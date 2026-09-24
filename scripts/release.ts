@@ -84,11 +84,16 @@ async function main() {
 
   const n = nextDeployNumber()
   const tag = `deploy-${n}`
-  sh(`git tag ${tag}`)
-  sh(`git push origin ${tag}`)
-  console.log(`\nTagged ${tag} at ${buildCommit}. Remember to log it in PROGRESS.md's deploy log.`)
-
-  sh('git checkout build')
+  try {
+    sh(`git tag ${tag}`)
+    sh(`git push origin ${tag}`)
+    console.log(`\nTagged ${tag} at ${buildCommit}. Remember to log it in PROGRESS.md's deploy log.`)
+  } catch (err) {
+    console.log(`\nCould not push tag ${tag} (see PROGRESS.md Blocked section for known cause).`)
+    console.log(err)
+  } finally {
+    sh('git checkout build')
+  }
 }
 
 main().catch((err) => {

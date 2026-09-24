@@ -7,7 +7,7 @@ M0 Setup (hours 0-4)
 
 ### M0 Setup (hours 0-4)
 - [x] repo, tooling, npm scripts, the `build` branch, the lock, `DEADLINE` and `PROGRESS.md`
-- [ ] `vercel.json`, `version.json` and the holding page released to `main` (vercel.json + version.json done; release pending)
+- [x] `vercel.json`, `version.json` and the holding page released to `main`
 - [x] `ci.yml`, `ios.yml` and `store.yml` committed (Capacitor iOS shell not yet built)
 - [ ] push `ios-1` to prove that signing and upload to TestFlight work end to end (blocked on Capacitor iOS shell)
 
@@ -51,10 +51,10 @@ M0 Setup (hours 0-4)
 - [ ] create `DONE`
 
 ## Blocked
-(none yet)
+- `git push origin deploy-1`: fails with `HTTP 403` (RPC failed). `main` and `build` pushes work fine, so this looks like a git-tag-specific permission restriction on this session's GitHub credentials, not a transient network issue. No MCP GitHub tool creates a tag ref either (`create_branch` only creates `refs/heads/*`). Retry next session; if it keeps failing, treat tags as blocked and rely on the deploy log below plus commit SHAs instead.
 
 ## Deploy log
-(none yet)
+- `bf1e42c` (holding page, M0 scaffold) — released to `main` 2026-09-24 ~14:00 UTC. Live smoke test passed (`https://cathnivore.com` returned 200, `/version.json` showed the new commit immediately). Tag `deploy-1` created locally but could not be pushed (see Blocked).
 
 ## Final report
 (not yet written)
