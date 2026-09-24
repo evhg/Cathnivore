@@ -1,7 +1,7 @@
 # Progress
 
 ## Current milestone
-M3 Playable game (second half of day 2 to day 3) — M1 and M2 are complete.
+M4 Full content and balance (day 4) — M1, M2 and M3 are complete (M3's exact-STYLE.md piece icons are deferred to M6 polish, per the cut order in SPEC 1.12 and the DECISIONS.md entry on the map's placeholder shapes).
 
 ## Tasks
 
@@ -51,7 +51,7 @@ M3 Playable game (second half of day 2 to day 3) — M1 and M2 are complete.
 - [x] the Farm sheet (`src/ui/FarmSheet.tsx`: every producer's resources/production, tableau with tags and flavor, and tag-count totals) and the Market/Cath's Plan sheets (`src/ui/MarketSheet.tsx`/`CathsPlanSheet.tsx`: the 4/3 face-up cards with full cost/tags/flavor text and a Buy/Play button when the active human producer currently has a legal action for that card — `Game.tsx`'s `canBuy`/`buy`/`canPlayScheme`/`playScheme` look it up in the same `actions`/`groups` the main action panel already computed, and a Scheme needing a region choice opens the map's targeting mode instead of acting blind). Verified with a headless-Chromium run: opened all three sheets, saw real card data, bought a Market card via its sheet button (closed the sheet on success), no console errors.
 - [x] desktop 3-column layout (SPEC 10.3): `FarmSheet`/`MarketSheet`/`CathsPlanSheet`/`LogSheet` all gained an `inline` prop that renders the same content without the phone-sized `.sheet-overlay` modal chrome; `Game.tsx` now always mounts an inline Farm panel on the left and Market/Cath's Plan/Log panels on the right (`.desktop-col-left`/`.desktop-col-right`), wrapping the existing phone-layout `<main className="game">` in a `.game-layout` grid. Below 1024px `.desktop-col` is `display: none` and the phone sheet-toggle buttons (now `.mobile-only`) work exactly as before; at 1024px+ the grid (300px / 1fr / 320px columns, `height: 100vh`, inner columns `overflow-y: auto`) shows all three columns with no page scroll, and `.mobile-only` buttons hide since their panels are already visible. Verified with headless-Chromium screenshots at both 390x844 and 1440x900 (a real Quick Game round): the phone layout is pixel-identical to before, the desktop layout shows Farm/map+plan-strip/Market+Plan+Log side by side with no scrollbar, no console errors either size.
 - [ ] full STYLE.md visual pass
-- [ ] Release to `main` (holding off until the screen is closer to spec — releasing this plain-HTML placeholder to production would fail SPEC 11.4 gate 8's visual review)
+- [x] Release to `main`: ran `npm run release` — gates passed (gate 5's e2e suite included; gates 6-8 still log as skipped, chartered to M6 per SPEC 12), fast-forwarded `main` to `0fa64b2`, live smoke test passed. **cathnivore.com now serves a playable game.**
 
 ### M4 Full content and balance (day 4)
 - [ ] full card counts and difficulty levels
@@ -84,6 +84,7 @@ M3 Playable game (second half of day 2 to day 3) — M1 and M2 are complete.
 
 ## Deploy log
 - `bf1e42c` (holding page, M0 scaffold) — released to `main` 2026-09-24 ~14:00 UTC. Live smoke test passed (`https://cathnivore.com` returned 200, `/version.json` showed the new commit immediately). Tag `deploy-1` created locally but could not be pushed (see Blocked).
+- `0fa64b2` (M3 playable game: map, sheets, desktop layout, rules reference, e2e gate 5 started) — released to `main` 2026-09-24 ~20:09 UTC via `npm run release`. `npm run gates` passed (gates 1-5; 6-8 log as skipped, chartered to M6). Live smoke test passed (`https://cathnivore.com` returned 200, `/version.json` showed commit `0fa64b2` immediately, title page HTML confirmed). Tag `deploy-1` created locally but could not be pushed (same known blocker as the M0 release — because neither push ever lands on the remote, `nextDeployNumber()` reused the name "deploy-1" for both; treat the commit SHA as the real identifier in this log, not the tag number, until tag pushes work).
 
 ## Final report
 (not yet written)
