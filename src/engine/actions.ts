@@ -13,6 +13,10 @@ function ownStalls(state: GameState, producer: ProducerId, region: RegionId): nu
   return state.regions[region].stalls[producer] ?? 0
 }
 
+// M4 balance-loop iteration 3 (was 4, see DECISIONS.md): clearing a Buyout is one of the two costs
+// (with Supply Outlets) directly on the critical path to liberating a region.
+const SUPPLY_BUYOUT_COST = 3
+
 // SPEC 7 "Mobile Butcher"/"Wholesale Crate Deal": Supply in Pasture/Crop regions costs 1 less Produce
 // per Outlet (minimum 1).
 function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, region: RegionId): number {
@@ -52,7 +56,7 @@ export function legalActions(state: GameState): Action[] {
     const outletCost = supplyOutletCostPerOutlet(state, producer, id)
     if (r.outlets >= 1 && p.resources.produce >= outletCost) actions.push({ kind: 'supplyOutlets', region: id, count: 1 })
     if (r.outlets >= 2 && p.resources.produce >= outletCost * 2) actions.push({ kind: 'supplyOutlets', region: id, count: 2 })
-    if (r.buyouts >= 1 && p.resources.produce >= 4 && regionStallTotal(r) >= 2) {
+    if (r.buyouts >= 1 && p.resources.produce >= SUPPLY_BUYOUT_COST && regionStallTotal(r) >= 2) {
       actions.push({ kind: 'supplyBuyout', region: id })
     }
     if (r.doubt >= 1 && p.resources.goodwill >= 1) actions.push({ kind: 'rebut', region: id, count: 1 })
@@ -186,7 +190,7 @@ export function applyAction(state: GameState, action: Action): GameState {
       break
     }
     case 'supplyBuyout': {
-      next = spend(state, producer, { produce: 4, marks: 0, goodwill: 0 })
+      next = spend(state, producer, { produce: SUPPLY_BUYOUT_COST, marks: 0, goodwill: 0 })
       next = removeBuyout(next, action.region, 1)
       break
     }

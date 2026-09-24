@@ -123,7 +123,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
   {
     id: 'letterpress-flyers',
     name: 'Letterpress Flyers',
-    cost: 4,
+    cost: 3,
     tags: ['media'],
     flavor: 'Smells like ink. Reads like honesty.',
     text: '+1 Goodwill production.',
@@ -140,7 +140,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
   {
     id: 'seed-library',
     name: 'Seed Library',
-    cost: 4,
+    cost: 3,
     tags: ['crop', 'science'],
     flavor: 'Borrow a seed, return two.',
     text: '+1 Produce production.',
