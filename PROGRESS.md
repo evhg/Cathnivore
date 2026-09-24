@@ -8,8 +8,9 @@ M0 Setup (hours 0-4)
 ### M0 Setup (hours 0-4)
 - [x] repo, tooling, npm scripts, the `build` branch, the lock, `DEADLINE` and `PROGRESS.md`
 - [x] `vercel.json`, `version.json` and the holding page released to `main`
-- [x] `ci.yml`, `ios.yml` and `store.yml` committed (Capacitor iOS shell not yet built)
-- [ ] push `ios-1` to prove that signing and upload to TestFlight work end to end (blocked on Capacitor iOS shell)
+- [x] `ci.yml`, `ios.yml` and `store.yml` committed
+- [x] Capacitor iOS shell wrapping the holding page (`ios/App`, `capacitor.config.ts`)
+- [ ] push `ios-1` to prove that signing and upload to TestFlight work end to end (pushed, awaiting `origin/ci-status`)
 
 ### M1 Engine (day 1)
 - [ ] full rules of section 4 with starter content: 4 producers, 24 Improvements, 18 Schemes, 8 Hollowell and 8 Candor Agenda cards, and 10 Pressure cards
