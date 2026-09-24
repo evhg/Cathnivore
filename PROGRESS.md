@@ -1,7 +1,7 @@
 # Progress
 
 ## Current milestone
-M2 Bots and simulation (first half of day 2) — M1 is complete.
+M3 Playable game (second half of day 2 to day 3) — M1 and M2 are complete.
 
 ## Tasks
 
@@ -37,10 +37,13 @@ M2 Bots and simulation (first half of day 2) — M1 is complete.
   - **Perf note for M4:** MCTSBot at the sim's 200-simulation budget takes ~400ms per decision *in this environment* (profiled directly), so a full 1,000-game MCTSBot run would take on the order of hours single-threaded — too slow to iterate the balance loop (SPEC 9.3's 12-iteration cap) inside a session, even though a single 10-game smoke run was fine. Before M4 starts, either add the worker-thread pool SPEC 9.3 asks for, or cut MCTS rollout cost (e.g. a cheaper rollout policy than a fully-lookahead HeuristicBot, or a smaller rollout budget/depth just for sim runs vs. the AI teammate). Logged in DECISIONS.md.
 
 ### M3 Playable game (second half of day 2 to day 3)
-- [ ] the game screen on phone and desktop, and the setup screen
-- [ ] Solo and Hot-seat modes, saves and undo
-- [ ] enemy turn playback and the rules reference
-- [ ] Release to `main`
+- [ ] (partial) a functional but unstyled Quick Game loop exists and was smoke-tested in a real browser (title → setup → game → end screen), with no console errors. `src/ui/Setup.tsx` (mode/producers/difficulty/seed), `src/ui/Game.tsx` (one button per `legalActions()` entry via `src/ui/actionLabel.ts`, since every choice is already expanded into a concrete Action — no separate map/targeting UI yet), `src/App.tsx` (Title/Setup/Game screen switch, Continue from a save). Still missing before this is done: the SVG hex map and STYLE.md visual pass (SPEC 10.2/10.4 — this UI is plain HTML controls, not close to the spec'd look yet), the Farm/Market/Cath's Plan/Log sheets, enemy-turn step playback (currently the whole enemy turn + cleanup happens invisibly inside one `applyAction` call, which is correct engine behaviour but gives the player no feedback), the rules reference screen, and the desktop 3-column layout (SPEC 10.3).
+- [x] Solo mode: the 2nd configured producer is AI-controlled (`src/ui/Game.tsx`'s `aiProducerRef`, decided as "producers[1] is the AI" — see DECISIONS.md) and auto-acts via `HeuristicBot`, including resolving its own `currentDecision`s. **Not yet MCTSBot-in-a-Worker** as SPEC 9.2 specifies for the real AI teammate — HeuristicBot is a synchronous stand-in so the loop is playable now; swap once MCTSBot's performance is fixed (see M2's perf note) and a Web Worker wrapper exists. Hot-seat mode (no AI producer) also works, just untested beyond a manual pass.
+- [x] Saves: `src/platform/storage.ts` (SPEC 11.3 `{version, config, seed, actions}` shape, `cathnivore:save:v1` key, web `localStorage` only so far — the Capacitor Preferences implementation behind the same interface is iPhone/M5+ work) autosaves after every state change; Title screen offers Continue when a save exists, rebuilding via `replay()`.
+- [x] Undo: a simplified version exists (a plain in-memory stack of prior states, popped on Undo) — **not yet** SPEC 4.6's real semantics (limited to the current turn, and blocked past an irreversible action like Steak-out's peek). Revisit before relying on it for the real UI.
+- [ ] enemy turn playback (currently invisible/instant, see above) and the rules reference
+- [ ] the SVG map, sheets and full STYLE.md visual pass; desktop 3-column layout
+- [ ] Release to `main` (holding off until the screen is closer to spec — releasing this plain-HTML placeholder to production would fail SPEC 11.4 gate 8's visual review)
 
 ### M4 Full content and balance (day 4)
 - [ ] full card counts and difficulty levels
