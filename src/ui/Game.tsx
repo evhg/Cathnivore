@@ -25,9 +25,19 @@ interface Props {
 // SPEC 10.2 Game screen. Plain controls for now — see PROGRESS.md M3 for what's still missing (the SVG
 // map, sheets, targeting-mode highlighting, enemy-turn step playback). `legalActions` already expands
 // every choice into its own concrete Action, so a flat button list is enough to play a full game.
+// SPEC 11.4 gate 5's "test driving ... using HeuristicBot choices" and the chapters 2-6 "test-only
+// auto-play hook driven by MCTSBot" both need some way for a Playwright test to finish a game without
+// hand-writing every click. `?e2eAutoplay=1` makes every producer (not just the Solo AI teammate) act via
+// HeuristicBot and skips enemy-turn playback instantly, so a test only has to load the URL and poll for
+// `state.result`. Never set by the app itself outside a test — see e2e/quick-game.spec.ts.
+function isE2EAutoplay(): boolean {
+  return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAutoplay') === '1'
+}
+
 export default function Game({ initial, seed, mode, onExit }: Props) {
   const [state, setState] = useState(initial)
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
+  const autoplayRef = useRef(isE2EAutoplay())
   const undoStackRef = useRef<GameState[]>([])
   const rngRef = useRef(createRng(seed + 1))
   const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
@@ -57,18 +67,27 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
   }
 
   useEffect(() => {
+    if (state.result || pendingEnemyTurn.length > 0) return
     const aiProducer = aiProducerRef.current
-    if (!aiProducer || state.result || pendingEnemyTurn.length > 0) return
     const decision = currentDecision(state)
-    const aiShouldAct = decision ? decision.producer === aiProducer : state.activeProducer === aiProducer
+    const activeProducer = decision ? decision.producer : state.activeProducer
+    const aiShouldAct = autoplayRef.current || (aiProducer !== null && activeProducer === aiProducer)
     if (!aiShouldAct) return
-    const timer = setTimeout(() => {
-      const [action, nextRng] = HeuristicBot.chooseAction(state, rngRef.current)
-      rngRef.current = nextRng
-      advance(state, action)
-    }, 150)
+    const timer = setTimeout(
+      () => {
+        const [action, nextRng] = HeuristicBot.chooseAction(state, rngRef.current)
+        rngRef.current = nextRng
+        advance(state, action)
+      },
+      autoplayRef.current ? 0 : 150,
+    )
     return () => clearTimeout(timer)
   }, [state, pendingEnemyTurn.length])
+
+  // Skip the (otherwise real-time) enemy-turn caption playback instantly under e2e autoplay.
+  useEffect(() => {
+    if (autoplayRef.current && pendingEnemyTurn.length > 0) setPendingEnemyTurn([])
+  }, [pendingEnemyTurn])
 
   if (state.result) {
     return (
