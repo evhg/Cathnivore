@@ -43,3 +43,16 @@ export function regionsBorderingLiberated(state: GameState): RegionId[] {
     REGIONS[id].neighbors.some((n) => state.regions[n].liberated),
   )
 }
+
+function anyProducerHasStall(state: GameState, region: RegionId): boolean {
+  return regionStallTotal(state.regions[region]) > 0
+}
+
+// SPEC 6 Tomas "Market Day": open a Stall for free in a region bordering any producer's Stall (not just
+// the actor's own), still subject to the Kingsmarket guard and the Stall cap.
+export function canMarketDayOpenIn(state: GameState, region: RegionId): boolean {
+  if (region === 'kingsmarket' && !kingsmarketOpen(state)) return false
+  if (regionStallTotal(state.regions[region]) >= stallCap(state.regions[region])) return false
+  if (anyProducerHasStall(state, region)) return true
+  return REGIONS[region].neighbors.some((n) => anyProducerHasStall(state, n))
+}

@@ -122,7 +122,7 @@ export type Action =
   | { kind: 'sell'; count: 1 | 2 | 3 }
   | { kind: 'scheme'; schemeId: string; targetRegion?: RegionId }
   | { kind: 'graft' }
-  | { kind: 'role' }
+  | { kind: 'role'; targetRegion?: RegionId }
 
 export type LossReason = 'publicTrust' | 'lostLand' | 'pressureDeckEmpty'
 

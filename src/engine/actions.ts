@@ -3,7 +3,7 @@ import { removeBuyout, removeDoubt, removeOutlets } from './pieces'
 import { refreshAllLiberation } from './enemy'
 import { advanceTurnIfNeeded } from './round'
 import { hasImprovement } from './producer'
-import { canOpenStallIn, regionStallTotal } from './region'
+import { canMarketDayOpenIn, canOpenStallIn, regionStallTotal } from './region'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID, legalSchemeTargets } from '../content/schemes'
 import type { Action, GameState, ProducerId, RegionId } from './types'
@@ -66,9 +66,28 @@ export function legalActions(state: GameState): Action[] {
   }
 
   actions.push({ kind: 'graft' })
-  if (!p.roleUsedThisRound) actions.push({ kind: 'role' })
+  if (!p.roleUsedThisRound) {
+    for (const target of legalRoleTargets(state, producer)) {
+      actions.push(target ? { kind: 'role', targetRegion: target } : { kind: 'role' })
+    }
+  }
 
   return actions
+}
+
+// SPEC 6: role abilities that need a target region (Mara's Injunction, Tomas's Market Day) are only
+// offered per legal target; Ines/Sol's abilities need no target so `role` is offered once, unconditionally
+// (their effects fizzle harmlessly with no valid target — same as an Agenda card with none, SPEC 4.7).
+function legalRoleTargets(state: GameState, producer: ProducerId): (RegionId | null)[] {
+  if (producer === 'mara') {
+    const targets = state.config.activeRegions.filter((id) => ownStalls(state, producer, id) > 0 && !state.regions[id].liberated)
+    return targets.length > 0 ? targets : [null]
+  }
+  if (producer === 'tomas') {
+    const targets = state.config.activeRegions.filter((id) => canMarketDayOpenIn(state, id))
+    return targets.length > 0 ? targets : [null]
+  }
+  return [null]
 }
 
 function assertLegal(state: GameState, action: Action): void {
@@ -78,23 +97,28 @@ function assertLegal(state: GameState, action: Action): void {
 }
 
 // SPEC 6: the four producers' free, once-per-round role abilities.
-function applyRole(state: GameState, producer: ProducerId): GameState {
+function applyRole(state: GameState, producer: ProducerId, target: RegionId | null): GameState {
   switch (producer) {
     case 'ines': {
-      const target = state.config.activeRegions.find((id) => ownStalls(state, producer, id) > 0 && state.regions[id].doubt > 0)
-      if (!target) return state
-      return removeDoubt(state, target, 1)
+      const region = state.config.activeRegions.find((id) => ownStalls(state, producer, id) > 0 && state.regions[id].doubt > 0)
+      if (!region) return state
+      return removeDoubt(state, region, 1)
     }
     case 'sol': {
       // Default choice: Public Trust +1. The UI/AI may prefer +2 Goodwill via a future `currentDecision`.
       return { ...state, publicTrust: Math.min(15, state.publicTrust + 1) }
     }
-    case 'mara':
-    case 'tomas':
-    default:
-      // Injunction (Mara) and Market Day (Tomas) need a target chosen by the caller; a no-op placeholder
-      // keeps `role` legal without a target picker. Wired up once the UI/AI decision layer lands.
-      return state
+    case 'mara': {
+      // Injunction: Expand skips the chosen region this round.
+      if (!target) return state
+      return { ...state, expandSkip: [...state.expandSkip, target] }
+    }
+    case 'tomas': {
+      // Market Day: open a Stall for free in a region bordering any producer's Stall.
+      if (!target) return state
+      const r = state.regions[target]
+      return { ...state, regions: { ...state.regions, [target]: { ...r, stalls: { ...r.stalls, [producer]: (r.stalls[producer] ?? 0) + 1 } } } }
+    }
   }
 }
 
@@ -143,7 +167,7 @@ export function applyAction(state: GameState, action: Action): GameState {
       break
     }
     case 'role': {
-      next = applyRole(state, producer)
+      next = applyRole(state, producer, action.targetRegion ?? null)
       next = {
         ...next,
         producers: { ...next.producers, [producer]: { ...next.producers[producer], roleUsedThisRound: true } },
