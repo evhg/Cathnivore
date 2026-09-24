@@ -10,7 +10,7 @@ M0 Setup (hours 0-4)
 - [x] `vercel.json`, `version.json` and the holding page released to `main`
 - [x] `ci.yml`, `ios.yml` and `store.yml` committed
 - [x] Capacitor iOS shell wrapping the holding page (`ios/App`, `capacitor.config.ts`)
-- [ ] push `ios-1` to prove that signing and upload to TestFlight work end to end (pushed, awaiting `origin/ci-status`)
+- [ ] push `ios-1` to prove that signing and upload to TestFlight work end to end (tag push blocked, see Blocked below; triggered `ios.yml` via `workflow_dispatch` on `build` instead, awaiting `origin/ci-status`)
 
 ### M1 Engine (day 1)
 - [ ] full rules of section 4 with starter content: 4 producers, 24 Improvements, 18 Schemes, 8 Hollowell and 8 Candor Agenda cards, and 10 Pressure cards
@@ -52,7 +52,7 @@ M0 Setup (hours 0-4)
 - [ ] create `DONE`
 
 ## Blocked
-- `git push origin deploy-1`: fails with `HTTP 403` (RPC failed). `main` and `build` pushes work fine, so this looks like a git-tag-specific permission restriction on this session's GitHub credentials, not a transient network issue. No MCP GitHub tool creates a tag ref either (`create_branch` only creates `refs/heads/*`). Retry next session; if it keeps failing, treat tags as blocked and rely on the deploy log below plus commit SHAs instead.
+- Pushing any git tag (`deploy-1`, `ios-1`) fails with `HTTP 403` (RPC failed) from this session's GitHub credentials; `main` and `build` branch pushes work fine. No MCP GitHub tool creates a tag ref either (`create_branch` only creates `refs/heads/*`). Confirmed again on `ios-1` after 3 retries with backoff. Workaround in place (see `DECISIONS.md`): dispatch the workflow directly via `mcp__github__actions_run_trigger` (`run_workflow`, ref `build`) instead of pushing a tag, since `ios.yml`/`store.yml` both also listen for `workflow_dispatch`. `release`'s `deploy-<n>` tag has no such trigger use (it's just a marker), so that one stays untagged; rely on the deploy log plus commit SHAs.
 
 ## Deploy log
 - `bf1e42c` (holding page, M0 scaffold) — released to `main` 2026-09-24 ~14:00 UTC. Live smoke test passed (`https://cathnivore.com` returned 200, `/version.json` showed the new commit immediately). Tag `deploy-1` created locally but could not be pushed (see Blocked).
