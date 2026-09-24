@@ -168,6 +168,55 @@ h3 {
   margin-bottom: 6px;
 }
 
+.card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-list li {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.card-list .card-empty {
+  border-style: dashed;
+  min-height: 24px;
+}
+
+.card-flavor {
+  margin: 4px 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.farm-column {
+  margin-bottom: 16px;
+}
+
+.farm-production {
+  font-size: 14px;
+}
+
+.farm-tableau {
+  margin: 4px 0;
+  padding-left: 18px;
+  font-size: 14px;
+}
+
+.farm-flavor {
+  color: var(--ink-muted);
+}
+
+.farm-tags {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
 .region-name {
   font-family: 'Fraunces', Georgia, serif;
   font-size: 13px;

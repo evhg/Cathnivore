@@ -8,6 +8,9 @@ import { actionLabel, actionGroupKey, actionGroupLabel, regionOf } from './actio
 import { enemyTurnEvents } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
 import LogSheet from './LogSheet'
+import FarmSheet from './FarmSheet'
+import MarketSheet from './MarketSheet'
+import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap from './Map'
 import type { Action, GameEvent, GameState, ProducerId, RegionId } from '../engine/types'
 import type { Mode } from './Setup'
@@ -30,6 +33,9 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
   const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
   const [showLog, setShowLog] = useState(false)
+  const [showFarm, setShowFarm] = useState(false)
+  const [showMarket, setShowMarket] = useState(false)
+  const [showPlan, setShowPlan] = useState(false)
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -116,6 +122,46 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
     if (previous) setState(previous)
   }
 
+  // The Market/Cath's Plan sheets (SPEC 10.2) offer a direct Buy/Play button for a card only when the
+  // active human producer currently has a legal action for it, reusing the same `actions` this render
+  // already computed rather than re-deriving legality.
+  function canBuy(improvementId: string): boolean {
+    return standalone.some(({ action: a }) => a.kind === 'invest' && a.improvementId === improvementId)
+  }
+
+  function buy(improvementId: string): void {
+    const entry = standalone.find(({ action: a }) => a.kind === 'invest' && a.improvementId === improvementId)
+    if (entry) {
+      act(entry.index)
+      setShowMarket(false)
+    }
+  }
+
+  // A Scheme with no region choice is one standalone action; one needing a region lands in `groups` under
+  // `scheme:<id>` — a single legal region there still resolves directly (matching the main action panel's
+  // own single-entry-group behaviour), more than one opens the map's targeting mode instead.
+  function canPlayScheme(schemeId: string): boolean {
+    return (
+      groups.has(`scheme:${schemeId}`) ||
+      standalone.some(({ action: a }) => a.kind === 'scheme' && a.schemeId === schemeId)
+    )
+  }
+
+  function playScheme(schemeId: string): void {
+    const group = groups.get(`scheme:${schemeId}`)
+    if (group) {
+      if (group.entries.length === 1) act(group.entries[0]!.index)
+      else setSelectedGroup(group)
+      setShowPlan(false)
+      return
+    }
+    const entry = standalone.find(({ action: a }) => a.kind === 'scheme' && a.schemeId === schemeId)
+    if (entry) {
+      act(entry.index)
+      setShowPlan(false)
+    }
+  }
+
   return (
     <main className="game">
       <header className="topbar">
@@ -200,10 +246,18 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
         <button disabled={undoStackRef.current.length === 0 || pendingEnemyTurn.length > 0} onClick={undo}>
           Undo
         </button>
+        <button onClick={() => setShowFarm(true)}>Farm</button>
+        <button onClick={() => setShowMarket(true)}>Market</button>
+        <button onClick={() => setShowPlan(true)}>Cath&rsquo;s Plan</button>
         <button onClick={() => setShowLog(true)}>Log</button>
         <button onClick={onExit}>Menu</button>
       </footer>
 
+      {showFarm && <FarmSheet state={state} onClose={() => setShowFarm(false)} />}
+      {showMarket && <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => setShowMarket(false)} />}
+      {showPlan && (
+        <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => setShowPlan(false)} />
+      )}
       {showLog && <LogSheet log={state.log} onClose={() => setShowLog(false)} />}
     </main>
   )
