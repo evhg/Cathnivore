@@ -29,6 +29,12 @@ function regionsWithDoubt(state: GameState): RegionId[] {
   return state.config.activeRegions.filter((id) => state.regions[id].doubt > 0)
 }
 
+function anyStallRegions(state: GameState): RegionId[] {
+  return state.config.activeRegions.filter((id) =>
+    Object.values(state.regions[id].stalls).some((n) => (n ?? 0) > 0),
+  )
+}
+
 export const SCHEMES: SchemeCard[] = [
   // --- The 6 exact cards from SPEC 5 ---
   {
@@ -243,6 +249,142 @@ export const SCHEMES: SchemeCard[] = [
     text: 'Choose a region. Expand skips it this round.',
     targeting: 'required',
     legalTargets: (state) => state.config.activeRegions.filter((id) => !state.regions[id].liberated),
+    effect: (state, _producer, target) => (target ? { ...state, expandSkip: [...state.expandSkip, target] } : state),
+  },
+
+  // --- 12 more for M4's full 30-card count, keeping the SPEC 5 mix (10 removal/tempo, 6 economy, 5 info, 5 rift, 4 defensive) ---
+  {
+    id: 'two-for-one',
+    name: 'Two For One',
+    cost: 3,
+    tags: ['market'],
+    line: "One sign, two lies, half the price. I'll take down both.",
+    text: 'Remove 1 Outlet and 1 Doubt from a region with your Stall.',
+    targeting: 'required',
+    legalTargets: (state, producer) =>
+      ownStallRegions(state, producer).filter((id) => state.regions[id].outlets > 0 || state.regions[id].doubt > 0),
+    effect: (state, _producer, target) => {
+      if (!target) return state
+      let next = state
+      if (next.regions[target].outlets > 0) next = removeOutlets(next, target, 1)
+      if (next.regions[target].doubt > 0) next = removeDoubt(next, target, 1)
+      return next
+    },
+  },
+  {
+    id: 'fence-jumpers',
+    name: 'Fence Jumpers',
+    cost: 3,
+    tags: ['market'],
+    line: 'The SOLD sign made excellent kindling.',
+    text: 'Remove 1 Buyout from a region with your Stall.',
+    targeting: 'required',
+    legalTargets: (state, producer) => ownStallRegions(state, producer).filter((id) => state.regions[id].buyouts > 0),
+    effect: (state, _producer, target) => {
+      if (!target) return state
+      const r = state.regions[target]
+      return { ...state, buyoutPool: state.buyoutPool + 1, regions: { ...state.regions, [target]: { ...r, buyouts: r.buyouts - 1 } } }
+    },
+  },
+  {
+    id: 'late-delivery',
+    name: 'Late Delivery',
+    cost: 2,
+    tags: ['market'],
+    line: "Their lorry took the scenic route. I made a call.",
+    text: 'Remove 2 Outlets from any region with a Stall.',
+    targeting: 'required',
+    legalTargets: (state) => anyStallRegions(state).filter((id) => state.regions[id].outlets > 0),
+    effect: (state, _producer, target) => (target ? removeOutlets(state, target, 2) : state),
+  },
+  {
+    id: 'quiet-word',
+    name: 'Quiet Word',
+    cost: 1,
+    line: "Pip has a word with the van driver. The driver leaves early.",
+    text: 'Remove 1 Doubt from any region with a Stall.',
+    targeting: 'required',
+    legalTargets: (state) => anyStallRegions(state).filter((id) => state.regions[id].doubt > 0),
+    effect: (state, _producer, target) => (target ? removeDoubt(state, target, 1) : state),
+  },
+  {
+    id: 'undercut',
+    name: 'Undercut',
+    cost: 2,
+    tags: ['market'],
+    line: "They priced to win. I priced to end it.",
+    text: 'Remove 1 Outlet from any region with a Stall.',
+    targeting: 'required',
+    legalTargets: (state) => anyStallRegions(state).filter((id) => state.regions[id].outlets > 0),
+    effect: (state, _producer, target) => (target ? removeOutlets(state, target, 1) : state),
+  },
+  {
+    id: 'bumper-crop',
+    name: 'Bumper Crop',
+    cost: 2,
+    tags: ['market'],
+    line: "The weather owed us one. It paid up.",
+    text: 'Gain 2 Produce and 1 Marks.',
+    targeting: 'none',
+    effect: (state, producer) => addResources(state, producer, { produce: 2, marks: 1 }),
+  },
+  {
+    id: 'paper-trail',
+    name: 'Paper Trail',
+    cost: 1,
+    line: "Somebody left the memo in the printer tray again.",
+    text: 'Look at the top Agenda card.',
+    targeting: 'none',
+    // Information: a UI-only reveal, same reasoning as Reconnaissance (no hidden state relative to the caller).
+    effect: (state) => state,
+  },
+  {
+    id: 'weather-eye',
+    name: 'Weather Eye',
+    cost: 2,
+    line: "I read clouds and quarterly reports the same way.",
+    text: 'Look at the top two Pressure cards.',
+    targeting: 'none',
+    effect: (state) => state,
+  },
+  {
+    id: 'anonymous-tip',
+    name: 'Anonymous Tip',
+    cost: 2,
+    tags: ['rift'],
+    line: "It came from a number I don't recognise. It checks out.",
+    text: 'Rift +1.',
+    targeting: 'none',
+    effect: (state) => ({ ...state, rift: Math.min(6, state.rift + 1) }),
+  },
+  {
+    id: 'public-records-request',
+    name: 'Records Request',
+    cost: 3,
+    tags: ['rift'],
+    line: "Everything they filed is, technically, public.",
+    text: 'Rift +2.',
+    targeting: 'none',
+    effect: (state) => ({ ...state, rift: Math.min(6, state.rift + 2) }),
+  },
+  {
+    id: 'firm-no',
+    name: 'Firm No',
+    cost: 2,
+    line: "I said no. I meant it. It was very quiet after.",
+    text: 'Choose a region with your Stall. Squeeze skips it this round.',
+    targeting: 'required',
+    legalTargets: (state, producer) => ownStallRegions(state, producer).filter((id) => !state.regions[id].liberated),
+    effect: (state, _producer, target) => (target ? { ...state, squeezeSkip: [...state.squeezeSkip, target] } : state),
+  },
+  {
+    id: 'redirect',
+    name: 'Redirect',
+    cost: 3,
+    line: "Told them the good land was two regions over. It wasn't.",
+    text: 'Choose a region with your Stall. Expand skips it this round.',
+    targeting: 'required',
+    legalTargets: (state, producer) => ownStallRegions(state, producer).filter((id) => !state.regions[id].liberated),
     effect: (state, _producer, target) => (target ? { ...state, expandSkip: [...state.expandSkip, target] } : state),
   },
 ]
