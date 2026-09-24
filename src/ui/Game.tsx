@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { createRng } from '../engine/rng'
-import { REGIONS } from '../content/map'
 import { PRODUCERS } from '../content/producers'
 import { HeuristicBot } from '../ai/heuristic'
 import { saveGame, clearGame } from '../platform/storage'
 import { actionLabel } from './actionLabel'
+import Map from './Map'
 import type { GameState, ProducerId } from '../engine/types'
 import type { Mode } from './Setup'
 
@@ -96,24 +96,8 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
         <span>Scout: {state.scout?.regionTypes.join('+') ?? '—'}</span>
       </section>
 
-      <section className="regions">
-        {state.config.activeRegions.map((id) => {
-          const r = state.regions[id]
-          const stalls = Object.entries(r.stalls)
-            .filter(([, n]) => (n ?? 0) > 0)
-            .map(([pid, n]) => `${PRODUCERS[pid as ProducerId].name.split(' ')[0]}×${n}`)
-            .join(', ')
-          return (
-            <div key={id} className={`region region-${REGIONS[id].type}${r.liberated ? ' liberated' : ''}`}>
-              <strong>{REGIONS[id].name}</strong>
-              <span>{stalls || 'no Stalls'}</span>
-              <span>
-                {r.outlets} Outlet{r.outlets === 1 ? '' : 's'}, {r.buyouts} Buyout{r.buyouts === 1 ? '' : 's'}, {r.doubt} Doubt
-                {r.lostLand > 0 ? `, ${r.lostLand} Lost Land` : ''}
-              </span>
-            </div>
-          )
-        })}
+      <section className="map-wrap">
+        <Map state={state} />
       </section>
 
       {decision ? (
