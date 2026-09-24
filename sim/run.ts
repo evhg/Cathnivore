@@ -1,43 +1,31 @@
 // SPEC 9.3 simulation harness: `npm run sim -- --games 1000 --bot mcts --difficulty normal --pairs all`.
-// Runs headless games and writes `sim/reports/<timestamp>.json`, then appends a summary to `BALANCE.md`.
+// Runs headless games across a pool of child processes (one per CPU core minus one, per SPEC 9.3's "Node
+// worker threads" -- see `sim/simWorker.ts` for why this uses `child_process` instead of an actual
+// `worker_threads.Worker`), writes `sim/reports/<timestamp>.json`, then appends a summary to `BALANCE.md`.
 //
-// Runs single-threaded rather than across Node worker threads (SPEC 9.3's "one per CPU core minus one").
-// Logged as a decision in DECISIONS.md: correctness of the metrics matters more than wall-clock speed
-// while the balance loop hasn't started (M4), and 1,000 games already finishes in well under a minute at
-// the lower (200-simulation) MCTS budget SPEC 9.3 allows for sims. Revisit if M4's iteration loop (up to
-// 12 iterations x 1,000+ games) turns out too slow.
-import { writeFileSync, mkdirSync, appendFileSync, existsSync } from 'node:fs'
-import { createGame } from '../src/engine/state'
-import { applyAction, legalActions } from '../src/engine/actions'
-import { validate } from '../src/engine/api'
-import { createRng } from '../src/engine/rng'
+// MCTSBot decisions are the expensive case (~400ms/decision profiled at the sim harness's 200-simulation
+// budget before the rollout-policy fix in `src/ai/mcts.ts`, ~100ms after it), which made a full 1,000-game
+// MCTSBot run take on the order of hours single-threaded (see PROGRESS.md's M2 perf note / DECISIONS.md).
+// This worker pool is the other half of that fix, matching SPEC 9.3's own text.
+import { writeFileSync, mkdirSync, appendFileSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { cpus } from 'node:os'
+import { spawn } from 'node:child_process'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
+import { ALL_PAIRS, playOneGame, botFor } from './simCore'
+import type { BotName, Difficulty, GameOutcome } from './simCore'
+import type { ProducerId } from '../src/engine/types'
 import { ALL_REGION_IDS } from '../src/content/map'
-import { RandomBot } from '../src/ai/random'
-import { HeuristicBot } from '../src/ai/heuristic'
-import { createMCTSBot } from '../src/ai/mcts'
 import { IMPROVEMENTS } from '../src/content/improvements'
 import { SCHEMES } from '../src/content/schemes'
-import type { Bot } from '../src/ai/types'
-import type { GameConfig, GameState, ProducerId } from '../src/engine/types'
-
-// SPEC 9.3: "Simulations may use a lower budget (200 simulations per decision) to save time."
-const SIM_MCTS_BUDGET = 200
-const STEP_CAP = 2000
-const SETTLED_LIBERATED_THRESHOLD = 4
-
-const ALL_PAIRS: ProducerId[][] = [
-  ['mara', 'tomas'],
-  ['mara', 'ines'],
-  ['mara', 'sol'],
-  ['tomas', 'ines'],
-  ['tomas', 'sol'],
-  ['ines', 'sol'],
-]
 
 interface Args {
   games: number
-  bot: 'random' | 'heuristic' | 'mcts'
-  difficulty: 'easy' | 'normal' | 'hard'
+  bot: BotName
+  difficulty: Difficulty
   pairs: 'all' | ProducerId[]
 }
 
@@ -53,86 +41,6 @@ function parseArgs(): Args {
   const pairsArg = get('--pairs', 'all')
   const pairs: Args['pairs'] = pairsArg === 'all' ? 'all' : (pairsArg.split(',') as ProducerId[])
   return { games, bot, difficulty, pairs }
-}
-
-function botFor(name: Args['bot']): Bot {
-  if (name === 'random') return RandomBot
-  if (name === 'heuristic') return HeuristicBot
-  return createMCTSBot(SIM_MCTS_BUDGET)
-}
-
-interface GameOutcome {
-  pair: string
-  won: boolean
-  lossReason: string | null
-  rounds: number
-  settledRound: number | null // first round the outcome looked decided (SPEC 9.3)
-  improvementsBought: string[]
-  schemesPlayed: string[]
-  legalActionCounts: number[]
-  crashed: boolean
-  invariantFailure: string | null
-}
-
-// "the round at which the outcome became settled (4 or more regions liberated, or a loss track within 1
-// of losing)" — checked once per round, right after Cleanup, using that round's ending state.
-function isSettled(state: GameState): boolean {
-  const liberated = Object.values(state.regions).filter((r) => r.liberated).length
-  if (liberated >= SETTLED_LIBERATED_THRESHOLD) return true
-  if (state.publicTrust <= 1) return true
-  if (state.lostLandPool <= 1) return true
-  if (state.pressureDeck.length <= 1) return true
-  return false
-}
-
-function playOneGame(bot: Bot, pair: ProducerId[], difficulty: Args['difficulty'], seed: number): GameOutcome {
-  const config: GameConfig = { producers: pair, difficulty, activeRegions: ALL_REGION_IDS }
-  const pairLabel = [...pair].sort().join('+')
-  const outcome: GameOutcome = {
-    pair: pairLabel,
-    won: false,
-    lossReason: null,
-    rounds: 0,
-    settledRound: null,
-    improvementsBought: [],
-    schemesPlayed: [],
-    legalActionCounts: [],
-    crashed: false,
-    invariantFailure: null,
-  }
-  try {
-    let state = createGame(config, seed)
-    let rng = createRng(seed * 7919 + 1)
-    let lastRound = state.round
-    for (let step = 0; step < STEP_CAP; step++) {
-      if (state.result) {
-        outcome.won = state.result.won
-        outcome.lossReason = state.result.lossReason ?? null
-        outcome.rounds = state.round
-        break
-      }
-      const actions = legalActions(state)
-      outcome.legalActionCounts.push(actions.length)
-      const [action, next] = bot.chooseAction(state, rng)
-      rng = next
-      state = applyAction(state, action)
-      if (action.kind === 'invest') outcome.improvementsBought.push(action.improvementId)
-      if (action.kind === 'scheme') outcome.schemesPlayed.push(action.schemeId)
-      const errors = validate(state)
-      if (errors.length > 0) {
-        outcome.invariantFailure = errors.map((e) => e.message).join('; ')
-        return outcome
-      }
-      if (state.round !== lastRound && outcome.settledRound === null && isSettled(state)) {
-        outcome.settledRound = state.round
-      }
-      lastRound = state.round
-    }
-  } catch (err) {
-    outcome.crashed = true
-    outcome.invariantFailure = err instanceof Error ? err.message : String(err)
-  }
-  return outcome
 }
 
 interface Summary {
@@ -235,18 +143,71 @@ function appendToBalanceLog(summary: Summary, reportPath: string): void {
   appendFileSync('BALANCE.md', lines.join('\n'))
 }
 
-function main(): void {
-  const args = parseArgs()
-  const bot = botFor(args.bot)
-  const pairs = args.pairs === 'all' ? ALL_PAIRS : [args.pairs]
+// One child process per job list, running `sim/simWorker.ts` as a real `tsx` CLI invocation (see that
+// file's header comment for why). Input/output are small JSON files in a scratch temp dir, since a
+// worker's whole job list and outcome list are both well under any pipe/argv size limit but a file is
+// simpler to get right than streaming NDJSON over stdout.
+function runInWorker(
+  tmpDir: string,
+  index: number,
+  botName: BotName,
+  difficulty: Difficulty,
+  jobs: { pair: ProducerId[]; seed: number }[],
+): Promise<GameOutcome[]> {
+  const inputPath = join(tmpDir, `in-${index}.json`)
+  const outputPath = join(tmpDir, `out-${index}.json`)
+  writeFileSync(inputPath, JSON.stringify({ bot: botName, difficulty, jobs }))
 
-  const outcomes: GameOutcome[] = []
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [require.resolve('tsx/cli'), 'sim/simWorker.ts', '--input', inputPath, '--output', outputPath], {
+      stdio: 'inherit',
+    })
+    child.on('error', reject)
+    child.on('exit', (code) => {
+      if (code !== 0) {
+        reject(new Error(`sim worker ${index} exited with code ${code}`))
+        return
+      }
+      resolve(JSON.parse(readFileSync(outputPath, 'utf-8')) as GameOutcome[])
+    })
+  })
+}
+
+// SPEC 9.3: "one per CPU core minus one." Single-threaded (no worker) for tiny runs, since spawning a
+// worker thread costs more than a handful of RandomBot/HeuristicBot games take to just run inline.
+async function playAllGames(args: Args): Promise<GameOutcome[]> {
+  const pairs = args.pairs === 'all' ? ALL_PAIRS : [args.pairs]
+  const jobs: { pair: ProducerId[]; seed: number }[] = []
   let seed = 1
   for (let i = 0; i < args.games; i++) {
-    const pair = pairs[i % pairs.length]!
-    outcomes.push(playOneGame(bot, pair, args.difficulty, seed))
+    jobs.push({ pair: pairs[i % pairs.length]!, seed })
     seed += 1
   }
+
+  const workerCount = Math.max(1, cpus().length - 1)
+  if (args.games < 20 || workerCount <= 1) {
+    const bot = botFor(args.bot)
+    return jobs.map((job) => playOneGame(bot, job.pair, args.difficulty, job.seed, ALL_REGION_IDS))
+  }
+
+  const chunks: { pair: ProducerId[]; seed: number }[][] = Array.from({ length: workerCount }, () => [])
+  jobs.forEach((job, i) => chunks[i % workerCount]!.push(job))
+
+  const tmpDir = mkdtempSync(join(tmpdir(), 'cathnivore-sim-'))
+  try {
+    const results = await Promise.all(
+      chunks.filter((c) => c.length > 0).map((chunk, i) => runInWorker(tmpDir, i, args.bot, args.difficulty, chunk)),
+    )
+    return results.flat()
+  } finally {
+    rmSync(tmpDir, { recursive: true, force: true })
+  }
+}
+
+async function main(): Promise<void> {
+  const args = parseArgs()
+
+  const outcomes = await playAllGames(args)
 
   const summary = summarize(outcomes, args)
 
@@ -262,4 +223,4 @@ function main(): void {
   if (summary.crashes > 0 || summary.invariantFailures > 0) process.exit(1)
 }
 
-main()
+void main()
