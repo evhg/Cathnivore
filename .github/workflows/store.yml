@@ -1,0 +1,80 @@
+name: Store
+
+on:
+  push:
+    tags:
+      - 'store-*'
+      - 'submit-*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: false
+      - run: gem install fastlane
+
+      - name: Write App Store Connect API key
+        run: |
+          mkdir -p private_keys
+          echo "${{ secrets.ASC_KEY_P8 }}" > private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+
+      - name: Upload metadata, screenshots and build via fastlane deliver
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_PATH: private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+        run: |
+          if [ -f store/Fastfile ]; then
+            fastlane run deliver --metadata_path store/metadata --screenshots_path store/screenshots
+          else
+            echo "store/Fastfile not set up yet; skipping upload"
+          fi
+
+      - name: Submit for App Review (manual release)
+        if: startsWith(github.ref_name, 'submit-')
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_PATH: private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+        run: |
+          if [ -f store/Fastfile ]; then
+            fastlane run deliver submit_for_review --automatic_release false
+          else
+            echo "store/Fastfile not set up yet; skipping submission"
+          fi
+
+      - name: Delete API key
+        if: always()
+        run: rm -rf private_keys
+
+      - name: Report status to ci-status
+        if: always()
+        run: |
+          STATUS=${{ job.status }}
+          COMMIT=${{ github.sha }}
+          TAG=${{ github.ref_name }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin ci-status 2>/dev/null || true
+          git checkout ci-status 2>/dev/null || git checkout --orphan ci-status
+          mkdir -p status
+          cat > status/store.json <<EOF
+          {
+            "workflow": "store",
+            "tag": "$TAG",
+            "commit": "$COMMIT",
+            "success": $( [ "$STATUS" = "success" ] && echo true || echo false ),
+            "time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+          git add status/store.json
+          git commit -m "store status for $TAG" --allow-empty
+          git push --force origin ci-status

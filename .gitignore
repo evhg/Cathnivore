@@ -1,0 +1,27 @@
+node_modules
+dist
+dist-ssr
+*.local
+*.tsbuildinfo
+
+# test output
+test-results
+playwright-report
+coverage
+sim/reports
+
+# e2e screenshots (but keep store screenshots)
+e2e/screenshots
+!store/screenshots
+
+# secrets
+.env
+.env.*
+*.p8
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+.DS_Store

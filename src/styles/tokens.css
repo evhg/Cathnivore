@@ -1,0 +1,67 @@
+:root {
+  --paper: #F4EDE1;
+  --paper-2: #EAE0CF;
+  --surface: #FBF8F1;
+  --ink: #2B2320;
+  --ink-muted: #6E625A;
+  --pasture: #5B7F3A;
+  --pasture-deep: #466A2B;
+  --soil: #6B4A2B;
+  --wheat: #D9B45A;
+  --sea: #3E6E7E;
+  --clay: #B5523B;
+  --clay-deep: #9E4430;
+
+  --region-pasture: #CFE0B4;
+  --region-crop: #EBD9A6;
+  --region-coast: #BFD6DA;
+  --region-capital: #D8CFC4;
+
+  --p-mara: #8C2F39;
+  --p-tomas: #C9962B;
+  --p-ines: #4E6A8C;
+  --p-sol: #6B4E7A;
+
+  --hollowell: #FF7A1A;
+  --hollowell-highlight: #FFB36B;
+  --candor: #3FC1D9;
+  --candor-highlight: #BFF1FA;
+
+  --rule: #C9BCAC;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1E1A17;
+    --paper-2: #2A2420;
+    --surface: #332C27;
+    --rule: #8A7D72;
+    --ink: #F1E9DC;
+    --ink-muted: #B8AC9F;
+    --pasture: #7FA35A;
+    --sea: #6FA3B3;
+    --clay: #D0705A;
+
+    --region-pasture: #3E4A30;
+    --region-crop: #574A2A;
+    --region-coast: #2F474C;
+    --region-capital: #45403B;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #1E1A17;
+  --paper-2: #2A2420;
+  --surface: #332C27;
+  --rule: #8A7D72;
+  --ink: #F1E9DC;
+  --ink-muted: #B8AC9F;
+  --pasture: #7FA35A;
+  --sea: #6FA3B3;
+  --clay: #D0705A;
+
+  --region-pasture: #3E4A30;
+  --region-crop: #574A2A;
+  --region-coast: #2F474C;
+  --region-capital: #45403B;
+}
