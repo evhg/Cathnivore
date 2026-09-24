@@ -7,6 +7,7 @@ import { saveGame, clearGame } from '../platform/storage'
 import { actionLabel, actionGroupKey, actionGroupLabel, regionOf } from './actionLabel'
 import { enemyTurnEvents } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
+import LogSheet from './LogSheet'
 import RegionMap from './Map'
 import type { Action, GameEvent, GameState, ProducerId, RegionId } from '../engine/types'
 import type { Mode } from './Setup'
@@ -28,6 +29,7 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
   const rngRef = useRef(createRng(seed + 1))
   const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
+  const [showLog, setShowLog] = useState(false)
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -198,8 +200,11 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
         <button disabled={undoStackRef.current.length === 0 || pendingEnemyTurn.length > 0} onClick={undo}>
           Undo
         </button>
+        <button onClick={() => setShowLog(true)}>Log</button>
         <button onClick={onExit}>Menu</button>
       </footer>
+
+      {showLog && <LogSheet log={state.log} onClose={() => setShowLog(false)} />}
     </main>
   )
 }

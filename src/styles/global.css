@@ -109,8 +109,8 @@ h3 {
   gap: 8px;
   padding: 24px;
   text-align: center;
-  background: rgba(28, 26, 23, 0.85);
-  color: #fdf8ee;
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  color: var(--paper);
   cursor: pointer;
 }
 
@@ -124,6 +124,48 @@ h3 {
 .enemy-turn-playback-hint {
   font-size: 12px;
   opacity: 0.75;
+}
+
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: color-mix(in srgb, var(--ink) 45%, transparent);
+  z-index: 10;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--ink);
+  border-top: 1px solid var(--rule);
+  border-radius: 12px 12px 0 0;
+  padding: 12px 16px 20px;
+}
+
+.sheet header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  padding-bottom: 8px;
+}
+
+.log-sheet ol {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+}
+
+.log-sheet li {
+  margin-bottom: 6px;
 }
 
 .region-name {
