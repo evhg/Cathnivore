@@ -22,8 +22,15 @@ function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, regio
   return base
 }
 
+// SPEC 9.1 `currentDecision`: while a forced choice is pending, it's the only thing the engine will
+// accept — resolving it (`decide`) is a prerequisite for any other action, same path for human and AI.
+function decisionActions(decision: GameState['pendingDecisions'][number]): Action[] {
+  return decision.options.map((choice) => ({ kind: 'decide', decisionId: decision.id, choice }))
+}
+
 export function legalActions(state: GameState): Action[] {
   if (state.result) return []
+  if (state.pendingDecisions.length > 0) return decisionActions(state.pendingDecisions[0]!)
   const producer = state.activeProducer
   const p = state.producers[producer]
   const actions: Action[] = []
@@ -123,8 +130,34 @@ function applyRole(state: GameState, producer: ProducerId, target: RegionId | nu
   }
 }
 
+// Resolves a pending `currentDecision`. A default choice is already applied to state (see enemy.ts); if
+// the resolved choice differs, undo the default and apply the chosen option in its place. This isn't one
+// of a producer's 3 actions, so it doesn't touch `actionsLeft` or turn order.
+function applyDecision(state: GameState, action: Extract<Action, { kind: 'decide' }>): GameState {
+  const decision = state.pendingDecisions.find((d) => d.id === action.decisionId)
+  if (!decision) throw new Error(`Unknown decision: ${action.decisionId}`)
+  const producer = state.producers[decision.producer]
+  let production = producer.production
+  if (decision.applied !== action.choice) {
+    const delta = decision.kind === 'squeezeProductionLoss' ? 1 : -1
+    production = {
+      ...production,
+      [decision.applied]: Math.max(0, production[decision.applied] + delta),
+      [action.choice]: Math.max(0, production[action.choice] - delta),
+    }
+  }
+  return {
+    ...state,
+    producers: { ...state.producers, [decision.producer]: { ...producer, production } },
+    pendingDecisions: state.pendingDecisions.filter((d) => d.id !== action.decisionId),
+    log: [...state.log, { type: 'decision', decisionId: action.decisionId, choice: action.choice }],
+    actionHistory: [...state.actionHistory, action],
+  }
+}
+
 export function applyAction(state: GameState, action: Action): GameState {
   assertLegal(state, action)
+  if (action.kind === 'decide') return applyDecision(state, action)
   const producer = state.activeProducer
   let next = state
 

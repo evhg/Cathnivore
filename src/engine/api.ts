@@ -6,12 +6,18 @@ import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { AGENDA_CARDS } from '../content/agenda'
 import { IMPROVEMENTS } from '../content/improvements'
 import { SCHEMES } from '../content/schemes'
-import type { Action, GameConfig, GameResult, GameState } from './types'
+import type { Action, GameConfig, GameResult, GameState, PendingDecision } from './types'
 
 export { createGame, legalActions, applyAction }
 
 export function isOver(state: GameState): boolean {
   return state.result !== null
+}
+
+// SPEC 9.1: who must decide what, right now — a forced choice with legal options (see `types.ts`
+// `PendingDecision`), resolved via `applyAction({kind: 'decide', ...})`. `null` when nothing is pending.
+export function currentDecision(state: GameState): PendingDecision | null {
+  return state.pendingDecisions[0] ?? null
 }
 
 export function result(state: GameState): GameResult | null {

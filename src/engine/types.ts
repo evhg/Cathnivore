@@ -100,10 +100,31 @@ export interface GameState {
   cathsPlan: (SchemeCardId | null)[] // 3 face-up slots; null while empty until cleanup refill
   squeezeSkip: RegionId[] // regions whose Squeeze step is skipped this round (Sunlight, Injunction)
   expandSkip: RegionId[] // regions whose Expand step is skipped this round (Injunction)
+  pendingDecisions: PendingDecision[] // forced choices (SPEC 9.1 currentDecision); a default is already applied, see actions.ts
   log: GameEvent[]
   actionHistory: Action[]
   result: GameResult | null
 }
+
+// SPEC 9.1: `currentDecision(state)` — forced choices with legal options, so humans and the AI use the
+// same path. The engine applies a default immediately (so unrelated state stays consistent) and records
+// it here; resolving with a `decide` action either confirms the default or swaps it for another option.
+export type PendingDecision =
+  | {
+      id: string
+      kind: 'squeezeProductionLoss' // SPEC 4.7 Squeeze: a home region takes damage, its producer lowers one track by 1
+      producer: ProducerId
+      region: RegionId
+      options: ResourceKind[]
+      applied: ResourceKind
+    }
+  | {
+      id: string
+      kind: 'kingsmarketBonus' // SPEC 4.8: first-liberating Kingsmarket lets its producer choose which production to raise
+      producer: ProducerId
+      options: ResourceKind[]
+      applied: ResourceKind
+    }
 
 export type GameEvent =
   | { type: 'action'; producer: ProducerId; action: Action }
@@ -115,6 +136,7 @@ export type GameEvent =
   | { type: 'invest'; producer: ProducerId; improvementId: ImprovementCardId }
   | { type: 'schemePlayed'; producer: ProducerId; schemeId: SchemeCardId; target: RegionId | null }
   | { type: 'riftSplit'; faction: 'hollowell' | 'candor' }
+  | { type: 'decision'; decisionId: string; choice: ResourceKind }
 
 export type Action =
   | { kind: 'openStall'; region: RegionId }
@@ -126,6 +148,7 @@ export type Action =
   | { kind: 'scheme'; schemeId: string; targetRegion?: RegionId }
   | { kind: 'graft' }
   | { kind: 'role'; targetRegion?: RegionId }
+  | { kind: 'decide'; decisionId: string; choice: ResourceKind }
 
 export type LossReason = 'publicTrust' | 'lostLand' | 'pressureDeckEmpty'
 

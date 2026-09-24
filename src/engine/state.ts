@@ -115,6 +115,7 @@ export function createGame(config: GameConfig, seed: number): GameState {
     cathsPlan,
     squeezeSkip: [],
     expandSkip: [],
+    pendingDecisions: [],
     log: [],
     actionHistory: [],
     result: null,

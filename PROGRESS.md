@@ -1,7 +1,7 @@
 # Progress
 
 ## Current milestone
-M1 Engine (day 1)
+M2 Bots and simulation (first half of day 2) — M1 is complete.
 
 ## Tasks
 
@@ -21,11 +21,11 @@ M1 Engine (day 1)
 - [x] Rift 3 "Cracks" (Agenda bonus effects skipped when Rift >= 3) — now exercised end-to-end: several Schemes/Improvements raise Rift (Leaked Memo, Whistleblower, Competing Lawsuits, Op-ed Column, Listening Post)
 - [x] Rift 6 "The Split" (`src/engine/rift.ts`, `checkRiftSplit`): triggers once, automatically, whenever Rift reaches 6 (checked after every action and after Agenda resolution). Faction and piece-removal choice are auto-decided (see DECISIONS.md) rather than through a real `currentDecision`. Tests in `tests/rift-split.test.ts`.
 - [x] First-time liberation production bonus (SPEC 4.8: Pasture→Produce, Crop→Marks, Coast→Goodwill, Kingsmarket→choice, defaulted to Marks — see DECISIONS.md) — this was previously missing (only the Public Trust +1 half was implemented); fixed in `enemy.ts`'s `refreshLiberation`
-- [ ] The Kingsmarket-liberation production choice and the home-region Squeeze production-loss choice are still auto-picked by a default instead of going through a real `currentDecision` (not yet built — `resolveSqueeze` already takes an optional `chooseProduction` callback for the latter)
+- [x] `currentDecision()` API (SPEC 9.1): `src/engine/types.ts`'s `PendingDecision`, `src/engine/api.ts`'s `currentDecision(state)`, and a `{kind: 'decide'}` action resolve it. The Kingsmarket-liberation production choice and the home-region Squeeze production-loss choice both apply a default immediately (so unrelated play isn't blocked) and expose it as a pending decision; while one is pending, `legalActions` returns only its `decide` options, so a human and the AI (once it exists in M2) use the same path. Rift 6 "The Split" keeps its own auto-decide heuristic for now (SPEC explicitly ties it to "the AI's evaluation," which doesn't exist until M2's MCTSBot — see DECISIONS.md). Tests in `tests/decisions.test.ts`; full 10,000-game RandomBot fuzz still clean.
 - [x] Starter content: 24 Improvements (`src/content/improvements.ts`, the 6 exact cards from SPEC 7 plus 18 more) and 18 Schemes (`src/content/schemes.ts`, the 6 exact cards from SPEC 5 plus 12 more, with region-targeting via `legalSchemeTargets`)
 - [x] `sim/fuzz.ts`: the real fuzz gate — RandomBot games (200 quick / 10,000 full) across all 6 producer pairs, `validate()` after every step, checked into `npm run fuzz`/`npm run check`. Ran clean: 10,000/10,000 games, 0 exceptions, 0 invariant failures, all ended by round 10 (avg 5.91 rounds — short because RandomBot plays badly; HeuristicBot fuzz lands in M2). HeuristicBot fuzzing (1,000 games) is still pending M2's bots.
 - [x] `validate()`, `serialize`/`deserialize`, `replay()`, `isOver()`/`result()` in `src/engine/api.ts`, with round-trip/determinism/invariant tests
-- [ ] `currentDecision()` (forced choices — Squeeze's home-production-loss pick, Rift 6's faction split — aren't wired up as decisions yet, see above)
+- [x] `currentDecision()` (see above; Rift 6's faction/piece split is intentionally still a heuristic default, not a real decision, pending M2's evaluation function)
 - [x] Unit tests: RNG determinism, `createGame` setup invariants, several actions, illegal-action rejection, no-mutation
 - [x] A 40-seed random-play smoke test (`tests/random-play.test.ts`) plays full games start to finish, calling `validate()` after every step, with no crash or invariant failure, and confirms determinism by replay. Caught and fixed two real bugs in an earlier session: an Agenda card effect that bypassed the outlet-pool bookkeeping, and a `validate()` check that was itself wrong (see DECISIONS.md).
 

@@ -4,7 +4,7 @@ import { addBuyout, addDoubt, addLostLand, addOutlets, countLiberated } from './
 import { isLiberated, regionStallTotal } from './region'
 import { addProduction } from './producer'
 import { checkRiftSplit } from './rift'
-import type { GameState, PressureCard, ProducerId, RegionId, RegionState } from './types'
+import type { GameState, PressureCard, ProducerId, RegionId, RegionState, ResourceKind } from './types'
 
 const AGENDA_BY_ID = new Map(AGENDA_CARDS.map((c) => [c.id, c]))
 
@@ -32,10 +32,10 @@ function activeRegions(state: GameState): RegionId[] {
 }
 
 // SPEC 4.8: the first time a region is liberated, Public Trust +1 and the liberating producer gains +1
-// production: Pasture -> Produce, Crop -> Marks, Coast -> Goodwill, Kingsmarket -> their choice (default
-// Marks here; the UI/AI may steer this via a future `currentDecision`, same pattern as the Squeeze
-// home-production-loss choice).
-function firstLiberationProductionBonus(regionId: RegionId): 'produce' | 'marks' | 'goodwill' {
+// production: Pasture -> Produce, Crop -> Marks, Coast -> Goodwill, Kingsmarket -> their choice. The
+// choice is a real `currentDecision` (SPEC 9.1): the default (Marks) is applied immediately below, and
+// `applyAction`'s `decide` case swaps it if the human/AI picks something else.
+function firstLiberationProductionBonus(regionId: RegionId): ResourceKind {
   const type = REGIONS[regionId].type
   if (type === 'pasture') return 'produce'
   if (type === 'crop') return 'marks'
@@ -57,7 +57,23 @@ function refreshLiberation(state: GameState, region: RegionId): GameState {
     }
     if (isFirstTime) {
       next = { ...next, publicTrust: Math.min(15, next.publicTrust + 1) }
-      next = addProduction(next, producer, { [firstLiberationProductionBonus(region)]: 1 })
+      const bonus = firstLiberationProductionBonus(region)
+      next = addProduction(next, producer, { [bonus]: 1 })
+      if (region === 'kingsmarket') {
+        next = {
+          ...next,
+          pendingDecisions: [
+            ...next.pendingDecisions,
+            {
+              id: `kingsmarketBonus-${producer}-${next.round}`,
+              kind: 'kingsmarketBonus',
+              producer,
+              options: ['produce', 'marks', 'goodwill'],
+              applied: bonus,
+            },
+          ],
+        }
+      }
     }
     return next
   }
@@ -130,7 +146,7 @@ function pickProducerToLoseStall(state: GameState, region: RegionState): Produce
 // SPEC 4.7 Squeeze: Damage = Outlets + 2*Buyouts, Defence = Stalls. Damage > Defence places a Lost Land
 // token (and, if home region, that producer lowers a production track by 1). Damage >= Defence+3 also
 // removes 1 Stall from the producer with the most there. Public Trust drops by min(Doubt, 2).
-export function resolveSqueeze(state: GameState, chooseProduction?: (producer: string) => 'produce' | 'marks' | 'goodwill'): GameState {
+export function resolveSqueeze(state: GameState): GameState {
   const card = state.squeeze
   if (!card) return state
   let next = state
@@ -150,11 +166,11 @@ export function resolveSqueeze(state: GameState, chooseProduction?: (producer: s
       const homeOf = (Object.entries(next.producers).find(([, p]) => REGIONS_HOME[p.id] === id)?.[0] as
         | ProducerId
         | undefined)
-      // Home-region production penalty is applied by the caller via currentDecision for a human/AI choice;
-      // here we apply a default (first resource with production > 0) when no chooser is supplied.
+      // SPEC 9.1 `currentDecision`: apply the default track immediately (so play can continue without
+      // pausing) and record it as a pending decision; `applyAction`'s `decide` case can swap it later.
       if (homeOf) {
         const producer = next.producers[homeOf]
-        const track = chooseProduction ? chooseProduction(homeOf) : defaultTrackToLower(producer.production)
+        const track = defaultTrackToLower(producer.production)
         if (track) {
           next = {
             ...next,
@@ -165,6 +181,17 @@ export function resolveSqueeze(state: GameState, chooseProduction?: (producer: s
                 production: { ...producer.production, [track]: Math.max(0, producer.production[track] - 1) },
               },
             },
+            pendingDecisions: [
+              ...next.pendingDecisions,
+              {
+                id: `squeezeProductionLoss-${homeOf}-${next.round}`,
+                kind: 'squeezeProductionLoss',
+                producer: homeOf,
+                region: id,
+                options: (['produce', 'marks', 'goodwill'] as const).filter((k) => producer.production[k] > 0),
+                applied: track,
+              },
+            ],
           }
         }
       }
@@ -235,10 +262,10 @@ function advancePipeline(state: GameState): GameState {
 }
 
 // SPEC 4.5.3: the full enemy turn — Agenda, Squeeze, Expand, Scout, Advance.
-export function runEnemyTurn(state: GameState, chooseProduction?: (producer: string) => 'produce' | 'marks' | 'goodwill'): GameState {
+export function runEnemyTurn(state: GameState): GameState {
   let next = resolveAgenda(state)
   if (next.result) return next
-  next = resolveSqueeze(next, chooseProduction)
+  next = resolveSqueeze(next)
   if (next.result) return next
   next = resolveExpand(next)
   next = revealAndResolveScout(next)
