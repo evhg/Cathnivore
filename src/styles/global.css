@@ -301,3 +301,63 @@ button {
   padding: 16px;
   text-align: center;
 }
+
+/* Rules reference (SPEC 10.1/10.5) */
+.rules-reference {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-bottom: 48px;
+}
+
+.rules-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  padding: 8px 0;
+}
+
+.rules-search {
+  width: 100%;
+  font-size: 16px;
+  padding: 8px 10px;
+  margin: 8px 0 16px;
+  border: 1px solid var(--ink-muted, #999);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.rules-empty {
+  color: var(--ink-muted);
+}
+
+.rules-section {
+  margin-bottom: 20px;
+}
+
+.rules-section h2 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.rules-entries {
+  margin: 0;
+}
+
+.rules-entry {
+  margin-bottom: 10px;
+}
+
+.rules-entry dt {
+  font-weight: 700;
+}
+
+.rules-entry dd {
+  margin: 2px 0 0;
+  color: var(--ink-muted);
+}

@@ -2,10 +2,15 @@ import { useState } from 'react'
 import { createGame, replay } from './engine/api'
 import Setup, { type Mode } from './ui/Setup'
 import Game from './ui/Game'
+import RulesReference from './ui/RulesReference'
 import { loadGame } from './platform/storage'
 import type { GameConfig, GameState } from './engine/types'
 
-type Screen = { name: 'title' } | { name: 'setup' } | { name: 'game'; state: GameState; seed: number; mode: Mode }
+type Screen =
+  | { name: 'title' }
+  | { name: 'setup' }
+  | { name: 'rules' }
+  | { name: 'game'; state: GameState; seed: number; mode: Mode }
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
@@ -29,6 +34,7 @@ export default function App() {
         <p>A cooperative engine-builder against two very polite conglomerates.</p>
         {saved && <button onClick={resume}>Continue</button>}
         <button onClick={() => setScreen({ name: 'setup' })}>Quick Game</button>
+        <button onClick={() => setScreen({ name: 'rules' })}>How to Play</button>
         <footer>
           <p>A work of satire. All places, companies and people are fictional.</p>
           <p>No tracking. Your saves stay on your device.</p>
@@ -39,6 +45,10 @@ export default function App() {
 
   if (screen.name === 'setup') {
     return <Setup onStart={start} />
+  }
+
+  if (screen.name === 'rules') {
+    return <RulesReference onClose={() => setScreen({ name: 'title' })} />
   }
 
   return <Game initial={screen.state} seed={screen.seed} mode={screen.mode} onExit={() => setScreen({ name: 'title' })} />

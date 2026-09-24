@@ -9,6 +9,9 @@ export interface ImprovementCard {
   cost: number // Marks
   tags: ImprovementTag[] // 1 or 2
   flavor?: string // SPEC 7: 80 characters maximum
+  // Plain-English rules text (SPEC 10.5: generated from or checked against the rules data), shown in the
+  // Market sheet and the rules reference. tests/rules-text.test.ts checks it against `onBuy`'s actual effect.
+  text: string
   // Applied once, immediately, when bought. Ongoing abilities that aren't a flat production bump (Supply
   // discounts, extra free Rebut, Harvest triggers) are instead checked by id at the point they apply
   // (src/engine/actions.ts, src/engine/round.ts) via `hasImprovement`.
@@ -27,6 +30,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Farm Shop',
     cost: 3,
     tags: ['community'],
+    text: '+1 Marks production.',
     onBuy: (state, producer) => addProduction(state, producer, { marks: 1 }),
   },
   {
@@ -34,6 +38,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Rotational Grazing',
     cost: 6,
     tags: ['pasture'],
+    text: '+2 Produce production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 2 }),
   },
   {
@@ -42,6 +47,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 5,
     tags: ['pasture', 'community'],
     flavor: 'Supply in Pasture regions costs 1 less Produce per Outlet (minimum 1).',
+    text: 'Supply in Pasture regions costs 1 less Produce per Outlet (minimum 1).',
     onBuy: (state) => state, // ongoing: checked in actions.ts Supply cost
   },
   {
@@ -50,6 +56,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 4,
     tags: ['crop', 'science'],
     flavor: 'When you Rebut, you may remove 1 extra Doubt for free.',
+    text: '+1 Goodwill production. When you Rebut, you may remove 1 extra Doubt for free.',
     onBuy: (state, producer) => addProduction(state, producer, { goodwill: 1 }), // ongoing bonus checked in actions.ts Rebut
   },
   {
@@ -57,6 +64,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Veg Box Round',
     cost: 5,
     tags: ['crop', 'community'],
+    text: '+1 Marks production for every 2 Community tags you have, including this one.',
     onBuy: (state, producer) => {
       const bonus = Math.floor(communityTagCount(state, producer, 'veg-box-round') / 2)
       return addProduction(state, producer, { marks: bonus })
@@ -68,6 +76,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 4,
     tags: ['coast'],
     flavor: 'At Harvest, also gain 1 Goodwill if you have a Stall in Shingle Bay.',
+    text: '+1 Produce production. At Harvest, also gain 1 Goodwill if you have a Stall in Shingle Bay.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1 }), // Harvest bonus checked in round.ts
   },
 
@@ -78,6 +87,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 3,
     tags: ['community'],
     flavor: 'Honesty box. Mostly honest.',
+    text: '+1 Produce production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1 }),
   },
   {
@@ -86,6 +96,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 6,
     tags: ['pasture'],
     flavor: 'Slower cattle, better opinions.',
+    text: '+2 Marks production.',
     onBuy: (state, producer) => addProduction(state, producer, { marks: 2 }),
   },
   {
@@ -93,6 +104,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Polytunnel',
     cost: 5,
     tags: ['crop'],
+    text: '+2 Produce production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 2 }),
   },
   {
@@ -101,6 +113,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 3,
     tags: ['coast', 'science'],
     flavor: "Written down. Argued about anyway.",
+    text: '+1 Goodwill production.',
     onBuy: (state, producer) => addProduction(state, producer, { goodwill: 1 }),
   },
   {
@@ -109,6 +122,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 4,
     tags: ['media'],
     flavor: 'Smells like ink. Reads like honesty.',
+    text: '+1 Goodwill production.',
     onBuy: (state, producer) => addProduction(state, producer, { goodwill: 1 }),
   },
   {
@@ -116,6 +130,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Grazing Co-op',
     cost: 7,
     tags: ['pasture', 'community'],
+    text: '+1 Produce production and +1 Marks production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1, marks: 1 }),
   },
   {
@@ -124,6 +139,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 4,
     tags: ['crop', 'science'],
     flavor: 'Borrow a seed, return two.',
+    text: '+1 Produce production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1 }),
   },
   {
@@ -132,6 +148,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 4,
     tags: ['community'],
     flavor: 'Take what you need. Mostly works.',
+    text: '+1 Goodwill production.',
     onBuy: (state, producer) => addProduction(state, producer, { goodwill: 1 }),
   },
   {
@@ -139,6 +156,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Harbour Stall Licence',
     cost: 3,
     tags: ['coast', 'community'],
+    text: '+1 Marks production.',
     onBuy: (state, producer) => addProduction(state, producer, { marks: 1 }),
   },
   {
@@ -147,6 +165,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 2,
     tags: ['media', 'community'],
     flavor: 'Bunting: the original algorithm.',
+    text: '+1 Goodwill production for every 2 Community tags you have, including this one.',
     onBuy: (state, producer) => {
       const bonus = Math.floor(communityTagCount(state, producer, 'market-day-banner') / 2)
       return addProduction(state, producer, { goodwill: bonus })
@@ -158,6 +177,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 5,
     tags: ['media'],
     flavor: 'Returns your calls. Sometimes prints your quote.',
+    text: '+2 Goodwill production.',
     onBuy: (state, producer) => addProduction(state, producer, { goodwill: 2 }),
   },
   {
@@ -165,6 +185,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Irrigation Line',
     cost: 6,
     tags: ['crop'],
+    text: '+2 Produce production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 2 }),
   },
   {
@@ -173,6 +194,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 5,
     tags: ['pasture', 'science'],
     flavor: 'Keeps the beef. Keeps its cool.',
+    text: '+1 Produce production and +1 Marks production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1, marks: 1 }),
   },
   {
@@ -181,6 +203,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 3,
     tags: ['science'],
     flavor: "It's going to rain. It's always going to rain.",
+    text: '+1 Goodwill production.',
     onBuy: (state, producer) => addProduction(state, producer, { goodwill: 1 }),
   },
   {
@@ -188,6 +211,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Wholesale Account',
     cost: 4,
     tags: ['community'],
+    text: '+2 Marks production.',
     onBuy: (state, producer) => addProduction(state, producer, { marks: 2 }),
   },
   {
@@ -195,6 +219,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Kelp Beds',
     cost: 6,
     tags: ['coast', 'science'],
+    text: '+1 Produce production and +1 Goodwill production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1, goodwill: 1 }),
   },
   {
@@ -203,6 +228,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 8,
     tags: ['media'],
     flavor: 'Raises eyebrows. And Rift.',
+    text: '+1 Goodwill production. Rift +1.',
     onBuy: (state, producer) => {
       let next = addProduction(state, producer, { goodwill: 1 })
       next = { ...next, rift: Math.min(6, next.rift + 1) }
@@ -215,6 +241,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 9,
     tags: ['media', 'science'],
     flavor: "Somebody's always listening. Might as well be you.",
+    text: '+1 Marks production and +1 Goodwill production. Rift +1.',
     onBuy: (state, producer) => {
       let next = addProduction(state, producer, { marks: 1, goodwill: 1 })
       next = { ...next, rift: Math.min(6, next.rift + 1) }
