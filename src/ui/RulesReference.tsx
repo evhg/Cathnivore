@@ -27,7 +27,7 @@ const ACTIONS: Entry[] = [
 
 const TERMS: Entry[] = [
   { term: 'Liberated', body: 'A region with at least 1 Stall and no Outlets, Buyouts or Doubt. The first time a region is liberated, Public Trust +1 and the liberating producer gains +1 production.' },
-  { term: 'Squeeze', body: 'An enemy step: in each matching region, Damage (Outlets + 2x Buyouts) compared to Defence (Stalls). If Damage is greater, place 1 Lost Land token; if it is at least Defence + 3, also remove a Stall. Public Trust also drops per Doubt there.' },
+  { term: 'Squeeze', body: 'An enemy step: in each matching region, Damage (Outlets + 2x Buyouts) compared to Defence (Stalls). If Damage is greater, place 1 Lost Land token; if it is at least Defence + 4, also remove a Stall. Public Trust also drops per Doubt there.' },
   { term: 'Expand', body: 'An enemy step: each matching region with at least 1 enemy piece gains an Outlet, or a Buyout if it already has 2+ Outlets and no Buyout.' },
   { term: 'Scout', body: 'An enemy step: reveal the top Pressure card and add 1 Outlet (and, at Stage III, 1 Doubt) to each matching region.' },
   { term: 'Rift', body: 'A shared track (0-6) that rises from Schemes and some Improvements. At 3 ("Cracks"), Agenda bonus effects are skipped. At 6 ("The Split"), the players remove one faction from the game in part.' },
