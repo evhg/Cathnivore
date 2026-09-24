@@ -3,6 +3,7 @@ import { AGENDA_CARDS } from '../content/agenda'
 import { addBuyout, addDoubt, addLostLand, addOutlets, countLiberated } from './pieces'
 import { isLiberated, regionStallTotal } from './region'
 import { addProduction } from './producer'
+import { checkRiftSplit } from './rift'
 import type { GameState, PressureCard, ProducerId, RegionId, RegionState } from './types'
 
 const AGENDA_BY_ID = new Map(AGENDA_CARDS.map((c) => [c.id, c]))
@@ -18,7 +19,8 @@ function resolveAgenda(state: GameState): GameState {
   const bonusSkipped = next.rift >= 3
   if (!bonusSkipped) next = card.bonusEffect(next)
   next = { ...next, log: [...next.log, { type: 'agenda', cardId: id, bonusSkipped }] }
-  return refreshAllLiberation(next)
+  next = refreshAllLiberation(next)
+  return refreshAllLiberation(checkRiftSplit(next))
 }
 
 function matches(card: PressureCard, region: RegionId): boolean {

@@ -86,7 +86,8 @@ export function validate(state: GameState): ValidationError[] {
     )
   }
 
-  const agendaTotal = state.agendaDeck.length + state.agendaDiscard.length + (state.currentAgenda ? 1 : 0)
+  const agendaTotal =
+    state.agendaDeck.length + state.agendaDiscard.length + state.agendaRemoved.length + (state.currentAgenda ? 1 : 0)
   if (agendaTotal !== AGENDA_CARDS.length) {
     push(`agenda deck/discard/current total mismatch: ${agendaTotal} != ${AGENDA_CARDS.length}`)
   }

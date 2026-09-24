@@ -1,6 +1,7 @@
 import { REGIONS } from '../content/map'
 import { removeBuyout, removeDoubt, removeOutlets } from './pieces'
 import { refreshAllLiberation } from './enemy'
+import { checkRiftSplit } from './rift'
 import { advanceTurnIfNeeded } from './round'
 import { hasImprovement } from './producer'
 import { canMarketDayOpenIn, canOpenStallIn, regionStallTotal } from './region'
@@ -207,6 +208,7 @@ export function applyAction(state: GameState, action: Action): GameState {
   }
 
   next = refreshAllLiberation(next)
+  next = refreshAllLiberation(checkRiftSplit(next))
   next = {
     ...next,
     actionsLeft: next.actionsLeft - (action.kind === 'role' ? 0 : 1),

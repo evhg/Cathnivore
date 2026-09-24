@@ -76,6 +76,7 @@ export interface GameState {
   actionsLeft: number
   publicTrust: number
   rift: number
+  riftSplitDone: boolean // SPEC 4.7 Rift 6 "The Split" happens once per game
   lostLandPool: number
   outletPool: number
   buyoutPool: number
@@ -90,6 +91,7 @@ export interface GameState {
   agendaDeck: AgendaCardId[]
   agendaDiscard: AgendaCardId[]
   currentAgenda: AgendaCardId | null
+  agendaRemoved: AgendaCardId[] // removed from the deck by Rift 6 "The Split" (SPEC 4.7), kept for accounting
   improvementDeck: ImprovementCardId[]
   improvementDiscard: ImprovementCardId[] // unused (Improvements aren't discarded), kept for symmetry with Schemes
   market: (ImprovementCardId | null)[] // 4 face-up slots; null while empty until cleanup refill
@@ -112,6 +114,7 @@ export type GameEvent =
   | { type: 'scout'; region: RegionId; doubtAdded: boolean }
   | { type: 'invest'; producer: ProducerId; improvementId: ImprovementCardId }
   | { type: 'schemePlayed'; producer: ProducerId; schemeId: SchemeCardId; target: RegionId | null }
+  | { type: 'riftSplit'; faction: 'hollowell' | 'candor' }
 
 export type Action =
   | { kind: 'openStall'; region: RegionId }
