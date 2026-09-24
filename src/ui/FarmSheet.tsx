@@ -6,7 +6,20 @@ const TAG_LABEL = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community:
 
 // SPEC 10.2 "Sheets ... Farm (tableau and tag counts)." Shows every producer (SPEC 6: 1 in campaign
 // chapters 1-3, 2 in a full game) so either can check the other's tableau, not just the active one.
-export default function FarmSheet({ state, onClose }: { state: GameState; onClose(): void }) {
+// `inline` (SPEC 10.3 desktop 3-column layout) renders the panel content directly in the page flow
+// instead of as a phone-sized modal overlay — the same data, just without the overlay/Close chrome.
+export default function FarmSheet({ state, onClose, inline }: { state: GameState; onClose(): void; inline?: boolean }) {
+  if (inline) {
+    return (
+      <div className="sheet-panel farm-sheet">
+        <h2>Farm</h2>
+        {state.config.producers.map((id) => (
+          <FarmColumn key={id} state={state} producer={id} />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="sheet-overlay" onClick={onClose}>
       <div className="sheet farm-sheet" onClick={(e) => e.stopPropagation()}>

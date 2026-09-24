@@ -51,6 +51,10 @@ h3 {
 }
 
 /* Game screen (SPEC 10.2) */
+.game-layout {
+  min-height: 100vh;
+}
+
 .game {
   display: flex;
   flex-direction: column;
@@ -59,6 +63,51 @@ h3 {
   margin: 0 auto;
   padding: 8px;
   gap: 8px;
+}
+
+/* Desktop-only Farm/Market/Cath's Plan/Log panels (rendered inline, always mounted) and the phone-only
+   sheet-toggle buttons in the footer are mutually exclusive, split by this one breakpoint. */
+.desktop-col {
+  display: none;
+}
+
+/* SPEC 10.3: three columns at 1024px+, no scrolling at 1280x800. */
+@media (min-width: 1024px) {
+  .game-layout {
+    display: grid;
+    grid-template-columns: 300px minmax(420px, 1fr) 320px;
+    gap: 16px;
+    max-width: 1280px;
+    height: 100vh;
+    margin: 0 auto;
+    padding: 16px;
+    align-items: stretch;
+  }
+
+  .desktop-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .desktop-col .sheet-panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 12px 16px;
+  }
+
+  .game {
+    max-width: none;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .mobile-only {
+    display: none;
+  }
 }
 
 .topbar {

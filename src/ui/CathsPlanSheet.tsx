@@ -9,12 +9,41 @@ export default function CathsPlanSheet({
   canPlay,
   onPlay,
   onClose,
+  inline,
 }: {
   state: GameState
   canPlay: (schemeId: string) => boolean
   onPlay: (schemeId: string) => void
   onClose(): void
+  inline?: boolean
 }) {
+  const cards = (
+    <ul className="card-list">
+      {state.cathsPlan.map((id, slot) => {
+        if (!id) return <li key={slot} className="card-empty" />
+        const card = SCHEMES_BY_ID.get(id)
+        if (!card) return null
+        return (
+          <li key={id}>
+            <strong>{card.name}</strong> — {card.cost} Goodwill
+            <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
+            {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}
+          </li>
+        )
+      })}
+    </ul>
+  )
+
+  // SPEC 10.3 desktop 3-column layout: the same card list, without the phone-sized modal overlay.
+  if (inline) {
+    return (
+      <div className="sheet-panel card-sheet">
+        <h2>Cath&rsquo;s Plan</h2>
+        {cards}
+      </div>
+    )
+  }
+
   return (
     <div className="sheet-overlay" onClick={onClose}>
       <div className="sheet card-sheet" onClick={(e) => e.stopPropagation()}>
@@ -22,20 +51,7 @@ export default function CathsPlanSheet({
           <h2>Cath&rsquo;s Plan</h2>
           <button onClick={onClose}>Close</button>
         </header>
-        <ul className="card-list">
-          {state.cathsPlan.map((id, slot) => {
-            if (!id) return <li key={slot} className="card-empty" />
-            const card = SCHEMES_BY_ID.get(id)
-            if (!card) return null
-            return (
-              <li key={id}>
-                <strong>{card.name}</strong> — {card.cost} Goodwill
-                <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
-                {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}
-              </li>
-            )
-          })}
-        </ul>
+        {cards}
       </div>
     </div>
   )

@@ -162,8 +162,17 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
     }
   }
 
+  // SPEC 10.3 desktop 3-column layout (1024px+): both producers' Farms on the left, the map/plan strip in
+  // the centre, Market/Cath's Plan/Log on the right, always visible (no scrolling at 1280x800). `.desktop-*`
+  // panels reuse the same sheet components in `inline` mode and are shown only above 1024px via CSS; below
+  // that the phone layout's toggle buttons and modal sheets (below) still work unchanged.
   return (
-    <main className="game">
+    <div className="game-layout">
+      <aside className="desktop-col desktop-col-left">
+        <FarmSheet state={state} onClose={() => {}} inline />
+      </aside>
+
+      <main className="game">
       <header className="topbar">
         <span>Round {state.round}/10</span>
         <span>Trust {state.publicTrust}</span>
@@ -246,10 +255,10 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
         <button disabled={undoStackRef.current.length === 0 || pendingEnemyTurn.length > 0} onClick={undo}>
           Undo
         </button>
-        <button onClick={() => setShowFarm(true)}>Farm</button>
-        <button onClick={() => setShowMarket(true)}>Market</button>
-        <button onClick={() => setShowPlan(true)}>Cath&rsquo;s Plan</button>
-        <button onClick={() => setShowLog(true)}>Log</button>
+        <button className="mobile-only" onClick={() => setShowFarm(true)}>Farm</button>
+        <button className="mobile-only" onClick={() => setShowMarket(true)}>Market</button>
+        <button className="mobile-only" onClick={() => setShowPlan(true)}>Cath&rsquo;s Plan</button>
+        <button className="mobile-only" onClick={() => setShowLog(true)}>Log</button>
         <button onClick={onExit}>Menu</button>
       </footer>
 
@@ -259,6 +268,13 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
         <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => setShowPlan(false)} />
       )}
       {showLog && <LogSheet log={state.log} onClose={() => setShowLog(false)} />}
-    </main>
+      </main>
+
+      <aside className="desktop-col desktop-col-right">
+        <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => {}} inline />
+        <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => {}} inline />
+        <LogSheet log={state.log} onClose={() => {}} inline />
+      </aside>
+    </div>
   )
 }

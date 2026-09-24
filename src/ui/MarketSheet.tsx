@@ -12,12 +12,41 @@ export default function MarketSheet({
   canBuy,
   onBuy,
   onClose,
+  inline,
 }: {
   state: GameState
   canBuy: (cardId: string) => boolean
   onBuy: (cardId: string) => void
   onClose(): void
+  inline?: boolean
 }) {
+  const cards = (
+    <ul className="card-list">
+      {state.market.map((id, slot) => {
+        if (!id) return <li key={slot} className="card-empty" />
+        const card = IMPROVEMENTS_BY_ID.get(id)
+        if (!card) return null
+        return (
+          <li key={id}>
+            <strong>{card.name}</strong> — {card.cost} Marks ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+            {card.flavor && <p className="card-flavor">{card.flavor}</p>}
+            {canBuy(id) && <button onClick={() => onBuy(id)}>Buy</button>}
+          </li>
+        )
+      })}
+    </ul>
+  )
+
+  // SPEC 10.3 desktop 3-column layout: the same card list, without the phone-sized modal overlay.
+  if (inline) {
+    return (
+      <div className="sheet-panel card-sheet">
+        <h2>Market</h2>
+        {cards}
+      </div>
+    )
+  }
+
   return (
     <div className="sheet-overlay" onClick={onClose}>
       <div className="sheet card-sheet" onClick={(e) => e.stopPropagation()}>
@@ -25,20 +54,7 @@ export default function MarketSheet({
           <h2>Market</h2>
           <button onClick={onClose}>Close</button>
         </header>
-        <ul className="card-list">
-          {state.market.map((id, slot) => {
-            if (!id) return <li key={slot} className="card-empty" />
-            const card = IMPROVEMENTS_BY_ID.get(id)
-            if (!card) return null
-            return (
-              <li key={id}>
-                <strong>{card.name}</strong> — {card.cost} Marks ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
-                {card.flavor && <p className="card-flavor">{card.flavor}</p>}
-                {canBuy(id) && <button onClick={() => onBuy(id)}>Buy</button>}
-              </li>
-            )
-          })}
-        </ul>
+        {cards}
       </div>
     </div>
   )
