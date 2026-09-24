@@ -88,7 +88,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
   {
     id: 'roadside-stand',
     name: 'Roadside Stand',
-    cost: 3,
+    cost: 2,
     tags: ['community'],
     flavor: 'Honesty box. Mostly honest.',
     text: '+1 Produce production.',
@@ -106,7 +106,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
   {
     id: 'polytunnel',
     name: 'Polytunnel',
-    cost: 5,
+    cost: 4,
     tags: ['crop'],
     text: '+2 Produce production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 2 }),
@@ -158,7 +158,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
   {
     id: 'harbour-stall-licence',
     name: 'Harbour Stall Licence',
-    cost: 3,
+    cost: 2,
     tags: ['coast', 'community'],
     text: '+1 Marks production.',
     onBuy: (state, producer) => addProduction(state, producer, { marks: 1 }),
