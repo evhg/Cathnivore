@@ -57,6 +57,22 @@ describe('createGame', () => {
     expect(state.regions.saltmarsh.doubt).toBeGreaterThanOrEqual(1)
     expect(state.regions.shingleBay.doubt).toBeGreaterThanOrEqual(1)
   })
+
+  it('Easy starts with higher Public Trust and a bigger Lost Land pool than Normal (SPEC 4.9)', () => {
+    const easy = createGame({ ...FULL_CONFIG, difficulty: 'easy' }, 1)
+    expect(easy.publicTrust).toBe(12)
+    expect(easy.lostLandPool).toBe(10)
+  })
+
+  it('Hard starts with lower Public Trust, a smaller Lost Land pool, an extra Kingsmarket Outlet and Pasture Doubt (SPEC 4.9)', () => {
+    const hard = createGame({ ...FULL_CONFIG, difficulty: 'hard' }, 1)
+    expect(hard.publicTrust).toBe(8)
+    expect(hard.lostLandPool).toBe(6)
+    // 3 base outlets (Normal's 2 + Hard's extra) plus at least 1 from the initial Scout if it matched Kingsmarket.
+    expect(hard.regions.kingsmarket.outlets).toBeGreaterThanOrEqual(3)
+    expect(hard.regions.highmoor.doubt).toBeGreaterThanOrEqual(1)
+    expect(hard.regions.brindleHills.doubt).toBeGreaterThanOrEqual(1)
+  })
 })
 
 describe('actions', () => {
