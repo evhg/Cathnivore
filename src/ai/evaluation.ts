@@ -1,0 +1,79 @@
+import { REGIONS } from '../content/map'
+import { DIFFICULTY_SETTINGS } from '../content/difficulty'
+import { countLiberated } from '../engine/pieces'
+import type { GameState, RegionType } from '../engine/types'
+
+const MAX_TRUST = 15
+const ENEMY_POOL_WEIGHT_TOTAL = 30 + 12 * 2 + 30 // outlets + 2*buyouts + doubt, matching the pools' max
+const WIN_REGIONS = 5
+const NORMAL_ROUND_CAP = 10
+
+function matchesType(types: RegionType[], type: RegionType): boolean {
+  return types.includes(type)
+}
+
+// SPEC 9.2: "a weighted mix of liberated regions and progress towards Kingsmarket, the margin on Public
+// Trust, the margin on Lost Land, progress relative to rounds remaining, total production, enemy pieces
+// on the map (negative) and Stall coverage of the next Squeeze regions." Weights are a starting point —
+// SPEC 9.2 says to tune them by self-play once the balance loop (M4) can measure MCTSBot's win rate.
+const WEIGHTS = {
+  liberated: 0.3,
+  trust: 0.15,
+  lostLand: 0.15,
+  pace: 0.1,
+  production: 0.1,
+  enemyPieces: 0.1,
+  squeezeCoverage: 0.1,
+}
+
+function clamp01(x: number): number {
+  return Math.max(0, Math.min(1, x))
+}
+
+export function evaluate(state: GameState): number {
+  if (state.result) return state.result.won ? 1 : 0
+
+  const liberated = countLiberated(state)
+  const kingsmarketBonus = state.regions.kingsmarket.liberated ? 1 / WIN_REGIONS : 0
+  const liberatedScore = clamp01(liberated / WIN_REGIONS + kingsmarketBonus)
+
+  const trustScore = clamp01(state.publicTrust / MAX_TRUST)
+
+  const startingLostLandPool = DIFFICULTY_SETTINGS[state.config.difficulty].lostLandPool
+  const lostLandScore = clamp01(state.lostLandPool / startingLostLandPool)
+
+  // "On pace" when the shortfall to win (regions still needed) is no larger than the rounds still left.
+  const regionsNeeded = Math.max(0, WIN_REGIONS - liberated)
+  const roundsLeft = Math.max(0, NORMAL_ROUND_CAP - state.round)
+  const paceScore = clamp01(1 - Math.max(0, regionsNeeded - roundsLeft) / WIN_REGIONS)
+
+  const producers = Object.values(state.producers)
+  const totalProduction = producers.reduce((sum, p) => sum + p.production.produce + p.production.marks + p.production.goodwill, 0)
+  const productionScore = clamp01(totalProduction / (producers.length * 15))
+
+  let enemyPieces = 0
+  for (const id of state.config.activeRegions) {
+    const r = state.regions[id]
+    enemyPieces += r.outlets + 2 * r.buyouts + r.doubt
+  }
+  const enemyScore = clamp01(1 - enemyPieces / ENEMY_POOL_WEIGHT_TOTAL)
+
+  const squeezeTypes = state.squeeze?.regionTypes ?? []
+  const squeezeTargets = state.config.activeRegions.filter(
+    (id) => !state.regions[id].liberated && matchesType(squeezeTypes, REGIONS[id].type),
+  )
+  const squeezeCoverageScore =
+    squeezeTargets.length === 0
+      ? 1
+      : clamp01(squeezeTargets.filter((id) => Object.values(state.regions[id].stalls).some((n) => (n ?? 0) > 0)).length / squeezeTargets.length)
+
+  return clamp01(
+    WEIGHTS.liberated * liberatedScore +
+      WEIGHTS.trust * trustScore +
+      WEIGHTS.lostLand * lostLandScore +
+      WEIGHTS.pace * paceScore +
+      WEIGHTS.production * productionScore +
+      WEIGHTS.enemyPieces * enemyScore +
+      WEIGHTS.squeezeCoverage * squeezeCoverageScore,
+  )
+}

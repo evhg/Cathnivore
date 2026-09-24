@@ -30,8 +30,9 @@ M2 Bots and simulation (first half of day 2) — M1 is complete.
 - [x] A 40-seed random-play smoke test (`tests/random-play.test.ts`) plays full games start to finish, calling `validate()` after every step, with no crash or invariant failure, and confirms determinism by replay. Caught and fixed two real bugs in an earlier session: an Agenda card effect that bypassed the outlet-pool bookkeeping, and a `validate()` check that was itself wrong (see DECISIONS.md).
 
 ### M2 Bots and simulation (first half of day 2)
-- [ ] RandomBot, HeuristicBot and MCTSBot
-- [ ] the simulation harness and the first balance report
+- [x] RandomBot, HeuristicBot and MCTSBot: `src/ai/types.ts` (shared `Bot` interface, RNG-threaded like the engine), `src/ai/random.ts`, `src/ai/heuristic.ts` (1-ply lookahead against `src/ai/evaluation.ts`), `src/ai/mcts.ts` (`createMCTSBot(budget, rolloutRounds)`, flat Monte Carlo rollout rather than a full UCB tree — see DECISIONS.md; reshuffles the undrawn portion of every deck before each simulation per SPEC 9.2). Evaluation weights are a first-pass starting point, to be tuned by the M4 balance loop per SPEC 9.2. Tests in `tests/bots.test.ts` (all three bots finish games cleanly; HeuristicBot beats RandomBot on the evaluation function; `evaluate()` scores won/lost terminal states as 1/0).
+- [x] `sim/fuzz.ts` now also fuzzes 1,000 HeuristicBot games (100 in `--quick`), satisfying SPEC 11.4 gate 3 in full (10,000 RandomBot + 1,000 HeuristicBot). Ran clean: 10,000 RandomBot (avg 5.89 rounds) + 1,000 HeuristicBot (avg 8.46 rounds) games, 0 exceptions, 0 invariant failures, all ended by round 10. HeuristicBot playing noticeably longer games than RandomBot (it survives to liberate more before losing/winning) is a first sanity signal that the evaluation function is pointing the right direction.
+- [ ] the simulation harness (`sim/run.ts`) and the first balance report (SPEC 9.3/9.4, `BALANCE.md`)
 
 ### M3 Playable game (second half of day 2 to day 3)
 - [ ] the game screen on phone and desktop, and the setup screen
