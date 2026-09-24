@@ -17,13 +17,13 @@ function matchesType(types: RegionType[], type: RegionType): boolean {
 // on the map (negative) and Stall coverage of the next Squeeze regions." Weights are a starting point —
 // SPEC 9.2 says to tune them by self-play once the balance loop (M4) can measure MCTSBot's win rate.
 const WEIGHTS = {
-  liberated: 0.3,
+  liberated: 0.35,
   trust: 0.15,
   lostLand: 0.15,
-  pace: 0.1,
+  pace: 0.15,
   production: 0.1,
-  enemyPieces: 0.1,
-  squeezeCoverage: 0.1,
+  enemyPieces: 0.05,
+  squeezeCoverage: 0.05,
 }
 
 function clamp01(x: number): number {
