@@ -1,5 +1,5 @@
 import type { GameState, ProducerId } from '../engine/types'
-import { addProduction } from '../engine/producer'
+import { addProduction, addResources } from '../engine/producer'
 
 export type ImprovementTag = 'pasture' | 'crop' | 'coast' | 'community' | 'media' | 'science'
 
@@ -19,8 +19,12 @@ export interface ImprovementCard {
 }
 
 function communityTagCount(state: GameState, producer: ProducerId, includingId: string): number {
+  return tagCount(state, producer, includingId, 'community')
+}
+
+function tagCount(state: GameState, producer: ProducerId, includingId: string, tag: ImprovementTag): number {
   const owned = [...state.producers[producer].improvements, includingId]
-  return owned.filter((id) => IMPROVEMENTS_BY_ID.get(id)?.tags.includes('community')).length
+  return owned.filter((id) => IMPROVEMENTS_BY_ID.get(id)?.tags.includes(tag)).length
 }
 
 export const IMPROVEMENTS: ImprovementCard[] = [
@@ -247,6 +251,120 @@ export const IMPROVEMENTS: ImprovementCard[] = [
       next = { ...next, rift: Math.min(6, next.rift + 1) }
       return next
     },
+  },
+
+  // --- 12 more for M4's full 36-card count, keeping the same mix (SPEC 7) ---
+  {
+    id: 'wagon-wheel-press',
+    name: 'Wagon Wheel Press',
+    cost: 3,
+    tags: ['media'],
+    flavor: 'Prints the truth, and the odd correction.',
+    text: '+1 Marks production.',
+    onBuy: (state, producer) => addProduction(state, producer, { marks: 1 }),
+  },
+  {
+    id: 'compost-exchange',
+    name: 'Compost Exchange',
+    cost: 4,
+    tags: ['crop', 'community'],
+    flavor: 'One farmer’s waste is another’s Tuesday.',
+    text: '+1 Produce production.',
+    onBuy: (state, producer) => addProduction(state, producer, { produce: 1 }),
+  },
+  {
+    id: 'windbreak-hedgerow',
+    name: 'Windbreak Hedgerow',
+    cost: 5,
+    tags: ['pasture'],
+    text: '+1 Produce production and +1 Goodwill production.',
+    onBuy: (state, producer) => addProduction(state, producer, { produce: 1, goodwill: 1 }),
+  },
+  {
+    id: 'tidal-smokehouse',
+    name: 'Tidal Smokehouse',
+    cost: 6,
+    tags: ['coast'],
+    flavor: 'Slow food, on a tight schedule.',
+    text: '+2 Marks production.',
+    onBuy: (state, producer) => addProduction(state, producer, { marks: 2 }),
+  },
+  {
+    id: 'field-notes-app',
+    name: 'Field Notes App',
+    cost: 4,
+    tags: ['science'],
+    text: '+1 Marks production for every 2 Science tags you have, including this one.',
+    onBuy: (state, producer) => {
+      const bonus = Math.floor(tagCount(state, producer, 'field-notes-app', 'science') / 2)
+      return addProduction(state, producer, { marks: bonus })
+    },
+  },
+  {
+    id: 'late-harvest-fair',
+    name: 'Late Harvest Fair',
+    cost: 3,
+    tags: ['community'],
+    flavor: 'One good weekend pays for the stall twice over.',
+    text: 'Immediately gain 2 Marks.',
+    onBuy: (state, producer) => addResources(state, producer, { marks: 2 }),
+  },
+  {
+    id: 'winter-larder',
+    name: 'Winter Larder',
+    cost: 5,
+    tags: ['pasture', 'community'],
+    flavor: 'Stocked before the first frost.',
+    text: 'Immediately gain 2 Produce and 1 Goodwill.',
+    onBuy: (state, producer) => addResources(state, producer, { produce: 2, goodwill: 1 }),
+  },
+  {
+    id: 'wholesale-crate-deal',
+    name: 'Wholesale Crate Deal',
+    cost: 5,
+    tags: ['crop', 'community'],
+    flavor: 'Supply in Crop regions costs 1 less Produce per Outlet (minimum 1).',
+    text: 'Supply in Crop regions costs 1 less Produce per Outlet (minimum 1).',
+    onBuy: (state) => state, // ongoing: checked in actions.ts Supply cost
+  },
+  {
+    id: 'harbour-watch',
+    name: 'Harbour Watch',
+    cost: 4,
+    tags: ['coast', 'science'],
+    flavor: 'Somebody always sees the van coming.',
+    text: '+1 Produce production and +1 Marks production.',
+    onBuy: (state, producer) => addProduction(state, producer, { produce: 1, marks: 1 }),
+  },
+  {
+    id: 'signal-boost',
+    name: 'Signal Boost',
+    cost: 7,
+    tags: ['media', 'science'],
+    flavor: 'Loud, and mostly accurate.',
+    text: '+2 Goodwill production. Rift +1.',
+    onBuy: (state, producer) => {
+      let next = addProduction(state, producer, { goodwill: 2 })
+      next = { ...next, rift: Math.min(6, next.rift + 1) }
+      return next
+    },
+  },
+  {
+    id: 'barn-conversion',
+    name: 'Barn Conversion',
+    cost: 6,
+    tags: ['pasture', 'community'],
+    text: '+1 Produce production and +1 Marks production.',
+    onBuy: (state, producer) => addProduction(state, producer, { produce: 1, marks: 1 }),
+  },
+  {
+    id: 'quayside-workshop',
+    name: 'Quayside Workshop',
+    cost: 3,
+    tags: ['coast', 'community'],
+    flavor: 'Nets mended, gossip repaired.',
+    text: 'Immediately gain 3 Marks.',
+    onBuy: (state, producer) => addResources(state, producer, { marks: 3 }),
   },
 ]
 

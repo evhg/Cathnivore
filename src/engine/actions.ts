@@ -13,10 +13,15 @@ function ownStalls(state: GameState, producer: ProducerId, region: RegionId): nu
   return state.regions[region].stalls[producer] ?? 0
 }
 
-// SPEC 7 "Mobile Butcher": Supply in Pasture regions costs 1 less Produce per Outlet (minimum 1).
+// SPEC 7 "Mobile Butcher"/"Wholesale Crate Deal": Supply in Pasture/Crop regions costs 1 less Produce
+// per Outlet (minimum 1).
 function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, region: RegionId): number {
   const base = 2
-  if (hasImprovement(state, producer, 'mobile-butcher') && REGIONS[region].type === 'pasture') {
+  const type = REGIONS[region].type
+  if (
+    (hasImprovement(state, producer, 'mobile-butcher') && type === 'pasture') ||
+    (hasImprovement(state, producer, 'wholesale-crate-deal') && type === 'crop')
+  ) {
     return Math.max(1, base - 1)
   }
   return base
