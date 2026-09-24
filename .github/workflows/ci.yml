@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [build, main]
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: Report status to ci-status
+        if: always()
+        run: |
+          STATUS=${{ job.status }}
+          COMMIT=${{ github.sha }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin ci-status 2>/dev/null || true
+          git checkout ci-status 2>/dev/null || git checkout --orphan ci-status
+          mkdir -p status
+          cat > status/ci.json <<EOF
+          {
+            "workflow": "ci",
+            "commit": "$COMMIT",
+            "success": $( [ "$STATUS" = "success" ] && echo true || echo false ),
+            "time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+          git add status/ci.json
+          git commit -m "ci status for $COMMIT" --allow-empty
+          git push --force origin ci-status

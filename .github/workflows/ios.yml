@@ -1,0 +1,96 @@
+name: iOS
+
+on:
+  push:
+    tags:
+      - 'ios-*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync ios
+
+      - name: Write App Store Connect API key
+        run: |
+          mkdir -p private_keys
+          echo "${{ secrets.ASC_KEY_P8 }}" > private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+
+      - name: Fill in export options team ID
+        working-directory: ios/App
+        run: |
+          sed -i '' "s/TEAM_ID_PLACEHOLDER/${{ secrets.APPLE_TEAM_ID }}/" ExportOptions.plist
+
+      - name: Archive with xcodebuild
+        working-directory: ios/App
+        run: |
+          set -o pipefail
+          xcodebuild -workspace App.xcodeproj/project.xcworkspace -scheme App -configuration Release \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" -destination 'generic/platform=iOS' \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$GITHUB_WORKSPACE/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8" \
+            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            archive 2>&1 | tee "$RUNNER_TEMP/archive.log"
+
+      - name: Export and upload to App Store Connect (TestFlight)
+        working-directory: ios/App
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$GITHUB_WORKSPACE/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8" \
+            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+            2>&1 | tee "$RUNNER_TEMP/export.log"
+
+      - name: Delete API key
+        if: always()
+        run: rm -rf private_keys
+
+      - name: Report status to ci-status
+        if: always()
+        run: |
+          STATUS=${{ job.status }}
+          COMMIT=${{ github.sha }}
+          TAG=${{ github.ref_name }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin ci-status 2>/dev/null || true
+          git checkout ci-status 2>/dev/null || git checkout --orphan ci-status
+          mkdir -p status
+          if [ "$STATUS" != "success" ]; then
+            LOG=$(cat "$RUNNER_TEMP/export.log" "$RUNNER_TEMP/archive.log" 2>/dev/null | tail -n 150 | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
+          else
+            LOG='""'
+          fi
+          cat > status/ios.json <<EOF
+          {
+            "workflow": "ios",
+            "tag": "$TAG",
+            "commit": "$COMMIT",
+            "success": $( [ "$STATUS" = "success" ] && echo true || echo false ),
+            "buildNumber": "${{ github.run_number }}",
+            "time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "log": $LOG
+          }
+          EOF
+          git add status/ios.json
+          git commit -m "ios status for $TAG" --allow-empty
+          git push --force origin ci-status
