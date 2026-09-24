@@ -55,7 +55,8 @@ M4 Full content and balance (day 4) — M1, M2 and M3 are complete (M3's exact-S
 
 ### M4 Full content and balance (day 4)
 - [x] MCTSBot perf blocker fixed (see M2's perf note above and DECISIONS.md) — the balance loop can now actually run 1,000-game MCTSBot sims in a reasonable time
-- [ ] full card counts and difficulty levels
+- [x] Agenda deck grown to the full 24 cards (12 Hollowell + 12 Candor, SPEC 4.7 — no cuttable minimum, unlike Improvements/Schemes). Fixed three unit tests whose seed-5 fixtures broke from the RNG-stream shift this caused (see DECISIONS.md); `npm run check` passes.
+- [ ] full card counts (Improvements 24 -> 36, Schemes 18 -> 30; both already meet their SPEC-cuttable minimums) and difficulty levels (difficulty tiers already implemented in `src/content/difficulty.ts`/`src/engine/state.ts`, just needs balance-loop tuning)
 - [ ] the balance loop run to the targets
 - [ ] Release
 

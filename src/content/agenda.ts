@@ -48,7 +48,7 @@ function loseTrust(state: GameState, amount: number): GameState {
 }
 
 export const AGENDA_CARDS: AgendaCard[] = [
-  // --- Hollowell (8) ---
+  // --- Hollowell (12) ---
   {
     id: 'hollowell-farmhouse-range',
     faction: 'hollowell',
@@ -151,7 +151,55 @@ export const AGENDA_CARDS: AgendaCard[] = [
       return next
     },
   },
-  // --- Candor (8) ---
+  {
+    id: 'hollowell-value-meal',
+    faction: 'hollowell',
+    headline: "Hollowell's new 'value meal' is technically three meals stapled together.",
+    effect: (state) => {
+      const ids = nonLiberated(state)
+      const target = extremeByStallCount(state, ids, 'fewest')
+      return target ? addOutlets(state, target, 1) : state
+    },
+    bonusEffect: (state) => eachProducerLoses(state, 'produce'),
+  },
+  {
+    id: 'hollowell-store-opening',
+    faction: 'hollowell',
+    headline: 'Hollowell opens a store directly across from Kingsmarket. Coincidence, they say.',
+    effect: (state) => addOutlets(state, 'kingsmarket', 1),
+    bonusEffect: (state) => {
+      let next = state
+      for (const id of nonLiberated(next)) {
+        if (REGIONS[id].type === 'coast') next = addOutlets(next, id, 1)
+      }
+      return next
+    },
+  },
+  {
+    id: 'hollowell-supply-chain',
+    faction: 'hollowell',
+    headline: "Hollowell announces a 'resilient supply chain.' Resilient to what, unclear.",
+    effect: (state) => {
+      let next = state
+      for (const id of regionsWithStall(next, nonLiberated(next))) {
+        if (REGIONS[id].type === 'crop') next = addOutlets(next, id, 1)
+      }
+      return next
+    },
+    bonusEffect: (state) => eachProducerLoses(state, 'marks'),
+  },
+  {
+    id: 'hollowell-friendly-buyout-offer',
+    faction: 'hollowell',
+    headline: "Hollowell makes a 'friendly' buyout offer, twice, in writing.",
+    effect: (state) => {
+      const candidates = nonLiberated(state).filter((id) => state.regions[id].outlets >= 2 && state.regions[id].buyouts === 0)
+      const target = extremeByStallCount(state, candidates, 'fewest')
+      return target ? addBuyout(state, target, 1) : state
+    },
+    bonusEffect: (state) => addOutlets(state, 'kingsmarket', 1),
+  },
+  // --- Candor (12) ---
   {
     id: 'candor-natural-risk-factor',
     faction: 'candor',
@@ -241,6 +289,50 @@ export const AGENDA_CARDS: AgendaCard[] = [
     headline: 'Candor advises that seeking a second opinion may cause unnecessary alarm.',
     effect: (state) => loseTrust(state, 1),
     bonusEffect: (state) => eachProducerLoses(state, 'marks'),
+  },
+  {
+    id: 'candor-peer-reviewed-by-us',
+    faction: 'candor',
+    headline: "Candor's study was peer-reviewed. The peers also work at Candor.",
+    effect: (state) => {
+      const target = extremeByStallCount(state, state.config.activeRegions, 'most')
+      return target ? addDoubt(state, target, 1) : state
+    },
+    bonusEffect: (state) => loseTrust(state, 1),
+  },
+  {
+    id: 'candor-awareness-campaign',
+    faction: 'candor',
+    headline: 'Candor launches an awareness campaign. Nobody is sure what it wants them aware of.',
+    effect: (state) => {
+      let next = state
+      for (const id of nonLiberated(next)) {
+        if (REGIONS[id].type === 'pasture') next = addDoubt(next, id, 1)
+      }
+      return next
+    },
+    bonusEffect: (state) => eachProducerLoses(state, 'produce'),
+  },
+  {
+    id: 'candor-independent-panel',
+    faction: 'candor',
+    headline: "Candor convenes an 'independent panel.' Candor picked the panel.",
+    effect: (state) => addDoubt(state, 'kingsmarket', 1),
+    bonusEffect: (state) => {
+      const ids = nonLiberated(state)
+      const target = extremeByStallCount(state, ids, 'most')
+      return target ? addDoubt(state, target, 1) : state
+    },
+  },
+  {
+    id: 'candor-satisfaction-survey',
+    faction: 'candor',
+    headline: "Candor's satisfaction survey finds 9 out of 10 Candor employees satisfied.",
+    effect: (state) => eachProducerLoses(state, 'goodwill'),
+    bonusEffect: (state) => {
+      const count = state.config.activeRegions.filter((id) => state.regions[id].doubt >= 1).length
+      return loseTrust(state, Math.min(1, count))
+    },
   },
 ]
 

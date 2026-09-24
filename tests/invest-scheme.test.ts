@@ -25,6 +25,26 @@ function richMara(state: GameState): GameState {
   }
 }
 
+// Forces `id` into Cath's Plan slot 0 for a deterministic test target, without duplicating or losing a
+// card: `id` may already be face up (elsewhere in the plan), in the deck or in the discard, depending on
+// the seed's shuffle. If it's already in the plan, swap it into slot 0; otherwise pull it out of the deck
+// or discard and put whatever was in slot 0 back into the deck to keep the total scheme count correct.
+function forceScheme(state: GameState, id: string): GameState {
+  const planIndex = state.cathsPlan.indexOf(id)
+  if (planIndex >= 0) {
+    const cathsPlan = [...state.cathsPlan]
+    ;[cathsPlan[0], cathsPlan[planIndex]] = [cathsPlan[planIndex]!, cathsPlan[0] ?? null]
+    return { ...state, cathsPlan }
+  }
+  const displaced = state.cathsPlan[0] ?? null
+  return {
+    ...state,
+    cathsPlan: [id, ...state.cathsPlan.slice(1)],
+    schemeDeck: [...state.schemeDeck.filter((s) => s !== id), ...(displaced ? [displaced] : [])],
+    schemeDiscard: state.schemeDiscard.filter((s) => s !== id),
+  }
+}
+
 describe('Invest', () => {
   it('buying an Improvement spends Marks, adds it to the tableau, empties its Market slot, and applies its effect', () => {
     let state = richMara(createGame(FULL_CONFIG, 5))
@@ -39,7 +59,12 @@ describe('Invest', () => {
   })
 
   it('is not legal without enough Marks', () => {
-    const state = createGame(FULL_CONFIG, 5) // starting Marks are well under every Improvement's cost
+    let state = createGame(FULL_CONFIG, 5)
+    // Every Improvement costs at least 2 Marks (SPEC 7); 0 is under all of them regardless of the seed's market draw.
+    state = {
+      ...state,
+      producers: { ...state.producers, mara: { ...state.producers.mara, resources: { ...state.producers.mara.resources, marks: 0 } } },
+    }
     const actions = legalActions(state)
     expect(actions.some((a) => a.kind === 'invest')).toBe(false)
   })
@@ -57,7 +82,7 @@ describe('Invest', () => {
 describe('Scheme', () => {
   it('playing a Scheme spends Goodwill, empties its Cath\'s Plan slot, discards it, and applies its effect', () => {
     let state = richMara(createGame(FULL_CONFIG, 5))
-    state = { ...state, cathsPlan: ['leaked-memo', ...state.cathsPlan.slice(1)] }
+    state = forceScheme(state, 'leaked-memo')
     const before = state.producers.mara.resources.goodwill
     const beforeRift = state.rift
     // Saltmarsh (a Coast region) starts with 1 Doubt (SPEC 4.3.2), so it's a legal target.
@@ -71,7 +96,7 @@ describe('Scheme', () => {
 
   it('Loss Leader removes 2 Outlets from a targeted region with the player\'s Stall', () => {
     let state = richMara(createGame(FULL_CONFIG, 5))
-    state = { ...state, cathsPlan: ['loss-leader', ...state.cathsPlan.slice(1)] }
+    state = forceScheme(state, 'loss-leader')
     // Mara's home (Brindle Hills) keeps its starting Outlet and she starts with a Stall there.
     const before = state.regions.brindleHills.outlets
     expect(before).toBeGreaterThanOrEqual(1)
@@ -81,7 +106,7 @@ describe('Scheme', () => {
 
   it('is not offered as a legal action without enough Goodwill', () => {
     let state = createGame(FULL_CONFIG, 5)
-    state = { ...state, cathsPlan: ['leaked-memo', ...state.cathsPlan.slice(1)] }
+    state = forceScheme(state, 'leaked-memo')
     state = {
       ...state,
       producers: { ...state.producers, mara: { ...state.producers.mara, resources: { ...state.producers.mara.resources, goodwill: 0 } } },
@@ -93,7 +118,7 @@ describe('Scheme', () => {
   it('a required-target Scheme with no legal target is not offered', () => {
     let state = richMara(createGame(FULL_CONFIG, 5))
     // Grass Roots needs a region bordering a liberated one; nothing is liberated at game start.
-    state = { ...state, cathsPlan: ['grass-roots', ...state.cathsPlan.slice(1)] }
+    state = forceScheme(state, 'grass-roots')
     const actions = legalActions(state)
     expect(actions.some((a) => a.kind === 'scheme' && a.schemeId === 'grass-roots')).toBe(false)
   })
