@@ -2,6 +2,8 @@ import { ALL_REGION_IDS, REGIONS } from '../content/map'
 import { PRODUCERS } from '../content/producers'
 import { unshuffledPressureDeck } from '../content/pressure'
 import { AGENDA_CARDS } from '../content/agenda'
+import { IMPROVEMENTS } from '../content/improvements'
+import { SCHEMES } from '../content/schemes'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { createRng, shuffle } from './rng'
 import type { GameConfig, GameState, PressureCard, ProducerState, RegionState } from './types'
@@ -66,7 +68,19 @@ export function createGame(config: GameConfig, seed: number): GameState {
     AGENDA_CARDS.map((c) => c.id),
     { seed: seedAfter },
   )
-  const rng = agendaRng
+  const [improvementDeck, improvementRng] = shuffle(
+    IMPROVEMENTS.map((c) => c.id),
+    agendaRng,
+  )
+  const [schemeDeck, schemeRng] = shuffle(
+    SCHEMES.map((c) => c.id),
+    improvementRng,
+  )
+  const rng = schemeRng
+  const market = [...improvementDeck.slice(0, 4), ...Array(Math.max(0, 4 - improvementDeck.length)).fill(null)]
+  const marketRest = improvementDeck.slice(4)
+  const cathsPlan = [...schemeDeck.slice(0, 3), ...Array(Math.max(0, 3 - schemeDeck.length)).fill(null)]
+  const schemeRest = schemeDeck.slice(3)
 
   let state: GameState = {
     config,
@@ -91,6 +105,14 @@ export function createGame(config: GameConfig, seed: number): GameState {
     agendaDeck,
     agendaDiscard: [],
     currentAgenda: null,
+    improvementDeck: marketRest,
+    improvementDiscard: [],
+    market,
+    schemeDeck: schemeRest,
+    schemeDiscard: [],
+    cathsPlan,
+    squeezeSkip: [],
+    expandSkip: [],
     log: [],
     actionHistory: [],
     result: null,

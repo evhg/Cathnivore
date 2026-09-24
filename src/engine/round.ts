@@ -1,5 +1,7 @@
 import { runEnemyTurn } from './enemy'
 import { countLiberated } from './pieces'
+import { shuffle } from './rng'
+import { hasImprovement } from './producer'
 import type { GameState, ProducerId } from './types'
 
 function nextProducer(state: GameState, current: ProducerId): ProducerId | null {
@@ -18,11 +20,38 @@ function checkWin(state: GameState): GameState {
   return state
 }
 
-// SPEC 4.5.4 Cleanup: refill Market/Plan (deferred until Improvements/Schemes content lands), check
-// win/loss, advance the round and swap the first player.
+// SPEC 4.5.4 Cleanup: refill the Market to 4 and Cath's Plan to 3, check win/loss, advance the round and
+// swap the first player.
+function refillSlots(deck: string[], slots: (string | null)[], size: number): { deck: string[]; slots: (string | null)[] } {
+  let remaining = deck
+  const filled = slots.slice()
+  for (let i = 0; i < size; i++) {
+    if (filled[i] == null && remaining.length > 0) {
+      filled[i] = remaining[0]!
+      remaining = remaining.slice(1)
+    }
+  }
+  return { deck: remaining, slots: filled }
+}
+
 function cleanup(state: GameState): GameState {
   let next = checkWin(state)
   if (next.result) return next
+
+  // SPEC 5: "When the deck runs out, shuffle the discard pile to form a new deck."
+  let schemeDeck = next.schemeDeck
+  let schemeDiscard = next.schemeDiscard
+  let rng = next.rng
+  if (schemeDeck.length === 0 && schemeDiscard.length > 0) {
+    const [reshuffled, nextRng] = shuffle(schemeDiscard, rng)
+    schemeDeck = reshuffled
+    schemeDiscard = []
+    rng = nextRng
+  }
+
+  const { deck: improvementDeck, slots: market } = refillSlots(next.improvementDeck, next.market, 4)
+  const { deck: schemeDeckAfterRefill, slots: cathsPlan } = refillSlots(schemeDeck, next.cathsPlan, 3)
+  next = { ...next, rng, improvementDeck, market, schemeDeck: schemeDeckAfterRefill, schemeDiscard, cathsPlan }
 
   const newFirstPlayer = nextProducer(next, next.firstPlayer) ?? next.config.producers[0]!
   next = {
@@ -31,6 +60,8 @@ function cleanup(state: GameState): GameState {
     firstPlayer: newFirstPlayer,
     activeProducer: newFirstPlayer,
     actionsLeft: 3,
+    squeezeSkip: [],
+    expandSkip: [],
     producers: Object.fromEntries(
       Object.entries(next.producers).map(([id, p]) => [id, { ...p, roleUsedThisRound: false }]),
     ) as GameState['producers'],
@@ -39,6 +70,8 @@ function cleanup(state: GameState): GameState {
   // SPEC 4.5.1 Harvest happens at the start of the next round's producer turns.
   for (const pid of next.config.producers) {
     const p = next.producers[pid]
+    // SPEC 7 "Oyster Beds": at Harvest, also gain 1 Goodwill if the owner has a Stall in Shingle Bay.
+    const oysterBonus = hasImprovement(next, pid, 'oyster-beds') && (next.regions.shingleBay.stalls[pid] ?? 0) > 0 ? 1 : 0
     next = {
       ...next,
       producers: {
@@ -48,7 +81,7 @@ function cleanup(state: GameState): GameState {
           resources: {
             produce: p.resources.produce + p.production.produce,
             marks: p.resources.marks + p.production.marks,
-            goodwill: p.resources.goodwill + p.production.goodwill,
+            goodwill: p.resources.goodwill + p.production.goodwill + oysterBonus,
           },
         },
       },

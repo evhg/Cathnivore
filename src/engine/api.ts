@@ -4,6 +4,8 @@ import { isLiberated } from './region'
 import { POOL_SIZES } from './pieces'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { AGENDA_CARDS } from '../content/agenda'
+import { IMPROVEMENTS } from '../content/improvements'
+import { SCHEMES } from '../content/schemes'
 import type { Action, GameConfig, GameResult, GameState } from './types'
 
 export { createGame, legalActions, applyAction }
@@ -87,6 +89,20 @@ export function validate(state: GameState): ValidationError[] {
   const agendaTotal = state.agendaDeck.length + state.agendaDiscard.length + (state.currentAgenda ? 1 : 0)
   if (agendaTotal !== AGENDA_CARDS.length) {
     push(`agenda deck/discard/current total mismatch: ${agendaTotal} != ${AGENDA_CARDS.length}`)
+  }
+
+  // SPEC 7/5: Improvements bought stay permanently in a tableau; Schemes played go to the discard pile.
+  const marketCount = state.market.filter((id) => id !== null).length
+  const ownedImprovements = Object.values(state.producers).reduce((n, p) => n + p.improvements.length, 0)
+  const improvementTotal = state.improvementDeck.length + marketCount + state.improvementDiscard.length + ownedImprovements
+  if (improvementTotal !== IMPROVEMENTS.length) {
+    push(`improvement deck/market/tableau total mismatch: ${improvementTotal} != ${IMPROVEMENTS.length}`)
+  }
+
+  const planCount = state.cathsPlan.filter((id) => id !== null).length
+  const schemeTotal = state.schemeDeck.length + planCount + state.schemeDiscard.length
+  if (schemeTotal !== SCHEMES.length) {
+    push(`scheme deck/plan/discard total mismatch: ${schemeTotal} != ${SCHEMES.length}`)
   }
 
   if (state.publicTrust < 0 || state.publicTrust > 15) push(`publicTrust out of range: ${state.publicTrust}`)

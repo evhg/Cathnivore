@@ -2,29 +2,23 @@ import { REGIONS } from '../content/map'
 import { removeBuyout, removeDoubt, removeOutlets } from './pieces'
 import { refreshAllLiberation } from './enemy'
 import { advanceTurnIfNeeded } from './round'
-import { regionStallTotal, stallCap } from './region'
+import { hasImprovement } from './producer'
+import { canOpenStallIn, regionStallTotal } from './region'
+import { IMPROVEMENTS_BY_ID } from '../content/improvements'
+import { SCHEMES_BY_ID, legalSchemeTargets } from '../content/schemes'
 import type { Action, GameState, ProducerId, RegionId } from './types'
 
 function ownStalls(state: GameState, producer: ProducerId, region: RegionId): number {
   return state.regions[region].stalls[producer] ?? 0
 }
 
-function anyStallsAdjacentOrIn(state: GameState, producer: ProducerId, region: RegionId): boolean {
-  if (ownStalls(state, producer, region) > 0) return true
-  return REGIONS[region].neighbors.some((n) => ownStalls(state, producer, n) > 0)
-}
-
-// SPEC 4.8: nobody may place a Stall in Kingsmarket unless at least 2 of its neighbors are liberated.
-function kingsmarketOpen(state: GameState): boolean {
-  const neighbors = REGIONS.kingsmarket.neighbors
-  const liberatedNeighbors = neighbors.filter((n) => state.regions[n].liberated).length
-  return liberatedNeighbors >= 2
-}
-
-function canOpenStallIn(state: GameState, producer: ProducerId, region: RegionId): boolean {
-  if (region === 'kingsmarket' && !kingsmarketOpen(state)) return false
-  if (regionStallTotal(state.regions[region]) >= stallCap(state.regions[region])) return false
-  return anyStallsAdjacentOrIn(state, producer, region)
+// SPEC 7 "Mobile Butcher": Supply in Pasture regions costs 1 less Produce per Outlet (minimum 1).
+function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, region: RegionId): number {
+  const base = 2
+  if (hasImprovement(state, producer, 'mobile-butcher') && REGIONS[region].type === 'pasture') {
+    return Math.max(1, base - 1)
+  }
+  return base
 }
 
 export function legalActions(state: GameState): Action[] {
@@ -42,8 +36,9 @@ export function legalActions(state: GameState): Action[] {
   for (const id of state.config.activeRegions) {
     if (ownStalls(state, producer, id) === 0) continue
     const r = state.regions[id]
-    if (r.outlets >= 1 && p.resources.produce >= 2) actions.push({ kind: 'supplyOutlets', region: id, count: 1 })
-    if (r.outlets >= 2 && p.resources.produce >= 4) actions.push({ kind: 'supplyOutlets', region: id, count: 2 })
+    const outletCost = supplyOutletCostPerOutlet(state, producer, id)
+    if (r.outlets >= 1 && p.resources.produce >= outletCost) actions.push({ kind: 'supplyOutlets', region: id, count: 1 })
+    if (r.outlets >= 2 && p.resources.produce >= outletCost * 2) actions.push({ kind: 'supplyOutlets', region: id, count: 2 })
     if (r.buyouts >= 1 && p.resources.produce >= 4 && regionStallTotal(r) >= 2) {
       actions.push({ kind: 'supplyBuyout', region: id })
     }
@@ -53,6 +48,21 @@ export function legalActions(state: GameState): Action[] {
 
   for (let n = 1; n <= Math.min(3, p.resources.produce); n++) {
     actions.push({ kind: 'sell', count: n as 1 | 2 | 3 })
+  }
+
+  for (const id of state.market) {
+    if (!id) continue
+    const card = IMPROVEMENTS_BY_ID.get(id)
+    if (card && p.resources.marks >= card.cost) actions.push({ kind: 'invest', improvementId: id })
+  }
+
+  for (const id of state.cathsPlan) {
+    if (!id) continue
+    const card = SCHEMES_BY_ID.get(id)
+    if (!card || p.resources.goodwill < card.cost) continue
+    for (const target of legalSchemeTargets(state, producer, id)) {
+      actions.push(target ? { kind: 'scheme', schemeId: id, targetRegion: target } : { kind: 'scheme', schemeId: id })
+    }
   }
 
   actions.push({ kind: 'graft' })
@@ -107,7 +117,8 @@ export function applyAction(state: GameState, action: Action): GameState {
       break
     }
     case 'supplyOutlets': {
-      next = spend(state, producer, { produce: 2 * action.count, marks: 0, goodwill: 0 })
+      const cost = supplyOutletCostPerOutlet(state, producer, action.region) * action.count
+      next = spend(state, producer, { produce: cost, marks: 0, goodwill: 0 })
       next = removeOutlets(next, action.region, action.count)
       break
     }
@@ -118,7 +129,8 @@ export function applyAction(state: GameState, action: Action): GameState {
     }
     case 'rebut': {
       next = spend(state, producer, { produce: 0, marks: 0, goodwill: action.count })
-      next = removeDoubt(next, action.region, action.count)
+      const bonus = hasImprovement(state, producer, 'soil-lab-report') ? 1 : 0
+      next = removeDoubt(next, action.region, action.count + bonus)
       break
     }
     case 'sell': {
@@ -138,9 +150,36 @@ export function applyAction(state: GameState, action: Action): GameState {
       }
       break
     }
-    case 'invest':
-    case 'scheme':
-      throw new Error(`Action not yet implemented: ${action.kind}`)
+    case 'invest': {
+      const card = IMPROVEMENTS_BY_ID.get(action.improvementId)
+      if (!card) throw new Error(`Unknown improvement: ${action.improvementId}`)
+      next = spend(state, producer, { produce: 0, marks: card.cost, goodwill: 0 })
+      next = card.onBuy(next, producer)
+      next = {
+        ...next,
+        producers: {
+          ...next.producers,
+          [producer]: { ...next.producers[producer], improvements: [...next.producers[producer].improvements, card.id] },
+        },
+        market: next.market.map((id) => (id === card.id ? null : id)),
+        log: [...next.log, { type: 'invest', producer, improvementId: card.id }],
+      }
+      break
+    }
+    case 'scheme': {
+      const card = SCHEMES_BY_ID.get(action.schemeId)
+      if (!card) throw new Error(`Unknown scheme: ${action.schemeId}`)
+      const target = action.targetRegion ?? null
+      next = spend(state, producer, { produce: 0, marks: 0, goodwill: card.cost })
+      next = card.effect(next, producer, target)
+      next = {
+        ...next,
+        cathsPlan: next.cathsPlan.map((id) => (id === card.id ? null : id)),
+        schemeDiscard: [...next.schemeDiscard, card.id],
+        log: [...next.log, { type: 'schemePlayed', producer, schemeId: card.id, target }],
+      }
+      break
+    }
   }
 
   next = refreshAllLiberation(next)

@@ -63,6 +63,10 @@ export interface GameConfig {
   activeRegions: RegionId[] // which regions are in play (full game: all 7)
 }
 
+// Improvement/Scheme content (including effect functions) lives in src/content, keyed by these ids.
+export type ImprovementCardId = string
+export type SchemeCardId = string
+
 export interface GameState {
   config: GameConfig
   rng: RngState
@@ -86,6 +90,14 @@ export interface GameState {
   agendaDeck: AgendaCardId[]
   agendaDiscard: AgendaCardId[]
   currentAgenda: AgendaCardId | null
+  improvementDeck: ImprovementCardId[]
+  improvementDiscard: ImprovementCardId[] // unused (Improvements aren't discarded), kept for symmetry with Schemes
+  market: (ImprovementCardId | null)[] // 4 face-up slots; null while empty until cleanup refill
+  schemeDeck: SchemeCardId[]
+  schemeDiscard: SchemeCardId[]
+  cathsPlan: (SchemeCardId | null)[] // 3 face-up slots; null while empty until cleanup refill
+  squeezeSkip: RegionId[] // regions whose Squeeze step is skipped this round (Sunlight, Injunction)
+  expandSkip: RegionId[] // regions whose Expand step is skipped this round (Injunction)
   log: GameEvent[]
   actionHistory: Action[]
   result: GameResult | null
@@ -98,6 +110,8 @@ export type GameEvent =
   | { type: 'squeeze'; region: RegionId; lostLand: boolean; stallRemoved: boolean; trustLoss: number }
   | { type: 'expand'; region: RegionId; piece: 'outlet' | 'buyout' | 'doubt' }
   | { type: 'scout'; region: RegionId; doubtAdded: boolean }
+  | { type: 'invest'; producer: ProducerId; improvementId: ImprovementCardId }
+  | { type: 'schemePlayed'; producer: ProducerId; schemeId: SchemeCardId; target: RegionId | null }
 
 export type Action =
   | { kind: 'openStall'; region: RegionId }
@@ -106,7 +120,7 @@ export type Action =
   | { kind: 'rebut'; region: RegionId; count: 1 | 2 }
   | { kind: 'invest'; improvementId: string }
   | { kind: 'sell'; count: 1 | 2 | 3 }
-  | { kind: 'scheme'; schemeId: string }
+  | { kind: 'scheme'; schemeId: string; targetRegion?: RegionId }
   | { kind: 'graft' }
   | { kind: 'role' }
 

@@ -2,6 +2,7 @@ import { REGIONS } from '../content/map'
 import { AGENDA_CARDS } from '../content/agenda'
 import { addBuyout, addDoubt, addLostLand, addOutlets, countLiberated } from './pieces'
 import { isLiberated, regionStallTotal } from './region'
+import { addProduction } from './producer'
 import type { GameState, PressureCard, ProducerId, RegionId, RegionState } from './types'
 
 const AGENDA_BY_ID = new Map(AGENDA_CARDS.map((c) => [c.id, c]))
@@ -28,19 +29,33 @@ function activeRegions(state: GameState): RegionId[] {
   return state.config.activeRegions
 }
 
+// SPEC 4.8: the first time a region is liberated, Public Trust +1 and the liberating producer gains +1
+// production: Pasture -> Produce, Crop -> Marks, Coast -> Goodwill, Kingsmarket -> their choice (default
+// Marks here; the UI/AI may steer this via a future `currentDecision`, same pattern as the Squeeze
+// home-production-loss choice).
+function firstLiberationProductionBonus(regionId: RegionId): 'produce' | 'marks' | 'goodwill' {
+  const type = REGIONS[regionId].type
+  if (type === 'pasture') return 'produce'
+  if (type === 'crop') return 'marks'
+  if (type === 'coast') return 'goodwill'
+  return 'marks'
+}
+
 function refreshLiberation(state: GameState, region: RegionId): GameState {
   const r = state.regions[region]
   const nowLiberated = isLiberated(r)
   if (nowLiberated === r.liberated) return state
   if (nowLiberated) {
     const isFirstTime = !r.everLiberated
+    const producer = state.activeProducer
     let next: GameState = {
       ...state,
       regions: { ...state.regions, [region]: { ...r, liberated: true, everLiberated: true } },
-      log: [...state.log, { type: 'liberated', region, producer: state.activeProducer }],
+      log: [...state.log, { type: 'liberated', region, producer }],
     }
     if (isFirstTime) {
       next = { ...next, publicTrust: Math.min(15, next.publicTrust + 1) }
+      next = addProduction(next, producer, { [firstLiberationProductionBonus(region)]: 1 })
     }
     return next
   }
@@ -80,6 +95,7 @@ export function resolveExpand(state: GameState): GameState {
     const r = next.regions[id]
     if (r.liberated) continue
     if (!matches(card, id)) continue
+    if (state.expandSkip.includes(id)) continue
     const hasEnemyPiece = r.outlets > 0 || r.buyouts > 0 || r.doubt > 0
     if (!hasEnemyPiece) continue
     if (r.outlets >= 2 && r.buyouts === 0) {
@@ -120,6 +136,7 @@ export function resolveSqueeze(state: GameState, chooseProduction?: (producer: s
     const r = next.regions[id]
     if (r.liberated) continue
     if (!matches(card, id)) continue
+    if (state.squeezeSkip.includes(id)) continue
     const damage = r.outlets + 2 * r.buyouts
     const defence = regionStallTotal(r)
     let lostLand = false
