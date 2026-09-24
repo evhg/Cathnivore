@@ -4,9 +4,9 @@ import { createRng } from '../engine/rng'
 import { PRODUCERS } from '../content/producers'
 import { HeuristicBot } from '../ai/heuristic'
 import { saveGame, clearGame } from '../platform/storage'
-import { actionLabel } from './actionLabel'
-import Map from './Map'
-import type { GameState, ProducerId } from '../engine/types'
+import { actionLabel, actionGroupKey, actionGroupLabel, regionOf } from './actionLabel'
+import RegionMap from './Map'
+import type { Action, GameState, ProducerId, RegionId } from '../engine/types'
 import type { Mode } from './Setup'
 
 interface Props {
@@ -24,6 +24,11 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const undoStackRef = useRef<GameState[]>([])
   const rngRef = useRef(createRng(seed + 1))
+  const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
+
+  useEffect(() => {
+    setSelectedGroup(null)
+  }, [state])
 
   useEffect(() => {
     saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory })
@@ -71,6 +76,22 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
   const actions = waitingOnAi ? [] : legalActions(state)
   const active = state.producers[state.activeProducer]
 
+  // SPEC 10.2 targeting mode: group same-action-different-region choices into one button, then let the
+  // player tap the glowing region on the map instead of reading N near-identical buttons.
+  const standalone: { index: number; action: Action }[] = []
+  const groups = new Map<string, { label: string; entries: { index: number; region: RegionId }[] }>()
+  actions.forEach((a, index) => {
+    const region = regionOf(a)
+    if (region === undefined) {
+      standalone.push({ index, action: a })
+      return
+    }
+    const key = actionGroupKey(a)
+    const group = groups.get(key) ?? { label: actionGroupLabel(a, state), entries: [] }
+    group.entries.push({ index, region })
+    groups.set(key, group)
+  })
+
   function act(actionIndex: number): void {
     undoStackRef.current.push(state)
     setState(applyAction(state, actions[actionIndex]!))
@@ -97,7 +118,18 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
       </section>
 
       <section className="map-wrap">
-        <Map state={state} />
+        <RegionMap
+          state={state}
+          highlight={selectedGroup?.entries.map((e) => e.region)}
+          onSelect={
+            selectedGroup
+              ? (region) => {
+                  const entry = selectedGroup.entries.find((e) => e.region === region)
+                  if (entry) act(entry.index)
+                }
+              : undefined
+          }
+        />
       </section>
 
       {decision ? (
@@ -120,12 +152,30 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
       <section className="actions">
         {waitingOnAi ? (
           <p>AI teammate is deciding…</p>
+        ) : selectedGroup ? (
+          <>
+            <p>{selectedGroup.label}: tap a glowing region on the map.</p>
+            <button onClick={() => setSelectedGroup(null)}>Cancel</button>
+          </>
         ) : (
-          actions.map((a, i) => (
-            <button key={i} onClick={() => act(i)}>
-              {actionLabel(a, state)}
-            </button>
-          ))
+          <>
+            {standalone.map(({ index, action: a }) => (
+              <button key={index} onClick={() => act(index)}>
+                {actionLabel(a, state)}
+              </button>
+            ))}
+            {[...groups.entries()].map(([key, group]) =>
+              group.entries.length === 1 ? (
+                <button key={key} onClick={() => act(group.entries[0]!.index)}>
+                  {actionLabel(actions[group.entries[0]!.index]!, state)}
+                </button>
+              ) : (
+                <button key={key} onClick={() => setSelectedGroup(group)}>
+                  {group.label}…
+                </button>
+              ),
+            )}
+          </>
         )}
       </section>
 

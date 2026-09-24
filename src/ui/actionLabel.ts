@@ -2,7 +2,7 @@ import { REGIONS } from '../content/map'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { PRODUCERS } from '../content/producers'
-import type { Action, GameState } from '../engine/types'
+import type { Action, GameState, RegionId } from '../engine/types'
 
 const RESOURCE_NAME = { produce: 'Produce', marks: 'Marks', goodwill: 'Goodwill' } as const
 
@@ -39,5 +39,66 @@ export function actionLabel(action: Action, state: GameState): string {
     }
     case 'decide':
       return `Choose ${RESOURCE_NAME[action.choice]}`
+  }
+}
+
+// The region an action targets, for SPEC 10.2's targeting mode (tap a glowing region on the map instead
+// of picking a per-region button). Actions with no region choice (Sell, Graft, Invest, decide, an
+// untargeted Scheme/Role) return undefined and stay a single ordinary button.
+export function regionOf(action: Action): RegionId | undefined {
+  switch (action.kind) {
+    case 'openStall':
+    case 'supplyOutlets':
+    case 'supplyBuyout':
+    case 'rebut':
+      return action.region
+    case 'scheme':
+    case 'role':
+      return action.targetRegion
+    default:
+      return undefined
+  }
+}
+
+// A key grouping every region-variant of "the same" action together (e.g. "Open Stall" regardless of
+// which region), so the UI can offer one button that then highlights the legal regions on the map.
+export function actionGroupKey(action: Action): string {
+  switch (action.kind) {
+    case 'openStall':
+      return 'openStall'
+    case 'supplyOutlets':
+      return `supplyOutlets:${action.count}`
+    case 'supplyBuyout':
+      return 'supplyBuyout'
+    case 'rebut':
+      return `rebut:${action.count}`
+    case 'scheme':
+      return `scheme:${action.schemeId}`
+    case 'role':
+      return 'role'
+    default:
+      return `${action.kind}:${JSON.stringify(action)}`
+  }
+}
+
+// The label for a group button, with no region mentioned (the map highlight supplies that once tapped).
+export function actionGroupLabel(action: Action, state: GameState): string {
+  switch (action.kind) {
+    case 'openStall':
+      return 'Open Stall'
+    case 'supplyOutlets':
+      return `Supply: remove ${action.count} Outlet${action.count > 1 ? 's' : ''}`
+    case 'supplyBuyout':
+      return 'Supply: remove Buyout'
+    case 'rebut':
+      return `Rebut: remove ${action.count} Doubt`
+    case 'scheme': {
+      const card = SCHEMES_BY_ID.get(action.schemeId)
+      return `Scheme: ${card?.name ?? action.schemeId}`
+    }
+    case 'role':
+      return `Role (${PRODUCERS[state.activeProducer].roleName})`
+    default:
+      return actionLabel(action, state)
   }
 }
