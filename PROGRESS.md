@@ -57,7 +57,7 @@ M4 Full content and balance (day 4) — M1, M2 and M3 are complete (M3's exact-S
 - [x] MCTSBot perf blocker fixed (see M2's perf note above and DECISIONS.md) — the balance loop can now actually run 1,000-game MCTSBot sims in a reasonable time
 - [x] Agenda deck grown to the full 24 cards (12 Hollowell + 12 Candor, SPEC 4.7 — no cuttable minimum, unlike Improvements/Schemes). Fixed three unit tests whose seed-5 fixtures broke from the RNG-stream shift this caused (see DECISIONS.md); `npm run check` passes.
 - [ ] full card counts (Improvements 24 -> 36, Schemes 18 -> 30; both already meet their SPEC-cuttable minimums) and difficulty levels (difficulty tiers already implemented in `src/content/difficulty.ts`/`src/engine/state.ts`, just needs balance-loop tuning)
-- [ ] the balance loop run to the targets
+- [ ] the balance loop run to the targets — **iteration 0 (baseline) done:** 1,000 games, MCTSBot vs MCTSBot, Normal, all pairs: 7.8% win rate (target 45-60%), loss reasons lostLand=60.7%/pressureDeckEmpty=29.7%/publicTrust=9.5% (target wants publicTrust+lostLand each >=15%, so publicTrust is under and lostLand/pressureDeckEmpty are dominating instead). See DECISIONS.md for the full reading and candidate fixes for iteration 1 (raise the Normal Lost Land pool, ease the Pressure deck's late-game pressure, and/or strengthen MCTSBot's rollout so it plays a more representative long game) — not yet applied, needs its own session to change <=3 numbers and re-verify with a fresh 1,000-game run per SPEC 9.4's loop discipline.
 - [ ] Release
 
 ### M5 Campaign (day 5 to first half of day 6)
