@@ -5,8 +5,10 @@ import { PRODUCERS } from '../content/producers'
 import { HeuristicBot } from '../ai/heuristic'
 import { saveGame, clearGame } from '../platform/storage'
 import { actionLabel, actionGroupKey, actionGroupLabel, regionOf } from './actionLabel'
+import { enemyTurnEvents } from './enemyTurnLog'
+import EnemyTurnPlayback from './EnemyTurnPlayback'
 import RegionMap from './Map'
-import type { Action, GameState, ProducerId, RegionId } from '../engine/types'
+import type { Action, GameEvent, GameState, ProducerId, RegionId } from '../engine/types'
 import type { Mode } from './Setup'
 
 interface Props {
@@ -25,6 +27,7 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
   const undoStackRef = useRef<GameState[]>([])
   const rngRef = useRef(createRng(seed + 1))
   const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
+  const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -36,19 +39,28 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
 
   // SPEC 6/8.1: in Solo mode, the second producer is played by the AI teammate. A real MCTSBot-in-Worker
   // teammate is future M3/M6 work (see DECISIONS.md); HeuristicBot stands in for now so the loop plays.
+  // Applies an action and, if it ended the round, queues the resulting enemy-turn events for playback
+  // (SPEC 10.2) instead of jumping straight to the new state's controls.
+  function advance(from: GameState, action: Action): void {
+    const next = applyAction(from, action)
+    const events = enemyTurnEvents(from, next)
+    setState(next)
+    if (events.length > 0) setPendingEnemyTurn(events)
+  }
+
   useEffect(() => {
     const aiProducer = aiProducerRef.current
-    if (!aiProducer || state.result) return
+    if (!aiProducer || state.result || pendingEnemyTurn.length > 0) return
     const decision = currentDecision(state)
     const aiShouldAct = decision ? decision.producer === aiProducer : state.activeProducer === aiProducer
     if (!aiShouldAct) return
     const timer = setTimeout(() => {
       const [action, nextRng] = HeuristicBot.chooseAction(state, rngRef.current)
       rngRef.current = nextRng
-      setState((s) => applyAction(s, action))
+      advance(state, action)
     }, 150)
     return () => clearTimeout(timer)
-  }, [state])
+  }, [state, pendingEnemyTurn.length])
 
   if (state.result) {
     return (
@@ -73,7 +85,7 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
   const decision = currentDecision(state)
   const aiProducer = aiProducerRef.current
   const waitingOnAi = decision ? decision.producer === aiProducer : state.activeProducer === aiProducer
-  const actions = waitingOnAi ? [] : legalActions(state)
+  const actions = waitingOnAi || pendingEnemyTurn.length > 0 ? [] : legalActions(state)
   const active = state.producers[state.activeProducer]
 
   // SPEC 10.2 targeting mode: group same-action-different-region choices into one button, then let the
@@ -94,7 +106,7 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
 
   function act(actionIndex: number): void {
     undoStackRef.current.push(state)
-    setState(applyAction(state, actions[actionIndex]!))
+    advance(state, actions[actionIndex]!)
   }
 
   function undo(): void {
@@ -130,6 +142,9 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
               : undefined
           }
         />
+        {pendingEnemyTurn.length > 0 && (
+          <EnemyTurnPlayback events={pendingEnemyTurn} onDone={() => setPendingEnemyTurn([])} />
+        )}
       </section>
 
       {decision ? (
@@ -150,7 +165,7 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
       )}
 
       <section className="actions">
-        {waitingOnAi ? (
+        {pendingEnemyTurn.length > 0 ? null : waitingOnAi ? (
           <p>AI teammate is deciding…</p>
         ) : selectedGroup ? (
           <>
@@ -180,7 +195,7 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
       </section>
 
       <footer className="controls">
-        <button disabled={undoStackRef.current.length === 0} onClick={undo}>
+        <button disabled={undoStackRef.current.length === 0 || pendingEnemyTurn.length > 0} onClick={undo}>
           Undo
         </button>
         <button onClick={onExit}>Menu</button>

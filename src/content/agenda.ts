@@ -243,3 +243,5 @@ export const AGENDA_CARDS: AgendaCard[] = [
     bonusEffect: (state) => eachProducerLoses(state, 'marks'),
   },
 ]
+
+export const AGENDA_CARDS_BY_ID: Map<string, AgendaCard> = new Map(AGENDA_CARDS.map((c) => [c.id, c]))
