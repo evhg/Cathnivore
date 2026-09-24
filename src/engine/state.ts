@@ -1,16 +1,11 @@
 import { ALL_REGION_IDS, REGIONS } from '../content/map'
 import { PRODUCERS } from '../content/producers'
 import { unshuffledPressureDeck } from '../content/pressure'
+import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { createRng, shuffle } from './rng'
 import type { GameConfig, GameState, PressureCard, ProducerState, RegionState } from './types'
 import { resolveScout } from './enemy'
 import { POOL_SIZES, addBuyout, addDoubt, addOutlets } from './pieces'
-
-const DIFFICULTY_SETTINGS = {
-  easy: { publicTrust: 12, lostLandPool: 10 },
-  normal: { publicTrust: 10, lostLandPool: 8 },
-  hard: { publicTrust: 8, lostLandPool: 6 },
-} as const
 
 function buildPressureDeck(seed: number): { deck: PressureCard[]; seedAfter: number } {
   const cards = unshuffledPressureDeck()

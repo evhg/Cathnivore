@@ -21,7 +21,8 @@ M1 Engine (day 1)
 - [ ] Rift track effects (Rift 3 "Cracks", Rift 6 "The Split") — Rift field exists but nothing changes it yet
 - [ ] Kingsmarket-liberation production choice, and the home-region Squeeze production-loss choice, are auto-picked by a default instead of going through `currentDecision` (not yet built)
 - [ ] starter content: 24 Improvements, 18 Schemes, 8 Hollowell + 8 Candor Agenda cards
-- [ ] `validate()`, `serialize`/`deserialize`, `replay()`, `currentDecision()` per SPEC 9.1's full API (only `createGame`/`legalActions`/`applyAction` exist so far)
+- [x] `validate()`, `serialize`/`deserialize`, `replay()`, `isOver()`/`result()` in `src/engine/api.ts`, with round-trip/determinism/invariant tests
+- [ ] `currentDecision()` (forced choices — Squeeze's home-production-loss pick, Rift 6's faction split — aren't wired up as decisions yet, see above)
 - [x] Unit tests: RNG determinism, `createGame` setup invariants, several actions, illegal-action rejection, no-mutation
 - [x] A 25-seed random-play smoke test plays full games start to finish with no crash and confirms determinism by replay (stands in for the real fuzz gate until `npm run fuzz`/`sim/fuzz.ts` exist)
 - [ ] `sim/fuzz.ts` (the actual `npm run fuzz` / fuzz gate: 10,000 RandomBot + 1,000 HeuristicBot games with `validate()` after every step)
