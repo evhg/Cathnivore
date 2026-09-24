@@ -27,29 +27,38 @@ jobs:
           mkdir -p private_keys
           echo "${{ secrets.ASC_KEY_P8 }}" > private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
 
+      - name: Fill in export options team ID
+        working-directory: ios/App
+        run: |
+          sed -i '' "s/TEAM_ID_PLACEHOLDER/${{ secrets.APPLE_TEAM_ID }}/" ExportOptions.plist
+
       - name: Archive with xcodebuild
         working-directory: ios/App
         run: |
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release \
-            -archivePath $RUNNER_TEMP/App.xcarchive -destination 'generic/platform=iOS' \
+          set -o pipefail
+          xcodebuild -workspace App.xcodeproj/project.xcworkspace -scheme App -configuration Release \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" -destination 'generic/platform=iOS' \
             -allowProvisioningUpdates \
             -authenticationKeyPath "$GITHUB_WORKSPACE/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8" \
             -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
             -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
-            archive
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            archive 2>&1 | tee "$RUNNER_TEMP/archive.log"
 
       - name: Export and upload to App Store Connect (TestFlight)
         working-directory: ios/App
         run: |
+          set -o pipefail
           xcodebuild -exportArchive \
-            -archivePath $RUNNER_TEMP/App.xcarchive \
-            -exportPath $RUNNER_TEMP/export \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
             -exportOptionsPlist ExportOptions.plist \
             -allowProvisioningUpdates \
             -authenticationKeyPath "$GITHUB_WORKSPACE/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8" \
             -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
+            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+            2>&1 | tee "$RUNNER_TEMP/export.log"
 
       - name: Delete API key
         if: always()
@@ -67,9 +76,9 @@ jobs:
           git checkout ci-status 2>/dev/null || git checkout --orphan ci-status
           mkdir -p status
           if [ "$STATUS" != "success" ]; then
-            LOG=$(echo "See workflow run for full logs." | tail -c 4000)
+            LOG=$(cat "$RUNNER_TEMP/export.log" "$RUNNER_TEMP/archive.log" 2>/dev/null | tail -n 150 | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
           else
-            LOG=""
+            LOG='""'
           fi
           cat > status/ios.json <<EOF
           {
@@ -79,7 +88,7 @@ jobs:
             "success": $( [ "$STATUS" = "success" ] && echo true || echo false ),
             "buildNumber": "${{ github.run_number }}",
             "time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "log": "$LOG"
+            "log": $LOG
           }
           EOF
           git add status/ios.json

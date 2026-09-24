@@ -25,3 +25,12 @@ e2e/screenshots
 .idea
 
 .DS_Store
+
+# iOS build artifacts (ios/ project itself is committed)
+ios/App/App/public
+ios/App/DerivedData
+ios/**/xcuserdata
+ios/**/*.xcuserstate
+ios/**/.build
+ios/App/Pods
+ios/App/Podfile.lock
