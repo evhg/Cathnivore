@@ -1,7 +1,24 @@
 import { REGIONS } from '../content/map'
+import { AGENDA_CARDS } from '../content/agenda'
 import { addBuyout, addDoubt, addLostLand, addOutlets, countLiberated } from './pieces'
 import { isLiberated, regionStallTotal } from './region'
 import type { GameState, PressureCard, ProducerId, RegionId, RegionState } from './types'
+
+const AGENDA_BY_ID = new Map(AGENDA_CARDS.map((c) => [c.id, c]))
+
+// SPEC 4.5.3.1 Agenda: reveal the top card and resolve it. SPEC 4.7 Rift 3 "Cracks" skips bonus effects.
+function resolveAgenda(state: GameState): GameState {
+  if (state.agendaDeck.length === 0) return state
+  const [id, ...rest] = state.agendaDeck as [string, ...string[]]
+  const discardPrevious = state.currentAgenda ? [...state.agendaDiscard, state.currentAgenda] : state.agendaDiscard
+  const card = AGENDA_BY_ID.get(id)
+  if (!card) return { ...state, agendaDeck: rest, agendaDiscard: discardPrevious, currentAgenda: id }
+  let next = card.effect({ ...state, agendaDeck: rest, agendaDiscard: discardPrevious, currentAgenda: id })
+  const bonusSkipped = next.rift >= 3
+  if (!bonusSkipped) next = card.bonusEffect(next)
+  next = { ...next, log: [...next.log, { type: 'agenda', cardId: id, bonusSkipped }] }
+  return refreshAllLiberation(next)
+}
 
 function matches(card: PressureCard, region: RegionId): boolean {
   return card.regionTypes.includes(REGIONS[region].type)
@@ -198,9 +215,11 @@ function advancePipeline(state: GameState): GameState {
   }
 }
 
-// SPEC 4.5.3: the full enemy turn, minus Agenda (not yet implemented; deferred until the Agenda deck lands).
+// SPEC 4.5.3: the full enemy turn — Agenda, Squeeze, Expand, Scout, Advance.
 export function runEnemyTurn(state: GameState, chooseProduction?: (producer: string) => 'produce' | 'marks' | 'goodwill'): GameState {
-  let next = resolveSqueeze(state, chooseProduction)
+  let next = resolveAgenda(state)
+  if (next.result) return next
+  next = resolveSqueeze(next, chooseProduction)
   if (next.result) return next
   next = resolveExpand(next)
   next = revealAndResolveScout(next)

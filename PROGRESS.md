@@ -17,14 +17,15 @@ M1 Engine (day 1)
 - [x] `src/content`: `map.ts` (7 regions + adjacency), `producers.ts` (all 4), `pressure.ts` (10 cards, 3 stages)
 - [x] Actions implemented: Open Stall, Supply (Outlets/Buyout), Rebut, Sell, Graft, Role (Ines/Sol done; Mara's Injunction and Tomas's Market Day are no-op placeholders pending a target-picker in `currentDecision`)
 - [ ] Invest and Scheme actions (blocked on Improvements/Schemes content below)
-- [ ] Agenda deck and its resolution step (Squeeze/Expand/Scout work; Agenda is not yet wired into the enemy turn)
-- [ ] Rift track effects (Rift 3 "Cracks", Rift 6 "The Split") — Rift field exists but nothing changes it yet
+- [x] Agenda deck: 8 Hollowell + 8 Candor cards (`src/content/agenda.ts`, the 4 exact cards from SPEC 4.7 plus 4 more per faction), shuffled at setup, resolved first each enemy turn (`resolveAgenda` in `enemy.ts`)
+- [x] Rift 3 "Cracks" (Agenda bonus effects skipped when Rift >= 3) — the check exists and is tested via `validate()`'s agenda-deck accounting, but nothing raises Rift yet (that's Schemes/Improvements, not built), so it can't be exercised end-to-end until then
+- [ ] Rift 6 "The Split" (needs a `currentDecision`-style choice for which faction/pieces; not built)
 - [ ] Kingsmarket-liberation production choice, and the home-region Squeeze production-loss choice, are auto-picked by a default instead of going through `currentDecision` (not yet built)
-- [ ] starter content: 24 Improvements, 18 Schemes, 8 Hollowell + 8 Candor Agenda cards
+- [ ] starter content: 24 Improvements, 18 Schemes (Agenda done, see above)
 - [x] `validate()`, `serialize`/`deserialize`, `replay()`, `isOver()`/`result()` in `src/engine/api.ts`, with round-trip/determinism/invariant tests
 - [ ] `currentDecision()` (forced choices — Squeeze's home-production-loss pick, Rift 6's faction split — aren't wired up as decisions yet, see above)
 - [x] Unit tests: RNG determinism, `createGame` setup invariants, several actions, illegal-action rejection, no-mutation
-- [x] A 25-seed random-play smoke test plays full games start to finish with no crash and confirms determinism by replay (stands in for the real fuzz gate until `npm run fuzz`/`sim/fuzz.ts` exist)
+- [x] A 40-seed random-play smoke test plays full games start to finish, calling `validate()` after every step, with no crash or invariant failure, and confirms determinism by replay (stands in for the real fuzz gate until `npm run fuzz`/`sim/fuzz.ts` exist). Caught and fixed two real bugs this session: an Agenda card effect that bypassed the outlet-pool bookkeeping, and a `validate()` check that was itself wrong (see DECISIONS.md).
 - [ ] `sim/fuzz.ts` (the actual `npm run fuzz` / fuzz gate: 10,000 RandomBot + 1,000 HeuristicBot games with `validate()` after every step)
 
 ### M2 Bots and simulation (first half of day 2)

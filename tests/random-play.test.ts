@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createGame } from '../src/engine/state'
 import { legalActions, applyAction } from '../src/engine/actions'
+import { validate } from '../src/engine/api'
 import { createRng, nextInt } from '../src/engine/rng'
 import { ALL_REGION_IDS } from '../src/content/map'
 import type { GameConfig } from '../src/engine/types'
@@ -11,8 +12,9 @@ const FULL_CONFIG: GameConfig = {
   activeRegions: ALL_REGION_IDS,
 }
 
-// Plays uniformly-random legal actions until the game ends or a safety cap is hit. This is the shape
-// SPEC 11.4's fuzz gate runs at scale (10,000 games); here it's a handful, just to catch crashes early.
+// Plays uniformly-random legal actions until the game ends or a safety cap is hit, calling validate()
+// after every step. This is the shape SPEC 11.4's fuzz gate runs at scale (10,000 games); here it's a
+// handful, just to catch crashes and invariant failures early.
 function playRandomGame(seed: number) {
   let state = createGame(FULL_CONFIG, seed)
   let rng = createRng(seed * 7919 + 1)
@@ -23,13 +25,14 @@ function playRandomGame(seed: number) {
     const [i, next] = nextInt(rng, actions.length)
     rng = next
     state = applyAction(state, actions[i]!)
+    expect(validate(state)).toEqual([])
   }
   throw new Error(`Game did not end within the step cap (seed ${seed})`)
 }
 
 describe('random play', () => {
-  it('never crashes and ends by round 10, for a range of seeds', () => {
-    for (let seed = 1; seed <= 25; seed++) {
+  it('never crashes, stays valid, and ends by round 10, for a range of seeds', () => {
+    for (let seed = 1; seed <= 40; seed++) {
       const state = playRandomGame(seed)
       expect(state.result).not.toBeNull()
       expect(state.round).toBeLessThanOrEqual(10)

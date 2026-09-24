@@ -1,6 +1,7 @@
 import { ALL_REGION_IDS, REGIONS } from '../content/map'
 import { PRODUCERS } from '../content/producers'
 import { unshuffledPressureDeck } from '../content/pressure'
+import { AGENDA_CARDS } from '../content/agenda'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { createRng, shuffle } from './rng'
 import type { GameConfig, GameState, PressureCard, ProducerState, RegionState } from './types'
@@ -61,7 +62,11 @@ export function createGame(config: GameConfig, seed: number): GameState {
   }
 
   const { deck, seedAfter } = buildPressureDeck(seed)
-  const rng = { seed: seedAfter }
+  const [agendaDeck, agendaRng] = shuffle(
+    AGENDA_CARDS.map((c) => c.id),
+    { seed: seedAfter },
+  )
+  const rng = agendaRng
 
   let state: GameState = {
     config,
@@ -83,6 +88,9 @@ export function createGame(config: GameConfig, seed: number): GameState {
     squeeze: null,
     expand: null,
     scout: null,
+    agendaDeck,
+    agendaDiscard: [],
+    currentAgenda: null,
     log: [],
     actionHistory: [],
     result: null,

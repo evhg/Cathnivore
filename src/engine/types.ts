@@ -53,6 +53,10 @@ export interface PressureCard {
 
 export type PressureSlot = 'squeeze' | 'expand' | 'scout'
 
+// Agenda card content (including its effect functions) lives in src/content/agenda.ts, keyed by this id,
+// so GameState only ever stores the id — keeping the state plain data and JSON-serializable (SPEC 9.1).
+export type AgendaCardId = string
+
 export interface GameConfig {
   producers: ProducerId[] // 1 or 2
   difficulty: 'easy' | 'normal' | 'hard'
@@ -79,6 +83,9 @@ export interface GameState {
   squeeze: PressureCard | null
   expand: PressureCard | null
   scout: PressureCard | null
+  agendaDeck: AgendaCardId[]
+  agendaDiscard: AgendaCardId[]
+  currentAgenda: AgendaCardId | null
   log: GameEvent[]
   actionHistory: Action[]
   result: GameResult | null
@@ -87,6 +94,7 @@ export interface GameState {
 export type GameEvent =
   | { type: 'action'; producer: ProducerId; action: Action }
   | { type: 'liberated'; region: RegionId; producer: ProducerId }
+  | { type: 'agenda'; cardId: AgendaCardId; bonusSkipped: boolean }
   | { type: 'squeeze'; region: RegionId; lostLand: boolean; stallRemoved: boolean; trustLoss: number }
   | { type: 'expand'; region: RegionId; piece: 'outlet' | 'buyout' | 'doubt' }
   | { type: 'scout'; region: RegionId; doubtAdded: boolean }

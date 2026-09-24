@@ -3,6 +3,7 @@ import { applyAction, legalActions } from './actions'
 import { isLiberated } from './region'
 import { POOL_SIZES } from './pieces'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
+import { AGENDA_CARDS } from '../content/agenda'
 import type { Action, GameConfig, GameResult, GameState } from './types'
 
 export { createGame, legalActions, applyAction }
@@ -81,6 +82,11 @@ export function validate(state: GameState): ValidationError[] {
     push(
       `lostLand pool mismatch: ${lostLandOnMap} on map + ${state.lostLandPool} in pool != ${startingLostLandPool}`,
     )
+  }
+
+  const agendaTotal = state.agendaDeck.length + state.agendaDiscard.length + (state.currentAgenda ? 1 : 0)
+  if (agendaTotal !== AGENDA_CARDS.length) {
+    push(`agenda deck/discard/current total mismatch: ${agendaTotal} != ${AGENDA_CARDS.length}`)
   }
 
   if (state.publicTrust < 0 || state.publicTrust > 15) push(`publicTrust out of range: ${state.publicTrust}`)
