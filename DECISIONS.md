@@ -295,3 +295,18 @@ Format: date, decision, reason.
   A+AA) rather than a narrower or wider ruleset, matching what `@axe-core/playwright` runs out of the box and
   what SPEC 11.4 gate 6 implies by just saying "axe finds no serious or critical issues." Gates 7 (Lighthouse)
   and 8 (visual review) remain stubs — separate M6 tasks.
+
+- 2026-09-25: Also started M6's web-install/offline item (SPEC 11.1) in the same session, right after Gate
+  6, since neither needs release/main access. Added `vite-plugin-pwa` in `generateSW` mode with
+  `registerType: 'prompt'` and `injectRegister: null` — chose manual registration over the plugin's own
+  auto-inject so `main.tsx` could gate it on `!Capacitor.isNativePlatform()` (SPEC 11.1: "off inside the
+  iPhone app") without importing `@capacitor/core` into the web bundle just to call that one check; reading
+  `window.Capacitor` directly (injected by Capacitor's native runtime at startup) gets the same answer for
+  free. The manifest's only icon is `favicon.svg` at `sizes: "any"` for now — this sandbox has no image
+  rasterizer (`sharp`, ImageMagick, `rsvg-convert` all absent, confirmed by trying), so real 192/512 PNGs
+  (and the separate 1024x1024 App Store icon SPEC 11.6/STYLE.md 13 needs, which has its own composition
+  requirements beyond a plain favicon crop) are logged as open rather than faked with a resized favicon.
+  `e2e/offline.spec.ts` needed two online loads before going offline (goto, wait for
+  `navigator.serviceWorker.ready`, reload, wait for `navigator.serviceWorker.controller`) because a page's
+  very first visit is never controlled by the worker it just registered — only a subsequent navigation is —
+  which matches gate 5's own phrasing ("after the first load ... reload") rather than being a workaround.

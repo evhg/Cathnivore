@@ -25,7 +25,7 @@ if (!hasWebkit) {
 }
 const projects = hasWebkit ? '' : '--project=phone --project=desktop-chromium'
 const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : '')
-const GATE_5_SPECS = 'e2e/campaign.spec.ts e2e/hotseat.spec.ts e2e/quick-game.spec.ts e2e/title.spec.ts'
+const GATE_5_SPECS = 'e2e/campaign.spec.ts e2e/hotseat.spec.ts e2e/offline.spec.ts e2e/quick-game.spec.ts e2e/title.spec.ts'
 run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} ${GATE_5_SPECS}`)
 
 run('Gate 6: Accessibility (axe)', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} e2e/accessibility.spec.ts`)

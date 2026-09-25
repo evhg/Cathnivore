@@ -19,3 +19,15 @@ createRoot(rootEl).render(
     <App />
   </StrictMode>,
 )
+
+// SPEC 11.1: the service worker (offline play, home-screen install) is web-only — it's never
+// registered inside the iPhone app, where Capacitor bundles every asset instead.
+if (!('Capacitor' in window && (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.())) {
+  import('virtual:pwa-register').then(({ registerSW }) => {
+    registerSW({
+      onNeedRefresh() {
+        window.dispatchEvent(new CustomEvent('cathnivore:update-ready'))
+      },
+    })
+  })
+}

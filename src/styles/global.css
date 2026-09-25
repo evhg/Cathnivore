@@ -29,6 +29,17 @@ h3 {
   margin: 0;
 }
 
+/* SPEC 11.1: "Update ready: reload" prompt, title screen only */
+.update-ready {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--wheat);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
 .holding {
   min-height: 100vh;
   display: flex;

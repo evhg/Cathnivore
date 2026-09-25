@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createGame, replay } from './engine/api'
 import Setup, { type Mode } from './ui/Setup'
 import Game from './ui/Game'
@@ -35,7 +35,14 @@ type Screen =
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
+  const [updateReady, setUpdateReady] = useState(false)
   const saved = loadGame()
+
+  useEffect(() => {
+    const onUpdateReady = () => setUpdateReady(true)
+    window.addEventListener('cathnivore:update-ready', onUpdateReady)
+    return () => window.removeEventListener('cathnivore:update-ready', onUpdateReady)
+  }, [])
 
   function start(config: GameConfig, seed: number, mode: Mode): void {
     setScreen({ name: 'game', state: createGame(config, seed), seed, mode })
@@ -77,6 +84,12 @@ export default function App() {
       <main className="title">
         <h1>Cathnivore</h1>
         <p>A cooperative engine-builder against two very polite conglomerates.</p>
+        {updateReady && (
+          <div className="update-ready">
+            <span>Update ready.</span>
+            <button onClick={() => window.location.reload()}>Reload</button>
+          </div>
+        )}
         {saved && <button onClick={resume}>Continue</button>}
         <button onClick={() => setScreen({ name: 'campaign' })}>Campaign</button>
         <button onClick={() => setScreen({ name: 'setup' })}>Quick Game</button>

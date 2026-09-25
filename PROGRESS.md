@@ -221,8 +221,21 @@ M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons defe
   review fixes, performance (Lighthouse, gate 7)
 - [x] (partial) `public/favicon.svg` now exists (a Cath-face-crop icon per STYLE.md 13's app-icon
   description, simplified for favicon scale) — `index.html` already referenced `/favicon.svg` but the file
-  never existed (a real 404, found while starting this checklist item). Web install (manifest,
-  `vite-plugin-pwa`), offline play, the 1024x1024 App Store icon, launch screen and haptics are still open.
+  never existed (a real 404, found while starting this checklist item).
+- [x] (partial) web install and offline play (SPEC 11.1): added `vite-plugin-pwa` (`generateSW` mode,
+  `registerType: 'prompt'`, `injectRegister: null` so `main.tsx` controls registration itself), a
+  `manifest.webmanifest` (name/theme/background colour from STYLE.md, `favicon.svg` as its one icon for now
+  — a real 192/512 PNG pair needs an image tool this sandbox doesn't have, tracked below), and the "Update
+  ready: reload" banner on the title screen only (`App.tsx`'s `updateReady` state, set by a
+  `cathnivore:update-ready` window event `main.tsx` dispatches from `registerSW`'s `onNeedRefresh`).
+  `main.tsx` skips SW registration entirely when `window.Capacitor?.isNativePlatform()` is true, so the
+  service worker stays off inside the iPhone app per SPEC 11.1's explicit requirement — checked via
+  `'Capacitor' in window` rather than importing `@capacitor/core`, so the web bundle doesn't pull it in.
+  `e2e/offline.spec.ts` covers SPEC 11.4 gate 5's last bullet (load once online to install+precache, reload
+  once more so the new worker takes control, go offline, reload again, start a Quick Game — all with zero
+  console errors) and is wired into `scripts/gates.ts`'s Gate 5. `npm run check`/`npm run gates` both pass
+  clean. Still open: real PNG icons (192/512, maskable) for a proper installable-app icon rather than just
+  the SVG favicon, the 1024x1024 App Store icon (STYLE.md 13), the launch screen and haptics.
 - [ ] the privacy and support pages, store text and screenshots
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
