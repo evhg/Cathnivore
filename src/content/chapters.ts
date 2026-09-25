@@ -22,6 +22,7 @@ export interface Chapter {
   scriptedPressure?: PressureCard[]
   scriptedMarket?: string[] // SPEC 8.2 ch3: force these Improvement ids into the opening Market
   scriptedTrigger?: { round: number; effect: 'wholesomeHollowReveal'; sceneId: string } // SPEC 8.1/8.2
+  scriptedStart?: GameConfig['scriptedStart'] // SPEC 8.2 ch5: a pre-built mid-game board
   winCondition: { regionsRequired: number; requireKingsmarket: boolean }
   goalDescription: string // shown on the chapter-list card, e.g. "Liberate both regions within 6 rounds."
   tutorialSteps: TutorialStep[]
@@ -38,6 +39,7 @@ export function chapterConfig(chapter: Chapter): GameConfig {
     scriptedPressure: chapter.scriptedPressure,
     scriptedMarket: chapter.scriptedMarket,
     scriptedTrigger: chapter.scriptedTrigger,
+    scriptedStart: chapter.scriptedStart,
     winCondition: chapter.winCondition,
   }
 }
@@ -312,5 +314,78 @@ export const CHAPTER_4: Chapter = {
   closingScene: 'closing',
 }
 
-export const CHAPTERS: Chapter[] = [CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4]
+const RULES_CHAPTER_5: RulesEnabled = {
+  agenda: true, // SPEC 8.2 ch5: "everything, including the Agenda deck and Rift" — the full game's rules.
+  squeeze: true,
+  expand: true,
+  rebut: true,
+  sell: true,
+  improvements: true,
+  schemes: true,
+  roles: true,
+}
+
+// SPEC 8.2 ch5: "the chapter starts from a pre-built mid-game position." Rivermead is already liberated
+// (Ines's home, carried forward from chapter 4's progress); every other active region has some contested
+// enemy presence, and Kingsmarket keeps its guard shut (only 1 of its neighbours is liberated so far, one
+// short of SPEC 4.8's 2). Region-targeted cycling (as chapters 1/3/4 all use) rather than type-matching,
+// for the same reason: Oakvale and Rivermead share the Crop type, and 8 cards (1 setup reveal + 7 rounds,
+// matching "lasts 7 rounds") is short enough that determinism matters more than full randomness here.
+function chapter5Pressure(): PressureCard[] {
+  const cycle: RegionId[] = ['oakvale', 'shingleBay', 'brindleHills', 'highmoor', 'saltmarsh']
+  return Array.from({ length: 8 }, (_, i) => ({
+    id: `tutorial-5-${i}`,
+    stage: i % 4 === 3 ? (3 as const) : (1 as const),
+    regionTypes: [],
+    regions: [cycle[i % cycle.length]!],
+  }))
+}
+
+export const CHAPTER_5: Chapter = {
+  id: 'friends-in-low-places',
+  title: 'Friends in Low Places',
+  activeRegions: ['kingsmarket', 'highmoor', 'saltmarsh', 'rivermead', 'shingleBay', 'oakvale', 'brindleHills'],
+  greyedRegions: [],
+  producers: ['ines', 'tomas'],
+  difficulty: 'normal',
+  rulesEnabled: RULES_CHAPTER_5,
+  scriptedPressure: chapter5Pressure(),
+  winCondition: { regionsRequired: 3, requireKingsmarket: false },
+  goalDescription: 'Liberate 3 regions within 7 rounds. Kingsmarket is not required.',
+  scriptedStart: {
+    rift: 1,
+    publicTrust: 8,
+    regions: {
+      rivermead: { liberated: true, stalls: { ines: 2 } },
+      oakvale: { outlets: 1, stalls: { tomas: 2 } },
+      shingleBay: { outlets: 1, doubt: 1, stalls: { ines: 1, tomas: 1 } },
+      brindleHills: { outlets: 1 },
+      highmoor: { outlets: 1, doubt: 1 },
+      saltmarsh: { outlets: 2 },
+      kingsmarket: { outlets: 2, buyouts: 1, doubt: 2 },
+    },
+    producers: {
+      ines: { resources: { produce: 3, marks: 4, goodwill: 3 }, production: { produce: 2, marks: 2, goodwill: 2 } },
+      tomas: { resources: { produce: 3, marks: 4, goodwill: 3 }, production: { produce: 2, marks: 2, goodwill: 2 } },
+    },
+  },
+  tutorialSteps: [
+    {
+      text: 'The Agenda deck adds a headline every enemy turn — some help you, most don’t. Watch what it does before you act.',
+      highlight: null,
+    },
+    {
+      text: 'Rift measures the two companies’ own distrust. At Rift 3 their Agenda bonuses stop firing.',
+      highlight: null,
+    },
+    {
+      text: 'Rivermead is already free. Two more liberated regions, within 7 rounds, wins this chapter.',
+      highlight: null,
+    },
+  ],
+  openingScene: 'opening',
+  closingScene: 'closing',
+}
+
+export const CHAPTERS: Chapter[] = [CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_5]
 export const CHAPTERS_BY_ID: Map<string, Chapter> = new Map(CHAPTERS.map((c) => [c.id, c]))

@@ -217,3 +217,20 @@ Format: date, decision, reason.
   Threaded `Mode` through `chapterScene`/`chapterGame`'s screen state and `endChapter` so the closing scene
   and any replay carry the chosen mode, reusing `Setup.tsx`'s existing `Mode` type and `Game.tsx`'s existing
   `aiProducerRef` (producers[1] is AI in Solo) rather than building a second mechanism.
+
+- 2026-09-25: Built chapter 5 "Friends in Low Places" (SPEC 8.2) on top of the new `scriptedStart` engine
+  primitive. Kept the same 2-producer pair (Ines + Tomas) as chapter 4 for continuity rather than switching
+  — SPEC 8.1/8.2 don't say chapters 4-6 must use different producers, and the story doesn't require a
+  producer swap (Mara is a suspicion target in the plot, not a required playable character this chapter).
+  Scripted board: Rivermead already liberated (carrying forward chapter 4's progress narratively), every
+  other region lightly contested, Rift 1, Public Trust 8 — enough tension to make the Agenda deck's first
+  real appearance felt without being punishing in a 7-round chapter that only needs 2 more liberations.
+  Measured with HeuristicBot: 100% win rate over 30 seeds (avg ~2.6 rounds), clearing SPEC 9.4's >=50%
+  chapters-5-6 floor with a lot of headroom — accepted rather than tuned down further, since SPEC 1.3 ranks
+  "the campaign teaches the game clearly" above hitting a bot benchmark precisely, and the pre-built-board
+  chapters are meant to feel like a mid-campaign power spike, not a fresh struggle.
+- 2026-09-25: Chapter 5's closing-scene "montage" (SPEC 8.2: "replays three of his helpful tutorial lines
+  from chapters 1 to 4... which now read very differently") reuses Pip Talbot's two genuine chapter-1 lines
+  verbatim (the only chapter with real Pip dialogue so far) plus a repeated fragment of the first, rather
+  than inventing new lines or forcing one from each of chapters 1-4: SPEC 8.3 asks for consistency with
+  established dialogue, and chapters 2-4 never gave Pip a spoken line to begin with.

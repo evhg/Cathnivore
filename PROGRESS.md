@@ -1,7 +1,7 @@
 # Progress
 
 ## Current milestone
-M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons deferred to M6, see DECISIONS.md). M4's balance loop is complete (12/12 iterations, see DECISIONS.md); M4's release to `main` is done on the git side (`main` is on `bf08c61`) but Vercel has not served that commit — a firm, owner-side blocker (see Blocked). M5 chapters 1-4 ("Fresh Meat", "Word of Mouth", "Growing Season", "The Plan") are now fully done, including chapter 3's Wholesome Hollow Contract twist and chapter 4's first two-producer/Solo-or-Hot-seat/Kingsmarket-guard content (see below and DECISIONS.md), with story scenes, tutorial prompts and e2e coverage. `main` is still on `bf08c61` (pre-M5): a fresh `npm run release` push to `main` is now blocked by this session's own harness ("Production Deploy" denial, see Blocked) rather than by GitHub, so all of M5 so far lives only on `build` until that's resolved. Chapters 5-6 and portraits remain.
+M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons deferred to M6, see DECISIONS.md). M4's balance loop is complete (12/12 iterations, see DECISIONS.md); M4's release to `main` is done on the git side (`main` is on `bf08c61`) but Vercel has not served that commit — a firm, owner-side blocker (see Blocked). M5 chapters 1-5 ("Fresh Meat", "Word of Mouth", "Growing Season", "The Plan", "Friends in Low Places") are now fully done, including chapter 3's Wholesome Hollow Contract twist, chapter 4's first two-producer/Solo-or-Hot-seat/Kingsmarket-guard content and chapter 5's new `scriptedStart` pre-built-board engine primitive (see below and DECISIONS.md), with story scenes, tutorial prompts and e2e coverage. `main` is still on `bf08c61` (pre-M5): a fresh `npm run release` push to `main` is now blocked by this session's own harness ("Production Deploy" denial, see Blocked) rather than by GitHub, so all of M5 so far lives only on `build` until that's resolved. Chapter 6 and portraits remain.
 
 ## Tasks
 
@@ -148,7 +148,27 @@ M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons defe
     each clear this chapter's 5 regions considerably faster than any 1-producer chapter). `e2e/campaign.spec.ts`
     extended to cover chapter 4, including clicking through the new Solo/Hot-seat choice. All of `npm run
     check` (135 unit tests) and the full 16-test e2e suite (`phone` + `desktop-chromium`) pass.
-  - Chapters 5-6 not started yet. Portraits (STYLE.md 9) not started — chapters 1-4 don't strictly need
+  - **Chapter 5 "Friends in Low Places" now done.** All 7 regions, the full ruleset (Agenda deck and Rift
+    both on for the first time — `RULES_CHAPTER_5` is the same as `DEFAULT_RULES`), still Ines+Tomas. SPEC
+    8.2 says the chapter "starts from a pre-built mid-game position," which needed a new engine primitive:
+    `GameConfig.scriptedStart` (`src/engine/types.ts`/`state.ts`) lets a chapter specify per-region enemy
+    pieces/Stalls/liberation, Rift, Public Trust and per-producer resources/production directly, replacing
+    SPEC 4.3.2's normal fresh setup and the normal 2-Stalls-at-home placement when present — built on top of
+    `pieces.ts`'s existing pool-bookkeeping helpers (`addOutlets`/`addBuyout`/`addDoubt`) so
+    `validate()`'s pool invariants stay correct without duplicating that logic. Chapter 5's board: Rivermead
+    already liberated (Ines's home), every other region contested, Kingsmarket's guard (SPEC 4.8) still shut
+    since only 1 neighbour is liberated so far. Region-targeted scripted Pressure (8 cards: 1 setup reveal +
+    7 rounds, matching "lasts 7 rounds"), win condition 3 liberated regions (Kingsmarket not required, per
+    SPEC 8.2). Opening/closing scenes in `src/content/story/friends-in-low-places.ts`; the closing scene's
+    Pip Talbot "montage" twist reuses his two real chapter-1 lines verbatim (`fresh-meat.ts`) plus a repeated
+    fragment, now read as reconnaissance rather than tutorial help, per SPEC 8.2's "replays three of his
+    helpful tutorial lines from chapters 1 to 4." `tests/chapters.test.ts` confirms the scripted board
+    (Rivermead liberated, Rift 1, Trust 8, Kingsmarket guard shut), that the Agenda deck is populated, and
+    HeuristicBot clearing SPEC 9.4's >=50% chapters-5-6 target (100% over 30 seeds — the pre-built board only
+    needs 2 more regions, so this clears with room to spare). `e2e/campaign.spec.ts` extended to cover
+    chapter 5. All of `npm run check` (139 unit tests) and the full 20-test e2e suite (`phone` +
+    `desktop-chromium`) pass.
+  - Chapter 6 not started yet. Portraits (STYLE.md 9) not started — chapters 1-5 don't strictly need
     them to be playable, so sequenced after chapter content per SPEC 1.3's priority order (rules > story).
   - Tutorial prompts are currently always-visible/manually-advanced, not the full "only the action being
     taught is enabled" guided gating SPEC 8.1 describes for chapters 1-2's first few steps — revisit once

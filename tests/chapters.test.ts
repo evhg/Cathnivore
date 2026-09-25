@@ -3,7 +3,7 @@ import { createGame, validate } from '../src/engine/api'
 import { applyAction, legalActions } from '../src/engine/actions'
 import { createRng } from '../src/engine/rng'
 import { HeuristicBot } from '../src/ai/heuristic'
-import { CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, chapterConfig } from '../src/content/chapters'
+import { CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_5, chapterConfig } from '../src/content/chapters'
 
 describe('chapter 1: Fresh Meat', () => {
   it('creates a valid single-producer game restricted to Brindle Hills and Highmoor', () => {
@@ -159,5 +159,43 @@ describe('chapter 4: The Plan', () => {
       if (state.result?.won) wins++
     }
     expect(wins / seeds).toBeGreaterThanOrEqual(0.7)
+  })
+})
+
+describe('chapter 5: Friends in Low Places', () => {
+  it('creates a valid game on all 7 regions, pre-built (SPEC 8.2: "starts from a pre-built mid-game position")', () => {
+    const state = createGame(chapterConfig(CHAPTER_5), 1)
+    expect(validate(state)).toEqual([])
+    expect(Object.keys(state.producers)).toEqual(['ines', 'tomas'])
+    expect(state.regions.rivermead.liberated).toBe(true)
+    expect(state.rift).toBe(1)
+    expect(state.publicTrust).toBe(8)
+    const openStallTargets = legalActions(state).filter((a) => a.kind === 'openStall')
+    expect(openStallTargets.every((a) => (a as { region: string }).region !== 'kingsmarket')).toBe(true)
+  })
+
+  it('the Agenda deck is on (unlike every earlier chapter)', () => {
+    const state = createGame(chapterConfig(CHAPTER_5), 1)
+    expect(state.agendaDeck.length).toBeGreaterThan(0)
+  })
+
+  it('HeuristicBot wins at least 50% of seeds (SPEC 9.4 campaign target for chapters 5-6)', () => {
+    let wins = 0
+    const seeds = 30
+    for (let seed = 0; seed < seeds; seed++) {
+      let state = createGame(chapterConfig(CHAPTER_5), seed)
+      let rng = createRng(seed + 5000)
+      let steps = 0
+      while (!state.result && steps < 800) {
+        const [action, nextRng] = HeuristicBot.chooseAction(state, rng)
+        state = applyAction(state, action)
+        rng = nextRng
+        steps++
+        expect(validate(state)).toEqual([])
+      }
+      expect(state.result).not.toBeNull()
+      if (state.result?.won) wins++
+    }
+    expect(wins / seeds).toBeGreaterThanOrEqual(0.5)
   })
 })
