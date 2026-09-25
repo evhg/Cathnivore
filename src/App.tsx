@@ -9,12 +9,14 @@ import { CHAPTERS, chapterConfig, type Chapter } from './content/chapters'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
 import { SCENES as GROWING_SEASON_SCENES } from './content/story/growing-season'
+import { SCENES as THE_PLAN_SCENES } from './content/story/the-plan'
 import type { GameConfig, GameState } from './engine/types'
 
 const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
   'fresh-meat': FRESH_MEAT_SCENES,
   'word-of-mouth': WORD_OF_MOUTH_SCENES,
   'growing-season': GROWING_SEASON_SCENES,
+  'the-plan': THE_PLAN_SCENES,
 }
 
 type Screen =
@@ -22,9 +24,10 @@ type Screen =
   | { name: 'setup' }
   | { name: 'rules' }
   | { name: 'campaign' }
-  | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' }
+  | { name: 'chapterModeSelect'; chapter: Chapter }
+  | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing'; mode: Mode }
   | { name: 'game'; state: GameState; seed: number; mode: Mode }
-  | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number }
+  | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode }
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
@@ -42,18 +45,24 @@ export default function App() {
   }
 
   function startChapter(chapter: Chapter): void {
-    setScreen({ name: 'chapterScene', chapter, which: 'opening' })
+    // SPEC 8.1: "the player picks Solo or Hot-seat when starting the campaign." A single-producer
+    // chapter has no second producer for an AI teammate to play, so there's nothing to choose.
+    if (chapter.producers.length > 1) {
+      setScreen({ name: 'chapterModeSelect', chapter })
+    } else {
+      setScreen({ name: 'chapterScene', chapter, which: 'opening', mode: 'hotseat' })
+    }
   }
 
-  function playChapter(chapter: Chapter): void {
+  function playChapter(chapter: Chapter, mode: Mode): void {
     const seed = Date.now()
-    setScreen({ name: 'chapterGame', chapter, state: createGame(chapterConfig(chapter), seed), seed })
+    setScreen({ name: 'chapterGame', chapter, state: createGame(chapterConfig(chapter), seed), seed, mode })
   }
 
-  function endChapter(chapter: Chapter, won: boolean): void {
+  function endChapter(chapter: Chapter, mode: Mode, won: boolean): void {
     markChapterComplete(chapter.id)
     if (won) {
-      setScreen({ name: 'chapterScene', chapter, which: 'closing' })
+      setScreen({ name: 'chapterScene', chapter, which: 'closing', mode })
     } else {
       setScreen({ name: 'campaign' })
     }
@@ -107,20 +116,37 @@ export default function App() {
     )
   }
 
+  if (screen.name === 'chapterModeSelect') {
+    const chapter = screen.chapter
+    return (
+      <main className="campaign">
+        <h1>{chapter.title}</h1>
+        <p>Play with an AI teammate, or pass the device back and forth between two humans.</p>
+        <button onClick={() => setScreen({ name: 'chapterScene', chapter, which: 'opening', mode: 'solo' })}>
+          Solo (with an AI teammate)
+        </button>
+        <button onClick={() => setScreen({ name: 'chapterScene', chapter, which: 'opening', mode: 'hotseat' })}>
+          Hot-seat (two humans)
+        </button>
+        <button onClick={() => setScreen({ name: 'campaign' })}>Back</button>
+      </main>
+    )
+  }
+
   if (screen.name === 'chapterScene') {
     const scenes = STORY_SCENES[screen.chapter.id]
     const key = screen.which === 'opening' ? screen.chapter.openingScene : screen.chapter.closingScene
     const scene = scenes?.[key as keyof typeof scenes]
     if (!scene) {
       // No story data for this chapter yet — skip straight past the scene rather than show a blank screen.
-      if (screen.which === 'opening') playChapter(screen.chapter)
+      if (screen.which === 'opening') playChapter(screen.chapter, screen.mode)
       else setScreen({ name: 'campaign' })
       return null
     }
     return (
       <Scene
         scene={scene}
-        onContinue={() => (screen.which === 'opening' ? playChapter(screen.chapter) : setScreen({ name: 'campaign' }))}
+        onContinue={() => (screen.which === 'opening' ? playChapter(screen.chapter, screen.mode) : setScreen({ name: 'campaign' }))}
       />
     )
   }
@@ -133,11 +159,11 @@ export default function App() {
       <Game
         initial={screen.state}
         seed={screen.seed}
-        mode="hotseat"
+        mode={screen.mode}
         tutorialSteps={screen.chapter.tutorialSteps}
         midGameScenes={midGameScenes}
         onExit={() => setScreen({ name: 'campaign' })}
-        onChapterEnd={(won) => endChapter(screen.chapter, won)}
+        onChapterEnd={(won) => endChapter(screen.chapter, screen.mode, won)}
       />
     )
   }

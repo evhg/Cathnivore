@@ -251,5 +251,66 @@ export const CHAPTER_3: Chapter = {
   closingScene: 'closing',
 }
 
-export const CHAPTERS: Chapter[] = [CHAPTER_1, CHAPTER_2, CHAPTER_3]
+const RULES_CHAPTER_4: RulesEnabled = {
+  agenda: false, // SPEC 8.2 ch5 is where "the Agenda deck and Rift" arrive — still off here.
+  squeeze: true,
+  expand: true,
+  rebut: true,
+  sell: true,
+  improvements: true,
+  schemes: true, // SPEC 8.2: "Cath's Plan (Schemes)" is chapter 4's addition.
+  roles: true,
+}
+
+// SPEC 8.2 ch4: 5 regions with Kingsmarket "visible and guarded." Rivermead (Ines's home) and Oakvale
+// (Tomas's home) aren't directly adjacent on the ring, so the other 3 active regions form the connecting
+// chain Rivermead-ShingleBay-Oakvale-BrindleHills, with every one of them (plus Kingsmarket itself, per
+// SPEC 4.8) bordering Kingsmarket — enough neighbours for the guard rule ("nobody may place a Stall
+// [in Kingsmarket] unless at least 2 of its neighbours are liberated") to matter once play is underway.
+// Region-targeted cycling (as chapters 1 and 3 both use) rather than type-matching, since Rivermead and
+// Oakvale share the Crop type and a type card would otherwise double them up.
+function chapter4Pressure(): PressureCard[] {
+  const cycle: RegionId[] = ['rivermead', 'shingleBay', 'oakvale', 'brindleHills']
+  return Array.from({ length: 14 }, (_, i) => ({
+    id: `tutorial-4-${i}`,
+    stage: i % 4 === 3 ? (3 as const) : (1 as const),
+    regionTypes: [],
+    regions: [cycle[i % cycle.length]!],
+  }))
+}
+
+export const CHAPTER_4: Chapter = {
+  id: 'the-plan',
+  title: 'The Plan',
+  activeRegions: ['rivermead', 'shingleBay', 'oakvale', 'brindleHills', 'kingsmarket'],
+  greyedRegions: ['highmoor', 'saltmarsh'],
+  producers: ['ines', 'tomas'],
+  difficulty: 'normal',
+  rulesEnabled: RULES_CHAPTER_4,
+  scriptedPressure: chapter4Pressure(),
+  winCondition: { regionsRequired: 3, requireKingsmarket: false },
+  goalDescription: 'Liberate 3 of the 5 regions, with a teammate.',
+  tutorialSteps: [
+    {
+      text: 'Two producers, one plan: you and your teammate each take 3 actions this round, in turn.',
+      highlight: null,
+    },
+    {
+      text: 'Cath’s Plan sits face up below the Market. Spend Goodwill to play a Scheme as an action.',
+      highlight: { kind: 'action', action: 'scheme' },
+    },
+    {
+      text: "Kingsmarket is guarded: nobody can place a Stall there until 2 of its neighbours are free.",
+      highlight: { kind: 'region', region: 'kingsmarket' },
+    },
+    {
+      text: 'Liberate 3 of these 5 regions to win. Kingsmarket itself is not required this chapter.',
+      highlight: null,
+    },
+  ],
+  openingScene: 'opening',
+  closingScene: 'closing',
+}
+
+export const CHAPTERS: Chapter[] = [CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4]
 export const CHAPTERS_BY_ID: Map<string, Chapter> = new Map(CHAPTERS.map((c) => [c.id, c]))

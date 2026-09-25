@@ -3,7 +3,7 @@ import { createGame, validate } from '../src/engine/api'
 import { applyAction, legalActions } from '../src/engine/actions'
 import { createRng } from '../src/engine/rng'
 import { HeuristicBot } from '../src/ai/heuristic'
-import { CHAPTER_1, CHAPTER_2, CHAPTER_3, chapterConfig } from '../src/content/chapters'
+import { CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, chapterConfig } from '../src/content/chapters'
 
 describe('chapter 1: Fresh Meat', () => {
   it('creates a valid single-producer game restricted to Brindle Hills and Highmoor', () => {
@@ -121,5 +121,43 @@ describe('chapter 3: Growing Season', () => {
       if (state.result?.won) wins++
     }
     expect(wins / seeds).toBeGreaterThanOrEqual(0.6)
+  })
+})
+
+describe('chapter 4: The Plan', () => {
+  it('creates a valid two-producer game restricted to Rivermead, Shingle Bay, Oakvale, Brindle Hills and Kingsmarket', () => {
+    const state = createGame(chapterConfig(CHAPTER_4), 1)
+    expect(validate(state)).toEqual([])
+    expect(Object.keys(state.producers)).toEqual(['ines', 'tomas'])
+    expect(state.regions.rivermead.stalls.ines).toBe(2)
+    expect(state.regions.oakvale.stalls.tomas).toBe(2)
+    expect(state.regions.kingsmarket.stalls.ines ?? 0).toBe(0)
+    expect(state.regions.kingsmarket.stalls.tomas ?? 0).toBe(0)
+  })
+
+  it('never allows a Stall in guarded Kingsmarket before 2 neighbours are liberated', () => {
+    const state = createGame(chapterConfig(CHAPTER_4), 1)
+    const openStallTargets = legalActions(state).filter((a) => a.kind === 'openStall')
+    expect(openStallTargets.every((a) => (a as { region: string }).region !== 'kingsmarket')).toBe(true)
+  })
+
+  it('HeuristicBot wins at least 70% of seeds (SPEC 9.4 campaign target for chapters 2-4)', () => {
+    let wins = 0
+    const seeds = 30
+    for (let seed = 0; seed < seeds; seed++) {
+      let state = createGame(chapterConfig(CHAPTER_4), seed)
+      let rng = createRng(seed + 4000)
+      let steps = 0
+      while (!state.result && steps < 800) {
+        const [action, nextRng] = HeuristicBot.chooseAction(state, rng)
+        state = applyAction(state, action)
+        rng = nextRng
+        steps++
+        expect(validate(state)).toEqual([])
+      }
+      expect(state.result).not.toBeNull()
+      if (state.result?.won) wins++
+    }
+    expect(wins / seeds).toBeGreaterThanOrEqual(0.7)
   })
 })

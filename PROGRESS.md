@@ -1,7 +1,7 @@
 # Progress
 
 ## Current milestone
-M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons deferred to M6, see DECISIONS.md). M4's balance loop is complete (12/12 iterations, see DECISIONS.md); M4's release to `main` is done on the git side (`main` is on `bf08c61`) but Vercel has not served that commit — a firm, owner-side blocker (see Blocked). M5 chapters 1-3 ("Fresh Meat", "Word of Mouth", "Growing Season") are now fully done, including chapter 3's Wholesome Hollow Contract twist (scripted triggers, the tear-up action — see below and DECISIONS.md for its balance shortfall), with story scenes, tutorial prompts and e2e coverage. `main` is still on `bf08c61` (pre-M5): a fresh `npm run release` push to `main` is now blocked by this session's own harness ("Production Deploy" denial, see Blocked) rather than by GitHub, so all of M5 so far lives only on `build` until that's resolved. Chapters 4-6 and portraits remain.
+M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons deferred to M6, see DECISIONS.md). M4's balance loop is complete (12/12 iterations, see DECISIONS.md); M4's release to `main` is done on the git side (`main` is on `bf08c61`) but Vercel has not served that commit — a firm, owner-side blocker (see Blocked). M5 chapters 1-4 ("Fresh Meat", "Word of Mouth", "Growing Season", "The Plan") are now fully done, including chapter 3's Wholesome Hollow Contract twist and chapter 4's first two-producer/Solo-or-Hot-seat/Kingsmarket-guard content (see below and DECISIONS.md), with story scenes, tutorial prompts and e2e coverage. `main` is still on `bf08c61` (pre-M5): a fresh `npm run release` push to `main` is now blocked by this session's own harness ("Production Deploy" denial, see Blocked) rather than by GitHub, so all of M5 so far lives only on `build` until that's resolved. Chapters 5-6 and portraits remain.
 
 ## Tasks
 
@@ -133,7 +133,22 @@ M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons defe
     over a real, measured result. Direct unit tests for the new mechanic (Market seeding, one-time trigger
     firing, the per-round Outlet addition, tearing up) are in `tests/scenario.test.ts`. All of `npm run
     check` (129 unit tests) and the full 14-test e2e suite (`phone` + `desktop-chromium`) pass.
-  - Chapters 4-6 not started yet. Portraits (STYLE.md 9) not started — chapters 1-3 don't strictly need
+  - **Chapter 4 "The Plan" now done**: the campaign's first two-producer chapter, Ines and Tomas (SPEC 8.2's
+    "Recommended" pair) in Rivermead/Shingle Bay/Oakvale/Brindle Hills plus a visible, guarded Kingsmarket.
+    Adds Schemes (Cath's Plan), the full Squeeze/Expand/Scout pipeline (already proven in chapter 3), real
+    two-producer turns and the Kingsmarket guard rule (SPEC 4.8, already implemented since M1 — this is its
+    first exercise in the campaign). Agenda/Rift stay off (SPEC 8.2 reserves those for chapter 5). Opening/
+    closing scenes in `src/content/story/the-plan.ts`. The App needed its first real "which mode" choice for
+    a chapter (SPEC 8.1: "the player picks Solo or Hot-seat when starting the campaign") — added a
+    `chapterModeSelect` screen in `App.tsx`, shown only when `chapter.producers.length > 1` (chapters 1-3
+    have no second producer to make AI-controlled, so they skip straight to the opening scene as before).
+    `tests/chapters.test.ts` confirms the 2-producer setup, the Kingsmarket-guard invariant (no legal Open
+    Stall action ever targets Kingsmarket before 2 neighbours are liberated) and HeuristicBot clearing
+    SPEC 9.4's >=70% chapters-2-4 target (100% over 30 seeds, avg ~4.5 rounds — two producers with 3 actions
+    each clear this chapter's 5 regions considerably faster than any 1-producer chapter). `e2e/campaign.spec.ts`
+    extended to cover chapter 4, including clicking through the new Solo/Hot-seat choice. All of `npm run
+    check` (135 unit tests) and the full 16-test e2e suite (`phone` + `desktop-chromium`) pass.
+  - Chapters 5-6 not started yet. Portraits (STYLE.md 9) not started — chapters 1-4 don't strictly need
     them to be playable, so sequenced after chapter content per SPEC 1.3's priority order (rules > story).
   - Tutorial prompts are currently always-visible/manually-advanced, not the full "only the action being
     taught is enabled" guided gating SPEC 8.1 describes for chapters 1-2's first few steps — revisit once

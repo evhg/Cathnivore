@@ -201,3 +201,19 @@ Format: date, decision, reason.
   and moved on to other `build`-branch work rather than retrying. This means `main`/cathnivore.com stays on
   `bf08c61` (M4 content) for now; chapter 3's twist (and all of M5 so far) is on `build` only until a session
   or the owner can push the release.
+
+- 2026-09-25: Built chapter 4 "The Plan" (SPEC 8.2), the campaign's first two-producer chapter. Chose
+  Rivermead/Shingle Bay/Oakvale/Brindle Hills as the 4 non-capital active regions (plus Kingsmarket): SPEC
+  8.2 doesn't name the exact 5, and Ines's home (Rivermead) and Tomas's home (Oakvale) aren't directly
+  adjacent on the ring, so Shingle Bay and Brindle Hills fill the connecting chain while every active region
+  (including both homes) borders Kingsmarket, giving the guard rule's "2 liberated neighbours" condition
+  real options. Used a region-targeted scripted Pressure cycle (like chapters 1 and 3) rather than
+  type-matching, since Rivermead and Oakvale share the Crop type. Measured with HeuristicBot: 100% win rate
+  over 30 seeds at ~4.5 rounds average — two producers each taking 3 actions clear 3-of-5 regions far faster
+  than any 1-producer chapter, comfortably clearing SPEC 9.4's >=70% chapters-2-4 floor.
+- 2026-09-25: Added a `chapterModeSelect` screen to `App.tsx`, shown only when a chapter has more than one
+  producer (SPEC 8.1: "the player picks Solo or Hot-seat when starting the campaign" — chapters 1-3 have a
+  single producer, so there's nothing to choose and they skip straight to the opening scene as before).
+  Threaded `Mode` through `chapterScene`/`chapterGame`'s screen state and `endChapter` so the closing scene
+  and any replay carry the chosen mode, reusing `Setup.tsx`'s existing `Mode` type and `Game.tsx`'s existing
+  `aiProducerRef` (producers[1] is AI in Solo) rather than building a second mechanism.
