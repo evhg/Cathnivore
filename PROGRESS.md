@@ -18,13 +18,21 @@ blocked on something outside session capability, this session did real, unblocke
 - **ran M7's "long fuzz run of 50,000 RandomBot games" early**, since it's fully unblocked and the deadline
   has days of slack (same reasoning as writing the README early) — 0 exceptions, 0 invariant failures,
   every game ended by round 10. Added `sim/fuzz.ts --games <n>` / `npm run fuzz:long` so it's repeatable;
+- **built the real "only the action being taught is enabled" tutorial gating** SPEC 8.1 describes for
+  chapters 1-2's first few steps (previously always-visible/manually-advanced, a logged simplification).
+  Found and fixed a real content bug this surfaced: chapter 1's own step 2 was gated to an action that
+  isn't affordable right after steps 0-1, which would have stranded a player following the steps in order
+  — now `highlight: null` (it was already worded as informational, not an instruction). New
+  `e2e/tutorial.spec.ts` closes SPEC 11.4 gate 5's "clicking the highlighted elements" bullet, previously
+  unexercised by any test;
 - re-confirmed the standing push-restriction denial (one quick check, as established) and moved on rather
   than re-investigating a well-documented blocker again.
-`npm run check`/`npm run gates` both still pass clean end to end (164 unit tests now, up from 155; gate 8
-still needs a human/subagent judgement call each session). Next session: piece icons are still simplified
+`npm run check`/`npm run gates` both still pass clean end to end (164 unit tests, 35 e2e/gate-5 tests; gate
+8 still needs a human/subagent judgement call each session). Next session: piece icons are still simplified
 vs. STYLE.md 6's exact illustrations (lowest priority); re-try the push-restriction dry-run check once;
-re-check `OWNER.md`'s Apple Team ID in case secrets have appeared; M7's remaining items (a final full e2e
-pass on both sizes, and the final balance report) are best left until closer to the deadline so they aren't
+re-check `OWNER.md`'s Apple Team ID in case secrets have appeared; chapter 2 could use its own guided-
+tutorial e2e test (it shares chapter 1's gating mechanism but not its test coverage); M7's remaining items
+(a final full e2e pass on both sizes, and the final balance report) are best left until closer to the deadline so they aren't
 redone after more content lands.
 
 ## Tasks
@@ -243,10 +251,17 @@ redone after more content lands.
     cast coverage, the 3-5-colour budget and that every story speaker resolves to a portrait; verified
     visually with a headless-Chromium screenshot of chapter 1's opening scene, no console errors. **M5's
     checklist is now fully done** except for the two pending releases below (still blocked, see Blocked).
-  - Tutorial prompts are currently always-visible/manually-advanced, not the full "only the action being
-    taught is enabled" guided gating SPEC 8.1 describes for chapters 1-2's first few steps — revisit once
-    more chapters exist to see whether a shared gating mechanism is worth building or each chapter's first
-    steps can just start with a deliberately narrow `rulesEnabled`/map instead.
+  - **Tutorial gating is now done (a later session).** `Game.tsx` filters `legalActions` down to a step's
+    highlighted action kind or region (a forced `decide` always bypasses it), auto-advancing the step when
+    the taught action is taken; an informational step (no highlight) still needs a manual "Got it". Falls
+    back to the ungated list if gating would leave nothing playable, so a resource-timing mismatch can
+    never strand a player. Found and fixed one real instance of that: chapter 1's own step 2 ("Highmoor
+    borders Brindle Hills, so you can open a Stall there too") isn't affordable immediately after steps 0-1
+    spend Brindle Hills' Outlet-clearing Produce — its phrasing was already informational rather than an
+    instruction, so it's now `highlight: null` rather than gated. New `e2e/tutorial.spec.ts` plays chapter
+    1 by hand and clicks only the highlighted elements, closing SPEC 11.4 gate 5's "clicking the highlighted
+    elements" bullet (nothing exercised it literally before). Chapter 2 shares the same mechanism/gating for
+    free but doesn't have its own dedicated e2e test yet.
 - [ ] Release after chapters 1 to 3, and again after chapters 4 to 6
 - [ ] push `ios-<n>` for the first full iPhone build (up to 3 fix builds)
 

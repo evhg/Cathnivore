@@ -556,3 +556,20 @@ Format: date, decision, reason.
   ended by round 10 (50,000/50,000). M7's remaining items (full e2e suite both sizes as a *final* pass, and
   the final balance report) still wait for closer to the deadline, since re-running them now would just be
   redone later once more content/fixes land.
+- **2026-09-25 (this session):** Built SPEC 8.1's "only the action being taught is enabled" guided-tutorial
+  gating for chapters 1-2 (previously always-visible/manually-advanced, a logged simplification). Design:
+  `Game.tsx` filters the render's `legalActions` result down to the current `TutorialStep.highlight`'s
+  action kind or region; a forced `decide` action always bypasses the gate (it's never optional regardless
+  of tutorial state); if gating would leave nothing playable, it falls back to the full list rather than
+  stranding the player. Taking the taught action auto-advances the step (no separate "Got it" needed); an
+  informational step (`highlight: null`) still needs one, since there's no action to detect. This surfaced
+  a real bug in chapter 1's own content: step 2 ("Highmoor borders Brindle Hills, so you can open a Stall
+  there too") was gated to `{kind: 'region', region: 'highmoor'}`, but after steps 0-1 spend Brindle Hills'
+  Outlet-clearing Produce, opening a Stall in Highmoor isn't affordable again until Harvest next round —
+  gating it would have stuck a by-the-book player on that step. Fixed by ungating it rather than reordering
+  the sequence: its own phrasing ("so you can... too") was already informational, not an instruction, so
+  `highlight: null` is the more honest read of the step's own text, not just a workaround. New
+  `e2e/tutorial.spec.ts` plays chapter 1 by hand (no `?e2eAutoplay=1`) and asserts each step's gating
+  directly — this is the literal test SPEC 11.4 gate 5 asks for ("the test clicking the highlighted
+  elements"), which nothing exercised before. Chapter 2 gets the same gating for free (same `TutorialStep`
+  shape) but wasn't given its own e2e test this session.
