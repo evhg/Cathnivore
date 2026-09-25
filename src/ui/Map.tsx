@@ -47,6 +47,41 @@ interface Props {
   onSelect?: (region: RegionId) => void
 }
 
+// STYLE.md 2.3 "shape before colour" / 3.2's "texture pattern at 8% ink" per region type — a second,
+// low-opacity fill on top of the flat colour so each region type is still identifiable without colour
+// (greyscale, colour blindness). Patterns are defined once in <defs> and referenced by every hex of that
+// type, so the SVG isn't repeating the same geometry per region.
+const REGION_PATTERN_ID: Record<RegionType, string> = {
+  pasture: 'texture-pasture',
+  crop: 'texture-crop',
+  coast: 'texture-coast',
+  capital: 'texture-capital',
+}
+
+function RegionTextureDefs() {
+  return (
+    <defs>
+      {/* Pasture: short diagonal strokes. */}
+      <pattern id="texture-pasture" width={10} height={10} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1={0} y1={0} x2={0} y2={10} stroke="var(--ink)" strokeWidth={1.6} opacity={0.08} />
+      </pattern>
+      {/* Crop: dotted furrow rows. */}
+      <pattern id="texture-crop" width={12} height={8} patternUnits="userSpaceOnUse">
+        <circle cx={2} cy={4} r={1.1} fill="var(--ink)" opacity={0.08} />
+        <circle cx={8} cy={4} r={1.1} fill="var(--ink)" opacity={0.08} />
+      </pattern>
+      {/* Coast: wave lines. */}
+      <pattern id="texture-coast" width={16} height={8} patternUnits="userSpaceOnUse">
+        <path d="M0,4 Q4,0 8,4 T16,4" fill="none" stroke="var(--ink)" strokeWidth={1.2} opacity={0.08} />
+      </pattern>
+      {/* Capital: cobblestone grid. */}
+      <pattern id="texture-capital" width={12} height={12} patternUnits="userSpaceOnUse">
+        <rect x={0} y={0} width={11} height={11} fill="none" stroke="var(--ink)" strokeWidth={1} opacity={0.08} />
+      </pattern>
+    </defs>
+  )
+}
+
 export default function Map({ state, highlight, onSelect }: Props) {
   const active = state.config.activeRegions
   const squeezeTargets = active.filter((id) => matchesSlot(state, id, 'squeeze'))
@@ -56,6 +91,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
 
   return (
     <svg viewBox={`${-SIZE} ${-SIZE} ${SIZE * 2} ${SIZE * 2}`} className="map" role="img" aria-label="Map of Marrow">
+      <RegionTextureDefs />
       {active.map((id) => {
         const def = REGIONS[id]
         const r = state.regions[id]
@@ -76,6 +112,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
               stroke="var(--ink)"
               strokeWidth={2}
             />
+            <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill={`url(#${REGION_PATTERN_ID[def.type]})`} />
             {r.lostLand > 0 && (
               <polygon
                 className="lostland-overlay"
