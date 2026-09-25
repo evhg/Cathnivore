@@ -452,3 +452,15 @@ Format: date, decision, reason.
   "fades only" case, which is not the same thing as the explicit Settings toggle being off. All 155 unit
   tests, typecheck, lint, build (bundle still well under the 400 KB gzip cap) and the full 40-test e2e suite
   (phone + desktop-chromium, including a re-check of the animated map/cards via fresh screenshots) pass.
+- 2026-09-25: Fixed Undo (SPEC 4.6) to its real semantics — see this session's commit message for the full
+  rationale; logged here too since it's a correctness fix, not just polish. One loose end: running the full
+  e2e suite once right after this change hit a single `desktop-chromium` accessibility failure on the game
+  screen (`.desktop-col-right` — the right sidebar holding Market/Cath's Plan/Log — flagged by axe as having
+  `tabindex` but no focusable content). Re-ran immediately after with no code changes and it passed clean,
+  and a second full-suite run also passed clean, so this looks like a pre-existing flake tied to the
+  Quick-Game setup's random starting state (most likely: at some random seeds, neither Market nor Cath's
+  Plan has an affordable card yet, so that aside briefly has no Buy/Play button inside it) rather than
+  anything the Undo change touched — the Undo change never touches `.desktop-col-right`'s markup. Not
+  investigated further under this session's budget; a future session hitting this again should look at
+  whether `MarketSheet`/`CathsPlanSheet`'s inline panels need a `tabindex`/fallback when literally no card
+  in either sheet is actionable yet.
