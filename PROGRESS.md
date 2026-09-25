@@ -83,7 +83,15 @@ M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons defe
   `src/platform/storage.ts`. Verified with two headless-Chromium runs: a manual Graft-only playthrough (no
   console errors, correct loss screen) and a `?e2eAutoplay=1` HeuristicBot playthrough (won in 4 rounds,
   closing scene rendered, no console errors, screenshots checked).
-  - Chapters 2-6 not started yet. Portraits (STYLE.md 9) not started — chapters 1-3 don't strictly need
+  **Chapter 2 "Word of Mouth" also done**: Sol alone in Saltmarsh/Highmoor/Rivermead (three different
+  region types, so plain type-matching scripted cards already introduce them one at a time — no need for
+  chapter 1's `regions` override), Rebut and role abilities on, still Scout-only (Squeeze/Expand stay off
+  — SPEC 8.2 lists them as chapter 3's addition, see DECISIONS.md on the "keep Trust above 0" goal being
+  currently unenforceable in ch2 for that same reason). Opening/closing scenes in
+  `src/content/story/word-of-mouth.ts`. `tests/chapters.test.ts` confirms the restricted action set and
+  HeuristicBot clears SPEC 9.4's >=70% chapters-2-4 win-rate target on the first attempt (no balance
+  tuning needed, unlike chapter 1). Wired into `App.tsx`'s chapter list alongside chapter 1.
+  - Chapters 3-6 not started yet. Portraits (STYLE.md 9) not started — chapters 1-3 don't strictly need
     them to be playable, so sequenced after chapter content per SPEC 1.3's priority order (rules > story).
   - Tutorial prompts are currently always-visible/manually-advanced, not the full "only the action being
     taught is enabled" guided gating SPEC 8.1 describes for chapters 1-2's first few steps — revisit once

@@ -106,5 +106,67 @@ export const CHAPTER_1: Chapter = {
   closingScene: 'closing',
 }
 
-export const CHAPTERS: Chapter[] = [CHAPTER_1]
+const RULES_CHAPTER_2: RulesEnabled = {
+  agenda: false,
+  squeeze: false, // SPEC 8.2 ch3 explicitly lists Squeeze/Expand as ITS new additions — still off here.
+  expand: false,
+  rebut: true,
+  sell: false,
+  improvements: false,
+  schemes: false,
+  roles: true,
+}
+
+// SPEC 8.2: "the enemy only Scouts" is still true in chapter 2 (Squeeze/Expand are chapter 3's addition),
+// but "Scout also adds Doubt" — Saltmarsh, Highmoor and Rivermead are three different region types, so
+// plain type-matching cards already introduce them one at a time; a couple of Stage III (two-type) cards
+// near the end add the Doubt/Rebut lesson without needing the `regions` override chapter 1 needed.
+function chapter2Pressure(): PressureCard[] {
+  const single = (id: string, stage: 1 | 2, types: PressureCard['regionTypes']): PressureCard => ({ id, stage, regionTypes: types })
+  const double = (id: string, types: PressureCard['regionTypes']): PressureCard => ({ id, stage: 3, regionTypes: types })
+  return [
+    single('tutorial-2-setup', 1, ['coast']),
+    single('tutorial-2-r1', 1, ['pasture']),
+    single('tutorial-2-r2', 1, ['crop']),
+    double('tutorial-2-r3', ['coast', 'pasture']),
+    double('tutorial-2-r4', ['pasture', 'crop']),
+    single('tutorial-2-r5', 2, ['coast']),
+    single('tutorial-2-r6', 2, ['pasture']),
+    single('tutorial-2-r7', 2, ['crop']),
+  ]
+}
+
+export const CHAPTER_2: Chapter = {
+  id: 'word-of-mouth',
+  title: 'Word of Mouth',
+  activeRegions: ['saltmarsh', 'highmoor', 'rivermead'],
+  greyedRegions: ['kingsmarket'],
+  producers: ['sol'],
+  difficulty: 'normal',
+  rulesEnabled: RULES_CHAPTER_2,
+  scriptedPressure: chapter2Pressure(),
+  winCondition: { regionsRequired: 2, requireKingsmarket: false },
+  tutorialSteps: [
+    {
+      text: "Doubt is a company's word against yours. Spend Goodwill to Rebut it in a region with your Stall.",
+      highlight: { kind: 'action', action: 'rebut' },
+    },
+    {
+      text: 'Public Trust is everyone’s opinion of farmers, shared by both of you. Keep an eye on it.',
+      highlight: null,
+    },
+    {
+      text: 'Once a round, your role ability is free: On Air raises Trust or your Goodwill, your choice.',
+      highlight: { kind: 'action', action: 'role' },
+    },
+    {
+      text: 'Liberate 2 of these 3 regions to win the chapter.',
+      highlight: null,
+    },
+  ],
+  openingScene: 'opening',
+  closingScene: 'closing',
+}
+
+export const CHAPTERS: Chapter[] = [CHAPTER_1, CHAPTER_2]
 export const CHAPTERS_BY_ID: Map<string, Chapter> = new Map(CHAPTERS.map((c) => [c.id, c]))
