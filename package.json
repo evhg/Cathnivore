@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fuzz": "tsx sim/fuzz.ts",
+    "fuzz:long": "tsx sim/fuzz.ts --games 50000",
     "check": "npm run typecheck && npm run lint && npm run test && npm run fuzz -- --quick && npm run build",
     "e2e": "playwright test",
     "sim": "tsx sim/run.ts",
