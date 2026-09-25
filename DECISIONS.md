@@ -600,3 +600,12 @@ Format: date, decision, reason.
   directly: one run lost via lostLand at round 10) since HeuristicBot only clears chapter 6 ~63% of the time
   (SPEC 9.4's own >=50% floor). Not wired into any gate — it's a one-time manual asset, not a correctness
   check, so that flakiness is an acceptable, logged tradeoff rather than something to chase to 100%.
+- **2026-09-25 (this session):** `npm ci` reports 9 audit vulnerabilities (7 moderate, 1 high, 1 critical).
+  Checked what they actually are rather than ignoring the count: all three are dev-tooling-only (Vitest's
+  `@vitest/mocker`/esbuild dev-server path-traversal advisories, and a `uuid` bounds-check issue reached only
+  through `@capacitor/cli`'s bundled `xcode` dependency at iOS build time) — none touch code that ships in
+  the built web bundle or the iOS app, so this isn't a live-site or App Store risk (SPEC 1.3's #1 priority).
+  `npm audit fix --force` would bump to vite 8/vitest 5/@capacitor/cli 8.4.3, all breaking changes with no
+  session time budgeted to validate the whole suite against them right now — logged rather than applied
+  blind. Worth a dedicated session before shipping if there's spare time, but not urgent: SPEC 11.1 already
+  pins versions via `package-lock.json`, so nothing here is a moving target.
