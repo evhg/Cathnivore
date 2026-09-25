@@ -91,7 +91,22 @@ M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons defe
   `src/content/story/word-of-mouth.ts`. `tests/chapters.test.ts` confirms the restricted action set and
   HeuristicBot clears SPEC 9.4's >=70% chapters-2-4 win-rate target on the first attempt (no balance
   tuning needed, unlike chapter 1). Wired into `App.tsx`'s chapter list alongside chapter 1.
-  - Chapters 3-6 not started yet. Portraits (STYLE.md 9) not started — chapters 1-3 don't strictly need
+  **Chapter 3 "Growing Season" also done** (minus its carry-over twist, see below): Tomas alone in
+  Oakvale/Brindle Hills/Rivermead/Shingle Bay, Squeeze/Expand/Lost Land/Sell/Improvements all on for the
+  first time, Schemes still off (SPEC 8.2 lists Cath's Plan as chapter 4's addition). SPEC 8.2's stated
+  "within 8 rounds" goal proved far too tight for a lone producer against a real Squeeze/Expand pipeline
+  (measured directly with HeuristicBot — see DECISIONS.md); the scripted Pressure sequence now round-robins
+  one region at a time across 16 rounds instead, clearing SPEC 9.4's >=70% chapters-2-4 target with room to
+  spare (`tests/chapters.test.ts`). Opening/closing scenes in `src/content/story/growing-season.ts`.
+  `e2e/campaign.spec.ts` now covers all 3 chapters, checking the mechanical flow (opening scene -> a played
+  game -> end screen -> Continue going somewhere sensible) rather than requiring a win every time, since
+  chapter 3 only guarantees >=70%, not 100% — re-ran 3x locally with no flakes.
+  - **Not yet done for chapter 3:** the Market isn't seeded with "Wholesome Hollow Contract" specifically
+    (SPEC 8.2), and the round-5 scripted twist (the contract's true ownership reveal, switching on SPEC 7's
+    contract-Outlet rule) doesn't exist — that needs a round/event-triggered mid-game rule change, a real
+    engine feature (`Chapter`'s data model has no "triggers" concept yet) that a future session should
+    build deliberately rather than bolt on under time pressure. Logged here rather than silently dropped.
+  - Chapters 4-6 not started yet. Portraits (STYLE.md 9) not started — chapters 1-3 don't strictly need
     them to be playable, so sequenced after chapter content per SPEC 1.3's priority order (rules > story).
   - Tutorial prompts are currently always-visible/manually-advanced, not the full "only the action being
     taught is enabled" guided gating SPEC 8.1 describes for chapters 1-2's first few steps — revisit once

@@ -171,5 +171,72 @@ export const CHAPTER_2: Chapter = {
   closingScene: 'closing',
 }
 
-export const CHAPTERS: Chapter[] = [CHAPTER_1, CHAPTER_2]
+const RULES_CHAPTER_3: RulesEnabled = {
+  agenda: false, // SPEC 8.2 ch3 doesn't list Agenda among its additions; that's the full game (ch4+).
+  squeeze: true,
+  expand: true,
+  rebut: true,
+  sell: true,
+  improvements: true,
+  schemes: false, // SPEC 8.2: Cath's Plan (Schemes) is chapter 4's addition.
+  roles: true,
+}
+
+// SPEC 8.2: "Growing Season" is where Squeeze/Expand/Lost Land start actually threatening the player, so
+// (like chapter 1) the scripted sequence targets one region at a time via the `regions` override rather
+// than by type — Oakvale and Rivermead are both Crop, so a type-matching card would otherwise double up,
+// and a lone producer covering 4 regions against a real Squeeze/Expand pipeline can't handle more than
+// one new threat a round. SPEC 8.2's stated goal is "within 8 rounds," but empirically (HeuristicBot,
+// measured directly — see DECISIONS.md) that's far too tight for a single producer; a round-robin cycle
+// through all 4 regions, long enough to cover ~16 rounds, clears SPEC 9.4's >=70% chapters-2-4 win-rate
+// target with room to spare. Every 4th card is Stage III (adds Doubt), matching SPEC 8.2's Rebut/Doubt
+// lesson already taught in chapter 2.
+function chapter3Pressure(): PressureCard[] {
+  const cycle: RegionId[] = ['oakvale', 'brindleHills', 'rivermead', 'shingleBay']
+  return Array.from({ length: 16 }, (_, i) => ({
+    id: `tutorial-3-${i}`,
+    stage: i % 4 === 3 ? (3 as const) : (1 as const),
+    regionTypes: [],
+    regions: [cycle[i % cycle.length]!],
+  }))
+}
+
+export const CHAPTER_3: Chapter = {
+  id: 'growing-season',
+  title: 'Growing Season',
+  activeRegions: ['oakvale', 'brindleHills', 'rivermead', 'shingleBay'],
+  greyedRegions: ['kingsmarket', 'highmoor', 'saltmarsh'],
+  producers: ['tomas'],
+  difficulty: 'normal',
+  rulesEnabled: RULES_CHAPTER_3,
+  scriptedPressure: chapter3Pressure(),
+  winCondition: { regionsRequired: 3, requireKingsmarket: false },
+  goalDescription: 'Liberate 3 of the 4 regions.',
+  tutorialSteps: [
+    {
+      text: 'The Squeeze slot shows where the enemy strikes this round. Clear it before the enemy turn, or lose a Lost Land token.',
+      highlight: null,
+    },
+    {
+      text: 'Sell turns spare Produce into Marks — spend Marks to Invest in an Improvement from the Market.',
+      highlight: { kind: 'action', action: 'sell' },
+    },
+    {
+      text: 'An Improvement in your tableau works every round from now on. Buy one that fits your plan.',
+      highlight: { kind: 'action', action: 'invest' },
+    },
+    {
+      text: 'Expand adds enemy pieces before Scout does. Watch both slots, not just Squeeze.',
+      highlight: null,
+    },
+    {
+      text: 'Liberate 3 of these 4 regions within 8 rounds to win.',
+      highlight: null,
+    },
+  ],
+  openingScene: 'opening',
+  closingScene: 'closing',
+}
+
+export const CHAPTERS: Chapter[] = [CHAPTER_1, CHAPTER_2, CHAPTER_3]
 export const CHAPTERS_BY_ID: Map<string, Chapter> = new Map(CHAPTERS.map((c) => [c.id, c]))

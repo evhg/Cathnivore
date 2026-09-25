@@ -8,11 +8,13 @@ import { loadGame, loadCampaign, markChapterComplete } from './platform/storage'
 import { CHAPTERS, chapterConfig, type Chapter } from './content/chapters'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
+import { SCENES as GROWING_SEASON_SCENES } from './content/story/growing-season'
 import type { GameConfig, GameState } from './engine/types'
 
 const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
   'fresh-meat': FRESH_MEAT_SCENES,
   'word-of-mouth': WORD_OF_MOUTH_SCENES,
+  'growing-season': GROWING_SEASON_SCENES,
 }
 
 type Screen =

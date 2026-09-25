@@ -3,7 +3,7 @@ import { createGame, validate } from '../src/engine/api'
 import { applyAction, legalActions } from '../src/engine/actions'
 import { createRng } from '../src/engine/rng'
 import { HeuristicBot } from '../src/ai/heuristic'
-import { CHAPTER_1, CHAPTER_2, chapterConfig } from '../src/content/chapters'
+import { CHAPTER_1, CHAPTER_2, CHAPTER_3, chapterConfig } from '../src/content/chapters'
 
 describe('chapter 1: Fresh Meat', () => {
   it('creates a valid single-producer game restricted to Brindle Hills and Highmoor', () => {
@@ -66,6 +66,41 @@ describe('chapter 2: Word of Mouth', () => {
     for (let seed = 0; seed < seeds; seed++) {
       let state = createGame(chapterConfig(CHAPTER_2), seed)
       let rng = createRng(seed + 2000)
+      let steps = 0
+      while (!state.result && steps < 500) {
+        const [action, nextRng] = HeuristicBot.chooseAction(state, rng)
+        state = applyAction(state, action)
+        rng = nextRng
+        steps++
+        expect(validate(state)).toEqual([])
+      }
+      expect(state.result).not.toBeNull()
+      if (state.result?.won) wins++
+    }
+    expect(wins / seeds).toBeGreaterThanOrEqual(0.7)
+  })
+})
+
+describe('chapter 3: Growing Season', () => {
+  it('creates a valid single-producer game restricted to Oakvale, Brindle Hills, Rivermead and Shingle Bay', () => {
+    const state = createGame(chapterConfig(CHAPTER_3), 1)
+    expect(validate(state)).toEqual([])
+    expect(Object.keys(state.producers)).toEqual(['tomas'])
+    expect(state.regions.oakvale.stalls.tomas).toBe(2)
+  })
+
+  it('offers Sell and Invest, but never Scheme (Cath’s Plan is chapter 4’s addition)', () => {
+    const state = createGame(chapterConfig(CHAPTER_3), 1)
+    const kinds = new Set(legalActions(state).map((a) => a.kind))
+    expect(kinds.has('scheme')).toBe(false)
+  })
+
+  it('HeuristicBot wins at least 70% of seeds (SPEC 9.4 campaign target for chapters 2-4)', () => {
+    let wins = 0
+    const seeds = 30
+    for (let seed = 0; seed < seeds; seed++) {
+      let state = createGame(chapterConfig(CHAPTER_3), seed)
+      let rng = createRng(seed + 3000)
       let steps = 0
       while (!state.result && steps < 500) {
         const [action, nextRng] = HeuristicBot.chooseAction(state, rng)

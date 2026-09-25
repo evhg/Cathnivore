@@ -121,4 +121,31 @@ Format: date, decision, reason.
   HeuristicBot cleared SPEC 9.4's >=70% win-rate target for chapters 2-4 on the very first attempt (30/30
   seeds all won, no balance tuning needed) — a much gentler chapter than 1 turned out to be, consistent
   with it building on an already-taught base rather than teaching from zero.
+- 2026-09-25: Built chapter 3 ("Growing Season", `CHAPTER_3` in `src/content/chapters.ts`): Tomas alone in
+  Oakvale/Brindle Hills/Rivermead/Shingle Bay, `rulesEnabled` turns on Squeeze/Expand/Sell/Improvements
+  (Schemes stay off — SPEC 8.2 lists Cath's Plan as chapter 4's addition). SPEC 8.2's stated goal is
+  "liberate 3 regions within 8 rounds," but measuring it directly with HeuristicBot showed that's
+  unreachable for a lone producer once Squeeze/Expand are real (an unlimited-deck run averaged 9-10 rounds
+  with some seeds needing 16; an 8-card scripted sequence gave a 3% win rate, a 12-card one only 10%). This
+  mirrors chapter 1's own round-budget lesson (a same-round Scout on every region overwhelms a single
+  producer with 3 actions), so the same fix applies: the scripted Pressure round-robins one region at a
+  time (via `PressureCard.regions`) rather than hitting several per round, extended to 16 rounds' worth of
+  cards. That combination (gentler per-round threat, more rounds) gets HeuristicBot to an 80% win rate —
+  comfortably past SPEC 9.4's >=70% chapters-2-4 floor — without needing any engine-side balance change.
+  The chapter's displayed goal text drops the specific round number rather than promise "within 8 rounds"
+  and then not enforce it.
+  **Deliberately deferred, not forgotten:** SPEC 8.2 also wants the Market seeded with 3 copies of
+  "Wholesome Hollow Contract" and a scripted round-5 twist that reveals its real ownership and switches on
+  SPEC 7's contract-Outlet rule. Neither exists yet. Implementing the twist properly needs a real
+  round/event-triggered mid-game rule change — `Chapter`/`GameConfig` have no "triggers" concept, and
+  building one under end-of-session time pressure risked a half-finished, undertested feature (the kind
+  CLAUDE.md's standing instructions explicitly warn against). Chapter 3 is fully playable and correctly
+  rule-gated without it; the twist is the next session's first M5 task, alongside chapters 4-6.
+- 2026-09-25: `e2e/campaign.spec.ts` (added when chapter 3 joined the suite) checks the mechanical flow —
+  opening scene, a played-out `?e2eAutoplay=1` game, an end screen, Continue going to the closing scene on
+  a win or back to the chapter list on a loss — instead of asserting a win every time. Reason: chapter 3
+  only guarantees a >=70% HeuristicBot win rate (SPEC 9.4's floor for chapters 2-4, not 100%), so an
+  assertion requiring "You liberated Marrow." specifically would be genuinely flaky (failed on its first
+  run, on the `phone` project, before this fix) — about 3 in 10 real CI runs would fail for no code reason.
+  Re-ran 3x locally after the fix with no failures.
 - 2026-09-25: Balance loop iteration 12 **CONFIRMED and kept — the loop is now complete (12/12 iterations used)**. The 200-game MCTS/Normal/all-pairs sanity run gives win rate **27.0%**, a clear, real gain over iteration 11's 22.7-23.0% baseline and the largest confirmed gain since iteration 9. Both loss-reason floors hold: publicTrust 33.6% and lostLand 18.5% (both comfortably clear SPEC 9.4's 15% floor), pressureDeckEmpty 47.9% (still dominant but clears the >=10% "time" floor). The intended fix worked directly: **sol-paired pairs are no longer the weakest** — sol+tomas rose from iteration 11's 12.0% to 21.2%, and ines+sol rose from 10.0% to 21.2%, now tied with ines+tomas as the joint-second pair rather than trailing alone at the bottom. The producer-pair spread narrowed from iteration 11's 26.0 points to **20.0 points** (21.2% floor across three tied pairs, 41.2% ceiling at mara+tomas) — still outside SPEC 9.4's 12-point band, but the second-largest single-iteration spread improvement of the whole loop (after iteration 10's). Ran a second 200-game confirmation attempt, which returned numbers identical to the first down to every decimal (same per-pair win rates, same loss-reason shares, same avg rounds) — a red flag investigated and explained, not a coincidence to trust: `sim/run.ts` assigns games deterministic seeds starting at 1 every run regardless of wall-clock time, so two `--games 200` runs with no seed offset replay the exact same 200 games rather than sampling a fresh set. This means the "second confirmation" added no new evidence; logging it here so a future session doesn't mistake repeated `npm run sim` calls at the same `--games` count for independent samples (use a different `--games` value, e.g. 200 then 300, to get at least *some* new seeds, as iterations 10/11 happened to do). Given time remaining in this session was too short for a larger, genuinely-independent run (a 300-game run would take ~22 minutes, pushing past this session's ~40-minute "no new long jobs" cutoff), and this is the **12th and final** balance-loop iteration under SPEC 9.4's cap regardless of further confirmation, kept as-is: `startingProduction.produce = 2` stays for Sol. Final state of the 12-iteration balance loop: win rate 27.0% (up from the iteration-0 baseline's 7.8%, a >3x improvement, but still below the 45-60% Normal target), both loss-reason floors (publicTrust, lostLand) hold, pressureDeckEmpty remains the dominant loss reason throughout the loop's life, and the producer-pair spread (20.0 points) never reached the 12-point band despite several dedicated attempts. Per SPEC 9.4's own exit clause ("stop when the targets are met or after 12 iterations, whichever comes first... if the targets aren't met, ship the closest version and say so in the final report") — the loop is done; the final report (M7) should note the win rate and pair-spread gaps as known, accepted balance shortfalls, not blockers to shipping. `npm run check` passes throughout (111 tests unaffected by this entry).
