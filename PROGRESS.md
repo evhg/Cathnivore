@@ -4,31 +4,28 @@
 M5 Campaign is content-complete; M6 Polish is nearly done. M1-M4 are complete (M4's balance loop 12/12
 iterations, see DECISIONS.md). `main` is still on `bf08c61` (pre-M5): re-checked again this session with
 the same cheap throwaway-branch dry-run push, still denied outright by the harness's own "Production
-Deploy" classifier — a standing restriction confirmed across 5+ sessions now. All of M5/M6's work still
-lives only on `build`; this needs the owner to either approve production pushes for this session type or
-run `npm run release` themselves. `ios-1`'s signing check also stays blocked on `OWNER.md`'s Apple Team ID
-still being the placeholder — nothing to re-check there until that changes. With both release paths
-blocked on something outside session capability, this session did real M6/quality work instead (SPEC 1.3's
+Deploy" classifier — a standing restriction confirmed across 6+ consecutive sessions now. All of M5/M6's
+work still lives only on `build`; this needs the owner to either approve production pushes for this session
+type or run `npm run release` themselves. `ios-1`'s signing check also stays blocked on `OWNER.md`'s Apple
+Team ID still being the placeholder — nothing to re-check there until that changes. With both release paths
+blocked on something outside session capability, this session did real, unblocked work instead (SPEC 1.3's
 "cut scope, not stability"):
-- the Campaign chapter list's locked/completed visual state (SPEC 10.1) — a hint only, never a real gate
-  (SPEC 8.1: "Progress is never locked"), so `e2e/campaign.spec.ts`'s direct-chapter tests stayed valid;
-- **the real MCTS-in-Worker AI teammate (SPEC 9.2) is now shipped**, replacing the HeuristicBot stand-in
-  that had been in place since M3. This needed a real fix first: `createMCTSBot` had no wall-clock cutoff,
-  so at the teammate's real 600-simulation budget it measured ~672ms/decision — over SPEC 9.2's 400ms half
-  of the budget, and likely to fail gate 7's throttled-performance check. Added an opt-in `deadlineMs`
-  parameter (zero effect on any existing caller) that holds it to ~401ms, then built `src/ai/aiWorker.ts`
-  and wired `Game.tsx`'s Solo mode to it. New `e2e/ai-teammate.spec.ts` verifies both that the teammate
-  acts for real and — closing gate 7's previously-unchecked other half — that a full decision stays under
-  1 second with real CDP 4x CPU throttling;
-- extended gate-8 screenshot coverage to chapters 2-6's opening scenes (previously only chapter 1's was
-  captured) and reviewed all 10 new screenshots directly — clean at both sizes, no fixes needed;
-- wrote a real `README.md` (M7's task, done early since it's pure documentation and the deadline has days
-  of slack left).
-`npm run gates` runs real gates 1-7 end to end, all clean (gate 8 still needs a human/subagent judgement
-call each session). Next session: piece icons are still simplified vs. STYLE.md 6's exact illustrations
-(lowest priority — shapes are already distinguishable); re-try the push-restriction dry-run check once;
-re-check `OWNER.md`'s Apple Team ID in case secrets have appeared; consider whether M7's long fuzz run is
-worth starting early given the deadline's remaining slack.
+- **implemented SPEC 8.2 ch6's missing "one free Scheme" grant** (a gap the previous session's chapter-6
+  entry logged rather than guessed at): `GameState.freeSchemePlays`, set to 1 by the same `unlockCathsPlan`
+  scripted trigger that clears `cathsPlanLocked`, lets a producer play a Scheme without enough Goodwill,
+  spending the grant only when it was actually needed. New unit tests in `tests/invest-scheme.test.ts` and
+  `tests/chapters.test.ts`; `e2e/campaign.spec.ts`'s all-6-chapters run still passes;
+- **ran M7's "long fuzz run of 50,000 RandomBot games" early**, since it's fully unblocked and the deadline
+  has days of slack (same reasoning as writing the README early) — 0 exceptions, 0 invariant failures,
+  every game ended by round 10. Added `sim/fuzz.ts --games <n>` / `npm run fuzz:long` so it's repeatable;
+- re-confirmed the standing push-restriction denial (one quick check, as established) and moved on rather
+  than re-investigating a well-documented blocker again.
+`npm run check`/`npm run gates` both still pass clean end to end (164 unit tests now, up from 155; gate 8
+still needs a human/subagent judgement call each session). Next session: piece icons are still simplified
+vs. STYLE.md 6's exact illustrations (lowest priority); re-try the push-restriction dry-run check once;
+re-check `OWNER.md`'s Apple Team ID in case secrets have appeared; M7's remaining items (a final full e2e
+pass on both sizes, and the final balance report) are best left until closer to the deadline so they aren't
+redone after more content lands.
 
 ## Tasks
 
@@ -208,11 +205,10 @@ worth starting early given the deadline's remaining slack.
     instead of Normal (SPEC 8.2 doesn't mandate a difficulty) and (b) a `scriptedStart` board carrying
     Rivermead and Oakvale forward as already-liberated from chapters 4-5 (no rule, card or cost changed —
     only the starting board and which difficulty-table row applies). HeuristicBot now clears the floor
-    (63.3% over 30 seeds). The "one free Scheme" bonus mentioned in SPEC 8.2 ("the Plan unlocks and the
-    players get one free Scheme") is **not yet implemented** — unlocking Cath's Plan itself is real and
-    tested, but no extra free-Scheme grant fires alongside it; a minor, logged simplification (SPEC 1.3
-    ranks this kind of extra content below stability and correctness) rather than risking a rushed forced-
-    choice mechanic this late in a session. Opening/mid-game ("planUnlocked")/closing scenes in
+    (63.3% over 30 seeds). **The "one free Scheme" bonus (SPEC 8.2: "the Plan unlocks and the players get
+    one free Scheme") is now implemented too** (a later session): `GameState.freeSchemePlays`, set to 1 by
+    the same `unlockCathsPlan` trigger, covers the Goodwill shortfall the first time any producer plays a
+    Scheme they couldn't otherwise afford. Opening/mid-game ("planUnlocked")/closing scenes in
     `src/content/story/kingsmarket.ts`. `tests/chapters.test.ts` confirms the lock/unlock mechanic, the
     standard win condition and HeuristicBot's win rate. `e2e/campaign.spec.ts` extended to cover chapter 6
     (needed an anchor-regex fix, `^${title}`, since "Kingsmarket" was also a substring of another chapter's
@@ -420,7 +416,10 @@ worth starting early given the deadline's remaining slack.
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
 ### M7 Hardening (final 18 hours; no new features)
-- [ ] long fuzz run of 50,000 RandomBot games, full e2e suite on both sizes, final balance report
+- [x] (partial) long fuzz run of 50,000 RandomBot games — run early (see Current milestone/DECISIONS.md):
+  0 exceptions, 0 invariant failures, every game ended by round 10. Still open: the full e2e suite on both
+  sizes as a *final* pass (running it now would just be redone once more content/fixes land) and the final
+  balance report.
 - [x] README covering how to play, how to run it locally and how it was built — written early (plenty of
   `DEADLINE` time remains; this is pure documentation, not a new feature, so there's no reason to wait for
   M7 proper). Covers the game briefly, points to the live site and `PROGRESS.md` for the iPhone app's

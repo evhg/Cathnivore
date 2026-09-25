@@ -535,3 +535,24 @@ Format: date, decision, reason.
   descendant either, making it unreachable by keyboard. Fixed with `tabIndex={0}` on both desktop columns
   unconditionally, rather than depending on always having a Buy/Play button inside. Confirmed with 3
   back-to-back clean accessibility runs.
+
+- **2026-09-25 (this session):** Re-confirmed the standing "Production Deploy" push restriction with the
+  usual minimal check (fast-forward a throwaway local branch to `build`'s tip and push it to `main`) —
+  denied again, identical classifier message, before reaching GitHub. Per the established pattern, not
+  retried further this session; real work went to unblocked M5/M6/M7 items instead.
+- **2026-09-25 (this session):** Implemented SPEC 8.2 ch6's "the Plan unlocks and the players get one free
+  Scheme," previously logged as a known gap (chapter 6's checklist entry in PROGRESS.md). Added
+  `GameState.freeSchemePlays`, incremented by 1 by the same `unlockCathsPlan` scripted trigger that clears
+  `cathsPlanLocked`. Design choice: the grant only pays for the *shortfall* when a producer can't otherwise
+  afford the Scheme's Goodwill cost, rather than unconditionally covering the next Scheme played — so a
+  producer who happens to have enough Goodwill anyway doesn't burn the one-time grant on a play that didn't
+  need it. This is a reasonable reading of "get one free Scheme" (SPEC doesn't specify the exact mechanic)
+  and keeps the grant meaningful regardless of when a player chooses to use it.
+- **2026-09-25 (this session):** Ran SPEC 12 M7's "long fuzz run of 50,000 RandomBot games" early, ahead of
+  M7 proper — it's fully unblocked (unlike the release/iOS work this session also hit) and the deadline has
+  several days of slack, matching the precedent already set for writing the README early. Added
+  `sim/fuzz.ts --games <n>` (and `npm run fuzz:long`) since the script previously only supported the fixed
+  10,000/1,000 default or the 200/100 `--quick` mode. Result: 0 exceptions, 0 invariant failures, every game
+  ended by round 10 (50,000/50,000). M7's remaining items (full e2e suite both sizes as a *final* pass, and
+  the final balance report) still wait for closer to the deadline, since re-running them now would just be
+  redone later once more content/fixes land.
