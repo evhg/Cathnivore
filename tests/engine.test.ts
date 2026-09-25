@@ -34,7 +34,7 @@ describe('createGame', () => {
     const state = createGame(FULL_CONFIG, 1)
     expect(state.publicTrust).toBe(10)
     expect(state.rift).toBe(0)
-    expect(state.lostLandPool).toBe(11)
+    expect(state.lostLandPool).toBe(9)
     expect(state.round).toBe(1)
     expect(state.regions.kingsmarket.buyouts).toBe(1)
     expect(state.regions.kingsmarket.doubt).toBe(2)
