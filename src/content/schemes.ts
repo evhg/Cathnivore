@@ -16,6 +16,9 @@ export interface SchemeCard {
   // Plain-English rules text (SPEC 10.5), shown in Cath's Plan sheet and the rules reference.
   // tests/rules-text.test.ts checks it against `effect`'s actual behaviour.
   text: string
+  // SPEC 4.6's Undo: "any action that reveals hidden information ... is marked irreversible, and undo
+  // cannot go back past it." Only Steak-out currently does this (it peeks the Pressure deck).
+  irreversible?: boolean
   targeting: SchemeTargeting
   legalTargets?: (state: GameState, producer: ProducerId) => RegionId[]
   effect: (state: GameState, producer: ProducerId, target: RegionId | null) => GameState
@@ -85,6 +88,7 @@ export const SCHEMES: SchemeCard[] = [
     cost: 2,
     line: "I don't guess where they'll go. I wait where they're going.",
     text: 'Look at the top Pressure card. You may put it at the bottom of its stage. (Irreversible.)',
+    irreversible: true,
     targeting: 'none',
     // Irreversible (SPEC 4.6): peeks the Pressure deck. Simplified to always move the peeked card to the
     // bottom of its stage, which is the only choice that's ever worth making after a free look.

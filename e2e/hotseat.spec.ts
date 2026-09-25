@@ -33,6 +33,11 @@ test('Hot-seat: two full turns, undo, and reload mid-turn resume an identical st
   await graft()
   await expect(page.locator('.active-producer strong')).not.toHaveText(firstName)
 
+  // SPEC 4.6: undo is scoped to "the current turn" — once the turn has passed to the next producer, the
+  // first producer's last action can no longer be undone. The button should be disabled, not just
+  // ineffective, the moment the turn changes.
+  await expect(page.getByRole('button', { name: 'Undo' })).toBeDisabled()
+
   // Partway into the second producer's turn — not all 3 actions, so the round (and its enemy turn) hasn't
   // ended yet — reload and confirm the resumed state matches exactly.
   await graft()

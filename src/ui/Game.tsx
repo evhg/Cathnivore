@@ -8,6 +8,7 @@ import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionLabel, actionGroupKey, actionGroupLabel, regionOf } from './actionLabel'
+import { isIrreversible } from './undo'
 import { enemyTurnEvents } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
 import LogSheet from './LogSheet'
@@ -74,7 +75,13 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>([])
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
-  const undoStackRef = useRef<GameState[]>([])
+  // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
+  // information [because refills happen at cleanup]. Any action that reveals hidden information ... is
+  // marked irreversible, and undo cannot go back past it. The AI never undoes." So the stack is cleared
+  // whenever the turn changes (activeProducer switches, see `advance()`), and once an irreversible action
+  // is taken, its own entry can never be popped (see `undo()`) — later actions in the same turn can still
+  // be undone individually, right back down to that point.
+  const undoStackRef = useRef<{ state: GameState; irreversible: boolean }[]>([])
   const rngRef = useRef(createRng(seed + 1))
   const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
@@ -97,6 +104,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // (SPEC 10.2) instead of jumping straight to the new state's controls.
   function advance(from: GameState, action: Action): void {
     const next = applyAction(from, action)
+    // Undo is scoped to "the current turn" (SPEC 4.6) — the moment the active producer changes, whatever
+    // was undoable before belongs to a turn that's now over.
+    if (next.activeProducer !== from.activeProducer) undoStackRef.current = []
     const events = enemyTurnEvents(from, next)
     playHapticsFor(action, next.log.slice(from.log.length), next.result)
     setState(next)
@@ -199,13 +209,16 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   })
 
   function act(actionIndex: number): void {
-    undoStackRef.current.push(state)
-    advance(state, actions[actionIndex]!)
+    const action = actions[actionIndex]!
+    undoStackRef.current.push({ state, irreversible: isIrreversible(action) })
+    advance(state, action)
   }
 
   function undo(): void {
-    const previous = undoStackRef.current.pop()
-    if (previous) setState(previous)
+    const top = undoStackRef.current[undoStackRef.current.length - 1]
+    if (!top || top.irreversible) return
+    undoStackRef.current.pop()
+    setState(top.state)
   }
 
   // The Market/Cath's Plan sheets (SPEC 10.2) offer a direct Buy/Play button for a card only when the
@@ -356,7 +369,15 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       </section>
 
       <footer className="controls">
-        <button disabled={undoStackRef.current.length === 0 || pendingEnemyTurn.length > 0} onClick={undo}>
+        <button
+          disabled={
+            undoStackRef.current.length === 0 ||
+            undoStackRef.current[undoStackRef.current.length - 1]!.irreversible ||
+            pendingEnemyTurn.length > 0 ||
+            waitingOnAi
+          }
+          onClick={undo}
+        >
           Undo
         </button>
         <button className="mobile-only" onClick={() => setShowFarm(true)}>Farm</button>
