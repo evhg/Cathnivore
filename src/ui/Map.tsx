@@ -161,8 +161,15 @@ export default function Map({ state, highlight, onSelect }: Props) {
               {Array.from({ length: r.buyouts }).map((_, i) => (
                 <g key={`b${i}`} transform={`translate(${(r.outlets + i) * 16}, 0)`}>
                   <g className="enemy-piece">
-                    <rect width={12} height={12} rx={1} fill="var(--hollowell)" />
-                    <circle cx={9} cy={3} r={2.2} fill="var(--hollowell-highlight)" />
+                    {/* STYLE.md 6: "picket-fence segment with a SOLD sign" — a peaked sign-post silhouette,
+                        deliberately distinct in outline from the Outlet's plain square (STYLE.md 2.3:
+                        "shape before colour" — the two share the same glossy Hollowell colour and, before
+                        this fix, only differed by a barely-visible corner radius, effectively
+                        indistinguishable in greyscale; found by eye on this session's own greyscale
+                        screenshot after the gate-8 subagent's pass, which didn't catch it at that
+                        resolution). */}
+                    <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" />
+                    <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
                   </g>
                 </g>
               ))}
