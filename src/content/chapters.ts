@@ -21,6 +21,7 @@ export interface Chapter {
   rulesEnabled: RulesEnabled
   scriptedPressure?: PressureCard[]
   winCondition: { regionsRequired: number; requireKingsmarket: boolean }
+  goalDescription: string // shown on the chapter-list card, e.g. "Liberate both regions within 6 rounds."
   tutorialSteps: TutorialStep[]
   openingScene: string // key into `src/content/story/<id>.ts`'s scene data
   closingScene: string
@@ -76,6 +77,7 @@ export const CHAPTER_1: Chapter = {
   rulesEnabled: RULES_CHAPTER_1,
   scriptedPressure: chapter1Pressure(),
   winCondition: { regionsRequired: 2, requireKingsmarket: false },
+  goalDescription: 'Liberate both regions.',
   tutorialSteps: [
     {
       text: 'This is Brindle Hills, your farm. An Outlet is undercutting you — spend 1 Produce to Open a Stall here.',
@@ -146,6 +148,7 @@ export const CHAPTER_2: Chapter = {
   rulesEnabled: RULES_CHAPTER_2,
   scriptedPressure: chapter2Pressure(),
   winCondition: { regionsRequired: 2, requireKingsmarket: false },
+  goalDescription: 'Liberate 2 of the 3 regions while keeping Public Trust above 0.',
   tutorialSteps: [
     {
       text: "Doubt is a company's word against yours. Spend Goodwill to Rebut it in a region with your Stall.",

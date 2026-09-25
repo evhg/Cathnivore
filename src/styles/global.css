@@ -372,6 +372,14 @@ button {
 .chapter-list button {
   width: 100%;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chapter-goal {
+  font-size: 14px;
+  color: var(--ink-muted);
 }
 
 /* Scene (dialogue) screen (SPEC 10.1/8.3) */

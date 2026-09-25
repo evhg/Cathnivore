@@ -91,8 +91,11 @@ export default function App() {
           {CHAPTERS.map((chapter) => (
             <li key={chapter.id}>
               <button onClick={() => startChapter(chapter)}>
-                {chapter.title}
-                {progress.completed.includes(chapter.id) ? ' (completed)' : ''}
+                <strong>
+                  {chapter.title}
+                  {progress.completed.includes(chapter.id) ? ' (completed)' : ''}
+                </strong>
+                <span className="chapter-goal">{chapter.goalDescription}</span>
               </button>
             </li>
           ))}
