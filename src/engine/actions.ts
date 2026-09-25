@@ -99,8 +99,13 @@ export function legalActions(state: GameState): Action[] {
 
   actions.push({ kind: 'graft' })
   if (!p.roleUsedThisRound) {
-    for (const target of legalRoleTargets(state, producer)) {
-      actions.push(target ? { kind: 'role', targetRegion: target } : { kind: 'role' })
+    if (producer === 'sol') {
+      // SPEC 6: Sol's "On Air" is a real choice (Public Trust +1, or gain 2 Goodwill), not a fixed default.
+      actions.push({ kind: 'role', choice: 'trust' }, { kind: 'role', choice: 'goodwill' })
+    } else {
+      for (const target of legalRoleTargets(state, producer)) {
+        actions.push(target ? { kind: 'role', targetRegion: target } : { kind: 'role' })
+      }
     }
   }
 
@@ -129,7 +134,7 @@ function assertLegal(state: GameState, action: Action): void {
 }
 
 // SPEC 6: the four producers' free, once-per-round role abilities.
-function applyRole(state: GameState, producer: ProducerId, target: RegionId | null): GameState {
+function applyRole(state: GameState, producer: ProducerId, target: RegionId | null, choice?: 'trust' | 'goodwill'): GameState {
   switch (producer) {
     case 'ines': {
       const region = state.config.activeRegions.find((id) => ownStalls(state, producer, id) > 0 && state.regions[id].doubt > 0)
@@ -137,7 +142,10 @@ function applyRole(state: GameState, producer: ProducerId, target: RegionId | nu
       return removeDoubt(state, region, 1)
     }
     case 'sol': {
-      // Default choice: Public Trust +1. The UI/AI may prefer +2 Goodwill via a future `currentDecision`.
+      // SPEC 6 "On Air": Public Trust +1, or gain 2 Goodwill — a real choice (M4 balance-loop iteration 8,
+      // see DECISIONS.md: the fixed +1 Trust default left MCTSBot unable to pick Goodwill when it needed it
+      // to Rebut or play Schemes, plausibly contributing to Sol's pairs being the weakest in the spread).
+      if (choice === 'goodwill') return gain(state, producer, { produce: 0, marks: 0, goodwill: 2 })
       return { ...state, publicTrust: Math.min(15, state.publicTrust + 1) }
     }
     case 'mara': {
@@ -225,7 +233,7 @@ export function applyAction(state: GameState, action: Action): GameState {
       break
     }
     case 'role': {
-      next = applyRole(state, producer, action.targetRegion ?? null)
+      next = applyRole(state, producer, action.targetRegion ?? null, action.choice)
       next = {
         ...next,
         producers: { ...next.producers, [producer]: { ...next.producers[producer], roleUsedThisRound: true } },

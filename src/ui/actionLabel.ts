@@ -35,7 +35,8 @@ export function actionLabel(action: Action, state: GameState): string {
     case 'role': {
       const roleName = PRODUCERS[state.activeProducer].roleName
       const target = action.targetRegion ? ` on ${REGIONS[action.targetRegion].name}` : ''
-      return `Role (${roleName})${target}`
+      const choice = action.choice === 'trust' ? ': Public Trust +1' : action.choice === 'goodwill' ? ': +2 Goodwill' : ''
+      return `Role (${roleName})${target}${choice}`
     }
     case 'decide':
       return `Choose ${RESOURCE_NAME[action.choice]}`

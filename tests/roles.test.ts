@@ -11,6 +11,12 @@ const FULL_CONFIG: GameConfig = {
   activeRegions: ALL_REGION_IDS,
 }
 
+const SOL_CONFIG: GameConfig = {
+  producers: ['sol', 'ines'],
+  difficulty: 'normal',
+  activeRegions: ALL_REGION_IDS,
+}
+
 describe('role abilities (SPEC 6)', () => {
   it("Mara's Injunction adds the chosen region to expandSkip and is once per round", () => {
     const state = createGame(FULL_CONFIG, 5)
@@ -37,5 +43,27 @@ describe('role abilities (SPEC 6)', () => {
     expect(state.regions.highmoor.stalls.tomas).toBe(highmoorStallsBefore + 1)
     expect(state.producers.tomas.resources.produce).toBe(before) // free: no Produce spent
     expect(validate(state)).toEqual([])
+  })
+
+  it("Sol's On Air is a real choice between Public Trust +1 and +2 Goodwill (M4 balance-loop iteration 8)", () => {
+    const trustState = createGame(SOL_CONFIG, 5)
+    const legal = legalActions(trustState)
+    expect(legal.some((a) => a.kind === 'role' && a.choice === 'trust')).toBe(true)
+    expect(legal.some((a) => a.kind === 'role' && a.choice === 'goodwill')).toBe(true)
+
+    const trustBefore = trustState.publicTrust
+    const afterTrust = applyAction(trustState, { kind: 'role', choice: 'trust' })
+    expect(afterTrust.publicTrust).toBe(Math.min(15, trustBefore + 1))
+    expect(afterTrust.producers.sol.resources.goodwill).toBe(trustState.producers.sol.resources.goodwill)
+    expect(afterTrust.producers.sol.roleUsedThisRound).toBe(true)
+    expect(legalActions(afterTrust).some((a) => a.kind === 'role')).toBe(false)
+    expect(validate(afterTrust)).toEqual([])
+
+    const goodwillState = createGame(SOL_CONFIG, 5)
+    const goodwillBefore = goodwillState.producers.sol.resources.goodwill
+    const afterGoodwill = applyAction(goodwillState, { kind: 'role', choice: 'goodwill' })
+    expect(afterGoodwill.producers.sol.resources.goodwill).toBe(goodwillBefore + 2)
+    expect(afterGoodwill.publicTrust).toBe(goodwillState.publicTrust)
+    expect(validate(afterGoodwill)).toEqual([])
   })
 })

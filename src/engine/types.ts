@@ -147,7 +147,7 @@ export type Action =
   | { kind: 'sell'; count: 1 | 2 | 3 }
   | { kind: 'scheme'; schemeId: string; targetRegion?: RegionId }
   | { kind: 'graft' }
-  | { kind: 'role'; targetRegion?: RegionId }
+  | { kind: 'role'; targetRegion?: RegionId; choice?: 'trust' | 'goodwill' }
   | { kind: 'decide'; decisionId: string; choice: ResourceKind }
 
 export type LossReason = 'publicTrust' | 'lostLand' | 'pressureDeckEmpty'
