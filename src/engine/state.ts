@@ -129,6 +129,7 @@ export function createGame(config: GameConfig, seed: number): GameState {
     contractsTornUp: 0,
     scriptedTriggerFired: false,
     cathsPlanLocked: config.cathsPlanLocked ?? false,
+    freeSchemePlays: 0,
     log: [],
     actionHistory: [],
     result: null,

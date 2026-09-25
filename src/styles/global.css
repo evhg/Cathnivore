@@ -248,6 +248,13 @@ h3 {
   min-height: 24px;
 }
 
+.card-list .card-note {
+  border-style: dashed;
+  border-color: var(--wheat);
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
 .card-flavor {
   margin: 4px 0;
   font-size: 13px;

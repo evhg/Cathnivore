@@ -185,6 +185,10 @@ export interface GameState {
   // SPEC 8.2 ch6: "Cath's Plan starts face down and locked." Mirrors `config.cathsPlanLocked`'s initial
   // value; a scripted trigger with `effect: 'unlockCathsPlan'` sets this to false partway through.
   cathsPlanLocked: boolean
+  // SPEC 8.2 ch6: "the Plan unlocks and the players get one free Scheme" — set to 1 by the same
+  // `unlockCathsPlan` trigger that clears `cathsPlanLocked`. While positive, any producer may play a
+  // Scheme paying 0 Goodwill instead of its printed cost; playing one that way decrements this by 1.
+  freeSchemePlays: number
   log: GameEvent[]
   actionHistory: Action[]
   result: GameResult | null

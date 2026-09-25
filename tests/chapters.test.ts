@@ -223,6 +223,8 @@ describe('chapter 6: Kingsmarket', () => {
     }
     expect(state.cathsPlanLocked).toBe(false)
     expect(state.log.some((e) => e.type === 'trigger' && e.effect === 'unlockCathsPlan')).toBe(true)
+    // SPEC 8.2: "the Plan unlocks and the players get one free Scheme."
+    expect(state.freeSchemePlays).toBe(1)
   })
 
   it('the standard win condition (5 regions including Kingsmarket) applies', () => {

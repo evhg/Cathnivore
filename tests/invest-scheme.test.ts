@@ -123,3 +123,46 @@ describe('Scheme', () => {
     expect(actions.some((a) => a.kind === 'scheme' && a.schemeId === 'grass-roots')).toBe(false)
   })
 })
+
+describe('freeSchemePlays (SPEC 8.2 ch6 "the Plan unlocks and the players get one free Scheme")', () => {
+  it('lets a producer with 0 Goodwill play a Scheme for free, and decrements the grant', () => {
+    let state = createGame(FULL_CONFIG, 5)
+    state = forceScheme(state, 'leaked-memo')
+    state = {
+      ...state,
+      freeSchemePlays: 1,
+      producers: { ...state.producers, mara: { ...state.producers.mara, resources: { ...state.producers.mara.resources, goodwill: 0 } } },
+    }
+    expect(legalActions(state).some((a) => a.kind === 'scheme' && a.schemeId === 'leaked-memo')).toBe(true)
+    state = applyAction(state, { kind: 'scheme', schemeId: 'leaked-memo', targetRegion: 'saltmarsh' })
+    expect(state.producers.mara.resources.goodwill).toBe(0)
+    expect(state.freeSchemePlays).toBe(0)
+    expect(state.cathsPlan).not.toContain('leaked-memo')
+    expect(validate(state)).toEqual([])
+  })
+
+  it('does not spend the grant when the producer could already afford the card', () => {
+    let state = richMara(createGame(FULL_CONFIG, 5))
+    state = forceScheme(state, 'leaked-memo')
+    state = { ...state, freeSchemePlays: 1 }
+    const before = state.producers.mara.resources.goodwill
+    state = applyAction(state, { kind: 'scheme', schemeId: 'leaked-memo', targetRegion: 'saltmarsh' })
+    expect(state.producers.mara.resources.goodwill).toBe(before - SCHEMES_BY_ID.get('leaked-memo')!.cost)
+    expect(state.freeSchemePlays).toBe(1)
+  })
+
+  it('the unlockCathsPlan scripted trigger grants exactly one free play alongside unlocking the Plan', () => {
+    const config: GameConfig = {
+      ...FULL_CONFIG,
+      cathsPlanLocked: true,
+      scriptedTrigger: { liberatedCount: 0, effect: 'unlockCathsPlan', sceneId: 'planUnlocked' },
+    }
+    let state = createGame(config, 5)
+    expect(state.cathsPlanLocked).toBe(true)
+    expect(state.freeSchemePlays).toBe(0)
+    // Round 1 -> 2 cleanup: liberatedCount (0) already meets the trigger's threshold, so it fires here.
+    for (let i = 0; i < 6; i++) state = applyAction(state, legalActions(state).find((a) => a.kind === 'graft')!)
+    expect(state.cathsPlanLocked).toBe(false)
+    expect(state.freeSchemePlays).toBe(1)
+  })
+})

@@ -20,6 +20,9 @@ export default function CathsPlanSheet({
 }) {
   const cards = (
     <ul className="card-list">
+      {state.freeSchemePlays > 0 && (
+        <li className="card-note">Cath&rsquo;s Plan grants a free Scheme play — no Goodwill needed this once.</li>
+      )}
       {state.cathsPlan.map((id, slot) => {
         if (!id) return <li key={slot} className="card-empty" />
         const card = SCHEMES_BY_ID.get(id)

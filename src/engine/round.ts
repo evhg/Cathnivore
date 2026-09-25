@@ -85,6 +85,8 @@ function cleanup(state: GameState): GameState {
       scriptedTriggerFired: true,
       wholesomeHollowRevealed: trigger.effect === 'wholesomeHollowReveal' ? true : next.wholesomeHollowRevealed,
       cathsPlanLocked: trigger.effect === 'unlockCathsPlan' ? false : next.cathsPlanLocked,
+      // SPEC 8.2 ch6: "the Plan unlocks and the players get one free Scheme."
+      freeSchemePlays: trigger.effect === 'unlockCathsPlan' ? next.freeSchemePlays + 1 : next.freeSchemePlays,
       log: [...next.log, { type: 'trigger', effect: trigger.effect, sceneId: trigger.sceneId }],
     }
   }

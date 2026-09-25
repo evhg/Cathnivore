@@ -107,7 +107,7 @@ export function legalActions(state: GameState): Action[] {
     for (const id of state.cathsPlan) {
       if (!id) continue
       const card = SCHEMES_BY_ID.get(id)
-      if (!card || p.resources.goodwill < card.cost) continue
+      if (!card || (p.resources.goodwill < card.cost && state.freeSchemePlays <= 0)) continue
       for (const target of legalSchemeTargets(state, producer, id)) {
         actions.push(target ? { kind: 'scheme', schemeId: id, targetRegion: target } : { kind: 'scheme', schemeId: id })
       }
@@ -306,12 +306,17 @@ export function applyAction(state: GameState, action: Action): GameState {
       const card = SCHEMES_BY_ID.get(action.schemeId)
       if (!card) throw new Error(`Unknown scheme: ${action.schemeId}`)
       const target = action.targetRegion ?? null
-      next = spend(state, producer, { produce: 0, marks: 0, goodwill: card.cost })
+      // SPEC 8.2 ch6: while a free play is available, cover any shortfall for free rather than always
+      // spending one — a producer with enough Goodwill anyway still pays normally, so the grant isn't
+      // wasted on a play that didn't need it.
+      const useFreePlay = state.freeSchemePlays > 0 && state.producers[producer].resources.goodwill < card.cost
+      next = spend(state, producer, { produce: 0, marks: 0, goodwill: useFreePlay ? 0 : card.cost })
       next = card.effect(next, producer, target)
       next = {
         ...next,
         cathsPlan: next.cathsPlan.map((id) => (id === card.id ? null : id)),
         schemeDiscard: [...next.schemeDiscard, card.id],
+        freeSchemePlays: useFreePlay ? next.freeSchemePlays - 1 : next.freeSchemePlays,
         log: [...next.log, { type: 'schemePlayed', producer, schemeId: card.id, target }],
       }
       break
