@@ -277,3 +277,21 @@ Format: date, decision, reason.
   distinguishable-per-character flat-geometric bust that reads at the sizes tested. Only the 9 named
   characters from STYLE.md 9 are covered (not, e.g., generic villager portraits) since that's the section's
   full scope. `npm run check` passes (147 unit tests).
+
+- 2026-09-25: Re-attempted `npm run release`'s `git push origin main` step this session (after M5's portrait
+  work); denied again with the identical "Production Deploy" classifier message as the prior session's entry
+  under PROGRESS.md's Blocked section. Treating this as a standing per-session-type restriction rather than
+  a fluke: still worth one attempt per session (in case the owner's session-type settings change), but not
+  worth retrying more than once inside a session, per the denial's own instruction not to route around it.
+
+- 2026-09-25: Started M6's accessibility gate (SPEC 11.4 gate 6) ahead of the rest of M6, since it needed no
+  release/main access and slotted in cleanly after M5's portrait work finished the campaign content.
+  `@axe-core/playwright` (the exact library SPEC 11.1 names) against the title, setup, game and scene
+  screens, asserting zero `serious`/`critical` violations — a real pass/fail check, not a stub. Wired into
+  `scripts/gates.ts`'s Gate 6 (previously always logged "skipped"); narrowed Gate 5's own Playwright
+  invocation to its 4 pre-existing spec files (`campaign`/`hotseat`/`quick-game`/`title`) rather than the
+  whole `e2e/` directory, so the two gates don't redundantly re-run each other's suite. All 8 tests (4
+  screens x 2 viewport projects) pass cleanly on the current UI. Chose axe's default rule set (WCAG 2.0/2.1
+  A+AA) rather than a narrower or wider ruleset, matching what `@axe-core/playwright` runs out of the box and
+  what SPEC 11.4 gate 6 implies by just saying "axe finds no serious or critical issues." Gates 7 (Lighthouse)
+  and 8 (visual review) remain stubs — separate M6 tasks.

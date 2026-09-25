@@ -211,7 +211,14 @@ M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons defe
 - [ ] push `ios-<n>` for the first full iPhone build (up to 3 fix builds)
 
 ### M6 Polish and store assets (second half of day 6)
-- [ ] animations, fixes from the visual review, accessibility and performance
+- [x] (partial) accessibility gate: added `@axe-core/playwright`, `e2e/accessibility.spec.ts` (SPEC 11.4
+  gate 6 — title, setup, game and scene screens, asserting zero `serious`/`critical` axe violations) and
+  wired it into `scripts/gates.ts` as a real Gate 6 (previously a permanent stub), with Gate 5's own
+  Playwright run narrowed to its 4 non-accessibility spec files so the two gates don't double-run the same
+  suite. All 8 accessibility tests (4 screens x phone/desktop-chromium) pass with zero serious/critical
+  issues on the current UI — a real, clean result, not just "gate exists." `npm run gates` runs clean
+  end to end (gates 1-6; 7-8 still skipped, chartered to the rest of M6). Still missing: animations, visual-
+  review fixes, performance (Lighthouse, gate 7)
 - [ ] web install and offline play; icons, launch screen and haptics
 - [ ] the privacy and support pages, store text and screenshots
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
