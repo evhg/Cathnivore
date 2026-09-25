@@ -15,9 +15,12 @@ export const SIM_MCTS_BUDGET = 200
 // Balance-loop iteration 5 (DECISIONS.md): a longer rollout horizon lets MCTS "see" more of the
 // liberation payoff of a candidate action, since pressureDeckEmpty (games running out the 10-round
 // Pressure deck before liberating 5 regions) has been the dominant loss reason since iteration 1.
-// Iteration 8 pushed this further (3 -> 4) for the same reason: pressureDeckEmpty was still dominant
-// (49.2%) after the Sol's On Air correctness fix, and iteration 5 already showed this lever works.
-export const SIM_MCTS_ROLLOUT_ROUNDS = 4
+// Iteration 8 tried pushing this further (3 -> 4) and reverted it (DECISIONS.md): a 200-game sanity
+// run took 18 minutes (vs. ~87s for a 60-game run at rounds=3), making a 1,000-game confirmation
+// impractical within one session, and the loss-reason mix just shifted (pressureDeckEmpty down,
+// publicTrust up sharply) rather than clearly improving, with the win rate flat and the producer-pair
+// spread worse. 3 is the value actually used.
+export const SIM_MCTS_ROLLOUT_ROUNDS = 3
 const STEP_CAP = 2000
 const SETTLED_LIBERATED_THRESHOLD = 4
 
