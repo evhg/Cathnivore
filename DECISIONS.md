@@ -319,3 +319,26 @@ Format: date, decision, reason.
   behaviour untested). Also added a `no-cache` header for `sw.js`/`manifest.webmanifest` alongside the
   existing `index.html` one, so a CDN or browser cache can't sit on a stale service worker and delay the
   "Update ready: reload" prompt after a real release.
+
+- 2026-09-25: Installed `sharp` (`npm install --no-save`, not added to `package.json`/`package-lock.json`
+  since it's only a one-off local rasterizer, not something the build or CI needs) to close the real PNG/
+  App-Store-icon gap the portraits/PWA session had logged as open — this sandbox previously had no
+  rasterizer (`sharp`, ImageMagick, `rsvg-convert` all confirmed absent then); it turns out `npm install`
+  itself works fine here even though those pre-installed CLI tools don't. Generated from a squared-off
+  (no baked-in corner radius, since both iOS and the web manifest apply their own mask) version of
+  `favicon.svg`'s existing STYLE.md-13-matching artwork: `public/icon-192.png`/`icon-512.png` (added to the
+  web manifest's `icons` array alongside the existing SVG entry) and `public/apple-touch-icon.png` (180x180,
+  linked from `index.html`, since Safari's "Add to Home Screen" looks for that rel specifically rather than
+  reading the web manifest). Replaced the still-default Capacitor placeholder icon
+  (`ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`, a blue "X" logo, never swapped since
+  M0 scaffolding) with a real 1024x1024 render, no alpha channel per SPEC 11.6/STYLE.md 13. Also replaced the
+  three still-default Capacitor splash PNGs (`Splash.imageset/splash-2732x2732*.png`) with STYLE.md 13's
+  "paper background with the icon drawing centred, and nothing else" — paper (`#F4EDE1`) background, the
+  rounded-square icon artwork centred at about a third of the canvas width. Added `public/social-preview.png`
+  (1200x630, same icon-on-paper treatment as an interim; STYLE.md 13 calls for "the same style as
+  screenshot 1," i.e. a real mid-game map screenshot, which doesn't exist yet — this is a placeholder-safe
+  minimum, not the final asset, tracked as still-open below) and wired `og:image`/`og:title`/`og:description`
+  into `index.html`. Verified visually (both new PNGs read correctly at their rendered size) and `npm run
+  check` still passes clean (build unaffected — these are static assets, no bundle-size impact beyond the
+  PNGs themselves which aren't part of the JS bundle). Still open: the real 5 App Store screenshots and the
+  final social-preview image once in-game screenshots exist (M6's visual-review/store-assets work).

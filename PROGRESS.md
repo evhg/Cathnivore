@@ -250,8 +250,19 @@ appeared.
   `e2e/offline.spec.ts` covers SPEC 11.4 gate 5's last bullet (load once online to install+precache, reload
   once more so the new worker takes control, go offline, reload again, start a Quick Game — all with zero
   console errors) and is wired into `scripts/gates.ts`'s Gate 5. `npm run check`/`npm run gates` both pass
-  clean. Still open: real PNG icons (192/512, maskable) for a proper installable-app icon rather than just
-  the SVG favicon, the 1024x1024 App Store icon (STYLE.md 13), the launch screen and haptics.
+  clean.
+- [x] Real PNG/App Store icons and the launch screen (STYLE.md 13, closing the item above's "still open"
+  list): installed `sharp` locally (not a project dependency, see DECISIONS.md) and rasterized a squared-off
+  version of `favicon.svg`'s existing artwork to `public/icon-192.png`/`icon-512.png` (now in the web
+  manifest's `icons` array) and `public/apple-touch-icon.png` (180x180, linked from `index.html`). Replaced
+  the still-default Capacitor placeholder icon (a blue "X" logo, never swapped since M0) with a real
+  1024x1024, no-alpha render at `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`, and
+  replaced the three default Capacitor splash PNGs with STYLE.md 13's launch screen ("paper background with
+  the icon drawing centred, and nothing else"). Added `public/social-preview.png` (1200x630, icon-on-paper,
+  an interim placeholder — the real one is "the same style as screenshot 1," which needs in-game screenshots
+  that don't exist yet) wired via `og:image`/`og:title`/`og:description` in `index.html`. Verified visually;
+  `npm run check` unaffected. Still open: haptics, the real 5 App Store screenshots and the final
+  social-preview image (both need in-game screenshots, part of M6's visual-review/store-assets work).
 - [x] (partial) the privacy and support pages (SPEC 11.5): static `public/privacy/index.html` and
   `public/support/index.html` (Vite copies `public/` verbatim, so they land at `dist/privacy/index.html`
   and `dist/support/index.html`), styled with STYLE.md's colour tokens inline (a plain `<style>` block, not
