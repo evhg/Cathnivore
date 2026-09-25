@@ -1,9 +1,9 @@
 {
   "workflow": "ios",
   "tag": "build",
-  "commit": "b99e197a6ef9fd7ea60aa8e57784abd38b729683",
+  "commit": "9fc0f3736871054e58b83c5a63dcbfadd80c3c23",
   "success": false,
-  "buildNumber": "1",
-  "time": "2026-09-24T14:55:35Z",
-  "log": "2026-09-24 14:55:34.133 xcodebuild[2284:10600] Writing error result bundle to /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/ResultBundle_2026-24-09_14-55-0034.xcresult\nxcodebuild: error: The flag -authenticationKeyID is required when specifying -authenticationKeyPath.\n"
+  "buildNumber": "2",
+  "time": "2026-09-25T11:06:39Z",
+  "log": "2026-09-25 11:06:38.485 xcodebuild[1995:9896] Writing error result bundle to /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/ResultBundle_2026-25-09_11-06-0038.xcresult\nxcodebuild: error: The flag -authenticationKeyID is required when specifying -authenticationKeyPath.\n"
 }
