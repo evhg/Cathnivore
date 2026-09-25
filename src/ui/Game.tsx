@@ -14,6 +14,7 @@ import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap from './Map'
 import Scene from './Scene'
+import { ActionsLeftIcon, GoodwillIcon, MarksIcon, ProduceIcon } from './icons/ResourceIcons'
 import type { Action, GameEvent, GameState, ProducerId, RegionId } from '../engine/types'
 import type { Mode } from './Setup'
 import type { TutorialStep } from '../content/chapters'
@@ -294,10 +295,13 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <section className="active-producer">
           <strong>{PRODUCERS[state.activeProducer].name}</strong>
           <span>
-            Produce {active.resources.produce} ({active.production.produce}/round), Marks {active.resources.marks} (
-            {active.production.marks}/round), Goodwill {active.resources.goodwill} ({active.production.goodwill}/round)
+            <ProduceIcon /> {active.resources.produce} ({active.production.produce}/round) <MarksIcon />{' '}
+            {active.resources.marks} ({active.production.marks}/round) <GoodwillIcon /> {active.resources.goodwill} (
+            {active.production.goodwill}/round)
           </span>
-          <span>Actions left: {state.actionsLeft}</span>
+          <span>
+            Actions left: <ActionsLeftIcon total={3} left={state.actionsLeft} />
+          </span>
         </section>
       )}
 
