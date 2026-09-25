@@ -41,5 +41,21 @@ export default defineConfig({
       name: 'phone-webkit',
       use: { ...devices['iPhone 13'], viewport: { width: 390, height: 844 } },
     },
+    {
+      // SPEC 11.6/STYLE.md 13: App Store screenshots at Apple's largest *required* size (checked directly
+      // against Apple's current developer docs), the "6.5-inch display" set — 1284x2778 physical pixels,
+      // which is a 428x926 CSS viewport at deviceScaleFactor 3 (an iPhone 14 Plus's real logical/physical
+      // pixel ratio), not a literal 1284-wide CSS viewport (that would trip the app's own 1024px desktop
+      // breakpoint and render the 3-column layout instead of the phone one).
+      name: 'store-screenshots',
+      testMatch: 'e2e/store-screenshots.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 428, height: 926 },
+        deviceScaleFactor: 3,
+        hasTouch: true,
+        launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH },
+      },
+    },
   ],
 })
