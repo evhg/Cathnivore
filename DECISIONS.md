@@ -460,7 +460,10 @@ Format: date, decision, reason.
   and a second full-suite run also passed clean, so this looks like a pre-existing flake tied to the
   Quick-Game setup's random starting state (most likely: at some random seeds, neither Market nor Cath's
   Plan has an affordable card yet, so that aside briefly has no Buy/Play button inside it) rather than
-  anything the Undo change touched — the Undo change never touches `.desktop-col-right`'s markup. Not
-  investigated further under this session's budget; a future session hitting this again should look at
-  whether `MarketSheet`/`CathsPlanSheet`'s inline panels need a `tabindex`/fallback when literally no card
-  in either sheet is actionable yet.
+  anything the Undo change touched — the Undo change never touches `.desktop-col-right`'s markup.
+  **Root-caused and fixed within this same session** (see the next commit): axe's "scrollable-region-
+  focusable" rule — `.desktop-col` scrolls (`overflow-y: auto`, SPEC 10.3) but had no `tabindex` of its
+  own, so at game states where neither Market nor Cath's Plan has an affordable card, it had no focusable
+  descendant either, making it unreachable by keyboard. Fixed with `tabIndex={0}` on both desktop columns
+  unconditionally, rather than depending on always having a Buy/Play button inside. Confirmed with 3
+  back-to-back clean accessibility runs.
