@@ -305,6 +305,14 @@ h3 {
   pointer-events: none;
 }
 
+.doubt-mark {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  fill: var(--ink);
+  pointer-events: none;
+}
+
 .map-legend {
   font-size: 12px;
   fill: var(--ink-muted);

@@ -186,6 +186,9 @@ export default function Map({ state, highlight, onSelect }: Props) {
                   <g className="enemy-piece">
                     <circle cx={6} cy={6} r={6} fill="var(--candor)" />
                     <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
+                    <text x={6} y={9} textAnchor="middle" className="doubt-mark">
+                      ?
+                    </text>
                   </g>
                 </g>
               ))}
