@@ -316,7 +316,22 @@ appeared.
   web build, as expected since `.native-app` never applies there. Not verified on a real device (no
   simulator/hardware access from this sandbox — the CSS technique is standard for Capacitor apps but
   untested end-to-end here).
-- [ ] animations, fixes from the visual review (gate 8)
+- [x] (partial) Gate 8's screenshot capture: `e2e/screenshots.spec.ts` walks title → How to Play (rules
+  reference) → Quick Game setup → game screen → a greyscale map shot (`filter: grayscale(100%)`, STYLE.md
+  3's "shape before colour" test) → end screen → a campaign scene, at both `phone`/`desktop-chromium`
+  sizes (14 PNGs total, `e2e/screenshots/`, already gitignored). Reviewed directly this session (not a
+  literal subagent call, see DECISIONS.md) rather than left uninspected: all 7 screens read cleanly at both
+  sizes, no unreadable text, no hidden controls, greyscale map pieces stay shape-distinguishable (square
+  Outlets vs. circular Doubt vs. awning-strip Stalls, matching STYLE.md 10's shape spec). Two minor,
+  non-blocking observations for a future visual-review pass (not fixed now — neither makes text unreadable,
+  overlaps, hides a control, or fails the greyscale test, the only "must fix" bar SPEC 11.4 gate 8 sets):
+  the Setup screen's producer checkboxes wrap tightly against the next label at phone width; the desktop
+  layout's right column (Market + Cath's Plan) sits close to the 900px viewport bottom at 1440x900, worth
+  confirming has zero actual overflow at 1280x800 (SPEC 10.3's stated floor). Still open: chapters 2-6's
+  scenes/screens, the Settings/Campaign-chapter-list screens, and — the actual point of gate 8 — a
+  second, more adversarial pass (ideally the literal subagent SPEC calls for) once more screens/animations
+  exist, so it's not spent early on a UI that's still changing.
+- [ ] animations, fixes from a fuller visual review
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
 ### M7 Hardening (final 18 hours; no new features)

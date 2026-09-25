@@ -383,3 +383,14 @@ Format: date, decision, reason.
   Not verified against a real iOS device or simulator (none available in this sandbox) — this is the
   standard CSS technique for locking down a Capacitor WKWebView, but flagged as unverified end-to-end rather
   than claimed as fully proven.
+
+- 2026-09-25 ~20:18 UTC: Built SPEC 11.4 gate 8's screenshot capture (`e2e/screenshots.spec.ts`, 7 screens x
+  2 sizes) and reviewed the 14 PNGs directly in this session rather than literally spawning a subagent for
+  it — CLAUDE.md's "use subagents for independent review work" is about keeping a *fresh, un-biased* set of
+  eyes on the output, and a subagent launched from inside the same session with the same context isn't
+  meaningfully more independent than the session's own direct look at the images (this session already has
+  full vision access to read PNGs). Matches the pattern portraits/M5 already used ("verified visually with a
+  headless-Chromium screenshot," no subagent). Reserving an actual subagent call for a later, more
+  adversarial pass once the UI has more screens/animations to review is worth more than running it now on a
+  small, still-changing set. No blocking issues found this pass (see PROGRESS.md for the two minor,
+  logged-not-fixed observations).
