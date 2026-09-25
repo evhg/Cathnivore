@@ -28,7 +28,7 @@ export default function MarketSheet({
         const card = IMPROVEMENTS_BY_ID.get(id)
         if (!card) return null
         return (
-          <li key={id}>
+          <li key={id} className="card-enter">
             <strong>{card.name}</strong> — <MarksIcon /> {card.cost} Marks ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
             {card.flavor && <p className="card-flavor">{card.flavor}</p>}
             {canBuy(id) && <button onClick={() => onBuy(id)}>Buy</button>}

@@ -25,7 +25,7 @@ export default function CathsPlanSheet({
         const card = SCHEMES_BY_ID.get(id)
         if (!card) return null
         return (
-          <li key={id}>
+          <li key={id} className="card-enter">
             <strong>{card.name}</strong> — <GoodwillIcon /> {card.cost} Goodwill
             <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
             {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}

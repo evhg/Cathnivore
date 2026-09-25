@@ -77,7 +77,12 @@ export default function Map({ state, highlight, onSelect }: Props) {
               strokeWidth={2}
             />
             {r.lostLand > 0 && (
-              <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)} fill="var(--clay)" opacity={0.18} />
+              <polygon
+                className="lostland-overlay"
+                points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)}
+                fill="var(--clay)"
+                opacity={0.18}
+              />
             )}
 
             <text x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
@@ -103,22 +108,33 @@ export default function Map({ state, highlight, onSelect }: Props) {
 
             {/* Enemy pieces cluster near the top: Outlets, Buyouts, Doubt. */}
             <g transform={`translate(${x - (r.outlets + r.buyouts + r.doubt) * 8}, ${y - HEX_R * 0.1})`}>
+              {/* Each piece's own SVG `transform` attribute positions it (its offset in the row); the
+                  animation class goes on an inner <g> instead of that same element, since a CSS
+                  `animation`/`transform` would otherwise override the positioning attribute rather than
+                  compose with it (SVG2: a CSS transform replaces the presentation attribute, it doesn't
+                  add to it). */}
               {Array.from({ length: r.outlets }).map((_, i) => (
                 <g key={`o${i}`} transform={`translate(${i * 16}, 0)`}>
-                  <rect width={12} height={12} rx={2} fill="var(--hollowell)" />
-                  <circle cx={9} cy={3} r={2.2} fill="var(--hollowell-highlight)" />
+                  <g className="enemy-piece">
+                    <rect width={12} height={12} rx={2} fill="var(--hollowell)" />
+                    <circle cx={9} cy={3} r={2.2} fill="var(--hollowell-highlight)" />
+                  </g>
                 </g>
               ))}
               {Array.from({ length: r.buyouts }).map((_, i) => (
                 <g key={`b${i}`} transform={`translate(${(r.outlets + i) * 16}, 0)`}>
-                  <rect width={12} height={12} rx={1} fill="var(--hollowell)" />
-                  <circle cx={9} cy={3} r={2.2} fill="var(--hollowell-highlight)" />
+                  <g className="enemy-piece">
+                    <rect width={12} height={12} rx={1} fill="var(--hollowell)" />
+                    <circle cx={9} cy={3} r={2.2} fill="var(--hollowell-highlight)" />
+                  </g>
                 </g>
               ))}
               {Array.from({ length: r.doubt }).map((_, i) => (
                 <g key={`d${i}`} transform={`translate(${(r.outlets + r.buyouts + i) * 16}, 0)`}>
-                  <circle cx={6} cy={6} r={6} fill="var(--candor)" />
-                  <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
+                  <g className="enemy-piece">
+                    <circle cx={6} cy={6} r={6} fill="var(--candor)" />
+                    <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
+                  </g>
                 </g>
               ))}
             </g>
@@ -129,6 +145,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
                 Array.from({ length: n }).map((_, i) => (
                   <rect
                     key={`${pid}-${i}`}
+                    className="stall-piece"
                     x={(stalls.findIndex(([p]) => p === pid) + i) * 18}
                     y={0}
                     width={14}

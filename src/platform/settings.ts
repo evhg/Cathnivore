@@ -34,6 +34,16 @@ export function loadSettings(): Settings {
 
 export function saveSettings(settings: Settings): void {
   storage.set(SETTINGS_KEY, JSON.stringify(settings))
+  applyAnimationsSetting(settings.animations)
+}
+
+// STYLE.md 11: "with reduced motion switched on, use fades only" is the OS-level `prefers-reduced-motion`
+// media query (handled in CSS directly); this is the separate, explicit Settings toggle (SPEC 10.1) that
+// turns animations off entirely. A plain `<html>` class keeps every animated element's CSS in one place
+// (global.css) rather than threading a prop through Map/sheets/etc.
+export function applyAnimationsSetting(animations: boolean): void {
+  if (typeof document === 'undefined') return
+  document.documentElement.classList.toggle('no-animations', !animations)
 }
 
 // The AI teammate's "thinking" pause before it acts (Game.tsx) — SPEC 9.2's real budget (up to 600
