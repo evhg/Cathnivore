@@ -1,22 +1,19 @@
 import type { Action, GameEvent, GameState } from '../engine/types'
+import { isNativePlatform } from './native'
 
 // STYLE.md 11: "a light tap when placing, a medium tap on liberation, and a warning buzz on Lost Land and
 // loss." Capacitor's haptics plugin is a thin native wrapper that silently no-ops in a plain browser
-// (confirmed by its own docs), but we still gate on `Capacitor.isNativePlatform()` and skip the import
-// entirely on the web build so `@capacitor/haptics` never has to load there, mirroring how
-// `main.tsx` already gates the service-worker registration on the same check.
-function isNative(): boolean {
-  return typeof window !== 'undefined' && Boolean((window as unknown as { Capacitor?: { isNativePlatform?(): boolean } }).Capacitor?.isNativePlatform?.())
-}
-
+// (confirmed by its own docs), but we still gate on `isNativePlatform()` and skip the import entirely on
+// the web build so `@capacitor/haptics` never has to load there, mirroring how `main.tsx` already gates
+// the service-worker registration on the same check.
 async function impact(style: 'Light' | 'Medium'): Promise<void> {
-  if (!isNative()) return
+  if (!isNativePlatform()) return
   const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
   await Haptics.impact({ style: style === 'Light' ? ImpactStyle.Light : ImpactStyle.Medium })
 }
 
 async function warning(): Promise<void> {
-  if (!isNative()) return
+  if (!isNativePlatform()) return
   const { Haptics, NotificationType } = await import('@capacitor/haptics')
   await Haptics.notification({ type: NotificationType.Warning })
 }

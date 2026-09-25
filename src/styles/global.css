@@ -500,3 +500,20 @@ button {
   margin: 2px 0 0;
   color: var(--ink-muted);
 }
+
+/* SPEC 11.6 app shell: inside the bundled iPhone app only (`.native-app`, set by main.tsx via
+   Capacitor.isNativePlatform()) — no text selection or long-press callouts, no pinch zoom, and no
+   whole-page rubber-band scrolling or link previews. Never applied on the website, where users must still
+   be able to select text and pinch-zoom. */
+html.native-app,
+html.native-app body {
+  overscroll-behavior: none;
+}
+
+.native-app,
+.native-app * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: pan-x pan-y;
+}

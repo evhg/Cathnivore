@@ -370,3 +370,16 @@ Format: date, decision, reason.
   implements the Lighthouse-score half of gate 7 — the "AI teammate decision <=1s under 4x CPU throttling"
   half has no real subject to test yet (HeuristicBot stands in for the Solo AI teammate; the actual
   MCTS-in-Worker teammate is still open, tracked since M2/M3) and is logged as still open rather than faked.
+
+- 2026-09-25 ~20:14 UTC: Implemented SPEC 11.6's app-shell lockdown (no text selection/long-press callouts,
+  no pinch zoom, no rubber-band scrolling or link previews) as CSS scoped to a `.native-app` class that
+  `main.tsx` only adds when `isNativePlatform()` is true — extracted that check into a new
+  `src/platform/native.ts` (previously duplicated inline in `haptics.ts`) since it's now needed in three
+  places. Deliberately not applied to the website: `index.html`/`global.css` are shared between both builds,
+  and disabling text selection or pinch-zoom globally would be a real accessibility regression for web
+  visitors (WCAG requires user-controlled zoom) that SPEC 11.6 never asks for — this section is explicitly
+  under "App shell," about the bundled app only. Used `touch-action: pan-x pan-y` rather than `touch-action:
+  none` so scrolling (sheets, the rules reference) keeps working, just not pinch-zoom or double-tap-zoom.
+  Not verified against a real iOS device or simulator (none available in this sandbox) — this is the
+  standard CSS technique for locking down a Capacitor WKWebView, but flagged as unverified end-to-end rather
+  than claimed as fully proven.

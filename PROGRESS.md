@@ -304,6 +304,18 @@ appeared.
   `sim/reports` already was). Still open, and can't be checked until it exists: gate 7's other half, "each
   AI teammate decision takes at most 1 second with 4x CPU throttling," needs the real MCTS-in-Worker AI
   teammate (HeuristicBot still stands in for the Solo AI teammate — see DECISIONS.md).
+- [x] SPEC 11.6 app shell lockdown: "no text selection or long-press callouts, no pinch zoom, and no web
+  behaviour such as whole-page rubber-band scrolling or link previews" — `src/platform/native.ts`'s new
+  shared `isNativePlatform()` (extracted from `haptics.ts`, now also used by `main.tsx`), which adds a
+  `native-app` class to `<html>` only inside the bundled iPhone app. `global.css`'s new `.native-app` rules
+  (`overscroll-behavior: none` for the rubber-band bounce, `-webkit-touch-callout`/`user-select: none` for
+  long-press callouts and link previews, `touch-action: pan-x pan-y` for pinch-zoom) are scoped to that
+  class rather than applied to the website, where users must still be able to select text and pinch-zoom.
+  `tests/native.test.ts` covers the (only unit-testable, no-`window`-in-Vitest) not-native path.
+  `npm run check` (151 tests) and the full 30-test e2e/accessibility suite pass clean — unaffected on the
+  web build, as expected since `.native-app` never applies there. Not verified on a real device (no
+  simulator/hardware access from this sandbox — the CSS technique is standard for Capacitor apps but
+  untested end-to-end here).
 - [ ] animations, fixes from the visual review (gate 8)
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
