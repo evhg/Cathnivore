@@ -43,7 +43,9 @@ export const PRODUCERS: Record<ProducerId, ProducerDef> = {
     name: 'Sol Abara',
     home: 'saltmarsh',
     startingResources: { produce: 2, marks: 2, goodwill: 2 },
-    startingProduction: { produce: 1, marks: 1, goodwill: 2 },
+    // M4 balance-loop iteration 12 (see DECISIONS.md): produce production 1 -> 2, to close the
+    // liberation-pace gap that left Sol-paired producers the weakest pairs in every recent balance run.
+    startingProduction: { produce: 2, marks: 1, goodwill: 2 },
     roleName: 'Podcaster, On Air',
     roleAbility: 'Public Trust +1, or gain 2 Goodwill.',
   },
