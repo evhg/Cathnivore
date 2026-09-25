@@ -1,7 +1,7 @@
 # Progress
 
 ## Current milestone
-M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons deferred to M6, see DECISIONS.md). M4's balance loop is complete (12/12 iterations, see DECISIONS.md); M4's release to `main` is done on the git side (`main` is on `bf08c61`) but Vercel has not served that commit — a firm, owner-side blocker (see Blocked). M5 chapter 1 is playable end-to-end; chapters 2-6 and portraits remain.
+M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons deferred to M6, see DECISIONS.md). M4's balance loop is complete (12/12 iterations, see DECISIONS.md); M4's release to `main` is done on the git side (`main` is on `bf08c61`) but Vercel has not served that commit — a firm, owner-side blocker (see Blocked). M5 chapters 1-3 ("Fresh Meat", "Word of Mouth", "Growing Season") are playable end-to-end with story scenes, tutorial prompts and e2e coverage; chapter 3's Wholesome Hollow Contract twist, chapters 4-6, and portraits remain.
 
 ## Tasks
 
