@@ -96,8 +96,12 @@ export const CHAPTER_1: Chapter = {
       highlight: { kind: 'action', action: 'supplyOutlets' },
     },
     {
+      // Informational, not gated: after steps 0-1 spend Brindle Hills' Outlet-clearing Produce, opening a
+      // Stall in Highmoor isn't affordable again until Harvest next round, so this step's own "you can...
+      // too" phrasing (not an imperative like the other steps) is also the honest one — gating it would
+      // strand a player following the steps in order until they'd earned more Produce.
       text: 'Highmoor borders Brindle Hills, so you can open a Stall there too.',
-      highlight: { kind: 'region', region: 'highmoor' },
+      highlight: null,
     },
     {
       text: 'No good move? Graft always works: 1 Produce and 1 Marks, guaranteed.',

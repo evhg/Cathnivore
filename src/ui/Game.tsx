@@ -230,11 +230,28 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   const actions = waitingOnAi || pendingEnemyTurn.length > 0 ? [] : legalActions(state)
   const active = state.producers[state.activeProducer]
 
+  // SPEC 8.1: "the first few steps are guided: only the action being taught is enabled." A step with a
+  // highlight gates every action except a forced `decide` (never optional) and the one being taught,
+  // either a specific action kind or any action targeting the highlighted region. Autoplay never reaches
+  // this render path (it calls `legalActions` directly, see the AI-turn effect above), so it's unaffected.
+  // If gating would leave nothing playable (a scripting mistake, or the player already cleared the taught
+  // move some other way), fall back to the ungated list rather than stranding the player.
+  const tutorialStep = !autoplayRef.current && tutorialSteps && tutorialIndex < tutorialSteps.length ? tutorialSteps[tutorialIndex] : undefined
+  function tutorialAllows(a: Action): boolean {
+    const highlight = tutorialStep?.highlight
+    if (!highlight || a.kind === 'decide') return true
+    return highlight.kind === 'action' ? a.kind === highlight.action : regionOf(a) === highlight.region
+  }
+  const allIndices = actions.map((_, i) => i)
+  const gatedIndices = allIndices.filter((i) => tutorialAllows(actions[i]!))
+  const visibleIndices = gatedIndices.length > 0 ? gatedIndices : allIndices
+
   // SPEC 10.2 targeting mode: group same-action-different-region choices into one button, then let the
   // player tap the glowing region on the map instead of reading N near-identical buttons.
   const standalone: { index: number; action: Action }[] = []
   const groups = new Map<string, { label: string; entries: { index: number; region: RegionId }[] }>()
-  actions.forEach((a, index) => {
+  visibleIndices.forEach((index) => {
+    const a = actions[index]!
     const region = regionOf(a)
     if (region === undefined) {
       standalone.push({ index, action: a })
@@ -248,6 +265,10 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
 
   function act(actionIndex: number): void {
     const action = actions[actionIndex]!
+    // SPEC 8.1: once the taught action is actually taken, move straight to the next tutorial step rather
+    // than waiting on a separate "Got it" tap — the gate above already guaranteed this action is the one
+    // being taught (or gating had nothing to show, in which case there's nothing to advance past).
+    if (tutorialStep?.highlight && tutorialAllows(action)) setTutorialIndex((i) => i + 1)
     undoStackRef.current.push({ state, irreversible: isIrreversible(action) })
     advance(state, action)
   }
@@ -333,7 +354,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {tutorialSteps && tutorialIndex < tutorialSteps.length && (
         <section className="tutorial-prompt">
           <p>{tutorialSteps[tutorialIndex]!.text}</p>
-          <button onClick={() => setTutorialIndex((i) => i + 1)}>Got it</button>
+          {/* SPEC 8.1: a step teaching one action/region advances by taking it (see `act`'s auto-advance);
+              an informational step (no highlight) has nothing to take, so it still needs a manual tap. */}
+          {!tutorialSteps[tutorialIndex]!.highlight && <button onClick={() => setTutorialIndex((i) => i + 1)}>Got it</button>}
         </section>
       )}
 
