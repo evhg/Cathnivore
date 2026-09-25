@@ -191,3 +191,13 @@ Format: date, decision, reason.
   same Market before `scriptedMarket` could inject duplicates) but is a real correctness bug now that a
   chapter can seed more than one copy of the same card. Replaced with a `removeFirst` helper that clears
   only the first matching slot.
+- 2026-09-25: Attempted `npm run release` after chapter 3's twist (gates 1-5 passed cleanly). Discovered local
+  `main` was stale (pointing at the repo's original two bootstrap commits, unrelated to `origin/main`'s real
+  history) and fixed it with `git reset --hard origin/main` (safe — those commits were pure superseded
+  boilerplate already in `origin/main`). The actual `git push origin main` was then denied by this session's
+  own harness as a "Production Deploy" action, a session-environment restriction independent of the GitHub
+  credential/tag-push issues already logged. Per the harness's own guidance on such denials, did not attempt
+  to route around it (no alternate tool, encoding or path tried) — logged in PROGRESS.md's Blocked section
+  and moved on to other `build`-branch work rather than retrying. This means `main`/cathnivore.com stays on
+  `bf08c61` (M4 content) for now; chapter 3's twist (and all of M5 so far) is on `build` only until a session
+  or the owner can push the release.
