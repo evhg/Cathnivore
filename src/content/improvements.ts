@@ -160,8 +160,9 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Harbour Stall Licence',
     cost: 2,
     tags: ['coast', 'community'],
-    text: '+1 Marks production.',
-    onBuy: (state, producer) => addProduction(state, producer, { marks: 1 }),
+    flavor: 'Supply in Coast regions costs 1 less Produce per Outlet (minimum 1).',
+    text: '+1 Marks production. Supply in Coast regions costs 1 less Produce per Outlet (minimum 1).',
+    onBuy: (state, producer) => addProduction(state, producer, { marks: 1 }), // ongoing: checked in actions.ts Supply cost
   },
   {
     id: 'market-day-banner',

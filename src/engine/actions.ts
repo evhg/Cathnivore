@@ -30,13 +30,16 @@ const SUPPLY_BUYOUT_COST = 3
 const SUPPLY_OUTLET_BASE_COST = 2
 
 // SPEC 7 "Mobile Butcher"/"Wholesale Crate Deal": Supply in Pasture/Crop regions costs 1 less Produce
-// per Outlet (minimum 1).
+// per Outlet (minimum 1). M4 balance-loop iteration 7 (see DECISIONS.md) added "Harbour Stall Licence"'s
+// matching Coast discount to close the coverage gap (Pasture and Crop already had one, Coast didn't) —
+// a gentler, investment-gated version of iteration 6's reverted universal base-cost cut.
 function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, region: RegionId): number {
   const base = SUPPLY_OUTLET_BASE_COST
   const type = REGIONS[region].type
   if (
     (hasImprovement(state, producer, 'mobile-butcher') && type === 'pasture') ||
-    (hasImprovement(state, producer, 'wholesale-crate-deal') && type === 'crop')
+    (hasImprovement(state, producer, 'wholesale-crate-deal') && type === 'crop') ||
+    (hasImprovement(state, producer, 'harbour-stall-licence') && type === 'coast')
   ) {
     return Math.max(1, base - 1)
   }
