@@ -5,6 +5,7 @@ import { PRODUCERS } from '../content/producers'
 import { REGIONS } from '../content/map'
 import { HeuristicBot } from '../ai/heuristic'
 import { saveGame, clearGame } from '../platform/storage'
+import { playHapticsFor } from '../platform/haptics'
 import { actionLabel, actionGroupKey, actionGroupLabel, regionOf } from './actionLabel'
 import { enemyTurnEvents } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
@@ -87,6 +88,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   function advance(from: GameState, action: Action): void {
     const next = applyAction(from, action)
     const events = enemyTurnEvents(from, next)
+    playHapticsFor(action, next.log.slice(from.log.length), next.result)
     setState(next)
     if (events.length > 0) setPendingEnemyTurn(events)
   }

@@ -261,8 +261,20 @@ appeared.
   the icon drawing centred, and nothing else"). Added `public/social-preview.png` (1200x630, icon-on-paper,
   an interim placeholder — the real one is "the same style as screenshot 1," which needs in-game screenshots
   that don't exist yet) wired via `og:image`/`og:title`/`og:description` in `index.html`. Verified visually;
-  `npm run check` unaffected. Still open: haptics, the real 5 App Store screenshots and the final
-  social-preview image (both need in-game screenshots, part of M6's visual-review/store-assets work).
+  `npm run check` unaffected. Still open: the real 5 App Store screenshots and the final social-preview
+  image (both need in-game screenshots, part of M6's visual-review/store-assets work).
+- [x] Haptics (SPEC 2/10.1/11.1, STYLE.md 11 "a light tap when placing, a medium tap on liberation, and a
+  warning buzz on Lost Land and loss"): `src/platform/haptics.ts`'s `playHapticsFor(action, newEvents,
+  result)`, called from `Game.tsx`'s `advance()` right after every `applyAction`. Gated on
+  `Capacitor.isNativePlatform()` (same pattern `main.tsx` already uses for the service worker) with a
+  dynamic `import('@capacitor/haptics')` behind that gate, so the web bundle only pays for a small lazily-
+  loaded chunk (not inlined into the main bundle) rather than never shipping the plugin's JS at all — Vite
+  still needs a static chunk to exist for the dynamic import target, it just never fetches it off-native.
+  Fires from the new-log-entries slice each `advance()` call already has to hand (`next.log.slice(from.log.
+  length)`), the same slice `enemyTurnEvents` reads, so no separate liberation/Lost-Land tracking was needed.
+  `tests/haptics.test.ts` (4 tests) checks each STYLE.md-11 trigger shape doesn't throw off a native
+  platform (the only testable surface in a non-native env — the actual dispatch is a thin Capacitor plugin
+  call). `npm run check` (150 tests) and lint both pass clean.
 - [x] (partial) the privacy and support pages (SPEC 11.5): static `public/privacy/index.html` and
   `public/support/index.html` (Vite copies `public/` verbatim, so they land at `dist/privacy/index.html`
   and `dist/support/index.html`), styled with STYLE.md's colour tokens inline (a plain `<style>` block, not
