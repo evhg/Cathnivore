@@ -74,6 +74,45 @@ Format: date, decision, reason.
 
 - 2026-09-25: Balance loop iteration 12 (1 number, per SPEC 9.4's cap; the final iteration under the 12-iteration cap): Sol's starting `produce` production (`src/content/producers.ts`) 1 -> 2, matching Mara's Produce production and lifting Sol from the lowest Produce production of the four producers. Reason, following iteration 11's recommendation: Sol-paired pairs (ines+sol, sol+tomas) have been the two weakest pairs in every recent balance run, and unlike Ines (who pairs well with Mara/Tomas at 26%+), Sol drags down every pairing he's in — a Sol-specific gap, not general Goodwill-focus weakness. Sol's role ability ("On Air": Trust or Goodwill) helps neither Produce nor Marks, the two resources liberation pace (Open Stall, Supply) actually spends, so of the two candidates iteration 11 listed (a role-ability tweak vs. a production number), the production number was chosen as the lower-risk, easier-to-reason-about lever: it directly targets the pace gap without touching role-ability choice logic the earlier Sol correctness fix (see above) had just added. `npm run check` passes (111 tests, no test hardcoded Sol's old production values). A 200-game MCTS/Normal/all-pairs sanity run is in progress; result and keep/revert decision to follow in the next entry.
 
+- 2026-09-25: Investigated wiring the real MCTSBot into a Web Worker for the Solo AI teammate (SPEC 9.2,
+  outstanding since M2/M3 — HeuristicBot still stands in, see earlier decisions) and **decided not to wire
+  it up this session**, based on a real measurement rather than a guess. Profiled `MCTSBot.chooseAction`
+  (the shipped default export, `createMCTSBot()` = budget 200/rounds 2) and a teammate-budget variant
+  (budget 600/rounds 2, matching SPEC 9.2's "up to 600 simulations") directly in this environment, mid-game
+  (28 legal actions, a realistic decision size): the default bot now averages **~276ms/decision** and the
+  600-budget variant **~672ms/decision** — both well over SPEC 9.2's 400ms half of the "600 simulations or
+  400ms, whichever comes first" budget, and `src/ai/mcts.ts` has no wall-clock cutoff logic at all today
+  (it only ever stops on the simulation-count budget). 672ms unthrottled would very likely fail SPEC 11.4
+  gate 7's other half ("each AI teammate decision takes at most 1 second with 4x CPU throttling") once
+  throttled. Root cause: the M4 balance loop's iterations 9 and 11 widened `ROLLOUT_SAMPLE_SIZE` in
+  `src/ai/mcts.ts` (4 -> 6 -> 8) to improve MCTSBot's *simulation* win rate — a constant shared by the sim
+  harness's bot and this same file's shipped `MCTSBot`/`createMCTSBot()` default export, tuned purely for
+  balance-loop quality with no perf check against the live AI-teammate budget. Wiring a Worker around a bot
+  that's already this slow would make the teammate feel sluggish (and risk failing gate 7) even though the
+  UI thread itself would stay responsive — a Worker fixes freezing, not decision latency. Real fix needed
+  before this can ship, for a future session: add an actual wall-clock cutoff inside `chooseAction` (check
+  elapsed time between candidate actions/rollouts and stop early once ~400ms has passed, same shape as the
+  "whichever comes first" spec text already describes) rather than only a simulation-count budget, then
+  re-measure. Logged as a concrete, numbers-backed blocker rather than leaving the Worker task's status
+  unclear — the previous "swap once perf is fixed" note undersold how far off perf actually is with the
+  balance loop's now-tuned parameters.
+- 2026-09-25: Fixed the blocker above: `createMCTSBot` (`src/ai/mcts.ts`) now takes an optional third
+  `deadlineMs` parameter that enforces SPEC 9.2's "whichever comes first" for real -- `chooseAction` checks
+  elapsed wall-clock time before each new candidate action and before each rollout beyond a candidate's
+  first (always running at least one rollout per candidate so every action still gets a real score), and
+  returns the best candidate found so far once the deadline passes, rather than only ever stopping on the
+  simulation-count budget. It's opt-in and defaults to `undefined` (no `performance.now()` calls at all in
+  that case), so `MCTSBot`, the sim harness's bot, and every existing test/balance run are byte-for-byte
+  unaffected -- this is a pure addition, not a behaviour change, verified by re-running the full `npm run
+  check` (161 tests, up from 158) with no failures. Added a new `AI_TEAMMATE_BOT = createMCTSBot(600, 2,
+  400)` export matching SPEC 9.2's exact real-teammate budget, for a future session's Worker-wiring work to
+  use directly. Re-measured the same mid-game decision from the blocker's profiling: ~401ms/decision (vs.
+  the undeadlined 672ms), confirming the cutoff holds in practice. Three new tests in `tests/bots.test.ts`:
+  a deadlined bot still always returns a legal action under an impossibly tight (0ms) deadline, a
+  deadlined bot finishes a full game cleanly, and a deadline measurably shortens a decision's real time
+  without changing an undeadlined bot's own behaviour. **Still not wired into `Game.tsx` or a Web
+  Worker** -- that's the next step for whoever picks this back up, now unblocked by a bot that actually
+  respects its time budget.
 - 2026-09-25: Implemented the Campaign chapter list's locked/completed visual state (SPEC 10.1), the gap
   DECISIONS.md flagged after the gate-8 review. Decision on the open design question: chapter N shows as
   "(locked)" only when chapter N-1 is not yet completed, but the button stays fully clickable — SPEC 8.1

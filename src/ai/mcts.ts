@@ -86,11 +86,25 @@ function rollout(state: GameState, rounds: number, rng: RngState): [GameState, R
 // simulation budget across the candidate actions rather than growing a UCB tree — which matches that
 // plain description and is cheap enough to run inside a Web Worker (SPEC 9.2's AI teammate) or the sim
 // harness; revisit for a real UCB tree only if the balance loop (M4) shows this isn't strong enough.
-export function createMCTSBot(budget = 200, rolloutRounds = 2): Bot {
+//
+// `deadlineMs`, when given, enforces SPEC 9.2's "up to 600 simulations or 400ms per decision, whichever
+// comes first" for real: once it's exceeded, the search stops and returns the best candidate found so
+// far instead of finishing the full simulation budget. It's an opt-in third parameter (not the sim
+// harness's or `MCTSBot`'s default) so every existing caller — the balance-loop sim harness and the many
+// tests asserting exact, budget-only behaviour — is completely unaffected (no `performance.now()` calls
+// happen at all when it's omitted, so this is a pure addition, not a behaviour change). Measured directly
+// in this environment (see DECISIONS.md): at the real teammate's 600-simulation budget with this file's
+// current balance-tuned rollout parameters, an undeadlined decision already averages ~672ms — well over
+// 400ms — so a deadline is required before this bot can be wired into the live AI teammate, not just a
+// nice-to-have.
+export function createMCTSBot(budget = 200, rolloutRounds = 2, deadlineMs?: number): Bot {
   return {
     chooseAction(state, rng) {
       const actions = legalActions(state)
       if (actions.length <= 1) return [actions[0]!, rng]
+
+      const start = deadlineMs !== undefined ? performance.now() : 0
+      const outOfTime = () => deadlineMs !== undefined && performance.now() - start > deadlineMs
 
       const perAction = Math.max(1, Math.floor(budget / actions.length))
       let best = actions[0]!
@@ -98,15 +112,22 @@ export function createMCTSBot(budget = 200, rolloutRounds = 2): Bot {
       let r = rng
 
       for (const action of actions) {
+        if (outOfTime()) break
         const afterAction = applyAction(state, action)
         let total = 0
+        let count = 0
         for (let i = 0; i < perAction; i++) {
+          // Always run at least one rollout per candidate (i === 0) so every action gets a real score
+          // to compare, even under a very tight deadline — only the extra rollouts beyond the first are
+          // time-boxed.
+          if (i > 0 && outOfTime()) break
           const [reshuffled, r1] = reshuffleHiddenDecks(afterAction, r)
           const [finished, r2] = rollout(reshuffled, rolloutRounds, r1)
           r = r2
           total += evaluate(finished)
+          count++
         }
-        const avg = total / perAction
+        const avg = total / count
         if (avg > bestScore) {
           bestScore = avg
           best = action
@@ -118,3 +139,9 @@ export function createMCTSBot(budget = 200, rolloutRounds = 2): Bot {
 }
 
 export const MCTSBot = createMCTSBot()
+
+// SPEC 9.2's real AI teammate: "up to 600 simulations or 400ms per decision, whichever comes first."
+// Not yet wired into a Web Worker or used by `Game.tsx` (HeuristicBot still stands in there — see
+// PROGRESS.md/DECISIONS.md) — exported now so that follow-up work only has to build the Worker plumbing,
+// not also design the bot's own parameters.
+export const AI_TEAMMATE_BOT = createMCTSBot(600, 2, 400)

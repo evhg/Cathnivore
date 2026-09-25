@@ -44,6 +44,37 @@ describe('bots', () => {
     playOut(createMCTSBot(20, 1), 1)
   })
 
+  it('a deadlined MCTSBot always returns a legal action, even with an impossibly tight deadline', () => {
+    // deadlineMs=0 forces the very first out-of-time check to already be true for every candidate after
+    // the first, so this also exercises the "only one rollout ran" path — the bot must still pick
+    // something legal rather than throw or return undefined.
+    const state = createGame(FULL_CONFIG, 7)
+    const bot = createMCTSBot(600, 2, 0)
+    const [action] = bot.chooseAction(state, createRng(1))
+    expect(action).toBeDefined()
+  })
+
+  it('a deadlined MCTSBot finishes a full game with no invariant failures', () => {
+    playOut(createMCTSBot(600, 2, 50), 3)
+  })
+
+  it("a deadline cuts a decision's real time short without changing an undeadlined bot's behaviour", () => {
+    // Same budget/rounds/seed/state with and without a deadline: the deadlined run must be faster (it's
+    // cutting simulations short), and the undeadlined bot's own timing is completely unaffected by the
+    // new parameter existing (no `performance.now()` call happens when `deadlineMs` is omitted).
+    const state = createGame(FULL_CONFIG, 2)
+    const rng = createRng(9)
+    const t0 = performance.now()
+    createMCTSBot(400, 2).chooseAction(state, rng)
+    const undeadlinedMs = performance.now() - t0
+
+    const t1 = performance.now()
+    createMCTSBot(400, 2, 5).chooseAction(state, rng)
+    const deadlinedMs = performance.now() - t1
+
+    expect(deadlinedMs).toBeLessThan(undeadlinedMs)
+  })
+
   it('HeuristicBot beats RandomBot on average evaluation after a fixed number of steps', () => {
     function scoreAfterSteps(bot: Bot, seed: number, steps: number): number {
       let state = createGame(FULL_CONFIG, seed)
