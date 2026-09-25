@@ -400,6 +400,17 @@ button {
   gap: 8px;
 }
 
+.scene-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.scene-portrait {
+  flex-shrink: 0;
+  line-height: 0;
+}
+
 .scene-speaker {
   font-family: 'Fraunces', serif;
   font-weight: 600;

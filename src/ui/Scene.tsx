@@ -1,15 +1,25 @@
 import type { Scene as SceneData } from '../content/story/types'
+import { portraitKeyFor } from '../content/characters'
+import Portrait from './portraits/Portrait'
 
 // SPEC 10.1: the Scene (dialogue) screen. Lines reveal one at a time; the last tap continues on.
 export default function Scene({ scene, onContinue }: { scene: SceneData; onContinue: () => void }) {
   return (
     <main className="scene">
       <div className="scene-lines">
-        {scene.lines.map((l, i) => (
-          <p key={i} className="scene-line">
-            <span className="scene-speaker">{l.speaker}</span> {l.line}
-          </p>
-        ))}
+        {scene.lines.map((l, i) => {
+          const key = portraitKeyFor(l.speaker)
+          return (
+            <p key={i} className="scene-line">
+              {key && (
+                <span className="scene-portrait">
+                  <Portrait character={key} size={48} />
+                </span>
+              )}
+              <span className="scene-speaker">{l.speaker}</span> {l.line}
+            </p>
+          )
+        })}
       </div>
       <button onClick={onContinue}>Continue</button>
     </main>

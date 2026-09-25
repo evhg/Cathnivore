@@ -258,3 +258,22 @@ Format: date, decision, reason.
   without the usual Goodwill gate) that risks a rushed, undertested addition this late in a session; logged
   as a known simplification rather than attempted hastily. The lock/unlock mechanic itself — the part with
   real rules consequences — is implemented and tested. Revisit if a future session has spare time before M7.
+
+- 2026-09-25: Built STYLE.md 9's portraits (M5's last remaining checklist item) as a single parametric SVG
+  `Portrait` component (`src/ui/portraits/Portrait.tsx`) driven by a per-character data table
+  (`src/content/characters.ts`) rather than 9 x 4 hand-drawn image assets — cheaper to keep in sync with
+  STYLE.md, resolution-independent (one viewBox scales to all four required sizes), and themeable (ink/eye
+  colours use CSS variables so dark mode isn't a second art pass). Cath gets her own branch inside the same
+  component (bigger eyes, lash flick, blush, curtain bangs) per STYLE.md's stated exception, with her
+  hair/skin hardcoded from OWNER.md's two hex fields (no runtime Markdown parsing exists, matching
+  `scripts/release.ts`'s existing convention of hardcoding OWNER.md values with a comment). Wired into
+  `Scene.tsx` next to each dialogue line via `portraitKeyFor(speaker)`, which normalizes a free-form speaker
+  string ("Cath", "Cath's inner voice") to a character key. `tests/portraits.test.ts` checks the STYLE.md 9
+  cast all have specs, each spec stays within the "3 to 5 colours plus skin" budget, and every speaker
+  string actually used across `src/content/story/*.ts` resolves to a real portrait (would catch a future
+  chapter introducing an unhandled speaker name). Verified visually with a headless-Chromium screenshot of
+  chapter 1's opening scene (Cath/Mara/Pip all rendered distinctly, no console errors) — not a pixel-perfect
+  match to STYLE.md's illustration references (no reference art exists to match against), but a real,
+  distinguishable-per-character flat-geometric bust that reads at the sizes tested. Only the 9 named
+  characters from STYLE.md 9 are covered (not, e.g., generic villager portraits) since that's the section's
+  full scope. `npm run check` passes (147 unit tests).

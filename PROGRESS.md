@@ -194,10 +194,15 @@ M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons defe
     chapter 5. All of `npm run check` (139 unit tests) and the full 20-test e2e suite (`phone` +
     `desktop-chromium`) pass.
   - **Chapters 1 to 6 all exist and are wired into the campaign screen** — the last chapter-content task in
-    this checklist item, done. Portraits (STYLE.md 9) are still not started — none of the 6 chapters strictly
-    need them to be playable (they use placeholder text), so sequenced into M6 polish per SPEC 1.3's priority
-    order (rules > story > polish). Known, logged simplifications against SPEC 8's letter: chapter 6's "one
+    this checklist item, done. Known, logged simplifications against SPEC 8's letter: chapter 6's "one
     free Scheme" grant isn't implemented (see its own entry above), and the tutorial-gating note below.
+  - **Portraits (STYLE.md 9) now done** — a parametric SVG `Portrait` component (`src/ui/portraits/`) plus a
+    per-character data table (`src/content/characters.ts`) covers all 9 named characters (Cath's softer
+    K-pop-idol treatment included), wired into `Scene.tsx` next to each dialogue line. See DECISIONS.md for
+    why a parametric component rather than hand-drawn assets. `tests/portraits.test.ts` (4 tests) checks
+    cast coverage, the 3-5-colour budget and that every story speaker resolves to a portrait; verified
+    visually with a headless-Chromium screenshot of chapter 1's opening scene, no console errors. **M5's
+    checklist is now fully done** except for the two pending releases below (still blocked, see Blocked).
   - Tutorial prompts are currently always-visible/manually-advanced, not the full "only the action being
     taught is enabled" guided gating SPEC 8.1 describes for chapters 1-2's first few steps — revisit once
     more chapters exist to see whether a shared gating mechanism is worth building or each chapter's first
