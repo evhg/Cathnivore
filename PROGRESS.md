@@ -27,8 +27,10 @@ blocked on something outside session capability, this session did real, unblocke
   unexercised by any test;
 - **wrote the App Store metadata SPEC 11.6 asks for** (the `store/` directory didn't exist yet): fastlane
   `deliver`'s standard layout, an age-rating answer sheet, and a minimal `Fastfile` so `store.yml`'s upload
-  step stops always skipping. Review contact name/phone are new `PASTE-*` placeholders in `OWNER.md`.
-  Screenshots still need their own Playwright pass;
+  step stops always skipping. Review contact name/phone are new `PASTE-*` placeholders in `OWNER.md`;
+- **generated the 5 App Store screenshots** SPEC 11.6/STYLE.md 13 call for, at Apple's required 1284x2778
+  size (checked against Apple's own docs), via a new dedicated `store-screenshots` Playwright project —
+  **all of M6's store-assets checklist item is now done**;
 - re-confirmed the standing push-restriction denial (one quick check, as established) and moved on rather
   than re-investigating a well-documented blocker again.
 `npm run check`/`npm run gates` both still pass clean end to end (164 unit tests, 35 e2e/gate-5 tests; gate
@@ -336,9 +338,15 @@ redone after more content lands.
   UGC), and a minimal `store/Fastfile` marker lets `store.yml`'s existing `if [ -f store/Fastfile ]` check
   actually attempt an upload instead of always skipping. Review contact name/phone are `PASTE-*`
   placeholders in `OWNER.md`, same pattern as its existing seller-name placeholder — App Store Connect needs
-  a real person there, which no session has. Screenshots (SPEC 11.6/STYLE.md 13: 5 captioned portrait shots
-  from scripted game states, a different size/style from `e2e/screenshots.spec.ts`'s gate-8 review shots)
-  still need their own Playwright pass.
+  a real person there, which no session has. **Screenshots are now done too (same later session):** a
+  dedicated `store-screenshots` Playwright project (`playwright.config.ts`, 428x926 CSS viewport at
+  deviceScaleFactor 3 — Apple's required 1284x2778 physical pixels for the 6.5" display set, checked
+  directly against Apple's current developer docs) and `e2e/store-screenshots.spec.ts` capture the exact 5
+  shots/captions STYLE.md 13 lists, compositing each caption banner onto the live page rather than building
+  it into the app. Committed to `store/screenshots/`. The victory shot uses chapter 6 specifically (the only
+  campaign win actually about Kingsmarket, matching its caption); HeuristicBot only wins it ~63% of the time
+  so that one test isn't wired into any gate and may need a re-run to land on a win — not a concern for a
+  one-time manual asset.
 - [x] STYLE.md 5 resource icons, now fully wired: `Game.tsx`'s top bar (Round/Trust/Lost-Land/Rift, next to
   their existing text labels — text stays so nothing regresses for accessibility/screen readers, the icons
   are `aria-hidden`), `FarmSheet.tsx`'s per-producer production line (Produce/Marks/Goodwill, matching

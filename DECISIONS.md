@@ -583,3 +583,20 @@ Format: date, decision, reason.
   misrepresenting the app more than a manual step does. Review contact name/phone have no honest value a
   session can supply (no real person to name), so they're `PASTE-*` placeholders in `OWNER.md`, matching
   the existing seller-name placeholder's precedent rather than inventing a name.
+- **2026-09-25 (this session):** Generated the 5 App Store screenshots SPEC 11.6/STYLE.md 13 call for, the
+  last open piece of M6's store-assets checklist item. Checked Apple's current developer docs directly for
+  the required size rather than guessing or reusing a stale number: 1284x2778 physical pixels (the "6.5-inch
+  display" set, the largest currently *required* — a 6.9" set exists but isn't mandatory). Implemented as a
+  428x926 CSS viewport at `deviceScaleFactor: 3` (matching a real iPhone 14 Plus's logical/physical pixel
+  ratio) rather than a literal 1284px-wide CSS viewport, since the latter would cross the app's own 1024px
+  desktop-layout breakpoint and capture the 3-column desktop UI instead of the phone game screen — confirmed
+  by hitting exactly that failure mode once (a `.card-sheet` locator matched 3 elements including
+  always-in-DOM, CSS-hidden desktop panels) before adding the dedicated `store-screenshots` Playwright
+  project. Each caption banner (Fraunces, STYLE.md 13) is composited onto the live page via a small
+  `page.evaluate` DOM injection rather than built into the app UI, since it's store-listing decoration a
+  real player never sees. The victory shot specifically uses campaign chapter 6 ("Kingsmarket"), not Quick
+  Game or another chapter, since it's the only campaign win actually about liberating Kingsmarket — matching
+  STYLE.md 13's exact caption honestly, at the cost of that one test needing an occasional re-run (confirmed
+  directly: one run lost via lostLand at round 10) since HeuristicBot only clears chapter 6 ~63% of the time
+  (SPEC 9.4's own >=50% floor). Not wired into any gate — it's a one-time manual asset, not a correctness
+  check, so that flakiness is an acceptable, logged tradeoff rather than something to chase to 100%.
