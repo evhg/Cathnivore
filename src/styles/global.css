@@ -518,26 +518,31 @@ html.native-app body {
   touch-action: pan-x pan-y;
 }
 
-/* Setup screen (SPEC 10.1): plain semantic markup so far (M3), but with no layout CSS at all its
-   producer/mode/difficulty <label> rows ran together inline instead of one option per line — found while
+/* Setup and Settings screens (SPEC 10.1): plain semantic markup so far (M3/M6), but with no layout CSS at
+   all their option <label> rows ran together inline instead of one option per line — found while
    spot-checking gate 8's screenshots. Minimal block-per-option spacing, matching the paper-card look used
-   elsewhere (buttons, sheets), without a full visual-design pass. */
-.setup {
+   elsewhere (buttons, sheets), without a full visual-design pass. Settings shares the same rules since its
+   markup (main > section > h2/label/button) is structurally the same form-screen shape. */
+.setup,
+.settings {
   max-width: 480px;
   margin: 0 auto;
   padding: 16px;
 }
 
-.setup section {
+.setup section,
+.settings section {
   margin-top: 20px;
 }
 
-.setup h2 {
+.setup h2,
+.settings h2 {
   font-size: 16px;
   margin-bottom: 8px;
 }
 
-.setup label {
+.setup label,
+.settings label {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -545,7 +550,8 @@ html.native-app body {
   border-radius: 8px;
 }
 
-.setup label:hover {
+.setup label:hover,
+.settings label:hover {
   background: var(--paper-2);
 }
 
@@ -561,6 +567,23 @@ html.native-app body {
   font: inherit;
 }
 
-.setup > button {
+.setup > button,
+.settings > button {
   margin-top: 20px;
+}
+
+.settings .reset-confirm {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--clay-deep);
+  border-radius: 8px;
+  background: var(--paper-2);
+}
+
+.settings .reset-confirm p {
+  margin: 0 0 10px;
+}
+
+.settings .reset-confirm button {
+  margin-right: 8px;
 }

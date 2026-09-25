@@ -394,3 +394,14 @@ Format: date, decision, reason.
   adversarial pass once the UI has more screens/animations to review is worth more than running it now on a
   small, still-changing set. No blocking issues found this pass (see PROGRESS.md for the two minor,
   logged-not-fixed observations).
+
+- 2026-09-25 ~20:22 UTC: Built the Settings screen (SPEC 10.1), found entirely missing while auditing
+  `App.tsx`'s screen list against SPEC 10.1's — Credits is also missing, logged as still open rather than
+  built too (ran out of session budget; Settings has real gameplay effect via AI speed, Credits is purely
+  cosmetic, so it was the better use of remaining time). Animations/colour-blind-patterns toggles are real,
+  persisted settings but currently no-ops — there's no animation system or colour-blind rendering mode to
+  gate yet (both are still-open M6 items in their own right); storing the toggle now means the actual
+  rendering work later just has to read a value that's already wired through, not invent the settings
+  plumbing too. Chose a plain checkbox/radio list with the same minimal-CSS treatment as the Setup-screen
+  fix earlier this session, rather than a fuller design pass, consistent with SPEC 1.3's priority order
+  (stability/correctness over polish) this late in a single session.

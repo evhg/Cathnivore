@@ -36,3 +36,10 @@ test('scene screen has no serious or critical accessibility issues', async ({ pa
   await expect(page.locator('.scene')).toBeVisible()
   await assertNoSeriousIssues(page)
 })
+
+test('settings screen has no serious or critical accessibility issues', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Settings').click()
+  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+  await assertNoSeriousIssues(page)
+})

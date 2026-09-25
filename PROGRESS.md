@@ -335,6 +335,23 @@ appeared.
   open: chapters 2-6's scenes/screens, the Settings/Campaign-chapter-list
   screens, and — the actual point of gate 8 — a second, more adversarial pass (ideally the literal subagent
   SPEC calls for) once more screens/animations exist, so it's not spent early on a UI that's still changing.
+- [x] Settings screen (SPEC 10.1: "Settings: animations, colour-blind patterns, AI speed, and 'Reset all
+  data' with a confirmation") — found missing entirely while checking SPEC 10.1's screen list against
+  `App.tsx`'s `Screen` union during this M6 session (Credits is also still missing, see below). New
+  `src/platform/settings.ts` (`loadSettings`/`saveSettings`, `cathnivore:settings:v1` via the existing
+  `storage` interface, same pattern as `platform/storage.ts`'s save/campaign keys) and `src/ui/Settings.tsx`,
+  reached from a new title-screen button. Animations and colour-blind-patterns are real, persisted booleans
+  but have no visible effect yet (no animations or colour-blind rendering mode exist to gate — both are
+  logged as open, not faked); AI speed is real and wired end-to-end: `AI_SPEED_DELAY_MS` now drives
+  `Game.tsx`'s AI-turn pacing (previously a hardcoded `150`). Reset all data needs an explicit second
+  confirmation click (never a single tap) and clears both save keys via the existing `clearGame`/
+  `CAMPAIGN_KEY` — SPEC 11.3's two keys only, settings themselves persist through a reset. Reused the
+  Setup-screen CSS fix from earlier in this session (`.setup, .settings` share the same block-per-option
+  rules) rather than duplicating it. `tests/settings.test.ts` (4 tests: defaults, round-trip, corrupt-value
+  fallback, AI-speed delay ordering) and a new e2e test (`title.spec.ts`: toggling AI speed persists across
+  reload, Reset all data requires confirming) plus a settings-screen accessibility check. `npm run check`
+  (155 tests) and the full 48-test e2e/accessibility suite pass clean.
+- [ ] Credits screen (SPEC 10.1's title-screen nav list) — same gap found alongside Settings, not yet built.
 - [ ] animations, fixes from a fuller visual review
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 

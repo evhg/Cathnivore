@@ -4,6 +4,7 @@ import Setup, { type Mode } from './ui/Setup'
 import Game from './ui/Game'
 import Scene from './ui/Scene'
 import RulesReference from './ui/RulesReference'
+import Settings from './ui/Settings'
 import { loadGame, loadCampaign, markChapterComplete } from './platform/storage'
 import { CHAPTERS, chapterConfig, type Chapter } from './content/chapters'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
@@ -27,6 +28,7 @@ type Screen =
   | { name: 'title' }
   | { name: 'setup' }
   | { name: 'rules' }
+  | { name: 'settings' }
   | { name: 'campaign' }
   | { name: 'chapterModeSelect'; chapter: Chapter }
   | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing'; mode: Mode }
@@ -94,6 +96,7 @@ export default function App() {
         <button onClick={() => setScreen({ name: 'campaign' })}>Campaign</button>
         <button onClick={() => setScreen({ name: 'setup' })}>Quick Game</button>
         <button onClick={() => setScreen({ name: 'rules' })}>How to Play</button>
+        <button onClick={() => setScreen({ name: 'settings' })}>Settings</button>
         <footer>
           <p>A work of satire. All places, companies and people are fictional.</p>
           <p>No tracking. Your saves stay on your device.</p>
@@ -111,6 +114,10 @@ export default function App() {
 
   if (screen.name === 'rules') {
     return <RulesReference onClose={() => setScreen({ name: 'title' })} />
+  }
+
+  if (screen.name === 'settings') {
+    return <Settings onClose={() => setScreen({ name: 'title' })} />
   }
 
   if (screen.name === 'campaign') {

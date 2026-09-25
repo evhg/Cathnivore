@@ -6,6 +6,7 @@ import { REGIONS } from '../content/map'
 import { HeuristicBot } from '../ai/heuristic'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
+import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionLabel, actionGroupKey, actionGroupLabel, regionOf } from './actionLabel'
 import { enemyTurnEvents } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
@@ -130,7 +131,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         rngRef.current = nextRng
         advance(state, action)
       },
-      autoplayRef.current ? 0 : 150,
+      autoplayRef.current ? 0 : AI_SPEED_DELAY_MS[loadSettings().aiSpeed],
     )
     return () => clearTimeout(timer)
   }, [state, pendingEnemyTurn.length, pendingMidScene])
