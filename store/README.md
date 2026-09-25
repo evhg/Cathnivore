@@ -15,4 +15,15 @@
   Playwright from scripted game states at the size Apple currently requires for the largest iPhone, each
   with a specific caption. Not built yet — needs its own scripted-state Playwright pass, separate from
   `e2e/screenshots.spec.ts`'s gate-8 review screenshots (which are unstyled and the wrong aspect/size for
-  App Store submission).
+  App Store submission). **Required size, checked directly against Apple's current developer docs this
+  session:** 1284×2778 px portrait (the "6.5-inch display" set — Apple's largest *required* size; a 6.9"
+  set would also work but isn't required, and submitting the 6.5" set lets the Store auto-scale down for
+  smaller devices). PNG or JPEG, no alpha/transparency. The 5 shots and captions are exact in STYLE.md 13:
+  1. mid-game map with the enemy plan visible ("See their next move. Beat it.");
+  2. Cath's Plan with a witty scheme ("Her schemes. Your call.");
+  3. a story scene ("A campaign with a twist. Or three.");
+  4. an Agenda headline during the enemy turn ("Big Food. Big Pharma. Small print.");
+  5. a victory screen ("Take back Kingsmarket.").
+  Each needs a Fraunces caption banner composited at the top (STYLE.md 13) — plausibly a small wrapper
+  around each scripted-state screenshot rather than in-app UI, since these banners are store-listing
+  decoration, not part of the game screen itself.
