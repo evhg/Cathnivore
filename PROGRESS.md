@@ -1,7 +1,8 @@
 # Progress
 
 ## Current milestone
-M5 Campaign is content-complete; M6 Polish is nearly done. M1-M4 are complete (M4's balance loop 12/12
+M5 Campaign and M6 Polish are both content-complete — every checklist item in both sections is done except
+the release/`ios-<n>`/`store-<n>` pushes, which stay blocked (see below). M1-M4 are complete (M4's balance loop 12/12
 iterations, see DECISIONS.md). `main` is still on `bf08c61` (pre-M5): re-checked again this session with
 the same cheap throwaway-branch dry-run push, still denied outright by the harness's own "Production
 Deploy" classifier — a standing restriction confirmed across 6+ consecutive sessions now. All of M5/M6's
