@@ -13,6 +13,8 @@ You are building the game described in `SPEC.md`, fully unattended. A routine on
 5. Check the time left against `DEADLINE`. The first session creates it as now plus 7 days, in UTC. Follow SPEC section 12; with less than 18 hours left, do only M7.
 6. If `PROGRESS.md` doesn't exist yet, you are at the start of M0. Create it from SPEC sections 12 and 13.
 7. Work for about 50 minutes. After each task, run its checks, tick it in `PROGRESS.md`, then commit and push to `build`.
+   - **Use the full ~50 minutes** (owner instruction, 2026-09-25). Finishing one or two tasks is not a reason to stop: note the time you took the lock and keep starting the next unchecked task until about 45 minutes have passed. Early sessions ended after 6-21 minutes, which wasted half of each hour.
+   - **Don't start anything long after about 40 minutes** (a sim run, a big refactor). Wrap up by about 55 minutes so the lock is released before the next session starts at :51; one session ran 70 minutes and the next hour's session found the lock held and did nothing.
 8. Before ending, make `PROGRESS.md` accurate, delete `.build-lock`, then commit and push.
 
 ## Non-negotiables (full list in SPEC section 1)
