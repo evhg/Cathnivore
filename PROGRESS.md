@@ -359,8 +359,15 @@ Apple Team ID in case secrets have appeared.
   fallback, AI-speed delay ordering) and a new e2e test (`title.spec.ts`: toggling AI speed persists across
   reload, Reset all data requires confirming) plus a settings-screen accessibility check. `npm run check`
   (155 tests) and the full 48-test e2e/accessibility suite pass clean.
-- [ ] Credits screen (SPEC 10.1's title-screen nav list) — same gap found alongside Settings, not yet built.
-- [ ] animations, fixes from a fuller visual review
+- [x] Credits screen (SPEC 10.1's title-screen nav list) — `src/ui/Credits.tsx`: a cast list (SPEC 3.2-3.4's
+  playable producers plus Cath) and a short "made with"/satire note, reached from a new title-screen button.
+  Styled via the existing `.settings` block-per-section rules (shares its markup shape) plus a small
+  `.credits ul/li` addition. `e2e/title.spec.ts` (open/close) and `e2e/accessibility.spec.ts` (zero
+  serious/critical axe issues) both cover it; `e2e/screenshots.spec.ts` also now captures it (screenshot 9)
+  plus the previously-uncaptured Campaign chapter-list screen (screenshot 10). All pass at both sizes.
+- [ ] animations, fixes from a fuller visual review — a real adversarial gate-8 pass (the literal subagent
+  review SPEC 11.4 gate 8 calls for, not just a direct look) is running this session against the freshly
+  regenerated 20-screenshot set (10 screens x phone/desktop); findings and fixes to follow in the next entry.
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
 ### M7 Hardening (final 18 hours; no new features)

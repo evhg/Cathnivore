@@ -50,4 +50,14 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
   await page.getByText('Settings').click()
   await page.getByRole('heading', { name: 'Settings' }).waitFor()
   await shoot(page, project, '8-settings')
+
+  await page.goto('/')
+  await page.getByText('Credits').click()
+  await page.getByRole('heading', { name: 'Credits' }).waitFor()
+  await shoot(page, project, '9-credits')
+
+  await page.goto('/')
+  await page.getByText('Campaign').click()
+  await page.getByRole('heading', { name: 'Campaign' }).waitFor()
+  await shoot(page, project, '10-campaign')
 })
