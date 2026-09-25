@@ -46,9 +46,9 @@ export function applyAnimationsSetting(animations: boolean): void {
   document.documentElement.classList.toggle('no-animations', !animations)
 }
 
-// The AI teammate's "thinking" pause before it acts (Game.tsx) — SPEC 9.2's real budget (up to 600
-// simulations/400ms) applies once the MCTS-in-Worker teammate exists; until then this just paces
-// HeuristicBot's stand-in moves so they don't feel instant, at a speed the player controls.
+// The AI teammate's "thinking" pause before it starts its real decision (Game.tsx) — on top of this, the
+// MCTS-in-Worker teammate itself takes up to SPEC 9.2's 400ms deadline (src/ai/mcts.ts's `AI_TEAMMATE_BOT`)
+// to actually choose. This delay alone doesn't dictate feel; it's a speed the player controls.
 export const AI_SPEED_DELAY_MS: Record<AiSpeed, number> = {
   slow: 500,
   normal: 150,

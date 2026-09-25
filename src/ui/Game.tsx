@@ -4,6 +4,7 @@ import { createRng } from '../engine/rng'
 import { PRODUCERS } from '../content/producers'
 import { REGIONS } from '../content/map'
 import { HeuristicBot } from '../ai/heuristic'
+import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
@@ -83,6 +84,15 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // be undone individually, right back down to that point.
   const undoStackRef = useRef<{ state: GameState; irreversible: boolean }[]>([])
   const rngRef = useRef(createRng(seed + 1))
+  // SPEC 9.2's real AI teammate ("MCTSBot running in a Web Worker so the screen never freezes"), created
+  // lazily so hotseat/campaign games with no AI producer never spin one up. Terminated on unmount.
+  const aiWorkerRef = useRef<Worker | null>(null)
+  useEffect(() => {
+    return () => {
+      aiWorkerRef.current?.terminate()
+      aiWorkerRef.current = null
+    }
+  }, [])
   const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
   const [showLog, setShowLog] = useState(false)
@@ -135,15 +145,43 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     const activeProducer = decision ? decision.producer : state.activeProducer
     const aiShouldAct = autoplayRef.current || (aiProducer !== null && activeProducer === aiProducer)
     if (!aiShouldAct) return
-    const timer = setTimeout(
-      () => {
+
+    // Autoplay (e2e tests, SPEC 11.4 gate 5's "HeuristicBot choices" driver) always uses the fast,
+    // synchronous HeuristicBot for every producer — including the AI teammate's own seat — so a test can
+    // finish a whole game in milliseconds rather than waiting on real MCTS decisions.
+    if (autoplayRef.current) {
+      const timer = setTimeout(() => {
         const [action, nextRng] = HeuristicBot.chooseAction(state, rngRef.current)
         rngRef.current = nextRng
         advance(state, action)
-      },
-      autoplayRef.current ? 0 : AI_SPEED_DELAY_MS[loadSettings().aiSpeed],
-    )
-    return () => clearTimeout(timer)
+      }, 0)
+      return () => clearTimeout(timer)
+    }
+
+    // The real Solo AI teammate (SPEC 9.2): MCTSBot in a Web Worker, so its up-to-400ms decision never
+    // blocks the UI thread. `cancelled` guards against a stale response landing after the state this
+    // decision was made against has already changed (e.g. the player undid something while it was
+    // thinking, or the component unmounted).
+    let cancelled = false
+    const timer = setTimeout(() => {
+      if (!aiWorkerRef.current) {
+        aiWorkerRef.current = new Worker(new URL('../ai/aiWorker.ts', import.meta.url), { type: 'module' })
+      }
+      const worker = aiWorkerRef.current
+      const onMessage = (event: MessageEvent<AIWorkerResponse>) => {
+        worker.removeEventListener('message', onMessage)
+        if (cancelled) return
+        rngRef.current = event.data.rng
+        advance(state, event.data.action)
+      }
+      worker.addEventListener('message', onMessage)
+      const request: AIWorkerRequest = { state, rng: rngRef.current }
+      worker.postMessage(request)
+    }, AI_SPEED_DELAY_MS[loadSettings().aiSpeed])
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
   }, [state, pendingEnemyTurn.length, pendingMidScene])
 
   // Skip the (otherwise real-time) enemy-turn caption playback instantly under e2e autoplay.

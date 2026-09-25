@@ -25,15 +25,17 @@ if (!hasWebkit) {
 }
 const projects = hasWebkit ? '' : '--project=phone --project=desktop-chromium'
 const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : '')
-const GATE_5_SPECS = 'e2e/campaign.spec.ts e2e/hotseat.spec.ts e2e/offline.spec.ts e2e/quick-game.spec.ts e2e/title.spec.ts'
+const GATE_5_SPECS =
+  'e2e/ai-teammate.spec.ts e2e/campaign.spec.ts e2e/hotseat.spec.ts e2e/offline.spec.ts e2e/quick-game.spec.ts e2e/title.spec.ts'
 run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} ${GATE_5_SPECS}`)
 
 run('Gate 6: Accessibility (axe)', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} e2e/accessibility.spec.ts`)
 
 // SPEC 11.4 gate 7: "Lighthouse mobile performance score of 85 or more on the production build served
 // locally." (The gate's other half, "each AI teammate decision takes at most 1 second with 4x CPU
-// throttling," needs the real MCTS-in-Worker AI teammate, which doesn't exist yet — HeuristicBot still
-// stands in, see DECISIONS.md — so it can't be checked here and is logged as still open.)
+// throttling," is now covered too — the real MCTS-in-Worker AI teammate exists (see DECISIONS.md) and
+// `e2e/ai-teammate.spec.ts`'s throttled test, run as part of Gate 5 above, measures it directly with a
+// real CDP `Emulation.setCPUThrottlingRate` session rather than just asserting it.)
 async function waitForServer(url: string, timeoutMs: number): Promise<void> {
   const start = Date.now()
   while (Date.now() - start < timeoutMs) {
@@ -84,8 +86,8 @@ async function runLighthouseGate(): Promise<void> {
       throw new Error(`Gate 7 failed: Lighthouse performance score ${score} is below the required 85.`)
     }
     console.log(
-      'Gate 7 (Lighthouse half) passed. Still open: "each AI teammate decision takes at most 1 second with ' +
-        '4x CPU throttling" needs the real MCTS-in-Worker AI teammate (M6/DECISIONS.md).',
+      'Gate 7 (Lighthouse half) passed. The AI-teammate-under-throttling half is checked by ' +
+        'e2e/ai-teammate.spec.ts as part of Gate 5, not here.',
     )
   } finally {
     killServer(server)

@@ -113,6 +113,28 @@ Format: date, decision, reason.
   without changing an undeadlined bot's own behaviour. **Still not wired into `Game.tsx` or a Web
   Worker** -- that's the next step for whoever picks this back up, now unblocked by a bot that actually
   respects its time budget.
+- 2026-09-25: Wired the real MCTS-in-Worker AI teammate into `Game.tsx`, closing the gap the entry above
+  set up. `src/ai/aiWorker.ts` is a small Worker entry point: it receives `{state, rng}`, runs
+  `AI_TEAMMATE_BOT.chooseAction`, and posts back `{action, rng}` — `GameState`/`Action`/`RngState` are all
+  plain JSON-shaped data (SPEC 9.1), so they cross the structured-clone boundary with no special handling.
+  `Game.tsx`'s Solo-mode AI-turn effect now branches: autoplay (e2e tests, SPEC 11.4 gate 5's own
+  "HeuristicBot choices" driver) keeps using the fast synchronous `HeuristicBot` for every producer,
+  completely unchanged, so no existing test needed touching; the *real* Solo AI teammate now creates a
+  Worker lazily (`aiWorkerRef`, terminated on unmount), posts the current state, and applies whatever
+  action comes back. A `cancelled` flag on each effect run guards against a stale Worker response landing
+  after the state it was computed against has already changed. Bundle impact: Vite gives the worker its
+  own chunk (`aiWorker-*.js`, ~44 KB including the engine/AI code it needs) rather than inlining it into
+  the main bundle, which stayed at ~78 KB gzipped — comfortably under SPEC 11.4 gate 4's 400 KB budget.
+  Verified two ways, both new `e2e/ai-teammate.spec.ts` tests run as part of Gate 5: (1) a real Solo game,
+  played for real (no autoplay) through Mara's turn, shows Tomas (the AI teammate) then acting on his own
+  with zero console errors; (2) SPEC 11.4 gate 7's previously-unchecked other half — "each AI teammate
+  decision takes at most 1 second with 4x CPU throttling" — is now measured for real with a CDP
+  `Emulation.setCPUThrottlingRate(4)` session wrapped around a full turn-change-to-turn-change decision,
+  which stays under 1 second: `deadlineMs` is a wall-clock cutoff (not a simulation-count one), so
+  throttling means fewer simulations complete in the same ~400ms window rather than a longer window.
+  `scripts/gates.ts`'s Gate 7 log message and stale comment updated to point at this instead of "still
+  open." `npm run gates` passes clean end to end (gates 1-7; 8 stays a logged stub, unrelated to this
+  change). SPEC 9.2's AI teammate is now the real thing, not a stand-in.
 - 2026-09-25: Implemented the Campaign chapter list's locked/completed visual state (SPEC 10.1), the gap
   DECISIONS.md flagged after the gate-8 review. Decision on the open design question: chapter N shows as
   "(locked)" only when chapter N-1 is not yet completed, but the button stays fully clickable — SPEC 8.1
