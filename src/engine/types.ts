@@ -101,6 +101,32 @@ export interface GameConfig {
   // considerably longer than the full game's 10-round cap). Overrides that pool size for this game only;
   // absent means the ordinary difficulty-table value.
   lostLandPoolOverride?: number
+  // SPEC 8.2 ch5: "the chapter starts from a pre-built mid-game position." Replaces the normal SPEC 4.3.2
+  // per-region setup (Kingsmarket 2 Outlets/1 Buyout/2 Doubt, everyone else 1 Outlet, +1 Doubt on Coast)
+  // and the normal 2-Stalls-at-home placement with an explicit board: which regions already have which
+  // enemy pieces and Stalls, which are already liberated, and each producer's starting resources and
+  // production. Applied once in `createGame`, after the deck-building/Scout-reveal steps still run
+  // normally against this board. Absent means the ordinary fresh SPEC 4.3 setup.
+  scriptedStart?: {
+    rift?: number
+    publicTrust?: number
+    regions?: Partial<
+      Record<
+        RegionId,
+        {
+          outlets?: number
+          buyouts?: number
+          doubt?: number
+          lostLand?: number
+          stalls?: Partial<Record<ProducerId, number>>
+          liberated?: boolean
+        }
+      >
+    >
+    producers?: Partial<
+      Record<ProducerId, { resources?: Partial<Record<ResourceKind, number>>; production?: Partial<Record<ResourceKind, number>> }>
+    >
+  }
 }
 
 // Improvement/Scheme content (including effect functions) lives in src/content, keyed by these ids.

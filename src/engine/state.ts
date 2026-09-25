@@ -58,7 +58,7 @@ export function createGame(config: GameConfig, seed: number): GameState {
       roleUsedThisRound: false,
     }
     producers[pid] = state
-    if (active.has(def.home)) {
+    if (!config.scriptedStart && active.has(def.home)) {
       regions[def.home].stalls[pid] = 2
     }
   }
@@ -132,17 +132,65 @@ export function createGame(config: GameConfig, seed: number): GameState {
     result: null,
   }
 
-  // SPEC 4.3.2: Kingsmarket 2 Outlets/1 Buyout/2 Doubt; every other region 1 Outlet; each Coast +1 Doubt.
-  for (const id of config.activeRegions) {
-    const def = REGIONS[id]
-    if (def.type === 'capital') {
-      state = addOutlets(state, id, config.difficulty === 'hard' ? 3 : 2)
-      state = addBuyout(state, id, 1)
-      state = addDoubt(state, id, 2)
-    } else {
-      state = addOutlets(state, id, 1)
-      if (def.type === 'coast') state = addDoubt(state, id, 1)
-      if (def.type === 'pasture' && config.difficulty === 'hard') state = addDoubt(state, id, 1)
+  if (config.scriptedStart) {
+    // SPEC 8.2 ch5: an explicit pre-built board replaces the normal SPEC 4.3.2 setup entirely.
+    const start = config.scriptedStart
+    for (const [id, r] of Object.entries(start.regions ?? {}) as [RegionState['id'], NonNullable<typeof start.regions>[RegionState['id']]][]) {
+      if (!r) continue
+      if (r.outlets) state = addOutlets(state, id, r.outlets)
+      if (r.buyouts) state = addBuyout(state, id, r.buyouts)
+      if (r.doubt) state = addDoubt(state, id, r.doubt)
+      if (r.lostLand) {
+        state = { ...state, lostLandPool: Math.max(0, state.lostLandPool - r.lostLand) }
+      }
+      const stalls = r.stalls ?? {}
+      const liberated = r.liberated ?? false
+      state = {
+        ...state,
+        regions: {
+          ...state.regions,
+          [id]: {
+            ...state.regions[id],
+            stalls: { ...state.regions[id].stalls, ...stalls },
+            lostLand: state.regions[id].lostLand + (r.lostLand ?? 0),
+            liberated,
+            everLiberated: state.regions[id].everLiberated || liberated,
+          },
+        },
+      }
+    }
+    if (start.rift !== undefined) state = { ...state, rift: start.rift }
+    if (start.publicTrust !== undefined) state = { ...state, publicTrust: start.publicTrust }
+    for (const [pid, overrides] of Object.entries(start.producers ?? {}) as [
+      keyof typeof producers,
+      NonNullable<typeof start.producers>[keyof typeof producers],
+    ][]) {
+      if (!overrides || !state.producers[pid]) continue
+      state = {
+        ...state,
+        producers: {
+          ...state.producers,
+          [pid]: {
+            ...state.producers[pid],
+            resources: { ...state.producers[pid].resources, ...overrides.resources },
+            production: { ...state.producers[pid].production, ...overrides.production },
+          },
+        },
+      }
+    }
+  } else {
+    // SPEC 4.3.2: Kingsmarket 2 Outlets/1 Buyout/2 Doubt; every other region 1 Outlet; each Coast +1 Doubt.
+    for (const id of config.activeRegions) {
+      const def = REGIONS[id]
+      if (def.type === 'capital') {
+        state = addOutlets(state, id, config.difficulty === 'hard' ? 3 : 2)
+        state = addBuyout(state, id, 1)
+        state = addDoubt(state, id, 2)
+      } else {
+        state = addOutlets(state, id, 1)
+        if (def.type === 'coast') state = addDoubt(state, id, 1)
+        if (def.type === 'pasture' && config.difficulty === 'hard') state = addDoubt(state, id, 1)
+      }
     }
   }
 
