@@ -8,5 +8,6 @@ Fill these in before the first run (SETUP.md explains where each one comes from)
 - **Support email (shown publicly on cathnivore.com/support):** claude@cathnivore.com
 - **Vercel address of the project (for example cathnivore.vercel.app):** cathnivore.vercel.app
 - **Seller name shown on the App Store (your legal name or company):** PASTE-NAME
+- **App Review contact name and phone number (App Store Connect requires both; not shown publicly):** PASTE-FIRST-NAME PASTE-LAST-NAME, PASTE-PHONE-NUMBER
 - **Cathnivore's hair colour (hex, from the style board's hair control):** #2E211C
 - **Cathnivore's skin colour (hex, from the style board's skin control):** #F7DCCB

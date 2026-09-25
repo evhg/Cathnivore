@@ -1,0 +1,15 @@
+Cathnivore is a free, single-player-or-two-player cooperative strategy game. There is no login, no
+account, and no server: all game state lives on the device via localStorage-equivalent storage.
+
+There is nothing to sign in with, so no demo account is needed.
+
+To review the tutorial: from the title screen tap "Campaign", then "Fresh Meat" (chapter 1). The first
+few steps are guided — only the action being taught is tappable at each step — and finish in under 10
+minutes.
+
+Every place, company and person depicted (Hollowell Group, Candor Health, the Republic of Marrow, and
+every named character) is fictional. The game satirizes corporate marketing and lobbying tactics in
+general; it does not depict, name, or allude to any real company, product, or person, and makes no
+health or medical claims.
+
+The app collects no data and shows no ads or in-app purchases (App Privacy: Data Not Collected).
