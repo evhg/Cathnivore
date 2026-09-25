@@ -12,6 +12,10 @@ import type { GameConfig, GameState, ProducerId } from '../src/engine/types'
 
 // SPEC 9.3: "Simulations may use a lower budget (200 simulations per decision) to save time."
 export const SIM_MCTS_BUDGET = 200
+// Balance-loop iteration 5 (DECISIONS.md): a longer rollout horizon lets MCTS "see" more of the
+// liberation payoff of a candidate action, since pressureDeckEmpty (games running out the 10-round
+// Pressure deck before liberating 5 regions) has been the dominant loss reason since iteration 1.
+export const SIM_MCTS_ROLLOUT_ROUNDS = 3
 const STEP_CAP = 2000
 const SETTLED_LIBERATED_THRESHOLD = 4
 
@@ -30,7 +34,7 @@ export type Difficulty = 'easy' | 'normal' | 'hard'
 export function botFor(name: BotName): Bot {
   if (name === 'random') return RandomBot
   if (name === 'heuristic') return HeuristicBot
-  return createMCTSBot(SIM_MCTS_BUDGET)
+  return createMCTSBot(SIM_MCTS_BUDGET, SIM_MCTS_ROLLOUT_ROUNDS)
 }
 
 export interface GameOutcome {
