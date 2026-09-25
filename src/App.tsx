@@ -133,17 +133,28 @@ export default function App() {
       <main className="campaign">
         <h1>Campaign</h1>
         <ul className="chapter-list">
-          {CHAPTERS.map((chapter) => (
-            <li key={chapter.id}>
-              <button onClick={() => startChapter(chapter)}>
-                <strong>
-                  {chapter.title}
-                  {progress.completed.includes(chapter.id) ? ' (completed)' : ''}
-                </strong>
-                <span className="chapter-goal">{chapter.goalDescription}</span>
-              </button>
-            </li>
-          ))}
+          {CHAPTERS.map((chapter, i) => {
+            const completed = progress.completed.includes(chapter.id)
+            // Chapter N unlocks once chapter N-1 is completed, mirroring the story's order (see
+            // DECISIONS.md). This is a visual hint only, not a real gate: SPEC 8.1 says "Progress is
+            // never locked," so the button stays clickable even while shown as locked.
+            const previous = CHAPTERS[i - 1]
+            const locked = i > 0 && !completed && !!previous && !progress.completed.includes(previous.id)
+            return (
+              <li key={chapter.id}>
+                <button
+                  className={completed ? 'chapter-completed' : locked ? 'chapter-locked' : undefined}
+                  onClick={() => startChapter(chapter)}
+                >
+                  <strong>
+                    {chapter.title}
+                    {completed ? ' (completed)' : locked ? ' (locked)' : ''}
+                  </strong>
+                  <span className="chapter-goal">{chapter.goalDescription}</span>
+                </button>
+              </li>
+            )
+          })}
         </ul>
         <button onClick={() => setScreen({ name: 'title' })}>Back to Title</button>
       </main>

@@ -409,6 +409,16 @@ button {
   color: var(--ink-muted);
 }
 
+/* Locked/completed visual state (SPEC 10.1: "showing locked and completed chapters"). A chapter shown
+   as locked stays clickable — SPEC 8.1: "Progress is never locked" — this is a hint, not a gate. */
+.chapter-list button.chapter-completed {
+  border-color: var(--pasture-deep);
+}
+
+.chapter-list button.chapter-locked {
+  opacity: 0.6;
+}
+
 /* Scene (dialogue) screen (SPEC 10.1/8.3) */
 .scene {
   min-height: 100vh;

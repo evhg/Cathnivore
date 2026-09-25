@@ -74,6 +74,13 @@ Format: date, decision, reason.
 
 - 2026-09-25: Balance loop iteration 12 (1 number, per SPEC 9.4's cap; the final iteration under the 12-iteration cap): Sol's starting `produce` production (`src/content/producers.ts`) 1 -> 2, matching Mara's Produce production and lifting Sol from the lowest Produce production of the four producers. Reason, following iteration 11's recommendation: Sol-paired pairs (ines+sol, sol+tomas) have been the two weakest pairs in every recent balance run, and unlike Ines (who pairs well with Mara/Tomas at 26%+), Sol drags down every pairing he's in — a Sol-specific gap, not general Goodwill-focus weakness. Sol's role ability ("On Air": Trust or Goodwill) helps neither Produce nor Marks, the two resources liberation pace (Open Stall, Supply) actually spends, so of the two candidates iteration 11 listed (a role-ability tweak vs. a production number), the production number was chosen as the lower-risk, easier-to-reason-about lever: it directly targets the pace gap without touching role-ability choice logic the earlier Sol correctness fix (see above) had just added. `npm run check` passes (111 tests, no test hardcoded Sol's old production values). A 200-game MCTS/Normal/all-pairs sanity run is in progress; result and keep/revert decision to follow in the next entry.
 
+- 2026-09-25: Implemented the Campaign chapter list's locked/completed visual state (SPEC 10.1), the gap
+  DECISIONS.md flagged after the gate-8 review. Decision on the open design question: chapter N shows as
+  "(locked)" only when chapter N-1 is not yet completed, but the button stays fully clickable — SPEC 8.1
+  is explicit that "Progress is never locked," so this is a visual hint (a dimmed style plus a label) about
+  suggested order, never a real gate. This keeps `e2e/campaign.spec.ts`'s direct-chapter-start tests valid
+  unchanged (verified: all 12 pass). `src/App.tsx`'s campaign screen and a `.chapter-completed`/
+  `.chapter-locked` CSS pair in `global.css`. `npm run check` (158 tests) passes.
 - 2026-09-25: Started M5 (campaign). Engine additions: `GameConfig` gained three optional fields —
   `rulesEnabled` (per-rule on/off, `src/engine/rules.ts`'s `resolveRules`/`DEFAULT_RULES`, defaulting to
   the full game when absent), `scriptedPressure` (a fixed Pressure card sequence for a chapter, with a new

@@ -404,6 +404,10 @@ appeared.
   since gating chapter access is a real design decision that risks breaking `e2e/campaign.spec.ts`'s
   direct-chapter-start tests, not obviously a quick fix — logged in DECISIONS.md rather than guessed at.
   Everything else (title, rules, game, end screen, scene, greyscale map shape-legibility) came back clean.
+- [x] Campaign screen locked/completed visual state (SPEC 10.1) — the design decision the gate-8 review
+  deferred is now made and built: a chapter shows "(locked)" and a dimmed style only when the previous
+  chapter isn't completed, but stays clickable regardless (SPEC 8.1: "Progress is never locked"). Verified
+  `e2e/campaign.spec.ts`'s 12 direct-chapter-start tests still pass unchanged. See DECISIONS.md.
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
 ### M7 Hardening (final 18 hours; no new features)
