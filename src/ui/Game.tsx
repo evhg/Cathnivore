@@ -15,7 +15,16 @@ import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap from './Map'
 import Scene from './Scene'
-import { ActionsLeftIcon, GoodwillIcon, MarksIcon, ProduceIcon } from './icons/ResourceIcons'
+import {
+  ActionsLeftIcon,
+  GoodwillIcon,
+  LostLandIcon,
+  MarksIcon,
+  ProduceIcon,
+  PublicTrustIcon,
+  RiftIcon,
+  RoundIcon,
+} from './icons/ResourceIcons'
 import type { Action, GameEvent, GameState, ProducerId, RegionId } from '../engine/types'
 import type { Mode } from './Setup'
 import type { TutorialStep } from '../content/chapters'
@@ -250,10 +259,18 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
 
       <main className="game">
       <header className="topbar">
-        <span>Round {state.round}/10</span>
-        <span>Trust {state.publicTrust}</span>
-        <span>Lost Land left {state.lostLandPool}</span>
-        <span>Rift {state.rift}</span>
+        <span>
+          <RoundIcon /> Round {state.round}/10
+        </span>
+        <span>
+          <PublicTrustIcon /> Trust {state.publicTrust}
+        </span>
+        <span>
+          <LostLandIcon /> Lost Land left {state.lostLandPool}
+        </span>
+        <span>
+          <RiftIcon /> Rift {state.rift}
+        </span>
       </header>
 
       {tutorialSteps && tutorialIndex < tutorialSteps.length && (

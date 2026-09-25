@@ -1,4 +1,5 @@
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
+import { MarksIcon } from './icons/ResourceIcons'
 import type { GameState } from '../engine/types'
 
 const TAG_LABEL: Record<string, string> = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
@@ -28,7 +29,7 @@ export default function MarketSheet({
         if (!card) return null
         return (
           <li key={id}>
-            <strong>{card.name}</strong> — {card.cost} Marks ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+            <strong>{card.name}</strong> — <MarksIcon /> {card.cost} Marks ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
             {card.flavor && <p className="card-flavor">{card.flavor}</p>}
             {canBuy(id) && <button onClick={() => onBuy(id)}>Buy</button>}
           </li>

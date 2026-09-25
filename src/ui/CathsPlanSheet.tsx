@@ -1,4 +1,5 @@
 import { SCHEMES_BY_ID } from '../content/schemes'
+import { GoodwillIcon } from './icons/ResourceIcons'
 import type { GameState } from '../engine/types'
 
 // SPEC 10.2 "Sheets ... Cath's Plan (3 Schemes)." Playing a Scheme may need picking a region, which the
@@ -25,7 +26,7 @@ export default function CathsPlanSheet({
         if (!card) return null
         return (
           <li key={id}>
-            <strong>{card.name}</strong> — {card.cost} Goodwill
+            <strong>{card.name}</strong> — <GoodwillIcon /> {card.cost} Goodwill
             <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
             {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}
           </li>

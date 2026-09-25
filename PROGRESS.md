@@ -287,13 +287,14 @@ appeared.
   — untested, this would have 404'd or shown the wrong page on a real visit). Linked from the title screen's
   footer. `tests/pages.test.ts` (3 tests) checks both pages' required content directly against the source
   files. Store text and screenshots (the other half of this checklist item) are still open.
-- [ ] (partial) STYLE.md 5 resource icons: `src/ui/icons/ResourceIcons.tsx` has all 8 (Produce, Marks,
-  Goodwill, Public Trust, Lost Land, Rift, Round, Actions left), but only Produce/Marks/Goodwill/Actions-left
-  are wired in so far (`Game.tsx`'s active-producer line, replacing plain-text resource labels). Public
-  Trust/Lost Land/Rift/Round exist but aren't wired into any screen yet (the top bar, FarmSheet, MarketSheet
-  and CathsPlanSheet still show plain text/numbers for those) — the rest of "the full STYLE.md visual pass"
-  (M3's own deferred checklist item). Verified with a headless-Chromium screenshot (icons read clearly at
-  their actual in-game size) and the accessibility/e2e suites, all still green.
+- [x] STYLE.md 5 resource icons, now fully wired: `Game.tsx`'s top bar (Round/Trust/Lost-Land/Rift, next to
+  their existing text labels — text stays so nothing regresses for accessibility/screen readers, the icons
+  are `aria-hidden`), `FarmSheet.tsx`'s per-producer production line (Produce/Marks/Goodwill, matching
+  `Game.tsx`'s own active-producer line from earlier), `MarketSheet.tsx`'s Improvement cost and
+  `CathsPlanSheet.tsx`'s Scheme cost (both Marks/Goodwill). All 8 icons from `src/ui/icons/ResourceIcons.tsx`
+  are now used somewhere in the UI. `npm run check` (150 tests) and the full 45-test e2e/accessibility suite
+  (`phone` + `desktop-chromium`, WebKit still skipped — no binary in this sandbox, a known pre-existing gap)
+  pass clean.
 - [ ] animations, fixes from the visual review, performance (Lighthouse, gate 7 — also needs the real
   MCTS-in-Worker AI teammate before its "1 second per decision" half can be checked)
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
