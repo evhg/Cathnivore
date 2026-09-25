@@ -1,34 +1,34 @@
 # Progress
 
 ## Current milestone
-M5 Campaign is content-complete; M6 Polish is well underway. M1-M4 are complete (M4's balance loop 12/12
-iterations, see DECISIONS.md). `main` is still on `bf08c61` (pre-M5): re-checked this session with a cheap
-throwaway-branch dry-run push rather than a full `npm run gates`/`release` run, and `git push origin
-main-test:main` is still denied outright by the harness's own "Production Deploy" classifier — the same
-standing restriction logged in prior sessions' Blocked entries. All of M5/M6's work still lives only on
-`build`; this needs the owner to either approve production pushes for this session type or run the release
-themselves. Since release/iPhone-build steps stay blocked on something outside session capability, this
-session again moved ahead into M6's non-release-gated work (SPEC 1.3's "cut scope, not stability"):
-- the Credits screen (SPEC 10.1), the last missing title-screen nav item found in a prior session's screen
-  audit;
-- a real gate-8 adversarial visual review (an actual subagent call, not a direct look) against a refreshed
-  20-screenshot set — one real finding fixed (off-palette blue form-control accents; now `var(--wheat)`);
-- real animations (STYLE.md 11: Stall drop, enemy-piece delivery, Lost Land wipe, card flip), gated by the
-  Settings toggle and `prefers-reduced-motion`, plus the colour-blind-patterns toggle wired to a real effect
-  (producer initials on Stalls) — both settings were previously stored but inert;
-- STYLE.md 3.2's region texture patterns (previously entirely missing) and a real Buyout/Outlet shape split
-  on the map (the two were nearly indistinguishable in greyscale before this session, a genuine "shape
-  before colour" gap found by eye, not by the subagent review);
-- Undo fixed to SPEC 4.6's real semantics (turn-scoped, blocked past an irreversible action, disabled
-  during the AI's turn) — a correctness fix, not just polish, closing a gap flagged since M3;
-- a flaky accessibility failure (found and root-caused within this same session, not left as noise): the
-  desktop side columns needed `tabIndex={0}` to stay keyboard-focusable when momentarily empty of buttons.
-`npm run gates` still runs real gates 1-7 end to end (gate 8 needs a human/subagent judgement call each
-time). Next session: keep working through M6 (piece icons still simplified vs. STYLE.md 6's exact
-illustrations — lower priority now that shapes are at least distinguishable; the Campaign screen's missing
-locked/completed visual state, see DECISIONS.md for why it needs a real design decision first), re-try the
-push-restriction dry-run check, and re-check `ios.yml`/`OWNER.md`'s Apple Team ID in case secrets have
-appeared.
+M5 Campaign is content-complete; M6 Polish is nearly done. M1-M4 are complete (M4's balance loop 12/12
+iterations, see DECISIONS.md). `main` is still on `bf08c61` (pre-M5): re-checked again this session with
+the same cheap throwaway-branch dry-run push, still denied outright by the harness's own "Production
+Deploy" classifier — a standing restriction confirmed across 5+ sessions now. All of M5/M6's work still
+lives only on `build`; this needs the owner to either approve production pushes for this session type or
+run `npm run release` themselves. `ios-1`'s signing check also stays blocked on `OWNER.md`'s Apple Team ID
+still being the placeholder — nothing to re-check there until that changes. With both release paths
+blocked on something outside session capability, this session did real M6/quality work instead (SPEC 1.3's
+"cut scope, not stability"):
+- the Campaign chapter list's locked/completed visual state (SPEC 10.1) — a hint only, never a real gate
+  (SPEC 8.1: "Progress is never locked"), so `e2e/campaign.spec.ts`'s direct-chapter tests stayed valid;
+- **the real MCTS-in-Worker AI teammate (SPEC 9.2) is now shipped**, replacing the HeuristicBot stand-in
+  that had been in place since M3. This needed a real fix first: `createMCTSBot` had no wall-clock cutoff,
+  so at the teammate's real 600-simulation budget it measured ~672ms/decision — over SPEC 9.2's 400ms half
+  of the budget, and likely to fail gate 7's throttled-performance check. Added an opt-in `deadlineMs`
+  parameter (zero effect on any existing caller) that holds it to ~401ms, then built `src/ai/aiWorker.ts`
+  and wired `Game.tsx`'s Solo mode to it. New `e2e/ai-teammate.spec.ts` verifies both that the teammate
+  acts for real and — closing gate 7's previously-unchecked other half — that a full decision stays under
+  1 second with real CDP 4x CPU throttling;
+- extended gate-8 screenshot coverage to chapters 2-6's opening scenes (previously only chapter 1's was
+  captured) and reviewed all 10 new screenshots directly — clean at both sizes, no fixes needed;
+- wrote a real `README.md` (M7's task, done early since it's pure documentation and the deadline has days
+  of slack left).
+`npm run gates` runs real gates 1-7 end to end, all clean (gate 8 still needs a human/subagent judgement
+call each session). Next session: piece icons are still simplified vs. STYLE.md 6's exact illustrations
+(lowest priority — shapes are already distinguishable); re-try the push-restriction dry-run check once;
+re-check `OWNER.md`'s Apple Team ID in case secrets have appeared; consider whether M7's long fuzz run is
+worth starting early given the deadline's remaining slack.
 
 ## Tasks
 
