@@ -351,6 +351,66 @@ button {
   text-align: center;
 }
 
+/* Campaign chapter list (SPEC 10.1) */
+.campaign {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chapter-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chapter-list button {
+  width: 100%;
+  text-align: left;
+}
+
+/* Scene (dialogue) screen (SPEC 10.1/8.3) */
+.scene {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.scene-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scene-speaker {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  color: var(--soil);
+}
+
+/* Tutorial prompt banner (SPEC 8.1/10.2) */
+.tutorial-prompt {
+  background: var(--wheat);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0;
+}
+
 /* Rules reference (SPEC 10.1/10.5) */
 .rules-reference {
   max-width: 640px;

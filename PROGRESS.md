@@ -1,7 +1,7 @@
 # Progress
 
 ## Current milestone
-M4 Full content and balance (day 4) — M1, M2 and M3 are complete (M3's exact-STYLE.md piece icons are deferred to M6 polish, per the cut order in SPEC 1.12 and the DECISIONS.md entry on the map's placeholder shapes).
+M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons deferred to M6, see DECISIONS.md). M4's balance loop is complete (12/12 iterations, see DECISIONS.md); M4's release to `main` is done on the git side (`main` is on `bf08c61`) but Vercel has not served that commit — a firm, owner-side blocker (see Blocked). M5 chapter 1 is playable end-to-end; chapters 2-6 and portraits remain.
 
 ## Tasks
 
@@ -62,8 +62,33 @@ M4 Full content and balance (day 4) — M1, M2 and M3 are complete (M3's exact-S
 - [ ] Release (last attempt `bf08c61` -> `main` succeeded on the git side but Vercel never served the new commit, see Blocked; needs a fresh `npm run release` once content/balance work for M4 is otherwise final — the Sol change above should go out in the same release)
 
 ### M5 Campaign (day 5 to first half of day 6)
-- [ ] the scenario system, portraits, scenes and tutorial prompts
-- [ ] chapters 1 to 6, with their twists and carry-over
+- [x] (partial) the scenario system: `GameConfig` gained optional `rulesEnabled` (per-rule on/off, gating
+  `legalActions`/`runEnemyTurn`), `scriptedPressure` (a fixed Pressure card sequence, with an optional
+  `regions` override alongside the normal type match, for a campaign-only region-targeted sequence) and
+  `winCondition` (region count / Kingsmarket requirement), all optional and defaulting to the full game
+  when absent (`src/engine/rules.ts`) so no existing caller needed to change. `src/content/chapters.ts`
+  defines the shared `Chapter`/`TutorialStep` shape and `chapterConfig()`. Portraits are still placeholder
+  text (no SVG yet) — tracked below.
+- [ ] chapters 1 to 6, with their twists and carry-over — **chapter 1 "Fresh Meat" done**: Mara alone in
+  Brindle Hills/Highmoor, only Harvest/Open Stall/Supply/Graft, the enemy only Scouting a scripted
+  sequence that introduces one region at a time (see DECISIONS.md for why — both regions are Pasture, so
+  a same-round Scout on both was untenable for a single producer with 3 actions/round). Opening/closing
+  scenes in `src/content/story/fresh-meat.ts`. `tests/chapters.test.ts` confirms the restricted action set
+  and HeuristicBot's SPEC 9.4 >=90% chapter-1 win-rate target (ran clean at 100%/30 seeds). Wired into the
+  UI: `App.tsx`'s new "Campaign" title-screen button -> chapter list -> opening `Scene` -> `Game` (with a
+  `tutorialSteps` banner above the plan strip, player-advanced rather than gating legal actions down to
+  "only the action being taught" per SPEC 8.1's letter — a scoped-down first pass, see DECISIONS.md) ->
+  closing `Scene` on a win, or back to the chapter list on a loss. Campaign progress persists separately
+  from game saves (`cathnivore:campaign:v1`, SPEC 8.1) via `markChapterComplete`/`loadCampaign` in
+  `src/platform/storage.ts`. Verified with two headless-Chromium runs: a manual Graft-only playthrough (no
+  console errors, correct loss screen) and a `?e2eAutoplay=1` HeuristicBot playthrough (won in 4 rounds,
+  closing scene rendered, no console errors, screenshots checked).
+  - Chapters 2-6 not started yet. Portraits (STYLE.md 9) not started — chapters 1-3 don't strictly need
+    them to be playable, so sequenced after chapter content per SPEC 1.3's priority order (rules > story).
+  - Tutorial prompts are currently always-visible/manually-advanced, not the full "only the action being
+    taught is enabled" guided gating SPEC 8.1 describes for chapters 1-2's first few steps — revisit once
+    more chapters exist to see whether a shared gating mechanism is worth building or each chapter's first
+    steps can just start with a deliberately narrow `rulesEnabled`/map instead.
 - [ ] Release after chapters 1 to 3, and again after chapters 4 to 6
 - [ ] push `ios-<n>` for the first full iPhone build (up to 3 fix builds)
 

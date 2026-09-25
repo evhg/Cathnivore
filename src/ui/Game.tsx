@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { createRng } from '../engine/rng'
 import { PRODUCERS } from '../content/producers'
+import { REGIONS } from '../content/map'
 import { HeuristicBot } from '../ai/heuristic'
 import { saveGame, clearGame } from '../platform/storage'
 import { actionLabel, actionGroupKey, actionGroupLabel, regionOf } from './actionLabel'
@@ -14,12 +15,20 @@ import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap from './Map'
 import type { Action, GameEvent, GameState, ProducerId, RegionId } from '../engine/types'
 import type { Mode } from './Setup'
+import type { TutorialStep } from '../content/chapters'
 
 interface Props {
   initial: GameState
   seed: number
   mode: Mode
   onExit(): void
+  // SPEC 8.1: a campaign chapter's end screen continues into its closing scene (via App.tsx) instead of
+  // going straight back to the title, so it takes this callback instead of the plain onExit button.
+  onChapterEnd?(won: boolean): void
+  // SPEC 8.1 tutorial prompts (2 sentences max), shown one at a time above the plan strip. Simplified
+  // from the full spec for now: the player advances them manually rather than the engine gating legal
+  // actions down to "only the action being taught" — see DECISIONS.md.
+  tutorialSteps?: TutorialStep[]
 }
 
 // SPEC 10.2 Game screen. Plain controls for now — see PROGRESS.md M3 for what's still missing (the SVG
@@ -34,8 +43,16 @@ function isE2EAutoplay(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAutoplay') === '1'
 }
 
-export default function Game({ initial, seed, mode, onExit }: Props) {
+// A scripted campaign Pressure card (SPEC 8.1) may target regions directly instead of by type.
+function pressureLabel(card: GameState['squeeze']): string {
+  if (!card) return '—'
+  if (card.regionTypes.length > 0) return card.regionTypes.join('+')
+  return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
+}
+
+export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps }: Props) {
   const [state, setState] = useState(initial)
+  const [tutorialIndex, setTutorialIndex] = useState(0)
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
   const undoStackRef = useRef<GameState[]>([])
@@ -97,14 +114,25 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
           {state.result.won ? 'Win' : `Loss: ${state.result.lossReason}`} — {state.result.regionsLiberated} regions
           liberated, round {state.result.round}.
         </p>
-        <button
-          onClick={() => {
-            clearGame()
-            onExit()
-          }}
-        >
-          Back to Title
-        </button>
+        {onChapterEnd ? (
+          <button
+            onClick={() => {
+              clearGame()
+              onChapterEnd(state.result!.won)
+            }}
+          >
+            Continue
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              clearGame()
+              onExit()
+            }}
+          >
+            Back to Title
+          </button>
+        )}
       </main>
     )
   }
@@ -199,10 +227,17 @@ export default function Game({ initial, seed, mode, onExit }: Props) {
         <span>Rift {state.rift}</span>
       </header>
 
+      {tutorialSteps && tutorialIndex < tutorialSteps.length && (
+        <section className="tutorial-prompt">
+          <p>{tutorialSteps[tutorialIndex]!.text}</p>
+          <button onClick={() => setTutorialIndex((i) => i + 1)}>Got it</button>
+        </section>
+      )}
+
       <section className="plan-strip">
-        <span>Squeeze: {state.squeeze?.regionTypes.join('+') ?? '—'}</span>
-        <span>Expand: {state.expand?.regionTypes.join('+') ?? '—'}</span>
-        <span>Scout: {state.scout?.regionTypes.join('+') ?? '—'}</span>
+        <span>Squeeze: {pressureLabel(state.squeeze)}</span>
+        <span>Expand: {pressureLabel(state.expand)}</span>
+        <span>Scout: {pressureLabel(state.scout)}</span>
       </section>
 
       <section className="map-wrap">

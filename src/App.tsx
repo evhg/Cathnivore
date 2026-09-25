@@ -2,15 +2,25 @@ import { useState } from 'react'
 import { createGame, replay } from './engine/api'
 import Setup, { type Mode } from './ui/Setup'
 import Game from './ui/Game'
+import Scene from './ui/Scene'
 import RulesReference from './ui/RulesReference'
-import { loadGame } from './platform/storage'
+import { loadGame, loadCampaign, markChapterComplete } from './platform/storage'
+import { CHAPTERS, chapterConfig, type Chapter } from './content/chapters'
+import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import type { GameConfig, GameState } from './engine/types'
+
+const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
+  'fresh-meat': FRESH_MEAT_SCENES,
+}
 
 type Screen =
   | { name: 'title' }
   | { name: 'setup' }
   | { name: 'rules' }
+  | { name: 'campaign' }
+  | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' }
   | { name: 'game'; state: GameState; seed: number; mode: Mode }
+  | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number }
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
@@ -27,12 +37,31 @@ export default function App() {
     setScreen({ name: 'game', state, seed: saved.seed, mode: 'hotseat' })
   }
 
+  function startChapter(chapter: Chapter): void {
+    setScreen({ name: 'chapterScene', chapter, which: 'opening' })
+  }
+
+  function playChapter(chapter: Chapter): void {
+    const seed = Date.now()
+    setScreen({ name: 'chapterGame', chapter, state: createGame(chapterConfig(chapter), seed), seed })
+  }
+
+  function endChapter(chapter: Chapter, won: boolean): void {
+    markChapterComplete(chapter.id)
+    if (won) {
+      setScreen({ name: 'chapterScene', chapter, which: 'closing' })
+    } else {
+      setScreen({ name: 'campaign' })
+    }
+  }
+
   if (screen.name === 'title') {
     return (
       <main className="title">
         <h1>Cathnivore</h1>
         <p>A cooperative engine-builder against two very polite conglomerates.</p>
         {saved && <button onClick={resume}>Continue</button>}
+        <button onClick={() => setScreen({ name: 'campaign' })}>Campaign</button>
         <button onClick={() => setScreen({ name: 'setup' })}>Quick Game</button>
         <button onClick={() => setScreen({ name: 'rules' })}>How to Play</button>
         <footer>
@@ -49,6 +78,57 @@ export default function App() {
 
   if (screen.name === 'rules') {
     return <RulesReference onClose={() => setScreen({ name: 'title' })} />
+  }
+
+  if (screen.name === 'campaign') {
+    const progress = loadCampaign()
+    return (
+      <main className="campaign">
+        <h1>Campaign</h1>
+        <ul className="chapter-list">
+          {CHAPTERS.map((chapter) => (
+            <li key={chapter.id}>
+              <button onClick={() => startChapter(chapter)}>
+                {chapter.title}
+                {progress.completed.includes(chapter.id) ? ' (completed)' : ''}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button onClick={() => setScreen({ name: 'title' })}>Back to Title</button>
+      </main>
+    )
+  }
+
+  if (screen.name === 'chapterScene') {
+    const scenes = STORY_SCENES[screen.chapter.id]
+    const key = screen.which === 'opening' ? screen.chapter.openingScene : screen.chapter.closingScene
+    const scene = scenes?.[key as keyof typeof scenes]
+    if (!scene) {
+      // No story data for this chapter yet — skip straight past the scene rather than show a blank screen.
+      if (screen.which === 'opening') playChapter(screen.chapter)
+      else setScreen({ name: 'campaign' })
+      return null
+    }
+    return (
+      <Scene
+        scene={scene}
+        onContinue={() => (screen.which === 'opening' ? playChapter(screen.chapter) : setScreen({ name: 'campaign' }))}
+      />
+    )
+  }
+
+  if (screen.name === 'chapterGame') {
+    return (
+      <Game
+        initial={screen.state}
+        seed={screen.seed}
+        mode="hotseat"
+        tutorialSteps={screen.chapter.tutorialSteps}
+        onExit={() => setScreen({ name: 'campaign' })}
+        onChapterEnd={(won) => endChapter(screen.chapter, won)}
+      />
+    )
   }
 
   return <Game initial={screen.state} seed={screen.seed} mode={screen.mode} onExit={() => setScreen({ name: 'title' })} />

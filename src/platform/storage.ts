@@ -62,3 +62,29 @@ export function loadGame(): SavedGame | null {
 export function clearGame(): void {
   storage.remove(SAVE_KEY)
 }
+
+// SPEC 8.1: "Campaign progress and carry-over flags are saved separately from game saves."
+export interface CampaignProgress {
+  version: 1
+  completed: string[] // chapter ids finished (won or skipped), in no particular order
+}
+
+export const CAMPAIGN_KEY = 'cathnivore:campaign:v1'
+
+export function loadCampaign(): CampaignProgress {
+  const raw = storage.get(CAMPAIGN_KEY)
+  if (!raw) return { version: 1, completed: [] }
+  try {
+    const parsed = JSON.parse(raw) as CampaignProgress
+    if (parsed.version !== 1) return { version: 1, completed: [] }
+    return parsed
+  } catch {
+    return { version: 1, completed: [] }
+  }
+}
+
+export function markChapterComplete(chapterId: string): void {
+  const progress = loadCampaign()
+  if (progress.completed.includes(chapterId)) return
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ version: 1, completed: [...progress.completed, chapterId] }))
+}
