@@ -573,3 +573,13 @@ Format: date, decision, reason.
   directly — this is the literal test SPEC 11.4 gate 5 asks for ("the test clicking the highlighted
   elements"), which nothing exercised before. Chapter 2 gets the same gating for free (same `TutorialStep`
   shape) but wasn't given its own e2e test this session.
+- **2026-09-25 (this session):** Wrote SPEC 11.6's App Store metadata into `store/`, which didn't exist at
+  all before this — `store.yml` has always hit its `if [ -f store/Fastfile ]` fallback and skipped the
+  upload step outright. Used fastlane `deliver`'s standard metadata directory layout (`metadata/<locale>/`
+  plus `metadata/review_information/`) since that's what `store.yml` already passes as `--metadata_path`.
+  Age rating is documented in `store/AGE_RATING.md` rather than scripted into a `deliver` config file:
+  fastlane's age-rating survey automation varies across App Store Connect API versions and there's no way
+  to verify it against a real account from this sandbox, so a wrong automated answer risks silently
+  misrepresenting the app more than a manual step does. Review contact name/phone have no honest value a
+  session can supply (no real person to name), so they're `PASTE-*` placeholders in `OWNER.md`, matching
+  the existing seller-name placeholder's precedent rather than inventing a name.

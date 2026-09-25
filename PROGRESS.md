@@ -25,6 +25,10 @@ blocked on something outside session capability, this session did real, unblocke
   — now `highlight: null` (it was already worded as informational, not an instruction). New
   `e2e/tutorial.spec.ts` closes SPEC 11.4 gate 5's "clicking the highlighted elements" bullet, previously
   unexercised by any test;
+- **wrote the App Store metadata SPEC 11.6 asks for** (the `store/` directory didn't exist yet): fastlane
+  `deliver`'s standard layout, an age-rating answer sheet, and a minimal `Fastfile` so `store.yml`'s upload
+  step stops always skipping. Review contact name/phone are new `PASTE-*` placeholders in `OWNER.md`.
+  Screenshots still need their own Playwright pass;
 - re-confirmed the standing push-restriction denial (one quick check, as established) and moved on rather
   than re-investigating a well-documented blocker again.
 `npm run check`/`npm run gates` both still pass clean end to end (164 unit tests, 35 e2e/gate-5 tests; gate
@@ -325,6 +329,16 @@ redone after more content lands.
   — untested, this would have 404'd or shown the wrong page on a real visit). Linked from the title screen's
   footer. `tests/pages.test.ts` (3 tests) checks both pages' required content directly against the source
   files. Store text and screenshots (the other half of this checklist item) are still open.
+  **Store text is now done too (a later session).** `store/metadata/` follows fastlane `deliver`'s standard
+  layout (name/subtitle/description/keywords/promotional text/URLs/release notes/review contact+notes/
+  copyright/category — `store/README.md` documents each file's role), `store/AGE_RATING.md` records the
+  age-rating questionnaire answers (all "None" — the game has no violence, mature content, gambling or
+  UGC), and a minimal `store/Fastfile` marker lets `store.yml`'s existing `if [ -f store/Fastfile ]` check
+  actually attempt an upload instead of always skipping. Review contact name/phone are `PASTE-*`
+  placeholders in `OWNER.md`, same pattern as its existing seller-name placeholder — App Store Connect needs
+  a real person there, which no session has. Screenshots (SPEC 11.6/STYLE.md 13: 5 captioned portrait shots
+  from scripted game states, a different size/style from `e2e/screenshots.spec.ts`'s gate-8 review shots)
+  still need their own Playwright pass.
 - [x] STYLE.md 5 resource icons, now fully wired: `Game.tsx`'s top bar (Round/Trust/Lost-Land/Rift, next to
   their existing text labels — text stays so nothing regresses for accessibility/screen readers, the icons
   are `aria-hidden`), `FarmSheet.tsx`'s per-producer production line (Produce/Marks/Goodwill, matching
