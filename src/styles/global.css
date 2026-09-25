@@ -517,3 +517,50 @@ html.native-app body {
   user-select: none;
   touch-action: pan-x pan-y;
 }
+
+/* Setup screen (SPEC 10.1): plain semantic markup so far (M3), but with no layout CSS at all its
+   producer/mode/difficulty <label> rows ran together inline instead of one option per line — found while
+   spot-checking gate 8's screenshots. Minimal block-per-option spacing, matching the paper-card look used
+   elsewhere (buttons, sheets), without a full visual-design pass. */
+.setup {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.setup section {
+  margin-top: 20px;
+}
+
+.setup h2 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.setup label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.setup label:hover {
+  background: var(--paper-2);
+}
+
+.setup input[type='text'],
+.setup input:not([type='radio']):not([type='checkbox']) {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--soil);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}
+
+.setup > button {
+  margin-top: 20px;
+}

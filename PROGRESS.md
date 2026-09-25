@@ -322,15 +322,17 @@ appeared.
   sizes (14 PNGs total, `e2e/screenshots/`, already gitignored). Reviewed directly this session (not a
   literal subagent call, see DECISIONS.md) rather than left uninspected: all 7 screens read cleanly at both
   sizes, no unreadable text, no hidden controls, greyscale map pieces stay shape-distinguishable (square
-  Outlets vs. circular Doubt vs. awning-strip Stalls, matching STYLE.md 10's shape spec). Two minor,
-  non-blocking observations for a future visual-review pass (not fixed now — neither makes text unreadable,
-  overlaps, hides a control, or fails the greyscale test, the only "must fix" bar SPEC 11.4 gate 8 sets):
-  the Setup screen's producer checkboxes wrap tightly against the next label at phone width; the desktop
-  layout's right column (Market + Cath's Plan) sits close to the 900px viewport bottom at 1440x900, worth
-  confirming has zero actual overflow at 1280x800 (SPEC 10.3's stated floor). Still open: chapters 2-6's
-  scenes/screens, the Settings/Campaign-chapter-list screens, and — the actual point of gate 8 — a
-  second, more adversarial pass (ideally the literal subagent SPEC calls for) once more screens/animations
-  exist, so it's not spent early on a UI that's still changing.
+  Outlets vs. circular Doubt vs. awning-strip Stalls, matching STYLE.md 10's shape spec). One minor finding
+  fixed on the spot (cheap, isolated, CSS-only): the Setup screen had no layout CSS at all, so its
+  Mode/Producers/Difficulty `<label>` rows ran together inline instead of one option per row — added a
+  `.setup` block in `global.css` (block-per-option rows, hover state, a proper seed-input field style) and
+  re-captured the screenshots to confirm (see both `e2e/screenshots/*-3-setup.png`). Still logged, not
+  fixed: the desktop layout's right column (Market + Cath's Plan) sits close to the 900px viewport bottom
+  at 1440x900, worth confirming has zero actual overflow at 1280x800 (SPEC 10.3's stated floor) — this
+  needs measuring `scrollHeight` directly, not just eyeballing a viewport screenshot, so it's left for next
+  time rather than guessed at. Still open: chapters 2-6's scenes/screens, the Settings/Campaign-chapter-list
+  screens, and — the actual point of gate 8 — a second, more adversarial pass (ideally the literal subagent
+  SPEC calls for) once more screens/animations exist, so it's not spent early on a UI that's still changing.
 - [ ] animations, fixes from a fuller visual review
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
