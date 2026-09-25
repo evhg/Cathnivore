@@ -237,10 +237,18 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // If gating would leave nothing playable (a scripting mistake, or the player already cleared the taught
   // move some other way), fall back to the ungated list rather than stranding the player.
   const tutorialStep = !autoplayRef.current && tutorialSteps && tutorialIndex < tutorialSteps.length ? tutorialSteps[tutorialIndex] : undefined
-  function tutorialAllows(a: Action): boolean {
+  // Whether `a` is genuinely the action a highlight names — used both to gate and (separately, see `act`)
+  // to decide whether taking `a` should advance the step. A pending `decide` is never a genuine match: it
+  // only needs `tutorialAllows` below to bypass the gate so a forced choice is never blocked, not to be
+  // mistaken for the taught action itself (a chapter with both a gated step and an unrelated pending
+  // decision at once doesn't exist yet, but this keeps the two concerns from silently coupling).
+  function matchesHighlight(a: Action): boolean {
     const highlight = tutorialStep?.highlight
-    if (!highlight || a.kind === 'decide') return true
+    if (!highlight) return false
     return highlight.kind === 'action' ? a.kind === highlight.action : regionOf(a) === highlight.region
+  }
+  function tutorialAllows(a: Action): boolean {
+    return !tutorialStep?.highlight || a.kind === 'decide' || matchesHighlight(a)
   }
   const allIndices = actions.map((_, i) => i)
   const gatedIndices = allIndices.filter((i) => tutorialAllows(actions[i]!))
@@ -268,7 +276,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     // SPEC 8.1: once the taught action is actually taken, move straight to the next tutorial step rather
     // than waiting on a separate "Got it" tap — the gate above already guaranteed this action is the one
     // being taught (or gating had nothing to show, in which case there's nothing to advance past).
-    if (tutorialStep?.highlight && tutorialAllows(action)) setTutorialIndex((i) => i + 1)
+    if (matchesHighlight(action)) setTutorialIndex((i) => i + 1)
     undoStackRef.current.push({ state, irreversible: isIrreversible(action) })
     advance(state, action)
   }
