@@ -61,3 +61,21 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
   await page.getByRole('heading', { name: 'Campaign' }).waitFor()
   await shoot(page, project, '10-campaign')
 })
+
+// Chapter 1's opening scene is covered above; the other 5 chapters' opening scenes use different
+// portraits (Sol, Tomas, Ines, Mara, plus villains Pell/Vane/Crisp/Pip across the story) and were never
+// captured — a real coverage gap the gate-8 review noted (see PROGRESS.md's M6 section). Two-producer
+// chapters (4-6) show a Solo/Hot-seat choice first.
+const OTHER_CHAPTERS = ['Word of Mouth', 'Growing Season', 'The Plan', 'Friends in Low Places', 'Kingsmarket']
+for (const [i, title] of OTHER_CHAPTERS.entries()) {
+  test(`chapter "${title}" opening scene`, async ({ page }, testInfo) => {
+    const project = testInfo.project.name
+    await page.goto('/')
+    await page.getByText('Campaign').click()
+    await page.getByRole('button', { name: new RegExp(`^${title}`) }).click()
+    const soloButton = page.getByRole('button', { name: /^Solo/ })
+    if (await soloButton.isVisible().catch(() => false)) await soloButton.click()
+    await page.locator('.scene').waitFor()
+    await shoot(page, project, `11-${i}-chapter-scene-${title.toLowerCase().replace(/\s+/g, '-')}`)
+  })
+}

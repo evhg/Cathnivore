@@ -404,6 +404,13 @@ appeared.
   since gating chapter access is a real design decision that risks breaking `e2e/campaign.spec.ts`'s
   direct-chapter-start tests, not obviously a quick fix — logged in DECISIONS.md rather than guessed at.
   Everything else (title, rules, game, end screen, scene, greyscale map shape-legibility) came back clean.
+- [x] Extended gate-8 screenshot coverage to chapters 2-6's opening scenes (previously only chapter 1's was
+  captured) — `e2e/screenshots.spec.ts` now has 5 more tests, one per chapter, at both sizes (10 new PNGs).
+  Reviewed all 10 directly this session: every scene reads cleanly at both sizes (no overflow, no
+  overlapping portraits, no low-contrast text), the villain/ally portrait set (Ines, Tomas, Sol, Mara)
+  stays visually distinct, and the longest scene (chapter 4, 7 lines) still fits without scrolling on
+  phone. No findings to fix. `npm run gates`' Gate 5 picks these new tests up automatically (they live in
+  the same spec file, no wiring needed).
 - [x] Campaign screen locked/completed visual state (SPEC 10.1) — the design decision the gate-8 review
   deferred is now made and built: a chapter shows "(locked)" and a dimmed style only when the previous
   chapter isn't completed, but stays clickable regardless (SPEC 8.1: "Progress is never locked"). Verified
