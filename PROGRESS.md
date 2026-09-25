@@ -412,7 +412,10 @@ appeared.
 
 ### M7 Hardening (final 18 hours; no new features)
 - [ ] long fuzz run of 50,000 RandomBot games, full e2e suite on both sizes, final balance report
-- [ ] README covering how to play, how to run it locally and how it was built
+- [x] README covering how to play, how to run it locally and how it was built — written early (plenty of
+  `DEADLINE` time remains; this is pure documentation, not a new feature, so there's no reason to wait for
+  M7 proper). Covers the game briefly, points to the live site and `PROGRESS.md` for the iPhone app's
+  status, local dev/test/sim commands, and a short account of the stack and the unattended build process.
 - [ ] final release and live smoke test, then the final `ios-<n>` build
 - [ ] push `submit-<n>` to send that build for App Review
 - [ ] final report in `PROGRESS.md`
