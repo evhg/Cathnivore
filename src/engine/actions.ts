@@ -5,6 +5,7 @@ import { checkRiftSplit } from './rift'
 import { advanceTurnIfNeeded } from './round'
 import { hasImprovement } from './producer'
 import { canMarketDayOpenIn, canOpenStallIn, regionStallTotal } from './region'
+import { resolveRules } from './rules'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID, legalSchemeTargets } from '../content/schemes'
 import type { Action, GameState, ProducerId, RegionId } from './types'
@@ -58,6 +59,7 @@ export function legalActions(state: GameState): Action[] {
   const producer = state.activeProducer
   const p = state.producers[producer]
   const actions: Action[] = []
+  const rules = resolveRules(state)
 
   if (p.resources.produce >= 1) {
     for (const id of state.config.activeRegions) {
@@ -74,31 +76,37 @@ export function legalActions(state: GameState): Action[] {
     if (r.buyouts >= 1 && p.resources.produce >= SUPPLY_BUYOUT_COST && regionStallTotal(r) >= 2) {
       actions.push({ kind: 'supplyBuyout', region: id })
     }
-    if (r.doubt >= 1 && p.resources.goodwill >= 1) actions.push({ kind: 'rebut', region: id, count: 1 })
-    if (r.doubt >= 2 && p.resources.goodwill >= 2) actions.push({ kind: 'rebut', region: id, count: 2 })
+    if (rules.rebut && r.doubt >= 1 && p.resources.goodwill >= 1) actions.push({ kind: 'rebut', region: id, count: 1 })
+    if (rules.rebut && r.doubt >= 2 && p.resources.goodwill >= 2) actions.push({ kind: 'rebut', region: id, count: 2 })
   }
 
-  for (let n = 1; n <= Math.min(3, p.resources.produce); n++) {
-    actions.push({ kind: 'sell', count: n as 1 | 2 | 3 })
+  if (rules.sell) {
+    for (let n = 1; n <= Math.min(3, p.resources.produce); n++) {
+      actions.push({ kind: 'sell', count: n as 1 | 2 | 3 })
+    }
   }
 
-  for (const id of state.market) {
-    if (!id) continue
-    const card = IMPROVEMENTS_BY_ID.get(id)
-    if (card && p.resources.marks >= card.cost) actions.push({ kind: 'invest', improvementId: id })
+  if (rules.improvements) {
+    for (const id of state.market) {
+      if (!id) continue
+      const card = IMPROVEMENTS_BY_ID.get(id)
+      if (card && p.resources.marks >= card.cost) actions.push({ kind: 'invest', improvementId: id })
+    }
   }
 
-  for (const id of state.cathsPlan) {
-    if (!id) continue
-    const card = SCHEMES_BY_ID.get(id)
-    if (!card || p.resources.goodwill < card.cost) continue
-    for (const target of legalSchemeTargets(state, producer, id)) {
-      actions.push(target ? { kind: 'scheme', schemeId: id, targetRegion: target } : { kind: 'scheme', schemeId: id })
+  if (rules.schemes) {
+    for (const id of state.cathsPlan) {
+      if (!id) continue
+      const card = SCHEMES_BY_ID.get(id)
+      if (!card || p.resources.goodwill < card.cost) continue
+      for (const target of legalSchemeTargets(state, producer, id)) {
+        actions.push(target ? { kind: 'scheme', schemeId: id, targetRegion: target } : { kind: 'scheme', schemeId: id })
+      }
     }
   }
 
   actions.push({ kind: 'graft' })
-  if (!p.roleUsedThisRound) {
+  if (rules.roles && !p.roleUsedThisRound) {
     if (producer === 'sol') {
       // SPEC 6: Sol's "On Air" is a real choice (Public Trust +1, or gain 2 Goodwill), not a fixed default.
       actions.push({ kind: 'role', choice: 'trust' }, { kind: 'role', choice: 'goodwill' })

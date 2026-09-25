@@ -49,6 +49,10 @@ export interface PressureCard {
   id: string
   stage: PressureStage
   regionTypes: RegionType[] // one or two region types this card matches
+  // SPEC 8.1 "a scripted Pressure sequence where needed": a campaign chapter can target specific regions
+  // directly instead of by type (e.g. chapter 1 introduces Brindle Hills and Highmoor one at a time,
+  // even though both are Pasture). Absent for the real Pressure deck, which always matches by type.
+  regions?: RegionId[]
 }
 
 export type PressureSlot = 'squeeze' | 'expand' | 'scout'
@@ -57,10 +61,32 @@ export type PressureSlot = 'squeeze' | 'expand' | 'scout'
 // so GameState only ever stores the id — keeping the state plain data and JSON-serializable (SPEC 9.1).
 export type AgendaCardId = string
 
+// SPEC 8.1: campaign chapters switch individual rules on/off (e.g. chapter 1 has only Harvest, Open
+// Stall, Supply and Graft, with an enemy that only Scouts). Missing when absent from GameConfig — see
+// `src/engine/rules.ts`'s `DEFAULT_RULES`/`resolveRules`, which the full game (and every non-campaign
+// config) relies on implicitly.
+export interface RulesEnabled {
+  agenda: boolean
+  squeeze: boolean
+  expand: boolean
+  rebut: boolean
+  sell: boolean
+  improvements: boolean
+  schemes: boolean
+  roles: boolean
+}
+
 export interface GameConfig {
   producers: ProducerId[] // 1 or 2
   difficulty: 'easy' | 'normal' | 'hard'
   activeRegions: RegionId[] // which regions are in play (full game: all 7)
+  rulesEnabled?: RulesEnabled // SPEC 8.1; absent means the full game (see `resolveRules`)
+  scriptedPressure?: PressureCard[] // SPEC 8.1 "a scripted Pressure sequence where needed" (campaign only)
+  // SPEC 8.2's chapters each have their own liberation goal (e.g. chapter 1: "liberate both regions
+  // within 6 rounds"). Absent means the full game's SPEC 4.8 win (5 regions, one of which is Kingsmarket).
+  // A chapter's round limit is expressed by giving `scriptedPressure` exactly that many cards, so running
+  // out of the deck (the engine's existing `pressureDeckEmpty` loss) doubles as "ran out of rounds."
+  winCondition?: { regionsRequired: number; requireKingsmarket: boolean }
 }
 
 // Improvement/Scheme content (including effect functions) lives in src/content, keyed by these ids.

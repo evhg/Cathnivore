@@ -4,6 +4,7 @@ import { addBuyout, addDoubt, addLostLand, addOutlets, countLiberated } from './
 import { isLiberated, regionStallTotal } from './region'
 import { addProduction } from './producer'
 import { checkRiftSplit } from './rift'
+import { resolveRules } from './rules'
 import type { GameState, PressureCard, ProducerId, RegionId, RegionState, ResourceKind } from './types'
 
 const AGENDA_BY_ID = new Map(AGENDA_CARDS.map((c) => [c.id, c]))
@@ -24,6 +25,7 @@ function resolveAgenda(state: GameState): GameState {
 }
 
 function matches(card: PressureCard, region: RegionId): boolean {
+  if (card.regions) return card.regions.includes(region)
   return card.regionTypes.includes(REGIONS[region].type)
 }
 
@@ -264,13 +266,16 @@ function advancePipeline(state: GameState): GameState {
   }
 }
 
-// SPEC 4.5.3: the full enemy turn — Agenda, Squeeze, Expand, Scout, Advance.
+// SPEC 4.5.3: the full enemy turn — Agenda, Squeeze, Expand, Scout, Advance. SPEC 8.1 campaign chapters
+// can switch Agenda/Squeeze/Expand off (e.g. chapter 1: "the enemy only Scouts") — Scout and Advance
+// always run, since even the earliest chapter needs the visible Squeeze/Expand/Scout pipeline to teach it.
 export function runEnemyTurn(state: GameState): GameState {
-  let next = resolveAgenda(state)
+  const rules = resolveRules(state)
+  let next = rules.agenda ? resolveAgenda(state) : state
   if (next.result) return next
-  next = resolveSqueeze(next)
+  next = rules.squeeze ? resolveSqueeze(next) : next
   if (next.result) return next
-  next = resolveExpand(next)
+  next = rules.expand ? resolveExpand(next) : next
   next = revealAndResolveScout(next)
   if (next.result) return next
   next = advancePipeline(next)

@@ -63,7 +63,11 @@ export function createGame(config: GameConfig, seed: number): GameState {
     }
   }
 
-  const { deck, seedAfter } = buildPressureDeck(seed)
+  // SPEC 8.1 "a scripted Pressure sequence where needed": a campaign chapter can supply a fixed card
+  // order (e.g. chapter 1's tutorial Scout sequence) instead of the normal per-stage shuffle.
+  const { deck, seedAfter } = config.scriptedPressure
+    ? { deck: config.scriptedPressure, seedAfter: seed }
+    : buildPressureDeck(seed)
   const [agendaDeck, agendaRng] = shuffle(
     AGENDA_CARDS.map((c) => c.id),
     { seed: seedAfter },
