@@ -267,7 +267,12 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // that the phone layout's toggle buttons and modal sheets (below) still work unchanged.
   return (
     <div className="game-layout">
-      <aside className="desktop-col desktop-col-left">
+      {/* tabIndex so axe's "scrollable-region-focusable" rule is satisfied unconditionally, not just when
+          the panel happens to contain a focusable button — the desktop column scrolls (overflow-y: auto,
+          SPEC 10.3), and at some game states (nothing affordable yet in Market/Cath's Plan) it can have no
+          focusable descendants of its own, which the right column hit at random in this session's
+          testing. */}
+      <aside className="desktop-col desktop-col-left" tabIndex={0}>
         <FarmSheet state={state} onClose={() => {}} inline />
       </aside>
 
@@ -395,7 +400,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {showLog && <LogSheet log={state.log} onClose={() => setShowLog(false)} />}
       </main>
 
-      <aside className="desktop-col desktop-col-right">
+      <aside className="desktop-col desktop-col-right" tabIndex={0}>
         <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => {}} inline />
         <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => {}} inline />
         <LogSheet log={state.log} onClose={() => {}} inline />
