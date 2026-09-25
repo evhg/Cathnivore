@@ -54,3 +54,40 @@ test('campaign chapter 1 ("Fresh Meat") is completed by following the tutorial p
 
   expect(errors).toEqual([])
 })
+
+test('campaign chapter 2 ("Word of Mouth") is completed by following the tutorial prompts, clicking only the highlighted elements', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (err) => errors.push(String(err)))
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await page.getByRole('button', { name: /^Word of Mouth/ }).click()
+  await expect(page.locator('.scene')).toBeVisible()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  const actions = page.locator('.actions')
+  const prompt = page.locator('.tutorial-prompt p')
+
+  // Step 0: "Spend Goodwill to Rebut" — only Rebut is offered (Sol's home, Saltmarsh, starts with Doubt).
+  await expect(prompt).toContainText('Rebut it')
+  await expect(actions.getByRole('button', { name: 'Graft', exact: false })).toHaveCount(0)
+  await actions.getByRole('button', { name: /^Rebut/ }).click()
+
+  // Step 1: "Public Trust ... Keep an eye on it" is informational — manual "Got it".
+  await expect(prompt).toContainText('Public Trust')
+  await page.getByRole('button', { name: 'Got it' }).click()
+
+  // Step 2: "On Air raises Trust or your Goodwill" — only the (free) role ability is offered.
+  await expect(prompt).toContainText('On Air')
+  const otherButtons = await actions.locator('button').allTextContents()
+  expect(otherButtons.every((t) => t.startsWith('Role'))).toBe(true)
+  await actions.getByRole('button', { name: /^Role/ }).first().click()
+
+  // Step 3: "Liberate 2 of these 3 regions" is informational — manual "Got it", then free play resumes.
+  await expect(prompt).toContainText('Liberate 2 of these 3 regions')
+  await page.getByRole('button', { name: 'Got it' }).click()
+  await expect(page.locator('.tutorial-prompt')).toHaveCount(0)
+  await expect(actions.getByRole('button', { name: /^Graft/ })).toBeVisible()
+
+  expect(errors).toEqual([])
+})
