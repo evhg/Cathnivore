@@ -236,7 +236,18 @@ M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons defe
   console errors) and is wired into `scripts/gates.ts`'s Gate 5. `npm run check`/`npm run gates` both pass
   clean. Still open: real PNG icons (192/512, maskable) for a proper installable-app icon rather than just
   the SVG favicon, the 1024x1024 App Store icon (STYLE.md 13), the launch screen and haptics.
-- [ ] the privacy and support pages, store text and screenshots
+- [x] (partial) the privacy and support pages (SPEC 11.5): static `public/privacy/index.html` and
+  `public/support/index.html` (Vite copies `public/` verbatim, so they land at `dist/privacy/index.html`
+  and `dist/support/index.html`), styled with STYLE.md's colour tokens inline (a plain `<style>` block, not
+  the app's own hashed CSS bundle, since these sit outside the React app and its build-time asset
+  fingerprinting). Privacy states plainly that no data is collected or tracked and saves stay on-device;
+  Support explains how to start (Campaign vs. Quick Game, the in-game How to Play reference) and gives
+  `OWNER.md`'s support email. Added explicit `vercel.json` rewrites for `/privacy`/`/support` ahead of the
+  SPA catch-all (found and fixed a real routing gap: `vite preview`'s dev server silently falls back to
+  `index.html` for an extensionless path with no trailing slash, e.g. `/privacy` vs. the working `/privacy/`
+  — untested, this would have 404'd or shown the wrong page on a real visit). Linked from the title screen's
+  footer. `tests/pages.test.ts` (3 tests) checks both pages' required content directly against the source
+  files. Store text and screenshots (the other half of this checklist item) are still open.
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
 ### M7 Hardening (final 18 hours; no new features)

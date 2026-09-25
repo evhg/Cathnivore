@@ -97,6 +97,9 @@ export default function App() {
         <footer>
           <p>A work of satire. All places, companies and people are fictional.</p>
           <p>No tracking. Your saves stay on your device.</p>
+          <p>
+            <a href="/privacy">Privacy</a> · <a href="/support">Support</a>
+          </p>
         </footer>
       </main>
     )
