@@ -13,12 +13,11 @@ function ownStalls(state: GameState, producer: ProducerId, region: RegionId): nu
   return state.regions[region].stalls[producer] ?? 0
 }
 
-// M4 balance-loop iteration 4 (was 3, see DECISIONS.md): clearing a Buyout is one of the two costs
-// (with Supply Outlets) directly on the critical path to liberating a region. pressureDeckEmpty is
-// still the dominant loss reason after iteration 3 (66.2%), i.e. liberation pace remains the blocker;
-// cutting this further (leaving Supply Outlets' base cost alone, since halving it would zero out
-// Mobile Butcher's/Wholesale Crate Deal's "1 less, minimum 1" discount text) is the safer lever.
-const SUPPLY_BUYOUT_COST = 2
+// M4 balance-loop iteration 3 (see DECISIONS.md): clearing a Buyout is one of the two costs
+// (with Supply Outlets) directly on the critical path to liberating a region. Iteration 4 tried
+// cutting this further to 2 alongside a lostLandPool cut, but the combined 1,000-game confirmation
+// regressed publicTrust's loss share under SPEC 9.4's 15% floor with a flat win rate — reverted to 3.
+const SUPPLY_BUYOUT_COST = 3
 
 // SPEC 7 "Mobile Butcher"/"Wholesale Crate Deal": Supply in Pasture/Crop regions costs 1 less Produce
 // per Outlet (minimum 1).
