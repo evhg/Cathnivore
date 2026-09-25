@@ -1,5 +1,12 @@
 import { REGIONS } from '../content/map'
+import { loadSettings } from '../platform/settings'
 import type { GameState, ProducerId, RegionId, RegionType } from '../engine/types'
+
+// SPEC 10.1's Settings screen has a "colour-blind patterns" toggle; Stalls are otherwise the one piece
+// type distinguished only by fill hue (oxblood/mustard/slate/plum), with no shape difference between
+// producers the way Outlet/Buyout/Doubt already have — so this is what the toggle turns on: each
+// producer's initial, stamped on their Stalls.
+const PRODUCER_INITIAL: Record<ProducerId, string> = { mara: 'M', tomas: 'T', ines: 'I', sol: 'S' }
 
 // SPEC 10.2/STYLE.md 7: a square SVG hex flower, Kingsmarket in the centre. Pointy-top hexagons so the
 // six directions land exactly on "left"/"right"/"top-left" etc. (angle 0 = right, going clockwise).
@@ -88,6 +95,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
   const expandTargets = active.filter((id) => matchesSlot(state, id, 'expand'))
   const highlighted = new Set(highlight ?? [])
   const targeting = highlighted.size > 0
+  const colourBlindPatterns = loadSettings().colourBlindPatterns
 
   return (
     <svg viewBox={`${-SIZE} ${-SIZE} ${SIZE * 2} ${SIZE * 2}`} className="map" role="img" aria-label="Map of Marrow">
@@ -186,20 +194,19 @@ export default function Map({ state, highlight, onSelect }: Props) {
             {/* Stalls sit along the bottom edge, striped in the producer's colour. */}
             <g transform={`translate(${x - 27}, ${y + HEX_R * 0.5})`}>
               {stalls.flatMap(([pid, n]) =>
-                Array.from({ length: n }).map((_, i) => (
-                  <rect
-                    key={`${pid}-${i}`}
-                    className="stall-piece"
-                    x={(stalls.findIndex(([p]) => p === pid) + i) * 18}
-                    y={0}
-                    width={14}
-                    height={10}
-                    rx={2}
-                    fill={`var(--p-${pid})`}
-                    stroke="var(--ink)"
-                    strokeWidth={1}
-                  />
-                )),
+                Array.from({ length: n }).map((_, i) => {
+                  const sx = (stalls.findIndex(([p]) => p === pid) + i) * 18
+                  return (
+                    <g key={`${pid}-${i}`} className="stall-piece">
+                      <rect x={sx} y={0} width={14} height={10} rx={2} fill={`var(--p-${pid})`} stroke="var(--ink)" strokeWidth={1} />
+                      {colourBlindPatterns && (
+                        <text x={sx + 7} y={8} textAnchor="middle" className="stall-initial">
+                          {PRODUCER_INITIAL[pid]}
+                        </text>
+                      )}
+                    </g>
+                  )
+                }),
               )}
             </g>
 

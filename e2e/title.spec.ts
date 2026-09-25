@@ -46,6 +46,21 @@ test('Settings toggles persist and Reset all data needs confirmation', async ({ 
   await expect(page.getByRole('radio', { name: 'fast' })).toBeChecked()
 })
 
+// SPEC 10.1's Settings screen has a "colour-blind patterns" toggle; Map.tsx uses it to stamp each
+// producer's initial onto their Stalls (otherwise distinguished only by fill hue).
+test('Colour-blind patterns setting shows producer initials on Stalls', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Settings').click()
+  await page.getByRole('checkbox', { name: 'Colour-blind patterns' }).check()
+  await page.getByRole('button', { name: 'Back' }).click()
+
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  await expect(page.locator('.stall-initial').first()).toBeVisible()
+})
+
 // SPEC 10.1's title-screen nav list includes Credits.
 test('Credits opens and closes', async ({ page }) => {
   await page.goto('/')

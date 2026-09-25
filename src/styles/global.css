@@ -297,6 +297,14 @@ h3 {
   fill: var(--ink);
 }
 
+.stall-initial {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  fill: var(--paper);
+  pointer-events: none;
+}
+
 .map-legend {
   font-size: 12px;
   fill: var(--ink-muted);
