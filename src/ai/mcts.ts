@@ -17,7 +17,7 @@ const ROLLOUT_STEP_CAP = 200 // safety valve; real games never need this many st
 // rollout step (instead of all legal actions) and picks the best of those by the same evaluation
 // function, cutting the per-step cost from O(legal actions) to O(1) without changing what's being
 // optimized for.
-const ROLLOUT_SAMPLE_SIZE = 4
+const ROLLOUT_SAMPLE_SIZE = 6
 
 function sampleRolloutAction(state: GameState, actions: Action[], rng: RngState): [Action, RngState] {
   if (actions.length <= ROLLOUT_SAMPLE_SIZE) {
