@@ -405,3 +405,12 @@ Format: date, decision, reason.
   plumbing too. Chose a plain checkbox/radio list with the same minimal-CSS treatment as the Setup-screen
   fix earlier this session, rather than a fuller design pass, consistent with SPEC 1.3's priority order
   (stability/correctness over polish) this late in a single session.
+- 2026-09-25: Re-checked the `main` push restriction at the start of this session (a cheap `git push
+  origin main-test:main --dry-run` from a throwaway local branch, rather than running the full ~50-minute
+  `npm run release` gate sequence first): still denied by the harness's own "Production Deploy" classifier,
+  identical message to the prior entries. Per the denial's own guidance, not retried further this session
+  (no alternate tool/path attempted); local throwaway branch deleted immediately after. Since `npm run
+  check` already confirms gates 1-4 clean and prior sessions already validated gates 5-8 on very similar
+  code, skipping a full `npm run gates`/`npm run release` run this session avoids spending the lock window
+  on a push step that's still blocked — better spent on M6 feature work (see below). Still needs the owner
+  to either approve production pushes for this session type or run the release themselves.

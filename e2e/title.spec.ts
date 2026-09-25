@@ -45,3 +45,13 @@ test('Settings toggles persist and Reset all data needs confirmation', async ({ 
   await page.getByText('Settings').click()
   await expect(page.getByRole('radio', { name: 'fast' })).toBeChecked()
 })
+
+// SPEC 10.1's title-screen nav list includes Credits.
+test('Credits opens and closes', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Credits').click()
+  await expect(page.getByRole('heading', { name: 'Credits' })).toBeVisible()
+  await expect(page.getByText('Cath Hale')).toBeVisible()
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page.getByRole('heading', { name: 'Cathnivore' })).toBeVisible()
+})

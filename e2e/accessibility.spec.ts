@@ -43,3 +43,10 @@ test('settings screen has no serious or critical accessibility issues', async ({
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
   await assertNoSeriousIssues(page)
 })
+
+test('credits screen has no serious or critical accessibility issues', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Credits').click()
+  await expect(page.getByRole('heading', { name: 'Credits' })).toBeVisible()
+  await assertNoSeriousIssues(page)
+})

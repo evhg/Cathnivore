@@ -587,3 +587,14 @@ html.native-app body {
 .settings .reset-confirm button {
   margin-right: 8px;
 }
+
+.credits ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.credits li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--paper-2);
+}
