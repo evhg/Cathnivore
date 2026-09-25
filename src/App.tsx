@@ -11,6 +11,7 @@ import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
 import { SCENES as GROWING_SEASON_SCENES } from './content/story/growing-season'
 import { SCENES as THE_PLAN_SCENES } from './content/story/the-plan'
 import { SCENES as FRIENDS_IN_LOW_PLACES_SCENES } from './content/story/friends-in-low-places'
+import { SCENES as KINGSMARKET_SCENES } from './content/story/kingsmarket'
 import type { GameConfig, GameState } from './engine/types'
 
 const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
@@ -19,6 +20,7 @@ const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
   'growing-season': GROWING_SEASON_SCENES,
   'the-plan': THE_PLAN_SCENES,
   'friends-in-low-places': FRIENDS_IN_LOW_PLACES_SCENES,
+  kingsmarket: KINGSMARKET_SCENES,
 }
 
 type Screen =

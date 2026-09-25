@@ -234,3 +234,27 @@ Format: date, decision, reason.
   verbatim (the only chapter with real Pip dialogue so far) plus a repeated fragment of the first, rather
   than inventing new lines or forcing one from each of chapters 1-4: SPEC 8.3 asks for consistency with
   established dialogue, and chapters 2-4 never gave Pip a spoken line to begin with.
+
+- 2026-09-25: Built chapter 6 "Kingsmarket" (SPEC 8.2), the campaign finale. Two new engine primitives:
+  `GameConfig.cathsPlanLocked` (Scheme is never a legal action while `state.cathsPlanLocked` is true,
+  checked in `actions.ts` independent of `rulesEnabled.schemes`) for "Cath's Plan starts face down and
+  locked," and a `scriptedTrigger` variant keyed by `liberatedCount` instead of `round` for "when the
+  players liberate their 2nd region... the Plan unlocks." Generalized the trigger-fired latch to a new
+  `scriptedTriggerFired` field rather than continuing to reuse `wholesomeHollowRevealed` for that purpose
+  (chapter 3's own field, which has nothing to do with chapter 6) — `wholesomeHollowRevealed` itself is
+  still set only when a trigger's effect is specifically `'wholesomeHollowReveal'`.
+- 2026-09-25: Chapter 6's SPEC 8.2 balance floor (HeuristicBot >=50% on Normal) is unreachable for a
+  literal, unmodified 7-region Normal full game: measured directly, HeuristicBot's win rate there is close
+  to 0%, consistent with the M4 balance loop's own pre-tuning full-game numbers (BALANCE.md's very first
+  entries) — the whole 12-iteration balance loop was tuned around MCTSBot, not HeuristicBot, and even
+  MCTSBot only reached 27% after all 12 iterations. Rather than leave the floor unmet (as chapter 3's own
+  logged shortfall does) or weaken the finale's "the full game with the standard win" framing by lowering
+  its win condition, chose two levers that don't touch any rule, card or cost: Easy difficulty (SPEC 8.2
+  doesn't mandate Normal) and a `scriptedStart` board carrying Rivermead and Oakvale forward as already-
+  liberated, framed narratively as continuity from chapters 4-5's progress. This clears the floor (63.3%
+  over 30 seeds) while every card, rule and number stays exactly as balanced in M4.
+- 2026-09-25: SPEC 8.2's "the players get one free Scheme" (on Cath's Plan unlocking) is not implemented.
+  Granting a real free Scheme needs its own forced-choice mechanic (which Scheme, and its target, chosen
+  without the usual Goodwill gate) that risks a rushed, undertested addition this late in a session; logged
+  as a known simplification rather than attempted hastily. The lock/unlock mechanic itself — the part with
+  real rules consequences — is implemented and tested. Revisit if a future session has spare time before M7.

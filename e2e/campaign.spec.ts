@@ -8,14 +8,14 @@ import { test, expect } from '@playwright/test'
 // guarantees >=70% (SPEC 9.4's chapters-2-4 floor, not 100%), so this asserts the mechanical flow — opening
 // scene, a played-out game, an end screen, and Continue going somewhere sensible — rather than a win every
 // time, to avoid a flaky gate on the ~30% of seeds where even HeuristicBot loses chapter 3.
-for (const title of ['Fresh Meat', 'Word of Mouth', 'Growing Season', 'The Plan', 'Friends in Low Places']) {
+for (const title of ['Fresh Meat', 'Word of Mouth', 'Growing Season', 'The Plan', 'Friends in Low Places', 'Kingsmarket']) {
   test(`campaign chapter "${title}" plays through its opening scene and reaches its end screen`, async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(String(err)))
 
     await page.goto('/?e2eAutoplay=1')
     await page.getByRole('button', { name: 'Campaign' }).click()
-    await page.getByRole('button', { name: new RegExp(title) }).click()
+    await page.getByRole('button', { name: new RegExp(`^${title}`) }).click()
 
     // 2-producer chapters (SPEC 8.1) show a Solo/Hot-seat choice before the opening scene.
     const soloButton = page.getByRole('button', { name: /^Solo/ })

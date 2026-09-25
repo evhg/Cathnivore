@@ -58,7 +58,7 @@ export function createGame(config: GameConfig, seed: number): GameState {
       roleUsedThisRound: false,
     }
     producers[pid] = state
-    if (!config.scriptedStart && active.has(def.home)) {
+    if (!config.scriptedStart?.regions && active.has(def.home)) {
       regions[def.home].stalls[pid] = 2
     }
   }
@@ -127,12 +127,14 @@ export function createGame(config: GameConfig, seed: number): GameState {
     pendingDecisions: [],
     wholesomeHollowRevealed: false,
     contractsTornUp: 0,
+    scriptedTriggerFired: false,
+    cathsPlanLocked: config.cathsPlanLocked ?? false,
     log: [],
     actionHistory: [],
     result: null,
   }
 
-  if (config.scriptedStart) {
+  if (config.scriptedStart?.regions) {
     // SPEC 8.2 ch5: an explicit pre-built board replaces the normal SPEC 4.3.2 setup entirely.
     const start = config.scriptedStart
     for (const [id, r] of Object.entries(start.regions ?? {}) as [RegionState['id'], NonNullable<typeof start.regions>[RegionState['id']]][]) {
@@ -159,6 +161,26 @@ export function createGame(config: GameConfig, seed: number): GameState {
         },
       }
     }
+  } else {
+    // SPEC 4.3.2: Kingsmarket 2 Outlets/1 Buyout/2 Doubt; every other region 1 Outlet; each Coast +1 Doubt.
+    for (const id of config.activeRegions) {
+      const def = REGIONS[id]
+      if (def.type === 'capital') {
+        state = addOutlets(state, id, config.difficulty === 'hard' ? 3 : 2)
+        state = addBuyout(state, id, 1)
+        state = addDoubt(state, id, 2)
+      } else {
+        state = addOutlets(state, id, 1)
+        if (def.type === 'coast') state = addDoubt(state, id, 1)
+        if (def.type === 'pasture' && config.difficulty === 'hard') state = addDoubt(state, id, 1)
+      }
+    }
+  }
+
+  // SPEC 8.2 ch6: rift/publicTrust/producer overrides (e.g. Rift starting at 2) apply whether or not a
+  // chapter also supplies a fully scripted board of region pieces.
+  if (config.scriptedStart) {
+    const start = config.scriptedStart
     if (start.rift !== undefined) state = { ...state, rift: start.rift }
     if (start.publicTrust !== undefined) state = { ...state, publicTrust: start.publicTrust }
     for (const [pid, overrides] of Object.entries(start.producers ?? {}) as [
@@ -176,20 +198,6 @@ export function createGame(config: GameConfig, seed: number): GameState {
             production: { ...state.producers[pid].production, ...overrides.production },
           },
         },
-      }
-    }
-  } else {
-    // SPEC 4.3.2: Kingsmarket 2 Outlets/1 Buyout/2 Doubt; every other region 1 Outlet; each Coast +1 Doubt.
-    for (const id of config.activeRegions) {
-      const def = REGIONS[id]
-      if (def.type === 'capital') {
-        state = addOutlets(state, id, config.difficulty === 'hard' ? 3 : 2)
-        state = addBuyout(state, id, 1)
-        state = addDoubt(state, id, 2)
-      } else {
-        state = addOutlets(state, id, 1)
-        if (def.type === 'coast') state = addDoubt(state, id, 1)
-        if (def.type === 'pasture' && config.difficulty === 'hard') state = addDoubt(state, id, 1)
       }
     }
   }

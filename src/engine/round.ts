@@ -71,13 +71,20 @@ function cleanup(state: GameState): GameState {
     ) as GameState['producers'],
   }
 
-  // SPEC 8.1 "triggers (round start ...)"; SPEC 8.2 ch3's twist ("scripted at the start of round 5")
-  // fires once, the first time the configured round is reached.
+  // SPEC 8.1 "triggers (round start ..., region liberated ...)": fires once, the first time its condition
+  // holds at cleanup — either a fixed round (SPEC 8.2 ch3's twist) or a liberated-region count (ch6's
+  // "when the players liberate their 2nd region").
   const trigger = next.config.scriptedTrigger
-  if (trigger && next.round === trigger.round && !next.wholesomeHollowRevealed) {
+  const triggerReady =
+    !!trigger &&
+    !next.scriptedTriggerFired &&
+    ('round' in trigger ? next.round === trigger.round : countLiberated(next) >= trigger.liberatedCount)
+  if (trigger && triggerReady) {
     next = {
       ...next,
-      wholesomeHollowRevealed: true,
+      scriptedTriggerFired: true,
+      wholesomeHollowRevealed: trigger.effect === 'wholesomeHollowReveal' ? true : next.wholesomeHollowRevealed,
+      cathsPlanLocked: trigger.effect === 'unlockCathsPlan' ? false : next.cathsPlanLocked,
       log: [...next.log, { type: 'trigger', effect: trigger.effect, sceneId: trigger.sceneId }],
     }
   }

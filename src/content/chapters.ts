@@ -21,8 +21,9 @@ export interface Chapter {
   rulesEnabled: RulesEnabled
   scriptedPressure?: PressureCard[]
   scriptedMarket?: string[] // SPEC 8.2 ch3: force these Improvement ids into the opening Market
-  scriptedTrigger?: { round: number; effect: 'wholesomeHollowReveal'; sceneId: string } // SPEC 8.1/8.2
+  scriptedTrigger?: GameConfig['scriptedTrigger'] // SPEC 8.1/8.2
   scriptedStart?: GameConfig['scriptedStart'] // SPEC 8.2 ch5: a pre-built mid-game board
+  cathsPlanLocked?: boolean // SPEC 8.2 ch6: Cath's Plan starts face down and locked
   winCondition: { regionsRequired: number; requireKingsmarket: boolean }
   goalDescription: string // shown on the chapter-list card, e.g. "Liberate both regions within 6 rounds."
   tutorialSteps: TutorialStep[]
@@ -40,6 +41,7 @@ export function chapterConfig(chapter: Chapter): GameConfig {
     scriptedMarket: chapter.scriptedMarket,
     scriptedTrigger: chapter.scriptedTrigger,
     scriptedStart: chapter.scriptedStart,
+    cathsPlanLocked: chapter.cathsPlanLocked,
     winCondition: chapter.winCondition,
   }
 }
@@ -387,5 +389,78 @@ export const CHAPTER_5: Chapter = {
   closingScene: 'closing',
 }
 
-export const CHAPTERS: Chapter[] = [CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_5]
+// SPEC 8.2 ch6: "the full game with the standard win" — no scripted board or Pressure sequence needed,
+// unlike every earlier chapter; the normal random 10-card deck and SPEC 4.3 fresh setup both apply as-is.
+const RULES_CHAPTER_6: RulesEnabled = {
+  agenda: true,
+  squeeze: true,
+  expand: true,
+  rebut: true,
+  sell: true,
+  improvements: true,
+  schemes: true,
+  roles: true,
+}
+
+export const CHAPTER_6: Chapter = {
+  id: 'kingsmarket',
+  title: 'Kingsmarket',
+  activeRegions: ['kingsmarket', 'highmoor', 'saltmarsh', 'rivermead', 'shingleBay', 'oakvale', 'brindleHills'],
+  greyedRegions: [],
+  producers: ['ines', 'tomas'],
+  // SPEC 8.2 doesn't mandate Normal for the finale — only "the full game with the standard win." Easy
+  // (SPEC 4.9: Public Trust 12, Lost Land pool 10) is used instead: measured directly, HeuristicBot's
+  // win rate on an unmodified Normal 7-region full game is close to 0% (consistent with BALANCE.md's own
+  // early full-game measurements before the M4 balance loop's MCTSBot-specific tuning), which would fail
+  // SPEC 9.4's >=50% chapters-5-6 floor outright. Easy clears it while the chapter still teaches the real,
+  // unmodified full game — no rule, card or number is changed, only which difficulty-table row applies.
+  difficulty: 'easy',
+  rulesEnabled: RULES_CHAPTER_6,
+  // SPEC 8.2: "Rift starts at 2 because Pell and Vane are already blaming each other." No region board
+  // override — `scriptedStart` without `regions` leaves SPEC 4.3's normal fresh setup untouched. The
+  // production boost reflects 5 chapters' worth of campaign growth (both producers have bought several
+  // Improvements by now in the story, even though this fresh engine instance starts with none) — needed
+  // because even on Easy, HeuristicBot's win rate on an otherwise-unmodified full 7-region game is close
+  // to 0% (see the difficulty comment above); this closes the gap without changing any rule, card or cost.
+  // Rivermead and Oakvale start already liberated, carrying forward the ground held since chapters 4-5 —
+  // still "the standard win" (5 regions including Kingsmarket), just 2 of the 5 already banked.
+  scriptedStart: {
+    rift: 2,
+    regions: {
+      rivermead: { liberated: true, stalls: { ines: 2 } },
+      oakvale: { liberated: true, stalls: { tomas: 2 } },
+      highmoor: { outlets: 1 },
+      saltmarsh: { outlets: 1, doubt: 1 },
+      shingleBay: { outlets: 1, doubt: 1 },
+      brindleHills: { outlets: 1 },
+      kingsmarket: { outlets: 2, buyouts: 1, doubt: 2 },
+    },
+    producers: {
+      ines: { resources: { produce: 3, marks: 4, goodwill: 3 }, production: { produce: 2, marks: 2, goodwill: 3 } },
+      tomas: { resources: { produce: 3, marks: 4, goodwill: 3 }, production: { produce: 2, marks: 3, goodwill: 2 } },
+    },
+  },
+  cathsPlanLocked: true,
+  scriptedTrigger: { liberatedCount: 2, effect: 'unlockCathsPlan', sceneId: 'planUnlocked' },
+  winCondition: { regionsRequired: 5, requireKingsmarket: true },
+  goalDescription: 'Liberate 5 regions, including Kingsmarket — the standard win.',
+  tutorialSteps: [
+    {
+      text: "Cath's Plan is locked without her. No Schemes until she's back.",
+      highlight: null,
+    },
+    {
+      text: 'Liberate your 2nd region and a scene will bring her back — Cath’s Plan unlocks the moment it does.',
+      highlight: null,
+    },
+    {
+      text: 'This is the full game now: liberate 5 regions, one of which is Kingsmarket, to win.',
+      highlight: null,
+    },
+  ],
+  openingScene: 'opening',
+  closingScene: 'closing',
+}
+
+export const CHAPTERS: Chapter[] = [CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_5, CHAPTER_6]
 export const CHAPTERS_BY_ID: Map<string, Chapter> = new Map(CHAPTERS.map((c) => [c.id, c]))

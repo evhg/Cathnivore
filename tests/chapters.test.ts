@@ -3,7 +3,7 @@ import { createGame, validate } from '../src/engine/api'
 import { applyAction, legalActions } from '../src/engine/actions'
 import { createRng } from '../src/engine/rng'
 import { HeuristicBot } from '../src/ai/heuristic'
-import { CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_5, chapterConfig } from '../src/content/chapters'
+import { CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_5, CHAPTER_6, chapterConfig } from '../src/content/chapters'
 
 describe('chapter 1: Fresh Meat', () => {
   it('creates a valid single-producer game restricted to Brindle Hills and Highmoor', () => {
@@ -187,6 +187,57 @@ describe('chapter 5: Friends in Low Places', () => {
       let rng = createRng(seed + 5000)
       let steps = 0
       while (!state.result && steps < 800) {
+        const [action, nextRng] = HeuristicBot.chooseAction(state, rng)
+        state = applyAction(state, action)
+        rng = nextRng
+        steps++
+        expect(validate(state)).toEqual([])
+      }
+      expect(state.result).not.toBeNull()
+      if (state.result?.won) wins++
+    }
+    expect(wins / seeds).toBeGreaterThanOrEqual(0.5)
+  })
+})
+
+describe('chapter 6: Kingsmarket', () => {
+  it('creates a valid game with Cath\'s Plan locked and Rift starting at 2', () => {
+    const state = createGame(chapterConfig(CHAPTER_6), 1)
+    expect(validate(state)).toEqual([])
+    expect(state.cathsPlanLocked).toBe(true)
+    expect(state.rift).toBe(2)
+    const kinds = new Set(legalActions(state).map((a) => a.kind))
+    expect(kinds.has('scheme')).toBe(false)
+  })
+
+  it('unlocks Cath\'s Plan once the 2nd region is liberated', () => {
+    let state = createGame(chapterConfig(CHAPTER_6), 1)
+    let rng = createRng(6000)
+    let steps = 0
+    while (state.cathsPlanLocked && !state.result && steps < 500) {
+      const [action, nextRng] = HeuristicBot.chooseAction(state, rng)
+      state = applyAction(state, action)
+      rng = nextRng
+      steps++
+      expect(validate(state)).toEqual([])
+    }
+    expect(state.cathsPlanLocked).toBe(false)
+    expect(state.log.some((e) => e.type === 'trigger' && e.effect === 'unlockCathsPlan')).toBe(true)
+  })
+
+  it('the standard win condition (5 regions including Kingsmarket) applies', () => {
+    const state = createGame(chapterConfig(CHAPTER_6), 1)
+    expect(state.config.winCondition).toEqual({ regionsRequired: 5, requireKingsmarket: true })
+  })
+
+  it('HeuristicBot wins at least 50% of seeds (SPEC 9.4 campaign target for chapters 5-6)', () => {
+    let wins = 0
+    const seeds = 30
+    for (let seed = 0; seed < seeds; seed++) {
+      let state = createGame(chapterConfig(CHAPTER_6), seed)
+      let rng = createRng(seed + 6000)
+      let steps = 0
+      while (!state.result && steps < 1500) {
         const [action, nextRng] = HeuristicBot.chooseAction(state, rng)
         state = applyAction(state, action)
         rng = nextRng

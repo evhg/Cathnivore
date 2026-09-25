@@ -103,7 +103,7 @@ export function legalActions(state: GameState): Action[] {
     }
   }
 
-  if (rules.schemes) {
+  if (rules.schemes && !state.cathsPlanLocked) {
     for (const id of state.cathsPlan) {
       if (!id) continue
       const card = SCHEMES_BY_ID.get(id)

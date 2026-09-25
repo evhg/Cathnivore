@@ -91,11 +91,16 @@ export interface GameConfig {
   // draw — chapter 3 seeds 3 copies of the campaign-only "Wholesome Hollow Contract". Remaining slots
   // still fill from the normal shuffled Improvement deck. Absent means the ordinary all-random market.
   scriptedMarket?: ImprovementCardId[]
-  // SPEC 8.1 "triggers (round start ...)" / SPEC 8.2 ch3's twist: at the start of `round`, `effect` is
-  // applied once (see `round.ts`'s `applyScriptedTrigger`) and a `{type: 'trigger'}` event is logged so
-  // the UI can show `sceneId`'s scene. Only one kind of effect exists so far — extend the union, not the
-  // shape, if a later chapter needs a different one.
-  scriptedTrigger?: { round: number; effect: 'wholesomeHollowReveal'; sceneId: string }
+  // SPEC 8.1 "triggers (round start ..., region liberated ...)". `effect` fires once — the first time the
+  // condition holds true at cleanup (see `round.ts`) — and a `{type: 'trigger'}` event is logged so the UI
+  // can show `sceneId`'s scene. SPEC 8.2 ch3's twist fires at a fixed `round`; ch6's ("when the players
+  // liberate their 2nd region") fires once `liberatedCount` regions are liberated.
+  scriptedTrigger?:
+    | { round: number; effect: 'wholesomeHollowReveal'; sceneId: string }
+    | { liberatedCount: number; effect: 'unlockCathsPlan'; sceneId: string }
+  // SPEC 8.2 ch6: "Cath's Plan starts face down and locked." No Scheme is a legal action while true,
+  // regardless of `rulesEnabled.schemes`; a scripted trigger (above) switches it off mid-game.
+  cathsPlanLocked?: boolean
   // A campaign chapter's single lone producer faces far more enemy turns per region than the tuned
   // 2-producer/7-region full game's `DIFFICULTY_SETTINGS.lostLandPool` was balanced for (a chapter runs
   // considerably longer than the full game's 10-round cap). Overrides that pool size for this game only;
@@ -174,6 +179,12 @@ export interface GameState {
   // Contracts removed by `tearUpContract` leave the game entirely (unlike a Scheme's discard pile), so
   // `validate()`'s improvement-total invariant needs this count to still add up.
   contractsTornUp: number
+  // True once `config.scriptedTrigger` has fired (any effect) — the generic "fired already" latch, kept
+  // separate from `wholesomeHollowRevealed` (which also gates the contract-Outlet mechanic specifically).
+  scriptedTriggerFired: boolean
+  // SPEC 8.2 ch6: "Cath's Plan starts face down and locked." Mirrors `config.cathsPlanLocked`'s initial
+  // value; a scripted trigger with `effect: 'unlockCathsPlan'` sets this to false partway through.
+  cathsPlanLocked: boolean
   log: GameEvent[]
   actionHistory: Action[]
   result: GameResult | null
