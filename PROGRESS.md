@@ -1,7 +1,23 @@
 # Progress
 
 ## Current milestone
-M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons deferred to M6, see DECISIONS.md). M4's balance loop is complete (12/12 iterations, see DECISIONS.md); M4's release to `main` is done on the git side (`main` is on `bf08c61`) but Vercel has not served that commit — a firm, owner-side blocker (see Blocked). **All 6 campaign chapters are now done** ("Fresh Meat" through "Kingsmarket"), including chapter 3's Wholesome Hollow Contract twist, chapter 4's first two-producer/Solo-or-Hot-seat/Kingsmarket-guard content, chapter 5's new `scriptedStart` pre-built-board engine primitive and chapter 6's Cath's-Plan-lock/unlock trigger (see below and DECISIONS.md), with story scenes, tutorial prompts and e2e coverage for all six. `main` is still on `bf08c61` (pre-M5): a fresh `npm run release` push to `main` is now blocked by this session's own harness ("Production Deploy" denial, see Blocked) rather than by GitHub, so all of M5 so far lives only on `build` until that's resolved. Only portraits (STYLE.md 9) remain before M5's checklist is fully done, and both M5 releases (after ch1-3, and after ch4-6) are still pending on that same release blocker.
+M5 Campaign is content-complete; M6 Polish has started. M1-M4 are complete (M4's balance loop 12/12
+iterations, see DECISIONS.md). **M5's checklist is now fully done**: all 6 campaign chapters ("Fresh Meat"
+through "Kingsmarket") with their twists and carry-over, story scenes, tutorial prompts, e2e coverage, and
+now portraits (STYLE.md 9, a parametric SVG component for all 9 named characters). `main` is still on
+`bf08c61` (pre-M5): `npm run release`'s `git push origin main` step is blocked by this session's own harness
+("Production Deploy" denial, re-confirmed again this session, see Blocked) rather than by GitHub, so all of
+M5 and the M6 work below lives only on `build` until that's resolved — every session should still try the
+push once, but not more, per the denial's own guidance. Since the release-and-iPhone-build steps that would
+normally close out M5 are blocked on something outside session capability, this session moved ahead into
+M6 (non-release-gated work only, per SPEC 1.3's "cut scope, not stability" and the fact that stalling until
+an owner-side blocker clears helps no one): a real Gate 6 (accessibility/axe, replacing its stub), web
+install and offline play (`vite-plugin-pwa`, the title-screen "Update ready" prompt), the previously-missing
+`favicon.svg`, and the privacy/support pages. `npm run gates` passes end to end (gates 1-6; 7-8 still
+skipped — gate 7 also needs the real MCTS-in-Worker AI teammate to fully check, which doesn't exist yet).
+Next session: keep working through M6 (real PNG/App-Store icons, launch screen, haptics, animations, visual
+review, Lighthouse), re-try the `main` push once, and re-check `ios.yml` in case Apple secrets have
+appeared.
 
 ## Tasks
 

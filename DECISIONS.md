@@ -310,3 +310,12 @@ Format: date, decision, reason.
   `navigator.serviceWorker.ready`, reload, wait for `navigator.serviceWorker.controller`) because a page's
   very first visit is never controlled by the worker it just registered — only a subsequent navigation is —
   which matches gate 5's own phrasing ("after the first load ... reload") rather than being a workaround.
+
+- 2026-09-25: Added `vercel.json` rewrites for `/privacy` and `/support` ahead of the SPA catch-all (found
+  while testing them locally: `vite preview`'s dev server serves `index.html` for `/privacy` with no
+  trailing slash, only serving the real static file for `/privacy/` — production Vercel likely resolves the
+  no-slash form correctly via its own file-system routing, but there was no way to confirm that without a
+  live deploy, which is blocked, so an explicit rewrite removes the ambiguity rather than trusting default
+  behaviour untested). Also added a `no-cache` header for `sw.js`/`manifest.webmanifest` alongside the
+  existing `index.html` one, so a CDN or browser cache can't sit on a stale service worker and delay the
+  "Update ready: reload" prompt after a real release.
