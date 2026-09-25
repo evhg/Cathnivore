@@ -219,7 +219,10 @@ M5 Campaign (day 5) — M1-M3 are complete (M3's exact-STYLE.md piece icons defe
   issues on the current UI — a real, clean result, not just "gate exists." `npm run gates` runs clean
   end to end (gates 1-6; 7-8 still skipped, chartered to the rest of M6). Still missing: animations, visual-
   review fixes, performance (Lighthouse, gate 7)
-- [ ] web install and offline play; icons, launch screen and haptics
+- [x] (partial) `public/favicon.svg` now exists (a Cath-face-crop icon per STYLE.md 13's app-icon
+  description, simplified for favicon scale) — `index.html` already referenced `/favicon.svg` but the file
+  never existed (a real 404, found while starting this checklist item). Web install (manifest,
+  `vite-plugin-pwa`), offline play, the 1024x1024 App Store icon, launch screen and haptics are still open.
 - [ ] the privacy and support pages, store text and screenshots
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
