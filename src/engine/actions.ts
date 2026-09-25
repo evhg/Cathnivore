@@ -19,10 +19,20 @@ function ownStalls(state: GameState, producer: ProducerId, region: RegionId): nu
 // regressed publicTrust's loss share under SPEC 9.4's 15% floor with a flat win rate — reverted to 3.
 const SUPPLY_BUYOUT_COST = 3
 
+// M4 balance-loop iteration 6 (see DECISIONS.md): tried cutting this 2 -> 1 (every region with an
+// Outlet, not just the Buyout-having ones) to attack the still-dominant pressureDeckEmpty loss reason.
+// A 200-game confirmation showed it was far too strong a single lever: win rate jumped to 48.5% (inside
+// the 45-60% target) but publicTrust/lostLand loss shares collapsed to 5.8%/2.9% (both well under the
+// 15% floor iterations 1-5 had already cleared), games settled far too early (avg settled round 4.46,
+// 88.8% settled before round 7, versus SPEC 9.4's "at least 60% not settled before round 7"), and the
+// producer-pair spread blew past the 12-point band (33.3%-70.6%). Reverted to 2. Revisit with a gentler
+// version (e.g. a per-Improvement discount rather than a universal base cut) in a later iteration.
+const SUPPLY_OUTLET_BASE_COST = 2
+
 // SPEC 7 "Mobile Butcher"/"Wholesale Crate Deal": Supply in Pasture/Crop regions costs 1 less Produce
 // per Outlet (minimum 1).
 function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, region: RegionId): number {
-  const base = 2
+  const base = SUPPLY_OUTLET_BASE_COST
   const type = REGIONS[region].type
   if (
     (hasImprovement(state, producer, 'mobile-butcher') && type === 'pasture') ||
