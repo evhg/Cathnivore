@@ -358,3 +358,15 @@ Format: date, decision, reason.
   `git checkout -B main origin/main` (recreating the local branch ref from scratch, rather than resetting an
   existing one) also gets denied, that's confirmation this is a standing restriction on this session type,
   not specific to `reset --hard`.
+
+- 2026-09-25 ~20:15 UTC: Built SPEC 11.4 gate 7's Lighthouse half in `scripts/gates.ts`. Installed
+  `lighthouse` as a real devDependency (its own CLI, run via `npx lighthouse`) rather than a one-off local
+  tool like `sharp` earlier this session, since gate 7 needs to be reproducible by any future session, not
+  just this one. Runs against the actual production build (`vite preview` on a fixed port after `npm run
+  check`'s own build step), pointed at the sandbox's existing pinned Chromium via `CHROME_PATH` — the same
+  binary `PLAYWRIGHT_CHROMIUM_PATH` already uses for e2e/accessibility, so no new browser download was
+  needed and Lighthouse's own bundled Chrome-launcher just uses it directly. First real score: 99/100, well
+  clear of SPEC's 85 floor. The gate throws (failing `npm run gates`) if the score drops below 85. Only
+  implements the Lighthouse-score half of gate 7 — the "AI teammate decision <=1s under 4x CPU throttling"
+  half has no real subject to test yet (HeuristicBot stands in for the Solo AI teammate; the actual
+  MCTS-in-Worker teammate is still open, tracked since M2/M3) and is logged as still open rather than faked.

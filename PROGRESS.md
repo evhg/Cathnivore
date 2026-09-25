@@ -295,8 +295,16 @@ appeared.
   are now used somewhere in the UI. `npm run check` (150 tests) and the full 45-test e2e/accessibility suite
   (`phone` + `desktop-chromium`, WebKit still skipped — no binary in this sandbox, a known pre-existing gap)
   pass clean.
-- [ ] animations, fixes from the visual review, performance (Lighthouse, gate 7 — also needs the real
-  MCTS-in-Worker AI teammate before its "1 second per decision" half can be checked)
+- [x] (partial) Gate 7, its Lighthouse half: `scripts/gates.ts` now builds `dist/`, serves it with `vite
+  preview` on port 4173, runs `npx lighthouse` (added as a devDependency) against it with
+  `--preset=perf --form-factor=mobile` (`CHROME_PATH` pointed at the sandbox's pinned
+  `/opt/pw-browsers/chromium`, same binary the e2e suite already uses — no `playwright install`/separate
+  Lighthouse-Chrome download needed), parses the JSON report's performance score and fails the gate under
+  85. First real run: **99/100**. Report written to `sim/reports/lighthouse-latest.json` (gitignored,
+  `sim/reports` already was). Still open, and can't be checked until it exists: gate 7's other half, "each
+  AI teammate decision takes at most 1 second with 4x CPU throttling," needs the real MCTS-in-Worker AI
+  teammate (HeuristicBot still stands in for the Solo AI teammate — see DECISIONS.md).
+- [ ] animations, fixes from the visual review (gate 8)
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
 ### M7 Hardening (final 18 hours; no new features)
