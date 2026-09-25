@@ -326,11 +326,13 @@ appeared.
   fixed on the spot (cheap, isolated, CSS-only): the Setup screen had no layout CSS at all, so its
   Mode/Producers/Difficulty `<label>` rows ran together inline instead of one option per row — added a
   `.setup` block in `global.css` (block-per-option rows, hover state, a proper seed-input field style) and
-  re-captured the screenshots to confirm (see both `e2e/screenshots/*-3-setup.png`). Still logged, not
-  fixed: the desktop layout's right column (Market + Cath's Plan) sits close to the 900px viewport bottom
-  at 1440x900, worth confirming has zero actual overflow at 1280x800 (SPEC 10.3's stated floor) — this
-  needs measuring `scrollHeight` directly, not just eyeballing a viewport screenshot, so it's left for next
-  time rather than guessed at. Still open: chapters 2-6's scenes/screens, the Settings/Campaign-chapter-list
+  re-captured the screenshots to confirm (see both `e2e/screenshots/*-3-setup.png`). Checked the other
+  observation from the first pass (the desktop right column sitting close to the 1440x900 viewport bottom)
+  against the actual CSS rather than leaving it as a guess: `.game-layout` is `height: 100vh` with each
+  `.desktop-col`/`.game` set to `overflow-y: auto` (`global.css` line ~85, explicitly commented "SPEC 10.3:
+  ... no scrolling at 1280x800"), so a tall column scrolls internally — the page itself never scrolls. Not a
+  bug; false alarm from eyeballing a single viewport screenshot rather than reading the layout CSS. Still
+  open: chapters 2-6's scenes/screens, the Settings/Campaign-chapter-list
   screens, and — the actual point of gate 8 — a second, more adversarial pass (ideally the literal subagent
   SPEC calls for) once more screens/animations exist, so it's not spent early on a UI that's still changing.
 - [ ] animations, fixes from a fuller visual review
