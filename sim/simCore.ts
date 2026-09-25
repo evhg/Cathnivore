@@ -15,7 +15,9 @@ export const SIM_MCTS_BUDGET = 200
 // Balance-loop iteration 5 (DECISIONS.md): a longer rollout horizon lets MCTS "see" more of the
 // liberation payoff of a candidate action, since pressureDeckEmpty (games running out the 10-round
 // Pressure deck before liberating 5 regions) has been the dominant loss reason since iteration 1.
-export const SIM_MCTS_ROLLOUT_ROUNDS = 3
+// Iteration 8 pushed this further (3 -> 4) for the same reason: pressureDeckEmpty was still dominant
+// (49.2%) after the Sol's On Air correctness fix, and iteration 5 already showed this lever works.
+export const SIM_MCTS_ROLLOUT_ROUNDS = 4
 const STEP_CAP = 2000
 const SETTLED_LIBERATED_THRESHOLD = 4
 
