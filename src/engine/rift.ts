@@ -14,10 +14,12 @@ function totalPieces(state: GameState, faction: Faction): number {
   return state.config.activeRegions.reduce((sum, id) => sum + pieceCount(state.regions[id], faction), 0)
 }
 
-// SPEC 4.7 Rift 6: "The AI picks the faction and places whose removal most improves its evaluation." A
-// full evaluation function doesn't exist yet (that's M2, SPEC 9.2), so this uses the closest available
-// proxy: remove half of whichever faction currently has more pieces on the map, since that's the faction
-// doing the players the most harm right now.
+// SPEC 4.7 Rift 6: "The AI picks the faction and places whose removal most improves its evaluation." M2's
+// real evaluation function (src/ai/evaluation.ts) exists now, but wiring it in here would have `engine/`
+// (meant to stay pure, dependency-free of `ai/` — SPEC 9.1/11.2's layering, `ai/` depends on `engine/`, not
+// the other way around) import from `ai/`, risking a circular import and inverting that layering for a
+// once-per-game, low-stakes event. Keeping the greedy proxy: remove half of whichever faction currently has
+// more pieces on the map, since that's the faction doing the players the most harm right now.
 function pickFaction(state: GameState): Faction {
   return totalPieces(state, 'hollowell') >= totalPieces(state, 'candor') ? 'hollowell' : 'candor'
 }
