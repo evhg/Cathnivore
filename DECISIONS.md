@@ -414,3 +414,41 @@ Format: date, decision, reason.
   code, skipping a full `npm run gates`/`npm run release` run this session avoids spending the lock window
   on a push step that's still blocked — better spent on M6 feature work (see below). Still needs the owner
   to either approve production pushes for this session type or run the release themselves.
+- 2026-09-25: Ran a real gate-8 adversarial visual review this session (an actual `Agent` subagent call
+  reading all 20 screenshots against STYLE.md and SPEC 10, not the direct-look pass an earlier session did
+  in DECISIONS.md instead of a literal subagent call) — SPEC 11.4 gate 8 and CLAUDE.md's "use subagents for
+  independent review work (screenshots...)" both ask for this explicitly, and PROGRESS.md had flagged it as
+  the next session's job. Findings: (1) native checkboxes/radios on Setup/Settings used the browser default
+  blue instead of any STYLE.md token — fixed with `accent-color: var(--wheat)`, since STYLE.md 3.1 names
+  `--wheat` as exactly "the selected state." (2) the Campaign chapter list doesn't visually distinguish
+  locked chapters from unlocked ones (SPEC 10.1: "showing locked and completed chapters") — left unfixed.
+  Reason: the engine currently lets a player start any chapter regardless of prior completion (SPEC 8.1's
+  "Progress is never locked" is about retry options after a loss, not chapter-to-chapter gating, but no
+  other part of SPEC actually specifies when a later chapter should be inaccessible), and
+  `e2e/campaign.spec.ts` deliberately jumps straight to each of the 6 chapters without playing the others
+  first — so a real "locked" state would need a genuine design decision (what unlocks what, and whether
+  locked chapters stay playable or truly block) that's more than a quick visual fix, not something to guess
+  at under this session's own time budget. Logged here rather than either skipping it silently or inventing
+  gating logic that might contradict SPEC or break existing tests; a future session should decide the real
+  unlock rule (likely "chapter N unlocks once chapter N-1 is completed, mirroring the story's order") before
+  building the visual state.
+- 2026-09-25: Built the animations STYLE.md 11 calls for (Stall drop, enemy-piece delivery, Lost Land wipe,
+  card flip) as CSS keyframe animations applied via a class on each piece, rather than a JS animation
+  library or manual transition orchestration — since each piece is a keyed list item, React only mounts a
+  new DOM node when a piece is genuinely new (an appended Stall/enemy piece, or a Market/Scheme card
+  replaced at a different id), so a plain "animate on mount" CSS rule already gets exactly the "only new
+  things animate" behaviour STYLE.md implies, with no manual diffing needed. Found and fixed a real
+  conflict in the process: `Map.tsx`'s enemy-piece `<g>` elements already use an SVG `transform` attribute
+  for their row offset (`translate(i*16, 0)`); adding a CSS `animation` that also sets `transform` on that
+  same element doesn't compose with the attribute the way `translate`+`translate` might suggest — per SVG2,
+  a CSS `transform` value replaces the presentation attribute outright for rendering — so during the
+  animation every piece in a region would have collapsed to the same x-position before snapping to its
+  correct offset when the animation ended. Fixed by wrapping the animated content in a nested `<g>` so the
+  position offset and the animation live on different elements. Stall `<rect>`s don't have this problem
+  (they use plain `x`/`y` geometry attributes, not `transform`, for position). Wired the Settings
+  "Animations" toggle end-to-end for the first time (previously a stored-but-no-op boolean, per an earlier
+  session's own note) via `platform/settings.ts`'s `applyAnimationsSetting`, toggling `<html
+  class="no-animations">`; `prefers-reduced-motion: reduce` is handled separately in CSS for STYLE.md 11's
+  "fades only" case, which is not the same thing as the explicit Settings toggle being off. All 155 unit
+  tests, typecheck, lint, build (bundle still well under the 400 KB gzip cap) and the full 40-test e2e suite
+  (phone + desktop-chromium, including a re-check of the animated map/cards via fresh screenshots) pass.

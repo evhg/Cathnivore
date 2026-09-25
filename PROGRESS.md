@@ -365,9 +365,25 @@ Apple Team ID in case secrets have appeared.
   `.credits ul/li` addition. `e2e/title.spec.ts` (open/close) and `e2e/accessibility.spec.ts` (zero
   serious/critical axe issues) both cover it; `e2e/screenshots.spec.ts` also now captures it (screenshot 9)
   plus the previously-uncaptured Campaign chapter-list screen (screenshot 10). All pass at both sizes.
-- [ ] animations, fixes from a fuller visual review — a real adversarial gate-8 pass (the literal subagent
-  review SPEC 11.4 gate 8 calls for, not just a direct look) is running this session against the freshly
-  regenerated 20-screenshot set (10 screens x phone/desktop); findings and fixes to follow in the next entry.
+- [x] animations (STYLE.md 11) — CSS keyframe animations (stall drop-with-spring, enemy-piece delivery
+  slide, Lost Land crack-wipe, Market/Cath's Plan card flip), all mount-triggered so existing pieces never
+  replay them on unrelated re-renders. Gated by Settings' "Animations" toggle (`platform/settings.ts`'s
+  `applyAnimationsSetting`, an `<html class="no-animations">` switch) and `prefers-reduced-motion` (fades
+  only), per STYLE.md 11's exact wording. Found and fixed a real bug while building this: enemy-piece `<g>`
+  elements already carry an SVG `transform` attribute for their row offset, and adding a CSS animation that
+  also sets `transform` would silently replace that offset instead of composing with it (SVG2 behaviour,
+  not a React/Vite quirk) — fixed by nesting the animated `<g>` inside the positioned one. Details in
+  DECISIONS.md.
+- [x] a real gate-8 adversarial visual review (SPEC 11.4 gate 8's literal subagent, not the earlier
+  direct-look pass) ran this session against a refreshed 20-screenshot set (10 screens x phone/desktop,
+  now including Credits and the Campaign chapter list, previously uncaptured). One real, fixed finding:
+  native checkboxes/radios on Setup/Settings rendered with the browser's default blue instead of any
+  STYLE.md token — fixed with `accent-color: var(--wheat)` (STYLE.md 3.1 names `--wheat` as exactly "the
+  selected state"). One minor, deliberately-not-fixed finding: the Campaign screen doesn't visually
+  distinguish locked chapters (SPEC 10.1 says the list should show "locked and completed"); left open
+  since gating chapter access is a real design decision that risks breaking `e2e/campaign.spec.ts`'s
+  direct-chapter-start tests, not obviously a quick fix — logged in DECISIONS.md rather than guessed at.
+  Everything else (title, rules, game, end screen, scene, greyscale map shape-legibility) came back clean.
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
 ### M7 Hardening (final 18 hours; no new features)
