@@ -30,9 +30,8 @@ blocked on something outside session capability, this session did real, unblocke
 `npm run check`/`npm run gates` both still pass clean end to end (164 unit tests, 35 e2e/gate-5 tests; gate
 8 still needs a human/subagent judgement call each session). Next session: piece icons are still simplified
 vs. STYLE.md 6's exact illustrations (lowest priority); re-try the push-restriction dry-run check once;
-re-check `OWNER.md`'s Apple Team ID in case secrets have appeared; chapter 2 could use its own guided-
-tutorial e2e test (it shares chapter 1's gating mechanism but not its test coverage); M7's remaining items
-(a final full e2e pass on both sizes, and the final balance report) are best left until closer to the deadline so they aren't
+re-check `OWNER.md`'s Apple Team ID in case secrets have appeared; M7's remaining items (a final full e2e
+pass on both sizes, and the final balance report) are best left until closer to the deadline so they aren't
 redone after more content lands.
 
 ## Tasks
@@ -260,8 +259,8 @@ redone after more content lands.
     spend Brindle Hills' Outlet-clearing Produce — its phrasing was already informational rather than an
     instruction, so it's now `highlight: null` rather than gated. New `e2e/tutorial.spec.ts` plays chapter
     1 by hand and clicks only the highlighted elements, closing SPEC 11.4 gate 5's "clicking the highlighted
-    elements" bullet (nothing exercised it literally before). Chapter 2 shares the same mechanism/gating for
-    free but doesn't have its own dedicated e2e test yet.
+    elements" bullet (nothing exercised it literally before). Chapter 2 gets the same mechanism/gating for
+    free and now has its own `e2e/tutorial.spec.ts` test too (rebut, then the free role ability).
 - [ ] Release after chapters 1 to 3, and again after chapters 4 to 6
 - [ ] push `ios-<n>` for the first full iPhone build (up to 3 fix builds)
 
