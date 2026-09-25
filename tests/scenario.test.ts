@@ -82,6 +82,67 @@ describe('scriptedPressure and PressureCard.regions (SPEC 8.1)', () => {
   })
 })
 
+describe('scriptedMarket and scriptedTrigger (SPEC 8.1/8.2 ch3 twist)', () => {
+  const contractConfig: GameConfig = {
+    ...BASE_CONFIG,
+    rulesEnabled: { ...DEFAULT_RULES, agenda: false, squeeze: false, expand: false },
+    // Scout isn't one of `rulesEnabled`'s gates, so without this the real shuffled Pressure deck would
+    // still add its own Outlets to brindleHills (a Pasture region) independently of the contract effect
+    // under test — scripting every card at highmoor instead keeps brindleHills' Outlet count isolated.
+    scriptedPressure: Array.from({ length: 6 }, (_, i) => ({ id: `p${i}`, stage: 1 as const, regionTypes: [], regions: ['highmoor' as const] })),
+    scriptedMarket: ['wholesome-hollow-contract'],
+    scriptedTrigger: { round: 2, effect: 'wholesomeHollowReveal', sceneId: 'twist' },
+  }
+
+  it('seeds the given ids into the opening Market ahead of the shuffled draw', () => {
+    const state = createGame(contractConfig, 1)
+    expect(state.market[0]).toBe('wholesome-hollow-contract')
+    expect(state.market.slice(1).every((id) => id !== null)).toBe(true)
+  })
+
+  it('does nothing until the configured round, then fires once and logs a trigger event', () => {
+    let state = createGame(contractConfig, 1)
+    expect(state.wholesomeHollowRevealed).toBe(false)
+    // Round 1: Graft through to Cleanup (round becomes 2, the configured trigger round).
+    for (let i = 0; i < 3; i++) state = applyAction(state, legalActions(state).find((a) => a.kind === 'graft')!)
+    expect(state.round).toBe(2)
+    expect(state.wholesomeHollowRevealed).toBe(true)
+    expect(state.log.filter((e) => e.type === 'trigger')).toEqual([{ type: 'trigger', effect: 'wholesomeHollowReveal', sceneId: 'twist' }])
+    // Round 2 -> 3: the trigger doesn't fire again.
+    for (let i = 0; i < 3; i++) state = applyAction(state, legalActions(state).find((a) => a.kind === 'graft')!)
+    expect(state.log.filter((e) => e.type === 'trigger')).toHaveLength(1)
+  })
+
+  it('adds 1 Outlet to the owner’s home region per owned contract at the start of every round once revealed, until torn up', () => {
+    let state = createGame(contractConfig, 1)
+    const buy = () => applyAction(state, legalActions(state).find((a) => a.kind === 'invest' && a.improvementId === 'wholesome-hollow-contract')!)
+    state = buy()
+    for (let i = 0; i < 2; i++) state = applyAction(state, legalActions(state).find((a) => a.kind === 'graft')!)
+    expect(state.round).toBe(2)
+    const outletsAtReveal = state.regions.brindleHills.outlets
+    // One more full round with no Supply: the owned contract should add exactly 1 Outlet at round 3's start.
+    for (let i = 0; i < 3; i++) state = applyAction(state, legalActions(state).find((a) => a.kind === 'graft')!)
+    expect(state.round).toBe(3)
+    expect(state.regions.brindleHills.outlets).toBe(outletsAtReveal + 1)
+
+    const tearUp = legalActions(state).find((a) => a.kind === 'tearUpContract')
+    expect(tearUp).toBeDefined()
+    const marksBefore = state.producers.mara.resources.marks
+    const productionBefore = state.producers.mara.production.marks
+    state = applyAction(state, tearUp!)
+    expect(state.producers.mara.improvements.includes('wholesome-hollow-contract')).toBe(false)
+    expect(state.producers.mara.resources.marks).toBe(marksBefore - 3)
+    expect(state.producers.mara.production.marks).toBe(productionBefore - 2)
+    expect(legalActions(state).some((a) => a.kind === 'tearUpContract')).toBe(false)
+
+    const outletsAfterTearUp = state.regions.brindleHills.outlets
+    for (let i = 0; i < 3; i++) state = applyAction(state, legalActions(state).find((a) => a.kind === 'graft')!)
+    expect(state.round).toBe(4)
+    // No more owned contracts, so no further Outlets get added.
+    expect(state.regions.brindleHills.outlets).toBe(outletsAfterTearUp)
+  })
+})
+
 describe('winCondition (SPEC 8.1)', () => {
   it('a chapter can win with fewer regions and without Kingsmarket', () => {
     const config: GameConfig = { ...BASE_CONFIG, winCondition: { regionsRequired: 1, requireKingsmarket: false } }

@@ -87,6 +87,20 @@ export interface GameConfig {
   // A chapter's round limit is expressed by giving `scriptedPressure` exactly that many cards, so running
   // out of the deck (the engine's existing `pressureDeckEmpty` loss) doubles as "ran out of rounds."
   winCondition?: { regionsRequired: number; requireKingsmarket: boolean }
+  // SPEC 8.2 ch3: the Market starts with these ids face up (in slot order) instead of the usual shuffled
+  // draw — chapter 3 seeds 3 copies of the campaign-only "Wholesome Hollow Contract". Remaining slots
+  // still fill from the normal shuffled Improvement deck. Absent means the ordinary all-random market.
+  scriptedMarket?: ImprovementCardId[]
+  // SPEC 8.1 "triggers (round start ...)" / SPEC 8.2 ch3's twist: at the start of `round`, `effect` is
+  // applied once (see `round.ts`'s `applyScriptedTrigger`) and a `{type: 'trigger'}` event is logged so
+  // the UI can show `sceneId`'s scene. Only one kind of effect exists so far — extend the union, not the
+  // shape, if a later chapter needs a different one.
+  scriptedTrigger?: { round: number; effect: 'wholesomeHollowReveal'; sceneId: string }
+  // A campaign chapter's single lone producer faces far more enemy turns per region than the tuned
+  // 2-producer/7-region full game's `DIFFICULTY_SETTINGS.lostLandPool` was balanced for (a chapter runs
+  // considerably longer than the full game's 10-round cap). Overrides that pool size for this game only;
+  // absent means the ordinary difficulty-table value.
+  lostLandPoolOverride?: number
 }
 
 // Improvement/Scheme content (including effect functions) lives in src/content, keyed by these ids.
@@ -127,6 +141,13 @@ export interface GameState {
   squeezeSkip: RegionId[] // regions whose Squeeze step is skipped this round (Sunlight, Injunction)
   expandSkip: RegionId[] // regions whose Expand step is skipped this round (Injunction)
   pendingDecisions: PendingDecision[] // forced choices (SPEC 9.1 currentDecision); a default is already applied, see actions.ts
+  // SPEC 8.2 ch3: true once the "Wholesome Hollow Contract" ownership twist has fired (`scriptedTrigger`).
+  // From then on, each owned contract adds 1 Outlet to its owner's home region at the start of every round
+  // (SPEC 7), until torn up (`tearUpContract` action).
+  wholesomeHollowRevealed: boolean
+  // Contracts removed by `tearUpContract` leave the game entirely (unlike a Scheme's discard pile), so
+  // `validate()`'s improvement-total invariant needs this count to still add up.
+  contractsTornUp: number
   log: GameEvent[]
   actionHistory: Action[]
   result: GameResult | null
@@ -163,6 +184,7 @@ export type GameEvent =
   | { type: 'schemePlayed'; producer: ProducerId; schemeId: SchemeCardId; target: RegionId | null }
   | { type: 'riftSplit'; faction: 'hollowell' | 'candor' }
   | { type: 'decision'; decisionId: string; choice: ResourceKind }
+  | { type: 'trigger'; effect: string; sceneId: string }
 
 export type Action =
   | { kind: 'openStall'; region: RegionId }
@@ -175,6 +197,9 @@ export type Action =
   | { kind: 'graft' }
   | { kind: 'role'; targetRegion?: RegionId; choice?: 'trust' | 'goodwill' }
   | { kind: 'decide'; decisionId: string; choice: ResourceKind }
+  // SPEC 7 campaign-only carry-over rule: pay 3 Marks to remove one owned "Wholesome Hollow Contract"
+  // and its +2 Marks production, once `wholesomeHollowRevealed` is true.
+  | { kind: 'tearUpContract' }
 
 export type LossReason = 'publicTrust' | 'lostLand' | 'pressureDeckEmpty'
 

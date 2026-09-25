@@ -3,7 +3,7 @@ import { removeBuyout, removeDoubt, removeOutlets } from './pieces'
 import { refreshAllLiberation } from './enemy'
 import { checkRiftSplit } from './rift'
 import { advanceTurnIfNeeded } from './round'
-import { hasImprovement } from './producer'
+import { hasImprovement, improvementCount } from './producer'
 import { canMarketDayOpenIn, canOpenStallIn, regionStallTotal } from './region'
 import { resolveRules } from './rules'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
@@ -12,6 +12,12 @@ import type { Action, GameState, ProducerId, RegionId } from './types'
 
 function ownStalls(state: GameState, producer: ProducerId, region: RegionId): number {
   return state.regions[region].stalls[producer] ?? 0
+}
+
+function removeFirst<T>(slots: (T | null)[], value: T): (T | null)[] {
+  const i = slots.indexOf(value)
+  if (i === -1) return slots
+  return slots.map((v, idx) => (idx === i ? null : v))
 }
 
 // M4 balance-loop iteration 3 (see DECISIONS.md): clearing a Buyout is one of the two costs
@@ -29,6 +35,9 @@ const SUPPLY_BUYOUT_COST = 3
 // producer-pair spread blew past the 12-point band (33.3%-70.6%). Reverted to 2. Revisit with a gentler
 // version (e.g. a per-Improvement discount rather than a universal base cut) in a later iteration.
 const SUPPLY_OUTLET_BASE_COST = 2
+
+// SPEC 7 campaign carry-over rule: "the owner spends an action and 3 Marks on 'Tear Up the Contract.'"
+const TEAR_UP_CONTRACT_COST = 3
 
 // SPEC 7 "Mobile Butcher"/"Wholesale Crate Deal": Supply in Pasture/Crop regions costs 1 less Produce
 // per Outlet (minimum 1). M4 balance-loop iteration 7 (see DECISIONS.md) added "Harbour Stall Licence"'s
@@ -103,6 +112,12 @@ export function legalActions(state: GameState): Action[] {
         actions.push(target ? { kind: 'scheme', schemeId: id, targetRegion: target } : { kind: 'scheme', schemeId: id })
       }
     }
+  }
+
+  // SPEC 7 campaign carry-over rule (chapter 3's twist): once revealed, tearing up one owned contract at
+  // a time is available like any other action, for as long as the producer still owns one.
+  if (state.wholesomeHollowRevealed && improvementCount(state, producer, 'wholesome-hollow-contract') > 0 && p.resources.marks >= TEAR_UP_CONTRACT_COST) {
+    actions.push({ kind: 'tearUpContract' })
   }
 
   actions.push({ kind: 'graft' })
@@ -259,8 +274,31 @@ export function applyAction(state: GameState, action: Action): GameState {
           ...next.producers,
           [producer]: { ...next.producers[producer], improvements: [...next.producers[producer].improvements, card.id] },
         },
-        market: next.market.map((id) => (id === card.id ? null : id)),
+        // `removeFirst` (not a blanket `.map`), because chapter 3's scripted Market can hold more than one
+        // copy of the same card (3x "Wholesome Hollow Contract") in different slots — a blanket null-out
+        // would empty every copy's slot when only one was bought.
+        market: removeFirst(next.market, card.id),
         log: [...next.log, { type: 'invest', producer, improvementId: card.id }],
+      }
+      break
+    }
+    case 'tearUpContract': {
+      next = spend(state, producer, { produce: 0, marks: TEAR_UP_CONTRACT_COST, goodwill: 0 })
+      const owned = next.producers[producer]
+      const i = owned.improvements.indexOf('wholesome-hollow-contract')
+      const improvements = i === -1 ? owned.improvements : [...owned.improvements.slice(0, i), ...owned.improvements.slice(i + 1)]
+      next = {
+        ...next,
+        producers: {
+          ...next.producers,
+          [producer]: {
+            ...owned,
+            improvements,
+            // Undoes the +2 Marks production the contract's `onBuy` granted (SPEC 7).
+            production: { ...owned.production, marks: Math.max(0, owned.production.marks - 2) },
+          },
+        },
+        contractsTornUp: next.contractsTornUp + 1,
       }
       break
     }

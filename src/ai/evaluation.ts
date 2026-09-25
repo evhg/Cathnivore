@@ -16,6 +16,8 @@ function matchesType(types: RegionType[], type: RegionType): boolean {
 // Trust, the margin on Lost Land, progress relative to rounds remaining, total production, enemy pieces
 // on the map (negative) and Stall coverage of the next Squeeze regions." Weights are a starting point —
 // SPEC 9.2 says to tune them by self-play once the balance loop (M4) can measure MCTSBot's win rate.
+const CONTRACT_PENALTY = 0.05
+
 const WEIGHTS = {
   liberated: 0.35,
   trust: 0.15,
@@ -39,7 +41,7 @@ export function evaluate(state: GameState): number {
 
   const trustScore = clamp01(state.publicTrust / MAX_TRUST)
 
-  const startingLostLandPool = DIFFICULTY_SETTINGS[state.config.difficulty].lostLandPool
+  const startingLostLandPool = state.config.lostLandPoolOverride ?? DIFFICULTY_SETTINGS[state.config.difficulty].lostLandPool
   const lostLandScore = clamp01(state.lostLandPool / startingLostLandPool)
 
   // "On pace" when the shortfall to win (regions still needed) is no larger than the rounds still left.
@@ -67,7 +69,7 @@ export function evaluate(state: GameState): number {
       ? 1
       : clamp01(squeezeTargets.filter((id) => Object.values(state.regions[id].stalls).some((n) => (n ?? 0) > 0)).length / squeezeTargets.length)
 
-  return clamp01(
+  const base = clamp01(
     WEIGHTS.liberated * liberatedScore +
       WEIGHTS.trust * trustScore +
       WEIGHTS.lostLand * lostLandScore +
@@ -76,4 +78,19 @@ export function evaluate(state: GameState): number {
       WEIGHTS.enemyPieces * enemyScore +
       WEIGHTS.squeezeCoverage * squeezeCoverageScore,
   )
+
+  // SPEC 8.2/7 chapter 3's twist: once revealed, an owned "Wholesome Hollow Contract" is a *future*
+  // liability (it floods its owner's home region with Outlets every round from here on) that a 1-ply
+  // evaluation otherwise can't see — tearing one up costs marks/production right now for a payoff only
+  // visible next round, so without this term a greedy bot never tears one up until the damage is already
+  // done (observed directly: HeuristicBot's chapter-3 win rate was 0% before this term existed). Zero
+  // everywhere else in the game, since `wholesomeHollowRevealed` is otherwise always false.
+  if (state.wholesomeHollowRevealed) {
+    const contracts = producers.reduce(
+      (n, p) => n + p.improvements.filter((id) => id === 'wholesome-hollow-contract').length,
+      0,
+    )
+    return clamp01(base - contracts * CONTRACT_PENALTY)
+  }
+  return base
 }

@@ -126,12 +126,16 @@ export default function App() {
   }
 
   if (screen.name === 'chapterGame') {
+    const scenes = STORY_SCENES[screen.chapter.id]
+    const triggerSceneId = screen.chapter.scriptedTrigger?.sceneId
+    const midGameScenes = scenes && triggerSceneId && triggerSceneId in scenes ? { [triggerSceneId]: (scenes as Record<string, (typeof scenes)[keyof typeof scenes]>)[triggerSceneId]! } : undefined
     return (
       <Game
         initial={screen.state}
         seed={screen.seed}
         mode="hotseat"
         tutorialSteps={screen.chapter.tutorialSteps}
+        midGameScenes={midGameScenes}
         onExit={() => setScreen({ name: 'campaign' })}
         onChapterEnd={(won) => endChapter(screen.chapter, won)}
       />

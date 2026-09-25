@@ -40,6 +40,8 @@ export function actionLabel(action: Action, state: GameState): string {
     }
     case 'decide':
       return `Choose ${RESOURCE_NAME[action.choice]}`
+    case 'tearUpContract':
+      return 'Tear Up the Contract (3 Marks)'
   }
 }
 

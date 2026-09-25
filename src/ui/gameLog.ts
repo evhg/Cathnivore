@@ -27,6 +27,8 @@ function actionCaption(producer: ProducerId, action: Action): string | null {
       return `${name} grafts for +1 Produce, +1 Marks.`
     case 'role':
       return `${name} uses ${PRODUCERS[producer].roleName}.`
+    case 'tearUpContract':
+      return `${name} tears up a Wholesome Hollow Contract.`
     case 'invest':
     case 'scheme':
     case 'decide':
@@ -60,5 +62,7 @@ export function logCaption(event: GameEvent): string | null {
       const caption = captionFor(event)
       return caption || null
     }
+    case 'trigger':
+      return null // the UI shows the scripted scene itself instead of a log line
   }
 }

@@ -20,6 +20,8 @@ export interface Chapter {
   difficulty: 'easy' | 'normal' | 'hard'
   rulesEnabled: RulesEnabled
   scriptedPressure?: PressureCard[]
+  scriptedMarket?: string[] // SPEC 8.2 ch3: force these Improvement ids into the opening Market
+  scriptedTrigger?: { round: number; effect: 'wholesomeHollowReveal'; sceneId: string } // SPEC 8.1/8.2
   winCondition: { regionsRequired: number; requireKingsmarket: boolean }
   goalDescription: string // shown on the chapter-list card, e.g. "Liberate both regions within 6 rounds."
   tutorialSteps: TutorialStep[]
@@ -34,6 +36,8 @@ export function chapterConfig(chapter: Chapter): GameConfig {
     activeRegions: chapter.activeRegions,
     rulesEnabled: chapter.rulesEnabled,
     scriptedPressure: chapter.scriptedPressure,
+    scriptedMarket: chapter.scriptedMarket,
+    scriptedTrigger: chapter.scriptedTrigger,
     winCondition: chapter.winCondition,
   }
 }
@@ -210,6 +214,15 @@ export const CHAPTER_3: Chapter = {
   difficulty: 'normal',
   rulesEnabled: RULES_CHAPTER_3,
   scriptedPressure: chapter3Pressure(),
+  // SPEC 8.2: "the Improvements Market (seeded with the attractive Wholesome Hollow Contract cards)."
+  // Only 1 copy, not all 3 SPEC 7 prints of the card (see DECISIONS.md): a lone chapter-3 producer facing
+  // Squeeze/Expand across 4 regions plus the twist's per-contract Outlet flood couldn't clear SPEC 9.4's
+  // >=70% HeuristicBot win-rate floor with more than one copy in play (measured directly — 3 copies gave
+  // 10%, 1 copy gives ~78% over 60 seeds).
+  scriptedMarket: ['wholesome-hollow-contract'],
+  // SPEC 8.2 twist: "scripted at the start of round 5, a scene reveals that Wholesome Hollow is owned by
+  // Hollowell, and the contract rule from section 7 switches on immediately."
+  scriptedTrigger: { round: 5, effect: 'wholesomeHollowReveal', sceneId: 'twist' },
   winCondition: { regionsRequired: 3, requireKingsmarket: false },
   goalDescription: 'Liberate 3 of the 4 regions.',
   tutorialSteps: [

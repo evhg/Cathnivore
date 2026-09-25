@@ -85,7 +85,7 @@ export function validate(state: GameState): ValidationError[] {
   if (doubtOnMap + state.doubtPool !== POOL_SIZES.doubt) {
     push(`doubt pool mismatch: ${doubtOnMap} on map + ${state.doubtPool} in pool != ${POOL_SIZES.doubt}`)
   }
-  const startingLostLandPool = DIFFICULTY_SETTINGS[state.config.difficulty].lostLandPool
+  const startingLostLandPool = state.config.lostLandPoolOverride ?? DIFFICULTY_SETTINGS[state.config.difficulty].lostLandPool
   if (lostLandOnMap + state.lostLandPool !== startingLostLandPool) {
     push(
       `lostLand pool mismatch: ${lostLandOnMap} on map + ${state.lostLandPool} in pool != ${startingLostLandPool}`,
@@ -101,9 +101,15 @@ export function validate(state: GameState): ValidationError[] {
   // SPEC 7/5: Improvements bought stay permanently in a tableau; Schemes played go to the discard pile.
   const marketCount = state.market.filter((id) => id !== null).length
   const ownedImprovements = Object.values(state.producers).reduce((n, p) => n + p.improvements.length, 0)
-  const improvementTotal = state.improvementDeck.length + marketCount + state.improvementDiscard.length + ownedImprovements
-  if (improvementTotal !== IMPROVEMENTS.length) {
-    push(`improvement deck/market/tableau total mismatch: ${improvementTotal} != ${IMPROVEMENTS.length}`)
+  // SPEC 7 carry-over rule: a torn-up contract leaves the game entirely (unlike a Scheme's discard pile),
+  // so it counts toward the total the same as one still on the deck/market/tableau.
+  const improvementTotal =
+    state.improvementDeck.length + marketCount + state.improvementDiscard.length + ownedImprovements + state.contractsTornUp
+  // SPEC 8.2 ch3's `scriptedMarket` (3x "Wholesome Hollow Contract") adds cards outside the normal 36-card
+  // `IMPROVEMENTS` pool, so the expected total grows by however many of those a campaign chapter injected.
+  const expectedImprovementTotal = IMPROVEMENTS.length + (state.config.scriptedMarket?.length ?? 0)
+  if (improvementTotal !== expectedImprovementTotal) {
+    push(`improvement deck/market/tableau total mismatch: ${improvementTotal} != ${expectedImprovementTotal}`)
   }
 
   const planCount = state.cathsPlan.filter((id) => id !== null).length

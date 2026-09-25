@@ -81,8 +81,13 @@ export function createGame(config: GameConfig, seed: number): GameState {
     improvementRng,
   )
   const rng = schemeRng
-  const market = [...improvementDeck.slice(0, 4), ...Array(Math.max(0, 4 - improvementDeck.length)).fill(null)]
-  const marketRest = improvementDeck.slice(4)
+  // SPEC 8.2 ch3: a chapter can force specific cards (e.g. 3x "Wholesome Hollow Contract") into the
+  // opening Market instead of the usual shuffled draw. Those ids never entered `improvementDeck` (they
+  // aren't part of `IMPROVEMENTS`), so the remaining slots still fill from the normal shuffled deck.
+  const scripted = config.scriptedMarket ?? []
+  const fillCount = Math.max(0, 4 - scripted.length)
+  const market = [...scripted.slice(0, 4), ...improvementDeck.slice(0, fillCount), ...Array(Math.max(0, 4 - scripted.length - fillCount)).fill(null)]
+  const marketRest = improvementDeck.slice(fillCount)
   const cathsPlan = [...schemeDeck.slice(0, 3), ...Array(Math.max(0, 3 - schemeDeck.length)).fill(null)]
   const schemeRest = schemeDeck.slice(3)
 
@@ -96,7 +101,7 @@ export function createGame(config: GameConfig, seed: number): GameState {
     publicTrust: settings.publicTrust,
     rift: 0,
     riftSplitDone: false,
-    lostLandPool: settings.lostLandPool,
+    lostLandPool: config.lostLandPoolOverride ?? settings.lostLandPool,
     outletPool: POOL_SIZES.outlet,
     buyoutPool: POOL_SIZES.buyout,
     doubtPool: POOL_SIZES.doubt,
@@ -120,6 +125,8 @@ export function createGame(config: GameConfig, seed: number): GameState {
     squeezeSkip: [],
     expandSkip: [],
     pendingDecisions: [],
+    wholesomeHollowRevealed: false,
+    contractsTornUp: 0,
     log: [],
     actionHistory: [],
     result: null,

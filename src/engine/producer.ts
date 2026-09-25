@@ -41,3 +41,7 @@ export function addResources(state: GameState, producer: ProducerId, amount: Par
 export function hasImprovement(state: GameState, producer: ProducerId, improvementId: string): boolean {
   return state.producers[producer].improvements.includes(improvementId)
 }
+
+export function improvementCount(state: GameState, producer: ProducerId, improvementId: string): number {
+  return state.producers[producer].improvements.filter((id) => id === improvementId).length
+}

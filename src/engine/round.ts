@@ -1,7 +1,8 @@
-import { runEnemyTurn } from './enemy'
-import { countLiberated } from './pieces'
+import { refreshAllLiberation, runEnemyTurn } from './enemy'
+import { addOutlets, countLiberated } from './pieces'
 import { shuffle } from './rng'
-import { hasImprovement } from './producer'
+import { hasImprovement, improvementCount } from './producer'
+import { PRODUCERS } from '../content/producers'
 import type { GameState, ProducerId } from './types'
 
 function nextProducer(state: GameState, current: ProducerId): ProducerId | null {
@@ -68,6 +69,29 @@ function cleanup(state: GameState): GameState {
     producers: Object.fromEntries(
       Object.entries(next.producers).map(([id, p]) => [id, { ...p, roleUsedThisRound: false }]),
     ) as GameState['producers'],
+  }
+
+  // SPEC 8.1 "triggers (round start ...)"; SPEC 8.2 ch3's twist ("scripted at the start of round 5")
+  // fires once, the first time the configured round is reached.
+  const trigger = next.config.scriptedTrigger
+  if (trigger && next.round === trigger.round && !next.wholesomeHollowRevealed) {
+    next = {
+      ...next,
+      wholesomeHollowRevealed: true,
+      log: [...next.log, { type: 'trigger', effect: trigger.effect, sceneId: trigger.sceneId }],
+    }
+  }
+
+  // SPEC 7 carry-over rule: once revealed, each owned "Wholesome Hollow Contract" adds 1 Outlet to its
+  // owner's home region at the start of every round (including the round it's revealed in), until torn up.
+  if (next.wholesomeHollowRevealed) {
+    for (const pid of next.config.producers) {
+      const n = improvementCount(next, pid, 'wholesome-hollow-contract')
+      if (n > 0) next = addOutlets(next, PRODUCERS[pid].home, n)
+    }
+    // A contract-added Outlet can un-liberate the owner's home region (SPEC 4.8: a liberated region loses
+    // its Co-op marker if it ever gains an enemy piece).
+    next = refreshAllLiberation(next)
   }
 
   // SPEC 4.5.1 Harvest happens at the start of the next round's producer turns.

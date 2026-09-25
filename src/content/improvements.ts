@@ -369,4 +369,26 @@ export const IMPROVEMENTS: ImprovementCard[] = [
   },
 ]
 
-export const IMPROVEMENTS_BY_ID: Map<string, ImprovementCard> = new Map(IMPROVEMENTS.map((c) => [c.id, c]))
+// SPEC 7: "Campaign-only cards: 3 copies of Wholesome Hollow Contract ... They appear only in chapter 3."
+// Kept out of `IMPROVEMENTS` (and so out of the full game's shuffled deck/Market) — `chapterConfig`'s
+// `scriptedMarket` places it directly (only 1 of the 3 prints, for balance reasons — see DECISIONS.md and
+// `chapters.ts`'s `CHAPTER_3`). `IMPROVEMENTS_BY_ID` still needs to resolve the id, so it's built from both
+// arrays below. The contract-Outlet side effect (SPEC 7: "each owned contract adds 1 Outlet to its owner's
+// home region at the start of every round, until torn up") is chapter-scripted and gated on
+// `state.wholesomeHollowRevealed`, so it's checked by id in `round.ts`/`actions.ts`, the same pattern as
+// every other ongoing (non-flat-production) Improvement ability here.
+export const WHOLESOME_HOLLOW_CONTRACT: ImprovementCard = {
+  id: 'wholesome-hollow-contract',
+  name: 'Wholesome Hollow Contract',
+  cost: 2,
+  tags: ['community'],
+  flavor: 'Two Marks, extra income. Practically a gift.',
+  text: '+2 Marks production.',
+  onBuy: (state, producer) => addProduction(state, producer, { marks: 2 }),
+}
+
+export const CAMPAIGN_IMPROVEMENTS: ImprovementCard[] = [WHOLESOME_HOLLOW_CONTRACT]
+
+export const IMPROVEMENTS_BY_ID: Map<string, ImprovementCard> = new Map(
+  [...IMPROVEMENTS, ...CAMPAIGN_IMPROVEMENTS].map((c) => [c.id, c]),
+)

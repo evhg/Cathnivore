@@ -13,9 +13,11 @@ import FarmSheet from './FarmSheet'
 import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap from './Map'
+import Scene from './Scene'
 import type { Action, GameEvent, GameState, ProducerId, RegionId } from '../engine/types'
 import type { Mode } from './Setup'
 import type { TutorialStep } from '../content/chapters'
+import type { Scene as SceneData } from '../content/story/types'
 
 interface Props {
   initial: GameState
@@ -29,6 +31,10 @@ interface Props {
   // from the full spec for now: the player advances them manually rather than the engine gating legal
   // actions down to "only the action being taught" — see DECISIONS.md.
   tutorialSteps?: TutorialStep[]
+  // SPEC 8.1 "triggers ... scenes": a chapter's mid-game scripted scenes, keyed by `scriptedTrigger.sceneId`
+  // (e.g. chapter 3's round-5 Wholesome Hollow reveal). Absent for non-campaign games and chapters with no
+  // scripted trigger — see `state.log`'s `{type: 'trigger'}` events, appended by `round.ts`.
+  midGameScenes?: Record<string, SceneData>
 }
 
 // SPEC 10.2 Game screen. Plain controls for now — see PROGRESS.md M3 for what's still missing (the SVG
@@ -50,9 +56,10 @@ function pressureLabel(card: GameState['squeeze']): string {
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
 }
 
-export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps }: Props) {
+export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes }: Props) {
   const [state, setState] = useState(initial)
   const [tutorialIndex, setTutorialIndex] = useState(0)
+  const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>([])
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
   const undoStackRef = useRef<GameState[]>([])
@@ -83,8 +90,23 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     if (events.length > 0) setPendingEnemyTurn(events)
   }
 
+  // SPEC 8.1/8.2 ch3: a chapter's mid-game scripted scene (e.g. the round-5 Wholesome Hollow reveal) pauses
+  // play until dismissed — found via `state.log`'s `{type: 'trigger'}` events, which `round.ts` appends the
+  // moment the chapter's `scriptedTrigger.round` is reached. Autoplay (e2e/the AI teammate) skips straight
+  // past it, matching how it already skips the enemy-turn caption playback.
+  const pendingTrigger = midGameScenes
+    ? (state.log.find((e) => e.type === 'trigger' && !dismissedMidScenes.includes(e.sceneId)) as
+        | Extract<GameEvent, { type: 'trigger' }>
+        | undefined)
+    : undefined
+  const pendingMidScene = pendingTrigger && !autoplayRef.current ? midGameScenes![pendingTrigger.sceneId] : undefined
+
   useEffect(() => {
-    if (state.result || pendingEnemyTurn.length > 0) return
+    if (autoplayRef.current && pendingTrigger) setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])
+  }, [pendingTrigger])
+
+  useEffect(() => {
+    if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
     const aiProducer = aiProducerRef.current
     const decision = currentDecision(state)
     const activeProducer = decision ? decision.producer : state.activeProducer
@@ -99,7 +121,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       autoplayRef.current ? 0 : 150,
     )
     return () => clearTimeout(timer)
-  }, [state, pendingEnemyTurn.length])
+  }, [state, pendingEnemyTurn.length, pendingMidScene])
 
   // Skip the (otherwise real-time) enemy-turn caption playback instantly under e2e autoplay.
   useEffect(() => {
@@ -135,6 +157,10 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         )}
       </main>
     )
+  }
+
+  if (pendingMidScene && pendingTrigger) {
+    return <Scene scene={pendingMidScene} onContinue={() => setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])} />
   }
 
   const decision = currentDecision(state)
