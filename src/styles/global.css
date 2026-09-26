@@ -17,6 +17,17 @@ body {
   line-height: 1.4;
 }
 
+/* STYLE.md 3.1: "--sea: Links, information" — found unset while reviewing the new dark theme's
+   screenshots (the title screen's Privacy/Support links were still the browser default blue in both
+   themes, never having been given a colour at all). Same colour for visited, since STYLE.md defines no
+   separate visited state and a change here would be surprising rather than informative. */
+a {
+  color: var(--sea);
+}
+a:visited {
+  color: var(--sea);
+}
+
 #root {
   min-height: 100vh;
 }

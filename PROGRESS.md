@@ -96,6 +96,14 @@ passes clean end to end. Next session: re-try the push-restriction/Apple-Team-ID
 remaining items (a final full e2e pass on both sizes, and the final balance report) are still best left
 until closer to the deadline.
 
+Finally, did the gate-8-style visual review the dark theme addition itself deserved (screenshots of the
+title, rules reference and a story scene, forced into dark mode, reviewed directly): all read cleanly, and
+portraits correctly keep their light-theme colours per STYLE.md 3.5's "the table goes dark; the pieces,
+cards and portraits don't." One real, small, isolated finding, fixed on the spot: `global.css` had no `a`
+styling at all, so the title screen's Privacy/Support links were the browser default blue in *both* themes,
+never having been given a colour — added `a { color: var(--sea) }` (STYLE.md 3.1: "Links, information").
+`npm run check` and the accessibility/title e2e suites both re-confirmed clean afterward.
+
 ## Tasks
 
 ### M0 Setup (hours 0-4)
