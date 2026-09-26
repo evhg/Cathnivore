@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import ErrorBoundary from './ui/ErrorBoundary'
 import '@fontsource/fraunces/600.css'
 import '@fontsource/fraunces/700.css'
 import '@fontsource/fraunces/700-italic.css'
@@ -29,7 +30,9 @@ applyThemeSetting(loadSettings().theme)
 
 createRoot(rootEl).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )
 

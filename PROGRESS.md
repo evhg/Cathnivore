@@ -65,9 +65,36 @@ all clean, no regressions. Then, with time left in the session, closed a real te
 in `tests/rules-text.test.ts` (Improvement cost 2-9/tags 1-2/flavor <=80 chars, Agenda headline <=90 chars,
 Scheme cost 1-4 Goodwill). All of it passed on the first run — the existing content was already compliant —
 but these limits are now enforced permanently instead of resting on each session's care while writing new
-cards/scenes. `npm run check` (170 unit tests total) passes clean. Next session: re-try the push-
-restriction/Apple-Team-ID checks once as usual; M7's remaining items (a final full e2e pass on both sizes,
-and the final balance report) are still best left until closer to the deadline.
+cards/scenes.
+
+Then found and fixed a real, higher-priority gap directly against SPEC 1.3's #1 priority ("the live site
+works: it loads, never crashes, ... saves survive a reload") — **SPEC 11.3's save-recovery and global crash
+screen didn't exist at all.** `loadGame()` silently returned `null` for both "no save" and "a save exists
+but is corrupt/wrong-version," so an incompatible save's Continue button just vanished with no explanation,
+and `resume()` called `replay()` with no error handling, so a bad save would crash the whole app instead of
+showing SPEC 11.3's required "This save is from an older version" screen. Neither gap was logged anywhere
+as a deliberate cut — SPEC 1.12's cut list doesn't even mention this, since it's baseline robustness, not
+scope. Fixed both:
+- `platform/storage.ts`'s `loadGame()` now returns `{ save, incompatible }` instead of collapsing every
+  failure to `null`, so the UI can tell "no save" from "a save exists but couldn't be trusted." `App.tsx`'s
+  title screen shows the SPEC-exact notice with Start New (clears the save) and Try Anyway (attempts
+  `resume()` regardless) when incompatible; `resume()` itself now catches a `replay()` throw and routes to
+  a dedicated `saveError` screen instead of crashing.
+- New `src/ui/ErrorBoundary.tsx` (a class component — no hook equivalent of `componentDidCatch`), wrapping
+  `<App>` in `main.tsx`. Its "Resume From Last Autosave" reloads with `?autoresume=1` (handled by a new
+  `App.tsx` mount effect that calls `resume()`, reusing the same fallback path above so it can't crash-loop
+  silently); "Copy Bug Report" reads the same last-good autosave via `loadGame()` plus the caught error's
+  message/stack, JSON-encoded to the clipboard; "Back to Title" reloads plain.
+
+New `tests/storage.test.ts` (4 tests: none/valid/wrong-version/unparseable) and `e2e/save-recovery.spec.ts`
+(2 tests, now wired into Gate 5: an incompatible save shows the notice and Try Anyway gets into the game;
+Start New clears it) — both pass. The ErrorBoundary's actual crash-catching path isn't covered by an
+automated test (triggering a genuine uncaught React render error from outside the app, without adding a
+debug-only throw hook, wasn't worth the scope this session); it was checked by reasoning through the code
+path instead — logged as an accepted verification gap in DECISIONS.md, not silently skipped. `npm run check`
+passes clean end to end. Next session: re-try the push-restriction/Apple-Team-ID checks once as usual; M7's
+remaining items (a final full e2e pass on both sizes, and the final balance report) are still best left
+until closer to the deadline.
 
 ## Tasks
 

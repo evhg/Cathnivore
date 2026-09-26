@@ -6,7 +6,7 @@ import Scene from './ui/Scene'
 import RulesReference from './ui/RulesReference'
 import Settings from './ui/Settings'
 import Credits from './ui/Credits'
-import { loadGame, loadCampaign, markChapterComplete } from './platform/storage'
+import { loadGame, clearGame, loadCampaign, markChapterComplete } from './platform/storage'
 import { CHAPTERS, chapterConfig, type Chapter } from './content/chapters'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
@@ -32,6 +32,7 @@ type Screen =
   | { name: 'settings' }
   | { name: 'credits' }
   | { name: 'campaign' }
+  | { name: 'saveError' }
   | { name: 'chapterModeSelect'; chapter: Chapter }
   | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing'; mode: Mode }
   | { name: 'game'; state: GameState; seed: number; mode: Mode }
@@ -48,15 +49,38 @@ export default function App() {
     return () => window.removeEventListener('cathnivore:update-ready', onUpdateReady)
   }, [])
 
+  // ErrorBoundary.tsx's "Resume From Last Autosave" reloads with this flag rather than calling `resume()`
+  // directly (it has no access to App's internal state); this is the other half of that path.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('autoresume')) {
+      window.history.replaceState(null, '', window.location.pathname)
+      resume()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function start(config: GameConfig, seed: number, mode: Mode): void {
     setScreen({ name: 'game', state: createGame(config, seed), seed, mode })
   }
 
+  // SPEC 11.3: "If a save fails to load or is from an older version, show 'This save is from an older
+  // version' with Start New and Try Anyway. Never show a blank screen." `resume` is both the plain
+  // Continue path and "Try Anyway" — if replaying an incompatible/corrupt save throws, this catches it
+  // instead of crashing the whole app.
   function resume(): void {
-    if (!saved) return
-    const state = replay(saved.config, saved.seed, saved.actions)
-    // Hot-seat is the safe default on resume — a mid-game Solo save doesn't record which slot was human.
-    setScreen({ name: 'game', state, seed: saved.seed, mode: 'hotseat' })
+    if (!saved.save) return
+    try {
+      const state = replay(saved.save.config, saved.save.seed, saved.save.actions)
+      // Hot-seat is the safe default on resume — a mid-game Solo save doesn't record which slot was human.
+      setScreen({ name: 'game', state, seed: saved.save.seed, mode: 'hotseat' })
+    } catch {
+      setScreen({ name: 'saveError' })
+    }
+  }
+
+  function startNewFromSaveError(): void {
+    clearGame()
+    setScreen({ name: 'title' })
   }
 
   function startChapter(chapter: Chapter): void {
@@ -83,6 +107,20 @@ export default function App() {
     }
   }
 
+  if (screen.name === 'saveError') {
+    return (
+      <main className="title">
+        <h1>Cathnivore</h1>
+        <div className="save-warning">
+          <p>This save is from an older version.</p>
+          <button onClick={startNewFromSaveError}>Start New</button>
+          <button onClick={resume}>Try Anyway</button>
+        </div>
+        <button onClick={() => setScreen({ name: 'title' })}>Back to Title</button>
+      </main>
+    )
+  }
+
   if (screen.name === 'title') {
     return (
       <main className="title">
@@ -94,7 +132,14 @@ export default function App() {
             <button onClick={() => window.location.reload()}>Reload</button>
           </div>
         )}
-        {saved && <button onClick={resume}>Continue</button>}
+        {saved.save && !saved.incompatible && <button onClick={resume}>Continue</button>}
+        {saved.incompatible && (
+          <div className="save-warning">
+            <p>This save is from an older version.</p>
+            <button onClick={startNewFromSaveError}>Start New</button>
+            {saved.save && <button onClick={resume}>Try Anyway</button>}
+          </div>
+        )}
         <button onClick={() => setScreen({ name: 'campaign' })}>Campaign</button>
         <button onClick={() => setScreen({ name: 'setup' })}>Quick Game</button>
         <button onClick={() => setScreen({ name: 'rules' })}>How to Play</button>

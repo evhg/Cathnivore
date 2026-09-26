@@ -47,15 +47,24 @@ export function saveGame(save: SavedGame): void {
   storage.set(SAVE_KEY, JSON.stringify(save))
 }
 
-export function loadGame(): SavedGame | null {
+// SPEC 11.3: "If a save fails to load or is from an older version, show 'This save is from an older
+// version' with Start New and Try Anyway. Never show a blank screen." `save` carries whatever was
+// recovered (present even when `incompatible` is true, so "Try Anyway" has something to attempt replaying)
+// and is `null` only when there was truly nothing usable (no save, or unparseable JSON).
+export interface LoadGameResult {
+  save: SavedGame | null
+  incompatible: boolean
+}
+
+export function loadGame(): LoadGameResult {
   const raw = storage.get(SAVE_KEY)
-  if (!raw) return null
+  if (!raw) return { save: null, incompatible: false }
   try {
     const parsed = JSON.parse(raw) as SavedGame
-    if (parsed.version !== 1) return null
-    return parsed
+    if (parsed.version !== 1) return { save: parsed, incompatible: true }
+    return { save: parsed, incompatible: false }
   } catch {
-    return null
+    return { save: null, incompatible: true }
   }
 }
 

@@ -647,3 +647,30 @@ Format: date, decision, reason.
   otherwise drift past a limit unnoticed. Chose per-chapter scoping for the exclamation-mark rule (only
   counting Cath's own lines) since SPEC 3.2 states it under her voice description specifically, not as a
   whole-chapter dialogue rule.
+
+- 2026-09-26: Implemented SPEC 11.3's save-recovery and global crash screen, both previously entirely
+  missing (not a logged cut — SPEC 1.12's cut list doesn't cover baseline crash robustness, and this
+  directly serves SPEC 1.3's #1 priority: "the live site works: it loads, never crashes... saves survive a
+  reload"). `loadGame()` used to return `null` for both "no save" and "a save exists but is corrupt/wrong-
+  version," silently hiding the Continue button with no explanation for the second case, and `resume()`
+  called `replay()` with no error handling at all — a bad save would crash the whole app rather than show
+  the spec's required warning. Changed `loadGame()` to `{ save, incompatible }`; `App.tsx`'s title screen
+  and a new `saveError` screen both show "This save is from an older version" with Start New/Try Anyway
+  exactly as specified. `src/ui/ErrorBoundary.tsx` (necessarily a class component — `componentDidCatch` has
+  no hook form) wraps `<App>` in `main.tsx` for the separate "global error screen [that] catches crashes"
+  requirement, offering Resume From Last Autosave / Copy Bug Report / Back to Title. Kept it decoupled from
+  `App`'s internal screen state (reading the same autosave `Game.tsx` already writes after every action,
+  rather than threading game state down as a prop) so it still works if the crash originates inside `App`
+  itself. "Resume From Last Autosave" reloads with a `?autoresume=1` query flag rather than calling
+  `resume()` directly, since the boundary has no reference to `App`'s functions; a new `App.tsx` mount
+  effect handles that flag by calling the same `resume()` that already has the incompatible-save fallback,
+  so this path can't crash-loop.
+  **Verification gap, logged rather than silently left untested:** `tests/storage.test.ts` and
+  `e2e/save-recovery.spec.ts` (now in Gate 5) cover the save-incompatibility path end to end, but nothing
+  automatically exercises `ErrorBoundary`'s actual `componentDidCatch` path — triggering a genuine uncaught
+  React render error from Playwright, without adding a debug-only throw hook to production code, was judged
+  not worth the scope this session. Checked by reading the code path instead (both button handlers are
+  simple, well-understood browser APIs: `window.location.href` and `navigator.clipboard.writeText`).
+  Revisit if a future session has spare time and wants a debug query flag (e.g. `?crashtest=1`) purely to
+  exercise this in e2e — would need to weigh whether that's worth shipping a deliberate crash trigger in the
+  production bundle.
