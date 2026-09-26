@@ -37,6 +37,15 @@ colour tokens, so a light-theme-only check doesn't guarantee dark is fine) — a
 screenshotted the desktop map. All 4 region textures render clearly and distinctly in dark+greyscale too, no
 regression, not overly busy. Clean confirmation, not a fix — no further action needed.
 
+With remaining time, looked for another bounded gap: re-checked several previously-logged "future session"
+DECISIONS.md findings and confirmed they're already resolved by later sessions (chapter 1/5's off-by-one
+Pressure-deck pacing, the chapter 3->4 carry-over, the CSP `unsafe-inline`/hardcoded-font privacy/support
+pages, the iOS build-number/device-family/orientation settings, the external-link Safari behavior, the rules
+reference's search box) — all clean, no action needed, logged here so a future session doesn't re-check the
+same already-closed items. `npm audit --omit=dev` confirms 0 production vulnerabilities. `origin/ci-status`
+confirms `ci.yml` passed on this session's latest pushed commit. Wrapping up here (this session's real work
+was the release + the gate-8 fix above) rather than forcing a rushed change without a clear finding.
+
 ---
 
 Previous session (2026-09-26, starting ~15:52 UTC): re-checked both standing blockers first — `OWNER.md`'s
