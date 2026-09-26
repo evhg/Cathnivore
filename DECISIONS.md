@@ -1130,3 +1130,22 @@ Format: date, decision, reason.
   100-or-more-game MCTS/Normal/all-pairs confirmation, started early in the session, is the next session's
   first balance task. Revert `WEIGHTS.expandCoverage` to 0 and `WEIGHTS.enemyPieces` back to 0.05 if it
   doesn't hold a floor or shows an unexpected regression.
+- 2026-09-26: This session started the queued 200-game MCTS/Normal/all-pairs confirmation for the
+  `expandCoverage` evaluation change (above) as its first task; it's still running in the background as this
+  entry is written (see PROGRESS.md for the result once it lands). With that run using most of the box's
+  cores, picked a non-CPU-bound task in the meantime: fixed the other still-open finding from the 2026-09-25
+  deployment audit, `store.yml`'s `fastlane deliver` never attaching a build (SPEC 11.6: "attach the latest
+  processed build"). Read literally, "attach" means point the App Store Connect version at a build ios.yml
+  already uploaded to TestFlight, not have `store.yml` re-build or re-upload an .ipa itself (it has no Xcode
+  toolchain — it runs on `ubuntu-latest`, unlike `ios.yml`'s `macos-latest`). Fixed by having `store.yml`
+  read the build number `ios.yml` already recorded in `origin/ci-status`'s `status/ios.json` (only when that
+  run's own `success` was true, so a failed/missing iOS build correctly falls through to fastlane's own
+  no-argument default instead of pinning a bad number) and pass it to `fastlane deliver` as `--build_number`
+  alongside `--skip_binary_upload true` and `--app_version 1.0.0` — this selects the already-processed
+  TestFlight build by number instead of trying to upload a binary this job was never given. Still can't be
+  dry-run end to end without real App Store Connect credentials (`OWNER.md`'s Team ID is still a placeholder,
+  same standing blocker as every iOS/store item), but the workflow logic itself is now correct against SPEC's
+  literal text, verified by parsing the YAML and reading the `git show origin/ci-status:status/ios.json`
+  command against the exact shape `ios.yml`'s own report step writes (`{"success": bool, "buildNumber":
+  "<github.run_number>", ...}`). `npm run check` unaffected (no source files touched, only
+  `.github/workflows/store.yml`).

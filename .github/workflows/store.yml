@@ -26,14 +26,39 @@ jobs:
           mkdir -p private_keys
           echo "${{ secrets.ASC_KEY_P8 }}" > private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
 
-      - name: Upload metadata, screenshots and build via fastlane deliver
+      - name: Find the latest processed TestFlight build number
+        id: build
+        run: |
+          git fetch origin ci-status
+          NUMBER=$(git show origin/ci-status:status/ios.json 2>/dev/null | python3 -c "
+          import json, sys
+          try:
+              data = json.load(sys.stdin)
+              print(data['buildNumber'] if data.get('success') else '')
+          except Exception:
+              print('')
+          ")
+          echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
+          if [ -z "$NUMBER" ]; then
+            echo "::warning::No successful ios.yml run found on origin/ci-status; deliver will fall back to the latest processed build App Store Connect has for this version."
+          fi
+
+      - name: Upload metadata and screenshots, attach the latest processed build, via fastlane deliver
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_PATH: private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+          BUILD_NUMBER: ${{ steps.build.outputs.number }}
         run: |
           if [ -f store/Fastfile ]; then
-            fastlane run deliver --metadata_path store/metadata --screenshots_path store/screenshots
+            # SPEC 11.6 asks to "attach the latest processed build," not re-upload a binary this job never
+            # built itself: ios.yml already exported and uploaded the .ipa to App Store Connect on its own
+            # run, so skip_binary_upload here selects that already-processed build by number instead.
+            ARGS=(--metadata_path store/metadata --screenshots_path store/screenshots --skip_binary_upload true --app_version 1.0.0)
+            if [ -n "$BUILD_NUMBER" ]; then
+              ARGS+=(--build_number "$BUILD_NUMBER")
+            fi
+            fastlane run deliver "${ARGS[@]}"
           else
             echo "store/Fastfile not set up yet; skipping upload"
           fi
