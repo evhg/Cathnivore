@@ -30,6 +30,12 @@ export default function CathsPlanSheet({
         return (
           <li key={id} className="card-enter">
             <strong>{card.name}</strong> — <GoodwillIcon /> {card.cost} Goodwill
+            {/* SPEC 10.5: "All rules text is generated from card and rules data" — `card.text` is the
+                plain-English effect, checked against the card's actual `effect` by tests/rules-text.test.ts.
+                It was previously only shown in the Rules Reference, never here, so a player deciding whether
+                to play a Scheme during play had no way to see what it does without leaving Cath's Plan sheet
+                to search for it separately. Cath's own voice line stays as the flavour text below it. */}
+            <p className="card-text">{card.text}</p>
             <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
             {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}
           </li>

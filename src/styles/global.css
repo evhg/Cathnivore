@@ -369,6 +369,13 @@ h3 {
   color: var(--ink-muted);
 }
 
+/* STYLE.md 4's "card rules text (compact card view)": 14px, normal weight, full-ink (not muted like the
+   flavour line below it, since this is the actual effect, not decoration). */
+.card-text {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
 .card-flavor {
   margin: 4px 0;
   font-size: 13px;

@@ -614,6 +614,15 @@ or collapsible cards, genuine visual-design work left for a future session rathe
 `npm run check` (286 tests) and `npm run gates` (64 e2e, 16 axe, Lighthouse 98/100) both pass clean. Full
 detail in DECISIONS.md.
 
+While looking for a safe desktop card-density win for the right column's still-open gap, found a real,
+previously-unnoticed bug instead: `MarketSheet.tsx`/`CathsPlanSheet.tsx` never rendered `card.text` — the
+plain-English rules text both card types define specifically to be "shown in the Market sheet"/"shown in
+Cath's Plan sheet" (their own doc comments), checked against actual behaviour by `tests/rules-text.test.ts`.
+It only ever appeared in the Rules Reference's search results — during actual play, buying an Improvement or
+playing a Scheme showed only its name, cost and tags, never what it does. Fixed by rendering it on both
+sheets, styled per STYLE.md 4's 14px card-rules-text size. Verified on both phone and desktop via screenshot
+(clean, no overflow) and `npm run check`/`npm run gates` both still pass clean. Full detail in DECISIONS.md.
+
 ## Tasks
 
 ### M0 Setup (hours 0-4)

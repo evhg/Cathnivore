@@ -30,6 +30,12 @@ export default function MarketSheet({
         return (
           <li key={id} className="card-enter">
             <strong>{card.name}</strong> — <MarksIcon /> {card.cost} Marks ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+            {/* SPEC 10.5: "All rules text is generated from card and rules data" — `card.text` is the
+                plain-English effect (STYLE.md 8: "rules text in Atkinson Hyperlegible"), checked against
+                the card's actual `onBuy` by tests/rules-text.test.ts. It was previously only shown in the
+                Rules Reference, never here, so a player deciding whether to buy a card during play had no
+                way to see what it does without leaving the Market sheet to search for it separately. */}
+            <p className="card-text">{card.text}</p>
             {card.flavor && <p className="card-flavor">{card.flavor}</p>}
             {canBuy(id) && <button onClick={() => onBuy(id)}>Buy</button>}
           </li>
