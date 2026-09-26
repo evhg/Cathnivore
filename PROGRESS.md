@@ -14,7 +14,15 @@ Tomas" scene in chapter 4's opening when contracts survived. New tests in `tests
 `tests/storage.test.ts`; `npm run check` (247 tests) clean; re-ran `e2e/campaign.spec.ts` by hand with
 `PLAYWRIGHT_CHROMIUM_PATH` pointed at this sandbox's installed Chromium revision (the pinned revision
 Playwright wanted wasn't installed here — see CLAUDE.md's new note) and got a clean pass on all 6 chapters.
-Full detail in DECISIONS.md.
+
+With time still left, also fixed the other real gap the same prior audit found: the one-round-longer-than-
+stated scripted-Pressure pacing quirk (see line 57 below for the original finding). Chapters 1 and 5 were
+genuine off-by-ones and are now fixed (one scripted card dropped from each, so the deck size matches the
+stated round count exactly) and re-verified at 100%/100% HeuristicBot win rate over 30 seeds, both
+comfortably above their SPEC 9.4 floors (>=90% ch1, >=50% ch5) with no regression. Chapters 3 and 4 turned
+out not to have this bug after all on closer inspection (ch3's 16-card deck vs. "within 8 rounds" is a
+pre-existing, deliberate, already-documented divergence for balance reasons, not an off-by-one; ch4 has no
+stated round cap to check against) — left untouched. Full detail in DECISIONS.md.
 
 Previous session (2026-09-26, third session that day): re-checked both standing blockers once each (still denied /
 still the placeholder — unchanged, see Blocked). `npm run check`/`npm run gates` both re-confirmed clean on

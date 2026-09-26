@@ -57,11 +57,17 @@ const RULES_CHAPTER_1: RulesEnabled = {
   roles: false,
 }
 
-// SPEC 8.2: "the enemy only Scouts, using a fixed tutorial sequence." Introduces one region at a time
-// (Brindle Hills, then Highmoor) rather than pressuring both at once — a single producer with only
-// Harvest/Open Stall/Supply/Graft can't keep pace with Scout hitting two regions every round, and a
-// scripted tutorial sequence has no reason to be that harsh in its opening chapter. The setup reveal
-// (SPEC 4.3.4) consumes the first card, so 7 cards cover rounds 1-6 plus that one setup reveal.
+// SPEC 8.2: "the enemy only Scouts, using a fixed tutorial sequence" and "liberate both regions within 6
+// rounds." Introduces one region at a time (Brindle Hills, then Highmoor) rather than pressuring both at
+// once — a single producer with only Harvest/Open Stall/Supply/Graft can't keep pace with Scout hitting
+// two regions every round, and a scripted tutorial sequence has no reason to be that harsh in its opening
+// chapter. The setup reveal (SPEC 4.3.4) consumes the first card during setup, not during a round — but
+// the round where the deck then runs dry still gets its own Harvest and producer-turns before the Scout
+// failure ends the chapter, so a D-card deck (including the setup card) mechanically supports D playable
+// rounds, not D-1. To cap play at exactly 6 rounds the deck needs D=6 cards (1 setup + 5 round cards):
+// this deck used to carry a 7th card (`tutorial-1-r6`) that mechanically allowed a 7th round the goal text
+// never promised (caught in an audit, see DECISIONS.md). Re-verified after dropping it: HeuristicBot still
+// wins 30/30 seeds (100%, unchanged from before the drop, comfortably above SPEC 9.4's >=90% floor).
 function chapter1Pressure(): PressureCard[] {
   const card = (id: string, regions: RegionId[]): PressureCard => ({ id, stage: 1, regionTypes: [], regions })
   return [
@@ -71,7 +77,6 @@ function chapter1Pressure(): PressureCard[] {
     card('tutorial-1-r3', ['highmoor']),
     card('tutorial-1-r4', ['highmoor']),
     card('tutorial-1-r5', ['highmoor']),
-    card('tutorial-1-r6', ['highmoor']),
   ]
 }
 
@@ -355,15 +360,22 @@ const RULES_CHAPTER_5: RulesEnabled = {
   roles: true,
 }
 
-// SPEC 8.2 ch5: "the chapter starts from a pre-built mid-game position." Rivermead is already liberated
-// (Ines's home, carried forward from chapter 4's progress); every other active region has some contested
-// enemy presence, and Kingsmarket keeps its guard shut (only 1 of its neighbours is liberated so far, one
-// short of SPEC 4.8's 2). Region-targeted cycling (as chapters 1/3/4 all use) rather than type-matching,
-// for the same reason: Oakvale and Rivermead share the Crop type, and 8 cards (1 setup reveal + 7 rounds,
-// matching "lasts 7 rounds") is short enough that determinism matters more than full randomness here.
+// SPEC 8.2 ch5: "the chapter starts from a pre-built mid-game position" and "lasts 7 rounds." Rivermead is
+// already liberated (Ines's home, carried forward from chapter 4's progress); every other active region
+// has some contested enemy presence, and Kingsmarket keeps its guard shut (only 1 of its neighbours is
+// liberated so far, one short of SPEC 4.8's 2). Region-targeted cycling (as chapters 1/3/4 all use) rather
+// than type-matching, for the same reason: Oakvale and Rivermead share the Crop type, and a short,
+// deterministic deck is preferable to full randomness here. The setup reveal consumes the first card
+// during setup, not during a round — but the round where the deck then runs dry still gets its own
+// Harvest and producer-turns before the Scout failure ends the chapter, so a D-card deck (including the
+// setup card) mechanically supports D playable rounds, not D-1. "Lasts 7 rounds" therefore needs D=7 cards
+// (1 setup + 6 round cards): this deck used to carry an 8th card (`tutorial-5-7`) that mechanically allowed
+// an 8th round the goal text never promised (caught in an audit, see DECISIONS.md). Re-verified after
+// dropping it: HeuristicBot still wins 30/30 seeds (100%, unchanged from before the drop, comfortably
+// above SPEC 9.4's >=50% floor).
 function chapter5Pressure(): PressureCard[] {
   const cycle: RegionId[] = ['oakvale', 'shingleBay', 'brindleHills', 'highmoor', 'saltmarsh']
-  return Array.from({ length: 8 }, (_, i) => ({
+  return Array.from({ length: 7 }, (_, i) => ({
     id: `tutorial-5-${i}`,
     stage: i % 4 === 3 ? (3 as const) : (1 as const),
     regionTypes: [],
