@@ -23,8 +23,9 @@ const WEIGHTS = {
   lostLand: 0.15,
   pace: 0.15,
   production: 0.1,
-  enemyPieces: 0.05,
+  enemyPieces: 0.02,
   squeezeCoverage: 0.05,
+  expandCoverage: 0.03,
 }
 
 function clamp01(x: number): number {
@@ -75,6 +76,25 @@ export function evaluate(state: GameState): number {
       ? 1
       : clamp01(squeezeTargets.filter((id) => Object.values(state.regions[id].stalls).some((n) => (n ?? 0) > 0)).length / squeezeTargets.length)
 
+  // SPEC 9.2 also credits HeuristicBot with "protecting regions in the ... Expand slot," but unlike
+  // `squeezeCoverageScore` (which rewards Stall coverage — Squeeze's own Defence stat), Expand's rule
+  // (4.7) only escalates a region that "has at least 1 enemy piece" there already; a region with none is
+  // untouched by Expand regardless of Stalls. So the matching defensive signal for Expand is "cleared,"
+  // not "occupied": reward having no enemy pieces left in an Expand-targeted region before it resolves.
+  const expandTypes = state.expand?.regionTypes ?? []
+  const expandTargets = state.config.activeRegions.filter(
+    (id) => !state.regions[id].liberated && matchesType(expandTypes, REGIONS[id].type),
+  )
+  const expandCoverageScore =
+    expandTargets.length === 0
+      ? 1
+      : clamp01(
+          expandTargets.filter((id) => {
+            const r = state.regions[id]
+            return r.outlets === 0 && r.buyouts === 0 && r.doubt === 0
+          }).length / expandTargets.length,
+        )
+
   const base = clamp01(
     WEIGHTS.liberated * liberatedScore +
       WEIGHTS.trust * trustScore +
@@ -82,7 +102,8 @@ export function evaluate(state: GameState): number {
       WEIGHTS.pace * paceScore +
       WEIGHTS.production * productionScore +
       WEIGHTS.enemyPieces * enemyScore +
-      WEIGHTS.squeezeCoverage * squeezeCoverageScore,
+      WEIGHTS.squeezeCoverage * squeezeCoverageScore +
+      WEIGHTS.expandCoverage * expandCoverageScore,
   )
 
   // SPEC 8.2/7 chapter 3's twist: once revealed, an owned "Wholesome Hollow Contract" is a *future*
