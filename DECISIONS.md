@@ -1758,3 +1758,34 @@ Format: date, decision, reason.
   Verified together: `npx tsc -b --noEmit` clean, `npm run check` (311 tests, up from 306), and the
   hotseat/quick-game e2e undo paths all passing. `build` now carries the undo fix on top of everything
   released as `deploy-9`.
+
+- 2026-09-26 (~23:16-23:23 UTC, same session): with the release attempt done for this session (main healthy,
+  see PROGRESS.md's Blocked/Deploy log), launched one more hardening-review subagent scoped to the Rules
+  reference screen's generation/search correctness (SPEC 10.1/10.5) — a fresh area no prior session had
+  covered. Confirmed correct: the tooltip and Rules-reference term lists share one source of truth
+  (`src/content/terms.ts`, already guarded by `tests/terms.test.ts`), and search already covers real card
+  text (Improvements/Schemes/Agenda), not just static glossary entries. **Two real bugs found and fixed:**
+  - The Lost Land glossary entry still hardcoded "8 at Normal" from the game's original setup, unchanged
+    since a balance-loop pass moved the real Normal pool size to 10 (`src/content/difficulty.ts`) — the
+    prose had silently drifted from the actual rule, the exact class of bug `tests/rules-text.test.ts`
+    already guards against for card text but nothing guarded for glossary prose. The Squeeze entry also
+    didn't mention the Public Trust loss is capped at 2 per region. Fixed by deriving these numbers (Lost
+    Land, Public Trust, pool sizes, the stall-loss margin) directly from `DIFFICULTY_SETTINGS`/`POOL_SIZES`/
+    a newly-exported `STALL_LOSS_MARGIN` instead of hardcoding them, with new regression tests asserting the
+    glossary tracks its source (reproduced the original failure against the old hardcoded "8" to confirm the
+    test actually catches this class of bug).
+  - The tutorial prompt's "?" link (SPEC 8.1) always opened the Rules reference at the top, regardless of
+    which action was actually being taught — no term/section was ever passed through. Added an `initialTerm`
+    prop to `RulesReference` (scrolls to and highlights the matching entry) and a new `actionTermForKind()`
+    helper (factored out of the existing `actionTermFor`) so `Game.tsx` can compute the right term from the
+    current tutorial step's highlight.
+  Verified with `npx tsc -b --noEmit`, `npm run check` (315 tests, up from 311), and the tutorial/tooltip/
+  title e2e suites. `build` now carries this fix on top of everything else, gated and pushed — still 3
+  commits ahead of what's live on `main` (see PROGRESS.md's Blocked section for why: the "Production Deploy"
+  classifier denial on restoring the TLS-smoke-test auto-revert).
+
+  Wrapping this session here (~32 minutes of work): released deploy-9 to `main` cleanly at the start, then
+  found and fixed 3 more real bugs across 3 hardening-review passes (chapter-loss/retry + chapter-resume,
+  3 undertagged irreversible Schemes, 2 drifted rules-reference numbers + a dead tutorial deep link), plus
+  one clean CSP/headers confirmation. `build` is fully gated and pushed; the next session should retry
+  releasing it to `main` (see Blocked).
