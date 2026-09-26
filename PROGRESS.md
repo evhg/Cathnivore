@@ -54,6 +54,17 @@ DECISIONS.md for full detail and why they weren't attempted in the time left):
   session already carrying two other real fixes. Logged here with the exact fix (drop 1 card, re-run
   `tests/chapters.test.ts`'s win-rate assertions) for a future session to pick up with its own time budget.
 
+A fourth subagent then audited the save/replay/undo/crash-recovery system (SPEC 1.3's #1 priority area) and
+found nothing new — replay determinism, the Undo `irreversible` guard, autosave coverage, the AI-worker/
+autosave race and JSON round-trip safety all checked out clean (see DECISIONS.md for detail). A clean
+confirmation, not a fix.
+
+This session's net result: **3 real, previously-uncaught rules bugs found and fixed** (all with new
+regression tests, all verified against `npm run check`/`npm run gates`), **2 real gaps found and clearly
+logged for a future session** (the chapter 3->4 carry-over, and a one-round pacing quirk in 4 scripted
+chapters), and **1 area confirmed clean** (save/replay/undo). Both release blockers are unchanged (still
+denied / still the placeholder).
+
 M1-M6 are all content-complete, and M7 is now nearly complete too (long fuzz, README, full e2e pass and a
 final balance report all done — see below) — every checklist item is done except the release/`ios-<n>`/
 `store-<n>` pushes, `submit-<n>`, the final report and `DONE`, which all stay blocked on the two standing
