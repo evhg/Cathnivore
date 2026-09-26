@@ -2,11 +2,27 @@ import { logCaption } from './gameLog'
 import type { GameEvent } from '../engine/types'
 
 // SPEC 10.2 "Sheets ... Log (turn history with AI reasons and enemy events)." Covers the turn history and
-// enemy events, which `state.log` already fully records. The AI-teammate "one-line reason" half of SPEC
-// 9.2 is still open (see DECISIONS.md) — the real MCTSBot-in-Worker teammate now exists, but no bot yet
-// produces a reason string for this to render.
-export default function LogSheet({ log, onClose, inline }: { log: GameEvent[]; onClose(): void; inline?: boolean }) {
-  const lines = log.map(logCaption).filter((line): line is string => line !== null)
+// enemy events, which `state.log` already fully records, plus the AI teammate's one-line reasons (SPEC
+// 9.2), keyed by `state.log` index from `Game.tsx`'s `aiReasons` (narration, not engine state — see there).
+export default function LogSheet({
+  log,
+  aiReasons,
+  onClose,
+  inline,
+}: {
+  log: GameEvent[]
+  aiReasons?: Record<number, string>
+  onClose(): void
+  inline?: boolean
+}) {
+  const lines = log
+    .map((event, i) => {
+      const caption = logCaption(event)
+      if (caption === null) return null
+      const reason = aiReasons?.[i]
+      return reason ? `${caption} ${reason}` : caption
+    })
+    .filter((line): line is string => line !== null)
   const entries = (
     <ol reversed>
       {lines

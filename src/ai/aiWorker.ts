@@ -7,6 +7,7 @@
 // JSON-shaped data (SPEC 9.1), so they cross the worker boundary via structured clone with no special
 // handling needed.
 import { AI_TEAMMATE_BOT } from './mcts'
+import { reasonForAction } from './reason'
 import type { Action, GameState } from '../engine/types'
 import type { RngState } from '../engine/rng'
 
@@ -18,6 +19,9 @@ export interface AIWorkerRequest {
 export interface AIWorkerResponse {
   action: Action
   rng: RngState
+  // SPEC 9.2: "Each AI action shows a one-line reason in the log." Computed here, against the state the
+  // decision was actually made from, rather than in `Game.tsx` after the fact.
+  reason: string
 }
 
 // `self` in a module worker's scope is a `DedicatedWorkerGlobalScope`, not the `Window` the project's DOM
@@ -31,5 +35,5 @@ const scope = self as unknown as {
 scope.onmessage = (event) => {
   const { state, rng } = event.data
   const [action, nextRng] = AI_TEAMMATE_BOT.chooseAction(state, rng)
-  scope.postMessage({ action, rng: nextRng })
+  scope.postMessage({ action, rng: nextRng, reason: reasonForAction(state, action) })
 }

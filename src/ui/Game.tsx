@@ -114,6 +114,11 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   const [showMarket, setShowMarket] = useState(false)
   const [showPlan, setShowPlan] = useState(false)
   const [showRulesFromTutorial, setShowRulesFromTutorial] = useState(false)
+  // SPEC 9.2: "Each AI action shows a one-line reason in the log." Keyed by the index of the `state.log`
+  // entry the reason belongs to (the `{type: 'action'}` entry `applyAction` appends for that decision) —
+  // engine state itself never carries this narration, since it's not a rule, so it lives alongside the UI
+  // state that already tracks everything else not worth serializing into a save (`pendingChoice`, etc.).
+  const [aiReasons, setAiReasons] = useState<Record<number, string>>({})
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -128,13 +133,23 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // bot below, not a HeuristicBot stand-in (see the effect further down that wires `aiWorker.ts`).
   // Applies an action and, if it ended the round, queues the resulting enemy-turn events for playback
   // (SPEC 10.2) instead of jumping straight to the new state's controls.
-  function advance(from: GameState, action: Action): void {
+  function advance(from: GameState, action: Action, aiReason?: string): void {
     const next = applyAction(from, action)
     // Undo is scoped to "the current turn" (SPEC 4.6) — the moment the active producer changes, whatever
     // was undoable before belongs to a turn that's now over.
     if (next.activeProducer !== from.activeProducer) undoStackRef.current = []
     const events = enemyTurnEvents(from, next)
     playHapticsFor(action, next.log.slice(from.log.length), next.result)
+    if (aiReason) {
+      // This one `applyAction` call added exactly one `{type: 'action'}` log entry (invest/scheme add an
+      // earlier entry of their own too, but never a second 'action' one) — find it rather than assuming a
+      // fixed offset, since `refreshAllLiberation` may have inserted 'liberated' entries first.
+      const addedIndex = next.log.slice(from.log.length).findIndex((e) => e.type === 'action')
+      if (addedIndex !== -1) {
+        const logIndex = from.log.length + addedIndex
+        setAiReasons((reasons) => ({ ...reasons, [logIndex]: aiReason }))
+      }
+    }
     setState(next)
     if (events.length > 0) setPendingEnemyTurn(events)
   }
@@ -188,7 +203,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         worker.removeEventListener('message', onMessage)
         if (cancelled) return
         rngRef.current = event.data.rng
-        advance(state, event.data.action)
+        advance(state, event.data.action, event.data.reason)
       }
       worker.addEventListener('message', onMessage)
       const request: AIWorkerRequest = { state, rng: rngRef.current }
@@ -585,13 +600,13 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {showPlan && (
         <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => setShowPlan(false)} />
       )}
-      {showLog && <LogSheet log={state.log} onClose={() => setShowLog(false)} />}
+      {showLog && <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => setShowLog(false)} />}
       </main>
 
       <aside className="desktop-col desktop-col-right" tabIndex={0}>
         <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => {}} inline />
         <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => {}} inline />
-        <LogSheet log={state.log} onClose={() => {}} inline />
+        <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => {}} inline />
       </aside>
     </div>
   )
