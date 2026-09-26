@@ -1303,3 +1303,31 @@ Format: date, decision, reason.
   step rather than reverting to "looks fine to me" — worth a future session actually wiring a lightweight
   version of it into `scripts/gates.ts` itself (screenshot capture is already scriptable; only the subagent
   review step needs a session in the loop, which every `npm run gates` invocation already has).
+
+- 2026-09-26: **Wired gate 8's screenshot capture into `npm run gates`** (`scripts/gates.ts`), per the
+  previous entry's own suggestion. A script can't spawn a Claude subagent, so this only automates the
+  scriptable half (running `e2e/screenshots.spec.ts`) and prints an explicit reminder that the session
+  driving `npm run gates` still needs to delegate the review itself — but that reminder replaces a silent
+  permanent "skipped" message, which is exactly why gate 8 went unexercised as a subagent call for most of
+  the build until two sessions ago.
+
+- 2026-09-26: **Ran that new gate-8 step for real against the just-released `937b64f`, and it found another
+  real bug**, the same class of problem the previous entry's pass caught: the desktop map (shrunk to 260px
+  max-width by the SPEC 10.3 no-scroll fix, vs. the phone map's 420px) rendered crop and coast regions'
+  greyscale textures (STYLE.md 3.2's dotted furrow rows / wave lines, both at 8% ink) as completely flat
+  fills — confirmed by cropping and 8x-upscaling the screenshots directly (not trusting the subagent's read
+  on its own), and by comparing against the phone screenshot at the same game state, where both textures
+  render correctly. Pasture (dense diagonal lines) and Kingsmarket (dense grid) survived the same downscale
+  because they're already sparse-tile-independent — many repeats per region regardless of physical size —
+  while crop's 2-dots-per-12x8-unit-tile and coast's 1-curve-per-16x8-unit-tile only repeat once or twice
+  across a small hex, so anti-aliasing at a small physical rendering washes them out entirely. Root cause is
+  physical rendering size, not a missing/broken pattern definition, so the fix targets pattern density
+  rather than the map's CSS size (changing that risks re-opening the no-scroll gate the previous session
+  spent real effort closing): halved both patterns' tile dimensions and thickened their strokes/dot radii
+  (`src/ui/Map.tsx`'s `RegionTextureDefs`), keeping the same 8% opacity STYLE.md specifies — a denser, bolder
+  tile survives the same downscale the sparser original didn't, the same way pasture/capital already did.
+  Verified by rebuilding, re-capturing screenshots, and visually comparing crops at both map sizes: all 4
+  region types are now distinguishable by texture alone at 260px, and the phone rendering (420px) is
+  unaffected in kind (still clearly the same dotted/wavy shapes, just denser). `npm run gates` re-run clean
+  end to end afterward (68 e2e, 16 axe, Lighthouse 98/100) — three real, independently-found gate-8 bugs
+  across two consecutive sessions now, reinforcing that this needs to stay a routine step, not a one-off.
