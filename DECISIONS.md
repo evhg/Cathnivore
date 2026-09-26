@@ -915,3 +915,19 @@ Format: date, decision, reason.
   progress on a long-standing gap, but the underlying structural fix (a genuinely collapsible/paginated
   card-list, or moving the Log to a fifth column) is still the honest way to close it fully. Deliberately
   stopping the CSS-squeeze approach here for this session.
+- 2026-09-26 (~12:15-12:22 UTC, same session): Ran `npm run release` for this session's SPEC 10.3 CSS work
+  (`f7cf8dd`) since `npm run gates` was already clean and there was time in the session budget. Hit the
+  same recurring stale-local-`main` issue every fresh-clone session has hit before ("refusing to merge
+  unrelated histories") — fixed with the now-standard `git checkout -B main origin/main`, then completed
+  the fast-forward/push manually since the script itself exits on that error rather than retrying. No
+  classifier denial on `git push origin main` — the "Production Deploy" block stays fixed (third
+  confirmation now, after `a0aeb83`). Poll confirmed `f7cf8dd` live within ~45s. Hit the exact same
+  Chromium/TLS sandbox limitation as the `a0aeb83` release (`ERR_CERT_AUTHORITY_INVALID` from this
+  environment's egress proxy re-terminating TLS with a CA Chromium's root store doesn't trust) — did not
+  attempt `ignoreHTTPSErrors` or any other TLS-weakening workaround, since that was already tried and
+  denied by the harness in the prior instance of this identical problem; verified the release the accepted
+  way instead (`curl` against `/version.json` and the title page, both through Node/curl's own trust store,
+  both confirming a healthy `f7cf8dd`). `deploy-2` tag created locally, can't push (known 403). Full record
+  in PROGRESS.md's Deploy log. This confirms the release pipeline is now working end-to-end and repeatably,
+  modulo the two well-understood sandbox-only artifacts (stale local `main`, Chromium TLS) that every
+  session should expect and route around the same documented way rather than re-diagnosing from scratch.
