@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createGame } from '../src/engine/state'
 import { IMPROVEMENTS } from '../src/content/improvements'
 import { SCHEMES } from '../src/content/schemes'
+import { AGENDA_CARDS } from '../src/content/agenda'
 import { ALL_REGION_IDS } from '../src/content/map'
 import type { GameConfig, ResourceKind } from '../src/engine/types'
 
@@ -32,6 +33,25 @@ describe('Improvement rules text', () => {
         }
       }
     })
+
+    it(`${card.name}: cost, tags and flavor length are within SPEC 7's limits`, () => {
+      expect(card.cost).toBeGreaterThanOrEqual(2)
+      expect(card.cost).toBeLessThanOrEqual(9)
+      expect(card.tags.length).toBeGreaterThanOrEqual(1)
+      expect(card.tags.length).toBeLessThanOrEqual(2)
+      if (card.flavor !== undefined) {
+        expect(card.flavor.length).toBeLessThanOrEqual(80)
+      }
+    })
+  }
+})
+
+describe('Agenda rules text', () => {
+  for (const card of AGENDA_CARDS) {
+    it(`${card.id}: headline is within SPEC 4.7's 90-character limit`, () => {
+      expect(card.headline.length).toBeGreaterThan(0)
+      expect(card.headline.length).toBeLessThanOrEqual(90)
+    })
   }
 })
 
@@ -42,6 +62,8 @@ describe('Scheme rules text', () => {
       expect(card.text.length).toBeLessThanOrEqual(200)
       expect(card.line.length).toBeLessThanOrEqual(110)
       expect(card.name.split(' ').length).toBeLessThanOrEqual(3)
+      expect(card.cost).toBeGreaterThanOrEqual(1)
+      expect(card.cost).toBeLessThanOrEqual(4)
     })
   }
 })

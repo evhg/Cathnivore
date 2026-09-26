@@ -637,3 +637,13 @@ Format: date, decision, reason.
   of the game screen: dark panels/map background, producer/enemy piece colours unchanged, per STYLE.md
   3.5's "the table goes dark; the pieces, cards and portraits don't") and with `npm run check` (165 tests)
   plus the accessibility/title/settings e2e suites, all clean.
+
+- 2026-09-26: Added test coverage for content limits SPEC 3.2/4.7/5/7/8.3 always specified but nothing
+  checked: `tests/story.test.ts` (scenes: <=12 lines, <=160 chars/line, whole campaign <4,000 words, Cath
+  <=1 "!" per chapter) and new assertions in `tests/rules-text.test.ts` (Improvement cost 2-9/tags 1-2/
+  flavor <=80 chars, Agenda headline <=90 chars, Scheme cost 1-4 Goodwill). All passed immediately — no
+  existing card or scene violated any of these — so this is pure regression protection, not a content fix,
+  but worth having now that six chapters and 90 cards exist and a future session editing any of them could
+  otherwise drift past a limit unnoticed. Chose per-chapter scoping for the exclamation-mark rule (only
+  counting Cath's own lines) since SPEC 3.2 states it under her voice description specifically, not as a
+  whole-chapter dialogue rule.

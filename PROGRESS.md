@@ -59,9 +59,15 @@ placeholder), then did two rounds of real, unblocked work:
 Both verified visually (cropped/full screenshots via a temporary Playwright script, removed after use, not
 committed) and with the full `npm run check` (165 unit tests) plus targeted e2e runs
 (`quick-game.spec.ts`+`screenshots.spec.ts`, `title.spec.ts`+`accessibility.spec.ts`, `desktop-chromium`) —
-all clean, no regressions. Next session: re-try the push-restriction/Apple-Team-ID checks once as usual;
-M7's remaining items (a final full e2e pass on both sizes, and the final balance report) are still best
-left until closer to the deadline.
+all clean, no regressions. Then, with time left in the session, closed a real test-coverage gap SPEC 8.3/
+4.7/7/5 had always specified but no test ever checked: new `tests/story.test.ts` (12-lines-per-scene,
+160-chars-per-line, <4,000-total-words, Cath's at-most-one-exclamation-mark-per-chapter) and new assertions
+in `tests/rules-text.test.ts` (Improvement cost 2-9/tags 1-2/flavor <=80 chars, Agenda headline <=90 chars,
+Scheme cost 1-4 Goodwill). All of it passed on the first run — the existing content was already compliant —
+but these limits are now enforced permanently instead of resting on each session's care while writing new
+cards/scenes. `npm run check` (170 unit tests total) passes clean. Next session: re-try the push-
+restriction/Apple-Team-ID checks once as usual; M7's remaining items (a final full e2e pass on both sizes,
+and the final balance report) are still best left until closer to the deadline.
 
 ## Tasks
 
