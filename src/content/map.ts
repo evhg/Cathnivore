@@ -1,4 +1,4 @@
-import type { RegionId, RegionType } from '../engine/types'
+import type { GameState, RegionId, RegionType } from '../engine/types'
 
 export interface RegionDef {
   id: RegionId
@@ -26,6 +26,15 @@ export const REGIONS: Record<RegionId, RegionDef> = {
   shingleBay: { id: 'shingleBay', name: 'Shingle Bay', type: 'coast', neighbors: ringNeighbors('shingleBay') },
   oakvale: { id: 'oakvale', name: 'Oakvale', type: 'crop', neighbors: ringNeighbors('oakvale') },
   brindleHills: { id: 'brindleHills', name: 'Brindle Hills', type: 'pasture', neighbors: ringNeighbors('brindleHills') },
+}
+
+// SPEC 10.2: "Tapping [a Squeeze/Expand/Scout card in the enemy plan strip] highlights the matching
+// regions on the map." Shared by `Map.tsx`'s own SQUEEZE/EXPAND badges and `Game.tsx`'s plan-strip buttons
+// so both use the same region-type match, instead of a second, potentially-drifting copy of the logic.
+export function regionMatchesPressureSlot(state: GameState, region: RegionId, slot: 'squeeze' | 'expand' | 'scout'): boolean {
+  const card = slot === 'squeeze' ? state.squeeze : slot === 'expand' ? state.expand : state.scout
+  if (!card) return false
+  return card.regionTypes.includes(REGIONS[region].type)
 }
 
 export const ALL_REGION_IDS: RegionId[] = [

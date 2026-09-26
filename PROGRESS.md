@@ -44,6 +44,15 @@ wide margin** in a content-dense mid-game position (the centre column needs 388p
 available, the right column 423px more) — verified with a new `test.skip`'d Playwright test
 (`e2e/desktop-no-scroll.spec.ts`, skipped so it doesn't block the gate) ready for a future session to
 un-skip once the desktop layout is made denser.
+
+With time still left, fixed the smaller of the two real interaction gaps: **the enemy-plan-strip
+tap-to-highlight (SPEC 10.2) is now implemented.** The three Squeeze/Expand/Scout plan-strip cards are real
+buttons now; tapping one highlights its matching regions on the map (reusing the same glow/dim visual the
+existing action-targeting mode already uses) and tapping it again clears the highlight. The map's own
+region-type-match logic moved to a shared `regionMatchesPressureSlot()` in `src/content/map.ts` so the
+map's SQUEEZE/EXPAND badges and the plan-strip buttons can't drift apart. New `tests/map.test.ts` and
+`e2e/plan-strip.spec.ts` (now part of `npm run gates`'s Gate 5). The targeting-mode Confirm button and
+in-game tooltips (the other two interface-audit findings) remain open for a future session.
 `npm run check` (249 tests) and `npm run gates` (gates 1-7, Chromium-fallback for gate 5/6 as usual in this
 sandbox, Lighthouse 99/100) both re-run clean end to end with no regressions. All of this session's work is
 on `build` only, same as everything else, still waiting on the two release blockers below.

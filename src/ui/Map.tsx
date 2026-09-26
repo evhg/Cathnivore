@@ -1,4 +1,4 @@
-import { REGIONS } from '../content/map'
+import { REGIONS, regionMatchesPressureSlot } from '../content/map'
 import { loadSettings } from '../platform/settings'
 import type { GameState, ProducerId, RegionId, RegionType } from '../engine/types'
 
@@ -303,8 +303,5 @@ export default function Map({ state, highlight, onSelect }: Props) {
 }
 
 function matchesSlot(state: GameState, region: RegionId, slot: 'squeeze' | 'expand'): boolean {
-  const card = slot === 'squeeze' ? state.squeeze : state.expand
-  if (!card) return false
-  const type = REGIONS[region].type
-  return card.regionTypes.includes(type)
+  return regionMatchesPressureSlot(state, region, slot)
 }

@@ -165,7 +165,7 @@ h3 {
   gap: 8px;
 }
 
-.plan-strip span {
+.plan-strip button {
   flex: 1;
   background: var(--surface);
   border: 1px solid var(--rule);
@@ -173,6 +173,15 @@ h3 {
   padding: 6px 8px;
   font-size: 14px;
   text-align: center;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* SPEC 10.2: the tapped plan-strip card stays visibly selected while its regions are highlighted. */
+.plan-strip-active {
+  border-color: var(--pasture-deep) !important;
+  background: var(--paper-2) !important;
 }
 
 .map-wrap {

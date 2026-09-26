@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { createRng } from '../engine/rng'
 import { PRODUCERS } from '../content/producers'
-import { REGIONS } from '../content/map'
+import { REGIONS, regionMatchesPressureSlot } from '../content/map'
 import { HeuristicBot } from '../ai/heuristic'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
@@ -96,6 +96,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     }
   }, [])
   const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
+  // SPEC 10.2: "Tapping [a Squeeze/Expand/Scout card] highlights the matching regions on the map." A
+  // second tap on the same card clears the highlight; tapping a different card switches to it.
+  const [planHighlightSlot, setPlanHighlightSlot] = useState<'squeeze' | 'expand' | 'scout' | null>(null)
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
   const [showLog, setShowLog] = useState(false)
   const [showFarm, setShowFarm] = useState(false)
@@ -371,15 +374,29 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       )}
 
       <section className="plan-strip">
-        <span>Squeeze: {pressureLabel(state.squeeze)}</span>
-        <span>Expand: {pressureLabel(state.expand)}</span>
-        <span>Scout: {pressureLabel(state.scout)}</span>
+        {(['squeeze', 'expand', 'scout'] as const).map((slot) => (
+          <button
+            key={slot}
+            type="button"
+            aria-pressed={planHighlightSlot === slot}
+            className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
+            onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
+          >
+            {slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'}: {pressureLabel(state[slot])}
+          </button>
+        ))}
       </section>
 
       <section className="map-wrap">
         <RegionMap
           state={state}
-          highlight={selectedGroup?.entries.map((e) => e.region)}
+          highlight={
+            selectedGroup
+              ? selectedGroup.entries.map((e) => e.region)
+              : planHighlightSlot
+                ? state.config.activeRegions.filter((id) => regionMatchesPressureSlot(state, id, planHighlightSlot))
+                : undefined
+          }
           onSelect={
             selectedGroup
               ? (region) => {
