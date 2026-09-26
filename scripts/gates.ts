@@ -9,7 +9,16 @@ function run(label: string, cmd: string) {
   execSync(cmd, { stdio: 'inherit' })
 }
 
-run('Gate 1-4: typecheck, lint, test, fuzz, build', 'npm run check')
+run('Gate 1-2: typecheck, lint, test', 'npm run typecheck && npm run lint && npm run test')
+
+// SPEC 11.4 gate 3 is literal: "10,000 RandomBot games and 1,000 HeuristicBot games." `npm run check`
+// (the fast dev-loop command) intentionally uses `sim/fuzz.ts --quick`'s 200/100 instead — fine for a
+// quick local check, but this is the pre-release gate every push to `main` must actually pass, so it needs
+// the real counts, not the quick ones. Confirmed cheap enough to run every time: ~19s for the full 10,000
+// RandomBot + 1,000 HeuristicBot games on this hardware.
+run('Gate 3: fuzz (10,000 RandomBot + 1,000 HeuristicBot games)', 'npm run fuzz')
+
+run('Gate 4: build', 'npm run build')
 
 const browsersPath = process.env.PLAYWRIGHT_BROWSERS_PATH
 const hasWebkit = !!browsersPath && existsSync(browsersPath) && readdirSync(browsersPath).some((f) => f.startsWith('webkit'))

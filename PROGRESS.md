@@ -54,6 +54,18 @@ With time still left, made a real, measured (not guessed) dent in the SPEC 10.3 
   real. `npm run check` (281 tests, unchanged) and `npm run gates` (58 e2e tests, axe/Lighthouse clean, 98/100)
   both re-run clean; the phone layout is untouched (the fix is scoped to the 1024px+ breakpoint).
 
+With time still left, checked SPEC 11.6's store-text limits (subtitle/description/keywords) against the
+actual files and added the missing test coverage (`tests/store.test.ts`, 5 tests) — the files themselves
+were already within limits, but nothing was guarding them against a future edit. `npm run check` (286
+tests, up from 281).
+
+With time still left, found and fixed a real SPEC 11.4 gate 3 gap: `npm run gates`/`npm run release` were
+only ever fuzzing at `npm run check`'s quick 200/100 scale, never gate 3's literal "10,000 RandomBot games
+and 1,000 HeuristicBot games" — meaning every release to date only ever passed the quick fuzz, not the real
+gate. Split `scripts/gates.ts`'s combined gate 1-4 step into three, with gate 3 now calling the full,
+un-quicked `npm run fuzz` (confirmed cheap: 19s for 10,000+1,000 games). `npm run gates` re-run clean with
+the real counts now actually executing.
+
 ---
 
 Previous session (2026-09-26, starting ~08:51 UTC): both standing blockers re-checked once, unchanged (12th+
