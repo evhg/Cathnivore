@@ -1,7 +1,22 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, starting ~11:52 UTC): both standing blockers re-checked once — `OWNER.md`'s Apple
+This session (2026-09-26, starting ~12:52 UTC): both standing blockers re-checked once — `OWNER.md`'s Apple
+Team ID still `PASTE-TEAM-ID` (`ci-status` unchanged since ~1h45m earlier, no re-dispatch); the "Production
+Deploy" push restriction wasn't re-tested (already proven fixed by 3 consecutive real releases, not worth
+spending a check on). Picked up one of the two large, explicitly-deferred interface-audit findings instead
+of another desktop-CSS pass: **SPEC 10.2's targeting-mode Confirm button.** Scoped to the one clear literal
+gap (tapping a glowing region committed the action immediately, with no actual Confirm step) rather than the
+full redesign — new `pendingChoice` state in `Game.tsx` narrows the glow to the tapped region and shows a
+real Confirm/Cancel prompt; `act()` only fires on Confirm. Updated `e2e/tutorial.spec.ts`'s chapter-1 test
+(the only e2e test driving this flow via a real `.region-hex` click) to click Confirm; verified with a
+screenshot that the flow reads correctly. `npm run check` (286 tests) and `npm run gates` (gates 1-7, 64 e2e,
+16 axe, Lighthouse 99/100) both re-run clean, no regressions. Full detail in DECISIONS.md. Remaining SPEC
+10.2 gap: Market/Cath's Plan card lists still don't glow/dim as a group (not currently reachable, since no
+card list offers more than one ambiguous legal choice). SPEC 10.3's desktop no-scroll gap is unchanged. Next
+session should re-check the two blockers first, then pick up either of those two remaining items.
+
+Previous session (2026-09-26, starting ~11:52 UTC): both standing blockers re-checked once — `OWNER.md`'s Apple
 Team ID still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch, since `ci-status` already showed the identical
 failure from ~48 minutes earlier); the "Production Deploy" push restriction stayed fixed, confirmed by
 actually using it (see below). All content/milestone work is done except the two owner-blocked M7 items
@@ -680,6 +695,7 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 ### M3 Playable game (second half of day 2 to day 3)
 - [ ] (partial) the Quick Game loop is now visually recognisable, not just functional. Added `src/ui/Map.tsx`: an SVG hex flower (STYLE.md 7) with Kingsmarket centred and the 6 regions placed by exact compass angle (pointy-top hexagons, ring distance = `HEX_R * sqrt(3)`, matching SPEC 4.2's adjacency naming), drawing region fills from the STYLE.md colour tokens, Stalls (producer-coloured strip along the bottom edge), Outlets/Buyouts (glossy Hollowell squares with a highlight dot), Doubt (glossy Candor circles), a Lost Land overlay tint, a Co-op marker circle on liberated regions, and SQUEEZE/EXPAND badge pills on regions matching the current Pressure slots. `Game.tsx` now renders `<Map>` instead of the plain text region list; bundled `@fontsource/fraunces` and `@fontsource/atkinson-hyperlegible` (STYLE.md 4) and added game-screen CSS (top bar, plan strip, map wrapper, decision/active-producer panels, action buttons) to `src/styles/global.css`. Verified with a headless-Chromium smoke run (title → Quick Game → a real round), no console errors — screenshot looked correct (hex flower, region names, enemy pieces, stalls, badges all in the right places).
   - Region-targeted actions (Open Stall, Supply, Rebut, a targeted Scheme/Role) now group into one button per action type (`src/ui/actionLabel.ts`'s `regionOf`/`actionGroupKey`/`actionGroupLabel`) instead of one button per region; tapping the group button enters SPEC 10.2 targeting mode, highlighting the legal regions on the map (`Map.tsx`'s `highlight`/`onSelect` props, a wheat glow outline plus 45% dim on everything else) with a Cancel button, and tapping a glowing region applies that exact action. Verified end to end with a headless-Chromium run (Open Stall… → tap a highlighted region → Produce and Actions-left both updated correctly, no console errors).
+    - **Confirm step added (a much later session, 2026-09-26):** tapping a glowing region used to apply the action immediately; it now only stages the choice (narrowing the glow to that one region) and shows a real Confirm/Cancel prompt, closing the "a clear Confirm button appears" half of SPEC 10.2 this entry's own wording never actually delivered. See DECISIONS.md.
   - (stale note, updated in M6) the piece icons still aren't the exact STYLE.md illustrations (a plain
     square/pentagon/circle rather than a full shopfront-with-"0.99"-tag/picket-fence/speech-bubble drawing),
     but the M6 gate-8 visual-review pass gave Outlet and Buyout genuinely distinct shapes (they used to be

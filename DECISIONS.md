@@ -948,3 +948,60 @@ Format: date, decision, reason.
   audit` now reports 6 vulnerabilities (down from 9; the critical one gone), all in `vite`/`vitest`'s dev
   server only, still needing genuine breaking major-version bumps (vite 5->8, vitest 2->5) that risk the
   build/PWA-plugin/test-runner pipeline — left deferred, same reasoning as before, not attempted blind.
+- 2026-09-26 (new session, ~12:56-13:10 UTC): Re-checked both standing blockers: `OWNER.md`'s Apple Team ID
+  is still `PASTE-TEAM-ID` (`origin/ci-status`'s `status/ios.json` still shows the identical missing-secrets
+  failure from ~1h45m earlier, commit `6d96198` — not worth a fresh `ios.yml` dispatch for an unchanged
+  result). Did not re-test the "Production Deploy" push restriction with a throwaway dry-run push since
+  three consecutive real `npm run release` runs already demonstrated it fixed; picked up real work instead
+  of spending a check on something already proven. `npm ci` + `npm run check` (286 tests) confirmed clean on
+  the unchanged `build` HEAD first.
+
+  Rather than another CSS-squeeze pass on the SPEC 10.3 desktop no-scroll gap (four prior sessions already
+  logged diminishing returns there), picked up **the other explicitly-deferred interface-audit finding: SPEC
+  10.2's targeting-mode Confirm button** ("Choosing an action enters targeting mode: legal regions or cards
+  glow, everything else dims, a clear Confirm button appears, and Cancel is always visible" — DECISIONS.md's
+  2026-09-26 ~06:xx UTC entry logged this as real but deferred, needing "its own multi-hour task"). Scoped it
+  down from the full redesign (which would also cover card-targeted actions and single-legal-target actions
+  that have nothing to choose) to the one clear, literal violation: **the map's region-targeting flow
+  committed an action on the same tap that selected the region**, with no actual confirm step despite already
+  having Cancel and glow/dim. Fixed that specific gap:
+  - `Game.tsx` gained `pendingChoice` state (`{index, region} | null`). Tapping a glowing region during
+    `selectedGroup` targeting now calls `setPendingChoice(entry)` instead of `act(entry.index)` directly; the
+    map's `highlight` prop narrows to just that one region (instead of the whole group) once a choice is
+    pending, and the actions panel swaps its "tap a glowing region" prompt for "`<Action>` in `<Region>`?"
+    with real Confirm (calls `act`) and Cancel (steps back to the group's full glow, not out of targeting
+    mode) buttons.
+  - `pendingChoice` is cleared alongside `selectedGroup` in the existing `useEffect(() => {...}, [state])`
+    that already resets targeting mode after any committed action, so a stale pending choice can't survive
+    into the next turn. Also cleared explicitly in `playScheme`'s `setSelectedGroup(group)` call (the one
+    other place a fresh group can be opened without an intervening state change, e.g. via the Cath's Plan
+    sheet while the main action panel's own group picker is hidden behind it) — the main action panel's own
+    "open a new group" button is unreachable while `selectedGroup` is already set (the `.actions` section's
+    ternary replaces itself with the targeting prompt), so that call site can't hit the same staleness.
+  - Deliberately did **not** extend this to standalone single-legal-target actions (Graft, a Sell of a fixed
+    quantity, an Invest/Scheme with only one legal card) — there is nothing to *select* in those cases, so
+    the button tap already *is* "choosing the action" in the spec's own sense; adding a second confirm tap
+    with nothing to change one's mind about would be UX debt, not a fix. Card-targeted actions (Invest,
+    Scheme play from the Market/Cath's Plan sheets) already work the same way they did before (direct
+    buy/play, or opening the map's targeting mode when the scheme/whatever also needs a region) — SPEC
+    10.2's "cards ... glow" bullet (dimming/glowing the Market/Plan lists themselves) remains unaddressed,
+    same as before, since no card list currently offers more than one legal card as an ambiguous choice to
+    narrow down the way the region grouping does.
+  - Verified with a screenshot (chapter 1, Open Stall with 2 legal regions): both regions glow initially;
+    tapping one narrows the glow to just that region and shows "Open Stall in Brindle Hills? Confirm /
+    Cancel" — matches SPEC 10.2's literal description.
+  - Updated `e2e/tutorial.spec.ts`'s chapter-1 test (the one place any e2e test drove this flow by clicking
+    a real `.region-hex`) to click Confirm after tapping the region. Searched the whole `e2e/` directory for
+    other `.region-hex` clicks or direct commits through this path first — `plan-strip.spec.ts`'s
+    `.region-hex` references are the unrelated Squeeze/Expand/Scout highlight, not action targeting, and
+    every other UI-driven test (`quick-game.spec.ts`, `hotseat.spec.ts`, `ai-teammate.spec.ts`, the
+    chapters-2-6 half of `campaign.spec.ts`) drives play through `?e2eAutoplay=1` (`HeuristicBot.chooseAction`
+    applied directly, bypassing `selectedGroup`/`pendingChoice` entirely — confirmed in `Game.tsx`), so none
+    of them could be affected either way.
+  - `npm run check` (286 tests, typecheck/lint clean, unchanged count — no new unit-testable surface, this is
+    pure UI wiring) and the full `npm run gates` (gates 1-7: 64 e2e tests all passing including the updated
+    tutorial test, 16 axe tests clean, Lighthouse 99/100) both re-run clean end to end, no regressions.
+  Remaining SPEC 10.2/10.5 gaps: the Market/Cath's Plan card lists still don't glow/dim as a group the way
+  the map does (no current card list has more than one ambiguous legal choice to narrow, so there's nothing
+  visibly broken today, but a future card design that did would need this), and the SPEC 10.3 desktop
+  no-scroll gap is unchanged. Both logged here rather than attempted in the time left this session.

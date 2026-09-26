@@ -99,6 +99,12 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     }
   }, [])
   const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
+  // SPEC 10.2: "Choosing an action enters targeting mode: legal regions ... glow, everything else dims, a
+  // clear Confirm button appears, and Cancel is always visible." Tapping a glowing region used to commit
+  // the action immediately; it now only stages a choice (`pendingChoice`), narrowing the glow to that one
+  // region, and the action only actually happens on Confirm. Cancel steps back to the full group's glow
+  // (or, with nothing pending, drops out of targeting mode entirely).
+  const [pendingChoice, setPendingChoice] = useState<{ index: number; region: RegionId } | null>(null)
   // SPEC 10.2: "Tapping [a Squeeze/Expand/Scout card] highlights the matching regions on the map." A
   // second tap on the same card clears the highlight; tapping a different card switches to it.
   const [planHighlightSlot, setPlanHighlightSlot] = useState<'squeeze' | 'expand' | 'scout' | null>(null)
@@ -111,6 +117,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
 
   useEffect(() => {
     setSelectedGroup(null)
+    setPendingChoice(null)
   }, [state])
 
   useEffect(() => {
@@ -340,7 +347,10 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     const group = groups.get(`scheme:${schemeId}`)
     if (group) {
       if (group.entries.length === 1) act(group.entries[0]!.index)
-      else setSelectedGroup(group)
+      else {
+        setPendingChoice(null)
+        setSelectedGroup(group)
+      }
       setShowPlan(false)
       return
     }
@@ -438,7 +448,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           state={state}
           highlight={
             selectedGroup
-              ? selectedGroup.entries.map((e) => e.region)
+              ? pendingChoice
+                ? [pendingChoice.region]
+                : selectedGroup.entries.map((e) => e.region)
               : planHighlightSlot
                 ? state.config.activeRegions.filter((id) => regionMatchesPressureSlot(state, id, planHighlightSlot))
                 : undefined
@@ -447,7 +459,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             selectedGroup
               ? (region) => {
                   const entry = selectedGroup.entries.find((e) => e.region === region)
-                  if (entry) act(entry.index)
+                  if (entry) setPendingChoice(entry)
                 }
               : undefined
           }
@@ -502,10 +514,18 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         {pendingEnemyTurn.length > 0 ? null : waitingOnAi ? (
           <p>AI teammate is deciding…</p>
         ) : selectedGroup ? (
-          <>
-            <p>{selectedGroup.label}: tap a glowing region on the map.</p>
-            <button onClick={() => setSelectedGroup(null)}>Cancel</button>
-          </>
+          pendingChoice ? (
+            <>
+              <p>{selectedGroup.label} in {REGIONS[pendingChoice.region].name}?</p>
+              <button onClick={() => act(pendingChoice.index)}>Confirm</button>
+              <button onClick={() => setPendingChoice(null)}>Cancel</button>
+            </>
+          ) : (
+            <>
+              <p>{selectedGroup.label}: tap a glowing region on the map.</p>
+              <button onClick={() => setSelectedGroup(null)}>Cancel</button>
+            </>
+          )
         ) : (
           <>
             {standalone.map(({ index, action: a }) => {
