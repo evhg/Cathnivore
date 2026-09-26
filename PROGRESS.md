@@ -1,7 +1,34 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, ~05:52-06:xx UTC): re-checked both standing blockers once each — still identical
+This session (2026-09-26, ~06:51-07:xx UTC): re-checked both standing blockers once each, as usual — still
+identical (a throwaway-branch dry-run push to `main`, `git push origin main-test-check:main`, denied again
+with the identical "Production Deploy" classifier message before reaching GitHub; `OWNER.md`'s Apple Team ID
+still `PASTE-TEAM-ID`, so `ios.yml` wasn't re-dispatched — same reasoning as every prior re-check). `npm ci`
++ `npm run check` (270 tests) confirmed clean on the unchanged `build` HEAD first. With the release paths
+still blocked, picked up the smaller of the two still-open interface-audit findings logged in DECISIONS.md
+(2026-09-26 ~06:03 UTC): **SPEC 10.5's in-game tap/hover tooltips on game terms.** Implemented a bounded
+slice of it — the topbar's Public Trust/Lost Land/Rift labels now have a real tooltip, not the whole
+surface (action buttons, map legend pieces) the spec's "every game term" would eventually need, which stays
+open for a future session with more time (same scoping precedent as the prior session's plan-strip fix).
+Extracted the term/body data `RulesReference.tsx` already had into a new shared `src/content/terms.ts`
+(`GLOSSARY_TERMS`/`ACTION_TERMS`/`GLOSSARY_LOOKUP`) so the reference and the new tooltip read one source and
+can't drift apart; added 3 Outlet/Buyout/Doubt entries that weren't in the reference's list before either.
+New `src/ui/Tooltip.tsx`: a tap-or-hover popover (a native `title` attribute doesn't reliably show on tap on
+mobile, which SPEC 10.5 asks for alongside hover). Non-obvious bug caught before it shipped: a real mouse
+click also fires `mouseenter` immediately before the click itself, so a single toggled `open` flag opened on
+the hover and instantly closed again on the click that followed in the same gesture — fixed by tracking
+`pinned` (click/tap) and `hovering` (mouse) as two separate flags, OR'd together for visibility, with a
+`pointerdown`-outside/Escape handler closing `pinned`. New `tests/terms.test.ts` (19 tests, the glossary
+data) and `e2e/tooltip.spec.ts` (4 tests: tap-toggle open/close, outside-click dismiss, on both `phone` and
+`desktop-chromium` — the latter needed `dispatchEvent('click')` instead of `.click()`/`.tap()` to test the
+tap path in isolation from the hover path, since desktop-chromium has no touch support and a real `.click()`
+there still fires the confounding `mouseenter`). `npm run check` (270 tests, up from 251) and `npm run gates`
+(gates 1-7; 46 e2e tests in gate 5, up from 42; Lighthouse 98/100) both re-run clean end to end, no
+regressions, bundle still well under the 400 KB gate. The targeting-mode Confirm button, the rest of SPEC
+10.5's tooltip surface, and the desktop no-scroll gap remain open, per DECISIONS.md.
+
+Previous session (2026-09-26, ~05:52-06:xx UTC): re-checked both standing blockers once each — still identical
 (production push denied by the harness's "Production Deploy" classifier before reaching GitHub; `OWNER.md`'s
 Apple Team ID still `PASTE-TEAM-ID`), now 10+ consecutive sessions with zero net release progress. `npm run
 check`/`npm run gates` re-confirmed clean on the unchanged `build` HEAD first. Used 2 concurrent
@@ -743,6 +770,11 @@ thing to do is `npm run release`, since gates/e2e/balance are all in a shippable
 - [ ] create `DONE`
 
 ## Blocked
+- **Re-checked 2026-09-26 ~06:52 UTC:** same throwaway-branch dry-run push (`git push origin
+  main-test-check:main`), denied again with the identical "Production Deploy" classifier message before
+  reaching GitHub. `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID`, so `ios.yml` wasn't re-dispatched.
+  Now 11+ consecutive sessions with an identical denial since 2026-09-25 ~17:12 UTC. Used the session for
+  real, unblocked work instead — see Current milestone / DECISIONS.md for the SPEC 10.5 tooltip work.
 - **Re-checked 2026-09-26 ~05:57 UTC:** same throwaway-branch dry-run push (`git push origin
   main-test-check:main`), denied again with the identical "Production Deploy" classifier message before
   reaching GitHub. `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID`, so `ios.yml` wasn't re-dispatched

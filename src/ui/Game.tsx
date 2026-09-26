@@ -18,6 +18,7 @@ import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap from './Map'
 import Scene from './Scene'
+import Tooltip from './Tooltip'
 import {
   ActionsLeftIcon,
   GoodwillIcon,
@@ -354,13 +355,19 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           <RoundIcon /> Round {state.round}/10
         </span>
         <span>
-          <PublicTrustIcon /> Trust {state.publicTrust}
+          <Tooltip term="Public Trust">
+            <PublicTrustIcon /> Trust {state.publicTrust}
+          </Tooltip>
         </span>
         <span>
-          <LostLandIcon /> Lost Land left {state.lostLandPool}
+          <Tooltip term="Lost Land">
+            <LostLandIcon /> Lost Land left {state.lostLandPool}
+          </Tooltip>
         </span>
         <span>
-          <RiftIcon /> Rift {state.rift}
+          <Tooltip term="Rift">
+            <RiftIcon /> Rift {state.rift}
+          </Tooltip>
         </span>
       </header>
 

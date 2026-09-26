@@ -160,6 +160,40 @@ h3 {
   font-variant-numeric: tabular-nums;
 }
 
+/* SPEC 10.5: in-game tap/hover tooltip on game terms (Squeeze, Expand, Public Trust and so on), alongside
+   the same explanation in the rules reference. `.tooltip-trigger-button` inherits its font/layout from
+   whatever it wraps (a topbar label, a plan-strip card, an action button) rather than looking like a
+   separate control of its own. */
+.tooltip-trigger {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-trigger-button {
+  all: unset;
+  cursor: help;
+  border-bottom: 1px dotted currentColor;
+}
+
+.tooltip-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: max-content;
+  max-width: 240px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.3;
+  padding: 8px 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  text-align: left;
+}
+
 .plan-strip {
   display: flex;
   gap: 8px;
