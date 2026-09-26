@@ -748,6 +748,21 @@ html.native-app body {
   touch-action: pan-x pan-y;
 }
 
+/* SPEC 11.6: "Status bar and safe areas handled." `statusBar.ts` overlays the webview rather than reserving
+   its own space, so the game screen's fixed top bar and bottom controls (SPEC 10.2) need their own padding
+   for the notch/Dynamic Island and the home-indicator area — `env()` resolves to 0 on the web build (and on
+   older iPhones), so this is inert there. iPhone is portrait-only (SPEC 11.6), so left/right insets are
+   never non-zero in practice, but padding them costs nothing. */
+.native-app .topbar {
+  padding-top: calc(8px + env(safe-area-inset-top));
+  padding-left: calc(12px + env(safe-area-inset-left));
+  padding-right: calc(12px + env(safe-area-inset-right));
+}
+
+.native-app .controls {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* Setup and Settings screens (SPEC 10.1): plain semantic markup so far (M3/M6), but with no layout CSS at
    all their option <label> rows ran together inline instead of one option per line — found while
    spot-checking gate 8's screenshots. Minimal block-per-option spacing, matching the paper-card look used

@@ -1,4 +1,5 @@
 import { storage } from './storage'
+import { applyStatusBarStyle } from './statusBar'
 
 // SPEC 10.1: "Settings: animations, colour-blind patterns, AI speed, and 'Reset all data' with a
 // confirmation."
@@ -43,6 +44,7 @@ export function saveSettings(settings: Settings): void {
   storage.set(SETTINGS_KEY, JSON.stringify(settings))
   applyAnimationsSetting(settings.animations)
   applyThemeSetting(settings.theme)
+  void applyStatusBarStyle(settings.theme)
 }
 
 // STYLE.md 11: "with reduced motion switched on, use fades only" is the OS-level `prefers-reduced-motion`

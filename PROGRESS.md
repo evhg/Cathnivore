@@ -1,7 +1,42 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, starting ~08:51 UTC): both standing blockers re-checked once, unchanged (12th+
+This session (2026-09-26, starting ~09:52 UTC): both standing blockers re-checked once, unchanged (13th+
+consecutive identical denial/placeholder — see Blocked). Picked up the iOS status bar/safe-area/splash-screen
+gap the previous session logged as needing its own dedicated session:
+- **SPEC 11.6's status bar, safe areas and launch screen were unbuilt.** `@capacitor/status-bar` and
+  `@capacitor/splash-screen` were installed but never called anywhere, and no CSS used
+  `env(safe-area-inset-*)`. Built all three:
+  - `src/platform/statusBar.ts` (`applyStatusBarStyle(theme)`, native-gated like `haptics.ts`/`storage.ts`):
+    sets the status bar to overlay the webview and picks `Style.Dark`/`Style.Light` from the same effective
+    theme (`system`/`light`/`dark`, with `system` resolved against `prefers-color-scheme`) that
+    `applyThemeSetting` already computes for the page — STYLE.md 3.5's "the theme follows the phone's
+    setting, and Settings can force light or dark" now covers the status bar icons too, not just the page.
+    Wired into `main.tsx`'s startup, `settings.ts`'s `saveSettings` (an explicit Settings change), and a
+    `prefers-color-scheme` change listener (native-only) so `system` tracks the OS live, matching how
+    `tokens.css`'s media query already does for the page itself.
+  - `src/platform/splash.ts` (`hideSplashScreen()`): `capacitor.config.ts` now sets
+    `SplashScreen.launchAutoHide: false`, and `main.tsx` calls this right after the real UI mounts, instead
+    of the native splash hiding itself as soon as the webview's initial HTML loads (before
+    `preloadNativeStorage()`/React have run) — avoids a blank-screen flash between "splash gone" and "app
+    rendered."
+  - Safe-area CSS: `.native-app .topbar` (SPEC 10.2's fixed top bar) gets `env(safe-area-inset-top/left/
+    right)` padding, `.native-app .controls` (the fixed bottom panel) gets `env(safe-area-inset-bottom)`.
+    Scoped to `.native-app` only (inert on the web build) and to the two fixed panels the notch/Dynamic
+    Island and home-indicator area actually threaten, not a blanket body padding.
+  Still genuinely unverifiable without a real device/simulator (no macOS in this sandbox) — same limit the
+  previous session flagged — but each piece follows an existing, already-shipped pattern exactly (native
+  gating, effective-theme resolution, `.native-app`-scoped CSS), so the risk is contained. New
+  `tests/statusBar.test.ts` (both functions no-op off-native, same precedent as `tests/haptics.test.ts`).
+  `npm run check` (281 tests, up from 279) and `npm run gates` (gates 1-7; 58 e2e tests, unchanged; axe and
+  Lighthouse both clean, 98/100) both re-run clean end to end, no regressions — none of this touches the web
+  build's behavior. The next `ios-<n>` dispatch (once Apple secrets exist) will be the first real signal on
+  whether the status bar/safe-area/splash-screen behavior actually looks right on device; nothing more to
+  verify from this sandbox.
+
+---
+
+Previous session (2026-09-26, starting ~08:51 UTC): both standing blockers re-checked once, unchanged (12th+
 consecutive identical denial/placeholder — see Blocked). Two real, bounded fixes made and pushed:
 - **SPEC 10.2's menu button was in the footer, not the top bar.** The spec lists it as part of the fixed
   top bar ("round x/10, Public Trust, Lost Land remaining, Rift and a menu button"), but `Game.tsx` rendered
@@ -942,6 +977,12 @@ thing to do is `npm run release`, since gates/e2e/balance are all in a shippable
 - [ ] create `DONE`
 
 ## Blocked
+- **Re-checked 2026-09-26 ~09:56 UTC:** same throwaway-branch dry-run push (`git push origin
+  main-test-check:main`), denied again with the identical "Production Deploy" classifier message before
+  reaching GitHub. `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID`, so `ios.yml` wasn't re-dispatched.
+  Now 13+ consecutive sessions with an identical denial since 2026-09-25 ~17:12 UTC. Used the session for
+  real, unblocked work instead — see Current milestone / DECISIONS.md for the iOS status bar/safe-area/
+  splash-screen fix.
 - **Re-checked 2026-09-26 ~07:52 UTC:** same throwaway-branch dry-run push, denied again with the identical
   "Production Deploy" classifier message before reaching GitHub. `OWNER.md`'s Apple Team ID is still
   `PASTE-TEAM-ID`, so `ios.yml` wasn't re-dispatched. Now 12+ consecutive sessions with an identical denial

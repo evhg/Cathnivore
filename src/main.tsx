@@ -12,6 +12,8 @@ import './styles/global.css'
 import { isNativePlatform } from './platform/native'
 import { applyAnimationsSetting, applyThemeSetting, loadSettings } from './platform/settings'
 import { preloadNativeStorage } from './platform/storage'
+import { applyStatusBarStyle } from './platform/statusBar'
+import { hideSplashScreen } from './platform/splash'
 
 const rootEl = document.getElementById('root')
 if (!rootEl) {
@@ -34,8 +36,10 @@ if (isNativePlatform()) {
 // there), so this costs web startup nothing measurable; top-level `await` isn't used here since the
 // project's build target predates it (esbuild rejects it directly).
 preloadNativeStorage().then(() => {
+  const theme = loadSettings().theme
   applyAnimationsSetting(loadSettings().animations)
-  applyThemeSetting(loadSettings().theme)
+  applyThemeSetting(theme)
+  void applyStatusBarStyle(theme)
 
   createRoot(rootEl).render(
     <StrictMode>
@@ -44,7 +48,19 @@ preloadNativeStorage().then(() => {
       </ErrorBoundary>
     </StrictMode>,
   )
+
+  void hideSplashScreen()
 })
+
+// STYLE.md 3.5's "system" theme tracks the OS live (tokens.css's media query already does this for the
+// page itself); the status bar icon colour needs the same live tracking, since `applyStatusBarStyle` only
+// re-runs on an explicit Settings change otherwise (see `settings.ts`'s `saveSettings`, which doesn't know
+// about the status bar at all — it's a native-only concern, so it stays out of that shared, web-tested path).
+if (isNativePlatform()) {
+  window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (loadSettings().theme === 'system') void applyStatusBarStyle('system')
+  })
+}
 
 // SPEC 11.1: the service worker (offline play, home-screen install) is web-only — it's never
 // registered inside the iPhone app, where Capacitor bundles every asset instead.
