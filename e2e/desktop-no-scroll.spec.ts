@@ -39,7 +39,9 @@ test('desktop game screen has no scrolling at 1280x800, even in a content-dense 
   // rule isn't in the default ruleset this repo's `e2e/accessibility.spec.ts` runs. Centre column now
   // ~292-365px short (down from ~341-422px), right column ~239-366px (same range, just noisier: game-state
   // variance dominates at this size). Then tightened the topbar's gap/padding, which took it from 2 rows
-  // (111px) to 1 (56px) at this width — centre column now ~220-327px short. See DECISIONS.md.
+  // (111px) to 1 (56px) at this width — centre column now ~220-327px short. Then shrank the desktop
+  // sheet-panel `h2`s (Farm/Market/Cath's Plan/Log) from the browser's ~24px UA-default down to 18px —
+  // centre ~220-293px, right ~169-310px short. See DECISIONS.md.
   test.skip(true, 'SPEC 10.3 "no scrolling at 1280x800" still fails on both columns — see DECISIONS.md for exact numbers; closing the rest needs shrinking the centre column further and/or a collapsible card-list design, not a quick CSS tweak')
   await page.setViewportSize({ width: 1280, height: 800 })
 

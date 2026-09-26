@@ -622,6 +622,14 @@ h3 {
     padding: 8px 10px;
   }
 
+  /* Sheet-panel headings (Farm/Market/Cath's Plan/Log) were still at the browser's UA-default h2 size
+     (~24px, since `h2 { margin: 0 }` above never sets a size) — comfortably above STYLE.md's legibility
+     floors even shrunk, and each of the 4 desktop panels pays this cost once. */
+  .desktop-col h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
   /* `.actions` (13 items in a full game, 5 rows in the 3-column grid above) measured at 380px — the single
      largest contributor to the centre column's remaining shortfall. The 44px `min-height` on the base
      `button` rule is a touch-target minimum (STYLE.md/WCAG, needed on phone); desktop is mouse-driven, so a

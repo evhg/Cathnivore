@@ -1085,6 +1085,11 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   ~292-365px). `npm run check`/`npm run gates` clean. Stopping the centre-column squeeze here for this
   session (three verified dents is a reasonable chunk without over-fitting one file all session); right
   column card density and the remaining gap stay open — see DECISIONS.md.
+- [x] SPEC 10.3 desktop no-scroll gap, a fourth dent same session: the 4 desktop sheet-panel `h2`s (Farm/
+  Market/Cath's Plan/Log) were still at the browser's ~24px UA-default size. Set `.desktop-col h2` to 18px.
+  Right column (the main beneficiary) now ~169-310px short (from ~239-366px). `npm run check`/`npm run
+  gates` clean; headings still read clearly. Deliberately stopping the CSS-squeeze approach here — the
+  honest full fix is a collapsible/paginated card list, left open for a future session, per DECISIONS.md.
 
 ### M7 Hardening (final 18 hours; no new features)
 - [x] long fuzz run of 50,000 RandomBot games — run early (see Current milestone/DECISIONS.md): 0

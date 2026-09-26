@@ -901,3 +901,17 @@ Format: date, decision, reason.
   topbar) is a reasonable chunk of incremental progress without over-fitting one CSS file for an entire
   session; the right column (Market/Cath's Plan card density) and the remaining centre-column gap are still
   open, same hand-off as every prior session here.
+- 2026-09-26 (~12:25-12:32 UTC, same session): A fourth small dent in the same gap: the 4 desktop
+  sheet-panel headings (Farm/Market/Cath's Plan/Log) had never had their own `h2` size set — the global
+  `h2 { margin: 0 }` rule (line ~36) never sets `font-size`, so they were still at the browser's UA-default
+  (~1.5em, ~24px). Added `.desktop-col h2 { font-size: 18px; margin-bottom: 4px }`, applying once per panel
+  across all 4 desktop columns rather than per-card like the earlier card-list fix. Re-measured 3 times:
+  centre column ~220-293px short (from ~220-327px — a small, mostly-noise-sized gain, since the centre
+  column's Farm panel is on the left column, not centre — the real beneficiary is the right column, which
+  moved to ~169-310px short from ~239-366px). Screenshotted again: headings still read clearly as headings
+  (bold serif, clearly distinct from body text), no crowding. `npm run check` (286 tests) and `npm run
+  gates` (64 e2e, 16 axe, Lighthouse) all clean. This is the fourth verified CSS dent this session
+  (`.actions` grid+shrink, map+log-cap from an earlier session, topbar, now headings) — real, cumulative
+  progress on a long-standing gap, but the underlying structural fix (a genuinely collapsible/paginated
+  card-list, or moving the Log to a fifth column) is still the honest way to close it fully. Deliberately
+  stopping the CSS-squeeze approach here for this session.
