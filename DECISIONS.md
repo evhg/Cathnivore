@@ -1233,3 +1233,51 @@ Format: date, decision, reason.
   Lighthouse 98/100. This is the last of the interface-audit's "needs its own dedicated session" items from
   several sessions ago (the Confirm-button redesign and the AI reason-string feature were both closed in
   earlier sessions) — no known open interface-audit item remains.
+
+- 2026-09-26: **Ran SPEC 11.4 gate 8's visual review as a real subagent call** (not the "direct-look pass"
+  several prior sessions' notes flagged as a substitute for the literal spec text) right after the desktop
+  no-scroll fix above, since that fix touched exactly the screen gate 8 exists to catch problems on.
+  Captured the full screenshot set with `e2e/screenshots.spec.ts` (30 screenshots: phone/desktop-chromium ×
+  title/rules/setup/game/map-greyscale/end-screen/scene/settings/credits/campaign-list + 5 chapter-opening
+  scenes) and delegated the review to a `general-purpose` subagent with STYLE.md and SPEC section 10 as its
+  brief, per SPEC 1.11 ("use subagents for independent review work"). **It found a real bug**: the desktop
+  game screenshot showed the action-button list cut off mid-word ("Supply: remove 1 Outlet in Brindle...")
+  with a large empty gap below before the Undo button — a genuine regression from the `.actions`
+  `max-height`+`overflow-y:auto` fix earlier this session, invisible to the automated no-scroll test (which
+  only checks *whether* content overflows a container, not whether it's legible or where it sits). This is
+  exactly the class of problem gate 8 exists to catch that an automated height check cannot — validates
+  actually running the subagent step instead of treating a prior "looks fine to me" pass as equivalent.
+  Root-caused with a real screenshot (not guessed): confirmed visually, then via a throwaway
+  `page.evaluate()` computed-style probe (deleted after use) that `.controls`'s base, unconditional
+  `margin-top: auto` (meant to pin Undo to the bottom of the phone screen's single fixed footer) was still
+  winning on desktop despite an `.actions`/`.game` fix elsewhere, dragging Undo down through all the centre
+  column's spare vertical space and visually disconnecting it from the actions above it. Two real mistakes
+  along the way, both caught by re-measuring rather than trusting the CSS by eye (same discipline this
+  file's own `.actions`-grid and `.actions`-scroll entries record needing before):
+  1. First attempted a `@media (min-width: 1024px) { .controls { margin-top: 0 } }` override placed in the
+     *earlier* desktop media block (the one holding the `.topbar`/button-density tweaks) — didn't take
+     effect, because the base unconditional `.controls { margin-top: auto }` rule is defined *later* in the
+     file and wins the cascade at equal specificity, the exact ordering gotcha this file's `.actions` grid
+     override comment already documents for the same reason. Moved the override to a new small
+     `@media` block placed immediately after the unconditional `.controls` rule instead.
+  2. After that fix, `.actions` was *still* visually clipped, and increasing the diagnosis further, a
+     computed-style check on `page.evaluate()` showed `margin-top: auto` was *still* resolving to a nonzero
+     pixel value — turned out to be Playwright's `webServer` reusing an already-running `vite preview`
+     process across separate `npx playwright test` invocations (the exact stale-preview-server gotcha
+     `PROGRESS.md`'s M6-era tutorial-prompt session already logged), so the CSS edit hadn't actually reached
+     the page under test at all. `lsof -ti:4173 | xargs kill` plus a fresh `npm run build` before re-running
+     fixed it.
+  With the cascade-ordering fixed, a re-screenshot showed the `margin-top` bug gone (Undo sat right after
+  the actions list) but the *clipped-action-list* bug was still there on its own — the fixed `160px`
+  `max-height` this session's earlier `.actions` fix used was sized for the *worst* case (chapter 5's
+  content-dense, tutorial-banner-showing scripted position the automated test deliberately targets), so it
+  clipped a perfectly normal, short action list on every *other* game state, wasting exactly the vertical
+  space the `.controls` fix had just freed up. Replaced the fixed cap with `flex: 1 1 auto; min-height: 0;`
+  (keeping `overflow-y: auto`): `.actions` now claims whatever space is actually left in the `.game` flex
+  column after every fixed-size sibling, so a short list shows in full and only a genuinely long one
+  scrolls — `.game`'s own `overflow-y: auto` (already in place) remains the backstop for the pathological
+  case, confirmed still holding by re-running `e2e/desktop-no-scroll.spec.ts` 3 times against the unchanged
+  worst-case chapter-5 scripted position (0px overflow every time, same as before this fix). Re-screenshotted
+  the desktop game screen after both fixes: all 8 action buttons render in full, no clipping, no dead space,
+  Undo directly below. Full `npm run gates` re-run clean end to end afterward: all 8 gates, 68 e2e tests, 16
+  axe checks, Lighthouse 98/100 — no regression from either fix.

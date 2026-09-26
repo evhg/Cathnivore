@@ -607,10 +607,19 @@ h3 {
      target, the same unboundedly-variable shape as the Log's turn history, not a fixed card count like
      Market/Cath's Plan. A fixed-size column can't guarantee "no scrolling" against a genuinely variable
      list any more than it could for the Log, so `.actions` gets the identical internally-scrolling
-     max-height treatment (see the Log's own comment above) rather than another CSS squeeze that would only
-     buy back a fixed amount against a moving target. 160px fits a comfortable 3 rows before scrolling. */
+     escape valve the Log already had (see the Log's own comment below).
+     A *fixed* `max-height` here (an earlier version of this rule used 160px) turned out wrong in a
+     different way: a gate-8 visual-review screenshot caught it clipping a normal, un-dense action list
+     (a fresh game with only 7-8 actions, no tutorial banner) mid-button with no visible scroll affordance,
+     because 160px was sized for the *worst* case (chapter 5's content-dense tutorial-banner scenario), not
+     the typical one — wasting all the space the `.controls` margin fix (below) freed up on every other
+     game state. `flex: 1 1 auto` with `min-height: 0` instead makes `.actions` claim whatever's actually
+     left in the column after every other (fixed-size) sibling, so a light action list gets to show more of
+     itself and only a genuinely long one scrolls — `.game`'s own `overflow-y: auto` stays the backstop for
+     the pathological case (measured to hold with the tutorial-banner scenario at gate 5's own e2e check). */
   .actions {
-    max-height: 160px;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
   }
 
@@ -714,6 +723,21 @@ button {
   justify-content: space-between;
   gap: 8px;
   margin-top: auto;
+}
+
+/* `.controls`'s `margin-top: auto` above pins Undo to the bottom of the phone screen's fixed footer —
+   right for a single-screen mobile layout, but on desktop it instead stretches through the centre column's
+   spare vertical space and shoves Undo down against the column's own bottom edge, visually disconnected
+   from the actions list above it — a real bug a gate-8 visual-review screenshot caught (the automated
+   no-scroll height check only looks at whether content overflows, not where it sits). Desktop's centre
+   column already flows normally top-to-bottom, so Undo just needs to sit directly after the actions list
+   like every other section. This override must come after the unconditional rule above to win the cascade
+   at equal specificity, the same ordering constraint the `.actions` grid/scroll overrides note elsewhere
+   in this file. */
+@media (min-width: 1024px) {
+  .controls {
+    margin-top: 0;
+  }
 }
 
 .end-screen {
