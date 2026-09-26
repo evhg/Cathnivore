@@ -1,7 +1,38 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, starting ~17:51 UTC): first task per the previous session's own note — retried
+This session (2026-09-26, starting ~18:52 UTC): re-checked both standing blockers first — `OWNER.md`'s
+Apple Team ID is still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch, would only reproduce the recorded
+missing-secrets failure). With M0-M6 content-complete and M7 fully done apart from the Apple-secrets-blocked
+iOS submission (see Blocked), used the session for real hardening work per M7's own remit ("no new
+features"): delegated a `general-purpose` subagent to review `src/engine/*.ts` and `src/ai/*.ts` (the parts
+of the codebase gate 8's screenshot-based visual review can never catch, since a rules bug doesn't show up
+in a screenshot) against SPEC section 4. It found two real, independently-reproduced bugs — both fixed and
+tested this session, full detail in DECISIONS.md:
+1. A mid-round win (from an action that wasn't a producer's last of the round) went unrecorded until the
+   next Cleanup, leaving a window where the rest of the round — including the Enemy turn — could
+   un-liberate the winning region and turn an already-satisfied win (SPEC 4.8: "the moment 5 regions are
+   liberated...") into a loss. Fixed by checking win right after every action (`src/engine/actions.ts`),
+   not only at Cleanup. New regression test in `tests/scenario.test.ts`.
+2. Squeeze's stall-loss tie-break (SPEC 4.7: "on a tie, the current first player") actually used
+   object-key insertion order — whoever opened a Stall in the region first, ever — never checking
+   `state.firstPlayer`. Fixed in `src/engine/enemy.ts`'s `pickProducerToLoseStall`. New `tests/squeeze.
+   test.ts` (2 tests).
+
+`npm run check` (299 tests, up from 296) and a full `npm run gates` (all 8 gates; 68 e2e, 16 axe, Lighthouse
+98/100) both clean. A 300-game HeuristicBot/Normal/all-pairs sim run afterward (7.0% win rate) is consistent
+with sampling noise against the prior 30-game run (10.0%) — this fix only changes behavior in the rare
+same-round-reversal window, not aggregate balance, so the closed (12/12-iteration) balance loop doesn't need
+re-running. Verified live site still healthy: `curl https://cathnivore.com/version.json` matches `c8c4fee`
+(this session's fixes are pushed to `build`, not yet released — see Deploy log note below), `/`, `/privacy`,
+`/support` all 200. Pushed to `build`.
+
+With time still left after the review/fix/gates/sim work above, ran `npm run release` to ship these two real
+bug fixes. See Deploy log for the outcome.
+
+---
+
+Previous session (2026-09-26, starting ~17:51 UTC): first task per the previous session's own note — retried
 `npm run release`. `npm ci` + `npm run check` (296 tests) confirmed clean on the unchanged `build` HEAD
 first. `npm run release` ran gates 1-7 clean (68 e2e, 16 axe, Lighthouse 98/100); gate 5's
 `desktop-no-scroll.spec.ts` failed once inside that run (a real content-density flake under full-suite CPU

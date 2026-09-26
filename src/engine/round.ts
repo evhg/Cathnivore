@@ -14,7 +14,7 @@ function nextProducer(state: GameState, current: ProducerId): ProducerId | null 
 
 // SPEC 4.8: win the moment 5 regions are liberated, one of which is Kingsmarket. SPEC 8.2: a campaign
 // chapter can set its own goal (a lower region count, and/or not requiring Kingsmarket).
-function checkWin(state: GameState): GameState {
+export function checkWin(state: GameState): GameState {
   const goal = state.config.winCondition ?? { regionsRequired: 5, requireKingsmarket: true }
   const liberated = countLiberated(state)
   const kingsmarketOk = !goal.requireKingsmarket || state.regions.kingsmarket.liberated

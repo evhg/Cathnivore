@@ -1331,3 +1331,43 @@ Format: date, decision, reason.
   unaffected in kind (still clearly the same dotted/wavy shapes, just denser). `npm run gates` re-run clean
   end to end afterward (68 e2e, 16 axe, Lighthouse 98/100) — three real, independently-found gate-8 bugs
   across two consecutive sessions now, reinforcing that this needs to stay a routine step, not a one-off.
+
+- 2026-09-26: **Found and fixed two real engine bugs via a dedicated `src/engine`/`src/ai` code-review
+  subagent** (a targeted M7-hardening pass, since content is complete and gate-8's screenshot-based review
+  can't see rules-logic bugs). Both verified live with throwaway vitest scripts before trusting the
+  subagent's read, per this file's usual discipline.
+  1. **A mid-round win could be silently reversed into a loss.** SPEC 4.8 says "Win: the moment 5 regions
+     are liberated..." — a real-time trigger — but `checkWin` (`src/engine/round.ts`) was only ever called
+     from `advanceTurnIfNeeded` (once the *last* producer's actions run out) and from `cleanup`, never
+     right after an individual action. If the *first* action of a round liberated the winning region, the
+     engine kept going through the rest of that producer's actions, the other producer's whole turn, and
+     the entire Enemy turn (Agenda/Squeeze/Expand/Scout) — all running against a board that should already
+     be a won game — before ever checking win at the next Cleanup. Reproduced directly: a scripted 1-action-
+     from-win state where the Enemy turn's Squeeze re-added an Outlet to the just-liberated region and then
+     dropped Public Trust to 0, turning what should have been an immediate win into a `publicTrust` loss.
+     Note `tests/scenario.test.ts`'s existing `winCondition` test already covers the *design choice* of
+     checking win before Cleanup fine (it loops until `state.result` appears, tolerant of either timing) —
+     the bug was specifically the multi-action, same-round window where the Enemy turn could reverse an
+     already-satisfied win. Fixed by exporting `checkWin` from `round.ts` and calling it in
+     `actions.ts`'s `applyAction`, right after every action (once liberation/Rift-split are refreshed),
+     short-circuiting before `advanceTurnIfNeeded` if it just won. New regression test in
+     `tests/scenario.test.ts` asserts the win is recorded on the very action that satisfies it, with
+     `actionsLeft` still nonzero (i.e. not the producer's last action of the round) — this assertion fails
+     without the fix. `npm run check` (299 tests, up from 296) and `npm run gates` (all 8 gates; 68 e2e, 16
+     axe, Lighthouse 98/100) both clean. A 300-game HeuristicBot/Normal/all-pairs sim run afterward (7.0%
+     win rate) is consistent with sampling noise against the prior 30-game HeuristicBot run (10.0%) at this
+     bot's low win rate — this fix only changes behavior in the rare same-round-reversal window, not
+     aggregate balance, so no re-run of the (already-closed, 12/12-iteration) balance loop is warranted.
+  2. **Squeeze's stall-loss tie-break used insertion order, not the current first player.** SPEC 4.7:
+     "remove 1 Stall there, from the producer with the most Stalls in that region (on a tie, the current
+     first player)." `pickProducerToLoseStall` (`src/engine/enemy.ts`) iterated `Object.entries(region.
+     stalls)` and only updated its running best on a *strictly greater* count, so on a tie it kept whichever
+     producer's key was inserted into the object first — i.e. whoever opened a Stall in that region first,
+     ever — never checking `state.firstPlayer` at all. Reproduced directly: two producers each with 1 Stall
+     in a region (the non-first-player's key inserted first), `firstPlayer` set to the other producer, and
+     a Squeeze big enough to remove a Stall picked the wrong one. Only reachable in 2-producer games/
+     chapters (a single-producer game can't tie). Fixed by iterating `state.config.producers` and
+     explicitly preferring `state.firstPlayer` on a tied count. Two new tests in a new `tests/squeeze.test.
+     ts` (one for each first-player assignment on the same tied board) confirm the right producer loses the
+     Stall either way — the first one fails without the fix. `npm run check`/`npm run gates` both clean
+     (counted in the numbers above).

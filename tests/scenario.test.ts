@@ -148,12 +148,33 @@ describe('winCondition (SPEC 8.1)', () => {
     const config: GameConfig = { ...BASE_CONFIG, winCondition: { regionsRequired: 1, requireKingsmarket: false } }
     let state = createGame(config, 1)
     // Clear brindleHills (Mara's home, already has 2 Stalls) of its single starting Outlet to liberate it,
-    // then keep playing (win is only checked at the next Cleanup, SPEC 4.5.4) until the result appears.
+    // then keep playing until the result appears.
     for (let i = 0; i < 20 && !state.result; i++) {
       const supply = !state.regions.brindleHills.liberated ? legalActions(state).find((a) => a.kind === 'supplyOutlets') : undefined
       const action = supply ?? legalActions(state).find((a) => a.kind === 'graft')!
       state = applyAction(state, action)
     }
+    expect(state.result?.won).toBe(true)
+    expect(state.result?.regionsLiberated).toBe(1)
+  })
+
+  // SPEC 4.8: "Win: the moment 5 regions are liberated..." — a real-time trigger, not one that waits for
+  // the next Cleanup. Regression test for a bug where a mid-round win (from an action that wasn't the
+  // producer's last of the round) went unrecorded until Cleanup, leaving a window where the rest of the
+  // round (including the Enemy turn) could un-liberate the winning region and turn the win into a loss.
+  it('locks in the win immediately, on the very action that satisfies it, not at the next Cleanup', () => {
+    const config: GameConfig = { ...BASE_CONFIG, winCondition: { regionsRequired: 1, requireKingsmarket: false } }
+    let state = createGame(config, 1)
+    expect(state.regions.brindleHills.liberated).toBe(false)
+    expect(state.actionsLeft).toBe(3)
+
+    const supply = legalActions(state).find((a) => a.kind === 'supplyOutlets')!
+    state = applyAction(state, supply)
+
+    // This was the producer's 1st action of the round, not their last — the bug only checked win at the
+    // next Cleanup (after the Enemy turn), so this assertion fails before the fix.
+    expect(state.actionsLeft).toBe(2)
+    expect(state.regions.brindleHills.liberated).toBe(true)
     expect(state.result?.won).toBe(true)
     expect(state.result?.regionsLiberated).toBe(1)
   })

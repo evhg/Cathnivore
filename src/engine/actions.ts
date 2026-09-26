@@ -2,7 +2,7 @@ import { REGIONS } from '../content/map'
 import { removeBuyout, removeDoubt, removeOutlets } from './pieces'
 import { refreshAllLiberation } from './enemy'
 import { checkRiftSplit } from './rift'
-import { advanceTurnIfNeeded } from './round'
+import { advanceTurnIfNeeded, checkWin } from './round'
 import { hasImprovement, improvementCount } from './producer'
 import { canMarketDayOpenIn, canOpenStallIn, regionStallTotal } from './region'
 import { resolveRules } from './rules'
@@ -338,6 +338,11 @@ export function applyAction(state: GameState, action: Action): GameState {
     log: [...next.log, { type: 'action', producer, action }],
     actionHistory: [...next.actionHistory, action],
   }
+  // SPEC 4.8: "Win: the moment 5 regions are liberated..." — check right after this action, not only at
+  // the next Cleanup, so a mid-round win can't be reversed by the rest of the round (e.g. the Enemy turn
+  // un-liberating the winning region before Cleanup ever runs).
+  next = checkWin(next)
+  if (next.result) return next
   return advanceTurnIfNeeded(next)
 }
 

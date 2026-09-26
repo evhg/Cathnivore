@@ -133,12 +133,14 @@ export function resolveExpand(state: GameState): GameState {
   return refreshAllLiberation(next)
 }
 
+// SPEC 4.7: "the producer with the most Stalls in that region (on a tie, the current first player)".
 function pickProducerToLoseStall(state: GameState, region: RegionState): ProducerId {
   let best: ProducerId | null = null
   let bestCount = -1
-  for (const [pid, count] of Object.entries(region.stalls) as [ProducerId, number][]) {
-    if ((count ?? 0) > bestCount) {
-      bestCount = count ?? 0
+  for (const pid of state.config.producers) {
+    const count = region.stalls[pid] ?? 0
+    if (count > bestCount || (count === bestCount && pid === state.firstPlayer)) {
+      bestCount = count
       best = pid
     }
   }
