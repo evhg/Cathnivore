@@ -162,12 +162,25 @@ describe('chapter 3 -> 4 Wholesome Hollow Contract carry-over (SPEC 8.2)', () =>
     expect(survivingWholesomeHollowContracts(withContracts(3))).toBe(2)
   })
 
-  it('a torn-up contract (removed from `improvements`) no longer counts', () => {
-    // `tearUpContract` (actions.ts) removes the id from `improvements` entirely — simulate that directly
-    // rather than owning 2 and tearing 1 up via the full action, since this test only cares what the
-    // carry-over reads off the final state, not the tear-up action itself (covered in actions.test.ts).
-    expect(survivingWholesomeHollowContracts(withContracts(1))).toBe(1)
-    expect(survivingWholesomeHollowContracts(withContracts(0))).toBe(0)
+  it('a contract torn up via the real tearUpContract action no longer counts', () => {
+    // Exercises the actual action (not just a hand-built `improvements` array, per the two tests above)
+    // so this test would fail if `tearUpContract` ever left a stale marker instead of truly removing the
+    // id — `wholesomeHollowRevealed` and enough Marks are the action's own legality requirements.
+    const base = withContracts(2)
+    let state = {
+      ...base,
+      wholesomeHollowRevealed: true,
+      producers: {
+        ...base.producers,
+        tomas: { ...base.producers.tomas, resources: { ...base.producers.tomas.resources, marks: 10 } },
+      },
+    }
+    expect(survivingWholesomeHollowContracts(state)).toBe(2)
+    const tearUp = legalActions(state).find((a) => a.kind === 'tearUpContract')
+    expect(tearUp).toBeDefined()
+    state = applyAction(state, tearUp!)
+    expect(state.producers.tomas.improvements.filter((id) => id === 'wholesome-hollow-contract')).toHaveLength(1)
+    expect(survivingWholesomeHollowContracts(state)).toBe(1)
   })
 
   it('chapter4Config adds that many Outlets to Oakvale on top of the ordinary chapter 4 setup, additively', () => {

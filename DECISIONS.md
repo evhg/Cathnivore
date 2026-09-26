@@ -1626,3 +1626,27 @@ Format: date, decision, reason.
   motion/accessibility bug fixed, and three real UI-rendering bugs fixed (Stall overlap, liberated-region
   false highlighting, and hardcoded dark-theme-breaking colours) — the busiest single-session review haul
   since the three-bug engine/content/UI-state session two sessions ago.
+
+- 2026-09-26 (same session, ~22:08 UTC): With time still left, launched a fifth review subagent scoped to
+  the test suite's own quality (`tests/*.test.ts`, `e2e/*.spec.ts`) — a first for this project — looking for
+  tests that would give false confidence rather than for app bugs directly: trivial assertions, e2e tests
+  that only check "didn't crash," tests encoding a known bug as correct, stray `.skip`/`.only`, and
+  copy-pasted test bodies. **Overall quality came back unusually high** (every test file reviewed ties its
+  assertions to a specific SPEC/STYLE.md clause, several are explicit named regression tests, and the three
+  `.skip()` calls found are all conditional and browser-scoped, not blanket skips). **One real gap found and
+  fixed:** `tests/chapters.test.ts`'s "a torn-up contract ... no longer counts" test (chapter 3 -> 4 carry-
+  over describe block) never actually simulated a tear-up — it called `survivingWholesomeHollowContracts`
+  on `withContracts(1)` then `withContracts(0)`, byte-for-byte the same two assertions as the two tests
+  immediately above it in the same block, with a comment claiming the real tear-up path was "covered in
+  actions.test.ts" — a file that **doesn't exist** in this project (checked directly: no `tests/
+  actions.test.ts` anywhere). The real `tearUpContract` action *is* genuinely tested, but only in
+  `tests/scenario.test.ts`, which checks the action's own effects (Marks spent, production reduced,
+  `improvements` no longer containing the id) and never calls `survivingWholesomeHollowContracts` — so the
+  specific interaction the chapters.test.ts test's name promised (carry-over count correctly dropping after
+  a *real* tear-up, not a hand-built array) had no coverage anywhere; a bug leaving a stale marker in
+  `improvements` after tear-up would have passed every existing test. Fixed by rewriting the test to build a
+  legal tear-up state (`wholesomeHollowRevealed: true`, enough Marks) from 2 owned contracts, apply the real
+  `tearUpContract` action via `legalActions`/`applyAction` (matching `scenario.test.ts`'s own pattern), and
+  assert `survivingWholesomeHollowContracts` drops from 2 to 1 afterward, with an intermediate assertion
+  that `improvements` itself still has exactly 1 copy left (not just 0, since 2 were owned). `npm run check`
+  (299 tests, same count — one test rewritten, not added) passes clean.
