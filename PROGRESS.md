@@ -54,6 +54,13 @@ same convention `tests/story.test.ts` already enforces for scene lines) plus an 
 tests, up from 272) and `npm run gates` (gates 1-7, 56 e2e tests, axe and Lighthouse both clean) both re-run
 clean end to end, no regressions.
 
+With time still left, checked SPEC 2's "URL: https://cathnivore.com, with www.cathnivore.com redirecting to
+it" and found `vercel.json` never configured the redirect. Added a host-matched permanent redirect
+(`www.cathnivore.com` → `https://cathnivore.com/:path*`) — config-only, and inert until the owner adds
+`www` as a domain alias on the Vercel project (not explicitly listed as owner setup in SPEC 11.5, so logged
+rather than assumed done). New test in `tests/pages.test.ts` checks the rule's shape. `npm run check` (278
+tests) and `npm run gates` both re-run clean, unaffected otherwise.
+
 Previous session (2026-09-26, ~06:51-07:xx UTC): re-checked both standing blockers once each, as usual — still
 identical (a throwaway-branch dry-run push to `main`, `git push origin main-test-check:main`, denied again
 with the identical "Production Deploy" classifier message before reaching GitHub; `OWNER.md`'s Apple Team ID

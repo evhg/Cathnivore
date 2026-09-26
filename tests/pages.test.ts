@@ -47,3 +47,17 @@ describe('vercel.json CSP', () => {
     expect(csp).not.toContain('unsafe-inline')
   })
 })
+
+// SPEC 2: "URL: https://cathnivore.com, with www.cathnivore.com redirecting to it."
+describe('vercel.json www redirect', () => {
+  const vercelConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '../vercel.json'), 'utf8'))
+
+  it('permanently redirects the www host to the apex domain', () => {
+    const redirect = vercelConfig.redirects?.find((r: { has?: { type: string; value: string }[] }) =>
+      r.has?.some((h) => h.type === 'host' && h.value === 'www.cathnivore.com'),
+    )
+    expect(redirect).toBeDefined()
+    expect(redirect.destination).toBe('https://cathnivore.com/:path*')
+    expect(redirect.permanent).toBe(true)
+  })
+})
