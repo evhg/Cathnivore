@@ -1,7 +1,15 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, ~07:52-08:xx UTC): re-checked both standing blockers once each, as usual — still
+This session (2026-09-26, ~07:52-08:22 UTC): net result — both standing blockers unchanged (11th+
+consecutive re-check with identical denials), and 4 real, previously-uncaught SPEC gaps found and fixed
+with new test coverage each time: SPEC 10.5's tooltip surface completed (action buttons, map legend), SPEC
+4.8's missing end-screen story line and cards/schemes stats, SPEC 2's missing www redirect, and SPEC 8.1's
+missing tutorial-prompt rules-reference link. `npm run check` (278 tests, up from 270) and `npm run gates`
+(gates 1-7; 58 e2e tests, up from 48; axe and Lighthouse both clean) pass end to end with no regressions.
+Full detail below and in DECISIONS.md.
+
+Re-checked both standing blockers once each, as usual — still
 identical (a throwaway-branch dry-run push to `main`, denied again with the identical "Production Deploy"
 classifier message before even reaching GitHub; `OWNER.md`'s Apple Team ID still `PASTE-TEAM-ID`, so
 `ios.yml` wasn't re-dispatched). `npm ci` + `npm run check` (272 tests) confirmed clean on the unchanged
