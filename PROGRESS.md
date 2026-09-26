@@ -15,9 +15,22 @@ to be noise on a later retry. Per the denial's own guidance, not retried again t
 (`bf5321e`) carries the three real fixes from two sessions ago (the mid-round-win-loss bug, the Squeeze
 tie-break bug, the chapter 6 threshold bug), gated and pushed, waiting for a future session's retry.
 
-With the release path blocked for this session, ran SPEC 11.4 gate 8's visual review as a real subagent call
-against the screenshots this session's own `npm run gates` run just captured (`e2e/screenshots/`), rather
-than leaving it as a logged skip.
+With the release path blocked for this session, ran two subagent review passes (CLAUDE.md's 2-concurrent
+cap): (1) SPEC 11.4 gate 8's visual review as a real subagent call against the screenshots this session's
+own `npm run gates` run just captured — no problems found, all 30 screenshots checked, greyscale map texture
+test still passes; a clean confirmation, not a new fix. (2) A first-ever dedicated review of the build
+tooling itself (`scripts/gates.ts`, `scripts/release.ts`, `sim/*`, the GitHub workflows) rather than only the
+game code — found a real, never-yet-exercised bug: `scripts/release.ts`'s smoke-test-failure revert path
+computed an empty git-revert range (`buildCommit..HEAD`, where `HEAD` already equals `buildCommit` by that
+point) that was silently swallowed by a trailing `|| true`, so a real live smoke-test failure would have left
+`main` permanently on the broken commit while the log falsely claimed a revert happened. Fixed, then found
+and fixed a deeper layer the first fix's own tag-based revert target still had: `deploy-<n>` git tags can
+never be pushed (known HTTP 403) and don't survive a fresh session clone, so `nextDeployNumber()` always
+returns 1 in a new session and the "revert to last good tag" branch could never actually fire across
+sessions. Now captures `origin/main`'s commit before the fast-forward and reverts against that directly,
+independent of any tag. Full detail in DECISIONS.md. `npx tsc -b --noEmit`/`eslint` and a full `npm run
+check` re-run both clean after the fix. Not yet exercised by a real smoke-test failure (none has ever
+happened in this project) — the next one will be this code's first live signal. Pushed to `build`.
 
 ---
 

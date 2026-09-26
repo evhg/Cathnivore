@@ -1423,3 +1423,53 @@ Format: date, decision, reason.
   content, UI/state) found three real bugs and zero false positives reported as real — a good sign the
   "downgrade confidence when an existing test already pins the behavior" instruction given to each subagent
   is working as intended, rather than every pass needing to manufacture a finding to justify its cost.
+
+- 2026-09-26 (~19:52-20:15 UTC session): Re-checked the standing release blocker — retried `npm run release`
+  on the unchanged `build` HEAD (`bf5321e`, carrying three real fixes from two sessions ago). All 8 gates
+  passed clean (68 e2e, 16 axe, Lighthouse 98/100). The fast-forward step hit the usual fresh-clone
+  stale-local-`main` issue, and this session's attempt at the documented fix (`git checkout -B main
+  origin/main`) was denied by the harness's "Blind Apply" classifier — a single denial, matching the same
+  intermittent pattern several prior sessions logged (most recently ~16:00 UTC) that turned out to be noise
+  on a later retry. Not retried again this session per the denial's own guidance; confirmed `origin/main`
+  untouched (`c8c4fee`) and switched back to `build`.
+  With the release path blocked, ran two subagent review passes (CLAUDE.md's 2-concurrent cap) instead of
+  leaving the session idle:
+  1. **Gate 8's visual review, run for real** against this session's own freshly-captured screenshot set
+     (all 30 PNGs, both projects). No problems found — all screens legible, no overlaps, no hidden controls,
+     and the greyscale map's four region textures (pasture diagonal strokes, coast waves, capital
+     cobblestone grid, crop dotted furrows) all remain distinguishable by shape alone, confirming the prior
+     session's crop/coast texture-density fix still holds. A clean confirmation, not a new fix.
+  2. **A dedicated review of the build tooling itself** (`scripts/gates.ts`, `scripts/release.ts`, `sim/*`,
+     `.github/workflows/*.yml`) — an area with less prior scrutiny than the game code itself, and one where
+     a bug could cause a botched release or waste scarce iOS build budget. **Found and fixed one real bug,
+     with a second, deeper layer to it fixed in a same-session follow-up:**
+     - `scripts/release.ts`'s smoke-test-failure revert path computed the revert range as
+       `${buildCommit}..HEAD`, but by that point in the script `main` had already been fast-forwarded to
+       `buildCommit` and pushed, making `HEAD` equal `buildCommit` — an **empty range**. `git revert` on an
+       empty range fails with "empty commit set passed" (verified directly), and a trailing `|| true`
+       silently swallowed that failure, so `git push origin main` on the next line re-pushed nothing changed:
+       a real live smoke-test failure would have left `main` permanently pointed at the broken commit while
+       the log falsely claimed "Reverting main to deploy-N." This is exactly SPEC 11.5's revert clause
+       broken in the one case it exists to handle, and had never been exercised in this project's history
+       (no release has ever actually failed the smoke test) so nothing caught it until now. First fix
+       (subagent): revert `deploy-${n}..HEAD` instead, where `n = nextDeployNumber() - 1`.
+     - **Follow-up finding (this session, after re-reading the fix): the tag-based revert target is itself
+       unreliable across sessions.** `deploy-<n>` tags are created locally but can never be pushed (HTTP 403,
+       a long-standing documented restriction — see the "Pushing any git tag" Blocked entry), and every
+       session starts from a fresh clone, so a tag created in one session's local repo never exists in the
+       next session's. Confirmed directly: `git tag -l` in this session's fresh clone returns nothing, so
+       `nextDeployNumber()` always returns 1 and `n` is always 0 in a fresh session — meaning the "revert to
+       last good tag" branch can never actually fire across sessions; every smoke-test failure would still
+       hit the "no prior tag" fallback and leave the broken build live, just with an accurate log message
+       instead of a false one. Fixed by capturing `previousMainCommit = git rev-parse origin/main` *before*
+       the fast-forward (right after `git fetch origin main build`), independent of any tag, and reverting
+       `${previousMainCommit}..HEAD` on smoke-test failure — this is exactly "main's last actually-live
+       commit" regardless of whether a `deploy-<n>` tag exists anywhere. Also guarded the one case where
+       `previousMainCommit === buildCommit` (re-running release against an unchanged `build` HEAD) to skip
+       reverting nothing. `npx tsc -b --noEmit`/`eslint scripts/release.ts` clean; dry-ran the git-revert
+       logic conceptually against the fix (git tags are provably absent in this session's clone, confirming
+       the bug's premise) but did not execute a real `npm run release` failure path (would need a genuinely
+       broken live site to trigger it, which isn't safe to manufacture against production). Not yet exercised
+       for real, same as the smoke test's own prior fixes — the first real live smoke-test failure will be
+       this code's first live signal.
+  A full `npm run check` re-run (typecheck/lint/tests/fuzz/build) stayed clean after the `release.ts` fixes.

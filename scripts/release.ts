@@ -93,6 +93,13 @@ async function main() {
   const buildCommit = sh('git rev-parse build')
   console.log(`\n=== Fast-forwarding main to ${buildCommit} ===`)
   sh('git fetch origin main build')
+  // Captured before the fast-forward so a smoke-test failure can always revert to main's actual last
+  // live commit, regardless of whether any `deploy-<n>` tag exists locally: tag pushes are known to be
+  // blocked in this environment (HTTP 403, see DECISIONS.md), and every session starts from a fresh
+  // clone, so locally-created tags never survive past the session that made them. Relying on
+  // `nextDeployNumber()` for the revert target meant it silently found no prior tag in every fresh
+  // session and skipped the revert entirely (see DECISIONS.md for the incident this was found from).
+  const previousMainCommit = sh('git rev-parse origin/main')
   sh('git checkout main')
   sh('git merge --ff-only build')
   sh('git push origin main')
@@ -119,11 +126,21 @@ async function main() {
   // this script runs outside the `playwright test` runner and its config.
   const smokeTestOk = await liveSmokeTest(base)
   if (!smokeTestOk) {
-    const n = nextDeployNumber() - 1
-    if (n >= 1) {
-      console.log(`Reverting main to deploy-${n}`)
+    if (previousMainCommit === buildCommit) {
+      // main was already at buildCommit before this run (e.g. re-running release on an unchanged
+      // build), so there is nothing to revert.
+      console.log('main was already at this commit before this run; nothing to revert.')
+    } else {
+      // Revert the range from main's actual last live commit (captured before the fast-forward above)
+      // up to HEAD (buildCommit). Reverting `buildCommit..HEAD` here would be an empty range (main was
+      // just ff-merged to buildCommit, so HEAD already equals buildCommit), which `git revert` rejects
+      // with "empty commit set passed" — previously masked by a trailing `|| true`, so main silently
+      // stayed on the broken commit instead of being reverted. This also doesn't depend on a
+      // `deploy-<n>` tag existing: tag pushes are blocked in this environment (HTTP 403) and every
+      // session starts from a fresh clone, so a locally-created tag never survives past its own session.
+      console.log(`Reverting main to ${previousMainCommit}`)
       sh('git checkout main')
-      sh(`git revert --no-edit ${buildCommit}..HEAD || true`)
+      sh(`git revert --no-edit ${previousMainCommit}..HEAD`)
       sh('git push origin main')
     }
     process.exitCode = 1
