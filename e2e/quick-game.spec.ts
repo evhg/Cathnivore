@@ -17,5 +17,11 @@ test('a full Solo Quick Game reaches the end screen', async ({ page }) => {
   await expect(page.locator('.end-screen')).toBeVisible({ timeout: 30_000 })
   await expect(page.getByRole('button', { name: 'Back to Title' })).toBeVisible()
 
+  // SPEC 4.8: "the end screen shows the reason, a short story line, and stats: regions liberated, rounds
+  // played, cards bought and schemes played."
+  await expect(page.locator('.end-screen-story')).not.toBeEmpty()
+  await expect(page.locator('.end-screen-stats')).toContainText(/bought/)
+  await expect(page.locator('.end-screen-stats')).toContainText(/played/)
+
   expect(errors).toEqual([])
 })

@@ -1,5 +1,5 @@
 import { refreshAllLiberation, runEnemyTurn } from './enemy'
-import { addOutlets, countLiberated } from './pieces'
+import { addOutlets, countGameStats, countLiberated } from './pieces'
 import { shuffle } from './rng'
 import { hasImprovement, improvementCount } from './producer'
 import { PRODUCERS } from '../content/producers'
@@ -19,7 +19,7 @@ function checkWin(state: GameState): GameState {
   const liberated = countLiberated(state)
   const kingsmarketOk = !goal.requireKingsmarket || state.regions.kingsmarket.liberated
   if (liberated >= goal.regionsRequired && kingsmarketOk) {
-    return { ...state, result: { won: true, regionsLiberated: liberated, round: state.round } }
+    return { ...state, result: { won: true, regionsLiberated: liberated, round: state.round, ...countGameStats(state) } }
   }
   return state
 }

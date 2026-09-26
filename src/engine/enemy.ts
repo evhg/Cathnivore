@@ -1,6 +1,6 @@
 import { REGIONS } from '../content/map'
 import { AGENDA_CARDS } from '../content/agenda'
-import { addBuyout, addDoubt, addLostLand, addOutlets, countLiberated } from './pieces'
+import { addBuyout, addDoubt, addLostLand, addOutlets, countGameStats, countLiberated } from './pieces'
 import { isLiberated, regionStallTotal } from './region'
 import { addProduction } from './producer'
 import { checkRiftSplit } from './rift'
@@ -221,7 +221,7 @@ export function resolveSqueeze(state: GameState): GameState {
     }
     next = { ...next, log: [...next.log, { type: 'squeeze', region: id, lostLand, stallRemoved, trustLoss }] }
     if (next.publicTrust <= 0) {
-      return { ...next, result: { won: false, lossReason: 'publicTrust', regionsLiberated: countLiberated(next), round: next.round } }
+      return { ...next, result: { won: false, lossReason: 'publicTrust', regionsLiberated: countLiberated(next), round: next.round, ...countGameStats(next) } }
     }
   }
   return refreshAllLiberation(next)
@@ -247,7 +247,7 @@ function revealAndResolveScout(state: GameState): GameState {
   if (state.pressureDeck.length === 0) {
     return {
       ...state,
-      result: { won: false, lossReason: 'pressureDeckEmpty', regionsLiberated: countLiberated(state), round: state.round },
+      result: { won: false, lossReason: 'pressureDeckEmpty', regionsLiberated: countLiberated(state), round: state.round, ...countGameStats(state) },
     }
   }
   const [card, ...rest] = state.pressureDeck

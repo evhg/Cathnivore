@@ -19,6 +19,7 @@ import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap, { Outlet, Buyout, Doubt } from './Map'
 import Scene from './Scene'
 import Tooltip from './Tooltip'
+import { WIN_LINE, LOSS_LINE } from '../content/endLines'
 import {
   ActionsLeftIcon,
   GoodwillIcon,
@@ -202,6 +203,13 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <p>
           {state.result.won ? 'Win' : `Loss: ${state.result.lossReason}`} — {state.result.regionsLiberated} regions
           liberated, round {state.result.round}.
+        </p>
+        <p className="end-screen-story">
+          {state.result.won ? WIN_LINE : LOSS_LINE[state.result.lossReason!]}
+        </p>
+        <p className="end-screen-stats">
+          {state.result.cardsBought} card{state.result.cardsBought === 1 ? '' : 's'} bought,{' '}
+          {state.result.schemesPlayed} scheme{state.result.schemesPlayed === 1 ? '' : 's'} played.
         </p>
         {onChapterEnd ? (
           <button

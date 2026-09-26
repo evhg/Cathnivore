@@ -30,7 +30,7 @@ describe('playHapticsFor', () => {
 
   it('does nothing off a native platform on a loss', () => {
     expect(() =>
-      playHapticsFor(null, [], { won: false, lossReason: 'publicTrust', round: 5, regionsLiberated: 0 }),
+      playHapticsFor(null, [], { won: false, lossReason: 'publicTrust', round: 5, regionsLiberated: 0, cardsBought: 0, schemesPlayed: 0 }),
     ).not.toThrow()
   })
 })

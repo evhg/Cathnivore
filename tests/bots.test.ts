@@ -98,7 +98,7 @@ describe('bots', () => {
 
   it('evaluate() scores a won position as 1 and a lost position as 0', () => {
     const state = createGame(FULL_CONFIG, 1)
-    expect(evaluate({ ...state, result: { won: true, regionsLiberated: 5, round: 4 } })).toBe(1)
-    expect(evaluate({ ...state, result: { won: false, lossReason: 'publicTrust', regionsLiberated: 0, round: 4 } })).toBe(0)
+    expect(evaluate({ ...state, result: { won: true, regionsLiberated: 5, round: 4, cardsBought: 0, schemesPlayed: 0 } })).toBe(1)
+    expect(evaluate({ ...state, result: { won: false, lossReason: 'publicTrust', regionsLiberated: 0, round: 4, cardsBought: 0, schemesPlayed: 0 } })).toBe(0)
   })
 })

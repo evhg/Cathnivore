@@ -86,7 +86,7 @@ export function addLostLand(state: GameState, region: RegionId): GameState {
   if (state.lostLandPool <= 0) {
     return {
       ...state,
-      result: { won: false, lossReason: 'lostLand', regionsLiberated: countLiberated(state), round: state.round },
+      result: { won: false, lossReason: 'lostLand', regionsLiberated: countLiberated(state), round: state.round, ...countGameStats(state) },
     }
   }
   return {
@@ -101,4 +101,18 @@ export function addLostLand(state: GameState, region: RegionId): GameState {
 
 export function countLiberated(state: GameState): number {
   return Object.values(state.regions).filter((r) => r.liberated).length
+}
+
+// SPEC 4.8: the end screen shows "cards bought and schemes played" among its stats. Derived from the log
+// rather than tracked as separate counters, since `invest`/`schemePlayed` events are already recorded for
+// every game (including campaign scripted starts, which don't go through `applyAction`'s normal path for
+// every prior action) and can't drift from what actually happened.
+export function countGameStats(state: GameState): { cardsBought: number; schemesPlayed: number } {
+  let cardsBought = 0
+  let schemesPlayed = 0
+  for (const event of state.log) {
+    if (event.type === 'invest') cardsBought++
+    else if (event.type === 'schemePlayed') schemesPlayed++
+  }
+  return { cardsBought, schemesPlayed }
 }

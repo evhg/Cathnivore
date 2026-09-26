@@ -255,4 +255,6 @@ export interface GameResult {
   lossReason?: LossReason
   regionsLiberated: number
   round: number
+  cardsBought: number
+  schemesPlayed: number
 }

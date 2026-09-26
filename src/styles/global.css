@@ -546,6 +546,15 @@ button {
   text-align: center;
 }
 
+.end-screen-story {
+  max-width: 40ch;
+}
+
+.end-screen-stats {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
 /* Campaign chapter list (SPEC 10.1) */
 .campaign {
   max-width: 480px;

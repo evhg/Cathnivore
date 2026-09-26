@@ -35,6 +35,25 @@ glossary covers. The only two items left open from the interface audit are the t
 button redesign and the desktop no-scroll gap — both logged in DECISIONS.md as needing their own dedicated
 session, unchanged this session.
 
+With time still left, found and fixed another real gap, this time directly against SPEC 4.8's literal end-
+screen requirement rather than an already-logged finding: **"The end screen shows the reason, a short
+story line, and stats: regions liberated, rounds played, cards bought and schemes played."** The end screen
+(`Game.tsx`) showed the reason and regions/round, but no story line and no cards-bought/schemes-played
+counts — `GameResult` (`src/engine/types.ts`) never tracked either. Added `countGameStats(state)` in
+`src/engine/pieces.ts`, deriving both counts from `state.log`'s existing `invest`/`schemePlayed` events
+(so they can't drift from what actually happened, and campaign scripted starts are covered for free — no
+new state to keep in sync) rather than adding separate counters; wired into `GameResult` and all 4 places
+that construct one (`round.ts`'s win check, `enemy.ts`'s Public-Trust-zero and Pressure-deck-empty losses,
+`pieces.ts`'s Lost-Land-pool-empty loss). New `src/content/endLines.ts` (Cath's voice, section 3.2) supplies
+the missing "short story line": one for a win, one per `LossReason`. `npm run typecheck` caught the 3 test
+fixtures across `tests/bots.test.ts`/`tests/haptics.test.ts` that constructed a bare `GameResult` literal
+and needed the two new required fields added. New `tests/game-stats.test.ts` (counts real log events,
+ignores everything else) and `tests/end-lines.test.ts` (160-char cap and at-most-one-exclamation-mark,
+same convention `tests/story.test.ts` already enforces for scene lines) plus an extended
+`e2e/quick-game.spec.ts` assertion that the story line and both stats actually render. `npm run check` (277
+tests, up from 272) and `npm run gates` (gates 1-7, 56 e2e tests, axe and Lighthouse both clean) both re-run
+clean end to end, no regressions.
+
 Previous session (2026-09-26, ~06:51-07:xx UTC): re-checked both standing blockers once each, as usual — still
 identical (a throwaway-branch dry-run push to `main`, `git push origin main-test-check:main`, denied again
 with the identical "Production Deploy" classifier message before reaching GitHub; `OWNER.md`'s Apple Team ID
