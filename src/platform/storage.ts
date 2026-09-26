@@ -16,6 +16,13 @@ export interface SavedGame {
   config: import('../engine/types').GameConfig
   seed: number
   actions: import('../engine/types').Action[]
+  // SPEC 8.1/11.3: which campaign chapter this save belongs to, absent for a Quick Game/hot-seat save.
+  // Needed so a reload mid-chapter can resume back into the `chapterGame` screen (tutorial prompts,
+  // scripted mid-game scenes, and — critically — `endChapter`'s `markChapterComplete` call on finishing)
+  // rather than silently downgrading into a plain Quick Game that can never mark the chapter complete or
+  // carry its story scenes forward. `config`/`seed`/`actions` alone can't tell campaign and Quick Game
+  // saves apart (a chapter's `GameConfig` has no chapter id of its own), so this is carried alongside them.
+  chapterId?: string
 }
 
 export interface KeyValueStorage {
@@ -138,6 +145,10 @@ export interface CampaignProgress {
   // "Growing Season" (0-2, already capped — see `survivingWholesomeHollowContracts`), read by chapter 4's
   // setup to add that many Outlets to Oakvale. Absent (older saves, or chapter 3 never finished) means 0.
   growingSeasonContractsSurviving?: number
+  // SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy. After
+  // 2 losses, also offer Skip Chapter." Counts consecutive losses since the chapter was last won or
+  // skipped, keyed by chapter id. Absent/missing entry means 0 losses recorded yet.
+  chapterLossCounts?: Record<string, number>
 }
 
 export function loadCampaign(): CampaignProgress {
@@ -164,4 +175,27 @@ export function markChapterComplete(chapterId: string): void {
 export function recordGrowingSeasonCarryOver(contractsSurviving: number): void {
   const progress = loadCampaign()
   storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, growingSeasonContractsSurviving: contractsSurviving }))
+}
+
+// SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy. After 2
+// losses, also offer Skip Chapter." Called once per chapter loss; returns the new total so the caller
+// can decide whether to show Skip Chapter without a second read.
+export function recordChapterLoss(chapterId: string): number {
+  const progress = loadCampaign()
+  const counts = { ...(progress.chapterLossCounts ?? {}) }
+  const next = (counts[chapterId] ?? 0) + 1
+  counts[chapterId] = next
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, chapterLossCounts: counts }))
+  return next
+}
+
+// Resets a chapter's loss streak once it's won (or skipped) — a fresh future attempt (e.g. after a
+// campaign reset, or replaying an earlier chapter) starts counting from 0 again rather than carrying over
+// stale losses from a previous run.
+export function clearChapterLossCount(chapterId: string): void {
+  const progress = loadCampaign()
+  if (!progress.chapterLossCounts || !(chapterId in progress.chapterLossCounts)) return
+  const counts = { ...progress.chapterLossCounts }
+  delete counts[chapterId]
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, chapterLossCounts: counts }))
 }
