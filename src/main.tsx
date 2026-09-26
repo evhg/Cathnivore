@@ -11,6 +11,7 @@ import './styles/tokens.css'
 import './styles/global.css'
 import { isNativePlatform } from './platform/native'
 import { applyAnimationsSetting, applyThemeSetting, loadSettings } from './platform/settings'
+import { preloadNativeStorage } from './platform/storage'
 
 const rootEl = document.getElementById('root')
 if (!rootEl) {
@@ -25,16 +26,25 @@ if (!rootEl) {
 if (isNativePlatform()) {
   document.documentElement.classList.add('native-app')
 }
-applyAnimationsSetting(loadSettings().animations)
-applyThemeSetting(loadSettings().theme)
 
-createRoot(rootEl).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </StrictMode>,
-)
+// SPEC 11.3: on the bundled iPhone app, `storage` (platform/storage.ts) is backed by an in-memory cache
+// over Capacitor Preferences, not raw `localStorage` — that cache has to be warmed from the real native
+// store once, before anything (including the settings calls below, and `App`'s own first render) reads
+// or writes it. `preloadNativeStorage` resolves on the same microtask tick on the web build (it's a no-op
+// there), so this costs web startup nothing measurable; top-level `await` isn't used here since the
+// project's build target predates it (esbuild rejects it directly).
+preloadNativeStorage().then(() => {
+  applyAnimationsSetting(loadSettings().animations)
+  applyThemeSetting(loadSettings().theme)
+
+  createRoot(rootEl).render(
+    <StrictMode>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </StrictMode>,
+  )
+})
 
 // SPEC 11.1: the service worker (offline play, home-screen install) is web-only — it's never
 // registered inside the iPhone app, where Capacitor bundles every asset instead.

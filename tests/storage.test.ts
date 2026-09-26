@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
-import { loadGame, saveGame, SAVE_KEY, loadCampaign, markChapterComplete, recordGrowingSeasonCarryOver } from '../src/platform/storage'
+import { loadGame, saveGame, SAVE_KEY, loadCampaign, markChapterComplete, recordGrowingSeasonCarryOver, preloadNativeStorage } from '../src/platform/storage'
 import type { GameConfig } from '../src/engine/types'
 
 // Same fake localStorage shape as tests/settings.test.ts — Vitest runs in plain Node with no `window`.
@@ -76,5 +76,17 @@ describe('growing season carry-over (SPEC 8.2 ch3, campaign storage)', () => {
     const progress = loadCampaign()
     expect(progress.completed).toEqual(['growing-season', 'the-plan'])
     expect(progress.growingSeasonContractsSurviving).toBe(2)
+  })
+})
+
+// SPEC 11.3: "On iPhone it uses Capacitor Preferences." `preloadNativeStorage` warms the in-memory cache
+// the native half of `storage.ts` reads synchronously from — but which backend `storage` itself resolved
+// to was already decided at module-load time (off-native, in this Vitest/Node environment, same as every
+// other test above), so this only exercises the off-native no-op path, mirroring `tests/haptics.test.ts`'s
+// and `tests/native.test.ts`'s precedent: the real Capacitor Preferences half has no meaningful surface to
+// unit-test without a DOM + a Capacitor global, and is exercised for real by the iOS build (gate 9).
+describe('preloadNativeStorage (SPEC 11.3)', () => {
+  it('resolves immediately and does nothing off a native platform', async () => {
+    await expect(preloadNativeStorage()).resolves.toBeUndefined()
   })
 })

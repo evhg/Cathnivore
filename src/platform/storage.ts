@@ -1,7 +1,16 @@
-// SPEC 11.3: autosave storage behind one interface, web (localStorage) vs iPhone (Capacitor
-// Preferences) differences hidden behind it. Only the web implementation exists so far (M3); the
-// Capacitor Preferences implementation is swapped in behind this same shape once the iPhone shell needs
-// it (M5+, see PROGRESS.md).
+// SPEC 11.3: autosave storage behind one interface, web (localStorage) vs iPhone (Capacitor Preferences)
+// differences hidden behind it — "iOS can clear web storage when space is low," which localStorage alone
+// inside the bundled app's WKWebView would be exposed to. Every caller in the app (`saveGame`/`loadGame`
+// and friends below, `platform/settings.ts`) uses this synchronously — `App.tsx` reads `loadGame()` in its
+// very first render, not behind a loading screen — but `@capacitor/preferences`' real API is Promise-based.
+// Reconciled with a synchronous in-memory cache: `preloadNativeStorage()` awaits every known key from
+// Preferences once, before `main.tsx` renders anything (native only); after that, `nativeStorage.get` reads
+// the cache directly (sync) while `set`/`remove` update the cache immediately and fire the real Preferences
+// write in the background (matching `haptics.ts`'s "a spurious/late write is a smaller cost than blocking
+// the UI" tolerance) — a failed or slow native write behaves the same as `webStorage`'s caught
+// `localStorage` exceptions: the in-memory value (and the next autosave) is still correct either way.
+import { isNativePlatform } from './native'
+
 export interface SavedGame {
   version: 1
   config: import('../engine/types').GameConfig
@@ -39,9 +48,58 @@ const webStorage: KeyValueStorage = {
   },
 }
 
-export const storage: KeyValueStorage = webStorage
-
 export const SAVE_KEY = 'cathnivore:save:v1'
+export const CAMPAIGN_KEY = 'cathnivore:campaign:v1'
+
+// Every key any part of the app persists, so `preloadNativeStorage()` can warm the whole cache in one
+// pass at startup rather than each module needing to register its own key. Written as a literal, not
+// imported from `platform/settings.ts` (which owns the real `SETTINGS_KEY` export), since that module
+// already imports `storage` from here — importing back would be circular.
+const ALL_KEYS = [SAVE_KEY, CAMPAIGN_KEY, 'cathnivore:settings:v1']
+
+const nativeCache = new Map<string, string | null>()
+
+// SPEC 11.3: "a failed save should never crash the app" applies here exactly as it does to `webStorage`'s
+// caught `localStorage` exceptions — a native write failing (or merely being slow) leaves the in-memory
+// cache as the source of truth for the rest of this session, so the game keeps working; only a genuinely
+// persistent failure would cost the *next* app launch's autosave, not this one.
+const nativeStorage: KeyValueStorage = {
+  get: (key) => nativeCache.get(key) ?? null,
+  set: (key, value) => {
+    nativeCache.set(key, value)
+    void import('@capacitor/preferences')
+      .then(({ Preferences }) => Preferences.set({ key, value }))
+      .catch(() => {})
+  },
+  remove: (key) => {
+    nativeCache.delete(key)
+    void import('@capacitor/preferences')
+      .then(({ Preferences }) => Preferences.remove({ key }))
+      .catch(() => {})
+  },
+}
+
+// Called once from `main.tsx`, before anything renders, only inside the bundled iPhone app. A no-op on
+// the web build (where `storage` below never uses the cache this fills), so this is always safe to call.
+// Never throws/rejects — SPEC 1.3's "never show a blank screen" applies just as much to startup as to a
+// mid-game save, so a native read failure just leaves that key's cache entry empty (read back as "no save
+// yet") rather than blocking `main.tsx`'s render entirely.
+export async function preloadNativeStorage(): Promise<void> {
+  if (!isNativePlatform()) return
+  try {
+    const { Preferences } = await import('@capacitor/preferences')
+    await Promise.all(
+      ALL_KEYS.map(async (key) => {
+        const { value } = await Preferences.get({ key })
+        nativeCache.set(key, value)
+      }),
+    )
+  } catch {
+    // Leave the cache empty; the rest of the app already treats "nothing cached yet" as "no save exists."
+  }
+}
+
+export const storage: KeyValueStorage = isNativePlatform() ? nativeStorage : webStorage
 
 export function saveGame(save: SavedGame): void {
   storage.set(SAVE_KEY, JSON.stringify(save))
@@ -81,8 +139,6 @@ export interface CampaignProgress {
   // setup to add that many Outlets to Oakvale. Absent (older saves, or chapter 3 never finished) means 0.
   growingSeasonContractsSurviving?: number
 }
-
-export const CAMPAIGN_KEY = 'cathnivore:campaign:v1'
 
 export function loadCampaign(): CampaignProgress {
   const raw = storage.get(CAMPAIGN_KEY)
