@@ -1732,3 +1732,29 @@ Format: date, decision, reason.
   the chapter-resume storage round-trip cases plus the loss-counter cases), and the relevant e2e suites
   (`campaign`, `chapter-resume`, `save-recovery`, `crash-recovery`) all passing on top of each other's changes.
   `build` now carries both fixes, verified and pushed, on top of the freshly-released `deploy-9`.
+
+- 2026-09-26 (~23:05-23:12 UTC, same session): launched two more hardening-review subagents in parallel
+  (2-concurrent cap), each scoped to an area no prior session had covered: (1) CSP/security-header
+  correctness against real runtime loads (SPEC 11.5), verified with actual header injection via a local
+  server plus headless Chromium console monitoring, rather than the existing DOM-based `e2e/csp.spec.ts`
+  guard; (2) undo/irreversible-action correctness (SPEC 4.6).
+  - **CSP/headers pass: clean, no bug found.** Confirmed `vercel.json`'s CSP (`default-src 'self'`, no
+    `unsafe-inline`/`unsafe-eval`/wildcards) produces zero console CSP violations across the title screen, a
+    Quick Game, a real AI-Worker-backed Solo game, a campaign chapter, and `/privacy`/`/support`, and that
+    `X-Content-Type-Options`/`Referrer-Policy` are present on every path Vercel serves (fonts and the AI
+    Worker bundle are both same-origin, so nothing needed a CDN allowance). No changes made.
+  - **Undo pass: one real bug found and fixed.** Three Scheme cards that peek a hidden deck — Reconnaissance
+    ("Look at the top Pressure card"), Paper Trail ("Look at the top Agenda card") and Weather Eye ("Look at
+    the top two Pressure cards") — were never marked `irreversible: true`, unlike Steak-out doing the
+    identical thing, so a human could undo straight past a hidden-information reveal SPEC 4.6 explicitly
+    forbids. Fixed by adding the flag to all three (and their rules text, matching Steak-out's "(Irreversible.)"
+    suffix). Also extracted the undo-stack boundary logic out of `Game.tsx`'s inline closures into pure,
+    exported functions (`src/ui/undo.ts`: `pushUndo`/`canUndo`/`popUndo`) so the "second undo is a true no-op,
+    not a silent replay past the boundary" invariant is now covered directly against the real production code
+    path in `tests/undo.test.ts` (5 new cases), not just documented in a comment. Everything else checked
+    (enemy-turn/AI-teammate exclusion from undo, the stack correctly not surviving a reload so a resumed
+    mid-turn save is conservatively "nothing to undo" rather than risking a forgotten boundary, the Undo
+    button's disabled state) was already correct.
+  Verified together: `npx tsc -b --noEmit` clean, `npm run check` (311 tests, up from 306), and the
+  hotseat/quick-game e2e undo paths all passing. `build` now carries the undo fix on top of everything
+  released as `deploy-9`.
