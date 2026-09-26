@@ -1473,3 +1473,55 @@ Format: date, decision, reason.
        for real, same as the smoke test's own prior fixes — the first real live smoke-test failure will be
        this code's first live signal.
   A full `npm run check` re-run (typecheck/lint/tests/fuzz/build) stayed clean after the `release.ts` fixes.
+
+- 2026-09-26 (~20:51-21:15 UTC session): Retried `npm run release` on the unchanged `build` HEAD (`a1b6458`).
+  All 8 gates passed clean again. The fast-forward step's documented fix (`git checkout -B main
+  origin/main` + `git merge --ff-only build`) worked with no denial this time and fast-forwarded local
+  `main` to `a1b6458` cleanly, but the following `git push origin main` was denied by the harness's
+  **"Blind Apply"** classifier — a different classifier than the usual "Production Deploy" one seen on this
+  exact step in prior sessions, and the first time this project's release attempts have seen "Blind Apply"
+  fire on the push itself rather than on the `git checkout -B` step. Confirmed `origin/main` untouched
+  (`c8c4fee`, via read-only `git ls-remote origin main`) and switched back to `build` without retrying, per
+  the denial's own guidance. `build` still carries the queued fixes, waiting for a future session's retry.
+
+  With the release path blocked again, ran two more subagent hardening-review passes (CLAUDE.md's
+  2-concurrent cap), each scoped to an area no prior session's audits had covered:
+  1. **PWA/service-worker + Capacitor native-platform layer** (`vite.config.ts`, `main.tsx`'s SW
+     registration and native-storage preload, `App.tsx`'s update-ready prompt, all of `src/platform/*.ts`,
+     `capacitor.config.ts`) against SPEC 2/10.1/11.1/11.3/11.6. **No real bug found** — confirmed the
+     service worker is genuinely inert inside the native build (registration itself is gated on
+     `!isNativePlatform()`, not just "never called"), the "Update ready: reload" prompt only renders on the
+     title screen, and every native/web branch point already matches its SPEC clause with an explanatory
+     comment in place. A clean, thorough confirmation, not a fix.
+  2. **`ios.yml`/`store.yml` workflow correctness** against SPEC 11.6, adversarially re-read line by line.
+     `ios.yml`: no bug found (key file written and deleted correctly including on failure, no secret ever
+     echoed, `DEVELOPMENT_TEAM` correctly sourced from the secret with no hardcoded team ID in the pbxproj,
+     triggers match SPEC). **`store.yml`: found and fixed a real bug, independent of the missing-Apple-
+     secrets blocker and hiding behind it.** Both `fastlane run deliver` invocations used double-dash CLI
+     flags (`--metadata_path`, `--skip_binary_upload true`, `--automatic_release false`, a bare
+     `submit_for_review` token) — but `fastlane run <action>` (the generic action runner) only accepts
+     `key:value` arguments; double-dash flags are syntax for the standalone `deliver` gem CLI, a different
+     invocation path. Reproduced directly by installing fastlane in the review sandbox and running the
+     exact original strings: immediate `invalid option: --metadata_path` / `invalid option:
+     --automatic_release` failures. Separately, the env vars the workflow set (`ASC_KEY_ID`, `ASC_ISSUER_ID`,
+     `ASC_KEY_PATH`) are not what `deliver`'s `api_key_path` option reads — it wants a single JSON file
+     containing `key_id`/`issuer_id`/`key` (the .p8 content), not three separate env vars or a bare path to
+     the .p8 file itself (confirmed against `deliver`'s own `options.rb`). This means every real
+     `store-<n>`/`submit-<n>` dispatch to date would have failed on an argument-parsing error before ever
+     reaching Apple, on top of the already-logged missing-secrets blocker — the metadata/screenshot/build
+     upload step and the App Review submission step were both silently broken since the build-number fix
+     landed. Fixed: the key-writing step now also builds `private_keys/api_key.json` (key_id/issuer_id/key
+     content, written to disk only, never printed) alongside the existing `.p8` file; both `fastlane run
+     deliver` calls switched to `key:value` syntax with `api_key_path:"private_keys/api_key.json"`; the
+     submission call also passes `skip_metadata:true skip_screenshots:true skip_binary_upload:true` (those
+     were already uploaded by the previous step) and `force:true` on both calls to avoid an interactive
+     HTML-preview prompt hanging the unattended pipeline. The existing `rm -rf private_keys` cleanup step
+     (`if: always()`) already covers the new `api_key.json` file too, so no change needed there. Validated
+     by installing fastlane 2.240.1 in the review sandbox and running the corrected `fastlane run deliver
+     api_key_path:"..." metadata_path:"..." ... force:true` and the submit variant verbatim — both now parse
+     correctly and proceed all the way to a real Apple Connect-API auth attempt, failing only on the
+     sandbox's fake test EC key content (`OpenSSL::PKey::ECError: invalid curve name`, expected with no real
+     Apple key), confirming the argument-parsing and JSON-construction bugs are gone and the only remaining
+     blocker is the pre-existing missing-secrets one. Both workflow files re-parsed clean as YAML
+     afterward. Not exercised against real Apple Connect credentials (none available to any session), same
+     limit as every other iOS/store finding to date.

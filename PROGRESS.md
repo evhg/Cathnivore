@@ -17,6 +17,24 @@ retried. Confirmed `origin/main` untouched (`c8c4fee`, via `git ls-remote origin
 switched back to `build`. `build` (`a1b6458`) still carries the three engine/content fixes plus the
 release.ts revert-bug fix, gated and pushed, waiting for a future session's retry.
 
+With the release path blocked again, ran two more subagent hardening-review passes (2-concurrent cap),
+each on an area no prior session had covered: (1) the PWA/service-worker + Capacitor native-platform layer
+— no real bug found, a clean confirmation (SW genuinely inert in the native build, update-ready prompt
+title-screen-only, every native/web branch matches SPEC); (2) `ios.yml`/`store.yml` correctness — `ios.yml`
+clean, but found and fixed a **real bug in `store.yml`**: both `fastlane run deliver` calls used
+`--flag value` CLI syntax, which `fastlane run <action>` doesn't accept (that's the standalone `deliver`
+gem CLI's syntax, not the generic action runner's `key:value` form) — reproduced directly, both calls
+failed immediately with "invalid option" errors, independent of the missing-Apple-secrets blocker. Also
+fixed the API-key plumbing: `deliver`'s `api_key_path` wants a JSON file bundling key_id/issuer_id/key
+content, not the three separate env vars the workflow was setting. Fixed both (new `api_key.json` built
+alongside the existing `.p8`, both calls switched to `key:value` syntax, `force:true` added to avoid an
+interactive prompt hanging the pipeline), validated by installing fastlane in the review sandbox and
+confirming the corrected commands parse and reach a real Apple auth attempt (failing only on the sandbox's
+fake key, as expected). Full detail in DECISIONS.md. Pushed (`3f40f1e`). This means every prior
+`store-<n>`/`submit-<n>` dispatch to date would have failed silently even once Apple secrets exist — a real,
+previously-undiscovered gap in the App Store submission path, now closed ahead of when it would have first
+mattered (after the still-pending Apple Team ID/secrets setup).
+
 ---
 
 Previous session (2026-09-26, starting ~19:52 UTC): re-checked both standing blockers first — `OWNER.md`'s
