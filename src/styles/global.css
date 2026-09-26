@@ -151,6 +151,8 @@ h3 {
 
 .topbar {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 8px;
   padding: 8px 12px;
@@ -158,6 +160,12 @@ h3 {
   border-radius: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* The topbar's Menu button (SPEC 10.2) keeps the global 44x44 tap-target minimum (STYLE.md 12) but drops
+   the default button's larger horizontal padding so it doesn't dominate an otherwise compact, text-only bar. */
+.topbar button {
+  padding: 10px 12px;
 }
 
 /* SPEC 10.5: in-game tap/hover tooltip on game terms (Squeeze, Expand, Public Trust and so on), alongside

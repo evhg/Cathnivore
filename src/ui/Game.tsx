@@ -386,6 +386,10 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             <RiftIcon /> Rift {state.rift}
           </Tooltip>
         </span>
+        {/* SPEC 10.2: "Top bar (fixed): round x/10, Public Trust, Lost Land remaining, Rift and a menu
+            button" — the menu button belongs in the fixed top bar, not the footer, so it stays reachable
+            without scrolling past the bottom action panel. */}
+        <button onClick={onExit}>Menu</button>
       </header>
 
       {tutorialSteps && tutorialIndex < tutorialSteps.length && (
@@ -554,7 +558,6 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <button className="mobile-only" onClick={() => setShowMarket(true)}>Market</button>
         <button className="mobile-only" onClick={() => setShowPlan(true)}>Cath&rsquo;s Plan</button>
         <button className="mobile-only" onClick={() => setShowLog(true)}>Log</button>
-        <button onClick={onExit}>Menu</button>
       </footer>
 
       {showFarm && <FarmSheet state={state} onClose={() => setShowFarm(false)} />}
