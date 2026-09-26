@@ -2,6 +2,7 @@
 // poll the live version.json, run a live smoke test, tag deploy-<n>, and log it in PROGRESS.md.
 // On smoke-test failure, revert main to the previous deploy tag (never force-push) and log it.
 import { execSync } from 'node:child_process'
+import { chromium } from '@playwright/test'
 
 const VERCEL_ADDRESS = 'cathnivore.vercel.app' // from OWNER.md; used until the domain resolves
 const DOMAIN = 'https://cathnivore.com'
@@ -40,6 +41,45 @@ async function pollVersion(commit: string, base: string): Promise<boolean> {
   return false
 }
 
+async function liveSmokeTest(base: string): Promise<boolean> {
+  const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined
+  const browser = await chromium.launch({ executablePath })
+  try {
+    const page = await browser.newPage()
+    const errors: string[] = []
+    page.on('pageerror', (err) => errors.push(String(err)))
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text())
+    })
+
+    const res = await page.goto(base, { waitUntil: 'load' })
+    if (!res || !res.ok()) {
+      console.log(`Smoke test failed: ${base} returned ${res?.status()}`)
+      return false
+    }
+
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    // Graft (SPEC 4.6.7: "gain 1 Produce and 1 Marks. This guarantees a legal action always exists.") is
+    // always legal on the opening turn regardless of producer pair or difficulty, so it's the one action
+    // this quick check can always take without needing to know the game state first.
+    await page.getByRole('button', { name: /^Graft/ }).click({ timeout: 15_000 })
+
+    if (errors.length > 0) {
+      console.log(`Smoke test failed: ${errors.length} console error(s) on ${base}:`)
+      for (const e of errors) console.log(`  ${e}`)
+      return false
+    }
+    console.log(`Smoke test passed: title loaded, Quick Game started, Graft taken, no console errors.`)
+    return true
+  } catch (err) {
+    console.log(`Smoke test failed with an exception: ${String(err)}`)
+    return false
+  } finally {
+    await browser.close()
+  }
+}
+
 async function main() {
   console.log('=== Running gates ===')
   execSync('tsx scripts/gates.ts', { stdio: 'inherit' })
@@ -67,10 +107,12 @@ async function main() {
   }
 
   console.log(`\n=== Live smoke test against ${base} ===`)
-  // Minimal smoke test: fetch the title page and check it responds with no server error.
-  const res = await fetch(base, { cache: 'no-store' })
-  if (!res.ok) {
-    console.log(`Smoke test failed: ${base} returned ${res.status}`)
+  // SPEC 11.5: "the title loads, a Quick Game starts, one action is taken, and there are no console
+  // errors" — a real browser check against the live URL, not just an HTTP status fetch. Uses the same
+  // pinned-Chromium-path workaround as e2e/gates (playwright.config.ts's PLAYWRIGHT_CHROMIUM_PATH), since
+  // this script runs outside the `playwright test` runner and its config.
+  const smokeTestOk = await liveSmokeTest(base)
+  if (!smokeTestOk) {
     const n = nextDeployNumber() - 1
     if (n >= 1) {
       console.log(`Reverting main to deploy-${n}`)

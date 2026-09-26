@@ -66,6 +66,24 @@ gate. Split `scripts/gates.ts`'s combined gate 1-4 step into three, with gate 3 
 un-quicked `npm run fuzz` (confirmed cheap: 19s for 10,000+1,000 games). `npm run gates` re-run clean with
 the real counts now actually executing.
 
+With time still left, found the same class of gap again: `e2e/carry-over.spec.ts` (SPEC 8.2 chapter 3→4
+carry-over, 3 tests, passing) existed but was never in `scripts/gates.ts`'s `GATE_5_SPECS` list, so
+`npm run gates`/`release` never ran it. Added it (confirmed 6/6 pass first) and documented why the
+screenshot specs and the skipped desktop-no-scroll spec stay deliberately excluded. `npm run gates` re-run
+clean (64 e2e tests, up from 58).
+
+With time still left, read `scripts/release.ts` end to end against SPEC 11.5's literal text and found its
+"live smoke test" was a bare HTTP status fetch, not "the title loads, a Quick Game starts, one action is
+taken, and there are no console errors" — meaning neither release logged so far actually verified any of
+that. Replaced it with a real Playwright-driven check (`liveSmokeTest`, programmatic `chromium` from
+`@playwright/test`, same `PLAYWRIGHT_CHROMIUM_PATH` override the e2e suite already uses): loads the live
+URL, starts a Quick Game, takes Graft (always legal on the opening turn), and fails with specifics on any
+console error or missing element instead of just a status code. Verified against a local `vite preview`
+server standing in for the live site (a throwaway harness, deleted after use) — passes end to end. Not yet
+exercised by a real `npm run release` run (still blocked on the standing push denial — see Blocked); the
+next time that clears will be this code's first real signal. `npm run check` (286 tests, unchanged) plus a
+direct `tsc -b --noEmit`/`eslint scripts/release.ts` both clean.
+
 ---
 
 Previous session (2026-09-26, starting ~08:51 UTC): both standing blockers re-checked once, unchanged (12th+
