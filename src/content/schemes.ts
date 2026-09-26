@@ -17,7 +17,8 @@ export interface SchemeCard {
   // tests/rules-text.test.ts checks it against `effect`'s actual behaviour.
   text: string
   // SPEC 4.6's Undo: "any action that reveals hidden information ... is marked irreversible, and undo
-  // cannot go back past it." Only Steak-out currently does this (it peeks the Pressure deck).
+  // cannot go back past it." Steak-out, Reconnaissance, Paper Trail and Weather Eye all set this: each
+  // peeks the top of a hidden deck (Pressure or Agenda).
   irreversible?: boolean
   targeting: SchemeTargeting
   legalTargets?: (state: GameState, producer: ProducerId) => RegionId[]
@@ -206,10 +207,13 @@ export const SCHEMES: SchemeCard[] = [
     name: 'Reconnaissance',
     cost: 1,
     line: "I don't spy. I just ask questions nobody else thinks to.",
-    text: 'Look at the top Pressure card.',
+    text: 'Look at the top Pressure card. (Irreversible.)',
+    irreversible: true,
     targeting: 'none',
     // Information: lets the player look at the top Pressure card (a UI-only reveal; the engine's state is
-    // already fully known to the caller, so there is nothing to change here beyond the peek itself).
+    // already fully known to the caller, so there is nothing to change here beyond the peek itself). This
+    // is exactly the "reveals hidden information" case SPEC 4.6 calls out, so it's irreversible the same as
+    // Steak-out — undoing back past a peek would let the player keep knowledge of a card they've "un-seen".
     effect: (state) => state,
   },
   {
@@ -337,9 +341,11 @@ export const SCHEMES: SchemeCard[] = [
     name: 'Paper Trail',
     cost: 1,
     line: "Somebody left the memo in the printer tray again.",
-    text: 'Look at the top Agenda card.',
+    text: 'Look at the top Agenda card. (Irreversible.)',
+    irreversible: true,
     targeting: 'none',
-    // Information: a UI-only reveal, same reasoning as Reconnaissance (no hidden state relative to the caller).
+    // Information: a UI-only reveal, same reasoning as Reconnaissance (no hidden state relative to the
+    // caller) — and, like Reconnaissance, irreversible under SPEC 4.6 for the same reason.
     effect: (state) => state,
   },
   {
@@ -347,8 +353,10 @@ export const SCHEMES: SchemeCard[] = [
     name: 'Weather Eye',
     cost: 2,
     line: "I read clouds and quarterly reports the same way.",
-    text: 'Look at the top two Pressure cards.',
+    text: 'Look at the top two Pressure cards. (Irreversible.)',
+    irreversible: true,
     targeting: 'none',
+    // Irreversible (SPEC 4.6): same reasoning as Reconnaissance/Paper Trail — this peeks the deck too.
     effect: (state) => state,
   },
   {
