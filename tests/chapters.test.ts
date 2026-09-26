@@ -3,7 +3,17 @@ import { createGame, validate } from '../src/engine/api'
 import { applyAction, legalActions } from '../src/engine/actions'
 import { createRng } from '../src/engine/rng'
 import { HeuristicBot } from '../src/ai/heuristic'
-import { CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_5, CHAPTER_6, chapterConfig } from '../src/content/chapters'
+import {
+  CHAPTER_1,
+  CHAPTER_2,
+  CHAPTER_3,
+  CHAPTER_4,
+  CHAPTER_5,
+  CHAPTER_6,
+  chapterConfig,
+  chapter4Config,
+  survivingWholesomeHollowContracts,
+} from '../src/content/chapters'
 
 describe('chapter 1: Fresh Meat', () => {
   it('creates a valid single-producer game restricted to Brindle Hills and Highmoor', () => {
@@ -121,6 +131,69 @@ describe('chapter 3: Growing Season', () => {
       if (state.result?.won) wins++
     }
     expect(wins / seeds).toBeGreaterThanOrEqual(0.6)
+  })
+})
+
+// SPEC 8.2 ch3 carry-over: "each contract not torn up by the end of the chapter adds 1 Outlet to Oakvale
+// in chapter 4 (maximum 2), with a rueful line from Tomas." `survivingWholesomeHollowContracts` reads the
+// count off chapter 3's final state; `chapter4Config` folds it into chapter 4's `GameConfig`.
+describe('chapter 3 -> 4 Wholesome Hollow Contract carry-over (SPEC 8.2)', () => {
+  function withContracts(count: number): ReturnType<typeof createGame> {
+    const state = createGame(chapterConfig(CHAPTER_3), 1)
+    return {
+      ...state,
+      producers: {
+        ...state.producers,
+        tomas: { ...state.producers.tomas, improvements: Array(count).fill('wholesome-hollow-contract') },
+      },
+    }
+  }
+
+  it('0 contracts survive -> 0 extra Outlets', () => {
+    expect(survivingWholesomeHollowContracts(withContracts(0))).toBe(0)
+  })
+
+  it('1 contract survives -> 1 extra Outlet', () => {
+    expect(survivingWholesomeHollowContracts(withContracts(1))).toBe(1)
+  })
+
+  it('2 or more contracts survive -> capped at 2 extra Outlets', () => {
+    expect(survivingWholesomeHollowContracts(withContracts(2))).toBe(2)
+    expect(survivingWholesomeHollowContracts(withContracts(3))).toBe(2)
+  })
+
+  it('a torn-up contract (removed from `improvements`) no longer counts', () => {
+    // `tearUpContract` (actions.ts) removes the id from `improvements` entirely — simulate that directly
+    // rather than owning 2 and tearing 1 up via the full action, since this test only cares what the
+    // carry-over reads off the final state, not the tear-up action itself (covered in actions.test.ts).
+    expect(survivingWholesomeHollowContracts(withContracts(1))).toBe(1)
+    expect(survivingWholesomeHollowContracts(withContracts(0))).toBe(0)
+  })
+
+  it('chapter4Config adds that many Outlets to Oakvale on top of the ordinary chapter 4 setup, additively', () => {
+    const plain = createGame(chapterConfig(CHAPTER_4), 1)
+    const plainOakvaleOutlets = plain.regions.oakvale.outlets
+
+    const zero = createGame(chapter4Config(0), 1)
+    expect(zero.regions.oakvale.outlets).toBe(plainOakvaleOutlets)
+    expect(validate(zero)).toEqual([])
+
+    const one = createGame(chapter4Config(1), 1)
+    expect(one.regions.oakvale.outlets).toBe(plainOakvaleOutlets + 1)
+    expect(validate(one)).toEqual([])
+
+    const two = createGame(chapter4Config(2), 1)
+    expect(two.regions.oakvale.outlets).toBe(plainOakvaleOutlets + 2)
+    expect(validate(two)).toEqual([])
+
+    // Over-the-cap input is clamped defensively too, not just `survivingWholesomeHollowContracts`'s own cap.
+    const capped = createGame(chapter4Config(5), 1)
+    expect(capped.regions.oakvale.outlets).toBe(plainOakvaleOutlets + 2)
+
+    // Every other chapter 4 region's setup is untouched by the carry-over.
+    for (const region of ['rivermead', 'shingleBay', 'brindleHills', 'kingsmarket'] as const) {
+      expect(two.regions[region].outlets).toBe(plain.regions[region].outlets)
+    }
   })
 })
 

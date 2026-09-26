@@ -76,6 +76,10 @@ export function clearGame(): void {
 export interface CampaignProgress {
   version: 1
   completed: string[] // chapter ids finished (won or skipped), in no particular order
+  // SPEC 8.2 ch3 carry-over: "Wholesome Hollow Contract" copies still owned (by anyone) at the end of
+  // "Growing Season" (0-2, already capped — see `survivingWholesomeHollowContracts`), read by chapter 4's
+  // setup to add that many Outlets to Oakvale. Absent (older saves, or chapter 3 never finished) means 0.
+  growingSeasonContractsSurviving?: number
 }
 
 export const CAMPAIGN_KEY = 'cathnivore:campaign:v1'
@@ -95,5 +99,13 @@ export function loadCampaign(): CampaignProgress {
 export function markChapterComplete(chapterId: string): void {
   const progress = loadCampaign()
   if (progress.completed.includes(chapterId)) return
-  storage.set(CAMPAIGN_KEY, JSON.stringify({ version: 1, completed: [...progress.completed, chapterId] }))
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, completed: [...progress.completed, chapterId] }))
+}
+
+// SPEC 8.2 ch3 carry-over: records how many Wholesome Hollow Contracts survived "Growing Season," for
+// chapter 4's setup to read back later. Kept separate from `markChapterComplete` (called alongside it,
+// only for chapter 3) since no other chapter has a carry-over value to save yet.
+export function recordGrowingSeasonCarryOver(contractsSurviving: number): void {
+  const progress = loadCampaign()
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, growingSeasonContractsSurviving: contractsSurviving }))
 }

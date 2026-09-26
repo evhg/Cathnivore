@@ -112,6 +112,12 @@ export interface GameConfig {
   // enemy pieces and Stalls, which are already liberated, and each producer's starting resources and
   // production. Applied once in `createGame`, after the deck-building/Scout-reveal steps still run
   // normally against this board. Absent means the ordinary fresh SPEC 4.3 setup.
+  // SPEC 8.2 ch3->4 campaign carry-over: "each [Wholesome Hollow] contract not torn up by the end of the
+  // chapter adds 1 Outlet to Oakvale in chapter 4 (maximum 2)." Applied as a straight addition on top of
+  // the ordinary SPEC 4.3.2 per-region setup (chapter 4 has no `scriptedStart` board of its own — unlike
+  // `scriptedStart.regions`, which *replaces* that setup entirely, see `createGame`), so it can't just be
+  // folded into `scriptedStart` here without also zeroing out every other chapter-4 region's enemy pieces.
+  extraStartingOutlets?: Partial<Record<RegionId, number>>
   scriptedStart?: {
     rift?: number
     publicTrust?: number

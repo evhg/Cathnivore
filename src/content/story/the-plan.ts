@@ -3,7 +3,16 @@ import type { Scene } from './types'
 // SPEC 8.2 chapter 4, "The Plan." The campaign's first two-producer chapter: Ines Farrow and Tomas Reed
 // (SPEC 8.2's "Recommended" pair) team up under Cath's plan, with Cath's Plan (Schemes), the AI teammate
 // and the Kingsmarket guard rule all switched on for the first time.
-export const SCENES: Record<'opening' | 'closing', Scene> = {
+// SPEC 8.2 ch3 carry-over: "each contract not torn up by the end of the chapter adds 1 Outlet to Oakvale
+// in chapter 4 (maximum 2), with a rueful line from Tomas." Shown (App.tsx) right before `opening`, only
+// when at least 1 "Wholesome Hollow Contract" survived chapter 3 — one short scene per surviving count.
+export const SCENES: Record<'opening' | 'closing' | 'contracts1' | 'contracts2', Scene> = {
+  contracts1: {
+    lines: [{ speaker: 'Tomas', line: "Never did tear up that last contract. There's an Outlet in Oakvale market this morning to prove it." }],
+  },
+  contracts2: {
+    lines: [{ speaker: 'Tomas', line: "Kept both contracts too long. Oakvale's got two new Outlets to show for my hesitation." }],
+  },
   opening: {
     lines: [
       { speaker: 'Cath', line: "Two farms, one plan. Ines Farrow and Tomas Reed, meet the whiteboard." },

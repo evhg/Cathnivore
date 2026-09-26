@@ -1,7 +1,22 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, third session today): re-checked both standing blockers once each (still denied /
+This session (2026-09-26, ~04:51-05:xx UTC): re-checked both standing blockers once each (still denied /
+still the placeholder — unchanged, 9+ consecutive sessions now, see Blocked; this session's routine also
+pushed a notification to the owner about it, since the pattern is now long-standing and the game is
+otherwise content-complete). With the release paths blocked, implemented the chapter 3->4 Wholesome Hollow
+Contract carry-over (SPEC 7/8.2) that a prior session's audit found completely missing — the last real
+content gap logged as outstanding. `GameConfig.extraStartingOutlets` (additive per-region Outlets, applied
+in `createGame` on top of the normal setup), `chapters.ts`'s `survivingWholesomeHollowContracts`/
+`chapter4Config`, `storage.ts`'s `growingSeasonContractsSurviving` campaign field (plus a `markChapterComplete`
+bug fix: it was overwriting the whole progress object instead of spreading it), and a new short "rueful
+Tomas" scene in chapter 4's opening when contracts survived. New tests in `tests/chapters.test.ts`/
+`tests/storage.test.ts`; `npm run check` (247 tests) clean; re-ran `e2e/campaign.spec.ts` by hand with
+`PLAYWRIGHT_CHROMIUM_PATH` pointed at this sandbox's installed Chromium revision (the pinned revision
+Playwright wanted wasn't installed here — see CLAUDE.md's new note) and got a clean pass on all 6 chapters.
+Full detail in DECISIONS.md.
+
+Previous session (2026-09-26, third session that day): re-checked both standing blockers once each (still denied /
 still the placeholder — unchanged, see Blocked). `npm run check`/`npm run gates` both re-confirmed clean on
 the unchanged `build` HEAD first (no regressions since the last session). Then used a general-purpose
 subagent for a fresh adversarial audit of `src/engine`/`src/content` against SPEC section 4's literal rules
@@ -293,9 +308,10 @@ thing to do is `npm run release`, since gates/e2e/balance are all in a shippable
   when absent (`src/engine/rules.ts`) so no existing caller needed to change. `src/content/chapters.ts`
   defines the shared `Chapter`/`TutorialStep` shape and `chapterConfig()`. Portraits are still placeholder
   text (no SVG yet) — tracked below.
-- [ ] chapters 1 to 6, with their twists and carry-over (**the chapter 3->4 carry-over itself is still not
-  implemented** — see the 2026-09-26 audit finding in Current milestone/DECISIONS.md; this line was
-  previously checked off in error, since every other part of this item really is done) — **chapter 1 "Fresh Meat" done**: Mara alone in
+- [x] chapters 1 to 6, with their twists and carry-over (**the chapter 3->4 carry-over is now implemented**,
+  2026-09-26 ~05:00 UTC session — `chapter4Config`/`survivingWholesomeHollowContracts` in
+  `src/content/chapters.ts`, `GameConfig.extraStartingOutlets`, a new rueful-Tomas scene; see DECISIONS.md
+  for full detail and `tests/chapters.test.ts`/`tests/storage.test.ts` for coverage) — **chapter 1 "Fresh Meat" done**: Mara alone in
   Brindle Hills/Highmoor, only Harvest/Open Stall/Supply/Graft, the enemy only Scouting a scripted
   sequence that introduces one region at a time (see DECISIONS.md for why — both regions are Pasture, so
   a same-round Scout on both was untenable for a single producer with 3 actions/round). Opening/closing
@@ -651,6 +667,14 @@ thing to do is `npm run release`, since gates/e2e/balance are all in a shippable
 - [ ] create `DONE`
 
 ## Blocked
+- **Re-checked 2026-09-26 ~04:55 UTC:** same throwaway-branch dry-run push, denied again with the identical
+  "Production Deploy" classifier message before reaching GitHub. `OWNER.md`'s Apple Team ID is still
+  `PASTE-TEAM-ID`, so `ios.yml` wasn't re-dispatched. This is now 9+ consecutive sessions with an identical
+  denial on the production-push path since 2026-09-25 ~17:12 UTC, and the game has been content-complete
+  (M1-M6 fully done, M7 nearly done) for several of those sessions — nothing left to build blocks on this
+  except the two owner-side items (approve production pushes for this session type, or run `npm run
+  release`/push `ios-<n>`/set the real Apple Team ID + GitHub Actions secrets yourself). This session's
+  routine sent the owner a push notification about it directly, rather than only re-logging it here again.
 - **Re-checked 2026-09-25 ~21:58 UTC:** tried the minimal direct check (fast-forward a throwaway local
   `main-test` branch to `build`'s `be6ed1d` and `git push origin main-test:main`) rather than the full
   `npm run release` script, to confirm the standing restriction without spending gates/poll time on a push

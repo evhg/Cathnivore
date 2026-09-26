@@ -1,4 +1,4 @@
-import type { GameConfig, PressureCard, ProducerId, RegionId, RulesEnabled } from '../engine/types'
+import type { GameConfig, GameState, PressureCard, ProducerId, RegionId, RulesEnabled } from '../engine/types'
 
 // SPEC 8.1: "Chapters are data: which regions are active, which rules are switched on, the starting
 // state, a scripted Pressure sequence where needed, triggers ..., scenes and tutorial steps." This is
@@ -257,6 +257,30 @@ export const CHAPTER_3: Chapter = {
   ],
   openingScene: 'opening',
   closingScene: 'closing',
+}
+
+// SPEC 8.2 ch3 carry-over: "each contract not torn up by the end of the chapter adds 1 Outlet to Oakvale
+// in chapter 4 (maximum 2)." A contract still owned (by any producer — chapter 3 only ever has Tomas, but
+// this doesn't assume that) at the final state counts; one torn up via `tearUpContract` left the game
+// entirely (`actions.ts`) and so no longer shows up in anyone's `improvements`, no need to separately
+// consult `contractsTornUp` here.
+export const CHAPTER_3_CARRY_OVER_CAP = 2
+
+export function survivingWholesomeHollowContracts(state: GameState): number {
+  const total = Object.values(state.producers).reduce(
+    (n, p) => n + p.improvements.filter((id) => id === 'wholesome-hollow-contract').length,
+    0,
+  )
+  return Math.min(total, CHAPTER_3_CARRY_OVER_CAP)
+}
+
+// Builds chapter 4's config with the chapter 3 carry-over folded in. Chapter 4 has no `scriptedStart` of
+// its own (see `GameConfig.extraStartingOutlets`'s comment) so this only ever adds `extraStartingOutlets`,
+// never touches `scriptedStart`.
+export function chapter4Config(survivingContracts: number): GameConfig {
+  const extraOutlets = Math.min(Math.max(survivingContracts, 0), CHAPTER_3_CARRY_OVER_CAP)
+  const base = chapterConfig(CHAPTER_4)
+  return extraOutlets > 0 ? { ...base, extraStartingOutlets: { oakvale: extraOutlets } } : base
 }
 
 const RULES_CHAPTER_4: RulesEnabled = {

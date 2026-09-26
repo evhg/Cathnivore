@@ -6,7 +6,7 @@ import { IMPROVEMENTS } from '../content/improvements'
 import { SCHEMES } from '../content/schemes'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { createRng, shuffle } from './rng'
-import type { GameConfig, GameState, PressureCard, ProducerState, RegionState } from './types'
+import type { GameConfig, GameState, PressureCard, ProducerState, RegionId, RegionState } from './types'
 import { resolveScout } from './enemy'
 import { POOL_SIZES, addBuyout, addDoubt, addOutlets } from './pieces'
 
@@ -175,6 +175,14 @@ export function createGame(config: GameConfig, seed: number): GameState {
         if (def.type === 'coast') state = addDoubt(state, id, 1)
         if (def.type === 'pasture' && config.difficulty === 'hard') state = addDoubt(state, id, 1)
       }
+    }
+  }
+
+  // SPEC 8.2 ch3->4 carry-over (see `GameConfig.extraStartingOutlets`): applied on top of whichever setup
+  // just ran above, additively, so it never displaces the normal per-region enemy setup.
+  if (config.extraStartingOutlets) {
+    for (const [id, count] of Object.entries(config.extraStartingOutlets) as [RegionId, number][]) {
+      if (count) state = addOutlets(state, id, count)
     }
   }
 

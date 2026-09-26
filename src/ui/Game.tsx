@@ -39,8 +39,10 @@ interface Props {
   mode: Mode
   onExit(): void
   // SPEC 8.1: a campaign chapter's end screen continues into its closing scene (via App.tsx) instead of
-  // going straight back to the title, so it takes this callback instead of the plain onExit button.
-  onChapterEnd?(won: boolean): void
+  // going straight back to the title, so it takes this callback instead of the plain onExit button. The
+  // final `state` is passed too so App.tsx can read carry-over data (e.g. chapter 3's surviving Wholesome
+  // Hollow Contracts, SPEC 7) out of it when a chapter ends.
+  onChapterEnd?(won: boolean, state: GameState): void
   // SPEC 8.1 tutorial prompts (2 sentences max), shown one at a time above the plan strip. Simplified
   // from the full spec for now: the player advances them manually rather than the engine gating legal
   // actions down to "only the action being taught" — see DECISIONS.md.
@@ -201,7 +203,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           <button
             onClick={() => {
               clearGame()
-              onChapterEnd(state.result!.won)
+              onChapterEnd(state.result!.won, state)
             }}
           >
             Continue
