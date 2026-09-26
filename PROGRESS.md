@@ -31,6 +31,12 @@ restriction that stayed fixed for 8+ consecutive sessions before this one. Per t
 not retried this session; `build` (04fba1a) carries the fix, gated and pushed, waiting for the next
 session's retry (this has flipped between fixed/denied before — see Blocked). Local `main` untouched.
 
+With time still left, spot-checked the same texture fix in forced dark theme (STYLE.md 3.5/3.6 has its own
+colour tokens, so a light-theme-only check doesn't guarantee dark is fine) — a throwaway Playwright script
+(not committed) forced Dark via Settings, started a Quick Game, applied the same greyscale filter, and
+screenshotted the desktop map. All 4 region textures render clearly and distinctly in dark+greyscale too, no
+regression, not overly busy. Clean confirmation, not a fix — no further action needed.
+
 ---
 
 Previous session (2026-09-26, starting ~15:52 UTC): re-checked both standing blockers first — `OWNER.md`'s
