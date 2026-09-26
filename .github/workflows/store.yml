@@ -22,9 +22,16 @@ jobs:
       - run: gem install fastlane
 
       - name: Write App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
           mkdir -p private_keys
-          echo "${{ secrets.ASC_KEY_P8 }}" > private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+          echo "$ASC_KEY_P8" > "private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          # fastlane deliver's api_key_path wants a JSON file bundling key_id/issuer_id/key content,
+          # not the bare .p8 path that ios.yml's xcodebuild -authenticationKeyPath flag takes.
+          python3 -c "import json, os; key_id = os.environ['ASC_KEY_ID']; key_content = open('private_keys/AuthKey_' + key_id + '.p8').read(); json.dump({'key_id': key_id, 'issuer_id': os.environ['ASC_ISSUER_ID'], 'key': key_content}, open('private_keys/api_key.json', 'w'))"
 
       - name: Find the latest processed TestFlight build number
         id: build
@@ -45,18 +52,17 @@ jobs:
 
       - name: Upload metadata and screenshots, attach the latest processed build, via fastlane deliver
         env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_PATH: private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
           BUILD_NUMBER: ${{ steps.build.outputs.number }}
         run: |
           if [ -f store/Fastfile ]; then
+            # `fastlane run <action>` takes `key:value` arguments, not `--flag value` (that syntax is
+            # for the standalone `deliver` gem CLI and fails with "invalid option" under `fastlane run`).
             # SPEC 11.6 asks to "attach the latest processed build," not re-upload a binary this job never
             # built itself: ios.yml already exported and uploaded the .ipa to App Store Connect on its own
             # run, so skip_binary_upload here selects that already-processed build by number instead.
-            ARGS=(--metadata_path store/metadata --screenshots_path store/screenshots --skip_binary_upload true --app_version 1.0.0)
+            ARGS=(api_key_path:"private_keys/api_key.json" metadata_path:"store/metadata" screenshots_path:"store/screenshots" skip_binary_upload:true app_version:"1.0.0" force:true)
             if [ -n "$BUILD_NUMBER" ]; then
-              ARGS+=(--build_number "$BUILD_NUMBER")
+              ARGS+=(build_number:"$BUILD_NUMBER")
             fi
             fastlane run deliver "${ARGS[@]}"
           else
@@ -65,13 +71,13 @@ jobs:
 
       - name: Submit for App Review (manual release)
         if: startsWith(github.ref_name, 'submit-')
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_PATH: private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
         run: |
           if [ -f store/Fastfile ]; then
-            fastlane run deliver submit_for_review --automatic_release false
+            # Metadata, screenshots and the build were already uploaded by the previous step, so skip
+            # re-uploading them here and only flip the app to "submitted for review".
+            fastlane run deliver api_key_path:"private_keys/api_key.json" app_version:"1.0.0" \
+              skip_metadata:true skip_screenshots:true skip_binary_upload:true \
+              submit_for_review:true automatic_release:false force:true
           else
             echo "store/Fastfile not set up yet; skipping submission"
           fi
