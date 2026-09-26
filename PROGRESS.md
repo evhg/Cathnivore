@@ -26,6 +26,16 @@ genuinely necessary; re-verified the worst case still holds (0px overflow, 3 rep
 screenshotted to confirm the fix looks right, not just passes automated checks. `npm run gates` re-run
 clean again afterward. Pushed (`cdbc47b`). Full detail of both fixes in DECISIONS.md.
 
+A spot-check of one more screenshot the subagent had marked clean (the loss end-screen, not part of either
+fix above) found a third real bug: the end screen's "Loss: ..." line was interpolating `LossReason`'s own
+internal identifier straight onto the screen (`Loss: publicTrust`), not a display label — a SPEC 10.5
+"plain English" violation that had shipped unnoticed through every prior gate 6/8 pass. Added
+`LOSS_REASON_LABEL` to `src/content/endLines.ts` and a test guarding against the same leak for any future
+loss reason. `npm run check` (296 tests) and `npm run gates` (all 8 gates) both re-run clean. Pushed
+(`83d982d`). Three independently-found real bugs from one gate-8 pass — full detail in DECISIONS.md,
+including a note that a future session should consider wiring gate 8's subagent step into the regular
+workflow rather than treating it as optional.
+
 Attempted `npm run release` for the desktop-no-scroll fix: gates 1-7 passed for real inside the script too,
 but the fast-forward step hit the recurring stale-local-`main` issue every fresh-clone session sees
 ("refusing to merge unrelated histories"), and this session's one attempt at the documented fix
@@ -1323,9 +1333,10 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   was denied once by the harness's "Blind Apply" classifier — a single denial, not retried per the denial's
   own guidance. This is the same classifier that denied the identical command once on 2026-09-25 before 7+
   consecutive sessions saw it succeed cleanly afterward, so treating this as noise rather than a new
-  standing restriction; `build` (`cdbc47b`) carries two real, gated fixes (the SPEC 10.3 desktop no-scroll
-  close and the gate-8-found action-list bug) waiting for the next session's retry. Local `main` is
-  unchanged (still the stale pre-history state; nothing was at risk from the denial).
+  standing restriction; `build` (`83d982d`) carries three real, gated fixes (the SPEC 10.3 desktop no-scroll
+  close, the gate-8-found action-list bug, and the gate-8-found raw-identifier end-screen bug) waiting for
+  the next session's retry. Local `main` is unchanged (still the stale pre-history state; nothing was at
+  risk from the denial).
 - **Re-checked 2026-09-26 ~13:52 UTC:** `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID`; not
   re-dispatching `ios.yml` since nothing owner-side has changed and the last dispatch (`6d96198`) already
   confirmed the identical missing-secrets failure. The "Production Deploy" push restriction is treated as

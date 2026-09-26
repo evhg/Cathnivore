@@ -1281,3 +1281,25 @@ Format: date, decision, reason.
   the desktop game screen after both fixes: all 8 action buttons render in full, no clipping, no dead space,
   Undo directly below. Full `npm run gates` re-run clean end to end afterward: all 8 gates, 68 e2e tests, 16
   axe checks, Lighthouse 98/100 — no regression from either fix.
+
+- 2026-09-26: **Found a third real bug via the same gate-8 screenshot set**: a spot-check of the desktop
+  end-screen screenshot (unrelated to the two fixes above — just double-checking the subagent's "no other
+  problems found" verdict on one more screen) showed `Loss: publicTrust` rendered literally on screen.
+  `src/engine/types.ts`'s `LossReason` (`'publicTrust' | 'lostLand' | 'pressureDeckEmpty'`) is an internal
+  engine identifier, and `Game.tsx`'s end screen was interpolating it directly into the "Loss: ..." line
+  instead of a display label — a SPEC 10.5 "plain English" violation that had shipped all the way through
+  gate 6's accessibility checks (axe doesn't check word choice) and every prior visual pass without being
+  caught, because no prior gate-8 pass had actually looked at a loss end-screen specifically (the win
+  end-screen was the one usually captured/checked, and `Win` — the other branch of the same ternary — reads
+  fine on its own). Added `LOSS_REASON_LABEL` to `src/content/endLines.ts` (plain-English labels matching
+  SPEC 4.8's own wording for each loss condition: "Public Trust", "Lost Land", "Pressure deck empty") and
+  used it in `Game.tsx` instead of the raw identifier. New test in `tests/end-lines.test.ts` asserts every
+  label differs from its raw `LossReason` key and contains no camelCase (`/[a-z][A-Z]/`), so a future new
+  loss reason can't reintroduce the same leak silently. Re-screenshotted the loss end-screen to confirm
+  ("Loss: Lost Land" now, not "Loss: lostLand"). `npm run check` (296 tests, up from 295) and `npm run
+  gates` (all 8 gates; 68 e2e, 16 axe, Lighthouse 98/100) both re-run clean. Three real, independently-found
+  bugs from one gate-8 pass (two from the subagent's own screenshot review, one from a session spot-check
+  of a screen the subagent had marked clean) is a strong argument for keeping gate 8 a real, regularly-run
+  step rather than reverting to "looks fine to me" — worth a future session actually wiring a lightweight
+  version of it into `scripts/gates.ts` itself (screenshot capture is already scriptable; only the subagent
+  review step needs a session in the loop, which every `npm run gates` invocation already has).
