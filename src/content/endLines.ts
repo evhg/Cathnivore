@@ -9,3 +9,13 @@ export const LOSS_LINE: Record<LossReason, string> = {
   lostLand: 'We ran out of land before they ran out of money.',
   pressureDeckEmpty: "The merger went through. There's no undoing a signature.",
 }
+
+// SPEC 10.5: "Use plain English." `LossReason`'s own values (`publicTrust`, `lostLand`,
+// `pressureDeckEmpty`) are internal engine identifiers, not display text — Game.tsx's end screen was
+// interpolating them directly, leaking camelCase straight onto the screen (found by a gate-8 visual
+// review screenshot). These match SPEC 4.8's own wording for each loss condition.
+export const LOSS_REASON_LABEL: Record<LossReason, string> = {
+  publicTrust: 'Public Trust',
+  lostLand: 'Lost Land',
+  pressureDeckEmpty: 'Pressure deck empty',
+}
