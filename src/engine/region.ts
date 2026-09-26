@@ -37,11 +37,11 @@ export function canOpenStallIn(state: GameState, producer: ProducerId, region: R
   return anyStallsAdjacentOrIn(state, producer, region)
 }
 
-// Regions bordering (or equal to) a liberated region, usable by anyone (SPEC 5 "Grass Roots").
+// Regions bordering (or equal to) a liberated region, usable by anyone (SPEC 5 "Grass Roots"). Scoped to
+// this game's active regions: a campaign chapter's inactive regions (SPEC 8.1) must never become a legal
+// target just because they happen to neighbor a liberated one.
 export function regionsBorderingLiberated(state: GameState): RegionId[] {
-  return (Object.keys(state.regions) as RegionId[]).filter((id) =>
-    REGIONS[id].neighbors.some((n) => state.regions[n].liberated),
-  )
+  return state.config.activeRegions.filter((id) => REGIONS[id].neighbors.some((n) => state.regions[n].liberated))
 }
 
 function anyProducerHasStall(state: GameState, region: RegionId): boolean {

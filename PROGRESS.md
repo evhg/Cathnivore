@@ -19,8 +19,40 @@ uncaught rules bugs — see DECISIONS.md for full detail:
   before refilling the Market/Cath's Plan, reversed from spec's stated order — but `advanceTurnIfNeeded`
   already checks win before `cleanup()` is ever called and nothing inside `cleanup()` can newly satisfy the
   win condition, so this had no live effect. Fixed anyway for correctness-by-construction.
-`npm run check` (237 tests, up from 234) and `npm run gates` (gates 1-7) both re-run clean after the fixes.
-Both fixes are on `build` only, same as everything else, pending the two release blockers below.
+- **SPEC 5 "Grass Roots" could target an inactive campaign region:** a second subagent (run concurrently,
+  2 at once per CLAUDE.md's cap) found `src/engine/region.ts`'s `regionsBorderingLiberated` scanned every
+  one of the 7 region ids `state.regions` always holds, instead of `state.config.activeRegions` like every
+  other region-set helper in `region.ts`/`schemes.ts` — so in a restricted-map campaign chapter with Schemes
+  on (chapter 4 "The Plan" is the first), Grass Roots could place a free Stall in a "greyed out" inactive
+  region (e.g. Highmoor) once its active neighbour (Brindle Hills) was liberated. Fixed by scoping it to
+  `activeRegions`, one line; new `tests/region-scope.test.ts` (2 tests, both confirmed failing pre-fix).
+`npm run check` (239 tests, up from 234) and `npm run gates` (gates 1-7) both re-run clean after all three
+fixes. All three are on `build` only, same as everything else, pending the two release blockers below.
+
+A third concurrent subagent audited the campaign chapters (`src/content/chapters.ts`) against SPEC 8.2 and
+found two more real issues, **not yet fixed this session** (both need careful, non-rushed follow-up — see
+DECISIONS.md for full detail and why they weren't attempted in the time left):
+- **The chapter 3 -> 4 Wholesome Hollow Contract carry-over (SPEC 7: "each contract not torn up by the end
+  of the chapter adds 1 Outlet to Oakvale in chapter 4 (maximum 2)") was never actually implemented**, only
+  partially logged as such (PROGRESS.md's chapter-3 entry already said "minus its carry-over twist," but the
+  overall M5 checklist item was still checked off as "chapters 1 to 6, with their twists **and carry-over**"
+  — that line is corrected below; this was a known, logged simplification that just never got a follow-up
+  session, not a silent miss). `contractsTornUp` is tracked in chapter 3's own state but nothing reads it
+  when chapter 4 starts (`CHAPTER_4` has no `scriptedStart`, and `App.tsx` never threads it through).
+- **A one-round-longer-than-stated pacing quirk in every scripted-Pressure chapter (1, 3, 4, 5):** the
+  engine's "N Pressure cards -> a game can last at most N rounds" rule (SPEC 4.8, verified correct for the
+  full 10-card game) means a scripted chapter with a 1-setup-plus-K-round-card deck actually plays for up to
+  K+1 rounds, not K, since the round where the deck runs dry still gets its own producer-turns before the
+  Scout failure ends it. Chapter 1's goal text says "within 6 rounds" with a 7-card deck (1 setup + 6 "r1..
+  r6" cards) that mechanically allows a 7th round; chapter 5's SPEC-8.2-mandated "lasts 7 rounds" uses an
+  8-card deck that mechanically allows an 8th. Not a crash or an exploitable bug (it's one round *more*
+  generous to the player, never fewer), but a real mismatch between the stated goal text and the actual
+  mechanic. Fixing it means removing one scripted card from each affected chapter's sequence, which shifts
+  each chapter's HeuristicBot win-rate by an unknown amount — SPEC 9.4's chapter win-rate floors
+  (>=90%/>=70%/>=50%) are balance-sensitive, so this needs its own measurement pass (a fresh 30+ seed
+  HeuristicBot run per affected chapter after the change), not a same-session drive-by edit this late in a
+  session already carrying two other real fixes. Logged here with the exact fix (drop 1 card, re-run
+  `tests/chapters.test.ts`'s win-rate assertions) for a future session to pick up with its own time budget.
 
 M1-M6 are all content-complete, and M7 is now nearly complete too (long fuzz, README, full e2e pass and a
 final balance report all done — see below) — every checklist item is done except the release/`ios-<n>`/
@@ -250,7 +282,9 @@ thing to do is `npm run release`, since gates/e2e/balance are all in a shippable
   when absent (`src/engine/rules.ts`) so no existing caller needed to change. `src/content/chapters.ts`
   defines the shared `Chapter`/`TutorialStep` shape and `chapterConfig()`. Portraits are still placeholder
   text (no SVG yet) — tracked below.
-- [x] chapters 1 to 6, with their twists and carry-over — **chapter 1 "Fresh Meat" done**: Mara alone in
+- [ ] chapters 1 to 6, with their twists and carry-over (**the chapter 3->4 carry-over itself is still not
+  implemented** — see the 2026-09-26 audit finding in Current milestone/DECISIONS.md; this line was
+  previously checked off in error, since every other part of this item really is done) — **chapter 1 "Fresh Meat" done**: Mara alone in
   Brindle Hills/Highmoor, only Harvest/Open Stall/Supply/Graft, the enemy only Scouting a scripted
   sequence that introduces one region at a time (see DECISIONS.md for why — both regions are Pasture, so
   a same-round Scout on both was untenable for a single producer with 3 actions/round). Opening/closing
