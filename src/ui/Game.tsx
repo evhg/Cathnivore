@@ -124,8 +124,8 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory })
   }, [state, seed])
 
-  // SPEC 6/8.1: in Solo mode, the second producer is played by the AI teammate. A real MCTSBot-in-Worker
-  // teammate is future M3/M6 work (see DECISIONS.md); HeuristicBot stands in for now so the loop plays.
+  // SPEC 6/8.1: in Solo mode, the second producer is played by the AI teammate — the real MCTSBot-in-Worker
+  // bot below, not a HeuristicBot stand-in (see the effect further down that wires `aiWorker.ts`).
   // Applies an action and, if it ended the round, queues the resulting enemy-turn events for playback
   // (SPEC 10.2) instead of jumping straight to the new state's controls.
   function advance(from: GameState, action: Action): void {

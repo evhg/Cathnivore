@@ -141,7 +141,5 @@ export function createMCTSBot(budget = 200, rolloutRounds = 2, deadlineMs?: numb
 export const MCTSBot = createMCTSBot()
 
 // SPEC 9.2's real AI teammate: "up to 600 simulations or 400ms per decision, whichever comes first."
-// Not yet wired into a Web Worker or used by `Game.tsx` (HeuristicBot still stands in there — see
-// PROGRESS.md/DECISIONS.md) — exported now so that follow-up work only has to build the Worker plumbing,
-// not also design the bot's own parameters.
+// Wired into a Web Worker (`aiWorker.ts`) and used by `Game.tsx`'s Solo mode.
 export const AI_TEAMMATE_BOT = createMCTSBot(600, 2, 400)
