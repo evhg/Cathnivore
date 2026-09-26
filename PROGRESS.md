@@ -28,6 +28,14 @@ there still fires the confounding `mouseenter`). `npm run check` (270 tests, up 
 regressions, bundle still well under the 400 KB gate. The targeting-mode Confirm button, the rest of SPEC
 10.5's tooltip surface, and the desktop no-scroll gap remain open, per DECISIONS.md.
 
+With time still left, extended the tooltip work to the plan-strip's Squeeze/Expand/Scout cards: each now
+has its own small "?" trigger next to the existing highlight-toggle button (a separate sibling element,
+not nested inside it — nesting would make one tap ambiguous between two different actions). `Tooltip.tsx`
+gained an optional `label` prop for an accessible name when the trigger's visible content is just "?".
+New e2e coverage confirms the two triggers act independently. `npm run check` (270 tests) and `npm run
+gates` (48 e2e tests, axe and Lighthouse both clean) re-run clean again. The action-button/map-legend
+terms are the last open piece of SPEC 10.5, alongside the Confirm button and desktop no-scroll gap.
+
 Previous session (2026-09-26, ~05:52-06:xx UTC): re-checked both standing blockers once each — still identical
 (production push denied by the harness's "Production Deploy" classifier before reaching GitHub; `OWNER.md`'s
 Apple Team ID still `PASTE-TEAM-ID`), now 10+ consecutive sessions with zero net release progress. `npm run

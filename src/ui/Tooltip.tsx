@@ -4,6 +4,9 @@ import { GLOSSARY_LOOKUP } from '../content/terms'
 interface Props {
   term: keyof typeof GLOSSARY_LOOKUP | string
   children: React.ReactNode
+  // For a trigger whose visible content isn't the term itself (e.g. a standalone "?" icon next to an
+  // already-interactive button), an accessible name a screen reader can announce instead of "?".
+  label?: string
 }
 
 // SPEC 10.5: "Every game term ... is explained in the rules reference and in a tap or hover tooltip."
@@ -11,7 +14,7 @@ interface Props {
 // hover, so this wraps the term in a focusable/tappable trigger with its own popover instead. Click/tap
 // toggles (so it works with no pointer at all); mouse hover/focus also opens it for desktop, without
 // fighting the toggle (hover-close only fires if a tap didn't leave it pinned open).
-export default function Tooltip({ term, children }: Props) {
+export default function Tooltip({ term, children, label }: Props) {
   const body = GLOSSARY_LOOKUP[term]
   // Two independent flags rather than one: a real mouse click also fires a `mouseenter` just before it
   // (moving the pointer onto the trigger to click it), so a single toggled flag would open on the hover
@@ -53,6 +56,7 @@ export default function Tooltip({ term, children }: Props) {
       <button
         type="button"
         className="tooltip-trigger-button"
+        aria-label={label}
         aria-describedby={open ? id : undefined}
         aria-expanded={open}
         onClick={(e) => {

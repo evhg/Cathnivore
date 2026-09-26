@@ -381,17 +381,27 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       )}
 
       <section className="plan-strip">
-        {(['squeeze', 'expand', 'scout'] as const).map((slot) => (
-          <button
-            key={slot}
-            type="button"
-            aria-pressed={planHighlightSlot === slot}
-            className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
-            onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
-          >
-            {slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'}: {pressureLabel(state[slot])}
-          </button>
-        ))}
+        {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
+          const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
+          return (
+            <span key={slot} className="plan-strip-item">
+              <button
+                type="button"
+                aria-pressed={planHighlightSlot === slot}
+                className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
+                onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
+              >
+                {slotLabel}: {pressureLabel(state[slot])}
+              </button>
+              {/* A separate trigger, not nested inside the button above: that button already has its own
+                  tap meaning (toggle the map highlight), so a tooltip needs its own affordance rather than
+                  fighting it for the same tap (SPEC 10.5, alongside SPEC 10.2's highlight behaviour). */}
+              <Tooltip term={slotLabel} label={`What is ${slotLabel}?`}>
+                ?
+              </Tooltip>
+            </span>
+          )
+        })}
       </section>
 
       <section className="map-wrap">

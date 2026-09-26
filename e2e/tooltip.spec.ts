@@ -28,6 +28,24 @@ test('tapping a topbar term shows its tooltip, and tapping again hides it', asyn
   await expect(popover).toHaveCount(0)
 })
 
+test('the plan-strip cards have their own "?" tooltip, separate from the tap-to-highlight button', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  const info = page.locator('.plan-strip-item .tooltip-trigger-button', { hasText: '?' }).first()
+  await expect(info).toBeVisible()
+  await info.dispatchEvent('click')
+  await expect(page.locator('.tooltip-popover')).toBeVisible()
+
+  // Tapping the highlight button in the same item is a separate gesture and must not be swallowed by the
+  // tooltip trigger sitting right next to it (SPEC 10.2's highlight behaviour still works).
+  const highlightButton = page.locator('.plan-strip-item').first().locator('button').first()
+  await highlightButton.click()
+  await expect(highlightButton).toHaveAttribute('aria-pressed', 'true')
+})
+
 test('clicking outside a tooltip dismisses it', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()

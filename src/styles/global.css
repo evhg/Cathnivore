@@ -199,7 +199,14 @@ h3 {
   gap: 8px;
 }
 
-.plan-strip button {
+.plan-strip-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.plan-strip-item > button:first-child {
   flex: 1;
   background: var(--surface);
   border: 1px solid var(--rule);
@@ -210,6 +217,20 @@ h3 {
   font-family: inherit;
   color: inherit;
   cursor: pointer;
+}
+
+/* The small "?" tooltip trigger next to each plan-strip card (SPEC 10.5) — a separate, deliberately
+   compact affordance so it never competes with the card's own tap-to-highlight target above. */
+.plan-strip-item .tooltip-trigger-button {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  text-align: center;
+  font-size: 12px;
+  cursor: help;
+  color: inherit;
 }
 
 /* SPEC 10.2: the tapped plan-strip card stays visibly selected while its regions are highlighted. */
