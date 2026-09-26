@@ -210,9 +210,8 @@ export default function Map({ state, highlight, onSelect }: Props) {
         return (
           <g
             key={id}
-            className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}`}
+            className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}`}
             onClick={onSelect ? () => onSelect(id) : undefined}
-            style={onSelect ? { cursor: 'pointer' } : undefined}
           >
             <polygon
               points={hexPoints(x, y, HEX_R * GAP_SCALE)}

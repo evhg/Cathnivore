@@ -440,6 +440,16 @@ h3 {
   opacity: 0.45;
 }
 
+.region-hex-selectable {
+  cursor: pointer;
+}
+
+/* SPEC 11.5's CSP has no `style-src 'unsafe-inline'` exception, so a DOM `style` attribute (not just a
+   `<style>` tag) is blocked — `ResourceIcons.tsx`'s two icons used one only for `vertical-align`. */
+.icon-inline {
+  vertical-align: middle;
+}
+
 .region-hex.glow polygon:first-of-type {
   stroke: var(--wheat);
   stroke-width: 5;

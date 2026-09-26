@@ -36,6 +36,16 @@ New e2e coverage confirms the two triggers act independently. `npm run check` (2
 gates` (48 e2e tests, axe and Lighthouse both clean) re-run clean again. The action-button/map-legend
 terms are the last open piece of SPEC 10.5, alongside the Confirm button and desktop no-scroll gap.
 
+With time still left, fixed another logged-but-open deployment-audit finding: **SPEC 11.5's CSP no longer
+needs `style-src 'unsafe-inline'`.** Moved `/privacy`/`/support`'s inline `<style>` blocks into a shared
+`public/pages.css`, self-hosted Fraunces/Atkinson Hyperlegible (STYLE.md 4, replacing the old Georgia
+fallback) at a stable `public/fonts/` path, and dropped the CSP exception. Before dropping it, found and
+fixed two real DOM `style={{...}}` usages elsewhere in the app (`ResourceIcons.tsx`, `Map.tsx`) that would
+otherwise have silently broken under the tightened CSP in production — moved to CSS classes. New
+`e2e/csp.spec.ts` (checks for zero `[style]` elements, since the CSP header itself isn't visible to a local
+preview server) plus new `tests/pages.test.ts`/CSP-config assertions guard against regressions. `npm run
+check` (272 tests) and `npm run gates` (52 e2e tests, axe/Lighthouse clean) re-run clean.
+
 Previous session (2026-09-26, ~05:52-06:xx UTC): re-checked both standing blockers once each — still identical
 (production push denied by the harness's "Production Deploy" classifier before reaching GitHub; `OWNER.md`'s
 Apple Team ID still `PASTE-TEAM-ID`), now 10+ consecutive sessions with zero net release progress. `npm run

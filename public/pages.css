@@ -1,0 +1,61 @@
+/* Shared stylesheet for the static /privacy and /support pages (SPEC 11.5). External, not inline, so
+   the CSP's `style-src` doesn't need `'unsafe-inline'` — these two pages are the only ones that ever
+   needed it. Fonts are self-hosted at this stable, non-content-hashed path (`/fonts/*.woff2`) rather than
+   the main app's bundler-hashed filenames, matching STYLE.md 4's Fraunces/Atkinson Hyperlegible instead of
+   the previous Georgia fallback. */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/atkinson-hyperlegible-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/atkinson-hyperlegible-latin-700-normal.woff2') format('woff2');
+}
+
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: #F4EDE1;
+  color: #2B2320;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  line-height: 1.5;
+}
+main {
+  max-width: 640px;
+  margin: 0 auto;
+}
+h1,
+h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 700;
+}
+a {
+  color: #6B4A2B;
+}
+footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #C9BCAC;
+  font-size: 14px;
+  color: #6E625A;
+}

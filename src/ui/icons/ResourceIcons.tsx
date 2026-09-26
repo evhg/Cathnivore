@@ -5,7 +5,7 @@ const INK = 'var(--ink, #2B2320)'
 
 function Base({ size = 16, children }: { size?: number; children: ReactNode }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ verticalAlign: 'middle' }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" className="icon-inline">
       {children}
     </svg>
   )
@@ -93,7 +93,7 @@ export function RoundIcon(props: { size?: number }) {
 export function ActionsLeftIcon({ total, left }: { total: number; left: number }) {
   const n = Math.max(total, 1)
   return (
-    <svg width={16 * n} height={16} viewBox={`0 0 ${24 * n} 24`} aria-hidden="true" style={{ verticalAlign: 'middle' }}>
+    <svg width={16 * n} height={16} viewBox={`0 0 ${24 * n} 24`} aria-hidden="true" className="icon-inline">
       {Array.from({ length: total }, (_, i) => (
         <circle key={i} cx={12 + i * 24} cy={12} r={7} fill={i < left ? INK : 'none'} stroke={INK} strokeWidth={1.5} />
       ))}

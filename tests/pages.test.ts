@@ -26,4 +26,24 @@ describe('privacy and support pages', () => {
     expect(privacy).toContain('href="/support"')
     expect(support).toContain('href="/privacy"')
   })
+
+  // SPEC 11.5's CSP has no `style-src 'unsafe-inline'` exception; these two pages used to be the reason
+  // it was there (an inline `<style>` block each). Guards against a future edit reintroducing one.
+  it('neither page has an inline <style> block', () => {
+    for (const page of [privacy, support]) {
+      expect(page).not.toMatch(/<style/i)
+      expect(page).toContain('<link rel="stylesheet" href="/pages.css" />')
+    }
+  })
+})
+
+describe('vercel.json CSP', () => {
+  const vercelConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '../vercel.json'), 'utf8'))
+  const cspRule = vercelConfig.headers.find((h: { source: string }) => h.source === '/(.*)')
+  const csp: string = cspRule.headers.find((h: { key: string }) => h.key === 'Content-Security-Policy').value
+
+  it('style-src allows only self, no unsafe-inline', () => {
+    expect(csp).toMatch(/style-src 'self'(?!.*unsafe-inline)/)
+    expect(csp).not.toContain('unsafe-inline')
+  })
 })
