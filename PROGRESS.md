@@ -45,7 +45,36 @@ reduced-motion fix, gated and pushed, still waiting on a future session's releas
 With time still left, launched a third subagent, scoped to the test suite's own quality (tests/*.test.ts,
 e2e/*.spec.ts) rather than the app code — looking for tests that would give false confidence (trivial
 assertions, tests that only check "didn't crash," tests encoding a bug as correct, `.skip`/`.only` left in,
-copy-paste test bodies). Result pending in the next entry.
+copy-paste test bodies). Overall quality came back unusually high (every test file ties assertions to a
+SPEC/STYLE.md clause, the few `.skip()`s found are all conditional/browser-scoped, no `.only`/`.todo`/
+swallowed failures). **One real gap found and fixed:** `tests/chapters.test.ts`'s "a torn-up contract ...
+no longer counts" test never actually simulated a tear-up — it duplicated the two tests above it and cited
+a nonexistent `actions.test.ts` as covering the real path. Rewrote it to drive the real `tearUpContract`
+action via `applyAction` (matching `scenario.test.ts`'s own pattern) and assert the carry-over count drops
+from 2 to 1 afterward.
+
+With still more time left, launched a fourth subagent scoped to the AI teammate's Web Worker communication
+layer (`src/ai/aiWorker.ts`/`src/ui/Game.tsx`'s wiring) — confirmed the stale-response race, worker
+lifecycle, reason-string computation and the 400ms/600-sim budget are all handled correctly, but found one
+real, previously-undiscovered gap: **no `worker.onerror` handler and no timeout for a missing response.**
+If the worker ever threw, the AI teammate's turn — and the whole game — would silently hang forever with no
+recovery, violating SPEC 1.3's #1 priority ("games can be finished"). Fixed by adding an error handler plus
+a 3-second watchdog that falls back to the same synchronous `HeuristicBot.chooseAction` the autoplay path
+already uses, terminating and replacing the stale worker. Added a `?e2eAiWorkerCrash=1` test-only hook
+(matching the existing `?e2eCrash=1`/`?e2eAutoplay=1` pattern) and a new e2e test exercising the real
+fallback end to end — verified the test actually catches the regression by temporarily stripping the fix
+back out and confirming the test failed (turn hung on Mara) before restoring it.
+
+Full session tally: **six subagent review passes** (two launched in parallel, four sequential), one clean
+confirmation (haptics/motion durations), and **five real, previously-undiscovered bugs found and fixed**
+(reduced-motion CSS not fading, Stall-rendering overlap between producers, false SQUEEZE/EXPAND highlighting
+on liberated regions, hardcoded dark-theme-breaking icon colours, and the AI worker hang), plus one weak
+test strengthened — the busiest single-session hardening haul in the project's history. `npm run check`
+(299 tests) and a full `npm run gates` (all 8 gates; 70 e2e now, up from 68, 16 axe, Lighthouse 98/100; gate
+8 reviewed directly against fresh screenshots, no regressions) both clean on the final `build` HEAD. Every
+fix is committed and pushed to `build`, still waiting on a future session's release retry (the `main`
+push classifier denial and the Apple-secrets iOS block are this session's only two unresolved blockers,
+both owner-side/environment-side, not code issues).
 
 ---
 
