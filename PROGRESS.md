@@ -35,8 +35,25 @@ build` succeeded locally. `git push origin main` was then denied by this session
 Deploy" classifier) — the same restriction several prior sessions logged as fixed (8+ consecutive clean
 pushes since 2026-09-26 ~11:00 UTC) has recurred. Per the denial's own guidance, not retried or routed around
 this session. Local `main` was left fast-forwarded but unpushed; switched back to `build` (confirmed
-`origin/main` is untouched, still at `c8c4fee`). `build` carries these two real fixes, gated and pushed,
-ready for the next session's release retry. See Blocked for the full note.
+`origin/main` is untouched, still at `c8c4fee`).
+
+With more time still left, ran a second, differently-scoped review subagent against `src/content/*.ts` (the
+36 Improvements/30 Schemes/24 Agenda cards/campaign chapters — the other part of the codebase a screenshot
+can't validate). It found a third real bug: **chapter 6's "liberate your 2nd region" trigger fired
+unconditionally at round-1 cleanup**, before any player action, because the chapter's `scriptedStart` already
+carries 2 regions liberated forward from chapters 4-5 (a documented M4/M5 balance decision) and the trigger's
+threshold (`liberatedCount: 2`) was never updated to account for that — reproduced directly by playing only
+`graft` actions through round 1 and watching Cath's Plan unlock anyway. Fixed by raising the threshold to 3
+(2 carried + 1 new) in `src/content/chapters.ts`, reworded the now-inaccurate tutorial line, and strengthened
+`tests/chapters.test.ts`'s existing test (which only checked the unlock eventually happened, never that it
+coincided with an actual new liberation) to pin the correct behavior — it fails without the fix. Full detail
+in DECISIONS.md, including a stale-note cleanup this bug hunt turned up along the way (SPEC 8.2's "free
+Scheme" grant was logged as unimplemented in 2026-09-25 but actually shipped in a later session).
+`npm run check` (299 tests) and `npm run gates` (all 8 gates; 68 e2e, 16 axe, Lighthouse 98/100) both clean
+again after this fix. `build` now carries all three real fixes from this session, gated and pushed, ready
+for the next session's release retry (this session already spent its one release attempt on the first two
+fixes above, denied per the "Production Deploy" note; not attempting a second retry this session per the
+denial's own once-per-session guidance). See Blocked for the full release-attempt note.
 
 ---
 

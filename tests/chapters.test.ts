@@ -283,10 +283,25 @@ describe('chapter 6: Kingsmarket', () => {
     expect(kinds.has('scheme')).toBe(false)
   })
 
-  it('unlocks Cath\'s Plan once the 2nd region is liberated', () => {
+  it('unlocks Cath\'s Plan only once a 3rd region is liberated (2 already carried over from chapters 4-5)', () => {
     let state = createGame(chapterConfig(CHAPTER_6), 1)
+    // Regression check for a bug where the trigger fired unconditionally at round-1 cleanup, before any
+    // player action, because `scriptedStart` already starts 2 regions liberated: confirm it's still locked
+    // (and no new region liberated yet) after cleanup ends round 1.
     let rng = createRng(6000)
     let steps = 0
+    while (state.round === 1 && !state.result && steps < 500) {
+      const [action, nextRng] = HeuristicBot.chooseAction(state, rng)
+      state = applyAction(state, action)
+      rng = nextRng
+      steps++
+      expect(validate(state)).toEqual([])
+    }
+    if (!state.result) {
+      expect(state.cathsPlanLocked).toBe(true)
+      expect(Object.values(state.regions).filter((r) => r.liberated).length).toBe(2)
+    }
+
     while (state.cathsPlanLocked && !state.result && steps < 500) {
       const [action, nextRng] = HeuristicBot.chooseAction(state, rng)
       state = applyAction(state, action)
@@ -296,6 +311,8 @@ describe('chapter 6: Kingsmarket', () => {
     }
     expect(state.cathsPlanLocked).toBe(false)
     expect(state.log.some((e) => e.type === 'trigger' && e.effect === 'unlockCathsPlan')).toBe(true)
+    // The trigger must coincide with an actual 3rd liberated region, not fire on round advancement alone.
+    expect(Object.values(state.regions).filter((r) => r.liberated).length).toBeGreaterThanOrEqual(3)
     // SPEC 8.2: "the Plan unlocks and the players get one free Scheme."
     expect(state.freeSchemePlays).toBe(1)
   })

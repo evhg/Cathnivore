@@ -481,7 +481,12 @@ export const CHAPTER_6: Chapter = {
     },
   },
   cathsPlanLocked: true,
-  scriptedTrigger: { liberatedCount: 2, effect: 'unlockCathsPlan', sceneId: 'planUnlocked' },
+  // SPEC 8.2: "When the players liberate their 2nd region..." — written before the balance-loop decision
+  // (DECISIONS.md 2026-09-25) to carry 2 already-liberated regions over from chapters 4-5. `liberatedCount`
+  // counts the chapter's total liberated regions, not new ones, so it must be 3 (2 carried + 1 new) for the
+  // trigger to still mean "the players liberate [another] region" rather than firing unconditionally at
+  // round-1 cleanup before any player action.
+  scriptedTrigger: { liberatedCount: 3, effect: 'unlockCathsPlan', sceneId: 'planUnlocked' },
   winCondition: { regionsRequired: 5, requireKingsmarket: true },
   goalDescription: 'Liberate 5 regions, including Kingsmarket — the standard win.',
   tutorialSteps: [
@@ -490,7 +495,7 @@ export const CHAPTER_6: Chapter = {
       highlight: null,
     },
     {
-      text: 'Liberate your 2nd region and a scene will bring her back — Cath’s Plan unlocks the moment it does.',
+      text: 'Liberate one more region and a scene will bring her back — Cath’s Plan unlocks the moment it does.',
       highlight: null,
     },
     {

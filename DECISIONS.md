@@ -326,6 +326,12 @@ Format: date, decision, reason.
   without the usual Goodwill gate) that risks a rushed, undertested addition this late in a session; logged
   as a known simplification rather than attempted hastily. The lock/unlock mechanic itself — the part with
   real rules consequences — is implemented and tested. Revisit if a future session has spare time before M7.
+  **Stale as of a later session (2026-09-26): this was implemented.** `GameState.freeSchemePlays` (set to 1
+  by chapter 6's `unlockCathsPlan` trigger, see `round.ts`'s cleanup) lets `actions.ts`'s `scheme` case cover
+  a Scheme's Goodwill cost for free the next time a producer plays one, same shape as SPEC 9.2's AI-teammate
+  reason-string item elsewhere in this file being picked back up once its stated blocker no longer applied.
+  `tests/chapters.test.ts` asserts `freeSchemePlays === 1` after the trigger fires. Leaving this entry rather
+  than deleting it, so a future session doesn't independently re-discover the same already-closed gap.
 
 - 2026-09-25: Built STYLE.md 9's portraits (M5's last remaining checklist item) as a single parametric SVG
   `Portrait` component (`src/ui/portraits/Portrait.tsx`) driven by a per-character data table
@@ -1371,3 +1377,31 @@ Format: date, decision, reason.
      ts` (one for each first-player assignment on the same tied board) confirm the right producer loses the
      Stall either way — the first one fails without the fix. `npm run check`/`npm run gates` both clean
      (counted in the numbers above).
+
+- 2026-09-26 (same session): **A second, targeted content-review subagent pass** (`src/content/*.ts`: the
+  36 Improvements, 30 Schemes, 24 Agenda cards, Pressure deck, map adjacency and campaign chapters, against
+  SPEC sections 4.2/5/6/7/8) found one more real bug, in chapter 6. Everything else it checked (all card
+  effects, map adjacency, chapters 1-5's scripted setups/triggers/carry-over) matched SPEC with no
+  deviations beyond already-logged, dated balance-loop decisions.
+  **Chapter 6's "liberate your 2nd region" trigger fired unconditionally at round-1 cleanup, before any
+  player action.** `CHAPTER_6.scriptedTrigger` was `{ liberatedCount: 2, ... }`, but the M4/M5-era balance
+  decision (this file, 2026-09-25) to carry Rivermead and Oakvale forward as already-liberated from chapters
+  4-5 (`scriptedStart.regions`, both `liberated: true`) means the chapter *starts* with 2 regions liberated
+  — so `countLiberated(next) >= 2` (`round.ts`'s cleanup trigger check) was already true before the first
+  round even finished, regardless of what the player did. Reproduced directly: played only `graft` actions
+  (no liberating action at all) through round 1 of a fresh chapter-6 game — `cathsPlanLocked` still flipped
+  to `false` and `freeSchemePlays` still became 1 at that round's cleanup. SPEC 8.2's "When the players
+  **liberate** their 2nd region" describes a player action causing it; the balance-loop carry-over decision
+  (made after that SPEC text, to close the chapter-6 HeuristicBot win-rate floor) broke that link without
+  updating the trigger threshold to account for the 2 pieces of ground already banked. The in-game tutorial
+  line ("Liberate your 2nd region...") was also factually wrong under this scripted start. Fixed by raising
+  `liberatedCount` to 3 (2 carried + 1 new) in `src/content/chapters.ts`, so the trigger now means "liberate
+  one more region" as intended, and reworded the tutorial line to match. `tests/chapters.test.ts`'s existing
+  "unlocks Cath's Plan" test only asserted the unlock eventually happened, never that it coincided with an
+  actual new liberation — strengthened it to assert the Plan is still locked (and liberated-region count is
+  still exactly 2) through the end of round 1, and that the unlock's liberated-region count is >=3 once it
+  does fire; both assertions fail without the fix. Also fixed a stale note this file carried (2026-09-25,
+  "the free Scheme grant is not implemented") — a later session actually implemented `freeSchemePlays`
+  end to end; annotated rather than deleted, so a future session doesn't waste time re-discovering the same
+  already-closed gap. `npx tsc -b --noEmit`, `npm run check` (299 tests) and `npm run gates` (all 8 gates;
+  68 e2e, 16 axe, Lighthouse 98/100) all clean.
