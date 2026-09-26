@@ -27,8 +27,25 @@ attaching a build/ipa (SPEC 11.6: "attach the latest processed build"). Full det
 more findings were investigated and left alone as already-logged, reasoned balance-loop trade-offs, not
 bugs (Normal's Lost Land pool, Sol's production, chapter 3's Wholesome Hollow Contract count) — see
 DECISIONS.md for why each is a settled decision, not drift.
-`npm run check` (249 tests, up from 247) and `npm run gates` (gates 1-7, Chromium-fallback for gate 5/6 as
-usual in this sandbox, Lighthouse 99/100) both re-run clean end to end with no regressions. All of this is
+
+With time still left, ran a third audit against SPEC 10's literal interaction/behavior requirements (as
+opposed to the appearance-only gate-8 visual reviews done before). Found 3 real, substantial gaps, none
+fixed this session (each is real design/engineering work, not a bounded bug, and rushing any risks breaking
+the ~90-test e2e suite that exercises the current, working, already-tested UI flow) — logged in full detail
+in DECISIONS.md for a future session with proper time to spend:
+- SPEC 10.2's "targeting mode" (glow legal targets/cards, dim everything else, show Confirm, Cancel always
+  visible) doesn't exist — actions commit immediately on the first tap instead.
+- SPEC 10.2's enemy-plan-strip tap-to-highlight isn't wired up (the three Squeeze/Expand/Scout cards have
+  no click handler at all).
+- SPEC 10.5's tap/hover tooltips on game terms (Squeeze, Expand, etc.) don't exist in the game UI itself
+  (only the rules reference has the explanation half).
+Also measured (not fixed) a related, more concrete gap: **SPEC 10.3's "no scrolling at 1280×800" fails by a
+wide margin** in a content-dense mid-game position (the centre column needs 388px more height than
+available, the right column 423px more) — verified with a new `test.skip`'d Playwright test
+(`e2e/desktop-no-scroll.spec.ts`, skipped so it doesn't block the gate) ready for a future session to
+un-skip once the desktop layout is made denser.
+`npm run check` (249 tests) and `npm run gates` (gates 1-7, Chromium-fallback for gate 5/6 as usual in this
+sandbox, Lighthouse 99/100) both re-run clean end to end with no regressions. All of this session's work is
 on `build` only, same as everything else, still waiting on the two release blockers below.
 
 Previous session (2026-09-26, ~04:51-05:xx UTC): re-checked both standing blockers once each (still denied /
