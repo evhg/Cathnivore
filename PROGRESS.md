@@ -37,17 +37,27 @@ blocked on something outside session capability, this session did real, unblocke
 `npm run check`/`npm run gates` both still pass clean end to end (164 unit tests, 35 e2e/gate-5 tests; gate
 8 still needs a human/subagent judgement call each session). This session (2026-09-26): re-checked the
 production-push restriction (still denied, see Blocked) and `OWNER.md`'s Apple Team ID (still the
-placeholder), then did the piece-icon polish flagged as the next session's lowest-priority open item —
-**`src/ui/Map.tsx`'s game pieces now match STYLE.md 6's exact illustrations**, not just distinguishable
-shapes: Outlet gained its hanging ".99" price tag, Buyout gained a "SOLD" banner on its fence-post
-silhouette, Doubt gained a speech-bubble tail, Stall is now a two-stripe (producer colour/paper) awning
-roof over a scalloped valance instead of a plain rounded rect, Lost Land's overlay is a real cross-hatch
-pattern plus two crack lines instead of a flat tint, and the Co-op marker is a six-petal rosette instead of
-a plain circle. Verified visually (cropped screenshots at 3x scale via a temporary Playwright script,
-removed after use) and with the full `npm run check` plus a targeted e2e run
-(`quick-game.spec.ts`+`screenshots.spec.ts`, `desktop-chromium`) — both clean, no regressions. Next
-session: re-try the push-restriction/Apple-Team-ID checks once as usual; M7's remaining items (a final full
-e2e pass on both sizes, and the final balance report) are still best left until closer to the deadline.
+placeholder), then did two rounds of real, unblocked work:
+- **piece-icon polish, closing the last open item from M3/M6's map visual pass** —
+  **`src/ui/Map.tsx`'s game pieces now match STYLE.md 6's exact illustrations**, not just distinguishable
+  shapes: Outlet gained its hanging ".99" price tag, Buyout gained a "SOLD" banner on its fence-post
+  silhouette, Doubt gained a speech-bubble tail, Stall is now a two-stripe (producer colour/paper) awning
+  roof over a scalloped valance instead of a plain rounded rect, Lost Land's overlay is a real cross-hatch
+  pattern plus two crack lines instead of a flat tint, and the Co-op marker is a six-petal rosette instead
+  of a plain circle;
+- **found and fixed a real gap: STYLE.md 3.5's dark theme had no way to turn it on.** `tokens.css` already
+  had the full dark-theme colour set (both a `prefers-color-scheme: dark` media query and a
+  `[data-theme]` attribute override) from an earlier session, but nothing ever set that attribute and
+  Settings had no control for it — STYLE.md 3.5's "Settings can force light or dark" was unimplemented,
+  not merely untested. Added `Settings.theme: 'system' | 'light' | 'dark'` (`src/platform/settings.ts`),
+  `applyThemeSetting()` (same pattern as the existing `applyAnimationsSetting()`), a new Theme section in
+  `Settings.tsx`, and wired it into `main.tsx`'s startup alongside the animations setting.
+Both verified visually (cropped/full screenshots via a temporary Playwright script, removed after use, not
+committed) and with the full `npm run check` (165 unit tests) plus targeted e2e runs
+(`quick-game.spec.ts`+`screenshots.spec.ts`, `title.spec.ts`+`accessibility.spec.ts`, `desktop-chromium`) —
+all clean, no regressions. Next session: re-try the push-restriction/Apple-Team-ID checks once as usual;
+M7's remaining items (a final full e2e pass on both sizes, and the final balance report) are still best
+left until closer to the deadline.
 
 ## Tasks
 
@@ -415,7 +425,9 @@ e2e pass on both sizes, and the final balance report) are still best left until 
   `storage` interface, same pattern as `platform/storage.ts`'s save/campaign keys) and `src/ui/Settings.tsx`,
   reached from a new title-screen button. Animations and colour-blind-patterns are real, persisted booleans
   but have no visible effect yet (no animations or colour-blind rendering mode exist to gate — both are
-  logged as open, not faked); AI speed is real and wired end-to-end: `AI_SPEED_DELAY_MS` now drives
+  logged as open, not faked — **animations' effect is now real too, see M6's animations entry below; the
+  dark theme gap this left open is now closed too, see Current milestone's 2026-09-26 entry**); AI speed is
+  real and wired end-to-end: `AI_SPEED_DELAY_MS` now drives
   `Game.tsx`'s AI-turn pacing (previously a hardcoded `150`). Reset all data needs an explicit second
   confirmation click (never a single tap) and clears both save keys via the existing `clearGame`/
   `CAMPAIGN_KEY` — SPEC 11.3's two keys only, settings themselves persist through a reset. Reused the

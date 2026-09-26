@@ -4,11 +4,17 @@ import { storage } from './storage'
 // confirmation."
 export type AiSpeed = 'slow' | 'normal' | 'fast'
 
+// STYLE.md 3.5: "The theme follows the phone's setting, and Settings can force light or dark."
+// 'system' defers to the OS's `prefers-color-scheme` (handled by tokens.css's media query); 'light'/'dark'
+// force one regardless of the OS setting.
+export type ThemePreference = 'system' | 'light' | 'dark'
+
 export interface Settings {
   version: 1
   animations: boolean
   colourBlindPatterns: boolean
   aiSpeed: AiSpeed
+  theme: ThemePreference
 }
 
 export const SETTINGS_KEY = 'cathnivore:settings:v1'
@@ -18,6 +24,7 @@ export const DEFAULT_SETTINGS: Settings = {
   animations: true,
   colourBlindPatterns: false,
   aiSpeed: 'normal',
+  theme: 'system',
 }
 
 export function loadSettings(): Settings {
@@ -35,6 +42,7 @@ export function loadSettings(): Settings {
 export function saveSettings(settings: Settings): void {
   storage.set(SETTINGS_KEY, JSON.stringify(settings))
   applyAnimationsSetting(settings.animations)
+  applyThemeSetting(settings.theme)
 }
 
 // STYLE.md 11: "with reduced motion switched on, use fades only" is the OS-level `prefers-reduced-motion`
@@ -44,6 +52,19 @@ export function saveSettings(settings: Settings): void {
 export function applyAnimationsSetting(animations: boolean): void {
   if (typeof document === 'undefined') return
   document.documentElement.classList.toggle('no-animations', !animations)
+}
+
+// tokens.css already defines both a `prefers-color-scheme: dark` media query and a `[data-theme="dark"]`/
+// `[data-theme="light"]` attribute override (the media query is itself guarded by `:not([data-theme=
+// "light"])` so an explicit light override always wins over a dark OS setting). This just sets or clears
+// that attribute; 'system' clears it so the media query alone decides.
+export function applyThemeSetting(theme: ThemePreference): void {
+  if (typeof document === 'undefined') return
+  if (theme === 'system') {
+    document.documentElement.removeAttribute('data-theme')
+  } else {
+    document.documentElement.setAttribute('data-theme', theme)
+  }
 }
 
 // The AI teammate's "thinking" pause before it starts its real decision (Game.tsx) — on top of this, the

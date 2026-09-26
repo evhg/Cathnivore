@@ -622,3 +622,18 @@ Format: date, decision, reason.
   `desktop-chromium` e2e run (`quick-game.spec.ts` + `screenshots.spec.ts`), both clean. No engine/rules/
   test changes needed — this is pure `src/ui/Map.tsx` + `src/styles/global.css` presentation work, so no
   existing test needed updating.
+
+- 2026-09-26: After the piece-icon polish above, checked SPEC 1.12's cut list against what's actually
+  implemented (looking for anything silently missing rather than deliberately cut and logged) and found a
+  real gap: STYLE.md 3.5's dark theme. `src/styles/tokens.css` already defined the full dark colour set
+  (both a `prefers-color-scheme: dark` media query and a `[data-theme]` attribute override, from an earlier
+  session), but nothing in the app ever set that attribute and the Settings screen had no control for
+  it — so "the theme follows the phone's setting" half-worked (the media query alone), but "Settings can
+  force light or dark" was simply not built, not just untested. Since animations (SPEC 1.12's cut #1,
+  ranked *ahead* of dark theme in the cut order) were already fully implemented, this was an oversight, not
+  an implied cut. Added `Settings.theme: 'system' | 'light' | 'dark'` and `applyThemeSetting()`
+  (`src/platform/settings.ts`, same shape as the existing `applyAnimationsSetting()`), a Theme section in
+  `src/ui/Settings.tsx`, and wired it into `main.tsx`'s startup. Verified visually (a forced-dark screenshot
+  of the game screen: dark panels/map background, producer/enemy piece colours unchanged, per STYLE.md
+  3.5's "the table goes dark; the pieces, cards and portraits don't") and with `npm run check` (165 tests)
+  plus the accessibility/title/settings e2e suites, all clean.

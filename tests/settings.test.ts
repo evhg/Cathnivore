@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
-import { DEFAULT_SETTINGS, loadSettings, saveSettings, AI_SPEED_DELAY_MS } from '../src/platform/settings'
+import { DEFAULT_SETTINGS, loadSettings, saveSettings, applyThemeSetting, AI_SPEED_DELAY_MS } from '../src/platform/settings'
 
 // `src/platform/storage.ts`'s web implementation reads/writes `window.localStorage` directly (SPEC 11.3);
 // Vitest runs in plain Node with no `window` at all, so it silently no-ops there (by design — a failed
@@ -27,8 +27,14 @@ describe('settings', () => {
   })
 
   it('round-trips a saved settings object', () => {
-    saveSettings({ version: 1, animations: false, colourBlindPatterns: true, aiSpeed: 'fast' })
-    expect(loadSettings()).toEqual({ version: 1, animations: false, colourBlindPatterns: true, aiSpeed: 'fast' })
+    saveSettings({ version: 1, animations: false, colourBlindPatterns: true, aiSpeed: 'fast', theme: 'dark' })
+    expect(loadSettings()).toEqual({
+      version: 1,
+      animations: false,
+      colourBlindPatterns: true,
+      aiSpeed: 'fast',
+      theme: 'dark',
+    })
   })
 
   it('falls back to defaults for a corrupt value', () => {
@@ -37,6 +43,11 @@ describe('settings', () => {
       'not json',
     )
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS)
+  })
+
+  it('applyThemeSetting no-ops without throwing when there is no document (Vitest runs in Node)', () => {
+    expect(() => applyThemeSetting('dark')).not.toThrow()
+    expect(() => applyThemeSetting('system')).not.toThrow()
   })
 
   it('every AI speed has a positive delay, ordered slow > normal > fast', () => {

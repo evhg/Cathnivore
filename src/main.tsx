@@ -9,7 +9,7 @@ import '@fontsource/atkinson-hyperlegible/700.css'
 import './styles/tokens.css'
 import './styles/global.css'
 import { isNativePlatform } from './platform/native'
-import { applyAnimationsSetting, loadSettings } from './platform/settings'
+import { applyAnimationsSetting, applyThemeSetting, loadSettings } from './platform/settings'
 
 const rootEl = document.getElementById('root')
 if (!rootEl) {
@@ -25,6 +25,7 @@ if (isNativePlatform()) {
   document.documentElement.classList.add('native-app')
 }
 applyAnimationsSetting(loadSettings().animations)
+applyThemeSetting(loadSettings().theme)
 
 createRoot(rootEl).render(
   <StrictMode>

@@ -1,5 +1,11 @@
 import { useState } from 'react'
-import { loadSettings, saveSettings, type AiSpeed, type Settings as SettingsData } from '../platform/settings'
+import {
+  loadSettings,
+  saveSettings,
+  type AiSpeed,
+  type Settings as SettingsData,
+  type ThemePreference,
+} from '../platform/settings'
 import { clearGame, storage, CAMPAIGN_KEY } from '../platform/storage'
 
 interface Props {
@@ -42,6 +48,16 @@ export default function Settings({ onClose }: Props) {
           />
           Colour-blind patterns
         </label>
+      </section>
+
+      <section>
+        <h2>Theme</h2>
+        {(['system', 'light', 'dark'] as const satisfies readonly ThemePreference[]).map((theme) => (
+          <label key={theme}>
+            <input type="radio" checked={settings.theme === theme} onChange={() => update({ theme })} />{' '}
+            {theme === 'system' ? 'Match device' : theme === 'light' ? 'Light' : 'Dark'}
+          </label>
+        ))}
       </section>
 
       <section>
