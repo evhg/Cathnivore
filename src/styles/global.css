@@ -396,7 +396,12 @@ h3 {
   font-size: 14px;
 }
 
+.farm-card-text {
+  margin: 2px 0;
+}
+
 .farm-flavor {
+  margin: 2px 0;
   color: var(--ink-muted);
 }
 

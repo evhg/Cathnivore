@@ -64,7 +64,12 @@ function FarmColumn({ state, producer }: { state: GameState; producer: ProducerI
             return (
               <li key={id}>
                 <strong>{card.name}</strong> ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
-                {card.flavor && <span className="farm-flavor"> — {card.flavor}</span>}
+                {/* SPEC 10.5/STYLE.md 8: same gap as the Market/Cath's Plan sheets (see DECISIONS.md
+                    2026-09-26) — a bought Improvement's own tableau entry is exactly where a player would
+                    want to be reminded what an ongoing ability (a Supply discount, an extra free Rebut)
+                    actually does, without reopening the Market or the Rules Reference. */}
+                <div className="farm-card-text">{card.text}</div>
+                {card.flavor && <div className="farm-flavor">{card.flavor}</div>}
               </li>
             )
           })}

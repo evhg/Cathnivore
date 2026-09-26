@@ -621,7 +621,11 @@ Cath's Plan sheet" (their own doc comments), checked against actual behaviour by
 It only ever appeared in the Rules Reference's search results — during actual play, buying an Improvement or
 playing a Scheme showed only its name, cost and tags, never what it does. Fixed by rendering it on both
 sheets, styled per STYLE.md 4's 14px card-rules-text size. Verified on both phone and desktop via screenshot
-(clean, no overflow) and `npm run check`/`npm run gates` both still pass clean. Full detail in DECISIONS.md.
+(clean, no overflow) and `npm run check`/`npm run gates` both still pass clean. Regenerated `store/
+screenshots/` afterwards, since screenshot 2 (Cath's Plan) now shows the improved sheet. Found the same gap
+in one more place — `FarmSheet.tsx`'s tableau of already-bought Improvements — and fixed it the same way;
+arguably the more useful of the two, since an ongoing ability's own effect is exactly what a player would
+want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIONS.md.
 
 ## Tasks
 
