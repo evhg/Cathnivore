@@ -1525,3 +1525,15 @@ Format: date, decision, reason.
      blocker is the pre-existing missing-secrets one. Both workflow files re-parsed clean as YAML
      afterward. Not exercised against real Apple Connect credentials (none available to any session), same
      limit as every other iOS/store finding to date.
+
+  A third review pass, scoped to the sim harness's worker-process orchestration and result aggregation
+  (`sim/run.ts`, `sim/simWorker.ts`, `sim/simCore.ts`, `sim/fuzz.ts`) against SPEC 9.1/9.3, found **no real
+  bug**: per-game crashes are caught inside `playOneGame` itself and counted from the flattened outcomes
+  array regardless of which worker produced them, so a crash can't be silently undercounted or kill the run
+  quietly; job division across workers is an even round-robin split with no dropped/duplicated/zero-game
+  workers; seeds are assigned sequentially before chunking, so no cross-worker collision is possible; and
+  `summarize()` computes every stat from the single combined outcomes array rather than averaging per-worker
+  sub-averages, sidestepping the classic uneven-weighting bug entirely. Matches this area's own M4-era
+  redesign record (a child-process pool instead of `worker_threads`, due to a documented tsx ESM-loader
+  limitation). A clean confirmation, not a fix — no code changed, no validation sim needed for a null
+  result.

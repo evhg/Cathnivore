@@ -35,6 +35,16 @@ fake key, as expected). Full detail in DECISIONS.md. Pushed (`3f40f1e`). This me
 previously-undiscovered gap in the App Store submission path, now closed ahead of when it would have first
 mattered (after the still-pending Apple Team ID/secrets setup).
 
+With time still left, ran a third review subagent scoped to the sim harness's worker-process orchestration
+and aggregation (`sim/run.ts`, `sim/simWorker.ts`, `sim/simCore.ts`, `sim/fuzz.ts`) against SPEC 9.1/9.3 —
+another area no prior session's audits had covered directly. **No real bug found**: crash counting, job
+division across workers, seed determinism and the aggregation math were all traced adversarially and hold
+up. A clean confirmation, not a fix. Three review passes this session found one real bug (the `store.yml`
+fastlane syntax/API-key fix above) and two clean confirmations — wrapping up here (~27 minutes of real
+review/fix work plus the release retry, within budget) rather than starting a fourth open-ended pass.
+`build` (`aa449c5`) carries the release.ts fix, the three engine/content fixes, and this session's
+`store.yml` fix, all gated and pushed, waiting for a future session's release retry.
+
 ---
 
 Previous session (2026-09-26, starting ~19:52 UTC): re-checked both standing blockers first — `OWNER.md`'s
