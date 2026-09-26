@@ -1405,3 +1405,21 @@ Format: date, decision, reason.
   end to end; annotated rather than deleted, so a future session doesn't waste time re-discovering the same
   already-closed gap. `npx tsc -b --noEmit`, `npm run check` (299 tests) and `npm run gates` (all 8 gates;
   68 e2e, 16 axe, Lighthouse 98/100) all clean.
+
+- 2026-09-26 (same session): **A third review subagent pass, scoped to the UI/state-management layer**
+  (`src/ui/Game.tsx`'s undo/targeting-mode/autosave logic, `src/App.tsx`'s save/resume path,
+  `src/platform/storage.ts`, `src/engine/api.ts`'s `replay()`) against SPEC 4.6 (Undo) and 11.3
+  (autosave/versioning) — the third area a screenshot-based gate-8 pass can't validate, since it's about
+  state transitions across a sequence of actions, not what one screen looks like. **No real bug found**
+  after a genuinely thorough trace of undo replay correctness, autosave races, targeting-mode Cancel paths,
+  and save-version-mismatch handling — each traced against its own passing test (`tests/undo.test.ts`,
+  `tests/storage.test.ts`, `e2e/save-recovery.spec.ts`) with high, not just absence-of-finding, confidence.
+  One genuine (but cosmetic) finding: `src/engine/api.ts`'s `replay()` doc comment claimed it's "used for
+  undo (replay a truncated log)," but `Game.tsx`'s undo actually pushes a full `GameState` snapshot before
+  each human action and restores it directly (cheaper than a re-replay, and safe since `applyAction` only
+  ever does immutable spread-updates, confirmed by the subagent) — `replay()` is only used by the
+  save-load path now. Fixed the comment to describe what the code actually does, not a behavior change.
+  `npx tsc -b --noEmit`/`eslint` clean. Three subagent-driven review passes this session (engine/AI,
+  content, UI/state) found three real bugs and zero false positives reported as real — a good sign the
+  "downgrade confidence when an existing test already pins the behavior" instruction given to each subagent
+  is working as intended, rather than every pass needing to manufacture a finding to justify its cost.

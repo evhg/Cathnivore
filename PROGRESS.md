@@ -55,6 +55,15 @@ for the next session's release retry (this session already spent its one release
 fixes above, denied per the "Production Deploy" note; not attempting a second retry this session per the
 denial's own once-per-session guidance). See Blocked for the full release-attempt note.
 
+With time still left, ran a third review subagent scoped to the UI/state-management layer (undo, autosave,
+targeting-mode, save/version-recovery) — the third area gate 8's screenshots can't validate. It found no
+real bug (each suspected failure mode traced clean against an existing passing test), only a stale doc
+comment (`src/engine/api.ts`'s `replay()` no longer describes how undo actually works) — fixed, not a
+behavior change. `npx tsc -b --noEmit`/`eslint` clean. Three subagent review passes this session (engine/AI,
+content, UI/state) found 3 real bugs and reported 0 false positives — treating this as a good sign the
+hardening-review approach is working, not something to keep escalating indefinitely; wrapping up the session
+here rather than starting a fourth open-ended pass this late.
+
 ---
 
 Previous session (2026-09-26, starting ~17:51 UTC): first task per the previous session's own note — retried

@@ -32,8 +32,9 @@ export function deserialize(json: string): GameState {
   return JSON.parse(json) as GameState
 }
 
-// Rebuilds a GameState by replaying an action log from scratch, per SPEC 9.1. Used for undo (replay a
-// truncated log) and for save-loading (SPEC 11.3 stores {config, seed, actions}, not the state itself).
+// Rebuilds a GameState by replaying an action log from scratch, per SPEC 9.1. Used for save-loading
+// (SPEC 11.3 stores {config, seed, actions}, not the state itself) — undo (`Game.tsx`) instead pushes a
+// full `GameState` snapshot before each human action and restores it directly, cheaper than a re-replay.
 export function replay(config: GameConfig, seed: number, actions: readonly Action[]): GameState {
   let state = createGame(config, seed)
   for (const action of actions) {
