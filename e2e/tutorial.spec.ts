@@ -92,3 +92,24 @@ test('campaign chapter 2 ("Word of Mouth") is completed by following the tutoria
 
   expect(errors).toEqual([])
 })
+
+// SPEC 8.1: "a '?' link to the rules reference" alongside every tutorial prompt.
+test('the tutorial prompt\'s "?" opens the rules reference and returns to the same game on close', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await page.getByRole('button', { name: /^Fresh Meat/ }).click()
+  await expect(page.locator('.scene')).toBeVisible()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await expect(page.locator('.tutorial-prompt')).toBeVisible()
+  await page.getByRole('button', { name: 'Open the rules reference' }).click()
+  await expect(page.locator('.rules-reference')).toBeVisible()
+  await expect(page.locator('.tutorial-prompt')).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Close' }).click()
+  await expect(page.locator('.rules-reference')).toHaveCount(0)
+  // Back on the same in-progress game (not reset to the title or a fresh chapter start): step 0's prompt
+  // and the Open Stall gating are both still there, exactly as left.
+  await expect(page.locator('.tutorial-prompt')).toContainText('Open a Stall')
+  await expect(page.locator('.actions').getByRole('button', { name: 'Graft', exact: false })).toHaveCount(0)
+})

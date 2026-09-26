@@ -632,6 +632,24 @@ button {
 }
 
 /* Tutorial prompt banner (SPEC 8.1/10.2) */
+/* SPEC 8.1's "'?' link to the rules reference," inline with the tutorial prompt text. Reuses the
+   fixed-fill/fixed-text pairing `.tutorial-prompt` itself uses (STYLE.md 3.5: `--wheat` never adapts to
+   dark mode, so its text can't use the adaptive `--ink` either without breaking contrast there). */
+.tutorial-rules-link {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--ink-on-fixed-fill);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-on-fixed-fill);
+}
+
 .tutorial-prompt {
   background: var(--wheat);
   /* Same fixed-fill/fixed-text pairing as .update-ready above. */

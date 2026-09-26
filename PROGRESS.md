@@ -61,6 +61,25 @@ it" and found `vercel.json` never configured the redirect. Added a host-matched 
 rather than assumed done). New test in `tests/pages.test.ts` checks the rule's shape. `npm run check` (278
 tests) and `npm run gates` both re-run clean, unaffected otherwise.
 
+With time still left, checked SPEC 8.1's tutorial-prompt requirement word-for-word and found another real,
+previously-unimplemented gap: **"Each new rule is introduced exactly once, at the moment it first matters,
+with a '?' link to the rules reference."** `TutorialStep`/`Game.tsx`'s tutorial-prompt section had the
+prompt text and the highlight gating, but no link to the rules reference at all — `RulesReference` was only
+reachable from the title screen's "How to Play". Read literally, the spec asks for a help link alongside
+the prompt, not a term-specific deep link, so the fix is a single "?" button next to every tutorial prompt
+(not per-chapter content work) that opens the same `RulesReference` screen already used elsewhere: a new
+`showRulesFromTutorial` state in `Game.tsx`, an early `return <RulesReference onClose={...} />` (avoiding
+two nested `<main>` landmarks a stacked overlay would need to work around), and a small circular "?" button
+styled to match `.tutorial-prompt`'s fixed wheat fill (STYLE.md 3.5's fixed-fill/fixed-text token pairing).
+Closing it returns to the exact same in-progress game — `showRulesFromTutorial` is just local component
+state, so the game's own `state` never unmounts. New `e2e/tutorial.spec.ts` test confirms the link opens
+the reference and returns to the same tutorial step on close. Caught the same stale-preview-server gotcha a
+prior session already logged (Playwright's `webServer` reuses an already-running server across separate
+`npx playwright test` invocations) — `lsof -ti:4173 | xargs kill` before rebuilding fixed a spurious
+"button not found" failure. `npm run check` (278 tests, unchanged — no new unit-testable surface, same as
+every other tooltip-shaped UI addition this session) and `npm run gates` (58 e2e tests, up from 56; axe and
+Lighthouse both clean) both re-run clean end to end.
+
 Previous session (2026-09-26, ~06:51-07:xx UTC): re-checked both standing blockers once each, as usual — still
 identical (a throwaway-branch dry-run push to `main`, `git push origin main-test-check:main`, denied again
 with the identical "Production Deploy" classifier message before reaching GitHub; `OWNER.md`'s Apple Team ID

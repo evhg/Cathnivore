@@ -17,6 +17,7 @@ import FarmSheet from './FarmSheet'
 import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap, { Outlet, Buyout, Doubt } from './Map'
+import RulesReference from './RulesReference'
 import Scene from './Scene'
 import Tooltip from './Tooltip'
 import { WIN_LINE, LOSS_LINE } from '../content/endLines'
@@ -106,6 +107,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   const [showFarm, setShowFarm] = useState(false)
   const [showMarket, setShowMarket] = useState(false)
   const [showPlan, setShowPlan] = useState(false)
+  const [showRulesFromTutorial, setShowRulesFromTutorial] = useState(false)
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -195,6 +197,13 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   useEffect(() => {
     if (autoplayRef.current && pendingEnemyTurn.length > 0) setPendingEnemyTurn([])
   }, [pendingEnemyTurn])
+
+  // SPEC 8.1: "Each new rule is introduced ... with a '?' link to the rules reference." A full early
+  // return (rather than an overlay stacked on top of the game's own `<main>`) avoids nesting two
+  // `<main>` landmarks and reuses the exact same screen "How to Play" already opens from the title.
+  if (showRulesFromTutorial) {
+    return <RulesReference onClose={() => setShowRulesFromTutorial(false)} />
+  }
 
   if (state.result) {
     return (
@@ -381,7 +390,15 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
 
       {tutorialSteps && tutorialIndex < tutorialSteps.length && (
         <section className="tutorial-prompt">
-          <p>{tutorialSteps[tutorialIndex]!.text}</p>
+          <p>
+            {tutorialSteps[tutorialIndex]!.text}{' '}
+            {/* SPEC 8.1: "a '?' link to the rules reference," alongside every tutorial prompt, not just
+                the ones teaching an action — a step can be explaining Public Trust or the Scout slot with
+                nothing to click. */}
+            <button type="button" className="tutorial-rules-link" aria-label="Open the rules reference" onClick={() => setShowRulesFromTutorial(true)}>
+              ?
+            </button>
+          </p>
           {/* SPEC 8.1: a step teaching one action/region advances by taking it (see `act`'s auto-advance);
               an informational step (no highlight) has nothing to take, so it still needs a manual tap. */}
           {!tutorialSteps[tutorialIndex]!.highlight && <button onClick={() => setTutorialIndex((i) => i + 1)}>Got it</button>}
