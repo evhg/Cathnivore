@@ -286,16 +286,20 @@ export default function Map({ state, highlight, onSelect }: Props) {
 
             {/* Stalls sit along the bottom edge, striped in the producer's colour. */}
             <g transform={`translate(${x - 27}, ${y + HEX_R * 0.5})`}>
-              {stalls.flatMap(([pid, n]) =>
-                Array.from({ length: n }).map((_, i) => {
-                  const sx = (stalls.findIndex(([p]) => p === pid) + i) * 18
-                  return (
-                    <g key={`${pid}-${i}`} transform={`translate(${sx}, 0)`}>
-                      <Stall pid={pid} initial={PRODUCER_INITIAL[pid]} showInitial={colourBlindPatterns} />
-                    </g>
-                  )
-                }),
-              )}
+              {(() => {
+                let slot = 0
+                return stalls.flatMap(([pid, n]) =>
+                  Array.from({ length: n }).map((_, i) => {
+                    const sx = slot * 18
+                    slot += 1
+                    return (
+                      <g key={`${pid}-${i}`} transform={`translate(${sx}, 0)`}>
+                        <Stall pid={pid} initial={PRODUCER_INITIAL[pid]} showInitial={colourBlindPatterns} />
+                      </g>
+                    )
+                  }),
+                )
+              })()}
             </g>
 
             {r.liberated && <CoopMarker x={x + HEX_R * 0.55} y={y + HEX_R * 0.55} />}

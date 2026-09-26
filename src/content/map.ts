@@ -32,6 +32,10 @@ export const REGIONS: Record<RegionId, RegionDef> = {
 // regions on the map." Shared by `Map.tsx`'s own SQUEEZE/EXPAND badges and `Game.tsx`'s plan-strip buttons
 // so both use the same region-type match, instead of a second, potentially-drifting copy of the logic.
 export function regionMatchesPressureSlot(state: GameState, region: RegionId, slot: 'squeeze' | 'expand' | 'scout'): boolean {
+  // SPEC 4.8: "Liberated regions ignore Scout and Expand" (and Squeeze is a no-op there too, since
+  // Damage is always 0 once a region has no Outlets/Buyouts/Doubt left) — so a liberated region never
+  // actually matches a pressure slot, whatever its type, and must not be highlighted as if it did.
+  if (state.regions[region].liberated) return false
   const card = slot === 'squeeze' ? state.squeeze : slot === 'expand' ? state.expand : state.scout
   if (!card) return false
   return card.regionTypes.includes(REGIONS[region].type)

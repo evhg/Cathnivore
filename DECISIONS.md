@@ -1580,5 +1580,49 @@ Format: date, decision, reason.
      session's e2e coverage pass, logged here rather than added now given the fix itself was already the
      session's main deliverable.
 
-  Two review passes this session: one clean confirmation, one real (previously undiscovered) accessibility
-  bug found and fixed.
+  A third review pass this session, launched in parallel with the haptics/motion one above and scoped to
+  the UI rendering/presentational layer (map, pieces, cards, enemy plan strip, tooltips, colour-blind
+  patterns) for code-correctness bugs against SPEC 10/STYLE.md — corrected from the earlier "no real bug
+  found" note above, which was this session's first, less thorough pass at the same area; a second,
+  independently-launched subagent scoped identically found **three real bugs, all fixed**:
+  1. **Stall pieces from different producers sharing a region could render on top of each other**
+     (`src/ui/Map.tsx`'s Stall-slot layout). The x-offset for a producer's Nth Stall used
+     `stalls.findIndex(([p]) => p === pid) + i` — that producer's *index in the region's producer list*
+     plus its own within-group position — not a running count of Stalls already placed by earlier
+     producers. Concretely: a region with 2 Mara Stalls then 1 Tomas Stall placed Mara's second Stall and
+     Tomas's only Stall at the identical slot (`(0+1)*18` vs `(1+0)*18`), hiding board state STYLE.md's
+     legibility principle and SPEC 10.2 require. Fixed by tracking a single running slot counter across all
+     producers in the region instead of the two independent counters.
+  2. **The SQUEEZE/EXPAND map badges and plan-strip highlighting lit up liberated regions the engine will
+     actually skip.** `src/content/map.ts`'s `regionMatchesPressureSlot` (shared by `Map.tsx`'s badges,
+     `Game.tsx`'s plan-strip tap-to-highlight, and `src/ai/reason.ts`'s AI log reasons) only checked the
+     region's type against the card, with no liberated check — but `src/engine/enemy.ts` explicitly skips
+     liberated regions in `resolveScout`/`resolveExpand`/`resolveSqueeze`, per SPEC 4.8 ("Liberated regions
+     ignore Scout and Expand," and Squeeze is a no-op there too since Damage is always 0 with no
+     Outlets/Buyouts/Doubt left to total). A liberated region of a matching type kept showing the clay
+     "SQUEEZE" or wheat "EXPAND" pill and glowed on tap — STYLE.md 7's "most important signals on the
+     screen" actively misleading the player's planning on SPEC 10.2's stated "main planning tool," for
+     nothing. `tests/map.test.ts` only exercised the type-match logic on a fresh, no-liberated-regions
+     state, so it never caught this. Fixed inside `regionMatchesPressureSlot` itself (one call site fixes
+     all three consumers): returns `false` immediately if `state.regions[region].liberated`.
+  3. **Hardcoded hex colours in `src/ui/icons/ResourceIcons.tsx` bypassed the dark-theme tokens**, violating
+     STYLE.md 3.1's "never hard-code a colour outside the token file." Every icon fill was a raw light-theme
+     hex literal (`#B5523B`, `#5B7F3A`, `#D9B45A`, `#EAE0CF`) instead of `var(--clay)`/`var(--pasture)`/
+     `var(--wheat)`/`var(--paper-2)` — the one `INK` constant in the same file already correctly used
+     `var(--ink, ...)`, so the other four were simply missed. STYLE.md 3.5 explicitly redefines all four
+     tokens for dark mode; because these top-bar/action-panel resource icons hardcoded the light values,
+     Public Trust/Rift/Round's cream icon background and Lost Land/Produce's clay/pasture fills stayed
+     light-themed even with dark mode on. (Producer/portrait colours are correctly exempt per STYLE.md
+     3.3/3.5's own "pieces, cards and portraits don't [go dark]" — this bug was specifically the *UI chrome*
+     icons, not those.) Fixed by adding `CLAY`/`PASTURE`/`WHEAT`/`PAPER_2` token constants (same
+     `var(--x, #hex)` fallback pattern as the existing `INK`) and swapping every literal to the matching
+     token.
+  No issues found in CathsPlanSheet/MarketSheet/FarmSheet/Tooltip/EnemyTurnPlayback/Portrait, or in the
+  warning-badge SQUEEZE-over-EXPAND precedence and colour-blind Stall-initial mapping, all separately
+  checked. `npx tsc -b --noEmit`, `npm run check` (299 tests, unchanged count — none of the three bugs had
+  existing coverage) and `npm run build` all clean after the fixes.
+
+  Four review passes this session across two parallel launches: one clean confirmation (haptics), one real
+  motion/accessibility bug fixed, and three real UI-rendering bugs fixed (Stall overlap, liberated-region
+  false highlighting, and hardcoded dark-theme-breaking colours) — the busiest single-session review haul
+  since the three-bug engine/content/UI-state session two sessions ago.
