@@ -44,12 +44,35 @@ export default function MarketSheet({
     </ul>
   )
 
-  // SPEC 10.3 desktop 3-column layout: the same card list, without the phone-sized modal overlay.
+  // SPEC 10.3 desktop 3-column layout: the same cards, collapsed to name/cost by default (a native
+  // <details> per card, no extra JS state) so the right column's fixed height doesn't have to fit every
+  // card's rules text and flavour line at once — see DECISIONS.md for why prior CSS-only squeezes on this
+  // column couldn't close the SPEC 10.3 "no scrolling at 1280x800" gap on their own. The Buy button stays
+  // outside the <details> so buying never requires expanding a card first.
   if (inline) {
     return (
       <div className="sheet-panel card-sheet">
         <h2>Market</h2>
-        {cards}
+        <ul className="card-list card-list-collapsible">
+          {state.market.map((id, slot) => {
+            if (!id) return <li key={slot} className="card-empty" />
+            const card = IMPROVEMENTS_BY_ID.get(id)
+            if (!card) return null
+            return (
+              <li key={id} className="card-enter">
+                <details>
+                  <summary>
+                    <strong>{card.name}</strong> — <MarksIcon /> {card.cost} Marks (
+                    {card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+                  </summary>
+                  <p className="card-text">{card.text}</p>
+                  {card.flavor && <p className="card-flavor">{card.flavor}</p>}
+                </details>
+                {canBuy(id) && <button onClick={() => onBuy(id)}>Buy</button>}
+              </li>
+            )
+          })}
+        </ul>
       </div>
     )
   }

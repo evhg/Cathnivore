@@ -530,7 +530,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         </section>
       )}
 
-      <section className="actions">
+      {/* SPEC 10.3 desktop 3-column layout: the action list is the one section of the centre column whose
+          length genuinely varies with the game state (one entry per legal region/card/quantity target),
+          the same shape of problem the Log solved on the right (see LogSheet.tsx) — so it gets the same
+          internally-scrolling max-height on desktop (global.css's 1024px+ block), with the matching
+          `tabIndex`/`role`/`aria-label` a scrollable container needs to stay keyboard-reachable (axe's
+          "focusable-content"/"focusable-element" rules). Inert on phone, where `.actions` never sets an
+          `overflow`/`max-height`. */}
+      <section className="actions" tabIndex={0} role="region" aria-label="Actions">
         {pendingEnemyTurn.length > 0 ? null : waitingOnAi ? (
           <p>AI teammate is deciding…</p>
         ) : selectedGroup ? (

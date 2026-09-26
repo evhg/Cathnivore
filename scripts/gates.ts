@@ -36,10 +36,10 @@ const projects = hasWebkit ? '' : '--project=phone --project=desktop-chromium'
 const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : '')
 // e2e/screenshots.spec.ts and e2e/store-screenshots.spec.ts are gate 8's material (visual review/App
 // Store assets), not gate 5's pass/fail regression suite, so they're deliberately left out here.
-// e2e/desktop-no-scroll.spec.ts is `test.skip`'d (SPEC 10.3 gap, see DECISIONS.md) so it's a no-op either
-// way, but it's left out too rather than listed-and-skipped, to avoid implying it's actively checked here.
+// e2e/desktop-no-scroll.spec.ts (SPEC 10.3's "no scrolling at 1280x800") is now genuinely fixed — see
+// DECISIONS.md — so it's back in the real regression suite instead of being left out as a no-op skip.
 const GATE_5_SPECS =
-  'e2e/ai-teammate.spec.ts e2e/campaign.spec.ts e2e/carry-over.spec.ts e2e/crash-recovery.spec.ts e2e/csp.spec.ts e2e/hotseat.spec.ts e2e/offline.spec.ts e2e/plan-strip.spec.ts e2e/quick-game.spec.ts e2e/save-recovery.spec.ts e2e/title.spec.ts e2e/tooltip.spec.ts e2e/tutorial.spec.ts'
+  'e2e/ai-teammate.spec.ts e2e/campaign.spec.ts e2e/carry-over.spec.ts e2e/crash-recovery.spec.ts e2e/csp.spec.ts e2e/desktop-no-scroll.spec.ts e2e/hotseat.spec.ts e2e/offline.spec.ts e2e/plan-strip.spec.ts e2e/quick-game.spec.ts e2e/save-recovery.spec.ts e2e/title.spec.ts e2e/tooltip.spec.ts e2e/tutorial.spec.ts'
 run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} ${GATE_5_SPECS}`)
 
 run('Gate 6: Accessibility (axe)', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} e2e/accessibility.spec.ts`)

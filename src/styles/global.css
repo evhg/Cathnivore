@@ -382,6 +382,19 @@ h3 {
   color: var(--ink-muted);
 }
 
+/* SPEC 10.3 desktop inline sheets only (MarketSheet.tsx/CathsPlanSheet.tsx): each card collapses to its
+   name/cost summary by default via a native <details>, so the right column doesn't have to fit every
+   card's rules text and flavour line at once to satisfy "no scrolling at 1280x800". Native <details> needs
+   no extra JS state and is keyboard/screen-reader operable out of the box. */
+.card-list-collapsible summary {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.card-list-collapsible summary::marker {
+  color: var(--ink-muted);
+}
+
 .farm-column {
   margin-bottom: 16px;
 }
@@ -567,11 +580,38 @@ h3 {
   /* SPEC 10.3's centre column still needs more room after the `.actions` grid fix above (measured
      2026-09-26: 424px short at 1280x800 with a chapter-5 mid-game position — see DECISIONS.md). SPEC 10.2's
      "full width" map rule is a phone rule (390-430px-wide screens); 10.3 sets no size for the desktop map,
-     so shrinking it here is a real, available lever, not a spec violation. 320px (down from the unconditional
-     420px above) frees 100px of column height while staying well above STYLE.md 9's 32px minimum-legible-size
-     floor (region names/pieces are far larger than that even at 320px). */
+     so shrinking it here is a real, available lever, not a spec violation. 260px (down from the unconditional
+     420px above, tightened further from an earlier 320px once the right column's own gap closed and made the
+     centre column the sole remaining blocker) frees 160px of column height while staying well above
+     STYLE.md 9's 32px minimum-legible-size floor (region names/pieces are far larger than that even at
+     260px). */
   .map {
-    max-width: 320px;
+    max-width: 260px;
+  }
+
+  /* Tighter row gap between the centre column's stacked sections (topbar, plan strip, map, active-producer
+     panel, actions, controls) — each section already carries its own internal padding, so the extra 8px
+     between every one of them was pure column-height cost with no legibility benefit. */
+  .game {
+    gap: 6px;
+  }
+
+  .decision,
+  .active-producer {
+    padding: 6px 10px;
+  }
+
+  /* The centre column's remaining shortfall (measured 2026-09-26: 142-232px across repeated runs, all with
+     the same fixed content around it) comes entirely from `.actions` itself varying game-state to
+     game-state (233-323px measured across those same runs) — one button per legal region/card/quantity
+     target, the same unboundedly-variable shape as the Log's turn history, not a fixed card count like
+     Market/Cath's Plan. A fixed-size column can't guarantee "no scrolling" against a genuinely variable
+     list any more than it could for the Log, so `.actions` gets the identical internally-scrolling
+     max-height treatment (see the Log's own comment above) rather than another CSS squeeze that would only
+     buy back a fixed amount against a moving target. 160px fits a comfortable 3 rows before scrolling. */
+  .actions {
+    max-height: 160px;
+    overflow-y: auto;
   }
 
   /* The Log (SPEC 10.2's "Log: turn history") grows by design over a game's up to 10 rounds and has no

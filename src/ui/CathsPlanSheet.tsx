@@ -44,12 +44,35 @@ export default function CathsPlanSheet({
     </ul>
   )
 
-  // SPEC 10.3 desktop 3-column layout: the same card list, without the phone-sized modal overlay.
+  // SPEC 10.3 desktop 3-column layout: same collapsed-by-default treatment as the Market sheet's inline
+  // mode (see MarketSheet.tsx and DECISIONS.md) — a card's rules text and Cath's line only show once
+  // expanded, cutting the right column's fixed height while the Play button stays outside the <details>.
   if (inline) {
     return (
       <div className="sheet-panel card-sheet">
         <h2>Cath&rsquo;s Plan</h2>
-        {cards}
+        <ul className="card-list card-list-collapsible">
+          {state.freeSchemePlays > 0 && (
+            <li className="card-note">Cath&rsquo;s Plan grants a free Scheme play — no Goodwill needed this once.</li>
+          )}
+          {state.cathsPlan.map((id, slot) => {
+            if (!id) return <li key={slot} className="card-empty" />
+            const card = SCHEMES_BY_ID.get(id)
+            if (!card) return null
+            return (
+              <li key={id} className="card-enter">
+                <details>
+                  <summary>
+                    <strong>{card.name}</strong> — <GoodwillIcon /> {card.cost} Goodwill
+                  </summary>
+                  <p className="card-text">{card.text}</p>
+                  <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
+                </details>
+                {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}
+              </li>
+            )
+          })}
+        </ul>
       </div>
     )
   }
