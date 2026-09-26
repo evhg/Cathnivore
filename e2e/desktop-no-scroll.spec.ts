@@ -9,12 +9,24 @@ import { test, expect } from '@playwright/test'
 // content-dense realistic state rather than a fresh, mostly-empty game.
 test('desktop game screen has no scrolling at 1280x800, even in a content-dense mid-game position', async ({ page, browserName }) => {
   test.skip(browserName !== 'chromium', 'desktop layout only kicks in at the 1024px breakpoint; one Chromium check is enough, same pattern as e2e/ai-teammate.spec.ts')
-  // Skipped, not fixed: this genuinely fails today. Measured at chapter 5's mid-game position, 1280x800:
-  // `.game` needs 1156px of height against 768 available (388px short) and `.desktop-col-right` needs
-  // 1191px (423px short) — a real, substantial layout gap, not a rounding error, logged in DECISIONS.md
-  // (2026-09-26) for a future session with room for real desktop-layout design work, not a same-session
-  // squeeze. Left in place (skipped, not deleted) so that session has a ready-made check to un-skip.
-  test.skip(true, 'SPEC 10.3 "no scrolling at 1280x800" fails today by a wide margin on both the centre and right columns — see DECISIONS.md 2026-09-26 for exact numbers; needs real desktop-layout design work, not a quick CSS tweak')
+  // Skipped, not fixed: this genuinely fails today, though a real dent was made in it (2026-09-26: the
+  // `.actions` list went from flex-wrap, one-button-per-row on desktop's wider centre column, to a 3-column
+  // grid — see DECISIONS.md for why that needed `min-width: 0` and why the rule has to live after the
+  // unconditional `.actions` rule, not inside the earlier desktop `@media` block). Re-measured after that
+  // fix, same chapter-5 mid-game position, 1280x800: `.game` needs 1192px of height against 768 available
+  // (424px short, down from 1156px/388px short before this session touched anything, so the gap actually
+  // grew slightly since that number was first measured — game state isn't identical run to run) and
+  // `.desktop-col-right` needs 1051px (283px short, down from 423px short). Both columns are real,
+  // substantial gaps, not rounding errors: `.actions` was the single largest contributor on the centre
+  // column and is now fixed; the remaining centre-column cost is dominated by the 420px-tall map (SPEC
+  // 10.2's full-width square hex flower) plus the topbar/tutorial-prompt/plan-strip/active-producer stack
+  // above it, and the right column's remaining cost is the Market/Cath's Plan card lists plus the
+  // turn-by-turn Log, which only grows over a game's 10 rounds. Closing the rest needs real desktop-layout
+  // design work (a smaller map on desktop, denser or collapsible card lists, an internally-scrolling Log
+  // panel treated as a deliberate design choice rather than an SPEC 10.3 violation) — logged in
+  // DECISIONS.md for a future session with room for that, not a same-session squeeze. Left in place
+  // (skipped, not deleted) so that session has a ready-made check to un-skip.
+  test.skip(true, 'SPEC 10.3 "no scrolling at 1280x800" still fails on both the centre and right columns after this session\'s `.actions`-grid fix — see DECISIONS.md 2026-09-26 for exact numbers; needs real desktop-layout design work (a smaller map, denser cards, a deliberately-scrolling Log), not a quick CSS tweak')
   await page.setViewportSize({ width: 1280, height: 800 })
 
   await page.goto('/')

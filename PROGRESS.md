@@ -34,6 +34,26 @@ gap the previous session logged as needing its own dedicated session:
   whether the status bar/safe-area/splash-screen behavior actually looks right on device; nothing more to
   verify from this sandbox.
 
+With time still left, made a real, measured (not guessed) dent in the SPEC 10.3 desktop "no scrolling at
+1280x800" gap logged by the previous session as needing its own dedicated session:
+- **`.actions` (the action-button list) was the single largest contributor to `.game` overflowing its 768px
+  desktop-column height** — measured at 460px tall, out of a 602px total shortfall (`.game` needed 1370px;
+  `.desktop-col-right` needed 1083px, 315px short). Cause: the phone layout's `flex-wrap` sizes each button
+  by its own label, which on a full game's action list (10+ specific region-scoped entries, one Sell entry
+  per quantity) still wraps to near one-per-row even on the wider desktop centre column. Fixed with a
+  `@media (min-width: 1024px)` override to a fixed 3-column grid, plus `min-width: 0` on the grid items
+  (their default `min-width: auto` was otherwise refusing to shrink below a label's full intrinsic width,
+  defeating the grid entirely). Two real mistakes caught by re-measuring rather than trusting the CSS by eye
+  — full account in DECISIONS.md, including why the override had to move to a different spot in the
+  cascade to take effect at all. Result: `.actions` 460px → 282px, `.game`'s shortfall 602px → 424px.
+- **Not attempted this session:** the map (420px, SPEC 10.2's mandated full-width square — shrinking it is a
+  real visual tradeoff) and the right column's Market/Cath's Plan/Log stack (283px still short; the Log in
+  particular grows unbounded over a game and is a strong candidate for a deliberately-scrolling inner panel
+  rather than a violation to eliminate, but that's a judgment call for a session with room to weigh it).
+  `e2e/desktop-no-scroll.spec.ts` stays `test.skip`'d with updated numbers — the gap is smaller but still
+  real. `npm run check` (281 tests, unchanged) and `npm run gates` (58 e2e tests, axe/Lighthouse clean, 98/100)
+  both re-run clean; the phone layout is untouched (the fix is scoped to the 1024px+ breakpoint).
+
 ---
 
 Previous session (2026-09-26, starting ~08:51 UTC): both standing blockers re-checked once, unchanged (12th+

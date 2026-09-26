@@ -523,6 +523,36 @@ h3 {
   color: inherit;
 }
 
+/* SPEC 10.3: the phone layout's `.actions` above relies on `flex-wrap`, sizing each button by its own
+   label. On the wider desktop centre column (a `minmax(420px, 1fr)` grid track, not the phone's 480px-
+   capped column) that still wraps to close to one button per row when a full game's action list can have
+   10+ specific entries (region-scoped Supply/Rebut/Scheme/Role labels, one Sell entry per quantity) —
+   measured at ~460px tall at 1280x800 (see DECISIONS.md 2026-09-26), the single largest contributor to
+   `.game` overflowing its 768px-tall column. A fixed-column grid packs the same buttons into far fewer
+   rows on desktop's extra width; `min-width: 0` on the grid item is required because a flex/grid item's
+   default `min-width: auto` otherwise refuses to shrink `.action-item` below its label's full intrinsic
+   width, which defeats the grid track sizing entirely (confirmed directly: without it every item still
+   claimed a full row). This rule must come after the unconditional `.actions`/`.action-item` rules above so
+   it wins the cascade at the same specificity — placing it back in the earlier `@media (min-width: 1024px)`
+   block (grouped with the rest of SPEC 10.3's desktop layout) silently lost to these later, unconditional
+   rules regardless of viewport width. Does not, by itself, close the full SPEC 10.3 "no scrolling" gap —
+   see DECISIONS.md for the measured remaining shortfall and what's still needed. */
+@media (min-width: 1024px) {
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .actions .action-item {
+    min-width: 0;
+  }
+
+  .actions .action-item > button:first-child {
+    min-width: 0;
+    white-space: normal;
+  }
+}
+
 button {
   font-family: 'Atkinson Hyperlegible', sans-serif;
   font-size: 14px;
