@@ -1119,6 +1119,12 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   server, `uuid` via `@capacitor/cli`'s `xcode` dependency), none reaching the shipped bundle, all requiring
   breaking major-version bumps to fix — deferred rather than attempted blind this late in a session, see
   DECISIONS.md.
+- [x] Cleared the critical `uuid` finding from the `npm audit` list above (a later session, time permitting):
+  `xcode` only calls `uuid.v4()`, not in the advisory's affected range, so it was never actually exploitable
+  here, but a package.json `overrides` entry forces `uuid@11.1.1` without needing `@capacitor/cli`'s own
+  major-version bump. Verified `npm run check` and `npx cap sync ios` (the actual codepath into `xcode`)
+  both still work. 9 -> 6 remaining vulnerabilities, all `vite`/`vitest` dev-tooling only, still genuinely
+  needing breaking bumps — stays deferred, see DECISIONS.md.
 - [ ] push `submit-<n>` to send that build for App Review
 - [ ] final report in `PROGRESS.md`
 - [ ] create `DONE`
