@@ -28,6 +28,15 @@
   --candor-highlight: #BFF1FA;
 
   --rule: #C9BCAC;
+
+  /* STYLE.md 3.5 keeps `--pasture-deep`/`--clay-deep`/`--wheat` "unchanged" in dark mode — they're fills
+     that carry text (SQUEEZE/EXPAND badges, buttons), not table surfaces. Text drawn on them needs colours
+     that are equally fixed, or dark mode's `--ink`/`--paper` redefinitions drift out of sync with a fill
+     that never moved and contrast breaks (found via axe on the game screen in forced dark mode: the
+     SQUEEZE badge's `--paper` text on `--clay-deep` dropped to 2.73:1). These never get a dark-mode
+     override, on purpose. */
+  --ink-on-fixed-fill: #2B2320;
+  --paper-on-fixed-fill: #F4EDE1;
 }
 
 @media (prefers-color-scheme: dark) {

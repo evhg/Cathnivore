@@ -46,7 +46,9 @@ h3 {
   align-items: center;
   gap: 8px;
   background: var(--wheat);
-  color: var(--ink);
+  /* See tokens.css's `--*-on-fixed-fill` comment: `--wheat` doesn't adapt for dark mode, so this text
+     can't use the adaptive `--ink` either (axe caught the same bug on the SQUEEZE/EXPAND map badges). */
+  color: var(--ink-on-fixed-fill);
   border-radius: 12px;
   padding: 8px 12px;
 }
@@ -322,12 +324,14 @@ h3 {
   font-family: 'Atkinson Hyperlegible', sans-serif;
   font-size: 10px;
   font-weight: 700;
-  fill: var(--paper);
+  /* See tokens.css's `--*-on-fixed-fill` comment: the SQUEEZE/EXPAND pills use `--clay-deep`/`--wheat`,
+     which don't adapt for dark mode, so this text can't either. */
+  fill: var(--paper-on-fixed-fill);
   dominant-baseline: middle;
 }
 
 .badge-text-dark {
-  fill: var(--ink);
+  fill: var(--ink-on-fixed-fill);
 }
 
 .stall-initial {
@@ -507,7 +511,8 @@ button {
 /* Tutorial prompt banner (SPEC 8.1/10.2) */
 .tutorial-prompt {
   background: var(--wheat);
-  color: var(--ink);
+  /* Same fixed-fill/fixed-text pairing as .update-ready above. */
+  color: var(--ink-on-fixed-fill);
   border-radius: 12px;
   padding: 8px 12px;
   display: flex;
@@ -629,6 +634,25 @@ html.native-app body {
 .setup label:hover,
 .settings label:hover {
   background: var(--paper-2);
+}
+
+/* SPEC 6: "the setup screen suggests the pair with the best balance data, labelled 'Recommended.'" */
+.recommended-badge {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  /* STYLE.md 3.6: text must reach 4.5:1 in both themes. A filled `--pasture-deep` pill with `--paper`
+     text measured fine in light mode but only 2.76:1 in dark mode (axe caught the light-mode case first,
+     SPEC 11.4 gate 6) — `--pasture-deep` is one of the tokens STYLE.md 3.5 keeps "unchanged" in dark mode,
+     so text tokens that *do* adapt (like `--paper`) drift out of sync with it once dark mode changes them.
+     `--sea` ("links, information," STYLE.md 3.1) adapts for dark mode and clears 4.5:1 against the plain
+     page background in both themes (4.83:1 light, 6.23:1 dark, checked directly) — an outline badge with
+     no fill sidesteps the non-adapting-fill problem entirely. */
+  color: var(--sea);
+  border: 1px solid var(--sea);
+  border-radius: 999px;
+  padding: 2px 8px;
 }
 
 .setup input[type='checkbox'],

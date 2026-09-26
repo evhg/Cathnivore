@@ -104,6 +104,29 @@ styling at all, so the title screen's Privacy/Support links were the browser def
 never having been given a colour — added `a { color: var(--sea) }` (STYLE.md 3.1: "Links, information").
 `npm run check` and the accessibility/title e2e suites both re-confirmed clean afterward.
 
+While there, also implemented SPEC 6's "the setup screen suggests the pair with the best balance data,
+labelled 'Recommended'" — previously just a comment saying it was deferred until real balance data existed.
+That data has existed since M4's balance loop finished; added `RECOMMENDED_PAIR` to
+`src/content/producers.ts` (mara+tomas, per `BALANCE.md`'s final iteration-12 run, the clear leader in
+every pair split logged) and a "Recommended" badge plus a "Use recommended pair" shortcut button on the
+Setup screen. **This directly caught a real, pre-existing dark-theme accessibility bug, not just one in the
+new badge:** the badge's first draft (a filled `--pasture-deep` pill with `--paper` text) failed axe's
+contrast check outright (4.46:1 light mode, short of 4.5:1) — but chasing the fix exposed that `--paper`/
+`--ink` are adaptive tokens while `--pasture-deep`/`--clay-deep`/`--wheat` are explicitly *not* (STYLE.md
+3.5: "Fills that carry text: unchanged"), so any text drawn on those fills using the adaptive tokens quietly
+breaks contrast the moment dark mode is on, even though it looked fine in the light-mode screenshots every
+prior session took. Confirmed by direct contrast-ratio calculation that this was already true of the
+SQUEEZE map badge (2.73:1 in dark mode, using `--paper` on `--clay-deep`), the EXPAND map badge (1.64:1,
+`--ink` on `--wheat`), the "Update ready" banner and the tutorial-prompt banner (both `--ink` on `--wheat`)
+— four real, previously-undetected accessibility failures that simply never had a dark-mode axe run to
+catch them, because dark mode had no way to be turned on until this session. Fixed all of them: two new
+fixed (non-adapting) tokens in `tokens.css`, `--ink-on-fixed-fill`/`--paper-on-fixed-fill`, used wherever
+text sits on one of the three fills STYLE.md keeps constant across themes; the "Recommended" badge itself
+ended up using `--sea` (also adaptive, clears 4.5:1 in both themes) with an outline instead of a fill, since
+the badge isn't one of STYLE.md's fixed-fill cases. New `e2e/accessibility.spec.ts` test (`setup screen ...
+in forced dark theme`) plus manual dark-mode screenshot verification of the EXPAND badge and a fresh
+`npm run gates` full pass. `npm run check` (170+ tests) is clean.
+
 ## Tasks
 
 ### M0 Setup (hours 0-4)

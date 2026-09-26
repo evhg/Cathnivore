@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ALL_PRODUCER_IDS, PRODUCERS } from '../content/producers'
+import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/producers'
 import { ALL_REGION_IDS } from '../content/map'
 import type { GameConfig, ProducerId } from '../engine/types'
 
@@ -10,8 +10,7 @@ interface Props {
 }
 
 // SPEC 10.1/10.2 Setup screen: mode, producers, difficulty and an optional seed. Plain controls for now
-// (no visual design pass yet — see PROGRESS.md M3); the "Recommended" pairing (SPEC 6) isn't wired up
-// until the balance loop (M4) produces real pairing data to recommend from.
+// (no visual design pass yet — see PROGRESS.md M3).
 export default function Setup({ onStart }: Props) {
   const [mode, setMode] = useState<Mode>('solo')
   const [producers, setProducers] = useState<ProducerId[]>(['mara', 'tomas'])
@@ -49,10 +48,14 @@ export default function Setup({ onStart }: Props) {
 
       <section>
         <h2>Producers (pick 2)</h2>
+        <button type="button" onClick={() => setProducers([...RECOMMENDED_PAIR])}>
+          Use recommended pair
+        </button>
         {ALL_PRODUCER_IDS.map((id) => (
           <label key={id}>
             <input type="checkbox" checked={producers.includes(id)} onChange={() => toggleProducer(id)} />
             {PRODUCERS[id].name} — {PRODUCERS[id].roleName}
+            {RECOMMENDED_PAIR.includes(id) && <span className="recommended-badge">Recommended</span>}
           </label>
         ))}
       </section>

@@ -674,3 +674,30 @@ Format: date, decision, reason.
   Revisit if a future session has spare time and wants a debug query flag (e.g. `?crashtest=1`) purely to
   exercise this in e2e — would need to weigh whether that's worth shipping a deliberate crash trigger in the
   production bundle.
+
+- 2026-09-26: Implemented SPEC 6's "Recommended" pairing on the Setup screen (`RECOMMENDED_PAIR` in
+  `src/content/producers.ts`, mara+tomas per `BALANCE.md`'s final iteration-12 run — the clear win-rate
+  leader in every pair split logged since iteration 7). While fixing the badge's contrast (see below), found
+  a real, pre-existing class of dark-theme accessibility bugs and fixed it everywhere it appeared, not just
+  in the new code. Root cause: STYLE.md 3.5 explicitly keeps `--pasture-deep`/`--clay-deep`/`--wheat`
+  "unchanged" in dark mode (they're fills that carry text — SQUEEZE/EXPAND badges, banners — not table
+  surfaces), but `--ink`/`--paper` *do* change. Any text using the adaptive pair on top of one of the fixed
+  fills looks fine in light mode and silently fails contrast the instant dark mode is on. Confirmed by
+  direct WCAG contrast-ratio calculation (not just axe, since axe only catches what's actually rendered
+  on-screen at test time) that this was already true of four places, none touched this session until now:
+  the SQUEEZE map badge (2.73:1, `--paper` on `--clay-deep`), the EXPAND map badge (1.64:1, `--ink` on
+  `--wheat`), `.update-ready` (the update banner) and `.tutorial-prompt` (both `--ink` on `--wheat`). None
+  of these had ever been caught because no axe run had ever happened with dark mode actually turned on —
+  dark mode had no UI path to enable it until this same session's earlier `applyThemeSetting` work. Fixed
+  by adding two new *non-adapting* tokens to `tokens.css` (`--ink-on-fixed-fill`, `--paper-on-fixed-fill`,
+  deliberately given no dark-mode override) and repointing all four sites plus `Map.tsx`'s two SVG badge
+  classes at them. The new "Recommended" badge itself doesn't use a fixed fill, so it uses `--sea`
+  ("links, information," STYLE.md 3.1) as an outline instead — `--sea` *is* adaptive and clears 4.5:1 in
+  both themes (4.83:1 light, 6.23:1 dark, calculated directly), a cleaner fit than force-fitting it into the
+  fixed-fill pattern. New `e2e/accessibility.spec.ts` test covers the setup screen in forced dark mode
+  (exactly the case that would have caught the original badge regression); the SQUEEZE/EXPAND fix was
+  verified by direct contrast-ratio calculation plus a manual dark-mode screenshot of a rendered EXPAND
+  badge, not a dedicated new automated test triggering a SQUEEZE badge specifically (getting one to render
+  needs advancing past round 1, which didn't fit this session's remaining time cleanly) — logged as a
+  smaller remaining verification gap, not a silent skip. `npm run gates` (all of gates 1-7) re-run clean
+  end to end after these changes.

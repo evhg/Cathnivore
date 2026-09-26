@@ -65,3 +65,16 @@ test('game screen has no serious or critical accessibility issues in forced dark
   await expect(page.locator('.game')).toBeVisible()
   await assertNoSeriousIssues(page)
 })
+
+// The "Recommended" badge (SPEC 6) originally used a fixed-in-both-themes fill (`--pasture-deep`) with an
+// adaptive text colour (`--paper`), which cleared 4.5:1 in light mode but dropped to 2.76:1 once `--paper`
+// went dark — this test is what would have caught it, run in the theme that actually broke.
+test('setup screen has no serious or critical accessibility issues in forced dark theme', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Settings').click()
+  await page.getByText('Dark', { exact: true }).click()
+  await page.getByRole('button', { name: 'Back' }).click()
+  await page.getByText('Quick Game').click()
+  await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
+  await assertNoSeriousIssues(page)
+})
