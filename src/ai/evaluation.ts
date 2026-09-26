@@ -6,7 +6,6 @@ import type { GameState, RegionType } from '../engine/types'
 const MAX_TRUST = 15
 const ENEMY_POOL_WEIGHT_TOTAL = 30 + 12 * 2 + 30 // outlets + 2*buyouts + doubt, matching the pools' max
 const WIN_REGIONS = 5
-const NORMAL_ROUND_CAP = 10
 
 function matchesType(types: RegionType[], type: RegionType): boolean {
   return types.includes(type)
@@ -45,8 +44,15 @@ export function evaluate(state: GameState): number {
   const lostLandScore = clamp01(state.lostLandPool / startingLostLandPool)
 
   // "On pace" when the shortfall to win (regions still needed) is no larger than the rounds still left.
+  // Rounds left is the Pressure deck's own remaining length, not a hardcoded 10: SPEC 4.8's loss condition
+  // ("the Scout step needs a Pressure card and the deck is empty") ties the real round cap directly to the
+  // deck, one card consumed per round's Scout — and campaign chapters script decks of other lengths (6, 8,
+  // 14 cards; see src/content/chapters.ts), so a fixed 10-round assumption was wrong for every chapter but
+  // 4 and 6. Matches the old `NORMAL_ROUND_CAP - state.round` exactly for the standard 10-card game (the
+  // setup Scout consumes 1 card before round 1, then 1 more per round's own Scout step), so full-game/Quick
+  // Game bot behavior and every existing balance-loop measurement are unaffected.
   const regionsNeeded = Math.max(0, WIN_REGIONS - liberated)
-  const roundsLeft = Math.max(0, NORMAL_ROUND_CAP - state.round)
+  const roundsLeft = state.pressureDeck.length
   const paceScore = clamp01(1 - Math.max(0, regionsNeeded - roundsLeft) / WIN_REGIONS)
 
   const producers = Object.values(state.producers)

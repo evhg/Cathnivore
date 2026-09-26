@@ -13,8 +13,24 @@ real Confirm/Cancel prompt; `act()` only fires on Confirm. Updated `e2e/tutorial
 screenshot that the flow reads correctly. `npm run check` (286 tests) and `npm run gates` (gates 1-7, 64 e2e,
 16 axe, Lighthouse 99/100) both re-run clean, no regressions. Full detail in DECISIONS.md. Remaining SPEC
 10.2 gap: Market/Cath's Plan card lists still don't glow/dim as a group (not currently reachable, since no
-card list offers more than one ambiguous legal choice). SPEC 10.3's desktop no-scroll gap is unchanged. Next
-session should re-check the two blockers first, then pick up either of those two remaining items.
+card list offers more than one ambiguous legal choice). Released the Confirm-button fix to `main` (`1bd98c0`,
+~13:00 UTC, verified live via `curl`; see Deploy log).
+
+With time still left, delegated a fresh subagent audit of `src/ai/` (bots, evaluation) against SPEC 9.2 — an
+area no prior session's audits had covered. Found and fixed one real bug: **`evaluation.ts`'s pace score
+hardcoded a 10-round cap**, wrong for every campaign chapter except 4 and 6 (each scripts a different-length
+Pressure deck — 6/8/7/14 rounds respectively), making both HeuristicBot's lookahead and MCTSBot's rollout
+scoring misjudge "on pace" in those chapters. Fixed by deriving rounds-left from `state.pressureDeck.length`
+directly (already exactly "rounds remaining" by construction) instead of the constant — mathematically
+identical to the old behavior for the standard 10-round game, so no balance-loop numbers are affected, just
+campaign-chapter pace-awareness. `npm run check` (286 tests, including all 6 chapters' HeuristicBot win-rate
+floor assertions) re-run clean. Two smaller findings logged for a future session, not fixed this session:
+SPEC 9.2's "AI action reason in the log" is entirely unimplemented (its stated blocker, no live AI teammate,
+is now stale — the real one has shipped since M3/M6), and HeuristicBot's claimed Expand-slot protection has
+no actual evaluation term (lower-confidence, smaller impact than the other two). Full detail in DECISIONS.md.
+SPEC 10.3's desktop no-scroll gap remains unchanged. Next session should re-check the two blockers first,
+then pick up one of: the AI reason-string feature, the Expand-protection evaluation gap, or the desktop
+no-scroll gap.
 
 Previous session (2026-09-26, starting ~11:52 UTC): both standing blockers re-checked once — `OWNER.md`'s Apple
 Team ID still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch, since `ci-status` already showed the identical

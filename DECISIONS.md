@@ -1005,3 +1005,52 @@ Format: date, decision, reason.
   the map does (no current card list has more than one ambiguous legal choice to narrow, so there's nothing
   visibly broken today, but a future card design that did would need this), and the SPEC 10.3 desktop
   no-scroll gap is unchanged. Both logged here rather than attempted in the time left this session.
+- 2026-09-26 (same session, ~13:05-13:10 UTC): Delegated a fresh adversarial audit of `src/ai/` (bots,
+  evaluation function) to a general-purpose subagent, against SPEC 9.2 — an area no prior session's audits
+  had specifically covered (past audits: engine rules, campaign chapters, deployment config, save/replay,
+  interface/interaction). It found two real, reachable bugs and one plausible-but-smaller gap; everything
+  else checked out clean (RandomBot uniformity, HeuristicBot's genuine one-step lookahead, MCTSBot's rollout
+  horizon/partner policy/budget/hidden-deck reshuffling, and full coverage of the evaluation function's
+  SPEC-listed factors). Fixed the more concrete of the two real bugs this session:
+  - **`evaluation.ts`'s `paceScore` hardcoded a 10-round cap** (`NORMAL_ROUND_CAP = 10`, `roundsLeft =
+    NORMAL_ROUND_CAP - state.round`) for "progress relative to rounds remaining" (SPEC 9.2), but the real
+    round cap isn't always 10 — it's however many cards remain in `state.pressureDeck` (SPEC 4.8's actual
+    loss mechanic: the game ends when a Scout draw finds the deck empty, one card consumed per round). Every
+    scripted campaign chapter except 4 and 6 runs a different-length deck (chapter 1: 6 rounds, chapter 3: 8,
+    chapter 5: 7, chapter 4: 14 — see `src/content/chapters.ts`), so both HeuristicBot's one-step lookahead
+    and MCTSBot's rollout scoring were evaluating "on pace" against the wrong cap in every one of those
+    chapters: too pessimistic in the shorter ones (chapters 1/3/5, where the real cap is under 10) and too
+    pessimistic near the back half of chapter 4 too (its real 14-card cap is *longer* than 10, so the old
+    code was clamping `roundsLeft` to 0 well before the game was actually out of time). Fixed by using
+    `state.pressureDeck.length` directly instead of the hardcoded constant — it's already exactly "rounds
+    left" by construction (1 card = 1 remaining Scout draw = 1 remaining round), config-agnostic, and
+    requires no new state threading. Verified the fix is a pure improvement with zero behavioral change to
+    the standard 10-round game (Quick Game, chapters 4/6's win conditions aren't round-capped by SPEC text
+    either, but the maths still lines up for any deck): `state.pressureDeck.length` at any point during a
+    round equals `10 - state.round` for the standard deck exactly, since the setup Scout consumes 1 card
+    before round 1 and each round's own Scout step consumes exactly 1 more, so full-game/Quick-Game bot
+    behavior — and every existing balance-loop win-rate measurement, all of which used the standard deck —
+    is unaffected; only the campaign chapters' pace-awareness gets more accurate. `npm run check` (286
+    tests, including `tests/chapters.test.ts`'s existing HeuristicBot win-rate floor assertions for all 6
+    chapters and `tests/bots.test.ts`'s MCTSBot invariant checks, both still fully green) and the fuzz gate
+    both re-run clean.
+  - Not fixed this session (logged for a future session): **SPEC 9.2's "each AI action shows a one-line
+    reason in the log" is entirely unimplemented** — no bot produces a reason string, and `LogSheet.tsx`'s
+    own comment says this is deferred until "the MCTSBot-in-Worker teammate" exists, but that teammate is
+    already live (`src/ai/aiWorker.ts`, wired into `Game.tsx`) — the stated blocker no longer applies, the
+    feature was just never picked back up. Real UI/content work (reason templates per action type, wiring
+    into the AI-teammate's worker response and the log), not a one-line fix — left for a future session with
+    room for it, same treatment prior sessions gave similarly-sized interface gaps.
+  - Also not fixed (smaller, lower-confidence): **HeuristicBot's claimed "protecting regions in the Squeeze
+    and Expand slots" rule (SPEC 9.2) has no actual Expand-specific term** in the evaluation function —
+    `squeezeCoverageScore` only covers Squeeze-targeted regions, and the only Expand-adjacent signal is the
+    global `enemyScore` (all enemy pieces on the map, weight 0.05), which doesn't specifically reward
+    defending an Expand-targeted region. Lower-impact than the other two (Expand only escalates existing
+    enemy presence rather than newly threatening liberation the way Squeeze does), and the audit itself
+    flagged it as "plausible-but-real rather than certainly severe" — left open rather than guessed at with
+    a rushed weight/term addition that would need its own balance-floor re-verification.
+  - Stale comments (`Game.tsx` ~127-128, `mcts.ts` ~143-147) claiming the AI teammate "isn't wired yet"/
+    HeuristicBot "stands in for now" are simply out of date — the real MCTSBot-in-Worker teammate has been
+    live since M3/M6 (confirmed directly: `aiWorker.ts` is genuinely invoked from `Game.tsx`). No behavioral
+    bug, just comment cleanup a future session can fold into whatever touches that code next; not worth a
+    dedicated commit on its own.
