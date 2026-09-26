@@ -1537,3 +1537,48 @@ Format: date, decision, reason.
   redesign record (a child-process pool instead of `worker_threads`, due to a documented tsx ESM-loader
   limitation). A clean confirmation, not a fix — no code changed, no validation sim needed for a null
   result.
+
+- 2026-09-26 (~21:52-22:35 UTC session): Retried `npm run release` on the unchanged `build` HEAD (`cf1acc3`
+  at start, carrying every queued fix from prior sessions). All 8 gates passed clean again (68 e2e, 16 axe,
+  Lighthouse 98/100). The fast-forward step's documented fix (`git checkout -B main origin/main` && `git
+  merge --ff-only build`) was denied outright by the harness's own **"Production Deploy"** classifier this
+  time — the original, most common denial pattern from 2026-09-25 onward, not the rarer "Blind Apply"
+  variant the last two sessions hit on this same step. This confirms the denial is genuinely intermittent
+  per-session rather than durably fixed, despite the multi-session run of clean pushes logged above (that
+  run was real, not fabricated — this is simply a recurrence). Confirmed `origin/main` untouched (`c8c4fee`)
+  and switched back to `build` without retrying, per the denial's own guidance.
+
+  With the release path blocked again, ran two subagent hardening-review passes (2-concurrent cap), each
+  scoped to an area no prior session's audits had covered:
+  1. **UI rendering/presentational layer** (map, pieces, cards, enemy plan strip, tooltips, colour-blind
+     patterns) for code-correctness bugs against SPEC 10/STYLE.md — distinct from gate 8's visual-polish
+     screenshot review. **No real bug found** after a genuinely thorough look (region highlighting on
+     Squeeze/Expand/Scout tap, Stall-slot rendering, card cost/tag display, colour-blind initials, and
+     colour-token usage all traced against the actual engine state shape and STYLE.md's token rules). A
+     clean confirmation, not a fix.
+  2. **STYLE.md section 11 (motion and haptics)** — durations, the Settings "animations" toggle, and the
+     `prefers-reduced-motion` fallback, plus the light/medium/warning haptic triggers. **Found and fixed one
+     real bug**: haptics (`src/platform/haptics.ts`) were confirmed correct and well-gated (Light on
+     `openStall`, Medium only on `liberated`, Warning on `lostLand`/loss, all gated on `isNativePlatform()`,
+     all covered by `tests/haptics.test.ts`), and animation durations (220ms, within STYLE.md's 150-250ms
+     band) and the `.no-animations` Settings toggle were also both confirmed correct. But the separate
+     `@media (prefers-reduced-motion: reduce)` block in `src/styles/global.css` did **not** actually deliver
+     "fades only" as STYLE.md 11 requires: it set `animation: none` plus `transition: opacity 150ms
+     ease-out` on `.stall-piece`/`.enemy-piece`/`.card-enter`, and `animation: none` alone on
+     `.lostland-overlay`. A CSS `transition` never plays on an element's first paint — it only animates a
+     *subsequent* style change on an already-mounted element — and React mounts these classes directly at
+     creation time with no later opacity change to trigger it, so with `animation: none` they simply popped
+     in at full opacity instantly, with zero fade; `.lostland-overlay` had no fallback at all. Verified no
+     test exercises `prefers-reduced-motion` (grepped `tests/` and `e2e/` for "reduced-motion" and each
+     affected class name — no matches), so this had never been caught. Fixed by replacing the dead
+     `transition` with a `@keyframes reduced-motion-fade { from { opacity: 0 } to { opacity: 1 } }` (a
+     keyframe animation *does* play on initial mount, unlike a transition) applied to all four affected
+     classes at 150ms ease-out, opacity-only — matching "fades only" exactly, with no transform. `npx tsc -b
+     --noEmit` and a full `npm run check` (typecheck/lint/tests/fuzz/build) both clean after the fix. Not
+     covered by an automated test (Playwright's `prefers-reduced-motion` emulation would be needed to assert
+     the computed animation-name at mount, which no existing e2e spec does) — a good candidate for a future
+     session's e2e coverage pass, logged here rather than added now given the fix itself was already the
+     session's main deliverable.
+
+  Two review passes this session: one clean confirmation, one real (previously undiscovered) accessibility
+  bug found and fixed.
