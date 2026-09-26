@@ -8,7 +8,7 @@ import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
-import { actionLabel, actionGroupKey, actionGroupLabel, regionOf } from './actionLabel'
+import { actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, regionOf } from './actionLabel'
 import { isIrreversible } from './undo'
 import { enemyTurnEvents } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
@@ -16,7 +16,7 @@ import LogSheet from './LogSheet'
 import FarmSheet from './FarmSheet'
 import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
-import RegionMap from './Map'
+import RegionMap, { Outlet, Buyout, Doubt } from './Map'
 import Scene from './Scene'
 import Tooltip from './Tooltip'
 import {
@@ -428,6 +428,27 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         )}
       </section>
 
+      {/* SPEC 10.5: the map's own pieces (Outlet/Buyout/Doubt) are the last piece of the tooltip surface —
+          a compact key, not one trigger per drawn piece (a region can hold several of the same piece, and
+          an in-SVG popover would fight the map's own transforms), same "?"-next-to-the-thing pattern as
+          the topbar and plan-strip above. */}
+      <section className="map-legend">
+        {(
+          [
+            { term: 'Outlet', icon: <Outlet /> },
+            { term: 'Buyout', icon: <Buyout /> },
+            { term: 'Doubt', icon: <Doubt /> },
+          ] as const
+        ).map(({ term, icon }) => (
+          <span key={term} className="map-legend-item">
+            <svg viewBox="0 0 12 14" width={16} height={18} aria-hidden="true">
+              {icon}
+            </svg>
+            <Tooltip term={term}>{term}</Tooltip>
+          </span>
+        ))}
+      </section>
+
       {decision ? (
         <section className="decision">
           <p>
@@ -458,22 +479,36 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           </>
         ) : (
           <>
-            {standalone.map(({ index, action: a }) => (
-              <button key={index} onClick={() => act(index)}>
-                {actionLabel(a, state)}
-              </button>
-            ))}
-            {[...groups.entries()].map(([key, group]) =>
-              group.entries.length === 1 ? (
-                <button key={key} onClick={() => act(group.entries[0]!.index)}>
-                  {actionLabel(actions[group.entries[0]!.index]!, state)}
-                </button>
-              ) : (
-                <button key={key} onClick={() => setSelectedGroup(group)}>
-                  {group.label}…
-                </button>
-              ),
-            )}
+            {standalone.map(({ index, action: a }) => {
+              const term = actionTermFor(a)
+              return (
+                <span key={index} className="action-item">
+                  <button onClick={() => act(index)}>{actionLabel(a, state)}</button>
+                  {term && (
+                    <Tooltip term={term} label={`What is ${term}?`}>
+                      ?
+                    </Tooltip>
+                  )}
+                </span>
+              )
+            })}
+            {[...groups.entries()].map(([key, group]) => {
+              const single = group.entries.length === 1
+              const firstAction = actions[group.entries[0]!.index]!
+              const term = actionTermFor(firstAction)
+              return (
+                <span key={key} className="action-item">
+                  <button onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
+                    {single ? actionLabel(firstAction, state) : `${group.label}…`}
+                  </button>
+                  {term && (
+                    <Tooltip term={term} label={`What is ${term}?`}>
+                      ?
+                    </Tooltip>
+                  )}
+                </span>
+              )
+            })}
           </>
         )}
       </section>

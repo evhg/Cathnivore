@@ -46,6 +46,43 @@ test('the plan-strip cards have their own "?" tooltip, separate from the tap-to-
   await expect(highlightButton).toHaveAttribute('aria-pressed', 'true')
 })
 
+test('an action button has its own "?" tooltip, separate from taking the action', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  const graftItem = page.locator('.action-item', { hasText: 'Graft' })
+  const info = graftItem.locator('.tooltip-trigger-button')
+  await expect(info).toBeVisible()
+  await info.dispatchEvent('click')
+  const popover = page.locator('.tooltip-popover')
+  await expect(popover).toBeVisible()
+  await expect(popover).toContainText('Always legal')
+
+  // Dismiss before checking the action button underneath still works on its own, unaffected by the
+  // tooltip trigger sitting right next to it.
+  await info.dispatchEvent('click')
+  await expect(popover).toHaveCount(0)
+  const actionsLeftBefore = await page.locator('.active-producer').textContent()
+  await graftItem.locator('button').first().click()
+  await expect(page.locator('.active-producer')).not.toHaveText(actionsLeftBefore ?? '')
+})
+
+test('the map legend explains Outlet/Buyout/Doubt on tap', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  const outletTrigger = page.locator('.map-legend-item', { hasText: 'Outlet' }).locator('.tooltip-trigger-button')
+  await expect(outletTrigger).toBeVisible()
+  await outletTrigger.dispatchEvent('click')
+  const popover = page.locator('.tooltip-popover')
+  await expect(popover).toBeVisible()
+  await expect(popover).toContainText('Hollowell')
+})
+
 test('clicking outside a tooltip dismisses it', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()

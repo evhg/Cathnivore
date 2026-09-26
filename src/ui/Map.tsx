@@ -100,7 +100,7 @@ function RegionTextureDefs() {
 
 // Outlet: "little shopfront box with a price tag reading 0.99" — a glossy Hollowell square (unchanged
 // from before) plus a small hanging price tag, the wit detail STYLE.md 2.5 asks for by name.
-function Outlet() {
+export function Outlet() {
   return (
     <g className="enemy-piece">
       <rect width={12} height={12} rx={2} fill="var(--hollowell)" />
@@ -118,7 +118,7 @@ function Outlet() {
 
 // Buyout: "picket-fence segment with a SOLD sign" — keeps the peaked sign-post silhouette (already
 // distinct in outline from Outlet's square, STYLE.md 2.3) and adds the sign itself.
-function Buyout() {
+export function Buyout() {
   return (
     <g className="enemy-piece">
       <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" />
@@ -135,7 +135,7 @@ function Buyout() {
 
 // Doubt: "speech bubble with a '?'" — the glossy Candor circle already had the "?", but no tail, so it
 // read as a plain dot rather than a speech bubble (STYLE.md 6's literal shape).
-function Doubt() {
+export function Doubt() {
   return (
     <g className="enemy-piece">
       <circle cx={6} cy={6} r={6} fill="var(--candor)" />

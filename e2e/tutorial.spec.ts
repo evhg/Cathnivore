@@ -22,7 +22,7 @@ test('campaign chapter 1 ("Fresh Meat") is completed by following the tutorial p
   // Step 0: "Open a Stall here" — only Open Stall is offered, Graft (always otherwise legal) is not.
   await expect(prompt).toContainText('Open a Stall')
   await expect(actions.getByRole('button', { name: 'Graft', exact: false })).toHaveCount(0)
-  await actions.getByRole('button', { name: 'Open Stall' }).click()
+  await actions.getByRole('button', { name: /^Open Stall/ }).click()
   await page.locator('.region-hex', { hasText: 'Brindle Hills' }).click()
 
   // Step 1: "Supply and clear the Outlet" — only Supply is offered now.
@@ -36,10 +36,11 @@ test('campaign chapter 1 ("Fresh Meat") is completed by following the tutorial p
   await expect(prompt).toContainText('Highmoor')
   await page.getByRole('button', { name: 'Got it' }).click()
 
-  // Step 3: "Graft always works" — only Graft is offered.
+  // Step 3: "Graft always works" — only Graft is offered (its own "?" tooltip trigger sits alongside it,
+  // not a second action).
   await expect(prompt).toContainText('Graft always works')
   const otherButtons = await actions.locator('button').allTextContents()
-  expect(otherButtons.every((t) => t.startsWith('Graft'))).toBe(true)
+  expect(otherButtons.every((t) => t.startsWith('Graft') || t === '?')).toBe(true)
   await actions.getByRole('button', { name: /^Graft/ }).click()
 
   // Steps 4-5 are informational (no highlight): free play resumes, and they need a manual "Got it".

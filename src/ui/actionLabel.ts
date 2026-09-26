@@ -45,6 +45,31 @@ export function actionLabel(action: Action, state: GameState): string {
   }
 }
 
+// The `ACTION_TERMS` glossary entry (src/content/terms.ts) an action's button should offer a SPEC 10.5
+// tooltip for, or undefined for kinds with no matching entry (role abilities are producer-specific, not
+// one of the 7 spec-4.6 actions the glossary covers, and `decide`/`tearUpContract` aren't base actions).
+export function actionTermFor(action: Action): string | undefined {
+  switch (action.kind) {
+    case 'openStall':
+      return 'Open Stall'
+    case 'supplyOutlets':
+    case 'supplyBuyout':
+      return 'Supply'
+    case 'rebut':
+      return 'Rebut'
+    case 'invest':
+      return 'Invest'
+    case 'sell':
+      return 'Sell'
+    case 'scheme':
+      return 'Scheme'
+    case 'graft':
+      return 'Graft'
+    default:
+      return undefined
+  }
+}
+
 // The region an action targets, for SPEC 10.2's targeting mode (tap a glowing region on the map instead
 // of picking a per-region button). Actions with no region choice (Sell, Graft, Invest, decide, an
 // untargeted Scheme/Role) return undefined and stay a single ordinary button.
