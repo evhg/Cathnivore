@@ -1,6 +1,23 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-26, starting ~11:52 UTC): both standing blockers re-checked once — `OWNER.md`'s Apple
+Team ID still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch, since `ci-status` already showed the identical
+failure from ~48 minutes earlier); the "Production Deploy" push restriction stayed fixed, confirmed by
+actually using it (see below). All content/milestone work is done except the two owner-blocked M7 items
+(iOS/App Store), so this session made four small, verified CSS dents in the still-open SPEC 10.3 desktop
+"no scrolling at 1280x800" gap (`.actions` grid density, topbar spacing, sheet-panel heading size — right
+column shortfall down from ~529px to ~169-310px, centre from ~422px to ~220-293px; still real, still
+`test.skip`'d), ran `npm run release` end-to-end for the resulting commit (`f7cf8dd` -> `main`, live and
+verified via `curl` after hitting the sandbox's two already-documented artifacts — stale local `main`, fixed
+the standard way; Chromium TLS interception on the live smoke test, verified via curl instead rather than
+weakening TLS), and cleared the critical `npm audit` finding (`uuid` override to 11.1.1, verified `cap sync
+ios` still works). Manually re-audited a few rules areas (Rift 6 Split, Kingsmarket-guard/`activeRegions`
+scoping, difficulty-table setup) against SPEC 4.7-4.9 and found no bugs — clean confirmation, not a fix.
+Full details of each in DECISIONS.md. Next session should re-check the two blockers first, then either
+continue the desktop card-density work or look for another bounded SPEC-compliance gap the way this session
+did.
+
 This session (2026-09-26, starting ~09:52 UTC): both standing blockers re-checked once, unchanged (13th+
 consecutive identical denial/placeholder — see Blocked). Picked up the iOS status bar/safe-area/splash-screen
 gap the previous session logged as needing its own dedicated session:
