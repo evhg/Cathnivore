@@ -51,7 +51,11 @@ placeholder), then did two rounds of real, unblocked work:
   Settings had no control for it — STYLE.md 3.5's "Settings can force light or dark" was unimplemented,
   not merely untested. Added `Settings.theme: 'system' | 'light' | 'dark'` (`src/platform/settings.ts`),
   `applyThemeSetting()` (same pattern as the existing `applyAnimationsSetting()`), a new Theme section in
-  `Settings.tsx`, and wired it into `main.tsx`'s startup alongside the animations setting.
+  `Settings.tsx`, and wired it into `main.tsx`'s startup alongside the animations setting. Also added a new
+  gate-6 accessibility test (`e2e/accessibility.spec.ts`) that forces dark theme via the new Settings
+  control and checks the game screen for axe violations — the dark tokens had never actually been
+  reachable before, so this is real new coverage, not a redundant re-check (passes clean on both
+  `phone`/`desktop-chromium`).
 Both verified visually (cropped/full screenshots via a temporary Playwright script, removed after use, not
 committed) and with the full `npm run check` (165 unit tests) plus targeted e2e runs
 (`quick-game.spec.ts`+`screenshots.spec.ts`, `title.spec.ts`+`accessibility.spec.ts`, `desktop-chromium`) —

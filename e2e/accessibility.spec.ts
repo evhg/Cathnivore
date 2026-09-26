@@ -50,3 +50,18 @@ test('credits screen has no serious or critical accessibility issues', async ({ 
   await expect(page.getByRole('heading', { name: 'Credits' })).toBeVisible()
   await assertNoSeriousIssues(page)
 })
+
+// STYLE.md 3.5/3.6: the dark theme has its own colour tokens, so it needs its own contrast check — a
+// screen that's fine in the light palette isn't guaranteed fine in the dark one. Forced via Settings'
+// theme override (added alongside this test) rather than `page.emulateMedia`, so this exercises the same
+// path a real player forcing dark mode would use.
+test('game screen has no serious or critical accessibility issues in forced dark theme', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Settings').click()
+  await page.getByText('Dark', { exact: true }).click()
+  await page.getByRole('button', { name: 'Back' }).click()
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await expect(page.locator('.game')).toBeVisible()
+  await assertNoSeriousIssues(page)
+})
