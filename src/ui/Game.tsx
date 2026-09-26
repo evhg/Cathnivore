@@ -54,10 +54,6 @@ interface Props {
   // (e.g. chapter 3's round-5 Wholesome Hollow reveal). Absent for non-campaign games and chapters with no
   // scripted trigger — see `state.log`'s `{type: 'trigger'}` events, appended by `round.ts`.
   midGameScenes?: Record<string, SceneData>
-  // SPEC 8.1/11.3: which campaign chapter this game belongs to, so the autosave records it (see the effect
-  // below) — a reload mid-chapter needs this to resume back into the `chapterGame` screen rather than a
-  // plain Quick Game that can never call `onChapterEnd`. Absent for Quick Game/hot-seat games.
-  chapterId?: string
 }
 
 // SPEC 10.2 Game screen. Plain controls for now — see PROGRESS.md M3 for what's still missing (the SVG
@@ -86,7 +82,7 @@ function pressureLabel(card: GameState['squeeze']): string {
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
 }
 
-export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId }: Props) {
+export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes }: Props) {
   const [state, setState] = useState(initial)
   const [tutorialIndex, setTutorialIndex] = useState(0)
   const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>([])
@@ -137,8 +133,8 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   }, [state])
 
   useEffect(() => {
-    saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory, chapterId })
-  }, [state, seed, chapterId])
+    saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory })
+  }, [state, seed])
 
   // SPEC 6/8.1: in Solo mode, the second producer is played by the AI teammate — the real MCTSBot-in-Worker
   // bot below, not a HeuristicBot stand-in (see the effect further down that wires `aiWorker.ts`).

@@ -30,12 +30,11 @@ for (const title of ['Fresh Meat', 'Word of Mouth', 'Growing Season', 'The Plan'
     const won = (await page.locator('.end-screen').textContent())?.includes('You liberated Marrow.') ?? false
     await page.getByRole('button', { name: 'Continue' }).click()
 
-    // A win continues into the closing scene; a loss goes to the SPEC 8.1 retry screen (Retry/Play on
-    // Easy/Skip Chapter), which reuses the `.campaign` class alongside its own `.chapter-loss` one.
+    // A win continues into the closing scene; a loss goes back to the chapter list.
     if (won) {
       await expect(page.locator('.scene')).toBeVisible()
     } else {
-      await expect(page.locator('.campaign.chapter-loss')).toBeVisible()
+      await expect(page.locator('.campaign')).toBeVisible()
     }
 
     expect(errors).toEqual([])

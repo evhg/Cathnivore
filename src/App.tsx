@@ -6,17 +6,9 @@ import Scene from './ui/Scene'
 import RulesReference from './ui/RulesReference'
 import Settings from './ui/Settings'
 import Credits from './ui/Credits'
-import {
-  loadGame,
-  clearGame,
-  loadCampaign,
-  markChapterComplete,
-  recordGrowingSeasonCarryOver,
-  recordChapterLoss,
-  clearChapterLossCount,
-} from './platform/storage'
+import { loadGame, clearGame, loadCampaign, markChapterComplete, recordGrowingSeasonCarryOver } from './platform/storage'
 import { openExternalLink } from './platform/externalLink'
-import { CHAPTERS, CHAPTERS_BY_ID, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
+import { CHAPTERS, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
 import { SCENES as GROWING_SEASON_SCENES } from './content/story/growing-season'
@@ -48,11 +40,6 @@ type Screen =
   | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' | 'contracts1' | 'contracts2'; mode: Mode }
   | { name: 'game'; state: GameState; seed: number; mode: Mode }
   | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode }
-  // SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy. After
-  // 2 losses, also offer Skip Chapter." `seed` is the just-lost attempt's own seed, kept so "Retry (same
-  // shuffle)" can replay it exactly; `lossCount` is this chapter's consecutive-loss count so far.
-  | { name: 'chapterLoss'; chapter: Chapter; mode: Mode; seed: number; lossCount: number }
-  | { name: 'chapterSkipSummary'; chapter: Chapter }
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
@@ -97,18 +84,7 @@ export default function App() {
     try {
       const state = replay(saved.save.config, saved.save.seed, saved.save.actions)
       // Hot-seat is the safe default on resume — a mid-game Solo save doesn't record which slot was human.
-      // A campaign chapter save (`chapterId` set) resumes back into `chapterGame`, not a plain Quick Game —
-      // otherwise the tutorial prompts/scripted scenes are lost and, worse, `endChapter` (markChapterComplete,
-      // the ch3->4 carry-over, the loss/retry screen) can never fire for this playthrough again, silently
-      // stalling campaign progress every time the app is reloaded mid-chapter (SPEC 8.1's "save and resume"
-      // is a "never cut" feature). Falls back to the plain Quick Game screen for an old save, a Quick Game
-      // save, or a chapter that no longer exists.
-      const chapter = saved.save.chapterId ? CHAPTERS_BY_ID.get(saved.save.chapterId) : undefined
-      if (chapter) {
-        setScreen({ name: 'chapterGame', chapter, state, seed: saved.save.seed, mode: 'hotseat' })
-      } else {
-        setScreen({ name: 'game', state, seed: saved.save.seed, mode: 'hotseat' })
-      }
+      setScreen({ name: 'game', state, seed: saved.save.seed, mode: 'hotseat' })
     } catch {
       setScreen({ name: 'saveError' })
     }
@@ -137,39 +113,25 @@ export default function App() {
     }
   }
 
-  // SPEC 8.2 ch3 carry-over: chapter 4's setup adds Outlets to Oakvale for contracts that survived
-  // chapter 3 (see `chapter4Config`); every other chapter just uses its plain `chapterConfig`.
-  // `difficultyOverride` backs SPEC 8.1's "Play on Easy" loss option — it swaps only the difficulty,
-  // keeping the chapter's own map/rules/scripted content untouched.
-  function configForChapter(chapter: Chapter, difficultyOverride?: 'easy' | 'normal' | 'hard'): GameConfig {
-    const base =
-      chapter.id === CHAPTER_4.id ? chapter4Config(loadCampaign().growingSeasonContractsSurviving ?? 0) : chapterConfig(chapter)
-    return difficultyOverride ? { ...base, difficulty: difficultyOverride } : base
-  }
-
-  function playChapter(chapter: Chapter, mode: Mode, seedOverride?: number, difficultyOverride?: 'easy' | 'normal' | 'hard'): void {
-    // SPEC 8.1 "Retry (same shuffle)" reuses the just-lost attempt's own seed; every other path
-    // (a fresh chapter start, "Retry (new shuffle)", "Play on Easy") draws a new one.
-    const seed = seedOverride ?? Date.now()
-    const config = configForChapter(chapter, difficultyOverride)
+  function playChapter(chapter: Chapter, mode: Mode): void {
+    const seed = Date.now()
+    // SPEC 8.2 ch3 carry-over: chapter 4's setup adds Outlets to Oakvale for contracts that survived
+    // chapter 3 (see `chapter4Config`); every other chapter just uses its plain `chapterConfig`.
+    const config = chapter.id === CHAPTER_4.id ? chapter4Config(loadCampaign().growingSeasonContractsSurviving ?? 0) : chapterConfig(chapter)
     setScreen({ name: 'chapterGame', chapter, state: createGame(config, seed), seed, mode })
   }
 
-  function endChapter(chapter: Chapter, mode: Mode, won: boolean, state: GameState, seed: number): void {
+  function endChapter(chapter: Chapter, mode: Mode, won: boolean, state: GameState): void {
+    markChapterComplete(chapter.id)
     // SPEC 8.2 ch3 carry-over: recorded whenever the chapter ends (won or lost), so a replay's latest
     // outcome is always what chapter 4 reads back.
     if (chapter.id === CHAPTER_3.id) {
       recordGrowingSeasonCarryOver(survivingWholesomeHollowContracts(state))
     }
     if (won) {
-      markChapterComplete(chapter.id)
-      clearChapterLossCount(chapter.id)
       setScreen({ name: 'chapterScene', chapter, which: 'closing', mode })
     } else {
-      // SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy.
-      // After 2 losses, also offer Skip Chapter... Progress is never locked."
-      const lossCount = recordChapterLoss(chapter.id)
-      setScreen({ name: 'chapterLoss', chapter, mode, seed, lossCount })
+      setScreen({ name: 'campaign' })
     }
   }
 
@@ -319,47 +281,9 @@ export default function App() {
         mode={screen.mode}
         tutorialSteps={screen.chapter.tutorialSteps}
         midGameScenes={midGameScenes}
-        chapterId={screen.chapter.id}
         onExit={() => setScreen({ name: 'campaign' })}
-        onChapterEnd={(won, state) => endChapter(screen.chapter, screen.mode, won, state, screen.seed)}
+        onChapterEnd={(won, state) => endChapter(screen.chapter, screen.mode, won, state)}
       />
-    )
-  }
-
-  if (screen.name === 'chapterLoss') {
-    const { chapter, mode, seed, lossCount } = screen
-    return (
-      <main className="campaign chapter-loss">
-        <h1>{chapter.title}</h1>
-        <p>You didn’t pull it off this time. Progress is never locked — try again whenever you like.</p>
-        <button onClick={() => playChapter(chapter, mode, seed)}>Retry (same shuffle)</button>
-        <button onClick={() => playChapter(chapter, mode)}>Retry (new shuffle)</button>
-        <button onClick={() => playChapter(chapter, mode, undefined, 'easy')}>Play on Easy</button>
-        {lossCount >= 2 && (
-          <button
-            onClick={() => {
-              // SPEC 8.1: "Progress is never locked" — skipping still lets the campaign move on.
-              markChapterComplete(chapter.id)
-              clearChapterLossCount(chapter.id)
-              setScreen({ name: 'chapterSkipSummary', chapter })
-            }}
-          >
-            Skip Chapter
-          </button>
-        )}
-        <button onClick={() => setScreen({ name: 'campaign' })}>Back to Chapter List</button>
-      </main>
-    )
-  }
-
-  if (screen.name === 'chapterSkipSummary') {
-    const { chapter } = screen
-    return (
-      <main className="campaign chapter-skip-summary">
-        <h1>{chapter.title}</h1>
-        <p>You skip ahead rather than replay it again. {chapter.goalDescription} The story moves on without dwelling on it.</p>
-        <button onClick={() => setScreen({ name: 'campaign' })}>Continue</button>
-      </main>
     )
   }
 
