@@ -931,3 +931,20 @@ Format: date, decision, reason.
   in PROGRESS.md's Deploy log. This confirms the release pipeline is now working end-to-end and repeatably,
   modulo the two well-understood sandbox-only artifacts (stale local `main`, Chromium TLS) that every
   session should expect and route around the same documented way rather than re-diagnosing from scratch.
+- 2026-09-26 (~12:22-12:28 UTC, same session): Fixed the critical `npm audit` finding logged as deferred in
+  a prior session ("all requiring breaking major-version bumps"). Checked whether that was actually true for
+  `uuid` specifically (the critical one, via `@capacitor/cli` -> `xcode` -> `uuid@7.0.3`, GHSA-w5hq-g745-h8pq,
+  a missing buffer-bounds check when a `buf` argument is passed to v3/v5/v6): `node_modules/xcode/lib/
+  pbxProject.js` only ever calls `uuid.v4()` (no `buf` argument, and v4 isn't in the advisory's affected list
+  at all), so this repo's actual usage was never exploitable — but bumping past it removes the audit noise
+  either way, without needing `@capacitor/cli`'s major-version bump the tool's own suggested fix
+  (`npm audit fix --force`) would have forced. Added a top-level `"overrides": { "uuid": "^11.1.1" }` to
+  `package.json` (uuid's own advisory fix version) rather than bumping `@capacitor/cli`, since npm's
+  `overrides` can force a nested transitive dependency's version without touching its parent. Verified this
+  doesn't just silence the audit: `npm ls uuid` confirms `uuid@11.1.1 overridden` under `xcode`, `npm run
+  check` (286 tests, build clean) passes, and — the real risk with overriding a native-tooling dependency's
+  own dependency — `npx cap sync ios` (the exact codepath that calls into `xcode`/`pbxProject.js`) still
+  runs clean end to end (copies web assets, writes `Package.swift`, finds all 5 Capacitor plugins). `npm
+  audit` now reports 6 vulnerabilities (down from 9; the critical one gone), all in `vite`/`vitest`'s dev
+  server only, still needing genuine breaking major-version bumps (vite 5->8, vitest 2->5) that risk the
+  build/PWA-plugin/test-runner pipeline — left deferred, same reasoning as before, not attempted blind.
