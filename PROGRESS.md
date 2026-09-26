@@ -19,8 +19,33 @@ With the release path blocked again, launched two subagent hardening-review pass
 each scoped to an area no prior session's audits had covered: (1) the UI rendering/presentational layer
 (map, pieces, cards, enemy plan strip, tooltips, colour-blind patterns) for code-correctness bugs against
 SPEC 10/STYLE.md, not gate 8's visual-polish screenshot review; (2) STYLE.md section 11 (motion and
-haptics) — durations, reduced-motion fallback, and the light/medium/warning haptic triggers. Results to
-follow in the next entry once both return.
+haptics) — durations, reduced-motion fallback, and the light/medium/warning haptic triggers.
+
+Both returned real findings, all fixed (full detail in DECISIONS.md):
+- **Motion/haptics pass:** haptics themselves and animation durations were already correct, but
+  `prefers-reduced-motion` didn't actually deliver "fades only" (STYLE.md 11) — a dead CSS `transition` on
+  elements that only ever get their opacity set at mount, never changed afterward, so a `transition` never
+  fires. Fixed with a `@keyframes` fade instead (keyframes do play on mount).
+- **UI rendering pass:** three real bugs — (1) Stall pieces from two different producers in the same
+  region could render in the identical slot (`Map.tsx`'s offset math indexed by producer-list position
+  instead of a running total), hiding real board state; (2) `regionMatchesPressureSlot` (shared by the
+  map's SQUEEZE/EXPAND badges, the plan-strip tap-to-highlight, and the AI's log reasons) had no liberated
+  check, so a liberated region of a matching type kept showing a false SQUEEZE/EXPAND warning and glowing
+  on tap even though the engine actually skips liberated regions there (SPEC 4.8) — actively misleading the
+  player's main planning tool; (3) `src/ui/icons/ResourceIcons.tsx` hardcoded light-theme hex colours
+  instead of the `var(--token)` pattern already used for ink, so Public Trust/Rift/Round/Lost
+  Land/Produce's top-bar icons stayed light-themed under dark mode, violating STYLE.md 3.1's "never
+  hard-code a colour outside the token file."
+All three fixes verified with `npx tsc -b --noEmit`, a full `npm run check` (299 tests, unchanged — none of
+the three bugs had prior coverage) and a full `npm run gates` re-run (all 8 gates; 68 e2e, 16 axe, Lighthouse
+98/100; gate 8's screenshots reviewed directly — no regression from the Stall/colour fixes, board layout and
+icon colours read clean in the fresh captures). `build` now also carries these three fixes plus the
+reduced-motion fix, gated and pushed, still waiting on a future session's release retry.
+
+With time still left, launched a third subagent, scoped to the test suite's own quality (tests/*.test.ts,
+e2e/*.spec.ts) rather than the app code — looking for tests that would give false confidence (trivial
+assertions, tests that only check "didn't crash," tests encoding a bug as correct, `.skip`/`.only` left in,
+copy-paste test bodies). Result pending in the next entry.
 
 ---
 
