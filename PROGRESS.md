@@ -22,7 +22,19 @@ stated round count exactly) and re-verified at 100%/100% HeuristicBot win rate o
 comfortably above their SPEC 9.4 floors (>=90% ch1, >=50% ch5) with no regression. Chapters 3 and 4 turned
 out not to have this bug after all on closer inspection (ch3's 16-card deck vs. "within 8 rounds" is a
 pre-existing, deliberate, already-documented divergence for balance reasons, not an off-by-one; ch4 has no
-stated round cap to check against) — left untouched. Full detail in DECISIONS.md.
+stated round cap to check against) — left untouched. Also added `e2e/carry-over.spec.ts`, closing a real gap:
+the carry-over's pure logic was already unit-tested, but nothing exercised `App.tsx` actually reading
+campaign storage and routing to the right scene (0/1/2 surviving contracts) — now covered end to end.
+Full detail in DECISIONS.md.
+
+With both release paths still blocked and the balance loop already at its SPEC 9.4 cap (12/12 iterations,
+stopped per the spec's own exit clause), this session ran out of further genuinely open, bounded,
+unblocked work to pick up beyond re-checking the two blockers — everything else still `[ ]` in the Tasks
+section below is a release/deploy/`ios-<n>`/`store-<n>`/`submit-<n>` step or the final report, all of which
+wait on the same two owner-side items. **Next session's first move should still be the standard blocker
+re-check** (per CLAUDE.md/SPEC 1.9), but if a future session also comes up empty here, it's worth spending
+time on a fresh adversarial audit of an area not yet specifically re-derived from the SPEC text (the pattern
+that found real bugs on 2026-09-26 ~04:06 UTC) rather than assuming there's nothing left to check.
 
 Previous session (2026-09-26, third session that day): re-checked both standing blockers once each (still denied /
 still the placeholder — unchanged, see Blocked). `npm run check`/`npm run gates` both re-confirmed clean on
