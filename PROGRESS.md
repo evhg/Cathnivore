@@ -57,7 +57,13 @@ Four bounded fixes total this session, all small and outside the release-path bl
 pattern several recent sessions have used while `npm run release`/`ios.yml`/App Store submission stay stuck on owner-side
 setup. Continued in the same vein as the previous session's audit (below) rather than attempting either of
 the two logged large redesigns (SPEC 10.2's targeting-mode Confirm button, SPEC 10.3's desktop no-scroll
-gap) — both still need a dedicated, less-interrupted session, unchanged this session.
+gap) — both still need a dedicated, less-interrupted session, unchanged this session. A third item now
+joins that "needs its own session" list: **SPEC 11.1/11.6's status bar/safe-area/splash-screen handling is
+also unbuilt** (`@capacitor/status-bar`/`@capacitor/splash-screen` are installed but never called anywhere,
+no CSS uses `env(safe-area-inset-*)`) — found while auditing the rest of the iPhone shell after fixing the
+Preferences gap, but deliberately not attempted this session since none of it is verifiable without a real
+device/simulator this sandbox doesn't have, unlike the Preferences fix (verified end-to-end by the existing
+web e2e suite). Full detail and candidate approach in DECISIONS.md.
 
 ---
 
