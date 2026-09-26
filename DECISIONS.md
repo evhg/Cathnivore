@@ -1102,3 +1102,31 @@ Format: date, decision, reason.
   `npm run check` (293 tests, up from 286) and `npm run gates` (gates 1-7; 67 e2e tests, up from 66; 16 axe;
   Lighthouse 98/100) both re-run clean end to end, no regressions. Pushed as two commits: `13b6dfc` (the
   feature) and `de843e7` (the e2e coverage), both gated individually before pushing.
+- 2026-09-26 (same session, ~14:09-14:22 UTC): With time still left, added the second item the previous
+  session's `src/ai/` audit flagged — SPEC 9.2 credits HeuristicBot's evaluation with "protecting regions in
+  the Squeeze and Expand slots," but only Squeeze had a matching term (`squeezeCoverageScore`, rewarding
+  Stall coverage — Squeeze's own Defence stat). Expand's rule (4.7) only escalates a region that "has at
+  least 1 enemy piece" there already, so the matching defensive signal is having *cleared* an
+  Expand-targeted region, not occupied it — added `expandCoverageScore` on that basis in
+  `src/ai/evaluation.ts`, weighted 0.03 (taken from `enemyPieces`, 0.05 -> 0.02, so the weights still sum to
+  1). `npm run check` (295 tests, up from 293) and a full `npm run gates`-independent build/typecheck/lint
+  pass clean; `tests/evaluation.test.ts` (2 new tests) checks the term directly, including the exact literal
+  case SPEC 9.2 describes (a cleared Expand-targeted region scores strictly higher than an uncleared one).
+  Unlike the pace-score fix earlier this session's chain, this change alters evaluation scores in every
+  position with an active Expand slot, so per the M4 balance loop's own established precedent it needs a
+  real MCTS confirmation before being trusted at scale, not just unit tests. Started a 100-game MCTS/Normal/
+  all-pairs sanity run to get that signal before the session ended, but at this file's current
+  `ROLLOUT_SAMPLE_SIZE = 8` (widened across iterations 9 and 11) it didn't finish within a 590-second budget
+  and had to be killed with no usable output at all (not even a partial read — `tail`'s buffering meant the
+  killed process produced nothing) as the session's wrap-up time approached. This is a new, unlogged data
+  point on this sample size's cost: even recent 200-game sanity runs at `ROLLOUT_SAMPLE_SIZE = 8` have taken
+  10-11 minutes (see the iteration 11 entries above), so 100 games alone exceeding ~10 minutes suggests the
+  per-game cost has grown further since those measurements, or this session's box was simply slower/more
+  contended — either way, a future session attempting to confirm this (or run any further MCTS balance
+  work) should budget more generously than "half of a 200-game run's time" and consider starting it as the
+  very first task of an hour, the same way iteration 10's session eventually had to. **Kept unconfirmed**
+  (code is correct and unit-tested either way — `npm run check`/typecheck/lint all pass, and this doesn't
+  touch anything `npm run gates`/`release` checks, so it's safe to leave on `build` regardless): a
+  100-or-more-game MCTS/Normal/all-pairs confirmation, started early in the session, is the next session's
+  first balance task. Revert `WEIGHTS.expandCoverage` to 0 and `WEIGHTS.enemyPieces` back to 0.05 if it
+  doesn't hold a floor or shows an unexpected regression.

@@ -30,17 +30,23 @@ move, so the log-line assertion needed its own wait rather than reusing the prod
 Lighthouse 98/100) both re-run clean end to end, no regressions — pushed in two commits (`13b6dfc` for the
 feature, `de843e7` for the e2e coverage).
 
-Considered the other two items the previous session left open (a further `squeezeCoverageScore`-shaped term
-for Expand-protection in `src/ai/evaluation.ts`, and the SPEC 10.3 desktop no-scroll gap) and deliberately
-did not attempt either this session: an Expand-protection evaluation term would change every producer's
-score in every position (unlike the earlier pace-score fix, which was provably a no-op for the standard
-game), so per the M4 balance loop's own precedent it would need a real MCTS confirmation run before being
-trusted — recent 200-game runs at this file's current `ROLLOUT_SAMPLE_SIZE` have taken 10+ minutes, and a
-proper re-verification is a poor fit for the back half of a single ~50-minute session right after a
-different real change already landed. The desktop no-scroll gap needs genuine layout-design work (a
-collapsible/paginated card list), not another CSS squeeze, per several previous sessions' notes — left for
-a session that can start with it fresh rather than picked up with under half the session left. Both remain
-open for a future session with more room.
+With time still left, also picked up the second `src/ai/` audit finding: added `expandCoverageScore` to
+`src/ai/evaluation.ts` (SPEC 9.2's "protecting regions in the ... Expand slot," the half `squeezeCoverageScore`
+didn't cover — see DECISIONS.md for why Expand's own rule needs a "cleared," not "occupied," signal),
+weighted 0.03 (taken from `enemyPieces`, 0.05 -> 0.02). `npm run check` (295 tests, up from 293) passes with
+new direct unit tests (`tests/evaluation.test.ts`). Started a 100-game MCTS/Normal/all-pairs sanity run to
+confirm it before trusting it at scale (this changes scores in every position with an active Expand slot,
+unlike the earlier pace-score fix), but it didn't finish within a 590s budget at this file's current
+`ROLLOUT_SAMPLE_SIZE = 8` and had to be killed with no usable output as the session's wrap-up time
+approached — a new data point that this sample size's cost has grown past what a quick same-session sanity
+check can absorb (see DECISIONS.md). **Kept unconfirmed** (unit-tested and safe regardless, doesn't touch
+anything `npm run gates`/`release` checks): a real confirmation run, started as the very first task of an
+hour, is the next session's first balance task; revert `expandCoverage`/`enemyPieces`'s weights if it
+doesn't hold.
+
+The SPEC 10.3 desktop no-scroll gap (the third item the previous session left open) was not attempted this
+session — it needs genuine layout-design work (a collapsible/paginated card list), not another CSS squeeze,
+per several previous sessions' notes, and is left for a session that can start with it fresh.
 
 
 This session (2026-09-26, starting ~12:52 UTC): both standing blockers re-checked once — `OWNER.md`'s Apple
