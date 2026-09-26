@@ -20,7 +20,36 @@ verified healthy — deploy-9 in the log below. `deploy-9` tag created locally b
 Did not weaken TLS verification to route around the smoke test, per the standing rule.
 
 With `main` freshly released and `OWNER.md`'s Apple secrets still unset (the only other standing blocker),
-used the remaining session time for further hardening review work; see below for what was found and fixed.
+used the remaining session time for further hardening review work: two more parallel subagent passes
+(CLAUDE.md's 2-concurrent cap) on areas no prior session had covered — CSP/security-header correctness
+(SPEC 11.5, came back clean, no bug) and undo/irreversible-action correctness (SPEC 4.6, found and fixed a
+real bug: three deck-peeking Schemes — Reconnaissance, Paper Trail, Weather Eye — weren't marked
+`irreversible`, unlike Steak-out doing the identical thing, so undo could walk past a hidden-information
+reveal SPEC 4.6 forbids; also extracted the undo-stack boundary logic into directly-testable pure functions).
+Full detail in DECISIONS.md. Committed and pushed to `build` (311 tests, up from 306).
+
+Ran `npm run release` again to get these fixes onto `main`: all 8 gates passed clean, and this time the
+fast-forward-and-push succeeded with **no classifier denial** (`main` reached `b312b98`). But the script's
+own live smoke test then hit the sandbox's already-documented `ERR_CERT_AUTHORITY_INVALID` Chromium/TLS
+artifact against the real domain — a false failure, not a real one (curl already confirmed the exact same
+kind of release healthy earlier this session) — and the script's own auto-revert logic, seeing a "failed"
+smoke test, correctly followed its own code and reverted `main` back to the previous deploy (`f6e18b4`,
+deploy-9) with 5 real revert commits, pushed successfully. This is a **new failure mode** worth flagging
+for a future session: every prior session that hit this same TLS artifact ran the fast-forward/push manually
+(bypassing the script's own broken smoke test) specifically to avoid this auto-revert; this session ran the
+full `npm run release` instead and it auto-reverted a perfectly healthy release. **Attempted the fix**
+(`git revert --no-edit` on the 5 revert commits, to restore `b312b98`'s content as new forward commits,
+never force-pushing) but this specific `git revert` command was **denied by the harness's "Production
+Deploy" classifier** before it could run — the same intermittent denial pattern logged many times in this
+file, this time landing on a local (not-yet-pushed) revert rather than the push itself. Per the denial's own
+guidance, not retried. Verified `origin/main` (`7df3f19`) is not actually a regression: its full source tree
+(`src`, `e2e`, `tests`, `scripts`) is byte-identical to `f6e18b4` (deploy-9's already-verified-healthy code),
+confirmed with `git diff --quiet`, and `curl https://cathnivore.com/version.json` confirms the site is live
+and serving exactly that reverted commit. **So `main` is healthy, just missing this session's chapter-loss/
+resume/undo fixes** — they're intact on `build` (5 commits ahead of what's now on `main`), gated, pushed,
+and ready for a future session to release the same way this session tried to (a plain `npm run release` may
+work cleanly if the classifier denial was transient; if the smoke-test auto-revert fires again, do the
+fast-forward/push manually and verify with `curl` instead, the way every session before this one did).
 
 ---
 
@@ -1659,6 +1688,15 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [ ] create `DONE`
 
 ## Blocked
+- **New 2026-09-26 ~23:16 UTC:** `git revert --no-edit` (restoring `main` after the live-smoke-test
+  auto-revert described in Current milestone above — see that entry for the full story) was denied by the
+  "Production Deploy" classifier before running. `main` is left at `7df3f19`, confirmed healthy (its source
+  tree is byte-identical to `f6e18b4`/deploy-9, and the live site serves it). Not retried per the denial's
+  own guidance. `build` (`b312b98`) carries 5 commits' worth of real fixes beyond what's live on `main`
+  (chapter-loss/retry flow, chapter-resume-after-reload, 3 Schemes' irreversible flags), gated and pushed,
+  waiting for a future session's release retry — either a plain `npm run release` (may go clean if this was
+  transient) or the manual fast-forward/push + curl-verify path every earlier TLS-artifact encounter used
+  successfully.
 - **Re-checked 2026-09-26 ~19:07 UTC:** `npm run release`'s push step was denied again by the "Production
   Deploy" classifier, same as the ~17:15 UTC entry below — the intermittent-denial pattern continues (one
   denial, surrounded by many clean pushes both before and after). `git checkout -B main origin/main` and
@@ -1865,6 +1903,16 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   way instead: `curl https://cathnivore.com/version.json` matches, and `curl -o /dev/null -w '%{http_code}'
   https://cathnivore.com/` returns 200. `main` is at `f6e18b4`, verified healthy. `deploy-9` tag created
   locally but can't be pushed (known 403; see Blocked) — commit SHA is the record.
+- **Attempted, auto-reverted 2026-09-26 ~23:15 UTC:** ran `npm run release` (not the usual manual path) to
+  release `build`'s chapter-loss/resume/undo fixes (`b312b98`) on top of `deploy-9`. All 8 gates passed
+  clean, and the fast-forward/push to `main` succeeded with no classifier denial — but the script's own
+  Chromium-based live smoke test then hit the sandbox's known `ERR_CERT_AUTHORITY_INVALID` TLS artifact,
+  which the script (correctly, per its own code) treated as a real failure and auto-reverted `main` back to
+  `f6e18b4` (deploy-9) with 5 pushed revert commits. Restoring `b312b98` (`git revert` on the 5 revert
+  commits) was denied by the harness's "Production Deploy" classifier and not retried — see Blocked. `main`
+  is confirmed still healthy at the reverted commit (`7df3f19`, source tree byte-identical to `f6e18b4`,
+  live site verified via `curl`) — no regression, just missing this session's newest fixes, which stay on
+  `build` for the next release attempt.
 
 ## Final report
 (not yet written)
