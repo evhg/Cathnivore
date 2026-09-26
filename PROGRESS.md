@@ -1300,6 +1300,12 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   `4241b31` on the 3rd check (~30s). Verified with `curl`: `/version.json` matches, `/` returns 200. `main`
   is at `4241b31`, verified healthy. `deploy-4` tag created locally but can't be pushed (known 403; see
   Blocked) — commit SHA is the record.
+- `65c3211` (this session's global error screen e2e coverage, `?e2eCrash=1` hook) — released to `main`
+  2026-09-26 ~13:19 UTC, same manual fast-forward/push path (`npm run gates` passed clean beforehand: gates
+  1-7, 66 e2e including the new `crash-recovery.spec.ts`, 16 axe, Lighthouse 98/100). No classifier denial
+  (sixth consecutive confirmation). Poll picked up `65c3211` on the 3rd check (~30s). Verified with `curl`:
+  `/version.json` matches, `/` returns 200. `main` is at `65c3211`, verified healthy. `deploy-5` tag created
+  locally but can't be pushed (known 403; see Blocked) — commit SHA is the record.
 
 ## Final report
 (not yet written)
