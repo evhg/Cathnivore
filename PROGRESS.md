@@ -37,8 +37,12 @@ never been exercised end to end. Added a test-only `?e2eCrash=1` hook (`App.tsx`
 Back to Title and Resume From Last Autosave both work) — now part of `npm run gates`'s Gate 5 (66 e2e tests,
 up from 64). `npm run check`/`npm run gates` both re-run clean.
 
-Next session should re-check the two blockers first, then pick up one of: the AI reason-string feature, the
-Expand-protection evaluation gap, or the desktop no-scroll gap.
+Released all three changes to `main` this session, each individually gated and verified live: `1bd98c0`
+(Confirm button), `4241b31` (pace-score fix + comment cleanup), `65c3211` (crash-screen coverage, `main`'s
+final state this session). All three pushes went through with no classifier denial (4th/5th/6th consecutive
+confirmations the "Production Deploy" block stays fixed). Next session should re-check the two blockers
+first, then pick up one of: the AI reason-string feature, the Expand-protection evaluation gap, or the
+desktop no-scroll gap.
 
 Previous session (2026-09-26, starting ~11:52 UTC): both standing blockers re-checked once — `OWNER.md`'s Apple
 Team ID still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch, since `ci-status` already showed the identical
