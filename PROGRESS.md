@@ -1282,6 +1282,14 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   with `curl`: `/version.json` shows the matching commit, and `/`, `/privacy`, `/support` all return 200.
   `main` is at `1bd98c0`, verified healthy. `deploy-3` tag created locally but can't be pushed (known 403;
   see Blocked) — commit SHA is the record, same as every prior release in this log.
+- `4241b31` (this session's evaluation.ts pace-score round-cap fix, plus 3 stale-comment cleanups) —
+  released to `main` 2026-09-26 ~13:11 UTC, same manual fast-forward/push path as the `1bd98c0` release
+  (`npm run gates` passed clean beforehand: gates 1-7, 64 e2e, 16 axe, Lighthouse 98/100; skipped the
+  script's own live smoke test for the same known Chromium/TLS sandbox reason). No classifier denial on the
+  push (fifth consecutive confirmation). Poll against `https://cathnivore.com/version.json` picked up
+  `4241b31` on the 3rd check (~30s). Verified with `curl`: `/version.json` matches, `/` returns 200. `main`
+  is at `4241b31`, verified healthy. `deploy-4` tag created locally but can't be pushed (known 403; see
+  Blocked) — commit SHA is the record.
 
 ## Final report
 (not yet written)
