@@ -141,10 +141,15 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     const events = enemyTurnEvents(from, next)
     playHapticsFor(action, next.log.slice(from.log.length), next.result)
     if (aiReason) {
-      // This one `applyAction` call added exactly one `{type: 'action'}` log entry (invest/scheme add an
-      // earlier entry of their own too, but never a second 'action' one) — find it rather than assuming a
-      // fixed offset, since `refreshAllLiberation` may have inserted 'liberated' entries first.
-      const addedIndex = next.log.slice(from.log.length).findIndex((e) => e.type === 'action')
+      // `gameLog.ts`'s `actionCaption` deliberately returns null for invest/scheme/decide's own `{type:
+      // 'action'}` entry, deferring to the richer 'invest'/'schemePlayed'/'decision' entry `applyAction`
+      // also appends for those three kinds — LogSheet then drops the null-caption entry entirely, so a
+      // reason attached to it would never render. Attach to whichever entry actually carries the caption
+      // for this decision instead. `refreshAllLiberation` may have inserted 'liberated' entries first, so
+      // find by type rather than assuming a fixed offset.
+      const captionEventType: GameEvent['type'] =
+        action.kind === 'invest' ? 'invest' : action.kind === 'scheme' ? 'schemePlayed' : action.kind === 'decide' ? 'decision' : 'action'
+      const addedIndex = next.log.slice(from.log.length).findIndex((e) => e.type === captionEventType)
       if (addedIndex !== -1) {
         const logIndex = from.log.length + addedIndex
         setAiReasons((reasons) => ({ ...reasons, [logIndex]: aiReason }))

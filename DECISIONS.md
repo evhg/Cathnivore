@@ -1168,3 +1168,22 @@ Format: date, decision, reason.
   precedent. If a future session wants to revisit Expand-slot protection in the evaluation function, a
   smaller weight (well under 0.03) or a term that doesn't trade against `enemyPieces`/`lostLand` this hard is
   the lesson to take from this attempt.
+- 2026-09-26: The `expandCoverage` revert above changed which action the AI teammate's first Solo-mode
+  decision picks in `e2e/ai-teammate.spec.ts`'s fixed-seed test, and running `npm run gates` surfaced a real,
+  previously-latent bug this exposed for the first time: when the AI teammate's first move is a Scheme (here,
+  "Reconnaissance"), its SPEC 9.2 log reason silently never rendered. Root cause: `Game.tsx`'s `advance()`
+  attached the reason to the log index of the `{type: 'action'}` entry `applyAction` always appends last, but
+  `gameLog.ts`'s `actionCaption` deliberately returns `null` for `invest`/`scheme`/`decide` actions'
+  `'action'` entries — those three kinds get their own richer caption from a *different* log entry type
+  (`'invest'`, `'schemePlayed'`, `'decision'` respectively) that `applyAction`/`applyDecision` also append,
+  and `LogSheet.tsx` drops any entry whose caption is `null` entirely. So a reason keyed to the null-caption
+  `'action'` entry was computed correctly (`reasonForAction` never returns empty) but had nowhere to attach
+  to once that entry got filtered out of the rendered list — silently lost, not crashed, which is exactly why
+  no earlier session's fixed-seed e2e run (or the unit tests, which don't render `LogSheet`) had ever hit it:
+  the AI teammate's first move needed to specifically be an invest/scheme/decide for the gap to show at all,
+  and it happened to take this session's evaluation-weight revert to change the first move to one of those.
+  Fixed `advance()` in `src/ui/Game.tsx` to pick the log-entry type to search for based on `action.kind`
+  (`'invest'`/`'schemePlayed'`/`'decision'` for those three kinds, `'action'` otherwise) instead of always
+  searching for `'action'`. `npm run check` (295 tests, unchanged — no new unit-testable surface, same as
+  every other Log-sheet-shaped fix) and the specific previously-failing `e2e/ai-teammate.spec.ts` (both
+  phone and desktop-chromium projects) both pass clean after the fix.
