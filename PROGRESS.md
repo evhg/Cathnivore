@@ -1255,6 +1255,17 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   live, serving the new commit, and healthy. `main` is at `f7cf8dd`, verified healthy. `deploy-2` tag
   created locally but can't be pushed (known 403; see Blocked) — commit SHA is the record, same as every
   prior release in this log.
+- `1bd98c0` (this session's SPEC 10.2 targeting-mode Confirm-button fix) — released to `main` 2026-09-26
+  ~13:00 UTC. `npm run gates` passed clean beforehand (gates 1-7; 64 e2e including the updated
+  `tutorial.spec.ts`, 16 axe, Lighthouse 99/100). Ran the fast-forward/push manually (same as the `f7cf8dd`
+  release: `git checkout -B main origin/main` then `git merge --ff-only build` then `git push origin main`)
+  rather than the full `scripts/release.ts`, since its own live smoke test is known to fail in this sandbox
+  on the Chromium/TLS artifact (`ERR_CERT_AUTHORITY_INVALID`, DECISIONS.md) with no way to fix it here — no
+  classifier denial on the push (fourth consecutive confirmation the "Production Deploy" block stays fixed).
+  Poll against `https://cathnivore.com/version.json` picked up `1bd98c0` on the very first check. Verified
+  with `curl`: `/version.json` shows the matching commit, and `/`, `/privacy`, `/support` all return 200.
+  `main` is at `1bd98c0`, verified healthy. `deploy-3` tag created locally but can't be pushed (known 403;
+  see Blocked) — commit SHA is the record, same as every prior release in this log.
 
 ## Final report
 (not yet written)
