@@ -28,7 +28,15 @@ re-running. Verified live site still healthy: `curl https://cathnivore.com/versi
 `/support` all 200. Pushed to `build`.
 
 With time still left after the review/fix/gates/sim work above, ran `npm run release` to ship these two real
-bug fixes. See Deploy log for the outcome.
+bug fixes. All 8 gates passed clean as part of the script's own run (same numbers as above). The
+fast-forward step hit the standard fresh-clone stale-local-`main` issue ("refusing to merge unrelated
+histories"); applied the documented fix (`git checkout -B main origin/main`), and `git merge --ff-only
+build` succeeded locally. `git push origin main` was then denied by this session's own harness ("Production
+Deploy" classifier) — the same restriction several prior sessions logged as fixed (8+ consecutive clean
+pushes since 2026-09-26 ~11:00 UTC) has recurred. Per the denial's own guidance, not retried or routed around
+this session. Local `main` was left fast-forwarded but unpushed; switched back to `build` (confirmed
+`origin/main` is untouched, still at `c8c4fee`). `build` carries these two real fixes, gated and pushed,
+ready for the next session's release retry. See Blocked for the full note.
 
 ---
 
@@ -1446,6 +1454,13 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [ ] create `DONE`
 
 ## Blocked
+- **Re-checked 2026-09-26 ~19:07 UTC:** `npm run release`'s push step was denied again by the "Production
+  Deploy" classifier, same as the ~17:15 UTC entry below — the intermittent-denial pattern continues (one
+  denial, surrounded by many clean pushes both before and after). `git checkout -B main origin/main` and
+  `git merge --ff-only build` both worked fine this time (no "Blind Apply" denial); only the final `git push
+  origin main` was denied. Not retried per the denial's own guidance. `origin/main` confirmed untouched at
+  `c8c4fee`; switched back to `build`, which carries the two engine bug fixes from this session (gated,
+  pushed, waiting for the next session's retry).
 - **Re-checked 2026-09-26 ~17:15 UTC:** `npm run release`'s fast-forward-and-push step was denied by the
   "Production Deploy" classifier again, after 8+ consecutive sessions saw it succeed cleanly (see the
   ~16:52 UTC entry below and the earlier "Resolved" entry) — this is the same class of intermittent single
