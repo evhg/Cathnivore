@@ -1,6 +1,27 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-26, third session today): re-checked both standing blockers once each (still denied /
+still the placeholder — unchanged, see Blocked). `npm run check`/`npm run gates` both re-confirmed clean on
+the unchanged `build` HEAD first (no regressions since the last session). Then used a general-purpose
+subagent for a fresh adversarial audit of `src/engine`/`src/content` against SPEC section 4's literal rules
+text (a fresh angle prior sessions hadn't logged specifically) and found + fixed two real, previously-
+uncaught rules bugs — see DECISIONS.md for full detail:
+- **SPEC 4.8 violation (real, reachable):** three Agenda card effects (`candor-natural-risk-factor`'s bonus,
+  `candor-peer-reviewed-by-us`'s main effect, `hollowell-sunny-the-silo`'s bonus) picked their "most
+  Stalls"/"most Outlets" target from every active region instead of `nonLiberated(state)` (already correctly
+  used by every other such effect in the same file), so they could place a Doubt/Buyout in an
+  already-liberated region — something SPEC 4.8 explicitly forbids ("Agenda cards cannot place pieces there
+  unless the card says 'even liberated regions'"), and which would silently strip that region's Co-op marker
+  and could retroactively undo a win. Fixed all three call sites; new `tests/agenda.test.ts` (3 tests,
+  confirmed 2 genuinely fail pre-fix) guards it going forward.
+- **SPEC 4.5.4 Cleanup order fix (dead code, no observable bug):** `round.ts`'s `cleanup()` checked win
+  before refilling the Market/Cath's Plan, reversed from spec's stated order — but `advanceTurnIfNeeded`
+  already checks win before `cleanup()` is ever called and nothing inside `cleanup()` can newly satisfy the
+  win condition, so this had no live effect. Fixed anyway for correctness-by-construction.
+`npm run check` (237 tests, up from 234) and `npm run gates` (gates 1-7) both re-run clean after the fixes.
+Both fixes are on `build` only, same as everything else, pending the two release blockers below.
+
 M1-M6 are all content-complete, and M7 is now nearly complete too (long fuzz, README, full e2e pass and a
 final balance report all done — see below) — every checklist item is done except the release/`ios-<n>`/
 `store-<n>` pushes, `submit-<n>`, the final report and `DONE`, which all stay blocked on the two standing

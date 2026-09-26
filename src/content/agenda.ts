@@ -133,7 +133,8 @@ export const AGENDA_CARDS: AgendaCard[] = [
       return next
     },
     bonusEffect: (state) => {
-      const ids = state.config.activeRegions
+      const ids = nonLiberated(state)
+      if (ids.length === 0) return state
       const target = ids.reduce((best, id) => (state.regions[id].outlets > state.regions[best].outlets ? id : best))
       return addBuyout(state, target, 1)
     },
@@ -209,7 +210,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
       return loseTrust(state, count)
     },
     bonusEffect: (state) => {
-      const target = extremeByStallCount(state, state.config.activeRegions, 'most')
+      const target = extremeByStallCount(state, nonLiberated(state), 'most')
       return target ? addDoubt(state, target, 1) : state
     },
   },
@@ -295,7 +296,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     faction: 'candor',
     headline: "Candor's study was peer-reviewed. The peers also work at Candor.",
     effect: (state) => {
-      const target = extremeByStallCount(state, state.config.activeRegions, 'most')
+      const target = extremeByStallCount(state, nonLiberated(state), 'most')
       return target ? addDoubt(state, target, 1) : state
     },
     bonusEffect: (state) => loseTrust(state, 1),

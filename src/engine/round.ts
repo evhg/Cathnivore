@@ -39,13 +39,11 @@ function refillSlots(deck: string[], slots: (string | null)[], size: number): { 
 }
 
 function cleanup(state: GameState): GameState {
-  let next = checkWin(state)
-  if (next.result) return next
-
+  // SPEC 4.5.4 order: refill the Market/Cath's Plan first, then check win/loss.
   // SPEC 5: "When the deck runs out, shuffle the discard pile to form a new deck."
-  let schemeDeck = next.schemeDeck
-  let schemeDiscard = next.schemeDiscard
-  let rng = next.rng
+  let schemeDeck = state.schemeDeck
+  let schemeDiscard = state.schemeDiscard
+  let rng = state.rng
   if (schemeDeck.length === 0 && schemeDiscard.length > 0) {
     const [reshuffled, nextRng] = shuffle(schemeDiscard, rng)
     schemeDeck = reshuffled
@@ -53,9 +51,12 @@ function cleanup(state: GameState): GameState {
     rng = nextRng
   }
 
-  const { deck: improvementDeck, slots: market } = refillSlots(next.improvementDeck, next.market, 4)
-  const { deck: schemeDeckAfterRefill, slots: cathsPlan } = refillSlots(schemeDeck, next.cathsPlan, 3)
-  next = { ...next, rng, improvementDeck, market, schemeDeck: schemeDeckAfterRefill, schemeDiscard, cathsPlan }
+  const { deck: improvementDeck, slots: market } = refillSlots(state.improvementDeck, state.market, 4)
+  const { deck: schemeDeckAfterRefill, slots: cathsPlan } = refillSlots(schemeDeck, state.cathsPlan, 3)
+  let next: GameState = { ...state, rng, improvementDeck, market, schemeDeck: schemeDeckAfterRefill, schemeDiscard, cathsPlan }
+
+  next = checkWin(next)
+  if (next.result) return next
 
   const newFirstPlayer = nextProducer(next, next.firstPlayer) ?? next.config.producers[0]!
   next = {
