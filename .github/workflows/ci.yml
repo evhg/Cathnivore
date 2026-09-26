@@ -28,6 +28,9 @@ jobs:
           git fetch origin ci-status 2>/dev/null || true
           git checkout ci-status 2>/dev/null || git checkout --orphan ci-status
           mkdir -p status
+          # Stop Vercel building this branch: status pushes were using up the Hobby plan's 100 deployments a day.
+          printf '{"git":{"deploymentEnabled":false}}\n' > vercel.json
+          git add vercel.json
           cat > status/ci.json <<EOF
           {
             "workflow": "ci",

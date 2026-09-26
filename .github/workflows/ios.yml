@@ -75,6 +75,9 @@ jobs:
           git fetch origin ci-status 2>/dev/null || true
           git checkout ci-status 2>/dev/null || git checkout --orphan ci-status
           mkdir -p status
+          # Stop Vercel building this branch: status pushes were using up the Hobby plan's 100 deployments a day.
+          printf '{"git":{"deploymentEnabled":false}}\n' > vercel.json
+          git add vercel.json
           if [ "$STATUS" != "success" ]; then
             LOG=$(cat "$RUNNER_TEMP/export.log" "$RUNNER_TEMP/archive.log" 2>/dev/null | tail -n 150 | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
           else
