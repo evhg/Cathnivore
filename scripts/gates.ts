@@ -39,7 +39,7 @@ const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? (existsSync('/opt/p
 // e2e/desktop-no-scroll.spec.ts is `test.skip`'d (SPEC 10.3 gap, see DECISIONS.md) so it's a no-op either
 // way, but it's left out too rather than listed-and-skipped, to avoid implying it's actively checked here.
 const GATE_5_SPECS =
-  'e2e/ai-teammate.spec.ts e2e/campaign.spec.ts e2e/carry-over.spec.ts e2e/csp.spec.ts e2e/hotseat.spec.ts e2e/offline.spec.ts e2e/plan-strip.spec.ts e2e/quick-game.spec.ts e2e/save-recovery.spec.ts e2e/title.spec.ts e2e/tooltip.spec.ts e2e/tutorial.spec.ts'
+  'e2e/ai-teammate.spec.ts e2e/campaign.spec.ts e2e/carry-over.spec.ts e2e/crash-recovery.spec.ts e2e/csp.spec.ts e2e/hotseat.spec.ts e2e/offline.spec.ts e2e/plan-strip.spec.ts e2e/quick-game.spec.ts e2e/save-recovery.spec.ts e2e/title.spec.ts e2e/tooltip.spec.ts e2e/tutorial.spec.ts'
 run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} ${GATE_5_SPECS}`)
 
 run('Gate 6: Accessibility (axe)', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} e2e/accessibility.spec.ts`)

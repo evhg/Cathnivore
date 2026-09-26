@@ -46,6 +46,15 @@ export default function App() {
   const [updateReady, setUpdateReady] = useState(false)
   const saved = loadGame()
 
+  // Test-only: SPEC 11.3's global error screen (`ErrorBoundary.tsx`) has no other reliable way to be
+  // exercised end to end — a real crash can't be scripted from outside the app. Throwing during render
+  // (rather than in an event handler, which React error boundaries don't catch) guarantees the boundary
+  // catches it. Gone from the URL the moment `backToTitle`/`resumeFromAutosave` navigate away, so there's
+  // no crash loop.
+  if (new URLSearchParams(window.location.search).get('e2eCrash') === '1') {
+    throw new Error('Test-only crash (?e2eCrash=1)')
+  }
+
   useEffect(() => {
     const onUpdateReady = () => setUpdateReady(true)
     window.addEventListener('cathnivore:update-ready', onUpdateReady)

@@ -28,9 +28,17 @@ floor assertions) re-run clean. Two smaller findings logged for a future session
 SPEC 9.2's "AI action reason in the log" is entirely unimplemented (its stated blocker, no live AI teammate,
 is now stale — the real one has shipped since M3/M6), and HeuristicBot's claimed Expand-slot protection has
 no actual evaluation term (lower-confidence, smaller impact than the other two). Full detail in DECISIONS.md.
-SPEC 10.3's desktop no-scroll gap remains unchanged. Next session should re-check the two blockers first,
-then pick up one of: the AI reason-string feature, the Expand-protection evaluation gap, or the desktop
-no-scroll gap.
+SPEC 10.3's desktop no-scroll gap remains unchanged.
+
+With time still left, checked SPEC 11.3's global error screen against `ErrorBoundary.tsx` — clean, matches
+SPEC exactly (Resume From Last Autosave, Copy Bug Report with the right JSON shape, Back to Title), but had
+never been exercised end to end. Added a test-only `?e2eCrash=1` hook (`App.tsx`) and new
+`e2e/crash-recovery.spec.ts` (plays a real game, forces the crash screen, checks all 3 buttons, verifies
+Back to Title and Resume From Last Autosave both work) — now part of `npm run gates`'s Gate 5 (66 e2e tests,
+up from 64). `npm run check`/`npm run gates` both re-run clean.
+
+Next session should re-check the two blockers first, then pick up one of: the AI reason-string feature, the
+Expand-protection evaluation gap, or the desktop no-scroll gap.
 
 Previous session (2026-09-26, starting ~11:52 UTC): both standing blockers re-checked once — `OWNER.md`'s Apple
 Team ID still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch, since `ci-status` already showed the identical
@@ -578,7 +586,9 @@ New `tests/storage.test.ts` (4 tests: none/valid/wrong-version/unparseable) and 
 Start New clears it) — both pass. The ErrorBoundary's actual crash-catching path isn't covered by an
 automated test (triggering a genuine uncaught React render error from outside the app, without adding a
 debug-only throw hook, wasn't worth the scope this session); it was checked by reasoning through the code
-path instead — logged as an accepted verification gap in DECISIONS.md, not silently skipped. `npm run check`
+path instead — logged as an accepted verification gap in DECISIONS.md, not silently skipped.
+**Closed (a much later session, 2026-09-26):** added the debug-only throw hook after all (`?e2eCrash=1`)
+and `e2e/crash-recovery.spec.ts` — see this file's Current milestone and DECISIONS.md. `npm run check`
 passes clean end to end. Next session: re-try the push-restriction/Apple-Team-ID checks once as usual; M7's
 remaining items (a final full e2e pass on both sizes, and the final balance report) are still best left
 until closer to the deadline.

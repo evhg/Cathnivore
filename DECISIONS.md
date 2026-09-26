@@ -1054,3 +1054,23 @@ Format: date, decision, reason.
     live since M3/M6 (confirmed directly: `aiWorker.ts` is genuinely invoked from `Game.tsx`). No behavioral
     bug, just comment cleanup a future session can fold into whatever touches that code next; not worth a
     dedicated commit on its own.
+- 2026-09-26 (same session, ~13:16-13:25 UTC): With time still left, checked SPEC 11.3's global error screen
+  ("catches crashes and offers Resume From Last Autosave, Copy Bug Report ... and Back to Title") against
+  `src/ui/ErrorBoundary.tsx` — a clean confirmation, all three buttons and the Copy Bug Report JSON shape
+  (config/seed/actions/error) match SPEC exactly, no bug found. It had never been exercised end to end
+  though (no unit-render tooling in this project — Vitest has no jsdom/testing-library setup, only pure-logic
+  unit tests — and no e2e test triggered a real crash), so added coverage for it: a test-only `?e2eCrash=1`
+  query param (`App.tsx`, same precedent as `?e2eAutoplay=1`/`?autoresume=1`) throws during render,
+  guaranteed to be caught by the error boundary (React only catches render/lifecycle/commit-phase errors,
+  not event-handler errors, so this has to throw in the component body, not an effect or a click handler).
+  New `e2e/crash-recovery.spec.ts`: plays a real Quick Game to autoplay completion first (so there's an
+  actual autosave to resume from), forces the crash screen, confirms all three buttons render, confirms
+  Back to Title clears the crash flag and returns to a working title screen, then forces the crash again and
+  confirms Resume From Last Autosave gets back to a working game screen (the completed game's end screen,
+  since nothing overwrote that autosave) rather than staying stuck on the crash screen. Added to
+  `scripts/gates.ts`'s `GATE_5_SPECS`. Hit the exact "stale preview server serving an old build" snag
+  DECISIONS.md's `plan-strip.spec.ts` entry already documented (`lsof -ti:4173 | xargs kill` + rebuild fixed
+  it immediately, not a real bug) — a good reminder this is a recurring, already-solved gotcha in this
+  sandbox, not something to re-diagnose from scratch each time. `npm run check` (286 tests, unchanged — no
+  new unit-testable surface) and `npm run gates` (gates 1-7; 66 e2e tests, up from 64; 16 axe, Lighthouse
+  98/100) both re-run clean end to end.
