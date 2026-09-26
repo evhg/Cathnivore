@@ -1149,3 +1149,22 @@ Format: date, decision, reason.
   command against the exact shape `ios.yml`'s own report step writes (`{"success": bool, "buildNumber":
   "<github.run_number>", ...}`). `npm run check` unaffected (no source files touched, only
   `.github/workflows/store.yml`).
+- 2026-09-26: The queued `expandCoverage`/`enemyPieces` confirmation landed and the weight change is
+  **reverted**. 200-game MCTS/Normal/all-pairs result: win rate 32.0% (up from the ~27-32% range recent
+  sessions have seen, a real-looking gain), but two of the specific things this entry's own revert condition
+  named came back exactly as the failure case it flagged: **lostLand fell to 12.5%, under SPEC 9.4's 15%
+  floor** (the same shape of dip iterations 3/9 hit before), and the producer-pair spread widened to 31.8
+  points (18.2%-50.0%, worse than every recent run's 16-26-point spreads) while "settled before round 7" rose
+  to 56.8% (SPEC 9.4 wants *at most* ~40% settled that early — this run nearly hit 57%, the worst reading on
+  that metric since the reverted iteration 6). Per this entry's own pre-committed condition ("revert ...  if
+  it doesn't hold a floor or shows an unexpected regression") and the standing iteration-6 precedent (a
+  win-rate gain that breaks multiple other established targets isn't a net win), reverted `src/ai/
+  evaluation.ts`'s `WEIGHTS` back to `enemyPieces: 0.05, expandCoverage: 0` — i.e. the `expandCoverageScore`
+  function (the real SPEC 9.2 "protecting the Expand slot" evaluation term, still correctly implemented and
+  unit-tested) stays in the code but no longer affects the live score, matching the file's state before this
+  weight change. `npm run check` re-run clean (295 tests) after the revert. This wasn't logged as one of the
+  12-iteration-cap's numbered iterations to begin with (an evaluation-weight tune, same framing as iterations
+  2/5/8/9/11), and a full revert with no net effect doesn't need a slot either, per iteration 8's identical
+  precedent. If a future session wants to revisit Expand-slot protection in the evaluation function, a
+  smaller weight (well under 0.03) or a term that doesn't trade against `enemyPieces`/`lostLand` this hard is
+  the lesson to take from this attempt.

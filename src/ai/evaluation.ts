@@ -23,9 +23,9 @@ const WEIGHTS = {
   lostLand: 0.15,
   pace: 0.15,
   production: 0.1,
-  enemyPieces: 0.02,
+  enemyPieces: 0.05,
   squeezeCoverage: 0.05,
-  expandCoverage: 0.03,
+  expandCoverage: 0,
 }
 
 function clamp01(x: number): number {
