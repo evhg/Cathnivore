@@ -2,6 +2,7 @@
 // poll the live version.json, run a live smoke test, tag deploy-<n>, and log it in PROGRESS.md.
 // On smoke-test failure, revert main to the previous deploy tag (never force-push) and log it.
 import { execSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { chromium } from '@playwright/test'
 
 const VERCEL_ADDRESS = 'cathnivore.vercel.app' // from OWNER.md; used until the domain resolves
@@ -42,9 +43,14 @@ async function pollVersion(commit: string, base: string): Promise<boolean> {
 }
 
 async function liveSmokeTest(base: string): Promise<boolean> {
-  const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined
-  const browser = await chromium.launch({ executablePath })
+  // Same pinned-Chromium-path fallback as scripts/gates.ts's GATE_5_SPECS invocation: this script runs
+  // outside the `playwright test` runner (no playwright.config.ts project applies), so without this,
+  // chromium.launch() defaults to the headless-shell binary, which this sandbox never installs.
+  const executablePath =
+    process.env.PLAYWRIGHT_CHROMIUM_PATH || (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined)
+  let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined
   try {
+    browser = await chromium.launch({ executablePath })
     const page = await browser.newPage()
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(String(err)))
@@ -76,7 +82,7 @@ async function liveSmokeTest(base: string): Promise<boolean> {
     console.log(`Smoke test failed with an exception: ${String(err)}`)
     return false
   } finally {
-    await browser.close()
+    await browser?.close()
   }
 }
 
