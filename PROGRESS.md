@@ -1072,6 +1072,13 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   Right column back down to ~246-315px short (3 runs); centre column unchanged at ~341-422px (measured
   variance, not a regression). `npm run check` (286 tests) and `npm run gates` (64 e2e, 16 axe, Lighthouse
   98/100) both clean. Still real, still `test.skip`'d — see DECISIONS.md for exact numbers and what's left.
+- [x] SPEC 10.3 desktop no-scroll gap, a further dent same session: `.actions` (13 items, 5 grid rows) was
+  the centre column's single biggest contributor at 380px. Desktop's mouse-driven, so it doesn't need the
+  44px touch-target `min-height` phone buttons do (axe's `target-size` rule isn't in this repo's default
+  ruleset, and WCAG 2.5.5 is AAA, not this project's AA target) — shrunk just the action buttons' min-height/
+  padding on desktop. Centre column now ~292-365px short (from ~341-422px). `npm run check`/`npm run gates`
+  both clean (64 e2e, 16 axe, Lighthouse 98/100); action buttons still read and click cleanly. Still real,
+  still `test.skip`'d — see DECISIONS.md.
 
 ### M7 Hardening (final 18 hours; no new features)
 - [x] long fuzz run of 50,000 RandomBot games — run early (see Current milestone/DECISIONS.md): 0

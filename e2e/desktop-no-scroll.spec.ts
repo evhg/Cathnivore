@@ -33,8 +33,12 @@ test('desktop game screen has no scrolling at 1280x800, even in a content-dense 
   // fix, not to be undone) widened the right column's shortfall to ~529px. Added a desktop-only denser
   // card-list style (tighter list/li/text/panel spacing, scoped to `.desktop-col` so phone is untouched) —
   // right column is back down to ~246-315px short (3 runs), similar to or better than before the
-  // card.text regression. Centre column is ~341-422px short (unchanged; run-to-run game-state variance
-  // this session's own market/plan refill draws, not a regression). See DECISIONS.md.
+  // card.text regression. Then shrank the centre column's `.actions` list (13 items, 5 grid rows, the
+  // single largest contributor at 380px) with a smaller desktop-only min-height/padding on action buttons
+  // — mouse-driven desktop doesn't need the 44px touch-target minimum phone does, and axe's target-size
+  // rule isn't in the default ruleset this repo's `e2e/accessibility.spec.ts` runs. Centre column now
+  // ~292-365px short (down from ~341-422px), right column ~239-366px (same range, just noisier: game-state
+  // variance dominates at this size). See DECISIONS.md.
   test.skip(true, 'SPEC 10.3 "no scrolling at 1280x800" still fails on both columns — see DECISIONS.md for exact numbers; closing the rest needs shrinking the centre column further and/or a collapsible card-list design, not a quick CSS tweak')
   await page.setViewportSize({ width: 1280, height: 800 })
 

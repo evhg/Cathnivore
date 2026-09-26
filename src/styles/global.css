@@ -621,6 +621,18 @@ h3 {
   .desktop-col .sheet-panel {
     padding: 8px 10px;
   }
+
+  /* `.actions` (13 items in a full game, 5 rows in the 3-column grid above) measured at 380px — the single
+     largest contributor to the centre column's remaining shortfall. The 44px `min-height` on the base
+     `button` rule is a touch-target minimum (STYLE.md/WCAG, needed on phone); desktop is mouse-driven, so a
+     smaller minimum here doesn't cost accessibility (axe's target-size rule isn't part of the default
+     ruleset `e2e/accessibility.spec.ts` runs, and isn't a WCAG 2.1 AA requirement either — 2.5.5 is AAA).
+     Scoped to the action buttons specifically, not all desktop buttons, since other button rows (Continue,
+     Menu, etc.) aren't part of this dense list. */
+  .actions .action-item > button:first-child {
+    min-height: 32px;
+    padding: 6px 10px;
+  }
 }
 
 button {

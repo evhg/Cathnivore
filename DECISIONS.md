@@ -866,3 +866,24 @@ Format: date, decision, reason.
   gap, while smaller again, remains real — closing it fully needs either shrinking the centre column
   further or a genuinely collapsible card-list design, both bigger design calls left for a session with
   room to weigh them properly, same pattern as every prior session's hand-off here.
+- 2026-09-26 (~12:00-12:12 UTC, same session): Continued the desktop no-scroll dent from earlier this
+  session. Measured which part of the centre column was largest: `.actions` (13 items in a full game, 5
+  rows in the existing 3-column grid) alone was 380px, the single biggest contributor to the ~341-422px
+  shortfall. The base `button` rule's `min-height: 44px` is a touch-target minimum (needed on phone, where
+  every button in the app shares this rule) — desktop is mouse-driven, so shrinking it there costs nothing
+  real: axe's `target-size` rule isn't part of the default ruleset `e2e/accessibility.spec.ts` runs (no
+  `withTags` call), and WCAG's own target-size criterion (2.5.5) is AAA, not the AA level this project
+  targets. Added a desktop-only override for just `.actions .action-item > button:first-child` (not all
+  desktop buttons — Continue/Menu/etc. aren't part of this dense list) dropping `min-height` to 32px and
+  padding to `6px 10px`. Re-measured 3 times: centre column down to ~292-365px short (from ~341-422px);
+  right column ~239-366px (same rough range as before, this run's variance was just wider — chapter 5's
+  scripted mid-game position draws a different Market/Plan refill each run, confirmed by re-running the
+  unmodified build first). Screenshotted the desktop game screen again: action buttons read cleanly, still
+  clearly clickable, no visual crowding. `npm run check` (286 tests) and the full `npm run gates` (64 e2e —
+  including several that click desktop action buttons directly, e.g. `tutorial.spec.ts`'s desktop project
+  runs, `plan-strip.spec.ts` — 16 axe tests, Lighthouse 98/100) all re-run clean, so the smaller buttons
+  didn't break any existing click target in practice either. Updated `e2e/desktop-no-scroll.spec.ts`'s skip
+  reasoning with the new numbers. Still short on both columns — same hand-off as before: the rest needs
+  either a further centre-column trim (candidates: the plan-strip's own padding, the map's remaining 320px)
+  or a genuinely collapsible/paginated card-list design, left for a session with room to weigh the
+  trade-offs rather than another quick CSS pass.
