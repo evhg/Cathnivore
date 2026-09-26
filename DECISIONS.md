@@ -1690,3 +1690,45 @@ Format: date, decision, reason.
   highlighting, hardcoded resource-icon colours, one weak test), plus this AI-worker hang fix — the busiest
   single-session hardening haul in the project's history. `build` now carries all of it, gated and pushed,
   still waiting on a future session's release retry (Apple secrets remain the other standing blocker).
+
+- 2026-09-26 (~22:51-23:10 UTC, new session): released `build` (`f6e18b4`) to `main` as `deploy-9` — all 8
+  gates passed clean, the usual stale-local-`main` fast-forward fix worked, and `git push origin main`
+  succeeded with no classifier denial. Confirmed live via `curl` (the Chromium-based live smoke test still
+  hits the sandbox's documented `ERR_CERT_AUTHORITY_INVALID` TLS artifact; reproduced directly to confirm
+  it's still the same known cause, not a new issue). See PROGRESS.md's deploy log.
+
+  With `main` freshly released and Apple secrets still the only other standing blocker, launched two more
+  hardening-review subagents in parallel (CLAUDE.md's 2-concurrent cap), each scoped to an area no prior
+  session had covered: (1) save/storage and the PWA update-flow (SPEC 11.1/11.3), (2) the campaign
+  scenario/trigger system (SPEC 8). Both found and fixed real bugs, and — because they ran concurrently
+  against the same working tree — independently touched overlapping code (`storage.ts`, `App.tsx`) and each
+  noted the other's in-progress edits; both sets of changes turned out to be complementary rather than
+  conflicting, and merged cleanly:
+  - **Save/storage pass:** `SavedGame` had no `chapterId`, so reloading the page mid-campaign-chapter always
+    resumed into a plain Quick Game, silently losing the chapter's tutorial steps, mid-game scenes, and (most
+    importantly) the `onChapterEnd` handler — meaning `markChapterComplete`, the chapter-3→4 Wholesome Hollow
+    Contract carry-over, and the loss/retry screen could never fire again for that playthrough after any
+    ordinary browser reload. This violates SPEC 1.3 priority 1 ("saves survive a reload") for the specific
+    case of a campaign chapter, not a Quick Game. Fixed by threading `chapterId` through `Game.tsx`'s autosave
+    and `App.tsx`'s `resume()` (looked up via `CHAPTERS_BY_ID`, falling back to plain Quick Game for old/
+    chapterless saves). New `e2e/chapter-resume.spec.ts` plays chapter 1, reloads mid-game, and asserts the
+    chapter still reaches its real end state afterward — a test that only passes because of this fix.
+    Everything else checked (JSON-parse guards, settings persistence, the native-vs-web storage backend
+    selection via `isNativePlatform()`, the PWA "Update ready" prompt only ever rendering on the title
+    screen) was already correct and is now independently re-confirmed, not just trusted from this log.
+  - **Campaign trigger pass:** SPEC 8.1's chapter-loss flow ("Retry (same shuffle), Retry (new shuffle) and
+    Play on Easy... After 2 losses, also offer Skip Chapter... Progress is never locked") didn't exist at
+    all — losing a chapter called `markChapterComplete` unconditionally (incorrectly unlocking the next
+    chapter after a *loss*) and dropped straight back to the chapter list with no retry options and no loss
+    counter anywhere. Fixed: a new `chapterLossCounts` field in campaign storage plus `recordChapterLoss`/
+    `clearChapterLossCount`, and a new `chapterLoss`/`chapterSkipSummary` screen pair in `App.tsx` offering
+    exactly the four SPEC options (same-seed retry via a new `seedOverride` param, new-seed retry, an easy-
+    difficulty override, and — after 2 losses — Skip Chapter, which still marks the chapter complete so the
+    campaign moves on). Everything else checked (trigger fire-once/no-skip via the `scriptedTriggerFired`
+    latch, chapter 5's pre-built mid-game position's own `validate()` pass, and chapter-scoped rule switches
+    being enforced by `legalActions`'s `resolveRules`, not just the UI) was confirmed already correct.
+
+  Both fixes verified together: `npx tsc -b --noEmit` clean, `npm run check` (306 tests, up from 299 — 7 new:
+  the chapter-resume storage round-trip cases plus the loss-counter cases), and the relevant e2e suites
+  (`campaign`, `chapter-resume`, `save-recovery`, `crash-recovery`) all passing on top of each other's changes.
+  `build` now carries both fixes, verified and pushed, on top of the freshly-released `deploy-9`.
