@@ -72,14 +72,19 @@ function RegionTextureDefs() {
       <pattern id="texture-pasture" width={10} height={10} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
         <line x1={0} y1={0} x2={0} y2={10} stroke="var(--ink)" strokeWidth={1.6} opacity={0.08} />
       </pattern>
-      {/* Crop: dotted furrow rows. */}
-      <pattern id="texture-crop" width={12} height={8} patternUnits="userSpaceOnUse">
-        <circle cx={2} cy={4} r={1.1} fill="var(--ink)" opacity={0.08} />
-        <circle cx={8} cy={4} r={1.1} fill="var(--ink)" opacity={0.08} />
+      {/* Crop: dotted furrow rows. Tile halved and dots enlarged from an earlier pass (2026-09-26) that
+          rendered invisibly on the desktop map, which STYLE.md 3.2 shrinks well below the phone map's
+          size (SPEC 10.3 sets no desktop map size) — a sparse, single-repeat-per-region tile anti-aliases
+          away at that physical size, unlike pasture/capital's denser tiling. A smaller, denser tile repeats
+          enough times to survive the downscale, matching STYLE.md 3.2's greyscale legibility test at every
+          map size, not just the phone one. Ink stays at the spec's 8%; only feature size/frequency changed. */}
+      <pattern id="texture-crop" width={8} height={6} patternUnits="userSpaceOnUse">
+        <circle cx={2} cy={3} r={1.3} fill="var(--ink)" opacity={0.08} />
+        <circle cx={6} cy={3} r={1.3} fill="var(--ink)" opacity={0.08} />
       </pattern>
-      {/* Coast: wave lines. */}
-      <pattern id="texture-coast" width={16} height={8} patternUnits="userSpaceOnUse">
-        <path d="M0,4 Q4,0 8,4 T16,4" fill="none" stroke="var(--ink)" strokeWidth={1.2} opacity={0.08} />
+      {/* Coast: wave lines. Tile halved and stroke thickened for the same reason as Crop above. */}
+      <pattern id="texture-coast" width={10} height={6} patternUnits="userSpaceOnUse">
+        <path d="M0,3 Q2.5,0 5,3 T10,3" fill="none" stroke="var(--ink)" strokeWidth={1.5} opacity={0.08} />
       </pattern>
       {/* Capital: cobblestone grid. */}
       <pattern id="texture-capital" width={12} height={12} patternUnits="userSpaceOnUse">

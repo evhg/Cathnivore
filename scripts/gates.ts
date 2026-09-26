@@ -109,6 +109,21 @@ async function runLighthouseGate(): Promise<void> {
 
 await runLighthouseGate()
 
-console.log('\n=== Gate 8: Visual review ===\nskipped: no visual-review subagent step yet (M6)')
+// SPEC 11.4 gate 8: "capture screenshots of every screen at both sizes, plus one map screenshot in
+// greyscale. A subagent reviews them against STYLE.md and section 10 and lists problems." A script can
+// capture the screenshots but can't itself spawn a Claude subagent to review them, so this step does the
+// scriptable half automatically (closing the gap where several early sessions treated the whole gate as
+// a permanent skip) and prints an explicit reminder for the session driving `npm run gates` to do the
+// review half before treating gate 8 as passed.
+console.log('\n=== Gate 8: Visual review ===')
+run(
+  'Gate 8: capturing screenshots',
+  `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} e2e/screenshots.spec.ts`,
+)
+console.log(
+  'Screenshots captured to e2e/screenshots/ (gitignored). Gate 8 is not yet satisfied: have a subagent ' +
+    'review them against STYLE.md and SPEC section 10 and fix anything it flags before treating this ' +
+    'release as gated on gate 8.',
+)
 
 console.log('\nGates run complete.')
