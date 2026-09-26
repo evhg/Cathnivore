@@ -585,6 +585,42 @@ h3 {
     max-height: 220px;
     overflow-y: auto;
   }
+
+  /* SPEC 10.3's right column shortfall grew further once the Market/Cath's Plan sheets started rendering
+     `card.text` (DECISIONS.md 2026-09-26's rules-text fix, needed for SPEC priority 2 — not something to
+     undo just to save height): 4 Improvement + 3 Scheme cards each gained a rules-text paragraph, measured
+     at 529px short at 1280x800 with chapter 5's mid-game position (up from ~280-332px before that fix).
+     Market and Cath's Plan are both fixed-size lists (SPEC 10.2: "4 Improvements"/"3 Schemes", never
+     growing unboundedly like the Log), so — unlike the Log's internal scroll — the honest fix is a denser
+     desktop-only card style, not another scrolling escape valve. Tightened spacing/type scale, scoped to
+     `.desktop-col` only so the phone sheets (which have their own screen, not a shared column budget) are
+     untouched. Still comfortably above STYLE.md's legibility floors: 13px is `--text-sm`'s Atkinson
+     Hyperlegible size, well short of unreadable, and the flavour line already ran below body size. */
+  .desktop-col .card-list {
+    gap: 6px;
+  }
+
+  .desktop-col .card-list li {
+    padding: 6px 8px;
+  }
+
+  .desktop-col .card-text {
+    margin: 2px 0;
+    font-size: 13px;
+  }
+
+  .desktop-col .card-flavor {
+    margin: 2px 0;
+    font-size: 12px;
+  }
+
+  .desktop-col {
+    gap: 10px;
+  }
+
+  .desktop-col .sheet-panel {
+    padding: 8px 10px;
+  }
 }
 
 button {

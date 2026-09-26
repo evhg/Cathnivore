@@ -29,7 +29,13 @@ test('desktop game screen has no scrolling at 1280x800, even in a content-dense 
   // the rest needs real desktop-layout design work (denser or collapsible card lists, possibly a further
   // map/topbar trim) — logged in DECISIONS.md for a future session with room for that, not a same-session
   // squeeze. Left in place (skipped, not deleted) so that session has a ready-made check to un-skip.
-  test.skip(true, 'SPEC 10.3 "no scrolling at 1280x800" still fails on both the centre and right columns after this session\'s map-shrink/log-cap fixes — see DECISIONS.md 2026-09-26 for exact numbers; the right column in particular needs denser/collapsible Market and Cath\'s Plan card lists, not a quick CSS tweak')
+  // 2026-09-26 (later session): rendering `card.text` on the Market/Cath's Plan sheets (a real SPEC 10.5
+  // fix, not to be undone) widened the right column's shortfall to ~529px. Added a desktop-only denser
+  // card-list style (tighter list/li/text/panel spacing, scoped to `.desktop-col` so phone is untouched) —
+  // right column is back down to ~246-315px short (3 runs), similar to or better than before the
+  // card.text regression. Centre column is ~341-422px short (unchanged; run-to-run game-state variance
+  // this session's own market/plan refill draws, not a regression). See DECISIONS.md.
+  test.skip(true, 'SPEC 10.3 "no scrolling at 1280x800" still fails on both columns — see DECISIONS.md for exact numbers; closing the rest needs shrinking the centre column further and/or a collapsible card-list design, not a quick CSS tweak')
   await page.setViewportSize({ width: 1280, height: 800 })
 
   await page.goto('/')

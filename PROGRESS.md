@@ -1064,6 +1064,14 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   403 blocker, see Blocked) — commit SHA is the record until tag pushes work.
 - [ ] Push `ios-<n>`, then push `store-<n>` (still blocked on `OWNER.md`'s placeholder Apple Team ID / ASC
   secrets, per Blocked)
+- [x] SPEC 10.3 desktop no-scroll gap, another dent: the `card.text` rules-text fix (above) had grown the
+  right column's measured shortfall to ~529px (from ~280-332px). Added a desktop-only denser card-list
+  style (tighter spacing/type scale, scoped to `.desktop-col` so phone is untouched) rather than scrolling
+  Market/Cath's Plan the way the Log already does — both are fixed-size lists (4/3 cards, never growing),
+  so a scroll escape valve there isn't the honest fix the way it was for the unboundedly-growing Log.
+  Right column back down to ~246-315px short (3 runs); centre column unchanged at ~341-422px (measured
+  variance, not a regression). `npm run check` (286 tests) and `npm run gates` (64 e2e, 16 axe, Lighthouse
+  98/100) both clean. Still real, still `test.skip`'d — see DECISIONS.md for exact numbers and what's left.
 
 ### M7 Hardening (final 18 hours; no new features)
 - [x] long fuzz run of 50,000 RandomBot games — run early (see Current milestone/DECISIONS.md): 0
