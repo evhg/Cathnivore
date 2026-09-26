@@ -14,6 +14,9 @@ import type { RngState } from '../engine/rng'
 export interface AIWorkerRequest {
   state: GameState
   rng: RngState
+  // Test-only: forces this decision to throw instead of deciding, so e2e/ai-teammate-crash.spec.ts can
+  // verify Game.tsx's worker-error/watchdog fallback (DECISIONS.md) without depending on a real MCTS bug.
+  e2eCrash?: boolean
 }
 
 export interface AIWorkerResponse {
@@ -33,7 +36,8 @@ const scope = self as unknown as {
 }
 
 scope.onmessage = (event) => {
-  const { state, rng } = event.data
+  const { state, rng, e2eCrash } = event.data
+  if (e2eCrash) throw new Error('Test-only AI worker crash (?e2eAiWorkerCrash=1)')
   const [action, nextRng] = AI_TEAMMATE_BOT.chooseAction(state, rng)
   scope.postMessage({ action, rng: nextRng, reason: reasonForAction(state, action) })
 }

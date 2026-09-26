@@ -68,6 +68,13 @@ function isE2EAutoplay(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAutoplay') === '1'
 }
 
+// Test-only: forces the AI teammate's Worker to throw on its very first decision, so
+// e2e/ai-teammate-crash.spec.ts can verify the fallback-to-HeuristicBot path (DECISIONS.md) without
+// depending on a real MCTS bug. Never set by the app itself outside a test.
+function isE2EAiWorkerCrash(): boolean {
+  return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAiWorkerCrash') === '1'
+}
+
 // A scripted campaign Pressure card (SPEC 8.1) may target regions directly instead of by type.
 function pressureLabel(card: GameState['squeeze']): string {
   if (!card) return '—'
@@ -199,24 +206,51 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     // decision was made against has already changed (e.g. the player undid something while it was
     // thinking, or the component unmounted).
     let cancelled = false
+    let settled = false
+    let watchdog: ReturnType<typeof setTimeout> | undefined
     const timer = setTimeout(() => {
       if (!aiWorkerRef.current) {
         aiWorkerRef.current = new Worker(new URL('../ai/aiWorker.ts', import.meta.url), { type: 'module' })
       }
       const worker = aiWorkerRef.current
+      // SPEC 1.3's #1 priority ("games can be finished") over a real MCTS decision every time: if the
+      // worker throws (`onerror`) or simply never responds within a watchdog well past its own 400ms
+      // budget, fall back to the fast, synchronous HeuristicBot rather than leaving the AI teammate's turn
+      // — and the whole game — stuck forever with no visible failure and no recovery path.
+      const fallBackToHeuristic = () => {
+        if (settled || cancelled) return
+        settled = true
+        worker.removeEventListener('message', onMessage)
+        worker.removeEventListener('error', onError)
+        clearTimeout(watchdog)
+        aiWorkerRef.current?.terminate()
+        aiWorkerRef.current = null
+        const [action, nextRng] = HeuristicBot.chooseAction(state, rngRef.current)
+        rngRef.current = nextRng
+        advance(state, action)
+      }
       const onMessage = (event: MessageEvent<AIWorkerResponse>) => {
         worker.removeEventListener('message', onMessage)
-        if (cancelled) return
+        worker.removeEventListener('error', onError)
+        clearTimeout(watchdog)
+        if (settled || cancelled) return
+        settled = true
         rngRef.current = event.data.rng
         advance(state, event.data.action, event.data.reason)
       }
+      const onError = () => fallBackToHeuristic()
       worker.addEventListener('message', onMessage)
-      const request: AIWorkerRequest = { state, rng: rngRef.current }
+      worker.addEventListener('error', onError)
+      // Well past the bot's own 400ms decision budget (SPEC 9.2) plus the UI's own AI-speed delay, so this
+      // only ever fires on a genuine hang, never on a slow-but-alive decision.
+      watchdog = setTimeout(fallBackToHeuristic, 3000)
+      const request: AIWorkerRequest = { state, rng: rngRef.current, e2eCrash: isE2EAiWorkerCrash() }
       worker.postMessage(request)
     }, AI_SPEED_DELAY_MS[loadSettings().aiSpeed])
     return () => {
       cancelled = true
       clearTimeout(timer)
+      clearTimeout(watchdog)
     }
   }, [state, pendingEnemyTurn.length, pendingMidScene])
 

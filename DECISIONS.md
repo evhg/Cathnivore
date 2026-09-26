@@ -1650,3 +1650,43 @@ Format: date, decision, reason.
   assert `survivingWholesomeHollowContracts` drops from 2 to 1 afterward, with an intermediate assertion
   that `improvements` itself still has exactly 1 copy left (not just 0, since 2 were owned). `npm run check`
   (299 tests, same count — one test rewritten, not added) passes clean.
+
+- 2026-09-26 (same session, ~22:14 UTC): With time still left, launched a sixth review subagent, scoped to
+  the AI Web Worker communication layer (`src/ai/aiWorker.ts` and its wiring in `src/ui/Game.tsx`) — a fresh
+  area distinct from prior sessions' review of the MCTS algorithm and evaluation weights themselves.
+  Confirmed correct: the stale-response race (an in-flight decision from before an Undo/state change),
+  worker lifecycle (no leaked Worker instances, `terminate()`d only on unmount), the reason string being
+  computed inside the worker against the exact state it decided from, the 400ms/600-simulation budget being
+  enforced via `performance.now()` inside the MCTS loop rather than blocking `postMessage`, and structured-
+  clone safety (`GameState` is fully plain-JSON-shaped). **One real, previously-undiscovered gap found and
+  fixed:** neither file registered a `worker.onerror` handler, and there was no timeout for a response that
+  simply never arrives. If `AI_TEAMMATE_BOT.chooseAction` ever threw inside the worker (an unexpected state
+  shape, a future engine bug, anything), no response would ever post back, and — since the existing
+  `cancelled` flag only guards against a *stale* response landing late, not a *missing* one — the AI
+  teammate's turn, and the whole game, would silently hang forever with no error shown and no recovery. This
+  directly violates SPEC 1.3's #1 priority ("games can be finished") and effectively defeats gate 7's "each
+  AI teammate decision takes at most 1 second" the moment a decision throws instead of merely running slow.
+  Fixed in `src/ui/Game.tsx`'s AI-teammate effect: added a `worker.addEventListener('error', ...)` handler
+  plus a 3-second watchdog `setTimeout` (well past the bot's own 400ms budget), both routing to a new
+  `fallBackToHeuristic()` that terminates and drops the stale worker (a fresh one is created on the next
+  decision) and completes the turn via the same synchronous `HeuristicBot.chooseAction` the autoplay path
+  already uses — prioritizing "the game keeps moving" over "this one decision came from real MCTS," per SPEC
+  1.3's own priority order. A `settled`/`cancelled` pair of guards ensures exactly one of {real response,
+  error fallback, watchdog fallback} ever calls `advance()`, never a race between them. Added a matching
+  test-only hook (`AIWorkerRequest.e2eCrash`, read from a new `?e2eAiWorkerCrash=1` query param — same
+  pattern as the existing `?e2eCrash=1`/`?e2eAutoplay=1` hooks) so `aiWorker.ts` can be made to throw on
+  command, and a new e2e test (`e2e/ai-teammate.spec.ts`, "a thrown AI worker error falls back to
+  HeuristicBot instead of hanging the turn") that exercises the real fallback path end to end. **Verified the
+  test actually catches the bug it's meant to catch, not just that it passes on the fixed code:** temporarily
+  stripped the `onerror`/watchdog logic back to the original message-only handler (keeping the `e2eCrash`
+  request plumbing) and re-ran the new test — it failed exactly as expected, timing out waiting for Tomas's
+  turn while the log stayed stuck on Mara's last action, confirming the turn really does hang without this
+  fix. Restored the fix and re-ran clean. `npx tsc -b --noEmit`, a full `npm run check` (299 tests) and a
+  full `npm run gates` (all 8 gates; 70 e2e now, up from 68, 16 axe, Lighthouse 98/100; gate 8's screenshots
+  reviewed directly, no regression) all clean.
+
+  Six review passes this session across three launches (two in parallel, one solo): one clean confirmation
+  (haptics), five real bugs found and fixed (reduced-motion CSS, Stall overlap, liberated-region false
+  highlighting, hardcoded resource-icon colours, one weak test), plus this AI-worker hang fix — the busiest
+  single-session hardening haul in the project's history. `build` now carries all of it, gated and pushed,
+  still waiting on a future session's release retry (Apple secrets remain the other standing blocker).
