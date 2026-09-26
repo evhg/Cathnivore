@@ -551,6 +551,28 @@ h3 {
     min-width: 0;
     white-space: normal;
   }
+
+  /* SPEC 10.3's centre column still needs more room after the `.actions` grid fix above (measured
+     2026-09-26: 424px short at 1280x800 with a chapter-5 mid-game position — see DECISIONS.md). SPEC 10.2's
+     "full width" map rule is a phone rule (390-430px-wide screens); 10.3 sets no size for the desktop map,
+     so shrinking it here is a real, available lever, not a spec violation. 320px (down from the unconditional
+     420px above) frees 100px of column height while staying well above STYLE.md 9's 32px minimum-legible-size
+     floor (region names/pieces are far larger than that even at 320px). */
+  .map {
+    max-width: 320px;
+  }
+
+  /* The Log (SPEC 10.2's "Log: turn history") grows by design over a game's up to 10 rounds and has no
+     natural upper bound, so no fixed-height desktop layout can guarantee it never needs its own scroll —
+     capping it here and letting only this one inner panel scroll is what makes "no scrolling" achievable at
+     all for a log that keeps growing, rather than a workaround for it. This does not, by itself, close the
+     right column's separate measured shortfall (2026-09-26 DECISIONS.md): today's chapter-5 mid-game log is
+     short enough that this cap doesn't yet engage; the right column's actual current bottleneck is the
+     Market/Cath's Plan card lists, still open for a future session (see DECISIONS.md). */
+  .desktop-col .log-sheet {
+    max-height: 220px;
+    overflow-y: auto;
+  }
 }
 
 button {

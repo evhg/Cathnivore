@@ -597,6 +597,23 @@ alongside the other owner-side fixes — they hadn't; identical `-authentication
 `main` is now content-complete and live for real — the only things left before `DONE` are the iOS/store
 pushes (gated on Apple secrets) and the final report.
 
+**This session (2026-09-26, starting ~11:19 UTC):** checked `OWNER.md` again — Apple's Team ID is still the
+placeholder, unchanged from the previous session 8 minutes earlier, so skipped a redundant `ios.yml`
+re-dispatch (nothing would explain a different result; the dispatch count stays at 3). With no new owner-side
+movement and no unblocked checklist item left, picked up the desktop
+"no scrolling at 1280x800" gap (SPEC 10.3) that a prior session deferred as needing a dedicated session —
+this is that session, given `DEADLINE` has 5+ days left. Shrank the desktop-only map 420px->320px and gave
+the desktop Log panel its own bounded, internally-scrolling max-height (it grows unboundedly, so no
+fixed-height column can honestly promise zero scrolling without this). Found and fixed a real accessibility
+regression the Log change introduced (an `overflow:auto` div needs `tabIndex`/`role`/`aria-label` to be
+keyboard-reachable — axe caught it). Re-measured 3 times for an honest range given real game-state variance:
+centre column improved from ~424px short to 358-405px short; the right column is essentially unchanged
+(280-332px, vs. ~268-283px before) since this fix, chapter-5's mid-game Log, is too short to hit the new cap
+— the real right-column bottleneck (Market/Cath's Plan card list size) is untouched and still needs denser
+or collapsible cards, genuine visual-design work left for a future session rather than guessed at here.
+`npm run check` (286 tests) and `npm run gates` (64 e2e, 16 axe, Lighthouse 98/100) both pass clean. Full
+detail in DECISIONS.md.
+
 ## Tasks
 
 ### M0 Setup (hours 0-4)

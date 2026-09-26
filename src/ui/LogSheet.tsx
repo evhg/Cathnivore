@@ -17,10 +17,16 @@ export default function LogSheet({ log, onClose, inline }: { log: GameEvent[]; o
     </ol>
   )
 
-  // SPEC 10.3 desktop 3-column layout: the same log, without the phone-sized modal overlay.
+  // SPEC 10.3 desktop 3-column layout: the same log, without the phone-sized modal overlay. This panel is
+  // given its own internally-scrolling max-height on desktop (global.css's 1024px+ block) since the Log
+  // grows unboundedly over a game's rounds and no fixed-height column could otherwise guarantee SPEC 10.3's
+  // "no scrolling" for the page as a whole — `tabIndex`/`role`/`aria-label` are required the moment a
+  // container can scroll its own overflow, so a keyboard user can actually reach and scroll it (axe's
+  // "focusable-content"/"focusable-element" rules; found failing this exact way when the max-height was
+  // first added, see DECISIONS.md).
   if (inline) {
     return (
-      <div className="sheet-panel log-sheet">
+      <div className="sheet-panel log-sheet" tabIndex={0} role="region" aria-label="Turn log">
         <h2>Log</h2>
         {entries}
       </div>
