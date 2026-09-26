@@ -24,8 +24,12 @@ Released `5a74db4` to `main` via `npm run release` (see Deploy log) — no class
 seventh consecutive confirmation the "Production Deploy" block stays fixed; verified live via `curl` (the
 script's own smoke test still hits the sandbox's known TLS artifact). Re-checked `OWNER.md`'s Apple Team ID:
 still `PASTE-TEAM-ID`, no change, no `ios.yml` re-dispatch (would only reproduce the recorded failure). With
-time remaining after the release, continuing to look for another bounded SPEC-compliance gap (see below);
-this entry will be extended or a new one added before the session wraps.
+time remaining after the release, continuing to look for another bounded SPEC-compliance gap; a full
+`npm run gates` run plus the release itself used most of the session's ~50-minute budget for real, gated work
+this time rather than a fourth item, so wrapping up here per CLAUDE.md's ~55-minute cutoff. Next session:
+re-check the two standing blockers as usual, then pick a fresh bounded SPEC-compliance item — the SPEC 10.3
+desktop no-scroll gap remains the one item several sessions have flagged as needing dedicated, uninterrupted
+time rather than another quick dent.
 
 ---
 
