@@ -3,7 +3,7 @@ import { createGame } from '../src/engine/state'
 import { legalActions, applyAction } from '../src/engine/actions'
 import { validate } from '../src/engine/api'
 import { ALL_REGION_IDS } from '../src/content/map'
-import type { GameConfig } from '../src/engine/types'
+import type { GameConfig, GameState } from '../src/engine/types'
 
 const FULL_CONFIG: GameConfig = {
   producers: ['mara', 'tomas'],
@@ -65,5 +65,33 @@ describe('role abilities (SPEC 6)', () => {
     expect(afterGoodwill.producers.sol.resources.goodwill).toBe(goodwillBefore + 2)
     expect(afterGoodwill.publicTrust).toBe(goodwillState.publicTrust)
     expect(validate(afterGoodwill)).toEqual([])
+  })
+
+  it("Ines's Second Opinion lets the player choose among every region with her Stall and Doubt, not just the first", () => {
+    // SPEC 6: "remove 1 Doubt from a region with your Stall, at no cost" — previously auto-picked the
+    // first eligible region in activeRegions order, denying the player a choice when two+ qualified.
+    let state: GameState = createGame(SOL_CONFIG, 5)
+    // Advance to Ines's turn (first player is Sol; use up her 3 actions with graft).
+    state = applyAction(state, { kind: 'graft' })
+    state = applyAction(state, { kind: 'graft' })
+    state = applyAction(state, { kind: 'graft' })
+    expect(state.activeProducer).toBe('ines')
+    state = {
+      ...state,
+      doubtPool: state.doubtPool - 2, // both regions gain 1 Doubt each from the map's pool below
+      regions: {
+        ...state.regions,
+        highmoor: { ...state.regions.highmoor, stalls: { ines: 1 }, doubt: 1 },
+        rivermead: { ...state.regions.rivermead, stalls: { ines: 1 }, doubt: 1 },
+      },
+    }
+    const legal = legalActions(state).filter((a) => a.kind === 'role')
+    expect(legal.some((a) => a.targetRegion === 'highmoor')).toBe(true)
+    expect(legal.some((a) => a.targetRegion === 'rivermead')).toBe(true)
+
+    const next = applyAction(state, { kind: 'role', targetRegion: 'highmoor' })
+    expect(next.regions.highmoor.doubt).toBe(0)
+    expect(next.regions.rivermead.doubt).toBe(1) // the other eligible region is untouched
+    expect(validate(next)).toEqual([])
   })
 })

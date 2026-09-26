@@ -1,7 +1,37 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, ~04:51-05:xx UTC): re-checked both standing blockers once each (still denied /
+This session (2026-09-26, ~05:52-06:xx UTC): re-checked both standing blockers once each — still identical
+(production push denied by the harness's "Production Deploy" classifier before reaching GitHub; `OWNER.md`'s
+Apple Team ID still `PASTE-TEAM-ID`), now 10+ consecutive sessions with zero net release progress. `npm run
+check`/`npm run gates` re-confirmed clean on the unchanged `build` HEAD first. Used 2 concurrent
+general-purpose subagents (CLAUDE.md's cap) for a fresh adversarial audit of two areas not yet specifically
+covered: SPEC 4.3/4.9/5/6/7's literal numbers vs. `src/content`/`src/engine`, and SPEC 11.5/11.6's deployment
+config vs. `vercel.json`/`ios/App`/the workflows. Found and fixed 3 real, previously-unlogged bugs:
+- **Ines's "Second Opinion" role ability gave no choice of region** when 2+ qualified (SPEC 6 parallels
+  Mara's explicit choice; SPEC 9.1 requires forced choices to go through the same `legalActions` path for
+  humans and the AI) — `legalRoleTargets`/`applyRole` in `src/engine/actions.ts` fixed to offer and use a
+  real per-region choice, same shape as Mara/Tomas. New test in `tests/roles.test.ts`.
+- **The iPhone app's Privacy/Support links never actually opened in Safari** (SPEC 11.6, verbatim: "The
+  only links out are Privacy and Support, which open in Safari") — they'd have opened the app's own bundled
+  copy in its in-app WebView instead, a real App Review 4.2 risk. Added `@capacitor/browser` and a new
+  `src/platform/externalLink.ts` gated on `isNativePlatform()`; synced `ios/` (5 Capacitor plugins now).
+  New `tests/external-link.test.ts`; bundle still well under the 400 KB gate.
+- **`vercel.json`'s "index.html never cached" rule (SPEC 11.5) never matched a real app route** — the SPA
+  catch-all rewrite means every visited path never has the literal `/index.html` path the old header rule
+  matched. Added a second header rule using the same catch-all pattern as the rewrite.
+Also found and logged (not fixed, needs its own careful pass): the CSP's `style-src 'unsafe-inline'` and the
+`/privacy`/`/support` static pages' non-STYLE.md fonts (Georgia instead of Fraunces/Atkinson Hyperlegible —
+likely why the inline-style CSP exception exists), and `store.yml`'s `fastlane deliver` step never actually
+attaching a build/ipa (SPEC 11.6: "attach the latest processed build"). Full detail in DECISIONS.md. Three
+more findings were investigated and left alone as already-logged, reasoned balance-loop trade-offs, not
+bugs (Normal's Lost Land pool, Sol's production, chapter 3's Wholesome Hollow Contract count) — see
+DECISIONS.md for why each is a settled decision, not drift.
+`npm run check` (249 tests, up from 247) and `npm run gates` (gates 1-7, Chromium-fallback for gate 5/6 as
+usual in this sandbox, Lighthouse 99/100) both re-run clean end to end with no regressions. All of this is
+on `build` only, same as everything else, still waiting on the two release blockers below.
+
+Previous session (2026-09-26, ~04:51-05:xx UTC): re-checked both standing blockers once each (still denied /
 still the placeholder — unchanged, 9+ consecutive sessions now, see Blocked; this session's routine also
 pushed a notification to the owner about it, since the pattern is now long-standing and the game is
 otherwise content-complete). With the release paths blocked, implemented the chapter 3->4 Wholesome Hollow
@@ -687,6 +717,12 @@ thing to do is `npm run release`, since gates/e2e/balance are all in a shippable
 - [ ] create `DONE`
 
 ## Blocked
+- **Re-checked 2026-09-26 ~05:57 UTC:** same throwaway-branch dry-run push (`git push origin
+  main-test-check:main`), denied again with the identical "Production Deploy" classifier message before
+  reaching GitHub. `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID`, so `ios.yml` wasn't re-dispatched
+  (would only reproduce the recorded missing-secrets failure). Now 10+ consecutive sessions with an
+  identical denial since 2026-09-25 ~17:12 UTC. Used the session for real, unblocked work instead — see
+  Current milestone / DECISIONS.md for the 3 real bugs found and fixed this session.
 - **Re-checked 2026-09-26 ~04:55 UTC:** same throwaway-branch dry-run push, denied again with the identical
   "Production Deploy" classifier message before reaching GitHub. `OWNER.md`'s Apple Team ID is still
   `PASTE-TEAM-ID`, so `ios.yml` wasn't re-dispatched. This is now 9+ consecutive sessions with an identical

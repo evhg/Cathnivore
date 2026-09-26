@@ -7,6 +7,7 @@ import RulesReference from './ui/RulesReference'
 import Settings from './ui/Settings'
 import Credits from './ui/Credits'
 import { loadGame, clearGame, loadCampaign, markChapterComplete, recordGrowingSeasonCarryOver } from './platform/storage'
+import { openExternalLink } from './platform/externalLink'
 import { CHAPTERS, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
@@ -167,7 +168,8 @@ export default function App() {
           <p>A work of satire. All places, companies and people are fictional.</p>
           <p>No tracking. Your saves stay on your device.</p>
           <p>
-            <a href="/privacy">Privacy</a> · <a href="/support">Support</a>
+            <a href="/privacy" onClick={(e) => { e.preventDefault(); openExternalLink('/privacy') }}>Privacy</a> ·{' '}
+            <a href="/support" onClick={(e) => { e.preventDefault(); openExternalLink('/support') }}>Support</a>
           </p>
         </footer>
       </main>

@@ -135,9 +135,10 @@ export function legalActions(state: GameState): Action[] {
   return actions
 }
 
-// SPEC 6: role abilities that need a target region (Mara's Injunction, Tomas's Market Day) are only
-// offered per legal target; Ines/Sol's abilities need no target so `role` is offered once, unconditionally
-// (their effects fizzle harmlessly with no valid target — same as an Agenda card with none, SPEC 4.7).
+// SPEC 6: role abilities that need a target region (Mara's Injunction, Tomas's Market Day, Ines's Second
+// Opinion) are only offered per legal target; Sol's ability needs no target so `role` is offered once,
+// unconditionally (its effect fizzles harmlessly with no valid target — same as an Agenda card with none,
+// SPEC 4.7).
 function legalRoleTargets(state: GameState, producer: ProducerId): (RegionId | null)[] {
   if (producer === 'mara') {
     const targets = state.config.activeRegions.filter((id) => ownStalls(state, producer, id) > 0 && !state.regions[id].liberated)
@@ -145,6 +146,13 @@ function legalRoleTargets(state: GameState, producer: ProducerId): (RegionId | n
   }
   if (producer === 'tomas') {
     const targets = state.config.activeRegions.filter((id) => canMarketDayOpenIn(state, id))
+    return targets.length > 0 ? targets : [null]
+  }
+  if (producer === 'ines') {
+    // SPEC 6 "Second Opinion": "remove 1 Doubt from a region with your Stall, at no cost" — a choice among
+    // every eligible region, parallel to Mara's "choose a region with your Stall" (previously auto-picked
+    // the first eligible region in a fixed order, denying the player a choice when more than one qualified).
+    const targets = state.config.activeRegions.filter((id) => ownStalls(state, producer, id) > 0 && state.regions[id].doubt > 0)
     return targets.length > 0 ? targets : [null]
   }
   return [null]
@@ -160,9 +168,8 @@ function assertLegal(state: GameState, action: Action): void {
 function applyRole(state: GameState, producer: ProducerId, target: RegionId | null, choice?: 'trust' | 'goodwill'): GameState {
   switch (producer) {
     case 'ines': {
-      const region = state.config.activeRegions.find((id) => ownStalls(state, producer, id) > 0 && state.regions[id].doubt > 0)
-      if (!region) return state
-      return removeDoubt(state, region, 1)
+      if (!target) return state
+      return removeDoubt(state, target, 1)
     }
     case 'sol': {
       // SPEC 6 "On Air": Public Trust +1, or gain 2 Goodwill — a real choice (M4 balance-loop iteration 8,
