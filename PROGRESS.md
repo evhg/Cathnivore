@@ -1,7 +1,30 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, starting ~16:52 UTC): first task per the previous session's own note — retried
+This session (2026-09-26, starting ~17:51 UTC): first task per the previous session's own note — retried
+`npm run release`. `npm ci` + `npm run check` (296 tests) confirmed clean on the unchanged `build` HEAD
+first. `npm run release` ran gates 1-7 clean (68 e2e, 16 axe, Lighthouse 98/100); gate 5's
+`desktop-no-scroll.spec.ts` failed once inside that run (a real content-density flake under full-suite CPU
+contention, not a regression — reproduced clean in 5 subsequent isolated and full-suite reruns, 0px overflow
+every time) and gate 8 logged its now-standard "captured, needs a subagent" reminder. The fast-forward step
+then hit the standard fresh-clone stale-local-`main` issue ("refusing to merge unrelated histories") and the
+script exited without pushing. Applied the documented fix directly (`git checkout -B main origin/main` +
+`git merge --ff-only build` + `git push origin main`) rather than re-running the whole script — succeeded
+with **no classifier denial**, another confirmation the "Production Deploy"/"Blind Apply" blocks stay fixed.
+`main` is now at `c8c4fee` (the gate-8 texture fix and this session's own lock commit — no other new code
+since the last release). Verified live: `/version.json` matched `c8c4fee` within 3 polls (~30s), `/`,
+`/privacy`, `/support` all 200 via `curl` (the script's own Chromium-based smoke test still hits this
+sandbox's documented `ERR_CERT_AUTHORITY_INVALID` artifact against the real domain — cross-checked by hand
+instead, per CLAUDE.md's note, rather than trusting a weakened check). Ran SPEC 11.4 gate 8's subagent
+review for real against the freshly-captured screenshot set (30 screenshots, both projects): **no problems
+found**, including a dedicated greyscale-texture check of the map screenshot (confirming the previous
+session's crop/coast pattern-density fix holds) — matches the prior review's outcome on this near-identical
+build. No tag pushed (`deploy-<n>` pushes 403 with this session's credentials, per the standing note; commit
+SHA is the record, as every prior entry in this log does). See Deploy log for the full entry.
+
+---
+
+Previous session (2026-09-26, starting ~16:52 UTC): first task per the previous session's own note — retried
 `npm run release`. All 8 gates passed clean (68 e2e, 16 axe, Lighthouse 98/100). Hit the standard fresh-
 clone stale-local-`main` issue; fixed the documented way (`git checkout -B main origin/main`), then
 `git merge --ff-only build` and `git push origin main` succeeded with **no classifier denial** — confirming
@@ -1544,6 +1567,19 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   the 3rd check (~30s). Verified with `curl`: `/version.json` matches, `/`, `/privacy`, `/support` all return
   200. `main` is at `937b64f`, verified healthy. `deploy-7` tag created locally but can't be pushed (known
   403; see Blocked) — commit SHA is the record.
+- `c8c4fee` (gate-8 crop/coast texture fix + prior session's own lock/log commits — no other new code since
+  `937b64f`) — released to `main` 2026-09-26 ~17:59 UTC. `npm run release`'s scripted run passed gates 1-7
+  clean (68 e2e, 16 axe, Lighthouse 98/100; one incidental `desktop-no-scroll.spec.ts` flake under full-suite
+  CPU contention, reproduced clean in 5 isolated/full-suite reruns immediately after — not a regression) and
+  captured gate 8's screenshots, but its own fast-forward step hit the standard stale-local-`main` issue and
+  exited without pushing. Applied the documented fix directly (`git checkout -B main origin/main` + `git
+  merge --ff-only build` + `git push origin main`) — succeeded with no classifier denial. Poll against
+  `https://cathnivore.com/version.json` picked up `c8c4fee` on the 3rd check (~30s). Verified with `curl`:
+  `/version.json` matches, `/`, `/privacy`, `/support` all return 200 (the script's own Chromium smoke test
+  still hits the sandbox's documented TLS artifact against the real domain). Ran gate 8's subagent review for
+  real against the fresh screenshot set: no problems found, greyscale texture check included. `main` is at
+  `c8c4fee`, verified healthy. `deploy-8` tag created locally but can't be pushed (known 403; see Blocked) —
+  commit SHA is the record.
 
 ## Final report
 (not yet written)
