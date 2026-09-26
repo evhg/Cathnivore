@@ -1187,3 +1187,49 @@ Format: date, decision, reason.
   searching for `'action'`. `npm run check` (295 tests, unchanged — no new unit-testable surface, same as
   every other Log-sheet-shaped fix) and the specific previously-failing `e2e/ai-teammate.spec.ts` (both
   phone and desktop-chromium projects) both pass clean after the fix.
+
+- 2026-09-26: **Closed the SPEC 10.3 "no scrolling at 1280x800" gap for real**, the item several sessions'
+  writeups (most recently the ~14:52 UTC session) flagged as needing dedicated, uninterrupted time rather
+  than another CSS squeeze. Measured with a throwaway instrumented copy of the (then-`test.skip`'d)
+  `e2e/desktop-no-scroll.spec.ts` before changing anything: with the right column's prior CSS-only dents
+  already in place, `.game` (centre) measured 215-310px short across repeated runs, `.desktop-col-left`/
+  `-right` (Farm/Market-Plan-Log) 0px short — i.e. the CSS-density work already done had fully closed the
+  side columns and the only remaining blocker was the centre column, mostly `.actions`. Two changes closed
+  it:
+  1. **Market/Cath's Plan cards collapse to name/cost by default on desktop.** Every prior session's CSS
+     pass on the right column fought the same fact: a full game's 4 Market + 3 Plan cards each carry a
+     rules-text paragraph and a flavour line (SPEC 10.5's card.text fix, kept — not something to undo for
+     height), and no amount of font/padding shrinking closes a gap whose real cause is "showing 7 cards'
+     full text at once, unconditionally." `MarketSheet.tsx`/`CathsPlanSheet.tsx`'s `inline` (desktop) branch
+     now wraps each card's summary line (name, cost, tags) in a native `<details>`, with the rules text and
+     flavour only rendered once expanded. Used a native `<details>`/`<summary>` rather than a `useState`
+     toggle: it needs no extra JS, and is keyboard/screen-reader operable for free (`Enter`/`Space` toggles
+     it, and it exposes its own expanded state to assistive tech without any `aria-expanded` wiring). The
+     Buy/Play button sits *outside* the `<details>`, as a sibling, not inside — buying a card was never
+     meant to require expanding it first, and nesting an interactive button inside a `<summary>` would be
+     invalid HTML (a `<summary>`'s own click target already toggles the whole element) even if it were
+     desirable. Result: both `.desktop-col-left` and `.desktop-col-right` now measure 0px of overflow.
+  2. **`.actions` gets the same internally-scrolling `max-height` the Log already had**, rather than a
+     further CSS squeeze. Direct measurement (`.game`'s children's `offsetHeight`, logged from the
+     instrumented test) showed every other section of the centre column is effectively fixed-size (topbar
+     56px, plan strip 44px, map 260px, legend 18px, active-producer panel ~87px, controls 44px — a tutorial
+     banner adds ~94px only in the specific chapter-5 tutorial moment the test's scripted position happens
+     to hit) while `.actions` itself ranged 233-323px across identical repeated runs of the *same* scripted
+     game state — i.e. legal-action count (one entry per legal region/card/quantity target) is the one
+     genuinely variable quantity in the centre column, the same shape of problem the Log already had on the
+     right (turn history grows unboundedly) and was already solved for with `max-height`+`overflow-y:auto`
+     plus the `tabIndex`/`role="region"`/`aria-label` a scrollable container needs to stay keyboard-reachable
+     (axe's "focusable-content" rule, per the Log's own precedent). No fixed-height column can guarantee
+     zero overflow against a quantity that varies with the game state; a bounded, keyboard-reachable scroll
+     region is the honest fix, not another one-off shrink that would only buy back a fixed amount against a
+     moving target. Set `.actions`'s desktop `max-height` to 160px (comfortably fits ~3 rows before
+     scrolling, well above the map/topbar/etc.'s own fixed budget).
+  Re-ran the *un-instrumented* test 3+ times after both changes: `.game`/`.desktop-col-left`/
+  `.desktop-col-right` all measure exactly 0px of overflow every time, no game-state-dependent flakiness.
+  Un-skipped `e2e/desktop-no-scroll.spec.ts` for real and added it back into `scripts/gates.ts`'s Gate 5
+  list (it had been deliberately left out of the list while `test.skip`'d, per that file's own comment).
+  Full `npm run gates` re-run clean end to end: all 8 gates, 68 e2e tests (up from 67 — the newly-real test
+  itself), 16 axe checks (the new `<details>`/`tabIndex` additions introduced no accessibility regression),
+  Lighthouse 98/100. This is the last of the interface-audit's "needs its own dedicated session" items from
+  several sessions ago (the Confirm-button redesign and the AI reason-string feature were both closed in
+  earlier sessions) — no known open interface-audit item remains.
