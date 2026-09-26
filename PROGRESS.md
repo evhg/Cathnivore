@@ -22,6 +22,24 @@ session's crop/coast pattern-density fix holds) — matches the prior review's o
 build. No tag pushed (`deploy-<n>` pushes 403 with this session's credentials, per the standing note; commit
 SHA is the record, as every prior entry in this log does). See Deploy log for the full entry.
 
+With time still left, since the balance loop itself is closed (12/12 iterations used, per SPEC 9.4's own exit
+clause — see the M4 task entry below), picked a different SPEC 9.4 compliance question no session had
+actually checked: **are the shipped Improvement/Scheme numbers within SPEC 9.4's own caps** ("no Improvement
+[or Scheme] is bought/played in more than 70% of games, has a win rate when bought/played more than 15 points
+above average, or is bought/played in fewer than 3% of games")? Writing a quick analysis script against the
+sim harness's full JSON report to check this found a real gap first: `sim/run.ts`'s `Summary` tracked
+`schemePlayRate` but never a `schemeWinRateWhenPlayed` (the Improvement side has both
+`improvementPurchaseRate` and `improvementWinRateWhenBought`) — so the win-rate-margin cap, one of SPEC 9.4's
+three explicit limits on Schemes, was structurally unmeasurable from any past sim run. Fixed by adding
+`schemeWinRateWhenPlayed` to `Summary` and computing it the same way as its Improvement analog (`sim/run.ts`).
+`npx tsc -b --noEmit` clean; verified the new field populates correctly with a 30-game sanity run, then ran a
+real 200-game MCTS/Normal/all-pairs confirmation (win rate 32.0%, matching the previous session's run exactly
+— sim seeds are deterministic, expected) and checked every Improvement and Scheme against all three SPEC 9.4
+caps at that sample size: **no violations found** for either card type. This closes a real, previously-open
+question (whether the shipped content actually meets SPEC 9.4's per-card caps, not just its headline win-rate/
+loss-reason/pace targets) that no prior session's balance-loop writeup had actually verified. Pushed
+(`sim/run.ts` + the two sim runs' `BALANCE.md` appends).
+
 ---
 
 Previous session (2026-09-26, starting ~16:52 UTC): first task per the previous session's own note — retried
