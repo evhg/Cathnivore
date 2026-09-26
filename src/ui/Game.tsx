@@ -9,7 +9,7 @@ import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, regionOf } from './actionLabel'
-import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
+import { isIrreversible } from './undo'
 import { enemyTurnEvents } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
 import LogSheet from './LogSheet'
@@ -98,7 +98,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // whenever the turn changes (activeProducer switches, see `advance()`), and once an irreversible action
   // is taken, its own entry can never be popped (see `undo()`) — later actions in the same turn can still
   // be undone individually, right back down to that point.
-  const undoStackRef = useRef<UndoEntry[]>([])
+  const undoStackRef = useRef<{ state: GameState; irreversible: boolean }[]>([])
   const rngRef = useRef(createRng(seed + 1))
   // SPEC 9.2's real AI teammate ("MCTSBot running in a Web Worker so the screen never freezes"), created
   // lazily so hotseat/campaign games with no AI producer never spin one up. Terminated on unmount.
@@ -365,15 +365,15 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     // than waiting on a separate "Got it" tap — the gate above already guaranteed this action is the one
     // being taught (or gating had nothing to show, in which case there's nothing to advance past).
     if (matchesHighlight(action)) setTutorialIndex((i) => i + 1)
-    undoStackRef.current = pushUndo(undoStackRef.current, state, action)
+    undoStackRef.current.push({ state, irreversible: isIrreversible(action) })
     advance(state, action)
   }
 
   function undo(): void {
-    const popped = popUndo(undoStackRef.current)
-    if (!popped) return
-    undoStackRef.current = popped.stack
-    setState(popped.state)
+    const top = undoStackRef.current[undoStackRef.current.length - 1]
+    if (!top || top.irreversible) return
+    undoStackRef.current.pop()
+    setState(top.state)
   }
 
   // The Market/Cath's Plan sheets (SPEC 10.2) offer a direct Buy/Play button for a card only when the
@@ -629,7 +629,12 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
 
       <footer className="controls">
         <button
-          disabled={!canUndo(undoStackRef.current) || pendingEnemyTurn.length > 0 || waitingOnAi}
+          disabled={
+            undoStackRef.current.length === 0 ||
+            undoStackRef.current[undoStackRef.current.length - 1]!.irreversible ||
+            pendingEnemyTurn.length > 0 ||
+            waitingOnAi
+          }
           onClick={undo}
         >
           Undo
