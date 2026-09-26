@@ -1,6 +1,48 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-26, starting ~13:51 UTC): both standing blockers re-checked once, unchanged —
+`OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch, since it would only reproduce
+the recorded missing-secrets failure) and the "Production Deploy" push restriction stays fixed (no need to
+spend a check re-confirming something already demonstrated fixed for several sessions running). Picked up
+one of the three items the previous session left for "a future session with room for it":
+**SPEC 9.2's "each AI action shows a one-line reason in the log" was entirely unimplemented** — no bot
+produced a reason string, and `LogSheet.tsx` had a comment saying so. Built it end to end:
+`src/ai/reason.ts`'s `reasonForAction(state, action)` builds a plain-English template from the state the
+decision was actually made against (not the state after — "before it's squeezed next round" needs the
+still-visible Squeeze slot), matching SPEC 9.2's own example exactly for a squeeze-targeted Rebut
+("Clearing Doubt in Saltmarsh before it's squeezed next round.") plus a template for every other action
+kind (Open Stall calls out liberation or an upcoming Squeeze/Expand; Supply/Rebut call out an upcoming
+Squeeze; each producer's role ability gets its own line; Invest/Scheme name the card). `aiWorker.ts`
+computes the reason alongside the chosen action (against the same state, before it's applied) and returns
+it in `AIWorkerResponse`; `Game.tsx`'s `advance()` records it in a new `aiReasons: Record<number, string>`
+map keyed by the exact `state.log` index the action produced (found by scanning the newly-appended log
+entries for the one `{type: 'action'}` entry, rather than assuming a fixed offset, since `invest`/`scheme`
+add an earlier entry of their own and `refreshAllLiberation` can insert `liberated` entries first) — kept
+out of engine state entirely, since it's narration, not a rule. `LogSheet.tsx` renders it inline after the
+action's own caption. New `tests/reason.test.ts` (7 tests, including the literal SPEC-example assertion and
+a "every action kind gets a non-empty, well-formed reason" sweep) and an extension to the existing real-
+Worker `e2e/ai-teammate.spec.ts` test confirming the reason actually reaches the Log sheet for a genuine
+AI-teammate move (found and fixed a real race in writing that test: the active-producer name flips to the
+AI teammate the instant its turn *starts*, before the Worker round-trip that actually produces and logs its
+move, so the log-line assertion needed its own wait rather than reusing the producer-name-change wait).
+`npm run check` (293 tests, up from 286) and `npm run gates` (gates 1-7; 67 e2e tests, up from 66; 16 axe;
+Lighthouse 98/100) both re-run clean end to end, no regressions — pushed in two commits (`13b6dfc` for the
+feature, `de843e7` for the e2e coverage).
+
+Considered the other two items the previous session left open (a further `squeezeCoverageScore`-shaped term
+for Expand-protection in `src/ai/evaluation.ts`, and the SPEC 10.3 desktop no-scroll gap) and deliberately
+did not attempt either this session: an Expand-protection evaluation term would change every producer's
+score in every position (unlike the earlier pace-score fix, which was provably a no-op for the standard
+game), so per the M4 balance loop's own precedent it would need a real MCTS confirmation run before being
+trusted — recent 200-game runs at this file's current `ROLLOUT_SAMPLE_SIZE` have taken 10+ minutes, and a
+proper re-verification is a poor fit for the back half of a single ~50-minute session right after a
+different real change already landed. The desktop no-scroll gap needs genuine layout-design work (a
+collapsible/paginated card list), not another CSS squeeze, per several previous sessions' notes — left for
+a session that can start with it fresh rather than picked up with under half the session left. Both remain
+open for a future session with more room.
+
+
 This session (2026-09-26, starting ~12:52 UTC): both standing blockers re-checked once — `OWNER.md`'s Apple
 Team ID still `PASTE-TEAM-ID` (`ci-status` unchanged since ~1h45m earlier, no re-dispatch); the "Production
 Deploy" push restriction wasn't re-tested (already proven fixed by 3 consecutive real releases, not worth
@@ -1193,6 +1235,11 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [ ] create `DONE`
 
 ## Blocked
+- **Re-checked 2026-09-26 ~13:52 UTC:** `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID`; not
+  re-dispatching `ios.yml` since nothing owner-side has changed and the last dispatch (`6d96198`) already
+  confirmed the identical missing-secrets failure. The "Production Deploy" push restriction is treated as
+  resolved (see the entry below) and wasn't re-tested this session — used the session for real build work
+  instead (SPEC 9.2's AI reason-string feature, see Current milestone).
 - **Resolved 2026-09-26 ~11:00 UTC: the "Production Deploy" `git push origin main` denial is gone.** This
   session's `npm run release` ran `git push origin main` (fast-forwarding `bf08c61`→`a0aeb83`) with no
   classifier denial at all — first time since the original 2026-09-25 ~17:12 UTC denial, 14+ sessions ago.

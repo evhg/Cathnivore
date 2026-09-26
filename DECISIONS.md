@@ -1074,3 +1074,31 @@ Format: date, decision, reason.
   sandbox, not something to re-diagnose from scratch each time. `npm run check` (286 tests, unchanged — no
   new unit-testable surface) and `npm run gates` (gates 1-7; 66 e2e tests, up from 64; 16 axe, Lighthouse
   98/100) both re-run clean end to end.
+- 2026-09-26 (new session, ~13:51-14:09 UTC): Implemented SPEC 9.2's "each AI action shows a one-line
+  reason in the log," the one item from the previous session's audit that was both real and cheap to build
+  without touching balance (unlike the Expand-protection evaluation term, deliberately not attempted this
+  session — see PROGRESS.md's Current milestone for why). Design choice: the reason lives entirely in the
+  UI/AI layer (`src/ai/reason.ts`, `Game.tsx`'s new `aiReasons` state), never in `GameState`/`state.log`
+  itself — it's narration built from a decision, not a rule outcome, and SPEC 9.1 caps serialized state at
+  50 KB with `validate()` checking real invariants, neither of which a free-text reason string belongs in.
+  The alternative (having `applyAction` accept and store a reason) would have coupled the pure, DOM-free
+  engine to AI-specific narration for no gameplay benefit. Threading the reason from `aiWorker.ts`'s
+  response through to the exact `state.log` entry it explains needed one small piece of care: `applyAction`
+  can append more than one log entry for a single call (`invest`/`scheme` add their own entry before the
+  final `{type: 'action'}` one; `refreshAllLiberation` can insert `liberated` entries in between) — so
+  `advance()` scans the newly-appended slice for the one `{type: 'action'}` entry rather than assuming a
+  fixed offset, and records the reason against that entry's real index. Verified against SPEC 9.2's own
+  example text exactly (`tests/reason.test.ts`: a squeeze-targeted Rebut on Saltmarsh produces "Clearing
+  Doubt in Saltmarsh before it's squeezed next round." verbatim) plus a "every action kind produces a
+  non-empty, period-terminated reason" sweep so a future action kind can't silently fall through to an
+  empty string. Writing the e2e coverage (extending `e2e/ai-teammate.spec.ts` rather than a new file, since
+  it already drives a real Worker-backed AI turn) surfaced a genuine race worth recording: the
+  active-producer name flips to the AI teammate the instant `advanceTurnIfNeeded` ends the human's turn,
+  which is *before* the Worker round-trip that actually computes and logs the teammate's move — the
+  existing test's own wait (`not.toHaveText(firstName)`) was already correct for "it's now the AI's turn,"
+  but a naive reuse of that same wait for "the AI has now acted" would be a race that happens to pass most
+  of the time locally and flakes under load. Fixed by giving the log-line assertion its own
+  `toContainText(..., {timeout: 15000})` wait rather than assuming the producer-name wait already covers it.
+  `npm run check` (293 tests, up from 286) and `npm run gates` (gates 1-7; 67 e2e tests, up from 66; 16 axe;
+  Lighthouse 98/100) both re-run clean end to end, no regressions. Pushed as two commits: `13b6dfc` (the
+  feature) and `de843e7` (the e2e coverage), both gated individually before pushing.
