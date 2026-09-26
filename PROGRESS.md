@@ -1,7 +1,35 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, starting ~13:51 UTC): both standing blockers re-checked once, unchanged —
+This session (2026-09-26, starting ~14:52 UTC): picked up the previous session's queued balance task first —
+ran the 200-game MCTS/Normal/all-pairs confirmation for the `expandCoverage` evaluation-weight change. Win
+rate rose to 32.0%, but lostLand fell to 12.5% (under SPEC 9.4's 15% floor, the exact revert condition that
+change's own entry pre-committed to), the producer-pair spread widened to 31.8 points, and "settled before
+round 7" rose to 56.8% (SPEC 9.4 wants at most ~40%) — three regressions alongside the one gain, matching the
+iteration-6 precedent that this isn't a net win. **Reverted** `enemyPieces`/`expandCoverage` back to their
+pre-change weights (0.05/0). Re-running `npm run gates` after the revert surfaced a real, previously-latent
+bug the revert's changed AI-teammate action exposed: **the SPEC 9.2 log reason silently never rendered when
+the AI teammate's first move was a Scheme, Improvement or forced decision** — `Game.tsx` was attaching the
+reason to the `{type: 'action'}` log entry's index, but `gameLog.ts` deliberately returns a null caption for
+those three action kinds (their own richer `'invest'`/`'schemePlayed'`/`'decision'` entry carries the caption
+instead), and `LogSheet.tsx` drops null-caption entries entirely — so the reason had nowhere to attach to.
+Fixed by keying off the actual caption-bearing entry type per `action.kind`. Also fixed, while the balance sim
+occupied the box's CPU cores: **`store.yml`'s `fastlane deliver` never attached a build** (SPEC 11.6: "attach
+the latest processed build"), a real gap logged since 2026-09-25 as needing Apple credentials to *run* safely
+but not to *write* correctly — it now reads the build number `ios.yml` already recorded on `origin/ci-status`
+and passes it as `--build_number`/`--skip_binary_upload true`, selecting the already-processed TestFlight
+build instead of trying to re-upload one from a job with no Xcode toolchain. `npm run check` (295 tests) and
+`npm run gates` (all 8 gates; 66 e2e, 16 axe, Lighthouse 98-99/100) both pass clean after all three changes.
+Released `5a74db4` to `main` via `npm run release` (see Deploy log) — no classifier denial on the push, the
+seventh consecutive confirmation the "Production Deploy" block stays fixed; verified live via `curl` (the
+script's own smoke test still hits the sandbox's known TLS artifact). Re-checked `OWNER.md`'s Apple Team ID:
+still `PASTE-TEAM-ID`, no change, no `ios.yml` re-dispatch (would only reproduce the recorded failure). With
+time remaining after the release, continuing to look for another bounded SPEC-compliance gap (see below);
+this entry will be extended or a new one added before the session wraps.
+
+---
+
+Previous session (2026-09-26, starting ~13:51 UTC): both standing blockers re-checked once, unchanged —
 `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch, since it would only reproduce
 the recorded missing-secrets failure) and the "Production Deploy" push restriction stays fixed (no need to
 spend a check re-confirming something already demonstrated fixed for several sessions running). Picked up
@@ -1363,6 +1391,18 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   (sixth consecutive confirmation). Poll picked up `65c3211` on the 3rd check (~30s). Verified with `curl`:
   `/version.json` matches, `/` returns 200. `main` is at `65c3211`, verified healthy. `deploy-5` tag created
   locally but can't be pushed (known 403; see Blocked) — commit SHA is the record.
+- `5a74db4` (this session: `store.yml`'s "attach the latest processed build" fix, the `expandCoverage`
+  evaluation-weight revert, and the AI-teammate log-reason bug that revert exposed) — released to `main`
+  2026-09-26 ~15:22 UTC via `npm run release`. `npm run gates` passed clean beforehand (gates 1-7; 66 e2e, 16
+  axe, Lighthouse 98-99/100). Hit the same recurring stale-local-`main` issue every fresh-clone session sees
+  ("refusing to merge unrelated histories") — fixed the usual documented way (`git checkout -B main
+  origin/main`), then `git merge --ff-only build` and `git push origin main` both succeeded with no
+  classifier denial (seventh consecutive confirmation the "Production Deploy" block stays fixed). Skipped the
+  script's own Chromium-based live smoke test (known `ERR_CERT_AUTHORITY_INVALID` sandbox artifact, see
+  DECISIONS.md) and verified the accepted alternative way instead: `curl https://cathnivore.com/version.json`
+  picked up the matching commit on the 2nd poll (~15s), and `/`, `/privacy`, `/support` all return 200. `main`
+  is at `5a74db4`, verified healthy. `deploy-6` tag created locally but can't be pushed (known 403; see
+  Blocked) — commit SHA is the record.
 
 ## Final report
 (not yet written)
