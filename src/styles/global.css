@@ -320,6 +320,23 @@ h3 {
   pointer-events: none;
 }
 
+.price-tag-text {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-size: 3.6px;
+  font-weight: 700;
+  fill: var(--ink);
+  pointer-events: none;
+}
+
+.sold-text {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-size: 3.4px;
+  font-weight: 700;
+  fill: var(--ink);
+  letter-spacing: 0.2px;
+  pointer-events: none;
+}
+
 .map-legend {
   font-size: 12px;
   fill: var(--ink-muted);

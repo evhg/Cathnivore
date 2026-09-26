@@ -35,11 +35,19 @@ blocked on something outside session capability, this session did real, unblocke
 - re-confirmed the standing push-restriction denial (one quick check, as established) and moved on rather
   than re-investigating a well-documented blocker again.
 `npm run check`/`npm run gates` both still pass clean end to end (164 unit tests, 35 e2e/gate-5 tests; gate
-8 still needs a human/subagent judgement call each session). Next session: piece icons are still simplified
-vs. STYLE.md 6's exact illustrations (lowest priority); re-try the push-restriction dry-run check once;
-re-check `OWNER.md`'s Apple Team ID in case secrets have appeared; M7's remaining items (a final full e2e
-pass on both sizes, and the final balance report) are best left until closer to the deadline so they aren't
-redone after more content lands.
+8 still needs a human/subagent judgement call each session). This session (2026-09-26): re-checked the
+production-push restriction (still denied, see Blocked) and `OWNER.md`'s Apple Team ID (still the
+placeholder), then did the piece-icon polish flagged as the next session's lowest-priority open item —
+**`src/ui/Map.tsx`'s game pieces now match STYLE.md 6's exact illustrations**, not just distinguishable
+shapes: Outlet gained its hanging ".99" price tag, Buyout gained a "SOLD" banner on its fence-post
+silhouette, Doubt gained a speech-bubble tail, Stall is now a two-stripe (producer colour/paper) awning
+roof over a scalloped valance instead of a plain rounded rect, Lost Land's overlay is a real cross-hatch
+pattern plus two crack lines instead of a flat tint, and the Co-op marker is a six-petal rosette instead of
+a plain circle. Verified visually (cropped screenshots at 3x scale via a temporary Playwright script,
+removed after use) and with the full `npm run check` plus a targeted e2e run
+(`quick-game.spec.ts`+`screenshots.spec.ts`, `desktop-chromium`) — both clean, no regressions. Next
+session: re-try the push-restriction/Apple-Team-ID checks once as usual; M7's remaining items (a final full
+e2e pass on both sizes, and the final balance report) are still best left until closer to the deadline.
 
 ## Tasks
 
@@ -98,14 +106,16 @@ redone after more content lands.
 - [x] the Log sheet (SPEC 10.2): `src/ui/gameLog.ts`'s `logCaption(event)` renders every `GameEvent` type `state.log` can hold (actions, Invest, Scheme plays, plus the enemy-turn types via `enemyTurnLog.ts`'s `captionFor`) as one readable line; `src/ui/LogSheet.tsx` shows the full history newest-first in a bottom sheet, toggled by a new "Log" button in `Game.tsx`'s footer. AI-teammate reasons ("Clearing Doubt in Saltmarsh before it's squeezed next round") are separate M6 work tied to the real MCTSBot-in-Worker teammate (see DECISIONS.md) — out of scope until that exists. Verified with a headless-Chromium run (played Graft, opened Log, saw the action plus the setup-time Scout, closed it), no console errors. Unit test in `tests/game-log.test.ts`.
 - [x] the Farm sheet (`src/ui/FarmSheet.tsx`: every producer's resources/production, tableau with tags and flavor, and tag-count totals) and the Market/Cath's Plan sheets (`src/ui/MarketSheet.tsx`/`CathsPlanSheet.tsx`: the 4/3 face-up cards with full cost/tags/flavor text and a Buy/Play button when the active human producer currently has a legal action for that card — `Game.tsx`'s `canBuy`/`buy`/`canPlayScheme`/`playScheme` look it up in the same `actions`/`groups` the main action panel already computed, and a Scheme needing a region choice opens the map's targeting mode instead of acting blind). Verified with a headless-Chromium run: opened all three sheets, saw real card data, bought a Market card via its sheet button (closed the sheet on success), no console errors.
 - [x] desktop 3-column layout (SPEC 10.3): `FarmSheet`/`MarketSheet`/`CathsPlanSheet`/`LogSheet` all gained an `inline` prop that renders the same content without the phone-sized `.sheet-overlay` modal chrome; `Game.tsx` now always mounts an inline Farm panel on the left and Market/Cath's Plan/Log panels on the right (`.desktop-col-left`/`.desktop-col-right`), wrapping the existing phone-layout `<main className="game">` in a `.game-layout` grid. Below 1024px `.desktop-col` is `display: none` and the phone sheet-toggle buttons (now `.mobile-only`) work exactly as before; at 1024px+ the grid (300px / 1fr / 320px columns, `height: 100vh`, inner columns `overflow-y: auto`) shows all three columns with no page scroll, and `.mobile-only` buttons hide since their panels are already visible. Verified with headless-Chromium screenshots at both 390x844 and 1440x900 (a real Quick Game round): the phone layout is pixel-identical to before, the desktop layout shows Farm/map+plan-strip/Market+Plan+Log side by side with no scrollbar, no console errors either size.
-- [x] (mostly) STYLE.md visual pass on the map — region texture patterns (3.2: pasture diagonal strokes,
+- [x] STYLE.md visual pass on the map — region texture patterns (3.2: pasture diagonal strokes,
   crop dotted furrow rows, coast wave lines, capital cobblestone grid, all 8%-ink SVG pattern overlays), a
   real Buyout shape distinct from Outlet (6: a peaked sign-post silhouette instead of a barely-different
   square — the two were effectively indistinguishable in greyscale before this fix), and the Settings
   "colour-blind patterns" toggle wired to a real effect (each Stall gets its producer's initial, since
-  Stalls were otherwise distinguished only by fill hue). Piece icons are still simplified shapes rather
-  than the exact STYLE.md 6 illustrations (Outlet's shopfront-with-"0.99"-tag, Doubt's full speech-bubble
-  glyph) — a further, lower-priority polish pass, not a shape-collision bug like the Buyout one was.
+  Stalls were otherwise distinguished only by fill hue). **Piece icons now match STYLE.md 6's exact
+  illustrations (a later session, 2026-09-26):** Outlet's hanging ".99" price tag, Buyout's "SOLD" banner,
+  Doubt's speech-bubble tail, Stall's striped-awning-over-scalloped-valance shape, Lost Land's cross-hatch
+  overlay with crack lines, and the Co-op marker's six-petal wax-seal rosette — closing what was the last
+  open item from this checklist entry. See DECISIONS.md and PROGRESS.md's Current milestone for details.
 - [x] Release to `main`: ran `npm run release` — gates passed (gate 5's e2e suite included; gates 6-8 still log as skipped, chartered to M6 per SPEC 12), fast-forwarded `main` to `0fa64b2`, live smoke test passed. **cathnivore.com now serves a playable game.**
 
 ### M4 Full content and balance (day 4)

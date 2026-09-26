@@ -85,7 +85,107 @@ function RegionTextureDefs() {
       <pattern id="texture-capital" width={12} height={12} patternUnits="userSpaceOnUse">
         <rect x={0} y={0} width={11} height={11} fill="none" stroke="var(--ink)" strokeWidth={1} opacity={0.08} />
       </pattern>
+      {/* STYLE.md 6: Lost Land is a "cracked hatched tile" — a cross-hatch pattern under the crack lines
+          drawn per-region below, replacing the earlier flat opacity tint. */}
+      <pattern id="texture-lostland" width={8} height={8} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1={0} y1={0} x2={0} y2={8} stroke="var(--ink)" strokeWidth={1.4} opacity={0.35} />
+        <line x1={4} y1={0} x2={4} y2={8} stroke="var(--ink)" strokeWidth={1.4} opacity={0.35} />
+      </pattern>
     </defs>
+  )
+}
+
+// STYLE.md 6's exact game pieces, drawn as small self-contained SVG groups so `Map` can place one per
+// slot in the enemy-piece row / Stall row without repeating their geometry inline.
+
+// Outlet: "little shopfront box with a price tag reading 0.99" — a glossy Hollowell square (unchanged
+// from before) plus a small hanging price tag, the wit detail STYLE.md 2.5 asks for by name.
+function Outlet() {
+  return (
+    <g className="enemy-piece">
+      <rect width={12} height={12} rx={2} fill="var(--hollowell)" />
+      <circle cx={9} cy={3} r={2.2} fill="var(--hollowell-highlight)" />
+      <g transform="translate(7,9) rotate(18)">
+        <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
+        <circle cx={1.3} cy={1.3} r={0.5} fill="var(--ink)" />
+        <text x={4.2} y={4} textAnchor="middle" className="price-tag-text">
+          .99
+        </text>
+      </g>
+    </g>
+  )
+}
+
+// Buyout: "picket-fence segment with a SOLD sign" — keeps the peaked sign-post silhouette (already
+// distinct in outline from Outlet's square, STYLE.md 2.3) and adds the sign itself.
+function Buyout() {
+  return (
+    <g className="enemy-piece">
+      <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" />
+      <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
+      <g transform="translate(1,7) rotate(-6)">
+        <rect x={0} y={0} width={10} height={4} rx={0.5} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
+        <text x={5} y={3.1} textAnchor="middle" className="sold-text">
+          SOLD
+        </text>
+      </g>
+    </g>
+  )
+}
+
+// Doubt: "speech bubble with a '?'" — the glossy Candor circle already had the "?", but no tail, so it
+// read as a plain dot rather than a speech bubble (STYLE.md 6's literal shape).
+function Doubt() {
+  return (
+    <g className="enemy-piece">
+      <circle cx={6} cy={6} r={6} fill="var(--candor)" />
+      <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor)" />
+      <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
+      <text x={6} y={9} textAnchor="middle" className="doubt-mark">
+        ?
+      </text>
+    </g>
+  )
+}
+
+// Stall: "small awning with scalloped edge, striped in the producer's colour and paper" — was a plain
+// rounded rect. Now a two-stripe canvas roof over a scalloped valance, both in the producer's colour.
+function Stall({ pid, initial, showInitial }: { pid: ProducerId; initial: string; showInitial: boolean }) {
+  const colour = `var(--p-${pid})`
+  return (
+    <g className="stall-piece">
+      <rect x={0} y={0} width={7} height={6} fill={colour} />
+      <rect x={7} y={0} width={7} height={6} fill="var(--paper)" />
+      <rect x={0} y={0} width={14} height={6} fill="none" stroke="var(--ink)" strokeWidth={1} />
+      <path
+        d="M 0,6 a 3.5,3 0 0 0 7,0 a 3.5,3 0 0 0 7,0 L 14,10 L 0,10 Z"
+        fill={colour}
+        stroke="var(--ink)"
+        strokeWidth={1}
+      />
+      {showInitial && (
+        <text x={7} y={9} textAnchor="middle" className="stall-initial">
+          {initial}
+        </text>
+      )}
+    </g>
+  )
+}
+
+// Co-op marker: "wax-seal rosette" — was a plain filled circle. Now a ring of six petals around a
+// centre disc, the shape a wax seal's pressed rosette actually has.
+function CoopMarker({ x, y }: { x: number; y: number }) {
+  const petals = Array.from({ length: 6 }, (_, i) => {
+    const angle = (i * 60 * Math.PI) / 180
+    return { cx: x + 7 * Math.cos(angle), cy: y + 7 * Math.sin(angle) }
+  })
+  return (
+    <g>
+      {petals.map((p, i) => (
+        <circle key={i} cx={p.cx} cy={p.cy} r={4.5} fill="var(--pasture)" stroke="var(--ink)" strokeWidth={1} />
+      ))}
+      <circle cx={x} cy={y} r={6} fill="var(--pasture)" stroke="var(--ink)" strokeWidth={1.5} />
+    </g>
   )
 }
 
@@ -122,12 +222,17 @@ export default function Map({ state, highlight, onSelect }: Props) {
             />
             <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill={`url(#${REGION_PATTERN_ID[def.type]})`} />
             {r.lostLand > 0 && (
-              <polygon
-                className="lostland-overlay"
-                points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)}
-                fill="var(--clay)"
-                opacity={0.18}
-              />
+              <g className="lostland-overlay">
+                <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)} fill="var(--clay)" opacity={0.18} />
+                <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)} fill="url(#texture-lostland)" />
+                <path
+                  d={`M ${x - HEX_R * 0.4},${y - HEX_R * 0.3} L ${x - HEX_R * 0.1},${y} L ${x - HEX_R * 0.3},${y + HEX_R * 0.35} M ${x - HEX_R * 0.1},${y} L ${x + HEX_R * 0.25},${y + HEX_R * 0.15}`}
+                  fill="none"
+                  stroke="var(--ink)"
+                  strokeWidth={1.5}
+                  opacity={0.4}
+                />
+              </g>
             )}
 
             <text x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
@@ -160,36 +265,17 @@ export default function Map({ state, highlight, onSelect }: Props) {
                   add to it). */}
               {Array.from({ length: r.outlets }).map((_, i) => (
                 <g key={`o${i}`} transform={`translate(${i * 16}, 0)`}>
-                  <g className="enemy-piece">
-                    <rect width={12} height={12} rx={2} fill="var(--hollowell)" />
-                    <circle cx={9} cy={3} r={2.2} fill="var(--hollowell-highlight)" />
-                  </g>
+                  <Outlet />
                 </g>
               ))}
               {Array.from({ length: r.buyouts }).map((_, i) => (
                 <g key={`b${i}`} transform={`translate(${(r.outlets + i) * 16}, 0)`}>
-                  <g className="enemy-piece">
-                    {/* STYLE.md 6: "picket-fence segment with a SOLD sign" — a peaked sign-post silhouette,
-                        deliberately distinct in outline from the Outlet's plain square (STYLE.md 2.3:
-                        "shape before colour" — the two share the same glossy Hollowell colour and, before
-                        this fix, only differed by a barely-visible corner radius, effectively
-                        indistinguishable in greyscale; found by eye on this session's own greyscale
-                        screenshot after the gate-8 subagent's pass, which didn't catch it at that
-                        resolution). */}
-                    <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" />
-                    <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
-                  </g>
+                  <Buyout />
                 </g>
               ))}
               {Array.from({ length: r.doubt }).map((_, i) => (
                 <g key={`d${i}`} transform={`translate(${(r.outlets + r.buyouts + i) * 16}, 0)`}>
-                  <g className="enemy-piece">
-                    <circle cx={6} cy={6} r={6} fill="var(--candor)" />
-                    <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
-                    <text x={6} y={9} textAnchor="middle" className="doubt-mark">
-                      ?
-                    </text>
-                  </g>
+                  <Doubt />
                 </g>
               ))}
             </g>
@@ -200,22 +286,15 @@ export default function Map({ state, highlight, onSelect }: Props) {
                 Array.from({ length: n }).map((_, i) => {
                   const sx = (stalls.findIndex(([p]) => p === pid) + i) * 18
                   return (
-                    <g key={`${pid}-${i}`} className="stall-piece">
-                      <rect x={sx} y={0} width={14} height={10} rx={2} fill={`var(--p-${pid})`} stroke="var(--ink)" strokeWidth={1} />
-                      {colourBlindPatterns && (
-                        <text x={sx + 7} y={8} textAnchor="middle" className="stall-initial">
-                          {PRODUCER_INITIAL[pid]}
-                        </text>
-                      )}
+                    <g key={`${pid}-${i}`} transform={`translate(${sx}, 0)`}>
+                      <Stall pid={pid} initial={PRODUCER_INITIAL[pid]} showInitial={colourBlindPatterns} />
                     </g>
                   )
                 }),
               )}
             </g>
 
-            {r.liberated && (
-              <circle cx={x + HEX_R * 0.55} cy={y + HEX_R * 0.55} r={10} fill="var(--pasture)" stroke="var(--ink)" strokeWidth={1.5} />
-            )}
+            {r.liberated && <CoopMarker x={x + HEX_R * 0.55} y={y + HEX_R * 0.55} />}
           </g>
         )
       })}

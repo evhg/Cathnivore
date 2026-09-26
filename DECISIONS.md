@@ -609,3 +609,16 @@ Format: date, decision, reason.
   session time budgeted to validate the whole suite against them right now — logged rather than applied
   blind. Worth a dedicated session before shipping if there's spare time, but not urgent: SPEC 11.1 already
   pins versions via `package-lock.json`, so nothing here is a moving target.
+
+- 2026-09-26: Re-checked the production-push restriction (throwaway fast-forward branch, same as every
+  prior session): still denied outright by the harness's "Production Deploy" classifier before the push
+  reached GitHub. `OWNER.md`'s Apple Team ID is also still the `PASTE-TEAM-ID` placeholder. Both release
+  paths remain outside session capability, so this session did the piece-icon polish PROGRESS.md's M3/M6
+  entries had logged as the next lowest-priority open item: `src/ui/Map.tsx`'s Outlet/Buyout/Doubt/Stall/
+  Lost Land/Co-op-marker pieces now match STYLE.md 6's exact illustrations (price tag, SOLD sign, speech-
+  bubble tail, striped-awning-over-scalloped-valance, cross-hatch+cracks, six-petal rosette) instead of the
+  simplified shapes that only satisfied "shape before colour." Verified visually with cropped 3x screenshots
+  from a temporary Playwright script (removed after use, not committed) and `npm run check` plus a targeted
+  `desktop-chromium` e2e run (`quick-game.spec.ts` + `screenshots.spec.ts`), both clean. No engine/rules/
+  test changes needed — this is pure `src/ui/Map.tsx` + `src/styles/global.css` presentation work, so no
+  existing test needed updating.
