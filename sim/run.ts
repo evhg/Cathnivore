@@ -59,6 +59,7 @@ interface Summary {
   improvementPurchaseRate: Record<string, number>
   improvementWinRateWhenBought: Record<string, number>
   schemePlayRate: Record<string, number>
+  schemeWinRateWhenPlayed: Record<string, number>
 }
 
 function summarize(outcomes: GameOutcome[], args: Args): Summary {
@@ -95,9 +96,11 @@ function summarize(outcomes: GameOutcome[], args: Args): Summary {
   }
 
   const schemePlayRate: Record<string, number> = {}
+  const schemeWinRateWhenPlayed: Record<string, number> = {}
   for (const card of SCHEMES) {
     const played = finished.filter((o) => o.schemesPlayed.includes(card.id))
     schemePlayRate[card.id] = played.length / Math.max(1, finished.length)
+    schemeWinRateWhenPlayed[card.id] = played.length > 0 ? played.filter((o) => o.won).length / played.length : 0
   }
 
   return {
@@ -116,6 +119,7 @@ function summarize(outcomes: GameOutcome[], args: Args): Summary {
     improvementPurchaseRate,
     improvementWinRateWhenBought,
     schemePlayRate,
+    schemeWinRateWhenPlayed,
   }
 }
 
