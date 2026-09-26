@@ -45,11 +45,14 @@ export function actionLabel(action: Action, state: GameState): string {
   }
 }
 
-// The `ACTION_TERMS` glossary entry (src/content/terms.ts) an action's button should offer a SPEC 10.5
+// The `ACTION_TERMS` glossary entry (src/content/terms.ts) an action kind should offer a SPEC 10.5
 // tooltip for, or undefined for kinds with no matching entry (role abilities are producer-specific, not
 // one of the 7 spec-4.6 actions the glossary covers, and `decide`/`tearUpContract` aren't base actions).
-export function actionTermFor(action: Action): string | undefined {
-  switch (action.kind) {
+// Shared by `actionTermFor` (a full `Action`, for in-game tooltips) and `Game.tsx`'s tutorial "?" link
+// (only ever has the bare `Action['kind']` string a `TutorialStep.highlight` names), so both agree on
+// which glossary entry a given action kind maps to.
+export function actionTermForKind(kind: Action['kind'] | string): string | undefined {
+  switch (kind) {
     case 'openStall':
       return 'Open Stall'
     case 'supplyOutlets':
@@ -68,6 +71,10 @@ export function actionTermFor(action: Action): string | undefined {
     default:
       return undefined
   }
+}
+
+export function actionTermFor(action: Action): string | undefined {
+  return actionTermForKind(action.kind)
 }
 
 // The region an action targets, for SPEC 10.2's targeting mode (tap a glowing region on the map instead

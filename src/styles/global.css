@@ -928,6 +928,15 @@ button {
   color: var(--ink-muted);
 }
 
+/* SPEC 8.1: the entry a tutorial prompt's "?" link opened the reference on (RulesReference's
+   `initialTerm`), so the player lands on the right explanation instead of just the top of the page. */
+.rules-entry-active {
+  background: var(--highlight, #fff3b0);
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin: -4px -6px 6px;
+}
+
 /* SPEC 11.6 app shell: inside the bundled iPhone app only (`.native-app`, set by main.tsx via
    Capacitor.isNativePlatform()) — no text selection or long-press callouts, no pinch zoom, and no
    whole-page rubber-band scrolling or link previews. Never applied on the website, where users must still

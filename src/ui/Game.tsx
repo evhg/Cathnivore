@@ -8,7 +8,7 @@ import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
-import { actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, regionOf } from './actionLabel'
+import { actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
@@ -267,7 +267,12 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // return (rather than an overlay stacked on top of the game's own `<main>`) avoids nesting two
   // `<main>` landmarks and reuses the exact same screen "How to Play" already opens from the title.
   if (showRulesFromTutorial) {
-    return <RulesReference onClose={() => setShowRulesFromTutorial(false)} />
+    // SPEC 8.1: land on the term this tutorial step is actually teaching, not just the top of the page.
+    // Only an action-kind highlight names a glossary term this way; a region highlight (e.g. "tap this
+    // region") has no single matching entry, so it falls back to opening at the top.
+    const highlight = tutorialSteps?.[tutorialIndex]?.highlight
+    const initialTerm = highlight?.kind === 'action' ? actionTermForKind(highlight.action) : undefined
+    return <RulesReference onClose={() => setShowRulesFromTutorial(false)} initialTerm={initialTerm} />
   }
 
   if (state.result) {

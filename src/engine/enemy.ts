@@ -152,7 +152,7 @@ function pickProducerToLoseStall(state: GameState, region: RegionState): Produce
 // also removes 1 Stall from the producer with the most there. Public Trust drops by min(Doubt, 2).
 // STALL_LOSS_MARGIN is a balance-loop-tunable number (SPEC 4 preamble); raised from 3 to 4 in the M4
 // iteration-1 balance pass (2026-09-24, see DECISIONS.md) to ease the dominant lostLand loss reason.
-const STALL_LOSS_MARGIN = 4
+export const STALL_LOSS_MARGIN = 4
 export function resolveSqueeze(state: GameState): GameState {
   const card = state.squeeze
   if (!card) return state

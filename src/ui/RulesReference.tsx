@@ -1,14 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { IMPROVEMENTS } from '../content/improvements'
 import { SCHEMES } from '../content/schemes'
 import { AGENDA_CARDS } from '../content/agenda'
 import { PRODUCERS, ALL_PRODUCER_IDS } from '../content/producers'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { REGIONS } from '../content/map'
-import { ACTION_TERMS, GLOSSARY_TERMS, type GlossaryEntry } from '../content/terms'
+import { ACTION_TERMS, GLOSSARY_TERMS, entryDomId, type GlossaryEntry } from '../content/terms'
 
 interface Props {
   onClose(): void
+  // SPEC 8.1: "a '?' link to the rules reference" from a tutorial prompt should land the player on the
+  // term that prompt was about, not just the top of the page. The exact glossary/action term name (see
+  // `Game.tsx`'s `tutorialTermFor`), used to scroll to and highlight that entry once opened.
+  initialTerm?: string
 }
 
 type Entry = GlossaryEntry
@@ -25,11 +29,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-function EntryList({ entries }: { entries: Entry[] }) {
+function EntryList({ entries, activeTerm }: { entries: Entry[]; activeTerm?: string }) {
   return (
     <dl className="rules-entries">
       {entries.map((e) => (
-        <div key={e.term} className="rules-entry">
+        <div
+          key={e.term}
+          id={entryDomId(e.term)}
+          className={e.term === activeTerm ? 'rules-entry rules-entry-active' : 'rules-entry'}
+        >
           <dt>{e.term}</dt>
           <dd>{e.body}</dd>
         </div>
@@ -46,8 +54,19 @@ function matches(query: string, ...fields: (string | undefined)[]): boolean {
 
 // SPEC 10.1/10.5: rules reference, generated from the rules data (so it can never disagree with the
 // engine), searchable by name/text/flavor.
-export default function RulesReference({ onClose }: Props) {
+export default function RulesReference({ onClose, initialTerm }: Props) {
   const [query, setQuery] = useState('')
+  const scrolledRef = useRef(false)
+
+  // Land on and briefly highlight the term the tutorial's "?" was tapped from, rather than always opening
+  // at the top (SPEC 8.1). Runs once per mount; the empty initial `query` means every section (including
+  // `initialTerm`'s) is already rendered on this first pass, so the target id exists immediately.
+  useEffect(() => {
+    if (!initialTerm || scrolledRef.current) return
+    scrolledRef.current = true
+    const el = document.getElementById(entryDomId(initialTerm))
+    el?.scrollIntoView({ block: 'center' })
+  }, [initialTerm])
 
   const actions = useMemo(() => ACTIONS.filter((e) => matches(query, e.term, e.body)), [query])
   const terms = useMemo(() => TERMS.filter((e) => matches(query, e.term, e.body)), [query])
@@ -94,13 +113,13 @@ export default function RulesReference({ onClose }: Props) {
 
       {actions.length > 0 && (
         <Section title="Actions (3 per producer per round)">
-          <EntryList entries={actions} />
+          <EntryList entries={actions} activeTerm={initialTerm} />
         </Section>
       )}
 
       {terms.length > 0 && (
         <Section title="Key terms">
-          <EntryList entries={terms} />
+          <EntryList entries={terms} activeTerm={initialTerm} />
         </Section>
       )}
 
