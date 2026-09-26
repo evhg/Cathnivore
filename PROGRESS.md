@@ -1055,7 +1055,14 @@ pushes (gated on Apple secrets) and the final report.
   `DEADLINE` time remains; this is pure documentation, not a new feature, so there's no reason to wait for
   M7 proper). Covers the game briefly, points to the live site and `PROGRESS.md` for the iPhone app's
   status, local dev/test/sim commands, and a short account of the stack and the unattended build process.
-- [ ] final release and live smoke test, then the final `ios-<n>` build
+- [ ] final release and live smoke test, then the final `ios-<n>` build — 2026-09-26's `a0aeb83` release
+  (see Deploy log) may end up being this one if no further content changes land before Apple secrets appear;
+  not marking it done yet since a session between now and then could still add something. The `ios-<n>`
+  half is still hard-blocked (Apple secrets, see Blocked) — checked `npm audit` while looking for other
+  hardening work in the meantime: 9 vulnerabilities, all in dev/build tooling only (`vite`/`esbuild`'s dev
+  server, `uuid` via `@capacitor/cli`'s `xcode` dependency), none reaching the shipped bundle, all requiring
+  breaking major-version bumps to fix — deferred rather than attempted blind this late in a session, see
+  DECISIONS.md.
 - [ ] push `submit-<n>` to send that build for App Review
 - [ ] final report in `PROGRESS.md`
 - [ ] create `DONE`
