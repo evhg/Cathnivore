@@ -1,11 +1,12 @@
 # Progress
 
 ## Current milestone
-M5 Campaign and M6 Polish are both content-complete — every checklist item in both sections is done except
-the release/`ios-<n>`/`store-<n>` pushes, which stay blocked (see below). M1-M4 are complete (M4's balance loop 12/12
-iterations, see DECISIONS.md). `main` is still on `bf08c61` (pre-M5): re-checked again this session with
-the same cheap throwaway-branch dry-run push, still denied outright by the harness's own "Production
-Deploy" classifier — a standing restriction confirmed across 6+ consecutive sessions now. All of M5/M6's
+M1-M6 are all content-complete, and M7 is now nearly complete too (long fuzz, README, full e2e pass and a
+final balance report all done — see below) — every checklist item is done except the release/`ios-<n>`/
+`store-<n>` pushes, `submit-<n>`, the final report and `DONE`, which all stay blocked on the two standing
+blockers (see below). `main` is still on `bf08c61` (pre-M5): re-checked again this session with the same
+cheap throwaway-branch dry-run push, still denied outright by the harness's own "Production Deploy"
+classifier — a standing restriction confirmed across 7+ consecutive sessions now. All of M5/M6/M7's
 work still lives only on `build`; this needs the owner to either approve production pushes for this session
 type or run `npm run release` themselves. `ios-1`'s signing check also stays blocked on `OWNER.md`'s Apple
 Team ID still being the placeholder — nothing to re-check there until that changes. With both release paths
@@ -126,6 +127,22 @@ ended up using `--sea` (also adaptive, clears 4.5:1 in both themes) with an outl
 the badge isn't one of STYLE.md's fixed-fill cases. New `e2e/accessibility.spec.ts` test (`setup screen ...
 in forced dark theme`) plus manual dark-mode screenshot verification of the EXPAND badge and a fresh
 `npm run gates` full pass. `npm run check` (170+ tests) is clean.
+
+This session (2026-09-26, second session today): re-checked both standing blockers once each (still denied /
+still the placeholder — unchanged). This sandbox got a real Playwright WebKit binary for the first time,
+so ran the genuine full e2e suite (all projects, all specs) rather than the Chromium-fallback subset
+`npm run gates` had used until now. Found and fixed 3 real bugs this exposed (all in test/config code, not
+the app): `store-screenshots.spec.ts` running under every project instead of just its own dedicated one (a
+real failure on desktop-chromium), `ai-teammate.spec.ts`'s CPU-throttling test calling a Chromium-only CDP
+API with no browser guard, and a WebKit/sandbox-specific "internal error" reloading while offline (isolated
+with a throwaway test to confirm it reproduces with no app code at all, and that the identical scenario
+already passes on both Chromium projects — see DECISIONS.md for the full writeup). `npm run gates` now runs
+`phone-webkit` for real (82 e2e tests across gates 5-6) and passes clean; Gate 7's Lighthouse score is
+99/100. Also re-ran the balance sim once more (300 games, MCTS/Normal) as M7's "final balance report":
+26.7% win rate, matching iteration 12's confirmed 27.0% — confirms this session's changes didn't move
+balance. With that, every M7 item except the final release/`ios`/`submit` pushes and the closing report is
+now done. Next session: re-try the two standing blockers once as usual; if either clears, the very next
+thing to do is `npm run release`, since gates/e2e/balance are all in a shippable state right now.
 
 ## Tasks
 
@@ -543,8 +560,14 @@ in forced dark theme`) plus manual dark-mode screenshot verification of the EXPA
 - [ ] Release, push `ios-<n>`, then push `store-<n>`
 
 ### M7 Hardening (final 18 hours; no new features)
-- [x] (partial) long fuzz run of 50,000 RandomBot games — run early (see Current milestone/DECISIONS.md):
-  0 exceptions, 0 invariant failures, every game ended by round 10. Still open: the final balance report.
+- [x] long fuzz run of 50,000 RandomBot games — run early (see Current milestone/DECISIONS.md): 0
+  exceptions, 0 invariant failures, every game ended by round 10.
+- [x] final balance report: re-ran the 12-iteration-loop's final content at 300 games (MCTS/Normal/all
+  pairs) as a fresh confirmation post-loop — win rate 26.7%, matching iteration 12's confirmed 27.0% within
+  sampling noise, all loss-reason floors still hold (publicTrust 36.8%, lostLand 15.5%, pressureDeckEmpty
+  47.7%). Confirms this session's e2e/test-only changes didn't touch balance. The 45-60% Normal win-rate
+  target and the 12-point pair-spread target remain unmet after the full 12-iteration cap (SPEC 9.4's own
+  exit clause) — a known, accepted shortfall for the final report, not a new problem.
 - [x] full e2e suite on both sizes, run for real for the first time this session — this sandbox got a real
   Playwright WebKit binary installed (previously only a pinned Chromium existed, so `phone-webkit` silently
   never ran; see DECISIONS.md). Found and fixed 3 real bugs this exposed (all logged in DECISIONS.md):
