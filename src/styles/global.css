@@ -633,6 +633,19 @@ h3 {
     min-height: 32px;
     padding: 6px 10px;
   }
+
+  /* The topbar's 5 items (Round/Trust/Lost Land/Rift/Menu) wrap to 2 rows in the centre column's ~596px
+     width (measured at 111px tall vs. a single row's ~44px), the 3rd-largest contributor after `.actions`
+     and the map. Tightening gap/padding and the Menu button's own padding keeps every label readable
+     (still 16px body text, nothing shrunk) while buying back a row on desktop's wider text. */
+  .topbar {
+    gap: 4px;
+    padding: 6px 8px;
+  }
+
+  .topbar button {
+    padding: 8px 10px;
+  }
 }
 
 button {

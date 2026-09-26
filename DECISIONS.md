@@ -887,3 +887,17 @@ Format: date, decision, reason.
   either a further centre-column trim (candidates: the plan-strip's own padding, the map's remaining 320px)
   or a genuinely collapsible/paginated card-list design, left for a session with room to weigh the
   trade-offs rather than another quick CSS pass.
+- 2026-09-26 (~12:12-12:25 UTC, same session): A third dent in the same SPEC 10.3 gap. Measured each
+  centre-column section's height directly: `.topbar` (Round/Trust/Lost Land/Rift/Menu, 5 items) was 111px —
+  it was wrapping to 2 rows even in the centre column's ~596px width, the 3rd-largest contributor after
+  `.actions` (306px) and the map (320px). Tightened `.topbar`'s gap/padding and the Menu button's own
+  padding (desktop-only, same `.game`-scoped media block as the `.actions`/map fixes) — nothing shrunk in
+  font size, so every label stays exactly as legible, it just wraps less. Verified with a screenshot: one
+  row, no overlap, "Lost Land left 10" (the longest label) still fits with room. Re-measured 3 times:
+  topbar now consistently 56px (single row), centre column shortfall down to ~220-327px (from ~292-365px).
+  `npm run check` (286 tests) and the full `npm run gates` (64 e2e, 16 axe, Lighthouse) all re-run clean.
+  Updated `e2e/desktop-no-scroll.spec.ts`'s skip reasoning again. Stopping the centre-column squeeze here
+  for this session — three separate, verified, low-risk dents (`.actions` grid, map shrink + log cap,
+  topbar) is a reasonable chunk of incremental progress without over-fitting one CSS file for an entire
+  session; the right column (Market/Cath's Plan card density) and the remaining centre-column gap are still
+  open, same hand-off as every prior session here.

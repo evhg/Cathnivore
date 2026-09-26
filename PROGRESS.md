@@ -1079,6 +1079,12 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   padding on desktop. Centre column now ~292-365px short (from ~341-422px). `npm run check`/`npm run gates`
   both clean (64 e2e, 16 axe, Lighthouse 98/100); action buttons still read and click cleanly. Still real,
   still `test.skip`'d — see DECISIONS.md.
+- [x] SPEC 10.3 desktop no-scroll gap, a third dent same session: the topbar (5 items) was wrapping to 2
+  rows (111px) even in the centre column's own width. Tightened its gap/padding (no font-size change, so
+  legibility is untouched) — down to a single 56px row. Centre column now ~220-327px short (from
+  ~292-365px). `npm run check`/`npm run gates` clean. Stopping the centre-column squeeze here for this
+  session (three verified dents is a reasonable chunk without over-fitting one file all session); right
+  column card density and the remaining gap stay open — see DECISIONS.md.
 
 ### M7 Hardening (final 18 hours; no new features)
 - [x] long fuzz run of 50,000 RandomBot games — run early (see Current milestone/DECISIONS.md): 0
