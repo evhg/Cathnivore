@@ -37,6 +37,18 @@ test('the real Solo AI teammate (MCTSBot in a Worker) takes its turn after the h
   // still finish well within a few seconds, not hang.
   await expect(page.locator('.active-producer strong')).not.toHaveText(firstName, { timeout: 15_000 })
 
+  // SPEC 9.2: "Each AI action shows a one-line reason in the log." Confirms the reason `aiWorker.ts`
+  // computed for the teammate's real move actually reaches the Log sheet, not just that a move happened.
+  // On desktop the Log is always visible inline (SPEC 10.3); on phone it needs the "Log" toggle first. The
+  // active-producer name flips to Tomas the instant his turn *starts* (`advanceTurnIfNeeded`), before the
+  // Worker round-trip that actually picks and logs his move — so the log line itself needs its own wait,
+  // not just the producer-name change above.
+  const logToggle = page.getByRole('button', { name: 'Log' })
+  if (await logToggle.isVisible().catch(() => false)) await logToggle.click()
+  const firstLogLine = page.locator('.log-sheet li').first()
+  await expect(firstLogLine).toContainText('Tomas', { timeout: 15_000 })
+  expect(await firstLogLine.innerText()).toMatch(/Tomas .*\. .+\./)
+
   expect(errors).toEqual([])
   expect(consoleErrors).toEqual([])
 })
