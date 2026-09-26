@@ -544,9 +544,14 @@ in forced dark theme`) plus manual dark-mode screenshot verification of the EXPA
 
 ### M7 Hardening (final 18 hours; no new features)
 - [x] (partial) long fuzz run of 50,000 RandomBot games — run early (see Current milestone/DECISIONS.md):
-  0 exceptions, 0 invariant failures, every game ended by round 10. Still open: the full e2e suite on both
-  sizes as a *final* pass (running it now would just be redone once more content/fixes land) and the final
-  balance report.
+  0 exceptions, 0 invariant failures, every game ended by round 10. Still open: the final balance report.
+- [x] full e2e suite on both sizes, run for real for the first time this session — this sandbox got a real
+  Playwright WebKit binary installed (previously only a pinned Chromium existed, so `phone-webkit` silently
+  never ran; see DECISIONS.md). Found and fixed 3 real bugs this exposed (all logged in DECISIONS.md):
+  `store-screenshots.spec.ts` running under every project instead of only its own, `ai-teammate.spec.ts`'s
+  CPU-throttling test using a Chromium-only API with no browser guard, and a WebKit-specific
+  offline-reload sandbox limitation. `npm run gates` now runs the real `phone-webkit` project end to end
+  (gates 5-6, 82 e2e tests total) and passes clean; gate 7's Lighthouse score is 99/100.
 - [x] README covering how to play, how to run it locally and how it was built — written early (plenty of
   `DEADLINE` time remains; this is pure documentation, not a new feature, so there's no reason to wait for
   M7 proper). Covers the game briefly, points to the live site and `PROGRESS.md` for the iPhone app's

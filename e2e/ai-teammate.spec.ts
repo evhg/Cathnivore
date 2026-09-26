@@ -46,7 +46,14 @@ test('the real Solo AI teammate (MCTSBot in a Worker) takes its turn after the h
 // simulation-count one, so it should hold up under throttling by construction — fewer simulations run in
 // the same ~400ms window, but the window itself doesn't get longer. This measures the real thing end to
 // end (turn-change to turn-change, across the real Worker) rather than assuming that holds.
-test('AI teammate decision stays under 1 second with 4x CPU throttling (SPEC 11.4 gate 7)', async ({ page }) => {
+test('AI teammate decision stays under 1 second with 4x CPU throttling (SPEC 11.4 gate 7)', async ({
+  page,
+  browserName,
+}) => {
+  // CDP (`newCDPSession`) only exists in Chromium — this measures the same real Worker-backed teammate as
+  // the test above, so running it once on a Chromium project is sufficient; the throttled-timing claim
+  // isn't browser-engine-specific.
+  test.skip(browserName !== 'chromium', 'CDP CPU throttling is only available in Chromium')
   const client = await page.context().newCDPSession(page)
   await client.send('Emulation.setCPUThrottlingRate', { rate: 4 })
 

@@ -22,6 +22,12 @@ export default defineConfig({
   projects: [
     {
       name: 'phone',
+      // store-screenshots.spec.ts (below) is only meant for the dedicated `store-screenshots` project's
+      // 428x926/deviceScaleFactor-3 viewport — without this it also runs here by default (every project
+      // matches every e2e/*.spec.ts file unless excluded), where its "Cath's Plan" button is `mobile-only`
+      // but still fits this viewport, so it passed, but redundantly re-generated store assets and burned
+      // gate time.
+      testIgnore: 'e2e/store-screenshots.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 390, height: 844 },
@@ -31,6 +37,10 @@ export default defineConfig({
     },
     {
       name: 'desktop-chromium',
+      // Same reason as `phone` above — and here it's a real failure, not just redundant: the "Cath's Plan"
+      // button store-screenshots.spec.ts clicks is CSS `mobile-only`, so it's never actionable at this
+      // viewport's 1024px+ desktop breakpoint.
+      testIgnore: 'e2e/store-screenshots.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1440, height: 900 },
@@ -39,6 +49,8 @@ export default defineConfig({
     },
     {
       name: 'phone-webkit',
+      // Same reason as `phone` above.
+      testIgnore: 'e2e/store-screenshots.spec.ts',
       use: { ...devices['iPhone 13'], viewport: { width: 390, height: 844 } },
     },
     {
