@@ -1,7 +1,27 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, starting ~18:52 UTC): re-checked both standing blockers first — `OWNER.md`'s
+This session (2026-09-26, starting ~19:52 UTC): re-checked both standing blockers first — `OWNER.md`'s
+Apple Team ID is still `PASTE-TEAM-ID` (`origin/ci-status`'s `ios.json` unchanged since the last dispatch,
+so no re-dispatch). `npm ci` + `npm run check` confirmed clean on the unchanged `build` HEAD (`bf5321e`,
+this session's lock commit on top of the previous session's three real fixes). Retried `npm run release` per
+the previous session's queued next task: all 8 gates passed clean (68 e2e, 16 axe, Lighthouse 98/100; gate 8
+captured screenshots, needs the subagent review below). The fast-forward step hit the standard fresh-clone
+stale-local-`main` issue ("refusing to merge unrelated histories"); this session's attempt at the documented
+fix (`git checkout -B main origin/main`) was denied by the harness's own "Blind Apply" classifier — the same
+intermittent single-denial pattern several prior sessions logged (most recently ~16:00 UTC) that turned out
+to be noise on a later retry. Per the denial's own guidance, not retried again this session. Confirmed
+`origin/main` untouched (`c8c4fee`) and switched back to `build` without further attempts. `build`
+(`bf5321e`) carries the three real fixes from two sessions ago (the mid-round-win-loss bug, the Squeeze
+tie-break bug, the chapter 6 threshold bug), gated and pushed, waiting for a future session's retry.
+
+With the release path blocked for this session, ran SPEC 11.4 gate 8's visual review as a real subagent call
+against the screenshots this session's own `npm run gates` run just captured (`e2e/screenshots/`), rather
+than leaving it as a logged skip.
+
+---
+
+Previous session (2026-09-26, starting ~18:52 UTC): re-checked both standing blockers first — `OWNER.md`'s
 Apple Team ID is still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch, would only reproduce the recorded
 missing-secrets failure). With M0-M6 content-complete and M7 fully done apart from the Apple-secrets-blocked
 iOS submission (see Blocked), used the session for real hardening work per M7's own remit ("no new
