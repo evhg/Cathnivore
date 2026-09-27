@@ -2568,3 +2568,17 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   legend icon now shows a real six-petal outline, distinguishable by shape alone in the greyscale
   screenshot. `npx tsc -b`, `npm run build` and a fresh Chromium screenshot pass (both projects) confirm the
   fix; `npm run check` (390+ tests) stays clean.
+- 2026-09-27 (same session, ~12:15 UTC): 2 more review subagents came back clean, no new findings:
+  1. Tag-scaling Improvements (Veg Box Round + Market Day Banner + Field Notes App) vs. SPEC 7: all three
+     use a shared `tagCount` helper, compute their bonus once at purchase (a permanent snapshot, matching
+     "counted when bought" — never recomputed at Harvest), and correctly count their own tag ("including
+     this one"). `FarmSheet.tsx`'s tag-count display is a live current-tableau total, not a per-card
+     snapshot, so it doesn't diverge from any already-bought card's locked-in bonus (informational, not
+     misleading). This exact area was already confirmed once before (DECISIONS.md's 2026-09-26 entry) and
+     holds on re-verification.
+  2. `index.html`/the generated `manifest.webmanifest`/`vercel.json` CSP vs. SPEC 10.5/11.1/11.5/15 and
+     STYLE.md 13: title/meta/OG tags, favicon/icon links (both root and `/cathnivore/`-subpath copies),
+     manifest `start_url`/`scope` (`/cathnivore/`, correct post-portfolio-move), theme/background colours
+     matching `--paper`, and the exact title-screen footer text were all verified correct against real build
+     output. No stray inline-style CSP conflict (already fixed in an earlier session, re-confirmed still
+     fixed). No actionable findings.
