@@ -37,7 +37,7 @@ export function reasonForAction(state: GameState, action: Action): string {
     case 'openStall': {
       const name = REGIONS[action.region].name
       const region = state.regions[action.region]
-      const wouldLiberate = region.outlets === 0 && region.buyouts === 0 && region.doubt === 0
+      const wouldLiberate = !region.liberated && region.outlets === 0 && region.buyouts === 0 && region.doubt === 0
       if (wouldLiberate) return `Liberating ${name}.`
       const target = targetedNextRound(state, action.region)
       if (target) return `Reinforcing ${name} before it's ${target === 'squeeze' ? 'squeezed' : 'expanded'} next round.`

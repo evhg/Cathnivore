@@ -6,6 +6,7 @@ import { PRODUCERS, ALL_PRODUCER_IDS } from '../content/producers'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { REGIONS } from '../content/map'
 import { ACTION_TERMS, GLOSSARY_TERMS, entryDomId, type GlossaryEntry } from '../content/terms'
+import { ACTIONS_PER_ROUND } from '../engine/region'
 
 interface Props {
   onClose(): void
@@ -112,7 +113,7 @@ export default function RulesReference({ onClose, initialTerm }: Props) {
       {nothingFound && <p className="rules-empty">No matches for "{query}".</p>}
 
       {actions.length > 0 && (
-        <Section title="Actions (3 per producer per round)">
+        <Section title={`Actions (${ACTIONS_PER_ROUND} per producer per round)`}>
           <EntryList entries={actions} activeTerm={initialTerm} />
         </Section>
       )}

@@ -3,6 +3,7 @@ import { addOutlets, countGameStats, countLiberated } from './pieces'
 import { shuffle } from './rng'
 import { hasImprovement, improvementCount } from './producer'
 import { PRODUCERS } from '../content/producers'
+import { ACTIONS_PER_ROUND } from './region'
 import type { GameState, ProducerId } from './types'
 
 function nextProducer(state: GameState, current: ProducerId): ProducerId | null {
@@ -64,7 +65,7 @@ function cleanup(state: GameState): GameState {
     round: next.round + 1,
     firstPlayer: newFirstPlayer,
     activeProducer: newFirstPlayer,
-    actionsLeft: 3,
+    actionsLeft: ACTIONS_PER_ROUND,
     squeezeSkip: [],
     expandSkip: [],
     producers: Object.fromEntries(
@@ -138,7 +139,7 @@ export function advanceTurnIfNeeded(state: GameState): GameState {
 
   const next = nextProducer(state, state.activeProducer)
   if (next) {
-    return { ...state, activeProducer: next, actionsLeft: 3 }
+    return { ...state, activeProducer: next, actionsLeft: ACTIONS_PER_ROUND }
   }
 
   let afterEnemy = runEnemyTurn(state)

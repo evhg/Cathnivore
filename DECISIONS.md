@@ -2155,3 +2155,238 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   DECISIONS.md history, is still in place), `ios/App`'s Info.plist/ExportOptions.plist/AppDelegate/
   SceneDelegate/capacitor.config settings, and `store/` metadata's character limits and satire-disclosure
   wording -- checked out clean. Diff reviewed by hand before committing, not trusted at face value.
+- 2026-09-27 (same session): a dedicated review subagent audited `src/platform/storage.ts` end to end
+  (never had its own review pass before, only incidental fixes found in passing) and found a real bug:
+  `loadCampaign()` only checked `parsed.version`, not the shape of `parsed.completed`. Every reader of that
+  field (`markChapterComplete` here, and the campaign chapter list in `App.tsx`) calls `.includes`/spreads
+  it as an array with no defensive fallback (unlike `chapterLossCounts`, which every writer guards with
+  `?? {}`), so a same-version campaign save with a missing or corrupted `completed` field would crash
+  uncaught -- SPEC 11.3's "This save is from an older version" flow only covers game saves, not campaign
+  progress, so this would have been a bare ErrorBoundary crash from just opening the Campaign menu. Fixed
+  by also checking `Array.isArray(parsed.completed)` and resetting to a fresh `CampaignProgress` on failure,
+  same as a version mismatch already does. `tests/storage.test.ts` grew from 15 to 17 tests. Diff and tests
+  verified by hand before committing.
+- 2026-09-27 (same session): released `build` to `main` twice this session. The first (`302e285`) went
+  clean end to end. The second, carrying the `storage.ts` fix above (`c3e1a09`), hit a real complication:
+  `npm run release`'s HTTP smoke-test fallback failed with `curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL`
+  against `/cathnivore/` -- a different failure signature from the documented `ERR_CERT_AUTHORITY_INVALID`
+  sandbox artifact, but a network-layer error rather than a real HTTP failure (a non-2xx, a wrong commit,
+  missing content) -- and the script auto-reverted `main` back to `302e285` (new commit `69ea2d7`). Per
+  CLAUDE.md's explicit instruction for this exact situation ("cross-check by hand with curl... instead of
+  trusting the script's own revert decision"), checked by hand rather than accepting the revert: a curl
+  taken *before* the revert's own deploy had propagated had already shown `c3e1a09` live and fully healthy
+  (`version.json` matching, `/`/`/cathnivore/`/`/runnel/` all 200) -- direct evidence the smoke-test failure
+  was transient/network-layer, not a real problem with the release. Corrected it with `git revert --no-edit
+  69ea2d7` on `main` (verified the resulting tree exactly matches `c3e1a09` via `git diff c3e1a09 HEAD`
+  before pushing) rather than leaving the good commit reverted or force-pushing over the script's own commit
+  history. Polled `version.json` until it showed the new commit (`53d37ff`, ~75s), then ran 4 repeated
+  curl passes against `/`, `/cathnivore/`, `/runnel/`, `/privacy/` and `version.json` -- all 200, all
+  matching, no flakiness across the repeated checks. `main` is now healthy at `53d37ff` (tree-identical to
+  `build`'s `c3e1a09`), carrying the `storage.ts` crash fix live. This is the first time this specific
+  SSL_ERROR_SYSCALL failure mode has been seen (as opposed to the documented cert-authority one); worth
+  watching for in future sessions as possibly the same class of sandbox-proxy artifact under a different
+  error message, not a new standing restriction.
+- 2026-09-27 (session starting ~08:51 UTC): looked for genuinely unreviewed code by cross-referencing
+  `src/ui`'s helper modules against DECISIONS.md's own mention count, on the theory used by several recent
+  sessions that files with zero dedicated review passes are the most likely place a real bug still hides.
+  `src/ui/enemyTurnLog.ts` had zero mentions (every sibling helper — `actionLabel.ts`, `gameLog.ts`,
+  `undo.ts` — had at least one). Found a real STYLE.md 12 violation on first read: the `'liberated'` caption
+  ("... liberated by Mara!") ended with an exclamation mark, which STYLE.md 12 bans outright ("No exclamation
+  marks and no emoji anywhere in the interface") — this is enemy-turn playback UI text (SPEC 10.2), not story
+  or Cath's-voice text, so SPEC 3.2's "at most one exclamation mark per chapter" allowance for her voice
+  doesn't apply here either. Fixed by changing it to a period, matching every other caption in the same
+  function. Added a regression test enumerating one instance of every `GameEvent` type `captionFor()`
+  handles and asserting none contain `!`, so a future caption change can't reintroduce this silently.
+  Verified with `npx vitest run tests/enemy-turn-playback.test.ts` (3/3) and a full `npm run check` (clean).
+- 2026-09-27 (same session, ~09:03 UTC): dispatched 2 concurrent review subagents (CLAUDE.md's 2-cap) at
+  files with the fewest DECISIONS.md mentions — a proxy for "never had a dedicated adversarial pass" that
+  found the enemyTurnLog.ts bug above. One (content data: agenda.ts/pressure.ts/characters.ts vs SPEC 3/4.7)
+  came back clean, but flagged pressure.ts as having zero dedicated test coverage (every existing test
+  reaches pressureDeck only via scriptedPressure overrides) — added `tests/pressure.test.ts` asserting the
+  real `unshuffledPressureDeck()`'s stage sizes, per-stage region-type sets, Capital's single Stage-II-only
+  appearance, and total count (all passed first try, the data itself was already correct).
+  The other (rift.ts/region.ts/rules.ts vs SPEC 4.6-4.8) found a real rules bug: SPEC 5's Grass Roots Scheme
+  ("Open a Stall for free in any region bordering a liberated region") had its `legalTargets` filtered
+  through region.ts's `canOpenStallIn`, which also enforces SPEC 4.6.1's ordinary-Open-Stall adjacency rule
+  (the acting producer needs a Stall in-region or in a neighbour) — a condition SPEC 5 never states for this
+  card. This silently blocked Grass Roots exactly when it would matter most: a producer with no Stall
+  network near a teammate's freshly-liberated region, i.e. the "piggyback on someone else's liberation to
+  open a beachhead elsewhere" case the card's own flavour line ("Roots first. Then shoots. Then lawyers.")
+  implies. Confirmed by hand: traced the exact code path, verified `canOpenStallIn`'s adjacency check does
+  fire even when the target only borders (not equals) the liberated region, and confirmed no existing test
+  exercised a target with zero adjacency to the acting producer's Stalls (kingsmarket-stall-cap.test.ts's
+  Grass Roots case happens to place a Stall adjacent to the target, masking the bug). Fixed by splitting
+  `canOpenStallIn` into `canPlaceStall` (Kingsmarket guard + Stall cap only) and `canOpenStallIn`
+  (`canPlaceStall` + adjacency); Grass Roots now uses `canPlaceStall`. Added a regression test
+  (tests/invest-scheme.test.ts) using Rivermead/Saltmarsh specifically because neither borders Mara's home
+  (her only starting Stall), verified it fails on the pre-fix code and passes after. `npm run check` clean,
+  376/376 unit tests. Per SPEC 1.3's priority order, rule correctness (priority 2) outranks balance
+  (priority 5); Grass Roots' play rate has never been flagged as a balance-target violation in any of the
+  12 completed balance-loop iterations, so this fix is not expected to meaningfully shift Normal's win rate,
+  and the balance loop itself is already closed per its own 12-iteration exit clause (SPEC 9.4) — not
+  re-running it solely for this fix, but flagging here in case a future session's spot-check sim looks
+  different from prior runs and needs an explanation.
+- 2026-09-27 (same session, ~09:14-09:21 UTC): dispatched 2 more concurrent review subagents at the next
+  lowest-DECISIONS.md-mention files, continuing the pattern above.
+  One (src/ai/reason.ts, src/content/endLines.ts) found two real issues: (1) reason.ts's openStall reason
+  said "Liberating X." whenever a region's outlets/buyouts/doubt were already 0, without also checking
+  `!region.liberated` — true for a *second* Stall opened in an already-liberated region (SPEC 4.6.1 permits
+  this, up to the cap), so the AI teammate's log would repeatedly claim to be liberating a region it freed
+  turns earlier. Fixed by adding the `!region.liberated` check; added a regression test. (2)
+  tests/end-lines.test.ts allowed up to one "!" per End-screen line, citing SPEC 3.2's "at most one
+  exclamation mark per chapter" — but that allowance is scoped to Cath's chapter-scene dialogue (already
+  enforced separately by tests/story.test.ts), not the End screen, which is interface UI STYLE.md 12 governs
+  with a flat zero-exclamation-marks rule. No live content violated it (WIN_LINE/LOSS_LINE both already have
+  zero), but the test itself would have silently let a future edit add one. Tightened to zero.
+  The other (src/engine/api.ts, src/engine/state.ts) found a real, more consequential bug: rng.ts's
+  `nextFloat` did `let t = (rng.seed += 0x6d2b79f5)`, mutating the caller's `RngState` object directly
+  instead of only returning a new one, violating SPEC 9.1's "never mutates its input" contract. Traced the
+  real risk: `round.ts`'s `cleanup()` does `let rng = state.rng` (an alias, not a copy), so reshuffling the
+  scheme discard pile there would mutate `state.rng.seed` on the original `GameState` object — and
+  `Game.tsx`'s undo stack pushes that exact pre-action `GameState` reference (not a deep clone) before each
+  human action, so an undo taken after a round that reshuffled a discard pile could resume from a `GameState`
+  whose `rng.seed` had been silently corrupted after the snapshot was taken, diverging from what `replay()`
+  would reconstruct from the action log alone. Fixed to compute the new seed without touching `rng.seed`;
+  confirmed the PRNG's output sequence is byte-identical (full test suite passes unchanged, including every
+  determinism/replay test). Added tests/rng.test.ts (5 tests: purity of nextFloat/nextInt/shuffle, reuse-
+  safety, determinism); confirmed 4 of 5 fail on the pre-fix code.
+  The same subagent also suggested two `validate()` additions matching its own doc comment's "slots
+  consistent" claim: Market/Cath's Plan should stay exactly 4/3 slots (added, both real invariants, tested)
+  and a Stall-cap invariant (SPEC 4.6.1). Implemented and tested the Stall-cap one too, but its own test
+  immediately caught it firing on a legitimate 60-random-action playthrough (brindleHills ending with 3
+  Stalls against a cap of 2, i.e. 1 Lost Land token had landed there after the 3rd Stall was already legally
+  placed) — traced this to be correct, intended behavior: SPEC 4.6.1's cap only gates *placing a new* Stall
+  (`canOpenStallIn`), and nothing in section 4 requires retroactively removing Stalls when a later Lost Land
+  token shrinks a region's cap (Squeeze's own, separate, narrower Stall-removal rule already exists for that
+  situation). Reverted that one check as a false invariant discovered by its own regression test, rather than
+  force a real reachable state to report as broken — a useful example of the "add a test, let it prove
+  itself" discipline paying off in the negative direction too.
+- 2026-09-27 ~09:53 UTC (new session, lock taken at 09:51 UTC): re-attempted the previous session's logged
+  release-merge plan (`git checkout -B main origin/main && git merge --no-ff build`, net tree diff verified
+  empty against `origin/main`'s revert-and-revert-the-revert pair) to unblock the standing `build`/`main`
+  divergence. The `git checkout -B main origin/main` step was denied by the harness's "Blind Apply"
+  classifier before running (no local branch change occurred; still on `build` at `2d15b41`, verified after).
+  Per the denial's own guidance, not retried this session, and per CLAUDE.md/SPEC 1.1 this isn't a question
+  for the owner to answer — logged and moved to other build work. This is a new denial reason on this exact
+  command (prior sessions' identical command hit "Blind Apply" once before too, in an earlier blocker entry,
+  and it turned out to be transient noise cleared by a later session's retry) — worth a plain retry next
+  session before assuming it's a new standing restriction.
+- 2026-09-27 (same session, ~09:56-10:00 UTC): dispatched 2 more concurrent review subagents (CLAUDE.md's
+  cap) at the next-lowest-mention files. One (src/ai/random.ts, src/ai/heuristic.ts, src/engine/producer.ts)
+  came back clean -- RandomBot genuinely uniform, HeuristicBot's greedy search and its
+  liberation/Squeeze-protection weighting both match SPEC 9.2, producer.ts is pure/non-mutating. Noted
+  `addResources` in producer.ts looks unused (no call sites found), not treated as a bug.
+  The other (5 story files + Credits.tsx + EnemyTurnPlayback.tsx) found one real bug: SPEC 8.2 chapter 5's
+  closing twist calls for a montage replaying "three of his [Pip's] helpful tutorial lines from chapters 1
+  to 4" -- but `friends-in-low-places.ts`'s montage only had two distinct chapter-1 Pip lines available to
+  draw from (chapters 2-4 have no Pip dialogue at all), so its third "line" was just a truncated repeat of
+  the first clause of the first line. Fixed by adding a genuine third Pip line to chapter 1's opening
+  (`fresh-meat.ts`: "I keep a tally of every Stall in Marrow. Habit of the job. Or so I always say.") that
+  foreshadows the informant reveal (ties into the montage's own new closing line, "He was counting badges
+  for the other one"), then using that as the montage's real third line instead of the duplicate. Kept the
+  montage sourced entirely from chapter 1 rather than inventing new dialogue for chapters 2-4 (which have
+  different producers/stories and no natural place for a Pip cameo) -- "three of his chapter-1-to-4 lines"
+  is satisfied since chapter 1 is within that range, and this is a much smaller, safer change than adding
+  Pip to 3 more chapters this late in the build. Both files stay under the 12-line/scene and 160-char/line
+  caps. Re-ran `npm run gates` (already in flight when the fix landed, so it captured screenshots of the
+  *pre-fix* text -- a stale `vite preview` process on port 4173 was reusing an old `dist/` build even after a
+  fresh `npm run build`, a real footgun for this sandbox worth remembering: kill any lingering `vite preview`
+  before re-running Playwright screenshot specs after an edit) and re-ran `e2e/screenshots.spec.ts` alone
+  after a clean rebuild + killing the stale preview server; both sizes of the chapter-1 scene screenshot
+  read cleanly with the new line, no overflow or STYLE.md issues. `tests/story.test.ts`/`tests/end-lines.
+  test.ts` still pass.
+- 2026-09-27 (same session, ~10:00-10:03 UTC): dispatched 2 more concurrent review subagents (CLAUDE.md's
+  cap) at the next-lowest-mention files. Both came back clean, no fixes needed:
+  1. src/engine/rules.ts, src/content/map.ts, src/content/producers.ts vs SPEC 4.2/4.6/4.6.1/4.8/6 -- rules.ts
+     turned out to be just the campaign rule-toggle object (the actual mechanics live in region.ts/actions.ts/
+     round.ts/pieces.ts/enemy.ts, all cross-checked anyway and correct); map.ts's regions/types/ring adjacency
+     match SPEC 4.2 exactly; producers.ts matches SPEC 6's table exactly except Sol's Produce production
+     (2 in code vs 1 in the SPEC table), already explained by the logged balance-loop iteration 12 entry.
+  2. src/ui/FarmSheet.tsx, ErrorBoundary.tsx, Tooltip.tsx, actionLabel.ts, gameLog.ts vs SPEC 10/11.3 -- tag
+     counts, Resume-From-Last-Autosave's `?autoresume=1` handoff to App.tsx, Copy Bug Report's contents, and
+     every Action/GameEvent variant's switch coverage all check out. One low-confidence, unverifiable watch
+     item (not fixed): Tooltip.tsx ORs a `hovering` flag (set by both mouse hover *and* keyboard focus/blur)
+     with a separately-toggled `pinned` flag. On a touch device where a tap both focuses the button (Chrome/
+     Android does this; WebKit/iOS traditionally does not) and fires the click that toggles `pinned`, the
+     first tap opens it via both flags, and a second tap toggling `pinned` back to false can leave `hovering`
+     stuck true (no real `blur` occurs since focus never left the button), so the tooltip doesn't close until
+     something else moves focus away. This is real browser/device-dependent event-ordering behavior that
+     can't be confirmed or exercised from source alone or via jsdom (which doesn't reproduce the platform-
+     specific tap-to-focus quirk), so -- matching this project's established "don't force-fix an unconfirmed
+     reachable state" discipline (see the reverted Stall-cap invariant entry above) -- logging as a watch
+     item for a future session with real-device access rather than guessing at a fix now.
+- 2026-09-27 (same session, ~10:03-10:05 UTC): dispatched 2 more concurrent review subagents (CLAUDE.md's
+  cap), targeting content-data correctness and the engine purity/determinism contract specifically.
+  1. src/content/schemes.ts vs SPEC 5, src/content/improvements.ts vs SPEC 7 -- both clean. All 6 mandated
+     Schemes and all 6 mandated Improvements present verbatim (name/cost/tags/effect); counts correct (30
+     Schemes, 36 main-deck Improvements); mix ratios within tolerance of SPEC's rough targets; cost/length
+     ranges respected; spot-checked non-mandated cards' text against their actual implementation and it
+     matches. Re-confirmed the already-logged Wholesome Hollow Contract count (1 copy in code vs SPEC 7's
+     literal "3 copies") is the deliberate, measured balance-loop fix already in this file, not a new finding.
+  2. src/engine/state.ts, api.ts, region.ts vs SPEC 9.1's purity/mutation/determinism contract -- no real
+     mutation or determinism bugs (every state.ts writer uses fresh spreads, region.ts is read-only, no
+     Math.random/Date.now anywhere in src/engine). The one thing it flagged as a "bug" -- `validate()` never
+     asserting `regionStallTotal(region) <= stallCap(region)` despite SPEC 9.1 saying validate should check
+     "Stall caps respected" -- is **not new**: this exact check was implemented and then deliberately reverted
+     earlier in this same build (see the entry above, ~09:14-09:21 UTC pass logging the "add a test, let it
+     prove itself" story) after its own regression test caught it firing on a legitimate reachable state (a
+     Lost Land token shrinking a region's cap below its already-legally-placed Stall count -- SPEC 4.6.1's cap
+     only gates *placing a new* Stall, nothing requires retroactively removing existing ones). Left unchanged;
+     noting here in case a future session's own audit rediscovers the same absence and needs the explanation
+     without re-reading the full older entry.
+- 2026-09-27 (same session, ~10:05-10:08 UTC): last 2 concurrent review subagents (CLAUDE.md's cap) this
+  session, targeting enemy-turn/difficulty logic and campaign chapter config. Both came back essentially
+  clean:
+  1. src/content/chapters.ts vs SPEC 8.2 -- every chapter's region set, rules-on flags, win condition,
+     scripted state and carry-over check out and are wired into real engine paths (not dead config). The
+     2 discrepancies it flagged (ch2's "Public Trust above 0" goal being unenforceable since Squeeze/Agenda/
+     Schemes are all off there; ch3's scripted Pressure deck running ~16 rounds vs SPEC's literal "8") are
+     both already-deliberate, already-logged balance/scope decisions (DECISIONS.md ~179-210, ~766), not new
+     findings.
+  2. src/engine/enemy.ts vs SPEC 4.5/4.7, src/content/difficulty.ts vs SPEC 4.9 -- Scout/Expand/Squeeze/
+     Agenda/pool-exhaustion logic all verified correct against the spec text, line by line. One real
+     (documentation-only) bug: SPEC 4.9's own note claims "this table is kept in sync with the tuned code,"
+     but it wasn't -- two Easy-only difficulty.ts levers added by later 2026-09-27 sessions
+     (`extraHomeStalls`, `kingsmarketBuyouts`) and the 300-game 75.3% confirmation that closed out Easy's
+     balance-loop pace work were never folded back into SPEC.md's table/note. Fixed: added both levers to
+     the Extra-setup table cell and the 75.3%/300-game confirmation to the note, so the "kept in sync" claim
+     is true again. No code changed, no tests reference SPEC.md's prose directly (grepped tests/ for
+     "SPEC.md", zero hits), so this carries no gate risk.
+- 2026-09-27 (same session, ~10:11-10:13 UTC): fixed the 2 real findings from the last review pair above.
+  (1) SPEC 10.5 drift risk: "3 actions per producer per round" was a bare literal repeated in 4 places
+  (state.ts, round.ts x2, Game.tsx's ActionsLeftIcon) with RulesReference.tsx's section title as a 5th,
+  untested copy -- a future balance change to the real value could silently leave the rules text wrong.
+  Added `ACTIONS_PER_ROUND` to region.ts (the file's existing home for SPEC-4.6-adjacent constants like
+  `stallCap`) and pointed all 5 sites at it, including interpolating it into RulesReference's title.
+  (2) SPEC 10.5 accuracy gap: `terms.ts`'s Open Stall glossary body said "Maximum 3 Stalls per region" as a
+  flat cap, omitting SPEC 4.6.1's "minus 1 per Lost Land token there, never below 1" -- which the engine
+  (region.ts's `stallCap`) does implement, so a player reading the glossary in a Lost-Land-damaged region
+  would be misled. Appended the missing clause to the glossary text. `npx tsc -b` and `npm run check`
+  (384/384 tests, build clean) both pass after both fixes.
+- 2026-09-27 (same session, ~10:08-10:13 UTC): final 2 concurrent review subagents (CLAUDE.md's cap) this
+  session. src/ai/aiWorker.ts + mcts.ts vs SPEC 9.2's 600-sim/400ms budget, worker-failure fallback and
+  per-simulation deck reshuffling, plus src/platform/settings.ts (all 4 SPEC 10.1 settings, Reset's real
+  2-step confirmation) and haptics.ts (STYLE.md's 4 trigger conditions) all came back clean, no issues.
+  src/ai/evaluation.ts vs SPEC 9.2's eval-function description also came back clean (every term correctly
+  signed/clamped/live, `expandCoverage`'s 0 weight re-confirmed as the already-logged deliberate revert).
+  The same pass's 2 real RulesReference.tsx/terms.ts findings (the ACTIONS_PER_ROUND drift risk and the
+  Open Stall Lost-Land clause) are fixed in the entry above. After the fix: `npx playwright test
+  --project=phone` (50 tests) passes clean.
+- 2026-09-27 (same session, ~10:16-10:20 UTC): last 2 concurrent review subagents (CLAUDE.md's cap) this
+  session, both UI-interaction-focused. One (LogSheet.tsx, the undo mechanism) came back fully clean --
+  worth noting for future sessions that undo works by snapshotting the pre-action `GameState` (not by
+  calling `replay()` as SPEC 4.6's prose literally suggests), which is safe only because the whole engine
+  is strictly immutable (already verified this session, see the state.ts/api.ts/region.ts entry above) --
+  a spec-wording/implementation naming mismatch, not a bug.
+  The other (MarketSheet/CathsPlanSheet/Scene/Setup) found 2 small real issues, both fixed:
+  (1) Setup.tsx's optional seed field: a non-numeric paste silently coerced to seed 0 via `parseInt` ->
+  `NaN` -> `seed >>> 0` in rng.ts, indistinguishable from actually typing "0". Fixed to fall back to a
+  fresh random seed on `NaN` instead.
+  (2) actions.ts's `scheme` case cleared a played Scheme's Cath's Plan slot with a blanket
+  `.map(id => id === card.id ? null : id)`, while the structurally identical `invest` case a few lines
+  above already uses `removeFirst` specifically because chapter 3's scripted Market can hold duplicate
+  card ids (3x Wholesome Hollow Contract) and a blanket null-out would empty every matching slot at once.
+  No scripted-duplicate Scheme exists today so this was latent, not live, but it's the same trap the
+  Market code already has a fix and a comment for -- made `scheme` use `removeFirst` too, for symmetry and
+  to close the trap before any future scripted content hits it. `npx tsc -b` and `npx vitest run`
+  (384/384) both pass clean after both fixes.

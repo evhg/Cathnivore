@@ -99,6 +99,12 @@ export function validate(state: GameState): ValidationError[] {
     push(`agenda deck/discard/current total mismatch: ${agendaTotal} != ${AGENDA_CARDS.length}`)
   }
 
+  // SPEC 4.3/7: the Market always shows exactly 4 slots (empty ones stay null, SPEC 7's "if the deck is
+  // empty, empty spaces stay empty" — the array itself never shrinks or grows).
+  if (state.market.length !== 4) push(`market has ${state.market.length} slots, expected 4`)
+  // SPEC 4.3/5: Cath's Plan always shows exactly 3 slots, same reasoning as the Market above.
+  if (state.cathsPlan.length !== 3) push(`cathsPlan has ${state.cathsPlan.length} slots, expected 3`)
+
   // SPEC 7/5: Improvements bought stay permanently in a tableau; Schemes played go to the discard pile.
   const marketCount = state.market.filter((id) => id !== null).length
   const ownedImprovements = Object.values(state.producers).reduce((n, p) => n + p.improvements.length, 0)

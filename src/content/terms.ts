@@ -11,7 +11,7 @@ export interface GlossaryEntry {
 }
 
 export const ACTION_TERMS: GlossaryEntry[] = [
-  { term: 'Open Stall', body: 'Pay 1 Produce and place one of your Stalls in a region that contains your Stall or borders a region that does. Maximum 3 Stalls per region (all producers combined).' },
+  { term: 'Open Stall', body: 'Pay 1 Produce and place one of your Stalls in a region that contains your Stall or borders a region that does. Maximum 3 Stalls per region (all producers combined), minus 1 per Lost Land token there, never below 1.' },
   { term: 'Supply', body: 'In a region with your Stall, either pay 2 Produce per Outlet to remove up to 2 Outlets, or pay 3 Produce to remove 1 Buyout (needs at least 2 Stalls in the region).' },
   { term: 'Rebut', body: 'In a region with your Stall, pay 1 Goodwill per Doubt to remove up to 2 Doubt.' },
   { term: 'Invest', body: 'Buy one face-up Improvement from the Market by paying its Marks cost. It joins your tableau and its Market space stays empty until cleanup.' },

@@ -389,7 +389,10 @@ export function applyAction(state: GameState, action: Action): GameState {
       next = card.effect(next, producer, target)
       next = {
         ...next,
-        cathsPlan: next.cathsPlan.map((id) => (id === card.id ? null : id)),
+        // `removeFirst` (not a blanket `.map`), for the same reason as `invest`'s Market clear above: a
+        // future scripted Cath's Plan holding two copies of the same Scheme id must only clear the one
+        // played, not every matching slot at once.
+        cathsPlan: removeFirst(next.cathsPlan, card.id),
         schemeDiscard: [...next.schemeDiscard, card.id],
         freeSchemePlays: useFreePlay ? next.freeSchemePlays - 1 : next.freeSchemePlays,
         log: [...next.log, { type: 'schemePlayed', producer, schemeId: card.id, target }],

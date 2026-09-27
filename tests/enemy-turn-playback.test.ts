@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createGame } from '../src/engine/state'
 import { applyAction, legalActions } from '../src/engine/actions'
 import { enemyTurnEvents, captionFor } from '../src/ui/enemyTurnLog'
-import type { GameConfig } from '../src/engine/types'
+import type { GameConfig, GameEvent } from '../src/engine/types'
 
 // SPEC 10.2: the enemy turn plays back as a caption per step. `enemyTurnEvents` picks out exactly the
 // log entries added by the enemy turn (agenda onward) from one `applyAction` call, and every one of
@@ -30,6 +30,23 @@ describe('enemy turn playback', () => {
     expect(events[0]!.type).toBe('agenda')
     for (const event of events) {
       expect(captionFor(event)).not.toBe('')
+    }
+  })
+
+  // STYLE.md 12: "No exclamation marks and no emoji anywhere in the interface." Enemy-turn captions are
+  // interface text, not story or Cath's-voice text, so none of the caption forms may use one.
+  it('never uses an exclamation mark, for any event type', () => {
+    const events: GameEvent[] = [
+      { type: 'agenda', cardId: 'h1', bonusSkipped: false },
+      { type: 'scout', region: 'highmoor', doubtAdded: true },
+      { type: 'expand', region: 'highmoor', piece: 'outlet' },
+      { type: 'squeeze', region: 'highmoor', lostLand: true, stallRemoved: true, trustLoss: 2 },
+      { type: 'squeeze', region: 'highmoor', lostLand: false, stallRemoved: false, trustLoss: 0 },
+      { type: 'liberated', region: 'highmoor', producer: 'mara' },
+      { type: 'riftSplit', faction: 'hollowell' },
+    ]
+    for (const event of events) {
+      expect(captionFor(event)).not.toContain('!')
     }
   })
 

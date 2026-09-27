@@ -10,6 +10,7 @@ export const SCENES: Record<'opening' | 'closing', Scene> = {
       { speaker: 'Mara', line: 'They sell my own cattle back to my neighbours, cheaper. I looked into suing. There is no law against being awful.' },
       { speaker: 'Cath', line: "There's a market stall, though. And a farmer who still shows up to it." },
       { speaker: 'Pip', line: "Pip Talbot, market inspector. I clip badges, I don't take sides. Open a Stall here and you're back in business." },
+      { speaker: 'Pip', line: "I keep a tally of every Stall in Marrow. Habit of the job. Or so I always say." },
       { speaker: 'Cath', line: 'One stall. One farmer. Against a company with a marketing department. Normal Tuesday, honestly.' },
     ],
   },

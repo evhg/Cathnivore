@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../src/content/endLines'
 
-// SPEC 4.8's end-screen "short story line", in Cath's voice (section 3.2: short sentences, at most one
-// exclamation mark). Same 160-character cap tests/story.test.ts already enforces for scene lines.
+// SPEC 4.8's end-screen "short story line", in Cath's voice (section 3.2's short-sentence style). Same
+// 160-character cap tests/story.test.ts already enforces for scene lines.
 describe('end-of-game story lines', () => {
   const allLines = [WIN_LINE, ...Object.values(LOSS_LINE)]
 
@@ -12,9 +12,14 @@ describe('end-of-game story lines', () => {
     }
   })
 
-  it('has at most one exclamation mark per line', () => {
+  // These lines render on the End screen (Game.tsx), which is interface UI, not a story chapter's
+  // dialogue — SPEC 3.2's "at most one exclamation mark per chapter" allowance is scoped to Cath's
+  // chapter-scene voice (already enforced separately by tests/story.test.ts) and doesn't apply here.
+  // STYLE.md 12 governs the End screen instead: "No exclamation marks and no emoji anywhere in the
+  // interface" — zero, with no exception.
+  it('has no exclamation marks (STYLE.md 12: interface text allows none)', () => {
     for (const line of allLines) {
-      expect((line.match(/!/g) ?? []).length, line).toBeLessThanOrEqual(1)
+      expect(line).not.toContain('!')
     }
   })
 
