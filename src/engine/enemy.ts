@@ -275,6 +275,9 @@ export function runEnemyTurn(state: GameState): GameState {
   const rules = resolveRules(state)
   let next = rules.agenda ? resolveAgenda(state) : state
   if (next.result) return next
+  if (next.publicTrust <= 0) {
+    return { ...next, result: { won: false, lossReason: 'publicTrust', regionsLiberated: countLiberated(next), round: next.round, ...countGameStats(next) } }
+  }
   next = rules.squeeze ? resolveSqueeze(next) : next
   if (next.result) return next
   next = rules.expand ? resolveExpand(next) : next

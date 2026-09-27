@@ -115,3 +115,34 @@ describe('Rift 3 "Cracks" skips Agenda bonus effects but not the main effect (SP
     expect(entry).toEqual({ type: 'agenda', cardId: 'hollowell-sunny-the-silo', bonusSkipped: false })
   })
 })
+
+// SPEC 4.8: "Lose immediately if: Public Trust reaches 0." An Agenda effect can drop Public Trust to 0 on
+// its own (e.g. "Candor-funded study finds 'natural' is a risk factor'"'s -1 per 2+-Doubt region). Squeeze
+// is disabled here specifically so `resolveSqueeze`'s own incidental Public-Trust check (the only other
+// place the engine checked this) can't be mistaken for a real, general check.
+describe('Public Trust hitting 0 from an Agenda effect ends the game immediately (SPEC 4.8)', () => {
+  it('sets result.lossReason to publicTrust without ever reaching Squeeze/Expand/Scout', () => {
+    const config: GameConfig = {
+      ...FULL_CONFIG,
+      rulesEnabled: { agenda: true, squeeze: false, expand: false, sell: true, improvements: true, schemes: true, roles: true, rebut: true },
+    }
+    let state = createGame(config, 1)
+    state = {
+      ...state,
+      publicTrust: 1,
+      regions: {
+        ...state.regions,
+        brindleHills: { ...state.regions.brindleHills, doubt: 2 },
+        highmoor: { ...state.regions.highmoor, doubt: 2 },
+      },
+    }
+    state = { ...state, agendaDeck: ['candor-natural-risk-factor', ...state.agendaDeck.filter((c) => c !== 'candor-natural-risk-factor')] }
+
+    const after = runEnemyTurn(state)
+
+    expect(after.publicTrust).toBe(0)
+    expect(after.result?.won).toBe(false)
+    expect(after.result?.lossReason).toBe('publicTrust')
+    expect(after.result?.regionsLiberated).toBe(0)
+  })
+})

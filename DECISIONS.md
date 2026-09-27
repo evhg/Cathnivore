@@ -2390,3 +2390,18 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   Market code already has a fix and a comment for -- made `scheme` use `removeFirst` too, for symmetry and
   to close the trap before any future scripted content hits it. `npx tsc -b` and `npx vitest run`
   (384/384) both pass clean after both fixes.
+  to close the trap before any future scripted content hits it. `npx tsc -b` and `npx vitest run`
+- 2026-09-27 (new session, ~11:05 UTC): a review subagent found a real, previously-unlogged bug: SPEC 4.8's
+  "Lose immediately if: Public Trust reaches 0" was only checked inside `resolveSqueeze`'s per-region loop
+  (`src/engine/enemy.ts` ~225), which only runs when a non-liberated region actually matches the round's
+  Squeeze card. Two Agenda effects (`candor-natural-risk-factor`, `candor-more-research-needed`,
+  `src/content/agenda.ts`) can drop Public Trust to 0 on their own via `loseTrust`, with no check anywhere
+  else in `runEnemyTurn` — if that same round's Squeeze card doesn't match any remaining region (late game,
+  most regions already liberated, or the target region is skipped via Mara's Injunction/the Sunlight
+  Scheme), the game would keep running with Trust pinned at 0 instead of ending. Fixed by adding the same
+  `publicTrust <= 0` check `runEnemyTurn` (enemy.ts) already does after Squeeze, right after `resolveAgenda`
+  too, before Squeeze/Expand/Scout run. Added a regression test (`tests/agenda.test.ts`, Squeeze disabled so
+  the fix under test can't be confused with the pre-existing Squeeze-loop check) that forces
+  `candor-natural-risk-factor` with 2 Doubt-heavy regions and Trust at 1, confirming `result.lossReason ===
+  'publicTrust'` fires from the Agenda step alone. `npm run check` (388 tests) and `npx vitest run
+  tests/agenda.test.ts` both pass clean.
