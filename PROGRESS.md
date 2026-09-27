@@ -1,6 +1,60 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~19:51 UTC): standard session start, lock taken, `ci.json` green,
+`ios.json` unchanged (still blocked on Apple secrets, `OWNER.md`'s Team ID still a placeholder — not
+re-dispatched, no point per the prior session's own logged reasoning). `DEADLINE` has ~90 hours left, no
+M7-only restriction. `npm ci` + `npm run check` clean. Ran a full `npm run gates`: all 8 gates passed (gate
+8's screenshot review done with 2 subagents, phone + desktop, CLAUDE.md's cap) — no new blocking findings
+(one already-addressed piece-legibility item re-confirmed clean by direct zoom, one "1 Marks" pluralization
+"bug" that's actually this codebase's consistent, intentional convention throughout, not a real bug).
+Attempted `npm run release`: gates passed, hit the usual stale-local-`main` fast-forward failure, and the
+documented manual fix was denied as one unit by the harness's "Production Deploy" classifier before running.
+`origin/main` confirmed untouched at `93bdc55`. Not retried per its own guidance — see Blocked.
+
+With the release path blocked, ran two more adversarial subagent correctness audits (2 at once, CLAUDE.md's
+cap) of content not recently re-derived from SPEC.md's own text: all 24 Agenda cards, and all 37
+Improvements. **Found and fixed a real bug** (SPEC 1.3 priority #2): 7 Agenda cards target Kingsmarket by a
+literal id and bypassed the liberated-region exemption a 2026-09-26 session had already fixed for *computed*
+targets ("most/fewest Stalls") but missed for this literal-id case — SPEC 4.8 requires every Agenda card to
+skip liberated regions unless it explicitly says otherwise, and none of these 7 do. Fixed with a small
+`addToKingsmarket()` liberation-checked wrapper in `src/content/agenda.ts`, routed all 7 call sites through
+it, and added 7 regression tests. Verified: `npx tsc -b`, `npm run check` (405 tests), and a 300-game quick
+fuzz all pass. Full detail in DECISIONS.md. Pushed the fix to `build` (`08f0da7`).
+
+The Improvements audit found no correctness bugs, only a minor `tests/rules-text.test.ts` coverage gap
+(resource/Rift-changing cards and the campaign-only Wholesome Hollow Contract weren't numerically checked
+against their text — hand-verified correct at the time, but nothing would have caught future drift). Closed
+it this same session: extended the existing per-card test to also diff `resources` and `rift` (not just
+`production`), and folded `CAMPAIGN_IMPROVEMENTS` into the loop. `npm run check` (407 tests) and the quick
+fuzz both pass clean. Pushed (`712f7a6`).
+
+Also re-checked the standing, already-diagnosed "one-round-longer-than-stated" scripted-Pressure pacing
+item (PROGRESS.md's own Tasks/M5 log): confirmed directly (not just re-reading the old note) that chapters
+1 and 5 were already fixed by a 2026-09-26 session, and that chapters 3/4 were already correctly found
+*not* to have this bug (ch3's goal text no longer states a round count at all, matching its deliberate
+16-round redesign; ch4 never had one) — nothing left to do there, no new finding.
+
+The Improvements audit's item 2 also flagged that 3 Supply-discount cards (Mobile Butcher, Wholesale Crate
+Deal, Harbour Stall Licence — SPEC 7's per-region-type "Supply costs 1 less Produce per Outlet") had no
+direct unit test of their own (SPEC 11.4 gate 2). Closed it: 6 new tests in `tests/invest-scheme.test.ts`
+(one confirming the discount, one confirming it doesn't apply to another region type, per card).
+`npm run check` (413 tests) and the quick fuzz both pass clean. Pushed (`8626e4d`).
+
+While looking for the next bounded gap, checked Schemes' test coverage the same way (every id grepped
+against `tests/`) and found a much bigger version of the same gate-2 gap: **23 of 30 Schemes had zero test
+anywhere that called their `effect`** — `rules-text.test.ts`'s Scheme check only covers `text`/`line`/`cost`
+shape. Closed it with a new `tests/schemes-effects.test.ts`: one stocked board where every targeting shape
+(a Stall-owning region, any Stall-owning region, a non-liberated region, a liberated-region border) has a
+legal target, playing every Scheme for real through `applyAction` and checking a clean `validate()` plus the
+shared "empties its Plan slot" postcondition. All 30 pass. `npm run check` (443 tests, up from 413) and the
+quick fuzz both pass clean. Pushed (`d0b6676`). Full detail (including a pool-invariant mistake in the first
+draft of the board setup, caught and fixed before committing) in DECISIONS.md.
+
+Wrapping up with `build` fully gated again, plus two real correctness fixes and three test-coverage
+improvements landed this session, and releasing the lock.
+
+---
 This session (2026-09-27, starting ~18:51 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json` unchanged (still blocked on Apple secrets — `OWNER.md`'s Apple Team ID is still
 `PASTE-TEAM-ID`, not re-dispatched). `DEADLINE` has ~90 hours left, no M7-only restriction. `npm ci` +

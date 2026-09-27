@@ -2874,3 +2874,56 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   Outlet/Buyout/Doubt are now clearly distinct silhouettes in greyscale at both phone and desktop sizes, with
   headroom left in the hex even at 5 stacked pieces. `npm run build`'s bundle size is unaffected (no new
   dependencies, one added constant and one adjusted transform string).
+- 2026-09-27 (~20:03 UTC): a fresh adversarial subagent audit of `src/content/agenda.ts` (SPEC 1.3 priority
+  #2, "rules correctly implemented") found a real bug not caught by the earlier session that fixed 3 similar
+  cases (2026-09-26, extremal-pick targets bypassing `nonLiberated()`): 7 cards target Kingsmarket by its
+  literal id (`hollowell-farmhouse-range`'s bonus, `hollowell-loyalty-card`'s bonus, `hollowell-listening-
+  tour`'s bonus, `hollowell-store-opening`'s effect, `hollowell-friendly-buyout-offer`'s bonus, `candor-
+  clarifies-clarification`'s effect, `candor-independent-panel`'s effect), so they never went through that
+  same filter — the earlier fix only covered computed picks ("most/fewest Stalls"), not a hardcoded id.
+  SPEC 4.8: "Agenda cards cannot place pieces there unless the card says 'even liberated regions.'" None of
+  these do, and Kingsmarket can be liberated well before the game ends (win needs 5 liberated regions total,
+  of which Kingsmarket is one, so a liberated-Kingsmarket-but-still-playing state is reachable) — in that
+  window these 7 cards could still add an Outlet/Buyout/Doubt there, silently stripping its Co-op marker
+  per SPEC 4.8's "loses its Co-op marker if it ever ... gains an enemy piece." Verified the claim directly by
+  reading `pieces.ts`'s `addOutlets`/`addBuyout`/`addDoubt` (confirmed no liberation guard of their own) before
+  trusting the subagent's report, per this file's own standing lesson about verifying gate-8-style claims.
+  Fixed with a small `addToKingsmarket(state, add)` wrapper (checks `state.regions.kingsmarket.liberated`
+  before calling through) and routed all 7 call sites through it — same fix shape as the earlier
+  `nonLiberated()`-based one, just for a literal id instead of a computed target. Added 7 new regression
+  tests (`tests/agenda.test.ts`, one per card, liberating Kingsmarket first and asserting the targeted field
+  stays 0 and `liberated` stays true). `npx tsc -b`, `npm run check` (405 tests) and a quick fuzz (200
+  RandomBot + 100 HeuristicBot, 0 exceptions/invariant failures) all pass. A parallel subagent audit of
+  `src/content/improvements.ts` (37 cards) found no correctness bugs, only a minor `tests/rules-text.test.ts`
+  coverage gap (resource/Rift-changing cards and the campaign-only card aren't numerically checked against
+  their text, though hand-verified correct) — closed the same session (see the next entry).
+- 2026-09-27 (~20:05 UTC): closed the `tests/rules-text.test.ts` coverage gap the Improvements audit above
+  flagged: extended the existing per-Improvement test to also diff `resources` (for "Immediately gain N X"
+  one-off cards) and `rift` (for the few Media cards that raise it on purchase), not just `production`, and
+  folded `CAMPAIGN_IMPROVEMENTS` (the Wholesome Hollow Contract) into the same loop so it's checked too.
+  Hit one real assertion mismatch while writing it: Winter Larder's text ("Immediately gain 2 Produce and 1
+  Goodwill") doesn't repeat the word "gain" before each resource, so the naive `gain ${delta} ${noun}` check
+  failed on its Goodwill half — fixed the check to look for `${delta} ${noun}` alone (the actual convention
+  every multi-resource card's text follows), not a per-resource repeat of "gain". `npm run check` (407
+  tests) and a quick fuzz pass clean.
+- 2026-09-27 (~20:09 UTC): the Improvements audit's item 2 also flagged that Mobile Butcher, Wholesale Crate
+  Deal and Harbour Stall Licence's own Supply-per-Outlet discounts (SPEC 7) had no direct unit test — only
+  Harbour Stall Licence's id showed up incidentally in a Wholesale Account floor test, never exercising its
+  own discount. Added 6 tests to `tests/invest-scheme.test.ts` (one confirming the discount in its own
+  region type, one confirming no discount in a different type, per card, reusing the existing
+  `withImprovement`/`richMara` helpers plus a new `withOutletRegion`). `npm run check` (413 tests) and a
+  quick fuzz pass clean.
+- 2026-09-27 (~20:13 UTC): while looking for the next bounded gap, checked Schemes' test coverage the same
+  way (grepping every Scheme id against `tests/`) and found a much larger version of the same gate-2 gap:
+  23 of 30 Schemes had zero test anywhere that called their `effect` — `tests/rules-text.test.ts`'s "Scheme
+  rules text" block only checks `text`/`line`/`cost` shape, never plays the card. Closed it with a new
+  `tests/schemes-effects.test.ts`: one board (`richBoard`), stocked via the real pool-tracking
+  `addOutlets`/`addBuyout`/`addDoubt`/`removeOutlets` helpers (not direct region-object overwrites, which a
+  first attempt used and which broke `validate()`'s pool-total invariant — piece counts must move through
+  the pool, not just the region) so every targeting shape has a legal target at once: Brindle Hills (Mara's
+  home) carries extra Outlets/a Buyout/Doubt for every "region/any region with a Stall" scheme, and a
+  liberated Highmoor gives Grass Roots a "borders a liberated region" target. Every Scheme is then played
+  for real through `applyAction` (found via `legalActions`, not hand-built, so the exact legal shape is
+  exercised) and checked for a clean `validate()` plus the shared "empties its Plan slot and discards itself"
+  postcondition (SPEC 5). All 30 pass on the first stocked-board attempt once the pool-safe setup was fixed.
+  `npm run check` (443 tests, up from 407) and a quick fuzz both pass clean.
