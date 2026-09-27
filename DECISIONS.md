@@ -2024,3 +2024,23 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   - Hard's own settings are untouched).
 - 2026-09-27: **Owner instruction (given in a chat session, not a build session):** make cathnivore.com the landing page for a portfolio of games, with Cathnivore as the first game and a second game of Claude's choosing, and a full-screen animated landing page that looks great on high-resolution desktops and iPhones. Done in that chat session: the landing page (`site/`, a WebGL shader of hex farmland at dusk, with a CSS fallback and a still frame for reduced motion); **Runnel** (`games/runnel/`), a daily hex irrigation puzzle, chosen because it is a quick visit that complements a 45-minute strategy game, is set in the same farm world, and every puzzle can be proved solvable by construction (unit tests generate 600 puzzles and solve them); Cathnivore moved to `/cathnivore/`, with a separate site build so the iPhone app and the existing gates are unaffected; a self-removing root service worker for players who have the old offline copy (checked by simulating a returning player: they reach the landing page in about 4 s); the site e2e suite added to gate 5; and the live smoke test extended. See SPEC 15.
 - 2026-09-27 (owner's chat session): fixed two defects in `scripts/release.ts` found while releasing the portfolio. (1) Revert-on-failure used `git revert <range>`, which crashes on any merge commit in the range, so a real smoke-test failure could have left `main` broken. It now makes one forward commit that restores the previous tree (`git read-tree -u --reset`), with no history rewrite. (2) The Chromium smoke test always fails in these sandboxes on the proxy's `ERR_CERT_AUTHORITY_INVALID` (and sometimes `ERR_TOO_MANY_RETRIES`). Once revert worked, every release would have rolled itself back; this is likely what happened to `deploy-9`. Those errors now make the browser check "inconclusive", and the release is then verified by an HTTP check through curl: `version.json` shows the new commit, and the landing page, Runnel, Cathnivore and every file they reference return 200. It reverts only if that fails too. No TLS verification is disabled.
+- 2026-09-27 (~04:52-05:20 UTC session): continued the Easy balance-loop track. Widened
+  `lostLandPool` 16 -> 20 (one number, per SPEC 9.3), then re-ran a 100-game MCTSBot Easy spot check:
+  50.0%, statistically indistinguishable from the prior 53.0% at pool=16 (both well within a 100-game
+  sample's ~5-point noise band) — so this step alone did not move the win rate. But the loss-reason
+  breakdown shifted meaningfully: `lostLand`'s share dropped to 0% (was already fading at pool=16) while
+  `pressureDeckEmpty` rose to 78.0% (from 63.8%) and `publicTrust` fell to 22.0%. **Conclusion: Lost Land
+  is no longer Easy's bottleneck at all — the games that don't win are running out of rounds (the
+  Pressure deck empties) before liberating 5 regions, not losing to a track.** Widening `lostLandPool`
+  further is very unlikely to help from here; it already stopped being the limiting resource. Kept the
+  20 value (it's harmless — still gated, still clean — and a real per-game effect, just not the deciding
+  one) rather than reverting, since SPEC 9.4's floor rules don't forbid a 0% lostLand share, only require
+  it clear >=15% on Normal specifically. **Queued for a future session:** the next lever to try for Easy
+  is something that speeds up liberation pace itself, since neither of SPEC 4.9's two numeric knobs
+  (`publicTrust`, `lostLandPool`) touches that directly. The table's third column, "extra setup" (currently
+  "none" for Easy, matching Normal), is the natural place: SPEC 4.9 already uses it for Hard's asymmetric
+  penalty ("+1 Doubt in each Pasture region, +1 Outlet in Kingsmarket"), so a symmetric Easy-side
+  *advantage* there (for example, 1 fewer starting Outlet per region, or an extra starting Stall) would be
+  in-spec and would attack the actual bottleneck (pace) rather than the loss tracks a 100-game sample just
+  showed aren't binding anymore. Not implemented this session — wanted the loss-reason evidence logged
+  and reviewed before spending another slow MCTSBot confirmation run on a specific number.
