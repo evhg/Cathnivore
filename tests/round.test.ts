@@ -27,12 +27,6 @@ function grindOneAction(state: GameState): GameState {
   return applyAction(state, { kind: 'graft' })
 }
 
-function grindActions(state: GameState, n: number): GameState {
-  let next = state
-  for (let i = 0; i < n; i++) next = grindOneAction(next)
-  return next
-}
-
 describe('SPEC 4.3/4.5.2/4.5.4: first player at setup, alternation, and turn order', () => {
   it('makes config.producers[0] the first player and activeProducer from round 1 (SPEC 4.3 step 6)', () => {
     const state = createGame(FULL_CONFIG, 1)
