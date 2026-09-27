@@ -67,11 +67,8 @@ export default function MarketSheet({
               <li key={id} className="card-enter">
                 <details>
                   <summary>
-                    <strong>{card.name}</strong> —{' '}
-                    <Tooltip term="Marks">
-                      <MarksIcon /> {card.cost} Marks
-                    </Tooltip>{' '}
-                    ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+                    <strong>{card.name}</strong> — <MarksIcon /> {card.cost} Marks (
+                    {card.tags.map((t) => TAG_LABEL[t]).join(', ')})
                   </summary>
                   <p className="card-text">{card.text}</p>
                   {card.flavor && <p className="card-flavor">{card.flavor}</p>}

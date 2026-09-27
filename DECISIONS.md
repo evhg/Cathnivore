@@ -2808,3 +2808,20 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   toggles `<details>` normally (`Tooltip`'s own `onClick` already calls `e.stopPropagation()`, which is what
   prevents the click from also reaching the summary's native toggle handler). No conflict, so wrapped both.
   `npx tsc -b`, `npm run check` (392 tests, build) and `tests/terms.test.ts` all pass clean.
+- 2026-09-27 (~17:15 UTC): **Correction to the ~17:05 UTC entry above.** That entry's manual Playwright
+  check only verified click/toggle *behavior* (the tooltip opens, `<details>` doesn't also toggle) and
+  concluded the nesting was safe — but a full `npm run gates` run afterward caught what the manual check
+  missed: axe's `no-focusable-content` rule (serious) correctly flags a focusable `<button>` nested inside
+  `<summary>` regardless of click-handler behavior, because `<summary>` is required to have no focusable
+  descendants for assistive tech (it's the sole native disclosure control). 2 gate-6 accessibility tests
+  failed (`game screen`, both themes) on `desktop-chromium`. Reverted both `<Tooltip>` wraps inside
+  `<summary>` in `MarketSheet.tsx`/`CathsPlanSheet.tsx`, back to plain text — same accessible, working state
+  prior sessions deliberately left in place. Re-ran the accessibility suite directly (`e2e/accessibility.spec.ts`,
+  desktop-chromium): 8/8 pass, including both previously-failing dark-theme cases. `npm run check` (392
+  tests, build) also clean. **Lesson for the record:** a manual smoke check of interactive *behavior* is not
+  a substitute for running the actual axe-based accessibility gate before treating an accessibility-adjacent
+  change as verified — the two catch different failure classes (nesting-legality vs. functional-conflict).
+  The desktop tooltip gap for the collapsed Market/Cath's Plan cost remains open, same as before this
+  session touched it: making it accessible needs the trigger moved to be a DOM sibling of `<summary>`
+  (not a descendant) with CSS to keep it visually aligned with the collapsed cost line — real layout work,
+  left for a future session rather than a second rushed attempt in this one.
