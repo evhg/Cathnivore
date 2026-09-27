@@ -57,7 +57,13 @@ at all. A generic block in `tests/agenda.test.ts` calls both on every card again
 pass on the first attempt. `npm run check` (467 tests, up from 443) and the quick fuzz both pass clean.
 Pushed (`da78fd9`).
 
-Wrapping up with `build` fully gated again, plus two real correctness fixes and four test-coverage
+Ran a final full `npm run gates` on the resulting `build` HEAD (`363a111`) to confirm nothing regressed
+across 5 commits of test-only + one small engine change: all 8 gates pass (70+28 e2e, 16 axe, Lighthouse
+99/100). Gate 8's own screenshot review wasn't re-run with fresh subagents — nothing touched this session
+changed any UI/rendering code, only `src/content/agenda.ts` (a pure data/engine fix with no visual surface)
+and test files, so the earlier-in-this-session 2-subagent review still applies.
+
+Wrapping up with `build` fully gated again, plus one real correctness fix and four test-coverage
 improvements landed this session, and releasing the lock.
 
 ---
