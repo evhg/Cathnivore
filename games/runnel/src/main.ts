@@ -161,20 +161,30 @@ function pauseClock(): void {
   save(data)
 }
 
+function checkDailyRollover(): void {
+  const now = utcDateString(new Date())
+  if (now !== today) {
+    today = now
+    if (mode === 'daily') openGame()
+  }
+}
+
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) pauseClock()
   else if (game && game.taps > 0) resumeClock()
   // A tab left open past midnight moves on to the new daily when it comes back.
-  const now = utcDateString(new Date())
-  if (!document.hidden && now !== today) {
-    today = now
-    if (mode === 'daily') openGame()
-  }
+  if (!document.hidden) checkDailyRollover()
 })
 
 window.setInterval(() => {
   if (startedAt) ui.hudTime.textContent = formatTime(elapsed())
 }, 250)
+
+// A tab left open and visible (never backgrounded) across UTC midnight also needs to roll over,
+// since visibilitychange alone never fires in that case. A coarse interval is enough for this.
+window.setInterval(() => {
+  if (!document.hidden) checkDailyRollover()
+}, 30_000)
 
 // ---- rendering --------------------------------------------------------------------------------------
 

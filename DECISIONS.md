@@ -2390,3 +2390,81 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   Market code already has a fix and a comment for -- made `scheme` use `removeFirst` too, for symmetry and
   to close the trap before any future scripted content hits it. `npx tsc -b` and `npx vitest run`
   (384/384) both pass clean after both fixes.
+  to close the trap before any future scripted content hits it. `npx tsc -b` and `npx vitest run`
+- 2026-09-27 (new session, ~11:05 UTC): a review subagent found a real, previously-unlogged bug: SPEC 4.8's
+  "Lose immediately if: Public Trust reaches 0" was only checked inside `resolveSqueeze`'s per-region loop
+  (`src/engine/enemy.ts` ~225), which only runs when a non-liberated region actually matches the round's
+  Squeeze card. Two Agenda effects (`candor-natural-risk-factor`, `candor-more-research-needed`,
+  `src/content/agenda.ts`) can drop Public Trust to 0 on their own via `loseTrust`, with no check anywhere
+  else in `runEnemyTurn` — if that same round's Squeeze card doesn't match any remaining region (late game,
+  most regions already liberated, or the target region is skipped via Mara's Injunction/the Sunlight
+  Scheme), the game would keep running with Trust pinned at 0 instead of ending. Fixed by adding the same
+  `publicTrust <= 0` check `runEnemyTurn` (enemy.ts) already does after Squeeze, right after `resolveAgenda`
+  too, before Squeeze/Expand/Scout run. Added a regression test (`tests/agenda.test.ts`, Squeeze disabled so
+  the fix under test can't be confused with the pre-existing Squeeze-loop check) that forces
+  `candor-natural-risk-factor` with 2 Doubt-heavy regions and Trust at 1, confirming `result.lossReason ===
+  'publicTrust'` fires from the Agenda step alone. `npm run check` (388 tests) and `npx vitest run
+  tests/agenda.test.ts` both pass clean.
+- 2026-09-27 (same session, ~11:12 UTC): a second review subagent (Runnel + site, less-reviewed code than
+  the main Cathnivore engine) found no correctness bugs in `games/runnel/src/engine.ts`'s daily-puzzle
+  seeding or win condition (both verified sound: UTC-only date derivation, deterministic RNG from the date
+  string, a spanning-tree channel layout that can't produce a false "solved" state regardless of rotation).
+  One real, minor gap: `games/runnel/src/main.ts`'s UTC-midnight daily rollover only ran inside the
+  `visibilitychange` listener, so a tab left open and visible (never backgrounded) across UTC midnight would
+  never roll over to the new daily puzzle in that session. Fixed by factoring the check into
+  `checkDailyRollover()` and also polling it every 30s from a new `setInterval` (coarse on purpose — no need
+  to check every render tick), alongside the existing `visibilitychange` call. `npx tsc -b` and
+  `npx vitest run tests/runnel.test.ts` (13 tests) both pass clean.
+- 2026-09-27 (same session, ~11:20 UTC): a third review subagent (sim harness + release.ts, less-reviewed
+  than the core engine) found one real, previously-unflagged bug: `sim/simCore.ts`'s `playOneGame` runs its
+  step loop `for (let step = 0; step < STEP_CAP; step++)` and only ever set `outcome.won`/`lossReason`/
+  `rounds` inside the `if (state.result)` branch before `break` — if a game somehow never reached
+  `state.result` within STEP_CAP (2000) steps (e.g. a future engine regression causing a decision loop),
+  the loop would simply exhaust and `outcome` fell through with its untouched defaults (`won: false,
+  lossReason: null, rounds: 0`), which `sim/run.ts` then counts as an ordinary loss bucketed under
+  `lossReasonShare`'s `'unknown'` key rather than the `crashes`/`invariantFailures` metrics SPEC 9.3 requires
+  to be 0 — exactly the class of failure those metrics exist to catch. The sibling harness `sim/fuzz.ts`
+  already handles the identical condition correctly. Fixed: after the loop, if `state.result` is still
+  unset, set `outcome.invariantFailure` to a descriptive message — `run.ts`'s existing `finished = outcomes
+  .filter(o => !o.crashed && !o.invariantFailure)` already routes this correctly into the invariant-failure
+  count instead of the loss-reason tally, no other change needed. No release.ts issues found (gates -> fast-
+  forward -> poll -> smoke test -> tag -> revert pipeline re-verified sound, matching the extensive prior
+  fixes already logged here). `npx tsc -b` clean; smoke-tested with a real 20-game RandomBot sim run (0
+  crashes/invariant failures, as expected — this bug only manifests on a genuine non-terminating game, which
+  doesn't happen in the current engine, so no existing sim output changes).
+- 2026-09-27 (same session, ~11:15 UTC): a fourth review subagent (iOS platform shell) found a real, serious
+  second bug hiding behind the already-logged missing-Apple-secrets `ios.yml` failure: no Xcode scheme was
+  ever committed at `ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme`. `ios.yml`'s `xcodebuild
+  -workspace App.xcodeproj/project.xcworkspace -scheme App ... archive` step needs a shared scheme named
+  "App" to exist on disk; without one, once real `ASC_KEY_ID`/`ASC_ISSUER_ID`/`ASC_KEY_P8`/`APPLE_TEAM_ID`
+  secrets finally appear, the workflow would get past signing setup only to die immediately at the archive
+  step with "The workspace named 'App' does not contain a scheme named 'App'" — a second, previously-
+  invisible blocker that nobody could have seen while the missing-secrets failure fired first every time.
+  Fixed: created the shared scheme file by hand (matching Xcode's own generated format for a single-target
+  app), referencing the real target from `project.pbxproj` (`504EC3031FED79650016851F`, name/productName
+  "App", `App.app` product). Validated as well-formed XML with `xmllint --noout` (no Xcode/macOS available
+  in this sandbox to open the project directly, so that's the limit of what could be verified here — a
+  future `ios.yml` dispatch, once Apple secrets exist, is the real end-to-end test). Also verified
+  `capacitor.config.ts`/`Info.plist` still match SPEC 11.6 exactly (device family, orientation, version,
+  encryption flag, bundle ID) — no other findings there. One cosmetic-only note (not fixed, not worth a
+  change): `externalLink.ts` statically imports `@capacitor/browser` instead of the dynamic-import-on-native
+  pattern `haptics.ts`/`splash.ts`/`statusBar.ts` use, but Vite still code-splits it into its own tiny chunk
+  either way, so there's no real behavior difference.
+- 2026-09-27 (same session, ~11:25 UTC): `npm run gates` (run again after this session's engine/sim/ios
+  fixes, to confirm nothing regressed before releasing) caught a real, new gate-6 failure:
+  `e2e-site/site.spec.ts`'s landing-page accessibility test failed on desktop with a serious color-contrast
+  violation (1.13:1 vs. the required 4.5:1) on the Runnel card's "New" `.badge`. The badge's own CSS
+  (`site/src/styles.css` line 332) has plenty of contrast (`#2b1d10` text on `--gold` `#f4c774`) — the
+  violation's actual computed colours (`#463527`/`#4f3d2f`, nearly identical to each other) only make sense
+  as a partial-opacity blend, which pointed at `styles.css`'s `.reveal`/`.ready .reveal` entrance animation
+  (`main.ts` adds `.ready` ~2 animation frames after load; each `.reveal` card then fades in over 1.1s with
+  a `--order`-based stagger). The accessibility test only waits for the H1 to be visible, not for that
+  animation to finish, so axe was scanning a genuine but transient mid-fade frame — not the actual persistent
+  UI, which (per `styles.css`'s already-existing `prefers-reduced-motion` block, `.ready .reveal { opacity: 1
+  }`) real users with that preference see immediately, and everyone else sees within ~2.3s regardless. Fixed
+  by giving this one test its own `reducedMotion: 'reduce'` browser context (matching the existing "still
+  works with reduced motion" test right above it in the same file), so it scans the real steady-state UI
+  instead of an animation frame — a one-line-of-intent fix, not a CSS/contrast change, since the steady state
+  was never actually broken. Re-ran just this test (4/4 pass, both projects) and then the full `npm run
+  gates` (gates 1-7 clean end to end; gate 8's screenshots are unchanged from this session's earlier clean
+  subagent review, since nothing visual changed).
