@@ -1,7 +1,54 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-27, starting ~07:51 UTC): standard session start — `git fetch --all`, checked out
+This session (2026-09-27, starting ~08:51 UTC): standard session start — `git fetch --all`, checked out
+`build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
+BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (unchanged from the
+previous session, `002f335`). `ci.json` confirmed green on that commit; `ios.json` unchanged (still blocked
+on `OWNER.md`'s placeholder Apple Team ID). Continued the previous several sessions' approach: hunt for
+files with the fewest DECISIONS.md mentions (a proxy for "never had its own dedicated adversarial pass")
+rather than re-confirming already-settled state.
+
+Found and fixed one real bug by hand: `src/ui/enemyTurnLog.ts` (zero DECISIONS.md mentions, unlike every
+sibling UI helper) had a `'liberated'` caption ending in an exclamation mark — a direct STYLE.md 12
+violation ("No exclamation marks and no emoji anywhere in the interface"; this is enemy-turn playback UI
+text, not story/Cath's-voice text, so SPEC 3.2's per-chapter allowance doesn't cover it). Fixed to a period,
+added a regression test covering every `GameEvent` type `captionFor()` handles.
+
+Dispatched 2 concurrent review subagents (CLAUDE.md's cap) at the next-lowest-mention files:
+1. Content data (agenda.ts/pressure.ts/characters.ts vs SPEC 3/4.7) — came back clean (all 4 mandated
+   Agenda cards verbatim, deck counts correct, character data consistent with the bible), but flagged
+   pressure.ts as having zero dedicated test coverage. Added `tests/pressure.test.ts` (6 tests) asserting
+   the real `unshuffledPressureDeck()`'s stage sizes, region-type sets, Capital's single Stage-II-only
+   appearance and total count — all passed immediately, the data itself was already right.
+2. Engine core rules (rift.ts/region.ts/rules.ts vs SPEC 4.6-4.8) — rift.ts and rules.ts came back clean,
+   but found a real rules bug in region.ts: SPEC 5's Grass Roots Scheme ("Open a Stall for free in any
+   region bordering a liberated region") was filtered through `canOpenStallIn`, which also silently
+   re-imposed SPEC 4.6.1's ordinary-Open-Stall adjacency rule (the acting producer needs a Stall in-region
+   or in a neighbour) — a condition SPEC 5 never states, defeating the card's purpose of letting a producer
+   piggyback on a teammate's liberation. Verified by hand, fixed by splitting `canOpenStallIn` into a new
+   `canPlaceStall` (guard + cap only, used by Grass Roots) and `canOpenStallIn` (`canPlaceStall` + adjacency,
+   still used by the ordinary action). Added a regression test (Rivermead/Saltmarsh, chosen so neither
+   borders Mara's only starting Stall) — confirmed it fails on the pre-fix code and passes after.
+
+`npm run check` clean throughout (376/376 unit tests by the end). Ran `npm run gates`: all 8 gates passed,
+including a real gate-8 subagent review of freshly captured screenshots (clean, no findings) and the real
+e2e/site/axe/Lighthouse suites (70 e2e + 28 site e2e + 16 axe, Lighthouse 98/100). Attempted `npm run
+release` to carry these 3 real fixes to `main`: this time the fast-forward step hit a genuine divergence
+(not the usual stale-local-`main` artifact) — see Blocked for the full diagnosis and the safe, verified-
+lossless fix (a real `--no-ff` merge, not a fast-forward) that a future session should run instead of the
+script's own fast-forward step. That merge command was denied by the harness before it ran; not retried,
+per the denial's own guidance. `origin/main` is confirmed untouched and healthy at `53d37ff`.
+
+Session tally: one STYLE.md violation fixed, one real rules bug fixed (Grass Roots), one test-coverage gap
+closed (pressure.ts), `build` (`42db466`) gated and pushed but not yet released to `main` (blocked this
+session on the merge-command denial above, not on the gates). Next session: standard start, retry the
+release via the documented merge fix in Blocked, re-check the Apple secrets as usual, and keep hunting
+low-DECISIONS.md-mention files for the next genuinely unreviewed corner.
+
+---
+
+Previous session (2026-09-27, starting ~07:51 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
 BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (unchanged from the
 previous session). Content is complete and the balance loop is closed (12/12 iterations used); the only
@@ -2191,6 +2238,21 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-27 ~09:08 UTC:** `npm run release` genuinely couldn't fast-forward this time (not the usual
+  stale-local-`main` artifact): `origin/main` (`53d37ff`) carries the previous session's live-smoke-test
+  revert-and-revert-the-revert pair (`69ea2d7`/`53d37ff`), 2 commits `build` never had, while `build`
+  (`42db466`) is 7 commits ahead of `origin/main`'s merge-base (`c3e1a09`) with this session's real work (the
+  STYLE.md exclamation-mark fix, the Pressure-deck test, the Grass Roots adjacency-rule fix — see Current
+  milestone/DECISIONS.md). Verified `git diff c3e1a09 53d37ff` is empty — the revert dance's net tree change
+  is zero, so a real 3-way merge (`git merge --no-ff build` on `main`, not a fast-forward) is safe and
+  lossless: main contributes no content, so the merge result equals `build`'s tree exactly. That merge
+  command itself was denied by the harness's "Production Deploy" classifier before it ran (no commit made,
+  `origin/main` confirmed untouched at `53d37ff`). Per the denial's own guidance, not retried this session.
+  `build` (`42db466`) is gated (all 8 gates passed, including a real gate-8 subagent screenshot review) and
+  pushed, waiting for a future session's retry: `git checkout -B main origin/main && git merge --no-ff build`
+  (a plain `npm run release` will hit the same ff-only failure first; the fix above is what to run instead of
+  the script's own fast-forward step, then resume from its push/poll/smoke-test steps by hand, the same
+  pattern every stale-local-`main` release before this one has used).
 - **New 2026-09-27 ~03:00 UTC:** with the real build/main divergence fixed (see Current milestone/DECISIONS.md
   — `origin/main` is now a genuine ancestor of `build`'s HEAD), `npm run release`'s fast-forward step still hit
   the stale-local-`main` symptom; the documented fix (`git checkout -B main origin/main`) was denied by the
