@@ -2582,3 +2582,30 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
      matching `--paper`, and the exact title-screen footer text were all verified correct against real build
      output. No stray inline-style CSP conflict (already fixed in an earlier session, re-confirmed still
      fixed). No actionable findings.
+- 2026-09-27 (same session, ~12:35 UTC): a review subagent found a genuine, previously-unverified gap: SPEC
+  9.4's exact per-card thresholds ("no Improvement/Scheme bought/played in >70% of games, with a win rate
+  when bought/played >15 points above average, or bought/played in <3% of games") were never actually
+  checked against those numeric limits during the M4 balance loop — every iteration verified the aggregate
+  win-rate/loss-reason/pair-spread targets but not this one, and `sim/reports/` is gitignored so the loop's
+  final report no longer exists to check retroactively. `sim/run.ts`'s report format itself is fine (already
+  captures `improvementWinRateWhenBought`/`schemeWinRateWhenPlayed`, matching SPEC 9.3 — re-confirmed, not a
+  new finding). Ran a fresh 200-game MCTSBot/Normal/all-pairs confirmation specifically to check this for
+  real (not a numbered balance-loop iteration — no content/weight change, and the loop is already closed at
+  12/12 per SPEC 9.4's own exit clause): win rate 48.0% (inside the 45-60% target, consistent with the loop's
+  final ~27%... no, consistent with a genuine Normal run, unlike the Hard run above), pair spread 39.4%-
+  57.6% (18.2 points, still outside the 12-point band, a known/already-logged shortfall), all loss-reason
+  floors clear. **One real per-card violation found:** "Op-ed Column" (8 Marks, +1 Goodwill production,
+  Rift +1) — bought in 11.0% of games (clears the 3%/70% bounds) but with a 72.7% win rate when bought vs.
+  the 48.0% overall average, a +24.7-point gap, over SPEC 9.4's 15-point limit. Likely explanation, not yet
+  confirmed: at 8 Marks it's one of the pricier Improvements, so affording it may correlate with an
+  already-winning economic position rather than causing the win itself — but this is a hypothesis, not a
+  verified explanation, and the numbers themselves are a real SPEC 9.4 miss on a 200-game sample (~22 games
+  bought it, so the delta carries real sampling noise too). **Logged as a known, unremediated shortfall**
+  rather than acted on this session: a real fix needs either a much larger confirmation run to separate
+  signal from 22-game noise, or a content change (a cost/effect nudge) re-run through the same balance-loop
+  discipline (>=1000 games, keep only if it moves metrics toward target) — both too large to start this late
+  in a session per CLAUDE.md's "don't start anything long after about 40 minutes." Next session's first
+  balance task: re-run this same 200-game (or larger) Normal check: if Op-ed Column's delta holds up at
+  scale, treat it as a real balance-loop candidate (a 13th "iteration" would exceed SPEC 9.4's 12-iteration
+  cap, so per the spec's own exit clause the honest move is probably to log it in the final report as a
+  known imbalance rather than reopen the loop, unless the delta turns out to be pure noise and shrinks).
