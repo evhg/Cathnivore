@@ -42,6 +42,23 @@ describe('reasonForAction', () => {
     expect(reasonForAction(cleared, action)).toBe('Liberating Highmoor.')
   })
 
+  // A second Stall can legally be opened in an already-liberated region (SPEC 4.6.1: up to the 3-Stall
+  // cap, region.ts's canOpenStallIn doesn't forbid it). That action liberates nothing — it was already
+  // liberated — so the reason must not claim it does.
+  it('does not claim liberation for a Stall opened in an already-liberated region', () => {
+    const state = baseState()
+    const region = state.regions.highmoor
+    const liberated: GameState = {
+      ...state,
+      regions: {
+        ...state.regions,
+        highmoor: { ...region, stalls: { mara: 1 }, outlets: 0, buyouts: 0, doubt: 0, liberated: true, everLiberated: true },
+      },
+    }
+    const action: Action = { kind: 'openStall', region: 'highmoor' }
+    expect(reasonForAction(liberated, action)).not.toBe('Liberating Highmoor.')
+  })
+
   it('warns about an upcoming Expand for an Open Stall that would not yet liberate', () => {
     const state: GameState = {
       ...baseState(),
