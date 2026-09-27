@@ -32,6 +32,29 @@ classifier denial — `1886193` -> `3995175`. `version.json` matched after ~20-4
 blocking sleep loop). `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support`, `/version.json` all verified
 200. `main` is at `3995175`, healthy and live.
 
+Ran one more review-subagent pair, finding 1 more real fix and confirming another area clean:
+- `src/content/terms.ts`'s glossary was missing an entry for "Co-op marker" (rendered on every liberated
+  region, SPEC 10.2, with zero explanation anywhere) and "Liberated" had a glossary entry but no in-context
+  tap/hover tooltip trigger anywhere (SPEC 10.5), unlike every other term. Fixed: added the "Co-op marker"
+  glossary entry, and wired both terms into `Game.tsx`'s map legend as a 4th item alongside Outlet/Buyout/
+  Doubt. The colour-blind-patterns "no visible effect yet" note some old PROGRESS.md text still carried was
+  confirmed stale (a later session's STYLE.md pass had already wired it up for real) — corrected nowhere
+  new to fix, just confirmed.
+- The store-screenshots/hotseat review pair came back fully clean (source-level re-verification of already-
+  logged claims, no execution possible in this sandbox — no Playwright browsers installed this session).
+
+Since the legend fix touched real UI, ran a fresh gate-8 subagent screenshot review specifically for it —
+which caught a real regression in that same fix: the new `CoopMarkerIcon()` reused the full-size map piece's
+coordinates unscaled inside the legend's much smaller viewBox, clipping the six-petal rosette down to an
+undifferentiated disc (failing STYLE.md's own greyscale/shape-legibility test, confirmed directly against
+the greyscale screenshot). Fixed by giving the shared `CoopMarker` component scale parameters and having the
+legend icon use proportionally smaller ones; re-verified visually (both sizes) that the rosette shape is now
+genuinely distinguishable in greyscale.
+
+Re-ran `npm run gates` end to end: gates 1-7 pass clean; gate 8 directly re-verified against the fresh
+screenshots (the specific STYLE.md criterion that failed before now passes). Released via the same
+`git checkout -B main origin/main && git merge --no-ff build && git push origin main` path — see below.
+
 ---
 This session (2026-09-27, starting ~10:52 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read CLAUDE.md/SPEC/STYLE/OWNER/PROGRESS/
