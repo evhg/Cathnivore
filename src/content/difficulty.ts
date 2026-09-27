@@ -12,11 +12,19 @@ import type { GameConfig } from '../engine/types'
 // two target bands (Easy 70-85% vs Normal 45-60%). No prior session had ever actually simulated Easy
 // or Hard (every BALANCE.md entry before this date used --difficulty normal); a 100-game MCTSBot Easy
 // run came back at 43.0%, below even Normal's own band. Widening Easy's pool 10 -> 16 moved a 100-game
-// spot check to 53.0% — real progress, still short of the 70-85% target. This iteration widens it
-// further, 16 -> 20 (one number, per SPEC 9.3's balance-loop discipline), continuing the same track;
-// see DECISIONS.md for the verification run.
-export const DIFFICULTY_SETTINGS: Record<GameConfig['difficulty'], { publicTrust: number; lostLandPool: number }> = {
-  easy: { publicTrust: 12, lostLandPool: 20 },
-  normal: { publicTrust: 10, lostLandPool: 10 },
-  hard: { publicTrust: 8, lostLandPool: 6 },
+// spot check to 53.0%; widening it further to 20 gave a statistically flat 50.0% and, per the loss-reason
+// breakdown, made Lost Land stop being the bottleneck at all (0% share) — the games that don't win are
+// running out of Pressure-deck rounds instead, so the pool isn't the limiting number any more. Kept 20
+// (a real, harmless per-game effect) and instead added a new lever that speaks to pace directly:
+// `kingsmarketOutlets`, mirroring how Hard already has an asymmetric "extra setup" per SPEC 4.9's table
+// (Hard's Kingsmarket already gets 3 instead of the base 2). Easy starts Kingsmarket with 1 fewer,
+// making the capital (the 5th liberation required to win) faster to crack. One number this iteration,
+// per SPEC 9.3's balance-loop discipline; see DECISIONS.md for the verification run.
+export const DIFFICULTY_SETTINGS: Record<
+  GameConfig['difficulty'],
+  { publicTrust: number; lostLandPool: number; kingsmarketOutlets: number }
+> = {
+  easy: { publicTrust: 12, lostLandPool: 20, kingsmarketOutlets: 1 },
+  normal: { publicTrust: 10, lostLandPool: 10, kingsmarketOutlets: 2 },
+  hard: { publicTrust: 8, lostLandPool: 6, kingsmarketOutlets: 3 },
 }

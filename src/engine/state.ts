@@ -167,7 +167,7 @@ export function createGame(config: GameConfig, seed: number): GameState {
     for (const id of config.activeRegions) {
       const def = REGIONS[id]
       if (def.type === 'capital') {
-        state = addOutlets(state, id, config.difficulty === 'hard' ? 3 : 2)
+        state = addOutlets(state, id, settings.kingsmarketOutlets)
         state = addBuyout(state, id, 1)
         state = addDoubt(state, id, 2)
       } else {

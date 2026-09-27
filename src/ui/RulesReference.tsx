@@ -172,7 +172,7 @@ export default function RulesReference({ onClose, initialTerm }: Props) {
           <EntryList
             entries={(['easy', 'normal', 'hard'] as const).map((d) => ({
               term: d[0]!.toUpperCase() + d.slice(1),
-              body: `Public Trust starts at ${DIFFICULTY_SETTINGS[d].publicTrust}, Lost Land pool of ${DIFFICULTY_SETTINGS[d].lostLandPool}.`,
+              body: `Public Trust starts at ${DIFFICULTY_SETTINGS[d].publicTrust}, Lost Land pool of ${DIFFICULTY_SETTINGS[d].lostLandPool}, Kingsmarket starts with ${DIFFICULTY_SETTINGS[d].kingsmarketOutlets} Outlet${DIFFICULTY_SETTINGS[d].kingsmarketOutlets === 1 ? '' : 's'}.`,
             }))}
           />
         </Section>

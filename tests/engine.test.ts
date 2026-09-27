@@ -72,6 +72,11 @@ describe('createGame', () => {
     expect(easy.publicTrust).toBeGreaterThan(normal.publicTrust)
     expect(easy.lostLandPool).toBe(20)
     expect(easy.lostLandPool).toBeGreaterThanOrEqual(normal.lostLandPool)
+    // Easy also starts Kingsmarket with 1 fewer Outlet than Normal (1 base, vs. Normal's 2), a pace lever
+    // added after a 100-game MCTSBot spot check showed Lost Land had stopped being Easy's bottleneck —
+    // see DECISIONS.md. At least 1 from the base setup, possibly +1 more if the initial Scout matched it.
+    expect(easy.regions.kingsmarket.outlets).toBeGreaterThanOrEqual(1)
+    expect(easy.regions.kingsmarket.outlets).toBeLessThanOrEqual(2)
   })
 
   it('Hard starts with lower Public Trust, a smaller Lost Land pool, an extra Kingsmarket Outlet and Pasture Doubt (SPEC 4.9)', () => {
