@@ -1,5 +1,6 @@
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { GoodwillIcon } from './icons/ResourceIcons'
+import Tooltip from './Tooltip'
 import type { GameState } from '../engine/types'
 
 // SPEC 10.2 "Sheets ... Cath's Plan (3 Schemes)." Playing a Scheme may need picking a region, which the
@@ -29,7 +30,10 @@ export default function CathsPlanSheet({
         if (!card) return null
         return (
           <li key={id} className="card-enter">
-            <strong>{card.name}</strong> — <GoodwillIcon /> {card.cost} Goodwill
+            <strong>{card.name}</strong> —{' '}
+            <Tooltip term="Goodwill">
+              <GoodwillIcon /> {card.cost} Goodwill
+            </Tooltip>
             {/* SPEC 10.5: "All rules text is generated from card and rules data" — `card.text` is the
                 plain-English effect, checked against the card's actual `effect` by tests/rules-text.test.ts.
                 It was previously only shown in the Rules Reference, never here, so a player deciding whether
@@ -60,14 +64,20 @@ export default function CathsPlanSheet({
             const card = SCHEMES_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className="card-enter">
+              <li key={id} className="card-enter card-row">
                 <details>
                   <summary>
-                    <strong>{card.name}</strong> — <GoodwillIcon /> {card.cost} Goodwill
+                    <strong>{card.name}</strong>
                   </summary>
                   <p className="card-text">{card.text}</p>
                   <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
                 </details>
+                {/* Sibling of <details>, not a descendant — see MarketSheet.tsx for why. */}
+                <div className="card-cost-row">
+                  <Tooltip term="Goodwill">
+                    <GoodwillIcon /> {card.cost} Goodwill
+                  </Tooltip>
+                </div>
                 {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}
               </li>
             )

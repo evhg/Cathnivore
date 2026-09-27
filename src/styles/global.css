@@ -385,7 +385,31 @@ h3 {
 /* SPEC 10.3 desktop inline sheets only (MarketSheet.tsx/CathsPlanSheet.tsx): each card collapses to its
    name/cost summary by default via a native <details>, so the right column doesn't have to fit every
    card's rules text and flavour line at once to satisfy "no scrolling at 1280x800". Native <details> needs
-   no extra JS state and is keyboard/screen-reader operable out of the box. */
+   no extra JS state and is keyboard/screen-reader operable out of the box.
+
+   The Marks/Goodwill cost (`.card-cost-row`) has to live as a sibling of <details>, not a child of it:
+   Chromium wraps every non-<summary> child of <details> in an internal `::details-content` box that it
+   hides wholesale while collapsed (via layout containment, not a plain `display: none` an author rule can
+   override on one child), so anything that must stay visible while collapsed can't be a child of <details>
+   at all. Putting the Tooltip button inside <summary> itself isn't an option either — axe's
+   no-focusable-content rule (SPEC 11.4 gate 6) forbids a focusable descendant there. `.card-row`'s flex
+   layout puts `.card-cost-row` back on the same visual line as the summary above it. */
+.card-list-collapsible .card-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+}
+
+.card-list-collapsible .card-row > details {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.card-list-collapsible .card-row > button {
+  flex-basis: 100%;
+}
+
 .card-list-collapsible summary {
   cursor: pointer;
   font-size: 14px;
@@ -393,6 +417,14 @@ h3 {
 
 .card-list-collapsible summary::marker {
   color: var(--ink-muted);
+}
+
+.card-list-collapsible .card-cost-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 14px;
+  flex: 0 0 auto;
 }
 
 .farm-column {
@@ -726,13 +758,35 @@ button {
   cursor: pointer;
 }
 
+/* STYLE.md 10: "Primary is pasture-deep fill with paper text." Reserved for the one clear next action on
+   a screen (SPEC 10.1's Setup "Start", SPEC 10.2's targeting-mode "Confirm") — every other button stays
+   the default secondary style above, per STYLE.md 2's "one accent per screen". */
+button.primary {
+  background: var(--pasture-deep);
+  border-color: var(--pasture-deep);
+  /* tokens.css: pasture-deep is a fixed-in-both-themes fill, so its text needs the matching fixed
+     token, not `--paper` (which redefines to a dark value in dark mode and breaks contrast — the same
+     bug the "Recommended" badge had). */
+  color: var(--paper-on-fixed-fill);
+}
+
+button.primary:disabled {
+  background: var(--surface);
+  border-color: var(--rule);
+  color: var(--ink-muted);
+}
+
 /* STYLE.md 10: "Destructive is clay-deep." Only the confirming "Yes, reset all data" button (the one
    irreversible action, SPEC 10.1) uses this — the "Reset all data" button that opens the confirmation
    stays a normal secondary button, since it isn't itself destructive yet. */
 button.destructive {
   background: var(--clay-deep);
   border-color: var(--clay-deep);
-  color: var(--paper);
+  /* Same fixed-fill/fixed-text pairing as `button.primary` above — clay-deep never changes with the
+     theme, so `--paper` text on it drops well below 4.5:1 in dark mode (found by direct contrast check
+     while adding `button.primary`, same root cause as the "Recommended" badge and the SQUEEZE/EXPAND
+     badges, which were already fixed this way). */
+  color: var(--paper-on-fixed-fill);
 }
 
 .controls {

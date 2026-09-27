@@ -1,5 +1,6 @@
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { MarksIcon } from './icons/ResourceIcons'
+import Tooltip from './Tooltip'
 import type { GameState } from '../engine/types'
 
 const TAG_LABEL: Record<string, string> = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
@@ -29,7 +30,11 @@ export default function MarketSheet({
         if (!card) return null
         return (
           <li key={id} className="card-enter">
-            <strong>{card.name}</strong> — <MarksIcon /> {card.cost} Marks ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+            <strong>{card.name}</strong> —{' '}
+            <Tooltip term="Marks">
+              <MarksIcon /> {card.cost} Marks
+            </Tooltip>{' '}
+            ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
             {/* SPEC 10.5: "All rules text is generated from card and rules data" — `card.text` is the
                 plain-English effect (STYLE.md 8: "rules text in Atkinson Hyperlegible"), checked against
                 the card's actual `onBuy` by tests/rules-text.test.ts. It was previously only shown in the
@@ -59,15 +64,25 @@ export default function MarketSheet({
             const card = IMPROVEMENTS_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className="card-enter">
+              <li key={id} className="card-enter card-row">
                 <details>
                   <summary>
-                    <strong>{card.name}</strong> — <MarksIcon /> {card.cost} Marks (
-                    {card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+                    <strong>{card.name}</strong> ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
                   </summary>
                   <p className="card-text">{card.text}</p>
                   {card.flavor && <p className="card-flavor">{card.flavor}</p>}
                 </details>
+                {/* A sibling of <details>, not a descendant: Chromium hides every non-<summary> child of a
+                    closed <details> (via an internal `::details-content` wrapper CSS can't carve one child
+                    out of), so the cost has to live outside <details> entirely to stay visible while
+                    collapsed. `.card-row`'s flex layout (global.css) puts it back on the same line as the
+                    summary above. Also sidesteps axe's no-focusable-content rule (SPEC 11.4 gate 6), which
+                    forbids a focusable Tooltip button inside <summary> itself. */}
+                <div className="card-cost-row">
+                  <Tooltip term="Marks">
+                    <MarksIcon /> {card.cost} Marks
+                  </Tooltip>
+                </div>
                 {canBuy(id) && <button onClick={() => onBuy(id)}>Buy</button>}
               </li>
             )

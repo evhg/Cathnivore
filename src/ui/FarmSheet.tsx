@@ -1,6 +1,7 @@
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { PRODUCERS } from '../content/producers'
 import { GoodwillIcon, MarksIcon, ProduceIcon } from './icons/ResourceIcons'
+import Tooltip from './Tooltip'
 import type { GameState, ProducerId } from '../engine/types'
 
 const TAG_LABEL = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
@@ -50,9 +51,15 @@ function FarmColumn({ state, producer }: { state: GameState; producer: ProducerI
     <section className="farm-column">
       <h3>{def.name}</h3>
       <p className="farm-production">
-        <ProduceIcon /> Produce {p.resources.produce} ({p.production.produce}/round) · <MarksIcon /> Marks{' '}
-        {p.resources.marks} ({p.production.marks}/round) · <GoodwillIcon /> Goodwill {p.resources.goodwill} (
-        {p.production.goodwill}/round)
+        <Tooltip term="Produce">
+          <ProduceIcon /> Produce {p.resources.produce} ({p.production.produce}/round)
+        </Tooltip>{' '}
+        · <Tooltip term="Marks">
+          <MarksIcon /> Marks {p.resources.marks} ({p.production.marks}/round)
+        </Tooltip>{' '}
+        · <Tooltip term="Goodwill">
+          <GoodwillIcon /> Goodwill {p.resources.goodwill} ({p.production.goodwill}/round)
+        </Tooltip>
       </p>
       {p.improvements.length === 0 ? (
         <p className="farm-empty">No Improvements bought yet.</p>

@@ -7,7 +7,10 @@ import { test, expect, type Page } from '@playwright/test'
 // run with `npx playwright test e2e/store-screenshots.spec.ts --project=store-screenshots`.
 //
 // The caption banner is store-listing decoration, not part of the game screen itself, so it's composited
-// onto the live page with a small injected overlay rather than built into the app UI.
+// onto the live page with a small injected overlay rather than built into the app UI. It's `position:
+// fixed`, which doesn't reserve layout space, so it used to sit directly on top of the fixed top bar's own
+// content (action-button labels in shots 1 and 4) — pushing the whole page down by the banner's own
+// measured height keeps the banner purely additive instead of clipping what's underneath it.
 async function addCaptionBanner(page: Page, text: string): Promise<void> {
   await page.evaluate((caption) => {
     const banner = document.createElement('div')
@@ -29,6 +32,7 @@ async function addCaptionBanner(page: Page, text: string): Promise<void> {
       boxShadow: '0 2px 0 var(--ink)',
     })
     document.body.appendChild(banner)
+    document.body.style.marginTop = `${banner.getBoundingClientRect().height}px`
   }, text)
 }
 

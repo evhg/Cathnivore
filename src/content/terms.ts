@@ -21,6 +21,9 @@ export const ACTION_TERMS: GlossaryEntry[] = [
 ]
 
 export const GLOSSARY_TERMS: GlossaryEntry[] = [
+  { term: 'Produce', body: 'Food you grow. Spent to Open Stall and to Supply. Each producer has their own Produce, carried over between rounds with no cap, and gains it each round through Harvest equal to their Produce production.' },
+  { term: 'Marks', body: 'Money. Spent on Improvements (Invest) and to Supply away a Buyout. Each producer has their own Marks, carried over between rounds with no cap, and gains it each round through Harvest equal to their Marks production.' },
+  { term: 'Goodwill', body: 'Personal reputation. Spent to Rebut Doubt and to play Schemes. Each producer has their own Goodwill, carried over between rounds with no cap, and gains it each round through Harvest equal to their Goodwill production.' },
   { term: 'Liberated', body: 'A region with at least 1 Stall and no Outlets, Buyouts or Doubt. The first time a region is liberated, Public Trust +1 and the liberating producer gains +1 production.' },
   { term: 'Squeeze', body: `An enemy step: in each matching region, Damage (Outlets + 2x Buyouts) compared to Defence (Stalls). If Damage is greater, place 1 Lost Land token; if it is at least Defence + ${STALL_LOSS_MARGIN}, also remove a Stall. Public Trust also drops per Doubt there (up to 2).` },
   { term: 'Expand', body: 'An enemy step: each matching region with at least 1 enemy piece gains an Outlet, or a Buyout if it already has 2+ Outlets and no Buyout.' },

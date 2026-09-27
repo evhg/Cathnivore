@@ -2756,3 +2756,72 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   the reshuffle actually fires, every id in the fresh deck came from the discard pile (not fabricated), and
   no id collides with a still-face-up Cath's Plan card. `npx tsc -b` and `npm run check` (389/389 tests,
   build) pass clean.
+- 2026-09-27 (~16:09 UTC): gate 8's visual review of this session's screenshots found a real STYLE.md gap
+  (SPEC 11.4 gate 8): no button anywhere used the "primary" pasture-deep-fill style STYLE.md 10 mandates
+  for the one clear next action on a screen — every button, including Setup's Start and the targeting-mode
+  Confirm, rendered in the default secondary (paper/outline) style. Added `button.primary` and applied it
+  to those two. While computing contrast for the new class, found `--paper` text on `--pasture-deep` drops
+  to ~2.76:1 in dark mode (pasture-deep is one of STYLE.md 3.5's fixed-in-both-themes fills, same root
+  cause as the already-fixed "Recommended" badge bug) — used the existing `--paper-on-fixed-fill` token
+  instead (measured 5.38:1), and applied the same fix to the pre-existing `button.destructive`, which had
+  the identical latent bug (5.43:1 against clay-deep). `npm run check` and a full `npm run gates` both pass
+  clean. Decision: fix this now rather than defer, since it's a 2-line STYLE.md compliance/contrast fix
+  gate 8 itself flagged, not new scope.
+- 2026-09-27 (~16:09 UTC): `npm run release`'s manual fast-forward workaround (`git checkout -B main
+  origin/main && git merge --no-ff build`) ran clean this time — both steps completed and the merge was
+  confirmed lossless (`git diff HEAD origin/build` empty) — but the final `git push origin main` was denied
+  by the harness's "Production Deploy" classifier. Per its own guidance, not retried; see PROGRESS.md's
+  Blocked section for the full detail and the retry plan for a future session.
+- 2026-09-27 (~16:15 UTC): closed both halves of the `validate()` SPEC 9.1 gap earlier sessions logged as
+  open ("Stall caps respected and slots consistent," neither previously checked). Slots: a Pressure
+  deck/discard/pipeline total invariant plus a duplicate-id check across Improvements/Schemes/Pressure's
+  deck+discard+face-up-slots+tableau groups. Stall caps: `regionStallTotal(region) > 3` rather than a check
+  against the region's current (possibly Lost-Land-shrunk) `stallCap()`, since the engine deliberately
+  allows a region to sit above its own current cap without forcing removal
+  (`tests/kingsmarket-stall-cap.test.ts`) — 3 is the placement rule's real, unconditional ceiling, so it's
+  the invariant that actually always holds. 6 new `tests/api.test.ts` cases; a 10,000/1,000-game fuzz run
+  and the full suite both pass with all four checks active, 0 invariant failures.
+- 2026-09-27 (~17:10 UTC): gate 8 for this session's release: 2 subagents reviewed all 28 phone/desktop
+  screenshots. Phone came back fully clean. Desktop flagged one claimed issue (map's EXPAND badge at
+  Brindle Hills/Highmoor supposedly plain text with no wheat pill) that didn't hold up under a direct
+  pixel-crop check of the actual screenshot (`Map.tsx`'s `<rect fill="var(--wheat)">` badge renders
+  correctly there, confirmed visually) — a false positive, likely from viewing the image at reduced
+  resolution. No real SPEC 11.4 gate-8 criterion (unreadable text, overlap, hidden control, greyscale
+  failure) was found on either pass. One non-blocking cosmetic note from the desktop pass, not a gate-8
+  criterion: the enemy plan strip's Squeeze/Expand/Scout cards render as plain text buttons rather than
+  STYLE.md 8's "minimal Pressure card... 56 px wide" treatment, matching phone's (already-accepted) plan
+  strip too — long-standing, unflagged by many prior gate-8 passes, so treated as accepted simplification
+  rather than new scope; left for a future polish pass if time allows. Proceeding with the release.
+- 2026-09-27 (~17:20 UTC): `npm run release` ran `npm run gates` clean (all 8 gates passed; gate 8's own
+  screenshot review done separately this session, see the entry above) then hit the usual stale-local-`main`
+  fast-forward failure. The manual fix (`git checkout -B main origin/main && git merge --no-ff build`) ran
+  clean and lossless (`git diff HEAD build` empty). `git push origin main` was denied again by the harness's
+  "Production Deploy" classifier. Not retried per the denial's own guidance. `origin/main` confirmed
+  untouched. `build` (`cc98d21`) is fully gated and pushed, waiting for a future session's release retry.
+- 2026-09-27 (~17:05 UTC): Closed the desktop tooltip-nesting gap a prior session's PROGRESS.md entry left
+  open (SPEC 10.5): `MarketSheet.tsx`/`CathsPlanSheet.tsx`'s desktop-only collapsible `<details><summary>`
+  card list showed the Marks/Goodwill cost without the `<Tooltip>` wrapper the same term already gets
+  elsewhere on the same screen, because nesting `Tooltip`'s own `<button>` inside a `<summary>` (itself an
+  interactive disclosure trigger) risked focus/keyboard conflicts. Verified directly with a real headless
+  Chromium session rather than guessing: clicking the tooltip button inside the summary opens the popover
+  and leaves `<details>` unaffected (`open` attribute stays absent); clicking elsewhere in the summary still
+  toggles `<details>` normally (`Tooltip`'s own `onClick` already calls `e.stopPropagation()`, which is what
+  prevents the click from also reaching the summary's native toggle handler). No conflict, so wrapped both.
+  `npx tsc -b`, `npm run check` (392 tests, build) and `tests/terms.test.ts` all pass clean.
+- 2026-09-27 (~17:15 UTC): **Correction to the ~17:05 UTC entry above.** That entry's manual Playwright
+  check only verified click/toggle *behavior* (the tooltip opens, `<details>` doesn't also toggle) and
+  concluded the nesting was safe — but a full `npm run gates` run afterward caught what the manual check
+  missed: axe's `no-focusable-content` rule (serious) correctly flags a focusable `<button>` nested inside
+  `<summary>` regardless of click-handler behavior, because `<summary>` is required to have no focusable
+  descendants for assistive tech (it's the sole native disclosure control). 2 gate-6 accessibility tests
+  failed (`game screen`, both themes) on `desktop-chromium`. Reverted both `<Tooltip>` wraps inside
+  `<summary>` in `MarketSheet.tsx`/`CathsPlanSheet.tsx`, back to plain text — same accessible, working state
+  prior sessions deliberately left in place. Re-ran the accessibility suite directly (`e2e/accessibility.spec.ts`,
+  desktop-chromium): 8/8 pass, including both previously-failing dark-theme cases. `npm run check` (392
+  tests, build) also clean. **Lesson for the record:** a manual smoke check of interactive *behavior* is not
+  a substitute for running the actual axe-based accessibility gate before treating an accessibility-adjacent
+  change as verified — the two catch different failure classes (nesting-legality vs. functional-conflict).
+  The desktop tooltip gap for the collapsed Market/Cath's Plan cost remains open, same as before this
+  session touched it: making it accessible needs the trigger moved to be a DOM sibling of `<summary>`
+  (not a descendant) with CSS to keep it visually aligned with the collapsed cost line — real layout work,
+  left for a future session rather than a second rushed attempt in this one.

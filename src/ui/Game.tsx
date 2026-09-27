@@ -587,9 +587,15 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             <strong>{PRODUCERS[state.activeProducer].name}</strong>
           </span>
           <span>
-            <ProduceIcon /> {active.resources.produce} ({active.production.produce}/round) <MarksIcon />{' '}
-            {active.resources.marks} ({active.production.marks}/round) <GoodwillIcon /> {active.resources.goodwill} (
-            {active.production.goodwill}/round)
+            <Tooltip term="Produce">
+              <ProduceIcon /> {active.resources.produce} ({active.production.produce}/round)
+            </Tooltip>{' '}
+            <Tooltip term="Marks">
+              <MarksIcon /> {active.resources.marks} ({active.production.marks}/round)
+            </Tooltip>{' '}
+            <Tooltip term="Goodwill">
+              <GoodwillIcon /> {active.resources.goodwill} ({active.production.goodwill}/round)
+            </Tooltip>
           </span>
           <span>
             Actions left: <ActionsLeftIcon total={ACTIONS_PER_ROUND} left={state.actionsLeft} />
@@ -611,7 +617,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           pendingChoice ? (
             <>
               <p>{selectedGroup.label} in {REGIONS[pendingChoice.region].name}?</p>
-              <button onClick={() => act(pendingChoice.index)}>Confirm</button>
+              <button className="primary" onClick={() => act(pendingChoice.index)}>Confirm</button>
               <button onClick={() => setPendingChoice(null)}>Cancel</button>
             </>
           ) : (

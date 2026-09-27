@@ -1,11 +1,12 @@
 import { createGame } from './state'
 import { applyAction, legalActions } from './actions'
-import { isLiberated } from './region'
+import { isLiberated, regionStallTotal } from './region'
 import { POOL_SIZES } from './pieces'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { AGENDA_CARDS } from '../content/agenda'
 import { IMPROVEMENTS } from '../content/improvements'
 import { SCHEMES } from '../content/schemes'
+import { unshuffledPressureDeck } from '../content/pressure'
 import type { Action, GameConfig, GameResult, GameState, PendingDecision } from './types'
 
 export { createGame, legalActions, applyAction }
@@ -75,6 +76,14 @@ export function validate(state: GameState): ValidationError[] {
     if (region.liberated !== isLiberated(region)) {
       push(`${region.id}: liberated flag (${region.liberated}) doesn't match its pieces`)
     }
+    // SPEC 4.6.1's "max 3 Stalls per region... minus 1 per Lost Land token, never below 1" only gates new
+    // placements: a Lost Land token can drop a region's *current* cap (`stallCap()`) below its existing
+    // Stall count without forcing a removal (tests/kingsmarket-stall-cap.test.ts documents this on
+    // purpose). So the standing invariant is the placement rule's own absolute ceiling, 3, not the
+    // region's current (possibly lower) `stallCap()`.
+    if (regionStallTotal(region) > 3) {
+      push(`${region.id}: ${regionStallTotal(region)} stalls exceeds the 3-per-region maximum`)
+    }
   }
 
   if (outletsOnMap + state.outletPool !== POOL_SIZES.outlet) {
@@ -124,6 +133,46 @@ export function validate(state: GameState): ValidationError[] {
   if (schemeTotal !== SCHEMES.length) {
     push(`scheme deck/plan/discard total mismatch: ${schemeTotal} != ${SCHEMES.length}`)
   }
+
+  // SPEC 9.1 "slots consistent": no face-up slot ever shows the same card twice, and the deck/discard
+  // never holds a duplicate of a card that's also currently face up (a real double-draw bug, not just a
+  // count mismatch the totals above wouldn't catch since they only sum lengths).
+  const checkNoDuplicateIds = (label: string, groups: Array<readonly (string | null)[]>) => {
+    const seen = new Set<string>()
+    for (const group of groups) {
+      for (const id of group) {
+        if (id === null) continue
+        if (seen.has(id)) push(`${label}: id ${id} appears more than once across deck/discard/face-up slots`)
+        seen.add(id)
+      }
+    }
+  }
+  checkNoDuplicateIds('improvements', [
+    state.improvementDeck,
+    state.market,
+    state.improvementDiscard,
+    ...Object.values(state.producers).map((p) => p.improvements),
+  ])
+  checkNoDuplicateIds('schemes', [state.schemeDeck, state.cathsPlan, state.schemeDiscard])
+
+  // SPEC 4.7: the Pressure pipeline (deck, discard, and the 3 pipeline slots) holds exactly the cards the
+  // game started with — a scripted campaign chapter's own count (SPEC 8.1) when it supplies one, the
+  // normal 10-card deck otherwise — with none dropped, duplicated or conjured by Scout/Advance.
+  const expectedPressureTotal = state.config.scriptedPressure?.length ?? unshuffledPressureDeck().length
+  const pressureTotal =
+    state.pressureDeck.length +
+    state.pressureDiscard.length +
+    (state.squeeze ? 1 : 0) +
+    (state.expand ? 1 : 0) +
+    (state.scout ? 1 : 0)
+  if (pressureTotal !== expectedPressureTotal) {
+    push(`pressure deck/discard/pipeline total mismatch: ${pressureTotal} != ${expectedPressureTotal}`)
+  }
+  checkNoDuplicateIds('pressure', [
+    state.pressureDeck.map((c) => c.id),
+    state.pressureDiscard.map((c) => c.id),
+    [state.squeeze?.id ?? null, state.expand?.id ?? null, state.scout?.id ?? null],
+  ])
 
   if (state.publicTrust < 0 || state.publicTrust > 15) push(`publicTrust out of range: ${state.publicTrust}`)
   if (state.rift < 0 || state.rift > 6) push(`rift out of range: ${state.rift}`)
