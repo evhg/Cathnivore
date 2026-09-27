@@ -2315,3 +2315,22 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
      specific tap-to-focus quirk), so -- matching this project's established "don't force-fix an unconfirmed
      reachable state" discipline (see the reverted Stall-cap invariant entry above) -- logging as a watch
      item for a future session with real-device access rather than guessing at a fix now.
+- 2026-09-27 (same session, ~10:03-10:05 UTC): dispatched 2 more concurrent review subagents (CLAUDE.md's
+  cap), targeting content-data correctness and the engine purity/determinism contract specifically.
+  1. src/content/schemes.ts vs SPEC 5, src/content/improvements.ts vs SPEC 7 -- both clean. All 6 mandated
+     Schemes and all 6 mandated Improvements present verbatim (name/cost/tags/effect); counts correct (30
+     Schemes, 36 main-deck Improvements); mix ratios within tolerance of SPEC's rough targets; cost/length
+     ranges respected; spot-checked non-mandated cards' text against their actual implementation and it
+     matches. Re-confirmed the already-logged Wholesome Hollow Contract count (1 copy in code vs SPEC 7's
+     literal "3 copies") is the deliberate, measured balance-loop fix already in this file, not a new finding.
+  2. src/engine/state.ts, api.ts, region.ts vs SPEC 9.1's purity/mutation/determinism contract -- no real
+     mutation or determinism bugs (every state.ts writer uses fresh spreads, region.ts is read-only, no
+     Math.random/Date.now anywhere in src/engine). The one thing it flagged as a "bug" -- `validate()` never
+     asserting `regionStallTotal(region) <= stallCap(region)` despite SPEC 9.1 saying validate should check
+     "Stall caps respected" -- is **not new**: this exact check was implemented and then deliberately reverted
+     earlier in this same build (see the entry above, ~09:14-09:21 UTC pass logging the "add a test, let it
+     prove itself" story) after its own regression test caught it firing on a legitimate reachable state (a
+     Lost Land token shrinking a region's cap below its already-legally-placed Stall count -- SPEC 4.6.1's cap
+     only gates *placing a new* Stall, nothing requires retroactively removing existing ones). Left unchanged;
+     noting here in case a future session's own audit rediscovers the same absence and needs the explanation
+     without re-reading the full older entry.
