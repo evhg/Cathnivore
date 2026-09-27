@@ -1,7 +1,36 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-27, starting ~08:51 UTC): standard session start — `git fetch --all`, checked out
+This session (2026-09-27, starting ~09:51 UTC): standard session start — `git fetch --all`, checked out
+`build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
+BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (unchanged from the
+previous session, `e95e64b`). `ci.json` confirmed green (`e95e64b`); `ios.json` unchanged (still blocked on
+`OWNER.md`'s placeholder Apple Team ID — not re-dispatched, no owner-side change).
+
+Re-attempted the previous session's logged release-merge plan (`git checkout -B main origin/main && git
+merge --no-ff build`) to unblock the standing `build`/`main` divergence; the checkout step was denied by the
+harness's "Blind Apply" classifier before running (no repo state changed). Not retried this session per the
+denial's own guidance — logged in Blocked/DECISIONS.md; worth a plain retry next session since this same
+command has hit transient single-session denials before.
+
+Dispatched 2 concurrent review subagents (CLAUDE.md's cap) at the next-lowest-DECISIONS.md-mention files,
+continuing the established pattern. One (src/ai/random.ts, src/ai/heuristic.ts, src/engine/producer.ts) came
+back clean. The other (5 story files + Credits.tsx + EnemyTurnPlayback.tsx) found one real bug: SPEC 8.2
+chapter 5's closing "Pip was the informant" montage was supposed to replay three distinct Pip lines but only
+had two available (chapters 2-4 have no Pip dialogue), so its third line was a truncated repeat of the
+first. Fixed by giving chapter 1 (`fresh-meat.ts`) a genuine third Pip line that also foreshadows the reveal,
+and using it as the montage's real third line in `friends-in-low-places.ts`. Full details in DECISIONS.md.
+
+Ran `npm run gates` end to end: all of gates 1-7 passed clean (384 unit tests, 70+28 e2e, 16 axe, Lighthouse
+98/100). Gate 8 needed a fresh screenshot capture after the story fix (a stale `vite preview` process on
+port 4173 had been silently serving a pre-fix `dist/` build to Playwright even after a rebuild — killed it,
+rebuilt, re-ran `e2e/screenshots.spec.ts` alone) — the affected chapter-1 scene screenshot reads cleanly at
+both sizes with the new line, no STYLE.md/section-10 issues.
+
+`build` is gated and pushed at this point, still waiting on the `main`-merge blocker above to actually
+release.
+
+Previous session (2026-09-27, starting ~08:51 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
 BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (unchanged from the
 previous session, `002f335`). `ci.json` confirmed green on that commit; `ios.json` unchanged (still blocked

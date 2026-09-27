@@ -2271,3 +2271,27 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   command (prior sessions' identical command hit "Blind Apply" once before too, in an earlier blocker entry,
   and it turned out to be transient noise cleared by a later session's retry) — worth a plain retry next
   session before assuming it's a new standing restriction.
+- 2026-09-27 (same session, ~09:56-10:00 UTC): dispatched 2 more concurrent review subagents (CLAUDE.md's
+  cap) at the next-lowest-mention files. One (src/ai/random.ts, src/ai/heuristic.ts, src/engine/producer.ts)
+  came back clean -- RandomBot genuinely uniform, HeuristicBot's greedy search and its
+  liberation/Squeeze-protection weighting both match SPEC 9.2, producer.ts is pure/non-mutating. Noted
+  `addResources` in producer.ts looks unused (no call sites found), not treated as a bug.
+  The other (5 story files + Credits.tsx + EnemyTurnPlayback.tsx) found one real bug: SPEC 8.2 chapter 5's
+  closing twist calls for a montage replaying "three of his [Pip's] helpful tutorial lines from chapters 1
+  to 4" -- but `friends-in-low-places.ts`'s montage only had two distinct chapter-1 Pip lines available to
+  draw from (chapters 2-4 have no Pip dialogue at all), so its third "line" was just a truncated repeat of
+  the first clause of the first line. Fixed by adding a genuine third Pip line to chapter 1's opening
+  (`fresh-meat.ts`: "I keep a tally of every Stall in Marrow. Habit of the job. Or so I always say.") that
+  foreshadows the informant reveal (ties into the montage's own new closing line, "He was counting badges
+  for the other one"), then using that as the montage's real third line instead of the duplicate. Kept the
+  montage sourced entirely from chapter 1 rather than inventing new dialogue for chapters 2-4 (which have
+  different producers/stories and no natural place for a Pip cameo) -- "three of his chapter-1-to-4 lines"
+  is satisfied since chapter 1 is within that range, and this is a much smaller, safer change than adding
+  Pip to 3 more chapters this late in the build. Both files stay under the 12-line/scene and 160-char/line
+  caps. Re-ran `npm run gates` (already in flight when the fix landed, so it captured screenshots of the
+  *pre-fix* text -- a stale `vite preview` process on port 4173 was reusing an old `dist/` build even after a
+  fresh `npm run build`, a real footgun for this sandbox worth remembering: kill any lingering `vite preview`
+  before re-running Playwright screenshot specs after an edit) and re-ran `e2e/screenshots.spec.ts` alone
+  after a clean rebuild + killing the stale preview server; both sizes of the chapter-1 scene screenshot
+  read cleanly with the new line, no overflow or STYLE.md issues. `tests/story.test.ts`/`tests/end-lines.
+  test.ts` still pass.
