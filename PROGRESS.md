@@ -1,6 +1,30 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~14:52 UTC): standard session start, lock taken, `ci.json` green,
+`ios.json`/`OWNER.md` Team ID unchanged (still blocked, not re-dispatched — same missing-secrets failure
+every prior session has confirmed). `DEADLINE` has ~94 hours left, no M7-only restriction. Ran `npm ci` +
+`npm run check` first: clean (389 tests, fuzz clean, build 88.03 kB gzip main bundle).
+
+Ran 4 review-subagent rounds (CLAUDE.md's 2-at-once cap, 2 batches): chapter 5/6 twists vs SPEC 8.2, the
+Capacitor iOS shell vs SPEC 11.6, the Settings screen vs SPEC 10.1, and the `store/` App Store text vs SPEC
+11.6/3.5. Three of the four came back fully clean (the one chapter-6-difficulty item the first review
+flagged is already a documented, deliberate decision — DECISIONS.md's 2026-09-25 entry, `chapters.ts`'s own
+comment). The store-text review found one real, fixable bug: `e2e/store-screenshots.spec.ts`'s caption
+banner is `position: fixed` with no reserved layout space, so it sat directly on top of the fixed top bar's
+own content — visibly clipping the action-button labels underneath in screenshots 1 and 4 (STYLE.md 13
+requires 5 captioned screenshots but doesn't forbid overlap, so this was cosmetic, not a SPEC violation, but
+still a real quality issue in a store-facing asset). Fixed by measuring the banner's own rendered height and
+pushing `document.body`'s `margin-top` down by that amount, so the banner is purely additive instead of
+overlapping. Regenerated all 5 screenshots with the fix; visually confirmed 1 and 4 (the two that had the
+clip) are now clean, no overlap. Also confirmed (not new, already logged): `store/metadata/review_information`
+still has the `PASTE-FIRST-NAME`/`PASTE-LAST-NAME`/`PASTE-PHONE-NUMBER` placeholders `store.yml` would
+literally submit if `store-<n>`/`submit-<n>` ran today — a standing owner-side blocker, unchanged.
+
+`npm run check` re-ran clean after the fix. No release needed by itself (test/asset-only change, not a
+gate-affecting one), but bundled into whatever this session's next release turns out to be.
+
+---
 This session (2026-09-27, starting ~12:36 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json`/`OWNER.md` Team ID unchanged (still blocked, not re-dispatched). 3 review-subagent rounds: Runnel
 practice-mode solvability and support/privacy pages both came back essentially clean (one real Credits.tsx
