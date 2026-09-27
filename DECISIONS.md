@@ -2491,3 +2491,14 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   to enforce "happens once" correctly. The chapter 3->4 carry-over's extra starting Outlets go through the
   same generic `addOutlets` pool bookkeeping every other Outlet placement uses, so `validate()`'s invariant
   needs no special-casing and has none missing — already covered by `tests/chapters.test.ts`.
+- 2026-09-27 (same session, ~11:46 UTC): closed the residual balance-data gap the Hard-difficulty review
+  subagent flagged (Hard only had a single 100-game MCTSBot confirmation vs. hundreds for Normal/Easy). Ran
+  a 300-game MCTSBot/Hard/all-pairs sim (no code/content change, pure data collection — doesn't touch the
+  already-closed 12-iteration balance loop). Result: win rate **25.7%**, inside SPEC 9.4's 25-40% Hard target
+  band (the earlier 100-game spot check's 26.0% holds at 3x the sample size). All three loss-reason floors
+  clear: publicTrust 22.9%, lostLand 65.0% (dominant, as expected — SPEC 9.4 only requires >=15%, not a cap),
+  pressureDeckEmpty 12.1% (clears the >=10% "running out of time" floor). Producer-pair spread is exactly at
+  the 12-point band's edge (20.0%-32.0%, ines+tomas weakest, sol+tomas strongest) — the first difficulty
+  level to land inside that band at all in this build's history (Normal/Easy have both consistently missed
+  it, per BALANCE.md's earlier entries). 0 crashes, 0 invariant failures. `BALANCE.md` updated by the sim
+  run itself. No action needed: Hard difficulty meets every SPEC 9.4 target at this sample size.
