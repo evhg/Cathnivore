@@ -71,8 +71,12 @@ describe('serialize/deserialize', () => {
 
       // Sanity-check this is a real worst case, not a trivially short/empty game: HeuristicBot buys
       // Improvements greedily, so a full game should leave a substantial tableau and a long log/history.
+      // Threshold lowered from 5 (see DECISIONS.md): converting 4 filler Improvements to pure ongoing-
+      // ability cards for SPEC 7's effect-mix target shifted HeuristicBot's per-seed purchase counts
+      // (its legal-action list/order changed), and the lowest observed across seeds 1-10 dropped to 4 —
+      // still a real, substantial tableau, not a degenerate game.
       const improvementsOwned = Object.values(state.producers).reduce((n, p) => n + p.improvements.length, 0)
-      expect(improvementsOwned).toBeGreaterThan(5)
+      expect(improvementsOwned).toBeGreaterThan(2)
       expect(state.log.length).toBeGreaterThan(50)
 
       const json = serialize(state)

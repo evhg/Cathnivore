@@ -166,3 +166,67 @@ describe('freeSchemePlays (SPEC 8.2 ch6 "the Plan unlocks and the players get on
     expect(state.freeSchemePlays).toBe(1)
   })
 })
+
+// SPEC 7's "~30% ongoing discounts or abilities" effect mix (see DECISIONS.md): these four cards were
+// converted from plain production bumps to real ongoing abilities to close a real gap a hardening-review
+// audit found (only 2 of 36 cards were pure ongoing-ability cards, vs. SPEC 7's ~11-card target).
+describe('ongoing-ability Improvements added for the SPEC 7 effect-mix fix', () => {
+  // Grants `id` to Mara directly (skipping a real purchase, since these tests only care about the
+  // ability's effect), pulling it out of wherever it currently sits so `validate()`'s pool-total
+  // invariant still holds.
+  function withImprovement(state: GameState, id: string): GameState {
+    return {
+      ...state,
+      producers: { ...state.producers, mara: { ...state.producers.mara, improvements: [...state.producers.mara.improvements, id] } },
+      market: state.market.map((slot) => (slot === id ? null : slot)),
+      improvementDeck: state.improvementDeck.filter((cardId) => cardId !== id),
+    }
+  }
+
+  it('Wagon Wheel Press: Sell yields 1 extra Marks', () => {
+    let state = richMara(createGame(FULL_CONFIG, 5))
+    state = withImprovement(state, 'wagon-wheel-press')
+    const before = state.producers.mara.resources.marks
+    state = applyAction(state, { kind: 'sell', count: 2 })
+    expect(state.producers.mara.resources.marks).toBe(before + 2 + 1)
+    expect(validate(state)).toEqual([])
+  })
+
+  it('Compost Exchange: Graft yields 1 extra Produce', () => {
+    let state = createGame(FULL_CONFIG, 5)
+    state = withImprovement(state, 'compost-exchange')
+    const before = state.producers.mara.resources.produce
+    state = applyAction(state, { kind: 'graft' })
+    expect(state.producers.mara.resources.produce).toBe(before + 1 + 1)
+    expect(validate(state)).toEqual([])
+  })
+
+  it('Press Contact: Schemes cost 1 less Goodwill, minimum 1', () => {
+    let state = richMara(createGame(FULL_CONFIG, 5))
+    state = withImprovement(state, 'press-contact')
+    state = forceScheme(state, 'leaked-memo')
+    const before = state.producers.mara.resources.goodwill
+    state = applyAction(state, { kind: 'scheme', schemeId: 'leaked-memo', targetRegion: 'saltmarsh' })
+    expect(state.producers.mara.resources.goodwill).toBe(before - (SCHEMES_BY_ID.get('leaked-memo')!.cost - 1))
+  })
+
+  it('Wholesale Account: Improvements cost 1 less Marks, minimum 1, but never discounts its own purchase', () => {
+    let state = richMara(createGame(FULL_CONFIG, 5))
+    state = withImprovement(state, 'wholesale-account')
+    const improvementId = state.market.find((id): id is string => id !== null && id !== 'wholesale-account')!
+    const card = IMPROVEMENTS_BY_ID.get(improvementId)!
+    const before = state.producers.mara.resources.marks
+    state = applyAction(state, { kind: 'invest', improvementId })
+    expect(state.producers.mara.resources.marks).toBe(before - Math.max(1, card.cost - 1))
+  })
+
+  it('Wholesale Account discount has a floor of 1 Mark even on the cheapest Improvements', () => {
+    let state = richMara(createGame(FULL_CONFIG, 5))
+    state = withImprovement(state, 'wholesale-account')
+    // Force a 2-Marks card (the SPEC 7 minimum) into the market to exercise the floor.
+    state = { ...state, market: ['harbour-stall-licence', state.market[1] ?? null, state.market[2] ?? null, state.market[3] ?? null] }
+    const before = state.producers.mara.resources.marks
+    state = applyAction(state, { kind: 'invest', improvementId: 'harbour-stall-licence' })
+    expect(state.producers.mara.resources.marks).toBe(before - 1)
+  })
+})

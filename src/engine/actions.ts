@@ -56,6 +56,21 @@ function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, regio
   return base
 }
 
+// Ongoing-ability Improvements (SPEC 7's "~30% ongoing discounts or abilities" mix target — see
+// DECISIONS.md for the effect-mix audit that added these): "Wholesale Account" discounts Invest,
+// "Press Contact" discounts Scheme plays, both minimum 1, same shape as the existing per-region Supply
+// discounts above. Checked by id against the producer's improvements *before* this purchase is added to
+// the tableau, so a card never discounts its own purchase.
+function investCost(state: GameState, producer: ProducerId, card: { cost: number }): number {
+  const discount = hasImprovement(state, producer, 'wholesale-account') ? 1 : 0
+  return Math.max(1, card.cost - discount)
+}
+
+function schemeCost(state: GameState, producer: ProducerId, card: { cost: number }): number {
+  const discount = hasImprovement(state, producer, 'press-contact') ? 1 : 0
+  return Math.max(1, card.cost - discount)
+}
+
 // SPEC 9.1 `currentDecision`: while a forced choice is pending, it's the only thing the engine will
 // accept — resolving it (`decide`) is a prerequisite for any other action, same path for human and AI.
 function decisionActions(decision: GameState['pendingDecisions'][number]): Action[] {
@@ -99,7 +114,7 @@ export function legalActions(state: GameState): Action[] {
     for (const id of state.market) {
       if (!id) continue
       const card = IMPROVEMENTS_BY_ID.get(id)
-      if (card && p.resources.marks >= card.cost) actions.push({ kind: 'invest', improvementId: id })
+      if (card && p.resources.marks >= investCost(state, producer, card)) actions.push({ kind: 'invest', improvementId: id })
     }
   }
 
@@ -107,7 +122,7 @@ export function legalActions(state: GameState): Action[] {
     for (const id of state.cathsPlan) {
       if (!id) continue
       const card = SCHEMES_BY_ID.get(id)
-      if (!card || (p.resources.goodwill < card.cost && state.freeSchemePlays <= 0)) continue
+      if (!card || (p.resources.goodwill < schemeCost(state, producer, card) && state.freeSchemePlays <= 0)) continue
       for (const target of legalSchemeTargets(state, producer, id)) {
         actions.push(target ? { kind: 'scheme', schemeId: id, targetRegion: target } : { kind: 'scheme', schemeId: id })
       }
@@ -277,12 +292,16 @@ export function applyAction(state: GameState, action: Action): GameState {
       break
     }
     case 'sell': {
+      // "Wagon Wheel Press" (SPEC 7 ongoing-ability mix, see DECISIONS.md): Sell yields 1 extra Marks.
+      const sellBonus = hasImprovement(state, producer, 'wagon-wheel-press') ? 1 : 0
       next = spend(state, producer, { produce: action.count, marks: 0, goodwill: 0 })
-      next = gain(next, producer, { produce: 0, marks: action.count, goodwill: 0 })
+      next = gain(next, producer, { produce: 0, marks: action.count + sellBonus, goodwill: 0 })
       break
     }
     case 'graft': {
-      next = gain(state, producer, { produce: 1, marks: 1, goodwill: 0 })
+      // "Compost Exchange" (SPEC 7 ongoing-ability mix, see DECISIONS.md): Graft yields 1 extra Produce.
+      const graftBonus = hasImprovement(state, producer, 'compost-exchange') ? 1 : 0
+      next = gain(state, producer, { produce: 1 + graftBonus, marks: 1, goodwill: 0 })
       break
     }
     case 'role': {
@@ -296,7 +315,7 @@ export function applyAction(state: GameState, action: Action): GameState {
     case 'invest': {
       const card = IMPROVEMENTS_BY_ID.get(action.improvementId)
       if (!card) throw new Error(`Unknown improvement: ${action.improvementId}`)
-      next = spend(state, producer, { produce: 0, marks: card.cost, goodwill: 0 })
+      next = spend(state, producer, { produce: 0, marks: investCost(state, producer, card), goodwill: 0 })
       next = card.onBuy(next, producer)
       next = {
         ...next,
@@ -339,8 +358,9 @@ export function applyAction(state: GameState, action: Action): GameState {
       // SPEC 8.2 ch6: while a free play is available, cover any shortfall for free rather than always
       // spending one — a producer with enough Goodwill anyway still pays normally, so the grant isn't
       // wasted on a play that didn't need it.
-      const useFreePlay = state.freeSchemePlays > 0 && state.producers[producer].resources.goodwill < card.cost
-      next = spend(state, producer, { produce: 0, marks: 0, goodwill: useFreePlay ? 0 : card.cost })
+      const cost = schemeCost(state, producer, card)
+      const useFreePlay = state.freeSchemePlays > 0 && state.producers[producer].resources.goodwill < cost
+      next = spend(state, producer, { produce: 0, marks: 0, goodwill: useFreePlay ? 0 : cost })
       next = card.effect(next, producer, target)
       next = {
         ...next,

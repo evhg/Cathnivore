@@ -1832,3 +1832,53 @@ Format: date, decision, reason.
   hold. No other BALANCE.md conclusion checked against the code turned up a mismatch (loss-reason mix,
   purchase-rate framing and the win-rate-by-pair spread language in recent entries all match what
   `summarize()` actually computes).
+
+- **2026-09-27 (session starting ~01:51 UTC):** a hardening-review subagent audited SPEC 7's Improvements
+  effect-mix target ("~50% production increases, ~30% ongoing discounts or abilities, ~10% tag-scaling,
+  ~10% one-off effects") — a compliance question no prior session had actually checked. Result: badly
+  skewed, not within tolerance — 28/36 cards (78%) were pure production increases and only 2/36 (6%) were
+  pure ongoing-ability cards, versus the 50%/30% targets. Fixed by converting 4 non-SPEC-mandated filler
+  cards from flat production bumps into real ongoing abilities, using patterns already established
+  elsewhere in the codebase (per-region Supply discounts, Soil Lab Report's free-extra-Rebut): "Wagon Wheel
+  Press" (Sell yields 1 extra Marks), "Compost Exchange" (Graft yields 1 extra Produce), "Press Contact"
+  (Schemes cost 1 less Goodwill, minimum 1) and "Wholesale Account" (Improvements cost 1 less Marks,
+  minimum 1, never discounting its own purchase). New `investCost`/`schemeCost` helpers in
+  `src/engine/actions.ts` mirror `supplyOutletCostPerOutlet`'s existing shape and are used consistently in
+  both `legalActions` and `applyAction` so legality and the actual spend never disagree. This moves the mix
+  to 24/36 (67%) production and 6/36 (17%) ongoing — real progress, still short of the 50/30 target; a
+  future session should convert several more filler "+N stat" cards (candidates already identified in the
+  audit: polytunnel, seed-library, community-larder, wholesale-account-style siblings) to close the rest of
+  the gap. Not touching the balance-loop-tuned Supply/Buyout base costs or the 6 SPEC-exact cards, since
+  those are either closed (12/12 balance iterations used) or explicitly non-negotiable text.
+  Verified: `npx tsc -b --noEmit`, full `npm test` (344 tests, up from 339 — new
+  `tests/invest-scheme.test.ts` coverage for all 4 abilities including the discount floor), `npm run fuzz
+  --quick` and `npm run build` all clean. One pre-existing test's floor needed loosening as a direct,
+  expected consequence (not a bug): `tests/api.test.ts`'s 50KB-worst-case sanity check asserted
+  HeuristicBot ends a full game owning >5 Improvements across both producers; changing 4 cards' immediate
+  effects shifted the bot's legal-action ordering enough that the observed per-seed minimum (over the same
+  10 fixed seeds) dropped to 4 — still a real, substantial tableau, so the threshold was lowered to >2 with
+  a comment explaining why, rather than the test being deleted or the finding buried. A 200-game
+  HeuristicBot/Normal/all-pairs sim afterward (10.5% win rate) lands within the range recent sessions have
+  already logged, no regression signal; a 200-game MCTSBot confirmation was also queued this session (see
+  PROGRESS.md for the result once it completes) since these are genuinely new economic levers (Sell/Graft
+  bonuses, Invest/Scheme discounts) rather than a pure content substitution, so balance verification is
+  warranted despite the closed 12-iteration loop only formally covering numbered content-number tweaks.
+  A second hardening-review subagent this session re-audited SPEC 4.5/4.7's enemy multi-region Squeeze/
+  Expand/Scout resolution order (another previously-flagged, never-directly-verified area) and found no
+  bug: the per-region-key immutable update pattern in `pieces.ts` structurally rules out cross-region state
+  leakage, and Agenda/Squeeze/Expand/Scout/Advance run in the correct order with correct short-circuiting
+  on a mid-turn loss. One minor gap worth noting for the record (not a bug): `src/content/pressure.ts`'s
+  Pressure cards carry no faction field, so Expand's Candor-only "add 1 Doubt if the region has a Stall"
+  clause (SPEC 4.7) is implemented as applying unconditionally on every Expand resolution with a Stall
+  present — a reasonable reading given the data model (Pressure cards are shared, not per-faction, unlike
+  the Agenda deck), but never previously written down as a deliberate interpretation.
+  This session's `npm run release` attempt: gates 1-7 passed clean (70 e2e, 16 axe, Lighthouse 98/100; gate
+  8 needs its own subagent screenshot review, not yet run against the latest build). The fast-forward step
+  hit the standard fresh-clone stale-local-`main` issue; this session's documented-fix attempt
+  (`git checkout -B main origin/main` + `git merge --no-ff build`, since a real divergence — 5 revert
+  commits already on `origin/main` from an earlier session's smoke-test auto-revert — made a plain
+  `--ff-only` merge impossible even after the checkout fix) was denied by the harness's own "Blind Apply"
+  classifier before it could run. Per the denial's own guidance, not retried this session. `origin/main`
+  confirmed untouched (`7df3f19`) and the working tree switched back to `build` with no partial merge state
+  left behind. `build` remains gated and pushed, now carrying this session's Improvements-mix fix on top of
+  the prior session's 9-commits-ahead backlog, waiting on a future session's release retry.

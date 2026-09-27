@@ -182,8 +182,8 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 5,
     tags: ['media'],
     flavor: 'Returns your calls. Sometimes prints your quote.',
-    text: '+2 Goodwill production.',
-    onBuy: (state, producer) => addProduction(state, producer, { goodwill: 2 }),
+    text: 'Schemes cost 1 less Goodwill (minimum 1).',
+    onBuy: (state) => state, // ongoing: checked in actions.ts's Scheme cost
   },
   {
     id: 'irrigation-line',
@@ -216,8 +216,8 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Wholesale Account',
     cost: 4,
     tags: ['community'],
-    text: '+2 Marks production.',
-    onBuy: (state, producer) => addProduction(state, producer, { marks: 2 }),
+    text: 'Improvements cost 1 less Marks (minimum 1).',
+    onBuy: (state) => state, // ongoing: checked in actions.ts's Invest cost
   },
   {
     id: 'kelp-beds',
@@ -261,8 +261,8 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 3,
     tags: ['media'],
     flavor: 'Prints the truth, and the odd correction.',
-    text: '+1 Marks production.',
-    onBuy: (state, producer) => addProduction(state, producer, { marks: 1 }),
+    text: 'Whenever you Sell, gain 1 extra Marks.',
+    onBuy: (state) => state, // ongoing: checked in actions.ts's Sell handler
   },
   {
     id: 'compost-exchange',
@@ -270,8 +270,8 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 4,
     tags: ['crop', 'community'],
     flavor: 'One farmer’s waste is another’s Tuesday.',
-    text: '+1 Produce production.',
-    onBuy: (state, producer) => addProduction(state, producer, { produce: 1 }),
+    text: 'Whenever you Graft, gain 1 extra Produce.',
+    onBuy: (state) => state, // ongoing: checked in actions.ts's Graft handler
   },
   {
     id: 'windbreak-hedgerow',
