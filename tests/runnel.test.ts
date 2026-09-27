@@ -56,12 +56,15 @@ describe('Runnel generation', () => {
     }
   })
 
-  it('marks dead ends as fields and keeps junctions small', () => {
-    for (const seed of seeds.slice(0, 50)) {
+  it('marks dead ends as fields and keeps junctions to 3 openings or fewer', () => {
+    for (const seed of seeds) {
       const p = generatePuzzle(seed, { radius: 3 })
       for (const c of p.cells) {
         if (c.kind === 'field') expect(bitCount(c.solved)).toBe(1)
-        if (c.kind === 'channel') expect(bitCount(c.solved)).toBeGreaterThanOrEqual(2)
+        if (c.kind === 'channel') {
+          expect(bitCount(c.solved)).toBeGreaterThanOrEqual(2)
+          expect(bitCount(c.solved)).toBeLessThanOrEqual(3)
+        }
         if (c.kind === 'spring') expect(bitCount(c.solved)).toBeLessThanOrEqual(3)
       }
     }

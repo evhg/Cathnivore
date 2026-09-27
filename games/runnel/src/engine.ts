@@ -201,12 +201,42 @@ function allConnected(n: number, neighbours: number[][], start: number, blocked:
   return seen.size === n - blocked.size
 }
 
+/** The most openings a generated piece is allowed to have; a fourth opening reads badly on a phone. */
+const MAX_OPENINGS = 3
+/** How many randomised attempts to make before accepting a tree that has to break the cap somewhere. */
+const GROW_TREE_ATTEMPTS = 40
+
 /**
- * Randomised Prim's algorithm from the spring. Junction pieces with four or more openings are hard to
- * read on a phone, so an edge that would give a cell a fourth opening is only taken when nothing else is
- * left; the spring is capped at three openings too.
+ * Randomised Prim's algorithm from the spring, retried until every cell (the spring included) stays at
+ * or under `MAX_OPENINGS`. A bad random order can back the tree into a corner where every frontier cell
+ * is already full; when every attempt does, the least-bad attempt is kept (fewest, and least severe,
+ * over-cap cells; ties preferring the spring not be the one that goes over) rather than looping forever.
  */
 function growTree(
+  hexes: readonly Hex[],
+  neighbours: number[][],
+  centre: number,
+  stones: Set<number>,
+  rng: () => number,
+): number[] {
+  let best: number[] | null = null
+  let bestScore = Infinity
+  for (let attempt = 0; attempt < GROW_TREE_ATTEMPTS; attempt++) {
+    const masks = growTreeAttempt(hexes, neighbours, centre, stones, rng)
+    const score = masks.reduce(
+      (sum, m, i) => sum + Math.max(0, bitCount(m) - MAX_OPENINGS) * (i === centre ? 100 : 1),
+      0,
+    )
+    if (score === 0) return masks
+    if (score < bestScore) {
+      best = masks
+      bestScore = score
+    }
+  }
+  return best!
+}
+
+function growTreeAttempt(
   hexes: readonly Hex[],
   neighbours: number[][],
   centre: number,
@@ -224,10 +254,12 @@ function growTree(
         const j = neighbours[i]![d]!
         if (j < 0 || stones.has(j) || inTree.has(j)) continue
         any.push([i, d])
-        if (bitCount(masks[i]!) < 3) good.push([i, d])
+        if (bitCount(masks[i]!) < MAX_OPENINGS) good.push([i, d])
       }
     }
-    const pool = good.length ? good : any
+    // If nothing keeps every cell in cap, prefer overloading a non-spring cell over the spring.
+    const nonSpring = any.filter(([i]) => i !== centre)
+    const pool = good.length ? good : nonSpring.length ? nonSpring : any
     const [i, d] = pool[Math.floor(rng() * pool.length)]!
     const j = neighbours[i]![d]!
     masks[i] = masks[i]! | (1 << d)
@@ -237,17 +269,31 @@ function growTree(
   return masks
 }
 
-/** Turns pieces to random rotations and returns the par (taps back to the generator's solution). */
+/**
+ * Turns pieces to random rotations and returns the par (taps back to the generator's solution). Retries
+ * until at least three quarters of the turnable pieces are wrong and the board isn't already solved; if
+ * no attempt manages that within the budget, the attempt with the most wrong pieces is kept instead of
+ * whatever the last random draw happened to produce, so a puzzle is never handed to a player pre-solved
+ * (unless it genuinely has no turnable pieces at all, which is already solved by construction).
+ */
 function scramble(cells: Cell[], rng: () => number): number {
   const turnable = cells.filter((c) => c.kind !== 'stone' && rotationalPeriod(c.solved) > 1)
+  let best: number[] | null = null
+  let bestWrong = -1
   for (let attempt = 0; attempt < 50; attempt++) {
-    let wrong = 0
-    for (const c of turnable) {
-      c.rot = Math.floor(rng() * 6)
-      if (rotateMask(c.solved, c.rot) !== c.solved) wrong++
+    const rotations = turnable.map(() => Math.floor(rng() * 6))
+    const wrong = turnable.filter((c, k) => rotateMask(c.solved, rotations[k]!) !== c.solved).length
+    turnable.forEach((c, k) => (c.rot = rotations[k]!))
+    if (wrong >= Math.ceil(turnable.length * 0.75) && !computeFlow(cells).solved) {
+      best = null
+      break
     }
-    if (wrong >= Math.ceil(turnable.length * 0.75) && !computeFlow(cells).solved) break
+    if (wrong > bestWrong) {
+      best = rotations
+      bestWrong = wrong
+    }
   }
+  if (best) turnable.forEach((c, k) => (c.rot = best[k]!))
   // Par: fewest clockwise taps from each piece's scrambled rotation back to a solved-looking rotation.
   let par = 0
   for (const c of turnable) par += tapsToSolve(c)
