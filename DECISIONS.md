@@ -2186,3 +2186,15 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   SSL_ERROR_SYSCALL failure mode has been seen (as opposed to the documented cert-authority one); worth
   watching for in future sessions as possibly the same class of sandbox-proxy artifact under a different
   error message, not a new standing restriction.
+- 2026-09-27 (session starting ~08:51 UTC): looked for genuinely unreviewed code by cross-referencing
+  `src/ui`'s helper modules against DECISIONS.md's own mention count, on the theory used by several recent
+  sessions that files with zero dedicated review passes are the most likely place a real bug still hides.
+  `src/ui/enemyTurnLog.ts` had zero mentions (every sibling helper — `actionLabel.ts`, `gameLog.ts`,
+  `undo.ts` — had at least one). Found a real STYLE.md 12 violation on first read: the `'liberated'` caption
+  ("... liberated by Mara!") ended with an exclamation mark, which STYLE.md 12 bans outright ("No exclamation
+  marks and no emoji anywhere in the interface") — this is enemy-turn playback UI text (SPEC 10.2), not story
+  or Cath's-voice text, so SPEC 3.2's "at most one exclamation mark per chapter" allowance for her voice
+  doesn't apply here either. Fixed by changing it to a period, matching every other caption in the same
+  function. Added a regression test enumerating one instance of every `GameEvent` type `captionFor()`
+  handles and asserting none contain `!`, so a future caption change can't reintroduce this silently.
+  Verified with `npx vitest run tests/enemy-turn-playback.test.ts` (3/3) and a full `npm run check` (clean).
