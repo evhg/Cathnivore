@@ -1,6 +1,26 @@
 # Progress
 
 ## Current milestone
+Continuing the same 2026-09-27 session (~11:47 UTC start): 2 more review-subagent rounds. First round (tag-
+scaling Improvements vs. SPEC 7; index.html/manifest/CSP vs. SPEC 10.5/11.1/11.5/15) came back fully clean —
+both independently re-confirmed already-logged findings still hold, no new issues.
+
+Second round found a real, previously-unverified gap: SPEC 9.4's exact per-Improvement/per-Scheme thresholds
+(not bought/played >70%, win rate when bought/played not >15pts above average, not bought/played <3%) were
+never actually checked against those numeric limits during the M4 balance loop — every iteration verified
+only the aggregate win-rate/loss-reason/pair-spread targets. Ran a fresh 200-game MCTSBot/Normal/all-pairs
+confirmation specifically to check this for real (not a new balance-loop iteration, loop stays closed at
+12/12): 48.0% win rate (inside target), pair spread 18.2 points (still outside the 12-point band, an already-
+known shortfall), all loss-reason floors clear. Found one real per-card violation: "Op-ed Column" has a
++24.7-point win-rate-when-bought delta (72.7% vs. 48.0% overall), over the 15-point limit — logged as a known,
+unremediated shortfall (not yet acted on: the sample is only ~22 games, and a proper fix needs either a much
+larger confirmation or a new balance-loop-style content change, both too large to start this late in the
+session). Full detail in DECISIONS.md.
+
+No code changes this round (data/docs only), so no release needed. Wrapping up at ~48 minutes per CLAUDE.md's
+guidance — no uncommitted changes, releasing the lock now.
+
+---
 This session (2026-09-27, starting ~11:47 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read CLAUDE.md/SPEC/STYLE/OWNER/PROGRESS/
 DECISIONS/BALANCE/`git log -20`/`origin/ci-status`. `ci.json` green on `ab226d2`; `ios.json` unchanged
