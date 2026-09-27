@@ -1,7 +1,42 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-27, starting ~02:51 UTC): re-checked both standing blockers first — `OWNER.md`'s Apple
+This session (2026-09-27, starting ~03:52 UTC): re-checked both standing blockers first — `OWNER.md`'s Apple
+Team ID is still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch). `npm ci` + `npm run check` clean on the unchanged
+`build` HEAD (`1935ccd`, this session's own lock commit on top of the prior session's history-reconciliation
+fix). Ran `npm run release`: gates 1-7 passed clean (70 e2e, 16 axe, Lighthouse 98/100). The fast-forward step
+hit the usual stale-local-`main` symptom; this session's attempt at the fix (`git checkout -B main
+origin/main` + `git merge --ff-only build`) was denied outright by the harness's "Production Deploy"
+classifier before it could run. Per the denial's own guidance, not retried; confirmed `origin/main` untouched
+(`7df3f19`, via `git ls-remote`) and switched back to `build`.
+
+With the release path blocked again, launched one subagent for SPEC 11.4 gate 8's screenshot review (2-
+concurrent cap) — came back clean, no changes needed (full detail in the subagent's own report; not
+duplicated here). In parallel, did a first-ever, previously-unattempted piece of hardening work myself: ran
+`--difficulty easy` and `--difficulty hard` MCTSBot sims, something no prior session (43 `BALANCE.md` entries,
+all `--difficulty normal`) had ever actually done despite SPEC 9.4 setting separate win-rate bands for all
+three difficulties. Found a real, previously-invisible target miss: Hard came back in-band (26.0%), but Easy
+came back at 43.0% — *below Normal's own 45-60% band* — because the M4 balance loop's Normal-only tuning had
+walked Normal's Lost Land pool up to equal Easy's original value, leaving Easy barely distinguishable from
+Normal (only +2 Public Trust). Widened Easy's `lostLandPool` 10 -> 16 (`src/content/difficulty.ts`, one number
+per SPEC 9.3's balance-loop discipline), updated the one stale test assertion and SPEC.md's table/note to
+match, and re-ran a 100-game MCTSBot Easy sim: 43.0% -> 53.0%, real progress but still short of the 70-85%
+target — logged as an open follow-up for a future session rather than iterating further unverified this
+session (each 100-game MCTSBot run costs ~8.5 minutes single-threaded, so a full 1,000-game confirmation was
+out of this session's time budget). Full detail in `DECISIONS.md`. Verified with a full `npx vitest run` (353
+tests, all green) before committing. `build` (`d448877`) is gated and pushed, 2 commits ahead of the session's
+starting point.
+
+Session tally: one release attempt (denied, `main` unchanged and healthy — same standing classifier
+restriction as many prior sessions), one clean gate-8 confirmation, and one real, previously-unverified SPEC
+9.4 gap found (Easy's win-rate target) with a first concrete fix landed and partially verified. Next session:
+re-check the release path and the two standing blockers as usual, then continue the Easy balance-loop track
+(try `lostLandPool` higher still, e.g. 20-24, and/or widen Public Trust's gap too) toward the 70-85% target,
+eventually with a real 1,000-game MCTSBot confirmation once 100-game spot-checks land consistently in-band.
+
+---
+
+Previous session (2026-09-27, starting ~02:51 UTC): re-checked both standing blockers first — `OWNER.md`'s Apple
 Team ID is still `PASTE-TEAM-ID`, no `ios.yml` re-dispatch. Found the previous session had left a real problem
 beyond the usual stale-local-`main` issue: `origin/main` (`7df3f19`) carries 5 revert commits from an even
 earlier session's live-smoke-test false-failure auto-revert that `build` never had, so `build` and `main` had

@@ -1989,3 +1989,36 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   task's own scope guidance) rather than pushing the mix all the way to exact targets in one pass — the
   remaining gap (production still ~3 points over 50%, tag-scaling/one-off each ~2 points under 10%) is
   small enough to leave for a future session if ever revisited, not urgent.
+
+- 2026-09-27 (~04:00-04:25 UTC): **first-ever Easy/Hard simulation, and a real, previously-invisible SPEC
+  9.4 target miss.** Every one of the 43 prior `BALANCE.md` entries used `--difficulty normal` — nobody had
+  ever actually run `--difficulty easy` or `--difficulty hard`, despite SPEC 9.4 setting separate win-rate
+  bands for all three (Easy 70-85%, Normal 45-60%, Hard 25-40%). Ran both with MCTSBot at 100 games each
+  (a quick spot-check, not a full 1,000-game confirmation, given this session's time budget): Hard came
+  back at 26.0%, inside its band, no action needed. Easy came back at 43.0% - *below Normal's own band*,
+  despite being the easiest difficulty. Root cause: `src/content/difficulty.ts`'s own comment already
+  documented that the M4 balance loop (tuning Normal alone) had walked Normal's `lostLandPool` up from 8 to
+  10 across several iterations, landing it exactly equal to Easy's original value - nobody revisited
+  whether that left Easy meaningfully easier than Normal once the value converged. With Lost Land pools
+  tied and only a 2-point Public Trust gap (12 vs 10), Easy had almost nothing distinguishing it from
+  Normal by that point, explaining the sub-Normal win rate directly.
+  Fix: widened Easy's `lostLandPool` from 10 to 16 (one number, per SPEC 9.3's "change at most 3 numbers
+  per iteration" discipline - this is the first iteration of a balance-loop track for Easy specifically,
+  separate from the closed Normal-only loop). A 100-game MCTSBot re-check moved Easy's win rate from 43.0%
+  to 53.0% - real, measurable progress in the right direction, but still well short of the 70-85% target.
+  Updated the one place that hardcoded the old value in a test assertion (`tests/engine.test.ts`'s Easy
+  Lost-Land-pool test), `src/content/chapters.ts`'s explanatory comment (chapter 6 deliberately runs the
+  full game at Easy difficulty to hit its own SPEC 9.4 campaign target - this pool widening only makes that
+  easier, not harder, so no regression risk there), and SPEC.md's difficulty table/note to match. Every
+  other Easy/Hard-referencing text (`terms.ts`, `RulesReference.tsx`) reads `DIFFICULTY_SETTINGS` directly,
+  so it updates automatically with no drift risk. Verified with a full `npx vitest run` (353 tests, all
+  green, no regressions from the pool change) before committing.
+  **Left as an open follow-up, not closed this session:** Easy is still below target even after this
+  change. A future session should continue the same one-number-at-a-time loop (try `lostLandPool` higher
+  still, e.g. 20-24, and/or widen Easy's Public Trust gap too, per SPEC 9.3's "at most 3 numbers per
+  iteration") and eventually run the real 1,000-game MCTSBot confirmation SPEC 9.3 calls for once the
+  100-game spot-checks land consistently in-band - that full confirmation was out of this session's time
+  budget (each 100-game MCTSBot run took ~8.5 minutes single-threaded per the profiled ~400ms/decision
+  cost noted elsewhere in this file; 1,000 games would take roughly an hour and a half). Hard's 26.0% is a
+  clean pass and doesn't need further iteration unless Easy's tuning inadvertently affects it (it shouldn't
+  - Hard's own settings are untouched).
