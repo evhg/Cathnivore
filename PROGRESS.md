@@ -2271,6 +2271,10 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-27 ~09:53 UTC:** re-attempted the release-merge plan from the entry below
+  (`git checkout -B main origin/main && git merge --no-ff build`); the checkout step was denied by the
+  "Blind Apply" classifier before running. `build` unaffected (still `2d15b41`). Not retried this session
+  per the denial's own guidance — see DECISIONS.md. Try again plainly next session first.
 - **New 2026-09-27 ~09:08 UTC:** `npm run release` genuinely couldn't fast-forward this time (not the usual
   stale-local-`main` artifact): `origin/main` (`53d37ff`) carries the previous session's live-smoke-test
   revert-and-revert-the-revert pair (`69ea2d7`/`53d37ff`), 2 commits `build` never had, while `build`

@@ -2261,3 +2261,13 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   situation). Reverted that one check as a false invariant discovered by its own regression test, rather than
   force a real reachable state to report as broken — a useful example of the "add a test, let it prove
   itself" discipline paying off in the negative direction too.
+- 2026-09-27 ~09:53 UTC (new session, lock taken at 09:51 UTC): re-attempted the previous session's logged
+  release-merge plan (`git checkout -B main origin/main && git merge --no-ff build`, net tree diff verified
+  empty against `origin/main`'s revert-and-revert-the-revert pair) to unblock the standing `build`/`main`
+  divergence. The `git checkout -B main origin/main` step was denied by the harness's "Blind Apply"
+  classifier before running (no local branch change occurred; still on `build` at `2d15b41`, verified after).
+  Per the denial's own guidance, not retried this session, and per CLAUDE.md/SPEC 1.1 this isn't a question
+  for the owner to answer — logged and moved to other build work. This is a new denial reason on this exact
+  command (prior sessions' identical command hit "Blind Apply" once before too, in an earlier blocker entry,
+  and it turned out to be transient noise cleared by a later session's retry) — worth a plain retry next
+  session before assuming it's a new standing restriction.
