@@ -35,9 +35,20 @@ unnoticed: SPEC 10.2's "the active producer's portrait" in the game screen's bot
 built — `Portrait` only ever got wired into the campaign's `Scene.tsx`, never the main `Game.tsx` screen, so
 every prior "portraits are done" checklist entry was checking the wrong screen. Fixed: `Game.tsx`'s active-
 producer panel now shows the portrait next to the producer's name. Verified visually at both sizes and with
-the full 100-test e2e/accessibility suite (all pass). Two minor findings (piece-illustration fidelity, the
-Reset-all-data button's styling) were logged but not acted on this session — see DECISIONS.md for why.
-Committed and pushed to `build`.
+the full 100-test e2e/accessibility suite (all pass). Committed and pushed to `build`.
+
+With time remaining, also fixed one of the two minor gate-8 findings logged above: the "Yes, reset all data"
+confirmation button (Settings) used the same plain secondary style as every other button, but STYLE.md 10
+specifies destructive buttons use clay-deep fill — genuinely the only truly irreversible action anywhere in
+Settings. Added a `button.destructive` style and applied it to that one button (not the "Reset all data"
+button that opens the confirmation, which isn't itself destructive). Verified visually and with the
+accessibility/title e2e suites (26 tests, all pass). The other minor finding (piece-illustration fidelity)
+stays open, a repeat of an already-accepted, already-logged gap — see DECISIONS.md. This session's overall
+tally: one blocked release attempt (`main` untouched, `origin/main` still `7df3f19`), 2 hardening-review
+subagent passes (Improvements effect-mix — real gap found and partially fixed; enemy multi-region resolution
+— clean), and 1 gate-8 visual-review pass (2 false positives verified and dismissed, 1 real SPEC 10.2 gap
+found and fixed, plus the destructive-button follow-up). `build` is fully gated (`npm run check` clean, 344
+tests) and pushed 5 commits ahead of the session start, ready for a future session's release retry.
 
 ---
 
