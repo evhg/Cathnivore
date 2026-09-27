@@ -2,7 +2,8 @@ import type { Scene as SceneData } from '../content/story/types'
 import { portraitKeyFor } from '../content/characters'
 import Portrait from './portraits/Portrait'
 
-// SPEC 10.1: the Scene (dialogue) screen. Lines reveal one at a time; the last tap continues on.
+// SPEC 10.1: the Scene (dialogue) screen. All of a scene's lines render at once, with a single Continue
+// button to move on — not the one-line-at-a-time reveal an earlier draft of this comment described.
 export default function Scene({ scene, onContinue }: { scene: SceneData; onContinue: () => void }) {
   return (
     <main className="scene">
