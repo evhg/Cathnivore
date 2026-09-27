@@ -30,6 +30,17 @@ carefully-tuned desktop column height. Re-captured gate 8's screenshots and re-i
 cluster directly: Outlet (box+tag), Buyout (peaked fence+sign) and Doubt (circular speech bubble) are now
 clearly distinct shapes in greyscale at both sizes, with room to spare in the hex. See DECISIONS.md.
 
+Attempted `npm run release`: `npm run gates` passed clean again on this commit, but the fast-forward step
+hit the usual stale-local-`main` failure and the documented manual fix was denied as one unit by the
+harness's "Production Deploy" classifier. Not retried per its own guidance — see Blocked. `build` (`89af73d`)
+is fully gated and pushed, waiting for a future session's release retry.
+
+Also reviewed `store/metadata/` for correctness (quick, static-text check, no code risk): description,
+keywords, subtitle, URLs all still within SPEC 11.6's character limits and accurate; `review_information`'s
+first/last name and phone number correctly still mirror `OWNER.md`'s own unfilled `PASTE-*` placeholders
+(nothing a session can invent) — no action needed. Wrapping up at ~25 minutes with `build` in a fully
+gated, verified state plus one real fix landed; releasing the lock now.
+
 ---
 This session (2026-09-27, starting ~17:52 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json` unchanged (still blocked on Apple secrets — `OWNER.md`'s Apple Team ID is still
@@ -2761,6 +2772,14 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-27 ~19:15 UTC:** `npm run release` ran `npm run gates` clean (all 8 gates — gate 8's own
+  screenshot review already done separately with 2 subagents plus a direct-verification fix, see Current
+  milestone), hit the usual stale-local-`main` fast-forward failure, and the documented manual fix
+  (`git checkout -B main origin/main && git merge --no-ff build`) was denied as one unit by the harness's
+  "Production Deploy" classifier before running. `origin/main` confirmed untouched at `93bdc55`. Not retried
+  per the denial's own guidance. `build` (`89af73d`, this session's desktop-map greyscale-legibility fix) is
+  fully gated and pushed, waiting for a future session's release retry: try `npm run release` normally first;
+  if it hits the same ff-only failure, redo the manual checkout+merge+push sequence from scratch.
 - **New 2026-09-27 ~17:07 UTC:** `npm run release` ran `npm run gates` clean (all 8 gates, gate 8 via a
   direct subagent screenshot review — see Current milestone), hit the usual stale-local-`main` fast-forward
   failure, and the manual fix (`git checkout -B main origin/main && git merge --no-ff build`) ran clean and
