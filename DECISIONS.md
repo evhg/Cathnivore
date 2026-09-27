@@ -2098,3 +2098,14 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   code changes this entry — this closes out the Easy pace-lever track opened by the last several sessions
   with a confirmed, in-band result. `sol+tomas`/`ines+sol` remain the weakest pairs on Easy (as they are on
   Normal), consistent with Sol/Tomas's shared production-track profile rather than a new finding.
+- 2026-09-27 (same session): fixed the recurring "refusing to merge unrelated histories" failure that
+  `npm run release`'s fast-forward step has hit at the start of nearly every release across many sessions
+  (see PROGRESS.md's Blocked/Deploy log history) — every session so far has worked around it by hand with
+  `git checkout -B main origin/main` instead of the script's plain `git checkout main`. Applied that exact
+  fix inside `scripts/release.ts` itself, so future sessions no longer need the manual intervention.
+  Verified two ways: `npx tsc -b --noEmit`/`eslint`/`npm run check` all clean, and a throwaway copy of the
+  repo with `main` forced onto a fabricated unrelated commit confirmed `git checkout -B main origin/main`
+  resets local `main` to track `origin/main` and lets the following `git merge --ff-only build` fast-
+  forward cleanly, where the old `git checkout main` failed outright. `-B` is safe here because this
+  script never has local commits on `main` worth preserving — it only ever wants `main` to track
+  `origin/main` before merging `build` in.

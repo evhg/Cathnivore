@@ -161,7 +161,13 @@ async function main() {
   // `nextDeployNumber()` for the revert target meant it silently found no prior tag in every fresh
   // session and skipped the revert entirely (see DECISIONS.md for the incident this was found from).
   const previousMainCommit = sh('git rev-parse origin/main')
-  sh('git checkout main')
+  // Every fresh-clone session has hit "refusing to merge unrelated histories" here at least once
+  // (DECISIONS.md/PROGRESS.md's Blocked section, recurring across many sessions): a plain `git checkout
+  // main` can land on a stale local `main` ref (e.g. the container image's default-branch checkout at
+  // clone time) instead of tracking `origin/main`. `-B` forces local `main` to match the just-fetched
+  // `origin/main` unconditionally, which is always safe here (this script never had local commits on
+  // `main` to lose) and is the same fix every session has applied by hand until now.
+  sh('git checkout -B main origin/main')
   sh('git merge --ff-only build')
   sh('git push origin main')
 
