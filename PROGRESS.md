@@ -23,6 +23,27 @@ a subagent screenshot review, clean), the fast-forward hit the usual recurring s
 denial. `main` is now at `2da4acf`, verified live via curl (Chromium smoke test skipped for the standing
 sandbox TLS artifact). Full detail in the Deploy log. `deploy-11` tagged locally (tag pushes still 403).
 
+With time still left, fixed the recurring "refusing to merge unrelated histories" fast-forward failure that
+nearly every past session's release has hit and worked around by hand: `scripts/release.ts` now runs
+`git checkout -B main origin/main` instead of a plain `git checkout main`, baking in the documented manual
+fix. Verified with `npx tsc -b --noEmit`/`eslint`/`npm run check` (all clean) and a throwaway-repo repro
+(forced local `main` onto a fabricated unrelated commit; the old code failed exactly as described, the new
+code recovered cleanly). Pushed as `12eb9a5`; `origin/ci-status` already confirms green on the prior commit
+(`74660d2`), the fix commit's own CI run should follow shortly.
+
+Checked the standing blockers: `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID` (`ios.yml`/`store.yml`
+remain blocked, no re-dispatch — no new information since the last check) and `npm audit`'s 6 remaining
+findings are still dev-tooling-only with no non-breaking fix available (`npm audit fix --dry-run` still
+offers only `--force` major bumps), so the standing deferral holds. Searched `src`/`tests`/`e2e`/`sim`/
+`scripts` for stray TODO/FIXME markers: none found.
+
+Session tally: closed out the Easy balance-loop track with a confirmed in-band result (75.3%, 300 games),
+released `build` to `main` cleanly end to end, and fixed a real recurring release-script bug so future
+sessions no longer need to work around it by hand. `build` (`12eb9a5`) is gated and pushed, 1 commit ahead
+of `main` (docs/tooling only, no game content). Next session: standard session start, re-check the Apple
+secrets and `npm audit` status as usual, and look for the next unblocked hardening or polish item — very
+little remains outside the Apple-secrets-blocked iPhone/App-Store path.
+
 ---
 
 Previous session (2026-09-27, starting ~05:52 UTC): standard session start — `git fetch --all`, checked out
