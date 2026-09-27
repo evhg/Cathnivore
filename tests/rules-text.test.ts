@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createGame } from '../src/engine/state'
-import { IMPROVEMENTS } from '../src/content/improvements'
+import { IMPROVEMENTS, CAMPAIGN_IMPROVEMENTS } from '../src/content/improvements'
 import { SCHEMES } from '../src/content/schemes'
 import { AGENDA_CARDS } from '../src/content/agenda'
 import { ALL_REGION_IDS } from '../src/content/map'
@@ -19,8 +19,10 @@ const TRACKS: { kind: ResourceKind; noun: string }[] = [
 ]
 
 describe('Improvement rules text', () => {
-  for (const card of IMPROVEMENTS) {
-    it(`${card.name}: text matches an immediate production change`, () => {
+  // Includes the 3 campaign-only Wholesome Hollow Contract copies (SPEC 7) alongside the 36 full-game
+  // cards — a prior gap left `CAMPAIGN_IMPROVEMENTS` unchecked by this file's numeric text-vs-effect test.
+  for (const card of [...IMPROVEMENTS, ...CAMPAIGN_IMPROVEMENTS]) {
+    it(`${card.name}: text matches an immediate production/resource/Rift change`, () => {
       expect(card.text.length).toBeGreaterThan(0)
       expect(card.text.length).toBeLessThanOrEqual(200)
 
@@ -31,6 +33,22 @@ describe('Improvement rules text', () => {
         if (delta !== 0) {
           expect(card.text).toContain(`+${delta} ${noun} production`)
         }
+      }
+      // Immediate one-off resource gains ("Immediately gain 2 Produce and 1 Goodwill.") aren't production
+      // changes, so they need their own check against `resources`, not `production`. "gain" is stated once
+      // for the whole sentence when several resources change (e.g. "gain 2 Produce and 1 Goodwill"), so the
+      // check is just the number+noun pair, not a repeated "gain" before each one.
+      for (const { kind, noun } of TRACKS) {
+        const delta = after.producers.mara.resources[kind] - before.producers.mara.resources[kind]
+        if (delta !== 0) {
+          expect(card.text).toContain(`${delta} ${noun}`)
+        }
+      }
+      // A few Media Improvements also raise Rift as part of buying them (SPEC 7: "A few Media cards raise
+      // Rift"); their text's "Rift +N" claim was previously unchecked against the actual `onBuy` delta.
+      const riftDelta = after.rift - before.rift
+      if (riftDelta !== 0) {
+        expect(card.text).toContain(`Rift +${riftDelta}`)
       }
     })
 
