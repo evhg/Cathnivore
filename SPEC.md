@@ -208,7 +208,7 @@ Stack them with Stage I on top and Stage III at the bottom. A card matches every
 
 | | Easy | Normal | Hard |
 |---|---|---|---|
-| Public Trust at start | 12 | 10 | 8 |
+| Public Trust at start | 14 | 10 | 8 |
 | Lost Land pool | 20 | 10 | 6 |
 | Extra setup | 1 fewer starting Outlet in Kingsmarket | none | +1 Doubt in each Pasture region, +1 Outlet in Kingsmarket |
 
@@ -219,7 +219,9 @@ first actually simulated Easy/Hard: a 100-game MCTSBot Easy run came back at 43.
 band. Easy's pool was widened 10 -> 16 (53.0% on a 100-game spot check), then 16 -> 20 in a further
 iteration the same day, which held win rate flat but showed Lost Land had stopped being the bottleneck —
 so a further iteration added the Kingsmarket-Outlet line above instead, targeting liberation pace
-directly; this table is kept in sync with the tuned code rather than the original design draft.)
+directly (50.0% -> 56.0% confirmed). That shifted the dominant loss reason to Public Trust, so a further
+iteration widened Easy's starting Public Trust 12 -> 14 to address it directly; this table is kept in
+sync with the tuned code rather than the original design draft.)
 
 ## 5. Cath's Plan (Schemes)
 

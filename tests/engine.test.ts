@@ -68,7 +68,7 @@ describe('createGame', () => {
     // Normal, so it doesn't re-drift if the loop moves Normal again without a matching Easy change.
     const easy = createGame({ ...FULL_CONFIG, difficulty: 'easy' }, 1)
     const normal = createGame(FULL_CONFIG, 1)
-    expect(easy.publicTrust).toBe(12)
+    expect(easy.publicTrust).toBe(14)
     expect(easy.publicTrust).toBeGreaterThan(normal.publicTrust)
     expect(easy.lostLandPool).toBe(20)
     expect(easy.lostLandPool).toBeGreaterThanOrEqual(normal.lostLandPool)

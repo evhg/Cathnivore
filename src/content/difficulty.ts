@@ -19,12 +19,16 @@ import type { GameConfig } from '../engine/types'
 // `kingsmarketOutlets`, mirroring how Hard already has an asymmetric "extra setup" per SPEC 4.9's table
 // (Hard's Kingsmarket already gets 3 instead of the base 2). Easy starts Kingsmarket with 1 fewer,
 // making the capital (the 5th liberation required to win) faster to crack. One number this iteration,
-// per SPEC 9.3's balance-loop discipline; see DECISIONS.md for the verification run.
+// per SPEC 9.3's balance-loop discipline; see DECISIONS.md for the verification run. That change was
+// confirmed with a 100-game MCTSBot spot check: 50.0% -> 56.0%, real progress, but it also shifted the
+// dominant loss reason to `publicTrust` (47.7%, up from ~20-35% in earlier runs). Widening Easy's own
+// Public Trust gap over Normal (12 -> 14, still under the track's 15 ceiling) is this iteration's single
+// number, targeting that new bottleneck directly.
 export const DIFFICULTY_SETTINGS: Record<
   GameConfig['difficulty'],
   { publicTrust: number; lostLandPool: number; kingsmarketOutlets: number }
 > = {
-  easy: { publicTrust: 12, lostLandPool: 20, kingsmarketOutlets: 1 },
+  easy: { publicTrust: 14, lostLandPool: 20, kingsmarketOutlets: 1 },
   normal: { publicTrust: 10, lostLandPool: 10, kingsmarketOutlets: 2 },
   hard: { publicTrust: 8, lostLandPool: 6, kingsmarketOutlets: 3 },
 }
