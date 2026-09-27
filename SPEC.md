@@ -209,15 +209,16 @@ Stack them with Stage I on top and Stage III at the bottom. A card matches every
 | | Easy | Normal | Hard |
 |---|---|---|---|
 | Public Trust at start | 12 | 10 | 8 |
-| Lost Land pool | 16 | 10 | 6 |
+| Lost Land pool | 20 | 10 | 6 |
 | Extra setup | none | none | +1 Doubt in each Pasture region, +1 Outlet in Kingsmarket |
 
 The balance loop may tune these values. (Normal's Lost Land pool moved 8 -> 11 -> 10 across several
 M4 balance-loop iterations — see `DECISIONS.md` and `src/content/difficulty.ts` — landing equal to Easy's
 original value. That left Easy's own SPEC 9.4 win-rate target unmet, undetected until a 2026-09-27 session
 first actually simulated Easy/Hard: a 100-game MCTSBot Easy run came back at 43.0%, below even Normal's
-band. Easy's pool was widened 10 -> 16 to reopen a real gap; this table is kept in sync with the tuned
-code rather than the original design draft.)
+band. Easy's pool was widened 10 -> 16 (53.0% on a 100-game spot check), then 16 -> 20 in a further
+iteration the same day; this table is kept in sync with the tuned code rather than the original design
+draft.)
 
 ## 5. Cath's Plan (Schemes)
 
