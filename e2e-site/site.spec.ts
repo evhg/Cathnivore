@@ -135,6 +135,18 @@ test.describe('Runnel', () => {
     await expect(page.locator('#hud-taps')).toHaveText('1')
   })
 
+  test('clicking a tile moves the roving tabindex so Tab returns there', async ({ page }) => {
+    await page.goto('/runnel/?nohelp')
+    const cells = page.locator('.tiles > g.cell:not(.stone)')
+    const initial = page.locator('.tiles > g.cell[tabindex="0"]')
+    await expect(initial).toHaveCount(1)
+    const target = cells.nth(2)
+    await target.click()
+    // The tapped tile becomes the sole roving-tabindex stop, not just whatever last had DOM focus.
+    await expect(page.locator('.tiles > g.cell[tabindex="0"]')).toHaveCount(1)
+    await expect(target).toHaveAttribute('tabindex', '0')
+  })
+
   test('has no serious or critical accessibility issues, before and during play', async ({ page }) => {
     await page.goto('/runnel/')
     await expect(page.getByRole('heading', { name: 'How to play' })).toBeVisible()

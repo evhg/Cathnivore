@@ -92,6 +92,9 @@ export class Board {
     const tiles = el('g', { class: 'tiles' }, svg)
     puzzle.cells.forEach((cell, i) => this.views.push(this.drawCell(tiles, cell, i)))
     this.puddles = el('g', { class: 'puddles' }, svg)
+    // drawCell already gave the first playable cell tabindex="0" as the sole initial roving-tabindex
+    // stop; track it so the first focus/click elsewhere clears it instead of leaving two.
+    this.focusIndex = this.firstPlayable()
 
     this.flow = computeFlow(puzzle.cells)
     this.applyFlow(this.flow, new Set(), true)
@@ -294,6 +297,13 @@ export class Board {
     })
     root.addEventListener('keydown', (e) => this.onKey(e, index))
     root.addEventListener('focus', () => {
+      // Keep the roving tabindex in step with whichever cell actually has DOM focus, however it got
+      // there (arrow keys already move it themselves, but a pointer tap or a Tab from outside the
+      // board would otherwise leave the old cell as the sole tabindex="0" stop).
+      if (this.focusIndex >= 0 && this.focusIndex !== index) {
+        this.views[this.focusIndex]?.root.setAttribute('tabindex', '-1')
+      }
+      root.setAttribute('tabindex', '0')
       this.focusIndex = index
     })
   }

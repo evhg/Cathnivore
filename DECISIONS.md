@@ -2109,3 +2109,22 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   forward cleanly, where the old `git checkout main` failed outright. `-B` is safe here because this
   script never has local commits on `main` worth preserving — it only ever wants `main` to track
   `origin/main` before merging `build` in.
+- 2026-09-27 (same session): adversarial read of Runnel's UI/persistence layer (`board.ts`, `main.ts`,
+  `store.ts` -- the engine already had its own bug-hunt pass). `store.ts`'s Daily-vs-stale-day handling,
+  the save/reload race around `finish()`, and practice-mode size switching all held up (each keys state
+  correctly, e.g. `data.daily[today]`/`data.practice[size]`, and `restore()`'s seed+length check already
+  rejects a mismatched saved game). Found one real bug in `board.ts`: the roving `tabindex` (arrow-key
+  navigation) was only ever updated by the arrow-key handler itself, never by the `focus` DOM event, so a
+  pointer tap (or a Tab from outside the board) left the *previous* cell as the sole `tabindex="0"` stop
+  instead of following actual focus -- two cells could end up focusable via Tab, or Tab-ing back into the
+  board could land somewhere the player never was. Fixed by moving the roving-tabindex bookkeeping into
+  the `focus` listener (so it tracks focus however it's reached) and seeding `Board`'s initial
+  `focusIndex` to the first playable cell instead of `-1`, so the very first pointer/Tab focus change
+  correctly clears that initial tile's `tabindex` too. Added `e2e-site/site.spec.ts`'s "clicking a tile
+  moves the roving tabindex so Tab returns there" test, which failed before the fix (2 cells with
+  `tabindex="0"`) and passes after. Verified: `npx vitest run tests/runnel.test.ts` (13/13), `npx tsc
+  --noEmit` clean, and the full `npm run e2e:site` suite (28/28, phone+desktop) via
+  `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`. One unrelated,
+  pre-existing flaky failure was seen once (landing page "New" badge color-contrast axe violation) and
+  reproduced as flaky on the unmodified tree too (passed 6/6 in isolation reruns on both trees) -- not a
+  Runnel issue, left alone.
