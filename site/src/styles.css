@@ -444,8 +444,12 @@ body {
   .title {
     font-size: clamp(48px, 16vh, 120px);
   }
-  .lede {
+  .lede,
+  .card-text {
     display: none;
+  }
+  .card {
+    padding: 12px 14px;
   }
 }
 
