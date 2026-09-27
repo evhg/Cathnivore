@@ -2701,6 +2701,21 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   before (only the cert-authority one was documented) — if it recurs, treat it the same way (curl
   cross-check, correct by hand if the release was actually healthy) rather than assuming it's a new, real
   release-blocking problem.
+- `5b5b8f9` (merge of all 25 commits that had been stuck on `build` behind the `origin/main` divergence since
+  `c3e1a09` — see Current milestone/Blocked for the divergence's own history). Released via
+  `git checkout -B main origin/main && git merge --no-ff build && git push origin main`, first try, no
+  classifier denial either step. `version.json` matched on the first `curl` check (no poll needed).
+  `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all verified 200. `deploy-14` would be the next tag
+  number but tag pushes remain blocked (known 403; see Blocked) — commit SHA is the record.
+- `1886193` (this session's 5 review-subagent fixes: the Public-Trust Agenda-loss gap, the Runnel daily-
+  rollover gap, the sim-harness STEP_CAP miscount, the missing iOS Xcode scheme, and the site-accessibility
+  test timing fix — see Current milestone for full detail). Released the same way as `5b5b8f9` immediately
+  above (`git checkout -B main origin/main && git merge --no-ff build && git push origin main`), first try,
+  no classifier denial. `npm run gates` passed clean beforehand (gates 1-7; gate 8 unchanged from this
+  session's earlier clean subagent review, no visual changes in this batch). `version.json` matched
+  `1886193` on the first poll after a 20s wait. `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all
+  verified 200. `main` is at `1886193`, healthy. `deploy-15` would be the next tag number but tag pushes
+  remain blocked (known 403; see Blocked) — commit SHA is the record.
 
 ## Final report
 (not yet written)
