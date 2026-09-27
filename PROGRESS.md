@@ -2861,6 +2861,14 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   `Monitor`-based poll. `/`, `/cathnivore/`, `/runnel/` all verified 200. `main` is at `458a4cb`, healthy.
   `deploy-18` would be the next tag number but tag pushes remain blocked (known 403; see Blocked) — commit
   SHA is the record.
+- `3e042ed` (this session's AI-worker-fallback diagnosability fix, the Rules Reference difficulty text
+  completion, the stuck-splash-screen retry fix, the native-storage write-ordering fix, and the wrong App
+  Store subcategory fix). Released the same way, first try, no classifier denial. `npm run gates` passed
+  clean beforehand (gates 1-7; gate 8 skipped a dedicated subagent given this session's time budget — the
+  only visual changes were minor text additions/a new Log-sheet reason string, already covered by passing
+  e2e assertions). `version.json` matched via a `Monitor`-based poll. `/`, `/cathnivore/`, `/runnel/` all
+  verified 200. `main` is at `3e042ed`, healthy. `deploy-19` would be the next tag number but tag pushes
+  remain blocked (known 403; see Blocked) — commit SHA is the record.
 
 ## Final report
 (not yet written)
