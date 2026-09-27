@@ -2516,3 +2516,26 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   a real Quick Game first specifically so this is checkable). Verified: `phone`/`desktop-chromium` both pass
   (WebKit unavailable in this sandbox instance this session — a pre-existing environment gap, not a
   regression from this change).
+- 2026-09-27 (new session, ~11:56 UTC): 2 more review subagents (PWA offline/update flow vs. SPEC 11.1;
+  Vercel config/site build vs. SPEC 11.5/15) found 2 small, real, previously-unlogged gaps and confirmed
+  everything else already reviewed still holds:
+  1. `vite.config.ts`'s PWA `workbox.globPatterns` (`'**/*.{js,css,html,woff,woff2,svg,json}'`) never got
+     `png` added after a later session added `public/icon-192.png`/`icon-512.png` to the manifest's `icons`
+     array — those PNGs (plus `apple-touch-icon.png`/`social-preview.png`) were silently excluded from the
+     service worker's precache list, so a player who never fetched them online (or whose browser evicted
+     them) could hit a failed icon fetch offline (e.g. "Add to Home Screen" while offline). Cosmetic, not
+     gameplay-breaking, but a real precache gap against SPEC 11.1's offline-play requirement. Fixed by adding
+     `png` to the extension list; precache count went from 53 to 57 entries (1020 KiB, still comfortably
+     under any real budget concern).
+  2. `vercel.json` had no explicit Cache-Control rule for `/version.json` — every other rule either excludes
+     it by pattern (the dotted-path catch-all) or targets something else, so it fell through to Vercel's
+     static-file default rather than an explicit `no-cache`. Low real-world risk in practice (the default is
+     already `max-age=0, must-revalidate`), but `scripts/release.ts`'s post-deploy poll depends on this exact
+     file reflecting the new commit promptly, so an explicit rule closes a previously-unreviewed loose end in
+     the same cache-header story DECISIONS.md's earlier `index.html`-caching fix already covered. Added a
+     dedicated `no-cache` rule for `/version.json`, validated as well-formed JSON and against
+     `tests/pages.test.ts`'s existing `vercel.json` parsing tests. Everything else in both review passes
+     (SW-registration native-platform gating, the update-ready banner's title-screen-only display and
+     mid-game-safe persistence, the `/cathnivore/`/`/runnel/` rewrite exclusions, `build-site.ts`'s
+     base-href correctness) was independently re-verified against real build output and prior DECISIONS.md
+     entries, no new issues. `npm run check` (390+ tests, build) passes clean after both fixes.
