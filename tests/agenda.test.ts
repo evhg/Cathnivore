@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createGame } from '../src/engine/state'
 import { runEnemyTurn } from '../src/engine/enemy'
-import { AGENDA_CARDS_BY_ID } from '../src/content/agenda'
+import { validate } from '../src/engine/api'
+import { AGENDA_CARDS, AGENDA_CARDS_BY_ID } from '../src/content/agenda'
 import { ALL_REGION_IDS } from '../src/content/map'
 import type { GameConfig } from '../src/engine/types'
 
@@ -178,6 +179,22 @@ describe('Agenda cards that target Kingsmarket by id respect the liberated-regio
       const after = card[kind]!(state)
       expect(after.regions.kingsmarket[field]).toBe(0)
       expect(after.regions.kingsmarket.liberated).toBe(true)
+    })
+  }
+})
+
+// SPEC 11.4 gate 2: "a unit test for every ... Agenda card." A fresh audit found 14 of the 24 cards had no
+// test anywhere that called their `effect`/`bonusEffect` at all (only the liberated-region-exemption tests
+// above touch a handful of them, and only for that one property). Closes it generically: every card's
+// `effect` and `bonusEffect` are called directly against the real post-setup board (varied Stalls/Outlets/
+// Doubt/Buyouts across regions, so "most/fewest Stalls"/"2+ Outlets, no Buyout" extremal picks all have a
+// real answer), and the result must never violate `validate()`'s invariants.
+describe('Every Agenda card resolves cleanly (SPEC 11.4 gate 2)', () => {
+  for (const card of AGENDA_CARDS) {
+    it(`${card.id}: effect and bonusEffect are both invariant-clean`, () => {
+      const state = createGame(FULL_CONFIG, 3)
+      expect(validate(card.effect(state))).toEqual([])
+      expect(validate(card.bonusEffect(state))).toEqual([])
     })
   }
 })
