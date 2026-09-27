@@ -2869,6 +2869,13 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   e2e assertions). `version.json` matched via a `Monitor`-based poll. `/`, `/cathnivore/`, `/runnel/` all
   verified 200. `main` is at `3e042ed`, healthy. `deploy-19` would be the next tag number but tag pushes
   remain blocked (known 403; see Blocked) — commit SHA is the record.
+- `6306cd2` (this session's stale-Scene.tsx-comment fix and 2 new test-coverage additions: `replay()`
+  through `tearUpContract`/`decide` actions, and the Scheme deck's discard-pile reshuffle). Released the
+  same way, first try, no classifier denial. `npm run gates` passed clean beforehand (gates 1-7; gate 8's
+  screenshots unchanged — no UI touched this batch, tests/comments only). `version.json` matched via a
+  `Monitor`-based poll. `/`, `/cathnivore/`, `/runnel/` all verified 200. `main` is at `6306cd2`, healthy.
+  `deploy-20` would be the next tag number but tag pushes remain blocked (known 403; see Blocked) — commit
+  SHA is the record.
 
 ## Final report
 (not yet written)
