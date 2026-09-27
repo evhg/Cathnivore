@@ -2666,3 +2666,27 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   task (the Op-ed Column finding from the prior session) and to double-check mara+tomas vs. mara+sol at
   higher confidence — start it early in the session, since a single run now regularly takes well over 20
   minutes in this sandbox.
+- 2026-09-27 (new session, ~13:33 UTC): 2 review subagents (AI Web Worker crash diagnosability vs. SPEC
+  9.2/11.3; Setup screen difficulty/seed/producer-selection vs. SPEC 10.1/4.9) each found one real,
+  previously-unlogged issue:
+  1. A worker crash/hang correctly falls back to HeuristicBot within its 3s watchdog (confirmed still
+     correct, not a stuck-turn bug), but the fallback was completely silent: no `console.*` call anywhere in
+     the failure path, and `advance()` was called with no `aiReason`, so the Log sheet showed a normal-
+     looking action with no indication the real MCTS decision never ran — breaking SPEC 9.2's "each AI
+     action shows a one-line reason in the log" for every fallback move, and leaving zero trace a bug report
+     could capture (SPEC 11.3). Fixed: `Game.tsx`'s `fallBackToHeuristic` now takes a `why` string (`onerror`
+     includes the underlying `ErrorEvent.message`, the watchdog says "decision timed out"), `console.warn`s
+     it, and passes a fixed "(AI worker unavailable — used backup logic)" `aiReason` into `advance()` so the
+     Log sheet shows it too. `e2e/ai-teammate.spec.ts`'s existing crash-fallback test previously asserted the
+     OLD buggy behaviour (*no* reason shown) — updated it to assert the new fallback reason text is present
+     instead, since the old assertion was literally testing for the absence of what this fix adds.
+  2. `RulesReference.tsx`'s "Difficulty" section body text covered only 3 of `DIFFICULTY_SETTINGS`'s 5
+     fields (Public Trust, Lost Land pool, Kingsmarket Outlets) — Easy's `extraHomeStalls`/
+     `kingsmarketBuyouts` levers and Hard's Pasture-region Doubt (all added by later balance-loop sessions,
+     after this text was first written) were silently missing, so a player checking Rules Reference for what
+     Easy/Hard actually change saw an incomplete picture. Fixed by extending the body string to cover all 5
+     differences, still built from live `DIFFICULTY_SETTINGS` values (not hardcoded numbers) so it can't
+     drift the same way again. Setup.tsx itself, seed handling and producer-selection validation were all
+     re-verified correct, no new issues there.
+  `npx tsc -b`, `npm run build`, `npx vitest run` (386/386) and the full `e2e/ai-teammate.spec.ts` suite
+  (both sizes) all pass clean.

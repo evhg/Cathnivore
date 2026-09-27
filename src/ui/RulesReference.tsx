@@ -173,7 +173,14 @@ export default function RulesReference({ onClose, initialTerm }: Props) {
           <EntryList
             entries={(['easy', 'normal', 'hard'] as const).map((d) => ({
               term: d[0]!.toUpperCase() + d.slice(1),
-              body: `Public Trust starts at ${DIFFICULTY_SETTINGS[d].publicTrust}, Lost Land pool of ${DIFFICULTY_SETTINGS[d].lostLandPool}, Kingsmarket starts with ${DIFFICULTY_SETTINGS[d].kingsmarketOutlets} Outlet${DIFFICULTY_SETTINGS[d].kingsmarketOutlets === 1 ? '' : 's'}.`,
+              body: [
+                `Public Trust starts at ${DIFFICULTY_SETTINGS[d].publicTrust}, Lost Land pool of ${DIFFICULTY_SETTINGS[d].lostLandPool}, Kingsmarket starts with ${DIFFICULTY_SETTINGS[d].kingsmarketOutlets} Outlet${DIFFICULTY_SETTINGS[d].kingsmarketOutlets === 1 ? '' : 's'} and ${DIFFICULTY_SETTINGS[d].kingsmarketBuyouts} Buyout${DIFFICULTY_SETTINGS[d].kingsmarketBuyouts === 1 ? '' : 's'}.`,
+                DIFFICULTY_SETTINGS[d].extraHomeStalls > 0 &&
+                  `Each producer starts with ${DIFFICULTY_SETTINGS[d].extraHomeStalls} extra Stall in their home region.`,
+                d === 'hard' && 'Each Pasture region also starts with 1 Doubt.',
+              ]
+                .filter(Boolean)
+                .join(' '),
             }))}
           />
         </Section>
