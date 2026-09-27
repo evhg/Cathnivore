@@ -54,7 +54,9 @@ export const PRODUCERS: Record<ProducerId, ProducerDef> = {
 export const ALL_PRODUCER_IDS: ProducerId[] = ['mara', 'tomas', 'ines', 'sol']
 
 // SPEC 6: "The setup screen suggests the pair with the best balance data, labelled 'Recommended.'"
-// Sourced from BALANCE.md's final balance-loop run (iteration 12, 2026-09-25T15:25:27.400Z, 200-game
-// MCTSBot/Normal/all-pairs): mara+tomas led every pair at 41.2%, ahead of ines+mara (29.4%) and every other
-// pair. Update this if a future balance-loop run changes which pair leads.
+// mara+tomas has led every MCTSBot/Normal/all-pairs run in BALANCE.md since balance-loop iteration 7,
+// including the latest one (2026-09-26T18:37:03.292Z, 200 games: mara+tomas=52.9%, next-best
+// mara+sol=42.4%). `tests/recommended-pair.test.ts` re-derives the leader from BALANCE.md's most recent
+// such run on every `npm run check` and fails if it no longer matches this constant — update both this
+// pair and this comment together if a future balance-loop run changes which pair leads.
 export const RECOMMENDED_PAIR: [ProducerId, ProducerId] = ['mara', 'tomas']

@@ -94,4 +94,43 @@ describe('role abilities (SPEC 6)', () => {
     expect(next.regions.rivermead.doubt).toBe(1) // the other eligible region is untouched
     expect(validate(next)).toEqual([])
   })
+
+  it('is free (does not consume one of the 3 actions), is scoped per-producer, and resets at the start of the next round', () => {
+    let state = createGame(FULL_CONFIG, 5)
+    expect(state.round).toBe(1)
+    expect(state.activeProducer).toBe('mara')
+    const actionsLeftBefore = state.actionsLeft
+
+    // Using Mara's role ability spends no action (SPEC 4.6: the role ability is separate from the 3
+    // numbered actions) and doesn't touch Tomas's own availability (per-producer scoping).
+    state = applyAction(state, { kind: 'role', targetRegion: 'brindleHills' })
+    expect(state.actionsLeft).toBe(actionsLeftBefore)
+    expect(state.producers.mara.roleUsedThisRound).toBe(true)
+    expect(state.producers.tomas.roleUsedThisRound).toBe(false)
+    expect(legalActions(state).some((a) => a.kind === 'role')).toBe(false)
+
+    // Finish Mara's turn (3 real actions) and hand off to Tomas.
+    state = applyAction(state, { kind: 'graft' })
+    state = applyAction(state, { kind: 'graft' })
+    state = applyAction(state, { kind: 'graft' })
+    expect(state.activeProducer).toBe('tomas')
+    // Tomas's role ability is still available even though Mara already used hers this round.
+    expect(legalActions(state).some((a) => a.kind === 'role')).toBe(true)
+
+    // Finish the round without Tomas using his role ability at all (round 1 -> round 2 via Enemy turn
+    // and Cleanup, triggered once his 3rd action drops actionsLeft to 0).
+    state = applyAction(state, { kind: 'graft' })
+    state = applyAction(state, { kind: 'graft' })
+    state = applyAction(state, { kind: 'graft' })
+
+    if (!state.result) {
+      expect(state.round).toBe(2)
+      // Both producers' role-ability availability resets per round, regardless of whether it was used
+      // (Mara) or left unused (Tomas) the round before.
+      expect(state.producers.mara.roleUsedThisRound).toBe(false)
+      expect(state.producers.tomas.roleUsedThisRound).toBe(false)
+      expect(legalActions(state).some((a) => a.kind === 'role')).toBe(true)
+      expect(validate(state)).toEqual([])
+    }
+  })
 })
