@@ -3,6 +3,7 @@ import {
   loadGame,
   saveGame,
   SAVE_KEY,
+  CAMPAIGN_KEY,
   loadCampaign,
   markChapterComplete,
   recordGrowingSeasonCarryOver,
@@ -92,6 +93,26 @@ describe('growing season carry-over (SPEC 8.2 ch3, campaign storage)', () => {
     expect(loadCampaign().growingSeasonContractsSurviving).toBe(1)
     recordGrowingSeasonCarryOver(2)
     expect(loadCampaign().growingSeasonContractsSurviving).toBe(2)
+  })
+
+  // Adversarial pass: a same-version campaign save whose `completed` field is missing/malformed used to be
+  // returned as-is by `loadCampaign`, and every reader (`markChapterComplete` here, plus App.tsx's campaign
+  // chapter list) calls `.includes`/spreads it assuming an array, with no defensive fallback of its own —
+  // so this would throw uncaught the moment the campaign screen rendered or a chapter finished, instead of
+  // just resetting progress like a version mismatch does.
+  it('treats a version-1 save with a non-array `completed` as unusable and resets it', () => {
+    vi.stubGlobal('window', { localStorage: fakeLocalStorage() })
+    window.localStorage.setItem(CAMPAIGN_KEY, JSON.stringify({ version: 1, completed: 'not-an-array' }))
+    expect(loadCampaign()).toEqual({ version: 1, completed: [] })
+    // Must not throw: this is exactly what crashed before the fix.
+    expect(() => markChapterComplete('fresh-meat')).not.toThrow()
+    expect(loadCampaign().completed).toEqual(['fresh-meat'])
+  })
+
+  it('treats a version-1 save with a missing `completed` field as unusable and resets it', () => {
+    vi.stubGlobal('window', { localStorage: fakeLocalStorage() })
+    window.localStorage.setItem(CAMPAIGN_KEY, JSON.stringify({ version: 1 }))
+    expect(loadCampaign()).toEqual({ version: 1, completed: [] })
   })
 
   it('does not clobber chapter-completion progress, and vice versa', () => {
