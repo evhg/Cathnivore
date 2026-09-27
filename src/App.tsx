@@ -16,6 +16,7 @@ import {
   clearChapterLossCount,
 } from './platform/storage'
 import { openExternalLink } from './platform/externalLink'
+import { isNativePlatform } from './platform/native'
 import { CHAPTERS, CHAPTERS_BY_ID, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
@@ -217,6 +218,8 @@ export default function App() {
           <p>
             <a href="/privacy" onClick={(e) => { e.preventDefault(); openExternalLink('/privacy') }}>Privacy</a> ·{' '}
             <a href="/support" onClick={(e) => { e.preventDefault(); openExternalLink('/support') }}>Support</a>
+            {/* The website's root is the games landing page. The iPhone app keeps SPEC 11.6's only two links out. */}
+            {!isNativePlatform() && <> · <a href="/">More games</a></>}
           </p>
         </footer>
       </main>

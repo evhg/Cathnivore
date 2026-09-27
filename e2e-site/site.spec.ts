@@ -1,0 +1,124 @@
+import { expect, test, type Page } from '@playwright/test'
+import { dailyPuzzle, tapsToSolve, utcDateString } from '../games/runnel/src/engine'
+
+function trackErrors(page: Page): string[] {
+  const errors: string[] = []
+  page.on('pageerror', (e) => errors.push(String(e)))
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text())
+  })
+  return errors
+}
+
+async function noSideways(page: Page): Promise<void> {
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+  expect(overflow).toBeLessThanOrEqual(0)
+}
+
+test.describe('landing page', () => {
+  test('shows the title and both games, with no errors or sideways scroll', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore' })).toBeVisible()
+    await expect(page.locator('a[href="/cathnivore/"]')).toBeVisible()
+    await expect(page.locator('a[href="/runnel/"]')).toBeVisible()
+    await noSideways(page)
+    expect(errors).toEqual([])
+  })
+
+  test('still works with reduced motion', async ({ browser }) => {
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' })
+    const page = await ctx.newPage()
+    const errors = trackErrors(page)
+    await page.goto('http://localhost:4175/')
+    await expect(page.locator('a[href="/runnel/"]')).toBeVisible()
+    expect(errors).toEqual([])
+    await ctx.close()
+  })
+
+  test('the Cathnivore card opens the game', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('a[href="/cathnivore/"]').click()
+    await expect(page).toHaveURL(/\/cathnivore\/$/)
+    await expect(page.getByText('Quick Game')).toBeVisible()
+  })
+
+  test('the Runnel card opens the puzzle', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('a[href="/runnel/"]').click()
+    await expect(page).toHaveURL(/\/runnel\/$/)
+    await expect(page.getByRole('heading', { name: 'Runnel' })).toBeVisible()
+  })
+
+  test('the root service worker is the self-removing replacement', async ({ request }) => {
+    const res = await request.get('/sw.js')
+    expect(res.ok()).toBe(true)
+    expect(await res.text()).toContain('registration.unregister()')
+  })
+
+  test('shared root pages are still served', async ({ request }) => {
+    for (const path of ['/privacy/', '/support/', '/version.json', '/fonts/fraunces-latin-700-normal.woff2']) {
+      expect((await request.get(path)).ok(), path).toBe(true)
+    }
+  })
+})
+
+test.describe('Runnel', () => {
+  test('first visit shows how to play, then a tap turns a tile', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.goto('/runnel/')
+    await expect(page.getByRole('heading', { name: 'How to play' })).toBeVisible()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await expect(page.locator('#hud-taps')).toHaveText('0')
+    await page.locator('.tiles > g.cell:not(.stone)').first().click()
+    await expect(page.locator('#hud-taps')).toHaveText('1')
+    await noSideways(page)
+    expect(errors).toEqual([])
+  })
+
+  test('solving the daily shows the result, and it survives a reload', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.goto('/runnel/?nohelp')
+    const puzzle = dailyPuzzle(utcDateString(new Date()))
+    const cells = page.locator('.tiles > g.cell')
+    for (let i = 0; i < puzzle.cells.length; i++) {
+      const n = tapsToSolve(puzzle.cells[i]!)
+      for (let k = 0; k < n; k++) await cells.nth(i).click({ force: true })
+    }
+    await expect(page.getByRole('heading', { name: 'Every field is watered.' })).toBeVisible()
+    await expect(page.locator('#win-taps')).toHaveText(String(puzzle.par))
+    await page.reload()
+    await expect(page.locator('#hint')).toContainText('Solved')
+    await expect(page.locator('.board.won')).toHaveCount(1)
+    expect(errors).toEqual([])
+  })
+
+  test('a tap in progress is saved across a reload', async ({ page }) => {
+    await page.goto('/runnel/?nohelp')
+    const cell = page.locator('.tiles > g.cell:not(.stone)').nth(3)
+    await cell.click()
+    await cell.click()
+    await page.reload()
+    await expect(page.locator('#hud-taps')).toHaveText('2')
+  })
+
+  test('practice mode offers three sizes and a new puzzle', async ({ page }) => {
+    await page.goto('/runnel/?nohelp')
+    await page.getByRole('tab', { name: 'Practice' }).click()
+    await expect(page.locator('#hud-title')).toContainText('Practice')
+    const medium = await page.locator('.tiles > g.cell').count()
+    await page.getByRole('button', { name: 'Large' }).click()
+    expect(await page.locator('.tiles > g.cell').count()).toBeGreaterThan(medium)
+    await page.getByRole('button', { name: 'Small' }).click()
+    expect(await page.locator('.tiles > g.cell').count()).toBeLessThan(medium)
+    await expect(page.getByRole('button', { name: 'New puzzle' })).toBeVisible()
+  })
+
+  test('keyboard players can move between tiles and turn them', async ({ page }) => {
+    await page.goto('/runnel/?nohelp')
+    await page.locator('.tiles > g.cell[tabindex="0"]').focus()
+    await page.keyboard.press('ArrowRight')
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#hud-taps')).toHaveText('1')
+  })
+})

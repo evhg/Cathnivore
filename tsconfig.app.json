@@ -19,5 +19,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["src", "sim", "tests", "e2e", "scripts"]
+  "include": ["src", "sim", "tests", "e2e", "scripts", "games", "site", "e2e-site"]
 }

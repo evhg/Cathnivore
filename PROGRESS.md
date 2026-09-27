@@ -1940,6 +1940,13 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [ ] final report in `PROGRESS.md`
 - [ ] create `DONE`
 
+
+### Portfolio (owner request, 2026-09-27; SPEC 15)
+- [x] Games landing page at `/` (`site/`), full-screen WebGL farmland scene, cards for both games
+- [x] Runnel daily irrigation puzzle at `/runnel/` (`games/runnel/`), with unit tests and the site e2e suite (`npm run e2e:site`, now part of gate 5)
+- [x] Cathnivore moved to `/cathnivore/` via `npm run build:site`; self-removing root service worker for returning players
+- [ ] Released to `main` (done by the owner's chat session under the build lock; see the deploy log)
+
 ## Blocked
 - **New 2026-09-27 ~03:00 UTC:** with the real build/main divergence fixed (see Current milestone/DECISIONS.md
   — `origin/main` is now a genuine ancestor of `build`'s HEAD), `npm run release`'s fast-forward step still hit
