@@ -9,6 +9,7 @@ import { createRng, shuffle } from './rng'
 import type { GameConfig, GameState, PressureCard, ProducerState, RegionId, RegionState } from './types'
 import { resolveScout } from './enemy'
 import { POOL_SIZES, addBuyout, addDoubt, addOutlets } from './pieces'
+import { ACTIONS_PER_ROUND } from './region'
 
 function buildPressureDeck(seed: number): { deck: PressureCard[]; seedAfter: number } {
   const cards = unshuffledPressureDeck()
@@ -97,7 +98,7 @@ export function createGame(config: GameConfig, seed: number): GameState {
     round: 1,
     firstPlayer: firstProducer,
     activeProducer: firstProducer,
-    actionsLeft: 3,
+    actionsLeft: ACTIONS_PER_ROUND,
     publicTrust: settings.publicTrust,
     rift: 0,
     riftSplitDone: false,

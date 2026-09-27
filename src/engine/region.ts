@@ -1,6 +1,10 @@
 import { REGIONS } from '../content/map'
 import type { GameState, ProducerId, RegionId, RegionState } from './types'
 
+// SPEC 4.6: "3 actions per producer per round" -- the single source of truth so state.ts/round.ts (which
+// set it), Game.tsx (which renders it) and RulesReference.tsx (which describes it in prose) can't drift.
+export const ACTIONS_PER_ROUND = 3
+
 export function regionStallTotal(region: RegionState): number {
   return Object.values(region.stalls).reduce((a, b) => a + (b ?? 0), 0)
 }

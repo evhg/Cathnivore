@@ -2352,3 +2352,14 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
      the Extra-setup table cell and the 75.3%/300-game confirmation to the note, so the "kept in sync" claim
      is true again. No code changed, no tests reference SPEC.md's prose directly (grepped tests/ for
      "SPEC.md", zero hits), so this carries no gate risk.
+- 2026-09-27 (same session, ~10:11-10:13 UTC): fixed the 2 real findings from the last review pair above.
+  (1) SPEC 10.5 drift risk: "3 actions per producer per round" was a bare literal repeated in 4 places
+  (state.ts, round.ts x2, Game.tsx's ActionsLeftIcon) with RulesReference.tsx's section title as a 5th,
+  untested copy -- a future balance change to the real value could silently leave the rules text wrong.
+  Added `ACTIONS_PER_ROUND` to region.ts (the file's existing home for SPEC-4.6-adjacent constants like
+  `stallCap`) and pointed all 5 sites at it, including interpolating it into RulesReference's title.
+  (2) SPEC 10.5 accuracy gap: `terms.ts`'s Open Stall glossary body said "Maximum 3 Stalls per region" as a
+  flat cap, omitting SPEC 4.6.1's "minus 1 per Lost Land token there, never below 1" -- which the engine
+  (region.ts's `stallCap`) does implement, so a player reading the glossary in a Lost-Land-damaged region
+  would be misled. Appended the missing clause to the glossary text. `npx tsc -b` and `npm run check`
+  (384/384 tests, build clean) both pass after both fixes.

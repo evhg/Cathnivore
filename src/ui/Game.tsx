@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { createRng } from '../engine/rng'
+import { ACTIONS_PER_ROUND } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
 import { REGIONS, regionMatchesPressureSlot } from '../content/map'
 import { HeuristicBot } from '../ai/heuristic'
@@ -578,7 +579,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             {active.production.goodwill}/round)
           </span>
           <span>
-            Actions left: <ActionsLeftIcon total={3} left={state.actionsLeft} />
+            Actions left: <ActionsLeftIcon total={ACTIONS_PER_ROUND} left={state.actionsLeft} />
           </span>
         </section>
       )}
