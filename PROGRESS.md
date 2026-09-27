@@ -1,6 +1,36 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~18:51 UTC): standard session start, lock taken, `ci.json` green,
+`ios.json` unchanged (still blocked on Apple secrets — `OWNER.md`'s Apple Team ID is still
+`PASTE-TEAM-ID`, not re-dispatched). `DEADLINE` has ~90 hours left, no M7-only restriction. `npm ci` +
+`npm run check` clean (398 tests — `build`/`main` were already in sync content-wise from the prior
+session's release, nothing new to release at session start).
+
+Ran a full `npm run gates`: gates 1-7 passed clean (Lighthouse mobile perf 98/100). Gate 8's screenshot
+review used 2 subagents (phone + desktop, CLAUDE.md's 2-at-once cap). Phone came back fully clean. Desktop
+found one real STYLE.md/SPEC-11.4-gate-8 issue and verified it myself before acting (this codebase's own
+history has several false-positive gate-8 claims from viewing screenshots at reduced resolution): the
+desktop map's enemy-piece icons (Outlet/Buyout/Doubt) render at only ~5px on-screen at the desktop map's
+260px CSS width (`global.css`'s `@media (min-width: 1024px) { .map { max-width: 260px } }`, tightened by a
+prior session purely to close SPEC 10.3's no-scroll gap) — well under STYLE.md 9's "readable at 16-20px"
+floor, and too small to tell the three piece shapes apart by silhouette alone in greyscale (STYLE.md
+principle 3), confirmed by cropping/zooming the actual screenshot at Kingsmarket's 5-piece cluster. A
+`global.css` comment had assumed pieces stayed "far larger than" the 32px floor at 260px, which the actual
+per-icon math (12 viewBox units × 260/600 px-per-unit ≈ 5.2px) shows was wrong for the piece icons
+specifically (region names are fine).
+
+Fixed without touching the tuned map/column sizing: added `PIECE_SCALE = 1.5` in `src/ui/Map.tsx`, applied
+only to the enemy-piece cluster's own `<g>` transform (scales the icons in place within each hex's ample
+existing white space, not the map or any other element). Verified: `npx tsc -b`, `npm run check` (398/398
+tests, build), and a full re-run of `e2e/accessibility.spec.ts`/`campaign.spec.ts`/`quick-game.spec.ts`/
+`hotseat.spec.ts` (both phone + desktop-chromium) all pass clean — including the desktop no-scroll layout
+gate 6 accessibility checks and the map-heavy quick-game/hotseat flows, so this didn't regress the
+carefully-tuned desktop column height. Re-captured gate 8's screenshots and re-inspected the Kingsmarket
+cluster directly: Outlet (box+tag), Buyout (peaked fence+sign) and Doubt (circular speech bubble) are now
+clearly distinct shapes in greyscale at both sizes, with room to spare in the hex. See DECISIONS.md.
+
+---
 This session (2026-09-27, starting ~17:52 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json` unchanged (still blocked on Apple secrets — `OWNER.md`'s Apple Team ID is still
 `PASTE-TEAM-ID`, not re-dispatched). `DEADLINE` has ~92 hours left, no M7-only restriction. `npm ci` +

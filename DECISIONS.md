@@ -2845,3 +2845,32 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   check of `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support`. Treating this the same way the
   2026-09-26 pattern was treated: the denial is intermittent, not a standing block — try `npm run release`
   normally (or the manual fallback) each session rather than assuming it will fail.
+- 2026-09-27 (~19:05 UTC): a fresh `npm run gates` run's gate-8 desktop screenshot subagent flagged the
+  desktop map's Outlet/Buyout/Doubt icons as failing STYLE.md principle 3 ("shape before colour... every
+  piece and marker must be identifiable in greyscale") when several pieces stack in one region (its example:
+  Kingsmarket with 2 Outlets/1 Buyout/2 Doubt). Verified directly rather than trusting the claim outright
+  (this file has several logged instances of gate-8 screenshot findings that turned out to be false
+  positives from viewing at reduced resolution) by cropping and zooming the actual PNG at native scale: the
+  cluster really does render at ~5px per icon on the desktop map. Root cause, confirmed by the math: the
+  desktop map is capped at `max-width: 260px` (`global.css`, `@media (min-width: 1024px)`) purely to close
+  SPEC 10.3's "no scrolling at 1280x800" gap (a prior session's own comment there, tightened 420→320→260px
+  over several sessions) against a 600-unit SVG viewBox, i.e. ~0.433 px per viewBox unit; each piece icon
+  (`Outlet`/`Buyout`/`Doubt` in `src/ui/Map.tsx`) is drawn in a 12×12-unit box, so 12 × 0.433 ≈ 5.2px on
+  screen — well under STYLE.md 9's "readable at 16-20px" floor for pieces, though the same `global.css`
+  comment's claim that pieces stay "far larger than" that floor at 260px is simply wrong (it was true for
+  region-name text, never checked separately for piece icons). At that size, greyscale Outlet/Buyout/Doubt
+  genuinely blur toward similar grey blobs, matching the subagent's claim.
+  Fixed narrowly rather than reopening the desktop map/column-height tuning (which several prior sessions
+  spent real, measured effort getting to fit without scrolling — re-widening the map itself would risk
+  reintroducing that gap): added `PIECE_SCALE = 1.5` in `src/ui/Map.tsx`, applied only to the enemy-piece
+  cluster's own `<g transform="... scale(...)">`, with the translate math adjusted so the row stays centred
+  (`x - count * 8 * PIECE_SCALE` in place of the old `x - count * 8`). This enlarges just the icons in place,
+  using each hex's existing empty space around the cluster (confirmed visually — regions are far larger than
+  the piece row even at the worst-case Kingsmarket density) rather than growing the map or any other element.
+  Verified: `npx tsc -b`, `npm run check` (398/398 tests, build) clean; re-ran
+  `e2e/accessibility.spec.ts`/`campaign.spec.ts`/`quick-game.spec.ts`/`hotseat.spec.ts` at both sizes (32
+  tests total) to specifically re-check the desktop no-scroll layout and the map-heavy gameplay flows for a
+  regression — all pass. Re-captured gate 8's screenshots and re-cropped the same Kingsmarket cluster:
+  Outlet/Buyout/Doubt are now clearly distinct silhouettes in greyscale at both phone and desktop sizes, with
+  headroom left in the hex even at 5 stacked pieces. `npm run build`'s bundle size is unaffected (no new
+  dependencies, one added constant and one adjusted transform string).
