@@ -3010,3 +3010,43 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   unchanged beyond the lock-file churn; this was a verification-only session once the release path was
   blocked, which is itself real progress (gate 8 is now confirmed clean for this exact commit, not just
   "unchanged since an earlier review" as several recent Blocked entries had to say).
+- 2026-09-27 (~22:52 UTC, new session): gate 8's screenshot review found a real, previously-undetected bug
+  (this run's own subagent pair, not a stale note): the game screen's map legend (Outlet/Buyout/Doubt icons)
+  rendered as thin, unrecognisable slivers on phone. Diagnosed properly rather than patching the first
+  plausible theory — an initial guess (the flex row overflows 390px, so flexbox squashes the svg's width
+  but not its height) looked right from the screenshot alone, but a `flex-shrink:0` fix made no visible
+  difference. Rather than stack another guess on top, wrote a throwaway Playwright test reading
+  `getBoundingClientRect`/`getComputedStyle` on the actual legend `<svg>` elements: the DOM box was exactly
+  the intended 16x18px the whole time, so the bug was never in layout sizing. The same script then caught it
+  immediately: at the moment gate 8's screenshot fires (right after `.game` mounts), the legend's Outlet/
+  Buyout/Doubt icons — which reuse the map's `.enemy-piece` components — were sitting at
+  `transform: translateX(18px); opacity: 0`, the 0% frame of `.enemy-piece`'s 200ms "piece-delivery" CSS
+  entrance animation (meant for a piece being placed on the map, not a static legend key). A `waitForTimeout
+  (1000)` in the same script confirmed the icons render correctly once the animation finishes. Fix: a
+  `.map-legend-icon .enemy-piece { animation: none }` rule so the legend's icons never play that animation
+  in the first place (reverted the flex-shrink/flex-wrap changes from the wrong first theory, since they
+  turned out to change nothing and weren't needed). Verified the fix at the pixel level, not just by re-
+  reading the gate: rebuilt, re-ran `e2e/screenshots.spec.ts`, then cropped and zoomed the legend row in
+  both `phone-4-game.png` and `phone-5-map-greyscale.png` directly — all four icons (Outlet's shopfront box
+  and price tag, Buyout's fence and SOLD sign, Doubt's speech bubble and "?", the Co-op marker rosette) now
+  render in full, and stay shape-distinguishable in greyscale. Added a regression test to
+  `e2e/tooltip.spec.ts` asserting `getComputedStyle(...).animationName === 'none'` on every
+  `.map-legend-icon .enemy-piece`, so this can't silently regress. `npm run check` and a full `npm run
+  gates` (gates 1-7, gate 8 via 2 fresh subagents re-reviewing all 30 screenshots specifically for this fix
+  plus a full general pass) both came back clean. Pushed to `build` (`aeebb9c`).
+
+  Also worth noting for future sessions: this confirms the map's `.enemy-piece`/`.stall-piece` animation
+  classes are unsafe to reuse on any *static* UI element (only ever meant for a piece appearing live on the
+  map) — if a future session reuses `Outlet`/`Buyout`/`Doubt`/`Stall`/`CoopMarkerIcon` anywhere else (an
+  Improvement card icon, a rules-reference illustration, etc.), it needs the same
+  `animation: none` treatment or an early screenshot will show the same 0%-frame artifact.
+
+  Then ran `npm run release`: gates passed, the fast-forward step hit the usual stale-local-`main`/
+  diverging-histories failure (main's own `Merge build into main: release` commits are never a `build`
+  ancestor), and the documented manual fix (`git checkout -B main origin/main && git merge --no-ff build`)
+  ran clean with **no classifier denial** on the checkout, merge, or `git push origin main` — consistent
+  with CLAUDE.md's 2026-09-26 note that this restriction is intermittent, not standing; this session simply
+  didn't trip it. `git diff HEAD origin/build` was empty before pushing, confirming a lossless merge.
+  `https://cathnivore.com/version.json` picked up the new commit (`f78f78e`, tree-identical to `aeebb9c`) on
+  the 3rd `curl` poll (~30s); `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all verified 200.
+  `main` is healthy at `f78f78e`. Full detail in PROGRESS.md's Current milestone/Deploy log.

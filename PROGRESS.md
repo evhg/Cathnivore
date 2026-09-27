@@ -1,6 +1,48 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~22:52 UTC): standard session start, lock taken, `ci.json` green at
+`e8f0666`, `ios.json`/`OWNER.md` unchanged (Apple Team ID still a placeholder). `npm ci` + `npm run check`
+clean. Ran `npm run release`: gates 1-7 passed clean; gate 8's fresh screenshots got a real 2-subagent
+review (CLAUDE.md's cap) and **found a real bug**: the map legend row (Outlet/Buyout/Doubt icons at the
+bottom of the game screen) rendered as unrecognisable slivers on phone. Root-caused it properly rather than
+guessing at a CSS-sizing fix: those icons reuse the map's `.enemy-piece` components, which carry a 200ms
+"piece-delivery" entrance animation meant for a piece appearing on the map. Gate 8's screenshot fires as
+soon as `.game` mounts, well inside that 200ms window, catching the icons at their 0% keyframe
+(`translateX(18px)`, `opacity:0`) — verified directly with a throwaway Playwright debug script reading
+`getComputedStyle`/`getBoundingClientRect` before guessing, since an earlier `flex-shrink`/`flex-wrap`
+theory (the icons *looked* squashed) turned out to be wrong once measured (the DOM box was the correct
+16x18px the whole time; the bug was inside the SVG's paint, not its layout box). Fixed by disabling the
+animation on the legend's static icons (`.map-legend-icon .enemy-piece { animation: none }`) — confirmed
+by rebuilding, re-running the screenshot capture, and pixel-inspecting the crop directly (both fixed and
+matching the intended Outlet/Buyout/Doubt/Co-op-marker shapes, in colour and greyscale). Added a regression
+test (`e2e/tooltip.spec.ts`) asserting the legend's `.enemy-piece` elements never carry the animation.
+`npm run check` clean; pushed to `build` (`aeebb9c`).
+
+Re-ran `npm run gates` in full to confirm the fix under real gate conditions (not just the two isolated
+screenshot re-runs done while diagnosing): gates 1-7 clean again (72 Cathnivore e2e + 28 site e2e + 16 axe,
+Lighthouse 98/100; `phone-webkit` still unavailable in this sandbox, a standing environment limit, not new).
+2 fresh subagents re-reviewed gate 8's screenshots specifically checking the legend fix plus a full general
+pass — both clean, 0 problems, fix confirmed on both phone and desktop.
+
+Ran `npm run release`: gates passed, the fast-forward step hit the usual stale-local-`main`/diverging-
+histories failure, and this time the documented manual fix (`git checkout -B main origin/main && git merge
+--no-ff build`) ran with **no classifier denial** on the checkout, the merge, or the final `git push origin
+main` — matching CLAUDE.md's 2026-09-26 note that the standing "Production Deploy" restriction several
+dozen sessions hit is intermittent, not permanent; this session simply didn't hit it. `git diff HEAD
+origin/build` was empty before pushing (lossless merge). Polled `https://cathnivore.com/version.json`
+directly with `curl` (no classifier restriction on read-only `curl`): picked up the new commit (`f78f78e`)
+on the 3rd check (~30s). Verified `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all return 200.
+`main` is at `f78f78e` (tree-identical to `build`'s `aeebb9c`), healthy — this is the release the M7
+checklist's "final release" item has been waiting on; not marking that item done yet since `ios-<n>`/
+`store.yml`/`submit-<n>` are still ahead of it and Apple secrets are still a placeholder, but this is now
+the live build if nothing further lands before then. `deploy-<n>` tag creation not attempted (known 403,
+see Blocked) — the commit SHA is the record, as every prior entry in this log does.
+
+`npm audit`: 0 vulnerabilities (unchanged, confirmed on the fresh `npm ci`). Lock released at session end.
+
+---
+
 This session (2026-09-27, starting ~21:52 UTC): standard session start, lock taken, `ci.json` green at
 `c129950`, `ios.json`/`OWNER.md` unchanged (Apple Team ID still a placeholder). `npm ci` + `npm run check`
 clean. Ran `npm run release`: all gates ran clean (gates 1-7 confirmed; gate 8's fresh screenshot capture
@@ -3327,6 +3369,16 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   intermittent, not standing. `version.json` matched via a `Monitor`-based poll (3rd check, ~20s). `/`,
   `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all verified 200 via `curl`. `main` is at `93bdc55`,
   healthy. Tag push remains blocked (known 403; see Blocked) — commit SHA is the record.
+- `aeebb9c` (this session's map-legend Outlet/Buyout/Doubt icon-slivers fix — see Current
+  milestone/DECISIONS.md). `npm run gates` passed clean beforehand (all 8 gates; gate 8 via 2 fresh
+  subagents, phone + desktop, specifically re-checking the legend fix plus a full general pass — 0 problems
+  found on either). `npm run release`'s own fast-forward step hit the usual stale-local-`main` failure; the
+  manual fix (`git checkout -B main origin/main && git merge --no-ff build`) ran clean with **no classifier
+  denial** on the checkout, the merge, or the final `git push origin main`. `git diff HEAD origin/build` was
+  empty before pushing (lossless merge). `version.json` matched via a `curl` poll (3rd check, ~30s). `/`,
+  `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all verified 200 via `curl`. `main` is at `f78f78e`
+  (tree-identical to `aeebb9c`), healthy. `deploy-<n>` tag push not attempted (known 403; see Blocked) —
+  commit SHA is the record.
 
 ## Final report
 (not yet written)
