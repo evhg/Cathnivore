@@ -2155,3 +2155,34 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   DECISIONS.md history, is still in place), `ios/App`'s Info.plist/ExportOptions.plist/AppDelegate/
   SceneDelegate/capacitor.config settings, and `store/` metadata's character limits and satire-disclosure
   wording -- checked out clean. Diff reviewed by hand before committing, not trusted at face value.
+- 2026-09-27 (same session): a dedicated review subagent audited `src/platform/storage.ts` end to end
+  (never had its own review pass before, only incidental fixes found in passing) and found a real bug:
+  `loadCampaign()` only checked `parsed.version`, not the shape of `parsed.completed`. Every reader of that
+  field (`markChapterComplete` here, and the campaign chapter list in `App.tsx`) calls `.includes`/spreads
+  it as an array with no defensive fallback (unlike `chapterLossCounts`, which every writer guards with
+  `?? {}`), so a same-version campaign save with a missing or corrupted `completed` field would crash
+  uncaught -- SPEC 11.3's "This save is from an older version" flow only covers game saves, not campaign
+  progress, so this would have been a bare ErrorBoundary crash from just opening the Campaign menu. Fixed
+  by also checking `Array.isArray(parsed.completed)` and resetting to a fresh `CampaignProgress` on failure,
+  same as a version mismatch already does. `tests/storage.test.ts` grew from 15 to 17 tests. Diff and tests
+  verified by hand before committing.
+- 2026-09-27 (same session): released `build` to `main` twice this session. The first (`302e285`) went
+  clean end to end. The second, carrying the `storage.ts` fix above (`c3e1a09`), hit a real complication:
+  `npm run release`'s HTTP smoke-test fallback failed with `curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL`
+  against `/cathnivore/` -- a different failure signature from the documented `ERR_CERT_AUTHORITY_INVALID`
+  sandbox artifact, but a network-layer error rather than a real HTTP failure (a non-2xx, a wrong commit,
+  missing content) -- and the script auto-reverted `main` back to `302e285` (new commit `69ea2d7`). Per
+  CLAUDE.md's explicit instruction for this exact situation ("cross-check by hand with curl... instead of
+  trusting the script's own revert decision"), checked by hand rather than accepting the revert: a curl
+  taken *before* the revert's own deploy had propagated had already shown `c3e1a09` live and fully healthy
+  (`version.json` matching, `/`/`/cathnivore/`/`/runnel/` all 200) -- direct evidence the smoke-test failure
+  was transient/network-layer, not a real problem with the release. Corrected it with `git revert --no-edit
+  69ea2d7` on `main` (verified the resulting tree exactly matches `c3e1a09` via `git diff c3e1a09 HEAD`
+  before pushing) rather than leaving the good commit reverted or force-pushing over the script's own commit
+  history. Polled `version.json` until it showed the new commit (`53d37ff`, ~75s), then ran 4 repeated
+  curl passes against `/`, `/cathnivore/`, `/runnel/`, `/privacy/` and `version.json` -- all 200, all
+  matching, no flakiness across the repeated checks. `main` is now healthy at `53d37ff` (tree-identical to
+  `build`'s `c3e1a09`), carrying the `storage.ts` crash fix live. This is the first time this specific
+  SSL_ERROR_SYSCALL failure mode has been seen (as opposed to the documented cert-authority one); worth
+  watching for in future sessions as possibly the same class of sandbox-proxy artifact under a different
+  error message, not a new standing restriction.

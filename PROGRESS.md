@@ -43,14 +43,39 @@ review history:
 Each subagent's diff was read and verified by hand (not trusted at face value) before committing, and each
 fix was re-verified with the relevant test suite. Released to `main` this session (`302e285`) via
 `npm run release` — clean end to end, no stale-`main` issue, no classifier denial, gates all passed (gate 8
-via a fresh subagent pass on this exact screenshot set). See Deploy log for full detail.
+via a fresh subagent pass on this exact screenshot set).
 
-Session tally: one closed coverage gap (site accessibility), three real bugs found and fixed by dedicated
-review passes (an Apple-secrets exposure pattern, a WebGL cleanup gap, a Runnel keyboard-focus bug), one
-clean release to `main`. `build`/`main` are both at `302e285`. Next session: standard session start,
-re-check the two standing blockers as usual (Apple secrets, tag pushes), and keep looking for genuinely
-unreviewed corners rather than assuming none remain — this session's four finds suggest there's still
-value in it.
+With time still left, ran two more review subagents on the same theory (areas with no dedicated pass yet):
+5. **PWA manifest and static assets vs SPEC 11.1/11.5** (`vite.config.ts`'s manifest, `index.html`,
+   `public/`, `vercel.json`'s cache/CSP headers) — clean, no findings. Verified against real built output
+   (`dist`/`dist-site`), not just config intent.
+6. **`src/platform/storage.ts`** (the save/campaign-progress module) — never had its own dedicated pass
+   before, only incidental fixes found in passing. Found and fixed a real bug: `loadCampaign()` only checked
+   `parsed.version`, not whether `parsed.completed` was actually an array. Every reader of that field
+   (`markChapterComplete` here, the campaign chapter list in `App.tsx`) uses it as an array with no fallback,
+   so a same-version save with a corrupted `completed` field would crash uncaught the moment the Campaign
+   screen renders — SPEC 11.3's "older version" recovery flow only covers game saves, not campaign progress,
+   so this would have been a bare ErrorBoundary crash. Fixed the same way a version mismatch already is
+   handled (reset to a fresh `CampaignProgress`); `tests/storage.test.ts` grew 15 -> 17.
+
+Released again to carry this fix live. This second release hit a real complication, handled per CLAUDE.md's
+explicit guidance for exactly this situation: the script's HTTP smoke-test fallback failed with a
+`SSL_ERROR_SYSCALL` (a different signature from the documented `ERR_CERT_AUTHORITY_INVALID` sandbox
+artifact) and auto-reverted `main`. A curl taken *before* the revert's own deploy had propagated had already
+shown the reverted commit live and fully healthy — clear evidence the smoke-test failure was transient, not
+a real problem. Corrected it with `git revert --no-edit` on the bad revert (tree-verified identical to the
+originally-released commit before pushing), polled until live, then ran 4 repeated curl passes against every
+page — all green, no flakiness. Full detail in DECISIONS.md and the Deploy log.
+
+Session tally: one closed coverage gap (site accessibility), four real bugs found and fixed by dedicated
+review passes (an Apple-secrets exposure pattern, a WebGL cleanup gap, a Runnel keyboard-focus bug, a
+campaign-save crash), two releases to `main` (one clean, one that needed a by-hand correction after a
+transient smoke-test failure) — `build`/`main` both healthy at `53d37ff` (tree-identical to `build`'s
+`c3e1a09`). Next session: standard session start, re-check the two standing blockers as usual (Apple
+secrets, tag pushes), and keep looking for genuinely unreviewed corners rather than assuming none remain —
+this session's four finds suggest there's still value in it. Also worth watching: whether the
+`SSL_ERROR_SYSCALL` smoke-test failure recurs (possibly the same sandbox-proxy artifact class as the
+documented cert one, under a different error message, not a new standing restriction).
 
 ---
 
@@ -2434,6 +2459,25 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   and matching commit). Independently re-verified with a direct `curl https://cathnivore.com/version.json`
   after the release finished: commit matches `302e285`. `origin/ci-status` confirms `ci.json` green on this
   exact commit. `deploy-12` tagged locally but can't be pushed (known 403; see Blocked).
+- `c3e1a09` (this session's `storage.ts` campaign-save crash fix, plus a PWA/static-asset review pass that
+  found no issues). `npm run release`'s fast-forward and CI both succeeded cleanly, but the script's HTTP
+  smoke-test fallback failed with `curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL` against
+  `/cathnivore/` — a new failure signature, not the documented `ERR_CERT_AUTHORITY_INVALID` one — and the
+  script auto-reverted `main` to `302e285` (commit `69ea2d7`). Per CLAUDE.md's explicit guidance for this
+  situation, cross-checked by hand rather than trusting the revert: a curl taken *before* the revert's own
+  deploy had propagated had already shown `c3e1a09` live and fully healthy (version.json matching, `/`,
+  `/cathnivore/`, `/runnel/` all 200) — clear evidence the smoke-test failure was transient/network-layer,
+  not a real problem with the release. Corrected with `git revert --no-edit 69ea2d7` on `main` (tree
+  verified identical to `c3e1a09` via `git diff` before pushing, so this restores exactly what should have
+  shipped, not a guess), producing `53d37ff`. Polled `version.json` until it showed the new commit (~75s),
+  then ran 4 repeated curl passes against `/`, `/cathnivore/`, `/runnel/`, `/privacy/` and `version.json` —
+  all 200, all matching, no flakiness. `main` is healthy at `53d37ff` (tree-identical to `build`'s
+  `c3e1a09`); `origin/ci-status`'s `ci.json` already confirmed green on `c3e1a09` before this complication
+  started. `deploy-13` would be the next tag number but tag pushes remain blocked (known 403; see Blocked).
+  **Watch item for future sessions:** this `SSL_ERROR_SYSCALL` smoke-test failure mode hadn't been seen
+  before (only the cert-authority one was documented) — if it recurs, treat it the same way (curl
+  cross-check, correct by hand if the release was actually healthy) rather than assuming it's a new, real
+  release-blocking problem.
 
 ## Final report
 (not yet written)
