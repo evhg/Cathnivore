@@ -1,6 +1,51 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~16:51 UTC): standard session start, lock taken, `ci.json` green,
+`ios.json` unchanged (still blocked on Apple secrets, not re-dispatched). `DEADLINE` has ~93 hours left, no
+M7-only restriction. `npm ci` + `npm run check` clean (392 tests).
+
+Ran a full `npm run gates`: all 8 gates passed. Gate 8's screenshot review (2 subagents, phone + desktop,
+CLAUDE.md's 2-at-once cap): phone came back fully clean; desktop claimed the map's EXPAND badge at
+Brindle Hills/Highmoor rendered as plain text with no wheat pill. Checked directly with a pixel crop of the
+actual screenshot rather than trusting the claim — the pill renders correctly, a false positive from viewing
+at reduced resolution. No real gate-8 criterion (unreadable text, overlap, hidden control, greyscale
+failure) found on either pass; logged and proceeded.
+
+Attempted the release: `npm run release`'s fast-forward step hit the usual stale-local-`main` failure, the
+documented manual fix (`git checkout -B main origin/main && git merge --no-ff build`) ran clean and lossless
+(`git diff HEAD build` empty), but `git push origin main` was denied again by the harness's "Production
+Deploy" classifier. Not retried per its own guidance. `origin/main` untouched; `build` unaffected, fully
+gated and pushed. Same standing blocker every recent session has hit — see Blocked.
+
+With the release path blocked, closed a real, previously-logged SPEC 10.5 gap: the desktop-only collapsible
+Market/Cath's Plan card list (`<details><summary>`) showed the Marks/Goodwill cost without the `<Tooltip>`
+wrapper the same term gets elsewhere, left open by a prior session over an unverified nesting-conflict
+concern. Wrapped both, verified the interactive behavior directly in a real headless-Chromium session
+(tooltip opens without also toggling `<details>`), and shipped it. **Then a full `npm run gates` re-run
+caught what that manual check couldn't:** axe's `no-focusable-content` rule (serious) correctly flags a
+focusable `<button>` nested inside `<summary>` regardless of click-handler behavior — 2 gate-6 accessibility
+tests failed (game screen, both themes, desktop). Reverted the change back to plain text, re-verified the
+accessibility suite passes (8/8) and `npm run check` stays clean (392 tests). Net effect on `build`: no
+change from where the session started, but the false lead and the correct fix are both logged in
+DECISIONS.md, including the lesson (a manual interactivity check is not a substitute for the real
+accessibility gate) and what a correct fix would actually need (the tooltip trigger as a DOM sibling of
+`<summary>`, not a descendant, with CSS to stay visually aligned — real layout work for a future session).
+
+Reviewed the standing "future session" follow-ups logged across DECISIONS.md/PROGRESS.md for any bounded,
+safe remaining work: the chapter 3->4 Wholesome Hollow Contract carry-over once flagged as missing is
+confirmed already implemented (`chapters.ts`'s `chapter4Config`/`survivingWholesomeHollowContracts`,
+`storage.ts`'s `growingSeasonContractsSurviving`, `App.tsx`'s rueful-Tomas scene wiring) by a later session
+than the one that logged the gap; the Easy/Normal/Hard balance-loop items are all superseded by later
+confirmed BALANCE.md results within SPEC 9.4's targets or its 12-iteration exit clause. No other
+bounded/safe gap found without either needing a larger session (the desktop no-scroll card-list redesign,
+the enemy-plan-strip Pressure-card visual treatment — both explicitly logged as accepted, deliberate
+deferrals by multiple prior sessions) or risking another rushed, easy-to-get-subtly-wrong change so soon
+after this session's own tooltip/axe lesson. Wrapping up at ~20 minutes with `build` in a fully gated,
+verified state (matching where it started, plus the DECISIONS.md log of what was tried) — releasing the
+lock now rather than forcing further speculative changes.
+
+---
 This session (2026-09-27, starting ~15:51 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json` unchanged (still blocked on Apple secrets, not re-dispatched). `DEADLINE` has ~94 hours left, no
 M7-only restriction. `npm ci` + `npm run check` clean (392 tests). Ran a full `npm run gates`: all 8 gates
@@ -2647,6 +2692,14 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-27 ~17:07 UTC:** `npm run release` ran `npm run gates` clean (all 8 gates, gate 8 via a
+  direct subagent screenshot review — see Current milestone), hit the usual stale-local-`main` fast-forward
+  failure, and the manual fix (`git checkout -B main origin/main && git merge --no-ff build`) ran clean and
+  lossless (`git diff HEAD build` empty). `git push origin main` was denied again by the same "Production
+  Deploy" classifier. Not retried per its own guidance. `origin/main` confirmed untouched; `build` (`501b942`
+  as of session end, after the tooltip/axe revert — see Current milestone) is fully gated and pushed,
+  waiting for a future session's release retry: try `npm run release` normally first; if it hits the same
+  ff-only failure, redo the manual checkout+merge+push sequence from scratch.
 - **New 2026-09-27 ~16:09 UTC:** Ran `npm run check` clean, then a full `npm run gates` (all 8 gates
   passed for real, including gate 5/6/7; gate 8's screenshot review found and fixed one real bug — see
   Current milestone). `npm run release`'s own fast-forward step wasn't tried; went straight to the
