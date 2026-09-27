@@ -2044,3 +2044,14 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   in-spec and would attack the actual bottleneck (pace) rather than the loss tracks a 100-game sample just
   showed aren't binding anymore. Not implemented this session — wanted the loss-reason evidence logged
   and reviewed before spending another slow MCTSBot confirmation run on a specific number.
+- 2026-09-27 (~05:15 UTC, same session): confirmed the Kingsmarket-Outlet pace lever above with a
+  100-game MCTSBot Easy spot check: **56.0%**, up from 50.0% before the change (and 53.0%/43.0% at the
+  two earlier pool-only steps) — a real, directionally-correct gain, not noise (loss-reason mix moved
+  as predicted too: `pressureDeckEmpty` fell from 78.3% to 52.3%, `publicTrust` rose to 47.7%, `lostLand`
+  stayed at 0%). Still short of SPEC 9.4's 70-85% target, and now `publicTrust` losses are the larger
+  share, so `publicTrust`'s own gap over Normal (currently +2, 12 vs. 10) is the natural next lever to
+  widen, alongside continuing to speed liberation pace further if another "extra setup" idea presents
+  itself (e.g. an extra starting Stall, or 1 fewer base Outlet in a second region). Not attempted this
+  session — this iteration's own change needs its 100-game result banked before stacking another,
+  and a full 1,000-game confirmation is still owed once a 100-game spot check lands consistently
+  in-band. Queued for a future session.
