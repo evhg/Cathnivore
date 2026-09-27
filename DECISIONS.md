@@ -2415,3 +2415,20 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   `checkDailyRollover()` and also polling it every 30s from a new `setInterval` (coarse on purpose — no need
   to check every render tick), alongside the existing `visibilitychange` call. `npx tsc -b` and
   `npx vitest run tests/runnel.test.ts` (13 tests) both pass clean.
+- 2026-09-27 (same session, ~11:20 UTC): a third review subagent (sim harness + release.ts, less-reviewed
+  than the core engine) found one real, previously-unflagged bug: `sim/simCore.ts`'s `playOneGame` runs its
+  step loop `for (let step = 0; step < STEP_CAP; step++)` and only ever set `outcome.won`/`lossReason`/
+  `rounds` inside the `if (state.result)` branch before `break` — if a game somehow never reached
+  `state.result` within STEP_CAP (2000) steps (e.g. a future engine regression causing a decision loop),
+  the loop would simply exhaust and `outcome` fell through with its untouched defaults (`won: false,
+  lossReason: null, rounds: 0`), which `sim/run.ts` then counts as an ordinary loss bucketed under
+  `lossReasonShare`'s `'unknown'` key rather than the `crashes`/`invariantFailures` metrics SPEC 9.3 requires
+  to be 0 — exactly the class of failure those metrics exist to catch. The sibling harness `sim/fuzz.ts`
+  already handles the identical condition correctly. Fixed: after the loop, if `state.result` is still
+  unset, set `outcome.invariantFailure` to a descriptive message — `run.ts`'s existing `finished = outcomes
+  .filter(o => !o.crashed && !o.invariantFailure)` already routes this correctly into the invariant-failure
+  count instead of the loss-reason tally, no other change needed. No release.ts issues found (gates -> fast-
+  forward -> poll -> smoke test -> tag -> revert pipeline re-verified sound, matching the extensive prior
+  fixes already logged here). `npx tsc -b` clean; smoke-tested with a real 20-game RandomBot sim run (0
+  crashes/invariant failures, as expected — this bug only manifests on a genuine non-terminating game, which
+  doesn't happen in the current engine, so no existing sim output changes).

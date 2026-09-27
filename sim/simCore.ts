@@ -122,6 +122,14 @@ export function playOneGame(
       }
       lastRound = state.round
     }
+    if (!state.result) {
+      // The loop exhausted STEP_CAP without the engine ever reaching a win/loss result — a non-terminating
+      // game is itself the most serious kind of engine failure SPEC 9.3's "crashes and invariant failures,
+      // which must be 0" metric exists to catch (sim/fuzz.ts's sibling harness already treats this the same
+      // way). Left unflagged, this would otherwise fall through as an ordinary loss with a misleading
+      // `rounds: 0`/`lossReason: null`.
+      outcome.invariantFailure = `did not reach a result within ${STEP_CAP} steps`
+    }
   } catch (err) {
     outcome.crashed = true
     outcome.invariantFailure = err instanceof Error ? err.message : String(err)
