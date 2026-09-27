@@ -2797,6 +2797,12 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   poll (~40s). `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support`, `/version.json` all verified 200.
   `main` is at `3995175`, healthy. `deploy-16` would be the next tag number but tag pushes remain blocked
   (known 403; see Blocked) — commit SHA is the record.
+- `6822b92` (this session's Co-op marker glossary/tooltip fix plus the gate-8-caught legend-icon clipping
+  fix it needed). Released the same way, first try, no classifier denial. `npm run gates` passed clean
+  beforehand (gates 1-7; gate 8 directly re-verified against fresh screenshots, the specific greyscale
+  finding confirmed fixed). `version.json` matched via a `Monitor`-based poll. `/`, `/cathnivore/`,
+  `/runnel/`, `/privacy`, `/support` all verified 200. `main` is at `6822b92`, healthy. `deploy-17` would be
+  the next tag number but tag pushes remain blocked (known 403; see Blocked) — commit SHA is the record.
 
 ## Final report
 (not yet written)
