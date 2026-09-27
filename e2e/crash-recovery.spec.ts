@@ -32,4 +32,7 @@ test('the global error screen offers Back to Title, and Resume From Last Autosav
   await page.locator('.crash-screen').getByRole('button', { name: 'Resume From Last Autosave' }).click()
   await expect(page.getByText('Something went wrong.')).toHaveCount(0)
   expect(page.url()).not.toContain('e2eCrash')
+  // Resume must land back on the actual saved game, not just any non-crash screen (e.g. a silent fall-back
+  // to the title/setup screen would also pass the two assertions above without this one).
+  await expect(page.locator('.end-screen')).toBeVisible()
 })

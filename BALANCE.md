@@ -551,3 +551,13 @@ Appended by `npm run sim` (SPEC 9.3). Newest entries at the bottom.
 - avg rounds: 7.64, avg settled round: 5.43, settled before round 7: 66.7%
 - avg legal actions per decision: 13.40
 - full report: `sim/reports/2026-09-27T07-10-21-317Z.json`
+
+## 2026-09-27T11:46:24.814Z
+- args: {"games":300,"bot":"mcts","difficulty":"hard","pairs":"all"}
+- games: 300, crashes: 0, invariant failures: 0
+- win rate: 25.7%
+- win rate by pair: mara+tomas=22.0%, ines+tomas=20.0%, ines+mara=28.0%, sol+tomas=32.0%, mara+sol=30.0%, ines+sol=22.0%
+- loss reason share: publicTrust=22.9%, pressureDeckEmpty=12.1%, lostLand=65.0%
+- avg rounds: 8.36, avg settled round: 5.30, settled before round 7: 82.3%
+- avg legal actions per decision: 14.36
+- full report: `sim/reports/2026-09-27T11-46-24-814Z.json`

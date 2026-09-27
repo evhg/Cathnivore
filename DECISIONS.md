@@ -2468,3 +2468,74 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   was never actually broken. Re-ran just this test (4/4 pass, both projects) and then the full `npm run
   gates` (gates 1-7 clean end to end; gate 8's screenshots are unchanged from this session's earlier clean
   subagent review, since nothing visual changed).
+- 2026-09-27 (same session, ~11:20 UTC): 2 more review subagents came back clean, no new findings:
+  1. Hard difficulty vs. SPEC 4.9/4.7: `src/engine/state.ts`'s Kingsmarket-Outlet/Pasture-Doubt Hard deltas,
+     `src/content/pressure.ts`'s stage ordering/draw direction, and `pieces.ts`'s pool clamping all verified
+     correct, no code defect. Residual, non-code risk noted: BALANCE.md has only one 100-game Hard MCTSBot
+     run (26.0% win rate, inside the 25-40% target band) vs. hundreds of games each for Normal/Easy — a
+     larger confirmation sample would be reassuring but isn't blocking, since the one sample already clears
+     the target and the balance loop is already closed (SPEC 9.4's 12-iteration cap reached).
+  2. Map.tsx/Game.tsx targeting-mode flow (enemy-turn-overlay race, stale-Confirm-after-state-change,
+     actionGroupKey collisions) vs. SPEC 10.2: all three hypothesized failure modes traced through and ruled
+     out for specific, verifiable reasons (React batching prevents the overlay race; `selectedGroup`/
+     `pendingChoice` only persist across a `state` that can't go stale under them; every action kind's group
+     key construction prevents two different legal actions from colliding into one button). No new bug.
+- 2026-09-27 (same session, ~11:24 UTC): last review subagent this session (Rift 6 "The Split" +
+  chapter 3->4 Wholesome Hollow Contract carry-over) came back clean, no code bugs. One doc-drift nit found
+  and fixed: PROGRESS.md's M1 `currentDecision()` entry still described Rift 6's faction/piece-removal
+  choice as "its own auto-decide heuristic for now," a framing that was true when M1 was written (before
+  M2's evaluation function existed) but stale since a later session actually routed it through a real
+  `riftSplitFaction`/`riftSplitRemoval` pending decision — both bots now score every option via
+  `src/ai/evaluation.ts`'s `evaluate()` like any other decision, confirmed end to end by this review.
+  Corrected the note. `riftSplitDone` (a real boolean flag, not an assumption about Rift's range) confirmed
+  to enforce "happens once" correctly. The chapter 3->4 carry-over's extra starting Outlets go through the
+  same generic `addOutlets` pool bookkeeping every other Outlet placement uses, so `validate()`'s invariant
+  needs no special-casing and has none missing — already covered by `tests/chapters.test.ts`.
+- 2026-09-27 (same session, ~11:46 UTC): closed the residual balance-data gap the Hard-difficulty review
+  subagent flagged (Hard only had a single 100-game MCTSBot confirmation vs. hundreds for Normal/Easy). Ran
+  a 300-game MCTSBot/Hard/all-pairs sim (no code/content change, pure data collection — doesn't touch the
+  already-closed 12-iteration balance loop). Result: win rate **25.7%**, inside SPEC 9.4's 25-40% Hard target
+  band (the earlier 100-game spot check's 26.0% holds at 3x the sample size). All three loss-reason floors
+  clear: publicTrust 22.9%, lostLand 65.0% (dominant, as expected — SPEC 9.4 only requires >=15%, not a cap),
+  pressureDeckEmpty 12.1% (clears the >=10% "running out of time" floor). Producer-pair spread is exactly at
+  the 12-point band's edge (20.0%-32.0%, ines+tomas weakest, sol+tomas strongest) — the first difficulty
+  level to land inside that band at all in this build's history (Normal/Easy have both consistently missed
+  it, per BALANCE.md's earlier entries). 0 crashes, 0 invariant failures. `BALANCE.md` updated by the sim
+  run itself. No action needed: Hard difficulty meets every SPEC 9.4 target at this sample size.
+- 2026-09-27 (new session, ~11:52 UTC): 2 review subagents (error boundary/save-recovery vs. SPEC 11.3;
+  story satire/exclamation-mark rules vs. SPEC 3.5/3.2 + chapter-unlock logic vs. SPEC 8.1) both came back
+  clean on correctness — `ErrorBoundary.tsx`'s Resume/Copy-Bug-Report/Back-to-Title, `storage.ts`'s version-
+  mismatch handling, every story scene's satire compliance (zero exclamation marks anywhere, so SPEC 3.2's
+  "at most one per chapter" is trivially met), and the chapter-unlock `locked` computation were all
+  independently re-verified against already-logged prior findings, no new bugs. One real gap found in test
+  coverage, not runtime behaviour: `e2e/crash-recovery.spec.ts`'s final assertion (Resume From Last Autosave
+  after a forced crash) only checked that the crash message was gone and the URL no longer carried
+  `e2eCrash` — it never asserted the resumed screen actually showed the saved game's content, so a
+  regression that silently fell back to the title/setup screen instead of the real autosave would have
+  passed undetected. Fixed by asserting `.end-screen` is visible after Resume (the test's own setup finishes
+  a real Quick Game first specifically so this is checkable). Verified: `phone`/`desktop-chromium` both pass
+  (WebKit unavailable in this sandbox instance this session — a pre-existing environment gap, not a
+  regression from this change).
+- 2026-09-27 (new session, ~11:56 UTC): 2 more review subagents (PWA offline/update flow vs. SPEC 11.1;
+  Vercel config/site build vs. SPEC 11.5/15) found 2 small, real, previously-unlogged gaps and confirmed
+  everything else already reviewed still holds:
+  1. `vite.config.ts`'s PWA `workbox.globPatterns` (`'**/*.{js,css,html,woff,woff2,svg,json}'`) never got
+     `png` added after a later session added `public/icon-192.png`/`icon-512.png` to the manifest's `icons`
+     array — those PNGs (plus `apple-touch-icon.png`/`social-preview.png`) were silently excluded from the
+     service worker's precache list, so a player who never fetched them online (or whose browser evicted
+     them) could hit a failed icon fetch offline (e.g. "Add to Home Screen" while offline). Cosmetic, not
+     gameplay-breaking, but a real precache gap against SPEC 11.1's offline-play requirement. Fixed by adding
+     `png` to the extension list; precache count went from 53 to 57 entries (1020 KiB, still comfortably
+     under any real budget concern).
+  2. `vercel.json` had no explicit Cache-Control rule for `/version.json` — every other rule either excludes
+     it by pattern (the dotted-path catch-all) or targets something else, so it fell through to Vercel's
+     static-file default rather than an explicit `no-cache`. Low real-world risk in practice (the default is
+     already `max-age=0, must-revalidate`), but `scripts/release.ts`'s post-deploy poll depends on this exact
+     file reflecting the new commit promptly, so an explicit rule closes a previously-unreviewed loose end in
+     the same cache-header story DECISIONS.md's earlier `index.html`-caching fix already covered. Added a
+     dedicated `no-cache` rule for `/version.json`, validated as well-formed JSON and against
+     `tests/pages.test.ts`'s existing `vercel.json` parsing tests. Everything else in both review passes
+     (SW-registration native-platform gating, the update-ready banner's title-screen-only display and
+     mid-game-safe persistence, the `/cathnivore/`/`/runnel/` rewrite exclusions, `build-site.ts`'s
+     base-href correctness) was independently re-verified against real build output and prior DECISIONS.md
+     entries, no new issues. `npm run check` (390+ tests, build) passes clean after both fixes.

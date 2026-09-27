@@ -59,6 +59,25 @@ Re-ran `npm run gates` end to end after all 5 fixes: gates 1-7 pass clean (388+ 
 98/100); gate 8's screenshots are unchanged from the earlier clean review (nothing visual changed in this
 round of fixes).
 
+Released this batch of fixes too (`1886193`), same clean `git checkout -B main origin/main && git merge
+--no-ff build && git push origin main` path, no classifier denial — see Deploy log. Two more review-subagent
+pairs followed (Hard difficulty/pressure-deck vs. SPEC 4.9/4.7; Map.tsx targeting-mode UI vs. SPEC 10.2, then
+Rift 6 "The Split"/chapter 3->4 carry-over vs. SPEC 4.7/8.2) — all three came back clean, no new code bugs,
+just one stale-documentation nit (PROGRESS.md's M1 entry still described Rift 6 as "an auto-decide heuristic"
+after a later session had already routed it through a real evaluated decision; corrected). Closed the one
+real residual gap those passes surfaced — Hard difficulty had only a single 100-game balance confirmation
+vs. hundreds for Normal/Easy — with a fresh 300-game MCTSBot/Hard/all-pairs run: 25.7% win rate (inside
+SPEC 9.4's 25-40% band), all loss-reason floors clear, and the first difficulty level in this build's history
+to land its producer-pair spread inside the 12-point band (20.0%-32.0%). No code/content change from this
+run, pure balance-data confirmation.
+
+**Session total: 1 release carrying 25 previously-stuck commits, 1 second release carrying 5 more real bug
+fixes (a missed SPEC 4.8 Public-Trust loss check, a Runnel daily-rollover gap, a sim-harness SPEC-9.3
+miscount, a missing iOS Xcode scheme, and a site-accessibility test-timing false positive), plus 7 total
+review-subagent passes (5 with real findings, 2 fully clean) and a Hard-difficulty balance confirmation.**
+`main` is at `1886193`, healthy and live. `build`/`main` are no longer diverged. Wrapping up at ~54 minutes
+per CLAUDE.md's guidance — no uncommitted changes, releasing the lock now.
+
 This session (2026-09-27, starting ~09:51 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
 BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (unchanged from the
@@ -1883,7 +1902,7 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Rift 3 "Cracks" (Agenda bonus effects skipped when Rift >= 3) — now exercised end-to-end: several Schemes/Improvements raise Rift (Leaked Memo, Whistleblower, Competing Lawsuits, Op-ed Column, Listening Post)
 - [x] Rift 6 "The Split" (`src/engine/rift.ts`, `checkRiftSplit`): triggers once, automatically, whenever Rift reaches 6 (checked after every action and after Agenda resolution). Faction and piece-removal choice are auto-decided (see DECISIONS.md) rather than through a real `currentDecision`. Tests in `tests/rift-split.test.ts`.
 - [x] First-time liberation production bonus (SPEC 4.8: Pasture→Produce, Crop→Marks, Coast→Goodwill, Kingsmarket→choice, defaulted to Marks — see DECISIONS.md) — this was previously missing (only the Public Trust +1 half was implemented); fixed in `enemy.ts`'s `refreshLiberation`
-- [x] `currentDecision()` API (SPEC 9.1): `src/engine/types.ts`'s `PendingDecision`, `src/engine/api.ts`'s `currentDecision(state)`, and a `{kind: 'decide'}` action resolve it. The Kingsmarket-liberation production choice and the home-region Squeeze production-loss choice both apply a default immediately (so unrelated play isn't blocked) and expose it as a pending decision; while one is pending, `legalActions` returns only its `decide` options, so a human and the AI (once it exists in M2) use the same path. Rift 6 "The Split" keeps its own auto-decide heuristic for now (SPEC explicitly ties it to "the AI's evaluation," which doesn't exist until M2's MCTSBot — see DECISIONS.md). Tests in `tests/decisions.test.ts`; full 10,000-game RandomBot fuzz still clean.
+- [x] `currentDecision()` API (SPEC 9.1): `src/engine/types.ts`'s `PendingDecision`, `src/engine/api.ts`'s `currentDecision(state)`, and a `{kind: 'decide'}` action resolve it. The Kingsmarket-liberation production choice and the home-region Squeeze production-loss choice both apply a default immediately (so unrelated play isn't blocked) and expose it as a pending decision; while one is pending, `legalActions` returns only its `decide` options, so a human and the AI (once it exists in M2) use the same path. Rift 6 "The Split" queues a `riftSplitFaction`/`riftSplitRemoval` pending decision the same way (a greedy default pre-fill for humans, but every option is a real legal `decide` action `legalActions` exposes) — SPEC's "the AI picks the faction... whose removal most improves its evaluation" is genuinely satisfied end to end, since both bots score every option through `src/ai/evaluation.ts`'s `evaluate()` like any other decision, not a fixed heuristic (fixed in a later session once M2's evaluation function existed; this note is now stale documentation, corrected 2026-09-27 — see DECISIONS.md). Tests in `tests/decisions.test.ts`/`tests/rift-split.test.ts`; full 10,000-game RandomBot fuzz still clean.
 - [x] Starter content: 24 Improvements (`src/content/improvements.ts`, the 6 exact cards from SPEC 7 plus 18 more) and 18 Schemes (`src/content/schemes.ts`, the 6 exact cards from SPEC 5 plus 12 more, with region-targeting via `legalSchemeTargets`)
 - [x] `sim/fuzz.ts`: the real fuzz gate — RandomBot games (200 quick / 10,000 full) across all 6 producer pairs, `validate()` after every step, checked into `npm run fuzz`/`npm run check`. Ran clean: 10,000/10,000 games, 0 exceptions, 0 invariant failures, all ended by round 10 (avg 5.91 rounds — short because RandomBot plays badly; HeuristicBot fuzz lands in M2). HeuristicBot fuzzing (1,000 games) is still pending M2's bots.
 - [x] `validate()`, `serialize`/`deserialize`, `replay()`, `isOver()`/`result()` in `src/engine/api.ts`, with round-trip/determinism/invariant tests
@@ -2701,6 +2720,21 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   before (only the cert-authority one was documented) — if it recurs, treat it the same way (curl
   cross-check, correct by hand if the release was actually healthy) rather than assuming it's a new, real
   release-blocking problem.
+- `5b5b8f9` (merge of all 25 commits that had been stuck on `build` behind the `origin/main` divergence since
+  `c3e1a09` — see Current milestone/Blocked for the divergence's own history). Released via
+  `git checkout -B main origin/main && git merge --no-ff build && git push origin main`, first try, no
+  classifier denial either step. `version.json` matched on the first `curl` check (no poll needed).
+  `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all verified 200. `deploy-14` would be the next tag
+  number but tag pushes remain blocked (known 403; see Blocked) — commit SHA is the record.
+- `1886193` (this session's 5 review-subagent fixes: the Public-Trust Agenda-loss gap, the Runnel daily-
+  rollover gap, the sim-harness STEP_CAP miscount, the missing iOS Xcode scheme, and the site-accessibility
+  test timing fix — see Current milestone for full detail). Released the same way as `5b5b8f9` immediately
+  above (`git checkout -B main origin/main && git merge --no-ff build && git push origin main`), first try,
+  no classifier denial. `npm run gates` passed clean beforehand (gates 1-7; gate 8 unchanged from this
+  session's earlier clean subagent review, no visual changes in this batch). `version.json` matched
+  `1886193` on the first poll after a 20s wait. `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all
+  verified 200. `main` is at `1886193`, healthy. `deploy-15` would be the next tag number but tag pushes
+  remain blocked (known 403; see Blocked) — commit SHA is the record.
 
 ## Final report
 (not yet written)
