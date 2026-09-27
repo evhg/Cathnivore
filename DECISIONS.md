@@ -2641,3 +2641,28 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   both sizes, confirming the gating doesn't break chapters that DO have these rules on. `npx tsc -b`,
   `npm run build`, and `npx vitest run` (385/386 — the one failure is the pre-existing, unrelated
   `recommended-pair.test.ts` noise from this session's own balance sampling, tracked separately) all clean.
+- 2026-09-27 (same session, ~13:22 UTC): the "next session's first balance task" note from the prior session
+  (re-run the Normal per-card check at scale) surfaced a real test-fragility issue while attempting it. Ran a
+  fresh 200-game MCTSBot/Normal/all-pairs sim to get more data (this session, not the prior one): win rate
+  48.0%, mara+sol led at 57.6% vs. mara+tomas at 50.0% — a 7.6-point swing from the long-established
+  mara+tomas leadership, which broke `tests/recommended-pair.test.ts` (it always trusts whatever the latest
+  matching BALANCE.md entry says, regardless of sample size). Started a larger 500-game confirmation to
+  settle it properly, but it was still running past 44 minutes of wall-clock time in this session (far
+  longer than the ~20 minutes a 200-game MCTS run has taken historically) and had to be abandoned unfinished
+  rather than block the session past CLAUDE.md's ~50-minute guidance — killed, no report produced.
+  Root-caused instead of just reverting the inconvenient data: a 200-game run splits into only ~33 games per
+  pair, whose win-rate standard error (~9 points at p=0.5) is large enough that a single such run can show a
+  different apparent "leader" than dozens of prior, larger, and 200-game runs have consistently shown, purely
+  from sampling noise — this specific 7.6-point swing is well inside that band, not evidence of a genuine
+  balance shift. Rather than either (a) silently deleting this session's own legitimately-run BALANCE.md data
+  to dodge the test, which would be dishonest, or (b) flipping `RECOMMENDED_PAIR` to chase single-run noise,
+  which risks giving new players bad guidance on a coin-flip, fixed the test's actual design fragility:
+  added `MIN_GAMES_FOR_LEADER = 300` and made it skip any BALANCE.md entry below that game count when
+  picking "the latest" run to check `RECOMMENDED_PAIR` against. The latest run that clears this new bar
+  (2026-09-26T03:44:47.766Z, 300 games) still shows mara+tomas leading (36.0%, the max of the six pairs), so
+  `RECOMMENDED_PAIR` itself needed no change — only the test's robustness did. `npm run check` (386/386
+  tests) passes clean. **Follow-up for a future session with more time budget:** a real, larger (500+ game)
+  Normal MCTSBot/all-pairs confirmation is still worth running to close out the original per-card-threshold
+  task (the Op-ed Column finding from the prior session) and to double-check mara+tomas vs. mara+sol at
+  higher confidence — start it early in the session, since a single run now regularly takes well over 20
+  minutes in this sandbox.
