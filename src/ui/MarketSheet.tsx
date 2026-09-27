@@ -1,5 +1,6 @@
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { MarksIcon } from './icons/ResourceIcons'
+import Tooltip from './Tooltip'
 import type { GameState } from '../engine/types'
 
 const TAG_LABEL: Record<string, string> = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
@@ -29,7 +30,11 @@ export default function MarketSheet({
         if (!card) return null
         return (
           <li key={id} className="card-enter">
-            <strong>{card.name}</strong> — <MarksIcon /> {card.cost} Marks ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+            <strong>{card.name}</strong> —{' '}
+            <Tooltip term="Marks">
+              <MarksIcon /> {card.cost} Marks
+            </Tooltip>{' '}
+            ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
             {/* SPEC 10.5: "All rules text is generated from card and rules data" — `card.text` is the
                 plain-English effect (STYLE.md 8: "rules text in Atkinson Hyperlegible"), checked against
                 the card's actual `onBuy` by tests/rules-text.test.ts. It was previously only shown in the

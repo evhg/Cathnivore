@@ -40,6 +40,39 @@ same review — `dist-site/cathnivore/{privacy,support,fonts}` end up duplicated
 `publicDir` copy, unreachable but harmless build bloat — left alone rather than risking `build-site.ts`'s
 copy logic for a purely cosmetic win.)
 
+2 more review-subagent rounds: tooltip coverage vs SPEC 10.5, and `validate()`'s invariant coverage vs SPEC
+9.1. Both found real, previously-unnoticed gaps.
+
+**Tooltip gap, fixed:** SPEC 10.5 requires every game term to be explained in both the rules reference and
+a tap/hover tooltip. Produce, Marks and Goodwill (SPEC 4.4's three resources) had neither — `src/content/
+terms.ts`'s `GLOSSARY_TERMS` had no entries for them, so they had no rules-reference section and nothing to
+look up even if a `<Tooltip>` wrapped them, and in fact nothing did: `Game.tsx`'s active-producer resource
+line, `FarmSheet.tsx`'s per-producer production line, and the Marks/Goodwill cost display in `MarketSheet.tsx`
+/`CathsPlanSheet.tsx`'s non-collapsible card list were all plain text/icons. Added the 3 missing glossary
+entries (picking up SPEC 4.4's own wording) and wrapped all of the above in `<Tooltip>`, verified end to end
+with a headless-Chromium screenshot (Produce's tooltip renders the new glossary text correctly) plus the
+full e2e suite (12/12 `title`/`quick-game` specs across phone+desktop, no console errors) and
+`tests/terms.test.ts`/`tests/rules-text.test.ts` (157 tests). **Left open, logged rather than silently
+dropped:** `MarketSheet.tsx`/`CathsPlanSheet.tsx`'s desktop-only collapsible `<details>` card list (SPEC
+10.3's density fix) shows the same Marks/Goodwill cost inside a `<summary>`, which wasn't wrapped — nesting
+a `<Tooltip>`'s own `<button>` inside a `<summary>` (itself an interactive disclosure trigger) risks
+focus/keyboard conflicts worth a more careful look, not a quick copy-paste, and the same term already has a
+working tooltip elsewhere on the same desktop screen (the inline Farm panel), so this isn't a total gap for
+a desktop player, just an inconsistent one. A future session should either restructure that `<summary>` or
+confirm nesting is actually fine in practice before wrapping it.
+
+**`validate()` gap, logged only (not fixed this session — needs design judgement, not a quick patch):** SPEC
+9.1 asks `validate()` to check "Stall caps respected" and "slots consistent," and it currently checks
+neither. The Stall-cap gap is entangled with an existing, intentional design choice
+(`tests/api.test.ts`'s "does not force removal of excess Stalls when a Lost Land token lowers the cap below
+the current count" — placement is gated, not enforced as a standing invariant), so a strict `regionStallTotal
+<= stallCap` check would immediately fail a state the engine deliberately allows; fixing this properly means
+either changing that documented design or writing a softened invariant that accounts for it, not something
+to rush through near a session's own time budget. The "slots consistent" gap (Market/Cath's Plan only check
+array length + a rough total-count reconciliation, not duplicate/dangling ids; the Pressure pipeline slots
+have no check at all) is more mechanical but still real engine-invariant work, not a UI tweak. Left as a
+concrete, actionable item for a future session rather than attempted half-finished.
+
 ---
 This session (2026-09-27, starting ~12:36 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json`/`OWNER.md` Team ID unchanged (still blocked, not re-dispatched). 3 review-subagent rounds: Runnel
