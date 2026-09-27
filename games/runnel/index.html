@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4EDE1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1C1714" media="(prefers-color-scheme: dark)" />
+    <title>Runnel: a daily irrigation puzzle</title>
+    <meta name="description" content="Turn the channels and bring water from the spring to every field. A new puzzle every day." />
+    <link rel="icon" href="/runnel/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/runnel/apple-touch-icon.png" />
+    <meta property="og:title" content="Runnel" />
+    <meta property="og:description" content="A daily irrigation puzzle from cathnivore.com." />
+    <meta property="og:image" content="https://cathnivore.com/runnel/social-preview.png" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <a class="back" href="/" aria-label="All games">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
+          <span>Games</span>
+        </a>
+        <h1 class="wordmark">Runnel</h1>
+        <div class="top-actions">
+          <button class="icon-btn" id="btn-stats" type="button" aria-label="Stats">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6" /></svg>
+          </button>
+          <button class="icon-btn" id="btn-help" type="button" aria-label="How to play">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 9a3 3 0 1 1 4.3 2.7c-.9.5-1.5 1.2-1.5 2.3M12 17.5v.01" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <nav class="modes" aria-label="Puzzle">
+        <div class="segmented" role="tablist">
+          <button type="button" role="tab" id="tab-daily" aria-selected="true">Daily</button>
+          <button type="button" role="tab" id="tab-practice" aria-selected="false">Practice</button>
+        </div>
+        <div class="sizes" id="sizes" hidden>
+          <button type="button" data-size="small">Small</button>
+          <button type="button" data-size="medium">Medium</button>
+          <button type="button" data-size="large">Large</button>
+        </div>
+      </nav>
+
+      <section class="hud" aria-live="off">
+        <div class="hud-title" id="hud-title">Daily #1</div>
+        <div class="hud-stats">
+          <span><b id="hud-time">0:00</b> time</span>
+          <span><b id="hud-taps">0</b> taps</span>
+          <span><b id="hud-par">0</b> par</span>
+        </div>
+      </section>
+
+      <main class="stage">
+        <svg id="board" class="board" role="group" aria-label="Puzzle board"></svg>
+        <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+      </main>
+
+      <footer class="foot">
+        <p class="hint" id="hint">Tap a tile to turn it. Hold to pin it in place.</p>
+        <button class="btn btn-quiet" id="btn-new" type="button" hidden>New puzzle</button>
+      </footer>
+      <p class="sr-only" id="announce" aria-live="polite"></p>
+    </div>
+
+    <dialog id="dlg-help" class="sheet" aria-labelledby="help-title">
+      <form method="dialog">
+        <h2 id="help-title">How to play</h2>
+        <div class="help-demo" aria-hidden="true">
+          <svg viewBox="-60 -60 120 120"><g class="demo-tile"><polygon points="43.3,25 0,50 -43.3,25 -43.3,-25 0,-50 43.3,-25" /><line class="demo-groove" x1="0" y1="0" x2="45" y2="0" /><line class="demo-groove" x1="0" y1="0" x2="-22.5" y2="39" /><line class="demo-water" x1="0" y1="0" x2="45" y2="0" /><line class="demo-water" x1="0" y1="0" x2="-22.5" y2="39" /></g></svg>
+        </div>
+        <ol class="rules">
+          <li><b>Tap</b> a tile to turn it clockwise. Right-click or <kbd>Shift</kbd>-click turns it back.</li>
+          <li>Bring water from the <b>spring</b> in the middle to <b>every tile</b>. Fields sprout when it reaches them.</li>
+          <li>No channel may <b>spill</b>: every opening must meet another channel.</li>
+          <li><b>Hold</b> a tile to pin it once you're sure of it.</li>
+        </ol>
+        <p class="muted">A new Daily puzzle arrives at midnight UTC. Par is the number of taps the puzzle maker needed.</p>
+        <button class="btn" value="close">Start</button>
+      </form>
+    </dialog>
+
+    <dialog id="dlg-stats" class="sheet" aria-labelledby="stats-title">
+      <form method="dialog">
+        <h2 id="stats-title">Your Runnel</h2>
+        <div class="stat-grid" id="stat-grid"></div>
+        <button class="btn" value="close">Close</button>
+      </form>
+    </dialog>
+
+    <dialog id="dlg-win" class="sheet win" aria-labelledby="win-title">
+      <form method="dialog">
+        <p class="eyebrow" id="win-eyebrow">Daily #1</p>
+        <h2 id="win-title">Every field is watered.</h2>
+        <div class="win-numbers">
+          <div><b id="win-time">0:00</b><span>time</span></div>
+          <div><b id="win-taps">0</b><span>taps</span></div>
+          <div><b id="win-par">0</b><span>par</span></div>
+        </div>
+        <p class="win-note" id="win-note"></p>
+        <div class="win-actions">
+          <button class="btn" type="button" id="btn-share">Share result</button>
+          <button class="btn btn-quiet" type="button" id="btn-next">Play practice</button>
+        </div>
+        <p class="toast" id="toast" role="status"></p>
+        <button class="close-x" value="close" aria-label="Close">×</button>
+      </form>
+    </dialog>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
