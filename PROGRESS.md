@@ -46,12 +46,23 @@ real logic gap, now fixed by tracking the best-scrambled attempt instead of trus
 last. Verified with the full unit suite (still 366 tests; `tests/runnel.test.ts`'s channel-cap assertion
 was tightened to check the upper bound across all 200 seeds, not just a lower bound on the first 50).
 
-Session tally: no release needed (already current, thanks to the owner's chat session), two real Easy
-balance-loop iterations with a confirmed 50.0% -> 56.0% MCTSBot win-rate gain (still short of target, next
-lever queued), one clean portfolio-code confirmation, and two real previously-unknown Runnel generation
-bugs found and fixed with new stress-test verification. `build` (`3803457`) is fully gated and pushed, 6
-commits ahead of the session's starting point. Next session: continue the Easy balance loop (widen Public
-Trust's gap over Normal next, since it's now the larger loss share), and eventually run the real
+After the Kingsmarket-Outlet win, tried the queued next step — widening Easy's starting Public Trust
+12 -> 14 to address that run's new dominant loss reason directly. A follow-up 100-game MCTSBot spot check
+came back at an identical 56.0%: it only moved losses from `publicTrust` (47.7% -> 27.3%) back to
+`pressureDeckEmpty` (up to 72.7%), no net win-rate change. Per SPEC 9.4's "keep changes that move the
+metrics towards the targets," reverted it (confirmed clean: typecheck, lint, full unit suite). This
+confirms liberation pace, not either loss track, is still Easy's real bottleneck — Public Trust isn't a
+useful lever here on its own.
+
+Session tally: no release needed (already current, thanks to the owner's chat session); three Easy
+balance-loop iterations (Lost-Land-pool widening: flat, informative; Kingsmarket-Outlet: a confirmed
+50.0% -> 56.0% real win-rate gain, kept; Public Trust widening: flat, reverted) leaving Easy still short of
+the 70-85% target but with a clearer picture of the real bottleneck (pace); one clean portfolio-code
+confirmation; and two real previously-unknown Runnel generation bugs found and fixed with new stress-test
+verification. `build` (`117a588`) is fully gated and pushed, 9 commits ahead of the session's starting
+point. Next session: keep pulling on the pace lever for Easy specifically (another region's starting
+Outlet, or an extra starting Stall), not Public Trust again unless a further pace change makes it the
+dominant loss reason once more, and eventually run the real
 1,000-game MCTSBot confirmation SPEC 9.3 calls for once a 100-game spot check lands consistently in-band.
 
 ---
