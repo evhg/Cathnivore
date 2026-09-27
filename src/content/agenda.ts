@@ -15,6 +15,12 @@ function nonLiberated(state: GameState): RegionId[] {
   return state.config.activeRegions.filter((id) => !state.regions[id].liberated)
 }
 
+// SPEC 4.8: "Agenda cards cannot place pieces there unless the card says 'even liberated regions.'"
+// None of this file's Kingsmarket-targeted cards say that, so each must no-op once Kingsmarket is liberated.
+function addToKingsmarket(state: GameState, add: (state: GameState, id: RegionId, n: number) => GameState): GameState {
+  return state.regions.kingsmarket.liberated ? state : add(state, 'kingsmarket', 1)
+}
+
 function regionsWithStall(state: GameState, ids: RegionId[]): RegionId[] {
   return ids.filter((id) => regionStallTotal(state.regions[id]) > 0)
 }
@@ -60,7 +66,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
       }
       return next
     },
-    bonusEffect: (state) => addBuyout(state, 'kingsmarket', 1),
+    bonusEffect: (state) => addToKingsmarket(state, addBuyout),
   },
   {
     id: 'hollowell-support-local-farmers',
@@ -82,7 +88,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
       const target = extremeByStallCount(state, candidates, 'most')
       return target ? addBuyout(state, target, 1) : state
     },
-    bonusEffect: (state) => addOutlets(state, 'kingsmarket', 1),
+    bonusEffect: (state) => addToKingsmarket(state, addOutlets),
   },
   {
     id: 'hollowell-record-harvests',
@@ -108,7 +114,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
         : null
       return target ? addOutlets(state, target, 1) : state
     },
-    bonusEffect: (state) => addDoubt(state, 'kingsmarket', 1),
+    bonusEffect: (state) => addToKingsmarket(state, addDoubt),
   },
   {
     id: 'hollowell-billboard',
@@ -167,7 +173,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     id: 'hollowell-store-opening',
     faction: 'hollowell',
     headline: 'Hollowell opens a store directly across from Kingsmarket. Coincidence, they say.',
-    effect: (state) => addOutlets(state, 'kingsmarket', 1),
+    effect: (state) => addToKingsmarket(state, addOutlets),
     bonusEffect: (state) => {
       let next = state
       for (const id of nonLiberated(next)) {
@@ -198,7 +204,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
       const target = extremeByStallCount(state, candidates, 'fewest')
       return target ? addBuyout(state, target, 1) : state
     },
-    bonusEffect: (state) => addOutlets(state, 'kingsmarket', 1),
+    bonusEffect: (state) => addToKingsmarket(state, addOutlets),
   },
   // --- Candor (12) ---
   {
@@ -254,7 +260,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     id: 'candor-clarifies-clarification',
     faction: 'candor',
     headline: "Candor's spokesperson clarifies the clarification of yesterday's clarification.",
-    effect: (state) => addDoubt(state, 'kingsmarket', 1),
+    effect: (state) => addToKingsmarket(state, addDoubt),
     bonusEffect: (state) => {
       const count = state.config.activeRegions.filter((id) => state.regions[id].buyouts > 0).length
       return loseTrust(state, count)
@@ -318,7 +324,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     id: 'candor-independent-panel',
     faction: 'candor',
     headline: "Candor convenes an 'independent panel.' Candor picked the panel.",
-    effect: (state) => addDoubt(state, 'kingsmarket', 1),
+    effect: (state) => addToKingsmarket(state, addDoubt),
     bonusEffect: (state) => {
       const ids = nonLiberated(state)
       const target = extremeByStallCount(state, ids, 'most')

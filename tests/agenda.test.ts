@@ -146,3 +146,38 @@ describe('Public Trust hitting 0 from an Agenda effect ends the game immediately
     expect(after.result?.regionsLiberated).toBe(0)
   })
 })
+
+// SPEC 4.8's exemption applies to every Agenda card, including the several that target Kingsmarket by a
+// literal id rather than a computed "most/fewest Stalls" pick — those don't go through the same
+// `nonLiberated()` filter and were found to bypass the check entirely (fixed alongside this test).
+describe('Agenda cards that target Kingsmarket by id respect the liberated-region exemption (SPEC 4.8)', () => {
+  function liberatedKingsmarket(state: ReturnType<typeof createGame>) {
+    return {
+      ...state,
+      regions: {
+        ...state.regions,
+        kingsmarket: { ...state.regions.kingsmarket, stalls: { mara: 1 }, outlets: 0, buyouts: 0, doubt: 0, liberated: true, everLiberated: true },
+      },
+    }
+  }
+
+  const cases: Array<{ id: string; kind: 'bonusEffect' | 'effect'; field: 'outlets' | 'buyouts' | 'doubt' }> = [
+    { id: 'hollowell-farmhouse-range', kind: 'bonusEffect', field: 'buyouts' },
+    { id: 'hollowell-loyalty-card', kind: 'bonusEffect', field: 'outlets' },
+    { id: 'hollowell-listening-tour', kind: 'bonusEffect', field: 'doubt' },
+    { id: 'hollowell-store-opening', kind: 'effect', field: 'outlets' },
+    { id: 'hollowell-friendly-buyout-offer', kind: 'bonusEffect', field: 'outlets' },
+    { id: 'candor-clarifies-clarification', kind: 'effect', field: 'doubt' },
+    { id: 'candor-independent-panel', kind: 'effect', field: 'doubt' },
+  ]
+
+  for (const { id, kind, field } of cases) {
+    it(`"${id}"'s ${kind} never adds a piece to a liberated Kingsmarket`, () => {
+      const state = liberatedKingsmarket(createGame(FULL_CONFIG, 1))
+      const card = AGENDA_CARDS_BY_ID.get(id)!
+      const after = card[kind]!(state)
+      expect(after.regions.kingsmarket[field]).toBe(0)
+      expect(after.regions.kingsmarket.liberated).toBe(true)
+    })
+  }
+})
