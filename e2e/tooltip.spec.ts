@@ -83,6 +83,24 @@ test('the map legend explains Outlet/Buyout/Doubt on tap', async ({ page }) => {
   await expect(popover).toContainText('Hollowell')
 })
 
+// Regression test: SPEC 11.4 gate 8 caught the legend's Outlet/Buyout/Doubt icons rendering as
+// unrecognisable slivers in a screenshot taken right after the game screen mounted. Cause: those icons
+// reuse `.enemy-piece`, which carries a 200ms map-piece "delivery" entrance animation, and the screenshot
+// landed on its 0% frame (translateX(18px), opacity 0) — shifting most of the icon's shape out of its
+// compact legend viewBox. The legend is a static key, not a delivered piece, so it must never animate.
+test('the map legend icons never carry the piece-delivery animation', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  const animationNames = await page.locator('.map-legend-icon .enemy-piece').evaluateAll((els) =>
+    els.map((el) => getComputedStyle(el).animationName),
+  )
+  expect(animationNames.length).toBeGreaterThan(0)
+  for (const name of animationNames) expect(name).toBe('none')
+})
+
 test('clicking outside a tooltip dismisses it', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
