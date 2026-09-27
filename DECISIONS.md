@@ -2798,3 +2798,13 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   clean and lossless (`git diff HEAD build` empty). `git push origin main` was denied again by the harness's
   "Production Deploy" classifier. Not retried per the denial's own guidance. `origin/main` confirmed
   untouched. `build` (`cc98d21`) is fully gated and pushed, waiting for a future session's release retry.
+- 2026-09-27 (~17:05 UTC): Closed the desktop tooltip-nesting gap a prior session's PROGRESS.md entry left
+  open (SPEC 10.5): `MarketSheet.tsx`/`CathsPlanSheet.tsx`'s desktop-only collapsible `<details><summary>`
+  card list showed the Marks/Goodwill cost without the `<Tooltip>` wrapper the same term already gets
+  elsewhere on the same screen, because nesting `Tooltip`'s own `<button>` inside a `<summary>` (itself an
+  interactive disclosure trigger) risked focus/keyboard conflicts. Verified directly with a real headless
+  Chromium session rather than guessing: clicking the tooltip button inside the summary opens the popover
+  and leaves `<details>` unaffected (`open` attribute stays absent); clicking elsewhere in the summary still
+  toggles `<details>` normally (`Tooltip`'s own `onClick` already calls `e.stopPropagation()`, which is what
+  prevents the click from also reaching the summary's native toggle handler). No conflict, so wrapped both.
+  `npx tsc -b`, `npm run check` (392 tests, build) and `tests/terms.test.ts` all pass clean.

@@ -67,7 +67,10 @@ export default function CathsPlanSheet({
               <li key={id} className="card-enter">
                 <details>
                   <summary>
-                    <strong>{card.name}</strong> — <GoodwillIcon /> {card.cost} Goodwill
+                    <strong>{card.name}</strong> —{' '}
+                    <Tooltip term="Goodwill">
+                      <GoodwillIcon /> {card.cost} Goodwill
+                    </Tooltip>
                   </summary>
                   <p className="card-text">{card.text}</p>
                   <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
