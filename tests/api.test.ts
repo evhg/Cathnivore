@@ -5,7 +5,7 @@ import { deserialize, isOver, replay, result, serialize, validate } from '../src
 import { createRng, nextInt } from '../src/engine/rng'
 import { ALL_REGION_IDS } from '../src/content/map'
 import { HeuristicBot } from '../src/ai/heuristic'
-import type { GameConfig } from '../src/engine/types'
+import type { Action, GameConfig, GameState } from '../src/engine/types'
 
 const FULL_CONFIG: GameConfig = {
   producers: ['mara', 'tomas'],
@@ -104,6 +104,73 @@ describe('replay', () => {
     const { state, actions } = playSomeActions(33, 40)
     const rebuilt = replay(FULL_CONFIG, 33, actions)
     expect(serialize(rebuilt)).toBe(serialize(state))
+  })
+
+  // A review pass found `replay()` itself is a generic per-kind-agnostic loop (so it can't special-case
+  // fail), but no test actually drove a real `{config, seed, actions}` triple through `tearUpContract` or
+  // a `decide` action and confirmed replay reproduces the exact same state — the specific "does a real
+  // save+reload actually work" property, as opposed to `applyAction()` correctness in isolation (already
+  // covered elsewhere for these action kinds). Closes that gap directly rather than leaving it as a
+  // documented-but-untested risk.
+  it('reproduces the identical state through a tearUpContract action (SPEC 8.2 ch3 carry-over)', () => {
+    const config: GameConfig = {
+      producers: ['mara'],
+      difficulty: 'normal',
+      activeRegions: ['brindleHills', 'highmoor'],
+      rulesEnabled: { agenda: false, squeeze: false, expand: false, sell: true, improvements: true, schemes: true, roles: true, rebut: true },
+      scriptedPressure: Array.from({ length: 6 }, (_, i) => ({ id: `p${i}`, stage: 1 as const, regionTypes: [], regions: ['highmoor' as const] })),
+      scriptedMarket: ['wholesome-hollow-contract'],
+      scriptedTrigger: { round: 2, effect: 'wholesomeHollowReveal', sceneId: 'twist' },
+    }
+    const seed = 1
+    let state = createGame(config, seed)
+    const actions: Action[] = []
+    const graft = () => {
+      const action = legalActions(state).find((a) => a.kind === 'graft')!
+      actions.push(action)
+      state = applyAction(state, action)
+    }
+    const buyContract = () => {
+      const action = legalActions(state).find((a) => a.kind === 'invest' && a.improvementId === 'wholesome-hollow-contract')!
+      actions.push(action)
+      state = applyAction(state, action)
+    }
+    buyContract()
+    for (let i = 0; i < 5; i++) graft() // through the round-2 reveal trigger and one more round
+    const tearUp = legalActions(state).find((a) => a.kind === 'tearUpContract')!
+    actions.push(tearUp)
+    state = applyAction(state, tearUp)
+    graft() // one more action after the trigger has already fired, to prove `scriptedTriggerFired` replays too
+
+    const rebuilt = replay(config, seed, actions)
+    expect(serialize(rebuilt)).toBe(serialize(state))
+    expect(rebuilt.wholesomeHollowRevealed).toBe(true)
+    expect(rebuilt.producers.mara.improvements.includes('wholesome-hollow-contract')).toBe(false)
+  })
+
+  // A `decide` action (SPEC 9.1's `currentDecision`/`PendingDecision` path — e.g. the Kingsmarket-
+  // liberation production-bonus choice, or the home-region Squeeze production-loss choice) is the other
+  // under-tested action kind the same review flagged. HeuristicBot already resolves `decide` options
+  // itself (tests/bots.test.ts), so playing full games with it and keeping the first one whose action list
+  // contains a real `decide` is a reliable way to get one without hand-scripting a specific board state.
+  it('reproduces the identical state through a decide action', () => {
+    let found: { config: GameConfig; seed: number; state: GameState; actions: Action[] } | undefined
+    for (let seed = 1; seed <= 15 && !found; seed++) {
+      let state = createGame(FULL_CONFIG, seed)
+      let rng = createRng(seed * 104729 + 1)
+      const actions: Action[] = []
+      for (let step = 0; step < 2000 && !state.result; step++) {
+        const [action, next] = HeuristicBot.chooseAction(state, rng)
+        rng = next
+        actions.push(action)
+        state = applyAction(state, action)
+      }
+      if (actions.some((a) => a.kind === 'decide')) found = { config: FULL_CONFIG, seed, state, actions }
+    }
+    expect(found, 'no decide action found across 15 seeds — widen the seed range').toBeDefined()
+
+    const rebuilt = replay(found!.config, found!.seed, found!.actions)
+    expect(serialize(rebuilt)).toBe(serialize(found!.state))
   })
 })
 

@@ -2723,3 +2723,19 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   plumbing, metadata character limits, screenshot count/size, `capacitor.config.ts`'s `launchAutoHide`
   consistency with `splash.ts`) checked out clean. `npx tsc -b`, `npm run check` (386/386 tests, build)
   all pass clean.
+- 2026-09-27 (same session, ~13:44 UTC): 2 more review subagents. Scene.tsx/portrait-resolution/e2eAutoplay
+  came back clean except one trivial stale comment (fixed: it described a one-line-at-a-time reveal that
+  hasn't existed since the component was created). The replay/determinism pass found no engine bug (`replay`
+  is a thin, kind-agnostic loop over `applyAction`, and the engine has zero `Math.random`/`Date.now` uses,
+  so every `decide`/`tearUpContract`/targeted-`scheme` action replays deterministically by construction) but
+  a real, concrete test-coverage gap: `tests/api.test.ts`'s only `replay()` test drove 40 random steps on a
+  plain config that can never reach `tearUpContract` (gated behind chapter 3's scripted trigger) and only
+  reaches `decide`/targeted `scheme` by chance; `tests/storage.test.ts`'s save round-trip fixtures all use
+  `actions: []`. So the specific "does a real save+reload actually work" property (distinct from
+  `applyAction()` correctness in isolation, already covered elsewhere for these kinds) was genuinely
+  untested for the engine's two least-common action shapes. Closed the gap directly: added a
+  `tearUpContract` replay test (a real `{config, seed, actions}` triple built from a scripted chapter-3-
+  style Wholesome-Hollow-Contract game, asserting `serialize(replay(...)) === serialize(state)` plus the
+  post-tear-up state) and a `decide`-action replay test (plays full HeuristicBot games across up to 15 seeds
+  — HeuristicBot already resolves `decide` options itself — and keeps the first one whose action history
+  contains a real `decide`, same assertion). Both pass; `npm run check` (388/388 tests, build) clean.
