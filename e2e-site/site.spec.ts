@@ -1,5 +1,12 @@
 import { expect, test, type Page } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
 import { dailyPuzzle, tapsToSolve, utcDateString } from '../games/runnel/src/engine'
+
+async function assertNoSeriousIssues(page: Page): Promise<void> {
+  const results = await new AxeBuilder({ page }).analyze()
+  const serious = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+  expect(serious, JSON.stringify(serious, null, 2)).toEqual([])
+}
 
 function trackErrors(page: Page): string[] {
   const errors: string[] = []
@@ -61,6 +68,12 @@ test.describe('landing page', () => {
       expect((await request.get(path)).ok(), path).toBe(true)
     }
   })
+
+  test('has no serious or critical accessibility issues', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore' })).toBeVisible()
+    await assertNoSeriousIssues(page)
+  })
 })
 
 test.describe('Runnel', () => {
@@ -120,5 +133,14 @@ test.describe('Runnel', () => {
     await page.keyboard.press('ArrowRight')
     await page.keyboard.press('Enter')
     await expect(page.locator('#hud-taps')).toHaveText('1')
+  })
+
+  test('has no serious or critical accessibility issues, before and during play', async ({ page }) => {
+    await page.goto('/runnel/')
+    await expect(page.getByRole('heading', { name: 'How to play' })).toBeVisible()
+    await assertNoSeriousIssues(page)
+    await page.getByRole('button', { name: 'Start' }).click()
+    await expect(page.locator('.tiles > g.cell')).not.toHaveCount(0)
+    await assertNoSeriousIssues(page)
   })
 })
