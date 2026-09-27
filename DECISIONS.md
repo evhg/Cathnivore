@@ -1789,3 +1789,46 @@ Format: date, decision, reason.
   3 undertagged irreversible Schemes, 2 drifted rules-reference numbers + a dead tutorial deep link), plus
   one clean CSP/headers confirmation. `build` is fully gated and pushed; the next session should retry
   releasing it to `main` (see Blocked).
+
+- 2026-09-27: Hardening review of the balance sim harness (`sim/simCore.ts`, `sim/run.ts`,
+  `sim/simWorker.ts`, `sim/fuzz.ts`) against SPEC 9.3/9.4's metric definitions, scoped to whether the
+  metrics themselves (not worker orchestration/crash counting, already checked 2026-09-26) are computed
+  correctly. Found and fixed one real off-by-one bug: `simCore.ts`'s `playOneGame` detected a settled
+  outcome right after `state.round` changed (i.e. right after Cleanup, per SPEC 9.3's own text), but
+  recorded `outcome.settledRound = state.round` — and `src/engine/round.ts`'s `cleanup()` increments
+  `round` to the *next* round before returning, after computing every field `isSettled()` reads (liberated
+  count, publicTrust, lostLandPool, pressureDeck.length are all already final for the round that just
+  ended). So every recorded `settledRound` was 1 higher than the round that actually settled, which in
+  turn *undercounted* SPEC 9.4's "settled before round 7" share in every past BALANCE.md run (a game that
+  truly settled at round 6 was recorded as round 7, so it stopped counting as "before round 7"). Fixed by
+  recording `lastRound` (the round whose Cleanup just ran) instead of the already-incremented
+  `state.round`. Verified the fix moves the metric in the expected direction with a fresh 200-game
+  HeuristicBot/Normal/all-pairs run (fast, no MCTSBot per this session's constraints): avg settled round
+  dropped from 8.49 (300-game run, 2026-09-26T19:05, old code) to 7.57, and settled-before-round-7 rose
+  from 7.6% to 11.3% — consistent with the ~1-round-earlier true settling point the bug was hiding. This
+  means every MCTS/Normal "settled before round 7" figure logged in BALANCE.md before this fix (including
+  the 56.8%/59.7% readings from 2026-09-26 that were already flagged as concerningly high against SPEC
+  9.4's implied ~40% ceiling) is a floor on the true value, not an exact reading — the real rate is likely
+  higher still. A fresh 1,000-game MCTSBot confirmation is needed before trusting this metric again for the
+  balance loop, but per this session's constraints (no MCTSBot sim — ~400ms/decision, hours for 1,000
+  games) that's left for a future session with the time budget for it.
+  Also checked the other SPEC 9.3 metrics (win rate/loss-reason/purchase-rate/play-rate denominators) —
+  all correct: win rate and purchase/play rates use `finished` (crash/invariant-excluded) games as the
+  denominator, matching SPEC 9.3's per-run reporting intent; `improvementWinRateWhenBought`/
+  `schemeWinRateWhenPlayed` correctly restrict to the bought/played subset before computing win rate
+  ("the win rate when it was bought/played", not overall win rate); `lossReasonShare` correctly uses
+  `losses.length` (not `finished.length`) as its denominator, matching SPEC 9.4's "at least 15%/10% of
+  losses" framing; `pressureDeckEmpty` is the loss reason that maps to SPEC 9.4's "running out of time".
+  No bug in `run.ts`'s aggregation or `simWorker.ts`.
+  Cross-checked SPEC 9.4's campaign-specific targets ("HeuristicBot wins chapter 1 in >=90% of runs,
+  chapters 2-4 in >=70%, chapters 5-6 on Normal in >=50%") against `BALANCE.md` (no campaign/chapter
+  mentions there at all — never measured via the sim harness) — but they *are* measured for real, just
+  not through `sim/run.ts`: `tests/chapters.test.ts` runs HeuristicBot to completion over 30 seeds per
+  chapter and asserts the exact SPEC 9.4 floor for each (0.9/0.7/0.7/0.6/0.7/0.5 — chapter 3's floor is
+  openly logged as a relaxed 0.6 given a measured ~66.7-78.3% true rate against SPEC's 0.7, an accepted,
+  documented shortfall per SPEC 9.4's own "ship the closest version and say so" precedent). This runs on
+  every `npm run check`, not just once — a real, repeated measurement, not an assumption drawn from a
+  single e2e run reaching an end screen. No bug here; the premise that this was never measured doesn't
+  hold. No other BALANCE.md conclusion checked against the code turned up a mismatch (loss-reason mix,
+  purchase-rate framing and the win-rate-by-pair spread language in recent entries all match what
+  `summarize()` actually computes).

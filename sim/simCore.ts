@@ -110,8 +110,15 @@ export function playOneGame(
         outcome.invariantFailure = errors.map((e) => e.message).join('; ')
         return outcome
       }
+      // Cleanup (src/engine/round.ts) increments `state.round` to the *next* round right after computing
+      // the state this check reads (liberated count, publicTrust, lostLandPool, pressureDeck.length are
+      // all already final for the round that just ended and are unaffected by the increment). So once
+      // `state.round` has changed, `lastRound` — not the already-incremented `state.round` — is the round
+      // whose Cleanup this settled check is evaluating; using `state.round` here recorded the round *after*
+      // the one that actually settled (an off-by-one that inflated every settledRound by 1, which in turn
+      // undercounted "settled before round 7" in every past BALANCE.md run using this harness).
       if (state.round !== lastRound && outcome.settledRound === null && isSettled(state)) {
-        outcome.settledRound = state.round
+        outcome.settledRound = lastRound
       }
       lastRound = state.round
     }
