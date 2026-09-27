@@ -17,7 +17,7 @@ import LogSheet from './LogSheet'
 import FarmSheet from './FarmSheet'
 import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
-import RegionMap, { Outlet, Buyout, Doubt } from './Map'
+import RegionMap, { Outlet, Buyout, Doubt, CoopMarkerIcon } from './Map'
 import RulesReference from './RulesReference'
 import Scene from './Scene'
 import Portrait from './portraits/Portrait'
@@ -546,6 +546,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             { term: 'Outlet', icon: <Outlet /> },
             { term: 'Buyout', icon: <Buyout /> },
             { term: 'Doubt', icon: <Doubt /> },
+            { term: 'Co-op marker', icon: <CoopMarkerIcon /> },
           ] as const
         ).map(({ term, icon }) => (
           <span key={term} className="map-legend-item">
@@ -553,6 +554,12 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
               {icon}
             </svg>
             <Tooltip term={term}>{term}</Tooltip>
+            {term === 'Co-op marker' && (
+              <>
+                {' · '}
+                <Tooltip term="Liberated">Liberated</Tooltip>
+              </>
+            )}
           </span>
         ))}
       </section>
