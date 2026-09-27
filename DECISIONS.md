@@ -2756,3 +2756,19 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   the reshuffle actually fires, every id in the fresh deck came from the discard pile (not fabricated), and
   no id collides with a still-face-up Cath's Plan card. `npx tsc -b` and `npm run check` (389/389 tests,
   build) pass clean.
+- 2026-09-27 (~16:09 UTC): gate 8's visual review of this session's screenshots found a real STYLE.md gap
+  (SPEC 11.4 gate 8): no button anywhere used the "primary" pasture-deep-fill style STYLE.md 10 mandates
+  for the one clear next action on a screen — every button, including Setup's Start and the targeting-mode
+  Confirm, rendered in the default secondary (paper/outline) style. Added `button.primary` and applied it
+  to those two. While computing contrast for the new class, found `--paper` text on `--pasture-deep` drops
+  to ~2.76:1 in dark mode (pasture-deep is one of STYLE.md 3.5's fixed-in-both-themes fills, same root
+  cause as the already-fixed "Recommended" badge bug) — used the existing `--paper-on-fixed-fill` token
+  instead (measured 5.38:1), and applied the same fix to the pre-existing `button.destructive`, which had
+  the identical latent bug (5.43:1 against clay-deep). `npm run check` and a full `npm run gates` both pass
+  clean. Decision: fix this now rather than defer, since it's a 2-line STYLE.md compliance/contrast fix
+  gate 8 itself flagged, not new scope.
+- 2026-09-27 (~16:09 UTC): `npm run release`'s manual fast-forward workaround (`git checkout -B main
+  origin/main && git merge --no-ff build`) ran clean this time — both steps completed and the merge was
+  confirmed lossless (`git diff HEAD origin/build` empty) — but the final `git push origin main` was denied
+  by the harness's "Production Deploy" classifier. Per its own guidance, not retried; see PROGRESS.md's
+  Blocked section for the full detail and the retry plan for a future session.

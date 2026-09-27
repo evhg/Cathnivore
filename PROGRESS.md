@@ -1,6 +1,27 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~15:51 UTC): standard session start, lock taken, `ci.json` green,
+`ios.json` unchanged (still blocked on Apple secrets, not re-dispatched). `DEADLINE` has ~94 hours left, no
+M7-only restriction. `npm ci` + `npm run check` clean (392 tests). Ran a full `npm run gates`: all 8 gates
+passed, with 2 subagents doing gate 8's screenshot review in parallel (phone + desktop, CLAUDE.md's 2-at-once
+cap) — desktop came back clean, phone found one real STYLE.md gap: no button anywhere used the "primary"
+pasture-deep style (STYLE.md 10) for a screen's one clear next action, including Setup's Start and the
+targeting-mode Confirm, which both rendered as plain secondary buttons. Fixed: added `button.primary` and
+applied it to both. Computing its contrast surfaced a second, related bug: `--paper` text on `--pasture-deep`
+(one of STYLE.md 3.5's fixed-in-both-themes fills) drops to ~2.76:1 in dark mode — same root cause as the
+already-fixed "Recommended" badge — so used the existing `--paper-on-fixed-fill` token instead (5.38:1), and
+applied the same fix to the pre-existing `button.destructive` (had the identical latent bug against
+clay-deep, 5.43:1 after the fix). Re-ran `npm run check` and a full `npm run gates` clean after the fix
+(392/392 tests, all 8 gates). Full detail in DECISIONS.md.
+
+Then tried to release: the documented manual fast-forward fix (`git checkout -B main origin/main && git
+merge --no-ff build`) ran clean and lossless this time (confirmed via `git diff HEAD origin/build` = empty),
+but `git push origin main` was denied by the "Production Deploy" classifier. Not retried per its own
+guidance. `build` (`37b7aa6`) is fully gated and pushed, waiting for a future session's release retry — see
+Blocked for the exact retry steps.
+
+---
 This session (2026-09-27, starting ~14:52 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json`/`OWNER.md` Team ID unchanged (still blocked, not re-dispatched — same missing-secrets failure
 every prior session has confirmed). `DEADLINE` has ~94 hours left, no M7-only restriction. Ran `npm ci` +
@@ -2600,6 +2621,25 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-27 ~16:09 UTC:** Ran `npm run check` clean, then a full `npm run gates` (all 8 gates
+  passed for real, including gate 5/6/7; gate 8's screenshot review found and fixed one real bug — see
+  Current milestone). `npm run release`'s own fast-forward step wasn't tried; went straight to the
+  documented manual fix since this session already knew the ff-only failure was coming (same
+  never-an-ancestor `main`-history shape prior sessions have hit repeatedly). Unlike the ~15:30 entry
+  below, this time `git checkout -B main origin/main` and `git merge --no-ff build` both ran without being
+  denied, and `git diff HEAD origin/build` came back empty — confirming the merge was lossless (`main`'s
+  tree now equals `build`'s exactly). Only the final `git push origin main` was denied, by the same
+  "Production Deploy" classifier. Not retried per the denial's own guidance. `origin/main` confirmed still
+  at `6306cd2`, untouched — the local `main` branch with the pending merge commit is only local state, not
+  pushed anywhere. `git checkout build` right after was denied once, then succeeded on an immediate retry
+  (same pattern the ~15:30 and ~09:53 entries below already document) — `build` confirmed still at
+  `37b7aa6`, matching `origin/build`, no work lost. `build` (`37b7aa6`) carries this session's gate-8 fix
+  (missing `button.primary` variant plus a dark-mode contrast bug in it and in the pre-existing
+  `button.destructive`, both now using `--paper-on-fixed-fill`) and is fully gated, waiting for a future
+  session's release retry: try `npm run release` normally first; if it hits the usual ff-only failure, redo
+  the manual `git checkout -B main origin/main && git merge --no-ff build && git push origin main` sequence
+  from scratch (don't reuse this session's local `main` branch — it won't exist in the next session's fresh
+  clone).
 - **New 2026-09-27 ~15:30 UTC:** `npm run release` ran `npm run gates` clean (all 8 gates passed, gate 8 via
   a direct screenshot check given this session's time budget — no visual regressions from the tooltip/CSS
   changes below) then hit the usual stale-local-`main`/diverging-branches fast-forward failure (`main`'s own
