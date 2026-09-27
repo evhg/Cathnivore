@@ -82,6 +82,11 @@ describe('createGame', () => {
     // Kingsmarket-Outlet lever still showed liberation pace, not either loss track, as the bottleneck.
     expect(easy.regions.brindleHills.stalls.mara).toBe(3)
     expect(normal.regions.brindleHills.stalls.mara).toBe(2)
+    // Easy also starts Kingsmarket with 0 Buyouts instead of Normal's 1, a third pace lever added the
+    // same session (see DECISIONS.md): `extraHomeStalls` can't go any higher without exceeding SPEC
+    // 4.6's 3-per-region Stall cap, so this targets the capital's more-expensive-to-clear piece instead.
+    expect(easy.regions.kingsmarket.buyouts).toBe(0)
+    expect(normal.regions.kingsmarket.buyouts).toBe(1)
   })
 
   it('Hard starts with lower Public Trust, a smaller Lost Land pool, an extra Kingsmarket Outlet and Pasture Doubt (SPEC 4.9)', () => {

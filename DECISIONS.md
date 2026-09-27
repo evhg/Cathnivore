@@ -2071,3 +2071,19 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   starting Outlet reduced, or a second extra Stall) rather than starting over, since three consecutive
   pace-targeted changes (Kingsmarket Outlet, this one) have both moved the number in the right direction
   while Public Trust widening alone did not.
+- 2026-09-27 (same session, continued): `extraHomeStalls` can't go past 1 (a 2nd would exceed SPEC 4.6's
+  3-per-region Stall cap), so added a second, independent pace lever: `kingsmarketBuyouts` (Easy 0,
+  Normal/Hard 1 unchanged), removing Easy's one starting Kingsmarket Buyout. A Buyout costs 4 Produce and
+  needs 2+ Stalls in the region to clear (SPEC 4.6.2) — strictly more expensive than an Outlet — so
+  cutting it speeds the Kingsmarket endgame the same way `kingsmarketOutlets` already sped up getting its
+  Outlet count down. A 100-game MCTSBot Easy sim confirmed a real gain: 66.0% -> **73.0%**, the first time
+  any Easy sim has landed inside SPEC 9.4's 70-85% target band. Loss-reason shares stayed reasonable
+  (pressureDeckEmpty 48.1%/publicTrust 51.9%, both comfortably clear the 15%/10% floors, no extreme
+  0%/100% split that would flag an overshoot). A 200-game HeuristicBot/Normal sanity run (7.0%) confirmed
+  Normal is untouched, as expected since its `kingsmarketBuyouts`/`extraHomeStalls` values didn't change.
+  Kept per SPEC 9.4's "keep changes that move the metrics towards the targets." Session tally for the Easy
+  track: 56.0% -> 66.0% -> 73.0% across two pace-lever changes, now inside target. A future session should
+  run a larger confirmation (300-1,000 games) before treating this as fully settled, since 100-game spot
+  checks carry real sampling noise (as several prior Normal-loop iterations found), and should also
+  double check the producer-pair spread (43.8%-88.2% this run, wide, matching the Normal loop's own
+  unresolved pair-spread gap) isn't its own SPEC 9.4 problem for Easy specifically.

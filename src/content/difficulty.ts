@@ -32,12 +32,26 @@ import type { GameConfig } from '../engine/types'
 // producers 1 extra starting Stall in their home region (3 total instead of 2; still within SPEC 4.6's
 // 3-per-region cap), so home-region Supply/liberation needs one less Open-Stall action to reach full
 // Defence. One number, mirroring `kingsmarketOutlets`'s existing precedent of a difficulty-only setup
-// tweak. See DECISIONS.md for the verification run.
+// tweak. Confirmed with a 100-game MCTSBot spot check: 56.0% -> 66.0%, real progress, still short of the
+// 70-85% target — see DECISIONS.md.
+//
+// 2026-09-27 (same session): `extraHomeStalls` can't go any higher (2 would put a home region's Stall
+// count at 4, over SPEC 4.6's 3-per-region cap), so added a second, independent pace lever the same
+// session: `kingsmarketBuyouts`, removing Easy's one starting Kingsmarket Buyout (Normal/Hard keep 1).
+// A Buyout costs 4 Produce and needs 2+ Stalls in the region to clear (SPEC 4.6.2), strictly more
+// expensive than an Outlet, so removing it from the capital speeds the endgame liberation the same way
+// `kingsmarketOutlets` already speeds getting Kingsmarket's Outlet count down. See DECISIONS.md.
 export const DIFFICULTY_SETTINGS: Record<
   GameConfig['difficulty'],
-  { publicTrust: number; lostLandPool: number; kingsmarketOutlets: number; extraHomeStalls: number }
+  {
+    publicTrust: number
+    lostLandPool: number
+    kingsmarketOutlets: number
+    kingsmarketBuyouts: number
+    extraHomeStalls: number
+  }
 > = {
-  easy: { publicTrust: 12, lostLandPool: 20, kingsmarketOutlets: 1, extraHomeStalls: 1 },
-  normal: { publicTrust: 10, lostLandPool: 10, kingsmarketOutlets: 2, extraHomeStalls: 0 },
-  hard: { publicTrust: 8, lostLandPool: 6, kingsmarketOutlets: 3, extraHomeStalls: 0 },
+  easy: { publicTrust: 12, lostLandPool: 20, kingsmarketOutlets: 1, kingsmarketBuyouts: 0, extraHomeStalls: 1 },
+  normal: { publicTrust: 10, lostLandPool: 10, kingsmarketOutlets: 2, kingsmarketBuyouts: 1, extraHomeStalls: 0 },
+  hard: { publicTrust: 8, lostLandPool: 6, kingsmarketOutlets: 3, kingsmarketBuyouts: 1, extraHomeStalls: 0 },
 }
