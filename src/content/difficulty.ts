@@ -21,14 +21,19 @@ import type { GameConfig } from '../engine/types'
 // making the capital (the 5th liberation required to win) faster to crack. One number this iteration,
 // per SPEC 9.3's balance-loop discipline; see DECISIONS.md for the verification run. That change was
 // confirmed with a 100-game MCTSBot spot check: 50.0% -> 56.0%, real progress, but it also shifted the
-// dominant loss reason to `publicTrust` (47.7%, up from ~20-35% in earlier runs). Widening Easy's own
-// Public Trust gap over Normal (12 -> 14, still under the track's 15 ceiling) is this iteration's single
-// number, targeting that new bottleneck directly.
+// dominant loss reason to `publicTrust` (47.7%, up from ~20-35% in earlier runs). Tried widening Easy's
+// Public Trust gap next (12 -> 14) to address that directly, but a follow-up 100-game spot check came
+// back at an identical 56.0% — it only moved losses from `publicTrust` (down to 27.3%) to
+// `pressureDeckEmpty` (up to 72.7%), not the win rate itself, confirming liberation pace (not either loss
+// track) is still the real bottleneck. Reverted per SPEC 9.4's "keep changes that move the metrics
+// towards the targets" — this one didn't. A future session should keep pulling on the pace lever instead
+// (another region's starting Outlet, or an extra starting Stall for Easy), not Public Trust again unless
+// a further pace change makes `publicTrust` the dominant reason once more.
 export const DIFFICULTY_SETTINGS: Record<
   GameConfig['difficulty'],
   { publicTrust: number; lostLandPool: number; kingsmarketOutlets: number }
 > = {
-  easy: { publicTrust: 14, lostLandPool: 20, kingsmarketOutlets: 1 },
+  easy: { publicTrust: 12, lostLandPool: 20, kingsmarketOutlets: 1 },
   normal: { publicTrust: 10, lostLandPool: 10, kingsmarketOutlets: 2 },
   hard: { publicTrust: 8, lostLandPool: 6, kingsmarketOutlets: 3 },
 }
