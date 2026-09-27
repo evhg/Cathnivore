@@ -617,7 +617,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           pendingChoice ? (
             <>
               <p>{selectedGroup.label} in {REGIONS[pendingChoice.region].name}?</p>
-              <button onClick={() => act(pendingChoice.index)}>Confirm</button>
+              <button className="primary" onClick={() => act(pendingChoice.index)}>Confirm</button>
               <button onClick={() => setPendingChoice(null)}>Cancel</button>
             </>
           ) : (

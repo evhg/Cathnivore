@@ -77,7 +77,7 @@ export default function Setup({ onStart }: Props) {
         <input value={seedInput} onChange={(e) => setSeedInput(e.target.value)} placeholder="random" inputMode="numeric" />
       </section>
 
-      <button disabled={!canStart} onClick={start}>
+      <button className="primary" disabled={!canStart} onClick={start}>
         Start
       </button>
     </main>
