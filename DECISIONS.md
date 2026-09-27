@@ -2480,3 +2480,14 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
      out for specific, verifiable reasons (React batching prevents the overlay race; `selectedGroup`/
      `pendingChoice` only persist across a `state` that can't go stale under them; every action kind's group
      key construction prevents two different legal actions from colliding into one button). No new bug.
+- 2026-09-27 (same session, ~11:24 UTC): last review subagent this session (Rift 6 "The Split" +
+  chapter 3->4 Wholesome Hollow Contract carry-over) came back clean, no code bugs. One doc-drift nit found
+  and fixed: PROGRESS.md's M1 `currentDecision()` entry still described Rift 6's faction/piece-removal
+  choice as "its own auto-decide heuristic for now," a framing that was true when M1 was written (before
+  M2's evaluation function existed) but stale since a later session actually routed it through a real
+  `riftSplitFaction`/`riftSplitRemoval` pending decision — both bots now score every option via
+  `src/ai/evaluation.ts`'s `evaluate()` like any other decision, confirmed end to end by this review.
+  Corrected the note. `riftSplitDone` (a real boolean flag, not an assumption about Rift's range) confirmed
+  to enforce "happens once" correctly. The chapter 3->4 carry-over's extra starting Outlets go through the
+  same generic `addOutlets` pool bookkeeping every other Outlet placement uses, so `validate()`'s invariant
+  needs no special-casing and has none missing — already covered by `tests/chapters.test.ts`.
