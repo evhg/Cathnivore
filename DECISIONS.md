@@ -2554,3 +2554,17 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   tests, `tests/terms.test.ts`'s generic per-entry loop picks up the new term automatically) and a Chromium
   screenshot verification (both `phone`/`desktop-chromium`, legend now reads "Outlet · Buyout · Doubt ·
   [icon] Co-op marker · Liberated") all pass clean.
+- 2026-09-27 (same session, ~12:07 UTC): the fresh gate-8 subagent screenshot review (needed since the
+  Co-op marker legend addition above was a real visual change) found a real, caught-immediately regression
+  in that same fix: the new `CoopMarkerIcon()` reused the map-piece `CoopMarker`'s coordinates unscaled
+  (`orbit=7, petalR=4.5` around `x=6,y=7`, a ~23-unit-diameter shape) inside the legend's compact 12x14
+  SVG viewBox — the rosette's petals overflowed the viewBox and got clipped away, leaving only the centre
+  disc visible, i.e. exactly the plain-circle look STYLE.md's "wax-seal rosette" spec was written to avoid,
+  and a real failure of gate 8's own greyscale/shape-legibility check (confirmed directly against
+  `phone-5-map-greyscale.png`: an undifferentiated grey disc, no shape distinct from a generic dot). Fixed
+  by giving `CoopMarker` optional `orbit`/`petalR`/`centreR` scale params (default unchanged, so the real
+  map piece is untouched) and having `CoopMarkerIcon()` pass proportionally smaller values (`orbit=2.6,
+  petalR=1.9, centreR=2.3`) that fit inside the 12x14 box with room to spare. Re-verified visually: the
+  legend icon now shows a real six-petal outline, distinguishable by shape alone in the greyscale
+  screenshot. `npx tsc -b`, `npm run build` and a fresh Chromium screenshot pass (both projects) confirm the
+  fix; `npm run check` (390+ tests) stays clean.

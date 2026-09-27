@@ -178,26 +178,43 @@ function Stall({ pid, initial, showInitial }: { pid: ProducerId; initial: string
 }
 
 // Co-op marker: "wax-seal rosette" — was a plain filled circle. Now a ring of six petals around a
-// centre disc, the shape a wax seal's pressed rosette actually has.
-function CoopMarker({ x, y }: { x: number; y: number }) {
+// centre disc, the shape a wax seal's pressed rosette actually has. `orbit`/`petalR`/`centreR` scale the
+// whole rosette; the map-piece size (used at `x`/`y` region coordinates) needs a bigger radius than the
+// legend icon below, which must fit inside a compact fixed viewBox like Outlet/Buyout/Doubt's.
+function CoopMarker({
+  x,
+  y,
+  orbit = 7,
+  petalR = 4.5,
+  centreR = 6,
+}: {
+  x: number
+  y: number
+  orbit?: number
+  petalR?: number
+  centreR?: number
+}) {
   const petals = Array.from({ length: 6 }, (_, i) => {
     const angle = (i * 60 * Math.PI) / 180
-    return { cx: x + 7 * Math.cos(angle), cy: y + 7 * Math.sin(angle) }
+    return { cx: x + orbit * Math.cos(angle), cy: y + orbit * Math.sin(angle) }
   })
   return (
     <g>
       {petals.map((p, i) => (
-        <circle key={i} cx={p.cx} cy={p.cy} r={4.5} fill="var(--pasture)" stroke="var(--ink)" strokeWidth={1} />
+        <circle key={i} cx={p.cx} cy={p.cy} r={petalR} fill="var(--pasture)" stroke="var(--ink)" strokeWidth={0.6} />
       ))}
-      <circle cx={x} cy={y} r={6} fill="var(--pasture)" stroke="var(--ink)" strokeWidth={1.5} />
+      <circle cx={x} cy={y} r={centreR} fill="var(--pasture)" stroke="var(--ink)" strokeWidth={0.8} />
     </g>
   )
 }
 
-// Same rosette, centred and scaled for the map legend (SPEC 10.5's "?"-next-to-the-thing tooltip key,
-// matching Outlet/Buyout/Doubt's own fixed-viewBox legend icons below).
+// Same rosette, scaled down to fit the map legend's compact 12x14 viewBox (SPEC 10.5's "?"-next-to-the-
+// thing tooltip key, matching Outlet/Buyout/Doubt's own fixed-viewBox legend icons below). The map-piece
+// version above is sized for 32px+ regions and overflows a 12x14 box if reused directly, which had been
+// clipping the rosette down to an undifferentiated circle (caught by gate 8's greyscale/shape-legibility
+// check) — this version keeps the same silhouette at a proportion that actually fits.
 export function CoopMarkerIcon() {
-  return <CoopMarker x={6} y={7} />
+  return <CoopMarker x={6} y={7} orbit={2.6} petalR={1.9} centreR={2.3} />
 }
 
 export default function Map({ state, highlight, onSelect }: Props) {
