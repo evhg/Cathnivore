@@ -2334,3 +2334,21 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
      only gates *placing a new* Stall, nothing requires retroactively removing existing ones). Left unchanged;
      noting here in case a future session's own audit rediscovers the same absence and needs the explanation
      without re-reading the full older entry.
+- 2026-09-27 (same session, ~10:05-10:08 UTC): last 2 concurrent review subagents (CLAUDE.md's cap) this
+  session, targeting enemy-turn/difficulty logic and campaign chapter config. Both came back essentially
+  clean:
+  1. src/content/chapters.ts vs SPEC 8.2 -- every chapter's region set, rules-on flags, win condition,
+     scripted state and carry-over check out and are wired into real engine paths (not dead config). The
+     2 discrepancies it flagged (ch2's "Public Trust above 0" goal being unenforceable since Squeeze/Agenda/
+     Schemes are all off there; ch3's scripted Pressure deck running ~16 rounds vs SPEC's literal "8") are
+     both already-deliberate, already-logged balance/scope decisions (DECISIONS.md ~179-210, ~766), not new
+     findings.
+  2. src/engine/enemy.ts vs SPEC 4.5/4.7, src/content/difficulty.ts vs SPEC 4.9 -- Scout/Expand/Squeeze/
+     Agenda/pool-exhaustion logic all verified correct against the spec text, line by line. One real
+     (documentation-only) bug: SPEC 4.9's own note claims "this table is kept in sync with the tuned code,"
+     but it wasn't -- two Easy-only difficulty.ts levers added by later 2026-09-27 sessions
+     (`extraHomeStalls`, `kingsmarketBuyouts`) and the 300-game 75.3% confirmation that closed out Easy's
+     balance-loop pace work were never folded back into SPEC.md's table/note. Fixed: added both levers to
+     the Extra-setup table cell and the 75.3%/300-game confirmation to the note, so the "kept in sync" claim
+     is true again. No code changed, no tests reference SPEC.md's prose directly (grepped tests/ for
+     "SPEC.md", zero hits), so this carries no gate risk.

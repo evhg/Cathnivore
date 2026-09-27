@@ -210,7 +210,7 @@ Stack them with Stage I on top and Stage III at the bottom. A card matches every
 |---|---|---|---|
 | Public Trust at start | 12 | 10 | 8 |
 | Lost Land pool | 20 | 10 | 6 |
-| Extra setup | 1 fewer starting Outlet in Kingsmarket | none | +1 Doubt in each Pasture region, +1 Outlet in Kingsmarket |
+| Extra setup | 1 fewer starting Outlet in Kingsmarket, 0 starting Buyouts in Kingsmarket (Normal/Hard keep 1), 1 extra starting Stall in each producer's home region | none | +1 Doubt in each Pasture region, +1 Outlet in Kingsmarket |
 
 The balance loop may tune these values. (Normal's Lost Land pool moved 8 -> 11 -> 10 across several
 M4 balance-loop iterations — see `DECISIONS.md` and `src/content/difficulty.ts` — landing equal to Easy's
@@ -221,8 +221,14 @@ iteration the same day, which held win rate flat but showed Lost Land had stoppe
 so a further iteration added the Kingsmarket-Outlet line above instead, targeting liberation pace
 directly (50.0% -> 56.0% confirmed). That shifted the dominant loss reason to Public Trust, so a further
 iteration tried widening Easy's starting Public Trust 12 -> 14, but a follow-up spot check came back at
-an identical 56.0% (it only moved losses to running out of rounds, not the win rate) and was reverted;
-this table is kept in sync with the tuned code rather than the original design draft.)
+an identical 56.0% (it only moved losses to running out of rounds, not the win rate) and was reverted.
+Later 2026-09-27 sessions kept pulling the same liberation-pace lever: `extraHomeStalls` (1 extra starting
+Stall per producer's home region, still within the 3-per-region cap) took a 100-game spot check
+56.0% -> 66.0%; once that lever hit its own ceiling (a 2nd point would break the 3-per-region cap),
+`kingsmarketBuyouts` (0 for Easy instead of 1) pushed further. A 300-game MCTSBot confirmation (up from
+the earlier 100-game spot checks) landed at 75.3%, inside the 70-85% target band with every producer pair
+within 12 points of that rate — this table is kept in sync with the tuned code rather than the original
+design draft.)
 
 ## 5. Cath's Plan (Schemes)
 
