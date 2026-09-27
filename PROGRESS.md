@@ -24,6 +24,22 @@ literally submit if `store-<n>`/`submit-<n>` ran today — a standing owner-side
 `npm run check` re-ran clean after the fix. No release needed by itself (test/asset-only change, not a
 gate-affecting one), but bundled into whatever this session's next release turns out to be.
 
+2 more review-subagent rounds: PWA offline/update-prompt behavior vs SPEC 11.1 (clean — the "Update ready"
+banner really does only render on the title screen, the service worker really is unregistered on native, the
+self-removing root `sw.js` really can't touch the `/cathnivore/`-scoped real PWA registration since a more
+specific SW scope always wins); `vercel.json`'s security headers/cache/version.json vs SPEC 11.5 (also
+clean — CSP/nosniff/referrer-policy/cache rules and both `version.json` writers, for `npm run build` and
+`npm run build:site`, all verified against a real build). One small, safe cleanup found and applied: the
+top-level no-cache catch-all's `"/((?!assets/|.*\\..*).*)"` had a dead `assets/`-prefix exclusion left over
+from the pre-portfolio single-app layout — nothing has lived at a top-level `/assets/` path since the SPEC 15
+migration moved hashed assets under `/cathnivore/assets/`/`/runnel/assets/`/`/site-assets/` (each already
+covered by its own specific header rule above this one), so the exclusion never matched anything real.
+Removed it (`"/((?!.*\\..*).*)"`); confirmed with a fresh `npm run build:site` that `dist-site/` still has no
+top-level `assets/` directory, so nothing changes in practice. (A second, lower-value observation from the
+same review — `dist-site/cathnivore/{privacy,support,fonts}` end up duplicated from Cathnivore's own
+`publicDir` copy, unreachable but harmless build bloat — left alone rather than risking `build-site.ts`'s
+copy logic for a purely cosmetic win.)
+
 ---
 This session (2026-09-27, starting ~12:36 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json`/`OWNER.md` Team ID unchanged (still blocked, not re-dispatched). 3 review-subagent rounds: Runnel
