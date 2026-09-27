@@ -2405,3 +2405,13 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   `candor-natural-risk-factor` with 2 Doubt-heavy regions and Trust at 1, confirming `result.lossReason ===
   'publicTrust'` fires from the Agenda step alone. `npm run check` (388 tests) and `npx vitest run
   tests/agenda.test.ts` both pass clean.
+- 2026-09-27 (same session, ~11:12 UTC): a second review subagent (Runnel + site, less-reviewed code than
+  the main Cathnivore engine) found no correctness bugs in `games/runnel/src/engine.ts`'s daily-puzzle
+  seeding or win condition (both verified sound: UTC-only date derivation, deterministic RNG from the date
+  string, a spanning-tree channel layout that can't produce a false "solved" state regardless of rotation).
+  One real, minor gap: `games/runnel/src/main.ts`'s UTC-midnight daily rollover only ran inside the
+  `visibilitychange` listener, so a tab left open and visible (never backgrounded) across UTC midnight would
+  never roll over to the new daily puzzle in that session. Fixed by factoring the check into
+  `checkDailyRollover()` and also polling it every 30s from a new `setInterval` (coarse on purpose — no need
+  to check every render tick), alongside the existing `visibilitychange` call. `npx tsc -b` and
+  `npx vitest run tests/runnel.test.ts` (13 tests) both pass clean.
