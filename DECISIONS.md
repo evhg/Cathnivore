@@ -2432,3 +2432,21 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   fixes already logged here). `npx tsc -b` clean; smoke-tested with a real 20-game RandomBot sim run (0
   crashes/invariant failures, as expected — this bug only manifests on a genuine non-terminating game, which
   doesn't happen in the current engine, so no existing sim output changes).
+- 2026-09-27 (same session, ~11:15 UTC): a fourth review subagent (iOS platform shell) found a real, serious
+  second bug hiding behind the already-logged missing-Apple-secrets `ios.yml` failure: no Xcode scheme was
+  ever committed at `ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme`. `ios.yml`'s `xcodebuild
+  -workspace App.xcodeproj/project.xcworkspace -scheme App ... archive` step needs a shared scheme named
+  "App" to exist on disk; without one, once real `ASC_KEY_ID`/`ASC_ISSUER_ID`/`ASC_KEY_P8`/`APPLE_TEAM_ID`
+  secrets finally appear, the workflow would get past signing setup only to die immediately at the archive
+  step with "The workspace named 'App' does not contain a scheme named 'App'" — a second, previously-
+  invisible blocker that nobody could have seen while the missing-secrets failure fired first every time.
+  Fixed: created the shared scheme file by hand (matching Xcode's own generated format for a single-target
+  app), referencing the real target from `project.pbxproj` (`504EC3031FED79650016851F`, name/productName
+  "App", `App.app` product). Validated as well-formed XML with `xmllint --noout` (no Xcode/macOS available
+  in this sandbox to open the project directly, so that's the limit of what could be verified here — a
+  future `ios.yml` dispatch, once Apple secrets exist, is the real end-to-end test). Also verified
+  `capacitor.config.ts`/`Info.plist` still match SPEC 11.6 exactly (device family, orientation, version,
+  encryption flag, bundle ID) — no other findings there. One cosmetic-only note (not fixed, not worth a
+  change): `externalLink.ts` statically imports `@capacitor/browser` instead of the dynamic-import-on-native
+  pattern `haptics.ts`/`splash.ts`/`statusBar.ts` use, but Vite still code-splits it into its own tiny chunk
+  either way, so there's no real behavior difference.
