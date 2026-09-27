@@ -40,6 +40,13 @@ standing invariant regardless of Lost Land. Added `regionStallTotal(region) > 3`
 3). Re-ran `npm run check` and the 10,000/1,000-game fuzz clean with both new checks active — SPEC 9.1's
 `validate()` gap ("Stall caps respected and slots consistent") is now fully closed.
 
+Re-ran a full `npm run gates` once more after the `validate()` changes as a final check (engine code, so
+worth confirming no UI regression even though none was expected): all 8 gates pass clean. `build` (`b2b3bfe`)
+is fully gated and pushed. Wrapping up at ~29 minutes — no uncommitted changes, releasing the lock now. Next
+session: try `npm run release` normally first (this session's own manual-merge attempt got all the way to a
+denied `git push origin main`, so the fast-forward step itself should now succeed the same way); if denied
+again, redo the manual merge from scratch per Blocked's retry steps.
+
 ---
 This session (2026-09-27, starting ~14:52 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json`/`OWNER.md` Team ID unchanged (still blocked, not re-dispatched — same missing-secrets failure
