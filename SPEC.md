@@ -135,7 +135,7 @@ Seven regions form a hex flower with Kingsmarket in the centre.
 **Adjacency:** every outer region borders Kingsmarket and its two neighbours on the ring (Highmoor–Saltmarsh–Rivermead–Shingle Bay–Oakvale–Brindle Hills–Highmoor).
 
 ### 4.3 Setup (Normal)
-1. Public Trust 10, Rift 0, Lost Land pool 8, Round 1.
+1. Public Trust 10, Rift 0, Lost Land pool 10 (4.9), Round 1.
 2. Kingsmarket gets 2 Outlets, 1 Buyout and 2 Doubt. Every other region gets 1 Outlet. Each Coast region also gets 1 Doubt.
 3. Each producer places 2 Stalls in their home region and takes their starting resources and production (section 6). Home regions keep their Outlet, so freeing your home is everyone's first goal.
 4. Build the Pressure deck (4.7). Reveal the top card into the Scout slot, resolve Scout, then advance the pipeline (4.7).
@@ -209,10 +209,12 @@ Stack them with Stage I on top and Stage III at the bottom. A card matches every
 | | Easy | Normal | Hard |
 |---|---|---|---|
 | Public Trust at start | 12 | 10 | 8 |
-| Lost Land pool | 10 | 8 | 6 |
+| Lost Land pool | 10 | 10 | 6 |
 | Extra setup | none | none | +1 Doubt in each Pasture region, +1 Outlet in Kingsmarket |
 
-The balance loop may tune these values.
+The balance loop may tune these values. (Normal's Lost Land pool moved 8 -> 11 -> 10 across several
+M4 balance-loop iterations — see `DECISIONS.md` and `src/content/difficulty.ts` — landing equal to Easy's;
+this table is kept in sync with the tuned code rather than the original design draft.)
 
 ## 5. Cath's Plan (Schemes)
 

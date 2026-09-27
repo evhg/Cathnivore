@@ -217,7 +217,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
   {
     id: 'candor-wellness-app',
     faction: 'candor',
-    headline: 'Candor launches a free wellness app. It is very interested in you.',
+    headline: 'Candor launches free wellness app. It is very interested in you.',
     effect: (state) => eachProducerLoses(state, 'goodwill'),
     bonusEffect: (state) => {
       let next = state

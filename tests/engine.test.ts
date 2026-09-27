@@ -58,10 +58,19 @@ describe('createGame', () => {
     expect(state.regions.shingleBay.doubt).toBeGreaterThanOrEqual(1)
   })
 
-  it('Easy starts with higher Public Trust and a bigger Lost Land pool than Normal (SPEC 4.9)', () => {
+  it('Easy starts with higher Public Trust than Normal and at least as big a Lost Land pool (SPEC 4.9)', () => {
+    // SPEC 4.9's table: Easy/Normal/Hard Lost Land pool was originally 10/8/6, but the M4 balance loop
+    // tuned Normal's value up (8 -> 11 -> 10 across several iterations, see DECISIONS.md and
+    // src/content/difficulty.ts) to fix an under-target Lost Land loss-reason share. Normal now equals
+    // Easy's 10 rather than sitting strictly below it; SPEC.md's table was updated to match. This test
+    // only asserts Easy is never *worse* than Normal, so it doesn't re-drift if the loop moves Normal
+    // again without a matching Easy change.
     const easy = createGame({ ...FULL_CONFIG, difficulty: 'easy' }, 1)
+    const normal = createGame(FULL_CONFIG, 1)
     expect(easy.publicTrust).toBe(12)
+    expect(easy.publicTrust).toBeGreaterThan(normal.publicTrust)
     expect(easy.lostLandPool).toBe(10)
+    expect(easy.lostLandPool).toBeGreaterThanOrEqual(normal.lostLandPool)
   })
 
   it('Hard starts with lower Public Trust, a smaller Lost Land pool, an extra Kingsmarket Outlet and Pasture Doubt (SPEC 4.9)', () => {

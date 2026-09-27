@@ -53,6 +53,23 @@ describe('Agenda rules text', () => {
       expect(card.headline.length).toBeLessThanOrEqual(90)
     })
   }
+
+  it('has exactly 12 Hollowell cards and 12 Candor cards (SPEC 4.7)', () => {
+    expect(AGENDA_CARDS.filter((c) => c.faction === 'hollowell').length).toBe(12)
+    expect(AGENDA_CARDS.filter((c) => c.faction === 'candor').length).toBe(12)
+    expect(AGENDA_CARDS.length).toBe(24)
+  })
+
+  // SPEC 4.7 mandates these four headlines verbatim ("Use these four exactly and write the rest to
+  // match"). A prior session introduced a one-word drift ("launches a free" vs "launches free") that
+  // nothing caught, so this locks the exact text down.
+  it('includes the four SPEC-mandated headlines verbatim', () => {
+    const headlines = new Set(AGENDA_CARDS.map((c) => c.headline))
+    expect(headlines.has("Hollowell unveils 'Farmhouse' range, made in a very large house.")).toBe(true)
+    expect(headlines.has('Hollowell pledges to support local farmers by buying them.')).toBe(true)
+    expect(headlines.has("Candor-funded study finds 'natural' is a risk factor.")).toBe(true)
+    expect(headlines.has('Candor launches free wellness app. It is very interested in you.')).toBe(true)
+  })
 })
 
 describe('Scheme rules text', () => {
