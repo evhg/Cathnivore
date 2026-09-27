@@ -41,7 +41,7 @@ export function captionFor(event: GameEvent): string {
       return parts.length > 0 ? `Squeeze in ${region}: ${parts.join(', ')}.` : `Squeeze in ${region}: held.`
     }
     case 'liberated':
-      return `${REGIONS[event.region].name} liberated by ${PRODUCERS[event.producer].name}!`
+      return `${REGIONS[event.region].name} liberated by ${PRODUCERS[event.producer].name}.`
     case 'riftSplit':
       return `Rift 6, The Split: ${event.faction === 'hollowell' ? 'Hollowell' : 'Candor'} loses half its pieces.`
     default:
