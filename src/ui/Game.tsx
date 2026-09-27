@@ -19,6 +19,7 @@ import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap, { Outlet, Buyout, Doubt } from './Map'
 import RulesReference from './RulesReference'
 import Scene from './Scene'
+import Portrait from './portraits/Portrait'
 import Tooltip from './Tooltip'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../content/endLines'
 import {
@@ -567,7 +568,10 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         </section>
       ) : (
         <section className="active-producer">
-          <strong>{PRODUCERS[state.activeProducer].name}</strong>
+          <span className="active-producer-header">
+            <Portrait character={state.activeProducer} size={48} />
+            <strong>{PRODUCERS[state.activeProducer].name}</strong>
+          </span>
           <span>
             <ProduceIcon /> {active.resources.produce} ({active.production.produce}/round) <MarksIcon />{' '}
             {active.resources.marks} ({active.production.marks}/round) <GoodwillIcon /> {active.resources.goodwill} (

@@ -23,11 +23,21 @@ came back clean, no bug, plus one minor undocumented-but-defensible interpretati
 Doubt-if-Stall clause applies unconditionally since Pressure cards carry no faction field). Verified the
 Improvements fix with `npx tsc -b --noEmit`, a full `npm test` (344 tests, up from 339), `npm run fuzz
 --quick` and `npm run build`, all clean; a 200-game HeuristicBot/Normal/all-pairs sim (10.5% win rate) showed
-no regression signal, and a 200-game MCTSBot confirmation was run too (see the next entry for its result once
-available). Committed and pushed to `build` (`cfdce34`).
+no regression signal; a 200-game MCTSBot confirmation was attempted but hit this session's time budget
+before finishing and was killed unconfirmed (MCTSBot sims are much slower than HeuristicBot's — see
+DECISIONS.md), left queued for a future session. Committed and pushed to `build` (`cfdce34`).
 
 A third subagent ran a real SPEC 11.4 gate-8 visual review against this session's freshly captured 30-
-screenshot set (see the next entry for its result).
+screenshot set. Two of its four findings were false positives (region-texture and Outlet/Buyout-shape
+"failures" that don't hold up once the screenshots are actually zoomed in on — verified directly with a
+crop-and-upscale, same technique a prior session used for the same reason) but one was real and previously
+unnoticed: SPEC 10.2's "the active producer's portrait" in the game screen's bottom panel was never actually
+built — `Portrait` only ever got wired into the campaign's `Scene.tsx`, never the main `Game.tsx` screen, so
+every prior "portraits are done" checklist entry was checking the wrong screen. Fixed: `Game.tsx`'s active-
+producer panel now shows the portrait next to the producer's name. Verified visually at both sizes and with
+the full 100-test e2e/accessibility suite (all pass). Two minor findings (piece-illustration fidelity, the
+Reset-all-data button's styling) were logged but not acted on this session — see DECISIONS.md for why.
+Committed and pushed to `build`.
 
 ---
 

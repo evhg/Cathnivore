@@ -1859,10 +1859,14 @@ Format: date, decision, reason.
   10 fixed seeds) dropped to 4 — still a real, substantial tableau, so the threshold was lowered to >2 with
   a comment explaining why, rather than the test being deleted or the finding buried. A 200-game
   HeuristicBot/Normal/all-pairs sim afterward (10.5% win rate) lands within the range recent sessions have
-  already logged, no regression signal; a 200-game MCTSBot confirmation was also queued this session (see
-  PROGRESS.md for the result once it completes) since these are genuinely new economic levers (Sell/Graft
-  bonuses, Invest/Scheme discounts) rather than a pure content substitution, so balance verification is
-  warranted despite the closed 12-iteration loop only formally covering numbered content-number tweaks.
+  already logged, no regression signal. A 200-game MCTSBot confirmation was also attempted (these are
+  genuinely new economic levers — Sell/Graft bonuses, Invest/Scheme discounts — rather than a pure content
+  substitution, so balance verification is warranted despite the closed 12-iteration loop only formally
+  covering numbered content-number tweaks) but hit this session's 8-minute background-task budget before
+  finishing and was killed unconfirmed — MCTSBot sim runs are known to take much longer than HeuristicBot's
+  (see the perf notes elsewhere in this file). Left as a queued task for a future session with the time
+  budget for it, not treated as a blocker on this fix: HeuristicBot already shows no regression, and the new
+  levers are additive/optional (a producer never has to buy these 4 specific cards).
   A second hardening-review subagent this session re-audited SPEC 4.5/4.7's enemy multi-region Squeeze/
   Expand/Scout resolution order (another previously-flagged, never-directly-verified area) and found no
   bug: the per-region-key immutable update pattern in `pieces.ts` structurally rules out cross-region state
@@ -1882,3 +1886,36 @@ Format: date, decision, reason.
   confirmed untouched (`7df3f19`) and the working tree switched back to `build` with no partial merge state
   left behind. `build` remains gated and pushed, now carrying this session's Improvements-mix fix on top of
   the prior session's 9-commits-ahead backlog, waiting on a future session's release retry.
+
+- **2026-09-27 (same session):** the gate-8 visual-review subagent (screenshots from this session's
+  `npm run release` run) reported 4 findings. Verified each directly (cropping and upscaling with PIL,
+  matching this project's established practice of not trusting a subagent's screen-reading blind) before
+  acting, since two were "hard gate failures" that would contradict a lot of prior sessions' already-
+  verified work:
+  - **False positive:** "the greyscale map's region textures are all near-identical, failing STYLE.md 3's
+    shape-before-colour test." At native thumbnail scale the fine hatching/dot/wave/grid patterns are too
+    subtle to see; an 8x crop-and-upscale of the same screenshot shows all four region types clearly
+    distinguishable by pattern alone. No bug — the subagent's read, not the game's render, was wrong.
+  - **False positive:** "Outlet and Buyout are near-identical squares in the legend." Same zoom technique
+    shows a shopfront-with-price-tag (Outlet) clearly distinct from a peaked SOLD-banner shape (Buyout) and
+    a speech-bubble (Doubt) — all three genuinely distinct silhouettes, matching STYLE.md 6.
+  - **Real, confirmed, fixed:** SPEC 10.2 says the game screen's bottom panel shows "the active producer's
+    portrait, resources with production, actions left" — `src/ui/Game.tsx` never rendered one; `Portrait`
+    was wired into `Scene.tsx` (dialogue) only, never the main game screen, so every session that verified
+    "portraits are done" was checking the campaign scenes, not this specific SPEC 10.2 line, and nobody had
+    checked this exact requirement before. Fixed: `Game.tsx`'s `.active-producer` header now renders
+    `<Portrait character={state.activeProducer} size={48} />` next to the producer's name (new
+    `.active-producer-header` flex row in `global.css`). Verified visually at both phone/desktop sizes
+    (portrait renders correctly, no overlap/clipping) and with the full 100-test e2e/accessibility suite
+    (`phone`+`desktop-chromium`, all pass, including a forced-dark-theme accessibility check).
+  - **Not acted on (a judgment call, not a bug):** "pieces don't visually match STYLE.md's described
+    materials/shapes" and "the Reset-all-data button isn't styled as destructive." The first is a repeat of
+    a fidelity gap already logged and accepted years of sessions ago (PROGRESS.md M3's "stale note, updated
+    in M6" entry: legibility-level shape distinction is met, further illustration detail is decorative, not
+    a gate-8 requirement). The second is real but genuinely minor (a still-fully-functional, still-legible
+    button using the wrong token) — logged here rather than spending remaining session time on a cosmetic
+    tweak; a future session can pick it up.
+  A caution for future sessions running this same subagent-based gate-8 review: this is now the second
+  documented instance (see the 2026-09-26 entry above, "Verified by cropping and 8x-upscaling") of a
+  gate-8 subagent misreading fine texture/shape detail at native screenshot resolution. Always verify a
+  reported shape/texture failure by zooming in before trusting or acting on it.

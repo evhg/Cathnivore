@@ -512,6 +512,14 @@ h3 {
   gap: 4px;
 }
 
+/* SPEC 10.2: "the active producer's portrait, resources with production, actions left" — the portrait
+   sits next to the name rather than stacked in the column flow `.active-producer` otherwise uses. */
+.active-producer-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
