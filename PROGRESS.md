@@ -27,6 +27,26 @@ port 4173 had been silently serving a pre-fix `dist/` build to Playwright even a
 rebuilt, re-ran `e2e/screenshots.spec.ts` alone) — the affected chapter-1 scene screenshot reads cleanly at
 both sizes with the new line, no STYLE.md/section-10 issues.
 
+Continued with 3 more rounds of paired review subagents (CLAUDE.md's 2-at-once cap) across most of the
+remaining low-DECISIONS.md-mention files: engine core (rules.ts/map.ts/producers.ts, state.ts/api.ts/
+region.ts's purity contract), content data (schemes.ts/improvements.ts vs SPEC 5/7, chapters.ts vs SPEC
+8.2), UI helpers (FarmSheet/ErrorBoundary/Tooltip/actionLabel/gameLog), and AI/platform code (aiWorker.ts/
+mcts.ts, evaluation.ts, settings.ts, haptics.ts, enemy.ts, difficulty.ts, RulesReference.tsx/terms.ts).
+Found and fixed 2 more real issues, both logged in DECISIONS.md with full detail:
+- SPEC 4.9's difficulty-table note claimed to be "kept in sync with the tuned code" but was missing two
+  Easy-only levers (`extraHomeStalls`, `kingsmarketBuyouts`) added by later sessions and the 300-game 75.3%
+  confirmation that closed out that balance work. Fixed (SPEC.md doc-only change, no code/test impact).
+- SPEC 10.5 ("rules text is generated from... or checked against... data") had 2 real gaps: "3 actions per
+  round" was a bare literal repeated in 5 places (engine + UI + rules reference) with nothing keeping them
+  in sync, and the Open Stall glossary entry omitted SPEC 4.6.1's Lost-Land Stall-cap reduction. Fixed by
+  adding a single `ACTIONS_PER_ROUND` constant (`src/engine/region.ts`) used everywhere, and completing the
+  glossary text. `npx tsc -b`, `npm run check` (384/384 tests) and the full Playwright suite at both sizes
+  (100 e2e tests total) all pass clean after every fix.
+
+Everything else across all 5 subagent-pair rounds this session came back clean (no bugs) — including one
+apparent "missing validate() check" that turned out to be a rediscovery of an already-deliberately-reverted
+false invariant from an earlier session (see DECISIONS.md), correctly left alone rather than re-added.
+
 `build` is gated and pushed at this point, still waiting on the `main`-merge blocker above to actually
 release.
 
