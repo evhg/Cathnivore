@@ -2502,3 +2502,17 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   level to land inside that band at all in this build's history (Normal/Easy have both consistently missed
   it, per BALANCE.md's earlier entries). 0 crashes, 0 invariant failures. `BALANCE.md` updated by the sim
   run itself. No action needed: Hard difficulty meets every SPEC 9.4 target at this sample size.
+- 2026-09-27 (new session, ~11:52 UTC): 2 review subagents (error boundary/save-recovery vs. SPEC 11.3;
+  story satire/exclamation-mark rules vs. SPEC 3.5/3.2 + chapter-unlock logic vs. SPEC 8.1) both came back
+  clean on correctness — `ErrorBoundary.tsx`'s Resume/Copy-Bug-Report/Back-to-Title, `storage.ts`'s version-
+  mismatch handling, every story scene's satire compliance (zero exclamation marks anywhere, so SPEC 3.2's
+  "at most one per chapter" is trivially met), and the chapter-unlock `locked` computation were all
+  independently re-verified against already-logged prior findings, no new bugs. One real gap found in test
+  coverage, not runtime behaviour: `e2e/crash-recovery.spec.ts`'s final assertion (Resume From Last Autosave
+  after a forced crash) only checked that the crash message was gone and the URL no longer carried
+  `e2eCrash` — it never asserted the resumed screen actually showed the saved game's content, so a
+  regression that silently fell back to the title/setup screen instead of the real autosave would have
+  passed undetected. Fixed by asserting `.end-screen` is visible after Resume (the test's own setup finishes
+  a real Quick Game first specifically so this is checkable). Verified: `phone`/`desktop-chromium` both pass
+  (WebKit unavailable in this sandbox instance this session — a pre-existing environment gap, not a
+  regression from this change).
