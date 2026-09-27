@@ -2468,3 +2468,15 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   was never actually broken. Re-ran just this test (4/4 pass, both projects) and then the full `npm run
   gates` (gates 1-7 clean end to end; gate 8's screenshots are unchanged from this session's earlier clean
   subagent review, since nothing visual changed).
+- 2026-09-27 (same session, ~11:20 UTC): 2 more review subagents came back clean, no new findings:
+  1. Hard difficulty vs. SPEC 4.9/4.7: `src/engine/state.ts`'s Kingsmarket-Outlet/Pasture-Doubt Hard deltas,
+     `src/content/pressure.ts`'s stage ordering/draw direction, and `pieces.ts`'s pool clamping all verified
+     correct, no code defect. Residual, non-code risk noted: BALANCE.md has only one 100-game Hard MCTSBot
+     run (26.0% win rate, inside the 25-40% target band) vs. hundreds of games each for Normal/Easy — a
+     larger confirmation sample would be reassuring but isn't blocking, since the one sample already clears
+     the target and the balance loop is already closed (SPEC 9.4's 12-iteration cap reached).
+  2. Map.tsx/Game.tsx targeting-mode flow (enemy-turn-overlay race, stale-Confirm-after-state-change,
+     actionGroupKey collisions) vs. SPEC 10.2: all three hypothesized failure modes traced through and ruled
+     out for specific, verifiable reasons (React batching prevents the overlay race; `selectedGroup`/
+     `pendingChoice` only persist across a `state` that can't go stale under them; every action kind's group
+     key construction prevents two different legal actions from colliding into one button). No new bug.
