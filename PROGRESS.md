@@ -40,11 +40,44 @@ lossless fix (a real `--no-ff` merge, not a fast-forward) that a future session 
 script's own fast-forward step. That merge command was denied by the harness before it ran; not retried,
 per the denial's own guidance. `origin/main` is confirmed untouched and healthy at `53d37ff`.
 
-Session tally: one STYLE.md violation fixed, one real rules bug fixed (Grass Roots), one test-coverage gap
-closed (pressure.ts), `build` (`42db466`) gated and pushed but not yet released to `main` (blocked this
-session on the merge-command denial above, not on the gates). Next session: standard start, retry the
-release via the documented merge fix in Blocked, re-check the Apple secrets as usual, and keep hunting
-low-DECISIONS.md-mention files for the next genuinely unreviewed corner.
+After the blocked release attempt, dispatched 2 more concurrent review subagents at the next-lowest-mention
+files, since gates/release weren't the bottleneck on further hardening work:
+3. `src/ai/reason.ts`/`src/content/endLines.ts` — found reason.ts's openStall reason said "Liberating X."
+   whenever a region's outlets/buyouts/doubt were 0, without checking `!region.liberated` — true for a
+   *second* Stall opened in an already-liberated region (SPEC 4.6.1 permits this), so the AI teammate's log
+   would repeatedly claim to be liberating a region it freed turns earlier. Fixed, tested. Also caught
+   tests/end-lines.test.ts enforcing the wrong exclamation-mark rule for End-screen text (conflated SPEC
+   3.2's per-chapter story allowance with STYLE.md 12's flat interface-wide zero — no live content violated
+   it, but the test would have let a future edit slip one through). Tightened.
+4. `src/engine/api.ts`/`src/engine/state.ts` — found a real, more consequential bug: rng.ts's `nextFloat`
+   mutated its `RngState` input in place (`rng.seed += ...`) instead of only returning a new one, violating
+   SPEC 9.1's purity contract. Traced a real risk: `round.ts`'s `cleanup()` aliases `state.rng` rather than
+   copying it, and `Game.tsx`'s undo stack pushes the exact pre-action `GameState` reference (not a deep
+   clone), so an undo taken after a reshuffle could resume from a `GameState` whose `rng.seed` was silently
+   corrupted after the snapshot, diverging from what `replay()` would reconstruct. Fixed; confirmed the PRNG
+   output sequence is unchanged (full suite passes identically). Added tests/rng.test.ts (5 tests); 4 fail on
+   the pre-fix code. Also added validate() checks for Market/Cath's Plan's fixed 4/3 slot counts (a real gap
+   vs. validate()'s own "slots consistent" doc comment) — but a third suggested check (a Stall-count-vs-cap
+   invariant) was implemented, then reverted after its own regression test caught it firing on a legitimate
+   60-random-action playthrough: SPEC 4.6.1's cap only gates placing a *new* Stall, and nothing requires
+   retroactively removing Stalls when a later Lost Land token shrinks a region's cap. Full detail in
+   DECISIONS.md.
+
+Session tally: one STYLE.md violation fixed (enemyTurnLog.ts), two real rules/logic bugs fixed (Grass Roots'
+wrong adjacency requirement, reasonForAction's false liberation claim), one real engine-purity bug fixed
+(rng.ts mutating its input), two test-coverage gaps closed (pressure.ts, validate()'s Market/Plan slot
+counts), one test-correctness fix (end-lines.test.ts's exclamation-mark rule), one false invariant caught
+and reverted by its own test before being committed. `npm run check` stayed clean after every change
+(382/382 unit tests by the end); re-ran the fuller `npm run gates` after all of this session's fixes landed
+— all 8 gates' automated checks passed clean (70 e2e, 28 site e2e, 16 axe, Lighthouse 98/100), though gate
+8's screenshots from this final run weren't re-reviewed by a subagent (no visual/UI changes this session, all
+fixes were engine/AI-log/test logic, so not expected to differ from the earlier clean gate-8 pass on this
+same commit range). `build` (`128d2f9`) is gated and pushed, not yet released to `main` (blocked on the
+merge-command denial above, not on the gates or the fixes' quality). Next session: standard start, retry the
+release via the documented merge fix in Blocked (gates don't need re-running unless new commits land first),
+re-check the Apple secrets as usual, and keep hunting low-DECISIONS.md-mention files for the next genuinely
+unreviewed corner — this session's 4 finds in a row suggest there's still real value in it, not just
+diminishing returns.
 
 ---
 
