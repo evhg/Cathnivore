@@ -1,7 +1,62 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-27, starting ~03:52 UTC): re-checked both standing blockers first — `OWNER.md`'s Apple
+This session (2026-09-27, starting ~04:52 UTC): `git fetch --all` showed the owner had run a chat session
+(not an hourly build session) since the last one: it merged the portfolio branch into `build`, released it
+to `main` (both now at `a175052`, confirmed via `git merge-base --is-ancestor origin/main HEAD`), and fixed
+two `scripts/release.ts` defects (a merge-commit-unsafe revert, and the sandbox TLS smoke-test false-
+failure) — full detail already in DECISIONS.md from that session. So this session started with `main`
+already caught up and no release-path blocker to retry; `OWNER.md`'s Apple Team ID is still
+`PASTE-TEAM-ID` (no `ios.yml` re-dispatch). `npm ci` + `npm run check` clean (366 tests).
+
+With no release pending, continued the previous session's queued Easy balance-loop track (SPEC 9.4's
+70-85% target, still short after the last session's 43.0% -> 53.0% Lost-Land-pool widening): widened
+`lostLandPool` once more, 16 -> 20 (one number). A 100-game MCTSBot Easy spot check came back at 50.0% —
+statistically flat versus 53.0% (100-game noise), but the loss-reason breakdown showed Lost Land had
+dropped to a 0% loss share — it had stopped being the bottleneck entirely, with games now mostly timing
+out against the Pressure deck instead (`pressureDeckEmpty` 78.0%). Recognising that neither of SPEC 4.9's
+two numeric knobs speaks to liberation *pace*, added a new difficulty lever instead: `kingsmarketOutlets`
+(Easy 1, Normal 2 unchanged, Hard 3 unchanged, replacing an inline ternary), giving Easy's capital 1 fewer
+starting Outlet so the required 5th liberation is faster to reach — mirrors how SPEC 4.9's table already
+has an asymmetric "extra setup" entry for Hard. A follow-up 100-game MCTSBot Easy sim confirmed real
+progress: **56.0%**, up from 50.0%, with `pressureDeckEmpty`'s share falling to 52.3% as predicted and
+`publicTrust` becoming the larger loss share (47.7%) — the pace lever worked as diagnosed. Still short of
+the 70-85% target; the natural next step (queued, not started this session) is widening Easy's Public
+Trust gap over Normal, since that's now the larger loss reason. Every step verified with
+`npx tsc -b --noEmit`, lint, the full unit suite, fuzz, build, and a 200-game HeuristicBot sanity sim
+before the slower MCTSBot confirmation; full detail and the exact numbers are in `DECISIONS.md`/
+`BALANCE.md`.
+
+In parallel, launched two hardening-review subagents (2-concurrent cap) on the portfolio code the owner's
+chat session added earlier today (`site/`, `games/runnel/`, `scripts/build-site.ts`, `vercel.json`) — brand
+new code nobody had reviewed yet, a clear gap versus the game code's many prior review passes. (1) The
+site/portfolio build and routing review came back **clean**: `vercel.json`'s rewrites, the separate
+`dist-site` subtrees for the landing page/Runnel/Cathnivore, the self-removing migration `sw.js`, gate 5's
+`e2e:site` wiring, the web-only "More games" link (correctly hidden in the iOS shell), and the live smoke
+test's actual coverage were all verified directly (not just read as claims) and hold up — see DECISIONS.md
+for the specific checks. (2) The Runnel puzzle-engine review found and the review verified **two real
+bugs**, both fixed this session: `growTree()`'s documented "junctions capped at 3 openings, spring
+included" guarantee wasn't actually enforced — a fallback path could push any in-tree cell (the spring
+included) to 4+ openings, reproduced in ~0.7% of a 15,000-puzzle stress sweep, undetected because the test
+suite only checked a lower bound for channels. Fixed by retrying generation (bounded, still seed-
+deterministic) until a fully-compliant tree is found; a fresh 9,000-puzzle stress check now shows zero
+violations. Also hardened `scramble()`'s scrambling retry loop, which had no fallback guarantee against
+handing out an under-scrambled or (in principle) already-solved puzzle — not observed in practice, but a
+real logic gap, now fixed by tracking the best-scrambled attempt instead of trusting whichever attempt was
+last. Verified with the full unit suite (still 366 tests; `tests/runnel.test.ts`'s channel-cap assertion
+was tightened to check the upper bound across all 200 seeds, not just a lower bound on the first 50).
+
+Session tally: no release needed (already current, thanks to the owner's chat session), two real Easy
+balance-loop iterations with a confirmed 50.0% -> 56.0% MCTSBot win-rate gain (still short of target, next
+lever queued), one clean portfolio-code confirmation, and two real previously-unknown Runnel generation
+bugs found and fixed with new stress-test verification. `build` (`3803457`) is fully gated and pushed, 6
+commits ahead of the session's starting point. Next session: continue the Easy balance loop (widen Public
+Trust's gap over Normal next, since it's now the larger loss share), and eventually run the real
+1,000-game MCTSBot confirmation SPEC 9.3 calls for once a 100-game spot check lands consistently in-band.
+
+---
+
+Previous session (2026-09-27, starting ~03:52 UTC): re-checked both standing blockers first — `OWNER.md`'s Apple
 Team ID is still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch). `npm ci` + `npm run check` clean on the unchanged
 `build` HEAD (`1935ccd`, this session's own lock commit on top of the prior session's history-reconciliation
 fix). Ran `npm run release`: gates 1-7 passed clean (70 e2e, 16 axe, Lighthouse 98/100). The fast-forward step
