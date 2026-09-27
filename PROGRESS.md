@@ -1,7 +1,61 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-27, starting ~04:52 UTC): `git fetch --all` showed the owner had run a chat session
+This session (2026-09-27, starting ~05:52 UTC): standard session start — `git fetch --all`, checked out
+`build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
+BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on the unchanged `build` HEAD
+(`08f1459`, the owner's portfolio-release commit from the previous session). `origin/main` was already an
+ancestor of `build` (`a175052`), so a release was possible. Launched one gate-8 subagent (2-concurrent cap)
+to review freshly captured screenshots against STYLE.md/SPEC 10 — came back clean, no findings. Ran
+`npm run gates` (all 8 gates, gate 8 now satisfied by the subagent review above; 70 e2e, 22 site e2e, 16
+axe, Lighthouse 99/100) then `npm run release`: the fast-forward step hit the familiar stale-local-`main`
+symptom ("refusing to merge unrelated histories"); `git checkout -B main origin/main` + `git merge --ff-only
+build` + `git push origin main` all succeeded with **no classifier denial** this time, fast-forwarding
+`main` to `08f1459`. The script's own Chromium-based smoke test wasn't run (this sandbox's standing
+`ERR_CERT_AUTHORITY_INVALID` TLS artifact against the real domain, logged in CLAUDE.md); verified instead
+with `curl`: `https://cathnivore.com/version.json` picked up `08f1459` on the 3rd poll (~30s), and `/`,
+`/cathnivore/`, `/runnel/` all return 200. `deploy-10` tagged locally at `08f1459` but can't be pushed
+(known 403, see Blocked) — see Deploy log. `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID`
+(`origin/ci-status`'s `ios.json` unchanged), so `ios.yml` wasn't re-dispatched.
+
+With `main` freshly released, used the rest of the session to continue the queued Easy balance-loop pace
+track (SPEC 9.4's 70-85% target, at 56.0% coming into this session after the last session's
+Kingsmarket-Outlet lever). Two more pace-lever iterations, both kept (full detail in DECISIONS.md):
+1. **`extraHomeStalls`** (Easy 1, Normal/Hard 0): Easy producers now start with 3 Stalls in their home
+   region instead of 2 (still within SPEC 4.6's 3-per-region cap). A 100-game MCTSBot Easy sim: **56.0% ->
+   66.0%**, real progress, loss-reason shares stayed reasonable (no floor breach, no 0%/100% extreme).
+2. **`kingsmarketBuyouts`** (Easy 0, Normal/Hard 1 unchanged): `extraHomeStalls` can't go any higher without
+   breaking the 3-per-region cap, so this lever instead removes Easy's one starting Kingsmarket Buyout — a
+   Buyout costs 4 Produce and 2+ Stalls to clear (SPEC 4.6.2), strictly pricier than an Outlet, so cutting
+   it speeds the Kingsmarket endgame. A 100-game MCTSBot Easy sim: **66.0% -> 73.0%** — the first Easy sim
+   ever to land inside SPEC 9.4's 70-85% target band. A 200-game HeuristicBot/Normal sanity run (7.0%,
+   matching the existing baseline) confirmed Normal is untouched, as expected since neither new setting
+   changed for Normal/Hard.
+
+Both changes verified together with `npx tsc -b --noEmit`, `eslint`, the full unit suite (368 tests, up
+from 366 — one existing test extended with the new assertions rather than new test files), `npm run fuzz
+--quick`, and `npm run build`, all clean. A follow-up 200-game MCTSBot Easy confirmation was started to
+firm up the 100-game spot check before treating this as settled, but was still running past the session's
+~55-minute wrap-up point with no output yet (a 100-game run took ~9 minutes in this environment; 200 across
+6 pairs evidently took longer than the naive 2x estimate) — killed rather than let it run past the lock
+release, per CLAUDE.md's "don't start anything long after about 40 minutes" guidance (this one was
+borderline-started at the ~27-minute mark and didn't finish by ~38). **Queued for the next session: run a
+200-1,000-game MCTSBot Easy confirmation of the `kingsmarketBuyouts` change before treating 73.0% as
+settled, and check the producer-pair spread (43.8%-88.2% in the last 100-game run, wide) as a possible
+separate Easy-specific gap**, the same way the main Normal loop's own pair-spread problem was never fully
+resolved either.
+
+Session tally: one clean release to `main` (`08f1459`, verified live via `curl`, no classifier denial this
+time), one clean gate-8 confirmation, and two kept Easy balance-loop pace-lever iterations moving the
+100-game spot check from 56.0% to **73.0%** — inside SPEC 9.4's Easy target band for the first time, though
+still needing a larger-sample confirmation before calling it settled. `build` (`a468a5c`) is fully gated
+and pushed, 2 commits ahead of `main`. Next session: re-check the release path and the two standing
+blockers as usual, then run the queued larger Easy MCTSBot confirmation and pair-spread check before any
+further Easy-track changes.
+
+---
+
+Previous session (2026-09-27, starting ~04:52 UTC): `git fetch --all` showed the owner had run a chat session
 (not an hourly build session) since the last one: it merged the portfolio branch into `build`, released it
 to `main` (both now at `a175052`, confirmed via `git merge-base --is-ancestor origin/main HEAD`), and fixed
 two `scripts/release.ts` defects (a merge-commit-unsafe revert, and the sandbox TLS smoke-test false-
@@ -2252,6 +2306,15 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   live site verified via `curl`) — no regression, just missing this session's newest fixes, which stay on
   `build` for the next release attempt.
 - `a175052` (games portfolio: landing page at `/`, Runnel at `/runnel/`, Cathnivore at `/cathnivore/`). Released to `main` 2026-09-27 ~04:32 UTC via `npm run release` from the owner's chat session. All gates passed, including the new site suite in gate 5. `version.json` was live within about 3 minutes. The Chromium smoke test hit the known sandbox `ERR_CERT_AUTHORITY_INVALID`. The script then tried to revert and crashed on the merge commit (`git revert` needs `-m`), so `main` correctly stayed on `a175052`. Verified with curl: all three pages and every file they reference return 200, and `/sw.js` is the self-removing worker. `release.ts` now treats sandbox proxy errors as inconclusive, falls back to that HTTP check, and reverts only on a real failure, with a single forward commit that restores the old tree and works across merges.
+- `08f1459` (this session's Easy balance-loop lead-in commit — the release itself carried no game-content
+  changes beyond the previous session's Public Trust revert/finalize, since the Easy pace-lever work below
+  landed on `build` after this release). Released to `main` 2026-09-27 ~06:00 UTC via `npm run release`.
+  All 8 gates passed (gate 8 via a real subagent review, clean). The fast-forward hit the usual
+  stale-local-`main` symptom; `git checkout -B main origin/main` + `git merge --ff-only build` + `git push
+  origin main` all succeeded with no classifier denial. `version.json` picked up the new commit on the 3rd
+  poll (~30s). The script's own Chromium smoke test wasn't run (standing sandbox TLS artifact); verified
+  instead with curl (`/`, `/cathnivore/`, `/runnel/`, `/version.json` all 200/matching). `deploy-10` tagged
+  locally but can't be pushed (known 403).
 
 ## Final report
 (not yet written)
