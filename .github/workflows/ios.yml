@@ -23,31 +23,43 @@ jobs:
       - run: npx cap sync ios
 
       - name: Write App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
           mkdir -p private_keys
-          echo "${{ secrets.ASC_KEY_P8 }}" > private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+          echo "$ASC_KEY_P8" > "private_keys/AuthKey_${ASC_KEY_ID}.p8"
 
       - name: Fill in export options team ID
         working-directory: ios/App
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          sed -i '' "s/TEAM_ID_PLACEHOLDER/${{ secrets.APPLE_TEAM_ID }}/" ExportOptions.plist
+          sed -i '' "s/TEAM_ID_PLACEHOLDER/${APPLE_TEAM_ID}/" ExportOptions.plist
 
       - name: Archive with xcodebuild
         working-directory: ios/App
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -o pipefail
           xcodebuild -workspace App.xcodeproj/project.xcworkspace -scheme App -configuration Release \
             -archivePath "$RUNNER_TEMP/App.xcarchive" -destination 'generic/platform=iOS' \
             -allowProvisioningUpdates \
-            -authenticationKeyPath "$GITHUB_WORKSPACE/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8" \
-            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
-            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
+            -authenticationKeyPath "$GITHUB_WORKSPACE/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
             archive 2>&1 | tee "$RUNNER_TEMP/archive.log"
 
       - name: Export and upload to App Store Connect (TestFlight)
         working-directory: ios/App
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           set -o pipefail
           xcodebuild -exportArchive \
@@ -55,9 +67,9 @@ jobs:
             -exportPath "$RUNNER_TEMP/export" \
             -exportOptionsPlist ExportOptions.plist \
             -allowProvisioningUpdates \
-            -authenticationKeyPath "$GITHUB_WORKSPACE/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8" \
-            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+            -authenticationKeyPath "$GITHUB_WORKSPACE/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             2>&1 | tee "$RUNNER_TEMP/export.log"
 
       - name: Delete API key
