@@ -17,8 +17,11 @@ every one of the 6 pairs is within 12 points of the overall rate — the 100-gam
 was sampling noise, not a real Easy-specific gap. Logged in `DECISIONS.md` and `src/content/difficulty.ts`.
 This closes out the Easy balance-loop track for now with no further code changes needed.
 
-With `build` 2 commits ahead of `main` (both gated, real content changes affecting live balance), released
-via `npm run release` this session — see Deploy log for the outcome.
+With `build` ahead of `main`, released via `npm run release` this session: all 8 gates passed (gate 8 via
+a subagent screenshot review, clean), the fast-forward hit the usual recurring stale-local-`main` symptom
+(fixed the documented way outside the script) and `git push origin main` succeeded with no classifier
+denial. `main` is now at `2da4acf`, verified live via curl (Chromium smoke test skipped for the standing
+sandbox TLS artifact). Full detail in the Deploy log. `deploy-11` tagged locally (tag pushes still 403).
 
 ---
 
@@ -2336,6 +2339,17 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   poll (~30s). The script's own Chromium smoke test wasn't run (standing sandbox TLS artifact); verified
   instead with curl (`/`, `/cathnivore/`, `/runnel/`, `/version.json` all 200/matching). `deploy-10` tagged
   locally but can't be pushed (known 403).
+- `2da4acf` (this session's Easy balance-loop confirmation commit: 300-game MCTSBot Easy sim landed at
+  75.3%, inside SPEC 9.4's 70-85% band, plus the pair-spread doc/comment updates — no game-content changes,
+  docs and comments only). Released to `main` 2026-09-27 ~07:15 UTC via `npm run release`. All 8 gates
+  passed (`npm run gates`'s own run; gate 8 via a real subagent review of the freshly captured screenshots,
+  clean, no findings). The fast-forward step hit the usual stale-local-`main` "refusing to merge unrelated
+  histories" symptom inside the release script itself; fixed the documented way outside the script
+  (`git checkout -B main origin/main` + `git merge --ff-only build`) then `git push origin main` succeeded
+  with no classifier denial. `version.json` picked up the new commit on the 2nd poll (~15s). The script's
+  own Chromium smoke test wasn't run (standing sandbox TLS artifact, see CLAUDE.md); verified instead with
+  curl (`/`, `/cathnivore/`, `/runnel/`, `/version.json` all 200/matching, commit hash confirmed). `deploy-11`
+  tagged locally but can't be pushed (known 403; see Blocked).
 
 ## Final report
 (not yet written)
