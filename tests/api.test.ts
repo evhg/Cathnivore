@@ -38,6 +38,20 @@ describe('validate', () => {
     const { state } = playSomeActions(11, 60)
     expect(validate(state)).toEqual([])
   })
+
+  // SPEC 4.3/7: the Market always has exactly 4 slots and Cath's Plan exactly 3, empty slots staying null
+  // rather than the array shrinking or growing.
+  it('flags a Market that is not exactly 4 slots', () => {
+    const state = createGame(FULL_CONFIG, 11)
+    const broken = { ...state, market: state.market.slice(0, 3) }
+    expect(validate(broken).some((e) => e.message.includes('market has'))).toBe(true)
+  })
+
+  it("flags a Cath's Plan that is not exactly 3 slots", () => {
+    const state = createGame(FULL_CONFIG, 11)
+    const broken = { ...state, cathsPlan: [...state.cathsPlan, null] }
+    expect(validate(broken).some((e) => e.message.includes('cathsPlan has'))).toBe(true)
+  })
 })
 
 // Plays a full game to its end screen (round 10 or a liberation/loss result) using HeuristicBot, which
