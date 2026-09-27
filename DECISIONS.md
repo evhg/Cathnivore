@@ -2609,3 +2609,16 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   scale, treat it as a real balance-loop candidate (a 13th "iteration" would exceed SPEC 9.4's 12-iteration
   cap, so per the spec's own exit clause the honest move is probably to log it in the final report as a
   known imbalance rather than reopen the loop, unless the delta turns out to be pure noise and shrinks).
+- 2026-09-27 (new session, ~12:40 UTC): a review subagent (support/privacy pages + Credits.tsx) found the
+  support/privacy pages both correct (support email matches `OWNER.md`, privacy's "no data, no tracking"
+  claim confirmed true — a codebase-wide search for `fetch`/`XMLHttpRequest`/`sendBeacon`/analytics-style
+  calls outside same-origin game assets turned up nothing) and one real, minor gap: `Credits.tsx`'s own
+  comment claimed the cast list "mirrors SPEC 3.2-3.4 (playable producers, antagonists and secrets)," but
+  the actual `CAST` array only ever listed the 4 producers plus Cath — none of SPEC 3.4's antagonists (Pell,
+  Vane, Crisp, Pip) were present, so the comment overstated what the code did. Fixed by completing the cast
+  list to match the comment's stated intent, adding all 4 antagonists with the same one-line-note format the
+  existing entries use. Verified visually (both sizes, no overflow/overlap) and with axe (0 serious/critical
+  issues) — screenshot in `e2e/screenshots/*-9-credits.png`. `npm run check`'s only failure is the unrelated,
+  pre-existing `recommended-pair.test.ts` noise from this session's own 200-game balance sample (see the
+  Op-ed-Column-followup entry below) — Credits' own coverage (portraits.test.ts, the e2e/axe runs above) all
+  pass clean.
