@@ -5,7 +5,7 @@ import { validate } from '../src/engine/api'
 import { ALL_REGION_IDS } from '../src/content/map'
 import { IMPROVEMENTS_BY_ID } from '../src/content/improvements'
 import { SCHEMES_BY_ID } from '../src/content/schemes'
-import type { GameConfig, GameState } from '../src/engine/types'
+import type { GameConfig, GameState, RegionId } from '../src/engine/types'
 
 const FULL_CONFIG: GameConfig = {
   producers: ['mara', 'tomas'],
@@ -319,6 +319,50 @@ describe('ongoing-ability Improvements added for the SPEC 7 effect-mix fix', () 
     const actions = legalActions(state)
     expect(actions.some((a) => a.kind === 'supplyBuyout')).toBe(false)
   })
+
+  // Sets `region` up with a lone Mara Stall and `outlets` Outlets, no Buyout/Doubt, so `supplyOutlets` is
+  // legal there regardless of the seed's starting layout.
+  function withOutletRegion(state: GameState, region: RegionId, outlets: number): GameState {
+    return {
+      ...state,
+      regions: {
+        ...state.regions,
+        [region]: { ...state.regions[region], stalls: { ...state.regions[region].stalls, mara: 1 }, outlets, buyouts: 0, doubt: 0 },
+      },
+    }
+  }
+
+  // SPEC 7: Mobile Butcher/Wholesale Crate Deal/Harbour Stall Licence each give a matching Pasture/Crop/
+  // Coast region type its own "Supply costs 1 less Produce per Outlet (minimum 1)" discount — previously
+  // untested (only Wholesale Account's floor test happened to reference Harbour Stall Licence's id, without
+  // exercising its actual Supply discount).
+  const supplyDiscountCards: { id: string; region: RegionId; type: string }[] = [
+    { id: 'mobile-butcher', region: 'highmoor', type: 'Pasture' },
+    { id: 'wholesale-crate-deal', region: 'rivermead', type: 'Crop' },
+    { id: 'harbour-stall-licence', region: 'saltmarsh', type: 'Coast' },
+  ]
+
+  for (const { id, region, type } of supplyDiscountCards) {
+    it(`${id}: Supply costs 1 less Produce per Outlet in a ${type} region`, () => {
+      let state = richMara(withOutletRegion(createGame(FULL_CONFIG, 5), region, 2))
+      state = withImprovement(state, id)
+      const before = state.producers.mara.resources.produce
+      state = applyAction(state, { kind: 'supplyOutlets', region, count: 2 })
+      // Base cost is 2 Produce/Outlet (SPEC 4.6.2); the discount is 1 less per Outlet, so 2 Outlets cost
+      // (2-1)*2 = 2, not the undiscounted (2*2 = 4).
+      expect(state.producers.mara.resources.produce).toBe(before - 2)
+      expect(state.regions[region].outlets).toBe(0)
+    })
+
+    it(`${id} does not discount Supply in a region of a different type`, () => {
+      const otherRegion = supplyDiscountCards.find((c) => c.id !== id)!.region
+      let state = richMara(withOutletRegion(createGame(FULL_CONFIG, 5), otherRegion, 1))
+      state = withImprovement(state, id)
+      const before = state.producers.mara.resources.produce
+      state = applyAction(state, { kind: 'supplyOutlets', region: otherRegion, count: 1 })
+      expect(state.producers.mara.resources.produce).toBe(before - 2)
+    })
+  }
 
   it('Tide Tables: Rebut costs 1 less Goodwill overall, applied per action, not per Doubt removed', () => {
     let state = richMara(withClearableRegion(createGame(FULL_CONFIG, 5)))
