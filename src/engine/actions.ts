@@ -1,14 +1,14 @@
 import { REGIONS } from '../content/map'
 import { removeBuyout, removeDoubt, removeOutlets } from './pieces'
 import { refreshAllLiberation } from './enemy'
-import { checkRiftSplit } from './rift'
+import { checkRiftSplit, resolveRiftSplitFaction, resolveRiftSplitRemoval } from './rift'
 import { advanceTurnIfNeeded, checkWin } from './round'
 import { hasImprovement, improvementCount } from './producer'
 import { canMarketDayOpenIn, canOpenStallIn, regionStallTotal } from './region'
 import { resolveRules } from './rules'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID, legalSchemeTargets } from '../content/schemes'
-import type { Action, GameState, ProducerId, RegionId } from './types'
+import type { Action, Faction, GameState, ProducerId, RegionId, ResourceKind } from './types'
 
 function ownStalls(state: GameState, producer: ProducerId, region: RegionId): number {
   return state.regions[region].stalls[producer] ?? 0
@@ -192,34 +192,57 @@ function applyRole(state: GameState, producer: ProducerId, target: RegionId | nu
   }
 }
 
-// Resolves a pending `currentDecision`. A default choice is already applied to state (see enemy.ts); if
-// the resolved choice differs, undo the default and apply the chosen option in its place. This isn't one
-// of a producer's 3 actions, so it doesn't touch `actionsLeft` or turn order.
+// Resolves a pending `currentDecision`. A default choice is already applied to state (see enemy.ts/
+// rift.ts); if the resolved choice differs, undo the default and apply the chosen option in its place.
+// This isn't one of a producer's 3 actions, so it doesn't touch `actionsLeft` or turn order.
 function applyDecision(state: GameState, action: Extract<Action, { kind: 'decide' }>): GameState {
   const decision = state.pendingDecisions.find((d) => d.id === action.decisionId)
   if (!decision) throw new Error(`Unknown decision: ${action.decisionId}`)
+
+  // SPEC 4.7 Rift 6 "The Split": these two kinds don't swap a producer's production track like the ones
+  // below — they pick a faction, then (possibly several times) where to remove one of its pieces from.
+  if (decision.kind === 'riftSplitFaction' || decision.kind === 'riftSplitRemoval') {
+    const next =
+      decision.kind === 'riftSplitFaction'
+        ? resolveRiftSplitFaction(state, decision.id, action.choice as Faction)
+        : resolveRiftSplitRemoval(state, decision, action.choice as RegionId)
+    return {
+      ...next,
+      log: [...next.log, { type: 'decision', decisionId: action.decisionId, choice: action.choice }],
+      actionHistory: [...next.actionHistory, action],
+    }
+  }
+
+  const choice = action.choice as ResourceKind
   const producer = state.producers[decision.producer]
   let production = producer.production
-  if (decision.applied !== action.choice) {
+  if (decision.applied !== choice) {
     const delta = decision.kind === 'squeezeProductionLoss' ? 1 : -1
     production = {
       ...production,
       [decision.applied]: Math.max(0, production[decision.applied] + delta),
-      [action.choice]: Math.max(0, production[action.choice] - delta),
+      [choice]: Math.max(0, production[choice] - delta),
     }
   }
   return {
     ...state,
     producers: { ...state.producers, [decision.producer]: { ...producer, production } },
     pendingDecisions: state.pendingDecisions.filter((d) => d.id !== action.decisionId),
-    log: [...state.log, { type: 'decision', decisionId: action.decisionId, choice: action.choice }],
+    log: [...state.log, { type: 'decision', decisionId: action.decisionId, choice }],
     actionHistory: [...state.actionHistory, action],
   }
 }
 
 export function applyAction(state: GameState, action: Action): GameState {
   assertLegal(state, action)
-  if (action.kind === 'decide') return applyDecision(state, action)
+  if (action.kind === 'decide') {
+    // Most `decide` kinds (squeeze/Kingsmarket) only swap a production track and need no refresh below.
+    // A `riftSplitRemoval` decision can remove an Outlet/Buyout/Doubt, though, which can liberate a region
+    // or even complete the win condition mid-chain — same re-checks `applyAction`'s own action path below
+    // runs after any piece change, so this can't apply an action's worth of removal without them.
+    const resolved = refreshAllLiberation(applyDecision(state, action))
+    return resolved.result ? resolved : checkWin(resolved)
+  }
   const producer = state.activeProducer
   let next = state
 

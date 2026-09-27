@@ -1,8 +1,6 @@
 import { AGENDA_CARDS } from '../content/agenda'
-import { removeBuyout, removeDoubt, removeOutlets } from './pieces'
-import type { GameState, RegionId, RegionState } from './types'
-
-type Faction = 'hollowell' | 'candor'
+import { addBuyout, addDoubt, addOutlets, removeBuyout, removeDoubt, removeOutlets } from './pieces'
+import type { Faction, FactionPieceKind, GameState, PendingDecision, RegionId, RegionState } from './types'
 
 const AGENDA_FACTION_BY_ID = new Map(AGENDA_CARDS.map((c) => [c.id, c.faction]))
 
@@ -14,52 +12,122 @@ function totalPieces(state: GameState, faction: Faction): number {
   return state.config.activeRegions.reduce((sum, id) => sum + pieceCount(state.regions[id], faction), 0)
 }
 
-// SPEC 4.7 Rift 6: "The AI picks the faction and places whose removal most improves its evaluation." M2's
-// real evaluation function (src/ai/evaluation.ts) exists now, but wiring it in here would have `engine/`
-// (meant to stay pure, dependency-free of `ai/` — SPEC 9.1/11.2's layering, `ai/` depends on `engine/`, not
-// the other way around) import from `ai/`, risking a circular import and inverting that layering for a
-// once-per-game, low-stakes event. Keeping the greedy proxy: remove half of whichever faction currently has
-// more pieces on the map, since that's the faction doing the players the most harm right now.
-function pickFaction(state: GameState): Faction {
+// SPEC 4.6/4.7: Hollowell's pieces are Outlets and Buyouts; Candor's is Doubt. Outlets go first (matching
+// Supply's own removal order), falling back to a Buyout only once a region has no Outlets left.
+function pieceKindToRemove(region: RegionState, faction: Faction): FactionPieceKind {
+  if (faction === 'candor') return 'doubt'
+  return region.outlets > 0 ? 'outlet' : 'buyout'
+}
+
+function removePiece(state: GameState, region: RegionId, kind: FactionPieceKind): GameState {
+  if (kind === 'outlet') return removeOutlets(state, region, 1)
+  if (kind === 'buyout') return removeBuyout(state, region, 1)
+  return removeDoubt(state, region, 1)
+}
+
+function addPiece(state: GameState, region: RegionId, kind: FactionPieceKind): GameState {
+  if (kind === 'outlet') return addOutlets(state, region, 1)
+  if (kind === 'buyout') return addBuyout(state, region, 1)
+  return addDoubt(state, region, 1)
+}
+
+function regionWithMostPieces(state: GameState, faction: Faction): RegionId | null {
+  const candidates = state.config.activeRegions.filter((id) => pieceCount(state.regions[id], faction) > 0)
+  if (candidates.length === 0) return null
+  return candidates.reduce((best, id) => (pieceCount(state.regions[id], faction) > pieceCount(state.regions[best], faction) ? id : best))
+}
+
+// Greedy proxy for "the faction whose removal most improves its evaluation," used only as the *default*
+// pre-filled into the `riftSplitFaction` decision below: remove whichever faction currently has more
+// pieces on the map, since that's doing the players the most harm right now. It is never the final word —
+// a human or the AI can override it through the same `currentDecision`/`decide` path (SPEC 9.1) as every
+// other forced choice, and an AI bot picks among the two `decide` options the same way it picks any other
+// action: by evaluating the resulting state (`src/ai/evaluation.ts`), same as SPEC 4.7 describes.
+function defaultFaction(state: GameState): Faction {
   return totalPieces(state, 'hollowell') >= totalPieces(state, 'candor') ? 'hollowell' : 'candor'
 }
 
-function removeOnePiece(state: GameState, region: RegionId, faction: Faction): GameState {
-  if (faction === 'candor') return removeDoubt(state, region, 1)
-  return state.regions[region].outlets > 0 ? removeOutlets(state, region, 1) : removeBuyout(state, region, 1)
+function riftSplitDecisionPending(state: GameState): boolean {
+  return state.pendingDecisions.some((d) => d.kind === 'riftSplitFaction' || d.kind === 'riftSplitRemoval')
 }
 
-// Removes half (rounded down) of the faction's pieces, greedily from the regions with the most of them
-// first, standing in for "the players choose where."
-function removeHalfFactionPieces(state: GameState, faction: Faction): GameState {
-  let next = state
-  let toRemove = Math.floor(totalPieces(state, faction) / 2)
-  while (toRemove > 0) {
-    const candidates = next.config.activeRegions.filter((id) => pieceCount(next.regions[id], faction) > 0)
-    if (candidates.length === 0) break
-    const target = candidates.reduce((best, id) =>
-      pieceCount(next.regions[id], faction) > pieceCount(next.regions[best], faction) ? id : best,
-    )
-    next = removeOnePiece(next, target, faction)
-    toRemove--
-  }
-  return next
-}
-
-// SPEC 4.7 Rift 6 "The Split" (happens once): the players choose one faction. Remove all its remaining
-// cards from the Agenda deck, and remove half (rounded down) of its pieces from the map. Callers must
-// re-check liberation afterwards (removing pieces can liberate a region) — not done here, to avoid a
+// SPEC 4.7 Rift 6 "The Split" (happens once): "the players choose one faction... Remove all of its
+// remaining cards from the Agenda deck, and remove half (rounded down) of that faction's pieces from the
+// map, with the players choosing where." SPEC 9.1 names this exact pair of choices as an example forced
+// decision ("which faction to split at Rift 6"), so both steps go through `currentDecision`/`decide` — the
+// same path a human or the AI uses for every other forced choice — rather than being resolved directly
+// here. This only *starts* the chain, the moment Rift first reaches 6 (from either a Scheme or an Agenda
+// bonus), by queuing the first decision; `resolveRiftSplitFaction`/`resolveRiftSplitRemoval` below (called
+// from `actions.ts`'s `applyDecision`) carry it through to completion. Callers must re-check liberation
+// afterwards (removing pieces, here or via a decision, can liberate a region) — not done here, to avoid a
 // circular import with engine/enemy.ts, which already calls this after its own liberation check.
 export function checkRiftSplit(state: GameState): GameState {
-  if (state.riftSplitDone || state.rift < 6) return state
-  const faction = pickFaction(state)
-  const next = removeHalfFactionPieces(state, faction)
-  const removed = next.agendaDeck.filter((id) => AGENDA_FACTION_BY_ID.get(id) === faction)
+  if (state.riftSplitDone || state.rift < 6 || riftSplitDecisionPending(state)) return state
   return {
-    ...next,
-    riftSplitDone: true,
-    agendaDeck: next.agendaDeck.filter((id) => AGENDA_FACTION_BY_ID.get(id) !== faction),
-    agendaRemoved: [...next.agendaRemoved, ...removed],
-    log: [...next.log, { type: 'riftSplit', faction }],
+    ...state,
+    pendingDecisions: [
+      ...state.pendingDecisions,
+      { id: `riftSplitFaction-${state.round}`, kind: 'riftSplitFaction', options: ['hollowell', 'candor'], applied: defaultFaction(state) },
+    ],
   }
+}
+
+// Queues the next single-piece `riftSplitRemoval` decision for `faction`, applying its greedy default
+// (most pieces first, standing in for "the players choose where" until overridden) immediately — matching
+// every other `currentDecision`'s "apply a default, expose it for override" pattern — or, once none remain
+// to remove, finishes the Split.
+function queueNextRemovalOrFinish(state: GameState, faction: Faction, remaining: number): GameState {
+  const target = remaining > 0 ? regionWithMostPieces(state, faction) : null
+  if (!target) {
+    return { ...state, riftSplitDone: true, log: [...state.log, { type: 'riftSplit', faction }] }
+  }
+  const options = state.config.activeRegions.filter((id) => pieceCount(state.regions[id], faction) > 0)
+  const pieceKind = pieceKindToRemove(state.regions[target], faction)
+  const applied = removePiece(state, target, pieceKind)
+  return {
+    ...applied,
+    pendingDecisions: [
+      ...applied.pendingDecisions,
+      {
+        id: `riftSplitRemoval-${faction}-${remaining}-${state.round}`,
+        kind: 'riftSplitRemoval',
+        faction,
+        pieceKind,
+        remaining: remaining - 1,
+        options,
+        applied: target,
+      },
+    ],
+  }
+}
+
+// Resolves the `riftSplitFaction` decision (called from `actions.ts`'s `applyDecision`): strips the chosen
+// faction's remaining Agenda cards — nothing else can have touched `agendaDeck` meanwhile, since a pending
+// decision is the only legal action (SPEC 9.1) — then starts the removal chain for half its current
+// pieces, rounded down (SPEC 4.7).
+export function resolveRiftSplitFaction(state: GameState, decisionId: string, faction: Faction): GameState {
+  const removed = state.agendaDeck.filter((id) => AGENDA_FACTION_BY_ID.get(id) === faction)
+  const next: GameState = {
+    ...state,
+    agendaDeck: state.agendaDeck.filter((id) => AGENDA_FACTION_BY_ID.get(id) !== faction),
+    agendaRemoved: [...state.agendaRemoved, ...removed],
+    pendingDecisions: state.pendingDecisions.filter((d) => d.id !== decisionId),
+  }
+  return queueNextRemovalOrFinish(next, faction, Math.floor(totalPieces(next, faction) / 2))
+}
+
+// Resolves one `riftSplitRemoval` decision: if the chosen region differs from the greedy default already
+// applied, undoes that default removal and removes from the chosen region instead, then queues the next
+// removal (or finishes).
+export function resolveRiftSplitRemoval(
+  state: GameState,
+  decision: Extract<PendingDecision, { kind: 'riftSplitRemoval' }>,
+  region: RegionId,
+): GameState {
+  let next: GameState = { ...state, pendingDecisions: state.pendingDecisions.filter((d) => d.id !== decision.id) }
+  if (region !== decision.applied) {
+    next = addPiece(next, decision.applied, decision.pieceKind)
+    next = removePiece(next, region, pieceKindToRemove(next.regions[region], decision.faction))
+  }
+  return queueNextRemovalOrFinish(next, decision.faction, decision.remaining)
 }

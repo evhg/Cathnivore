@@ -189,7 +189,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
     const aiProducer = aiProducerRef.current
     const decision = currentDecision(state)
-    const activeProducer = decision ? decision.producer : state.activeProducer
+    // SPEC 4.7 Rift 6's two decisions belong to "the players" collectively, not one producer (unlike
+    // squeeze/Kingsmarket, which name whose production is affected) — the current turn holder decides.
+    const activeProducer = decision && 'producer' in decision ? decision.producer : state.activeProducer
     const aiShouldAct = autoplayRef.current || (aiProducer !== null && activeProducer === aiProducer)
     if (!aiShouldAct) return
 
@@ -319,7 +321,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
 
   const decision = currentDecision(state)
   const aiProducer = aiProducerRef.current
-  const waitingOnAi = decision ? decision.producer === aiProducer : state.activeProducer === aiProducer
+  const waitingOnAi = decision && 'producer' in decision ? decision.producer === aiProducer : state.activeProducer === aiProducer
   const actions = waitingOnAi || pendingEnemyTurn.length > 0 ? [] : legalActions(state)
   const active = state.producers[state.activeProducer]
 
@@ -556,7 +558,11 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {decision ? (
         <section className="decision">
           <p>
-            {PRODUCERS[decision.producer].name}: {decision.kind === 'kingsmarketBonus' ? 'choose a production bonus' : 'choose which production to lower'}
+            {decision.kind === 'kingsmarketBonus' && `${PRODUCERS[decision.producer].name}: choose a production bonus`}
+            {decision.kind === 'squeezeProductionLoss' && `${PRODUCERS[decision.producer].name}: choose which production to lower`}
+            {decision.kind === 'riftSplitFaction' && 'Rift 6, The Split: choose which faction to split'}
+            {decision.kind === 'riftSplitRemoval' &&
+              `Rift 6, The Split: choose where to remove a ${decision.pieceKind === 'doubt' ? 'Doubt' : decision.pieceKind === 'buyout' ? 'Buyout' : 'Outlet'} from (${decision.remaining + 1} left)`}
           </p>
         </section>
       ) : (

@@ -3,9 +3,18 @@ import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { PRODUCERS } from '../content/producers'
 import { captionFor } from './enemyTurnLog'
-import type { Action, GameEvent, ProducerId } from '../engine/types'
+import type { Action, Faction, GameEvent, ProducerId, RegionId, ResourceKind } from '../engine/types'
 
 const RESOURCE_NAME = { produce: 'Produce', marks: 'Marks', goodwill: 'Goodwill' } as const
+const FACTION_NAME = { hollowell: 'Hollowell', candor: 'Candor' } as const
+
+// A `decide` choice is a `ResourceKind` (squeeze/Kingsmarket), a `Faction` (Rift 6's faction pick) or a
+// `RegionId` (Rift 6's per-piece removal target) — pick whichever name matches SPEC 4.7/9.1's `decide`.
+function decisionChoiceName(choice: ResourceKind | Faction | RegionId): string {
+  if (choice in RESOURCE_NAME) return RESOURCE_NAME[choice as ResourceKind]
+  if (choice in FACTION_NAME) return FACTION_NAME[choice as Faction]
+  return REGIONS[choice as RegionId].name
+}
 
 // A plain-English caption for one action, historical (SPEC 10.2's Log sheet), unlike `actionLabel`'s
 // present-tense button text: it names the producer (a fixed `event.producer`, not `state.activeProducer`,
@@ -52,7 +61,7 @@ export function logCaption(event: GameEvent): string | null {
       return `${PRODUCERS[event.producer].name} plays ${card?.name ?? event.schemeId}${target}.`
     }
     case 'decision':
-      return `Choice recorded: ${RESOURCE_NAME[event.choice]}.`
+      return `Choice recorded: ${decisionChoiceName(event.choice)}.`
     case 'agenda':
     case 'squeeze':
     case 'expand':

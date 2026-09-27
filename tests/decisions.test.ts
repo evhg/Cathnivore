@@ -33,14 +33,15 @@ describe('currentDecision (SPEC 9.1)', () => {
     const decision = currentDecision(next)
     expect(decision).not.toBeNull()
     expect(decision!.kind).toBe('squeezeProductionLoss')
-    expect(decision!.producer).toBe('mara')
+    if (!decision || decision.kind !== 'squeezeProductionLoss') throw new Error('unreachable')
+    expect(decision.producer).toBe('mara')
     // Default track (first of produce/marks/goodwill with production > 0) is already applied.
-    expect(next.producers.mara.production[decision!.applied]).toBe(before[decision!.applied] - 1)
+    expect(next.producers.mara.production[decision.applied]).toBe(before[decision.applied] - 1)
 
     // While a decision is pending, it's the only legal action.
     const actions = legalActions(next)
     expect(actions.every((a) => a.kind === 'decide')).toBe(true)
-    expect(actions.length).toBe(decision!.options.length)
+    expect(actions.length).toBe(decision.options.length)
   })
 
   it('resolving with a different choice swaps the production penalty, not stacks it', () => {
@@ -53,6 +54,7 @@ describe('currentDecision (SPEC 9.1)', () => {
     const before = state.producers.mara.production
     const afterSqueeze = resolveSqueeze(state)
     const decision = currentDecision(afterSqueeze)!
+    if (decision.kind !== 'squeezeProductionLoss') throw new Error('unreachable')
     const otherTrack = decision.options.find((o) => o !== decision.applied)!
 
     const resolved = applyAction(afterSqueeze, { kind: 'decide', decisionId: decision.id, choice: otherTrack })
@@ -73,6 +75,7 @@ describe('currentDecision (SPEC 9.1)', () => {
     }
     const afterSqueeze = resolveSqueeze(state)
     const decision = currentDecision(afterSqueeze)!
+    if (decision.kind !== 'squeezeProductionLoss') throw new Error('unreachable')
 
     const resolved = applyAction(afterSqueeze, { kind: 'decide', decisionId: decision.id, choice: decision.applied })
 

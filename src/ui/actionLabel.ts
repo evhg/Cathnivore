@@ -2,9 +2,18 @@ import { REGIONS } from '../content/map'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { PRODUCERS } from '../content/producers'
-import type { Action, GameState, RegionId } from '../engine/types'
+import type { Action, Faction, GameState, RegionId, ResourceKind } from '../engine/types'
 
 const RESOURCE_NAME = { produce: 'Produce', marks: 'Marks', goodwill: 'Goodwill' } as const
+const FACTION_NAME = { hollowell: 'Hollowell', candor: 'Candor' } as const
+
+// A `decide` choice is a `ResourceKind` (squeeze/Kingsmarket), a `Faction` (Rift 6's faction pick) or a
+// `RegionId` (Rift 6's per-piece removal target) — pick whichever name matches SPEC 4.7/9.1's `decide`.
+function decisionChoiceName(choice: ResourceKind | Faction | RegionId): string {
+  if (choice in RESOURCE_NAME) return RESOURCE_NAME[choice as ResourceKind]
+  if (choice in FACTION_NAME) return FACTION_NAME[choice as Faction]
+  return REGIONS[choice as RegionId].name
+}
 
 // A plain-English label for a fully-specified legal Action, used until the real map/card UI (SPEC 10)
 // exists. `legalActions` already expands every choice (region, card, track) into its own Action, so one
@@ -39,7 +48,7 @@ export function actionLabel(action: Action, state: GameState): string {
       return `Role (${roleName})${target}${choice}`
     }
     case 'decide':
-      return `Choose ${RESOURCE_NAME[action.choice]}`
+      return `Choose ${decisionChoiceName(action.choice)}`
     case 'tearUpContract':
       return 'Tear Up the Contract (3 Marks)'
   }

@@ -15,6 +15,13 @@ export type ProducerId = 'mara' | 'tomas' | 'ines' | 'sol'
 
 export type ResourceKind = 'produce' | 'marks' | 'goodwill'
 
+// SPEC 4.7 Rift 6 "The Split": the two Agenda factions.
+export type Faction = 'hollowell' | 'candor'
+
+// The three piece kinds a faction can have removed at Rift 6: Hollowell's are Outlets/Buyouts, Candor's
+// are Doubt (SPEC 4.6/4.7 — see `rift.ts`'s `pieceKindToRemove`).
+export type FactionPieceKind = 'outlet' | 'buyout' | 'doubt'
+
 export interface Resources {
   produce: number
   marks: number
@@ -219,6 +226,23 @@ export type PendingDecision =
       options: ResourceKind[]
       applied: ResourceKind
     }
+  | {
+      id: string
+      kind: 'riftSplitFaction' // SPEC 4.7 Rift 6 "The Split": "the players choose one faction"
+      options: Faction[]
+      applied: Faction
+    }
+  | {
+      id: string
+      // SPEC 4.7 Rift 6: "with the players choosing where" — one region per removed piece; chained (a new
+      // decision of this kind is queued as each one resolves) until `remaining` reaches 0.
+      kind: 'riftSplitRemoval'
+      faction: Faction
+      pieceKind: FactionPieceKind
+      remaining: number
+      options: RegionId[]
+      applied: RegionId
+    }
 
 export type GameEvent =
   | { type: 'action'; producer: ProducerId; action: Action }
@@ -229,8 +253,8 @@ export type GameEvent =
   | { type: 'scout'; region: RegionId; doubtAdded: boolean }
   | { type: 'invest'; producer: ProducerId; improvementId: ImprovementCardId }
   | { type: 'schemePlayed'; producer: ProducerId; schemeId: SchemeCardId; target: RegionId | null }
-  | { type: 'riftSplit'; faction: 'hollowell' | 'candor' }
-  | { type: 'decision'; decisionId: string; choice: ResourceKind }
+  | { type: 'riftSplit'; faction: Faction }
+  | { type: 'decision'; decisionId: string; choice: ResourceKind | Faction | RegionId }
   | { type: 'trigger'; effect: string; sceneId: string }
 
 export type Action =
@@ -243,7 +267,7 @@ export type Action =
   | { kind: 'scheme'; schemeId: string; targetRegion?: RegionId }
   | { kind: 'graft' }
   | { kind: 'role'; targetRegion?: RegionId; choice?: 'trust' | 'goodwill' }
-  | { kind: 'decide'; decisionId: string; choice: ResourceKind }
+  | { kind: 'decide'; decisionId: string; choice: ResourceKind | Faction | RegionId }
   // SPEC 7 campaign-only carry-over rule: pay 3 Marks to remove one owned "Wholesome Hollow Contract"
   // and its +2 Marks production, once `wholesomeHollowRevealed` is true.
   | { kind: 'tearUpContract' }
