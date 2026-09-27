@@ -261,6 +261,16 @@ h3 {
   gap: 4px;
 }
 
+/* Outlet/Buyout/Doubt carry `.enemy-piece`'s 200ms "piece-delivery" entrance animation, meant for a piece
+   appearing on the map. Reused here as a static legend key, that animation instead made gate 8's
+   screenshot (taken as soon as the game screen mounts, well inside the 200ms window) catch the icons at
+   their 0% frame — translateX(18px) and opacity 0 — which shifted most of each icon's shape out of its
+   compact 12x14 viewBox, leaving only an unrecognisable sliver. The legend isn't delivering anything, so
+   it never needs this animation. */
+.map-legend-icon .enemy-piece {
+  animation: none;
+}
+
 .map-wrap {
   display: flex;
   justify-content: center;

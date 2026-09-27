@@ -556,7 +556,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           ] as const
         ).map(({ term, icon }) => (
           <span key={term} className="map-legend-item">
-            <svg viewBox="0 0 12 14" width={16} height={18} aria-hidden="true">
+            <svg className="map-legend-icon" viewBox="0 0 12 14" width={16} height={18} aria-hidden="true">
               {icon}
             </svg>
             <Tooltip term={term}>{term}</Tooltip>

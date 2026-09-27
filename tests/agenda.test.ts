@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createGame } from '../src/engine/state'
 import { runEnemyTurn } from '../src/engine/enemy'
-import { AGENDA_CARDS_BY_ID } from '../src/content/agenda'
+import { validate } from '../src/engine/api'
+import { AGENDA_CARDS, AGENDA_CARDS_BY_ID } from '../src/content/agenda'
 import { ALL_REGION_IDS } from '../src/content/map'
 import type { GameConfig } from '../src/engine/types'
 
@@ -145,4 +146,55 @@ describe('Public Trust hitting 0 from an Agenda effect ends the game immediately
     expect(after.result?.lossReason).toBe('publicTrust')
     expect(after.result?.regionsLiberated).toBe(0)
   })
+})
+
+// SPEC 4.8's exemption applies to every Agenda card, including the several that target Kingsmarket by a
+// literal id rather than a computed "most/fewest Stalls" pick — those don't go through the same
+// `nonLiberated()` filter and were found to bypass the check entirely (fixed alongside this test).
+describe('Agenda cards that target Kingsmarket by id respect the liberated-region exemption (SPEC 4.8)', () => {
+  function liberatedKingsmarket(state: ReturnType<typeof createGame>) {
+    return {
+      ...state,
+      regions: {
+        ...state.regions,
+        kingsmarket: { ...state.regions.kingsmarket, stalls: { mara: 1 }, outlets: 0, buyouts: 0, doubt: 0, liberated: true, everLiberated: true },
+      },
+    }
+  }
+
+  const cases: Array<{ id: string; kind: 'bonusEffect' | 'effect'; field: 'outlets' | 'buyouts' | 'doubt' }> = [
+    { id: 'hollowell-farmhouse-range', kind: 'bonusEffect', field: 'buyouts' },
+    { id: 'hollowell-loyalty-card', kind: 'bonusEffect', field: 'outlets' },
+    { id: 'hollowell-listening-tour', kind: 'bonusEffect', field: 'doubt' },
+    { id: 'hollowell-store-opening', kind: 'effect', field: 'outlets' },
+    { id: 'hollowell-friendly-buyout-offer', kind: 'bonusEffect', field: 'outlets' },
+    { id: 'candor-clarifies-clarification', kind: 'effect', field: 'doubt' },
+    { id: 'candor-independent-panel', kind: 'effect', field: 'doubt' },
+  ]
+
+  for (const { id, kind, field } of cases) {
+    it(`"${id}"'s ${kind} never adds a piece to a liberated Kingsmarket`, () => {
+      const state = liberatedKingsmarket(createGame(FULL_CONFIG, 1))
+      const card = AGENDA_CARDS_BY_ID.get(id)!
+      const after = card[kind]!(state)
+      expect(after.regions.kingsmarket[field]).toBe(0)
+      expect(after.regions.kingsmarket.liberated).toBe(true)
+    })
+  }
+})
+
+// SPEC 11.4 gate 2: "a unit test for every ... Agenda card." A fresh audit found 14 of the 24 cards had no
+// test anywhere that called their `effect`/`bonusEffect` at all (only the liberated-region-exemption tests
+// above touch a handful of them, and only for that one property). Closes it generically: every card's
+// `effect` and `bonusEffect` are called directly against the real post-setup board (varied Stalls/Outlets/
+// Doubt/Buyouts across regions, so "most/fewest Stalls"/"2+ Outlets, no Buyout" extremal picks all have a
+// real answer), and the result must never violate `validate()`'s invariants.
+describe('Every Agenda card resolves cleanly (SPEC 11.4 gate 2)', () => {
+  for (const card of AGENDA_CARDS) {
+    it(`${card.id}: effect and bonusEffect are both invariant-clean`, () => {
+      const state = createGame(FULL_CONFIG, 3)
+      expect(validate(card.effect(state))).toEqual([])
+      expect(validate(card.bonusEffect(state))).toEqual([])
+    })
+  }
 })

@@ -24,6 +24,7 @@ const SIZE = 300 // viewBox half-width; hexes drawn within [-SIZE, SIZE]
 const HEX_R = 92 // circumradius (centre to vertex)
 const RING_DISTANCE = HEX_R * Math.sqrt(3)
 const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap between them (STYLE.md 7)
+const PIECE_SCALE = 1.5 // enlarge the enemy-piece cluster in place (see the comment where it's used)
 
 function hexCenter(id: RegionId): { x: number; y: number } {
   const angle = HEX_ANGLES[id]
@@ -283,8 +284,15 @@ export default function Map({ state, highlight, onSelect }: Props) {
               </g>
             )}
 
-            {/* Enemy pieces cluster near the top: Outlets, Buyouts, Doubt. */}
-            <g transform={`translate(${x - (r.outlets + r.buyouts + r.doubt) * 8}, ${y - HEX_R * 0.1})`}>
+            {/* Enemy pieces cluster near the top: Outlets, Buyouts, Doubt. `PIECE_SCALE` enlarges the
+                icons themselves (not the map/hex, which SPEC 10.3's desktop column-height budget already
+                tightens elsewhere): at the desktop map's 260px CSS width (`global.css`), an unscaled
+                12-unit icon renders at ~5px, well under STYLE.md 9's "readable at 16-20px" floor and too
+                small to tell Outlet/Buyout/Doubt apart by shape alone in greyscale (SPEC 11.4 gate 8 found
+                this via a real screenshot review, confirmed by inspection — not just trusted). Each hex has
+                ample empty space around this cluster (confirmed visually), so scaling it up in place is
+                safe without widening the map or risking the desktop no-scroll layout. */}
+            <g transform={`translate(${x - (r.outlets + r.buyouts + r.doubt) * 8 * PIECE_SCALE}, ${y - HEX_R * 0.1}) scale(${PIECE_SCALE})`}>
               {/* Each piece's own SVG `transform` attribute positions it (its offset in the row); the
                   animation class goes on an inner <g> instead of that same element, since a CSS
                   `animation`/`transform` would otherwise override the positioning attribute rather than
