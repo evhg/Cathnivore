@@ -58,9 +58,26 @@ async function liveSmokeTest(base: string): Promise<boolean> {
       if (msg.type() === 'error') errors.push(msg.text())
     })
 
-    const res = await page.goto(base, { waitUntil: 'load' })
+    // The site root is the games landing page; each game lives under its own path.
+    const landing = await page.goto(`${base}/`, { waitUntil: 'load' })
+    if (!landing || !landing.ok()) {
+      console.log(`Smoke test failed: ${base}/ returned ${landing?.status()}`)
+      return false
+    }
+    await page.locator('a[href="/cathnivore/"]').waitFor({ timeout: 15_000 })
+    await page.locator('a[href="/runnel/"]').waitFor({ timeout: 15_000 })
+
+    const runnel = await page.goto(`${base}/runnel/?nohelp`, { waitUntil: 'load' })
+    if (!runnel || !runnel.ok()) {
+      console.log(`Smoke test failed: ${base}/runnel/ returned ${runnel?.status()}`)
+      return false
+    }
+    await page.locator('.tiles > g.cell:not(.stone)').first().click({ timeout: 15_000 })
+    await page.locator('#hud-taps', { hasText: '1' }).waitFor({ timeout: 5_000 })
+
+    const res = await page.goto(`${base}/cathnivore/`, { waitUntil: 'load' })
     if (!res || !res.ok()) {
-      console.log(`Smoke test failed: ${base} returned ${res?.status()}`)
+      console.log(`Smoke test failed: ${base}/cathnivore/ returned ${res?.status()}`)
       return false
     }
 
@@ -76,7 +93,7 @@ async function liveSmokeTest(base: string): Promise<boolean> {
       for (const e of errors) console.log(`  ${e}`)
       return false
     }
-    console.log(`Smoke test passed: title loaded, Quick Game started, Graft taken, no console errors.`)
+    console.log(`Smoke test passed: landing page and Runnel loaded, a Runnel tile turned, Cathnivore Quick Game started, Graft taken, no console errors.`)
     return true
   } catch (err) {
     console.log(`Smoke test failed with an exception: ${String(err)}`)

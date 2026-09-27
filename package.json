@@ -18,7 +18,8 @@
     "sim": "tsx sim/run.ts",
     "gates": "tsx scripts/gates.ts",
     "release": "tsx scripts/release.ts",
-    "build:site": "tsc -b && tsx scripts/build-site.ts"
+    "build:site": "tsc -b && tsx scripts/build-site.ts",
+    "e2e:site": "playwright test -c playwright.site.config.ts"
   },
   "dependencies": {
     "@capacitor/browser": "^8.0.4",

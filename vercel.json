@@ -2,9 +2,11 @@
   "git": {
     "deploymentEnabled": { "build": false, "ci-status": false, "claude/*": false }
   },
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "npm run build:site",
+  "outputDirectory": "dist-site",
   "redirects": [
+    { "source": "/cathnivore", "destination": "/cathnivore/", "permanent": true },
+    { "source": "/runnel", "destination": "/runnel/", "permanent": true },
     {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "www.cathnivore.com" }],
@@ -15,17 +17,24 @@
   "rewrites": [
     { "source": "/privacy", "destination": "/privacy/index.html" },
     { "source": "/support", "destination": "/support/index.html" },
-    { "source": "/((?!assets/|.*\\..*).*)", "destination": "/index.html" }
+    { "source": "/cathnivore/((?!assets/|.*\\..*).*)", "destination": "/cathnivore/index.html" },
+    { "source": "/runnel/((?!assets/|.*\\..*).*)", "destination": "/runnel/index.html" }
   ],
   "headers": [
     {
-      "source": "/assets/(.*)",
+      "source": "/:dir(cathnivore|runnel)/assets/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
-      "source": "/index.html",
+      "source": "/site-assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)index.html",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache" }
       ]
@@ -37,7 +46,7 @@
       ]
     },
     {
-      "source": "/(sw.js|manifest.webmanifest)",
+      "source": "/(.*)(sw.js|manifest.webmanifest)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache" }
       ]

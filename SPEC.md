@@ -528,3 +528,12 @@ Create it in M0. It has these sections:
 
 ## 14. Not in v1
 Online play on separate devices, accounts, leaderboards, sound and music, translations, more than 2 producers per game, more enemy factions, painted or illustrated art, an iPad-specific layout, Android, in-app purchases, ads and analytics.
+
+## 15. The cathnivore.com games portfolio (added by the owner, 2026-09-27)
+The owner turned cathnivore.com into the landing page for a small portfolio of games. This section overrides anything above that says the game is served at the site root.
+
+- **Site layout.** `/` is the games landing page (`site/`): a full-screen WebGL animation of hexagonal farmland at dusk, the title, and one card per game. `/cathnivore/` is Cathnivore. `/runnel/` is Runnel (`games/runnel/`). `/privacy`, `/support`, `/fonts`, the icons and `version.json` stay at the root.
+- **Builds.** `npm run build` still builds Cathnivore alone at `/` into `dist/`; the iPhone app, the Cathnivore e2e suite and gates 5-8 use it unchanged. `npm run build:site` (`scripts/build-site.ts`) builds the whole website into `dist-site/`, which is what Vercel deploys. It also writes a self-removing `sw.js` at the root, which moves players who have the pre-portfolio offline copy of Cathnivore on to the new site. Never remove it.
+- **Runnel** is a finished daily hex irrigation puzzle: turn the channels so water from the central spring reaches every tile with no spills. There is one Daily puzzle per UTC day (Daily #1 was 2026-09-27) plus Practice in three sizes. Logic lives in `games/runnel/src/engine.ts` and is tested in `tests/runnel.test.ts`. The site suite (`npm run e2e:site`, run by gate 5) covers the landing page, Runnel and the game under `/cathnivore/`. Maintain it like the rest of the site: fix bugs, keep its tests green, no new features after M7 starts.
+- **Releases.** `npm run release`'s live smoke test checks the landing page, turns a tile in Runnel, and then runs the Cathnivore Quick Game check at `/cathnivore/`.
+- **The iPhone app** is still Cathnivore only. Its links out are still just Privacy and Support; the web version's title screen also links to `/` ("More games").
