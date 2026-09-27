@@ -1,7 +1,57 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-26, starting ~22:51 UTC): re-checked both standing blockers first — `OWNER.md`'s
+This session (2026-09-27, starting ~23:51 UTC): `npm ci` + `npm run check` confirmed clean on the unchanged
+`build` HEAD (`bea5fc6`). Ran `npm run release`: all 8 gates passed clean (70 e2e, 16 axe, Lighthouse
+98/100). The fast-forward-to-`main` step hit the usual fresh-clone stale-local-`main` issue ("refusing to
+merge unrelated histories"); the documented fix (`git checkout -B main origin/main`) was denied by the
+harness's own "Production Deploy" classifier — the same intermittent per-session denial many prior sessions
+have logged. Per the denial's own guidance, not retried; confirmed `origin/main` untouched (`7df3f19`) and
+switched back to `build`. `OWNER.md`'s Apple Team ID is still `PASTE-TEAM-ID` (no `ios.yml` re-dispatch).
+
+With the release path blocked again, ran SPEC 11.4 gate 8's visual review as a real subagent call against
+the freshly-captured screenshots: **clean, no problems found** (one very minor, already-known texture-
+fidelity tradeoff at the desktop map size, not a distinguishability failure — left as is, matches a prior
+session's note in `Map.tsx`). In parallel, a second subagent reviewed the balance sim harness (SPEC 9.3/9.4)
+and found a real bug: `sim/simCore.ts`'s settled-round check recorded `state.round` instead of `lastRound`,
+so `Cleanup`'s round increment (which happens right after the settled-state check's own inputs are already
+final) made every recorded `settledRound` one higher than the round that actually settled — undercounting
+SPEC 9.4's "settled before round 7" share in every past `BALANCE.md` run (the previously-logged 56.8%/59.7%
+MCTS readings were floors, not exact values; a fresh 1,000-game MCTSBot confirmation is still needed by a
+future session, not run here per the no-slow-MCTS-sim rule). Fixed, verified with a 200-game HeuristicBot
+run showing the expected shift (avg settled round 8.49→7.57), logged in `BALANCE.md`/`DECISIONS.md`, `npm
+run check` clean (315 tests), committed and pushed.
+
+Ran two more subagent hardening-review passes (2-concurrent cap), each on an area no prior session had
+covered: (1) **Kingsmarket's guard rule and the Stall cap's Lost-Land interaction** (SPEC 4.6/4.8) across
+every free-placement path (Open Stall, Tomas's Market Day, the "Grass Roots" Scheme) — clean, no bug, all
+three paths already correctly centralised through `region.ts`'s `kingsmarketOpen`/`stallCap` helpers and
+`applyAction`'s `assertLegal`; added `tests/kingsmarket-stall-cap.test.ts` (7 new tests) since no test file
+had exercised these two rules directly. (2) **Rift 6 "The Split"** (SPEC 4.7/9.1) — found and fixed a real,
+previously-known-and-deferred gap: it was resolved by a hardcoded greedy heuristic with no actual decision,
+contradicting SPEC 9.1's own example of a forced choice ("which faction to split at Rift 6") and SPEC 4.7's
+"the players choose... with the players choosing where." A 2026-09-24 `DECISIONS.md` entry had explicitly
+deferred wiring in a real evaluation-based choice until M2 landed — M2 landed sessions ago and nobody had
+revisited it since. Fixed by adding two new `PendingDecision` kinds (`riftSplitFaction`, chained
+`riftSplitRemoval` per piece) resolved through the same `currentDecision`/`decide` path every other forced
+choice already uses, so a human picks via the UI and the AI picks via its normal evaluation loop — plus a
+latent gap this exposed (`decide` skipped the liberation/win check, which now matters since a Split-driven
+piece removal can liberate a region or end the game mid-chain). Verified with `npx tsc -b --noEmit`,
+`eslint`, and a full `npm test` run (327 tests, up from 315, all green); committed and pushed.
+
+Wrapping up here (~43 minutes, per CLAUDE.md's ~55-minute cutoff, not starting anything long this late).
+Session tally: one release attempt (denied, `main` unchanged and healthy), one clean gate-8 confirmation,
+and 2 real bugs found and fixed (the sim-harness settled-round off-by-one, and Rift 6's hardcoded-vs-decision
+gap) plus one clean confirmation with new test coverage added (Kingsmarket guard/Stall cap). `build` is
+fully gated (`npm test` 327 passing) and pushed, 4 commits ahead of `origin/main`, waiting on a future
+session's release retry. Next session: re-check the release path and the two standing blockers as usual,
+then continue hardening-review passes on areas still uncovered (e.g. a fresh 1,000-game MCTSBot sim
+confirmation of the settled-round fix's real effect on SPEC 9.4's "settled before round 7" target, once that
+becomes worth the multi-hour runtime — see `DECISIONS.md`).
+
+---
+
+Previous session (2026-09-26, starting ~22:51 UTC): re-checked both standing blockers first — `OWNER.md`'s
 Apple Team ID is still `PASTE-TEAM-ID` (`origin/ci-status`'s `ios.json` unchanged, no re-dispatch: nothing
 owner-side has changed since the last check). `npm ci` + `npm run check` confirmed clean on the unchanged
 `build` HEAD (`f6e18b4`, carrying the prior session's six-review-pass hardening haul). Ran `npm run release`:
