@@ -2226,3 +2226,38 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   and the balance loop itself is already closed per its own 12-iteration exit clause (SPEC 9.4) — not
   re-running it solely for this fix, but flagging here in case a future session's spot-check sim looks
   different from prior runs and needs an explanation.
+- 2026-09-27 (same session, ~09:14-09:21 UTC): dispatched 2 more concurrent review subagents at the next
+  lowest-DECISIONS.md-mention files, continuing the pattern above.
+  One (src/ai/reason.ts, src/content/endLines.ts) found two real issues: (1) reason.ts's openStall reason
+  said "Liberating X." whenever a region's outlets/buyouts/doubt were already 0, without also checking
+  `!region.liberated` — true for a *second* Stall opened in an already-liberated region (SPEC 4.6.1 permits
+  this, up to the cap), so the AI teammate's log would repeatedly claim to be liberating a region it freed
+  turns earlier. Fixed by adding the `!region.liberated` check; added a regression test. (2)
+  tests/end-lines.test.ts allowed up to one "!" per End-screen line, citing SPEC 3.2's "at most one
+  exclamation mark per chapter" — but that allowance is scoped to Cath's chapter-scene dialogue (already
+  enforced separately by tests/story.test.ts), not the End screen, which is interface UI STYLE.md 12 governs
+  with a flat zero-exclamation-marks rule. No live content violated it (WIN_LINE/LOSS_LINE both already have
+  zero), but the test itself would have silently let a future edit add one. Tightened to zero.
+  The other (src/engine/api.ts, src/engine/state.ts) found a real, more consequential bug: rng.ts's
+  `nextFloat` did `let t = (rng.seed += 0x6d2b79f5)`, mutating the caller's `RngState` object directly
+  instead of only returning a new one, violating SPEC 9.1's "never mutates its input" contract. Traced the
+  real risk: `round.ts`'s `cleanup()` does `let rng = state.rng` (an alias, not a copy), so reshuffling the
+  scheme discard pile there would mutate `state.rng.seed` on the original `GameState` object — and
+  `Game.tsx`'s undo stack pushes that exact pre-action `GameState` reference (not a deep clone) before each
+  human action, so an undo taken after a round that reshuffled a discard pile could resume from a `GameState`
+  whose `rng.seed` had been silently corrupted after the snapshot was taken, diverging from what `replay()`
+  would reconstruct from the action log alone. Fixed to compute the new seed without touching `rng.seed`;
+  confirmed the PRNG's output sequence is byte-identical (full test suite passes unchanged, including every
+  determinism/replay test). Added tests/rng.test.ts (5 tests: purity of nextFloat/nextInt/shuffle, reuse-
+  safety, determinism); confirmed 4 of 5 fail on the pre-fix code.
+  The same subagent also suggested two `validate()` additions matching its own doc comment's "slots
+  consistent" claim: Market/Cath's Plan should stay exactly 4/3 slots (added, both real invariants, tested)
+  and a Stall-cap invariant (SPEC 4.6.1). Implemented and tested the Stall-cap one too, but its own test
+  immediately caught it firing on a legitimate 60-random-action playthrough (brindleHills ending with 3
+  Stalls against a cap of 2, i.e. 1 Lost Land token had landed there after the 3rd Stall was already legally
+  placed) — traced this to be correct, intended behavior: SPEC 4.6.1's cap only gates *placing a new* Stall
+  (`canOpenStallIn`), and nothing in section 4 requires retroactively removing Stalls when a later Lost Land
+  token shrinks a region's cap (Squeeze's own, separate, narrower Stall-removal rule already exists for that
+  situation). Reverted that one check as a false invariant discovered by its own regression test, rather than
+  force a real reachable state to report as broken — a useful example of the "add a test, let it prove
+  itself" discipline paying off in the negative direction too.
