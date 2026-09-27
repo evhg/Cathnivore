@@ -77,6 +77,24 @@ describe('validate', () => {
     expect(validate(broken).some((e) => e.message.includes('pressure deck/discard/pipeline total'))).toBe(true)
   })
 
+  // SPEC 9.1 "Stall caps respected": the standing invariant is the placement rule's own absolute ceiling
+  // (3 per region), not the region's current, possibly Lost-Land-shrunk `stallCap()` — a region is allowed
+  // to sit above its current cap (tests/kingsmarket-stall-cap.test.ts), just never above 3.
+  it('flags a region with more than 3 Stalls', () => {
+    const state = createGame(FULL_CONFIG, 11)
+    const broken = { ...state, regions: { ...state.regions, highmoor: { ...state.regions.highmoor, stalls: { mara: 2, tomas: 2 } } } }
+    expect(validate(broken).some((e) => e.message.includes('exceeds the 3-per-region maximum'))).toBe(true)
+  })
+
+  it('does not flag a region sitting above its current (Lost-Land-shrunk) cap, only above 3', () => {
+    const state = createGame(FULL_CONFIG, 11)
+    const broken = {
+      ...state,
+      regions: { ...state.regions, highmoor: { ...state.regions.highmoor, stalls: { mara: 3 }, lostLand: 2 } },
+    }
+    expect(validate(broken).some((e) => e.message.includes('exceeds the 3-per-region maximum'))).toBe(false)
+  })
+
   it('flags a duplicate Pressure card id between the deck and the discard pile', () => {
     const state = createGame(FULL_CONFIG, 11)
     const dupe = state.pressureDeck[0]!

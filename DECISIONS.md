@@ -2772,3 +2772,12 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   confirmed lossless (`git diff HEAD origin/build` empty) — but the final `git push origin main` was denied
   by the harness's "Production Deploy" classifier. Per its own guidance, not retried; see PROGRESS.md's
   Blocked section for the full detail and the retry plan for a future session.
+- 2026-09-27 (~16:15 UTC): closed both halves of the `validate()` SPEC 9.1 gap earlier sessions logged as
+  open ("Stall caps respected and slots consistent," neither previously checked). Slots: a Pressure
+  deck/discard/pipeline total invariant plus a duplicate-id check across Improvements/Schemes/Pressure's
+  deck+discard+face-up-slots+tableau groups. Stall caps: `regionStallTotal(region) > 3` rather than a check
+  against the region's current (possibly Lost-Land-shrunk) `stallCap()`, since the engine deliberately
+  allows a region to sit above its own current cap without forcing removal
+  (`tests/kingsmarket-stall-cap.test.ts`) — 3 is the placement rule's real, unconditional ceiling, so it's
+  the invariant that actually always holds. 6 new `tests/api.test.ts` cases; a 10,000/1,000-game fuzz run
+  and the full suite both pass with all four checks active, 0 invariant failures.

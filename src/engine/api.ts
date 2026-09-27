@@ -1,6 +1,6 @@
 import { createGame } from './state'
 import { applyAction, legalActions } from './actions'
-import { isLiberated } from './region'
+import { isLiberated, regionStallTotal } from './region'
 import { POOL_SIZES } from './pieces'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { AGENDA_CARDS } from '../content/agenda'
@@ -75,6 +75,14 @@ export function validate(state: GameState): ValidationError[] {
     }
     if (region.liberated !== isLiberated(region)) {
       push(`${region.id}: liberated flag (${region.liberated}) doesn't match its pieces`)
+    }
+    // SPEC 4.6.1's "max 3 Stalls per region... minus 1 per Lost Land token, never below 1" only gates new
+    // placements: a Lost Land token can drop a region's *current* cap (`stallCap()`) below its existing
+    // Stall count without forcing a removal (tests/kingsmarket-stall-cap.test.ts documents this on
+    // purpose). So the standing invariant is the placement rule's own absolute ceiling, 3, not the
+    // region's current (possibly lower) `stallCap()`.
+    if (regionStallTotal(region) > 3) {
+      push(`${region.id}: ${regionStallTotal(region)} stalls exceeds the 3-per-region maximum`)
     }
   }
 

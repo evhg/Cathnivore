@@ -28,8 +28,17 @@ and a duplicate-id check across each of Improvements/Schemes/Pressure's deck+dis
 groups (a card id appearing twice means one was duplicated, which the existing total-only checks couldn't
 catch). 4 new `tests/api.test.ts` cases prove each check actually fires on a broken state. A 10,000-game
 RandomBot + 1,000-game HeuristicBot fuzz run and the full test suite both pass with the new checks active
-(0 invariant failures), so nothing legitimate trips them. The Stall-cap half of the gap is left as before —
-still entangled with an intentional design choice, needs a judgement call, not a mechanical check.
+(0 invariant failures), so nothing legitimate trips them.
+
+Then closed the Stall-cap half too, with the softened form the gap's own writeup called for: every
+placement path (`canPlaceStall`/`canMarketDayOpenIn`) already gates on the region's current `stallCap()`
+(which a Lost Land token can shrink below an existing count, by design — `tests/kingsmarket-stall-cap.test.ts`
+"does not force removal of excess Stalls"), but nothing ever raises `stallCap()` back up or places a Stall
+past it, so the placement rule's own absolute ceiling (SPEC 4.6.1's "max 3 Stalls per region") holds as a
+standing invariant regardless of Lost Land. Added `regionStallTotal(region) > 3` as the check, with 2 new
+`tests/api.test.ts` cases (fires above 3, stays silent for a region above its own shrunk cap but at or below
+3). Re-ran `npm run check` and the 10,000/1,000-game fuzz clean with both new checks active — SPEC 9.1's
+`validate()` gap ("Stall caps respected and slots consistent") is now fully closed.
 
 ---
 This session (2026-09-27, starting ~14:52 UTC): standard session start, lock taken, `ci.json` green,
