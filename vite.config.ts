@@ -5,6 +5,12 @@ import { execSync } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+// `npm run build` (the iPhone app, e2e and gates) builds the game at `/` into `dist/`. The website build
+// (`scripts/build-site.ts`) builds it again under `/cathnivore/` into `dist-site/cathnivore/`, because the site
+// root is the games landing page.
+const base = process.env.CATHNIVORE_BASE ?? '/'
+const outDir = process.env.CATHNIVORE_OUT_DIR ?? 'dist'
+
 function versionFile(): Plugin {
   return {
     name: 'cathnivore-version-file',
@@ -19,12 +25,13 @@ function versionFile(): Plugin {
         commit,
         buildTime: new Date().toISOString(),
       }
-      writeFileSync(resolve(import.meta.dirname, 'dist/version.json'), JSON.stringify(payload, null, 2))
+      writeFileSync(resolve(import.meta.dirname, outDir, 'version.json'), JSON.stringify(payload, null, 2))
     },
   }
 }
 
 export default defineConfig({
+  base,
   plugins: [
     react(),
     versionFile(),
@@ -53,6 +60,6 @@ export default defineConfig({
     }),
   ],
   build: {
-    outDir: 'dist',
+    outDir,
   },
 })
