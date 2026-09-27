@@ -64,14 +64,20 @@ export default function CathsPlanSheet({
             const card = SCHEMES_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className="card-enter">
+              <li key={id} className="card-enter card-row">
                 <details>
                   <summary>
-                    <strong>{card.name}</strong> — <GoodwillIcon /> {card.cost} Goodwill
+                    <strong>{card.name}</strong>
                   </summary>
                   <p className="card-text">{card.text}</p>
                   <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
                 </details>
+                {/* Sibling of <details>, not a descendant — see MarketSheet.tsx for why. */}
+                <div className="card-cost-row">
+                  <Tooltip term="Goodwill">
+                    <GoodwillIcon /> {card.cost} Goodwill
+                  </Tooltip>
+                </div>
                 {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}
               </li>
             )

@@ -385,7 +385,31 @@ h3 {
 /* SPEC 10.3 desktop inline sheets only (MarketSheet.tsx/CathsPlanSheet.tsx): each card collapses to its
    name/cost summary by default via a native <details>, so the right column doesn't have to fit every
    card's rules text and flavour line at once to satisfy "no scrolling at 1280x800". Native <details> needs
-   no extra JS state and is keyboard/screen-reader operable out of the box. */
+   no extra JS state and is keyboard/screen-reader operable out of the box.
+
+   The Marks/Goodwill cost (`.card-cost-row`) has to live as a sibling of <details>, not a child of it:
+   Chromium wraps every non-<summary> child of <details> in an internal `::details-content` box that it
+   hides wholesale while collapsed (via layout containment, not a plain `display: none` an author rule can
+   override on one child), so anything that must stay visible while collapsed can't be a child of <details>
+   at all. Putting the Tooltip button inside <summary> itself isn't an option either — axe's
+   no-focusable-content rule (SPEC 11.4 gate 6) forbids a focusable descendant there. `.card-row`'s flex
+   layout puts `.card-cost-row` back on the same visual line as the summary above it. */
+.card-list-collapsible .card-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+}
+
+.card-list-collapsible .card-row > details {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.card-list-collapsible .card-row > button {
+  flex-basis: 100%;
+}
+
 .card-list-collapsible summary {
   cursor: pointer;
   font-size: 14px;
@@ -393,6 +417,14 @@ h3 {
 
 .card-list-collapsible summary::marker {
   color: var(--ink-muted);
+}
+
+.card-list-collapsible .card-cost-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 14px;
+  flex: 0 0 auto;
 }
 
 .farm-column {
