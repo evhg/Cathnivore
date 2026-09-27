@@ -2690,3 +2690,36 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
      re-verified correct, no new issues there.
   `npx tsc -b`, `npm run build`, `npx vitest run` (386/386) and the full `e2e/ai-teammate.spec.ts` suite
   (both sizes) all pass clean.
+- 2026-09-27 (same session, ~13:38 UTC): 2 more review subagents found 3 real issues (2 code, 1 store
+  metadata) plus 2 doc-drift notes:
+  1. `src/platform/splash.ts`'s `hideSplashScreen()` had no error handling and its only caller
+     (`main.tsx`) discards the rejection with `void`. Since `capacitor.config.ts` deliberately sets
+     `launchAutoHide: false` (correctly, to avoid a blank-frame flash) and nothing else in the app ever
+     calls `SplashScreen.hide()` again, a single transient failure (a native-bridge hiccup, the plugin not
+     yet ready right after launch) would permanently strand a real device on the launch splash for the rest
+     of that app session — a real "stuck, not just missing" failure mode, worse than `haptics.ts`'s
+     already-reviewed "swallow and move on" pattern (a missing haptic is harmless; a stuck splash blocks the
+     whole app). Fixed with a 3-attempt retry (300ms backoff) before giving up with a logged `console.warn`.
+     `statusBar.ts` has the same missing-catch shape but a cosmetic-only failure mode (wrong icon colour),
+     left as-is.
+  2. `src/platform/storage.ts`'s native (Capacitor Preferences) `set`/`remove` fired each write
+     independently with no ordering between them — correct today only because iOS's Preferences happens to
+     process calls FIFO in practice, not because the code guarantees it. Two rapid saves (e.g. a human
+     action immediately followed by the AI teammate's own autosave) had no enforced write order. Fixed by
+     chaining every write through a single `writeQueue` promise, so the actual persisted-to-disk order
+     matches call order for real rather than relying on an undocumented bridge assumption. The in-memory
+     `nativeCache` (already synchronous, unaffected) stays the correct source of truth within a session
+     regardless.
+  3. `store/metadata/primary_first_sub_category.txt` contained the bare value `BOARD`, but fastlane
+     `deliver`/App Store Connect's subcategory enum values are prefixed with the parent category (e.g.
+     `GAMES_BOARD`) — `primary_category.txt` correctly has `GAMES`, but the subcategory file didn't follow
+     the same convention. This has never been caught since `store.yml` has never actually run (blocked on
+     missing Apple secrets, same as `ios.yml`). Fixed to `GAMES_BOARD`. Also fixed 2 stale doc-only notes
+     found alongside it: `store/Fastfile`'s comment said `deliver` was called with `--metadata_path`/
+     `--screenshots_path` flags, but the actual workflow uses the already-fixed `key:value` syntax; and
+     `store/README.md`'s screenshots section still said "empty for now, not built yet" despite the 5
+     screenshots having existed since an earlier session.
+  Everything else in both passes (`store.yml`'s structure, `submit-<n>` conditional gating, build-number
+  plumbing, metadata character limits, screenshot count/size, `capacitor.config.ts`'s `launchAutoHide`
+  consistency with `splash.ts`) checked out clean. `npx tsc -b`, `npm run check` (386/386 tests, build)
+  all pass clean.

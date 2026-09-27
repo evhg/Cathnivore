@@ -1,4 +1,4 @@
 # Minimal marker so .github/workflows/store.yml's `if [ -f store/Fastfile ]` check finds a real setup
 # instead of skipping. The workflow calls `fastlane run deliver` directly (a raw action invocation, not a
-# lane), passing --metadata_path and --screenshots_path itself, so no lane needs to be defined here.
+# lane), passing metadata_path:/screenshots_path: itself, so no lane needs to be defined here.
 default_platform(:ios)
