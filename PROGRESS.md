@@ -1,60 +1,7 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-27, starting ~07:51 UTC): standard session start — `git fetch --all`, checked out
-`build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
-BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (unchanged from the
-previous session). Content is complete and the balance loop is closed (12/12 iterations used); the only
-standing blockers are Apple secrets (owner-side) and tag pushes (workaround already in place) — as the
-previous session's own note said, "very little remains outside the Apple-secrets-blocked path." Rather than
-re-confirming that with no new evidence, used the session to look for genuinely unreviewed code, on the
-theory that a codebase reviewed this many times still has isolated gaps between reviews, not that it's
-provably bug-free.
-
-Found and closed one real coverage gap: the portfolio pages (`site/`, `games/runnel/`, added 2026-09-27)
-had never had an accessibility pass, unlike Cathnivore's own gate 6. Added axe checks to
-`e2e-site/site.spec.ts` for the landing page and Runnel (before and during play) — both came back clean,
-zero serious/critical issues, on the first run.
-
-Ran four hardening-review subagents (2-concurrent cap, two waves) targeting areas with little or no prior
-review history:
-1. **Gate 8's screenshot review**, run for real against a freshly captured set — clean, no findings.
-2. **`.github/workflows/ios.yml` and the whole `store/`/App-Store-submission path** — since these only run
-   once Apple secrets appear, they've had far less scrutiny than the web game. Found and fixed a real bug:
-   4 steps in `ios.yml` interpolated Apple secrets directly into `run:` script bodies (`${{ secrets.X }}`)
-   instead of via `env:`, where they're visible to other processes on the runner and to the log before
-   masking applies — `store.yml` already used the safer pattern. Rewrote all four to match. Everything else
-   (workflow step order, `store.yml`'s fastlane invocation, Info.plist/ExportOptions.plist settings, store
-   metadata character limits) checked out clean.
-3. **The landing page's WebGL scene** (`site/src/scene.ts`) — reviewed only for build/routing before, never
-   for the rendering code itself. Found and fixed one real gap: `startScene()`'s returned `stop()` never
-   removed its pointer/context-loss listeners or freed its GL buffer/program. Not a live leak today (nothing
-   calls `stop()` on this single-page site), but a real hole in the public API. Context-loss handling,
-   reduced-motion, rAF hygiene, resize math and the hex-pattern math itself all checked out clean.
-4. **Runnel's UI/persistence layer** (`board.ts`/`main.ts`/`store.ts`) — the engine already had its own
-   bug-hunt pass; this layer hadn't. Found and fixed a real bug: the roving `tabindex` for keyboard
-   navigation was only updated by the arrow-key handler, never by the DOM `focus` event, so a pointer tap
-   or a Tab from outside the board could leave two cells focusable or land Tab focus somewhere the player
-   never touched. Fixed and added a regression test. One unrelated flaky axe failure (landing-page "New"
-   badge color-contrast) was observed once and reproduced as flaky on the unmodified tree too — verified by
-   hand (contrast ratio 10.3:1, well past the 4.5:1 floor) that this is a timing artifact, not a real
-   contrast bug; left alone.
-
-Each subagent's diff was read and verified by hand (not trusted at face value) before committing, and each
-fix was re-verified with the relevant test suite. Released to `main` this session (`302e285`) via
-`npm run release` — clean end to end, no stale-`main` issue, no classifier denial, gates all passed (gate 8
-via a fresh subagent pass on this exact screenshot set). See Deploy log for full detail.
-
-Session tally: one closed coverage gap (site accessibility), three real bugs found and fixed by dedicated
-review passes (an Apple-secrets exposure pattern, a WebGL cleanup gap, a Runnel keyboard-focus bug), one
-clean release to `main`. `build`/`main` are both at `302e285`. Next session: standard session start,
-re-check the two standing blockers as usual (Apple secrets, tag pushes), and keep looking for genuinely
-unreviewed corners rather than assuming none remain — this session's four finds suggest there's still
-value in it.
-
----
-
-Previous session (2026-09-27, starting ~06:51 UTC): standard session start — `git fetch --all`, checked out
+This session (2026-09-27, starting ~06:51 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
 BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (`9137de0`, 2
 commits ahead of `main`'s `08f1459` with the two Easy balance-loop pace-lever commits from the previous
@@ -2424,16 +2371,6 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   own Chromium smoke test wasn't run (standing sandbox TLS artifact, see CLAUDE.md); verified instead with
   curl (`/`, `/cathnivore/`, `/runnel/`, `/version.json` all 200/matching, commit hash confirmed). `deploy-11`
   tagged locally but can't be pushed (known 403; see Blocked).
-- `302e285` (this session's site accessibility coverage, an `ios.yml` secrets-handling hardening fix, and
-  two real bugs found by review subagents — WebGL scene cleanup and Runnel's roving tabindex; full detail
-  in Current milestone/DECISIONS.md). Released to `main` 2026-09-27 ~08:20 UTC via `npm run release`,
-  first-try clean (no stale-local-`main` issue this time, no classifier denial). All 8 gates passed inside
-  the release script itself (gate 8 via a real subagent review of the freshly captured screenshots, clean,
-  no findings). The script's own Chromium smoke test was inconclusive (standing sandbox TLS artifact, see
-  CLAUDE.md) but its own HTTP fallback check passed (version.json + every page/asset it references, 200s
-  and matching commit). Independently re-verified with a direct `curl https://cathnivore.com/version.json`
-  after the release finished: commit matches `302e285`. `origin/ci-status` confirms `ci.json` green on this
-  exact commit. `deploy-12` tagged locally but can't be pushed (known 403; see Blocked).
 
 ## Final report
 (not yet written)
