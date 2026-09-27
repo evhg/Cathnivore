@@ -3,6 +3,7 @@
 // On smoke-test failure, revert main to the previous deploy tag (never force-push) and log it.
 import { execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
 
 const VERCEL_ADDRESS = 'cathnivore.vercel.app' // from OWNER.md; used until the domain resolves
@@ -42,7 +43,14 @@ async function pollVersion(commit: string, base: string): Promise<boolean> {
   return false
 }
 
-async function liveSmokeTest(base: string): Promise<boolean> {
+type SmokeResult = 'passed' | 'failed' | 'inconclusive'
+
+// This sandbox's egress proxy re-signs TLS with a CA Chromium doesn't trust, and it drops some of a
+// browser's parallel requests. Those errors say nothing about the site, so they make the browser check
+// inconclusive rather than failed (a failed check reverts main).
+const SANDBOX_NETWORK_ERRORS = /ERR_CERT_AUTHORITY_INVALID|ERR_TOO_MANY_RETRIES|ERR_PROXY_CONNECTION_FAILED|ERR_TUNNEL_CONNECTION_FAILED/
+
+export async function liveSmokeTest(base: string): Promise<SmokeResult> {
   // Same pinned-Chromium-path fallback as scripts/gates.ts's GATE_5_SPECS invocation: this script runs
   // outside the `playwright test` runner (no playwright.config.ts project applies), so without this,
   // chromium.launch() defaults to the headless-shell binary, which this sandbox never installs.
@@ -62,7 +70,7 @@ async function liveSmokeTest(base: string): Promise<boolean> {
     const landing = await page.goto(`${base}/`, { waitUntil: 'load' })
     if (!landing || !landing.ok()) {
       console.log(`Smoke test failed: ${base}/ returned ${landing?.status()}`)
-      return false
+      return 'failed'
     }
     await page.locator('a[href="/cathnivore/"]').waitFor({ timeout: 15_000 })
     await page.locator('a[href="/runnel/"]').waitFor({ timeout: 15_000 })
@@ -70,7 +78,7 @@ async function liveSmokeTest(base: string): Promise<boolean> {
     const runnel = await page.goto(`${base}/runnel/?nohelp`, { waitUntil: 'load' })
     if (!runnel || !runnel.ok()) {
       console.log(`Smoke test failed: ${base}/runnel/ returned ${runnel?.status()}`)
-      return false
+      return 'failed'
     }
     await page.locator('.tiles > g.cell:not(.stone)').first().click({ timeout: 15_000 })
     await page.locator('#hud-taps', { hasText: '1' }).waitFor({ timeout: 5_000 })
@@ -78,7 +86,7 @@ async function liveSmokeTest(base: string): Promise<boolean> {
     const res = await page.goto(`${base}/cathnivore/`, { waitUntil: 'load' })
     if (!res || !res.ok()) {
       console.log(`Smoke test failed: ${base}/cathnivore/ returned ${res?.status()}`)
-      return false
+      return 'failed'
     }
 
     await page.getByText('Quick Game').click()
@@ -88,18 +96,54 @@ async function liveSmokeTest(base: string): Promise<boolean> {
     // this quick check can always take without needing to know the game state first.
     await page.getByRole('button', { name: /^Graft/ }).click({ timeout: 15_000 })
 
+    const realErrors = errors.filter((e) => !SANDBOX_NETWORK_ERRORS.test(e))
+    if (realErrors.length > 0) {
+      console.log(`Smoke test failed: ${realErrors.length} console error(s) on ${base}:`)
+      for (const e of realErrors) console.log(`  ${e}`)
+      return 'failed'
+    }
     if (errors.length > 0) {
-      console.log(`Smoke test failed: ${errors.length} console error(s) on ${base}:`)
-      for (const e of errors) console.log(`  ${e}`)
-      return false
+      console.log(`Browser check inconclusive: only sandbox proxy errors (${errors.length}), e.g. ${errors[0]}`)
+      return 'inconclusive'
     }
     console.log(`Smoke test passed: landing page and Runnel loaded, a Runnel tile turned, Cathnivore Quick Game started, Graft taken, no console errors.`)
-    return true
+    return 'passed'
   } catch (err) {
+    if (SANDBOX_NETWORK_ERRORS.test(String(err))) {
+      console.log(`Browser check inconclusive (sandbox proxy): ${String(err).split('\n')[0]}`)
+      return 'inconclusive'
+    }
     console.log(`Smoke test failed with an exception: ${String(err)}`)
-    return false
+    return 'failed'
   } finally {
     await browser?.close()
+  }
+}
+
+// Fallback when the browser check is inconclusive: every page must return 200 with the expected content,
+// and so must every file each page references. curl uses the system trust store, which holds the proxy CA.
+export function httpSmokeTest(base: string, commit: string): boolean {
+  const get = (path: string) => execSync(`curl -sS -f -m 30 ${JSON.stringify(base + path)}`, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+  try {
+    const version = JSON.parse(get('/version.json')) as { commit?: string }
+    if (version.commit !== commit) {
+      console.log(`HTTP check failed: /version.json shows ${version.commit}, expected ${commit}`)
+      return false
+    }
+    const pages: Array<[string, string]> = [['/', 'href="/runnel/"'], ['/runnel/', 'id="board"'], ['/cathnivore/', 'id="root"']]
+    for (const [path, marker] of pages) {
+      const html = get(path)
+      if (!html.includes(marker)) {
+        console.log(`HTTP check failed: ${path} is missing ${marker}`)
+        return false
+      }
+      for (const m of html.matchAll(/(?:src|href)="(\/[^"]+)"/g)) get(m[1]!)
+    }
+    console.log('HTTP check passed: version.json, the landing page, Runnel, Cathnivore and every file they reference all load.')
+    return true
+  } catch (err) {
+    console.log(`HTTP check failed: ${String(err).split('\n')[0]}`)
+    return false
   }
 }
 
@@ -141,7 +185,8 @@ async function main() {
   // errors" — a real browser check against the live URL, not just an HTTP status fetch. Uses the same
   // pinned-Chromium-path workaround as e2e/gates (playwright.config.ts's PLAYWRIGHT_CHROMIUM_PATH), since
   // this script runs outside the `playwright test` runner and its config.
-  const smokeTestOk = await liveSmokeTest(base)
+  const smoke = await liveSmokeTest(base)
+  const smokeTestOk = smoke === 'passed' || (smoke === 'inconclusive' && httpSmokeTest(base, buildCommit))
   if (!smokeTestOk) {
     if (previousMainCommit === buildCommit) {
       // main was already at buildCommit before this run (e.g. re-running release on an unchanged
@@ -155,9 +200,13 @@ async function main() {
       // stayed on the broken commit instead of being reverted. This also doesn't depend on a
       // `deploy-<n>` tag existing: tag pushes are blocked in this environment (HTTP 403) and every
       // session starts from a fresh clone, so a locally-created tag never survives past its own session.
+      // A single forward commit that restores main's previous tree. `git revert <range>` can't do this
+      // when the range holds a merge commit (it needs -m, which then breaks on ordinary commits), and
+      // this never rewrites history.
       console.log(`Reverting main to ${previousMainCommit}`)
       sh('git checkout main')
-      sh(`git revert --no-edit ${previousMainCommit}..HEAD`)
+      sh(`git read-tree -u --reset ${previousMainCommit}`)
+      sh(`git commit --no-verify -m "Revert main to ${previousMainCommit}: live smoke test failed for ${buildCommit}"`)
       sh('git push origin main')
     }
     process.exitCode = 1
@@ -178,7 +227,10 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exitCode = 1
-})
+// Run only when invoked as a script, so the smoke checks can be imported and tried on their own.
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  main().catch((err) => {
+    console.error(err)
+    process.exitCode = 1
+  })
+}

@@ -1945,7 +1945,7 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Games landing page at `/` (`site/`), full-screen WebGL farmland scene, cards for both games
 - [x] Runnel daily irrigation puzzle at `/runnel/` (`games/runnel/`), with unit tests and the site e2e suite (`npm run e2e:site`, now part of gate 5)
 - [x] Cathnivore moved to `/cathnivore/` via `npm run build:site`; self-removing root service worker for returning players
-- [ ] Released to `main` (done by the owner's chat session under the build lock; see the deploy log)
+- [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
 - **New 2026-09-27 ~03:00 UTC:** with the real build/main divergence fixed (see Current milestone/DECISIONS.md
@@ -2185,6 +2185,7 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   is confirmed still healthy at the reverted commit (`7df3f19`, source tree byte-identical to `f6e18b4`,
   live site verified via `curl`) — no regression, just missing this session's newest fixes, which stay on
   `build` for the next release attempt.
+- `a175052` (games portfolio: landing page at `/`, Runnel at `/runnel/`, Cathnivore at `/cathnivore/`). Released to `main` 2026-09-27 ~04:32 UTC via `npm run release` from the owner's chat session. All gates passed, including the new site suite in gate 5. `version.json` was live within about 3 minutes. The Chromium smoke test hit the known sandbox `ERR_CERT_AUTHORITY_INVALID`. The script then tried to revert and crashed on the merge commit (`git revert` needs `-m`), so `main` correctly stayed on `a175052`. Verified with curl: all three pages and every file they reference return 200, and `/sw.js` is the self-removing worker. `release.ts` now treats sandbox proxy errors as inconclusive, falls back to that HTTP check, and reverts only on a real failure, with a single forward commit that restores the old tree and works across merges.
 
 ## Final report
 (not yet written)
