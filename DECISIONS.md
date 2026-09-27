@@ -2781,3 +2781,14 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   (`tests/kingsmarket-stall-cap.test.ts`) — 3 is the placement rule's real, unconditional ceiling, so it's
   the invariant that actually always holds. 6 new `tests/api.test.ts` cases; a 10,000/1,000-game fuzz run
   and the full suite both pass with all four checks active, 0 invariant failures.
+- 2026-09-27 (~17:10 UTC): gate 8 for this session's release: 2 subagents reviewed all 28 phone/desktop
+  screenshots. Phone came back fully clean. Desktop flagged one claimed issue (map's EXPAND badge at
+  Brindle Hills/Highmoor supposedly plain text with no wheat pill) that didn't hold up under a direct
+  pixel-crop check of the actual screenshot (`Map.tsx`'s `<rect fill="var(--wheat)">` badge renders
+  correctly there, confirmed visually) — a false positive, likely from viewing the image at reduced
+  resolution. No real SPEC 11.4 gate-8 criterion (unreadable text, overlap, hidden control, greyscale
+  failure) was found on either pass. One non-blocking cosmetic note from the desktop pass, not a gate-8
+  criterion: the enemy plan strip's Squeeze/Expand/Scout cards render as plain text buttons rather than
+  STYLE.md 8's "minimal Pressure card... 56 px wide" treatment, matching phone's (already-accepted) plan
+  strip too — long-standing, unflagged by many prior gate-8 passes, so treated as accepted simplification
+  rather than new scope; left for a future polish pass if time allows. Proceeding with the release.
