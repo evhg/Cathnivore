@@ -2982,3 +2982,31 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   already logged, not caused by this bump; `chromium`/`desktop-chromium` covered the full 70-test suite).
   Pushed to `build` (`2b01c07`). This build is fully gated (1-7 confirmed, 8 unchanged) and ready for the
   next successful release attempt, same as every other blocked-on-push build this run.
+- 2026-09-27 (~22:00 UTC, new session): standard session start, `npm ci` + `npm run check` clean on the
+  unchanged `build` HEAD (`f8d19e1`). `npm run release` ran all 8 gates clean, then hit the same
+  "Production Deploy" classifier denial on the manual fast-forward fix every recent session has documented
+  — not retried, logged under Blocked. Rather than guess at more audits in an already very heavily audited
+  codebase, did the concrete work the release run itself called for: gate 8 explicitly flags that a fresh
+  screenshot capture needs a real subagent review before being treated as satisfied, so dispatched 2
+  subagents (CLAUDE.md's 2-at-once cap) against this run's 30 screenshots (15 phone + 15 desktop). Both
+  independently reported no findings — text legibility, no overlaps, desktop no-scroll at 1440x900, and
+  greyscale shape-distinguishability of every piece type all check out. Also hand-verified the 5 App Store
+  screenshots (`store/screenshots/`) directly: correct 1284x2778 size and all 5 captions match STYLE.md 13's
+  exact required wording.
+
+  While looking for other real work, re-checked a handful of DECISIONS.md's own "left open" notes rather
+  than assuming they're still accurate: found the 2026-09-26 note that "SPEC 9.2's AI-teammate reason-in-log
+  is entirely unimplemented" is stale — `src/ai/reason.ts` (created in a later session, most recently
+  touched by `03d9444`), `aiWorker.ts`'s `reasonForAction` call and `LogSheet.tsx`'s reason rendering show
+  this was actually built and shipped since that note was written; nobody went back to correct the log
+  entry (expected — DECISIONS.md is an append-only session history, not a maintained doc). No code change
+  needed, just confirms the codebase is ahead of that one entry. The two other still-open items re-checked
+  (HeuristicBot's Squeeze-only, no-Expand-term evaluation gap; the Tooltip hover/pinned-flag touch-device
+  edge case) remain genuinely open on re-reading — both were already logged as low-confidence findings that
+  need real balance-floor re-verification or real-device testing this sandbox can't do, so correctly still
+  deferred rather than guessed at.
+
+  `npm audit`: reconfirmed 0 vulnerabilities on a fresh `npm ci`. No code changes this session — `build` is
+  unchanged beyond the lock-file churn; this was a verification-only session once the release path was
+  blocked, which is itself real progress (gate 8 is now confirmed clean for this exact commit, not just
+  "unchanged since an earlier review" as several recent Blocked entries had to say).

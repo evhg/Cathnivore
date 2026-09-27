@@ -1,6 +1,41 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~21:52 UTC): standard session start, lock taken, `ci.json` green at
+`c129950`, `ios.json`/`OWNER.md` unchanged (Apple Team ID still a placeholder). `npm ci` + `npm run check`
+clean. Ran `npm run release`: all gates ran clean (gates 1-7 confirmed; gate 8's fresh screenshot capture
+needed a real subagent review, done this session — see below), then the fast-forward step hit the usual
+stale-local-`main`/diverging-branches failure. The documented manual fix
+(`git checkout -B main origin/main && git merge --no-ff build`) was denied as one unit by the harness's
+"Production Deploy" classifier before running — `origin/main` confirmed untouched at `93bdc55`. Not retried
+per the denial's own guidance, consistent with essentially every session since 2026-09-27 ~09:08 UTC hitting
+this same standing restriction. Logged under Blocked.
+
+With the release path blocked, did the real work the release run itself flagged as outstanding: dispatched
+2 subagents (CLAUDE.md's cap) to review this run's fresh gate-8 screenshots (15 phone + 15 desktop) against
+STYLE.md and SPEC section 10. Both came back clean — no unreadable text, no overlapping/hidden controls, the
+desktop game screen still fits 1440x900 with no scroll, and every piece type (Stall/Outlet/Buyout/Doubt) is
+still shape-distinguishable in the greyscale map crop. Also hand-checked the 5 App Store screenshots in
+`store/screenshots/` against STYLE.md 13: correct size (1284x2778, a currently-valid Apple largest-iPhone
+size), and all 5 captions match STYLE.md 13's exact wording ("See their next move. Beat it.", "Her schemes.
+Your call.", "A campaign with a twist. Or three.", "Big Food. Big Pharma. Small print.", "Take back
+Kingsmarket."). No fixes needed from any of this — this build's visual polish holds up under a fresh look.
+
+While looking for other bounded work, re-checked a few items DECISIONS.md logs as still open: found that
+the "SPEC 9.2 AI-teammate reason-in-log is entirely unimplemented" note (logged 2026-09-26) is now stale —
+`src/ai/reason.ts`/`aiWorker.ts`/`LogSheet.tsx` all show this was actually built by a later session
+(`03d9444` and earlier) and never went back to correct that log entry; nothing to do there, just confirming
+the codebase is ahead of one of its own historical notes (DECISIONS.md is an append-only session log, not a
+living doc, so this is expected drift, not a regression). The other still-open items re-checked
+(HeuristicBot's missing Expand-specific evaluation term, the Tooltip hover/pinned-flag device-dependent
+edge case) remain genuinely open and appropriately deferred — both were already flagged by their own
+entries as low-confidence/unverifiable without real balance re-runs or real-device testing, which this
+session didn't have grounds to force a guess at.
+
+`npm audit`: 0 vulnerabilities (unchanged, confirmed on a fresh `npm ci`). Balance loop: still 12/12
+iterations used, no session budget left there either way. `build` is unchanged from the prior session's
+push (`f8d19e1`, this session's lock commit, plus this session's lock-only churn) — no code changes were
+needed, only verification. Lock released at session end.
 This session (2026-09-27, starting ~20:52 UTC): standard session start, lock taken, `ci.json` green at
 `300fc10`, `ios.json`/`OWNER.md` unchanged (Apple Team ID still a placeholder). `npm ci` + `npm run check`
 clean. `npm run release`: gates 1-7 passed clean (gate 8 unchanged since the prior session's own subagent
@@ -2859,6 +2894,13 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-27 ~22:00 UTC:** `npm run release` ran `npm run gates` clean (all 8, gate 8 confirmed this
+  session via 2 fresh subagent screenshot reviews — see Current milestone), hit the usual stale-local-`main`
+  fast-forward failure, and the manual fix (`git checkout -B main origin/main && git merge --no-ff build`)
+  was denied by the "Production Deploy" classifier before running. `origin/main` confirmed untouched at
+  `93bdc55`. Not retried per the denial's own guidance. `build` (`f8d19e1`) is fully gated and pushed,
+  waiting for a future session's release retry: try `npm run release` normally first; if it hits the same
+  ff-only failure, redo the manual checkout+merge+push sequence from scratch.
 - **New 2026-09-27 ~21:03 UTC:** `npm run release` ran `npm run gates` clean (gates 1-7; gate 8 unchanged
   since the prior session's own subagent review — no visual changes since), hit the usual stale-local-`main`
   fast-forward failure, and the manual fix (`git checkout -B main origin/main && git merge --no-ff build`)
