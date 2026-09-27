@@ -52,6 +52,37 @@ describe('validate', () => {
     const broken = { ...state, cathsPlan: [...state.cathsPlan, null] }
     expect(validate(broken).some((e) => e.message.includes('cathsPlan has'))).toBe(true)
   })
+
+  // SPEC 9.1 "slots consistent": the same Improvement or Scheme id showing up twice (deck vs. market vs.
+  // a tableau) means a card was duplicated somewhere, not just a count that happens to still add up.
+  it('flags a duplicate Improvement id between the deck and the Market', () => {
+    const state = createGame(FULL_CONFIG, 11)
+    const dupeId = state.market.find((id) => id !== null)!
+    const broken = { ...state, improvementDeck: [...state.improvementDeck, dupeId] }
+    expect(validate(broken).some((e) => e.message.includes('improvements') && e.message.includes(dupeId))).toBe(true)
+  })
+
+  it('flags a duplicate Scheme id between the deck and Cath\'s Plan', () => {
+    const state = createGame(FULL_CONFIG, 11)
+    const dupeId = state.cathsPlan.find((id) => id !== null)!
+    const broken = { ...state, schemeDeck: [...state.schemeDeck, dupeId] }
+    expect(validate(broken).some((e) => e.message.includes('schemes') && e.message.includes(dupeId))).toBe(true)
+  })
+
+  // SPEC 4.7: the Pressure pipeline's deck + discard + squeeze/expand/scout slots must always total the
+  // deck it started with — Scout/Advance move cards between these, never drop or duplicate one.
+  it('flags a Pressure deck/discard/pipeline total that has lost a card', () => {
+    const state = createGame(FULL_CONFIG, 11)
+    const broken = { ...state, pressureDeck: state.pressureDeck.slice(1) }
+    expect(validate(broken).some((e) => e.message.includes('pressure deck/discard/pipeline total'))).toBe(true)
+  })
+
+  it('flags a duplicate Pressure card id between the deck and the discard pile', () => {
+    const state = createGame(FULL_CONFIG, 11)
+    const dupe = state.pressureDeck[0]!
+    const broken = { ...state, pressureDiscard: [...state.pressureDiscard, dupe] }
+    expect(validate(broken).some((e) => e.message.includes('pressure') && e.message.includes(dupe.id))).toBe(true)
+  })
 })
 
 // Plays a full game to its end screen (round 10 or a liberation/loss result) using HeuristicBot, which

@@ -21,6 +21,16 @@ but `git push origin main` was denied by the "Production Deploy" classifier. Not
 guidance. `build` (`37b7aa6`) is fully gated and pushed, waiting for a future session's release retry — see
 Blocked for the exact retry steps.
 
+With time left in the budget, closed the mechanical half of the `validate()` "slots consistent" gap this
+file's history had logged as open (SPEC 9.1): added a Pressure deck/discard/pipeline total check (deck +
+discard + squeeze/expand/scout must always equal the game's starting Pressure-card count, scripted or not)
+and a duplicate-id check across each of Improvements/Schemes/Pressure's deck+discard+face-up-slots+tableau
+groups (a card id appearing twice means one was duplicated, which the existing total-only checks couldn't
+catch). 4 new `tests/api.test.ts` cases prove each check actually fires on a broken state. A 10,000-game
+RandomBot + 1,000-game HeuristicBot fuzz run and the full test suite both pass with the new checks active
+(0 invariant failures), so nothing legitimate trips them. The Stall-cap half of the gap is left as before —
+still entangled with an intentional design choice, needs a judgement call, not a mechanical check.
+
 ---
 This session (2026-09-27, starting ~14:52 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json`/`OWNER.md` Team ID unchanged (still blocked, not re-dispatched — same missing-secrets failure
