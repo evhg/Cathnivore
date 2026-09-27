@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
+import { resolveRules } from '../engine/rules'
 import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
@@ -321,6 +322,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     return <Scene scene={pendingMidScene} onContinue={() => setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])} />
   }
 
+  const rules = resolveRules(state)
   const decision = currentDecision(state)
   const aiProducer = aiProducerRef.current
   const waitingOnAi = decision && 'producer' in decision ? decision.producer === aiProducer : state.activeProducer === aiProducer
@@ -658,22 +660,34 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           Undo
         </button>
         <button className="mobile-only" onClick={() => setShowFarm(true)}>Farm</button>
-        <button className="mobile-only" onClick={() => setShowMarket(true)}>Market</button>
-        <button className="mobile-only" onClick={() => setShowPlan(true)}>Cath&rsquo;s Plan</button>
+        {rules.improvements && (
+          <button className="mobile-only" onClick={() => setShowMarket(true)}>Market</button>
+        )}
+        {rules.schemes && (
+          <button className="mobile-only" onClick={() => setShowPlan(true)}>Cath&rsquo;s Plan</button>
+        )}
         <button className="mobile-only" onClick={() => setShowLog(true)}>Log</button>
       </footer>
 
       {showFarm && <FarmSheet state={state} onClose={() => setShowFarm(false)} />}
-      {showMarket && <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => setShowMarket(false)} />}
-      {showPlan && (
+      {/* SPEC 8.1: "each new rule is introduced exactly once, at the moment it first matters" — a chapter
+          with `improvements`/`schemes` off (e.g. chapters 1-2 have no Market, 1-3 have no Cath's Plan) must
+          not let the sheet stay reachable with real card content, even read-only, before its own chapter
+          narrates that introduction. */}
+      {rules.improvements && showMarket && (
+        <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => setShowMarket(false)} />
+      )}
+      {rules.schemes && showPlan && (
         <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => setShowPlan(false)} />
       )}
       {showLog && <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => setShowLog(false)} />}
       </main>
 
       <aside className="desktop-col desktop-col-right" tabIndex={0}>
-        <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => {}} inline />
-        <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => {}} inline />
+        {rules.improvements && <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => {}} inline />}
+        {rules.schemes && (
+          <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => {}} inline />
+        )}
         <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => {}} inline />
       </aside>
     </div>

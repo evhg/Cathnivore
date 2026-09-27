@@ -10,6 +10,10 @@ const CAST: { name: string; note: string }[] = [
   { name: 'Tomas Reed', note: 'Vegetable grower, Oakvale' },
   { name: 'Dr Ines Farrow', note: 'Dairy farmer and country doctor, Rivermead' },
   { name: 'Sol Abara', note: 'Salt-marsh lamb farmer and podcaster, Saltmarsh' },
+  { name: 'Graham Pell', note: 'Hollowell Group, CEO' },
+  { name: 'Dr Octavia Vane', note: 'Candor Health, Head of Public Understanding' },
+  { name: 'Julian Crisp', note: 'PR fixer, works for both companies' },
+  { name: 'Pip Talbot', note: 'Kingsmarket market inspector' },
 ]
 
 export default function Credits({ onClose }: Props) {
