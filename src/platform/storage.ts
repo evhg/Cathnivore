@@ -156,7 +156,15 @@ export function loadCampaign(): CampaignProgress {
   if (!raw) return { version: 1, completed: [] }
   try {
     const parsed = JSON.parse(raw) as CampaignProgress
-    if (parsed.version !== 1) return { version: 1, completed: [] }
+    // Unlike `loadGame`, there's no "Try Anyway" UI for campaign progress (SPEC 11.3's warning screen is
+    // only wired up for game saves) — any shape that isn't safe to use as-is just resets to a fresh, empty
+    // CampaignProgress, the same way a version mismatch already does below. `completed` is checked
+    // explicitly (not just `version`) because every reader — `markChapterComplete` here and the campaign
+    // chapter list in App.tsx — calls `.includes`/spreads it as an array with no defensive fallback of its
+    // own (unlike `chapterLossCounts`, which every reader guards with `?? {}`); a same-version save with a
+    // missing or corrupted `completed` field would otherwise crash on `progress.completed.includes(...)`
+    // the moment the campaign screen renders or a chapter finishes, instead of just losing progress.
+    if (parsed.version !== 1 || !Array.isArray(parsed.completed)) return { version: 1, completed: [] }
     return parsed
   } catch {
     return { version: 1, completed: [] }
