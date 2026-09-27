@@ -2539,3 +2539,18 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
      mid-game-safe persistence, the `/cathnivore/`/`/runnel/` rewrite exclusions, `build-site.ts`'s
      base-href correctness) was independently re-verified against real build output and prior DECISIONS.md
      entries, no new issues. `npm run check` (390+ tests, build) passes clean after both fixes.
+- 2026-09-27 (same session, ~12:00 UTC): 2 more review subagents. The colour-blind-patterns pass confirmed
+  it's genuinely wired (a stale PROGRESS.md note from before a later STYLE.md-pass fix had claimed otherwise
+  — already superseded, no code issue) and found 2 real SPEC 10.5 glossary/tooltip gaps: no glossary entry
+  for "Co-op marker" (rendered on every liberated region via `Map.tsx`'s `CoopMarker`, with zero explanation
+  anywhere), and "Liberated" had a glossary entry but no in-context tap/hover tooltip trigger anywhere in the
+  game (only reachable via manually searching the Rules Reference), unlike every other glossary term. Fixed:
+  added a "Co-op marker" entry to `terms.ts`'s `GLOSSARY_TERMS`; added a new `CoopMarkerIcon()` export in
+  `Map.tsx` (the same rosette drawing, centred for a fixed-viewBox legend icon rather than a region-relative
+  one) and wired both "Co-op marker" and "Liberated" into `Game.tsx`'s map legend as a 4th entry, next to the
+  existing Outlet/Buyout/Doubt tooltips (same pattern, same `Tooltip`/`GLOSSARY_LOOKUP` shared-data path so
+  wording can't drift). The store-screenshot/hotseat review pass came back fully clean, no new findings —
+  both re-confirmed already-logged claims against the current source. `npx tsc -b`, `npm run check` (390+
+  tests, `tests/terms.test.ts`'s generic per-entry loop picks up the new term automatically) and a Chromium
+  screenshot verification (both `phone`/`desktop-chromium`, legend now reads "Outlet · Buyout · Doubt ·
+  [icon] Co-op marker · Liberated") all pass clean.

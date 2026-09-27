@@ -31,6 +31,7 @@ export const GLOSSARY_TERMS: GlossaryEntry[] = [
   { term: 'Outlet', body: `A Hollowell enemy piece (pool of ${POOL_SIZES.outlet}). Squeeze deals more Damage per Outlet; Supply removes it for 2 Produce each.` },
   { term: 'Buyout', body: `A Hollowell enemy piece (pool of ${POOL_SIZES.buyout}), worth double an Outlet toward Squeeze Damage. Supply removes one for 3 Produce, needing at least 2 Stalls in the region.` },
   { term: 'Doubt', body: `A Candor enemy piece (pool of ${POOL_SIZES.doubt}). Rebut removes it for 1 Goodwill each; left alone it can lower Public Trust when Squeeze resolves.` },
+  { term: 'Co-op marker', body: 'Placed on a region the moment it becomes Liberated. It is removed if the region ever has no Stalls or gains an enemy piece, which also ends its Liberated status.' },
 ]
 
 export const GLOSSARY_LOOKUP: Record<string, string> = Object.fromEntries(

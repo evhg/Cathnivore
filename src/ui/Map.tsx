@@ -194,6 +194,12 @@ function CoopMarker({ x, y }: { x: number; y: number }) {
   )
 }
 
+// Same rosette, centred and scaled for the map legend (SPEC 10.5's "?"-next-to-the-thing tooltip key,
+// matching Outlet/Buyout/Doubt's own fixed-viewBox legend icons below).
+export function CoopMarkerIcon() {
+  return <CoopMarker x={6} y={7} />
+}
+
 export default function Map({ state, highlight, onSelect }: Props) {
   const active = state.config.activeRegions
   const squeezeTargets = active.filter((id) => matchesSlot(state, id, 'squeeze'))
