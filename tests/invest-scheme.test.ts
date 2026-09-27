@@ -229,4 +229,89 @@ describe('ongoing-ability Improvements added for the SPEC 7 effect-mix fix', () 
     state = applyAction(state, { kind: 'invest', improvementId: 'harbour-stall-licence' })
     expect(state.producers.mara.resources.marks).toBe(before - 1)
   })
+
+  it('Letterpress Flyers: Schemes cost 1 less Goodwill, minimum 1 (same shape as Press Contact)', () => {
+    let state = richMara(createGame(FULL_CONFIG, 5))
+    state = withImprovement(state, 'letterpress-flyers')
+    state = forceScheme(state, 'leaked-memo')
+    const before = state.producers.mara.resources.goodwill
+    state = applyAction(state, { kind: 'scheme', schemeId: 'leaked-memo', targetRegion: 'saltmarsh' })
+    expect(state.producers.mara.resources.goodwill).toBe(before - (SCHEMES_BY_ID.get('leaked-memo')!.cost - 1))
+  })
+
+  it('Press Contact and Letterpress Flyers do not stack: owning both still only discounts Schemes by 1', () => {
+    let state = richMara(createGame(FULL_CONFIG, 5))
+    state = withImprovement(state, 'press-contact')
+    state = withImprovement(state, 'letterpress-flyers')
+    state = forceScheme(state, 'leaked-memo')
+    const before = state.producers.mara.resources.goodwill
+    state = applyAction(state, { kind: 'scheme', schemeId: 'leaked-memo', targetRegion: 'saltmarsh' })
+    expect(state.producers.mara.resources.goodwill).toBe(before - (SCHEMES_BY_ID.get('leaked-memo')!.cost - 1))
+  })
+
+  // Sets up a region with 2 Stalls (SPEC 4.6.2's Buyout-clearing requirement), 1 Buyout and 2 Doubt,
+  // so Supply Buyout and Rebut are both legal on it regardless of the seed's starting layout.
+  function withClearableRegion(state: GameState): GameState {
+    return {
+      ...state,
+      regions: {
+        ...state.regions,
+        highmoor: {
+          ...state.regions.highmoor,
+          stalls: { ...state.regions.highmoor.stalls, mara: 2 },
+          buyouts: 1,
+          doubt: 2,
+        },
+      },
+    }
+  }
+
+  it('Community Larder: Supply Buyout costs 1 less Produce, and never touches the 2-Stall requirement', () => {
+    let state = richMara(withClearableRegion(createGame(FULL_CONFIG, 5)))
+    state = withImprovement(state, 'community-larder')
+    const before = state.producers.mara.resources.produce
+    state = applyAction(state, { kind: 'supplyBuyout', region: 'highmoor' })
+    expect(state.producers.mara.resources.produce).toBe(before - 2)
+    expect(state.regions.highmoor.buyouts).toBe(0)
+  })
+
+  it('Community Larder discount has a floor of 2 Produce, and stacks only once even with multiple copies', () => {
+    let state = richMara(withClearableRegion(createGame(FULL_CONFIG, 5)))
+    // Grant a second copy directly (bypassing the market, which never deals duplicates) to prove the
+    // floor holds even in that case: hasImprovement is a boolean membership check, so it can never stack.
+    state = withImprovement(state, 'community-larder')
+    state = { ...state, producers: { ...state.producers, mara: { ...state.producers.mara, improvements: [...state.producers.mara.improvements, 'community-larder'] } } }
+    const before = state.producers.mara.resources.produce
+    state = applyAction(state, { kind: 'supplyBuyout', region: 'highmoor' })
+    expect(state.producers.mara.resources.produce).toBe(before - 2)
+  })
+
+  it('Supply Buyout still requires at least 2 Stalls even with Community Larder', () => {
+    let state = richMara(withClearableRegion(createGame(FULL_CONFIG, 5)))
+    state = withImprovement(state, 'community-larder')
+    state = { ...state, regions: { ...state.regions, highmoor: { ...state.regions.highmoor, stalls: { ...state.regions.highmoor.stalls, mara: 1 } } } }
+    const actions = legalActions(state)
+    expect(actions.some((a) => a.kind === 'supplyBuyout')).toBe(false)
+  })
+
+  it('Tide Tables: Rebut costs 1 less Goodwill overall, applied per action, not per Doubt removed', () => {
+    let state = richMara(withClearableRegion(createGame(FULL_CONFIG, 5)))
+    state = withImprovement(state, 'tide-tables')
+    // Removing 1 Doubt: base cost 1, minus the flat 1 discount, floored at 1 — not free.
+    const before1 = state.producers.mara.resources.goodwill
+    const oneDoubt = applyAction(state, { kind: 'rebut', region: 'highmoor', count: 1 })
+    expect(oneDoubt.producers.mara.resources.goodwill).toBe(before1 - 1)
+    // Removing 2 Doubt: base cost 2, minus the flat 1 discount = 1 — not less than the 1-Doubt cost above
+    // (no inverted-cost bug where clearing more Doubt is cheaper than clearing less).
+    const before2 = state.producers.mara.resources.goodwill
+    const twoDoubt = applyAction(state, { kind: 'rebut', region: 'highmoor', count: 2 })
+    expect(twoDoubt.producers.mara.resources.goodwill).toBe(before2 - 1)
+  })
+
+  it('without Tide Tables, Rebut costs scale with Doubt removed (1 for 1, 2 for 2)', () => {
+    let state = richMara(withClearableRegion(createGame(FULL_CONFIG, 5)))
+    const before = state.producers.mara.resources.goodwill
+    state = applyAction(state, { kind: 'rebut', region: 'highmoor', count: 2 })
+    expect(state.producers.mara.resources.goodwill).toBe(before - 2)
+  })
 })
