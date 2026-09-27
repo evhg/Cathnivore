@@ -2198,3 +2198,31 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   function. Added a regression test enumerating one instance of every `GameEvent` type `captionFor()`
   handles and asserting none contain `!`, so a future caption change can't reintroduce this silently.
   Verified with `npx vitest run tests/enemy-turn-playback.test.ts` (3/3) and a full `npm run check` (clean).
+- 2026-09-27 (same session, ~09:03 UTC): dispatched 2 concurrent review subagents (CLAUDE.md's 2-cap) at
+  files with the fewest DECISIONS.md mentions — a proxy for "never had a dedicated adversarial pass" that
+  found the enemyTurnLog.ts bug above. One (content data: agenda.ts/pressure.ts/characters.ts vs SPEC 3/4.7)
+  came back clean, but flagged pressure.ts as having zero dedicated test coverage (every existing test
+  reaches pressureDeck only via scriptedPressure overrides) — added `tests/pressure.test.ts` asserting the
+  real `unshuffledPressureDeck()`'s stage sizes, per-stage region-type sets, Capital's single Stage-II-only
+  appearance, and total count (all passed first try, the data itself was already correct).
+  The other (rift.ts/region.ts/rules.ts vs SPEC 4.6-4.8) found a real rules bug: SPEC 5's Grass Roots Scheme
+  ("Open a Stall for free in any region bordering a liberated region") had its `legalTargets` filtered
+  through region.ts's `canOpenStallIn`, which also enforces SPEC 4.6.1's ordinary-Open-Stall adjacency rule
+  (the acting producer needs a Stall in-region or in a neighbour) — a condition SPEC 5 never states for this
+  card. This silently blocked Grass Roots exactly when it would matter most: a producer with no Stall
+  network near a teammate's freshly-liberated region, i.e. the "piggyback on someone else's liberation to
+  open a beachhead elsewhere" case the card's own flavour line ("Roots first. Then shoots. Then lawyers.")
+  implies. Confirmed by hand: traced the exact code path, verified `canOpenStallIn`'s adjacency check does
+  fire even when the target only borders (not equals) the liberated region, and confirmed no existing test
+  exercised a target with zero adjacency to the acting producer's Stalls (kingsmarket-stall-cap.test.ts's
+  Grass Roots case happens to place a Stall adjacent to the target, masking the bug). Fixed by splitting
+  `canOpenStallIn` into `canPlaceStall` (Kingsmarket guard + Stall cap only) and `canOpenStallIn`
+  (`canPlaceStall` + adjacency); Grass Roots now uses `canPlaceStall`. Added a regression test
+  (tests/invest-scheme.test.ts) using Rivermead/Saltmarsh specifically because neither borders Mara's home
+  (her only starting Stall), verified it fails on the pre-fix code and passes after. `npm run check` clean,
+  376/376 unit tests. Per SPEC 1.3's priority order, rule correctness (priority 2) outranks balance
+  (priority 5); Grass Roots' play rate has never been flagged as a balance-target violation in any of the
+  12 completed balance-loop iterations, so this fix is not expected to meaningfully shift Normal's win rate,
+  and the balance loop itself is already closed per its own 12-iteration exit clause (SPEC 9.4) — not
+  re-running it solely for this fix, but flagging here in case a future session's spot-check sim looks
+  different from prior runs and needs an explanation.
