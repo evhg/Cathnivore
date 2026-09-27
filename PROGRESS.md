@@ -1,6 +1,19 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~10:52 UTC): standard session start — `git fetch --all`, checked out
+`build` (no `DONE`, no live `.build-lock`), took the lock, read CLAUDE.md/SPEC/STYLE/OWNER/PROGRESS/
+DECISIONS/BALANCE/`git log -20`/`origin/ci-status`. `npm ci` + `npm run gates` clean end to end on `build`
+HEAD (`be3d95d`, unchanged from the previous session's finalize): gates 1-7 (384+ unit tests, site e2e 28,
+gate-5/6 e2e/axe all green, Lighthouse 98/100) plus a real gate-8 subagent screenshot review (30 PNGs
+against STYLE.md/SPEC 10) — no problems found, greyscale/shape-legibility test included. `DEADLINE` has
+about 4 days left (2026-10-01T13:54Z), well inside SPEC 12's schedule, so no M7-only restriction applies yet.
+
+`build`/`origin/main` divergence re-checked: `origin/main` (`53d37ff`) still carries the documented
+zero-net-tree revert/revert-the-revert pair (verified again: `git diff` between their common ancestor
+`c3e1a09` and `origin/main` is empty), so a `git merge --no-ff build` on `main` remains safe and lossless.
+Attempting the release now that gate 8 is clean — see below for the outcome.
+
 This session (2026-09-27, starting ~09:51 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
 BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (unchanged from the
