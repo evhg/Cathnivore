@@ -2363,3 +2363,12 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   (region.ts's `stallCap`) does implement, so a player reading the glossary in a Lost-Land-damaged region
   would be misled. Appended the missing clause to the glossary text. `npx tsc -b` and `npm run check`
   (384/384 tests, build clean) both pass after both fixes.
+- 2026-09-27 (same session, ~10:08-10:13 UTC): final 2 concurrent review subagents (CLAUDE.md's cap) this
+  session. src/ai/aiWorker.ts + mcts.ts vs SPEC 9.2's 600-sim/400ms budget, worker-failure fallback and
+  per-simulation deck reshuffling, plus src/platform/settings.ts (all 4 SPEC 10.1 settings, Reset's real
+  2-step confirmation) and haptics.ts (STYLE.md's 4 trigger conditions) all came back clean, no issues.
+  src/ai/evaluation.ts vs SPEC 9.2's eval-function description also came back clean (every term correctly
+  signed/clamped/live, `expandCoverage`'s 0 weight re-confirmed as the already-logged deliberate revert).
+  The same pass's 2 real RulesReference.tsx/terms.ts findings (the ACTIONS_PER_ROUND drift risk and the
+  Open Stall Lost-Land clause) are fixed in the entry above. After the fix: `npx playwright test
+  --project=phone` (50 tests) passes clean.
