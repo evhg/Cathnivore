@@ -43,12 +43,29 @@ Found and fixed 2 more real issues, both logged in DECISIONS.md with full detail
   glossary text. `npx tsc -b`, `npm run check` (384/384 tests) and the full Playwright suite at both sizes
   (100 e2e tests total) all pass clean after every fix.
 
-Everything else across all 5 subagent-pair rounds this session came back clean (no bugs) — including one
+Two more subagent-pair rounds followed (Market/Cath's Plan/Scene/Setup UI, and the Log sheet/undo
+mechanism), finding 2 more small real issues, both fixed: Setup.tsx's optional seed field silently
+coerced a non-numeric paste to seed 0 via `parseInt` -> `NaN` -> `seed >>> 0` (now falls back to a fresh
+random seed instead), and `actions.ts`'s `scheme` case cleared a played Scheme's Cath's Plan slot with a
+blanket null-out instead of the `removeFirst` helper the structurally-identical `invest` case already uses
+to guard against duplicate scripted card ids (latent today, no scripted-duplicate Scheme exists yet, but
+now consistent with the Market path's existing fix). The undo mechanism itself (a `GameState`-snapshot
+stack, not a literal `replay()` call as SPEC 4.6's prose reads) is safe only because the whole engine is
+provably immutable -- confirmed as part of this session's earlier engine-purity audit, not a new risk.
+
+Everything else across all 7 subagent-pair rounds this session came back clean (no bugs) — including one
 apparent "missing validate() check" that turned out to be a rediscovery of an already-deliberately-reverted
 false invariant from an earlier session (see DECISIONS.md), correctly left alone rather than re-added.
 
-`build` is gated and pushed at this point, still waiting on the `main`-merge blocker above to actually
-release.
+Re-ran `npm run gates` end to end one final time after this round's 2 fixes: all of gates 1-7 pass clean
+(384 unit tests, 70+28 e2e, 16 axe, Lighthouse 98/100), gate 8 screenshots refreshed.
+
+`build` is gated and pushed at this point (`be3d95d`), still waiting on the `main`-merge blocker above to
+actually release. Session totals: 3 real bugs fixed in game/story logic (the ch5 Pip montage, the seed-NaN
+gap, the scheme-slot-clear inconsistency), 1 SPEC-doc sync fix (4.9's difficulty note), 1 SPEC-10.5
+drift-prevention fix (ACTIONS_PER_ROUND + the Open Stall glossary gap); 9 paired review-subagent rounds (18
+subagents total, within CLAUDE.md's 2-at-once cap) swept nearly every remaining low-DECISIONS.md-mention
+file in `src/`.
 
 Previous session (2026-09-27, starting ~08:51 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
