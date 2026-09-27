@@ -122,6 +122,32 @@ describe('Scheme', () => {
     const actions = legalActions(state)
     expect(actions.some((a) => a.kind === 'scheme' && a.schemeId === 'grass-roots')).toBe(false)
   })
+
+  // SPEC 5: "Grass Roots (1): Open a Stall for free in any region bordering a liberated region." — no
+  // requirement that the acting producer already have a Stall network near the target. Rivermead borders
+  // Saltmarsh and Shingle Bay, neither of which borders Mara's home Brindle Hills (her only Stall at game
+  // start), so this exercises the case tests/kingsmarket-stall-cap.test.ts's Grass Roots coverage doesn't:
+  // a target with no adjacency to the acting producer's own Stalls at all.
+  it('offers a region bordering a liberated region even with no adjacency to the acting producer\'s own Stalls', () => {
+    let state = richMara(createGame(FULL_CONFIG, 5))
+    const removedOutlets = state.regions.rivermead.outlets
+    state = {
+      ...state,
+      outletPool: state.outletPool + removedOutlets,
+      regions: {
+        ...state.regions,
+        rivermead: { ...state.regions.rivermead, stalls: { tomas: 1 }, outlets: 0, buyouts: 0, doubt: 0, liberated: true, everLiberated: true },
+      },
+    }
+    state = forceScheme(state, 'grass-roots')
+    const actions = legalActions(state)
+    const grassRoots = actions.filter((a) => a.kind === 'scheme' && a.schemeId === 'grass-roots')
+    expect(grassRoots.some((a) => a.kind === 'scheme' && a.targetRegion === 'saltmarsh')).toBe(true)
+
+    state = applyAction(state, { kind: 'scheme', schemeId: 'grass-roots', targetRegion: 'saltmarsh' })
+    expect(state.regions.saltmarsh.stalls.mara).toBe(1)
+    expect(validate(state)).toEqual([])
+  })
 })
 
 describe('freeSchemePlays (SPEC 8.2 ch6 "the Plan unlocks and the players get one free Scheme")', () => {

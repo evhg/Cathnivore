@@ -1,5 +1,5 @@
 import { removeDoubt, removeOutlets } from '../engine/pieces'
-import { canOpenStallIn, regionsBorderingLiberated } from '../engine/region'
+import { canPlaceStall, regionsBorderingLiberated } from '../engine/region'
 import { addProduction, addResources } from '../engine/producer'
 import type { GameState, ProducerId, RegionId } from '../engine/types'
 
@@ -75,8 +75,7 @@ export const SCHEMES: SchemeCard[] = [
     line: 'Roots first. Then shoots. Then lawyers.',
     text: 'Open a Stall for free in any region bordering a liberated region.',
     targeting: 'required',
-    legalTargets: (state, producer) =>
-      regionsBorderingLiberated(state).filter((id) => canOpenStallIn(state, producer, id)),
+    legalTargets: (state) => regionsBorderingLiberated(state).filter((id) => canPlaceStall(state, id)),
     effect: (state, producer, target) => {
       if (!target) return state
       const r = state.regions[target]

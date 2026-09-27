@@ -31,10 +31,18 @@ export function anyStallsAdjacentOrIn(state: GameState, producer: ProducerId, re
   return REGIONS[region].neighbors.some((n) => ownStalls(state, producer, n) > 0)
 }
 
-export function canOpenStallIn(state: GameState, producer: ProducerId, region: RegionId): boolean {
+// The Kingsmarket guard and Stall cap alone, with no adjacency requirement — shared by `canOpenStallIn`
+// (SPEC 4.6.1's ordinary Open Stall action, which adds its own adjacency check on top) and SPEC 5's
+// "Grass Roots" Scheme (its own eligibility is "any region bordering a liberated region", already
+// enforced by `regionsBorderingLiberated`; it must not also require the acting producer's own Stall to be
+// adjacent, which `canOpenStallIn` would silently add back in).
+export function canPlaceStall(state: GameState, region: RegionId): boolean {
   if (region === 'kingsmarket' && !kingsmarketOpen(state)) return false
-  if (regionStallTotal(state.regions[region]) >= stallCap(state.regions[region])) return false
-  return anyStallsAdjacentOrIn(state, producer, region)
+  return regionStallTotal(state.regions[region]) < stallCap(state.regions[region])
+}
+
+export function canOpenStallIn(state: GameState, producer: ProducerId, region: RegionId): boolean {
+  return canPlaceStall(state, region) && anyStallsAdjacentOrIn(state, producer, region)
 }
 
 // Regions bordering (or equal to) a liberated region, usable by anyone (SPEC 5 "Grass Roots"). Scoped to
