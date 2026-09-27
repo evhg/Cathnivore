@@ -4,6 +4,7 @@ import { legalActions, applyAction } from '../src/engine/actions'
 import { deserialize, isOver, replay, result, serialize, validate } from '../src/engine/api'
 import { createRng, nextInt } from '../src/engine/rng'
 import { ALL_REGION_IDS } from '../src/content/map'
+import { HeuristicBot } from '../src/ai/heuristic'
 import type { GameConfig } from '../src/engine/types'
 
 const FULL_CONFIG: GameConfig = {
@@ -39,12 +40,44 @@ describe('validate', () => {
   })
 })
 
+// Plays a full game to its end screen (round 10 or a liberation/loss result) using HeuristicBot, which
+// greedily buys Improvements whenever that scores best — the realistic worst case for serialized size,
+// since `state.log`/`state.actionHistory` (SPEC 9.1's engine invariants, `pieces.ts`'s end-screen stats)
+// grow for the whole game and never get trimmed, and a full tableau of owned Improvements is the biggest
+// per-producer payload. A safety cap guards against a bot bug hanging the test instead of ending the game.
+function playFullGame(seed: number) {
+  let state = createGame(FULL_CONFIG, seed)
+  let rng = createRng(seed * 104729 + 1)
+  for (let step = 0; step < 2000 && !state.result; step++) {
+    const [action, next] = HeuristicBot.chooseAction(state, rng)
+    rng = next
+    state = applyAction(state, action)
+  }
+  return state
+}
+
 describe('serialize/deserialize', () => {
-  it('round-trips to an identical state and stays under 50KB', () => {
+  it('round-trips to an identical state', () => {
     const { state } = playSomeActions(21, 40)
     const json = serialize(state)
-    expect(json.length).toBeLessThan(50 * 1024)
     expect(deserialize(json)).toEqual(state)
+  })
+
+  it('stays under 50KB (SPEC 9.1) for a full 10-round game with a maxed-out Improvement tableau', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const state = playFullGame(seed)
+      expect(state.result).not.toBeNull()
+      expect(state.round).toBeLessThanOrEqual(10)
+
+      // Sanity-check this is a real worst case, not a trivially short/empty game: HeuristicBot buys
+      // Improvements greedily, so a full game should leave a substantial tableau and a long log/history.
+      const improvementsOwned = Object.values(state.producers).reduce((n, p) => n + p.improvements.length, 0)
+      expect(improvementsOwned).toBeGreaterThan(5)
+      expect(state.log.length).toBeGreaterThan(50)
+
+      const json = serialize(state)
+      expect(json.length).toBeLessThan(50 * 1024)
+    }
   })
 })
 
