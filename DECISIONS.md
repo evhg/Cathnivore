@@ -2450,3 +2450,21 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   change): `externalLink.ts` statically imports `@capacitor/browser` instead of the dynamic-import-on-native
   pattern `haptics.ts`/`splash.ts`/`statusBar.ts` use, but Vite still code-splits it into its own tiny chunk
   either way, so there's no real behavior difference.
+- 2026-09-27 (same session, ~11:25 UTC): `npm run gates` (run again after this session's engine/sim/ios
+  fixes, to confirm nothing regressed before releasing) caught a real, new gate-6 failure:
+  `e2e-site/site.spec.ts`'s landing-page accessibility test failed on desktop with a serious color-contrast
+  violation (1.13:1 vs. the required 4.5:1) on the Runnel card's "New" `.badge`. The badge's own CSS
+  (`site/src/styles.css` line 332) has plenty of contrast (`#2b1d10` text on `--gold` `#f4c774`) — the
+  violation's actual computed colours (`#463527`/`#4f3d2f`, nearly identical to each other) only make sense
+  as a partial-opacity blend, which pointed at `styles.css`'s `.reveal`/`.ready .reveal` entrance animation
+  (`main.ts` adds `.ready` ~2 animation frames after load; each `.reveal` card then fades in over 1.1s with
+  a `--order`-based stagger). The accessibility test only waits for the H1 to be visible, not for that
+  animation to finish, so axe was scanning a genuine but transient mid-fade frame — not the actual persistent
+  UI, which (per `styles.css`'s already-existing `prefers-reduced-motion` block, `.ready .reveal { opacity: 1
+  }`) real users with that preference see immediately, and everyone else sees within ~2.3s regardless. Fixed
+  by giving this one test its own `reducedMotion: 'reduce'` browser context (matching the existing "still
+  works with reduced motion" test right above it in the same file), so it scans the real steady-state UI
+  instead of an animation frame — a one-line-of-intent fix, not a CSS/contrast change, since the steady state
+  was never actually broken. Re-ran just this test (4/4 pass, both projects) and then the full `npm run
+  gates` (gates 1-7 clean end to end; gate 8's screenshots are unchanged from this session's earlier clean
+  subagent review, since nothing visual changed).

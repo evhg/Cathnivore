@@ -69,10 +69,19 @@ test.describe('landing page', () => {
     }
   })
 
-  test('has no serious or critical accessibility issues', async ({ page }) => {
+  test('has no serious or critical accessibility issues', async ({ browser }) => {
+    // The title/cards fade in via a CSS entrance animation (`.reveal`, styles.css) that starts several
+    // hundred ms after load and runs for ~1.1s per card. Scanning mid-animation catches a transient,
+    // partial-opacity frame whose blended colours can read as low contrast even though the steady state
+    // (and the reduced-motion state real users with that preference see, per styles.css's
+    // `prefers-reduced-motion` block) is fine — reducedMotion here scans the actual persistent UI instead
+    // of an animation frame, the same context the "still works with reduced motion" test above already uses.
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' })
+    const page = await ctx.newPage()
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore' })).toBeVisible()
     await assertNoSeriousIssues(page)
+    await ctx.close()
   })
 })
 
