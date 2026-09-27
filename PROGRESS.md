@@ -1,6 +1,38 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~11:47 UTC): standard session start — `git fetch --all`, checked out
+`build` (no `DONE`, no live `.build-lock`), took the lock, read CLAUDE.md/SPEC/STYLE/OWNER/PROGRESS/
+DECISIONS/BALANCE/`git log -20`/`origin/ci-status`. `ci.json` green on `ab226d2`; `ios.json` unchanged
+(`OWNER.md`'s Apple Team ID still `PASTE-TEAM-ID` — not re-dispatched, the prior session's Xcode-scheme fix
+only matters once real secrets exist). `DEADLINE` still has ~4 days left, no M7-only restriction.
+
+Ran 3 more rounds of paired review subagents (CLAUDE.md's 2-at-once cap), finding and fixing 3 more real
+issues (full detail in each DECISIONS.md entry):
+1. `e2e/crash-recovery.spec.ts`'s final assertion only checked the crash message was gone, never that Resume
+   From Last Autosave actually landed back on the real saved game — a regression that silently fell back to
+   title/setup would have passed undetected. Added an `.end-screen`-visible assertion.
+2. `vite.config.ts`'s PWA `globPatterns` was missing `png`, so the manifest's own icon PNGs (added in a later
+   session, after the glob was last touched) were silently excluded from the offline precache — a real,
+   if cosmetic, gap against SPEC 11.1's offline-play requirement. Added `png` to the extension list.
+3. `vercel.json` had no explicit Cache-Control rule for `/version.json`, the one file `scripts/release.ts`'s
+   post-deploy poll depends on reflecting the new commit promptly — added a dedicated `no-cache` rule closing
+   a previously-unreviewed loose end in the cache-header story.
+
+Everything else across these 3 review-subagent pairs (ErrorBoundary/save-version-mismatch vs. SPEC 11.3;
+story satire/exclamation-mark rules vs. SPEC 3.5/3.2 + chapter-unlock logic vs. SPEC 8.1; PWA SW-registration/
+update-banner vs. SPEC 11.1; Vercel rewrites/build-site.ts base-href correctness vs. SPEC 11.5/15) came back
+clean — no new bugs, several already-logged findings independently re-confirmed still correct.
+
+Re-ran `npm run gates`: gates 1-7 pass clean (390+ unit tests, full e2e/site/accessibility suites, Lighthouse
+98/100); gate 8 unchanged from the prior session's clean subagent screenshot review (nothing visual changed
+in this batch — engine test coverage, PWA precache config and a cache header, not UI). Released via the now-
+routine `git checkout -B main origin/main && git merge --no-ff build && git push origin main`, first try, no
+classifier denial — `1886193` -> `3995175`. `version.json` matched after ~20-40s (Monitor-based poll, not a
+blocking sleep loop). `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support`, `/version.json` all verified
+200. `main` is at `3995175`, healthy and live.
+
+---
 This session (2026-09-27, starting ~10:52 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read CLAUDE.md/SPEC/STYLE/OWNER/PROGRESS/
 DECISIONS/BALANCE/`git log -20`/`origin/ci-status`. `npm ci` + `npm run gates` clean end to end on `build`
@@ -2735,6 +2767,13 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   `1886193` on the first poll after a 20s wait. `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all
   verified 200. `main` is at `1886193`, healthy. `deploy-15` would be the next tag number but tag pushes
   remain blocked (known 403; see Blocked) — commit SHA is the record.
+- `3995175` (this session's 3 fixes: the crash-recovery test strengthening, the PWA icon precache gap, and
+  the `version.json` cache header). Released the same way (`git checkout -B main origin/main && git merge
+  --no-ff build && git push origin main`), first try, no classifier denial. `npm run gates` passed clean
+  beforehand (gates 1-7; gate 8 unchanged, no visual changes). `version.json` matched via a `Monitor`-based
+  poll (~40s). `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support`, `/version.json` all verified 200.
+  `main` is at `3995175`, healthy. `deploy-16` would be the next tag number but tag pushes remain blocked
+  (known 403; see Blocked) — commit SHA is the record.
 
 ## Final report
 (not yet written)
