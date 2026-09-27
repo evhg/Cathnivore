@@ -74,7 +74,9 @@ export default function Settings({ onClose }: Props) {
         {confirmingReset ? (
           <div className="reset-confirm">
             <p>This deletes your saved game and campaign progress. This can&rsquo;t be undone.</p>
-            <button onClick={resetAllData}>Yes, reset all data</button>
+            <button className="destructive" onClick={resetAllData}>
+              Yes, reset all data
+            </button>
             <button onClick={() => setConfirmingReset(false)}>Cancel</button>
           </div>
         ) : (

@@ -726,6 +726,15 @@ button {
   cursor: pointer;
 }
 
+/* STYLE.md 10: "Destructive is clay-deep." Only the confirming "Yes, reset all data" button (the one
+   irreversible action, SPEC 10.1) uses this — the "Reset all data" button that opens the confirmation
+   stays a normal secondary button, since it isn't itself destructive yet. */
+button.destructive {
+  background: var(--clay-deep);
+  border-color: var(--clay-deep);
+  color: var(--paper);
+}
+
 .controls {
   display: flex;
   justify-content: space-between;
