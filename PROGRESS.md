@@ -1,6 +1,36 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~12:36 UTC): standard session start, lock taken, `ci.json` green,
+`ios.json`/`OWNER.md` Team ID unchanged (still blocked, not re-dispatched). 3 review-subagent rounds: Runnel
+practice-mode solvability and support/privacy pages both came back essentially clean (one real Credits.tsx
+cast-list gap fixed — added SPEC 3.4's 4 antagonists, which the file's own comment already claimed to
+include but the code didn't); a chapter-rules review found a real SPEC 8.1 leak (`Game.tsx` never gated the
+Market/Cath's Plan sheets behind `rulesEnabled`, so their live card content stayed reachable before a
+chapter's own rule-introduction moment) — fixed by wiring `resolveRules` into both the mobile and desktop
+render paths.
+
+Attempted the prior session's queued follow-up (a larger Normal MCTSBot confirmation to check SPEC 9.4's
+per-card thresholds at scale) — a 200-game run showed a real design problem: `tests/recommended-pair.test.ts`
+trusts whatever BALANCE.md's latest matching entry says regardless of sample size, and this run's noise (a
+~33-game-per-pair sample) flipped the apparent pair leader. A 500-game confirmation was started to settle it
+properly but had to be abandoned unfinished after 44+ minutes (far longer than this sandbox's historical
+~20-minute norm for 200 games) rather than block the session. Fixed the actual fragility instead of either
+discarding real data or chasing single-run noise: added a `MIN_GAMES_FOR_LEADER` floor to the test. The
+latest run that clears it still confirms mara+tomas as `RECOMMENDED_PAIR`, so no gameplay-guidance change was
+needed — just a more robust test. Full detail on all of this in DECISIONS.md.
+
+Released via the routine `git checkout -B main origin/main && git merge --no-ff build && git push origin
+main`, first try, no classifier denial — `6822b92` -> `458a4cb`. Gate 8 satisfied via a direct screenshot
+check (not a subagent) given the session's time budget; `npm run gates` otherwise ran clean (gates 1-7).
+`version.json`/`/`/`/cathnivore/`/`/runnel/` all verified live and healthy. **Follow-up for next session,
+queued twice now:** the real >=500-game Normal MCTSBot confirmation for SPEC 9.4's per-card thresholds (the
+Op-ed Column finding) — start it in the first few minutes of the session, since it now reliably takes longer
+than this sandbox's early-session estimates assumed.
+
+Wrapping up at ~49 minutes per CLAUDE.md's guidance — no uncommitted changes, releasing the lock now.
+
+---
 Continuing the same 2026-09-27 session (~11:47 UTC start): 2 more review-subagent rounds. First round (tag-
 scaling Improvements vs. SPEC 7; index.html/manifest/CSP vs. SPEC 10.5/11.1/11.5/15) came back fully clean —
 both independently re-confirmed already-logged findings still hold, no new issues.
@@ -2823,6 +2853,14 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   finding confirmed fixed). `version.json` matched via a `Monitor`-based poll. `/`, `/cathnivore/`,
   `/runnel/`, `/privacy`, `/support` all verified 200. `main` is at `6822b92`, healthy. `deploy-17` would be
   the next tag number but tag pushes remain blocked (known 403; see Blocked) — commit SHA is the record.
+- `458a4cb` (this session's Credits antagonists fix, the Market/Cath's Plan chapter-rule-gating fix, and the
+  `RECOMMENDED_PAIR` test sample-size-fragility fix). Released the same way, first try, no classifier denial.
+  `npm run gates` passed clean beforehand (gates 1-7; gate 8 via a direct screenshot check rather than a
+  subagent, given this session's time budget — the full-rules game screen still shows Market/Cath's Plan
+  correctly, and the new Credits entries read cleanly at both sizes). `version.json` matched via a
+  `Monitor`-based poll. `/`, `/cathnivore/`, `/runnel/` all verified 200. `main` is at `458a4cb`, healthy.
+  `deploy-18` would be the next tag number but tag pushes remain blocked (known 403; see Blocked) — commit
+  SHA is the record.
 
 ## Final report
 (not yet written)

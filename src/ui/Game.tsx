@@ -226,7 +226,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       // worker throws (`onerror`) or simply never responds within a watchdog well past its own 400ms
       // budget, fall back to the fast, synchronous HeuristicBot rather than leaving the AI teammate's turn
       // — and the whole game — stuck forever with no visible failure and no recovery path.
-      const fallBackToHeuristic = () => {
+      const fallBackToHeuristic = (why: string) => {
         if (settled || cancelled) return
         settled = true
         worker.removeEventListener('message', onMessage)
@@ -234,9 +234,13 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         clearTimeout(watchdog)
         aiWorkerRef.current?.terminate()
         aiWorkerRef.current = null
+        // SPEC 9.2's "each AI action shows a one-line reason in the log" must still hold on this path —
+        // silently substituting HeuristicBot with no trace left this undiagnosable (no console output, no
+        // Log sheet indication) and every fallback move looked like a normal, reason-less action.
+        console.warn(`AI teammate: ${why}, falling back to HeuristicBot for this decision.`)
         const [action, nextRng] = HeuristicBot.chooseAction(state, rngRef.current)
         rngRef.current = nextRng
-        advance(state, action)
+        advance(state, action, '(AI worker unavailable — used backup logic)')
       }
       const onMessage = (event: MessageEvent<AIWorkerResponse>) => {
         worker.removeEventListener('message', onMessage)
@@ -247,12 +251,12 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         rngRef.current = event.data.rng
         advance(state, event.data.action, event.data.reason)
       }
-      const onError = () => fallBackToHeuristic()
+      const onError = (event: ErrorEvent) => fallBackToHeuristic(`worker error (${event.message || 'unknown'})`)
       worker.addEventListener('message', onMessage)
       worker.addEventListener('error', onError)
       // Well past the bot's own 400ms decision budget (SPEC 9.2) plus the UI's own AI-speed delay, so this
       // only ever fires on a genuine hang, never on a slow-but-alive decision.
-      watchdog = setTimeout(fallBackToHeuristic, 3000)
+      watchdog = setTimeout(() => fallBackToHeuristic('decision timed out'), 3000)
       const request: AIWorkerRequest = { state, rng: rngRef.current, e2eCrash: isE2EAiWorkerCrash() }
       worker.postMessage(request)
     }, AI_SPEED_DELAY_MS[loadSettings().aiSpeed])

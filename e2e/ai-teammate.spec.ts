@@ -117,14 +117,15 @@ test('a thrown AI worker error falls back to HeuristicBot instead of hanging the
   // allows for an actual MCTS search.
   await expect(page.locator('.active-producer strong')).not.toHaveText(firstName, { timeout: 5_000 })
 
-  // The fallback calls `advance()` with no `aiReason` (it's HeuristicBot, not the real teammate's Worker
-  // decision), so the log line for Tomas's move should have no reason sentence after the action caption —
-  // confirming this really is the fallback path, not a lucky real decision that raced in first.
+  // The fallback calls `advance()` with a fixed "(AI worker unavailable — used backup logic)" aiReason
+  // (SPEC 9.2's "each AI action shows a one-line reason in the log" must hold on the fallback path too,
+  // not just the real Worker's decisions — a silent, reason-less fallback move used to be indistinguishable
+  // from a normal action, see DECISIONS.md), so the log line for Tomas's move should carry that exact text.
   const logToggle = page.getByRole('button', { name: 'Log' })
   if (await logToggle.isVisible().catch(() => false)) await logToggle.click()
   const firstLogLine = page.locator('.log-sheet li').first()
   await expect(firstLogLine).toContainText('Tomas')
-  expect(await firstLogLine.innerText()).not.toMatch(/Tomas .*\. .+\./)
+  await expect(firstLogLine).toContainText('AI worker unavailable — used backup logic')
 
   // The Worker's own thrown exception fires `onerror`, not a page-level error — the whole point of the
   // fallback is that it's handled, not that it never happens — so `pageerror` should stay empty.

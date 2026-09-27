@@ -70,19 +70,32 @@ const nativeCache = new Map<string, string | null>()
 // caught `localStorage` exceptions — a native write failing (or merely being slow) leaves the in-memory
 // cache as the source of truth for the rest of this session, so the game keeps working; only a genuinely
 // persistent failure would cost the *next* app launch's autosave, not this one.
+// The in-memory `nativeCache` above is always updated synchronously first, so `get()` is correct for the
+// rest of this session regardless of the disk write below. But two rapid `set`/`remove` calls (e.g. a
+// human action's autosave immediately followed by the AI teammate's own) previously fired their
+// `Preferences` writes independently with no ordering between them — correct today only because iOS's
+// Preferences (UserDefaults-backed) happens to process calls FIFO, not because anything in this code
+// guarantees it. Chaining every write through one promise makes the actual persisted-to-disk order match
+// call order for real, so a future plugin/OS change can't silently let a stale write land last.
+let writeQueue: Promise<void> = Promise.resolve()
+
 const nativeStorage: KeyValueStorage = {
   get: (key) => nativeCache.get(key) ?? null,
   set: (key, value) => {
     nativeCache.set(key, value)
-    void import('@capacitor/preferences')
-      .then(({ Preferences }) => Preferences.set({ key, value }))
-      .catch(() => {})
+    writeQueue = writeQueue.then(() =>
+      import('@capacitor/preferences')
+        .then(({ Preferences }) => Preferences.set({ key, value }))
+        .catch(() => {}),
+    )
   },
   remove: (key) => {
     nativeCache.delete(key)
-    void import('@capacitor/preferences')
-      .then(({ Preferences }) => Preferences.remove({ key }))
-      .catch(() => {})
+    writeQueue = writeQueue.then(() =>
+      import('@capacitor/preferences')
+        .then(({ Preferences }) => Preferences.remove({ key }))
+        .catch(() => {}),
+    )
   },
 }
 
