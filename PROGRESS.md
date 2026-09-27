@@ -51,7 +51,13 @@ shared "empties its Plan slot" postcondition. All 30 pass. `npm run check` (443 
 quick fuzz both pass clean. Pushed (`d0b6676`). Full detail (including a pool-invariant mistake in the first
 draft of the board setup, caught and fixed before committing) in DECISIONS.md.
 
-Wrapping up with `build` fully gated again, plus two real correctness fixes and three test-coverage
+Closed the same gap's Agenda-card half too: 14 of 24 cards had no test calling their `effect`/`bonusEffect`
+at all. A generic block in `tests/agenda.test.ts` calls both on every card against the real post-setup board
+(already varied enough for every extremal pick, no custom stocking needed) and checks `validate()`. All 24
+pass on the first attempt. `npm run check` (467 tests, up from 443) and the quick fuzz both pass clean.
+Pushed (`da78fd9`).
+
+Wrapping up with `build` fully gated again, plus two real correctness fixes and four test-coverage
 improvements landed this session, and releasing the lock.
 
 ---

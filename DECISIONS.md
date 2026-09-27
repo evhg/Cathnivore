@@ -2927,3 +2927,11 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   exercised) and checked for a clean `validate()` plus the shared "empties its Plan slot and discards itself"
   postcondition (SPEC 5). All 30 pass on the first stocked-board attempt once the pool-safe setup was fixed.
   `npm run check` (443 tests, up from 407) and a quick fuzz both pass clean.
+- 2026-09-27 (~20:14 UTC): closed the same gap's Agenda-card half, which the earlier subagent audit had
+  already flagged directly ("21 of 24 cards have zero functional-behavior test coverage" — 3 have since
+  gained coverage via the liberated-exemption tests above, so 14 were actually left bare). Added a generic
+  block to `tests/agenda.test.ts`: every card's `effect` and `bonusEffect` called directly against the real
+  post-setup board (`createGame`'s own setup already gives varied Stalls/Outlets/Doubt/Buyouts across
+  regions, so every "most/fewest Stalls"/"2+ Outlets, no Buyout" extremal pick has a real answer without
+  any custom board-stocking needed, unlike the Schemes version above), checked against `validate()`. All 24
+  pass on the first attempt. `npm run check` (467 tests, up from 443) and a quick fuzz both pass clean.
