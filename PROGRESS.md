@@ -59,6 +59,25 @@ Re-ran `npm run gates` end to end after all 5 fixes: gates 1-7 pass clean (388+ 
 98/100); gate 8's screenshots are unchanged from the earlier clean review (nothing visual changed in this
 round of fixes).
 
+Released this batch of fixes too (`1886193`), same clean `git checkout -B main origin/main && git merge
+--no-ff build && git push origin main` path, no classifier denial — see Deploy log. Two more review-subagent
+pairs followed (Hard difficulty/pressure-deck vs. SPEC 4.9/4.7; Map.tsx targeting-mode UI vs. SPEC 10.2, then
+Rift 6 "The Split"/chapter 3->4 carry-over vs. SPEC 4.7/8.2) — all three came back clean, no new code bugs,
+just one stale-documentation nit (PROGRESS.md's M1 entry still described Rift 6 as "an auto-decide heuristic"
+after a later session had already routed it through a real evaluated decision; corrected). Closed the one
+real residual gap those passes surfaced — Hard difficulty had only a single 100-game balance confirmation
+vs. hundreds for Normal/Easy — with a fresh 300-game MCTSBot/Hard/all-pairs run: 25.7% win rate (inside
+SPEC 9.4's 25-40% band), all loss-reason floors clear, and the first difficulty level in this build's history
+to land its producer-pair spread inside the 12-point band (20.0%-32.0%). No code/content change from this
+run, pure balance-data confirmation.
+
+**Session total: 1 release carrying 25 previously-stuck commits, 1 second release carrying 5 more real bug
+fixes (a missed SPEC 4.8 Public-Trust loss check, a Runnel daily-rollover gap, a sim-harness SPEC-9.3
+miscount, a missing iOS Xcode scheme, and a site-accessibility test-timing false positive), plus 7 total
+review-subagent passes (5 with real findings, 2 fully clean) and a Hard-difficulty balance confirmation.**
+`main` is at `1886193`, healthy and live. `build`/`main` are no longer diverged. Wrapping up at ~54 minutes
+per CLAUDE.md's guidance — no uncommitted changes, releasing the lock now.
+
 This session (2026-09-27, starting ~09:51 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
 BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (unchanged from the
