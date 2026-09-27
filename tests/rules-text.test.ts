@@ -44,6 +44,51 @@ describe('Improvement rules text', () => {
       }
     })
   }
+
+  it('has 36 cards (SPEC 7 minimum 24)', () => {
+    expect(IMPROVEMENTS.length).toBe(36)
+  })
+
+  // SPEC 7 mandates these six cards exactly ("Use these exactly and write the rest to match"). The Agenda
+  // deck review found a headline that had drifted from its SPEC-mandated text with nothing catching it;
+  // this locks the six mandated Improvements' name, cost, tags and effect text down the same way.
+  it('includes the six SPEC-mandated cards verbatim', () => {
+    const byName = new Map(IMPROVEMENTS.map((c) => [c.name, c]))
+
+    const farmShop = byName.get('Farm Shop')
+    expect(farmShop?.cost).toBe(3)
+    expect(farmShop?.tags).toEqual(['community'])
+    expect(farmShop?.text).toBe('+1 Marks production.')
+
+    const rotationalGrazing = byName.get('Rotational Grazing')
+    expect(rotationalGrazing?.cost).toBe(6)
+    expect(rotationalGrazing?.tags).toEqual(['pasture'])
+    expect(rotationalGrazing?.text).toBe('+2 Produce production.')
+
+    const mobileButcher = byName.get('Mobile Butcher')
+    expect(mobileButcher?.cost).toBe(5)
+    expect(mobileButcher?.tags).toEqual(['pasture', 'community'])
+    expect(mobileButcher?.text).toBe('Supply in Pasture regions costs 1 less Produce per Outlet (minimum 1).')
+
+    const soilLabReport = byName.get('Soil Lab Report')
+    expect(soilLabReport?.cost).toBe(4)
+    expect(soilLabReport?.tags).toEqual(['crop', 'science'])
+    expect(soilLabReport?.text).toBe(
+      '+1 Goodwill production. When you Rebut, you may remove 1 extra Doubt for free.',
+    )
+
+    const vegBoxRound = byName.get('Veg Box Round')
+    expect(vegBoxRound?.cost).toBe(5)
+    expect(vegBoxRound?.tags).toEqual(['crop', 'community'])
+    expect(vegBoxRound?.text).toBe('+1 Marks production for every 2 Community tags you have, including this one.')
+
+    const oysterBeds = byName.get('Oyster Beds')
+    expect(oysterBeds?.cost).toBe(4)
+    expect(oysterBeds?.tags).toEqual(['coast'])
+    expect(oysterBeds?.text).toBe(
+      '+1 Produce production. At Harvest, also gain 1 Goodwill if you have a Stall in Shingle Bay.',
+    )
+  })
 })
 
 describe('Agenda rules text', () => {
