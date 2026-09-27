@@ -2295,3 +2295,23 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   after a clean rebuild + killing the stale preview server; both sizes of the chapter-1 scene screenshot
   read cleanly with the new line, no overflow or STYLE.md issues. `tests/story.test.ts`/`tests/end-lines.
   test.ts` still pass.
+- 2026-09-27 (same session, ~10:00-10:03 UTC): dispatched 2 more concurrent review subagents (CLAUDE.md's
+  cap) at the next-lowest-mention files. Both came back clean, no fixes needed:
+  1. src/engine/rules.ts, src/content/map.ts, src/content/producers.ts vs SPEC 4.2/4.6/4.6.1/4.8/6 -- rules.ts
+     turned out to be just the campaign rule-toggle object (the actual mechanics live in region.ts/actions.ts/
+     round.ts/pieces.ts/enemy.ts, all cross-checked anyway and correct); map.ts's regions/types/ring adjacency
+     match SPEC 4.2 exactly; producers.ts matches SPEC 6's table exactly except Sol's Produce production
+     (2 in code vs 1 in the SPEC table), already explained by the logged balance-loop iteration 12 entry.
+  2. src/ui/FarmSheet.tsx, ErrorBoundary.tsx, Tooltip.tsx, actionLabel.ts, gameLog.ts vs SPEC 10/11.3 -- tag
+     counts, Resume-From-Last-Autosave's `?autoresume=1` handoff to App.tsx, Copy Bug Report's contents, and
+     every Action/GameEvent variant's switch coverage all check out. One low-confidence, unverifiable watch
+     item (not fixed): Tooltip.tsx ORs a `hovering` flag (set by both mouse hover *and* keyboard focus/blur)
+     with a separately-toggled `pinned` flag. On a touch device where a tap both focuses the button (Chrome/
+     Android does this; WebKit/iOS traditionally does not) and fires the click that toggles `pinned`, the
+     first tap opens it via both flags, and a second tap toggling `pinned` back to false can leave `hovering`
+     stuck true (no real `blur` occurs since focus never left the button), so the tooltip doesn't close until
+     something else moves focus away. This is real browser/device-dependent event-ordering behavior that
+     can't be confirmed or exercised from source alone or via jsdom (which doesn't reproduce the platform-
+     specific tap-to-focus quirk), so -- matching this project's established "don't force-fix an unconfirmed
+     reachable state" discipline (see the reverted Stall-cap invariant entry above) -- logging as a watch
+     item for a future session with real-device access rather than guessing at a fix now.
