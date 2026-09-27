@@ -28,7 +28,10 @@ export default function Setup({ onStart }: Props) {
   const canStart = producers.length === 2
 
   function start(): void {
-    const seed = seedInput.trim() ? Number.parseInt(seedInput, 10) : Math.floor(Math.random() * 2 ** 31)
+    const parsed = seedInput.trim() ? Number.parseInt(seedInput, 10) : NaN
+    // A non-numeric seed (e.g. a pasted non-digit string) must not silently coerce to a real seed (0)
+    // indistinguishable from actually typing "0" — fall back to a fresh random seed instead.
+    const seed = Number.isFinite(parsed) ? parsed : Math.floor(Math.random() * 2 ** 31)
     onStart({ producers, difficulty, activeRegions: ALL_REGION_IDS }, seed, mode)
   }
 

@@ -2372,3 +2372,21 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   The same pass's 2 real RulesReference.tsx/terms.ts findings (the ACTIONS_PER_ROUND drift risk and the
   Open Stall Lost-Land clause) are fixed in the entry above. After the fix: `npx playwright test
   --project=phone` (50 tests) passes clean.
+- 2026-09-27 (same session, ~10:16-10:20 UTC): last 2 concurrent review subagents (CLAUDE.md's cap) this
+  session, both UI-interaction-focused. One (LogSheet.tsx, the undo mechanism) came back fully clean --
+  worth noting for future sessions that undo works by snapshotting the pre-action `GameState` (not by
+  calling `replay()` as SPEC 4.6's prose literally suggests), which is safe only because the whole engine
+  is strictly immutable (already verified this session, see the state.ts/api.ts/region.ts entry above) --
+  a spec-wording/implementation naming mismatch, not a bug.
+  The other (MarketSheet/CathsPlanSheet/Scene/Setup) found 2 small real issues, both fixed:
+  (1) Setup.tsx's optional seed field: a non-numeric paste silently coerced to seed 0 via `parseInt` ->
+  `NaN` -> `seed >>> 0` in rng.ts, indistinguishable from actually typing "0". Fixed to fall back to a
+  fresh random seed on `NaN` instead.
+  (2) actions.ts's `scheme` case cleared a played Scheme's Cath's Plan slot with a blanket
+  `.map(id => id === card.id ? null : id)`, while the structurally identical `invest` case a few lines
+  above already uses `removeFirst` specifically because chapter 3's scripted Market can hold duplicate
+  card ids (3x Wholesome Hollow Contract) and a blanket null-out would empty every matching slot at once.
+  No scripted-duplicate Scheme exists today so this was latent, not live, but it's the same trap the
+  Market code already has a fix and a comment for -- made `scheme` use `removeFirst` too, for symmetry and
+  to close the trap before any future scripted content hits it. `npx tsc -b` and `npx vitest run`
+  (384/384) both pass clean after both fixes.
