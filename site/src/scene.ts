@@ -311,12 +311,13 @@ export function startScene(canvas: HTMLCanvasElement, reducedMotion: boolean): S
   const onLeave = () => {
     pointer.target = 0
   }
+  const onUp = (e: PointerEvent) => {
+    if (e.pointerType !== 'mouse') pointer.target = 0
+  }
   window.addEventListener('pointermove', onMove, { passive: true })
   window.addEventListener('pointerdown', onDown, { passive: true })
   document.addEventListener('pointerleave', onLeave)
-  window.addEventListener('pointerup', (e) => {
-    if (e.pointerType !== 'mouse') pointer.target = 0
-  })
+  window.addEventListener('pointerup', onUp)
 
   const start = performance.now()
   // Reduced motion shows one still, well-lit frame: fully revealed, mid-afternoon of the drift.
@@ -381,12 +382,13 @@ export function startScene(canvas: HTMLCanvasElement, reducedMotion: boolean): S
   }
   document.addEventListener('visibilitychange', onVisibility)
 
-  canvas.addEventListener('webglcontextlost', (e) => {
+  const onContextLost = (e: Event) => {
     e.preventDefault()
     running = false
     cancelAnimationFrame(raf)
     document.documentElement.classList.add('no-webgl')
-  })
+  }
+  canvas.addEventListener('webglcontextlost', onContextLost)
 
   raf = requestAnimationFrame(frame)
 
@@ -396,6 +398,13 @@ export function startScene(canvas: HTMLCanvasElement, reducedMotion: boolean): S
       cancelAnimationFrame(raf)
       ro.disconnect()
       document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('pointerup', onUp)
+      document.removeEventListener('pointerleave', onLeave)
+      canvas.removeEventListener('webglcontextlost', onContextLost)
+      gl!.deleteBuffer(buf)
+      gl!.deleteProgram(program)
     },
   }
 }
