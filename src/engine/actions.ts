@@ -24,7 +24,15 @@ function removeFirst<T>(slots: (T | null)[], value: T): (T | null)[] {
 // (with Supply Outlets) directly on the critical path to liberating a region. Iteration 4 tried
 // cutting this further to 2 alongside a lostLandPool cut, but the combined 1,000-game confirmation
 // regressed publicTrust's loss share under SPEC 9.4's 15% floor with a flat win rate — reverted to 3.
-const SUPPLY_BUYOUT_COST = 3
+const SUPPLY_BUYOUT_COST_BASE = 3
+
+// SPEC 7 effect-mix follow-up (2026-09-27, see DECISIONS.md): "Community Larder" gives an ongoing
+// Buyout discount, same minimum-floor shape as the per-region Supply discounts below, rather than
+// touching the shared base constant itself (that's the balance-loop-tuned number, left alone).
+function supplyBuyoutCost(state: GameState, producer: ProducerId): number {
+  const discount = hasImprovement(state, producer, 'community-larder') ? 1 : 0
+  return Math.max(2, SUPPLY_BUYOUT_COST_BASE - discount)
+}
 
 // M4 balance-loop iteration 6 (see DECISIONS.md): tried cutting this 2 -> 1 (every region with an
 // Outlet, not just the Buyout-having ones) to attack the still-dominant pressureDeckEmpty loss reason.
@@ -58,17 +66,26 @@ function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, regio
 
 // Ongoing-ability Improvements (SPEC 7's "~30% ongoing discounts or abilities" mix target — see
 // DECISIONS.md for the effect-mix audit that added these): "Wholesale Account" discounts Invest,
-// "Press Contact" discounts Scheme plays, both minimum 1, same shape as the existing per-region Supply
-// discounts above. Checked by id against the producer's improvements *before* this purchase is added to
-// the tableau, so a card never discounts its own purchase.
+// "Press Contact" and "Letterpress Flyers" both discount Scheme plays (the same flat 1, not stacking —
+// two Media-flavoured cards sharing one PR-cost-cutting ability, matching how the 3 per-region Supply
+// discounts already share one shape), both minimum 1. Checked by id against the producer's improvements
+// *before* this purchase is added to the tableau, so a card never discounts its own purchase.
 function investCost(state: GameState, producer: ProducerId, card: { cost: number }): number {
   const discount = hasImprovement(state, producer, 'wholesale-account') ? 1 : 0
   return Math.max(1, card.cost - discount)
 }
 
 function schemeCost(state: GameState, producer: ProducerId, card: { cost: number }): number {
-  const discount = hasImprovement(state, producer, 'press-contact') ? 1 : 0
+  const discount =
+    hasImprovement(state, producer, 'press-contact') || hasImprovement(state, producer, 'letterpress-flyers') ? 1 : 0
   return Math.max(1, card.cost - discount)
+}
+
+// "Tide Tables" (2026-09-27 effect-mix follow-up): Rebut costs 1 less Goodwill overall (not per Doubt
+// removed — that would make removing a single Doubt free), same minimum-1 floor as the discounts above.
+function rebutCost(state: GameState, producer: ProducerId, count: number): number {
+  const discount = hasImprovement(state, producer, 'tide-tables') ? 1 : 0
+  return Math.max(1, count - discount)
 }
 
 // SPEC 9.1 `currentDecision`: while a forced choice is pending, it's the only thing the engine will
@@ -97,11 +114,15 @@ export function legalActions(state: GameState): Action[] {
     const outletCost = supplyOutletCostPerOutlet(state, producer, id)
     if (r.outlets >= 1 && p.resources.produce >= outletCost) actions.push({ kind: 'supplyOutlets', region: id, count: 1 })
     if (r.outlets >= 2 && p.resources.produce >= outletCost * 2) actions.push({ kind: 'supplyOutlets', region: id, count: 2 })
-    if (r.buyouts >= 1 && p.resources.produce >= SUPPLY_BUYOUT_COST && regionStallTotal(r) >= 2) {
+    if (r.buyouts >= 1 && p.resources.produce >= supplyBuyoutCost(state, producer) && regionStallTotal(r) >= 2) {
       actions.push({ kind: 'supplyBuyout', region: id })
     }
-    if (rules.rebut && r.doubt >= 1 && p.resources.goodwill >= 1) actions.push({ kind: 'rebut', region: id, count: 1 })
-    if (rules.rebut && r.doubt >= 2 && p.resources.goodwill >= 2) actions.push({ kind: 'rebut', region: id, count: 2 })
+    if (rules.rebut && r.doubt >= 1 && p.resources.goodwill >= rebutCost(state, producer, 1)) {
+      actions.push({ kind: 'rebut', region: id, count: 1 })
+    }
+    if (rules.rebut && r.doubt >= 2 && p.resources.goodwill >= rebutCost(state, producer, 2)) {
+      actions.push({ kind: 'rebut', region: id, count: 2 })
+    }
   }
 
   if (rules.sell) {
@@ -281,27 +302,31 @@ export function applyAction(state: GameState, action: Action): GameState {
       break
     }
     case 'supplyBuyout': {
-      next = spend(state, producer, { produce: SUPPLY_BUYOUT_COST, marks: 0, goodwill: 0 })
+      next = spend(state, producer, { produce: supplyBuyoutCost(state, producer), marks: 0, goodwill: 0 })
       next = removeBuyout(next, action.region, 1)
       break
     }
     case 'rebut': {
-      next = spend(state, producer, { produce: 0, marks: 0, goodwill: action.count })
+      next = spend(state, producer, { produce: 0, marks: 0, goodwill: rebutCost(state, producer, action.count) })
       const bonus = hasImprovement(state, producer, 'soil-lab-report') ? 1 : 0
       next = removeDoubt(next, action.region, action.count + bonus)
       break
     }
     case 'sell': {
       // "Wagon Wheel Press" (SPEC 7 ongoing-ability mix, see DECISIONS.md): Sell yields 1 extra Marks.
+      // "Polytunnel" (2026-09-27 follow-up): Sell also yields 1 extra Goodwill, same trigger.
       const sellBonus = hasImprovement(state, producer, 'wagon-wheel-press') ? 1 : 0
+      const sellGoodwillBonus = hasImprovement(state, producer, 'polytunnel') ? 1 : 0
       next = spend(state, producer, { produce: action.count, marks: 0, goodwill: 0 })
-      next = gain(next, producer, { produce: 0, marks: action.count + sellBonus, goodwill: 0 })
+      next = gain(next, producer, { produce: 0, marks: action.count + sellBonus, goodwill: sellGoodwillBonus })
       break
     }
     case 'graft': {
       // "Compost Exchange" (SPEC 7 ongoing-ability mix, see DECISIONS.md): Graft yields 1 extra Produce.
+      // "Seed Library" (2026-09-27 follow-up): Graft also yields 1 extra Marks, same trigger.
       const graftBonus = hasImprovement(state, producer, 'compost-exchange') ? 1 : 0
-      next = gain(state, producer, { produce: 1 + graftBonus, marks: 1, goodwill: 0 })
+      const graftMarksBonus = hasImprovement(state, producer, 'seed-library') ? 1 : 0
+      next = gain(state, producer, { produce: 1 + graftBonus, marks: 1 + graftMarksBonus, goodwill: 0 })
       break
     }
     case 'role': {

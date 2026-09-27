@@ -108,8 +108,9 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Polytunnel',
     cost: 4,
     tags: ['crop'],
-    text: '+2 Produce production.',
-    onBuy: (state, producer) => addProduction(state, producer, { produce: 2 }),
+    flavor: 'Extends the season. Extends the queue at the stall, too.',
+    text: 'Whenever you Sell, gain 1 extra Goodwill.',
+    onBuy: (state) => state, // ongoing: checked in actions.ts's Sell handler
   },
   {
     id: 'tide-tables',
@@ -117,8 +118,8 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 3,
     tags: ['coast', 'science'],
     flavor: "Written down. Argued about anyway.",
-    text: '+1 Goodwill production.',
-    onBuy: (state, producer) => addProduction(state, producer, { goodwill: 1 }),
+    text: 'Rebut costs 1 less Goodwill (minimum 1).',
+    onBuy: (state) => state, // ongoing: checked in actions.ts's Rebut cost
   },
   {
     id: 'letterpress-flyers',
@@ -126,8 +127,8 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 3,
     tags: ['media'],
     flavor: 'Smells like ink. Reads like honesty.',
-    text: '+1 Goodwill production.',
-    onBuy: (state, producer) => addProduction(state, producer, { goodwill: 1 }),
+    text: 'Schemes cost 1 less Goodwill (minimum 1).',
+    onBuy: (state) => state, // ongoing: checked in actions.ts's Scheme cost
   },
   {
     id: 'grazing-co-op',
@@ -143,8 +144,8 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 3,
     tags: ['crop', 'science'],
     flavor: 'Borrow a seed, return two.',
-    text: '+1 Produce production.',
-    onBuy: (state, producer) => addProduction(state, producer, { produce: 1 }),
+    text: 'Whenever you Graft, gain 1 extra Marks.',
+    onBuy: (state) => state, // ongoing: checked in actions.ts's Graft handler
   },
   {
     id: 'community-larder',
@@ -152,8 +153,8 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 4,
     tags: ['community'],
     flavor: 'Take what you need. Mostly works.',
-    text: '+1 Goodwill production.',
-    onBuy: (state, producer) => addProduction(state, producer, { goodwill: 1 }),
+    text: 'Supply Buyouts cost 1 less Produce (minimum 2).',
+    onBuy: (state) => state, // ongoing: checked in actions.ts's Supply Buyout cost
   },
   {
     id: 'harbour-stall-licence',

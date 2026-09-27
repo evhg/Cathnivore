@@ -1958,3 +1958,34 @@ as before this session started. A future session should still try `npm run relea
 stale-local-main fix will now succeed since `build`/`main` are no longer genuinely diverged), and if that specific
 step is denied again, `git push origin build:main` is now a valid one-step alternative to try instead of the
 two-step checkout+merge, since it reaches the same fast-forward without touching the local `main` ref at all.
+
+- 2026-09-27 (subagent continuation of the effect-mix follow-up): converted 5 more non-SPEC-mandated
+  filler "+N stat" Improvements into ongoing abilities, per the prior session's queued candidates
+  (polytunnel, seed-library, community-larder) plus 2 more picked the same way (tide-tables,
+  letterpress-flyers) — all pure-production cards, none of SPEC 7's 6 exact cards touched. New abilities,
+  each mirroring an existing hook's shape (a flat minimum-floored discount or a per-action bonus, not a new
+  mechanism): "Polytunnel" (Sell also yields 1 extra Goodwill, alongside Wagon Wheel Press's existing extra
+  Marks), "Seed Library" (Graft also yields 1 extra Marks, alongside Compost Exchange's extra Produce),
+  "Community Larder" (Supply Buyouts cost 1 less Produce, minimum 2 — a new `supplyBuyoutCost` helper,
+  `SUPPLY_BUYOUT_COST` renamed to `SUPPLY_BUYOUT_COST_BASE` to keep the balance-loop-tuned constant
+  separate from the discount), "Tide Tables" (Rebut costs 1 less Goodwill overall via a new `rebutCost`
+  helper — deliberately a flat discount on the whole action, not per Doubt removed, since a per-Doubt
+  discount would make removing a single Doubt free) and "Letterpress Flyers" (Schemes cost 1 less
+  Goodwill, sharing Press Contact's existing `schemeCost` discount rather than stacking — two Media cards
+  granting the same non-stacking PR discount, matching how 3 cards already share one Supply-discount
+  shape). Costs left unchanged (all already 3-4 Marks, within SPEC 7's "ongoing ability 2 to 4" band),
+  following the precedent set by the prior session's 4 conversions. This moves the mix from 24/36 (67%)
+  production to 19/36 (53%), and ongoing from 6/36 (17%) to 11/36 (31%) — both now within a couple points
+  of SPEC 7's ~50%/~30% targets (tag-scaling stays 3/36=8%, one-off 3/36=8%, both close to the 10% target).
+  Verified: `npx tsc -b --noEmit`, lint, full `npm test` (346 tests, up from 344, all existing
+  `tests/rules-text.test.ts`/`tests/invest-scheme.test.ts` cases still pass against the new `text` fields
+  and `onBuy`/cost-helper behaviour — no test needed loosening this time), `npm run fuzz -- --quick` (0
+  exceptions, 0 invariant failures) and `npm run build`, all clean. A 200-game HeuristicBot/Normal/all-pairs
+  sim gives 7.0% (vs. the prior session's 10.5% 200-game baseline) — lower but well within normal 200-game
+  sample variance for this bot/mode (not a collapse to 0% or a doubling), loss-reason shares
+  (publicTrust=15.6%, lostLand=65.6%, pressureDeckEmpty=18.8%) and avg settled round (7.54) both stay in
+  the same range as the immediately preceding entries in `BALANCE.md`, so treated as no regression signal
+  rather than a real balance shift; appended to `BALANCE.md`. Left as a bounded, iterative step (per the
+  task's own scope guidance) rather than pushing the mix all the way to exact targets in one pass — the
+  remaining gap (production still ~3 points over 50%, tag-scaling/one-off each ~2 points under 10%) is
+  small enough to leave for a future session if ever revisited, not urgent.
