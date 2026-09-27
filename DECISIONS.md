@@ -2128,3 +2128,30 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   pre-existing flaky failure was seen once (landing page "New" badge color-contrast axe violation) and
   reproduced as flaky on the unmodified tree too (passed 6/6 in isolation reruns on both trees) -- not a
   Runnel issue, left alone.
+- 2026-09-27 (same session): checked by hand whether the flaky "New" badge color-contrast axe finding above
+  is a real, latent bug rather than pure timing noise -- computed the actual WCAG contrast ratio for
+  `.badge`'s `color: #2b1d10` on `background: var(--gold)` (`#f4c774`): 10.32:1, comfortably clear of the
+  4.5:1 AA floor (and the 3:1 floor that would apply even if this text counted as "large"). Confirms the
+  CSS itself has no contrast problem; the flake is a rendering-timing artifact (most likely web-font load
+  timing affecting the exact pixels axe samples), not something to fix by changing colours. No code change.
+- 2026-09-27 (same session): added axe accessibility checks to `e2e-site/site.spec.ts` for the landing page
+  and Runnel (before and during play) -- the portfolio pages added earlier the same day had never had an
+  accessibility pass, unlike Cathnivore's own SPEC 11.4 gate 6. Both came back clean on the first run (zero
+  serious/critical issues). Not added as a new numbered SPEC gate (SPEC 11.4's gate 6 is scoped to
+  Cathnivore's own screens by its literal text), just folded into gate 5 (site)'s existing e2e run, the same
+  way SPEC 15 already asks the site suite to be maintained "like the rest of the site."
+- 2026-09-27 (same session): a dedicated review subagent audited everything in `.github/workflows/ios.yml`
+  and `store/` that will run once Apple secrets appear (SPEC 11.6) -- deliberately picked because that path
+  has had far less scrutiny than the web game (which has had 20+ hardening-review passes) purely because it
+  can't be exercised end-to-end without real credentials. Found and fixed a real bug: `ios.yml` interpolated
+  `${{ secrets.ASC_KEY_ID }}`/`ASC_KEY_P8`/`ASC_ISSUER_ID`/`APPLE_TEAM_ID` directly into `run:` script bodies
+  in 4 places (the key-file write, the ExportOptions.plist sed, and both `xcodebuild` invocations) -- a
+  known GitHub Actions anti-pattern, since the secret value then appears literally on the process's command
+  line (visible to `ps` and to the runner before log-masking applies), where `store.yml` already loads the
+  same secrets via `env:` and references them as `$VAR`. Rewrote all four steps in `ios.yml` to match
+  `store.yml`'s pattern; verified the YAML still parses and the diff changes nothing behaviourally, only how
+  the values reach the shell. Everything else in that pass -- workflow step order and flags against SPEC
+  11.6's literal text, `store.yml`'s fastlane `deliver` invocation (a prior session's fix to it, per
+  DECISIONS.md history, is still in place), `ios/App`'s Info.plist/ExportOptions.plist/AppDelegate/
+  SceneDelegate/capacitor.config settings, and `store/` metadata's character limits and satire-disclosure
+  wording -- checked out clean. Diff reviewed by hand before committing, not trusted at face value.
