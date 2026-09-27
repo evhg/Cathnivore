@@ -1,7 +1,28 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-27, starting ~05:52 UTC): standard session start — `git fetch --all`, checked out
+This session (2026-09-27, starting ~06:51 UTC): standard session start — `git fetch --all`, checked out
+`build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
+BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on `build` HEAD (`9137de0`, 2
+commits ahead of `main`'s `08f1459` with the two Easy balance-loop pace-lever commits from the previous
+session). `origin/ci-status`'s `status/ci.json` confirmed green on `a11916e` (the pre-lock commit);
+`status/ios.json` unchanged (`ios.yml` still fails on missing Apple secrets, `OWNER.md`'s Team ID still
+`PASTE-TEAM-ID`).
+
+Ran the queued item from the previous session: a 300-game MCTSBot Easy confirmation (all 6 pairs) of the
+Easy pace-lever track (`kingsmarketOutlets`/`extraHomeStalls`/`kingsmarketBuyouts`). Came back at **75.3%**
+(0 crashes, 0 invariant failures), inside SPEC 9.4's 70-85% Easy target band, up from the 100-game spot
+check's 73.0%. Also resolved the queued pair-spread worry: at 300 games the spread is 66.0%-86.0%, and
+every one of the 6 pairs is within 12 points of the overall rate — the 100-game runs' wider-looking spread
+was sampling noise, not a real Easy-specific gap. Logged in `DECISIONS.md` and `src/content/difficulty.ts`.
+This closes out the Easy balance-loop track for now with no further code changes needed.
+
+With `build` 2 commits ahead of `main` (both gated, real content changes affecting live balance), released
+via `npm run release` this session — see Deploy log for the outcome.
+
+---
+
+Previous session (2026-09-27, starting ~05:52 UTC): standard session start — `git fetch --all`, checked out
 `build` (no `DONE`, no live `.build-lock`), took the lock, read SPEC/STYLE/OWNER/PROGRESS/DECISIONS/
 BALANCE/`git log`/`origin/ci-status`. `npm ci` + `npm run check` clean on the unchanged `build` HEAD
 (`08f1459`, the owner's portfolio-release commit from the previous session). `origin/main` was already an

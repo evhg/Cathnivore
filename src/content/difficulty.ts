@@ -41,6 +41,11 @@ import type { GameConfig } from '../engine/types'
 // A Buyout costs 4 Produce and needs 2+ Stalls in the region to clear (SPEC 4.6.2), strictly more
 // expensive than an Outlet, so removing it from the capital speeds the endgame liberation the same way
 // `kingsmarketOutlets` already speeds getting Kingsmarket's Outlet count down. See DECISIONS.md.
+//
+// 2026-09-27 (later session): a 300-game MCTSBot Easy confirmation (up from the 100-game spot checks
+// above) came back at 75.3%, inside SPEC 9.4's 70-85% target band, with every producer pair within 12
+// points of that overall rate (the earlier 100-game runs' wider spread was sampling noise). Easy pace
+// track closed for now — see DECISIONS.md.
 export const DIFFICULTY_SETTINGS: Record<
   GameConfig['difficulty'],
   {

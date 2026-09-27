@@ -2087,3 +2087,14 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   checks carry real sampling noise (as several prior Normal-loop iterations found), and should also
   double check the producer-pair spread (43.8%-88.2% this run, wide, matching the Normal loop's own
   unresolved pair-spread gap) isn't its own SPEC 9.4 problem for Easy specifically.
+- 2026-09-27 (session starting ~06:51 UTC): ran the queued larger-sample confirmation of the Easy
+  balance-loop pace track (`kingsmarketOutlets`/`extraHomeStalls`/`kingsmarketBuyouts`, previously spot-
+  checked at 100 games each): a 300-game MCTSBot Easy run across all 6 pairs came back at **75.3%**, up
+  from the 100-game spot check's 73.0% and comfortably inside SPEC 9.4's 70-85% Easy target band (0
+  crashes, 0 invariant failures). Also resolved the queued producer-pair-spread worry: the 100-game runs'
+  apparent 43.8-88.2% spread was itself sampling noise — at 300 games the spread is 66.0% (ines+sol) to
+  86.0% (ines+mara), and every one of the 6 pairs is within 12 points of the 75.3% overall rate (the same
+  bar SPEC 9.4 sets for Normal), so there is no separate Easy-specific pair-spread problem after all. No
+  code changes this entry — this closes out the Easy pace-lever track opened by the last several sessions
+  with a confirmed, in-band result. `sol+tomas`/`ines+sol` remain the weakest pairs on Easy (as they are on
+  Normal), consistent with Sol/Tomas's shared production-track profile rather than a new finding.
