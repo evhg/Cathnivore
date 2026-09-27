@@ -91,3 +91,40 @@ describe('SPEC 4.3/4.5.2/4.5.4: first player at setup, alternation, and turn ord
     expect(state.activeProducer).toBe('mara')
   })
 })
+
+// SPEC 5: "When the deck runs out, shuffle the discard pile to form a new deck." A review pass found this
+// branch (round.ts's `cleanup`) had no test at all — not even in isolation — despite the code itself being
+// correct: `schemeDeck`/`cathsPlan`/`schemeDiscard` are kept disjoint by construction elsewhere (playing a
+// Scheme moves it from `cathsPlan` straight to `schemeDiscard`, never leaving a card in both places), so
+// the concern here is purely "does the reshuffle actually fire and produce a usable deck," not double-
+// counting. Forces `schemeDeck` empty and `schemeDiscard` full (keeping `validate()`'s deck+plan+discard
+// total invariant intact) rather than legitimately playing ~27 Schemes through real actions, which the
+// engine's own round/loss-condition caps make impractical to drive from outside a scripted test.
+describe("SPEC 5: Cath's Plan deck reshuffles from the discard pile once empty", () => {
+  it('reshuffles at the next cleanup once schemeDeck is empty and schemeDiscard is not', () => {
+    let state = createGame(ONE_PRODUCER_CONFIG, 1)
+    state = {
+      ...state,
+      schemeDiscard: [...state.schemeDiscard, ...state.schemeDeck],
+      schemeDeck: [],
+    }
+    expect(state.schemeDeck).toHaveLength(0)
+    const discardedIds = new Set(state.schemeDiscard)
+
+    // Grind through to the next round: cleanup runs once, which is exactly where the reshuffle lives.
+    const startRound = state.round
+    let guard = 0
+    while (state.round === startRound && !state.result && guard < 20) {
+      state = grindOneAction(state)
+      guard++
+    }
+
+    expect(state.schemeDiscard).toHaveLength(0)
+    expect(state.schemeDeck.length).toBeGreaterThan(0)
+    // Every id now in the deck came from the discard pile that was reshuffled, not fabricated.
+    for (const id of state.schemeDeck) expect(discardedIds.has(id)).toBe(true)
+    // No id sits in both the fresh deck and the still-face-up Cath's Plan slots at once.
+    const planIds = new Set(state.cathsPlan.filter((id): id is string => id !== null))
+    for (const id of state.schemeDeck) expect(planIds.has(id)).toBe(false)
+  })
+})

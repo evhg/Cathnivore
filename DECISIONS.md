@@ -2739,3 +2739,20 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   post-tear-up state) and a `decide`-action replay test (plays full HeuristicBot games across up to 15 seeds
   — HeuristicBot already resolves `decide` options itself — and keeps the first one whose action history
   contains a real `decide`, same assertion). Both pass; `npm run check` (388/388 tests, build) clean.
+- 2026-09-27 (same session, ~13:47 UTC): 2 more review subagents. Agenda cards' pool-clamping/Rift/Public-
+  Trust safety (a narrower angle than the already-logged verbatim-text audit) came back clean — every piece
+  addition in `agenda.ts` goes through `pieces.ts`'s clamped helpers, no card touches Rift at all, and every
+  Trust decrease goes through the local `loseTrust` helper's `Math.max(0, ...)`. The Scheme/Improvement deck-
+  reshuffle asymmetry pass found the code itself correct (SPEC 5's reshuffle-from-discard for Schemes fires
+  at the right moment relative to `refillSlots`, `schemeDeck`/`cathsPlan`/`schemeDiscard` stay disjoint by
+  construction so no duplicate-draw is possible; SPEC 7's Improvements correctly never reshuffle, matching
+  `types.ts`'s own "unused (Improvements aren't discarded), kept for symmetry" comment on
+  `improvementDiscard`) but found a real, previously-unlogged test gap: nothing in `tests/` exercised the
+  Scheme reshuffle branch at all, not even in isolation — grepping for `reshuffle`/`schemeDiscard`/`exhaust`
+  only turned up an unrelated `forceScheme` test helper. Closed it: `tests/round.test.ts` now forces
+  `schemeDeck` empty and `schemeDiscard` full (keeping `validate()`'s deck+plan+discard total invariant
+  intact, rather than legitimately playing ~27 Schemes through real actions, which the engine's own round/
+  loss-condition caps make impractical from outside a scripted test) and grinds one round forward, asserting
+  the reshuffle actually fires, every id in the fresh deck came from the discard pile (not fabricated), and
+  no id collides with a still-face-up Cath's Plan card. `npx tsc -b` and `npm run check` (389/389 tests,
+  build) pass clean.
