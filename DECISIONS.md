@@ -2622,3 +2622,22 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   pre-existing `recommended-pair.test.ts` noise from this session's own 200-game balance sample (see the
   Op-ed-Column-followup entry below) — Credits' own coverage (portraits.test.ts, the e2e/axe runs above) all
   pass clean.
+- 2026-09-27 (same session, ~12:48 UTC): the chapter-rules review subagent's finding #1 (chapter 2's "keep
+  Public Trust above 0" goal has no mechanical teeth since both Trust-loss paths are gated behind
+  squeeze/agenda, which ch2 turns off) is not new — already logged and accepted in an earlier session
+  (PROGRESS.md's chapter-2 entry references this exact tradeoff, since SPEC 8.2 assigns Squeeze/Agenda to
+  chapter 3). No action needed. Finding #2 was real and previously unflagged: `Game.tsx` never referenced
+  `resolveRules`/`rulesEnabled` at all, so the Market and Cath's Plan sheets (both the mobile footer buttons
+  and the always-mounted desktop inline panels) rendered with real, full card text in every chapter
+  regardless of `rulesEnabled.improvements`/`.schemes` — e.g. chapters 1-2 have no Market and chapters 1-3
+  have no Cath's Plan per SPEC 8.2, but a player could still open either sheet and read live card names/
+  costs/rules text/flavour before the chapter that's supposed to introduce them. Not a legality bug (nothing
+  illegal could actually be played — `legalActions()` already gated the underlying actions correctly), but a
+  real SPEC 8.1 "introduced exactly once, at the moment it first matters" leak. Fixed: `Game.tsx` now calls
+  `resolveRules(state)` and gates both the mobile footer buttons and both sheets' every render path (mobile
+  overlay + desktop inline) behind `rules.improvements`/`rules.schemes`. Verified with a throwaway Playwright
+  check (chapter 1: 0 Market/Cath's Plan buttons found) plus the existing `e2e/campaign.spec.ts` (all 6
+  chapters) and `e2e/tutorial.spec.ts` (chapters 1-2's literal tutorial-click flow) — all 18 tests pass at
+  both sizes, confirming the gating doesn't break chapters that DO have these rules on. `npx tsc -b`,
+  `npm run build`, and `npx vitest run` (385/386 — the one failure is the pre-existing, unrelated
+  `recommended-pair.test.ts` noise from this session's own balance sampling, tracked separately) all clean.
