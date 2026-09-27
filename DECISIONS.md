@@ -2935,3 +2935,50 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   regions, so every "most/fewest Stalls"/"2+ Outlets, no Buyout" extremal pick has a real answer without
   any custom board-stocking needed, unlike the Schemes version above), checked against `validate()`. All 24
   pass on the first attempt. `npm run check` (467 tests, up from 443) and a quick fuzz both pass clean.
+- 2026-09-27 (~21:08 UTC, new session): standard session start (lock, `ci.json` green at `300fc10`,
+  `ios.json`/`OWNER.md` Team ID unchanged, ~89 hours left on `DEADLINE`, no M7-only restriction). `npm ci` +
+  `npm run check` clean on the unchanged `build` HEAD. Attempted `npm run release`: gates 1-7 passed clean
+  (gate 8's screenshots unchanged in content since the prior session's own subagent review — nothing visual
+  changed since then), then the fast-forward step hit the usual stale-local-`main` failure; the documented
+  manual fix (`git checkout -B main origin/main && git merge --no-ff build`) was denied by the harness's
+  "Blind Apply" classifier before running. `origin/main` confirmed untouched at `93bdc55`. Not retried per
+  the denial's own guidance — logged under Blocked, consistent with the ~19:15 UTC entry from the prior
+  session hitting the same restriction on the same commit.
+
+  With the release path blocked and this build's SPEC-correctness/interface/content audits already
+  exhausted across many prior sessions (Agenda, Schemes, Improvements, producers/difficulty, Pressure deck,
+  campaign twists/carry-over, targeting-mode UI, tooltips, error boundary, PWA, Vercel config, store
+  metadata — checked the trail in DECISIONS.md/PROGRESS.md rather than re-deriving from scratch), picked up
+  the one concretely bounded, previously-deferred item still open: **the `npm audit` dev-tooling
+  vulnerabilities** (6 total: 1 critical/`vitest`'s UI-server arbitrary-file-read, 1 high/`vite`'s
+  `server.fs.deny` bypass, 4 moderate — all in `vite`/`vitest`/`@vitejs/plugin-react`/`vite-plugin-pwa`'s dev
+  server or test-runner UI, never reaching the shipped bundle, but every prior session logged the fix itself
+  — major version bumps — as "risky to attempt blind," deferring it for "a future session with room for a
+  full `npm run check`/`npm run gates` re-verification after each bump." This session had that room (~89
+  hours left, no other unblocked work).
+
+  Bumped `vite` 5.4.11->8.3.1, `vitest` 2.1.5->5.0.2, `vite-plugin-pwa` 0.20.5->1.3.0, `@vitejs/plugin-react`
+  4.3.3->6.1.1 (the compatible latest-major set; `vite-plugin-pwa@1.3.0`'s own peerDependencies confirm vite
+  8 support). Did a clean `rm -rf node_modules package-lock.json && npm install` rather than patching
+  `package-lock.json` in place, since a major-version bump changes enough of the dependency graph that an
+  in-place lockfile edit risks a broken/inconsistent tree. `npm install` resolved cleanly with 0 peer
+  conflicts once `@vitejs/plugin-react` was bumped alongside `vite` (an earlier attempt bumping `vite`/
+  `vitest`/`vite-plugin-pwa` only, leaving `@vitejs/plugin-react` at `^4.3.3`, hit an ERESOLVE conflict since
+  `@vitejs/plugin-react@6.x` requires `vite@^8`). `npm audit` now reports **0 vulnerabilities** (down from 6).
+
+  Verified thoroughly before pushing: `npm run check` (467 tests, typecheck, lint, quick fuzz, `vite build`
+  all clean, same test count as before the bump) and a full `npm run gates` (gates 1-7: 70 Cathnivore e2e +
+  28 site e2e + 16 axe accessibility tests all pass, Lighthouse 98/100; gate 8's screenshots captured clean,
+  content unchanged from the last subagent review since no UI code changed) both re-run end to end with no
+  regressions. `npm run build:site` also verified directly (the site build uses the same `vite build` path).
+  One cosmetic-only difference: `vite build`'s font-URL-resolution warning ("didn't resolve at build time,
+  it will remain unchanged to be resolved at runtime") now prints for the site build's 4 stable-path font
+  files, which don't appear in any prior session's logged output — checked this is expected/harmless (those
+  paths are deliberately unhashed so `/privacy`/`/support`'s external stylesheet can reference them
+  directly, per the 2026-09-26 CSP/font-hardcoding fix; `dist-site/fonts/` still contains the actual files,
+  and the site e2e suite's 28 tests, including both pages, all still pass), not a new gap; likely vite 8
+  logging a case vite 5 didn't warn about, not a functional change. `phone-webkit` didn't run in this
+  sandbox instance (no WebKit browser installed here — a pre-existing environment gap several sessions have
+  already logged, not caused by this bump; `chromium`/`desktop-chromium` covered the full 70-test suite).
+  Pushed to `build` (`2b01c07`). This build is fully gated (1-7 confirmed, 8 unchanged) and ready for the
+  next successful release attempt, same as every other blocked-on-push build this run.

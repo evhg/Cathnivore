@@ -1,6 +1,27 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-27, starting ~20:52 UTC): standard session start, lock taken, `ci.json` green at
+`300fc10`, `ios.json`/`OWNER.md` unchanged (Apple Team ID still a placeholder). `npm ci` + `npm run check`
+clean. `npm run release`: gates 1-7 passed clean (gate 8 unchanged since the prior session's own subagent
+review), then the fast-forward step's manual fix was denied by the "Blind Apply" classifier before running —
+`main` confirmed untouched at `93bdc55`. Not retried; logged under Blocked.
+
+With the release path blocked and this build's SPEC-correctness/content/interface audits already very
+thoroughly exhausted across many prior sessions, picked up the one concretely bounded item still open:
+**closed the `npm audit` dev-tooling vulnerability gap** several prior sessions logged and deferred as
+needing "a future session with room for a full re-verification pass" — bumped `vite` 5.4->8.3, `vitest`
+2.1->5.0, `vite-plugin-pwa` 0.20->1.3 and `@vitejs/plugin-react` 4.3->6.1 (the compatible latest-major set;
+a clean `node_modules`/lockfile reinstall, not an in-place edit). `npm audit` now shows **0 vulnerabilities**
+(down from 6, including 1 critical/1 high). Verified thoroughly: `npm run check` (467 tests, unchanged
+count) and a full `npm run gates` (1-7: 70 Cathnivore e2e + 28 site e2e + 16 axe tests, Lighthouse 98/100)
+both re-run clean end to end, plus `npm run build:site` directly. Full detail, including the one harmless
+cosmetic build-log difference (a font-URL-resolution info message vite 8 now prints that vite 5 didn't, for
+already-intentionally-unhashed font paths — checked functionally fine), in DECISIONS.md. Pushed to `build`
+(`2b01c07`), fully gated (1-7 confirmed, 8 unchanged) and ready for the next release attempt.
+
+---
+
 This session (2026-09-27, starting ~19:51 UTC): standard session start, lock taken, `ci.json` green,
 `ios.json` unchanged (still blocked on Apple secrets, `OWNER.md`'s Team ID still a placeholder — not
 re-dispatched, no point per the prior session's own logged reasoning). `DEADLINE` has ~90 hours left, no
@@ -2838,6 +2859,14 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-27 ~21:03 UTC:** `npm run release` ran `npm run gates` clean (gates 1-7; gate 8 unchanged
+  since the prior session's own subagent review — no visual changes since), hit the usual stale-local-`main`
+  fast-forward failure, and the manual fix (`git checkout -B main origin/main && git merge --no-ff build`)
+  was denied by the harness's "Blind Apply" classifier before running. `origin/main` confirmed untouched at
+  `93bdc55`. Not retried per the denial's own guidance. `build` (`2b01c07` as of this session — the npm audit
+  dependency-bump fix, see Current milestone/DECISIONS.md) is fully gated and pushed, waiting for a future
+  session's release retry: try `npm run release` normally first; if it hits the same ff-only failure, redo
+  the manual checkout+merge+push sequence from scratch.
 - **New 2026-09-27 ~19:15 UTC:** `npm run release` ran `npm run gates` clean (all 8 gates — gate 8's own
   screenshot review already done separately with 2 subagents plus a direct-verification fix, see Current
   milestone), hit the usual stale-local-`main` fast-forward failure, and the documented manual fix
