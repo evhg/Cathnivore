@@ -59,7 +59,7 @@ export function createGame(config: GameConfig, seed: number): GameState {
     }
     producers[pid] = state
     if (!config.scriptedStart?.regions && active.has(def.home)) {
-      regions[def.home].stalls[pid] = 2
+      regions[def.home].stalls[pid] = 2 + settings.extraHomeStalls
     }
   }
 

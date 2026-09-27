@@ -77,6 +77,11 @@ describe('createGame', () => {
     // see DECISIONS.md. At least 1 from the base setup, possibly +1 more if the initial Scout matched it.
     expect(easy.regions.kingsmarket.outlets).toBeGreaterThanOrEqual(1)
     expect(easy.regions.kingsmarket.outlets).toBeLessThanOrEqual(2)
+    // Easy also starts each producer with 1 extra Stall (3 total) in their home region, another pace
+    // lever added the same session (see DECISIONS.md): a further 100-game MCTSBot spot check after the
+    // Kingsmarket-Outlet lever still showed liberation pace, not either loss track, as the bottleneck.
+    expect(easy.regions.brindleHills.stalls.mara).toBe(3)
+    expect(normal.regions.brindleHills.stalls.mara).toBe(2)
   })
 
   it('Hard starts with lower Public Trust, a smaller Lost Land pool, an extra Kingsmarket Outlet and Pasture Doubt (SPEC 4.9)', () => {

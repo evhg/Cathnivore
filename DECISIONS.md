@@ -2055,3 +2055,19 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   session — this iteration's own change needs its 100-game result banked before stacking another,
   and a full 1,000-game confirmation is still owed once a 100-game spot check lands consistently
   in-band. Queued for a future session.
+- 2026-09-27 (session starting ~05:52 UTC): continued the queued Easy balance-loop pace lever (after
+  `lostLandPool` and `kingsmarketOutlets` widening, see the earlier 2026-09-27 entries): added
+  `extraHomeStalls` to `src/content/difficulty.ts` (Easy 1, Normal/Hard 0), so Easy producers start with 3
+  Stalls in their home region instead of 2 — still within SPEC 4.6's 3-per-region cap, and mirrors
+  `kingsmarketOutlets`'s existing precedent of a difficulty-only setup number. Reason: the prior session's
+  100-game MCTSBot Easy spot check (56.0%) showed liberation pace, not either loss track, as the remaining
+  bottleneck, and a Public-Trust widening attempt had already been tried and reverted (flat). One extra
+  home Stall means one less Open-Stall action needed before a producer's home region can reach full
+  Defence against Squeeze, directly targeting pace. A follow-up 100-game MCTSBot Easy sim confirmed real
+  progress: 56.0% -> 66.0%, loss-reason shares held reasonable (publicTrust 44.1%/pressureDeckEmpty 55.9%,
+  both away from the 0%/100% extremes a bad lever would show), still short of SPEC 9.4's 70-85% Easy
+  target but the closest yet. Kept per SPEC 9.4's "keep changes that move the metrics towards the
+  targets." A future session should keep iterating on the same pace lever (e.g. a second region's
+  starting Outlet reduced, or a second extra Stall) rather than starting over, since three consecutive
+  pace-targeted changes (Kingsmarket Outlet, this one) have both moved the number in the right direction
+  while Public Trust widening alone did not.

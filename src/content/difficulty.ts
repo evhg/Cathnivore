@@ -26,14 +26,18 @@ import type { GameConfig } from '../engine/types'
 // back at an identical 56.0% — it only moved losses from `publicTrust` (down to 27.3%) to
 // `pressureDeckEmpty` (up to 72.7%), not the win rate itself, confirming liberation pace (not either loss
 // track) is still the real bottleneck. Reverted per SPEC 9.4's "keep changes that move the metrics
-// towards the targets" — this one didn't. A future session should keep pulling on the pace lever instead
-// (another region's starting Outlet, or an extra starting Stall for Easy), not Public Trust again unless
-// a further pace change makes `publicTrust` the dominant reason once more.
+// towards the targets" — this one didn't.
+//
+// 2026-09-27 (later session): kept pulling the pace lever as queued: `extraHomeStalls` gives Easy
+// producers 1 extra starting Stall in their home region (3 total instead of 2; still within SPEC 4.6's
+// 3-per-region cap), so home-region Supply/liberation needs one less Open-Stall action to reach full
+// Defence. One number, mirroring `kingsmarketOutlets`'s existing precedent of a difficulty-only setup
+// tweak. See DECISIONS.md for the verification run.
 export const DIFFICULTY_SETTINGS: Record<
   GameConfig['difficulty'],
-  { publicTrust: number; lostLandPool: number; kingsmarketOutlets: number }
+  { publicTrust: number; lostLandPool: number; kingsmarketOutlets: number; extraHomeStalls: number }
 > = {
-  easy: { publicTrust: 12, lostLandPool: 20, kingsmarketOutlets: 1 },
-  normal: { publicTrust: 10, lostLandPool: 10, kingsmarketOutlets: 2 },
-  hard: { publicTrust: 8, lostLandPool: 6, kingsmarketOutlets: 3 },
+  easy: { publicTrust: 12, lostLandPool: 20, kingsmarketOutlets: 1, extraHomeStalls: 1 },
+  normal: { publicTrust: 10, lostLandPool: 10, kingsmarketOutlets: 2, extraHomeStalls: 0 },
+  hard: { publicTrust: 8, lostLandPool: 6, kingsmarketOutlets: 3, extraHomeStalls: 0 },
 }
