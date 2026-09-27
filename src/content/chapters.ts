@@ -449,7 +449,7 @@ export const CHAPTER_6: Chapter = {
   greyedRegions: [],
   producers: ['ines', 'tomas'],
   // SPEC 8.2 doesn't mandate Normal for the finale — only "the full game with the standard win." Easy
-  // (SPEC 4.9: Public Trust 12, Lost Land pool 10) is used instead: measured directly, HeuristicBot's
+  // (SPEC 4.9: Public Trust 12, Lost Land pool 16) is used instead: measured directly, HeuristicBot's
   // win rate on an unmodified Normal 7-region full game is close to 0% (consistent with BALANCE.md's own
   // early full-game measurements before the M4 balance loop's MCTSBot-specific tuning), which would fail
   // SPEC 9.4's >=50% chapters-5-6 floor outright. Easy clears it while the chapter still teaches the real,
