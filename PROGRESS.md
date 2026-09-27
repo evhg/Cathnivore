@@ -1,7 +1,53 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-27, starting ~23:51 UTC): `npm ci` + `npm run check` confirmed clean on the unchanged
+This session (2026-09-27, starting ~00:36 UTC): `npm ci` + `npm run check` clean on the unchanged `build`
+HEAD (`4c5a201`). Ran `npm run release`: all 8 gates passed clean again. The fast-forward-to-`main` step hit
+the usual stale-local-`main` issue; the documented fix (`git checkout -B main origin/main`) was denied this
+time by a **different** harness classifier than usual — "Auto-Mode Bypass" rather than the familiar
+"Production Deploy" — still per-session-intermittent, not retried. `origin/main` confirmed untouched
+(`7df3f19`), still healthy. `OWNER.md`'s Apple Team ID still `PASTE-TEAM-ID`, no `ios.yml` re-dispatch.
+
+With the release path blocked again, ran **eight** hardening-review subagent passes this session (2-concurrent
+cap, sequential pairs), each on an area no prior session had covered — the busiest single-session review
+count in the project's history. Six came back clean (with useful test-coverage additions on most: gate 8
+visual review again, Wholesome Hollow Contract mechanic, setup screen's "Recommended" pair derivation,
+role-ability once-per-round enforcement, serialized-state 50KB budget, privacy/support page content,
+Improvements catalog, first-player alternation/turn structure — that's 8 areas across 6 clean passes since a
+couple of pairs bundled two related checks). Two found and fixed **real bugs**:
+- **Agenda deck** (SPEC 4.7/3.5): the mandated "Candor launches free wellness app" headline had drifted to
+  include an extra "a", no longer matching SPEC verbatim. Fixed, plus added tests locking the exact 12/12
+  faction split and all four mandated headlines so this class of drift can't recur silently (this is exactly
+  the kind of bug the new guard-tests added for Improvements and the Recommended-pair claim are meant to
+  catch too).
+- **SPEC.md itself** was stale: section 4.9's difficulty table and section 4.3's setup step still said
+  Normal's Lost Land pool is 8, but the code, tests and player-facing glossary have correctly carried the
+  balance-loop-tuned value of 10 since M4 (SPEC 4.9 explicitly allows the loop to tune these numbers). Updated
+  SPEC.md to match the tuned/tested code rather than reverting real balance work, with a note on the tuning
+  history, and fixed a test whose title wrongly claimed Easy's pool is strictly bigger than Normal's now that
+  they're equal (10 == 10).
+
+Also, from the serialized-state review: confirmed SPEC 9.1's "state stays under 50KB" is genuinely met (worst
+observed ~18.5KB across 10 full HeuristicBot games with maxed Improvement tableaus) — the existing test only
+checked a trivially-small 40-random-action state, so replaced it with a real worst-case test.
+
+All eight passes' changes verified together with `npx tsc -b --noEmit`, `eslint`, and a full `npm run check`
+(339 tests, up from 327 at session start), committed in small logical groups as each pair of agents finished,
+and pushed to `build` throughout the session rather than batched at the end.
+
+Wrapping up here (~39 minutes, per CLAUDE.md's ~55-minute cutoff, not starting a ninth pass this late).
+Session tally: one release attempt (denied by a new classifier variant, `main` unchanged and healthy), 6
+clean confirmations (with test-coverage additions on most of them), and 2 real bugs found and fixed (a
+drifted mandated Agenda headline, stale SPEC.md difficulty prose vs. already-tuned code). `build` is fully
+gated and pushed, now 9 commits ahead of `origin/main`, waiting on a future session's release retry. Next
+session: re-check the release path and the two standing blockers as usual, then continue hardening-review
+passes on any areas still uncovered — enemy Scout/Expand/Squeeze exact multi-region-match resolution order,
+and the Improvements effect-mix soft targets (SPEC 7: ~50/30/10/10), are two candidates nobody has directly
+verified yet.
+
+---
+
+Previous session (2026-09-26, starting ~23:51 UTC): `npm ci` + `npm run check` confirmed clean on the unchanged
 `build` HEAD (`bea5fc6`). Ran `npm run release`: all 8 gates passed clean (70 e2e, 16 axe, Lighthouse
 98/100). The fast-forward-to-`main` step hit the usual fresh-clone stale-local-`main` issue ("refusing to
 merge unrelated histories"); the documented fix (`git checkout -B main origin/main`) was denied by the
