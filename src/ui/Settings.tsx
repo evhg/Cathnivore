@@ -47,6 +47,15 @@ export default function Settings({ onClose }: Props) {
         <label>
           <input
             type="checkbox"
+            checked={settings.ambient}
+            disabled={!settings.sound}
+            onChange={(e) => update({ ambient: e.target.checked })}
+          />
+          Ambient music
+        </label>
+        <label>
+          <input
+            type="checkbox"
             checked={settings.colourBlindPatterns}
             onChange={(e) => update({ colourBlindPatterns: e.target.checked })}
           />

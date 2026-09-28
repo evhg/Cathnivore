@@ -26,7 +26,8 @@ export function unlockAudioOnFirstTap(): void {
   if (typeof window === 'undefined') return
   const unlock = (): void => {
     const c = getContext()
-    if (c && c.state === 'suspended') void c.resume()
+    if (c && c.state === 'suspended') void c.resume().then(syncAmbient)
+    else syncAmbient()
   }
   window.addEventListener('pointerdown', unlock, { once: true })
   // A soft tick on every button press, so menus feel tactile too (ROADMAP 19's UI-tap cue).
@@ -84,4 +85,47 @@ export function playSoundsFor(action: Action | null, newEvents: GameEvent[], res
   if (newEvents.some((e) => e.type === 'squeeze' && e.lostLand)) return play(SOUNDS.lostLand)
   if (newEvents.some((e) => e.type === 'squeeze')) return play(SOUNDS.squeeze)
   if (action?.kind === 'openStall' || newEvents.some((e) => e.type === 'expand')) play(SOUNDS.place)
+}
+
+// ROADMAP 19's optional ambient loop: a quiet, slowly breathing two-note pad (a fifth apart), off by default.
+// Sound must be on as well, and like every cue it waits for the first tap.
+let ambient: { stop: () => void } | null = null
+
+export function syncAmbient(): void {
+  const s = loadSettings()
+  const c = ctx
+  const want = s.sound && s.ambient && !!c && c.state === 'running'
+  if (!want) {
+    ambient?.stop()
+    ambient = null
+    return
+  }
+  if (ambient || !c) return
+  const master = c.createGain()
+  master.gain.setValueAtTime(0.0001, c.currentTime)
+  master.gain.exponentialRampToValueAtTime(0.035, c.currentTime + 2)
+  master.connect(c.destination)
+  const lfo = c.createOscillator()
+  const lfoGain = c.createGain()
+  lfo.frequency.value = 0.12
+  lfoGain.gain.value = 0.015
+  lfo.connect(lfoGain).connect(master.gain)
+  const oscs = [130.81, 196, 261.63].map((freq) => {
+    const o = c.createOscillator()
+    o.type = 'sine'
+    o.frequency.value = freq
+    o.connect(master)
+    o.start()
+    return o
+  })
+  lfo.start()
+  ambient = {
+    stop: () => {
+      const t = c.currentTime
+      master.gain.cancelScheduledValues(t)
+      master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), t)
+      master.gain.exponentialRampToValueAtTime(0.0001, t + 0.5)
+      for (const o of [...oscs, lfo]) o.stop(t + 0.6)
+    },
+  }
 }

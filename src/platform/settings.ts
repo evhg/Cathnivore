@@ -1,5 +1,6 @@
 import { storage } from './storage'
 import { applyStatusBarStyle } from './statusBar'
+import { syncAmbient } from './sound'
 
 // SPEC 10.1: "Settings: animations, colour-blind patterns, AI speed, and 'Reset all data' with a
 // confirmation."
@@ -14,6 +15,7 @@ export interface Settings {
   version: 1
   animations: boolean
   sound: boolean
+  ambient: boolean
   colourBlindPatterns: boolean
   aiSpeed: AiSpeed
   theme: ThemePreference
@@ -25,6 +27,7 @@ export const DEFAULT_SETTINGS: Settings = {
   version: 1,
   animations: true,
   sound: true,
+  ambient: false,
   colourBlindPatterns: false,
   aiSpeed: 'normal',
   theme: 'system',
@@ -47,6 +50,7 @@ export function saveSettings(settings: Settings): void {
   applyAnimationsSetting(settings.animations)
   applyThemeSetting(settings.theme)
   void applyStatusBarStyle(settings.theme)
+  syncAmbient()
 }
 
 // STYLE.md 11: "with reduced motion switched on, use fades only" is the OS-level `prefers-reduced-motion`

@@ -162,7 +162,7 @@ Every visual item is done only when:
 16. [ ] **End screen:** a win or loss illustration with Cath's reaction, the final map snapshot, stat cards, and "Play again" and "Share".
 17. [ ] **Cards:** Improvements and Schemes as illustrated cards with a frame per category and an icon per card, and animations for buying and playing them. Cath's Plan cards carry her handwriting and avatar.
 18. [ ] **How to Play:** illustrated and paged, taught by Cath, with tiny demo boards.
-19. [ ] **Sound:** *(2026-09-28 night: shipped `src/platform/sound.ts` synth cues for place/liberate/Squeeze/Lost Land/win/lose, Settings "Sound" switch, silent until first tap; unreleased. UI-tap tick added; open: ambient loop.)* a synthesised WebAudio sound set and an optional ambient loop, with Settings switches. Silent until the first tap.
+19. [ ] **Sound:** *(2026-09-28 night: shipped `src/platform/sound.ts` synth cues for place/liberate/Squeeze/Lost Land/win/lose, Settings "Sound" switch, silent until first tap; unreleased. UI-tap tick added; 2026-09-28 late: optional ambient pad loop, off by default, unreleased.)* a synthesised WebAudio sound set and an optional ambient loop, with Settings switches. Silent until the first tap.
 20. [ ] **Settings and Credits:** designed screens that match the title.
 21. [ ] **Motion system:** shared easing and duration tokens, and an audit of every screen.
 

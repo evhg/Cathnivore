@@ -152,3 +152,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-28: ROADMAP 12's piece art already existed; added per-piece placement animations only. Chromium e2e passed; webkit projects fail here only because no WebKit binary is installed. No release (daily cap already exceeded).
 - 2026-09-28: Sound is synth-only (no files), default on, silent until first pointerdown; ROADMAP 19 stays open for ambient loop.
 - 2026-09-28: UI-tap cue is one global click listener (buttons/links), very quiet; no release (daily cap).
+- 2026-09-28: ambient loop is opt-in (default off) so nobody gets unexpected music; needs sound on too.
