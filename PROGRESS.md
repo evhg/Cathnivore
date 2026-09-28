@@ -3068,6 +3068,15 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-28 ~02:16 UTC:** re-ran `npm run gates` clean once more (all 8 gates 1-7 real; gate 8's
+  screenshots re-captured after this session's 2nd pair of fixes — `--soil` dark contrast, `.sheet` safe-area
+  padding — with a direct visual check of the scene screenshot confirming light mode is unaffected).
+  `git checkout -B main origin/main && git merge --no-ff build` denied again by the "Production Deploy"
+  classifier before running. `git status` immediately after confirmed no branch change: still on `build` at
+  `813a54a` (matching `origin/build`), `origin/main` untouched at `f78f78e`. Not retried per the denial's own
+  guidance. `build` carries 2 real fixes beyond the previous entry's texture fix (all gated, pushed), waiting
+  for a future session's release retry: try `npm run release` normally first; if it hits the same ff-only
+  failure, redo the manual checkout+merge+push sequence from scratch.
 - **New 2026-09-28 ~02:13 UTC:** with the gate-8 texture fix in (`85ad260`), re-ran `npm run gates` clean
   (gates 1-7; gate 8's own screenshots re-captured but not yet re-reviewed by a fresh subagent this exact
   run — a direct visual crop/zoom check of the same map-greyscale shots, done as part of verifying the fix
