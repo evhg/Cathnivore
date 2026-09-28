@@ -1733,7 +1733,7 @@ html.native-app body {
 .coop-stamp {
   transform-box: fill-box;
   transform-origin: center;
-  animation: seal-stamp 380ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  animation: seal-stamp 380ms var(--ease-settle);
 }
 
 .liberate-bloom {

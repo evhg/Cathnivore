@@ -153,3 +153,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-28: Sound is synth-only (no files), default on, silent until first pointerdown; ROADMAP 19 stays open for ambient loop.
 - 2026-09-28: UI-tap cue is one global click listener (buttons/links), very quiet; no release (daily cap).
 - 2026-09-28: ambient loop is opt-in (default off) so nobody gets unexpected music; needs sound on too.
+- 2026-09-28: small slice only (motion tokens); no release, daily cap already spent. First session after UTC midnight should release the backlog.

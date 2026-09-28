@@ -16,6 +16,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-28 21:00 UTC:** ROADMAP 19 sound cues + Settings switch (unreleased; release cap reached today).
 - **2026-09-28 22:00 UTC:** ROADMAP 19 UI-tap tick on buttons/links (unreleased; release cap reached today).
 - **2026-09-28 23:00 UTC:** ROADMAP 19 optional ambient pad loop + Settings "Ambient music" switch, off by default (unreleased; release cap reached today).
+- **2026-09-28 23:52 UTC:** ROADMAP 21 motion tokens (`--ease-settle`/`--ease-pop`) adopted by title, campaign, seal stamp (unreleased; cap reached; 11 commits waiting for the next day's first release).
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or
