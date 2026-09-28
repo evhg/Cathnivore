@@ -112,3 +112,35 @@ test('a targeting:none Scheme shows a disabled, explained placeholder when unaff
   await seasonalBonus.getByRole('button', { name: /^Scheme/ }).click({ force: true })
   await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
 })
+
+// ROADMAP 9, continued: Open Stall costs a flat 1 Produce and `legalActions` skips its whole per-region
+// loop when Produce is 0 — the only case where "no Open Stall action exists" is unambiguously about
+// affordability (a real "no legal region" case, e.g. every region already at its Stall cap, stays
+// silently absent, since that's genuinely ambiguous from outside). A fresh Quick Game producer starts
+// with 3 Produce, so this spends it all first (Sell) to reach the disabled state.
+test('Open Stall shows a disabled, explained placeholder when Produce is 0', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  // A fresh producer already has Stalls in their home region, so Open Stall is a real, enabled group
+  // button (not a disabled placeholder) as long as Produce is affordable.
+  await expect(page.locator('.action-item', { hasText: 'Open Stall' }).locator('.action-why-not')).toHaveCount(0)
+
+  await page.getByRole('button', { name: /^Sell 3 Produce/ }).click()
+  await page.locator('.actions').waitFor()
+
+  const openStall = page.locator('.action-item', { hasText: 'Open Stall' })
+  await expect(openStall.getByRole('button', { name: /^Open Stall/ })).toBeDisabled()
+  await expect(openStall.locator('.action-why-not')).toHaveText('Need 1 more Produce')
+
+  // Still explained by the same "Open Stall" glossary tooltip a real Open Stall button offers.
+  await openStall.locator('.tooltip-trigger-button').dispatchEvent('click')
+  await expect(page.locator('.tooltip-popover')).toBeVisible()
+
+  // A disabled button is genuinely inert.
+  const actionsLeftBefore = await page.locator('.active-producer').textContent()
+  await openStall.getByRole('button', { name: /^Open Stall/ }).click({ force: true })
+  await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
+})

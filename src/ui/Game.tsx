@@ -670,6 +670,17 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     return schemeMissingByCard.get(schemeId)
   }
 
+  // ROADMAP 9 why-not, continued: Open Stall costs exactly 1 Produce and `legalActions` never even
+  // checks any region when Produce is 0 (it skips the whole loop) — the *only* case where "no Open Stall
+  // action exists at all" is unambiguously about affordability, not "no adjacent/legal region" (which
+  // stays silently absent, as before, since that really is ambiguous without per-region reason logic).
+  const showDisabledOpenStall =
+    !tutorialStep?.highlight &&
+    !waitingOnAi &&
+    pendingEnemyTurn.length === 0 &&
+    active.resources.produce < 1 &&
+    !groups.has('openStall')
+
   function act(actionIndex: number): void {
     const action = actions[actionIndex]!
     // SPEC 8.1: once the taught action is actually taken, move straight to the next tutorial step rather
@@ -875,6 +886,23 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
               </span>
             )
           })}
+          {showDisabledOpenStall && (
+            <span className="action-item">
+              <button disabled title="Need 1 more Produce">
+                <span className="action-label-group">
+                  <span className="action-label">
+                    <OpenStallIcon size={18} />
+                    Open Stall
+                  </span>
+                  <span className="action-why-not">Need 1 more Produce</span>
+                </span>
+                <ActionCostChip cost={{ resource: 'produce', amount: 1 }} />
+              </button>
+              <Tooltip term="Open Stall" label="What is Open Stall?">
+                ?
+              </Tooltip>
+            </span>
+          )}
           {[...groups.entries()].map(([key, group]) => {
             const single = group.entries.length === 1
             const firstAction = actions[group.entries[0]!.index]!
