@@ -3236,3 +3236,19 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
      run in the same session).
   `npm run check` clean; the new e2e test plus the full existing `phone`+`desktop-chromium` suites (104/104)
   and `npx vitest run` (519/519) all green. Pushed to `build`.
+
+- **2026-09-28:** Dispatched 2 subagents (phone + desktop) for gate 8's mandated screenshot review before
+  this session's `npm run release` attempt. Both independently flagged the same real bug: the map's region
+  texture patterns (`src/ui/Map.tsx`'s `RegionTextureDefs`), drawn at STYLE.md 3.2's literal "8% ink,"
+  render as flat, uniform grey in the greyscale screenshot gate 8 requires — coast (wave lines) was
+  completely invisible on both phone and desktop; crop (dotted furrow rows) was faint; pasture and capital
+  were the only two that read clearly. This means regions were only distinguishable by their printed name
+  label, not shape/pattern, failing STYLE.md 2.3's "shape before colour" test outright, which STYLE.md 2.1
+  ("Legibility first") ranks above 3.2's specific number when the two conflict. Fixed by raising each
+  pattern's opacity/stroke weight (pasture 0.08->0.16, crop 0.08->0.2 with larger dots, coast 0.08->0.26
+  with a smaller/denser tile and much thicker stroke since it was the worst offender, capital 0.08->0.14 for
+  consistency) rather than literally keeping 8%. Verified by rebuilding, re-running
+  `e2e/screenshots.spec.ts` for real (not just re-reading the stale screenshots), and visually inspecting
+  cropped/zoomed greyscale renders at both sizes: all 4 region types are now clearly distinguishable by
+  pattern alone. `npx tsc -b`/`npx eslint` clean, `npx vitest run` 519/519, `quick-game.spec.ts` (desktop)
+  green. Pushed to `build`.
