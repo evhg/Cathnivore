@@ -79,3 +79,9 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   (`supplyOutletCostPerOutlet` etc.) rather than duplicating their logic in the UI layer, so a chip can
   never drift from what `applyAction` actually charges. Shipped this session alongside the 2 CSS-only
   pieces; icons and why-not states are still the real follow-up.
+- 2026-09-28: shipped item 9's icon set, but a gate-8 review of the first pass caught 3 real defects
+  (2 icons reading as the wrong thing at true small size, 1 icon's "faded" shape having no visible
+  outline at all so it was just an X floating in space) — none were caught until a zoomed render made
+  them obvious. Lesson: any icon meant to read at ~16-18px needs checking at that actual render size,
+  not just at the 3x-zoomed scale it's easy to eyeball during design; a resting-state `shots` screenshot
+  alone isn't zoomed enough to catch a silhouette that only half-works.
