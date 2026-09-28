@@ -51,8 +51,20 @@ Every visual item is done only when:
    `desktop-no-scroll.spec.ts` both times). The row-merge briefly overflowed horizontally — a bug the
    vertical-only e2e test couldn't catch, only a `shots` screenshot did — fixed with `min-width: 0` and a
    `flex-wrap` fallback; see DECISIONS.md. Diminishing returns from here: the companion/tutorial-prompt
-   chrome was already tightened in an earlier session. Phone's own bottom-tray restructure is still fully
-   open — see DECISIONS.md for the measured numbers.)* Make the
+   chrome was already tightened in an earlier session. 2026-09-28 (later session): gave phone its bottom
+   tray. `.game` now splits into two flex children — `.game-scroll` (topbar/companion/plan-strip/map,
+   scrolls internally if needed) and `.action-tray` (producer info, actions, Undo/sheet-toggle footer,
+   its own natural size) — so the bottom panel SPEC 10.2 calls "fixed" is always fully visible with no
+   fixed positioning or measured JS height, avoiding the inline-style CSP rule entirely; the actions list
+   itself caps at 130px with internal scroll so a 10+-action state can't push Undo off-screen. Verified at
+   360x640/390x844/430x932 (SPEC 10.2's full range): zero page scroll, every action and the footer always
+   reachable. Trade-off, not yet solved: at the 390x844 design size the topbar (wraps to 2 lines) plus
+   companion plus plan-strip plus legend already need ~570px on their own, so the map's bottom portion
+   stays cropped within `.game-scroll`'s own scroll even with the action list collapsed — a gate-8 review
+   called the crop itself clean-looking, not broken, but the map isn't the size-dominant "hero" on phone
+   yet, and there's still no interactive pull-to-expand gesture (just a fixed peek height). Left unchecked
+   for that reason — a follow-up could shrink the topbar/companion further, or add a real drag/tap-to-
+   expand affordance.)* Make the
    map the hero. On desktop, the map fills the centre column at the largest size that fits, and the farm,
    market, plan and log panels become tidy side trays. On phone, the map fills the top of the screen and
    actions live in a bottom tray that can be pulled up. Leave room for Cath's companion (item 3). Keep every

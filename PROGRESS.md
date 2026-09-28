@@ -4,30 +4,28 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** item 1's full listed scope is done; item 5 has 4 light, unreleased Bea
-  mentions across 4 chapters. Item 8 (game-screen layout) got 2 more tested slices this session,
-  continuing the desktop chrome-trimming this item's note called for: merged the plan strip and
-  map legend into one shared row instead of two stacked full-width rows (the centre column is far
-  wider than the map, so this was real slack), then tightened the topbar's and the
-  decision/active-producer panel's vertical padding by 2px each. `.map`'s desktop max-width went
-  262px → 284px → 288px, bisected against `desktop-no-scroll.spec.ts`'s fixture both times (293px
-  is the current exact last passing width; 288px keeps the same 5px safety margin earlier sessions
-  used). The row-merge alone briefly introduced a real bug caught by `shots`, not by any e2e test
-  (`desktop-no-scroll.spec.ts` only checks *vertical* overflow): `min-width: auto` on the flex
-  items let their combined natural width silently overflow `.game`'s right edge, clipping the
-  topbar's Menu button and the legend's own text. Fixed with `min-width: 0` plus a `flex-wrap`
-  fallback on the legend — see DECISIONS.md. A full `npm run gates` run this session passed gates
-  1-7, and a gate-8 subagent review of a fresh screenshot set found no regressions anywhere,
-  including a close look at the changed game screen at both sizes. Also added 1 more light Bea line
-  (ROADMAP 5, chapter 4's opening — 2 of the 6 chapters were still missing one; chapter 5's tone
-  didn't have a natural spot for one, left as-is). Still open: the companion/tutorial-prompt chrome
-  has little further slack (already tightened in an earlier session); phone's own bottom-tray
-  restructure is untouched. **Today's 4-release cap was already spent before this session started,
-  so none of this has reached `main` yet — next session's `npm run release` should pick up
+- **Current ROADMAP item:** item 1's full listed scope is done; item 5 has 5 light, unreleased Bea
+  mentions across 5 chapters. Item 8 (game-screen layout): desktop's chrome-trimming hit diminishing
+  returns last session (`.map` at 288px); this session gave phone its bottom tray, the item's other
+  open half. `.game` now splits into `.game-scroll` (topbar/companion/plan-strip/map, scrolls
+  internally) and `.action-tray` (producer info, actions, Undo/sheet-toggle footer, natural size) —
+  plain flexbox keeps the bottom panel SPEC 10.2 calls "fixed" always visible, no fixed positioning
+  or measured JS height (which would've needed an inline `style` attribute the CSP forbids — see
+  `csp.spec.ts`). Verified directly at 360x640/390x844/430x932 (SPEC 10.2's full range) and against
+  a dense 38-action fixture: zero page scroll needed, every action and the footer reachable, a fixed
+  gate closed. Trade-off, not fully solved: the map's bottom portion still crops within
+  `.game-scroll`'s own scroll at the design size (topbar/companion/plan-strip/legend alone need
+  ~570px), so the map isn't the size-dominant "hero" on phone yet — a gate-8 review called the crop
+  itself clean-looking, not broken, though. A full `npm run gates` run passed all gates both before
+  and after this slice; the gate-8 review also flagged "KINGSMARKET" as clipped to "RINGSMARKET" on
+  the map, but a zoomed screenshot showed it renders in full — a false positive from the low-res
+  screenshot, not a real bug (logged so it isn't re-investigated). Also added 1 more light Bea line
+  (ROADMAP 5, chapter 4's opening). **Today's 4-release cap was already spent before this session
+  started, so none of this has reached `main` yet — next session's `npm run release` should pick up
   everything since `92e7406`.**
-- **Next step:** a follow-up session on item 8 should re-check whether there's any further desktop
-  chrome slack (diminishing returns at this point — see DECISIONS.md), or move on to phone's
-  bottom-tray restructure, the item's other open half.
+- **Next step:** item 8 could still use a follow-up (shrink the phone topbar/companion further, or
+  add a real drag/tap-to-expand affordance to the action tray) but diminishing returns are setting
+  in on both halves — a good point to `npm run release` next session and move down `ROADMAP.md`.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -61,6 +59,22 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~11:24-11:45 UTC: gave phone's game screen its ROADMAP 8 bottom tray, unreleased (cap spent).
+  Split `.game` into `.game-scroll` (topbar/companion/plan-strip/map) and `.action-tray` (producer info,
+  actions, Undo/sheet-toggle footer) as flex siblings — the tray keeps its natural size and is always the
+  second, non-scrolling child, so SPEC 10.2's "Bottom panel (fixed)" holds with plain flexbox, no fixed
+  positioning or measured-JS-height hack (would've needed an inline `style` the CSP forbids). First pass
+  capped the actions list at 42vh, which (combined with the topbar wrapping to 2 lines at 390px, plus the
+  companion and plan-strip) still squeezed `.game-scroll` down to nothing — the map was entirely invisible
+  on load. Bisected down to a 130px cap by direct measurement (Playwright scripts checking element
+  bounding boxes, then a screenshot) — leaves ~3 action rows visible plus a 4th peeking, and the map mostly
+  but not fully visible (its bottom crops within the scroll area). Desktop unaffected: both wrappers are
+  `display: contents` at 1024px+, confirmed pixel-identical via `shots`. Verified at all 3 of SPEC 10.2's
+  named viewports (360x640/390x844/430x932) and against the chapter-5 dense fixture (38-41 actions): zero
+  page scroll, Undo always reachable. `npm run check`, the full Playwright suite (106/106) and `npm run
+  gates` (all gates) green both before and after. A gate-8 review flagged "KINGSMARKET" as clipped to
+  "RINGSMARKET" on the map — a zoomed screenshot showed the full text renders correctly; false positive
+  from the low-res screenshot, not a real bug.
 - 2026-09-28 ~10:52-11:13 UTC: 2 more ROADMAP 8 slices, both unreleased (cap spent). (1) Merged `.plan-strip`
   and `.map-legend` into one shared desktop row (`Game.tsx`'s new `.plan-legend-row` wrapper, `display:
   contents` on phone so it's a no-op there) instead of two stacked full-width rows — real vertical slack,
@@ -102,36 +116,5 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   Now/session log below) — stopped it via TaskStop before it touched `main` (verified
   `origin/main` still at `d193d0c`, working tree clean). All gates green, live site confirmed at
   `d193d0c` via `version.json`. **Today's 4-release cap remains spent; nothing new released.**
-- 2026-09-28 ~07:51-08:14 UTC: ROADMAP 1 polish, all unreleased (today's 4-release cap was already spent).
-  Gave the half-body figure hands: both outfits' sleeves already converged to one point at her waist, so drew
-  clasped hands there (`cb72336`). A gate-8 subagent review (screenshots + a direct render of the half
-  framing) flagged the shape as reading like a heart, not hands — redrew it as one dominant hand with
-  knuckle-crease lines and a thumb over a sliver of the other hand's wrist (`497f2d1`), confirmed with a
-  zoomed-in render. That same review found `e2e/screenshots.spec.ts` shot the title screen before
-  `.title-cath`'s 500ms-delay/900ms fade-in finished, so every past gate-8 review of the title screen never
-  actually saw her — added a wait for computed opacity 1 (`7b63459`). Replaced `public/favicon.svg` (still
-  the pre-redesign 'idol style' Cath) with a square-cropped, static copy of `cathSvg({framing:'face', ...})`,
-  checked it reads at 16-128px, and rasterized the same crop for `apple-touch-icon.png`/`icon-192.png`/
-  `icon-512.png` (`0b171b8`, `dcd6c92`); rewrote STYLE.md 13 to match. Regenerated both `social-preview.png`
-  og:images (`7af62e1`): the root one from a live mid-game capture with a Fraunces caption banner (built
-  independently of the store-screenshots harness — the App Store launch itself stays postponed), and
-  `site/public/social-preview.png` (found stale: its Cathnivore card icon was still the old favicon) from a
-  live capture of the landing hero, which already draws from `shared/cath/cath.ts` so it picked up the new
-  Cath for free. `npm run check` and a `shots`/gate-8-equivalent visual pass green after each slice. Only
-  finer hair/fabric shading is left open on ROADMAP 1.
-- 2026-09-28 ~06:52-07:19 UTC: closed out ROADMAP 3 (release `cb050ee`): rewrote all 6 chapters' tutorial
-  prompts in Cath's first-person voice (kept every phrase `e2e/tutorial.spec.ts` asserts on), grew the
-  companion line bank with a couple of tasteful Bea mentions, rewrote STYLE.md 9 to describe the new Cath in
-  full, and fixed 2 known `site/src/scene.ts` issues (a shader leak on every `startScene()`/link, and no
-  `webglcontextrestored` handler). Then started ROADMAP 1's remaining polish (release `d193d0c`): rendered
-  every expression at 56px/160px via a throwaway Playwright script to see what the gate-8 review actually
-  flagged, then widened 'determined' (furrowed brows, tighter squint, firmer mouth) and 'worried' (stronger
-  raised/dropped brow, deeper frown) so they read apart from the default smirk at small size. 2 releases,
-  all gates green both times, live confirmed via HTTP (browser smoke test hit the known sandbox-proxy cert
-  issue both times) — **today's 4-release cap is now spent** (2 from an earlier session, 2 from this one).
-  Closed with a small, unreleased ROADMAP 5 start: one light Bea line each in chapter 1's closing scene and
-  chapter 6's `planUnlocked` scene, both well under SPEC 8.3's 12-line cap. ROADMAP 3 and 25 ticked; item 1's
-  remaining scope (hands/pose, hair/fabric shading, favicon/social images) is next, and the next session's
-  first `npm run release` will pick up the Bea commit too.
-- 2026-09-28 ~05:23-06:31 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — the SPEC 16 pivot, the sw.js
-  cache-wipe fix, and ROADMAP 3's first slices (the Cath companion, end-screen portrait, tutorial-prompt face).
+- 2026-09-28 ~06:52-08:14 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — ROADMAP 1's hands/pose,
+  favicon/social-image and tutorial-voice work, ROADMAP 3's close-out, the SPEC 16 pivot and the sw.js fix.

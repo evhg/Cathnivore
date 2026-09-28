@@ -62,3 +62,9 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   test — fixed with `min-width: 0` plus a `flex-wrap` fallback. Lesson for later sessions: any new
   desktop-only flex/grid row needs an explicit horizontal-overflow check (screenshot or measured
   `scrollWidth`), not just the existing vertical-only e2e test.
+- 2026-09-28: gave phone's game screen a fixed bottom tray (plain flexbox: `.game` splits into a
+  scrollable `.game-scroll` and a natural-size `.action-tray`) rather than measuring the tray's height
+  in JS and setting it via a `style` prop — that would've meant an inline `style` attribute, which
+  `csp.spec.ts` forbids project-wide. Capped the actions list at 130px (not the more generous 42vh
+  tried first) after measuring that the topbar/companion/plan-strip/legend alone need ~570px of the
+  844px design viewport — the map's bottom crop is a real, accepted trade-off, not a bug.
