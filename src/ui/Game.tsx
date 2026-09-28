@@ -638,6 +638,17 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       </aside>
 
       <main className="game">
+      {/* ROADMAP 8 "the table, part 1: layout": SPEC 10.2's phone "Bottom panel (fixed)" — the active
+          producer, actions and Undo/sheet buttons below — must stay visible without scrolling the page to
+          reach it (previously all of this just sat at the end of one long scrolling column, so only the
+          first action button was ever on-screen without a scroll, a real gap this wrapper closes). Splits
+          `.game` into two flex children: this one (everything *about* the current state — topbar, companion,
+          plan strip, map) scrolls internally if it doesn't fit; `.action-tray` below (the actual controls)
+          keeps its natural size and is always the second, non-scrolling child, so simple flexbox does the
+          pinning with no fixed positioning or measured JS height needed. A plain `display: contents` on
+          desktop (`@media (max-width: 1023.98px)` below) makes both wrappers a no-op there — every element
+          still flows directly in `.game`'s own column exactly as before this session. */}
+      <div className="game-scroll">
       <header className="topbar">
         <span>
           <RoundIcon /> Round {state.round}/{state.round + state.pressureDeck.length}
@@ -770,7 +781,11 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           <EnemyTurnPlayback events={pendingEnemyTurn} onDone={() => setPendingEnemyTurn([])} />
         )}
       </section>
+      </div>
 
+      {/* SPEC 10.2's phone "Bottom panel (fixed)": the active producer, its actions and Undo/sheet-toggle
+          buttons, always on screen — see the `.game-scroll` comment above for how. */}
+      <div className="action-tray">
       {decision ? (
         <section className="decision">
           <p>
@@ -804,9 +819,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         </section>
       )}
 
-      {/* Phone copy of `actionsPanel` (defined above): normal document flow, same spot it always occupied.
-          Only mounted when `useIsDesktopLayout()` says this isn't desktop — see the left tray's copy above
-          for why this is gated in JS rather than just hidden by CSS. */}
+      {/* Phone copy of `actionsPanel` (defined above), now inside `.action-tray`. Only mounted when
+          `useIsDesktopLayout()` says this isn't desktop — see the left tray's copy above for why this is
+          gated in JS rather than just hidden by CSS. */}
       {!isDesktop && actionsPanel}
 
       <footer className="controls">
@@ -825,6 +840,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         )}
         <button className="mobile-only" onClick={() => setShowLog(true)}>Log</button>
       </footer>
+      </div>
 
       {showFarm && <FarmSheet state={state} onClose={() => setShowFarm(false)} />}
       {/* SPEC 8.1: "each new rule is introduced exactly once, at the moment it first matters" — a chapter

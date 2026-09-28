@@ -104,6 +104,60 @@ h3 {
   gap: 8px;
 }
 
+/* SPEC 10.2 phone: "Bottom panel (fixed)" — the active producer, its actions and the Undo/sheet-toggle
+   footer must stay visible without scrolling the page to reach them (previously they just sat at the end
+   of one long scrolling column, so only the first action button was ever on screen). `.game`'s two flex
+   children do the pinning with plain flexbox, no fixed positioning or measured JS height needed:
+   `.game-scroll` (everything *about* the current state) is the one allowed to shrink and scroll
+   internally; `.action-tray` (the actual controls) keeps its own natural size, so it's always fully
+   visible as `.game`'s second child. Desktop (1024px+, below) turns both into `display: contents` — a
+   no-op there, since every element still needs to flow directly in `.game`'s own column exactly as
+   before this session (active-producer/decision stay in the centre column's normal flow; the actions
+   list moved to the side tray entirely, see `actionsPanel` in Game.tsx). */
+.game-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.action-tray {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: none;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+
+/* `.action-tray` itself is `flex: none` (its own natural size, so it's never squeezed below usable), but
+   a content-dense state can have 10+ legal actions (region-scoped Supply/Rebut/Scheme/Role labels, one
+   Sell entry per quantity — the same variable-length list desktop's `.desktop-col-left .actions-sheet
+   .actions` already caps) — left unbounded, that would grow the tray past the viewport and push `Undo`
+   off-screen, defeating the whole "always visible" point. Capping just this list, not the tray around it,
+   keeps the producer info and Undo/sheet-toggle footer always shown while the list scrolls internally.
+   130px (about 3 rows, with a 4th peeking to hint there's more) was picked by measuring the design
+   viewport (390x844) directly: even with this list collapsed to nothing, the topbar/companion/plan-strip/
+   legend above the map already need ~570px on their own (the topbar alone wraps to 2 lines at this
+   width), so `.game-scroll` was never going to show the map's full height without scrolling regardless —
+   130px keeps a real, usable action peek without giving up much more of that already-tight budget. */
+.action-tray .actions {
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+@media (max-width: 1023.98px) {
+  .game {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .game-scroll {
+    flex: 1 1 auto;
+  }
+}
+
 /* Desktop-only Farm/Market/Cath's Plan/Log panels (rendered inline, always mounted) and the phone-only
    sheet-toggle buttons in the footer are mutually exclusive, split by this one breakpoint. */
 .desktop-col {
@@ -142,6 +196,12 @@ h3 {
     max-width: none;
     min-height: 0;
     overflow-y: auto;
+  }
+
+  /* Neutralises the phone-only `.game-scroll`/`.action-tray` split above — see its comment. */
+  .game-scroll,
+  .action-tray {
+    display: contents;
   }
 
   .mobile-only {
