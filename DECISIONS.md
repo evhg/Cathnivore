@@ -27,3 +27,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   than by RNG, so the same event always shows the same line — kept screenshots and e2e stable without a
   seeded RNG plumbed through the UI layer. Released to `main` (`adef266`); `deploy-1` tag push failed with
   the known 403, harmless per PROGRESS.md.
+- 2026-09-28: `npm run shots`/`npm run gates` reuse an already-listening `:4173` preview server
+  (`playwright.config.ts`'s `reuseExistingServer: !CI`) without rebuilding, so a server left over from an
+  earlier gates/release run in the same session silently serves stale assets — a real UI change (Cath's
+  Campaign-header portrait) rendered as if absent until the stale process was killed. Future sessions:
+  `lsof -i :4173` before trusting a shots/gates run that follows an earlier one in the same session.

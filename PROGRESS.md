@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** 3, "Cath in Cathnivore, as guide and narrator". Shipped: a reacting companion on the game screen (liberated/Squeeze/Rift split), her portrait on the end screen, and a small face inline with tutorial prompts. Still open: title/Campaign/setup screens more broadly, Bea, and a bigger line bank. Item 1's remaining polish (favicon/social images, art refinement — a subagent review found her small-scale portrait loses the character bible's fine detail and her expressions read as too similar at 56-96px) can go alongside.
+- **Current ROADMAP item:** 3, "Cath in Cathnivore, as guide and narrator". Shipped: a reacting companion on the game screen (liberated/Squeeze/Expand/Rift split), her portrait on the end screen, a face inline with tutorial prompts, and her bust on the Campaign and Setup screens — the "matching expression" bullet is now done everywhere it applies pre-redesign. Still open: Bea, a bigger line bank, and tutorial prompts fully in her voice (today it's just a face, not rewritten text). Item 1's remaining polish (favicon/social images, art refinement — a subagent review found her small-scale portrait loses the character bible's fine detail and her expressions read as too similar at 56-96px) can go alongside.
 - **Next step:** see the **Session log** for where the last session stopped.
 
 ## Blocked
@@ -23,19 +23,25 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - [ ] `site/src/scene.ts` has no `webglcontextrestored` handler: after a GPU reset the landing animation stays stopped until reload.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-28 ~06:30 UTC (`c78fad8`): Cath's bust on the Campaign screen (expression tracks chapter progress) and the Setup screen. All gates passed; `deploy-2` tag push failed with the known 403 (harmless).
 - 2026-09-28 ~06:14 UTC (`adef266`): the Cath companion (game-screen reactions, end-screen portrait, tutorial-prompt face). All gates passed; `deploy-1` tag push failed with the known 403 (harmless, see Known limitations).
 - 2026-09-28 (owner's chat session): Cath's new look everywhere (title hero, portraits, landing page star, Runnel host), title and Campaign redesigns, continuous-improvement plan.
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
-- 2026-09-28 ~05:51-06:15 UTC: shipped ROADMAP 3 slice 1 — `CathCompanion.tsx` reacts to liberated/Squeeze/
-  Rift-split log events with an expression and a deterministic line from `cathCompanionLines.ts` (same event
-  always shows the same line); added her portrait to the end screen and a small face inline with tutorial
-  prompts. Had to shrink the companion at the 1024px breakpoint after it broke `desktop-no-scroll.spec.ts`'s
-  1280x800 budget (a 56px portrait was enough on its own). All gates green; released to `main` (`adef266`),
-  confirmed live via `version.json`. A subagent's gate-8 review found no blocking issues but flagged that
-  Cath's small-scale portrait loses character-bible detail and her expressions look similar at this size —
-  logged above under Now, not fixed this session (a `shared/cath/` art concern, ROADMAP item 1).
+- 2026-09-28 ~05:51-06:31 UTC: shipped ROADMAP 3 across 5 slices, 2 releases. `CathCompanion.tsx` reacts to
+  liberated/Squeeze/Expand/Rift-split log events with an expression and a deterministic line from
+  `cathCompanionLines.ts` (same event always shows the same line — a region/faction hash, not RNG, so
+  screenshots/e2e stay stable); added her portrait to the end screen, a face inline with tutorial prompts,
+  and her bust to the Campaign (expression tracks chapter progress) and Setup screen headers. Had to shrink
+  the companion at the 1024px breakpoint after it broke `desktop-no-scroll.spec.ts`'s 1280x800 budget (a
+  56px portrait was enough on its own) — fixed and reverified. Caught a false-negative mid-session: a stale
+  `vite preview` server on :4173 from an earlier gates run made `npm run shots` silently reuse old assets
+  (Playwright's `reuseExistingServer`) — screenshots showed no Cath at all on Campaign until the stale
+  server was killed. All gates green both releases; live via `version.json` at `c78fad8`. A subagent's
+  gate-8 review of slice 1 found no blocking issues but flagged that Cath's small-scale portrait loses
+  character-bible detail and her expressions look similar at this size — logged under Now, not fixed this
+  session (a `shared/cath/` art concern, ROADMAP item 1).
 - 2026-09-28 ~05:23 UTC: a routine session had already found and fixed (pre-`main`, on `build`) a real v1
   bug before this new plan landed underneath it: the root `sw.js` (SPEC 15) was wiping the live
   `/cathnivore/` PWA's own cache on activation (origin-wide `caches.keys()`/`delete()`, not scoped to the
