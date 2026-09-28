@@ -32,3 +32,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   earlier gates/release run in the same session silently serves stale assets — a real UI change (Cath's
   Campaign-header portrait) rendered as if absent until the stale process was killed. Future sessions:
   `lsof -i :4173` before trusting a shots/gates run that follows an earlier one in the same session.
+- 2026-09-28: rewrote tutorial prompts (chapters.ts) in Cath's first-person voice while preserving the
+  exact substrings `e2e/tutorial.spec.ts` asserts on, rather than rewriting the test too — kept the change
+  scoped to voice, not behaviour. Companion line-bank growth confirmed safe to do freely: no test or
+  screenshot anywhere asserts on the companion's exact reaction text, only the deterministic-hash mechanism.
