@@ -282,7 +282,8 @@ ${JACKET}"/>
 <path fill="none" stroke="${C.oliveShade}" stroke-width="1.6" stroke-linecap="round" d="M176 424 C172 446 174 472 178 500 M224 424 C228 446 226 472 222 500"/>
 <path fill="${C.oliveLight}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M183 250 L160 268 L168 282 L158 290 L200 404 Z"/>
 <path fill="${C.oliveLight}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M217 250 L240 268 L232 282 L242 290 L200 404 Z"/>
-<circle cx="200" cy="418" r="4.4" fill="${C.oliveShade}" stroke="${C.ink}" stroke-width="1.3"/>`
+<circle cx="200" cy="418" r="4.4" fill="${C.oliveShade}" stroke="${C.ink}" stroke-width="1.3"/>
+${hands(C.oliveShade, 404)}`
 }
 
 // Shared tailored silhouette: sloped shoulders, a nipped waist and a slight flare at the hip.
@@ -311,7 +312,25 @@ ${JACKET.replace('L200 404', 'L200 380')}"/>
 <path fill="none" stroke="${C.camelShade}" stroke-width="2" stroke-linecap="round" d="M136 318 C142 360 142 390 138 412 M264 318 C258 360 258 390 262 412"/>
 <path fill="${C.knit}" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="M176 232 C188 244 212 244 224 232 C236 242 236 258 228 268 C212 280 188 280 172 268 C164 258 164 242 176 232 Z"/>
 <path fill="${C.knit}" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="M208 266 C214 296 212 322 206 344 L224 348 C230 322 230 294 222 264 Z"/>
-<path fill="none" stroke="${C.knitShade}" stroke-width="2" stroke-linecap="round" d="M180 246 Q200 258 220 246 M178 258 Q200 270 222 258 M212 288 L224 286 M210 310 L224 308 M209 332 L223 332"/>`
+<path fill="none" stroke="${C.knitShade}" stroke-width="2" stroke-linecap="round" d="M180 246 Q200 258 220 246 M178 258 Q200 270 222 258 M212 288 L224 286 M210 310 L224 308 M209 332 L223 332"/>
+${hands(C.camelShade, 380)}`
+}
+
+// A relaxed, graceful pose: both sleeves converge in front of her waist (see JACKET/the sleeve overlay
+// paths above), so her hands rest there, lightly clasped. cy is the sleeve tip's y, shared with the
+// outfit's own sleeve paths so the cuffs and hands line up exactly.
+function hands(cuffShade: string, cy: number): string {
+  return `<path fill="none" stroke="${cuffShade}" stroke-width="1.6" stroke-linecap="round" d="M186 ${cy - 6} Q200 ${cy} 214 ${cy - 6}"/>
+<path fill="${SKIN}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="
+M181 ${cy - 4}
+C175 ${cy} 173 ${cy + 10} 179 ${cy + 18}
+C185 ${cy + 25} 195 ${cy + 25} 199 ${cy + 19}
+C203 ${cy + 25} 213 ${cy + 25} 219 ${cy + 18}
+C225 ${cy + 10} 223 ${cy} 217 ${cy - 4}
+C211 ${cy + 3} 205 ${cy + 6} 199 ${cy + 4}
+C193 ${cy + 6} 187 ${cy + 3} 181 ${cy - 4} Z"/>
+<path fill="none" stroke="${C.skinDeep}" stroke-width="1.1" stroke-linecap="round" d="M187 ${cy + 6} Q191 ${cy + 13} 187 ${cy + 19} M211 ${cy + 6} Q207 ${cy + 13} 211 ${cy + 19}"/>
+<ellipse cx="199" cy="${cy + 12}" rx="3.4" ry="4.2" fill="${C.skinShade}" opacity="0.55"/>`
 }
 
 function accessories(outfit: CathOutfit): string {
