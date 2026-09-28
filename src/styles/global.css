@@ -986,6 +986,28 @@ button {
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
+  transition: transform 100ms ease-out;
+}
+
+/* ROADMAP 9's "press feedback" for the table's action tiles, applied to every button rather than just
+   those (STYLE.md has no per-screen exception, and a press effect on some buttons but not others would
+   read as inconsistent/broken, not selectively finished). `:not(:disabled)` matches `button.primary`'s
+   own disabled styling above — a disabled button shouldn't visibly react to a tap it can't take.
+   STYLE.md 11: "With reduced motion switched on, use fades only" — the scale becomes a plain opacity dip
+   instead of disappearing outright, so a tap still gets *some* feedback either way. */
+button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: opacity 100ms ease-out;
+  }
+
+  button:active:not(:disabled) {
+    transform: none;
+    opacity: 0.7;
+  }
 }
 
 /* STYLE.md 10: "Primary is pasture-deep fill with paper text." Reserved for the one clear next action on
