@@ -247,6 +247,12 @@ h3 {
   background: var(--paper-2) !important;
 }
 
+/* ROADMAP 8: shares one row with `.map-legend` on desktop (see the `@media (min-width: 1024px)` block
+   below); a plain block on phone, same stacked layout as before. */
+.plan-legend-row {
+  display: contents;
+}
+
 .map-legend {
   display: flex;
   justify-content: center;
@@ -675,10 +681,14 @@ h3 {
      ceiling here, though: the old `.actions` already shrank to near-nothing in the tightest states (its
      own `flex: 1 1 auto; min-height: 0` let it collapse rather than force `.game` to overflow), so this
      column's real fixed cost was always the topbar/companion/tutorial-prompt/plan-strip/legend/active-
-     producer chrome around the map, not the action list sharing space with it. 262px (up from 260px) is
-     the actual small amount of slack that freed up; confirmed 268px+ still overflows `.game` at 1280x800. */
+     producer chrome around the map, not the action list sharing space with it.
+     This session merged `.plan-strip` and `.map-legend` into one shared row (`.plan-legend-row` below)
+     instead of two stacked full-width rows — real slack, since the centre column is far wider than the
+     map. Bisected against the same fixture: 289px is the exact last passing width, 290px+ overflows;
+     284px keeps a 5px margin, the same kind of safety gap earlier sessions left (262px vs. the 268px that
+     failed). */
   .map {
-    max-width: 262px;
+    max-width: 284px;
   }
 
   /* Without the action list stretching to fill it (ROADMAP 8: it moved to the left tray), `.game`'s leftover
@@ -698,6 +708,43 @@ h3 {
      every one of them was pure column-height cost with no legibility benefit. */
   .game {
     gap: 6px;
+  }
+
+  /* ROADMAP 8: the plan strip and map legend used to be two separate full-height rows stacked above the
+     map — both are short, low-height content, and the centre column here is far wider than the 262px map
+     itself, so they share one row instead of two. This is worth a real, measured chunk of the "no scrolling
+     at 1280x800" budget (desktop-no-scroll.spec.ts): one whole row's height plus one `.game` gap, freed up
+     for the map itself below. `.plan-strip` grows to fill the leftover width; `.map-legend` keeps its own
+     compact size and right-aligns.
+     The two sides' natural (unconstrained) widths sum to more than the row actually has at 1280px
+     (measured directly: ~677px wanted, ~641px available) — grid/flex items default to `min-width: auto`,
+     which refuses to shrink below that natural content width and silently overflows past `.game`'s right
+     edge instead of wrapping (this doesn't show up in desktop-no-scroll.spec.ts, which only checks
+     *vertical* overflow — caught instead by comparing `shots` screenshots before/after). `min-width: 0` on
+     both sides lets them actually shrink to fit; `.map-legend`'s own `flex-wrap: wrap` is the fallback if
+     they still don't both fit at some future viewport/content combination, so the failure mode is an extra
+     legend line, never a clipped edge. */
+  .plan-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .plan-legend-row .plan-strip {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .plan-legend-row .plan-strip-item {
+    min-width: 0;
+  }
+
+  .plan-legend-row .map-legend {
+    flex: 0 1 auto;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px 14px;
   }
 
   .decision,

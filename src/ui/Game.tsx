@@ -685,29 +685,65 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         </section>
       )}
 
-      <section className="plan-strip">
-        {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
-          const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
-          return (
-            <span key={slot} className="plan-strip-item">
-              <button
-                type="button"
-                aria-pressed={planHighlightSlot === slot}
-                className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
-                onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
-              >
-                {slotLabel}: {pressureLabel(state[slot])}
-              </button>
-              {/* A separate trigger, not nested inside the button above: that button already has its own
-                  tap meaning (toggle the map highlight), so a tooltip needs its own affordance rather than
-                  fighting it for the same tap (SPEC 10.5, alongside SPEC 10.2's highlight behaviour). */}
-              <Tooltip term={slotLabel} label={`What is ${slotLabel}?`}>
-                ?
-              </Tooltip>
+      {/* ROADMAP 8: the plan strip and the map legend used to be two separate full-width rows stacked
+          above the map — both are compact, low-height content (a handful of short labels), so on desktop,
+          where the centre column is far wider than the map itself, they share one row instead. `.plan-strip`
+          grows to fill the leftover width; `.map-legend` keeps its own natural size. Phone keeps the original
+          two-row stack (`.plan-legend-row` is a plain block there, see global.css) since the narrower column
+          has no spare width to share. */}
+      <div className="plan-legend-row">
+        <section className="plan-strip">
+          {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
+            const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
+            return (
+              <span key={slot} className="plan-strip-item">
+                <button
+                  type="button"
+                  aria-pressed={planHighlightSlot === slot}
+                  className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
+                  onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
+                >
+                  {slotLabel}: {pressureLabel(state[slot])}
+                </button>
+                {/* A separate trigger, not nested inside the button above: that button already has its own
+                    tap meaning (toggle the map highlight), so a tooltip needs its own affordance rather than
+                    fighting it for the same tap (SPEC 10.5, alongside SPEC 10.2's highlight behaviour). */}
+                <Tooltip term={slotLabel} label={`What is ${slotLabel}?`}>
+                  ?
+                </Tooltip>
+              </span>
+            )
+          })}
+        </section>
+
+        {/* SPEC 10.5: the map's own pieces (Outlet/Buyout/Doubt) are the last piece of the tooltip surface —
+            a compact key, not one trigger per drawn piece (a region can hold several of the same piece, and
+            an in-SVG popover would fight the map's own transforms), same "?"-next-to-the-thing pattern as
+            the topbar and plan-strip above. */}
+        <section className="map-legend">
+          {(
+            [
+              { term: 'Outlet', icon: <Outlet /> },
+              { term: 'Buyout', icon: <Buyout /> },
+              { term: 'Doubt', icon: <Doubt /> },
+              { term: 'Co-op marker', icon: <CoopMarkerIcon /> },
+            ] as const
+          ).map(({ term, icon }) => (
+            <span key={term} className="map-legend-item">
+              <svg className="map-legend-icon" viewBox="0 0 12 14" width={16} height={18} aria-hidden="true">
+                {icon}
+              </svg>
+              <Tooltip term={term}>{term}</Tooltip>
+              {term === 'Co-op marker' && (
+                <>
+                  {' · '}
+                  <Tooltip term="Liberated">Liberated</Tooltip>
+                </>
+              )}
             </span>
-          )
-        })}
-      </section>
+          ))}
+        </section>
+      </div>
 
       <section className="map-wrap">
         <RegionMap
@@ -733,34 +769,6 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         {pendingEnemyTurn.length > 0 && (
           <EnemyTurnPlayback events={pendingEnemyTurn} onDone={() => setPendingEnemyTurn([])} />
         )}
-      </section>
-
-      {/* SPEC 10.5: the map's own pieces (Outlet/Buyout/Doubt) are the last piece of the tooltip surface —
-          a compact key, not one trigger per drawn piece (a region can hold several of the same piece, and
-          an in-SVG popover would fight the map's own transforms), same "?"-next-to-the-thing pattern as
-          the topbar and plan-strip above. */}
-      <section className="map-legend">
-        {(
-          [
-            { term: 'Outlet', icon: <Outlet /> },
-            { term: 'Buyout', icon: <Buyout /> },
-            { term: 'Doubt', icon: <Doubt /> },
-            { term: 'Co-op marker', icon: <CoopMarkerIcon /> },
-          ] as const
-        ).map(({ term, icon }) => (
-          <span key={term} className="map-legend-item">
-            <svg className="map-legend-icon" viewBox="0 0 12 14" width={16} height={18} aria-hidden="true">
-              {icon}
-            </svg>
-            <Tooltip term={term}>{term}</Tooltip>
-            {term === 'Co-op marker' && (
-              <>
-                {' · '}
-                <Tooltip term="Liberated">Liberated</Tooltip>
-              </>
-            )}
-          </span>
-        ))}
       </section>
 
       {decision ? (
