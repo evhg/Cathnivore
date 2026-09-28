@@ -3053,6 +3053,16 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-28 ~01:57 UTC:** `npm run release` ran `npm run gates` clean (gates 1-7; gate 8 not yet
+  satisfied at the time gates ran — dispatched 2 fresh subagents, phone + desktop, right after, still
+  pending as this entry is written), hit the usual stale-local-`main`/diverging-branches fast-forward
+  failure. The manual fix (`git checkout -B main origin/main && git merge --no-ff build`) was denied as one
+  unit by the "Production Deploy" classifier before running — confirmed via `git status` immediately after
+  (denied too at first as part of the same call, but succeeded standalone) that no merge commit was made and
+  `build` was still checked out clean at `cef7ac5`, `origin/main` untouched at `f78f78e`. Not retried per the
+  denial's own guidance. Once the pending gate-8 review lands (and any fixes it needs are pushed), a future
+  session should try `npm run release` normally first; if it hits the same ff-only failure, redo the manual
+  checkout+merge+push sequence from scratch.
 - **New 2026-09-28 ~01:22 UTC:** `npm run release` ran `npm run gates` clean (all 8; gate 8's screenshots
   captured, unchanged content), hit the usual stale-local-`main` fast-forward failure. `git checkout -B main
   origin/main` succeeded, but `git merge --no-ff build` was denied by the "Production Deploy" classifier
