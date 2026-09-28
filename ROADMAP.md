@@ -139,9 +139,16 @@ Every visual item is done only when:
     hard requirement from the bottom-tray work (zero page scroll, Undo/action tray fully visible) at all 3
     of SPEC 10.2's named viewports. A gate-8 review claimed the gauge always renders full/identical
     regardless of value; checked directly (DOM `<rect width>` attributes, then a 4x-scale screenshot crop)
-    and found the fills exactly correct — a false positive, see DECISIONS.md. Still open: the enemy's
-    Squeeze/Expand/Scout slots as branded agenda cards, and the desktop half of the gauges (needs its own
-    width budget win first, not attempted again this session).)* Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
+    and found the fills exactly correct — a false positive, see DECISIONS.md. Still open: the desktop half
+    of the gauges (needs its own width budget win first, not attempted again this session).
+    2026-09-28 (later still): shipped STYLE.md 8's Pressure card look on Squeeze/Expand/Scout — a stage
+    numeral (Roman) and region-type icon(s) as a small `position: absolute` corner badge on the existing
+    plan-strip pill (`RegionTypeIcon.tsx`, reuses the map's own `REGION_FILL` colours), not a full card
+    redesign, since the desktop plan-strip row measured at exactly zero vertical slack (768/768px) — an
+    inline badge wrapped the button to an extra line and broke `desktop-no-scroll.spec.ts`; the corner
+    badge doesn't affect text flow so it ships on both phone and desktop with no width-budget fight at all.
+    Verified with direct DOM height measurement, not just a screenshot. Still open: the desktop half of the
+    gauges (needs its own width budget win first).)* Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
 11. [ ] **Map art, part 1: regions.** Terrain illustration on each region (hedgerows, field rows, shoreline and boats, the Kingsmarket clock tower) and labels as painted signboards. It must pass the greyscale shape test (STYLE.md 2).
 12. [ ] **Map art, part 2: pieces.** The exact STYLE.md 6 pieces (awning Stall, glossy "0.99" Outlet, "SOLD" fence Buyout, "?" bubble Doubt), each with a placement animation.
 13. [ ] **Moments:** liberating a region (a seal stamp, colour blooming across the hex, Cath cheering), a Squeeze (glossy plastic creeping over a region), Lost Land, the Rift at 3 and 6, the enemy turn playback choreographed step by step, and the end of a round.

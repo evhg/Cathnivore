@@ -103,3 +103,19 @@ Search with grep; never read in full.
   288px (293px now the last passing width). Both slices: `npm run check`, the full Playwright suite (both
   projects, 106/106) and a `shots` visual check all green. `lsof -i :4173` confirmed no stale preview server
   before every `shots` run this session, per the known gotcha.
+- 2026-09-28 ~11:24-11:45 UTC: gave phone's game screen its ROADMAP 8 bottom tray, unreleased (cap spent).
+  Split `.game` into `.game-scroll` (topbar/companion/plan-strip/map) and `.action-tray` (producer info,
+  actions, Undo/sheet-toggle footer) as flex siblings — the tray keeps its natural size and is always the
+  second, non-scrolling child, so SPEC 10.2's "Bottom panel (fixed)" holds with plain flexbox, no fixed
+  positioning or measured-JS-height hack (would've needed an inline `style` the CSP forbids). First pass
+  capped the actions list at 42vh, which (combined with the topbar wrapping to 2 lines at 390px, plus the
+  companion and plan-strip) still squeezed `.game-scroll` down to nothing — the map was entirely invisible
+  on load. Bisected down to a 130px cap by direct measurement (Playwright scripts checking element
+  bounding boxes, then a screenshot) — leaves ~3 action rows visible plus a 4th peeking, and the map mostly
+  but not fully visible (its bottom crops within the scroll area). Desktop unaffected: both wrappers are
+  `display: contents` at 1024px+, confirmed pixel-identical via `shots`. Verified at all 3 of SPEC 10.2's
+  named viewports (360x640/390x844/430x932) and against the chapter-5 dense fixture (38-41 actions): zero
+  page scroll, Undo always reachable. `npm run check`, the full Playwright suite (106/106) and `npm run
+  gates` (all gates) green both before and after. A gate-8 review flagged "KINGSMARKET" as clipped to
+  "RINGSMARKET" on the map — a zoomed screenshot showed the full text renders correctly; false positive
+  from the low-res screenshot, not a real bug.

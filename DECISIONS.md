@@ -104,3 +104,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   a partly-obscured letter) that a zoomed crop or a direct attribute check resolves cleanly. Lesson
   restated: don't trust a gate-8 finding about something *small* without a second, more direct check
   before spending a fix cycle on it.
+- 2026-09-28: the desktop plan-strip row (Squeeze/Expand/Scout) has zero vertical slack (measured: `.game`
+  768/768px) — same ceiling as the HUD gauges, but here the fix was cheap: `position: absolute`-ing the
+  new Pressure-card badge into the button's own corner instead of inline after the label text, so it never
+  affects line count/height. Unlike the gauges, this needed no phone/desktop split at all.

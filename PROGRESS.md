@@ -5,20 +5,22 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
 - **Current ROADMAP item:** item 1 done; item 8 hit diminishing returns; item 9 close but not done (see
-  its ROADMAP note). This session shipped both no-new-engine-change halves of item 10 ("the HUD"): the
+  its ROADMAP note). Prior session shipped both no-new-engine-change halves of item 10 ("the HUD"): the
   tick-up/tick-down animation (a scale-pulse, colourless on purpose — see DECISIONS.md), then the
-  illustrated gauge bars themselves (`MiniGauge`, `ResourceIcons.tsx`), phone only. Desktop's centre
-  column had no width left for the gauge — confirmed by measurement, the same ceiling several earlier
-  sessions already hit — so it's hidden there (`.hud-gauge { display: none }` at 1024px+) rather than
-  shown illegibly small. A gate-8 review claimed the gauge always renders full regardless of value;
-  checked directly (DOM attributes, then a 4x screenshot crop) and found it exactly correct — a false
-  positive, logged in DECISIONS.md alongside the earlier similar one. **Today's 4-release cap was
-  already spent before this session started, so none of this has reached `main` yet — next session's
-  `npm run release` should pick up everything since `92e7406`.**
-- **Next step:** 7 sessions have now piled up unreleased work on `build` — the next session should
+  illustrated gauge bars themselves (`MiniGauge`, `ResourceIcons.tsx`), phone only (desktop's centre
+  column had no width left, same ceiling several earlier sessions already hit). This session shipped
+  item 10's Pressure-card piece: STYLE.md 8's stage numeral + region-type icon(s) on the Squeeze/Expand/
+  Scout plan-strip slots, as a `position: absolute` corner badge (not a full card redesign) so it never
+  affects text flow — measured the desktop plan-strip row at exactly zero vertical slack (768/768px)
+  before landing this, confirmed an inline version broke `desktop-no-scroll.spec.ts` by wrapping the
+  button, fixed with the corner badge, ships on phone and desktop both (`RegionTypeIcon.tsx`). **Today's
+  4-release cap was already spent before this session started, so none of this has reached `main` yet —
+  next session's `npm run release` should pick up everything since `92e7406`.**
+- **Next step:** 8 sessions have now piled up unreleased work on `build` — the next session should
   seriously consider opening with `npm run release` (today's cap resets on the next calendar day)
-  before starting more new work. Item 10's remaining scope (desktop's gauges, the enemy's Squeeze/
-  Expand/Scout as branded agenda cards) both need a fresh width budget or real new art.
+  before starting more new work. Item 10's remaining scope: only the desktop half of the gauges, which
+  needs a fresh width budget win (not attempted again this session — the plan-strip row already proved
+  that budget has zero slack left).
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -52,6 +54,18 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~13:39-13:49 UTC: shipped ROADMAP 10's Pressure-card piece — STYLE.md 8's stage numeral
+  (Roman) + region-type icon(s) on the Squeeze/Expand/Scout plan-strip slots (`RegionTypeIcon.tsx`,
+  reuses the map's own `REGION_FILL` colours/silhouette). Measured the desktop plan-strip row directly
+  before landing anything: exactly zero vertical slack (`.game` at 768/768px). An inline version (icon
+  after the label text) wrapped the Expand button to a 3rd line and overflowed `desktop-no-scroll.spec.ts`
+  by ~11px; fixed by making the badge `position: absolute` in the button's own corner instead, which
+  never affects text flow — reverified all 3 buttons stay at their original 48px height, so it ships on
+  phone and desktop both, no width-budget fight needed (unlike the gauges). Verified with a 3x zoomed
+  screenshot of `.plan-strip` in both light and dark themes — numeral and icon both read clearly, no
+  overlap with the label text. `npm run check`, the full Playwright suite (108/108, both projects, incl.
+  `desktop-no-scroll.spec.ts` and `plan-strip.spec.ts`) and `npm run shots` all green. Unreleased (cap
+  spent). Item 10's only open piece now is the desktop half of the gauges.
 - 2026-09-28 ~13:13-13:35 UTC: shipped ROADMAP 10's gauge bars (`MiniGauge`, `ResourceIcons.tsx`) — a
   small proportional fill pill next to Round/Trust/Lost Land/Rift's existing icon+number. Bounds from
   the engine's own source of truth (Trust 0-15/Rift 0-6 match `validate()`'s checks; Lost Land's "full"
@@ -116,22 +130,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   `actions.ts`'s real cost functions rather than duplicating them in the UI, so a chip can't drift from
   what a tap actually costs) — all unreleased (cap spent). `npm run check`/full Playwright/`npm run
   gates` green throughout; one `ai-teammate.spec.ts` failure confirmed flaky/pre-existing, unrelated.
-- 2026-09-28 ~11:24-11:45 UTC: gave phone's game screen its ROADMAP 8 bottom tray, unreleased (cap spent).
-  Split `.game` into `.game-scroll` (topbar/companion/plan-strip/map) and `.action-tray` (producer info,
-  actions, Undo/sheet-toggle footer) as flex siblings — the tray keeps its natural size and is always the
-  second, non-scrolling child, so SPEC 10.2's "Bottom panel (fixed)" holds with plain flexbox, no fixed
-  positioning or measured-JS-height hack (would've needed an inline `style` the CSP forbids). First pass
-  capped the actions list at 42vh, which (combined with the topbar wrapping to 2 lines at 390px, plus the
-  companion and plan-strip) still squeezed `.game-scroll` down to nothing — the map was entirely invisible
-  on load. Bisected down to a 130px cap by direct measurement (Playwright scripts checking element
-  bounding boxes, then a screenshot) — leaves ~3 action rows visible plus a 4th peeking, and the map mostly
-  but not fully visible (its bottom crops within the scroll area). Desktop unaffected: both wrappers are
-  `display: contents` at 1024px+, confirmed pixel-identical via `shots`. Verified at all 3 of SPEC 10.2's
-  named viewports (360x640/390x844/430x932) and against the chapter-5 dense fixture (38-41 actions): zero
-  page scroll, Undo always reachable. `npm run check`, the full Playwright suite (106/106) and `npm run
-  gates` (all gates) green both before and after. A gate-8 review flagged "KINGSMARKET" as clipped to
-  "RINGSMARKET" on the map — a zoomed screenshot showed the full text renders correctly; false positive
-  from the low-res screenshot, not a real bug.
-- 2026-09-28 ~08:52-11:13 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — ROADMAP 8's desktop-tray and
-  chrome-trimming slices, ROADMAP 1's hands/pose,
-  favicon/social-image and tutorial-voice work, ROADMAP 3's close-out, the SPEC 16 pivot and the sw.js fix.
+- 2026-09-28 ~08:52-11:45 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — ROADMAP 8's phone bottom
+  tray, desktop-tray and chrome-trimming slices, ROADMAP 1's hands/pose, favicon/social-image and
+  tutorial-voice work, ROADMAP 3's close-out, the SPEC 16 pivot and the sw.js fix.
