@@ -744,6 +744,25 @@ h3 {
   flex: none;
 }
 
+/* ROADMAP 9 "clear disabled and why-not states": a disabled action button needs its reason on a second
+   line, not squeezed onto the same row as the icon/label (which is already tight against the cost chip
+   on the right) — this wrapper stacks `.action-label` above `.action-why-not`, so the button's own
+   `justify-content: space-between` still only ever splits 2 children (this wrapper, and `.action-cost`). */
+.action-label-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.action-why-not {
+  font-size: 12px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
 /* ROADMAP 9 "cost chips shown with resource tokens": a small pill inside the action button, additive to
    `actionLabel`'s existing text cost (not a replacement — several e2e tests match button names by
    prefix, so the text stays exactly as it was). Reuses the same resource icons the topbar/active-producer
@@ -1046,6 +1065,27 @@ button:active:not(:disabled) {
     transform: none;
     opacity: 0.7;
   }
+}
+
+/* ROADMAP 9 "clear disabled ... states": a secondary/default button (this app's `button.primary` already
+   has its own disabled style above) had no disabled treatment at all before this — it inherited the same
+   solid ink text/border as an enabled one, so the existing `disabled` Undo button only ever looked
+   disabled by its cursor. A first pass used `opacity` on the whole button for "can't tap this," but a
+   gate-8 review measured the result: `--ink-muted` text at 55% opacity compounds into an even lighter
+   grey that drops to ~2.3:1 contrast, failing STYLE.md 3.6's 4.5:1 floor and making the label and its
+   "why not" reason nearly illegible rather than clearly muted. `--ink-muted` alone (no opacity) already
+   passes contrast on its own everywhere else it's used, so the border and background carry the dimming
+   instead, and only non-text children (the leading icon, the cost chip) get the opacity treatment. */
+button:disabled {
+  cursor: not-allowed;
+  color: var(--ink-muted);
+  border-color: var(--rule);
+  background: var(--paper-2);
+}
+
+button:disabled .action-label svg,
+button:disabled .action-cost {
+  opacity: 0.5;
 }
 
 /* STYLE.md 10: "Primary is pasture-deep fill with paper text." Reserved for the one clear next action on

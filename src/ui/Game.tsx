@@ -549,6 +549,25 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     groups.set(key, group)
   })
 
+  // ROADMAP 9 "clear disabled and why-not states": Sell's missing counts (Produce too low for 2 or 3)
+  // get a disabled placeholder right where the real button would be, so a player learns *why* the full
+  // 1-3 range isn't all offered instead of the count quietly shrinking with no explanation. Scoped to
+  // Sell only for now, not every action: it's the one whose entire legality is a single resource
+  // comparison, so the reason is never ambiguous the way it would be for e.g. Invest (not enough Marks,
+  // no affordable card, or the rule not unlocked yet could all look the same from outside) — those stay
+  // simply absent, as before, until a later session can give each kind its own real reason. Skipped
+  // during a gated tutorial step: SPEC 8.1's "only the action being taught is enabled" already hides
+  // everything else outright, and a disabled Sell row competing for attention there would muddy that.
+  const sellEntries = standalone.filter((e) => e.action.kind === 'sell')
+  const otherStandalone = standalone.filter((e) => e.action.kind !== 'sell')
+  const disabledSell: { count: 1 | 2 | 3; missing: number }[] = []
+  if (rules.sell && !tutorialStep?.highlight) {
+    const affordable = Math.min(3, active.resources.produce)
+    for (let n = affordable + 1; n <= 3; n++) {
+      disabledSell.push({ count: n as 1 | 2 | 3, missing: n - active.resources.produce })
+    }
+  }
+
   function act(actionIndex: number): void {
     const action = actions[actionIndex]!
     // SPEC 8.1: once the taught action is actually taken, move straight to the next tutorial step rather
@@ -635,7 +654,44 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         )
       ) : (
         <>
-          {standalone.map(({ index, action: a }) => {
+          {sellEntries.map(({ index, action: a }) => {
+            const term = actionTermFor(a)
+            const Icon = ACTION_ICON[a.kind]
+            return (
+              <span key={index} className="action-item">
+                <button onClick={() => act(index)}>
+                  <span className="action-label">
+                    {Icon && <Icon size={18} />}
+                    {actionLabel(a, state)}
+                  </span>
+                  <ActionCostChip cost={actionCost(a, state)} />
+                </button>
+                {term && (
+                  <Tooltip term={term} label={`What is ${term}?`}>
+                    ?
+                  </Tooltip>
+                )}
+              </span>
+            )
+          })}
+          {disabledSell.map(({ count, missing }) => (
+            <span key={`disabled-sell-${count}`} className="action-item">
+              <button disabled title={`Need ${missing} more Produce`}>
+                <span className="action-label-group">
+                  <span className="action-label">
+                    <SellIcon size={18} />
+                    {`Sell ${count} Produce for ${count} Marks`}
+                  </span>
+                  <span className="action-why-not">Need {missing} more Produce</span>
+                </span>
+                <ActionCostChip cost={{ resource: 'produce', amount: count }} />
+              </button>
+              <Tooltip term="Sell" label="What is Sell?">
+                ?
+              </Tooltip>
+            </span>
+          ))}
+          {otherStandalone.map(({ index, action: a }) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
