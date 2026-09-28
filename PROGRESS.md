@@ -65,6 +65,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~18:51-19:20 UTC: released the piled-up why-not work (`b2c035c` live; tag push 403 as usual). ROADMAP 11: terrain vignettes per region type and signboard labels on the map (unreleased). Playwright needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`; webkit project can't run here.
 - 2026-09-28 ~17:51-18:26 UTC: shipped 3 slices closing out ROADMAP 9's why-not scope: Supply (Outlets and
   Buyout) and Rebut — each a structural check (an owned region with something to remove) then a resource
   comparison, so a "nothing to target" reason is genuinely distinct from "can't afford it" and worth

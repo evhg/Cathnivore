@@ -226,6 +226,55 @@ export function CoopMarkerIcon() {
   return <CoopMarker x={6} y={7} orbit={2.6} petalR={1.9} centreR={2.3} />
 }
 
+// ROADMAP 11: a small painted-terrain vignette per region type, tucked into the hex's upper flanks where
+// no piece or label ever sits. Flat fills, 1.5 ink outline (STYLE.md 2), and each is a distinct silhouette
+// (bushes, furrows, boat, tower) so it survives the greyscale shape test as well as the texture does.
+function TerrainArt({ type }: { type: RegionType }) {
+  const line = { stroke: 'var(--ink)', strokeWidth: 1.5, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
+  if (type === 'pasture') {
+    const bush = (cx: number) => (
+      <path
+        key={cx}
+        d={`M${cx - 13},-10 q-4,-9 5,-11 q3,-8 8,-2 q8,-5 9,4 q6,2 3,9 z`}
+        fill="var(--pasture)"
+        {...line}
+      />
+    )
+    return <g opacity={0.85}>{bush(-40)}{bush(38)}</g>
+  }
+  if (type === 'crop') {
+    return (
+      <g fill="none" {...line} opacity={0.75}>
+        {[-1, 1].map((d) => (
+          <g key={d}>
+            <path d={`M${d * 24},-4 Q${d * 36},-16 ${d * 52},-28`} />
+            <path d={`M${d * 34},0 Q${d * 46},-12 ${d * 62},-22`} />
+            <path d={`M${d * 44},4 Q${d * 56},-6 ${d * 70},-14`} />
+          </g>
+        ))}
+      </g>
+    )
+  }
+  if (type === 'coast') {
+    const boat = (cx: number, k: number) => (
+      <g key={cx} transform={`translate(${cx},-14) scale(${k})`}>
+        <path d="M-12,2 L12,2 L8,10 L-8,10 Z" fill="var(--clay)" {...line} />
+        <path d="M0,0 L0,-20 M0,-20 L11,-2 L0,-2 Z" fill="var(--paper)" {...line} />
+      </g>
+    )
+    return <g opacity={0.9}>{boat(-42, 1)}{boat(42, 0.75)}</g>
+  }
+  return (
+    <g opacity={0.9}>
+      <g transform="translate(0,-38)">
+        <path d="M-7,30 L-7,4 L0,-8 L7,4 L7,30 Z" fill="var(--paper)" {...line} />
+        <circle cx={0} cy={9} r={4.5} fill="var(--paper)" {...line} />
+        <path d="M0,9 L0,6 M0,9 L2,10" {...line} strokeWidth={1.2} />
+      </g>
+    </g>
+  )
+}
+
 export default function Map({ state, highlight, onSelect }: Props) {
   const active = state.config.activeRegions
   const squeezeTargets = active.filter((id) => matchesSlot(state, id, 'squeeze'))
@@ -258,6 +307,9 @@ export default function Map({ state, highlight, onSelect }: Props) {
               strokeWidth={2}
             />
             <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill={`url(#${REGION_PATTERN_ID[def.type]})`} />
+            <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art">
+              <TerrainArt type={def.type} />
+            </g>
             {r.lostLand > 0 && (
               <g className="lostland-overlay">
                 <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)} fill="var(--clay)" opacity={0.18} />
@@ -350,9 +402,21 @@ export default function Map({ state, highlight, onSelect }: Props) {
         const def = REGIONS[id]
         const { x, y } = hexCenter(id)
         return (
-          <text key={`name-${id}`} x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
-            {def.name}
-          </text>
+          <g key={`name-${id}`} className="region-sign" pointerEvents="none">
+            <rect
+              x={x - def.name.length * 4.3 - 6}
+              y={y - HEX_R * 0.62 - 12}
+              width={def.name.length * 8.6 + 12}
+              height={17}
+              rx={3}
+              fill="var(--paper)"
+              stroke="var(--ink)"
+              strokeWidth={1.5}
+            />
+            <text x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
+              {def.name}
+            </text>
+          </g>
         )
       })}
     </svg>
