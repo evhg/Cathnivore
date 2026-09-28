@@ -5,19 +5,21 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
 - **Current ROADMAP item:** item 1's scope is done; item 8 hit diminishing returns 2 sessions ago.
-  Item 9 ("actions as cards") is now 4 of 5 pieces done: press feedback and the region-glow pulse
-  (prior session), resource cost chips (prior session), and this session's icon set — 8 new icons
-  (Sell, Invest, Scheme, Graft, Open Stall, Supply, Rebut, Role) documented in a new STYLE.md 5.1 and
-  drawn in `src/ui/icons/ActionIcons.tsx`, at the start of every action button. A gate-8 review of the
-  first pass caught 3 real defects (Scheme reading as a plain chevron, Open Stall reading as a
-  monitor, Supply/Rebut's faded shape having no visible outline at all) — all fixed and reverified
-  with zoomed renders before committing. **Today's 4-release cap was already spent before this
+  Item 9 ("actions as cards") shipped its icon set last session; this session started its last listed
+  piece, disabled/why-not states, scoped to the one unambiguous case: Sell's unaffordable counts now
+  render disabled, in place, with a "Need N more Produce" reason and their cost chip. Every other kind
+  stays simply absent when illegal (giving each an accurate reason needs real per-kind logic, deferred).
+  Along the way gave every button a real `:disabled` style (none existed beyond the cursor before); a
+  gate-8 review caught the first pass's opacity-on-everything approach failing contrast (~2.3:1, under
+  STYLE.md 3.6's 4.5:1 floor) — fixed by keeping text at plain `--ink-muted` (verified 4.51:1) and
+  dimming only the icon/chip. New `e2e/disabled-actions.spec.ts` locks the behaviour in. Item 9 is
+  close but not done: the full illustrated-tile redesign (its own title) hasn't started, and
+  disabled/why-not only covers Sell so far. **Today's 4-release cap was already spent before this
   session started, so none of this has reached `main` yet — next session's `npm run release` should
   pick up everything since `92e7406`.**
-- **Next step:** item 9's last piece, disabled/why-not states, is a real behaviour change (today only
-  *legal* actions render as buttons at all) touching enough e2e tests (tutorial highlighting, the AI
-  teammate) to need its own dedicated session — or, given 4 sessions have now piled up unreleased
-  work on `build`, the next session might reasonably open with `npm run release` instead.
+- **Next step:** 5 sessions have now piled up unreleased work on `build` — the next session should
+  seriously consider opening with `npm run release` (today's cap resets on the next calendar day)
+  before starting more of item 9's remaining scope (per-kind why-not reasons, the illustrated tiles).
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -51,6 +53,21 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~12:38-13:00 UTC: started ROADMAP 9's disabled/why-not piece, unreleased (cap spent).
+  Scoped to Sell only (the one action whose legality is a single resource comparison, so the reason is
+  never ambiguous): a disabled placeholder button now renders for each unaffordable count, right where
+  the real button would sit, with "Need N more Produce" and its cost chip. Built by splitting `standalone`
+  into `sellEntries`/`otherStandalone` and inserting the synthetic disabled rows between them, so ordering
+  stays natural without needing to splice into the typed `{index, action}` array. Skipped during a gated
+  tutorial step (SPEC 8.1's "only the action being taught is enabled"). Added a real `button:disabled`
+  style project-wide (previously only `button.primary:disabled` had one) — first pass used `opacity` on
+  the whole button, which a gate-8 review measured at ~2.3:1 contrast (compounding `--ink-muted` with 50%
+  opacity), well under STYLE.md 3.6's 4.5:1 floor; fixed by keeping text at plain `--ink-muted` (hand-
+  verified 4.51:1 via the WCAG relative-luminance formula) and moving the opacity to only the icon/cost
+  chip. New `e2e/disabled-actions.spec.ts` checks the reason text, the tooltip, and that a forced click on
+  a disabled button changes nothing. `npm run check`, the full Playwright suite (108/108, both projects,
+  including the new spec) and `npm run gates` (all gates) green throughout, including a second full gates
+  run after the contrast fix.
 - 2026-09-28 ~12:17-12:35 UTC: ROADMAP 9's icon set, unreleased (cap spent). Documented 8 new icons in
   STYLE.md 5.1 (Sell, Invest, Scheme, Graft, Open Stall, Supply, Rebut, Role — same 24px/flat-fill/
   2px-ink-outline grid as the resource icons) and drew them in `src/ui/icons/ActionIcons.tsx`, wired in
@@ -102,32 +119,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   288px (293px now the last passing width). Both slices: `npm run check`, the full Playwright suite (both
   projects, 106/106) and a `shots` visual check all green. `lsof -i :4173` confirmed no stale preview server
   before every `shots` run this session, per the known gotcha.
-- 2026-09-28 ~09:52-10:20 UTC: gave ROADMAP 8 (game-screen layout) a dedicated session as scoped. Moved the
-  desktop action list out of the centre `.game` column into a new side tray next to the Farm panel
-  (`Game.tsx`'s `actionsPanel`, `.actions-sheet` in `global.css`), tried the right column first but measured
-  it already near-full (Market+Plan+Log alone) before reaching for the left one instead. First pass mounted
-  both the phone and desktop copies unconditionally (CSS picking which showed) — broke Playwright's
-  strict-mode locators, since `display: none` doesn't stop a DOM query match; fixed by gating which one
-  *mounts* with a `useIsDesktopLayout()` matchMedia hook instead. Measured directly (repeated runs against
-  desktop-no-scroll.spec.ts's fixture) that this barely grows the map: the old action list already shrank to
-  near-nothing in tight states, so the real ceiling is the fixed chrome around the map, not the action list
-  sharing space with it. `.map`'s cap moved 260px→262px; `.map-wrap` now absorbs leftover vertical space on
-  taller-than-1280x800 windows (a `shots` screenshot caught a dead gap below Undo otherwise). SPEC 10.3
-  updated to match. `npm run check`, the full Playwright suite (both projects, 106/106) and `shots` all
-  green; not released (today's cap already spent). ROADMAP 8 stays unchecked — see its note for what's left.
-- 2026-09-28 ~08:52-09:10 UTC: closed out ROADMAP 1's last open piece — finer hair/fabric shading
-  (`73e6e60`): strand-shine and depth strokes on the hair (back mass and front locks) and
-  sleeve/lapel/waist fold shading on both outfits, verified across all 5 expressions and every
-  framing down to 56px, gate-8 subagent review found no regressions. Added 2 more light Bea lines
-  (`36bc223`, ROADMAP 5: Growing Season and Word of Mouth closings). Scoped ROADMAP item 8 (see its
-  note) rather than starting it: today's desktop `.map` is deliberately capped at 260px to fit
-  SPEC 10.3's no-scroll budget, so "make the map the hero" needs the actions moved out of the
-  centre column — real `Game.tsx`/CSS surgery, not a same-session slice; confirmed with a live
-  test (`a25949b`) that even a 10px bump past 260px fails `desktop-no-scroll.spec.ts`, so it's
-  not a lever with hidden headroom. Caught my own mistake:
-  started `npm run release` out of habit before checking today's cap was already spent (noted in
-  Now/session log below) — stopped it via TaskStop before it touched `main` (verified
-  `origin/main` still at `d193d0c`, working tree clean). All gates green, live site confirmed at
-  `d193d0c` via `version.json`. **Today's 4-release cap remains spent; nothing new released.**
-- 2026-09-28 ~06:52-08:14 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — ROADMAP 1's hands/pose,
+- 2026-09-28 ~08:52-10:20 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — ROADMAP 8's first slice
+  (the desktop action tray), ROADMAP 1's hands/pose,
   favicon/social-image and tutorial-voice work, ROADMAP 3's close-out, the SPEC 16 pivot and the sw.js fix.

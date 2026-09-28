@@ -85,3 +85,9 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   them obvious. Lesson: any icon meant to read at ~16-18px needs checking at that actual render size,
   not just at the 3x-zoomed scale it's easy to eyeball during design; a resting-state `shots` screenshot
   alone isn't zoomed enough to catch a silhouette that only half-works.
+- 2026-09-28: scoped "disabled and why-not states" (ROADMAP 9) to Sell only rather than all 8 action
+  kinds — Sell's legality is one resource comparison, so its reason is never ambiguous; every other kind
+  would need real per-kind precondition logic to give an accurate (not just plausible-looking) reason.
+  Also: `opacity` on a whole disabled button double-dims text that's already `--ink-muted`, dropping below
+  STYLE.md 3.6's 4.5:1 floor — a gate-8 review caught this at ~2.3:1. Keep disabled text at plain
+  `--ink-muted` (no opacity) and put the opacity only on non-text children (icons, chips) instead.

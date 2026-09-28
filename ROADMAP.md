@@ -100,11 +100,22 @@ Every visual item is done only when:
    box/bubble had no `stroke` at all, so only the X was visible (added a separately-opaque ink
    outline). 5 of the 8 icons needed genuinely new art (Sell, Invest, Scheme, Graft, Role); the other
    3 (Open Stall, Supply, Rebut) build on shapes that already existed on the map. `npm run gates`
-   green 3 times across the 2 sessions that shipped item 9's pieces so far. Still open, the item's
-   last piece: disabled/why-not states — today only *legal* actions render as buttons at all, so "why
-   not" has no illegal action to explain itself against; making that work is a real behaviour change
-   (which actions render, not just how) touching enough e2e tests (tutorial highlighting, the AI
-   teammate's decision loop) to warrant its own dedicated session.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
+   green 3 times across the 2 sessions that shipped item 9's pieces so far.
+   2026-09-28 (later same session): started the item's last piece, disabled/why-not states, with the one
+   case that's genuinely unambiguous — Sell. Its whole legality is a single resource comparison (Produce
+   ≥ count), so when a count is unaffordable it now renders as a disabled placeholder, in its natural
+   numeric position, with a "Need N more Produce" line and its cost chip still shown (skipped during a
+   gated tutorial step, since SPEC 8.1's "only the action being taught is enabled" already hides
+   everything else). Every other action kind stays simply absent when illegal, as before: Invest/Scheme's
+   "not enough Marks/Goodwill vs. no affordable card vs. rule not unlocked yet" and Supply/Rebut/Open
+   Stall's "no valid region vs. can't afford it" would need real per-kind reason logic to avoid showing a
+   misleading reason, which is a bigger, separate piece of work. Along the way, gave every button (not
+   just this one) a real `:disabled` style — none existed before beyond the cursor, and a gate-8 review
+   caught a first pass compounding `--ink-muted` text with 50% opacity into ~2.3:1 contrast (under
+   STYLE.md 3.6's 4.5:1 floor); fixed by keeping text at plain `--ink-muted` (verified 4.51:1) and moving
+   the opacity to only the icon/cost chip. New `e2e/disabled-actions.spec.ts` locks in the behaviour.
+   Item 9 is now close but not done: disabled/why-not states cover only Sell, and the full
+   illustrated-tile redesign (the item's own title) hasn't started.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
 10. [ ] **The table, part 3: the HUD.** Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
 11. [ ] **Map art, part 1: regions.** Terrain illustration on each region (hedgerows, field rows, shoreline and boats, the Kingsmarket clock tower) and labels as painted signboards. It must pass the greyscale shape test (STYLE.md 2).
 12. [ ] **Map art, part 2: pieces.** The exact STYLE.md 6 pieces (awning Stall, glossy "0.99" Outlet, "SOLD" fence Buyout, "?" bubble Doubt), each with a placement animation.

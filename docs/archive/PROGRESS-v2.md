@@ -62,3 +62,30 @@ Search with grep; never read in full.
   live capture of the landing hero, which already draws from `shared/cath/cath.ts` so it picked up the new
   Cath for free. `npm run check` and a `shots`/gate-8-equivalent visual pass green after each slice. Only
   finer hair/fabric shading is left open on ROADMAP 1.
+- 2026-09-28 ~08:52-09:10 UTC: closed out ROADMAP 1's last open piece — finer hair/fabric shading
+  (`73e6e60`): strand-shine and depth strokes on the hair (back mass and front locks) and
+  sleeve/lapel/waist fold shading on both outfits, verified across all 5 expressions and every
+  framing down to 56px, gate-8 subagent review found no regressions. Added 2 more light Bea lines
+  (`36bc223`, ROADMAP 5: Growing Season and Word of Mouth closings). Scoped ROADMAP item 8 (see its
+  note) rather than starting it: today's desktop `.map` is deliberately capped at 260px to fit
+  SPEC 10.3's no-scroll budget, so "make the map the hero" needs the actions moved out of the
+  centre column — real `Game.tsx`/CSS surgery, not a same-session slice; confirmed with a live
+  test (`a25949b`) that even a 10px bump past 260px fails `desktop-no-scroll.spec.ts`, so it's
+  not a lever with hidden headroom. Caught my own mistake:
+  started `npm run release` out of habit before checking today's cap was already spent (noted in
+  Now/session log below) — stopped it via TaskStop before it touched `main` (verified
+  `origin/main` still at `d193d0c`, working tree clean). All gates green, live site confirmed at
+  `d193d0c` via `version.json`. **Today's 4-release cap remains spent; nothing new released.**
+- 2026-09-28 ~09:52-10:20 UTC: gave ROADMAP 8 (game-screen layout) a dedicated session as scoped. Moved the
+  desktop action list out of the centre `.game` column into a new side tray next to the Farm panel
+  (`Game.tsx`'s `actionsPanel`, `.actions-sheet` in `global.css`), tried the right column first but measured
+  it already near-full (Market+Plan+Log alone) before reaching for the left one instead. First pass mounted
+  both the phone and desktop copies unconditionally (CSS picking which showed) — broke Playwright's
+  strict-mode locators, since `display: none` doesn't stop a DOM query match; fixed by gating which one
+  *mounts* with a `useIsDesktopLayout()` matchMedia hook instead. Measured directly (repeated runs against
+  desktop-no-scroll.spec.ts's fixture) that this barely grows the map: the old action list already shrank to
+  near-nothing in tight states, so the real ceiling is the fixed chrome around the map, not the action list
+  sharing space with it. `.map`'s cap moved 260px→262px; `.map-wrap` now absorbs leftover vertical space on
+  taller-than-1280x800 windows (a `shots` screenshot caught a dead gap below Undo otherwise). SPEC 10.3
+  updated to match. `npm run check`, the full Playwright suite (both projects, 106/106) and `shots` all
+  green; not released (today's cap already spent). ROADMAP 8 stays unchecked — see its note for what's left.
