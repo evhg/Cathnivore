@@ -3080,14 +3080,10 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [ ] create `DONE`
 
 
-### Known issues found 2026-09-28, not yet fixed (both real, neither release-blocking per SPEC 1.3's
-priority order — correctness of implemented rules outranks these but neither is a scored-rule bug)
-- [ ] The 4 "look at the top card" info Schemes (Reconnaissance, Paper Trail, Weather Eye, Steak-out —
-  `src/content/schemes.ts`) never show the player what was peeked: their `effect` is a no-op by design
-  ("UI-only reveal") but no UI anywhere actually surfaces the peeked card, so a player pays Goodwill, sees
-  nothing change, and loses Undo (correctly `irreversible: true`) for a reveal that never happened on
-  screen. Fix needs a small `GameEvent`/log field (e.g. `schemePlayed` gaining an optional `peekedCard`) plus
-  a UI surface for it (a toast, a log line, or a small reveal panel) — bigger than a text fix, hence deferred.
+### Known issues found 2026-09-28
+- [x] The 4 "look at the top card" info Schemes (Reconnaissance, Paper Trail, Weather Eye, Steak-out) never
+  showed the player what was peeked. **Fixed same session**: `schemePlayed` GameEvents gained an optional
+  `peek: string[]` field, shown in the Log sheet ("Peeked: Stage 1: Coast."). See DECISIONS.md.
 - [ ] Hot-seat mode has no turn-transition/"pass the device" screen — turns switch with only the active-
   producer header changing, even though the mode-picker's own copy promises "pass the device back and
   forth" (`src/App.tsx`). Not a strict SPEC violation (SPEC 2 only requires "2 humans taking turns on one
