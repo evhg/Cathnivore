@@ -54,6 +54,15 @@ scripted-trigger/carry-over robustness. Each found one real bug (full detail in 
 `npm run check` clean; new e2e test plus the full `phone`+`desktop-chromium` suites (104/104) and
 `npx vitest run` (519/519) all green. Pushed to `build`.
 
+With `build` carrying a full session's worth of fixes, ran `npm run release` a second time. Gates passed
+clean again (all 8; gate 8's screenshots unchanged), but the fast-forward hit the usual stale-local-`main`
+failure and the manual fix's merge step was denied again by the "Production Deploy" classifier —
+`origin/main` confirmed still at `f78f78e`. Not retried; switched back to `build`, logged under Blocked.
+Session total: 6 real, previously-unlogged bugs found and fixed across 8 subagent review passes (2 at a
+time throughout, respecting CLAUDE.md's cap), plus 40 new regression tests (38 unit + 1 e2e + the AI-reason
+suite's own additions) closing SPEC 11.4 gate 2's Agenda/Scheme/Improvement coverage gap. `build` is at
+`d8fcfd4`, fully gated, waiting for a future session's release retry. Lock released at session end.
+
 ---
 This session (2026-09-28, starting ~23:51 UTC): standard session start, lock taken, `main`/`build` already in
 sync (only lock/doc churn between `f78f78e`/`130be4a`), `origin/ci-status`'s `ios.json` unchanged (still the
@@ -3044,6 +3053,17 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-28 ~01:22 UTC:** `npm run release` ran `npm run gates` clean (all 8; gate 8's screenshots
+  captured, unchanged content), hit the usual stale-local-`main` fast-forward failure. `git checkout -B main
+  origin/main` succeeded, but `git merge --no-ff build` was denied by the "Production Deploy" classifier
+  before running — no local merge made, `origin/main` confirmed untouched at `f78f78e` (verified with a
+  plain `git status` afterward). Not retried per the denial's own guidance; switched back to `build`. `build`
+  (`d8fcfd4`) carries this session's 6 real fixes (chapter 3's stale tutorial text, the campaign-wide wrong
+  round-total display, the stale privacy/support link, the AI's content-free `decide` reason, and the
+  narrower mid-scene-replay-on-reload gap — see Current milestone/DECISIONS.md) plus 38 new gate-2 unit
+  tests and 1 new e2e regression test, all fully gated and pushed, waiting for a future session's release
+  retry: try `npm run release` normally first; if it hits the same ff-only failure, redo the manual
+  checkout+merge+push sequence from scratch.
 - **New 2026-09-28 ~00:56 UTC:** `npm run release` ran `npm run gates` clean (gates 1-7; gate 8's screenshots
   captured, unchanged content from the prior session's own subagent-reviewed pass — see Current milestone),
   hit the usual stale-local-`main` fast-forward failure. `git checkout -B main origin/main` succeeded, but
