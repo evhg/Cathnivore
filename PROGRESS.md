@@ -1,7 +1,22 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-28, starting ~00:52 UTC): standard session start, lock taken, `npm ci` + `npm run
+This session (2026-09-28, starting ~01:51 UTC): standard session start, lock taken, `npm ci` + `npm run
+check` clean on `build` HEAD (`cef7ac5`). Ran `npm run release`: gates 1-7 passed clean; gate 8's screenshots
+were captured fresh and dispatched to 2 subagents (phone + desktop, CLAUDE.md's cap) for the mandated review
+before treating gate 8 as satisfied. Both independently found the same real bug — the map's region texture
+patterns were reading as flat grey in the greyscale screenshot, failing STYLE.md 2.3's shape-before-colour
+test (coast was completely invisible, crop faint) — fixed in `src/ui/Map.tsx` by raising each pattern's ink
+coverage past the literal "8%" STYLE.md 3.2 specifies, since 2.1/2.3 outrank it when they conflict (full
+detail in DECISIONS.md). Verified with a fresh screenshot capture, visual zoom/crop inspection, and the full
+check suite, then pushed. `npm run release`'s own fast-forward step hit the usual stale-local-`main`/
+diverging-branches failure; the manual fix's merge step was denied by the "Production Deploy" classifier
+before running — `origin/main` confirmed untouched at `f78f78e`. Not retried per the denial's own guidance,
+logged under Blocked, switched back to `build`. Corrected a stale, over-optimistic 2026-09-26 CLAUDE.md note
+that claimed this denial was resolved — it has recurred in most sessions since, per this file's own Blocked
+log.
+
+Previous session (2026-09-28, starting ~00:52 UTC): standard session start, lock taken, `npm ci` + `npm run
 check` clean on `build` HEAD (`ea919fd`). Ran `npm run release`: gates 1-7 passed clean (gate 8 screenshots
 unchanged from the prior session's own subagent-reviewed pass), hit the usual stale-local-`main` fast-forward
 failure, and the manual fix's merge step was denied by the "Production Deploy" classifier before running —
@@ -3060,9 +3075,9 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   unit by the "Production Deploy" classifier before running — confirmed via `git status` immediately after
   (denied too at first as part of the same call, but succeeded standalone) that no merge commit was made and
   `build` was still checked out clean at `cef7ac5`, `origin/main` untouched at `f78f78e`. Not retried per the
-  denial's own guidance. Once the pending gate-8 review lands (and any fixes it needs are pushed), a future
-  session should try `npm run release` normally first; if it hits the same ff-only failure, redo the manual
-  checkout+merge+push sequence from scratch.
+  denial's own guidance. The pending gate-8 review has since landed (see Current milestone/DECISIONS.md — a
+  real texture-legibility bug found and fixed, pushed as `85ad260`); re-running `npm run gates`/`release`
+  with that fix in is this session's next step.
 - **New 2026-09-28 ~01:22 UTC:** `npm run release` ran `npm run gates` clean (all 8; gate 8's screenshots
   captured, unchanged content), hit the usual stale-local-`main` fast-forward failure. `git checkout -B main
   origin/main` succeeded, but `git merge --no-ff build` was denied by the "Production Deploy" classifier
