@@ -33,10 +33,26 @@ captured (unchanged content from this session's earlier subagent-reviewed pass �
 markup/CSS). Hit the usual stale-local-`main`/diverging-histories fast-forward failure. The documented manual
 fix (`git checkout -B main origin/main`) succeeded, but `git merge --no-ff build` was denied by the harness's
 "Production Deploy" classifier before running — no local merge was made, `origin/main` confirmed untouched at
-`f78f78e`. Not retried per the denial's own guidance; logged under Blocked. `build` (`cdaa1f8`, carrying both
-real fixes above) is fully gated and pushed, waiting for a future session's release retry.
+`f78f78e`. Not retried per the denial's own guidance; logged under Blocked.
 
-`npm audit`: 0 vulnerabilities (unchanged). Lock released at session end.
+With time left in the session, dispatched 2 more subagents at areas without a dedicated correctness pass
+recently: the sim/balance harness (came back clean — specifically re-verified the settledRound/STEP_CAP
+fixes prior sessions logged are genuinely correct, plus worker-pool disjointness and every aggregate ratio's
+divide-by-zero guard) and every Scheme/Improvement's `text` field cross-checked against its actual
+`effect`/`onBuy`. The second found a real bug: **"Two For One" (a Scheme) claimed an unconditional "Remove 1
+Outlet and 1 Doubt,"** but its `legalTargets` only requires *either* to be present (an OR) and its `effect`
+correctly only removes what's there — so the card was legally playable, and correctly resolved, on a region
+with just one of the two, silently overclaiming what it does. Fixed the text (not the targeting rule, which
+is the established, already-balance-tuned design) and added a direct regression test for the OR-only case,
+which no existing test exercised. `npm run check` (472 tests, up from 467 at session start) and a full
+`tsc`/`eslint` pass both clean. Pushed to `build` (`31b4c6a`).
+
+Session total: 3 real, previously-unlogged bugs found and fixed (the mid-scene reload bug, the AI-worker
+listener leak, and this Scheme text mismatch), across 8 subagent review passes (2 at a time throughout,
+respecting CLAUDE.md's cap) covering platform/iOS, engine rules, Runnel/site, error screen/CSP, AI worker
+logic, UI state management, the sim harness, and content text — plus 4 of those 8 passes coming back clean,
+a real confirmation nothing else has regressed in a codebase this heavily audited already. `npm audit`: 0
+vulnerabilities (unchanged). Lock released at session end.
 
 ---
 This session (2026-09-27, starting ~22:52 UTC): standard session start, lock taken, `ci.json` green at
@@ -2980,10 +2996,11 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
   itself succeeded this time (no "Blind Apply" denial), but the next step, `git merge --no-ff build`, was
   denied by the "Production Deploy" classifier before running — no local merge commit was made,
   `origin/main` confirmed untouched at `f78f78e`. Not retried per the denial's own guidance; switched back to
-  `build` (still at `cdaa1f8`, unaffected). `build` carries this session's 2 real fixes (the mid-game-scene
-  reload bug and the AI-worker listener leak, both fully gated and e2e-verified — see Current milestone/
-  DECISIONS.md), waiting for a future session's release retry: try `npm run release` normally first; if it
-  hits the same ff-only failure, redo the manual checkout+merge+push sequence from scratch.
+  `build`. `build` (`31b4c6a` as of session end) carries this session's 3 real fixes (the mid-game-scene
+  reload bug, the AI-worker listener leak, and the Two For One Scheme text mismatch — all fully gated and
+  e2e/unit-verified, see Current milestone/DECISIONS.md), waiting for a future session's release retry: try
+  `npm run release` normally first; if it hits the same ff-only failure, redo the manual
+  checkout+merge+push sequence from scratch.
 - **New 2026-09-27 ~22:00 UTC:** `npm run release` ran `npm run gates` clean (all 8, gate 8 confirmed this
   session via 2 fresh subagent screenshot reviews — see Current milestone), hit the usual stale-local-`main`
   fast-forward failure, and the manual fix (`git checkout -B main origin/main && git merge --no-ff build`)

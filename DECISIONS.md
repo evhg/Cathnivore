@@ -3090,3 +3090,31 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   workaround, not `playwright install`. `scripts/gates.ts`'s own `npm run gates` run picked the right path
   automatically (unaffected); only this session's extra manual `npx playwright test` reruns needed the env
   var set explicitly.
+  Also ran `npm run release` at this point: gates 1-7 passed clean again, gate 8 recaptured (unchanged
+  content, no UI touched by either fix), but the fast-forward hit the usual stale-local-`main` symptom —
+  `git checkout -B main origin/main` succeeded this time, but the following `git merge --no-ff build` was
+  denied by the "Production Deploy" classifier before running. No local merge was made; `origin/main`
+  confirmed untouched at `f78f78e`. Not retried per the denial's own guidance; logged under Blocked, switched
+  back to `build`.
+
+  With time still left in the session, dispatched 2 more subagents (still within CLAUDE.md's 2-at-once cap
+  across the session as a whole) at two areas that hadn't had a dedicated correctness pass: the sim/balance
+  harness (`sim/run.ts`/`simCore.ts`/`simWorker.ts`/`fuzz.ts` — the code behind every number in the 12-
+  iteration balance loop and every fuzz-gate run) and every Scheme/Improvement's `text` field cross-checked
+  against its actual `effect`/`onBuy` (SPEC 4's "rules text ... checked against it by tests" requirement).
+  The sim-harness pass came back clean (specifically re-verified the settledRound/STEP_CAP fixes prior
+  sessions logged are genuinely correct, not just claimed, plus worker-pool seed/chunk disjointness and
+  every aggregate ratio's divide-by-zero guard — no new bug).
+  The content pass found one real, previously-unlogged bug: **"Two For One" (src/content/schemes.ts)'s text
+  said "Remove 1 Outlet and 1 Doubt from a region with your Stall"** (an unconditional AND), but
+  `legalTargets` only requires *either* piece type to be present (an OR) and `effect` correctly only removes
+  what's there — so the card was legally playable, and correctly resolved, on a region with just one of the
+  two, silently overclaiming what it does. `tests/rules-text.test.ts` only numerically checks Improvements,
+  not Schemes (a known, already-logged scope gap), and `tests/schemes-effects.test.ts`'s `richBoard` fixture
+  always gives its test region *both* piece types, so no existing test ever exercised the OR-only-satisfied
+  case. Fixed the text to say "(whichever it has)" rather than tightening `legalTargets` to an AND, since the
+  OR-gated legality is the established, already-balance-tuned targeting rule (SPEC 4's balance loop tunes
+  numbers, not silently retightened targeting) — a text fix, not a rules fix. Added a direct regression test
+  in `tests/schemes-effects.test.ts` (a region with Doubt but no Outlet still lets the card be played and
+  removes only the Doubt). `npm run check` (472 tests, up from 471) and a full `tsc`/`eslint` pass both
+  clean. Pushed to `build` (`31b4c6a`).
