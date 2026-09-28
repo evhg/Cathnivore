@@ -1,6 +1,33 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-28, starting ~00:52 UTC): standard session start, lock taken, `npm ci` + `npm run
+check` clean on `build` HEAD (`ea919fd`). Ran `npm run release`: gates 1-7 passed clean (gate 8 screenshots
+unchanged from the prior session's own subagent-reviewed pass), hit the usual stale-local-`main` fast-forward
+failure, and the manual fix's merge step was denied by the "Production Deploy" classifier before running —
+`origin/main` confirmed untouched at `f78f78e`. Not retried per the denial's own guidance; logged under
+Blocked, switched back to `build`.
+
+Dispatched 2 subagents (CLAUDE.md's cap) at fresh areas — one re-checking `src/content/story`/`chapters.ts`,
+`src/ai/evaluation.ts` and previously-unaudited `src/ui` components, the other checking `store/`, `public/`
+(+ `site/` equivalents), `vercel.json` and the workflow YAMLs against SPEC 11.5/11.6/15. Both found one real,
+previously-unlogged bug each, all fixed this session (full detail in DECISIONS.md):
+1. Chapter 3's in-game tutorial prompt still promised "within 8 rounds," a claim already known false and
+   already dropped from `goalDescription` by a prior session, but never updated in `tutorialSteps`. Fixed.
+2. `Game.tsx`'s topbar hardcoded "Round x/10" even though every campaign chapter except 6 runs a different
+   scripted Pressure-deck length (chapter 1 caps at 6 rounds, chapter 3 at 16, etc.) — so most of the
+   campaign showed a wrong round total throughout play. Fixed by deriving the total from
+   `state.round + state.pressureDeck.length` (the same field `evaluation.ts`'s `paceScore` already trusts).
+3. `public/privacy/index.html` and `public/support/index.html`'s "Back to Cathnivore" footer link used
+   `href="/"`, stale since the 2026-09-27 portfolio restructuring moved Cathnivore to `/cathnivore/` and made
+   `/` the multi-game landing page. Fixed both to `href="/cathnivore/"`.
+
+All three fixes verified: `npx tsc -b`/`npx eslint` clean, `npx vitest run` 472/472 (unchanged, none of these
+needed new unit tests — 1/3 is a text-only content fix, 2/3 is arithmetic off an already-tested field, 3/3 is
+a static HTML link), `desktop-chromium` runs of `e2e/quick-game.spec.ts` + `e2e/campaign.spec.ts` (7/7) and
+the full `npm run e2e:site` (28/28) all green. Pushed to `build`.
+
+---
 This session (2026-09-28, starting ~23:51 UTC): standard session start, lock taken, `main`/`build` already in
 sync (only lock/doc churn between `f78f78e`/`130be4a`), `origin/ci-status`'s `ios.json` unchanged (still the
 same missing-Apple-secrets failure on the unchanged `OWNER.md` placeholder Team ID — not re-dispatched, would
@@ -2990,6 +3017,16 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-28 ~00:56 UTC:** `npm run release` ran `npm run gates` clean (gates 1-7; gate 8's screenshots
+  captured, unchanged content from the prior session's own subagent-reviewed pass — see Current milestone),
+  hit the usual stale-local-`main` fast-forward failure. `git checkout -B main origin/main` succeeded, but
+  `git merge --no-ff build` was denied by the "Production Deploy" classifier before running — no local merge
+  made, `origin/main` confirmed untouched at `f78f78e`. Not retried per the denial's own guidance; switched
+  back to `build`. `build` carries this session's 3 real fixes (chapter 3's stale tutorial-text claim, the
+  campaign-wide wrong round-total display, and the stale post-portfolio-restructuring privacy/support "Back
+  to Cathnivore" link — see Current milestone/DECISIONS.md), waiting for a future session's release retry:
+  try `npm run release` normally first; if it hits the same ff-only failure, redo the manual
+  checkout+merge+push sequence from scratch.
 - **New 2026-09-28 ~00:12 UTC:** `npm run release` ran `npm run gates` clean (gates 1-7; gate 8's screenshots
   captured, unchanged content from this session's own earlier subagent-reviewed pass — see Current
   milestone), hit the usual stale-local-`main` fast-forward failure. `git checkout -B main origin/main`

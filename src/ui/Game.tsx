@@ -454,7 +454,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       <main className="game">
       <header className="topbar">
         <span>
-          <RoundIcon /> Round {state.round}/10
+          <RoundIcon /> Round {state.round}/{state.round + state.pressureDeck.length}
         </span>
         <span>
           <Tooltip term="Public Trust">

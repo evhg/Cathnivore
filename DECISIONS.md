@@ -3118,3 +3118,51 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   in `tests/schemes-effects.test.ts` (a region with Doubt but no Outlet still lets the card be played and
   removes only the Doubt). `npm run check` (472 tests, up from 471) and a full `tsc`/`eslint` pass both
   clean. Pushed to `build` (`31b4c6a`).
+- 2026-09-28 (~00:52 UTC, new session): standard session start, lock taken, `npm ci` + `npm run check` clean
+  on `build` HEAD (`ea919fd`, this session's own lock commit on top of `31b4c6a`). Ran `npm run release`:
+  gates 1-7 passed clean (28 site e2e, 16 axe, Lighthouse 98/100, gate 8 screenshots captured but unchanged
+  content from the prior session's own subagent-reviewed pass), then hit the usual stale-local-`main`
+  fast-forward failure. The manual fix's merge step (`git checkout -B main origin/main` succeeded; `git merge
+  --no-ff build`) was denied by the harness's "Production Deploy" classifier before running — no local merge
+  made, `origin/main` confirmed untouched at `f78f78e`. Not retried per the denial's own guidance; switched
+  back to `build`. Logged under Blocked.
+
+  Dispatched 2 subagents (CLAUDE.md's cap) at fresh areas: one re-checked `src/content/story`/`chapters.ts`,
+  `src/ai/evaluation.ts` and several previously-unaudited `src/ui` components (Setup.tsx, Settings.tsx,
+  Tooltip.tsx); the other checked `store/`, `public/` (+ `site/` equivalents), `vercel.json` and the
+  workflow YAMLs against SPEC 11.5/11.6/15. Both found one real, previously-unlogged bug each, both fixed
+  this session:
+  1. **`src/content/chapters.ts`'s chapter 3 tutorial step still promised "within 8 rounds"** even though a
+     2026-09-25 session already dropped that same false claim from `goalDescription` once chapter 3's
+     scripted Pressure deck was deliberately grown to 16 cards (SPEC 8.2's literal 8-round goal was
+     empirically far too tight for a single producer — see that session's own DECISIONS.md entry). The
+     `tutorialSteps` copy was never updated to match, so a player following the in-game tutorial prompt
+     (not the chapter-select card) saw a deadline that doesn't exist. Fixed the text to drop the round
+     count, matching `goalDescription`'s wording exactly.
+  2. **`src/ui/Game.tsx`'s topbar hardcoded "Round {state.round}/10"** even though `Game` is shared by Quick
+     Game (a real 10-round game) and every campaign chapter, most of which run a different scripted
+     Pressure-deck length (chapter 1 caps at 6 rounds, chapter 3 at 16, etc. — chapter 6 is the only chapter
+     that happens to also use a real 10-card deck). `src/ai/evaluation.ts`'s `paceScore` had already been
+     fixed for this same class of bug (reading `state.pressureDeck.length` instead of a hardcoded
+     `NORMAL_ROUND_CAP`), but the UI display was never given the equivalent fix, so every non-Quick-Game,
+     non-chapter-6 screen showed a wrong round total throughout play. Fixed by deriving the total from the
+     engine's own state: total rounds = `state.round + state.pressureDeck.length` (setup already pops one
+     Pressure card into Scout before round 1 starts, so the invariant holds every round: e.g. chapter 1's
+     6-card deck reads `1/6` at kickoff, matching SPEC 8.2's stated 6-round cap, and the standard 10-card
+     game correctly still reads `.../10`). No new test added (a straightforward arithmetic derivation
+     directly off the same field `paceScore` already trusts, not new logic to regress) — verified instead
+     with a full `desktop-chromium` run of `e2e/campaign.spec.ts` (all 6 chapters) and `e2e/quick-game.spec.ts`,
+     all green, plus a full `npx vitest run` (472/472 unchanged).
+  3. **`public/privacy/index.html` and `public/support/index.html`'s footer "Back to Cathnivore" link used
+     `href="/"`**, a leftover from before the 2026-09-27 SPEC 15 portfolio restructuring, when `/` was
+     Cathnivore itself. Since that restructuring `/` is the multi-game landing page and Cathnivore lives at
+     `/cathnivore/` (`scripts/build-site.ts` copies both pages verbatim into `dist-site`'s root without
+     rewriting internal links), so a player reaching either page from inside the app (via `src/App.tsx`'s
+     footer links, or an App Store reviewer following the store metadata's privacy/support URLs) and tapping
+     "Back to Cathnivore" landed on the portfolio page instead of the game. Fixed both to `href="/cathnivore/"`
+     (the link text already specifically says "Cathnivore," not "games" or "home," so the destination should
+     match). Verified with `npm run build:site` (both `dist-site/privacy/`, `dist-site/support/` and their
+     `/cathnivore/`-prefixed copies now link correctly) and a full `npm run e2e:site` (28/28 passing).
+  All three fixes: `npx tsc -b`/`npx eslint` clean, `npx vitest run` 472/472, `desktop-chromium` runs of
+  `e2e/quick-game.spec.ts` + `e2e/campaign.spec.ts` (7/7) and the full `e2e:site` suite (28/28) all green.
+  Pushed to `build`.
