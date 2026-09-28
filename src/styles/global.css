@@ -1050,6 +1050,13 @@ html.native-app body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Same safe-area gap as `.controls` above, missed for the Farm/Market/Cath's Plan/Log bottom sheets
+   (found in a 2026-09-28 QA pass): they slide up from the same bottom edge but only had a flat 20px of
+   padding, so their last row of content sat flush against the home-indicator area on-device. */
+.native-app .sheet {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
 /* Setup and Settings screens (SPEC 10.1): plain semantic markup so far (M3/M6), but with no layout CSS at
    all their option <label> rows ran together inline instead of one option per line — found while
    spot-checking gate 8's screenshots. Minimal block-per-option spacing, matching the paper-card look used

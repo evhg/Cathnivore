@@ -68,6 +68,7 @@ Define all colours as CSS custom properties. Never hard-code a colour outside th
 | `--ink` | #F1E9DC | Text, and icon strokes that sit directly on dark |
 | `--ink-muted` | #B8AC9F | Secondary text |
 | `--pasture` | #7FA35A | Pasture-coloured text and outlines |
+| `--soil` | #D9B98A | Headings on paper, borders |
 | `--sea` | #6FA3B3 | Links, information |
 | `--clay` | #D0705A | Danger text |
 | `--pasture-deep`, `--clay-deep`, `--wheat` | unchanged | Fills that carry text |

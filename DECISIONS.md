@@ -3252,3 +3252,30 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   cropped/zoomed greyscale renders at both sizes: all 4 region types are now clearly distinguishable by
   pattern alone. `npx tsc -b`/`npx eslint` clean, `npx vitest run` 519/519, `quick-game.spec.ts` (desktop)
   green. Pushed to `build`.
+
+- **2026-09-28 (2nd pair):** Dispatched 2 more subagents (dark theme/PWA/settings; platform layer/iOS shell)
+  while waiting out this session's release-merge denial. Each found one real, previously-unlogged bug:
+  1. **`--soil` (STYLE.md 3.1: "Headings on paper, borders") had no dark-mode override at all** in
+     `src/styles/tokens.css` — unlike every other text/border token, it silently kept its light value
+     (#6B4A2B) in dark mode, giving ~2.17:1 contrast against the dark paper background (#1E1A17) on `.holding
+     h1` and `.scene-speaker` (well under STYLE.md 3.6's 4.5:1/3:1 floors). Not one of the "kept unchanged"
+     fixed-fill exceptions (`--pasture-deep`/`--clay-deep`/`--wheat`) either — those are fills that carry
+     text, `--soil` is text/border colour sitting on the table's own background, so it should have followed
+     `--ink`'s pattern of getting a light dark-mode value. Fixed: added `--soil: #D9B98A` (9.26:1 against
+     dark paper) to both dark-mode blocks in `tokens.css`, and to STYLE.md 3.5's table (which had never
+     listed it, in either form). **Also added a new test**,
+     `e2e/accessibility.spec.ts`'s "scene screen ... in forced dark theme," since the reason this escaped
+     gate 6 for as long as it did is that a dark-mode scene test never existed (only game/setup had one) —
+     without it, the next token missing a dark override on a scene-only element would escape again the same
+     way.
+  2. **`.sheet` (the Farm/Market/Cath's Plan/Log bottom sheets, `src/styles/global.css`) had no
+     `.native-app`-scoped safe-area-bottom padding**, unlike `.topbar`/`.controls` right next to it, which
+     already handle the iPhone home-indicator inset correctly (SPEC 11.6/STYLE.md 10). Fixed by adding a
+     `.native-app .sheet { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }` rule alongside the
+     existing two. `env()` is inert (0) on the web build, so this has no effect there — iPhone-only, and
+     can't be exercised by this repo's Chromium/WebKit e2e suite (no iOS simulator here), so it's a
+     targeted-review fix rather than a covered-by-a-new-test one, same as the other safe-area rules already
+     next to it.
+  `npx tsc -b`/`npx eslint` clean, `npx vitest run` 519/519, the full `phone`+`desktop-chromium`
+  `accessibility.spec.ts` (18/18, up from 16) and a `quick-game.spec.ts` sanity run all green. Pushed to
+  `build`.
