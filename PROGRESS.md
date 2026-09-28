@@ -1,7 +1,16 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-28, starting ~02:51 UTC): standard session start, lock taken, `npm ci` + `npm run
+This session (2026-09-28, starting ~03:52 UTC): standard session start, lock taken, `npm ci` + `npm run
+check` clean on `build` HEAD (`827e110`, previous session's final state plus this session's lock commit).
+Picked up the one remaining "Known issues" item from the previous session: Hot-seat's missing "pass the
+device" screen (`c4f5fad`, full detail above the Tasks section). Verified with `npx tsc -b`, `npx eslint`,
+`npx vitest run` (547/547) and the `e2e/hotseat.spec.ts`/`e2e/store-screenshots.spec.ts` suites (phone,
+desktop-chromium, store-screenshots), all green — pushed to `build`. Next: run `npm run gates` and attempt
+`npm run release` to get this and the previous session's queued fixes (`5f819e9`) live.
+
+---
+Previous session (2026-09-28, starting ~02:51 UTC): standard session start, lock taken, `npm ci` + `npm run
 check` clean on `build` HEAD (`fbceea5`, i.e. the previous session's final state plus this session's lock
 commit). Ran `npm run gates`: gates 1-7 passed clean. Dispatched 2 subagents (CLAUDE.md's cap) for gate 8's
 mandated screenshot review, phone + desktop. Phone came back clean. Desktop found one real bug: the map's
@@ -3153,11 +3162,16 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] The 4 "look at the top card" info Schemes (Reconnaissance, Paper Trail, Weather Eye, Steak-out) never
   showed the player what was peeked. **Fixed same session**: `schemePlayed` GameEvents gained an optional
   `peek: string[]` field, shown in the Log sheet ("Peeked: Stage 1: Coast."). See DECISIONS.md.
-- [ ] Hot-seat mode has no turn-transition/"pass the device" screen — turns switch with only the active-
+- [x] Hot-seat mode has no turn-transition/"pass the device" screen — turns switch with only the active-
   producer header changing, even though the mode-picker's own copy promises "pass the device back and
   forth" (`src/App.tsx`). Not a strict SPEC violation (SPEC 2 only requires "2 humans taking turns on one
-  device," no literal prompt mandated), but a real UX gap a player could miss. Lower priority than the item
-  above since it's polish, not a mechanic that silently does nothing.
+  device," no literal prompt mandated), but a real UX gap a player could miss. **Fixed this session**
+  (`c4f5fad`): a blocking `.pass-device` screen (`src/ui/Game.tsx`) shows the next producer's portrait and
+  name whenever `state.activeProducer` changes in Hot-seat mode (mid-round hand-off and the post-enemy-turn
+  new-round hand-off alike), gated behind a Continue tap; autoplay/Solo are unaffected. Updated
+  `e2e/hotseat.spec.ts` and `e2e/store-screenshots.spec.ts`'s Agenda-headline shot for the new required tap.
+  Verified: `npx tsc -b`, `npx eslint`, `npx vitest run` (547/547), and `e2e/hotseat.spec.ts` +
+  `e2e/store-screenshots.spec.ts` (phone/desktop-chromium/store-screenshots) all green.
 
 ### Portfolio (owner request, 2026-09-27; SPEC 15)
 - [x] Games landing page at `/` (`site/`), full-screen WebGL farmland scene, cards for both games
