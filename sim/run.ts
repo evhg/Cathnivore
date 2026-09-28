@@ -156,6 +156,13 @@ function appendToBalanceLog(summary: Summary, reportPath: string): void {
   appendFileSync('BALANCE.md', lines.join('\n'))
 }
 
+// Generous per-game ceiling for a worker's wall-clock timeout: MCTSBot (the slowest bot) profiles at well
+// under 1s/decision at the sim harness's budget (see CLAUDE.md's notes), and a game rarely exceeds a few
+// dozen decisions, so this is many times slower than any real game should ever take — it exists only to
+// catch a genuine hang (e.g. a bot decision that never returns, not bounded by STEP_CAP's step-count
+// limit), not to bound normal variance.
+const PER_GAME_TIMEOUT_MS = 60_000
+
 // One child process per job list, running `sim/simWorker.ts` as a real `tsx` CLI invocation (see that
 // file's header comment for why). Input/output are small JSON files in a scratch temp dir, since a
 // worker's whole job list and outcome list are both well under any pipe/argv size limit but a file is
@@ -175,8 +182,19 @@ function runInWorker(
     const child = spawn(process.execPath, [require.resolve('tsx/cli'), 'sim/simWorker.ts', '--input', inputPath, '--output', outputPath], {
       stdio: 'inherit',
     })
-    child.on('error', reject)
+    // A hung bot decision (never returning, unbounded by STEP_CAP's step count) would otherwise hang the
+    // whole run forever with no report ever written (see DECISIONS.md) — kill the worker and reject
+    // instead once it's had far longer than any real run of its job count should ever need.
+    const timeout = setTimeout(() => {
+      child.kill('SIGKILL')
+      reject(new Error(`sim worker ${index} timed out after ${jobs.length * PER_GAME_TIMEOUT_MS}ms (${jobs.length} games) — likely a hung bot decision`))
+    }, jobs.length * PER_GAME_TIMEOUT_MS)
+    child.on('error', (err) => {
+      clearTimeout(timeout)
+      reject(err)
+    })
     child.on('exit', (code) => {
+      clearTimeout(timeout)
       if (code !== 0) {
         reject(new Error(`sim worker ${index} exited with code ${code}`))
         return
