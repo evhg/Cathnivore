@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="122 52 156 188">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="122 68 156 156">
   <!-- STYLE.md 13: a close crop of Cath's face, framed by her long hair falling to the edges,
        the raised right eyebrow and warm smirk, a pasture-green leaf clip (VISION.md "Cath:
-       character bible"). Wheat background for her dark hair. A frozen, static copy of
+       character bible"). Wheat background for her dark hair. A square crop (this file, and the
+       app icon/touch-icon PNGs raster off it, all need to agree) of a frozen, static copy of
        shared/cath/cath.ts's cathSvg({framing: "face", outfit: "field", expression: "smirk"})
        output (favicons can't run the module's JS) — regenerate by hand from there if her look
        changes. -->
@@ -28,7 +29,7 @@
   <stop offset="0" stop-color="#FFFFFF"/><stop offset="0.6" stop-color="#FBF7F0"/><stop offset="1" stop-color="#DCD3C6"/>
 </radialGradient>
 </defs>
-<rect x="122" y="52" width="156" height="188" rx="26" fill="#D9B45A" />
+<rect x="122" y="68" width="156" height="156" rx="24" fill="#D9B45A" />
 
 <g class="cath-hair-back"><path fill="url(#cath1-hair)" stroke="#3A2A24" stroke-width="2" stroke-linejoin="round" d="
 M200 60
