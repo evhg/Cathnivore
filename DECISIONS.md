@@ -15,3 +15,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-28 (owner's chat session): archived v1's `PROGRESS.md`, `DECISIONS.md` and `BALANCE.md` to `docs/archive/` because they had grown to about 870 KB, which every session was paying to read. New size limits are in SPEC 16.
 - 2026-09-28 (owner's chat session): shipped the title screen (the title screen: an illustrated, animated map of Marrow with Cath, in `src/ui/TitleArt.tsx` and `src/styles/title.css`) and the Campaign screen (the Campaign screen as a journey, in `src/ui/CampaignScreen.tsx` and `src/styles/campaign.css`). Text entrance animations move without fading, because axe measured contrast mid-fade and the test failed intermittently. Test hooks kept: chapter buttons' accessible names still start with the chapter title.
 - 2026-09-28 (owner's chat session): **new plan from the owner.** Cath becomes a classy, cute, stylish mum (interpreted tastefully: elegant, warm, never suggestive) and a prime figure in every game; the iPhone App Store launch is postponed until the games are truly impressive. `ROADMAP.md` was rewritten (Phase 1: Cath); VISION.md gained "Cath: character bible"; SPEC 3.2 and 16, STYLE 9 and CLAUDE.md now point to it.
+- 2026-09-28: found this pivot only after already fixing 2 real v1 bugs on `build` this session (the root
+  `sw.js` origin-wide cache wipe deleting Cathnivore's own PWA cache; the sim harness's silent bad-`--bot`
+  fallback and hung-worker gap). Rebased cleanly onto the pivot's tip rather than discarding either side —
+  no conflicts, both are orthogonal fixes. `npm run release` hit the standing stale-`main` classifier denial
+  twice this session; not retried a 3rd time (see PROGRESS.md).
