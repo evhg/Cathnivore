@@ -2,6 +2,7 @@ import type { Chapter } from '../content/chapters'
 import { REGIONS } from '../content/map'
 import type { RegionId } from '../engine/types'
 import Portrait from './portraits/Portrait'
+import CathArt from './CathArt'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
 // path, with a mini map of the regions it plays on and the producers who play it. Locked chapters stay
@@ -92,14 +93,27 @@ export default function CampaignScreen({
   return (
     <main className="campaign campaign-screen">
       <header className="cmp-header">
-        <p className="cmp-kicker">The liberation of Marrow</p>
-        <h1>Campaign</h1>
-        <p className="cmp-progress">
-          {done} of {chapters.length} chapters
-          <span className="cmp-progress-bar" aria-hidden="true">
-            <span className={`cmp-progress-fill cmp-fill-${done}`} />
-          </span>
-        </p>
+        <div className="cmp-header-text">
+          <p className="cmp-kicker">The liberation of Marrow</p>
+          <h1>Campaign</h1>
+          <p className="cmp-progress">
+            {done} of {chapters.length} chapters
+            <span className="cmp-progress-bar" aria-hidden="true">
+              <span className={`cmp-progress-fill cmp-fill-${done}`} />
+            </span>
+          </p>
+        </div>
+        {/* ROADMAP "Cath on the title, Campaign, setup and end screens with a matching expression":
+            delighted once every chapter is done, her default warm smirk otherwise. */}
+        <CathArt
+          className="cmp-header-cath"
+          framing="bust"
+          expression={done === chapters.length ? 'delighted' : 'smirk'}
+          animate
+          width={84}
+          height={84}
+          title="Cath"
+        />
       </header>
       <ol className="chapter-list cmp-path">
         {chapters.map((chapter, i) => {

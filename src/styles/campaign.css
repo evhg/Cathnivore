@@ -40,9 +40,22 @@
 
 .cmp-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 22px;
+}
+
+.cmp-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cmp-header-cath svg {
+  filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 20%, transparent));
 }
 
 .cmp-kicker {
