@@ -5,13 +5,12 @@ import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
 import { REGIONS, regionMatchesPressureSlot } from '../content/map'
-import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { HeuristicBot } from '../ai/heuristic'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
-import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
+import { actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
@@ -34,24 +33,12 @@ import {
   GoodwillIcon,
   LostLandIcon,
   MarksIcon,
-  MiniGauge,
   ProduceIcon,
   PublicTrustIcon,
   RiftIcon,
   RoundIcon,
 } from './icons/ResourceIcons'
-import {
-  GraftIcon,
-  InvestIcon,
-  OpenStallIcon,
-  RebutIcon,
-  RoleIcon,
-  SchemeIcon,
-  SellIcon,
-  SupplyIcon,
-} from './icons/ActionIcons'
-import { RegionTypeIcon, romanStage } from './icons/RegionTypeIcon'
-import type { Action, GameEvent, GameState, ProducerId, RegionId, RegionType, ResourceKind } from '../engine/types'
+import type { Action, GameEvent, GameState, ProducerId, RegionId } from '../engine/types'
 import type { Mode } from './Setup'
 import type { TutorialStep } from '../content/chapters'
 import type { Scene as SceneData } from '../content/story/types'
@@ -104,27 +91,6 @@ function isE2EAiWorkerCrash(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAiWorkerCrash') === '1'
 }
 
-// ROADMAP 8 "the table, part 1: layout": the action list (see `actionsPanel` below) shows in a different
-// place on phone vs desktop, and mounting it unconditionally in both spots (CSS picking which one is
-// visible, the way the Farm/Market/Plan/Log `inline` panels split their mobile-modal/desktop-tray copies)
-// broke every Playwright locator that queries `.action-item`/`.tooltip-trigger-button` — strict mode counts
-// DOM matches regardless of `display: none`, so `e2e/tooltip.spec.ts` started resolving 2 elements for the
-// same button. Gating which one actually *mounts* on viewport width avoids that: there is only ever one
-// `.actions` in the DOM. Reacts to live resizes (not just the width at first render) since Playwright's
-// `setViewportSize` can change the viewport after the page has already mounted.
-function useIsDesktopLayout(): boolean {
-  const [isDesktop, setIsDesktop] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
-  )
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)')
-    const onChange = () => setIsDesktop(mq.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-  return isDesktop
-}
-
 // The Cath companion's reaction to one log event (ROADMAP "Cath in Cathnivore, as guide and narrator"),
 // ranked so that when a round produces several at once (e.g. a Squeeze and a liberation), the most
 // significant wins. `null` for events she has nothing to say about yet.
@@ -154,107 +120,8 @@ function pressureLabel(card: GameState['squeeze']): string {
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
 }
 
-// STYLE.md 8's Pressure card: "one or two region-type icons." A scripted card (SPEC 8.1) has no
-// `regionTypes` of its own, only specific `regions` — derived here via each region's own type, deduped,
-// so the icon still shows correctly for both the real Pressure deck and a campaign chapter's scripted
-// sequence, the same fallback `pressureLabel` above already uses for its text.
-function pressureIconTypes(card: GameState['squeeze']): RegionType[] {
-  if (!card) return []
-  if (card.regionTypes.length > 0) return card.regionTypes
-  const types = (card.regions ?? []).map((r) => REGIONS[r].type)
-  return [...new Set(types)]
-}
-
-// ROADMAP 10 "illustrated gauges": Public Trust's and Rift's fixed ranges, matching the exact bounds
-// `validate()` (engine/api.ts) checks state against — the single source of truth for "full" on each
-// gauge, so it can never silently drift from what the rules actually allow.
-const TRUST_MAX = 15
-const RIFT_MAX = 6
-
-// Lost Land has no fixed range — it's a pool that starts at a difficulty (or campaign-chapter override)
-// value and only ever shrinks, so "full" for its gauge is this game's own starting pool, computed the
-// exact same way `createGame` (engine/api.ts) does rather than a guessed constant.
-function lostLandStartingPool(state: GameState): number {
-  return state.config.lostLandPoolOverride ?? DIFFICULTY_SETTINGS[state.config.difficulty].lostLandPool
-}
-
-// ROADMAP 10 "the HUD ... tick-up and tick-down animation when they change": returns a counter that only
-// increments when `value` actually differs from the previous render, computed synchronously during
-// render (no effect/timer needed) — starts at 0 and never moves on the very first render of this
-// component instance, so a fresh game screen doesn't flash every stat on load, only a real change later
-// ticks it. The caller keys its animated element on this counter, so React remounts it (replaying its
-// CSS `animation`) exactly once per genuine change, and gates the animation class itself on `tick > 0`
-// so that very first key=0 mount never plays it either.
-function useHudTick<T>(value: T): number {
-  const prev = useRef(value)
-  const tick = useRef(0)
-  if (prev.current !== value) {
-    tick.current += 1
-    prev.current = value
-  }
-  return tick.current
-}
-
-const COST_ICON: Record<ResourceKind, typeof ProduceIcon> = { produce: ProduceIcon, marks: MarksIcon, goodwill: GoodwillIcon }
-
-// ROADMAP 9 "an icon per action" (STYLE.md 5.1): a leading icon inside each action button, before the
-// label. `supplyOutlets`/`supplyBuyout` share one icon (both are "Supply," just a different piece
-// removed); `decide`/`tearUpContract` have none yet (a forced choice and a rare campaign-only action,
-// neither part of the core 7-actions-plus-role set STYLE.md 5.1 documents).
-const ACTION_ICON: Partial<Record<Action['kind'], typeof OpenStallIcon>> = {
-  openStall: OpenStallIcon,
-  supplyOutlets: SupplyIcon,
-  supplyBuyout: SupplyIcon,
-  rebut: RebutIcon,
-  invest: InvestIcon,
-  sell: SellIcon,
-  scheme: SchemeIcon,
-  graft: GraftIcon,
-  role: RoleIcon,
-}
-
-// ROADMAP 9 "cost chips shown with resource tokens": a small icon+number badge inside an action button,
-// next to `actionLabel`'s existing cost-as-text (e.g. "(4 Marks)") — additive, not a replacement, so no
-// existing button text changes (several e2e tests match button names by prefix, e.g. `/^Graft:/`).
-// `undefined` renders nothing, for the actions `actionCost` already returns no cost for.
-function ActionCostChip({ cost }: { cost: { resource: ResourceKind; amount: number } | undefined }) {
-  if (!cost) return null
-  const Icon = COST_ICON[cost.resource]
-  return (
-    <span className="action-cost">
-      <Icon size={14} />
-      {cost.amount}
-    </span>
-  )
-}
-
-// A region-targeting group (e.g. "Supply: remove 2 Outlets…") can cover several regions whose actual
-// cost differs (Supply's per-Outlet Produce cost varies by region type and Improvements, SPEC 7) — the
-// group button itself doesn't commit to a region yet, so it can only show one number if every entry in
-// the group would actually cost the same. Mixed costs fall back to no chip rather than a misleading one.
-function uniformGroupCost(
-  entries: { index: number }[],
-  actions: Action[],
-  state: GameState,
-): { resource: ResourceKind; amount: number } | undefined {
-  const first = actionCost(actions[entries[0]!.index]!, state)
-  if (!first) return undefined
-  const uniform = entries.every((e) => {
-    const c = actionCost(actions[e.index]!, state)
-    return c && c.resource === first.resource && c.amount === first.amount
-  })
-  return uniform ? first : undefined
-}
-
 export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
-  // ROADMAP 10's HUD tick animation (see `useHudTick`'s own comment) — called unconditionally here,
-  // before any of this component's early returns (pass-device, end screen, tutorial rules), so the Rules
-  // of Hooks hold regardless of which branch below actually renders.
-  const roundTick = useHudTick(state.round)
-  const trustTick = useHudTick(state.publicTrust)
-  const lostLandTick = useHudTick(state.lostLandPool)
-  const riftTick = useHudTick(state.rift)
   const cathLogSeenRef = useRef(0)
   const [cathReaction, setCathReaction] = useState<{ expression: CathExpression; line: string }>(() => ({
     expression: CATH_REACTION_EXPRESSION.greeting,
@@ -264,7 +131,6 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>(initialDismissedMidScenes ?? [])
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
-  const isDesktop = useIsDesktopLayout()
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
   // information [because refills happen at cleanup]. Any action that reveals hidden information ... is
   // marked irreversible, and undo cannot go back past it. The AI never undoes." So the stack is cleared
@@ -600,25 +466,6 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     groups.set(key, group)
   })
 
-  // ROADMAP 9 "clear disabled and why-not states": Sell's missing counts (Produce too low for 2 or 3)
-  // get a disabled placeholder right where the real button would be, so a player learns *why* the full
-  // 1-3 range isn't all offered instead of the count quietly shrinking with no explanation. Scoped to
-  // Sell only for now, not every action: it's the one whose entire legality is a single resource
-  // comparison, so the reason is never ambiguous the way it would be for e.g. Invest (not enough Marks,
-  // no affordable card, or the rule not unlocked yet could all look the same from outside) — those stay
-  // simply absent, as before, until a later session can give each kind its own real reason. Skipped
-  // during a gated tutorial step: SPEC 8.1's "only the action being taught is enabled" already hides
-  // everything else outright, and a disabled Sell row competing for attention there would muddy that.
-  const sellEntries = standalone.filter((e) => e.action.kind === 'sell')
-  const otherStandalone = standalone.filter((e) => e.action.kind !== 'sell')
-  const disabledSell: { count: 1 | 2 | 3; missing: number }[] = []
-  if (rules.sell && !tutorialStep?.highlight) {
-    const affordable = Math.min(3, active.resources.produce)
-    for (let n = affordable + 1; n <= 3; n++) {
-      disabledSell.push({ count: n as 1 | 2 | 3, missing: n - active.resources.produce })
-    }
-  }
-
   function act(actionIndex: number): void {
     const action = actions[actionIndex]!
     // SPEC 8.1: once the taught action is actually taken, move straight to the next tutorial step rather
@@ -679,121 +526,10 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     }
   }
 
-  // ROADMAP 8 "the table, part 1: layout": the action list used to render inside the centre `.game`
-  // column, squeezed into an internally-scrolling 3-column grid at the bottom (see DECISIONS.md history).
-  // Built once here as a value, not a component, so both places that can show it (the phone flow below and
-  // the desktop left tray further down, alongside the Farm panel) read the exact same
-  // `standalone`/`groups`/`selectedGroup` closures. `useIsDesktopLayout()` (above) mounts exactly one of the
-  // two at a time — not both with CSS hiding one, which left a second `.actions`/`.action-item` permanently
-  // in the DOM and broke every Playwright strict-mode locator that queried it (e2e/tooltip.spec.ts).
-  const actionsPanel = (
-    <section className="actions" tabIndex={0} role="region" aria-label="Actions">
-      {pendingEnemyTurn.length > 0 ? null : waitingOnAi ? (
-        <p>AI teammate is deciding…</p>
-      ) : selectedGroup ? (
-        pendingChoice ? (
-          <>
-            <p>{selectedGroup.label} in {REGIONS[pendingChoice.region].name}?</p>
-            <button className="primary" onClick={() => act(pendingChoice.index)}>Confirm</button>
-            <button onClick={() => setPendingChoice(null)}>Cancel</button>
-          </>
-        ) : (
-          <>
-            <p>{selectedGroup.label}: tap a glowing region on the map.</p>
-            <button onClick={() => setSelectedGroup(null)}>Cancel</button>
-          </>
-        )
-      ) : (
-        <>
-          {sellEntries.map(({ index, action: a }) => {
-            const term = actionTermFor(a)
-            const Icon = ACTION_ICON[a.kind]
-            return (
-              <span key={index} className="action-item">
-                <button onClick={() => act(index)}>
-                  <span className="action-label">
-                    {Icon && <Icon size={18} />}
-                    {actionLabel(a, state)}
-                  </span>
-                  <ActionCostChip cost={actionCost(a, state)} />
-                </button>
-                {term && (
-                  <Tooltip term={term} label={`What is ${term}?`}>
-                    ?
-                  </Tooltip>
-                )}
-              </span>
-            )
-          })}
-          {disabledSell.map(({ count, missing }) => (
-            <span key={`disabled-sell-${count}`} className="action-item">
-              <button disabled title={`Need ${missing} more Produce`}>
-                <span className="action-label-group">
-                  <span className="action-label">
-                    <SellIcon size={18} />
-                    {`Sell ${count} Produce for ${count} Marks`}
-                  </span>
-                  <span className="action-why-not">Need {missing} more Produce</span>
-                </span>
-                <ActionCostChip cost={{ resource: 'produce', amount: count }} />
-              </button>
-              <Tooltip term="Sell" label="What is Sell?">
-                ?
-              </Tooltip>
-            </span>
-          ))}
-          {otherStandalone.map(({ index, action: a }) => {
-            const term = actionTermFor(a)
-            const Icon = ACTION_ICON[a.kind]
-            return (
-              <span key={index} className="action-item">
-                <button onClick={() => act(index)}>
-                  <span className="action-label">
-                    {Icon && <Icon size={18} />}
-                    {actionLabel(a, state)}
-                  </span>
-                  <ActionCostChip cost={actionCost(a, state)} />
-                </button>
-                {term && (
-                  <Tooltip term={term} label={`What is ${term}?`}>
-                    ?
-                  </Tooltip>
-                )}
-              </span>
-            )
-          })}
-          {[...groups.entries()].map(([key, group]) => {
-            const single = group.entries.length === 1
-            const firstAction = actions[group.entries[0]!.index]!
-            const term = actionTermFor(firstAction)
-            const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
-            const Icon = ACTION_ICON[firstAction.kind]
-            return (
-              <span key={key} className="action-item">
-                <button onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
-                  <span className="action-label">
-                    {Icon && <Icon size={18} />}
-                    {single ? actionLabel(firstAction, state) : `${group.label}…`}
-                  </span>
-                  <ActionCostChip cost={cost} />
-                </button>
-                {term && (
-                  <Tooltip term={term} label={`What is ${term}?`}>
-                    ?
-                  </Tooltip>
-                )}
-              </span>
-            )
-          })}
-        </>
-      )}
-    </section>
-  )
-
   // SPEC 10.3 desktop 3-column layout (1024px+): both producers' Farms on the left, the map/plan strip in
-  // the centre, actions/Market/Cath's Plan/Log on the right, always visible (no scrolling at 1280x800).
-  // `.desktop-*` panels reuse the same sheet components in `inline` mode and are shown only above 1024px
-  // via CSS; below that the phone layout's toggle buttons and modal sheets (below) still work unchanged.
+  // the centre, Market/Cath's Plan/Log on the right, always visible (no scrolling at 1280x800). `.desktop-*`
+  // panels reuse the same sheet components in `inline` mode and are shown only above 1024px via CSS; below
+  // that the phone layout's toggle buttons and modal sheets (below) still work unchanged.
   return (
     <div className="game-layout">
       {/* tabIndex so axe's "scrollable-region-focusable" rule is satisfied unconditionally, not just when
@@ -803,62 +539,26 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           testing. */}
       <aside className="desktop-col desktop-col-left" tabIndex={0}>
         <FarmSheet state={state} onClose={() => {}} inline />
-        {/* ROADMAP 8: the actions tray lives here on desktop, not the right column — Market/Cath's Plan/Log
-            already claim nearly all of the right column's height budget on their own (measured directly:
-            close to the full 768px at 1280x800), while the Farm panel leaves real headroom. Mounted only
-            when `useIsDesktopLayout()` says so, not just hidden by CSS: `actionsPanel` is otherwise mounted
-            twice at once (here and in the phone flow below), and Playwright's strict-mode locators count
-            DOM matches regardless of `display: none` — e2e/tooltip.spec.ts caught this directly. Wrapped in
-            `.sheet-panel` to match the tray it sits alongside. */}
-        {isDesktop && (
-          <div className="sheet-panel actions-sheet">
-            <h2>Actions</h2>
-            {actionsPanel}
-          </div>
-        )}
       </aside>
 
       <main className="game">
-      {/* ROADMAP 8 "the table, part 1: layout": SPEC 10.2's phone "Bottom panel (fixed)" — the active
-          producer, actions and Undo/sheet buttons below — must stay visible without scrolling the page to
-          reach it (previously all of this just sat at the end of one long scrolling column, so only the
-          first action button was ever on-screen without a scroll, a real gap this wrapper closes). Splits
-          `.game` into two flex children: this one (everything *about* the current state — topbar, companion,
-          plan strip, map) scrolls internally if it doesn't fit; `.action-tray` below (the actual controls)
-          keeps its natural size and is always the second, non-scrolling child, so simple flexbox does the
-          pinning with no fixed positioning or measured JS height needed. A plain `display: contents` on
-          desktop (`@media (max-width: 1023.98px)` below) makes both wrappers a no-op there — every element
-          still flows directly in `.game`'s own column exactly as before this session. */}
-      <div className="game-scroll">
       <header className="topbar">
         <span>
-          <span key={roundTick} className={roundTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-            <RoundIcon /> Round {state.round}/{state.round + state.pressureDeck.length}
-            <MiniGauge value={state.round} max={state.round + state.pressureDeck.length} width={28} />
-          </span>
+          <RoundIcon /> Round {state.round}/{state.round + state.pressureDeck.length}
         </span>
         <span>
           <Tooltip term="Public Trust">
-            <span key={trustTick} className={trustTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-              <PublicTrustIcon /> Trust {state.publicTrust}
-              <MiniGauge value={state.publicTrust} max={TRUST_MAX} width={28} />
-            </span>
+            <PublicTrustIcon /> Trust {state.publicTrust}
           </Tooltip>
         </span>
         <span>
           <Tooltip term="Lost Land">
-            <span key={lostLandTick} className={lostLandTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-              <LostLandIcon /> Lost Land left {state.lostLandPool}
-              <MiniGauge value={state.lostLandPool} max={lostLandStartingPool(state)} width={28} />
-            </span>
+            <LostLandIcon /> Lost Land left {state.lostLandPool}
           </Tooltip>
         </span>
         <span>
           <Tooltip term="Rift">
-            <span key={riftTick} className={riftTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-              <RiftIcon /> Rift {state.rift}
-              <MiniGauge value={state.rift} max={RIFT_MAX} width={28} />
-            </span>
+            <RiftIcon /> Rift {state.rift}
           </Tooltip>
         </span>
         {/* SPEC 10.2: "Top bar (fixed): round x/10, Public Trust, Lost Land remaining, Rift and a menu
@@ -889,74 +589,29 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         </section>
       )}
 
-      {/* ROADMAP 8: the plan strip and the map legend used to be two separate full-width rows stacked
-          above the map — both are compact, low-height content (a handful of short labels), so on desktop,
-          where the centre column is far wider than the map itself, they share one row instead. `.plan-strip`
-          grows to fill the leftover width; `.map-legend` keeps its own natural size. Phone keeps the original
-          two-row stack (`.plan-legend-row` is a plain block there, see global.css) since the narrower column
-          has no spare width to share. */}
-      <div className="plan-legend-row">
-        <section className="plan-strip">
-          {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
-            const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
-            const card = state[slot]
-            return (
-              <span key={slot} className="plan-strip-item">
-                <button
-                  type="button"
-                  aria-pressed={planHighlightSlot === slot}
-                  className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
-                  onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
-                >
-                  {slotLabel}: {pressureLabel(state[slot])}
-                  {card && (
-                    <span className="plan-strip-card-meta">
-                      <span className="plan-strip-stage">{romanStage(card.stage)}</span>
-                      {pressureIconTypes(card).map((type) => (
-                        <RegionTypeIcon key={type} type={type} size={13} />
-                      ))}
-                    </span>
-                  )}
-                </button>
-                {/* A separate trigger, not nested inside the button above: that button already has its own
-                    tap meaning (toggle the map highlight), so a tooltip needs its own affordance rather than
-                    fighting it for the same tap (SPEC 10.5, alongside SPEC 10.2's highlight behaviour). */}
-                <Tooltip term={slotLabel} label={`What is ${slotLabel}?`}>
-                  ?
-                </Tooltip>
-              </span>
-            )
-          })}
-        </section>
-
-        {/* SPEC 10.5: the map's own pieces (Outlet/Buyout/Doubt) are the last piece of the tooltip surface —
-            a compact key, not one trigger per drawn piece (a region can hold several of the same piece, and
-            an in-SVG popover would fight the map's own transforms), same "?"-next-to-the-thing pattern as
-            the topbar and plan-strip above. */}
-        <section className="map-legend">
-          {(
-            [
-              { term: 'Outlet', icon: <Outlet /> },
-              { term: 'Buyout', icon: <Buyout /> },
-              { term: 'Doubt', icon: <Doubt /> },
-              { term: 'Co-op marker', icon: <CoopMarkerIcon /> },
-            ] as const
-          ).map(({ term, icon }) => (
-            <span key={term} className="map-legend-item">
-              <svg className="map-legend-icon" viewBox="0 0 12 14" width={16} height={18} aria-hidden="true">
-                {icon}
-              </svg>
-              <Tooltip term={term}>{term}</Tooltip>
-              {term === 'Co-op marker' && (
-                <>
-                  {' · '}
-                  <Tooltip term="Liberated">Liberated</Tooltip>
-                </>
-              )}
+      <section className="plan-strip">
+        {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
+          const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
+          return (
+            <span key={slot} className="plan-strip-item">
+              <button
+                type="button"
+                aria-pressed={planHighlightSlot === slot}
+                className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
+                onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
+              >
+                {slotLabel}: {pressureLabel(state[slot])}
+              </button>
+              {/* A separate trigger, not nested inside the button above: that button already has its own
+                  tap meaning (toggle the map highlight), so a tooltip needs its own affordance rather than
+                  fighting it for the same tap (SPEC 10.5, alongside SPEC 10.2's highlight behaviour). */}
+              <Tooltip term={slotLabel} label={`What is ${slotLabel}?`}>
+                ?
+              </Tooltip>
             </span>
-          ))}
-        </section>
-      </div>
+          )
+        })}
+      </section>
 
       <section className="map-wrap">
         <RegionMap
@@ -983,11 +638,35 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           <EnemyTurnPlayback events={pendingEnemyTurn} onDone={() => setPendingEnemyTurn([])} />
         )}
       </section>
-      </div>
 
-      {/* SPEC 10.2's phone "Bottom panel (fixed)": the active producer, its actions and Undo/sheet-toggle
-          buttons, always on screen — see the `.game-scroll` comment above for how. */}
-      <div className="action-tray">
+      {/* SPEC 10.5: the map's own pieces (Outlet/Buyout/Doubt) are the last piece of the tooltip surface —
+          a compact key, not one trigger per drawn piece (a region can hold several of the same piece, and
+          an in-SVG popover would fight the map's own transforms), same "?"-next-to-the-thing pattern as
+          the topbar and plan-strip above. */}
+      <section className="map-legend">
+        {(
+          [
+            { term: 'Outlet', icon: <Outlet /> },
+            { term: 'Buyout', icon: <Buyout /> },
+            { term: 'Doubt', icon: <Doubt /> },
+            { term: 'Co-op marker', icon: <CoopMarkerIcon /> },
+          ] as const
+        ).map(({ term, icon }) => (
+          <span key={term} className="map-legend-item">
+            <svg className="map-legend-icon" viewBox="0 0 12 14" width={16} height={18} aria-hidden="true">
+              {icon}
+            </svg>
+            <Tooltip term={term}>{term}</Tooltip>
+            {term === 'Co-op marker' && (
+              <>
+                {' · '}
+                <Tooltip term="Liberated">Liberated</Tooltip>
+              </>
+            )}
+          </span>
+        ))}
+      </section>
+
       {decision ? (
         <section className="decision">
           <p>
@@ -1021,10 +700,64 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         </section>
       )}
 
-      {/* Phone copy of `actionsPanel` (defined above), now inside `.action-tray`. Only mounted when
-          `useIsDesktopLayout()` says this isn't desktop — see the left tray's copy above for why this is
-          gated in JS rather than just hidden by CSS. */}
-      {!isDesktop && actionsPanel}
+      {/* SPEC 10.3 desktop 3-column layout: the action list is the one section of the centre column whose
+          length genuinely varies with the game state (one entry per legal region/card/quantity target),
+          the same shape of problem the Log solved on the right (see LogSheet.tsx) — so it gets the same
+          internally-scrolling max-height on desktop (global.css's 1024px+ block), with the matching
+          `tabIndex`/`role`/`aria-label` a scrollable container needs to stay keyboard-reachable (axe's
+          "focusable-content"/"focusable-element" rules). Inert on phone, where `.actions` never sets an
+          `overflow`/`max-height`. */}
+      <section className="actions" tabIndex={0} role="region" aria-label="Actions">
+        {pendingEnemyTurn.length > 0 ? null : waitingOnAi ? (
+          <p>AI teammate is deciding…</p>
+        ) : selectedGroup ? (
+          pendingChoice ? (
+            <>
+              <p>{selectedGroup.label} in {REGIONS[pendingChoice.region].name}?</p>
+              <button className="primary" onClick={() => act(pendingChoice.index)}>Confirm</button>
+              <button onClick={() => setPendingChoice(null)}>Cancel</button>
+            </>
+          ) : (
+            <>
+              <p>{selectedGroup.label}: tap a glowing region on the map.</p>
+              <button onClick={() => setSelectedGroup(null)}>Cancel</button>
+            </>
+          )
+        ) : (
+          <>
+            {standalone.map(({ index, action: a }) => {
+              const term = actionTermFor(a)
+              return (
+                <span key={index} className="action-item">
+                  <button onClick={() => act(index)}>{actionLabel(a, state)}</button>
+                  {term && (
+                    <Tooltip term={term} label={`What is ${term}?`}>
+                      ?
+                    </Tooltip>
+                  )}
+                </span>
+              )
+            })}
+            {[...groups.entries()].map(([key, group]) => {
+              const single = group.entries.length === 1
+              const firstAction = actions[group.entries[0]!.index]!
+              const term = actionTermFor(firstAction)
+              return (
+                <span key={key} className="action-item">
+                  <button onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
+                    {single ? actionLabel(firstAction, state) : `${group.label}…`}
+                  </button>
+                  {term && (
+                    <Tooltip term={term} label={`What is ${term}?`}>
+                      ?
+                    </Tooltip>
+                  )}
+                </span>
+              )
+            })}
+          </>
+        )}
+      </section>
 
       <footer className="controls">
         <button
@@ -1042,7 +775,6 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         )}
         <button className="mobile-only" onClick={() => setShowLog(true)}>Log</button>
       </footer>
-      </div>
 
       {showFarm && <FarmSheet state={state} onClose={() => setShowFarm(false)} />}
       {/* SPEC 8.1: "each new rule is introduced exactly once, at the moment it first matters" — a chapter

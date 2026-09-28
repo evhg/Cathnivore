@@ -65,7 +65,7 @@ const SUPPLY_BUYOUT_COST_BASE = 3
 // SPEC 7 effect-mix follow-up (2026-09-27, see DECISIONS.md): "Community Larder" gives an ongoing
 // Buyout discount, same minimum-floor shape as the per-region Supply discounts below, rather than
 // touching the shared base constant itself (that's the balance-loop-tuned number, left alone).
-export function supplyBuyoutCost(state: GameState, producer: ProducerId): number {
+function supplyBuyoutCost(state: GameState, producer: ProducerId): number {
   const discount = hasImprovement(state, producer, 'community-larder') ? 1 : 0
   return Math.max(2, SUPPLY_BUYOUT_COST_BASE - discount)
 }
@@ -81,13 +81,13 @@ export function supplyBuyoutCost(state: GameState, producer: ProducerId): number
 const SUPPLY_OUTLET_BASE_COST = 2
 
 // SPEC 7 campaign carry-over rule: "the owner spends an action and 3 Marks on 'Tear Up the Contract.'"
-export const TEAR_UP_CONTRACT_COST = 3
+const TEAR_UP_CONTRACT_COST = 3
 
 // SPEC 7 "Mobile Butcher"/"Wholesale Crate Deal": Supply in Pasture/Crop regions costs 1 less Produce
 // per Outlet (minimum 1). M4 balance-loop iteration 7 (see DECISIONS.md) added "Harbour Stall Licence"'s
 // matching Coast discount to close the coverage gap (Pasture and Crop already had one, Coast didn't) —
 // a gentler, investment-gated version of iteration 6's reverted universal base-cost cut.
-export function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, region: RegionId): number {
+function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, region: RegionId): number {
   const base = SUPPLY_OUTLET_BASE_COST
   const type = REGIONS[region].type
   if (
@@ -106,12 +106,12 @@ export function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId
 // two Media-flavoured cards sharing one PR-cost-cutting ability, matching how the 3 per-region Supply
 // discounts already share one shape), both minimum 1. Checked by id against the producer's improvements
 // *before* this purchase is added to the tableau, so a card never discounts its own purchase.
-export function investCost(state: GameState, producer: ProducerId, card: { cost: number }): number {
+function investCost(state: GameState, producer: ProducerId, card: { cost: number }): number {
   const discount = hasImprovement(state, producer, 'wholesale-account') ? 1 : 0
   return Math.max(1, card.cost - discount)
 }
 
-export function schemeCost(state: GameState, producer: ProducerId, card: { cost: number }): number {
+function schemeCost(state: GameState, producer: ProducerId, card: { cost: number }): number {
   const discount =
     hasImprovement(state, producer, 'press-contact') || hasImprovement(state, producer, 'letterpress-flyers') ? 1 : 0
   return Math.max(1, card.cost - discount)
@@ -119,7 +119,7 @@ export function schemeCost(state: GameState, producer: ProducerId, card: { cost:
 
 // "Tide Tables" (2026-09-27 effect-mix follow-up): Rebut costs 1 less Goodwill overall (not per Doubt
 // removed — that would make removing a single Doubt free), same minimum-1 floor as the discounts above.
-export function rebutCost(state: GameState, producer: ProducerId, count: number): number {
+function rebutCost(state: GameState, producer: ProducerId, count: number): number {
   const discount = hasImprovement(state, producer, 'tide-tables') ? 1 : 0
   return Math.max(1, count - discount)
 }

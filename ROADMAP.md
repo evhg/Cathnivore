@@ -11,7 +11,7 @@ Every visual item is done only when:
 
 ## Phase 1: Cath, the face of every game (owner's top priority)
 
-1. [ ] **Cath's new look: the master art.** *(v1 shipped 2026-09-28 by the owner's chat session: `shared/cath/cath.ts` with face, bust and half framings, five expressions, two outfits and idle animation, used by Portrait.tsx, the title, the landing page and Runnel. STYLE.md 9 rewritten 2026-09-28 (`6e7a643`) to describe the new Cath in full, replacing the old K-pop-idol notes. 2026-09-28 (`d193d0c`): widened 'determined'/'worried' so they read apart from the default smirk at 56-96px, fixing the readability half of a gate-8 flag. 2026-09-28 (`cb72336`/`497f2d1`): gave the half-body figure hands, clasped at her waist where both sleeves already converged — a gate-8 review caught the first shape reading as a heart, redrawn as a single dominant hand with finger creases and a thumb. 2026-09-28 (`0b171b8`/`dcd6c92`/`7af62e1`): replaced `public/favicon.svg` (now a square crop, also used for `apple-touch-icon.png`/`icon-192.png`/`icon-512.png`) and both `social-preview.png` og:images with the new Cath, and rewrote STYLE.md 13's app icon brief. 2026-09-28 (this session): added finer hair strand-shine/depth texture and fabric fold/lapel/sleeve shading to both outfits, verified at every framing/expression and down to 56px, gate-8 reviewed clean — **all listed scope is now done**; only shipping to `main` is outstanding (today's release cap was already spent, see PROGRESS.md). Leave unchecked until released.)* Redesign Cath per `VISION.md` "Cath: character bible": a classy, cute, stylish mum. Build one shared, framework-free art module (`shared/cath/`) that renders her as SVG in:
+1. [ ] **Cath's new look: the master art.** *(v1 shipped 2026-09-28 by the owner's chat session: `shared/cath/cath.ts` with face, bust and half framings, five expressions, two outfits and idle animation, used by Portrait.tsx, the title, the landing page and Runnel. STYLE.md 9 rewritten 2026-09-28 (`6e7a643`) to describe the new Cath in full, replacing the old K-pop-idol notes. Still to do: refine the art (hands and a pose, finer hair and fabric shading, readability at 32 px — a subagent review found her small-scale portrait and expressions hard to tell apart at 56-96px), then replace `public/favicon.svg`, the app icon brief and the social images with the new Cath.)* Redesign Cath per `VISION.md` "Cath: character bible": a classy, cute, stylish mum. Build one shared, framework-free art module (`shared/cath/`) that renders her as SVG in:
    - two framings: a bust portrait for UI sizes of 32-160 px, and a half-body figure for heroes and scenes;
    - at least five expressions: warm smirk (the default), delighted, determined, worried and wink;
    - two outfits: her classic field look and a market-day look.
@@ -33,122 +33,9 @@ Every visual item is done only when:
 
 6. [x] **Title screen:** an illustrated, animated map of Marrow with Cath, poster typography and a clear menu (owner's chat session, 2026-09-28). Update Cath to the new art once item 1 ships.
 7. [x] **Campaign screen:** a journey across Marrow, with chapter stops, mini maps and each chapter's producers (owner's chat session, 2026-09-28).
-8. [ ] **The table (game screen), part 1: layout.** *(2026-09-28: the desktop action list moved out of the
-   centre column into a new side tray next to the Farm panel (`Game.tsx`'s `actionsPanel`, `.actions-sheet`
-   in `global.css`) — mounted via a `useIsDesktopLayout()` matchMedia hook, not CSS-hidden duplicates, since
-   two always-mounted copies broke Playwright's strict-mode locators (e2e/tooltip.spec.ts). Measured
-   directly (repeated runs against `desktop-no-scroll.spec.ts`'s own fixture) that this barely grows the
-   map, though: the old in-column action list already shrank to near-nothing in the tightest states, so it
-   was never really the map's ceiling — the topbar/companion/tutorial-prompt/plan-strip/legend/active-
-   producer chrome around the map is. `.map`'s cap only moved from 260px to 262px; `.map-wrap` now absorbs
-   leftover vertical space on taller-than-1280x800 windows so the map centres in it instead of leaving a
-   dead gap below Undo (caught in a `shots` screenshot). Real, shippable progress toward "tidy side trays,"
-   but not the item: the map isn't dramatically bigger, and phone still has no bottom tray (its action list
-   render spot is unchanged). 2026-09-28 (later session): trimmed the fixed chrome itself — merged the plan
-   strip and map legend into one shared desktop row instead of two stacked full-width rows (real slack, the
-   centre column is far wider than the map), then tightened the topbar's and the decision/active-producer
-   panel's vertical padding by 2px each. `.map`'s cap moved 262px→288px (bisected against
-   `desktop-no-scroll.spec.ts` both times). The row-merge briefly overflowed horizontally — a bug the
-   vertical-only e2e test couldn't catch, only a `shots` screenshot did — fixed with `min-width: 0` and a
-   `flex-wrap` fallback; see DECISIONS.md. Diminishing returns from here: the companion/tutorial-prompt
-   chrome was already tightened in an earlier session. 2026-09-28 (later session): gave phone its bottom
-   tray. `.game` now splits into two flex children — `.game-scroll` (topbar/companion/plan-strip/map,
-   scrolls internally if needed) and `.action-tray` (producer info, actions, Undo/sheet-toggle footer,
-   its own natural size) — so the bottom panel SPEC 10.2 calls "fixed" is always fully visible with no
-   fixed positioning or measured JS height, avoiding the inline-style CSP rule entirely; the actions list
-   itself caps at 130px with internal scroll so a 10+-action state can't push Undo off-screen. Verified at
-   360x640/390x844/430x932 (SPEC 10.2's full range): zero page scroll, every action and the footer always
-   reachable. Trade-off, not yet solved: at the 390x844 design size the topbar (wraps to 2 lines) plus
-   companion plus plan-strip plus legend already need ~570px on their own, so the map's bottom portion
-   stays cropped within `.game-scroll`'s own scroll even with the action list collapsed — a gate-8 review
-   called the crop itself clean-looking, not broken, but the map isn't the size-dominant "hero" on phone
-   yet, and there's still no interactive pull-to-expand gesture (just a fixed peek height). Left unchecked
-   for that reason — a follow-up could shrink the topbar/companion further, or add a real drag/tap-to-
-   expand affordance.)* Make the
-   map the hero. On desktop, the map fills the centre column at the largest size that fits, and the farm,
-   market, plan and log panels become tidy side trays. On phone, the map fills the top of the screen and
-   actions live in a bottom tray that can be pulled up. Leave room for Cath's companion (item 3). Keep every
-   current control and test hook, and don't change the rules.
-9. [ ] **The table, part 2: actions as cards.** *(2026-09-28: shipped the two pieces of this item that needed
-   no new art or engine changes, so they could land as safe, reversible slices ahead of the bigger
-   illustrated-tile redesign. Press feedback: every button (not just action buttons — STYLE.md draws no
-   per-screen exception, and a press effect on some buttons but not others would read as unfinished, not
-   selective) gets a `transform: scale(0.96)` on `:active`, replaced with a plain opacity dip under
-   `prefers-reduced-motion` per STYLE.md 11's "fades only". Region-targeting's animated outline: STYLE.md 7
-   already called for "legal regions glow with a 3px wheat outline and a soft pulse," but only the static
-   outline existed — added a 1.6s stroke-width/opacity pulse, disabled under reduced motion (falls back to
-   the exact prior static stroke). Both verified directly (computed-style checks for both motion states,
-   plus the full Playwright suite and `npm run gates`) rather than by screenshot, since neither is visible
-   in a resting-state screenshot. 2026-09-28 (later same session): added resource cost chips — a small
-   icon+number pill inside each action button, reusing the exact `ProduceIcon`/`MarksIcon`/`GoodwillIcon`
-   already drawn in the topbar/active-producer panel (no new art needed), additive to `actionLabel`'s
-   existing text cost rather than replacing it (keeps every e2e test that matches a button name by
-   prefix working unchanged). `actionCost()` (`actionLabel.ts`) calls the exact same cost functions
-   `applyAction` uses to spend the resource (now exported from `engine/actions.ts`) — one source of
-   truth, so a chip can never drift from the real cost. A region-targeting group button only shows a
-   chip when every region behind it costs the same (Supply's per-Outlet cost varies by region type and
-   Improvements); mixed costs fall back to no chip. Gate-8 reviewed clean at both sizes, including the
-   longest label ("Supply: remove 1 Outlet in Brindle Hills", which wraps to 2 lines).
-   2026-09-28 (later same session): added the icon set — new STYLE.md 5.1 documents 8 icons (Sell,
-   Invest, Scheme, Graft, Open Stall, Supply, Rebut, Role) on the same 24px/flat-fill/2px-ink-outline
-   grid as the resource icons, drawn in `src/ui/icons/ActionIcons.tsx` and rendered at the start of
-   each action button. Supply/Rebut reuse the map's Outlet/Doubt colours (a faded piece struck through
-   with an X) rather than needing wholly new shapes. A gate-8 review of the first pass caught 3 real
-   defects, all fixed and reverified with zoomed renders: Scheme's paper-dart shape collapsed into a
-   plain chevron at true ~18px size (widened it, shaded one wing); Open Stall's canopy-to-valance
-   proportions read as a boxy monitor rather than an awning (flipped them); Supply/Rebut's faded
-   box/bubble had no `stroke` at all, so only the X was visible (added a separately-opaque ink
-   outline). 5 of the 8 icons needed genuinely new art (Sell, Invest, Scheme, Graft, Role); the other
-   3 (Open Stall, Supply, Rebut) build on shapes that already existed on the map. `npm run gates`
-   green 3 times across the 2 sessions that shipped item 9's pieces so far.
-   2026-09-28 (later same session): started the item's last piece, disabled/why-not states, with the one
-   case that's genuinely unambiguous — Sell. Its whole legality is a single resource comparison (Produce
-   ≥ count), so when a count is unaffordable it now renders as a disabled placeholder, in its natural
-   numeric position, with a "Need N more Produce" line and its cost chip still shown (skipped during a
-   gated tutorial step, since SPEC 8.1's "only the action being taught is enabled" already hides
-   everything else). Every other action kind stays simply absent when illegal, as before: Invest/Scheme's
-   "not enough Marks/Goodwill vs. no affordable card vs. rule not unlocked yet" and Supply/Rebut/Open
-   Stall's "no valid region vs. can't afford it" would need real per-kind reason logic to avoid showing a
-   misleading reason, which is a bigger, separate piece of work. Along the way, gave every button (not
-   just this one) a real `:disabled` style — none existed before beyond the cursor, and a gate-8 review
-   caught a first pass compounding `--ink-muted` text with 50% opacity into ~2.3:1 contrast (under
-   STYLE.md 3.6's 4.5:1 floor); fixed by keeping text at plain `--ink-muted` (verified 4.51:1) and moving
-   the opacity to only the icon/cost chip. New `e2e/disabled-actions.spec.ts` locks in the behaviour.
-   Item 9 is now close but not done: disabled/why-not states cover only Sell, and the full
-   illustrated-tile redesign (the item's own title) hasn't started.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
-10. [ ] **The table, part 3: the HUD.** *(2026-09-28: shipped the tick-up/tick-down animation half, which
-    needed no new art — `useHudTick()` (`Game.tsx`) increments a per-stat counter only on a genuine value
-    change, computed synchronously during render; the topbar wraps each stat's icon+number in a span keyed
-    on that counter, so React remounts and replays a CSS scale-pulse exactly once per change, gated so the
-    very first render (game load) never flashes every stat at once. Deliberately scale-only, no colour:
-    Round going up is neutral, Trust going up is good, but Lost Land/Rift going up are both bad, so no
-    single colour-by-direction would be honest across all 4 without tracking each one's own "which way is
-    good" — left for a later pass if it's worth it. Verified directly (initial render has no animation
-    class; forcing a real round advance confirms only the stats that actually changed tick).
-    2026-09-28 (later same session): added the gauge bars themselves — `MiniGauge` (`ResourceIcons.tsx`),
-    a small proportional fill pill next to each stat's existing icon+number (not replacing the number,
-    SPEC 10.5 still wants it shown). Bounds come from the engine's own source of truth: Trust (0-15) and
-    Rift (0-6) match `validate()`'s range checks; Lost Land's "full" is this game's actual starting pool
-    (`lostLandPoolOverride ?? DIFFICULTY_SETTINGS[difficulty].lostLandPool`, the same formula
-    `createGame` uses), not a guessed constant. Phone only: fitting the gauge on desktop's centre column
-    would have re-opened the exact width fight several earlier sessions already spent real time
-    winning — measured that even an 8px sliver gauge with the topbar's padding/gap trimmed to almost
-    nothing still left the row ~17px too wide at 1280x800, wrapping the topbar and failing
-    `desktop-no-scroll.spec.ts`; hid it there instead (`.hud-gauge { display: none }` at 1024px+). Phone's
-    own topbar wrap grew from 2 lines to 3 (Menu now on its own line) — verified this doesn't break either
-    hard requirement from the bottom-tray work (zero page scroll, Undo/action tray fully visible) at all 3
-    of SPEC 10.2's named viewports. A gate-8 review claimed the gauge always renders full/identical
-    regardless of value; checked directly (DOM `<rect width>` attributes, then a 4x-scale screenshot crop)
-    and found the fills exactly correct — a false positive, see DECISIONS.md. Still open: the desktop half
-    of the gauges (needs its own width budget win first, not attempted again this session).
-    2026-09-28 (later still): shipped STYLE.md 8's Pressure card look on Squeeze/Expand/Scout — a stage
-    numeral (Roman) and region-type icon(s) as a small `position: absolute` corner badge on the existing
-    plan-strip pill (`RegionTypeIcon.tsx`, reuses the map's own `REGION_FILL` colours), not a full card
-    redesign, since the desktop plan-strip row measured at exactly zero vertical slack (768/768px) — an
-    inline badge wrapped the button to an extra line and broke `desktop-no-scroll.spec.ts`; the corner
-    badge doesn't affect text flow so it ships on both phone and desktop with no width-budget fight at all.
-    Verified with direct DOM height measurement, not just a screenshot. Still open: the desktop half of the
-    gauges (needs its own width budget win first).)* Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
+8. [ ] **The table (game screen), part 1: layout.** Make the map the hero. On desktop, the map fills the centre column at the largest size that fits, and the farm, market, plan and log panels become tidy side trays. On phone, the map fills the top of the screen and actions live in a bottom tray that can be pulled up. Leave room for Cath's companion (item 3). Keep every current control and test hook, and don't change the rules.
+9. [ ] **The table, part 2: actions as cards.** Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
+10. [ ] **The table, part 3: the HUD.** Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
 11. [ ] **Map art, part 1: regions.** Terrain illustration on each region (hedgerows, field rows, shoreline and boats, the Kingsmarket clock tower) and labels as painted signboards. It must pass the greyscale shape test (STYLE.md 2).
 12. [ ] **Map art, part 2: pieces.** The exact STYLE.md 6 pieces (awning Stall, glossy "0.99" Outlet, "SOLD" fence Buyout, "?" bubble Doubt), each with a placement animation.
 13. [ ] **Moments:** liberating a region (a seal stamp, colour blooming across the hex, Cath cheering), a Squeeze (glossy plastic creeping over a region), Lost Land, the Rift at 3 and 6, the enemy turn playback choreographed step by step, and the end of a round.

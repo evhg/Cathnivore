@@ -111,19 +111,6 @@ Icons are flat fills with a 2 px `--ink` outline and rounded joins, and must sta
 | Round | calendar leaf |
 | Actions left | filled or empty dots |
 
-### 5.1 Action icons (ROADMAP 9)
-Same 24 px grid, flat fill, 2 px ink outline. Sits at the start of each action button, before the label.
-| Action | Icon |
-|---|---|
-| Sell | a downward arrow feeding into a wheat coin |
-| Invest | a paper card with a wheat coin badge at top right (echoes the Improvement card itself) |
-| Scheme | a folded paper dart (a note "sent" — Cath's Plan cards are "notes from her pocket") |
-| Graft | a thin pasture-green sprout growing from a small clay soil mound |
-| Open Stall | the Stall piece's own scalloped awning, in clay rather than a producer colour (no producer context yet at icon scale) |
-| Supply | a faded Outlet box struck through with a clay X |
-| Rebut | a faded Doubt bubble struck through with a clay X |
-| Role | a plain wheat 5-point star badge (one shared icon; the 4 producers' role abilities differ too much for a per-role icon yet) |
-
 ## 6. Game pieces (SVG, 32 px on the map, readable at 20 px)
 | Piece | Shape | Material |
 |---|---|---|
@@ -199,7 +186,7 @@ Neither may resemble any real brand. In particular, avoid red-and-yellow food lo
 - No exclamation marks and no emoji anywhere in the interface.
 
 ## 13. App icon and store assets
-- **App icon (1024×1024, no transparency):** a close crop of the new Cath (`shared/cath/cath.ts`, see section 9 and VISION.md "Cath: character bible"), drawn from `cathSvg({framing: 'face', outfit: 'field', expression: 'smirk'})` — her very long, centre-parted hair falling to the edges, the raised right eyebrow and warm smirk. A small pasture-green leaf clip shows on the right side of her hair. The background is wheat for dark hair and pasture-deep for light hair, so the hair always stands out. No text. It must read at 60 px. `public/favicon.svg` is a frozen, static copy of that same render (favicons can't run the module's JS); the app icon and other static Cath assets (touch icon, social preview) should match it.
+- **App icon (1024×1024, no transparency):** a close crop of Cath's face in her idol style, framed by her very long, centre-parted hair falling to the bottom edge, keeping the raised eyebrow and the smirk. A small pasture-green leaf is tucked into the right side of her hair. The background is wheat for dark hair and pasture-deep for light hair, so the hair always stands out. No text. It must read at 60 px. The style board shows the reference drawing.
 - **Launch screen:** paper background with the icon drawing centred, and nothing else.
 - **App Store screenshots:** 5 portrait screenshots at the size Apple currently requires for the largest iPhone, each with a caption banner in Fraunces at the top:
   1. mid-game map with the enemy plan visible ("See their next move. Beat it.");

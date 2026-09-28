@@ -2,14 +2,6 @@ import { REGIONS } from '../content/map'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { PRODUCERS } from '../content/producers'
-import {
-  investCost,
-  rebutCost,
-  schemeCost,
-  supplyBuyoutCost,
-  supplyOutletCostPerOutlet,
-  TEAR_UP_CONTRACT_COST,
-} from '../engine/actions'
 import type { Action, Faction, GameState, RegionId, ResourceKind } from '../engine/types'
 
 const RESOURCE_NAME = { produce: 'Produce', marks: 'Marks', goodwill: 'Goodwill' } as const
@@ -59,43 +51,6 @@ export function actionLabel(action: Action, state: GameState): string {
       return `Choose ${decisionChoiceName(action.choice)}`
     case 'tearUpContract':
       return 'Tear Up the Contract (3 Marks)'
-  }
-}
-
-// ROADMAP 9's "cost chips shown with resource tokens": the resource and amount an action actually
-// spends, for a UI-layer chip to render as an icon (reusing the topbar/active-producer panel's existing
-// `ProduceIcon`/`MarksIcon`/`GoodwillIcon`, no new art needed) rather than the plain-text costs
-// `actionLabel` above already spells out. Calls the exact same cost functions `applyAction` (engine/
-// actions.ts) uses to actually spend the resource — one source of truth, so a chip can never drift from
-// what the button actually costs when tapped. `undefined` for actions with no resource cost (Graft is a
-// pure gain; Role abilities are free, SPEC 6; `decide` isn't a player-initiated spend).
-export function actionCost(action: Action, state: GameState): { resource: ResourceKind; amount: number } | undefined {
-  const producer = state.activeProducer
-  switch (action.kind) {
-    case 'openStall':
-      return { resource: 'produce', amount: 1 }
-    case 'supplyOutlets':
-      return { resource: 'produce', amount: supplyOutletCostPerOutlet(state, producer, action.region) * action.count }
-    case 'supplyBuyout':
-      return { resource: 'produce', amount: supplyBuyoutCost(state, producer) }
-    case 'rebut':
-      return { resource: 'goodwill', amount: rebutCost(state, producer, action.count) }
-    case 'invest': {
-      const card = IMPROVEMENTS_BY_ID.get(action.improvementId)
-      return card ? { resource: 'marks', amount: investCost(state, producer, card) } : undefined
-    }
-    case 'sell':
-      return { resource: 'produce', amount: action.count }
-    case 'scheme': {
-      const card = SCHEMES_BY_ID.get(action.schemeId)
-      return card ? { resource: 'goodwill', amount: schemeCost(state, producer, card) } : undefined
-    }
-    case 'tearUpContract':
-      return { resource: 'marks', amount: TEAR_UP_CONTRACT_COST }
-    case 'graft':
-    case 'role':
-    case 'decide':
-      return undefined
   }
 }
 

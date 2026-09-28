@@ -104,60 +104,6 @@ h3 {
   gap: 8px;
 }
 
-/* SPEC 10.2 phone: "Bottom panel (fixed)" — the active producer, its actions and the Undo/sheet-toggle
-   footer must stay visible without scrolling the page to reach them (previously they just sat at the end
-   of one long scrolling column, so only the first action button was ever on screen). `.game`'s two flex
-   children do the pinning with plain flexbox, no fixed positioning or measured JS height needed:
-   `.game-scroll` (everything *about* the current state) is the one allowed to shrink and scroll
-   internally; `.action-tray` (the actual controls) keeps its own natural size, so it's always fully
-   visible as `.game`'s second child. Desktop (1024px+, below) turns both into `display: contents` — a
-   no-op there, since every element still needs to flow directly in `.game`'s own column exactly as
-   before this session (active-producer/decision stay in the centre column's normal flow; the actions
-   list moved to the side tray entirely, see `actionsPanel` in Game.tsx). */
-.game-scroll {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.action-tray {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: none;
-  padding-top: 8px;
-  border-top: 1px solid var(--rule);
-}
-
-/* `.action-tray` itself is `flex: none` (its own natural size, so it's never squeezed below usable), but
-   a content-dense state can have 10+ legal actions (region-scoped Supply/Rebut/Scheme/Role labels, one
-   Sell entry per quantity — the same variable-length list desktop's `.desktop-col-left .actions-sheet
-   .actions` already caps) — left unbounded, that would grow the tray past the viewport and push `Undo`
-   off-screen, defeating the whole "always visible" point. Capping just this list, not the tray around it,
-   keeps the producer info and Undo/sheet-toggle footer always shown while the list scrolls internally.
-   130px (about 3 rows, with a 4th peeking to hint there's more) was picked by measuring the design
-   viewport (390x844) directly: even with this list collapsed to nothing, the topbar/companion/plan-strip/
-   legend above the map already need ~570px on their own (the topbar alone wraps to 2 lines at this
-   width), so `.game-scroll` was never going to show the map's full height without scrolling regardless —
-   130px keeps a real, usable action peek without giving up much more of that already-tight budget. */
-.action-tray .actions {
-  max-height: 130px;
-  overflow-y: auto;
-}
-
-@media (max-width: 1023.98px) {
-  .game {
-    height: 100vh;
-    height: 100dvh;
-  }
-
-  .game-scroll {
-    flex: 1 1 auto;
-  }
-}
-
 /* Desktop-only Farm/Market/Cath's Plan/Log panels (rendered inline, always mounted) and the phone-only
    sheet-toggle buttons in the footer are mutually exclusive, split by this one breakpoint. */
 .desktop-col {
@@ -198,12 +144,6 @@ h3 {
     overflow-y: auto;
   }
 
-  /* Neutralises the phone-only `.game-scroll`/`.action-tray` split above — see its comment. */
-  .game-scroll,
-  .action-tray {
-    display: contents;
-  }
-
   .mobile-only {
     display: none;
   }
@@ -226,48 +166,6 @@ h3 {
    the default button's larger horizontal padding so it doesn't dominate an otherwise compact, text-only bar. */
 .topbar button {
   padding: 10px 12px;
-}
-
-/* ROADMAP 10 "the HUD ... tick-up and tick-down animation when they change": `.hud-value` wraps each
-   stat's icon+number (Round/Trust/Lost Land/Rift) so it keeps the exact inline icon-then-text layout the
-   plain text already had; `.hud-tick` is the animated variant, added only from the second render a given
-   value actually has (see Game.tsx's `useHudTick`) so a fresh game screen doesn't flash every stat once
-   on load — only a real change later ticks it. React remounts this span on every value change (it's
-   `key`ed on a per-change counter), which is what replays the animation below each time. */
-.hud-value {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.hud-tick {
-  animation: hud-tick 500ms ease-out;
-}
-
-/* Scale only, no colour change: Round going up is neutral progress, Trust going up is good, but Lost
-   Land and Rift going up are both bad — no single colour-by-direction rule would be honest across all 4
-   stats without tracking each one's own "which way is good" separately, which is more than this first
-   pass needs, and picking one colour for every direction risks the same kind of contrast mistake this
-   session's Sell-button disabled state already made once (checked here too: a scale-only transform never
-   touches text colour, so there's nothing to re-check). The animation marking that something changed is
-   the useful part; STYLE.md 7 already reserves colour-as-signal (Squeeze/Expand pills) for the map's own
-   warnings, not the topbar. */
-@keyframes hud-tick {
-  0% {
-    transform: scale(1);
-  }
-  30% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hud-tick {
-    animation: none;
-  }
 }
 
 /* SPEC 10.5: in-game tap/hover tooltip on game terms (Squeeze, Expand, Public Trust and so on), alongside
@@ -317,7 +215,6 @@ h3 {
 }
 
 .plan-strip-item > button:first-child {
-  position: relative;
   flex: 1;
   background: var(--surface);
   border: 1px solid var(--rule);
@@ -328,27 +225,6 @@ h3 {
   font-family: inherit;
   color: inherit;
   cursor: pointer;
-}
-
-/* STYLE.md 8's Pressure card meta (stage numeral + region-type icon), pinned to the button's own corner
-   rather than sharing its text line: the plan-strip row already sits at zero vertical slack against
-   SPEC 10.3's 1280x800 no-scroll budget (measured directly — adding the meta inline wraps the button to
-   an extra line and overflows `.game` by ~11px), so it must not affect layout flow or height at all. */
-.plan-strip-card-meta {
-  position: absolute;
-  top: 2px;
-  right: 3px;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  line-height: 1;
-}
-
-.plan-strip-stage {
-  font-family: var(--font-display, inherit);
-  font-size: 9px;
-  font-weight: 600;
-  opacity: 0.7;
 }
 
 /* The small "?" tooltip trigger next to each plan-strip card (SPEC 10.5) — a separate, deliberately
@@ -369,12 +245,6 @@ h3 {
 .plan-strip-active {
   border-color: var(--pasture-deep) !important;
   background: var(--paper-2) !important;
-}
-
-/* ROADMAP 8: shares one row with `.map-legend` on desktop (see the `@media (min-width: 1024px)` block
-   below); a plain block on phone, same stacked layout as before. */
-.plan-legend-row {
-  display: contents;
 }
 
 .map-legend {
@@ -669,35 +539,9 @@ h3 {
   vertical-align: middle;
 }
 
-/* ROADMAP 9 "region-targeting mode highlights the valid regions with an animated outline" (STYLE.md 7:
-   "legal regions glow with a 3 px wheat outline and a soft pulse") — the outline itself already existed
-   (`.dimmed`'s 45% opacity on everything else too), but had no pulse. `stroke-width: 5` stays as the plain
-   declaration (not just a keyframe value) so it's still what renders when the animation below is switched
-   off, matching the established `prefers-reduced-motion` pattern elsewhere in this file (e.g.
-   `.cath-companion-line`) — reduced-motion users see exactly the same static outline as before this
-   change, not a broken or frozen mid-pulse frame. */
 .region-hex.glow polygon:first-of-type {
   stroke: var(--wheat);
   stroke-width: 5;
-  animation: region-glow-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes region-glow-pulse {
-  0%,
-  100% {
-    stroke-width: 4;
-    stroke-opacity: 0.8;
-  }
-  50% {
-    stroke-width: 7;
-    stroke-opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .region-hex.glow polygon:first-of-type {
-    animation: none;
-  }
 }
 
 .decision,
@@ -785,63 +629,6 @@ h3 {
 
 .actions .action-item > button:first-child {
   flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  text-align: left;
-}
-
-/* ROADMAP 9 "an icon per action" (STYLE.md 5.1): the icon and the label text share this wrapper so the
-   button's own `justify-content: space-between` (above) only ever splits 2 children — this span and
-   `.action-cost` — instead of spreading an icon/text/chip trio unevenly across the row. `min-width: 0`
-   lets the label itself still wrap/shrink inside it on narrow layouts (desktop's 3-column action grid
-   already relies on that, see the `.action-item > button:first-child` override further down). */
-.action-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.action-label svg {
-  flex: none;
-}
-
-/* ROADMAP 9 "clear disabled and why-not states": a disabled action button needs its reason on a second
-   line, not squeezed onto the same row as the icon/label (which is already tight against the cost chip
-   on the right) — this wrapper stacks `.action-label` above `.action-why-not`, so the button's own
-   `justify-content: space-between` still only ever splits 2 children (this wrapper, and `.action-cost`). */
-.action-label-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  min-width: 0;
-}
-
-.action-why-not {
-  font-size: 12px;
-  font-weight: 400;
-  font-style: italic;
-  color: var(--ink-muted);
-}
-
-/* ROADMAP 9 "cost chips shown with resource tokens": a small pill inside the action button, additive to
-   `actionLabel`'s existing text cost (not a replacement — several e2e tests match button names by
-   prefix, so the text stays exactly as it was). Reuses the same resource icons the topbar/active-producer
-   panel already draw with (`ProduceIcon`/`MarksIcon`/`GoodwillIcon`), so this needed no new art. */
-.action-cost {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex: none;
-  padding: 2px 6px;
-  border-radius: 10px;
-  background: var(--paper-2);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
 }
 
 .actions .action-item .tooltip-trigger-button {
@@ -857,16 +644,19 @@ h3 {
 }
 
 /* SPEC 10.3: the phone layout's `.actions` above relies on `flex-wrap`, sizing each button by its own
-   label. On desktop (ROADMAP 8: now the right tray's ~320px column, not the phone's 480px-capped column)
-   that still wraps to close to one button per row when a full game's action list can have 10+ specific
-   entries (region-scoped Supply/Rebut/Scheme/Role labels, one Sell entry per quantity). A fixed-column grid
-   packs the same buttons into far fewer rows; `min-width: 0` on the grid item is required because a flex/
-   grid item's default `min-width: auto` otherwise refuses to shrink `.action-item` below its label's full
-   intrinsic width, which defeats the grid track sizing entirely (confirmed directly: without it every item
-   still claimed a full row). This rule must come after the unconditional `.actions`/`.action-item` rules
-   above so it wins the cascade at the same specificity — placing it back in the earlier
-   `@media (min-width: 1024px)` block (grouped with the rest of SPEC 10.3's desktop layout) silently lost to
-   these later, unconditional rules regardless of viewport width. */
+   label. On the wider desktop centre column (a `minmax(420px, 1fr)` grid track, not the phone's 480px-
+   capped column) that still wraps to close to one button per row when a full game's action list can have
+   10+ specific entries (region-scoped Supply/Rebut/Scheme/Role labels, one Sell entry per quantity) —
+   measured at ~460px tall at 1280x800 (see DECISIONS.md 2026-09-26), the single largest contributor to
+   `.game` overflowing its 768px-tall column. A fixed-column grid packs the same buttons into far fewer
+   rows on desktop's extra width; `min-width: 0` on the grid item is required because a flex/grid item's
+   default `min-width: auto` otherwise refuses to shrink `.action-item` below its label's full intrinsic
+   width, which defeats the grid track sizing entirely (confirmed directly: without it every item still
+   claimed a full row). This rule must come after the unconditional `.actions`/`.action-item` rules above so
+   it wins the cascade at the same specificity — placing it back in the earlier `@media (min-width: 1024px)`
+   block (grouped with the rest of SPEC 10.3's desktop layout) silently lost to these later, unconditional
+   rules regardless of viewport width. Does not, by itself, close the full SPEC 10.3 "no scrolling" gap —
+   see DECISIONS.md for the measured remaining shortfall and what's still needed. */
 @media (min-width: 1024px) {
   .actions {
     display: grid;
@@ -882,104 +672,35 @@ h3 {
     white-space: normal;
   }
 
-  /* ROADMAP 8 "the table, part 1: layout": the action list moved out of the centre column entirely (into
-     the left tray, `.desktop-col-left`, below) — measured directly (repeated runs against
-     desktop-no-scroll.spec.ts's own chapter-5 mid-game fixture) that it barely changes the map's own
-     ceiling here, though: the old `.actions` already shrank to near-nothing in the tightest states (its
-     own `flex: 1 1 auto; min-height: 0` let it collapse rather than force `.game` to overflow), so this
-     column's real fixed cost was always the topbar/companion/tutorial-prompt/plan-strip/legend/active-
-     producer chrome around the map, not the action list sharing space with it.
-     This session merged `.plan-strip` and `.map-legend` into one shared row (`.plan-legend-row` below)
-     instead of two stacked full-width rows, and tightened `.topbar`'s and `.decision`/`.active-producer`'s
-     vertical padding by 2px each — real slack, since the centre column is far wider than the map and
-     those two paddings had no legibility benefit at their old size. Bisected against the same fixture:
-     293px is the exact last passing width, 294px+ overflows; 288px keeps a 5px margin, the same kind of
-     safety gap earlier sessions left (262px vs. the 268px that failed). */
+  /* SPEC 10.3's centre column still needs more room after the `.actions` grid fix above (measured
+     2026-09-26: 424px short at 1280x800 with a chapter-5 mid-game position — see DECISIONS.md). SPEC 10.2's
+     "full width" map rule is a phone rule (390-430px-wide screens); 10.3 sets no size for the desktop map,
+     so shrinking it here is a real, available lever, not a spec violation. 260px (down from the unconditional
+     420px above, tightened further from an earlier 320px once the right column's own gap closed and made the
+     centre column the sole remaining blocker) frees 160px of column height while staying well above
+     STYLE.md 9's 32px minimum-legible-size floor (region names/pieces are far larger than that even at
+     260px). */
   .map {
-    max-width: 288px;
-  }
-
-  /* Without the action list stretching to fill it (ROADMAP 8: it moved to the left tray), `.game`'s leftover
-     vertical space on a taller-than-1280x800 desktop window used to show up as a dead gap below the Undo
-     button — caught in a `shots` screenshot at this session's own default (taller) desktop viewport.
-     `.map-wrap` absorbing that space and centering the map within it (rather than the map sitting at a
-     fixed spot with blank space beneath) makes the leftover room read as intentional breathing room around
-     the table, not an empty afterthought — and costs nothing at the exact 1280x800 budget, where there's no
-     leftover space to distribute in the first place. */
-  .map-wrap {
-    flex: 1 1 auto;
-    align-items: center;
+    max-width: 260px;
   }
 
   /* Tighter row gap between the centre column's stacked sections (topbar, plan strip, map, active-producer
-     panel, controls) — each section already carries its own internal padding, so the extra 8px between
-     every one of them was pure column-height cost with no legibility benefit. */
+     panel, actions, controls) — each section already carries its own internal padding, so the extra 8px
+     between every one of them was pure column-height cost with no legibility benefit. */
   .game {
     gap: 6px;
   }
 
-  /* ROADMAP 8: the plan strip and map legend used to be two separate full-height rows stacked above the
-     map — both are short, low-height content, and the centre column here is far wider than the 262px map
-     itself, so they share one row instead of two. This is worth a real, measured chunk of the "no scrolling
-     at 1280x800" budget (desktop-no-scroll.spec.ts): one whole row's height plus one `.game` gap, freed up
-     for the map itself below. `.plan-strip` grows to fill the leftover width; `.map-legend` keeps its own
-     compact size and right-aligns.
-     The two sides' natural (unconstrained) widths sum to more than the row actually has at 1280px
-     (measured directly: ~677px wanted, ~641px available) — grid/flex items default to `min-width: auto`,
-     which refuses to shrink below that natural content width and silently overflows past `.game`'s right
-     edge instead of wrapping (this doesn't show up in desktop-no-scroll.spec.ts, which only checks
-     *vertical* overflow — caught instead by comparing `shots` screenshots before/after). `min-width: 0` on
-     both sides lets them actually shrink to fit; `.map-legend`'s own `flex-wrap: wrap` is the fallback if
-     they still don't both fit at some future viewport/content combination, so the failure mode is an extra
-     legend line, never a clipped edge. */
-  .plan-legend-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .plan-legend-row .plan-strip {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .plan-legend-row .plan-strip-item {
-    min-width: 0;
-  }
-
-  .plan-legend-row .map-legend {
-    flex: 0 1 auto;
-    min-width: 0;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px 14px;
-  }
-
-  .topbar {
-    padding: 6px 12px;
-  }
-
-  /* ROADMAP 10's illustrated-gauge bars fit comfortably in the topbar's phone layout (each stat gets its
-     own line there), but the desktop centre column has no width left to give them: even shrinking the
-     gauge to a bare 8px sliver and the topbar's own padding/gap to almost nothing still left the row
-     ~17px too wide at 1280px (measured directly against desktop-no-scroll.spec.ts's fixture, wrapping the
-     topbar to 2 lines and blowing the "no scrolling at 1280x800" budget several sessions of chrome-
-     trimming already fought hard to hold). Hiding the gauge here keeps the number itself (the part SPEC
-     10.5 actually requires) and drops only the added decoration, rather than squeezing it illegibly small
-     or re-opening the centre column's budget fight again. */
-  .hud-gauge {
-    display: none;
-  }
-
   .decision,
   .active-producer {
-    padding: 4px 10px;
+    padding: 6px 10px;
   }
 
   /* The companion (added after this column's height budget was last measured, DECISIONS.md) is more fixed
-     chrome the "no scrolling at 1280x800" budget above has to absorb — a 56px portrait plus 16px of
+     chrome the same "no scrolling at 1280x800" budget above has to absorb — a 56px portrait plus 16px of
      padding was enough on its own to blow it. A small face and single-line, truncated text keep her
-     present without costing the column much height. */
+     present without costing the column the ~50px `.actions` needs back (measured against the same
+     chapter-5 mid-game fixture desktop-no-scroll.spec.ts uses). */
   .cath-companion {
     padding: 4px 10px;
     gap: 8px;
@@ -996,31 +717,23 @@ h3 {
     text-overflow: ellipsis;
   }
 
-  /* ROADMAP 8: `.actions` now lives in the left tray (`.desktop-col-left`), alongside the Farm panel —
-     tried the right tray first, but Market+Cath's Plan+Log already claim close to the full 768px column on
-     their own at 1280x800 (measured directly against desktop-no-scroll.spec.ts's own chapter-5 mid-game
-     fixture), leaving no real room for a 4th item there. The Farm panel is comparatively light (one fixed
-     entry per producer, measured ~360px), so pairing it with the actions tray here actually has headroom.
-     `.desktop-col-left`'s Farm panel gets `flex: none` (natural size, never shrinks) and `.actions-sheet` is
-     the flex/shrink target, absorbing whatever's left in the column; its own `min-height`/`overflow-y: auto`
-     below keeps it a working, scrollable list even when that's small — the same "internal scroll is the
-     honest escape valve for variable-length content" approach as the Log's own cap. */
-  .desktop-col-left > .sheet-panel {
-    flex: none;
-  }
-
-  .desktop-col-left .actions-sheet {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 40px;
-  }
-
-  .desktop-col-left .actions-sheet .actions {
-    /* The left tray (~300px, minus the `.sheet-panel` padding) is too narrow for the 3-column grid above —
-       one column per row reads far better than 3 cramped ones, matching how Market/Cath's Plan's card
-       lists already stack single-file in the right tray. */
-    grid-template-columns: 1fr;
+  /* The centre column's remaining shortfall (measured 2026-09-26: 142-232px across repeated runs, all with
+     the same fixed content around it) comes entirely from `.actions` itself varying game-state to
+     game-state (233-323px measured across those same runs) — one button per legal region/card/quantity
+     target, the same unboundedly-variable shape as the Log's turn history, not a fixed card count like
+     Market/Cath's Plan. A fixed-size column can't guarantee "no scrolling" against a genuinely variable
+     list any more than it could for the Log, so `.actions` gets the identical internally-scrolling
+     escape valve the Log already had (see the Log's own comment below).
+     A *fixed* `max-height` here (an earlier version of this rule used 160px) turned out wrong in a
+     different way: a gate-8 visual-review screenshot caught it clipping a normal, un-dense action list
+     (a fresh game with only 7-8 actions, no tutorial banner) mid-button with no visible scroll affordance,
+     because 160px was sized for the *worst* case (chapter 5's content-dense tutorial-banner scenario), not
+     the typical one — wasting all the space the `.controls` margin fix (below) freed up on every other
+     game state. `flex: 1 1 auto` with `min-height: 0` instead makes `.actions` claim whatever's actually
+     left in the column after every other (fixed-size) sibling, so a light action list gets to show more of
+     itself and only a genuinely long one scrolls — `.game`'s own `overflow-y: auto` stays the backstop for
+     the pathological case (measured to hold with the tutorial-banner scenario at gate 5's own e2e check). */
+  .actions {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
@@ -1119,49 +832,6 @@ button {
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
-  transition: transform 100ms ease-out;
-}
-
-/* ROADMAP 9's "press feedback" for the table's action tiles, applied to every button rather than just
-   those (STYLE.md has no per-screen exception, and a press effect on some buttons but not others would
-   read as inconsistent/broken, not selectively finished). `:not(:disabled)` matches `button.primary`'s
-   own disabled styling above — a disabled button shouldn't visibly react to a tap it can't take.
-   STYLE.md 11: "With reduced motion switched on, use fades only" — the scale becomes a plain opacity dip
-   instead of disappearing outright, so a tap still gets *some* feedback either way. */
-button:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  button {
-    transition: opacity 100ms ease-out;
-  }
-
-  button:active:not(:disabled) {
-    transform: none;
-    opacity: 0.7;
-  }
-}
-
-/* ROADMAP 9 "clear disabled ... states": a secondary/default button (this app's `button.primary` already
-   has its own disabled style above) had no disabled treatment at all before this — it inherited the same
-   solid ink text/border as an enabled one, so the existing `disabled` Undo button only ever looked
-   disabled by its cursor. A first pass used `opacity` on the whole button for "can't tap this," but a
-   gate-8 review measured the result: `--ink-muted` text at 55% opacity compounds into an even lighter
-   grey that drops to ~2.3:1 contrast, failing STYLE.md 3.6's 4.5:1 floor and making the label and its
-   "why not" reason nearly illegible rather than clearly muted. `--ink-muted` alone (no opacity) already
-   passes contrast on its own everywhere else it's used, so the border and background carry the dimming
-   instead, and only non-text children (the leading icon, the cost chip) get the opacity treatment. */
-button:disabled {
-  cursor: not-allowed;
-  color: var(--ink-muted);
-  border-color: var(--rule);
-  background: var(--paper-2);
-}
-
-button:disabled .action-label svg,
-button:disabled .action-cost {
-  opacity: 0.5;
 }
 
 /* STYLE.md 10: "Primary is pasture-deep fill with paper text." Reserved for the one clear next action on
@@ -1205,12 +875,12 @@ button.destructive {
 /* `.controls`'s `margin-top: auto` above pins Undo to the bottom of the phone screen's fixed footer —
    right for a single-screen mobile layout, but on desktop it instead stretches through the centre column's
    spare vertical space and shoves Undo down against the column's own bottom edge, visually disconnected
-   from the active-producer panel above it (ROADMAP 8: the actions list that used to sit there moved to the
-   right tray) — a real bug a gate-8 visual-review screenshot caught (the automated no-scroll height check
-   only looks at whether content overflows, not where it sits). Desktop's centre column already flows
-   normally top-to-bottom, so Undo just needs to sit directly after the section above it like every other
-   one. This override must come after the unconditional rule above to win the cascade at equal specificity,
-   the same ordering constraint the `.actions` grid/scroll overrides note elsewhere in this file. */
+   from the actions list above it — a real bug a gate-8 visual-review screenshot caught (the automated
+   no-scroll height check only looks at whether content overflows, not where it sits). Desktop's centre
+   column already flows normally top-to-bottom, so Undo just needs to sit directly after the actions list
+   like every other section. This override must come after the unconditional rule above to win the cascade
+   at equal specificity, the same ordering constraint the `.actions` grid/scroll overrides note elsewhere
+   in this file. */
 @media (min-width: 1024px) {
   .controls {
     margin-top: 0;

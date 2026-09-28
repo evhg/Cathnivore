@@ -14,12 +14,6 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
   const project = testInfo.project.name
 
   await page.goto('/')
-  // .title-cath fades/rises in (title.css's title-fade-rise, a 500ms delay + 900ms animation) — wait for
-  // it to finish so gate 8's screenshot actually shows Cath instead of catching her mid-fade or invisible.
-  await page.waitForFunction(() => {
-    const el = document.querySelector('.title-cath')
-    return el ? getComputedStyle(el).opacity === '1' : true
-  })
   await shoot(page, project, '1-title')
 
   await page.getByText('How to Play').click()

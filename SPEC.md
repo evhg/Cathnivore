@@ -359,7 +359,7 @@ Quick Game is available from the start, with a note recommending the campaign fi
 - An Undo button is available during your own turn.
 
 ### 10.3 Desktop (1024 px and wider)
-Three columns: both producers' farms and the action list on the left, the map and enemy plan strip in the centre, and the Market, Cath's Plan and Log on the right (ROADMAP 8: the action list moved here from the centre column so the map could grow — see DECISIONS.md). No scrolling at 1280×800.
+Three columns: both producers' farms on the left, the map and enemy plan strip in the centre, and the Market, Cath's Plan and Log on the right. No scrolling at 1280×800.
 
 ### 10.4 Visual style
 Follow `STYLE.md` for everything visual: colour tokens, fonts, icons, pieces, map, cards, portraits, spacing, motion, words on screen and store assets.

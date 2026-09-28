@@ -105,23 +105,3 @@ export function ActionsLeftIcon({ total, left }: { total: number; left: number }
     </svg>
   )
 }
-
-// ROADMAP 10 "Round, Trust, Lost Land and Rift become illustrated gauges": a small filled bar showing
-// `value`/`max` as a proportion, next to (not instead of) the existing icon+number — the exact number
-// still matters (SPEC 10.5's plain-English clarity), the bar adds an at-a-glance sense of how full or
-// empty the track is. One neutral fill colour for all 4 rather than a good/bad tint per stat: Round
-// climbing is neutral progress, Trust climbing is good, but Lost Land and Rift climbing are both bad —
-// no single colour-by-direction is honest across all 4 (same reasoning as the HUD tick animation staying
-// colourless). `viewBox` stays on the same 24px-tall grid as the other icons even though the gauge itself
-// is short, so it sits on the same baseline inline next to them.
-export function MiniGauge({ value, max, width = 32 }: { value: number; max: number; width?: number }) {
-  const fraction = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0
-  const trackWidth = width - 2
-  const fillWidth = fraction > 0 ? Math.max(2, fraction * trackWidth) : 0
-  return (
-    <svg width={width} height={16} viewBox={`0 0 ${width} 24`} aria-hidden="true" className="icon-inline hud-gauge">
-      <rect x="1" y="9" width={trackWidth} height="6" rx="3" fill={PAPER_2} stroke={INK} strokeWidth={1.2} />
-      {fillWidth > 0 && <rect x="1" y="9" width={fillWidth} height="6" rx="3" fill={INK} opacity={0.55} />}
-    </svg>
-  )
-}

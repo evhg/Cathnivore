@@ -128,9 +128,7 @@ function defs(id: string): string {
 
 function hairBack(id: string): string {
   // Hair behind her: it hugs the head, then falls behind the shoulders in soft waves. Most of its length is
-  // carried by the two front locks, so her shoulders stay visible. Two faint strand-shine strokes on each
-  // side (deeper set than the front locks' own shine, so they read behind rather than competing) give the
-  // back mass some volume instead of reading as a flat, single-tone blob.
+  // carried by the two front locks, so her shoulders stay visible.
   return `<path fill="url(#${id}-hair)" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="
 M200 60
 C154 58 126 90 124 144
@@ -139,13 +137,7 @@ C126 278 120 296 128 314
 L272 314
 C280 296 274 278 278 252
 C282 222 278 186 276 144
-C274 90 246 58 200 60 Z"/>
-<path fill="none" stroke="${C.hairShine}" stroke-width="1.8" stroke-linecap="round" opacity="0.3" d="
-M142 100 C134 130 132 162 136 192 C140 218 136 240 140 262
-M258 100 C266 130 268 162 264 192 C260 218 264 240 260 262"/>
-<path fill="none" stroke="${C.hairDeep}" stroke-width="2.2" stroke-linecap="round" opacity="0.35" d="
-M132 190 C128 216 128 240 134 262
-M268 190 C272 216 272 240 266 262"/>`
+C274 90 246 58 200 60 Z"/>`
 }
 
 function hairFront(id: string): string {
@@ -168,8 +160,7 @@ C${x(152)} 226 ${x(152)} 196 ${x(152)} 172
 C${x(152)} 150 ${x(154)} 132 ${x(162)} 118
 C${x(172)} 124 ${x(186)} 118 ${x(194)} 104
 C${x(198)} 96 ${x(200)} 88 ${x(200)} 80 Z"/>
-<path fill="none" stroke="${C.hairShine}" stroke-width="2.2" stroke-linecap="round" opacity="0.6" d="M${x(158)} 94 C${x(148)} 108 ${x(142)} 128 ${x(142)} 150 M${x(146)} 280 C${x(152)} 300 ${x(152)} 318 ${x(160)} 338 M${x(160)} 372 C${x(164)} 388 ${x(162)} 400 ${x(160)} 412"/>
-<path fill="none" stroke="${C.hairShine}" stroke-width="1.4" stroke-linecap="round" opacity="0.4" d="M${x(168)} 128 C${x(162)} 150 ${x(162)} 172 ${x(166)} 196 M${x(150)} 220 C${x(156)} 240 ${x(154)} 258 ${x(150)} 274"/>`
+<path fill="none" stroke="${C.hairShine}" stroke-width="2.2" stroke-linecap="round" opacity="0.6" d="M${x(158)} 94 C${x(148)} 108 ${x(142)} 128 ${x(142)} 150 M${x(146)} 280 C${x(152)} 300 ${x(152)} 318 ${x(160)} 338 M${x(160)} 372 C${x(164)} 388 ${x(162)} 400 ${x(160)} 412"/>`
   }
   return `<g class="cath-hair-front">
 ${lock(1)}
@@ -287,15 +278,11 @@ function fieldOutfit(id: string): string {
 <path fill="${C.leaf}" stroke="${C.ink}" stroke-width="0.9" d="M200 274 C195 279 196 286 200 289 C204 286 205 279 200 274 Z"/>
 <path fill="url(#${id}-olive)" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="
 ${JACKET}"/>
-<path fill="none" stroke="${C.oliveLight}" stroke-width="1.6" stroke-linecap="round" opacity="0.55" d="M124 288 Q118 340 122 400 M276 288 Q282 340 278 400"/>
-<path fill="none" stroke="${C.oliveShade}" stroke-width="1.4" stroke-linecap="round" opacity="0.5" d="M148 344 Q136 356 140 372 M252 344 Q264 356 260 372"/>
 <path fill="none" stroke="${C.oliveShade}" stroke-width="2" stroke-linecap="round" d="M136 318 C142 360 142 420 134 500 M264 318 C258 360 258 420 266 500"/>
 <path fill="none" stroke="${C.oliveShade}" stroke-width="1.6" stroke-linecap="round" d="M176 424 C172 446 174 472 178 500 M224 424 C228 446 226 472 222 500"/>
 <path fill="${C.oliveLight}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M183 250 L160 268 L168 282 L158 290 L200 404 Z"/>
 <path fill="${C.oliveLight}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M217 250 L240 268 L232 282 L242 290 L200 404 Z"/>
-<path fill="none" stroke="${C.blouse}" stroke-width="1.2" stroke-linecap="round" opacity="0.5" d="M186 254 L165 270 M214 254 L235 270"/>
-<circle cx="200" cy="418" r="4.4" fill="${C.oliveShade}" stroke="${C.ink}" stroke-width="1.3"/>
-${hands(C.oliveShade, 404)}`
+<circle cx="200" cy="418" r="4.4" fill="${C.oliveShade}" stroke="${C.ink}" stroke-width="1.3"/>`
 }
 
 // Shared tailored silhouette: sloped shoulders, a nipped waist and a slight flare at the hip.
@@ -317,42 +304,14 @@ function marketOutfit(id: string): string {
   return `<path fill="url(#${id}-blouse)" stroke="${C.ink}" stroke-width="2" d="M182 254 L218 254 L222 420 L178 420 Z"/>
 <path fill="url(#${id}-camel)" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="
 ${JACKET.replace('L200 404', 'L200 380')}"/>
-<path fill="none" stroke="${C.camelLight}" stroke-width="1.6" stroke-linecap="round" opacity="0.55" d="M124 288 Q118 330 122 375 M276 288 Q282 330 278 375"/>
 <path fill="${C.camelLight}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M183 250 L150 276 L162 292 L148 304 L200 380 Z"/>
 <path fill="${C.camelLight}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M217 250 L250 276 L238 292 L252 304 L200 380 Z"/>
 <path fill="${C.camelShade}" stroke="${C.ink}" stroke-width="1.6" d="M122 412 C170 420 230 420 278 412 L278 428 C230 436 170 436 122 428 Z"/>
-<path fill="none" stroke="${C.camelLight}" stroke-width="1.2" stroke-linecap="round" opacity="0.5" d="M128 414 Q200 421 272 414"/>
 <rect x="191" y="410" width="18" height="24" rx="3" fill="none" stroke="${C.gold}" stroke-width="2.4"/>
 <path fill="none" stroke="${C.camelShade}" stroke-width="2" stroke-linecap="round" d="M136 318 C142 360 142 390 138 412 M264 318 C258 360 258 390 262 412"/>
-<path fill="none" stroke="${C.camelShade}" stroke-width="1.4" stroke-linecap="round" opacity="0.5" d="M148 340 Q138 352 142 366 M252 340 Q262 352 258 366"/>
 <path fill="${C.knit}" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="M176 232 C188 244 212 244 224 232 C236 242 236 258 228 268 C212 280 188 280 172 268 C164 258 164 242 176 232 Z"/>
 <path fill="${C.knit}" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="M208 266 C214 296 212 322 206 344 L224 348 C230 322 230 294 222 264 Z"/>
-<path fill="none" stroke="${C.knitShade}" stroke-width="2" stroke-linecap="round" d="M180 246 Q200 258 220 246 M178 258 Q200 270 222 258 M212 288 L224 286 M210 310 L224 308 M209 332 L223 332"/>
-${hands(C.camelShade, 380)}`
-}
-
-// A relaxed, graceful pose: both sleeves converge in front of her waist (see JACKET/the sleeve overlay
-// paths above), so her hands rest there, lightly clasped. cy is the sleeve tip's y, shared with the
-// outfit's own sleeve paths so the cuffs and hands line up exactly.
-function hands(cuffShade: string, cy: number): string {
-  const x = 199
-  // Asymmetric on purpose: her far hand (fingers) peeks out low and to the left, mostly covered by her
-  // near hand resting loosely on top, thumb wrapped over the right side. A first version drew a
-  // symmetric double lobe here that a gate-8 review read as a heart rather than clasped hands — this
-  // shape avoids that by keeping only one hand's outline dominant, with the other just a sliver beneath.
-  return `<path fill="none" stroke="${cuffShade}" stroke-width="1.6" stroke-linecap="round" d="M186 ${cy - 6} Q200 ${cy} 214 ${cy - 6}"/>
-<ellipse cx="${x - 12}" cy="${cy + 15}" rx="8" ry="11" fill="${SKIN}" stroke="${C.ink}" stroke-width="1.5" transform="rotate(20 ${x - 12} ${cy + 15})"/>
-<path fill="${SKIN}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="
-M${x - 15} ${cy + 2}
-C${x - 7} ${cy - 4} ${x + 7} ${cy - 4} ${x + 16} ${cy + 3}
-C${x + 21} ${cy + 8} ${x + 19} ${cy + 17} ${x + 11} ${cy + 21}
-C${x + 1} ${cy + 25} ${x - 10} ${cy + 23} ${x - 16} ${cy + 17}
-C${x - 20} ${cy + 12} ${x - 19} ${cy + 5} ${x - 15} ${cy + 2} Z"/>
-<path fill="none" stroke="${C.skinDeep}" stroke-width="1.1" stroke-linecap="round" d="
-M${x - 7} ${cy + 2} Q${x - 5} ${cy + 9} ${x - 9} ${cy + 15}
-M${x} ${cy + 1} Q${x + 2} ${cy + 9} ${x - 2} ${cy + 17}
-M${x + 7} ${cy + 2} Q${x + 9} ${cy + 10} ${x + 5} ${cy + 18}"/>
-<path fill="${C.skinShade}" stroke="${C.ink}" stroke-width="1.4" stroke-linejoin="round" d="M${x + 12} ${cy + 4} C${x + 17} ${cy + 6} ${x + 18} ${cy + 12} ${x + 13} ${cy + 15} C${x + 10} ${cy + 12} ${x + 9} ${cy + 7} ${x + 12} ${cy + 4} Z"/>`
+<path fill="none" stroke="${C.knitShade}" stroke-width="2" stroke-linecap="round" d="M180 246 Q200 258 220 246 M178 258 Q200 270 222 258 M212 288 L224 286 M210 310 L224 308 M209 332 L223 332"/>`
 }
 
 function accessories(outfit: CathOutfit): string {
