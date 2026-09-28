@@ -68,3 +68,9 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   `csp.spec.ts` forbids project-wide. Capped the actions list at 130px (not the more generous 42vh
   tried first) after measuring that the topbar/companion/plan-strip/legend alone need ~570px of the
   844px design viewport — the map's bottom crop is a real, accepted trade-off, not a bug.
+- 2026-09-28: moved to ROADMAP 9 after item 8 hit diminishing returns on both halves. Split item 9 at
+  its natural seam: press feedback and the region-glow pulse are pure CSS with no behaviour change,
+  so they shipped this session; icons/cost chips/why-not states need new art or expose engine-internal
+  costs as UI-facing values, and why-not states change *which* actions render at all (today illegal
+  actions simply don't appear as buttons) — real enough scope to log as its own follow-up rather than
+  half-attempt alongside the CSS-only pieces.

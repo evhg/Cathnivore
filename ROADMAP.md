@@ -69,7 +69,23 @@ Every visual item is done only when:
    market, plan and log panels become tidy side trays. On phone, the map fills the top of the screen and
    actions live in a bottom tray that can be pulled up. Leave room for Cath's companion (item 3). Keep every
    current control and test hook, and don't change the rules.
-9. [ ] **The table, part 2: actions as cards.** Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
+9. [ ] **The table, part 2: actions as cards.** *(2026-09-28: shipped the two pieces of this item that needed
+   no new art or engine changes, so they could land as safe, reversible slices ahead of the bigger
+   illustrated-tile redesign. Press feedback: every button (not just action buttons — STYLE.md draws no
+   per-screen exception, and a press effect on some buttons but not others would read as unfinished, not
+   selective) gets a `transform: scale(0.96)` on `:active`, replaced with a plain opacity dip under
+   `prefers-reduced-motion` per STYLE.md 11's "fades only". Region-targeting's animated outline: STYLE.md 7
+   already called for "legal regions glow with a 3px wheat outline and a soft pulse," but only the static
+   outline existed — added a 1.6s stroke-width/opacity pulse, disabled under reduced motion (falls back to
+   the exact prior static stroke). Both verified directly (computed-style checks for both motion states,
+   plus the full Playwright suite and `npm run gates`) rather than by screenshot, since neither is visible
+   in a resting-state screenshot. Still open, the bulk of the item: icons per action, cost chips (the
+   costs themselves are already computed per-action in `actions.ts`/`actionLabel.ts`, just not exposed as
+   a separate value for a chip to render), and disabled/why-not states — today only *legal* actions render
+   as buttons at all, so "why not" has no illegal action to explain itself against; making that work would
+   be a real behaviour change (which actions render, not just how), not a visual-only slice, and touches
+   enough e2e tests (tutorial highlighting, the AI teammate's decision loop) to warrant its own dedicated
+   session rather than a same-session add-on.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
 10. [ ] **The table, part 3: the HUD.** Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
 11. [ ] **Map art, part 1: regions.** Terrain illustration on each region (hedgerows, field rows, shoreline and boats, the Kingsmarket clock tower) and labels as painted signboards. It must pass the greyscale shape test (STYLE.md 2).
 12. [ ] **Map art, part 2: pieces.** The exact STYLE.md 6 pieces (awning Stall, glossy "0.99" Outlet, "SOLD" fence Buyout, "?" bubble Doubt), each with a placement animation.
