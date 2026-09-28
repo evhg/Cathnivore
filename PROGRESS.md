@@ -46,6 +46,24 @@ Oakvale/Shingle Bay labels are now fully legible, textures/icons all render corr
 item (owner-input placeholders in `store/metadata/review_information/`) is the same already-known Apple/
 OWNER.md gap under a different filename, not a new problem.
 
+Used the rest of the session for one more subagent QA round (2 at a time): one auditing content text limits
+and satire compliance (SPEC 3.5/5/7/8.3) against the most recently added fields (Agenda's `text`, Scheme
+`text`/`line`, Improvement `flavor`, all 6 story files) — came back clean, no violations, though it noted
+`tests/rules-text.test.ts`'s Agenda block only checks length/structure, not satire-content, for the `text`
+field (an accepted, by-design gap per that test's own comment, not a new problem); one auditing the real
+`npm run gates` e2e suite (everything but `store-screenshots.spec.ts`) for hidden non-determinism — confirmed
+every campaign-autoplay test already deliberately checks "reaches an end screen," never "wins" (SPEC 9.4's
+own win-rate targets mean HeuristicBot doesn't win every seed), so no flaky-on-loss risk there. It flagged
+one legitimate-but-not-actionable observation: `e2e/ai-teammate.spec.ts:90`'s
+`expect(elapsedMs).toBeLessThan(1000)` (SPEC 11.4 gate 7's "at most 1 second... with 4x CPU throttling") has
+zero slack and could in principle flake under a heavily loaded CI runner — not changed, since loosening it
+would weaken the actual gate-7 acceptance threshold SPEC states verbatim, and this session's own runs (4x
+this session, including under this sandbox's real 4x throttling) never once flaked it.
+
+Re-ran a full `npm run gates` one final time as an end-of-session confirmation: all 8 gates clean (gate 8's
+screenshots re-captured, unchanged content since the label-clip fix earlier this session — no further visual
+changes landed after that).
+
 `build` (`5f819e9`) carries 3 real fixes this session (the map label-clip bug, its own aria-label test fix,
 and the stale store-screenshot regen), all fully gated and pushed, waiting for a future session's release
 retry: try `npm run release` normally first; if it hits the same ff-only failure, redo the manual
