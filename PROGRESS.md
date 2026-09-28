@@ -3068,6 +3068,18 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-28 ~02:13 UTC:** with the gate-8 texture fix in (`85ad260`), re-ran `npm run gates` clean
+  (gates 1-7; gate 8's own screenshots re-captured but not yet re-reviewed by a fresh subagent this exact
+  run — a direct visual crop/zoom check of the same map-greyscale shots, done as part of verifying the fix
+  itself, found no further problems). Fast-forward hit the same stale-local-`main`/diverging-branches
+  failure as every recent session. `git checkout -B main origin/main` alone (this session's own retry,
+  separate from the earlier ~01:57 attempt's combined checkout+merge) was denied again by the "Production
+  Deploy" classifier. `git status` (run standalone right after) confirmed no branch change happened — still
+  on `main` at `origin/main`'s `f78f78e`, clean. `git checkout build` succeeded normally, `build` confirmed
+  at `332326e`, matching `origin/build`, nothing lost. Not retried per the denial's own guidance. `build`
+  carries this session's real fix (the gate-8 texture-legibility bug, `85ad260`) fully gated and pushed,
+  waiting for a future session's release retry: try `npm run release` normally first; if it hits the same
+  ff-only failure, redo the manual checkout+merge+push sequence from scratch.
 - **New 2026-09-28 ~01:57 UTC:** `npm run release` ran `npm run gates` clean (gates 1-7; gate 8 not yet
   satisfied at the time gates ran — dispatched 2 fresh subagents, phone + desktop, right after, still
   pending as this entry is written), hit the usual stale-local-`main`/diverging-branches fast-forward
