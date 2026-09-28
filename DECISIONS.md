@@ -3050,3 +3050,43 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   `https://cathnivore.com/version.json` picked up the new commit (`f78f78e`, tree-identical to `aeebb9c`) on
   the 3rd `curl` poll (~30s); `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all verified 200.
   `main` is healthy at `f78f78e`. Full detail in PROGRESS.md's Current milestone/Deploy log.
+- 2026-09-28 (~23:52 UTC, new session): standard session start, lock taken, `npm ci` + `npm run check` clean
+  on `build` HEAD (`130be4a`). `main`/`build` were already in sync (only lock/doc churn between them) and
+  `origin/ci-status`'s `ios.json` still shows the same missing-Apple-secrets failure on the unchanged
+  `OWNER.md` placeholder Team ID — not re-dispatched, would only reproduce it.
+  With no fresh work already queued, ran `npm run gates` in full (clean: 1-7 confirmed, gate 8's 30 fresh
+  screenshots reviewed by 2 subagents, both clean) and, in parallel/afterward, dispatched a further 6
+  subagents (2 at a time, CLAUDE.md's cap) across areas this session's own review of PROGRESS.md/DECISIONS.md
+  showed hadn't had a dedicated fresh pass in a while: `src/platform`/`ios/App` shell vs SPEC 11.3/11.6,
+  engine rules vs SPEC 4/6/7 line-by-line, `games/runnel`+`site/`+`scripts/build-site.ts`, the global error
+  screen + CSP headers vs SPEC 11.3/11.5, `src/ai/*`'s Worker lifecycle/RNG/MCTS-deadline safety, and
+  `src/ui/Game.tsx`'s state management (stale closures, races, mutation). Four of six came back clean (a
+  genuine, valuable result on a codebase this heavily audited already — confirms nothing regressed). Two
+  found real, previously-unlogged bugs, both fixed this session (see `build`'s new commit):
+  1. **Mid-game scripted scenes (chapters 3/6) replayed forever after any reload.** `dismissedMidScenes` was
+     plain `Game.tsx` component state, reset to `[]` on every reload, while the `{type:'trigger'}` log event
+     that gates it is permanent history that's never removed — so a reload well after the scene was already
+     seen and dismissed found that same past trigger again and re-showed the blocking Scene overlay,
+     stalling the current turn. Fixed by extracting the pending-trigger lookup into a new, directly unit-
+     tested pure function (`pendingMidSceneTrigger` in `src/ui/enemyTurnLog.ts`) that also treats "an action
+     was logged after this trigger" as durable proof of a past dismissal, since the Scene overlay blocks
+     every action while pending — no new persisted state needed, just a smarter derivation from state
+     already in `state.log`/`replay()`. 4 new Vitest cases in `tests/enemy-turn-playback.test.ts` cover all
+     four combinations (freshly fired / same-session dismissed / reload-after-dismissal / reload-with-
+     nothing-yet-after-it). Verified beyond the unit tests: the full 102-test e2e suite (`phone` +
+     `desktop-chromium`, including all 6 campaign chapters and both tutorial chapters) still passes clean.
+  2. **A worker-listener leak in the AI teammate's fallback path** (`Game.tsx`'s AI-turn effect): `onMessage`
+     removed its own `message`/`error` listeners *before* its `settled`/`cancelled` early-return check, but
+     `fallBackToHeuristic` (called from `onError` and the watchdog) checked *first*, so a turn cancelled
+     (undo, unmount) before a late error/watchdog fire never got to unregister its closures from the single
+     long-lived Worker — a slow accumulation of dead listener pairs over a long solo game, never a stale
+     action (the guard itself still worked). Fixed by reordering to match `onMessage`. Low severity, no test
+     added (nothing user-visible to assert on; the fix is the reorder itself, reviewed directly).
+  Both fixes: `npm run check` clean (471 tests, up from 467), `npm run gates` gates 1-4 reconfirmed, and a
+  fresh full e2e run (`phone` + `desktop-chromium`, 102 tests) all green. Pushed to `build` (`a93dac4`).
+  **Environment note:** this sandbox's pinned Chromium revision drifted again (`chromium_headless_shell-1243`
+  wanted, `chromium-1194`/`chromium_headless_shell-1194` installed) — used
+  `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` per CLAUDE.md's documented
+  workaround, not `playwright install`. `scripts/gates.ts`'s own `npm run gates` run picked the right path
+  automatically (unaffected); only this session's extra manual `npx playwright test` reruns needed the env
+  var set explicitly.
