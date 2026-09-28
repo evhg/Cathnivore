@@ -7,10 +7,10 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **Current ROADMAP item:** item 1 done; item 5 substantially done (see its note); item 8 diminishing
   returns; item 9 close but not done; item 10's gauges/tick/Pressure-badge shipped, only the desktop
   gauge width budget still open.
-- **Next step:** **`main` needs a manual fast-forward to `3d474ce`** — it's already the live commit, a
-  `npm run release` HTTP-check false positive reverted it and a re-attempt was classifier-denied this
-  session (see Session log and `DECISIONS.md`). Release that plus this session's Bea line next. Item 10's
-  only remaining scope: the desktop gauge width budget.
+- **Next step:** `main` is genuinely back on the reverted content (the earlier "false positive" read was
+  itself wrong — see DECISIONS.md). Fixed `build`'s ancestry with `git merge -s ours origin/main` so
+  `npm run release` can fast-forward again; re-running it is this session's next step. Item 10's only
+  remaining scope: the desktop gauge width budget.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -19,7 +19,11 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - **Git tag pushes fail with HTTP 403** from session credentials. Tags are only bookmarks: skip them and keep the release list below.
 - **The live browser smoke test hits the sandbox proxy's `ERR_CERT_AUTHORITY_INVALID`.** `npm run release` treats that as inconclusive and verifies the live site over HTTP instead.
 - **Apple secrets** are only needed when the owner reopens the App Store launch.
-- **`main` sometimes carries merge-only commits from earlier releases**, so `git merge --ff-only build` fails. Merge `origin/main` into `build` first (no content changes), then release.
+- **`main` sometimes carries commits `build` doesn't have** (merge-only commits from earlier releases, or a
+  release-script revert), so `git merge --ff-only build` fails. If it's a real revert commit (content
+  changes, not just a merge), a plain `git merge origin/main` into `build` will silently delete whatever
+  the revert removed — use `git merge -s ours origin/main` instead (records the merge for ancestry,
+  keeps `build`'s tree untouched), then release. See DECISIONS.md 2026-09-28.
 
 ## Known issues (small, from v1's last reviews)
 - [x] `sim/run.ts`'s worker pool has no per-worker wall-clock timeout (dev tooling only). **Fixed

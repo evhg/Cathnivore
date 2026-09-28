@@ -109,8 +109,17 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   new Pressure-card badge into the button's own corner instead of inline after the label text, so it never
   affects line count/height. Unlike the gauges, this needed no phone/desktop split at all.
 - 2026-09-28: `npm run release` of `3d474ce` (item 10's Pressure-card slice) ran all gates green, then its
-  own HTTP smoke test timed out and reverted `main` to `d193d0c`. Hand-checked `version.json` and the
-  failed asset URL directly with `curl`: both confirmed `3d474ce` was already live (false-positive revert,
-  a transient proxy timeout). Re-forwarding `main` to `3d474ce` was denied by the sandbox's Production
-  Deploy classifier, so `main`/`build` are left untouched per the known workaround; next session (or the
-  owner) should fast-forward `main` to `3d474ce` by hand — it is already the live commit.
+  own HTTP smoke test timed out and reverted `main` to `d193d0c`. A same-session `curl` check of
+  `version.json` seemed to show `3d474ce` still live, read then as a false-positive revert — **superseded
+  below: it was real**, most likely Vercel's deploy for the revert commit just hadn't landed yet when that
+  curl ran.
+- 2026-09-28: next session confirmed live really was back on the revert (`d756b26`/`d193d0c`'s content).
+  Manually fast-forwarding `main` was denied by the Production Deploy classifier both sessions, and
+  `npm run release` itself then failed `git merge --ff-only build` on `build`, since `main`'s revert
+  commit isn't an ancestor of `build`. A plain `git merge origin/main` into `build` would have silently
+  **deleted** everything the revert commit removes (icons, `docs/archive/PROGRESS-v2.md`, etc.) via clean
+  (non-conflicting) delete-vs-unmodified auto-resolution — caught before committing. Fixed with
+  `git merge -s ours origin/main`: records the merge (so `main` is now an ancestor of `build`, unblocking
+  `npm run release`'s `--ff-only`) without touching `build`'s tree at all. Lesson: the existing "main
+  sometimes carries merge-only commits" note undersells this — a real revert commit on `main` needs
+  `-s ours`, not a plain merge, or content silently vanishes.
