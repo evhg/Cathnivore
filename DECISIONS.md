@@ -3329,3 +3329,21 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   `quick-game.spec.ts`/`campaign.spec.ts` (desktop) green. Pushed to `build`. Hot-seat's missing pass-device
   screen (logged alongside this in PROGRESS.md) remains open — a UI feature addition, out of this session's
   remaining time.
+
+- 2026-09-28 (~03:13 UTC session): fixed the bottom-row hex region-name clipping gate-8 found (Oakvale,
+  Shingle Bay) by drawing all region names in one pass after every hex's fill/pattern, rather than per-region
+  inside the same `<g>` as that region's own fill (a hex whose top vertex borders another hex, rather than
+  open background, could otherwise have its label's top half painted over by that neighbour). This is a
+  z-order/paint-order fix, not a geometry change — chose it over nudging the label's y-offset per-region
+  since a uniform pass is correct regardless of which regions happen to sit in the bottom row, and needs no
+  per-region-position special-casing if the map layout ever changes. Traded off: `e2e/tutorial.spec.ts`'s
+  existing `.region-hex` + `hasText` selector broke, since the name text moved out of that element. Fixed by
+  adding `aria-label={def.name}` to each region-hex `<g>` (also a minor accessibility win — the hex was
+  otherwise an unlabelled clickable group) and updating the one affected test to select on it instead.
+- 2026-09-28 (same session, ~03:13 UTC): regenerated `store/screenshots/` after an iOS/App-Store-readiness
+  audit found 4 of the 5 were stale (captured before the map-texture/legend-icon/label-clip fixes landed).
+  Decided to fix this now rather than defer to the M7 final `store-<n>` push, since a wrong screenshot
+  sitting in the repo for another several sessions risked being forgotten and shipped to App Review as-is —
+  cheap to regenerate now, expensive to notice late. The victory-screen shot needed one retry since it
+  depends on a HeuristicBot win in campaign chapter 6, documented at ~63%, not 100%, by the test's own
+  comment — an accepted, pre-existing flake source for that one manual asset, not a new problem.
