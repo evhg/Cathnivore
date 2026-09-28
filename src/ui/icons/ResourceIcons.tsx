@@ -106,22 +106,38 @@ export function ActionsLeftIcon({ total, left }: { total: number; left: number }
   )
 }
 
-// ROADMAP 10 "Round, Trust, Lost Land and Rift become illustrated gauges": a small filled bar showing
-// `value`/`max` as a proportion, next to (not instead of) the existing icon+number — the exact number
-// still matters (SPEC 10.5's plain-English clarity), the bar adds an at-a-glance sense of how full or
-// empty the track is. One neutral fill colour for all 4 rather than a good/bad tint per stat: Round
-// climbing is neutral progress, Trust climbing is good, but Lost Land and Rift climbing are both bad —
-// no single colour-by-direction is honest across all 4 (same reasoning as the HUD tick animation staying
-// colourless). `viewBox` stays on the same 24px-tall grid as the other icons even though the gauge itself
-// is short, so it sits on the same baseline inline next to them.
-export function MiniGauge({ value, max, width = 32 }: { value: number; max: number; width?: number }) {
+// ROADMAP 10 "Round, Trust, Lost Land and Rift become illustrated gauges": a progress ring drawn on the
+// exact same 24px grid as the icon it overlays (see `.hud-icon-ring` in global.css), instead of a
+// separate bar next to it — earlier sessions shipped a bar (`MiniGauge`, since removed) but it needed
+// extra horizontal width the desktop topbar never had room for (measured directly against
+// `desktop-no-scroll.spec.ts`: even an 8px sliver still overflowed by ~17px at 1280px), so it only ever
+// shipped on phone. A ring adds zero width — it's the same size as the icon it wraps — so it needs no
+// phone/desktop split at all. One neutral fill colour for all 4 stats rather than a good/bad tint per
+// stat: Round climbing is neutral progress, Trust climbing is good, but Lost Land and Rift climbing are
+// both bad — no single colour-by-direction is honest across all 4 (same reasoning as the HUD tick
+// animation staying colourless).
+export function GaugeRing({ value, max, size = 16 }: { value: number; max: number; size?: number }) {
   const fraction = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0
-  const trackWidth = width - 2
-  const fillWidth = fraction > 0 ? Math.max(2, fraction * trackWidth) : 0
+  const radius = 11
+  const circumference = 2 * Math.PI * radius
+  const dash = fraction * circumference
   return (
-    <svg width={width} height={16} viewBox={`0 0 ${width} 24`} aria-hidden="true" className="icon-inline hud-gauge">
-      <rect x="1" y="9" width={trackWidth} height="6" rx="3" fill={PAPER_2} stroke={INK} strokeWidth={1.2} />
-      {fillWidth > 0 && <rect x="1" y="9" width={fillWidth} height="6" rx="3" fill={INK} opacity={0.55} />}
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" className="hud-ring">
+      <circle cx="12" cy="12" r={radius} fill="none" stroke={PAPER_2} strokeWidth={2} />
+      {dash > 0 && (
+        <circle
+          cx="12"
+          cy="12"
+          r={radius}
+          fill="none"
+          stroke={INK}
+          strokeWidth={2}
+          opacity={0.55}
+          strokeLinecap="round"
+          strokeDasharray={`${dash} ${circumference}`}
+          transform="rotate(-90 12 12)"
+        />
+      )}
     </svg>
   )
 }

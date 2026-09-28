@@ -119,3 +119,71 @@ Search with grep; never read in full.
   gates` (all gates) green both before and after. A gate-8 review flagged "KINGSMARKET" as clipped to
   "RINGSMARKET" on the map — a zoomed screenshot showed the full text renders correctly; false positive
   from the low-res screenshot, not a real bug.
+
+## Archived from PROGRESS.md's Session log, 2026-09-28
+
+- 2026-09-28 ~11:51-12:16 UTC: moved from ROADMAP 8 (diminishing returns, prior session) to ROADMAP 9,
+  shipping press feedback (every button, `:active` scale, a reduced-motion opacity fallback), the
+  region-glow's missing pulse (STYLE.md 7 already specified it), and resource cost chips (exported
+  `actions.ts`'s real cost functions rather than duplicating them in the UI, so a chip can't drift from
+  what a tap actually costs) — all unreleased (cap spent). `npm run check`/full Playwright/`npm run
+  gates` green throughout; one `ai-teammate.spec.ts` failure confirmed flaky/pre-existing, unrelated.
+- 2026-09-28 ~12:17-12:35 UTC: ROADMAP 9's icon set, unreleased (cap spent). Documented 8 new icons in
+  STYLE.md 5.1 (Sell, Invest, Scheme, Graft, Open Stall, Supply, Rebut, Role — same 24px/flat-fill/
+  2px-ink-outline grid as the resource icons) and drew them in `src/ui/icons/ActionIcons.tsx`, wired in
+  at the start of every action button (a new `.action-label` wrapper span so the button's existing
+  `justify-content: space-between` still only ever splits 2 children — icon+label, and the cost chip —
+  not an icon/text/chip trio spread unevenly). Supply/Rebut reuse the map's Outlet/Doubt colour language
+  (a faded piece struck through with an X) instead of new shapes. A gate-8 subagent review of the first
+  pass caught 3 real issues, all fixed and reverified with zoomed Playwright screenshots before
+  committing: (1) Scheme's paper-dart redesign (already a fix for an even earlier version too close to
+  Invest's card shape) still collapsed into a plain chevron at true ~18px render size — widened the dart
+  and shaded one wing so it keeps a visible paper body; (2) Open Stall's canopy-to-valance proportions
+  read as a boxy monitor, not an awning — flipped them so the scalloped valance dominates; (3) Supply/
+  Rebut's faded box/bubble had no `stroke` at all (only fill opacity), so only the bare X was visible —
+  added a separately-opaque ink outline. `npm run check`, the full Playwright suite (106/106) and
+  `npm run gates` (all gates) green both before and after the icon fixes.
+- 2026-09-28 ~12:38-13:00 UTC: started ROADMAP 9's disabled/why-not piece, unreleased (cap spent).
+  Scoped to Sell only (the one action whose legality is a single resource comparison, so the reason is
+  never ambiguous): a disabled placeholder button now renders for each unaffordable count, right where
+  the real button would sit, with "Need N more Produce" and its cost chip. Built by splitting `standalone`
+  into `sellEntries`/`otherStandalone` and inserting the synthetic disabled rows between them, so ordering
+  stays natural without needing to splice into the typed `{index, action}` array. Skipped during a gated
+  tutorial step (SPEC 8.1's "only the action being taught is enabled"). Added a real `button:disabled`
+  style project-wide (previously only `button.primary:disabled` had one) — first pass used `opacity` on
+  the whole button, which a gate-8 review measured at ~2.3:1 contrast (compounding `--ink-muted` with 50%
+  opacity), well under STYLE.md 3.6's 4.5:1 floor; fixed by keeping text at plain `--ink-muted` (hand-
+  verified 4.51:1 via the WCAG relative-luminance formula) and moving the opacity to only the icon/cost
+  chip. New `e2e/disabled-actions.spec.ts` checks the reason text, the tooltip, and that a forced click on
+  a disabled button changes nothing. `npm run check`, the full Playwright suite (108/108, both projects,
+  including the new spec) and `npm run gates` (all gates) green throughout, including a second full gates
+  run after the contrast fix.
+- 2026-09-28 ~13:02-13:11 UTC: moved to ROADMAP 10 (the HUD), shipped its no-new-art half: a
+  `useHudTick()` hook (`Game.tsx`) increments a per-stat counter only when Round/Trust/Lost Land/Rift
+  actually change, computed synchronously during render; the topbar wraps each stat's icon+number in a
+  span keyed on that counter so React remounts (replaying a CSS scale-pulse) exactly once per real
+  change. Gated the animation class itself on the counter being > 0 so game load's first render never
+  flashes every stat. Deliberately scale-only, no colour change — no single colour-by-direction is
+  honest across all 4 stats (Round up is neutral, Trust up is good, Lost Land/Rift up are both bad), and
+  a scale transform never touches text colour so there's no contrast to re-check (this session's prior
+  Sell-disabled-state slice already found one real contrast mistake from an unchecked colour choice).
+  Verified directly: initial render has no animation class at all; forcing a real round advance
+  (autoplay) confirmed only the stats that actually changed got the tick class, the unchanged ones
+  didn't. `npm run check`, the full Playwright suite (108/108, both projects) and `npm run gates` (all
+  gates) green. Unreleased (cap spent). Item 10's actual title — illustrated gauges, branded agenda
+  cards — needs real new art and hasn't started.
+- 2026-09-28 ~13:13-13:35 UTC: shipped ROADMAP 10's gauge bars (`MiniGauge`, `ResourceIcons.tsx`) — a
+  small proportional fill pill next to Round/Trust/Lost Land/Rift's existing icon+number. Bounds from
+  the engine's own source of truth (Trust 0-15/Rift 0-6 match `validate()`'s checks; Lost Land's "full"
+  is this game's real starting pool via the exact formula `createGame` uses), not guessed constants.
+  Adding it broke `desktop-no-scroll.spec.ts` (wrapped the topbar to 2 lines at 1280x800) — tried
+  shrinking the gauge to 8px and the topbar's own padding/gap to almost nothing, still ~17px short, the
+  same centre-column ceiling several earlier sessions already fought; hid the gauge on desktop instead
+  of re-opening that fight or showing it illegibly small. Verified phone's topbar growing from a 2-line
+  to a 3-line wrap doesn't break either hard requirement from the bottom-tray work (zero page scroll,
+  Undo/action tray fully visible) at all 3 of SPEC 10.2's named viewports. `npm run check` and the full
+  Playwright suite (108/108, both projects) green; checked dark theme separately. A gate-8 review then
+  claimed the gauge always renders full regardless of value — checked directly (DOM `<rect width>`
+  attributes matched the expected fractions exactly, then a 4x-scale screenshot crop showed the same) and
+  found it a false positive, logged in DECISIONS.md. Unreleased (cap spent). (This bar-based gauge was
+  later replaced by a ring, see PROGRESS.md/DECISIONS.md 2026-09-28.)

@@ -31,10 +31,10 @@ import type { CathExpression } from '../../shared/cath/cath'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../content/endLines'
 import {
   ActionsLeftIcon,
+  GaugeRing,
   GoodwillIcon,
   LostLandIcon,
   MarksIcon,
-  MiniGauge,
   ProduceIcon,
   PublicTrustIcon,
   RiftIcon,
@@ -833,31 +833,43 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       <header className="topbar">
         <span>
           <span key={roundTick} className={roundTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-            <RoundIcon /> Round {state.round}/{state.round + state.pressureDeck.length}
-            <MiniGauge value={state.round} max={state.round + state.pressureDeck.length} width={28} />
+            <span className="hud-icon-ring">
+              <RoundIcon />
+              <GaugeRing value={state.round} max={state.round + state.pressureDeck.length} />
+            </span>{' '}
+            Round {state.round}/{state.round + state.pressureDeck.length}
           </span>
         </span>
         <span>
           <Tooltip term="Public Trust">
             <span key={trustTick} className={trustTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-              <PublicTrustIcon /> Trust {state.publicTrust}
-              <MiniGauge value={state.publicTrust} max={TRUST_MAX} width={28} />
+              <span className="hud-icon-ring">
+                <PublicTrustIcon />
+                <GaugeRing value={state.publicTrust} max={TRUST_MAX} />
+              </span>{' '}
+              Trust {state.publicTrust}
             </span>
           </Tooltip>
         </span>
         <span>
           <Tooltip term="Lost Land">
             <span key={lostLandTick} className={lostLandTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-              <LostLandIcon /> Lost Land left {state.lostLandPool}
-              <MiniGauge value={state.lostLandPool} max={lostLandStartingPool(state)} width={28} />
+              <span className="hud-icon-ring">
+                <LostLandIcon />
+                <GaugeRing value={state.lostLandPool} max={lostLandStartingPool(state)} />
+              </span>{' '}
+              Lost Land left {state.lostLandPool}
             </span>
           </Tooltip>
         </span>
         <span>
           <Tooltip term="Rift">
             <span key={riftTick} className={riftTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-              <RiftIcon /> Rift {state.rift}
-              <MiniGauge value={state.rift} max={RIFT_MAX} width={28} />
+              <span className="hud-icon-ring">
+                <RiftIcon />
+                <GaugeRing value={state.rift} max={RIFT_MAX} />
+              </span>{' '}
+              Rift {state.rift}
             </span>
           </Tooltip>
         </span>

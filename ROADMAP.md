@@ -116,39 +116,21 @@ Every visual item is done only when:
    the opacity to only the icon/cost chip. New `e2e/disabled-actions.spec.ts` locks in the behaviour.
    Item 9 is now close but not done: disabled/why-not states cover only Sell, and the full
    illustrated-tile redesign (the item's own title) hasn't started.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
-10. [ ] **The table, part 3: the HUD.** *(2026-09-28: shipped the tick-up/tick-down animation half, which
-    needed no new art — `useHudTick()` (`Game.tsx`) increments a per-stat counter only on a genuine value
-    change, computed synchronously during render; the topbar wraps each stat's icon+number in a span keyed
-    on that counter, so React remounts and replays a CSS scale-pulse exactly once per change, gated so the
-    very first render (game load) never flashes every stat at once. Deliberately scale-only, no colour:
-    Round going up is neutral, Trust going up is good, but Lost Land/Rift going up are both bad, so no
-    single colour-by-direction would be honest across all 4 without tracking each one's own "which way is
-    good" — left for a later pass if it's worth it. Verified directly (initial render has no animation
-    class; forcing a real round advance confirms only the stats that actually changed tick).
-    2026-09-28 (later same session): added the gauge bars themselves — `MiniGauge` (`ResourceIcons.tsx`),
-    a small proportional fill pill next to each stat's existing icon+number (not replacing the number,
-    SPEC 10.5 still wants it shown). Bounds come from the engine's own source of truth: Trust (0-15) and
-    Rift (0-6) match `validate()`'s range checks; Lost Land's "full" is this game's actual starting pool
-    (`lostLandPoolOverride ?? DIFFICULTY_SETTINGS[difficulty].lostLandPool`, the same formula
-    `createGame` uses), not a guessed constant. Phone only: fitting the gauge on desktop's centre column
-    would have re-opened the exact width fight several earlier sessions already spent real time
-    winning — measured that even an 8px sliver gauge with the topbar's padding/gap trimmed to almost
-    nothing still left the row ~17px too wide at 1280x800, wrapping the topbar and failing
-    `desktop-no-scroll.spec.ts`; hid it there instead (`.hud-gauge { display: none }` at 1024px+). Phone's
-    own topbar wrap grew from 2 lines to 3 (Menu now on its own line) — verified this doesn't break either
-    hard requirement from the bottom-tray work (zero page scroll, Undo/action tray fully visible) at all 3
-    of SPEC 10.2's named viewports. A gate-8 review claimed the gauge always renders full/identical
-    regardless of value; checked directly (DOM `<rect width>` attributes, then a 4x-scale screenshot crop)
-    and found the fills exactly correct — a false positive, see DECISIONS.md. Still open: the desktop half
-    of the gauges (needs its own width budget win first, not attempted again this session).
-    2026-09-28 (later still): shipped STYLE.md 8's Pressure card look on Squeeze/Expand/Scout — a stage
-    numeral (Roman) and region-type icon(s) as a small `position: absolute` corner badge on the existing
-    plan-strip pill (`RegionTypeIcon.tsx`, reuses the map's own `REGION_FILL` colours), not a full card
-    redesign, since the desktop plan-strip row measured at exactly zero vertical slack (768/768px) — an
-    inline badge wrapped the button to an extra line and broke `desktop-no-scroll.spec.ts`; the corner
-    badge doesn't affect text flow so it ships on both phone and desktop with no width-budget fight at all.
-    Verified with direct DOM height measurement, not just a screenshot. Still open: the desktop half of the
-    gauges (needs its own width budget win first).)* Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
+10. [ ] **The table, part 3: the HUD.** *(2026-09-28: shipped the tick-up/tick-down animation (`useHudTick()`
+    in `Game.tsx`, a CSS scale-pulse keyed on a per-stat change counter, deliberately colourless since
+    Round/Trust/Lost Land/Rift don't share one "which way is good" direction) and Pressure-card corner
+    badges (stage numeral + region-type icon on the Squeeze/Expand/Scout plan-strip pills,
+    `RegionTypeIcon.tsx`, `position: absolute` so it never affects text flow). The gauges themselves first
+    shipped as a bar next to each stat (`MiniGauge`) but phone-only — the desktop centre column had no
+    width left for a second element per stat, confirmed by measurement (`desktop-no-scroll.spec.ts`) more
+    than once. 2026-09-28 (later session): replaced the bar with `GaugeRing`, a progress ring drawn on the
+    icon's own 24px grid and layered directly over it (`.hud-icon-ring`/`.hud-ring` in `global.css`) —
+    same footprint as the bare icon, so it needs no separate width budget and ships identically on phone
+    and desktop, closing that gap for good. Verified with zoomed screenshots in both themes and both
+    sizes (Round/Trust/Lost Land/Rift's rings all show the correct fraction). Bounds still come from the
+    engine's own source of truth (Trust 0-15/Rift 0-6 match `validate()`, Lost Land's "full" is the real
+    starting pool). Still open: the enemy's Squeeze/Expand/Scout slots as full branded agenda cards — the
+    Pressure-card badge above is a small piece of that, not the whole thing.)* Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
 11. [ ] **Map art, part 1: regions.** Terrain illustration on each region (hedgerows, field rows, shoreline and boats, the Kingsmarket clock tower) and labels as painted signboards. It must pass the greyscale shape test (STYLE.md 2).
 12. [ ] **Map art, part 2: pieces.** The exact STYLE.md 6 pieces (awning Stall, glossy "0.99" Outlet, "SOLD" fence Buyout, "?" bubble Doubt), each with a placement animation.
 13. [ ] **Moments:** liberating a region (a seal stamp, colour blooming across the hex, Cath cheering), a Squeeze (glossy plastic creeping over a region), Lost Land, the Rift at 3 and 6, the enemy turn playback choreographed step by step, and the end of a round.

@@ -123,3 +123,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   `npm run release`'s `--ff-only`) without touching `build`'s tree at all. Lesson: the existing "main
   sometimes carries merge-only commits" note undersells this — a real revert commit on `main` needs
   `-s ours`, not a plain merge, or content silently vanishes.
+- 2026-09-28: closed ROADMAP 10's desktop-gauge gap by changing the gauge's *shape*, not fighting for more
+  width: a ring drawn on the icon's own 24px grid and layered over it (same footprint as the bare icon)
+  instead of a bar next to it. No separate width budget needed, so it ships on phone and desktop alike —
+  several earlier sessions' attempts to shrink a bar-shaped gauge into the desktop centre column's zero
+  slack never worked because the bar always needed *some* extra width; a ring needs none.
