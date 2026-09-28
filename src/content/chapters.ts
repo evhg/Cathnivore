@@ -93,11 +93,11 @@ export const CHAPTER_1: Chapter = {
   goalDescription: 'Liberate both regions.',
   tutorialSteps: [
     {
-      text: 'This is Brindle Hills, your farm. An Outlet is undercutting you — spend 1 Produce to Open a Stall here.',
+      text: 'This is Brindle Hills — ground we are not giving up without a fight. Spend 1 Produce to Open a Stall here.',
       highlight: { kind: 'action', action: 'openStall' },
     },
     {
-      text: 'Stalls push Outlets out. Spend Produce to Supply and clear the Outlet from Brindle Hills.',
+      text: 'Good instinct. Stalls push Outlets out — spend Produce to Supply and clear it from Brindle Hills.',
       highlight: { kind: 'action', action: 'supplyOutlets' },
     },
     {
@@ -105,19 +105,19 @@ export const CHAPTER_1: Chapter = {
       // Stall in Highmoor isn't affordable again until Harvest next round, so this step's own "you can...
       // too" phrasing (not an imperative like the other steps) is also the honest one — gating it would
       // strand a player following the steps in order until they'd earned more Produce.
-      text: 'Highmoor borders Brindle Hills, so you can open a Stall there too.',
+      text: 'Highmoor is right next door — open a Stall there too, once you have the Produce for it.',
       highlight: null,
     },
     {
-      text: 'No good move? Graft always works: 1 Produce and 1 Marks, guaranteed.',
+      text: 'No good move? Graft always works: 1 Produce and 1 Marks, guaranteed. Not glamorous, but neither is undercutting your neighbours.',
       highlight: { kind: 'action', action: 'graft' },
     },
     {
-      text: 'Watch the Scout slot — it shows exactly where the next Outlet lands.',
+      text: 'Keep an eye on the Scout slot — it tells you exactly where the next Outlet lands.',
       highlight: null,
     },
     {
-      text: 'Clear every Outlet and Buyout from a region with a Stall in it to liberate it. Liberate both regions to win.',
+      text: 'Clear every Outlet and Buyout from a region with a Stall in it, and it is liberated. Do that to both regions and we have won.',
       highlight: null,
     },
   ],
@@ -168,15 +168,15 @@ export const CHAPTER_2: Chapter = {
   goalDescription: 'Liberate 2 of the 3 regions while keeping Public Trust above 0.',
   tutorialSteps: [
     {
-      text: "Doubt is a company's word against yours. Spend Goodwill to Rebut it in a region with your Stall.",
+      text: 'Doubt is just a company’s word against ours — and it works far too often. Spend Goodwill to Rebut it in a region with your Stall.',
       highlight: { kind: 'action', action: 'rebut' },
     },
     {
-      text: 'Public Trust is everyone’s opinion of farmers, shared by both of you. Keep an eye on it.',
+      text: 'Public Trust is everyone’s opinion of farmers, shared by both sides. Keep an eye on it — it decides more than you would think.',
       highlight: null,
     },
     {
-      text: 'Once a round, your role ability is free: On Air raises Trust or your Goodwill, your choice.',
+      text: 'Once a round, your role ability comes free: On Air raises Trust or Goodwill, your choice.',
       highlight: { kind: 'action', action: 'role' },
     },
     {
@@ -240,7 +240,7 @@ export const CHAPTER_3: Chapter = {
   goalDescription: 'Liberate 3 of the 4 regions.',
   tutorialSteps: [
     {
-      text: 'The Squeeze slot shows where the enemy strikes this round. Clear it before the enemy turn, or lose a Lost Land token.',
+      text: 'The Squeeze slot shows where they are striking this round. Clear it before the enemy turn, or we lose a Lost Land token.',
       highlight: null,
     },
     {
@@ -248,11 +248,11 @@ export const CHAPTER_3: Chapter = {
       highlight: { kind: 'action', action: 'sell' },
     },
     {
-      text: 'An Improvement in your tableau works every round from now on. Buy one that fits your plan.',
+      text: 'An Improvement works every round from here on, so buy one that actually fits your plan.',
       highlight: { kind: 'action', action: 'invest' },
     },
     {
-      text: 'Expand adds enemy pieces before Scout does. Watch both slots, not just Squeeze.',
+      text: 'Expand adds enemy pieces before Scout even does. Watch both slots, not just Squeeze.',
       highlight: null,
     },
     {
@@ -337,7 +337,7 @@ export const CHAPTER_4: Chapter = {
       highlight: { kind: 'action', action: 'scheme' },
     },
     {
-      text: "Kingsmarket is guarded: nobody can place a Stall there until 2 of its neighbours are free.",
+      text: 'Kingsmarket is guarded — nobody can place a Stall there until 2 of its neighbours are free.',
       highlight: { kind: 'region', region: 'kingsmarket' },
     },
     {
@@ -413,11 +413,11 @@ export const CHAPTER_5: Chapter = {
   },
   tutorialSteps: [
     {
-      text: 'The Agenda deck adds a headline every enemy turn — some help you, most don’t. Watch what it does before you act.',
+      text: 'The Agenda deck adds a headline every enemy turn — some help us, most don’t. Watch what it does before you act.',
       highlight: null,
     },
     {
-      text: 'Rift measures the two companies’ own distrust. At Rift 3 their Agenda bonuses stop firing.',
+      text: 'Rift measures the two companies’ own distrust. At Rift 3, their Agenda bonuses stop firing.',
       highlight: null,
     },
     {
@@ -491,11 +491,11 @@ export const CHAPTER_6: Chapter = {
   goalDescription: 'Liberate 5 regions, including Kingsmarket — the standard win.',
   tutorialSteps: [
     {
-      text: "Cath's Plan is locked without her. No Schemes until she's back.",
+      text: "Cath's Plan is locked without me. No Schemes until I'm back.",
       highlight: null,
     },
     {
-      text: 'Liberate one more region and a scene will bring her back — Cath’s Plan unlocks the moment it does.',
+      text: 'Liberate one more region and a scene brings me back — Cath’s Plan unlocks the moment it does.',
       highlight: null,
     },
     {
