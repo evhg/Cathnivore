@@ -10,7 +10,7 @@ import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
-import { actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
+import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
@@ -38,7 +38,7 @@ import {
   RiftIcon,
   RoundIcon,
 } from './icons/ResourceIcons'
-import type { Action, GameEvent, GameState, ProducerId, RegionId } from '../engine/types'
+import type { Action, GameEvent, GameState, ProducerId, RegionId, ResourceKind } from '../engine/types'
 import type { Mode } from './Setup'
 import type { TutorialStep } from '../content/chapters'
 import type { Scene as SceneData } from '../content/story/types'
@@ -139,6 +139,41 @@ function pressureLabel(card: GameState['squeeze']): string {
   if (!card) return '—'
   if (card.regionTypes.length > 0) return card.regionTypes.join('+')
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
+}
+
+const COST_ICON: Record<ResourceKind, typeof ProduceIcon> = { produce: ProduceIcon, marks: MarksIcon, goodwill: GoodwillIcon }
+
+// ROADMAP 9 "cost chips shown with resource tokens": a small icon+number badge inside an action button,
+// next to `actionLabel`'s existing cost-as-text (e.g. "(4 Marks)") — additive, not a replacement, so no
+// existing button text changes (several e2e tests match button names by prefix, e.g. `/^Graft:/`).
+// `undefined` renders nothing, for the actions `actionCost` already returns no cost for.
+function ActionCostChip({ cost }: { cost: { resource: ResourceKind; amount: number } | undefined }) {
+  if (!cost) return null
+  const Icon = COST_ICON[cost.resource]
+  return (
+    <span className="action-cost">
+      <Icon size={14} />
+      {cost.amount}
+    </span>
+  )
+}
+
+// A region-targeting group (e.g. "Supply: remove 2 Outlets…") can cover several regions whose actual
+// cost differs (Supply's per-Outlet Produce cost varies by region type and Improvements, SPEC 7) — the
+// group button itself doesn't commit to a region yet, so it can only show one number if every entry in
+// the group would actually cost the same. Mixed costs fall back to no chip rather than a misleading one.
+function uniformGroupCost(
+  entries: { index: number }[],
+  actions: Action[],
+  state: GameState,
+): { resource: ResourceKind; amount: number } | undefined {
+  const first = actionCost(actions[entries[0]!.index]!, state)
+  if (!first) return undefined
+  const uniform = entries.every((e) => {
+    const c = actionCost(actions[e.index]!, state)
+    return c && c.resource === first.resource && c.amount === first.amount
+  })
+  return uniform ? first : undefined
 }
 
 export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
@@ -578,7 +613,10 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             const term = actionTermFor(a)
             return (
               <span key={index} className="action-item">
-                <button onClick={() => act(index)}>{actionLabel(a, state)}</button>
+                <button onClick={() => act(index)}>
+                  {actionLabel(a, state)}
+                  <ActionCostChip cost={actionCost(a, state)} />
+                </button>
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?
@@ -591,10 +629,12 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             const single = group.entries.length === 1
             const firstAction = actions[group.entries[0]!.index]!
             const term = actionTermFor(firstAction)
+            const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
             return (
               <span key={key} className="action-item">
                 <button onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
                   {single ? actionLabel(firstAction, state) : `${group.label}…`}
+                  <ActionCostChip cost={cost} />
                 </button>
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>

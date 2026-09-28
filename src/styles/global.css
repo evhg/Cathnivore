@@ -721,6 +721,28 @@ h3 {
 
 .actions .action-item > button:first-child {
   flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  text-align: left;
+}
+
+/* ROADMAP 9 "cost chips shown with resource tokens": a small pill inside the action button, additive to
+   `actionLabel`'s existing text cost (not a replacement — several e2e tests match button names by
+   prefix, so the text stays exactly as it was). Reuses the same resource icons the topbar/active-producer
+   panel already draw with (`ProduceIcon`/`MarksIcon`/`GoodwillIcon`), so this needed no new art. */
+.action-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--paper-2);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 
 .actions .action-item .tooltip-trigger-button {
