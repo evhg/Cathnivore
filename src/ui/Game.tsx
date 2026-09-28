@@ -22,7 +22,11 @@ import RegionMap, { Outlet, Buyout, Doubt, CoopMarkerIcon } from './Map'
 import RulesReference from './RulesReference'
 import Scene from './Scene'
 import Portrait from './portraits/Portrait'
+import CathArt from './CathArt'
+import CathCompanion from './CathCompanion'
 import Tooltip from './Tooltip'
+import { CATH_REACTION_EXPRESSION, cathLine, cathLineForRegion, type CathReaction } from '../content/cathCompanionLines'
+import type { CathExpression } from '../../shared/cath/cath'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../content/endLines'
 import {
   ActionsLeftIcon,
@@ -87,6 +91,24 @@ function isE2EAiWorkerCrash(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAiWorkerCrash') === '1'
 }
 
+// The Cath companion's reaction to one log event (ROADMAP "Cath in Cathnivore, as guide and narrator"),
+// ranked so that when a round produces several at once (e.g. a Squeeze and a liberation), the most
+// significant wins. `null` for events she has nothing to say about yet.
+function cathReactionFor(event: GameEvent): { reaction: CathReaction; rank: number; line: string } | null {
+  switch (event.type) {
+    case 'liberated':
+      return { reaction: 'liberated', rank: 1, line: cathLineForRegion('liberated', event.region) }
+    case 'squeeze':
+      return event.lostLand
+        ? { reaction: 'squeezeLostLand', rank: 3, line: cathLineForRegion('squeezeLostLand', event.region) }
+        : { reaction: 'squeeze', rank: 2, line: cathLineForRegion('squeeze', event.region) }
+    case 'riftSplit':
+      return { reaction: 'riftSplit', rank: 4, line: cathLine('riftSplit', event.faction) }
+    default:
+      return null
+  }
+}
+
 // A scripted campaign Pressure card (SPEC 8.1) may target regions directly instead of by type.
 function pressureLabel(card: GameState['squeeze']): string {
   if (!card) return '—'
@@ -96,6 +118,11 @@ function pressureLabel(card: GameState['squeeze']): string {
 
 export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
+  const cathLogSeenRef = useRef(0)
+  const [cathReaction, setCathReaction] = useState<{ expression: CathExpression; line: string }>(() => ({
+    expression: CATH_REACTION_EXPRESSION.greeting,
+    line: cathLine('greeting', String(seed)),
+  }))
   const [tutorialIndex, setTutorialIndex] = useState(0)
   const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>(initialDismissedMidScenes ?? [])
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
@@ -146,6 +173,19 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // dismissed. Solo/campaign games have at most one human seat, so this never fires there.
   const passAckRef = useRef<ProducerId>(initial.activeProducer)
   const [passDeviceFor, setPassDeviceFor] = useState<ProducerId | null>(null)
+
+  // The Cath companion (CathCompanion.tsx): react to whatever's newest in the log each time it grows,
+  // picking the highest-ranked reaction if a round produced more than one (see `cathReactionFor`).
+  useEffect(() => {
+    const newEvents = state.log.slice(cathLogSeenRef.current)
+    cathLogSeenRef.current = state.log.length
+    let best: { reaction: CathReaction; rank: number; line: string } | null = null
+    for (const event of newEvents) {
+      const candidate = cathReactionFor(event)
+      if (candidate && (!best || candidate.rank >= best.rank)) best = candidate
+    }
+    if (best) setCathReaction({ expression: CATH_REACTION_EXPRESSION[best.reaction], line: best.line })
+  }, [state.log])
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -308,6 +348,15 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   if (state.result) {
     return (
       <main className="end-screen">
+        <CathArt
+          className="end-screen-cath"
+          framing="bust"
+          expression={state.result.won ? 'delighted' : 'worried'}
+          animate
+          width={96}
+          height={96}
+          title={state.result.won ? 'Cath, delighted' : 'Cath, undeterred'}
+        />
         <h1>{state.result.won ? 'You liberated Marrow.' : 'Not this time.'}</h1>
         <p>
           {state.result.won ? 'Win' : `Loss: ${LOSS_REASON_LABEL[state.result.lossReason!]}`} — {state.result.regionsLiberated} regions
@@ -513,6 +562,8 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             without scrolling past the bottom action panel. */}
         <button onClick={onExit}>Menu</button>
       </header>
+
+      <CathCompanion expression={cathReaction.expression} line={cathReaction.line} />
 
       {tutorialSteps && tutorialIndex < tutorialSteps.length && (
         <section className="tutorial-prompt">

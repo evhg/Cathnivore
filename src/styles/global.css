@@ -562,6 +562,51 @@ h3 {
   gap: 8px;
 }
 
+/* The Cath companion (ROADMAP "Cath in Cathnivore, as guide and narrator"): her bust portrait next to a
+   speech-bubble line that reacts to the newest thing that happened (CathCompanion.tsx). */
+.cath-companion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--paper-2);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.cath-companion .cath-art {
+  flex: none;
+  display: block;
+  line-height: 0;
+}
+
+.cath-companion-line {
+  margin: 0;
+  font-style: italic;
+  font-size: 14px;
+  animation: cath-line-in 200ms ease-out both;
+}
+
+@keyframes cath-line-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cath-companion-line {
+    animation: none;
+  }
+}
+
+.end-screen-cath svg {
+  filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 25%, transparent));
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
