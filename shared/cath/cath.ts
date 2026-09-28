@@ -195,7 +195,7 @@ function eye(cx: number, flip: 1 | -1, variant: 'open' | 'closed-happy' | 'close
     return `<path fill="none" stroke="${C.liner}" stroke-width="3.4" stroke-linecap="round" d="M${x(-13)} ${y0} Q${x(0)} ${y0 + lift} ${x(13)} ${y0}"/>
 <path fill="none" stroke="${C.liner}" stroke-width="2" stroke-linecap="round" d="M${x(13)} ${y0} L${x(18)} ${y0 - 4.5} M${x(9)} ${y0 - 2.5} L${x(12.5)} ${y0 - 7}"/>`
   }
-  const top = variant === 'narrow' ? y0 - 6 : y0 - 11
+  const top = variant === 'narrow' ? y0 - 4 : y0 - 11
   return `<g class="cath-eye">
 <path fill="${C.eyeWhite}" d="M${x(-13.5)} ${y0} Q${x(-1)} ${top} ${x(14)} ${y0 - 1} Q${x(1)} ${y0 + 10} ${x(-13.5)} ${y0} Z"/>
 <circle cx="${x(1)}" cy="${y0 + 0.5}" r="8.6" fill="${C.iris}"/>
@@ -212,12 +212,15 @@ function eye(cx: number, flip: 1 | -1, variant: 'open' | 'closed-happy' | 'close
 
 function brows(expression: CathExpression): string {
   // Left then right (viewer's left = her right). Her viewer-right brow sits a touch higher by default.
+  // Determined and worried push their control points further from smirk's baseline than the others
+  // (a squint-furrow vs. a raised, pulled-apart worry) — flagged by a gate-8 review as too close to tell
+  // apart at 56-96px; wider deltas keep them readable at companion/portrait scale, not just at full size.
   const shapes: Record<CathExpression, [string, string]> = {
     smirk: ['M159 131 Q172 124 186 129', 'M214 127 Q228 118 242 124'],
     wink: ['M159 133 Q172 127 186 131', 'M214 125 Q228 116 242 122'],
     delighted: ['M159 128 Q172 120 186 125', 'M214 125 Q228 120 241 128'],
-    determined: ['M160 128 Q174 128 187 134', 'M213 134 Q226 128 240 128'],
-    worried: ['M160 133 Q172 128 186 124', 'M214 124 Q228 128 240 133'],
+    determined: ['M159 124 Q173 130 187 140', 'M213 140 Q227 130 241 124'],
+    worried: ['M160 138 Q172 130 186 120', 'M214 120 Q228 130 240 138'],
   }
   const [l, r] = shapes[expression]
   return `<path fill="none" stroke="${C.brow}" stroke-width="3.4" stroke-linecap="round" d="${l}"/>
@@ -231,11 +234,13 @@ function mouth(expression: CathExpression): string {
 <path fill="${C.teeth}" d="M187 193.5 Q200 197 213 193.5 Q212 199 200 199.5 Q188 199 187 193.5 Z"/>
 <path fill="${C.lip}" d="M191 205 Q200 211 209 205 Q205 209.5 200 209.8 Q195 209.5 191 205 Z"/>`
     case 'worried':
-      return `<path fill="${C.lip}" stroke="${C.ink}" stroke-width="1.4" d="M192 199 Q200 193.5 208 199 Q200 202 192 199 Z"/>
-<ellipse cx="199" cy="199.8" rx="2.6" ry="0.9" fill="${C.lipShine}"/>`
+      // A deeper frown than before, so it reads at a glance rather than blending into determined's flat line.
+      return `<path fill="${C.lip}" stroke="${C.ink}" stroke-width="1.4" d="M190 200 Q200 191 210 200 Q200 204.5 190 200 Z"/>
+<ellipse cx="199" cy="200.2" rx="2.6" ry="0.9" fill="${C.lipShine}"/>`
     case 'determined':
-      return `<path fill="${C.lip}" stroke="${C.ink}" stroke-width="1.4" stroke-linejoin="round" d="M187 197 Q194 194 200 195.5 Q206 194 213 197 Q206 201.5 200 201.5 Q194 201.5 187 197 Z"/>
-<ellipse cx="202" cy="199.5" rx="3.4" ry="1.1" fill="${C.lipShine}"/>`
+      // A flatter, firmer press than the default smirk line — reads as set-jaw resolve rather than ease.
+      return `<path fill="${C.lip}" stroke="${C.ink}" stroke-width="1.4" stroke-linejoin="round" d="M186 197.5 Q193 195 200 196 Q207 195 214 197.5 Q207 200 200 200 Q193 200 186 197.5 Z"/>
+<ellipse cx="202" cy="199" rx="3.4" ry="0.9" fill="${C.lipShine}"/>`
     default:
       // A warm smirk: the viewer-right corner lifts.
       return `<path fill="${C.lip}" stroke="${C.ink}" stroke-width="1.4" stroke-linejoin="round" d="M187 197 Q194 192.5 200 195 Q207 191.5 215.5 192.5 Q209 203 200 202.5 Q192 202.5 187 197 Z"/>
