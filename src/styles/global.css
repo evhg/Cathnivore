@@ -683,12 +683,13 @@ h3 {
      column's real fixed cost was always the topbar/companion/tutorial-prompt/plan-strip/legend/active-
      producer chrome around the map, not the action list sharing space with it.
      This session merged `.plan-strip` and `.map-legend` into one shared row (`.plan-legend-row` below)
-     instead of two stacked full-width rows — real slack, since the centre column is far wider than the
-     map. Bisected against the same fixture: 289px is the exact last passing width, 290px+ overflows;
-     284px keeps a 5px margin, the same kind of safety gap earlier sessions left (262px vs. the 268px that
-     failed). */
+     instead of two stacked full-width rows, and tightened `.topbar`'s and `.decision`/`.active-producer`'s
+     vertical padding by 2px each — real slack, since the centre column is far wider than the map and
+     those two paddings had no legibility benefit at their old size. Bisected against the same fixture:
+     293px is the exact last passing width, 294px+ overflows; 288px keeps a 5px margin, the same kind of
+     safety gap earlier sessions left (262px vs. the 268px that failed). */
   .map {
-    max-width: 284px;
+    max-width: 288px;
   }
 
   /* Without the action list stretching to fill it (ROADMAP 8: it moved to the left tray), `.game`'s leftover
@@ -747,9 +748,13 @@ h3 {
     gap: 8px 14px;
   }
 
+  .topbar {
+    padding: 6px 12px;
+  }
+
   .decision,
   .active-producer {
-    padding: 6px 10px;
+    padding: 4px 10px;
   }
 
   /* The companion (added after this column's height budget was last measured, DECISIONS.md) is more fixed
