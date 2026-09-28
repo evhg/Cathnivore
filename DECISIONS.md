@@ -55,3 +55,10 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   (CSS picking which showed) broke Playwright strict-mode locators; fixed with a `useIsDesktopLayout()`
   matchMedia hook that mounts only one. Measured that this barely grows the map (260px→262px) — the
   fixed chrome around it, not the action list, is the real ceiling; left as the next slice.
+- 2026-09-28: merged the plan strip and map legend into one shared desktop row (real slack — the centre
+  column is far wider than the map) and tightened topbar/active-producer padding; `.map` 262px→288px.
+  `desktop-no-scroll.spec.ts` only checks vertical overflow, so the row-merge's horizontal overflow
+  (flex items' `min-width: auto` spilling past `.game`) only showed up in a `shots` screenshot, not any
+  test — fixed with `min-width: 0` plus a `flex-wrap` fallback. Lesson for later sessions: any new
+  desktop-only flex/grid row needs an explicit horizontal-overflow check (screenshot or measured
+  `scrollWidth`), not just the existing vertical-only e2e test.

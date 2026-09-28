@@ -5,16 +5,25 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
 - **Current ROADMAP item:** item 1's full listed scope is done; item 5 has 4 light, unreleased Bea
-  mentions across 4 chapters. Item 8 (game-screen layout) got a real, tested slice this session:
-  the desktop action list moved out of the centre column into a new side tray next to the Farm
-  panel — see ROADMAP.md item 8's note for what actually changed and why it barely grew the map.
-  Still open: trimming the fixed chrome around the map so it can grow further, and phone's own
-  bottom-tray restructure. **Today's 4-release cap was already spent before this session started
-  (from the prior session), so none of this has reached `main` yet — next session's
-  `npm run release` should pick up everything since `92e7406`.**
-- **Next step:** a follow-up session on item 8 should look at trimming the topbar/companion/
-  tutorial-prompt/plan-strip/legend/active-producer chrome in the centre column (the real
-  remaining ceiling on the map's size, per this session's measurements) before touching phone.
+  mentions across 4 chapters. Item 8 (game-screen layout) got 2 more tested slices this session,
+  continuing the desktop chrome-trimming this item's note called for: merged the plan strip and
+  map legend into one shared row instead of two stacked full-width rows (the centre column is far
+  wider than the map, so this was real slack), then tightened the topbar's and the
+  decision/active-producer panel's vertical padding by 2px each. `.map`'s desktop max-width went
+  262px → 284px → 288px, bisected against `desktop-no-scroll.spec.ts`'s fixture both times (293px
+  is the current exact last passing width; 288px keeps the same 5px safety margin earlier sessions
+  used). The row-merge alone briefly introduced a real bug caught by `shots`, not by any e2e test
+  (`desktop-no-scroll.spec.ts` only checks *vertical* overflow): `min-width: auto` on the flex
+  items let their combined natural width silently overflow `.game`'s right edge, clipping the
+  topbar's Menu button and the legend's own text. Fixed with `min-width: 0` plus a `flex-wrap`
+  fallback on the legend — see DECISIONS.md. Still open: the companion/tutorial-prompt chrome has
+  little further slack (already tightened in an earlier session); phone's own bottom-tray
+  restructure is untouched. **Today's 4-release cap was already spent before this session started,
+  so none of this has reached `main` yet — next session's `npm run release` should pick up
+  everything since `92e7406`.**
+- **Next step:** a follow-up session on item 8 should re-check whether there's any further desktop
+  chrome slack (diminishing returns at this point — see DECISIONS.md), or move on to phone's
+  bottom-tray restructure, the item's other open half.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -48,6 +57,20 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~10:52-11:13 UTC: 2 more ROADMAP 8 slices, both unreleased (cap spent). (1) Merged `.plan-strip`
+  and `.map-legend` into one shared desktop row (`Game.tsx`'s new `.plan-legend-row` wrapper, `display:
+  contents` on phone so it's a no-op there) instead of two stacked full-width rows — real vertical slack,
+  since the centre column is far wider than the map. This briefly introduced a horizontal-overflow bug
+  `desktop-no-scroll.spec.ts` couldn't catch (it only checks vertical scrollHeight): `min-width: auto` on the
+  flex items let their combined ~677px natural width overflow the ~641px row, clipping the topbar's Menu
+  button and the legend text in a `shots` screenshot. Fixed with `min-width: 0` on both sides plus
+  `flex-wrap: wrap` on the legend as a permanent safety net, re-verified with a throwaway Playwright script
+  measuring `scrollWidth` directly at 1280 and 1440 before trusting the screenshot fix. `.map` max-width
+  262px→284px (bisected: 289px last passing, 290px+ overflows). (2) Tightened `.topbar` and
+  `.decision`/`.active-producer` desktop padding by 2px each (no legibility loss); re-bisected `.map` to
+  288px (293px now the last passing width). Both slices: `npm run check`, the full Playwright suite (both
+  projects, 106/106) and a `shots` visual check all green. `lsof -i :4173` confirmed no stale preview server
+  before every `shots` run this session, per the known gotcha.
 - 2026-09-28 ~09:52-10:20 UTC: gave ROADMAP 8 (game-screen layout) a dedicated session as scoped. Moved the
   desktop action list out of the centre `.game` column into a new side tray next to the Farm panel
   (`Game.tsx`'s `actionsPanel`, `.actions-sheet` in `global.css`), tried the right column first but measured
@@ -106,29 +129,5 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   chapter 6's `planUnlocked` scene, both well under SPEC 8.3's 12-line cap. ROADMAP 3 and 25 ticked; item 1's
   remaining scope (hands/pose, hair/fabric shading, favicon/social images) is next, and the next session's
   first `npm run release` will pick up the Bea commit too.
-- 2026-09-28 ~05:51-06:31 UTC: shipped ROADMAP 3 across 5 slices, 2 releases. `CathCompanion.tsx` reacts to
-  liberated/Squeeze/Expand/Rift-split log events with an expression and a deterministic line from
-  `cathCompanionLines.ts` (same event always shows the same line — a region/faction hash, not RNG, so
-  screenshots/e2e stay stable); added her portrait to the end screen, a face inline with tutorial prompts,
-  and her bust to the Campaign (expression tracks chapter progress) and Setup screen headers. Had to shrink
-  the companion at the 1024px breakpoint after it broke `desktop-no-scroll.spec.ts`'s 1280x800 budget (a
-  56px portrait was enough on its own) — fixed and reverified. Caught a false-negative mid-session: a stale
-  `vite preview` server on :4173 from an earlier gates run made `npm run shots` silently reuse old assets
-  (Playwright's `reuseExistingServer`) — screenshots showed no Cath at all on Campaign until the stale
-  server was killed. All gates green both releases; live via `version.json` at `c78fad8`. A subagent's
-  gate-8 review of slice 1 found no blocking issues but flagged that Cath's small-scale portrait loses
-  character-bible detail and her expressions look similar at this size — logged under Now, not fixed this
-  session (a `shared/cath/` art concern, ROADMAP item 1).
-- 2026-09-28 ~05:23 UTC: a routine session had already found and fixed (pre-`main`, on `build`) a real v1
-  bug before this new plan landed underneath it: the root `sw.js` (SPEC 15) was wiping the live
-  `/cathnivore/` PWA's own cache on activation (origin-wide `caches.keys()`/`delete()`, not scoped to the
-  calling worker) — fixed to skip cache keys naming `/cathnivore/`/`/runnel/`. Also fixed 2 of the 3 "Known
-  issues" above (sim `--bot`/`--difficulty` validation + the worker timeout ticked above) and hardened
-  `sim/run.ts`'s error surfacing. Rebased those commits onto the owner's chat-session tip (`3a18ed4`) after
-  finding it had landed the whole SPEC 16/VISION/ROADMAP/FEEDBACK pivot and the Cath-redesign kickoff while
-  this session held (then re-took) the lock — no conflicts, pure addition. None of this session's fixes have
-  reached `main` yet: `npm run release` hit the standing stale-local-`main`/"Production Deploy" classifier
-  denial twice (see `docs/archive/PROGRESS-v1.md`'s Blocked log for the pattern) and wasn't retried a 3rd
-  time. Next session: try `npm run release` first; if clean, both the sw.js fix and this new Cath-redesign
-  work ship together.
-- 2026-09-28 (owner's chat session): switched the routine to indefinite improvement (SPEC 16, VISION, ROADMAP, FEEDBACK); archived v1's notes; shipped the title screen and Campaign screen redesigns; the owner then set a new plan (Cath redesigned as a classy, cute, stylish mum and the star of every game; App Store launch postponed), and Cath's master art was started in `shared/cath/`.
+- 2026-09-28 ~05:23-06:31 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — the SPEC 16 pivot, the sw.js
+  cache-wipe fix, and ROADMAP 3's first slices (the Cath companion, end-screen portrait, tutorial-prompt face).

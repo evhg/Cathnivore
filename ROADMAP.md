@@ -44,8 +44,15 @@ Every visual item is done only when:
    leftover vertical space on taller-than-1280x800 windows so the map centres in it instead of leaving a
    dead gap below Undo (caught in a `shots` screenshot). Real, shippable progress toward "tidy side trays,"
    but not the item: the map isn't dramatically bigger, and phone still has no bottom tray (its action list
-   render spot is unchanged). Making the map genuinely the hero needs the fixed chrome around it trimmed
-   too, and phone's own restructure is still open — see DECISIONS.md for the measured numbers.)* Make the
+   render spot is unchanged). 2026-09-28 (later session): trimmed the fixed chrome itself — merged the plan
+   strip and map legend into one shared desktop row instead of two stacked full-width rows (real slack, the
+   centre column is far wider than the map), then tightened the topbar's and the decision/active-producer
+   panel's vertical padding by 2px each. `.map`'s cap moved 262px→288px (bisected against
+   `desktop-no-scroll.spec.ts` both times). The row-merge briefly overflowed horizontally — a bug the
+   vertical-only e2e test couldn't catch, only a `shots` screenshot did — fixed with `min-width: 0` and a
+   `flex-wrap` fallback; see DECISIONS.md. Diminishing returns from here: the companion/tutorial-prompt
+   chrome was already tightened in an earlier session. Phone's own bottom-tray restructure is still fully
+   open — see DECISIONS.md for the measured numbers.)* Make the
    map the hero. On desktop, the map fills the centre column at the largest size that fits, and the farm,
    market, plan and log panels become tidy side trays. On phone, the map fills the top of the screen and
    actions live in a bottom tray that can be pulled up. Leave room for Cath's companion (item 3). Keep every
