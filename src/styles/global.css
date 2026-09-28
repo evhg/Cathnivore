@@ -1159,6 +1159,17 @@ html.native-app body {
   margin-top: 20px;
 }
 
+.setup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.setup-header h1 {
+  margin: 0;
+}
+
 .setup h2,
 .settings h2 {
   font-size: 16px;

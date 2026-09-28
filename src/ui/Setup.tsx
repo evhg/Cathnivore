@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/producers'
 import { ALL_REGION_IDS } from '../content/map'
 import type { GameConfig, ProducerId } from '../engine/types'
+import CathArt from './CathArt'
 
 export type Mode = 'solo' | 'hotseat'
 
@@ -37,7 +38,12 @@ export default function Setup({ onStart }: Props) {
 
   return (
     <main className="setup">
-      <h1>Quick Game</h1>
+      <header className="setup-header">
+        <h1>Quick Game</h1>
+        {/* ROADMAP "Cath on the title, Campaign, setup and end screens": her default warm smirk, since
+            no game state exists yet to react to here. */}
+        <CathArt className="setup-header-cath" framing="bust" expression="smirk" animate width={56} height={56} title="Cath" />
+      </header>
 
       <section>
         <h2>Mode</h2>
