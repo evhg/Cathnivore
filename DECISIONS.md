@@ -22,3 +22,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   twice this session; not retried a 3rd time (see PROGRESS.md).
 - 2026-09-28 (owner's chat session): **the owner asked for a third game, a tower defense** with a level-by-level story, unlocks every level and level 100 as the ultimate boss fight. Wrote `docs/design/hedgerow.md` (working title *Hedgerow*: 10 acts of 10 levels across Marrow, Cath leading, HollowCandor as the final boss) and added it to ROADMAP as Phase 2b.
 - 2026-09-28 (owner's chat session): the owner confirmed that the Apple secrets, the tag-push 403s and the sandbox certificate don't block progress; PROGRESS.md now lists them as "Known limitations", not blockers.
+- 2026-09-28: shipped ROADMAP 3 slice 1 (Cath companion: game-screen reactions, end-screen portrait,
+  tutorial-prompt face). Lines are picked deterministically by hashing the event's region/faction rather
+  than by RNG, so the same event always shows the same line — kept screenshots and e2e stable without a
+  seeded RNG plumbed through the UI layer. Released to `main` (`adef266`); `deploy-1` tag push failed with
+  the known 403, harmless per PROGRESS.md.
