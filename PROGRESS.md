@@ -22,6 +22,16 @@ manual fix's `git merge --no-ff origin/build` step was denied by the "Production
 retried per its own guidance — see Blocked. `build` (`3ba6ad2`) is fully gated and pushed, waiting for a
 future session's release retry.
 
+Used remaining session time for 1 more subagent pair (2 at a time, CLAUDE.md's cap): the sim harness/AI
+worker protocol, and a full (not sampled) audit of all 36 Improvements/30 Schemes' text vs. code. The content
+audit came back fully clean. The sim/AI-worker pass found 2 real gaps in the dev-only balance tooling
+(`sim/run.ts`/`sim/simCore.ts`, not shipped game code) — full detail in DECISIONS.md. **Fixed:** a bad
+`--bot`/`--difficulty` CLI value now fails fast with a clear error instead of `botFor()` silently defaulting
+to the slowest bot (MCTSBot) under a mislabeled report entry, and a worker-process-level failure now prints
+a clear message and exits 1 instead of an opaque unhandled-rejection dump. New `tests/sim.test.ts`. **Not
+fixed** (logged as a known, lower-priority gap): the worker pool still has no wall-clock timeout for a
+genuinely hung decision. `npm run check` clean throughout; pushed to `build` (`0ee7b9a`).
+
 ---
 Previous session (2026-09-28, starting ~03:52 UTC): standard session start, lock taken, `npm ci` + `npm run
 check` clean on `build` HEAD (`827e110`, previous session's final state plus this session's lock commit).
@@ -3191,6 +3201,11 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 
 
 ### Known issues found 2026-09-28
+- [ ] `npm run sim`'s worker pool (`sim/run.ts`) has no per-worker wall-clock timeout: a genuinely hung bot
+  decision (not bounded by `STEP_CAP`'s step-count limit) would hang the whole run forever with no report
+  written. Dev-only balance tooling, not shipped game code, and not observed as an actual failure so far —
+  low priority, found by a subagent review. `botFor`'s bad-argument handling and the top-level unhandled-
+  rejection gap from the same review were fixed this session (see DECISIONS.md); this timeout gap was not.
 - [ ] `site/src/scene.ts`'s WebGL `link()` never calls `gl.deleteShader` on the compiled vertex/fragment
   shaders after linking (success or failure). Minor GPU-object leak, not user-visible (the page links a
   shader program at most a couple of times per load) — low priority, found by a subagent review, not fixed

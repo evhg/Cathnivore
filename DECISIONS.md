@@ -3396,3 +3396,27 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   regression per SPEC 1.3's own priority order. `npm run check` clean (all suites, including the 2 new unit
   tests); `npm run build:site` re-run and `dist-site/sw.js` inspected directly to confirm the generated
   output matches. Pushed to `build` (`6deac65`).
+
+- 2026-09-28 (~05:11 UTC, same session): 2 more subagents (sim harness/AI worker protocol; a full
+  Improvements/Schemes text-vs-code audit of all 36/30 cards, not just a sample) while a release attempt sat
+  blocked (see Blocked). The content audit came back fully clean. The sim/AI-worker pass confirmed
+  `src/ai/aiWorker.ts` correct (no new issue — that area's had unusually thorough prior review) but found 2
+  real gaps in `sim/run.ts`/`sim/simCore.ts` (dev-only balance tooling, not shipped game code — SPEC 1.3
+  ranks this below correctness/campaign/iPhone, but still worth a cheap, low-risk fix): (1) `botFor()` fell
+  through to MCTSBot for any unrecognized `--bot` value instead of validating, so a typo (`--bot heuristc`)
+  would silently run the slowest bot for hours while mislabeling the report with the typo'd name; (2) `void
+  main()` meant a worker-process-level failure outside `playOneGame`'s own per-game try/catch became an
+  unhandled promise rejection with no report/`BALANCE.md` entry written and no clear "sim failed" message.
+  **Fixed:** `sim/run.ts`'s `parseArgs` now validates `--bot`/`--difficulty` upfront and throws with a clear
+  message; `botFor()` also throws directly (it's called from `sim/simWorker.ts` too, not just after
+  `parseArgs`); `main().catch(...)` now prints a clear "sim: fatal error, no report written" message and
+  exits 1 instead of relying on Node's default unhandled-rejection dump. New `tests/sim.test.ts` covers
+  `botFor`'s validation. **Not fixed** (logged as an accepted, lower-priority gap): a genuinely hung worker
+  (e.g. a bot decision that never returns, not bounded by `STEP_CAP`'s step-count limit) still hangs the
+  whole `npm run sim` run forever with no timeout — a real gap, but fixing it properly needs a per-worker
+  wall-clock timeout with correct cleanup, which felt like too large a change to make and verify carefully
+  this late in a session; a future session can pick this up if it recurs in practice (it hasn't been observed
+  as an actual failure so far, only identified as a theoretical gap by this review). `npm run check` clean; a
+  20-game `random` smoke run and a deliberate bad-`--bot` run both behaved as expected (clean report vs. a
+  clear thrown error), with the smoke run's throwaway `BALANCE.md`/`sim/reports/` output discarded before
+  committing. Pushed to `build` (`0ee7b9a`).
