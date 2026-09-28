@@ -648,18 +648,20 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   }
 
   // ROADMAP 9 why-not, continued: a Scheme with `targeting: 'none'` never needs a region (see
-  // `legalSchemeTargets`), so unlike a 'required'/'optional' Scheme (whose absence could mean "no legal
-  // target" as easily as "can't afford it" — left alone, as before) its only legality condition is
-  // Goodwill vs. `schemeCost`, the same single-comparison shape as Sell/Invest. `state.freeSchemePlays`
-  // makes the next Scheme played free regardless of cost, so a card is only genuinely unaffordable when
-  // that's spent too.
+  // `legalSchemeTargets`), so its only legality condition is Goodwill vs. `schemeCost` — the same
+  // single-comparison shape as Sell/Invest. An 'optional'-targeting Scheme turns out to have exactly the
+  // same shape: `legalSchemeTargets` falls back to `[null]` (an untargeted play) whenever no real target
+  // exists, so it's never hidden for "no legal target" the way a 'required' Scheme genuinely can be — only
+  // for being unaffordable. `state.freeSchemePlays` makes the next Scheme played free regardless of cost,
+  // so a card is only genuinely unaffordable when that's spent too.
   const disabledScheme: { schemeId: string; cost: number; missing: number }[] = []
   if (rules.schemes && !state.cathsPlanLocked && !tutorialStep?.highlight && !waitingOnAi && pendingEnemyTurn.length === 0) {
     for (const id of state.cathsPlan) {
       if (!id) continue
       const card = SCHEMES_BY_ID.get(id)
-      if (!card || card.targeting !== 'none') continue
+      if (!card || (card.targeting !== 'none' && card.targeting !== 'optional')) continue
       if (standalone.some((e) => e.action.kind === 'scheme' && e.action.schemeId === id)) continue
+      if (groups.has(`scheme:${id}`)) continue
       if (state.freeSchemePlays > 0) continue
       const cost = schemeCost(state, state.activeProducer, card)
       if (active.resources.goodwill < cost) disabledScheme.push({ schemeId: id, cost, missing: cost - active.resources.goodwill })

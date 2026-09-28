@@ -113,6 +113,28 @@ test('a targeting:none Scheme shows a disabled, explained placeholder when unaff
   await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
 })
 
+// ROADMAP 9, continued: an 'optional'-targeting Scheme (e.g. Leaked Memo, "Rift +2. Remove 1 Doubt
+// anywhere") turns out to have the same single-comparison shape as `targeting: 'none'` — `legalSchemeTargets`
+// falls back to an untargeted play whenever no region has Doubt to remove, so unlike a 'required' Scheme
+// it's never hidden for "no legal target", only for being unaffordable. Seed 3's Cath's Plan starts with
+// Leaked Memo (3 Goodwill, the starting producer has 1) and no Doubt anywhere yet.
+test('an optional-targeting Scheme shows a disabled, explained placeholder when unaffordable', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.locator('input[inputmode="numeric"]').fill('3')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  const leakedMemo = page.locator('.action-item', { hasText: 'Leaked Memo' })
+  await expect(leakedMemo.getByRole('button', { name: /^Scheme/ })).toBeDisabled()
+  await expect(leakedMemo.locator('.action-why-not')).toHaveText('Need 2 more Goodwill')
+
+  // A disabled button is genuinely inert.
+  const actionsLeftBefore = await page.locator('.active-producer').textContent()
+  await leakedMemo.getByRole('button', { name: /^Scheme/ }).click({ force: true })
+  await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
+})
+
 // ROADMAP 9, continued: Open Stall costs a flat 1 Produce and `legalActions` skips its whole per-region
 // loop when Produce is 0 — the only case where "no Open Stall action exists" is unambiguously about
 // affordability (a real "no legal region" case, e.g. every region already at its Stall cap, stays
