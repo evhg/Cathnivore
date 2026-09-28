@@ -4,22 +4,24 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** item 1's scope is done; item 8 hit diminishing returns 2 sessions ago.
-  Item 9 ("actions as cards") shipped its icon set last session; this session started its last listed
-  piece, disabled/why-not states, scoped to the one unambiguous case: Sell's unaffordable counts now
-  render disabled, in place, with a "Need N more Produce" reason and their cost chip. Every other kind
-  stays simply absent when illegal (giving each an accurate reason needs real per-kind logic, deferred).
-  Along the way gave every button a real `:disabled` style (none existed beyond the cursor before); a
-  gate-8 review caught the first pass's opacity-on-everything approach failing contrast (~2.3:1, under
-  STYLE.md 3.6's 4.5:1 floor) — fixed by keeping text at plain `--ink-muted` (verified 4.51:1) and
-  dimming only the icon/chip. New `e2e/disabled-actions.spec.ts` locks the behaviour in. Item 9 is
-  close but not done: the full illustrated-tile redesign (its own title) hasn't started, and
-  disabled/why-not only covers Sell so far. **Today's 4-release cap was already spent before this
-  session started, so none of this has reached `main` yet — next session's `npm run release` should
-  pick up everything since `92e7406`.**
-- **Next step:** 5 sessions have now piled up unreleased work on `build` — the next session should
+- **Current ROADMAP item:** item 1's scope is done; item 8 hit diminishing returns; item 9 ("actions as
+  cards") is close but not done (icons, cost chips, press feedback, the region-glow pulse, and a
+  disabled/why-not state for Sell are shipped; per-kind why-not reasons and the full illustrated-tile
+  redesign aren't). This session moved to item 10 ("the HUD") and shipped its animation half:
+  `useHudTick()` (`Game.tsx`) plays a scale-pulse on Round/Trust/Lost Land/Rift exactly once per real
+  change (a per-stat counter incremented synchronously during render, keyed so React remounts and
+  replays the CSS animation), gated so game load never flashes every stat at once. Deliberately
+  scale-only, no colour — Round/Trust/Lost Land/Rift don't share one "which way is good" direction, and
+  this session already fixed one colour-contrast mistake (the Sell disabled state, prior session) so a
+  new colour choice went in only after concluding a scale transform sidesteps that risk entirely.
+  Verified directly (no animation class on the very first render; a forced round advance confirms only
+  the stats that actually changed tick). **Today's 4-release cap was already spent before this session
+  started, so none of this has reached `main` yet — next session's `npm run release` should pick up
+  everything since `92e7406`.**
+- **Next step:** 6 sessions have now piled up unreleased work on `build` — the next session should
   seriously consider opening with `npm run release` (today's cap resets on the next calendar day)
-  before starting more of item 9's remaining scope (per-kind why-not reasons, the illustrated tiles).
+  before starting more new work. Item 10's own title (illustrated gauges, branded agenda cards) still
+  needs real new art and hasn't started.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -53,6 +55,20 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~13:02-13:11 UTC: moved to ROADMAP 10 (the HUD), shipped its no-new-art half: a
+  `useHudTick()` hook (`Game.tsx`) increments a per-stat counter only when Round/Trust/Lost Land/Rift
+  actually change, computed synchronously during render; the topbar wraps each stat's icon+number in a
+  span keyed on that counter so React remounts (replaying a CSS scale-pulse) exactly once per real
+  change. Gated the animation class itself on the counter being > 0 so game load's first render never
+  flashes every stat. Deliberately scale-only, no colour change — no single colour-by-direction is
+  honest across all 4 stats (Round up is neutral, Trust up is good, Lost Land/Rift up are both bad), and
+  a scale transform never touches text colour so there's no contrast to re-check (this session's prior
+  Sell-disabled-state slice already found one real contrast mistake from an unchecked colour choice).
+  Verified directly: initial render has no animation class at all; forcing a real round advance
+  (autoplay) confirmed only the stats that actually changed got the tick class, the unchanged ones
+  didn't. `npm run check`, the full Playwright suite (108/108, both projects) and `npm run gates` (all
+  gates) green. Unreleased (cap spent). Item 10's actual title — illustrated gauges, branded agenda
+  cards — needs real new art and hasn't started.
 - 2026-09-28 ~12:38-13:00 UTC: started ROADMAP 9's disabled/why-not piece, unreleased (cap spent).
   Scoped to Sell only (the one action whose legality is a single resource comparison, so the reason is
   never ambiguous): a disabled placeholder button now renders for each unaffordable count, right where

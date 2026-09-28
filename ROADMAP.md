@@ -116,7 +116,18 @@ Every visual item is done only when:
    the opacity to only the icon/cost chip. New `e2e/disabled-actions.spec.ts` locks in the behaviour.
    Item 9 is now close but not done: disabled/why-not states cover only Sell, and the full
    illustrated-tile redesign (the item's own title) hasn't started.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
-10. [ ] **The table, part 3: the HUD.** Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
+10. [ ] **The table, part 3: the HUD.** *(2026-09-28: shipped the tick-up/tick-down animation half, which
+    needed no new art — `useHudTick()` (`Game.tsx`) increments a per-stat counter only on a genuine value
+    change, computed synchronously during render; the topbar wraps each stat's icon+number in a span keyed
+    on that counter, so React remounts and replays a CSS scale-pulse exactly once per change, gated so the
+    very first render (game load) never flashes every stat at once. Deliberately scale-only, no colour:
+    Round going up is neutral, Trust going up is good, but Lost Land/Rift going up are both bad, so no
+    single colour-by-direction would be honest across all 4 without tracking each one's own "which way is
+    good" — left for a later pass if it's worth it. Verified directly (initial render has no animation
+    class; forcing a real round advance confirms only the stats that actually changed tick). Still open,
+    the item's actual title: the illustrated gauges themselves (Round/Trust/Lost Land/Rift are still plain
+    icon+number, not gauges) and the enemy's Squeeze/Expand/Scout slots as branded agenda cards — both need
+    real new art.)* Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
 11. [ ] **Map art, part 1: regions.** Terrain illustration on each region (hedgerows, field rows, shoreline and boats, the Kingsmarket clock tower) and labels as painted signboards. It must pass the greyscale shape test (STYLE.md 2).
 12. [ ] **Map art, part 2: pieces.** The exact STYLE.md 6 pieces (awning Stall, glossy "0.99" Outlet, "SOLD" fence Buyout, "?" bubble Doubt), each with a placement animation.
 13. [ ] **Moments:** liberating a region (a seal stamp, colour blooming across the hex, Cath cheering), a Squeeze (glossy plastic creeping over a region), Lost Land, the Rift at 3 and 6, the enemy turn playback choreographed step by step, and the end of a round.

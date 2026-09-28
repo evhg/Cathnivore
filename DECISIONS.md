@@ -91,3 +91,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   Also: `opacity` on a whole disabled button double-dims text that's already `--ink-muted`, dropping below
   STYLE.md 3.6's 4.5:1 floor — a gate-8 review caught this at ~2.3:1. Keep disabled text at plain
   `--ink-muted` (no opacity) and put the opacity only on non-text children (icons, chips) instead.
+- 2026-09-28: moved to ROADMAP 10 after item 9's remaining scope (per-kind why-not reasons, the
+  illustrated-tile redesign) proved too large for a same-session add-on. HUD tick animation deliberately
+  scale-only, no colour: Round/Trust/Lost Land/Rift don't share one "which way is good" direction, and
+  picking a single colour anyway risked repeating the exact contrast mistake just made on Sell's disabled
+  state — a scale transform sidesteps that class of bug entirely since it never touches text colour.
