@@ -3312,3 +3312,20 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   `npx tsc -b`/`npx eslint` clean, `npx vitest run` 543/543 (up from 519, +24 new Agenda-text tests),
   `npm run build` clean, a fresh screenshot of the Rules Reference screen confirmed no rendering regression.
   Pushed to `build`.
+
+- **2026-09-28 (fixed the info-scheme peek gap logged above):** Reconnaissance/Steak-out/Weather Eye/Paper
+  Trail's `effect` was correctly a no-op (the peek itself needs no state change), but nothing anywhere
+  surfaced what was peeked to the player, so playing them bought nothing visible while still correctly
+  losing Undo (SPEC 4.6, `irreversible: true`). Fixed by giving `schemePlayed` GameEvents an optional `peek:
+  string[]` field (`src/engine/types.ts`), computed in `src/engine/actions.ts`'s `describeInfoSchemePeek`
+  right after paying the cost but before `card.effect` runs (so Steak-out's peek describes the pre-reorder
+  top card, not wherever the reorder puts it) — "Stage N: Type(s)" for the 3 Pressure-peeking cards,
+  `'Faction: "headline"'` for Paper Trail's Agenda peek. Wired into `src/ui/gameLog.ts`'s `logCaption` so it
+  shows in the Log sheet as "<Producer> plays <Scheme>. Peeked: Stage 1: Coast." New tests in
+  `tests/schemes-effects.test.ts` assert the exact peeked-card description for all 4 cards (had to fix the
+  new tests' own initial assumption that `schemePlayed` is the last log entry — `applyAction` always appends
+  a trailing generic `'action'` entry after the specific one, so the assertions read `log.at(-2)`, not
+  `log.at(-1)`). `npx tsc -b`/`npx eslint` clean, `npx vitest run` 547/547 (up from 543), a fresh build plus
+  `quick-game.spec.ts`/`campaign.spec.ts` (desktop) green. Pushed to `build`. Hot-seat's missing pass-device
+  screen (logged alongside this in PROGRESS.md) remains open — a UI feature addition, out of this session's
+  remaining time.

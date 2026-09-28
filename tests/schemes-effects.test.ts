@@ -257,6 +257,44 @@ describe("Every previously-untested Scheme's specific numeric effect (SPEC 11.4 
     const after = play(before, 'weather-eye')
     expect(after.pressureDeck).toEqual(before.pressureDeck)
   })
+
+  // These 4 Schemes' `effect` is a no-op (or a reorder, for Steak-out) by design — the actual reveal has to
+  // reach the player some other way, or paying Goodwill and losing Undo buys nothing visible. Found missing
+  // entirely in a 2026-09-28 QA pass; `schemePlayed`'s `peek` field (src/engine/types.ts) is the fix.
+  it('Steak-out: the schemePlayed log event peeks the pre-reorder top Pressure card', () => {
+    const before = richBoard(7)
+    const top = before.pressureDeck[0]!
+    const after = play(before, 'steak-out')
+    const event = after.log.at(-2)
+    expect(event?.type).toBe('schemePlayed')
+    const peek = event && 'peek' in event ? event.peek : undefined
+    expect(peek).toEqual([`Stage ${top.stage}: ${top.regionTypes.map((t) => t[0]!.toUpperCase() + t.slice(1)).join('+')}`])
+  })
+
+  it('Reconnaissance: the schemePlayed log event peeks the top Pressure card', () => {
+    const before = richBoard(7)
+    const top = before.pressureDeck[0]!
+    const after = play(before, 'reconnaissance')
+    const event = after.log.at(-2)
+    const peek = event && 'peek' in event ? event.peek : undefined
+    expect(peek).toEqual([`Stage ${top.stage}: ${top.regionTypes.map((t) => t[0]!.toUpperCase() + t.slice(1)).join('+')}`])
+  })
+
+  it('Weather Eye: the schemePlayed log event peeks the top 2 Pressure cards', () => {
+    const before = richBoard(7)
+    const after = play(before, 'weather-eye')
+    const event = after.log.at(-2)
+    const peek = event && 'peek' in event ? event.peek : undefined
+    expect(peek?.length).toBe(2)
+  })
+
+  it('Paper Trail: the schemePlayed log event peeks the top Agenda card by headline', () => {
+    const before = richBoard(7)
+    const after = play(before, 'paper-trail')
+    const event = after.log.at(-2)
+    const peek = event && 'peek' in event ? event.peek : undefined
+    expect(peek?.[0]).toContain('"')
+  })
 })
 
 describe('Two For One (OR-gated legality, SPEC 5)', () => {

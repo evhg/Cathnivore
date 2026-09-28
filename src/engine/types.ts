@@ -252,7 +252,18 @@ export type GameEvent =
   | { type: 'expand'; region: RegionId; piece: 'outlet' | 'buyout' | 'doubt' }
   | { type: 'scout'; region: RegionId; doubtAdded: boolean }
   | { type: 'invest'; producer: ProducerId; improvementId: ImprovementCardId }
-  | { type: 'schemePlayed'; producer: ProducerId; schemeId: SchemeCardId; target: RegionId | null }
+  | {
+      type: 'schemePlayed'
+      producer: ProducerId
+      schemeId: SchemeCardId
+      target: RegionId | null
+      // The "look at the top card" info Schemes (Reconnaissance/Paper Trail/Weather Eye/Steak-out) peek
+      // hidden deck order with an otherwise no-op `effect` (SPEC 4.6 still marks them irreversible, since
+      // the peek itself is hidden information). Without this, nothing ever told the player what they paid
+      // Goodwill to see — found in a 2026-09-28 QA pass. Plain-English description strings, one per card
+      // peeked, shown in the Log.
+      peek?: string[]
+    }
   | { type: 'riftSplit'; faction: Faction }
   | { type: 'decision'; decisionId: string; choice: ResourceKind | Faction | RegionId }
   | { type: 'trigger'; effect: string; sceneId: string }

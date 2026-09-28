@@ -8,7 +8,43 @@ import { canMarketDayOpenIn, canOpenStallIn, regionStallTotal } from './region'
 import { resolveRules } from './rules'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID, legalSchemeTargets } from '../content/schemes'
-import type { Action, Faction, GameState, ProducerId, RegionId, ResourceKind } from './types'
+import { AGENDA_CARDS_BY_ID } from '../content/agenda'
+import type { Action, Faction, GameState, PressureCard, ProducerId, RegionId, ResourceKind } from './types'
+
+function capitalize(word: string): string {
+  return word.charAt(0).toUpperCase() + word.slice(1)
+}
+
+function describePressureCard(card: PressureCard): string {
+  return `Stage ${card.stage}: ${card.regionTypes.map(capitalize).join('+')}`
+}
+
+// The 4 "look at the top card" info Schemes (SPEC 5) have an otherwise no-op `effect` — the peek is the
+// entire point, and it's hidden information the caller can already see, so there's nothing to change in
+// state. Without surfacing what was actually peeked, a player pays Goodwill and loses Undo (correctly
+// `irreversible: true`) for a reveal they never saw (found in a 2026-09-28 QA pass). Called with the state
+// right after paying the cost, before `card.effect` runs, so Steak-out sees the pre-reorder top card.
+function describeInfoSchemePeek(schemeId: string, state: GameState): string[] | undefined {
+  switch (schemeId) {
+    case 'reconnaissance':
+    case 'steak-out': {
+      const top = state.pressureDeck[0]
+      return top ? [describePressureCard(top)] : undefined
+    }
+    case 'weather-eye': {
+      const cards = state.pressureDeck.slice(0, 2).map(describePressureCard)
+      return cards.length > 0 ? cards : undefined
+    }
+    case 'paper-trail': {
+      const topId = state.agendaDeck[0]
+      const topCard = topId ? AGENDA_CARDS_BY_ID.get(topId) : undefined
+      if (!topCard) return undefined
+      return [`${topCard.faction === 'hollowell' ? 'Hollowell' : 'Candor'}: "${topCard.headline}"`]
+    }
+    default:
+      return undefined
+  }
+}
 
 function ownStalls(state: GameState, producer: ProducerId, region: RegionId): number {
   return state.regions[region].stalls[producer] ?? 0
@@ -386,6 +422,7 @@ export function applyAction(state: GameState, action: Action): GameState {
       const cost = schemeCost(state, producer, card)
       const useFreePlay = state.freeSchemePlays > 0 && state.producers[producer].resources.goodwill < cost
       next = spend(state, producer, { produce: 0, marks: 0, goodwill: useFreePlay ? 0 : cost })
+      const peek = describeInfoSchemePeek(card.id, next)
       next = card.effect(next, producer, target)
       next = {
         ...next,
@@ -395,7 +432,7 @@ export function applyAction(state: GameState, action: Action): GameState {
         cathsPlan: removeFirst(next.cathsPlan, card.id),
         schemeDiscard: [...next.schemeDiscard, card.id],
         freeSchemePlays: useFreePlay ? next.freeSchemePlays - 1 : next.freeSchemePlays,
-        log: [...next.log, { type: 'schemePlayed', producer, schemeId: card.id, target }],
+        log: [...next.log, { type: 'schemePlayed', producer, schemeId: card.id, target, ...(peek ? { peek } : {}) }],
       }
       break
     }
