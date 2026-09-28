@@ -34,7 +34,7 @@ There is a hard cap of 7 days from the time in `DEADLINE`. The run ends when the
 8. If an external step fails (network, npm, a workflow, DNS), retry up to 5 times with growing waits. If it still fails, log it under "Blocked" in `PROGRESS.md`, switch to other work, and retry next session.
 9. **Every session** (a routine starts one each hour):
    1. Run `git fetch --all`, then check out `build`, creating it from `main` if it doesn't exist.
-   2. If `DONE` exists, reply "Build finished" and end immediately.
+   2. ~~If `DONE` exists, reply "Build finished" and end immediately.~~ **Superseded by section 16 (2026-09-28): the run never ends. If `DONE` exists, delete it and carry on.**
    3. **Lock check:**
       - If `.build-lock` exists and its timestamp is less than 75 minutes old, another session is running, so end immediately.
       - Otherwise write the current UTC time to `.build-lock`, commit and push.
@@ -42,7 +42,7 @@ There is a hard cap of 7 days from the time in `DEADLINE`. The run ends when the
    4. Read `CLAUDE.md`, this file, `STYLE.md`, `OWNER.md`, `PROGRESS.md`, `DECISIONS.md`, `BALANCE.md` (if it exists), `git log --oneline -20`, and the files on `origin/ci-status`.
    5. Work through the next unchecked tasks for about 50 minutes. Commit and push to `build` after every finished task.
    6. Before ending, make `PROGRESS.md` accurate, delete `.build-lock`, then commit and push.
-10. **Time.** The first session creates `DEADLINE` (now plus 7 days, ISO format, UTC) and commits it. Check the time left before starting each task and follow the schedule in section 12. When less than 18 hours remain, stop feature work and go to M7. Once the deadline has passed:
+10. **Time.** (Superseded by section 16 on 2026-09-28: `DEADLINE` no longer ends the run and `DONE` is never created. The rest of this rule is kept for history.) The first session creates `DEADLINE` (now plus 7 days, ISO format, UTC) and commits it. Check the time left before starting each task and follow the schedule in section 12. When less than 18 hours remain, stop feature work and go to M7. Once the deadline has passed:
     - finish the current task only if it takes under 30 minutes;
     - confirm `main` is on the last good build;
     - write the final report;
