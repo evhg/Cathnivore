@@ -6,10 +6,11 @@ import type { RegionId } from '../engine/types'
 // reaction lines in her voice (SPEC 3.2 — short sentences, dry, specific, at most an occasional "!").
 // Deterministic, not random: each reaction picks a line by hashing the region/detail it's about, so the
 // same event always shows the same line (screenshots and e2e stay stable; SPEC 9's determinism spirit).
-export type CathReaction = 'liberated' | 'squeezeLostLand' | 'squeeze' | 'riftSplit' | 'win' | 'loss' | 'greeting'
+export type CathReaction = 'liberated' | 'expand' | 'squeezeLostLand' | 'squeeze' | 'riftSplit' | 'win' | 'loss' | 'greeting'
 
 export const CATH_REACTION_EXPRESSION: Record<CathReaction, CathExpression> = {
   liberated: 'delighted',
+  expand: 'determined',
   squeezeLostLand: 'worried',
   squeeze: 'determined',
   riftSplit: 'determined',
@@ -24,6 +25,11 @@ const LINES: Record<CathReaction, string[]> = {
     "That's a region back on real food. Told you it'd hold.",
     'Liberated. Turns out grass-fed beats a press release.',
     "They'll notice that one on the quarterly call.",
+  ],
+  expand: [
+    'Another Outlet. They do love a discount.',
+    "They're moving in. We were moving in first.",
+    'Cheap and everywhere. Their whole business model in two words.',
   ],
   squeeze: [
     "A Squeeze. Cute. We've had worse from the weather.",

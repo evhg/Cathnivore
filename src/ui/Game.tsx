@@ -98,6 +98,10 @@ function cathReactionFor(event: GameEvent): { reaction: CathReaction; rank: numb
   switch (event.type) {
     case 'liberated':
       return { reaction: 'liberated', rank: 1, line: cathLineForRegion('liberated', event.region) }
+    case 'expand':
+      // Lowest rank: an Outlet/Buyout/Doubt lands most rounds, so it should never bury a rarer, more
+      // significant reaction (a liberation or a Squeeze) that landed in the same round's new events.
+      return { reaction: 'expand', rank: 0, line: cathLineForRegion('expand', event.region) }
     case 'squeeze':
       return event.lostLand
         ? { reaction: 'squeezeLostLand', rank: 3, line: cathLineForRegion('squeezeLostLand', event.region) }
