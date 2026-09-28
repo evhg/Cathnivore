@@ -271,10 +271,6 @@ export default function Map({ state, highlight, onSelect }: Props) {
               </g>
             )}
 
-            <text x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
-              {def.name}
-            </text>
-
             {squeezeTargets.includes(id) && (
               <g transform={`translate(${x - 30}, ${y - HEX_R * 0.4})`}>
                 <rect x={0} y={0} width={60} height={16} rx={8} fill="var(--clay-deep)" />
@@ -343,6 +339,19 @@ export default function Map({ state, highlight, onSelect }: Props) {
 
             {r.liberated && <CoopMarker x={x + HEX_R * 0.55} y={y + HEX_R * 0.55} />}
           </g>
+        )
+      })}
+      {/* Region names are drawn in their own pass, after every hex's fill/pattern, so a name near a
+          hex's pointy top vertex is never painted over by a neighbouring hex above it (gate 8 found
+          Oakvale's and Shingle Bay's labels — the two bottom-row regions in the flower, whose top
+          vertex sits against the row above rather than open background — clipped this way). */}
+      {active.map((id) => {
+        const def = REGIONS[id]
+        const { x, y } = hexCenter(id)
+        return (
+          <text key={`name-${id}`} x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
+            {def.name}
+          </text>
         )
       })}
     </svg>
