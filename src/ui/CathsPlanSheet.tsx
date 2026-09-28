@@ -9,12 +9,18 @@ import type { GameState } from '../engine/types'
 export default function CathsPlanSheet({
   state,
   canPlay,
+  missingGoodwill,
   onPlay,
   onClose,
   inline,
 }: {
   state: GameState
   canPlay: (schemeId: string) => boolean
+  // ROADMAP 9 "clear disabled and why-not states": only unambiguous for a `targeting: 'none'` Scheme,
+  // whose sole legality condition is Goodwill vs. cost (see Game.tsx's `disabledScheme`) — a 'required'/
+  // 'optional' Scheme could be missing a legal region just as easily, so this returns `undefined` for
+  // those and the sheet falls back to today's plain absence, same as before this session.
+  missingGoodwill: (schemeId: string) => number | undefined
   onPlay: (schemeId: string) => void
   onClose(): void
   inline?: boolean
@@ -41,7 +47,11 @@ export default function CathsPlanSheet({
                 to search for it separately. Cath's own voice line stays as the flavour text below it. */}
             <p className="card-text">{card.text}</p>
             <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
-            {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}
+            {canPlay(id) ? (
+              <button onClick={() => onPlay(id)}>Play</button>
+            ) : (
+              missingGoodwill(id) !== undefined && <p className="card-why-not">Need {missingGoodwill(id)} more Goodwill</p>
+            )}
           </li>
         )
       })}
@@ -78,7 +88,11 @@ export default function CathsPlanSheet({
                     <GoodwillIcon /> {card.cost} Goodwill
                   </Tooltip>
                 </div>
-                {canPlay(id) && <button onClick={() => onPlay(id)}>Play</button>}
+                {canPlay(id) ? (
+                  <button onClick={() => onPlay(id)}>Play</button>
+                ) : (
+                  missingGoodwill(id) !== undefined && <p className="card-why-not">Need {missingGoodwill(id)} more Goodwill</p>
+                )}
               </li>
             )
           })}

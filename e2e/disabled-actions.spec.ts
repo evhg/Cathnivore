@@ -84,3 +84,31 @@ test('Invest shows a disabled, explained placeholder for market cards the player
   await expect(wholesaleAccount.getByRole('button', { name: /^Invest/ })).toBeEnabled()
   await expect(page.locator('.action-item', { hasText: 'Invest' }).locator('.action-why-not')).toHaveCount(3)
 })
+
+// ROADMAP 9, continued: a `targeting: 'none'` Scheme (never needs a region) gets the same per-card
+// treatment as Sell/Invest — its only legality condition is Goodwill vs. cost. Seed 1's Cath's Plan
+// starts with "Paper Trail" (1 Goodwill, playable from the start) and "Seasonal Bonus" (3 Goodwill,
+// disabled — the starting producer has 1).
+test('a targeting:none Scheme shows a disabled, explained placeholder when unaffordable', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.locator('input[inputmode="numeric"]').fill('1')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  const seasonalBonus = page.locator('.action-item', { hasText: 'Seasonal Bonus' })
+  await expect(seasonalBonus.getByRole('button', { name: /^Scheme/ })).toBeDisabled()
+  await expect(seasonalBonus.locator('.action-why-not')).toHaveText('Need 2 more Goodwill')
+
+  // A "required"-targeting Scheme (e.g. Fence Jumpers, which needs a liberated-adjacent region) never
+  // gets a why-not placeholder — its absence could mean "no legal target" just as easily as "too poor".
+  await expect(page.locator('.action-item', { hasText: 'Fence Jumpers' })).toHaveCount(0)
+
+  // Still playable: Paper Trail costs only 1 Goodwill, affordable from the start.
+  await expect(page.locator('.action-item', { hasText: 'Paper Trail' }).getByRole('button', { name: /^Scheme/ })).toBeEnabled()
+
+  // A disabled button is genuinely inert.
+  const actionsLeftBefore = await page.locator('.active-producer').textContent()
+  await seasonalBonus.getByRole('button', { name: /^Scheme/ }).click({ force: true })
+  await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
+})

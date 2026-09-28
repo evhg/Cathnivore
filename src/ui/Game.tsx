@@ -12,8 +12,9 @@ import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
-import { investCost } from '../engine/actions'
+import { investCost, schemeCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
+import { SCHEMES_BY_ID } from '../content/schemes'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
@@ -646,6 +647,29 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     return investMissingByCard.get(improvementId)
   }
 
+  // ROADMAP 9 why-not, continued: a Scheme with `targeting: 'none'` never needs a region (see
+  // `legalSchemeTargets`), so unlike a 'required'/'optional' Scheme (whose absence could mean "no legal
+  // target" as easily as "can't afford it" — left alone, as before) its only legality condition is
+  // Goodwill vs. `schemeCost`, the same single-comparison shape as Sell/Invest. `state.freeSchemePlays`
+  // makes the next Scheme played free regardless of cost, so a card is only genuinely unaffordable when
+  // that's spent too.
+  const disabledScheme: { schemeId: string; cost: number; missing: number }[] = []
+  if (rules.schemes && !state.cathsPlanLocked && !tutorialStep?.highlight && !waitingOnAi && pendingEnemyTurn.length === 0) {
+    for (const id of state.cathsPlan) {
+      if (!id) continue
+      const card = SCHEMES_BY_ID.get(id)
+      if (!card || card.targeting !== 'none') continue
+      if (standalone.some((e) => e.action.kind === 'scheme' && e.action.schemeId === id)) continue
+      if (state.freeSchemePlays > 0) continue
+      const cost = schemeCost(state, state.activeProducer, card)
+      if (active.resources.goodwill < cost) disabledScheme.push({ schemeId: id, cost, missing: cost - active.resources.goodwill })
+    }
+  }
+  const schemeMissingByCard = new Map(disabledScheme.map((d) => [d.schemeId, d.missing]))
+  function missingGoodwill(schemeId: string): number | undefined {
+    return schemeMissingByCard.get(schemeId)
+  }
+
   function act(actionIndex: number): void {
     const action = actions[actionIndex]!
     // SPEC 8.1: once the taught action is actually taken, move straight to the next tutorial step rather
@@ -827,6 +851,27 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                     ?
                   </Tooltip>
                 )}
+              </span>
+            )
+          })}
+          {disabledScheme.map(({ schemeId, cost, missing }) => {
+            const card = SCHEMES_BY_ID.get(schemeId)
+            if (!card) return null
+            return (
+              <span key={`disabled-scheme-${schemeId}`} className="action-item">
+                <button disabled title={`Need ${missing} more Goodwill`}>
+                  <span className="action-label-group">
+                    <span className="action-label">
+                      <SchemeIcon size={18} />
+                      {`Scheme: ${card.name}`}
+                    </span>
+                    <span className="action-why-not">Need {missing} more Goodwill</span>
+                  </span>
+                  <ActionCostChip cost={{ resource: 'goodwill', amount: cost }} />
+                </button>
+                <Tooltip term="Scheme" label="What is Scheme?">
+                  ?
+                </Tooltip>
               </span>
             )
           })}
@@ -1141,7 +1186,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <MarketSheet state={state} canBuy={canBuy} missingMarks={missingMarks} onBuy={buy} onClose={() => setShowMarket(false)} />
       )}
       {rules.schemes && showPlan && (
-        <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => setShowPlan(false)} />
+        <CathsPlanSheet state={state} canPlay={canPlayScheme} missingGoodwill={missingGoodwill} onPlay={playScheme} onClose={() => setShowPlan(false)} />
       )}
       {showLog && <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => setShowLog(false)} />}
       </main>
@@ -1149,7 +1194,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       <aside className="desktop-col desktop-col-right" tabIndex={0}>
         {rules.improvements && <MarketSheet state={state} canBuy={canBuy} missingMarks={missingMarks} onBuy={buy} onClose={() => {}} inline />}
         {rules.schemes && (
-          <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => {}} inline />
+          <CathsPlanSheet state={state} canPlay={canPlayScheme} missingGoodwill={missingGoodwill} onPlay={playScheme} onClose={() => {}} inline />
         )}
         <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => {}} inline />
       </aside>
