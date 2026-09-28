@@ -228,6 +228,48 @@ h3 {
   padding: 10px 12px;
 }
 
+/* ROADMAP 10 "the HUD ... tick-up and tick-down animation when they change": `.hud-value` wraps each
+   stat's icon+number (Round/Trust/Lost Land/Rift) so it keeps the exact inline icon-then-text layout the
+   plain text already had; `.hud-tick` is the animated variant, added only from the second render a given
+   value actually has (see Game.tsx's `useHudTick`) so a fresh game screen doesn't flash every stat once
+   on load — only a real change later ticks it. React remounts this span on every value change (it's
+   `key`ed on a per-change counter), which is what replays the animation below each time. */
+.hud-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-tick {
+  animation: hud-tick 500ms ease-out;
+}
+
+/* Scale only, no colour change: Round going up is neutral progress, Trust going up is good, but Lost
+   Land and Rift going up are both bad — no single colour-by-direction rule would be honest across all 4
+   stats without tracking each one's own "which way is good" separately, which is more than this first
+   pass needs, and picking one colour for every direction risks the same kind of contrast mistake this
+   session's Sell-button disabled state already made once (checked here too: a scale-only transform never
+   touches text colour, so there's nothing to re-check). The animation marking that something changed is
+   the useful part; STYLE.md 7 already reserves colour-as-signal (Squeeze/Expand pills) for the map's own
+   warnings, not the topbar. */
+@keyframes hud-tick {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-tick {
+    animation: none;
+  }
+}
+
 /* SPEC 10.5: in-game tap/hover tooltip on game terms (Squeeze, Expand, Public Trust and so on), alongside
    the same explanation in the rules reference. `.tooltip-trigger-button` inherits its font/layout from
    whatever it wraps (a topbar label, a plan-strip card, an action button) rather than looking like a

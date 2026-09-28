@@ -151,6 +151,23 @@ function pressureLabel(card: GameState['squeeze']): string {
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
 }
 
+// ROADMAP 10 "the HUD ... tick-up and tick-down animation when they change": returns a counter that only
+// increments when `value` actually differs from the previous render, computed synchronously during
+// render (no effect/timer needed) — starts at 0 and never moves on the very first render of this
+// component instance, so a fresh game screen doesn't flash every stat on load, only a real change later
+// ticks it. The caller keys its animated element on this counter, so React remounts it (replaying its
+// CSS `animation`) exactly once per genuine change, and gates the animation class itself on `tick > 0`
+// so that very first key=0 mount never plays it either.
+function useHudTick<T>(value: T): number {
+  const prev = useRef(value)
+  const tick = useRef(0)
+  if (prev.current !== value) {
+    tick.current += 1
+    prev.current = value
+  }
+  return tick.current
+}
+
 const COST_ICON: Record<ResourceKind, typeof ProduceIcon> = { produce: ProduceIcon, marks: MarksIcon, goodwill: GoodwillIcon }
 
 // ROADMAP 9 "an icon per action" (STYLE.md 5.1): a leading icon inside each action button, before the
@@ -204,6 +221,13 @@ function uniformGroupCost(
 
 export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
+  // ROADMAP 10's HUD tick animation (see `useHudTick`'s own comment) — called unconditionally here,
+  // before any of this component's early returns (pass-device, end screen, tutorial rules), so the Rules
+  // of Hooks hold regardless of which branch below actually renders.
+  const roundTick = useHudTick(state.round)
+  const trustTick = useHudTick(state.publicTrust)
+  const lostLandTick = useHudTick(state.lostLandPool)
+  const riftTick = useHudTick(state.rift)
   const cathLogSeenRef = useRef(0)
   const [cathReaction, setCathReaction] = useState<{ expression: CathExpression; line: string }>(() => ({
     expression: CATH_REACTION_EXPRESSION.greeting,
@@ -781,21 +805,29 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       <div className="game-scroll">
       <header className="topbar">
         <span>
-          <RoundIcon /> Round {state.round}/{state.round + state.pressureDeck.length}
+          <span key={roundTick} className={roundTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
+            <RoundIcon /> Round {state.round}/{state.round + state.pressureDeck.length}
+          </span>
         </span>
         <span>
           <Tooltip term="Public Trust">
-            <PublicTrustIcon /> Trust {state.publicTrust}
+            <span key={trustTick} className={trustTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
+              <PublicTrustIcon /> Trust {state.publicTrust}
+            </span>
           </Tooltip>
         </span>
         <span>
           <Tooltip term="Lost Land">
-            <LostLandIcon /> Lost Land left {state.lostLandPool}
+            <span key={lostLandTick} className={lostLandTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
+              <LostLandIcon /> Lost Land left {state.lostLandPool}
+            </span>
           </Tooltip>
         </span>
         <span>
           <Tooltip term="Rift">
-            <RiftIcon /> Rift {state.rift}
+            <span key={riftTick} className={riftTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
+              <RiftIcon /> Rift {state.rift}
+            </span>
           </Tooltip>
         </span>
         {/* SPEC 10.2: "Top bar (fixed): round x/10, Public Trust, Lost Land remaining, Rift and a menu
