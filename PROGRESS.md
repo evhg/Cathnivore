@@ -19,8 +19,11 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 ## Known issues (small, from v1's last reviews)
 - [x] `sim/run.ts`'s worker pool has no per-worker wall-clock timeout (dev tooling only). **Fixed
   2026-09-28** (`d196b03`): each worker now gets a 60s/game ceiling before it's killed with a clear error.
-- [ ] `site/src/scene.ts` never calls `gl.deleteShader` after linking (minor).
-- [ ] `site/src/scene.ts` has no `webglcontextrestored` handler: after a GPU reset the landing animation stays stopped until reload.
+- [x] `site/src/scene.ts` never calls `gl.deleteShader` after linking (minor). **Fixed 2026-09-28**
+  (`7c9121c`): shaders are freed after linking either way, and a failed link also frees the program.
+- [x] `site/src/scene.ts` has no `webglcontextrestored` handler: after a GPU reset the landing animation
+  stayed stopped until reload. **Fixed 2026-09-28** (`7c9121c`): the handler rebuilds the program, buffer
+  and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
 - 2026-09-28 ~06:30 UTC (`c78fad8`): Cath's bust on the Campaign screen (expression tracks chapter progress) and the Setup screen. All gates passed; `deploy-2` tag push failed with the known 403 (harmless).
