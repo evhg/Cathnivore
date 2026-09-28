@@ -48,7 +48,7 @@ type Screen =
   // `openingWhich`) right before 'opening' when contracts survived chapter 3 — see the-plan.ts.
   | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' | 'contracts1' | 'contracts2'; mode: Mode }
   | { name: 'game'; state: GameState; seed: number; mode: Mode }
-  | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode }
+  | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode; dismissedMidScenes?: string[] }
   // SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy. After
   // 2 losses, also offer Skip Chapter." `seed` is the just-lost attempt's own seed, kept so "Retry (same
   // shuffle)" can replay it exactly; `lossCount` is this chapter's consecutive-loss count so far.
@@ -106,7 +106,7 @@ export default function App() {
       // save, or a chapter that no longer exists.
       const chapter = saved.save.chapterId ? CHAPTERS_BY_ID.get(saved.save.chapterId) : undefined
       if (chapter) {
-        setScreen({ name: 'chapterGame', chapter, state, seed: saved.save.seed, mode: 'hotseat' })
+        setScreen({ name: 'chapterGame', chapter, state, seed: saved.save.seed, mode: 'hotseat', dismissedMidScenes: saved.save.dismissedMidScenes })
       } else {
         setScreen({ name: 'game', state, seed: saved.save.seed, mode: 'hotseat' })
       }
@@ -323,6 +323,7 @@ export default function App() {
         tutorialSteps={screen.chapter.tutorialSteps}
         midGameScenes={midGameScenes}
         chapterId={screen.chapter.id}
+        initialDismissedMidScenes={screen.dismissedMidScenes}
         onExit={() => setScreen({ name: 'campaign' })}
         onChapterEnd={(won, state) => endChapter(screen.chapter, screen.mode, won, state, screen.seed)}
       />

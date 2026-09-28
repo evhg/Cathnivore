@@ -40,6 +40,20 @@ calls on the file's existing `richBoard` fixture). Fixed one pre-existing test (
 was still asserting the stale `href="/"` value the earlier privacy/support fix corrected. `npx vitest run`:
 514/514 (up from 472). `npm run check` clean end to end. Pushed to `build`.
 
+Dispatched 2 more subagents at areas not yet covered: AI-teammate log reasons/Rules Reference, and campaign
+scripted-trigger/carry-over robustness. Each found one real bug (full detail in DECISIONS.md):
+1. The AI teammate's log reason for `decide` actions (SPEC 9.1's 4 pending-decision kinds — which
+   production to lower, which faction to split, etc.) was always the same content-free sentence, unlike
+   every other action kind. Fixed with a real per-kind template in `src/ai/reason.ts`.
+2. A narrower version of this session's earlier mid-scene-replay fix: dismissing a scripted scene and
+   reloading *before* any further action (rather than "ever again" as the earlier fix covered) could still
+   replay it once, since dismissal itself was never persisted. Fixed by adding `dismissedMidScenes` to the
+   save file (`src/platform/storage.ts`) and wiring it through `Game.tsx`/`App.tsx`. Verified with a new,
+   real end-to-end `e2e/campaign.spec.ts` test (no autoplay, since autoplay would skip past the exact bug
+   window) driving chapter 3 to its round-5 reveal, dismissing it, and reloading with zero actions taken.
+`npm run check` clean; new e2e test plus the full `phone`+`desktop-chromium` suites (104/104) and
+`npx vitest run` (519/519) all green. Pushed to `build`.
+
 ---
 This session (2026-09-28, starting ~23:51 UTC): standard session start, lock taken, `main`/`build` already in
 sync (only lock/doc churn between `f78f78e`/`130be4a`), `origin/ci-status`'s `ios.json` unchanged (still the

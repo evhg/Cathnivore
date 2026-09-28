@@ -61,6 +61,11 @@ interface Props {
   // below) — a reload mid-chapter needs this to resume back into the `chapterGame` screen rather than a
   // plain Quick Game that can never call `onChapterEnd`. Absent for Quick Game/hot-seat games.
   chapterId?: string
+  // SPEC 8.1/11.3: mid-game scene ids already dismissed in a prior session of this same save (from
+  // `SavedGame.dismissedMidScenes`, App.tsx's `resume()`) — seeds `dismissedMidScenes` state so a scene
+  // dismissed just before a reload (before any further action) doesn't replay once more on resume (see
+  // DECISIONS.md). Absent for a fresh game or an older save.
+  initialDismissedMidScenes?: string[]
 }
 
 // SPEC 10.2 Game screen. Plain controls for now — see PROGRESS.md M3 for what's still missing (the SVG
@@ -89,10 +94,10 @@ function pressureLabel(card: GameState['squeeze']): string {
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
 }
 
-export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId }: Props) {
+export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
   const [tutorialIndex, setTutorialIndex] = useState(0)
-  const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>([])
+  const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>(initialDismissedMidScenes ?? [])
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
@@ -140,8 +145,8 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   }, [state])
 
   useEffect(() => {
-    saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory, chapterId })
-  }, [state, seed, chapterId])
+    saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory, chapterId, dismissedMidScenes })
+  }, [state, seed, chapterId, dismissedMidScenes])
 
   // SPEC 6/8.1: in Solo mode, the second producer is played by the AI teammate — the real MCTSBot-in-Worker
   // bot below, not a HeuristicBot stand-in (see the effect further down that wires `aiWorker.ts`).

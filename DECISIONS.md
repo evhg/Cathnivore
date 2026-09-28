@@ -3200,3 +3200,39 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   (`tests/pages.test.ts`) asserted the *old* `href="/"` value the privacy/support link-fix above just
   corrected — updated its expectation to `href="/cathnivore/"` rather than reverting the fix. `npm run
   check` clean end to end (typecheck, lint, unit tests, fuzz, build). Pushed to `build`.
+
+  Dispatched 2 more subagents at areas not yet covered: one checked the AI teammate's log-reason templates
+  and the Rules Reference; the other checked campaign scripted-trigger/carry-over robustness. Each found one
+  real, previously-unlogged bug:
+  1. **`src/ai/reason.ts`'s `decide` case was a single content-free fallback** ("Making the required
+     choice.") for all 4 `PendingDecision` kinds (SPEC 9.1), unlike every other action kind, which breaks
+     SPEC 9.2's "built from templates" design specifically for these — real, distinct strategic choices
+     (which production track to lower, which faction to split at Rift 6, etc.) all showed the same
+     sentence. Fixed by looking up `state.pendingDecisions.find(d => d.id === action.decisionId)` and
+     building a real template per kind (`decideReason` in `reason.ts`), falling back to the old generic
+     sentence only if the decision is somehow no longer pending (shouldn't happen in real play, but keeps
+     the function total). Added 5 new tests in `tests/reason.test.ts`, one per decision kind plus the
+     fallback path.
+  2. **A narrower version of this session's earlier `pendingMidSceneTrigger` fix's own gap**: dismissing a
+     mid-game scripted scene (e.g. chapter 3's round-5 reveal) is a UI-only event with nothing appended to
+     `state.log`/`actionHistory`, so the only thing that made a dismissal "durable" was a later real action
+     being logged after it. A player who dismisses the scene and reloads *before taking that next action*
+     found the same not-yet-proven-dismissed trigger again and saw the scene replay once — the same
+     symptom the earlier fix addressed, just from a narrower window it didn't close. Fixed properly this
+     time by persisting dismissal directly: `SavedGame` (`src/platform/storage.ts`) gained an optional
+     `dismissedMidScenes?: string[]` field, `Game.tsx`'s save effect now writes it alongside the rest of the
+     save on every change (not just on a new action), and `App.tsx`'s `resume()` reads it back into a new
+     `initialDismissedMidScenes` prop that seeds `Game`'s `dismissedMidScenes` state on mount — so a reload
+     immediately after dismissal, even with zero further actions, now resumes already-dismissed. Verified
+     with a new, real end-to-end `e2e/campaign.spec.ts` test (no `?e2eAutoplay=1`, since autoplay
+     auto-dismisses the scene the instant it appears and would skip past the exact window this bug lived
+     in): drives chapter 3 with real Graft clicks through 4 rounds to the round-5 reveal, dismisses it,
+     reloads with *no* action taken since, and asserts the scene does not reappear. Caught one own mistake
+     while writing it: a stale `vite preview` server left running from an earlier command this session was
+     serving an old build via Playwright's `reuseExistingServer`, so the fix initially appeared not to work
+     until the stale server was killed and `npm run build` re-run — not a real regression, just this
+     session's own test-infra gotcha, worth remembering (a `vite preview --port 4173` process outliving the
+     command that started it will silently serve stale `dist/` to every subsequent `npx playwright test`
+     run in the same session).
+  `npm run check` clean; the new e2e test plus the full existing `phone`+`desktop-chromium` suites (104/104)
+  and `npx vitest run` (519/519) all green. Pushed to `build`.
