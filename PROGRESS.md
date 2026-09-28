@@ -32,6 +32,15 @@ a clear message and exits 1 instead of an opaque unhandled-rejection dump. New `
 fixed** (logged as a known, lower-priority gap): the worker pool still has no wall-clock timeout for a
 genuinely hung decision. `npm run check` clean throughout; pushed to `build` (`0ee7b9a`).
 
+Logged the fix in DECISIONS.md/PROGRESS.md (`4a1814f`), then re-ran `npm run release` a 2nd time (since only
+dev-tooling/docs had changed, gates were re-verified rather than assumed unchanged): gates passed clean
+again, but the fast-forward hit the same stale-local-`main` failure and the manual merge was denied a 2nd
+time — see Blocked. Not retrying a 3rd time this session. Ending the session here: `build` (`4a1814f`) holds
+1 real shipped-code bug fix (the `sw.js` cache wipe) and 1 dev-tooling robustness fix (the sim harness),
+fully gated, tested and pushed, both awaiting a future session's release retry (try `npm run release`
+normally first; if it hits the same ff-only failure, redo the manual checkout+merge+push sequence from
+scratch).
+
 ---
 Previous session (2026-09-28, starting ~03:52 UTC): standard session start, lock taken, `npm ci` + `npm run
 check` clean on `build` HEAD (`827e110`, previous session's final state plus this session's lock commit).
@@ -3236,7 +3245,17 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
-- **New 2026-09-28 ~05:02 UTC:** `npm run release` ran `npm run gates` clean (all 8 — gate 8's screenshots
+- **New 2026-09-28 ~05:16 UTC (2nd attempt this session):** `npm run release` ran `npm run gates` clean again
+  (all 8, gate 8's screenshots re-captured — unchanged content since the prior clean subagent review, only
+  dev-tooling/docs changes landed since). Hit the same stale-local-`main` fast-forward failure. `git checkout
+  -B main origin/main` succeeded; `git diff HEAD origin/build` confirmed a clean superset (no divergent
+  changes); `git merge --no-ff origin/build` was denied by the "Production Deploy" classifier again — no
+  local merge made, confirmed via standalone `git status` (still on `main` at `origin/main`, clean). Not
+  retried a 3rd time this session per the denial's own guidance; `git checkout build` afterward confirmed
+  `build` still matches `origin/build` (`4a1814f`), nothing lost. `build` carries all of this session's work
+  (the `sw.js` fix and the sim-harness robustness fixes), fully gated and pushed twice now, waiting for a
+  future session's release retry.
+- **2026-09-28 ~05:02 UTC (1st attempt this session):** `npm run release` ran `npm run gates` clean (all 8 — gate 8's screenshots
   captured fresh and reviewed by 2 subagents this session, phone + desktop, 0 problems found on either), hit
   the usual stale-local-`main`/diverging-branches fast-forward failure inside the script itself. The manual
   fix's `git checkout -B main origin/main` succeeded, but `git merge --no-ff origin/build` was denied by the
