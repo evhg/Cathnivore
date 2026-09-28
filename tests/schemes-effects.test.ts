@@ -83,3 +83,28 @@ describe('Every Scheme resolves cleanly when played (SPEC 11.4 gate 2)', () => {
     })
   }
 })
+
+// A fresh review session found "Two For One"'s `text` claimed an unconditional "Remove 1 Outlet and 1
+// Doubt," but `legalTargets` only requires *either* to be present (an OR, not an AND) and `effect` removes
+// only what's actually there — so the card was legally playable on a region with just one of the two. Text
+// fixed to say "(whichever it has)" rather than tightening `legalTargets` to an AND, since the OR-gated
+// legality is the established, already-balance-tuned design (SPEC 4 lets the balance loop tune numbers, not
+// silently retighten a card's targeting rule). `richBoard` above always gives Brindle Hills *both* an
+// Outlet and Doubt, so the plain "resolves cleanly" test above never exercises the OR-only-satisfied case —
+// this covers it directly.
+describe('Two For One (OR-gated legality, SPEC 5)', () => {
+  it('removes only the Doubt on a region with Doubt but no Outlet', () => {
+    let state = richBoard(7)
+    state = removeOutlets(state, 'brindleHills', state.regions.brindleHills.outlets)
+    expect(state.regions.brindleHills.outlets).toBe(0)
+    expect(state.regions.brindleHills.doubt).toBeGreaterThan(0)
+    state = forceScheme(state, 'two-for-one')
+    const action = legalActions(state).find((a) => a.kind === 'scheme' && a.schemeId === 'two-for-one')
+    expect(action, 'Two For One should still be legally targetable with only Doubt present').toBeDefined()
+    const doubtBefore = state.regions.brindleHills.doubt
+    const after = applyAction(state, action!)
+    expect(after.regions.brindleHills.outlets).toBe(0)
+    expect(after.regions.brindleHills.doubt).toBe(doubtBefore - 1)
+    expect(validate(after)).toEqual([])
+  })
+})

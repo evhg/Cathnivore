@@ -266,7 +266,7 @@ export const SCHEMES: SchemeCard[] = [
     cost: 3,
     tags: ['market'],
     line: "One sign, two lies, half the price. I'll take down both.",
-    text: 'Remove 1 Outlet and 1 Doubt from a region with your Stall.',
+    text: 'Remove 1 Outlet and 1 Doubt from a region with your Stall (whichever it has).',
     targeting: 'required',
     legalTargets: (state, producer) =>
       ownStallRegions(state, producer).filter((id) => state.regions[id].outlets > 0 || state.regions[id].doubt > 0),
