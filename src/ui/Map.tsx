@@ -249,6 +249,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
             key={id}
             className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}`}
             onClick={onSelect ? () => onSelect(id) : undefined}
+            aria-label={def.name}
           >
             <polygon
               points={hexPoints(x, y, HEX_R * GAP_SCALE)}
