@@ -994,6 +994,12 @@ button.destructive {
   color: var(--ink-on-fixed-fill);
 }
 
+.tutorial-prompt-cath {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
 .tutorial-prompt {
   background: var(--wheat);
   /* Same fixed-fill/fixed-text pairing as .update-ready above. */

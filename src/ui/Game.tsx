@@ -568,6 +568,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {tutorialSteps && tutorialIndex < tutorialSteps.length && (
         <section className="tutorial-prompt">
           <p>
+            {/* ROADMAP "tutorial prompts spoken by her": a small face so the line reads as Cath teaching,
+                not an anonymous system message. Decorative (the section's own text already says it). */}
+            <CathArt className="tutorial-prompt-cath" framing="face" width={22} height={27} />
             {tutorialSteps[tutorialIndex]!.text}{' '}
             {/* SPEC 8.1: "a '?' link to the rules reference," alongside every tutorial prompt, not just
                 the ones teaching an action — a step can be explaining Public Trust or the Scout slot with
