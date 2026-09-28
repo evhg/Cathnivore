@@ -91,6 +91,27 @@ function isE2EAiWorkerCrash(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAiWorkerCrash') === '1'
 }
 
+// ROADMAP 8 "the table, part 1: layout": the action list (see `actionsPanel` below) shows in a different
+// place on phone vs desktop, and mounting it unconditionally in both spots (CSS picking which one is
+// visible, the way the Farm/Market/Plan/Log `inline` panels split their mobile-modal/desktop-tray copies)
+// broke every Playwright locator that queries `.action-item`/`.tooltip-trigger-button` — strict mode counts
+// DOM matches regardless of `display: none`, so `e2e/tooltip.spec.ts` started resolving 2 elements for the
+// same button. Gating which one actually *mounts* on viewport width avoids that: there is only ever one
+// `.actions` in the DOM. Reacts to live resizes (not just the width at first render) since Playwright's
+// `setViewportSize` can change the viewport after the page has already mounted.
+function useIsDesktopLayout(): boolean {
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const onChange = () => setIsDesktop(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  return isDesktop
+}
+
 // The Cath companion's reaction to one log event (ROADMAP "Cath in Cathnivore, as guide and narrator"),
 // ranked so that when a round produces several at once (e.g. a Squeeze and a liberation), the most
 // significant wins. `null` for events she has nothing to say about yet.
@@ -131,6 +152,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>(initialDismissedMidScenes ?? [])
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
+  const isDesktop = useIsDesktopLayout()
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
   // information [because refills happen at cleanup]. Any action that reveals hidden information ... is
   // marked irreversible, and undo cannot go back past it. The AI never undoes." So the stack is cleared
@@ -526,10 +548,71 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     }
   }
 
+  // ROADMAP 8 "the table, part 1: layout": the action list used to render inside the centre `.game`
+  // column, squeezed into an internally-scrolling 3-column grid at the bottom (see DECISIONS.md history).
+  // Built once here as a value, not a component, so both places that can show it (the phone flow below and
+  // the desktop left tray further down, alongside the Farm panel) read the exact same
+  // `standalone`/`groups`/`selectedGroup` closures. `useIsDesktopLayout()` (above) mounts exactly one of the
+  // two at a time — not both with CSS hiding one, which left a second `.actions`/`.action-item` permanently
+  // in the DOM and broke every Playwright strict-mode locator that queried it (e2e/tooltip.spec.ts).
+  const actionsPanel = (
+    <section className="actions" tabIndex={0} role="region" aria-label="Actions">
+      {pendingEnemyTurn.length > 0 ? null : waitingOnAi ? (
+        <p>AI teammate is deciding…</p>
+      ) : selectedGroup ? (
+        pendingChoice ? (
+          <>
+            <p>{selectedGroup.label} in {REGIONS[pendingChoice.region].name}?</p>
+            <button className="primary" onClick={() => act(pendingChoice.index)}>Confirm</button>
+            <button onClick={() => setPendingChoice(null)}>Cancel</button>
+          </>
+        ) : (
+          <>
+            <p>{selectedGroup.label}: tap a glowing region on the map.</p>
+            <button onClick={() => setSelectedGroup(null)}>Cancel</button>
+          </>
+        )
+      ) : (
+        <>
+          {standalone.map(({ index, action: a }) => {
+            const term = actionTermFor(a)
+            return (
+              <span key={index} className="action-item">
+                <button onClick={() => act(index)}>{actionLabel(a, state)}</button>
+                {term && (
+                  <Tooltip term={term} label={`What is ${term}?`}>
+                    ?
+                  </Tooltip>
+                )}
+              </span>
+            )
+          })}
+          {[...groups.entries()].map(([key, group]) => {
+            const single = group.entries.length === 1
+            const firstAction = actions[group.entries[0]!.index]!
+            const term = actionTermFor(firstAction)
+            return (
+              <span key={key} className="action-item">
+                <button onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
+                  {single ? actionLabel(firstAction, state) : `${group.label}…`}
+                </button>
+                {term && (
+                  <Tooltip term={term} label={`What is ${term}?`}>
+                    ?
+                  </Tooltip>
+                )}
+              </span>
+            )
+          })}
+        </>
+      )}
+    </section>
+  )
+
   // SPEC 10.3 desktop 3-column layout (1024px+): both producers' Farms on the left, the map/plan strip in
-  // the centre, Market/Cath's Plan/Log on the right, always visible (no scrolling at 1280x800). `.desktop-*`
-  // panels reuse the same sheet components in `inline` mode and are shown only above 1024px via CSS; below
-  // that the phone layout's toggle buttons and modal sheets (below) still work unchanged.
+  // the centre, actions/Market/Cath's Plan/Log on the right, always visible (no scrolling at 1280x800).
+  // `.desktop-*` panels reuse the same sheet components in `inline` mode and are shown only above 1024px
+  // via CSS; below that the phone layout's toggle buttons and modal sheets (below) still work unchanged.
   return (
     <div className="game-layout">
       {/* tabIndex so axe's "scrollable-region-focusable" rule is satisfied unconditionally, not just when
@@ -539,6 +622,19 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           testing. */}
       <aside className="desktop-col desktop-col-left" tabIndex={0}>
         <FarmSheet state={state} onClose={() => {}} inline />
+        {/* ROADMAP 8: the actions tray lives here on desktop, not the right column — Market/Cath's Plan/Log
+            already claim nearly all of the right column's height budget on their own (measured directly:
+            close to the full 768px at 1280x800), while the Farm panel leaves real headroom. Mounted only
+            when `useIsDesktopLayout()` says so, not just hidden by CSS: `actionsPanel` is otherwise mounted
+            twice at once (here and in the phone flow below), and Playwright's strict-mode locators count
+            DOM matches regardless of `display: none` — e2e/tooltip.spec.ts caught this directly. Wrapped in
+            `.sheet-panel` to match the tray it sits alongside. */}
+        {isDesktop && (
+          <div className="sheet-panel actions-sheet">
+            <h2>Actions</h2>
+            {actionsPanel}
+          </div>
+        )}
       </aside>
 
       <main className="game">
@@ -700,64 +796,10 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         </section>
       )}
 
-      {/* SPEC 10.3 desktop 3-column layout: the action list is the one section of the centre column whose
-          length genuinely varies with the game state (one entry per legal region/card/quantity target),
-          the same shape of problem the Log solved on the right (see LogSheet.tsx) — so it gets the same
-          internally-scrolling max-height on desktop (global.css's 1024px+ block), with the matching
-          `tabIndex`/`role`/`aria-label` a scrollable container needs to stay keyboard-reachable (axe's
-          "focusable-content"/"focusable-element" rules). Inert on phone, where `.actions` never sets an
-          `overflow`/`max-height`. */}
-      <section className="actions" tabIndex={0} role="region" aria-label="Actions">
-        {pendingEnemyTurn.length > 0 ? null : waitingOnAi ? (
-          <p>AI teammate is deciding…</p>
-        ) : selectedGroup ? (
-          pendingChoice ? (
-            <>
-              <p>{selectedGroup.label} in {REGIONS[pendingChoice.region].name}?</p>
-              <button className="primary" onClick={() => act(pendingChoice.index)}>Confirm</button>
-              <button onClick={() => setPendingChoice(null)}>Cancel</button>
-            </>
-          ) : (
-            <>
-              <p>{selectedGroup.label}: tap a glowing region on the map.</p>
-              <button onClick={() => setSelectedGroup(null)}>Cancel</button>
-            </>
-          )
-        ) : (
-          <>
-            {standalone.map(({ index, action: a }) => {
-              const term = actionTermFor(a)
-              return (
-                <span key={index} className="action-item">
-                  <button onClick={() => act(index)}>{actionLabel(a, state)}</button>
-                  {term && (
-                    <Tooltip term={term} label={`What is ${term}?`}>
-                      ?
-                    </Tooltip>
-                  )}
-                </span>
-              )
-            })}
-            {[...groups.entries()].map(([key, group]) => {
-              const single = group.entries.length === 1
-              const firstAction = actions[group.entries[0]!.index]!
-              const term = actionTermFor(firstAction)
-              return (
-                <span key={key} className="action-item">
-                  <button onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
-                    {single ? actionLabel(firstAction, state) : `${group.label}…`}
-                  </button>
-                  {term && (
-                    <Tooltip term={term} label={`What is ${term}?`}>
-                      ?
-                    </Tooltip>
-                  )}
-                </span>
-              )
-            })}
-          </>
-        )}
-      </section>
+      {/* Phone copy of `actionsPanel` (defined above): normal document flow, same spot it always occupied.
+          Only mounted when `useIsDesktopLayout()` says this isn't desktop — see the left tray's copy above
+          for why this is gated in JS rather than just hidden by CSS. */}
+      {!isDesktop && actionsPanel}
 
       <footer className="controls">
         <button

@@ -4,16 +4,17 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** item 1's full listed scope is now done (`36bc223` and earlier;
-  see ROADMAP.md item 1) — hair/fabric shading was the last open piece. Item 5 has 4 light,
-  unreleased Bea mentions across 4 chapters (`b371223`, `36bc223`). Item 8 was scoped but not
-  started this session — it needs a real layout restructure, not a CSS tweak; see ROADMAP.md
-  item 8's note. **Today's 4-release cap was already spent before this session started, so none
-  of this has reached `main` yet — next session's `npm run release` should pick up everything
-  since `92e7406`.**
-- **Next step:** see the **Session log** for where the last session stopped. After the next
-  `npm run release`, item 8 (game-screen layout) is the top unstarted ROADMAP item — give it a
-  session that opens with it as the only task, not a slice bolted onto other work.
+- **Current ROADMAP item:** item 1's full listed scope is done; item 5 has 4 light, unreleased Bea
+  mentions across 4 chapters. Item 8 (game-screen layout) got a real, tested slice this session:
+  the desktop action list moved out of the centre column into a new side tray next to the Farm
+  panel — see ROADMAP.md item 8's note for what actually changed and why it barely grew the map.
+  Still open: trimming the fixed chrome around the map so it can grow further, and phone's own
+  bottom-tray restructure. **Today's 4-release cap was already spent before this session started
+  (from the prior session), so none of this has reached `main` yet — next session's
+  `npm run release` should pick up everything since `92e7406`.**
+- **Next step:** a follow-up session on item 8 should look at trimming the topbar/companion/
+  tutorial-prompt/plan-strip/legend/active-producer chrome in the centre column (the real
+  remaining ceiling on the map's size, per this session's measurements) before touching phone.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -47,6 +48,19 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~09:52-10:20 UTC: gave ROADMAP 8 (game-screen layout) a dedicated session as scoped. Moved the
+  desktop action list out of the centre `.game` column into a new side tray next to the Farm panel
+  (`Game.tsx`'s `actionsPanel`, `.actions-sheet` in `global.css`), tried the right column first but measured
+  it already near-full (Market+Plan+Log alone) before reaching for the left one instead. First pass mounted
+  both the phone and desktop copies unconditionally (CSS picking which showed) — broke Playwright's
+  strict-mode locators, since `display: none` doesn't stop a DOM query match; fixed by gating which one
+  *mounts* with a `useIsDesktopLayout()` matchMedia hook instead. Measured directly (repeated runs against
+  desktop-no-scroll.spec.ts's fixture) that this barely grows the map: the old action list already shrank to
+  near-nothing in tight states, so the real ceiling is the fixed chrome around the map, not the action list
+  sharing space with it. `.map`'s cap moved 260px→262px; `.map-wrap` now absorbs leftover vertical space on
+  taller-than-1280x800 windows (a `shots` screenshot caught a dead gap below Undo otherwise). SPEC 10.3
+  updated to match. `npm run check`, the full Playwright suite (both projects, 106/106) and `shots` all
+  green; not released (today's cap already spent). ROADMAP 8 stays unchecked — see its note for what's left.
 - 2026-09-28 ~08:52-09:10 UTC: closed out ROADMAP 1's last open piece — finer hair/fabric shading
   (`73e6e60`): strand-shine and depth strokes on the hair (back mass and front locks) and
   sleeve/lapel/waist fold shading on both outfits, verified across all 5 expressions and every

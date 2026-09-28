@@ -50,3 +50,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   around the centre column's action list. Making the map the real hero means moving actions out
   of that column, not resizing CSS — logged as a note on the item so the next session gives it a
   full, dedicated slice instead of a partial one squeezed after other work.
+- 2026-09-28: gave ROADMAP 8 its dedicated slice — moved the desktop action list to a new side tray
+  (left column, next to Farm; the right column was already near-full). Two always-mounted DOM copies
+  (CSS picking which showed) broke Playwright strict-mode locators; fixed with a `useIsDesktopLayout()`
+  matchMedia hook that mounts only one. Measured that this barely grows the map (260px→262px) — the
+  fixed chrome around it, not the action list, is the real ceiling; left as the next slice.

@@ -33,9 +33,23 @@ Every visual item is done only when:
 
 6. [x] **Title screen:** an illustrated, animated map of Marrow with Cath, poster typography and a clear menu (owner's chat session, 2026-09-28). Update Cath to the new art once item 1 ships.
 7. [x] **Campaign screen:** a journey across Marrow, with chapter stops, mini maps and each chapter's producers (owner's chat session, 2026-09-28).
-8. [ ] **The table (game screen), part 1: layout.** *(Scoped 2026-09-28: today's desktop `.map` is deliberately capped at 260px (down from 420px), specifically to keep the centre column's action list, active-producer panel and topbar under SPEC 10.3's 1280×800 no-scroll budget — see the CSS comment above `.map { max-width: 260px }` in `global.css` and DECISIONS.md 2026-09-26. Making the map the real hero needs the actions to move out of the centre column entirely (into a side tray or a phone-style bottom tray on desktop too), not just a CSS size bump — that's a genuine restructure of `Game.tsx`'s layout, several e2e specs (`desktop-no-scroll.spec.ts`, `screenshots.spec.ts`) and probably a new stylesheet, not a same-session slice on top of two other releases. Confirmed empirically this session: bumping `.map`'s cap by even 10px (270px) fails
-`desktop-no-scroll.spec.ts` — the 260px figure is exactly load-bearing, not a conservative
-guess with headroom. Left for a session that opens with this as its first and only task.)* Make the map the hero. On desktop, the map fills the centre column at the largest size that fits, and the farm, market, plan and log panels become tidy side trays. On phone, the map fills the top of the screen and actions live in a bottom tray that can be pulled up. Leave room for Cath's companion (item 3). Keep every current control and test hook, and don't change the rules.
+8. [ ] **The table (game screen), part 1: layout.** *(2026-09-28: the desktop action list moved out of the
+   centre column into a new side tray next to the Farm panel (`Game.tsx`'s `actionsPanel`, `.actions-sheet`
+   in `global.css`) — mounted via a `useIsDesktopLayout()` matchMedia hook, not CSS-hidden duplicates, since
+   two always-mounted copies broke Playwright's strict-mode locators (e2e/tooltip.spec.ts). Measured
+   directly (repeated runs against `desktop-no-scroll.spec.ts`'s own fixture) that this barely grows the
+   map, though: the old in-column action list already shrank to near-nothing in the tightest states, so it
+   was never really the map's ceiling — the topbar/companion/tutorial-prompt/plan-strip/legend/active-
+   producer chrome around the map is. `.map`'s cap only moved from 260px to 262px; `.map-wrap` now absorbs
+   leftover vertical space on taller-than-1280x800 windows so the map centres in it instead of leaving a
+   dead gap below Undo (caught in a `shots` screenshot). Real, shippable progress toward "tidy side trays,"
+   but not the item: the map isn't dramatically bigger, and phone still has no bottom tray (its action list
+   render spot is unchanged). Making the map genuinely the hero needs the fixed chrome around it trimmed
+   too, and phone's own restructure is still open — see DECISIONS.md for the measured numbers.)* Make the
+   map the hero. On desktop, the map fills the centre column at the largest size that fits, and the farm,
+   market, plan and log panels become tidy side trays. On phone, the map fills the top of the screen and
+   actions live in a bottom tray that can be pulled up. Leave room for Cath's companion (item 3). Keep every
+   current control and test hook, and don't change the rules.
 9. [ ] **The table, part 2: actions as cards.** Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
 10. [ ] **The table, part 3: the HUD.** Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
 11. [ ] **Map art, part 1: regions.** Terrain illustration on each region (hedgerows, field rows, shoreline and boats, the Kingsmarket clock tower) and labels as painted signboards. It must pass the greyscale shape test (STYLE.md 2).

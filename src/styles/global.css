@@ -644,19 +644,16 @@ h3 {
 }
 
 /* SPEC 10.3: the phone layout's `.actions` above relies on `flex-wrap`, sizing each button by its own
-   label. On the wider desktop centre column (a `minmax(420px, 1fr)` grid track, not the phone's 480px-
-   capped column) that still wraps to close to one button per row when a full game's action list can have
-   10+ specific entries (region-scoped Supply/Rebut/Scheme/Role labels, one Sell entry per quantity) —
-   measured at ~460px tall at 1280x800 (see DECISIONS.md 2026-09-26), the single largest contributor to
-   `.game` overflowing its 768px-tall column. A fixed-column grid packs the same buttons into far fewer
-   rows on desktop's extra width; `min-width: 0` on the grid item is required because a flex/grid item's
-   default `min-width: auto` otherwise refuses to shrink `.action-item` below its label's full intrinsic
-   width, which defeats the grid track sizing entirely (confirmed directly: without it every item still
-   claimed a full row). This rule must come after the unconditional `.actions`/`.action-item` rules above so
-   it wins the cascade at the same specificity — placing it back in the earlier `@media (min-width: 1024px)`
-   block (grouped with the rest of SPEC 10.3's desktop layout) silently lost to these later, unconditional
-   rules regardless of viewport width. Does not, by itself, close the full SPEC 10.3 "no scrolling" gap —
-   see DECISIONS.md for the measured remaining shortfall and what's still needed. */
+   label. On desktop (ROADMAP 8: now the right tray's ~320px column, not the phone's 480px-capped column)
+   that still wraps to close to one button per row when a full game's action list can have 10+ specific
+   entries (region-scoped Supply/Rebut/Scheme/Role labels, one Sell entry per quantity). A fixed-column grid
+   packs the same buttons into far fewer rows; `min-width: 0` on the grid item is required because a flex/
+   grid item's default `min-width: auto` otherwise refuses to shrink `.action-item` below its label's full
+   intrinsic width, which defeats the grid track sizing entirely (confirmed directly: without it every item
+   still claimed a full row). This rule must come after the unconditional `.actions`/`.action-item` rules
+   above so it wins the cascade at the same specificity — placing it back in the earlier
+   `@media (min-width: 1024px)` block (grouped with the rest of SPEC 10.3's desktop layout) silently lost to
+   these later, unconditional rules regardless of viewport width. */
 @media (min-width: 1024px) {
   .actions {
     display: grid;
@@ -672,21 +669,33 @@ h3 {
     white-space: normal;
   }
 
-  /* SPEC 10.3's centre column still needs more room after the `.actions` grid fix above (measured
-     2026-09-26: 424px short at 1280x800 with a chapter-5 mid-game position — see DECISIONS.md). SPEC 10.2's
-     "full width" map rule is a phone rule (390-430px-wide screens); 10.3 sets no size for the desktop map,
-     so shrinking it here is a real, available lever, not a spec violation. 260px (down from the unconditional
-     420px above, tightened further from an earlier 320px once the right column's own gap closed and made the
-     centre column the sole remaining blocker) frees 160px of column height while staying well above
-     STYLE.md 9's 32px minimum-legible-size floor (region names/pieces are far larger than that even at
-     260px). */
+  /* ROADMAP 8 "the table, part 1: layout": the action list moved out of the centre column entirely (into
+     the left tray, `.desktop-col-left`, below) — measured directly (repeated runs against
+     desktop-no-scroll.spec.ts's own chapter-5 mid-game fixture) that it barely changes the map's own
+     ceiling here, though: the old `.actions` already shrank to near-nothing in the tightest states (its
+     own `flex: 1 1 auto; min-height: 0` let it collapse rather than force `.game` to overflow), so this
+     column's real fixed cost was always the topbar/companion/tutorial-prompt/plan-strip/legend/active-
+     producer chrome around the map, not the action list sharing space with it. 262px (up from 260px) is
+     the actual small amount of slack that freed up; confirmed 268px+ still overflows `.game` at 1280x800. */
   .map {
-    max-width: 260px;
+    max-width: 262px;
+  }
+
+  /* Without the action list stretching to fill it (ROADMAP 8: it moved to the left tray), `.game`'s leftover
+     vertical space on a taller-than-1280x800 desktop window used to show up as a dead gap below the Undo
+     button — caught in a `shots` screenshot at this session's own default (taller) desktop viewport.
+     `.map-wrap` absorbing that space and centering the map within it (rather than the map sitting at a
+     fixed spot with blank space beneath) makes the leftover room read as intentional breathing room around
+     the table, not an empty afterthought — and costs nothing at the exact 1280x800 budget, where there's no
+     leftover space to distribute in the first place. */
+  .map-wrap {
+    flex: 1 1 auto;
+    align-items: center;
   }
 
   /* Tighter row gap between the centre column's stacked sections (topbar, plan strip, map, active-producer
-     panel, actions, controls) — each section already carries its own internal padding, so the extra 8px
-     between every one of them was pure column-height cost with no legibility benefit. */
+     panel, controls) — each section already carries its own internal padding, so the extra 8px between
+     every one of them was pure column-height cost with no legibility benefit. */
   .game {
     gap: 6px;
   }
@@ -697,10 +706,9 @@ h3 {
   }
 
   /* The companion (added after this column's height budget was last measured, DECISIONS.md) is more fixed
-     chrome the same "no scrolling at 1280x800" budget above has to absorb — a 56px portrait plus 16px of
+     chrome the "no scrolling at 1280x800" budget above has to absorb — a 56px portrait plus 16px of
      padding was enough on its own to blow it. A small face and single-line, truncated text keep her
-     present without costing the column the ~50px `.actions` needs back (measured against the same
-     chapter-5 mid-game fixture desktop-no-scroll.spec.ts uses). */
+     present without costing the column much height. */
   .cath-companion {
     padding: 4px 10px;
     gap: 8px;
@@ -717,23 +725,31 @@ h3 {
     text-overflow: ellipsis;
   }
 
-  /* The centre column's remaining shortfall (measured 2026-09-26: 142-232px across repeated runs, all with
-     the same fixed content around it) comes entirely from `.actions` itself varying game-state to
-     game-state (233-323px measured across those same runs) — one button per legal region/card/quantity
-     target, the same unboundedly-variable shape as the Log's turn history, not a fixed card count like
-     Market/Cath's Plan. A fixed-size column can't guarantee "no scrolling" against a genuinely variable
-     list any more than it could for the Log, so `.actions` gets the identical internally-scrolling
-     escape valve the Log already had (see the Log's own comment below).
-     A *fixed* `max-height` here (an earlier version of this rule used 160px) turned out wrong in a
-     different way: a gate-8 visual-review screenshot caught it clipping a normal, un-dense action list
-     (a fresh game with only 7-8 actions, no tutorial banner) mid-button with no visible scroll affordance,
-     because 160px was sized for the *worst* case (chapter 5's content-dense tutorial-banner scenario), not
-     the typical one — wasting all the space the `.controls` margin fix (below) freed up on every other
-     game state. `flex: 1 1 auto` with `min-height: 0` instead makes `.actions` claim whatever's actually
-     left in the column after every other (fixed-size) sibling, so a light action list gets to show more of
-     itself and only a genuinely long one scrolls — `.game`'s own `overflow-y: auto` stays the backstop for
-     the pathological case (measured to hold with the tutorial-banner scenario at gate 5's own e2e check). */
-  .actions {
+  /* ROADMAP 8: `.actions` now lives in the left tray (`.desktop-col-left`), alongside the Farm panel —
+     tried the right tray first, but Market+Cath's Plan+Log already claim close to the full 768px column on
+     their own at 1280x800 (measured directly against desktop-no-scroll.spec.ts's own chapter-5 mid-game
+     fixture), leaving no real room for a 4th item there. The Farm panel is comparatively light (one fixed
+     entry per producer, measured ~360px), so pairing it with the actions tray here actually has headroom.
+     `.desktop-col-left`'s Farm panel gets `flex: none` (natural size, never shrinks) and `.actions-sheet` is
+     the flex/shrink target, absorbing whatever's left in the column; its own `min-height`/`overflow-y: auto`
+     below keeps it a working, scrollable list even when that's small — the same "internal scroll is the
+     honest escape valve for variable-length content" approach as the Log's own cap. */
+  .desktop-col-left > .sheet-panel {
+    flex: none;
+  }
+
+  .desktop-col-left .actions-sheet {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 40px;
+  }
+
+  .desktop-col-left .actions-sheet .actions {
+    /* The left tray (~300px, minus the `.sheet-panel` padding) is too narrow for the 3-column grid above —
+       one column per row reads far better than 3 cramped ones, matching how Market/Cath's Plan's card
+       lists already stack single-file in the right tray. */
+    grid-template-columns: 1fr;
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
@@ -875,12 +891,12 @@ button.destructive {
 /* `.controls`'s `margin-top: auto` above pins Undo to the bottom of the phone screen's fixed footer —
    right for a single-screen mobile layout, but on desktop it instead stretches through the centre column's
    spare vertical space and shoves Undo down against the column's own bottom edge, visually disconnected
-   from the actions list above it — a real bug a gate-8 visual-review screenshot caught (the automated
-   no-scroll height check only looks at whether content overflows, not where it sits). Desktop's centre
-   column already flows normally top-to-bottom, so Undo just needs to sit directly after the actions list
-   like every other section. This override must come after the unconditional rule above to win the cascade
-   at equal specificity, the same ordering constraint the `.actions` grid/scroll overrides note elsewhere
-   in this file. */
+   from the active-producer panel above it (ROADMAP 8: the actions list that used to sit there moved to the
+   right tray) — a real bug a gate-8 visual-review screenshot caught (the automated no-scroll height check
+   only looks at whether content overflows, not where it sits). Desktop's centre column already flows
+   normally top-to-bottom, so Undo just needs to sit directly after the section above it like every other
+   one. This override must come after the unconditional rule above to win the cascade at equal specificity,
+   the same ordering constraint the `.actions` grid/scroll overrides note elsewhere in this file. */
 @media (min-width: 1024px) {
   .controls {
     margin-top: 0;
