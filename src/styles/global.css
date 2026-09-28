@@ -937,6 +937,18 @@ h3 {
     padding: 6px 12px;
   }
 
+  /* ROADMAP 10's illustrated-gauge bars fit comfortably in the topbar's phone layout (each stat gets its
+     own line there), but the desktop centre column has no width left to give them: even shrinking the
+     gauge to a bare 8px sliver and the topbar's own padding/gap to almost nothing still left the row
+     ~17px too wide at 1280px (measured directly against desktop-no-scroll.spec.ts's fixture, wrapping the
+     topbar to 2 lines and blowing the "no scrolling at 1280x800" budget several sessions of chrome-
+     trimming already fought hard to hold). Hiding the gauge here keeps the number itself (the part SPEC
+     10.5 actually requires) and drops only the added decoration, rather than squeezing it illegibly small
+     or re-opening the centre column's budget fight again. */
+  .hud-gauge {
+    display: none;
+  }
+
   .decision,
   .active-producer {
     padding: 4px 10px;

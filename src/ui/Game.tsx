@@ -5,6 +5,7 @@ import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
 import { REGIONS, regionMatchesPressureSlot } from '../content/map'
+import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { HeuristicBot } from '../ai/heuristic'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
@@ -33,6 +34,7 @@ import {
   GoodwillIcon,
   LostLandIcon,
   MarksIcon,
+  MiniGauge,
   ProduceIcon,
   PublicTrustIcon,
   RiftIcon,
@@ -149,6 +151,19 @@ function pressureLabel(card: GameState['squeeze']): string {
   if (!card) return '—'
   if (card.regionTypes.length > 0) return card.regionTypes.join('+')
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
+}
+
+// ROADMAP 10 "illustrated gauges": Public Trust's and Rift's fixed ranges, matching the exact bounds
+// `validate()` (engine/api.ts) checks state against — the single source of truth for "full" on each
+// gauge, so it can never silently drift from what the rules actually allow.
+const TRUST_MAX = 15
+const RIFT_MAX = 6
+
+// Lost Land has no fixed range — it's a pool that starts at a difficulty (or campaign-chapter override)
+// value and only ever shrinks, so "full" for its gauge is this game's own starting pool, computed the
+// exact same way `createGame` (engine/api.ts) does rather than a guessed constant.
+function lostLandStartingPool(state: GameState): number {
+  return state.config.lostLandPoolOverride ?? DIFFICULTY_SETTINGS[state.config.difficulty].lostLandPool
 }
 
 // ROADMAP 10 "the HUD ... tick-up and tick-down animation when they change": returns a counter that only
@@ -807,12 +822,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <span>
           <span key={roundTick} className={roundTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
             <RoundIcon /> Round {state.round}/{state.round + state.pressureDeck.length}
+            <MiniGauge value={state.round} max={state.round + state.pressureDeck.length} width={28} />
           </span>
         </span>
         <span>
           <Tooltip term="Public Trust">
             <span key={trustTick} className={trustTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
               <PublicTrustIcon /> Trust {state.publicTrust}
+              <MiniGauge value={state.publicTrust} max={TRUST_MAX} width={28} />
             </span>
           </Tooltip>
         </span>
@@ -820,6 +837,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           <Tooltip term="Lost Land">
             <span key={lostLandTick} className={lostLandTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
               <LostLandIcon /> Lost Land left {state.lostLandPool}
+              <MiniGauge value={state.lostLandPool} max={lostLandStartingPool(state)} width={28} />
             </span>
           </Tooltip>
         </span>
@@ -827,6 +845,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           <Tooltip term="Rift">
             <span key={riftTick} className={riftTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
               <RiftIcon /> Rift {state.rift}
+              <MiniGauge value={state.rift} max={RIFT_MAX} width={28} />
             </span>
           </Tooltip>
         </span>
