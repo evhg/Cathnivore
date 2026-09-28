@@ -36,3 +36,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   exact substrings `e2e/tutorial.spec.ts` asserts on, rather than rewriting the test too — kept the change
   scoped to voice, not behaviour. Companion line-bank growth confirmed safe to do freely: no test or
   screenshot anywhere asserts on the companion's exact reaction text, only the deterministic-hash mechanism.
+- 2026-09-28: verified the gate-8 "expressions look too similar at 56-96px" flag with a throwaway
+  Playwright script rendering `cathSvg()` at real companion/portrait sizes rather than guessing from the
+  source paths — confirmed 'determined' and 'worried' were near-indistinguishable from smirk, fixed by
+  widening their brow/eye/mouth deltas, re-verified before shipping (`d193d0c`).
