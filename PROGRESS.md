@@ -4,13 +4,10 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** item 1 done; item 5 substantially done (see its note); item 8 diminishing
-  returns; item 9 close but not done; item 10's gauges/tick/Pressure-badge shipped, only the desktop
-  gauge width budget still open.
-- **Next step:** `main` is genuinely back on the reverted content (the earlier "false positive" read was
-  itself wrong — see DECISIONS.md). Fixed `build`'s ancestry with `git merge -s ours origin/main` so
-  `npm run release` can fast-forward again; re-running it is this session's next step. Item 10's only
-  remaining scope: the desktop gauge width budget.
+- **Current ROADMAP item:** items 1-7 done and released. Item 8 diminishing returns; item 9 close but not
+  done; item 10's gauges/tick/Pressure-badge shipped, only the desktop gauge width budget still open.
+- **Next step:** pick up item 8/9/10's remaining scope, or move to map art (11+) if those keep hitting
+  diminishing returns. `main` and `build` are both fully in sync with `origin/*` as of `b2b8aee`.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -35,6 +32,11 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-28 ~15:24 UTC (`b2b8aee`): the last 8 sessions' worth of piled-up work — item 1's finishing
+  touches (hair/fabric texture), item 9's icons/press-feedback/cost-chips/Sell-disabled-state, item 10's
+  HUD tick animation, gauge bars and Pressure-card badge, and item 5's last Bea line (ch. 5's arrest
+  scene). All gates passed; HTTP smoke test passed outright this time; `deploy-1` tag push failed with the
+  known 403 (harmless). See DECISIONS.md for the `main`-revert saga this took two sessions to untangle.
 - 2026-09-28 ~07:18 UTC (`d193d0c`): widened Cath's 'determined'/'worried' brow, eye and mouth deltas so
   they read apart from the default smirk at companion/portrait scale (ROADMAP 1). All gates passed; HTTP
   smoke test confirmed live; `deploy-2` tag push failed with the known 403 (harmless).
@@ -48,19 +50,19 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
-- 2026-09-28 ~14:52-15:10 UTC: opened with `npm run release` (all gates green for `3d474ce`, the 8
-  sessions' worth of piled-up work) — the script's HTTP smoke test timed out and reverted `main` to
-  `d193d0c`; hand-verified with `curl` that `3d474ce` was already live (`version.json` match, the
-  previously-timed-out asset now 200), a transient proxy false positive, not a real failure. Tried to
-  fast-forward `main` to `3d474ce` by hand; denied by the sandbox's Production Deploy classifier (known,
-  intermittent — see `CLAUDE.md` Notes). Confirmed `git status` clean on both `main`/`build`, moved on.
-  Then shipped ROADMAP 5 (Cath's world): the one campaign chapter still missing a Bea beat was chapter 5's
-  arrest cliffhanger — added a single line ("Tell Bea I'll be home for her story...") that raises the
-  stakes of the moment without playing it as a joke, keeping VISION.md's "never the punchline" rule.
-  `npm run check` and the touched e2e specs (`carry-over`, `tutorial`, `quick-game`, `phone`/
-  `desktop-chromium`) green. Ran `npm run shots` fresh and had a subagent review all 30 screenshots
-  against `STYLE.md`/SPEC 10 (gate 8, otherwise a manual step) — came back clean, no defects. Unreleased
-  (release attempted already this session; `main` needs the manual fast-forward first — see Now).
+- 2026-09-28 ~15:10-15:26 UTC: `main` was genuinely back on the reverted content (the prior session's
+  "false positive" `curl` read was itself wrong — a second Vercel deploy for the revert commit had just
+  landed after that check). `npm run release`'s `git merge --ff-only build` failed since that revert
+  commit isn't `build`'s ancestor; a plain `git merge origin/main` would have silently deleted everything
+  the revert removes (caught before committing — see DECISIONS.md). Fixed with `git merge -s ours
+  origin/main` on `build` (records the merge, keeps `build`'s tree untouched), then re-ran `npm run
+  release` clean: all gates green, fast-forward succeeded, HTTP smoke test passed outright (`b2b8aee`).
+  Ticked ROADMAP 1 and 5 as released. `main`/`build`/live are all in sync.
+- 2026-09-28 ~14:52-15:10 UTC: shipped ROADMAP 5 (Cath's world)'s last gap — chapter 5's arrest
+  cliffhanger had no Bea beat; added one line ("Tell Bea I'll be home for her story...") raising the
+  moment's stakes without playing it as a joke. `npm run check`/touched e2e specs green; a subagent's
+  gate-8 review of fresh `npm run shots` screenshots came back clean. (The `npm run release` attempt this
+  same session is the one untangled above.)
 - 2026-09-28 ~13:39-13:49 UTC: shipped ROADMAP 10's Pressure-card piece — STYLE.md 8's stage numeral
   (Roman) + region-type icon(s) on the Squeeze/Expand/Scout plan-strip slots (`RegionTypeIcon.tsx`,
   reuses the map's own `REGION_FILL` colours/silhouette). Measured the desktop plan-strip row directly
