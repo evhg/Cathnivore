@@ -12,7 +12,8 @@ import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
-import { investCost, schemeCost } from '../engine/actions'
+import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
+import { regionStallTotal } from '../engine/region'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
@@ -681,6 +682,46 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     active.resources.produce < 1 &&
     !groups.has('openStall')
 
+  // ROADMAP 9 why-not, continued: Supply and Rebut are per-region grouped actions (SPEC 10.2's targeting
+  // mode highlights valid regions on the map rather than listing one button per region), but each kind's
+  // legality is still just two checks in a fixed order — a structural one (is there an owned region with
+  // something to remove at all: an Outlet, a Buyout, a Doubt) and then a resource comparison (Produce/
+  // Goodwill vs. cost). Those two reasons are genuinely distinct, unlike a 'required'/'optional' Scheme's
+  // single region check (a missing target there could mean several different things from outside) — so
+  // they're worth surfacing instead of leaving the whole group silently absent, same spirit as Sell/
+  // Invest/`targeting: 'none'` Scheme/Open Stall above.
+  const whyNotGated = tutorialStep?.highlight || waitingOnAi || pendingEnemyTurn.length > 0
+  function ownedRegionsWith(filter: (r: GameState['regions'][RegionId]) => boolean) {
+    return state.config.activeRegions.map((id) => state.regions[id]).filter((r) => (r.stalls[state.activeProducer] ?? 0) > 0 && filter(r))
+  }
+  function whyNotSupplyOutlets(count: 1 | 2): { text: string; cost?: { resource: ResourceKind; amount: number } } | undefined {
+    if (whyNotGated || groups.has(`supplyOutlets:${count}`)) return undefined
+    const candidates = ownedRegionsWith((r) => r.outlets >= count)
+    if (candidates.length === 0) return { text: `No Outlet${count > 1 ? 's' : ''} left to remove` }
+    const minCost = Math.min(...candidates.map((r) => supplyOutletCostPerOutlet(state, state.activeProducer, r.id) * count))
+    const missing = minCost - active.resources.produce
+    return missing > 0 ? { text: `Need ${missing} more Produce`, cost: { resource: 'produce', amount: minCost } } : undefined
+  }
+  function whyNotSupplyBuyout(): { text: string; cost?: { resource: ResourceKind; amount: number } } | undefined {
+    if (whyNotGated || groups.has('supplyBuyout')) return undefined
+    const candidates = ownedRegionsWith((r) => r.buyouts >= 1 && regionStallTotal(r) >= 2)
+    if (candidates.length === 0) return { text: 'No Buyout to remove' }
+    const cost = supplyBuyoutCost(state, state.activeProducer)
+    const missing = cost - active.resources.produce
+    return missing > 0 ? { text: `Need ${missing} more Produce`, cost: { resource: 'produce', amount: cost } } : undefined
+  }
+  function whyNotRebut(count: 1 | 2): { text: string; cost?: { resource: ResourceKind; amount: number } } | undefined {
+    if (whyNotGated || !rules.rebut || groups.has(`rebut:${count}`)) return undefined
+    const candidates = ownedRegionsWith((r) => r.doubt >= count)
+    if (candidates.length === 0) return { text: `No Doubt to rebut` }
+    const cost = rebutCost(state, state.activeProducer, count)
+    const missing = cost - active.resources.goodwill
+    return missing > 0 ? { text: `Need ${missing} more Goodwill`, cost: { resource: 'goodwill', amount: cost } } : undefined
+  }
+  const disabledSupplyOutlets = ([1, 2] as const).map((count) => ({ count, reason: whyNotSupplyOutlets(count) })).filter((d) => d.reason)
+  const disabledSupplyBuyoutReason = whyNotSupplyBuyout()
+  const disabledRebut = ([1, 2] as const).map((count) => ({ count, reason: whyNotRebut(count) })).filter((d) => d.reason)
+
   function act(actionIndex: number): void {
     const action = actions[actionIndex]!
     // SPEC 8.1: once the taught action is actually taken, move straight to the next tutorial step rather
@@ -903,6 +944,57 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
               </Tooltip>
             </span>
           )}
+          {disabledSupplyOutlets.map(({ count, reason }) => (
+            <span key={`disabled-supply-outlets-${count}`} className="action-item">
+              <button disabled title={reason!.text}>
+                <span className="action-label-group">
+                  <span className="action-label">
+                    <SupplyIcon size={18} />
+                    {`Supply: remove ${count} Outlet${count > 1 ? 's' : ''}`}
+                  </span>
+                  <span className="action-why-not">{reason!.text}</span>
+                </span>
+                {reason!.cost && <ActionCostChip cost={reason!.cost} />}
+              </button>
+              <Tooltip term="Supply" label="What is Supply?">
+                ?
+              </Tooltip>
+            </span>
+          ))}
+          {disabledSupplyBuyoutReason && !groups.has('supplyBuyout') && (
+            <span className="action-item">
+              <button disabled title={disabledSupplyBuyoutReason.text}>
+                <span className="action-label-group">
+                  <span className="action-label">
+                    <SupplyIcon size={18} />
+                    Supply: remove Buyout
+                  </span>
+                  <span className="action-why-not">{disabledSupplyBuyoutReason.text}</span>
+                </span>
+                {disabledSupplyBuyoutReason.cost && <ActionCostChip cost={disabledSupplyBuyoutReason.cost} />}
+              </button>
+              <Tooltip term="Supply" label="What is Supply?">
+                ?
+              </Tooltip>
+            </span>
+          )}
+          {disabledRebut.map(({ count, reason }) => (
+            <span key={`disabled-rebut-${count}`} className="action-item">
+              <button disabled title={reason!.text}>
+                <span className="action-label-group">
+                  <span className="action-label">
+                    <RebutIcon size={18} />
+                    {`Rebut: remove ${count} Doubt`}
+                  </span>
+                  <span className="action-why-not">{reason!.text}</span>
+                </span>
+                {reason!.cost && <ActionCostChip cost={reason!.cost} />}
+              </button>
+              <Tooltip term="Rebut" label="What is Rebut?">
+                ?
+              </Tooltip>
+            </span>
+          ))}
           {[...groups.entries()].map(([key, group]) => {
             const single = group.entries.length === 1
             const firstAction = actions[group.entries[0]!.index]!

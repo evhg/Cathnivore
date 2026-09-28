@@ -144,3 +144,57 @@ test('Open Stall shows a disabled, explained placeholder when Produce is 0', asy
   await openStall.getByRole('button', { name: /^Open Stall/ }).click({ force: true })
   await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
 })
+
+// ROADMAP 9, continued: Supply and Rebut are per-region grouped actions (SPEC 10.2's map-targeting mode),
+// but each kind's legality is still just two checks in a fixed order — a structural one (an owned region
+// with something to remove: an Outlet, a Buyout, or Doubt) and then a resource comparison. Those two
+// reasons are genuinely distinct, so unlike a 'required'/'optional' Scheme's single region check they're
+// worth surfacing. SPEC 4.3.2's setup gives every non-capital region exactly 1 starting Outlet and 0
+// Buyout, with Doubt only on Coast regions — Mara's home, Brindle Hills, is Pasture, so a fresh Quick
+// Game (default producers Mara/Tomas) already shows Rebut and Supply-remove-Buyout as disabled
+// placeholders from turn 1, while Supply-remove-1-Outlet starts as a real, legal action.
+test('Rebut and Supply-Buyout show a disabled, explained placeholder when there is nothing to remove yet', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  const supplyBuyout = page.locator('.action-item', { hasText: 'Supply: remove Buyout' })
+  const rebut1 = page.locator('.action-item', { hasText: 'Rebut: remove 1 Doubt' })
+  const rebut2 = page.locator('.action-item', { hasText: 'Rebut: remove 2 Doubt' })
+
+  await expect(supplyBuyout.getByRole('button', { name: /^Supply: remove Buyout/ })).toBeDisabled()
+  await expect(supplyBuyout.locator('.action-why-not')).toHaveText('No Buyout to remove')
+  await expect(rebut1.getByRole('button', { name: /^Rebut: remove 1 Doubt/ })).toBeDisabled()
+  await expect(rebut1.locator('.action-why-not')).toHaveText('No Doubt to rebut')
+  await expect(rebut2.getByRole('button', { name: /^Rebut: remove 2 Doubt/ })).toBeDisabled()
+  await expect(rebut2.locator('.action-why-not')).toHaveText('No Doubt to rebut')
+
+  // None of these placeholders show a cost chip (SPEC 10.5's tokens) — there's nothing to price when the
+  // reason is "nothing to target" rather than "can't afford it".
+  await expect(rebut1.locator('.action-cost')).toHaveCount(0)
+
+  // Still explained by the "Rebut" glossary tooltip the real button offers.
+  await rebut1.locator('.tooltip-trigger-button').dispatchEvent('click')
+  await expect(page.locator('.tooltip-popover')).toBeVisible()
+
+  // A disabled button is genuinely inert.
+  const actionsLeftBefore = await page.locator('.active-producer').textContent()
+  await rebut1.getByRole('button', { name: /^Rebut: remove 1 Doubt/ }).click({ force: true })
+  await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
+
+  // Supply-remove-1-Outlet starts as a real, legal action (Brindle Hills has its starting Outlet) — using
+  // it up removes the only Outlet there, so both Outlet counts flip to disabled "nothing to remove"
+  // placeholders right after, the same structural reason as Buyout/Doubt above.
+  const realSupply1 = page.getByRole('button', { name: /^Supply: remove 1 Outlet in/ })
+  await expect(realSupply1).toBeEnabled()
+  await realSupply1.click()
+  await page.locator('.actions').waitFor()
+
+  const disabledSupply1 = page.locator('.action-item', { hasText: 'Supply: remove 1 Outlet' })
+  const disabledSupply2 = page.locator('.action-item', { hasText: 'Supply: remove 2 Outlets' })
+  await expect(disabledSupply1.getByRole('button', { name: /^Supply: remove 1 Outlet/ })).toBeDisabled()
+  await expect(disabledSupply1.locator('.action-why-not')).toHaveText('No Outlet left to remove')
+  await expect(disabledSupply2.getByRole('button', { name: /^Supply: remove 2 Outlets/ })).toBeDisabled()
+  await expect(disabledSupply2.locator('.action-why-not')).toHaveText('No Outlets left to remove')
+})
