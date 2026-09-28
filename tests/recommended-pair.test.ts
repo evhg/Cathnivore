@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { ALL_PRODUCER_IDS, RECOMMENDED_PAIR } from '../src/content/producers'
@@ -28,7 +28,13 @@ describe('RECOMMENDED_PAIR', () => {
   })
 
   it(`matches the win-rate leader of the latest >=${MIN_GAMES_FOR_LEADER}-game MCTSBot/Normal/all-pairs run in BALANCE.md`, () => {
-    const balanceMd = readFileSync(join(__dirname, '../BALANCE.md'), 'utf8')
+    // SPEC 16 keeps BALANCE.md short and archives older runs; read the archive first, then the live file,
+    // so the latest qualifying run wins wherever it lives.
+    const balanceMd = ['../docs/archive/BALANCE-v1.md', '../BALANCE.md']
+      .map((f) => join(__dirname, f))
+      .filter((f) => existsSync(f))
+      .map((f) => readFileSync(f, 'utf8'))
+      .join('\n')
     const entries = balanceMd.split(/\n## /).slice(1)
 
     // Find the most recent entry (entries are chronological, newest last) that is a large-enough
