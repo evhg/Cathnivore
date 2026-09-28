@@ -115,6 +115,18 @@ describe('Agenda rules text', () => {
       expect(card.headline.length).toBeGreaterThan(0)
       expect(card.headline.length).toBeLessThanOrEqual(90)
     })
+
+    // SPEC 10.5: "every game term... is explained in the rules reference." Until a 2026-09-28 QA pass
+    // caught it, `AgendaCard` had no mechanical-text field at all (unlike Schemes/Improvements above), so
+    // the Rules Reference showed one identical generic sentence for all 24 cards. `text` is hand-written
+    // (effect/bonusEffect bodies are too varied in shape for a generic numeric-delta check like the
+        // Improvement test above), so this only checks it exists and mentions the bonus/Rift-3 relationship
+        // it's rendered alongside in `RulesReference.tsx`, not every detail of the effect.
+    it(`${card.id}: has a non-empty mechanical text field`, () => {
+      expect(card.text.length).toBeGreaterThan(0)
+      expect(card.text.length).toBeLessThanOrEqual(220)
+      expect(card.text).toContain('Bonus:')
+    })
   }
 
   it('has exactly 12 Hollowell cards and 12 Candor cards (SPEC 4.7)', () => {

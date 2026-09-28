@@ -3279,3 +3279,36 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   `npx tsc -b`/`npx eslint` clean, `npx vitest run` 519/519, the full `phone`+`desktop-chromium`
   `accessibility.spec.ts` (18/18, up from 16) and a `quick-game.spec.ts` sanity run all green. Pushed to
   `build`.
+
+- **2026-09-28 (3rd pair):** 2 more subagents (campaign carry-over/hot-seat/rules-reference; content-text/
+  satire compliance) found 3 more real issues while this session's release-merge stayed denied:
+  1. **Agenda cards had no mechanical rules-text field at all** (`AgendaCard` only carried `headline`,
+     `effect`, `bonusEffect`) — SPEC 10.5 requires every game term explained in the Rules Reference, but all
+     24 cards rendered the identical generic sentence there, and `tests/rules-text.test.ts`'s Agenda block
+     only checked `headline`, never a mechanical description, because none existed to check. **Fixed:** added
+     a hand-written `text` field to all 24 cards (`src/content/agenda.ts`) describing both `effect` and
+     `bonusEffect` in plain English (verified each against the actual effect functions while writing them,
+     not just copied from the headline), wired into `RulesReference.tsx` (replacing the generic sentence),
+     and added a test per card asserting `text` is non-empty, within a sane length, and mentions the bonus
+     effect. Not a full numeric-delta check like the Improvement test (Agenda effects are region-search-based,
+     not simple production deltas, so there's no generic invariant to assert the way there is for Improvements)
+     — a known, accepted gap in verification depth, not in coverage.
+  2. **`reconnaissance`/`paper-trail`/`weather-eye`/`steak-out` Schemes (the "look at the top card" info
+     Schemes) never actually show the peeked card to the player** — their `effect` is a literal no-op
+     ("UI-only reveal") but no UI code anywhere surfaces what was peeked, so a player pays Goodwill, sees
+     nothing, and loses Undo (correctly marked `irreversible`) for a reveal that never happened on screen.
+     **Not fixed this session** (needs a `GameEvent`/log field plus UI surface, more than a quick text fix,
+     and this session's time budget was already committed to the Agenda-text fix above) — logged here and in
+     PROGRESS.md's Blocked list for a future session.
+  3. **Hot-seat mode has no turn-transition/"pass the device" screen** — turns switch with only a header
+     change, no interstitial, even though the mode-picker screen's own copy promises "pass the device back
+     and forth." Not a strict SPEC violation (SPEC only requires 2 humans taking turns on one device, no
+     literal pass-device prompt mandated) but a real UX gap. **Not fixed this session** (a UI feature, not a
+     quick fix) — logged for a future session, lower priority than item 2 since it's UX polish, not a paid-
+     for-nothing mechanic.
+  All other areas both subagents checked (chapter 3->4 carry-over cap/no-double-apply, undo/replay boundary
+  correctness, AI never calling undo, Rules Reference search being real, all content character limits,
+  satire-rule compliance, no real-brand/health-claim leaks) came back clean.
+  `npx tsc -b`/`npx eslint` clean, `npx vitest run` 543/543 (up from 519, +24 new Agenda-text tests),
+  `npm run build` clean, a fresh screenshot of the Rules Reference screen confirmed no rendering regression.
+  Pushed to `build`.

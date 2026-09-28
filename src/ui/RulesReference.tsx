@@ -162,7 +162,7 @@ export default function RulesReference({ onClose, initialTerm }: Props) {
           <EntryList
             entries={agenda.map((c) => ({
               term: `${c.faction === 'hollowell' ? 'Hollowell' : 'Candor'}: "${c.headline}"`,
-              body: 'Resolves for its faction each round; its bonus effect is skipped once Rift reaches 3.',
+              body: `${c.text} Its bonus effect is skipped once Rift reaches 3.`,
             }))}
           />
         </Section>
