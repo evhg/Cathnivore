@@ -138,6 +138,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // engine state itself never carries this narration, since it's not a rule, so it lives alongside the UI
   // state that already tracks everything else not worth serializing into a save (`pendingChoice`, etc.).
   const [aiReasons, setAiReasons] = useState<Record<number, string>>({})
+  // Hot-seat "pass the device" screen (Known issues, PROGRESS.md): the mode-picker already promises
+  // "pass the device back and forth," but turns used to switch with only the active-producer header
+  // changing, an easy-to-miss cue on a shared screen. `passAckRef` is the producer whose turn the screen
+  // is already showing; whenever `state.activeProducer` moves past it (a new turn, or the next round's
+  // first player after enemy-turn playback finishes), a blocking screen names the next producer until
+  // dismissed. Solo/campaign games have at most one human seat, so this never fires there.
+  const passAckRef = useRef<ProducerId>(initial.activeProducer)
+  const [passDeviceFor, setPassDeviceFor] = useState<ProducerId | null>(null)
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -189,6 +197,12 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   useEffect(() => {
     if (autoplayRef.current && pendingTrigger) setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])
   }, [pendingTrigger])
+
+  useEffect(() => {
+    if (mode !== 'hotseat' || autoplayRef.current) return
+    if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
+    if (state.activeProducer !== passAckRef.current) setPassDeviceFor(state.activeProducer)
+  }, [mode, state, pendingEnemyTurn.length, pendingMidScene])
 
   useEffect(() => {
     if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
@@ -331,6 +345,24 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
 
   if (pendingMidScene && pendingTrigger) {
     return <Scene scene={pendingMidScene} onContinue={() => setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])} />
+  }
+
+  if (passDeviceFor) {
+    return (
+      <main className="scene pass-device">
+        <Portrait character={passDeviceFor} size={96} />
+        <h2>Pass the device</h2>
+        <p>It's {PRODUCERS[passDeviceFor].name}'s turn.</p>
+        <button
+          onClick={() => {
+            passAckRef.current = passDeviceFor
+            setPassDeviceFor(null)
+          }}
+        >
+          Continue
+        </button>
+      </main>
+    )
   }
 
   const rules = resolveRules(state)

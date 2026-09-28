@@ -917,6 +917,19 @@ button.destructive {
   color: var(--soil);
 }
 
+/* Hot-seat "pass the device" screen (SPEC 2/10.2, Known issues) */
+.pass-device {
+  align-items: center;
+  text-align: center;
+}
+
+.pass-device h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
 /* Tutorial prompt banner (SPEC 8.1/10.2) */
 /* SPEC 8.1's "'?' link to the rules reference," inline with the tutorial prompt text. Reuses the
    fixed-fill/fixed-text pairing `.tutorial-prompt` itself uses (STYLE.md 3.5: `--wheat` never adapts to

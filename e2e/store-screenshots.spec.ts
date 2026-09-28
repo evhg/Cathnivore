@@ -75,8 +75,14 @@ test('4. an Agenda headline during the enemy turn', async ({ page }) => {
   // Spend all 6 actions of round 1 (3 per producer, Graft is always legal — SPEC 4.6.7) to trigger the
   // enemy turn. The playback's first caption is always the Agenda headline (enemy-turn events start from
   // the first 'agenda' log entry — see src/ui/enemyTurnLog.ts), so grabbing the shot right as the overlay
-  // appears (before its 1s auto-advance) reliably catches it.
-  for (let i = 0; i < 6; i++) {
+  // appears (before its 1s auto-advance) reliably catches it. The hand-off after the first producer's 3
+  // actions shows a blocking "pass the device" screen (Known issues, PROGRESS.md) that needs its own
+  // Continue tap before the second producer's Graft button exists.
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: /^Graft:/ }).click()
+  }
+  await page.getByRole('button', { name: 'Continue' }).click()
+  for (let i = 0; i < 3; i++) {
     await page.getByRole('button', { name: /^Graft:/ }).click()
   }
   await expect(page.locator('.enemy-turn-playback')).toBeVisible()
