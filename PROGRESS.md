@@ -27,6 +27,19 @@ needed new unit tests — 1/3 is a text-only content fix, 2/3 is arithmetic off 
 a static HTML link), `desktop-chromium` runs of `e2e/quick-game.spec.ts` + `e2e/campaign.spec.ts` (7/7) and
 the full `npm run e2e:site` (28/28) all green. Pushed to `build`.
 
+Dispatched 2 more subagents at gate-2 completeness (SPEC 11.4 gate 2: "a unit test for every action, enemy
+step, Agenda card, Scheme, Improvement, and win or loss rule"). One came back clean (save/load, version
+mismatch, global error screen — see DECISIONS.md). The other found a real, previously-unlogged gap: 14 of 24
+Agenda cards, 21 of 30 Schemes and 3 Improvements' ongoing effects (`soil-lab-report`, `polytunnel`,
+`seed-library`) had no test asserting their actual numeric effect — only a generic "resolves without
+crashing" loop, or (for the 3 Improvements) a stale code comment claiming coverage that didn't exist. Closed
+all three gaps: 4 new tests in `tests/invest-scheme.test.ts`, 14 new tests in `tests/agenda.test.ts` (each
+hand-computed against the real SPEC 4.3 setup, all passing first try), and 22 new tests in
+`tests/schemes-effects.test.ts` (21 cards plus Steak-out's actual reorder, played through real `applyAction`
+calls on the file's existing `richBoard` fixture). Fixed one pre-existing test (`tests/pages.test.ts`) that
+was still asserting the stale `href="/"` value the earlier privacy/support fix corrected. `npx vitest run`:
+514/514 (up from 472). `npm run check` clean end to end. Pushed to `build`.
+
 ---
 This session (2026-09-28, starting ~23:51 UTC): standard session start, lock taken, `main`/`build` already in
 sync (only lock/doc churn between `f78f78e`/`130be4a`), `origin/ci-status`'s `ios.json` unchanged (still the

@@ -3166,3 +3166,37 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   All three fixes: `npx tsc -b`/`npx eslint` clean, `npx vitest run` 472/472, `desktop-chromium` runs of
   `e2e/quick-game.spec.ts` + `e2e/campaign.spec.ts` (7/7) and the full `e2e:site` suite (28/28) all green.
   Pushed to `build`.
+
+  Dispatched 2 more subagents (still within the 2-at-once cap) at gate-2 completeness: one audited whether
+  every Agenda card/Scheme/Improvement genuinely has a dedicated unit test asserting its specific numeric
+  effect (SPEC 11.4 gate 2's literal requirement), the other re-checked save/load and the global error
+  screen (came back clean — no new issues, see its own report for detail). The first found a real,
+  previously-unlogged gap: `tests/agenda.test.ts`'s and `tests/schemes-effects.test.ts`'s "every card
+  resolves cleanly" loops only ever called `validate()` on the result, never asserted what a specific card
+  actually *does* — so 14 of 24 Agenda cards and 21 of 30 Schemes (plus Steak-out, previously only checked
+  for its irreversible flag, not its actual reorder) had no test verifying their real effect, only that
+  applying it doesn't crash. 3 Improvements (`soil-lab-report`, `polytunnel`, `seed-library`) had the same
+  gap for a different reason: their ongoing effects live in `actions.ts`'s Rebut/Sell/Graft handlers (not
+  `onBuy`, which `tests/rules-text.test.ts`'s per-card loop already covers numerically), and their own code
+  comments claimed test coverage that turned out not to exist anywhere.
+
+  Closed all three gaps this session:
+  - `tests/invest-scheme.test.ts`: 4 new tests for Soil Lab Report (Rebut's free extra Doubt removal, plus
+    a without-the-card control), Polytunnel (Sell's extra Goodwill) and Seed Library (Graft's extra Marks),
+    using the file's existing `withImprovement`/`withClearableRegion` helpers.
+  - `tests/agenda.test.ts`: 14 new tests, one per previously-untested card, each computed by hand against
+    the real SPEC 4.3 setup on `createGame(FULL_CONFIG, ...)` (documented in the describe block's own
+    comment: Kingsmarket's 2 Outlets/1 Buyout/2 Doubt/0 Stalls, every other region's 1 starting Outlet,
+    Coast's extra starting Doubt, and which two regions have Stalls at setup) rather than a synthetic board,
+    so each assertion is a genuine hand-verified prediction, not a tautology. All 14 passed on the first
+    run, cross-confirming both the hand-derived setup numbers and the cards' actual behaviour.
+  - `tests/schemes-effects.test.ts`: 21 new tests reusing the file's existing `richBoard`/`forceScheme`
+    helpers, played for real through `applyAction` (not the raw `effect` function) so each also exercises
+    the real cost deduction and Cath's Plan slot/discard bookkeeping. Plus a 22nd for Steak-out's actual
+    Pressure-deck reorder (previously only its irreversible-undo flag was tested) and 2 more confirming
+    Reconnaissance/Paper Trail/Weather Eye are genuinely pure peeks (deck order literally unchanged), not
+    just "doesn't crash."
+  All new tests passed on the first run (`npx vitest run`: 514/514, up from 472). One pre-existing test
+  (`tests/pages.test.ts`) asserted the *old* `href="/"` value the privacy/support link-fix above just
+  corrected — updated its expectation to `href="/cathnivore/"` rather than reverting the fix. `npm run
+  check` clean end to end (typecheck, lint, unit tests, fuzz, build). Pushed to `build`.
