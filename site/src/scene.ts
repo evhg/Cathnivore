@@ -248,26 +248,41 @@ export function startScene(canvas: HTMLCanvasElement, reducedMotion: boolean): S
   const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'high-performance' })
   if (!gl) return null
 
-  const program = link(gl, VERT, FRAG)
+  let program = link(gl, VERT, FRAG)
   if (!program) return null
-  gl.useProgram(program)
+  let buf: WebGLBuffer | null = null
+  let uRes: WebGLUniformLocation | null = null
+  let uTime: WebGLUniformLocation | null = null
+  let uReveal: WebGLUniformLocation | null = null
+  let uPointer: WebGLUniformLocation | null = null
+  let uPointerOn: WebGLUniformLocation | null = null
+  let uTap: WebGLUniformLocation | null = null
+  let uTapAge: WebGLUniformLocation | null = null
+  let uHorizon: WebGLUniformLocation | null = null
 
-  const buf = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf)
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW)
-  const loc = gl.getAttribLocation(program, 'aPos')
-  gl.enableVertexAttribArray(loc)
-  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+  // Binds every GL resource against the *current* context: called once up front, and again after
+  // `webglcontextrestored` since a context loss invalidates the program, buffer and uniform locations
+  // (but not the WebGL2RenderingContext object itself, which `gl` keeps pointing at).
+  function setup(p: WebGLProgram): void {
+    gl!.useProgram(p)
+    buf = gl!.createBuffer()
+    gl!.bindBuffer(gl!.ARRAY_BUFFER, buf)
+    gl!.bufferData(gl!.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl!.STATIC_DRAW)
+    const loc = gl!.getAttribLocation(p, 'aPos')
+    gl!.enableVertexAttribArray(loc)
+    gl!.vertexAttribPointer(loc, 2, gl!.FLOAT, false, 0, 0)
 
-  const u = (name: string) => gl.getUniformLocation(program, name)
-  const uRes = u('uRes')
-  const uTime = u('uTime')
-  const uReveal = u('uReveal')
-  const uPointer = u('uPointer')
-  const uPointerOn = u('uPointerOn')
-  const uTap = u('uTap')
-  const uTapAge = u('uTapAge')
-  const uHorizon = u('uHorizon')
+    const u = (name: string) => gl!.getUniformLocation(p, name)
+    uRes = u('uRes')
+    uTime = u('uTime')
+    uReveal = u('uReveal')
+    uPointer = u('uPointer')
+    uPointerOn = u('uPointerOn')
+    uTap = u('uTap')
+    uTapAge = u('uTapAge')
+    uHorizon = u('uHorizon')
+  }
+  setup(program)
 
   const MAX_PIXELS = 2_400_000
   let quality = 1
@@ -383,12 +398,29 @@ export function startScene(canvas: HTMLCanvasElement, reducedMotion: boolean): S
   document.addEventListener('visibilitychange', onVisibility)
 
   const onContextLost = (e: Event) => {
+    // Without preventDefault() the browser never attempts to restore the context, so
+    // 'webglcontextrestored' below would never fire (MDN).
     e.preventDefault()
     running = false
     cancelAnimationFrame(raf)
     document.documentElement.classList.add('no-webgl')
   }
   canvas.addEventListener('webglcontextlost', onContextLost)
+
+  const onContextRestored = () => {
+    const restored = link(gl!, VERT, FRAG)
+    if (!restored) return
+    program = restored
+    setup(program)
+    resize()
+    document.documentElement.classList.remove('no-webgl')
+    if (!running && !document.hidden) {
+      running = true
+      last = performance.now()
+      raf = requestAnimationFrame(frame)
+    }
+  }
+  canvas.addEventListener('webglcontextrestored', onContextRestored)
 
   raf = requestAnimationFrame(frame)
 
@@ -403,6 +435,7 @@ export function startScene(canvas: HTMLCanvasElement, reducedMotion: boolean): S
       window.removeEventListener('pointerup', onUp)
       document.removeEventListener('pointerleave', onLeave)
       canvas.removeEventListener('webglcontextlost', onContextLost)
+      canvas.removeEventListener('webglcontextrestored', onContextRestored)
       gl!.deleteBuffer(buf)
       gl!.deleteProgram(program)
     },
@@ -421,19 +454,29 @@ function link(gl: WebGL2RenderingContext, vs: string, fs: string): WebGLProgram 
     gl.compileShader(sh)
     if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
       console.warn(gl.getShaderInfoLog(sh))
+      gl.deleteShader(sh)
       return null
     }
     return sh
   }
   const v = compile(gl.VERTEX_SHADER, vs)
   const f = compile(gl.FRAGMENT_SHADER, fs)
-  if (!v || !f) return null
+  if (!v || !f) {
+    if (v) gl.deleteShader(v)
+    if (f) gl.deleteShader(f)
+    return null
+  }
   const p = gl.createProgram()!
   gl.attachShader(p, v)
   gl.attachShader(p, f)
   gl.linkProgram(p)
+  // Shaders are copied into the program at link time (success or failure), so the standalone
+  // objects can be freed either way instead of leaking one pair per `startScene` call.
+  gl.deleteShader(v)
+  gl.deleteShader(f)
   if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
     console.warn(gl.getProgramInfoLog(p))
+    gl.deleteProgram(p)
     return null
   }
   return p
