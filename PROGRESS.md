@@ -4,13 +4,16 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** 3 shipped in full 2026-09-28 (`cb050ee`). Item 1 made further progress
-  2026-09-28: readability (`d193d0c`), hands/pose (`cb72336`, redrawn `497f2d1` after a gate-8 flag), and the
-  favicon/app-icon/social-preview asset refresh (`0b171b8`, `dcd6c92`, `7af62e1`). Only finer hair/fabric
-  shading is still open on item 1. Item 5's start (`b371223`, 2 light unreleased Bea mentions) is still on
-  `build`, unreleased. **Today's 4-release cap was already spent before this session started, so none of
-  this has reached `main` yet — next session's `npm run release` should pick up everything since `92e7406`.**
-- **Next step:** see the **Session log** for where the last session stopped.
+- **Current ROADMAP item:** item 1's full listed scope is now done (`36bc223` and earlier;
+  see ROADMAP.md item 1) — hair/fabric shading was the last open piece. Item 5 has 4 light,
+  unreleased Bea mentions across 4 chapters (`b371223`, `36bc223`). Item 8 was scoped but not
+  started this session — it needs a real layout restructure, not a CSS tweak; see ROADMAP.md
+  item 8's note. **Today's 4-release cap was already spent before this session started, so none
+  of this has reached `main` yet — next session's `npm run release` should pick up everything
+  since `92e7406`.**
+- **Next step:** see the **Session log** for where the last session stopped. After the next
+  `npm run release`, item 8 (game-screen layout) is the top unstarted ROADMAP item — give it a
+  session that opens with it as the only task, not a slice bolted onto other work.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -44,6 +47,18 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~08:52-09:10 UTC: closed out ROADMAP 1's last open piece — finer hair/fabric shading
+  (`73e6e60`): strand-shine and depth strokes on the hair (back mass and front locks) and
+  sleeve/lapel/waist fold shading on both outfits, verified across all 5 expressions and every
+  framing down to 56px, gate-8 subagent review found no regressions. Added 2 more light Bea lines
+  (`36bc223`, ROADMAP 5: Growing Season and Word of Mouth closings). Scoped ROADMAP item 8 (see its
+  note) rather than starting it: today's desktop `.map` is deliberately capped at 260px to fit
+  SPEC 10.3's no-scroll budget, so "make the map the hero" needs the actions moved out of the
+  centre column — real `Game.tsx`/CSS surgery, not a same-session slice. Caught my own mistake:
+  started `npm run release` out of habit before checking today's cap was already spent (noted in
+  Now/session log below) — stopped it via TaskStop before it touched `main` (verified
+  `origin/main` still at `d193d0c`, working tree clean). All gates green, live site confirmed at
+  `d193d0c` via `version.json`. **Today's 4-release cap remains spent; nothing new released.**
 - 2026-09-28 ~07:51-08:14 UTC: ROADMAP 1 polish, all unreleased (today's 4-release cap was already spent).
   Gave the half-body figure hands: both outfits' sleeves already converged to one point at her waist, so drew
   clasped hands there (`cb72336`). A gate-8 subagent review (screenshots + a direct render of the half

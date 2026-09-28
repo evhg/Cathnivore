@@ -45,3 +45,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   whenever her look changes, rather than trying to template them at build time. `public/social-preview.png`
   is composited independently of `e2e/store-screenshots.spec.ts` (same caption style, own script) so it
   doesn't touch the App Store launch's postponement.
+- 2026-09-28: scoped ROADMAP 8 instead of starting it: the desktop `.map`'s 260px cap
+  (`global.css`, DECISIONS 2026-09-26) exists specifically to fit SPEC 10.3's no-scroll budget
+  around the centre column's action list. Making the map the real hero means moving actions out
+  of that column, not resizing CSS — logged as a note on the item so the next session gives it a
+  full, dedicated slice instead of a partial one squeezed after other work.
