@@ -696,6 +696,27 @@ h3 {
     padding: 6px 10px;
   }
 
+  /* The companion (added after this column's height budget was last measured, DECISIONS.md) is more fixed
+     chrome the same "no scrolling at 1280x800" budget above has to absorb — a 56px portrait plus 16px of
+     padding was enough on its own to blow it. A small face and single-line, truncated text keep her
+     present without costing the column the ~50px `.actions` needs back (measured against the same
+     chapter-5 mid-game fixture desktop-no-scroll.spec.ts uses). */
+  .cath-companion {
+    padding: 4px 10px;
+    gap: 8px;
+  }
+
+  .cath-companion .cath-art svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .cath-companion-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   /* The centre column's remaining shortfall (measured 2026-09-26: 142-232px across repeated runs, all with
      the same fixed content around it) comes entirely from `.actions` itself varying game-state to
      game-state (233-323px measured across those same runs) — one button per legal region/card/quantity
