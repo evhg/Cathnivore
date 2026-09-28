@@ -320,17 +320,24 @@ ${hands(C.camelShade, 380)}`
 // paths above), so her hands rest there, lightly clasped. cy is the sleeve tip's y, shared with the
 // outfit's own sleeve paths so the cuffs and hands line up exactly.
 function hands(cuffShade: string, cy: number): string {
+  const x = 199
+  // Asymmetric on purpose: her far hand (fingers) peeks out low and to the left, mostly covered by her
+  // near hand resting loosely on top, thumb wrapped over the right side. A first version drew a
+  // symmetric double lobe here that a gate-8 review read as a heart rather than clasped hands — this
+  // shape avoids that by keeping only one hand's outline dominant, with the other just a sliver beneath.
   return `<path fill="none" stroke="${cuffShade}" stroke-width="1.6" stroke-linecap="round" d="M186 ${cy - 6} Q200 ${cy} 214 ${cy - 6}"/>
+<ellipse cx="${x - 12}" cy="${cy + 15}" rx="8" ry="11" fill="${SKIN}" stroke="${C.ink}" stroke-width="1.5" transform="rotate(20 ${x - 12} ${cy + 15})"/>
 <path fill="${SKIN}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="
-M181 ${cy - 4}
-C175 ${cy} 173 ${cy + 10} 179 ${cy + 18}
-C185 ${cy + 25} 195 ${cy + 25} 199 ${cy + 19}
-C203 ${cy + 25} 213 ${cy + 25} 219 ${cy + 18}
-C225 ${cy + 10} 223 ${cy} 217 ${cy - 4}
-C211 ${cy + 3} 205 ${cy + 6} 199 ${cy + 4}
-C193 ${cy + 6} 187 ${cy + 3} 181 ${cy - 4} Z"/>
-<path fill="none" stroke="${C.skinDeep}" stroke-width="1.1" stroke-linecap="round" d="M187 ${cy + 6} Q191 ${cy + 13} 187 ${cy + 19} M211 ${cy + 6} Q207 ${cy + 13} 211 ${cy + 19}"/>
-<ellipse cx="199" cy="${cy + 12}" rx="3.4" ry="4.2" fill="${C.skinShade}" opacity="0.55"/>`
+M${x - 15} ${cy + 2}
+C${x - 7} ${cy - 4} ${x + 7} ${cy - 4} ${x + 16} ${cy + 3}
+C${x + 21} ${cy + 8} ${x + 19} ${cy + 17} ${x + 11} ${cy + 21}
+C${x + 1} ${cy + 25} ${x - 10} ${cy + 23} ${x - 16} ${cy + 17}
+C${x - 20} ${cy + 12} ${x - 19} ${cy + 5} ${x - 15} ${cy + 2} Z"/>
+<path fill="none" stroke="${C.skinDeep}" stroke-width="1.1" stroke-linecap="round" d="
+M${x - 7} ${cy + 2} Q${x - 5} ${cy + 9} ${x - 9} ${cy + 15}
+M${x} ${cy + 1} Q${x + 2} ${cy + 9} ${x - 2} ${cy + 17}
+M${x + 7} ${cy + 2} Q${x + 9} ${cy + 10} ${x + 5} ${cy + 18}"/>
+<path fill="${C.skinShade}" stroke="${C.ink}" stroke-width="1.4" stroke-linejoin="round" d="M${x + 12} ${cy + 4} C${x + 17} ${cy + 6} ${x + 18} ${cy + 12} ${x + 13} ${cy + 15} C${x + 10} ${cy + 12} ${x + 9} ${cy + 7} ${x + 12} ${cy + 4} Z"/>`
 }
 
 function accessories(outfit: CathOutfit): string {
