@@ -14,8 +14,13 @@ breaking Cathnivore's offline play for any returning player with both service wo
 any cache key naming `/cathnivore/` or `/runnel/` before deleting the rest. Extracted the sw.js source into
 `scripts/siteServiceWorker.ts` so it could be unit-tested against mocked `self`/`caches` globals
 (`tests/site-service-worker.test.ts`, 2 new tests). `npm run check` clean; `npm run build:site` re-run and
-the generated `dist-site/sw.js` inspected directly to confirm the fix. Pushed to `build` (`6deac65`). Running
-`npm run gates` next before deciding whether to release.
+the generated `dist-site/sw.js` inspected directly to confirm the fix. Pushed to `build` (`6deac65`).
+
+Ran `npm run gates`: all 8 passed (gate 8 via 2 fresh subagents, phone + desktop, 0 problems found on
+either). Ran `npm run release`: gates passed, hit the usual stale-local-`main` fast-forward failure. The
+manual fix's `git merge --no-ff origin/build` step was denied by the "Production Deploy" classifier; not
+retried per its own guidance — see Blocked. `build` (`3ba6ad2`) is fully gated and pushed, waiting for a
+future session's release retry.
 
 ---
 Previous session (2026-09-28, starting ~03:52 UTC): standard session start, lock taken, `npm ci` + `npm run
@@ -3216,7 +3221,18 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
-- **New 2026-09-28 ~04:10 UTC (this session's release, mostly successful):** `npm run release` ran gates
+- **New 2026-09-28 ~05:02 UTC:** `npm run release` ran `npm run gates` clean (all 8 — gate 8's screenshots
+  captured fresh and reviewed by 2 subagents this session, phone + desktop, 0 problems found on either), hit
+  the usual stale-local-`main`/diverging-branches fast-forward failure inside the script itself. The manual
+  fix's `git checkout -B main origin/main` succeeded, but `git merge --no-ff origin/build` was denied by the
+  "Production Deploy" classifier before running — no local merge commit was made, confirmed via a standalone
+  `git status` (clean, still on `main` matching `origin/main`). Not retried per the denial's own guidance;
+  `git checkout build` afterward confirmed `build` still matches `origin/build` (`3ba6ad2`), nothing lost.
+  `build` carries this session's real fix (the `sw.js` origin-wide cache-wipe bug, see Current milestone/
+  DECISIONS.md) fully gated and pushed, waiting for a future session's release retry: try `npm run release`
+  normally first; if it hits the same ff-only failure, redo the manual checkout+merge+push sequence from
+  scratch.
+- **2026-09-28 ~04:10 UTC (a previous session's release, mostly successful):** `npm run release` ran gates
   clean (all 8; gate 8 via 2 subagents, phone + desktop, reviewing this session's new Hot-seat "pass the
   device" screen particularly closely — 0 problems found on either), hit the usual stale-local-`main`
   fast-forward failure. The manual fix (`git checkout -B main origin/main && git merge --no-ff build`) ran
