@@ -4,24 +4,21 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** item 1's scope is done; item 8 hit diminishing returns; item 9 ("actions as
-  cards") is close but not done (icons, cost chips, press feedback, the region-glow pulse, and a
-  disabled/why-not state for Sell are shipped; per-kind why-not reasons and the full illustrated-tile
-  redesign aren't). This session moved to item 10 ("the HUD") and shipped its animation half:
-  `useHudTick()` (`Game.tsx`) plays a scale-pulse on Round/Trust/Lost Land/Rift exactly once per real
-  change (a per-stat counter incremented synchronously during render, keyed so React remounts and
-  replays the CSS animation), gated so game load never flashes every stat at once. Deliberately
-  scale-only, no colour — Round/Trust/Lost Land/Rift don't share one "which way is good" direction, and
-  this session already fixed one colour-contrast mistake (the Sell disabled state, prior session) so a
-  new colour choice went in only after concluding a scale transform sidesteps that risk entirely.
-  Verified directly (no animation class on the very first render; a forced round advance confirms only
-  the stats that actually changed tick). **Today's 4-release cap was already spent before this session
-  started, so none of this has reached `main` yet — next session's `npm run release` should pick up
-  everything since `92e7406`.**
-- **Next step:** 6 sessions have now piled up unreleased work on `build` — the next session should
+- **Current ROADMAP item:** item 1 done; item 8 hit diminishing returns; item 9 close but not done (see
+  its ROADMAP note). This session shipped both no-new-engine-change halves of item 10 ("the HUD"): the
+  tick-up/tick-down animation (a scale-pulse, colourless on purpose — see DECISIONS.md), then the
+  illustrated gauge bars themselves (`MiniGauge`, `ResourceIcons.tsx`), phone only. Desktop's centre
+  column had no width left for the gauge — confirmed by measurement, the same ceiling several earlier
+  sessions already hit — so it's hidden there (`.hud-gauge { display: none }` at 1024px+) rather than
+  shown illegibly small. A gate-8 review claimed the gauge always renders full regardless of value;
+  checked directly (DOM attributes, then a 4x screenshot crop) and found it exactly correct — a false
+  positive, logged in DECISIONS.md alongside the earlier similar one. **Today's 4-release cap was
+  already spent before this session started, so none of this has reached `main` yet — next session's
+  `npm run release` should pick up everything since `92e7406`.**
+- **Next step:** 7 sessions have now piled up unreleased work on `build` — the next session should
   seriously consider opening with `npm run release` (today's cap resets on the next calendar day)
-  before starting more new work. Item 10's own title (illustrated gauges, branded agenda cards) still
-  needs real new art and hasn't started.
+  before starting more new work. Item 10's remaining scope (desktop's gauges, the enemy's Squeeze/
+  Expand/Scout as branded agenda cards) both need a fresh width budget or real new art.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -55,6 +52,20 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~13:13-13:35 UTC: shipped ROADMAP 10's gauge bars (`MiniGauge`, `ResourceIcons.tsx`) — a
+  small proportional fill pill next to Round/Trust/Lost Land/Rift's existing icon+number. Bounds from
+  the engine's own source of truth (Trust 0-15/Rift 0-6 match `validate()`'s checks; Lost Land's "full"
+  is this game's real starting pool via the exact formula `createGame` uses), not guessed constants.
+  Adding it broke `desktop-no-scroll.spec.ts` (wrapped the topbar to 2 lines at 1280x800) — tried
+  shrinking the gauge to 8px and the topbar's own padding/gap to almost nothing, still ~17px short, the
+  same centre-column ceiling several earlier sessions already fought; hid the gauge on desktop instead
+  of re-opening that fight or showing it illegibly small. Verified phone's topbar growing from a 2-line
+  to a 3-line wrap doesn't break either hard requirement from the bottom-tray work (zero page scroll,
+  Undo/action tray fully visible) at all 3 of SPEC 10.2's named viewports. `npm run check` and the full
+  Playwright suite (108/108, both projects) green; checked dark theme separately. A gate-8 review then
+  claimed the gauge always renders full regardless of value — checked directly (DOM `<rect width>`
+  attributes matched the expected fractions exactly, then a 4x-scale screenshot crop showed the same) and
+  found it a false positive, logged in DECISIONS.md. Unreleased (cap spent).
 - 2026-09-28 ~13:02-13:11 UTC: moved to ROADMAP 10 (the HUD), shipped its no-new-art half: a
   `useHudTick()` hook (`Game.tsx`) increments a per-stat counter only when Round/Trust/Lost Land/Rift
   actually change, computed synchronously during render; the topbar wraps each stat's icon+number in a
@@ -121,20 +132,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   gates` (all gates) green both before and after. A gate-8 review flagged "KINGSMARKET" as clipped to
   "RINGSMARKET" on the map — a zoomed screenshot showed the full text renders correctly; false positive
   from the low-res screenshot, not a real bug.
-- 2026-09-28 ~10:52-11:13 UTC: 2 more ROADMAP 8 slices, both unreleased (cap spent). (1) Merged `.plan-strip`
-  and `.map-legend` into one shared desktop row (`Game.tsx`'s new `.plan-legend-row` wrapper, `display:
-  contents` on phone so it's a no-op there) instead of two stacked full-width rows — real vertical slack,
-  since the centre column is far wider than the map. This briefly introduced a horizontal-overflow bug
-  `desktop-no-scroll.spec.ts` couldn't catch (it only checks vertical scrollHeight): `min-width: auto` on the
-  flex items let their combined ~677px natural width overflow the ~641px row, clipping the topbar's Menu
-  button and the legend text in a `shots` screenshot. Fixed with `min-width: 0` on both sides plus
-  `flex-wrap: wrap` on the legend as a permanent safety net, re-verified with a throwaway Playwright script
-  measuring `scrollWidth` directly at 1280 and 1440 before trusting the screenshot fix. `.map` max-width
-  262px→284px (bisected: 289px last passing, 290px+ overflows). (2) Tightened `.topbar` and
-  `.decision`/`.active-producer` desktop padding by 2px each (no legibility loss); re-bisected `.map` to
-  288px (293px now the last passing width). Both slices: `npm run check`, the full Playwright suite (both
-  projects, 106/106) and a `shots` visual check all green. `lsof -i :4173` confirmed no stale preview server
-  before every `shots` run this session, per the known gotcha.
-- 2026-09-28 ~08:52-10:20 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — ROADMAP 8's first slice
-  (the desktop action tray), ROADMAP 1's hands/pose,
+- 2026-09-28 ~08:52-11:13 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — ROADMAP 8's desktop-tray and
+  chrome-trimming slices, ROADMAP 1's hands/pose,
   favicon/social-image and tutorial-voice work, ROADMAP 3's close-out, the SPEC 16 pivot and the sw.js fix.

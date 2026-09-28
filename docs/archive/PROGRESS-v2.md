@@ -89,3 +89,17 @@ Search with grep; never read in full.
   taller-than-1280x800 windows (a `shots` screenshot caught a dead gap below Undo otherwise). SPEC 10.3
   updated to match. `npm run check`, the full Playwright suite (both projects, 106/106) and `shots` all
   green; not released (today's cap already spent). ROADMAP 8 stays unchecked — see its note for what's left.
+- 2026-09-28 ~10:52-11:13 UTC: 2 more ROADMAP 8 slices, both unreleased (cap spent). (1) Merged `.plan-strip`
+  and `.map-legend` into one shared desktop row (`Game.tsx`'s new `.plan-legend-row` wrapper, `display:
+  contents` on phone so it's a no-op there) instead of two stacked full-width rows — real vertical slack,
+  since the centre column is far wider than the map. This briefly introduced a horizontal-overflow bug
+  `desktop-no-scroll.spec.ts` couldn't catch (it only checks vertical scrollHeight): `min-width: auto` on the
+  flex items let their combined ~677px natural width overflow the ~641px row, clipping the topbar's Menu
+  button and the legend text in a `shots` screenshot. Fixed with `min-width: 0` on both sides plus
+  `flex-wrap: wrap` on the legend as a permanent safety net, re-verified with a throwaway Playwright script
+  measuring `scrollWidth` directly at 1280 and 1440 before trusting the screenshot fix. `.map` max-width
+  262px→284px (bisected: 289px last passing, 290px+ overflows). (2) Tightened `.topbar` and
+  `.decision`/`.active-producer` desktop padding by 2px each (no legibility loss); re-bisected `.map` to
+  288px (293px now the last passing width). Both slices: `npm run check`, the full Playwright suite (both
+  projects, 106/106) and a `shots` visual check all green. `lsof -i :4173` confirmed no stale preview server
+  before every `shots` run this session, per the known gotcha.

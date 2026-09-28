@@ -124,10 +124,24 @@ Every visual item is done only when:
     Round going up is neutral, Trust going up is good, but Lost Land/Rift going up are both bad, so no
     single colour-by-direction would be honest across all 4 without tracking each one's own "which way is
     good" — left for a later pass if it's worth it. Verified directly (initial render has no animation
-    class; forcing a real round advance confirms only the stats that actually changed tick). Still open,
-    the item's actual title: the illustrated gauges themselves (Round/Trust/Lost Land/Rift are still plain
-    icon+number, not gauges) and the enemy's Squeeze/Expand/Scout slots as branded agenda cards — both need
-    real new art.)* Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
+    class; forcing a real round advance confirms only the stats that actually changed tick).
+    2026-09-28 (later same session): added the gauge bars themselves — `MiniGauge` (`ResourceIcons.tsx`),
+    a small proportional fill pill next to each stat's existing icon+number (not replacing the number,
+    SPEC 10.5 still wants it shown). Bounds come from the engine's own source of truth: Trust (0-15) and
+    Rift (0-6) match `validate()`'s range checks; Lost Land's "full" is this game's actual starting pool
+    (`lostLandPoolOverride ?? DIFFICULTY_SETTINGS[difficulty].lostLandPool`, the same formula
+    `createGame` uses), not a guessed constant. Phone only: fitting the gauge on desktop's centre column
+    would have re-opened the exact width fight several earlier sessions already spent real time
+    winning — measured that even an 8px sliver gauge with the topbar's padding/gap trimmed to almost
+    nothing still left the row ~17px too wide at 1280x800, wrapping the topbar and failing
+    `desktop-no-scroll.spec.ts`; hid it there instead (`.hud-gauge { display: none }` at 1024px+). Phone's
+    own topbar wrap grew from 2 lines to 3 (Menu now on its own line) — verified this doesn't break either
+    hard requirement from the bottom-tray work (zero page scroll, Undo/action tray fully visible) at all 3
+    of SPEC 10.2's named viewports. A gate-8 review claimed the gauge always renders full/identical
+    regardless of value; checked directly (DOM `<rect width>` attributes, then a 4x-scale screenshot crop)
+    and found the fills exactly correct — a false positive, see DECISIONS.md. Still open: the enemy's
+    Squeeze/Expand/Scout slots as branded agenda cards, and the desktop half of the gauges (needs its own
+    width budget win first, not attempted again this session).)* Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
 11. [ ] **Map art, part 1: regions.** Terrain illustration on each region (hedgerows, field rows, shoreline and boats, the Kingsmarket clock tower) and labels as painted signboards. It must pass the greyscale shape test (STYLE.md 2).
 12. [ ] **Map art, part 2: pieces.** The exact STYLE.md 6 pieces (awning Stall, glossy "0.99" Outlet, "SOLD" fence Buyout, "?" bubble Doubt), each with a placement animation.
 13. [ ] **Moments:** liberating a region (a seal stamp, colour blooming across the hex, Cath cheering), a Squeeze (glossy plastic creeping over a region), Lost Land, the Rift at 3 and 6, the enemy turn playback choreographed step by step, and the end of a round.

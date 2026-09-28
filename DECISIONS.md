@@ -96,3 +96,11 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   scale-only, no colour: Round/Trust/Lost Land/Rift don't share one "which way is good" direction, and
   picking a single colour anyway risked repeating the exact contrast mistake just made on Sell's disabled
   state — a scale transform sidesteps that class of bug entirely since it never touches text colour.
+- 2026-09-28: a gate-8 review of the new HUD `MiniGauge` bars claimed they always render full/identical
+  regardless of value — checked directly (DOM `<rect width>` attributes, then a 4x-scale screenshot crop)
+  and found the fills exactly correct (Round 1/10 ≈ empty, Trust 10/15 ≈ 2/3, Lost Land 10/10 full, Rift 0
+  empty). False positive, same pattern as an earlier session's "KINGSMARKET clipped" flag — a gate-8
+  review's screenshot-based read can misjudge small/subtle visual differences (a thin proportional bar,
+  a partly-obscured letter) that a zoomed crop or a direct attribute check resolves cleanly. Lesson
+  restated: don't trust a gate-8 finding about something *small* without a second, more direct check
+  before spending a fix cycle on it.
