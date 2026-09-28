@@ -16,6 +16,7 @@ export const SCENES: Record<'opening' | 'planUnlocked' | 'closing', Scene> = {
       { speaker: 'Tomas', line: 'Two regions down. And—' },
       { speaker: 'Cath', line: "Did you miss me? Don't answer, I already know." },
       { speaker: 'Ines', line: 'How are you even here.' },
+      { speaker: 'Cath', line: "Bea had her school play. I was never missing that for a corporate land grab." },
       { speaker: 'Cath', line: 'A very good lawyer and a very bad case against me. Now. Pass me my Plan.' },
     ],
   },
