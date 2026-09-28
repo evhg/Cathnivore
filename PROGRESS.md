@@ -16,6 +16,25 @@ logged under Blocked, switched back to `build`. Corrected a stale, over-optimist
 that claimed this denial was resolved — it has recurred in most sessions since, per this file's own Blocked
 log.
 
+Used the remaining session time for 2 more rounds of subagent QA (4 more subagents total, CLAUDE.md's 2-at-
+once cap respected each round), then re-ran `npm run gates`/attempted the release merge again after each
+fix — denied again both times, logged as separate Blocked entries. Real bugs found and fixed this session
+(full detail in DECISIONS.md):
+1. Map region textures reading as flat grey in gate 8's mandated greyscale screenshot (the fix described
+   above).
+2. `--soil` (STYLE.md 3.1: headings/borders) had no dark-mode override at all, ~2.17:1 contrast on dark
+   paper — fixed, plus added the missing forced-dark-theme scene accessibility test that let it go
+   undetected.
+3. The Farm/Market/Cath's Plan/Log bottom sheets were missing `.native-app` safe-area-bottom padding that
+   `.topbar`/`.controls` already had, so their last row would sit under the iPhone home indicator.
+4. Agenda cards had no mechanical rules-text field at all (SPEC 10.5) — all 24 cards showed one identical
+   generic sentence in the Rules Reference. Added hand-written `text` to all 24, wired into the Rules
+   Reference, plus a test per card.
+Two further real findings were logged but **not fixed this session** (out of time budget, not quick fixes):
+the "look at the top card" info Schemes (Reconnaissance/Paper Trail/Weather Eye/Steak-out) never actually
+show the peeked card to the player despite being correctly marked irreversible, and Hot-seat mode has no
+turn-transition/"pass the device" screen. Both added to Blocked below for a future session.
+
 Previous session (2026-09-28, starting ~00:52 UTC): standard session start, lock taken, `npm ci` + `npm run
 check` clean on `build` HEAD (`ea919fd`). Ran `npm run release`: gates 1-7 passed clean (gate 8 screenshots
 unchanged from the prior session's own subagent-reviewed pass), hit the usual stale-local-`main` fast-forward
@@ -3060,6 +3079,20 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [ ] final report in `PROGRESS.md`
 - [ ] create `DONE`
 
+
+### Known issues found 2026-09-28, not yet fixed (both real, neither release-blocking per SPEC 1.3's
+priority order — correctness of implemented rules outranks these but neither is a scored-rule bug)
+- [ ] The 4 "look at the top card" info Schemes (Reconnaissance, Paper Trail, Weather Eye, Steak-out —
+  `src/content/schemes.ts`) never show the player what was peeked: their `effect` is a no-op by design
+  ("UI-only reveal") but no UI anywhere actually surfaces the peeked card, so a player pays Goodwill, sees
+  nothing change, and loses Undo (correctly `irreversible: true`) for a reveal that never happened on
+  screen. Fix needs a small `GameEvent`/log field (e.g. `schemePlayed` gaining an optional `peekedCard`) plus
+  a UI surface for it (a toast, a log line, or a small reveal panel) — bigger than a text fix, hence deferred.
+- [ ] Hot-seat mode has no turn-transition/"pass the device" screen — turns switch with only the active-
+  producer header changing, even though the mode-picker's own copy promises "pass the device back and
+  forth" (`src/App.tsx`). Not a strict SPEC violation (SPEC 2 only requires "2 humans taking turns on one
+  device," no literal prompt mandated), but a real UX gap a player could miss. Lower priority than the item
+  above since it's polish, not a mechanic that silently does nothing.
 
 ### Portfolio (owner request, 2026-09-27; SPEC 15)
 - [x] Games landing page at `/` (`site/`), full-screen WebGL farmland scene, cards for both games
