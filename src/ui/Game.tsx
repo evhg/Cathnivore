@@ -50,7 +50,8 @@ import {
   SellIcon,
   SupplyIcon,
 } from './icons/ActionIcons'
-import type { Action, GameEvent, GameState, ProducerId, RegionId, ResourceKind } from '../engine/types'
+import { RegionTypeIcon, romanStage } from './icons/RegionTypeIcon'
+import type { Action, GameEvent, GameState, ProducerId, RegionId, RegionType, ResourceKind } from '../engine/types'
 import type { Mode } from './Setup'
 import type { TutorialStep } from '../content/chapters'
 import type { Scene as SceneData } from '../content/story/types'
@@ -151,6 +152,17 @@ function pressureLabel(card: GameState['squeeze']): string {
   if (!card) return '—'
   if (card.regionTypes.length > 0) return card.regionTypes.join('+')
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
+}
+
+// STYLE.md 8's Pressure card: "one or two region-type icons." A scripted card (SPEC 8.1) has no
+// `regionTypes` of its own, only specific `regions` — derived here via each region's own type, deduped,
+// so the icon still shows correctly for both the real Pressure deck and a campaign chapter's scripted
+// sequence, the same fallback `pressureLabel` above already uses for its text.
+function pressureIconTypes(card: GameState['squeeze']): RegionType[] {
+  if (!card) return []
+  if (card.regionTypes.length > 0) return card.regionTypes
+  const types = (card.regions ?? []).map((r) => REGIONS[r].type)
+  return [...new Set(types)]
 }
 
 // ROADMAP 10 "illustrated gauges": Public Trust's and Rift's fixed ranges, matching the exact bounds
@@ -887,6 +899,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <section className="plan-strip">
           {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
             const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
+            const card = state[slot]
             return (
               <span key={slot} className="plan-strip-item">
                 <button
@@ -896,6 +909,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                   onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
                 >
                   {slotLabel}: {pressureLabel(state[slot])}
+                  {card && (
+                    <span className="plan-strip-card-meta">
+                      <span className="plan-strip-stage">{romanStage(card.stage)}</span>
+                      {pressureIconTypes(card).map((type) => (
+                        <RegionTypeIcon key={type} type={type} size={13} />
+                      ))}
+                    </span>
+                  )}
                 </button>
                 {/* A separate trigger, not nested inside the button above: that button already has its own
                     tap meaning (toggle the map highlight), so a tooltip needs its own affordance rather than
