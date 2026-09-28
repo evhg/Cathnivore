@@ -38,6 +38,16 @@ import {
   RiftIcon,
   RoundIcon,
 } from './icons/ResourceIcons'
+import {
+  GraftIcon,
+  InvestIcon,
+  OpenStallIcon,
+  RebutIcon,
+  RoleIcon,
+  SchemeIcon,
+  SellIcon,
+  SupplyIcon,
+} from './icons/ActionIcons'
 import type { Action, GameEvent, GameState, ProducerId, RegionId, ResourceKind } from '../engine/types'
 import type { Mode } from './Setup'
 import type { TutorialStep } from '../content/chapters'
@@ -142,6 +152,22 @@ function pressureLabel(card: GameState['squeeze']): string {
 }
 
 const COST_ICON: Record<ResourceKind, typeof ProduceIcon> = { produce: ProduceIcon, marks: MarksIcon, goodwill: GoodwillIcon }
+
+// ROADMAP 9 "an icon per action" (STYLE.md 5.1): a leading icon inside each action button, before the
+// label. `supplyOutlets`/`supplyBuyout` share one icon (both are "Supply," just a different piece
+// removed); `decide`/`tearUpContract` have none yet (a forced choice and a rare campaign-only action,
+// neither part of the core 7-actions-plus-role set STYLE.md 5.1 documents).
+const ACTION_ICON: Partial<Record<Action['kind'], typeof OpenStallIcon>> = {
+  openStall: OpenStallIcon,
+  supplyOutlets: SupplyIcon,
+  supplyBuyout: SupplyIcon,
+  rebut: RebutIcon,
+  invest: InvestIcon,
+  sell: SellIcon,
+  scheme: SchemeIcon,
+  graft: GraftIcon,
+  role: RoleIcon,
+}
 
 // ROADMAP 9 "cost chips shown with resource tokens": a small icon+number badge inside an action button,
 // next to `actionLabel`'s existing cost-as-text (e.g. "(4 Marks)") — additive, not a replacement, so no
@@ -611,10 +637,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <>
           {standalone.map(({ index, action: a }) => {
             const term = actionTermFor(a)
+            const Icon = ACTION_ICON[a.kind]
             return (
               <span key={index} className="action-item">
                 <button onClick={() => act(index)}>
-                  {actionLabel(a, state)}
+                  <span className="action-label">
+                    {Icon && <Icon size={18} />}
+                    {actionLabel(a, state)}
+                  </span>
                   <ActionCostChip cost={actionCost(a, state)} />
                 </button>
                 {term && (
@@ -630,10 +660,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             const firstAction = actions[group.entries[0]!.index]!
             const term = actionTermFor(firstAction)
             const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
+            const Icon = ACTION_ICON[firstAction.kind]
             return (
               <span key={key} className="action-item">
                 <button onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
-                  {single ? actionLabel(firstAction, state) : `${group.label}…`}
+                  <span className="action-label">
+                    {Icon && <Icon size={18} />}
+                    {single ? actionLabel(firstAction, state) : `${group.label}…`}
+                  </span>
                   <ActionCostChip cost={cost} />
                 </button>
                 {term && (

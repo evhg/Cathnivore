@@ -728,6 +728,22 @@ h3 {
   text-align: left;
 }
 
+/* ROADMAP 9 "an icon per action" (STYLE.md 5.1): the icon and the label text share this wrapper so the
+   button's own `justify-content: space-between` (above) only ever splits 2 children — this span and
+   `.action-cost` — instead of spreading an icon/text/chip trio unevenly across the row. `min-width: 0`
+   lets the label itself still wrap/shrink inside it on narrow layouts (desktop's 3-column action grid
+   already relies on that, see the `.action-item > button:first-child` override further down). */
+.action-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.action-label svg {
+  flex: none;
+}
+
 /* ROADMAP 9 "cost chips shown with resource tokens": a small pill inside the action button, additive to
    `actionLabel`'s existing text cost (not a replacement — several e2e tests match button names by
    prefix, so the text stays exactly as it was). Reuses the same resource icons the topbar/active-producer

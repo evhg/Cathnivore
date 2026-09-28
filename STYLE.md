@@ -111,6 +111,19 @@ Icons are flat fills with a 2 px `--ink` outline and rounded joins, and must sta
 | Round | calendar leaf |
 | Actions left | filled or empty dots |
 
+### 5.1 Action icons (ROADMAP 9)
+Same 24 px grid, flat fill, 2 px ink outline. Sits at the start of each action button, before the label.
+| Action | Icon |
+|---|---|
+| Sell | a downward arrow feeding into a wheat coin |
+| Invest | a paper card with a wheat coin badge at top right (echoes the Improvement card itself) |
+| Scheme | a folded paper dart (a note "sent" — Cath's Plan cards are "notes from her pocket") |
+| Graft | a thin pasture-green sprout growing from a small clay soil mound |
+| Open Stall | the Stall piece's own scalloped awning, in clay rather than a producer colour (no producer context yet at icon scale) |
+| Supply | a faded Outlet box struck through with a clay X |
+| Rebut | a faded Doubt bubble struck through with a clay X |
+| Role | a plain wheat 5-point star badge (one shared icon; the 4 producers' role abilities differ too much for a per-role icon yet) |
+
 ## 6. Game pieces (SVG, 32 px on the map, readable at 20 px)
 | Piece | Shape | Material |
 |---|---|---|
