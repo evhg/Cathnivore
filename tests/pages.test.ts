@@ -19,9 +19,9 @@ describe('privacy and support pages', () => {
     expect(support).toContain('claude@cathnivore.com')
   })
 
-  it('both pages link back to the title screen and to each other', () => {
+  it('both pages link back to Cathnivore (not the portfolio landing page, SPEC 15) and to each other', () => {
     for (const page of [privacy, support]) {
-      expect(page).toContain('href="/"')
+      expect(page).toContain('href="/cathnivore/"')
     }
     expect(privacy).toContain('href="/support"')
     expect(support).toContain('href="/privacy"')

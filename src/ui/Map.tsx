@@ -69,27 +69,35 @@ const REGION_PATTERN_ID: Record<RegionType, string> = {
 function RegionTextureDefs() {
   return (
     <defs>
-      {/* Pasture: short diagonal strokes. */}
+      {/* Pasture: short diagonal strokes. STYLE.md 3.2 specifies "8% ink," but a 2026-09-28 gate-8 review
+          (2 subagents, phone + desktop) found the region textures were reading as flat, uniform grey in
+          the mandated greyscale screenshot at map scale — the plain 8% opacity anti-aliases away on thin
+          strokes/small dots at the size a region hex actually renders. STYLE.md 2.1 ("Legibility first")
+          and 2.3 ("shape before colour... a subagent checks it") outrank 3.2's literal number when they
+          conflict, so ink coverage is raised here (and below) until the greyscale test actually passes,
+          not just nominally matches the 8% figure. */}
       <pattern id="texture-pasture" width={10} height={10} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-        <line x1={0} y1={0} x2={0} y2={10} stroke="var(--ink)" strokeWidth={1.6} opacity={0.08} />
+        <line x1={0} y1={0} x2={0} y2={10} stroke="var(--ink)" strokeWidth={1.8} opacity={0.16} />
       </pattern>
-      {/* Crop: dotted furrow rows. Tile halved and dots enlarged from an earlier pass (2026-09-26) that
-          rendered invisibly on the desktop map, which STYLE.md 3.2 shrinks well below the phone map's
-          size (SPEC 10.3 sets no desktop map size) — a sparse, single-repeat-per-region tile anti-aliases
-          away at that physical size, unlike pasture/capital's denser tiling. A smaller, denser tile repeats
-          enough times to survive the downscale, matching STYLE.md 3.2's greyscale legibility test at every
-          map size, not just the phone one. Ink stays at the spec's 8%; only feature size/frequency changed. */}
+      {/* Crop: dotted furrow rows. Tile halved and dots enlarged from an earlier pass (2026-09-26); ink
+          raised again 2026-09-28 (see the pasture comment above) after the 2026-09-26 pass was found still
+          only "faint but visible," not clearly legible. */}
       <pattern id="texture-crop" width={8} height={6} patternUnits="userSpaceOnUse">
-        <circle cx={2} cy={3} r={1.3} fill="var(--ink)" opacity={0.08} />
-        <circle cx={6} cy={3} r={1.3} fill="var(--ink)" opacity={0.08} />
+        <circle cx={2} cy={3} r={1.6} fill="var(--ink)" opacity={0.2} />
+        <circle cx={6} cy={3} r={1.6} fill="var(--ink)" opacity={0.2} />
       </pattern>
-      {/* Coast: wave lines. Tile halved and stroke thickened for the same reason as Crop above. */}
-      <pattern id="texture-coast" width={10} height={6} patternUnits="userSpaceOnUse">
-        <path d="M0,3 Q2.5,0 5,3 T10,3" fill="none" stroke="var(--ink)" strokeWidth={1.5} opacity={0.08} />
+      {/* Coast: wave lines. Tile halved and stroke thickened in an earlier pass (2026-09-26); found
+          completely invisible in greyscale by 2 independent 2026-09-28 gate-8 subagents (the worst of the
+          4 region types — a thin curved stroke has less ink per unit area than pasture's straight line or
+          capital's rect outline at the same opacity), so this one gets the largest bump: a smaller, denser
+          tile plus a much thicker stroke and higher opacity. */}
+      <pattern id="texture-coast" width={7} height={5} patternUnits="userSpaceOnUse">
+        <path d="M0,2.5 Q1.75,0 3.5,2.5 T7,2.5" fill="none" stroke="var(--ink)" strokeWidth={2.2} opacity={0.26} />
       </pattern>
-      {/* Capital: cobblestone grid. */}
+      {/* Capital: cobblestone grid. Already the most legible of the 4 in the 2026-09-28 review; bumped
+          slightly anyway for consistency with the other 3. */}
       <pattern id="texture-capital" width={12} height={12} patternUnits="userSpaceOnUse">
-        <rect x={0} y={0} width={11} height={11} fill="none" stroke="var(--ink)" strokeWidth={1} opacity={0.08} />
+        <rect x={0} y={0} width={11} height={11} fill="none" stroke="var(--ink)" strokeWidth={1.2} opacity={0.14} />
       </pattern>
       {/* STYLE.md 6: Lost Land is a "cracked hatched tile" — a cross-hatch pattern under the crack lines
           drawn per-region below, replacing the earlier flat opacity tint. */}
@@ -241,6 +249,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
             key={id}
             className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}`}
             onClick={onSelect ? () => onSelect(id) : undefined}
+            aria-label={def.name}
           >
             <polygon
               points={hexPoints(x, y, HEX_R * GAP_SCALE)}
@@ -262,10 +271,6 @@ export default function Map({ state, highlight, onSelect }: Props) {
                 />
               </g>
             )}
-
-            <text x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
-              {def.name}
-            </text>
 
             {squeezeTargets.includes(id) && (
               <g transform={`translate(${x - 30}, ${y - HEX_R * 0.4})`}>
@@ -335,6 +340,19 @@ export default function Map({ state, highlight, onSelect }: Props) {
 
             {r.liberated && <CoopMarker x={x + HEX_R * 0.55} y={y + HEX_R * 0.55} />}
           </g>
+        )
+      })}
+      {/* Region names are drawn in their own pass, after every hex's fill/pattern, so a name near a
+          hex's pointy top vertex is never painted over by a neighbouring hex above it (gate 8 found
+          Oakvale's and Shingle Bay's labels — the two bottom-row regions in the flower, whose top
+          vertex sits against the row above rather than open background — clipped this way). */}
+      {active.map((id) => {
+        const def = REGIONS[id]
+        const { x, y } = hexCenter(id)
+        return (
+          <text key={`name-${id}`} x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
+            {def.name}
+          </text>
         )
       })}
     </svg>

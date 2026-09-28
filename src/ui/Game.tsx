@@ -12,7 +12,7 @@ import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
-import { enemyTurnEvents } from './enemyTurnLog'
+import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
 import LogSheet from './LogSheet'
 import FarmSheet from './FarmSheet'
@@ -61,6 +61,11 @@ interface Props {
   // below) — a reload mid-chapter needs this to resume back into the `chapterGame` screen rather than a
   // plain Quick Game that can never call `onChapterEnd`. Absent for Quick Game/hot-seat games.
   chapterId?: string
+  // SPEC 8.1/11.3: mid-game scene ids already dismissed in a prior session of this same save (from
+  // `SavedGame.dismissedMidScenes`, App.tsx's `resume()`) — seeds `dismissedMidScenes` state so a scene
+  // dismissed just before a reload (before any further action) doesn't replay once more on resume (see
+  // DECISIONS.md). Absent for a fresh game or an older save.
+  initialDismissedMidScenes?: string[]
 }
 
 // SPEC 10.2 Game screen. Plain controls for now — see PROGRESS.md M3 for what's still missing (the SVG
@@ -89,10 +94,10 @@ function pressureLabel(card: GameState['squeeze']): string {
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
 }
 
-export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId }: Props) {
+export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
   const [tutorialIndex, setTutorialIndex] = useState(0)
-  const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>([])
+  const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>(initialDismissedMidScenes ?? [])
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
@@ -133,6 +138,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // engine state itself never carries this narration, since it's not a rule, so it lives alongside the UI
   // state that already tracks everything else not worth serializing into a save (`pendingChoice`, etc.).
   const [aiReasons, setAiReasons] = useState<Record<number, string>>({})
+  // Hot-seat "pass the device" screen (Known issues, PROGRESS.md): the mode-picker already promises
+  // "pass the device back and forth," but turns used to switch with only the active-producer header
+  // changing, an easy-to-miss cue on a shared screen. `passAckRef` is the producer whose turn the screen
+  // is already showing; whenever `state.activeProducer` moves past it (a new turn, or the next round's
+  // first player after enemy-turn playback finishes), a blocking screen names the next producer until
+  // dismissed. Solo/campaign games have at most one human seat, so this never fires there.
+  const passAckRef = useRef<ProducerId>(initial.activeProducer)
+  const [passDeviceFor, setPassDeviceFor] = useState<ProducerId | null>(null)
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -140,8 +153,8 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   }, [state])
 
   useEffect(() => {
-    saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory, chapterId })
-  }, [state, seed, chapterId])
+    saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory, chapterId, dismissedMidScenes })
+  }, [state, seed, chapterId, dismissedMidScenes])
 
   // SPEC 6/8.1: in Solo mode, the second producer is played by the AI teammate — the real MCTSBot-in-Worker
   // bot below, not a HeuristicBot stand-in (see the effect further down that wires `aiWorker.ts`).
@@ -174,19 +187,22 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   }
 
   // SPEC 8.1/8.2 ch3: a chapter's mid-game scripted scene (e.g. the round-5 Wholesome Hollow reveal) pauses
-  // play until dismissed — found via `state.log`'s `{type: 'trigger'}` events, which `round.ts` appends the
-  // moment the chapter's `scriptedTrigger.round` is reached. Autoplay (e2e/the AI teammate) skips straight
-  // past it, matching how it already skips the enemy-turn caption playback.
-  const pendingTrigger = midGameScenes
-    ? (state.log.find((e) => e.type === 'trigger' && !dismissedMidScenes.includes(e.sceneId)) as
-        | Extract<GameEvent, { type: 'trigger' }>
-        | undefined)
-    : undefined
+  // play until dismissed. Autoplay (e2e/the AI teammate) skips straight past it, matching how it already
+  // skips the enemy-turn caption playback. See `pendingMidSceneTrigger`'s own comment for why this is
+  // derived from the log rather than from `dismissedMidScenes` component state alone (that state resets on
+  // every reload, which used to make the scene reappear and re-block play long after it was dismissed).
+  const pendingTrigger = midGameScenes ? pendingMidSceneTrigger(state.log, dismissedMidScenes) : undefined
   const pendingMidScene = pendingTrigger && !autoplayRef.current ? midGameScenes![pendingTrigger.sceneId] : undefined
 
   useEffect(() => {
     if (autoplayRef.current && pendingTrigger) setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])
   }, [pendingTrigger])
+
+  useEffect(() => {
+    if (mode !== 'hotseat' || autoplayRef.current) return
+    if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
+    if (state.activeProducer !== passAckRef.current) setPassDeviceFor(state.activeProducer)
+  }, [mode, state, pendingEnemyTurn.length, pendingMidScene])
 
   useEffect(() => {
     if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
@@ -227,11 +243,16 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       // budget, fall back to the fast, synchronous HeuristicBot rather than leaving the AI teammate's turn
       // — and the whole game — stuck forever with no visible failure and no recovery path.
       const fallBackToHeuristic = (why: string) => {
-        if (settled || cancelled) return
-        settled = true
+        // Unregister this turn's listeners before the early return, matching `onMessage`'s order below —
+        // otherwise a turn whose effect gets cancelled (state advanced, e.g. an undo, or unmount) before a
+        // late `error` event or a late watchdog fire left its now-stale closures permanently attached to
+        // the long-lived worker (a listener leak, one pair per such turn — never a stale action, since the
+        // `settled`/`cancelled` guard still blocked `advance()` correctly either way; see DECISIONS.md).
         worker.removeEventListener('message', onMessage)
         worker.removeEventListener('error', onError)
         clearTimeout(watchdog)
+        if (settled || cancelled) return
+        settled = true
         aiWorkerRef.current?.terminate()
         aiWorkerRef.current = null
         // SPEC 9.2's "each AI action shows a one-line reason in the log" must still hold on this path —
@@ -324,6 +345,24 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
 
   if (pendingMidScene && pendingTrigger) {
     return <Scene scene={pendingMidScene} onContinue={() => setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])} />
+  }
+
+  if (passDeviceFor) {
+    return (
+      <main className="scene pass-device">
+        <Portrait character={passDeviceFor} size={96} />
+        <h2>Pass the device</h2>
+        <p>It's {PRODUCERS[passDeviceFor].name}'s turn.</p>
+        <button
+          onClick={() => {
+            passAckRef.current = passDeviceFor
+            setPassDeviceFor(null)
+          }}
+        >
+          Continue
+        </button>
+      </main>
+    )
   }
 
   const rules = resolveRules(state)
@@ -452,7 +491,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       <main className="game">
       <header className="topbar">
         <span>
-          <RoundIcon /> Round {state.round}/10
+          <RoundIcon /> Round {state.round}/{state.round + state.pressureDeck.length}
         </span>
         <span>
           <Tooltip term="Public Trust">

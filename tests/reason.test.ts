@@ -110,4 +110,56 @@ describe('reasonForAction', () => {
       expect(reason.endsWith('.')).toBe(true)
     }
   })
+
+  // A gate-2 style audit found `decide`'s reason was a single content-free fallback for all 4 pending-
+  // decision kinds (SPEC 9.1), unlike every other action kind above which inspects the real action/state.
+  // These give each kind's real reason its own targeted test, matching the specific content a player would
+  // actually see in the AI log for a real strategic choice (which track, which faction, which region).
+  describe('decide reasons name the actual choice (SPEC 9.1 pending decisions)', () => {
+    it('squeezeProductionLoss: names the region and the lowered track', () => {
+      const state: GameState = {
+        ...baseState(),
+        pendingDecisions: [
+          { id: 'd1', kind: 'squeezeProductionLoss', producer: 'mara', region: 'brindleHills', options: ['produce', 'marks', 'goodwill'], applied: 'produce' },
+        ],
+      }
+      const action: Action = { kind: 'decide', decisionId: 'd1', choice: 'marks' }
+      expect(reasonForAction(state, action)).toBe('Lowering Marks production in Brindle Hills after the Squeeze.')
+    })
+
+    it('kingsmarketBonus: names the chosen production', () => {
+      const state: GameState = {
+        ...baseState(),
+        pendingDecisions: [{ id: 'd2', kind: 'kingsmarketBonus', producer: 'mara', options: ['produce', 'marks', 'goodwill'], applied: 'marks' }],
+      }
+      const action: Action = { kind: 'decide', decisionId: 'd2', choice: 'goodwill' }
+      expect(reasonForAction(state, action)).toBe('Choosing Goodwill for liberating Kingsmarket.')
+    })
+
+    it('riftSplitFaction: names the removed faction', () => {
+      const state: GameState = {
+        ...baseState(),
+        pendingDecisions: [{ id: 'd3', kind: 'riftSplitFaction', options: ['hollowell', 'candor'], applied: 'candor' }],
+      }
+      const action: Action = { kind: 'decide', decisionId: 'd3', choice: 'hollowell' }
+      expect(reasonForAction(state, action)).toBe('Splitting off Hollowell at Rift 6.')
+    })
+
+    it('riftSplitRemoval: names the faction and the region a piece leaves', () => {
+      const state: GameState = {
+        ...baseState(),
+        pendingDecisions: [
+          { id: 'd4', kind: 'riftSplitRemoval', faction: 'hollowell', pieceKind: 'outlet', remaining: 2, options: ['highmoor', 'oakvale'], applied: 'highmoor' },
+        ],
+      }
+      const action: Action = { kind: 'decide', decisionId: 'd4', choice: 'oakvale' }
+      expect(reasonForAction(state, action)).toBe('Pulling a Hollowell piece out of Oakvale.')
+    })
+
+    it('falls back to a generic reason if the decision is somehow no longer pending', () => {
+      const state = baseState()
+      const action: Action = { kind: 'decide', decisionId: 'gone', choice: 'marks' }
+      expect(reasonForAction(state, action)).toBe('Making the required choice.')
+    })
+  })
 })

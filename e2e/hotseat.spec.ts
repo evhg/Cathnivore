@@ -26,11 +26,15 @@ test('Hot-seat: two full turns, undo, and reload mid-turn resume an identical st
   await page.getByRole('button', { name: 'Undo' }).click()
   await expect.poll(() => page.locator('.active-producer').innerText()).toBe(initial)
 
-  // First producer's full turn (3 actions, SPEC 4.5.2) hands the turn to the second producer.
+  // First producer's full turn (3 actions, SPEC 4.5.2) hands the turn to the second producer. The
+  // hand-off shows a blocking "pass the device" screen (Known issues, PROGRESS.md) until Continue is
+  // tapped, so the new producer's controls don't even render until then.
   const firstName = (await page.locator('.active-producer strong').innerText()).trim()
   await graft()
   await graft()
   await graft()
+  await expect(page.getByText('Pass the device')).toBeVisible()
+  await page.getByRole('button', { name: 'Continue' }).click()
   await expect(page.locator('.active-producer strong')).not.toHaveText(firstName)
 
   // SPEC 4.6: undo is scoped to "the current turn" — once the turn has passed to the next producer, the

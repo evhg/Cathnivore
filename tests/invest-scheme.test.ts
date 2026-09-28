@@ -384,4 +384,38 @@ describe('ongoing-ability Improvements added for the SPEC 7 effect-mix fix', () 
     state = applyAction(state, { kind: 'rebut', region: 'highmoor', count: 2 })
     expect(state.producers.mara.resources.goodwill).toBe(before - 2)
   })
+
+  // These three cards' ongoing effects live in actions.ts's rebut/sell/graft handlers (see the comments
+  // there); a gate-2 audit found their code comments claimed test coverage that didn't actually exist.
+  it('Soil Lab Report: Rebut removes 1 extra Doubt for free', () => {
+    let state = richMara(withClearableRegion(createGame(FULL_CONFIG, 5)))
+    state = withImprovement(state, 'soil-lab-report')
+    const before = state.producers.mara.resources.goodwill
+    state = applyAction(state, { kind: 'rebut', region: 'highmoor', count: 1 })
+    // Paid for removing 1 Doubt, but 2 are actually removed (the free bonus).
+    expect(state.producers.mara.resources.goodwill).toBe(before - 1)
+    expect(state.regions.highmoor.doubt).toBe(0)
+  })
+
+  it('without Soil Lab Report, Rebut only removes the Doubt paid for', () => {
+    let state = richMara(withClearableRegion(createGame(FULL_CONFIG, 5)))
+    state = applyAction(state, { kind: 'rebut', region: 'highmoor', count: 1 })
+    expect(state.regions.highmoor.doubt).toBe(1)
+  })
+
+  it('Polytunnel: Sell also yields 1 extra Goodwill', () => {
+    let state = richMara(createGame(FULL_CONFIG, 5))
+    state = withImprovement(state, 'polytunnel')
+    const before = state.producers.mara.resources.goodwill
+    state = applyAction(state, { kind: 'sell', count: 2 })
+    expect(state.producers.mara.resources.goodwill).toBe(before + 1)
+  })
+
+  it('Seed Library: Graft also yields 1 extra Marks', () => {
+    let state = createGame(FULL_CONFIG, 5)
+    state = withImprovement(state, 'seed-library')
+    const before = state.producers.mara.resources.marks
+    state = applyAction(state, { kind: 'graft' })
+    expect(state.producers.mara.resources.marks).toBe(before + 1 + 1)
+  })
 })

@@ -256,7 +256,7 @@ export const CHAPTER_3: Chapter = {
       highlight: null,
     },
     {
-      text: 'Liberate 3 of these 4 regions within 8 rounds to win.',
+      text: 'Liberate 3 of these 4 regions to win.',
       highlight: null,
     },
   ],

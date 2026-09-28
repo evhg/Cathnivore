@@ -198,3 +198,158 @@ describe('Every Agenda card resolves cleanly (SPEC 11.4 gate 2)', () => {
     })
   }
 })
+
+// SPEC 11.4 gate 2: the "resolves cleanly" loop above only checks validate() never fails — it never asserts
+// what a card actually *does*. A follow-up audit found 14 of the 24 cards had no test asserting their
+// specific numeric effect anywhere. These are computed by hand against the real SPEC 4.3 setup on
+// `createGame(FULL_CONFIG, ...)` (any seed — setup piece placement doesn't depend on the RNG): Kingsmarket
+// starts with 2 Outlets/1 Buyout/2 Doubt and 0 Stalls (guarded); every other region starts with 1 Outlet;
+// Saltmarsh/Shingle Bay (Coast) also start with 1 Doubt; Brindle Hills (Mara's home, Pasture) and Oakvale
+// (Tomas's home, Crop) are the only regions with Stalls (2 each). Ties in the "fewest Stalls" extremal pick
+// resolve to the first region in activeRegions order (Kingsmarket), since `extremeByStallCount`'s reduce
+// keeps the earliest region on a tie.
+describe('Every previously-untested Agenda card\'s specific numeric effect (SPEC 11.4 gate 2)', () => {
+  it('hollowell-support-local-farmers: converts 1 Outlet to a Buyout in the fewest-Stalls region (Kingsmarket)', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('hollowell-support-local-farmers')!
+    const afterEffect = card.effect(state)
+    expect(afterEffect.regions.kingsmarket.outlets).toBe(1)
+    expect(afterEffect.regions.kingsmarket.buyouts).toBe(2)
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.producers.mara.resources.marks).toBe(state.producers.mara.resources.marks - 1)
+    expect(afterBonus.producers.tomas.resources.marks).toBe(state.producers.tomas.resources.marks - 1)
+  })
+
+  it('hollowell-record-harvests: adds 1 Outlet only to a Pasture region that already has a Stall', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('hollowell-record-harvests')!
+    const after = card.effect(state)
+    expect(after.regions.brindleHills.outlets).toBe(2) // Pasture, has Mara's Stalls
+    expect(after.regions.oakvale.outlets).toBe(1) // Crop, has Tomas's Stalls, but wrong type
+    expect(after.regions.highmoor.outlets).toBe(1) // Pasture, but no Stall
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.producers.mara.resources.goodwill).toBe(state.producers.mara.resources.goodwill - 1)
+    expect(afterBonus.producers.tomas.resources.goodwill).toBe(state.producers.tomas.resources.goodwill - 1)
+  })
+
+  it('hollowell-billboard: adds 1 Doubt only to a Coast region that already has a Stall', () => {
+    let state = createGame(FULL_CONFIG, 1)
+    state = { ...state, regions: { ...state.regions, saltmarsh: { ...state.regions.saltmarsh, stalls: { mara: 1 } } } }
+    const card = AGENDA_CARDS_BY_ID.get('hollowell-billboard')!
+    const after = card.effect(state)
+    expect(after.regions.saltmarsh.doubt).toBe(2) // Coast, now has a Stall, started at 1
+    expect(after.regions.shingleBay.doubt).toBe(1) // Coast, but no Stall
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.producers.mara.resources.produce).toBe(state.producers.mara.resources.produce - 1)
+  })
+
+  it('hollowell-trademark-fresh: producers lose Marks, then every non-liberated Crop region gains 1 Outlet', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('hollowell-trademark-fresh')!
+    const afterEffect = card.effect(state)
+    expect(afterEffect.producers.mara.resources.marks).toBe(state.producers.mara.resources.marks - 1)
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.regions.rivermead.outlets).toBe(2)
+    expect(afterBonus.regions.oakvale.outlets).toBe(2)
+    expect(afterBonus.regions.highmoor.outlets).toBe(1) // Pasture, unaffected
+  })
+
+  it('hollowell-value-meal: adds 1 Outlet (unconditionally) to the fewest-Stalls region (Kingsmarket)', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('hollowell-value-meal')!
+    const afterEffect = card.effect(state)
+    expect(afterEffect.regions.kingsmarket.outlets).toBe(3)
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.producers.mara.resources.produce).toBe(state.producers.mara.resources.produce - 1)
+  })
+
+  it('hollowell-supply-chain: adds 1 Outlet only to a Crop region that already has a Stall', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('hollowell-supply-chain')!
+    const after = card.effect(state)
+    expect(after.regions.oakvale.outlets).toBe(2) // Crop, has Tomas's Stalls
+    expect(after.regions.rivermead.outlets).toBe(1) // Crop, but no Stall
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.producers.mara.resources.marks).toBe(state.producers.mara.resources.marks - 1)
+  })
+
+  it('candor-wellness-app: producers lose Goodwill, then every non-liberated Coast region gains 1 Doubt', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('candor-wellness-app')!
+    const afterEffect = card.effect(state)
+    expect(afterEffect.producers.mara.resources.goodwill).toBe(state.producers.mara.resources.goodwill - 1)
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.regions.saltmarsh.doubt).toBe(2)
+    expect(afterBonus.regions.shingleBay.doubt).toBe(2)
+  })
+
+  it('candor-more-research-needed: Public Trust -1, then the fewest-Stalls region (Kingsmarket) gains 1 Doubt', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('candor-more-research-needed')!
+    const afterEffect = card.effect(state)
+    expect(afterEffect.publicTrust).toBe(state.publicTrust - 1)
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.regions.kingsmarket.doubt).toBe(3)
+  })
+
+  it('candor-balanced-debate: adds 1 Doubt only to a Pasture region that already has a Stall', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('candor-balanced-debate')!
+    const after = card.effect(state)
+    expect(after.regions.brindleHills.doubt).toBe(1) // Pasture, has Mara's Stalls
+    expect(after.regions.highmoor.doubt).toBe(0) // Pasture, but no Stall
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.producers.mara.resources.goodwill).toBe(state.producers.mara.resources.goodwill - 1)
+  })
+
+  it('candor-wellness-index: producers lose Produce, then every region with 2+ Outlets (Kingsmarket) gains 1 Doubt', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('candor-wellness-index')!
+    const afterEffect = card.effect(state)
+    expect(afterEffect.producers.mara.resources.produce).toBe(state.producers.mara.resources.produce - 1)
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.regions.kingsmarket.doubt).toBe(3)
+    expect(afterBonus.regions.highmoor.doubt).toBe(0) // only 1 Outlet, unaffected
+  })
+
+  it('candor-sponsored-segment: adds 1 Doubt to every region with a Stall, of any type', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('candor-sponsored-segment')!
+    const after = card.effect(state)
+    expect(after.regions.brindleHills.doubt).toBe(1)
+    expect(after.regions.oakvale.doubt).toBe(1)
+    expect(after.regions.highmoor.doubt).toBe(0)
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.publicTrust).toBe(state.publicTrust - 1)
+  })
+
+  it('candor-second-opinion-discouraged: Public Trust -1, then producers lose Marks', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('candor-second-opinion-discouraged')!
+    const afterEffect = card.effect(state)
+    expect(afterEffect.publicTrust).toBe(state.publicTrust - 1)
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.producers.mara.resources.marks).toBe(state.producers.mara.resources.marks - 1)
+  })
+
+  it('candor-awareness-campaign: adds 1 Doubt to every non-liberated Pasture region, Stall or not', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('candor-awareness-campaign')!
+    const after = card.effect(state)
+    expect(after.regions.highmoor.doubt).toBe(1) // no Stall, still affected (unlike balanced-debate)
+    expect(after.regions.brindleHills.doubt).toBe(1)
+    const afterBonus = card.bonusEffect(state)
+    expect(afterBonus.producers.mara.resources.produce).toBe(state.producers.mara.resources.produce - 1)
+  })
+
+  it('candor-satisfaction-survey: producers lose Goodwill, then Public Trust -1 (capped, not per-region)', () => {
+    const state = createGame(FULL_CONFIG, 1)
+    const card = AGENDA_CARDS_BY_ID.get('candor-satisfaction-survey')!
+    const afterEffect = card.effect(state)
+    expect(afterEffect.producers.mara.resources.goodwill).toBe(state.producers.mara.resources.goodwill - 1)
+    const afterBonus = card.bonusEffect(state)
+    // 3 regions already have Doubt >= 1 at setup (Kingsmarket, Saltmarsh, Shingle Bay), but the loss is
+    // capped at 1 regardless of how many qualify.
+    expect(afterBonus.publicTrust).toBe(state.publicTrust - 1)
+  })
+})

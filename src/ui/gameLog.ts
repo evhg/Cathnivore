@@ -58,7 +58,8 @@ export function logCaption(event: GameEvent): string | null {
     case 'schemePlayed': {
       const card = SCHEMES_BY_ID.get(event.schemeId)
       const target = event.target ? ` in ${REGIONS[event.target].name}` : ''
-      return `${PRODUCERS[event.producer].name} plays ${card?.name ?? event.schemeId}${target}.`
+      const peek = event.peek ? ` Peeked: ${event.peek.join(', ')}.` : ''
+      return `${PRODUCERS[event.producer].name} plays ${card?.name ?? event.schemeId}${target}.${peek}`
     }
     case 'decision':
       return `Choice recorded: ${decisionChoiceName(event.choice)}.`

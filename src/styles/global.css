@@ -917,6 +917,19 @@ button.destructive {
   color: var(--soil);
 }
 
+/* Hot-seat "pass the device" screen (SPEC 2/10.2, Known issues) */
+.pass-device {
+  align-items: center;
+  text-align: center;
+}
+
+.pass-device h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
 /* Tutorial prompt banner (SPEC 8.1/10.2) */
 /* SPEC 8.1's "'?' link to the rules reference," inline with the tutorial prompt text. Reuses the
    fixed-fill/fixed-text pairing `.tutorial-prompt` itself uses (STYLE.md 3.5: `--wheat` never adapts to
@@ -1048,6 +1061,13 @@ html.native-app body {
 
 .native-app .controls {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Same safe-area gap as `.controls` above, missed for the Farm/Market/Cath's Plan/Log bottom sheets
+   (found in a 2026-09-28 QA pass): they slide up from the same bottom edge but only had a flat 20px of
+   padding, so their last row of content sat flush against the home-indicator area on-device. */
+.native-app .sheet {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 
 /* Setup and Settings screens (SPEC 10.1): plain semantic markup so far (M3/M6), but with no layout CSS at

@@ -8,7 +8,25 @@
 import { REGIONS, regionMatchesPressureSlot } from '../content/map'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
-import type { Action, GameState, RegionId } from '../engine/types'
+import type { Action, Faction, GameState, RegionId, ResourceKind } from '../engine/types'
+
+const RESOURCE_NAMES: Record<ResourceKind, string> = { produce: 'Produce', marks: 'Marks', goodwill: 'Goodwill' }
+const FACTION_NAMES: Record<Faction, string> = { hollowell: 'Hollowell', candor: 'Candor' }
+
+function decideReason(state: GameState, action: Extract<Action, { kind: 'decide' }>): string {
+  const decision = state.pendingDecisions.find((d) => d.id === action.decisionId)
+  if (!decision) return 'Making the required choice.'
+  switch (decision.kind) {
+    case 'squeezeProductionLoss':
+      return `Lowering ${RESOURCE_NAMES[action.choice as ResourceKind]} production in ${REGIONS[decision.region].name} after the Squeeze.`
+    case 'kingsmarketBonus':
+      return `Choosing ${RESOURCE_NAMES[action.choice as ResourceKind]} for liberating Kingsmarket.`
+    case 'riftSplitFaction':
+      return `Splitting off ${FACTION_NAMES[action.choice as Faction]} at Rift 6.`
+    case 'riftSplitRemoval':
+      return `Pulling a ${FACTION_NAMES[decision.faction]} piece out of ${REGIONS[action.choice as RegionId].name}.`
+  }
+}
 
 function targetedNextRound(state: GameState, region: RegionId): 'squeeze' | 'expand' | null {
   // Liberated regions ignore Scout and Expand (SPEC 4.8), so a targeted-looking match there is stale.
@@ -82,6 +100,6 @@ export function reasonForAction(state: GameState, action: Action): string {
     case 'tearUpContract':
       return 'Tearing up a Wholesome Hollow Contract before it costs more.'
     case 'decide':
-      return 'Making the required choice.'
+      return decideReason(state, action)
   }
 }

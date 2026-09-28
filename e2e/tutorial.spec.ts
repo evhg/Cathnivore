@@ -23,7 +23,7 @@ test('campaign chapter 1 ("Fresh Meat") is completed by following the tutorial p
   await expect(prompt).toContainText('Open a Stall')
   await expect(actions.getByRole('button', { name: 'Graft', exact: false })).toHaveCount(0)
   await actions.getByRole('button', { name: /^Open Stall/ }).click()
-  await page.locator('.region-hex', { hasText: 'Brindle Hills' }).click()
+  await page.locator('.region-hex[aria-label="Brindle Hills"]').click()
   // SPEC 10.2 targeting mode: tapping the region only stages the choice; a separate Confirm commits it.
   await actions.getByRole('button', { name: 'Confirm' }).click()
 

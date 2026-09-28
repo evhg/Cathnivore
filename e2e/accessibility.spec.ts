@@ -78,3 +78,17 @@ test('setup screen has no serious or critical accessibility issues in forced dar
   await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
   await assertNoSeriousIssues(page)
 })
+
+// `--soil` (headings on paper, `.scene-speaker` names) had no dark-mode override at all until a 2026-09-28
+// QA pass caught it (2.17:1 on the dark paper background) — undetected until then because no dark-theme
+// scene test existed, even though the light-mode scene test above did. This is that missing test.
+test('scene screen has no serious or critical accessibility issues in forced dark theme', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Settings').click()
+  await page.getByText('Dark', { exact: true }).click()
+  await page.getByRole('button', { name: 'Back' }).click()
+  await page.getByText('Campaign').click()
+  await page.getByRole('button', { name: /Fresh Meat/ }).click()
+  await expect(page.locator('.scene')).toBeVisible()
+  await assertNoSeriousIssues(page)
+})

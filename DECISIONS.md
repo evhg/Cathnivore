@@ -3010,3 +3010,353 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   unchanged beyond the lock-file churn; this was a verification-only session once the release path was
   blocked, which is itself real progress (gate 8 is now confirmed clean for this exact commit, not just
   "unchanged since an earlier review" as several recent Blocked entries had to say).
+- 2026-09-27 (~22:52 UTC, new session): gate 8's screenshot review found a real, previously-undetected bug
+  (this run's own subagent pair, not a stale note): the game screen's map legend (Outlet/Buyout/Doubt icons)
+  rendered as thin, unrecognisable slivers on phone. Diagnosed properly rather than patching the first
+  plausible theory — an initial guess (the flex row overflows 390px, so flexbox squashes the svg's width
+  but not its height) looked right from the screenshot alone, but a `flex-shrink:0` fix made no visible
+  difference. Rather than stack another guess on top, wrote a throwaway Playwright test reading
+  `getBoundingClientRect`/`getComputedStyle` on the actual legend `<svg>` elements: the DOM box was exactly
+  the intended 16x18px the whole time, so the bug was never in layout sizing. The same script then caught it
+  immediately: at the moment gate 8's screenshot fires (right after `.game` mounts), the legend's Outlet/
+  Buyout/Doubt icons — which reuse the map's `.enemy-piece` components — were sitting at
+  `transform: translateX(18px); opacity: 0`, the 0% frame of `.enemy-piece`'s 200ms "piece-delivery" CSS
+  entrance animation (meant for a piece being placed on the map, not a static legend key). A `waitForTimeout
+  (1000)` in the same script confirmed the icons render correctly once the animation finishes. Fix: a
+  `.map-legend-icon .enemy-piece { animation: none }` rule so the legend's icons never play that animation
+  in the first place (reverted the flex-shrink/flex-wrap changes from the wrong first theory, since they
+  turned out to change nothing and weren't needed). Verified the fix at the pixel level, not just by re-
+  reading the gate: rebuilt, re-ran `e2e/screenshots.spec.ts`, then cropped and zoomed the legend row in
+  both `phone-4-game.png` and `phone-5-map-greyscale.png` directly — all four icons (Outlet's shopfront box
+  and price tag, Buyout's fence and SOLD sign, Doubt's speech bubble and "?", the Co-op marker rosette) now
+  render in full, and stay shape-distinguishable in greyscale. Added a regression test to
+  `e2e/tooltip.spec.ts` asserting `getComputedStyle(...).animationName === 'none'` on every
+  `.map-legend-icon .enemy-piece`, so this can't silently regress. `npm run check` and a full `npm run
+  gates` (gates 1-7, gate 8 via 2 fresh subagents re-reviewing all 30 screenshots specifically for this fix
+  plus a full general pass) both came back clean. Pushed to `build` (`aeebb9c`).
+
+  Also worth noting for future sessions: this confirms the map's `.enemy-piece`/`.stall-piece` animation
+  classes are unsafe to reuse on any *static* UI element (only ever meant for a piece appearing live on the
+  map) — if a future session reuses `Outlet`/`Buyout`/`Doubt`/`Stall`/`CoopMarkerIcon` anywhere else (an
+  Improvement card icon, a rules-reference illustration, etc.), it needs the same
+  `animation: none` treatment or an early screenshot will show the same 0%-frame artifact.
+
+  Then ran `npm run release`: gates passed, the fast-forward step hit the usual stale-local-`main`/
+  diverging-histories failure (main's own `Merge build into main: release` commits are never a `build`
+  ancestor), and the documented manual fix (`git checkout -B main origin/main && git merge --no-ff build`)
+  ran clean with **no classifier denial** on the checkout, merge, or `git push origin main` — consistent
+  with CLAUDE.md's 2026-09-26 note that this restriction is intermittent, not standing; this session simply
+  didn't trip it. `git diff HEAD origin/build` was empty before pushing, confirming a lossless merge.
+  `https://cathnivore.com/version.json` picked up the new commit (`f78f78e`, tree-identical to `aeebb9c`) on
+  the 3rd `curl` poll (~30s); `/`, `/cathnivore/`, `/runnel/`, `/privacy`, `/support` all verified 200.
+  `main` is healthy at `f78f78e`. Full detail in PROGRESS.md's Current milestone/Deploy log.
+- 2026-09-28 (~23:52 UTC, new session): standard session start, lock taken, `npm ci` + `npm run check` clean
+  on `build` HEAD (`130be4a`). `main`/`build` were already in sync (only lock/doc churn between them) and
+  `origin/ci-status`'s `ios.json` still shows the same missing-Apple-secrets failure on the unchanged
+  `OWNER.md` placeholder Team ID — not re-dispatched, would only reproduce it.
+  With no fresh work already queued, ran `npm run gates` in full (clean: 1-7 confirmed, gate 8's 30 fresh
+  screenshots reviewed by 2 subagents, both clean) and, in parallel/afterward, dispatched a further 6
+  subagents (2 at a time, CLAUDE.md's cap) across areas this session's own review of PROGRESS.md/DECISIONS.md
+  showed hadn't had a dedicated fresh pass in a while: `src/platform`/`ios/App` shell vs SPEC 11.3/11.6,
+  engine rules vs SPEC 4/6/7 line-by-line, `games/runnel`+`site/`+`scripts/build-site.ts`, the global error
+  screen + CSP headers vs SPEC 11.3/11.5, `src/ai/*`'s Worker lifecycle/RNG/MCTS-deadline safety, and
+  `src/ui/Game.tsx`'s state management (stale closures, races, mutation). Four of six came back clean (a
+  genuine, valuable result on a codebase this heavily audited already — confirms nothing regressed). Two
+  found real, previously-unlogged bugs, both fixed this session (see `build`'s new commit):
+  1. **Mid-game scripted scenes (chapters 3/6) replayed forever after any reload.** `dismissedMidScenes` was
+     plain `Game.tsx` component state, reset to `[]` on every reload, while the `{type:'trigger'}` log event
+     that gates it is permanent history that's never removed — so a reload well after the scene was already
+     seen and dismissed found that same past trigger again and re-showed the blocking Scene overlay,
+     stalling the current turn. Fixed by extracting the pending-trigger lookup into a new, directly unit-
+     tested pure function (`pendingMidSceneTrigger` in `src/ui/enemyTurnLog.ts`) that also treats "an action
+     was logged after this trigger" as durable proof of a past dismissal, since the Scene overlay blocks
+     every action while pending — no new persisted state needed, just a smarter derivation from state
+     already in `state.log`/`replay()`. 4 new Vitest cases in `tests/enemy-turn-playback.test.ts` cover all
+     four combinations (freshly fired / same-session dismissed / reload-after-dismissal / reload-with-
+     nothing-yet-after-it). Verified beyond the unit tests: the full 102-test e2e suite (`phone` +
+     `desktop-chromium`, including all 6 campaign chapters and both tutorial chapters) still passes clean.
+  2. **A worker-listener leak in the AI teammate's fallback path** (`Game.tsx`'s AI-turn effect): `onMessage`
+     removed its own `message`/`error` listeners *before* its `settled`/`cancelled` early-return check, but
+     `fallBackToHeuristic` (called from `onError` and the watchdog) checked *first*, so a turn cancelled
+     (undo, unmount) before a late error/watchdog fire never got to unregister its closures from the single
+     long-lived Worker — a slow accumulation of dead listener pairs over a long solo game, never a stale
+     action (the guard itself still worked). Fixed by reordering to match `onMessage`. Low severity, no test
+     added (nothing user-visible to assert on; the fix is the reorder itself, reviewed directly).
+  Both fixes: `npm run check` clean (471 tests, up from 467), `npm run gates` gates 1-4 reconfirmed, and a
+  fresh full e2e run (`phone` + `desktop-chromium`, 102 tests) all green. Pushed to `build` (`a93dac4`).
+  **Environment note:** this sandbox's pinned Chromium revision drifted again (`chromium_headless_shell-1243`
+  wanted, `chromium-1194`/`chromium_headless_shell-1194` installed) — used
+  `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` per CLAUDE.md's documented
+  workaround, not `playwright install`. `scripts/gates.ts`'s own `npm run gates` run picked the right path
+  automatically (unaffected); only this session's extra manual `npx playwright test` reruns needed the env
+  var set explicitly.
+  Also ran `npm run release` at this point: gates 1-7 passed clean again, gate 8 recaptured (unchanged
+  content, no UI touched by either fix), but the fast-forward hit the usual stale-local-`main` symptom —
+  `git checkout -B main origin/main` succeeded this time, but the following `git merge --no-ff build` was
+  denied by the "Production Deploy" classifier before running. No local merge was made; `origin/main`
+  confirmed untouched at `f78f78e`. Not retried per the denial's own guidance; logged under Blocked, switched
+  back to `build`.
+
+  With time still left in the session, dispatched 2 more subagents (still within CLAUDE.md's 2-at-once cap
+  across the session as a whole) at two areas that hadn't had a dedicated correctness pass: the sim/balance
+  harness (`sim/run.ts`/`simCore.ts`/`simWorker.ts`/`fuzz.ts` — the code behind every number in the 12-
+  iteration balance loop and every fuzz-gate run) and every Scheme/Improvement's `text` field cross-checked
+  against its actual `effect`/`onBuy` (SPEC 4's "rules text ... checked against it by tests" requirement).
+  The sim-harness pass came back clean (specifically re-verified the settledRound/STEP_CAP fixes prior
+  sessions logged are genuinely correct, not just claimed, plus worker-pool seed/chunk disjointness and
+  every aggregate ratio's divide-by-zero guard — no new bug).
+  The content pass found one real, previously-unlogged bug: **"Two For One" (src/content/schemes.ts)'s text
+  said "Remove 1 Outlet and 1 Doubt from a region with your Stall"** (an unconditional AND), but
+  `legalTargets` only requires *either* piece type to be present (an OR) and `effect` correctly only removes
+  what's there — so the card was legally playable, and correctly resolved, on a region with just one of the
+  two, silently overclaiming what it does. `tests/rules-text.test.ts` only numerically checks Improvements,
+  not Schemes (a known, already-logged scope gap), and `tests/schemes-effects.test.ts`'s `richBoard` fixture
+  always gives its test region *both* piece types, so no existing test ever exercised the OR-only-satisfied
+  case. Fixed the text to say "(whichever it has)" rather than tightening `legalTargets` to an AND, since the
+  OR-gated legality is the established, already-balance-tuned targeting rule (SPEC 4's balance loop tunes
+  numbers, not silently retightened targeting) — a text fix, not a rules fix. Added a direct regression test
+  in `tests/schemes-effects.test.ts` (a region with Doubt but no Outlet still lets the card be played and
+  removes only the Doubt). `npm run check` (472 tests, up from 471) and a full `tsc`/`eslint` pass both
+  clean. Pushed to `build` (`31b4c6a`).
+- 2026-09-28 (~00:52 UTC, new session): standard session start, lock taken, `npm ci` + `npm run check` clean
+  on `build` HEAD (`ea919fd`, this session's own lock commit on top of `31b4c6a`). Ran `npm run release`:
+  gates 1-7 passed clean (28 site e2e, 16 axe, Lighthouse 98/100, gate 8 screenshots captured but unchanged
+  content from the prior session's own subagent-reviewed pass), then hit the usual stale-local-`main`
+  fast-forward failure. The manual fix's merge step (`git checkout -B main origin/main` succeeded; `git merge
+  --no-ff build`) was denied by the harness's "Production Deploy" classifier before running — no local merge
+  made, `origin/main` confirmed untouched at `f78f78e`. Not retried per the denial's own guidance; switched
+  back to `build`. Logged under Blocked.
+
+  Dispatched 2 subagents (CLAUDE.md's cap) at fresh areas: one re-checked `src/content/story`/`chapters.ts`,
+  `src/ai/evaluation.ts` and several previously-unaudited `src/ui` components (Setup.tsx, Settings.tsx,
+  Tooltip.tsx); the other checked `store/`, `public/` (+ `site/` equivalents), `vercel.json` and the
+  workflow YAMLs against SPEC 11.5/11.6/15. Both found one real, previously-unlogged bug each, both fixed
+  this session:
+  1. **`src/content/chapters.ts`'s chapter 3 tutorial step still promised "within 8 rounds"** even though a
+     2026-09-25 session already dropped that same false claim from `goalDescription` once chapter 3's
+     scripted Pressure deck was deliberately grown to 16 cards (SPEC 8.2's literal 8-round goal was
+     empirically far too tight for a single producer — see that session's own DECISIONS.md entry). The
+     `tutorialSteps` copy was never updated to match, so a player following the in-game tutorial prompt
+     (not the chapter-select card) saw a deadline that doesn't exist. Fixed the text to drop the round
+     count, matching `goalDescription`'s wording exactly.
+  2. **`src/ui/Game.tsx`'s topbar hardcoded "Round {state.round}/10"** even though `Game` is shared by Quick
+     Game (a real 10-round game) and every campaign chapter, most of which run a different scripted
+     Pressure-deck length (chapter 1 caps at 6 rounds, chapter 3 at 16, etc. — chapter 6 is the only chapter
+     that happens to also use a real 10-card deck). `src/ai/evaluation.ts`'s `paceScore` had already been
+     fixed for this same class of bug (reading `state.pressureDeck.length` instead of a hardcoded
+     `NORMAL_ROUND_CAP`), but the UI display was never given the equivalent fix, so every non-Quick-Game,
+     non-chapter-6 screen showed a wrong round total throughout play. Fixed by deriving the total from the
+     engine's own state: total rounds = `state.round + state.pressureDeck.length` (setup already pops one
+     Pressure card into Scout before round 1 starts, so the invariant holds every round: e.g. chapter 1's
+     6-card deck reads `1/6` at kickoff, matching SPEC 8.2's stated 6-round cap, and the standard 10-card
+     game correctly still reads `.../10`). No new test added (a straightforward arithmetic derivation
+     directly off the same field `paceScore` already trusts, not new logic to regress) — verified instead
+     with a full `desktop-chromium` run of `e2e/campaign.spec.ts` (all 6 chapters) and `e2e/quick-game.spec.ts`,
+     all green, plus a full `npx vitest run` (472/472 unchanged).
+  3. **`public/privacy/index.html` and `public/support/index.html`'s footer "Back to Cathnivore" link used
+     `href="/"`**, a leftover from before the 2026-09-27 SPEC 15 portfolio restructuring, when `/` was
+     Cathnivore itself. Since that restructuring `/` is the multi-game landing page and Cathnivore lives at
+     `/cathnivore/` (`scripts/build-site.ts` copies both pages verbatim into `dist-site`'s root without
+     rewriting internal links), so a player reaching either page from inside the app (via `src/App.tsx`'s
+     footer links, or an App Store reviewer following the store metadata's privacy/support URLs) and tapping
+     "Back to Cathnivore" landed on the portfolio page instead of the game. Fixed both to `href="/cathnivore/"`
+     (the link text already specifically says "Cathnivore," not "games" or "home," so the destination should
+     match). Verified with `npm run build:site` (both `dist-site/privacy/`, `dist-site/support/` and their
+     `/cathnivore/`-prefixed copies now link correctly) and a full `npm run e2e:site` (28/28 passing).
+  All three fixes: `npx tsc -b`/`npx eslint` clean, `npx vitest run` 472/472, `desktop-chromium` runs of
+  `e2e/quick-game.spec.ts` + `e2e/campaign.spec.ts` (7/7) and the full `e2e:site` suite (28/28) all green.
+  Pushed to `build`.
+
+  Dispatched 2 more subagents (still within the 2-at-once cap) at gate-2 completeness: one audited whether
+  every Agenda card/Scheme/Improvement genuinely has a dedicated unit test asserting its specific numeric
+  effect (SPEC 11.4 gate 2's literal requirement), the other re-checked save/load and the global error
+  screen (came back clean — no new issues, see its own report for detail). The first found a real,
+  previously-unlogged gap: `tests/agenda.test.ts`'s and `tests/schemes-effects.test.ts`'s "every card
+  resolves cleanly" loops only ever called `validate()` on the result, never asserted what a specific card
+  actually *does* — so 14 of 24 Agenda cards and 21 of 30 Schemes (plus Steak-out, previously only checked
+  for its irreversible flag, not its actual reorder) had no test verifying their real effect, only that
+  applying it doesn't crash. 3 Improvements (`soil-lab-report`, `polytunnel`, `seed-library`) had the same
+  gap for a different reason: their ongoing effects live in `actions.ts`'s Rebut/Sell/Graft handlers (not
+  `onBuy`, which `tests/rules-text.test.ts`'s per-card loop already covers numerically), and their own code
+  comments claimed test coverage that turned out not to exist anywhere.
+
+  Closed all three gaps this session:
+  - `tests/invest-scheme.test.ts`: 4 new tests for Soil Lab Report (Rebut's free extra Doubt removal, plus
+    a without-the-card control), Polytunnel (Sell's extra Goodwill) and Seed Library (Graft's extra Marks),
+    using the file's existing `withImprovement`/`withClearableRegion` helpers.
+  - `tests/agenda.test.ts`: 14 new tests, one per previously-untested card, each computed by hand against
+    the real SPEC 4.3 setup on `createGame(FULL_CONFIG, ...)` (documented in the describe block's own
+    comment: Kingsmarket's 2 Outlets/1 Buyout/2 Doubt/0 Stalls, every other region's 1 starting Outlet,
+    Coast's extra starting Doubt, and which two regions have Stalls at setup) rather than a synthetic board,
+    so each assertion is a genuine hand-verified prediction, not a tautology. All 14 passed on the first
+    run, cross-confirming both the hand-derived setup numbers and the cards' actual behaviour.
+  - `tests/schemes-effects.test.ts`: 21 new tests reusing the file's existing `richBoard`/`forceScheme`
+    helpers, played for real through `applyAction` (not the raw `effect` function) so each also exercises
+    the real cost deduction and Cath's Plan slot/discard bookkeeping. Plus a 22nd for Steak-out's actual
+    Pressure-deck reorder (previously only its irreversible-undo flag was tested) and 2 more confirming
+    Reconnaissance/Paper Trail/Weather Eye are genuinely pure peeks (deck order literally unchanged), not
+    just "doesn't crash."
+  All new tests passed on the first run (`npx vitest run`: 514/514, up from 472). One pre-existing test
+  (`tests/pages.test.ts`) asserted the *old* `href="/"` value the privacy/support link-fix above just
+  corrected — updated its expectation to `href="/cathnivore/"` rather than reverting the fix. `npm run
+  check` clean end to end (typecheck, lint, unit tests, fuzz, build). Pushed to `build`.
+
+  Dispatched 2 more subagents at areas not yet covered: one checked the AI teammate's log-reason templates
+  and the Rules Reference; the other checked campaign scripted-trigger/carry-over robustness. Each found one
+  real, previously-unlogged bug:
+  1. **`src/ai/reason.ts`'s `decide` case was a single content-free fallback** ("Making the required
+     choice.") for all 4 `PendingDecision` kinds (SPEC 9.1), unlike every other action kind, which breaks
+     SPEC 9.2's "built from templates" design specifically for these — real, distinct strategic choices
+     (which production track to lower, which faction to split at Rift 6, etc.) all showed the same
+     sentence. Fixed by looking up `state.pendingDecisions.find(d => d.id === action.decisionId)` and
+     building a real template per kind (`decideReason` in `reason.ts`), falling back to the old generic
+     sentence only if the decision is somehow no longer pending (shouldn't happen in real play, but keeps
+     the function total). Added 5 new tests in `tests/reason.test.ts`, one per decision kind plus the
+     fallback path.
+  2. **A narrower version of this session's earlier `pendingMidSceneTrigger` fix's own gap**: dismissing a
+     mid-game scripted scene (e.g. chapter 3's round-5 reveal) is a UI-only event with nothing appended to
+     `state.log`/`actionHistory`, so the only thing that made a dismissal "durable" was a later real action
+     being logged after it. A player who dismisses the scene and reloads *before taking that next action*
+     found the same not-yet-proven-dismissed trigger again and saw the scene replay once — the same
+     symptom the earlier fix addressed, just from a narrower window it didn't close. Fixed properly this
+     time by persisting dismissal directly: `SavedGame` (`src/platform/storage.ts`) gained an optional
+     `dismissedMidScenes?: string[]` field, `Game.tsx`'s save effect now writes it alongside the rest of the
+     save on every change (not just on a new action), and `App.tsx`'s `resume()` reads it back into a new
+     `initialDismissedMidScenes` prop that seeds `Game`'s `dismissedMidScenes` state on mount — so a reload
+     immediately after dismissal, even with zero further actions, now resumes already-dismissed. Verified
+     with a new, real end-to-end `e2e/campaign.spec.ts` test (no `?e2eAutoplay=1`, since autoplay
+     auto-dismisses the scene the instant it appears and would skip past the exact window this bug lived
+     in): drives chapter 3 with real Graft clicks through 4 rounds to the round-5 reveal, dismisses it,
+     reloads with *no* action taken since, and asserts the scene does not reappear. Caught one own mistake
+     while writing it: a stale `vite preview` server left running from an earlier command this session was
+     serving an old build via Playwright's `reuseExistingServer`, so the fix initially appeared not to work
+     until the stale server was killed and `npm run build` re-run — not a real regression, just this
+     session's own test-infra gotcha, worth remembering (a `vite preview --port 4173` process outliving the
+     command that started it will silently serve stale `dist/` to every subsequent `npx playwright test`
+     run in the same session).
+  `npm run check` clean; the new e2e test plus the full existing `phone`+`desktop-chromium` suites (104/104)
+  and `npx vitest run` (519/519) all green. Pushed to `build`.
+
+- **2026-09-28:** Dispatched 2 subagents (phone + desktop) for gate 8's mandated screenshot review before
+  this session's `npm run release` attempt. Both independently flagged the same real bug: the map's region
+  texture patterns (`src/ui/Map.tsx`'s `RegionTextureDefs`), drawn at STYLE.md 3.2's literal "8% ink,"
+  render as flat, uniform grey in the greyscale screenshot gate 8 requires — coast (wave lines) was
+  completely invisible on both phone and desktop; crop (dotted furrow rows) was faint; pasture and capital
+  were the only two that read clearly. This means regions were only distinguishable by their printed name
+  label, not shape/pattern, failing STYLE.md 2.3's "shape before colour" test outright, which STYLE.md 2.1
+  ("Legibility first") ranks above 3.2's specific number when the two conflict. Fixed by raising each
+  pattern's opacity/stroke weight (pasture 0.08->0.16, crop 0.08->0.2 with larger dots, coast 0.08->0.26
+  with a smaller/denser tile and much thicker stroke since it was the worst offender, capital 0.08->0.14 for
+  consistency) rather than literally keeping 8%. Verified by rebuilding, re-running
+  `e2e/screenshots.spec.ts` for real (not just re-reading the stale screenshots), and visually inspecting
+  cropped/zoomed greyscale renders at both sizes: all 4 region types are now clearly distinguishable by
+  pattern alone. `npx tsc -b`/`npx eslint` clean, `npx vitest run` 519/519, `quick-game.spec.ts` (desktop)
+  green. Pushed to `build`.
+
+- **2026-09-28 (2nd pair):** Dispatched 2 more subagents (dark theme/PWA/settings; platform layer/iOS shell)
+  while waiting out this session's release-merge denial. Each found one real, previously-unlogged bug:
+  1. **`--soil` (STYLE.md 3.1: "Headings on paper, borders") had no dark-mode override at all** in
+     `src/styles/tokens.css` — unlike every other text/border token, it silently kept its light value
+     (#6B4A2B) in dark mode, giving ~2.17:1 contrast against the dark paper background (#1E1A17) on `.holding
+     h1` and `.scene-speaker` (well under STYLE.md 3.6's 4.5:1/3:1 floors). Not one of the "kept unchanged"
+     fixed-fill exceptions (`--pasture-deep`/`--clay-deep`/`--wheat`) either — those are fills that carry
+     text, `--soil` is text/border colour sitting on the table's own background, so it should have followed
+     `--ink`'s pattern of getting a light dark-mode value. Fixed: added `--soil: #D9B98A` (9.26:1 against
+     dark paper) to both dark-mode blocks in `tokens.css`, and to STYLE.md 3.5's table (which had never
+     listed it, in either form). **Also added a new test**,
+     `e2e/accessibility.spec.ts`'s "scene screen ... in forced dark theme," since the reason this escaped
+     gate 6 for as long as it did is that a dark-mode scene test never existed (only game/setup had one) —
+     without it, the next token missing a dark override on a scene-only element would escape again the same
+     way.
+  2. **`.sheet` (the Farm/Market/Cath's Plan/Log bottom sheets, `src/styles/global.css`) had no
+     `.native-app`-scoped safe-area-bottom padding**, unlike `.topbar`/`.controls` right next to it, which
+     already handle the iPhone home-indicator inset correctly (SPEC 11.6/STYLE.md 10). Fixed by adding a
+     `.native-app .sheet { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }` rule alongside the
+     existing two. `env()` is inert (0) on the web build, so this has no effect there — iPhone-only, and
+     can't be exercised by this repo's Chromium/WebKit e2e suite (no iOS simulator here), so it's a
+     targeted-review fix rather than a covered-by-a-new-test one, same as the other safe-area rules already
+     next to it.
+  `npx tsc -b`/`npx eslint` clean, `npx vitest run` 519/519, the full `phone`+`desktop-chromium`
+  `accessibility.spec.ts` (18/18, up from 16) and a `quick-game.spec.ts` sanity run all green. Pushed to
+  `build`.
+
+- **2026-09-28 (3rd pair):** 2 more subagents (campaign carry-over/hot-seat/rules-reference; content-text/
+  satire compliance) found 3 more real issues while this session's release-merge stayed denied:
+  1. **Agenda cards had no mechanical rules-text field at all** (`AgendaCard` only carried `headline`,
+     `effect`, `bonusEffect`) — SPEC 10.5 requires every game term explained in the Rules Reference, but all
+     24 cards rendered the identical generic sentence there, and `tests/rules-text.test.ts`'s Agenda block
+     only checked `headline`, never a mechanical description, because none existed to check. **Fixed:** added
+     a hand-written `text` field to all 24 cards (`src/content/agenda.ts`) describing both `effect` and
+     `bonusEffect` in plain English (verified each against the actual effect functions while writing them,
+     not just copied from the headline), wired into `RulesReference.tsx` (replacing the generic sentence),
+     and added a test per card asserting `text` is non-empty, within a sane length, and mentions the bonus
+     effect. Not a full numeric-delta check like the Improvement test (Agenda effects are region-search-based,
+     not simple production deltas, so there's no generic invariant to assert the way there is for Improvements)
+     — a known, accepted gap in verification depth, not in coverage.
+  2. **`reconnaissance`/`paper-trail`/`weather-eye`/`steak-out` Schemes (the "look at the top card" info
+     Schemes) never actually show the peeked card to the player** — their `effect` is a literal no-op
+     ("UI-only reveal") but no UI code anywhere surfaces what was peeked, so a player pays Goodwill, sees
+     nothing, and loses Undo (correctly marked `irreversible`) for a reveal that never happened on screen.
+     **Not fixed this session** (needs a `GameEvent`/log field plus UI surface, more than a quick text fix,
+     and this session's time budget was already committed to the Agenda-text fix above) — logged here and in
+     PROGRESS.md's Blocked list for a future session.
+  3. **Hot-seat mode has no turn-transition/"pass the device" screen** — turns switch with only a header
+     change, no interstitial, even though the mode-picker screen's own copy promises "pass the device back
+     and forth." Not a strict SPEC violation (SPEC only requires 2 humans taking turns on one device, no
+     literal pass-device prompt mandated) but a real UX gap. **Not fixed this session** (a UI feature, not a
+     quick fix) — logged for a future session, lower priority than item 2 since it's UX polish, not a paid-
+     for-nothing mechanic.
+  All other areas both subagents checked (chapter 3->4 carry-over cap/no-double-apply, undo/replay boundary
+  correctness, AI never calling undo, Rules Reference search being real, all content character limits,
+  satire-rule compliance, no real-brand/health-claim leaks) came back clean.
+  `npx tsc -b`/`npx eslint` clean, `npx vitest run` 543/543 (up from 519, +24 new Agenda-text tests),
+  `npm run build` clean, a fresh screenshot of the Rules Reference screen confirmed no rendering regression.
+  Pushed to `build`.
+
+- **2026-09-28 (fixed the info-scheme peek gap logged above):** Reconnaissance/Steak-out/Weather Eye/Paper
+  Trail's `effect` was correctly a no-op (the peek itself needs no state change), but nothing anywhere
+  surfaced what was peeked to the player, so playing them bought nothing visible while still correctly
+  losing Undo (SPEC 4.6, `irreversible: true`). Fixed by giving `schemePlayed` GameEvents an optional `peek:
+  string[]` field (`src/engine/types.ts`), computed in `src/engine/actions.ts`'s `describeInfoSchemePeek`
+  right after paying the cost but before `card.effect` runs (so Steak-out's peek describes the pre-reorder
+  top card, not wherever the reorder puts it) — "Stage N: Type(s)" for the 3 Pressure-peeking cards,
+  `'Faction: "headline"'` for Paper Trail's Agenda peek. Wired into `src/ui/gameLog.ts`'s `logCaption` so it
+  shows in the Log sheet as "<Producer> plays <Scheme>. Peeked: Stage 1: Coast." New tests in
+  `tests/schemes-effects.test.ts` assert the exact peeked-card description for all 4 cards (had to fix the
+  new tests' own initial assumption that `schemePlayed` is the last log entry — `applyAction` always appends
+  a trailing generic `'action'` entry after the specific one, so the assertions read `log.at(-2)`, not
+  `log.at(-1)`). `npx tsc -b`/`npx eslint` clean, `npx vitest run` 547/547 (up from 543), a fresh build plus
+  `quick-game.spec.ts`/`campaign.spec.ts` (desktop) green. Pushed to `build`. Hot-seat's missing pass-device
+  screen (logged alongside this in PROGRESS.md) remains open — a UI feature addition, out of this session's
+  remaining time.
+
+- 2026-09-28 (~03:13 UTC session): fixed the bottom-row hex region-name clipping gate-8 found (Oakvale,
+  Shingle Bay) by drawing all region names in one pass after every hex's fill/pattern, rather than per-region
+  inside the same `<g>` as that region's own fill (a hex whose top vertex borders another hex, rather than
+  open background, could otherwise have its label's top half painted over by that neighbour). This is a
+  z-order/paint-order fix, not a geometry change — chose it over nudging the label's y-offset per-region
+  since a uniform pass is correct regardless of which regions happen to sit in the bottom row, and needs no
+  per-region-position special-casing if the map layout ever changes. Traded off: `e2e/tutorial.spec.ts`'s
+  existing `.region-hex` + `hasText` selector broke, since the name text moved out of that element. Fixed by
+  adding `aria-label={def.name}` to each region-hex `<g>` (also a minor accessibility win — the hex was
+  otherwise an unlabelled clickable group) and updating the one affected test to select on it instead.
+- 2026-09-28 (same session, ~03:13 UTC): regenerated `store/screenshots/` after an iOS/App-Store-readiness
+  audit found 4 of the 5 were stale (captured before the map-texture/legend-icon/label-clip fixes landed).
+  Decided to fix this now rather than defer to the M7 final `store-<n>` push, since a wrong screenshot
+  sitting in the repo for another several sessions risked being forgotten and shipped to App Review as-is —
+  cheap to regenerate now, expensive to notice late. The victory-screen shot needed one retry since it
+  depends on a HeuristicBot win in campaign chapter 6, documented at ~63%, not 100%, by the test's own
+  comment — an accepted, pre-existing flake source for that one manual asset, not a new problem.
+
+- 2026-09-28 (~03:52 UTC session): fixed the Hot-seat "no pass-device screen" known issue left open by the
+  previous session. Implemented it as a blocking full-screen overlay (reusing `.scene`'s layout/typography
+  rather than inventing a new pattern) shown whenever `state.activeProducer` changes in Hot-seat mode and
+  dismissed by a Continue tap — mirrors how the existing mid-game-scene overlay (`pendingMidScene`) already
+  blocks play the same way, for consistency. Tracked "already acknowledged" via a plain `useRef` rather than
+  engine/save state, since which producer's turn the player has already seen is pure UI/session state (like
+  `pendingChoice`), not something a save needs to remember — a reload always lands on the resumed state's
+  current producer with no stale hand-off screen to redisplay. Gated on `mode === 'hotseat' &&
+  !autoplayRef.current` so Solo/campaign (single human seat) and every autoplay-driven e2e test are
+  unaffected. Two existing e2e specs drove real Hot-seat turns (`hotseat.spec.ts`,
+  `store-screenshots.spec.ts`'s Agenda-headline shot) and needed a Continue click added after the first
+  producer's 3rd action; both updated and re-verified green (phone/desktop-chromium/store-screenshots).

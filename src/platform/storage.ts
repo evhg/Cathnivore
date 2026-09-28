@@ -23,6 +23,13 @@ export interface SavedGame {
   // carry its story scenes forward. `config`/`seed`/`actions` alone can't tell campaign and Quick Game
   // saves apart (a chapter's `GameConfig` has no chapter id of its own), so this is carried alongside them.
   chapterId?: string
+  // SPEC 8.1: which of this chapter's mid-game scripted scenes (e.g. chapter 3's round-5 Wholesome Hollow
+  // reveal) have already been dismissed. Dismissal is a UI-only event (no engine action, so nothing in
+  // `actions`/the replayed log records it) — without persisting it here separately, a player who dismisses
+  // the scene and reloads before their next real action would see it replay once more on resume (a real,
+  // if narrow, bug: see DECISIONS.md). Absent/omitted for saves from before this field existed or with no
+  // mid-game scenes dismissed yet.
+  dismissedMidScenes?: string[]
 }
 
 export interface KeyValueStorage {
