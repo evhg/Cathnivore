@@ -5,14 +5,17 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
 - **Current ROADMAP item:** items 1-7 done and released. Item 8 diminishing returns; item 9's why-not
-  states now cover Sell, Invest, `targeting: 'none'` Schemes and Open Stall's Produce-0 case (still
-  unreleased); item 10's gauges ship on both phone and desktop (a ring, not a bar), tick animation and
-  Pressure-badge shipped, and the plan-strip cards now carry both corporations' logos (a branding pass,
-  not yet the full illustrated agenda-card redesign).
-- **Next step:** pick up item 9's remaining scope (Supply/Rebut/required-Scheme/Open-Stall's-no-legal-
-  region why-not, the illustrated-tile redesign) or item 10's full agenda-card redesign (newspaper-
-  clipping look, headline, boxed effect panel), or move to map art (11+) if those keep hitting
-  diminishing returns.
+  states now cover every action kind whose legality is unambiguous from outside: Sell, Invest,
+  `targeting: 'none'` and `'optional'` Schemes, Supply (Outlets and Buyout), Rebut, and both of Open
+  Stall's cases (Produce-0 and no-legal-region) — all unreleased. Only 'required'-targeting Schemes are
+  still left silently absent (a missing legal region reads identically to "can't afford it" from outside).
+  Item 10's gauges ship on both phone and desktop (a ring, not a bar), tick animation and Pressure-badge
+  shipped, and the plan-strip cards now carry both corporations' logos (a branding pass, not yet the full
+  illustrated agenda-card redesign).
+- **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
+  headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
+  pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or
+  move to map art (11+) if those keep hitting diminishing returns.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -62,6 +65,19 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~17:51-18:26 UTC: shipped 3 slices closing out ROADMAP 9's why-not scope: Supply (Outlets and
+  Buyout) and Rebut — each a structural check (an owned region with something to remove) then a resource
+  comparison, so a "nothing to target" reason is genuinely distinct from "can't afford it" and worth
+  surfacing, unlike a 'required'-Scheme's single ambiguous region check; Open Stall's real "no legal
+  region" case (`canOpenStallIn`'s Stall-cap/adjacency check, unambiguous the same way, folded into the
+  existing Produce-0 placeholder as one check); and 'optional'-targeting Schemes, which turn out to share
+  `targeting: 'none'`'s exact shape since `legalSchemeTargets` always falls back to an untargeted play
+  rather than ever disappearing for "no target". Along the way, an early version of the Supply/Rebut test
+  was flaky ~50% of the time — traced to SPEC 4.3.4's opening Scout (the first Pressure card resolves
+  immediately at game creation) sometimes adding a 2nd Outlet to a home region depending on the random
+  seed; fixed by pinning the test to seed 1. Verified with `npm run check`, the full desktop Playwright
+  suite (60/60, twice), and zoomed action-panel screenshots before/after. Not released: today's cap (4/day)
+  was already spent before this session started (see DECISIONS.md).
 - 2026-09-28 ~16:52-17:19 UTC: shipped 4 slices extending ROADMAP 9's why-not states beyond Sell: Invest
   (Marks vs. cost, same shape as Sell — main panel + a new `missingMarks` prop on the Market sheet, whose
   Buy button used to just disappear), `targeting: 'none'` Schemes (Goodwill vs. cost, same shape — main

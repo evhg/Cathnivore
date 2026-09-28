@@ -143,3 +143,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-28: did not run `npm run release` this session — PROGRESS.md's own log already shows 7+ releases
   earlier today, past SPEC 12/CLAUDE.md's "at most 4 times a day" cap (Vercel's 100-deploys/day limit).
   The 3 why-not slices ship to `build` only; a future session should release them once the cap has reset.
+- 2026-09-28: reversed the earlier "'optional' Schemes are ambiguous like 'required' ones" call —
+  `legalSchemeTargets` always falls back to `[null]` for `'optional'`, so it's unaffordability-only too;
+  gave it the same why-not treatment as `'none'`. Also: SPEC 4.3.4's opening Scout (resolves at game
+  creation, before turn 1) can add outlets beyond SPEC 4.3.2's base setup depending on seed — a Supply
+  why-not test assuming the base count alone was flaky ~50% of runs; pinned it to seed 1 instead.
