@@ -12,6 +12,8 @@ import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
+import { investCost } from '../engine/actions'
+import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
@@ -611,12 +613,29 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // during a gated tutorial step: SPEC 8.1's "only the action being taught is enabled" already hides
   // everything else outright, and a disabled Sell row competing for attention there would muddy that.
   const sellEntries = standalone.filter((e) => e.action.kind === 'sell')
-  const otherStandalone = standalone.filter((e) => e.action.kind !== 'sell')
+  const otherStandalone = standalone.filter((e) => e.action.kind !== 'sell' && e.action.kind !== 'invest')
+  const investEntries = standalone.filter((e) => e.action.kind === 'invest')
   const disabledSell: { count: 1 | 2 | 3; missing: number }[] = []
   if (rules.sell && !tutorialStep?.highlight) {
     const affordable = Math.min(3, active.resources.produce)
     for (let n = affordable + 1; n <= 3; n++) {
       disabledSell.push({ count: n as 1 | 2 | 3, missing: n - active.resources.produce })
+    }
+  }
+
+  // ROADMAP 9 why-not, continued: Invest is the other action whose legality is a single resource
+  // comparison per card (Marks vs. `investCost`), so — unlike Scheme/Supply/Rebut/Open Stall, whose
+  // legality also depends on region/target state — each unaffordable market slot gets its own
+  // unambiguous "Need N more Marks" placeholder, the same way each unaffordable Sell count does.
+  const disabledInvest: { improvementId: string; cost: number; missing: number }[] = []
+  if (rules.improvements && !tutorialStep?.highlight) {
+    for (const id of state.market) {
+      if (!id) continue
+      if (investEntries.some((e) => e.action.kind === 'invest' && e.action.improvementId === id)) continue
+      const card = IMPROVEMENTS_BY_ID.get(id)
+      if (!card) continue
+      const cost = investCost(state, state.activeProducer, card)
+      if (active.resources.marks < cost) disabledInvest.push({ improvementId: id, cost, missing: cost - active.resources.marks })
     }
   }
 
@@ -743,6 +762,47 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
               </Tooltip>
             </span>
           ))}
+          {investEntries.map(({ index, action: a }) => {
+            const term = actionTermFor(a)
+            const Icon = ACTION_ICON[a.kind]
+            return (
+              <span key={index} className="action-item">
+                <button onClick={() => act(index)}>
+                  <span className="action-label">
+                    {Icon && <Icon size={18} />}
+                    {actionLabel(a, state)}
+                  </span>
+                  <ActionCostChip cost={actionCost(a, state)} />
+                </button>
+                {term && (
+                  <Tooltip term={term} label={`What is ${term}?`}>
+                    ?
+                  </Tooltip>
+                )}
+              </span>
+            )
+          })}
+          {disabledInvest.map(({ improvementId, cost, missing }) => {
+            const card = IMPROVEMENTS_BY_ID.get(improvementId)
+            if (!card) return null
+            return (
+              <span key={`disabled-invest-${improvementId}`} className="action-item">
+                <button disabled title={`Need ${missing} more Marks`}>
+                  <span className="action-label-group">
+                    <span className="action-label">
+                      <InvestIcon size={18} />
+                      {`Invest: buy ${card.name} (${cost} Marks)`}
+                    </span>
+                    <span className="action-why-not">Need {missing} more Marks</span>
+                  </span>
+                  <ActionCostChip cost={{ resource: 'marks', amount: cost }} />
+                </button>
+                <Tooltip term="Invest" label="What is Invest?">
+                  ?
+                </Tooltip>
+              </span>
+            )
+          })}
           {otherStandalone.map(({ index, action: a }) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]

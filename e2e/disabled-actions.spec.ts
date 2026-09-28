@@ -3,16 +3,19 @@ import { test, expect } from '@playwright/test'
 // ROADMAP 9 "clear disabled and why-not states": Sell's missing counts (Produce too low for 2 or 3) get
 // a disabled placeholder button with a reason, right where the real button would be, instead of the
 // count range quietly shrinking with no explanation. A fresh Quick Game always starts with 3 Produce
-// (enough to legally Sell 1-3), so this spends it down first to reach the disabled state.
+// (enough to legally Sell 1-3), so this spends it down first to reach the disabled state. A fresh game
+// can also show Invest's own disabled placeholders from the very start (starting Marks are often below
+// a market card's cost) — this test scopes its "nothing disabled yet" check to Sell specifically so it
+// doesn't depend on the (RNG-drawn) market's starting affordability.
 test('Sell shows a disabled, explained placeholder for counts the player can no longer afford', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
-  // All 3 Sell counts are legal, real buttons at the start — no disabled placeholder yet.
+  // All 3 Sell counts are legal, real buttons at the start — no disabled Sell placeholder yet.
   await expect(page.getByRole('button', { name: /^Sell 3 Produce/ })).toBeEnabled()
-  await expect(page.locator('.action-why-not')).toHaveCount(0)
+  await expect(page.locator('.action-item', { hasText: 'Sell' }).locator('.action-why-not')).toHaveCount(0)
 
   await page.getByRole('button', { name: /^Sell 3 Produce/ }).click()
   await page.locator('.actions').waitFor()
@@ -39,4 +42,45 @@ test('Sell shows a disabled, explained placeholder for counts the player can no 
   const actionsLeftBefore = await page.locator('.active-producer').textContent()
   await disabledSell1.click({ force: true })
   await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
+})
+
+// ROADMAP 9, continued: Invest gets the same per-card treatment — each market slot the active producer
+// can't yet afford renders as its own disabled placeholder (never a generic "nothing affordable"), since
+// unlike Scheme/Supply/Rebut/Open Stall its legality is a single Marks-vs-cost comparison per card, just
+// like Sell's Produce-vs-count. Seed 1 is pinned so the market draw (and the exact "Marks needed") stay
+// deterministic: the starting producer's Marks are below every one of this seed's 4 cards' costs, and 2
+// Grafts (+1 Marks each) affords the cheapest, Wholesale Account (4, needing 2 more at the start).
+test('Invest shows a disabled, explained placeholder for market cards the player can no longer afford', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.locator('input[inputmode="numeric"]').fill('1')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  const investItems = page.locator('.action-item', { hasText: 'Invest' })
+  await expect(investItems).toHaveCount(4)
+  for (const item of await investItems.all()) {
+    await expect(item.getByRole('button', { name: /^Invest/ })).toBeDisabled()
+    await expect(item.locator('.action-why-not')).toHaveText(/^Need \d+ more Marks$/)
+  }
+  await expect(investItems.filter({ hasText: 'Wholesale Account' }).locator('.action-why-not')).toHaveText('Need 2 more Marks')
+
+  // Still explained by the same "Invest" glossary tooltip a real Invest button offers (SPEC 10.5).
+  const disabledTrigger = investItems.first().locator('.tooltip-trigger-button')
+  await disabledTrigger.dispatchEvent('click')
+  await expect(page.locator('.tooltip-popover')).toBeVisible()
+
+  // A disabled button is genuinely inert.
+  const actionsLeftBefore = await page.locator('.active-producer').textContent()
+  await investItems.first().getByRole('button', { name: /^Invest/ }).click({ force: true })
+  await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
+
+  // Grafting twice (+1 Marks each, no other cost) affords Wholesale Account, which swaps from a disabled
+  // placeholder to a real, clickable Invest button — the other 3 cards stay disabled (still short).
+  await page.getByRole('button', { name: /^Graft/ }).click()
+  await page.getByRole('button', { name: /^Graft/ }).click()
+  const wholesaleAccount = page.locator('.action-item', { hasText: 'Wholesale Account' })
+  await expect(wholesaleAccount.locator('.action-why-not')).toHaveCount(0)
+  await expect(wholesaleAccount.getByRole('button', { name: /^Invest/ })).toBeEnabled()
+  await expect(page.locator('.action-item', { hasText: 'Invest' }).locator('.action-why-not')).toHaveCount(3)
 })
