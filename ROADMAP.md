@@ -114,8 +114,19 @@ Every visual item is done only when:
    caught a first pass compounding `--ink-muted` text with 50% opacity into ~2.3:1 contrast (under
    STYLE.md 3.6's 4.5:1 floor); fixed by keeping text at plain `--ink-muted` (verified 4.51:1) and moving
    the opacity to only the icon/cost chip. New `e2e/disabled-actions.spec.ts` locks in the behaviour.
-   Item 9 is now close but not done: disabled/why-not states cover only Sell, and the full
-   illustrated-tile redesign (the item's own title) hasn't started.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
+   2026-09-28 (later session): extended why-not to every other unambiguous-legality action kind. Invest's
+   legality is the same single Marks-vs-cost comparison Sell has, so each unaffordable market slot gets its
+   own "Need N more Marks" placeholder — shown both in the main action panel and (new `missingMarks` prop)
+   the Market sheet, whose Buy button used to just silently disappear. A Scheme with `targeting: 'none'`
+   (16 of the 31 Scheme cards) never needs a region, so its legality is a single Goodwill-vs-cost
+   comparison too — same treatment, in both the action panel and Cath's Plan sheet. 'required'/'optional'
+   Schemes and Supply/Rebut/Open Stall are still left alone (a missing region target could look identical
+   to unaffordable — genuinely ambiguous without per-kind reason logic, still separate future work).
+   Verified with zoomed screenshots in both themes/layouts and 2 new seeded e2e tests (seed 1's
+   deterministic market/plan draw). Item 9 is now closer: disabled/why-not states cover Sell, Invest and
+   `targeting: 'none'` Schemes everywhere they can appear; the full illustrated-tile redesign (the item's
+   own title) still hasn't started, and Supply/Rebut/Open Stall/required-Scheme why-not remains future
+   work.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
 10. [ ] **The table, part 3: the HUD.** *(2026-09-28: shipped the tick-up/tick-down animation (`useHudTick()`
     in `Game.tsx`, a CSS scale-pulse keyed on a per-stat change counter, deliberately colourless since
     Round/Trust/Lost Land/Rift don't share one "which way is good" direction) and Pressure-card corner

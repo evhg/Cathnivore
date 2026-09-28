@@ -135,3 +135,11 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   the full redesign is real new-art scope of its own. Also: `npm run shots` after a CSS-only edit rendered
   stale (the `:4173` preview server note in this file's Notes) — the fix looked unchanged in a screenshot
   until the server was killed and `npm run build` rerun; worth remembering for any CSS-only slice.
+- 2026-09-28: extended ROADMAP 9's why-not states past Sell using the same test each time: is the action's
+  entire legality one resource-vs-cost comparison, per card/count? Invest and `targeting: 'none'` Schemes
+  both qualify (Marks/Goodwill vs. a fixed cost, no region); 'required'/'optional' Schemes and Supply/
+  Rebut/Open Stall don't (a missing legal region reads identically to "can't afford it" from outside), so
+  left untouched rather than risk a misleading reason.
+- 2026-09-28: did not run `npm run release` this session — PROGRESS.md's own log already shows 7+ releases
+  earlier today, past SPEC 12/CLAUDE.md's "at most 4 times a day" cap (Vercel's 100-deploys/day limit).
+  The 3 why-not slices ship to `build` only; a future session should release them once the cap has reset.
