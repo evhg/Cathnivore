@@ -4,11 +4,12 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** 3 shipped in full 2026-09-28 (`cb050ee`). Item 1's readability half also shipped
-  (`d193d0c`: 'determined'/'worried' now read apart from the default smirk at 56-96px). Still open on item 1:
-  hands and a pose, finer hair/fabric shading, then replace `public/favicon.svg`, the app icon brief and the
-  social images. Also made a start on item 5 ("Cath's world"): 2 light, unreleased Bea mentions in chapter 1
-  and chapter 6's scenes (`b371223`, on `build`, not yet released — next session's release picks it up).
+- **Current ROADMAP item:** 3 shipped in full 2026-09-28 (`cb050ee`). Item 1 made further progress
+  2026-09-28: readability (`d193d0c`), hands/pose (`cb72336`, redrawn `497f2d1` after a gate-8 flag), and the
+  favicon/app-icon/social-preview asset refresh (`0b171b8`, `dcd6c92`, `7af62e1`). Only finer hair/fabric
+  shading is still open on item 1. Item 5's start (`b371223`, 2 light unreleased Bea mentions) is still on
+  `build`, unreleased. **Today's 4-release cap was already spent before this session started, so none of
+  this has reached `main` yet — next session's `npm run release` should pick up everything since `92e7406`.**
 - **Next step:** see the **Session log** for where the last session stopped.
 
 ## Blocked
@@ -43,6 +44,23 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~07:51-08:14 UTC: ROADMAP 1 polish, all unreleased (today's 4-release cap was already spent).
+  Gave the half-body figure hands: both outfits' sleeves already converged to one point at her waist, so drew
+  clasped hands there (`cb72336`). A gate-8 subagent review (screenshots + a direct render of the half
+  framing) flagged the shape as reading like a heart, not hands — redrew it as one dominant hand with
+  knuckle-crease lines and a thumb over a sliver of the other hand's wrist (`497f2d1`), confirmed with a
+  zoomed-in render. That same review found `e2e/screenshots.spec.ts` shot the title screen before
+  `.title-cath`'s 500ms-delay/900ms fade-in finished, so every past gate-8 review of the title screen never
+  actually saw her — added a wait for computed opacity 1 (`7b63459`). Replaced `public/favicon.svg` (still
+  the pre-redesign 'idol style' Cath) with a square-cropped, static copy of `cathSvg({framing:'face', ...})`,
+  checked it reads at 16-128px, and rasterized the same crop for `apple-touch-icon.png`/`icon-192.png`/
+  `icon-512.png` (`0b171b8`, `dcd6c92`); rewrote STYLE.md 13 to match. Regenerated both `social-preview.png`
+  og:images (`7af62e1`): the root one from a live mid-game capture with a Fraunces caption banner (built
+  independently of the store-screenshots harness — the App Store launch itself stays postponed), and
+  `site/public/social-preview.png` (found stale: its Cathnivore card icon was still the old favicon) from a
+  live capture of the landing hero, which already draws from `shared/cath/cath.ts` so it picked up the new
+  Cath for free. `npm run check` and a `shots`/gate-8-equivalent visual pass green after each slice. Only
+  finer hair/fabric shading is left open on ROADMAP 1.
 - 2026-09-28 ~06:52-07:19 UTC: closed out ROADMAP 3 (release `cb050ee`): rewrote all 6 chapters' tutorial
   prompts in Cath's first-person voice (kept every phrase `e2e/tutorial.spec.ts` asserts on), grew the
   companion line bank with a couple of tasteful Bea mentions, rewrote STYLE.md 9 to describe the new Cath in

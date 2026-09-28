@@ -40,3 +40,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   Playwright script rendering `cathSvg()` at real companion/portrait sizes rather than guessing from the
   source paths — confirmed 'determined' and 'worried' were near-indistinguishable from smirk, fixed by
   widening their brow/eye/mouth deltas, re-verified before shipping (`d193d0c`).
+- 2026-09-28: static Cath assets (favicon, app-icon PNGs, social-preview.png) are hand-frozen copies of a
+  `cathSvg()` call, since they can't run the module's JS — regenerate them by hand from `shared/cath/cath.ts`
+  whenever her look changes, rather than trying to template them at build time. `public/social-preview.png`
+  is composited independently of `e2e/store-screenshots.spec.ts` (same caption style, own script) so it
+  doesn't touch the App Store launch's postponement.
