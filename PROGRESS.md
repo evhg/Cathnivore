@@ -16,8 +16,12 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
   (`desktop-no-scroll.spec.ts` only checks *vertical* overflow): `min-width: auto` on the flex
   items let their combined natural width silently overflow `.game`'s right edge, clipping the
   topbar's Menu button and the legend's own text. Fixed with `min-width: 0` plus a `flex-wrap`
-  fallback on the legend — see DECISIONS.md. Still open: the companion/tutorial-prompt chrome has
-  little further slack (already tightened in an earlier session); phone's own bottom-tray
+  fallback on the legend — see DECISIONS.md. A full `npm run gates` run this session passed gates
+  1-7, and a gate-8 subagent review of a fresh screenshot set found no regressions anywhere,
+  including a close look at the changed game screen at both sizes. Also added 1 more light Bea line
+  (ROADMAP 5, chapter 4's opening — 2 of the 6 chapters were still missing one; chapter 5's tone
+  didn't have a natural spot for one, left as-is). Still open: the companion/tutorial-prompt chrome
+  has little further slack (already tightened in an earlier session); phone's own bottom-tray
   restructure is untouched. **Today's 4-release cap was already spent before this session started,
   so none of this has reached `main` yet — next session's `npm run release` should pick up
   everything since `92e7406`.**
