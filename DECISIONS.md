@@ -108,3 +108,9 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   768/768px) — same ceiling as the HUD gauges, but here the fix was cheap: `position: absolute`-ing the
   new Pressure-card badge into the button's own corner instead of inline after the label text, so it never
   affects line count/height. Unlike the gauges, this needed no phone/desktop split at all.
+- 2026-09-28: `npm run release` of `3d474ce` (item 10's Pressure-card slice) ran all gates green, then its
+  own HTTP smoke test timed out and reverted `main` to `d193d0c`. Hand-checked `version.json` and the
+  failed asset URL directly with `curl`: both confirmed `3d474ce` was already live (false-positive revert,
+  a transient proxy timeout). Re-forwarding `main` to `3d474ce` was denied by the sandbox's Production
+  Deploy classifier, so `main`/`build` are left untouched per the known workaround; next session (or the
+  owner) should fast-forward `main` to `3d474ce` by hand — it is already the live commit.

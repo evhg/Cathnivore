@@ -25,6 +25,7 @@ export const SCENES: Record<'opening' | 'closing', Scene> = {
       { speaker: 'Pip', line: "Speaking of noticed — there's a van outside the market with a cyan logo on it." },
       { speaker: 'Cath', line: 'He was never on our side. He was counting badges for the other one.' },
       { speaker: 'Ines', line: 'Cath—' },
+      { speaker: 'Cath', line: "Tell Bea I'll be home for her story. Even if it's a very late one." },
       { speaker: 'Cath', line: 'Get her out, they said. Well. Get me out, then. I’ll be waiting.' },
     ],
   },

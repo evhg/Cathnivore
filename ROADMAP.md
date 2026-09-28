@@ -27,7 +27,7 @@ Every visual item is done only when:
    - she reacts as water reaches fields, and celebrates on the win screen with a line about your time and par;
    - the help sheet is in her voice;
    - the share text names her.
-5. [ ] **Cath's world:** a short character-bible pass on her story as a mum (her daughter, Bea, appears in a few scenes as a small, wholesome recurring character), woven lightly into the campaign's scenes and Runnel's daily lines. Keep SPEC 3.5's satire rules.
+5. [ ] **Cath's world:** a short character-bible pass on her story as a mum (her daughter, Bea, appears in a few scenes as a small, wholesome recurring character), woven lightly into the campaign's scenes and Runnel's daily lines. Keep SPEC 3.5's satire rules. *(2026-09-28, this session: `VISION.md`'s "Cath: character bible" already had the short pass on her being a mum; earlier sessions had already added one light Bea line each to 5 of the 6 campaign chapters' scenes and 1 of Runnel's 10 daily greetings. This session added the one remaining gap — chapter 5 ("Friends in Low Places"), the arrest cliffhanger, previously had none — with a single line raising the stakes ("Tell Bea I'll be home for her story...") without playing it for a joke, keeping the "never the punchline" rule. Left unchecked pending release and a fresh look at whether the cadence (now 6/6 chapters, 1/10 Runnel greetings) still reads as "now and then" rather than overused before ticking it off for good.)*
 
 ## Phase 2: make Cathnivore beautiful
 
