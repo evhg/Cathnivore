@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { unlockAudioOnFirstTap } from './platform/sound'
 import App from './App'
 import ErrorBoundary from './ui/ErrorBoundary'
 import '@fontsource/fraunces/600.css'
@@ -44,6 +45,7 @@ preloadNativeStorage().then(() => {
   applyThemeSetting(theme)
   void applyStatusBarStyle(theme)
 
+  unlockAudioOnFirstTap()
   createRoot(rootEl).render(
     <StrictMode>
       <ErrorBoundary>

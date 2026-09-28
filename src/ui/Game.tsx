@@ -10,6 +10,7 @@ import { HeuristicBot } from '../ai/heuristic'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
+import { playSoundsFor } from '../platform/sound'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
@@ -349,6 +350,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     if (next.activeProducer !== from.activeProducer) undoStackRef.current = []
     const events = enemyTurnEvents(from, next)
     playHapticsFor(action, next.log.slice(from.log.length), next.result)
+    playSoundsFor(action, next.log.slice(from.log.length), next.result)
     if (aiReason) {
       // `gameLog.ts`'s `actionCaption` deliberately returns null for invest/scheme/decide's own `{type:
       // 'action'}` entry, deferring to the richer 'invest'/'schemePlayed'/'decision' entry `applyAction`

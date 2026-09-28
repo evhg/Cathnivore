@@ -27,10 +27,11 @@ describe('settings', () => {
   })
 
   it('round-trips a saved settings object', () => {
-    saveSettings({ version: 1, animations: false, colourBlindPatterns: true, aiSpeed: 'fast', theme: 'dark' })
+    saveSettings({ version: 1, animations: false, sound: false, colourBlindPatterns: true, aiSpeed: 'fast', theme: 'dark' })
     expect(loadSettings()).toEqual({
       version: 1,
       animations: false,
+      sound: false,
       colourBlindPatterns: true,
       aiSpeed: 'fast',
       theme: 'dark',

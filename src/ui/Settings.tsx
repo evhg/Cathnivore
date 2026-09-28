@@ -41,6 +41,10 @@ export default function Settings({ onClose }: Props) {
           Animations
         </label>
         <label>
+          <input type="checkbox" checked={settings.sound} onChange={(e) => update({ sound: e.target.checked })} />
+          Sound
+        </label>
+        <label>
           <input
             type="checkbox"
             checked={settings.colourBlindPatterns}

@@ -13,6 +13,7 @@ export type ThemePreference = 'system' | 'light' | 'dark'
 export interface Settings {
   version: 1
   animations: boolean
+  sound: boolean
   colourBlindPatterns: boolean
   aiSpeed: AiSpeed
   theme: ThemePreference
@@ -23,6 +24,7 @@ export const SETTINGS_KEY = 'cathnivore:settings:v1'
 export const DEFAULT_SETTINGS: Settings = {
   version: 1,
   animations: true,
+  sound: true,
   colourBlindPatterns: false,
   aiSpeed: 'normal',
   theme: 'system',
