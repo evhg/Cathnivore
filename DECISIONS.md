@@ -20,3 +20,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   fallback and hung-worker gap). Rebased cleanly onto the pivot's tip rather than discarding either side —
   no conflicts, both are orthogonal fixes. `npm run release` hit the standing stale-`main` classifier denial
   twice this session; not retried a 3rd time (see PROGRESS.md).
+- 2026-09-28 (owner's chat session): **the owner asked for a third game, a tower defense** with a level-by-level story, unlocks every level and level 100 as the ultimate boss fight. Wrote `docs/design/hedgerow.md` (working title *Hedgerow*: 10 acts of 10 levels across Marrow, Cath leading, HollowCandor as the final boss) and added it to ROADMAP as Phase 2b.
+- 2026-09-28 (owner's chat session): the owner confirmed that the Apple secrets, the tag-push 403s and the sandbox certificate don't block progress; PROGRESS.md now lists them as "Known limitations", not blockers.

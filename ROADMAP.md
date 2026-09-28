@@ -48,6 +48,15 @@ Every visual item is done only when:
 20. [ ] **Settings and Credits:** designed screens that match the title.
 21. [ ] **Motion system:** shared easing and duration tokens, and an audit of every screen.
 
+## Phase 2b: Hedgerow, the third game (owner request, 2026-09-28)
+
+The owner asked for a tower defense game: a strong story that develops level by level, new weapons and tower upgrades unlocking as you go, and level 100 as the ultimate boss fight. Cath leads. **The design note is `docs/design/hedgerow.md`; follow it.** Sessions pick these up after Phase 2 items 8-13 (the Cathnivore table, map art and moments). The remaining Phase 2 items (14-21) continue after Hedgerow slice 2.
+
+H1. [ ] **Engine and a vertical slice:** the engine, a Canvas renderer, 2 towers, 2 enemies, levels 1-3 with story scenes, saves, `/hedgerow/` in the site build, a landing card, site e2e tests and the level bot gate.
+H2. [ ] **Act 1 complete (levels 1-10):** the Acquisition Van miniboss and the upgrade UI.
+H3. [ ] Act 2 (11-20). H4. [ ] Act 3 (21-30). H5. [ ] Act 4 (31-40). H6. [ ] Act 5 (41-50). H7. [ ] Act 6 (51-60). H8. [ ] Act 7 (61-70). H9. [ ] Act 8 (71-80). H10. [ ] Act 9 (81-90).
+H11. [ ] **Act 10 and level 100:** the multi-phase HollowCandor boss fight and the finale.
+
 ## Phase 3: Runnel and the site
 
 22. [ ] **Runnel feel:** a sound set, a water-arrival sparkle, crops varied by season, a streak calendar, and a fairer par (log the sim before and after).
@@ -61,5 +70,5 @@ Every visual item is done only when:
 
 ## Later (only when the owner asks in FEEDBACK.md)
 
-- A third game for the portfolio, starring Cath, with a design note first in `docs/design/`.
+- A fourth game, starring Cath, with a design note first in `docs/design/`.
 - Online play, localisation.

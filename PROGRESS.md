@@ -8,9 +8,13 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **Next step:** see the **Session log** for where the last session stopped.
 
 ## Blocked
-- **iPhone App Store launch: postponed by the owner** until the games are truly impressive (ROADMAP "Postponed"). Once reopened, it still needs the owner's Apple secrets (`ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `APPLE_TEAM_ID`) and the real Team ID in `OWNER.md`.
-- **Git tag pushes fail with HTTP 403** from session credentials. Dispatch `ios.yml`/`store.yml` by `workflow_dispatch` instead. `deploy-<n>` tags stay local; this file's release list is the record.
-- **The live browser smoke test can't run in this sandbox** (`ERR_CERT_AUTHORITY_INVALID` from the proxy). `npm run release` falls back to an HTTP check and reverts only on a real failure (see CLAUDE.md).
+Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
+
+## Known limitations (not blockers; the owner confirmed on 2026-09-28 that none of these hold up work)
+- **Git tag pushes fail with HTTP 403** from session credentials. Tags are only bookmarks: skip them and keep the release list below.
+- **The live browser smoke test hits the sandbox proxy's `ERR_CERT_AUTHORITY_INVALID`.** `npm run release` treats that as inconclusive and verifies the live site over HTTP instead.
+- **Apple secrets** are only needed when the owner reopens the App Store launch.
+- **`main` sometimes carries merge-only commits from earlier releases**, so `git merge --ff-only build` fails. Merge `origin/main` into `build` first (no content changes), then release.
 
 ## Known issues (small, from v1's last reviews)
 - [x] `sim/run.ts`'s worker pool has no per-worker wall-clock timeout (dev tooling only). **Fixed
