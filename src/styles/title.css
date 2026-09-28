@@ -45,7 +45,7 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--pasture-deep);
-  animation: title-rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1) both 100ms;
+  animation: title-rise 700ms var(--ease-settle) both 100ms;
 }
 
 .title-wordmark {
@@ -53,7 +53,7 @@
   line-height: 0.92;
   letter-spacing: -0.03em;
   color: var(--soil);
-  animation: title-rise 800ms cubic-bezier(0.2, 0.9, 0.3, 1) both 180ms;
+  animation: title-rise 800ms var(--ease-settle) both 180ms;
 }
 
 .title-tagline {
@@ -64,7 +64,7 @@
   font-size: clamp(18px, 1.9vw, 23px);
   line-height: 1.35;
   color: var(--ink-muted);
-  animation: title-rise 800ms cubic-bezier(0.2, 0.9, 0.3, 1) both 260ms;
+  animation: title-rise 800ms var(--ease-settle) both 260ms;
 }
 
 .title-menu {
@@ -72,7 +72,7 @@
   flex-direction: column;
   gap: 10px;
   width: min(100%, 360px);
-  animation: title-rise 800ms cubic-bezier(0.2, 0.9, 0.3, 1) both 360ms;
+  animation: title-rise 800ms var(--ease-settle) both 360ms;
 }
 
 .title-cta {
@@ -306,7 +306,7 @@
   left: -20%;
   bottom: -14%;
   width: 50%;
-  animation: title-fade-rise 900ms cubic-bezier(0.2, 0.9, 0.3, 1) both 500ms;
+  animation: title-fade-rise 900ms var(--ease-settle) both 500ms;
 }
 
 .title-cath svg {

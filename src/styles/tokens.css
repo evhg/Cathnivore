@@ -1,4 +1,10 @@
 :root {
+  /* Motion tokens (ROADMAP 21): one settle curve and one springy pop curve shared by every screen. */
+  --ease-settle: var(--ease-settle);
+  --ease-pop: cubic-bezier(0.34, 1.6, 0.64, 1);
+  --dur-quick: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 600ms;
   --paper: #F4EDE1;
   --paper-2: #EAE0CF;
   --surface: #FBF8F1;
