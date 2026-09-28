@@ -54,8 +54,9 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   arrest cliffhanger — added a single line ("Tell Bea I'll be home for her story...") that raises the
   stakes of the moment without playing it as a joke, keeping VISION.md's "never the punchline" rule.
   `npm run check` and the touched e2e specs (`carry-over`, `tutorial`, `quick-game`, `phone`/
-  `desktop-chromium`) green. Unreleased (release attempted already this session; `main` needs the manual
-  fast-forward first — see Now).
+  `desktop-chromium`) green. Ran `npm run shots` fresh and had a subagent review all 30 screenshots
+  against `STYLE.md`/SPEC 10 (gate 8, otherwise a manual step) — came back clean, no defects. Unreleased
+  (release attempted already this session; `main` needs the manual fast-forward first — see Now).
 - 2026-09-28 ~13:39-13:49 UTC: shipped ROADMAP 10's Pressure-card piece — STYLE.md 8's stage numeral
   (Roman) + region-type icon(s) on the Squeeze/Expand/Scout plan-strip slots (`RegionTypeIcon.tsx`,
   reuses the map's own `REGION_FILL` colours/silhouette). Measured the desktop plan-strip row directly
