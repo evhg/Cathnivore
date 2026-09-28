@@ -51,6 +51,7 @@ import {
   SupplyIcon,
 } from './icons/ActionIcons'
 import { RegionTypeIcon, romanStage } from './icons/RegionTypeIcon'
+import { CandorLogo, HollowellLogo } from './icons/EnemyLogos'
 import type { Action, GameEvent, GameState, ProducerId, RegionId, RegionType, ResourceKind } from '../engine/types'
 import type { Mode } from './Setup'
 import type { TutorialStep } from '../content/chapters'
@@ -920,6 +921,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                   className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
                   onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
                 >
+                  {/* ROADMAP 10: the enemy's plan strip becomes agenda-card-like — STYLE.md 8's Agenda
+                      cards put "the faction logo top-left"; both corporations act through every slot
+                      (SPEC 4.7's Scout/Expand/Squeeze all place or count Hollowell pieces, several also
+                      count or add Candor Doubt), so both logos brand every card rather than picking one. */}
+                  <span className="plan-strip-card-brand">
+                    <HollowellLogo size={12} />
+                    <CandorLogo size={12} />
+                  </span>
                   {slotLabel}: {pressureLabel(state[slot])}
                   {card && (
                     <span className="plan-strip-card-meta">

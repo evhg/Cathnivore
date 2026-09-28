@@ -146,7 +146,7 @@ On a region, Stalls sit along the bottom edge (up to 3 slots) and enemy pieces c
 - **Improvement:** a coloured band at the top per tag, the name in Fraunces, a coin with the cost at top right, rules text in Atkinson Hyperlegible, and an optional flavour line in italic `--ink-muted` at the bottom.
 - **Cath's Plan (Scheme):** an index card with faint ruled lines, the name in Fraunces, and Goodwill suns for the cost. Cath's line sits in Fraunces italic beside a 32 px avatar of her. These should feel like notes from her pocket.
 - **Agenda:** a newspaper clipping on off-white newsprint (#F7F4EC) with a torn top edge. The faction logo sits top-left and the headline is in Fraunces bold italic. The effect sits in a boxed panel, and the bonus effect in a dashed box that greys out at Rift 3.
-- **Pressure:** a minimal card showing the stage number in Roman numerals and one or two region-type icons. The enemy plan strip shows these at 56 px wide.
+- **Pressure:** a minimal card showing the stage number in Roman numerals and one or two region-type icons (top-right), plus both enemy logos, small, top-left — both corporations act through every slot (SPEC 4.7), so the card is dual-branded rather than picking one. The enemy plan strip shows these at 56 px wide.
 
 **Enemy logos** are original and simple:
 - **Hollowell:** a glossy orange rounded "H" in a rounded square, with one cheerful leaf that is clearly plastic.
