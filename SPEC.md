@@ -551,3 +551,26 @@ The owner turned cathnivore.com into the landing page for a small portfolio of g
 - **Runnel** is a finished daily hex irrigation puzzle: turn the channels so water from the central spring reaches every tile with no spills. There is one Daily puzzle per UTC day (Daily #1 was 2026-09-27) plus Practice in three sizes. Logic lives in `games/runnel/src/engine.ts` and is tested in `tests/runnel.test.ts`. The site suite (`npm run e2e:site`, run by gate 5) covers the landing page, Runnel and the game under `/cathnivore/`. Maintain it like the rest of the site: fix bugs, keep its tests green, no new features after M7 starts.
 - **Releases.** `npm run release`'s live smoke test checks the landing page, turns a tile in Runnel, and then runs the Cathnivore Quick Game check at `/cathnivore/`.
 - **The iPhone app** is still Cathnivore only. Its links out are still just Privacy and Support; the web version's title screen also links to `/` ("More games").
+
+## 16. Continuous improvement (owner decision, 2026-09-28): the run never ends
+The owner wants the hourly routine to **keep improving and beautifying the games indefinitely, until they are world-class** (`VISION.md`). This section overrides every earlier rule that ends the run or freezes features.
+
+**What changes**
+- **No end.** Never create `DONE`; if it exists, delete it and log why. `DEADLINE` now only marks the original v1 launch date. The "less than 18 hours left: M7 only" rule and the M7 "no new features" rule no longer apply. Section 12's milestones are history.
+- **What to work on,** in this order:
+  1. an open note in `FEEDBACK.md` (the owner's voice);
+  2. anything broken: red CI, a failing gate, a live-site bug, a save or rules bug;
+  3. the first unfinished item in `ROADMAP.md`.
+  Section 14's "Not in v1" list is lifted where `ROADMAP.md` schedules an item (for example, sound).
+- **How to work:** in slices that each leave `build` green and the game better (VISION.md principles). Put a redesign that can't be finished in one session behind a setting or feature flag, or develop it in a new component that isn't wired in yet, rather than shipping it half done.
+- **Visual work** is checked with `npm run shots` (every screen at phone and desktop) before and after, plus dark mode where the change touches colour. For anything bigger than a small tweak, have one subagent critique the "after" screenshots against `VISION.md` and `STYLE.md`, then fix what it flags.
+- **Releases:** run `npm run release` whenever a slice is complete and every gate passes, at most 4 times a day (Vercel's 100-deploys-a-day limit and the owner's usage). Never leave `main` behind `build` for more than a day without a logged reason.
+- **iPhone builds:** once the Apple secrets exist, at most 2 `ios.yml` builds a week, each for a release with meaningful changes. They replace section 12's 8-build cap.
+
+**What doesn't change:** section 1's autonomy rules (never ask; decide and log), the build lock, the priority order in 1.3, the gates in 11.4, save compatibility (a migration and a test for any change to the save format), rules correctness, at most 2 subagents at once, and no secrets.
+
+**Keep the notes short, or every session pays to read them.** v1's notes are archived in `docs/archive/` (read them only by searching, never in full). From now on:
+- `PROGRESS.md` stays under 150 lines, with four sections: **Now** (current ROADMAP item, status, next step), **Blocked**, **Recent releases** (last 10), **Session log** (last 15 sessions, one or two lines each). Delete older lines; git keeps them.
+- `DECISIONS.md` stays under 250 lines, newest at the bottom, each entry at most 5 lines. When it goes over, move the oldest entries to `docs/archive/DECISIONS-<YYYY-MM>.md`.
+- `BALANCE.md` stays under 300 lines; archive older runs the same way.
+- `CLAUDE.md` stays under 150 lines.

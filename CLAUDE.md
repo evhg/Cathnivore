@@ -1,28 +1,27 @@
 # Cathnivore: standing instructions
 
-You are building the game described in `SPEC.md`, fully unattended. A routine on claude.ai starts a cloud session every hour. The owner will not answer questions or approve anything until the build is finished. **Never ask. Decide, log the decision in `DECISIONS.md`, and keep going.**
+You are improving the games described in `SPEC.md` and `VISION.md`, fully unattended. A routine on claude.ai starts a cloud session every hour, **indefinitely**: the owner wants the games improved and beautified until they are world-class (SPEC 16). The owner doesn't answer questions. **Never ask. Decide, log the decision in `DECISIONS.md`, and keep going.**
 
-## Every session (full version in SPEC rule 1.9)
-1. Run `git fetch --all` and check out `build`, creating it from `main` if it's missing.
-2. If `DONE` exists, reply "Build finished" and end.
-3. **Lock check:**
+## Every session (SPEC 1.9 as amended by SPEC 16)
+1. Run `git fetch --all` and check out `build`. If `DONE` exists, delete it (SPEC 16: the run never ends) and log it.
+2. **Lock check:**
    - If `.build-lock` is less than 75 minutes old, end.
    - Otherwise write the UTC time into it, commit and push.
    - If the push is rejected, end.
-4. Read `SPEC.md` in full; it is the source of truth. Then read `STYLE.md`, `OWNER.md`, `PROGRESS.md`, `DECISIONS.md`, `BALANCE.md` (if present), `git log --oneline -20` and `origin/ci-status`.
-5. Check the time left against `DEADLINE`. The first session creates it as now plus 7 days, in UTC. Follow SPEC section 12; with less than 18 hours left, do only M7.
-6. If `PROGRESS.md` doesn't exist yet, you are at the start of M0. Create it from SPEC sections 12 and 13.
-7. Work for about 50 minutes. After each task, run its checks, tick it in `PROGRESS.md`, then commit and push to `build`.
-   - **Use the full ~50 minutes** (owner instruction, 2026-09-25). Finishing one or two tasks is not a reason to stop: note the time you took the lock and keep starting the next unchecked task until about 45 minutes have passed. Early sessions ended after 6-21 minutes, which wasted half of each hour.
-   - **Don't start anything long after about 40 minutes** (a sim run, a big refactor). Wrap up by about 55 minutes so the lock is released before the next session starts at :51; one session ran 70 minutes and the next hour's session found the lock held and did nothing.
-8. Before ending, make `PROGRESS.md` accurate, delete `.build-lock`, then commit and push.
+3. **Read, in this order:** `FEEDBACK.md`, `PROGRESS.md`, `ROADMAP.md`, `VISION.md`, the last 60 lines of `DECISIONS.md`, `git log --oneline -15` and `origin/ci-status`. Read `SPEC.md` sections 1, 15 and 16 in full; read other SPEC sections, `STYLE.md` and `BALANCE.md` when the task touches them. Never read `docs/archive/` in full; search it with grep.
+4. **Pick the work:** an open `FEEDBACK.md` note, then anything broken (CI, gates, the live site, saves, rules), then the first unfinished `ROADMAP.md` item. Write it under **Now** in `PROGRESS.md`.
+5. **Work for about 50 minutes, in slices.** After each slice, run its checks (`npm run check`; `npm run shots` before and after any visual change; the e2e specs it touches), commit and push to `build`. Each slice leaves the game better and never half-broken.
+   - **Use the full ~50 minutes** (owner instruction, 2026-09-25). Finishing one or two slices is not a reason to stop: keep starting the next one until about 45 minutes have passed.
+   - **Don't start anything long after about 40 minutes** (a sim run, a big refactor). Wrap up by about 55 minutes so the lock is released before the next session starts at :51.
+6. **Release** with `npm run release` when a slice is complete and every gate passes (at most 4 times a day). Tick the ROADMAP item when it ships.
+7. **Before ending,** keep the notes short (SPEC 16): update **Now**, the **Session log** and **Recent releases** in `PROGRESS.md`, append at most 5 lines to `DECISIONS.md`, and archive anything over the size limits. Then delete `.build-lock`, commit and push.
 
 ## Non-negotiables (full list in SPEC section 1)
 - Never ask questions or wait for input.
 - Work only on `build`. Move `main` forward only through `npm run release`, which requires every gate to pass. `main` is live on cathnivore.com.
 - Never push to or merge `ci-status`; only read it.
 - Never print, write or commit a secret. You don't have Vercel, Apple or domain credentials, and you don't need them.
-- iOS builds cost scarce macOS minutes: push `ios-<n>` tags only where SPEC section 12 says, with at most 8 in the whole run. Apart from the day-1 signing check, none before the web version is complete.
+- iOS builds cost scarce macOS minutes: once the Apple secrets exist, at most 2 `ios.yml` builds a week, each for a release with meaningful changes (SPEC 16).
 - Cut scope before you cut stability.
 - Use at most 2 subagents at once.
 
@@ -32,6 +31,7 @@ You are building the game described in `SPEC.md`, fully unattended. A routine on
 - `npm run e2e`: Playwright suite.
 - `npm run sim`: balance simulations.
 - `npm run release`: gates, fast-forward `main`, wait for the deployment, live smoke test, tag.
+- `npm run shots`: screenshots of every Cathnivore screen at phone and desktop sizes, saved to `e2e/screenshots/` (gitignored). Use them before and after every visual change.
 
 ## Notes
 Add short, durable notes here that will help later sessions, such as commands that work, gotchas and where things live. Keep this file under 150 lines.
