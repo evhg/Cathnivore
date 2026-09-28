@@ -605,9 +605,35 @@ h3 {
   vertical-align: middle;
 }
 
+/* ROADMAP 9 "region-targeting mode highlights the valid regions with an animated outline" (STYLE.md 7:
+   "legal regions glow with a 3 px wheat outline and a soft pulse") — the outline itself already existed
+   (`.dimmed`'s 45% opacity on everything else too), but had no pulse. `stroke-width: 5` stays as the plain
+   declaration (not just a keyframe value) so it's still what renders when the animation below is switched
+   off, matching the established `prefers-reduced-motion` pattern elsewhere in this file (e.g.
+   `.cath-companion-line`) — reduced-motion users see exactly the same static outline as before this
+   change, not a broken or frozen mid-pulse frame. */
 .region-hex.glow polygon:first-of-type {
   stroke: var(--wheat);
   stroke-width: 5;
+  animation: region-glow-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes region-glow-pulse {
+  0%,
+  100% {
+    stroke-width: 4;
+    stroke-opacity: 0.8;
+  }
+  50% {
+    stroke-width: 7;
+    stroke-opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .region-hex.glow polygon:first-of-type {
+    animation: none;
+  }
 }
 
 .decision,
