@@ -4,11 +4,11 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** 3 shipped in full 2026-09-28 (`cb050ee`). Now working item 1's remaining polish:
-  `d193d0c` widened the brow/eye/mouth deltas so 'determined' and 'worried' read apart from the default
-  smirk at 56-96px (companion/portrait scale) — the readability half of the gate-8 flag. Still open: hands
-  and a pose, finer hair/fabric shading, then replace `public/favicon.svg`, the app icon brief and the
-  social images with the new Cath (STYLE.md 9 itself is already rewritten).
+- **Current ROADMAP item:** 3 shipped in full 2026-09-28 (`cb050ee`). Item 1's readability half also shipped
+  (`d193d0c`: 'determined'/'worried' now read apart from the default smirk at 56-96px). Still open on item 1:
+  hands and a pose, finer hair/fabric shading, then replace `public/favicon.svg`, the app icon brief and the
+  social images. Also made a start on item 5 ("Cath's world"): 2 light, unreleased Bea mentions in chapter 1
+  and chapter 6's scenes (`b371223`, on `build`, not yet released — next session's release picks it up).
 - **Next step:** see the **Session log** for where the last session stopped.
 
 ## Blocked
@@ -52,8 +52,11 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   flagged, then widened 'determined' (furrowed brows, tighter squint, firmer mouth) and 'worried' (stronger
   raised/dropped brow, deeper frown) so they read apart from the default smirk at small size. 2 releases,
   all gates green both times, live confirmed via HTTP (browser smoke test hit the known sandbox-proxy cert
-  issue both times). ROADMAP 3 and 25 ticked; item 1's remaining scope (hands/pose, hair/fabric shading,
-  favicon/social images) is next.
+  issue both times) — **today's 4-release cap is now spent** (2 from an earlier session, 2 from this one).
+  Closed with a small, unreleased ROADMAP 5 start: one light Bea line each in chapter 1's closing scene and
+  chapter 6's `planUnlocked` scene, both well under SPEC 8.3's 12-line cap. ROADMAP 3 and 25 ticked; item 1's
+  remaining scope (hands/pose, hair/fabric shading, favicon/social images) is next, and the next session's
+  first `npm run release` will pick up the Bea commit too.
 - 2026-09-28 ~05:51-06:31 UTC: shipped ROADMAP 3 across 5 slices, 2 releases. `CathCompanion.tsx` reacts to
   liberated/Squeeze/Expand/Rift-split log events with an expression and a deterministic line from
   `cathCompanionLines.ts` (same event always shows the same line — a region/faction hash, not RNG, so
