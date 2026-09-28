@@ -3368,3 +3368,31 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   releasing the lock) was done from the checkout already in place (confirmed tree-identical to `build` via
   `git diff` beforehand) and pushed to `origin/build` with `git push origin HEAD:build`. Local `main`'s
   branch pointer is left as-is; only `origin/build`'s content matters for the next session.
+
+- 2026-09-28 (~04:52 UTC session): with no open Known issues left, dispatched 2 subagents (CLAUDE.md's cap)
+  for fresh adversarial review of areas not yet closely audited: (1) campaign chapters 5/6's scripted-start
+  interaction with Rift/liberation bookkeeping plus the error-screen/save-recovery path, and (2) the Runnel
+  puzzle engine's daily-rollover/determinism logic plus the site landing page's WebGL scene and the
+  self-removing root `sw.js` (SPEC 15). Pass (1) came back clean — no new findings; the mid-round-vs-cleanup
+  scripted-trigger timing and the narrative-only (not mechanically-enforced) chapter carry-over it re-checked
+  were both already-logged, deliberate design choices, not bugs.
+  Pass (2) found one real, previously-unlogged, HIGH-severity bug: `scripts/build-site.ts`'s generated
+  `sw.js` called `caches.keys()`/`caches.delete()` unscoped in its `activate` handler. Cache Storage is
+  shared per-origin, not scoped to the calling service worker, so this root-scoped worker (kept only to
+  clean up after players who still have the pre-portfolio root-scoped SW registered, SPEC 15) would delete
+  *every* cache on the origin on activation — including the live `/cathnivore/`-scoped PWA's own workbox
+  precache, silently breaking Cathnivore's offline play for any returning player who happened to have both
+  service workers registered (e.g. a second tab, or having visited `/cathnivore/` before revisiting `/`).
+  **Fixed:** the cache-deletion loop now skips any key containing `/cathnivore/` or `/runnel/` before
+  deleting the rest — workbox's default cache names embed the owning service worker's registration scope
+  URL, which always contains that app's base path, while the legacy root SW's caches only ever contained the
+  bare origin. Extracted the sw.js source into a new `scripts/siteServiceWorker.ts` (previously inlined as a
+  template string in `build-site.ts`) purely so it could be unit-tested: `tests/site-service-worker.test.ts`
+  evaluates the real generated source against mocked `self`/`caches` globals and asserts cache keys naming
+  either app survive an `activate` while everything else is deleted. Two lower-severity, non-user-facing
+  findings from the same pass (`site/src/scene.ts`'s WebGL `link()` not calling `gl.deleteShader` after
+  linking, and no `webglcontextrestored` handler to recover from a transient context loss) were left
+  unfixed — genuine minor cleanup gaps, not correctness bugs, and lower priority than a real offline-play
+  regression per SPEC 1.3's own priority order. `npm run check` clean (all suites, including the 2 new unit
+  tests); `npm run build:site` re-run and `dist-site/sw.js` inspected directly to confirm the generated
+  output matches. Pushed to `build` (`6deac65`).

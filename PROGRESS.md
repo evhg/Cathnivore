@@ -1,7 +1,24 @@
 # Progress
 
 ## Current milestone
-This session (2026-09-28, starting ~03:52 UTC): standard session start, lock taken, `npm ci` + `npm run
+This session (2026-09-28, starting ~04:52 UTC): standard session start, lock taken, `npm ci` + `npm run
+check` clean on `build` HEAD (`a46c916`, previous session's final state plus this session's lock commit).
+With no open Known issues left from the previous session, used 2 subagents (CLAUDE.md's cap) for fresh
+adversarial review of areas not yet closely audited: campaign chapters 5/6's scripted-start/Rift interaction
+plus the error-screen/save-recovery path (came back clean), and the Runnel engine/site landing page/root
+`sw.js` (found one real, previously-unlogged HIGH-severity bug — full detail in DECISIONS.md). **Fixed:**
+`scripts/build-site.ts`'s self-removing root `sw.js` (SPEC 15) was calling `caches.keys()`/`caches.delete()`
+unscoped, which is origin-wide, not scoped to the calling worker — on activation it would have deleted the
+live `/cathnivore/` PWA's own workbox precache along with the legacy caches it's meant to clean up, silently
+breaking Cathnivore's offline play for any returning player with both service workers registered. Now skips
+any cache key naming `/cathnivore/` or `/runnel/` before deleting the rest. Extracted the sw.js source into
+`scripts/siteServiceWorker.ts` so it could be unit-tested against mocked `self`/`caches` globals
+(`tests/site-service-worker.test.ts`, 2 new tests). `npm run check` clean; `npm run build:site` re-run and
+the generated `dist-site/sw.js` inspected directly to confirm the fix. Pushed to `build` (`6deac65`). Running
+`npm run gates` next before deciding whether to release.
+
+---
+Previous session (2026-09-28, starting ~03:52 UTC): standard session start, lock taken, `npm ci` + `npm run
 check` clean on `build` HEAD (`827e110`, previous session's final state plus this session's lock commit).
 Picked up the one remaining "Known issues" item from the previous session: Hot-seat's missing "pass the
 device" screen (`c4f5fad`, full detail above the Tasks section). Verified with `npx tsc -b`, `npx eslint`,
@@ -3169,6 +3186,15 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 
 
 ### Known issues found 2026-09-28
+- [ ] `site/src/scene.ts`'s WebGL `link()` never calls `gl.deleteShader` on the compiled vertex/fragment
+  shaders after linking (success or failure). Minor GPU-object leak, not user-visible (the page links a
+  shader program at most a couple of times per load) — low priority, found by a subagent review, not fixed
+  this session.
+- [ ] `site/src/scene.ts`'s `onContextLost` handler has no matching `webglcontextrestored` handler, so a
+  transient WebGL context loss (e.g. a GPU driver reset) permanently stops the landing page's animation for
+  the rest of that page load with no recovery path (unlike the existing `visibilitychange` pause/resume).
+  May be an intentional degrade rather than a bug — worth a future session confirming and, if not
+  intentional, adding a restore handler that recreates GL resources and resumes the RAF loop.
 - [x] The 4 "look at the top card" info Schemes (Reconnaissance, Paper Trail, Weather Eye, Steak-out) never
   showed the player what was peeked. **Fixed same session**: `schemePlayed` GameEvents gained an optional
   `peek: string[]` field, shown in the Log sheet ("Peeked: Stage 1: Coast."). See DECISIONS.md.
