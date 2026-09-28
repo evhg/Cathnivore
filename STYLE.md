@@ -186,7 +186,7 @@ Neither may resemble any real brand. In particular, avoid red-and-yellow food lo
 - No exclamation marks and no emoji anywhere in the interface.
 
 ## 13. App icon and store assets
-- **App icon (1024×1024, no transparency):** a close crop of Cath's face in her idol style, framed by her very long, centre-parted hair falling to the bottom edge, keeping the raised eyebrow and the smirk. A small pasture-green leaf is tucked into the right side of her hair. The background is wheat for dark hair and pasture-deep for light hair, so the hair always stands out. No text. It must read at 60 px. The style board shows the reference drawing.
+- **App icon (1024×1024, no transparency):** a close crop of the new Cath (`shared/cath/cath.ts`, see section 9 and VISION.md "Cath: character bible"), drawn from `cathSvg({framing: 'face', outfit: 'field', expression: 'smirk'})` — her very long, centre-parted hair falling to the edges, the raised right eyebrow and warm smirk. A small pasture-green leaf clip shows on the right side of her hair. The background is wheat for dark hair and pasture-deep for light hair, so the hair always stands out. No text. It must read at 60 px. `public/favicon.svg` is a frozen, static copy of that same render (favicons can't run the module's JS); the app icon and other static Cath assets (touch icon, social preview) should match it.
 - **Launch screen:** paper background with the icon drawing centred, and nothing else.
 - **App Store screenshots:** 5 portrait screenshots at the size Apple currently requires for the largest iPhone, each with a caption banner in Fraunces at the top:
   1. mid-game map with the enemy plan visible ("See their next move. Beat it.");
