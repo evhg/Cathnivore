@@ -12,6 +12,7 @@ import { execSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { build } from 'vite'
+import { siteServiceWorkerSource } from './siteServiceWorker'
 
 const root = resolve(import.meta.dirname, '..')
 const out = resolve(root, 'dist-site')
@@ -70,21 +71,7 @@ async function main(): Promise<void> {
     if (existsSync(from) && !existsSync(resolve(out, name))) cpSync(from, resolve(out, name), { recursive: true })
   }
 
-  // Before the portfolio, Cathnivore lived at / with a service worker scoped to the whole site. Anyone
-  // who played then still has it; it would keep serving the old cached game at /. This replacement
-  // clears its caches, unregisters itself and reloads open tabs so they get the landing page.
-  writeFileSync(
-    resolve(out, 'sw.js'),
-    `self.addEventListener('install', () => self.skipWaiting())
-self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    for (const key of await caches.keys()) await caches.delete(key)
-    await self.registration.unregister()
-    for (const client of await self.clients.matchAll({ type: 'window' })) client.navigate(client.url)
-  })())
-})
-`,
-  )
+  writeFileSync(resolve(out, 'sw.js'), siteServiceWorkerSource())
 
   writeFileSync(
     resolve(out, 'version.json'),
