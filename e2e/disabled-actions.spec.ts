@@ -150,12 +150,14 @@ test('Open Stall shows a disabled, explained placeholder when Produce is 0', asy
 // with something to remove: an Outlet, a Buyout, or Doubt) and then a resource comparison. Those two
 // reasons are genuinely distinct, so unlike a 'required'/'optional' Scheme's single region check they're
 // worth surfacing. SPEC 4.3.2's setup gives every non-capital region exactly 1 starting Outlet and 0
-// Buyout, with Doubt only on Coast regions — Mara's home, Brindle Hills, is Pasture, so a fresh Quick
-// Game (default producers Mara/Tomas) already shows Rebut and Supply-remove-Buyout as disabled
-// placeholders from turn 1, while Supply-remove-1-Outlet starts as a real, legal action.
+// Buyout, with Doubt only on Coast regions — Mara's home, Brindle Hills, is Pasture — but SPEC 4.3.4 then
+// immediately resolves the first Pressure card as an opening Scout, which can add a 2nd Outlet to a
+// matching region before the player's first action; seed 1 is pinned so Brindle Hills's opening Scout
+// doesn't match Pasture and it stays at exactly its starting 1 Outlet.
 test('Rebut and Supply-Buyout show a disabled, explained placeholder when there is nothing to remove yet', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
+  await page.locator('input[inputmode="numeric"]').fill('1')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
@@ -197,4 +199,47 @@ test('Rebut and Supply-Buyout show a disabled, explained placeholder when there 
   await expect(disabledSupply1.locator('.action-why-not')).toHaveText('No Outlet left to remove')
   await expect(disabledSupply2.getByRole('button', { name: /^Supply: remove 2 Outlets/ })).toBeDisabled()
   await expect(disabledSupply2.locator('.action-why-not')).toHaveText('No Outlets left to remove')
+})
+
+// ROADMAP 9, continued: Open Stall's other legality check (besides Produce) is `canOpenStallIn` — every
+// active region either full (SPEC 4.6.1's Stall cap) or unreachable (not the producer's own, nor
+// adjacent to one they own). A 2-region game (Mara's home Brindle Hills, Tomas's home Oakvale — SPEC
+// 4.3.2's ring puts them next to each other) starts each at cap-1 (2 of 3): Mara can legally Open Stall in
+// either (her own, or Oakvale since it borders her Stall), so 2 of her own actions fill both regions to
+// cap — with Produce still to spare, the only reason left is the structural one.
+test('Open Stall shows a disabled, explained placeholder when every region is full', async ({ page }) => {
+  await page.goto('/')
+  await page.evaluate(() => {
+    localStorage.setItem(
+      'cathnivore:save:v1',
+      JSON.stringify({
+        version: 1,
+        config: { producers: ['mara', 'tomas'], difficulty: 'normal', activeRegions: ['brindleHills', 'oakvale'] },
+        seed: 1,
+        actions: [],
+      }),
+    )
+  })
+  await page.reload()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await page.locator('.game').waitFor()
+
+  const actions = page.locator('.actions')
+  await expect(page.locator('.action-item', { hasText: 'Open Stall' }).locator('.action-why-not')).toHaveCount(0)
+
+  await actions.getByRole('button', { name: /^Open Stall/ }).click()
+  await page.locator('.region-hex[aria-label="Brindle Hills"]').click()
+  await actions.getByRole('button', { name: 'Confirm' }).click()
+  await actions.waitFor()
+
+  // Brindle Hills is now full, so Oakvale is the only legal target left — a single, directly-clickable
+  // button (SPEC 10.2: a group only needs the map-tap-and-Confirm flow when more than one target remains).
+  await actions.getByRole('button', { name: /^Open Stall in Oakvale/ }).click()
+  await actions.waitFor()
+
+  const openStall = page.locator('.action-item', { hasText: 'Open Stall' })
+  await expect(openStall.getByRole('button', { name: /^Open Stall/ })).toBeDisabled()
+  await expect(openStall.locator('.action-why-not')).toHaveText('No region open to place a Stall')
+  // Not a cost problem — no chip on a structural placeholder, same as Supply/Rebut above.
+  await expect(openStall.locator('.action-cost')).toHaveCount(0)
 })

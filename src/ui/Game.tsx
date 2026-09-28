@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { resolveRules } from '../engine/rules'
 import { createRng } from '../engine/rng'
-import { ACTIONS_PER_ROUND } from '../engine/region'
+import { ACTIONS_PER_ROUND, canOpenStallIn, regionStallTotal } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
 import { REGIONS, regionMatchesPressureSlot } from '../content/map'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
@@ -13,7 +13,6 @@ import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
-import { regionStallTotal } from '../engine/region'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
@@ -671,16 +670,18 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     return schemeMissingByCard.get(schemeId)
   }
 
-  // ROADMAP 9 why-not, continued: Open Stall costs exactly 1 Produce and `legalActions` never even
-  // checks any region when Produce is 0 (it skips the whole loop) — the *only* case where "no Open Stall
-  // action exists at all" is unambiguously about affordability, not "no adjacent/legal region" (which
-  // stays silently absent, as before, since that really is ambiguous without per-region reason logic).
-  const showDisabledOpenStall =
-    !tutorialStep?.highlight &&
-    !waitingOnAi &&
-    pendingEnemyTurn.length === 0 &&
-    active.resources.produce < 1 &&
-    !groups.has('openStall')
+  // ROADMAP 9 why-not, continued: Open Stall has exactly two legality checks in a fixed order — Produce
+  // vs. its flat 1-Produce cost, then whether any active region is actually open to place one in
+  // (`canOpenStallIn`: under the Stall cap, past the Kingsmarket guard, and adjacent to or holding one of
+  // the producer's own Stalls). Unlike a 'required'/'optional' Scheme's single region check, both reasons
+  // here are unambiguous to compute directly from state, so a real "every region is full or unreachable"
+  // case now gets its own placeholder too, not just the Produce-0 case this used to be scoped to.
+  const disabledOpenStall: { text: string } | undefined = (() => {
+    if (tutorialStep?.highlight || waitingOnAi || pendingEnemyTurn.length > 0 || groups.has('openStall')) return undefined
+    if (active.resources.produce < 1) return { text: 'Need 1 more Produce' }
+    const anyLegalRegion = state.config.activeRegions.some((id) => canOpenStallIn(state, state.activeProducer, id))
+    return anyLegalRegion ? undefined : { text: 'No region open to place a Stall' }
+  })()
 
   // ROADMAP 9 why-not, continued: Supply and Rebut are per-region grouped actions (SPEC 10.2's targeting
   // mode highlights valid regions on the map rather than listing one button per region), but each kind's
@@ -927,17 +928,17 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
               </span>
             )
           })}
-          {showDisabledOpenStall && (
+          {disabledOpenStall && (
             <span className="action-item">
-              <button disabled title="Need 1 more Produce">
+              <button disabled title={disabledOpenStall.text}>
                 <span className="action-label-group">
                   <span className="action-label">
                     <OpenStallIcon size={18} />
                     Open Stall
                   </span>
-                  <span className="action-why-not">Need 1 more Produce</span>
+                  <span className="action-why-not">{disabledOpenStall.text}</span>
                 </span>
-                <ActionCostChip cost={{ resource: 'produce', amount: 1 }} />
+                {disabledOpenStall.text.startsWith('Need') && <ActionCostChip cost={{ resource: 'produce', amount: 1 }} />}
               </button>
               <Tooltip term="Open Stall" label="What is Open Stall?">
                 ?
