@@ -17,6 +17,7 @@ export const SCENES: Record<'opening' | 'closing', Scene> = {
       { speaker: 'Cath', line: 'Octavia Vane runs Candor’s public understanding, which is a job title that means the opposite of what it says.' },
       { speaker: 'Cath', line: "She's just invited me to lunch. Personally. That's either a compliment or a warning shot." },
       { speaker: 'Sol', line: 'With her, why not both.' },
+      { speaker: 'Cath', line: "Bea's already asked if Octavia's the villain from her cartoons. I told her real life doesn't get such a good costume." },
     ],
   },
 }

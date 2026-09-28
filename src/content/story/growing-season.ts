@@ -28,6 +28,7 @@ export const SCENES: Record<'opening' | 'twist' | 'closing', Scene> = {
       { speaker: 'Cath', line: 'And your phone is about to ring. Graham Pell doesn’t call people he’s not worried about.' },
       { speaker: 'Tomas', line: 'He wants to buy my farm. Said it like he was doing me a favour.' },
       { speaker: 'Cath', line: 'He always does. Hang up, Tomas. We’re not selling — we’re just getting started.' },
+      { speaker: 'Cath', line: "Now if you'll excuse me, Bea's expecting a bedtime story and Pell can wait his turn." },
     ],
   },
 }
