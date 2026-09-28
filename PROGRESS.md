@@ -12,6 +12,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
   Item 10's gauges ship on both phone and desktop (a ring, not a bar), tick animation and Pressure-badge
   shipped, and the plan-strip cards now carry both corporations' logos (a branding pass, not yet the full
   illustrated agenda-card redesign).
+- **2026-09-28 20:00 UTC:** ROADMAP 12's per-piece entrance animations (Outlet pop, Buyout slam, Doubt float; unreleased — release cap reached today).
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or

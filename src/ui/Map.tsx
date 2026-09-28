@@ -116,7 +116,7 @@ function RegionTextureDefs() {
 // from before) plus a small hanging price tag, the wit detail STYLE.md 2.5 asks for by name.
 export function Outlet() {
   return (
-    <g className="enemy-piece">
+    <g className="enemy-piece enemy-outlet">
       <rect width={12} height={12} rx={2} fill="var(--hollowell)" />
       <circle cx={9} cy={3} r={2.2} fill="var(--hollowell-highlight)" />
       <g transform="translate(7,9) rotate(18)">
@@ -134,7 +134,7 @@ export function Outlet() {
 // distinct in outline from Outlet's square, STYLE.md 2.3) and adds the sign itself.
 export function Buyout() {
   return (
-    <g className="enemy-piece">
+    <g className="enemy-piece enemy-buyout">
       <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" />
       <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
       <g transform="translate(1,7) rotate(-6)">
@@ -151,7 +151,7 @@ export function Buyout() {
 // read as a plain dot rather than a speech bubble (STYLE.md 6's literal shape).
 export function Doubt() {
   return (
-    <g className="enemy-piece">
+    <g className="enemy-piece enemy-doubt">
       <circle cx={6} cy={6} r={6} fill="var(--candor)" />
       <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor)" />
       <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />

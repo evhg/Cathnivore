@@ -1678,6 +1678,31 @@ html.native-app body {
   animation: piece-delivery 200ms ease-out;
 }
 
+/* ROADMAP 12: each enemy piece arrives its own way, so a glance at the map says what just landed. Same
+   200-260ms budget as the shared slide; the reduced-motion and no-animations rules below already cover
+   `.enemy-piece`, which these classes only refine. */
+@keyframes outlet-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes buyout-slam {
+  0% { transform: translateY(-14px) scaleY(1.2); opacity: 0; }
+  65% { transform: translateY(1px) scaleY(0.88); opacity: 1; }
+  100% { transform: translateY(0) scaleY(1); opacity: 1; }
+}
+@keyframes doubt-float {
+  0% { transform: translateY(10px) rotate(-8deg) scale(0.6); opacity: 0; }
+  60% { transform: translateY(-2px) rotate(5deg) scale(1.05); opacity: 1; }
+  100% { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
+}
+.enemy-outlet { animation: outlet-pop 220ms ease-out; }
+.enemy-buyout { animation: buyout-slam 240ms ease-out; }
+.enemy-doubt { animation: doubt-float 260ms ease-out; }
+.map-legend-icon .enemy-outlet,
+.map-legend-icon .enemy-buyout,
+.map-legend-icon .enemy-doubt { animation: none; }
+
 /* ROADMAP 13: liberating a region stamps the co-op seal down and blooms pasture green across the hex. */
 @keyframes seal-stamp {
   0% {
@@ -1738,6 +1763,9 @@ html.native-app body {
 @media (prefers-reduced-motion: reduce) {
   .stall-piece,
   .enemy-piece,
+  .enemy-outlet,
+  .enemy-buyout,
+  .enemy-doubt,
   .card-enter,
   .coop-stamp,
   .liberate-bloom,
@@ -1748,6 +1776,9 @@ html.native-app body {
 
 html.no-animations .stall-piece,
 html.no-animations .enemy-piece,
+html.no-animations .enemy-outlet,
+html.no-animations .enemy-buyout,
+html.no-animations .enemy-doubt,
 html.no-animations .lostland-overlay,
 html.no-animations .coop-stamp,
 html.no-animations .liberate-bloom,
