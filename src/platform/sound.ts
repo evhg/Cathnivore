@@ -29,6 +29,10 @@ export function unlockAudioOnFirstTap(): void {
     if (c && c.state === 'suspended') void c.resume()
   }
   window.addEventListener('pointerdown', unlock, { once: true })
+  // A soft tick on every button press, so menus feel tactile too (ROADMAP 19's UI-tap cue).
+  window.addEventListener('click', (e) => {
+    if (e.target instanceof Element && e.target.closest('button, [role="button"], a')) play(SOUNDS.tap)
+  })
 }
 
 interface Note {
@@ -62,6 +66,7 @@ function play(notes: Note[]): void {
 }
 
 const SOUNDS = {
+  tap: [{ freq: 880, at: 0, dur: 0.04, type: 'sine' as const, gain: 0.03 }],
   place: [{ freq: 520, at: 0, dur: 0.09, type: 'triangle' as const }],
   liberate: [523, 659, 784, 1047].map((freq, i) => ({ freq, at: i * 0.09, dur: 0.22, type: 'triangle' as const })),
   squeeze: [{ freq: 300, at: 0, dur: 0.25, type: 'sawtooth' as const, slideTo: 140, gain: 0.05 }],
