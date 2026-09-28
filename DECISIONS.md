@@ -70,7 +70,12 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   844px design viewport — the map's bottom crop is a real, accepted trade-off, not a bug.
 - 2026-09-28: moved to ROADMAP 9 after item 8 hit diminishing returns on both halves. Split item 9 at
   its natural seam: press feedback and the region-glow pulse are pure CSS with no behaviour change,
-  so they shipped this session; icons/cost chips/why-not states need new art or expose engine-internal
-  costs as UI-facing values, and why-not states change *which* actions render at all (today illegal
-  actions simply don't appear as buttons) — real enough scope to log as its own follow-up rather than
-  half-attempt alongside the CSS-only pieces.
+  so they shipped this session; icons/why-not states need new art or a real behaviour change (which
+  actions render, not just how — today illegal actions simply don't appear as buttons), real enough
+  scope for their own dedicated follow-up.
+- 2026-09-28 (same session, revised the note above): cost chips turned out not to need new art after
+  all — they reuse the existing resource icons, and the actual cost numbers already exist in
+  `actions.ts`, just uncomputed as a separate UI-facing value. Exported the 5 cost functions
+  (`supplyOutletCostPerOutlet` etc.) rather than duplicating their logic in the UI layer, so a chip can
+  never drift from what `applyAction` actually charges. Shipped this session alongside the 2 CSS-only
+  pieces; icons and why-not states are still the real follow-up.

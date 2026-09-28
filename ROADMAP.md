@@ -79,13 +79,21 @@ Every visual item is done only when:
    outline existed — added a 1.6s stroke-width/opacity pulse, disabled under reduced motion (falls back to
    the exact prior static stroke). Both verified directly (computed-style checks for both motion states,
    plus the full Playwright suite and `npm run gates`) rather than by screenshot, since neither is visible
-   in a resting-state screenshot. Still open, the bulk of the item: icons per action, cost chips (the
-   costs themselves are already computed per-action in `actions.ts`/`actionLabel.ts`, just not exposed as
-   a separate value for a chip to render), and disabled/why-not states — today only *legal* actions render
-   as buttons at all, so "why not" has no illegal action to explain itself against; making that work would
-   be a real behaviour change (which actions render, not just how), not a visual-only slice, and touches
-   enough e2e tests (tutorial highlighting, the AI teammate's decision loop) to warrant its own dedicated
-   session rather than a same-session add-on.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
+   in a resting-state screenshot. 2026-09-28 (later same session): added resource cost chips — a small
+   icon+number pill inside each action button, reusing the exact `ProduceIcon`/`MarksIcon`/`GoodwillIcon`
+   already drawn in the topbar/active-producer panel (no new art needed), additive to `actionLabel`'s
+   existing text cost rather than replacing it (keeps every e2e test that matches a button name by
+   prefix working unchanged). `actionCost()` (`actionLabel.ts`) calls the exact same cost functions
+   `applyAction` uses to spend the resource (now exported from `engine/actions.ts`) — one source of
+   truth, so a chip can never drift from the real cost. A region-targeting group button only shows a
+   chip when every region behind it costs the same (Supply's per-Outlet cost varies by region type and
+   Improvements); mixed costs fall back to no chip. Gate-8 reviewed clean at both sizes, including the
+   longest label ("Supply: remove 1 Outlet in Brindle Hills", which wraps to 2 lines). Still open, the
+   rest of the item: icons per action (real new art, STYLE.md needs a documented icon spec for the 7
+   action kinds + Role first) and disabled/why-not states — today only *legal* actions render as
+   buttons at all, so "why not" has no illegal action to explain itself against; making that work is a
+   real behaviour change (which actions render, not just how) touching enough e2e tests (tutorial
+   highlighting, the AI teammate's decision loop) to warrant its own dedicated session.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
 10. [ ] **The table, part 3: the HUD.** Round, Trust, Lost Land and Rift become illustrated gauges with tick-up and tick-down animation when they change. The enemy's Squeeze, Expand and Scout slots become agenda cards with each corporation's glossy branding.
 11. [ ] **Map art, part 1: regions.** Terrain illustration on each region (hedgerows, field rows, shoreline and boats, the Kingsmarket clock tower) and labels as painted signboards. It must pass the greyscale shape test (STYLE.md 2).
 12. [ ] **Map art, part 2: pieces.** The exact STYLE.md 6 pieces (awning Stall, glossy "0.99" Outlet, "SOLD" fence Buyout, "?" bubble Doubt), each with a placement animation.

@@ -5,21 +5,22 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
 - **Current ROADMAP item:** item 1's scope is done; item 8 (game-screen layout) hit diminishing
-  returns on both desktop and phone last session — see its ROADMAP note. This session moved on to
-  item 9 ("actions as cards") and shipped its two pieces that needed no new art or engine changes:
-  press feedback (`transform: scale(0.96)` on `:active`, every button, a plain opacity dip under
-  `prefers-reduced-motion`) and the region-targeting glow's missing pulse (STYLE.md 7 already called
-  for it; only the static outline existed — added a 1.6s pulse, disabled under reduced motion,
-  falling back to the exact prior static stroke). Neither is visible in a resting-state screenshot,
-  so both were verified with computed-style checks for both motion states instead, plus the full
-  Playwright suite and `npm run gates` (all gates, twice). Item 9's bulk — icons per action, cost
-  chips, disabled/why-not states — is real behaviour change (which actions render, not just how) and
-  touches enough e2e tests to need its own dedicated session; see the ROADMAP note for specifics.
-  **Today's 4-release cap was already spent before this session started, so none of this has reached
-  `main` yet — next session's `npm run release` should pick up everything since `92e7406`.**
-- **Next step:** a follow-up session on item 9 should design the action-tile icon set and expose a
-  per-action cost value (the numbers already exist in `actions.ts`, just not as a separate value a
-  chip could render) before touching disabled/why-not states, which need real engine-facing work.
+  returns on both desktop and phone last session — see its ROADMAP note. This session moved to item 9
+  ("actions as cards") and shipped 3 of its 5 pieces: press feedback (every button, `:active` scale,
+  a plain opacity dip under `prefers-reduced-motion`); the region-targeting glow's missing pulse
+  (STYLE.md 7 already specified it; only the static outline existed); and resource cost chips inside
+  each action button, reusing the existing topbar/active-producer resource icons (no new art) and the
+  engine's own real cost functions (now exported from `actions.ts`, one source of truth — a chip can't
+  drift from what a tap actually costs). All 3 verified thoroughly (computed-style checks for the
+  motion-only 2, a gate-8 review for the chips, the full Playwright suite and `npm run gates` — all
+  gates, 3 times total this session). **Today's 4-release cap was already spent before this session
+  started, so none of this has reached `main` yet — next session's `npm run release` should pick up
+  everything since `92e7406`.**
+- **Next step:** item 9's remaining 2 pieces — icons per action (real new art; STYLE.md needs a
+  documented icon spec for the 7 action kinds + Role first, same as sections 5/6 already have for
+  resources/pieces) and disabled/why-not states (a real behaviour change: today only *legal* actions
+  render as buttons at all, so this touches which actions show, not just how — enough e2e tests
+  (tutorial highlighting, the AI teammate) to need its own dedicated session).
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -53,21 +54,29 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
-- 2026-09-28 ~11:51-12:05 UTC: moved from ROADMAP 8 (diminishing returns, prior session) to ROADMAP 9,
-  shipping its 2 pieces that needed no new art or engine work, both unreleased (cap spent). Press feedback:
-  every button gets `transform: scale(0.96)` on `:active` (a plain opacity dip under
-  `prefers-reduced-motion`, per STYLE.md 11's "fades only") — applied globally, not just to action buttons,
-  since STYLE.md draws no per-screen exception and a press effect on some buttons but not others would read
-  as unfinished. Region-targeting glow pulse: STYLE.md 7 already specified "a soft pulse" on the wheat
-  outline, but only the static stroke existed — added a 1.6s stroke-width/opacity `@keyframes` animation,
-  disabled under reduced motion (falls back to the exact prior static 5px stroke, not a frozen mid-pulse
-  frame). Neither change is visible in a resting-state `shots` screenshot, so both were verified directly
-  instead: a throwaway Playwright script checked `getComputedStyle(...).animationName` in both motion
-  states before trusting either fix. `npm run check`, the full Playwright suite (106/106; one
-  `ai-teammate.spec.ts` failure on the first run was confirmed flaky/pre-existing — passed clean on a
-  targeted re-run, unrelated to CSS) and `npm run gates` (all gates) green. Item 9's remaining scope (icons,
-  cost chips, disabled/why-not states) is real behaviour change, not visual-only — scoped as its own
-  dedicated follow-up in ROADMAP.md rather than rushed this session.
+- 2026-09-28 ~11:51-12:16 UTC: moved from ROADMAP 8 (diminishing returns, prior session) to ROADMAP 9,
+  shipping 3 of its 5 pieces, all unreleased (cap spent). Press feedback: every button gets `transform:
+  scale(0.96)` on `:active` (a plain opacity dip under `prefers-reduced-motion`, per STYLE.md 11's "fades
+  only") — applied globally, not just to action buttons, since STYLE.md draws no per-screen exception and a
+  press effect on some buttons but not others would read as unfinished. Region-targeting glow pulse:
+  STYLE.md 7 already specified "a soft pulse" on the wheat outline, but only the static stroke existed —
+  added a 1.6s stroke-width/opacity `@keyframes` animation, disabled under reduced motion (falls back to
+  the exact prior static 5px stroke, not a frozen mid-pulse frame). Neither change is visible in a
+  resting-state `shots` screenshot, so both were verified directly instead: a throwaway Playwright script
+  checked `getComputedStyle(...).animationName` in both motion states before trusting either fix. Then
+  resource cost chips: exported `actions.ts`'s existing cost functions (`supplyOutletCostPerOutlet`,
+  `supplyBuyoutCost`, `investCost`, `schemeCost`, `rebutCost`, `TEAR_UP_CONTRACT_COST`) rather than
+  duplicating the logic in the UI layer, added `actionCost()` (`actionLabel.ts`) calling them, and rendered
+  a small icon+number pill (reusing `ProduceIcon`/`MarksIcon`/`GoodwillIcon`, no new art) inside each action
+  button, additive to the existing text cost so no button-name-matching e2e test needed to change. A
+  region-targeting group button only shows a chip when every region behind it costs the same — Supply's
+  per-Outlet cost can vary by region type/Improvements, so a mixed group falls back to no chip rather than
+  a misleading number. `npm run check`, the full Playwright suite (106/106 each time; one
+  `ai-teammate.spec.ts` failure on an early run was confirmed flaky/pre-existing, unrelated to any of this
+  session's CSS/TS changes — passed clean on a re-run) and `npm run gates` (all gates) green 3 times across
+  the session; a gate-8 subagent review of the cost chips (including the longest action label, which wraps
+  to 2 lines) found no issues. Item 9's remaining 2 pieces (icons per action, disabled/why-not states) need
+  real new art and a real behaviour change respectively — scoped as a dedicated follow-up in ROADMAP.md.
 - 2026-09-28 ~11:24-11:45 UTC: gave phone's game screen its ROADMAP 8 bottom tray, unreleased (cap spent).
   Split `.game` into `.game-scroll` (topbar/companion/plan-strip/map) and `.action-tray` (producer info,
   actions, Undo/sheet-toggle footer) as flex siblings — the tray keeps its natural size and is always the
