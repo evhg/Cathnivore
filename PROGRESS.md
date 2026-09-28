@@ -54,7 +54,9 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   (`36bc223`, ROADMAP 5: Growing Season and Word of Mouth closings). Scoped ROADMAP item 8 (see its
   note) rather than starting it: today's desktop `.map` is deliberately capped at 260px to fit
   SPEC 10.3's no-scroll budget, so "make the map the hero" needs the actions moved out of the
-  centre column — real `Game.tsx`/CSS surgery, not a same-session slice. Caught my own mistake:
+  centre column — real `Game.tsx`/CSS surgery, not a same-session slice; confirmed with a live
+  test (`a25949b`) that even a 10px bump past 260px fails `desktop-no-scroll.spec.ts`, so it's
+  not a lever with hidden headroom. Caught my own mistake:
   started `npm run release` out of habit before checking today's cap was already spent (noted in
   Now/session log below) — stopped it via TaskStop before it touched `main` (verified
   `origin/main` still at `d193d0c`, working tree clean). All gates green, live site confirmed at
