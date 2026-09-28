@@ -1,6 +1,44 @@
 # Progress
 
 ## Current milestone
+This session (2026-09-28, starting ~23:51 UTC): standard session start, lock taken, `main`/`build` already in
+sync (only lock/doc churn between `f78f78e`/`130be4a`), `origin/ci-status`'s `ios.json` unchanged (still the
+same missing-Apple-secrets failure on the unchanged `OWNER.md` placeholder Team ID — not re-dispatched, would
+only reproduce it). `npm ci` + `npm run check` clean.
+
+Ran a full `npm run gates`: clean (gates 1-7 confirmed; gate 8's 30 fresh screenshots reviewed by 2 fresh
+subagents, phone + desktop, both clean, no findings). With nothing else queued, used the rest of the session
+for a deliberately broad fresh-eyes pass this heavily-audited codebase hadn't had in exactly this shape
+before: dispatched 6 more subagents in total (2 at a time, CLAUDE.md's cap) across `src/platform`/`ios/App`
+vs SPEC 11.3/11.6, the engine's rules vs SPEC 4/6/7 line-by-line, `games/runnel`+`site/`+`build-site.ts`, the
+global error screen + CSP headers vs SPEC 11.3/11.5, `src/ai/*`'s Worker/RNG/MCTS-deadline safety, and
+`src/ui/Game.tsx`'s state management. Four came back clean (a real, valuable confirmation nothing has
+regressed). Two found real bugs, both fixed and verified this session (see DECISIONS.md for full detail):
+1. **Mid-game scripted scenes (chapters 3/6) used to replay forever after any reload**, re-blocking the
+   current turn — `dismissedMidScenes` was plain component state (reset on reload) while the `trigger` log
+   event that gates it is permanent history. Fixed by extracting `pendingMidSceneTrigger` (new,
+   `src/ui/enemyTurnLog.ts`) which also treats "an action was logged after the trigger" as durable proof of
+   an earlier dismissal (the Scene overlay blocks every action while pending, so this is always true after a
+   genuine past dismissal). 4 new Vitest cases cover all 4 combinations.
+2. **A worker-listener leak in the AI teammate's fallback path** (never a stale action, just a slow
+   accumulation of dead listener pairs on a long-lived Worker over a long solo game) — fixed by reordering
+   `fallBackToHeuristic` to remove its listeners before its `settled`/`cancelled` check, matching `onMessage`.
+
+Verified both fixes beyond the unit tests: `npm run check` (471 tests, up from 467), then a full local e2e
+run (`phone` + `desktop-chromium`, 102 tests, including all 6 campaign chapters and both tutorial chapters)
+— all green. Pushed to `build` (`a93dac4`, then `cdaa1f8` for the DECISIONS.md write-up).
+
+Ran `npm run release`: gates 1-7 passed clean again inside the script's own run, gate 8's screenshots
+captured (unchanged content from this session's earlier subagent-reviewed pass — neither fix touched any UI
+markup/CSS). Hit the usual stale-local-`main`/diverging-histories fast-forward failure. The documented manual
+fix (`git checkout -B main origin/main`) succeeded, but `git merge --no-ff build` was denied by the harness's
+"Production Deploy" classifier before running — no local merge was made, `origin/main` confirmed untouched at
+`f78f78e`. Not retried per the denial's own guidance; logged under Blocked. `build` (`cdaa1f8`, carrying both
+real fixes above) is fully gated and pushed, waiting for a future session's release retry.
+
+`npm audit`: 0 vulnerabilities (unchanged). Lock released at session end.
+
+---
 This session (2026-09-27, starting ~22:52 UTC): standard session start, lock taken, `ci.json` green at
 `e8f0666`, `ios.json`/`OWNER.md` unchanged (Apple Team ID still a placeholder). `npm ci` + `npm run check`
 clean. Ran `npm run release`: gates 1-7 passed clean; gate 8's fresh screenshots got a real 2-subagent
@@ -2936,6 +2974,16 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - [x] Released to `main` as `a175052` on 2026-09-27 ~04:32 UTC (owner's chat session, under the build lock; see the deploy log)
 
 ## Blocked
+- **New 2026-09-28 ~00:12 UTC:** `npm run release` ran `npm run gates` clean (gates 1-7; gate 8's screenshots
+  captured, unchanged content from this session's own earlier subagent-reviewed pass — see Current
+  milestone), hit the usual stale-local-`main` fast-forward failure. `git checkout -B main origin/main`
+  itself succeeded this time (no "Blind Apply" denial), but the next step, `git merge --no-ff build`, was
+  denied by the "Production Deploy" classifier before running — no local merge commit was made,
+  `origin/main` confirmed untouched at `f78f78e`. Not retried per the denial's own guidance; switched back to
+  `build` (still at `cdaa1f8`, unaffected). `build` carries this session's 2 real fixes (the mid-game-scene
+  reload bug and the AI-worker listener leak, both fully gated and e2e-verified — see Current milestone/
+  DECISIONS.md), waiting for a future session's release retry: try `npm run release` normally first; if it
+  hits the same ff-only failure, redo the manual checkout+merge+push sequence from scratch.
 - **New 2026-09-27 ~22:00 UTC:** `npm run release` ran `npm run gates` clean (all 8, gate 8 confirmed this
   session via 2 fresh subagent screenshot reviews — see Current milestone), hit the usual stale-local-`main`
   fast-forward failure, and the manual fix (`git checkout -B main origin/main && git merge --no-ff build`)
