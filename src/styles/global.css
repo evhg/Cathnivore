@@ -547,6 +547,15 @@ h3 {
   color: var(--ink-muted);
 }
 
+/* ROADMAP 9 "clear disabled and why-not states", continued: a Market card that can't offer a Buy button
+   says why, in the exact spot the button would sit — same voice as the action panel's `.action-why-not`. */
+.card-why-not {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
 /* SPEC 10.3 desktop inline sheets only (MarketSheet.tsx/CathsPlanSheet.tsx): each card collapses to its
    name/cost summary by default via a native <details>, so the right column doesn't have to fit every
    card's rules text and flavour line at once to satisfy "no scrolling at 1280x800". Native <details> needs

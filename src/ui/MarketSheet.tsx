@@ -12,12 +12,19 @@ const TAG_LABEL: Record<string, string> = { pasture: 'Pasture', crop: 'Crop', co
 export default function MarketSheet({
   state,
   canBuy,
+  missingMarks,
   onBuy,
   onClose,
   inline,
 }: {
   state: GameState
   canBuy: (cardId: string) => boolean
+  // ROADMAP 9 "clear disabled and why-not states": Invest's only legality condition is Marks vs. cost
+  // (see Game.tsx's `disabledInvest`), so a card the sheet can't offer a Buy button for can always say
+  // exactly how many more Marks it needs, the same unambiguous reason the main action panel shows.
+  // Returns `undefined` when the card is already buyable (or the gap isn't Marks-shaped, e.g. a gated
+  // tutorial step or another producer's turn — Game.tsx's `missingMarks` already accounts for those).
+  missingMarks: (cardId: string) => number | undefined
   onBuy: (cardId: string) => void
   onClose(): void
   inline?: boolean
@@ -42,7 +49,11 @@ export default function MarketSheet({
                 way to see what it does without leaving the Market sheet to search for it separately. */}
             <p className="card-text">{card.text}</p>
             {card.flavor && <p className="card-flavor">{card.flavor}</p>}
-            {canBuy(id) && <button onClick={() => onBuy(id)}>Buy</button>}
+            {canBuy(id) ? (
+              <button onClick={() => onBuy(id)}>Buy</button>
+            ) : (
+              missingMarks(id) !== undefined && <p className="card-why-not">Need {missingMarks(id)} more Marks</p>
+            )}
           </li>
         )
       })}
@@ -83,7 +94,11 @@ export default function MarketSheet({
                     <MarksIcon /> {card.cost} Marks
                   </Tooltip>
                 </div>
-                {canBuy(id) && <button onClick={() => onBuy(id)}>Buy</button>}
+                {canBuy(id) ? (
+                  <button onClick={() => onBuy(id)}>Buy</button>
+                ) : (
+                  missingMarks(id) !== undefined && <p className="card-why-not">Need {missingMarks(id)} more Marks</p>
+                )}
               </li>
             )
           })}

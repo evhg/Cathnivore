@@ -628,7 +628,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // legality also depends on region/target state — each unaffordable market slot gets its own
   // unambiguous "Need N more Marks" placeholder, the same way each unaffordable Sell count does.
   const disabledInvest: { improvementId: string; cost: number; missing: number }[] = []
-  if (rules.improvements && !tutorialStep?.highlight) {
+  if (rules.improvements && !tutorialStep?.highlight && !waitingOnAi && pendingEnemyTurn.length === 0) {
     for (const id of state.market) {
       if (!id) continue
       if (investEntries.some((e) => e.action.kind === 'invest' && e.action.improvementId === id)) continue
@@ -637,6 +637,13 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       const cost = investCost(state, state.activeProducer, card)
       if (active.resources.marks < cost) disabledInvest.push({ improvementId: id, cost, missing: cost - active.resources.marks })
     }
+  }
+
+  // The same per-card "Need N more Marks" reason `disabledInvest` computes for the main action panel,
+  // looked up by card id, for the Market sheet's own Buy-button-less cards to explain themselves too.
+  const investMissingByCard = new Map(disabledInvest.map((d) => [d.improvementId, d.missing]))
+  function missingMarks(improvementId: string): number | undefined {
+    return investMissingByCard.get(improvementId)
   }
 
   function act(actionIndex: number): void {
@@ -1131,7 +1138,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           not let the sheet stay reachable with real card content, even read-only, before its own chapter
           narrates that introduction. */}
       {rules.improvements && showMarket && (
-        <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => setShowMarket(false)} />
+        <MarketSheet state={state} canBuy={canBuy} missingMarks={missingMarks} onBuy={buy} onClose={() => setShowMarket(false)} />
       )}
       {rules.schemes && showPlan && (
         <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => setShowPlan(false)} />
@@ -1140,7 +1147,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       </main>
 
       <aside className="desktop-col desktop-col-right" tabIndex={0}>
-        {rules.improvements && <MarketSheet state={state} canBuy={canBuy} onBuy={buy} onClose={() => {}} inline />}
+        {rules.improvements && <MarketSheet state={state} canBuy={canBuy} missingMarks={missingMarks} onBuy={buy} onClose={() => {}} inline />}
         {rules.schemes && (
           <CathsPlanSheet state={state} canPlay={canPlayScheme} onPlay={playScheme} onClose={() => {}} inline />
         )}
