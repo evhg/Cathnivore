@@ -1,3 +1,5 @@
+import CathArt from '../CathArt'
+import type { CathExpression } from '../../../shared/cath/cath'
 import { CHARACTERS, type CharacterPortrait, type HairStyle } from '../../content/characters'
 
 // STYLE.md 9: flat geometric busts, 3-5 colours plus skin tone, a 2px ink outline (scaled to a
@@ -138,10 +140,22 @@ function Accessory({ kind, accent }: { kind: NonNullable<CharacterPortrait['acce
   }
 }
 
-export default function Portrait({ character, size = 96 }: { character: string; size?: number }) {
+export default function Portrait({
+  character,
+  size = 96,
+  expression,
+}: {
+  character: string
+  size?: number
+  expression?: CathExpression
+}) {
   const spec = CHARACTERS[character]
   if (!spec) return null
-  const isCath = character === 'cath'
+  // Cath is drawn by the shared art module (VISION.md "Cath: character bible"), same as in Runnel and on
+  // the landing page. The bust framing has the same 5:6 shape as the other portraits.
+  if (character === 'cath') {
+    return <CathArt framing="bust" width={size} height={(size * 120) / 100} title={character} expression={expression} />
+  }
 
   return (
     <svg width={size} height={(size * 120) / 100} viewBox="0 0 100 120" role="img" aria-label={character}>
@@ -152,19 +166,12 @@ export default function Portrait({ character, size = 96 }: { character: string; 
       <rect x={44} y={68} width={12} height={16} fill={spec.skin} stroke={INK} strokeWidth={1.2} />
       {/* head */}
       <ellipse cx={50} cy={46} rx={22} ry={25} fill={spec.skin} stroke={INK} strokeWidth={2} />
-      {isCath && (
-        <>
-          <circle cx={34} cy={54} r={4} fill="#E8A98F" opacity={0.55} />
-          <circle cx={66} cy={54} r={4} fill="#E8A98F" opacity={0.55} />
-        </>
-      )}
       <Eyebrow cx={38} angle={spec.browAngle} />
-      <Eyebrow cx={62} angle={isCath ? -14 : spec.browAngle} />
-      <Eye cx={38} big={isCath} />
-      <Eye cx={62} big={isCath} />
-      {isCath && <path d="M 66.5 41 L 70 38" stroke={INK} strokeWidth={1.2} strokeLinecap="round" />}
+      <Eyebrow cx={62} angle={spec.browAngle} />
+      <Eye cx={38} />
+      <Eye cx={62} />
       <ellipse cx={50} cy={53} rx={1.6} ry={1.2} fill={INK} opacity={0.5} />
-      <Mouth kind={isCath ? 'smirk' : spec.mouth} />
+      <Mouth kind={spec.mouth} />
       <Hair style={spec.hairStyle} color={spec.hair} />
     </svg>
   )

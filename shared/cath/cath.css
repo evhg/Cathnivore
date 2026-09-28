@@ -1,0 +1,54 @@
+/* Cath's idle animation (shared/cath/cath.ts). Imported by the Cathnivore app, Runnel and the landing page.
+   Only applies to SVGs rendered with `animate: true`. Reduced motion keeps her still. */
+
+.cath-animate .cath-lids {
+  animation: cath-blink 6.2s infinite 1.4s;
+}
+
+.cath-animate .cath-hair-front {
+  transform-box: view-box;
+  transform-origin: 200px 90px;
+  animation: cath-sway 7s ease-in-out infinite;
+}
+
+.cath-animate .cath-body {
+  transform-box: view-box;
+  transform-origin: 200px 500px;
+  animation: cath-breathe 5s ease-in-out infinite;
+}
+
+.cath-animate .cath-head {
+  transform-box: view-box;
+  transform-origin: 200px 230px;
+  animation: cath-tilt 9s ease-in-out infinite;
+}
+
+@keyframes cath-blink {
+  0%, 95.5%, 100% { opacity: 0; }
+  96.5%, 98% { opacity: 1; }
+}
+
+@keyframes cath-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(0.8deg); }
+}
+
+@keyframes cath-breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.006, 1.012); }
+}
+
+@keyframes cath-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  40% { transform: rotate(-1.6deg); }
+  70% { transform: rotate(0.6deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cath-animate .cath-lids,
+  .cath-animate .cath-hair-front,
+  .cath-animate .cath-body,
+  .cath-animate .cath-head {
+    animation: none;
+  }
+}

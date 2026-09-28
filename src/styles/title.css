@@ -303,9 +303,9 @@
 
 .title-cath {
   position: absolute;
-  left: -4%;
-  bottom: -2%;
-  width: 30%;
+  left: -20%;
+  bottom: -14%;
+  width: 50%;
   animation: title-fade-rise 900ms cubic-bezier(0.2, 0.9, 0.3, 1) both 500ms;
 }
 
@@ -313,11 +313,14 @@
   width: 100%;
   height: auto;
   display: block;
-  filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--ink) 22%, transparent));
+  filter: drop-shadow(0 10px 16px color-mix(in srgb, var(--ink) 25%, transparent));
 }
 
-/* Text slides in without fading: text caught mid-fade has reduced contrast, and accessibility checks (and
-   people glancing at it) would see it that way. */
+/* Keep the long drop of her figure from covering the menu on narrow screens. */
+.title-cath .cath-art {
+  display: block;
+}
+
 @keyframes title-rise {
   from {
     transform: translateY(16px);
@@ -397,9 +400,9 @@
     width: 100%;
   }
   .title-cath {
-    width: 25%;
-    left: 0;
-    bottom: 8%;
+    width: 40%;
+    left: -5%;
+    bottom: 2%;
   }
 }
 

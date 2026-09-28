@@ -1,4 +1,4 @@
-import Portrait from './portraits/Portrait'
+import CathArt from './CathArt'
 
 // The title screen's illustration (STYLE.md 1: "a farmers'-market poster"): the seven regions of Marrow as
 // a hex flower, market stalls popping up across them, co-op seals stamping onto the liberated ones, and
@@ -125,7 +125,7 @@ export default function TitleArt() {
         </g>
       </svg>
       <div className="title-cath">
-        <Portrait character="cath" size={150} />
+        <CathArt framing="half" expression="smirk" animate />
       </div>
     </div>
   )
