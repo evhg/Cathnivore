@@ -5,13 +5,14 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
 - **Current ROADMAP item:** items 1-7 done and released. Item 8 diminishing returns; item 9's why-not
-  states now cover Sell, Invest and `targeting: 'none'` Schemes (still unreleased); item 10's gauges ship
-  on both phone and desktop (a ring, not a bar), tick animation and Pressure-badge shipped, and the
-  plan-strip cards now carry both corporations' logos (a branding pass, not yet the full illustrated
-  agenda-card redesign).
-- **Next step:** pick up item 9's remaining scope (Supply/Rebut/Open Stall/required-Scheme why-not, the
-  illustrated-tile redesign) or item 10's full agenda-card redesign (newspaper-clipping look, headline,
-  boxed effect panel), or move to map art (11+) if those keep hitting diminishing returns.
+  states now cover Sell, Invest, `targeting: 'none'` Schemes and Open Stall's Produce-0 case (still
+  unreleased); item 10's gauges ship on both phone and desktop (a ring, not a bar), tick animation and
+  Pressure-badge shipped, and the plan-strip cards now carry both corporations' logos (a branding pass,
+  not yet the full illustrated agenda-card redesign).
+- **Next step:** pick up item 9's remaining scope (Supply/Rebut/required-Scheme/Open-Stall's-no-legal-
+  region why-not, the illustrated-tile redesign) or item 10's full agenda-card redesign (newspaper-
+  clipping look, headline, boxed effect panel), or move to map art (11+) if those keep hitting
+  diminishing returns.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -61,16 +62,18 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
-- 2026-09-28 ~16:52-17:14 UTC: shipped 3 slices extending ROADMAP 9's why-not states beyond Sell: Invest
+- 2026-09-28 ~16:52-17:19 UTC: shipped 4 slices extending ROADMAP 9's why-not states beyond Sell: Invest
   (Marks vs. cost, same shape as Sell — main panel + a new `missingMarks` prop on the Market sheet, whose
-  Buy button used to just disappear), then `targeting: 'none'` Schemes (Goodwill vs. cost, same shape —
-  main panel + Cath's Plan sheet). Left 'required'/'optional' Schemes and Supply/Rebut/Open Stall alone
-  (still genuinely ambiguous without per-kind reason logic). Verified with `npm run check`, the full
-  Playwright suite (only pre-existing phone-webkit/store-screenshots failures, unrelated — no `webkit`
-  browser installed in this sandbox, and the victory-screenshot test is a documented ~63%-win-rate flake
-  not wired to gates), `npm run gates` (all 8 green), and zoomed screenshots in both themes/layouts. Not
-  released: `npm run release` was already run well past SPEC 12/PROGRESS's "at most 4 times a day" cap
-  earlier today (7+ logged releases before this session started) — see DECISIONS.md.
+  Buy button used to just disappear), `targeting: 'none'` Schemes (Goodwill vs. cost, same shape — main
+  panel + Cath's Plan sheet), and Open Stall's Produce-0 case (a flat 1-Produce cost with no per-region
+  loop run at all when unaffordable, so that specific empty state is unambiguous too). Left 'required'/
+  'optional' Schemes, Supply/Rebut and Open Stall's real "no legal region" case alone (still genuinely
+  ambiguous without per-kind reason logic). Verified with `npm run check`, the full Playwright suite (only
+  pre-existing phone-webkit/store-screenshots failures, unrelated — no `webkit` browser installed in this
+  sandbox, and the victory-screenshot test is a documented ~63%-win-rate flake not wired to gates),
+  `npm run gates` (all 8 green), and zoomed screenshots in both themes/layouts. Not released: `npm run
+  release` was already run well past SPEC 12/PROGRESS's "at most 4 times a day" cap earlier today (7+
+  logged releases before this session started) — see DECISIONS.md.
 - 2026-09-28 ~15:52-16:25 UTC: locked, released the prior session's unreleased gauge-ring change
   (`6a59418`), then shipped ROADMAP 10's plan-strip branding pass: `EnemyLogos.tsx` (Hollowell's "H",
   Candor's "C", both glossy per STYLE.md 2, built from shapes not text glyphs) on the Squeeze/Expand/

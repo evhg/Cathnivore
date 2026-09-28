@@ -120,13 +120,17 @@ Every visual item is done only when:
    the Market sheet, whose Buy button used to just silently disappear. A Scheme with `targeting: 'none'`
    (16 of the 31 Scheme cards) never needs a region, so its legality is a single Goodwill-vs-cost
    comparison too — same treatment, in both the action panel and Cath's Plan sheet. 'required'/'optional'
-   Schemes and Supply/Rebut/Open Stall are still left alone (a missing region target could look identical
-   to unaffordable — genuinely ambiguous without per-kind reason logic, still separate future work).
-   Verified with zoomed screenshots in both themes/layouts and 2 new seeded e2e tests (seed 1's
-   deterministic market/plan draw). Item 9 is now closer: disabled/why-not states cover Sell, Invest and
-   `targeting: 'none'` Schemes everywhere they can appear; the full illustrated-tile redesign (the item's
-   own title) still hasn't started, and Supply/Rebut/Open Stall/required-Scheme why-not remains future
-   work.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
+   Schemes and Supply/Rebut are still left alone (a missing region target could look identical to
+   unaffordable — genuinely ambiguous without per-kind reason logic, still separate future work). Open
+   Stall got its own flat-cost case too: it costs exactly 1 Produce and `legalActions` skips its whole
+   per-region loop when Produce is 0, so (unlike a real "no legal region" case, which stays silently
+   absent) that specific "nothing renders at all" state is unambiguously about affordability — one
+   disabled placeholder for the whole grouped action. Verified with zoomed screenshots in both
+   themes/layouts and 3 new seeded e2e tests (seed 1's deterministic market/plan draw for Invest/Scheme,
+   default seed for Open Stall). Item 9 is now closer: disabled/why-not states cover Sell, Invest,
+   `targeting: 'none'` Schemes and Open Stall's Produce-0 case everywhere they can appear; the full
+   illustrated-tile redesign (the item's own title) still hasn't started, and Supply/Rebut/required-Scheme/
+   Open-Stall's-no-legal-region why-not remains future work.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
 10. [ ] **The table, part 3: the HUD.** *(2026-09-28: shipped the tick-up/tick-down animation (`useHudTick()`
     in `Game.tsx`, a CSS scale-pulse keyed on a per-stat change counter, deliberately colourless since
     Round/Trust/Lost Land/Rift don't share one "which way is good" direction) and Pressure-card corner
