@@ -3347,3 +3347,16 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   cheap to regenerate now, expensive to notice late. The victory-screen shot needed one retry since it
   depends on a HeuristicBot win in campaign chapter 6, documented at ~63%, not 100%, by the test's own
   comment — an accepted, pre-existing flake source for that one manual asset, not a new problem.
+
+- 2026-09-28 (~03:52 UTC session): fixed the Hot-seat "no pass-device screen" known issue left open by the
+  previous session. Implemented it as a blocking full-screen overlay (reusing `.scene`'s layout/typography
+  rather than inventing a new pattern) shown whenever `state.activeProducer` changes in Hot-seat mode and
+  dismissed by a Continue tap — mirrors how the existing mid-game-scene overlay (`pendingMidScene`) already
+  blocks play the same way, for consistency. Tracked "already acknowledged" via a plain `useRef` rather than
+  engine/save state, since which producer's turn the player has already seen is pure UI/session state (like
+  `pendingChoice`), not something a save needs to remember — a reload always lands on the resumed state's
+  current producer with no stale hand-off screen to redisplay. Gated on `mode === 'hotseat' &&
+  !autoplayRef.current` so Solo/campaign (single human seat) and every autoplay-driven e2e test are
+  unaffected. Two existing e2e specs drove real Hot-seat turns (`hotseat.spec.ts`,
+  `store-screenshots.spec.ts`'s Agenda-headline shot) and needed a Continue click added after the first
+  producer's 3rd action; both updated and re-verified green (phone/desktop-chromium/store-screenshots).
