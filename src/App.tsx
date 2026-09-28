@@ -6,6 +6,8 @@ import Scene from './ui/Scene'
 import RulesReference from './ui/RulesReference'
 import Settings from './ui/Settings'
 import Credits from './ui/Credits'
+import TitleArt from './ui/TitleArt'
+import CampaignScreen from './ui/CampaignScreen'
 import {
   loadGame,
   clearGame,
@@ -189,30 +191,49 @@ export default function App() {
   }
 
   if (screen.name === 'title') {
+    const hasSave = !!saved.save && !saved.incompatible
     return (
-      <main className="title">
-        <h1>Cathnivore</h1>
-        <p>A cooperative engine-builder against two very polite conglomerates.</p>
-        {updateReady && (
-          <div className="update-ready">
-            <span>Update ready.</span>
-            <button onClick={() => window.location.reload()}>Reload</button>
+      <main className="title title-screen">
+        <div className="title-hero">
+          <TitleArt />
+          <div className="title-copy">
+            <p className="title-kicker">A cooperative strategy game</p>
+            <h1 className="title-wordmark">Cathnivore</h1>
+            <p className="title-tagline">A cooperative engine-builder against two very polite conglomerates.</p>
+            {updateReady && (
+              <div className="update-ready">
+                <span>Update ready.</span>
+                <button onClick={() => window.location.reload()}>Reload</button>
+              </div>
+            )}
+            {saved.incompatible && (
+              <div className="save-warning">
+                <p>This save is from an older version.</p>
+                <button onClick={startNewFromSaveError}>Start New</button>
+                {saved.save && <button onClick={resume}>Try Anyway</button>}
+              </div>
+            )}
+            <nav className="title-menu" aria-label="Main menu">
+              {hasSave && (
+                <button className="primary title-cta" onClick={resume}>
+                  Continue
+                </button>
+              )}
+              <button className={hasSave ? 'title-cta' : 'primary title-cta'} onClick={() => setScreen({ name: 'campaign' })}>
+                Campaign
+              </button>
+              <button className="title-cta" onClick={() => setScreen({ name: 'setup' })}>
+                Quick Game
+              </button>
+              <div className="title-minor">
+                <button className="quiet" onClick={() => setScreen({ name: 'rules' })}>How to Play</button>
+                <button className="quiet" onClick={() => setScreen({ name: 'settings' })}>Settings</button>
+                <button className="quiet" onClick={() => setScreen({ name: 'credits' })}>Credits</button>
+              </div>
+            </nav>
           </div>
-        )}
-        {saved.save && !saved.incompatible && <button onClick={resume}>Continue</button>}
-        {saved.incompatible && (
-          <div className="save-warning">
-            <p>This save is from an older version.</p>
-            <button onClick={startNewFromSaveError}>Start New</button>
-            {saved.save && <button onClick={resume}>Try Anyway</button>}
-          </div>
-        )}
-        <button onClick={() => setScreen({ name: 'campaign' })}>Campaign</button>
-        <button onClick={() => setScreen({ name: 'setup' })}>Quick Game</button>
-        <button onClick={() => setScreen({ name: 'rules' })}>How to Play</button>
-        <button onClick={() => setScreen({ name: 'settings' })}>Settings</button>
-        <button onClick={() => setScreen({ name: 'credits' })}>Credits</button>
-        <footer>
+        </div>
+        <footer className="title-footer">
           <p>A work of satire. All places, companies and people are fictional.</p>
           <p>No tracking. Your saves stay on your device.</p>
           <p>
@@ -243,36 +264,13 @@ export default function App() {
   }
 
   if (screen.name === 'campaign') {
-    const progress = loadCampaign()
     return (
-      <main className="campaign">
-        <h1>Campaign</h1>
-        <ul className="chapter-list">
-          {CHAPTERS.map((chapter, i) => {
-            const completed = progress.completed.includes(chapter.id)
-            // Chapter N unlocks once chapter N-1 is completed, mirroring the story's order (see
-            // DECISIONS.md). This is a visual hint only, not a real gate: SPEC 8.1 says "Progress is
-            // never locked," so the button stays clickable even while shown as locked.
-            const previous = CHAPTERS[i - 1]
-            const locked = i > 0 && !completed && !!previous && !progress.completed.includes(previous.id)
-            return (
-              <li key={chapter.id}>
-                <button
-                  className={completed ? 'chapter-completed' : locked ? 'chapter-locked' : undefined}
-                  onClick={() => startChapter(chapter)}
-                >
-                  <strong>
-                    {chapter.title}
-                    {completed ? ' (completed)' : locked ? ' (locked)' : ''}
-                  </strong>
-                  <span className="chapter-goal">{chapter.goalDescription}</span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-        <button onClick={() => setScreen({ name: 'title' })}>Back to Title</button>
-      </main>
+      <CampaignScreen
+        chapters={CHAPTERS}
+        completed={loadCampaign().completed}
+        onStart={startChapter}
+        onBack={() => setScreen({ name: 'title' })}
+      />
     )
   }
 

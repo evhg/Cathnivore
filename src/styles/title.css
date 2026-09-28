@@ -1,0 +1,428 @@
+/* Title screen (App.tsx `screen.name === 'title'`, art in ui/TitleArt.tsx). STYLE.md 1: a farmers'-market
+   poster. Colours come from tokens.css only. Motion: the map settles in, stalls pop up one by one, two
+   co-op seals stamp down, then everything rests with a slow breathing float. Reduced motion and the
+   Settings "no animations" switch show the final frame. */
+
+.title-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  background:
+    radial-gradient(120% 70% at 70% 30%, var(--surface) 0%, transparent 60%),
+    var(--paper);
+  overflow-x: hidden;
+}
+
+.title-hero {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-areas: 'copy art';
+  align-items: center;
+  gap: clamp(16px, 4vw, 64px);
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* ---- words and menu ---- */
+
+.title-copy {
+  grid-area: copy;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.title-kicker {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pasture-deep);
+  animation: title-rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1) both 100ms;
+}
+
+.title-wordmark {
+  font-size: clamp(54px, 8.5vw, 112px);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--soil);
+  animation: title-rise 800ms cubic-bezier(0.2, 0.9, 0.3, 1) both 180ms;
+}
+
+.title-tagline {
+  margin: 0 0 10px;
+  max-width: 30ch;
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(18px, 1.9vw, 23px);
+  line-height: 1.35;
+  color: var(--ink-muted);
+  animation: title-rise 800ms cubic-bezier(0.2, 0.9, 0.3, 1) both 260ms;
+}
+
+.title-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(100%, 360px);
+  animation: title-rise 800ms cubic-bezier(0.2, 0.9, 0.3, 1) both 360ms;
+}
+
+.title-cta {
+  min-height: 54px;
+  font-size: 17px;
+  border-radius: 16px;
+  box-shadow: 0 2px 0 var(--rule);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease;
+}
+
+.title-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--rule);
+}
+
+.title-cta:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 var(--rule);
+}
+
+.title-cta.primary {
+  font-size: 18px;
+  box-shadow: 0 3px 0 var(--soil);
+}
+
+.title-cta.primary:hover {
+  filter: brightness(1.07);
+  box-shadow: 0 6px 0 var(--soil);
+}
+
+.title-minor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.title-minor .quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-muted);
+  padding: 10px 12px;
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 4px;
+}
+
+.title-minor .quiet:hover {
+  color: var(--ink);
+  text-decoration-color: var(--soil);
+}
+
+.title-footer {
+  width: 100%;
+  max-width: 1180px;
+  margin: 18px auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.title-footer p {
+  margin: 0;
+}
+
+/* ---- the illustration ---- */
+
+.title-art {
+  grid-area: art;
+  position: relative;
+  width: 100%;
+  max-width: 620px;
+  justify-self: center;
+}
+
+.title-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.ta-sunburst path {
+  fill: var(--wheat);
+  opacity: 0.12;
+}
+
+.ta-sunburst {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: ta-spin 120s linear infinite;
+}
+
+.ta-board {
+  animation: ta-float 7s ease-in-out infinite 2.4s;
+}
+
+.ta-shadow polygon {
+  fill: var(--soil);
+  opacity: 0.18;
+}
+
+.ta-hex {
+  stroke: var(--ink);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+
+.ta-pasture .ta-hex {
+  fill: var(--region-pasture);
+}
+.ta-crop .ta-hex {
+  fill: var(--region-crop);
+}
+.ta-coast .ta-hex {
+  fill: var(--region-coast);
+}
+.ta-capital .ta-hex {
+  fill: var(--region-capital);
+}
+
+.ta-texture {
+  fill: none;
+  stroke: var(--ink);
+  stroke-opacity: 0.1;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+.ta-texture-fill {
+  fill: var(--ink);
+  opacity: 0.1;
+}
+
+.ta-label {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 700;
+  font-size: 7.2px;
+  letter-spacing: 0.06em;
+  text-anchor: middle;
+  fill: var(--ink);
+  opacity: 0.7;
+}
+
+.ta-region-inner {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ta-region-in 700ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+.ta-r0 .ta-region-inner { animation-delay: 60ms; }
+.ta-r1 .ta-region-inner { animation-delay: 120ms; }
+.ta-r2 .ta-region-inner { animation-delay: 180ms; }
+.ta-r3 .ta-region-inner { animation-delay: 0ms; }
+.ta-r4 .ta-region-inner { animation-delay: 240ms; }
+.ta-r5 .ta-region-inner { animation-delay: 300ms; }
+.ta-r6 .ta-region-inner { animation-delay: 360ms; }
+
+.ta-stall-inner {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ta-pop 520ms cubic-bezier(0.34, 1.8, 0.64, 1) both;
+}
+
+.ta-d0 .ta-stall-inner { animation-delay: 700ms; }
+.ta-d1 .ta-stall-inner { animation-delay: 820ms; }
+.ta-d2 .ta-stall-inner { animation-delay: 940ms; }
+.ta-d3 .ta-stall-inner { animation-delay: 1060ms; }
+.ta-d4 .ta-stall-inner { animation-delay: 1180ms; }
+.ta-d5 .ta-stall-inner { animation-delay: 1300ms; }
+.ta-d6 .ta-stall-inner { animation-delay: 1420ms; }
+.ta-d7 .ta-stall-inner { animation-delay: 1540ms; }
+.ta-d8 .ta-stall-inner { animation-delay: 1660ms; }
+.ta-d9 .ta-stall-inner { animation-delay: 1780ms; }
+
+.ta-stall-body {
+  fill: var(--surface);
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+
+.ta-awning {
+  fill: var(--clay);
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.ta-awning-stripe {
+  stroke: var(--surface);
+  stroke-width: 2.2;
+}
+
+.ta-scallop {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.ta-seal-inner {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ta-stamp 520ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+.ta-s0 .ta-seal-inner { animation-delay: 2050ms; }
+.ta-s1 .ta-seal-inner { animation-delay: 2300ms; }
+
+.ta-seal-petal,
+.ta-seal-centre {
+  fill: var(--pasture);
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+
+.ta-seal-tick {
+  fill: none;
+  stroke: var(--paper-on-fixed-fill);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.title-cath {
+  position: absolute;
+  left: -4%;
+  bottom: -2%;
+  width: 30%;
+  animation: title-fade-rise 900ms cubic-bezier(0.2, 0.9, 0.3, 1) both 500ms;
+}
+
+.title-cath svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--ink) 22%, transparent));
+}
+
+/* Text slides in without fading: text caught mid-fade has reduced contrast, and accessibility checks (and
+   people glancing at it) would see it that way. */
+@keyframes title-rise {
+  from {
+    transform: translateY(16px);
+  }
+}
+
+@keyframes title-fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes ta-region-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes ta-pop {
+  from {
+    opacity: 0;
+    transform: scale(0) translateY(6px);
+  }
+}
+
+@keyframes ta-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(2.2) rotate(-25deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.9) rotate(4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes ta-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes ta-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- phone ---- */
+
+@media (max-width: 760px) {
+  .title-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'art'
+      'copy';
+    align-content: start;
+    gap: 6px;
+  }
+  .title-art {
+    max-width: 440px;
+  }
+  .title-copy {
+    align-items: stretch;
+    text-align: left;
+  }
+  .title-menu {
+    width: 100%;
+  }
+  .title-cath {
+    width: 25%;
+    left: 0;
+    bottom: 8%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-screen *,
+  .title-screen *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+html.no-animations .title-screen * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* --pasture-deep stays fixed in dark mode (tokens.css) and is too dark on the dark paper for small text;
+   --pasture adapts. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .title-kicker {
+    color: var(--pasture);
+  }
+}
+:root[data-theme='dark'] .title-kicker {
+  color: var(--pasture);
+}
