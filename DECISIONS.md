@@ -148,3 +148,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   gave it the same why-not treatment as `'none'`. Also: SPEC 4.3.4's opening Scout (resolves at game
   creation, before turn 1) can add outlets beyond SPEC 4.3.2's base setup depending on seed — a Supply
   why-not test assuming the base count alone was flaky ~50% of runs; pinned it to seed 1 instead.
+- 2026-09-28: release script reverted main on a transient curl SSL error though the site was live; fixed by `merge -s ours origin/main` + re-release. Retry once before assuming a real failure.

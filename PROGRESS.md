@@ -40,6 +40,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-28 ~19:14 UTC (`2132b1f`): ROADMAP 11 terrain vignettes/signboards and ROADMAP 13 liberation seal-stamp + colour bloom, plus the earlier why-not slices. First attempt was reverted by a transient curl SSL error in the release script's HTTP check; `merge -s ours origin/main` then re-release succeeded. Tag push 403 (harmless).
 - 2026-09-28 ~16:10 UTC (`6a59418`): the unreleased gauge-ring change from the prior session (ROADMAP 10's
   `GaugeRing` on both phone and desktop). All gates passed; HTTP smoke test passed outright; `deploy-1` tag
   push failed with the known 403 (harmless).
@@ -65,7 +66,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
-- 2026-09-28 ~18:51-19:20 UTC: released the piled-up why-not work (`b2c035c` live; tag push 403 as usual). ROADMAP 11: terrain vignettes per region type and signboard labels on the map (unreleased). Playwright needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`; webkit project can't run here.
+- 2026-09-28 ~18:51-19:20 UTC: released the piled-up why-not work (`b2c035c` live; tag push 403 as usual). ROADMAP 11: terrain vignettes per region type and signboard labels on the map (released `2132b1f`, with ROADMAP 13's seal stamp). Playwright needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`; webkit project can't run here.
 - 2026-09-28 ~17:51-18:26 UTC: shipped 3 slices closing out ROADMAP 9's why-not scope: Supply (Outlets and
   Buyout) and Rebut — each a structural check (an owned region with something to remove) then a resource
   comparison, so a "nothing to target" reason is genuinely distinct from "can't afford it" and worth
