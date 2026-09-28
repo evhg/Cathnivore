@@ -128,3 +128,10 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
   instead of a bar next to it. No separate width budget needed, so it ships on phone and desktop alike —
   several earlier sessions' attempts to shrink a bar-shaped gauge into the desktop centre column's zero
   slack never worked because the bar always needed *some* extra width; a ring needs none.
+- 2026-09-28: scoped ROADMAP 10's "agenda cards with each corporation's glossy branding" down to a
+  branding pass — both Hollowell/Candor logos on the existing Pressure card shape — rather than the full
+  newspaper-clipping Agenda-card redesign STYLE.md 8 also describes, since Pressure cards have no single
+  faction (SPEC 4.7's Scout/Expand/Squeeze all touch Hollowell pieces, several also touch Candor Doubt) and
+  the full redesign is real new-art scope of its own. Also: `npm run shots` after a CSS-only edit rendered
+  stale (the `:4173` preview server note in this file's Notes) — the fix looked unchanged in a screenshot
+  until the server was killed and `npm run build` rerun; worth remembering for any CSS-only slice.

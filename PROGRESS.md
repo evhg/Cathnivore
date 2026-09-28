@@ -5,11 +5,12 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
 - **Current ROADMAP item:** items 1-7 done and released. Item 8 diminishing returns; item 9 close but not
-  done; item 10's gauges now ship on both phone and desktop (a ring, not a bar — see below), tick
-  animation and Pressure-badge also shipped; only the branded-agenda-cards half is still open.
-- **Next step:** pick up item 9's or item 10's remaining scope (the agenda cards need real new art), or
-  move to map art (11+) if those keep hitting diminishing returns. This session's gauge-ring change is
-  unreleased (checks/full Playwright green); release it next.
+  done; item 10's gauges ship on both phone and desktop (a ring, not a bar), tick animation and
+  Pressure-badge shipped, and the plan-strip cards now carry both corporations' logos (a branding pass,
+  not yet the full illustrated agenda-card redesign).
+- **Next step:** pick up item 9's remaining scope (per-kind why-not states, the illustrated-tile
+  redesign) or item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect
+  panel), or move to map art (11+) if those keep hitting diminishing returns.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -34,6 +35,13 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-28 ~16:10 UTC (`6a59418`): the unreleased gauge-ring change from the prior session (ROADMAP 10's
+  `GaugeRing` on both phone and desktop). All gates passed; HTTP smoke test passed outright; `deploy-1` tag
+  push failed with the known 403 (harmless).
+- 2026-09-28 ~16:23 UTC (`51bec56`): ROADMAP 10's plan-strip branding — both corporations' logos on the
+  Squeeze/Expand/Scout cards, and a fix for a pre-existing Expand-card badge/label overlap caught by
+  gate-8 along the way. All gates passed; HTTP smoke test passed outright; `deploy-2` tag push failed with
+  the known 403 (harmless).
 - 2026-09-28 ~15:24 UTC (`b2b8aee`): the last 8 sessions' worth of piled-up work — item 1's finishing
   touches (hair/fabric texture), item 9's icons/press-feedback/cost-chips/Sell-disabled-state, item 10's
   HUD tick animation, gauge bars and Pressure-card badge, and item 5's last Bea line (ch. 5's arrest
@@ -52,6 +60,15 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-28 ~15:52-16:25 UTC: locked, released the prior session's unreleased gauge-ring change
+  (`6a59418`), then shipped ROADMAP 10's plan-strip branding pass: `EnemyLogos.tsx` (Hollowell's "H",
+  Candor's "C", both glossy per STYLE.md 2, built from shapes not text glyphs) on the Squeeze/Expand/
+  Scout cards' top-left corner. A gate-8 review of the first pass caught a real, pre-existing bug while
+  zooming into that corner — the Expand card's top-right stage/region-icon badge had no reserved width
+  and sat directly on "Expand:" whenever a plan was revealed — fixed with matching right padding and
+  reverified with zoomed crops at both sizes (a second gate-8 pass confirmed clean). Released (`51bec56`):
+  all gates green both releases, HTTP smoke passed outright both times, tag pushes failed with the known
+  403 (harmless).
 - 2026-09-28 ~15:26-15:55 UTC: closed ROADMAP 10's remaining gauge gap for real — replaced the phone-only
   `MiniGauge` bar with `GaugeRing`, a progress ring drawn on the icon's own 24px grid and layered directly
   over it (`.hud-icon-ring`/`.hud-ring`, `position: absolute; inset: 0`), same footprint as the bare icon.
