@@ -60,6 +60,19 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
   await page.getByText('Campaign').click()
   await page.getByRole('heading', { name: 'Campaign' }).waitFor()
   await shoot(page, project, '10-campaign')
+
+  // Hot-seat's "pass the device" screen (Known issues, PROGRESS.md) — a new screen this session, so it
+  // needs its own gate-8 shot rather than piggybacking on an existing one.
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByLabel('Hot-seat (two humans)').check()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.active-producer').waitFor()
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: /^Graft:/ }).click()
+  }
+  await page.locator('.pass-device').waitFor()
+  await shoot(page, project, '12-pass-device')
 })
 
 // Chapter 1's opening scene is covered above; the other 5 chapters' opening scenes use different
