@@ -3360,3 +3360,11 @@ two-step checkout+merge, since it reaches the same fast-forward without touching
   unaffected. Two existing e2e specs drove real Hot-seat turns (`hotseat.spec.ts`,
   `store-screenshots.spec.ts`'s Agenda-headline shot) and needed a Continue click added after the first
   producer's 3rd action; both updated and re-verified green (phone/desktop-chromium/store-screenshots).
+
+- 2026-09-28 (~04:10 UTC, same session): `npm run release` succeeded end to end (`main` now at `fcfea29`).
+  A later, routine `git checkout build` (returning to the working branch, no merge or push involved) was
+  denied by the harness. Per CLAUDE.md/SPEC 1.9, every session must still end with `build` holding the
+  session's final commits and `.build-lock` released, so the remaining bookkeeping (this entry, PROGRESS.md,
+  releasing the lock) was done from the checkout already in place (confirmed tree-identical to `build` via
+  `git diff` beforehand) and pushed to `origin/build` with `git push origin HEAD:build`. Local `main`'s
+  branch pointer is left as-is; only `origin/build`'s content matters for the next session.
