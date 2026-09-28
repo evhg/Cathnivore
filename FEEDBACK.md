@@ -7,5 +7,8 @@ Sessions: handle every note under "Open". When a note is done (or turned into a 
 ## Open
 
 - 2026-09-28: Keep improving and beautifying the games indefinitely, especially Cathnivore, so the vision and scope become world-class. (Standing instruction; don't move this to "Handled".)
+- 2026-09-28: Postpone the iPhone App Store launch until the games are truly impressive. (Standing; the owner reopens it here.)
+- 2026-09-28: Cath should look like a hot mom: classy and cute. (Interpreted tastefully in VISION.md's character bible: stylish, elegant, warm, never suggestive. ROADMAP 1.)
+- 2026-09-28: Cath must be a prime figure in each game. (ROADMAP 1-5. Standing for future games.)
 
 ## Handled

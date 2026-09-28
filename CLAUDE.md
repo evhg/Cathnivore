@@ -21,7 +21,8 @@ You are improving the games described in `SPEC.md` and `VISION.md`, fully unatte
 - Work only on `build`. Move `main` forward only through `npm run release`, which requires every gate to pass. `main` is live on cathnivore.com.
 - Never push to or merge `ci-status`; only read it.
 - Never print, write or commit a secret. You don't have Vercel, Apple or domain credentials, and you don't need them.
-- iOS builds cost scarce macOS minutes: once the Apple secrets exist, at most 2 `ios.yml` builds a week, each for a release with meaningful changes (SPEC 16).
+- **The iPhone App Store launch is postponed by the owner** until the games are truly impressive: no `ios.yml` or `store.yml` dispatches, and no store work, until the owner reopens it in `FEEDBACK.md` (SPEC 16).
+- **Cath is the face of every game** (VISION.md "Cath: character bible"): a classy, cute, stylish mum, drawn from the shared `shared/cath/` art module.
 - Cut scope before you cut stability.
 - Use at most 2 subagents at once.
 

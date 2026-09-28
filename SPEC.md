@@ -85,6 +85,7 @@ Catherine "Cath" Hale, early thirties. She left a well-paid trading job to run a
 - **Character:** very smart, warm, funny and quick, always three moves ahead. Charm is her favourite tool. She is never cruel, never preachy and never a know-it-all. She is the one who notices things.
 - **Voice:** short sentences, specific details rather than slogans, dry and a little self-deprecating, with the occasional one-line zinger. At most one exclamation mark per chapter.
 - **Look (for her SVG portrait):** a soft K-pop idol style with light skin, large bright eyes, glossy lips and curtain bangs, and very long ("Rapunzel" length) centre-parted hair. Hair and skin colours are set in `OWNER.md`. Olive field jacket, cream scarf, and one eyebrow slightly raised by default. Full drawing rules are in `STYLE.md` section 9.
+- **Updated by the owner (2026-09-28):** Cath is now a classy, cute, stylish mum with a six-year-old daughter, Bea, and she is the face of every game on cathnivore.com. `VISION.md` "Cath: character bible" overrides the look above and `STYLE.md` 9 where they differ.
 
 ### 3.3 Allies (the four playable producers; rules in section 6)
 - **Mara Keel:** cattle rancher in Brindle Hills and former litigator. Precise and deadpan.
@@ -565,7 +566,7 @@ The owner wants the hourly routine to **keep improving and beautifying the games
 - **How to work:** in slices that each leave `build` green and the game better (VISION.md principles). Put a redesign that can't be finished in one session behind a setting or feature flag, or develop it in a new component that isn't wired in yet, rather than shipping it half done.
 - **Visual work** is checked with `npm run shots` (every screen at phone and desktop) before and after, plus dark mode where the change touches colour. For anything bigger than a small tweak, have one subagent critique the "after" screenshots against `VISION.md` and `STYLE.md`, then fix what it flags.
 - **Releases:** run `npm run release` whenever a slice is complete and every gate passes, at most 4 times a day (Vercel's 100-deploys-a-day limit and the owner's usage). Never leave `main` behind `build` for more than a day without a logged reason.
-- **iPhone builds:** once the Apple secrets exist, at most 2 `ios.yml` builds a week, each for a release with meaningful changes. They replace section 12's 8-build cap.
+- **iPhone App Store launch: postponed by the owner (2026-09-28)** until the games are truly impressive. Don't dispatch `ios.yml` or `store.yml`, and don't work on store listings or store screenshots, until the owner reopens the launch in `FEEDBACK.md`. Keep `npm run build`, the iPhone app's web bundle, passing. When the launch reopens: at most 2 `ios.yml` builds a week.
 
 **What doesn't change:** section 1's autonomy rules (never ask; decide and log), the build lock, the priority order in 1.3, the gates in 11.4, save compatibility (a migration and a test for any change to the save format), rules correctness, at most 2 subagents at once, and no secrets.
 

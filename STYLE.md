@@ -146,6 +146,7 @@ Neither may resemble any real brand. In particular, avoid red-and-yellow food lo
 - Eyes are ellipses with a small highlight. Expression comes from eyebrow angle and mouth line only. Cath is the exception (below).
 - Sizes are 32, 48, 96 and 160 px, and each must read at 32.
 - Characters:
+  - **Cath (updated by the owner, 2026-09-28): see `VISION.md` "Cath: character bible"; it overrides the list below.** She is a classy, cute, stylish mum, drawn by the shared `shared/cath/` art module in richer detail than the rest of the cast (soft shading and more than 5 colours are allowed for her). The original notes, kept for reference:
   - **Cath** is drawn in a softer K-pop idol style than the rest of the cast:
     - large eyes with two highlights and a lash flick;
     - thin straight brows, with the right one still raised so she reads as sharp, not just sweet;
