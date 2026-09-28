@@ -39,7 +39,10 @@ export type Difficulty = 'easy' | 'normal' | 'hard'
 export function botFor(name: BotName): Bot {
   if (name === 'random') return RandomBot
   if (name === 'heuristic') return HeuristicBot
-  return createMCTSBot(SIM_MCTS_BUDGET, SIM_MCTS_ROLLOUT_ROUNDS)
+  if (name === 'mcts') return createMCTSBot(SIM_MCTS_BUDGET, SIM_MCTS_ROLLOUT_ROUNDS)
+  // A bad --bot value used to fall through to MCTS silently, mislabeling the report with the typo'd name
+  // while actually running the slowest bot (hours, not seconds, at 1,000 games — see CLAUDE.md's notes).
+  throw new Error(`Unknown bot "${name}". Expected "random", "heuristic" or "mcts".`)
 }
 
 export interface GameOutcome {

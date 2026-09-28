@@ -36,10 +36,19 @@ function parseArgs(): Args {
     return i >= 0 && raw[i + 1] ? raw[i + 1]! : fallback
   }
   const games = Number.parseInt(get('--games', '1000'), 10)
-  const bot = get('--bot', 'mcts') as Args['bot']
-  const difficulty = get('--difficulty', 'normal') as Args['difficulty']
+  const bot = get('--bot', 'mcts')
+  const difficulty = get('--difficulty', 'normal')
   const pairsArg = get('--pairs', 'all')
   const pairs: Args['pairs'] = pairsArg === 'all' ? 'all' : (pairsArg.split(',') as ProducerId[])
+  // A typo'd --bot/--difficulty used to be cast straight through: botFor() silently ran MCTS (the slowest
+  // bot) under a mislabeled report entry (see DECISIONS.md), and an unrecognized difficulty would only
+  // surface much later as a confusing engine-level failure. Fail fast here instead.
+  if (bot !== 'random' && bot !== 'heuristic' && bot !== 'mcts') {
+    throw new Error(`Unknown --bot "${bot}". Expected "random", "heuristic" or "mcts".`)
+  }
+  if (difficulty !== 'easy' && difficulty !== 'normal' && difficulty !== 'hard') {
+    throw new Error(`Unknown --difficulty "${difficulty}". Expected "easy", "normal" or "hard".`)
+  }
   return { games, bot, difficulty, pairs }
 }
 
@@ -227,4 +236,10 @@ async function main(): Promise<void> {
   if (summary.crashes > 0 || summary.invariantFailures > 0) process.exit(1)
 }
 
-void main()
+main().catch((err) => {
+  // A worker-process failure outside playOneGame's own try/catch (e.g. a malformed input file, or a
+  // top-level throw in simWorker.ts) used to reject silently as an unhandled promise rejection, with no
+  // report written and no clear indication that the whole run's data was lost, not just one chunk's.
+  console.error('sim: fatal error, no report written:', err)
+  process.exit(1)
+})
