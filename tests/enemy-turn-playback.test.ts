@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createGame } from '../src/engine/state'
 import { applyAction, legalActions } from '../src/engine/actions'
-import { enemyTurnEvents, captionFor } from '../src/ui/enemyTurnLog'
+import { enemyTurnEvents, captionFor, pendingMidSceneTrigger } from '../src/ui/enemyTurnLog'
 import type { GameConfig, GameEvent } from '../src/engine/types'
 
 // SPEC 10.2: the enemy turn plays back as a caption per step. `enemyTurnEvents` picks out exactly the
@@ -55,5 +55,41 @@ describe('enemy turn playback', () => {
     const [action] = legalActions(state).filter((a) => a.kind === 'graft')
     const next = applyAction(state, action!)
     expect(enemyTurnEvents(state, next)).toEqual([])
+  })
+})
+
+// SPEC 8.1/8.2 ch3/ch6: a chapter's mid-game scripted scene must pause play once and never reappear once
+// dismissed, even across a reload (which starts with fresh, empty `dismissedMidScenes` component state —
+// see src/ui/Game.tsx). Regression coverage for a real bug a review session found: `pendingMidSceneTrigger`
+// used to be plain `dismissedMidScenes.includes(...)`-only logic inline in Game.tsx, which made the scene
+// reappear (re-blocking the current turn) on every reload after the round it fired on, not just the one
+// where it was first shown.
+describe('pendingMidSceneTrigger (SPEC 8.1/8.2 mid-game scripted scenes)', () => {
+  const triggerEvent: GameEvent = { type: 'trigger', effect: 'wholesomeHollowReveal', sceneId: 'twist' }
+  const actionEvent: GameEvent = {
+    type: 'action',
+    producer: 'tomas',
+    action: { kind: 'graft' },
+  }
+
+  it('is pending the moment the trigger fires, before anything else happens', () => {
+    expect(pendingMidSceneTrigger([triggerEvent], [])).toEqual(triggerEvent)
+  })
+
+  it('is no longer pending once dismissed in the current session', () => {
+    expect(pendingMidSceneTrigger([triggerEvent], ['twist'])).toBeUndefined()
+  })
+
+  it('is no longer pending after a reload, once at least one action was logged afterward', () => {
+    // Simulates the exact bug: `dismissedMidScenes` is back to `[]` (a fresh reload), but the log itself
+    // proves the scene was already shown and dismissed, since the Scene overlay blocks every action.
+    const log = [triggerEvent, actionEvent]
+    expect(pendingMidSceneTrigger(log, [])).toBeUndefined()
+  })
+
+  it('stays pending across a reload if no action was logged after the trigger yet', () => {
+    // The trigger just fired and nothing else has happened yet (e.g. the enemy turn that caused it was
+    // the very last thing in the log) — a fresh reload with empty `dismissedMidScenes` must still show it.
+    expect(pendingMidSceneTrigger([triggerEvent], [])).toEqual(triggerEvent)
   })
 })

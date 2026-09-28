@@ -12,7 +12,7 @@ import { playHapticsFor } from '../platform/haptics'
 import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
 import { actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
-import { enemyTurnEvents } from './enemyTurnLog'
+import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
 import LogSheet from './LogSheet'
 import FarmSheet from './FarmSheet'
@@ -174,14 +174,11 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   }
 
   // SPEC 8.1/8.2 ch3: a chapter's mid-game scripted scene (e.g. the round-5 Wholesome Hollow reveal) pauses
-  // play until dismissed — found via `state.log`'s `{type: 'trigger'}` events, which `round.ts` appends the
-  // moment the chapter's `scriptedTrigger.round` is reached. Autoplay (e2e/the AI teammate) skips straight
-  // past it, matching how it already skips the enemy-turn caption playback.
-  const pendingTrigger = midGameScenes
-    ? (state.log.find((e) => e.type === 'trigger' && !dismissedMidScenes.includes(e.sceneId)) as
-        | Extract<GameEvent, { type: 'trigger' }>
-        | undefined)
-    : undefined
+  // play until dismissed. Autoplay (e2e/the AI teammate) skips straight past it, matching how it already
+  // skips the enemy-turn caption playback. See `pendingMidSceneTrigger`'s own comment for why this is
+  // derived from the log rather than from `dismissedMidScenes` component state alone (that state resets on
+  // every reload, which used to make the scene reappear and re-block play long after it was dismissed).
+  const pendingTrigger = midGameScenes ? pendingMidSceneTrigger(state.log, dismissedMidScenes) : undefined
   const pendingMidScene = pendingTrigger && !autoplayRef.current ? midGameScenes![pendingTrigger.sceneId] : undefined
 
   useEffect(() => {
@@ -227,11 +224,16 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       // budget, fall back to the fast, synchronous HeuristicBot rather than leaving the AI teammate's turn
       // — and the whole game — stuck forever with no visible failure and no recovery path.
       const fallBackToHeuristic = (why: string) => {
-        if (settled || cancelled) return
-        settled = true
+        // Unregister this turn's listeners before the early return, matching `onMessage`'s order below —
+        // otherwise a turn whose effect gets cancelled (state advanced, e.g. an undo, or unmount) before a
+        // late `error` event or a late watchdog fire left its now-stale closures permanently attached to
+        // the long-lived worker (a listener leak, one pair per such turn — never a stale action, since the
+        // `settled`/`cancelled` guard still blocked `advance()` correctly either way; see DECISIONS.md).
         worker.removeEventListener('message', onMessage)
         worker.removeEventListener('error', onError)
         clearTimeout(watchdog)
+        if (settled || cancelled) return
+        settled = true
         aiWorkerRef.current?.terminate()
         aiWorkerRef.current = null
         // SPEC 9.2's "each AI action shows a one-line reason in the log" must still hold on this path —

@@ -48,3 +48,23 @@ export function captionFor(event: GameEvent): string {
       return ''
   }
 }
+
+// SPEC 8.1/8.2 ch3/ch6: finds the still-pending mid-game scripted-scene trigger in a game's log, if any.
+// `round.ts` appends a `{type: 'trigger'}` event once, the moment a chapter's `scriptedTrigger` condition is
+// reached, and it stays in `log` forever afterward (log entries are permanent history, never removed).
+// The Scene overlay it triggers blocks every game action while it's pending (no action buttons render), so
+// "at least one `{type: 'action'}` event exists later in the log" is durable proof the scene was already
+// shown and dismissed in an earlier session — without it, a reload long after the scene was dismissed would
+// find that same past trigger again and show the overlay a second time, re-blocking the current turn (a
+// real bug this function fixes; see DECISIONS.md). `dismissedIds` covers same-session dismissal, which
+// happens before any further action gets logged.
+export function pendingMidSceneTrigger(
+  log: GameEvent[],
+  dismissedIds: string[],
+): Extract<GameEvent, { type: 'trigger' }> | undefined {
+  return log.find((event, i) => {
+    if (event.type !== 'trigger') return false
+    if (dismissedIds.includes(event.sceneId)) return false
+    return !log.slice(i + 1).some((later) => later.type === 'action')
+  }) as Extract<GameEvent, { type: 'trigger' }> | undefined
+}
