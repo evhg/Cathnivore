@@ -310,6 +310,15 @@ export default function Map({ state, highlight, onSelect }: Props) {
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art">
               <TerrainArt type={def.type} />
             </g>
+            {r.liberated && (
+              <polygon
+                className="liberate-bloom"
+                points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)}
+                fill="var(--pasture)"
+                opacity={0.16}
+                pointerEvents="none"
+              />
+            )}
             {r.lostLand > 0 && (
               <g className="lostland-overlay">
                 <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)} fill="var(--clay)" opacity={0.18} />
@@ -390,7 +399,11 @@ export default function Map({ state, highlight, onSelect }: Props) {
               })()}
             </g>
 
-            {r.liberated && <CoopMarker x={x + HEX_R * 0.55} y={y + HEX_R * 0.55} />}
+            {r.liberated && (
+              <g className="coop-stamp">
+                <CoopMarker x={x + HEX_R * 0.55} y={y + HEX_R * 0.55} />
+              </g>
+            )}
           </g>
         )
       })}
