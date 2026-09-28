@@ -3,8 +3,8 @@ import type { CathExpression } from '../../../shared/cath/cath'
 import { CHARACTERS, type CharacterPortrait, type HairStyle } from '../../content/characters'
 
 // STYLE.md 9: flat geometric busts, 3-5 colours plus skin tone, a 2px ink outline (scaled to a
-// 100x120 viewBox so it still reads at the smallest size, 32px). Cath alone gets the softer
-// K-pop-idol treatment (bigger eyes, lash flick, blush, curtain bangs) per STYLE.md's exception.
+// 100x120 viewBox so it still reads at the smallest size, 32px). Cath alone is drawn by the
+// shared `shared/cath/` module (CathArt below) instead of these shapes, per STYLE.md's exception.
 const INK = 'var(--ink, #2B2320)'
 
 function Eyebrow({ cx, angle }: { cx: number; angle: number }) {

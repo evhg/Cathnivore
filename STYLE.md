@@ -146,15 +146,13 @@ Neither may resemble any real brand. In particular, avoid red-and-yellow food lo
 - Eyes are ellipses with a small highlight. Expression comes from eyebrow angle and mouth line only. Cath is the exception (below).
 - Sizes are 32, 48, 96 and 160 px, and each must read at 32.
 - Characters:
-  - **Cath (updated by the owner, 2026-09-28): see `VISION.md` "Cath: character bible"; it overrides the list below.** She is a classy, cute, stylish mum, drawn by the shared `shared/cath/` art module in richer detail than the rest of the cast (soft shading and more than 5 colours are allowed for her). The original notes, kept for reference:
-  - **Cath** is drawn in a softer K-pop idol style than the rest of the cast:
-    - large eyes with two highlights and a lash flick;
-    - thin straight brows, with the right one still raised so she reads as sharp, not just sweet;
-    - soft blush, a small nose, and small glossy pink lips with a slight smirk;
-    - curtain bangs and very long, centre-parted hair with a lighter shine band;
-    - olive field jacket and cream scarf.
-    
-    Her hair and skin colours come from `OWNER.md`.
+  - **Cath** is drawn by the shared, framework-free `shared/cath/cath.ts` module, not by the flat-geometric rules above — see `VISION.md` "Cath: character bible" for the full brief. In summary: a classy, cute, stylish mum in her early-to-mid thirties, drawn in richer detail than the rest of the cast (soft shading and more than 5 colours are allowed for her):
+    - large bright eyes with a neat winged liner and two highlights, soft brows with the right one a touch raised (sharp, not just sweet), rosy cheeks, a small nose and glossy rose lips with a warm half-smile;
+    - very long, glossy, centre-parted hair falling in soft waves with a light shine band, sometimes with a pasture-green leaf clip;
+    - two outfits: her classic field look (fitted olive field jacket, cream silk blouse, pearl studs, a fine gold necklace with a leaf pendant) and a market-day look (camel trench, cream knit scarf); every outfit keeps a cute touch (the leaf clip, a rolled sleeve, a gingham hair ribbon);
+    - five expressions — warm smirk (default), delighted, determined, worried, wink — and two framings, a bust portrait for 32-160 px UI and a half-body figure for heroes and scenes.
+
+    Her hair and skin colours come from `OWNER.md`. `shared/cath/` is the only source of truth for how she looks; nothing elsewhere in the app should draw her separately.
   - **Mara:** grey braid, waxed jacket.
   - **Tomas:** curly hair, apron.
   - **Ines:** short natural hair, cardigan over scrubs.
