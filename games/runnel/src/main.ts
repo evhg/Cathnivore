@@ -1,4 +1,6 @@
 import './styles.css'
+import '../../../shared/cath/cath.css'
+import { cathMarkup, createHost } from './host'
 import { Board } from './board'
 import {
   computeFlow,
@@ -42,6 +44,9 @@ const ui = {
   btnNext: $<HTMLButtonElement>('btn-next'),
   toast: $<HTMLParagraphElement>('toast'),
 }
+
+const host = createHost($<HTMLSpanElement>('host-face'), $<HTMLParagraphElement>('host-line'))
+$<HTMLDivElement>('help-cath').innerHTML = cathMarkup('wink', 'face')
 
 const data = load()
 let today = utcDateString(new Date())
@@ -95,6 +100,8 @@ function openGame(): void {
   }
   save(data)
   board = new Board(ui.board, puzzle, { onTurn, onToggleLock })
+  host.greet(mode === 'daily', mode === 'daily' ? dailyNumber(today) : Math.floor(Math.random() * 3) + 1)
+  if (game.solved) host.react(1, true)
   if (game.solved) board.celebrate()
   render()
   if (!game.solved && game.taps > 0) resumeClock()
@@ -207,6 +214,7 @@ function render(): void {
   const playable = puzzle.cells.filter((c) => c.kind !== 'stone').length
   ui.progress.style.setProperty('--progress', String(flow.wet.size / playable))
   ui.progress.classList.toggle('done', flow.solved)
+  if (game.taps > 0) host.react(flow.wet.size / playable, flow.solved)
 
   if (game.solved) {
     ui.hint.textContent = isDaily
@@ -254,6 +262,7 @@ function parNote(taps: number, par: number): string {
 // ---- dialogs ----------------------------------------------------------------------------------------
 
 function showWin(): void {
+  $<HTMLDivElement>('win-cath').innerHTML = cathMarkup('delighted', 'bust')
   const isDaily = mode === 'daily'
   ui.winEyebrow.textContent = isDaily ? `Daily #${dailyNumber(today)}` : `Practice · ${size}`
   ui.winTitle.textContent = 'Every field is watered.'
@@ -272,7 +281,7 @@ function showWin(): void {
 function shareText(): string {
   const head = mode === 'daily' ? `Runnel #${dailyNumber(today)}` : `Runnel practice (${size})`
   const drops = game.taps <= puzzle.par ? '💧💧💧' : game.taps <= puzzle.par * 1.3 ? '💧💧' : '💧'
-  return `${head} 🌱\n⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par}) ${drops}\nhttps://cathnivore.com/runnel/`
+  return `${head} 🌱 Cath's fields, all watered\n⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par}) ${drops}\nhttps://cathnivore.com/runnel/`
 }
 
 ui.btnShare.addEventListener('click', async () => {

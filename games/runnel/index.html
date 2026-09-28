@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#F4EDE1" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1C1714" media="(prefers-color-scheme: dark)" />
-    <title>Runnel: a daily irrigation puzzle</title>
+    <title>Runnel: Cath's daily irrigation puzzle</title>
     <meta name="description" content="Turn the channels and bring water from the spring to every field. A new puzzle every day." />
     <link rel="icon" href="/runnel/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/runnel/apple-touch-icon.png" />
@@ -52,6 +52,11 @@
         </div>
       </section>
 
+      <section class="host" aria-live="polite">
+        <span class="host-face" id="host-face" aria-hidden="true"></span>
+        <p class="host-line" id="host-line"></p>
+      </section>
+
       <main class="stage">
         <svg id="board" class="board" role="group" aria-label="Puzzle board"></svg>
         <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
@@ -66,7 +71,9 @@
 
     <dialog id="dlg-help" class="sheet" aria-labelledby="help-title">
       <form method="dialog">
+        <div class="help-cath" id="help-cath" aria-hidden="true"></div>
         <h2 id="help-title">How to play</h2>
+        <p class="muted">Hi, I'm Cath. These are my fields, and they're thirsty. Here's how you help.</p>
         <div class="help-demo" aria-hidden="true">
           <svg viewBox="-60 -60 120 120"><g class="demo-tile"><polygon points="43.3,25 0,50 -43.3,25 -43.3,-25 0,-50 43.3,-25" /><line class="demo-groove" x1="0" y1="0" x2="45" y2="0" /><line class="demo-groove" x1="0" y1="0" x2="-22.5" y2="39" /><line class="demo-water" x1="0" y1="0" x2="45" y2="0" /><line class="demo-water" x1="0" y1="0" x2="-22.5" y2="39" /></g></svg>
         </div>
@@ -91,6 +98,7 @@
 
     <dialog id="dlg-win" class="sheet win" aria-labelledby="win-title">
       <form method="dialog">
+        <div class="win-cath" id="win-cath" aria-hidden="true"></div>
         <p class="eyebrow" id="win-eyebrow">Daily #1</p>
         <h2 id="win-title">Every field is watered.</h2>
         <div class="win-numbers">

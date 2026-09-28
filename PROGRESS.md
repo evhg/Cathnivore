@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** 1, "Cath's new look: the master art". Started by the owner's chat session on 2026-09-28: `shared/cath/cath.ts` renders Cath (framings face, bust and half; five expressions; field and market outfits). Next, wire her into Portrait.tsx, the title screen, the landing page and Runnel, then continue with ROADMAP 2-5.
+- **Current ROADMAP item:** 3, "Cath in Cathnivore, as guide and narrator": a companion on the game screen with reactions and a line bank. Items 1's remaining polish (favicon and social images with the new Cath, art refinement) can go alongside.
 - **Next step:** see the **Session log** for where the last session stopped.
 
 ## Blocked
@@ -18,7 +18,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - [ ] `site/src/scene.ts` has no `webglcontextrestored` handler: after a GPU reset the landing animation stays stopped until reload.
 
 ## Recent releases (newest first, last 10)
-- 2026-09-28: title screen redesign, Campaign journey screen, continuous-improvement docs (owner's chat session).
+- 2026-09-28 (owner's chat session): Cath's new look everywhere (title hero, portraits, landing page star, Runnel host), title and Campaign redesigns, continuous-improvement plan.
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)

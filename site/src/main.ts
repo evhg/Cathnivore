@@ -1,4 +1,6 @@
 import './styles.css'
+import '../../shared/cath/cath.css'
+import { cathSvg, type CathExpression } from '../../shared/cath/cath'
 import { startScene } from './scene'
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -22,6 +24,23 @@ if (title) {
 }
 
 document.querySelectorAll<HTMLElement>('.reveal').forEach((el, i) => el.style.setProperty('--order', String(i)))
+
+// Cath is the face of every game (VISION.md): she stands in the landscape and reacts to the game cards.
+const heroCath = document.getElementById('hero-cath')
+function showCath(expression: CathExpression): void {
+  if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'half', expression, animate: !reducedMotion })
+}
+showCath('smirk')
+document.querySelectorAll<HTMLElement>('.card[data-cath]').forEach((card) => {
+  const react = () => showCath(card.dataset.cath as CathExpression)
+  const rest = () => showCath('smirk')
+  card.addEventListener('pointerenter', react)
+  card.addEventListener('focus', react)
+  card.addEventListener('pointerleave', rest)
+  card.addEventListener('blur', rest)
+})
+const cardFace = document.querySelector('.art-cath')
+if (cardFace) cardFace.innerHTML = cathSvg({ framing: 'face', expression: 'smirk' })
 
 const canvas = document.getElementById('scene') as HTMLCanvasElement
 let scene = null

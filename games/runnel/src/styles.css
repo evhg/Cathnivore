@@ -951,3 +951,99 @@ kbd {
     transition-delay: 0ms !important;
   }
 }
+
+/* ---- Cath, the host ---- */
+
+.app {
+  grid-template-rows: auto auto auto auto 1fr auto;
+}
+
+.host {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.host-face {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 62px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--wheat);
+  box-shadow: 0 2px 0 var(--dry-edge);
+}
+
+.host-face svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.host-line {
+  position: relative;
+  margin: 0;
+  padding: 9px 13px;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 1px 0 var(--paper-2);
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--ink);
+  animation: host-in 360ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.host-line::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--surface);
+  transform: translateY(-50%) rotate(45deg);
+  border-radius: 2px;
+}
+
+@keyframes host-in {
+  from {
+    transform: translateY(4px);
+  }
+}
+
+.win-cath,
+.help-cath {
+  width: 110px;
+  height: 132px;
+  margin: -64px auto 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--wheat);
+  border: 4px solid var(--surface);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.help-cath {
+  width: 96px;
+  height: 96px;
+}
+
+.win-cath svg,
+.help-cath svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.sheet {
+  overflow: visible;
+}
+
+.sheet form {
+  padding-top: 18px;
+}

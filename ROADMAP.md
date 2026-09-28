@@ -11,17 +11,17 @@ Every visual item is done only when:
 
 ## Phase 1: Cath, the face of every game (owner's top priority)
 
-1. [ ] **Cath's new look: the master art.** Redesign Cath per `VISION.md` "Cath: character bible": a classy, cute, stylish mum. Build one shared, framework-free art module (`shared/cath/`) that renders her as SVG in:
+1. [ ] **Cath's new look: the master art.** *(v1 shipped 2026-09-28 by the owner's chat session: `shared/cath/cath.ts` with face, bust and half framings, five expressions, two outfits and idle animation, used by Portrait.tsx, the title, the landing page and Runnel. Still to do: refine the art (hands and a pose, finer hair and fabric shading, readability at 32 px), then replace `public/favicon.svg`, the app icon brief and the social images with the new Cath, and update STYLE.md 9 in full.)* Redesign Cath per `VISION.md` "Cath: character bible": a classy, cute, stylish mum. Build one shared, framework-free art module (`shared/cath/`) that renders her as SVG in:
    - two framings: a bust portrait for UI sizes of 32-160 px, and a half-body figure for heroes and scenes;
    - at least five expressions: warm smirk (the default), delighted, determined, worried and wink;
    - two outfits: her classic field look and a market-day look.
    The Cathnivore game (React), Runnel and the landing page all import from it, so she looks the same everywhere. Replace her old portrait everywhere it appears, including the favicon and social images. Update `STYLE.md` 9 and the app icon brief to match.
-2. [ ] **Landing page stars Cath.** She stands in the hero, half-body, lit by the sunset over the fields, with a subtle idle animation (breathing, a blink, her hair moving in the wind) and a reaction when a game card is hovered or tapped. Each game card shows Cath in that game's role.
-3. [ ] **Cath in Cathnivore, as guide and narrator:**
+2. [x] **Landing page stars Cath.** *(v1 shipped 2026-09-28: she stands in the sunset fields, reacts to card hover and focus, and the Cathnivore card uses her face. A later polish pass can add her hair moving in the wind in step with the scene.)* She stands in the hero, half-body, lit by the sunset over the fields, with a subtle idle animation (breathing, a blink, her hair moving in the wind) and a reaction when a game card is hovered or tapped. Each game card shows Cath in that game's role.
+3. [ ] **Cath in Cathnivore, as guide and narrator** *(started: she is the title screen's hero, and her portraits everywhere use the new art)*:
    - a Cath companion on the game screen who comments on what just happened (short, witty lines from a bank written in her voice, SPEC 3.2) and reacts with her expressions to liberations, Squeezes, Lost Land and wins and losses;
    - Cath on the title, Campaign, setup and end screens with a matching expression;
    - tutorial prompts spoken by her.
-4. [ ] **Cath in Runnel, as host:**
+4. [x] **Cath in Runnel, as host:** *(v1 shipped 2026-09-28: a daily greeting, reactions at 40% and 75% watered and on the win, and Cath on the help and win sheets; the share text names her fields. Still open for later: Cath standing by the spring on the board.)*
    - she presents each day's puzzle ("Cath's runnel for Tuesday"), with a greeting line that changes daily;
    - she stands by the spring on the board;
    - she reacts as water reaches fields, and celebrates on the win screen with a line about your time and par;
