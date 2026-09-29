@@ -34,6 +34,7 @@ const ui = {
   dlgStats: $<HTMLDialogElement>('dlg-stats'),
   dlgWin: $<HTMLDialogElement>('dlg-win'),
   statGrid: $<HTMLDivElement>('stat-grid'),
+  streakCal: $<HTMLDivElement>('streak-cal'),
   winEyebrow: $<HTMLParagraphElement>('win-eyebrow'),
   winTitle: $<HTMLHeadingElement>('win-title'),
   winTime: $<HTMLElement>('win-time'),
@@ -325,6 +326,17 @@ function showStats(): void {
       return div
     }),
   )
+  const cal: HTMLElement[] = []
+  for (let i = 27; i >= 0; i--) {
+    const day = new Date(Date.parse(`${today}T00:00:00Z`) - i * 86_400_000).toISOString().slice(0, 10)
+    const cell = document.createElement('i')
+    const solved = data.results[day] !== undefined
+    if (solved) cell.className = 'on'
+    if (day === today) cell.classList.add('today')
+    cell.title = `${day}${solved ? ': solved' : ''}`
+    cal.push(cell)
+  }
+  ui.streakCal.replaceChildren(...cal)
   ui.dlgStats.showModal()
 }
 

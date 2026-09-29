@@ -1078,3 +1078,35 @@ kbd {
 .sheet form {
   padding-top: 18px;
 }
+
+.cal-title {
+  margin: 14px 0 6px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.streak-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.streak-cal i {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: var(--paper);
+  border: 1px dashed var(--dry-edge);
+}
+
+.streak-cal i.on {
+  background: var(--water);
+  border: 1px solid var(--water);
+  box-shadow: inset 0 -4px 0 var(--water-hi);
+}
+
+.streak-cal i.today {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
