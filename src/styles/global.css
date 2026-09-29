@@ -1881,6 +1881,22 @@ html.native-app body {
   }
 }
 
+.card-framed.card-playing {
+  animation: card-play 300ms var(--ease-pop) forwards;
+  pointer-events: none;
+}
+
+@keyframes card-play {
+  40% {
+    box-shadow: 0 0 0 3px rgba(190, 140, 210, 0.7), 0 0 18px rgba(190, 140, 210, 0.6);
+    transform: translateY(-6px) scale(1.03);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-18px) scale(1.06);
+  }
+}
+
 @keyframes reduced-motion-fade {
   from {
     opacity: 0;

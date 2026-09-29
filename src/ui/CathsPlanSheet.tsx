@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { GoodwillIcon } from './icons/ResourceIcons'
 import CathArt from './CathArt'
@@ -26,6 +27,21 @@ export default function CathsPlanSheet({
   onClose(): void
   inline?: boolean
 }) {
+  // ROADMAP 17: a played Scheme glows and lifts ("card-playing") before onPlay runs; immediate with
+  // reduced motion.
+  const [playing, setPlaying] = useState<string | null>(null)
+  const play = (id: string) => {
+    if (playing) return
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      onPlay(id)
+      return
+    }
+    setPlaying(id)
+    setTimeout(() => {
+      setPlaying(null)
+      onPlay(id)
+    }, 300)
+  }
   const cards = (
     <ul className="card-list">
       {state.freeSchemePlays > 0 && (
@@ -36,7 +52,7 @@ export default function CathsPlanSheet({
         const card = SCHEMES_BY_ID.get(id)
         if (!card) return null
         return (
-          <li key={id} className="card-enter card-framed card-plan" data-tag="plan">
+          <li key={id} className={`card-enter card-framed card-plan${playing === id ? ' card-playing' : ''}`} data-tag="plan">
             <CathArt className="card-plan-avatar" framing="face" width={32} height={32} title="Cath" />
             <strong>{card.name}</strong> —{' '}
             <Tooltip term="Goodwill">
@@ -50,7 +66,7 @@ export default function CathsPlanSheet({
             <p className="card-text">{card.text}</p>
             <p className="card-flavor card-hand">&ldquo;{card.line}&rdquo;</p>
             {canPlay(id) ? (
-              <button onClick={() => onPlay(id)}>Play</button>
+              <button onClick={() => play(id)}>Play</button>
             ) : (
               missingGoodwill(id) !== undefined && <p className="card-why-not">Need {missingGoodwill(id)} more Goodwill</p>
             )}
@@ -76,7 +92,7 @@ export default function CathsPlanSheet({
             const card = SCHEMES_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className="card-enter card-row card-framed card-plan" data-tag="plan">
+              <li key={id} className={`card-enter card-row card-framed card-plan${playing === id ? ' card-playing' : ''}`} data-tag="plan">
                 <details>
                   <summary>
                     <strong>{card.name}</strong>
@@ -91,7 +107,7 @@ export default function CathsPlanSheet({
                   </Tooltip>
                 </div>
                 {canPlay(id) ? (
-                  <button onClick={() => onPlay(id)}>Play</button>
+                  <button onClick={() => play(id)}>Play</button>
                 ) : (
                   missingGoodwill(id) !== undefined && <p className="card-why-not">Need {missingGoodwill(id)} more Goodwill</p>
                 )}
