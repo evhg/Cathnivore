@@ -773,7 +773,7 @@ h3 {
   margin: 0;
   font-style: italic;
   font-size: 14px;
-  animation: cath-line-in 200ms ease-out both;
+  animation: cath-line-in 200ms var(--ease-settle) both;
 }
 
 @keyframes cath-line-in {
@@ -1705,13 +1705,13 @@ html.native-app body {
 .stall-piece {
   transform-box: fill-box;
   transform-origin: center;
-  animation: stall-drop 220ms ease-out;
+  animation: stall-drop 220ms var(--ease-settle);
 }
 
 .enemy-piece {
   transform-box: fill-box;
   transform-origin: center;
-  animation: piece-delivery 200ms ease-out;
+  animation: piece-delivery 200ms var(--ease-settle);
 }
 
 /* ROADMAP 12: each enemy piece arrives its own way, so a glance at the map says what just landed. Same
@@ -1732,9 +1732,9 @@ html.native-app body {
   60% { transform: translateY(-2px) rotate(5deg) scale(1.05); opacity: 1; }
   100% { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
 }
-.enemy-outlet { animation: outlet-pop 220ms ease-out; }
-.enemy-buyout { animation: buyout-slam 240ms ease-out; }
-.enemy-doubt { animation: doubt-float 260ms ease-out; }
+.enemy-outlet { animation: outlet-pop 220ms var(--ease-pop); }
+.enemy-buyout { animation: buyout-slam 240ms var(--ease-pop); }
+.enemy-doubt { animation: doubt-float 260ms var(--ease-pop); }
 .map-legend-icon .enemy-outlet,
 .map-legend-icon .enemy-buyout,
 .map-legend-icon .enemy-doubt { animation: none; }
@@ -1779,11 +1779,11 @@ html.native-app body {
 }
 
 .lostland-overlay {
-  animation: lostland-wipe 220ms ease-out;
+  animation: lostland-wipe 220ms var(--ease-settle);
 }
 
 .card-enter {
-  animation: card-flip 220ms ease-out;
+  animation: card-flip 220ms var(--ease-settle);
   transform-style: preserve-3d;
 }
 
