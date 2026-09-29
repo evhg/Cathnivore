@@ -1,5 +1,6 @@
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { GoodwillIcon } from './icons/ResourceIcons'
+import CathArt from './CathArt'
 import Tooltip from './Tooltip'
 import type { GameState } from '../engine/types'
 
@@ -35,7 +36,8 @@ export default function CathsPlanSheet({
         const card = SCHEMES_BY_ID.get(id)
         if (!card) return null
         return (
-          <li key={id} className="card-enter">
+          <li key={id} className="card-enter card-framed card-plan" data-tag="plan">
+            <CathArt className="card-plan-avatar" framing="face" width={32} height={32} title="Cath" />
             <strong>{card.name}</strong> —{' '}
             <Tooltip term="Goodwill">
               <GoodwillIcon /> {card.cost} Goodwill
@@ -46,7 +48,7 @@ export default function CathsPlanSheet({
                 to play a Scheme during play had no way to see what it does without leaving Cath's Plan sheet
                 to search for it separately. Cath's own voice line stays as the flavour text below it. */}
             <p className="card-text">{card.text}</p>
-            <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
+            <p className="card-flavor card-hand">&ldquo;{card.line}&rdquo;</p>
             {canPlay(id) ? (
               <button onClick={() => onPlay(id)}>Play</button>
             ) : (
@@ -74,13 +76,13 @@ export default function CathsPlanSheet({
             const card = SCHEMES_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className="card-enter card-row">
+              <li key={id} className="card-enter card-row card-framed card-plan" data-tag="plan">
                 <details>
                   <summary>
                     <strong>{card.name}</strong>
                   </summary>
                   <p className="card-text">{card.text}</p>
-                  <p className="card-flavor">&ldquo;{card.line}&rdquo;</p>
+                  <p className="card-flavor card-hand">&ldquo;{card.line}&rdquo;</p>
                 </details>
                 {/* Sibling of <details>, not a descendant — see MarketSheet.tsx for why. */}
                 <div className="card-cost-row">
