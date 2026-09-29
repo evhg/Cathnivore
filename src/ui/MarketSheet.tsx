@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { MarksIcon } from './icons/ResourceIcons'
+import CardTagIcon from './icons/CardTagIcon'
 import Tooltip from './Tooltip'
 import type { GameState } from '../engine/types'
 
@@ -53,7 +54,7 @@ export default function MarketSheet({
         if (!card) return null
         return (
           <li key={id} className={`card-enter card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
-            <strong>{card.name}</strong> —{' '}
+            <CardTagIcon tag={card.tags[0]} /> <strong>{card.name}</strong> —{' '}
             <Tooltip term="Marks">
               <MarksIcon /> {card.cost} Marks
             </Tooltip>{' '}
@@ -94,7 +95,7 @@ export default function MarketSheet({
               <li key={id} className={`card-enter card-row card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
                 <details>
                   <summary>
-                    <strong>{card.name}</strong> ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+                    <CardTagIcon tag={card.tags[0]} /> <strong>{card.name}</strong> ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
                   </summary>
                   <p className="card-text">{card.text}</p>
                   {card.flavor && <p className="card-flavor">{card.flavor}</p>}

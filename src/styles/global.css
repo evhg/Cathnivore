@@ -530,6 +530,9 @@ h3 {
   background: color-mix(in srgb, var(--frame) 10%, var(--surface));
   box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 8%, transparent);
 }
+.card-tag-icon { vertical-align: -3px; margin-right: 2px; fill: var(--frame, currentColor); stroke: var(--frame, currentColor); stroke-width: 0; stroke-linecap: round; }
+.card-tag-icon path[fill='none'] { stroke-width: 1.6; }
+.card-tag-icon .ti-eye { fill: var(--paper, #fff); stroke: var(--paper, #fff); }
 .card-framed[data-tag='pasture'] { --frame: var(--pasture); }
 .card-framed[data-tag='crop'] { --frame: var(--wheat); }
 .card-framed[data-tag='coast'] { --frame: var(--sea); }
