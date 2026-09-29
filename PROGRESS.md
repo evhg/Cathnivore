@@ -58,6 +58,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-29 ~12:30 UTC (`5304060`): Runnel streak calendar, sparkle, seasonal crops, story scenes, etc. First attempt reverted on a curl timeout; retry landed (live version.json matches, main==build); tag 403.
 - 2026-09-29 ~07:10 UTC (`bf2dbf8`): --ease-settle fix, end-screen map/share, How to Play quick tour, How to Play + earlier work. main==build; tag push 403 (harmless).
 - 2026-09-29 ~03:04 UTC (`b8dc0df`): Setup redesign (ROADMAP 15) + end-screen stat cards (ROADMAP 16 slice). Gates passed; live version.json matches; tag push 403 (harmless).
 - 2026-09-29 ~02:25 UTC (`132ef5b`): Settings + Credits redesign (ROADMAP 20), plus the earlier sound/motion work. Gates passed; tag push 403 (harmless).
