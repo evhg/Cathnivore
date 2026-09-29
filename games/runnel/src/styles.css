@@ -644,6 +644,17 @@ a:focus-visible {
   stroke-width: 1.2;
 }
 
+.pumpkin,
+.pumpkin-side {
+  fill: #e8892b;
+  stroke: #9a4d12;
+  stroke-width: 1.4;
+}
+
+.pumpkin-side {
+  fill: #d9761c;
+}
+
 .leaf-outer {
   fill: #7ea84a;
   stroke: #3e5a22;

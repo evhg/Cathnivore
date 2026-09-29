@@ -29,6 +29,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-29 09:00 UTC:** ROADMAP 14 slice: Scene screen is now line-by-line (96px portrait + speech bubble, tap/Next, dimmed backlog; Continue still skips; unreleased). Still open: per-chapter backdrops, more cast expressions.
 - **2026-09-29 09:55 UTC:** ROADMAP 22 slice: Runnel water-arrival sparkle (droplets burst from a field as it turns wet; CSS-only, reduced-motion safe; e2e:site passes; unreleased). Still open: sound set, seasonal crops, streak calendar, fairer par.
 - **2026-09-29 10:55 UTC:** ROADMAP 22 slice: Runnel stats dialog gets a 28-day streak calendar (e2e:site passes; unreleased). Still open: sound set, seasonal crops, fairer par.
+- **2026-09-29 12:15 UTC:** ROADMAP 22 slice: Runnel seasonal crops (pools by month of the daily date, new pumpkin; e2e:site passes; unreleased). Still open: sound set, fairer par.
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or
