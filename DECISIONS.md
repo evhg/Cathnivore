@@ -161,3 +161,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-29: How to Play slice kept small (quick-start card, paper sections); no release, only one slice this hour.
 - 2026-09-29: end-screen Share uses navigator.share with clipboard fallback; no release yet (one small slice).
 - 2026-09-29: --ease-settle was self-referential (invalid); fixed. Released bf2dbf8.
+2026-09-29: Scene keeps an always-present 'Continue' (acts as skip) so e2e specs stay valid; lines reveal via Next/tap.

@@ -1343,21 +1343,72 @@ html.no-animations .stat-card { animation: none; }
   padding: 24px 16px;
 }
 
-.scene-lines {
+.scene-backlog {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  opacity: 0.6;
+  font-size: 14px;
 }
 
-.scene-line {
+.scene-log-line {
+  margin: 0;
+}
+
+.scene-stage {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 12px;
+  animation: scene-in var(--dur-md, 240ms) var(--ease-settle, ease-out) both;
 }
 
 .scene-portrait {
   flex-shrink: 0;
   line-height: 0;
+}
+
+.scene-bubble {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--paper, #fff8ea);
+  color: var(--ink, inherit);
+  border: 2px solid var(--soil, #5a4632);
+  border-radius: 16px 16px 16px 4px;
+  cursor: pointer;
+}
+
+.scene-text {
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.scene-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scene-progress {
+  margin-right: auto;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.scene-skip {
+  opacity: 0.75;
+}
+
+@keyframes scene-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-stage { animation: none; }
 }
 
 .scene-speaker {
