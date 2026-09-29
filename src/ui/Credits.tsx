@@ -1,3 +1,5 @@
+import CathArt from './CathArt'
+
 interface Props {
   onClose(): void
 }
@@ -19,25 +21,29 @@ const CAST: { name: string; note: string }[] = [
 export default function Credits({ onClose }: Props) {
   return (
     <main className="settings credits">
-      <h1>Credits</h1>
+      <header className="settings-header">
+        <h1>Credits</h1>
+        <CathArt framing="bust" expression="delighted" animate width={64} height={64} title="Cath" />
+      </header>
 
-      <section>
+      <section className="settings-card">
         <h2>Cast</h2>
         <ul>
           {CAST.map((c) => (
             <li key={c.name}>
-              <strong>{c.name}</strong> — {c.note}
+              <strong>{c.name}</strong>
+              <span>{c.note}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <section>
+      <section className="settings-card">
         <h2>Made with</h2>
         <p>TypeScript, React and Vite. The map, cards, pieces and portraits are all drawn in code — no stock art.</p>
       </section>
 
-      <section>
+      <section className="settings-card">
         <h2>A note</h2>
         <p>A work of satire. The Republic of Marrow, Hollowell Group, Candor Health and everyone in this story are fictional.</p>
       </section>

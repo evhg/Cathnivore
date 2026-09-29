@@ -163,7 +163,7 @@ Every visual item is done only when:
 17. [ ] **Cards:** Improvements and Schemes as illustrated cards with a frame per category and an icon per card, and animations for buying and playing them. Cath's Plan cards carry her handwriting and avatar.
 18. [ ] **How to Play:** illustrated and paged, taught by Cath, with tiny demo boards.
 19. [ ] **Sound:** *(2026-09-28 night: shipped `src/platform/sound.ts` synth cues for place/liberate/Squeeze/Lost Land/win/lose, Settings "Sound" switch, silent until first tap; unreleased. UI-tap tick added; 2026-09-28 late: optional ambient pad loop, off by default, unreleased.)* a synthesised WebAudio sound set and an optional ambient loop, with Settings switches. Silent until the first tap.
-20. [ ] **Settings and Credits:** designed screens that match the title.
+20. [x] **Settings and Credits:** *(2026-09-29: both redesigned with Cath header and paper cards.)* designed screens that match the title.
 21. [ ] **Motion system:** *(2026-09-29: `--ease-settle`/`--ease-pop`/`--dur-*` tokens in `tokens.css`; title and campaign use the settle token. Audit of remaining screens still open.)* shared easing and duration tokens, and an audit of every screen.
 
 ## Phase 2b: Hedgerow, the third game (owner request, 2026-09-28)
