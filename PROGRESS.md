@@ -38,6 +38,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-29 18:30 UTC:** ROADMAP 17 slice: Cath's Plan cards get a plum frame, Cath's face avatar and a handwriting-style line (check + a11y/no-scroll/disabled e2e pass; unreleased, cap reached).
 - **2026-09-29 19:00 UTC:** ROADMAP 14 slice: per-chapter scene backdrops (tinted horizon gradients per chapter id; check passes; unreleased, cap reached). Still open: more cast expressions.
 - **2026-09-29 20:00 UTC:** ROADMAP 17 slice: Scheme play animation on Cath's Plan cards (glow + lift, instant with reduced motion; check + plan-strip/disabled/quick-game e2e pass; unreleased, cap reached). Item 17's listed scope is now complete.
+- **2026-09-29 21:00 UTC:** ROADMAP 14 slice: cast expressions (brow tilt + mouth swap on non-Cath portraits; Scene infers mood from line punctuation; check + campaign/a11y e2e pass; unreleased, cap reached). Item 14's listed scope is now complete.
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or

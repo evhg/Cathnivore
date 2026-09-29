@@ -140,6 +140,22 @@ function Accessory({ kind, accent }: { kind: NonNullable<CharacterPortrait['acce
   }
 }
 
+// The rest of the cast reuses Cath's five expression names: a brow tilt and a mouth swap per mood.
+function expressionMood(e?: CathExpression): { brow: number; mouth?: CharacterPortrait['mouth'] } {
+  switch (e) {
+    case 'delighted':
+      return { brow: -6, mouth: 'grin' }
+    case 'wink':
+      return { brow: -3, mouth: 'smirk' }
+    case 'determined':
+      return { brow: 10, mouth: 'neutral' }
+    case 'worried':
+      return { brow: -14, mouth: 'neutral' }
+    default:
+      return { brow: 0 }
+  }
+}
+
 export default function Portrait({
   character,
   size = 96,
@@ -151,6 +167,7 @@ export default function Portrait({
 }) {
   const spec = CHARACTERS[character]
   if (!spec) return null
+  const mood = expressionMood(expression)
   // Cath is drawn by the shared art module (VISION.md "Cath: character bible"), same as in Runnel and on
   // the landing page. The bust framing has the same 5:6 shape as the other portraits.
   if (character === 'cath') {
@@ -166,12 +183,12 @@ export default function Portrait({
       <rect x={44} y={68} width={12} height={16} fill={spec.skin} stroke={INK} strokeWidth={1.2} />
       {/* head */}
       <ellipse cx={50} cy={46} rx={22} ry={25} fill={spec.skin} stroke={INK} strokeWidth={2} />
-      <Eyebrow cx={38} angle={spec.browAngle} />
-      <Eyebrow cx={62} angle={spec.browAngle} />
+      <Eyebrow cx={38} angle={spec.browAngle + mood.brow} />
+      <Eyebrow cx={62} angle={spec.browAngle + mood.brow} />
       <Eye cx={38} />
       <Eye cx={62} />
       <ellipse cx={50} cy={53} rx={1.6} ry={1.2} fill={INK} opacity={0.5} />
-      <Mouth kind={spec.mouth} />
+      <Mouth kind={mood.mouth ?? spec.mouth} />
       <Hair style={spec.hairStyle} color={spec.hair} />
     </svg>
   )

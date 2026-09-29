@@ -1,11 +1,20 @@
 import { useState } from 'react'
 import type { Scene as SceneData } from '../content/story/types'
 import { portraitKeyFor } from '../content/characters'
+import type { CathExpression } from '../../shared/cath/cath'
 import Portrait from './portraits/Portrait'
 
 // SPEC 10.1: the Scene (dialogue) screen, as a small graphic novel (ROADMAP 14): the current speaker's
 // portrait beside a speech bubble, tap the bubble or "Next" to reveal the next line, with earlier lines
 // kept as a dimmed backlog. "Continue" is always available and leaves the scene (it doubles as skip).
+// Scene lines carry no mood tags, so read it off the punctuation: "!" is delighted, "?" worried, "..." determined.
+function moodOf(line: string): CathExpression | undefined {
+  if (/!\s*["”']?$/.test(line)) return 'delighted'
+  if (/\?\s*["”']?$/.test(line)) return 'worried'
+  if (/(\.\.\.|…)\s*["”']?$/.test(line)) return 'determined'
+  return undefined
+}
+
 export default function Scene({ scene, onContinue, chapterId }: { scene: SceneData; onContinue: () => void; chapterId?: string }) {
   const [shown, setShown] = useState(1)
   const last = scene.lines.length
@@ -27,7 +36,7 @@ export default function Scene({ scene, onContinue, chapterId }: { scene: SceneDa
         <div className="scene-stage" key={shown}>
           {key && (
             <span className="scene-portrait">
-              <Portrait character={key} size={96} />
+              <Portrait character={key} size={96} expression={moodOf(current.line)} />
             </span>
           )}
           <div
