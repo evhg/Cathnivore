@@ -1989,3 +1989,11 @@ html.no-animations .card-enter {
   height: auto;
   display: block;
 }
+
+/* How to Play paged tour (ROADMAP 18) */
+.tour .tour-body { flex: 1; min-width: 0; }
+.tour-title { margin: 0 0 6px; font-size: 1em; color: var(--clay); }
+.tour-board { display: block; height: 42px; margin: 4px 0 8px; }
+.tour-text { margin: 0 0 8px; color: var(--ink-muted); }
+.tour-nav { display: flex; align-items: center; gap: 12px; }
+.tour-dots { font-size: 0.85em; color: var(--ink-muted); }

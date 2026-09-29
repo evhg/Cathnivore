@@ -48,6 +48,87 @@ function EntryList({ entries, activeTerm }: { entries: Entry[]; activeTerm?: str
   )
 }
 
+type Hex = { fill: string; mark?: string }
+const HEX_PTS = '0,-16 14,-8 14,8 0,16 -14,8 -14,-8'
+
+function DemoBoard({ hexes, label }: { hexes: Hex[]; label: string }) {
+  return (
+    <svg className="tour-board" viewBox={`0 0 ${hexes.length * 34 + 6} 42`} role="img" aria-label={label}>
+      {hexes.map((h, i) => (
+        <g key={i} transform={`translate(${i * 34 + 20} 21)`}>
+          <polygon points={HEX_PTS} fill={h.fill} stroke="var(--ink)" strokeWidth="1.5" />
+          {h.mark && (
+            <text textAnchor="middle" dy="5" fontSize="13" fontWeight="800" fill="var(--ink-on-fixed-fill)">
+              {h.mark}
+            </text>
+          )}
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+const TOUR = [
+  {
+    title: 'Your round',
+    text: `Each round, every producer gets ${ACTIONS_PER_ROUND} actions: sell, invest, scheme, supply and more.`,
+    board: [
+      { fill: 'var(--region-pasture)', mark: '1' },
+      { fill: 'var(--region-crop)', mark: '2' },
+      { fill: 'var(--region-coast)', mark: '3' },
+    ],
+    label: 'Three regions, numbered as actions one to three',
+  },
+  {
+    title: 'Beat the Squeeze',
+    text: 'Liberate regions by out-building the Outlets and Buyouts on them.',
+    board: [
+      { fill: 'var(--hollowell)', mark: '0.99' },
+      { fill: 'var(--region-crop)', mark: 'S' },
+      { fill: 'var(--region-pasture)', mark: 'S' },
+    ],
+    label: 'An Outlet-held region beside two of your Stalls',
+  },
+  {
+    title: 'Mind the Rift',
+    text: 'Watch Rift and Lost Land: the corporations get bolder as they climb.',
+    board: [
+      { fill: 'var(--candor)', mark: '?' },
+      { fill: 'var(--hollowell)' },
+      { fill: 'var(--candor)', mark: '?' },
+    ],
+    label: 'Corporate regions spreading across the board',
+  },
+  {
+    title: 'Ask the table',
+    text: 'Tap any card or action on the table for its rules; the "?" links land you back here.',
+    board: [{ fill: 'var(--wheat)', mark: '?' }],
+    label: 'A help marker',
+  },
+]
+
+// ROADMAP 18: Cath's paged quick tour, one tiny demo board per page.
+function QuickTour() {
+  const [i, setI] = useState(0)
+  const page = TOUR[i]!
+  return (
+    <section className="rules-basics settings-card tour" aria-label="Quick tour">
+      <CathArt framing="bust" expression="delighted" width={64} height={64} title="Cath" />
+      <div className="tour-body">
+        <h2>The basics, from Cath</h2>
+        <h3 className="tour-title">{page.title}</h3>
+        <DemoBoard hexes={page.board} label={page.label} />
+        <p className="tour-text">{page.text}</p>
+        <div className="tour-nav">
+          <button onClick={() => setI(i - 1)} disabled={i === 0}>Back</button>
+          <span className="tour-dots" aria-live="polite">{i + 1} / {TOUR.length}</span>
+          <button onClick={() => setI(i + 1)} disabled={i === TOUR.length - 1}>Next</button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function matches(query: string, ...fields: (string | undefined)[]): boolean {
   if (!query) return true
   const q = query.toLowerCase()
@@ -112,18 +193,7 @@ export default function RulesReference({ onClose, initialTerm }: Props) {
       />
 
       {!query && !initialTerm && (
-        <section className="rules-basics settings-card">
-          <CathArt framing="bust" expression="delighted" width={64} height={64} title="Cath" />
-          <div>
-            <h2>The basics, from Cath</h2>
-            <ol>
-              <li>Each round, every producer gets {ACTIONS_PER_ROUND} actions: sell, invest, scheme, supply and more.</li>
-              <li>Liberate regions from the Squeeze by out-building the Outlets and Buyouts on them.</li>
-              <li>Watch Rift and Lost Land: the corporations get bolder as they climb.</li>
-              <li>Tap any card or action on the table for its rules; the "?" links land you back here.</li>
-            </ol>
-          </div>
-        </section>
+        <QuickTour />
       )}
 
       {nothingFound && <p className="rules-empty">No matches for "{query}".</p>}
