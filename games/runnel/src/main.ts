@@ -11,6 +11,7 @@ import {
   utcDateString,
   type Puzzle,
 } from './engine'
+import { isMuted, playTurn, playWater, playWin, setMuted } from './sound'
 import { dailyStats, formatTime, load, save, SIZE_RADIUS, type SavedGame, type Size } from './store'
 
 type Mode = 'daily' | 'practice'
@@ -101,12 +102,15 @@ function openGame(): void {
   }
   save(data)
   board = new Board(ui.board, puzzle, { onTurn, onToggleLock })
+  wetCount = computeFlow(puzzle.cells).wet.size
   host.greet(mode === 'daily', mode === 'daily' ? dailyNumber(today) : Math.floor(Math.random() * 3) + 1)
   if (game.solved) host.react(1, true)
   if (game.solved) board.celebrate()
   render()
   if (!game.solved && game.taps > 0) resumeClock()
 }
+
+let wetCount = 0
 
 function onTurn(index: number, clockwise: boolean): void {
   if (game.solved) return
@@ -117,7 +121,11 @@ function onTurn(index: number, clockwise: boolean): void {
   game.taps++
   game.rots[index] = puzzle.cells[index]!.rot
   if (!startedAt) resumeClock()
+  const wetBefore = wetCount
   const flow = board.refresh(index)
+  wetCount = flow.wet.size
+  playTurn()
+  playWater(wetCount - wetBefore, wetCount / Math.max(1, puzzle.cells.filter((c) => c.kind !== 'stone').length))
   if (flow.solved) finish()
   else save(data)
   render()
@@ -147,6 +155,7 @@ function finish(): void {
   }
   save(data)
   board.celebrate()
+  playWin()
   ui.announce.textContent = 'Solved. Every field is watered.'
   window.setTimeout(showWin, matchMedia('(prefers-reduced-motion: reduce)').matches ? 200 : 1400)
 }
@@ -382,6 +391,12 @@ ui.sizes.addEventListener('click', (e) => {
 ui.btnNew.addEventListener('click', () => {
   if (mode === 'daily') showWin()
   else newPractice()
+})
+const soundBtn = $<HTMLButtonElement>('btn-sound')
+soundBtn.setAttribute('aria-pressed', String(!isMuted()))
+soundBtn.addEventListener('click', () => {
+  setMuted(!isMuted())
+  soundBtn.setAttribute('aria-pressed', String(!isMuted()))
 })
 $<HTMLButtonElement>('btn-help').addEventListener('click', () => ui.dlgHelp.showModal())
 $<HTMLButtonElement>('btn-stats').addEventListener('click', showStats)

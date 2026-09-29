@@ -30,6 +30,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-29 09:55 UTC:** ROADMAP 22 slice: Runnel water-arrival sparkle (droplets burst from a field as it turns wet; CSS-only, reduced-motion safe; e2e:site passes; unreleased). Still open: sound set, seasonal crops, streak calendar, fairer par.
 - **2026-09-29 10:55 UTC:** ROADMAP 22 slice: Runnel stats dialog gets a 28-day streak calendar (e2e:site passes; unreleased). Still open: sound set, seasonal crops, fairer par.
 - **2026-09-29 12:15 UTC:** ROADMAP 22 slice: Runnel seasonal crops (pools by month of the daily date, new pumpkin; e2e:site passes; unreleased). Still open: sound set, fairer par.
+- **2026-09-29 13:30 UTC:** ROADMAP 22 slice: Runnel synth sound set (turn click, rising water drip, win chime) + mute button in header (e2e:site passes; unreleased, release cap reached today). Still open: fairer par.
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or
@@ -88,6 +89,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
+- 2026-09-29: Runnel sound is synth-only in games/runnel/src/sound.ts, on by default, mute in localStorage `runnel:sound`; no release (5 today).
 - 2026-09-29 ~00:51-01:20 UTC: released `6b4e9fd` (sound, motion tokens, entrance animations, why-not work). Settings screen redesign (ROADMAP 20 part 1): native inputs kept, restyled; radio input lives inside its label's span so Playwright hit-tests pass. Credits still plain.
 - 2026-09-28 ~18:51-19:20 UTC: released the piled-up why-not work (`b2c035c` live; tag push 403 as usual). ROADMAP 11: terrain vignettes per region type and signboard labels on the map (released `2132b1f`, with ROADMAP 13's seal stamp). Playwright needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`; webkit project can't run here.
 - 2026-09-28 ~17:51-18:26 UTC: shipped 3 slices closing out ROADMAP 9's why-not scope: Supply (Outlets and

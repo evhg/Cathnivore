@@ -179,6 +179,14 @@ button {
   color: var(--ink-muted);
 }
 
+.mute-slash {
+  display: none;
+}
+
+#btn-sound[aria-pressed='false'] .mute-slash {
+  display: inline;
+}
+
 .icon-btn:hover {
   background: var(--paper-2);
 }
