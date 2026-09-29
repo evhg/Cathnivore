@@ -155,3 +155,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-28: ambient loop is opt-in (default off) so nobody gets unexpected music; needs sound on too.
 - 2026-09-28: small slice only (motion tokens); no release, daily cap already spent. First session after UTC midnight should release the backlog.
 - 2026-09-29: Settings redesign uses ROADMAP 20 slice; theme 'Match device' renamed 'Auto' (fits the segmented picker). Prettier isn't configured in-repo; use --no-semi --single-quote --print-width 120.
+- 2026-09-29: Credits restyled reusing Settings card classes; released 132ef5b.
