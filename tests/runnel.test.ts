@@ -4,6 +4,7 @@ import {
   computeFlow,
   currentMask,
   dailyNumber,
+  dropsFor,
   dailyPuzzle,
   generatePuzzle,
   rotateCell,
@@ -124,5 +125,19 @@ describe('Runnel daily', () => {
   it('gives everyone the same puzzle on a day', () => {
     expect(dailyPuzzle('2026-10-01')).toEqual(dailyPuzzle('2026-10-01'))
     expect(dailyPuzzle('2026-10-01')).not.toEqual(dailyPuzzle('2026-10-02'))
+  })
+})
+
+describe('Runnel drops', () => {
+  it('gives slack around par that scales with puzzle size', () => {
+    expect(dropsFor(10, 10)).toBe(3)
+    expect(dropsFor(12, 10)).toBe(3)
+    expect(dropsFor(13, 10)).toBe(2)
+    expect(dropsFor(14, 10)).toBe(2)
+    expect(dropsFor(15, 10)).toBe(2)
+    expect(dropsFor(40, 10)).toBe(1)
+    expect(dropsFor(44, 40)).toBe(3)
+    expect(dropsFor(45, 40)).toBe(2)
+    expect(dropsFor(3, 10)).toBe(3)
   })
 })

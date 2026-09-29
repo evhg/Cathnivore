@@ -5,6 +5,7 @@ import { Board } from './board'
 import {
   computeFlow,
   dailyNumber,
+  dropsFor,
   dailyPuzzle,
   generatePuzzle,
   rotateCell,
@@ -290,7 +291,7 @@ function showWin(): void {
 
 function shareText(): string {
   const head = mode === 'daily' ? `Runnel #${dailyNumber(today)}` : `Runnel practice (${size})`
-  const drops = game.taps <= puzzle.par ? '💧💧💧' : game.taps <= puzzle.par * 1.3 ? '💧💧' : '💧'
+  const drops = '💧'.repeat(dropsFor(game.taps, puzzle.par))
   return `${head} 🌱 Cath's fields, all watered\n⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par}) ${drops}\nhttps://cathnivore.com/runnel/`
 }
 

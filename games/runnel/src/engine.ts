@@ -396,3 +396,14 @@ function shuffle<T>(items: T[], rng: () => number): void {
     items[j] = tmp
   }
 }
+
+/**
+ * Water drops earned for a finished puzzle (1 to 3). Par is the perfect route, which a player can only
+ * hit by already knowing the answer, so the top rating allows a little slack (10%, at least 2 taps) and
+ * the middle one 50% (at least 4 taps), whatever the puzzle's size.
+ */
+export function dropsFor(taps: number, par: number): 1 | 2 | 3 {
+  if (taps <= par + Math.max(2, Math.ceil(par * 0.1))) return 3
+  if (taps <= par + Math.max(4, Math.ceil(par * 0.5))) return 2
+  return 1
+}
