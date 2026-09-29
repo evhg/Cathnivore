@@ -22,6 +22,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-29 03:00 UTC:** ROADMAP 15 done: Setup redesigned (segmented pickers, producer cards; unreleased).
 - **2026-09-29 03:20 UTC:** ROADMAP 16 slice: end-screen stat cards (unreleased).
 - **2026-09-29 04:00 UTC:** ROADMAP 18 slice: How to Play gets Cath's quick-start card + paper sections (unreleased; paged demo boards still open).
+- **2026-09-29 04:55 UTC:** ROADMAP 16 slice: end-screen "Share result" button (native share, else clipboard; unreleased).
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or

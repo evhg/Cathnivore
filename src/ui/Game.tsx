@@ -521,6 +521,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             </div>
           ))}
         </dl>
+        <ShareResultButton
+          text={`${state.result.won ? 'I liberated Marrow' : 'Marrow held out this time'} in Cathnivore: ${state.result.regionsLiberated} regions liberated in ${state.result.round} rounds.`}
+        />
         {onChapterEnd ? (
           <button
             onClick={() => {
@@ -1332,5 +1335,32 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => {}} inline />
       </aside>
     </div>
+  )
+}
+
+/** End-screen "Share result": the native share sheet where there is one, otherwise the clipboard. */
+function ShareResultButton({ text }: { text: string }) {
+  const [note, setNote] = useState('')
+  const share = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ text, url: location.origin + '/cathnivore/' })
+        return
+      }
+      await navigator.clipboard.writeText(text)
+      setNote('Copied to clipboard')
+    } catch {
+      setNote('Could not share')
+    }
+  }
+  return (
+    <>
+      <button className="secondary" onClick={share}>
+        Share result
+      </button>
+      <p className="end-screen-share-note" role="status">
+        {note}
+      </p>
+    </>
   )
 }

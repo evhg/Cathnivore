@@ -1966,3 +1966,10 @@ html.no-animations .card-enter {
 .rules-basics ol { margin: 0; padding-left: 18px; color: var(--ink-muted); }
 .rules-basics li { margin-bottom: 4px; }
 .rules-header h1 { margin: 0; flex: 1; }
+
+.end-screen-share-note {
+  min-height: 1.2em;
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
