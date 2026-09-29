@@ -1860,6 +1860,24 @@ html.native-app body {
   animation: colour-bloom 600ms ease-out;
 }
 
+/* ROADMAP 13: Squeeze — a glossy plastic film creeps over a region as Outlets arrive. */
+@keyframes plastic-creep {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.plastic-film {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: plastic-creep 450ms var(--ease-settle);
+}
+
 .lostland-overlay {
   animation: lostland-wipe 220ms var(--ease-settle);
 }
@@ -1915,6 +1933,7 @@ html.native-app body {
   .card-enter,
   .coop-stamp,
   .liberate-bloom,
+  .plastic-film,
   .lostland-overlay {
     animation: reduced-motion-fade 150ms ease-out;
   }
@@ -1928,6 +1947,7 @@ html.no-animations .enemy-doubt,
 html.no-animations .lostland-overlay,
 html.no-animations .coop-stamp,
 html.no-animations .liberate-bloom,
+html.no-animations .plastic-film,
 html.no-animations .card-enter {
   animation: none !important;
 }

@@ -333,6 +333,20 @@ export default function Map({ state, highlight, onSelect }: Props) {
               </g>
             )}
 
+            {r.outlets > 0 && (
+              <g className="plastic-film" pointerEvents="none" key={`film${r.outlets}`}>
+                <polygon
+                  points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)}
+                  fill="#dff3ff"
+                  opacity={Math.min(0.1 + r.outlets * 0.05, 0.3)}
+                />
+                <path
+                  d={`M ${x - HEX_R * 0.7},${y - HEX_R * 0.2} L ${x - HEX_R * 0.15},${y - HEX_R * 0.75} L ${x + HEX_R * 0.05},${y - HEX_R * 0.7} L ${x - HEX_R * 0.6},${y + HEX_R * 0.05} Z`}
+                  fill="#fff"
+                  opacity={0.35}
+                />
+              </g>
+            )}
             {squeezeTargets.includes(id) && (
               <g transform={`translate(${x - 30}, ${y - HEX_R * 0.4})`}>
                 <rect x={0} y={0} width={60} height={16} rx={8} fill="var(--clay-deep)" />
