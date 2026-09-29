@@ -226,6 +226,14 @@ export class Board {
     el('ellipse', { cx: 0, cy: 6, rx: S * 0.42, ry: S * 0.3, class: 'mound' }, g)
     for (const dx of [-11, 0, 11]) el('line', { x1: dx - 3, y1: -2, x2: dx + 3, y2: 14, class: 'furrow' }, g)
     const plant = el('g', { class: `crop crop-${crop}` }, g)
+    // Water-arrival sparkle: droplets that burst out of the plot when it turns wet (CSS-driven).
+    const spark = el('g', { class: 'spark' }, g)
+    for (let k = 0; k < 6; k++) {
+      const ang = (k / 6) * Math.PI * 2 + 0.4
+      const drop = el('circle', { r: k % 2 ? 2 : 3, cx: 0, cy: -4, class: 'spark-drop' }, spark)
+      drop.style.setProperty('--sx', `${(Math.cos(ang) * 24).toFixed(1)}px`)
+      drop.style.setProperty('--sy', `${(Math.sin(ang) * 20).toFixed(1)}px`)
+    }
     const sway = el('g', { class: 'sway' }, plant)
     switch (crop) {
       case 'wheat':
