@@ -53,6 +53,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-29 ~07:10 UTC (`bf2dbf8`): --ease-settle fix, end-screen map/share, How to Play quick tour, How to Play + earlier work. main==build; tag push 403 (harmless).
 - 2026-09-29 ~03:04 UTC (`b8dc0df`): Setup redesign (ROADMAP 15) + end-screen stat cards (ROADMAP 16 slice). Gates passed; live version.json matches; tag push 403 (harmless).
 - 2026-09-29 ~02:25 UTC (`132ef5b`): Settings + Credits redesign (ROADMAP 20), plus the earlier sound/motion work. Gates passed; tag push 403 (harmless).
 - 2026-09-28 ~19:14 UTC (`2132b1f`): ROADMAP 11 terrain vignettes/signboards and ROADMAP 13 liberation seal-stamp + colour bloom, plus the earlier why-not slices. First attempt was reverted by a transient curl SSL error in the release script's HTTP check; `merge -s ours origin/main` then re-release succeeded. Tag push 403 (harmless).
