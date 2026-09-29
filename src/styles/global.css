@@ -1853,6 +1853,18 @@ html.native-app body {
   transform-style: preserve-3d;
 }
 
+.card-framed.card-buying {
+  animation: card-buy 260ms var(--ease-settle) forwards;
+  pointer-events: none;
+}
+
+@keyframes card-buy {
+  to {
+    opacity: 0;
+    transform: translateY(-14px) scale(1.04);
+  }
+}
+
 @keyframes reduced-motion-fade {
   from {
     opacity: 0;

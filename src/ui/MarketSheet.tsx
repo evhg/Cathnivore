@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { MarksIcon } from './icons/ResourceIcons'
 import Tooltip from './Tooltip'
@@ -29,6 +30,21 @@ export default function MarketSheet({
   onClose(): void
   inline?: boolean
 }) {
+  // ROADMAP 17: a bought card lifts and fades ("card-buying") before the engine swaps it out of the
+  // Market; with reduced motion the purchase is immediate.
+  const [buying, setBuying] = useState<string | null>(null)
+  const buy = (id: string) => {
+    if (buying) return
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      onBuy(id)
+      return
+    }
+    setBuying(id)
+    setTimeout(() => {
+      setBuying(null)
+      onBuy(id)
+    }, 260)
+  }
   const cards = (
     <ul className="card-list">
       {state.market.map((id, slot) => {
@@ -36,7 +52,7 @@ export default function MarketSheet({
         const card = IMPROVEMENTS_BY_ID.get(id)
         if (!card) return null
         return (
-          <li key={id} className="card-enter card-framed" data-tag={card.tags[0]}>
+          <li key={id} className={`card-enter card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
             <strong>{card.name}</strong> —{' '}
             <Tooltip term="Marks">
               <MarksIcon /> {card.cost} Marks
@@ -50,7 +66,7 @@ export default function MarketSheet({
             <p className="card-text">{card.text}</p>
             {card.flavor && <p className="card-flavor">{card.flavor}</p>}
             {canBuy(id) ? (
-              <button onClick={() => onBuy(id)}>Buy</button>
+              <button onClick={() => buy(id)}>Buy</button>
             ) : (
               missingMarks(id) !== undefined && <p className="card-why-not">Need {missingMarks(id)} more Marks</p>
             )}
@@ -75,7 +91,7 @@ export default function MarketSheet({
             const card = IMPROVEMENTS_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className="card-enter card-row card-framed" data-tag={card.tags[0]}>
+              <li key={id} className={`card-enter card-row card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
                 <details>
                   <summary>
                     <strong>{card.name}</strong> ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
@@ -95,7 +111,7 @@ export default function MarketSheet({
                   </Tooltip>
                 </div>
                 {canBuy(id) ? (
-                  <button onClick={() => onBuy(id)}>Buy</button>
+                  <button onClick={() => buy(id)}>Buy</button>
                 ) : (
                   missingMarks(id) !== undefined && <p className="card-why-not">Need {missingMarks(id)} more Marks</p>
                 )}
