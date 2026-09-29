@@ -6,6 +6,7 @@ import {
   type Settings as SettingsData,
   type ThemePreference,
 } from '../platform/settings'
+import CathArt from './CathArt'
 import { clearGame, storage, CAMPAIGN_KEY } from '../platform/storage'
 
 interface Props {
@@ -33,16 +34,23 @@ export default function Settings({ onClose }: Props) {
 
   return (
     <main className="settings">
-      <h1>Settings</h1>
+      <header className="settings-header">
+        <h1>Settings</h1>
+        <CathArt framing="bust" expression="smirk" animate width={64} height={64} title="Cath" />
+      </header>
 
-      <section>
+      <section className="settings-card settings-switches">
         <label>
-          <input type="checkbox" checked={settings.animations} onChange={(e) => update({ animations: e.target.checked })} />
-          Animations
+          <input
+            type="checkbox"
+            checked={settings.animations}
+            onChange={(e) => update({ animations: e.target.checked })}
+          />
+          <span>Animations</span>
         </label>
         <label>
           <input type="checkbox" checked={settings.sound} onChange={(e) => update({ sound: e.target.checked })} />
-          Sound
+          <span>Sound</span>
         </label>
         <label>
           <input
@@ -51,7 +59,7 @@ export default function Settings({ onClose }: Props) {
             disabled={!settings.sound}
             onChange={(e) => update({ ambient: e.target.checked })}
           />
-          Ambient music
+          <span>Ambient music</span>
         </label>
         <label>
           <input
@@ -59,30 +67,39 @@ export default function Settings({ onClose }: Props) {
             checked={settings.colourBlindPatterns}
             onChange={(e) => update({ colourBlindPatterns: e.target.checked })}
           />
-          Colour-blind patterns
+          <span>Colour-blind patterns</span>
         </label>
       </section>
 
-      <section>
+      <section className="settings-card">
         <h2>Theme</h2>
-        {(['system', 'light', 'dark'] as const satisfies readonly ThemePreference[]).map((theme) => (
-          <label key={theme}>
-            <input type="radio" checked={settings.theme === theme} onChange={() => update({ theme })} />{' '}
-            {theme === 'system' ? 'Match device' : theme === 'light' ? 'Light' : 'Dark'}
-          </label>
-        ))}
+        <div className="segmented">
+          {(['system', 'light', 'dark'] as const satisfies readonly ThemePreference[]).map((theme) => (
+            <label key={theme}>
+              <span>
+                <input type="radio" checked={settings.theme === theme} onChange={() => update({ theme })} />
+                {theme === 'system' ? 'Auto' : theme === 'light' ? 'Light' : 'Dark'}
+              </span>
+            </label>
+          ))}
+        </div>
       </section>
 
-      <section>
+      <section className="settings-card">
         <h2>AI speed</h2>
-        {(['slow', 'normal', 'fast'] as const satisfies readonly AiSpeed[]).map((speed) => (
-          <label key={speed}>
-            <input type="radio" checked={settings.aiSpeed === speed} onChange={() => update({ aiSpeed: speed })} /> {speed}
-          </label>
-        ))}
+        <div className="segmented">
+          {(['slow', 'normal', 'fast'] as const satisfies readonly AiSpeed[]).map((speed) => (
+            <label key={speed}>
+              <span>
+                <input type="radio" checked={settings.aiSpeed === speed} onChange={() => update({ aiSpeed: speed })} />
+                {speed}
+              </span>
+            </label>
+          ))}
+        </div>
       </section>
 
-      <section>
+      <section className="settings-card">
         <h2>Data</h2>
         {confirmingReset ? (
           <div className="reset-confirm">
