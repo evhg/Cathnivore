@@ -158,7 +158,7 @@ Every visual item is done only when:
 12. [ ] **Map art, part 2: pieces.** The exact STYLE.md 6 pieces (awning Stall, glossy "0.99" Outlet, "SOLD" fence Buyout, "?" bubble Doubt), each with a placement animation.
 13. [ ] **Moments:** liberating a region (a seal stamp, colour blooming across the hex, Cath cheering), a Squeeze (glossy plastic creeping over a region), Lost Land, the Rift at 3 and 6, the enemy turn playback choreographed step by step, and the end of a round.
 14. [ ] **Story scenes as a graphic novel:** half-body characters with expressions (Cath from `shared/cath/`, the rest of the cast gains expressions too), speech bubbles on an illustrated backdrop per chapter's region, tap to advance line by line, and a skip option.
-15. [ ] **Setup screen:** the producers as character cards and a designed difficulty picker, with no default radio buttons or checkboxes anywhere.
+15. [x] **Setup screen:** *(2026-09-29: segmented mode/difficulty pickers, producers as cards with role and ability, paper cards; no visible radios/checkboxes.)* the producers as character cards and a designed difficulty picker, with no default radio buttons or checkboxes anywhere.
 16. [ ] **End screen:** a win or loss illustration with Cath's reaction, the final map snapshot, stat cards, and "Play again" and "Share".
 17. [ ] **Cards:** Improvements and Schemes as illustrated cards with a frame per category and an icon per card, and animations for buying and playing them. Cath's Plan cards carry her handwriting and avatar.
 18. [ ] **How to Play:** illustrated and paged, taught by Cath, with tiny demo boards.

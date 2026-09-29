@@ -19,6 +19,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-28 23:52 UTC:** ROADMAP 21 motion tokens (`--ease-settle`/`--ease-pop`) adopted by title, campaign, seal stamp (unreleased; cap reached; 11 commits waiting for the next day's first release).
 - **2026-09-29 01:00 UTC:** released the 13 waiting commits (`6b4e9fd` live; tag 403 as usual). ROADMAP 20 slice: Settings redesigned (Cath header, paper cards, switches, segmented pickers; unreleased).
 - **2026-09-29 02:00 UTC:** ROADMAP 20 done: Credits restyled to match Settings (Cath header, paper cards).
+- **2026-09-29 03:00 UTC:** ROADMAP 15 done: Setup redesigned (segmented pickers, producer cards; unreleased).
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or

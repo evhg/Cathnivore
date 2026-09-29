@@ -11,7 +11,7 @@ interface Props {
 }
 
 // SPEC 10.1/10.2 Setup screen: mode, producers, difficulty and an optional seed. Plain controls for now
-// (no visual design pass yet — see PROGRESS.md M3).
+
 export default function Setup({ onStart }: Props) {
   const [mode, setMode] = useState<Mode>('solo')
   const [producers, setProducers] = useState<ProducerId[]>(['mara', 'tomas'])
@@ -45,40 +45,56 @@ export default function Setup({ onStart }: Props) {
         <CathArt className="setup-header-cath" framing="bust" expression="smirk" animate width={56} height={56} title="Cath" />
       </header>
 
-      <section>
+      <section className="settings-card">
         <h2>Mode</h2>
-        <label>
-          <input type="radio" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo (with an AI teammate)
-        </label>
-        <label>
-          <input type="radio" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat (two humans)
-        </label>
+        <div className="segmented mode-picker">
+          <label>
+            <span>
+              <input type="radio" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo (with an AI teammate)
+            </span>
+          </label>
+          <label>
+            <span>
+              <input type="radio" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat (two humans)
+            </span>
+          </label>
+        </div>
       </section>
 
-      <section>
+      <section className="settings-card">
         <h2>Producers (pick 2)</h2>
         <button type="button" onClick={() => setProducers([...RECOMMENDED_PAIR])}>
           Use recommended pair
         </button>
-        {ALL_PRODUCER_IDS.map((id) => (
-          <label key={id}>
-            <input type="checkbox" checked={producers.includes(id)} onChange={() => toggleProducer(id)} />
-            {PRODUCERS[id].name} — {PRODUCERS[id].roleName}
-            {RECOMMENDED_PAIR.includes(id) && <span className="recommended-badge">Recommended</span>}
-          </label>
-        ))}
+        <div className="producer-grid">
+          {ALL_PRODUCER_IDS.map((id) => (
+            <label key={id} className="producer-card">
+              <input type="checkbox" checked={producers.includes(id)} onChange={() => toggleProducer(id)} />
+              <span className="pc-name">{PRODUCERS[id].name}</span>
+              <span className="pc-role">{PRODUCERS[id].roleName}</span>
+              <span className="pc-ability">{PRODUCERS[id].roleAbility}</span>
+              {RECOMMENDED_PAIR.includes(id) && <span className="recommended-badge">Recommended</span>}
+              <span className="pc-pick" aria-hidden="true">Picked</span>
+            </label>
+          ))}
+        </div>
       </section>
 
-      <section>
+      <section className="settings-card">
         <h2>Difficulty</h2>
-        {(['easy', 'normal', 'hard'] as const).map((d) => (
-          <label key={d}>
-            <input type="radio" checked={difficulty === d} onChange={() => setDifficulty(d)} /> {d}
-          </label>
-        ))}
+        <div className="segmented">
+          {(['easy', 'normal', 'hard'] as const).map((d) => (
+            <label key={d}>
+              <span>
+                <input type="radio" checked={difficulty === d} onChange={() => setDifficulty(d)} />
+                {d}
+              </span>
+            </label>
+          ))}
+        </div>
       </section>
 
-      <section>
+      <section className="settings-card">
         <h2>Seed (optional)</h2>
         <input value={seedInput} onChange={(e) => setSeedInput(e.target.value)} placeholder="random" inputMode="numeric" />
       </section>
