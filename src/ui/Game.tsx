@@ -497,22 +497,30 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           framing="bust"
           expression={state.result.won ? 'delighted' : 'worried'}
           animate
-          width={96}
-          height={96}
+          width={128}
+          height={128}
           title={state.result.won ? 'Cath, delighted' : 'Cath, undeterred'}
         />
         <h1>{state.result.won ? 'You liberated Marrow.' : 'Not this time.'}</h1>
-        <p>
-          {state.result.won ? 'Win' : `Loss: ${LOSS_REASON_LABEL[state.result.lossReason!]}`} — {state.result.regionsLiberated} regions
-          liberated, round {state.result.round}.
+        <p className="end-screen-verdict">
+          {state.result.won ? 'Win' : `Loss: ${LOSS_REASON_LABEL[state.result.lossReason!]}`}
         </p>
         <p className="end-screen-story">
           {state.result.won ? WIN_LINE : LOSS_LINE[state.result.lossReason!]}
         </p>
-        <p className="end-screen-stats">
-          {state.result.cardsBought} card{state.result.cardsBought === 1 ? '' : 's'} bought,{' '}
-          {state.result.schemesPlayed} scheme{state.result.schemesPlayed === 1 ? '' : 's'} played.
-        </p>
+        <dl className="end-screen-stats">
+          {[
+            ['Regions liberated', state.result.regionsLiberated],
+            ['Round', state.result.round],
+            ['Cards bought', state.result.cardsBought],
+            ['Schemes played', state.result.schemesPlayed],
+          ].map(([label, value]) => (
+            <div key={label} className="stat-card">
+              <dd>{value}</dd>
+              <dt>{label}</dt>
+            </div>
+          ))}
+        </dl>
         {onChapterEnd ? (
           <button
             onClick={() => {

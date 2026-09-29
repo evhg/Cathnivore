@@ -1254,10 +1254,41 @@ button.destructive {
   max-width: 40ch;
 }
 
-.end-screen-stats {
+.end-screen-verdict {
+  margin: 0;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   font-size: 13px;
-  color: var(--ink-muted);
 }
+
+.end-screen-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  grid-auto-rows: 1fr;
+  width: 100%;
+  max-width: 360px;
+  margin: 4px 0;
+}
+.stat-card {
+  justify-content: center;
+  display: flex;
+  flex-direction: column-reverse;
+  padding: 10px 6px;
+  border: 1px solid var(--soil);
+  border-radius: 12px;
+  background: var(--paper-2);
+  animation: stat-in 0.4s var(--ease-pop, ease) both;
+}
+.stat-card:nth-child(2) { animation-delay: 0.08s; }
+.stat-card:nth-child(3) { animation-delay: 0.16s; }
+.stat-card:nth-child(4) { animation-delay: 0.24s; }
+.stat-card dd { margin: 0; font-size: 28px; font-weight: 800; font-family: var(--font-display, inherit); }
+.stat-card dt { font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+@keyframes stat-in { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
+@media (prefers-reduced-motion: reduce) { .stat-card { animation: none; } }
+html.no-animations .stat-card { animation: none; }
 
 /* Campaign chapter list (SPEC 10.1) */
 .campaign {
