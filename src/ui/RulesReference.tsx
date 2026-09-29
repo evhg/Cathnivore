@@ -7,6 +7,7 @@ import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { REGIONS } from '../content/map'
 import { ACTION_TERMS, GLOSSARY_TERMS, entryDomId, type GlossaryEntry } from '../content/terms'
 import { ACTIONS_PER_ROUND } from '../engine/region'
+import CathArt from './CathArt'
 
 interface Props {
   onClose(): void
@@ -23,7 +24,7 @@ const TERMS = GLOSSARY_TERMS
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rules-section">
+    <section className="rules-section settings-card">
       <h2>{title}</h2>
       {children}
     </section>
@@ -109,6 +110,21 @@ export default function RulesReference({ onClose, initialTerm }: Props) {
         onChange={(e) => setQuery(e.target.value)}
         aria-label="Search the rules reference"
       />
+
+      {!query && !initialTerm && (
+        <section className="rules-basics settings-card">
+          <CathArt framing="bust" expression="delighted" width={64} height={64} title="Cath" />
+          <div>
+            <h2>The basics, from Cath</h2>
+            <ol>
+              <li>Each round, every producer gets {ACTIONS_PER_ROUND} actions: sell, invest, scheme, supply and more.</li>
+              <li>Liberate regions from the Squeeze by out-building the Outlets and Buyouts on them.</li>
+              <li>Watch Rift and Lost Land: the corporations get bolder as they climb.</li>
+              <li>Tap any card or action on the table for its rules; the "?" links land you back here.</li>
+            </ol>
+          </div>
+        </section>
+      )}
 
       {nothingFound && <p className="rules-empty">No matches for "{query}".</p>}
 

@@ -1959,3 +1959,10 @@ html.no-animations .card-enter {
 .producer-card:has(input:checked) .pc-pick { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .setup .producer-card { transition: none; } }
 .producer-card .recommended-badge { color: var(--ink); border-color: var(--ink); }
+
+/* How to Play: Cath's quick-start card (ROADMAP 18 slice) */
+.rules-basics { display: flex; gap: 12px; align-items: flex-start; }
+.rules-basics h2 { margin: 2px 0 6px; }
+.rules-basics ol { margin: 0; padding-left: 18px; color: var(--ink-muted); }
+.rules-basics li { margin-bottom: 4px; }
+.rules-header h1 { margin: 0; flex: 1; }
