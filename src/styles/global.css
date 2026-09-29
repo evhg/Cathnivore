@@ -773,7 +773,7 @@ h3 {
   margin: 0;
   font-style: italic;
   font-size: 14px;
-  animation: cath-line-in 200ms var(--ease-settle) both;
+  animation: cath-line-in 200ms ease-out both;
 }
 
 @keyframes cath-line-in {
@@ -1343,72 +1343,21 @@ html.no-animations .stat-card { animation: none; }
   padding: 24px 16px;
 }
 
-.scene-backlog {
+.scene-lines {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  opacity: 0.6;
-  font-size: 14px;
+  gap: 8px;
 }
 
-.scene-log-line {
-  margin: 0;
-}
-
-.scene-stage {
+.scene-line {
   display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  animation: scene-in var(--dur-md, 240ms) var(--ease-settle, ease-out) both;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .scene-portrait {
   flex-shrink: 0;
   line-height: 0;
-}
-
-.scene-bubble {
-  position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  background: var(--paper, #fff8ea);
-  color: var(--ink, inherit);
-  border: 2px solid var(--soil, #5a4632);
-  border-radius: 16px 16px 16px 4px;
-  cursor: pointer;
-}
-
-.scene-text {
-  font-size: 17px;
-  line-height: 1.4;
-}
-
-.scene-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.scene-progress {
-  margin-right: auto;
-  font-size: 13px;
-  opacity: 0.7;
-}
-
-.scene-skip {
-  opacity: 0.75;
-}
-
-@keyframes scene-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scene-stage { animation: none; }
 }
 
 .scene-speaker {
@@ -1756,13 +1705,13 @@ html.native-app body {
 .stall-piece {
   transform-box: fill-box;
   transform-origin: center;
-  animation: stall-drop 220ms var(--ease-settle);
+  animation: stall-drop 220ms ease-out;
 }
 
 .enemy-piece {
   transform-box: fill-box;
   transform-origin: center;
-  animation: piece-delivery 200ms var(--ease-settle);
+  animation: piece-delivery 200ms ease-out;
 }
 
 /* ROADMAP 12: each enemy piece arrives its own way, so a glance at the map says what just landed. Same
@@ -1783,9 +1732,9 @@ html.native-app body {
   60% { transform: translateY(-2px) rotate(5deg) scale(1.05); opacity: 1; }
   100% { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
 }
-.enemy-outlet { animation: outlet-pop 220ms var(--ease-pop); }
-.enemy-buyout { animation: buyout-slam 240ms var(--ease-pop); }
-.enemy-doubt { animation: doubt-float 260ms var(--ease-pop); }
+.enemy-outlet { animation: outlet-pop 220ms ease-out; }
+.enemy-buyout { animation: buyout-slam 240ms ease-out; }
+.enemy-doubt { animation: doubt-float 260ms ease-out; }
 .map-legend-icon .enemy-outlet,
 .map-legend-icon .enemy-buyout,
 .map-legend-icon .enemy-doubt { animation: none; }
@@ -1830,11 +1779,11 @@ html.native-app body {
 }
 
 .lostland-overlay {
-  animation: lostland-wipe 220ms var(--ease-settle);
+  animation: lostland-wipe 220ms ease-out;
 }
 
 .card-enter {
-  animation: card-flip 220ms var(--ease-settle);
+  animation: card-flip 220ms ease-out;
   transform-style: preserve-3d;
 }
 

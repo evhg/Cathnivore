@@ -10,22 +10,8 @@ const APOTHEM = (S * Math.sqrt(3)) / 2
 const TURN_MS = 150
 const CASCADE_MS = 55
 
-type Crop = 'wheat' | 'cabbage' | 'carrot' | 'sunflower' | 'pumpkin'
+type Crop = 'wheat' | 'cabbage' | 'carrot' | 'sunflower'
 const CROPS: Crop[] = ['wheat', 'cabbage', 'carrot', 'sunflower']
-/** Crops by season (from the seed's month when it is a daily date; practice seeds use the default pool). */
-const SEASON_CROPS: Record<string, Crop[]> = {
-  spring: ['carrot', 'cabbage', 'wheat'],
-  summer: ['sunflower', 'wheat', 'carrot'],
-  autumn: ['pumpkin', 'wheat', 'cabbage'],
-  winter: ['cabbage', 'carrot', 'pumpkin'],
-}
-function cropsForSeed(seed: string): Crop[] {
-  const m = /^\d{4}-(\d{2})-\d{2}$/.exec(seed)
-  if (!m) return CROPS
-  const month = Number(m[1])
-  const season = month >= 3 && month <= 5 ? 'spring' : month <= 8 && month >= 6 ? 'summer' : month >= 9 && month <= 11 ? 'autumn' : 'winter'
-  return SEASON_CROPS[season]!
-}
 
 export interface BoardHandlers {
   onTurn(index: number, clockwise: boolean): void
@@ -235,20 +221,11 @@ export class Board {
   }
 
   private drawField(root: SVGGElement, index: number): void {
-    const pool = cropsForSeed(this.puzzle.seed)
-    const crop = pool[hashString(`${this.puzzle.seed}:${index}`) % pool.length]!
+    const crop = CROPS[hashString(`${this.puzzle.seed}:${index}`) % CROPS.length]!
     const g = el('g', { class: 'field-plot' }, root)
     el('ellipse', { cx: 0, cy: 6, rx: S * 0.42, ry: S * 0.3, class: 'mound' }, g)
     for (const dx of [-11, 0, 11]) el('line', { x1: dx - 3, y1: -2, x2: dx + 3, y2: 14, class: 'furrow' }, g)
     const plant = el('g', { class: `crop crop-${crop}` }, g)
-    // Water-arrival sparkle: droplets that burst out of the plot when it turns wet (CSS-driven).
-    const spark = el('g', { class: 'spark' }, g)
-    for (let k = 0; k < 6; k++) {
-      const ang = (k / 6) * Math.PI * 2 + 0.4
-      const drop = el('circle', { r: k % 2 ? 2 : 3, cx: 0, cy: -4, class: 'spark-drop' }, spark)
-      drop.style.setProperty('--sx', `${(Math.cos(ang) * 24).toFixed(1)}px`)
-      drop.style.setProperty('--sy', `${(Math.sin(ang) * 20).toFixed(1)}px`)
-    }
     const sway = el('g', { class: 'sway' }, plant)
     switch (crop) {
       case 'wheat':
@@ -283,13 +260,6 @@ export class Board {
           }, sway)
         }
         el('circle', { cx: 0, cy: -16, r: 5.5, class: 'seedhead' }, sway)
-        break
-      case 'pumpkin':
-        el('path', { d: 'M0 -4 Q6 -14 12 -12', class: 'frond' }, sway)
-        el('ellipse', { cx: -6, cy: 0, rx: 8, ry: 10, class: 'pumpkin-side' }, sway)
-        el('ellipse', { cx: 6, cy: 0, rx: 8, ry: 10, class: 'pumpkin-side' }, sway)
-        el('ellipse', { cx: 0, cy: 0, rx: 8, ry: 11, class: 'pumpkin' }, sway)
-        el('line', { x1: 0, y1: -10, x2: 1, y2: -15, class: 'stalk' }, sway)
         break
     }
     plant.style.setProperty('--sway-delay', `${(hashString(crop + index) % 900) / 1000}s`)

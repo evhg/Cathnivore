@@ -25,11 +25,6 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-29 04:55 UTC:** ROADMAP 16 slice: end-screen "Share result" button (native share, else clipboard; unreleased).
 - **2026-09-29 06:00 UTC:** ROADMAP 16: end screen shows the final map snapshot (unreleased).
 - **2026-09-29 07:30 UTC:** fixed `--ease-settle` self-reference (title/campaign/seal animations were invalid); ROADMAP 18 paged quick tour with demo boards (unreleased).
-- **2026-09-29 08:00 UTC:** ROADMAP 21 audit slice: game-screen piece/card/overlay animations now use the shared easing tokens (unreleased; check passes).
-- **2026-09-29 09:00 UTC:** ROADMAP 14 slice: Scene screen is now line-by-line (96px portrait + speech bubble, tap/Next, dimmed backlog; Continue still skips; unreleased). Still open: per-chapter backdrops, more cast expressions.
-- **2026-09-29 09:55 UTC:** ROADMAP 22 slice: Runnel water-arrival sparkle (droplets burst from a field as it turns wet; CSS-only, reduced-motion safe; e2e:site passes; unreleased). Still open: sound set, seasonal crops, streak calendar, fairer par.
-- **2026-09-29 10:55 UTC:** ROADMAP 22 slice: Runnel stats dialog gets a 28-day streak calendar (e2e:site passes; unreleased). Still open: sound set, seasonal crops, fairer par.
-- **2026-09-29 12:15 UTC:** ROADMAP 22 slice: Runnel seasonal crops (pools by month of the daily date, new pumpkin; e2e:site passes; unreleased). Still open: sound set, fairer par.
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or
@@ -58,7 +53,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
-- 2026-09-29 ~07:10 UTC (`bf2dbf8`): --ease-settle fix, end-screen map/share, How to Play quick tour, How to Play + earlier work. main==build; tag push 403 (harmless).
 - 2026-09-29 ~03:04 UTC (`b8dc0df`): Setup redesign (ROADMAP 15) + end-screen stat cards (ROADMAP 16 slice). Gates passed; live version.json matches; tag push 403 (harmless).
 - 2026-09-29 ~02:25 UTC (`132ef5b`): Settings + Credits redesign (ROADMAP 20), plus the earlier sound/motion work. Gates passed; tag push 403 (harmless).
 - 2026-09-28 ~19:14 UTC (`2132b1f`): ROADMAP 11 terrain vignettes/signboards and ROADMAP 13 liberation seal-stamp + colour bloom, plus the earlier why-not slices. First attempt was reverted by a transient curl SSL error in the release script's HTTP check; `merge -s ours origin/main` then re-release succeeded. Tag push 403 (harmless).
