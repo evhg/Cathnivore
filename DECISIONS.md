@@ -165,3 +165,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-29: release's first attempt reverted on a 30s curl timeout (site was live); merge -s ours + re-release worked. Runnel crops now seasonal.
 - 2026-09-29: Runnel 'fairer par' = slack in the drop rating (par is already the exact optimum, so it stays; no sim needed).
 - 2026-09-29: Card buy animation delays onBuy by 260ms (skipped under reduced motion); no release, cap reached (4 today).
+- 2026-09-29: scene backdrops are CSS gradients keyed by chapter id (no art assets); no release, cap reached.

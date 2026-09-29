@@ -36,6 +36,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-29 16:30 UTC:** ROADMAP 17 slice: Market card buy animation (lift + fade before the swap, instant with reduced motion; check + Buy e2e pass; unreleased, cap reached).
 - **2026-09-29 17:30 UTC:** ROADMAP 17 slice: per-category icon (cow/wheat/boat/house/megaphone/flask) on Market cards; check + a11y/no-scroll/quick-game e2e pass (unreleased, cap reached).
 - **2026-09-29 18:30 UTC:** ROADMAP 17 slice: Cath's Plan cards get a plum frame, Cath's face avatar and a handwriting-style line (check + a11y/no-scroll/disabled e2e pass; unreleased, cap reached).
+- **2026-09-29 19:00 UTC:** ROADMAP 14 slice: per-chapter scene backdrops (tinted horizon gradients per chapter id; check passes; unreleased, cap reached). Still open: more cast expressions.
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or

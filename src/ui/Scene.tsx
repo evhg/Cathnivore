@@ -6,7 +6,7 @@ import Portrait from './portraits/Portrait'
 // SPEC 10.1: the Scene (dialogue) screen, as a small graphic novel (ROADMAP 14): the current speaker's
 // portrait beside a speech bubble, tap the bubble or "Next" to reveal the next line, with earlier lines
 // kept as a dimmed backlog. "Continue" is always available and leaves the scene (it doubles as skip).
-export default function Scene({ scene, onContinue }: { scene: SceneData; onContinue: () => void }) {
+export default function Scene({ scene, onContinue, chapterId }: { scene: SceneData; onContinue: () => void; chapterId?: string }) {
   const [shown, setShown] = useState(1)
   const last = scene.lines.length
   const done = shown >= last
@@ -15,7 +15,7 @@ export default function Scene({ scene, onContinue }: { scene: SceneData; onConti
   const key = current ? portraitKeyFor(current.speaker) : null
 
   return (
-    <main className="scene">
+    <main className={`scene${chapterId ? ` scene-bg-${chapterId}` : ''}`}>
       <div className="scene-backlog" aria-live="polite">
         {scene.lines.slice(0, shown - 1).map((l, i) => (
           <p key={i} className="scene-log-line">

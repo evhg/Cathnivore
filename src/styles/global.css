@@ -1424,6 +1424,15 @@ html.no-animations .stat-card { animation: none; }
   opacity: 0.75;
 }
 
+/* Per-chapter backdrops (ROADMAP 14): a soft horizon wash tinted to the chapter's region. */
+.scene[class*='scene-bg-'] { background-repeat: no-repeat; background-size: 100% 100%; }
+.scene-bg-fresh-meat { background-image: linear-gradient(180deg, rgba(255, 214, 150, 0.35), transparent 45%, rgba(120, 160, 80, 0.3)); }
+.scene-bg-word-of-mouth { background-image: linear-gradient(180deg, rgba(190, 170, 220, 0.3), transparent 45%, rgba(230, 170, 120, 0.28)); }
+.scene-bg-growing-season { background-image: linear-gradient(180deg, rgba(160, 210, 240, 0.35), transparent 45%, rgba(210, 180, 70, 0.32)); }
+.scene-bg-the-plan { background-image: linear-gradient(180deg, rgba(150, 150, 170, 0.35), transparent 50%, rgba(90, 70, 90, 0.25)); }
+.scene-bg-friends-in-low-places { background-image: linear-gradient(180deg, rgba(60, 60, 90, 0.4), transparent 55%, rgba(40, 40, 60, 0.3)); }
+.scene-bg-kingsmarket { background-image: linear-gradient(180deg, rgba(240, 190, 90, 0.4), transparent 45%, rgba(170, 110, 80, 0.3)); }
+
 @keyframes scene-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }

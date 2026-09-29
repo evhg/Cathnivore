@@ -306,7 +306,7 @@ export default function App() {
       continueTo()
       return null
     }
-    return <Scene scene={scene} onContinue={continueTo} />
+    return <Scene scene={scene} onContinue={continueTo} chapterId={screen.chapter.id} />
   }
 
   if (screen.name === 'chapterGame') {
