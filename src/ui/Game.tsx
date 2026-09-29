@@ -1048,6 +1048,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // via CSS; below that the phone layout's toggle buttons and modal sheets (below) still work unchanged.
   return (
     <div className="game-layout">
+      {(lostLandTick > 0 || riftTick > 0) && (
+        <div key={`${lostLandTick}-${riftTick}`} className="danger-flash" aria-hidden="true" />
+      )}
       {/* tabIndex so axe's "scrollable-region-focusable" rule is satisfied unconditionally, not just when
           the panel happens to contain a focusable button — the desktop column scrolls (overflow-y: auto,
           SPEC 10.3), and at some game states (nothing affordable yet in Market/Cath's Plan) it can have no
