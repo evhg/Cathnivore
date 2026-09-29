@@ -36,7 +36,7 @@ export default function MarketSheet({
         const card = IMPROVEMENTS_BY_ID.get(id)
         if (!card) return null
         return (
-          <li key={id} className="card-enter">
+          <li key={id} className="card-enter card-framed" data-tag={card.tags[0]}>
             <strong>{card.name}</strong> —{' '}
             <Tooltip term="Marks">
               <MarksIcon /> {card.cost} Marks
@@ -75,7 +75,7 @@ export default function MarketSheet({
             const card = IMPROVEMENTS_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className="card-enter card-row">
+              <li key={id} className="card-enter card-row card-framed" data-tag={card.tags[0]}>
                 <details>
                   <summary>
                     <strong>{card.name}</strong> ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})

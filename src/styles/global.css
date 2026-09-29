@@ -522,6 +522,21 @@ h3 {
   padding: 10px 12px;
 }
 
+/* ROADMAP 17: a frame per card category. A coloured top band and a soft tinted paper wash; the colour is
+   decoration only (the tag names stay in the text), so contrast is unaffected. */
+.card-list .card-framed {
+  --frame: var(--rule);
+  border-top: 5px solid var(--frame);
+  background: color-mix(in srgb, var(--frame) 10%, var(--surface));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.card-framed[data-tag='pasture'] { --frame: var(--pasture); }
+.card-framed[data-tag='crop'] { --frame: var(--wheat); }
+.card-framed[data-tag='coast'] { --frame: var(--sea); }
+.card-framed[data-tag='community'] { --frame: var(--clay); }
+.card-framed[data-tag='media'] { --frame: var(--p-sol); }
+.card-framed[data-tag='science'] { --frame: var(--p-ines); }
+
 .card-list .card-empty {
   border-style: dashed;
   min-height: 24px;

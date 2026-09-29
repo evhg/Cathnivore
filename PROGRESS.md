@@ -32,6 +32,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-29 12:15 UTC:** ROADMAP 22 slice: Runnel seasonal crops (pools by month of the daily date, new pumpkin; e2e:site passes; unreleased). Still open: sound set, fairer par.
 - **2026-09-29 13:30 UTC:** ROADMAP 22 slice: Runnel synth sound set (turn click, rising water drip, win chime) + mute button in header (e2e:site passes; unreleased, release cap reached today). Still open: fairer par.
 - **2026-09-29 14:15 UTC:** ROADMAP 22 slice: Runnel fairer drop rating (`dropsFor`: 3 drops within par+10%/2 taps, 2 within +50%/4; unit-tested; `npm run check` passes; unreleased, release cap reached). Item 22 now complete.
+- **2026-09-29 15:30 UTC:** ROADMAP 17 slice: Market cards get a per-category coloured frame (pasture/crop/coast/community/media/science); check + chromium a11y/no-scroll e2e pass (webkit projects unavailable in sandbox); unreleased, cap reached.
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or
