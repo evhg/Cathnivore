@@ -158,3 +158,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-29: Credits restyled reusing Settings card classes; released 132ef5b.
 - 2026-09-29: Setup redesign reuses Settings' .segmented/.settings-card; producers are label-wrapped checkbox cards (inputs stay real). Playwright here needs PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome.
 - 2026-09-29: released b8dc0df (Setup + end screen).
+- 2026-09-29: How to Play slice kept small (quick-start card, paper sections); no release, only one slice this hour.
