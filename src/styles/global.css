@@ -1973,3 +1973,19 @@ html.no-animations .card-enter {
   font-size: 0.85rem;
   opacity: 0.75;
 }
+
+.end-screen-map {
+  width: min(100%, 320px);
+  margin: 0.5rem auto;
+  padding: 0.5rem;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  transform: rotate(-1deg);
+  pointer-events: none;
+}
+.end-screen-map .map {
+  width: 100%;
+  height: auto;
+  display: block;
+}

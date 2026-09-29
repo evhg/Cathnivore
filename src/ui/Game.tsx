@@ -508,6 +508,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <p className="end-screen-story">
           {state.result.won ? WIN_LINE : LOSS_LINE[state.result.lossReason!]}
         </p>
+        <div className="end-screen-map">
+          <RegionMap state={state} />
+        </div>
         <dl className="end-screen-stats">
           {[
             ['Regions liberated', state.result.regionsLiberated],
