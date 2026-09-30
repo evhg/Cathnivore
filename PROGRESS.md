@@ -50,6 +50,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-30 05:15 UTC:** ROADMAP 23 slice: Runnel reservoirs (fixed pond taking water from any side; Tue/Thu 1, Sun 2 from 2026-10-02; unit-tested solvable; check + e2e:site pass; unreleased). Still open in 23: bridges.
 - **2026-09-30 06:30 UTC:** ROADMAP 23 slice: Runnel bridges (two crossing channels that don't mix; plank-deck art; Mon/Sat 1, Fri 2 from 2026-10-03; unit-tested solvable + non-mixing; check + e2e:site pass; art not eyeballed, no bridge on today's daily). Item 23 listed scope complete.
 - **2026-09-30 07:00 UTC:** released `4173659` (live confirmed via version.json; tag 403 as usual). ROADMAP 24 slice: landing Cathnivore card is a live miniature (hexes turn green in turn, Cath's face in the middle; reduced-motion static; e2e:site passes; unreleased). Still open in 24: frame-time check on real phones.
+- **2026-09-30 08:15 UTC:** ROADMAP 11 slice: per-region terrain variation (id-hashed mirror + small extras: barn, haystack, gulls; check passes, game screenshot eyeballed; unreleased).
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or

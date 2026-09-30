@@ -229,7 +229,12 @@ export function CoopMarkerIcon() {
 // ROADMAP 11: a small painted-terrain vignette per region type, tucked into the hex's upper flanks where
 // no piece or label ever sits. Flat fills, 1.5 ink outline (STYLE.md 2), and each is a distinct silhouette
 // (bushes, furrows, boat, tower) so it survives the greyscale shape test as well as the texture does.
-function TerrainArt({ type }: { type: RegionType }) {
+function TerrainArt({ type, id }: { type: RegionType; id: string }) {
+  // Per-region variation: a stable hash of the id picks a variant so neighbours of one type don't look cloned.
+  let h = 0
+  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  const flip = h % 2 === 0 ? 1 : -1
+  const extra = (h >> 1) % 3
   const line = { stroke: 'var(--ink)', strokeWidth: 1.5, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
   if (type === 'pasture') {
     const bush = (cx: number) => (
@@ -240,11 +245,23 @@ function TerrainArt({ type }: { type: RegionType }) {
         {...line}
       />
     )
-    return <g opacity={0.85}>{bush(-40)}{bush(38)}</g>
+    return (
+      <g opacity={0.85}>
+        {bush(-40)}
+        {bush(38)}
+        {extra === 0 && (
+          <g transform={`translate(${-6 * flip},-26)`}>
+            <path d="M-8,2 h14 v-6 h-4 l-2,-3 h-5 z" fill="var(--paper)" {...line} strokeWidth={1.2} />
+            <path d="M-6,2 v4 M4,2 v4" {...line} strokeWidth={1.2} />
+          </g>
+        )}
+      </g>
+    )
   }
   if (type === 'crop') {
     return (
-      <g fill="none" {...line} opacity={0.75}>
+      <g fill="none" {...line} opacity={0.75} transform={`scale(${flip},1)`}>
+        {extra === 0 && <path d="M-6,-30 q6,-10 12,0 z" fill="var(--clay)" />}
         {[-1, 1].map((d) => (
           <g key={d}>
             <path d={`M${d * 24},-4 Q${d * 36},-16 ${d * 52},-28`} />
@@ -262,7 +279,13 @@ function TerrainArt({ type }: { type: RegionType }) {
         <path d="M0,0 L0,-20 M0,-20 L11,-2 L0,-2 Z" fill="var(--paper)" {...line} />
       </g>
     )
-    return <g opacity={0.9}>{boat(-42, 1)}{boat(42, 0.75)}</g>
+    return (
+      <g opacity={0.9}>
+        {boat(-42 * flip, 1)}
+        {boat(42 * flip, 0.75)}
+        {extra === 0 && <path d="M-6,-34 q3,-5 6,0 q3,-5 6,0" fill="none" {...line} strokeWidth={1.2} />}
+      </g>
+    )
   }
   return (
     <g opacity={0.9}>
@@ -308,7 +331,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
             />
             <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill={`url(#${REGION_PATTERN_ID[def.type]})`} />
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art">
-              <TerrainArt type={def.type} />
+              <TerrainArt type={def.type} id={id} />
             </g>
             {r.liberated && (
               <polygon
