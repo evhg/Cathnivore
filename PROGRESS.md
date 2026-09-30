@@ -30,6 +30,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-30 ~12:10 UTC (`2350369`): Hedgerow act 2 (levels 11-20, Market Stall, trucks, Convoy boss). Live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~11:00 UTC (`6bf3253`): Hedgerow act 1 (levels 1-10, Beehive, Van boss, Cath's pie) + synth sound. Live version.json matches, /hedgerow/ 200; release script's tag push 403 (harmless).
 - 2026-09-30 ~10:05 UTC (`4baaa06`): Hedgerow H1 (engine, 3 levels, /hedgerow/, landing card). Gates passed; HTTP check passed; tag push 403 (harmless).
 - 2026-09-29 ~12:30 UTC (`5304060`): Runnel streak calendar, sparkle, seasonal crops, story scenes, etc. First attempt reverted on a curl timeout; retry landed (live version.json matches, main==build); tag 403.
