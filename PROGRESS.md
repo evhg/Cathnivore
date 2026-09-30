@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** **Hedgerow H2** (act 1 complete: levels 7-10, Acquisition Van miniboss, upgrade UI polish; levels 4-6 and the Beehive are done; H1 shipped 2026-09-30). Read `docs/design/hedgerow.md`. Keep polishing Cathnivore items 9-13 alongside when a Hedgerow slice is waiting on something.
+- **Next:** **Hedgerow H2 finish + H3.** Act 1 (levels 1-10), the Beehive, the Acquisition Van boss and Cath's pie are on `build`, unreleased (release cap reached today). Then sound, upgrade-UI polish, then act 2 (Highmoor, Market Stall). Read `docs/design/hedgerow.md`.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked
@@ -30,6 +30,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-30 ~10:05 UTC (`4baaa06`): Hedgerow H1 (engine, 3 levels, /hedgerow/, landing card). Gates passed; HTTP check passed; tag push 403 (harmless).
 - 2026-09-29 ~12:30 UTC (`5304060`): Runnel streak calendar, sparkle, seasonal crops, story scenes, etc. First attempt reverted on a curl timeout; retry landed (live version.json matches, main==build); tag 403.
 - 2026-09-29 ~07:10 UTC (`bf2dbf8`): --ease-settle fix, end-screen map/share, How to Play quick tour, How to Play + earlier work. main==build; tag push 403 (harmless).
 - 2026-09-29 ~03:04 UTC (`b8dc0df`): Setup redesign (ROADMAP 15) + end-screen stat cards (ROADMAP 16 slice). Gates passed; live version.json matches; tag push 403 (harmless).
@@ -56,6 +57,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-09-30 ~10:15 UTC (same session): released H1 (`4baaa06`, live, /hedgerow/ 200; tag 403). Then levels 4-10, Beehive, boss, Cath's pie on `build` (unreleased). Bot stars L1-10: 3,3,3,2,2,1,3,2,2,1. e2e:site needs a fresh port 4175: kill any stray `vite preview` or it serves stale dist-site.
 - 2026-09-30 ~09:51 UTC: Hedgerow H1 built (`games/hedgerow/`: pure 30 Hz engine, canvas renderer, levels 1-3 with story, saves, landing card, site e2e, bot test). Balance: van 98hp/drone 35hp; greedy bot wins all 3 with 3 stars, a no-build player loses.
 - 2026-09-29: Runnel sound is synth-only in games/runnel/src/sound.ts, on by default, mute in localStorage `runnel:sound`; no release (5 today).
 - 2026-09-29 ~00:51-01:20 UTC: released `6b4e9fd` (sound, motion tokens, entrance animations, why-not work). Settings screen redesign (ROADMAP 20 part 1): native inputs kept, restyled; radio input lives inside its label's span so Playwright hit-tests pass. Credits still plain.

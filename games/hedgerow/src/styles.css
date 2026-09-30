@@ -81,7 +81,8 @@ button { font: inherit; color: inherit; }
 .panel-title { color: var(--ink); font-weight: 700; }
 .panel-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .controls { display: flex; gap: 8px; }
-.controls .btn:first-child { flex: 1; }
+.controls .btn { padding: 0 10px; font-size: 14px; white-space: nowrap; min-width: 0; }
+.controls .btn:first-child { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 
 .btn { min-height: 46px; padding: 0 18px; border-radius: 14px; border: 0; background: var(--pasture); color: #fff; font-weight: 700; cursor: pointer; }
 .btn:disabled { opacity: 0.45; cursor: default; }

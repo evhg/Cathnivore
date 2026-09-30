@@ -5,7 +5,7 @@
 import { ENEMIES, TOWERS, laneCells, pointAt, towerAt, type Game, type EnemyKind, type GameEvent, type TowerKind } from './engine'
 
 interface Fx {
-  kind: 'turnip' | 'float' | 'puff' | 'swarm'
+  kind: 'turnip' | 'float' | 'puff' | 'swarm' | 'pie'
   x: number
   y: number
   toX: number
@@ -57,6 +57,7 @@ export class Renderer {
   feed(events: GameEvent[]): void {
     for (const e of events) {
       if (e.type === 'shot') this.fx.push({ kind: e.kind === 'beehive' ? 'swarm' : 'turnip', x: e.fromX, y: e.fromY, toX: e.toX, toY: e.toY, age: 0, life: 0.18 })
+      else if (e.type === 'pie') this.fx.push({ kind: 'pie', x: 0, y: 0, toX: 0, toY: 0, age: 0, life: 0.7 })
       else if (e.type === 'kill') {
         this.fx.push({ kind: 'float', x: e.x, y: e.y, toX: e.x, toY: e.y - 0.8, age: 0, life: 0.9, text: `+${e.bounty}` })
         this.fx.push({ kind: 'puff', x: e.x, y: e.y, toX: e.x, toY: e.y, age: 0, life: 0.35 })
@@ -144,7 +145,7 @@ export class Renderer {
 
     for (const e of game.enemies) {
       const p = pointAt(level.path, e.dist)
-      this.enemy(e.kind, px(p.x), px(p.y), s, e.hp / ENEMIES[e.kind].hp, e.slowed)
+      this.enemy(e.kind, px(p.x), px(p.y), s, e.hp / ENEMIES[e.kind].hp, e.slowed, e.stun > 0)
     }
 
     // Effects.
@@ -161,6 +162,11 @@ export class Renderer {
         ctx.arc(px(x), px(y), s * 0.1, 0, Math.PI * 2)
         ctx.fill()
         ctx.stroke()
+      } else if (f.kind === 'pie') {
+        ctx.globalAlpha = 0.5 * (1 - t)
+        ctx.fillStyle = '#fff6d6'
+        ctx.fillRect(0, 0, level.cols * s, level.rows * s)
+        ctx.globalAlpha = 1
       } else if (f.kind === 'swarm') {
         ctx.fillStyle = '#f2c94c'
         ctx.strokeStyle = '#2b2320'
@@ -282,7 +288,7 @@ export class Renderer {
     }
   }
 
-  private enemy(kind: EnemyKind, x: number, y: number, s: number, hp: number, slowed: boolean): void {
+  private enemy(kind: EnemyKind, x: number, y: number, s: number, hp: number, slowed: boolean, stunned: boolean): void {
     const { ctx } = this
     ctx.lineWidth = 2.5
     ctx.strokeStyle = '#2b2320'
@@ -338,6 +344,18 @@ export class Renderer {
       ctx.fillRect(x - s * 0.3, y - s * 0.46, s * 0.6, s * 0.08)
       ctx.fillStyle = '#c4433a'
       ctx.fillRect(x - s * 0.3, y - s * 0.46, s * 0.6 * Math.max(0, hp), s * 0.08)
+    }
+    if (stunned) {
+      ctx.fillStyle = '#fffbe6'
+      ctx.strokeStyle = '#2b2320'
+      ctx.lineWidth = 1.5
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2 + performance.now() / 400
+        ctx.beginPath()
+        ctx.arc(x + Math.cos(a) * s * 0.22, y - s * 0.36 + Math.sin(a) * s * 0.06, s * 0.045, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.stroke()
+      }
     }
     if (slowed) {
       ctx.strokeStyle = '#4c7a34'

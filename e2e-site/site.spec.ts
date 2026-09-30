@@ -182,6 +182,7 @@ test.describe('Hedgerow', () => {
     await expect(page.getByRole('dialog')).toContainText('Mara is halfway through a cheese sandwich')
     for (let i = 0; i < 4; i++) await page.locator('#story-next').click()
     await expect(page.locator('#hud-marks')).toHaveText('210')
+    await expect(page.locator('#btn-pie')).toBeHidden()
     // Tap a plot beside the lane (column 0, row 0 is grass in level 1).
     const box = (await page.locator('#canvas').boundingBox())!
     const cell = Math.floor(Math.min(box.width / 6, box.height / 7))
@@ -195,6 +196,19 @@ test.describe('Hedgerow', () => {
     await noSideways(page)
     await assertNoSeriousIssues(page)
     expect(errors).toEqual([])
+  })
+
+  test("Cath's pie is available from level 3 and freezes a wave", async ({ page }) => {
+    await page.goto('/hedgerow/')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 1, stars: { '1': 3, '2': 3 }, seenBefore: { '3': true } })))
+    await page.reload()
+    await page.locator('button.level[data-level="3"]').click()
+    await expect(page.locator('#btn-pie')).toBeDisabled()
+    await page.locator('#btn-send').click()
+    await expect(page.locator('#btn-pie')).toBeEnabled({ timeout: 8000 })
+    await page.locator('#btn-pie').click()
+    await expect(page.locator('#btn-pie')).toContainText('Pie 4')
+    await noSideways(page)
   })
 
   test('keeps progress in localStorage', async ({ page }) => {

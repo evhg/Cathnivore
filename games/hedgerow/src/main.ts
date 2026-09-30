@@ -11,6 +11,8 @@ import {
   sell,
   sellValue,
   sendWave,
+  throwPie,
+  pieUnlocked,
   stars as starsOf,
   stepGame,
   towerAt,
@@ -42,6 +44,7 @@ const ui = {
   hudWave: $<HTMLElement>('hud-wave'),
   btnLevels: $<HTMLButtonElement>('btn-levels'),
   btnSend: $<HTMLButtonElement>('btn-send'),
+  btnPie: $<HTMLButtonElement>('btn-pie'),
   btnSpeed: $<HTMLButtonElement>('btn-speed'),
   btnPause: $<HTMLButtonElement>('btn-pause'),
   announce: $<HTMLElement>('announce'),
@@ -178,14 +181,17 @@ function leaveLevel(): void {
 }
 
 function syncControls(): void {
-  ui.btnSpeed.textContent = fast ? 'Speed x2' : 'Speed x1'
+  ui.btnSpeed.textContent = fast ? 'x2' : 'x1'
   ui.btnSpeed.setAttribute('aria-pressed', String(fast))
   ui.btnPause.textContent = paused ? 'Resume' : 'Pause'
   ui.btnPause.setAttribute('aria-pressed', String(paused))
   if (!game) return
+  ui.btnPie.hidden = !pieUnlocked(game.level)
+  ui.btnPie.disabled = game.phase !== 'wave' || game.pieCd > 0
+  ui.btnPie.textContent = game.pieCd > 0 ? `Pie ${Math.ceil(game.pieCd)}s` : "Cath's pie"
   const more = game.wave < game.level.waves.length
   ui.btnSend.disabled = game.phase !== 'build' || !more
-  ui.btnSend.textContent = game.phase === 'wave' ? `Wave ${game.wave} in progress` : more ? `Send wave ${game.wave + 1}` : 'All waves sent'
+  ui.btnSend.textContent = game.phase === 'wave' ? `Wave ${game.wave} running` : more ? `Send wave ${game.wave + 1}` : 'All waves sent'
 }
 
 function updateHud(): void {
@@ -376,6 +382,10 @@ ui.canvas.addEventListener('keydown', (e) => {
 ui.btnSend.addEventListener('click', () => {
   if (!game) return
   act(() => sendWave(game!))
+})
+ui.btnPie.addEventListener('click', () => {
+  if (!game) return
+  act(() => throwPie(game!))
 })
 ui.btnSpeed.addEventListener('click', () => {
   fast = !fast

@@ -125,6 +125,8 @@ export interface Enemy {
   dist: number
   hp: number
   slowed: boolean
+  /** Seconds left frozen in place (Cath's pie). */
+  stun: number
 }
 
 export type GameEvent =
@@ -132,6 +134,7 @@ export type GameEvent =
   | { type: 'kill'; x: number; y: number; bounty: number }
   | { type: 'leak'; x: number; y: number }
   | { type: 'wave'; wave: number }
+  | { type: 'pie' }
 
 export type Phase = 'build' | 'wave' | 'won' | 'lost'
 
@@ -150,6 +153,8 @@ export interface Game {
   nextId: number
   pathLength: number
   events: GameEvent[]
+  /** Seconds until Cath's pie is ready again. */
+  pieCd: number
 }
 
 export function pathLength(path: Level['path']): number {
@@ -214,6 +219,7 @@ export function newGame(level: Level): Game {
     nextId: 1,
     pathLength: pathLength(level.path),
     events: [],
+    pieCd: 0,
   }
 }
 
@@ -283,11 +289,12 @@ export function stepGame(game: Game): void {
   if (game.phase !== 'wave') return
   game.tick += 1
   game.waveClock += STEP
+  if (game.pieCd > 0) game.pieCd = Math.max(0, game.pieCd - STEP)
   const path = game.level.path
 
   while (game.spawnQueue.length > 0 && game.spawnQueue[0]!.at <= game.waveClock) {
     const next = game.spawnQueue.shift()!
-    game.enemies.push({ id: game.nextId++, kind: next.kind, dist: 0, hp: ENEMIES[next.kind].hp, slowed: false })
+    game.enemies.push({ id: game.nextId++, kind: next.kind, dist: 0, hp: ENEMIES[next.kind].hp, slowed: false, stun: 0 })
   }
 
   // Hedgerows slow whatever is in range; the strongest one wins, they don't stack.
@@ -302,7 +309,8 @@ export function stepGame(game: Game): void {
       }
     }
     enemy.slowed = factor < 1
-    enemy.dist += ENEMIES[enemy.kind].speed * factor * STEP
+    if (enemy.stun > 0) enemy.stun -= STEP
+    else enemy.dist += ENEMIES[enemy.kind].speed * factor * STEP
   }
 
   // Scarecrows fire at the enemy furthest along the lane.
@@ -360,6 +368,26 @@ export function stepGame(game: Game): void {
       game.marks += 20 + game.wave * 5
     }
   }
+}
+
+export const PIE_COOLDOWN = 40
+export const PIE_STUN = 3
+export const PIE_FIRST_LEVEL = 3
+
+export function pieUnlocked(level: Level): boolean {
+  return level.id >= PIE_FIRST_LEVEL
+}
+
+/** Cath throws a pie: every enemy on the lane freezes for a few seconds. Bosses only for half as long. */
+export function throwPie(game: Game): ActionResult {
+  if (!pieUnlocked(game.level)) return { ok: false, reason: 'Cath has not baked one yet.' }
+  if (game.phase !== 'wave') return { ok: false, reason: 'Save it for a wave.' }
+  if (game.pieCd > 0) return { ok: false, reason: 'Still cooling on the windowsill.' }
+  if (game.enemies.length === 0) return { ok: false, reason: 'Nothing to throw it at.' }
+  for (const e of game.enemies) e.stun = e.kind === 'boss' ? PIE_STUN / 2 : PIE_STUN
+  game.pieCd = PIE_COOLDOWN
+  game.events.push({ type: 'pie' })
+  return { ok: true }
 }
 
 export function stars(game: Game): 0 | 1 | 2 | 3 {

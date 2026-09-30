@@ -11,6 +11,7 @@ import {
   sendWave,
   stars,
   stepGame,
+  throwPie,
   towerAt,
   upgrade,
   type Game,
@@ -107,9 +108,9 @@ describe('hedgerow engine', () => {
     place(game, 'beehive', 2, 1)
     sendWave(game)
     game.enemies.push(
-      { id: 90, kind: 'van', dist: 5, hp: 100, slowed: false },
-      { id: 91, kind: 'van', dist: 5.5, hp: 100, slowed: false },
-      { id: 92, kind: 'van', dist: 20, hp: 100, slowed: false },
+      { id: 90, kind: 'van', dist: 5, hp: 100, slowed: false, stun: 0 },
+      { id: 91, kind: 'van', dist: 5.5, hp: 100, slowed: false, stun: 0 },
+      { id: 92, kind: 'van', dist: 20, hp: 100, slowed: false, stun: 0 },
     )
     game.spawnQueue = []
     stepGame(game)
@@ -117,6 +118,20 @@ describe('hedgerow engine', () => {
     expect(hp(90)).toBeLessThan(100)
     expect(hp(91)).toBeLessThan(100)
     expect(hp(92)).toBe(100)
+  })
+
+  it("Cath's pie freezes the lane, then cools down", () => {
+    const game = newGame(LEVELS[2]!)
+    expect(throwPie(game).ok).toBe(false)
+    sendWave(game)
+    for (let i = 0; i < 90; i++) stepGame(game)
+    const before = game.enemies.map((e) => e.dist)
+    expect(throwPie(game).ok).toBe(true)
+    expect(throwPie(game).ok).toBe(false)
+    for (let i = 0; i < 30; i++) stepGame(game)
+    expect(game.enemies.slice(0, before.length).map((e) => e.dist)).toEqual(before)
+    expect(game.pieCd).toBeGreaterThan(30)
+    expect(throwPie(newGame(LEVELS[0]!)).ok).toBe(false)
   })
 
   it('a slowed enemy covers less ground', () => {

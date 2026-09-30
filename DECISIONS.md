@@ -178,3 +178,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-30: Hedgerow engine is hitscan with no RNG yet (fully deterministic; add seeded RNG when crits/chaos need it). Enemy HP tuned so the greedy bot just wins; bot wins at 98/35 HP but fails outright at 100/36 on level 3, so the curve is steep: retune with the bot on every new level.
 - 2026-09-30: Hedgerow story speakers other than Cath show a letter avatar until their art exists in shared/.
 - 2026-09-30: Hedgerow beehive = splash damage (1.1 cells) rather than a damage-over-time; the level bot now builds beehives when unlocked and gets 3,3,3,2,2,1 stars on levels 1-6 (a rising curve).
+- 2026-09-30: Cath's pie (stun every enemy 3s, bosses 1.5s, 40s cooldown) unlocks at level 3; the bot never uses it so it stays a safety margin, not a balance crutch. Did not release again: today's 4-release cap was already used.
