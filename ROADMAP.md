@@ -178,7 +178,7 @@ H11. [ ] **Act 10 and level 100:** the multi-phase HollowCandor boss fight and t
 ## Phase 3: Runnel and the site
 
 22. [ ] **Runnel feel:** a sound set, a water-arrival sparkle, crops varied by season, a streak calendar, and a fairer par (log the sim before and after).
-23. [ ] **Runnel variety:** new tile types (bridges, sluice gates, reservoirs) introduced gradually by day of the week, each with generator support and a solvability test.
+23. [x] **Runnel variety:** new tile types (bridges, sluice gates, reservoirs) introduced gradually by day of the week, each with generator support and a solvability test.
 24. [ ] **Landing page:** a live miniature preview of each game on its card, and a frame-time check on real mid-range phones.
 25. [x] **Known small issues:** the `sim/run.ts` worker timeout (fixed earlier), `scene.ts` `deleteShader`, and `scene.ts` WebGL context restore (fixed 2026-09-28 `cb050ee`; see `PROGRESS.md`).
 

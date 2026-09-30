@@ -12,6 +12,7 @@ import {
   rotationalPeriod,
   sluicesFor,
   reservoirsFor,
+  bridgesFor,
   tapsToSolve,
   type Puzzle,
 } from '../games/runnel/src/engine'
@@ -193,5 +194,45 @@ describe('reservoirs', () => {
     expect(reservoirsFor('2026-10-06')).toBe(1) // Tuesday
     expect(reservoirsFor('2026-10-04')).toBe(2) // Sunday
     expect(reservoirsFor('2026-10-05')).toBe(0)
+  })
+})
+
+describe('bridges', () => {
+  it('cross two channels without mixing them, and stay solvable', () => {
+    let seen = 0
+    for (let n = 0; n < 60; n++) {
+      const p = generatePuzzle(`bridge-${n}`, { radius: 3, bridgeCount: 2, fixedCount: n % 3, reservoirCount: n % 2 })
+      const bridges = p.cells.filter((c) => c.bridge)
+      seen += bridges.length
+      for (const c of bridges) expect(c.solved & (c.solved >> 3)).toBe(c.solved & 7)
+      solve(p)
+      expect(computeFlow(p.cells).solved).toBe(true)
+    }
+    expect(seen).toBeGreaterThan(30)
+  })
+
+  it('does not pass water round the corner', () => {
+    const p = generatePuzzle('bridge-turn', { radius: 3, bridgeCount: 1 })
+    solve(p)
+    const b = p.cells.findIndex((c) => c.bridge)
+    expect(b).toBeGreaterThanOrEqual(0)
+    // Turning the bridge a third of the way round swaps its axes, so the solved board must break.
+    p.cells[b]!.rot = (p.cells[b]!.rot + 1) % 6
+    expect(computeFlow(p.cells).solved).toBe(false)
+  })
+
+  it('appear only from the start date, by weekday', () => {
+    expect(bridgesFor('2026-10-02')).toBe(0)
+    expect(bridgesFor('2026-10-03')).toBe(1) // Saturday
+    expect(bridgesFor('2026-10-09')).toBe(2) // Friday
+    expect(bridgesFor('2026-10-06')).toBe(0)
+  })
+})
+
+describe('bridge dailies', () => {
+  it('actually carry a bridge on bridge days', () => {
+    for (const d of ['2026-10-03', '2026-10-05', '2026-10-09', '2026-10-10', '2026-10-12', '2026-10-16']) {
+      expect(dailyPuzzle(d).cells.some((c) => c.bridge)).toBe(true)
+    }
   })
 })

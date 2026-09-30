@@ -1151,3 +1151,17 @@ kbd {
   fill: #fff;
   opacity: 0.55;
 }
+
+.bridge-deck {
+  pointer-events: none;
+}
+.deck-plank {
+  fill: #c9a06a;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.deck-seam {
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0.45;
+}

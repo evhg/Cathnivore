@@ -48,6 +48,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-30 04:20 UTC:** ROADMAP 23 slice: Runnel fixed "sluice" tiles (pre-solved, unturnable; daily carries 2/3/4 on Wed/Fri/Sat from 2026-10-01; unit-tested solvable; check + e2e:site pass; unreleased). Still open in 23: bridges, reservoirs.
 - **2026-09-30 04:50 UTC:** released `0d9a0c4` (live confirmed via version.json; tag 403 as usual), including sluice tiles.
 - **2026-09-30 05:15 UTC:** ROADMAP 23 slice: Runnel reservoirs (fixed pond taking water from any side; Tue/Thu 1, Sun 2 from 2026-10-02; unit-tested solvable; check + e2e:site pass; unreleased). Still open in 23: bridges.
+- **2026-09-30 06:30 UTC:** ROADMAP 23 slice: Runnel bridges (two crossing channels that don't mix; plank-deck art; Mon/Sat 1, Fri 2 from 2026-10-03; unit-tested solvable + non-mixing; check + e2e:site pass; art not eyeballed, no bridge on today's daily). Item 23 listed scope complete.
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or

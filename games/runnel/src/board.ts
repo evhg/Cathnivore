@@ -168,7 +168,7 @@ export class Board {
 
   private drawCell(parent: SVGGElement, cell: Cell, index: number): CellView {
     const { x, y } = cellCentre(cell.q, cell.r)
-    const root = el('g', { class: `cell ${cell.kind}${cell.reservoir ? ' reservoir' : ''}`, transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, parent)
+    const root = el('g', { class: `cell ${cell.kind}${cell.reservoir ? ' reservoir' : ''}${cell.bridge ? ' bridge' : ''}`, transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, parent)
     root.style.setProperty('--ring', String(Math.max(Math.abs(cell.q), Math.abs(cell.r), Math.abs(cell.q + cell.r))))
     el('polygon', { class: 'tile', points: hexPoints(S * 0.965) }, root)
     el('polygon', { class: 'tile-grain', points: hexPoints(S * 0.965) }, root)
@@ -208,6 +208,7 @@ export class Board {
     el('circle', { r: S * 0.17, class: 'hub-groove' }, grooves)
     el('circle', { r: S * 0.1, class: 'hub-water' }, waters)
 
+    if (cell.bridge) this.drawBridge(piece)
     if (cell.kind === 'spring') this.drawSpring(root)
     if (cell.reservoir) this.drawReservoir(root)
     else if (cell.kind === 'field') this.drawField(root, index)
@@ -240,6 +241,13 @@ export class Board {
     el('ellipse', { cx: 0, cy: 2, rx: S * 0.5, ry: S * 0.38, class: 'pond-rim' }, g)
     el('ellipse', { cx: 0, cy: 2, rx: S * 0.4, ry: S * 0.29, class: 'pond-water' }, g)
     el('ellipse', { cx: -6, cy: -1, rx: 9, ry: 3.5, class: 'pond-shine' }, g)
+  }
+
+  /** A plank deck over the crossing, so a bridge reads apart from a plain four-way junction. */
+  private drawBridge(piece: SVGGElement): void {
+    const g = el('g', { class: 'bridge-deck' }, piece)
+    el('rect', { x: -S * 0.5, y: -5, width: S, height: 10, rx: 2, class: 'deck-plank' }, g)
+    for (const dx of [-14, -5, 5, 14]) el('line', { x1: dx, y1: -5, x2: dx, y2: 5, class: 'deck-seam' }, g)
   }
 
   private drawField(root: SVGGElement, index: number): void {
@@ -440,7 +448,7 @@ export class Board {
     const cell = this.puzzle.cells[index]!
     const view = this.views[index]!
     if (cell.kind === 'stone') return
-    const name = cell.reservoir ? 'Reservoir' : cell.kind === 'spring' ? 'Spring' : cell.kind === 'field' ? 'Field' : 'Channel'
+    const name = cell.reservoir ? 'Reservoir' : cell.bridge ? 'Bridge' : cell.kind === 'spring' ? 'Spring' : cell.kind === 'field' ? 'Field' : 'Channel'
     const state = flow.wet.has(index) ? (flow.leaks.has(index) ? 'watered, spilling' : 'watered') : 'dry'
     view.root.setAttribute('aria-label', `${name}, ${state}${cell.reservoir ? '' : cell.fixed ? ', fixed sluice' : cell.locked ? ', pinned' : ''}`)
   }

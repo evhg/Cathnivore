@@ -38,6 +38,8 @@ export interface Cell {
   fixed?: boolean
   /** A reservoir: a fixed pond at the end of a channel that takes water from any side and passes none on. */
   reservoir?: boolean
+  /** A bridge: two straight channels crossing without mixing. Water leaves by the opening opposite its way in. */
+  bridge?: boolean
 }
 
 export interface Puzzle {
@@ -145,6 +147,8 @@ export interface GenerateOptions {
   fixedCount?: number
   /** How many dead-end fields become reservoirs (default 0). */
   reservoirCount?: number
+  /** How many straight channels become bridges carrying a second, crossing channel (default 0). */
+  bridgeCount?: number
 }
 
 /**
@@ -153,9 +157,20 @@ export interface GenerateOptions {
  * are then turned to random rotations, keeping at least three quarters of the turnable pieces wrong.
  */
 export function generatePuzzle(seed: string, options: GenerateOptions): Puzzle {
+  const first = generateOnce(seed, seed, options)
+  if (!options.bridgeCount || first.cells.some((c) => c.bridge)) return first
+  // A layout with no room for a bridge is redrawn (deterministically) so bridge days always have one.
+  for (let n = 1; n <= 12; n++) {
+    const again = generateOnce(seed, `${seed}|bridge${n}`, options)
+    if (again.cells.some((c) => c.bridge)) return again
+  }
+  return first
+}
+
+function generateOnce(seed: string, drawSeed: string, options: GenerateOptions): Puzzle {
   const { radius } = options
   const stoneRate = options.stoneRate ?? 0.08
-  const rng = createRng(hashString(`${seed}|r${radius}`))
+  const rng = createRng(hashString(`${drawSeed}|r${radius}`))
   const hexes = boardHexes(radius)
   const neighbours = neighbourTable(hexes)
   const centre = hexes.findIndex((h) => h.q === 0 && h.r === 0)
@@ -180,6 +195,9 @@ export function generatePuzzle(seed: string, options: GenerateOptions): Puzzle {
     }
   }
 
+  const bridgeCount = options.bridgeCount ?? 0
+  if (bridgeCount > 0) makeBridges(cells, hexes, bridgeCount, rng)
+
   const reservoirCount = options.reservoirCount ?? 0
   if (reservoirCount > 0) {
     const pool = cells.map((_, i) => i).filter((i) => cells[i]!.kind === 'field')
@@ -193,6 +211,43 @@ export function generatePuzzle(seed: string, options: GenerateOptions): Puzzle {
 
   const par = scramble(cells, rng)
   return { seed, radius, cells, par }
+}
+
+/**
+ * Turns straight channels into bridges. A bridge keeps its through-channel and gains a second one on
+ * another axis; the two cells on that axis each grow an opening towards it, so the crossing is part of
+ * the solution. Only ordinary pieces with room for another opening are used as neighbours.
+ */
+function makeBridges(cells: Cell[], hexes: readonly Hex[], count: number, rng: () => number): void {
+  const neighbours = neighbourTable(hexes)
+  const ordinary = (j: number): boolean => {
+    const c = cells[j]
+    return !!c && (c.kind === 'channel' || c.kind === 'field') && !c.bridge && bitCount(c.solved) < MAX_OPENINGS
+  }
+  const pool = cells
+    .map((_, i) => i)
+    .filter((i) => cells[i]!.kind === 'channel' && rotationalPeriod(cells[i]!.solved) === 3 && bitCount(cells[i]!.solved) === 2)
+  shuffle(pool, rng)
+  let made = 0
+  for (const i of pool) {
+    if (made >= count) break
+    const cell = cells[i]!
+    const axis = [0, 1, 2].find((a) => cell.solved & (1 << a))!
+    const options = [0, 1, 2].filter((a) => a !== axis)
+    shuffle(options, rng)
+    for (const a of options) {
+      const p = neighbours[i]![a]!
+      const q = neighbours[i]![a + 3]!
+      if (p < 0 || q < 0 || p === q || !ordinary(p) || !ordinary(q)) continue
+      cell.solved |= (1 << a) | (1 << (a + 3))
+      cell.bridge = true
+      cells[p]!.solved |= 1 << (a + 3)
+      cells[q]!.solved |= 1 << a
+      for (const j of [p, q]) if (cells[j]!.kind === 'field') cells[j]!.kind = 'channel'
+      made++
+      break
+    }
+  }
 }
 
 function chooseStones(
@@ -364,13 +419,15 @@ export function computeFlow(cells: readonly Cell[]): Flow {
   cells.forEach((c, i) => {
     if (c.reservoir) masks[i] = 63
   })
-  // Breadth-first, so depth is the water's travel distance and animations can cascade outwards.
-  const queue = [spring]
+  // Breadth-first, so depth is the water's travel distance and animations can cascade outwards. Bridges
+  // carry two independent flows, so each way water enters one is queued (and processed) separately.
+  const queue: Array<[number, number]> = [[spring, -1]]
+  const bridgeSeen = new Set<number>()
   wet.add(spring)
   depth.set(spring, 0)
   for (let head = 0; head < queue.length; head++) {
-    const i = queue[head]!
-    const mask = cells[i]!.reservoir ? 0 : masks[i]!
+    const [i, via] = queue[head]!
+    const mask = cells[i]!.reservoir ? 0 : cells[i]!.bridge ? 1 << via : masks[i]!
     for (let d = 0; d < 6; d++) {
       if (!(mask & (1 << d))) continue
       const j = neighbours[i]![d]!
@@ -380,11 +437,21 @@ export function computeFlow(cells: readonly Cell[]): Flow {
         leakMask.set(i, (leakMask.get(i) ?? 0) | (1 << d))
         continue
       }
-      if (!wet.has(j)) {
+      if (cells[j]!.bridge) {
+        const code = j * 6 + d
+        if (bridgeSeen.has(code)) continue
+        bridgeSeen.add(code)
+        if (!wet.has(j)) {
+          wet.add(j)
+          inflow.set(j, (d + 3) % 6)
+          depth.set(j, depth.get(i)! + 1)
+        }
+        queue.push([j, d])
+      } else if (!wet.has(j)) {
         wet.add(j)
         inflow.set(j, (d + 3) % 6)
         depth.set(j, depth.get(i)! + 1)
-        queue.push(j)
+        queue.push([j, d])
       }
     }
   }
@@ -435,11 +502,22 @@ export function reservoirsFor(dateString: string): number {
   return ({ 0: 2, 2: 1, 4: 1 } as Record<number, number>)[day] ?? 0
 }
 
+/** First daily that can carry bridges. */
+export const BRIDGE_FROM = '2026-10-03'
+
+/** One bridge on Mondays and Saturdays, two on Fridays. */
+export function bridgesFor(dateString: string): number {
+  if (dateString < BRIDGE_FROM) return 0
+  const day = new Date(`${dateString}T00:00:00Z`).getUTCDay()
+  return ({ 1: 1, 6: 1, 5: 2 } as Record<number, number>)[day] ?? 0
+}
+
 export function dailyPuzzle(dateString: string): Puzzle {
   return generatePuzzle(`daily-${dateString}`, {
     radius: DAILY_RADIUS,
     fixedCount: sluicesFor(dateString),
     reservoirCount: reservoirsFor(dateString),
+    bridgeCount: bridgesFor(dateString),
   })
 }
 
