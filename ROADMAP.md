@@ -172,7 +172,7 @@ The owner asked for a tower defense game: a strong story that develops level by 
 
 H1. [x] **Engine and a vertical slice:** *(2026-09-30: `games/hedgerow/`, levels 1-3, `/hedgerow/`, landing card, tests/hedgerow.test.ts bot gate.)* the engine, a Canvas renderer, 2 towers, 2 enemies, levels 1-3 with story scenes, saves, `/hedgerow/` in the site build, a landing card, site e2e tests and the level bot gate.
 H2. [ ] **Act 1 complete (levels 1-10):** *(2026-09-30: levels 1-10, the Beehive, the Acquisition Van boss and Cath's pie are built (released: H1 only; the rest is on `build`). Open: upgrade-UI polish, sound, Hedgerow's own level-select art.)* the Acquisition Van miniboss and the upgrade UI.
-H3. [x] Act 2 (11-20): *(2026-09-30: Highmoor, Market Stall, price-war trucks, Mr Crisp's Convoy boss.)* H4. [x] Act 3 (21-30): *(2026-09-30: Saltmarsh, Duck Pond, influencers that charm towers, Brand Ambassador Blimp boss.)* H5. [ ] Act 4 (31-40). H6. [ ] Act 5 (41-50). H7. [ ] Act 6 (51-60). H8. [ ] Act 7 (61-70). H9. [ ] Act 8 (71-80). H10. [ ] Act 9 (81-90).
+H3. [x] Act 2 (11-20): *(2026-09-30: Highmoor, Market Stall, price-war trucks, Mr Crisp's Convoy boss.)* H4. [x] Act 3 (21-30): *(2026-09-30: Saltmarsh, Duck Pond, influencers that charm towers, Brand Ambassador Blimp boss.)* H5. [x] Act 4 (31-40): *(2026-09-30: Rivermead, armour, Co-op Barn, Grain Silo, Mega-Dozer boss.)* H6. [ ] Act 5 (41-50). H7. [ ] Act 6 (51-60). H8. [ ] Act 7 (61-70). H9. [ ] Act 8 (71-80). H10. [ ] Act 9 (81-90).
 H11. [ ] **Act 10 and level 100:** the multi-phase HollowCandor boss fight and the finale.
 
 ## Phase 3: Runnel and the site

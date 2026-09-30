@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** **Hedgerow H5** (act 4, Rivermead, levels 31-40: bulldozers, Co-op Barn tower, Mega-Dozer boss). Acts 1-3 done. Read `docs/design/hedgerow.md`.
+- **Next:** **Hedgerow H6** (act 5, Oakvale, levels 41-50: stealth units, Radio Mast tower, Vane's Clinic-in-a-Box boss). Acts 1-4 done (act 4 adds armour, Co-op Barn, Grain Silo, Mega-Dozer). Read `docs/design/hedgerow.md`.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked
@@ -60,6 +60,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-09-30 ~13:52-14:15 UTC: Hedgerow act 4 (levels 31-40, Rivermead): armour (halves non-piercing damage), bulldozers, Co-op Barn, Grain Silo (pierces), Mega-Dozer boss (splits into bulldozers); bot builds silos/barns; armour test. I ran prettier on games/hedgerow by mistake (big one-off diff, now formatted); files are prettier-clean from here.
 - 2026-09-30 ~13:00-13:25 UTC: Hedgerow act 3 (levels 21-30, Saltmarsh): Duck Pond tower, influencers (charm nearby towers), Brand Ambassador Blimp boss, Sol as speaker; bot builds ponds. Prettier reformats these files heavily: don't run it on games/hedgerow.
 - 2026-09-30 ~11:52-12:20 UTC: Hedgerow act 2 (levels 11-20, Highmoor): Market Stall (income + damage buff), price-war truck (splits into drones), Convoy boss (splits into trucks), 3 new tests. Duck Pond (design: level 18) skipped for now; add it in act 3.
 - 2026-09-30 ~10:51-11:10 UTC: Hedgerow sound (`games/hedgerow/src/sound.ts`, mute in localStorage `hedgerow:sound`), upgrade panel shows now/next stats, released act 1. Short session (little to break).
