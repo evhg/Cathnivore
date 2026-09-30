@@ -5,6 +5,7 @@
 import {
   ENEMIES,
   TOWERS,
+  isRevealed,
   laneCells,
   pointAt,
   towerAt,
@@ -221,6 +222,8 @@ export class Renderer {
 
     for (const e of game.enemies) {
       const p = pointAt(level.path, e.dist);
+      const ghost = !isRevealed(game, e);
+      if (ghost) ctx.globalAlpha = 0.22;
       this.enemy(
         e.kind,
         px(p.x),
@@ -230,6 +233,7 @@ export class Renderer {
         e.slowed,
         e.stun > 0,
       );
+      if (ghost) ctx.globalAlpha = 1;
     }
 
     // Effects.
@@ -358,6 +362,33 @@ export class Renderer {
           Math.PI * 2,
         );
         ctx.fill();
+      }
+    } else if (kind === "mast") {
+      ctx.strokeStyle = "#2b2320";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x - s * 0.2, y + s * 0.32);
+      ctx.lineTo(x, y - s * 0.3);
+      ctx.lineTo(x + s * 0.2, y + s * 0.32);
+      ctx.moveTo(x - s * 0.12, y + s * 0.08);
+      ctx.lineTo(x + s * 0.12, y + s * 0.08);
+      ctx.stroke();
+      ctx.fillStyle = "#d95f3b";
+      ctx.beginPath();
+      ctx.arc(x, y - s * 0.32, s * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(217,95,59,0.7)";
+      ctx.lineWidth = 2;
+      for (let i = 1; i <= tier; i++) {
+        ctx.beginPath();
+        ctx.arc(
+          x,
+          y - s * 0.32,
+          s * 0.1 * i + s * 0.06,
+          -0.9 * Math.PI,
+          -0.1 * Math.PI,
+        );
+        ctx.stroke();
       }
     } else if (kind === "barn") {
       ctx.fillStyle = "#b5523b";
@@ -600,6 +631,46 @@ export class Renderer {
         ctx.textBaseline = "middle";
         ctx.fillText("SYNERGY", x, y - s * 0.02);
       }
+    } else if (kind === "phantom") {
+      ctx.fillStyle = "#dfe3e6";
+      ctx.beginPath();
+      ctx.roundRect(x - s * 0.24, y - s * 0.15, s * 0.48, s * 0.3, s * 0.07);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#2b2320";
+      ctx.font = `bold ${Math.round(s * 0.2)}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("?", x, y);
+      ctx.beginPath();
+      ctx.arc(x - s * 0.12, y + s * 0.17, s * 0.06, 0, Math.PI * 2);
+      ctx.arc(x + s * 0.12, y + s * 0.17, s * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (kind === "clinic") {
+      ctx.fillStyle = "#f7fbfb";
+      ctx.beginPath();
+      ctx.roundRect(x - s * 0.46, y - s * 0.3, s * 0.92, s * 0.6, s * 0.1);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#4fb3a9";
+      ctx.fillRect(x - s * 0.1, y - s * 0.22, s * 0.2, s * 0.44);
+      ctx.fillRect(x - s * 0.22, y - s * 0.1, s * 0.44, s * 0.2);
+      ctx.fillStyle = "#2b2320";
+      ctx.beginPath();
+      ctx.arc(x - s * 0.28, y + s * 0.32, s * 0.09, 0, Math.PI * 2);
+      ctx.arc(x + s * 0.28, y + s * 0.32, s * 0.09, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(79,179,169,0.5)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(
+        x,
+        y,
+        s * 0.6 + Math.sin(performance.now() / 300) * 3,
+        0,
+        Math.PI * 2,
+      );
+      ctx.stroke();
     } else if (kind === "boss" || kind === "convoy") {
       ctx.fillStyle = kind === "convoy" ? "#f2c94c" : "#f3f0ea";
       ctx.beginPath();

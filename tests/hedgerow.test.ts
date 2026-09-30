@@ -62,21 +62,26 @@ function play(level: Level, build: boolean): Game {
           const ponds = game.towers.filter((t) => t.kind === "pond").length;
           const silos = game.towers.filter((t) => t.kind === "silo").length;
           const barns = game.towers.filter((t) => t.kind === "barn").length;
+          const masts = game.towers.filter((t) => t.kind === "mast").length;
           const kind =
-            level.towers.includes("silo") &&
-            silos < Math.floor(scarecrows / 2) + 1
-              ? "silo"
-              : level.towers.includes("barn") &&
-                  barns < Math.floor(scarecrows / 3)
-                ? "barn"
-                : level.towers.includes("pond") &&
-                    ponds < Math.floor(scarecrows / 2)
-                  ? "pond"
-                  : hedges < Math.floor(scarecrows / 2)
-                    ? "hedgerow"
-                    : level.towers.includes("beehive") && hives < scarecrows
-                      ? "beehive"
-                      : "scarecrow";
+            level.towers.includes("mast") &&
+            masts < Math.floor(scarecrows / 3) + 1 &&
+            scarecrows >= 2
+              ? "mast"
+              : level.towers.includes("silo") &&
+                  silos < Math.floor(scarecrows / 2) + 1
+                ? "silo"
+                : level.towers.includes("barn") &&
+                    barns < Math.floor(scarecrows / 3)
+                  ? "barn"
+                  : level.towers.includes("pond") &&
+                      ponds < Math.floor(scarecrows / 2)
+                    ? "pond"
+                    : hedges < Math.floor(scarecrows / 2)
+                      ? "hedgerow"
+                      : level.towers.includes("beehive") && hives < scarecrows
+                        ? "beehive"
+                        : "scarecrow";
           const spot = plots.find(([c, r]) => !towerAt(game, c, r));
           if (spot && place(game, kind, spot[0], spot[1]).ok) bought = true;
           else {
@@ -274,6 +279,41 @@ describe("hedgerow engine", () => {
     };
     expect(hpAfter("scarecrow")).toBe(996);
     expect(hpAfter("silo")).toBe(960);
+  });
+
+  it("stealth units are untouchable until a Radio Mast reveals them, and the mast marks targets", () => {
+    const lv = LEVELS[44]!;
+    const fire = (mast: boolean) => {
+      const g = newGame(lv);
+      place(g, "scarecrow", 5, 0);
+      if (mast) place(g, "mast", 4, 0);
+      sendWave(g);
+      g.spawnQueue = [];
+      g.enemies.push({
+        id: 90,
+        kind: "phantom",
+        dist: 1.5,
+        hp: 1000,
+        slowed: false,
+        stun: 0,
+      });
+      stepGame(g);
+      return 1000 - g.enemies[0]!.hp;
+    };
+    expect(fire(false)).toBe(0);
+    expect(fire(true)).toBeCloseTo(TOWERS.scarecrow.damage[0] * 1.2, 5);
+  });
+
+  it("the Clinic-in-a-Box heals its neighbours", () => {
+    const g = newGame(LEVELS[49]!);
+    sendWave(g);
+    g.spawnQueue = [];
+    g.enemies.push(
+      { id: 90, kind: "clinic", dist: 3, hp: 4800, slowed: false, stun: 0 },
+      { id: 91, kind: "van", dist: 3.5, hp: 50, slowed: false, stun: 0 },
+    );
+    stepGame(g);
+    expect(g.enemies.find((e) => e.id === 91)!.hp).toBeGreaterThan(50);
   });
 
   it("a slowed enemy covers less ground", () => {

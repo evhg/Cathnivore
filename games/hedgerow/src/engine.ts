@@ -13,7 +13,8 @@ export type TowerKind =
   | "stall"
   | "pond"
   | "barn"
-  | "silo";
+  | "silo"
+  | "mast";
 export type EnemyKind =
   | "van"
   | "drone"
@@ -23,7 +24,9 @@ export type EnemyKind =
   | "influencer"
   | "blimp"
   | "bulldozer"
-  | "megadozer";
+  | "megadozer"
+  | "phantom"
+  | "clinic";
 
 export interface TowerSpec {
   name: string;
@@ -46,6 +49,8 @@ export interface TowerSpec {
   income?: [number, number, number];
   /** Shots ignore armour (the Grain Silo). */
   pierce?: boolean;
+  /** Reveals stealth units in range and marks everything in range: they take this much extra damage (the Radio Mast). */
+  reveal?: [number, number, number];
 }
 
 export const TOWERS: Record<TowerKind, TowerSpec> = {
@@ -125,6 +130,18 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     slow: [1, 1, 1],
     pierce: true,
   },
+  mast: {
+    name: "Radio Mast",
+    blurb:
+      "Sol's mast. Shows up stealth units in range and marks everything there for extra damage.",
+    cost: 90,
+    upgrades: [70, 110],
+    range: [2.2, 2.5, 2.8],
+    damage: [0, 0, 0],
+    cooldown: [1, 1, 1],
+    slow: [1, 1, 1],
+    reveal: [1.2, 1.3, 1.45],
+  },
 };
 
 export interface EnemySpec {
@@ -141,6 +158,10 @@ export interface EnemySpec {
   charm?: number;
   /** Fraction of non-piercing damage it shrugs off. */
   armor?: number;
+  /** Towers cannot target it unless a Radio Mast has it in range. */
+  stealth?: boolean;
+  /** Other enemies within 1.6 cells regain this many hit points a second. */
+  heal?: number;
 }
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
@@ -201,6 +222,23 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     leak: 8,
     armor: 0.5,
     splits: { kind: "bulldozer", count: 2 },
+  },
+  phantom: {
+    name: "Unbranded courier",
+    hp: 90,
+    speed: 1.2,
+    bounty: 12,
+    leak: 1,
+    stealth: true,
+  },
+  clinic: {
+    name: "Vane's Clinic-in-a-Box",
+    hp: 4800,
+    speed: 0.42,
+    bounty: 350,
+    leak: 9,
+    heal: 14,
+    splits: { kind: "phantom", count: 3 },
   },
 };
 
@@ -464,6 +502,26 @@ function charmed(game: Game, t: Tower): boolean {
   return false;
 }
 
+/** Radio Masts see through stealth: an enemy within a mast's range is revealed and marked. */
+export function markMultiplier(game: Game, e: Enemy): number {
+  const p = pointAt(game.level.path, e.dist);
+  let m = 1;
+  for (const t of game.towers) {
+    const r = TOWERS[t.kind].reveal;
+    if (!r) continue;
+    if (
+      Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <=
+      TOWERS[t.kind].range[t.tier - 1]!
+    )
+      m = Math.max(m, r[t.tier - 1]!);
+  }
+  return m;
+}
+
+export function isRevealed(game: Game, e: Enemy): boolean {
+  return !ENEMIES[e.kind].stealth || markMultiplier(game, e) > 1;
+}
+
 export function stepGame(game: Game): void {
   if (game.phase !== "wave") return;
   game.tick += 1;
@@ -505,6 +563,17 @@ export function stepGame(game: Game): void {
     else enemy.dist += ENEMIES[enemy.kind].speed * factor * STEP;
   }
 
+  // Clinic-in-a-Box and friends patch up whatever is beside them.
+  for (const h of game.enemies) {
+    const heal = ENEMIES[h.kind].heal;
+    if (!heal || h.hp <= 0) continue;
+    for (const e of game.enemies) {
+      if (e === h || e.hp <= 0) continue;
+      if (Math.abs(e.dist - h.dist) <= 1.6)
+        e.hp = Math.min(ENEMIES[e.kind].hp, e.hp + heal * STEP);
+    }
+  }
+
   // Scarecrows fire at the enemy furthest along the lane.
   for (const t of game.towers) {
     if (TOWERS[t.kind].damage[0] === 0) continue;
@@ -518,7 +587,7 @@ export function stepGame(game: Game): void {
     const range = spec.range[t.tier - 1]!;
     let target: Enemy | undefined;
     for (const e of game.enemies) {
-      if (e.hp <= 0) continue;
+      if (e.hp <= 0 || !isRevealed(game, e)) continue;
       const p = pointAt(path, e.dist);
       if (
         Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= range &&
@@ -542,7 +611,7 @@ export function stepGame(game: Game): void {
     }
     const hit = (e: Enemy) => {
       const armor = ENEMIES[e.kind].armor ?? 0;
-      e.hp -= spec.pierce ? dmg : dmg * (1 - armor);
+      e.hp -= (spec.pierce ? dmg : dmg * (1 - armor)) * markMultiplier(game, e);
     };
     hit(target);
     if (spec.splash) {
@@ -630,7 +699,8 @@ export function throwPie(game: Game): ActionResult {
       e.kind === "boss" ||
       e.kind === "convoy" ||
       e.kind === "blimp" ||
-      e.kind === "megadozer"
+      e.kind === "megadozer" ||
+      e.kind === "clinic"
         ? PIE_STUN / 2
         : PIE_STUN;
   game.pieCd = PIE_COOLDOWN;
