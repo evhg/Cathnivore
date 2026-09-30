@@ -316,6 +316,32 @@ describe("hedgerow engine", () => {
     expect(g.enemies.find((e) => e.id === 91)!.hp).toBeGreaterThan(50);
   });
 
+  it("a Clinic Tent lets towers shrug off influencer charm", () => {
+    const lv = LEVELS[54]!;
+    const fire = (tent: boolean) => {
+      const g = newGame(lv);
+      place(g, "scarecrow", 5, 0);
+      if (tent) place(g, "tent", 4, 0);
+      sendWave(g);
+      g.spawnQueue = [];
+      g.enemies.push(
+        {
+          id: 90,
+          kind: "influencer",
+          dist: 4.5,
+          hp: 1000,
+          slowed: false,
+          stun: 0,
+        },
+        { id: 91, kind: "van", dist: 4.6, hp: 1000, slowed: false, stun: 0 },
+      );
+      stepGame(g);
+      return 1000 - g.enemies.find((e) => e.id === 91)!.hp;
+    };
+    expect(fire(false)).toBe(0);
+    expect(fire(true)).toBeGreaterThan(0);
+  });
+
   it("a slowed enemy covers less ground", () => {
     const g1 = newGame(level);
     const g2 = newGame(level);

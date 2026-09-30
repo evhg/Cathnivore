@@ -14,7 +14,8 @@ export type TowerKind =
   | "pond"
   | "barn"
   | "silo"
-  | "mast";
+  | "mast"
+  | "tent";
 export type EnemyKind =
   | "van"
   | "drone"
@@ -26,7 +27,9 @@ export type EnemyKind =
   | "bulldozer"
   | "megadozer"
   | "phantom"
-  | "clinic";
+  | "clinic"
+  | "tender"
+  | "ship";
 
 export interface TowerSpec {
   name: string;
@@ -51,6 +54,8 @@ export interface TowerSpec {
   pierce?: boolean;
   /** Reveals stealth units in range and marks everything in range: they take this much extra damage (the Radio Mast). */
   reveal?: [number, number, number];
+  /** Towers within this range of the tent ignore influencer charm (the Clinic Tent). */
+  cleanse?: boolean;
 }
 
 export const TOWERS: Record<TowerKind, TowerSpec> = {
@@ -142,6 +147,19 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     slow: [1, 1, 1],
     reveal: [1.2, 1.3, 1.45],
   },
+  tent: {
+    name: "Clinic Tent",
+    blurb:
+      "Ines's tent. Towers beside it shake off charm and fire faster, thanks to a great deal of tea.",
+    cost: 110,
+    upgrades: [80, 120],
+    range: [1.8, 2.1, 2.4],
+    damage: [0, 0, 0],
+    cooldown: [1, 1, 1],
+    slow: [1, 1, 1],
+    buff: [1.15, 1.25, 1.35],
+    cleanse: true,
+  },
 };
 
 export interface EnemySpec {
@@ -230,6 +248,23 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     bounty: 12,
     leak: 1,
     stealth: true,
+  },
+  tender: {
+    name: "Fast tender",
+    hp: 190,
+    speed: 1.1,
+    bounty: 13,
+    leak: 2,
+    armor: 0.3,
+  },
+  ship: {
+    name: "The Container Ship",
+    hp: 5600,
+    speed: 0.4,
+    bounty: 400,
+    leak: 10,
+    armor: 0.35,
+    splits: { kind: "tender", count: 4 },
   },
   clinic: {
     name: "Vane's Clinic-in-a-Box",
@@ -493,6 +528,13 @@ export function sendWave(game: Game): ActionResult {
 
 /** An influencer's followers are watching it, not the road: towers in its charm range hold fire. */
 function charmed(game: Game, t: Tower): boolean {
+  for (const c of game.towers)
+    if (
+      TOWERS[c.kind].cleanse &&
+      Math.hypot(c.col - t.col, c.row - t.row) <=
+        TOWERS[c.kind].range[c.tier - 1]!
+    )
+      return false;
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].charm;
     if (!r || e.hp <= 0) continue;
@@ -700,7 +742,8 @@ export function throwPie(game: Game): ActionResult {
       e.kind === "convoy" ||
       e.kind === "blimp" ||
       e.kind === "megadozer" ||
-      e.kind === "clinic"
+      e.kind === "clinic" ||
+      e.kind === "ship"
         ? PIE_STUN / 2
         : PIE_STUN;
   game.pieCd = PIE_COOLDOWN;

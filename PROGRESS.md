@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** **Hedgerow H7** (act 6, Shingle Bay, levels 51-60: naval lanes, Clinic Tent tower (Ines), Container Ship boss). Acts 1-5 done (act 5 adds stealth phantoms, Radio Mast, healing Clinic boss). Read `docs/design/hedgerow.md`.
+- **Next:** **Hedgerow H8** (act 7, The Rift, levels 61-70: two enemy factions fighting each other, Courthouse tower (Mara) 'Injunction', Lawyer Swarm boss). Acts 1-6 done (act 6 adds tenders, Clinic Tent, Container Ship). Read `docs/design/hedgerow.md`.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked
@@ -30,7 +30,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
-- 2026-09-30 ~15:20 UTC: Hedgerow act 5 (levels 41-50, Oakvale, stealth, Radio Mast, Clinic-in-a-Box). See release result below.
+- 2026-09-30 ~15:05 UTC (`da6db06`): Hedgerow act 5 (levels 41-50, Oakvale, stealth, Radio Mast, Clinic-in-a-Box). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~14:03 UTC (`4ad18c7`): Hedgerow act 4 (levels 31-40, Rivermead, armour, Barn, Silo, Mega-Dozer). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~13:20 UTC (`c059cb6`): Hedgerow act 3 (levels 21-30, Duck Pond, influencers, Blimp boss). Gates passed; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~12:10 UTC (`2350369`): Hedgerow act 2 (levels 11-20, Market Stall, trucks, Convoy boss). Live version.json matches; tag push 403 (harmless).

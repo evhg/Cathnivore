@@ -390,6 +390,30 @@ export class Renderer {
         );
         ctx.stroke();
       }
+    } else if (kind === "tent") {
+      ctx.fillStyle = "#fffbe6";
+      ctx.beginPath();
+      ctx.moveTo(x - s * 0.38, y + s * 0.3);
+      ctx.lineTo(x, y - s * 0.34);
+      ctx.lineTo(x + s * 0.38, y + s * 0.3);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#4fb3a9";
+      ctx.fillRect(x - s * 0.06, y - s * 0.08, s * 0.12, s * 0.3);
+      ctx.fillRect(x - s * 0.15, y + s * 0.01, s * 0.3, s * 0.12);
+      ctx.fillStyle = "#f2c94c";
+      for (let i = 0; i < tier; i++) {
+        ctx.beginPath();
+        ctx.arc(
+          x - s * 0.12 * (tier - 1) + i * s * 0.24,
+          y + s * 0.36,
+          s * 0.05,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
     } else if (kind === "barn") {
       ctx.fillStyle = "#b5523b";
       ctx.beginPath();
@@ -630,6 +654,34 @@ export class Renderer {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("SYNERGY", x, y - s * 0.02);
+      }
+    } else if (kind === "tender" || kind === "ship") {
+      const k = kind === "ship" ? 1.6 : 1;
+      ctx.fillStyle = kind === "ship" ? "#2f5a7a" : "#6fa0c4";
+      ctx.beginPath();
+      ctx.moveTo(x - s * 0.34 * k, y - s * 0.05 * k);
+      ctx.lineTo(x + s * 0.36 * k, y - s * 0.05 * k);
+      ctx.lineTo(x + s * 0.26 * k, y + s * 0.2 * k);
+      ctx.lineTo(x - s * 0.28 * k, y + s * 0.2 * k);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      const cols = ["#c4433a", "#f2c94c", "#4c7a34"];
+      const n = kind === "ship" ? 3 : 1;
+      for (let i = 0; i < n; i++) {
+        ctx.fillStyle = cols[i]!;
+        ctx.fillRect(
+          x - s * 0.28 * k + i * s * 0.19 * k,
+          y - s * 0.22 * k,
+          s * 0.17 * k,
+          s * 0.17 * k,
+        );
+        ctx.strokeRect(
+          x - s * 0.28 * k + i * s * 0.19 * k,
+          y - s * 0.22 * k,
+          s * 0.17 * k,
+          s * 0.17 * k,
+        );
       }
     } else if (kind === "phantom") {
       ctx.fillStyle = "#dfe3e6";
