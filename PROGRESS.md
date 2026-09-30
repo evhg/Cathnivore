@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** **Hedgerow H9** (act 8, levels 71-80; Farmers' Union Hall tower (Tomas), Market Day rally). Acts 1-7 done (act 7 adds lawyers that jam towers, the Courthouse 'Injunction', Lawyer Swarm boss; the two-faction feud is story only). Read `docs/design/hedgerow.md`.
+- **Next:** **Hedgerow H10** (act 9, levels 81-90, The Merger; Board of Directors five-in-one boss). Acts 1-8 done (act 8: Union Hall global aura + Market Day income, Pell's Campaign Bus) (act 7 adds lawyers that jam towers, the Courthouse 'Injunction', Lawyer Swarm boss; the two-faction feud is story only). Read `docs/design/hedgerow.md`.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked
@@ -30,6 +30,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-30 ~17:10 UTC: Hedgerow act 8 (levels 71-80, The Ballot, Union Hall, Campaign Bus) — see git log for hash.
 - 2026-09-30 ~16:00 UTC (`4b053d7`): Hedgerow act 7 (levels 61-70, The Rift, lawyers, Courthouse, Lawyer Swarm). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~15:08 UTC (`47ffb6d`): Hedgerow act 6 (levels 51-60, Shingle Bay, tenders, Clinic Tent, Container Ship). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~15:05 UTC (`da6db06`): Hedgerow act 5 (levels 41-50, Oakvale, stealth, Radio Mast, Clinic-in-a-Box). main==build; live version.json matches; tag push 403 (harmless).

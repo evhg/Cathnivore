@@ -449,6 +449,32 @@ export class Renderer {
         );
         ctx.fill();
       }
+    } else if (kind === "hall") {
+      ctx.fillStyle = "#c9a26b";
+      ctx.fillRect(x - s * 0.34, y - s * 0.1, s * 0.68, s * 0.4);
+      ctx.strokeRect(x - s * 0.34, y - s * 0.1, s * 0.68, s * 0.4);
+      ctx.fillStyle = "#6b8f4e";
+      ctx.beginPath();
+      ctx.moveTo(x - s * 0.4, y - s * 0.1);
+      ctx.lineTo(x, y - s * 0.38);
+      ctx.lineTo(x + s * 0.4, y - s * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#fffbe6";
+      ctx.fillRect(x - s * 0.06, y + s * 0.06, s * 0.12, s * 0.24);
+      ctx.fillStyle = "#f2c94c";
+      for (let i = 0; i < tier; i++) {
+        ctx.beginPath();
+        ctx.arc(
+          x - s * 0.12 * (tier - 1) + i * s * 0.24,
+          y - s * 0.16,
+          s * 0.045,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
     } else if (kind === "barn") {
       ctx.fillStyle = "#b5523b";
       ctx.beginPath();
@@ -717,6 +743,24 @@ export class Renderer {
         s * 0.16 * k,
         s * 0.2 * k,
       );
+    } else if (kind === "bus") {
+      ctx.fillStyle = "#b8323a";
+      ctx.fillRect(x - s * 0.38, y - s * 0.2, s * 0.76, s * 0.4);
+      ctx.strokeRect(x - s * 0.38, y - s * 0.2, s * 0.76, s * 0.4);
+      ctx.fillStyle = "#f4f1e8";
+      for (let i = 0; i < 4; i++)
+        ctx.fillRect(
+          x - s * 0.32 + i * s * 0.17,
+          y - s * 0.12,
+          s * 0.12,
+          s * 0.12,
+        );
+      ctx.fillStyle = "#2b2f3a";
+      for (const dx of [-0.22, 0.22]) {
+        ctx.beginPath();
+        ctx.arc(x + s * dx, y + s * 0.22, s * 0.07, 0, Math.PI * 2);
+        ctx.fill();
+      }
     } else if (kind === "tender" || kind === "ship") {
       const k = kind === "ship" ? 1.6 : 1;
       ctx.fillStyle = kind === "ship" ? "#2f5a7a" : "#6fa0c4";

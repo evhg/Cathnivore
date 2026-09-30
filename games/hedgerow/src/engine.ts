@@ -16,7 +16,8 @@ export type TowerKind =
   | "silo"
   | "mast"
   | "tent"
-  | "court";
+  | "court"
+  | "hall";
 export type EnemyKind =
   | "van"
   | "drone"
@@ -32,7 +33,8 @@ export type EnemyKind =
   | "tender"
   | "ship"
   | "lawyer"
-  | "swarm";
+  | "swarm"
+  | "bus";
 
 export interface TowerSpec {
   name: string;
@@ -61,6 +63,8 @@ export interface TowerSpec {
   cleanse?: boolean;
   /** Seconds it freezes a boss in range each time it fires (the Courthouse's Injunction). */
   injunction?: [number, number, number];
+  /** Damage multiplier on every tower on the map, wherever it stands (the Union Hall). */
+  aura?: [number, number, number];
 }
 
 export const TOWERS: Record<TowerKind, TowerSpec> = {
@@ -176,6 +180,19 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     cooldown: [9, 8, 7],
     slow: [1, 1, 1],
     injunction: [2.5, 3.5, 4.5],
+  },
+  hall: {
+    name: "Farmers' Union Hall",
+    blurb:
+      "Tomas's hall. Every tower on the map hits harder, and Market Day pays out after each wave.",
+    cost: 220,
+    upgrades: [150, 220],
+    range: [0, 0, 0],
+    damage: [0, 0, 0],
+    cooldown: [1, 1, 1],
+    slow: [1, 1, 1],
+    aura: [1.1, 1.17, 1.25],
+    income: [18, 30, 45],
   },
 };
 
@@ -301,6 +318,15 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     leak: 10,
     jam: 2,
     splits: { kind: "lawyer", count: 5 },
+  },
+  bus: {
+    name: "Pell's Campaign Bus",
+    hp: 7200,
+    speed: 0.5,
+    bounty: 500,
+    leak: 10,
+    armor: 0.2,
+    splits: { kind: "influencer", count: 6 },
   },
   clinic: {
     name: "Vane's Clinic-in-a-Box",
@@ -714,6 +740,7 @@ export function stepGame(game: Game): void {
         Math.hypot(b.col - t.col, b.row - t.row) <= bs.range[b.tier - 1]!
       )
         dmg *= bs.buff[b.tier - 1]!;
+      if (bs.aura) dmg *= bs.aura[b.tier - 1]!;
     }
     const hit = (e: Enemy) => {
       const armor = ENEMIES[e.kind].armor ?? 0;
@@ -808,7 +835,8 @@ export function throwPie(game: Game): ActionResult {
       e.kind === "megadozer" ||
       e.kind === "clinic" ||
       e.kind === "ship" ||
-      e.kind === "swarm"
+      e.kind === "swarm" ||
+      e.kind === "bus"
         ? PIE_STUN / 2
         : PIE_STUN;
   game.pieCd = PIE_COOLDOWN;

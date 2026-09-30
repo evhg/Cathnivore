@@ -390,6 +390,28 @@ describe("hedgerow engine", () => {
     expect(shots(true)).toBeLessThan(shots(false));
   });
 
+  it("a Union Hall lifts every tower's damage from anywhere on the map", () => {
+    const lv = LEVELS[74]!;
+    const dealt = (hall: boolean) => {
+      const g = newGame(lv);
+      place(g, "scarecrow", 5, 0);
+      if (hall) place(g, "hall", 0, 7);
+      sendWave(g);
+      g.spawnQueue = [];
+      g.enemies.push({
+        id: 91,
+        kind: "van",
+        dist: 4.6,
+        hp: 1e9,
+        slowed: false,
+        stun: 0,
+      });
+      for (let i = 0; i < 200; i++) stepGame(g);
+      return 1e9 - g.enemies.find((e) => e.id === 91)!.hp;
+    };
+    expect(dealt(true)).toBeGreaterThan(dealt(false));
+  });
+
   it("a slowed enemy covers less ground", () => {
     const g1 = newGame(level);
     const g2 = newGame(level);
