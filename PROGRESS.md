@@ -46,6 +46,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-30 02:20 UTC:** ROADMAP 13 slice: enemy-turn playback is now a bottom banner over a visible map, highlighting the region of each step (check + quick-game e2e pass; unreleased). Item 13's listed scope is now complete bar end-of-round moment.
 - **2026-09-30 03:15 UTC:** ROADMAP 13 slice: "Round N" banner at each round change (reduced-motion hidden; check + quick-game/a11y e2e pass; unreleased). Item 13 listed scope now complete.
 - **2026-09-30 04:20 UTC:** ROADMAP 23 slice: Runnel fixed "sluice" tiles (pre-solved, unturnable; daily carries 2/3/4 on Wed/Fri/Sat from 2026-10-01; unit-tested solvable; check + e2e:site pass; unreleased). Still open in 23: bridges, reservoirs.
+- **2026-09-30 04:50 UTC:** released `0d9a0c4` (live confirmed via version.json; tag 403 as usual), including sluice tiles.
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or

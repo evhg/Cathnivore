@@ -168,3 +168,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-29: scene backdrops are CSS gradients keyed by chapter id (no art assets); no release, cap reached.
 - 2026-09-29: cast expressions inferred from line punctuation (no story data changes); no release, cap reached.
 2026-09-30: right-column desktop panels (Market/Plan/Log) flex-shrink with internal scroll; fixed-height budgeting can't fit random card heights.
+- 2026-09-30: Runnel sluices (fixed pre-solved tiles) start 2026-10-01 so saved dailies don't change; release 0d9a0c4 live.
