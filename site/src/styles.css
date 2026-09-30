@@ -581,3 +581,38 @@ body {
     fill: #7fb15a;
   }
 }
+
+.art-hedgerow {
+  background: #9dbb6c;
+}
+
+.art-hedgerow svg {
+  width: 88%;
+  height: 88%;
+}
+
+.hg-lane {
+  fill: none;
+  stroke: #d8bd8a;
+  stroke-width: 20;
+  stroke-linejoin: miter;
+}
+
+.hg-hedge {
+  fill: #4c7a34;
+  stroke: #2b2320;
+  stroke-width: 4;
+}
+
+.hg-head {
+  fill: #e9c98a;
+  stroke: #2b2320;
+  stroke-width: 4;
+}
+
+.hg-hat {
+  fill: #6b4a2b;
+  stroke: #2b2320;
+  stroke-width: 4;
+  stroke-linejoin: round;
+}

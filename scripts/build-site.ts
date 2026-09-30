@@ -3,6 +3,7 @@
 //   /             the games landing page (site/)
 //   /cathnivore/  Cathnivore, the same app `npm run build` makes, rebuilt under a base path
 //   /runnel/      Runnel, the daily irrigation puzzle (games/runnel/)
+//   /hedgerow/    Hedgerow, Cath's tower defence (games/hedgerow/)
 //   /privacy, /support, /fonts, icons, version.json   shared files at the root
 //
 // `npm run build` is unchanged and still builds Cathnivore alone into dist/ for the iPhone app, e2e and
@@ -47,6 +48,16 @@ async function main(): Promise<void> {
     publicDir: resolve(root, 'games/runnel/public'),
     logLevel: 'warn',
     build: { outDir: resolve(out, 'runnel'), emptyOutDir: true },
+  })
+
+  console.log('\n=== Hedgerow ===')
+  await build({
+    configFile: false,
+    root: resolve(root, 'games/hedgerow'),
+    base: '/hedgerow/',
+    publicDir: resolve(root, 'games/hedgerow/public'),
+    logLevel: 'warn',
+    build: { outDir: resolve(out, 'hedgerow'), emptyOutDir: true },
   })
 
   console.log('\n=== Cathnivore ===')

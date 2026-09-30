@@ -4,7 +4,7 @@
 // so they land on the new games portfolio page.
 //
 // `caches.keys()`/`caches.delete()` are origin-wide, not scoped to this worker, so a blind wipe would also
-// delete the live /cathnivore/ and /runnel/ workbox precaches (Cache Storage is shared per origin). Cache
+// delete the live /cathnivore/, /runnel/ and /hedgerow/ workbox precaches (Cache Storage is shared per origin). Cache
 // names include the owning service worker's registration scope, which always contains that app's base
 // path, so skipping any key naming one of the current apps leaves only genuinely old, unscoped caches to
 // delete.
@@ -13,7 +13,7 @@ export function siteServiceWorkerSource(): string {
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     for (const key of await caches.keys()) {
-      if (key.includes('/cathnivore/') || key.includes('/runnel/')) continue
+      if (key.includes('/cathnivore/') || key.includes('/runnel/') || key.includes('/hedgerow/')) continue
       await caches.delete(key)
     }
     await self.registration.unregister()

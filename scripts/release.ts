@@ -143,7 +143,7 @@ export function httpSmokeTest(base: string, commit: string): boolean {
       console.log(`HTTP check failed: /version.json shows ${version.commit}, expected ${commit}`)
       return false
     }
-    const pages: Array<[string, string]> = [['/', 'href="/runnel/"'], ['/runnel/', 'id="board"'], ['/cathnivore/', 'id="root"']]
+    const pages: Array<[string, string]> = [['/', 'href="/runnel/"'], ['/runnel/', 'id="board"'], ['/hedgerow/', 'id="canvas"'], ['/cathnivore/', 'id="root"']]
     for (const [path, marker] of pages) {
       const html = get(path)
       if (!html.includes(marker)) {

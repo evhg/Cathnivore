@@ -1,0 +1,104 @@
+// Hedgerow's levels. H1 ships the first three of act 1, Brindle Hills (docs/design/hedgerow.md). Story
+// follows SPEC 3.2's voice: short, specific, dry, warm. Later acts append to LEVELS.
+
+import type { Level, WaveGroup } from './engine'
+
+const van = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'van', count, gap, delay })
+const drone = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'drone', count, gap, delay })
+
+export const LEVELS: Level[] = [
+  {
+    id: 1,
+    name: "Mara's Field",
+    place: 'Brindle Hills',
+    cols: 6,
+    rows: 7,
+    path: [[0, 1], [4, 1], [4, 3], [1, 3], [1, 5], [5, 5]],
+    startMarks: 210,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow'],
+    waves: [
+      [van(3, 3)],
+      [van(4, 2.6)],
+      [van(4, 2.4), drone(2, 1.5, 6)],
+      [van(5, 2.2), drone(3, 1.4, 5)],
+      [van(6, 2), drone(4, 1.2, 4)],
+    ],
+    before: [
+      { who: 'narrator', text: 'Brindle Hills, a Tuesday. Mara is halfway through a cheese sandwich when something hums overhead.' },
+      { who: 'mara', text: "There's a drone in my beans, Cath. It's taking photographs. Of my beans." },
+      { who: 'cath', expression: 'determined', text: "Then it's a survey. First the photographs, then the offer, then the bulldozer. I've seen the order." },
+      { who: 'cath', expression: 'wink', text: "Good news: you've got a hedge, a scarecrow and me. Let's put them where the lane bends." },
+    ],
+    after: [
+      { who: 'mara', text: "Well. That's the first van I've ever seen turn round on its own." },
+      { who: 'cath', expression: 'smirk', text: "It won't be the last one that comes. But now they know what your beans are made of." },
+    ],
+    reward: 'Lore card: "Mara\'s ledger", forty years of bean prices, all of them fair.',
+  },
+  {
+    id: 2,
+    name: 'The Long Lane',
+    place: 'Brindle Hills',
+    cols: 6,
+    rows: 8,
+    path: [[5, 0], [1, 0], [1, 2], [4, 2], [4, 4], [0, 4], [0, 6], [5, 6]],
+    startMarks: 190,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow'],
+    waves: [
+      [van(4, 2.8)],
+      [drone(4, 1.4), van(2, 2.6, 3)],
+      [van(5, 2.2), drone(3, 1.2, 4)],
+      [van(4, 2), drone(6, 1.1, 3)],
+      [van(6, 1.9), drone(5, 1.1, 4)],
+      [van(7, 1.7), drone(6, 1, 3)],
+    ],
+    before: [
+      { who: 'narrator', text: 'Word travels fast in Brindle Hills. By breakfast, four farms know about the drone.' },
+      { who: 'bea', expression: 'delighted', text: "I drew the van! It has a smiley face on it. Why do the mean ones always have smiley faces?" },
+      { who: 'cath', expression: 'smirk', text: "Because a frown wouldn't test well with customers, sweetheart." },
+      { who: 'cath', expression: 'determined', text: "They're coming down the long lane this time. Plenty of room for hedges. Bea, you keep score." },
+    ],
+    after: [
+      { who: 'bea', expression: 'delighted', text: 'Twenty-seven vans! I counted. Can I draw a medal for the hedge?' },
+      { who: 'cath', expression: 'wink', text: "Draw one for everyone. Hedges first." },
+    ],
+    reward: 'Scarecrow skin: "Bea\'s Sunday best", a hat and a very small bow tie.',
+  },
+  {
+    id: 3,
+    name: 'The Acquisition Van',
+    place: 'Brindle Hills',
+    cols: 6,
+    rows: 8,
+    path: [[0, 1], [5, 1], [5, 3], [0, 3], [0, 5], [5, 5]],
+    startMarks: 260,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow'],
+    waves: [
+      [van(5, 2.4)],
+      [drone(6, 1.2), van(3, 2.4, 2)],
+      [van(6, 2), drone(5, 1.1, 3)],
+      [van(7, 1.8), drone(6, 1, 3)],
+      [van(8, 1.6), drone(7, 0.9, 2)],
+      [van(9, 1.5), drone(8, 0.9, 2)],
+      [van(11, 1.3), drone(9, 0.8, 2)],
+    ],
+    before: [
+      { who: 'narrator', text: 'A very clean white van parks at the edge of the hills. Nobody sees anyone get out. That is the alarming part.' },
+      { who: 'tomas', text: "It's an acquisition van. There's an offer letter on every windscreen in the valley. Nice paper, too." },
+      { who: 'cath', expression: 'determined', text: "Everything they send is in the same font. That's how you know it's one company with two names." },
+      { who: 'cath', expression: 'wink', text: "Right. Vans first, drones after, and nobody sells a thing today." },
+    ],
+    after: [
+      { who: 'tomas', text: "They've stopped. Do you think that's the end of it?" },
+      { who: 'cath', expression: 'worried', text: "No. They've gone to get a bigger van." },
+    ],
+    reward: 'Lore card: "The offer letter", 400 words that never once say the word "no".',
+  },
+]
+
+export function levelById(id: number): Level | undefined {
+  return LEVELS.find((l) => l.id === id)
+}

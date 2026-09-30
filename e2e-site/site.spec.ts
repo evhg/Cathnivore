@@ -57,6 +57,13 @@ test.describe('landing page', () => {
     await expect(page.getByRole('heading', { name: 'Runnel' })).toBeVisible()
   })
 
+  test('the Hedgerow card opens the game', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('a[href="/hedgerow/"]').click()
+    await expect(page).toHaveURL(/\/hedgerow\/$/)
+    await expect(page.getByRole('heading', { name: 'Hedgerow' })).toBeVisible()
+  })
+
   test('the root service worker is the self-removing replacement', async ({ request }) => {
     const res = await request.get('/sw.js')
     expect(res.ok()).toBe(true)
@@ -163,5 +170,38 @@ test.describe('Runnel', () => {
     await page.getByRole('button', { name: 'Start' }).click()
     await expect(page.locator('.tiles > g.cell')).not.toHaveCount(0)
     await assertNoSeriousIssues(page)
+  })
+})
+
+test.describe('Hedgerow', () => {
+  test('story, build a scarecrow, send a wave', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.goto('/hedgerow/')
+    await expect(page.locator('button.level[data-level="2"]')).toBeDisabled()
+    await page.locator('button.level[data-level="1"]').click()
+    await expect(page.getByRole('dialog')).toContainText('Mara is halfway through a cheese sandwich')
+    for (let i = 0; i < 4; i++) await page.locator('#story-next').click()
+    await expect(page.locator('#hud-marks')).toHaveText('210')
+    // Tap a plot beside the lane (column 0, row 0 is grass in level 1).
+    const box = (await page.locator('#canvas').boundingBox())!
+    const cell = Math.floor(Math.min(box.width / 6, box.height / 7))
+    const offX = Math.floor((box.width - cell * 6) / 2)
+    const offY = Math.floor((box.height - cell * 7) / 2)
+    await page.mouse.click(box.x + offX + cell * 0.5, box.y + offY + cell * 0.5)
+    await page.locator('button.btn-build[data-kind="scarecrow"]').click()
+    await expect(page.locator('#hud-marks')).toHaveText('130')
+    await page.locator('#btn-send').click()
+    await expect(page.locator('#hud-wave')).toHaveText('1/5')
+    await noSideways(page)
+    await assertNoSeriousIssues(page)
+    expect(errors).toEqual([])
+  })
+
+  test('keeps progress in localStorage', async ({ page }) => {
+    await page.goto('/hedgerow/')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 1, stars: { '1': 2 }, seenBefore: { '1': true } })))
+    await page.reload()
+    await expect(page.locator('button.level[data-level="2"]')).toBeEnabled()
+    await expect(page.locator('button.level[data-level="1"] .level-stars')).toHaveText('★★☆')
   })
 })
