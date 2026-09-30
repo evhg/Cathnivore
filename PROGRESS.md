@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** **Hedgerow H3.** Act 1 (levels 1-10), sound and the upgrade stats line are done. Next: act 2 (Highmoor, Market Stall). Read `docs/design/hedgerow.md`.
+- **Next:** **Hedgerow H4** (act 3, Saltmarsh, levels 21-30: influencers, Duck Pond at 18 is still missing, Brand Ambassador Blimp boss). Acts 1-2 done. Read `docs/design/hedgerow.md`.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked
@@ -58,6 +58,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-09-30 ~11:52-12:20 UTC: Hedgerow act 2 (levels 11-20, Highmoor): Market Stall (income + damage buff), price-war truck (splits into drones), Convoy boss (splits into trucks), 3 new tests. Duck Pond (design: level 18) skipped for now; add it in act 3.
 - 2026-09-30 ~10:51-11:10 UTC: Hedgerow sound (`games/hedgerow/src/sound.ts`, mute in localStorage `hedgerow:sound`), upgrade panel shows now/next stats, released act 1. Short session (little to break).
 - 2026-09-30 ~10:15 UTC (same session): released H1 (`4baaa06`, live, /hedgerow/ 200; tag 403). Then levels 4-10, Beehive, boss, Cath's pie on `build` (unreleased). Bot stars L1-10: 3,3,3,2,2,1,3,2,2,1. e2e:site needs a fresh port 4175: kill any stray `vite preview` or it serves stale dist-site.
 - 2026-09-30 ~09:51 UTC: Hedgerow H1 built (`games/hedgerow/`: pure 30 Hz engine, canvas renderer, levels 1-3 with story, saves, landing card, site e2e, bot test). Balance: van 98hp/drone 35hp; greedy bot wins all 3 with 3 stars, a no-build player loses.

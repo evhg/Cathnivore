@@ -6,6 +6,18 @@ import type { Level, WaveGroup } from './engine'
 const van = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'van', count, gap, delay })
 const boss = (delay = 0): WaveGroup => ({ enemy: 'boss', count: 1, gap: 1, delay })
 const drone = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'drone', count, gap, delay })
+const truck = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'truck', count, gap, delay })
+const convoy = (delay = 0): WaveGroup => ({ enemy: 'convoy', count: 1, gap: 1, delay })
+
+/** A steady climb of `n` waves: vans, drones and (from wave `truckFrom`) trucks, growing a little each time. */
+function ramp(n: number, o: { v: number; d: number; t?: number; truckFrom?: number; vs?: number; ds?: number }): WaveGroup[][] {
+  return Array.from({ length: n }, (_, i) => {
+    const groups = [van(Math.round(o.v + i * (o.vs ?? 1.2)), Math.max(0.9, 1.9 - i * 0.1))]
+    groups.push(drone(Math.round(o.d + i * (o.ds ?? 1.4)), Math.max(0.5, 0.95 - i * 0.05), 2))
+    if (o.t && i >= (o.truckFrom ?? 2)) groups.push(truck(Math.round(o.t + (i - (o.truckFrom ?? 2)) * 0.8), 2.2, 4))
+    return groups
+  })
+}
 
 export const LEVELS: Level[] = [
   {
@@ -311,6 +323,235 @@ export const LEVELS: Level[] = [
       { who: 'cath', expression: 'smirk', text: "It didn't give up, Mara. It went to get advice. Highmoor is next, and their advice comes with a price tag." },
     ],
     reward: 'Act 1 complete. Lore card: "The Van\'s manifesto", 90 pages, not one of them about farming.',
+  },
+  {
+    id: 11,
+    name: 'Highmoor Market',
+    place: 'Highmoor',
+    cols: 6,
+    rows: 8,
+    path: [[0, 1], [4, 1], [4, 3], [1, 3], [1, 5], [5, 5], [5, 7]],
+    startMarks: 420,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive'],
+    waves: ramp(6, { v: 5, d: 6, vs: 1, ds: 1 }),
+    before: [
+      { who: 'narrator', text: 'Highmoor sits on a cold hill above the clouds, and every Saturday its market fills the square. This Saturday, a banner says: "GRAND REOPENING, FEATURING PRICES."' },
+      { who: 'tomas', text: "They've rented every stall. Every one. The rent is a pound. Nobody in Highmoor has been charged a pound for anything in forty years, and it's terrifying." },
+      { who: 'cath', expression: 'determined', text: "A pound this month, a hundred next. Come on, Tomas. We hold the road up to the square." },
+    ],
+    after: [
+      { who: 'tomas', text: 'The square is still ours. Nobody is quite sure what to do with the stall that was rented for a pound.' },
+      { who: 'cath', expression: 'smirk', text: "Keep the receipt. It's evidence." },
+    ],
+    reward: 'Lore card: "The one-pound lease", signed in a pen that runs out halfway through the small print.',
+  },
+  {
+    id: 12,
+    name: 'Cheap Eggs',
+    place: 'Highmoor',
+    cols: 6,
+    rows: 8,
+    path: [[5, 0], [1, 0], [1, 2], [5, 2], [5, 4], [0, 4], [0, 6], [4, 6], [4, 7]],
+    startMarks: 440,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive'],
+    waves: ramp(7, { v: 8, d: 9 }),
+    before: [
+      { who: 'narrator', text: 'A new stall opens at the top of the square. It sells eggs at a loss so vast that an accountant across the valley faints.' },
+      { who: 'tomas', text: "Half the town is queuing. Cath, they're my eggs. They just don't have my name on them any more." },
+      { who: 'cath', expression: 'worried', text: "That's the trick. Take the name, keep the egg, add a barcode." },
+      { who: 'cath', expression: 'wink', text: "Let's remind Highmoor who kept the hens." },
+    ],
+    after: [
+      { who: 'tomas', text: 'Three people came back to my stall today. One brought a cake.' },
+      { who: 'cath', expression: 'delighted', text: "That's how it starts. Then everyone brings a cake." },
+    ],
+    reward: 'Lore card: "The barcode", stuck on a hen. She was not pleased.',
+  },
+  {
+    id: 13,
+    name: 'The Market Stall',
+    place: 'Highmoor',
+    cols: 6,
+    rows: 8,
+    path: [[0, 0], [5, 0], [5, 2], [1, 2], [1, 4], [5, 4], [5, 6], [2, 6], [2, 7]],
+    startMarks: 460,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall'],
+    waves: ramp(7, { v: 8, d: 9 }),
+    before: [
+      { who: 'narrator', text: "Tomas hauls an old trestle table into the lane, throws a striped cloth over it and hangs a sign: 'OPEN'. It is the most defiant thing anyone has done all week." },
+      { who: 'tomas', text: "If we can't beat their prices, we'll beat their manners. Free tea with every turnip." },
+      { who: 'cath', expression: 'delighted', text: "New tool: the Market Stall. It earns Marks after every wave, and the towers beside it hit harder. Neighbours help neighbours. It's just good business." },
+    ],
+    after: [
+      { who: 'tomas', text: 'I sold eleven turnips and gave away forty cups of tea. I think I am the richest man in Highmoor.' },
+      { who: 'cath', expression: 'wink', text: "Tomas, you're the only man in Highmoor who's still allowed to say that." },
+    ],
+    reward: 'Unlocked: the Market Stall (earns Marks and cheers on its neighbours). Lore card: "Free tea".',
+  },
+  {
+    id: 14,
+    name: '0.99',
+    place: 'Highmoor',
+    cols: 6,
+    rows: 8,
+    path: [[0, 7], [0, 5], [4, 5], [4, 3], [1, 3], [1, 1], [5, 1], [5, 0]],
+    startMarks: 500,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall'],
+    waves: ramp(7, { v: 6, d: 8, t: 2, truckFrom: 1 }),
+    before: [
+      { who: 'narrator', text: 'A yellow lorry with a price on the side grinds up the hill: ".99". It is all the lorry says. It is all the lorry needs to say.' },
+      { who: 'bea', expression: 'worried', text: 'It goes bang and then two drones come out of it! Why does it do that?' },
+      { who: 'cath', expression: 'determined', text: "Because it's cheaper to be everywhere at once. Break the truck, and it just becomes more little problems." },
+      { who: 'cath', expression: 'smirk', text: "Hives on the bends, then. Little problems bunch up beautifully." },
+    ],
+    after: [
+      { who: 'bea', expression: 'delighted', text: 'Gerald got four drones in one go. He is very proud.' },
+      { who: 'cath', expression: 'wink', text: "As he should be." },
+    ],
+    reward: 'Lore card: "The .99 lorry", the paint smells of discount.',
+  },
+  {
+    id: 15,
+    name: 'Loyalty Cards',
+    place: 'Highmoor',
+    cols: 7,
+    rows: 8,
+    path: [[0, 0], [6, 0], [6, 2], [1, 2], [1, 4], [6, 4], [6, 6], [2, 6], [2, 7], [6, 7]],
+    startMarks: 540,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall'],
+    waves: ramp(7, { v: 7, d: 9, t: 2 }),
+    before: [
+      { who: 'narrator', text: 'Every house in Highmoor receives a small plastic card. It says "WELCOME BACK", though none of them have been anywhere.' },
+      { who: 'mara', text: "I got one too. It's asking for my postcode, my birthday and my favourite bean." },
+      { who: 'cath', expression: 'determined', text: "It knows what you want before you do. That's not a loyalty card, Mara. That's a leash with a discount." },
+      { who: 'cath', expression: 'wink', text: "Ours is a punch card. Ten hedges, one free hedge." },
+    ],
+    after: [
+      { who: 'mara', text: 'I put mine in the compost. It is now the most useful thing it has ever been.' },
+      { who: 'cath', expression: 'delighted', text: 'That is the finest thing anyone has said this month.' },
+    ],
+    reward: 'Lore card: "The punch card", ten holes, one free hedge.',
+  },
+  {
+    id: 16,
+    name: 'Mist on the Moor',
+    place: 'Highmoor',
+    cols: 6,
+    rows: 8,
+    path: [[5, 0], [0, 0], [0, 2], [4, 2], [4, 4], [0, 4], [0, 6], [5, 6], [5, 7]],
+    startMarks: 540,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall'],
+    waves: ramp(8, { v: 6, d: 8, t: 2, truckFrom: 1, vs: 1, ds: 1.1 }),
+    before: [
+      { who: 'narrator', text: 'A cold fog rolls down off the moor. In it, a hundred headlamps bob like lanterns at a very expensive funeral.' },
+      { who: 'tomas', text: "I can't see the road. I can't see my own hedges." },
+      { who: 'cath', expression: 'determined', text: "You don't have to see the road, Tomas. You just have to know where it ends. Ours ends at the farmhouse, and they'll find that out." },
+    ],
+    after: [
+      { who: 'tomas', text: 'The fog lifted. Every truck was facing the wrong way.' },
+      { who: 'cath', expression: 'smirk', text: "Someone turned the road signs round. I wonder who." },
+    ],
+    reward: 'Lore card: "Turned signs", every one of them now points at the pub.',
+  },
+  {
+    id: 17,
+    name: 'The Auction',
+    place: 'Highmoor',
+    cols: 6,
+    rows: 8,
+    path: [[0, 0], [4, 0], [4, 2], [1, 2], [1, 4], [5, 4], [5, 6], [0, 6], [0, 7], [5, 7]],
+    startMarks: 580,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall'],
+    waves: ramp(8, { v: 8, d: 10, t: 3, truckFrom: 1, vs: 1.4 }),
+    before: [
+      { who: 'narrator', text: 'A tidy man with a gavel announces the auction of the Highmoor Market Square. He is bidding against himself and winning.' },
+      { who: 'cath', expression: 'determined', text: "Nobody bid. Not one of you. Let him talk to the empty air until he runs out of pound coins." },
+      { who: 'mara', text: "He's just raised his own offer again." },
+      { who: 'cath', expression: 'wink', text: "Then we'd better make sure the square isn't for sale." },
+    ],
+    after: [
+      { who: 'tomas', text: 'The auctioneer left his gavel. I am using it to open jars.' },
+      { who: 'cath', expression: 'smirk', text: 'Going once. Going twice. Gone.' },
+    ],
+    reward: 'Lore card: "The gavel", currently a very good jar-opener.',
+  },
+  {
+    id: 18,
+    name: 'Last Orders',
+    place: 'Highmoor',
+    cols: 6,
+    rows: 8,
+    path: [[0, 1], [5, 1], [5, 3], [0, 3], [0, 5], [4, 5], [4, 7], [0, 7]],
+    startMarks: 600,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall'],
+    waves: ramp(8, { v: 6, d: 8, t: 2, truckFrom: 1, vs: 1.1, ds: 1.1 }),
+    before: [
+      { who: 'narrator', text: "The Highmoor Arms is the last pub in the valley that isn't owned by anyone with a slogan. The barman has locked the door and put out a sign: 'LAST ORDERS, LAST STAND'." },
+      { who: 'tomas', text: "There are sixty people inside, all with a pint, all with an opinion." },
+      { who: 'cath', expression: 'delighted', text: "Sixty opinions is an army, Tomas. Let's put them in the lane." },
+    ],
+    after: [
+      { who: 'tomas', text: 'The pub is still ours. Someone bought a round for the hedges.' },
+      { who: 'cath', expression: 'wink', text: "I'll have the same." },
+    ],
+    reward: 'Lore card: "The pub sign", a very cross-looking goose.',
+  },
+  {
+    id: 19,
+    name: 'The Convoy Assembles',
+    place: 'Highmoor',
+    cols: 7,
+    rows: 8,
+    path: [[6, 0], [0, 0], [0, 2], [5, 2], [5, 4], [1, 4], [1, 6], [6, 6], [6, 7]],
+    startMarks: 640,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall'],
+    waves: ramp(8, { v: 7, d: 9, t: 2, truckFrom: 1, vs: 1.2, ds: 1.2 }),
+    before: [
+      { who: 'narrator', text: "By dusk, the lorries are lined up along the ridge, nose to tail, headlamps on. There is a man in a very good coat walking down the line, and every driver sits up straighter as he passes." },
+      { who: 'tomas', text: "That's Mr Crisp. He owns the prices. All of them. He sets them in the morning like a farmer feeds hens." },
+      { who: 'cath', expression: 'determined', text: "Tomorrow, he brings the whole convoy. Tonight, we get ready." },
+    ],
+    after: [
+      { who: 'cath', expression: 'worried', text: "That was only the advance party. The convoy proper is on its way down the hill." },
+      { who: 'mara', text: 'Then we had better have the kettle on.' },
+    ],
+    reward: 'Lore card: "Mr Crisp\'s coat", very good, very expensive, slightly damp.',
+  },
+  {
+    id: 20,
+    name: "Mr Crisp's Convoy",
+    place: 'Highmoor',
+    cols: 6,
+    rows: 8,
+    path: [[0, 0], [5, 0], [5, 2], [0, 2], [0, 4], [5, 4], [5, 6], [0, 6], [0, 7], [5, 7]],
+    startMarks: 520,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall'],
+    waves: [
+      ...ramp(5, { v: 9, d: 11, t: 3, truckFrom: 0, vs: 1.4 }),
+      [convoy(0), van(10, 1.2, 6), truck(4, 2, 10), drone(14, 0.55, 8)],
+    ],
+    before: [
+      { who: 'narrator', text: "Mr Crisp's Price-War Convoy is forty lorries long and every one of them is painted with a discount. At its head, the largest lorry in Highmoor's history. It has a tiny flag on the bonnet reading 'SAVE'." },
+      { who: 'tomas', text: "He's offering to buy the whole square. He's offering a very good price. That's the horrible part." },
+      { who: 'cath', expression: 'determined', text: "A very good price is just a very good trap, Tomas. Every stall, every hedge, every hive. Highmoor is not for sale." },
+      { who: 'cath', expression: 'wink', text: "And when it breaks apart, that's when we sting them." },
+    ],
+    after: [
+      { who: 'narrator', text: "The Convoy stands in the lane, in pieces. Mr Crisp steps down from the cab, looks at his ruined lorries and adjusts his coat. 'Fine,' he says. 'I'll take my business elsewhere.'" },
+      { who: 'tomas', text: 'Where is elsewhere?' },
+      { who: 'cath', expression: 'worried', text: "Somewhere with a coast. And somewhere with a podcast. I think Saltmarsh is about to have a very loud month." },
+    ],
+    reward: 'Act 2 complete. Lore card: "The .99 sign", now hanging above Tomas\'s market, corrected to a very fair price.',
   },
 ]
 

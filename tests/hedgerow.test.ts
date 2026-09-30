@@ -134,6 +134,35 @@ describe('hedgerow engine', () => {
     expect(throwPie(newGame(LEVELS[0]!)).ok).toBe(false)
   })
 
+  it('a Market Stall earns Marks each wave and boosts neighbours', () => {
+    const lv = LEVELS[12]!
+    const game = newGame(lv)
+    place(game, 'stall', 0, 1)
+    place(game, 'scarecrow', 1, 1)
+    place(game, 'scarecrow', 5, 7)
+    sendWave(game)
+    game.enemies.push({ id: 90, kind: 'van', dist: 1, hp: 1000, slowed: false, stun: 0 })
+    stepGame(game)
+    const hp = game.enemies.find((e) => e.id === 90)!.hp
+    expect(1000 - hp).toBeCloseTo(TOWERS.scarecrow.damage[0] * TOWERS.stall.buff![0], 5)
+    const g2 = newGame(lv)
+    place(g2, 'stall', 0, 1)
+    const before = g2.marks
+    sendWave(g2)
+    g2.spawnQueue = []
+    stepGame(g2)
+    expect(g2.marks).toBe(before + 20 + 5 + TOWERS.stall.income![0])
+  })
+
+  it('a price-war truck breaks into drones', () => {
+    const game = newGame(LEVELS[13]!)
+    sendWave(game)
+    game.spawnQueue = []
+    game.enemies.push({ id: 90, kind: 'truck', dist: 4, hp: 0, slowed: false, stun: 0 })
+    stepGame(game)
+    expect(game.enemies.filter((e) => e.kind === 'drone')).toHaveLength(2)
+  })
+
   it('a slowed enemy covers less ground', () => {
     const g1 = newGame(level)
     const g2 = newGame(level)

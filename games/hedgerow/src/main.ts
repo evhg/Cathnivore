@@ -234,6 +234,8 @@ function renderPanel(): void {
       const parts = [`range ${spec.range[i]}`]
       if (spec.damage[i]) parts.push(`${dps.toFixed(1)} dmg/s`)
       if (spec.slow[i]! < 1) parts.push(`slows to ${Math.round(spec.slow[i]! * 100)}%`)
+      if (spec.buff) parts.push(`+${Math.round((spec.buff[i]! - 1) * 100)}% damage nearby`)
+      if (spec.income) parts.push(`+${spec.income[i]} Marks a wave`)
       return parts.join(', ')
     }
     line(t.tier < 3 ? `Now: ${at(t.tier - 1)}. Next: ${at(t.tier)}.` : `Now: ${at(2)}.`, 'panel-stats')

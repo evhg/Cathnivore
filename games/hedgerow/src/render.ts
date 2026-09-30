@@ -240,6 +240,23 @@ export class Renderer {
         ctx.arc(x - s * 0.2 + i * s * 0.14, y - s * 0.02 + (i % 2) * s * 0.08, s * 0.05, 0, Math.PI * 2)
         ctx.fill()
       }
+    } else if (kind === 'stall') {
+      ctx.fillStyle = '#8a5a35'
+      ctx.fillRect(x - s * 0.3, y, s * 0.6, s * 0.28)
+      ctx.strokeRect(x - s * 0.3, y, s * 0.6, s * 0.28)
+      for (let i = 0; i < 4; i++) {
+        ctx.fillStyle = i % 2 ? '#fffbe6' : '#c4433a'
+        ctx.beginPath()
+        ctx.rect(x - s * 0.34 + i * s * 0.17, y - s * 0.3, s * 0.17, s * 0.28)
+        ctx.fill()
+        ctx.stroke()
+      }
+      ctx.fillStyle = '#f2c94c'
+      for (let i = 0; i < tier; i++) {
+        ctx.beginPath()
+        ctx.arc(x - s * 0.12 * (tier - 1) + i * s * 0.24, y + s * 0.14, s * 0.055, 0, Math.PI * 2)
+        ctx.fill()
+      }
     } else if (kind === 'beehive') {
       ctx.fillStyle = '#f2c94c'
       for (let i = 0; i < 3; i++) {
@@ -292,8 +309,24 @@ export class Renderer {
     const { ctx } = this
     ctx.lineWidth = 2.5
     ctx.strokeStyle = '#2b2320'
-    if (kind === 'boss') {
-      ctx.fillStyle = '#f3f0ea'
+    if (kind === 'truck') {
+      ctx.fillStyle = '#f2c94c'
+      ctx.beginPath()
+      ctx.roundRect(x - s * 0.32, y - s * 0.2, s * 0.64, s * 0.4, s * 0.09)
+      ctx.fill()
+      ctx.stroke()
+      ctx.fillStyle = '#c4433a'
+      ctx.font = `bold ${Math.round(s * 0.2)}px sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('.99', x - s * 0.04, y)
+      ctx.fillStyle = '#2b2320'
+      ctx.beginPath()
+      ctx.arc(x - s * 0.16, y + s * 0.2, s * 0.07, 0, Math.PI * 2)
+      ctx.arc(x + s * 0.16, y + s * 0.2, s * 0.07, 0, Math.PI * 2)
+      ctx.fill()
+    } else if (kind === 'boss' || kind === 'convoy') {
+      ctx.fillStyle = kind === 'convoy' ? '#f2c94c' : '#f3f0ea'
       ctx.beginPath()
       ctx.roundRect(x - s * 0.46, y - s * 0.34, s * 0.92, s * 0.68, s * 0.12)
       ctx.fill()

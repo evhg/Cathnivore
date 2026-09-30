@@ -6,8 +6,8 @@
 
 export const STEP = 1 / 30
 
-export type TowerKind = 'hedgerow' | 'scarecrow' | 'beehive'
-export type EnemyKind = 'van' | 'drone' | 'boss'
+export type TowerKind = 'hedgerow' | 'scarecrow' | 'beehive' | 'stall'
+export type EnemyKind = 'van' | 'drone' | 'boss' | 'truck' | 'convoy'
 
 export interface TowerSpec {
   name: string
@@ -24,6 +24,10 @@ export interface TowerSpec {
   splash?: number
   /** Speed multiplier applied to enemies in range (1 = none). */
   slow: [number, number, number]
+  /** Damage multiplier given to other towers in range (the Market Stall). */
+  buff?: [number, number, number]
+  /** Marks earned at the end of every wave. */
+  income?: [number, number, number]
 }
 
 export const TOWERS: Record<TowerKind, TowerSpec> = {
@@ -58,6 +62,18 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     slow: [1, 1, 1],
     splash: 1.1,
   },
+  stall: {
+    name: 'Market Stall',
+    blurb: 'Earns Marks after every wave and cheers on the towers beside it.',
+    cost: 100,
+    upgrades: [80, 120],
+    range: [1.6, 1.9, 2.2],
+    damage: [0, 0, 0],
+    cooldown: [1, 1, 1],
+    slow: [1, 1, 1],
+    buff: [1.2, 1.3, 1.45],
+    income: [12, 20, 30],
+  },
 }
 
 export interface EnemySpec {
@@ -68,12 +84,16 @@ export interface EnemySpec {
   bounty: number
   /** Goodwill lost when it reaches the farmhouse. */
   leak: number
+  /** What it breaks into when destroyed. */
+  splits?: { kind: EnemyKind; count: number }
 }
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   van: { name: 'Delivery van', hp: 98, speed: 0.9, bounty: 9, leak: 1 },
   boss: { name: 'The Acquisition Van', hp: 1800, speed: 0.55, bounty: 150, leak: 5 },
   drone: { name: 'Delivery drone', hp: 35, speed: 1.8, bounty: 6, leak: 1 },
+  truck: { name: '0.99 price-war truck', hp: 150, speed: 0.8, bounty: 10, leak: 2, splits: { kind: 'drone', count: 2 } },
+  convoy: { name: "Mr Crisp's Price-War Convoy", hp: 2700, speed: 0.5, bounty: 200, leak: 6, splits: { kind: 'truck', count: 3 } },
 }
 
 export interface WaveGroup {
@@ -315,7 +335,7 @@ export function stepGame(game: Game): void {
 
   // Scarecrows fire at the enemy furthest along the lane.
   for (const t of game.towers) {
-    if (t.kind === 'hedgerow') continue
+    if (TOWERS[t.kind].damage[0] === 0) continue
     t.cd -= STEP
     if (t.cd > 0) continue
     const spec = TOWERS[t.kind]
@@ -331,7 +351,11 @@ export function stepGame(game: Game): void {
       continue
     }
     const p = pointAt(path, target.dist)
-    const dmg = spec.damage[t.tier - 1]!
+    let dmg = spec.damage[t.tier - 1]!
+    for (const b of game.towers) {
+      const bs = TOWERS[b.kind]
+      if (bs.buff && Math.hypot(b.col - t.col, b.row - t.row) <= bs.range[b.tier - 1]!) dmg *= bs.buff[b.tier - 1]!
+    }
     target.hp -= dmg
     if (spec.splash) {
       for (const e of game.enemies) {
@@ -345,18 +369,25 @@ export function stepGame(game: Game): void {
   }
 
   const alive: Enemy[] = []
+  const spawned: Enemy[] = []
   for (const e of game.enemies) {
     const p = pointAt(path, e.dist)
     if (e.hp <= 0) {
       const bounty = ENEMIES[e.kind].bounty
       game.marks += bounty
+      const split = ENEMIES[e.kind].splits
+      if (split) {
+        for (let i = 0; i < split.count; i++) {
+          spawned.push({ id: game.nextId++, kind: split.kind, dist: Math.max(0, e.dist - i * 0.35), hp: ENEMIES[split.kind].hp, slowed: false, stun: 0 })
+        }
+      }
       game.events.push({ type: 'kill', x: p.x, y: p.y, bounty })
     } else if (e.dist >= game.pathLength) {
       game.goodwill -= ENEMIES[e.kind].leak
       game.events.push({ type: 'leak', x: p.x, y: p.y })
     } else alive.push(e)
   }
-  game.enemies = alive
+  game.enemies = alive.concat(spawned)
 
   if (game.goodwill <= 0) {
     game.goodwill = 0
@@ -366,6 +397,7 @@ export function stepGame(game: Game): void {
     else {
       game.phase = 'build'
       game.marks += 20 + game.wave * 5
+      for (const t of game.towers) game.marks += TOWERS[t.kind].income?.[t.tier - 1] ?? 0
     }
   }
 }
@@ -384,7 +416,7 @@ export function throwPie(game: Game): ActionResult {
   if (game.phase !== 'wave') return { ok: false, reason: 'Save it for a wave.' }
   if (game.pieCd > 0) return { ok: false, reason: 'Still cooling on the windowsill.' }
   if (game.enemies.length === 0) return { ok: false, reason: 'Nothing to throw it at.' }
-  for (const e of game.enemies) e.stun = e.kind === 'boss' ? PIE_STUN / 2 : PIE_STUN
+  for (const e of game.enemies) e.stun = e.kind === 'boss' || e.kind === 'convoy' ? PIE_STUN / 2 : PIE_STUN
   game.pieCd = PIE_COOLDOWN
   game.events.push({ type: 'pie' })
   return { ok: true }
