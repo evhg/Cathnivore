@@ -440,15 +440,17 @@ h3 {
 
 .enemy-turn-playback {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 24px;
+  gap: 4px;
+  padding: 12px 16px;
   text-align: center;
-  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  border-radius: 12px 12px 0 0;
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
   color: var(--paper);
   cursor: pointer;
 }

@@ -298,6 +298,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // second tap on the same card clears the highlight; tapping a different card switches to it.
   const [planHighlightSlot, setPlanHighlightSlot] = useState<'squeeze' | 'expand' | 'scout' | null>(null)
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
+  const [enemyStepRegion, setEnemyStepRegion] = useState<RegionId | undefined>()
   const [showLog, setShowLog] = useState(false)
   const [showFarm, setShowFarm] = useState(false)
   const [showMarket, setShowMarket] = useState(false)
@@ -1237,7 +1238,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <RegionMap
           state={state}
           highlight={
-            selectedGroup
+            enemyStepRegion && pendingEnemyTurn.length > 0
+              ? [enemyStepRegion]
+              : selectedGroup
               ? pendingChoice
                 ? [pendingChoice.region]
                 : selectedGroup.entries.map((e) => e.region)
@@ -1255,7 +1258,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           }
         />
         {pendingEnemyTurn.length > 0 && (
-          <EnemyTurnPlayback events={pendingEnemyTurn} onDone={() => setPendingEnemyTurn([])} />
+          <EnemyTurnPlayback events={pendingEnemyTurn} onStep={setEnemyStepRegion} onDone={() => setPendingEnemyTurn([])} />
         )}
       </section>
       </div>
