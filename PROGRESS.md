@@ -67,6 +67,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-09-30 ~19:52-20:10 UTC: Hedgerow level select grouped into ten act headers (place names), boss levels marked, list scrolls to the next unplayed level.
 - 2026-09-30 ~18:52-19:10 UTC: Hedgerow act 10 (levels 91-100, Kingsmarket): HollowCandor 3-phase boss (phase 1 jams towers, splits into 2 Candors that heal, each splits into stealth remnants), finale with Bea; 1 new test. Prettier run on games/hedgerow again (fine).
 - 2026-09-30 ~13:52-14:15 UTC: Hedgerow act 4 (levels 31-40, Rivermead): armour (halves non-piercing damage), bulldozers, Co-op Barn, Grain Silo (pierces), Mega-Dozer boss (splits into bulldozers); bot builds silos/barns; armour test. I ran prettier on games/hedgerow by mistake (big one-off diff, now formatted); files are prettier-clean from here.
 - 2026-09-30 ~13:00-13:25 UTC: Hedgerow act 3 (levels 21-30, Saltmarsh): Duck Pond tower, influencers (charm nearby towers), Brand Ambassador Blimp boss, Sol as speaker; bot builds ponds. Prettier reformats these files heavily: don't run it on games/hedgerow.

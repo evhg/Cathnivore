@@ -100,13 +100,26 @@ function say(text: string): void {
 
 function renderLevels(): void {
   ui.levels.innerHTML = "";
+  let lastPlace = "";
+  let current: HTMLElement | null = null;
   for (const lv of LEVELS) {
+    if (lv.place !== lastPlace) {
+      lastPlace = lv.place;
+      const h = document.createElement("li");
+      h.className = "act-head";
+      h.setAttribute("role", "presentation");
+      const n = Math.floor((lv.id - 1) / 10) + 1;
+      h.innerHTML = `<span class="act-num"></span><span class="act-place"></span>`;
+      h.querySelector(".act-num")!.textContent = `Act ${n}`;
+      h.querySelector(".act-place")!.textContent = lv.place;
+      ui.levels.append(h);
+    }
     const unlocked = isUnlocked(data, lv.id);
     const got = data.stars[String(lv.id)] ?? 0;
     const li = document.createElement("li");
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "level";
+    b.className = "level" + (lv.id % 10 === 0 ? " level-boss" : "");
     b.disabled = !unlocked;
     b.dataset.level = String(lv.id);
     b.innerHTML = `<span class="level-num">${lv.id}</span><span><span class="level-name"></span><span class="level-sub"></span></span><span class="level-stars"></span>`;
@@ -120,7 +133,9 @@ function renderLevels(): void {
     b.addEventListener("click", () => openLevel(lv));
     li.append(b);
     ui.levels.append(li);
+    if (unlocked && got === 0 && !current) current = b;
   }
+  current?.scrollIntoView({ block: "center" });
 }
 
 // ---- story dialogs ----

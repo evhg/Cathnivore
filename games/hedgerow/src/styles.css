@@ -446,3 +446,31 @@ button {
   font-size: 54px;
   color: var(--soil);
 }
+
+.act-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 10px 2px 0;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--paper-2);
+  font-family: "Fraunces", Georgia, serif;
+  color: var(--soil);
+}
+.act-head:first-child {
+  margin-top: 0;
+}
+.act-num {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.act-place {
+  font-size: 20px;
+}
+.level-boss .level-num {
+  background: var(--soil);
+  color: var(--surface);
+  box-shadow: 0 0 0 3px var(--wheat);
+}
