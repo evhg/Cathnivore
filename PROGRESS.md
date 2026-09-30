@@ -30,7 +30,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
-- (pending) Hedgerow act 9 (levels 81-90, The Merger, Board of Directors boss).
+- 2026-09-30 ~18:00 UTC (`adfbd0a`): Hedgerow act 9 (levels 81-90, The Merger, Board of Directors). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~17:10 UTC: Hedgerow act 8 (levels 71-80, The Ballot, Union Hall, Campaign Bus) — `c0d569e`; live version.json matches; tag 403 (harmless).
 - 2026-09-30 ~16:00 UTC (`4b053d7`): Hedgerow act 7 (levels 61-70, The Rift, lawyers, Courthouse, Lawyer Swarm). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~15:08 UTC (`47ffb6d`): Hedgerow act 6 (levels 51-60, Shingle Bay, tenders, Clinic Tent, Container Ship). main==build; live version.json matches; tag push 403 (harmless).
