@@ -189,3 +189,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-30: Level 100's phases are chained enemy splits (hollowcandor -> candor x2 -> remnant x3) so the engine needs no phase state; jam/heal/stealth give each phase its own rule. Tuned down until the greedy test bot wins.
 - 2026-09-30: Hedgerow finale = four extra story lines appended after level 100's own (no new dialog); tower panel shows tier as pips. Session kept to one slice.
 - 2026-09-30: ROADMAP 12 was already fully built (shapes + placement animations); ticked it. Short session, no code change.
+- 2026-09-30 (late): Hedgerow level select got per-act SVG banners (palette per act, generated in main.ts). No release: daily cap already used.
