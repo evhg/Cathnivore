@@ -1082,6 +1082,14 @@ h3 {
     overflow-y: auto;
   }
 
+  /* Right column: Market, Cath's Plan and Log shrink together and scroll internally, because random cards
+     vary in height (Market alone measures 335-457px) and no fixed budget fits every draw. */
+  .desktop-col-right > .sheet-panel {
+    flex: 0 1 auto;
+    min-height: 72px;
+    overflow-y: auto;
+  }
+
   /* SPEC 10.3's right column shortfall grew further once the Market/Cath's Plan sheets started rendering
      `card.text` (DECISIONS.md 2026-09-26's rules-text fix, needed for SPEC priority 2 — not something to
      undo just to save height): 4 Improvement + 3 Scheme cards each gained a rules-text paragraph, measured
