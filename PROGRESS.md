@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** **Hedgerow H2** (act 1 complete: levels 4-10, Acquisition Van miniboss, upgrade UI polish, Beehive at level 4; H1 shipped 2026-09-30). Read `docs/design/hedgerow.md`. Keep polishing Cathnivore items 9-13 alongside when a Hedgerow slice is waiting on something.
+- **Next:** **Hedgerow H2** (act 1 complete: levels 7-10, Acquisition Van miniboss, upgrade UI polish; levels 4-6 and the Beehive are done; H1 shipped 2026-09-30). Read `docs/design/hedgerow.md`. Keep polishing Cathnivore items 9-13 alongside when a Hedgerow slice is waiting on something.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked

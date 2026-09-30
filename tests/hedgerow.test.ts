@@ -48,7 +48,13 @@ function play(level: Level, build: boolean): Game {
           bought = false
           const scarecrows = game.towers.filter((t) => t.kind === 'scarecrow').length
           const hedges = game.towers.filter((t) => t.kind === 'hedgerow').length
-          const kind = hedges < Math.floor(scarecrows / 2) ? 'hedgerow' : 'scarecrow'
+          const hives = game.towers.filter((t) => t.kind === 'beehive').length
+          const kind =
+            hedges < Math.floor(scarecrows / 2)
+              ? 'hedgerow'
+              : level.towers.includes('beehive') && hives < scarecrows
+                ? 'beehive'
+                : 'scarecrow'
           const spot = plots.find(([c, r]) => !towerAt(game, c, r))
           if (spot && place(game, kind, spot[0], spot[1]).ok) bought = true
           else {
@@ -93,6 +99,24 @@ describe('hedgerow engine', () => {
     const a = play(level, true)
     const b = play(level, true)
     expect([a.tick, a.goodwill, a.marks]).toEqual([b.tick, b.goodwill, b.marks])
+  })
+
+  it('a beehive stings every enemy near its target', () => {
+    const lv = LEVELS[3]!
+    const game = newGame(lv)
+    place(game, 'beehive', 2, 1)
+    sendWave(game)
+    game.enemies.push(
+      { id: 90, kind: 'van', dist: 5, hp: 100, slowed: false },
+      { id: 91, kind: 'van', dist: 5.5, hp: 100, slowed: false },
+      { id: 92, kind: 'van', dist: 20, hp: 100, slowed: false },
+    )
+    game.spawnQueue = []
+    stepGame(game)
+    const hp = (id: number) => game.enemies.find((e) => e.id === id)!.hp
+    expect(hp(90)).toBeLessThan(100)
+    expect(hp(91)).toBeLessThan(100)
+    expect(hp(92)).toBe(100)
   })
 
   it('a slowed enemy covers less ground', () => {

@@ -2,10 +2,10 @@
 // by shape as well as colour (STYLE.md 2: the greyscale test). Effects (flying turnips, floating Marks) live
 // here and are fed from the engine's event list.
 
-import { ENEMIES, TOWERS, laneCells, pointAt, towerAt, type Game, type GameEvent } from './engine'
+import { ENEMIES, TOWERS, laneCells, pointAt, towerAt, type Game, type GameEvent, type TowerKind } from './engine'
 
 interface Fx {
-  kind: 'turnip' | 'float' | 'puff'
+  kind: 'turnip' | 'float' | 'puff' | 'swarm'
   x: number
   y: number
   toX: number
@@ -56,7 +56,7 @@ export class Renderer {
 
   feed(events: GameEvent[]): void {
     for (const e of events) {
-      if (e.type === 'shot') this.fx.push({ kind: 'turnip', x: e.fromX, y: e.fromY, toX: e.toX, toY: e.toY, age: 0, life: 0.18 })
+      if (e.type === 'shot') this.fx.push({ kind: e.kind === 'beehive' ? 'swarm' : 'turnip', x: e.fromX, y: e.fromY, toX: e.toX, toY: e.toY, age: 0, life: 0.18 })
       else if (e.type === 'kill') {
         this.fx.push({ kind: 'float', x: e.x, y: e.y, toX: e.x, toY: e.y - 0.8, age: 0, life: 0.9, text: `+${e.bounty}` })
         this.fx.push({ kind: 'puff', x: e.x, y: e.y, toX: e.x, toY: e.y, age: 0, life: 0.35 })
@@ -119,7 +119,7 @@ export class Renderer {
       const { col, row } = this.selected
       const t = towerAt(game, col, row)
       if (t) {
-        const range = t.kind === 'scarecrow' ? TOWERS.scarecrow.range[t.tier - 1]! : TOWERS.hedgerow.range[t.tier - 1]!
+        const range = TOWERS[t.kind].range[t.tier - 1]!
         ctx.fillStyle = 'rgba(255,255,255,0.16)'
         ctx.strokeStyle = 'rgba(255,255,255,0.7)'
         ctx.lineWidth = 2
@@ -161,6 +161,18 @@ export class Renderer {
         ctx.arc(px(x), px(y), s * 0.1, 0, Math.PI * 2)
         ctx.fill()
         ctx.stroke()
+      } else if (f.kind === 'swarm') {
+        ctx.fillStyle = '#f2c94c'
+        ctx.strokeStyle = '#2b2320'
+        ctx.lineWidth = 1.5
+        for (let i = 0; i < 4; i++) {
+          const x = f.x + (f.toX - f.x) * t + Math.sin(t * 20 + i * 1.7) * 0.12
+          const y = f.y + (f.toY - f.y) * t + Math.cos(t * 18 + i * 2.1) * 0.12
+          ctx.beginPath()
+          ctx.arc(px(x), px(y), s * 0.05, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.stroke()
+        }
       } else if (f.kind === 'float') {
         ctx.globalAlpha = 1 - t
         ctx.fillStyle = f.text!.startsWith('-') ? '#8f2f22' : '#fffbe6'
@@ -206,7 +218,7 @@ export class Renderer {
     ctx.fillRect(x - s * 0.06, y + s * 0.08, s * 0.12, s * 0.22)
   }
 
-  private tower(kind: 'hedgerow' | 'scarecrow', tier: number, x: number, y: number, s: number): void {
+  private tower(kind: TowerKind, tier: number, x: number, y: number, s: number): void {
     const { ctx } = this
     ctx.lineWidth = 2.5
     ctx.strokeStyle = '#2b2320'
@@ -220,6 +232,25 @@ export class Renderer {
       for (let i = 0; i < tier + 1; i++) {
         ctx.beginPath()
         ctx.arc(x - s * 0.2 + i * s * 0.14, y - s * 0.02 + (i % 2) * s * 0.08, s * 0.05, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    } else if (kind === 'beehive') {
+      ctx.fillStyle = '#f2c94c'
+      for (let i = 0; i < 3; i++) {
+        const w = s * (0.44 - i * 0.1)
+        ctx.beginPath()
+        ctx.roundRect(x - w / 2, y + s * 0.26 - (i + 1) * s * 0.16, w, s * 0.16, s * 0.07)
+        ctx.fill()
+        ctx.stroke()
+      }
+      ctx.fillStyle = '#2b2320'
+      ctx.beginPath()
+      ctx.arc(x, y + s * 0.02, s * 0.04, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#fffbe6'
+      for (let i = 0; i < tier; i++) {
+        ctx.beginPath()
+        ctx.arc(x - s * 0.12 * (tier - 1) + i * s * 0.24, y + s * 0.35, s * 0.05, 0, Math.PI * 2)
         ctx.fill()
       }
     } else {

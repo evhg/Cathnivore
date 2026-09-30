@@ -57,7 +57,7 @@ button { font: inherit; color: inherit; }
 .host-line { margin: 0; font-size: 16px; line-height: 1.4; }
 
 .act { margin: 6px 2px 0; font-family: 'Fraunces', Georgia, serif; font-size: 18px; color: var(--soil); }
-.levels { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; overflow-y: auto; }
+.levels { flex: 1; min-height: 0; list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; overflow-y: auto; }
 .level { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; width: 100%; text-align: left; min-height: 64px; padding: 10px 14px; background: var(--surface); border: 2px solid transparent; border-radius: 16px; cursor: pointer; }
 .level:hover:not(:disabled) { border-color: var(--pasture); }
 .level:disabled { cursor: default; opacity: 0.6; }

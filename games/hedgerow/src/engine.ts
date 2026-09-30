@@ -6,7 +6,7 @@
 
 export const STEP = 1 / 30
 
-export type TowerKind = 'hedgerow' | 'scarecrow'
+export type TowerKind = 'hedgerow' | 'scarecrow' | 'beehive'
 export type EnemyKind = 'van' | 'drone'
 
 export interface TowerSpec {
@@ -20,6 +20,8 @@ export interface TowerSpec {
   damage: [number, number, number]
   /** Seconds between shots. */
   cooldown: [number, number, number]
+  /** Enemies within this many cells of the target also take the damage (0 = single target). */
+  splash?: number
   /** Speed multiplier applied to enemies in range (1 = none). */
   slow: [number, number, number]
 }
@@ -44,6 +46,17 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     damage: [8, 13, 20],
     cooldown: [0.8, 0.68, 0.55],
     slow: [1, 1, 1],
+  },
+  beehive: {
+    name: 'Beehive',
+    blurb: 'A swarm that stings everything near its target.',
+    cost: 120,
+    upgrades: [90, 140],
+    range: [2.0, 2.2, 2.5],
+    damage: [6, 10, 15],
+    cooldown: [1.1, 1, 0.9],
+    slow: [1, 1, 1],
+    splash: 1.1,
   },
 }
 
@@ -114,7 +127,7 @@ export interface Enemy {
 }
 
 export type GameEvent =
-  | { type: 'shot'; tower: number; enemy: number; fromX: number; fromY: number; toX: number; toY: number }
+  | { type: 'shot'; kind: TowerKind; tower: number; enemy: number; fromX: number; fromY: number; toX: number; toY: number }
   | { type: 'kill'; x: number; y: number; bounty: number }
   | { type: 'leak'; x: number; y: number }
   | { type: 'wave'; wave: number }
@@ -293,10 +306,10 @@ export function stepGame(game: Game): void {
 
   // Scarecrows fire at the enemy furthest along the lane.
   for (const t of game.towers) {
-    if (t.kind !== 'scarecrow') continue
+    if (t.kind === 'hedgerow') continue
     t.cd -= STEP
     if (t.cd > 0) continue
-    const spec = TOWERS.scarecrow
+    const spec = TOWERS[t.kind]
     const range = spec.range[t.tier - 1]!
     let target: Enemy | undefined
     for (const e of game.enemies) {
@@ -308,10 +321,18 @@ export function stepGame(game: Game): void {
       t.cd = 0
       continue
     }
-    target.hp -= spec.damage[t.tier - 1]!
-    t.cd = spec.cooldown[t.tier - 1]!
     const p = pointAt(path, target.dist)
-    game.events.push({ type: 'shot', tower: t.id, enemy: target.id, fromX: t.col + 0.5, fromY: t.row + 0.5, toX: p.x, toY: p.y })
+    const dmg = spec.damage[t.tier - 1]!
+    target.hp -= dmg
+    if (spec.splash) {
+      for (const e of game.enemies) {
+        if (e === target || e.hp <= 0) continue
+        const q = pointAt(path, e.dist)
+        if (Math.hypot(q.x - p.x, q.y - p.y) <= spec.splash) e.hp -= dmg
+      }
+    }
+    t.cd = spec.cooldown[t.tier - 1]!
+    game.events.push({ type: 'shot', kind: t.kind, tower: t.id, enemy: target.id, fromX: t.col + 0.5, fromY: t.row + 0.5, toX: p.x, toY: p.y })
   }
 
   const alive: Enemy[] = []
