@@ -25,6 +25,7 @@ import {
 } from './engine'
 import { LEVELS } from './levels'
 import { Renderer } from './render'
+import * as sfx from './sound'
 import { isUnlocked, load, recordStars, save } from './store'
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
@@ -47,6 +48,7 @@ const ui = {
   btnPie: $<HTMLButtonElement>('btn-pie'),
   btnSpeed: $<HTMLButtonElement>('btn-speed'),
   btnPause: $<HTMLButtonElement>('btn-pause'),
+  btnSound: $<HTMLButtonElement>('btn-sound'),
   announce: $<HTMLElement>('announce'),
   dlgStory: $<HTMLDialogElement>('dlg-story'),
   storyCath: $<HTMLElement>('story-cath'),
@@ -183,6 +185,8 @@ function leaveLevel(): void {
 function syncControls(): void {
   ui.btnSpeed.textContent = fast ? 'x2' : 'x1'
   ui.btnSpeed.setAttribute('aria-pressed', String(fast))
+  ui.btnSound.textContent = sfx.isMuted() ? 'Sound off' : 'Sound on'
+  ui.btnSound.setAttribute('aria-pressed', String(!sfx.isMuted()))
   ui.btnPause.textContent = paused ? 'Resume' : 'Pause'
   ui.btnPause.setAttribute('aria-pressed', String(paused))
   if (!game) return
@@ -234,14 +238,16 @@ function renderPanel(): void {
     up.id = 'btn-upgrade'
     up.textContent = cost === null ? 'Fully grown' : `Upgrade (${cost} Marks)`
     up.disabled = cost === null || game.marks < cost
-    up.onclick = () => act(() => upgrade(game!, t.id))
+    up.onclick = () => {
+      if (act(() => upgrade(game!, t.id))) sfx.playUpgrade()
+    }
     const sl = document.createElement('button')
     sl.type = 'button'
     sl.className = 'btn btn-quiet'
     sl.id = 'btn-sell'
     sl.textContent = `Sell (+${sellValue(t)})`
     sl.onclick = () => {
-      act(() => sell(game!, t.id))
+      if (act(() => sell(game!, t.id))) sfx.playSell()
       selected = null
       if (renderer) renderer.selected = null
       panelSig = ''
@@ -267,17 +273,20 @@ function renderPanel(): void {
     b.innerHTML = '<span></span><small></small>'
     b.firstElementChild!.textContent = `${spec.name} (${spec.cost})`
     b.lastElementChild!.textContent = spec.blurb
-    b.onclick = () => act(() => place(game!, kind as TowerKind, sel.col, sel.row))
+    b.onclick = () => {
+      if (act(() => place(game!, kind as TowerKind, sel.col, sel.row))) sfx.playBuild()
+    }
     row.append(b)
   }
   p.append(row)
 }
 
-function act(fn: () => { ok: boolean; reason?: string }): void {
+function act(fn: () => { ok: boolean; reason?: string }): boolean {
   const r = fn()
   if (!r.ok && r.reason) say(r.reason)
   panelSig = ''
   updateHud()
+  return r.ok
 }
 
 function select(col: number, row: number): void {
@@ -303,13 +312,25 @@ function frame(now: number): void {
       stepped = true
     }
     if (stepped) {
-      renderer.feed(drainEvents(game))
+      const evs = drainEvents(game)
+      let shots = 0
+      for (const ev of evs) {
+        if (ev.type === 'shot') {
+          if (shots++ < 2) sfx.playShot(ev.kind)
+        } else if (ev.type === 'kill') sfx.playKill()
+        else if (ev.type === 'leak') sfx.playLeak()
+        else if (ev.type === 'wave') sfx.playWave()
+        else if (ev.type === 'pie') sfx.playPie()
+      }
+      renderer.feed(evs)
       updateHud()
     }
   }
   renderer.draw(game, dt)
   if (!finished && (game.phase === 'won' || game.phase === 'lost')) {
     finished = true
+    if (game.phase === 'won') sfx.playWin()
+    else sfx.playLose()
     finish(game)
   }
 }
@@ -389,6 +410,10 @@ ui.btnPie.addEventListener('click', () => {
 })
 ui.btnSpeed.addEventListener('click', () => {
   fast = !fast
+  syncControls()
+})
+ui.btnSound.addEventListener('click', () => {
+  sfx.setMuted(!sfx.isMuted())
   syncControls()
 })
 ui.btnPause.addEventListener('click', () => {
