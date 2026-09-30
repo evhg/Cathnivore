@@ -15,7 +15,8 @@ export type TowerKind =
   | "barn"
   | "silo"
   | "mast"
-  | "tent";
+  | "tent"
+  | "court";
 export type EnemyKind =
   | "van"
   | "drone"
@@ -29,7 +30,9 @@ export type EnemyKind =
   | "phantom"
   | "clinic"
   | "tender"
-  | "ship";
+  | "ship"
+  | "lawyer"
+  | "swarm";
 
 export interface TowerSpec {
   name: string;
@@ -56,6 +59,8 @@ export interface TowerSpec {
   reveal?: [number, number, number];
   /** Towers within this range of the tent ignore influencer charm (the Clinic Tent). */
   cleanse?: boolean;
+  /** Seconds it freezes a boss in range each time it fires (the Courthouse's Injunction). */
+  injunction?: [number, number, number];
 }
 
 export const TOWERS: Record<TowerKind, TowerSpec> = {
@@ -160,6 +165,18 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     buff: [1.15, 1.25, 1.35],
     cleanse: true,
   },
+  court: {
+    name: "Courthouse",
+    blurb:
+      "Mara's courthouse. Serves an Injunction on any boss in range: it stops dead until the paperwork clears.",
+    cost: 180,
+    upgrades: [120, 180],
+    range: [2.2, 2.5, 2.8],
+    damage: [0, 0, 0],
+    cooldown: [9, 8, 7],
+    slow: [1, 1, 1],
+    injunction: [2.5, 3.5, 4.5],
+  },
 };
 
 export interface EnemySpec {
@@ -180,6 +197,8 @@ export interface EnemySpec {
   stealth?: boolean;
   /** Other enemies within 1.6 cells regain this many hit points a second. */
   heal?: number;
+  /** Towers within this many cells of it fire at half rate (paperwork). */
+  jam?: number;
 }
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
@@ -265,6 +284,23 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     leak: 10,
     armor: 0.35,
     splits: { kind: "tender", count: 4 },
+  },
+  lawyer: {
+    name: "Corporate lawyer",
+    hp: 170,
+    speed: 0.95,
+    bounty: 13,
+    leak: 2,
+    jam: 1.3,
+  },
+  swarm: {
+    name: "The Lawyer Swarm",
+    hp: 6000,
+    speed: 0.45,
+    bounty: 450,
+    leak: 10,
+    jam: 2,
+    splits: { kind: "lawyer", count: 5 },
   },
   clinic: {
     name: "Vane's Clinic-in-a-Box",
@@ -527,6 +563,16 @@ export function sendWave(game: Game): ActionResult {
 }
 
 /** An influencer's followers are watching it, not the road: towers in its charm range hold fire. */
+function jammed(game: Game, t: Tower): boolean {
+  for (const e of game.enemies) {
+    const r = ENEMIES[e.kind].jam;
+    if (!r || e.hp <= 0) continue;
+    const p = pointAt(game.level.path, e.dist);
+    if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= r) return true;
+  }
+  return false;
+}
+
 function charmed(game: Game, t: Tower): boolean {
   for (const c of game.towers)
     if (
@@ -618,8 +664,26 @@ export function stepGame(game: Game): void {
 
   // Scarecrows fire at the enemy furthest along the lane.
   for (const t of game.towers) {
+    const inj = TOWERS[t.kind].injunction;
+    if (inj) {
+      t.cd -= STEP;
+      if (t.cd > 0) continue;
+      const range = TOWERS[t.kind].range[t.tier - 1]!;
+      let served = false;
+      for (const e of game.enemies) {
+        if (e.hp <= 0 || ENEMIES[e.kind].hp < 1500) continue;
+        const p = pointAt(path, e.dist);
+        if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= range) {
+          e.stun = Math.max(e.stun, inj[t.tier - 1]!);
+          served = true;
+        }
+      }
+      t.cd = served ? TOWERS[t.kind].cooldown[t.tier - 1]! : 0;
+      continue;
+    }
     if (TOWERS[t.kind].damage[0] === 0) continue;
     t.cd -= STEP;
+    if (t.cd > 0 && jammed(game, t)) t.cd += STEP / 2;
     if (t.cd > 0) continue;
     if (charmed(game, t)) {
       t.cd = 0;
@@ -743,7 +807,8 @@ export function throwPie(game: Game): ActionResult {
       e.kind === "blimp" ||
       e.kind === "megadozer" ||
       e.kind === "clinic" ||
-      e.kind === "ship"
+      e.kind === "ship" ||
+      e.kind === "swarm"
         ? PIE_STUN / 2
         : PIE_STUN;
   game.pieCd = PIE_COOLDOWN;

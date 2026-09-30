@@ -414,6 +414,41 @@ export class Renderer {
         );
         ctx.fill();
       }
+    } else if (kind === "court") {
+      ctx.fillStyle = "#e8e2d0";
+      ctx.beginPath();
+      ctx.moveTo(x - s * 0.4, y - s * 0.12);
+      ctx.lineTo(x, y - s * 0.4);
+      ctx.lineTo(x + s * 0.4, y - s * 0.12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      for (let i = 0; i < 4; i++) {
+        ctx.fillRect(
+          x - s * 0.32 + i * s * 0.2,
+          y - s * 0.08,
+          s * 0.1,
+          s * 0.4,
+        );
+        ctx.strokeRect(
+          x - s * 0.32 + i * s * 0.2,
+          y - s * 0.08,
+          s * 0.1,
+          s * 0.4,
+        );
+      }
+      ctx.fillStyle = "#f2c94c";
+      for (let i = 0; i < tier; i++) {
+        ctx.beginPath();
+        ctx.arc(
+          x - s * 0.12 * (tier - 1) + i * s * 0.24,
+          y + s * 0.38,
+          s * 0.05,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
     } else if (kind === "barn") {
       ctx.fillStyle = "#b5523b";
       ctx.beginPath();
@@ -655,6 +690,33 @@ export class Renderer {
         ctx.textBaseline = "middle";
         ctx.fillText("SYNERGY", x, y - s * 0.02);
       }
+    } else if (kind === "lawyer" || kind === "swarm") {
+      const k = kind === "swarm" ? 1.6 : 1;
+      ctx.fillStyle = "#2b2f3a";
+      ctx.beginPath();
+      ctx.arc(x, y - s * 0.16 * k, s * 0.12 * k, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x - s * 0.2 * k, y + s * 0.3 * k);
+      ctx.lineTo(x - s * 0.14 * k, y - s * 0.04 * k);
+      ctx.lineTo(x + s * 0.14 * k, y - s * 0.04 * k);
+      ctx.lineTo(x + s * 0.2 * k, y + s * 0.3 * k);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#f4f1e8";
+      ctx.fillRect(
+        x + s * 0.12 * k,
+        y + s * 0.06 * k,
+        s * 0.16 * k,
+        s * 0.2 * k,
+      );
+      ctx.strokeRect(
+        x + s * 0.12 * k,
+        y + s * 0.06 * k,
+        s * 0.16 * k,
+        s * 0.2 * k,
+      );
     } else if (kind === "tender" || kind === "ship") {
       const k = kind === "ship" ? 1.6 : 1;
       ctx.fillStyle = kind === "ship" ? "#2f5a7a" : "#6fa0c4";

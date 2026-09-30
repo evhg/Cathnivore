@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** **Hedgerow H8** (act 7, The Rift, levels 61-70: two enemy factions fighting each other, Courthouse tower (Mara) 'Injunction', Lawyer Swarm boss). Acts 1-6 done (act 6 adds tenders, Clinic Tent, Container Ship). Read `docs/design/hedgerow.md`.
+- **Next:** **Hedgerow H9** (act 8, levels 71-80; Farmers' Union Hall tower (Tomas), Market Day rally). Acts 1-7 done (act 7 adds lawyers that jam towers, the Courthouse 'Injunction', Lawyer Swarm boss; the two-faction feud is story only). Read `docs/design/hedgerow.md`.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked

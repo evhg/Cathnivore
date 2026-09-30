@@ -342,6 +342,54 @@ describe("hedgerow engine", () => {
     expect(fire(true)).toBeGreaterThan(0);
   });
 
+  it("a Courthouse freezes a boss in range with an Injunction", () => {
+    const lv = LEVELS[64]!;
+    const g = newGame(lv);
+    place(g, "court", 4, 0);
+    sendWave(g);
+    g.spawnQueue = [];
+    g.enemies.push({
+      id: 90,
+      kind: "swarm",
+      dist: 4.5,
+      hp: 6000,
+      slowed: false,
+      stun: 0,
+    });
+    stepGame(g);
+    expect(g.enemies.find((e) => e.id === 90)!.stun).toBeGreaterThan(1);
+  });
+
+  it("lawyers jam nearby towers to half rate", () => {
+    const lv = LEVELS[62]!;
+    const shots = (jam: boolean) => {
+      const g = newGame(lv);
+      place(g, "scarecrow", 5, 0);
+      sendWave(g);
+      g.spawnQueue = [];
+      g.enemies.push({
+        id: 91,
+        kind: "van",
+        dist: 4.6,
+        hp: 1e9,
+        slowed: false,
+        stun: 0,
+      });
+      if (jam)
+        g.enemies.push({
+          id: 90,
+          kind: "lawyer",
+          dist: 4.5,
+          hp: 1e9,
+          slowed: false,
+          stun: 0,
+        });
+      for (let i = 0; i < 200; i++) stepGame(g);
+      return 1e9 - g.enemies.find((e) => e.id === 91)!.hp;
+    };
+    expect(shots(true)).toBeLessThan(shots(false));
+  });
+
   it("a slowed enemy covers less ground", () => {
     const g1 = newGame(level);
     const g2 = newGame(level);
