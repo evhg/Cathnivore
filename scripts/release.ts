@@ -123,7 +123,20 @@ export async function liveSmokeTest(base: string): Promise<SmokeResult> {
 // Fallback when the browser check is inconclusive: every page must return 200 with the expected content,
 // and so must every file each page references. curl uses the system trust store, which holds the proxy CA.
 export function httpSmokeTest(base: string, commit: string): boolean {
-  const get = (path: string) => execSync(`curl -sS -f -m 30 ${JSON.stringify(base + path)}`, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+  // Each request retries with backoff: a single curl timeout or TLS blip through the sandbox proxy has
+  // reverted a healthy release three times (DECISIONS.md, 2026-09-28/29).
+  const get = (path: string) => {
+    let last: unknown
+    for (const wait of [0, 3, 8, 20]) {
+      if (wait) execSync(`sleep ${wait}`)
+      try {
+        return execSync(`curl -sS -f -m 30 ${JSON.stringify(base + path)}`, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+      } catch (err) {
+        last = err
+      }
+    }
+    throw last
+  }
   try {
     const version = JSON.parse(get('/version.json')) as { commit?: string }
     if (version.commit !== commit) {
@@ -192,7 +205,15 @@ async function main() {
   // pinned-Chromium-path workaround as e2e/gates (playwright.config.ts's PLAYWRIGHT_CHROMIUM_PATH), since
   // this script runs outside the `playwright test` runner and its config.
   const smoke = await liveSmokeTest(base)
-  const smokeTestOk = smoke === 'passed' || (smoke === 'inconclusive' && httpSmokeTest(base, buildCommit))
+  // One more full HTTP check after a pause before anything is reverted: reverting a live, healthy site is
+  // worse than a slightly slower release.
+  const httpOk = () => {
+    if (httpSmokeTest(base, buildCommit)) return true
+    console.log('HTTP check failed once; waiting 60s and checking again before deciding.')
+    execSync('sleep 60')
+    return httpSmokeTest(base, buildCommit)
+  }
+  const smokeTestOk = smoke === 'passed' || (smoke === 'inconclusive' && httpOk())
   if (!smokeTestOk) {
     if (previousMainCommit === buildCommit) {
       // main was already at buildCommit before this run (e.g. re-running release on an unchanged
