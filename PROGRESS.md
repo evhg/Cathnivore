@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** **Hedgerow H1** (the owner asked on 2026-09-30 to start it now; read `docs/design/hedgerow.md`). Keep polishing Cathnivore items 9-13 alongside when a Hedgerow slice is waiting on something.
+- **Next:** **Hedgerow H2** (act 1 complete: levels 4-10, Acquisition Van miniboss, upgrade UI polish, Beehive at level 4; H1 shipped 2026-09-30). Read `docs/design/hedgerow.md`. Keep polishing Cathnivore items 9-13 alongside when a Hedgerow slice is waiting on something.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked
@@ -56,6 +56,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-09-30 ~09:51 UTC: Hedgerow H1 built (`games/hedgerow/`: pure 30 Hz engine, canvas renderer, levels 1-3 with story, saves, landing card, site e2e, bot test). Balance: van 98hp/drone 35hp; greedy bot wins all 3 with 3 stars, a no-build player loses.
 - 2026-09-29: Runnel sound is synth-only in games/runnel/src/sound.ts, on by default, mute in localStorage `runnel:sound`; no release (5 today).
 - 2026-09-29 ~00:51-01:20 UTC: released `6b4e9fd` (sound, motion tokens, entrance animations, why-not work). Settings screen redesign (ROADMAP 20 part 1): native inputs kept, restyled; radio input lives inside its label's span so Playwright hit-tests pass. Credits still plain.
 - 2026-09-28 ~18:51-19:20 UTC: released the piled-up why-not work (`b2c035c` live; tag push 403 as usual). ROADMAP 11: terrain vignettes per region type and signboard labels on the map (released `2132b1f`, with ROADMAP 13's seal stamp). Playwright needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`; webkit project can't run here.
