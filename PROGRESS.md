@@ -42,6 +42,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-09-29 22:00 UTC:** ROADMAP 13 slice: Squeeze plastic film creeps over regions with Outlets (glossy tint + sheen, reduced-motion safe; check + a11y/no-scroll/quick-game e2e pass; unreleased, cap reached). Still open in 13: Lost Land/Rift/enemy-turn choreography.
 - **2026-09-29 22:55 UTC:** ROADMAP 13 slice: red edge flash when Lost Land drops or the Rift rises (`.danger-flash`, reduced-motion hidden; check + a11y/quick-game e2e pass; desktop-no-scroll spec can't launch here, missing headless-shell revision; unreleased, cap reached). Still open in 13: Rift 3/6 moment, enemy-turn choreography.
 - **2026-09-29 23:55 UTC:** ROADMAP 13 slice: deeper, longer red pulse when the Rift reaches 3 or 6 (check passes; unreleased, cap reached). Still open in 13: enemy-turn choreography.
+- **2026-09-30 01:10 UTC:** released all waiting commits (`ef2258a` live, tag 403 as usual). Fixed flaky desktop-no-scroll: right-column panels now shrink and scroll internally (random Market cards vary 335-457px). Sandbox needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` for the desktop specs.
 - **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
   headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
   pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or
