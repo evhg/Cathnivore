@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** Hedgerow is content-complete (100 levels). Polish: level-select art, upgrade UI, finale scene/credits; then ROADMAP items 14-21.
+- **Next:** Hedgerow is content-complete (100 levels, finale scene after 100, tier pips in the tower panel). Polish: level-select art; then ROADMAP items 14-21.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked

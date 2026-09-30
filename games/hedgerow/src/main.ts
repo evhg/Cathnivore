@@ -265,7 +265,14 @@ function renderPanel(): void {
   }
   if (t) {
     const spec = TOWERS[t.kind];
-    line(`${spec.name}, tier ${t.tier} of 3`, "panel-title");
+    line(
+      `${spec.name} ${"●".repeat(t.tier)}${"○".repeat(3 - t.tier)}`,
+      "panel-title",
+    );
+    (p.lastElementChild as HTMLElement).setAttribute(
+      "aria-label",
+      `${spec.name}, tier ${t.tier} of 3`,
+    );
     const at = (i: number) => {
       const dps = spec.damage[i]! / spec.cooldown[i]!;
       const parts = [`range ${spec.range[i]}`];
@@ -390,6 +397,27 @@ function frame(now: number): void {
   }
 }
 
+const FINALE: StoryLine[] = [
+  {
+    who: "cath",
+    expression: "delighted",
+    text: "That's the last of them. The hedges are still standing, and so is everyone who planted them.",
+  },
+  {
+    who: "bea",
+    text: "Mum, the whole county is on the lane. Somebody brought a trestle table.",
+  },
+  {
+    who: "cath",
+    expression: "smirk",
+    text: "Then we'd better put the pies out. Nobody owns a hedgerow. You just look after it for the next person.",
+  },
+  {
+    who: "narrator",
+    text: "Hedgerow. Every bush, every scarecrow and every pie was made by the people of Marrow. Thank you for holding the lane.",
+  },
+];
+
 function finish(g: Game): void {
   const lv = g.level;
   const won = g.phase === "won";
@@ -406,10 +434,10 @@ function finish(g: Game): void {
     : "Regroup, rebuild and try again. Hedges slow them; scarecrows finish the job.";
   if (won) {
     recordStars(data, lv.id, n);
-    ui.resultPrimary.textContent = next ? "Continue" : "Back to levels";
+    ui.resultPrimary.textContent = next ? "Continue" : "Finale";
     ui.resultPrimary.onclick = () => {
       ui.dlgResult.close();
-      showStory(lv.after, lv.place, () => {
+      showStory(next ? lv.after : [...lv.after, ...FINALE], lv.place, () => {
         if (next && isUnlocked(data, next.id)) openLevel(next);
         else leaveLevel();
       });
