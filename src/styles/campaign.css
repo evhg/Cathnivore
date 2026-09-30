@@ -220,7 +220,7 @@
 }
 
 .cmp-stop-next .cmp-number {
-  animation: cmp-pulse 2.2s ease-out infinite 1s;
+  animation: cmp-pulse 2.2s var(--ease-settle) infinite 1s;
 }
 
 @keyframes cmp-pulse {

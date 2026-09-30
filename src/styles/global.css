@@ -255,7 +255,7 @@ h3 {
 }
 
 .hud-tick {
-  animation: hud-tick 500ms ease-out;
+  animation: hud-tick var(--dur-slow) var(--ease-settle);
 }
 
 /* Scale only, no colour change: Round going up is neutral progress, Trust going up is good, but Lost
@@ -1173,7 +1173,7 @@ button {
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
-  transition: transform 100ms ease-out;
+  transition: transform var(--dur-quick) var(--ease-settle);
 }
 
 /* ROADMAP 9's "press feedback" for the table's action tiles, applied to every button rather than just
@@ -1188,7 +1188,7 @@ button:active:not(:disabled) {
 
 @media (prefers-reduced-motion: reduce) {
   button {
-    transition: opacity 100ms ease-out;
+    transition: opacity var(--dur-quick) var(--ease-settle);
   }
 
   button:active:not(:disabled) {
@@ -1867,7 +1867,7 @@ html.native-app body {
 .liberate-bloom {
   transform-box: fill-box;
   transform-origin: center;
-  animation: colour-bloom 600ms ease-out;
+  animation: colour-bloom var(--dur-slow) var(--ease-settle);
 }
 
 /* ROADMAP 13: Squeeze — a glossy plastic film creeps over a region as Outlets arrive. */
@@ -2009,7 +2009,7 @@ html.native-app body {
   .liberate-bloom,
   .plastic-film,
   .lostland-overlay {
-    animation: reduced-motion-fade 150ms ease-out;
+    animation: reduced-motion-fade var(--dur-quick) var(--ease-settle);
   }
 }
 

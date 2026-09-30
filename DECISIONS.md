@@ -190,3 +190,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-30: Hedgerow finale = four extra story lines appended after level 100's own (no new dialog); tower panel shows tier as pips. Session kept to one slice.
 - 2026-09-30: ROADMAP 12 was already fully built (shapes + placement animations); ticked it. Short session, no code change.
 - 2026-09-30 (late): Hedgerow level select got per-act SVG banners (palette per act, generated in main.ts). No release: daily cap already used.
+- 2026-10-01: Motion-token audit slice on global.css/campaign.css; no release (check only, cheap CSS change, batching with next slice).
