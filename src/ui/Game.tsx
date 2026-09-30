@@ -1052,6 +1052,11 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {(lostLandTick > 0 || riftTick > 0) && (
         <div key={`${lostLandTick}-${riftTick}`} className={riftTick > 0 && (state.rift === 3 || state.rift === 6) ? 'danger-flash danger-flash-deep' : 'danger-flash'} aria-hidden="true" />
       )}
+      {roundTick > 0 && (
+        <div key={roundTick} className="round-banner" aria-hidden="true">
+          Round {state.round}
+        </div>
+      )}
       {/* tabIndex so axe's "scrollable-region-focusable" rule is satisfied unconditionally, not just when
           the panel happens to contain a focusable button — the desktop column scrolls (overflow-y: auto,
           SPEC 10.3), and at some game states (nothing affordable yet in Market/Cath's Plan) it can have no
