@@ -40,7 +40,12 @@ document.querySelectorAll<HTMLElement>('.card[data-cath]').forEach((card) => {
   card.addEventListener('blur', rest)
 })
 const cardFace = document.querySelector('.art-cath')
-if (cardFace) cardFace.innerHTML = cathSvg({ framing: 'face', expression: 'smirk' })
+if (cardFace) {
+  const face = document.createElement('span')
+  face.className = 'mm-cath'
+  face.innerHTML = cathSvg({ framing: 'face', expression: 'smirk' })
+  cardFace.appendChild(face)
+}
 
 const canvas = document.getElementById('scene') as HTMLCanvasElement
 let scene = null
