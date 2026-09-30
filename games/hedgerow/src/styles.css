@@ -79,6 +79,7 @@ button { font: inherit; color: inherit; }
 .panel { min-height: 92px; background: var(--surface); border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
 .panel p { margin: 0; font-size: 15px; color: var(--ink-muted); }
 .panel-title { color: var(--ink); font-weight: 700; }
+.panel-stats { font-size: 0.85rem; }
 .panel-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .controls { display: flex; gap: 8px; }
 .controls .btn { padding: 0 10px; font-size: 14px; white-space: nowrap; min-width: 0; }

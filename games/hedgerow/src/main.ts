@@ -229,6 +229,14 @@ function renderPanel(): void {
   if (t) {
     const spec = TOWERS[t.kind]
     line(`${spec.name}, tier ${t.tier} of 3`, 'panel-title')
+    const at = (i: number) => {
+      const dps = spec.damage[i]! / spec.cooldown[i]!
+      const parts = [`range ${spec.range[i]}`]
+      if (spec.damage[i]) parts.push(`${dps.toFixed(1)} dmg/s`)
+      if (spec.slow[i]! < 1) parts.push(`slows to ${Math.round(spec.slow[i]! * 100)}%`)
+      return parts.join(', ')
+    }
+    line(t.tier < 3 ? `Now: ${at(t.tier - 1)}. Next: ${at(t.tier)}.` : `Now: ${at(2)}.`, 'panel-stats')
     const row = document.createElement('div')
     row.className = 'panel-row'
     const cost = upgradeCost(t)
