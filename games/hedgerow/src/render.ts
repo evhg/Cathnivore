@@ -56,7 +56,16 @@ export class Renderer {
 
   feed(events: GameEvent[]): void {
     for (const e of events) {
-      if (e.type === 'shot') this.fx.push({ kind: e.kind === 'beehive' ? 'swarm' : 'turnip', x: e.fromX, y: e.fromY, toX: e.toX, toY: e.toY, age: 0, life: 0.18 })
+      if (e.type === 'shot')
+        this.fx.push({
+          kind: e.kind === 'beehive' ? 'swarm' : 'turnip',
+          x: e.fromX,
+          y: e.fromY,
+          toX: e.toX,
+          toY: e.toY,
+          age: 0,
+          life: 0.18,
+        })
       else if (e.type === 'pie') this.fx.push({ kind: 'pie', x: 0, y: 0, toX: 0, toY: 0, age: 0, life: 0.7 })
       else if (e.type === 'kill') {
         this.fx.push({ kind: 'float', x: e.x, y: e.y, toX: e.x, toY: e.y - 0.8, age: 0, life: 0.9, text: `+${e.bounty}` })
@@ -257,6 +266,23 @@ export class Renderer {
         ctx.arc(x - s * 0.12 * (tier - 1) + i * s * 0.24, y + s * 0.14, s * 0.055, 0, Math.PI * 2)
         ctx.fill()
       }
+    } else if (kind === 'pond') {
+      ctx.fillStyle = '#6fb3d6'
+      ctx.beginPath()
+      ctx.ellipse(x, y + s * 0.04, s * 0.38, s * 0.27, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+      ctx.fillStyle = '#fffbe6'
+      for (let i = 0; i < tier; i++) {
+        const dx = (i - (tier - 1) / 2) * s * 0.22
+        ctx.beginPath()
+        ctx.arc(x + dx, y + s * 0.02, s * 0.07, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.stroke()
+        ctx.fillStyle = '#f2994a'
+        ctx.fillRect(x + dx + s * 0.06, y, s * 0.06, s * 0.03)
+        ctx.fillStyle = '#fffbe6'
+      }
     } else if (kind === 'beehive') {
       ctx.fillStyle = '#f2c94c'
       for (let i = 0; i < 3; i++) {
@@ -325,6 +351,43 @@ export class Renderer {
       ctx.arc(x - s * 0.16, y + s * 0.2, s * 0.07, 0, Math.PI * 2)
       ctx.arc(x + s * 0.16, y + s * 0.2, s * 0.07, 0, Math.PI * 2)
       ctx.fill()
+    } else if (kind === 'influencer') {
+      ctx.fillStyle = '#f5a3c7'
+      ctx.beginPath()
+      ctx.roundRect(x - s * 0.2, y - s * 0.02, s * 0.4, s * 0.3, s * 0.08)
+      ctx.fill()
+      ctx.stroke()
+      ctx.fillStyle = '#ffe0c2'
+      ctx.beginPath()
+      ctx.arc(x, y - s * 0.14, s * 0.15, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+      // A phone held out at arm's length, always.
+      ctx.fillStyle = '#2b2320'
+      ctx.fillRect(x + s * 0.2, y - s * 0.22, s * 0.1, s * 0.18)
+      ctx.strokeStyle = 'rgba(245,163,199,0.7)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(x, y, s * 0.42 + Math.sin(performance.now() / 300) * 2, 0, Math.PI * 2)
+      ctx.stroke()
+    } else if (kind === 'blimp') {
+      ctx.fillStyle = '#f5a3c7'
+      ctx.beginPath()
+      ctx.ellipse(x, y - s * 0.05, s * 0.5, s * 0.28, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+      ctx.fillStyle = '#fffbe6'
+      ctx.font = `bold ${Math.round(s * 0.2)}px sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('#BLESSED', x, y - s * 0.05)
+      ctx.fillStyle = '#7fb8c8'
+      ctx.fillRect(x - s * 0.12, y + s * 0.22, s * 0.24, s * 0.12)
+      ctx.strokeStyle = 'rgba(245,163,199,0.6)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(x, y, s * 0.7 + Math.sin(performance.now() / 300) * 3, 0, Math.PI * 2)
+      ctx.stroke()
     } else if (kind === 'boss' || kind === 'convoy') {
       ctx.fillStyle = kind === 'convoy' ? '#f2c94c' : '#f3f0ea'
       ctx.beginPath()
@@ -399,4 +462,3 @@ export class Renderer {
     }
   }
 }
-

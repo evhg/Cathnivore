@@ -7,14 +7,17 @@ const van = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'van
 const boss = (delay = 0): WaveGroup => ({ enemy: 'boss', count: 1, gap: 1, delay })
 const drone = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'drone', count, gap, delay })
 const truck = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'truck', count, gap, delay })
+const influencer = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'influencer', count, gap, delay })
+const blimp = (delay = 0): WaveGroup => ({ enemy: 'blimp', count: 1, gap: 1, delay })
 const convoy = (delay = 0): WaveGroup => ({ enemy: 'convoy', count: 1, gap: 1, delay })
 
 /** A steady climb of `n` waves: vans, drones and (from wave `truckFrom`) trucks, growing a little each time. */
-function ramp(n: number, o: { v: number; d: number; t?: number; truckFrom?: number; vs?: number; ds?: number }): WaveGroup[][] {
+function ramp(n: number, o: { v: number; d: number; t?: number; truckFrom?: number; vs?: number; ds?: number; i?: number; infFrom?: number }): WaveGroup[][] {
   return Array.from({ length: n }, (_, i) => {
     const groups = [van(Math.round(o.v + i * (o.vs ?? 1.2)), Math.max(0.9, 1.9 - i * 0.1))]
     groups.push(drone(Math.round(o.d + i * (o.ds ?? 1.4)), Math.max(0.5, 0.95 - i * 0.05), 2))
     if (o.t && i >= (o.truckFrom ?? 2)) groups.push(truck(Math.round(o.t + (i - (o.truckFrom ?? 2)) * 0.8), 2.2, 4))
+    if (o.i && i >= (o.infFrom ?? 1)) groups.push(influencer(Math.round(o.i + (i - (o.infFrom ?? 1)) * 0.5), 2.6, 3))
     return groups
   })
 }
@@ -552,6 +555,231 @@ export const LEVELS: Level[] = [
       { who: 'cath', expression: 'worried', text: "Somewhere with a coast. And somewhere with a podcast. I think Saltmarsh is about to have a very loud month." },
     ],
     reward: 'Act 2 complete. Lore card: "The .99 sign", now hanging above Tomas\'s market, corrected to a very fair price.',
+  },
+  {
+    id: 21,
+    name: 'Salt and Static',
+    place: 'Saltmarsh',
+    cols: 6,
+    rows: 8,
+    path: [[0, 1], [5, 1], [5, 3], [1, 3], [1, 5], [5, 5], [5, 7]],
+    startMarks: 650,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: ramp(6, { v: 6, d: 7, t: 2, truckFrom: 3, i: 1, infFrom: 1 }),
+    before: [
+      { who: 'narrator', text: "Saltmarsh is flat, wet and quiet, which is why Sol's podcast can be heard from the church tower. Overnight, it has been downloaded four million times." },
+      { who: 'cath', expression: 'wink', text: 'Congratulations, Sol. You are now a target.' },
+      { who: 'narrator', text: "A glossy figure strides up the causeway, holding a phone at arm's length and narrating their own arrival. Every scarecrow turns to look." },
+    ],
+    after: [
+      { who: 'cath', expression: 'determined', text: "They don't shoot. They charm. Anything near an influencer forgets its job and starts watching." },
+      { who: 'cath', expression: 'smirk', text: 'So we hit them first, or we hit them from far away. Duck Pond next, Sol. Slow the sparkle down.' },
+    ],
+    reward: 'Unlocked: the Duck Pond (slows vehicles nearby, splashes the rest). Lore card: "Four million listens".',
+  },
+  {
+    id: 22,
+    name: 'Going Live',
+    place: 'Saltmarsh',
+    cols: 6,
+    rows: 8,
+    path: [[5, 0], [0, 0], [0, 2], [4, 2], [4, 4], [0, 4], [0, 6], [5, 6], [5, 7]],
+    startMarks: 650,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: ramp(6, { v: 6, d: 8, t: 2, truckFrom: 2, i: 2, infFrom: 0, vs: 1.1 }),
+    before: [
+      { who: 'narrator', text: 'An influencer sets up a ring light in the middle of the causeway and announces a giveaway. There is nothing to win. Forty people are queueing anyway.' },
+      { who: 'cath', expression: 'worried', text: 'The queue is the weapon. Anyone standing in it stops caring who is walking past them.' },
+      { who: 'cath', expression: 'determined', text: 'Ponds on the bends. Let them go live somewhere damp.' },
+    ],
+    after: [
+      { who: 'narrator', text: 'The ring light ended up in a ditch. It is still on. It has never been so flattering to a frog.' },
+      { who: 'cath', expression: 'smirk', text: "Sol, please don't put that in the episode." },
+    ],
+    reward: 'Lore card: "The ring light", now the frog\'s.',
+  },
+  {
+    id: 23,
+    name: 'Sponsored Tide',
+    place: 'Saltmarsh',
+    cols: 6,
+    rows: 8,
+    path: [[0, 0], [5, 0], [5, 2], [0, 2], [0, 4], [5, 4], [5, 6], [1, 6], [1, 7], [5, 7]],
+    startMarks: 690,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: ramp(7, { v: 7, d: 8, t: 2, truckFrom: 2, i: 2, infFrom: 1, vs: 1.1 }),
+    before: [
+      { who: 'narrator', text: 'The tide comes in with a logo on it. Someone has sponsored the sea.' },
+      { who: 'mara', text: 'I can hear the ad read from here. It is very calm. It is coming from the water.' },
+      { who: 'cath', expression: 'wink', text: "Never mind the sea. It's the little influencers in it I'm after." },
+    ],
+    after: [
+      { who: 'mara', text: 'The sea has gone back to being unsponsored. It looks relieved.' },
+      { who: 'cath', expression: 'smirk', text: 'Nobody asked the tide.' },
+    ],
+    reward: 'Lore card: "The sponsored sea", brought to you by absolutely nothing now.',
+  },
+  {
+    id: 24,
+    name: 'Discount Code',
+    place: 'Saltmarsh',
+    cols: 7,
+    rows: 8,
+    path: [[0, 7], [0, 5], [5, 5], [5, 3], [1, 3], [1, 1], [6, 1]],
+    startMarks: 710,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: ramp(7, { v: 7, d: 9, t: 3, truckFrom: 2, i: 2, infFrom: 1, vs: 1.2 }),
+    before: [
+      { who: 'narrator', text: 'Every influencer on the marsh is reading out the same code at once: SAVE10. A truck with .99 on the side idles behind them, waiting for the crowd.' },
+      { who: 'bea', expression: 'worried', text: 'Cath, the truck and the influencer are holding hands!' },
+      { who: 'cath', expression: 'determined', text: "That's the marketing department, sweetheart. They've discovered teamwork." },
+    ],
+    after: [
+      { who: 'bea', expression: 'delighted', text: 'I drew them holding hands. Then I drew the pond splashing them.' },
+      { who: 'cath', expression: 'wink', text: 'Frame it.' },
+    ],
+    reward: 'Lore card: "SAVE10", which saves nothing.',
+  },
+  {
+    id: 25,
+    name: 'The Unboxing',
+    place: 'Saltmarsh',
+    cols: 7,
+    rows: 8,
+    path: [[6, 0], [0, 0], [0, 2], [5, 2], [5, 4], [1, 4], [1, 6], [6, 6], [6, 7]],
+    startMarks: 730,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: ramp(7, { v: 7, d: 9, t: 3, truckFrom: 1, i: 2, infFrom: 0, vs: 1.2 }),
+    before: [
+      { who: 'narrator', text: 'A very large box arrives at the causeway with a bow on it. A crowd forms. Someone films it from four angles.' },
+      { who: 'cath', expression: 'worried', text: "Don't open it. Whatever it is, that's what they want on camera." },
+      { who: 'cath', expression: 'determined', text: "Ponds beside the box. Let's see who gets the reveal." },
+    ],
+    after: [
+      { who: 'narrator', text: 'The box was full of other, smaller boxes. The smallest one held a coupon for a larger box.' },
+      { who: 'cath', expression: 'smirk', text: 'Marketing is just a very expensive game of pass the parcel.' },
+    ],
+    reward: 'Lore card: "The smallest box", containing a coupon for a slightly larger box.',
+  },
+  {
+    id: 26,
+    name: 'Comment Section',
+    place: 'Saltmarsh',
+    cols: 6,
+    rows: 8,
+    path: [[0, 0], [5, 0], [5, 2], [1, 2], [1, 4], [5, 4], [5, 6], [0, 6], [0, 7], [5, 7]],
+    startMarks: 750,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: ramp(8, { v: 8, d: 9, t: 3, truckFrom: 1, i: 2, infFrom: 0, vs: 1.2 }),
+    before: [
+      { who: 'narrator', text: "By noon the podcast's comment section is on fire. Half the comments are real, and the other half share a very consistent tone." },
+      { who: 'cath', expression: 'determined', text: "Sol, your listeners are fine. It's the ones who want to be your listeners that I'd watch." },
+      { who: 'cath', expression: 'wink', text: 'Everyone on the causeway, stay off your phones. Well. Except Sol.' },
+    ],
+    after: [
+      { who: 'cath', expression: 'smirk', text: "Delete the ones with a smiling face and a discount code. You'll spot them." },
+      { who: 'mara', text: "Or just don't read them. It's what I do with the weather forecast." },
+    ],
+    reward: 'Lore card: "Top comment", nine hundred likes, none of them real.',
+  },
+  {
+    id: 27,
+    name: 'Brand Deal',
+    place: 'Saltmarsh',
+    cols: 6,
+    rows: 8,
+    path: [[0, 1], [5, 1], [5, 3], [0, 3], [0, 5], [5, 5], [5, 7], [1, 7]],
+    startMarks: 770,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: ramp(8, { v: 8, d: 10, t: 3, truckFrom: 1, i: 2, infFrom: 0, vs: 1.3 }),
+    before: [
+      { who: 'narrator', text: 'A man in a very good blazer offers Sol a great deal of money to say one particular yoghurt is the only yoghurt worth eating.' },
+      { who: 'cath', expression: 'determined', text: 'Say no, Sol. Then say it on air, so everyone hears.' },
+      { who: 'cath', expression: 'wink', text: "Ponds ready. The blazer's about to get very wet." },
+    ],
+    after: [
+      { who: 'narrator', text: "Sol said no. Four million people heard. The yoghurt's share price fell by a whole biscuit." },
+      { who: 'cath', expression: 'delighted', text: "That's how you do an ad read." },
+    ],
+    reward: 'Lore card: "The refusal", four minutes long and very polite.',
+  },
+  {
+    id: 28,
+    name: 'Golden Hour',
+    place: 'Saltmarsh',
+    cols: 7,
+    rows: 8,
+    path: [[6, 0], [1, 0], [1, 2], [6, 2], [6, 4], [0, 4], [0, 6], [5, 6], [5, 7]],
+    startMarks: 790,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: ramp(8, { v: 8, d: 10, t: 3, truckFrom: 1, i: 2, infFrom: 0, vs: 1.3, ds: 1.5 }),
+    before: [
+      { who: 'narrator', text: 'The marsh at sunset is the most beautiful thing in the county, and forty influencers have arrived to stand in front of it.' },
+      { who: 'cath', expression: 'worried', text: "They'll fill the lane with filters. Every tower will be looking at the sunset." },
+      { who: 'cath', expression: 'determined', text: "Then we out-stare them. Ponds and stalls, and don't blink." },
+    ],
+    after: [
+      { who: 'mara', text: 'I have never seen so many people photograph a puddle.' },
+      { who: 'cath', expression: 'wink', text: 'It was a good puddle.' },
+    ],
+    reward: 'Lore card: "The good puddle", photographed nine hundred times.',
+  },
+  {
+    id: 29,
+    name: 'The Blimp Rises',
+    place: 'Saltmarsh',
+    cols: 7,
+    rows: 8,
+    path: [[0, 0], [5, 0], [5, 2], [0, 2], [0, 4], [6, 4], [6, 6], [1, 6], [1, 7], [6, 7]],
+    startMarks: 810,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: ramp(8, { v: 8, d: 10, t: 3, truckFrom: 1, i: 2, infFrom: 0, vs: 1.3, ds: 1.5 }),
+    before: [
+      { who: 'narrator', text: 'A shape rises over the sea. It is pink, enormous, and has the word BLESSED across its side in a very rounded font.' },
+      { who: 'bea', expression: 'worried', text: "It's a balloon. It's looking at us." },
+      { who: 'cath', expression: 'determined', text: "It's a very large advert, sweetheart. Tomorrow, it comes to say hello. Tonight we make sure nothing is left for it to sell." },
+    ],
+    after: [
+      { who: 'cath', expression: 'worried', text: 'Everything within a couple of cells of that blimp will stop working. Put the ponds and hives at the edges.' },
+      { who: 'mara', text: "I'll put the kettle on. And a second kettle." },
+    ],
+    reward: 'Lore card: "BLESSED", in a very rounded font.',
+  },
+  {
+    id: 30,
+    name: 'Brand Ambassador',
+    place: 'Saltmarsh',
+    cols: 6,
+    rows: 8,
+    path: [[0, 0], [5, 0], [5, 2], [0, 2], [0, 4], [5, 4], [5, 6], [0, 6], [0, 7], [5, 7]],
+    startMarks: 900,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive', 'stall', 'pond'],
+    waves: [
+      ...ramp(5, { v: 9, d: 11, t: 3, truckFrom: 0, i: 2, infFrom: 0, vs: 1.4 }),
+      [blimp(0), van(10, 1.2, 6), influencer(3, 2.6, 8), drone(14, 0.55, 10)],
+    ],
+    before: [
+      { who: 'narrator', text: 'The Brand Ambassador Blimp drifts over Saltmarsh at walking pace. It plays a song. The song is about how you love the blimp. Everyone below starts humming.' },
+      { who: 'sol', text: "I can hear it. I can hear it in the microphone. I can't turn it off." },
+      { who: 'cath', expression: 'determined', text: 'Then we fight it in the quiet. Hold the lane, close in, and when it charms the towers near it, pie it. Pie stops everything for a moment.' },
+      { who: 'cath', expression: 'wink', text: 'Nobody has ever been a brand ambassador for very long.' },
+    ],
+    after: [
+      { who: 'narrator', text: "The Blimp comes down slowly in the shallows and deflates with a long, sad, well-produced sigh. Someone pins a note to it: 'Not sponsored.'" },
+      { who: 'sol', text: "I'm calling the episode 'Quiet'. Just forty minutes of the marsh." },
+      { who: 'cath', expression: 'worried', text: "Rivermead's next. There are bulldozers, and a river that is not in a good mood. Bring boots." },
+    ],
+    reward: 'Act 3 complete. Lore card: "Not sponsored", pinned to a very large sigh.',
   },
 ]
 

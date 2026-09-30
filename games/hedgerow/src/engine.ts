@@ -6,8 +6,8 @@
 
 export const STEP = 1 / 30
 
-export type TowerKind = 'hedgerow' | 'scarecrow' | 'beehive' | 'stall'
-export type EnemyKind = 'van' | 'drone' | 'boss' | 'truck' | 'convoy'
+export type TowerKind = 'hedgerow' | 'scarecrow' | 'beehive' | 'stall' | 'pond'
+export type EnemyKind = 'van' | 'drone' | 'boss' | 'truck' | 'convoy' | 'influencer' | 'blimp'
 
 export interface TowerSpec {
   name: string
@@ -74,6 +74,17 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     buff: [1.2, 1.3, 1.45],
     income: [12, 20, 30],
   },
+  pond: {
+    name: 'Duck Pond',
+    blurb: 'Slows every vehicle nearby, and the ducks splash whatever is left.',
+    cost: 110,
+    upgrades: [85, 130],
+    range: [1.8, 2.0, 2.2],
+    damage: [4, 7, 11],
+    cooldown: [1, 0.9, 0.8],
+    slow: [0.75, 0.66, 0.56],
+    splash: 0.9,
+  },
 }
 
 export interface EnemySpec {
@@ -86,6 +97,8 @@ export interface EnemySpec {
   leak: number
   /** What it breaks into when destroyed. */
   splits?: { kind: EnemyKind; count: number }
+  /** Towers within this many cells of it are charmed and stop shooting. */
+  charm?: number
 }
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
@@ -94,6 +107,8 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   drone: { name: 'Delivery drone', hp: 35, speed: 1.8, bounty: 6, leak: 1 },
   truck: { name: '0.99 price-war truck', hp: 150, speed: 0.8, bounty: 10, leak: 2, splits: { kind: 'drone', count: 2 } },
   convoy: { name: "Mr Crisp's Price-War Convoy", hp: 2700, speed: 0.5, bounty: 200, leak: 6, splits: { kind: 'truck', count: 3 } },
+  influencer: { name: 'Lifestyle influencer', hp: 70, speed: 1.0, bounty: 10, leak: 1, charm: 1.2 },
+  blimp: { name: 'The Brand Ambassador Blimp', hp: 3300, speed: 0.45, bounty: 250, leak: 7, charm: 1.8 },
 }
 
 export interface WaveGroup {
@@ -106,7 +121,7 @@ export interface WaveGroup {
 }
 
 export interface StoryLine {
-  who: 'cath' | 'mara' | 'bea' | 'tomas' | 'narrator'
+  who: 'cath' | 'mara' | 'bea' | 'tomas' | 'sol' | 'narrator'
   expression?: 'smirk' | 'delighted' | 'determined' | 'worried' | 'wink'
   text: string
 }
@@ -305,6 +320,17 @@ export function sendWave(game: Game): ActionResult {
   return { ok: true }
 }
 
+/** An influencer's followers are watching it, not the road: towers in its charm range hold fire. */
+function charmed(game: Game, t: Tower): boolean {
+  for (const e of game.enemies) {
+    const r = ENEMIES[e.kind].charm
+    if (!r || e.hp <= 0) continue
+    const p = pointAt(game.level.path, e.dist)
+    if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= r) return true
+  }
+  return false
+}
+
 export function stepGame(game: Game): void {
   if (game.phase !== 'wave') return
   game.tick += 1
@@ -322,8 +348,8 @@ export function stepGame(game: Game): void {
     const p = pointAt(path, enemy.dist)
     let factor = 1
     for (const t of game.towers) {
-      if (t.kind !== 'hedgerow') continue
-      const spec = TOWERS.hedgerow
+      const spec = TOWERS[t.kind]
+      if (spec.slow[0] >= 1) continue
       if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range[t.tier - 1]!) {
         factor = Math.min(factor, spec.slow[t.tier - 1]!)
       }
@@ -338,6 +364,10 @@ export function stepGame(game: Game): void {
     if (TOWERS[t.kind].damage[0] === 0) continue
     t.cd -= STEP
     if (t.cd > 0) continue
+    if (charmed(game, t)) {
+      t.cd = 0
+      continue
+    }
     const spec = TOWERS[t.kind]
     const range = spec.range[t.tier - 1]!
     let target: Enemy | undefined
@@ -365,7 +395,16 @@ export function stepGame(game: Game): void {
       }
     }
     t.cd = spec.cooldown[t.tier - 1]!
-    game.events.push({ type: 'shot', kind: t.kind, tower: t.id, enemy: target.id, fromX: t.col + 0.5, fromY: t.row + 0.5, toX: p.x, toY: p.y })
+    game.events.push({
+      type: 'shot',
+      kind: t.kind,
+      tower: t.id,
+      enemy: target.id,
+      fromX: t.col + 0.5,
+      fromY: t.row + 0.5,
+      toX: p.x,
+      toY: p.y,
+    })
   }
 
   const alive: Enemy[] = []
@@ -378,7 +417,14 @@ export function stepGame(game: Game): void {
       const split = ENEMIES[e.kind].splits
       if (split) {
         for (let i = 0; i < split.count; i++) {
-          spawned.push({ id: game.nextId++, kind: split.kind, dist: Math.max(0, e.dist - i * 0.35), hp: ENEMIES[split.kind].hp, slowed: false, stun: 0 })
+          spawned.push({
+            id: game.nextId++,
+            kind: split.kind,
+            dist: Math.max(0, e.dist - i * 0.35),
+            hp: ENEMIES[split.kind].hp,
+            slowed: false,
+            stun: 0,
+          })
         }
       }
       game.events.push({ type: 'kill', x: p.x, y: p.y, bounty })
@@ -416,7 +462,7 @@ export function throwPie(game: Game): ActionResult {
   if (game.phase !== 'wave') return { ok: false, reason: 'Save it for a wave.' }
   if (game.pieCd > 0) return { ok: false, reason: 'Still cooling on the windowsill.' }
   if (game.enemies.length === 0) return { ok: false, reason: 'Nothing to throw it at.' }
-  for (const e of game.enemies) e.stun = e.kind === 'boss' || e.kind === 'convoy' ? PIE_STUN / 2 : PIE_STUN
+  for (const e of game.enemies) e.stun = e.kind === 'boss' || e.kind === 'convoy' || e.kind === 'blimp' ? PIE_STUN / 2 : PIE_STUN
   game.pieCd = PIE_COOLDOWN
   game.events.push({ type: 'pie' })
   return { ok: true }

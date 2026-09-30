@@ -50,12 +50,15 @@ function play(level: Level, build: boolean): Game {
           const scarecrows = game.towers.filter((t) => t.kind === 'scarecrow').length
           const hedges = game.towers.filter((t) => t.kind === 'hedgerow').length
           const hives = game.towers.filter((t) => t.kind === 'beehive').length
+          const ponds = game.towers.filter((t) => t.kind === 'pond').length
           const kind =
-            hedges < Math.floor(scarecrows / 2)
-              ? 'hedgerow'
-              : level.towers.includes('beehive') && hives < scarecrows
-                ? 'beehive'
-                : 'scarecrow'
+            level.towers.includes('pond') && ponds < Math.floor(scarecrows / 2)
+              ? 'pond'
+              : hedges < Math.floor(scarecrows / 2)
+                ? 'hedgerow'
+                : level.towers.includes('beehive') && hives < scarecrows
+                  ? 'beehive'
+                  : 'scarecrow'
           const spot = plots.find(([c, r]) => !towerAt(game, c, r))
           if (spot && place(game, kind, spot[0], spot[1]).ok) bought = true
           else {
@@ -161,6 +164,27 @@ describe('hedgerow engine', () => {
     game.enemies.push({ id: 90, kind: 'truck', dist: 4, hp: 0, slowed: false, stun: 0 })
     stepGame(game)
     expect(game.enemies.filter((e) => e.kind === 'drone')).toHaveLength(2)
+  })
+
+  it('an influencer charms towers in range, and the Duck Pond slows and splashes', () => {
+    const lv = LEVELS[20]!
+    const game = newGame(lv)
+    place(game, 'scarecrow', 0, 0)
+    sendWave(game)
+    game.spawnQueue = []
+    game.enemies.push({ id: 90, kind: 'influencer', dist: 0.5, hp: 1000, slowed: false, stun: 0 })
+    game.enemies.push({ id: 91, kind: 'van', dist: 0.6, hp: 1000, slowed: false, stun: 0 })
+    stepGame(game)
+    expect(game.enemies.find((e) => e.id === 91)!.hp).toBe(1000)
+    const g2 = newGame(lv)
+    place(g2, 'pond', 0, 0)
+    sendWave(g2)
+    g2.spawnQueue = []
+    g2.enemies.push({ id: 90, kind: 'van', dist: 0.5, hp: 1000, slowed: false, stun: 0 })
+    stepGame(g2)
+    const e = g2.enemies[0]!
+    expect(e.slowed).toBe(true)
+    expect(e.hp).toBeLessThan(1000)
   })
 
   it('a slowed enemy covers less ground', () => {

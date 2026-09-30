@@ -66,7 +66,7 @@ const ui = {
   resultSecondary: $<HTMLButtonElement>('result-secondary'),
 }
 
-const NAMES: Record<StoryLine['who'], string> = { cath: 'Cath', mara: 'Mara', bea: 'Bea', tomas: 'Tomas', narrator: 'Marrow' }
+const NAMES: Record<StoryLine['who'], string> = { cath: 'Cath', mara: 'Mara', bea: 'Bea', tomas: 'Tomas', sol: 'Sol', narrator: 'Marrow' }
 const cath = (expression: CathExpression) => cathSvg({ framing: 'face', expression, animate: true })
 
 const data = load()
