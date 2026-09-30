@@ -387,6 +387,8 @@ export class Board {
       const wet = flow.wet.has(i)
       const wasWet = prevWet.has(i)
       const root = view.root
+      root.classList.toggle('locked', cell.locked)
+      root.classList.toggle('fixed', !!cell.fixed)
       if (wet && !wasWet) {
         const delay = initial || this.reducedMotion ? 0 : settle + (flow.depth.get(i)! - minNewDepth) * CASCADE_MS
         root.style.setProperty('--delay', `${delay}ms`)
@@ -432,7 +434,7 @@ export class Board {
     if (cell.kind === 'stone') return
     const name = cell.kind === 'spring' ? 'Spring' : cell.kind === 'field' ? 'Field' : 'Channel'
     const state = flow.wet.has(index) ? (flow.leaks.has(index) ? 'watered, spilling' : 'watered') : 'dry'
-    view.root.setAttribute('aria-label', `${name}, ${state}${cell.locked ? ', pinned' : ''}`)
+    view.root.setAttribute('aria-label', `${name}, ${state}${cell.fixed ? ', fixed sluice' : cell.locked ? ', pinned' : ''}`)
   }
 
   get focusedIndex(): number {

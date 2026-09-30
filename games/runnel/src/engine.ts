@@ -34,6 +34,8 @@ export interface Cell {
   rot: number
   /** Pinned by the player so taps don't turn it. */
   locked: boolean
+  /** A sluice: arrives already in its solved rotation and can never be turned or unpinned. */
+  fixed?: boolean
 }
 
 export interface Puzzle {
@@ -137,6 +139,8 @@ export interface GenerateOptions {
   radius: number
   /** Share of cells (excluding the spring and its neighbours) turned into stones. */
   stoneRate?: number
+  /** How many turnable pieces become fixed sluices, already in place (default 0). */
+  fixedCount?: number
 }
 
 /**
@@ -161,6 +165,16 @@ export function generatePuzzle(seed: string, options: GenerateOptions): Puzzle {
     const kind: CellKind = i === centre ? 'spring' : bitCount(mask) === 1 ? 'field' : 'channel'
     return { q: h.q, r: h.r, kind, solved: mask, rot: 0, locked: false }
   })
+
+  const fixedCount = options.fixedCount ?? 0
+  if (fixedCount > 0) {
+    const pool = cells.map((_, i) => i).filter((i) => i !== centre && cells[i]!.kind === 'channel')
+    shuffle(pool, rng)
+    for (const i of pool.slice(0, fixedCount)) {
+      cells[i]!.fixed = true
+      cells[i]!.locked = true
+    }
+  }
 
   const par = scramble(cells, rng)
   return { seed, radius, cells, par }
@@ -277,7 +291,7 @@ function growTreeAttempt(
  * (unless it genuinely has no turnable pieces at all, which is already solved by construction).
  */
 function scramble(cells: Cell[], rng: () => number): number {
-  const turnable = cells.filter((c) => c.kind !== 'stone' && rotationalPeriod(c.solved) > 1)
+  const turnable = cells.filter((c) => c.kind !== 'stone' && !c.fixed && rotationalPeriod(c.solved) > 1)
   let best: number[] | null = null
   let bestWrong = -1
   for (let attempt = 0; attempt < 50; attempt++) {
@@ -362,7 +376,7 @@ export function computeFlow(cells: readonly Cell[]): Flow {
 /** Turns a cell one step clockwise (or anticlockwise). Returns false when the cell can't turn. */
 export function rotateCell(cells: Cell[], index: number, clockwise = true): boolean {
   const cell = cells[index]
-  if (!cell || cell.kind === 'stone' || cell.locked) return false
+  if (!cell || cell.kind === 'stone' || cell.locked || cell.fixed) return false
   cell.rot = (cell.rot + (clockwise ? 1 : 5)) % 6
   return true
 }
@@ -382,8 +396,18 @@ export function dailyNumber(dateString: string): number {
   return Math.floor(ms / 86_400_000) + 1
 }
 
+/** First daily that can carry sluices, so puzzles already in players' saves don't change. */
+export const SLUICE_FROM = '2026-10-01'
+
+/** Sluices are introduced gradually by weekday: none Sun-Tue, then 2 on Wednesday, 3 Friday, 4 Saturday. */
+export function sluicesFor(dateString: string): number {
+  if (dateString < SLUICE_FROM) return 0
+  const day = new Date(`${dateString}T00:00:00Z`).getUTCDay()
+  return ({ 3: 2, 5: 3, 6: 4 } as Record<number, number>)[day] ?? 0
+}
+
 export function dailyPuzzle(dateString: string): Puzzle {
-  return generatePuzzle(`daily-${dateString}`, { radius: DAILY_RADIUS })
+  return generatePuzzle(`daily-${dateString}`, { radius: DAILY_RADIUS, fixedCount: sluicesFor(dateString) })
 }
 
 // ---- helpers ----------------------------------------------------------------------------------------

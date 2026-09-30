@@ -83,7 +83,8 @@ function restore(p: Puzzle, saved: SavedGame | undefined): SavedGame {
   if (!saved || saved.seed !== p.seed || saved.rots.length !== p.cells.length) return blankGame(p)
   p.cells.forEach((c, i) => {
     c.rot = saved.rots[i] ?? c.rot
-    c.locked = saved.locks.includes(i)
+    if (!c.fixed) c.locked = saved.locks.includes(i)
+    else c.rot = 0
   })
   return saved
 }
@@ -116,7 +117,8 @@ let wetCount = 0
 function onTurn(index: number, clockwise: boolean): void {
   if (game.solved) return
   if (!rotateCell(puzzle.cells, index, clockwise)) {
-    if (puzzle.cells[index]?.locked) flashHint('That tile is pinned. Hold it to unpin.')
+    if (puzzle.cells[index]?.fixed) flashHint('That sluice is fixed in place.')
+    else if (puzzle.cells[index]?.locked) flashHint('That tile is pinned. Hold it to unpin.')
     return
   }
   game.taps++
@@ -135,7 +137,7 @@ function onTurn(index: number, clockwise: boolean): void {
 function onToggleLock(index: number): void {
   if (game.solved) return
   const cell = puzzle.cells[index]
-  if (!cell || cell.kind === 'stone') return
+  if (!cell || cell.kind === 'stone' || cell.fixed) return
   cell.locked = !cell.locked
   game.locks = puzzle.cells.flatMap((c, i) => (c.locked ? [i] : []))
   board.setLocked(index)

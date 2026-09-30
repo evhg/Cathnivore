@@ -1129,3 +1129,9 @@ kbd {
   outline: 2px solid var(--ink);
   outline-offset: 1px;
 }
+
+.fixed .tile {
+  stroke: var(--ink);
+  stroke-width: 4;
+  stroke-dasharray: 5 3;
+}

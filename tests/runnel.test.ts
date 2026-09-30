@@ -10,6 +10,7 @@ import {
   rotateCell,
   rotateMask,
   rotationalPeriod,
+  sluicesFor,
   tapsToSolve,
   type Puzzle,
 } from '../games/runnel/src/engine'
@@ -139,5 +140,35 @@ describe('Runnel drops', () => {
     expect(dropsFor(44, 40)).toBe(3)
     expect(dropsFor(45, 40)).toBe(2)
     expect(dropsFor(3, 10)).toBe(3)
+  })
+})
+
+describe('sluices (fixed tiles)', () => {
+  it('generates fixed, pre-solved, unturnable pieces that stay out of par', () => {
+    const p = generatePuzzle('sluice', { radius: 3, fixedCount: 3 })
+    const fixed = p.cells.filter((c) => c.fixed)
+    expect(fixed).toHaveLength(3)
+    for (const c of fixed) {
+      expect(c.rot).toBe(0)
+      expect(c.locked).toBe(true)
+      expect(rotateCell(p.cells, p.cells.indexOf(c))).toBe(false)
+    }
+    expect(computeFlow(p.cells).solved).toBe(false)
+  })
+
+  it('stays solvable: turning every piece to its solved rotation wins', () => {
+    for (const seed of ['a', 'b', 'c', 'd']) {
+      const p = generatePuzzle(seed, { radius: 3, fixedCount: 4 })
+      solve(p)
+      expect(computeFlow(p.cells).solved).toBe(true)
+    }
+  })
+
+  it('introduces sluices by weekday and never before the start date', () => {
+    expect(sluicesFor('2026-09-30')).toBe(0)
+    expect(sluicesFor('2026-10-01')).toBe(0) // Thursday
+    expect(sluicesFor('2026-10-02')).toBe(3) // Friday
+    expect(sluicesFor('2026-10-03')).toBe(4) // Saturday
+    expect(sluicesFor('2026-10-07')).toBe(2) // Wednesday
   })
 })
