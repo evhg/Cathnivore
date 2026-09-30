@@ -30,6 +30,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-30 ~13:20 UTC (`c059cb6`): Hedgerow act 3 (levels 21-30, Duck Pond, influencers, Blimp boss). Gates passed; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~12:10 UTC (`2350369`): Hedgerow act 2 (levels 11-20, Market Stall, trucks, Convoy boss). Live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~11:00 UTC (`6bf3253`): Hedgerow act 1 (levels 1-10, Beehive, Van boss, Cath's pie) + synth sound. Live version.json matches, /hedgerow/ 200; release script's tag push 403 (harmless).
 - 2026-09-30 ~10:05 UTC (`4baaa06`): Hedgerow H1 (engine, 3 levels, /hedgerow/, landing card). Gates passed; HTTP check passed; tag push 403 (harmless).
