@@ -412,6 +412,23 @@ describe("hedgerow engine", () => {
     expect(dealt(true)).toBeGreaterThan(dealt(false));
   });
 
+  it("the Board of Directors splits into five directors", () => {
+    const g = newGame(LEVELS[89]!);
+    g.enemies.push({
+      id: 92,
+      kind: "board",
+      dist: 3,
+      hp: 1,
+      slowed: false,
+      stun: 0,
+    });
+    place(g, "scarecrow", 3, 1);
+    sendWave(g);
+    g.spawnQueue = [];
+    for (let i = 0; i < 300; i++) stepGame(g);
+    expect(g.enemies.filter((e) => e.kind === "director").length).toBe(5);
+  });
+
   it("a slowed enemy covers less ground", () => {
     const g1 = newGame(level);
     const g2 = newGame(level);

@@ -34,7 +34,9 @@ export type EnemyKind =
   | "ship"
   | "lawyer"
   | "swarm"
-  | "bus";
+  | "bus"
+  | "board"
+  | "director";
 
 export interface TowerSpec {
   name: string;
@@ -327,6 +329,23 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     leak: 10,
     armor: 0.2,
     splits: { kind: "influencer", count: 6 },
+  },
+  director: {
+    name: "Company director",
+    hp: 1500,
+    speed: 0.7,
+    bounty: 40,
+    leak: 3,
+    armor: 0.25,
+  },
+  board: {
+    name: "The Board of Directors",
+    hp: 8000,
+    speed: 0.5,
+    bounty: 550,
+    leak: 10,
+    armor: 0.2,
+    splits: { kind: "director", count: 5 },
   },
   clinic: {
     name: "Vane's Clinic-in-a-Box",
@@ -836,7 +855,8 @@ export function throwPie(game: Game): ActionResult {
       e.kind === "clinic" ||
       e.kind === "ship" ||
       e.kind === "swarm" ||
-      e.kind === "bus"
+      e.kind === "bus" ||
+      e.kind === "board"
         ? PIE_STUN / 2
         : PIE_STUN;
   game.pieCd = PIE_COOLDOWN;

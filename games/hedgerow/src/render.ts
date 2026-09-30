@@ -743,6 +743,21 @@ export class Renderer {
         s * 0.16 * k,
         s * 0.2 * k,
       );
+    } else if (kind === "board" || kind === "director") {
+      const k = kind === "board" ? 1.5 : 0.8;
+      ctx.fillStyle = kind === "board" ? "#3a3f55" : "#2b2f3a";
+      ctx.fillRect(x - s * 0.3 * k, y - s * 0.12 * k, s * 0.6 * k, s * 0.3 * k);
+      ctx.fillStyle = "#e8c9a8";
+      ctx.beginPath();
+      ctx.arc(x, y - s * 0.2 * k, s * 0.12 * k, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#b8323a";
+      ctx.fillRect(
+        x - s * 0.02 * k,
+        y - s * 0.1 * k,
+        s * 0.04 * k,
+        s * 0.16 * k,
+      );
     } else if (kind === "bus") {
       ctx.fillStyle = "#b8323a";
       ctx.fillRect(x - s * 0.38, y - s * 0.2, s * 0.76, s * 0.4);
