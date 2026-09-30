@@ -33,7 +33,7 @@ Every visual item is done only when:
 
 6. [x] **Title screen:** an illustrated, animated map of Marrow with Cath, poster typography and a clear menu (owner's chat session, 2026-09-28). Update Cath to the new art once item 1 ships.
 7. [x] **Campaign screen:** a journey across Marrow, with chapter stops, mini maps and each chapter's producers (owner's chat session, 2026-09-28).
-8. [ ] **The table (game screen), part 1: layout.** *(2026-09-28: the desktop action list moved out of the
+8. [x] **The table (game screen), part 1: layout.** *(Done 2026-09-30 by the owner's chat session: the map fills the centre column on a tabletop, sized by flexbox instead of a fixed 288px cap; the producer card and Undo moved to the left tray; phone gets a one-row icon HUD and a map that fits whole above the action tray. See `src/styles/table.css`.)* *(2026-09-28: the desktop action list moved out of the
    centre column into a new side tray next to the Farm panel (`Game.tsx`'s `actionsPanel`, `.actions-sheet`
    in `global.css`) — mounted via a `useIsDesktopLayout()` matchMedia hook, not CSS-hidden duplicates, since
    two always-mounted copies broke Playwright's strict-mode locators (e2e/tooltip.spec.ts). Measured
@@ -168,7 +168,7 @@ Every visual item is done only when:
 
 ## Phase 2b: Hedgerow, the third game (owner request, 2026-09-28)
 
-The owner asked for a tower defense game: a strong story that develops level by level, new weapons and tower upgrades unlocking as you go, and level 100 as the ultimate boss fight. Cath leads. **The design note is `docs/design/hedgerow.md`; follow it.** Sessions pick these up after Phase 2 items 8-13 (the Cathnivore table, map art and moments). The remaining Phase 2 items (14-21) continue after Hedgerow slice 2.
+The owner asked for a tower defense game: a strong story that develops level by level, new weapons and tower upgrades unlocking as you go, and level 100 as the ultimate boss fight. Cath leads. **The design note is `docs/design/hedgerow.md`; follow it.** Sessions pick these up after Phase 2 items 8-13 (**owner, 2026-09-30: start H1 now; don't wait for 9-13 to be fully polished**) (the Cathnivore table, map art and moments). The remaining Phase 2 items (14-21) continue after Hedgerow slice 2.
 
 H1. [ ] **Engine and a vertical slice:** the engine, a Canvas renderer, 2 towers, 2 enemies, levels 1-3 with story scenes, saves, `/hedgerow/` in the site build, a landing card, site e2e tests and the level bot gate.
 H2. [ ] **Act 1 complete (levels 1-10):** the Acquisition Van miniboss and the upgrade UI.

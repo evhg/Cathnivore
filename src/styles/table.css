@@ -1,0 +1,188 @@
+/* The table: the game screen redesign that makes the map the hero (ROADMAP 8, owner's chat session,
+   2026-09-30). Loaded after global.css, so same-specificity rules here win. Tokens only.
+
+   Desktop: the map fills whatever the centre column has left after the HUD, companion and plan strip,
+   on an illustrated tabletop. It's sized by flexbox (`flex: 1 1 0` plus an SVG that fills its box and
+   letterboxes itself through its viewBox), so it grows on big screens and can never overflow the
+   "no scrolling at 1280x800" budget. The active producer and Undo moved to the left tray (Game.tsx).
+
+   Phone: a one-row HUD, a slimmer companion and a compact producer bar, so the whole map fits above the
+   pinned action tray at 390x844. */
+
+/* ---- desktop ---- */
+
+@media (min-width: 1024px) {
+  .game-layout {
+    max-width: 1680px;
+    grid-template-columns: minmax(280px, 320px) minmax(460px, 1fr) minmax(300px, 340px);
+  }
+
+  .map-wrap {
+    flex: 1 1 0;
+    min-height: 0;
+    align-items: stretch;
+    padding: 14px;
+    border-radius: 28px;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 45%, var(--surface) 0%, transparent 72%),
+      radial-gradient(ellipse 120% 100% at 50% 50%, var(--paper) 30%, var(--paper-2) 100%);
+    border: 1px solid var(--rule);
+    box-shadow:
+      inset 0 2px 18px color-mix(in srgb, var(--ink) 9%, transparent),
+      inset 0 0 0 6px color-mix(in srgb, var(--surface) 55%, transparent);
+  }
+
+  .map {
+    max-width: none;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    filter: drop-shadow(0 12px 18px color-mix(in srgb, var(--ink) 16%, transparent));
+  }
+
+  /* The producer card heads the left tray, above the Farm panel and the actions it acts with. */
+  .desktop-col-left > .producer-sheet {
+    flex: none;
+    padding: 10px 14px;
+    background:
+      linear-gradient(180deg, var(--surface) 0%, var(--paper-2) 100%);
+  }
+
+  .producer-sheet .active-producer,
+  .producer-sheet .decision {
+    background: none;
+    padding: 0;
+  }
+
+  .producer-sheet .active-producer-header strong {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 20px;
+  }
+
+  /* Undo sits at the foot of the actions list, full width. */
+  .actions-sheet .controls {
+    margin-top: 8px;
+  }
+
+  .actions-sheet .controls button {
+    width: 100%;
+  }
+}
+
+/* A taller desktop gives the companion her portrait back. */
+@media (min-width: 1024px) and (min-height: 860px) {
+  .cath-companion .cath-art svg {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ---- phone and tablet ---- */
+
+@media (max-width: 1023.98px) {
+  /* One-row HUD: four gauges and Menu share a single line instead of wrapping to two. */
+  .topbar {
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 4px 6px 4px 10px;
+    font-size: 14px;
+  }
+
+  .topbar > span {
+    display: contents;
+  }
+
+  .topbar {
+    justify-content: space-between;
+  }
+
+  .topbar .hud-value {
+    white-space: nowrap;
+    font-size: 16px;
+  }
+
+  /* Icons and numbers only on a phone; the words stay for screen readers and tooltips. */
+  .topbar .hud-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .topbar button {
+    padding: 6px 10px;
+    min-height: 40px;
+  }
+
+  /* A slimmer companion: a small face and at most two lines. */
+  .cath-companion {
+    padding: 4px 10px;
+    gap: 8px;
+  }
+
+  .cath-companion .cath-art svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .cath-companion-line {
+    font-size: 13px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* The three enemy slots always fit side by side. */
+  .plan-strip-item {
+    min-width: 0;
+  }
+
+  .plan-strip-item > button:first-child {
+    min-width: 0;
+    font-size: 12px;
+    padding: 6px 4px 6px 22px;
+  }
+
+  /* The map is the table: full width, on the same tabletop as desktop. */
+  .map-wrap {
+    padding: 6px;
+    border-radius: 20px;
+    background: radial-gradient(ellipse 80% 70% at 50% 45%, var(--surface) 0%, var(--paper-2) 100%);
+    box-shadow: inset 0 1px 10px color-mix(in srgb, var(--ink) 8%, transparent);
+  }
+
+  /* The map takes the space left between the plan strip and the action tray, whole, letterboxed by its
+     own viewBox, instead of spilling below the fold. */
+  .map-wrap {
+    flex: 1 1 0;
+    min-height: 200px;
+  }
+
+  .map {
+    max-width: none;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    filter: drop-shadow(0 8px 12px color-mix(in srgb, var(--ink) 14%, transparent));
+  }
+
+  /* A compact producer bar: portrait and name, resources and actions left wrap onto one or two lines. */
+  .action-tray .active-producer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 14px;
+    row-gap: 2px;
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  .action-tray .active-producer-header svg {
+    width: 34px;
+    height: 41px;
+  }
+}

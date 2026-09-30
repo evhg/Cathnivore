@@ -3,59 +3,9 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **Mode:** continuous improvement, indefinitely (SPEC 16, `VISION.md`). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`, top down.
-- **Current ROADMAP item:** items 1-7 done and released. Item 8 diminishing returns; item 9's why-not
-  states now cover every action kind whose legality is unambiguous from outside: Sell, Invest,
-  `targeting: 'none'` and `'optional'` Schemes, Supply (Outlets and Buyout), Rebut, and both of Open
-  Stall's cases (Produce-0 and no-legal-region) — all unreleased. Only 'required'-targeting Schemes are
-  still left silently absent (a missing legal region reads identically to "can't afford it" from outside).
-  Item 10's gauges ship on both phone and desktop (a ring, not a bar), tick animation and Pressure-badge
-  shipped, and the plan-strip cards now carry both corporations' logos (a branding pass, not yet the full
-  illustrated agenda-card redesign).
-- **2026-09-28 20:00 UTC:** ROADMAP 12's per-piece entrance animations (Outlet pop, Buyout slam, Doubt float; unreleased — release cap reached today).
-- **2026-09-28 21:00 UTC:** ROADMAP 19 sound cues + Settings switch (unreleased; release cap reached today).
-- **2026-09-28 22:00 UTC:** ROADMAP 19 UI-tap tick on buttons/links (unreleased; release cap reached today).
-- **2026-09-28 23:00 UTC:** ROADMAP 19 optional ambient pad loop + Settings "Ambient music" switch, off by default (unreleased; release cap reached today).
-- **2026-09-28 23:52 UTC:** ROADMAP 21 motion tokens (`--ease-settle`/`--ease-pop`) adopted by title, campaign, seal stamp (unreleased; cap reached; 11 commits waiting for the next day's first release).
-- **2026-09-29 01:00 UTC:** released the 13 waiting commits (`6b4e9fd` live; tag 403 as usual). ROADMAP 20 slice: Settings redesigned (Cath header, paper cards, switches, segmented pickers; unreleased).
-- **2026-09-29 02:00 UTC:** ROADMAP 20 done: Credits restyled to match Settings (Cath header, paper cards).
-- **2026-09-29 03:00 UTC:** ROADMAP 15 done: Setup redesigned (segmented pickers, producer cards; unreleased).
-- **2026-09-29 03:20 UTC:** ROADMAP 16 slice: end-screen stat cards (unreleased).
-- **2026-09-29 04:00 UTC:** ROADMAP 18 slice: How to Play gets Cath's quick-start card + paper sections (unreleased; paged demo boards still open).
-- **2026-09-29 04:55 UTC:** ROADMAP 16 slice: end-screen "Share result" button (native share, else clipboard; unreleased).
-- **2026-09-29 06:00 UTC:** ROADMAP 16: end screen shows the final map snapshot (unreleased).
-- **2026-09-29 07:30 UTC:** fixed `--ease-settle` self-reference (title/campaign/seal animations were invalid); ROADMAP 18 paged quick tour with demo boards (unreleased).
-- **2026-09-29 08:00 UTC:** ROADMAP 21 audit slice: game-screen piece/card/overlay animations now use the shared easing tokens (unreleased; check passes).
-- **2026-09-29 09:00 UTC:** ROADMAP 14 slice: Scene screen is now line-by-line (96px portrait + speech bubble, tap/Next, dimmed backlog; Continue still skips; unreleased). Still open: per-chapter backdrops, more cast expressions.
-- **2026-09-29 09:55 UTC:** ROADMAP 22 slice: Runnel water-arrival sparkle (droplets burst from a field as it turns wet; CSS-only, reduced-motion safe; e2e:site passes; unreleased). Still open: sound set, seasonal crops, streak calendar, fairer par.
-- **2026-09-29 10:55 UTC:** ROADMAP 22 slice: Runnel stats dialog gets a 28-day streak calendar (e2e:site passes; unreleased). Still open: sound set, seasonal crops, fairer par.
-- **2026-09-29 12:15 UTC:** ROADMAP 22 slice: Runnel seasonal crops (pools by month of the daily date, new pumpkin; e2e:site passes; unreleased). Still open: sound set, fairer par.
-- **2026-09-29 13:30 UTC:** ROADMAP 22 slice: Runnel synth sound set (turn click, rising water drip, win chime) + mute button in header (e2e:site passes; unreleased, release cap reached today). Still open: fairer par.
-- **2026-09-29 14:15 UTC:** ROADMAP 22 slice: Runnel fairer drop rating (`dropsFor`: 3 drops within par+10%/2 taps, 2 within +50%/4; unit-tested; `npm run check` passes; unreleased, release cap reached). Item 22 now complete.
-- **2026-09-29 15:30 UTC:** ROADMAP 17 slice: Market cards get a per-category coloured frame (pasture/crop/coast/community/media/science); check + chromium a11y/no-scroll e2e pass (webkit projects unavailable in sandbox); unreleased, cap reached.
-- **2026-09-29 16:30 UTC:** ROADMAP 17 slice: Market card buy animation (lift + fade before the swap, instant with reduced motion; check + Buy e2e pass; unreleased, cap reached).
-- **2026-09-29 17:30 UTC:** ROADMAP 17 slice: per-category icon (cow/wheat/boat/house/megaphone/flask) on Market cards; check + a11y/no-scroll/quick-game e2e pass (unreleased, cap reached).
-- **2026-09-29 18:30 UTC:** ROADMAP 17 slice: Cath's Plan cards get a plum frame, Cath's face avatar and a handwriting-style line (check + a11y/no-scroll/disabled e2e pass; unreleased, cap reached).
-- **2026-09-29 19:00 UTC:** ROADMAP 14 slice: per-chapter scene backdrops (tinted horizon gradients per chapter id; check passes; unreleased, cap reached). Still open: more cast expressions.
-- **2026-09-29 20:00 UTC:** ROADMAP 17 slice: Scheme play animation on Cath's Plan cards (glow + lift, instant with reduced motion; check + plan-strip/disabled/quick-game e2e pass; unreleased, cap reached). Item 17's listed scope is now complete.
-- **2026-09-29 21:00 UTC:** ROADMAP 14 slice: cast expressions (brow tilt + mouth swap on non-Cath portraits; Scene infers mood from line punctuation; check + campaign/a11y e2e pass; unreleased, cap reached). Item 14's listed scope is now complete.
-- **2026-09-29 22:00 UTC:** ROADMAP 13 slice: Squeeze plastic film creeps over regions with Outlets (glossy tint + sheen, reduced-motion safe; check + a11y/no-scroll/quick-game e2e pass; unreleased, cap reached). Still open in 13: Lost Land/Rift/enemy-turn choreography.
-- **2026-09-29 22:55 UTC:** ROADMAP 13 slice: red edge flash when Lost Land drops or the Rift rises (`.danger-flash`, reduced-motion hidden; check + a11y/quick-game e2e pass; desktop-no-scroll spec can't launch here, missing headless-shell revision; unreleased, cap reached). Still open in 13: Rift 3/6 moment, enemy-turn choreography.
-- **2026-09-29 23:55 UTC:** ROADMAP 13 slice: deeper, longer red pulse when the Rift reaches 3 or 6 (check passes; unreleased, cap reached). Still open in 13: enemy-turn choreography.
-- **2026-09-30 01:10 UTC:** released all waiting commits (`ef2258a` live, tag 403 as usual). Fixed flaky desktop-no-scroll: right-column panels now shrink and scroll internally (random Market cards vary 335-457px). Sandbox needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` for the desktop specs.
-- **2026-09-30 02:20 UTC:** ROADMAP 13 slice: enemy-turn playback is now a bottom banner over a visible map, highlighting the region of each step (check + quick-game e2e pass; unreleased). Item 13's listed scope is now complete bar end-of-round moment.
-- **2026-09-30 03:15 UTC:** ROADMAP 13 slice: "Round N" banner at each round change (reduced-motion hidden; check + quick-game/a11y e2e pass; unreleased). Item 13 listed scope now complete.
-- **2026-09-30 04:20 UTC:** ROADMAP 23 slice: Runnel fixed "sluice" tiles (pre-solved, unturnable; daily carries 2/3/4 on Wed/Fri/Sat from 2026-10-01; unit-tested solvable; check + e2e:site pass; unreleased). Still open in 23: bridges, reservoirs.
-- **2026-09-30 04:50 UTC:** released `0d9a0c4` (live confirmed via version.json; tag 403 as usual), including sluice tiles.
-- **2026-09-30 05:15 UTC:** ROADMAP 23 slice: Runnel reservoirs (fixed pond taking water from any side; Tue/Thu 1, Sun 2 from 2026-10-02; unit-tested solvable; check + e2e:site pass; unreleased). Still open in 23: bridges.
-- **2026-09-30 06:30 UTC:** ROADMAP 23 slice: Runnel bridges (two crossing channels that don't mix; plank-deck art; Mon/Sat 1, Fri 2 from 2026-10-03; unit-tested solvable + non-mixing; check + e2e:site pass; art not eyeballed, no bridge on today's daily). Item 23 listed scope complete.
-- **2026-09-30 07:00 UTC:** released `4173659` (live confirmed via version.json; tag 403 as usual). ROADMAP 24 slice: landing Cathnivore card is a live miniature (hexes turn green in turn, Cath's face in the middle; reduced-motion static; e2e:site passes; unreleased). Still open in 24: frame-time check on real phones.
-- **2026-09-30 08:15 UTC:** ROADMAP 11 slice: per-region terrain variation (id-hashed mirror + small extras: barn, haystack, gulls; check passes, game screenshot eyeballed; unreleased).
-- **2026-09-30 09:00 UTC:** released `d3250a7` (live confirmed via version.json; tag 403 as usual; 4th release today, cap reached). Short session: no new slice; landing Runnel card already animated.
-- **Next step:** item 9's remaining scope is now just the illustrated-tile redesign itself (the item's own
-  headline) plus 'required'-Scheme why-not (needs real per-card region-reason logic, a bigger piece); or
-  pick up item 10's full agenda-card redesign (newspaper-clipping look, headline, boxed effect panel), or
-  move to map art (11+) if those keep hitting diminishing returns.
+- **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
+- **Next:** **Hedgerow H1** (the owner asked on 2026-09-30 to start it now; read `docs/design/hedgerow.md`). Keep polishing Cathnivore items 9-13 alongside when a Hedgerow slice is waiting on something.
+- 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -104,10 +54,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   bank, STYLE.md 9 rewritten, and the `scene.ts` shader-leak/context-restore fixes. All gates passed; the
   browser smoke test was inconclusive (sandbox proxy cert, expected) but the HTTP check confirmed the live
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
-- 2026-09-28 ~06:30 UTC (`c78fad8`): Cath's bust on the Campaign screen (expression tracks chapter progress) and the Setup screen. All gates passed; `deploy-2` tag push failed with the known 403 (harmless).
-- 2026-09-28 ~06:14 UTC (`adef266`): the Cath companion (game-screen reactions, end-screen portrait, tutorial-prompt face). All gates passed; `deploy-1` tag push failed with the known 403 (harmless, see Known limitations).
-- 2026-09-28 (owner's chat session): Cath's new look everywhere (title hero, portraits, landing page star, Runnel host), title and Campaign redesigns, continuous-improvement plan.
-- 2026-09-28 ~05:02 UTC and earlier: v1 hardening releases; see `docs/archive/PROGRESS-v1.md`'s deploy log.
 
 ## Session log (newest first, last 15)
 - 2026-09-29: Runnel sound is synth-only in games/runnel/src/sound.ts, on by default, mute in localStorage `runnel:sound`; no release (5 today).
@@ -178,3 +124,4 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   icon set and Sell disabled/why-not state; ROADMAP 10's tick animation and first (bar-based, phone-only)
   gauge pass; ROADMAP 8's phone bottom tray and chrome-trimming; ROADMAP 1's hands/pose, favicon/
   social-image and tutorial-voice work; ROADMAP 3's close-out; the SPEC 16 pivot and the sw.js fix.
+

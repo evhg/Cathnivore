@@ -1047,6 +1047,64 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // the centre, actions/Market/Cath's Plan/Log on the right, always visible (no scrolling at 1280x800).
   // `.desktop-*` panels reuse the same sheet components in `inline` mode and are shown only above 1024px
   // via CSS; below that the phone layout's toggle buttons and modal sheets (below) still work unchanged.
+  // ROADMAP 8, the owner's chat session 2026-09-30: the active producer's panel and the Undo/sheet controls
+  // live next to the actions they belong to: in the left tray on desktop (freeing the centre column for
+  // the map), in the pinned action tray on phone. Mounted exactly once, like `actionsPanel`.
+  const producerPanel = (
+    <>
+      {decision ? (
+        <section className="decision">
+          <p>
+            {decision.kind === 'kingsmarketBonus' && `${PRODUCERS[decision.producer].name}: choose a production bonus`}
+            {decision.kind === 'squeezeProductionLoss' && `${PRODUCERS[decision.producer].name}: choose which production to lower`}
+            {decision.kind === 'riftSplitFaction' && 'Rift 6, The Split: choose which faction to split'}
+            {decision.kind === 'riftSplitRemoval' &&
+              `Rift 6, The Split: choose where to remove a ${decision.pieceKind === 'doubt' ? 'Doubt' : decision.pieceKind === 'buyout' ? 'Buyout' : 'Outlet'} from (${decision.remaining + 1} left)`}
+          </p>
+        </section>
+      ) : (
+        <section className="active-producer">
+          <span className="active-producer-header">
+            <Portrait character={state.activeProducer} size={48} />
+            <strong>{PRODUCERS[state.activeProducer].name}</strong>
+          </span>
+          <span>
+            <Tooltip term="Produce">
+              <ProduceIcon /> {active.resources.produce} ({active.production.produce}/round)
+            </Tooltip>{' '}
+            <Tooltip term="Marks">
+              <MarksIcon /> {active.resources.marks} ({active.production.marks}/round)
+            </Tooltip>{' '}
+            <Tooltip term="Goodwill">
+              <GoodwillIcon /> {active.resources.goodwill} ({active.production.goodwill}/round)
+            </Tooltip>
+          </span>
+          <span>
+            Actions left: <ActionsLeftIcon total={ACTIONS_PER_ROUND} left={state.actionsLeft} />
+          </span>
+        </section>
+      )}
+    </>
+  )
+  const controls = (
+    <footer className="controls">
+      <button
+        disabled={!canUndo(undoStackRef.current) || pendingEnemyTurn.length > 0 || waitingOnAi}
+        onClick={undo}
+      >
+        Undo
+      </button>
+      <button className="mobile-only" onClick={() => setShowFarm(true)}>Farm</button>
+      {rules.improvements && (
+        <button className="mobile-only" onClick={() => setShowMarket(true)}>Market</button>
+      )}
+      {rules.schemes && (
+        <button className="mobile-only" onClick={() => setShowPlan(true)}>Cath&rsquo;s Plan</button>
+      )}
+      <button className="mobile-only" onClick={() => setShowLog(true)}>Log</button>
+    </footer>
+  )
+
   return (
     <div className="game-layout">
       {(lostLandTick > 0 || riftTick > 0) && (
@@ -1063,6 +1121,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           focusable descendants of its own, which the right column hit at random in this session's
           testing. */}
       <aside className="desktop-col desktop-col-left" tabIndex={0}>
+        {isDesktop && <div className="sheet-panel producer-sheet">{producerPanel}</div>}
         <FarmSheet state={state} onClose={() => {}} inline />
         {/* ROADMAP 8: the actions tray lives here on desktop, not the right column — Market/Cath's Plan/Log
             already claim nearly all of the right column's height budget on their own (measured directly:
@@ -1075,6 +1134,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           <div className="sheet-panel actions-sheet">
             <h2>Actions</h2>
             {actionsPanel}
+            {controls}
           </div>
         )}
       </aside>
@@ -1098,7 +1158,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
               <RoundIcon />
               <GaugeRing value={state.round} max={state.round + state.pressureDeck.length} />
             </span>{' '}
-            Round {state.round}/{state.round + state.pressureDeck.length}
+            <span className="hud-label">Round </span>{state.round}/{state.round + state.pressureDeck.length}
           </span>
         </span>
         <span>
@@ -1108,7 +1168,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                 <PublicTrustIcon />
                 <GaugeRing value={state.publicTrust} max={TRUST_MAX} />
               </span>{' '}
-              Trust {state.publicTrust}
+              <span className="hud-label">Trust </span>{state.publicTrust}
             </span>
           </Tooltip>
         </span>
@@ -1119,7 +1179,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                 <LostLandIcon />
                 <GaugeRing value={state.lostLandPool} max={lostLandStartingPool(state)} />
               </span>{' '}
-              Lost Land left {state.lostLandPool}
+              <span className="hud-label">Lost Land left </span>{state.lostLandPool}
             </span>
           </Tooltip>
         </span>
@@ -1130,7 +1190,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                 <RiftIcon />
                 <GaugeRing value={state.rift} max={RIFT_MAX} />
               </span>{' '}
-              Rift {state.rift}
+              <span className="hud-label">Rift </span>{state.rift}
             </span>
           </Tooltip>
         </span>
@@ -1271,60 +1331,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {/* SPEC 10.2's phone "Bottom panel (fixed)": the active producer, its actions and Undo/sheet-toggle
           buttons, always on screen — see the `.game-scroll` comment above for how. */}
       <div className="action-tray">
-      {decision ? (
-        <section className="decision">
-          <p>
-            {decision.kind === 'kingsmarketBonus' && `${PRODUCERS[decision.producer].name}: choose a production bonus`}
-            {decision.kind === 'squeezeProductionLoss' && `${PRODUCERS[decision.producer].name}: choose which production to lower`}
-            {decision.kind === 'riftSplitFaction' && 'Rift 6, The Split: choose which faction to split'}
-            {decision.kind === 'riftSplitRemoval' &&
-              `Rift 6, The Split: choose where to remove a ${decision.pieceKind === 'doubt' ? 'Doubt' : decision.pieceKind === 'buyout' ? 'Buyout' : 'Outlet'} from (${decision.remaining + 1} left)`}
-          </p>
-        </section>
-      ) : (
-        <section className="active-producer">
-          <span className="active-producer-header">
-            <Portrait character={state.activeProducer} size={48} />
-            <strong>{PRODUCERS[state.activeProducer].name}</strong>
-          </span>
-          <span>
-            <Tooltip term="Produce">
-              <ProduceIcon /> {active.resources.produce} ({active.production.produce}/round)
-            </Tooltip>{' '}
-            <Tooltip term="Marks">
-              <MarksIcon /> {active.resources.marks} ({active.production.marks}/round)
-            </Tooltip>{' '}
-            <Tooltip term="Goodwill">
-              <GoodwillIcon /> {active.resources.goodwill} ({active.production.goodwill}/round)
-            </Tooltip>
-          </span>
-          <span>
-            Actions left: <ActionsLeftIcon total={ACTIONS_PER_ROUND} left={state.actionsLeft} />
-          </span>
-        </section>
-      )}
+      {!isDesktop && producerPanel}
 
       {/* Phone copy of `actionsPanel` (defined above), now inside `.action-tray`. Only mounted when
           `useIsDesktopLayout()` says this isn't desktop — see the left tray's copy above for why this is
           gated in JS rather than just hidden by CSS. */}
       {!isDesktop && actionsPanel}
 
-      <footer className="controls">
-        <button
-          disabled={!canUndo(undoStackRef.current) || pendingEnemyTurn.length > 0 || waitingOnAi}
-          onClick={undo}
-        >
-          Undo
-        </button>
-        <button className="mobile-only" onClick={() => setShowFarm(true)}>Farm</button>
-        {rules.improvements && (
-          <button className="mobile-only" onClick={() => setShowMarket(true)}>Market</button>
-        )}
-        {rules.schemes && (
-          <button className="mobile-only" onClick={() => setShowPlan(true)}>Cath&rsquo;s Plan</button>
-        )}
-        <button className="mobile-only" onClick={() => setShowLog(true)}>Log</button>
-      </footer>
+      {!isDesktop && controls}
       </div>
 
       {showFarm && <FarmSheet state={state} onClose={() => setShowFarm(false)} />}
