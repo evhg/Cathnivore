@@ -98,6 +98,30 @@ function say(text: string): void {
 
 // ---- level select ----
 
+// Per-act banner: sky, rolling hills and one motif, all from a palette per act.
+const ACT_PALETTES: [string, string, string, string][] = [
+  ["#f6d7a7", "#e9a96b", "#7fa35a", "#5c7f43"],
+  ["#f3e3b0", "#e2c36e", "#8fae5d", "#6a8c47"],
+  ["#cfe6ee", "#9cc7d6", "#6d9f73", "#4f7f5c"],
+  ["#d9e7c4", "#b6d08c", "#7ea858", "#5a8540"],
+  ["#c8d7c0", "#9fb79a", "#5f8a62", "#44694a"],
+  ["#bfe0ea", "#86bfd2", "#c9b98a", "#a59866"],
+  ["#d8d2e2", "#b1a6c9", "#7d8f9a", "#5d6d78"],
+  ["#f2cfc4", "#e3998a", "#8a9a6a", "#687a4c"],
+  ["#d3d9e6", "#a4b0cc", "#77849a", "#56627a"],
+  ["#f7dc9a", "#eeb84f", "#b98a4a", "#8a6533"],
+];
+
+function actArt(n: number): string {
+  const [sky, glow, hill1, hill2] = ACT_PALETTES[(n - 1) % ACT_PALETTES.length]!;
+  const sun = 30 + ((n * 37) % 50);
+  const posts = Array.from({ length: 4 }, (_, i) => {
+    const x = 70 + i * 12 + ((n * 7 + i * 11) % 5);
+    return `<rect x="${x}" y="22" width="2" height="8" fill="${hill2}"/><circle cx="${x + 1}" cy="20" r="3.5" fill="${hill2}"/>`;
+  }).join("");
+  return `<svg class="act-art" viewBox="0 0 120 36" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><rect width="120" height="36" fill="${sky}"/><circle cx="${sun}" cy="14" r="8" fill="${glow}" opacity=".85"/><path d="M0 26 Q30 14 60 25 T120 22 V36 H0Z" fill="${hill1}"/><path d="M0 31 Q40 24 80 31 T120 29 V36 H0Z" fill="${hill2}"/>${posts}</svg>`;
+}
+
 function renderLevels(): void {
   ui.levels.innerHTML = "";
   let lastPlace = "";
@@ -109,7 +133,7 @@ function renderLevels(): void {
       h.className = "act-head";
       h.setAttribute("role", "presentation");
       const n = Math.floor((lv.id - 1) / 10) + 1;
-      h.innerHTML = `<span class="act-num"></span><span class="act-place"></span>`;
+      h.innerHTML = `${actArt(n)}<span class="act-num"></span><span class="act-place"></span>`;
       h.querySelector(".act-num")!.textContent = `Act ${n}`;
       h.querySelector(".act-place")!.textContent = lv.place;
       ui.levels.append(h);

@@ -448,14 +448,31 @@ button {
 }
 
 .act-head {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  min-height: 52px;
+  padding: 8px 12px;
   display: flex;
   align-items: baseline;
   gap: 10px;
   margin: 10px 2px 0;
   padding-bottom: 4px;
-  border-bottom: 2px solid var(--paper-2);
   font-family: "Fraunces", Georgia, serif;
   color: var(--soil);
+}
+.act-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+.act-num,
+.act-place {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 .act-head:first-child {
   margin-top: 0;
@@ -464,7 +481,7 @@ button {
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink-muted);
+  color: var(--soil);
 }
 .act-place {
   font-size: 20px;
