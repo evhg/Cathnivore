@@ -117,7 +117,8 @@ let wetCount = 0
 function onTurn(index: number, clockwise: boolean): void {
   if (game.solved) return
   if (!rotateCell(puzzle.cells, index, clockwise)) {
-    if (puzzle.cells[index]?.fixed) flashHint('That sluice is fixed in place.')
+    if (puzzle.cells[index]?.reservoir) flashHint('Reservoirs take water from any side.')
+    else if (puzzle.cells[index]?.fixed) flashHint('That sluice is fixed in place.')
     else if (puzzle.cells[index]?.locked) flashHint('That tile is pinned. Hold it to unpin.')
     return
   }

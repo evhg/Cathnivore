@@ -36,6 +36,8 @@ export interface Cell {
   locked: boolean
   /** A sluice: arrives already in its solved rotation and can never be turned or unpinned. */
   fixed?: boolean
+  /** A reservoir: a fixed pond at the end of a channel that takes water from any side and passes none on. */
+  reservoir?: boolean
 }
 
 export interface Puzzle {
@@ -141,6 +143,8 @@ export interface GenerateOptions {
   stoneRate?: number
   /** How many turnable pieces become fixed sluices, already in place (default 0). */
   fixedCount?: number
+  /** How many dead-end fields become reservoirs (default 0). */
+  reservoirCount?: number
 }
 
 /**
@@ -171,6 +175,17 @@ export function generatePuzzle(seed: string, options: GenerateOptions): Puzzle {
     const pool = cells.map((_, i) => i).filter((i) => i !== centre && cells[i]!.kind === 'channel')
     shuffle(pool, rng)
     for (const i of pool.slice(0, fixedCount)) {
+      cells[i]!.fixed = true
+      cells[i]!.locked = true
+    }
+  }
+
+  const reservoirCount = options.reservoirCount ?? 0
+  if (reservoirCount > 0) {
+    const pool = cells.map((_, i) => i).filter((i) => cells[i]!.kind === 'field')
+    shuffle(pool, rng)
+    for (const i of pool.slice(0, reservoirCount)) {
+      cells[i]!.reservoir = true
       cells[i]!.fixed = true
       cells[i]!.locked = true
     }
@@ -345,13 +360,17 @@ export function computeFlow(cells: readonly Cell[]): Flow {
   const depth = new Map<number, number>()
   if (spring < 0) return { wet, leaks, leakMask, inflow, depth, solved: false }
   const masks = cells.map(currentMask)
+  // A reservoir accepts water from every side; it passes none on (handled below).
+  cells.forEach((c, i) => {
+    if (c.reservoir) masks[i] = 63
+  })
   // Breadth-first, so depth is the water's travel distance and animations can cascade outwards.
   const queue = [spring]
   wet.add(spring)
   depth.set(spring, 0)
   for (let head = 0; head < queue.length; head++) {
     const i = queue[head]!
-    const mask = masks[i]!
+    const mask = cells[i]!.reservoir ? 0 : masks[i]!
     for (let d = 0; d < 6; d++) {
       if (!(mask & (1 << d))) continue
       const j = neighbours[i]![d]!
@@ -406,8 +425,22 @@ export function sluicesFor(dateString: string): number {
   return ({ 3: 2, 5: 3, 6: 4 } as Record<number, number>)[day] ?? 0
 }
 
+/** First daily that can carry reservoirs. */
+export const RESERVOIR_FROM = '2026-10-02'
+
+/** One reservoir on Tuesdays and Thursdays, two on Sundays. */
+export function reservoirsFor(dateString: string): number {
+  if (dateString < RESERVOIR_FROM) return 0
+  const day = new Date(`${dateString}T00:00:00Z`).getUTCDay()
+  return ({ 0: 2, 2: 1, 4: 1 } as Record<number, number>)[day] ?? 0
+}
+
 export function dailyPuzzle(dateString: string): Puzzle {
-  return generatePuzzle(`daily-${dateString}`, { radius: DAILY_RADIUS, fixedCount: sluicesFor(dateString) })
+  return generatePuzzle(`daily-${dateString}`, {
+    radius: DAILY_RADIUS,
+    fixedCount: sluicesFor(dateString),
+    reservoirCount: reservoirsFor(dateString),
+  })
 }
 
 // ---- helpers ----------------------------------------------------------------------------------------

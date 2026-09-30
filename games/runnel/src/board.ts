@@ -168,7 +168,7 @@ export class Board {
 
   private drawCell(parent: SVGGElement, cell: Cell, index: number): CellView {
     const { x, y } = cellCentre(cell.q, cell.r)
-    const root = el('g', { class: `cell ${cell.kind}`, transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, parent)
+    const root = el('g', { class: `cell ${cell.kind}${cell.reservoir ? ' reservoir' : ''}`, transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, parent)
     root.style.setProperty('--ring', String(Math.max(Math.abs(cell.q), Math.abs(cell.r), Math.abs(cell.q + cell.r))))
     el('polygon', { class: 'tile', points: hexPoints(S * 0.965) }, root)
     el('polygon', { class: 'tile-grain', points: hexPoints(S * 0.965) }, root)
@@ -209,7 +209,8 @@ export class Board {
     el('circle', { r: S * 0.1, class: 'hub-water' }, waters)
 
     if (cell.kind === 'spring') this.drawSpring(root)
-    if (cell.kind === 'field') this.drawField(root, index)
+    if (cell.reservoir) this.drawReservoir(root)
+    else if (cell.kind === 'field') this.drawField(root, index)
     el('circle', { class: 'pin', r: 5.5, cx: 0, cy: -S * 0.62 }, root)
     return view
   }
@@ -232,6 +233,13 @@ export class Board {
     el('circle', { r: S * 0.27, class: 'well-water' }, g)
     el('circle', { r: S * 0.12, class: 'well-ripple' }, g)
     el('circle', { r: S * 0.12, class: 'well-ripple well-ripple-2' }, g)
+  }
+
+  private drawReservoir(root: SVGGElement): void {
+    const g = el('g', { class: 'reservoir-pond' }, root)
+    el('ellipse', { cx: 0, cy: 2, rx: S * 0.5, ry: S * 0.38, class: 'pond-rim' }, g)
+    el('ellipse', { cx: 0, cy: 2, rx: S * 0.4, ry: S * 0.29, class: 'pond-water' }, g)
+    el('ellipse', { cx: -6, cy: -1, rx: 9, ry: 3.5, class: 'pond-shine' }, g)
   }
 
   private drawField(root: SVGGElement, index: number): void {
@@ -432,9 +440,9 @@ export class Board {
     const cell = this.puzzle.cells[index]!
     const view = this.views[index]!
     if (cell.kind === 'stone') return
-    const name = cell.kind === 'spring' ? 'Spring' : cell.kind === 'field' ? 'Field' : 'Channel'
+    const name = cell.reservoir ? 'Reservoir' : cell.kind === 'spring' ? 'Spring' : cell.kind === 'field' ? 'Field' : 'Channel'
     const state = flow.wet.has(index) ? (flow.leaks.has(index) ? 'watered, spilling' : 'watered') : 'dry'
-    view.root.setAttribute('aria-label', `${name}, ${state}${cell.fixed ? ', fixed sluice' : cell.locked ? ', pinned' : ''}`)
+    view.root.setAttribute('aria-label', `${name}, ${state}${cell.reservoir ? '' : cell.fixed ? ', fixed sluice' : cell.locked ? ', pinned' : ''}`)
   }
 
   get focusedIndex(): number {

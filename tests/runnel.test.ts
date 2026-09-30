@@ -11,6 +11,7 @@ import {
   rotateMask,
   rotationalPeriod,
   sluicesFor,
+  reservoirsFor,
   tapsToSolve,
   type Puzzle,
 } from '../games/runnel/src/engine'
@@ -170,5 +171,27 @@ describe('sluices (fixed tiles)', () => {
     expect(sluicesFor('2026-10-02')).toBe(3) // Friday
     expect(sluicesFor('2026-10-03')).toBe(4) // Saturday
     expect(sluicesFor('2026-10-07')).toBe(2) // Wednesday
+  })
+})
+
+describe('reservoirs', () => {
+  it('are fixed dead-end ponds that take water from any side without spilling', () => {
+    for (const seed of ['a', 'b', 'c', 'd', 'e']) {
+      const p = generatePuzzle(seed, { radius: 3, fixedCount: 2, reservoirCount: 2 })
+      expect(p.cells.filter((c) => c.reservoir)).toHaveLength(2)
+      for (const c of p.cells.filter((c) => c.reservoir)) {
+        expect(c.fixed).toBe(true)
+        expect(rotateCell(p.cells, p.cells.indexOf(c))).toBe(false)
+      }
+      solve(p)
+      expect(computeFlow(p.cells).solved).toBe(true)
+    }
+  })
+
+  it('appear only from the start date, by weekday', () => {
+    expect(reservoirsFor('2026-10-01')).toBe(0)
+    expect(reservoirsFor('2026-10-06')).toBe(1) // Tuesday
+    expect(reservoirsFor('2026-10-04')).toBe(2) // Sunday
+    expect(reservoirsFor('2026-10-05')).toBe(0)
   })
 })

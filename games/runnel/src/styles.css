@@ -1135,3 +1135,19 @@ kbd {
   stroke-width: 4;
   stroke-dasharray: 5 3;
 }
+
+.reservoir .tile {
+  stroke: var(--water-hi);
+  stroke-width: 3;
+}
+.pond-rim {
+  fill: var(--ink);
+  opacity: 0.25;
+}
+.pond-water {
+  fill: var(--water-hi);
+}
+.pond-shine {
+  fill: #fff;
+  opacity: 0.55;
+}
