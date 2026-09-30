@@ -2,7 +2,7 @@
 // by shape as well as colour (STYLE.md 2: the greyscale test). Effects (flying turnips, floating Marks) live
 // here and are fed from the engine's event list.
 
-import { ENEMIES, TOWERS, laneCells, pointAt, towerAt, type Game, type GameEvent, type TowerKind } from './engine'
+import { ENEMIES, TOWERS, laneCells, pointAt, towerAt, type Game, type EnemyKind, type GameEvent, type TowerKind } from './engine'
 
 interface Fx {
   kind: 'turnip' | 'float' | 'puff' | 'swarm'
@@ -282,11 +282,30 @@ export class Renderer {
     }
   }
 
-  private enemy(kind: 'van' | 'drone', x: number, y: number, s: number, hp: number, slowed: boolean): void {
+  private enemy(kind: EnemyKind, x: number, y: number, s: number, hp: number, slowed: boolean): void {
     const { ctx } = this
     ctx.lineWidth = 2.5
     ctx.strokeStyle = '#2b2320'
-    if (kind === 'van') {
+    if (kind === 'boss') {
+      ctx.fillStyle = '#f3f0ea'
+      ctx.beginPath()
+      ctx.roundRect(x - s * 0.46, y - s * 0.34, s * 0.92, s * 0.68, s * 0.12)
+      ctx.fill()
+      ctx.stroke()
+      ctx.fillStyle = '#7fb8c8'
+      ctx.fillRect(x + s * 0.12, y - s * 0.26, s * 0.26, s * 0.2)
+      ctx.fillStyle = '#c4433a'
+      ctx.fillRect(x - s * 0.36, y - s * 0.1, s * 0.4, s * 0.1)
+      ctx.fillStyle = '#2b2320'
+      ctx.beginPath()
+      ctx.arc(x - s * 0.24, y + s * 0.34, s * 0.09, 0, Math.PI * 2)
+      ctx.arc(x + s * 0.24, y + s * 0.34, s * 0.09, 0, Math.PI * 2)
+      ctx.fill()
+      // A small smile on the front: the corporations always smile.
+      ctx.beginPath()
+      ctx.arc(x + s * 0.2, y + s * 0.1, s * 0.09, 0.1 * Math.PI, 0.9 * Math.PI)
+      ctx.stroke()
+    } else if (kind === 'van') {
       ctx.fillStyle = '#f3f0ea'
       ctx.beginPath()
       ctx.roundRect(x - s * 0.3, y - s * 0.2, s * 0.6, s * 0.4, s * 0.09)
@@ -316,9 +335,9 @@ export class Renderer {
     }
     if (hp < 1) {
       ctx.fillStyle = 'rgba(0,0,0,0.5)'
-      ctx.fillRect(x - s * 0.3, y - s * 0.42, s * 0.6, s * 0.08)
+      ctx.fillRect(x - s * 0.3, y - s * 0.46, s * 0.6, s * 0.08)
       ctx.fillStyle = '#c4433a'
-      ctx.fillRect(x - s * 0.3, y - s * 0.42, s * 0.6 * Math.max(0, hp), s * 0.08)
+      ctx.fillRect(x - s * 0.3, y - s * 0.46, s * 0.6 * Math.max(0, hp), s * 0.08)
     }
     if (slowed) {
       ctx.strokeStyle = '#4c7a34'

@@ -7,7 +7,7 @@
 export const STEP = 1 / 30
 
 export type TowerKind = 'hedgerow' | 'scarecrow' | 'beehive'
-export type EnemyKind = 'van' | 'drone'
+export type EnemyKind = 'van' | 'drone' | 'boss'
 
 export interface TowerSpec {
   name: string
@@ -72,6 +72,7 @@ export interface EnemySpec {
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   van: { name: 'Delivery van', hp: 98, speed: 0.9, bounty: 9, leak: 1 },
+  boss: { name: 'The Acquisition Van', hp: 1800, speed: 0.55, bounty: 150, leak: 5 },
   drone: { name: 'Delivery drone', hp: 35, speed: 1.8, bounty: 6, leak: 1 },
 }
 

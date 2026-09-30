@@ -4,6 +4,7 @@
 import type { Level, WaveGroup } from './engine'
 
 const van = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'van', count, gap, delay })
+const boss = (delay = 0): WaveGroup => ({ enemy: 'boss', count: 1, gap: 1, delay })
 const drone = (count: number, gap: number, delay = 0): WaveGroup => ({ enemy: 'drone', count, gap, delay })
 
 export const LEVELS: Level[] = [
@@ -188,6 +189,128 @@ export const LEVELS: Level[] = [
       { who: 'cath', expression: 'smirk', text: "Sunday tea. And someone go and check on the acquisition van. It's been very quiet over there." },
     ],
     reward: 'Lore card: "Shift rota", a list of vans with a very tired-looking note at the bottom.',
+  },
+  {
+    id: 7,
+    name: 'Crooked Fences',
+    place: 'Brindle Hills',
+    cols: 6,
+    rows: 8,
+    path: [[0, 7], [0, 5], [3, 5], [3, 3], [0, 3], [0, 1], [5, 1], [5, 7]],
+    startMarks: 400,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive'],
+    waves: [
+      [van(7, 1.8)],
+      [van(8, 1.6), drone(8, 0.8, 2)],
+      [van(10, 1.4), drone(10, 0.7, 2)],
+      [van(11, 1.3), drone(12, 0.65, 2)],
+      [van(13, 1.2), drone(12, 0.6, 2)],
+      [van(14, 1.1), drone(14, 0.55, 2)],
+    ],
+    before: [
+      { who: 'narrator', text: "Overnight, someone moves Mara's fence posts four feet to the left. It is technically legal. That is the worst part." },
+      { who: 'mara', text: 'Their surveyor says my field is smaller than I thought. My field has been this size since 1974.' },
+      { who: 'cath', expression: 'determined', text: "Then we hold every inch of it, including the inches they've decided don't exist." },
+    ],
+    after: [
+      { who: 'mara', text: 'I moved the fence back. It is now six inches further left than it was. I win.' },
+      { who: 'cath', expression: 'wink', text: "That's the spirit. Slightly petty and completely correct." },
+    ],
+    reward: 'Lore card: "Mara\'s tape measure", 30 metres of proof.',
+  },
+  {
+    id: 8,
+    name: 'The Survey',
+    place: 'Brindle Hills',
+    cols: 6,
+    rows: 8,
+    path: [[0, 0], [2, 0], [2, 2], [5, 2], [5, 4], [2, 4], [2, 6], [5, 6], [5, 7]],
+    startMarks: 440,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive'],
+    waves: [
+      [drone(10, 0.8)],
+      [van(8, 1.6), drone(10, 0.7, 2)],
+      [van(10, 1.4), drone(12, 0.65, 2)],
+      [drone(18, 0.5), van(9, 1.4, 3)],
+      [van(13, 1.2), drone(14, 0.6, 2)],
+      [van(15, 1.1), drone(16, 0.55, 2)],
+      [van(16, 1), drone(18, 0.5, 2)],
+    ],
+    before: [
+      { who: 'narrator', text: 'Forty drones, one clipboard. A young man in a hi-vis vest stands at the gate and says he is "just here to measure".' },
+      { who: 'bea', expression: 'worried', text: "He's measuring the beehives. Why is he measuring the beehives?" },
+      { who: 'cath', expression: 'determined', text: "Because a hive is worth money, sweetheart. And they'd like to own it." },
+      { who: 'cath', expression: 'smirk', text: "Nobody owns Gerald. Gerald is a free bee." },
+    ],
+    after: [
+      { who: 'bea', expression: 'delighted', text: 'The man in the vest fell in the pond. Was that us?' },
+      { who: 'cath', expression: 'wink', text: "Officially, no." },
+    ],
+    reward: 'Lore card: "The clipboard", left behind, with one very honest line: "Nobody seems to mind."',
+  },
+  {
+    id: 9,
+    name: 'Night Shift',
+    place: 'Brindle Hills',
+    cols: 6,
+    rows: 8,
+    path: [[5, 0], [0, 0], [0, 2], [4, 2], [4, 4], [1, 4], [1, 6], [5, 6], [5, 7]],
+    startMarks: 460,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive'],
+    waves: [
+      [van(8, 1.5)],
+      [van(9, 1.4), drone(12, 0.65, 2)],
+      [van(12, 1.2), drone(12, 0.6, 2)],
+      [van(13, 1.1), drone(15, 0.55, 2)],
+      [van(15, 1), drone(16, 0.5, 2)],
+      [van(17, 0.95), drone(18, 0.5, 2)],
+      [van(18, 0.9), drone(20, 0.45, 2)],
+    ],
+    before: [
+      { who: 'narrator', text: 'At two in the morning the vans come with their lights off. The drones do not have lights to turn off, which is somehow worse.' },
+      { who: 'cath', expression: 'determined', text: "They've stopped pretending it's polite. That means they know the acquisition van is nearly ready." },
+      { who: 'tomas', text: 'Should I make tea?' },
+      { who: 'cath', expression: 'smirk', text: 'Make a lot of tea, Tomas. It is going to be that kind of night.' },
+    ],
+    after: [
+      { who: 'tomas', text: 'The tea was excellent. The vans were not.' },
+      { who: 'cath', expression: 'worried', text: "Something big is coming up the road. I can feel it in the fence posts." },
+    ],
+    reward: 'Lore card: "Tomas\'s flask", still warm.',
+  },
+  {
+    id: 10,
+    name: 'The Acquisition',
+    place: 'Brindle Hills',
+    cols: 6,
+    rows: 8,
+    path: [[0, 0], [5, 0], [5, 2], [0, 2], [0, 4], [5, 4], [5, 6], [0, 6], [0, 7], [5, 7]],
+    startMarks: 380,
+    goodwill: 10,
+    towers: ['hedgerow', 'scarecrow', 'beehive'],
+    waves: [
+      [van(8, 1.5)],
+      [van(10, 1.3), drone(12, 0.6, 2)],
+      [van(12, 1.2), drone(14, 0.55, 2)],
+      [van(14, 1.1), drone(16, 0.5, 2)],
+      [van(16, 1), drone(18, 0.5, 2)],
+      [boss(0), van(12, 1.2, 6), drone(16, 0.55, 8)],
+    ],
+    before: [
+      { who: 'narrator', text: 'The Acquisition Van is the size of a barn. It has a slogan on the side: "WE\'RE HERE FOR YOU." It has a smile, too. Nobody asked for the smile.' },
+      { who: 'mara', text: "Cath, that isn't a van. That's a lawyer with wheels." },
+      { who: 'cath', expression: 'determined', text: "It's what they send when they've run out of letters. It's slow, it's enormous and it's utterly convinced it's already won." },
+      { who: 'cath', expression: 'wink', text: "Every hedge, every scarecrow, every hive, Gerald included. Let's show it what Brindle Hills thinks of an offer." },
+    ],
+    after: [
+      { who: 'narrator', text: 'The Acquisition Van sits in the lane, stopped. A single, very small turnip rolls off its roof.' },
+      { who: 'mara', text: "Forty years I've farmed this valley. I never thought I'd see the day a van gave up." },
+      { who: 'cath', expression: 'smirk', text: "It didn't give up, Mara. It went to get advice. Highmoor is next, and their advice comes with a price tag." },
+    ],
+    reward: 'Act 1 complete. Lore card: "The Van\'s manifesto", 90 pages, not one of them about farming.',
   },
 ]
 
