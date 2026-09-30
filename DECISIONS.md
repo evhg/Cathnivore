@@ -181,3 +181,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-30: Cath's pie (stun every enemy 3s, bosses 1.5s, 40s cooldown) unlocks at level 3; the bot never uses it so it stays a safety margin, not a balance crutch. Did not release again: today's 4-release cap was already used.
 - 2026-09-30: Hedgerow sound reuses Runnel's synth approach (own key hedgerow:sound); shot sounds capped at 2 per tick.
 - 2026-09-30: Hedgerow act 2 built; Market Stall = income+damage buff (engine buff/income fields), enemies gained optional splits. Duck Pond deferred to act 3.
+
+- 2026-09-30: Hedgerow act 5-6: Radio Mast unlocks at level 45 (stealth phantoms appear from 44 in tiny numbers, leak 1). Clinic Tent at 55 cleanses influencer charm and buffs. Shipped act 6 with a broken first commit (duplicate ramp keys) caught by `npm run check`; fixed before release. Playwright needs PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome here.

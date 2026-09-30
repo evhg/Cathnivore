@@ -30,6 +30,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-09-30 ~15:08 UTC (`47ffb6d`): Hedgerow act 6 (levels 51-60, Shingle Bay, tenders, Clinic Tent, Container Ship). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~15:05 UTC (`da6db06`): Hedgerow act 5 (levels 41-50, Oakvale, stealth, Radio Mast, Clinic-in-a-Box). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~14:03 UTC (`4ad18c7`): Hedgerow act 4 (levels 31-40, Rivermead, armour, Barn, Silo, Mega-Dozer). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~13:20 UTC (`c059cb6`): Hedgerow act 3 (levels 21-30, Duck Pond, influencers, Blimp boss). Gates passed; live version.json matches; tag push 403 (harmless).
