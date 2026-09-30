@@ -183,3 +183,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-09-30: Hedgerow act 2 built; Market Stall = income+damage buff (engine buff/income fields), enemies gained optional splits. Duck Pond deferred to act 3.
 
 - 2026-09-30: Hedgerow act 5-6: Radio Mast unlocks at level 45 (stealth phantoms appear from 44 in tiny numbers, leak 1). Clinic Tent at 55 cleanses influencer charm and buffs. Shipped act 6 with a broken first commit (duplicate ramp keys) caught by `npm run check`; fixed before release. Playwright needs PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome here.
+- 2026-09-30: Act 7 feud between factions is story only; lawyers halve fire rate of towers in range (jam), Courthouse stuns enemies with hp>=1500.
