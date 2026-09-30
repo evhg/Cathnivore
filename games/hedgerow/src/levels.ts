@@ -5990,6 +5990,239 @@ export const LEVELS: Level[] = [
   },
 ];
 
+// ---- Act 10: Kingsmarket (levels 91-100) ----
+const ALL_TOWERS: Level["towers"] = [
+  "hedgerow",
+  "scarecrow",
+  "beehive",
+  "stall",
+  "pond",
+  "barn",
+  "silo",
+  "mast",
+  "tent",
+  "court",
+  "hall",
+];
+const KM_PATHS: Array<Level["path"]> = [
+  [
+    [0, 1],
+    [5, 1],
+    [5, 3],
+    [1, 3],
+    [1, 5],
+    [6, 5],
+    [6, 7],
+    [2, 7],
+  ],
+  [
+    [0, 0],
+    [6, 0],
+    [6, 2],
+    [0, 2],
+    [0, 4],
+    [6, 4],
+    [6, 6],
+    [0, 6],
+  ],
+  [
+    [0, 1],
+    [6, 1],
+    [6, 3],
+    [1, 3],
+    [1, 5],
+    [5, 5],
+    [5, 7],
+    [0, 7],
+  ],
+];
+const KM = [
+  [
+    "Cobbles and Crowns",
+    "The square fills with stalls overnight. Nobody asked. Everybody came.",
+    "Kingsmarket has a rule: whoever opens the first stall owns the morning.",
+    "Then we open forty.",
+  ],
+  [
+    "The Clock Tower",
+    "The clock tower has been stopped at 4:59 for eleven years, which is the firm's favourite time.",
+    "Tomas says he can wind it, if someone holds the ladder.",
+    "I'll hold the ladder. You hold the lane.",
+  ],
+  [
+    "Fishwives' Row",
+    "The fishwives have brought crates, hooks and opinions, all aimed the same way.",
+    "Nobody ever bought anything from a drone that they couldn't buy cheaper from me.",
+    "Then let them try to sell to an empty square.",
+  ],
+  [
+    "The Grain Exchange",
+    "Brass scales, marble floors, and a banner that says SYNERGY in six languages.",
+    "They've bought the exchange. They think buying the place buys the grain.",
+    "Grain belongs to whoever grew it. Let's remind the building.",
+  ],
+  [
+    "Bell Lane",
+    "Every bell in Kingsmarket rings at once. It is not a celebration. It is a summons.",
+    "That's every farmer in Marrow on the road. I can hear the carts.",
+    "Then we are not short of neighbours. We're short of time.",
+  ],
+  [
+    "The Long Table",
+    "Someone has laid a table down the whole length of the square. There are two hundred chairs.",
+    "It's for after. I've been baking since Tuesday.",
+    "Then we have a reason to win that tastes of pie.",
+  ],
+  [
+    "Charter Steps",
+    "The town charter is carved into the steps. Clause one: the market belongs to the people who use it.",
+    "They tried to sand it off. Sanding stone takes longer than they budgeted.",
+    "Keep the steps clear. Clause one has waited a long time.",
+  ],
+  [
+    "Vane's Last Memo",
+    "A paper drone drops a memo into Cath's pie: 'Regret to inform you.' It is unsigned, and slightly singed.",
+    "Even their memos are giving up. Tonight, everything they own is coming down this lane.",
+    "Then tonight is the lane's best night. Stay sharp.",
+  ],
+  [
+    "The Eve of Kingsmarket",
+    "Candles in every window, stalls dark, scarecrows on every corner. The square holds its breath.",
+    "Whatever tomorrow is, I'm glad I spent it with you lot.",
+    "Tomorrow is a pie, a hedge and a very stubborn mum. Sleep.",
+  ],
+] as const;
+for (let i = 0; i < 9; i++) {
+  const [name, n1, m1, c1] = KM[i]!;
+  const k = i;
+  LEVELS.push({
+    id: 91 + i,
+    name,
+    place: "Kingsmarket",
+    cols: 7,
+    rows: 8,
+    path: KM_PATHS[i % 3]!,
+    startMarks: 2700 + k * 40,
+    goodwill: 10,
+    towers: ALL_TOWERS,
+    waves: ramp(9, {
+      v: 30 + k,
+      d: 32 + k,
+      t: 11 + (k >> 1),
+      truckFrom: 1,
+      b: 13 + (k >> 1),
+      bFrom: 0,
+      i: 5,
+      infFrom: 3,
+      p: 10 + (k >> 1),
+      pFrom: 1,
+      vs: 1.4,
+      ds: 1.5,
+      e: 8,
+      eFrom: 2,
+      l: 11 + (k >> 1),
+      lFrom: 3,
+    }),
+    before: [
+      { who: "narrator", text: n1 },
+      { who: i % 2 ? "sol" : "tomas", text: m1 },
+      {
+        who: "cath",
+        expression: i % 3 === 0 ? "determined" : "smirk",
+        text: c1,
+      },
+    ],
+    after: [
+      {
+        who: "narrator",
+        text:
+          i === 8
+            ? "Midnight. The last stalls go up in silence, each one lit by a single lantern."
+            : "The lane clears. Somewhere, a stallholder starts to sing.",
+      },
+    ],
+    reward:
+      i === 8
+        ? 'Act 10 gate opens. Lore card: "Kingsmarket charter", read aloud.'
+        : `Lore card: "Market day ${i + 1}", stamped.`,
+  });
+}
+LEVELS.push({
+  id: 100,
+  name: "HollowCandor",
+  place: "Kingsmarket",
+  cols: 7,
+  rows: 8,
+  path: KM_PATHS[1]!,
+  startMarks: 3600,
+  goodwill: 10,
+  towers: ALL_TOWERS,
+  waves: [
+    ...ramp(6, {
+      v: 32,
+      d: 34,
+      t: 12,
+      truckFrom: 1,
+      b: 14,
+      bFrom: 0,
+      i: 5,
+      infFrom: 3,
+      p: 11,
+      pFrom: 1,
+      vs: 1.4,
+      ds: 1.5,
+      e: 8,
+      eFrom: 2,
+      l: 12,
+      lFrom: 3,
+    }),
+    [
+      { enemy: "hollowcandor", count: 1, gap: 1, delay: 0 },
+      influencer(6, 1.8, 6),
+      lawyer(8, 2, 6),
+      bulldozer(6, 3, 8),
+      van(16, 1.2, 8),
+      drone(18, 0.55, 10),
+    ],
+  ],
+  before: [
+    {
+      who: "narrator",
+      text: "Dawn over Kingsmarket. Hollowell and Candor have finally stopped pretending to be two companies: one enormous glass truck rolls in, wearing both logos.",
+    },
+    {
+      who: "bea",
+      text: "I was wrong about them, Cath, and I'm sorry. I sold them the paperwork. Let me hold the pie dish for the last one.",
+    },
+    {
+      who: "cath",
+      expression: "determined",
+      text: "It has three forms: HollowCandor jams every tower it passes. Broken, Candor heals the lane. Then the husks go stealth. Mast, Courthouse, Hall: all of it. Stand with me, Marrow.",
+    },
+  ],
+  after: [
+    {
+      who: "narrator",
+      text: "HollowCandor's glass shell cracks, the husks fold up like receipts, and the square goes quiet. Then someone starts ringing a bell, and every other bell joins in.",
+    },
+    {
+      who: "bea",
+      text: "I'll give evidence. All of it: the contracts, the memos, the offers. Every farm they tried to buy is on paper.",
+    },
+    {
+      who: "mara",
+      text: "Cath, there's two hundred chairs at that table and only one of them is yours.",
+    },
+    {
+      who: "cath",
+      expression: "delighted",
+      text: "Then pass the pie. Marrow is not for sale, and it never was. Now, who's hungry?",
+    },
+  ],
+  reward:
+    'Hedgerow complete. Lore card: "Marrow, unsold", the whole valley\'s signature.',
+});
+
 export function levelById(id: number): Level | undefined {
   return LEVELS.find((l) => l.id === id);
 }

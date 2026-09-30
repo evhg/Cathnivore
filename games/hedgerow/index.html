@@ -2,23 +2,45 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#F4EDE1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1C1714" media="(prefers-color-scheme: dark)" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta
+      name="theme-color"
+      content="#F4EDE1"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#1C1714"
+      media="(prefers-color-scheme: dark)"
+    />
     <title>Hedgerow: Cath's tower defence</title>
-    <meta name="description" content="Hold the lane. Build hedgerows and scarecrows to stop the corporations reaching the farmhouse." />
+    <meta
+      name="description"
+      content="Hold the lane. Build hedgerows and scarecrows to stop the corporations reaching the farmhouse."
+    />
     <link rel="icon" href="/hedgerow/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/hedgerow/apple-touch-icon.png" />
     <meta property="og:title" content="Hedgerow" />
-    <meta property="og:description" content="A tower defence game from cathnivore.com." />
-    <meta property="og:image" content="https://cathnivore.com/hedgerow/social-preview.png" />
+    <meta
+      property="og:description"
+      content="A tower defence game from cathnivore.com."
+    />
+    <meta
+      property="og:image"
+      content="https://cathnivore.com/hedgerow/social-preview.png"
+    />
   </head>
   <body>
     <div class="app">
       <section id="screen-select" class="screen">
         <header class="top">
           <a class="back" href="/" aria-label="All games">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 5 8 12l7 7" />
+            </svg>
             <span>Games</span>
           </a>
           <h1 class="wordmark">Hedgerow</h1>
@@ -26,7 +48,9 @@
         </header>
         <section class="host">
           <span class="host-face" id="host-face" aria-hidden="true"></span>
-          <p class="host-line" id="host-line">They're coming down the lane. Pick a field, and we'll dig in.</p>
+          <p class="host-line" id="host-line">
+            They're coming down the lane. Pick a field, and we'll dig in.
+          </p>
         </section>
         <h2 class="act">Act 1: Brindle Hills</h2>
         <ol class="levels" id="levels"></ol>
@@ -34,8 +58,15 @@
 
       <section id="screen-play" class="screen" hidden>
         <header class="hud">
-          <button class="icon-btn" id="btn-levels" type="button" aria-label="Back to levels">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
+          <button
+            class="icon-btn"
+            id="btn-levels"
+            type="button"
+            aria-label="Back to levels"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 5 8 12l7 7" />
+            </svg>
           </button>
           <div class="hud-title" id="hud-title">Level 1</div>
           <div class="hud-stats">
@@ -45,15 +76,44 @@
           </div>
         </header>
         <main class="stage" id="stage">
-          <canvas id="canvas" tabindex="0" role="application" aria-label="Battlefield. Arrow keys move the cursor, Enter selects a plot."></canvas>
+          <canvas
+            id="canvas"
+            tabindex="0"
+            role="application"
+            aria-label="Battlefield. Arrow keys move the cursor, Enter selects a plot."
+          ></canvas>
         </main>
         <section class="panel" id="panel" aria-live="polite"></section>
         <footer class="controls">
           <button class="btn" id="btn-send" type="button">Send wave 1</button>
-          <button class="btn btn-quiet" id="btn-pie" type="button" hidden>Cath's pie</button>
-          <button class="btn btn-quiet" id="btn-speed" type="button" aria-label="Game speed" aria-pressed="false">x1</button>
-          <button class="btn btn-quiet" id="btn-sound" type="button" aria-pressed="true">Sound on</button>
-          <button class="btn btn-quiet" id="btn-pause" type="button" aria-pressed="false">Pause</button>
+          <button class="btn btn-quiet" id="btn-pie" type="button" hidden>
+            Cath's pie
+          </button>
+          <button
+            class="btn btn-quiet"
+            id="btn-speed"
+            type="button"
+            aria-label="Game speed"
+            aria-pressed="false"
+          >
+            x1
+          </button>
+          <button
+            class="btn btn-quiet"
+            id="btn-sound"
+            type="button"
+            aria-pressed="true"
+          >
+            Sound on
+          </button>
+          <button
+            class="btn btn-quiet"
+            id="btn-pause"
+            type="button"
+            aria-pressed="false"
+          >
+            Pause
+          </button>
         </footer>
       </section>
       <p class="sr-only" id="announce" aria-live="polite"></p>
@@ -75,7 +135,9 @@
       <p class="story-text" id="result-note"></p>
       <div class="win-actions">
         <button class="btn" type="button" id="result-primary"></button>
-        <button class="btn btn-quiet" type="button" id="result-secondary">All levels</button>
+        <button class="btn btn-quiet" type="button" id="result-secondary">
+          All levels
+        </button>
       </div>
     </dialog>
 

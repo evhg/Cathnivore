@@ -429,6 +429,26 @@ describe("hedgerow engine", () => {
     expect(g.enemies.filter((e) => e.kind === "director").length).toBe(5);
   });
 
+  it("HollowCandor breaks into two Candors, each into remnants", () => {
+    const g = newGame(LEVELS[99]!);
+    g.enemies.push({
+      id: 93,
+      kind: "hollowcandor",
+      dist: 3,
+      hp: 1,
+      slowed: false,
+      stun: 0,
+    });
+    place(g, "scarecrow", 3, 1);
+    sendWave(g);
+    g.spawnQueue = [];
+    for (let i = 0; i < 4; i++) stepGame(g);
+    expect(g.enemies.filter((e) => e.kind === "candor").length).toBe(2);
+    g.enemies.filter((e) => e.kind === "candor").forEach((e) => (e.hp = 0));
+    stepGame(g);
+    expect(g.enemies.filter((e) => e.kind === "remnant").length).toBe(6);
+  });
+
   it("a slowed enemy covers less ground", () => {
     const g1 = newGame(level);
     const g2 = newGame(level);

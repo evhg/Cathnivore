@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- **Next:** **Hedgerow H11** (act 10, levels 91-100, Kingsmarket; level 100 HollowCandor multi-phase boss + finale). Acts 1-9 done (act 9: The Merger, Board of Directors splits into 5 directors) (act 8: Union Hall global aura + Market Day income, Pell's Campaign Bus) (act 7 adds lawyers that jam towers, the Courthouse 'Injunction', Lawyer Swarm boss; the two-faction feud is story only). Read `docs/design/hedgerow.md`.
+- **Next:** Hedgerow is content-complete (100 levels). Polish: level-select art, upgrade UI, finale scene/credits; then ROADMAP items 14-21.
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
 ## Blocked
@@ -66,6 +66,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-09-30 ~18:52-19:10 UTC: Hedgerow act 10 (levels 91-100, Kingsmarket): HollowCandor 3-phase boss (phase 1 jams towers, splits into 2 Candors that heal, each splits into stealth remnants), finale with Bea; 1 new test. Prettier run on games/hedgerow again (fine).
 - 2026-09-30 ~13:52-14:15 UTC: Hedgerow act 4 (levels 31-40, Rivermead): armour (halves non-piercing damage), bulldozers, Co-op Barn, Grain Silo (pierces), Mega-Dozer boss (splits into bulldozers); bot builds silos/barns; armour test. I ran prettier on games/hedgerow by mistake (big one-off diff, now formatted); files are prettier-clean from here.
 - 2026-09-30 ~13:00-13:25 UTC: Hedgerow act 3 (levels 21-30, Saltmarsh): Duck Pond tower, influencers (charm nearby towers), Brand Ambassador Blimp boss, Sol as speaker; bot builds ponds. Prettier reformats these files heavily: don't run it on games/hedgerow.
 - 2026-09-30 ~11:52-12:20 UTC: Hedgerow act 2 (levels 11-20, Highmoor): Market Stall (income + damage buff), price-war truck (splits into drones), Convoy boss (splits into trucks), 3 new tests. Duck Pond (design: level 18) skipped for now; add it in act 3.

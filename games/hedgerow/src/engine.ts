@@ -36,7 +36,10 @@ export type EnemyKind =
   | "swarm"
   | "bus"
   | "board"
-  | "director";
+  | "director"
+  | "hollowcandor"
+  | "candor"
+  | "remnant";
 
 export interface TowerSpec {
   name: string;
@@ -346,6 +349,34 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     leak: 10,
     armor: 0.2,
     splits: { kind: "director", count: 5 },
+  },
+  hollowcandor: {
+    name: "HollowCandor",
+    hp: 7000,
+    speed: 0.45,
+    bounty: 400,
+    leak: 10,
+    armor: 0.25,
+    jam: 1.5,
+    splits: { kind: "candor", count: 2 },
+  },
+  candor: {
+    name: "Candor, unmerged",
+    hp: 4500,
+    speed: 0.6,
+    bounty: 300,
+    leak: 6,
+    armor: 0.15,
+    heal: 20,
+    splits: { kind: "remnant", count: 3 },
+  },
+  remnant: {
+    name: "Hollow remnant",
+    hp: 1400,
+    speed: 0.9,
+    bounty: 60,
+    leak: 3,
+    stealth: true,
   },
   clinic: {
     name: "Vane's Clinic-in-a-Box",
@@ -856,7 +887,8 @@ export function throwPie(game: Game): ActionResult {
       e.kind === "ship" ||
       e.kind === "swarm" ||
       e.kind === "bus" ||
-      e.kind === "board"
+      e.kind === "board" ||
+      e.kind === "hollowcandor"
         ? PIE_STUN / 2
         : PIE_STUN;
   game.pieCd = PIE_COOLDOWN;

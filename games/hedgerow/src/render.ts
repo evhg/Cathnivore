@@ -743,9 +743,29 @@ export class Renderer {
         s * 0.16 * k,
         s * 0.2 * k,
       );
-    } else if (kind === "board" || kind === "director") {
-      const k = kind === "board" ? 1.5 : 0.8;
-      ctx.fillStyle = kind === "board" ? "#3a3f55" : "#2b2f3a";
+    } else if (
+      kind === "board" ||
+      kind === "director" ||
+      kind === "hollowcandor" ||
+      kind === "candor" ||
+      kind === "remnant"
+    ) {
+      const k =
+        kind === "hollowcandor"
+          ? 1.9
+          : kind === "board" || kind === "candor"
+            ? 1.5
+            : kind === "remnant"
+              ? 0.7
+              : 0.8;
+      ctx.fillStyle =
+        kind === "hollowcandor"
+          ? "#5a2f55"
+          : kind === "candor"
+            ? "#2f5a55"
+            : kind === "board"
+              ? "#3a3f55"
+              : "#2b2f3a";
       ctx.fillRect(x - s * 0.3 * k, y - s * 0.12 * k, s * 0.6 * k, s * 0.3 * k);
       ctx.fillStyle = "#e8c9a8";
       ctx.beginPath();
