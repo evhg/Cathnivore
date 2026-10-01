@@ -197,3 +197,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-01: Scene speakers: Cath left, everyone else right (row-reverse), CSS-only tails; no release (batching).
 - 2026-10-01: Released 55ac8ae (accumulated slices); ROADMAP 17 appears already built.
 - 2026-10-01: Scene backdrops get CSS data-URI SVG silhouettes (hills; skyline for ch 5-6); ROADMAP 14 ticked. No release (batching).
+- 2026-10-01: Landing frame-time check only possible on SwiftShader here (27ms avg); left ROADMAP 24's real-phone check open. Short session, no release.
