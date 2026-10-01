@@ -18,6 +18,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-01 (11:51 session): ROADMAP 14 done: scene horizon silhouettes (hills / town skyline) under each chapter wash (unreleased, check+shots pass).
 - 2026-10-01 (12:52 session): ROADMAP 11 + 16 ticked; map viewBox tightened (SIZE 250) so it fills its frame; CSS scale broke no-scroll e2e.
 - 2026-10-01 (13:52 session): verified ROADMAP 22 (Runnel feel) already built; ticked it. check passes.
+- 2026-10-01 (14:51 session): ROADMAP 24 slice: Hedgerow card art animated (foe walks the lane, hedge sways; reduced-motion safe). check + e2e:site pass. ROADMAP 24 still open for the frame-time check.
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 

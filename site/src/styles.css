@@ -565,6 +565,13 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hg-foe {
+    animation: none;
+    offset-distance: 30%;
+  }
+  .hg-hedge {
+    animation: none;
+  }
   .letter,
   .card {
     transition: none !important;
@@ -615,4 +622,45 @@ body {
   stroke: #2b2320;
   stroke-width: 4;
   stroke-linejoin: round;
+}
+
+.hg-foe {
+  fill: #c9d3d8;
+  stroke: #2b2320;
+  stroke-width: 3;
+  offset-path: path("M-50 30 H0 V-30 H50");
+  offset-rotate: 0deg;
+  animation: hg-walk 5s linear infinite;
+}
+
+.hg-hedge {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hg-sway 5s ease-in-out infinite;
+}
+
+@keyframes hg-walk {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  8%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes hg-sway {
+  0%,
+  40%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
 }
