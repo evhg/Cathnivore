@@ -20,7 +20,7 @@ const HEX_ANGLES: Record<RegionId, number | null> = {
   saltmarsh: 300,
 }
 
-const SIZE = 300 // viewBox half-width; hexes drawn within [-SIZE, SIZE]
+const SIZE = 250 // viewBox half-width; hexes drawn within [-SIZE, SIZE]
 const HEX_R = 92 // circumradius (centre to vertex)
 const RING_DISTANCE = HEX_R * Math.sqrt(3)
 const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap between them (STYLE.md 7)
