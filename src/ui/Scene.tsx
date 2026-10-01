@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Scene as SceneData } from '../content/story/types'
 import { portraitKeyFor } from '../content/characters'
 import type { CathExpression } from '../../shared/cath/cath'
@@ -21,12 +21,21 @@ export default function Scene({ scene, onContinue, chapterId }: { scene: SceneDa
   const done = shown >= last
   const advance = () => setShown((n) => Math.min(last, n + 1))
   const current = scene.lines[shown - 1]
+  // Keyboard: Right arrow advances; Escape skips the scene (Enter/Space on a focused button keep their own meaning).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') setShown((n) => Math.min(last, n + 1))
+      else if (e.key === 'Escape') onContinue()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [last, onContinue])
   const key = current ? portraitKeyFor(current.speaker) : null
 
   return (
     <main className={`scene${chapterId ? ` scene-bg-${chapterId}` : ''}`}>
       <div className="scene-backlog" aria-live="polite">
-        {scene.lines.slice(0, shown - 1).map((l, i) => (
+        {scene.lines.slice(Math.max(0, shown - 4), shown - 1).map((l, i) => (
           <p key={i} className="scene-log-line">
             <span className="scene-speaker">{l.speaker}</span> {l.line}
           </p>
