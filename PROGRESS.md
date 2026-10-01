@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- 2026-10-01 (short session): motion audit slice — global/campaign CSS durations and easings moved onto `--dur-*`/`--ease-settle` tokens (ROADMAP 21, still open for other screens). Unreleased.
+- 2026-10-01 (short session): motion audit slice — global/campaign CSS durations and easings moved onto `--dur-*`/`--ease-settle` tokens (ROADMAP 21, still open for other screens). Released `fde53bd`; title/campaign button transitions also tokenised.
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
@@ -31,6 +31,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-01 ~01:00 UTC (`fde53bd`): motion-token audit (global/title/campaign CSS) + Hedgerow act banners. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~19:05 UTC (`198c11b`): Hedgerow act 10 (levels 91-100, Kingsmarket, HollowCandor finale). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~18:00 UTC (`adfbd0a`): Hedgerow act 9 (levels 81-90, The Merger, Board of Directors). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~17:10 UTC: Hedgerow act 8 (levels 71-80, The Ballot, Union Hall, Campaign Bus) — `c0d569e`; live version.json matches; tag 403 (harmless).
