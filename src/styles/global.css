@@ -380,6 +380,11 @@ h3 {
   letter-spacing: 0.02em;
 }
 
+.plan-strip-effect {
+  /* ROADMAP 10: the effect text sits in a thin boxed panel under the headline (STYLE.md 8); inline, so no height change. */
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, currentColor 35%, transparent);
+}
+
 .plan-strip-stage {
   font-family: var(--font-display, inherit);
   font-size: 9px;

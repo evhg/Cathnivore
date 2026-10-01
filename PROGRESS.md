@@ -22,6 +22,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-01 (15:52 session): ROADMAP 24: all three landing cards animate; headless software-GL frame check (390px) averaged 27ms/p95 50ms, not meaningful for real phones, so the on-device check stays open (needs hardware).
 - 2026-10-01 (16:51 session): ROADMAP 10 slice: plan-strip cards get a newspaper-clipping double rule + paper tone (CSS only; check + desktop-no-scroll pass on chromium; WebKit project not installed here). Unreleased.
 - 2026-10-01 (17:51 session): ROADMAP 10 slice: plan-card slot name styled as a headline (CSS + one span; check + desktop-no-scroll pass). Unreleased.
+- 2026-10-01 (18:51 session): ROADMAP 10 slice: plan-card effect text underlined as a boxed panel (CSS + span; check + chromium no-scroll pass). Unreleased (daily release cap already used).
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
