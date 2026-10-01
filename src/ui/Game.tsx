@@ -1110,6 +1110,11 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {(lostLandTick > 0 || riftTick > 0) && (
         <div key={`${lostLandTick}-${riftTick}`} className={riftTick > 0 && (state.rift === 3 || state.rift === 6) ? 'danger-flash danger-flash-deep' : 'danger-flash'} aria-hidden="true" />
       )}
+      {riftTick > 0 && (state.rift === 3 || state.rift === 6) && (
+        <div key={`rift-${riftTick}`} className="round-banner rift-banner" role="status">
+          {state.rift === 3 ? 'The Rift widens' : 'The Rift splits open'}
+        </div>
+      )}
       {roundTick > 0 && (
         <div key={roundTick} className="round-banner" aria-hidden="true">
           Round {state.round}

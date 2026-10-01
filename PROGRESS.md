@@ -6,6 +6,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
 - 2026-10-01 (short session): motion audit slice — global/campaign CSS durations and easings moved onto `--dur-*`/`--ease-settle` tokens (ROADMAP 21, still open for other screens). Released `fde53bd`; title/campaign button transitions also tokenised.
 - 2026-10-01 (02:00 session): map-moment and settings durations (150-300ms) in global.css moved onto `--dur-*`; ROADMAP 21 only has longer decorative durations left (unreleased).
+- 2026-10-01 (03:00 session): ROADMAP 13 slice: Rift banner at 3 and 6 (unreleased, check passes).
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
@@ -70,6 +71,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-01 ~02:51-03:05 UTC: Rift 3/6 banner (`.rift-banner`, reuses round-banner motion). Short session; no release (batching).
 - 2026-09-30 ~19:52-20:10 UTC: Hedgerow level select grouped into ten act headers (place names), boss levels marked, list scrolls to the next unplayed level.
 - 2026-09-30 ~18:52-19:10 UTC: Hedgerow act 10 (levels 91-100, Kingsmarket): HollowCandor 3-phase boss (phase 1 jams towers, splits into 2 Candors that heal, each splits into stealth remnants), finale with Bea; 1 new test. Prettier run on games/hedgerow again (fine).
 - 2026-09-30 ~13:52-14:15 UTC: Hedgerow act 4 (levels 31-40, Rivermead): armour (halves non-piercing damage), bulldozers, Co-op Barn, Grain Silo (pierces), Mega-Dozer boss (splits into bulldozers); bot builds silos/barns; armour test. I ran prettier on games/hedgerow by mistake (big one-off diff, now formatted); files are prettier-clean from here.

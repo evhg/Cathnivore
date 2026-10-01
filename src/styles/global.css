@@ -1973,6 +1973,12 @@ html.native-app body {
   animation: round-banner 1300ms var(--ease-settle) forwards;
 }
 
+.rift-banner {
+  top: 26%;
+  border-color: var(--danger, #a3262a);
+  letter-spacing: 0.06em;
+}
+
 @keyframes round-banner {
   0% {
     opacity: 0;
@@ -2204,6 +2210,7 @@ html.no-animations .card-enter {
 
 @media (prefers-reduced-motion: reduce) {
   .danger-flash,
+  .rift-banner,
   .round-banner {
     display: none;
   }
