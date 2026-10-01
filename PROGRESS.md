@@ -10,6 +10,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-01 (04:00 session): ROADMAP 21 done: `--dur-moment` token; stat-in, seal-stamp, plastic-creep, ta-pop tokenised.
 - 2026-10-01 (05:00 session): ROADMAP 14 slice: scene portraits 128px with drop shadow, bubble tails, non-Cath speakers on the right (unreleased, check+shots pass).
 - 2026-10-01 (06:00 session): ROADMAP 14 slice: scene keyboard (→ next, Esc skip), backlog capped at 3 lines (unreleased, check passes).
+- 2026-10-01 (07:00 session): ROADMAP 13 slice: "Final round N" banner on the last round (unreleased, check passes).
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
