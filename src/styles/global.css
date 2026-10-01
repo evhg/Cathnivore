@@ -1494,6 +1494,14 @@ html.no-animations .stat-card { animation: none; }
 .scene-bg-friends-in-low-places { background-image: linear-gradient(180deg, rgba(60, 60, 90, 0.4), transparent 55%, rgba(40, 40, 60, 0.3)); }
 .scene-bg-kingsmarket { background-image: linear-gradient(180deg, rgba(240, 190, 90, 0.4), transparent 45%, rgba(170, 110, 80, 0.3)); }
 
+/* Horizon silhouettes under each chapter's wash: rolling hills for the countryside chapters, a town skyline for the last two. */
+.scene[class*='scene-bg-']::before {
+  content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 22vh; max-height: 180px; pointer-events: none; z-index: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80' preserveAspectRatio='none'%3E%3Cpath d='M0 50 Q60 20 120 44 T240 38 T400 46 V80 H0Z' fill='%23000' fill-opacity='.12'/%3E%3Cpath d='M0 64 Q80 44 170 60 T400 58 V80 H0Z' fill='%23000' fill-opacity='.14'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
+}
+.scene.scene-bg-friends-in-low-places::before, .scene.scene-bg-kingsmarket::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80' preserveAspectRatio='none'%3E%3Cpath d='M0 80V52h22v-12h18v12h16V30h14v22h24V44h20v8h18V24l8-8 8 8v28h22V46h20v6h26V36h16v16h28V42h20v10h24H400V80Z' fill='%23000' fill-opacity='.16'/%3E%3C/svg%3E") !important; }
+.scene[class*='scene-bg-'] > * { position: relative; z-index: 1; }
+
 @keyframes scene-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
