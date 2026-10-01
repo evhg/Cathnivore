@@ -43,6 +43,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-01 ~13:12 UTC (`65ab9f2`): bigger desktop map. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~11:02 UTC (`b69c37f`): How to Play tour (cards page, keys, dots) + roadmap ticks. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~09:02 UTC (`55ac8ae`): scenes graphic-novel slices, final-round banner, end-screen hero. main==build; live version.json matches; deploy-2 tag push 403 (harmless).
 - 2026-10-01 ~04:10 UTC (`b676182`): motion tokens complete (ROADMAP 21) + Rift banner. main==build; live version.json matches; tag push 403 (harmless).
