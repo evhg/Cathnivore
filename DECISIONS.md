@@ -200,3 +200,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-01: Landing frame-time check only possible on SwiftShader here (27ms avg); left ROADMAP 24's real-phone check open. Short session, no release.
 - 2026-10-01: Plan-card headline styling, short session; no release (batching).
 - 2026-10-01: Plan-card effect panel; no release (4/day cap hit).
+- 2026-10-01: ROADMAP 9 ticked as already built (required-Scheme why-not left ambiguous by design). No release (cap).

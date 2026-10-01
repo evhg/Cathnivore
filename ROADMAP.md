@@ -69,7 +69,7 @@ Every visual item is done only when:
    market, plan and log panels become tidy side trays. On phone, the map fills the top of the screen and
    actions live in a bottom tray that can be pulled up. Leave room for Cath's companion (item 3). Keep every
    current control and test hook, and don't change the rules.
-9. [ ] **The table, part 2: actions as cards.** *(2026-09-28: shipped the two pieces of this item that needed
+9. [x] **The table, part 2: actions as cards.** *(2026-09-28: shipped the two pieces of this item that needed
    no new art or engine changes, so they could land as safe, reversible slices ahead of the bigger
    illustrated-tile redesign. Press feedback: every button (not just action buttons — STYLE.md draws no
    per-screen exception, and a press effect on some buttons but not others would read as unfinished, not
