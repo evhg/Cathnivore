@@ -373,6 +373,13 @@ h3 {
   line-height: 1;
 }
 
+.plan-strip-headline {
+  /* ROADMAP 10: the slot name reads as the clipping's headline (STYLE.md 8); same line, so no height change. */
+  font-family: var(--font-display, inherit);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .plan-strip-stage {
   font-family: var(--font-display, inherit);
   font-size: 9px;

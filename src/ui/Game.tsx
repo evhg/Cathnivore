@@ -1256,7 +1256,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                     <HollowellLogo size={12} />
                     <CandorLogo size={12} />
                   </span>
-                  {slotLabel}: {pressureLabel(state[slot])}
+                  <span className="plan-strip-headline">{slotLabel}</span>: {pressureLabel(state[slot])}
                   {card && (
                     <span className="plan-strip-card-meta">
                       <span className="plan-strip-stage">{romanStage(card.stage)}</span>
