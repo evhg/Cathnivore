@@ -16,6 +16,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-01 (10:00 session): ROADMAP 18 slice: tour gains a cards page, arrow-key paging, dot progress (unreleased, check passes).
 - 2026-10-01 (10:51 session): verified ROADMAP 13, 17, 18 shipped and ticked them; released `b69c37f`.
 - 2026-10-01 (11:51 session): ROADMAP 14 done: scene horizon silhouettes (hills / town skyline) under each chapter wash (unreleased, check+shots pass).
+- 2026-10-01 (12:52 session): ROADMAP 11 + 16 ticked; desktop map scaled 1.22x to fill its frame.
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
