@@ -34,6 +34,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-01 ~04:10 UTC (`b676182`): motion tokens complete (ROADMAP 21) + Rift banner. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~01:00 UTC (`fde53bd`): motion-token audit (global/title/campaign CSS) + Hedgerow act banners. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~19:05 UTC (`198c11b`): Hedgerow act 10 (levels 91-100, Kingsmarket, HollowCandor finale). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~18:00 UTC (`adfbd0a`): Hedgerow act 9 (levels 81-90, The Merger, Board of Directors). main==build; live version.json matches; tag push 403 (harmless).
