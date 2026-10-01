@@ -12,6 +12,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-01 (06:00 session): ROADMAP 14 slice: scene keyboard (→ next, Esc skip), backlog capped at 3 lines (unreleased, check passes).
 - 2026-10-01 (07:00 session): ROADMAP 13 slice: "Final round N" banner on the last round (unreleased, check passes).
 - 2026-10-01 (08:00 session): ROADMAP 16 slice: end-screen hero (win sunburst rays / loss dusk arch behind Cath), unreleased, check+shots pass. Playwright needs PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome.
+- 2026-10-01 (09:00 session): released the accumulated slices (live matches `55ac8ae`); card frames/buy animation already exist (ROADMAP 17 looks done, verify next).
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
@@ -38,6 +39,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-01 ~09:02 UTC (`55ac8ae`): scenes graphic-novel slices, final-round banner, end-screen hero. main==build; live version.json matches; deploy-2 tag push 403 (harmless).
 - 2026-10-01 ~04:10 UTC (`b676182`): motion tokens complete (ROADMAP 21) + Rift banner. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~01:00 UTC (`fde53bd`): motion-token audit (global/title/campaign CSS) + Hedgerow act banners. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~19:05 UTC (`198c11b`): Hedgerow act 10 (levels 91-100, Kingsmarket, HollowCandor finale). main==build; live version.json matches; tag push 403 (harmless).
