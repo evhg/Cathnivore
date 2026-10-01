@@ -100,6 +100,15 @@ const TOUR = [
     label: 'Corporate regions spreading across the board',
   },
   {
+    title: 'Play your cards',
+    text: 'Buy Improvements to strengthen your regions, and play Schemes at the right moment to turn a round around.',
+    board: [
+      { fill: 'var(--wheat)', mark: 'I' },
+      { fill: 'var(--candor)', mark: 'S' },
+    ],
+    label: 'An Improvement card beside a Scheme card',
+  },
+  {
     title: 'Ask the table',
     text: 'Tap any card or action on the table for its rules; the "?" links land you back here.',
     board: [{ fill: 'var(--wheat)', mark: '?' }],
@@ -112,7 +121,14 @@ function QuickTour() {
   const [i, setI] = useState(0)
   const page = TOUR[i]!
   return (
-    <section className="rules-basics settings-card tour" aria-label="Quick tour">
+    <section
+      className="rules-basics settings-card tour"
+      aria-label="Quick tour"
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowRight') setI((n) => Math.min(n + 1, TOUR.length - 1))
+        if (e.key === 'ArrowLeft') setI((n) => Math.max(n - 1, 0))
+      }}
+    >
       <CathArt framing="bust" expression="delighted" width={64} height={64} title="Cath" />
       <div className="tour-body">
         <h2>The basics, from Cath</h2>
@@ -121,7 +137,12 @@ function QuickTour() {
         <p className="tour-text">{page.text}</p>
         <div className="tour-nav">
           <button onClick={() => setI(i - 1)} disabled={i === 0}>Back</button>
-          <span className="tour-dots" aria-live="polite">{i + 1} / {TOUR.length}</span>
+          <span className="tour-dots" aria-live="polite">
+            {TOUR.map((_, n) => (
+              <span key={n} aria-hidden="true" style={{ opacity: n === i ? 1 : 0.35 }}>●</span>
+            ))}
+            <span className="sr-only">{i + 1} / {TOUR.length}</span>
+          </span>
           <button onClick={() => setI(i + 1)} disabled={i === TOUR.length - 1}>Next</button>
         </div>
       </div>
