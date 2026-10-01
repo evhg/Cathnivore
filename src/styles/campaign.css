@@ -247,9 +247,9 @@
   background: var(--surface);
   box-shadow: 0 2px 0 var(--rule);
   transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    border-color 140ms ease;
+    transform var(--dur-quick) var(--ease-settle),
+    box-shadow var(--dur-quick) var(--ease-settle),
+    border-color var(--dur-quick) var(--ease-settle);
 }
 
 .cmp-path .cmp-card:hover {
