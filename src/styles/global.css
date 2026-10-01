@@ -1311,7 +1311,7 @@ button.destructive {
   border: 1px solid var(--soil);
   border-radius: 12px;
   background: var(--paper-2);
-  animation: stat-in 0.4s var(--ease-pop, ease) both;
+  animation: stat-in var(--dur-moment) var(--ease-pop, ease) both;
 }
 .stat-card:nth-child(2) { animation-delay: 0.08s; }
 .stat-card:nth-child(3) { animation-delay: 0.16s; }
@@ -1861,7 +1861,7 @@ html.native-app body {
 .coop-stamp {
   transform-box: fill-box;
   transform-origin: center;
-  animation: seal-stamp 380ms var(--ease-settle);
+  animation: seal-stamp var(--dur-moment) var(--ease-settle);
 }
 
 .liberate-bloom {
@@ -1885,7 +1885,7 @@ html.native-app body {
 .plastic-film {
   transform-box: fill-box;
   transform-origin: center;
-  animation: plastic-creep 450ms var(--ease-settle);
+  animation: plastic-creep var(--dur-moment) var(--ease-settle);
 }
 
 .lostland-overlay {

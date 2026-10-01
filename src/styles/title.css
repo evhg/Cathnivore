@@ -239,7 +239,7 @@
 .ta-stall-inner {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: ta-pop 520ms var(--ease-pop) both;
+  animation: ta-pop var(--dur-slow) var(--ease-pop) both;
 }
 
 .ta-d0 .ta-stall-inner { animation-delay: 700ms; }

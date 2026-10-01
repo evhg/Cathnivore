@@ -7,6 +7,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-01 (short session): motion audit slice — global/campaign CSS durations and easings moved onto `--dur-*`/`--ease-settle` tokens (ROADMAP 21, still open for other screens). Released `fde53bd`; title/campaign button transitions also tokenised.
 - 2026-10-01 (02:00 session): map-moment and settings durations (150-300ms) in global.css moved onto `--dur-*`; ROADMAP 21 only has longer decorative durations left (unreleased).
 - 2026-10-01 (03:00 session): ROADMAP 13 slice: Rift banner at 3 and 6 (unreleased, check passes).
+- 2026-10-01 (04:00 session): ROADMAP 21 done: `--dur-moment` token; stat-in, seal-stamp, plastic-creep, ta-pop tokenised.
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
