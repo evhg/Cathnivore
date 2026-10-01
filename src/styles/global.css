@@ -797,7 +797,7 @@ h3 {
   margin: 0;
   font-style: italic;
   font-size: 14px;
-  animation: cath-line-in 200ms var(--ease-settle) both;
+  animation: cath-line-in var(--dur-base) var(--ease-settle) both;
 }
 
 @keyframes cath-line-in {
@@ -1797,13 +1797,13 @@ html.native-app body {
 .stall-piece {
   transform-box: fill-box;
   transform-origin: center;
-  animation: stall-drop 220ms var(--ease-settle);
+  animation: stall-drop var(--dur-base) var(--ease-settle);
 }
 
 .enemy-piece {
   transform-box: fill-box;
   transform-origin: center;
-  animation: piece-delivery 200ms var(--ease-settle);
+  animation: piece-delivery var(--dur-base) var(--ease-settle);
 }
 
 /* ROADMAP 12: each enemy piece arrives its own way, so a glance at the map says what just landed. Same
@@ -1824,9 +1824,9 @@ html.native-app body {
   60% { transform: translateY(-2px) rotate(5deg) scale(1.05); opacity: 1; }
   100% { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
 }
-.enemy-outlet { animation: outlet-pop 220ms var(--ease-pop); }
-.enemy-buyout { animation: buyout-slam 240ms var(--ease-pop); }
-.enemy-doubt { animation: doubt-float 260ms var(--ease-pop); }
+.enemy-outlet { animation: outlet-pop var(--dur-base) var(--ease-pop); }
+.enemy-buyout { animation: buyout-slam var(--dur-base) var(--ease-pop); }
+.enemy-doubt { animation: doubt-float var(--dur-base) var(--ease-pop); }
 .map-legend-icon .enemy-outlet,
 .map-legend-icon .enemy-buyout,
 .map-legend-icon .enemy-doubt { animation: none; }
@@ -1889,16 +1889,16 @@ html.native-app body {
 }
 
 .lostland-overlay {
-  animation: lostland-wipe 220ms var(--ease-settle);
+  animation: lostland-wipe var(--dur-base) var(--ease-settle);
 }
 
 .card-enter {
-  animation: card-flip 220ms var(--ease-settle);
+  animation: card-flip var(--dur-base) var(--ease-settle);
   transform-style: preserve-3d;
 }
 
 .card-framed.card-buying {
-  animation: card-buy 260ms var(--ease-settle) forwards;
+  animation: card-buy var(--dur-base) var(--ease-settle) forwards;
   pointer-events: none;
 }
 
@@ -1910,7 +1910,7 @@ html.native-app body {
 }
 
 .card-framed.card-playing {
-  animation: card-play 300ms var(--ease-pop) forwards;
+  animation: card-play var(--dur-base) var(--ease-pop) forwards;
   pointer-events: none;
 }
 
@@ -2063,7 +2063,7 @@ html.no-animations .card-enter {
   border-radius: 999px;
   background: var(--paper);
   cursor: pointer;
-  transition: background 0.18s var(--ease-settle, ease);
+  transition: background var(--dur-quick) var(--ease-settle, ease);
 }
 .settings input[type='checkbox']::before {
   content: '';
@@ -2074,7 +2074,7 @@ html.no-animations .card-enter {
   height: 18px;
   border-radius: 50%;
   background: var(--ink);
-  transition: transform 0.18s var(--ease-pop, ease);
+  transition: transform var(--dur-quick) var(--ease-pop, ease);
 }
 .settings input[type='checkbox']:checked { background: var(--wheat); }
 .settings input[type='checkbox']:checked::before { transform: translateX(18px); }
@@ -2143,7 +2143,7 @@ html.no-animations .card-enter {
   border-radius: 12px;
   background: var(--paper);
   cursor: pointer;
-  transition: transform 0.16s var(--ease-pop, ease), border-color 0.16s var(--ease-settle, ease);
+  transition: transform var(--dur-quick) var(--ease-pop, ease), border-color var(--dur-quick) var(--ease-settle, ease);
 }
 .setup .producer-card input {
   position: absolute;
