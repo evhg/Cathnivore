@@ -25,6 +25,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-01 (18:51 session): ROADMAP 10 slice: plan-card effect text underlined as a boxed panel (CSS + span; check + chromium no-scroll pass). Unreleased (daily release cap already used).
 - 2026-10-01 (19:51 session): ROADMAP 10 ticked (HUD gauges + agenda cards: clipping, headline, effect panel all shipped; Pressure keeps its compact shape by design). Docs only; release cap already used today.
 - 2026-10-01 (20:51 session): verified ROADMAP 9 fully built (icons, chips, why-not for Sell/Invest/Scheme/Open Stall/Supply/Rebut, press, outline); ticked it. Docs only; release cap already used.
+- 2026-10-01 (21:51 session): health check only: CI green on `bd90164`, `npm run check` passes. Remaining ROADMAP (19 sound polish, H2, 24 real-phone check) is small or needs hardware; release cap already used.
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 

@@ -201,3 +201,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-01: Plan-card headline styling, short session; no release (batching).
 - 2026-10-01: Plan-card effect panel; no release (4/day cap hit).
 - 2026-10-01: ROADMAP 9 ticked as already built (required-Scheme why-not left ambiguous by design). No release (cap).
+- 2026-10-01 (late): Health-check session, no code change; remaining roadmap items need hardware or are polish. No release (cap).
