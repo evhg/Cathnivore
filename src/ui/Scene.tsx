@@ -33,10 +33,10 @@ export default function Scene({ scene, onContinue, chapterId }: { scene: SceneDa
         ))}
       </div>
       {current && (
-        <div className="scene-stage" key={shown}>
+        <div className={`scene-stage${key === 'cath' ? '' : ' scene-stage-right'}`} key={shown}>
           {key && (
             <span className="scene-portrait">
-              <Portrait character={key} size={96} expression={moodOf(current.line)} />
+              <Portrait character={key} size={128} expression={moodOf(current.line)} />
             </span>
           )}
           <div

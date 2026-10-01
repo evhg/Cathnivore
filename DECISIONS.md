@@ -194,3 +194,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-01: Released motion-token + Hedgerow banner work (fde53bd); short session.
 - 2026-10-01: Motion audit: 200-300ms map/card animations all snapped to --dur-base (250ms); long decorative ones (title/campaign intros) stay literal. No release (CSS only, batching).
 - 2026-10-01: Rift banner at 3 and 6 reuses round-banner; no release (batching small slices).
+- 2026-10-01: Scene speakers: Cath left, everyone else right (row-reverse), CSS-only tails; no release (batching).

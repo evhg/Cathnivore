@@ -1397,6 +1397,29 @@ html.no-animations .stat-card { animation: none; }
 .scene-portrait {
   flex-shrink: 0;
   line-height: 0;
+  filter: drop-shadow(0 6px 5px rgba(60, 40, 20, 0.28));
+}
+
+/* Non-Cath speakers stand on the right so a conversation reads left to right (ROADMAP 14). */
+.scene-stage-right { flex-direction: row-reverse; }
+.scene-stage-right .scene-bubble { border-radius: 16px 16px 4px 16px; }
+
+.scene-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: -9px;
+  width: 14px;
+  height: 14px;
+  background: var(--paper, #fff8ea);
+  border-left: 2px solid var(--soil, #5a4632);
+  border-bottom: 2px solid var(--soil, #5a4632);
+  transform: rotate(45deg);
+}
+.scene-stage-right .scene-bubble::after {
+  left: auto;
+  right: -9px;
+  transform: rotate(-135deg);
 }
 
 .scene-bubble {
