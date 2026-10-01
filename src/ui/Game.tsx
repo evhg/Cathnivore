@@ -493,15 +493,17 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   if (state.result) {
     return (
       <main className="end-screen">
-        <CathArt
-          className="end-screen-cath"
-          framing="bust"
-          expression={state.result.won ? 'delighted' : 'worried'}
-          animate
-          width={128}
-          height={128}
-          title={state.result.won ? 'Cath, delighted' : 'Cath, undeterred'}
-        />
+        <div className={`end-screen-hero ${state.result.won ? 'is-win' : 'is-loss'}`}>
+          <CathArt
+            className="end-screen-cath"
+            framing="bust"
+            expression={state.result.won ? 'delighted' : 'worried'}
+            animate
+            width={128}
+            height={128}
+            title={state.result.won ? 'Cath, delighted' : 'Cath, undeterred'}
+          />
+        </div>
         <h1>{state.result.won ? 'You liberated Marrow.' : 'Not this time.'}</h1>
         <p className="end-screen-verdict">
           {state.result.won ? 'Win' : `Loss: ${LOSS_REASON_LABEL[state.result.lossReason!]}`}
