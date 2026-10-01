@@ -131,7 +131,7 @@ Every visual item is done only when:
    `targeting: 'none'` Schemes and Open Stall's Produce-0 case everywhere they can appear; the full
    illustrated-tile redesign (the item's own title) still hasn't started, and Supply/Rebut/required-Scheme/
    Open-Stall's-no-legal-region why-not remains future work.)* Replace the grid of text buttons with illustrated action tiles: an icon per action, cost chips shown with resource tokens, clear disabled and why-not states, and press feedback. Region-targeting mode highlights the valid regions with an animated outline.
-10. [ ] **The table, part 3: the HUD.** *(2026-09-28: shipped the tick-up/tick-down animation (`useHudTick()`
+10. [x] **The table, part 3: the HUD.** *(2026-09-28: shipped the tick-up/tick-down animation (`useHudTick()`
     in `Game.tsx`, a CSS scale-pulse keyed on a per-stat change counter, deliberately colourless since
     Round/Trust/Lost Land/Rift don't share one "which way is good" direction) and Pressure-card corner
     badges (stage numeral + region-type icon on the Squeeze/Expand/Scout plan-strip pills,
