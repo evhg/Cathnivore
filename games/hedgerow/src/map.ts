@@ -3,7 +3,7 @@
 // stands on the next level to play. Buttons keep the `level` class and `data-level` for tests.
 
 import { cathSvg } from "../../../shared/cath/cath";
-import type { Level } from "./engine";
+import { TWISTS, type Level } from "./engine";
 import { isUnlocked, type SaveData } from "./store";
 import { THEMES } from "./theme";
 
@@ -166,6 +166,12 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       const name = document.createElement("span");
       name.className = "level-name";
       name.textContent = lv.name;
+      if (lv.twists?.length && unlocked) {
+        const tw = document.createElement("span");
+        tw.className = "level-twist";
+        tw.textContent = lv.twists.map((t) => TWISTS[t].name).join(" · ");
+        name.append(tw);
+      }
       b.append(numEl, st, name);
       if (lv.id === nextId) {
         b.classList.add("next");

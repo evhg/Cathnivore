@@ -6,6 +6,8 @@
 
 import {
   ENEMIES,
+  hasTwist,
+  maxHpOf,
   charmed,
   isBig,
   isRevealed,
@@ -591,7 +593,7 @@ export class Renderer {
     this.heroSwung += dt;
     this.heroThrew += dt;
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
-    items.push({
+    if (!hasTwist(level, "nocath")) items.push({
       y: h.y + 0.22,
       draw: () => {
         drawHero(
@@ -621,11 +623,11 @@ export class Renderer {
 
     // Cath's health and where she's heading.
     if (walking) this.flag(X(h.tx), Y(h.ty + 0.2), s, t);
-    this.heroBar(game, X(h.x), Y(h.y + 0.22) - s * 0.98, s);
+    if (!hasTwist(level, "nocath")) this.heroBar(game, X(h.x), Y(h.y + 0.22) - s * 0.98, s);
 
     // Health bars over sprites.
     for (const e of game.enemies) {
-      const max = ENEMIES[e.kind].hp;
+      const max = maxHpOf(e);
       if (e.hp >= max || !isRevealed(game, e)) continue;
       const p = enemyPoint(level, e);
       const k = enemyScale(e.kind);
@@ -743,7 +745,7 @@ export class Renderer {
       ctx.fillStyle = "#fff";
       ctx.strokeText(ENEMIES[boss.kind].name, bx, by + s * 0.02);
       ctx.fillText(ENEMIES[boss.kind].name, bx, by + s * 0.02);
-      bar(ctx, bx, by + s * 0.12, bw, Math.max(6, s * 0.1), boss.hp / ENEMIES[boss.kind].hp, true);
+      bar(ctx, bx, by + s * 0.12, bw, Math.max(6, s * 0.1), boss.hp / maxHpOf(boss), true);
     }
 
     // Flash (leaks, boss kills).

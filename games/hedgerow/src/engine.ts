@@ -660,9 +660,9 @@ const statCache = new WeakMap<object, { key: string; stats: TowerStats }>();
 
 /** The numbers a tower fights with at its tier, and with its specialisation at tier 4. */
 export function towerStats(
-  t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null; high?: boolean },
+  t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null; high?: boolean; rangeMul?: number; dmgMul?: number },
 ): TowerStats {
-  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}:${t.high ? 1 : 0}`;
+  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}:${t.high ? 1 : 0}:${t.rangeMul ?? 1}:${t.dmgMul ?? 1}`;
   const hit = statCache.get(t);
   if (hit && hit.key === key) return hit.stats;
   const s = TOWERS[t.kind];
@@ -698,6 +698,11 @@ export function towerStats(
     Object.assign(stats, o);
   }
   if (t.high && stats.range > 0) stats.range *= HIGH_GROUND_RANGE;
+  if (t.rangeMul) stats.range *= t.rangeMul;
+  if (t.dmgMul) {
+    stats.damage *= t.dmgMul;
+    stats.thorns *= t.dmgMul;
+  }
   statCache.set(t, { key, stats });
   return stats;
 }
@@ -801,7 +806,8 @@ function bossMoves(game: Game): void {
             kind: move.spawn!.kind,
             lane: e.lane,
             dist: Math.max(0, e.dist - 0.4 - i * 0.4),
-            hp: ENEMIES[move.spawn!.kind].hp,
+            hp: spawnHp(game, move.spawn!.kind),
+            maxHp: spawnHp(game, move.spawn!.kind),
             slowed: false,
             stun: 0,
             wave: e.wave,
@@ -811,7 +817,7 @@ function bossMoves(game: Game): void {
         e.charge = move.secs!;
         break;
       case "mend":
-        for (const o of game.enemies) if (o.hp > 0) o.hp = Math.min(ENEMIES[o.kind].hp, o.hp + ENEMIES[o.kind].hp * 0.15);
+        for (const o of game.enemies) if (o.hp > 0) o.hp = Math.min(maxHpOf(o), o.hp + maxHpOf(o) * 0.15);
         break;
       case "stomp": {
         const t = near(move.radius!)[0];
@@ -891,6 +897,59 @@ export interface Level {
   after: StoryLine[];
   /** What finishing the level unlocks (a tier, a skin or a lore card). */
   reward: string;
+  /** The level's twists: what makes it a different problem (docs/design/hedgerow-v2.md section 2). */
+  twists?: TwistId[];
+  /** Enemy health multiplier, found by the tuner (scripts/hedgerow-tune.ts) so the curve is fair. */
+  hpScale?: number;
+}
+
+export type TwistId =
+  | "fog"
+  | "night"
+  | "rain"
+  | "wind"
+  | "drought"
+  | "tight"
+  | "rush"
+  | "armoured"
+  | "air"
+  | "protected"
+  | "nocath"
+  | "noscarecrow"
+  | "crowd"
+  | "fast"
+  | "fortified"
+  | "market";
+
+export const TWISTS: Record<TwistId, { name: string; rule: string }> = {
+  fog: { name: "Fog", rule: "Towers reach 20% less far." },
+  night: { name: "Night", rule: "Towers reach 25% less far; vehicles are 10% faster." },
+  rain: { name: "Rain", rule: "Everything on the lane is 15% slower; Beehives do half damage." },
+  wind: { name: "High wind", rule: "Scarecrows and Silos do 25% less damage; drones fly 30% faster." },
+  drought: { name: "Drought", rule: "No Duck Ponds; slowing towers are 30% weaker." },
+  tight: { name: "Tight budget", rule: "40% fewer Marks to start; wave rewards +50%." },
+  rush: { name: "Rush hour", rule: "Waves don't wait: the next starts 6 s after the last has arrived." },
+  armoured: { name: "Armoured", rule: "Every enemy has 25% more armour." },
+  air: { name: "Air drop", rule: "Every wave brings extra drones." },
+  protected: { name: "Protected land", rule: "Only half the plots can be built on." },
+  nocath: { name: "Cath's away", rule: "Cath isn't on the field." },
+  noscarecrow: { name: "Scarecrow ban", rule: "No Scarecrows this level." },
+  crowd: { name: "Crowds", rule: "Twice as many enemies at half health, packed close." },
+  fast: { name: "Express", rule: "Enemies are 25% faster; bounties +50%." },
+  fortified: { name: "Fortified", rule: "Enemies have 30% more health." },
+  market: { name: "Market day", rule: "Income +50%." },
+};
+
+export function hasTwist(level: Pick<Level, "twists">, id: TwistId): boolean {
+  return !!level.twists?.includes(id);
+}
+
+/** Can this tower be built in this level (unlocked, and not banned or dried up by a twist)? */
+export function towerAllowed(level: Level, kind: TowerKind): boolean {
+  if (!level.towers.includes(kind)) return false;
+  if (kind === "scarecrow" && hasTwist(level, "noscarecrow")) return false;
+  if (kind === "pond" && hasTwist(level, "drought")) return false;
+  return true;
 }
 
 export type TargetMode = "first" | "last" | "strong" | "close";
@@ -904,6 +963,9 @@ export interface Tower {
   tier: 1 | 2 | 3 | 4;
   /** Built on high ground: +25% range. */
   high?: boolean;
+  /** The level's twists on this tower: range and damage multipliers (fog, night, wind, rain). */
+  rangeMul?: number;
+  dmgMul?: number;
   /** Which tier-4 specialisation it took (null below tier 4). */
   spec?: 0 | 1 | null;
   /** Which enemy in range it shoots at. */
@@ -936,6 +998,8 @@ export interface Enemy {
   stickyLeft?: number;
   /** Held up by Cath. */
   held?: boolean;
+  /** Full health after the level's scaling and twists (defaults to the kind's). */
+  maxHp?: number;
   /** Bosses: seconds until the next signature move, and which move is next. */
   moveCd?: number;
   moveIdx?: number;
@@ -1081,6 +1145,8 @@ export interface Game {
   auto: { hero: boolean; abilities: boolean };
   /** Seconds until the autonomous Cath and abilities think again. */
   aiCd: number;
+  /** Rush hour: seconds until the next wave is forced. */
+  rushIn?: number;
 }
 
 export function pathLength(path: Level["path"]): number {
@@ -1203,7 +1269,7 @@ export function newGame(
     level,
     tick: 0,
     phase: "build",
-    marks: level.startMarks + perks.marks,
+    marks: Math.round(level.startMarks * (hasTwist(level, "tight") ? 0.6 : 1)) + perks.marks,
     goodwill,
     maxGoodwill: goodwill,
     wave: 0,
@@ -1282,6 +1348,10 @@ export function place(
     return { ok: false, reason: "The level is over." };
   if (!game.level.towers.includes(kind))
     return { ok: false, reason: "Not unlocked yet." };
+  if (!towerAllowed(game.level, kind))
+    return { ok: false, reason: kind === "pond" ? "The ponds have dried up." : "Scarecrows are banned here." };
+  if (isProtected(game.level, col, row))
+    return { ok: false, reason: "Protected land: nothing can be built here." };
   if (!isPlot(game.level, col, row))
     return { ok: false, reason: "You can only build beside the lane." };
   if (towerAt(game, col, row))
@@ -1299,6 +1369,7 @@ export function place(
     row,
     tier: 1,
     high: ground === "high" || undefined,
+    ...twistMods(game.level, kind),
     spec: null,
     target: "first",
     shots: 0,
@@ -1306,6 +1377,49 @@ export function place(
     spent: cost,
   });
   return { ok: true };
+}
+
+/** Twists that change a tower's numbers for the whole level. */
+export function twistMods(level: Level, kind: TowerKind): { rangeMul?: number; dmgMul?: number } {
+  let range = 1;
+  let dmg = 1;
+  if (hasTwist(level, "fog")) range *= 0.8;
+  if (hasTwist(level, "night")) range *= 0.75;
+  if (hasTwist(level, "wind") && (kind === "scarecrow" || kind === "silo")) dmg *= 0.75;
+  if (hasTwist(level, "rain") && kind === "beehive") dmg *= 0.5;
+  return { ...(range !== 1 ? { rangeMul: range } : {}), ...(dmg !== 1 ? { dmgMul: dmg } : {}) };
+}
+
+/** Protected land: on those levels, every other plot is off limits. */
+export function isProtected(level: Level, col: number, row: number): boolean {
+  return hasTwist(level, "protected") && (col + row) % 2 === 1;
+}
+
+/** Full health for a new enemy: the kind's, scaled by the tuner and by fortified and crowd twists. */
+export function spawnHp(game: Game, kind: EnemyKind): number {
+  let hp = ENEMIES[kind].hp * (game.level.hpScale ?? 1);
+  if (hasTwist(game.level, "fortified")) hp *= 1.3;
+  if (hasTwist(game.level, "crowd") && !isBig(kind)) hp *= 0.5;
+  return Math.round(hp);
+}
+
+export function maxHpOf(e: Enemy): number {
+  return e.maxHp ?? ENEMIES[e.kind].hp;
+}
+
+/** How fast an enemy moves under the level's twists (before slows). */
+export function speedOf(game: Game, e: Enemy): number {
+  let v = ENEMIES[e.kind].speed;
+  if (hasTwist(game.level, "night")) v *= 1.1;
+  if (hasTwist(game.level, "rain")) v *= 0.85;
+  if (hasTwist(game.level, "fast")) v *= 1.25;
+  if (hasTwist(game.level, "wind") && ENEMIES[e.kind].flying) v *= 1.3;
+  return v;
+}
+
+function armorOf(game: Game, e: Enemy): number {
+  const a = ENEMIES[e.kind].armor ?? 0;
+  return hasTwist(game.level, "armoured") ? Math.min(0.75, a + 0.25) : a;
 }
 
 /** Upgrades a tower one tier. From tier 3 it needs `spec`: which of the two specialisations to take. */
@@ -1377,19 +1491,29 @@ export const EARLY_MIN_GAP = 1;
  * Starts the next wave: between waves, or early (for a bonus) at any time once the current one has been
  * on the lane a moment. An early wave's spawns join the queue after whatever is still to come.
  */
-export function sendWave(game: Game): ActionResult {
+export function sendWave(game: Game, forced = false): ActionResult {
   if (game.phase === "won" || game.phase === "lost")
     return { ok: false, reason: "The level is over." };
   if (game.phase === "wave" && !canCallEarly(game))
     return { ok: false, reason: "A wave is already on its way." };
   const groups = game.level.waves[game.wave];
   if (!groups) return { ok: false, reason: "No more waves." };
-  const early = game.phase === "wave" ? earlyBonus(game) : 0;
+  const early = game.phase === "wave" && !forced ? earlyBonus(game) : 0;
   const wave = game.wave + 1;
   const queue: Game["spawnQueue"] = [];
-  for (const g of groups)
-    for (let i = 0; i < g.count; i++)
-      queue.push({ at: g.delay + i * g.gap, kind: g.enemy, wave, lane: g.lane });
+  const crowd = hasTwist(game.level, "crowd");
+  let total = 0;
+  for (const g of groups) {
+    const big = isBig(g.enemy);
+    const n = crowd && !big ? g.count * 2 : g.count;
+    const gap = crowd && !big ? g.gap / 2 : g.gap;
+    total += n;
+    for (let i = 0; i < n; i++) queue.push({ at: g.delay + i * gap, kind: g.enemy, wave, lane: g.lane });
+  }
+  if (hasTwist(game.level, "air")) {
+    const extra = Math.ceil(total * 0.4);
+    for (let i = 0; i < extra; i++) queue.push({ at: 1.5 + i * 0.7, kind: "drone", wave, lane: i % 2 && game.level.path2 ? 1 : undefined });
+  }
   // Re-base everything still queued to a fresh clock, then add the new wave after a short gap.
   const pending = game.phase === "wave" ? game.spawnQueue.map((q) => ({ ...q, at: q.at - game.waveClock })) : [];
   const after = pending.length ? Math.max(0, ...pending.map((q) => q.at)) + 1.5 : 0;
@@ -1468,8 +1592,16 @@ export function markMultiplier(game: Game, e: Enemy): number {
 }
 
 export function isRevealed(game: Game, e: Enemy): boolean {
-  return !ENEMIES[e.kind].stealth || markMultiplier(game, e) > 1;
+  if (!ENEMIES[e.kind].stealth || markMultiplier(game, e) > 1) return true;
+  // Cath spots anything sneaking past close to her (unless she's down or away).
+  const h = game.hero;
+  if (h.down > 0 || hasTwist(game.level, "nocath")) return false;
+  const p = enemyPoint(game.level, e);
+  return Math.hypot(p.x - h.x, p.y - h.y) <= CATH_SPOTS;
 }
+
+/** How close a stealth vehicle has to come before Cath sees it. */
+export const CATH_SPOTS = 1.3;
 
 function damageEnemy(
   game: Game,
@@ -1477,12 +1609,13 @@ function damageEnemy(
   amount: number,
   pierce: boolean,
 ): void {
-  const armor = ENEMIES[e.kind].armor ?? 0;
+  const armor = armorOf(game, e);
   e.hp -= (pierce ? amount : amount * (1 - armor)) * markMultiplier(game, e);
 }
 
 function stepHero(game: Game): void {
   const h = game.hero;
+  if (hasTwist(game.level, "nocath")) return;
   if (h.down > 0) {
     h.down = Math.max(0, h.down - STEP);
     if (h.down === 0) {
@@ -1583,6 +1716,7 @@ function toGo(game: Game, e: Enemy): number {
  */
 function heroBrain(game: Game): void {
   const h = game.hero;
+  if (hasTwist(game.level, "nocath")) return;
   if (h.down > 0 || h.holding.length > 0) return;
   let lead: Enemy | undefined;
   for (const e of game.enemies) {
@@ -1697,12 +1831,22 @@ export function stepGame(game: Game): void {
       kind: next.kind,
       lane: next.lane,
       dist: 0,
-      hp: ENEMIES[next.kind].hp,
+      hp: spawnHp(game, next.kind),
+      maxHp: spawnHp(game, next.kind),
       slowed: false,
       stun: 0,
       wave: next.wave ?? game.wave,
     });
   }
+  // Rush hour: once a wave is all on the lane, the next follows 6 s later whether you're ready or not.
+  if (hasTwist(game.level, "rush") && game.spawnQueue.length === 0 && game.wave < game.level.waves.length) {
+    game.rushIn = (game.rushIn ?? 6) - STEP;
+    if (game.rushIn <= 0) {
+      game.rushIn = 6;
+      game.waveClock = Math.max(game.waveClock, EARLY_MIN_GAP);
+      sendWave(game, true);
+    }
+  } else game.rushIn = 6;
 
   stepHero(game);
   bossMoves(game);
@@ -1717,7 +1861,7 @@ export function stepGame(game: Game): void {
       const s = towerStats(t);
       if (s.slow >= 1 || !towerActive(t) || (flying && !s.air)) continue;
       if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= s.range)
-        factor = Math.min(factor, 1 - (1 - s.slow) / game.perks.slow);
+        factor = Math.min(factor, 1 - ((1 - s.slow) / game.perks.slow) * (hasTwist(game.level, "drought") ? 0.7 : 1));
     }
     if (enemy.stickyLeft && enemy.stickyLeft > 0) {
       factor = Math.min(factor, enemy.sticky ?? 1);
@@ -1727,7 +1871,7 @@ export function stepGame(game: Game): void {
     if (enemy.stun > 0) enemy.stun -= STEP;
     else if (!enemy.held) {
       let move =
-        ENEMIES[enemy.kind].speed * Math.max(0.05, factor) * (enemy.charge && enemy.charge > 0 ? 2.2 : 1) * STEP;
+        speedOf(game, enemy) * Math.max(0.05, factor) * (enemy.charge && enemy.charge > 0 ? 2.2 : 1) * STEP;
       const bar = game.barricade;
       if (bar && enemy.lane === bar.lane && enemy.dist <= bar.dist) {
         // Farmhands stop anything on foot dead; bosses only slow to a crawl.
@@ -1749,7 +1893,7 @@ export function stepGame(game: Game): void {
     for (const e of game.enemies) {
       if (e === h || e.hp <= 0) continue;
       if (Math.abs(e.dist - h.dist) <= 1.6)
-        e.hp = Math.min(ENEMIES[e.kind].hp, e.hp + heal * STEP);
+        e.hp = Math.min(maxHpOf(e), e.hp + heal * STEP);
     }
   }
 
@@ -1848,7 +1992,7 @@ export function stepGame(game: Game): void {
   for (const e of game.enemies) {
     const p = enemyPoint(game.level, e);
     if (e.hp <= 0) {
-      const bounty = ENEMIES[e.kind].bounty;
+      const bounty = Math.round(ENEMIES[e.kind].bounty * (hasTwist(game.level, "fast") ? 1.5 : 1));
       game.marks += bounty;
       const split = ENEMIES[e.kind].splits;
       if (split) {
@@ -1858,7 +2002,8 @@ export function stepGame(game: Game): void {
             kind: split.kind,
             lane: e.lane,
             dist: Math.max(0, e.dist - i * 0.35),
-            hp: ENEMIES[split.kind].hp,
+            hp: spawnHp(game, split.kind),
+            maxHp: spawnHp(game, split.kind),
             slowed: false,
             stun: 0,
             wave: e.wave,
@@ -1891,11 +2036,15 @@ export function stepGame(game: Game): void {
     game.paid = w;
     let reward = 20 + w * 5;
     let mend = 0;
+    let income = 0;
     for (const t of game.towers) {
       const s = towerStats(t);
-      reward += s.income;
+      income += s.income;
       mend += s.mend;
     }
+    if (hasTwist(game.level, "tight")) reward *= 1.5;
+    if (hasTwist(game.level, "market")) income *= 1.5;
+    reward = Math.round(reward + income);
     game.marks += reward;
     if (mend > 0)
       game.goodwill = Math.min(game.maxGoodwill, game.goodwill + mend);

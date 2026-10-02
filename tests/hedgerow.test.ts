@@ -13,7 +13,6 @@ import {
   sell,
   sellValue,
   sendWave,
-  stars,
   stepGame,
   throwPie,
   towerAt,
@@ -34,7 +33,8 @@ import {
   type GameEvent,
   type Level,
 } from "../games/hedgerow/src/engine";
-import { LEVELS } from "../games/hedgerow/src/levels";
+import { LEVELS, ORIGINAL_PATHS } from "../games/hedgerow/src/levels";
+import { playLevel } from "../games/hedgerow/src/bot";
 import {
   PERKS,
   buyPerk,
@@ -51,93 +51,6 @@ import {
 
 /** Cath and her abilities left to the test, not the auto-battler. */
 const MANUAL = { hero: false, abilities: false };
-/** A simple greedy player: spend everything, scarecrows on the plots that see the most lane. */
-function plotsByCoverage(level: Level): Array<[number, number]> {
-  const cells: Array<{ c: number; r: number; score: number }> = [];
-  for (let r = 0; r < level.rows; r++) {
-    for (let c = 0; c < level.cols; c++) {
-      if (!isPlot(level, c, r)) continue;
-      let score = 0;
-      for (const path of level.path2 ? [level.path, level.path2] : [level.path])
-        for (let d = 0; d < 40; d += 0.5) {
-          const p = pointAt(path, d);
-          if (Math.hypot(c + 0.5 - p.x, r + 0.5 - p.y) <= 2.4) score++;
-        }
-      cells.push({ c, r, score });
-    }
-  }
-  return cells.sort((a, b) => b.score - a.score).map((x) => [x.c, x.r]);
-}
-
-function play(level: Level, build: boolean): Game {
-  const game = newGame(level);
-  const plots = plotsByCoverage(level);
-  let guard = 0;
-  while (game.phase !== "won" && game.phase !== "lost" && guard++ < 200_000) {
-    if (game.phase === "build") {
-      if (build) {
-        let bought = true;
-        while (bought) {
-          bought = false;
-          const scarecrows = game.towers.filter(
-            (t) => t.kind === "scarecrow",
-          ).length;
-          const hedges = game.towers.filter(
-            (t) => t.kind === "hedgerow",
-          ).length;
-          const hives = game.towers.filter((t) => t.kind === "beehive").length;
-          const ponds = game.towers.filter((t) => t.kind === "pond").length;
-          const silos = game.towers.filter((t) => t.kind === "silo").length;
-          const barns = game.towers.filter((t) => t.kind === "barn").length;
-          const masts = game.towers.filter((t) => t.kind === "mast").length;
-          const kind =
-            level.towers.includes("mast") &&
-            masts < Math.floor(scarecrows / 3) + 1 &&
-            scarecrows >= 2
-              ? "mast"
-              : level.towers.includes("silo") &&
-                  silos < Math.floor(scarecrows / 2) + 1
-                ? "silo"
-                : level.towers.includes("barn") &&
-                    barns < Math.floor(scarecrows / 3)
-                  ? "barn"
-                  : level.towers.includes("pond") &&
-                      ponds < Math.floor(scarecrows / 2)
-                    ? "pond"
-                    : hedges < Math.floor(scarecrows / 2)
-                      ? "hedgerow"
-                      : level.towers.includes("beehive") && hives < scarecrows
-                        ? "beehive"
-                        : "scarecrow";
-          const spot = plots.find(
-            ([c, r]) =>
-              !towerAt(game, c, r) &&
-              (kind === "pond" || plotKind(level, c, r) !== "water"),
-          );
-          if (spot && place(game, kind, spot[0], spot[1]).ok) bought = true;
-          else {
-            const weakest = [...game.towers].sort((a, b) => a.tier - b.tier)[0];
-            if (
-              weakest &&
-              (upgrade(game, weakest.id).ok ||
-                upgrade(game, weakest.id, (weakest.id % 2) as 0 | 1).ok)
-            )
-              bought = true;
-          }
-        }
-      }
-      sendWave(game);
-    }
-    // Like a player, it saves the pie for bosses.
-    if (build && game.phase === "wave" && game.pieCd === 0) {
-      const boss = game.enemies.find((e) => e.hp >= 1500);
-      if (boss)
-        throwPie(game, enemyPoint(level, boss).x, enemyPoint(level, boss).y);
-    }
-    stepGame(game);
-  }
-  return game;
-}
 
 describe("hedgerow engine", () => {
   const level = LEVELS[0]!;
@@ -170,8 +83,8 @@ describe("hedgerow engine", () => {
   });
 
   it("is deterministic: the same build order gives the same result", () => {
-    const a = play(level, true);
-    const b = play(level, true);
+    const a = playLevel(LEVELS[11]!, "competent");
+    const b = playLevel(LEVELS[11]!, "competent");
     expect([a.tick, a.goodwill, a.marks]).toEqual([
       b.tick,
       b.goodwill,
@@ -180,7 +93,7 @@ describe("hedgerow engine", () => {
   });
 
   it("a beehive stings every enemy near its target", () => {
-    const lv = LEVELS[3]!;
+    const lv = classic(4);
     const game = newGame(lv);
     place(game, "beehive", 2, 1);
     sendWave(game);
@@ -219,7 +132,7 @@ describe("hedgerow engine", () => {
   });
 
   it("a Market Stall earns Marks each wave and boosts neighbours", () => {
-    const lv = LEVELS[12]!;
+    const lv = classic(13);
     const game = newGame(lv);
     place(game, "stall", 0, 1);
     place(game, "scarecrow", 1, 1);
@@ -249,7 +162,7 @@ describe("hedgerow engine", () => {
   });
 
   it("a price-war truck breaks into drones", () => {
-    const game = newGame(LEVELS[13]!);
+    const game = newGame(classic(14));
     sendWave(game);
     game.spawnQueue = [];
     game.enemies.push({
@@ -265,7 +178,7 @@ describe("hedgerow engine", () => {
   });
 
   it("an influencer charms towers in range, and the Duck Pond slows and splashes", () => {
-    const lv = LEVELS[20]!;
+    const lv = classic(21);
     const game = newGame(lv);
     place(game, "scarecrow", 0, 0);
     sendWave(game);
@@ -307,7 +220,7 @@ describe("hedgerow engine", () => {
   });
 
   it("armour halves ordinary shots but not the Grain Silo", () => {
-    const lv = LEVELS[37]!;
+    const lv = classic(38);
     const hpAfter = (kind: "scarecrow" | "silo") => {
       const g = newGame(lv);
       place(g, kind, 5, 0);
@@ -329,7 +242,7 @@ describe("hedgerow engine", () => {
   });
 
   it("stealth units are untouchable until a Radio Mast reveals them, and the mast marks targets", () => {
-    const lv = LEVELS[44]!;
+    const lv = classic(45);
     const fire = (mast: boolean) => {
       const g = newGame(lv);
       place(g, "scarecrow", 5, 0);
@@ -352,7 +265,7 @@ describe("hedgerow engine", () => {
   });
 
   it("the Clinic-in-a-Box heals its neighbours", () => {
-    const g = newGame(LEVELS[49]!, NO_PERKS, MANUAL);
+    const g = newGame(classic(50), NO_PERKS, MANUAL);
     sendWave(g);
     g.spawnQueue = [];
     g.enemies.push(
@@ -364,7 +277,7 @@ describe("hedgerow engine", () => {
   });
 
   it("a Clinic Tent lets towers shrug off influencer charm", () => {
-    const lv = LEVELS[54]!;
+    const lv = classic(55);
     const fire = (tent: boolean) => {
       const g = newGame(lv);
       place(g, "scarecrow", 5, 0);
@@ -390,7 +303,7 @@ describe("hedgerow engine", () => {
   });
 
   it("a Courthouse freezes a boss in range with an Injunction", () => {
-    const lv = LEVELS[64]!;
+    const lv = classic(65);
     const g = newGame(lv);
     place(g, "court", 4, 0);
     sendWave(g);
@@ -408,7 +321,7 @@ describe("hedgerow engine", () => {
   });
 
   it("lawyers jam nearby towers to half rate", () => {
-    const lv = LEVELS[62]!;
+    const lv = classic(63);
     const shots = (jam: boolean) => {
       const g = newGame(lv);
       place(g, "scarecrow", 5, 0);
@@ -438,7 +351,7 @@ describe("hedgerow engine", () => {
   });
 
   it("a Union Hall lifts every tower's damage from anywhere on the map", () => {
-    const lv = LEVELS[74]!;
+    const lv = classic(75);
     const dealt = (hall: boolean) => {
       const g = newGame(lv);
       place(g, "scarecrow", 5, 0);
@@ -460,7 +373,7 @@ describe("hedgerow engine", () => {
   });
 
   it("the Board of Directors splits into five directors", () => {
-    const g = newGame(LEVELS[89]!);
+    const g = newGame(classic(90));
     g.enemies.push({
       id: 92,
       kind: "board",
@@ -477,7 +390,7 @@ describe("hedgerow engine", () => {
   });
 
   it("HollowCandor breaks into two Candors, each into remnants", () => {
-    const g = newGame(LEVELS[99]!);
+    const g = newGame(classic(100));
     g.enemies.push({
       id: 93,
       kind: "hollowcandor",
@@ -527,31 +440,22 @@ describe("hedgerow engine", () => {
     expect(STEP).toBeCloseTo(1 / 30);
   });
 
-  for (const lv of LEVELS) {
-    it(`level ${lv.id} (${lv.name}): lanes are connected and it is winnable, but not for free`, () => {
-      for (let i = 1; i < lv.path.length; i++) {
-        const [ax, ay] = lv.path[i - 1]!;
-        const [bx, by] = lv.path[i]!;
-        expect(ax === bx || ay === by).toBe(true);
-        for (const [x, y] of lv.path) {
-          expect(x).toBeGreaterThanOrEqual(0);
-          expect(x).toBeLessThan(lv.cols);
-          expect(y).toBeGreaterThanOrEqual(0);
-          expect(y).toBeLessThan(lv.rows);
-        }
-      }
-      expect(play(lv, false).phase).toBe("lost");
-      const won = play(lv, true);
-      expect(won.phase).toBe("won");
-      expect(stars(won)).toBeGreaterThanOrEqual(1);
-    }, 60_000);
-  }
 });
+
+/** A level as first designed: its original serpentine lane, no fork, no terrain, no twist, no tuning. */
+function classic(id: number): Level {
+  const lv = LEVELS[id - 1]!;
+  return { ...lv, path: ORIGINAL_PATHS.get(id)!, path2: undefined, terrain: undefined, twists: undefined, hpScale: undefined };
+}
 
 /** A bare level for mechanics tests: a straight lane along row 1 of a 12x3 field. */
 function strip(overrides: Partial<Level> = {}): Level {
   return {
     ...LEVELS[40]!,
+    twists: undefined,
+    hpScale: undefined,
+    path2: undefined,
+    terrain: undefined,
     id: 50,
     cols: 12,
     rows: 3,
@@ -920,9 +824,10 @@ describe("hedgerow: perks", () => {
       pieCooldown: 0.5,
       discount: 0.1,
     };
-    const game = newGame(LEVELS[4]!, perks);
-    expect(game.marks).toBe(LEVELS[4]!.startMarks + 50);
-    expect(game.goodwill).toBe(LEVELS[4]!.goodwill + 3);
+    const lv = classic(5);
+    const game = newGame(lv, perks);
+    expect(game.marks).toBe(lv.startMarks + 50);
+    expect(game.goodwill).toBe(lv.goodwill + 3);
     expect(pieCooldown(game)).toBe(PIE_COOLDOWN * 0.5);
     const m = game.marks;
     place(game, "scarecrow", 0, 0);

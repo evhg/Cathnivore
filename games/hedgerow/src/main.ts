@@ -9,6 +9,7 @@ import {
   STEP,
   TARGET_MODES,
   TOWERS,
+  TWISTS,
   canCallEarly,
   drainEvents,
   earlyBonus,
@@ -52,6 +53,7 @@ import {
 } from "./engine";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
+import { Renderer3D } from "./render3d";
 import { enemyIcon, img, towerIcon } from "./icons";
 import * as sfx from "./sound";
 import { haptic, setHaptics } from "./haptics";
@@ -163,7 +165,9 @@ ui.hostFace.innerHTML = cath("smirk");
 ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined" });
 
 let game: Game | null = null;
-let renderer: Renderer | null = null;
+/** 3D when WebGL is there (and `?2d` isn't asked for); the 2D canvas renderer otherwise. */
+let renderer: Renderer | Renderer3D | null = null;
+const USE_3D = !new URLSearchParams(location.search).has("2d") && Renderer3D.supported();
 setHaptics(!sfx.isMuted());
 let selected: { col: number; row: number } | null = null;
 /** Auto-continue: the next wave starts by itself after a countdown (the auto-battler default). */
@@ -323,7 +327,8 @@ function startLevel(lv: Level): void {
   ui.play.hidden = false;
   ui.hudTitle.textContent = `${lv.id}. ${lv.name}`;
   ui.hudPlace.textContent = lv.place;
-  renderer ??= new Renderer(ui.canvas);
+  renderer ??= USE_3D ? new Renderer3D(ui.canvas, $<HTMLElement>("fx-layer")) : new Renderer(ui.canvas);
+  document.documentElement.classList.toggle("hedgerow-3d", renderer instanceof Renderer3D);
   renderer.reset();
   renderer.selected = null;
   renderer.heroSelected = false;
@@ -376,6 +381,12 @@ function hideBubble(): void {
 }
 
 function levelTips(lv: Level): void {
+  // The level's twist, up front: it's what makes this level a different problem.
+  if (lv.twists?.length)
+    window.setTimeout(() => {
+      if (game?.level.id !== lv.id) return;
+      banner(lv.twists!.map((t) => TWISTS[t].name).join(" · "), lv.twists!.map((t) => TWISTS[t].rule).join(" "));
+    }, 400);
   if (lv.id === 1)
     tip("build", "Tap a plot beside the lane to build. Hedges slow them down; scarecrows throw turnips.", "wink");
   else if (lv.id === 2)
@@ -547,6 +558,10 @@ function wavePreview(p: HTMLElement, g: Game): void {
   }
   head.append(line(g.phase === "wave" ? `Coming next: wave ${g.wave + 1}` : `Wave ${g.wave + 1} of ${g.level.waves.length}`, "preview-title"));
   p.append(head);
+  if (g.level.twists?.length) {
+    const tw = line(g.level.twists.map((t) => `${TWISTS[t].name}: ${TWISTS[t].rule}`).join(" "), "twist-line");
+    p.append(tw);
+  }
   const row = document.createElement("ul");
   row.className = "preview-row";
   for (const { kind, count } of waveSummary(next)) {

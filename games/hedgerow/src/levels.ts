@@ -1,10 +1,12 @@
 // Hedgerow's levels. H1 ships the first three of act 1, Brindle Hills (docs/design/hedgerow.md). Story
 // follows SPEC 3.2's voice: short, specific, dry, warm. Later acts append to LEVELS.
 
-import { BOSS_MOVES, ENEMIES, TOWERS, laneCellsOf, type Level, type WaveGroup } from "./engine";
+import { BOSS_MOVES, ENEMIES, TOWERS, type Level, type TwistId, type WaveGroup } from "./engine";
 import { ACTS_1_TO_5 } from "./story/acts1to5";
 import { ACTS_6_TO_10 } from "./story/acts6to10";
 import type { Beat } from "./story/types";
+import { HP_SCALE } from "./tuning";
+import { relayout } from "./layouts";
 import { addTerrain } from "./terrain";
 
 const van = (count: number, gap: number, delay = 0): WaveGroup => ({
@@ -6228,25 +6230,72 @@ LEVELS.push({
 });
 
 /**
+ * A second lane for a fork level: a straight feeder from a field edge that joins the main lane somewhere in
+ * its middle third, crossing only grass. Returns the feeder's full path to the farmhouse, or null.
+ */
+function findFork(l: Level): Array<[number, number]> | null {
+  const p = l.path;
+  // The main lane's cells in order, with the index of the waypoint segment each one is on.
+  const cells: Array<{ x: number; y: number; seg: number }> = [];
+  for (let i = 1; i < p.length; i++) {
+    const [ax, ay] = p[i - 1]!;
+    const [bx, by] = p[i]!;
+    const dx = Math.sign(bx - ax);
+    const dy = Math.sign(by - ay);
+    let x = ax;
+    let y = ay;
+    if (i === 1) cells.push({ x, y, seg: 1 });
+    while (x !== bx || y !== by) {
+      x += dx;
+      y += dy;
+      cells.push({ x, y, seg: i });
+    }
+  }
+  const lane = new Set(cells.map((c) => `${c.x},${c.y}`));
+  const from = Math.floor(cells.length * 0.25);
+  const to = Math.floor(cells.length * 0.75);
+  for (let k = from; k <= to; k++) {
+    const c = cells[k]!;
+    for (const [dx, dy] of [
+      [0, -1],
+      [0, 1],
+      [-1, 0],
+      [1, 0],
+    ] as const) {
+      let x = c.x + dx;
+      let y = c.y + dy;
+      let ok = true;
+      let len = 0;
+      while (x >= 0 && y >= 0 && x < l.cols && y < l.rows) {
+        if (lane.has(`${x},${y}`)) {
+          ok = false;
+          break;
+        }
+        len++;
+        x += dx;
+        y += dy;
+      }
+      if (!ok || len < 2) continue;
+      const edge: [number, number] = [x - dx, y - dy];
+      const rest = p.slice(c.seg);
+      const join: [number, number] = [c.x, c.y];
+      const tail = rest[0] && rest[0][0] === join[0] && rest[0][1] === join[1] ? rest.slice(1) : rest;
+      return [edge, join, ...tail];
+    }
+  }
+  return null;
+}
+
+/**
  * A fork on some levels: a second spawn on the opposite edge runs along the plot row between two lanes of
  * the serpentine and joins the main lane at the first connector, then shares its tail. Every second group
  * of each wave (or half of a lone big group) marches down it, so the defence has to cover two doors.
  */
 function addSecondLane(l: Level): void {
-  const p = l.path;
-  const lane = laneCellsOf(l);
-  for (let i = 1; i + 1 < p.length; i++) {
-    const [ax, ay] = p[i]!;
-    const [bx, by] = p[i + 1]!;
-    if (ax !== bx || Math.abs(by - ay) !== 2) continue;
-    const my = (ay + by) / 2;
-    const ex = ax === 0 ? l.cols - 1 : ax === l.cols - 1 ? 0 : -1;
-    if (ex < 0) continue;
-    let free = true;
-    for (let c = Math.min(ex, ax); c <= Math.max(ex, ax); c++)
-      if (c !== ax && lane.has(`${c},${my}`)) free = false;
-    if (!free) continue;
-    l.path2 = [[ex, my], [ax, my], ...p.slice(i + 1)];
+  const fork = findFork(l);
+  if (!fork) return;
+  {
+    l.path2 = fork;
     l.waves = l.waves.map((groups) => {
       const out: WaveGroup[] = [];
       groups.forEach((g, gi) => {
@@ -6268,6 +6317,11 @@ function addSecondLane(l: Level): void {
 // Level 94 (the Grain Exchange) stays single-lane: the level bot could not hold two doors there.
 const FORK_LEVELS = (id: number) =>
   id >= 10 && id % 4 === 2 && id % 10 !== 0 && id !== 94;
+/** Each level's original serpentine lane, before relayout (the mechanics tests are written against them). */
+export const ORIGINAL_PATHS = new Map(LEVELS.map((l) => [l.id, l.path] as const));
+
+// New lane shapes from level 4 on (layouts.ts): spirals, rings, staircases, hooks, so neighbours differ.
+for (const l of LEVELS) if (l.id > 3) relayout(l);
 for (const l of LEVELS) if (FORK_LEVELS(l.id)) addSecondLane(l);
 for (const l of LEVELS) addTerrain(l);
 
@@ -6280,6 +6334,92 @@ for (const l of LEVELS) {
   l.before = beat.before;
   l.after = beat.after;
 }
+
+// Each level's twist (docs/design/hedgerow-v2.md section 4: the beat and twist for every level).
+const TWIST_PLAN: Record<number, TwistId[]> = {
+  4: ["crowd"],
+  5: ["tight"],
+  6: ["fast"],
+  7: ["protected"],
+  8: ["air"],
+  9: ["night"],
+  11: ["market"],
+  12: ["fast"],
+  13: ["tight"],
+  14: ["air"],
+  15: ["crowd"],
+  16: ["fog"],
+  17: ["fortified"],
+  18: ["rain"],
+  19: ["armoured"],
+  22: ["crowd"],
+  23: ["fast"],
+  24: ["air"],
+  25: ["fortified"],
+  26: ["fog"],
+  27: ["tight"],
+  28: ["night"],
+  29: ["wind"],
+  31: ["rain"],
+  32: ["tight"],
+  33: ["armoured"],
+  35: ["crowd"],
+  36: ["market"],
+  37: ["night"],
+  38: ["armoured"],
+  39: ["drought"],
+  42: ["fog"],
+  43: ["tight"],
+  44: ["night"],
+  46: ["air"],
+  47: ["crowd"],
+  48: ["armoured"],
+  49: ["rush"],
+  52: ["fast"],
+  53: ["tight"],
+  54: ["wind"],
+  56: ["fog"],
+  57: ["wind"],
+  58: ["market"],
+  59: ["fog", "armoured"],
+  62: ["crowd"],
+  63: ["tight"],
+  64: ["fortified"],
+  66: ["rain"],
+  67: ["night"],
+  68: ["armoured"],
+  69: ["nocath"],
+  72: ["market"],
+  73: ["fast"],
+  74: ["air"],
+  76: ["crowd"],
+  77: ["night"],
+  78: ["protected"],
+  79: ["rain"],
+  82: ["crowd"],
+  83: ["fortified"],
+  84: ["tight"],
+  85: ["armoured"],
+  86: ["night"],
+  87: ["wind"],
+  88: ["air"],
+  89: ["rush"],
+  92: ["rush"],
+  93: ["market"],
+  94: ["armoured"],
+  95: ["night"],
+  96: ["crowd"],
+  97: ["protected"],
+  98: ["fog"],
+  99: ["fortified"],
+};
+for (const l of LEVELS) if (TWIST_PLAN[l.id]) l.twists = TWIST_PLAN[l.id];
+
+// Enemy health per level from the difficulty tuner.
+// The tuner finds where the competent bot only just keeps its target; people get a 15% margin on top,
+// because the bot never hesitates and never misplaces a tower.
+const HUMAN_MARGIN = 0.85;
+for (const l of LEVELS) if (HP_SCALE[l.id]) l.hpScale = Math.round(HP_SCALE[l.id]! * HUMAN_MARGIN * 100) / 100;
 
 // The barn is raised in level 36 (the story's barn raising), not at the start of act 4.
 for (const l of LEVELS) if (l.id >= 31 && l.id < 36) l.towers = l.towers.filter((t) => t !== "barn");
