@@ -60,6 +60,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-02 ~05:51-06:35 UTC: ROADMAP 38 part 1 (build pop-in/dust, upgrade sparkle, clean-sweep cheer, worried face, victory confetti, haptics.ts). check green; unreleased, batching. Left: enemies tipping over, scaffolding.
 - 2026-10-02 ~04:51-05:15 UTC: ROADMAP 35 (Neighbours at level 12, Rally at level 25, two perks, tests). e2e:site needs PLAYWRIGHT_CHROMIUM_PATH. Unreleased, batching.
 - 2026-10-02 ~02:48-04:20 UTC (owner's chat session): Hedgerow overhaul for the owner's "boring" feedback; ROADMAP 26-30 ticked, 35-39 added; released `aadfc2c`.
 - 2026-10-01 ~02:51-03:05 UTC: Rift 3/6 banner (`.rift-banner`, reuses round-banner motion). Short session; no release (batching).
