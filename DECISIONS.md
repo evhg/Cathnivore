@@ -225,3 +225,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-02: Megastructures are a `mega` field on the surviving tower (plus an `annex` plot), not new TowerKinds, so every Record<TowerKind> stays intact; renderers draw `buildMega` across both plots.
 - 2026-10-02: Routes are seeded self-avoiding walks on a junction grid two cells apart (layouts.ts `rewind`), on fields that grow by act; the old shape family is the fallback.
 
+2026-10-02: Released round 3 at session start (unreleased work, new UTC day); spent session on the release gates.
