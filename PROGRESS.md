@@ -4,8 +4,8 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
-- **Next:** ROADMAP Phase 4, "Hedgerow to world-class", starting with item 26 (the battlefield art), then 27-32; Phase 5 after. Open from earlier: 19 (sound polish), H2 notes, 24 (real-phone check, needs hardware: skip).
-- 2026-10-02 (owner's chat session): sessions had idled as "health check only" since about 21:00 UTC on 10-01 because the roadmap ran out. Added Phases 4-5 and the never-idle rule.
+- **Next:** the open FEEDBACK note (Hedgerow worth 50 USD): ROADMAP 35-39, then 31-32, then Phase 5. Open from earlier: 19 (sound polish), 24 (real-phone check, needs hardware: skip).
+- 2026-10-02 (owner's chat session, 02:48-04:15 UTC): owner said Hedgerow was boring. Shipped ROADMAP 26-30 and much more (see Recent releases); live at `aadfc2c`.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -30,6 +30,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-02 ~04:05 UTC (`aadfc2c`): Hedgerow overhaul: Cath as a hero unit, 22 tower specialisations, targeting, early calls, aimed pie, boss moves, painted acts and sprites, new build UI, journey map, graphic-novel scenes, Seed Bank (save v2), music. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-02 ~01:07 UTC (`a95986a`): all accumulated slices (scenes, plan cards, tour, motion tokens). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~13:12 UTC (`65ab9f2`): bigger desktop map. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~11:02 UTC (`b69c37f`): How to Play tour (cards page, keys, dots) + roadmap ticks. main==build; live version.json matches; tag push 403 (harmless).
@@ -39,20 +40,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-30 ~19:05 UTC (`198c11b`): Hedgerow act 10 (levels 91-100, Kingsmarket, HollowCandor finale). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~18:00 UTC (`adfbd0a`): Hedgerow act 9 (levels 81-90, The Merger, Board of Directors). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-09-30 ~17:10 UTC: Hedgerow act 8 (levels 71-80, The Ballot, Union Hall, Campaign Bus) — `c0d569e`; live version.json matches; tag 403 (harmless).
-- 2026-09-30 ~16:00 UTC (`4b053d7`): Hedgerow act 7 (levels 61-70, The Rift, lawyers, Courthouse, Lawyer Swarm). main==build; live version.json matches; tag push 403 (harmless).
-- 2026-09-30 ~15:08 UTC (`47ffb6d`): Hedgerow act 6 (levels 51-60, Shingle Bay, tenders, Clinic Tent, Container Ship). main==build; live version.json matches; tag push 403 (harmless).
-- 2026-09-30 ~15:05 UTC (`da6db06`): Hedgerow act 5 (levels 41-50, Oakvale, stealth, Radio Mast, Clinic-in-a-Box). main==build; live version.json matches; tag push 403 (harmless).
-- 2026-09-30 ~14:03 UTC (`4ad18c7`): Hedgerow act 4 (levels 31-40, Rivermead, armour, Barn, Silo, Mega-Dozer). main==build; live version.json matches; tag push 403 (harmless).
-- 2026-09-30 ~13:20 UTC (`c059cb6`): Hedgerow act 3 (levels 21-30, Duck Pond, influencers, Blimp boss). Gates passed; live version.json matches; tag push 403 (harmless).
-- 2026-09-30 ~12:10 UTC (`2350369`): Hedgerow act 2 (levels 11-20, Market Stall, trucks, Convoy boss). Live version.json matches; tag push 403 (harmless).
-- 2026-09-30 ~11:00 UTC (`6bf3253`): Hedgerow act 1 (levels 1-10, Beehive, Van boss, Cath's pie) + synth sound. Live version.json matches, /hedgerow/ 200; release script's tag push 403 (harmless).
-- 2026-09-30 ~10:05 UTC (`4baaa06`): Hedgerow H1 (engine, 3 levels, /hedgerow/, landing card). Gates passed; HTTP check passed; tag push 403 (harmless).
-- 2026-09-29 ~12:30 UTC (`5304060`): Runnel streak calendar, sparkle, seasonal crops, story scenes, etc. First attempt reverted on a curl timeout; retry landed (live version.json matches, main==build); tag 403.
-- 2026-09-29 ~07:10 UTC (`bf2dbf8`): --ease-settle fix, end-screen map/share, How to Play quick tour, How to Play + earlier work. main==build; tag push 403 (harmless).
-- 2026-09-29 ~03:04 UTC (`b8dc0df`): Setup redesign (ROADMAP 15) + end-screen stat cards (ROADMAP 16 slice). Gates passed; live version.json matches; tag push 403 (harmless).
-- 2026-09-29 ~02:25 UTC (`132ef5b`): Settings + Credits redesign (ROADMAP 20), plus the earlier sound/motion work. Gates passed; tag push 403 (harmless).
-- 2026-09-28 ~19:14 UTC (`2132b1f`): ROADMAP 11 terrain vignettes/signboards and ROADMAP 13 liberation seal-stamp + colour bloom, plus the earlier why-not slices. First attempt was reverted by a transient curl SSL error in the release script's HTTP check; `merge -s ours origin/main` then re-release succeeded. Tag push 403 (harmless).
-- 2026-09-28 ~16:10 UTC (`6a59418`): the unreleased gauge-ring change from the prior session (ROADMAP 10's
   `GaugeRing` on both phone and desktop). All gates passed; HTTP smoke test passed outright; `deploy-1` tag
   push failed with the known 403 (harmless).
 - 2026-09-28 ~16:23 UTC (`51bec56`): ROADMAP 10's plan-strip branding — both corporations' logos on the
@@ -73,6 +60,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-02 ~02:48-04:20 UTC (owner's chat session): Hedgerow overhaul for the owner's "boring" feedback; ROADMAP 26-30 ticked, 35-39 added; released `aadfc2c`.
 - 2026-10-01 ~02:51-03:05 UTC: Rift 3/6 banner (`.rift-banner`, reuses round-banner motion). Short session; no release (batching).
 - 2026-09-30 ~19:52-20:10 UTC: Hedgerow level select grouped into ten act headers (place names), boss levels marked, list scrolls to the next unplayed level.
 - 2026-09-30 ~18:52-19:10 UTC: Hedgerow act 10 (levels 91-100, Kingsmarket): HollowCandor 3-phase boss (phase 1 jams towers, splits into 2 Candors that heal, each splits into stealth remnants), finale with Bea; 1 new test. Prettier run on games/hedgerow again (fine).
