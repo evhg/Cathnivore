@@ -216,8 +216,8 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 ### Hedgerow round 3 (owner's third playtest, 2026-10-02 afternoon; design: docs/design/hedgerow-v2.md 6)
 
 47. [x] Bubble-wrapped vans against Scarecrow spam; Windmill and Seed Cannon; eight megastructures; veteran ranks; ambushes; winding routes on bigger fields with pan and zoom; Cath's character sheet (XP, six attributes, ten talents); one-on-one boss duels; tooltips on every control; dialogs that fit a phone; a synthwave score; richer 3D models.
-48. [ ] **Heroic and Endless:** a Heroic star per level (one life, no pie), and an Endless field per act with a weekly seed and a local best.
-49. [ ] **Daily challenge:** one seeded level a day with a fixed tower set and a twist mix; a share card of the result (no server needed).
+48. [x] *(2026-10-02 night: Heroic toggle on the map (one Goodwill, no pies, a diamond on cleared levels, two rosettes); Endless per act after its boss (endless.ts, weekly seed, best wave kept); unreleased)* **Heroic and Endless:** a Heroic star per level (one life, no pie), and an Endless field per act with a weekly seed and a local best.
+49. [x] *(2026-10-02 night: daily.ts, Daily button, no Seed Bank, score out of 100, copyable share card; fixed tower set and twist mix not done; unreleased)* **Daily challenge:** one seeded level a day with a fixed tower set and a twist mix; a share card of the result (no server needed).
 50. [ ] **The Almanac:** a codex of every tower, specialisation, megastructure, enemy and boss, with its stats, lore lines and a 3D turntable; entries unlock as met.
 51. [ ] **Cath's wardrobe:** outfits earned from Rosettes and act clears (wellies and wax jacket, market-day dress, Kingsmarket gown), shown in 3D and in the story scenes.
 52. [ ] **New enemy factions per act:** a drone carrier that launches swarms, a "lobbyist" that disables the nearest tower's specialisation, a rival hero unit (Pell on a quad bike) who fights Cath on the lane.
