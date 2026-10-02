@@ -216,3 +216,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-02: difficulty is tuned by a bot (bot.ts + scripts/hedgerow-tune.ts), not by hand: the competent bot must win every level; tuned values ship with a human margin (0.9 to level 7, 0.97 after). Outcomes are cliff-shaped in enemy health, so the margin, not the target, sets how hard it feels.
 - 2026-10-02: the script was rewritten by two subagents from a story bible I wrote (docs/design/hedgerow-v2.md 4); I reviewed samples. Level names follow the script.
 
+- 2026-10-02: ROADMAP 45 slice: Scarecrow ban on 11 more early levels (content, not tuning) and re-tune 8-29; naive-bot re-measure still to do.

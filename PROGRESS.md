@@ -61,6 +61,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-02 ~12:52-13:10 UTC: ROADMAP 45 part 1: Scarecrow ban twist added to levels 8,9,12,14,16,17,19,23,25,27,29; levels 8-29 re-tuned and verified; hedgerow level tests green. Not yet re-measured against the naive bot; unreleased.
 - 2026-10-02 ~09:28-12:30 UTC (owner's chat session): Hedgerow round 2 (auto-battler, stats, story rewrite, twists, layouts, bot + tuner, 3D renderer).
 - 2026-10-02 ~08:51-09:20 UTC: ROADMAP 36 forks: `Level.path2`, `Enemy.lane`, `enemyPoint`, `laneCellsOf`; second lane painted with its own gate; test bot covers both lanes; level 94 left single-lane (bot lost). check green. Hedgerow test file now ~4 min.
 - 2026-10-02 ~07:52-08:10 UTC: ROADMAP 36 terrain slice (high ground, water plots, `terrain.ts`, test). check green; unreleased, batching. Left: forks/two lanes/second spawn. Full hedgerow test file takes ~3 min.
