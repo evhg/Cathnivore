@@ -20,7 +20,7 @@ const MOTIFS = [
   "castle",
 ] as const;
 
-function actScene(n: number): string {
+export function actScene(n: number): string {
   const th = THEMES[(n - 1) % THEMES.length]!;
   const motif = MOTIFS[(n - 1) % MOTIFS.length]!;
   const dusk = n >= 7;

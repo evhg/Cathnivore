@@ -1157,6 +1157,121 @@ button {
   flex-wrap: wrap;
 }
 
+/* ---- story scenes ---- */
+
+.story {
+  width: min(94vw, 640px);
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+}
+.scene {
+  position: relative;
+  height: clamp(200px, 38vh, 300px);
+  overflow: hidden;
+}
+.scene-bg,
+.scene-bg svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.actor {
+  position: absolute;
+  bottom: -6px;
+  height: 92%;
+  aspect-ratio: 240 / 288;
+  transition: transform 260ms cubic-bezier(0.2, 1.2, 0.4, 1), filter 260ms ease, opacity 260ms ease;
+  filter: brightness(0.82) saturate(0.85) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
+  opacity: 0.92;
+}
+.actor svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.actor.left {
+  left: 4%;
+}
+.actor.right {
+  right: 4%;
+  height: 78%;
+  aspect-ratio: 160 / 190;
+}
+.actor.speaking {
+  transform: translateY(-6px) scale(1.04);
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.3));
+  opacity: 1;
+}
+.speech {
+  position: relative;
+  margin: -18px 14px 0;
+  padding: 12px 16px 10px;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 0 0 2px var(--ink), 0 6px 18px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+}
+.speech::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 18%;
+  border: 12px solid transparent;
+  border-top: 0;
+  border-bottom-color: var(--ink);
+}
+.speech::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: calc(18% + 3px);
+  border: 9px solid transparent;
+  border-top: 0;
+  border-bottom-color: var(--surface);
+}
+.speech.from-right::before {
+  left: auto;
+  right: 18%;
+}
+.speech.from-right::after {
+  left: auto;
+  right: calc(18% + 3px);
+}
+.speech.caption {
+  background: #2b2320;
+  color: #fff8e6;
+}
+.speech.caption::before,
+.speech.caption::after {
+  display: none;
+}
+.speech.caption .eyebrow,
+.speech.caption h2 {
+  color: #f2c94c;
+}
+.speech.caption .story-text {
+  font-style: italic;
+}
+.speech .story-text {
+  margin: 0;
+  min-height: 4.6em;
+}
+.speech h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+.story-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+.story-actions #story-next {
+  min-width: 120px;
+}
+
 .bank {
   width: min(94vw, 560px);
   text-align: left;
@@ -1307,5 +1422,18 @@ button {
   }
   .banner {
     transition: none;
+  }
+}
+@media (max-width: 520px) {
+  .actor.left {
+    left: -6%;
+    height: 84%;
+  }
+  .actor.right {
+    right: 0;
+    height: 60%;
+  }
+  .speech {
+    margin: -14px 10px 0;
   }
 }

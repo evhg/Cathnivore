@@ -58,7 +58,8 @@ import {
   refundAll,
   save,
 } from "./store";
-import { renderMap } from "./map";
+import { actScene, renderMap } from "./map";
+import { castSvg, type CastMember } from "./cast";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -96,7 +97,13 @@ const ui = {
   pausedNote: $<HTMLElement>("paused-note"),
   announce: $<HTMLElement>("announce"),
   dlgStory: $<HTMLDialogElement>("dlg-story"),
-  storyCath: $<HTMLElement>("story-cath"),
+  storyBg: $<HTMLElement>("story-bg"),
+  storyLeft: $<HTMLElement>("story-left"),
+  storyRight: $<HTMLElement>("story-right"),
+  storySpeech: $<HTMLElement>("story-speech"),
+  storyFull: $<HTMLElement>("story-full"),
+  storyTyped: $<HTMLElement>("story-typed"),
+  storySkip: $<HTMLButtonElement>("story-skip"),
   storyPlace: $<HTMLElement>("story-place"),
   storyWho: $<HTMLElement>("story-who"),
   storyText: $<HTMLElement>("story-text"),
@@ -159,41 +166,91 @@ function renderLevels(): void {
   renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv));
 }
 
-function showStory(lines: StoryLine[], place: string, done: () => void): void {
+let typing = 0;
+const REDUCED = (() => {
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+})();
+
+/** A story beat as a graphic-novel panel: the act's backdrop, Cath on the left, whoever she's talking to on the right. */
+function showStory(lines: StoryLine[], place: string, done: () => void, act = 1): void {
+  if (lines.length === 0) {
+    done();
+    return;
+  }
   let i = 0;
+  const other = lines.find((l) => l.who !== "cath" && l.who !== "narrator")?.who as CastMember | undefined;
+  ui.storyBg.innerHTML = actScene(act);
+  ui.storyRight.innerHTML = other ? castSvg(other) : "";
+  ui.storyRight.hidden = !other;
+  const finishTyping = () => {
+    clearInterval(typing);
+    typing = 0;
+    ui.storyTyped.textContent = ui.storyFull.textContent;
+  };
   const show = () => {
     const line = lines[i]!;
     ui.storyPlace.textContent = place;
     ui.storyWho.textContent = NAMES[line.who];
-    ui.storyText.textContent = line.text;
-    ui.storyCath.classList.toggle("letter", line.who !== "cath");
-    ui.storyCath.dataset.who = line.who;
-    ui.storyCath.innerHTML = line.who === "cath" ? cath(line.expression ?? "smirk") : NAMES[line.who].charAt(0);
+    ui.storyFull.textContent = line.text;
+    ui.storyLeft.innerHTML = cathSvg({ framing: "bust", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", animate: true });
+    ui.storyLeft.classList.toggle("speaking", line.who === "cath");
+    ui.storyRight.classList.toggle("speaking", line.who === other);
+    ui.storySpeech.dataset.who = line.who;
+    ui.storySpeech.classList.toggle("from-right", line.who !== "cath" && line.who !== "narrator");
+    ui.storySpeech.classList.toggle("caption", line.who === "narrator");
     ui.storyNext.textContent = i === lines.length - 1 ? "Let's go" : "Next";
+    clearInterval(typing);
+    if (REDUCED) {
+      ui.storyTyped.textContent = line.text;
+      return;
+    }
+    let n = 0;
+    ui.storyTyped.textContent = "";
+    typing = window.setInterval(() => {
+      n += 2;
+      ui.storyTyped.textContent = line.text.slice(0, n);
+      if (n >= line.text.length) finishTyping();
+    }, 22);
   };
   ui.storyNext.onclick = () => {
+    if (typing) {
+      finishTyping();
+      return;
+    }
     i += 1;
     if (i >= lines.length) {
       ui.dlgStory.close();
       done();
     } else show();
   };
-  if (lines.length === 0) {
+  ui.storySkip.onclick = () => {
+    finishTyping();
+    ui.dlgStory.close();
     done();
-    return;
-  }
+  };
   show();
   if (!ui.dlgStory.open) ui.dlgStory.showModal();
 }
 
+const actOf = (lv: Level) => Math.floor((lv.id - 1) / 10) + 1;
+
 function openLevel(lv: Level): void {
   const start = () => startLevel(lv);
   if (!data.seenBefore[String(lv.id)]) {
-    showStory(lv.before, lv.place, () => {
-      data.seenBefore[String(lv.id)] = true;
-      save(data);
-      start();
-    });
+    showStory(
+      lv.before,
+      lv.place,
+      () => {
+        data.seenBefore[String(lv.id)] = true;
+        save(data);
+        start();
+      },
+      actOf(lv),
+    );
   } else start();
 }
 
@@ -903,10 +960,15 @@ function finish(g: Game): void {
     ui.resultPrimary.textContent = next ? "Continue" : "Finale";
     ui.resultPrimary.onclick = () => {
       ui.dlgResult.close();
-      showStory(next ? lv.after : [...lv.after, ...FINALE], lv.place, () => {
-        if (next && isUnlocked(data, next.id)) openLevel(next);
-        else leaveLevel();
-      });
+      showStory(
+        next ? lv.after : [...lv.after, ...FINALE],
+        lv.place,
+        () => {
+          if (next && isUnlocked(data, next.id)) openLevel(next);
+          else leaveLevel();
+        },
+        actOf(lv),
+      );
     };
   } else {
     ui.resultPrimary.textContent = "Try again";

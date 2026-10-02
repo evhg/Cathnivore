@@ -196,7 +196,9 @@ test.describe('Hedgerow', () => {
     await expect(page.locator('button.level[data-level="2"]')).toBeDisabled()
     await page.locator('button.level[data-level="1"]').click()
     await expect(page.getByRole('dialog')).toContainText('Mara is halfway through a cheese sandwich')
-    for (let i = 0; i < 4; i++) await page.locator('#story-next').click()
+    // Next finishes the typing, then moves on; Skip ends the scene.
+    await page.locator('#story-next').click()
+    await page.locator('#story-skip').click()
     await expect(page.locator('#hud-marks')).toHaveText('210')
     await expect(page.locator('#btn-pie')).toBeHidden()
     // Tap a plot beside the lane (column 0, row 0 is grass in level 1).

@@ -168,12 +168,24 @@
       <p class="sr-only" id="announce" aria-live="polite"></p>
     </div>
 
-    <dialog id="dlg-story" class="sheet" aria-labelledby="story-who">
-      <div class="story-cath" id="story-cath" aria-hidden="true"></div>
-      <p class="eyebrow" id="story-place"></p>
-      <h2 id="story-who">Cath</h2>
-      <p class="story-text" id="story-text"></p>
-      <button class="btn" type="button" id="story-next">Next</button>
+    <dialog id="dlg-story" class="sheet story" aria-labelledby="story-who">
+      <div class="scene" id="story-scene">
+        <div class="scene-bg" id="story-bg" aria-hidden="true"></div>
+        <div class="actor left" id="story-left" aria-hidden="true"></div>
+        <div class="actor right" id="story-right" aria-hidden="true"></div>
+      </div>
+      <div class="speech" id="story-speech">
+        <p class="eyebrow" id="story-place"></p>
+        <h2 id="story-who">Cath</h2>
+        <p class="story-text" id="story-text">
+          <span class="sr-only" id="story-full"></span
+          ><span aria-hidden="true" id="story-typed"></span>
+        </p>
+      </div>
+      <div class="story-actions">
+        <button class="btn btn-quiet" type="button" id="story-skip">Skip</button>
+        <button class="btn" type="button" id="story-next">Next</button>
+      </div>
     </dialog>
 
     <dialog id="dlg-result" class="sheet win" aria-labelledby="result-title">
