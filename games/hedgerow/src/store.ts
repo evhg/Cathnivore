@@ -1,38 +1,53 @@
-// Saved progress for Hedgerow: stars per level and which stories were seen. One localStorage key; any
+// Saved progress for Hedgerow: stars per level, which stories were seen, which enemies have been met,
+// which tips Cath has given, and the Seed Bank (perks bought with stars). One localStorage key; any
 // storage failure degrades to an in-memory copy so the game still plays. Bump `version` and add a
-// migration (with a test) for every shape change.
+// migration (with a test) for every shape change. v1 -> v2 (2026-10-02): added seen, tips and bank.
+
+import { NO_PERKS, type Perks } from "./engine";
 
 export interface SaveData {
-  version: 1;
+  version: 2;
   /** Best stars per level id (1 to 3). Missing = not cleared. */
   stars: Record<string, number>;
   seenBefore: Record<string, boolean>;
+  /** Enemy kinds already introduced. */
+  seen: Record<string, boolean>;
+  /** Tips Cath has already given. */
+  tips: Record<string, boolean>;
+  /** Seed Bank: ranks bought per perk. */
+  bank: Record<string, number>;
 }
 
 const KEY = "hedgerow:v1";
 let memory: SaveData | null = null;
 
 export function emptySave(): SaveData {
-  return { version: 1, stars: {}, seenBefore: {} };
+  return { version: 2, stars: {}, seenBefore: {}, seen: {}, tips: {}, bank: {} };
 }
 
-/** Parses stored JSON, repairing anything unexpected instead of throwing. */
+/** Parses stored JSON (v1 or v2), repairing anything unexpected instead of throwing. */
 export function parseSave(raw: string | null): SaveData {
   const data = emptySave();
   if (!raw) return data;
   try {
-    const obj = JSON.parse(raw) as Partial<SaveData>;
+    const obj = JSON.parse(raw) as Partial<Omit<SaveData, "version">> & { version?: number };
     if (obj && typeof obj === "object") {
       for (const [k, v] of Object.entries(obj.stars ?? {})) {
-        if (typeof v === "number" && v >= 1 && v <= 3)
-          data.stars[k] = Math.floor(v);
+        if (typeof v === "number" && v >= 1 && v <= 3) data.stars[k] = Math.floor(v);
       }
-      for (const [k, v] of Object.entries(obj.seenBefore ?? {}))
-        if (v === true) data.seenBefore[k] = true;
+      for (const [k, v] of Object.entries(obj.seenBefore ?? {})) if (v === true) data.seenBefore[k] = true;
+      for (const [k, v] of Object.entries(obj.seen ?? {})) if (v === true) data.seen[k] = true;
+      for (const [k, v] of Object.entries(obj.tips ?? {})) if (v === true) data.tips[k] = true;
+      for (const [k, v] of Object.entries(obj.bank ?? {})) {
+        const perk = PERKS.find((p) => p.id === k);
+        if (perk && typeof v === "number" && v >= 1) data.bank[k] = Math.min(perk.costs.length, Math.floor(v));
+      }
     }
   } catch {
     // corrupt save: start fresh
   }
+  // A bank bought with stars that no longer exist (a reset elsewhere) is refunded rather than kept.
+  if (spentStars(data) > totalStars(data)) data.bank = {};
   return data;
 }
 
@@ -57,16 +72,145 @@ export function save(data: SaveData): void {
   }
 }
 
-export function recordStars(
-  data: SaveData,
-  levelId: number,
-  stars: number,
-): void {
-  if (stars > (data.stars[String(levelId)] ?? 0))
-    data.stars[String(levelId)] = stars;
+export function recordStars(data: SaveData, levelId: number, stars: number): void {
+  if (stars > (data.stars[String(levelId)] ?? 0)) data.stars[String(levelId)] = stars;
   save(data);
 }
 
 export function isUnlocked(data: SaveData, levelId: number): boolean {
   return levelId <= 1 || (data.stars[String(levelId - 1)] ?? 0) > 0;
+}
+
+// ---- the Seed Bank ----
+
+export interface PerkDef {
+  id: string;
+  name: string;
+  blurb: string;
+  /** Stars for each rank. */
+  costs: number[];
+  /** What one rank does, for the card. */
+  each: string;
+  apply: (p: Perks, rank: number) => void;
+}
+
+export const PERKS: PerkDef[] = [
+  {
+    id: "pockets",
+    name: "Deep Pockets",
+    blurb: "The co-op tin is never quite empty.",
+    each: "+30 starting Marks",
+    costs: [1, 2, 3, 4],
+    apply: (p, r) => (p.marks += 30 * r),
+  },
+  {
+    id: "hedges",
+    name: "Thicker Hedges",
+    blurb: "Hawthorn, blackthorn and a lot of patience.",
+    each: "Slowing towers bite 10% harder",
+    costs: [2, 3, 4],
+    apply: (p, r) => (p.slow = 1 / (1 + 0.1 * r)),
+  },
+  {
+    id: "apron",
+    name: "Cath's Apron",
+    blurb: "Waxed cotton. Pockets for everything.",
+    each: "+20% health for Cath",
+    costs: [1, 2, 3],
+    apply: (p, r) => (p.heroHp = 1 + 0.2 * r),
+  },
+  {
+    id: "pin",
+    name: "Grandma's Rolling Pin",
+    blurb: "Solid beech. Older than the corporation.",
+    each: "+20% damage for Cath",
+    costs: [2, 3, 4],
+    apply: (p, r) => (p.heroDamage = 1 + 0.2 * r),
+  },
+  {
+    id: "oven",
+    name: "Quick Oven",
+    blurb: "Bea minds the timer.",
+    each: "Pie cooldown -12%",
+    costs: [2, 3, 4],
+    apply: (p, r) => (p.pieCooldown = 1 - 0.12 * r),
+  },
+  {
+    id: "dish",
+    name: "Family-size Dish",
+    blurb: "It feeds twelve, or stops twelve vans.",
+    each: "Pie splash +15%",
+    costs: [2, 4],
+    apply: (p, r) => (p.pieRadius = 1 + 0.15 * r),
+  },
+  {
+    id: "neighbours",
+    name: "Good Neighbours",
+    blurb: "Somebody always comes to help.",
+    each: "+2 Goodwill",
+    costs: [3, 5],
+    apply: (p, r) => (p.goodwill += 2 * r),
+  },
+  {
+    id: "discount",
+    name: "Co-op Discount",
+    blurb: "Tomas knows a man who sells timber.",
+    each: "Towers cost 5% less",
+    costs: [3, 5],
+    apply: (p, r) => (p.discount = 0.05 * r),
+  },
+  {
+    id: "earlybird",
+    name: "Early Bird",
+    blurb: "Up before the vans.",
+    each: "+35% bonus for early waves",
+    costs: [2, 3],
+    apply: (p, r) => (p.earlyBonus = 1 + 0.35 * r),
+  },
+];
+
+export function totalStars(data: SaveData): number {
+  return Object.values(data.stars).reduce((a, b) => a + b, 0);
+}
+
+export function spentStars(data: SaveData): number {
+  let n = 0;
+  for (const p of PERKS) {
+    const r = data.bank[p.id] ?? 0;
+    for (let i = 0; i < r; i++) n += p.costs[i]!;
+  }
+  return n;
+}
+
+export function freeStars(data: SaveData): number {
+  return totalStars(data) - spentStars(data);
+}
+
+export function nextCost(data: SaveData, id: string): number | null {
+  const p = PERKS.find((x) => x.id === id);
+  if (!p) return null;
+  const r = data.bank[id] ?? 0;
+  return r >= p.costs.length ? null : p.costs[r]!;
+}
+
+export function buyPerk(data: SaveData, id: string): boolean {
+  const cost = nextCost(data, id);
+  if (cost === null || cost > freeStars(data)) return false;
+  data.bank[id] = (data.bank[id] ?? 0) + 1;
+  save(data);
+  return true;
+}
+
+export function refundAll(data: SaveData): void {
+  data.bank = {};
+  save(data);
+}
+
+export function perksOf(data: SaveData): Perks {
+  const p: Perks = { ...NO_PERKS };
+  for (const def of PERKS) {
+    const r = data.bank[def.id] ?? 0;
+    if (r > 0) def.apply(p, r);
+  }
+  return p;
 }

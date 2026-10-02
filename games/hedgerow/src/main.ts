@@ -2,34 +2,65 @@ import "./styles.css";
 import "../../../shared/cath/cath.css";
 import { cathSvg, type CathExpression } from "../../../shared/cath/cath";
 import {
+  ENEMIES,
+  PIE_FIRST_LEVEL,
+  SPECIALISATIONS,
+  SPEC_FIRST_LEVEL,
   STEP,
+  TARGET_MODES,
   TOWERS,
+  canCallEarly,
   drainEvents,
+  earlyBonus,
+  isBig,
   isPlot,
+  laneCells,
+  moveHero,
   newGame,
+  pieRadius,
+  pieUnlocked,
   place,
   sell,
   sellValue,
   sendWave,
-  throwPie,
-  pieUnlocked,
+  setTarget,
+  specCost,
+  specsUnlocked,
   stars as starsOf,
   stepGame,
+  throwPie,
   towerAt,
+  towerCost,
+  towerStats,
   upgrade,
   upgradeCost,
+  type EnemyKind,
   type Game,
+  type GameEvent,
   type Level,
   type StoryLine,
-  type TowerKind,
+  type TargetMode,
+  type Tower,
 } from "./engine";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
+import { enemyIcon, img, towerIcon } from "./icons";
 import * as sfx from "./sound";
-import { isUnlocked, load, recordStars, save } from "./store";
+import {
+  PERKS,
+  buyPerk,
+  freeStars,
+  isUnlocked,
+  load,
+  nextCost,
+  perksOf,
+  recordStars,
+  refundAll,
+  save,
+} from "./store";
+import { renderMap } from "./map";
 
-const $ = <T extends HTMLElement>(id: string) =>
-  document.getElementById(id) as T;
+const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const ui = {
   select: $<HTMLElement>("screen-select"),
@@ -41,15 +72,27 @@ const ui = {
   stage: $<HTMLElement>("stage"),
   panel: $<HTMLElement>("panel"),
   hudTitle: $<HTMLElement>("hud-title"),
+  hudPlace: $<HTMLElement>("hud-place"),
   hudGoodwill: $<HTMLElement>("hud-goodwill"),
   hudMarks: $<HTMLElement>("hud-marks"),
   hudWave: $<HTMLElement>("hud-wave"),
   btnLevels: $<HTMLButtonElement>("btn-levels"),
   btnSend: $<HTMLButtonElement>("btn-send"),
   btnPie: $<HTMLButtonElement>("btn-pie"),
+  pieRing: $<HTMLElement>("pie-ring"),
+  pieLabel: $<HTMLElement>("pie-label"),
+  btnHero: $<HTMLButtonElement>("btn-hero"),
+  heroFace: $<HTMLElement>("hero-face"),
+  heroHp: $<HTMLElement>("hero-hp"),
   btnSpeed: $<HTMLButtonElement>("btn-speed"),
   btnPause: $<HTMLButtonElement>("btn-pause"),
   btnSound: $<HTMLButtonElement>("btn-sound"),
+  banner: $<HTMLElement>("banner"),
+  bubble: $<HTMLElement>("bubble"),
+  bubbleFace: $<HTMLElement>("bubble-face"),
+  bubbleText: $<HTMLElement>("bubble-text"),
+  intro: $<HTMLElement>("intro"),
+  pausedNote: $<HTMLElement>("paused-note"),
   announce: $<HTMLElement>("announce"),
   dlgStory: $<HTMLDialogElement>("dlg-story"),
   storyCath: $<HTMLElement>("story-cath"),
@@ -62,9 +105,17 @@ const ui = {
   resultEyebrow: $<HTMLElement>("result-eyebrow"),
   resultTitle: $<HTMLElement>("result-title"),
   resultStars: $<HTMLElement>("result-stars"),
+  resultStats: $<HTMLElement>("result-stats"),
   resultNote: $<HTMLElement>("result-note"),
   resultPrimary: $<HTMLButtonElement>("result-primary"),
   resultSecondary: $<HTMLButtonElement>("result-secondary"),
+  btnBank: $<HTMLButtonElement>("btn-bank"),
+  bankStars: $<HTMLElement>("bank-stars"),
+  dlgBank: $<HTMLDialogElement>("dlg-bank"),
+  bankFree: $<HTMLElement>("bank-free"),
+  perks: $<HTMLUListElement>("perks"),
+  bankClose: $<HTMLButtonElement>("bank-close"),
+  bankRefund: $<HTMLButtonElement>("bank-refund"),
 };
 
 const NAMES: Record<StoryLine["who"], string> = {
@@ -75,22 +126,26 @@ const NAMES: Record<StoryLine["who"], string> = {
   sol: "Sol",
   narrator: "Marrow",
 };
-const cath = (expression: CathExpression) =>
-  cathSvg({ framing: "face", expression, animate: true });
+const cath = (expression: CathExpression) => cathSvg({ framing: "face", expression, animate: true });
 
 const data = load();
 ui.hostFace.innerHTML = cath("smirk");
+ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined" });
 
 let game: Game | null = null;
 let renderer: Renderer | null = null;
 let selected: { col: number; row: number } | null = null;
-let fast = false;
+let speed = 1;
 let paused = false;
+let aiming = false;
 let last = 0;
 let acc = 0;
 let raf = 0;
 let finished = false;
-let panelSig = "";
+let panelKey = "";
+let earlyCalls = 0;
+let bubbleTimer = 0;
+let bannerTimer = 0;
 
 function say(text: string): void {
   ui.announce.textContent = text;
@@ -98,71 +153,10 @@ function say(text: string): void {
 
 // ---- level select ----
 
-// Per-act banner: sky, rolling hills and one motif, all from a palette per act.
-const ACT_PALETTES: [string, string, string, string][] = [
-  ["#f6d7a7", "#e9a96b", "#7fa35a", "#5c7f43"],
-  ["#f3e3b0", "#e2c36e", "#8fae5d", "#6a8c47"],
-  ["#cfe6ee", "#9cc7d6", "#6d9f73", "#4f7f5c"],
-  ["#d9e7c4", "#b6d08c", "#7ea858", "#5a8540"],
-  ["#c8d7c0", "#9fb79a", "#5f8a62", "#44694a"],
-  ["#bfe0ea", "#86bfd2", "#c9b98a", "#a59866"],
-  ["#d8d2e2", "#b1a6c9", "#7d8f9a", "#5d6d78"],
-  ["#f2cfc4", "#e3998a", "#8a9a6a", "#687a4c"],
-  ["#d3d9e6", "#a4b0cc", "#77849a", "#56627a"],
-  ["#f7dc9a", "#eeb84f", "#b98a4a", "#8a6533"],
-];
-
-function actArt(n: number): string {
-  const [sky, glow, hill1, hill2] = ACT_PALETTES[(n - 1) % ACT_PALETTES.length]!;
-  const sun = 30 + ((n * 37) % 50);
-  const posts = Array.from({ length: 4 }, (_, i) => {
-    const x = 70 + i * 12 + ((n * 7 + i * 11) % 5);
-    return `<rect x="${x}" y="22" width="2" height="8" fill="${hill2}"/><circle cx="${x + 1}" cy="20" r="3.5" fill="${hill2}"/>`;
-  }).join("");
-  return `<svg class="act-art" viewBox="0 0 120 36" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><rect width="120" height="36" fill="${sky}"/><circle cx="${sun}" cy="14" r="8" fill="${glow}" opacity=".85"/><path d="M0 26 Q30 14 60 25 T120 22 V36 H0Z" fill="${hill1}"/><path d="M0 31 Q40 24 80 31 T120 29 V36 H0Z" fill="${hill2}"/>${posts}</svg>`;
-}
-
 function renderLevels(): void {
-  ui.levels.innerHTML = "";
-  let lastPlace = "";
-  let current: HTMLElement | null = null;
-  for (const lv of LEVELS) {
-    if (lv.place !== lastPlace) {
-      lastPlace = lv.place;
-      const h = document.createElement("li");
-      h.className = "act-head";
-      h.setAttribute("role", "presentation");
-      const n = Math.floor((lv.id - 1) / 10) + 1;
-      h.innerHTML = `${actArt(n)}<span class="act-num"></span><span class="act-place"></span>`;
-      h.querySelector(".act-num")!.textContent = `Act ${n}`;
-      h.querySelector(".act-place")!.textContent = lv.place;
-      ui.levels.append(h);
-    }
-    const unlocked = isUnlocked(data, lv.id);
-    const got = data.stars[String(lv.id)] ?? 0;
-    const li = document.createElement("li");
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "level" + (lv.id % 10 === 0 ? " level-boss" : "");
-    b.disabled = !unlocked;
-    b.dataset.level = String(lv.id);
-    b.innerHTML = `<span class="level-num">${lv.id}</span><span><span class="level-name"></span><span class="level-sub"></span></span><span class="level-stars"></span>`;
-    b.querySelector(".level-name")!.textContent = lv.name;
-    b.querySelector(".level-sub")!.textContent = unlocked
-      ? `${lv.waves.length} waves`
-      : "Clear the level before to unlock";
-    const st = b.querySelector(".level-stars") as HTMLElement;
-    st.textContent = unlocked ? "★".repeat(got) + "☆".repeat(3 - got) : "";
-    st.setAttribute("aria-label", `${got} of 3 stars`);
-    b.addEventListener("click", () => openLevel(lv));
-    li.append(b);
-    ui.levels.append(li);
-    if (unlocked && got === 0 && !current) current = b;
-  }
-  current?.scrollIntoView({ block: "center" });
+  ui.bankStars.textContent = String(freeStars(data));
+  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv));
 }
-
-// ---- story dialogs ----
 
 function showStory(lines: StoryLine[], place: string, done: () => void): void {
   let i = 0;
@@ -171,27 +165,25 @@ function showStory(lines: StoryLine[], place: string, done: () => void): void {
     ui.storyPlace.textContent = place;
     ui.storyWho.textContent = NAMES[line.who];
     ui.storyText.textContent = line.text;
-    ui.storyCath.hidden = line.who === "narrator";
     ui.storyCath.classList.toggle("letter", line.who !== "cath");
-    if (line.who === "cath")
-      ui.storyCath.innerHTML = cath(line.expression ?? "smirk");
-    else
-      ui.storyCath.textContent =
-        line.who === "narrator" ? "" : NAMES[line.who].charAt(0);
-    ui.storyNext.textContent = i === lines.length - 1 ? "Continue" : "Next";
+    ui.storyCath.dataset.who = line.who;
+    ui.storyCath.innerHTML = line.who === "cath" ? cath(line.expression ?? "smirk") : NAMES[line.who].charAt(0);
+    ui.storyNext.textContent = i === lines.length - 1 ? "Let's go" : "Next";
   };
   ui.storyNext.onclick = () => {
-    i++;
+    i += 1;
     if (i >= lines.length) {
       ui.dlgStory.close();
       done();
     } else show();
   };
+  if (lines.length === 0) {
+    done();
+    return;
+  }
   show();
   if (!ui.dlgStory.open) ui.dlgStory.showModal();
 }
-
-// ---- playing a level ----
 
 function openLevel(lv: Level): void {
   const start = () => startLevel(lv);
@@ -205,219 +197,637 @@ function openLevel(lv: Level): void {
 }
 
 function startLevel(lv: Level): void {
-  game = newGame(lv);
+  game = newGame(lv, perksOf(data));
   selected = null;
   finished = false;
   paused = false;
-  fast = false;
-  panelSig = "";
+  aiming = false;
+  speed = 1;
+  panelKey = "";
+  earlyCalls = 0;
   ui.select.hidden = true;
   ui.play.hidden = false;
   ui.hudTitle.textContent = `${lv.id}. ${lv.name}`;
+  ui.hudPlace.textContent = lv.place;
   renderer ??= new Renderer(ui.canvas);
+  renderer.reset();
   renderer.selected = null;
+  renderer.heroSelected = false;
+  renderer.aim = null;
   renderer.cursor = { col: 0, row: 0 };
+  hideBubble();
+  ui.intro.hidden = true;
   syncControls();
   renderer.resize(game);
   updateHud();
-  renderPanel();
+  renderPanel(true);
   cancelAnimationFrame(raf);
   last = performance.now();
   acc = 0;
   raf = requestAnimationFrame(frame);
+  sfx.startMusic(Math.floor((lv.id - 1) / 10));
+  sfx.setIntensity(0);
+  levelTips(lv);
 }
 
 function leaveLevel(): void {
   cancelAnimationFrame(raf);
+  sfx.stopMusic();
   game = null;
   ui.play.hidden = true;
   ui.select.hidden = false;
+  hideBubble();
   renderLevels();
 }
 
-function syncControls(): void {
-  ui.btnSpeed.textContent = fast ? "x2" : "x1";
-  ui.btnSpeed.setAttribute("aria-pressed", String(fast));
-  ui.btnSound.textContent = sfx.isMuted() ? "Sound off" : "Sound on";
-  ui.btnSound.setAttribute("aria-pressed", String(!sfx.isMuted()));
-  ui.btnPause.textContent = paused ? "Resume" : "Pause";
-  ui.btnPause.setAttribute("aria-pressed", String(paused));
-  if (!game) return;
-  ui.btnPie.hidden = !pieUnlocked(game.level);
-  ui.btnPie.disabled = game.phase !== "wave" || game.pieCd > 0;
-  ui.btnPie.textContent =
-    game.pieCd > 0 ? `Pie ${Math.ceil(game.pieCd)}s` : "Cath's pie";
-  const more = game.wave < game.level.waves.length;
-  ui.btnSend.disabled = game.phase !== "build" || !more;
-  ui.btnSend.textContent =
-    game.phase === "wave"
-      ? `Wave ${game.wave} running`
-      : more
-        ? `Send wave ${game.wave + 1}`
-        : "All waves sent";
+// ---- Cath's tips ----
+
+function tip(id: string, text: string, expression: CathExpression = "smirk", force = false): void {
+  if (!force && data.tips[id]) return;
+  data.tips[id] = true;
+  save(data);
+  ui.bubbleFace.innerHTML = cath(expression);
+  ui.bubbleText.textContent = text;
+  ui.bubble.hidden = false;
+  ui.bubble.classList.remove("pop");
+  void ui.bubble.offsetWidth;
+  ui.bubble.classList.add("pop");
+  say(`Cath: ${text}`);
+  clearTimeout(bubbleTimer);
+  bubbleTimer = window.setTimeout(hideBubble, Math.max(4000, text.length * 70));
 }
 
+function hideBubble(): void {
+  ui.bubble.hidden = true;
+}
+
+function levelTips(lv: Level): void {
+  if (lv.id === 1)
+    tip("build", "Tap a plot beside the lane to build. Hedges slow them down; scarecrows throw turnips.", "wink");
+  else if (lv.id === 2)
+    tip("hero", "I'm in the lane too. Tap the lane to send me somewhere: I hold two at a time. Drones fly over me.", "determined");
+  else if (lv.id === PIE_FIRST_LEVEL)
+    tip("pie", "Pies are out of the oven. Tap the pie, then tap where it should land.", "delighted");
+  else if (lv.id === SPEC_FIRST_LEVEL)
+    tip("spec", "Grow a tower to tier three and it can specialise. Two choices each, and they change everything.", "smirk");
+}
+
+// ---- HUD and controls ----
+
+function syncControls(): void {
+  ui.btnSpeed.textContent = `x${speed}`;
+  ui.btnSpeed.setAttribute("aria-pressed", String(speed > 1));
+  ui.btnSpeed.setAttribute("aria-label", `Game speed x${speed}`);
+  ui.btnSound.setAttribute("aria-pressed", String(!sfx.isMuted()));
+  ui.btnSound.classList.toggle("muted", sfx.isMuted());
+  ui.btnSound.setAttribute("aria-label", sfx.isMuted() ? "Sound off" : "Sound on");
+  ui.btnPause.setAttribute("aria-pressed", String(paused));
+  ui.btnPause.setAttribute("aria-label", paused ? "Resume" : "Pause");
+  ui.pausedNote.hidden = !paused;
+  if (!game) return;
+  const g = game;
+  ui.btnPie.hidden = !pieUnlocked(g.level);
+  ui.btnPie.disabled = g.phase !== "wave" || g.pieCd > 0 || g.enemies.length === 0;
+  ui.btnPie.setAttribute("aria-pressed", String(aiming));
+  ui.btnPie.classList.toggle("ready", !ui.btnPie.disabled);
+  ui.pieLabel.textContent = g.pieCd > 0 ? `Pie ${Math.ceil(g.pieCd)}s` : aiming ? "Aim" : "Pie";
+  const cdFrac = g.pieCd > 0 ? g.pieCd / 30 : 0;
+  ui.pieRing.style.setProperty("--cd", String(Math.min(1, cdFrac)));
+  const h = g.hero;
+  ui.btnHero.setAttribute("aria-pressed", String(!!renderer?.heroSelected));
+  ui.btnHero.classList.toggle("down", h.down > 0);
+  ui.heroHp.style.setProperty("--hp", String(h.down > 0 ? 0 : h.hp / h.maxHp));
+  ui.btnHero.setAttribute(
+    "aria-label",
+    h.down > 0 ? `Cath is catching her breath, back in ${Math.ceil(h.down)} seconds` : `Cath, ${Math.round(h.hp)} of ${h.maxHp} health. Select to move her.`,
+  );
+  const more = g.wave < g.level.waves.length;
+  const early = canCallEarly(g);
+  ui.btnSend.disabled = !(g.phase === "build" && more) && !early;
+  ui.btnSend.classList.toggle("early", early);
+  ui.btnSend.textContent =
+    g.phase === "build" && more
+      ? `Send wave ${g.wave + 1}`
+      : early
+        ? `Call wave ${g.wave + 1} early +${earlyBonus(g)}`
+        : g.phase === "wave"
+          ? `Wave ${g.wave} on the lane`
+          : "All waves sent";
+}
+
+const shown = { goodwill: -1, marks: -1, wave: "" };
 function updateHud(): void {
   if (!game) return;
-  ui.hudGoodwill.textContent = String(game.goodwill);
-  ui.hudMarks.textContent = String(game.marks);
-  ui.hudWave.textContent = `${game.wave}/${game.level.waves.length}`;
+  const g = game;
+  if (g.goodwill !== shown.goodwill) {
+    if (shown.goodwill > g.goodwill) bump(ui.hudGoodwill.parentElement!, "hurt");
+    ui.hudGoodwill.textContent = String(g.goodwill);
+    shown.goodwill = g.goodwill;
+  }
+  if (g.marks !== shown.marks) {
+    if (shown.marks >= 0 && g.marks > shown.marks) bump(ui.hudMarks.parentElement!, "gain");
+    ui.hudMarks.textContent = String(g.marks);
+    shown.marks = g.marks;
+    refreshAffordability();
+  }
+  const w = `${g.wave}/${g.level.waves.length}`;
+  if (w !== shown.wave) {
+    ui.hudWave.textContent = w;
+    shown.wave = w;
+  }
   syncControls();
   renderPanel();
 }
 
-function renderPanel(): void {
+function bump(el: HTMLElement, cls: string): void {
+  el.classList.remove("gain", "hurt");
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
+// ---- the panel: build menu, tower card or wave preview ----
+
+function refreshAffordability(): void {
   if (!game) return;
+  for (const b of ui.panel.querySelectorAll<HTMLButtonElement>("button[data-cost]")) {
+    const cost = Number(b.dataset.cost);
+    const locked = b.dataset.locked === "1";
+    b.disabled = locked || game.marks < cost;
+  }
+}
+
+function waveSummary(groups: Level["waves"][number]): Array<{ kind: EnemyKind; count: number }> {
+  const m = new Map<EnemyKind, number>();
+  for (const g of groups) m.set(g.enemy, (m.get(g.enemy) ?? 0) + g.count);
+  return [...m].map(([kind, count]) => ({ kind, count }));
+}
+
+function renderPanel(force = false): void {
+  if (!game) return;
+  const g = game;
   const sel = selected;
-  const t = sel ? towerAt(game, sel.col, sel.row) : undefined;
-  const sig = [sel?.col, sel?.row, t?.id, t?.tier, game.marks, game.phase].join(
-    "|",
-  );
-  if (sig === panelSig) return;
-  panelSig = sig;
+  const t = sel ? towerAt(g, sel.col, sel.row) : undefined;
+  const key = [sel?.col, sel?.row, t?.id, t?.tier, t?.target, g.wave, g.phase, renderer?.heroSelected, aiming].join("|");
+  if (!force && key === panelKey) return;
+  panelKey = key;
   const p = ui.panel;
   p.innerHTML = "";
-  const line = (text: string, cls = "") => {
-    const el = document.createElement("p");
-    el.textContent = text;
-    if (cls) el.className = cls;
-    p.append(el);
-  };
+  p.className = "panel";
+  if (renderer) renderer.preview = null;
+
+  if (aiming) {
+    p.append(line(`Tap where the pie should land. It freezes everything it hits for 3 seconds. Tap the pie again to aim at the front of the queue.`));
+    return;
+  }
+  if (renderer?.heroSelected) {
+    p.append(line("Tap anywhere on the field to send Cath there. In the lane she holds two vehicles at a time; drones and bosses get past her."));
+    return;
+  }
   if (!sel) {
-    line("Tap a plot beside the lane to build. The farmhouse is at the end.");
+    wavePreview(p, g);
     return;
   }
   if (t) {
-    const spec = TOWERS[t.kind];
-    line(
-      `${spec.name} ${"●".repeat(t.tier)}${"○".repeat(3 - t.tier)}`,
-      "panel-title",
-    );
-    (p.lastElementChild as HTMLElement).setAttribute(
-      "aria-label",
-      `${spec.name}, tier ${t.tier} of 3`,
-    );
-    const at = (i: number) => {
-      const dps = spec.damage[i]! / spec.cooldown[i]!;
-      const parts = [`range ${spec.range[i]}`];
-      if (spec.damage[i]) parts.push(`${dps.toFixed(1)} dmg/s`);
-      if (spec.slow[i]! < 1)
-        parts.push(`slows to ${Math.round(spec.slow[i]! * 100)}%`);
-      if (spec.buff)
-        parts.push(`+${Math.round((spec.buff[i]! - 1) * 100)}% damage nearby`);
-      if (spec.income) parts.push(`+${spec.income[i]} Marks a wave`);
-      return parts.join(", ");
+    towerCard(p, g, t);
+    return;
+  }
+  if (!isPlot(g.level, sel.col, sel.row)) {
+    p.append(line("That's the lane. Tap it again to send Cath there."));
+    return;
+  }
+  buildMenu(p, g, sel);
+}
+
+function line(text: string, cls = ""): HTMLParagraphElement {
+  const el = document.createElement("p");
+  el.textContent = text;
+  if (cls) el.className = cls;
+  return el;
+}
+
+function wavePreview(p: HTMLElement, g: Game): void {
+  p.classList.add("panel-preview");
+  const next = g.level.waves[g.wave];
+  const head = document.createElement("div");
+  head.className = "preview-head";
+  if (!next) {
+    head.append(line(g.phase === "wave" ? "Last wave on the lane. Hold them." : "", "preview-title"));
+    p.append(head);
+    return;
+  }
+  head.append(line(g.phase === "wave" ? `Coming next: wave ${g.wave + 1}` : `Wave ${g.wave + 1} of ${g.level.waves.length}`, "preview-title"));
+  p.append(head);
+  const row = document.createElement("ul");
+  row.className = "preview-row";
+  for (const { kind, count } of waveSummary(next)) {
+    const li = document.createElement("li");
+    li.className = "preview-chip" + (isBig(kind) ? " boss" : "");
+    li.append(img(enemyIcon(kind), "chip-icon"));
+    const label = document.createElement("span");
+    label.textContent = `${count} × ${ENEMIES[kind].name}`;
+    li.append(label);
+    row.append(li);
+  }
+  p.append(row);
+  if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Tap the lane to move Cath.", "hint"));
+}
+
+function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): void {
+  p.classList.add("panel-build");
+  const row = document.createElement("div");
+  row.className = "build-row";
+  const info = line("", "build-info");
+  for (const kind of g.level.towers) {
+    const spec = TOWERS[kind];
+    const cost = towerCost(g, kind);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn-build";
+    b.dataset.kind = kind;
+    b.dataset.cost = String(cost);
+    b.disabled = g.marks < cost;
+    b.setAttribute("aria-label", `${spec.name}, ${cost} Marks. ${spec.blurb}`);
+    b.append(img(towerIcon(kind), "build-icon"));
+    const name = document.createElement("span");
+    name.className = "build-name";
+    name.textContent = spec.name;
+    const price = document.createElement("span");
+    price.className = "build-cost";
+    price.textContent = String(cost);
+    b.append(name, price);
+    const show = () => {
+      info.textContent = `${spec.name}: ${spec.blurb}`;
+      if (renderer) renderer.preview = kind;
     };
-    line(
-      t.tier < 3
-        ? `Now: ${at(t.tier - 1)}. Next: ${at(t.tier)}.`
-        : `Now: ${at(2)}.`,
-      "panel-stats",
-    );
-    const row = document.createElement("div");
-    row.className = "panel-row";
-    const cost = upgradeCost(t);
+    b.addEventListener("pointerenter", show);
+    b.addEventListener("focus", show);
+    b.onclick = () => {
+      if (act(() => place(g, kind, sel.col, sel.row))) {
+        sfx.playBuild();
+        renderPanel(true);
+        if (g.level.id === 1 && g.towers.length === 1)
+          tip("send", "Lovely. When you're ready, send the wave. I'll be in the lane.", "delighted");
+      }
+    };
+    row.append(b);
+  }
+  info.textContent = "Pick something to plant here.";
+  p.append(row, info);
+}
+
+const TARGET_LABEL: Record<TargetMode, string> = { first: "First", last: "Last", strong: "Strongest", close: "Closest" };
+
+function towerCard(p: HTMLElement, g: Game, t: Tower): void {
+  p.classList.add("panel-tower");
+  const spec = TOWERS[t.kind];
+  const st = towerStats(t);
+  const head = document.createElement("div");
+  head.className = "tower-head";
+  head.append(img(towerIcon(t.kind, t.tier, t.spec ?? null), "tower-icon"));
+  const titles = document.createElement("div");
+  const name = t.tier === 4 && t.spec != null ? SPECIALISATIONS[t.kind][t.spec].name : spec.name;
+  const title = line(name, "panel-title");
+  title.setAttribute("aria-label", `${name}, tier ${t.tier} of 4`);
+  const pips = document.createElement("span");
+  pips.className = "pips";
+  pips.setAttribute("aria-hidden", "true");
+  pips.textContent = "★".repeat(t.tier) + "☆".repeat(4 - t.tier);
+  title.append(" ", pips);
+  titles.append(title, line(describeStats(st), "panel-stats"));
+  head.append(titles);
+  p.append(head);
+
+  if (st.damage > 0) {
+    const seg = document.createElement("div");
+    seg.className = "segmented";
+    seg.setAttribute("role", "group");
+    seg.setAttribute("aria-label", "Target");
+    for (const mode of TARGET_MODES) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = TARGET_LABEL[mode];
+      b.setAttribute("aria-pressed", String((t.target ?? "first") === mode));
+      b.onclick = () => {
+        setTarget(g, t.id, mode);
+        renderPanel(true);
+      };
+      seg.append(b);
+    }
+    p.append(seg);
+  }
+
+  const row = document.createElement("div");
+  row.className = "panel-row";
+  if (t.tier < 3) {
+    const cost = upgradeCost(t)!;
     const up = document.createElement("button");
     up.type = "button";
     up.className = "btn";
     up.id = "btn-upgrade";
-    up.textContent = cost === null ? "Fully grown" : `Upgrade (${cost} Marks)`;
-    up.disabled = cost === null || game.marks < cost;
+    up.dataset.cost = String(cost);
+    up.textContent = `Upgrade · ${cost}`;
+    up.disabled = g.marks < cost;
     up.onclick = () => {
-      if (act(() => upgrade(game!, t.id))) sfx.playUpgrade();
+      if (act(() => upgrade(g, t.id))) {
+        sfx.playUpgrade();
+        renderPanel(true);
+      }
     };
-    const sl = document.createElement("button");
-    sl.type = "button";
-    sl.className = "btn btn-quiet";
-    sl.id = "btn-sell";
-    sl.textContent = `Sell (+${sellValue(t)})`;
-    sl.onclick = () => {
-      if (act(() => sell(game!, t.id))) sfx.playSell();
-      selected = null;
-      if (renderer) renderer.selected = null;
-      panelSig = "";
-      renderPanel();
-    };
-    row.append(up, sl);
-    p.append(row);
-    return;
+    row.append(up);
+  } else if (t.tier === 3) {
+    const choices = document.createElement("div");
+    choices.className = "spec-row";
+    const open = specsUnlocked(g.level);
+    ([0, 1] as const).forEach((i) => {
+      const sp = SPECIALISATIONS[t.kind][i];
+      const cost = specCost(t, i)!;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = `spec spec-${i}`;
+      b.dataset.cost = String(cost);
+      b.dataset.locked = open ? "0" : "1";
+      b.disabled = !open || g.marks < cost;
+      b.append(img(towerIcon(t.kind, 4, i), "spec-icon"));
+      const txt = document.createElement("span");
+      txt.className = "spec-text";
+      const n = document.createElement("strong");
+      n.textContent = `${sp.name} · ${cost}`;
+      const d = document.createElement("small");
+      d.textContent = sp.blurb;
+      txt.append(n, d);
+      b.append(txt);
+      b.onclick = () => {
+        if (act(() => upgrade(g, t.id, i))) {
+          sfx.playUpgrade();
+          renderPanel(true);
+        }
+      };
+      choices.append(b);
+    });
+    p.append(choices);
+    if (!open) p.append(line(`Specialisations open at level ${SPEC_FIRST_LEVEL}.`, "hint"));
   }
-  if (!isPlot(game.level, sel.col, sel.row)) {
-    line("That is the lane. Build on the grass beside it.");
-    return;
-  }
-  const row = document.createElement("div");
-  row.className = "panel-row";
-  for (const kind of game.level.towers) {
-    const spec = TOWERS[kind];
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "btn btn-build";
-    b.dataset.kind = kind;
-    b.disabled = game.marks < spec.cost;
-    b.innerHTML = "<span></span><small></small>";
-    b.firstElementChild!.textContent = `${spec.name} (${spec.cost})`;
-    b.lastElementChild!.textContent = spec.blurb;
-    b.onclick = () => {
-      if (act(() => place(game!, kind as TowerKind, sel.col, sel.row)))
-        sfx.playBuild();
-    };
-    row.append(b);
-  }
+  const sl = document.createElement("button");
+  sl.type = "button";
+  sl.className = "btn btn-quiet";
+  sl.id = "btn-sell";
+  sl.textContent = `Sell +${sellValue(t)}`;
+  sl.onclick = () => {
+    if (act(() => sell(g, t.id))) sfx.playSell();
+    deselect();
+  };
+  row.append(sl);
   p.append(row);
+}
+
+function describeStats(st: ReturnType<typeof towerStats>): string {
+  const parts: string[] = [];
+  if (st.range) parts.push(`range ${st.range}`);
+  if (st.damage) parts.push(`${(st.damage / st.cooldown).toFixed(0)} damage a second`);
+  if (st.splash) parts.push("splash");
+  if (st.slow < 1) parts.push(`slows to ${Math.round(st.slow * 100)}%`);
+  if (st.thorns) parts.push(`thorns ${st.thorns}/s`);
+  if (st.poison) parts.push("poison");
+  if (st.sticky) parts.push("sticky honey");
+  if (st.knockback) parts.push("knockback");
+  if (st.crit) parts.push(`every ${st.crit.every}rd shot ×${st.crit.mult}`);
+  if (st.pierce) parts.push("ignores armour");
+  if (st.buff > 1) parts.push(`+${Math.round((st.buff - 1) * 100)}% to neighbours`);
+  if (st.aura > 1) parts.push(`+${Math.round((st.aura - 1) * 100)}% to every tower`);
+  if (st.income) parts.push(`+${st.income} Marks a wave`);
+  if (st.reveal > 1) parts.push(`reveals, +${Math.round((st.reveal - 1) * 100)}% damage taken`);
+  if (st.injunction) parts.push(`stops ${st.classAction ? "everything" : "bosses"} for ${st.injunction}s`);
+  if (st.mend) parts.push(`+${st.mend} Goodwill a wave`);
+  if (st.pieHaste) parts.push("faster pies");
+  if (st.cleanse) parts.push("cures charm");
+  return parts.join(" · ");
 }
 
 function act(fn: () => { ok: boolean; reason?: string }): boolean {
   const r = fn();
-  if (!r.ok && r.reason) say(r.reason);
-  panelSig = "";
+  if (!r.ok && r.reason) {
+    say(r.reason);
+    toast(r.reason);
+  }
   updateHud();
   return r.ok;
 }
 
+let toastTimer = 0;
+function toast(text: string): void {
+  ui.banner.textContent = text;
+  ui.banner.className = "banner small show";
+  clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => (ui.banner.className = "banner"), 1600);
+}
+
+function deselect(): void {
+  selected = null;
+  if (renderer) {
+    renderer.selected = null;
+    renderer.heroSelected = false;
+  }
+  renderPanel(true);
+  syncControls();
+}
+
 function select(col: number, row: number): void {
   if (!game || !renderer) return;
+  if (selected && selected.col === col && selected.row === row && !towerAt(game, col, row) && !isPlot(game.level, col, row)) {
+    // Second tap on the lane: send Cath.
+    sendCath(col + 0.5, row + 0.5);
+    return;
+  }
   selected = { col, row };
   renderer.selected = selected;
+  renderer.heroSelected = false;
   renderer.cursor = { col, row };
-  panelSig = "";
-  renderPanel();
+  renderPanel(true);
+  syncControls();
+}
+
+function sendCath(x: number, y: number): void {
+  if (!game) return;
+  if (act(() => moveHero(game!, x, y))) {
+    sfx.playMove();
+    deselect();
+  }
+}
+
+function startAim(): void {
+  if (!game || !renderer) return;
+  if (aiming) {
+    // Second press: throw at the front of the queue.
+    fire();
+    return;
+  }
+  aiming = true;
+  renderer.selected = null;
+  selected = null;
+  renderer.heroSelected = false;
+  renderPanel(true);
+  syncControls();
+}
+
+function fire(x?: number, y?: number): void {
+  if (!game || !renderer) return;
+  aiming = false;
+  renderer.aim = null;
+  if (act(() => throwPie(game!, x, y))) sfx.playPie();
+  renderPanel(true);
+  syncControls();
+}
+
+// ---- banners and enemy introductions ----
+
+function banner(text: string, sub = "", boss = false): void {
+  ui.banner.replaceChildren();
+  const big = document.createElement("strong");
+  big.textContent = text;
+  ui.banner.append(big);
+  if (sub) {
+    const s = document.createElement("span");
+    s.textContent = sub;
+    ui.banner.append(s);
+  }
+  ui.banner.className = `banner show${boss ? " boss" : ""}`;
+  clearTimeout(bannerTimer);
+  bannerTimer = window.setTimeout(() => (ui.banner.className = "banner"), boss ? 2600 : 1700);
+}
+
+function describeEnemy(kind: EnemyKind): string {
+  const e = ENEMIES[kind];
+  const bits: string[] = [];
+  if (isBig(kind)) bits.push("A boss: Cath can't hold it and pies only stun it half as long.");
+  if (e.flying) bits.push("Flies over Cath.");
+  if (e.armor) bits.push(`Armoured: shrugs off ${Math.round(e.armor * 100)}% of ordinary shots. Grain Silos go straight through.`);
+  if (e.stealth) bits.push("Invisible until a Radio Mast has it in range.");
+  if (e.charm) bits.push("Charms nearby towers into holding fire. A Clinic Tent cures it.");
+  if (e.jam) bits.push("Buries nearby towers in paperwork: they fire at half speed.");
+  if (e.heal) bits.push("Patches up anything beside it.");
+  if (e.splits) bits.push(`Breaks into ${e.splits.count} × ${ENEMIES[e.splits.kind].name}.`);
+  if (!bits.length) bits.push(e.speed >= 1.3 ? "Quick and flimsy." : "Slow, steady and very full of parcels.");
+  if (e.speed >= 1.3 && bits.length) bits.push("Fast.");
+  return bits.join(" ");
+}
+
+function introduce(kinds: EnemyKind[]): void {
+  const fresh = kinds.filter((k) => !data.seen[k]);
+  if (!fresh.length) return;
+  for (const k of fresh) data.seen[k] = true;
+  save(data);
+  const k = fresh[0]!;
+  ui.intro.replaceChildren();
+  ui.intro.append(img(enemyIcon(k), "intro-icon"));
+  const box = document.createElement("div");
+  const eb = document.createElement("p");
+  eb.className = "eyebrow";
+  eb.textContent = isBig(k) ? "Boss" : "New on the lane";
+  const n = document.createElement("strong");
+  n.textContent = ENEMIES[k].name;
+  const d = document.createElement("p");
+  d.textContent = describeEnemy(k);
+  box.append(eb, n, d);
+  ui.intro.append(box);
+  ui.intro.hidden = false;
+  ui.intro.classList.remove("pop");
+  void ui.intro.offsetWidth;
+  ui.intro.classList.add("pop");
+  say(`${ENEMIES[k].name}. ${describeEnemy(k)}`);
+  window.setTimeout(() => (ui.intro.hidden = true), 5200);
+}
+
+// ---- the loop ----
+
+function onEvents(g: Game, evs: GameEvent[]): void {
+  let shots = 0;
+  for (const ev of evs) {
+    switch (ev.type) {
+      case "shot":
+        if (shots++ < 2) sfx.playShot(ev.kind, !!ev.crit);
+        break;
+      case "kill":
+        sfx.playKill(isBig(ev.kind));
+        break;
+      case "leak":
+        sfx.playLeak();
+        if (g.goodwill <= g.maxGoodwill / 2 && g.goodwill > 0)
+          tip(`low-${g.level.id}`, "They're getting through! Hedges near the farmhouse, and send me to the end of the lane.", "worried", true);
+        break;
+      case "wave": {
+        sfx.playWave();
+        const groups = g.level.waves[ev.wave - 1] ?? [];
+        const kinds = waveSummary(groups).map((x) => x.kind);
+        const boss = kinds.find((k) => isBig(k));
+        if (boss) {
+          banner(ENEMIES[boss].name, "Boss incoming", true);
+          sfx.playBoss();
+        } else banner(`Wave ${ev.wave}`, ev.early ? `Called early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
+        introduce(kinds);
+        if (ev.early) earlyCalls += 1;
+        break;
+      }
+      case "cleared":
+        sfx.playCleared();
+        if (canCallEarlyHintable(g)) break;
+        break;
+      case "pie":
+        break;
+      case "swing":
+        sfx.playSwing();
+        break;
+      case "heroDown":
+        sfx.playHeroDown();
+        tip("down", "Oof. Give me a few seconds. They hit harder than they look.", "worried");
+        break;
+      case "heroUp":
+        break;
+      case "injunction":
+        sfx.playInjunction();
+        break;
+      case "split":
+        break;
+    }
+  }
+}
+
+function canCallEarlyHintable(g: Game): boolean {
+  return g.level.id <= 4 && canCallEarly(g);
 }
 
 function frame(now: number): void {
   raf = requestAnimationFrame(frame);
   if (!game || !renderer) return;
+  const g = game;
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   if (!paused && !ui.dlgStory.open && !ui.dlgResult.open) {
-    acc += dt * (fast ? 2 : 1);
+    acc += dt * speed;
     let stepped = false;
     while (acc >= STEP) {
       acc -= STEP;
-      stepGame(game);
+      stepGame(g);
       stepped = true;
     }
     if (stepped) {
-      const evs = drainEvents(game);
-      let shots = 0;
-      for (const ev of evs) {
-        if (ev.type === "shot") {
-          if (shots++ < 2) sfx.playShot(ev.kind);
-        } else if (ev.type === "kill") sfx.playKill();
-        else if (ev.type === "leak") sfx.playLeak();
-        else if (ev.type === "wave") sfx.playWave();
-        else if (ev.type === "pie") sfx.playPie();
-      }
-      renderer.feed(evs);
+      const evs = drainEvents(g);
+      onEvents(g, evs);
+      renderer.feed(evs, g);
       updateHud();
+      sfx.setIntensity(g.phase !== "wave" ? 0 : g.enemies.some((e) => isBig(e.kind)) ? 2 : 1);
+      if (canCallEarly(g) && g.level.id <= 3)
+        tip("early", "Feeling brave? Call the next wave early for bonus Marks.", "wink");
+      if (pieUnlocked(g.level) && g.pieCd === 0 && g.phase === "wave" && g.enemies.length > 3)
+        tip("pie-ready", "Pie's ready. Tap it, then tap the thick of them.", "delighted");
     }
   }
-  renderer.draw(game, dt);
-  if (!finished && (game.phase === "won" || game.phase === "lost")) {
+  renderer.draw(g, paused ? 0 : dt * Math.min(speed, 2));
+  if (!finished && (g.phase === "won" || g.phase === "lost")) {
     finished = true;
-    if (game.phase === "won") sfx.playWin();
+    sfx.setIntensity(0);
+    if (g.phase === "won") sfx.playWin();
     else sfx.playLose();
-    finish(game);
+    window.setTimeout(() => finish(g), 700);
   }
 }
 
@@ -443,19 +853,36 @@ const FINALE: StoryLine[] = [
 ];
 
 function finish(g: Game): void {
+  if (game !== g) return;
   const lv = g.level;
   const won = g.phase === "won";
   const n = starsOf(g);
   const idx = LEVELS.findIndex((l) => l.id === lv.id);
   const next = LEVELS[idx + 1];
-  ui.resultCath.innerHTML = cath(won ? "delighted" : "worried");
+  const before = data.stars[String(lv.id)] ?? 0;
+  ui.resultCath.innerHTML = cath(won ? (n === 3 ? "delighted" : "smirk") : "worried");
   ui.resultEyebrow.textContent = `${lv.place}: ${lv.name}`;
-  ui.resultTitle.textContent = won ? "The lane holds." : "They got through.";
-  ui.resultStars.textContent = won ? "★".repeat(n) + "☆".repeat(3 - n) : "";
+  ui.resultTitle.textContent = won ? (n === 3 ? "Not a scratch on the farmhouse." : "The lane holds.") : "They got through.";
+  ui.resultStars.replaceChildren();
+  if (won) {
+    for (let i = 0; i < 3; i++) {
+      const sEl = document.createElement("span");
+      sEl.className = `star${i < n ? " earned" : ""}`;
+      sEl.textContent = i < n ? "★" : "☆";
+      ui.resultStars.append(sEl);
+    }
+  }
   ui.resultStars.setAttribute("aria-label", won ? `${n} of 3 stars` : "");
+  const stats = [
+    `Goodwill kept ${g.goodwill}/${g.maxGoodwill}`,
+    `Cath's knockouts ${g.hero.kills}`,
+  ];
+  if (earlyCalls) stats.push(`Waves called early ${earlyCalls}`);
+  ui.resultStats.textContent = won ? stats.join(" · ") : `Reached wave ${g.wave} of ${lv.waves.length}`;
+  const gained = won ? Math.max(0, n - before) : 0;
   ui.resultNote.textContent = won
-    ? `${lv.reward}`
-    : "Regroup, rebuild and try again. Hedges slow them; scarecrows finish the job.";
+    ? `${lv.reward}${gained ? ` · +${gained} star${gained > 1 ? "s" : ""} for the Seed Bank.` : ""}`
+    : "Regroup and try again. Hedges slow them, scarecrows finish them, and Cath can hold the lane where it bends. Stars buy perks in the Seed Bank.";
   if (won) {
     recordStars(data, lv.id, n);
     ui.resultPrimary.textContent = next ? "Continue" : "Finale";
@@ -477,18 +904,118 @@ function finish(g: Game): void {
     ui.dlgResult.close();
     leaveLevel();
   };
+  ui.dlgResult.classList.toggle("lost", !won);
   ui.dlgResult.showModal();
 }
+
+// ---- the Seed Bank ----
+
+function renderBank(): void {
+  ui.bankFree.textContent = `${freeStars(data)} stars to spend. Earn more by clearing levels with three stars.`;
+  ui.perks.replaceChildren();
+  for (const p of PERKS) {
+    const rank = data.bank[p.id] ?? 0;
+    const li = document.createElement("li");
+    li.className = "perk";
+    const text = document.createElement("div");
+    const n = document.createElement("strong");
+    n.textContent = p.name;
+    const pips = document.createElement("span");
+    pips.className = "pips";
+    pips.textContent = "●".repeat(rank) + "○".repeat(p.costs.length - rank);
+    pips.setAttribute("aria-label", `rank ${rank} of ${p.costs.length}`);
+    const each = document.createElement("small");
+    each.textContent = `${p.each} per rank. ${p.blurb}`;
+    text.append(n, " ", pips, each);
+    const cost = nextCost(data, p.id);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn";
+    b.textContent = cost === null ? "Full" : `★ ${cost}`;
+    b.disabled = cost === null || cost > freeStars(data);
+    b.setAttribute("aria-label", cost === null ? `${p.name}: fully grown` : `Buy ${p.name} rank ${rank + 1} for ${cost} stars`);
+    b.onclick = () => {
+      if (buyPerk(data, p.id)) sfx.playUpgrade();
+      renderBank();
+      ui.bankStars.textContent = String(freeStars(data));
+    };
+    li.append(text, b);
+    ui.perks.append(li);
+  }
+}
+
+ui.btnBank.addEventListener("click", () => {
+  renderBank();
+  ui.dlgBank.showModal();
+});
+ui.bankClose.addEventListener("click", () => ui.dlgBank.close());
+ui.bankRefund.addEventListener("click", () => {
+  refundAll(data);
+  renderBank();
+  ui.bankStars.textContent = String(freeStars(data));
+});
 
 // ---- input ----
 
 ui.canvas.addEventListener("click", (e) => {
   if (!game || !renderer) return;
+  sfx.unlock();
+  const w = renderer.worldAt(e.clientX, e.clientY);
+  if (aiming) {
+    fire(w.x, w.y);
+    return;
+  }
+  if (renderer.heroSelected) {
+    sendCath(w.x, w.y);
+    return;
+  }
+  if (renderer.onHero(e.clientX, e.clientY, game) && game.hero.down === 0) {
+    selectHero();
+    return;
+  }
   const c = renderer.cellAt(e.clientX, e.clientY, game);
-  if (c) select(c.col, c.row);
+  if (!c) {
+    deselect();
+    return;
+  }
+  // Tapping the lane sends Cath straight there.
+  if (laneCells(game.level.path).has(`${c.col},${c.row}`)) {
+    sendCath(w.x, w.y);
+    return;
+  }
+  if (selected && selected.col === c.col && selected.row === c.row) {
+    deselect();
+    return;
+  }
+  select(c.col, c.row);
 });
+ui.canvas.addEventListener("pointermove", (e) => {
+  if (!game || !renderer || !aiming) return;
+  const w = renderer.worldAt(e.clientX, e.clientY);
+  renderer.aim = { x: w.x, y: w.y, r: pieRadius(game) };
+});
+ui.canvas.addEventListener("pointerleave", () => {
+  if (renderer && aiming) renderer.aim = null;
+});
+
+function selectHero(): void {
+  if (!game || !renderer) return;
+  if (game.hero.down > 0) {
+    say("Cath is catching her breath.");
+    return;
+  }
+  renderer.heroSelected = !renderer.heroSelected;
+  renderer.selected = null;
+  selected = null;
+  aiming = false;
+  renderer.aim = null;
+  renderPanel(true);
+  syncControls();
+}
+
 ui.canvas.addEventListener("keydown", (e) => {
   if (!game || !renderer) return;
+  const g = game;
   const cur = renderer.cursor ?? { col: 0, row: 0 };
   const d: Record<string, [number, number]> = {
     ArrowLeft: [-1, 0],
@@ -500,30 +1027,46 @@ ui.canvas.addEventListener("keydown", (e) => {
   if (m) {
     e.preventDefault();
     renderer.cursor = {
-      col: Math.min(game.level.cols - 1, Math.max(0, cur.col + m[0])),
-      row: Math.min(game.level.rows - 1, Math.max(0, cur.row + m[1])),
+      col: Math.min(g.level.cols - 1, Math.max(0, cur.col + m[0])),
+      row: Math.min(g.level.rows - 1, Math.max(0, cur.row + m[1])),
     };
-    say(`Column ${renderer.cursor.col + 1}, row ${renderer.cursor.row + 1}`);
+    if (aiming) renderer.aim = { x: renderer.cursor.col + 0.5, y: renderer.cursor.row + 0.5, r: pieRadius(g) };
+    const lane = laneCells(g.level.path).has(`${renderer.cursor.col},${renderer.cursor.row}`);
+    const tw = towerAt(g, renderer.cursor.col, renderer.cursor.row);
+    say(`Column ${renderer.cursor.col + 1}, row ${renderer.cursor.row + 1}: ${tw ? TOWERS[tw.kind].name : lane ? "lane" : "empty plot"}`);
   } else if (e.key === "Enter" || e.key === " ") {
     e.preventDefault();
-    select(cur.col, cur.row);
+    if (aiming) fire(cur.col + 0.5, cur.row + 0.5);
+    else if (renderer.heroSelected) sendCath(cur.col + 0.5, cur.row + 0.5);
+    else if (laneCells(g.level.path).has(`${cur.col},${cur.row}`)) sendCath(cur.col + 0.5, cur.row + 0.5);
+    else select(cur.col, cur.row);
   } else if (e.key === "Escape") {
-    selected = null;
-    renderer.selected = null;
-    panelSig = "";
-    renderPanel();
+    aiming = false;
+    renderer.aim = null;
+    deselect();
+  } else if (e.key === "c" || e.key === "C") {
+    selectHero();
+  } else if (e.key === "p" || e.key === "P") {
+    if (!ui.btnPie.disabled) startAim();
+  } else if (e.key === "n" || e.key === "N") {
+    ui.btnSend.click();
   }
 });
 ui.btnSend.addEventListener("click", () => {
   if (!game) return;
+  sfx.unlock();
   act(() => sendWave(game!));
 });
 ui.btnPie.addEventListener("click", () => {
-  if (!game) return;
-  act(() => throwPie(game!));
+  sfx.unlock();
+  startAim();
+});
+ui.btnHero.addEventListener("click", () => {
+  sfx.unlock();
+  selectHero();
 });
 ui.btnSpeed.addEventListener("click", () => {
-  fast = !fast;
+  speed = speed === 1 ? 2 : speed === 2 ? 3 : 1;
   syncControls();
 });
 ui.btnSound.addEventListener("click", () => {
@@ -537,6 +1080,12 @@ ui.btnPause.addEventListener("click", () => {
 ui.btnLevels.addEventListener("click", leaveLevel);
 window.addEventListener("resize", () => {
   if (game && renderer) renderer.resize(game);
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && game && game.phase === "wave") {
+    paused = true;
+    syncControls();
+  }
 });
 
 renderLevels();

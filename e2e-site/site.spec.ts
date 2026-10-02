@@ -179,6 +179,16 @@ test.describe('Runnel', () => {
   })
 })
 
+const PLOT6: [number, number] = [0, 1]
+
+/** Hedgerow's canvas geometry (render.ts `resize`): returns a function giving the page point at a cell's centre. */
+function hedgerowCell(box: { x: number; y: number; width: number; height: number }, cols: number, rows: number) {
+  const cell = Math.floor(Math.min(box.width / (cols + 0.3), box.height / (rows + 0.6)))
+  const offX = Math.floor((box.width - cell * cols) / 2)
+  const offY = Math.floor((box.height - cell * rows) / 2 + cell * 0.15)
+  return (c: number, r: number): [number, number] => [box.x + offX + (c + 0.5) * cell, box.y + offY + (r + 0.5) * cell]
+}
+
 test.describe('Hedgerow', () => {
   test('story, build a scarecrow, send a wave', async ({ page }) => {
     const errors = trackErrors(page)
@@ -191,14 +201,16 @@ test.describe('Hedgerow', () => {
     await expect(page.locator('#btn-pie')).toBeHidden()
     // Tap a plot beside the lane (column 0, row 0 is grass in level 1).
     const box = (await page.locator('#canvas').boundingBox())!
-    const cell = Math.floor(Math.min(box.width / 6, box.height / 7))
-    const offX = Math.floor((box.width - cell * 6) / 2)
-    const offY = Math.floor((box.height - cell * 7) / 2)
-    await page.mouse.click(box.x + offX + cell * 0.5, box.y + offY + cell * 0.5)
+    const at = hedgerowCell(box, 6, 7)
+    await page.mouse.click(...at(0, 0))
     await page.locator('button.btn-build[data-kind="scarecrow"]').click()
     await expect(page.locator('#hud-marks')).toHaveText('130')
+    // Tapping the lane sends Cath there; the panel stays on the wave preview.
+    await page.mouse.click(...at(2, 1))
+    await expect(page.locator('#panel')).toContainText('Wave 1 of 5')
     await page.locator('#btn-send').click()
     await expect(page.locator('#hud-wave')).toHaveText('1/5')
+    await expect(page.locator('#banner')).toContainText('Wave 1')
     await noSideways(page)
     await assertNoSeriousIssues(page)
     expect(errors).toEqual([])
@@ -212,9 +224,47 @@ test.describe('Hedgerow', () => {
     await expect(page.locator('#btn-pie')).toBeDisabled()
     await page.locator('#btn-send').click()
     await expect(page.locator('#btn-pie')).toBeEnabled({ timeout: 8000 })
+    // First tap aims; the second throws at the front of the queue.
     await page.locator('#btn-pie').click()
-    await expect(page.locator('#btn-pie')).toContainText('Pie 4')
+    await expect(page.locator('#btn-pie')).toHaveAttribute('aria-pressed', 'true')
+    await page.locator('#btn-pie').click()
+    await expect(page.locator('#btn-pie')).toContainText(/Pie \d+s/)
+    await expect(page.locator('#btn-pie')).toBeDisabled()
     await noSideways(page)
+  })
+
+  test('a tower grows to tier 3 and specialises from level 6', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.goto('/hedgerow/')
+    const stars: Record<string, number> = {}
+    for (let i = 1; i <= 5; i++) stars[String(i)] = 3
+    await page.evaluate((stars) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars, seenBefore: { '6': true }, tips: { spec: true } })), stars)
+    await page.reload()
+    await page.locator('button.level[data-level="6"]').click()
+    const box = (await page.locator('#canvas').boundingBox())!
+    // Level 6 is 6x8; PLOT is its first buildable cell.
+    await page.mouse.click(...hedgerowCell(box, 6, 8)(PLOT6[0], PLOT6[1]))
+    await expect(page.locator('#panel')).toContainText('Scarecrow')
+    await page.locator('button.btn-build[data-kind="scarecrow"]').click()
+    await page.locator('#btn-upgrade').click()
+    await page.locator('#btn-upgrade').click()
+    await expect(page.locator('button.spec')).toHaveCount(2)
+    await expect(page.locator('#panel')).toContainText('Pumpkin Lobber')
+    await expect(page.locator('#panel')).toContainText('Crow Caller')
+    expect(errors).toEqual([])
+  })
+
+  test('the Seed Bank spends stars on perks', async ({ page }) => {
+    await page.goto('/hedgerow/')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars: { '1': 3, '2': 3 }, seenBefore: {} })))
+    await page.reload()
+    await expect(page.locator('#bank-stars')).toHaveText('6')
+    await page.locator('#btn-bank').click()
+    await page.getByRole('button', { name: /Buy Deep Pockets rank 1/ }).click()
+    await expect(page.locator('#bank-free')).toContainText('5 stars')
+    await page.locator('#bank-close').click()
+    await expect(page.locator('#bank-stars')).toHaveText('5')
+    await assertNoSeriousIssues(page)
   })
 
   test('keeps progress in localStorage', async ({ page }) => {

@@ -221,6 +221,8 @@ export interface EnemySpec {
   heal?: number;
   /** Towers within this many cells of it fire at half rate (paperwork). */
   jam?: number;
+  /** Flies over the lane: Cath cannot hold it. */
+  flying?: boolean;
 }
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
@@ -232,7 +234,14 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     bounty: 150,
     leak: 5,
   },
-  drone: { name: "Delivery drone", hp: 35, speed: 1.8, bounty: 6, leak: 1 },
+  drone: {
+    name: "Delivery drone",
+    hp: 35,
+    speed: 1.8,
+    bounty: 6,
+    leak: 1,
+    flying: true,
+  },
   truck: {
     name: "0.99 price-war truck",
     hp: 150,
@@ -264,6 +273,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     bounty: 250,
     leak: 7,
     charm: 1.8,
+    flying: true,
   },
   bulldozer: {
     name: "Site-clearance bulldozer",
@@ -389,6 +399,296 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   },
 };
 
+// ---- tier 4: every tower branches into one of two specialisations ----
+
+export interface Specialisation {
+  name: string;
+  blurb: string;
+  cost: number;
+  range?: number;
+  damage?: number;
+  cooldown?: number;
+  slow?: number;
+  splash?: number;
+  buff?: number;
+  income?: number;
+  reveal?: number;
+  injunction?: number;
+  aura?: number;
+  /** Damage a second to everything in range, armour applies (Blackthorn). */
+  thorns?: number;
+  /** Every `every`-th shot lands for `mult` times the damage. */
+  crit?: { every: number; mult: number };
+  /** Everything hit keeps taking `dps` for `secs`. */
+  poison?: { dps: number; secs: number };
+  /** Everything hit is slowed to `factor` for `secs`. */
+  sticky?: { factor: number; secs: number };
+  /** Ordinary enemies hit are shoved this many cells back up the lane. */
+  knockback?: number;
+  /** The Injunction stops ordinary enemies too, not just bosses. */
+  classAction?: boolean;
+  /** Each one cuts the pie's cooldown by this fraction (down to 40%). */
+  pieHaste?: number;
+  /** Goodwill restored after every cleared wave. */
+  mend?: number;
+}
+
+export const SPEC_FIRST_LEVEL = 6;
+
+export const SPECIALISATIONS: Record<
+  TowerKind,
+  [Specialisation, Specialisation]
+> = {
+  hedgerow: [
+    {
+      name: "Blackthorn",
+      blurb: "Thorns like fish hooks. Everything in reach takes a steady scratching.",
+      cost: 150,
+      thorns: 14,
+      slow: 0.4,
+    },
+    {
+      name: "Bramble Maze",
+      blurb: "A tangle so dense the vans crawl at a quarter speed.",
+      cost: 140,
+      slow: 0.25,
+      range: 2.1,
+    },
+  ],
+  scarecrow: [
+    {
+      name: "Pumpkin Lobber",
+      blurb: "Swaps turnips for prize pumpkins. They burst over a crowd.",
+      cost: 200,
+      damage: 36,
+      cooldown: 0.85,
+      splash: 0.95,
+    },
+    {
+      name: "Crow Caller",
+      blurb: "Long sight, quick hands, and every third throw brings the crows down too.",
+      cost: 210,
+      damage: 24,
+      cooldown: 0.42,
+      range: 3.7,
+      crit: { every: 3, mult: 3 },
+    },
+  ],
+  beehive: [
+    {
+      name: "Killer Queen",
+      blurb: "An ill-tempered queen. Stings keep burning for three seconds.",
+      cost: 230,
+      damage: 20,
+      poison: { dps: 12, secs: 3 },
+    },
+    {
+      name: "Honey Trap",
+      blurb: "The swarm drips honey. Whatever it stings is stuck in it.",
+      cost: 220,
+      splash: 1.5,
+      damage: 16,
+      sticky: { factor: 0.55, secs: 1.6 },
+    },
+  ],
+  stall: [
+    {
+      name: "Farmers' Market",
+      blurb: "A proper Saturday market. Takes a fortune and cheers louder.",
+      cost: 200,
+      income: 55,
+      buff: 1.55,
+    },
+    {
+      name: "Pie Stand",
+      blurb: "Cath's pies, on sale. Every stand gets her next pie out of the oven sooner.",
+      cost: 180,
+      income: 30,
+      buff: 1.45,
+      pieHaste: 0.3,
+    },
+  ],
+  pond: [
+    {
+      name: "Goose Patrol",
+      blurb: "Geese. Nobody argues with geese. They peck hard and shove vans back up the lane.",
+      cost: 210,
+      damage: 22,
+      splash: 1.1,
+      knockback: 0.35,
+    },
+    {
+      name: "Lily Marsh",
+      blurb: "The pond spreads into a wide, sucking marsh.",
+      cost: 200,
+      slow: 0.4,
+      range: 2.7,
+    },
+  ],
+  barn: [
+    {
+      name: "Tractor Shed",
+      blurb: "The farmhands bring the tractor. Things get shunted.",
+      cost: 200,
+      damage: 26,
+      cooldown: 0.6,
+      knockback: 0.5,
+    },
+    {
+      name: "Haybale Wall",
+      blurb: "Round bales across the lane. Almost nothing gets through quickly.",
+      cost: 190,
+      slow: 0.2,
+      range: 2.0,
+    },
+  ],
+  silo: [
+    {
+      name: "Combine",
+      blurb: "One enormous blow that goes straight through any armour.",
+      cost: 280,
+      damage: 210,
+      cooldown: 1.8,
+    },
+    {
+      name: "Grain Elevator",
+      blurb: "Rains grain over a crowd, armour and all.",
+      cost: 270,
+      damage: 120,
+      splash: 1.1,
+    },
+  ],
+  mast: [
+    {
+      name: "Pirate Radio",
+      blurb: "Sol goes live. Everything in range is exposed, and takes far more damage.",
+      cost: 180,
+      reveal: 1.75,
+      range: 3.1,
+    },
+    {
+      name: "Emergency Siren",
+      blurb: "A wailing siren. Drivers in range slow down and get marked.",
+      cost: 170,
+      reveal: 1.4,
+      slow: 0.7,
+    },
+  ],
+  tent: [
+    {
+      name: "Field Hospital",
+      blurb: "Ines runs a real ward. Neighbours fight harder and a Goodwill is restored after every wave.",
+      cost: 200,
+      buff: 1.4,
+      mend: 1,
+    },
+    {
+      name: "Tea Urn",
+      blurb: "A tea urn the size of a tractor. Every tower near it is fired up.",
+      cost: 190,
+      buff: 1.55,
+      range: 2.9,
+    },
+  ],
+  court: [
+    {
+      name: "High Court",
+      blurb: "Mara takes it to the High Court. Longer injunctions, served more often.",
+      cost: 260,
+      injunction: 6.5,
+      cooldown: 5.5,
+    },
+    {
+      name: "Class Action",
+      blurb: "Everyone in range is named in the suit: bosses and drivers alike stop dead.",
+      cost: 250,
+      injunction: 3.5,
+      classAction: true,
+    },
+  ],
+  hall: [
+    {
+      name: "General Strike",
+      blurb: "The whole county downs tools against them. Every tower hits much harder.",
+      cost: 320,
+      aura: 1.38,
+    },
+    {
+      name: "Co-op Bank",
+      blurb: "Tomas opens a bank that lends to farms. It pays out handsomely after every wave.",
+      cost: 300,
+      income: 85,
+    },
+  ],
+};
+
+export interface TowerStats {
+  range: number;
+  damage: number;
+  cooldown: number;
+  slow: number;
+  splash: number;
+  buff: number;
+  income: number;
+  reveal: number;
+  injunction: number;
+  aura: number;
+  pierce: boolean;
+  cleanse: boolean;
+  thorns: number;
+  crit: { every: number; mult: number } | null;
+  poison: { dps: number; secs: number } | null;
+  sticky: { factor: number; secs: number } | null;
+  knockback: number;
+  classAction: boolean;
+  pieHaste: number;
+  mend: number;
+}
+
+const statCache = new WeakMap<object, { key: string; stats: TowerStats }>();
+
+/** The numbers a tower fights with at its tier, and with its specialisation at tier 4. */
+export function towerStats(
+  t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null },
+): TowerStats {
+  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}`;
+  const hit = statCache.get(t);
+  if (hit && hit.key === key) return hit.stats;
+  const s = TOWERS[t.kind];
+  const i = Math.min(t.tier, 3) - 1;
+  const stats: TowerStats = {
+    range: s.range[i]!,
+    damage: s.damage[i]!,
+    cooldown: s.cooldown[i]!,
+    slow: s.slow[i]!,
+    splash: s.splash ?? 0,
+    buff: s.buff?.[i] ?? 1,
+    income: s.income?.[i] ?? 0,
+    reveal: s.reveal?.[i] ?? 1,
+    injunction: s.injunction?.[i] ?? 0,
+    aura: s.aura?.[i] ?? 1,
+    pierce: !!s.pierce,
+    cleanse: !!s.cleanse,
+    thorns: 0,
+    crit: null,
+    poison: null,
+    sticky: null,
+    knockback: 0,
+    classAction: false,
+    pieHaste: 0,
+    mend: 0,
+  };
+  if (t.tier === 4 && t.spec != null) {
+    const o: Partial<Specialisation> = { ...SPECIALISATIONS[t.kind][t.spec] };
+    delete o.name;
+    delete o.blurb;
+    delete o.cost;
+    Object.assign(stats, o);
+  }
+  statCache.set(t, { key, stats });
+  return stats;
+}
+
 export interface WaveGroup {
   enemy: EnemyKind;
   count: number;
@@ -422,12 +722,21 @@ export interface Level {
   reward: string;
 }
 
+export type TargetMode = "first" | "last" | "strong" | "close";
+export const TARGET_MODES: TargetMode[] = ["first", "last", "strong", "close"];
+
 export interface Tower {
   id: number;
   kind: TowerKind;
   col: number;
   row: number;
-  tier: 1 | 2 | 3;
+  tier: 1 | 2 | 3 | 4;
+  /** Which tier-4 specialisation it took (null below tier 4). */
+  spec?: 0 | 1 | null;
+  /** Which enemy in range it shoots at. */
+  target?: TargetMode;
+  /** Shots fired, for every-nth-shot crits. */
+  shots?: number;
   cd: number;
   spent: number;
 }
@@ -438,9 +747,78 @@ export interface Enemy {
   dist: number;
   hp: number;
   slowed: boolean;
-  /** Seconds left frozen in place (Cath's pie). */
+  /** Seconds left frozen in place (Cath's pie, an injunction). */
   stun: number;
+  /** The wave it came with (its bounty counts towards that wave's clear). */
+  wave?: number;
+  /** Poison: damage a second, and seconds left. */
+  poison?: number;
+  poisonLeft?: number;
+  /** Honey: speed factor, and seconds left. */
+  sticky?: number;
+  stickyLeft?: number;
+  /** Held up by Cath. */
+  held?: boolean;
 }
+
+/** Cath on the battlefield: she walks where she's told, holds up to two vehicles and whacks them. */
+export interface Hero {
+  x: number;
+  y: number;
+  tx: number;
+  ty: number;
+  hp: number;
+  maxHp: number;
+  damage: number;
+  cd: number;
+  /** Seconds until she's back on her feet (0 = up). */
+  down: number;
+  /** Ids of the enemies she is holding. */
+  holding: number[];
+  facing: 1 | -1;
+  kills: number;
+}
+
+export const HERO = {
+  hp: 150,
+  speed: 2.6,
+  reach: 0.62,
+  damage: 15,
+  cooldown: 0.6,
+  regen: 9,
+  respawn: 9,
+  holds: 2,
+};
+
+/** Seed Bank perks bought with stars between levels (store.ts). All neutral by default. */
+export interface Perks {
+  marks: number;
+  goodwill: number;
+  /** Multiplies the pie's cooldown. */
+  pieCooldown: number;
+  /** Multiplies the pie's radius. */
+  pieRadius: number;
+  heroHp: number;
+  heroDamage: number;
+  /** Fraction off every tower's price. */
+  discount: number;
+  /** Multiplies the bonus for calling a wave early. */
+  earlyBonus: number;
+  /** Multiplies hedgerow-type slows' strength (lower = stronger). */
+  slow: number;
+}
+
+export const NO_PERKS: Perks = {
+  marks: 0,
+  goodwill: 0,
+  pieCooldown: 1,
+  pieRadius: 1,
+  heroHp: 1,
+  heroDamage: 1,
+  discount: 0,
+  earlyBonus: 1,
+  slow: 1,
+};
 
 export type GameEvent =
   | {
@@ -452,11 +830,19 @@ export type GameEvent =
       fromY: number;
       toX: number;
       toY: number;
+      crit?: boolean;
+      spec?: 0 | 1 | null;
     }
-  | { type: "kill"; x: number; y: number; bounty: number }
-  | { type: "leak"; x: number; y: number }
-  | { type: "wave"; wave: number }
-  | { type: "pie" };
+  | { type: "kill"; x: number; y: number; bounty: number; kind: EnemyKind }
+  | { type: "leak"; x: number; y: number; kind?: EnemyKind; lost?: number }
+  | { type: "wave"; wave: number; early?: number }
+  | { type: "cleared"; wave: number; reward: number }
+  | { type: "pie"; x?: number; y?: number; radius?: number }
+  | { type: "swing"; x: number; y: number }
+  | { type: "heroDown" }
+  | { type: "heroUp" }
+  | { type: "injunction"; x: number; y: number }
+  | { type: "split"; x: number; y: number; kind: EnemyKind };
 
 export type Phase = "build" | "wave" | "won" | "lost";
 
@@ -468,8 +854,10 @@ export interface Game {
   goodwill: number;
   /** Waves sent so far. */
   wave: number;
+  /** Waves cleared and paid for. */
+  paid: number;
   waveClock: number;
-  spawnQueue: Array<{ at: number; kind: EnemyKind }>;
+  spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number }>;
   enemies: Enemy[];
   towers: Tower[];
   nextId: number;
@@ -477,6 +865,10 @@ export interface Game {
   events: GameEvent[];
   /** Seconds until Cath's pie is ready again. */
   pieCd: number;
+  hero: Hero;
+  perks: Perks;
+  /** Goodwill at the start, after perks: stars are measured against it. */
+  maxGoodwill: number;
 }
 
 export function pathLength(path: Level["path"]): number {
@@ -508,7 +900,28 @@ export function pointAt(
   return { x: last[0] + 0.5, y: last[1] + 0.5 };
 }
 
+/** Which way the lane runs at `dist`: unit x and y. */
+export function headingAt(
+  path: Level["path"],
+  dist: number,
+): { dx: number; dy: number } {
+  let left = Math.max(0, dist);
+  for (let i = 1; i < path.length; i++) {
+    const [ax, ay] = path[i - 1]!;
+    const [bx, by] = path[i]!;
+    const len = Math.abs(bx - ax) + Math.abs(by - ay);
+    if (left <= len || i === path.length - 1)
+      return { dx: Math.sign(bx - ax), dy: Math.sign(by - ay) };
+    left -= len;
+  }
+  return { dx: 1, dy: 0 };
+}
+
+const laneCache = new WeakMap<Level["path"], Set<string>>();
+
 export function laneCells(path: Level["path"]): Set<string> {
+  const hit = laneCache.get(path);
+  if (hit) return hit;
   const cells = new Set<string>();
   for (let i = 1; i < path.length; i++) {
     const [ax, ay] = path[i - 1]!;
@@ -524,6 +937,7 @@ export function laneCells(path: Level["path"]): Set<string> {
       cells.add(`${x},${y}`);
     }
   }
+  laneCache.set(path, cells);
   return cells;
 }
 
@@ -533,14 +947,24 @@ export function isPlot(level: Level, col: number, row: number): boolean {
   return !laneCells(level.path).has(`${col},${row}`);
 }
 
-export function newGame(level: Level): Game {
+/** Where Cath stands at the start: on the lane, two thirds of the way down. */
+export function heroPost(level: Level): { x: number; y: number } {
+  return pointAt(level.path, pathLength(level.path) * 0.66);
+}
+
+export function newGame(level: Level, perks: Perks = NO_PERKS): Game {
+  const post = heroPost(level);
+  const maxHp = Math.round(HERO.hp * perks.heroHp);
+  const goodwill = level.goodwill + perks.goodwill;
   return {
     level,
     tick: 0,
     phase: "build",
-    marks: level.startMarks,
-    goodwill: level.goodwill,
+    marks: level.startMarks + perks.marks,
+    goodwill,
+    maxGoodwill: goodwill,
     wave: 0,
+    paid: 0,
     waveClock: 0,
     spawnQueue: [],
     enemies: [],
@@ -549,6 +973,21 @@ export function newGame(level: Level): Game {
     pathLength: pathLength(level.path),
     events: [],
     pieCd: 0,
+    perks,
+    hero: {
+      x: post.x,
+      y: post.y,
+      tx: post.x,
+      ty: post.y,
+      hp: maxHp,
+      maxHp,
+      damage: HERO.damage * perks.heroDamage,
+      cd: 0,
+      down: 0,
+      holding: [],
+      facing: 1,
+      kills: 0,
+    },
   };
 }
 
@@ -564,8 +1003,21 @@ export function sellValue(tower: Tower): number {
   return Math.floor(tower.spent * 0.7);
 }
 
+export function towerCost(game: Game, kind: TowerKind): number {
+  return Math.round(TOWERS[kind].cost * (1 - game.perks.discount));
+}
+
+/** The price of the next tier (null at tier 3, where the two specialisations are priced separately, and at 4). */
 export function upgradeCost(tower: Tower): number | null {
   return tower.tier >= 3 ? null : TOWERS[tower.kind].upgrades[tower.tier - 1]!;
+}
+
+export function specCost(tower: Tower, spec: 0 | 1): number | null {
+  return tower.tier === 3 ? SPECIALISATIONS[tower.kind][spec].cost : null;
+}
+
+export function specsUnlocked(level: Level): boolean {
+  return level.id >= SPEC_FIRST_LEVEL;
 }
 
 export type ActionResult = { ok: true } | { ok: false; reason: string };
@@ -584,7 +1036,7 @@ export function place(
     return { ok: false, reason: "You can only build beside the lane." };
   if (towerAt(game, col, row))
     return { ok: false, reason: "That plot is taken." };
-  const cost = TOWERS[kind].cost;
+  const cost = towerCost(game, kind);
   if (game.marks < cost) return { ok: false, reason: `Needs ${cost} Marks.` };
   game.marks -= cost;
   game.towers.push({
@@ -593,17 +1045,37 @@ export function place(
     col,
     row,
     tier: 1,
+    spec: null,
+    target: "first",
+    shots: 0,
     cd: 0,
     spent: cost,
   });
   return { ok: true };
 }
 
-export function upgrade(game: Game, id: number): ActionResult {
+/** Upgrades a tower one tier. From tier 3 it needs `spec`: which of the two specialisations to take. */
+export function upgrade(game: Game, id: number, spec?: 0 | 1): ActionResult {
   const tower = game.towers.find((t) => t.id === id);
   if (!tower) return { ok: false, reason: "No such tower." };
-  const cost = upgradeCost(tower);
-  if (cost === null) return { ok: false, reason: "Already fully grown." };
+  if (tower.tier >= 4) return { ok: false, reason: "Already fully grown." };
+  if (tower.tier === 3) {
+    if (!specsUnlocked(game.level))
+      return {
+        ok: false,
+        reason: `Specialisations open at level ${SPEC_FIRST_LEVEL}.`,
+      };
+    if (spec !== 0 && spec !== 1)
+      return { ok: false, reason: "Choose a specialisation." };
+    const cost = SPECIALISATIONS[tower.kind][spec].cost;
+    if (game.marks < cost) return { ok: false, reason: `Needs ${cost} Marks.` };
+    game.marks -= cost;
+    tower.spent += cost;
+    tower.tier = 4;
+    tower.spec = spec;
+    return { ok: true };
+  }
+  const cost = upgradeCost(tower)!;
   if (game.marks < cost) return { ok: false, reason: `Needs ${cost} Marks.` };
   game.marks -= cost;
   tower.spent += cost;
@@ -619,26 +1091,81 @@ export function sell(game: Game, id: number): ActionResult {
   return { ok: true };
 }
 
-/** Starts the next wave. Only allowed between waves. */
-export function sendWave(game: Game): ActionResult {
-  if (game.phase !== "build")
-    return { ok: false, reason: "A wave is already on its way." };
-  const groups = game.level.waves[game.wave];
-  if (!groups) return { ok: false, reason: "No more waves." };
-  const queue: Game["spawnQueue"] = [];
-  for (const g of groups)
-    for (let i = 0; i < g.count; i++)
-      queue.push({ at: g.delay + i * g.gap, kind: g.enemy });
-  queue.sort((a, b) => a.at - b.at);
-  game.spawnQueue = queue;
-  game.waveClock = 0;
-  game.wave += 1;
-  game.phase = "wave";
-  game.events.push({ type: "wave", wave: game.wave });
+export function setTarget(
+  game: Game,
+  id: number,
+  mode: TargetMode,
+): ActionResult {
+  const tower = game.towers.find((t) => t.id === id);
+  if (!tower) return { ok: false, reason: "No such tower." };
+  tower.target = mode;
   return { ok: true };
 }
 
-/** An influencer's followers are watching it, not the road: towers in its charm range hold fire. */
+/** Marks for calling the next wave before the current one is cleared. */
+export function earlyBonus(game: Game): number {
+  return Math.round((12 + game.wave * 3) * game.perks.earlyBonus);
+}
+
+/** True while a wave is out but fully spawned and more waves remain: the next one can be called early. */
+export function canCallEarly(game: Game): boolean {
+  return (
+    game.phase === "wave" &&
+    game.spawnQueue.length === 0 &&
+    game.wave < game.level.waves.length
+  );
+}
+
+/** Starts the next wave: between waves, or early (for a bonus) once the current wave is all on the lane. */
+export function sendWave(game: Game): ActionResult {
+  if (game.phase === "won" || game.phase === "lost")
+    return { ok: false, reason: "The level is over." };
+  if (game.phase === "wave" && !canCallEarly(game))
+    return { ok: false, reason: "A wave is already on its way." };
+  const groups = game.level.waves[game.wave];
+  if (!groups) return { ok: false, reason: "No more waves." };
+  const early = game.phase === "wave" ? earlyBonus(game) : 0;
+  const wave = game.wave + 1;
+  const queue: Game["spawnQueue"] = [];
+  for (const g of groups)
+    for (let i = 0; i < g.count; i++)
+      queue.push({ at: g.delay + i * g.gap, kind: g.enemy, wave });
+  queue.sort((a, b) => a.at - b.at);
+  game.spawnQueue = queue;
+  game.waveClock = 0;
+  game.wave = wave;
+  game.phase = "wave";
+  game.marks += early;
+  game.events.push(
+    early ? { type: "wave", wave, early } : { type: "wave", wave },
+  );
+  return { ok: true };
+}
+
+/** Sends Cath somewhere on the map. She walks; she can't hold anything while she walks. */
+export function moveHero(game: Game, x: number, y: number): ActionResult {
+  if (game.phase === "won" || game.phase === "lost")
+    return { ok: false, reason: "The level is over." };
+  if (game.hero.down > 0)
+    return { ok: false, reason: "Cath is catching her breath." };
+  const cx = Math.min(game.level.cols - 0.3, Math.max(0.3, x));
+  const cy = Math.min(game.level.rows - 0.3, Math.max(0.3, y));
+  game.hero.tx = cx;
+  game.hero.ty = cy;
+  return { ok: true };
+}
+
+/** A big enemy: a boss. Bosses can't be held, are served injunctions and shrug off half a pie. */
+export function isBig(kind: EnemyKind): boolean {
+  return ENEMIES[kind].hp >= 1500;
+}
+
+/** How hard an enemy hits Cath while she holds it, in hit points a second. */
+export function enemyHit(kind: EnemyKind): number {
+  return Math.min(30, Math.max(5, ENEMIES[kind].hp / 14));
+}
+
+/** Lawyers' paperwork: towers in range fire at half rate. */
 function jammed(game: Game, t: Tower): boolean {
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].jam;
@@ -649,14 +1176,13 @@ function jammed(game: Game, t: Tower): boolean {
   return false;
 }
 
-function charmed(game: Game, t: Tower): boolean {
-  for (const c of game.towers)
-    if (
-      TOWERS[c.kind].cleanse &&
-      Math.hypot(c.col - t.col, c.row - t.row) <=
-        TOWERS[c.kind].range[c.tier - 1]!
-    )
+/** An influencer's followers are watching it, not the road: towers in its charm range hold fire. */
+export function charmed(game: Game, t: Tower): boolean {
+  for (const c of game.towers) {
+    const cs = towerStats(c);
+    if (cs.cleanse && Math.hypot(c.col - t.col, c.row - t.row) <= cs.range)
       return false;
+  }
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].charm;
     if (!r || e.hp <= 0) continue;
@@ -671,19 +1197,148 @@ export function markMultiplier(game: Game, e: Enemy): number {
   const p = pointAt(game.level.path, e.dist);
   let m = 1;
   for (const t of game.towers) {
-    const r = TOWERS[t.kind].reveal;
-    if (!r) continue;
-    if (
-      Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <=
-      TOWERS[t.kind].range[t.tier - 1]!
-    )
-      m = Math.max(m, r[t.tier - 1]!);
+    const s = towerStats(t);
+    if (s.reveal <= 1) continue;
+    if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= s.range)
+      m = Math.max(m, s.reveal);
   }
   return m;
 }
 
 export function isRevealed(game: Game, e: Enemy): boolean {
   return !ENEMIES[e.kind].stealth || markMultiplier(game, e) > 1;
+}
+
+function damageEnemy(
+  game: Game,
+  e: Enemy,
+  amount: number,
+  pierce: boolean,
+): void {
+  const armor = ENEMIES[e.kind].armor ?? 0;
+  e.hp -= (pierce ? amount : amount * (1 - armor)) * markMultiplier(game, e);
+}
+
+function stepHero(game: Game): void {
+  const h = game.hero;
+  const path = game.level.path;
+  if (h.down > 0) {
+    h.down = Math.max(0, h.down - STEP);
+    if (h.down === 0) {
+      h.hp = h.maxHp;
+      game.events.push({ type: "heroUp" });
+    }
+    return;
+  }
+  // Walking.
+  const dx = h.tx - h.x;
+  const dy = h.ty - h.y;
+  const d = Math.hypot(dx, dy);
+  if (d > 0.02) {
+    const stepLen = Math.min(d, HERO.speed * STEP);
+    h.x += (dx / d) * stepLen;
+    h.y += (dy / d) * stepLen;
+    if (Math.abs(dx) > 0.01) h.facing = dx > 0 ? 1 : -1;
+    h.holding = [];
+  } else {
+    // Holding: keep what's still in reach, then pick up more, furthest along first.
+    const byId = new Map(game.enemies.map((e) => [e.id, e]));
+    h.holding = h.holding.filter((id) => {
+      const e = byId.get(id);
+      if (!e || e.hp <= 0) return false;
+      const p = pointAt(path, e.dist);
+      return Math.hypot(p.x - h.x, p.y - h.y) <= HERO.reach + 0.25;
+    });
+    if (h.holding.length < HERO.holds) {
+      const near = game.enemies
+        .filter((e) => {
+          if (e.hp <= 0 || h.holding.includes(e.id)) return false;
+          const spec = ENEMIES[e.kind];
+          if (spec.flying || isBig(e.kind) || !isRevealed(game, e))
+            return false;
+          const p = pointAt(path, e.dist);
+          return Math.hypot(p.x - h.x, p.y - h.y) <= HERO.reach;
+        })
+        .sort((a, b) => b.dist - a.dist || a.id - b.id);
+      for (const e of near) {
+        if (h.holding.length >= HERO.holds) break;
+        h.holding.push(e.id);
+      }
+    }
+  }
+  for (const e of game.enemies) e.held = h.holding.includes(e.id);
+
+  // Held enemies hit back.
+  let hurt = 0;
+  for (const e of game.enemies) if (e.held) hurt += enemyHit(e.kind);
+  if (hurt > 0) h.hp -= hurt * STEP;
+  else h.hp = Math.min(h.maxHp, h.hp + HERO.regen * STEP);
+  if (h.hp <= 0) {
+    h.hp = 0;
+    h.down = HERO.respawn;
+    h.holding = [];
+    for (const e of game.enemies) e.held = false;
+    game.events.push({ type: "heroDown" });
+    return;
+  }
+
+  // Swinging the rolling pin at whatever she holds, or anything in reach.
+  h.cd -= STEP;
+  if (h.cd > 0) return;
+  let target = game.enemies.find((e) => e.held && e.hp > 0);
+  if (!target) {
+    let best = Infinity;
+    for (const e of game.enemies) {
+      if (e.hp <= 0 || !isRevealed(game, e)) continue;
+      const p = pointAt(path, e.dist);
+      const dd = Math.hypot(p.x - h.x, p.y - h.y);
+      if (dd <= HERO.reach + 0.15 && dd < best) {
+        best = dd;
+        target = e;
+      }
+    }
+  }
+  if (!target) {
+    h.cd = 0;
+    return;
+  }
+  const before = target.hp;
+  damageEnemy(game, target, h.damage, false);
+  if (before > 0 && target.hp <= 0) h.kills += 1;
+  const p = pointAt(path, target.dist);
+  h.facing = p.x >= h.x ? 1 : -1;
+  h.cd = HERO.cooldown;
+  game.events.push({ type: "swing", x: p.x, y: p.y });
+}
+
+function pickTarget(
+  game: Game,
+  t: Tower,
+  range: number,
+): Enemy | undefined {
+  const path = game.level.path;
+  const mode = t.target ?? "first";
+  let target: Enemy | undefined;
+  let best = -Infinity;
+  for (const e of game.enemies) {
+    if (e.hp <= 0 || !isRevealed(game, e)) continue;
+    const p = pointAt(path, e.dist);
+    const d = Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y);
+    if (d > range) continue;
+    const score =
+      mode === "first"
+        ? e.dist
+        : mode === "last"
+          ? -e.dist
+          : mode === "strong"
+            ? e.hp
+            : -d;
+    if (score > best) {
+      best = score;
+      target = e;
+    }
+  }
+  return target;
 }
 
 export function stepGame(game: Game): void {
@@ -705,26 +1360,34 @@ export function stepGame(game: Game): void {
       hp: ENEMIES[next.kind].hp,
       slowed: false,
       stun: 0,
+      wave: next.wave ?? game.wave,
     });
   }
 
-  // Hedgerows slow whatever is in range; the strongest one wins, they don't stack.
+  stepHero(game);
+
+  // Hedgerows slow whatever is in range; the strongest one wins, they don't stack. Honey sticks.
   for (const enemy of game.enemies) {
     const p = pointAt(path, enemy.dist);
     let factor = 1;
     for (const t of game.towers) {
-      const spec = TOWERS[t.kind];
-      if (spec.slow[0] >= 1) continue;
-      if (
-        Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <=
-        spec.range[t.tier - 1]!
-      ) {
-        factor = Math.min(factor, spec.slow[t.tier - 1]!);
-      }
+      const s = towerStats(t);
+      if (s.slow >= 1) continue;
+      if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= s.range)
+        factor = Math.min(factor, 1 - (1 - s.slow) / game.perks.slow);
+    }
+    if (enemy.stickyLeft && enemy.stickyLeft > 0) {
+      factor = Math.min(factor, enemy.sticky ?? 1);
+      enemy.stickyLeft -= STEP;
     }
     enemy.slowed = factor < 1;
     if (enemy.stun > 0) enemy.stun -= STEP;
-    else enemy.dist += ENEMIES[enemy.kind].speed * factor * STEP;
+    else if (!enemy.held)
+      enemy.dist += ENEMIES[enemy.kind].speed * Math.max(0.05, factor) * STEP;
+    if (enemy.poisonLeft && enemy.poisonLeft > 0) {
+      enemy.hp -= (enemy.poison ?? 0) * STEP;
+      enemy.poisonLeft -= STEP;
+    }
   }
 
   // Clinic-in-a-Box and friends patch up whatever is beside them.
@@ -738,26 +1401,35 @@ export function stepGame(game: Game): void {
     }
   }
 
-  // Scarecrows fire at the enemy furthest along the lane.
   for (const t of game.towers) {
-    const inj = TOWERS[t.kind].injunction;
-    if (inj) {
+    const spec = towerStats(t);
+    // Blackthorn scratches everything in reach, all the time.
+    if (spec.thorns > 0) {
+      for (const e of game.enemies) {
+        if (e.hp <= 0) continue;
+        const p = pointAt(path, e.dist);
+        if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range)
+          damageEnemy(game, e, spec.thorns * STEP, false);
+      }
+    }
+    if (spec.injunction > 0) {
       t.cd -= STEP;
       if (t.cd > 0) continue;
-      const range = TOWERS[t.kind].range[t.tier - 1]!;
       let served = false;
       for (const e of game.enemies) {
-        if (e.hp <= 0 || ENEMIES[e.kind].hp < 1500) continue;
+        if (e.hp <= 0 || (!isBig(e.kind) && !spec.classAction)) continue;
         const p = pointAt(path, e.dist);
-        if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= range) {
-          e.stun = Math.max(e.stun, inj[t.tier - 1]!);
+        if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range) {
+          e.stun = Math.max(e.stun, spec.injunction);
           served = true;
         }
       }
-      t.cd = served ? TOWERS[t.kind].cooldown[t.tier - 1]! : 0;
+      if (served)
+        game.events.push({ type: "injunction", x: t.col + 0.5, y: t.row + 0.5 });
+      t.cd = served ? spec.cooldown : 0;
       continue;
     }
-    if (TOWERS[t.kind].damage[0] === 0) continue;
+    if (spec.damage === 0) continue;
     t.cd -= STEP;
     if (t.cd > 0 && jammed(game, t)) t.cd += STEP / 2;
     if (t.cd > 0) continue;
@@ -765,36 +1437,34 @@ export function stepGame(game: Game): void {
       t.cd = 0;
       continue;
     }
-    const spec = TOWERS[t.kind];
-    const range = spec.range[t.tier - 1]!;
-    let target: Enemy | undefined;
-    for (const e of game.enemies) {
-      if (e.hp <= 0 || !isRevealed(game, e)) continue;
-      const p = pointAt(path, e.dist);
-      if (
-        Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= range &&
-        (!target || e.dist > target.dist)
-      )
-        target = e;
-    }
+    const target = pickTarget(game, t, spec.range);
     if (!target) {
       t.cd = 0;
       continue;
     }
     const p = pointAt(path, target.dist);
-    let dmg = spec.damage[t.tier - 1]!;
+    let dmg = spec.damage;
     for (const b of game.towers) {
-      const bs = TOWERS[b.kind];
-      if (
-        bs.buff &&
-        Math.hypot(b.col - t.col, b.row - t.row) <= bs.range[b.tier - 1]!
-      )
-        dmg *= bs.buff[b.tier - 1]!;
-      if (bs.aura) dmg *= bs.aura[b.tier - 1]!;
+      const bs = towerStats(b);
+      if (bs.buff > 1 && Math.hypot(b.col - t.col, b.row - t.row) <= bs.range)
+        dmg *= bs.buff;
+      if (bs.aura > 1) dmg *= bs.aura;
     }
+    t.shots = (t.shots ?? 0) + 1;
+    const crit = !!spec.crit && t.shots % spec.crit.every === 0;
+    if (crit) dmg *= spec.crit!.mult;
     const hit = (e: Enemy) => {
-      const armor = ENEMIES[e.kind].armor ?? 0;
-      e.hp -= (spec.pierce ? dmg : dmg * (1 - armor)) * markMultiplier(game, e);
+      damageEnemy(game, e, dmg, spec.pierce);
+      if (spec.poison) {
+        e.poison = spec.poison.dps;
+        e.poisonLeft = spec.poison.secs;
+      }
+      if (spec.sticky) {
+        e.sticky = spec.sticky.factor;
+        e.stickyLeft = spec.sticky.secs;
+      }
+      if (spec.knockback && !isBig(e.kind) && !e.held)
+        e.dist = Math.max(0, e.dist - spec.knockback);
     };
     hit(target);
     if (spec.splash) {
@@ -804,7 +1474,7 @@ export function stepGame(game: Game): void {
         if (Math.hypot(q.x - p.x, q.y - p.y) <= spec.splash) hit(e);
       }
     }
-    t.cd = spec.cooldown[t.tier - 1]!;
+    t.cd = spec.cooldown;
     game.events.push({
       type: "shot",
       kind: t.kind,
@@ -814,6 +1484,8 @@ export function stepGame(game: Game): void {
       fromY: t.row + 0.5,
       toX: p.x,
       toY: p.y,
+      crit,
+      spec: t.spec ?? null,
     });
   }
 
@@ -834,13 +1506,16 @@ export function stepGame(game: Game): void {
             hp: ENEMIES[split.kind].hp,
             slowed: false,
             stun: 0,
+            wave: e.wave,
           });
         }
+        game.events.push({ type: "split", x: p.x, y: p.y, kind: split.kind });
       }
-      game.events.push({ type: "kill", x: p.x, y: p.y, bounty });
+      game.events.push({ type: "kill", x: p.x, y: p.y, bounty, kind: e.kind });
     } else if (e.dist >= game.pathLength) {
-      game.goodwill -= ENEMIES[e.kind].leak;
-      game.events.push({ type: "leak", x: p.x, y: p.y });
+      const lost = ENEMIES[e.kind].leak;
+      game.goodwill -= lost;
+      game.events.push({ type: "leak", x: p.x, y: p.y, kind: e.kind, lost });
     } else alive.push(e);
   }
   game.enemies = alive.concat(spawned);
@@ -848,27 +1523,61 @@ export function stepGame(game: Game): void {
   if (game.goodwill <= 0) {
     game.goodwill = 0;
     game.phase = "lost";
-  } else if (game.spawnQueue.length === 0 && game.enemies.length === 0) {
-    if (game.wave >= game.level.waves.length) game.phase = "won";
-    else {
-      game.phase = "build";
-      game.marks += 20 + game.wave * 5;
-      for (const t of game.towers)
-        game.marks += TOWERS[t.kind].income?.[t.tier - 1] ?? 0;
+    return;
+  }
+
+  // Pay for every wave that has been fully cleared, in order.
+  while (game.paid < game.wave) {
+    const w = game.paid + 1;
+    const pending =
+      game.spawnQueue.some((q) => (q.wave ?? game.wave) === w) ||
+      game.enemies.some((e) => (e.wave ?? game.wave) === w);
+    if (pending) break;
+    game.paid = w;
+    let reward = 20 + w * 5;
+    let mend = 0;
+    for (const t of game.towers) {
+      const s = towerStats(t);
+      reward += s.income;
+      mend += s.mend;
     }
+    game.marks += reward;
+    if (mend > 0)
+      game.goodwill = Math.min(game.maxGoodwill, game.goodwill + mend);
+    game.events.push({ type: "cleared", wave: w, reward });
+  }
+
+  if (game.spawnQueue.length === 0 && game.enemies.length === 0) {
+    game.phase = game.wave >= game.level.waves.length ? "won" : "build";
   }
 }
 
-export const PIE_COOLDOWN = 40;
+export const PIE_COOLDOWN = 30;
 export const PIE_STUN = 3;
+export const PIE_RADIUS = 1.7;
+export const PIE_DAMAGE = 40;
 export const PIE_FIRST_LEVEL = 3;
 
 export function pieUnlocked(level: Level): boolean {
   return level.id >= PIE_FIRST_LEVEL;
 }
 
-/** Cath throws a pie: every enemy on the lane freezes for a few seconds. Bosses only for half as long. */
-export function throwPie(game: Game): ActionResult {
+/** The pie's cooldown after Pie Stands and perks. */
+export function pieCooldown(game: Game): number {
+  let m = game.perks.pieCooldown;
+  for (const t of game.towers) m *= 1 - towerStats(t).pieHaste;
+  return PIE_COOLDOWN * Math.max(0.4, m);
+}
+
+export function pieRadius(game: Game): number {
+  return PIE_RADIUS * game.perks.pieRadius;
+}
+
+/**
+ * Cath throws a pie at (x, y): everything within the splash freezes for a few seconds (bosses half as
+ * long) and takes a dollop of damage. Without a target she aims at whatever is furthest down the lane.
+ */
+export function throwPie(game: Game, x?: number, y?: number): ActionResult {
   if (!pieUnlocked(game.level))
     return { ok: false, reason: "Cath has not baked one yet." };
   if (game.phase !== "wave")
@@ -877,28 +1586,27 @@ export function throwPie(game: Game): ActionResult {
     return { ok: false, reason: "Still cooling on the windowsill." };
   if (game.enemies.length === 0)
     return { ok: false, reason: "Nothing to throw it at." };
-  for (const e of game.enemies)
-    e.stun =
-      e.kind === "boss" ||
-      e.kind === "convoy" ||
-      e.kind === "blimp" ||
-      e.kind === "megadozer" ||
-      e.kind === "clinic" ||
-      e.kind === "ship" ||
-      e.kind === "swarm" ||
-      e.kind === "bus" ||
-      e.kind === "board" ||
-      e.kind === "hollowcandor"
-        ? PIE_STUN / 2
-        : PIE_STUN;
-  game.pieCd = PIE_COOLDOWN;
-  game.events.push({ type: "pie" });
+  if (x === undefined || y === undefined) {
+    const lead = game.enemies.reduce((a, b) => (b.dist > a.dist ? b : a));
+    const p = pointAt(game.level.path, lead.dist);
+    x = p.x;
+    y = p.y;
+  }
+  const radius = pieRadius(game);
+  for (const e of game.enemies) {
+    const p = pointAt(game.level.path, e.dist);
+    if (Math.hypot(p.x - x, p.y - y) > radius) continue;
+    e.stun = Math.max(e.stun, isBig(e.kind) ? PIE_STUN / 2 : PIE_STUN);
+    e.hp -= PIE_DAMAGE;
+  }
+  game.pieCd = pieCooldown(game);
+  game.events.push({ type: "pie", x, y, radius });
   return { ok: true };
 }
 
 export function stars(game: Game): 0 | 1 | 2 | 3 {
   if (game.phase !== "won") return 0;
-  const kept = game.goodwill / game.level.goodwill;
+  const kept = game.goodwill / game.maxGoodwill;
   return kept >= 0.9 ? 3 : kept >= 0.5 ? 2 : 1;
 }
 
