@@ -555,6 +555,48 @@ export class Renderer {
       }
     }
 
+    // Call the Neighbours: three farmhands with a hay bale, wobbling as the vans lean on them.
+    if (game.barricade) {
+      const bp = pointAt(level.path, game.barricade.dist);
+      const bx = X(bp.x);
+      const by = Y(bp.y);
+      const fade = Math.min(1, game.barricade.left / 1.5);
+      ctx.globalAlpha = fade;
+      ctx.fillStyle = "#d8b45a";
+      ctx.strokeStyle = "#2b2320";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(bx - s * 0.42, by - s * 0.1, s * 0.84, s * 0.3, s * 0.1);
+      ctx.fill();
+      ctx.stroke();
+      const shirts = ["#4f7fb0", "#c4433a", "#7fa65a"];
+      for (let i = 0; i < 3; i++) {
+        const fx = bx + (i - 1) * s * 0.3;
+        const fy = by - s * 0.18 + Math.sin(t * 9 + i * 2) * s * 0.02;
+        ctx.fillStyle = shirts[i]!;
+        ctx.beginPath();
+        ctx.roundRect(fx - s * 0.1, fy - s * 0.02, s * 0.2, s * 0.26, s * 0.06);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#f0c9a0";
+        ctx.beginPath();
+        ctx.arc(fx, fy - s * 0.1, s * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    // Rally: a golden pulse around every tower.
+    if (game.rallyLeft > 0) {
+      ctx.strokeStyle = "rgba(242,201,76,0.85)";
+      ctx.lineWidth = 3;
+      for (const tw of game.towers) {
+        ctx.beginPath();
+        ctx.arc(X(tw.col + 0.5), Y(tw.row + 0.5), s * (0.5 + 0.08 * Math.sin(t * 10)), 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
     this.drawShots(dt, X, Y, s);
     this.drawPies(dt, X, Y, s);
     this.drawParticles(dt, X, Y, s);

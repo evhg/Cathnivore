@@ -1011,10 +1011,14 @@ button {
   background: conic-gradient(rgba(43, 35, 32, 0.35) calc(var(--cd, 0) * 360deg), transparent 0);
   pointer-events: none;
 }
-#btn-pie:disabled .pie-icon {
+#btn-pie:disabled .pie-icon,
+#btn-neighbours:disabled .pie-icon,
+#btn-rally:disabled .pie-icon {
   opacity: 0.5;
 }
-#btn-pie.ready {
+#btn-pie.ready,
+#btn-neighbours.ready,
+#btn-rally.ready {
   animation: ready-glow 1.4s ease-in-out infinite;
 }
 @keyframes ready-glow {
@@ -1417,7 +1421,9 @@ button {
   .stars .star.earned,
   .you,
   .node.next .level-num,
-  #btn-pie.ready {
+  #btn-pie.ready,
+  #btn-neighbours.ready,
+  #btn-rally.ready {
     animation: none;
   }
   .banner {

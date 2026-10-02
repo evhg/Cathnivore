@@ -144,6 +144,22 @@ export const PERKS: PerkDef[] = [
     apply: (p, r) => (p.pieRadius = 1 + 0.15 * r),
   },
   {
+    id: "boots",
+    name: "Wellies by the Door",
+    blurb: "The neighbours are out the door before you finish asking.",
+    each: "Neighbours hold the lane 25% longer",
+    costs: [2, 3],
+    apply: (p, r) => (p.neighbours = 1 + 0.25 * r),
+  },
+  {
+    id: "rallycry",
+    name: "Rallying Cry",
+    blurb: "Cath has a voice that carries across three fields.",
+    each: "Rally lasts 25% longer",
+    costs: [2, 3],
+    apply: (p, r) => (p.rally = 1 + 0.25 * r),
+  },
+  {
     id: "neighbours",
     name: "Good Neighbours",
     blurb: "Somebody always comes to help.",

@@ -887,3 +887,21 @@ describe("hedgerow saves", () => {
     expect(isUnlocked(data, 2)).toBe(true);
   });
 });
+
+describe("Cath's calls", () => {
+  it("the neighbours stop foot traffic and Rally speeds towers", async () => {
+    const eng = await import("../games/hedgerow/src/engine");
+    const levels = await import("../games/hedgerow/src/levels");
+    const lv = levels.LEVELS.find((l) => l.id === 25)!;
+    const g = eng.newGame(lv);
+    expect(eng.callNeighbours(g).ok).toBe(false);
+    eng.sendWave(g);
+    for (let i = 0; i < 400 && g.enemies.length === 0; i++) eng.stepGame(g);
+    expect(eng.callRally(g).ok).toBe(false); // no towers yet
+    expect(eng.callNeighbours(g).ok).toBe(true);
+    const bar = g.barricade!.dist;
+    for (let i = 0; i < 30 * 5; i++) eng.stepGame(g);
+    for (const e of g.enemies) if (!eng.isBig(e.kind)) expect(e.dist).toBeLessThanOrEqual(bar + 1e-6);
+    expect(eng.callNeighbours(g).ok).toBe(false); // cooling down
+  });
+});

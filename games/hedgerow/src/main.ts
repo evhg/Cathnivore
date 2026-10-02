@@ -29,6 +29,14 @@ import {
   stars as starsOf,
   stepGame,
   throwPie,
+  callNeighbours,
+  callRally,
+  neighboursUnlocked,
+  rallyUnlocked,
+  NEIGHBOURS_COOLDOWN,
+  RALLY_COOLDOWN,
+  NEIGHBOURS_FIRST_LEVEL,
+  RALLY_FIRST_LEVEL,
   towerAt,
   towerCost,
   towerStats,
@@ -80,6 +88,12 @@ const ui = {
   btnLevels: $<HTMLButtonElement>("btn-levels"),
   btnSend: $<HTMLButtonElement>("btn-send"),
   btnPie: $<HTMLButtonElement>("btn-pie"),
+  btnNeighbours: $<HTMLButtonElement>("btn-neighbours"),
+  neighboursRing: $<HTMLElement>("neighbours-ring"),
+  neighboursLabel: $<HTMLElement>("neighbours-label"),
+  btnRally: $<HTMLButtonElement>("btn-rally"),
+  rallyRing: $<HTMLElement>("rally-ring"),
+  rallyLabel: $<HTMLElement>("rally-label"),
   pieRing: $<HTMLElement>("pie-ring"),
   pieLabel: $<HTMLElement>("pie-label"),
   btnHero: $<HTMLButtonElement>("btn-hero"),
@@ -333,6 +347,10 @@ function levelTips(lv: Level): void {
     tip("hero", "I'm in the lane too. Tap the lane to send me somewhere: I hold two at a time. Drones fly over me.", "determined");
   else if (lv.id === PIE_FIRST_LEVEL)
     tip("pie", "Pies are out of the oven. Tap the pie, then tap where it should land.", "delighted");
+  else if (lv.id === NEIGHBOURS_FIRST_LEVEL)
+    tip("neighbours-intro", "The neighbours are on side. In a wave, tap Neighbours (or press B) and three farmhands block the lane for ten seconds.", "delighted");
+  else if (lv.id === RALLY_FIRST_LEVEL)
+    tip("rally-intro", "Rally! Tap it (or press R) and every tower fires half as fast again for six seconds.", "determined");
   else if (lv.id === SPEC_FIRST_LEVEL)
     tip("spec", "Grow a tower to tier three and it can specialise. Two choices each, and they change everything.", "smirk");
 }
@@ -358,6 +376,16 @@ function syncControls(): void {
   ui.pieLabel.textContent = g.pieCd > 0 ? `Pie ${Math.ceil(g.pieCd)}s` : aiming ? "Aim" : "Pie";
   const cdFrac = g.pieCd > 0 ? g.pieCd / 30 : 0;
   ui.pieRing.style.setProperty("--cd", String(Math.min(1, cdFrac)));
+  ui.btnNeighbours.hidden = !neighboursUnlocked(g.level);
+  ui.btnNeighbours.disabled = g.phase !== "wave" || g.neighboursCd > 0 || g.enemies.length === 0;
+  ui.btnNeighbours.classList.toggle("ready", !ui.btnNeighbours.disabled);
+  ui.neighboursLabel.textContent = g.neighboursCd > 0 ? `${Math.ceil(g.neighboursCd)}s` : "Neighbours";
+  ui.neighboursRing.style.setProperty("--cd", String(g.neighboursCd / NEIGHBOURS_COOLDOWN));
+  ui.btnRally.hidden = !rallyUnlocked(g.level);
+  ui.btnRally.disabled = g.phase !== "wave" || g.rallyCd > 0 || g.towers.length === 0;
+  ui.btnRally.classList.toggle("ready", !ui.btnRally.disabled);
+  ui.rallyLabel.textContent = g.rallyLeft > 0 ? "Go!" : g.rallyCd > 0 ? `${Math.ceil(g.rallyCd)}s` : "Rally";
+  ui.rallyRing.style.setProperty("--cd", String(g.rallyCd / RALLY_COOLDOWN));
   const h = g.hero;
   ui.btnHero.setAttribute("aria-pressed", String(!!renderer?.heroSelected));
   ui.btnHero.classList.toggle("down", h.down > 0);
@@ -840,6 +868,12 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "pie":
         break;
+      case "neighbours":
+        tip("neighbours", "The neighbours are in the lane. Nothing on wheels gets past them for ten seconds.", "determined");
+        break;
+      case "rally":
+        tip("rally", "Come on, all of you! Everything fires faster for a few seconds.", "delighted");
+        break;
       case "swing":
         sfx.playSwing();
         break;
@@ -1125,6 +1159,10 @@ ui.canvas.addEventListener("keydown", (e) => {
     selectHero();
   } else if (e.key === "p" || e.key === "P") {
     if (!ui.btnPie.disabled) startAim();
+  } else if (e.key === "b" || e.key === "B") {
+    if (!ui.btnNeighbours.disabled) ui.btnNeighbours.click();
+  } else if (e.key === "r" || e.key === "R") {
+    if (!ui.btnRally.disabled) ui.btnRally.click();
   } else if (e.key === "n" || e.key === "N") {
     ui.btnSend.click();
   }
@@ -1137,6 +1175,18 @@ ui.btnSend.addEventListener("click", () => {
 ui.btnPie.addEventListener("click", () => {
   sfx.unlock();
   startAim();
+});
+ui.btnNeighbours.addEventListener("click", () => {
+  if (!game) return;
+  sfx.unlock();
+  if (act(() => callNeighbours(game!))) sfx.playNeighbours();
+  syncControls();
+});
+ui.btnRally.addEventListener("click", () => {
+  if (!game) return;
+  sfx.unlock();
+  if (act(() => callRally(game!))) sfx.playRally();
+  syncControls();
 });
 ui.btnHero.addEventListener("click", () => {
   sfx.unlock();

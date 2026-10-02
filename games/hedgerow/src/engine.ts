@@ -957,6 +957,10 @@ export interface Perks {
   pieCooldown: number;
   /** Multiplies the pie's radius. */
   pieRadius: number;
+  /** Multiplies how long the neighbours hold the lane. */
+  neighbours: number;
+  /** Multiplies how long Rally lasts. */
+  rally: number;
   heroHp: number;
   heroDamage: number;
   /** Fraction off every tower's price. */
@@ -972,6 +976,8 @@ export const NO_PERKS: Perks = {
   goodwill: 0,
   pieCooldown: 1,
   pieRadius: 1,
+  neighbours: 1,
+  rally: 1,
   heroHp: 1,
   heroDamage: 1,
   discount: 0,
@@ -997,6 +1003,8 @@ export type GameEvent =
   | { type: "wave"; wave: number; early?: number }
   | { type: "cleared"; wave: number; reward: number }
   | { type: "pie"; x?: number; y?: number; radius?: number }
+  | { type: "neighbours"; x: number; y: number }
+  | { type: "rally" }
   | { type: "swing"; x: number; y: number }
   | { type: "heroDown" }
   | { type: "heroUp" }
@@ -1034,6 +1042,13 @@ export interface Game {
   events: GameEvent[];
   /** Seconds until Cath's pie is ready again. */
   pieCd: number;
+  /** Seconds until she can Call the Neighbours / Rally again. */
+  neighboursCd: number;
+  rallyCd: number;
+  /** The farmhands' barricade: lane distance and seconds left (0 = none). */
+  barricade: { dist: number; left: number } | null;
+  /** Seconds of Rally left: towers fire faster. */
+  rallyLeft: number;
   hero: Hero;
   perks: Perks;
   /** Goodwill at the start, after perks: stars are measured against it. */
@@ -1142,6 +1157,10 @@ export function newGame(level: Level, perks: Perks = NO_PERKS): Game {
     pathLength: pathLength(level.path),
     events: [],
     pieCd: 0,
+    neighboursCd: 0,
+    rallyCd: 0,
+    barricade: null,
+    rallyLeft: 0,
     perks,
     hero: {
       x: post.x,
@@ -1515,6 +1534,13 @@ export function stepGame(game: Game): void {
   game.tick += 1;
   game.waveClock += STEP;
   if (game.pieCd > 0) game.pieCd = Math.max(0, game.pieCd - STEP);
+  if (game.neighboursCd > 0) game.neighboursCd = Math.max(0, game.neighboursCd - STEP);
+  if (game.rallyCd > 0) game.rallyCd = Math.max(0, game.rallyCd - STEP);
+  if (game.rallyLeft > 0) game.rallyLeft = Math.max(0, game.rallyLeft - STEP);
+  if (game.barricade) {
+    game.barricade.left -= STEP;
+    if (game.barricade.left <= 0) game.barricade = null;
+  }
   const path = game.level.path;
 
   while (
@@ -1553,9 +1579,17 @@ export function stepGame(game: Game): void {
     }
     enemy.slowed = factor < 1;
     if (enemy.stun > 0) enemy.stun -= STEP;
-    else if (!enemy.held)
-      enemy.dist +=
+    else if (!enemy.held) {
+      let move =
         ENEMIES[enemy.kind].speed * Math.max(0.05, factor) * (enemy.charge && enemy.charge > 0 ? 2.2 : 1) * STEP;
+      const bar = game.barricade;
+      if (bar && enemy.dist <= bar.dist) {
+        // Farmhands stop anything on foot dead; bosses only slow to a crawl.
+        if (isBig(enemy.kind)) move *= 0.25;
+        else move = Math.max(0, Math.min(move, bar.dist - enemy.dist));
+      }
+      enemy.dist += move;
+    }
     if (enemy.poisonLeft && enemy.poisonLeft > 0) {
       enemy.hp -= (enemy.poison ?? 0) * STEP;
       enemy.poisonLeft -= STEP;
@@ -1603,7 +1637,7 @@ export function stepGame(game: Game): void {
       continue;
     }
     if (spec.damage === 0) continue;
-    t.cd -= STEP;
+    t.cd -= game.rallyLeft > 0 ? STEP * RALLY_SPEEDUP : STEP;
     if (t.cd > 0 && jammed(game, t)) t.cd += STEP / 2;
     if (t.cd > 0) continue;
     if (charmed(game, t)) {
@@ -1723,6 +1757,50 @@ export function stepGame(game: Game): void {
   if (game.spawnQueue.length === 0 && game.enemies.length === 0) {
     game.phase = game.wave >= game.level.waves.length ? "won" : "build";
   }
+}
+
+export const NEIGHBOURS_FIRST_LEVEL = 12;
+export const NEIGHBOURS_COOLDOWN = 45;
+export const NEIGHBOURS_SECS = 10;
+export const RALLY_FIRST_LEVEL = 25;
+export const RALLY_COOLDOWN = 50;
+export const RALLY_SECS = 6;
+export const RALLY_SPEEDUP = 1.5;
+
+export function neighboursUnlocked(level: Level): boolean {
+  return level.id >= NEIGHBOURS_FIRST_LEVEL;
+}
+
+export function rallyUnlocked(level: Level): boolean {
+  return level.id >= RALLY_FIRST_LEVEL;
+}
+
+/** Three farmhands step into the lane just ahead of the leading enemy and hold it for a few seconds. */
+export function callNeighbours(game: Game): ActionResult {
+  if (!neighboursUnlocked(game.level))
+    return { ok: false, reason: "The neighbours aren't on your side yet." };
+  if (game.phase !== "wave") return { ok: false, reason: "Save them for a wave." };
+  if (game.neighboursCd > 0) return { ok: false, reason: "They're still getting their boots back on." };
+  if (game.enemies.length === 0) return { ok: false, reason: "Nothing to block." };
+  const lead = game.enemies.reduce((a, b) => (b.dist > a.dist ? b : a));
+  const dist = Math.min(game.pathLength - 1, lead.dist + 0.8);
+  const p = pointAt(game.level.path, dist);
+  game.barricade = { dist, left: NEIGHBOURS_SECS * game.perks.neighbours };
+  game.neighboursCd = NEIGHBOURS_COOLDOWN;
+  game.events.push({ type: "neighbours", x: p.x, y: p.y });
+  return { ok: true };
+}
+
+/** "Come on, all of you!": every tower fires half as fast again for a few seconds. */
+export function callRally(game: Game): ActionResult {
+  if (!rallyUnlocked(game.level)) return { ok: false, reason: "Nobody's marching yet." };
+  if (game.phase !== "wave") return { ok: false, reason: "Save it for a wave." };
+  if (game.rallyCd > 0) return { ok: false, reason: "Cath needs her breath back." };
+  if (game.towers.length === 0) return { ok: false, reason: "Nobody to rally." };
+  game.rallyLeft = RALLY_SECS * game.perks.rally;
+  game.rallyCd = RALLY_COOLDOWN;
+  game.events.push({ type: "rally" });
+  return { ok: true };
 }
 
 export const PIE_COOLDOWN = 30;

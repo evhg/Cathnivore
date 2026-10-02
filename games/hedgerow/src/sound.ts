@@ -217,6 +217,14 @@ export function playPie(): void {
   tone(300, 0, 0.3, "sine", 0.05, 900);
   noise(0.32, 0.25, 0.14, { type: "lowpass", freq: 900 });
 }
+export function playNeighbours(): void {
+  if (!ready()) return;
+  [330, 392, 494].forEach((f, i) => tone(f, i * 0.06, 0.14, "triangle", 0.05));
+}
+export function playRally(): void {
+  if (!ready()) return;
+  [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.07, 0.18, "square", 0.025));
+}
 export function playSwing(): void {
   if (!ready()) return;
   noise(0, 0.06, 0.04, { type: "highpass", freq: 2000 });
