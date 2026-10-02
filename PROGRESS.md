@@ -28,6 +28,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-01 (21:51 session): health check only: CI green on `bd90164`, `npm run check` passes. Remaining ROADMAP (19 sound polish, H2, 24 real-phone check) is small or needs hardware; release cap already used.
 - 2026-10-01 (22:51 session): health check: CI green on `73dc652`; no open FEEDBACK or broken items; no change.
 - 2026-10-01 (23:52 session): health check: CI green on `a4d8a09`; unreleased slices wait for tomorrow's release cap; no change.
+- 2026-10-02 (00:51 session): gates failed on the Runnel keyboard e2e (daily puzzle changes with date; ArrowRight landed on an unturnable sluice). Test fixed; released `a95986a` (24 accumulated commits), live matches.
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
@@ -54,6 +55,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-02 ~01:07 UTC (`a95986a`): all accumulated slices (scenes, plan cards, tour, motion tokens). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~13:12 UTC (`65ab9f2`): bigger desktop map. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~11:02 UTC (`b69c37f`): How to Play tour (cards page, keys, dots) + roadmap ticks. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~09:02 UTC (`55ac8ae`): scenes graphic-novel slices, final-round banner, end-screen hero. main==build; live version.json matches; deploy-2 tag push 403 (harmless).
