@@ -9,7 +9,7 @@ import {
   charmed,
   isBig,
   isRevealed,
-  pointAt,
+  enemyPoint,
   towerAt,
   towerStats,
   plotKind,
@@ -554,7 +554,7 @@ export class Renderer {
     const alive = new Set<number>();
     for (const e of game.enemies) {
       alive.add(e.id);
-      const p = pointAt(level.path, e.dist);
+      const p = enemyPoint(level, e);
       const lx = this.lastX.get(e.id);
       if (lx !== undefined && Math.abs(p.x - lx) > 0.0005) this.facing.set(e.id, p.x > lx ? 1 : -1);
       this.lastX.set(e.id, p.x);
@@ -627,7 +627,7 @@ export class Renderer {
     for (const e of game.enemies) {
       const max = ENEMIES[e.kind].hp;
       if (e.hp >= max || !isRevealed(game, e)) continue;
-      const p = pointAt(level.path, e.dist);
+      const p = enemyPoint(level, e);
       const k = enemyScale(e.kind);
       const top = Y(p.y + 0.2) - s * (0.5 * k + enemyLift(e.kind) + 0.12);
       bar(ctx, X(p.x), top, s * 0.5 * Math.min(1.6, k), Math.max(3, s * 0.06), e.hp / max);
@@ -652,7 +652,7 @@ export class Renderer {
     // Charging bosses leave speed lines.
     for (const e of game.enemies) {
       if (!e.charge || e.charge <= 0) continue;
-      const p = pointAt(level.path, e.dist);
+      const p = enemyPoint(level, e);
       const f = this.facing.get(e.id) ?? 1;
       ctx.strokeStyle = "rgba(255,255,255,0.7)";
       ctx.lineWidth = 2;
@@ -668,7 +668,7 @@ export class Renderer {
 
     // Call the Neighbours: three farmhands with a hay bale, wobbling as the vans lean on them.
     if (game.barricade) {
-      const bp = pointAt(level.path, game.barricade.dist);
+      const bp = enemyPoint(level, game.barricade);
       const bx = X(bp.x);
       const by = Y(bp.y);
       const fade = Math.min(1, game.barricade.left / 1.5);

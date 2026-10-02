@@ -1,7 +1,7 @@
 // Terrain that matters: high ground (+25% range) and water (Duck Ponds only). Generated from each level's
 // lane so every level has a few choice plots; hand-built test levels carry no terrain.
 
-import { laneCells, type Level } from "./engine";
+import { laneCellsOf, type Level } from "./engine";
 
 /** Act places that are wet: Saltmarsh (3), Rivermead (4), Shingle Bay (6). */
 const WET_ACTS = new Set([3, 4, 6]);
@@ -14,7 +14,7 @@ function hash(n: number): number {
 
 export function addTerrain(level: Level): void {
   if (level.id < 4) return;
-  const lane = laneCells(level.path);
+  const lane = laneCellsOf(level);
   const cells: Array<{ c: number; r: number; near: number; adj: number }> = [];
   for (let r = 0; r < level.rows; r++)
     for (let c = 0; c < level.cols; c++) {

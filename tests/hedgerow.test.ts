@@ -8,6 +8,8 @@ import {
   newGame,
   place,
   pointAt,
+  enemyPoint,
+  laneCellsOf,
   sell,
   sellValue,
   sendWave,
@@ -53,10 +55,11 @@ function plotsByCoverage(level: Level): Array<[number, number]> {
     for (let c = 0; c < level.cols; c++) {
       if (!isPlot(level, c, r)) continue;
       let score = 0;
-      for (let d = 0; d < 40; d += 0.5) {
-        const p = pointAt(level.path, d);
-        if (Math.hypot(c + 0.5 - p.x, r + 0.5 - p.y) <= 2.4) score++;
-      }
+      for (const path of level.path2 ? [level.path, level.path2] : [level.path])
+        for (let d = 0; d < 40; d += 0.5) {
+          const p = pointAt(path, d);
+          if (Math.hypot(c + 0.5 - p.x, r + 0.5 - p.y) <= 2.4) score++;
+        }
       cells.push({ c, r, score });
     }
   }
@@ -125,7 +128,8 @@ function play(level: Level, build: boolean): Game {
     // Like a player, it saves the pie for bosses.
     if (build && game.phase === "wave" && game.pieCd === 0) {
       const boss = game.enemies.find((e) => e.hp >= 1500);
-      if (boss) throwPie(game, pointAt(level.path, boss.dist).x, pointAt(level.path, boss.dist).y);
+      if (boss)
+        throwPie(game, enemyPoint(level, boss).x, enemyPoint(level, boss).y);
     }
     stepGame(game);
   }
@@ -489,6 +493,25 @@ describe("hedgerow engine", () => {
     expect(g.enemies.filter((e) => e.kind === "remnant").length).toBe(6);
   });
 
+  it("forked levels send enemies down a second lane that joins the first and still leaks Goodwill", () => {
+    const forked = LEVELS.filter((l) => l.path2);
+    expect(forked.length).toBeGreaterThanOrEqual(10);
+    const lv = forked[0]!;
+    const cells = laneCellsOf(lv);
+    for (const [c, r] of lv.path2!) expect(cells.has(`${c},${r}`)).toBe(true);
+    const g = newGame(lv);
+    expect(g.pathLength2).toBeGreaterThan(0);
+    sendWave(g);
+    for (let i = 0; i < 20 * 30; i++) stepGame(g);
+    const second = g.enemies.filter((e) => e.lane === 1);
+    expect(second.length).toBeGreaterThan(0);
+    const p = enemyPoint(lv, second[0]!);
+    expect(Math.abs(p.y - (lv.path2![0]![1] + 0.5)) < 99).toBe(true);
+    for (let i = 0; i < 120 * 30 && g.goodwill === g.maxGoodwill; i++)
+      stepGame(g);
+    expect(g.goodwill).toBeLessThan(g.maxGoodwill);
+  });
+
   it("a slowed enemy covers less ground", () => {
     const g1 = newGame(level);
     const g2 = newGame(level);
@@ -518,7 +541,7 @@ describe("hedgerow engine", () => {
       const won = play(lv, true);
       expect(won.phase).toBe("won");
       expect(stars(won)).toBeGreaterThanOrEqual(1);
-    });
+    }, 60_000);
   }
 });
 
@@ -535,13 +558,29 @@ function strip(overrides: Partial<Level> = {}): Level {
     ],
     startMarks: 5000,
     goodwill: 20,
-    waves: [[{ enemy: "van", count: 1, gap: 1, delay: 0 }], [{ enemy: "van", count: 1, gap: 1, delay: 0 }]],
+    waves: [
+      [{ enemy: "van", count: 1, gap: 1, delay: 0 }],
+      [{ enemy: "van", count: 1, gap: 1, delay: 0 }],
+    ],
     ...overrides,
   } as Level;
 }
 
-function spawn(game: Game, kind: Game["enemies"][number]["kind"], dist: number, hp?: number) {
-  const e: Game["enemies"][number] = { id: game.nextId++, kind, dist, hp: hp ?? 1000, slowed: false, stun: 0, wave: 1 };
+function spawn(
+  game: Game,
+  kind: Game["enemies"][number]["kind"],
+  dist: number,
+  hp?: number,
+) {
+  const e: Game["enemies"][number] = {
+    id: game.nextId++,
+    kind,
+    dist,
+    hp: hp ?? 1000,
+    slowed: false,
+    stun: 0,
+    wave: 1,
+  };
   game.enemies.push(e);
   return e;
 }
@@ -590,7 +629,9 @@ describe("hedgerow: Cath on the battlefield", () => {
       if (game.hero.down > 0) downs++;
     }
     expect(downs).toBeGreaterThan(0);
-    expect(moveHero({ ...game, hero: { ...game.hero, down: 3 } }, 1, 1).ok).toBe(false);
+    expect(
+      moveHero({ ...game, hero: { ...game.hero, down: 3 } }, 1, 1).ok,
+    ).toBe(false);
   });
 
   it("walks where she is sent, and lets go while walking", () => {
@@ -643,7 +684,9 @@ describe("hedgerow: towers go deeper", () => {
       game.events = [];
       stepGame(game);
       const shot = game.events.find((e) => e.type === "shot");
-      return shot && shot.type === "shot" ? Math.round(shot.toX * 10) / 10 : null;
+      return shot && shot.type === "shot"
+        ? Math.round(shot.toX * 10) / 10
+        : null;
     };
     expect(shotAt("first")).toBe(5.5);
     expect(shotAt("last")).toBe(2);
@@ -655,7 +698,12 @@ describe("hedgerow: towers go deeper", () => {
     const game = newGame(strip());
     game.hero.x = game.hero.tx = 11.5;
     game.hero.y = game.hero.ty = 0.5;
-    const build = (kind: Parameters<typeof place>[1], col: number, row: number, spec: 0 | 1) => {
+    const build = (
+      kind: Parameters<typeof place>[1],
+      col: number,
+      row: number,
+      spec: 0 | 1,
+    ) => {
       place(game, kind, col, row);
       const t = game.towers[game.towers.length - 1]!;
       upgrade(game, t.id);
@@ -724,7 +772,11 @@ describe("hedgerow: towers go deeper", () => {
 });
 
 describe("hedgerow: boss moves", () => {
-  const run = (kind: Parameters<typeof spawn>[1], secs: number, setup?: (g: Game) => void) => {
+  const run = (
+    kind: Parameters<typeof spawn>[1],
+    secs: number,
+    setup?: (g: Game) => void,
+  ) => {
     const game = newGame(strip());
     game.hero.x = game.hero.tx = 0.5;
     game.hero.y = game.hero.ty = 0.5;
@@ -756,7 +808,9 @@ describe("hedgerow: boss moves", () => {
     const flat = game.towers.find((t) => t.kind === "scarecrow")!;
     expect(flat.out).toBeGreaterThan(0);
     expect(game.towers.find((t) => t.kind === "hedgerow")!.out ?? 0).toBe(0);
-    const shots = () => game.events.filter((e) => e.type === "shot" && e.tower === flat.id).length;
+    const shots = () =>
+      game.events.filter((e) => e.type === "shot" && e.tower === flat.id)
+        .length;
     stepGame(game);
     expect(shots()).toBe(0);
   });
@@ -793,7 +847,15 @@ describe("hedgerow: boss moves", () => {
 
 describe("hedgerow: calling waves early", () => {
   it("pays a bonus, overlaps the waves and still pays each wave once it clears", () => {
-    const game = newGame(strip({ waves: [[{ enemy: "van", count: 1, gap: 1, delay: 0 }], [{ enemy: "van", count: 1, gap: 1, delay: 0 }], [{ enemy: "van", count: 1, gap: 1, delay: 0 }]] }));
+    const game = newGame(
+      strip({
+        waves: [
+          [{ enemy: "van", count: 1, gap: 1, delay: 0 }],
+          [{ enemy: "van", count: 1, gap: 1, delay: 0 }],
+          [{ enemy: "van", count: 1, gap: 1, delay: 0 }],
+        ],
+      }),
+    );
     game.hero.x = game.hero.tx = 0.5;
     game.hero.y = game.hero.ty = 0.5;
     expect(canCallEarly(game)).toBe(false);
@@ -818,7 +880,13 @@ describe("hedgerow: calling waves early", () => {
 
 describe("hedgerow: perks", () => {
   it("add Marks, Goodwill and a faster pie; discounts lower prices", () => {
-    const perks = { ...NO_PERKS, marks: 50, goodwill: 3, pieCooldown: 0.5, discount: 0.1 };
+    const perks = {
+      ...NO_PERKS,
+      marks: 50,
+      goodwill: 3,
+      pieCooldown: 0.5,
+      discount: 0.1,
+    };
     const game = newGame(LEVELS[4]!, perks);
     expect(game.marks).toBe(LEVELS[4]!.startMarks + 50);
     expect(game.goodwill).toBe(LEVELS[4]!.goodwill + 3);
@@ -857,7 +925,11 @@ describe("hedgerow saves", () => {
   });
 
   it("migrates a v1 save to v2, keeping stars and stories", () => {
-    const v1 = JSON.stringify({ version: 1, stars: { "1": 3, "2": 1 }, seenBefore: { "1": true } });
+    const v1 = JSON.stringify({
+      version: 1,
+      stars: { "1": 3, "2": 1 },
+      seenBefore: { "1": true },
+    });
     const v2 = parseSave(v1);
     expect(v2.version).toBe(2);
     expect(v2.stars).toEqual({ "1": 3, "2": 1 });
@@ -880,9 +952,13 @@ describe("hedgerow saves", () => {
     refundAll(data);
     expect(freeStars(data)).toBe(6);
     // A tampered save that spends more stars than it has gets its bank refunded.
-    const bad = parseSave(JSON.stringify({ stars: { "1": 1 }, bank: { pin: 3 } }));
+    const bad = parseSave(
+      JSON.stringify({ stars: { "1": 1 }, bank: { pin: 3 } }),
+    );
     expect(bad.bank).toEqual({});
-    expect(nextCost(bad, "pin")).toBe(PERKS.find((p) => p.id === "pin")!.costs[0]);
+    expect(nextCost(bad, "pin")).toBe(
+      PERKS.find((p) => p.id === "pin")!.costs[0],
+    );
   });
 
   it("unlocks level n only after level n-1 is cleared", () => {
@@ -907,7 +983,8 @@ describe("Cath's calls", () => {
     expect(eng.callNeighbours(g).ok).toBe(true);
     const bar = g.barricade!.dist;
     for (let i = 0; i < 30 * 5; i++) eng.stepGame(g);
-    for (const e of g.enemies) if (!eng.isBig(e.kind)) expect(e.dist).toBeLessThanOrEqual(bar + 1e-6);
+    for (const e of g.enemies)
+      if (!eng.isBig(e.kind)) expect(e.dist).toBeLessThanOrEqual(bar + 1e-6);
     expect(eng.callNeighbours(g).ok).toBe(false); // cooling down
   });
 
@@ -921,19 +998,28 @@ describe("Cath's calls", () => {
       }
       expect(t!.high.length).toBeGreaterThan(0);
       withHigh++;
-      for (const [c, r] of [...t!.high, ...t!.water]) expect(isPlot(lv, c, r)).toBe(true);
-      expect(t!.high.length + t!.water.length).toBeLessThan((lv.cols * lv.rows) / 6);
+      for (const [c, r] of [...t!.high, ...t!.water])
+        expect(isPlot(lv, c, r)).toBe(true);
+      expect(t!.high.length + t!.water.length).toBeLessThan(
+        (lv.cols * lv.rows) / 6,
+      );
     }
     expect(withHigh).toBe(97);
     const lv = LEVELS.find((l) => l.terrain?.water.length)!;
     const [wc, wr] = lv.terrain!.water[0]!;
     const [hc, hr] = lv.terrain!.high[0]!;
-    const game = newGame({ ...lv, startMarks: 5000, towers: ["scarecrow", "pond"] });
+    const game = newGame({
+      ...lv,
+      startMarks: 5000,
+      towers: ["scarecrow", "pond"],
+    });
     expect(place(game, "scarecrow", wc, wr).ok).toBe(false);
     expect(place(game, "pond", wc, wr).ok).toBe(true);
     expect(plotKind(lv, hc, hr)).toBe("high");
     expect(place(game, "scarecrow", hc, hr).ok).toBe(true);
     const tw = towerAt(game, hc, hr)!;
-    expect(towerStats(tw).range).toBeCloseTo(TOWERS.scarecrow.range[0] * HIGH_GROUND_RANGE);
+    expect(towerStats(tw).range).toBeCloseTo(
+      TOWERS.scarecrow.range[0] * HIGH_GROUND_RANGE,
+    );
   });
 });

@@ -2,7 +2,7 @@
 // per level and size into an offscreen canvas by `paintBackground`. Everything is procedural and seeded by
 // the level id, so a level always looks the same and nothing needs downloading.
 
-import { laneCells, plotKind, type Level } from "./engine";
+import { laneCellsOf, plotKind, type Level } from "./engine";
 
 export type Decor =
   | "oak"
@@ -235,8 +235,8 @@ export interface Layout {
 const INK = "#2b2320";
 
 /** The lane in canvas pixels, extended off the field at the start so the convoys drive in from the edge. */
-export function lanePoints(level: Level, L: Layout): Array<[number, number]> {
-  const pts = level.path.map(
+export function lanePoints(level: Level, L: Layout, second = false): Array<[number, number]> {
+  const pts = (second && level.path2 ? level.path2 : level.path).map(
     ([c, r]) =>
       [L.offX + (c + 0.5) * L.cell, L.offY + (r + 0.5) * L.cell] as [number, number],
   );
@@ -431,8 +431,18 @@ function paintLane(
   theme: Theme,
   rand: () => number,
 ): void {
+  paintOneLane(ctx, lanePoints(level, L), L, theme, rand);
+  if (level.path2) paintOneLane(ctx, lanePoints(level, L, true), L, theme, rand);
+}
+
+function paintOneLane(
+  ctx: CanvasRenderingContext2D,
+  pts: Array<[number, number]>,
+  L: Layout,
+  theme: Theme,
+  rand: () => number,
+): void {
   const s = L.cell;
-  const pts = lanePoints(level, L);
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
   // Shadowed verge, rim, then the track itself.
@@ -490,7 +500,7 @@ function paintLane(
 
 function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): void {
   const s = L.cell;
-  const lane = laneCells(level.path);
+  const lane = laneCellsOf(level);
   for (let r = 0; r < level.rows; r++) {
     for (let c = 0; c < level.cols; c++) {
       if (lane.has(`${c},${r}`)) continue;
@@ -570,10 +580,15 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
 }
 
 function paintGate(ctx: CanvasRenderingContext2D, level: Level, L: Layout): void {
+  paintOneGate(ctx, level, level.path, L);
+  if (level.path2) paintOneGate(ctx, level, level.path2, L);
+}
+
+function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["path"], L: Layout): void {
   // Where they come from: a glossy depot sign just off the field.
   const s = L.cell;
-  const [c, r] = level.path[0]!;
-  const [c2, r2] = level.path[1]!;
+  const [c, r] = path[0]!;
+  const [c2, r2] = path[1]!;
   const dx = Math.sign(c - c2);
   const dy = Math.sign(r - r2);
   const x = L.offX + (c + 0.5 + dx * 0.95) * s;
@@ -618,8 +633,9 @@ function paintDecor(
   const gy0 = L.offY - s * 0.25;
   const gx1 = L.offX + level.cols * s + s * 0.25;
   const gy1 = L.offY + level.rows * s + s * 0.25;
-  const lane = lanePoints(level, L);
+  const lanes = [lanePoints(level, L), ...(level.path2 ? [lanePoints(level, L, true)] : [])];
   const nearLane = (x: number, y: number) => {
+    for (const lane of lanes)
     for (let i = 1; i < lane.length; i++) {
       const [ax, ay] = lane[i - 1]!;
       const [bx, by] = lane[i]!;

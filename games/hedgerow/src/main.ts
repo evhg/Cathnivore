@@ -14,7 +14,7 @@ import {
   earlyBonus,
   isBig,
   isPlot,
-  laneCells,
+  laneCellsOf,
   moveHero,
   newGame,
   pieRadius,
@@ -1115,7 +1115,7 @@ ui.canvas.addEventListener("click", (e) => {
     return;
   }
   // Tapping the lane sends Cath straight there.
-  if (laneCells(game.level.path).has(`${c.col},${c.row}`)) {
+  if (laneCellsOf(game.level).has(`${c.col},${c.row}`)) {
     sendCath(w.x, w.y);
     return;
   }
@@ -1167,14 +1167,14 @@ ui.canvas.addEventListener("keydown", (e) => {
       row: Math.min(g.level.rows - 1, Math.max(0, cur.row + m[1])),
     };
     if (aiming) renderer.aim = { x: renderer.cursor.col + 0.5, y: renderer.cursor.row + 0.5, r: pieRadius(g) };
-    const lane = laneCells(g.level.path).has(`${renderer.cursor.col},${renderer.cursor.row}`);
+    const lane = laneCellsOf(g.level).has(`${renderer.cursor.col},${renderer.cursor.row}`);
     const tw = towerAt(g, renderer.cursor.col, renderer.cursor.row);
     say(`Column ${renderer.cursor.col + 1}, row ${renderer.cursor.row + 1}: ${tw ? TOWERS[tw.kind].name : lane ? "lane" : "empty plot"}`);
   } else if (e.key === "Enter" || e.key === " ") {
     e.preventDefault();
     if (aiming) fire(cur.col + 0.5, cur.row + 0.5);
     else if (renderer.heroSelected) sendCath(cur.col + 0.5, cur.row + 0.5);
-    else if (laneCells(g.level.path).has(`${cur.col},${cur.row}`)) sendCath(cur.col + 0.5, cur.row + 0.5);
+    else if (laneCellsOf(g.level).has(`${cur.col},${cur.row}`)) sendCath(cur.col + 0.5, cur.row + 0.5);
     else select(cur.col, cur.row);
   } else if (e.key === "Escape") {
     aiming = false;

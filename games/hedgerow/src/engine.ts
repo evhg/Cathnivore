@@ -762,7 +762,6 @@ export const BOSS_MOVES: Partial<Record<EnemyKind, { every: number; moves: BossM
 };
 
 function bossMoves(game: Game): void {
-  const path = game.level.path;
   const born: Enemy[] = [];
   for (const e of game.enemies) {
     const plan = BOSS_MOVES[e.kind];
@@ -775,7 +774,7 @@ function bossMoves(game: Game): void {
     e.moveCd = plan.every;
     const move = plan.moves[(e.moveIdx ?? 0) % plan.moves.length]!;
     e.moveIdx = (e.moveIdx ?? 0) + 1;
-    const p = pointAt(path, e.dist);
+    const p = enemyPoint(game.level, e);
     const hit: number[] = [];
     const near = (r: number) =>
       game.towers
@@ -791,6 +790,7 @@ function bossMoves(game: Game): void {
           born.push({
             id: game.nextId++,
             kind: move.spawn!.kind,
+            lane: e.lane,
             dist: Math.max(0, e.dist - 0.4 - i * 0.4),
             hp: ENEMIES[move.spawn!.kind].hp,
             slowed: false,
@@ -852,6 +852,8 @@ export interface WaveGroup {
   gap: number;
   /** Seconds after the wave starts that the group begins. */
   delay: number;
+  /** 1 = the second lane (only on levels with `path2`). */
+  lane?: 1;
 }
 
 export interface StoryLine {
@@ -868,6 +870,8 @@ export interface Level {
   rows: number;
   /** Cell waypoints; consecutive points share a row or a column. The last one is the farmhouse. */
   path: Array<[number, number]>;
+  /** A second lane from another spawn; it ends at the same farmhouse. Enemies in a group with `lane: 1` use it. */
+  path2?: Array<[number, number]>;
   /** Plots that aren't plain grass: high ground (+range) and water (ponds only). */
   terrain?: { high: Array<[number, number]>; water: Array<[number, number]> };
   startMarks: number;
@@ -907,6 +911,8 @@ export interface Enemy {
   id: number;
   kind: EnemyKind;
   dist: number;
+  /** 1 = walks the level's second lane. */
+  lane?: 1;
   hp: number;
   slowed: boolean;
   /** Seconds left frozen in place (Cath's pie, an injunction). */
@@ -1042,11 +1048,12 @@ export interface Game {
   /** Waves cleared and paid for. */
   paid: number;
   waveClock: number;
-  spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number }>;
+  spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number; lane?: 1 }>;
   enemies: Enemy[];
   towers: Tower[];
   nextId: number;
   pathLength: number;
+  pathLength2: number;
   events: GameEvent[];
   /** Seconds until Cath's pie is ready again. */
   pieCd: number;
@@ -1054,7 +1061,7 @@ export interface Game {
   neighboursCd: number;
   rallyCd: number;
   /** The farmhands' barricade: lane distance and seconds left (0 = none). */
-  barricade: { dist: number; left: number } | null;
+  barricade: { dist: number; left: number; lane?: 1 } | null;
   /** Seconds of Rally left: towers fire faster. */
   rallyLeft: number;
   hero: Hero;
@@ -1111,6 +1118,11 @@ export function headingAt(
 
 const laneCache = new WeakMap<Level["path"], Set<string>>();
 
+/** Where an enemy stands, on whichever lane it walks. */
+export function enemyPoint(level: Pick<Level, "path" | "path2">, e: { dist: number; lane?: 1 }) {
+  return pointAt(e.lane && level.path2 ? level.path2 : level.path, e.dist);
+}
+
 export function laneCells(path: Level["path"]): Set<string> {
   const hit = laneCache.get(path);
   if (hit) return hit;
@@ -1133,10 +1145,22 @@ export function laneCells(path: Level["path"]): Set<string> {
   return cells;
 }
 
+const levelLaneCache = new WeakMap<object, Set<string>>();
+
+/** Every lane cell on the level, both lanes together. */
+export function laneCellsOf(level: Pick<Level, "path" | "path2">): Set<string> {
+  if (!level.path2) return laneCells(level.path);
+  const hit = levelLaneCache.get(level);
+  if (hit) return hit;
+  const cells = new Set([...laneCells(level.path), ...laneCells(level.path2)]);
+  levelLaneCache.set(level, cells);
+  return cells;
+}
+
 export function isPlot(level: Level, col: number, row: number): boolean {
   if (col < 0 || row < 0 || col >= level.cols || row >= level.rows)
     return false;
-  return !laneCells(level.path).has(`${col},${row}`);
+  return !laneCellsOf(level).has(`${col},${row}`);
 }
 
 export type PlotKind = "plain" | "high" | "water";
@@ -1173,6 +1197,7 @@ export function newGame(level: Level, perks: Perks = NO_PERKS): Game {
     towers: [],
     nextId: 1,
     pathLength: pathLength(level.path),
+    pathLength2: level.path2 ? pathLength(level.path2) : 0,
     events: [],
     pieCd: 0,
     neighboursCd: 0,
@@ -1339,7 +1364,7 @@ export function sendWave(game: Game): ActionResult {
   const queue: Game["spawnQueue"] = [];
   for (const g of groups)
     for (let i = 0; i < g.count; i++)
-      queue.push({ at: g.delay + i * g.gap, kind: g.enemy, wave });
+      queue.push({ at: g.delay + i * g.gap, kind: g.enemy, wave, lane: g.lane });
   queue.sort((a, b) => a.at - b.at);
   game.spawnQueue = queue;
   game.waveClock = 0;
@@ -1380,7 +1405,7 @@ function jammed(game: Game, t: Tower): boolean {
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].jam;
     if (!r || e.hp <= 0) continue;
-    const p = pointAt(game.level.path, e.dist);
+    const p = enemyPoint(game.level, e);
     if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= r) return true;
   }
   return false;
@@ -1396,7 +1421,7 @@ export function charmed(game: Game, t: Tower): boolean {
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].charm;
     if (!r || e.hp <= 0) continue;
-    const p = pointAt(game.level.path, e.dist);
+    const p = enemyPoint(game.level, e);
     if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= r) return true;
   }
   return false;
@@ -1404,7 +1429,7 @@ export function charmed(game: Game, t: Tower): boolean {
 
 /** Radio Masts see through stealth: an enemy within a mast's range is revealed and marked. */
 export function markMultiplier(game: Game, e: Enemy): number {
-  const p = pointAt(game.level.path, e.dist);
+  const p = enemyPoint(game.level, e);
   let m = 1;
   for (const t of game.towers) {
     const s = towerStats(t);
@@ -1431,7 +1456,6 @@ function damageEnemy(
 
 function stepHero(game: Game): void {
   const h = game.hero;
-  const path = game.level.path;
   if (h.down > 0) {
     h.down = Math.max(0, h.down - STEP);
     if (h.down === 0) {
@@ -1456,7 +1480,7 @@ function stepHero(game: Game): void {
     h.holding = h.holding.filter((id) => {
       const e = byId.get(id);
       if (!e || e.hp <= 0) return false;
-      const p = pointAt(path, e.dist);
+      const p = enemyPoint(game.level, e);
       return Math.hypot(p.x - h.x, p.y - h.y) <= HERO.reach + 0.25;
     });
     if (h.holding.length < HERO.holds) {
@@ -1466,7 +1490,7 @@ function stepHero(game: Game): void {
           const spec = ENEMIES[e.kind];
           if (spec.flying || isBig(e.kind) || !isRevealed(game, e))
             return false;
-          const p = pointAt(path, e.dist);
+          const p = enemyPoint(game.level, e);
           return Math.hypot(p.x - h.x, p.y - h.y) <= HERO.reach;
         })
         .sort((a, b) => b.dist - a.dist || a.id - b.id);
@@ -1500,7 +1524,7 @@ function stepHero(game: Game): void {
     let best = Infinity;
     for (const e of game.enemies) {
       if (e.hp <= 0 || !isRevealed(game, e)) continue;
-      const p = pointAt(path, e.dist);
+      const p = enemyPoint(game.level, e);
       const dd = Math.hypot(p.x - h.x, p.y - h.y);
       if (dd <= HERO.reach + 0.15 && dd < best) {
         best = dd;
@@ -1515,7 +1539,7 @@ function stepHero(game: Game): void {
   const before = target.hp;
   damageEnemy(game, target, h.damage, false);
   if (before > 0 && target.hp <= 0) h.kills += 1;
-  const p = pointAt(path, target.dist);
+  const p = enemyPoint(game.level, target);
   h.facing = p.x >= h.x ? 1 : -1;
   h.cd = HERO.cooldown;
   game.events.push({ type: "swing", x: p.x, y: p.y });
@@ -1526,13 +1550,12 @@ function pickTarget(
   t: Tower,
   range: number,
 ): Enemy | undefined {
-  const path = game.level.path;
   const mode = t.target ?? "first";
   let target: Enemy | undefined;
   let best = -Infinity;
   for (const e of game.enemies) {
     if (e.hp <= 0 || !isRevealed(game, e)) continue;
-    const p = pointAt(path, e.dist);
+    const p = enemyPoint(game.level, e);
     const d = Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y);
     if (d > range) continue;
     const score =
@@ -1563,7 +1586,6 @@ export function stepGame(game: Game): void {
     game.barricade.left -= STEP;
     if (game.barricade.left <= 0) game.barricade = null;
   }
-  const path = game.level.path;
 
   while (
     game.spawnQueue.length > 0 &&
@@ -1573,6 +1595,7 @@ export function stepGame(game: Game): void {
     game.enemies.push({
       id: game.nextId++,
       kind: next.kind,
+      lane: next.lane,
       dist: 0,
       hp: ENEMIES[next.kind].hp,
       slowed: false,
@@ -1587,7 +1610,7 @@ export function stepGame(game: Game): void {
 
   // Hedgerows slow whatever is in range; the strongest one wins, they don't stack. Honey sticks.
   for (const enemy of game.enemies) {
-    const p = pointAt(path, enemy.dist);
+    const p = enemyPoint(game.level, enemy);
     let factor = 1;
     for (const t of game.towers) {
       const s = towerStats(t);
@@ -1605,7 +1628,7 @@ export function stepGame(game: Game): void {
       let move =
         ENEMIES[enemy.kind].speed * Math.max(0.05, factor) * (enemy.charge && enemy.charge > 0 ? 2.2 : 1) * STEP;
       const bar = game.barricade;
-      if (bar && enemy.dist <= bar.dist) {
+      if (bar && enemy.lane === bar.lane && enemy.dist <= bar.dist) {
         // Farmhands stop anything on foot dead; bosses only slow to a crawl.
         if (isBig(enemy.kind)) move *= 0.25;
         else move = Math.max(0, Math.min(move, bar.dist - enemy.dist));
@@ -1636,7 +1659,7 @@ export function stepGame(game: Game): void {
     if (spec.thorns > 0) {
       for (const e of game.enemies) {
         if (e.hp <= 0) continue;
-        const p = pointAt(path, e.dist);
+        const p = enemyPoint(game.level, e);
         if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range)
           damageEnemy(game, e, spec.thorns * STEP, false);
       }
@@ -1647,7 +1670,7 @@ export function stepGame(game: Game): void {
       let served = false;
       for (const e of game.enemies) {
         if (e.hp <= 0 || (!isBig(e.kind) && !spec.classAction)) continue;
-        const p = pointAt(path, e.dist);
+        const p = enemyPoint(game.level, e);
         if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range) {
           e.stun = Math.max(e.stun, spec.injunction);
           served = true;
@@ -1671,7 +1694,7 @@ export function stepGame(game: Game): void {
       t.cd = 0;
       continue;
     }
-    const p = pointAt(path, target.dist);
+    const p = enemyPoint(game.level, target);
     let dmg = spec.damage;
     for (const b of game.towers) {
       const bs = towerStats(b);
@@ -1699,7 +1722,7 @@ export function stepGame(game: Game): void {
     if (spec.splash) {
       for (const e of game.enemies) {
         if (e === target || e.hp <= 0) continue;
-        const q = pointAt(path, e.dist);
+        const q = enemyPoint(game.level, e);
         if (Math.hypot(q.x - p.x, q.y - p.y) <= spec.splash) hit(e);
       }
     }
@@ -1721,7 +1744,7 @@ export function stepGame(game: Game): void {
   const alive: Enemy[] = [];
   const spawned: Enemy[] = [];
   for (const e of game.enemies) {
-    const p = pointAt(path, e.dist);
+    const p = enemyPoint(game.level, e);
     if (e.hp <= 0) {
       const bounty = ENEMIES[e.kind].bounty;
       game.marks += bounty;
@@ -1731,6 +1754,7 @@ export function stepGame(game: Game): void {
           spawned.push({
             id: game.nextId++,
             kind: split.kind,
+            lane: e.lane,
             dist: Math.max(0, e.dist - i * 0.35),
             hp: ENEMIES[split.kind].hp,
             slowed: false,
@@ -1741,7 +1765,7 @@ export function stepGame(game: Game): void {
         game.events.push({ type: "split", x: p.x, y: p.y, kind: split.kind });
       }
       game.events.push({ type: "kill", x: p.x, y: p.y, bounty, kind: e.kind });
-    } else if (e.dist >= game.pathLength) {
+    } else if (e.dist >= (e.lane ? game.pathLength2 : game.pathLength)) {
       const lost = ENEMIES[e.kind].leak;
       game.goodwill -= lost;
       game.events.push({ type: "leak", x: p.x, y: p.y, kind: e.kind, lost });
@@ -1805,9 +1829,9 @@ export function callNeighbours(game: Game): ActionResult {
   if (game.neighboursCd > 0) return { ok: false, reason: "They're still getting their boots back on." };
   if (game.enemies.length === 0) return { ok: false, reason: "Nothing to block." };
   const lead = game.enemies.reduce((a, b) => (b.dist > a.dist ? b : a));
-  const dist = Math.min(game.pathLength - 1, lead.dist + 0.8);
-  const p = pointAt(game.level.path, dist);
-  game.barricade = { dist, left: NEIGHBOURS_SECS * game.perks.neighbours };
+  const dist = Math.min((lead.lane ? game.pathLength2 : game.pathLength) - 1, lead.dist + 0.8);
+  const p = enemyPoint(game.level, { dist, lane: lead.lane });
+  game.barricade = { dist, lane: lead.lane, left: NEIGHBOURS_SECS * game.perks.neighbours };
   game.neighboursCd = NEIGHBOURS_COOLDOWN;
   game.events.push({ type: "neighbours", x: p.x, y: p.y });
   return { ok: true };
@@ -1861,13 +1885,13 @@ export function throwPie(game: Game, x?: number, y?: number): ActionResult {
     return { ok: false, reason: "Nothing to throw it at." };
   if (x === undefined || y === undefined) {
     const lead = game.enemies.reduce((a, b) => (b.dist > a.dist ? b : a));
-    const p = pointAt(game.level.path, lead.dist);
+    const p = enemyPoint(game.level, lead);
     x = p.x;
     y = p.y;
   }
   const radius = pieRadius(game);
   for (const e of game.enemies) {
-    const p = pointAt(game.level.path, e.dist);
+    const p = enemyPoint(game.level, e);
     if (Math.hypot(p.x - x, p.y - y) > radius) continue;
     e.stun = Math.max(e.stun, isBig(e.kind) ? PIE_STUN / 2 : PIE_STUN);
     e.hp -= PIE_DAMAGE;

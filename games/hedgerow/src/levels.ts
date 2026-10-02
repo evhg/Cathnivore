@@ -1,7 +1,7 @@
 // Hedgerow's levels. H1 ships the first three of act 1, Brindle Hills (docs/design/hedgerow.md). Story
 // follows SPEC 3.2's voice: short, specific, dry, warm. Later acts append to LEVELS.
 
-import type { Level, WaveGroup } from "./engine";
+import { BOSS_MOVES, laneCellsOf, type Level, type WaveGroup } from "./engine";
 import { addTerrain } from "./terrain";
 
 const van = (count: number, gap: number, delay = 0): WaveGroup => ({
@@ -6224,6 +6224,48 @@ LEVELS.push({
     'Hedgerow complete. Lore card: "Marrow, unsold", the whole valley\'s signature.',
 });
 
+/**
+ * A fork on some levels: a second spawn on the opposite edge runs along the plot row between two lanes of
+ * the serpentine and joins the main lane at the first connector, then shares its tail. Every second group
+ * of each wave (or half of a lone big group) marches down it, so the defence has to cover two doors.
+ */
+function addSecondLane(l: Level): void {
+  const p = l.path;
+  const lane = laneCellsOf(l);
+  for (let i = 1; i + 1 < p.length; i++) {
+    const [ax, ay] = p[i]!;
+    const [bx, by] = p[i + 1]!;
+    if (ax !== bx || Math.abs(by - ay) !== 2) continue;
+    const my = (ay + by) / 2;
+    const ex = ax === 0 ? l.cols - 1 : ax === l.cols - 1 ? 0 : -1;
+    if (ex < 0) continue;
+    let free = true;
+    for (let c = Math.min(ex, ax); c <= Math.max(ex, ax); c++)
+      if (c !== ax && lane.has(`${c},${my}`)) free = false;
+    if (!free) continue;
+    l.path2 = [[ex, my], [ax, my], ...p.slice(i + 1)];
+    l.waves = l.waves.map((groups) => {
+      const out: WaveGroup[] = [];
+      groups.forEach((g, gi) => {
+        if (BOSS_MOVES[g.enemy] || g.count === 0) out.push(g);
+        else if (groups.length === 1 && g.count >= 4) {
+          const half = Math.floor(g.count / 2);
+          out.push(
+            { ...g, count: g.count - half },
+            { ...g, count: half, lane: 1 },
+          );
+        } else out.push(gi % 2 === 1 ? { ...g, lane: 1 } : g);
+      });
+      return out;
+    });
+    return;
+  }
+}
+
+// Level 94 (the Grain Exchange) stays single-lane: the level bot could not hold two doors there.
+const FORK_LEVELS = (id: number) =>
+  id >= 10 && id % 4 === 2 && id % 10 !== 0 && id !== 94;
+for (const l of LEVELS) if (FORK_LEVELS(l.id)) addSecondLane(l);
 for (const l of LEVELS) addTerrain(l);
 
 export function levelById(id: number): Level | undefined {

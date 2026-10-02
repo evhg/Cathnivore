@@ -210,3 +210,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-02: build menu is a bottom panel with icon cards rather than a radial menu: thumbs reach it one-handed and it never covers the lane. `?sandbox=1` gives unlimited Marks for screenshots.
 - 2026-10-02 06:51-07:10 UTC: ROADMAP 38 slice: defeated enemies tip over and fade (render only). check + e2e:site green. No release (batching).
 - 2026-10-02: Terrain is generated from each level's lane (terrain.ts) instead of hand-placed in 100 levels: high ground backed one cell off the lane, water only in acts 3, 4, 6; levels 1-3 stay plain.
+- 2026-10-02: Forks are generated (levels.ts addSecondLane), not hand-drawn: a feeder joins the serpentine at its first connector; odd groups of each wave use lane 1. Level 94 excluded (bot lost with two doors).
