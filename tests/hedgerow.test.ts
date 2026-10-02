@@ -48,6 +48,9 @@ import {
   refundAll,
 } from "../games/hedgerow/src/store";
 
+
+/** Cath and her abilities left to the test, not the auto-battler. */
+const MANUAL = { hero: false, abilities: false };
 /** A simple greedy player: spend everything, scarecrows on the plots that see the most lane. */
 function plotsByCoverage(level: Level): Array<[number, number]> {
   const cells: Array<{ c: number; r: number; score: number }> = [];
@@ -349,7 +352,7 @@ describe("hedgerow engine", () => {
   });
 
   it("the Clinic-in-a-Box heals its neighbours", () => {
-    const g = newGame(LEVELS[49]!);
+    const g = newGame(LEVELS[49]!, NO_PERKS, MANUAL);
     sendWave(g);
     g.spawnQueue = [];
     g.enemies.push(
@@ -585,9 +588,37 @@ function spawn(
   return e;
 }
 
+describe("hedgerow: the auto-battler", () => {
+  it("Cath walks to meet the vehicle nearest the farmhouse by herself", () => {
+    const game = newGame(strip());
+    sendWave(game);
+    game.spawnQueue = [];
+    spawn(game, "van", 8, 1e6);
+    spawn(game, "van", 2, 1e6);
+    for (let i = 0; i < 90; i++) stepGame(game);
+    expect(game.hero.x).toBeGreaterThan(8);
+    expect(game.enemies.some((e) => e.held)).toBe(true);
+  });
+
+  it("she throws the pie at the thickest crowd by herself", () => {
+    const game = newGame(strip({ id: 50 }));
+    sendWave(game);
+    game.spawnQueue = [];
+    for (let i = 0; i < 6; i++) spawn(game, "van", 3 + i * 0.2, 1e6);
+    stepGame(game);
+    expect(game.pieCd).toBeGreaterThan(0);
+    const off = newGame(strip({ id: 50 }), NO_PERKS, MANUAL);
+    sendWave(off);
+    off.spawnQueue = [];
+    for (let i = 0; i < 6; i++) spawn(off, "van", 3 + i * 0.2, 1e6);
+    stepGame(off);
+    expect(off.pieCd).toBe(0);
+  });
+});
+
 describe("hedgerow: Cath on the battlefield", () => {
   it("holds a van in place, whacks it and takes hits back", () => {
-    const game = newGame(strip());
+    const game = newGame(strip(), NO_PERKS, MANUAL);
     moveHero(game, 6.5, 1.5);
     for (let i = 0; i < 120; i++) stepGame(game); // build phase: nothing moves
     sendWave(game);
@@ -635,7 +666,7 @@ describe("hedgerow: Cath on the battlefield", () => {
   });
 
   it("walks where she is sent, and lets go while walking", () => {
-    const game = newGame(strip());
+    const game = newGame(strip(), NO_PERKS, MANUAL);
     expect(moveHero(game, 2.5, 0.5).ok).toBe(true);
     sendWave(game);
     for (let i = 0; i < 90; i++) stepGame(game);
@@ -861,6 +892,8 @@ describe("hedgerow: calling waves early", () => {
     expect(canCallEarly(game)).toBe(false);
     sendWave(game);
     stepGame(game);
+    expect(canCallEarly(game)).toBe(false); // a moment's grace against double taps
+    for (let i = 0; i < 30; i++) stepGame(game);
     expect(canCallEarly(game)).toBe(true);
     const bonus = earlyBonus(game);
     const before = game.marks;
@@ -898,6 +931,7 @@ describe("hedgerow: perks", () => {
 });
 
 const ENEMIES_VAN_BOUNTY = 9;
+
 
 describe("hedgerow saves", () => {
   it("starts empty, repairs junk and keeps the best stars", () => {

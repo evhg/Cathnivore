@@ -1443,3 +1443,102 @@ button {
     margin: -14px 10px 0;
   }
 }
+
+/* ---- stats (owner feedback 2026-10-02: make upgrades clear) ---- */
+.stats {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 10px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.stats dt {
+  color: var(--ink-muted);
+}
+.stats dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.stats dd.up {
+  color: #2f7d32;
+}
+.tower-titles {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+.target-btn {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--paper-2);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.spec {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.spec-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.spec-top strong {
+  flex: 1;
+  font-size: 14px;
+}
+.spec small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--ink-muted);
+}
+.spec .stats {
+  font-size: 12px;
+}
+@media (max-width: 899.98px) {
+  /* A fixed-height panel: choosing a tower never squeezes the battlefield. */
+  .panel {
+    height: 190px;
+    min-height: 0;
+    flex: none;
+    justify-content: flex-start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+.auto-btn {
+  flex: none;
+  min-width: 56px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(107, 74, 43, 0.25), inset 0 0 0 1px rgba(107, 74, 43, 0.12);
+}
+.auto-btn[aria-pressed="true"] {
+  background: var(--pasture);
+  color: #fff;
+}
+@media (max-width: 520px) {
+  /* Cath runs herself; on a phone she's tapped on the field, so her button makes room for the abilities. */
+  #btn-hero {
+    display: none;
+  }
+  .ability {
+    width: 54px;
+  }
+  .auto-btn {
+    min-width: 50px;
+  }
+}

@@ -15,7 +15,6 @@ import {
   isBig,
   isPlot,
   laneCellsOf,
-  moveHero,
   newGame,
   pieRadius,
   pieUnlocked,
@@ -70,6 +69,7 @@ import {
 } from "./store";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
+import { FINALE } from "./story/acts6to10";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -99,6 +99,7 @@ const ui = {
   pieRing: $<HTMLElement>("pie-ring"),
   pieLabel: $<HTMLElement>("pie-label"),
   btnHero: $<HTMLButtonElement>("btn-hero"),
+  btnAuto: $<HTMLButtonElement>("btn-auto"),
   heroFace: $<HTMLElement>("hero-face"),
   heroHp: $<HTMLElement>("hero-hp"),
   btnSpeed: $<HTMLButtonElement>("btn-speed"),
@@ -148,6 +149,11 @@ const NAMES: Record<StoryLine["who"], string> = {
   bea: "Bea",
   tomas: "Tomas",
   sol: "Sol",
+  ines: "Ines",
+  pip: "Pip Talbot",
+  pell: "Graham Pell",
+  crisp: "Julian Crisp",
+  vane: "Dr Vane",
   narrator: "Marrow",
 };
 const cath = (expression: CathExpression) => cathSvg({ framing: "face", expression, animate: true });
@@ -160,7 +166,25 @@ let game: Game | null = null;
 let renderer: Renderer | null = null;
 setHaptics(!sfx.isMuted());
 let selected: { col: number; row: number } | null = null;
-let speed = 1;
+/** Auto-continue: the next wave starts by itself after a countdown (the auto-battler default). */
+const AUTO_SECS = 6;
+let autoNext = (() => {
+  try {
+    return localStorage.getItem("hedgerow:auto") !== "off";
+  } catch {
+    return true;
+  }
+})();
+let autoLeft = AUTO_SECS;
+
+let speed = (() => {
+  try {
+    const v = Number(localStorage.getItem("hedgerow:speed"));
+    return v === 2 || v === 3 ? v : 1;
+  } catch {
+    return 1;
+  }
+})();
 let paused = false;
 let aiming = false;
 let last = 0;
@@ -199,10 +223,15 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
     return;
   }
   let i = 0;
-  const other = lines.find((l) => l.who !== "cath" && l.who !== "narrator")?.who as CastMember | undefined;
+  // The right-hand actor is whoever Cath is talking to at the moment (scenes can have two or three people).
+  let other = lines.find((l) => l.who !== "cath" && l.who !== "narrator")?.who as CastMember | undefined;
   ui.storyBg.innerHTML = actScene(act);
-  ui.storyRight.innerHTML = other ? castSvg(other) : "";
-  ui.storyRight.hidden = !other;
+  const showOther = () => {
+    ui.storyRight.innerHTML = other ? castSvg(other) : "";
+    ui.storyRight.hidden = !other;
+    ui.storyRight.dataset.who = other ?? "";
+  };
+  showOther();
   const finishTyping = () => {
     clearInterval(typing);
     typing = 0;
@@ -210,6 +239,10 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
   };
   const show = () => {
     const line = lines[i]!;
+    if (line.who !== "cath" && line.who !== "narrator" && line.who !== other) {
+      other = line.who as CastMember;
+      showOther();
+    }
     ui.storyPlace.textContent = place;
     ui.storyWho.textContent = NAMES[line.who];
     ui.storyFull.textContent = line.text;
@@ -284,7 +317,6 @@ function startLevel(lv: Level): void {
   finished = false;
   paused = false;
   aiming = false;
-  speed = 1;
   panelKey = "";
   earlyCalls = 0;
   ui.select.hidden = true;
@@ -390,20 +422,24 @@ function syncControls(): void {
   ui.rallyLabel.textContent = g.rallyLeft > 0 ? "Go!" : g.rallyCd > 0 ? `${Math.ceil(g.rallyCd)}s` : "Rally";
   ui.rallyRing.style.setProperty("--cd", String(g.rallyCd / RALLY_COOLDOWN));
   const h = g.hero;
-  ui.btnHero.setAttribute("aria-pressed", String(!!renderer?.heroSelected));
   ui.btnHero.classList.toggle("down", h.down > 0);
   ui.heroHp.style.setProperty("--hp", String(h.down > 0 ? 0 : h.hp / h.maxHp));
   ui.btnHero.setAttribute(
     "aria-label",
-    h.down > 0 ? `Cath is catching her breath, back in ${Math.ceil(h.down)} seconds` : `Cath, ${Math.round(h.hp)} of ${h.maxHp} health. Select to move her.`,
+    h.down > 0
+      ? `Cath is catching her breath, back in ${Math.ceil(h.down)} seconds`
+      : `Cath, ${Math.round(h.hp)} of ${h.maxHp} health, ${h.kills} knockouts. She goes where she's needed.`,
   );
   const more = g.wave < g.level.waves.length;
   const early = canCallEarly(g);
   ui.btnSend.disabled = !(g.phase === "build" && more) && !early;
   ui.btnSend.classList.toggle("early", early);
+  ui.btnAuto.setAttribute("aria-pressed", String(autoNext));
   ui.btnSend.textContent =
     g.phase === "build" && more
-      ? `Send wave ${g.wave + 1}`
+      ? autoNext && g.wave > 0 && autoLeft > 0
+        ? `Wave ${g.wave + 1} in ${Math.ceil(autoLeft)}…`
+        : `Send wave ${g.wave + 1}`
       : early
         ? `Call wave ${g.wave + 1} early +${earlyBonus(g)}`
         : g.phase === "wave"
@@ -475,10 +511,6 @@ function renderPanel(force = false): void {
 
   if (aiming) {
     p.append(line(`Tap where the pie should land. It freezes everything it hits for 3 seconds. Tap the pie again to aim at the front of the queue.`));
-    return;
-  }
-  if (renderer?.heroSelected) {
-    p.append(line("Tap anywhere on the field to send Cath there. In the lane she holds two vehicles at a time; drones and bosses get past her."));
     return;
   }
   if (!sel) {
@@ -585,6 +617,57 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
 
 const TARGET_LABEL: Record<TargetMode, string> = { first: "First", last: "Last", strong: "Strongest", close: "Closest" };
 
+type Stats = ReturnType<typeof towerStats>;
+
+/** The numbers a player compares: label and value, for a tower at some tier. */
+function statList(st: Stats): Array<[string, string]> {
+  const rows: Array<[string, string]> = [];
+  if (st.damage) {
+    rows.push(["Damage/s", (st.damage / st.cooldown).toFixed(0)]);
+    rows.push(["Hit", st.damage.toFixed(0)]);
+    rows.push(["Rate", `${(1 / st.cooldown).toFixed(1)}/s`]);
+  }
+  if (st.range) rows.push(["Range", st.range.toFixed(1)]);
+  if (st.damage || st.slow < 1 || st.thorns) rows.push(["Hits", st.air ? "air + ground" : "ground only"]);
+  if (st.splash) rows.push(["Splash", st.splash.toFixed(1)]);
+  if (st.slow < 1) rows.push(["Slows to", `${Math.round(st.slow * 100)}%`]);
+  if (st.thorns) rows.push(["Thorns", `${st.thorns}/s`]);
+  if (st.poison) rows.push(["Poison", `${st.poison.dps}/s for ${st.poison.secs}s`]);
+  if (st.sticky) rows.push(["Honey", `${Math.round(st.sticky.factor * 100)}% speed, ${st.sticky.secs}s`]);
+  if (st.knockback) rows.push(["Knockback", st.knockback.toFixed(2)]);
+  if (st.crit) rows.push(["Crit", `every ${st.crit.every} shots ×${st.crit.mult}`]);
+  if (st.pierce) rows.push(["Armour", "ignored"]);
+  if (st.buff > 1) rows.push(["Nearby towers", `+${Math.round((st.buff - 1) * 100)}% damage`]);
+  if (st.aura > 1) rows.push(["Every tower", `+${Math.round((st.aura - 1) * 100)}% damage`]);
+  if (st.income) rows.push(["Income", `+${st.income} a wave`]);
+  if (st.reveal > 1) rows.push(["Marked", `+${Math.round((st.reveal - 1) * 100)}% damage taken`]);
+  if (st.injunction) rows.push(["Injunction", `${st.injunction}s on ${st.classAction ? "everything" : "bosses"}`]);
+  if (st.mend) rows.push(["Mends", `+${st.mend} Goodwill a wave`]);
+  if (st.pieHaste) rows.push(["Pie", `${Math.round(st.pieHaste * 100)}% faster`]);
+  if (st.cleanse) rows.push(["Cures", "charm"]);
+  return rows;
+}
+
+/** A stat grid; with `next`, each row shows the change ("12 → 19"), changed rows highlighted. */
+function statGrid(st: Stats, next?: Stats): HTMLElement {
+  const dl = document.createElement("dl");
+  dl.className = "stats";
+  const now = new Map(statList(st));
+  const rows = next ? statList(next) : [...now];
+  for (const [label, value] of rows) {
+    const dt = document.createElement("dt");
+    dt.textContent = label;
+    const dd = document.createElement("dd");
+    const before = now.get(label);
+    if (next && before !== value) {
+      dd.className = "up";
+      dd.textContent = before ? `${before} → ${value}` : `new: ${value}`;
+    } else dd.textContent = value;
+    dl.append(dt, dd);
+  }
+  return dl;
+}
+
 function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   p.classList.add("panel-tower");
   const spec = TOWERS[t.kind];
@@ -593,6 +676,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   head.className = "tower-head";
   head.append(img(towerIcon(t.kind, t.tier, t.spec ?? null), "tower-icon"));
   const titles = document.createElement("div");
+  titles.className = "tower-titles";
   const name = t.tier === 4 && t.spec != null ? SPECIALISATIONS[t.kind][t.spec].name : spec.name;
   const title = line(name, "panel-title");
   title.setAttribute("aria-label", `${name}, tier ${t.tier} of 4`);
@@ -601,39 +685,37 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   pips.setAttribute("aria-hidden", "true");
   pips.textContent = "★".repeat(t.tier) + "☆".repeat(4 - t.tier);
   title.append(" ", pips);
-  titles.append(title, line(describeStats(st), "panel-stats"));
+  titles.append(title);
+  if (st.damage > 0) {
+    // Targeting is one small cycling button: it rarely needs changing.
+    const tb = document.createElement("button");
+    tb.type = "button";
+    tb.className = "target-btn";
+    const mode = t.target ?? "first";
+    tb.textContent = `Target: ${TARGET_LABEL[mode]}`;
+    tb.setAttribute("aria-label", `Target ${TARGET_LABEL[mode]}. Change target`);
+    tb.onclick = () => {
+      const next = TARGET_MODES[(TARGET_MODES.indexOf(mode) + 1) % TARGET_MODES.length]!;
+      setTarget(g, t.id, next);
+      renderPanel(true);
+    };
+    titles.append(tb);
+  }
   head.append(titles);
   p.append(head);
-
-  if (st.damage > 0) {
-    const seg = document.createElement("div");
-    seg.className = "segmented";
-    seg.setAttribute("role", "group");
-    seg.setAttribute("aria-label", "Target");
-    for (const mode of TARGET_MODES) {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.textContent = TARGET_LABEL[mode];
-      b.setAttribute("aria-pressed", String((t.target ?? "first") === mode));
-      b.onclick = () => {
-        setTarget(g, t.id, mode);
-        renderPanel(true);
-      };
-      seg.append(b);
-    }
-    p.append(seg);
-  }
 
   const row = document.createElement("div");
   row.className = "panel-row";
   if (t.tier < 3) {
     const cost = upgradeCost(t)!;
+    const nextStats = towerStats({ kind: t.kind, tier: (t.tier + 1) as 2 | 3, spec: null });
+    p.append(statGrid(st, nextStats));
     const up = document.createElement("button");
     up.type = "button";
     up.className = "btn";
     up.id = "btn-upgrade";
     up.dataset.cost = String(cost);
-    up.textContent = `Upgrade · ${cost}`;
+    up.textContent = `Upgrade to tier ${t.tier + 1} · ${cost}`;
     up.disabled = g.marks < cost;
     up.onclick = () => {
       if (act(() => upgrade(g, t.id))) {
@@ -645,6 +727,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     };
     row.append(up);
   } else if (t.tier === 3) {
+    p.append(statGrid(st));
     const choices = document.createElement("div");
     choices.className = "spec-row";
     const open = specsUnlocked(g.level);
@@ -657,19 +740,23 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
       b.dataset.cost = String(cost);
       b.dataset.locked = open ? "0" : "1";
       b.disabled = !open || g.marks < cost;
-      b.append(img(towerIcon(t.kind, 4, i), "spec-icon"));
-      const txt = document.createElement("span");
-      txt.className = "spec-text";
+      const top = document.createElement("span");
+      top.className = "spec-top";
+      top.append(img(towerIcon(t.kind, 4, i), "spec-icon"));
       const n = document.createElement("strong");
-      n.textContent = `${sp.name} · ${cost}`;
+      n.textContent = sp.name;
+      const c = document.createElement("span");
+      c.className = "build-cost";
+      c.textContent = String(cost);
+      top.append(n, c);
       const d = document.createElement("small");
       d.textContent = sp.blurb;
-      txt.append(n, d);
-      b.append(txt);
+      b.append(top, d, statGrid(st, towerStats({ kind: t.kind, tier: 4, spec: i })));
+      b.setAttribute("aria-label", `${sp.name}, ${cost} Marks. ${sp.blurb}`);
       b.onclick = () => {
         if (act(() => upgrade(g, t.id, i))) {
-        haptic.upgrade();
-        renderer?.built_(t.id, t.col, t.row, true);
+          haptic.upgrade();
+          renderer?.built_(t.id, t.col, t.row, true);
           sfx.playUpgrade();
           renderPanel(true);
         }
@@ -678,7 +765,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     });
     p.append(choices);
     if (!open) p.append(line(`Specialisations open at level ${SPEC_FIRST_LEVEL}.`, "hint"));
-  }
+  } else p.append(statGrid(st));
   const sl = document.createElement("button");
   sl.type = "button";
   sl.className = "btn btn-quiet";
@@ -690,29 +777,6 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   };
   row.append(sl);
   p.append(row);
-}
-
-function describeStats(st: ReturnType<typeof towerStats>): string {
-  const parts: string[] = [];
-  if (st.range) parts.push(`range ${st.range}`);
-  if (st.damage) parts.push(`${(st.damage / st.cooldown).toFixed(0)} damage a second`);
-  if (st.splash) parts.push("splash");
-  if (st.slow < 1) parts.push(`slows to ${Math.round(st.slow * 100)}%`);
-  if (st.thorns) parts.push(`thorns ${st.thorns}/s`);
-  if (st.poison) parts.push("poison");
-  if (st.sticky) parts.push("sticky honey");
-  if (st.knockback) parts.push("knockback");
-  if (st.crit) parts.push(`every ${st.crit.every}rd shot ×${st.crit.mult}`);
-  if (st.pierce) parts.push("ignores armour");
-  if (st.buff > 1) parts.push(`+${Math.round((st.buff - 1) * 100)}% to neighbours`);
-  if (st.aura > 1) parts.push(`+${Math.round((st.aura - 1) * 100)}% to every tower`);
-  if (st.income) parts.push(`+${st.income} Marks a wave`);
-  if (st.reveal > 1) parts.push(`reveals, +${Math.round((st.reveal - 1) * 100)}% damage taken`);
-  if (st.injunction) parts.push(`stops ${st.classAction ? "everything" : "bosses"} for ${st.injunction}s`);
-  if (st.mend) parts.push(`+${st.mend} Goodwill a wave`);
-  if (st.pieHaste) parts.push("faster pies");
-  if (st.cleanse) parts.push("cures charm");
-  return parts.join(" · ");
 }
 
 function act(fn: () => { ok: boolean; reason?: string }): boolean {
@@ -745,11 +809,6 @@ function deselect(): void {
 
 function select(col: number, row: number): void {
   if (!game || !renderer) return;
-  if (selected && selected.col === col && selected.row === row && !towerAt(game, col, row) && !isPlot(game.level, col, row)) {
-    // Second tap on the lane: send Cath.
-    sendCath(col + 0.5, row + 0.5);
-    return;
-  }
   selected = { col, row };
   renderer.selected = selected;
   renderer.heroSelected = false;
@@ -758,12 +817,15 @@ function select(col: number, row: number): void {
   syncControls();
 }
 
-function sendCath(x: number, y: number): void {
+/** Cath runs herself (the auto-battler): tapping her shows how she's doing. */
+function heroStatus(): void {
   if (!game) return;
-  if (act(() => moveHero(game!, x, y))) {
-    sfx.playMove();
-    deselect();
-  }
+  const h = game.hero;
+  toast(
+    h.down > 0
+      ? `Cath is catching her breath: back in ${Math.ceil(h.down)}s.`
+      : `Cath: ${Math.round(h.hp)}/${h.maxHp} health, ${h.kills} knockouts. She goes where she's needed.`,
+  );
 }
 
 function startAim(): void {
@@ -927,6 +989,15 @@ function frame(now: number): void {
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   if (!paused && !ui.dlgStory.open && !ui.dlgResult.open) {
+    if (g.phase === "build" && g.wave > 0 && g.wave < g.level.waves.length && autoNext) {
+      // Hold the countdown while the player is choosing something.
+      if (!selected) autoLeft -= dt * speed;
+      if (autoLeft <= 0) {
+        autoLeft = AUTO_SECS;
+        act(() => sendWave(g));
+      }
+      syncControls();
+    } else if (g.phase !== "build") autoLeft = AUTO_SECS;
     acc += dt * speed;
     let stepped = false;
     while (acc >= STEP) {
@@ -962,26 +1033,6 @@ function frame(now: number): void {
   }
 }
 
-const FINALE: StoryLine[] = [
-  {
-    who: "cath",
-    expression: "delighted",
-    text: "That's the last of them. The hedges are still standing, and so is everyone who planted them.",
-  },
-  {
-    who: "bea",
-    text: "Mum, the whole county is on the lane. Somebody brought a trestle table.",
-  },
-  {
-    who: "cath",
-    expression: "smirk",
-    text: "Then we'd better put the pies out. Nobody owns a hedgerow. You just look after it for the next person.",
-  },
-  {
-    who: "narrator",
-    text: "Hedgerow. Every bush, every scarecrow and every pie was made by the people of Marrow. Thank you for holding the lane.",
-  },
-];
 
 function finish(g: Game): void {
   if (game !== g) return;
@@ -1101,12 +1152,8 @@ ui.canvas.addEventListener("click", (e) => {
     fire(w.x, w.y);
     return;
   }
-  if (renderer.heroSelected) {
-    sendCath(w.x, w.y);
-    return;
-  }
-  if (renderer.onHero(e.clientX, e.clientY, game) && game.hero.down === 0) {
-    selectHero();
+  if (renderer.onHero(e.clientX, e.clientY, game)) {
+    heroStatus();
     return;
   }
   const c = renderer.cellAt(e.clientX, e.clientY, game);
@@ -1114,9 +1161,8 @@ ui.canvas.addEventListener("click", (e) => {
     deselect();
     return;
   }
-  // Tapping the lane sends Cath straight there.
   if (laneCellsOf(game.level).has(`${c.col},${c.row}`)) {
-    sendCath(w.x, w.y);
+    deselect();
     return;
   }
   if (selected && selected.col === c.col && selected.row === c.row) {
@@ -1133,21 +1179,6 @@ ui.canvas.addEventListener("pointermove", (e) => {
 ui.canvas.addEventListener("pointerleave", () => {
   if (renderer && aiming) renderer.aim = null;
 });
-
-function selectHero(): void {
-  if (!game || !renderer) return;
-  if (game.hero.down > 0) {
-    say("Cath is catching her breath.");
-    return;
-  }
-  renderer.heroSelected = !renderer.heroSelected;
-  renderer.selected = null;
-  selected = null;
-  aiming = false;
-  renderer.aim = null;
-  renderPanel(true);
-  syncControls();
-}
 
 ui.canvas.addEventListener("keydown", (e) => {
   if (!game || !renderer) return;
@@ -1173,15 +1204,13 @@ ui.canvas.addEventListener("keydown", (e) => {
   } else if (e.key === "Enter" || e.key === " ") {
     e.preventDefault();
     if (aiming) fire(cur.col + 0.5, cur.row + 0.5);
-    else if (renderer.heroSelected) sendCath(cur.col + 0.5, cur.row + 0.5);
-    else if (laneCellsOf(g.level).has(`${cur.col},${cur.row}`)) sendCath(cur.col + 0.5, cur.row + 0.5);
-    else select(cur.col, cur.row);
+    else if (!laneCellsOf(g.level).has(`${cur.col},${cur.row}`)) select(cur.col, cur.row);
   } else if (e.key === "Escape") {
     aiming = false;
     renderer.aim = null;
     deselect();
   } else if (e.key === "c" || e.key === "C") {
-    selectHero();
+    heroStatus();
   } else if (e.key === "p" || e.key === "P") {
     if (!ui.btnPie.disabled) startAim();
   } else if (e.key === "b" || e.key === "B") {
@@ -1215,10 +1244,25 @@ ui.btnRally.addEventListener("click", () => {
 });
 ui.btnHero.addEventListener("click", () => {
   sfx.unlock();
-  selectHero();
+  heroStatus();
+});
+ui.btnAuto.addEventListener("click", () => {
+  autoNext = !autoNext;
+  autoLeft = AUTO_SECS;
+  try {
+    localStorage.setItem("hedgerow:auto", autoNext ? "on" : "off");
+  } catch {
+    /* storage blocked */
+  }
+  syncControls();
 });
 ui.btnSpeed.addEventListener("click", () => {
   speed = speed === 1 ? 2 : speed === 2 ? 3 : 1;
+  try {
+    localStorage.setItem("hedgerow:speed", String(speed));
+  } catch {
+    /* storage blocked: speed lasts this visit */
+  }
   syncControls();
 });
 ui.btnSound.addEventListener("click", () => {

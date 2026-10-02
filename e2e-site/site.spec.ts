@@ -195,7 +195,7 @@ test.describe('Hedgerow', () => {
     await page.goto('/hedgerow/')
     await expect(page.locator('button.level[data-level="2"]')).toBeDisabled()
     await page.locator('button.level[data-level="1"]').click()
-    await expect(page.getByRole('dialog')).toContainText('Mara is halfway through a cheese sandwich')
+    await expect(page.getByRole('dialog')).toContainText('drone over my bottom field')
     // Next finishes the typing, then moves on; Skip ends the scene.
     await page.locator('#story-next').click()
     await page.locator('#story-skip').click()

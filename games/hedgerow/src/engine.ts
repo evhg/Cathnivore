@@ -62,6 +62,8 @@ export interface TowerSpec {
   income?: [number, number, number];
   /** Shots ignore armour (the Grain Silo). */
   pierce?: boolean;
+  /** Can't reach flying enemies (drones, the Blimp). */
+  groundOnly?: boolean;
   /** Reveals stealth units in range and marks everything in range: they take this much extra damage (the Radio Mast). */
   reveal?: [number, number, number];
   /** Towers within this range of the tent ignore influencer charm (the Clinic Tent). */
@@ -75,6 +77,7 @@ export interface TowerSpec {
 export const TOWERS: Record<TowerKind, TowerSpec> = {
   hedgerow: {
     name: "Hedgerow",
+    groundOnly: true,
     blurb: "Thick, thorny and cheap. Slows everything that passes.",
     cost: 50,
     upgrades: [45, 75],
@@ -118,6 +121,7 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
   },
   pond: {
     name: "Duck Pond",
+    groundOnly: true,
     blurb: "Slows every vehicle nearby, and the ducks splash whatever is left.",
     cost: 110,
     upgrades: [85, 130],
@@ -129,6 +133,7 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
   },
   barn: {
     name: "Co-op Barn",
+    groundOnly: true,
     blurb:
       "Farmhands spill out and block the lane: a hard slow, and a few solid whacks.",
     cost: 100,
@@ -140,6 +145,7 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
   },
   silo: {
     name: "Grain Silo",
+    groundOnly: true,
     blurb: "A slow, heavy grain-shot that ignores armour. Bulldozers hate it.",
     cost: 150,
     upgrades: [110, 170],
@@ -637,6 +643,8 @@ export interface TowerStats {
   injunction: number;
   aura: number;
   pierce: boolean;
+  /** Can hit flying enemies. */
+  air: boolean;
   cleanse: boolean;
   thorns: number;
   crit: { every: number; mult: number } | null;
@@ -671,6 +679,7 @@ export function towerStats(
     injunction: s.injunction?.[i] ?? 0,
     aura: s.aura?.[i] ?? 1,
     pierce: !!s.pierce,
+    air: !s.groundOnly,
     cleanse: !!s.cleanse,
     thorns: 0,
     crit: null,
@@ -857,7 +866,7 @@ export interface WaveGroup {
 }
 
 export interface StoryLine {
-  who: "cath" | "mara" | "bea" | "tomas" | "sol" | "narrator";
+  who: "cath" | "mara" | "bea" | "tomas" | "sol" | "ines" | "pip" | "pell" | "crisp" | "vane" | "narrator";
   expression?: "smirk" | "delighted" | "determined" | "worried" | "wink";
   text: string;
 }
@@ -1068,6 +1077,10 @@ export interface Game {
   perks: Perks;
   /** Goodwill at the start, after perks: stars are measured against it. */
   maxGoodwill: number;
+  /** The auto-battler: Cath walks to the trouble herself, and uses her abilities herself. */
+  auto: { hero: boolean; abilities: boolean };
+  /** Seconds until the autonomous Cath and abilities think again. */
+  aiCd: number;
 }
 
 export function pathLength(path: Level["path"]): number {
@@ -1178,7 +1191,11 @@ export function heroPost(level: Level): { x: number; y: number } {
   return pointAt(level.path, pathLength(level.path) * 0.66);
 }
 
-export function newGame(level: Level, perks: Perks = NO_PERKS): Game {
+export function newGame(
+  level: Level,
+  perks: Perks = NO_PERKS,
+  auto: Game["auto"] = { hero: true, abilities: true },
+): Game {
   const post = heroPost(level);
   const maxHp = Math.round(HERO.hp * perks.heroHp);
   const goodwill = level.goodwill + perks.goodwill;
@@ -1205,6 +1222,8 @@ export function newGame(level: Level, perks: Perks = NO_PERKS): Game {
     barricade: null,
     rallyLeft: 0,
     perks,
+    auto: { ...auto },
+    aiCd: 0,
     hero: {
       x: post.x,
       y: post.y,
@@ -1346,12 +1365,18 @@ export function earlyBonus(game: Game): number {
 export function canCallEarly(game: Game): boolean {
   return (
     game.phase === "wave" &&
-    game.spawnQueue.length === 0 &&
-    game.wave < game.level.waves.length
+    game.wave < game.level.waves.length &&
+    game.waveClock >= EARLY_MIN_GAP
   );
 }
 
-/** Starts the next wave: between waves, or early (for a bonus) once the current wave is all on the lane. */
+/** Seconds a wave must have been running before the next can be called (stops double taps sending two). */
+export const EARLY_MIN_GAP = 1;
+
+/**
+ * Starts the next wave: between waves, or early (for a bonus) at any time once the current one has been
+ * on the lane a moment. An early wave's spawns join the queue after whatever is still to come.
+ */
 export function sendWave(game: Game): ActionResult {
   if (game.phase === "won" || game.phase === "lost")
     return { ok: false, reason: "The level is over." };
@@ -1365,8 +1390,10 @@ export function sendWave(game: Game): ActionResult {
   for (const g of groups)
     for (let i = 0; i < g.count; i++)
       queue.push({ at: g.delay + i * g.gap, kind: g.enemy, wave, lane: g.lane });
-  queue.sort((a, b) => a.at - b.at);
-  game.spawnQueue = queue;
+  // Re-base everything still queued to a fresh clock, then add the new wave after a short gap.
+  const pending = game.phase === "wave" ? game.spawnQueue.map((q) => ({ ...q, at: q.at - game.waveClock })) : [];
+  const after = pending.length ? Math.max(0, ...pending.map((q) => q.at)) + 1.5 : 0;
+  game.spawnQueue = pending.concat(queue.map((q) => ({ ...q, at: q.at + after }))).sort((a, b) => a.at - b.at);
   game.waveClock = 0;
   game.wave = wave;
   game.phase = "wave";
@@ -1545,6 +1572,71 @@ function stepHero(game: Game): void {
   game.events.push({ type: "swing", x: p.x, y: p.y });
 }
 
+/** Lane distance remaining to the farmhouse for an enemy (on whichever lane it's on). */
+function toGo(game: Game, e: Enemy): number {
+  return (e.lane ? game.pathLength2 : game.pathLength) - e.dist;
+}
+
+/**
+ * Autonomous Cath: she meets the ground vehicle nearest the farmhouse a little ahead of it, so it walks
+ * into her. With nothing to hold she goes back to her post. She never abandons what she's already holding.
+ */
+function heroBrain(game: Game): void {
+  const h = game.hero;
+  if (h.down > 0 || h.holding.length > 0) return;
+  let lead: Enemy | undefined;
+  for (const e of game.enemies) {
+    if (e.hp <= 0 || ENEMIES[e.kind].flying || isBig(e.kind) || !isRevealed(game, e)) continue;
+    if (!lead || toGo(game, e) < toGo(game, lead)) lead = e;
+  }
+  const spot = lead
+    ? enemyPoint(game.level, {
+        dist: Math.min((lead.lane ? game.pathLength2 : game.pathLength) - 0.5, lead.dist + 0.7),
+        lane: lead.lane,
+      })
+    : heroPost(game.level);
+  if (Math.hypot(spot.x - h.tx, spot.y - h.ty) > 0.4) {
+    h.tx = spot.x;
+    h.ty = spot.y;
+  }
+}
+
+/** Auto-cast: the pie on the thickest crowd or a boss, the neighbours when something nears the farmhouse, a rally on a big wave. */
+function abilityBrain(game: Game): void {
+  if (game.phase !== "wave" || game.enemies.length === 0) return;
+  if (pieUnlocked(game.level) && game.pieCd <= 0) {
+    const r = pieRadius(game);
+    let best: Enemy | undefined;
+    let bestScore = 0;
+    for (const e of game.enemies) {
+      if (e.hp <= 0) continue;
+      const p = enemyPoint(game.level, e);
+      let score = isBig(e.kind) ? 6 : 0;
+      for (const o of game.enemies) {
+        if (o.hp <= 0) continue;
+        const q = enemyPoint(game.level, o);
+        if (Math.hypot(q.x - p.x, q.y - p.y) <= r) score += 1;
+      }
+      if (score > bestScore || (score === bestScore && best && toGo(game, e) < toGo(game, best))) {
+        best = e;
+        bestScore = score;
+      }
+    }
+    if (best && bestScore >= 5) {
+      const p = enemyPoint(game.level, best);
+      throwPie(game, p.x, p.y);
+    }
+  }
+  if (neighboursUnlocked(game.level) && game.neighboursCd <= 0 && game.enemies.some((e) => e.hp > 0 && toGo(game, e) < 3))
+    callNeighbours(game);
+  if (
+    rallyUnlocked(game.level) &&
+    game.rallyCd <= 0 &&
+    (game.enemies.length >= 10 || game.enemies.some((e) => isBig(e.kind)))
+  )
+    callRally(game);
+}
+
 function pickTarget(
   game: Game,
   t: Tower,
@@ -1553,8 +1645,10 @@ function pickTarget(
   const mode = t.target ?? "first";
   let target: Enemy | undefined;
   let best = -Infinity;
+  const air = towerStats(t).air;
   for (const e of game.enemies) {
     if (e.hp <= 0 || !isRevealed(game, e)) continue;
+    if (!air && ENEMIES[e.kind].flying) continue;
     const p = enemyPoint(game.level, e);
     const d = Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y);
     if (d > range) continue;
@@ -1586,6 +1680,12 @@ export function stepGame(game: Game): void {
     game.barricade.left -= STEP;
     if (game.barricade.left <= 0) game.barricade = null;
   }
+  game.aiCd -= STEP;
+  if (game.aiCd <= 0) {
+    game.aiCd = 0.5;
+    if (game.auto.hero) heroBrain(game);
+    if (game.auto.abilities) abilityBrain(game);
+  }
 
   while (
     game.spawnQueue.length > 0 &&
@@ -1611,10 +1711,11 @@ export function stepGame(game: Game): void {
   // Hedgerows slow whatever is in range; the strongest one wins, they don't stack. Honey sticks.
   for (const enemy of game.enemies) {
     const p = enemyPoint(game.level, enemy);
+    const flying = !!ENEMIES[enemy.kind].flying;
     let factor = 1;
     for (const t of game.towers) {
       const s = towerStats(t);
-      if (s.slow >= 1 || !towerActive(t)) continue;
+      if (s.slow >= 1 || !towerActive(t) || (flying && !s.air)) continue;
       if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= s.range)
         factor = Math.min(factor, 1 - (1 - s.slow) / game.perks.slow);
     }
@@ -1658,7 +1759,7 @@ export function stepGame(game: Game): void {
     // Blackthorn scratches everything in reach, all the time.
     if (spec.thorns > 0) {
       for (const e of game.enemies) {
-        if (e.hp <= 0) continue;
+        if (e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying)) continue;
         const p = enemyPoint(game.level, e);
         if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range)
           damageEnemy(game, e, spec.thorns * STEP, false);
@@ -1722,6 +1823,7 @@ export function stepGame(game: Game): void {
     if (spec.splash) {
       for (const e of game.enemies) {
         if (e === target || e.hp <= 0) continue;
+        if (!spec.air && ENEMIES[e.kind].flying) continue;
         const q = enemyPoint(game.level, e);
         if (Math.hypot(q.x - p.x, q.y - p.y) <= spec.splash) hit(e);
       }

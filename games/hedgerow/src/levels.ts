@@ -1,7 +1,10 @@
 // Hedgerow's levels. H1 ships the first three of act 1, Brindle Hills (docs/design/hedgerow.md). Story
 // follows SPEC 3.2's voice: short, specific, dry, warm. Later acts append to LEVELS.
 
-import { BOSS_MOVES, laneCellsOf, type Level, type WaveGroup } from "./engine";
+import { BOSS_MOVES, ENEMIES, TOWERS, laneCellsOf, type Level, type WaveGroup } from "./engine";
+import { ACTS_1_TO_5 } from "./story/acts1to5";
+import { ACTS_6_TO_10 } from "./story/acts6to10";
+import type { Beat } from "./story/types";
 import { addTerrain } from "./terrain";
 
 const van = (count: number, gap: number, delay = 0): WaveGroup => ({
@@ -6267,6 +6270,39 @@ const FORK_LEVELS = (id: number) =>
   id >= 10 && id % 4 === 2 && id % 10 !== 0 && id !== 94;
 for (const l of LEVELS) if (FORK_LEVELS(l.id)) addSecondLane(l);
 for (const l of LEVELS) addTerrain(l);
+
+// The script (story/, from docs/design/hedgerow-v2.md section 4) replaces the first draft's lines and names.
+const SCRIPT: Record<number, Beat> = { ...ACTS_1_TO_5, ...ACTS_6_TO_10 };
+for (const l of LEVELS) {
+  const beat = SCRIPT[l.id];
+  if (!beat) continue;
+  l.name = beat.name;
+  l.before = beat.before;
+  l.after = beat.after;
+}
+
+// The barn is raised in level 36 (the story's barn raising), not at the start of act 4.
+for (const l of LEVELS) if (l.id >= 31 && l.id < 36) l.towers = l.towers.filter((t) => t !== "barn");
+
+/** What clearing a level opens up, in plain words: the next level's new towers, abilities and enemies. */
+function unlockText(id: number): string {
+  const next = LEVELS[id];
+  if (!next) return "That's the lane held, all the way to Kingsmarket.";
+  const prev = LEVELS[id - 1]!;
+  const bits: string[] = [];
+  for (const t of next.towers) if (!prev.towers.includes(t)) bits.push(`${TOWERS[t].name}s join you`);
+  if (next.id === 3) bits.push("Cath bakes her first pie");
+  if (next.id === 6) bits.push("towers can specialise at tier 4");
+  if (next.id === 12) bits.push("Cath can call the neighbours");
+  if (next.id === 25) bits.push("Cath can rally the towers");
+  const seen = new Set(LEVELS.slice(0, id).flatMap((l) => l.waves.flat().map((g) => g.enemy)));
+  const fresh = [...new Set(next.waves.flat().map((g) => g.enemy))].filter((k) => !seen.has(k));
+  for (const k of fresh) bits.push(`watch for the ${ENEMIES[k].name}`);
+  if (!bits.length) return `Next: ${next.name}.`;
+  const text = bits.join(", ");
+  return `Next: ${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
+}
+for (const l of LEVELS) l.reward = unlockText(l.id);
 
 export function levelById(id: number): Level | undefined {
   return LEVELS.find((l) => l.id === id);
