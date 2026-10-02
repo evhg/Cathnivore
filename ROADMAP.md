@@ -197,7 +197,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 
 ### Hedgerow: from good to worth 50 USD (owner's feedback 2026-10-02; Kingdom Rush is the bar)
 
-35. [ ] **More of Cath's abilities:** "Call the Neighbours" (level 12: three farmhands who block the lane for 10 s) and "Rally" (level 25: towers fire 50% faster for 6 s), each with its own button, cooldown, art and sound, and Seed Bank perks to upgrade them.
+35. [x] *(2026-10-02: `callNeighbours`/`callRally` in engine, buttons B/R, barricade and rally art, perks Wellies by the Door and Rallying Cry; unreleased)* **More of Cath's abilities:** "Call the Neighbours" (level 12: three farmhands who block the lane for 10 s) and "Rally" (level 25: towers fire 50% faster for 6 s), each with its own button, cooldown, art and sound, and Seed Bank perks to upgrade them.
 36. [ ] **Better maps:** bigger, more varied layouts per act: forks and two lanes, a second spawn on some levels, terrain that matters (water plots for ponds only, high ground with +range). Keep every level winnable (the level test) and retune.
 37. [ ] **Replay value:** a Heroic challenge per level for a 4th star (for example "Iron Lane": 1 Goodwill; "Hedge Fund": no Market Stalls), an Endless mode per act, and achievements.
 38. [ ] **Feel pass:** Cath's live reactions on the field (cheers on a clean wave, worry at low Goodwill), tower build/upgrade animations (dirt puff, scaffolding), enemies that tip over when destroyed, a victory parade, and haptics on phones.

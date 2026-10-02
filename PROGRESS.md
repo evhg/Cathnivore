@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
-- **Next:** the open FEEDBACK note (Hedgerow worth 50 USD): ROADMAP 35-39, then 31-32, then Phase 5. Open from earlier: 19 (sound polish), 24 (real-phone check, needs hardware: skip).
+- **Next:** the open FEEDBACK note (Hedgerow worth 50 USD): ROADMAP 36-39, then 31-32, then Phase 5. Open from earlier: 19 (sound polish), 24 (real-phone check, needs hardware: skip).
 - 2026-10-02 (owner's chat session, 02:48-04:15 UTC): owner said Hedgerow was boring. Shipped ROADMAP 26-30 and much more (see Recent releases); live at `aadfc2c`.
 
 ## Blocked
@@ -60,6 +60,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-02 ~04:51-05:15 UTC: ROADMAP 35 (Neighbours at level 12, Rally at level 25, two perks, tests). e2e:site needs PLAYWRIGHT_CHROMIUM_PATH. Unreleased, batching.
 - 2026-10-02 ~02:48-04:20 UTC (owner's chat session): Hedgerow overhaul for the owner's "boring" feedback; ROADMAP 26-30 ticked, 35-39 added; released `aadfc2c`.
 - 2026-10-01 ~02:51-03:05 UTC: Rift 3/6 banner (`.rift-banner`, reuses round-banner motion). Short session; no release (batching).
 - 2026-09-30 ~19:52-20:10 UTC: Hedgerow level select grouped into ten act headers (place names), boss levels marked, list scrolls to the next unplayed level.
