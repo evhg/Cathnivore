@@ -16,6 +16,8 @@ export interface SaveData {
   tips: Record<string, boolean>;
   /** Seed Bank: ranks bought per perk. */
   bank: Record<string, number>;
+  /** Rosettes (achievements) earned, by id. Optional in old saves. */
+  rosettes?: Record<string, boolean>;
 }
 
 const KEY = "hedgerow:v1";
@@ -38,6 +40,7 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.seenBefore ?? {})) if (v === true) data.seenBefore[k] = true;
       for (const [k, v] of Object.entries(obj.seen ?? {})) if (v === true) data.seen[k] = true;
       for (const [k, v] of Object.entries(obj.tips ?? {})) if (v === true) data.tips[k] = true;
+      for (const [k, v] of Object.entries(obj.rosettes ?? {})) if (v === true) (data.rosettes ??= {})[k] = true;
       for (const [k, v] of Object.entries(obj.bank ?? {})) {
         const perk = PERKS.find((p) => p.id === k);
         if (perk && typeof v === "number" && v >= 1) data.bank[k] = Math.min(perk.costs.length, Math.floor(v));

@@ -69,6 +69,7 @@ import {
   refundAll,
   save,
 } from "./store";
+import { ROSETTES, newRosettes } from "./rosettes";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
 import { FINALE } from "./story/acts6to10";
@@ -141,6 +142,8 @@ const ui = {
   dlgBank: $<HTMLDialogElement>("dlg-bank"),
   bankFree: $<HTMLElement>("bank-free"),
   perks: $<HTMLUListElement>("perks"),
+  rosettes: $<HTMLUListElement>("rosettes"),
+  rosetteCount: $<HTMLElement>("rosette-count"),
   bankClose: $<HTMLButtonElement>("bank-close"),
   bankRefund: $<HTMLButtonElement>("bank-refund"),
 };
@@ -197,6 +200,7 @@ let raf = 0;
 let finished = false;
 let panelKey = "";
 let earlyCalls = 0;
+let startPerkRanks = 0;
 let bubbleTimer = 0;
 let bannerTimer = 0;
 
@@ -323,6 +327,7 @@ function startLevel(lv: Level): void {
   aiming = false;
   panelKey = "";
   earlyCalls = 0;
+  startPerkRanks = Object.values(data.bank).reduce((a, b) => a + b, 0);
   ui.select.hidden = true;
   ui.play.hidden = false;
   ui.hudTitle.textContent = `${lv.id}. ${lv.name}`;
@@ -1082,6 +1087,26 @@ function finish(g: Game): void {
     : "Regroup and try again. Hedges slow them, scarecrows finish them, and Cath can hold the lane where it bends. Stars buy perks in the Seed Bank.";
   if (won) {
     recordStars(data, lv.id, n);
+    const fresh = newRosettes(
+      {
+        levelId: lv.id,
+        won: true,
+        stars: n,
+        kept: g.goodwill / g.maxGoodwill,
+        heroKills: g.hero.kills,
+        earlyCalls,
+        towerKinds: new Set(g.towers.map((t) => t.kind)).size,
+        towers: g.towers.length,
+        perkRanks: startPerkRanks,
+      },
+      data,
+    );
+    if (fresh.length) {
+      data.rosettes = { ...data.rosettes, ...Object.fromEntries(fresh.map((id) => [id, true])) };
+      save(data);
+      const names = fresh.map((id) => ROSETTES.find((r) => r.id === id)?.name ?? id);
+      ui.resultNote.textContent += ` · Rosette${names.length > 1 ? "s" : ""}: ${names.join(", ")}.`;
+    }
     ui.resultPrimary.textContent = next ? "Continue" : "Finale";
     ui.resultPrimary.onclick = () => {
       ui.dlgResult.close();
@@ -1112,7 +1137,26 @@ function finish(g: Game): void {
 
 // ---- the Seed Bank ----
 
+function renderRosettes(): void {
+  ui.rosettes.replaceChildren();
+  let got = 0;
+  for (const r of ROSETTES) {
+    const has = data.rosettes?.[r.id] === true;
+    if (has) got += 1;
+    const li = document.createElement("li");
+    li.className = `rosette${has ? " earned" : ""}`;
+    const n = document.createElement("strong");
+    n.textContent = `${has ? "✿" : "·"} ${r.name}`;
+    const how = document.createElement("small");
+    how.textContent = r.how;
+    li.append(n, how);
+    ui.rosettes.append(li);
+  }
+  ui.rosetteCount.textContent = `Rosettes ${got}/${ROSETTES.length}`;
+}
+
 function renderBank(): void {
+  renderRosettes();
   ui.bankFree.textContent = `${freeStars(data)} stars to spend. Earn more by clearing levels with three stars.`;
   ui.perks.replaceChildren();
   for (const p of PERKS) {

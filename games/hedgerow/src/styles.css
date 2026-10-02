@@ -1295,8 +1295,35 @@ button {
   padding: 0;
   display: grid;
   gap: 8px;
-  max-height: 55vh;
+  max-height: 34vh;
   overflow-y: auto;
+}
+.rosette-head {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.rosettes {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  max-height: 22vh;
+  overflow-y: auto;
+}
+.rosette {
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--paper-2);
+  opacity: 0.6;
+}
+.rosette.earned {
+  opacity: 1;
+}
+.rosette small {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 12px;
 }
 .perk {
   display: flex;

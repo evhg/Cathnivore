@@ -61,6 +61,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-02 ~14:52-15:10 UTC: ROADMAP 45 re-measured (naive bot wins 10 of 8-40; done). ROADMAP 37 part: 12 Rosettes (rosettes.ts, Seed Bank list, result-card note, test). tsc, lint and new test green; full check was still running at wrap-up. Unreleased (4/day cap reached).
 - 2026-10-02 ~13:52-14:15 UTC: ROADMAP 45: naive Scarecrow bot measured (won 12 of levels 8-30 after the first bans); banned Scarecrows on 13,18,24,28, re-tuned and verified 13-28; level tests green. Naive bot should now win only 10,11,15,20,21,22,26,30 of 8-30 (not re-measured). Unreleased (4/day cap reached).
 - 2026-10-02 ~12:52-13:10 UTC: ROADMAP 45 part 1: Scarecrow ban twist added to levels 8,9,12,14,16,17,19,23,25,27,29; levels 8-29 re-tuned and verified; hedgerow level tests green. Not yet re-measured against the naive bot; unreleased.
 - 2026-10-02 ~09:28-12:30 UTC (owner's chat session): Hedgerow round 2 (auto-battler, stats, story rewrite, twists, layouts, bot + tuner, 3D renderer).
