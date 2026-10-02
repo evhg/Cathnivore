@@ -12,6 +12,7 @@ import {
   pointAt,
   towerAt,
   towerStats,
+  type EnemyKind,
   type Game,
   type GameEvent,
   type TowerKind,
@@ -102,6 +103,8 @@ export class Renderer {
   private parts: Particle[] = [];
   private decals: Decal[] = [];
   private pies: PieFlight[] = [];
+  /** Defeated enemies tipping over and fading where they fell. */
+  private fallen: { kind: EnemyKind; x: number; y: number; facing: 1 | -1; age: number }[] = [];
   private zaps: Array<{ x: number; y: number; toX: number; toY: number; age: number; life: number }> = [];
   private fired = new Map<number, number>();
   private hitAt = new Map<number, number>();
@@ -175,6 +178,7 @@ export class Renderer {
     this.parts = [];
     this.decals = [];
     this.pies = [];
+    this.fallen = [];
     this.zaps = [];
     this.fired.clear();
     this.hitAt.clear();
@@ -215,6 +219,20 @@ export class Renderer {
     };
   }
 
+  /** Which way the enemy nearest this x was walking, so a fallen one tips forward. */
+  private lastFacing(x: number): 1 | -1 {
+    let best: 1 | -1 = 1;
+    let bd = Infinity;
+    for (const [id, lx] of this.lastX) {
+      const d = Math.abs(lx - x);
+      if (d < bd) {
+        bd = d;
+        best = this.facing.get(id) ?? 1;
+      }
+    }
+    return best;
+  }
+
   cellAt(clientX: number, clientY: number, game: Game): { col: number; row: number } | null {
     const p = this.worldAt(clientX, clientY);
     const col = Math.floor(p.x);
@@ -251,7 +269,9 @@ export class Renderer {
           });
           break;
         }
-        case "kill":
+        case "kill": {
+          if (this.fallen.length < 24)
+            this.fallen.push({ kind: e.kind, x: e.x, y: e.y, facing: this.lastFacing(e.x), age: 0 });
           this.burst(e.x, e.y, isBig(e.kind) ? 2.5 : 1);
           this.float(e.x, e.y - 0.3, `+${e.bounty}`, "#ffe27a", isBig(e.kind) ? 1.6 : 1);
           if (isBig(e.kind)) {
@@ -260,6 +280,7 @@ export class Renderer {
             this.confetti(e.x, e.y);
           }
           break;
+        }
         case "split":
           this.ring(e.x, e.y, "#ffffff", 0.9);
           break;
@@ -507,6 +528,25 @@ export class Renderer {
           );
           if (pop !== 1) ctx.restore();
           this.knockedOut(tw.out ?? 0, X(tw.col + 0.5), Y(tw.row + 0.5), s, t);
+        },
+      });
+    }
+    this.fallen = this.fallen.filter((f) => (f.age += dt) < 0.7);
+    for (const f of this.fallen) {
+      const k = Math.min(1, f.age / 0.28);
+      const ease = 1 - (1 - k) * (1 - k);
+      items.push({
+        y: f.y + 0.2,
+        draw: () => {
+          const fx = X(f.x);
+          const fy = Y(f.y + 0.2);
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, Math.min(1, (0.7 - f.age) / 0.35));
+          ctx.translate(fx, fy);
+          ctx.rotate(-f.facing * ease * 1.45);
+          ctx.translate(-fx, -fy);
+          drawEnemy(ctx, { kind: f.kind, facing: f.facing, hit: 9, ghost: false, phase: 0 }, fx, fy, s, 0);
+          ctx.restore();
         },
       });
     }

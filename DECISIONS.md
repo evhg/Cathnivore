@@ -208,3 +208,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-02: the level test bot now pies bosses and takes specialisations (a player would); boss moves were tuned until all 100 levels stay winnable for it. The Lawyer Swarm's move is a spawn, not a tower knockout (any knockout made level 70 unwinnable for the bot).
 - 2026-10-02: Hedgerow save v2 (seen enemies, tips, Seed Bank) migrates v1 in place under the same key; a bank that spends more stars than the save has is refunded rather than kept.
 - 2026-10-02: build menu is a bottom panel with icon cards rather than a radial menu: thumbs reach it one-handed and it never covers the lane. `?sandbox=1` gives unlimited Marks for screenshots.
+- 2026-10-02 06:51-07:10 UTC: ROADMAP 38 slice: defeated enemies tip over and fade (render only). check + e2e:site green. No release (batching).
