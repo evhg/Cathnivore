@@ -146,7 +146,13 @@ test.describe('Runnel', () => {
   test('keyboard players can move between tiles and turn them', async ({ page }) => {
     await page.goto('/runnel/?nohelp')
     await page.locator('.tiles > g.cell[tabindex="0"]').focus()
-    await page.keyboard.press('ArrowRight')
+    // The daily puzzle changes with the date, and a sluice (.fixed) can't be turned: step right until
+    // the focused tile is a turnable one.
+    for (let i = 0; i < 6; i++) {
+      await page.keyboard.press('ArrowRight')
+      const fixed = await page.evaluate(() => !!document.activeElement?.classList.contains('fixed'))
+      if (!fixed) break
+    }
     await page.keyboard.press('Enter')
     await expect(page.locator('#hud-taps')).toHaveText('1')
   })
