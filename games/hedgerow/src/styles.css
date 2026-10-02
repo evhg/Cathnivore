@@ -1984,3 +1984,12 @@ button {
 }
 
 .heroic-btn.on { background: #c9962b; color: #1d1405; border-color: #f2d27a; }
+
+.act-endless { margin-top: 6px; align-self: flex-start; font: inherit; font-size: 0.8rem; padding: 4px 10px; border-radius: 999px; border: 1px solid #f2d27a; background: rgba(29, 20, 5, 0.55); color: #f2d27a; cursor: pointer; }
+
+@media (max-width: 420px) {
+  .top-tools { gap: 4px; }
+  .top-tools .bank-btn { padding: 0 9px; gap: 4px; }
+  .top .back span { display: none; }
+  .wordmark { font-size: 20px; }
+}

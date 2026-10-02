@@ -80,9 +80,11 @@ import {
   perksOf,
   recordStars,
   recordHeroic,
+  recordEndless,
   refundAll,
   save,
 } from "./store";
+import { endlessLevel, weekOf } from "./endless";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
@@ -260,7 +262,7 @@ function say(text: string): void {
 function renderLevels(): void {
   ui.bankStars.textContent = String(freeStars(data));
   renderCathButton();
-  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv));
+  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => startLevel(endlessLevel(act, weekOf(Date.now())), false));
 }
 
 let typing = 0;
@@ -374,8 +376,8 @@ ui.btnHeroic.addEventListener("click", () => {
   ui.btnHeroic.classList.toggle("on", heroicMode);
 });
 
-function startLevel(lv: Level): void {
-  game = newGame(lv, perksOf(data), { hero: true, abilities: true }, heroicMode);
+function startLevel(lv: Level, heroic = heroicMode): void {
+  game = newGame(lv, perksOf(data), { hero: true, abilities: true }, heroic && !lv.endless);
   // One-on-one boss duels are a player's moment; the tuner and sims never see them.
   game.duels = true;
   if (SANDBOX) {
@@ -391,7 +393,7 @@ function startLevel(lv: Level): void {
   startPerkRanks = Object.values(data.bank).reduce((a, b) => a + b, 0);
   ui.select.hidden = true;
   ui.play.hidden = false;
-  ui.hudTitle.textContent = `${heroicMode ? "◆ " : ""}${lv.id}. ${lv.name}`;
+  ui.hudTitle.textContent = `${game.heroic ? "◆ " : ""}${lv.endless ? "∞" : `${lv.id}.`} ${lv.name}`;
   ui.hudPlace.textContent = lv.place;
   renderer ??= USE_3D ? new Renderer3D(ui.canvas, $<HTMLElement>("fx-layer")) : new Renderer(ui.canvas);
   document.documentElement.classList.toggle("hedgerow-3d", renderer instanceof Renderer3D);
@@ -1204,6 +1206,7 @@ function frame(now: number): void {
 function finish(g: Game): void {
   if (game !== g) return;
   const lv = g.level;
+  if (lv.endless) return finishEndless(g, lv);
   const won = g.phase === "won";
   const n = starsOf(g);
   const idx = LEVELS.findIndex((l) => l.id === lv.id);
@@ -1289,6 +1292,31 @@ function finish(g: Game): void {
     leaveLevel();
   };
   ui.dlgResult.classList.toggle("lost", !won);
+  ui.dlgResult.showModal();
+}
+
+/** An Endless run ends when Goodwill does: the best wave reached is kept for the act. */
+function finishEndless(g: Game, lv: Level): void {
+  const act = actOf(lv);
+  const reached = Math.max(1, g.wave - 1);
+  const record = recordEndless(data, act, reached);
+  ui.resultCath.innerHTML = cath(record ? "delighted" : "smirk");
+  ui.resultEyebrow.textContent = lv.name;
+  ui.resultTitle.textContent = record ? "A new best." : "They got through, in the end.";
+  ui.resultStars.replaceChildren();
+  ui.resultStars.setAttribute("aria-label", "");
+  ui.resultStats.textContent = `Wave ${reached} · best ${data.endless?.[String(act)] ?? reached} · Cath's knockouts ${g.hero.kills}`;
+  ui.resultNote.textContent = "Same field and same waves all week; a new run next Monday.";
+  ui.resultPrimary.textContent = "Go again";
+  ui.resultPrimary.onclick = () => {
+    ui.dlgResult.close();
+    startLevel(lv, false);
+  };
+  ui.resultSecondary.onclick = () => {
+    ui.dlgResult.close();
+    leaveLevel();
+  };
+  ui.dlgResult.classList.add("lost");
   ui.dlgResult.showModal();
 }
 

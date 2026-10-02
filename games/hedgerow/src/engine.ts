@@ -1131,6 +1131,8 @@ export interface Level {
   twists?: TwistId[];
   /** Enemy health multiplier, found by the tuner (scripts/hedgerow-tune.ts) so the curve is fair. */
   hpScale?: number;
+  /** An Endless field: generated waves that never stop growing (endless.ts). The run ends when Goodwill does. */
+  endless?: boolean;
 }
 
 export type TwistId =
@@ -1705,6 +1707,7 @@ export function isProtected(level: Level, col: number, row: number): boolean {
 /** Full health for a new enemy: the kind's, scaled by the tuner and by fortified and crowd twists. */
 export function spawnHp(game: Game, kind: EnemyKind): number {
   let hp = ENEMIES[kind].hp * (game.level.hpScale ?? 1);
+  if (game.level.endless) hp *= 1 + 0.07 * game.wave;
   if (hasTwist(game.level, "fortified")) hp *= 1.3;
   if (hasTwist(game.level, "crowd") && !isBig(kind)) hp *= 0.5;
   return Math.round(hp);

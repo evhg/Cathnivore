@@ -2,6 +2,7 @@
 // a winding trail (two rows of five, the second running back the other way), the boss at the end. Cath
 // stands on the next level to play. Buttons keep the `level` class and `data-level` for tests.
 
+import { endlessUnlocked } from "./endless";
 import { cathSvg } from "../../../shared/cath/cath";
 import { TWISTS, type Level } from "./engine";
 import { isUnlocked, type SaveData } from "./store";
@@ -83,7 +84,7 @@ ${m}
 </svg>`;
 }
 
-export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, open: (lv: Level) => void): void {
+export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, open: (lv: Level) => void, openEndless?: (act: number) => void): void {
   list.replaceChildren();
   const acts = new Map<number, Level[]>();
   for (const lv of levels) {
@@ -115,6 +116,17 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     tally.textContent = `★ ${got}/${lvs.length * 3}`;
     tally.setAttribute("aria-label", `${got} of ${lvs.length * 3} stars`);
     title.append(num, place, tally);
+    if (openEndless && endlessUnlocked(data.stars, n)) {
+      const best = data.endless?.[String(n)] ?? 0;
+      const eb = document.createElement("button");
+      eb.type = "button";
+      eb.className = "act-endless";
+      eb.dataset.endless = String(n);
+      eb.textContent = best ? `∞ Endless · best wave ${best}` : "∞ Endless";
+      eb.title = "Waves that never stop. Goodwill runs out, and your best wave is kept.";
+      eb.addEventListener("click", () => openEndless(n));
+      title.append(eb);
+    }
     head.append(title);
     li.append(head);
 
