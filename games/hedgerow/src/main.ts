@@ -63,6 +63,7 @@ import {
   type StoryLine,
   type TargetMode,
   type Tower,
+  NO_PERKS,
 } from "./engine";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
@@ -81,9 +82,11 @@ import {
   recordStars,
   recordHeroic,
   recordEndless,
+  recordDaily,
   refundAll,
   save,
 } from "./store";
+import { dailyLevel, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { actScene, renderMap } from "./map";
@@ -167,6 +170,7 @@ const ui = {
   resultPrimary: $<HTMLButtonElement>("result-primary"),
   resultSecondary: $<HTMLButtonElement>("result-secondary"),
   btnBank: $<HTMLButtonElement>("btn-bank"),
+  btnDaily: $<HTMLButtonElement>("btn-daily"),
   btnHeroic: $<HTMLButtonElement>("btn-heroic"),
   bankStars: $<HTMLElement>("bank-stars"),
   dlgBank: $<HTMLDialogElement>("dlg-bank"),
@@ -262,7 +266,7 @@ function say(text: string): void {
 function renderLevels(): void {
   ui.bankStars.textContent = String(freeStars(data));
   renderCathButton();
-  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => startLevel(endlessLevel(act, weekOf(Date.now())), false));
+  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; startLevel(endlessLevel(act, weekOf(Date.now())), false); });
 }
 
 let typing = 0;
@@ -347,6 +351,7 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
 const actOf = (lv: Level) => Math.floor((lv.id - 1) / 10) + 1;
 
 function openLevel(lv: Level): void {
+  dailyDay = null;
   const start = () => startLevel(lv);
   if (!data.seenBefore[String(lv.id)]) {
     showStory(
@@ -376,8 +381,16 @@ ui.btnHeroic.addEventListener("click", () => {
   ui.btnHeroic.classList.toggle("on", heroicMode);
 });
 
+/** Set while a daily challenge is on: the day number. Perks are off so scores compare. */
+let dailyDay: number | null = null;
+ui.btnDaily.addEventListener("click", () => {
+  const day = dayOf(Date.now());
+  dailyDay = day;
+  startLevel(dailyLevel(day), false);
+});
+
 function startLevel(lv: Level, heroic = heroicMode): void {
-  game = newGame(lv, perksOf(data), { hero: true, abilities: true }, heroic && !lv.endless);
+  game = newGame(lv, dailyDay !== null ? NO_PERKS : perksOf(data), { hero: true, abilities: true }, heroic && !lv.endless);
   // One-on-one boss duels are a player's moment; the tuner and sims never see them.
   game.duels = true;
   if (SANDBOX) {
@@ -418,6 +431,7 @@ function startLevel(lv: Level, heroic = heroicMode): void {
 }
 
 function leaveLevel(): void {
+  dailyDay = null;
   cancelAnimationFrame(raf);
   sfx.stopMusic();
   game = null;
@@ -1207,6 +1221,7 @@ function finish(g: Game): void {
   if (game !== g) return;
   const lv = g.level;
   if (lv.endless) return finishEndless(g, lv);
+  if (dailyDay !== null) return finishDaily(g, lv, dailyDay);
   const won = g.phase === "won";
   const n = starsOf(g);
   const idx = LEVELS.findIndex((l) => l.id === lv.id);
@@ -1287,6 +1302,34 @@ function finish(g: Game): void {
       startLevel(lv);
     };
   }
+  ui.resultSecondary.onclick = () => {
+    ui.dlgResult.close();
+    leaveLevel();
+  };
+  ui.dlgResult.classList.toggle("lost", !won);
+  ui.dlgResult.showModal();
+}
+
+/** A daily challenge ends: the score, today's best and a share card to copy. */
+function finishDaily(g: Game, lv: Level, day: number): void {
+  const won = g.phase === "won";
+  const score = dailyScore(won, g.goodwill / g.maxGoodwill, earlyCalls);
+  const record = recordDaily(data, day, score);
+  ui.resultCath.innerHTML = cath(won ? "delighted" : "worried");
+  ui.resultEyebrow.textContent = `Daily #${day + 1}: ${lv.name}`;
+  ui.resultTitle.textContent = won ? `${score} out of 100.` : "Not today.";
+  ui.resultStars.replaceChildren();
+  ui.resultStars.setAttribute("aria-label", "");
+  ui.resultStats.textContent = `Today's best ${data.daily?.[String(day)] ?? 0}${record && won ? " (new)" : ""} · Goodwill ${g.goodwill}/${g.maxGoodwill}`;
+  const card = shareCard(day, lv, won, score);
+  ui.resultNote.textContent = "Same field for everyone today, no Seed Bank. Copy your card and send it round.";
+  ui.resultPrimary.textContent = "Copy card";
+  ui.resultPrimary.onclick = () => {
+    void navigator.clipboard?.writeText(card).then(
+      () => (ui.resultPrimary.textContent = "Copied"),
+      () => (ui.resultNote.textContent = card),
+    );
+  };
   ui.resultSecondary.onclick = () => {
     ui.dlgResult.close();
     leaveLevel();
@@ -1648,6 +1691,7 @@ const TIPS: Record<string, () => string> = {
   "btn-send": () => "Send the next wave. While a wave is on the lane you can call the next early for bonus Marks.",
   "btn-levels": () => "Back to the map.",
   "btn-cath": () => "Cath's character sheet: spend skill points on her attributes and pick talents as she levels up.",
+  "btn-daily": () => "Today's challenge: one level a day, no Seed Bank, and a score to share.",
   "btn-heroic": () => "Heroic: the next level starts with one Goodwill and no pies. Win it for a gold diamond.",
   "btn-bank": () => "The Seed Bank: spend stars on perks for every level.",
 };

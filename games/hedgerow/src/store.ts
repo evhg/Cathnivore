@@ -19,6 +19,8 @@ export interface SaveData {
   bank: Record<string, number>;
   /** Rosettes (achievements) earned, by id. Optional in old saves. */
   rosettes?: Record<string, boolean>;
+  /** Best daily-challenge score by day number (daily.ts). Optional in old saves. */
+  daily?: Record<string, number>;
   /** Best wave reached on each act's Endless field (by act number). Optional in old saves. */
   endless?: Record<string, number>;
   /** Levels won in a Heroic run (one Goodwill, no pies): the fourth star. Optional in old saves. */
@@ -50,6 +52,7 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.rosettes ?? {})) if (v === true) (data.rosettes ??= {})[k] = true;
       for (const [k, v] of Object.entries(obj.heroic ?? {})) if (v === true) (data.heroic ??= {})[k] = true;
       for (const [k, v] of Object.entries(obj.endless ?? {})) if (typeof v === "number" && v >= 1) (data.endless ??= {})[k] = Math.floor(v);
+      for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
       if (obj.cath) data.cath = parseCath(obj.cath);
       for (const [k, v] of Object.entries(obj.bank ?? {})) {
         const perk = PERKS.find((p) => p.id === k);
@@ -99,6 +102,14 @@ export function recordEndless(data: SaveData, act: number, wave: number): boolea
   const best = data.endless?.[String(act)] ?? 0;
   if (wave <= best) return false;
   (data.endless ??= {})[String(act)] = wave;
+  save(data);
+  return true;
+}
+
+export function recordDaily(data: SaveData, day: number, score: number): boolean {
+  const best = data.daily?.[String(day)];
+  if (best !== undefined && score <= best) return false;
+  (data.daily ??= {})[String(day)] = score;
   save(data);
   return true;
 }
