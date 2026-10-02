@@ -4,7 +4,8 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
-- **Next:** FEEDBACK.md's round-2 note is answered (ROADMAP 40-43, live once released); then ROADMAP 44 (3D polish), 45 (smarter bot), 37 (Heroic, Endless, achievements). Don't undo the 3D renderer or the auto-battler: the owner asked for both.
+- **Next:** FEEDBACK.md's round-3 note is answered (ROADMAP 47, design doc 6). Release it if today's cap allows (4 releases already on 2026-10-02, so the next session after midnight UTC), then ROADMAP 48-54 and 44's leftovers. Don't undo the 3D renderer, the auto-battler, duels or the Cath sheet: the owner asked for all of them.
+- 2026-10-02 (owner's chat session, 15:22-~19:30 UTC): owner's third playtest. Built ROADMAP 47: bubble-wrapped vans, Scarecrow crowding, Windmill, Seed Cannon, eight megastructures, veterans, ambushes, winding routes on bigger fields (pan/zoom), Cath's character sheet, boss duels, tooltips, phone-fit dialogs, a synth score, richer 3D models and battlefield; bots `balanced`/`best`, re-tuned, `--antispam`.
 - 2026-10-02 (owner's chat session, 09:28-12:30 UTC): owner's second playtest. Shipped ROADMAP 40-43 and 36, 39.
 - 2026-10-02 (owner's chat session, 02:48-04:15 UTC): owner said Hedgerow was boring. Shipped ROADMAP 26-30 and much more (see Recent releases); live at `aadfc2c`.
 
@@ -61,6 +62,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-02 15:22-21:00 UTC (owner chat session): round 3 (ROADMAP 47). All checks green: 729 unit/level tests, fuzz, build, 44 site e2e. Naive Scarecrow bot wins 9 of 93 levels from 8 (was 25). Unreleased: 4/day cap already used on 2026-10-02; the next session after 00:00 UTC should `npm run release`.
 - 2026-10-02 ~14:52-15:10 UTC: ROADMAP 45 re-measured (naive bot wins 10 of 8-40; done). ROADMAP 37 part: 12 Rosettes (rosettes.ts, Seed Bank list, result-card note, test). tsc, lint and new test green; full check was still running at wrap-up. Unreleased (4/day cap reached).
 - 2026-10-02 ~13:52-14:15 UTC: ROADMAP 45: naive Scarecrow bot measured (won 12 of levels 8-30 after the first bans); banned Scarecrows on 13,18,24,28, re-tuned and verified 13-28; level tests green. Naive bot should now win only 10,11,15,20,21,22,26,30 of 8-30 (not re-measured). Unreleased (4/day cap reached).
 - 2026-10-02 ~12:52-13:10 UTC: ROADMAP 45 part 1: Scarecrow ban twist added to levels 8,9,12,14,16,17,19,23,25,27,29; levels 8-29 re-tuned and verified; hedgerow level tests green. Not yet re-measured against the naive bot; unreleased.
@@ -75,14 +77,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
 - 2026-09-30 ~18:52-19:10 UTC: Hedgerow act 10 (levels 91-100, Kingsmarket): HollowCandor 3-phase boss (phase 1 jams towers, splits into 2 Candors that heal, each splits into stealth remnants), finale with Bea; 1 new test. Prettier run on games/hedgerow again (fine).
 - 2026-09-30 ~13:52-14:15 UTC: Hedgerow act 4 (levels 31-40, Rivermead): armour (halves non-piercing damage), bulldozers, Co-op Barn, Grain Silo (pierces), Mega-Dozer boss (splits into bulldozers); bot builds silos/barns; armour test. I ran prettier on games/hedgerow by mistake (big one-off diff, now formatted); files are prettier-clean from here.
 - 2026-09-30 ~13:00-13:25 UTC: Hedgerow act 3 (levels 21-30, Saltmarsh): Duck Pond tower, influencers (charm nearby towers), Brand Ambassador Blimp boss, Sol as speaker; bot builds ponds. Prettier reformats these files heavily: don't run it on games/hedgerow.
-- 2026-09-30 ~11:52-12:20 UTC: Hedgerow act 2 (levels 11-20, Highmoor): Market Stall (income + damage buff), price-war truck (splits into drones), Convoy boss (splits into trucks), 3 new tests. Duck Pond (design: level 18) skipped for now; add it in act 3.
-- 2026-09-30 ~10:51-11:10 UTC: Hedgerow sound (`games/hedgerow/src/sound.ts`, mute in localStorage `hedgerow:sound`), upgrade panel shows now/next stats, released act 1. Short session (little to break).
-- 2026-09-30 ~10:15 UTC (same session): released H1 (`4baaa06`, live, /hedgerow/ 200; tag 403). Then levels 4-10, Beehive, boss, Cath's pie on `build` (unreleased). Bot stars L1-10: 3,3,3,2,2,1,3,2,2,1. e2e:site needs a fresh port 4175: kill any stray `vite preview` or it serves stale dist-site.
-- 2026-09-30 ~09:51 UTC: Hedgerow H1 built (`games/hedgerow/`: pure 30 Hz engine, canvas renderer, levels 1-3 with story, saves, landing card, site e2e, bot test). Balance: van 98hp/drone 35hp; greedy bot wins all 3 with 3 stars, a no-build player loses.
-- 2026-09-29: Runnel sound is synth-only in games/runnel/src/sound.ts, on by default, mute in localStorage `runnel:sound`; no release (5 today).
-- 2026-09-29 ~00:51-01:20 UTC: released `6b4e9fd` (sound, motion tokens, entrance animations, why-not work). Settings screen redesign (ROADMAP 20 part 1): native inputs kept, restyled; radio input lives inside its label's span so Playwright hit-tests pass. Credits still plain.
-- 2026-09-28 ~18:51-19:20 UTC: released the piled-up why-not work (`b2c035c` live; tag push 403 as usual). ROADMAP 11: terrain vignettes per region type and signboard labels on the map (released `2132b1f`, with ROADMAP 13's seal stamp). Playwright needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`; webkit project can't run here.
-- 2026-09-28 ~17:51-18:26 UTC: shipped 3 slices closing out ROADMAP 9's why-not scope: Supply (Outlets and
   Buyout) and Rebut — each a structural check (an owned region with something to remove) then a resource
   comparison, so a "nothing to target" reason is genuinely distinct from "can't afford it" and worth
   surfacing, unlike a 'required'-Scheme's single ambiguous region check; Open Stall's real "no legal
@@ -95,7 +89,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   seed; fixed by pinning the test to seed 1. Verified with `npm run check`, the full desktop Playwright
   suite (60/60, twice), and zoomed action-panel screenshots before/after. Not released: today's cap (4/day)
   was already spent before this session started (see DECISIONS.md).
-- 2026-09-28 ~16:52-17:19 UTC: shipped 4 slices extending ROADMAP 9's why-not states beyond Sell: Invest
   (Marks vs. cost, same shape as Sell — main panel + a new `missingMarks` prop on the Market sheet, whose
   Buy button used to just disappear), `targeting: 'none'` Schemes (Goodwill vs. cost, same shape — main
   panel + Cath's Plan sheet), and Open Stall's Produce-0 case (a flat 1-Produce cost with no per-region
@@ -107,7 +100,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   `npm run gates` (all 8 green), and zoomed screenshots in both themes/layouts. Not released: `npm run
   release` was already run well past SPEC 12/PROGRESS's "at most 4 times a day" cap earlier today (7+
   logged releases before this session started) — see DECISIONS.md.
-- 2026-09-28 ~15:52-16:25 UTC: locked, released the prior session's unreleased gauge-ring change
   (`6a59418`), then shipped ROADMAP 10's plan-strip branding pass: `EnemyLogos.tsx` (Hollowell's "H",
   Candor's "C", both glossy per STYLE.md 2, built from shapes not text glyphs) on the Squeeze/Expand/
   Scout cards' top-left corner. A gate-8 review of the first pass caught a real, pre-existing bug while
@@ -116,7 +108,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   reverified with zoomed crops at both sizes (a second gate-8 pass confirmed clean). Released (`51bec56`):
   all gates green both releases, HTTP smoke passed outright both times, tag pushes failed with the known
   403 (harmless).
-- 2026-09-28 ~15:26-15:55 UTC: closed ROADMAP 10's remaining gauge gap for real — replaced the phone-only
   `MiniGauge` bar with `GaugeRing`, a progress ring drawn on the icon's own 24px grid and layered directly
   over it (`.hud-icon-ring`/`.hud-ring`, `position: absolute; inset: 0`), same footprint as the bare icon.
   This needs no width budget at all, so it ships identically on phone and desktop, finally closing the
@@ -125,7 +116,6 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   (Round's small arc, Trust's ~2/3, Lost Land's full circle, Rift's empty track). `npm run check` and the
   full Playwright suite (108/108, both projects, incl. `desktop-no-scroll.spec.ts` and `csp.spec.ts`)
   green. Unreleased.
-- 2026-09-28 ~15:10-15:26 UTC: `main` was genuinely back on the reverted content (the prior session's
   "false positive" `curl` read was itself wrong — a second Vercel deploy for the revert commit had just
   landed after that check). `npm run release`'s `git merge --ff-only build` failed since that revert
   commit isn't `build`'s ancestor; a plain `git merge origin/main` would have silently deleted everything
@@ -133,17 +123,14 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   origin/main` on `build` (records the merge, keeps `build`'s tree untouched), then re-ran `npm run
   release` clean: all gates green, fast-forward succeeded, HTTP smoke test passed outright (`b2b8aee`).
   Ticked ROADMAP 1 and 5 as released. `main`/`build`/live are all in sync.
-- 2026-09-28 ~14:52-15:10 UTC: shipped ROADMAP 5 (Cath's world)'s last gap — chapter 5's arrest
   cliffhanger had no Bea beat; added one line ("Tell Bea I'll be home for her story...") raising the
   moment's stakes without playing it as a joke. `npm run check`/touched e2e specs green; a subagent's
   gate-8 review of fresh `npm run shots` screenshots came back clean. (The `npm run release` attempt this
   same session is the one untangled above.)
-- 2026-09-28 ~13:39-13:49 UTC: shipped ROADMAP 10's Pressure-card piece — STYLE.md 8's stage numeral +
   region-type icon(s) on the Squeeze/Expand/Scout plan-strip slots (`RegionTypeIcon.tsx`), as a
   `position: absolute` corner badge (an inline version wrapped the button and broke
   `desktop-no-scroll.spec.ts`; the badge doesn't affect text flow so it ships on both platforms). Checks
   and full Playwright green. Unreleased (cap spent).
-- 2026-09-28 ~11:51-13:35 UTC and earlier: see `docs/archive/PROGRESS-v2.md` — ROADMAP 9's press feedback,
   icon set and Sell disabled/why-not state; ROADMAP 10's tick animation and first (bar-based, phone-only)
   gauge pass; ROADMAP 8's phone bottom tray and chrome-trimming; ROADMAP 1's hands/pose, favicon/
   social-image and tutorial-voice work; ROADMAP 3's close-out; the SPEC 16 pivot and the sw.js fix.

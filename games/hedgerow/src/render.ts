@@ -6,6 +6,7 @@
 
 import {
   ENEMIES,
+  MEGAS,
   hasTwist,
   maxHpOf,
   charmed,
@@ -357,6 +358,32 @@ export class Renderer {
           if (e.move === "mend") for (let i = 0; i < 16; i++) this.parts.push(this.particle(e.x, e.y - 0.3, "#7fd1b9", "star", 0.07, 0.9));
           break;
         }
+        case "gust":
+          this.ring(e.x, e.y, "#e8f4ff", e.radius);
+          for (let i = 0; i < 8; i++) this.parts.push(this.particle(e.x, e.y - 0.2, "#ffffff", "dot", 0.06, 0.6));
+          break;
+        case "pop":
+          this.float(e.x, e.y - 0.5, "POP!", "#d2ecff", 0.9);
+          for (let i = 0; i < 10; i++) this.parts.push(this.particle(e.x, e.y - 0.2, "#e6f4ff", "dot", 0.05, 0.6));
+          break;
+        case "rankUp":
+          this.float(e.x, e.y - 0.9, `Veteran ${"★".repeat(e.rank)}`, "#f2c94c", 1.05);
+          this.ring(e.x, e.y, "#f2c94c", 0.8);
+          break;
+        case "merge":
+          this.kick(0.3);
+          this.ring(e.x, e.y, "#f2c94c", 1.6);
+          this.float(e.x, e.y - 1, MEGAS[e.mega].name, "#fff2b8", 1.3);
+          for (let i = 0; i < 20; i++) this.parts.push(this.particle(e.x, e.y - 0.3, "#f2c94c", "star", 0.08, 1));
+          break;
+        case "ambush":
+          this.ring(e.x, e.y, "#d93a2f", 1.2);
+          this.float(e.x, e.y - 0.8, "Ambush here!", "#ffb3a8", 1.2);
+          break;
+        case "duelEnd":
+          this.kick(0.4);
+          this.float(game.hero.x, game.hero.y - 1.2, e.won ? "Cath wins the duel!" : "Cath's knocked back", e.won ? "#fff2b8" : "#ffd0c4", 1.3);
+          break;
         case "wave":
           this.leaksThisWave = 0;
           if (e.early) {
@@ -515,6 +542,23 @@ export class Renderer {
             ctx.scale(pop, pop);
             ctx.translate(-X(tw.col + 0.5), -Y(tw.row + 0.8));
           }
+          if (tw.mega && tw.annex) {
+            // A megastructure: its partner stands on the annex plot, both on one gilded plinth.
+            const other = MEGAS[tw.mega].from[0] === tw.kind ? MEGAS[tw.mega].from[1] : MEGAS[tw.mega].from[0];
+            ctx.save();
+            ctx.fillStyle = "rgba(242,201,76,0.35)";
+            ctx.strokeStyle = "#d4ae58";
+            const ax = Math.min(tw.col, tw.annex[0]);
+            const ay = Math.min(tw.row, tw.annex[1]);
+            const w = Math.abs(tw.col - tw.annex[0]) + 1;
+            const h = Math.abs(tw.row - tw.annex[1]) + 1;
+            ctx.beginPath();
+            ctx.roundRect(X(ax + 0.08), Y(ay + 0.08), X(ax + w - 0.08) - X(ax + 0.08), Y(ay + h - 0.08) - Y(ay + 0.08), s * 0.15);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+            drawTower(ctx, { kind: other, tier: 4, spec: null, fired: since, dazed: false }, X(tw.annex[0] + 0.5), Y(tw.annex[1] + 0.5), s, t + tw.id);
+          }
           drawTower(
             ctx,
             {
@@ -574,6 +618,7 @@ export class Renderer {
               hit: since,
               ghost: !isRevealed(game, e),
               phase: (e.id % 7) * 0.31,
+              shield: e.shield,
             },
             X(p.x),
             Y(gy),

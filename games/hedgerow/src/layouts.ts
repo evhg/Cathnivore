@@ -193,3 +193,108 @@ export function relayout(level: Level): boolean {
 export function shapeOf(level: Level): Shape {
   return ROTATION[(level.id * 3 + Math.floor(level.id / 10)) % ROTATION.length]!;
 }
+
+// ---- winding routes (owner, 2026-10-02 third playtest: "the route is always very simple and similar") ----
+
+/** Map size by act: the fields grow as the story moves from the hills to Kingsmarket. */
+export function fieldSize(id: number): { cols: number; rows: number } {
+  if (id <= 10) return { cols: 7, rows: 9 };
+  if (id <= 20) return { cols: 8, rows: 10 };
+  if (id <= 40) return { cols: 9, rows: 11 };
+  if (id <= 70) return { cols: 9, rows: 12 };
+  return { cols: 10, rows: 12 };
+}
+
+function rng(seed: number): () => number {
+  let s = (seed * 2654435761) >>> 0 || 1;
+  return () => {
+    s ^= s << 13;
+    s ^= s >>> 17;
+    s ^= s << 5;
+    return (s >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * A long, self-avoiding lane through a coarse grid of junctions two cells apart, so two stretches of lane
+ * always have a row of plots between them. Random walks (seeded by the level) that like to keep going
+ * straight for a while, then turn; the best of a few hundred tries is the longest with plenty of corners,
+ * capped so the field keeps room to build. Returns cell waypoints, or null if nothing good was found.
+ */
+export function windingPath(id: number, cols: number, rows: number): P[] | null {
+  const nc = Math.floor((cols + 1) / 2);
+  const nr = Math.floor((rows + 1) / 2);
+  const rand = rng(id * 7919 + 17);
+  const target = Math.round(nc * nr * (0.68 + rand() * 0.14));
+  const dirs: P[] = [
+    [1, 0],
+    [0, 1],
+    [-1, 0],
+    [0, -1],
+  ];
+  let best: P[] | null = null;
+  let bestScore = -Infinity;
+  for (let attempt = 0; attempt < 400; attempt++) {
+    // Start on the top or left edge (mirroring later puts the spawn on any side).
+    const fromTop = rand() < 0.5;
+    const start: P = fromTop ? [Math.floor(rand() * nc), 0] : [0, Math.floor(rand() * nr)];
+    const seen = new Set([`${start[0]},${start[1]}`]);
+    const walk: P[] = [start];
+    let dir: P = fromTop ? [0, 1] : [1, 0];
+    const straightness = 0.45 + rand() * 0.35;
+    while (walk.length < target) {
+      const [x, y] = walk[walk.length - 1]!;
+      const free = dirs.filter(([dx, dy]) => {
+        const nx = x + dx;
+        const ny = y + dy;
+        return nx >= 0 && ny >= 0 && nx < nc && ny < nr && !seen.has(`${nx},${ny}`);
+      });
+      if (!free.length) break;
+      // Don't walk into a dead end if there's a choice: prefer cells with somewhere to go next.
+      const exits = (d: P) =>
+        dirs.filter(([ex, ey]) => {
+          const nx = x + d[0] + ex;
+          const ny = y + d[1] + ey;
+          return nx >= 0 && ny >= 0 && nx < nc && ny < nr && !seen.has(`${nx},${ny}`) && !(nx === x && ny === y);
+        }).length;
+      const live = free.filter((d) => exits(d) > 0 || walk.length + 1 >= target);
+      const pool = live.length ? live : free;
+      const ahead = pool.find(([dx, dy]) => dx === dir[0] && dy === dir[1]);
+      const pick = ahead && rand() < straightness ? ahead : pool[Math.floor(rand() * pool.length)]!;
+      dir = pick;
+      const next: P = [x + pick[0], y + pick[1]];
+      seen.add(`${next[0]},${next[1]}`);
+      walk.push(next);
+    }
+    const cells = walk.map(([x, y]) => [x * 2, y * 2] as P);
+    const path = corners(cells);
+    const turns = path.length - 2;
+    // Long, lots of corners, but not a uniform zigzag: reward straights of mixed length.
+    const lens = new Set<number>();
+    for (let i = 1; i < path.length; i++)
+      lens.add(Math.abs(path[i]![0] - path[i - 1]![0]) + Math.abs(path[i]![1] - path[i - 1]![1]));
+    const score = walk.length * 3 + Math.min(turns, 12) * 2 + lens.size * 2 - Math.max(0, turns - 14) * 3;
+    if (walk.length >= target * 0.8 && score > bestScore) {
+      bestScore = score;
+      best = path;
+    }
+  }
+  return best;
+}
+
+/** Gives a level a bigger field and a winding route of its own. Returns false (level untouched) if none fits. */
+export function rewind(level: Level): boolean {
+  const { cols, rows } = fieldSize(level.id);
+  const raw = windingPath(level.id, cols, rows);
+  if (!raw) return false;
+  const path = corners(mirror(raw, cols, rows, level.id % 2 === 0, level.id % 3 === 0));
+  const cells = walk(path, cols, rows);
+  if (!cells || cells.length < cols + rows + 4) return false;
+  // The spawn must be on the edge of the field.
+  const [sx, sy] = path[0]!;
+  if (sx !== 0 && sy !== 0 && sx !== cols - 1 && sy !== rows - 1) return false;
+  level.cols = cols;
+  level.rows = rows;
+  level.path = path;
+  return true;
+}

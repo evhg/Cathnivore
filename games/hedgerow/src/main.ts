@@ -3,6 +3,19 @@ import "../../../shared/cath/cath.css";
 import { cathSvg, type CathExpression } from "../../../shared/cath/cath";
 import {
   ENEMIES,
+  MEGAS,
+  NEIGHBOURS_SECS,
+  PIE_DAMAGE,
+  PIE_STUN,
+  RALLY_SECS,
+  RANKS,
+  duelStrike,
+  megaFor,
+  megasUnlocked,
+  merge,
+  mergeOptions,
+  pieCooldown,
+  rankOf,
   PIE_FIRST_LEVEL,
   SPECIALISATIONS,
   SPEC_FIRST_LEVEL,
@@ -73,6 +86,19 @@ import { ROSETTES, newRosettes } from "./rosettes";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
 import { FINALE } from "./story/acts6to10";
+import {
+  ATTRS,
+  ATTR_CAP,
+  TALENTS,
+  emptyCath,
+  freePoints,
+  levelOf,
+  pickTalent,
+  raise,
+  respec,
+  talentsWaiting,
+  xpOf,
+} from "./cath";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -146,6 +172,25 @@ const ui = {
   rosetteCount: $<HTMLElement>("rosette-count"),
   bankClose: $<HTMLButtonElement>("bank-close"),
   bankRefund: $<HTMLButtonElement>("bank-refund"),
+  btnCath: $<HTMLButtonElement>("btn-cath"),
+  cathBtnFace: $<HTMLElement>("cath-btn-face"),
+  cathLevel: $<HTMLElement>("cath-level"),
+  cathDot: $<HTMLElement>("cath-dot"),
+  dlgCath: $<HTMLDialogElement>("dlg-cath"),
+  cathPortrait: $<HTMLElement>("cath-portrait"),
+  cathTitle: $<HTMLElement>("cath-title"),
+  cathXp: $<HTMLElement>("cath-xp"),
+  cathXpFill: $<HTMLElement>("cath-xp-fill"),
+  cathAttrs: $<HTMLUListElement>("cath-attrs"),
+  cathTalents: $<HTMLElement>("cath-talents"),
+  cathClose: $<HTMLButtonElement>("cath-close"),
+  cathRespec: $<HTMLButtonElement>("cath-respec"),
+  tooltip: $<HTMLElement>("tooltip"),
+  duel: $<HTMLElement>("duel"),
+  duelTitle: $<HTMLElement>("duel-title"),
+  duelRounds: $<HTMLElement>("duel-rounds"),
+  duelMark: $<HTMLElement>("duel-mark"),
+  duelStrike: $<HTMLButtonElement>("duel-strike"),
 };
 
 const NAMES: Record<StoryLine["who"], string> = {
@@ -212,6 +257,7 @@ function say(text: string): void {
 
 function renderLevels(): void {
   ui.bankStars.textContent = String(freeStars(data));
+  renderCathButton();
   renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv));
 }
 
@@ -314,9 +360,14 @@ function openLevel(lv: Level): void {
 
 /** `?sandbox=1`: unlimited Marks, for screenshots and testing late waves (sessions use it with `npm run shots`). */
 const SANDBOX = new URLSearchParams(location.search).has("sandbox");
+// Sandbox only: a handle for screenshot scripts to set up a field (towers, merges) without clicking.
+if (SANDBOX)
+  (window as unknown as { hedgerow: object }).hedgerow = { game: () => game, place, upgrade, merge, sendWave };
 
 function startLevel(lv: Level): void {
   game = newGame(lv, perksOf(data));
+  // One-on-one boss duels are a player's moment; the tuner and sims never see them.
+  game.duels = true;
   if (SANDBOX) {
     game.marks = 99999;
     game.goodwill = game.maxGoodwill = 999;
@@ -517,7 +568,7 @@ function renderPanel(force = false): void {
   const g = game;
   const sel = selected;
   const t = sel ? towerAt(g, sel.col, sel.row) : undefined;
-  const key = [sel?.col, sel?.row, t?.id, t?.tier, t?.target, g.wave, g.phase, renderer?.heroSelected, aiming].join("|");
+  const key = [sel?.col, sel?.row, t?.id, t?.tier, t?.target, t?.mega, rankOf(t?.kills ?? 0), g.wave, g.phase, renderer?.heroSelected, aiming].join("|");
   if (!force && key === panelKey) return;
   panelKey = key;
   const p = ui.panel;
@@ -697,15 +748,27 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   head.append(img(towerIcon(t.kind, t.tier, t.spec ?? null), "tower-icon"));
   const titles = document.createElement("div");
   titles.className = "tower-titles";
-  const name = t.tier === 4 && t.spec != null ? SPECIALISATIONS[t.kind][t.spec].name : spec.name;
+  const name = t.mega ? MEGAS[t.mega].name : t.tier === 4 && t.spec != null ? SPECIALISATIONS[t.kind][t.spec].name : spec.name;
   const title = line(name, "panel-title");
   title.setAttribute("aria-label", `${name}, tier ${t.tier} of 4`);
   const pips = document.createElement("span");
   pips.className = "pips";
   pips.setAttribute("aria-hidden", "true");
-  pips.textContent = "★".repeat(t.tier) + "☆".repeat(4 - t.tier);
+  pips.textContent = t.mega ? "◆" : "★".repeat(t.tier) + "☆".repeat(4 - t.tier);
   title.append(" ", pips);
   titles.append(title);
+  // Veterans: kills, rank, and how far to the next.
+  const kills = t.kills ?? 0;
+  const rank = rankOf(kills);
+  if (st.damage > 0 || st.thorns > 0 || st.gustEvery > 0) {
+    const vet = line(
+      rank > 0
+        ? `Veteran ${"★".repeat(rank)} · ${kills} knockouts${rank < 3 ? ` · next rank at ${RANKS[rank]}` : ""}`
+        : `${kills} knockouts · veteran at ${RANKS[0]}`,
+      "vet-line",
+    );
+    titles.append(vet);
+  }
   if (st.damage > 0) {
     // Targeting is one small cycling button: it rarely needs changing.
     const tb = document.createElement("button");
@@ -726,7 +789,9 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
 
   const row = document.createElement("div");
   row.className = "panel-row";
-  if (t.tier < 3) {
+  if (t.mega) {
+    p.append(line(MEGAS[t.mega].blurb, "hint"), statGrid(st));
+  } else if (t.tier < 3) {
     const cost = upgradeCost(t)!;
     const nextStats = towerStats({ kind: t.kind, tier: (t.tier + 1) as 2 | 3, spec: null });
     p.append(statGrid(st, nextStats));
@@ -786,6 +851,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     p.append(choices);
     if (!open) p.append(line(`Specialisations open at level ${SPEC_FIRST_LEVEL}.`, "hint"));
   } else p.append(statGrid(st));
+  if (!t.mega && t.tier >= 3) mergeSection(p, g, t);
   const sl = document.createElement("button");
   sl.type = "button";
   sl.className = "btn btn-quiet";
@@ -798,6 +864,48 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   row.append(sl);
   p.append(row);
 }
+
+/** Megastructures: merge buttons for grown neighbours, or a hint about what this tower could become. */
+function mergeSection(p: HTMLElement, g: Game, t: Tower): void {
+  if (!megasUnlocked(g.level)) return;
+  const opts = mergeOptions(g, t.id);
+  const box = document.createElement("div");
+  box.className = "merge-row";
+  for (const o of opts) {
+    const m = MEGAS[o.mega];
+    const partner = g.towers.find((x) => x.id === o.partner)!;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn merge-btn";
+    b.dataset.cost = String(o.cost);
+    b.disabled = g.marks < o.cost;
+    const top = document.createElement("strong");
+    top.textContent = `Merge with the ${TOWERS[partner.kind].name} → ${m.name} · ${o.cost}`;
+    const d = document.createElement("small");
+    d.textContent = m.blurb;
+    b.append(top, d, statGrid(st0(t), towerStats({ kind: t.kind, tier: 4, mega: o.mega })));
+    b.onclick = () => {
+      if (act(() => merge(g, t.id, o.partner))) {
+        renderer?.built_(t.id, t.col, t.row, true);
+        renderPanel(true);
+      }
+    };
+    box.append(b);
+  }
+  if (!opts.length) {
+    const partners = (Object.keys(TOWERS) as Array<Tower["kind"]>).filter((k) => megaFor(t.kind, k) && g.level.towers.includes(k));
+    if (!partners.length) return;
+    box.append(
+      line(
+        `Megastructure: grow a ${partners.map((k) => `${TOWERS[k].name} (→ ${MEGAS[megaFor(t.kind, k)!].name})`).join(" or a ")} to tier 3 right beside this one, then merge them.`,
+        "hint",
+      ),
+    );
+  }
+  p.append(box);
+}
+
+const st0 = (t: Tower) => towerStats(t);
 
 function act(fn: () => { ok: boolean; reason?: string }): boolean {
   const r = fn();
@@ -989,6 +1097,33 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "split":
         break;
+      case "pop":
+        tip("pop", "Bubble wrap! Single shots just pop it. Splash (bees, ponds, the Seed Cannon), slows and my pies go straight through.", "determined");
+        break;
+      case "rankUp":
+        toast(`${TOWERS[g.towers.find((t) => t.id === ev.tower)?.kind ?? "scarecrow"].name} is a veteran now: ${"★".repeat(ev.rank)}`);
+        break;
+      case "merge":
+        banner(MEGAS[ev.mega].name, "Megastructure raised", true);
+        sfx.playUpgrade();
+        haptic.boss();
+        break;
+      case "ambush":
+        banner("Ambush!", `${ENEMIES[ev.kind].name}s are lying in wait halfway down the lane.`);
+        tip("ambush", "Scouts say some of them are hiding partway down the lane. The red ring marks the spot: cover it.", "worried");
+        break;
+      case "duel":
+        sfx.playBoss();
+        haptic.boss();
+        say(`Cath squares up to ${ENEMIES[ev.kind].name}. Tap Strike when the pin is in the gold.`);
+        break;
+      case "duelStrike":
+        sfx.playSwing();
+        if (ev.quality >= 0.85) haptic.upgrade();
+        break;
+      case "duelEnd":
+        toast(ev.won ? `Cath wins the duel: the ${ENEMIES[ev.kind].name} reels.` : "Cath's knocked back. She'll be up in a moment.");
+        break;
       case "bossMove":
         sfx.playBossMove(ev.move);
         toast(ev.text);
@@ -1018,7 +1153,8 @@ function frame(now: number): void {
       }
       syncControls();
     } else if (g.phase !== "build") autoLeft = AUTO_SECS;
-    acc += dt * speed;
+    // A duel runs in real time, whatever the game speed.
+    acc += dt * (g.duel ? 1 : speed);
     let stepped = false;
     while (acc >= STEP) {
       acc -= STEP;
@@ -1038,6 +1174,7 @@ function frame(now: number): void {
     }
   }
   renderer.draw(g, paused ? 0 : dt * Math.min(speed, 2));
+  drawDuel(g);
   if (!finished && (g.phase === "won" || g.phase === "lost")) {
     finished = true;
     sfx.setIntensity(0);
@@ -1086,7 +1223,11 @@ function finish(g: Game): void {
     ? `${lv.reward}${gained ? ` · +${gained} star${gained > 1 ? "s" : ""} for the Seed Bank.` : ""}`
     : "Regroup and try again. Hedges slow them, scarecrows finish them, and Cath can hold the lane where it bends. Stars buy perks in the Seed Bank.";
   if (won) {
+    const cathBefore = levelOf(xpOf(data.stars)).level;
     recordStars(data, lv.id, n);
+    const cathAfter = levelOf(xpOf(data.stars)).level;
+    if (cathAfter > cathBefore)
+      ui.resultNote.textContent += ` · Cath reached level ${cathAfter}: ${cathAfter - cathBefore} skill point${cathAfter - cathBefore > 1 ? "s" : ""} to spend${TALENTS.some(([l]) => l > cathBefore && l <= cathAfter) ? ", and a talent to choose" : ""}.`;
     const fresh = newRosettes(
       {
         levelId: lv.id,
@@ -1203,8 +1344,60 @@ ui.bankRefund.addEventListener("click", () => {
 
 // ---- input ----
 
+// Pan and zoom on the 3D field: pinch or scroll to zoom, drag (when zoomed in) to look around. A drag
+// doesn't count as a tap.
+const pointers = new Map<number, { x: number; y: number }>();
+let dragged = 0;
+let pinch = 0;
+ui.canvas.addEventListener("pointerdown", (e) => {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 1) dragged = 0;
+  if (pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    pinch = Math.hypot(a!.x - b!.x, a!.y - b!.y);
+  }
+});
+ui.canvas.addEventListener("pointermove", (e) => {
+  const prev = pointers.get(e.pointerId);
+  if (!prev || !(renderer instanceof Renderer3D)) return;
+  const dx = e.clientX - prev.x;
+  const dy = e.clientY - prev.y;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    const d = Math.hypot(a!.x - b!.x, a!.y - b!.y);
+    if (pinch > 0) renderer.zoomBy(d / pinch);
+    pinch = d;
+    dragged = 99;
+  } else if (pointers.size === 1 && renderer.zoomed && !aiming) {
+    dragged += Math.abs(dx) + Math.abs(dy);
+    if (dragged > 8) renderer.panBy(dx, dy);
+  }
+});
+for (const ev of ["pointerup", "pointercancel", "pointerleave"] as const)
+  ui.canvas.addEventListener(ev, (e) => {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = 0;
+  });
+ui.canvas.addEventListener(
+  "wheel",
+  (e) => {
+    if (!(renderer instanceof Renderer3D)) return;
+    e.preventDefault();
+    renderer.zoomBy(Math.exp(-e.deltaY * 0.0015));
+  },
+  { passive: false },
+);
+ui.canvas.addEventListener("dblclick", () => {
+  if (renderer instanceof Renderer3D) renderer.resetView();
+});
+
 ui.canvas.addEventListener("click", (e) => {
   if (!game || !renderer) return;
+  if (dragged > 8) {
+    dragged = 0;
+    return;
+  }
   sfx.unlock();
   const w = renderer.worldAt(e.clientX, e.clientY);
   if (aiming) {
@@ -1342,6 +1535,244 @@ document.addEventListener("visibilitychange", () => {
     paused = true;
     syncControls();
   }
+});
+
+  // ---- one-on-one boss duels ----
+
+let duelShownFor = -1;
+function drawDuel(g: Game): void {
+  const d = g.duel;
+  ui.duel.hidden = !d;
+  if (!d) {
+    duelShownFor = -1;
+    return;
+  }
+  if (duelShownFor !== d.enemy) {
+    duelShownFor = d.enemy;
+    ui.duelTitle.textContent = `Cath vs ${ENEMIES[d.kind].name}`;
+    ui.duelStrike.focus({ preventScroll: true });
+  }
+  ui.duelRounds.textContent = [0, 1, 2]
+    .map((i) => (i < d.strikes.length ? (d.strikes[i]! >= 0.85 ? "★" : d.strikes[i]! >= 0.45 ? "●" : "✕") : i === d.round ? "◉" : "○"))
+    .join(" ");
+  ui.duelMark.style.setProperty("--x", String(duelPos(d.clock, d.round)));
+}
+
+/** Where the rolling pin is on the bar (0 to 1): it swings faster each round. */
+function duelPos(clock: number, round: number): number {
+  return 0.5 + 0.5 * Math.sin(clock * (2.6 + round * 0.9) - Math.PI / 2);
+}
+
+function strike(): void {
+  if (!game?.duel) return;
+  const d = game.duel;
+  const off = Math.abs(duelPos(d.clock, d.round) - 0.5);
+  const q = Math.max(0, Math.min(1, 1 - Math.max(0, off - 0.06) * 2.6));
+  duelStrike(game, q);
+  const evs = drainEvents(game);
+  onEvents(game, evs);
+  renderer?.feed(evs, game);
+  toast(q >= 0.85 ? "Perfect!" : q >= 0.45 ? "Good hit." : "Missed!");
+}
+ui.duelStrike.addEventListener("click", () => {
+  sfx.unlock();
+  strike();
+});
+document.addEventListener("keydown", (e) => {
+  if (game?.duel && (e.key === " " || e.key === "Enter")) {
+    e.preventDefault();
+    strike();
+  }
+});
+
+// ---- tooltips: hover (or press and hold) any control to see what it does ----
+
+const TIPS: Record<string, () => string> = {
+  "btn-pie": () =>
+    `Cath's pie. Tap it, then tap where it should land: everything in the splash freezes for ${PIE_STUN}s (bosses half that) and takes ${PIE_DAMAGE} damage. Ready again ${Math.round(game ? pieCooldown(game) : 30)}s later. Tap the pie twice to throw at the front of the queue.`,
+  "btn-neighbours": () =>
+    `Call the neighbours: three farmhands block the lane just ahead of the leading vehicle for ${NEIGHBOURS_SECS}s. Nothing on wheels gets past; bosses crawl. Unlocks at level ${NEIGHBOURS_FIRST_LEVEL}.`,
+  "btn-rally": () => `Rally: every tower fires half as fast again for ${RALLY_SECS}s. Unlocks at level ${RALLY_FIRST_LEVEL}.`,
+  "btn-auto": () =>
+    autoNext
+      ? "Auto is on: the next wave starts by itself a few seconds after the last one is cleared, and Cath and her abilities run themselves. Tap to send waves yourself."
+      : "Auto is off: you send each wave yourself. Tap to let the waves roll on their own.",
+  "btn-hero": () => "Cath. She walks to the trouble herself, holds vehicles in the lane and whacks them. Tap her for her health.",
+  "btn-speed": () => `Game speed (now x${speed}). Tap to cycle x1, x2, x3; it's remembered.`,
+  "btn-pause": () => (paused ? "Resume the game." : "Pause the game."),
+  "btn-sound": () => (sfx.isMuted() ? "Sound and vibration are off." : "Sound and vibration are on."),
+  "btn-send": () => "Send the next wave. While a wave is on the lane you can call the next early for bonus Marks.",
+  "btn-levels": () => "Back to the map.",
+  "btn-cath": () => "Cath's character sheet: spend skill points on her attributes and pick talents as she levels up.",
+  "btn-bank": () => "The Seed Bank: spend stars on perks for every level.",
+};
+
+let tipTimer = 0;
+let tipHide = 0;
+let tipSuppress = false;
+function showTip(el: HTMLElement): void {
+  const text = TIPS[el.id]?.();
+  if (!text) return;
+  ui.tooltip.textContent = text;
+  ui.tooltip.hidden = false;
+  const r = el.getBoundingClientRect();
+  const w = ui.tooltip.offsetWidth;
+  const h = ui.tooltip.offsetHeight;
+  const x = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+  const above = r.top - h - 10;
+  const y = above > 8 ? above : Math.min(window.innerHeight - h - 8, r.bottom + 10);
+  ui.tooltip.style.setProperty("--x", `${x}px`);
+  ui.tooltip.style.setProperty("--y", `${y}px`);
+  clearTimeout(tipHide);
+  tipHide = window.setTimeout(hideTip, Math.max(3500, text.length * 55));
+}
+function hideTip(): void {
+  clearTimeout(tipTimer);
+  ui.tooltip.hidden = true;
+}
+for (const id of Object.keys(TIPS)) {
+  const el = document.getElementById(id);
+  if (!el) continue;
+  el.classList.add("has-tip");
+  el.addEventListener("pointerenter", (e) => {
+    if (e.pointerType !== "mouse") return;
+    clearTimeout(tipTimer);
+    tipTimer = window.setTimeout(() => showTip(el), 380);
+  });
+  el.addEventListener("pointerleave", (e) => {
+    if (e.pointerType === "mouse") hideTip();
+  });
+  // Press and hold on a touch screen: the tip, and the press doesn't count as a tap.
+  el.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse") return;
+    tipSuppress = false;
+    clearTimeout(tipTimer);
+    tipTimer = window.setTimeout(() => {
+      tipSuppress = true;
+      showTip(el);
+      haptic.build();
+    }, 450);
+  });
+  for (const ev of ["pointerup", "pointercancel"] as const) el.addEventListener(ev, () => clearTimeout(tipTimer));
+  el.addEventListener(
+    "click",
+    (e) => {
+      hideTip();
+      if (tipSuppress) {
+        tipSuppress = false;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    },
+    true,
+  );
+  el.addEventListener("contextmenu", (e) => e.preventDefault());
+}
+
+// ---- Cath's character sheet ----
+
+function cathState() {
+  data.cath ??= emptyCath();
+  const xp = xpOf(data.stars);
+  const lv = levelOf(xp);
+  return { c: data.cath, xp, ...lv };
+}
+
+function renderCathButton(): void {
+  const { c, level } = cathState();
+  ui.cathLevel.textContent = String(level);
+  ui.cathDot.hidden = freePoints(c, level) === 0 && talentsWaiting(c, level).length === 0;
+  if (!ui.cathBtnFace.innerHTML) ui.cathBtnFace.innerHTML = cathSvg({ framing: "face", expression: "smirk" });
+}
+
+function renderCath(): void {
+  const { c, level, into, need, xp } = cathState();
+  ui.cathPortrait.innerHTML ||= cath("delighted");
+  ui.cathTitle.textContent = `Cath, level ${level}`;
+  ui.cathXpFill.style.setProperty("--xp", String(into / need));
+  const free = freePoints(c, level);
+  ui.cathXp.textContent = `${xp} XP · ${need - into} to level ${level + 1} · ${free} skill point${free === 1 ? "" : "s"} to spend. Every level cleared earns XP, and each star earns more.`;
+  ui.cathAttrs.replaceChildren();
+  for (const a of ATTRS) {
+    const n = c.attrs[a.id] ?? 0;
+    const li = document.createElement("li");
+    li.className = "attr";
+    const text = document.createElement("div");
+    const name = document.createElement("strong");
+    name.textContent = a.name;
+    const pips = document.createElement("span");
+    pips.className = "pips";
+    pips.textContent = "●".repeat(n) + "○".repeat(ATTR_CAP - n);
+    pips.setAttribute("aria-label", `${n} of ${ATTR_CAP}`);
+    const each = document.createElement("small");
+    each.textContent = `${a.each} per point`;
+    text.append(name, " ", pips, each);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn";
+    b.textContent = "+";
+    b.disabled = free === 0 || n >= ATTR_CAP;
+    b.setAttribute("aria-label", `Raise ${a.name}`);
+    b.onclick = () => {
+      if (raise(c, level, a.id)) {
+        save(data);
+        sfx.playUpgrade();
+      }
+      renderCath();
+      renderCathButton();
+    };
+    li.append(text, b);
+    ui.cathAttrs.append(li);
+  }
+  ui.cathTalents.replaceChildren();
+  const head = document.createElement("h3");
+  head.className = "rosette-head";
+  head.textContent = "Talents";
+  ui.cathTalents.append(head);
+  for (const [at, opts] of TALENTS) {
+    const row = document.createElement("div");
+    row.className = "talent-row";
+    const lab = document.createElement("span");
+    lab.className = "talent-at";
+    lab.textContent = `Lv ${at}`;
+    row.append(lab);
+    const picked = c.talents[String(at)];
+    ([0, 1] as const).forEach((i) => {
+      const t = opts[i];
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = `talent${picked === i ? " picked" : ""}`;
+      b.disabled = level < at || picked !== undefined;
+      const n = document.createElement("strong");
+      n.textContent = t.name;
+      const d = document.createElement("small");
+      d.textContent = t.blurb;
+      b.append(n, d);
+      b.setAttribute("aria-pressed", String(picked === i));
+      b.onclick = () => {
+        if (pickTalent(c, level, at, i)) {
+          save(data);
+          sfx.playUpgrade();
+        }
+        renderCath();
+        renderCathButton();
+      };
+      row.append(b);
+    });
+    ui.cathTalents.append(row);
+  }
+}
+
+ui.btnCath.addEventListener("click", () => {
+  renderCath();
+  ui.dlgCath.showModal();
+});
+ui.cathClose.addEventListener("click", () => ui.dlgCath.close());
+ui.cathRespec.addEventListener("click", () => {
+  respec(cathState().c);
+  save(data);
+  renderCath();
+  renderCathButton();
 });
 
 renderLevels();

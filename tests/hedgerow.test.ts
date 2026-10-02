@@ -237,7 +237,7 @@ describe("hedgerow engine", () => {
       stepGame(g);
       return g.enemies[0]!.hp;
     };
-    expect(hpAfter("scarecrow")).toBe(996);
+    expect(hpAfter("scarecrow")).toBeCloseTo(1000 - TOWERS.scarecrow.damage[0] * 0.5);
     expect(hpAfter("silo")).toBe(960);
   });
 

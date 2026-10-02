@@ -394,6 +394,76 @@ export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: numb
       ctx.restore();
       break;
     }
+    case "windmill": {
+      // A whitewashed tower mill with a cap and four sails that turn (faster just after a gust).
+      const h = 0.62 + tier * 0.04;
+      ctx.fillStyle = spec === 1 ? "#b9b2a4" : "#f1ead9";
+      ctx.beginPath();
+      ctx.moveTo(x - s * 0.2, base);
+      ctx.lineTo(x - s * 0.13, base - s * h);
+      ctx.lineTo(x + s * 0.13, base - s * h);
+      ctx.lineTo(x + s * 0.2, base);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      rr(ctx, x - s * 0.05, base - s * 0.16, s * 0.1, s * 0.16, s * 0.03, "#6b4a2b");
+      ctx.fillStyle = "#5e3d22";
+      ctx.beginPath();
+      ctx.arc(x, base - s * h, s * 0.15, Math.PI, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      if (spec === 1) {
+        ctx.fillStyle = "#9a9183";
+        ctx.beginPath();
+        ctx.ellipse(x + s * 0.27, base - s * 0.06, s * 0.1, s * 0.05, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      const hubY = base - s * (h - 0.04);
+      const spin = t * (1.2 + Math.max(0, 1 - fired) * 6);
+      const len = s * (spec === 0 ? 0.46 : 0.36);
+      for (let i = 0; i < 4; i++) {
+        const a = spin + (i * Math.PI) / 2;
+        ctx.save();
+        ctx.translate(x, hubY);
+        ctx.rotate(a);
+        ctx.fillStyle = spec === 0 ? "#f6efe0" : "rgba(246,239,224,0.8)";
+        ctx.fillRect(s * 0.03, -s * 0.05, len, s * 0.1);
+        ctx.strokeRect(s * 0.03, -s * 0.05, len, s * 0.1);
+        ctx.restore();
+      }
+      blob(ctx, x, hubY, s * 0.04, "#2b2320");
+      break;
+    }
+    case "cannon": {
+      // Pip's Seed Cannon: a fat barrel on a cart, sacks of seed potatoes beside it.
+      const wide = spec === 0 ? 0.13 : 0.09;
+      blob(ctx, x - s * 0.24, base - s * 0.08, s * 0.1, "#c9a66b");
+      blob(ctx, x - s * 0.15, base - s * 0.05, s * 0.08, "#b8923e");
+      rr(ctx, x - s * 0.2, base - s * 0.2, s * 0.4, s * 0.12, s * 0.03, "#8a5a35");
+      ctx.save();
+      ctx.translate(x, base - s * 0.24);
+      ctx.rotate(-0.55 - kick * 0.2);
+      const barrels = spec === 1 ? 3 : 1;
+      for (let i = 0; i < barrels; i++) {
+        const off = (i - (barrels - 1) / 2) * s * 0.09;
+        rr(ctx, -s * 0.06, off - s * wide, s * (0.42 - kick * 0.06), s * wide * 2, s * 0.04, spec === 0 ? "#d9822b" : "#5c6066");
+      }
+      for (let i = 0; i < tier; i++) {
+        ctx.fillStyle = "#d4ae58";
+        ctx.fillRect(s * (0.08 + i * 0.08), -s * wide, s * 0.03, s * wide * 2);
+      }
+      ctx.restore();
+      ctx.fillStyle = "#5e3d22";
+      for (const wx of [-0.13, 0.13]) {
+        ctx.beginPath();
+        ctx.arc(x + s * wx, base - s * 0.06, s * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      break;
+    }
     case "mast": {
       ctx.strokeStyle = "#5a5e63";
       ctx.lineWidth = Math.max(1.5, s * 0.03);
@@ -618,6 +688,8 @@ export interface EnemyLook {
   ghost: boolean;
   /** Animation phase, so a column of vans doesn't bob in step. */
   phase: number;
+  /** Bubble wrap left (0 = popped; undefined = whole). */
+  shield?: number;
 }
 
 /** How big each enemy is drawn, relative to a van. */
@@ -776,6 +848,26 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
     case "phantom":
       vehicle(ctx, 0, 0, s, tt, { len: 0.62, h: 0.32, body: "#34363d", cab: "#2a2b30", wheels: 2 });
       break;
+    case "wrapped": {
+      vehicle(ctx, 0, 0, s, tt, { len: 0.62, h: 0.32, body: "#f4f6f8", stripe: "#1f8a8a", label: "H", wheels: 2 });
+      if (look.shield !== 0) {
+        // Bubble wrap: a glossy, lumpy shell over the van.
+        ctx.fillStyle = "rgba(210,236,255,0.38)";
+        ctx.strokeStyle = "rgba(120,170,210,0.9)";
+        ctx.beginPath();
+        ctx.ellipse(0, -s * 0.2, s * 0.38, s * 0.24, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,0.7)";
+        for (let i = 0; i < 9; i++) {
+          ctx.beginPath();
+          ctx.arc(-s * 0.28 + (i % 5) * s * 0.14, -s * 0.3 + Math.floor(i / 5) * s * 0.14, s * 0.035, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.strokeStyle = INK;
+      }
+      break;
+    }
     case "truck":
       vehicle(ctx, 0, 0, s, tt, { len: 0.76, h: 0.36, body: "#d93a2f", label: "0.99", labelColor: "#ffe66b", wheels: 3 });
       break;

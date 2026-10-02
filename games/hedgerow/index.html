@@ -44,10 +44,17 @@
             <span>Games</span>
           </a>
           <h1 class="wordmark">Hedgerow</h1>
+          <div class="top-tools">
+          <button class="bank-btn cath-btn" id="btn-cath" type="button">
+            <span class="cath-btn-face" id="cath-btn-face" aria-hidden="true"></span>
+            <span>Cath <b id="cath-level">1</b></span>
+            <span class="cath-dot" id="cath-dot" hidden aria-label="Points to spend"></span>
+          </button>
           <button class="bank-btn" id="btn-bank" type="button">
             <span aria-hidden="true">★</span> <span id="bank-stars">0</span>
             <span class="bank-word">Seed Bank</span>
           </button>
+          </div>
         </header>
         <section class="host">
           <span class="host-face" id="host-face" aria-hidden="true"></span>
@@ -146,6 +153,17 @@
           </div>
           <div class="intro" id="intro" hidden></div>
           <p class="paused-note" id="paused-note" hidden>Paused</p>
+          <div class="duel" id="duel" hidden>
+            <p class="eyebrow">One on one</p>
+            <strong class="duel-title" id="duel-title">Cath vs the boss</strong>
+            <div class="duel-rounds" id="duel-rounds" aria-hidden="true"></div>
+            <div class="duel-bar" aria-hidden="true">
+              <span class="duel-sweet"></span>
+              <span class="duel-mark" id="duel-mark"></span>
+            </div>
+            <button class="btn duel-strike" id="duel-strike" type="button">Strike!</button>
+            <p class="duel-hint">Tap when the pin is in the gold. Three swings.</p>
+          </div>
         </main>
         <section class="panel" id="panel" aria-live="polite"></section>
         <footer class="controls">
@@ -227,6 +245,20 @@
       </div>
     </dialog>
 
+    <dialog id="dlg-cath" class="sheet cath-sheet" aria-labelledby="cath-title">
+      <div class="story-cath" id="cath-portrait" aria-hidden="true"></div>
+      <p class="eyebrow">Her character sheet</p>
+      <h2 id="cath-title">Cath, level 1</h2>
+      <div class="xp-bar" aria-hidden="true"><span id="cath-xp-fill"></span></div>
+      <p class="bank-free" id="cath-xp"></p>
+      <ul class="attrs" id="cath-attrs"></ul>
+      <div class="talents" id="cath-talents"></div>
+      <div class="win-actions">
+        <button class="btn" type="button" id="cath-close">Done</button>
+        <button class="btn btn-quiet" type="button" id="cath-respec">Respec</button>
+      </div>
+    </dialog>
+    <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
     <dialog id="dlg-bank" class="sheet bank" aria-labelledby="bank-title">
       <p class="eyebrow">Spend your stars</p>
       <h2 id="bank-title">The Seed Bank</h2>

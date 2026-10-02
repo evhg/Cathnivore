@@ -213,6 +213,17 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 45. [x] *(2026-10-02: naive bot now wins 10 of levels 8-40: 10,11,15,20,21,22,26,30,32,38; unreleased)* **Early acts still fall to Scarecrow spam** (2026-10-02 measurement: the naive Scarecrows-only bot wins levels 8-30 even at the tuned curve; from 31 it loses all but 32, 38, 43). Tuning can't fix it: with three tower types early, spam is near-optimal. Fix with content: early enemies that shrug off turnips (a "crate van" that only splash or slows stop), Scarecrow bans or limited plots on more act 1-3 levels, an earlier pond or barn. Then teach bot.ts early calls and targeting, re-tune and re-verify; target: the naive bot loses most levels from 8.
 46. [ ] **Owner's next playtest:** act on FEEDBACK.md first.
 
+### Hedgerow round 3 (owner's third playtest, 2026-10-02 afternoon; design: docs/design/hedgerow-v2.md 6)
+
+47. [x] Bubble-wrapped vans against Scarecrow spam; Windmill and Seed Cannon; eight megastructures; veteran ranks; ambushes; winding routes on bigger fields with pan and zoom; Cath's character sheet (XP, six attributes, ten talents); one-on-one boss duels; tooltips on every control; dialogs that fit a phone; a synthwave score; richer 3D models.
+48. [ ] **Heroic and Endless:** a Heroic star per level (one life, no pie), and an Endless field per act with a weekly seed and a local best.
+49. [ ] **Daily challenge:** one seeded level a day with a fixed tower set and a twist mix; a share card of the result (no server needed).
+50. [ ] **The Almanac:** a codex of every tower, specialisation, megastructure, enemy and boss, with its stats, lore lines and a 3D turntable; entries unlock as met.
+51. [ ] **Cath's wardrobe:** outfits earned from Rosettes and act clears (wellies and wax jacket, market-day dress, Kingsmarket gown), shown in 3D and in the story scenes.
+52. [ ] **New enemy factions per act:** a drone carrier that launches swarms, a "lobbyist" that disables the nearest tower's specialisation, a rival hero unit (Pell on a quad bike) who fights Cath on the lane.
+53. [ ] **Replay and watch mode:** the deterministic engine records inputs; replay any win at x4 with a free camera, and share a link to it.
+54. [ ] **Hand-tune the act openers and bosses:** level-specific set pieces (a flood that cuts a lane in act 4, a bridge that opens and closes, a night level lit only by towers).
+
 ## Phase 5: second passes (keep going)
 
 33. [ ] **Fresh-eyes audit of all three games and the landing page:** `npm run shots` plus Hedgerow and Runnel screenshots, critiqued by a subagent against `VISION.md`'s eight bars; turn its findings into new ranked items here.

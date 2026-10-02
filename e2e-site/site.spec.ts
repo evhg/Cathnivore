@@ -275,6 +275,22 @@ test.describe('Hedgerow', () => {
     await assertNoSeriousIssues(page)
   })
 
+  test("Cath's character sheet spends skill points and picks a talent", async ({ page }) => {
+    await page.goto(HEDGEROW_2D)
+    const stars = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [String(i + 1), 3]))
+    await page.evaluate((s) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars: s, seenBefore: {} })), stars)
+    await page.reload()
+    await expect(page.locator('#cath-level')).toHaveText('8')
+    await page.locator('#btn-cath').click()
+    await expect(page.locator('#cath-xp')).toContainText('7 skill points')
+    await page.getByRole('button', { name: 'Raise Strength' }).click()
+    await expect(page.locator('#cath-xp')).toContainText('6 skill points')
+    await page.getByRole('button', { name: /Iron Pin/ }).click()
+    await expect(page.getByRole('button', { name: /Iron Pin/ })).toHaveAttribute('aria-pressed', 'true')
+    await assertNoSeriousIssues(page)
+    await page.locator('#cath-close').click()
+  })
+
   test('the 3D battlefield loads without errors', async ({ page }) => {
     const errors = trackErrors(page)
     await page.goto('/hedgerow/')

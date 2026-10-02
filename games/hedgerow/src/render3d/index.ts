@@ -12,6 +12,7 @@ import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { cathSvg } from "../../../../shared/cath/cath";
 import {
   ENEMIES,
+  MEGAS,
   charmed,
   enemyPoint,
   hasTwist,
@@ -26,10 +27,10 @@ import {
   type Tower,
   type TowerKind,
 } from "../engine";
-import { actLight } from "./palette";
-import { buildCath, buildEnemy, buildTower, enemyLift, enemyScale } from "./models";
+import { actLight, actMood, matte } from "./palette";
+import { buildCath, buildEnemy, buildMega, buildTower, enemyLift, enemyScale } from "./models";
 import { buildGround, type Ground } from "./terrain";
-import { Debris, Floaters, Sparks, Transients } from "./fx";
+import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 
 interface TowerView {
   obj: THREE.Group;
@@ -45,7 +46,35 @@ interface EnemyView {
   last: THREE.Vector3;
   heading: number;
   hit: number;
+  /** Banking into corners (radians about the direction of travel). */
+  lean: number;
+  /** The model's opaque meshes and their own materials, for the hit flash (which swaps, never mutates). */
+  meshes: THREE.Mesh[];
+  mats: Array<THREE.Material | THREE.Material[]>;
+  flashing: boolean;
 }
+
+/** Geometry and materials every projectile of a kind borrows (created once, never disposed by an effect). */
+interface ShotKit {
+  turnip: THREE.BufferGeometry;
+  turnipTop: THREE.BufferGeometry;
+  sprout: THREE.BufferGeometry;
+  pumpkin: THREE.BufferGeometry;
+  stalk: THREE.BufferGeometry;
+  sack: THREE.BufferGeometry;
+  tie: THREE.BufferGeometry;
+  bee: THREE.BufferGeometry;
+  orb: THREE.BufferGeometry;
+  crowBody: THREE.BufferGeometry;
+  crowWing: THREE.BufferGeometry;
+  wingMat: THREE.Material;
+  beeRed: THREE.Material;
+  beeGold: THREE.Material;
+  drop: THREE.Material;
+}
+
+/** How long a hit flash lasts, in seconds. */
+const FLASH = 0.07;
 
 const SHOT_COLOURS: Record<string, string> = {
   scarecrow: "#ffe08a",
@@ -75,6 +104,15 @@ export class Renderer3D {
   private faceTex: THREE.Texture | null = null;
   private faceWorried: THREE.Texture | null = null;
   private sparks = new Sparks();
+  private motes: Motes[] = [];
+  private birds: Birds | null = null;
+  private pxScale = 300;
+  private kit: ShotKit | null = null;
+  private flashMat = Object.assign(new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: "#fff0dc", emissiveIntensity: 0.9, roughness: 0.6 }), { shared: true });
+  private gustLeaves: string[] = ["#6ea04c", "#8fbd57", "#c9a640"];
+  private v1 = new THREE.Vector3();
+  private v2 = new THREE.Vector3();
+  private v3 = new THREE.Vector3();
   private debris = new Debris();
   private fx: Transients;
   private floaters: Floaters;
@@ -211,19 +249,28 @@ export class Renderer3D {
     this.composer.setPixelRatio(dpr);
     this.composer.setSize(this.w, this.h);
     this.bloom.resolution.set(this.w / 2, this.h / 2);
-    this.sparks.setScale(this.h * dpr * 0.9);
+    this.pxScale = this.h * dpr * 0.9;
+    this.sparks.setScale(this.pxScale);
     this.camera.aspect = this.w / this.h;
     if (game.level.id !== this.levelId) this.buildLevel(game);
+    for (const m of this.motes) m.setScale(this.pxScale);
     this.fitCamera(game);
   }
 
   private buildLevel(game: Game): void {
     this.levelId = game.level.id;
+    // Free the last level's ground (its cached, shared materials stay for the next one).
+    for (const o of [...this.world.children]) o.traverse(disposeOwn);
+    for (const m of this.motes) m.dispose();
+    this.birds?.dispose();
+    this.motes = [];
+    this.birds = null;
     this.world.clear();
     this.clearDynamic();
     const L = actLight(game.level.id);
     this.ground = buildGround(game.level);
     this.world.add(this.ground.group);
+    this.buildAir(game);
     // Sky, fog and light for the act.
     const sky = document.createElement("canvas");
     sky.width = 4;
@@ -275,6 +322,34 @@ export class Renderer3D {
     this.dynamic.add(this.cath);
   }
 
+  /** The living air: pollen and birds by day; fireflies, lantern halos and bats by night. */
+  private buildAir(game: Game): void {
+    const lv = game.level;
+    const mood = actMood(lv.id);
+    const L = actLight(lv.id);
+    const night = hasTwist(lv, "night") || lv.id > 90;
+    const cx = lv.cols / 2;
+    const cz = lv.rows / 2;
+    const span = Math.max(lv.cols, lv.rows) * 0.6;
+    const box = { x0: -2, x1: lv.cols + 2, z0: -1.5, z1: lv.rows + 1.5, y0: 0.35, y1: 1.7 };
+    if (night) {
+      this.motes.push(new Motes(Math.round(lv.cols * lv.rows * 0.35), { kind: "fireflies", color: "#d8ff8a", size: 0.14, box: { ...box, y0: 0.15, y1: 0.8 } }));
+      if (this.ground?.lamps.length) this.motes.push(new Motes(0, { kind: "glow", color: "#ffa850", size: 0.85, box, at: this.ground.lamps }));
+      this.birds = new Birds(4, cx, cz, span, true);
+    } else {
+      if (!hasTwist(lv, "rain")) this.motes.push(new Motes(70, { kind: "pollen", color: mood.mote, size: 0.05, box, wind: hasTwist(lv, "wind") ? 3 : 1 }));
+      const coast = lv.id > 20 && lv.id <= 30 ? true : lv.id > 50 && lv.id <= 60;
+      if (mood.birds && !hasTwist(lv, "fog")) this.birds = new Birds(mood.birds, cx, cz, span, false, coast ? "#f4f2ec" : "#2e2a2a");
+    }
+    for (const m of this.motes) {
+      m.setScale(this.pxScale);
+      this.world.add(m.points);
+    }
+    if (this.birds) this.world.add(this.birds.mesh);
+    // Gusts throw this act's leaves about.
+    this.gustLeaves = [L.grass[2], L.grass[0], lv.id > 60 && lv.id <= 70 ? "#e0803a" : "#c9a640", "#a8c45a"];
+  }
+
   private fitCamera(game: Game): void {
     const cols = game.level.cols;
     const rows = game.level.rows;
@@ -317,6 +392,8 @@ export class Renderer3D {
       this.scene.fog.far = (hi + L.fogFar - 14) * dim;
     }
     this.camTarget.copy(target);
+    this.fieldSize.set(cols, rows);
+    this.resetView();
   }
 
   reset(): void {
@@ -400,11 +477,9 @@ export class Renderer3D {
         case "shot": {
           const tv = this.towers.get(e.tower);
           if (tv) tv.fired = 0;
-          const ev = this.enemies.get(e.enemy);
-          if (ev) ev.hit = 0;
           const fy = this.height(e.fromX, e.fromY) + 0.7;
           const ty = this.height(e.toX, e.toY) + 0.25;
-          this.projectile(e.kind, e.spec ?? null, e.fromX, fy, e.fromY, e.toX, ty, e.toY, !!e.crit);
+          this.projectile(e.kind, e.spec ?? null, e.fromX, fy, e.fromY, e.toX, ty, e.toY, !!e.crit, e.enemy);
           break;
         }
         case "kill": {
@@ -516,6 +591,45 @@ export class Renderer3D {
           if (e.move === "mend") this.sparks.emit(e.x, y + 0.4, e.y, "#2fd19c", 60, 2, 0.14, 1, -1);
           break;
         }
+        case "gust": {
+          const gv = this.towers.get(e.tower);
+          if (gv) gv.fired = 0;
+          const y = this.height(e.x, e.y);
+          this.fx.ring(e.x, y + 0.1, e.y, "#e8f4ff", e.radius * 2, 0.35);
+          if (!this.reducedMotion) this.fx.swirl(e.x, y, e.y, e.radius, this.gustLeaves);
+          this.sparks.emit(e.x, y + 0.15, e.y, "#f4fbff", 14, 2.4, 0.1, 0.45, 0);
+          break;
+        }
+        case "pop": {
+          const y = this.height(e.x, e.y);
+          this.sparks.emit(e.x, y + 0.3, e.y, "#e6f4ff", 14, 2.2, 0.08);
+          this.floaters.add("POP!", new THREE.Vector3(e.x, y + 0.9, e.y), "#d2ecff", 0.9);
+          break;
+        }
+        case "rankUp": {
+          const y = this.height(e.x, e.y);
+          this.fx.ring(e.x, y + 0.05, e.y, "#ffd76a", 1.2);
+          this.floaters.add(`Veteran ${"★".repeat(e.rank)}`, new THREE.Vector3(e.x, y + 1.4, e.y), "#ffd76a", 1.05);
+          break;
+        }
+        case "merge": {
+          const y = this.height(e.x, e.y);
+          this.shake = Math.max(this.shake, 0.4);
+          this.fx.ring(e.x, y + 0.05, e.y, "#ffd76a", 3.2, 0.8);
+          this.sparks.emit(e.x, y + 0.6, e.y, "#ffd76a", 30, 3, 0.12, 0.9);
+          this.floaters.add(MEGAS[e.mega].name, new THREE.Vector3(e.x, y + 2.2, e.y), "#fff2b8", 1.4);
+          break;
+        }
+        case "ambush": {
+          const y = this.height(e.x, e.y);
+          this.fx.ring(e.x, y + 0.08, e.y, "#ff3b30", 2.2, 1.2);
+          this.floaters.add("Ambush here!", new THREE.Vector3(e.x, y + 1.2, e.y), "#ffb3a8", 1.2);
+          break;
+        }
+        case "duelEnd":
+          this.shake = Math.max(this.shake, 0.5);
+          this.floaters.add(e.won ? "Cath wins the duel!" : "Cath's knocked back", new THREE.Vector3(game.hero.x, 1.6, game.hero.y), e.won ? "#fff2b8" : "#ffd0c4", 1.3);
+          break;
         case "neighbours": {
           const y = this.height(e.x, e.y);
           this.fx.ring(e.x, y + 0.05, e.y, "#ffd76a", 1.2);
@@ -533,56 +647,167 @@ export class Renderer3D {
     }
   }
 
-  private projectile(kind: TowerKind, spec: 0 | 1 | null, fx: number, fy: number, fz: number, tx: number, ty: number, tz: number, crit: boolean): void {
+  private shotKit(): ShotKit {
+    if (this.kit) return this.kit;
+    const g = sharedGeometry;
+    const wing = Object.assign(new THREE.MeshStandardMaterial({ color: "#1d1b22", roughness: 0.6, side: THREE.DoubleSide }), { shared: true });
+    const basic = (color: string) => Object.assign(new THREE.MeshBasicMaterial({ color }), { shared: true });
+    this.kit = {
+      turnip: g(new THREE.IcosahedronGeometry(0.06, 1).scale(1, 0.9, 1)),
+      turnipTop: g(new THREE.SphereGeometry(0.061, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2.4)),
+      sprout: g(new THREE.ConeGeometry(0.025, 0.08, 4).translate(0, 0.08, 0)),
+      pumpkin: g(new THREE.SphereGeometry(0.11, 10, 6).scale(1, 0.78, 1)),
+      stalk: g(new THREE.CylinderGeometry(0.012, 0.016, 0.05, 5).translate(0, 0.095, 0)),
+      sack: g(new THREE.IcosahedronGeometry(1, 1).scale(1, 1.2, 1)),
+      tie: g(new THREE.ConeGeometry(0.45, 0.6, 5).rotateX(Math.PI).translate(0, 1.35, 0)),
+      bee: g(new THREE.SphereGeometry(0.03, 6, 4)),
+      orb: g(new THREE.IcosahedronGeometry(1, 1)),
+      crowBody: g(new THREE.SphereGeometry(0.05, 6, 4).scale(1.4, 0.9, 0.9)),
+      crowWing: g(new THREE.PlaneGeometry(0.14, 0.05)),
+      wingMat: wing,
+      beeRed: basic("#ff5a3a"),
+      beeGold: basic("#ffd23f"),
+      drop: Object.assign(new THREE.MeshStandardMaterial({ color: "#9fdcff", roughness: 0.2, emissive: "#9fdcff", emissiveIntensity: 0.35 }), { shared: true }),
+    };
+    return this.kit;
+  }
+
+  /** A tower's shot in flight: a little model of what it throws, a trail, and a landing to match. */
+  private projectile(kind: TowerKind, spec: 0 | 1 | null, fx: number, fy: number, fz: number, tx: number, ty: number, tz: number, crit: boolean, enemy: number): void {
     const from = new THREE.Vector3(fx, fy, fz);
     const to = new THREE.Vector3(tx, ty, tz);
     const colour = SHOT_COLOURS[kind] ?? "#ffffff";
+    const flash = () => {
+      const ev = this.enemies.get(enemy);
+      if (ev) ev.hit = 0;
+    };
     if (kind === "silo") {
       this.fx.beam(fx, fy, fz, tx, ty, tz, "#ffcf5a", spec === 0 ? 0.09 : 0.06, 0.16);
+      // Grain sprays along the shot and bursts on the target.
+      for (let i = 1; i <= 4; i++) {
+        const k = i / 5;
+        this.sparks.emit(fx + (tx - fx) * k, fy + (ty - fy) * k, fz + (tz - fz) * k, "#ffe08a", 2, 0.6, 0.07, 0.3, -2);
+      }
+      this.sparks.emit(fx, fy, fz, "#fff2c0", 6, 1.2, 0.12, 0.2, 0);
       this.sparks.emit(tx, ty, tz, "#ffcf5a", spec === 1 ? 40 : 16, 2.5, 0.16, 0.4);
       if (spec === 1) this.fx.ring(tx, ty - 0.2, tz, "#ffcf5a", 1.1);
+      flash();
       return;
     }
+    const kit = this.shotKit();
+    const dist = Math.hypot(tx - fx, tz - fz);
     let obj: THREE.Object3D;
-    const life = kind === "beehive" ? 0.35 : kind === "scarecrow" && spec === 0 ? 0.32 : 0.24;
+    let life = 0.24;
+    let arc = 0.5;
+    let trail: string | null = null;
+    let trailSize = 0.06;
+    let spin = 1;
+    const pumpkin = kind === "scarecrow" && spec === 0;
+    const crow = kind === "scarecrow" && spec === 1;
     if (kind === "beehive") {
       const g = new THREE.Group();
-      for (let i = 0; i < 5; i++) {
-        const b = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), new THREE.MeshBasicMaterial({ color: spec === 0 ? "#ff5a3a" : "#ffd23f" }));
-        g.add(b);
-      }
+      for (let i = 0; i < 5; i++) g.add(new THREE.Mesh(kit.bee, spec === 0 ? kit.beeRed : kit.beeGold));
       obj = g;
-    } else if (kind === "scarecrow" && spec === 1) {
-      const crow = new THREE.Group();
-      const mat = new THREE.MeshStandardMaterial({ color: "#1d1b22", roughness: 0.6 });
-      crow.add(new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 4), mat));
+      life = 0.35;
+      trail = spec === 0 ? "#ff9a6a" : "#ffe27a";
+      trailSize = 0.04;
+      spin = 0;
+    } else if (crow) {
+      const c = new THREE.Group();
+      c.add(new THREE.Mesh(kit.crowBody, matte("#1d1b22", 0.6)));
       for (const s of [-1, 1]) {
-        const wing = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.05), new THREE.MeshStandardMaterial({ color: "#1d1b22", side: THREE.DoubleSide }));
-        wing.position.z = s * 0.06;
-        wing.userData.side = s;
-        crow.add(wing);
+        const w = new THREE.Mesh(kit.crowWing, kit.wingMat);
+        w.position.z = s * 0.06;
+        w.userData.side = s;
+        c.add(w);
       }
-      obj = crow;
+      obj = c;
+      spin = 0;
+    } else if (pumpkin) {
+      const p = new THREE.Group();
+      p.add(new THREE.Mesh(kit.pumpkin, matte("#e98a2b", 0.6, false)), new THREE.Mesh(kit.stalk, matte("#5a7a2a")));
+      obj = p;
+      life = 0.4;
+      arc = 0.9 + dist * 0.12;
+      trail = "#ffc070";
+      trailSize = 0.08;
+      spin = 0.5;
+    } else if (kind === "scarecrow") {
+      // A turnip: white root, purple shoulders, a tuft of leaves.
+      const t = new THREE.Group();
+      t.add(new THREE.Mesh(kit.turnip, matte("#f2ece4", 0.6, false)), new THREE.Mesh(kit.turnipTop, matte("#9a4f9c", 0.6, false)), new THREE.Mesh(kit.sprout, matte("#5e9a3a")));
+      obj = t;
+      trail = "#f4ead8";
+    } else if (kind === "cannon" || kind === "barn") {
+      // A sack of seed potatoes (cannon) or grain (barn), tied at the neck, tumbling end over end.
+      const big = kind === "cannon";
+      const r = big ? 0.085 : 0.06;
+      const s = new THREE.Group();
+      s.add(new THREE.Mesh(kit.sack, matte(big ? "#b8955a" : "#d8b870", 0.95)), new THREE.Mesh(kit.tie, matte("#8a6a3a", 0.95)));
+      s.scale.setScalar(r);
+      obj = s;
+      life = big ? 0.4 + dist * 0.05 : 0.28;
+      arc = big ? 0.8 + dist * 0.3 : 0.6;
+      trail = big ? "#e8d6a8" : "#f2d27a";
+      trailSize = big ? 0.08 : 0.06;
+      spin = big ? 0.6 : 0.8;
+    } else if (kind === "pond") {
+      obj = new THREE.Mesh(kit.orb, kit.drop);
+      obj.scale.setScalar(0.06);
+      arc = 0.3;
+      trail = "#bfe9ff";
+      trailSize = 0.05;
     } else {
-      const r = kind === "scarecrow" && spec === 0 ? 0.11 : kind === "barn" ? 0.07 : 0.06;
-      const color = kind === "scarecrow" ? (spec === 0 ? "#e98a2b" : "#efe2f0") : kind === "pond" ? "#9fdcff" : kind === "barn" ? "#e2c06a" : "#ffffff";
-      obj = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), new THREE.MeshStandardMaterial({ color, roughness: 0.5, emissive: color, emissiveIntensity: 0.25 }));
-      obj.castShadow = true;
+      obj = new THREE.Mesh(kit.orb, matte(colour, 0.5));
+      obj.scale.setScalar(0.06);
+      trail = colour;
     }
+    obj.traverse((o) => (o.castShadow = true));
+    if (crit) {
+      obj.scale.multiplyScalar(1.35);
+      trail = "#fff6d6";
+      trailSize *= 1.8;
+    }
+    // A puff at the muzzle.
+    this.sparks.emit(fx, fy, fz, kind === "cannon" ? "#efe2c4" : "#fff6d6", kind === "cannon" ? 12 : 3, kind === "cannon" ? 1.4 : 0.8, kind === "cannon" ? 0.16 : 0.08, 0.25, 0);
+    const p = obj.position;
     this.fx.add(obj, life, (k) => {
-      obj.position.lerpVectors(from, to, k);
-      obj.position.y += Math.sin(k * Math.PI) * (kind === "pond" ? 0.3 : 0.5);
-      obj.rotation.x += 0.4;
-      obj.rotation.y += 0.3;
+      p.lerpVectors(from, to, k);
+      p.y += Math.sin(k * Math.PI) * arc;
+      if (spin) {
+        obj.rotation.x += 0.4 * spin;
+        obj.rotation.y += 0.3 * spin;
+      }
       if (kind === "beehive") obj.children.forEach((b, i) => b.position.set(Math.sin(k * 30 + i * 1.7) * 0.12, Math.cos(k * 26 + i) * 0.1, Math.cos(k * 22 + i * 2.1) * 0.12));
-      if (kind === "scarecrow" && spec === 1) {
+      if (crow) {
         obj.lookAt(to);
-        obj.children.slice(1).forEach((w) => (w.rotation.x = Math.sin(k * 40) * 0.8 * (w.userData.side as number)));
+        obj.children.forEach((w, i) => {
+          if (i > 0) w.rotation.x = Math.sin(k * 40) * 0.8 * (w.userData.side as number);
+        });
+      }
+      if (trail && k < 1) {
+        this.sparks.emit(p.x, p.y, p.z, trail, crit ? 2 : 1, 0.08, trailSize, crit ? 0.35 : 0.25, 0);
       }
       if (k >= 1) {
+        flash();
+        if (kind === "cannon") {
+          // The sack bursts: a dust cloud, seed potatoes everywhere, a ring where it landed.
+          const gy = to.y - 0.25;
+          this.sparks.emit(to.x, gy + 0.1, to.z, "#e6d3a8", crit ? 40 : 26, 2, 0.22, 0.7, -2.5);
+          this.debris.emit(to.x, gy + 0.1, to.z, ["#c9a36a", "#8a6a43", "#d8c08a"], 9, 0.05, 2.4);
+          this.fx.ring(to.x, gy + 0.05, to.z, "#e6d3a8", 1.3, 0.5);
+          this.fx.decal(to.x, gy, to.z, "#3a2c1c", 0.35, 3);
+          this.kick(0.1);
+        } else if (pumpkin) {
+          this.fx.ring(to.x, to.y - 0.15, to.z, "#e98a2b", 1);
+          this.debris.emit(to.x, to.y, to.z, ["#e98a2b", "#f2b34a", "#fff0c0"], 8, 0.05, 2.2);
+          this.fx.decal(to.x, to.y - 0.25, to.z, "#d27a22", 0.3, 3);
+        } else if (kind === "pond") {
+          this.sparks.emit(to.x, to.y, to.z, "#bfe9ff", 14, 1.6, 0.08, 0.45, -5);
+        }
         this.sparks.emit(to.x, to.y, to.z, colour, crit ? 30 : 8, crit ? 3 : 1.8, crit ? 0.2 : 0.1, 0.4);
-        if (kind === "scarecrow" && spec === 0) this.fx.ring(to.x, to.y - 0.15, to.z, "#e98a2b", 1);
         if (crit) {
+          this.fx.ring(to.x, to.y - 0.2, to.z, "#fff6d6", 0.7, 0.3);
           this.floaters.add(kind === "scarecrow" ? "CAW!" : "CRIT!", to.clone().setY(to.y + 0.6), "#ffffff", 1.3);
           this.kick(0.08);
         }
@@ -592,6 +817,44 @@ export class Renderer3D {
 
   private kick(amount: number): void {
     if (!this.reducedMotion) this.shake = Math.max(this.shake, amount);
+  }
+
+  // ---- pan and zoom (bigger fields: pinch or scroll to look closer, drag to look around) ----
+
+  private zoom = 1;
+  private pan = new THREE.Vector2();
+  private fieldSize = new THREE.Vector2(8, 10);
+
+  /** Zooms by a factor (1 = the whole field), keeping the view on the field. */
+  zoomBy(f: number): void {
+    this.zoom = Math.min(2.6, Math.max(1, this.zoom * f));
+    this.clampPan();
+  }
+
+  /** Drags the view by a screen distance in pixels. */
+  panBy(dx: number, dy: number): void {
+    const d = this.camBase.distanceTo(this.camTarget) / this.zoom;
+    const perPx = (2 * d * Math.tan((this.camera.fov * Math.PI) / 360)) / Math.max(1, this.h);
+    this.pan.x -= dx * perPx;
+    this.pan.y -= dy * perPx * 1.3;
+    this.clampPan();
+  }
+
+  resetView(): void {
+    this.zoom = 1;
+    this.pan.set(0, 0);
+  }
+
+  get zoomed(): boolean {
+    return this.zoom > 1.01;
+  }
+
+  private clampPan(): void {
+    const k = 1 - 1 / this.zoom;
+    const mx = (this.fieldSize.x / 2) * k;
+    const mz = (this.fieldSize.y / 2) * k;
+    this.pan.x = Math.max(-mx, Math.min(mx, this.pan.x));
+    this.pan.y = Math.max(-mz, Math.min(mz, this.pan.y));
   }
 
   // ---- drawing ----
@@ -612,22 +875,23 @@ export class Renderer3D {
       this.smoke(c, hurt ? "#4a4440" : "#ece6dc", hurt ? 0.09 : 0.05);
     }
     for (const sp of (this.ground?.group.userData.spin as THREE.Object3D[] | undefined) ?? []) sp.rotation.z += dt * 0.7;
-    if (this.ground?.water) {
-      const m = this.ground.water.material as THREE.MeshPhysicalMaterial;
-      m.opacity = 0.8 + Math.sin(t * 1.5) * 0.03;
-    }
+    this.ground?.update(t, dt);
+    for (const m of this.motes) m.update(dt, t);
+    this.birds?.update(t);
     this.sparks.update(dt);
     this.debris.update(dt);
     this.fx.update(dt);
-    // Camera shake.
-    this.camera.position.copy(this.camBase);
+    // Camera: zoom towards the target, offset by the pan; then shake.
+    const look = this.v3.copy(this.camTarget).add(this.v2.set(this.pan.x, 0, this.pan.y));
+    this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / this.zoom).add(look);
     if (this.shake > 0) {
       const m = this.shake * 0.12;
       this.camera.position.x += (Math.random() - 0.5) * m;
       this.camera.position.y += (Math.random() - 0.5) * m;
       this.shake = Math.max(0, this.shake - dt * 1.8);
     }
-    this.camera.lookAt(this.camTarget);
+    this.camera.lookAt(look);
+    this.camera.updateMatrixWorld();
     this.composer.render(dt);
     this.floaters.update(dt, this.camera, this.w, this.h);
   }
@@ -648,13 +912,24 @@ export class Renderer3D {
     const seen = new Set<number>();
     for (const tw of game.towers) {
       seen.add(tw.id);
-      const sig = `${tw.kind}:${tw.tier}:${tw.spec ?? ""}`;
+      const sig = `${tw.kind}:${tw.tier}:${tw.spec ?? ""}:${tw.mega ?? ""}`;
       let v = this.towers.get(tw.id);
       if (!v || v.sig !== sig) {
         if (v) this.dynamic.remove(v.obj);
-        const obj = buildTower(tw.kind, tw.tier, tw.spec ?? null);
-        obj.userData.scale = 1.22;
-        obj.position.set(tw.col + 0.5, this.height(tw.col + 0.5, tw.row + 0.5), tw.row + 0.5);
+        let obj: THREE.Group;
+        if (tw.mega && tw.annex) {
+          // A megastructure stands across both its plots, its long side running from one to the other.
+          obj = buildMega(tw.mega);
+          obj.userData.scale = 1;
+          const mx = (tw.col + tw.annex[0]) / 2 + 0.5;
+          const mz = (tw.row + tw.annex[1]) / 2 + 0.5;
+          obj.position.set(mx, Math.min(this.height(tw.col + 0.5, tw.row + 0.5), this.height(tw.annex[0] + 0.5, tw.annex[1] + 0.5)), mz);
+          obj.rotation.y = tw.annex[1] !== tw.row ? -Math.PI / 2 : 0;
+        } else {
+          obj = buildTower(tw.kind, tw.tier, tw.spec ?? null);
+          obj.userData.scale = 1.22;
+          obj.position.set(tw.col + 0.5, this.height(tw.col + 0.5, tw.row + 0.5), tw.row + 0.5);
+        }
         this.dynamic.add(obj);
         v = { obj, sig, fired: 9, pop: v ? 0 : 0 };
         this.towers.set(tw.id, v);
@@ -676,12 +951,12 @@ export class Renderer3D {
     // Pop in when built or upgraded.
     const p = Math.min(1, v.pop / 0.35);
     const s = p < 1 ? 0.6 + Math.sin(p * Math.PI * 0.75) * 0.5 : 1;
-    v.obj.scale.setScalar(1.22 * (this.reducedMotion ? 1 : Math.min(1.15, s)));
+    v.obj.scale.setScalar(((ud.scale as number | undefined) ?? 1.22) * (this.reducedMotion ? 1 : Math.min(1.15, s)));
     // Turn to the latest target.
     const turret = ud.turret as THREE.Group | undefined;
     const target = this.lastTarget(game, tw);
     if (turret && target) {
-      const want = Math.atan2(target.x - (tw.col + 0.5), target.y - (tw.row + 0.5));
+      const want = Math.atan2(target.x - v.obj.position.x, target.y - v.obj.position.z) - v.obj.rotation.y;
       const cur = turret.rotation.y;
       let d = want - cur;
       d = Math.atan2(Math.sin(d), Math.cos(d));
@@ -691,6 +966,9 @@ export class Renderer3D {
     const arm = ud.arm as THREE.Object3D | undefined;
     if (arm) arm.rotation.z = -kick * 0.9;
     if (turret && tw.kind === "silo") turret.position.y = 0.6 - kick * 0.03;
+    // Windmill sails turn all the time, and spin up just after a gust.
+    const sails = ud.sails as THREE.Object3D | undefined;
+    if (sails) sails.rotation.z += dt * (1.1 + Math.max(0, 1.2 - v.fired) * 5);
     const bees = ud.bees as THREE.Group | undefined;
     if (bees) bees.children.forEach((b, i) => {
       const a = t * (2.4 + i * 0.3) + i * 2;
@@ -755,22 +1033,40 @@ export class Renderer3D {
         const k = enemyScale(e.kind);
         bar.scale.set(0.5 * Math.min(1.6, k), 0.06, 1);
         this.dynamic.add(obj, bar);
-        v = { obj, bar, fill, last: new THREE.Vector3(p.x, gy, p.y), heading: 0, hit: 9 };
+        const meshes: THREE.Mesh[] = [];
+        obj.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (m.isMesh && !(Array.isArray(m.material) ? m.material.some((x) => x.transparent) : m.material.transparent)) meshes.push(m);
+        });
+        // Start facing along the lane, not snapping round on the first frame.
+        const ahead = enemyPoint(game.level, { dist: e.dist + 0.05, lane: e.lane });
+        const heading = Math.atan2(-(ahead.y - p.y), ahead.x - p.x);
+        v = { obj, bar, fill, last: new THREE.Vector3(p.x, gy, p.y), heading, hit: 9, lean: 0, meshes, mats: meshes.map((m) => m.material), flashing: false };
         this.enemies.set(e.id, v);
       }
-      const pos = new THREE.Vector3(p.x, gy, p.y);
+      const pos = this.v1.set(p.x, gy, p.y);
       const lift = enemyLift(e.kind);
-      const move = pos.clone().sub(v.last);
+      const move = this.v2.copy(pos).sub(v.last);
+      let turn = 0;
       if (move.lengthSq() > 1e-6) {
         const want = Math.atan2(-move.z, move.x);
         let d = want - v.heading;
         d = Math.atan2(Math.sin(d), Math.cos(d));
-        v.heading += d * Math.min(1, dt * 8);
+        const step = d * Math.min(1, dt * 8);
+        v.heading += step;
+        if (dt > 0) turn = step / dt;
       }
       v.last.copy(pos);
       v.obj.position.set(p.x, gy + lift + (lift ? Math.sin(t * 3 + e.id) * 0.04 : 0), p.y);
       v.obj.rotation.y = v.heading;
       const inner = v.obj.userData.inner as THREE.Group;
+      // Lean into corners: a gentle body roll on the ground, a proper bank in the air.
+      const maxLean = lift ? 0.32 : 0.16;
+      const wantLean = this.reducedMotion ? 0 : Math.max(-maxLean, Math.min(maxLean, -turn * (lift ? 0.08 : 0.04)));
+      v.lean += (wantLean - v.lean) * Math.min(1, dt * 6);
+      inner.rotation.x = v.lean;
+      const shield = inner.userData.shield as THREE.Object3D | undefined;
+      if (shield) shield.visible = (e.shield ?? 1) > 0;
       const moving = !(e.stun > 0 || e.held);
       if (moving) {
         inner.position.y = Math.abs(Math.sin(t * 9 + e.id)) * 0.012;
@@ -809,10 +1105,14 @@ export class Renderer3D {
         v.fill.material = frac > 0.6 ? this.fillMats.good : frac > 0.3 ? this.fillMats.mid : this.fillMats.low;
       }
       inner.scale.setScalar(enemyScale(e.kind) * 1.3 * (v.hit < 0.06 ? 1.07 : 1));
+      // Hit flash: swap in one shared bright material for a moment (shared materials are never mutated).
+      const flash = v.hit < FLASH && v.obj.visible;
+      if (flash !== v.flashing) this.setFlash(v, flash);
     }
     for (const [id, v] of this.enemies)
       if (!seen.has(id)) {
         this.dynamic.remove(v.bar);
+        if (v.flashing) this.setFlash(v, false);
         // Tip over and sink.
         const obj = v.obj;
         this.enemies.delete(id);
@@ -824,6 +1124,11 @@ export class Renderer3D {
           if (k >= 1) obj.visible = false;
         });
       }
+  }
+
+  private setFlash(v: EnemyView, on: boolean): void {
+    v.flashing = on;
+    for (let i = 0; i < v.meshes.length; i++) v.meshes[i]!.material = on ? this.flashMat : v.mats[i]!;
   }
 
   private syncHero(game: Game, dt: number, t: number): void {

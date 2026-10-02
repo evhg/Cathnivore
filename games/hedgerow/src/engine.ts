@@ -17,7 +17,9 @@ export type TowerKind =
   | "mast"
   | "tent"
   | "court"
-  | "hall";
+  | "hall"
+  | "windmill"
+  | "cannon";
 export type EnemyKind =
   | "van"
   | "drone"
@@ -39,7 +41,8 @@ export type EnemyKind =
   | "director"
   | "hollowcandor"
   | "candor"
-  | "remnant";
+  | "remnant"
+  | "wrapped";
 
 export interface TowerSpec {
   name: string;
@@ -72,6 +75,8 @@ export interface TowerSpec {
   injunction?: [number, number, number];
   /** Damage multiplier on every tower on the map, wherever it stands (the Union Hall). */
   aura?: [number, number, number];
+  /** A gust every `every` seconds: everything in range is shoved `push` cells back and takes `damage` (the Windmill). */
+  gust?: { push: [number, number, number]; every: [number, number, number] };
 }
 
 export const TOWERS: Record<TowerKind, TowerSpec> = {
@@ -88,11 +93,11 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
   },
   scarecrow: {
     name: "Scarecrow",
-    blurb: "Throws turnips at the front of the queue.",
+    blurb: "Throws turnips at the front of the queue. Scarecrows spook each other: each one right next door makes it throw 20% slower.",
     cost: 80,
-    upgrades: [70, 110],
+    upgrades: [80, 125],
     range: [2.4, 2.7, 3.1],
-    damage: [8, 13, 20],
+    damage: [7, 11.5, 17.5],
     cooldown: [0.8, 0.68, 0.55],
     slow: [1, 1, 1],
   },
@@ -205,6 +210,30 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     aura: [1.1, 1.17, 1.25],
     income: [18, 30, 45],
   },
+  windmill: {
+    name: "Windmill",
+    blurb:
+      "Bea's old mill. Every few seconds its sails throw a gust down the lane: everything nearby is blown back and battered.",
+    cost: 130,
+    upgrades: [95, 140],
+    range: [1.7, 1.9, 2.1],
+    damage: [6, 10, 16],
+    cooldown: [1, 1, 1],
+    slow: [1, 1, 1],
+    gust: { push: [0.55, 0.7, 0.85], every: [3.2, 2.9, 2.6] },
+  },
+  cannon: {
+    name: "Seed Cannon",
+    groundOnly: true,
+    blurb: "Pip's contraption. Lobs a sack of seed potatoes a very long way, and it bursts over everything below.",
+    cost: 190,
+    upgrades: [130, 190],
+    range: [3.3, 3.7, 4.1],
+    damage: [26, 42, 64],
+    cooldown: [2.4, 2.2, 2.0],
+    slow: [1, 1, 1],
+    splash: 1.25,
+  },
 };
 
 export interface EnemySpec {
@@ -229,10 +258,14 @@ export interface EnemySpec {
   jam?: number;
   /** Flies over the lane: Cath cannot hold it. */
   flying?: boolean;
+  /** Bubble wrap: single-target shots do only WRAP_LEAK of their damage until something area-wide (splash,
+   * a piercing shot, a gust, a pie) pops it. Thorns, poison and Cath hit it in full. */
+  shield?: number;
 }
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   van: { name: "Delivery van", hp: 98, speed: 0.9, bounty: 9, leak: 1 },
+  wrapped: { name: "Bubble-wrapped van", hp: 90, speed: 0.85, bounty: 11, leak: 1, shield: 1 },
   boss: {
     name: "The Acquisition Van",
     hp: 1800,
@@ -437,6 +470,13 @@ export interface Specialisation {
   pieHaste?: number;
   /** Goodwill restored after every cleared wave. */
   mend?: number;
+  /** Gust overrides (Windmill): push and seconds between gusts. */
+  gustPush?: number;
+  gustEvery?: number;
+  pierce?: boolean;
+  /** Can hit flying enemies (a megastructure overriding a ground-only tower). */
+  air?: boolean;
+  cleanse?: boolean;
 }
 
 export const SPEC_FIRST_LEVEL = 6;
@@ -626,6 +666,44 @@ export const SPECIALISATIONS: Record<
       income: 85,
     },
   ],
+  windmill: [
+    {
+      name: "Storm Sails",
+      blurb: "Canvas the size of a barn roof. The gusts blow vans a long way back, more often.",
+      cost: 220,
+      range: 2.5,
+      gustPush: 1.25,
+      gustEvery: 2.2,
+    },
+    {
+      name: "Mill Stones",
+      blurb: "The millstones turn on the lane itself. Short gusts, but they grind through armour.",
+      cost: 230,
+      damage: 48,
+      gustPush: 0.6,
+      gustEvery: 1.6,
+      pierce: true,
+    },
+  ],
+  cannon: [
+    {
+      name: "Pumpkin Mortar",
+      blurb: "Prize pumpkins at extreme range. Slow, and devastating where they land.",
+      cost: 270,
+      damage: 150,
+      splash: 1.7,
+      cooldown: 2.8,
+      range: 4.6,
+    },
+    {
+      name: "Scatter Shot",
+      blurb: "Loads of seed at once. Fires three times as often over a tighter patch.",
+      cost: 250,
+      damage: 44,
+      cooldown: 0.8,
+      splash: 1.0,
+    },
+  ],
 };
 
 /** Towers on high ground see this much further. */
@@ -654,15 +732,158 @@ export interface TowerStats {
   classAction: boolean;
   pieHaste: number;
   mend: number;
+  gustPush: number;
+  gustEvery: number;
+  /** Veteran rank from kills (0 to 3). */
+  rank: number;
+}
+
+// ---- megastructures: two grown towers side by side merge into one ----
+
+export type MegaId =
+  | "harvester"
+  | "honeymarsh"
+  | "fortress"
+  | "grandmarket"
+  | "tribunal"
+  | "stormhive"
+  | "barrage"
+  | "sanctuary";
+
+export interface MegaSpec extends Specialisation {
+  /** The two towers it is made from (either order, side by side, both tier 3 or more). */
+  from: [TowerKind, TowerKind];
+}
+
+export const MEGA_FIRST_LEVEL = 12;
+export const MEGA_FEE = 220;
+
+export const MEGAS: Record<MegaId, MegaSpec> = {
+  harvester: {
+    from: ["scarecrow", "silo"],
+    name: "The Harvester",
+    blurb: "A scarecrow riding a silo. It reaps the lane: huge, armour-piercing blows, and every fourth one is brutal.",
+    cost: MEGA_FEE,
+    range: 3.6,
+    damage: 150,
+    cooldown: 0.9,
+    pierce: true,
+    air: true,
+    crit: { every: 4, mult: 2.5 },
+  },
+  honeymarsh: {
+    from: ["beehive", "pond"],
+    name: "Honey Marsh",
+    blurb: "Bees over a bog. Everything in it is stuck, stung and poisoned.",
+    cost: MEGA_FEE,
+    range: 2.8,
+    damage: 28,
+    cooldown: 0.8,
+    splash: 1.6,
+    slow: 0.45,
+    poison: { dps: 14, secs: 3 },
+    sticky: { factor: 0.5, secs: 2 },
+  },
+  fortress: {
+    from: ["hedgerow", "barn"],
+    name: "Hawthorn Fortress",
+    blurb: "Barn and hedge grown into one wall. The lane crawls past thorns and farmhands with shovels.",
+    cost: MEGA_FEE,
+    range: 2.2,
+    damage: 24,
+    cooldown: 0.6,
+    slow: 0.2,
+    thorns: 30,
+    knockback: 0.35,
+    air: false,
+  },
+  grandmarket: {
+    from: ["stall", "hall"],
+    name: "Grand Market",
+    blurb: "Tomas's hall becomes the county market. Rich pay-outs, loud cheers, and everyone hits harder.",
+    cost: MEGA_FEE,
+    range: 2.6,
+    buff: 1.6,
+    aura: 1.22,
+    income: 120,
+  },
+  tribunal: {
+    from: ["mast", "court"],
+    name: "The Tribunal",
+    blurb: "Mara broadcasts the hearing live. Everything in range is exposed, marked, and stopped by injunction.",
+    cost: MEGA_FEE,
+    range: 3.2,
+    reveal: 1.8,
+    injunction: 4,
+    cooldown: 5,
+    classAction: true,
+  },
+  stormhive: {
+    from: ["windmill", "beehive"],
+    name: "Stormhive",
+    blurb: "The mill's sails carry the bees. Gusts blow vans back into a cloud of stings.",
+    cost: MEGA_FEE,
+    range: 2.6,
+    damage: 34,
+    cooldown: 0.7,
+    splash: 1.4,
+    gustPush: 0.9,
+    gustEvery: 2.4,
+  },
+  barrage: {
+    from: ["cannon", "scarecrow"],
+    name: "Turnip Barrage",
+    blurb: "A scarecrow crew on a battery of seed cannons. Constant, long-range, everything in a wide patch.",
+    cost: MEGA_FEE,
+    range: 4.3,
+    damage: 72,
+    cooldown: 0.75,
+    splash: 1.3,
+    air: true,
+  },
+  sanctuary: {
+    from: ["tent", "pond"],
+    name: "Sanctuary",
+    blurb: "A field hospital by the water. Towers near it fire up and shake off charm; vans wade; Goodwill mends.",
+    cost: MEGA_FEE,
+    range: 2.6,
+    buff: 1.5,
+    slow: 0.5,
+    cleanse: true,
+    mend: 2,
+    air: false,
+  },
+};
+
+/** The megastructure two kinds make together, if any. */
+export function megaFor(a: TowerKind, b: TowerKind): MegaId | null {
+  for (const [id, m] of Object.entries(MEGAS) as Array<[MegaId, MegaSpec]>)
+    if ((m.from[0] === a && m.from[1] === b) || (m.from[0] === b && m.from[1] === a)) return id;
+  return null;
+}
+
+/** Kills for each veteran rank. */
+export const RANKS = [15, 40, 90];
+
+export function rankOf(kills: number): number {
+  return RANKS.filter((k) => kills >= k).length;
 }
 
 const statCache = new WeakMap<object, { key: string; stats: TowerStats }>();
 
 /** The numbers a tower fights with at its tier, and with its specialisation at tier 4. */
 export function towerStats(
-  t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null; high?: boolean; rangeMul?: number; dmgMul?: number },
+  t: Pick<Tower, "kind" | "tier"> & {
+    spec?: 0 | 1 | null;
+    high?: boolean;
+    rangeMul?: number;
+    dmgMul?: number;
+    mega?: MegaId;
+    kills?: number;
+  },
 ): TowerStats {
-  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}:${t.high ? 1 : 0}:${t.rangeMul ?? 1}:${t.dmgMul ?? 1}`;
+  const rank = rankOf(t.kills ?? 0);
+  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}:${t.high ? 1 : 0}:${t.rangeMul ?? 1}:${t.dmgMul ?? 1}:${t.mega ?? ""}:${rank}`;
   const hit = statCache.get(t);
   if (hit && hit.key === key) return hit.stats;
   const s = TOWERS[t.kind];
@@ -689,19 +910,36 @@ export function towerStats(
     classAction: false,
     pieHaste: 0,
     mend: 0,
+    gustPush: s.gust?.push[i] ?? 0,
+    gustEvery: s.gust?.every[i] ?? 0,
+    rank,
   };
-  if (t.tier === 4 && t.spec != null) {
-    const o: Partial<Specialisation> = { ...SPECIALISATIONS[t.kind][t.spec] };
-    delete o.name;
-    delete o.blurb;
-    delete o.cost;
-    Object.assign(stats, o);
+  const over: Partial<MegaSpec> | null = t.mega
+    ? { ...MEGAS[t.mega] }
+    : t.tier === 4 && t.spec != null
+      ? { ...SPECIALISATIONS[t.kind][t.spec] }
+      : null;
+  if (over) {
+    delete over.name;
+    delete over.blurb;
+    delete over.cost;
+    delete over.from;
+    if (t.mega) {
+      // A megastructure is its own building: it keeps only what its recipe gives it.
+      Object.assign(stats, { damage: 0, slow: 1, splash: 0, buff: 1, income: 0, reveal: 1, injunction: 0, aura: 1, pierce: false, air: true, cleanse: false, gustPush: 0, gustEvery: 0 });
+    }
+    Object.assign(stats, over);
   }
   if (t.high && stats.range > 0) stats.range *= HIGH_GROUND_RANGE;
   if (t.rangeMul) stats.range *= t.rangeMul;
   if (t.dmgMul) {
     stats.damage *= t.dmgMul;
     stats.thorns *= t.dmgMul;
+  }
+  if (rank > 0) {
+    stats.range *= 1 + 0.04 * rank;
+    stats.damage *= 1 + 0.1 * rank;
+    stats.thorns *= 1 + 0.1 * rank;
   }
   statCache.set(t, { key, stats });
   return stats;
@@ -801,17 +1039,7 @@ function bossMoves(game: Game): void {
     switch (move.kind) {
       case "spawn":
         for (let i = 0; i < move.spawn!.count; i++)
-          born.push({
-            id: game.nextId++,
-            kind: move.spawn!.kind,
-            lane: e.lane,
-            dist: Math.max(0, e.dist - 0.4 - i * 0.4),
-            hp: spawnHp(game, move.spawn!.kind),
-            maxHp: spawnHp(game, move.spawn!.kind),
-            slowed: false,
-            stun: 0,
-            wave: e.wave,
-          });
+          born.push(makeEnemy(game, move.spawn!.kind, Math.max(0, e.dist - 0.4 - i * 0.4), e.lane, e.wave));
         break;
       case "charge":
         e.charge = move.secs!;
@@ -869,6 +1097,8 @@ export interface WaveGroup {
   delay: number;
   /** 1 = the second lane (only on levels with `path2`). */
   lane?: 1;
+  /** An ambush: the group bursts out of cover this fraction of the way down the lane instead of at the spawn. */
+  ambush?: number;
 }
 
 export interface StoryLine {
@@ -976,6 +1206,13 @@ export interface Tower {
   out?: number;
   cd: number;
   spent: number;
+  /** Merged into a megastructure: which one, and the second plot it now also covers. */
+  mega?: MegaId;
+  annex?: [number, number];
+  /** Kills (veteran ranks at RANKS). */
+  kills?: number;
+  /** Seconds until its next gust (windmills). */
+  gustCd?: number;
 }
 
 export interface Enemy {
@@ -1005,6 +1242,12 @@ export interface Enemy {
   moveIdx?: number;
   /** Seconds left charging at double speed. */
   charge?: number;
+  /** Bubble wrap left: single-target hits it still shrugs off. */
+  shield?: number;
+  /** The tower that hit it last (for veteran kills). */
+  lastHit?: number;
+  /** Seconds before another gust can move it (gusts don't chain-lock a vehicle in place). */
+  gustCd?: number;
 }
 
 /** Cath on the battlefield: she walks where she's told, holds up to two vehicles and whacks them. */
@@ -1056,6 +1299,22 @@ export interface Perks {
   earlyBonus: number;
   /** Multiplies hedgerow-type slows' strength (lower = stronger). */
   slow: number;
+  // ---- Cath's own growth (her level, attributes and talents: store.ts) ----
+  /** Multiplies every tower's damage (Leadership, Matriarch). */
+  towerDamage: number;
+  heroSpeed: number;
+  /** Extra vehicles she can hold at once (Iron Pin). */
+  heroHolds: number;
+  /** Multiplies the time she's down (Second Wind). */
+  heroRespawn: number;
+  /** Multiplies the damage she takes while holding (Hold the Line). */
+  holdGuard: number;
+  pieDamage: number;
+  pieStun: number;
+  /** A burning pie: everything hit keeps taking this much a second for 4 s (Hot Oven). */
+  pieBurn: number;
+  /** Multiplies what a boss duel takes off the boss (Duellist). */
+  duel: number;
 }
 
 export const NO_PERKS: Perks = {
@@ -1070,6 +1329,15 @@ export const NO_PERKS: Perks = {
   discount: 0,
   earlyBonus: 1,
   slow: 1,
+  towerDamage: 1,
+  heroSpeed: 1,
+  heroHolds: 0,
+  heroRespawn: 1,
+  holdGuard: 1,
+  pieDamage: 1,
+  pieStun: 1,
+  pieBurn: 0,
+  duel: 1,
 };
 
 export type GameEvent =
@@ -1097,6 +1365,14 @@ export type GameEvent =
   | { type: "heroUp" }
   | { type: "injunction"; x: number; y: number }
   | { type: "split"; x: number; y: number; kind: EnemyKind }
+  | { type: "gust"; tower: number; x: number; y: number; radius: number }
+  | { type: "pop"; x: number; y: number }
+  | { type: "rankUp"; tower: number; rank: number; x: number; y: number }
+  | { type: "merge"; tower: number; mega: MegaId; x: number; y: number }
+  | { type: "ambush"; x: number; y: number; kind: EnemyKind; lane?: 1; in: number }
+  | { type: "duel"; kind: EnemyKind }
+  | { type: "duelStrike"; quality: number; round: number }
+  | { type: "duelEnd"; kind: EnemyKind; won: boolean; total: number }
   | {
       type: "bossMove";
       kind: EnemyKind;
@@ -1121,7 +1397,7 @@ export interface Game {
   /** Waves cleared and paid for. */
   paid: number;
   waveClock: number;
-  spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number; lane?: 1 }>;
+  spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number; lane?: 1; ambush?: number }>;
   enemies: Enemy[];
   towers: Tower[];
   nextId: number;
@@ -1147,7 +1423,29 @@ export interface Game {
   aiCd: number;
   /** Rush hour: seconds until the next wave is forced. */
   rushIn?: number;
+  /** One-on-one boss duels on (the browser turns them on; sims and the tuner leave them off). */
+  duels: boolean;
+  /** The duel in progress: the battlefield holds its breath until it's over. */
+  duel: Duel | null;
+  /** Boss kinds Cath has already duelled this level. */
+  dueled: EnemyKind[];
 }
+
+export interface Duel {
+  enemy: number;
+  kind: EnemyKind;
+  /** Rounds struck so far (0 to DUEL_ROUNDS), and each one's quality (0 to 1). */
+  round: number;
+  strikes: number[];
+  /** Seconds into the current round. */
+  clock: number;
+}
+
+export const DUEL_ROUNDS = 3;
+/** Seconds a round waits for a strike before Cath swings on her own (at half quality). */
+export const DUEL_AUTO = 4;
+/** Fraction of the boss's health one perfect strike takes. */
+export const DUEL_BITE = 0.09;
 
 export function pathLength(path: Level["path"]): number {
   let total = 0;
@@ -1290,6 +1588,9 @@ export function newGame(
     perks,
     auto: { ...auto },
     aiCd: 0,
+    duels: false,
+    duel: null,
+    dueled: [],
     hero: {
       x: post.x,
       y: post.y,
@@ -1312,7 +1613,9 @@ export function towerAt(
   col: number,
   row: number,
 ): Tower | undefined {
-  return game.towers.find((t) => t.col === col && t.row === row);
+  return game.towers.find(
+    (t) => (t.col === col && t.row === row) || (t.annex && t.annex[0] === col && t.annex[1] === row),
+  );
 }
 
 export function sellValue(tower: Tower): number {
@@ -1401,6 +1704,35 @@ export function spawnHp(game: Game, kind: EnemyKind): number {
   if (hasTwist(game.level, "fortified")) hp *= 1.3;
   if (hasTwist(game.level, "crowd") && !isBig(kind)) hp *= 0.5;
   return Math.round(hp);
+}
+
+/** A new enemy on the lane. */
+export function makeEnemy(game: Game, kind: EnemyKind, dist: number, lane: 1 | undefined, wave: number | undefined): Enemy {
+  const hp = spawnHp(game, kind);
+  const shield = ENEMIES[kind].shield;
+  return {
+    id: game.nextId++,
+    kind,
+    lane,
+    dist,
+    hp,
+    maxHp: hp,
+    slowed: false,
+    stun: 0,
+    wave,
+    ...(shield ? { shield } : {}),
+  };
+}
+
+/** What a single-target shot does to an enemy still in its bubble wrap. */
+export const WRAP_LEAK = 0.15;
+
+/** Pops an enemy's bubble wrap (splash, piercing shots, gusts, pies). */
+export function popWrap(game: Game, e: Enemy): void {
+  if (!e.shield) return;
+  e.shield = 0;
+  const q = enemyPoint(game.level, e);
+  game.events.push({ type: "pop", x: q.x, y: q.y });
 }
 
 export function maxHpOf(e: Enemy): number {
@@ -1508,7 +1840,8 @@ export function sendWave(game: Game, forced = false): ActionResult {
     const n = crowd && !big ? g.count * 2 : g.count;
     const gap = crowd && !big ? g.gap / 2 : g.gap;
     total += n;
-    for (let i = 0; i < n; i++) queue.push({ at: g.delay + i * gap, kind: g.enemy, wave, lane: g.lane });
+    for (let i = 0; i < n; i++)
+      queue.push({ at: g.delay + i * gap, kind: g.enemy, wave, lane: g.lane, ...(g.ambush ? { ambush: g.ambush } : {}) });
   }
   if (hasTwist(game.level, "air")) {
     const extra = Math.ceil(total * 0.4);
@@ -1522,6 +1855,17 @@ export function sendWave(game: Game, forced = false): ActionResult {
   game.wave = wave;
   game.phase = "wave";
   game.marks += early;
+  // Scouts spot the ambushes: where they'll burst out, and how soon.
+  const warned = new Set<string>();
+  for (const q of game.spawnQueue) {
+    if (!q.ambush || q.wave !== wave) continue;
+    const k = `${q.lane ?? 0}:${q.ambush}`;
+    if (warned.has(k)) continue;
+    warned.add(k);
+    const len = q.lane ? game.pathLength2 : game.pathLength;
+    const p = enemyPoint(game.level, { dist: q.ambush * len, lane: q.lane });
+    game.events.push({ type: "ambush", x: p.x, y: p.y, kind: q.kind, lane: q.lane, in: q.at });
+  }
   game.events.push(
     early ? { type: "wave", wave, early } : { type: "wave", wave },
   );
@@ -1549,6 +1893,16 @@ export function isBig(kind: EnemyKind): boolean {
 /** How hard an enemy hits Cath while she holds it, in hit points a second. */
 export function enemyHit(kind: EnemyKind): number {
   return Math.min(30, Math.max(5, ENEMIES[kind].hp / 14));
+}
+
+/** Scarecrows spook each other: each other Scarecrow in the eight plots around one slows its throwing by 20%. */
+export const SCARECROW_CROWDING = 0.2;
+export function crowding(game: Game, t: Tower): number {
+  if (t.kind !== "scarecrow" || t.mega) return 1;
+  let n = 0;
+  for (const o of game.towers)
+    if (o !== t && o.kind === "scarecrow" && !o.mega && Math.max(Math.abs(o.col - t.col), Math.abs(o.row - t.row)) === 1) n++;
+  return 1 + SCARECROW_CROWDING * n;
 }
 
 /** Lawyers' paperwork: towers in range fire at half rate. */
@@ -1629,7 +1983,7 @@ function stepHero(game: Game): void {
   const dy = h.ty - h.y;
   const d = Math.hypot(dx, dy);
   if (d > 0.02) {
-    const stepLen = Math.min(d, HERO.speed * STEP);
+    const stepLen = Math.min(d, HERO.speed * game.perks.heroSpeed * STEP);
     h.x += (dx / d) * stepLen;
     h.y += (dy / d) * stepLen;
     if (Math.abs(dx) > 0.01) h.facing = dx > 0 ? 1 : -1;
@@ -1643,7 +1997,8 @@ function stepHero(game: Game): void {
       const p = enemyPoint(game.level, e);
       return Math.hypot(p.x - h.x, p.y - h.y) <= HERO.reach + 0.25;
     });
-    if (h.holding.length < HERO.holds) {
+    const holds = HERO.holds + game.perks.heroHolds;
+    if (h.holding.length < holds) {
       const near = game.enemies
         .filter((e) => {
           if (e.hp <= 0 || h.holding.includes(e.id)) return false;
@@ -1655,7 +2010,7 @@ function stepHero(game: Game): void {
         })
         .sort((a, b) => b.dist - a.dist || a.id - b.id);
       for (const e of near) {
-        if (h.holding.length >= HERO.holds) break;
+        if (h.holding.length >= holds) break;
         h.holding.push(e.id);
       }
     }
@@ -1665,11 +2020,11 @@ function stepHero(game: Game): void {
   // Held enemies hit back.
   let hurt = 0;
   for (const e of game.enemies) if (e.held) hurt += enemyHit(e.kind);
-  if (hurt > 0) h.hp -= hurt * STEP;
+  if (hurt > 0) h.hp -= hurt * game.perks.holdGuard * STEP;
   else h.hp = Math.min(h.maxHp, h.hp + HERO.regen * STEP);
   if (h.hp <= 0) {
     h.hp = 0;
-    h.down = HERO.respawn;
+    h.down = HERO.respawn * game.perks.heroRespawn;
     h.holding = [];
     for (const e of game.enemies) e.held = false;
     game.events.push({ type: "heroDown" });
@@ -1804,6 +2159,12 @@ function pickTarget(
 
 export function stepGame(game: Game): void {
   if (game.phase !== "wave") return;
+  if (game.duel) {
+    // The battlefield holds its breath while Cath and the boss square up.
+    game.duel.clock += STEP;
+    if (game.duel.clock >= DUEL_AUTO) duelStrike(game, 0.5);
+    return;
+  }
   game.tick += 1;
   game.waveClock += STEP;
   if (game.pieCd > 0) game.pieCd = Math.max(0, game.pieCd - STEP);
@@ -1826,17 +2187,10 @@ export function stepGame(game: Game): void {
     game.spawnQueue[0]!.at <= game.waveClock
   ) {
     const next = game.spawnQueue.shift()!;
-    game.enemies.push({
-      id: game.nextId++,
-      kind: next.kind,
-      lane: next.lane,
-      dist: 0,
-      hp: spawnHp(game, next.kind),
-      maxHp: spawnHp(game, next.kind),
-      slowed: false,
-      stun: 0,
-      wave: next.wave ?? game.wave,
-    });
+    const len = next.lane ? game.pathLength2 : game.pathLength;
+    const e = makeEnemy(game, next.kind, next.ambush ? next.ambush * len : 0, next.lane, next.wave ?? game.wave);
+    game.enemies.push(e);
+    if (game.duels && isBig(next.kind) && !game.duel && !game.dueled.includes(next.kind)) startDuel(game, e);
   }
   // Rush hour: once a wave is all on the lane, the next follows 6 s later whether you're ready or not.
   if (hasTwist(game.level, "rush") && game.spawnQueue.length === 0 && game.wave < game.level.waves.length) {
@@ -1868,6 +2222,7 @@ export function stepGame(game: Game): void {
       enemy.stickyLeft -= STEP;
     }
     enemy.slowed = factor < 1;
+    if (enemy.gustCd && enemy.gustCd > 0) enemy.gustCd -= STEP;
     if (enemy.stun > 0) enemy.stun -= STEP;
     else if (!enemy.held) {
       let move =
@@ -1905,9 +2260,37 @@ export function stepGame(game: Game): void {
       for (const e of game.enemies) {
         if (e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying)) continue;
         const p = enemyPoint(game.level, e);
-        if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range)
+        if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range) {
           damageEnemy(game, e, spec.thorns * STEP, false);
+          e.lastHit = t.id;
+        }
       }
+    }
+    // Windmills: a gust every few seconds shoves everything in reach back up the lane and batters it.
+    if (spec.gustEvery > 0) {
+      t.gustCd = (t.gustCd ?? spec.gustEvery * 0.5) - STEP;
+      if (t.gustCd <= 0) {
+        let blew = false;
+        for (const e of game.enemies) {
+          if (e.hp <= 0 || !isRevealed(game, e) || (!spec.air && ENEMIES[e.kind].flying)) continue;
+          const q = enemyPoint(game.level, e);
+          if (Math.hypot(t.col + 0.5 - q.x, t.row + 0.5 - q.y) > spec.range) continue;
+          blew = true;
+          e.lastHit = t.id;
+          popWrap(game, e);
+          if (!spec.splash && spec.damage > 0) damageEnemy(game, e, spec.damage * game.perks.towerDamage, spec.pierce);
+          if (!isBig(e.kind) && !e.held && (e.gustCd ?? 0) <= 0) {
+            e.dist = Math.max(0, e.dist - spec.gustPush);
+            e.gustCd = 2;
+          }
+        }
+        if (blew) {
+          game.events.push({ type: "gust", tower: t.id, x: t.col + 0.5, y: t.row + 0.5, radius: spec.range });
+          t.gustCd = spec.gustEvery;
+        } else t.gustCd = 0;
+      }
+      // A plain windmill does all its work in the gust.
+      if (!spec.splash) continue;
     }
     if (spec.injunction > 0) {
       t.cd -= STEP;
@@ -1940,7 +2323,7 @@ export function stepGame(game: Game): void {
       continue;
     }
     const p = enemyPoint(game.level, target);
-    let dmg = spec.damage;
+    let dmg = spec.damage * game.perks.towerDamage;
     for (const b of game.towers) {
       const bs = towerStats(b);
       if (bs.buff > 1 && Math.hypot(b.col - t.col, b.row - t.row) <= bs.range)
@@ -1950,8 +2333,14 @@ export function stepGame(game: Game): void {
     t.shots = (t.shots ?? 0) + 1;
     const crit = !!spec.crit && t.shots % spec.crit.every === 0;
     if (crit) dmg *= spec.crit!.mult;
+    const area = spec.splash > 0 || spec.pierce;
     const hit = (e: Enemy) => {
-      damageEnemy(game, e, dmg, spec.pierce);
+      e.lastHit = t.id;
+      if (e.shield && !area) damageEnemy(game, e, dmg * WRAP_LEAK, false);
+      else {
+        popWrap(game, e);
+        damageEnemy(game, e, dmg, spec.pierce);
+      }
       if (spec.poison) {
         e.poison = spec.poison.dps;
         e.poisonLeft = spec.poison.secs;
@@ -1972,7 +2361,7 @@ export function stepGame(game: Game): void {
         if (Math.hypot(q.x - p.x, q.y - p.y) <= spec.splash) hit(e);
       }
     }
-    t.cd = spec.cooldown;
+    t.cd = spec.cooldown * crowding(game, t);
     game.events.push({
       type: "shot",
       kind: t.kind,
@@ -1994,20 +2383,18 @@ export function stepGame(game: Game): void {
     if (e.hp <= 0) {
       const bounty = Math.round(ENEMIES[e.kind].bounty * (hasTwist(game.level, "fast") ? 1.5 : 1));
       game.marks += bounty;
+      const killer = e.lastHit !== undefined ? game.towers.find((t) => t.id === e.lastHit) : undefined;
+      if (killer) {
+        const before = rankOf(killer.kills ?? 0);
+        killer.kills = (killer.kills ?? 0) + 1;
+        const after = rankOf(killer.kills);
+        if (after > before)
+          game.events.push({ type: "rankUp", tower: killer.id, rank: after, x: killer.col + 0.5, y: killer.row + 0.5 });
+      }
       const split = ENEMIES[e.kind].splits;
       if (split) {
         for (let i = 0; i < split.count; i++) {
-          spawned.push({
-            id: game.nextId++,
-            kind: split.kind,
-            lane: e.lane,
-            dist: Math.max(0, e.dist - i * 0.35),
-            hp: spawnHp(game, split.kind),
-            maxHp: spawnHp(game, split.kind),
-            slowed: false,
-            stun: 0,
-            wave: e.wave,
-          });
+          spawned.push(makeEnemy(game, split.kind, Math.max(0, e.dist - i * 0.35), e.lane, e.wave));
         }
         game.events.push({ type: "split", x: p.x, y: p.y, kind: split.kind });
       }
@@ -2144,8 +2531,14 @@ export function throwPie(game: Game, x?: number, y?: number): ActionResult {
   for (const e of game.enemies) {
     const p = enemyPoint(game.level, e);
     if (Math.hypot(p.x - x, p.y - y) > radius) continue;
-    e.stun = Math.max(e.stun, isBig(e.kind) ? PIE_STUN / 2 : PIE_STUN);
-    e.hp -= PIE_DAMAGE;
+    popWrap(game, e);
+    const stun = PIE_STUN * game.perks.pieStun;
+    e.stun = Math.max(e.stun, isBig(e.kind) ? stun / 2 : stun);
+    e.hp -= PIE_DAMAGE * game.perks.pieDamage;
+    if (game.perks.pieBurn > 0) {
+      e.poison = Math.max(e.poison ?? 0, game.perks.pieBurn);
+      e.poisonLeft = 4;
+    }
   }
   game.pieCd = pieCooldown(game);
   game.events.push({ type: "pie", x, y, radius });
@@ -2162,4 +2555,91 @@ export function drainEvents(game: Game): GameEvent[] {
   const events = game.events;
   game.events = [];
   return events;
+}
+
+// ---- one-on-one boss duels ----
+
+/** A boss rolls onto the lane: Cath steps out to meet it. */
+export function startDuel(game: Game, e: Enemy): void {
+  if (hasTwist(game.level, "nocath") || game.hero.down > 0) return;
+  game.duel = { enemy: e.id, kind: e.kind, round: 0, strikes: [], clock: 0 };
+  game.dueled.push(e.kind);
+  game.events.push({ type: "duel", kind: e.kind });
+}
+
+/** One strike of the duel, its quality from 0 (a miss) to 1 (perfect timing). The third strike settles it. */
+export function duelStrike(game: Game, quality: number): ActionResult {
+  const d = game.duel;
+  if (!d) return { ok: false, reason: "No duel on." };
+  const q = Math.max(0, Math.min(1, quality));
+  d.strikes.push(q);
+  d.round += 1;
+  d.clock = 0;
+  game.events.push({ type: "duelStrike", quality: q, round: d.round });
+  if (d.round < DUEL_ROUNDS) return { ok: true };
+  game.duel = null;
+  const total = d.strikes.reduce((a, b) => a + b, 0);
+  const boss = game.enemies.find((e) => e.id === d.enemy);
+  const won = total >= 1.5;
+  if (boss && boss.hp > 0) {
+    boss.hp -= maxHpOf(boss) * DUEL_BITE * total * game.perks.duel;
+    boss.stun = Math.max(boss.stun, won ? 1 + total : 0.5);
+  }
+  if (!won) {
+    // She took a beating: back to the farmhouse to recover.
+    game.hero.down = HERO.respawn * 0.5 * game.perks.heroRespawn;
+    game.hero.holding = [];
+    game.events.push({ type: "heroDown" });
+  }
+  game.events.push({ type: "duelEnd", kind: d.kind, won, total });
+  return { ok: true };
+}
+
+// ---- merging two grown towers into a megastructure ----
+
+export interface MergeOption {
+  /** The tower that becomes the megastructure, and its neighbour that joins it. */
+  tower: number;
+  partner: number;
+  mega: MegaId;
+  cost: number;
+}
+
+export function megasUnlocked(level: Level): boolean {
+  return level.id >= MEGA_FIRST_LEVEL;
+}
+
+/** Megastructures a tower could become with a grown neighbour beside it (empty below tier 3 or before level 12). */
+export function mergeOptions(game: Game, id: number): MergeOption[] {
+  const t = game.towers.find((x) => x.id === id);
+  if (!t || t.mega || t.tier < 3 || !megasUnlocked(game.level)) return [];
+  const out: MergeOption[] = [];
+  for (const o of game.towers) {
+    if (o === t || o.mega || o.tier < 3) continue;
+    if (Math.abs(o.col - t.col) + Math.abs(o.row - t.row) !== 1) continue;
+    const mega = megaFor(t.kind, o.kind);
+    if (mega) out.push({ tower: t.id, partner: o.id, mega, cost: MEGAS[mega].cost });
+  }
+  return out;
+}
+
+/** Merges a tower with its grown neighbour: one megastructure, covering both plots. */
+export function merge(game: Game, id: number, partner: number): ActionResult {
+  if (game.phase === "won" || game.phase === "lost") return { ok: false, reason: "The level is over." };
+  const opt = mergeOptions(game, id).find((o) => o.partner === partner);
+  if (!opt) return { ok: false, reason: "Those two can't merge." };
+  if (game.marks < opt.cost) return { ok: false, reason: `Needs ${opt.cost} Marks.` };
+  const t = game.towers.find((x) => x.id === id)!;
+  const p = game.towers.find((x) => x.id === partner)!;
+  game.marks -= opt.cost;
+  t.mega = opt.mega;
+  t.annex = [p.col, p.row];
+  t.spent += p.spent + opt.cost;
+  t.kills = Math.max(t.kills ?? 0, p.kills ?? 0);
+  t.tier = 4;
+  t.high = t.high || p.high;
+  t.cd = 0;
+  game.towers.splice(game.towers.indexOf(p), 1);
+  game.events.push({ type: "merge", tower: t.id, mega: opt.mega, x: (t.col + p.col) / 2 + 0.5, y: (t.row + p.row) / 2 + 0.5 });
+  return { ok: true };
 }

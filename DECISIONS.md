@@ -219,3 +219,9 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-02: ROADMAP 45 slice: Scarecrow ban on 11 more early levels (content, not tuning) and re-tune 8-29; naive-bot re-measure still to do.
 - 2026-10-02: ROADMAP 45: more Scarecrow bans (13,18,24,28); left 8 early levels open to Scarecrow spam on purpose, so bans don't become the sameness the owner complained of.
 - 2026-10-02: Achievements are 'Rosettes' stored as an optional save field (no version bump); Heroic star and Endless still open under ROADMAP 37.
+- 2026-10-02 (round 3): Bubble wrap cuts single-target damage to 15% until area damage pops it, and Scarecrows spook each other (20% slower per adjacent Scarecrow): content against spam instead of more bans (bans cut to levels 17 and 29).
+- 2026-10-02: The tuner and level tests now use the "best" bot (better of competent and the new balanced); the old competent bot played worse than spam, so it had been tuning the curve too soft. `--antispam` then raises health where spam still wins, as far as the best bot allows.
+- 2026-10-02: Cath's XP is derived from stars (no farming, no save migration); her sheet is an optional save field like rosettes. Boss duels are browser-only (`game.duels`), so they reward skill without moving the bot-tuned balance.
+- 2026-10-02: Megastructures are a `mega` field on the surviving tower (plus an `annex` plot), not new TowerKinds, so every Record<TowerKind> stays intact; renderers draw `buildMega` across both plots.
+- 2026-10-02: Routes are seeded self-avoiding walks on a junction grid two cells apart (layouts.ts `rewind`), on fields that grow by act; the old shape family is the fallback.
+

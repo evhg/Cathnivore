@@ -6,7 +6,7 @@ import { ACTS_1_TO_5 } from "./story/acts1to5";
 import { ACTS_6_TO_10 } from "./story/acts6to10";
 import type { Beat } from "./story/types";
 import { HP_SCALE } from "./tuning";
-import { relayout } from "./layouts";
+import { relayout, rewind } from "./layouts";
 import { addTerrain } from "./terrain";
 
 const van = (count: number, gap: number, delay = 0): WaveGroup => ({
@@ -6320,8 +6320,9 @@ const FORK_LEVELS = (id: number) =>
 /** Each level's original serpentine lane, before relayout (the mechanics tests are written against them). */
 export const ORIGINAL_PATHS = new Map(LEVELS.map((l) => [l.id, l.path] as const));
 
-// New lane shapes from level 4 on (layouts.ts): spirals, rings, staircases, hooks, so neighbours differ.
-for (const l of LEVELS) if (l.id > 3) relayout(l);
+// From level 4 on every level gets a bigger field and a long winding route of its own (layouts.ts
+// `rewind`, owner's third playtest); the older shape family is the fallback.
+for (const l of LEVELS) if (l.id > 3 && !rewind(l)) relayout(l);
 for (const l of LEVELS) if (FORK_LEVELS(l.id)) addSecondLane(l);
 for (const l of LEVELS) addTerrain(l);
 
@@ -6341,24 +6342,24 @@ const TWIST_PLAN: Record<number, TwistId[]> = {
   5: ["tight"],
   6: ["fast"],
   7: ["protected"],
-  8: ["air", "noscarecrow"],
-  9: ["night", "noscarecrow"],
+  8: ["air"],
+  9: ["night"],
   11: ["market"],
-  12: ["fast", "noscarecrow"],
-  13: ["tight", "noscarecrow"],
-  14: ["air", "noscarecrow"],
+  12: ["fast"],
+  13: ["tight"],
+  14: ["air"],
   15: ["crowd"],
-  16: ["fog", "noscarecrow"],
+  16: ["fog"],
   17: ["fortified", "noscarecrow"],
-  18: ["rain", "noscarecrow"],
-  19: ["armoured", "noscarecrow"],
+  18: ["rain"],
+  19: ["armoured"],
   22: ["crowd"],
-  23: ["fast", "noscarecrow"],
-  24: ["air", "noscarecrow"],
-  25: ["fortified", "noscarecrow"],
+  23: ["fast"],
+  24: ["air"],
+  25: ["fortified"],
   26: ["fog"],
-  27: ["tight", "noscarecrow"],
-  28: ["night", "noscarecrow"],
+  27: ["tight"],
+  28: ["night"],
   29: ["wind", "noscarecrow"],
   31: ["rain"],
   32: ["tight"],
@@ -6421,6 +6422,52 @@ for (const l of LEVELS) if (TWIST_PLAN[l.id]) l.twists = TWIST_PLAN[l.id];
 const humanMargin = (id: number) => (id <= 7 ? 0.9 : id <= 10 ? 0.97 : 1);
 for (const l of LEVELS) if (HP_SCALE[l.id]) l.hpScale = Math.round(HP_SCALE[l.id]! * humanMargin(l.id) * 100) / 100;
 
+// Round 3 (owner's third playtest): the early acts were won by planting nothing but Scarecrows.
+// Bubble-wrapped vans take a quarter damage from single-target shots until something area-wide pops the
+// wrap, so a field needs splash (bees, ponds, the Seed Cannon, a windmill's gust), slows and Cath as well;
+// and Scarecrows spook each other (engine `crowding`). 40% of the vans in act 1 come wrapped, 55% in act
+// 2, 45% in act 3, and a quarter after that.
+const wrapShare = (id: number) => (id < 5 ? 0 : id <= 12 ? 0.6 : id <= 20 ? 0.6 : id <= 30 ? 0.5 : 0.3);
+for (const l of LEVELS) {
+  const share = wrapShare(l.id);
+  if (!share) continue;
+  l.waves = l.waves.map((groups, wi) =>
+    groups.flatMap((g) => {
+      if (g.enemy !== "van" || wi === 0) return [g];
+      const k = Math.round(g.count * share);
+      if (k <= 0) return [g];
+      if (k >= g.count) return [{ ...g, enemy: "wrapped" as const }];
+      return [
+        { ...g, count: g.count - k },
+        { ...g, enemy: "wrapped" as const, count: k, delay: g.delay + g.gap / 2, gap: (g.gap * g.count) / k },
+      ];
+    }),
+  );
+}
+
+// New towers: Bea's Windmill from level 8, Pip's Seed Cannon from level 26.
+for (const l of LEVELS) {
+  if (l.id >= 8 && !l.towers.includes("windmill")) l.towers = [...l.towers, "windmill"];
+  if (l.id >= 26 && !l.towers.includes("cannon")) l.towers = [...l.towers, "cannon"];
+}
+
+// Ambushes from level 12: on two levels in three, from the third wave on, one ordinary group a wave lies
+// in wait partway down the lane. Scouts mark the spot when the wave is called.
+// Each act opens (21, 31, 41...) with an ambush every wave from the second: a new place, a new problem.
+for (const l of LEVELS) {
+  const opener = l.id > 20 && l.id % 10 === 1;
+  if (l.id < 12 || (l.id % 3 === 1 && !opener)) continue;
+  l.waves = l.waves.map((groups, wi) => {
+    if (opener ? wi < 1 : wi < 2 || (wi + l.id) % 2 === 1) return groups;
+    let done = false;
+    return groups.map((g) => {
+      if (done || BOSS_MOVES[g.enemy] || ENEMIES[g.enemy].flying || g.count < 2) return g;
+      done = true;
+      return { ...g, ambush: (40 + ((l.id * 7 + wi * 3) % 5) * 5) / 100 };
+    });
+  });
+}
+
 // The barn is raised in level 36 (the story's barn raising), not at the start of act 4.
 for (const l of LEVELS) if (l.id >= 31 && l.id < 36) l.towers = l.towers.filter((t) => t !== "barn");
 
@@ -6435,6 +6482,7 @@ function unlockText(id: number): string {
   if (next.id === 6) bits.push("towers can specialise at tier 4");
   if (next.id === 12) bits.push("Cath can call the neighbours");
   if (next.id === 25) bits.push("Cath can rally the towers");
+  if (next.id === 12) bits.push("grown towers side by side can merge into megastructures");
   const seen = new Set(LEVELS.slice(0, id).flatMap((l) => l.waves.flat().map((g) => g.enemy)));
   const fresh = [...new Set(next.waves.flat().map((g) => g.enemy))].filter((k) => !seen.has(k));
   for (const k of fresh) bits.push(`watch for the ${ENEMIES[k].name}`);

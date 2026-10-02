@@ -208,3 +208,52 @@ Act 10, Kingsmarket.
 - **Layouts:** `layouts.ts` gives levels 4-100 one of seven lane shapes (rotating, mirrored by id); `findFork` in levels.ts adds a feeder lane on the fork levels. Mechanics tests use `ORIGINAL_PATHS` (`classic()` in the tests).
 - **Bots and tuning:** `bot.ts` (competent, naive, idle); `scripts/hedgerow-tune.ts` and `--verify`; `tuning.ts`. Re-run both after any change to levels, enemies, towers or twists, and log in BALANCE.md.
 - **3D:** `render3d/` (three.js): palette.ts (materials, per-act light), models.ts (every tower tier/spec, enemy, Cath, farmhouse, gate, horizon landmarks), terrain.ts (heightfield, lanes, water, plots, hedges, scenery), fx.ts (sparks, debris, rings, beams, decals, HTML floaters), index.ts (the renderer). `?2d` forces the old canvas renderer, which is also the no-WebGL fallback; functional e2e tests use it because headless software WebGL is too slow to drive key by key.
+
+## 6. Round 3 (owner's third playtest, 2026-10-02 afternoon)
+
+- **Scarecrow spam:** three things, and only two bans left (levels 17 and 29).
+  - **Bubble wrap:** the Bubble-wrapped van (`wrapped`) takes only 15% from single-target shots until
+    something area-wide pops the wrap: splash, a piercing shot, a gust or a pie. Thorns, poison and Cath
+    hit it in full. Vans are converted by act: 60% in levels 5-20, 50% in act 3, 30% after.
+  - **Crowding:** Scarecrows spook each other, so each adjacent Scarecrow makes one throw 20% slower.
+  - **Cost:** the Scarecrow is a little weaker (damage 7/11.5/17.5, upgrades 80/125), as it was the most
+    cost-efficient tower by far.
+  - **Benchmark:** the tuner now tunes against the better of the competent and new `balanced` bots
+    (`"best"`), then `--antispam` raises health wherever the Scarecrows-only bot still wins, as far as the
+    best bot allows.
+- **New towers:** the Windmill (from level 8) gusts every few seconds, shoving everything in range back
+  up the lane and battering it, and a vehicle can't be gusted again for 2 s, so it can't be stun-locked.
+  The Seed Cannon (from 26) is long range and ground only, with a wide splash. Each has two specialisations.
+- **Megastructures (from level 12):** two tier-3+ towers side by side, from a recipe, merge for 220
+  Marks into one building that covers both plots. The eight recipes are:
+
+  | Megastructure | Ingredients |
+  |---|---|
+  | Harvester | Scarecrow + Silo |
+  | Honey Marsh | Beehive + Pond |
+  | Hawthorn Fortress | Hedgerow + Barn |
+  | Grand Market | Stall + Hall |
+  | Tribunal | Mast + Court |
+  | Stormhive | Windmill + Beehive |
+  | Turnip Barrage | Cannon + Scarecrow |
+  | Sanctuary | Tent + Pond |
+
+  The engine's `MEGAS` table has the stats.
+- **Veterans:** kills (the last tower to hit gets them) give ranks at 15, 40 and 90. Each rank adds 10%
+  damage and 4% range.
+- **Ambushes (from level 12):** a group can start a fraction of the way down the lane. A warning event marks
+  the spot when the wave is called. Act openers (21, 31, ...) have one every wave from the second.
+- **Routes:** from level 4, `layouts.ts rewind` gives every level a seeded, self-avoiding winding route
+  through a grid of junctions two cells apart, so lanes always have plots between them. Fields grow by act:
+  7×9, 8×10, 9×11, 9×12, 10×12. The 3D view pinches or scrolls to zoom and drags to pan.
+- **Cath grows (cath.ts):** XP comes from stars already earned (80 per clear plus 40 a star), so it can't
+  be farmed and old saves start at the right level. She gets one skill point per level across six
+  attributes (cap 8 each) and a talent choice at levels 5, 10, 15, 20 and 25. It folds into the Perks.
+- **Boss duels:** the first time each boss kind appears, the battlefield freezes and Cath duels it. There
+  are three timing strikes, and each perfect one takes 9% of the boss's health. A poor duel knocks her
+  down. Each round auto-strikes at half quality after 4 s. The browser turns duels on; the tuner and sims
+  leave them off, so they're a reward for skill, not part of the balance.
+- **Tooltips** on every control: hover with a mouse, or press and hold on a phone. **Dialogs** fit the
+  screen, with their buttons kept in view.
+- **Music:** a synth score in sound.ts with one track per act (French 79 / Diamond Veins-style electro).
+- **3D:** richer models, plus models for the new towers, the wrapped van and the eight megastructures.

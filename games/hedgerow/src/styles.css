@@ -1657,3 +1657,328 @@ button {
     color: #f0a070 !important;
   }
 }
+
+/* ---- round 3: Cath's sheet, tooltips, duels, merges, phone fit ---- */
+.top-tools {
+  justify-self: end;
+  display: flex;
+  gap: 6px;
+}
+.cath-btn {
+  position: relative;
+  padding: 0 12px 0 4px;
+  background: #7a3b52;
+}
+.cath-btn-face {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper-2);
+}
+.cath-btn-face svg {
+  width: 100%;
+  height: 100%;
+}
+.cath-btn b {
+  color: #f2c94c;
+}
+.cath-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f2c94c;
+  box-shadow: 0 0 0 2px #7a3b52;
+}
+.cath-dot[hidden] {
+  display: none;
+}
+@media (max-width: 420px) {
+  .cath-btn > span:not(.cath-btn-face):not(.cath-dot) {
+    font-size: 14px;
+  }
+  .wordmark {
+    font-size: 22px;
+  }
+}
+.xp-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--paper-2);
+  overflow: hidden;
+  margin: 0 0 8px;
+}
+.xp-bar span {
+  display: block;
+  height: 100%;
+  width: calc(var(--xp, 0) * 100%);
+  background: linear-gradient(90deg, #d4ae58, #f2c94c);
+}
+.attrs {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+.attr {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--paper-2);
+}
+.attr small {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.attr .btn {
+  min-width: 44px;
+  padding: 0 10px;
+}
+.talents {
+  margin: 0 0 12px;
+  text-align: left;
+}
+.talent-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 1fr;
+  gap: 6px;
+  align-items: stretch;
+  margin-bottom: 6px;
+}
+.talent-at {
+  align-self: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.talent {
+  border: 0;
+  border-radius: 12px;
+  padding: 6px 8px;
+  background: var(--paper-2);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.talent strong {
+  display: block;
+  font-size: 14px;
+}
+.talent small {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-muted);
+  line-height: 1.25;
+}
+.talent:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.talent.picked {
+  opacity: 1;
+  background: #f2c94c;
+  box-shadow: inset 0 0 0 2px #b8923e;
+}
+.talent.picked small {
+  color: var(--ink);
+}
+
+.tooltip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform: translate(var(--x, 0), var(--y, 0));
+  z-index: 50;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #2b2320;
+  color: #fff8e6;
+  font-size: 14px;
+  line-height: 1.35;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.tooltip[hidden] {
+  display: none;
+}
+.has-tip {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.duel {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  width: min(92%, 380px);
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: rgba(30, 22, 18, 0.88);
+  color: #fff6e6;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), inset 0 0 0 2px #d4ae58;
+  z-index: 5;
+}
+.duel[hidden] {
+  display: none;
+}
+.duel .eyebrow {
+  color: #f2c94c;
+}
+.duel-title {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 20px;
+}
+.duel-rounds {
+  font-size: 18px;
+  letter-spacing: 6px;
+  color: #f2c94c;
+}
+.duel-bar {
+  position: relative;
+  width: 100%;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8a2c22, #c9663a 30%, #6a4a2a 50%, #c9663a 70%, #8a2c22);
+  overflow: hidden;
+}
+.duel-sweet {
+  position: absolute;
+  left: 42%;
+  width: 16%;
+  top: 0;
+  bottom: 0;
+  background: #f2c94c;
+  box-shadow: 0 0 12px #f2c94c;
+}
+.duel-mark {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 8px;
+  margin-left: -4px;
+  left: calc(var(--x, 0.5) * 100%);
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 0 6px #000;
+}
+.duel-strike {
+  min-width: 160px;
+  min-height: 52px;
+  font-size: 19px;
+}
+.duel-hint {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.vet-line {
+  font-size: 12px !important;
+  color: #a07c2c !important;
+  font-weight: 700;
+}
+.merge-row {
+  display: grid;
+  gap: 6px;
+}
+.merge-btn {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  min-height: 0;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #7a3b52, #b8923e);
+}
+.merge-btn small {
+  font-weight: 400;
+  font-size: 12px;
+  opacity: 0.9;
+}
+.merge-btn .stats {
+  font-size: 12px;
+}
+
+/* Phones (owner: "sometimes you have to scroll to reach a button"): dialogs never outgrow the screen and
+   their buttons stay pinned in view; the tower card's actions stick to the bottom of its panel. */
+.sheet {
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.sheet .win-actions,
+.sheet .story-actions {
+  position: sticky;
+  bottom: -22px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: var(--surface);
+  z-index: 2;
+}
+.sheet.story .story-actions {
+  bottom: 0;
+}
+.panel .panel-row {
+  position: sticky;
+  bottom: -8px;
+  padding: 6px 0 2px;
+  background: var(--surface);
+  z-index: 1;
+}
+@media (max-width: 520px) {
+  .sheet {
+    padding: 16px;
+    width: calc(100vw - 16px);
+  }
+  .bank .perks,
+  .bank .rosettes {
+    max-height: none;
+  }
+  .controls {
+    gap: 6px;
+  }
+  .btn.send {
+    min-width: 0;
+    flex: 1;
+    font-size: 15px;
+    padding: 0 8px;
+  }
+}
+@media (max-height: 700px) and (max-width: 899.98px) {
+  .panel {
+    height: 150px;
+  }
+  .ability,
+  .auto-btn,
+  .btn.send {
+    min-height: 50px;
+  }
+}
+.hedgerow-3d #canvas {
+  touch-action: none;
+}
+@media (max-width: 520px) {
+  .ability-label {
+    font-size: 11px;
+    letter-spacing: -0.01em;
+  }
+  .cath-sheet .story-cath {
+    width: 84px;
+    height: 84px;
+  }
+}

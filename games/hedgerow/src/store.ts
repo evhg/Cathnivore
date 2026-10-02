@@ -4,6 +4,7 @@
 // migration (with a test) for every shape change. v1 -> v2 (2026-10-02): added seen, tips and bank.
 
 import { NO_PERKS, type Perks } from "./engine";
+import { applyCath, levelOf, parseCath, xpOf, type CathSave } from "./cath";
 
 export interface SaveData {
   version: 2;
@@ -18,6 +19,8 @@ export interface SaveData {
   bank: Record<string, number>;
   /** Rosettes (achievements) earned, by id. Optional in old saves. */
   rosettes?: Record<string, boolean>;
+  /** Cath's character sheet: attributes and talents (cath.ts). Optional in old saves. */
+  cath?: CathSave;
 }
 
 const KEY = "hedgerow:v1";
@@ -41,6 +44,7 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.seen ?? {})) if (v === true) data.seen[k] = true;
       for (const [k, v] of Object.entries(obj.tips ?? {})) if (v === true) data.tips[k] = true;
       for (const [k, v] of Object.entries(obj.rosettes ?? {})) if (v === true) (data.rosettes ??= {})[k] = true;
+      if (obj.cath) data.cath = parseCath(obj.cath);
       for (const [k, v] of Object.entries(obj.bank ?? {})) {
         const perk = PERKS.find((p) => p.id === k);
         if (perk && typeof v === "number" && v >= 1) data.bank[k] = Math.min(perk.costs.length, Math.floor(v));
@@ -231,5 +235,11 @@ export function perksOf(data: SaveData): Perks {
     const r = data.bank[def.id] ?? 0;
     if (r > 0) def.apply(p, r);
   }
+  if (data.cath) applyCath(p, data.cath, cathLevel(data));
   return p;
+}
+
+/** Cath's level, from the stars earned so far. */
+export function cathLevel(data: SaveData): number {
+  return levelOf(xpOf(data.stars)).level;
 }

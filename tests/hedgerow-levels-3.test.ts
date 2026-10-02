@@ -1,5 +1,5 @@
 // Every Hedgerow level, 51-75: connected lanes, lost by a player who builds nothing, won by the
-// competent bot (games/hedgerow/src/bot.ts), whose Goodwill the tuner targets (docs/design/hedgerow-v2.md 2).
+// best bot (games/hedgerow/src/bot.ts), whose Goodwill the tuner targets (docs/design/hedgerow-v2.md 2).
 // Split into four files so vitest runs them in parallel.
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
@@ -23,7 +23,7 @@ describe("hedgerow levels 51-75", () => {
         }
       }
       expect(playLevel(lv, "idle").phase).toBe("lost");
-      const won = playLevel(lv, "competent");
+      const won = playLevel(lv, "best");
       expect(won.phase).toBe("won");
       expect(stars(won)).toBeGreaterThanOrEqual(1);
       expect(kept(won)).toBeGreaterThanOrEqual(0.5);

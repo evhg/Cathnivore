@@ -10,12 +10,17 @@ function key(o: object): string {
   return JSON.stringify(o);
 }
 
+/** Cached materials are shared by many meshes: mark them so effects that dispose a dead model's materials skip them. */
+function shared<T extends THREE.Material>(m: T): T {
+  return Object.assign(m, { shared: true });
+}
+
 /** A matte, hand-made surface (wood, straw, paint, leaves). Flat-shaded so the low-poly facets read. */
 export function matte(color: string, rough = 0.85, flat = true): THREE.MeshStandardMaterial {
   const k = key({ m: "matte", color, rough, flat });
   let m = cache.get(k) as THREE.MeshStandardMaterial | undefined;
   if (!m) {
-    m = new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0, flatShading: flat });
+    m = shared(new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0, flatShading: flat }));
     cache.set(k, m);
   }
   return m;
@@ -26,7 +31,7 @@ export function gloss(color: string, metal = 0.35): THREE.MeshPhysicalMaterial {
   const k = key({ m: "gloss", color, metal });
   let m = cache.get(k) as THREE.MeshPhysicalMaterial | undefined;
   if (!m) {
-    m = new THREE.MeshPhysicalMaterial({ color, roughness: 0.28, metalness: metal, clearcoat: 1, clearcoatRoughness: 0.15 });
+    m = shared(new THREE.MeshPhysicalMaterial({ color, roughness: 0.28, metalness: metal, clearcoat: 1, clearcoatRoughness: 0.15 }));
     cache.set(k, m);
   }
   return m;
@@ -36,7 +41,7 @@ export function chrome(color = "#dfe6ee"): THREE.MeshStandardMaterial {
   const k = key({ m: "chrome", color });
   let m = cache.get(k) as THREE.MeshStandardMaterial | undefined;
   if (!m) {
-    m = new THREE.MeshStandardMaterial({ color, roughness: 0.18, metalness: 0.95 });
+    m = shared(new THREE.MeshStandardMaterial({ color, roughness: 0.18, metalness: 0.95 }));
     cache.set(k, m);
   }
   return m;
@@ -46,7 +51,7 @@ export function metal(color = "#9aa0a6", rough = 0.4): THREE.MeshStandardMateria
   const k = key({ m: "metal", color, rough });
   let m = cache.get(k) as THREE.MeshStandardMaterial | undefined;
   if (!m) {
-    m = new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0.75 });
+    m = shared(new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0.75 }));
     cache.set(k, m);
   }
   return m;
@@ -57,7 +62,7 @@ export function glow(color: string, intensity = 2): THREE.MeshStandardMaterial {
   const k = key({ m: "glow", color, intensity });
   let m = cache.get(k) as THREE.MeshStandardMaterial | undefined;
   if (!m) {
-    m = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: intensity, roughness: 0.5 });
+    m = shared(new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: intensity, roughness: 0.5 }));
     cache.set(k, m);
   }
   return m;
@@ -67,7 +72,20 @@ export function glass(color = "#1c2a36"): THREE.MeshPhysicalMaterial {
   const k = key({ m: "glass", color });
   let m = cache.get(k) as THREE.MeshPhysicalMaterial | undefined;
   if (!m) {
-    m = new THREE.MeshPhysicalMaterial({ color, roughness: 0.05, metalness: 0.2, clearcoat: 1 });
+    m = shared(new THREE.MeshPhysicalMaterial({ color, roughness: 0.05, metalness: 0.2, clearcoat: 1 }));
+    cache.set(k, m);
+  }
+  return m;
+}
+
+/** Shiny translucent plastic (bubble wrap, shields): clear-coated, see-through, never writes depth. */
+export function bubble(color = "#e8f6ff", opacity = 0.38): THREE.MeshPhysicalMaterial {
+  const k = key({ m: "bubble", color, opacity });
+  let m = cache.get(k) as THREE.MeshPhysicalMaterial | undefined;
+  if (!m) {
+    m = shared(
+      new THREE.MeshPhysicalMaterial({ color, roughness: 0.08, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, transparent: true, opacity, depthWrite: false }),
+    );
     cache.set(k, m);
   }
   return m;
@@ -138,4 +156,46 @@ export const ACT_LIGHT: ActLight[] = [
 
 export function actLight(levelId: number): ActLight {
   return ACT_LIGHT[Math.min(ACT_LIGHT.length - 1, Math.floor((levelId - 1) / 10))]!;
+}
+
+/** What grows and floats on each act's field: wildflower colours, how thick they are, the hedge blossom, the
+ * motes in the air and how much cloud passes over. Night levels swap the motes for fireflies. */
+export interface ActMood {
+  flowers: string[];
+  /** Share of each plot's edge plants that are flowers rather than grass. */
+  flowerRate: number;
+  blossom: string;
+  /** Colour of the drifting pollen or seeds. */
+  mote: string;
+  /** How dark the passing cloud shadows are (0 to 1). */
+  cloud: number;
+  /** Birds wheeling overhead. */
+  birds: number;
+}
+
+export const ACT_MOOD: ActMood[] = [
+  // 1 Brindle Hills: daisies, buttercups and cowslips; dandelion clocks on the breeze.
+  { flowers: ["#fff8ec", "#ffd84a", "#f6e27a", "#f2a7c3"], flowerRate: 0.32, blossom: "#f3e9f0", mote: "#fffbe8", cloud: 0.3, birds: 5 },
+  // 2 Highmoor: heather and gorse.
+  { flowers: ["#b98ad0", "#9b6fb8", "#ffcf3a", "#fff8ec"], flowerRate: 0.3, blossom: "#e8d0ee", mote: "#fff2cc", cloud: 0.32, birds: 4 },
+  // 3 Saltmarsh: sea thrift and sea lavender.
+  { flowers: ["#f2a7c3", "#c6a3e0", "#fff8ec"], flowerRate: 0.22, blossom: "#f6dce6", mote: "#f4fbff", cloud: 0.26, birds: 6 },
+  // 4 Rivermead: meadowsweet, forget-me-nots, kingcups.
+  { flowers: ["#fffbea", "#8fb8ff", "#ffd23f", "#fff8ec"], flowerRate: 0.3, blossom: "#fff6f0", mote: "#fffbe8", cloud: 0.24, birds: 4 },
+  // 5 Oakvale: bluebells and wood anemones.
+  { flowers: ["#7f8cf0", "#9aa4ff", "#fff8ec"], flowerRate: 0.3, blossom: "#f3e9f0", mote: "#ffeebb", cloud: 0.3, birds: 3 },
+  // 6 Shingle Bay: sea campion and yellow horned poppy.
+  { flowers: ["#fff8ec", "#ffe04a"], flowerRate: 0.16, blossom: "#f6f0e6", mote: "#f8fbff", cloud: 0.34, birds: 6 },
+  // 7 The Rift: dusk; seed heads catch the low sun.
+  { flowers: ["#ff9a4a", "#ffd07a", "#e0603a"], flowerRate: 0.14, blossom: "#f0c8a8", mote: "#ffc890", cloud: 0.22, birds: 4 },
+  // 8 The Ballot: poppies and cornflowers on polling day.
+  { flowers: ["#e8433a", "#6f8ff0", "#fff8ec"], flowerRate: 0.26, blossom: "#f3e9f0", mote: "#fff4dc", cloud: 0.28, birds: 5 },
+  // 9 The Merger: a grey, thinning verge.
+  { flowers: ["#d8d4c8", "#c8c070"], flowerRate: 0.08, blossom: "#d8d8d8", mote: "#dfe6ee", cloud: 0.14, birds: 2 },
+  // 10 Kingsmarket: night (fireflies take over from the pollen).
+  { flowers: ["#d8d0ff", "#fff0c8"], flowerRate: 0.12, blossom: "#cfc8e8", mote: "#d8ff8a", cloud: 0, birds: 0 },
+];
+
+export function actMood(levelId: number): ActMood {
+  return ACT_MOOD[Math.min(ACT_MOOD.length - 1, Math.floor((levelId - 1) / 10))]!;
 }

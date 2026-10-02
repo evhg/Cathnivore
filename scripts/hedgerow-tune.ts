@@ -1,8 +1,9 @@
 // Hedgerow's difficulty tuner (docs/design/hedgerow-v2.md section 2). For every level it finds the largest
-// enemy-health multiplier at which the competent bot (games/hedgerow/src/bot.ts) still wins keeping at least
+// enemy-health multiplier at which the best bot (games/hedgerow/src/bot.ts: the better of competent and balanced) still wins keeping at least
 // the target share of its Goodwill, and writes the table to games/hedgerow/src/tuning.ts. Run it after
 // changing levels, enemies, towers or twists: `npx tsx scripts/hedgerow-tune.ts [fromLevel] [toLevel]`, then
-// `npx tsx scripts/hedgerow-tune.ts --verify` to check every level at the value that ships.
+// `npx tsx scripts/hedgerow-tune.ts --verify` to check every level at the value that ships, then
+// `--antispam` to push levels the Scarecrows-only bot still wins as far as the best bot allows.
 // Levels run in parallel worker processes. Log the run in BALANCE.md.
 
 import { spawn } from "node:child_process";
@@ -34,8 +35,8 @@ async function verify(id: number): Promise<number> {
   let tuned = HP_SCALE[id] ?? 1;
   for (let i = 0; i < 20; i++) {
     const shipped = Math.round(tuned * humanMargin(id) * 100) / 100;
-    const g = playLevel({ ...base, hpScale: shipped }, "competent");
-    if (kept(g) >= 0.5 && kept(playLevel({ ...base, hpScale: shipped * 1.04 }, "competent")) > 0) break;
+    const g = playLevel({ ...base, hpScale: shipped }, "best");
+    if (kept(g) >= 0.5 && kept(playLevel({ ...base, hpScale: shipped * 1.04 }, "best")) > 0) break;
     tuned *= 0.92;
   }
   return Math.round(tuned * 100) / 100;
@@ -45,7 +46,7 @@ async function worker(id: number): Promise<number> {
   const { LEVELS } = await import("../games/hedgerow/src/levels");
   const { playLevel, kept } = await import("../games/hedgerow/src/bot");
   const base = LEVELS[id - 1]!;
-  const ok = (scale: number) => kept(playLevel({ ...base, hpScale: scale }, "competent")) >= target(id);
+  const ok = (scale: number) => kept(playLevel({ ...base, hpScale: scale }, "best")) >= target(id);
   let lo = 0.3;
   let hi = 16;
   if (!ok(lo)) return lo;
@@ -58,10 +59,39 @@ async function worker(id: number): Promise<number> {
   return Math.round(lo * 100) / 100;
 }
 
+/**
+ * Anti-spam mode (`--antispam`, owner 2026-10-02: "Scarecrow spam shouldn't win"): from level 8, while the
+ * naive Scarecrows-only bot still wins at the shipped value, raise enemy health 6% at a time as long as the
+ * best bot still passes the verify rule. Stops at whichever comes first. Run it after `--verify`.
+ */
+async function antispam(id: number): Promise<number> {
+  const { LEVELS } = await import("../games/hedgerow/src/levels");
+  const { playLevel, kept } = await import("../games/hedgerow/src/bot");
+  const { HP_SCALE } = await import("../games/hedgerow/src/tuning");
+  const base = LEVELS[id - 1]!;
+  let tuned = HP_SCALE[id] ?? 1;
+  if (id < 8) return tuned;
+  const shipped = (v: number) => Math.round(v * humanMargin(id) * 100) / 100;
+  const fair = (v: number) =>
+    kept(playLevel({ ...base, hpScale: shipped(v) }, "best")) >= 0.5 &&
+    kept(playLevel({ ...base, hpScale: shipped(v) * 1.04 }, "best")) > 0;
+  for (let i = 0; i < 12; i++) {
+    if (kept(playLevel({ ...base, hpScale: shipped(tuned) }, "naive")) === 0) break;
+    const up = Math.round(tuned * 1.06 * 100) / 100;
+    if (!fair(up)) break;
+    tuned = up;
+  }
+  return tuned;
+}
+
 async function main(): Promise<void> {
   const arg = process.argv[2];
   if (arg === "--one") {
     process.stdout.write(String(await worker(Number(process.argv[3]))));
+    return;
+  }
+  if (arg === "--antispam-one") {
+    process.stdout.write(String(await antispam(Number(process.argv[3]))));
     return;
   }
   if (arg === "--verify-one") {
@@ -69,8 +99,9 @@ async function main(): Promise<void> {
     return;
   }
   const verifying = arg === "--verify";
-  const from = verifying ? Number(process.argv[3] ?? 1) : Number(arg ?? 1);
-  const to = verifying ? Number(process.argv[4] ?? 100) : Number(process.argv[3] ?? 100);
+  const anti = arg === "--antispam";
+  const from = verifying || anti ? Number(process.argv[3] ?? 1) : Number(arg ?? 1);
+  const to = verifying || anti ? Number(process.argv[4] ?? 100) : Number(process.argv[3] ?? 100);
   const existing: Record<number, number> = {};
   try {
     const src = readFileSync(OUT, "utf8");
@@ -86,7 +117,7 @@ async function main(): Promise<void> {
     while (next < ids.length) {
       const id = ids[next++]!;
       const out = await new Promise<string>((resolve, reject) => {
-        const p = spawn(process.execPath, ["--import", "tsx", self, verifying ? "--verify-one" : "--one", String(id)], {
+        const p = spawn(process.execPath, ["--import", "tsx", self, anti ? "--antispam-one" : verifying ? "--verify-one" : "--one", String(id)], {
           stdio: ["ignore", "pipe", "inherit"],
         });
         let buf = "";

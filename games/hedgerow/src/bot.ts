@@ -5,6 +5,8 @@
 //   covers the most lane, upgrades, and picks specialisations to match. Cath and her abilities run
 //   themselves (the auto-battler).
 // - "naive" plants Scarecrows on the best plots and upgrades them, never specialising.
+// - "balanced" follows the same simple plan with a weighted mix of damage dealers (splash included).
+// - "best" is the better of competent and balanced: what the tuner and the level tests use.
 // A level is tuned so the competent bot wins keeping 40-85% of its Goodwill (docs/design/hedgerow-v2.md 2).
 
 import {
@@ -14,6 +16,10 @@ import {
   isBig,
   isPlot,
   isProtected,
+  megaFor,
+  megasUnlocked,
+  merge,
+  mergeOptions,
   newGame,
   place,
   plotKind,
@@ -32,7 +38,7 @@ import {
   type TowerKind,
 } from "./engine";
 
-export type Skill = "competent" | "naive" | "idle";
+export type Skill = "competent" | "naive" | "balanced" | "best" | "idle";
 
 interface Threat {
   total: number;
@@ -43,11 +49,12 @@ interface Threat {
   jam: number;
   heal: number;
   split: number;
+  shield: number;
   boss: boolean;
 }
 
 function threatOf(level: Level, from: number, n: number): Threat {
-  const t: Threat = { total: 0, flying: 0, armoured: 0, stealth: 0, charm: 0, jam: 0, heal: 0, split: 0, boss: false };
+  const t: Threat = { total: 0, flying: 0, armoured: 0, stealth: 0, charm: 0, jam: 0, heal: 0, split: 0, shield: 0, boss: false };
   for (const groups of level.waves.slice(from, from + n)) {
     for (const g of groups) {
       const e = ENEMIES[g.enemy];
@@ -60,6 +67,7 @@ function threatOf(level: Level, from: number, n: number): Threat {
       if (e.jam) t.jam += w;
       if (e.heal) t.heal += w;
       if (e.splits) t.split += w;
+      if (e.shield) t.shield += w;
       if (isBig(g.enemy)) t.boss = true;
     }
   }
@@ -118,6 +126,9 @@ function bestPlot(game: Game, kind: TowerKind, samples: ReturnType<typeof laneSa
           score += s.w;
         }
       } else score = coverage(samples, c, r, st.range * high);
+      // Plan a megastructure: a plot beside a tower this one could merge with is worth a good deal more.
+      if (score > 0 && megasUnlocked(game.level) && game.towers.some((t) => !t.mega && Math.abs(t.col - c) + Math.abs(t.row - r) === 1 && megaFor(kind, t.kind)))
+        score *= 1.3;
       if (score > bestScore) {
         bestScore = score;
         best = [c, r];
@@ -155,10 +166,15 @@ function wanted(game: Game): TowerKind[] {
   if (armour > 0.2) set("silo", 1 + dmgTowers * armour * 0.6);
   if (all.boss) set("court", game.wave >= lv.waves.length - 2 ? 1 : 0);
   if (n > 9) set("hall", 1);
-  if (th.split || th.total > 30 || hasTwist(lv, "crowd")) set("beehive", 1 + dmgTowers * 0.35);
+  const wrapped = th.total ? th.shield / th.total : 0;
+  if (th.split || th.total > 30 || hasTwist(lv, "crowd") || wrapped > 0.1)
+    set("beehive", 1 + dmgTowers * (0.35 + wrapped * 0.5));
+  if (ok("windmill")) set("windmill", 1 + n / 8);
+  if (ok("cannon")) set("cannon", 1 + dmgTowers * (0.2 + wrapped * 0.4 + (th.total > 30 ? 0.15 : 0)));
   // Anti-air and the backbone: scarecrows (or bees when scarecrows are banned).
   const airKind: TowerKind = ok("scarecrow") ? "scarecrow" : "beehive";
-  set(airKind, 2 + dmgTowers * Math.max(0.4, air));
+  // Bubble wrap makes single-target shots weak: lean on splash when it's about.
+  set(airKind, 2 + dmgTowers * Math.max(0.4 * (1 - wrapped), air));
   const order = Object.entries(want)
     .map(([k, v]) => [k as TowerKind, (v ?? 0) - count(game, k as TowerKind)] as const)
     .filter(([, d]) => d > 0)
@@ -180,6 +196,8 @@ function specFor(game: Game, t: Tower): 0 | 1 {
       return th.split || hasTwist(game.level, "crowd") ? 1 : 0;
     case "tent":
       return 1;
+    case "cannon":
+      return th.total > 40 || hasTwist(game.level, "crowd") ? 1 : 0;
     default:
       return 0;
   }
@@ -208,8 +226,32 @@ function upgradeSomething(game: Game, samples: ReturnType<typeof laneSamples>, s
 
 function spend(game: Game, skill: Skill, samples: ReturnType<typeof laneSamples>): void {
   for (let guard = 0; guard < 60; guard++) {
-    if (skill === "naive") {
-      const kind: TowerKind = towerAllowed(game.level, "scarecrow") ? "scarecrow" : "hedgerow";
+    if (skill === "naive" || skill === "balanced") {
+      // Naive: nothing but Scarecrows. Balanced: the same simple plan, but a mix of damage dealers, taking
+      // whichever kind it has fewest of (weighted), with splash for the bubble wrap.
+      const mix: Array<[TowerKind, number]> = [
+        ["scarecrow", 1],
+        ["beehive", 1],
+        ["windmill", 0.5],
+        ["cannon", 0.7],
+        ["pond", 0.4],
+        ["hedgerow", 0.3],
+      ];
+      const pickBalanced = (): TowerKind => {
+        let best: TowerKind = "hedgerow";
+        let bestScore = Infinity;
+        for (const [k, w] of mix) {
+          if (!towerAllowed(game.level, k)) continue;
+          const sc = count(game, k) / w;
+          if (sc < bestScore) {
+            bestScore = sc;
+            best = k;
+          }
+        }
+        return best;
+      };
+      const kind: TowerKind =
+        skill === "balanced" ? pickBalanced() : towerAllowed(game.level, "scarecrow") ? "scarecrow" : "hedgerow";
       const spot = bestPlot(game, kind, samples);
       if (spot && game.marks >= towerCost(game, kind) && game.towers.length < 3 + game.wave) {
         if (place(game, kind, spot[0], spot[1]).ok) continue;
@@ -222,6 +264,7 @@ function spend(game: Game, skill: Skill, samples: ReturnType<typeof laneSamples>
     const dmg = game.towers.filter((t) => towerStats(t).damage > 0);
     const avgTier = dmg.length ? dmg.reduce((a, t) => a + t.tier, 0) / dmg.length : 0;
     const preferUpgrade = dmg.length >= 4 + game.wave * 0.6 && avgTier < 3.6;
+    if (mergeSomething(game)) continue;
     if (preferUpgrade && upgradeSomething(game, samples, true)) continue;
     let built = false;
     for (const kind of wanted(game)) {
@@ -238,8 +281,24 @@ function spend(game: Game, skill: Skill, samples: ReturnType<typeof laneSamples>
   }
 }
 
-/** Plays a whole level and returns the finished game. */
+/** Merges any two grown neighbours that make a megastructure. */
+function mergeSomething(game: Game): boolean {
+  for (const t of game.towers) {
+    const opt = mergeOptions(game, t.id)[0];
+    if (opt && game.marks >= opt.cost && merge(game, t.id, opt.partner).ok) return true;
+  }
+  return false;
+}
+
+/** Plays a whole level and returns the finished game. "best" plays it both the competent and the balanced
+ * way and returns the better result: the benchmark the tuner uses, so no simple strategy beats the curve
+ * just because the benchmark played badly. */
 export function playLevel(level: Level, skill: Skill): Game {
+  if (skill === "best") {
+    const a = playLevel(level, "competent");
+    const b = playLevel(level, "balanced");
+    return kept(b) > kept(a) ? b : a;
+  }
   const game = newGame(level);
   const samples = laneSamples(game);
   let guard = 0;
@@ -247,7 +306,7 @@ export function playLevel(level: Level, skill: Skill): Game {
     if (game.phase === "build") {
       if (skill !== "idle") spend(game, skill, samples);
       sendWave(game);
-    } else if (skill === "competent" && game.tick % 90 === 0) {
+    } else if ((skill === "competent" || skill === "balanced") && game.tick % 90 === 0) {
       // Between spawns the competent bot keeps spending what the lane pays.
       spend(game, skill, samples);
     }
