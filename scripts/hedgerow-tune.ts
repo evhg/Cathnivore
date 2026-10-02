@@ -12,13 +12,13 @@ import { fileURLToPath } from "node:url";
 
 const OUT = new URL("../games/hedgerow/src/tuning.ts", import.meta.url);
 
-/** The share of Goodwill the competent bot must keep: gentle early, a real fight later. */
+/** The share of Goodwill the competent bot must keep: gentle in the tutorial, a real fight from level 8. */
 export function target(id: number): number {
-  return id <= 3 ? 0.9 : id <= 10 ? 0.8 : id <= 30 ? 0.7 : 0.6;
+  return id <= 3 ? 0.9 : id <= 7 ? 0.7 : 0.5;
 }
 
 /** What ships is the tuned value times this (levels.ts HUMAN_MARGIN): the verify pass checks that. */
-const HUMAN_MARGIN = 0.85;
+const HUMAN_MARGIN = 0.9;
 
 /**
  * Verify mode: the shipped value must give the competent bot a clean win (at least 50% Goodwill). Outcomes

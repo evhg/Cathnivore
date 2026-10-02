@@ -6416,9 +6416,9 @@ const TWIST_PLAN: Record<number, TwistId[]> = {
 for (const l of LEVELS) if (TWIST_PLAN[l.id]) l.twists = TWIST_PLAN[l.id];
 
 // Enemy health per level from the difficulty tuner.
-// The tuner finds where the competent bot only just keeps its target; people get a 15% margin on top,
+// The tuner finds where the competent bot only just keeps its target; people get a 10% margin on top,
 // because the bot never hesitates and never misplaces a tower.
-const HUMAN_MARGIN = 0.85;
+const HUMAN_MARGIN = 0.9;
 for (const l of LEVELS) if (HP_SCALE[l.id]) l.hpScale = Math.round(HP_SCALE[l.id]! * HUMAN_MARGIN * 100) / 100;
 
 // The barn is raised in level 36 (the story's barn raising), not at the start of act 4.
