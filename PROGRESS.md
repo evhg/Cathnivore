@@ -30,6 +30,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-02 ~09:25 UTC (`bdd2809`): ROADMAP 35, 36 (terrain, forks), 38 slices. main==build; tag push 403 (harmless).
 - 2026-10-02 ~04:05 UTC (`aadfc2c`): Hedgerow overhaul: Cath as a hero unit, 22 tower specialisations, targeting, early calls, aimed pie, boss moves, painted acts and sprites, new build UI, journey map, graphic-novel scenes, Seed Bank (save v2), music. main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-02 ~01:07 UTC (`a95986a`): all accumulated slices (scenes, plan cards, tour, motion tokens). main==build; live version.json matches; tag push 403 (harmless).
 - 2026-10-01 ~13:12 UTC (`65ab9f2`): bigger desktop map. main==build; live version.json matches; tag push 403 (harmless).
