@@ -3,35 +3,9 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`.
-- 2026-10-01 (short session): motion audit slice — global/campaign CSS durations and easings moved onto `--dur-*`/`--ease-settle` tokens (ROADMAP 21, still open for other screens). Released `fde53bd`; title/campaign button transitions also tokenised.
-- 2026-10-01 (02:00 session): map-moment and settings durations (150-300ms) in global.css moved onto `--dur-*`; ROADMAP 21 only has longer decorative durations left (unreleased).
-- 2026-10-01 (03:00 session): ROADMAP 13 slice: Rift banner at 3 and 6 (unreleased, check passes).
-- 2026-10-01 (04:00 session): ROADMAP 21 done: `--dur-moment` token; stat-in, seal-stamp, plastic-creep, ta-pop tokenised.
-- 2026-10-01 (05:00 session): ROADMAP 14 slice: scene portraits 128px with drop shadow, bubble tails, non-Cath speakers on the right (unreleased, check+shots pass).
-- 2026-10-01 (06:00 session): ROADMAP 14 slice: scene keyboard (→ next, Esc skip), backlog capped at 3 lines (unreleased, check passes).
-- 2026-10-01 (07:00 session): ROADMAP 13 slice: "Final round N" banner on the last round (unreleased, check passes).
-- 2026-10-01 (08:00 session): ROADMAP 16 slice: end-screen hero (win sunburst rays / loss dusk arch behind Cath), unreleased, check+shots pass. Playwright needs PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome.
-- 2026-10-01 (09:00 session): released the accumulated slices (live matches `55ac8ae`); card frames/buy animation already exist (ROADMAP 17 looks done, verify next).
-- 2026-10-01 (10:00 session): ROADMAP 18 slice: tour gains a cards page, arrow-key paging, dot progress (unreleased, check passes).
-- 2026-10-01 (10:51 session): verified ROADMAP 13, 17, 18 shipped and ticked them; released `b69c37f`.
-- 2026-10-01 (11:51 session): ROADMAP 14 done: scene horizon silhouettes (hills / town skyline) under each chapter wash (unreleased, check+shots pass).
-- 2026-10-01 (12:52 session): ROADMAP 11 + 16 ticked; map viewBox tightened (SIZE 250) so it fills its frame; CSS scale broke no-scroll e2e.
-- 2026-10-01 (13:52 session): verified ROADMAP 22 (Runnel feel) already built; ticked it. check passes.
-- 2026-10-01 (14:51 session): ROADMAP 24 slice: Hedgerow card art animated (foe walks the lane, hedge sways; reduced-motion safe). check + e2e:site pass. ROADMAP 24 still open for the frame-time check.
-- 2026-10-01 (15:52 session): ROADMAP 24: all three landing cards animate; headless software-GL frame check (390px) averaged 27ms/p95 50ms, not meaningful for real phones, so the on-device check stays open (needs hardware).
-- 2026-10-01 (16:51 session): ROADMAP 10 slice: plan-strip cards get a newspaper-clipping double rule + paper tone (CSS only; check + desktop-no-scroll pass on chromium; WebKit project not installed here). Unreleased.
-- 2026-10-01 (17:51 session): ROADMAP 10 slice: plan-card slot name styled as a headline (CSS + one span; check + desktop-no-scroll pass). Unreleased.
-- 2026-10-01 (18:51 session): ROADMAP 10 slice: plan-card effect text underlined as a boxed panel (CSS + span; check + chromium no-scroll pass). Unreleased (daily release cap already used).
-- 2026-10-01 (19:51 session): ROADMAP 10 ticked (HUD gauges + agenda cards: clipping, headline, effect panel all shipped; Pressure keeps its compact shape by design). Docs only; release cap already used today.
-- 2026-10-01 (20:51 session): verified ROADMAP 9 fully built (icons, chips, why-not for Sell/Invest/Scheme/Open Stall/Supply/Rebut, press, outline); ticked it. Docs only; release cap already used.
-- 2026-10-01 (21:51 session): health check only: CI green on `bd90164`, `npm run check` passes. Remaining ROADMAP (19 sound polish, H2, 24 real-phone check) is small or needs hardware; release cap already used.
-- 2026-10-01 (22:51 session): health check: CI green on `73dc652`; no open FEEDBACK or broken items; no change.
-- 2026-10-01 (23:52 session): health check: CI green on `a4d8a09`; unreleased slices wait for tomorrow's release cap; no change.
-- 2026-10-02 (00:51 session): gates failed on the Runnel keyboard e2e (daily puzzle changes with date; ArrowRight landed on an unturnable sluice). Test fixed; released `a95986a` (24 accumulated commits), live matches.
-- 2026-10-02 (01:51 session): health check: CI green on `2a13176`; no open FEEDBACK or broken items; remaining ROADMAP (19, H2 polish, 24 hardware check) unchanged.
-- **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
-- 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
+- **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
+- **Next:** ROADMAP Phase 4, "Hedgerow to world-class", starting with item 26 (the battlefield art), then 27-32; Phase 5 after. Open from earlier: 19 (sound polish), H2 notes, 24 (real-phone check, needs hardware: skip).
+- 2026-10-02 (owner's chat session): sessions had idled as "health check only" since about 21:00 UTC on 10-01 because the roadmap ran out. Added Phases 4-5 and the never-idle rule.
 
 ## Blocked
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)

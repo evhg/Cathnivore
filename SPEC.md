@@ -563,6 +563,7 @@ The owner wants the hourly routine to **keep improving and beautifying the games
   2. anything broken: red CI, a failing gate, a live-site bug, a save or rules bug;
   3. the first unfinished item in `ROADMAP.md`.
   Section 14's "Not in v1" list is lifted where `ROADMAP.md` schedules an item (for example, sound).
+- **Never idle (owner, 2026-10-02):** a session that only checks health wastes an hour. When fewer than 3 unfinished ROADMAP items remain, the session plans the next phase (screenshots of every game, a subagent critique against `VISION.md`, at least 5 new concrete items) and starts on the first.
 - **How to work:** in slices that each leave `build` green and the game better (VISION.md principles). Put a redesign that can't be finished in one session behind a setting or feature flag, or develop it in a new component that isn't wired in yet, rather than shipping it half done.
 - **Visual work** is checked with `npm run shots` (every screen at phone and desktop) before and after, plus dark mode where the change touches colour. For anything bigger than a small tweak, have one subagent critique the "after" screenshots against `VISION.md` and `STYLE.md`, then fix what it flags.
 - **Releases:** run `npm run release` whenever a slice is complete and every gate passes, at most 4 times a day (Vercel's 100-deploys-a-day limit and the owner's usage). Never leave `main` behind `build` for more than a day without a logged reason.

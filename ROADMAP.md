@@ -2,7 +2,7 @@
 
 The ordered plan for improvement sessions (SPEC 16). **New plan set by the owner on 2026-09-28.** Work from the top: take the first item that isn't done or blocked. Big items are split into slices, and each slice must ship on its own, leaving the games better and never half-broken.
 
-Sessions may add items, split items or reorder within a phase when they find something more important, and log the reason in `DECISIONS.md`. Only the owner (through `FEEDBACK.md`) moves items between phases or deletes them. Mark items `[x]` when shipped (released to `main`), with the release commit.
+Sessions may add items, split items or reorder within a phase when they find something more important, and log the reason in `DECISIONS.md`. **Never run out:** when fewer than 3 unfinished items remain, the session's work is planning: screenshot every game, have a subagent critique them against `VISION.md`, and add at least 5 concrete, measurable items before ending. Only the owner (through `FEEDBACK.md`) moves items between phases or deletes them. Mark items `[x]` when shipped (released to `main`), with the release commit.
 
 Every visual item is done only when:
 - before and after screenshots at 390×844 and 1440×900, light and dark, show a clear improvement against `VISION.md`;
@@ -181,6 +181,23 @@ H11. [x] **Act 10 and level 100:** the multi-phase HollowCandor boss fight and t
 23. [x] **Runnel variety:** new tile types (bridges, sluice gates, reservoirs) introduced gradually by day of the week, each with generator support and a solvability test.
 24. [ ] **Landing page:** a live miniature preview of each game on its card, and a frame-time check on real mid-range phones.
 25. [x] **Known small issues:** the `sim/run.ts` worker timeout (fixed earlier), `scene.ts` `deleteShader`, and `scene.ts` WebGL context restore (fixed 2026-09-28 `cb050ee`; see `PROGRESS.md`).
+
+## Phase 4: Hedgerow to world-class (owner's chat session, 2026-10-02)
+
+All 100 levels exist and play, but the look is a flat prototype: a plain grid, simple shapes and a list for level select. Bring it up to Cathnivore's standard. Every item: screenshots before and after, phone and desktop.
+
+26. [ ] **The battlefield:** illustrated terrain per act (Brindle Hills hedgerows and pasture, Highmoor market lanes, Saltmarsh reeds and water, Rivermead floods, Oakvale orchards, Shingle Bay shingle and sea, the Rift, the Ballot town, the Merger's glossy campus, Kingsmarket's square). The lane as a textured dirt track with ruts; plots as tilled patches with soft shadows; props (fences, gates, trees, the farmhouse with smoke). No visible grid outside build mode.
+27. [ ] **Towers and enemies:** a distinct illustrated sprite per tower, with each upgrade tier visibly different, idle animation and visible projectiles (turnips, bees, gusts, seeds). Enemies get STYLE.md's glossy corporate material with motion (wheels turning, drone rotors, bobbing), hit flashes, health bars and pops on defeat. Bosses are big, distinct and announced.
+28. [ ] **Cath on the battlefield:** Cath standing by the farmhouse with live reactions (cheering on a perfect wave, worried when Goodwill drops), and the story beats staged like Cathnivore's graphic-novel scenes (reuse its scene system and backdrops).
+29. [ ] **Build UX:** a radial build menu at the tapped plot (tower icons with costs, locked ones greyed), a range preview while choosing, a next-wave preview (enemy icons and counts), and clear sell and upgrade affordances. Must work one-handed on a 390 px phone.
+30. [ ] **Level select as a journey:** a map of Marrow with the ten acts as regions and the levels as stops on a path, stars and boss markers, and the current level glowing (like Cathnivore's campaign).
+31. [ ] **Balance pass:** a bot run over all 100 levels logged in `BALANCE.md` (stars per level, a difficulty curve); every level winnable with what's unlocked by then; 3 stars needs real skill; no sudden spikes except the bosses.
+32. [ ] **Story pass:** read all 100 levels' beats end to end and tighten them into one arc with setups and payoffs, Bea's thread, each boss's introduction, and Cath's voice (SPEC 3.2).
+
+## Phase 5: second passes (keep going)
+
+33. [ ] **Fresh-eyes audit of all three games and the landing page:** `npm run shots` plus Hedgerow and Runnel screenshots, critiqued by a subagent against `VISION.md`'s eight bars; turn its findings into new ranked items here.
+34. [ ] **Performance pass:** bundle sizes, first-load time, and frame time in Hedgerow with 50+ enemies on screen; fix anything over budget (VISION 7).
 
 ## Postponed by the owner (2026-09-28)
 
