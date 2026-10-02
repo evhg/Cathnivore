@@ -2,7 +2,7 @@
 // per level and size into an offscreen canvas by `paintBackground`. Everything is procedural and seeded by
 // the level id, so a level always looks the same and nothing needs downloading.
 
-import { laneCells, type Level } from "./engine";
+import { laneCells, plotKind, type Level } from "./engine";
 
 export type Decor =
   | "oak"
@@ -501,6 +501,47 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
       ctx.beginPath();
       ctx.roundRect(x + inset, y + inset, s - inset * 2, s - inset * 2, s * 0.14);
       ctx.fill();
+      const ground = plotKind(level, c, r);
+      if (ground === "water") {
+        const g = ctx.createRadialGradient(x + s / 2, y + s / 2, s * 0.05, x + s / 2, y + s / 2, s * 0.5);
+        g.addColorStop(0, "rgba(120,190,225,0.9)");
+        g.addColorStop(1, "rgba(50,110,160,0.85)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.ellipse(x + s / 2, y + s / 2, s * 0.42, s * 0.36, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.55)";
+        ctx.lineWidth = Math.max(1, s * 0.03);
+        ctx.beginPath();
+        ctx.arc(x + s * 0.4, y + s * 0.45, s * 0.12, Math.PI * 1.1, Math.PI * 1.8);
+        ctx.moveTo(x + s * 0.72, y + s * 0.6);
+        ctx.arc(x + s * 0.62, y + s * 0.6, s * 0.1, 0, Math.PI * 0.8);
+        ctx.stroke();
+        continue;
+      }
+      if (ground === "high") {
+        ctx.fillStyle = "rgba(0,0,0,0.18)";
+        ctx.beginPath();
+        ctx.ellipse(x + s / 2, y + s * 0.78, s * 0.42, s * 0.14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        const g = ctx.createLinearGradient(0, y + s * 0.2, 0, y + s * 0.8);
+        g.addColorStop(0, "rgba(190,220,120,0.95)");
+        g.addColorStop(1, "rgba(120,150,70,0.95)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.roundRect(x + s * 0.1, y + s * 0.18, s * 0.8, s * 0.6, s * 0.2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,230,0.75)";
+        ctx.lineWidth = Math.max(1.5, s * 0.04);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(x + s * 0.38, y + s * 0.5);
+        ctx.lineTo(x + s * 0.5, y + s * 0.36);
+        ctx.lineTo(x + s * 0.62, y + s * 0.5);
+        ctx.stroke();
+        continue;
+      }
       // Corner pegs: a quiet hint that this is a plot.
       ctx.strokeStyle = "rgba(255,255,240,0.32)";
       ctx.lineWidth = Math.max(1.2, s * 0.025);

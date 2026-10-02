@@ -40,6 +40,7 @@ import {
   towerAt,
   towerCost,
   towerStats,
+  plotKind,
   upgrade,
   upgradeCost,
   type EnemyKind,
@@ -534,6 +535,7 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
   const row = document.createElement("div");
   row.className = "build-row";
   const info = line("", "build-info");
+  const ground = plotKind(g.level, sel.col, sel.row);
   for (const kind of g.level.towers) {
     const spec = TOWERS[kind];
     const cost = towerCost(g, kind);
@@ -542,8 +544,9 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     b.className = "btn-build";
     b.dataset.kind = kind;
     b.dataset.cost = String(cost);
-    b.disabled = g.marks < cost;
-    b.setAttribute("aria-label", `${spec.name}, ${cost} Marks. ${spec.blurb}`);
+    const wet = ground === "water" && kind !== "pond";
+    b.disabled = g.marks < cost || wet;
+    b.setAttribute("aria-label", `${spec.name}, ${cost} Marks. ${spec.blurb}${wet ? " Too wet here." : ""}`);
     b.append(img(towerIcon(kind), "build-icon"));
     const name = document.createElement("span");
     name.className = "build-name";
@@ -571,7 +574,12 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     };
     row.append(b);
   }
-  info.textContent = "Pick something to plant here.";
+  info.textContent =
+    ground === "water"
+      ? "Wet ground: only a Duck Pond will sit here."
+      : ground === "high"
+        ? "High ground: towers here see 25% further."
+        : "Pick something to plant here.";
   p.append(row, info);
 }
 

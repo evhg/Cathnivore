@@ -622,6 +622,9 @@ export const SPECIALISATIONS: Record<
   ],
 };
 
+/** Towers on high ground see this much further. */
+export const HIGH_GROUND_RANGE = 1.25;
+
 export interface TowerStats {
   range: number;
   damage: number;
@@ -649,9 +652,9 @@ const statCache = new WeakMap<object, { key: string; stats: TowerStats }>();
 
 /** The numbers a tower fights with at its tier, and with its specialisation at tier 4. */
 export function towerStats(
-  t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null },
+  t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null; high?: boolean },
 ): TowerStats {
-  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}`;
+  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}:${t.high ? 1 : 0}`;
   const hit = statCache.get(t);
   if (hit && hit.key === key) return hit.stats;
   const s = TOWERS[t.kind];
@@ -685,6 +688,7 @@ export function towerStats(
     delete o.cost;
     Object.assign(stats, o);
   }
+  if (t.high && stats.range > 0) stats.range *= HIGH_GROUND_RANGE;
   statCache.set(t, { key, stats });
   return stats;
 }
@@ -864,6 +868,8 @@ export interface Level {
   rows: number;
   /** Cell waypoints; consecutive points share a row or a column. The last one is the farmhouse. */
   path: Array<[number, number]>;
+  /** Plots that aren't plain grass: high ground (+range) and water (ponds only). */
+  terrain?: { high: Array<[number, number]>; water: Array<[number, number]> };
   startMarks: number;
   goodwill: number;
   towers: TowerKind[];
@@ -883,6 +889,8 @@ export interface Tower {
   col: number;
   row: number;
   tier: 1 | 2 | 3 | 4;
+  /** Built on high ground: +25% range. */
+  high?: boolean;
   /** Which tier-4 specialisation it took (null below tier 4). */
   spec?: 0 | 1 | null;
   /** Which enemy in range it shoots at. */
@@ -1131,6 +1139,16 @@ export function isPlot(level: Level, col: number, row: number): boolean {
   return !laneCells(level.path).has(`${col},${row}`);
 }
 
+export type PlotKind = "plain" | "high" | "water";
+
+export function plotKind(level: Level, col: number, row: number): PlotKind {
+  const t = level.terrain;
+  if (!t) return "plain";
+  if (t.high.some(([c, r]) => c === col && r === row)) return "high";
+  if (t.water.some(([c, r]) => c === col && r === row)) return "water";
+  return "plain";
+}
+
 /** Where Cath stands at the start: on the lane, two thirds of the way down. */
 export function heroPost(level: Level): { x: number; y: number } {
   return pointAt(level.path, pathLength(level.path) * 0.66);
@@ -1224,6 +1242,9 @@ export function place(
     return { ok: false, reason: "You can only build beside the lane." };
   if (towerAt(game, col, row))
     return { ok: false, reason: "That plot is taken." };
+  const ground = plotKind(game.level, col, row);
+  if (ground === "water" && kind !== "pond")
+    return { ok: false, reason: "Too wet: only a Duck Pond goes on water." };
   const cost = towerCost(game, kind);
   if (game.marks < cost) return { ok: false, reason: `Needs ${cost} Marks.` };
   game.marks -= cost;
@@ -1233,6 +1254,7 @@ export function place(
     col,
     row,
     tier: 1,
+    high: ground === "high" || undefined,
     spec: null,
     target: "first",
     shots: 0,

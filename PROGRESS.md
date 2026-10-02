@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
-- **Next:** ROADMAP 36 (better maps), then 37, 39; 38 only needs scaffolding.
+- **Next:** ROADMAP 36 part 2 (forks, two lanes, second spawn), then 37, 39; 38 only needs scaffolding.
 - 2026-10-02 (owner's chat session, 02:48-04:15 UTC): owner said Hedgerow was boring. Shipped ROADMAP 26-30 and much more (see Recent releases); live at `aadfc2c`.
 
 ## Blocked
@@ -60,6 +60,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-02 ~07:52-08:10 UTC: ROADMAP 36 terrain slice (high ground, water plots, `terrain.ts`, test). check green; unreleased, batching. Left: forks/two lanes/second spawn. Full hedgerow test file takes ~3 min.
 - 2026-10-02 ~05:51-06:35 UTC: ROADMAP 38 part 1 (build pop-in/dust, upgrade sparkle, clean-sweep cheer, worried face, victory confetti, haptics.ts). check green; unreleased, batching. Left: enemies tipping over, scaffolding.
 - 2026-10-02 ~04:51-05:15 UTC: ROADMAP 35 (Neighbours at level 12, Rally at level 25, two perks, tests). e2e:site needs PLAYWRIGHT_CHROMIUM_PATH. Unreleased, batching.
 - 2026-10-02 ~02:48-04:20 UTC (owner's chat session): Hedgerow overhaul for the owner's "boring" feedback; ROADMAP 26-30 ticked, 35-39 added; released `aadfc2c`.

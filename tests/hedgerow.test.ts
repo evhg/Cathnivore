@@ -3,6 +3,8 @@ import {
   STEP,
   TOWERS,
   isPlot,
+  plotKind,
+  HIGH_GROUND_RANGE,
   newGame,
   place,
   pointAt,
@@ -101,7 +103,11 @@ function play(level: Level, build: boolean): Game {
                       : level.towers.includes("beehive") && hives < scarecrows
                         ? "beehive"
                         : "scarecrow";
-          const spot = plots.find(([c, r]) => !towerAt(game, c, r));
+          const spot = plots.find(
+            ([c, r]) =>
+              !towerAt(game, c, r) &&
+              (kind === "pond" || plotKind(level, c, r) !== "water"),
+          );
           if (spot && place(game, kind, spot[0], spot[1]).ok) bought = true;
           else {
             const weakest = [...game.towers].sort((a, b) => a.tier - b.tier)[0];
@@ -903,5 +909,31 @@ describe("Cath's calls", () => {
     for (let i = 0; i < 30 * 5; i++) eng.stepGame(g);
     for (const e of g.enemies) if (!eng.isBig(e.kind)) expect(e.dist).toBeLessThanOrEqual(bar + 1e-6);
     expect(eng.callNeighbours(g).ok).toBe(false); // cooling down
+  });
+
+  it("terrain: high ground adds range, water takes ponds only, and every level keeps plain plots", () => {
+    let withHigh = 0;
+    for (const lv of LEVELS) {
+      const t = lv.terrain;
+      if (lv.id < 4) {
+        expect(t).toBeUndefined();
+        continue;
+      }
+      expect(t!.high.length).toBeGreaterThan(0);
+      withHigh++;
+      for (const [c, r] of [...t!.high, ...t!.water]) expect(isPlot(lv, c, r)).toBe(true);
+      expect(t!.high.length + t!.water.length).toBeLessThan((lv.cols * lv.rows) / 6);
+    }
+    expect(withHigh).toBe(97);
+    const lv = LEVELS.find((l) => l.terrain?.water.length)!;
+    const [wc, wr] = lv.terrain!.water[0]!;
+    const [hc, hr] = lv.terrain!.high[0]!;
+    const game = newGame({ ...lv, startMarks: 5000, towers: ["scarecrow", "pond"] });
+    expect(place(game, "scarecrow", wc, wr).ok).toBe(false);
+    expect(place(game, "pond", wc, wr).ok).toBe(true);
+    expect(plotKind(lv, hc, hr)).toBe("high");
+    expect(place(game, "scarecrow", hc, hr).ok).toBe(true);
+    const tw = towerAt(game, hc, hr)!;
+    expect(towerStats(tw).range).toBeCloseTo(TOWERS.scarecrow.range[0] * HIGH_GROUND_RANGE);
   });
 });

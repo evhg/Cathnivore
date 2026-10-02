@@ -12,6 +12,7 @@ import {
   pointAt,
   towerAt,
   towerStats,
+  plotKind,
   type EnemyKind,
   type Game,
   type GameEvent,
@@ -778,7 +779,7 @@ export class Renderer {
         const st = towerStats(tw);
         if (st.range > 0) rangeRing(X(col + 0.5), Y(row + 0.5), st.range, st.slow < 1 ? "rgba(140,220,120,0.16)" : "rgba(255,255,255,0.14)");
       } else if (this.preview) {
-        const st = towerStats({ kind: this.preview, tier: 1, spec: null });
+        const st = towerStats({ kind: this.preview, tier: 1, spec: null, high: plotKind(game.level, col, row) === "high" });
         if (st.range > 0) rangeRing(X(col + 0.5), Y(row + 0.5), st.range, "rgba(255,240,180,0.18)");
       }
       ctx.strokeStyle = "#fff";

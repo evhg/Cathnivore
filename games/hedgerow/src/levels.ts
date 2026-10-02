@@ -2,6 +2,7 @@
 // follows SPEC 3.2's voice: short, specific, dry, warm. Later acts append to LEVELS.
 
 import type { Level, WaveGroup } from "./engine";
+import { addTerrain } from "./terrain";
 
 const van = (count: number, gap: number, delay = 0): WaveGroup => ({
   enemy: "van",
@@ -6222,6 +6223,8 @@ LEVELS.push({
   reward:
     'Hedgerow complete. Lore card: "Marrow, unsold", the whole valley\'s signature.',
 });
+
+for (const l of LEVELS) addTerrain(l);
 
 export function levelById(id: number): Level | undefined {
   return LEVELS.find((l) => l.id === id);
