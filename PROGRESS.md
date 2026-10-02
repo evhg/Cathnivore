@@ -29,6 +29,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-01 (22:51 session): health check: CI green on `73dc652`; no open FEEDBACK or broken items; no change.
 - 2026-10-01 (23:52 session): health check: CI green on `a4d8a09`; unreleased slices wait for tomorrow's release cap; no change.
 - 2026-10-02 (00:51 session): gates failed on the Runnel keyboard e2e (daily puzzle changes with date; ArrowRight landed on an unturnable sluice). Test fixed; released `a95986a` (24 accumulated commits), live matches.
+- 2026-10-02 (01:51 session): health check: CI green on `2a13176`; no open FEEDBACK or broken items; remaining ROADMAP (19, H2 polish, 24 hardware check) unchanged.
 - **Next:** (Hedgerow level-select act banners done 2026-09-30, `d48297e`, unreleased: today's release cap was used); then ROADMAP 9, 10, 13, 14, 16-19, 21 (12 is done).
 - 2026-09-30 (owner's chat session): ROADMAP 8 done (map-as-hero game screen, `src/styles/table.css`); `release.ts` HTTP check now retries with backoff and re-checks before any revert.
 
