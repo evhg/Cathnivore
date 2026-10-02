@@ -217,3 +217,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-02: the script was rewritten by two subagents from a story bible I wrote (docs/design/hedgerow-v2.md 4); I reviewed samples. Level names follow the script.
 
 - 2026-10-02: ROADMAP 45 slice: Scarecrow ban on 11 more early levels (content, not tuning) and re-tune 8-29; naive-bot re-measure still to do.
+- 2026-10-02: ROADMAP 45: more Scarecrow bans (13,18,24,28); left 8 early levels open to Scarecrow spam on purpose, so bans don't become the sameness the owner complained of.
