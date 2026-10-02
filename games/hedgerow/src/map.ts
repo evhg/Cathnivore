@@ -154,7 +154,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       b.setAttribute(
         "aria-label",
         unlocked
-          ? `Level ${lv.id}, ${lv.name}${boss ? ", boss" : ""}. ${lv.waves.length} waves. ${stars} of 3 stars.`
+          ? `Level ${lv.id}, ${lv.name}${boss ? ", boss" : ""}. ${lv.waves.length} waves. ${stars} of 3 stars${data.heroic?.[String(lv.id)] ? ", Heroic cleared" : ""}.`
           : `Level ${lv.id}, ${lv.name}. Locked: clear level ${lv.id - 1} first.`,
       );
       const numEl = document.createElement("span");
@@ -162,7 +162,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       numEl.textContent = String(lv.id);
       const st = document.createElement("span");
       st.className = "level-stars";
-      st.textContent = unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) : "";
+      st.textContent = unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) + (data.heroic?.[String(lv.id)] ? "◆" : "") : "";
       const name = document.createElement("span");
       name.className = "level-name";
       name.textContent = lv.name;

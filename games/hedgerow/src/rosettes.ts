@@ -16,6 +16,8 @@ export interface LevelSummary {
   towerKinds: number;
   /** Towers standing at the end. */
   towers: number;
+  /** The level was won in a Heroic run. */
+  heroic?: boolean;
   /** Seed Bank ranks owned when the level started. */
   perkRanks: number;
 }
@@ -43,6 +45,8 @@ export const ROSETTES: RosetteDef[] = [
   { id: "impatient", name: "No Time for Tea", how: "Call 5 waves early in one level and still win.", earned: (s) => s.earlyCalls >= 5 },
   { id: "mixed", name: "Mixed Borders", how: "Finish a level with 4 kinds of tower standing.", earned: (s) => s.towerKinds >= 4 },
   { id: "rolling", name: "Rolling Pin Rampage", how: "Win a level where Cath knocked out 25 enemies.", earned: (s) => s.heroKills >= 25 },
+  { id: "heroic", name: "Heroic", how: "Win a level with one Goodwill and no pies.", earned: (s) => s.heroic === true },
+  { id: "heroic10", name: "Heroine of the Parish", how: "Win 10 levels in Heroic runs.", earned: (_s, d) => Object.keys(d.heroic ?? {}).length >= 10 },
   { id: "tidy", name: "Tidy Garden", how: "Win a level from 8 up with 6 or fewer towers.", earned: (s) => s.levelId >= 8 && s.towers <= 6 },
 ];
 

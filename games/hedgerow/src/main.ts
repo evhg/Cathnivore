@@ -79,6 +79,7 @@ import {
   nextCost,
   perksOf,
   recordStars,
+  recordHeroic,
   refundAll,
   save,
 } from "./store";
@@ -164,6 +165,7 @@ const ui = {
   resultPrimary: $<HTMLButtonElement>("result-primary"),
   resultSecondary: $<HTMLButtonElement>("result-secondary"),
   btnBank: $<HTMLButtonElement>("btn-bank"),
+  btnHeroic: $<HTMLButtonElement>("btn-heroic"),
   bankStars: $<HTMLElement>("bank-stars"),
   dlgBank: $<HTMLDialogElement>("dlg-bank"),
   bankFree: $<HTMLElement>("bank-free"),
@@ -364,8 +366,16 @@ const SANDBOX = new URLSearchParams(location.search).has("sandbox");
 if (SANDBOX)
   (window as unknown as { hedgerow: object }).hedgerow = { game: () => game, place, upgrade, merge, sendWave };
 
+/** The Heroic toggle on the level map: the next level starts with one Goodwill and no pies. */
+let heroicMode = false;
+ui.btnHeroic.addEventListener("click", () => {
+  heroicMode = !heroicMode;
+  ui.btnHeroic.setAttribute("aria-pressed", String(heroicMode));
+  ui.btnHeroic.classList.toggle("on", heroicMode);
+});
+
 function startLevel(lv: Level): void {
-  game = newGame(lv, perksOf(data));
+  game = newGame(lv, perksOf(data), { hero: true, abilities: true }, heroicMode);
   // One-on-one boss duels are a player's moment; the tuner and sims never see them.
   game.duels = true;
   if (SANDBOX) {
@@ -381,7 +391,7 @@ function startLevel(lv: Level): void {
   startPerkRanks = Object.values(data.bank).reduce((a, b) => a + b, 0);
   ui.select.hidden = true;
   ui.play.hidden = false;
-  ui.hudTitle.textContent = `${lv.id}. ${lv.name}`;
+  ui.hudTitle.textContent = `${heroicMode ? "◆ " : ""}${lv.id}. ${lv.name}`;
   ui.hudPlace.textContent = lv.place;
   renderer ??= USE_3D ? new Renderer3D(ui.canvas, $<HTMLElement>("fx-layer")) : new Renderer(ui.canvas);
   document.documentElement.classList.toggle("hedgerow-3d", renderer instanceof Renderer3D);
@@ -1216,6 +1226,7 @@ function finish(g: Game): void {
     `Goodwill kept ${g.goodwill}/${g.maxGoodwill}`,
     `Cath's knockouts ${g.hero.kills}`,
   ];
+  if (g.heroic) stats.push("Heroic run ◆");
   if (earlyCalls) stats.push(`Waves called early ${earlyCalls}`);
   ui.resultStats.textContent = won ? stats.join(" · ") : `Reached wave ${g.wave} of ${lv.waves.length}`;
   const gained = won ? Math.max(0, n - before) : 0;
@@ -1225,6 +1236,10 @@ function finish(g: Game): void {
   if (won) {
     const cathBefore = levelOf(xpOf(data.stars)).level;
     recordStars(data, lv.id, n);
+    if (g.heroic) {
+      recordHeroic(data, lv.id);
+      ui.resultNote.textContent += " · Heroic ◆ earned: one Goodwill, no pies.";
+    }
     const cathAfter = levelOf(xpOf(data.stars)).level;
     if (cathAfter > cathBefore)
       ui.resultNote.textContent += ` · Cath reached level ${cathAfter}: ${cathAfter - cathBefore} skill point${cathAfter - cathBefore > 1 ? "s" : ""} to spend${TALENTS.some(([l]) => l > cathBefore && l <= cathAfter) ? ", and a talent to choose" : ""}.`;
@@ -1236,6 +1251,7 @@ function finish(g: Game): void {
         kept: g.goodwill / g.maxGoodwill,
         heroKills: g.hero.kills,
         earlyCalls,
+        heroic: g.heroic,
         towerKinds: new Set(g.towers.map((t) => t.kind)).size,
         towers: g.towers.length,
         perkRanks: startPerkRanks,
@@ -1604,6 +1620,7 @@ const TIPS: Record<string, () => string> = {
   "btn-send": () => "Send the next wave. While a wave is on the lane you can call the next early for bonus Marks.",
   "btn-levels": () => "Back to the map.",
   "btn-cath": () => "Cath's character sheet: spend skill points on her attributes and pick talents as she levels up.",
+  "btn-heroic": () => "Heroic: the next level starts with one Goodwill and no pies. Win it for a gold diamond.",
   "btn-bank": () => "The Seed Bank: spend stars on perks for every level.",
 };
 

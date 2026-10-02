@@ -1982,3 +1982,5 @@ button {
     height: 84px;
   }
 }
+
+.heroic-btn.on { background: #c9962b; color: #1d1405; border-color: #f2d27a; }

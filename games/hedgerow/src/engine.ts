@@ -1387,6 +1387,8 @@ export type GameEvent =
 export type Phase = "build" | "wave" | "won" | "lost";
 
 export interface Game {
+  /** A Heroic run: one Goodwill and no pies. Winning one earns the level's fourth star. */
+  heroic: boolean;
   level: Level;
   tick: number;
   phase: Phase;
@@ -1559,11 +1561,13 @@ export function newGame(
   level: Level,
   perks: Perks = NO_PERKS,
   auto: Game["auto"] = { hero: true, abilities: true },
+  heroic = false,
 ): Game {
   const post = heroPost(level);
   const maxHp = Math.round(HERO.hp * perks.heroHp);
-  const goodwill = level.goodwill + perks.goodwill;
+  const goodwill = heroic ? 1 : level.goodwill + perks.goodwill;
   return {
+    heroic,
     level,
     tick: 0,
     phase: "build",
@@ -2093,7 +2097,7 @@ function heroBrain(game: Game): void {
 /** Auto-cast: the pie on the thickest crowd or a boss, the neighbours when something nears the farmhouse, a rally on a big wave. */
 function abilityBrain(game: Game): void {
   if (game.phase !== "wave" || game.enemies.length === 0) return;
-  if (pieUnlocked(game.level) && game.pieCd <= 0) {
+  if (!game.heroic && pieUnlocked(game.level) && game.pieCd <= 0) {
     const r = pieRadius(game);
     let best: Enemy | undefined;
     let bestScore = 0;
@@ -2513,6 +2517,7 @@ export function pieRadius(game: Game): number {
  * long) and takes a dollop of damage. Without a target she aims at whatever is furthest down the lane.
  */
 export function throwPie(game: Game, x?: number, y?: number): ActionResult {
+  if (game.heroic) return { ok: false, reason: "No pies in a Heroic run." };
   if (!pieUnlocked(game.level))
     return { ok: false, reason: "Cath has not baked one yet." };
   if (game.phase !== "wave")

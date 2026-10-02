@@ -19,6 +19,8 @@ export interface SaveData {
   bank: Record<string, number>;
   /** Rosettes (achievements) earned, by id. Optional in old saves. */
   rosettes?: Record<string, boolean>;
+  /** Levels won in a Heroic run (one Goodwill, no pies): the fourth star. Optional in old saves. */
+  heroic?: Record<string, boolean>;
   /** Cath's character sheet: attributes and talents (cath.ts). Optional in old saves. */
   cath?: CathSave;
 }
@@ -44,6 +46,7 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.seen ?? {})) if (v === true) data.seen[k] = true;
       for (const [k, v] of Object.entries(obj.tips ?? {})) if (v === true) data.tips[k] = true;
       for (const [k, v] of Object.entries(obj.rosettes ?? {})) if (v === true) (data.rosettes ??= {})[k] = true;
+      for (const [k, v] of Object.entries(obj.heroic ?? {})) if (v === true) (data.heroic ??= {})[k] = true;
       if (obj.cath) data.cath = parseCath(obj.cath);
       for (const [k, v] of Object.entries(obj.bank ?? {})) {
         const perk = PERKS.find((p) => p.id === k);
@@ -81,6 +84,11 @@ export function save(data: SaveData): void {
 
 export function recordStars(data: SaveData, levelId: number, stars: number): void {
   if (stars > (data.stars[String(levelId)] ?? 0)) data.stars[String(levelId)] = stars;
+  save(data);
+}
+
+export function recordHeroic(data: SaveData, levelId: number): void {
+  (data.heroic ??= {})[String(levelId)] = true;
   save(data);
 }
 
