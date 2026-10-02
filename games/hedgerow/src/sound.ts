@@ -192,6 +192,22 @@ export function playBoss(): void {
   [110, 104, 98].forEach((f, i) => tone(f, i * 0.35, 0.5, "sawtooth", 0.06));
   noise(0, 1.2, 0.05, { type: "lowpass", freq: 200 });
 }
+export function playBossMove(move: string): void {
+  if (!ready()) return;
+  if (move === "stomp" || move === "takeover") {
+    tone(70, 0, 0.4, "sawtooth", 0.08, 35);
+    noise(0, 0.35, 0.18, { type: "lowpass", freq: 500 });
+  } else if (move === "pulse") {
+    [880, 660, 880, 660].forEach((f, i) => tone(f, i * 0.08, 0.1, "square", 0.02));
+  } else if (move === "charge") {
+    tone(120, 0, 0.6, "sawtooth", 0.05, 240);
+  } else if (move === "mend") {
+    [523, 784, 1047].forEach((f, i) => tone(f, i * 0.06, 0.25, "sine", 0.03));
+  } else {
+    tone(196, 0, 0.2, "triangle", 0.05);
+    tone(147, 0.18, 0.3, "triangle", 0.05);
+  }
+}
 export function playCleared(): void {
   if (!ready()) return;
   [784, 988, 1175].forEach((f, i) => tone(f, i * 0.07, 0.16, "sine", 0.035));

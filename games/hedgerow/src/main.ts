@@ -88,6 +88,7 @@ const ui = {
   btnPause: $<HTMLButtonElement>("btn-pause"),
   btnSound: $<HTMLButtonElement>("btn-sound"),
   banner: $<HTMLElement>("banner"),
+  toast: $<HTMLElement>("toast"),
   bubble: $<HTMLElement>("bubble"),
   bubbleFace: $<HTMLElement>("bubble-face"),
   bubbleText: $<HTMLElement>("bubble-text"),
@@ -196,8 +197,15 @@ function openLevel(lv: Level): void {
   } else start();
 }
 
+/** `?sandbox=1`: unlimited Marks, for screenshots and testing late waves (sessions use it with `npm run shots`). */
+const SANDBOX = new URLSearchParams(location.search).has("sandbox");
+
 function startLevel(lv: Level): void {
   game = newGame(lv, perksOf(data));
+  if (SANDBOX) {
+    game.marks = 99999;
+    game.goodwill = game.maxGoodwill = 999;
+  }
   selected = null;
   finished = false;
   paused = false;
@@ -312,7 +320,9 @@ function syncControls(): void {
         ? `Call wave ${g.wave + 1} early +${earlyBonus(g)}`
         : g.phase === "wave"
           ? `Wave ${g.wave} on the lane`
-          : "All waves sent";
+          : g.phase === "won" || g.phase === "lost"
+            ? "Level over"
+            : "All waves sent";
 }
 
 const shown = { goodwill: -1, marks: -1, wave: "" };
@@ -615,10 +625,10 @@ function act(fn: () => { ok: boolean; reason?: string }): boolean {
 
 let toastTimer = 0;
 function toast(text: string): void {
-  ui.banner.textContent = text;
-  ui.banner.className = "banner small show";
+  ui.toast.textContent = text;
+  ui.toast.className = "banner small show";
   clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => (ui.banner.className = "banner"), 1600);
+  toastTimer = window.setTimeout(() => (ui.toast.className = "banner small"), 2200);
 }
 
 function deselect(): void {
@@ -786,6 +796,11 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         sfx.playInjunction();
         break;
       case "split":
+        break;
+      case "bossMove":
+        sfx.playBossMove(ev.move);
+        toast(ev.text);
+        if (ev.towers.length) tip("boss-move", "Bosses have tricks. Knocked-out towers come back in a few seconds; a pie or an Injunction buys time.", "determined");
         break;
     }
   }

@@ -689,6 +689,158 @@ export function towerStats(
   return stats;
 }
 
+// ---- bosses: every boss has signature moves on a timer ----
+
+export interface BossMove {
+  kind: "spawn" | "charge" | "stomp" | "pulse" | "mend" | "takeover";
+  /** What a spawn calls in. */
+  spawn?: { kind: EnemyKind; count: number };
+  /** Seconds: of the charge, or that towers stay knocked out. */
+  secs?: number;
+  /** Reach of a pulse or a stomp, in cells. */
+  radius?: number;
+  /** What the banner says. */
+  text: string;
+}
+
+export const BOSS_MOVES: Partial<Record<EnemyKind, { every: number; moves: BossMove[] }>> = {
+  boss: {
+    every: 7,
+    moves: [{ kind: "spawn", spawn: { kind: "van", count: 2 }, text: "makes an offer: two more vans" }],
+  },
+  convoy: {
+    every: 7,
+    moves: [{ kind: "charge", secs: 2, text: "slashes prices and charges" }],
+  },
+  blimp: {
+    every: 8,
+    moves: [{ kind: "pulse", radius: 2.4, secs: 3, text: "runs a brand activation: nearby towers stop to watch" }],
+  },
+  megadozer: {
+    every: 7,
+    moves: [{ kind: "stomp", radius: 2.2, secs: 6, text: "flattens the nearest tower" }],
+  },
+  clinic: {
+    every: 6,
+    moves: [{ kind: "mend", text: "hands out a wellness drop: everything heals" }],
+  },
+  ship: {
+    every: 7,
+    moves: [{ kind: "spawn", spawn: { kind: "tender", count: 2 }, text: "lowers two fast tenders" }],
+  },
+  swarm: {
+    every: 8,
+    moves: [{ kind: "spawn", spawn: { kind: "lawyer", count: 2 }, text: "files more paperwork: two more lawyers" }],
+  },
+
+  bus: {
+    every: 6,
+    moves: [{ kind: "spawn", spawn: { kind: "influencer", count: 2 }, text: "drops off two influencers" }],
+  },
+  board: {
+    every: 8,
+    moves: [{ kind: "takeover", radius: 3, secs: 8, text: "stages a hostile takeover of the best tower in reach" }],
+  },
+  candor: {
+    every: 7,
+    moves: [{ kind: "mend", text: "merges with what's left: everything heals" }],
+  },
+  hollowcandor: {
+    every: 5,
+    moves: [
+      { kind: "spawn", spawn: { kind: "remnant", count: 2 }, text: "sheds two hollow remnants" },
+      { kind: "stomp", radius: 2.4, secs: 6, text: "crushes the nearest tower" },
+      { kind: "pulse", radius: 2.6, secs: 3, text: "broadcasts: every tower nearby stops to listen" },
+      { kind: "charge", secs: 2.5, text: "surges forward" },
+      { kind: "takeover", radius: 3.2, secs: 8, text: "acquires the best tower in reach" },
+    ],
+  },
+};
+
+function bossMoves(game: Game): void {
+  const path = game.level.path;
+  const born: Enemy[] = [];
+  for (const e of game.enemies) {
+    const plan = BOSS_MOVES[e.kind];
+    if (!plan || e.hp <= 0) continue;
+    if (e.charge && e.charge > 0) e.charge -= STEP;
+    if (e.moveCd === undefined) e.moveCd = plan.every * 0.6;
+    if (e.stun > 0) continue;
+    e.moveCd -= STEP;
+    if (e.moveCd > 0) continue;
+    e.moveCd = plan.every;
+    const move = plan.moves[(e.moveIdx ?? 0) % plan.moves.length]!;
+    e.moveIdx = (e.moveIdx ?? 0) + 1;
+    const p = pointAt(path, e.dist);
+    const hit: number[] = [];
+    const near = (r: number) =>
+      game.towers
+        .filter((t) => (t.out ?? 0) <= 0 && Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= r)
+        .sort(
+          (a, b) =>
+            Math.hypot(a.col + 0.5 - p.x, a.row + 0.5 - p.y) - Math.hypot(b.col + 0.5 - p.x, b.row + 0.5 - p.y) ||
+            a.id - b.id,
+        );
+    switch (move.kind) {
+      case "spawn":
+        for (let i = 0; i < move.spawn!.count; i++)
+          born.push({
+            id: game.nextId++,
+            kind: move.spawn!.kind,
+            dist: Math.max(0, e.dist - 0.4 - i * 0.4),
+            hp: ENEMIES[move.spawn!.kind].hp,
+            slowed: false,
+            stun: 0,
+            wave: e.wave,
+          });
+        break;
+      case "charge":
+        e.charge = move.secs!;
+        break;
+      case "mend":
+        for (const o of game.enemies) if (o.hp > 0) o.hp = Math.min(ENEMIES[o.kind].hp, o.hp + ENEMIES[o.kind].hp * 0.15);
+        break;
+      case "stomp": {
+        const t = near(move.radius!)[0];
+        if (t) {
+          t.out = move.secs!;
+          hit.push(t.id);
+        }
+        break;
+      }
+      case "takeover": {
+        const t = near(move.radius!).sort((a, b) => b.tier - a.tier || b.spent - a.spent)[0];
+        if (t) {
+          t.out = move.secs!;
+          hit.push(t.id);
+        }
+        break;
+      }
+      case "pulse":
+        for (const t of near(move.radius!)) {
+          t.out = move.secs!;
+          hit.push(t.id);
+        }
+        break;
+    }
+    game.events.push({
+      type: "bossMove",
+      kind: e.kind,
+      move: move.kind,
+      x: p.x,
+      y: p.y,
+      text: `${ENEMIES[e.kind].name} ${move.text}.`,
+      towers: hit,
+    });
+  }
+  game.enemies.push(...born);
+}
+
+/** Whether a tower is working: not knocked out by a boss. */
+export function towerActive(t: Tower): boolean {
+  return (t.out ?? 0) <= 0;
+}
+
 export interface WaveGroup {
   enemy: EnemyKind;
   count: number;
@@ -737,6 +889,8 @@ export interface Tower {
   target?: TargetMode;
   /** Shots fired, for every-nth-shot crits. */
   shots?: number;
+  /** Seconds left knocked out by a boss (it neither fires nor slows). */
+  out?: number;
   cd: number;
   spent: number;
 }
@@ -759,6 +913,11 @@ export interface Enemy {
   stickyLeft?: number;
   /** Held up by Cath. */
   held?: boolean;
+  /** Bosses: seconds until the next signature move, and which move is next. */
+  moveCd?: number;
+  moveIdx?: number;
+  /** Seconds left charging at double speed. */
+  charge?: number;
 }
 
 /** Cath on the battlefield: she walks where she's told, holds up to two vehicles and whacks them. */
@@ -842,7 +1001,17 @@ export type GameEvent =
   | { type: "heroDown" }
   | { type: "heroUp" }
   | { type: "injunction"; x: number; y: number }
-  | { type: "split"; x: number; y: number; kind: EnemyKind };
+  | { type: "split"; x: number; y: number; kind: EnemyKind }
+  | {
+      type: "bossMove";
+      kind: EnemyKind;
+      move: BossMove["kind"];
+      x: number;
+      y: number;
+      text: string;
+      /** Towers it knocked out. */
+      towers: number[];
+    };
 
 export type Phase = "build" | "wave" | "won" | "lost";
 
@@ -1365,6 +1534,8 @@ export function stepGame(game: Game): void {
   }
 
   stepHero(game);
+  bossMoves(game);
+  for (const t of game.towers) if (t.out && t.out > 0) t.out = Math.max(0, t.out - STEP);
 
   // Hedgerows slow whatever is in range; the strongest one wins, they don't stack. Honey sticks.
   for (const enemy of game.enemies) {
@@ -1372,7 +1543,7 @@ export function stepGame(game: Game): void {
     let factor = 1;
     for (const t of game.towers) {
       const s = towerStats(t);
-      if (s.slow >= 1) continue;
+      if (s.slow >= 1 || !towerActive(t)) continue;
       if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= s.range)
         factor = Math.min(factor, 1 - (1 - s.slow) / game.perks.slow);
     }
@@ -1383,7 +1554,8 @@ export function stepGame(game: Game): void {
     enemy.slowed = factor < 1;
     if (enemy.stun > 0) enemy.stun -= STEP;
     else if (!enemy.held)
-      enemy.dist += ENEMIES[enemy.kind].speed * Math.max(0.05, factor) * STEP;
+      enemy.dist +=
+        ENEMIES[enemy.kind].speed * Math.max(0.05, factor) * (enemy.charge && enemy.charge > 0 ? 2.2 : 1) * STEP;
     if (enemy.poisonLeft && enemy.poisonLeft > 0) {
       enemy.hp -= (enemy.poison ?? 0) * STEP;
       enemy.poisonLeft -= STEP;
@@ -1403,6 +1575,7 @@ export function stepGame(game: Game): void {
 
   for (const t of game.towers) {
     const spec = towerStats(t);
+    if (!towerActive(t)) continue;
     // Blackthorn scratches everything in reach, all the time.
     if (spec.thorns > 0) {
       for (const e of game.enemies) {

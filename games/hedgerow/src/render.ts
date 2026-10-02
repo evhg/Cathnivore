@@ -95,6 +95,7 @@ export class Renderer {
   private parts: Particle[] = [];
   private decals: Decal[] = [];
   private pies: PieFlight[] = [];
+  private zaps: Array<{ x: number; y: number; toX: number; toY: number; age: number; life: number }> = [];
   private fired = new Map<number, number>();
   private hitAt = new Map<number, number>();
   private facing = new Map<number, 1 | -1>();
@@ -158,6 +159,7 @@ export class Renderer {
     this.parts = [];
     this.decals = [];
     this.pies = [];
+    this.zaps = [];
     this.fired.clear();
     this.hitAt.clear();
     this.facing.clear();
@@ -265,6 +267,27 @@ export class Renderer {
           const end = game.level.path[game.level.path.length - 1]!;
           this.float(end[0] + 0.5, end[1] - 0.2, `Wave cleared +${e.reward}`, "#ffe27a", 1.05);
           for (let i = 0; i < 14; i++) this.parts.push(this.particle(end[0] + 0.5, end[1] + 0.2, "#f2c94c", "star", 0.08, 1));
+          break;
+        }
+        case "bossMove": {
+          this.kick(0.35);
+          this.ring(e.x, e.y - 0.3, "#d93a2f", 2.2);
+          const short: Record<string, string> = {
+            spawn: "Reinforcements!",
+            charge: "CHARGE!",
+            stomp: "CRUNCH!",
+            pulse: "Activation!",
+            mend: "Wellness drop!",
+            takeover: "Hostile takeover!",
+          };
+          this.float(e.x, e.y - 1.1, short[e.move] ?? "!", "#ffb3a8", 1.35);
+          for (const id of e.towers) {
+            const t = game.towers.find((x) => x.id === id);
+            if (!t) continue;
+            this.zaps.push({ x: e.x, y: e.y - 0.3, toX: t.col + 0.5, toY: t.row + 0.2, age: 0, life: 0.45 });
+            for (let i = 0; i < 8; i++) this.parts.push(this.particle(t.col + 0.5, t.row + 0.4, "#9aa0a6", "square", 0.07, 0.7));
+          }
+          if (e.move === "mend") for (let i = 0; i < 16; i++) this.parts.push(this.particle(e.x, e.y - 0.3, "#7fd1b9", "star", 0.07, 0.9));
           break;
         }
         case "wave":
@@ -402,7 +425,7 @@ export class Renderer {
       this.fired.set(tw.id, since + dt);
       items.push({
         y: tw.row + 0.8,
-        draw: () =>
+        draw: () => {
           drawTower(
             ctx,
             {
@@ -416,7 +439,9 @@ export class Renderer {
             Y(tw.row + 0.5),
             s,
             t + tw.id * 0.37,
-          ),
+          );
+          this.knockedOut(tw.out ?? 0, X(tw.col + 0.5), Y(tw.row + 0.5), s, t);
+        },
       });
     }
     const alive = new Set<number>();
@@ -495,6 +520,39 @@ export class Renderer {
       const k = enemyScale(e.kind);
       const top = Y(p.y + 0.2) - s * (0.5 * k + enemyLift(e.kind) + 0.12);
       bar(ctx, X(p.x), top, s * 0.5 * Math.min(1.6, k), Math.max(3, s * 0.06), e.hp / max);
+    }
+
+    // Boss moves: a red crackle from the boss to each tower it knocked out.
+    for (const z of this.zaps) {
+      z.age += dt;
+      const k = z.age / z.life;
+      ctx.strokeStyle = `rgba(217,58,47,${1 - k})`;
+      ctx.lineWidth = Math.max(2, s * 0.05);
+      ctx.beginPath();
+      ctx.moveTo(X(z.x), Y(z.y));
+      for (let i = 1; i <= 6; i++) {
+        const f = i / 6;
+        const j = i === 6 ? 0 : (this.rand() - 0.5) * 0.3;
+        ctx.lineTo(X(z.x + (z.toX - z.x) * f + j), Y(z.y + (z.toY - z.y) * f + j));
+      }
+      ctx.stroke();
+    }
+    this.zaps = this.zaps.filter((z) => z.age < z.life);
+    // Charging bosses leave speed lines.
+    for (const e of game.enemies) {
+      if (!e.charge || e.charge <= 0) continue;
+      const p = pointAt(level.path, e.dist);
+      const f = this.facing.get(e.id) ?? 1;
+      ctx.strokeStyle = "rgba(255,255,255,0.7)";
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 4; i++) {
+        const yy = Y(p.y) - s * (0.1 + i * 0.15);
+        const xx = X(p.x) - f * s * (0.7 + ((t * 6 + i * 0.3) % 1) * 0.3);
+        ctx.beginPath();
+        ctx.moveTo(xx, yy);
+        ctx.lineTo(xx - f * s * 0.35, yy);
+        ctx.stroke();
+      }
     }
 
     this.drawShots(dt, X, Y, s);
@@ -588,6 +646,33 @@ export class Renderer {
       ctx.roundRect(X(this.cursor.col) + pad, Y(this.cursor.row) + pad, s - pad * 2, s - pad * 2, s * 0.14);
       ctx.stroke();
       ctx.setLineDash([]);
+    }
+  }
+
+  /** A tower a boss has knocked out: greyed, with a countdown ring and a little cloud of dizziness. */
+  private knockedOut(out: number, x: number, y: number, s: number, t: number): void {
+    if (out <= 0) return;
+    const { ctx } = this;
+    ctx.fillStyle = "rgba(40,40,48,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(x, y + s * 0.05, s * 0.4, s * 0.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#d93a2f";
+    ctx.lineWidth = Math.max(2.5, s * 0.05);
+    ctx.beginPath();
+    ctx.arc(x, y - s * 0.55, s * 0.13, -Math.PI / 2, -Math.PI / 2 + Math.min(1, out / 8) * Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.font = `800 ${Math.max(10, Math.round(s * 0.16))}px ${FONT}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(Math.ceil(out)), x, y - s * 0.55);
+    for (let i = 0; i < 3; i++) {
+      const a = t * 3 + (i * Math.PI * 2) / 3;
+      ctx.fillStyle = "#c9ccd1";
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(a) * s * 0.25, y - s * 0.3 + Math.sin(a) * s * 0.06, s * 0.05, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 

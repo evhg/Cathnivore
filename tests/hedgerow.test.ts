@@ -27,6 +27,7 @@ import {
   towerStats,
   upgrade,
   type Game,
+  type GameEvent,
   type Level,
 } from "../games/hedgerow/src/engine";
 import { LEVELS } from "../games/hedgerow/src/levels";
@@ -104,11 +105,21 @@ function play(level: Level, build: boolean): Game {
           if (spot && place(game, kind, spot[0], spot[1]).ok) bought = true;
           else {
             const weakest = [...game.towers].sort((a, b) => a.tier - b.tier)[0];
-            if (weakest && upgrade(game, weakest.id).ok) bought = true;
+            if (
+              weakest &&
+              (upgrade(game, weakest.id).ok ||
+                upgrade(game, weakest.id, (weakest.id % 2) as 0 | 1).ok)
+            )
+              bought = true;
           }
         }
       }
       sendWave(game);
+    }
+    // Like a player, it saves the pie for bosses.
+    if (build && game.phase === "wave" && game.pieCd === 0) {
+      const boss = game.enemies.find((e) => e.hp >= 1500);
+      if (boss) throwPie(game, pointAt(level.path, boss.dist).x, pointAt(level.path, boss.dist).y);
     }
     stepGame(game);
   }
@@ -703,6 +714,74 @@ describe("hedgerow: towers go deeper", () => {
       last = big.hp;
     }
     expect(hits[2]).toBe(hits[0]! * 3);
+  });
+});
+
+describe("hedgerow: boss moves", () => {
+  const run = (kind: Parameters<typeof spawn>[1], secs: number, setup?: (g: Game) => void) => {
+    const game = newGame(strip());
+    game.hero.x = game.hero.tx = 0.5;
+    game.hero.y = game.hero.ty = 0.5;
+    setup?.(game);
+    sendWave(game);
+    game.spawnQueue = [];
+    const boss = spawn(game, kind, 4, 1e6);
+    const events: GameEvent[] = [];
+    for (let i = 0; i < secs * 30; i++) {
+      boss.dist = 4;
+      stepGame(game);
+      events.push(...game.events.splice(0));
+    }
+    return { game, boss, moves: events.filter((e) => e.type === "bossMove") };
+  };
+
+  it("the Acquisition Van calls in vans", () => {
+    const { game, moves } = run("boss", 6);
+    expect(moves.length).toBe(1);
+    expect(game.enemies.filter((e) => e.kind === "van").length).toBe(2);
+  });
+
+  it("the Mega-Dozer flattens the nearest tower, which then neither fires nor slows until it recovers", () => {
+    const { game, moves } = run("megadozer", 6, (g) => {
+      place(g, "scarecrow", 4, 0);
+      place(g, "hedgerow", 9, 0);
+    });
+    expect(moves.length).toBe(1);
+    const flat = game.towers.find((t) => t.kind === "scarecrow")!;
+    expect(flat.out).toBeGreaterThan(0);
+    expect(game.towers.find((t) => t.kind === "hedgerow")!.out ?? 0).toBe(0);
+    const shots = () => game.events.filter((e) => e.type === "shot" && e.tower === flat.id).length;
+    stepGame(game);
+    expect(shots()).toBe(0);
+  });
+
+  it("the Board takes over the best tower in reach", () => {
+    const { game } = run("board", 7, (g) => {
+      place(g, "scarecrow", 3, 0);
+      place(g, "scarecrow", 5, 2);
+      upgrade(g, g.towers[1]!.id);
+    });
+    expect(game.towers[1]!.out).toBeGreaterThan(0);
+    expect(game.towers[0]!.out ?? 0).toBe(0);
+  });
+
+  it("HollowCandor cycles through every trick", () => {
+    const { moves } = run("hollowcandor", 30);
+    expect(new Set(moves.map((m) => m.type === "bossMove" && m.move))).toEqual(
+      new Set(["spawn", "stomp", "pulse", "charge", "takeover"]),
+    );
+  });
+
+  it("a stunned boss saves its move for later", () => {
+    const { moves } = run("boss", 6, () => undefined);
+    expect(moves.length).toBe(1);
+    const game = newGame(strip());
+    sendWave(game);
+    game.spawnQueue = [];
+    const boss = spawn(game, "boss", 4, 1e6);
+    boss.stun = 999;
+    for (let i = 0; i < 300; i++) stepGame(game);
+    expect(game.events.some((e) => e.type === "bossMove")).toBe(false);
   });
 });
 
