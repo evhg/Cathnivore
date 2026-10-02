@@ -87,6 +87,13 @@ export interface View {
 
 const FONT = "'Atkinson Hyperlegible', system-ui, sans-serif";
 
+/** Overshoot ease for a tower popping in: 0 -> 1 with a small bounce. */
+function popScale(k: number): number {
+  const c = 1.9;
+  const x = k - 1;
+  return 1 + (c + 1) * x * x * x + c * x * x;
+}
+
 export class Renderer {
   private ctx: CanvasRenderingContext2D;
   private bg: HTMLCanvasElement | null = null;
@@ -109,6 +116,14 @@ export class Renderer {
   private rand = rng(99);
   private face: HTMLImageElement | null = null;
   private faceWorried: HTMLImageElement | null = null;
+  private faceCheer: HTMLImageElement | null = null;
+  /** Seconds left of Cath's cheer after a clean wave. */
+  private cheer = 0;
+  private leaksThisWave = 0;
+  /** Tower id -> seconds since it was built or upgraded (drives the pop-in). */
+  private built = new Map<number, number>();
+  /** Seconds of victory confetti still to fall. */
+  private parade = 0;
   view: View = { cellSize: 40, offX: 0, offY: 0 };
   selected: { col: number; row: number } | null = null;
   cursor: { col: number; row: number } | null = null;
@@ -127,6 +142,7 @@ export class Renderer {
     this.ctx = canvas.getContext("2d")!;
     this.face = svgImage(cathSvg({ framing: "face", expression: "determined" }));
     this.faceWorried = svgImage(cathSvg({ framing: "face", expression: "worried" }));
+    this.faceCheer = svgImage(cathSvg({ framing: "face", expression: "delighted" }));
     try {
       this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     } catch {
@@ -166,6 +182,28 @@ export class Renderer {
     this.lastX.clear();
     this.shake = 0;
     this.flash = 0;
+    this.built.clear();
+    this.cheer = 0;
+    this.parade = 0;
+    this.leaksThisWave = 0;
+  }
+
+  /** A tower was built or upgraded at (col, row): dust, sparkle and a pop-in. */
+  built_(id: number, col: number, row: number, upgrade: boolean): void {
+    this.built.set(id, 0);
+    const x = col + 0.5;
+    const y = row + 0.75;
+    for (let i = 0; i < 9; i++) this.parts.push(this.particle(x, y, i % 2 ? "#c79a62" : "#e8ddc8", "dot", 0.07, 0.6));
+    if (upgrade) {
+      this.ring(x, row + 0.5, "#f2c94c", 0.9);
+      for (let i = 0; i < 5; i++) this.parts.push(this.particle(x, row + 0.4, "#ffe27a", "star", 0.07, 0.8));
+    }
+  }
+
+  /** Victory: confetti rains over the field for a couple of seconds and Cath cheers. */
+  celebrate(): void {
+    this.parade = 2.2;
+    this.cheer = 4;
   }
 
   /** The point under the pointer, in cell units. */
@@ -226,6 +264,7 @@ export class Renderer {
           this.ring(e.x, e.y, "#ffffff", 0.9);
           break;
         case "leak":
+          this.leaksThisWave++;
           this.kick(0.3);
           this.flashOnce("220,40,30", 0.35);
           this.float(e.x, e.y - 0.4, `-${e.lost ?? 1} Goodwill`, "#ff8f80", 1.1);
@@ -266,6 +305,10 @@ export class Renderer {
         case "cleared": {
           const end = game.level.path[game.level.path.length - 1]!;
           this.float(end[0] + 0.5, end[1] - 0.2, `Wave cleared +${e.reward}`, "#ffe27a", 1.05);
+          if (this.leaksThisWave === 0) {
+            this.cheer = 2.5;
+            this.float(game.hero.x, game.hero.y - 1.2, "Clean sweep!", "#fff6d6", 1.2);
+          }
           for (let i = 0; i < 14; i++) this.parts.push(this.particle(end[0] + 0.5, end[1] + 0.2, "#f2c94c", "star", 0.08, 1));
           break;
         }
@@ -291,6 +334,7 @@ export class Renderer {
           break;
         }
         case "wave":
+          this.leaksThisWave = 0;
           if (e.early) {
             const h = game.hero;
             this.float(h.x, h.y - 1.1, `Early! +${e.early}`, "#ffe27a", 1.1);
@@ -369,6 +413,18 @@ export class Renderer {
     const { ctx } = this;
     const { cellSize: s, offX, offY } = this.view;
     this.clock += dt;
+    this.cheer = Math.max(0, this.cheer - dt);
+    if (this.parade > 0) {
+      this.parade -= dt;
+      const cols = ["#f2c94c", "#d93a2f", "#7fd1b9", "#fff6d6", "#e58fb3"];
+      for (let i = 0; i < Math.ceil(dt * 40); i++) {
+        const p = this.particle(this.rand() * game.level.cols, -0.3, cols[i % cols.length]!, i % 2 ? "square" : "star", 0.09, 1.8);
+        p.vx *= 0.3;
+        p.vy = 0.8 + this.rand();
+        p.g = 0.8;
+        this.parts.push(p);
+      }
+    }
     const t = this.clock;
     const level = game.level;
     const W = this.cssW;
@@ -422,10 +478,19 @@ export class Renderer {
     });
     for (const tw of game.towers) {
       const since = this.fired.get(tw.id) ?? 9;
+      const age = this.built.get(tw.id);
+      if (age !== undefined) this.built.set(tw.id, age + dt);
+      const pop = age !== undefined && age < 0.35 && !this.reducedMotion ? popScale(age / 0.35) : 1;
       this.fired.set(tw.id, since + dt);
       items.push({
         y: tw.row + 0.8,
         draw: () => {
+          if (pop !== 1) {
+            ctx.save();
+            ctx.translate(X(tw.col + 0.5), Y(tw.row + 0.8));
+            ctx.scale(pop, pop);
+            ctx.translate(-X(tw.col + 0.5), -Y(tw.row + 0.8));
+          }
           drawTower(
             ctx,
             {
@@ -440,6 +505,7 @@ export class Renderer {
             s,
             t + tw.id * 0.37,
           );
+          if (pop !== 1) ctx.restore();
           this.knockedOut(tw.out ?? 0, X(tw.col + 0.5), Y(tw.row + 0.5), s, t);
         },
       });
@@ -501,7 +567,11 @@ export class Renderer {
           Y(h.y + 0.22),
           s,
           t,
-          h.down > 0 ? this.faceWorried : this.face,
+          h.down > 0 || (game.goodwill <= game.maxGoodwill / 3 && game.phase === "wave")
+            ? this.faceWorried
+            : this.cheer > 0
+              ? this.faceCheer
+              : this.face,
         );
       },
     });

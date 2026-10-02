@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
-- **Next:** the open FEEDBACK note (Hedgerow worth 50 USD): ROADMAP 36-39, then 31-32, then Phase 5. Open from earlier: 19 (sound polish), 24 (real-phone check, needs hardware: skip).
+- **Next:** ROADMAP 38 (feel pass) in progress this session, then 37, 36, 39.
 - 2026-10-02 (owner's chat session, 02:48-04:15 UTC): owner said Hedgerow was boring. Shipped ROADMAP 26-30 and much more (see Recent releases); live at `aadfc2c`.
 
 ## Blocked

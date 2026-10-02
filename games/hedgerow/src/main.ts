@@ -54,6 +54,7 @@ import { LEVELS } from "./levels";
 import { Renderer } from "./render";
 import { enemyIcon, img, towerIcon } from "./icons";
 import * as sfx from "./sound";
+import { haptic, setHaptics } from "./haptics";
 import {
   PERKS,
   buyPerk,
@@ -156,6 +157,7 @@ ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined" });
 
 let game: Game | null = null;
 let renderer: Renderer | null = null;
+setHaptics(!sfx.isMuted());
 let selected: { col: number; row: number } | null = null;
 let speed = 1;
 let paused = false;
@@ -559,6 +561,9 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     b.onclick = () => {
       if (act(() => place(g, kind, sel.col, sel.row))) {
         sfx.playBuild();
+        haptic.build();
+        const nt = g.towers[g.towers.length - 1];
+        if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
         renderPanel(true);
         if (g.level.id === 1 && g.towers.length === 1)
           tip("send", "Lovely. When you're ready, send the wave. I'll be in the lane.", "delighted");
@@ -625,6 +630,8 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     up.onclick = () => {
       if (act(() => upgrade(g, t.id))) {
         sfx.playUpgrade();
+        haptic.upgrade();
+        renderer?.built_(t.id, t.col, t.row, true);
         renderPanel(true);
       }
     };
@@ -653,6 +660,8 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
       b.append(txt);
       b.onclick = () => {
         if (act(() => upgrade(g, t.id, i))) {
+        haptic.upgrade();
+        renderer?.built_(t.id, t.col, t.row, true);
           sfx.playUpgrade();
           renderPanel(true);
         }
@@ -846,6 +855,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "leak":
         sfx.playLeak();
+        haptic.leak();
         if (g.goodwill <= g.maxGoodwill / 2 && g.goodwill > 0)
           tip(`low-${g.level.id}`, "They're getting through! Hedges near the farmhouse, and send me to the end of the lane.", "worried", true);
         break;
@@ -857,6 +867,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         if (boss) {
           banner(ENEMIES[boss].name, "Boss incoming", true);
           sfx.playBoss();
+          haptic.boss();
         } else banner(`Wave ${ev.wave}`, ev.early ? `Called early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
         introduce(kinds);
         if (ev.early) earlyCalls += 1;
@@ -931,9 +942,15 @@ function frame(now: number): void {
   if (!finished && (g.phase === "won" || g.phase === "lost")) {
     finished = true;
     sfx.setIntensity(0);
-    if (g.phase === "won") sfx.playWin();
-    else sfx.playLose();
-    window.setTimeout(() => finish(g), 700);
+    if (g.phase === "won") {
+      sfx.playWin();
+      haptic.win();
+      renderer?.celebrate();
+    } else {
+      sfx.playLose();
+      haptic.lose();
+    }
+    window.setTimeout(() => finish(g), g.phase === "won" ? 1800 : 700);
   }
 }
 
@@ -1198,6 +1215,7 @@ ui.btnSpeed.addEventListener("click", () => {
 });
 ui.btnSound.addEventListener("click", () => {
   sfx.setMuted(!sfx.isMuted());
+  setHaptics(!sfx.isMuted());
   syncControls();
 });
 ui.btnPause.addEventListener("click", () => {
