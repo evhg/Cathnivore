@@ -17,8 +17,10 @@ export function target(id: number): number {
   return id <= 3 ? 0.9 : id <= 7 ? 0.7 : 0.5;
 }
 
-/** What ships is the tuned value times this (levels.ts HUMAN_MARGIN): the verify pass checks that. */
-const HUMAN_MARGIN = 0.9;
+/** What ships is the tuned value times this (levels.ts humanMargin): the verify pass checks that. */
+export function humanMargin(id: number): number {
+  return id <= 7 ? 0.9 : id <= 10 ? 0.97 : 1;
+}
 
 /**
  * Verify mode: the shipped value must give the competent bot a clean win (at least 50% Goodwill). Outcomes
@@ -31,7 +33,7 @@ async function verify(id: number): Promise<number> {
   const base = LEVELS[id - 1]!;
   let tuned = HP_SCALE[id] ?? 1;
   for (let i = 0; i < 20; i++) {
-    const shipped = Math.round(tuned * HUMAN_MARGIN * 100) / 100;
+    const shipped = Math.round(tuned * humanMargin(id) * 100) / 100;
     const g = playLevel({ ...base, hpScale: shipped }, "competent");
     if (kept(g) >= 0.5 && kept(playLevel({ ...base, hpScale: shipped * 1.04 }, "competent")) > 0) break;
     tuned *= 0.92;

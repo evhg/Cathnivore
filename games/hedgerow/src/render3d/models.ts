@@ -761,3 +761,96 @@ export function buildRock(rand: () => number): THREE.Mesh {
   m.rotation.set(rand(), rand() * 6, rand());
   return m;
 }
+
+// ---- landmarks on the horizon, one set per act ----
+
+export function buildWindmill(): THREE.Group {
+  const g = new THREE.Group();
+  g.add(cyl(0.35, 0.5, 1.6, matte(C.cream, 0.85), 0, 0, 0, 10));
+  g.add(cone(0.42, 0.45, matte(C.red, 0.7), 0, 1.6, 0, 10));
+  const sails = new THREE.Group();
+  sails.position.set(0, 1.45, 0.45);
+  for (let i = 0; i < 4; i++) {
+    const arm = new THREE.Group();
+    arm.rotation.z = (i * Math.PI) / 2;
+    arm.add(box(0.06, 0.9, 0.02, matte(C.woodDark), 0, 0.05, 0), box(0.24, 0.7, 0.01, matte("#e9e1cf", 0.9), 0.12, 0.2, 0));
+    sails.add(arm);
+  }
+  g.add(sails);
+  g.userData.spin = sails;
+  return g;
+}
+
+export function buildHouse(rand: () => number, lit = false): THREE.Group {
+  const g = new THREE.Group();
+  const w = 0.7 + rand() * 0.4;
+  const walls = ["#f4ede1", "#e9d9c0", "#d9c4a4", "#efe2c8"][Math.floor(rand() * 4)]!;
+  g.add(box(w, 0.55, 0.6, matte(walls, 0.85)));
+  for (const side of [-1, 1]) {
+    const slab = box(w + 0.1, 0.04, 0.42, matte(rand() > 0.5 ? C.red : "#5b5f66", 0.7));
+    slab.position.set(0, 0.68, side * 0.16);
+    slab.rotation.x = side * 0.75;
+    g.add(slab);
+  }
+  for (const x of [-w / 4, w / 4]) g.add(box(0.12, 0.12, 0.01, lit ? glow("#ffcf7a", 1.4) : matte("#5a7894", 0.3), x, 0.28, 0.305));
+  return g;
+}
+
+export function buildOffice(rand: () => number, lit: boolean): THREE.Group {
+  const g = new THREE.Group();
+  const h = 2.2 + rand() * 2.5;
+  const w = 0.8 + rand() * 0.6;
+  g.add(box(w, h, w, glass("#3a4f66")));
+  const win = lit ? glow("#cfe8ff", 1.3) : matte("#9fb6cc", 0.2);
+  for (let y = 0.3; y < h - 0.2; y += 0.32)
+    for (let x = -w / 2 + 0.12; x < w / 2 - 0.1; x += 0.2) if (rand() > 0.3) g.add(box(0.1, 0.14, 0.01, win, x + 0.05, y, w / 2 + 0.005));
+  g.add(box(w * 0.6, 0.12, 0.01, glow(C.teal, 2), 0, h - 0.25, w / 2 + 0.01));
+  return g;
+}
+
+export function buildLighthouse(): THREE.Group {
+  const g = new THREE.Group();
+  for (let i = 0; i < 4; i++) g.add(cyl(0.3 - i * 0.04, 0.34 - i * 0.04, 0.5, matte(i % 2 ? "#c4433a" : C.cream, 0.7), 0, i * 0.5, 0, 12));
+  g.add(cyl(0.22, 0.22, 0.25, glass("#cfe8ff"), 0, 2, 0, 12));
+  const lamp = ball(0.14, glow("#fff1b0", 5), 0, 2.13, 0, 1);
+  g.add(lamp, cone(0.26, 0.25, matte("#3a3a3a"), 0, 2.25, 0, 12));
+  g.userData.light = lamp;
+  return g;
+}
+
+export function buildBoat(rand: () => number): THREE.Group {
+  const g = new THREE.Group();
+  g.add(box(0.8, 0.18, 0.3, matte(["#c4433a", "#3f6fb5", "#f2c94c"][Math.floor(rand() * 3)]!, 0.6)));
+  g.add(cyl(0.015, 0.015, 0.8, matte(C.woodDark), 0, 0.18, 0, 4));
+  const sail = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.6), matte("#f4ede1", 0.8, false));
+  (sail.material as THREE.Material).side = THREE.DoubleSide;
+  sail.position.set(0.15, 0.6, 0);
+  g.add(sail);
+  return g;
+}
+
+export function buildCrane(): THREE.Group {
+  const g = new THREE.Group();
+  const yellow = gloss("#f2b51f", 0.3);
+  g.add(box(0.16, 3, 0.16, yellow));
+  const jib = box(2.4, 0.1, 0.12, yellow, 0.7, 2.95, 0);
+  g.add(jib, box(0.4, 0.3, 0.3, gloss("#3a3a3a", 0.3), -0.4, 2.8, 0));
+  g.add(ball(0.06, glow("#ff3b30", 4), 1.85, 3.1, 0, 0));
+  return g;
+}
+
+export function buildWall(len: number): THREE.Group {
+  const g = new THREE.Group();
+  const stone = matte("#b8ad96", 0.95);
+  g.add(box(len, 0.9, 0.35, stone));
+  for (let x = -len / 2 + 0.15; x < len / 2; x += 0.35) g.add(box(0.18, 0.18, 0.35, stone, x, 0.9, 0));
+  return g;
+}
+
+export function buildTowerKeep(): THREE.Group {
+  const g = new THREE.Group();
+  const stone = matte("#b8ad96", 0.95);
+  g.add(cyl(0.45, 0.5, 2, stone, 0, 0, 0, 10), cone(0.55, 0.7, matte("#5b5f66"), 0, 2, 0, 10));
+  g.add(box(0.12, 0.2, 0.01, glow("#ffb85a", 2), 0, 1.3, 0.48));
+  return g;
+}

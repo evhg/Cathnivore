@@ -4,7 +4,8 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
-- **Next:** ROADMAP 37 (Heroic 4th star, Endless, achievements), then 39; 38 only needs scaffolding.
+- **Next:** FEEDBACK.md's round-2 note is answered (ROADMAP 40-43, live once released); then ROADMAP 44 (3D polish), 45 (smarter bot), 37 (Heroic, Endless, achievements). Don't undo the 3D renderer or the auto-battler: the owner asked for both.
+- 2026-10-02 (owner's chat session, 09:28-12:30 UTC): owner's second playtest. Shipped ROADMAP 40-43 and 36, 39.
 - 2026-10-02 (owner's chat session, 02:48-04:15 UTC): owner said Hedgerow was boring. Shipped ROADMAP 26-30 and much more (see Recent releases); live at `aadfc2c`.
 
 ## Blocked
@@ -61,6 +62,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-02 ~09:28-12:30 UTC (owner's chat session): Hedgerow round 2 (auto-battler, stats, story rewrite, twists, layouts, bot + tuner, 3D renderer).
 - 2026-10-02 ~08:51-09:20 UTC: ROADMAP 36 forks: `Level.path2`, `Enemy.lane`, `enemyPoint`, `laneCellsOf`; second lane painted with its own gate; test bot covers both lanes; level 94 left single-lane (bot lost). check green. Hedgerow test file now ~4 min.
 - 2026-10-02 ~07:52-08:10 UTC: ROADMAP 36 terrain slice (high ground, water plots, `terrain.ts`, test). check green; unreleased, batching. Left: forks/two lanes/second spawn. Full hedgerow test file takes ~3 min.
 - 2026-10-02 ~05:51-06:35 UTC: ROADMAP 38 part 1 (build pop-in/dust, upgrade sparkle, clean-sweep cheer, worried face, victory confetti, haptics.ts). check green; unreleased, batching. Left: enemies tipping over, scaffolding.

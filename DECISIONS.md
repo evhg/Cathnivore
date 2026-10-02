@@ -211,3 +211,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-02 06:51-07:10 UTC: ROADMAP 38 slice: defeated enemies tip over and fade (render only). check + e2e:site green. No release (batching).
 - 2026-10-02: Terrain is generated from each level's lane (terrain.ts) instead of hand-placed in 100 levels: high ground backed one cell off the lane, water only in acts 3, 4, 6; levels 1-3 stay plain.
 - 2026-10-02: Forks are generated (levels.ts addSecondLane), not hand-drawn: a feeder joins the serpentine at its first connector; odd groups of each wave use lane 1. Level 94 excluded (bot lost with two doors).
+- 2026-10-02 (owner chat, round 2): "auto-chess where the player mostly watches" read as: build between waves, Cath and her abilities run themselves (still tappable), an Auto toggle (default on) starts waves after 6 s. Manual Cath steering removed (the owner found it unfriendly on iPhone).
+- 2026-10-02: "StarCraft 2 type visuals" read as a lit, shadowed, bloomed 3D battlefield (three.js, procedural models), keeping the farm palette; 2D canvas stays as the fallback and for e2e (headless software WebGL is too slow to drive).
+- 2026-10-02: difficulty is tuned by a bot (bot.ts + scripts/hedgerow-tune.ts), not by hand: the competent bot must win every level; tuned values ship with a human margin (0.9 to level 7, 0.97 after). Outcomes are cliff-shaped in enemy health, so the margin, not the target, sets how hard it feels.
+- 2026-10-02: the script was rewritten by two subagents from a story bible I wrote (docs/design/hedgerow-v2.md 4); I reviewed samples. Level names follow the script.
+

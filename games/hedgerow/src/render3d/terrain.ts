@@ -7,7 +7,20 @@ import * as THREE from "three";
 import { hasTwist, isProtected, laneCellsOf, plotKind, type Level } from "../engine";
 import { rng } from "../theme";
 import { actLight } from "./palette";
-import { buildFarmhouse, buildGate, buildRock, buildTree } from "./models";
+import {
+  buildBoat,
+  buildCrane,
+  buildFarmhouse,
+  buildGate,
+  buildHouse,
+  buildLighthouse,
+  buildOffice,
+  buildRock,
+  buildTowerKeep,
+  buildTree,
+  buildWall,
+  buildWindmill,
+} from "./models";
 import { matte, glow } from "./palette";
 
 const MARGIN = 9;
@@ -227,6 +240,66 @@ export function buildGround(level: Level): Ground {
     for (const r of [-0.62, -0.42, rows + 0.42, rows + 0.62]) hedgeAt(c + (rand() - 0.5) * 0.08, r);
   for (let r = -0.4; r <= rows + 0.4; r += 0.22)
     for (const c of [-0.62, -0.42, cols + 0.42, cols + 0.62]) hedgeAt(c, r + (rand() - 0.5) * 0.08);
+
+  // Each act's landmarks along the far horizon (behind the field, where the camera looks).
+  const night = act === 9 || hasTwist(level, "night");
+  const spin: THREE.Object3D[] = [];
+  const back = (x: number, z: number, o: THREE.Object3D, face = 0) => {
+    const h = Math.max(0, heightAt(x, z));
+    o.position.set(x, h, z);
+    o.rotation.y = face;
+    o.traverse((m) => {
+      if ((m as THREE.Mesh).isMesh) {
+        m.castShadow = true;
+        m.receiveShadow = true;
+      }
+    });
+    group.add(o);
+  };
+  const across = (n: number, z0: number, z1: number, make: (i: number) => THREE.Object3D) => {
+    for (let i = 0; i < n; i++) {
+      const x = -3 + ((i + 0.5) / n) * (cols + 6) + (rand() - 0.5) * 1.2;
+      const z = z0 + rand() * (z1 - z0);
+      if (laneDistance(level, x, z) < 1.5) continue;
+      back(x, z, make(i), (rand() - 0.5) * 0.6);
+    }
+  };
+  switch (act) {
+    case 0:
+    case 1: {
+      const w = buildWindmill();
+      back(cols + 1.8, -2.4, w, -0.4);
+      spin.push(w.userData.spin as THREE.Object3D);
+      across(3, -3.2, -2.2, () => buildHouse(rand));
+      break;
+    }
+    case 2:
+    case 5: {
+      back(act === 5 ? cols + 2 : -2.2, -2.6, buildLighthouse());
+      across(4, -3.8, -2.4, () => buildBoat(rand));
+      across(3, -3, -2.2, () => buildHouse(rand));
+      break;
+    }
+    case 3:
+    case 4:
+      across(5, -3.2, -2.2, () => buildHouse(rand, night));
+      break;
+    case 6:
+      across(3, -3.6, -2.4, () => buildCrane());
+      break;
+    case 7:
+      across(7, -3.2, -2.2, () => buildHouse(rand, night));
+      break;
+    case 8:
+      across(6, -4.2, -2.6, () => buildOffice(rand, true));
+      break;
+    case 9:
+      back(cols / 2, -2.2, buildWall(cols + 6));
+      across(3, -2.9, -2.6, () => buildTowerKeep());
+      across(5, -4, -3.2, () => buildHouse(rand, true));
+      break;
+  }
+  group.userData.spin = spin;
 
   // The corporate gate at each spawn.
   const label = level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 && level.id <= 60 ? "CANDOR" : "HOLLOWELL";

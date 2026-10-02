@@ -200,3 +200,11 @@ Act 10, Kingsmarket.
 98. Vane's last memo: Candor's people quit. · fog
 99. The eve of Kingsmarket. · fortified
 100. Boss: HollowCandor. Finale: Bea reads "What my mum does".
+
+## 5. As built (2026-10-02, owner's chat session)
+- **Auto-battler:** `Game.auto` (engine): `heroBrain` sends Cath to meet the ground vehicle nearest the farmhouse; `abilityBrain` throws the pie at the thickest crowd or a boss, calls the neighbours when something is within 3 cells of the farmhouse, and rallies on big waves. The Auto toggle (main.ts) starts the next wave 6 s into a build phase, holding while something is selected. Speed and Auto are remembered in localStorage.
+- **Stealth:** Cath spots any stealth vehicle within 1.3 cells (`CATH_SPOTS`), so stealth before the Radio Mast (levels 42-44) is a job for her.
+- **Twists:** `TWISTS` and `twistMods`, `spawnHp`, `speedOf` in engine.ts; assigned in levels.ts (`TWIST_PLAN`), following section 4.
+- **Layouts:** `layouts.ts` gives levels 4-100 one of seven lane shapes (rotating, mirrored by id); `findFork` in levels.ts adds a feeder lane on the fork levels. Mechanics tests use `ORIGINAL_PATHS` (`classic()` in the tests).
+- **Bots and tuning:** `bot.ts` (competent, naive, idle); `scripts/hedgerow-tune.ts` and `--verify`; `tuning.ts`. Re-run both after any change to levels, enemies, towers or twists, and log in BALANCE.md.
+- **3D:** `render3d/` (three.js): palette.ts (materials, per-act light), models.ts (every tower tier/spec, enemy, Cath, farmhouse, gate, horizon landmarks), terrain.ts (heightfield, lanes, water, plots, hedges, scenery), fx.ts (sparks, debris, rings, beams, decals, HTML floaters), index.ts (the renderer). `?2d` forces the old canvas renderer, which is also the no-WebGL fallback; functional e2e tests use it because headless software WebGL is too slow to drive key by key.

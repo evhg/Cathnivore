@@ -239,15 +239,18 @@ export class Renderer3D {
     this.scene.background = skyTex;
     const fogDim = hasTwist(game.level, "fog") ? 0.78 : hasTwist(game.level, "night") ? 0.85 : 1;
     this.scene.fog = new THREE.Fog(L.fog, L.fogNear * fogDim, L.fogFar * fogDim);
-    this.renderer.toneMappingExposure = L.exposure * (hasTwist(game.level, "night") ? 0.7 : 1);
+    const night = hasTwist(game.level, "night") || game.level.id > 90;
+    this.renderer.toneMappingExposure = L.exposure * (hasTwist(game.level, "night") ? 0.9 : 1) * (game.level.id > 90 ? 1.25 : 1);
     this.hemi.color.set(L.hemiSky);
     this.hemi.groundColor.set(L.hemiGround);
-    this.hemi.intensity = L.hemiIntensity * 0.65;
+    this.hemi.intensity = L.hemiIntensity * (night ? 1.4 : 0.65);
     this.sun.color.set(L.sun);
-    this.sun.intensity = L.sunIntensity * 1.25 * (hasTwist(game.level, "night") ? 0.45 : hasTwist(game.level, "rain") ? 0.7 : 1);
+    this.sun.intensity = L.sunIntensity * 1.25 * (hasTwist(game.level, "night") ? 0.75 : hasTwist(game.level, "rain") ? 0.7 : 1);
+    // Night: a cool moon fills in from the back so everything still reads.
+    this.rim.color.set(night ? "#8fb0ff" : "#9fc4ff");
     this.rim.position.set(game.level.cols / 2, 6, -8);
     this.rim.target = this.sun.target;
-    this.rim.intensity = hasTwist(game.level, "night") || game.level.id > 90 ? 1.4 : 0.8;
+    this.rim.intensity = night ? 2.2 : 0.8;
     const cx = game.level.cols / 2;
     const cz = game.level.rows / 2;
     const az = (L.sunAz * Math.PI) / 180;
@@ -608,6 +611,7 @@ export class Renderer3D {
       const hurt = game.goodwill / game.maxGoodwill < 0.5;
       this.smoke(c, hurt ? "#4a4440" : "#ece6dc", hurt ? 0.09 : 0.05);
     }
+    for (const sp of (this.ground?.group.userData.spin as THREE.Object3D[] | undefined) ?? []) sp.rotation.z += dt * 0.7;
     if (this.ground?.water) {
       const m = this.ground.water.material as THREE.MeshPhysicalMaterial;
       m.opacity = 0.8 + Math.sin(t * 1.5) * 0.03;
