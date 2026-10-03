@@ -5,127 +5,123 @@
 import type { Beat } from "./types";
 
 export const ACTS_1_TO_5: Record<number, Beat> = {
-  // Act 1, Brindle Hills: the land team.
+  // Act 1, Brindle Hills: the land team. (Rewritten 2026-10-03 to the clarity rules in
+  // docs/design/hedgerow-v2.md section 7: every scene says what's happening, why it matters and what to do.)
   1: {
     name: "Mara's Field",
     before: [
-      { who: "mara", text: "There's a drone over my bottom field. It has taken forty photographs of one cow." },
-      { who: "cath", expression: "smirk", text: "Hollowell put out a statement on Monday. They're 'mapping the opportunity' in Brindle Hills." },
-      { who: "mara", text: "The opportunity is called Margaret. She's nineteen." },
-      { who: "cath", expression: "determined", text: "Vans on the lane, drones overhead. Hedges stop vans. Only a scarecrow can reach anything that flies." },
+      { who: "narrator", text: "Brindle Hills. Hollowell, a giant delivery company, wants to pave this valley for a motorway of warehouses." },
+      { who: "mara", text: "Cath! It's Mara, from the farm next door. Hollowell vans are coming up my lane to measure my fields for the sale." },
+      { who: "cath", expression: "determined", text: "Your farm isn't for sale. So let's make sure their vans never reach your gate." },
+      { who: "cath", expression: "smirk", text: "Plant a hedge beside the lane to slow them down, and a scarecrow to chase them off." },
     ],
     after: [
-      { who: "mara", text: "Clause four of my deeds: no flying over the bottom field without consent. Drafted in 1911, for balloons." },
-      { who: "cath", text: "They got their photographs, though. Next they'll want a look in person." },
+      { who: "mara", text: "They turned round! My grandfather planted those hedges. I never thought they'd save the farm." },
+      { who: "cath", text: "They'll be back, and with more vans. We'll be ready." },
     ],
   },
   2: {
     name: "The Long Lane",
     before: [
-      { who: "pip", text: "Pip Talbot, market inspector. I see the depot rota, and there are twelve vans booked up your long lane after lunch." },
-      { who: "mara", text: "Booked by whom?" },
-      { who: "pip", text: "Couldn't say. If it were my lane, I'd put hedges on the bends. Only a suggestion." },
-      { who: "cath", expression: "smirk", text: "It's a good one. Long lane, lots of corners, and vans slow down on corners." },
+      { who: "pip", text: "Hello! Pip Talbot, the market inspector. I heard at the depot that twelve vans are heading up your lane today." },
+      { who: "cath", text: "Twelve? Thank you, Pip. The lane is long, with plenty of bends." },
+      { who: "cath", expression: "determined", text: "And I'll be out in the lane myself, holding up any van that slips past the hedges." },
     ],
     after: [
-      { who: "pip", text: "Textbook. Mind if I sketch where you put everything? For my report." },
-      { who: "mara", text: "We're a farm, Pip. Nobody reports on us." },
+      { who: "pip", text: "Well done! I'll let you know if I hear anything else at the depot." },
     ],
   },
   3: {
     name: "Pie for the Road",
     before: [
-      { who: "bea", text: "Why are you baking at six in the morning?" },
-      { who: "cath", text: "A van went straight through Mara's hedge yesterday and didn't stop." },
-      { who: "bea", text: "Is the pie for the driver?" },
-      { who: "cath", expression: "wink", text: "The pie is for the van. Hot, heavy, thrown hard. When one gets past the hedges, I'll be there." },
+      { who: "bea", text: "Mum, why are you baking at six in the morning?" },
+      { who: "cath", text: "Because yesterday a van drove straight through Mara's hedge, Bea. Today I've got a surprise for the next one." },
+      { who: "cath", expression: "wink", text: "When a crowd of vans comes, tap the pie and tap the lane. A hot pie stops them all for a few seconds." },
     ],
     after: [
-      { who: "bea", text: "We've got a project at school. It's called 'What my mum does'. Can I put pies?" },
-      { who: "cath", expression: "smirk", text: "Put 'baking'. 'Throwing' gets a letter home." },
+      { who: "bea", text: "The vans were covered in apple pie! Can I tell my class?" },
+      { who: "cath", expression: "smirk", text: "Tell them I bake. Leave out the throwing." },
     ],
   },
   4: {
     name: "Bea's Beehive",
     before: [
-      { who: "bea", text: "Miss Okafor says the school bees can stay with us for the holidays. I told her we've got clover." },
-      { who: "mara", text: "Hollowell have switched to the small vans. Twice as many, half the size, nose to tail." },
-      { who: "cath", expression: "determined", text: "Bees don't go after one van. They go after the lot. Put the hive where the lane bunches up." },
+      { who: "bea", text: "My school is lending us its beehive for the holidays! The bees can live on the farm." },
+      { who: "mara", text: "Good timing. Hollowell have switched to small vans, lots of them, driving close together." },
+      { who: "cath", expression: "determined", text: "Bees sting everything near their target, so they're perfect for a crowd. Put the hive where the lane bunches up." },
     ],
     after: [
-      { who: "bea", text: "I counted the stings. Forty-four. Is that a lot for a van?" },
-      { who: "cath", expression: "delighted", text: "For a van, it's a record." },
+      { who: "bea", text: "The bees chased off a whole line of vans at once!" },
+      { who: "cath", expression: "delighted", text: "They did. Remember that whenever the vans come in a crowd." },
     ],
   },
   5: {
     name: "The Offer",
     before: [
-      { who: "pell", text: "'Dear Ms Keel. Hollowell would like to offer three times your land's value, and a share in the valley's future.'" },
-      { who: "mara", text: "Page six: paid in instalments, once they get planning permission. If they lose, I've sold a farm on credit." },
-      { who: "mara", text: "And the bank has heard about the offer and called in my overdraft. The same week. Imagine." },
-      { who: "cath", expression: "determined", text: "So we're short. Cheap hedges first. The lane pays well when we hold it, so build as the money comes in." },
+      { who: "mara", text: "Hollowell sent me a letter: three times what my farm is worth, if I sign this week." },
+      { who: "mara", text: "But they only pay if they win planning permission. If they lose, I've given my farm away for nothing." },
+      { who: "cath", expression: "determined", text: "Then don't sign. Money's tight today, so build cheap hedges first and add more as the waves pay out." },
     ],
     after: [
-      { who: "mara", text: "I've replied. I corrected the spelling of my name and declined." },
+      { who: "mara", text: "I've written back. The answer is no." },
     ],
   },
   6: {
     name: "Bank Holiday",
     before: [
-      { who: "pip", text: "Bank holiday. The depot's paying a bonus for speed, so the vans won't slow for anything. Thought you'd want to know." },
-      { who: "mara", text: "The limit on this lane is twenty. I wrote to the council about it in 1998. And 2004." },
-      { who: "cath", text: "Faster vans, and every one we stop is worth more. Hedges early on the lane, so they're slowed before they're past." },
+      { who: "pip", text: "Warning from the depot: it's a bank holiday, and Hollowell are paying the drivers extra to go fast today." },
+      { who: "cath", text: "Fast vans get past before the towers can do much." },
+      { who: "cath", expression: "determined", text: "Put hedges early in the lane to slow them down. Good news: every fast van we stop pays more." },
     ],
     after: [
-      { who: "bea", text: "One went past so fast, my drawing of it is just a line." },
+      { who: "bea", text: "They went past so fast my drawing of them is just a line!" },
     ],
   },
   7: {
     name: "Crooked Fences",
     before: [
-      { who: "mara", text: "My fence posts moved four metres in the night. Each one has a little Hollowell sticker on it." },
-      { who: "crisp", text: "Julian Crisp, for Hollowell: 'We've corrected a historic boundary error, at our own expense. Happy to help.'" },
-      { who: "mara", text: "The boundary was settled in 1911. I have the map. Until a judge reads it, half my plots aren't mine to build on." },
-      { who: "cath", text: "Then we use the half that is. Fewer hedges, better placed." },
+      { who: "mara", text: "Cath, someone moved my fence posts in the night. Hollowell says half my field belongs to them now." },
+      { who: "mara", text: "It's a lie, and I'll prove it in court. But until then, we can only build on half the plots." },
+      { who: "cath", expression: "determined", text: "Then every tower has to count. Fewer of them, in the best spots by the bends." },
     ],
     after: [
-      { who: "cath", text: "Quiz night, when the whole lane was in the Plough. Good timing, for people who've never drunk there." },
+      { who: "cath", expression: "worried", text: "They moved those posts on the one night everyone was at the pub quiz. Someone told them when." },
     ],
   },
   8: {
     name: "Forty Drones",
     before: [
-      { who: "pell", text: "Graham Pell, Hollowell: 'We want to understand Brindle Hills properly. Today our survey team will look from above.'" },
-      { who: "mara", text: "Forty drones registered for today. The flight notice is on the parish board. Laminated." },
-      { who: "cath", expression: "determined", text: "Hedges can't reach them. Scarecrows and bees can. Put those on the bends and let the hedges keep the vans." },
+      { who: "mara", text: "Look up. Hollowell are sending forty drones over the farm to film it for their buyers." },
+      { who: "cath", text: "Drones fly over the hedges, and over me too. Hedges can't touch them." },
+      { who: "cath", expression: "determined", text: "Scarecrows and bees can. Put them where they can reach the sky over the lane." },
     ],
     after: [
-      { who: "bea", text: "Can I keep one? It's only a bit broken." },
-      { who: "mara", text: "It's evidence, Bea. You may draw it." },
+      { who: "bea", text: "One fell in the garden. Can I keep it?" },
+      { who: "mara", text: "It's evidence, Bea. You can draw it, though." },
     ],
   },
   9: {
     name: "Lights Off",
     before: [
-      { who: "pip", text: "Late text, sorry. Rumour at the depot: they might try something tonight. Keep the kettle on." },
-      { who: "mara", text: "No headlights on the lane, and my dog's been barking at it since ten." },
-      { who: "cath", expression: "determined", text: "Dark means we can't reach as far, and they'll drive faster. Build right up against the lane." },
+      { who: "pip", text: "Sorry it's late. I heard they're coming tonight, with their headlights off so nobody sees them." },
+      { who: "cath", text: "In the dark, the towers can't see as far, and the vans will be quicker than usual." },
+      { who: "cath", expression: "determined", text: "Build close to the lane tonight, so every tower can reach it." },
     ],
     after: [
-      { who: "cath", expression: "worried", text: "Lights off, first time on this lane, and they didn't miss one turn. Someone drew them a map." },
+      { who: "cath", expression: "worried", text: "They drove those bends in the dark without one wrong turn. Someone gave them a map of our lane." },
     ],
   },
   10: {
     name: "The Acquisition Van",
     before: [
-      { who: "narrator", text: "The Acquisition Van: armour-plated, chauffeur-driven, with a buying team and a chequebook in the back." },
-      { who: "pell", text: "Ms Keel, Graham Pell. I've come in person. I find people say yes more easily face to face." },
-      { who: "mara", text: "I find I say no more easily face to face." },
-      { who: "cath", expression: "determined", text: "It's slow and it's tough. It won't stop for one hedge, so give it every hedge we've got." },
+      { who: "narrator", text: "Hollowell's boss, Graham Pell, has come himself, in an armoured van full of lawyers and contracts." },
+      { who: "pell", text: "Ms Keel, I've come to buy your farm in person. Everyone has a price." },
+      { who: "mara", text: "I don't. Turn around and go home, Mr Pell." },
+      { who: "cath", expression: "determined", text: "His van is slow and very tough, and it calls in more vans. Line the whole lane with towers." },
     ],
     after: [
-      { who: "pell", text: "Thank you, Ms Keel. Lovely hedges. We've had a yes from Oakvale Parish Council, so we'll start there." },
-      { who: "mara", text: "They've sold Oakvale market square. Tomas has a market on Saturday and nowhere to hold it." },
+      { who: "pell", text: "Fine. If Brindle Hills won't sell, Oakvale's council will. We've just bought their market square." },
+      { who: "mara", text: "That's Tomas's market. Every Saturday for forty years. Where will he go now?" },
     ],
   },
 
@@ -133,115 +129,113 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
   11: {
     name: "Highmoor Market",
     before: [
-      { who: "tomas", text: "Ninety-one stalls, one borrowed field on Highmoor, and everyone came. Even Mr Ashby, who still owes me a ladder." },
-      { who: "bea", text: "Why can't the market stay in Oakvale?" },
-      { who: "cath", text: "Somebody bought the ground under it. Busy day, Tomas: spend while the tin's filling. Vans will find the moor road by noon." },
+      { who: "narrator", text: "Highmoor. Hollowell bought Oakvale's market square, so the Saturday market has moved up onto the moor." },
+      { who: "tomas", text: "Tomas Reed, I run the market. Ninety stalls in a borrowed field, and they still came. I could cry." },
+      { who: "cath", text: "Hollowell will send vans to scare the customers off. Today's a market day, so the towers earn extra." },
+      { who: "cath", expression: "determined", text: "Spend as the money comes in, and keep the lane to the field gate clear." },
     ],
     after: [
-      { who: "tomas", text: "Three hundred and six through the gate. I always count." },
-      { who: "tomas", text: "And Pip asked for a copy of the stall list, prices and all. Very thorough, Pip." },
+      { who: "tomas", text: "Three hundred people through the gate! The market's alive, Cath." },
     ],
   },
   12: {
     name: "Cheap Eggs",
     before: [
-      { who: "crisp", text: "Julian Crisp, for Hollowell: 'Highmoor eggs, 0.99 a dozen, from our pop-up trucks. That's not a price war. It's a price.'" },
-      { who: "tomas", text: "They're parked at our gate, selling below what it costs to keep a hen. People go in and don't come out to us." },
-      { who: "cath", text: "They don't hang about: in, sell, out. Fast trucks pay more stopped. Catch them on the long run to the gate." },
+      { who: "crisp", text: "Julian Crisp, for Hollowell. Our trucks are selling eggs at the market gate today, for 99p a dozen." },
+      { who: "tomas", text: "That's less than it costs to keep the hens! They want to bankrupt our farmers, then put prices back up." },
+      { who: "cath", expression: "determined", text: "Their trucks are fast: in, sell, out. Slow them early with hedges, then hit them hard." },
     ],
     after: [
-      { who: "tomas", text: "Mrs Penhale bought four dozen of ours at full price, then went and told the truck why. At length." },
+      { who: "tomas", text: "People bought our eggs anyway. They know what Hollowell is up to." },
     ],
   },
   13: {
     name: "The Market Stall",
     before: [
-      { who: "tomas", text: "Here's the sum. A mark a pitch into the co-op tin, every stall, every week. The tin pays for the hedges." },
-      { who: "mara", text: "And what's in the tin today?" },
-      { who: "tomas", text: "Eleven marks and a button." },
-      { who: "cath", text: "Then a stall goes up first. It earns every round and cheers on whatever's next to it. Hedges come out of what it makes." },
+      { who: "tomas", text: "Money's tight, so here's my idea: a market stall by the lane. It earns money every wave." },
+      { who: "tomas", text: "And the cheering crowd makes the towers next to it hit harder." },
+      { who: "cath", text: "Build the stall first and put your strongest towers beside it. It pays for the rest." },
     ],
     after: [
-      { who: "tomas", text: "Two hundred and twelve in the tin. Mr Ashby paid his pitch. He still owes me the ladder." },
+      { who: "tomas", text: "The stall paid for three new hedges today. We can afford to fight now." },
     ],
   },
   14: {
     name: "Last Mile",
     before: [
-      { who: "bea", text: "When you stop one of those trucks, why do drones come out of the back?" },
-      { who: "tomas", text: "Last mile. The truck stops, the drones finish the delivery. Straight over the stalls." },
-      { who: "cath", text: "Because the eggs are due by noon either way. Every truck we stop lets two fly: keep scarecrows behind the hedges." },
+      { who: "bea", text: "Mum, when you stop one of those trucks, drones fly out of the back. Why?" },
+      { who: "tomas", text: "It's their backup plan. If a truck is stopped, the drones fly the parcels the rest of the way." },
+      { who: "cath", expression: "determined", text: "So every truck we stop lets two drones loose. Keep scarecrows and bees behind the hedges for them." },
     ],
     after: [
-      { who: "bea", text: "I drew a truck having babies." },
-      { who: "cath", expression: "smirk", text: "Lovely. Maybe not for the school project." },
+      { who: "bea", text: "I drew the truck with the drones coming out. It looks like it's sneezing." },
     ],
   },
   15: {
     name: "Loyalty Cards",
     before: [
-      { who: "crisp", text: "'Every Highmoor home now has a Hollowell loyalty card. Ten stamps, a free dozen. Loyalty should be rewarded.'" },
-      { who: "tomas", text: "Two hundred trucks booked for today. Smaller, cheaper and bumper to bumper on the moor road." },
-      { who: "cath", text: "Packed that close, one hive stings six at a time. More bees today." },
+      { who: "crisp", text: "Every home on Highmoor has a free Hollowell loyalty card. Today, we deliver to all of them." },
+      { who: "tomas", text: "Look at the road. Hundreds of little trucks, bumper to bumper." },
+      { who: "cath", expression: "determined", text: "When they're packed this close, bees sting a whole group at once. Build more hives." },
     ],
     after: [
-      { who: "tomas", text: "Mrs Penhale cut her loyalty card in half and posted it back. Freepost. They paid for the stamp." },
+      { who: "tomas", text: "Mrs Penhale cut her loyalty card in half and posted it back to them. Good for her." },
     ],
   },
   16: {
     name: "Moor Fog",
     before: [
-      { who: "tomas", text: "I can't see my own stall. I know it's there because I can hear Mr Ashby complaining about it." },
-      { who: "cath", text: "Fog takes a fifth off how far anything reaches. Build right on the road. Nothing hits what it can't see." },
+      { who: "tomas", text: "I can't see my own stall in this fog." },
+      { who: "cath", text: "The towers can't see far either: fog cuts their reach." },
+      { who: "cath", expression: "determined", text: "Build right next to the road today, so they can still hit what goes by." },
     ],
     after: [
-      { who: "tomas", text: "Pip came up in the fog to check on us. Walked the whole road twice, writing things down. Lovely man." },
+      { who: "tomas", text: "Pip came up in the fog to check on us. He walked the whole road, making notes. Kind of him." },
     ],
   },
   17: {
     name: "The Auction Mart",
     before: [
-      { who: "tomas", text: "Hollowell bought the auction mart on Thursday. On Friday they rented it back to us. Double." },
-      { who: "mara", text: "Clause eleven of the lease: rent may be collected 'in person, by the landlord's agents'. That's the vans, Tomas." },
-      { who: "cath", text: "Heavier vans, built for collecting. They'll take more stopping. Upgrade what we have before we spread out." },
+      { who: "tomas", text: "Hollowell bought the auction mart where we sell our cattle. Now they're doubling our rent." },
+      { who: "tomas", text: "And they're sending their toughest trucks to collect it." },
+      { who: "cath", expression: "determined", text: "Tougher trucks take more hits. Upgrade the towers you have before you build new ones." },
     ],
     after: [
-      { who: "mara", text: "Clause twelve: the landlord's agents may not park on the premises. Bea is writing them tickets." },
+      { who: "tomas", text: "Not one rent truck got through. We'll pay what's fair, and not a penny more." },
     ],
   },
   18: {
     name: "Rain on the Moor",
     before: [
-      { who: "bea", text: "The bees won't come out. I asked nicely." },
-      { who: "tomas", text: "Rain on the moor. Everything on the road slows to a crawl, theirs included." },
-      { who: "cath", text: "Bees stay in when it's wet, so the hives do half their usual. Scarecrows and hedges carry today; the crawl helps." },
+      { who: "bea", text: "The bees won't come out. I asked them nicely." },
+      { who: "cath", text: "Bees hide from the rain, so beehives only do half their damage today." },
+      { who: "cath", expression: "determined", text: "The rain slows the trucks down too. Lean on scarecrows and hedges this time." },
     ],
     after: [
-      { who: "bea", text: "Miss Okafor says my project needs a photo of you at work. Can you stand still in a field?" },
-      { who: "cath", text: "Not this month." },
+      { who: "bea", text: "The bees came out when the sun did. They missed everything." },
     ],
   },
   19: {
     name: "The Cattle Grid",
     before: [
-      { who: "crisp", text: "'Hollowell's Highmoor convoy is an investment in the community: twenty trucks, steel-plated for everyone's safety.'" },
-      { who: "tomas", text: "Steel plates, the week after we beat them with hedges and bees. Somebody's been taking notes." },
-      { who: "cath", expression: "determined", text: "Armour shrugs off half of every hit. Upgrade, so each hit counts, and keep them under fire the whole way." },
+      { who: "tomas", text: "Hollowell have put steel plates on their trucks. They've been watching how we beat them." },
+      { who: "cath", text: "Armour blocks part of every hit, so weak hits barely scratch them." },
+      { who: "cath", expression: "determined", text: "Upgrade your towers so each hit lands hard, and keep the trucks under fire the whole way." },
     ],
     after: [
-      { who: "tomas", text: "Every truck's at the cattle grid with its engine running. Crisp's car is at the front." },
+      { who: "tomas", text: "They're lining up at the cattle grid for one last push. Crisp himself is leading it." },
     ],
   },
   20: {
     name: "Mr Crisp's Convoy",
     before: [
-      { who: "crisp", text: "'Mr Crisp will personally lead today's convoy, in the interests of transparency.'" },
-      { who: "tomas", text: "He's reading his own statement out of the window. Through a megaphone." },
-      { who: "cath", expression: "determined", text: "The big lorry is the one that matters. It breaks into trucks when it goes, so keep hedges behind it." },
+      { who: "narrator", text: "Julian Crisp leads Hollowell's price-war convoy: a giant lorry with smaller trucks inside it." },
+      { who: "crisp", text: "Shut the market today and Hollowell will look after all your shopping. Forever." },
+      { who: "cath", expression: "determined", text: "When the big lorry breaks, trucks spill out. Keep plenty of towers behind it to catch them." },
     ],
     after: [
-      { who: "crisp", text: "'Hollowell is pausing its Highmoor pricing. We've listened, and we'll be listening in Saltmarsh next.'" },
-      { who: "tomas", text: "Sol Abara played the megaphone bit on his podcast. Eleven thousand listens. Saltmarsh is about to get busy." },
+      { who: "tomas", text: "The convoy's gone! Highmoor market stays open." },
+      { who: "cath", text: "And Sol, the podcaster down in Saltmarsh, says they're heading his way next." },
     ],
   },
 

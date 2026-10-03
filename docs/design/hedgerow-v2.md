@@ -257,3 +257,27 @@ Act 10, Kingsmarket.
   screen, with their buttons kept in view.
 - **Music:** a synth score in sound.ts with one track per act (French 79 / Diamond Veins-style electro).
 - **3D:** richer models, plus models for the new towers, the wrapped van and the eight megastructures.
+
+## 7. Writing rules v3 (owner, 2026-10-03: "the dialog is so cryptic and feels like ai slop")
+
+These replace the "deadpan, one zinger, quotes the deeds" voice rules of section 4, which produced lines
+like "The opportunity is called Margaret. She's nineteen.": punchlines with no setup.
+
+1. **A player who skipped every earlier scene must understand this one.** No callbacks, in-jokes or
+   references that need an earlier line. If something matters, say it plainly here.
+2. **Every before-scene answers three things, in order:** what's happening today; why it matters (to the
+   farm, the market, the valley, a person); what to build or do (one concrete hint about this level's
+   threat or twist).
+3. **Introduce people.** The first time someone appears in an act, they say who they are or Cath does
+   ("Pip Talbot, the market inspector"). Villains say what they want.
+4. **Plain, warm, spoken English.** Say it the way a person would say it out loud. No riddles, no
+   aphorisms, no ironic understatement, no lists of oddly specific numbers, no dates as jokes.
+5. **Feelings are visible.** People say when they're worried, proud, angry or relieved.
+6. **One light moment per scene at most**, and it must be funny on its own (Bea's literal questions and
+   drawings work well).
+7. **After-scenes state the consequence**: what was won, and what happens next, in one or two lines.
+8. **Short:** before 2-4 lines, after 1-2 lines, each line under 120 characters. A narrator caption may
+   open an act or a boss level to set the scene in one sentence.
+9. Keep the plot of section 4 (who, where, what the twist is); change how it's told.
+
+Act 1 (levels 1-10) in `story/acts1to5.ts` is the model.
