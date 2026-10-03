@@ -195,6 +195,10 @@ export class Audio {
       this.thump(110, 40, 0.22, 0.9, 0, "sine", 0.5);
       this.burst({ type: "lowpass", freq: 3800, sweepTo: 500, decay: 0.3, gain: 0.9, verb: 0.9 });
       this.clack(0.3, 0.16, 2200);
+    } else if (weapon === "launcher") {
+      this.thump(70, 28, 0.45, 1.0, 0, "sine", 0.7);
+      this.burst({ type: "lowpass", freq: 1800, sweepTo: 250, decay: 0.7, gain: 0.8, verb: 1.2 });
+      this.clack(0.5, 0.2, 900);
     } else if (weapon === "smg" || weapon === "rifle") {
       const big = weapon === "rifle";
       this.thump(big ? 140 : 190, 70, 0.07, big ? 0.7 : 0.45);

@@ -14,7 +14,7 @@ describe("CATHODE playable weapons", () => {
   });
   it("covers revolver, SMG and rifle with sane numbers", () => {
     const by = Object.fromEntries(SLICE_WEAPONS.map((w) => [w.weaponClass, w]));
-    for (const c of ["revolver", "smg", "rifle"]) expect(by[c], c).toBeTruthy();
+    for (const c of ["revolver", "smg", "rifle", "launcher"]) expect(by[c], c).toBeTruthy();
     expect(by.smg!.cycle).toBeLessThan(by.rifle!.cycle);
     expect(by.revolver!.damage).toBeGreaterThan(by.rifle!.damage);
   });

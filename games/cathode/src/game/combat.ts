@@ -143,6 +143,13 @@ export class Combat {
     const maxD = hitW ? hitW.dist : w.range;
     this.blocked = null;
     const hitE = this.nearestEnemy(origin, dir, maxD);
+    if (w.blast) {
+      // Launchers: the round bursts where it lands (instant flight for now), enemy or wall.
+      const at = hitE ? hitE.point : hitW ? hitW.point.clone().addScaledVector(dir, -0.3) : origin.clone().addScaledVector(dir, w.range);
+      this.world.fx.explosion(at.clone(), w.blast);
+      this.explode(at, w.blast, w.damage, build);
+      return;
+    }
     if (!hitE && this.blocked) {
       const b = this.blocked as { point: THREE.Vector3; normal: THREE.Vector3 };
       this.world.fx.impact(b.point, b.normal, "metal");

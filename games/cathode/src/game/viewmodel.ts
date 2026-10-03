@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
-export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle";
+export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle" | "launcher";
 
 const M = {
   glove: new THREE.MeshStandardMaterial({ color: 0x0d0c0c, roughness: 0.42, metalness: 0.0 }),
@@ -322,6 +322,29 @@ function buildAuto(long: boolean): GunRig {
   return r;
 }
 
+/** The Bargain Bin: a fat tube launcher with a drum, a top sight and a pistol grip. */
+function buildLauncher(): GunRig {
+  const r = rig(new THREE.Vector3(0.17, -0.18, -0.44), new THREE.Vector3(0, -0.08, -0.34), 58);
+  const g = new THREE.Group();
+  g.add(at(cyl(0.04, 0.5, M.blued, 20), 0, 0.01, -0.2)); // tube
+  g.add(at(cyl(0.05, 0.05, M.steel, 20), 0, 0.01, -0.46)); // muzzle collar
+  const drum = at(cyl(0.05, 0.12, M.polymer, 6), 0, -0.01, 0.0);
+  drum.rotation.x = Math.PI / 2;
+  g.add(drum);
+  g.add(at(box(0.012, 0.04, 0.03, M.blued, 0.003), 0, 0.07, -0.1)); // sight
+  const grip = box(0.03, 0.09, 0.04, M.polymer, 0.008);
+  grip.position.set(0, -0.08, 0.06);
+  grip.rotation.x = 0.3;
+  g.add(grip);
+  g.add(at(box(0.03, 0.09, 0.03, M.polymer, 0.006), 0, -0.07, -0.2)); // foregrip
+  g.add(at(box(0.034, 0.06, 0.2, M.polymer, 0.01), 0, -0.01, 0.22)); // stock
+  r.root.add(g);
+  r.muzzle.position.set(0, 0.01, -0.5);
+  r.port.position.set(0.03, 0.01, 0.0);
+  attachHands(r, [0, -0.08, 0.06], [-0.005, -0.06, -0.2], -1.2);
+  return r;
+}
+
 export function buildGun(model: GunModel): GunRig {
   const r =
     model === "pin" ? buildPin()
@@ -330,6 +353,7 @@ export function buildGun(model: GunModel): GunRig {
     : model === "revolver" ? buildRevolver()
     : model === "smg" ? buildAuto(false)
     : model === "rifle" ? buildAuto(true)
+    : model === "launcher" ? buildLauncher()
     : buildSniper();
   r.root.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) {

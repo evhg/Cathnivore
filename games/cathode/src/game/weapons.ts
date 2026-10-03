@@ -32,6 +32,8 @@ export interface WeaponDef {
   range: number;
   /** Severs limbs easily (shotguns, the Pin at a kill). */
   brutal?: number;
+  /** Explosive round: burst radius in metres (launchers). */
+  blast?: number;
 }
 
 export const SLICE_WEAPONS: WeaponDef[] = [
@@ -42,6 +44,7 @@ export const SLICE_WEAPONS: WeaponDef[] = [
   { id: "oldTestament", name: "Old Testament", model: "revolver", weaponClass: "revolver", kind: "hitscan", damage: 62, pellets: 1, cycle: 0.45, mag: 6, reserve: 36, reload: 2.2, spread: [0.02, 0.003], noise: 55, kick: 2.0, range: 80, brutal: 0.5 },
   { id: "rattlecan", name: "Rattlecan", model: "smg", weaponClass: "smg", kind: "hitscan", damage: 15, pellets: 1, cycle: 0.075, mag: 30, reserve: 150, reload: 1.8, spread: [0.04, 0.016], noise: 40, kick: 0.5, range: 45 },
   { id: "corridorAR", name: "Corridor AR", model: "rifle", weaponClass: "rifle", kind: "hitscan", damage: 24, pellets: 1, cycle: 0.11, mag: 30, reserve: 120, reload: 2.1, spread: [0.03, 0.006], noise: 60, kick: 0.9, range: 120 },
+  { id: "bargainBin", name: "Bargain Bin", model: "launcher", weaponClass: "launcher", kind: "hitscan", damage: 140, pellets: 1, cycle: 0.9, mag: 4, reserve: 12, reload: 3.2, spread: [0.02, 0.004], noise: 90, kick: 2.6, range: 140, blast: 5, brutal: 1 },
 ];
 
 export interface Shot {
