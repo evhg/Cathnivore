@@ -191,6 +191,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let time = 0;
   let wasFire = false;
   let swayT = 0;
+  let drama = 0;
   let dead = false;
   let jobDone = false;
   const eye = new THREE.Vector3();
@@ -219,6 +220,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       scale = 0.35;
     } else s.focus = Math.min(progress.stats.bulletTimeSeconds, s.focus + realDt * 0.15);
     const dt = o.shot ? 0 : realDt * scale;
+    // Slow motion looks it: the noir grade deepens while time is held.
+    if (!killcam.active) {
+      const want = focusing || run.timeScale < 1 ? 0.4 : 0;
+      if (want !== drama) world.setDrama((drama = want));
+    }
     time += dt;
 
     if (killcam.active) {
