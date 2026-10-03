@@ -404,6 +404,12 @@ export class Body {
       if (t !== null && t <= maxDist && (!best || t < best.dist))
         best = { seg: s.def, dist: t, point: origin.clone().addScaledVector(dir, t) };
     }
+    // The chest's rounded top reaches past the neck: anything that lands above the neck is a headshot.
+    const head = this.segs.get("head");
+    if (best && best.seg.name === "chest" && head && !head.loose) {
+      const spine = new THREE.Vector3().subVectors(this.joints.neck, this.joints.chest).normalize();
+      if (new THREE.Vector3().subVectors(best.point, this.joints.neck).dot(spine) > 0) best = { ...best, seg: head.def };
+    }
     return best;
   }
 
