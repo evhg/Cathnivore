@@ -166,7 +166,7 @@ export class Audio {
   }
 
   // ---- weapons ----
-  shot(weapon: "pistol" | "shotgun" | "sniper" | "melee"): void {
+  shot(weapon: string): void {
     if (!this.enabled) return;
     if (weapon === "pistol") {
       // Suppressed: a hard "pfft", the slide's clack, a whisper of room.
@@ -191,6 +191,15 @@ export class Audio {
       // The bolt.
       this.clack(0.62, 0.22, 1800);
       this.clack(0.84, 0.26, 1300);
+    } else if (weapon === "revolver") {
+      this.thump(110, 40, 0.22, 0.9, 0, "sine", 0.5);
+      this.burst({ type: "lowpass", freq: 3800, sweepTo: 500, decay: 0.3, gain: 0.9, verb: 0.9 });
+      this.clack(0.3, 0.16, 2200);
+    } else if (weapon === "smg" || weapon === "rifle") {
+      const big = weapon === "rifle";
+      this.thump(big ? 140 : 190, 70, 0.07, big ? 0.7 : 0.45);
+      this.burst({ type: "highpass", freq: 2600, decay: 0.045, gain: big ? 0.7 : 0.5 });
+      this.burst({ type: "lowpass", freq: big ? 2600 : 3200, sweepTo: 500, decay: big ? 0.22 : 0.12, gain: big ? 0.6 : 0.4, verb: 0.5 });
     } else {
       this.burst({ freq: 900, sweepTo: 300, q: 1.5, decay: 0.18, gain: 0.35 });
     }

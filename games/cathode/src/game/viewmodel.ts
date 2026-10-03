@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
-export type GunModel = "pin" | "pistol" | "shotgun" | "sniper";
+export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle";
 
 const M = {
   glove: new THREE.MeshStandardMaterial({ color: 0x0d0c0c, roughness: 0.42, metalness: 0.0 }),
@@ -261,8 +261,76 @@ function buildSniper(): GunRig {
   return r;
 }
 
+/** The Old Testament: a long-barrelled revolver, walnut grip, a fluted cylinder that swings out to reload. */
+function buildRevolver(): GunRig {
+  const r = rig(new THREE.Vector3(0.14, -0.15, -0.36), new THREE.Vector3(0, -0.066, -0.3), 52);
+  const g = new THREE.Group();
+  g.add(at(box(0.03, 0.045, 0.1, M.steel, 0.006), 0, 0.01, -0.02)); // frame
+  g.add(at(cyl(0.013, 0.2, M.steel, 16), 0, 0.022, -0.2)); // barrel
+  g.add(at(box(0.012, 0.016, 0.2, M.steel, 0.003), 0, 0.04, -0.2)); // rib
+  const cyln = at(cyl(0.024, 0.065, M.blued, 6), 0, 0.01, -0.02);
+  cyln.rotation.x = Math.PI / 2;
+  g.add(cyln);
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    g.add(at(cyl(0.004, 0.066, M.brass, 8), Math.cos(a) * 0.016, 0.01 + Math.sin(a) * 0.016, -0.02)).rotation.x = Math.PI / 2;
+  }
+  g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.004, 8, 6), M.brass), 0, 0.05, -0.3)); // front sight
+  const hammer = at(box(0.008, 0.026, 0.014, M.steel, 0.002), 0, 0.045, 0.04);
+  g.add(hammer);
+  const grip = box(0.03, 0.1, 0.045, M.walnut, 0.01);
+  grip.position.set(0, -0.045, 0.05);
+  grip.rotation.x = 0.3;
+  g.add(grip);
+  g.add(at(box(0.004, 0.02, 0.03, M.steel, 0.002), 0, -0.02, 0.0)); // trigger guard
+  r.root.add(g);
+  r.action = hammer;
+  r.muzzle.position.set(0, 0.022, -0.31);
+  r.port.position.set(0.016, 0.01, -0.02);
+  attachHands(r, [0, -0.05, 0.05], [-0.012, -0.055, 0.04], -0.5);
+  return r;
+}
+
+/** SMGs and rifles share a build: a boxy receiver, a magazine, a short stock; `long` stretches it into the AR. */
+function buildAuto(long: boolean): GunRig {
+  const r = rig(new THREE.Vector3(0.17, -0.17, -0.42), new THREE.Vector3(0, -0.075, -0.32), long ? 56 : 54);
+  const g = new THREE.Group();
+  const len = long ? 0.52 : 0.28;
+  g.add(at(box(0.04, 0.062, 0.28, M.polymer, 0.008), 0, 0, -0.02)); // receiver
+  g.add(at(box(0.034, 0.02, 0.3, M.blued, 0.004), 0, 0.04, -0.02)); // top rail
+  g.add(at(cyl(0.012, len, M.blued, 14), 0, 0.012, -0.16 - len / 2)); // barrel
+  g.add(at(cyl(0.018, long ? 0.3 : 0.14, M.polymer, 16), 0, 0.012, -0.16 - (long ? 0.2 : 0.1))); // handguard / can
+  const mag = box(0.03, 0.12, 0.05, M.polymer, 0.006);
+  mag.position.set(0, -0.09, -0.06);
+  mag.rotation.x = long ? 0.18 : 0.05;
+  g.add(mag);
+  const grip = box(0.03, 0.09, 0.04, M.polymer, 0.008);
+  grip.position.set(0, -0.07, 0.1);
+  grip.rotation.x = 0.3;
+  g.add(grip);
+  g.add(at(box(0.036, 0.06, long ? 0.26 : 0.18, M.polymer, 0.01), 0, -0.01, 0.28)); // stock
+  g.add(at(box(0.012, 0.028, 0.012, M.blued, 0.002), 0, 0.066, long ? -0.5 : -0.3)); // front post
+  g.add(at(box(0.016, 0.03, 0.02, M.blued, 0.003), 0, 0.066, 0.1)); // rear sight
+  g.add(at(box(0.01, 0.012, 0.02, M.red, 0.002), 0, 0.083, 0.1));
+  const bolt = at(box(0.008, 0.012, 0.03, M.steel, 0.002), 0.022, 0.02, 0.0); // charging handle
+  g.add(bolt);
+  r.root.add(g);
+  r.action = bolt;
+  r.muzzle.position.set(0, 0.012, -(0.16 + len + 0.02));
+  r.port.position.set(0.022, 0.015, 0.0);
+  attachHands(r, [0, -0.08, 0.1], [-0.005, -0.04, long ? -0.32 : -0.2], -1.2);
+  return r;
+}
+
 export function buildGun(model: GunModel): GunRig {
-  const r = model === "pin" ? buildPin() : model === "pistol" ? buildPistol() : model === "shotgun" ? buildShotgun() : buildSniper();
+  const r =
+    model === "pin" ? buildPin()
+    : model === "pistol" ? buildPistol()
+    : model === "shotgun" ? buildShotgun()
+    : model === "revolver" ? buildRevolver()
+    : model === "smg" ? buildAuto(false)
+    : model === "rifle" ? buildAuto(true)
+    : buildSniper();
   r.root.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) {
       o.castShadow = false;

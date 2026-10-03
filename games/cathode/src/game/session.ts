@@ -99,7 +99,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const arsenal = new Arsenal(world.viewScene);
   // Each class walks in holding its own weapon: the Ghost the rifle, the Butcher the shotgun.
   const cls = progress.character.classes[0];
-  arsenal.equip(cls === "ghost" ? 3 : cls === "butcher" ? 2 : 1);
+  arsenal.equip(cls === "ghost" ? 3 : cls === "butcher" ? 2 : cls === "gunslinger" ? 4 : 1);
   // The gun reflects the same neon city as the street.
   if (world.scene.environment && !world.viewScene.environment) world.viewScene.environment = world.scene.environment;
   const combat = new Combat(world, rays, enemies, o.intensity === "full");

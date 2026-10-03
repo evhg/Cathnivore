@@ -3,6 +3,7 @@
 // Base numbers here are the slice's; sim/weapons.ts owns the full tables and the build scaling (ROADMAP 64).
 
 import * as THREE from "three";
+import type { WeaponClass } from "../sim/types";
 import { buildGun, ViewAnim, type GunModel, type GunRig } from "./viewmodel";
 
 export type FireKind = "hitscan" | "ballistic" | "melee";
@@ -11,7 +12,7 @@ export interface WeaponDef {
   id: string;
   name: string;
   model: GunModel;
-  weaponClass: "melee" | "pistol" | "shotgun" | "sniper";
+  weaponClass: WeaponClass;
   kind: FireKind;
   damage: number;
   pellets: number;
@@ -38,6 +39,9 @@ export const SLICE_WEAPONS: WeaponDef[] = [
   { id: "kestrel", name: "Kestrel 9 (suppressed)", model: "pistol", weaponClass: "pistol", kind: "hitscan", damage: 34, pellets: 1, cycle: 0.16, mag: 12, reserve: 60, reload: 1.35, spread: [0.022, 0.004], noise: 7, kick: 0.6, range: 60 },
   { id: "fishmonger", name: "The Fishmonger", model: "shotgun", weaponClass: "shotgun", kind: "hitscan", damage: 16, pellets: 9, cycle: 0.85, mag: 6, reserve: 24, reload: 0.5, spread: [0.075, 0.05], noise: 48, kick: 1.8, range: 35, brutal: 1 },
   { id: "widowmaker", name: "Widowmaker", model: "sniper", weaponClass: "sniper", kind: "ballistic", damage: 140, pellets: 1, cycle: 1.25, mag: 5, reserve: 20, reload: 2.4, spread: [0.06, 0.0], noise: 14, kick: 2.4, velocity: 820, range: 600, brutal: 0.7 },
+  { id: "oldTestament", name: "Old Testament", model: "revolver", weaponClass: "revolver", kind: "hitscan", damage: 62, pellets: 1, cycle: 0.45, mag: 6, reserve: 36, reload: 2.2, spread: [0.02, 0.003], noise: 55, kick: 2.0, range: 80, brutal: 0.5 },
+  { id: "rattlecan", name: "Rattlecan", model: "smg", weaponClass: "smg", kind: "hitscan", damage: 15, pellets: 1, cycle: 0.075, mag: 30, reserve: 150, reload: 1.8, spread: [0.04, 0.016], noise: 40, kick: 0.5, range: 45 },
+  { id: "corridorAR", name: "Corridor AR", model: "rifle", weaponClass: "rifle", kind: "hitscan", damage: 24, pellets: 1, cycle: 0.11, mag: 30, reserve: 120, reload: 2.1, spread: [0.03, 0.006], noise: 60, kick: 0.9, range: 120 },
 ];
 
 export interface Shot {

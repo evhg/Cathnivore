@@ -285,9 +285,9 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
     - the job "The Fish Market" from briefing to extraction.
 
 **Phase 2: systems.**
-70. [ ] All 5 classes playable, dual-classing at level 15, the 10 hybrid capstones.
+70. [x] *(2026-10-03: all actives play; hacking hits what she looks at until street cameras exist; unreleased)* All 5 classes playable, dual-classing at level 15, the 10 hybrid capstones.
 71. [ ] Loot drops, inventory, Rare/Unique/Set generation, sockets and firmware chains, the gunsmith (tiers I–V, parts).
-72. [ ] The remaining weapon classes (revolver, SMG, assault rifle, launcher, smart gun, katana and monowire, sledgehammer) with alt-fires.
+72. [ ] *(2026-10-03: revolver, SMG and assault rifle now playable, with models and sounds; left: launcher, smart gun, katana/monowire, sledgehammer, alt-fires)* The remaining weapon classes (revolver, SMG, assault rifle, launcher, smart gun, katana and monowire, sledgehammer) with alt-fires.
 73. [ ] Elites with Diablo-style modifiers; damage types and resistances; saves, checkpoints and an export code.
 
 **Phase 3: act 1, the Drowned Market.**
