@@ -75,6 +75,9 @@ interface ShotKit {
   drop: THREE.Material;
 }
 
+/** Cath's pose: rolling-pin shoulder, elbow, wrist; free shoulder, elbow; body lean (radians). */
+type Pose = [number, number, number, number, number, number];
+
 /** How long a hit flash lasts, in seconds. */
 const FLASH = 0.07;
 
@@ -131,6 +134,7 @@ export class Renderer3D {
   private camBase = new THREE.Vector3();
   private camTarget = new THREE.Vector3();
   private heroSwung = 9;
+  private heroPie = 9;
   private raycaster = new THREE.Raycaster();
   private plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   private w = 1;
@@ -224,14 +228,33 @@ export class Renderer3D {
     this.bossBar.append(this.bossName, track);
     overlay.append(this.bossBar);
 
-    const loader = new THREE.TextureLoader();
+    // Her portrait, with its bottom edge faded out so the cut ends of her hair blend into her 3D hair.
     const tex = (svg: string) => {
-      const t = loader.load(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
+      const c = document.createElement("canvas");
+      c.width = 312;
+      c.height = 376;
+      const t = new THREE.CanvasTexture(c);
       t.colorSpace = THREE.SRGBColorSpace;
+      const img = new Image();
+      img.onload = () => {
+        const ctx = c.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        ctx.globalCompositeOperation = "destination-in";
+        const g = ctx.createLinearGradient(0, c.height * 0.8, 0, c.height);
+        g.addColorStop(0, "rgba(0,0,0,1)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, c.width, c.height);
+        t.needsUpdate = true;
+      };
+      img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
       return t;
     };
     this.faceTex = tex(cathSvg({ framing: "face", expression: "determined", width: 312, height: 376 }));
     this.faceWorried = tex(cathSvg({ framing: "face", expression: "worried", width: 312, height: 376 }));
+    // Sandbox only: a handle for screenshot scripts (zoom on Cath, freeze a swing).
+    if (new URLSearchParams(location.search).has("sandbox")) (window as unknown as { hedgerow3d: Renderer3D }).hedgerow3d = this;
     try {
       this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     } catch {
@@ -527,7 +550,7 @@ export class Renderer3D {
           const cream = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: "#fff6e0", roughness: 0.5 }));
           cream.position.y = 0.03;
           pie.add(crust, cream);
-          this.heroSwung = 0;
+          this.heroPie = 0;
           this.fx.add(pie, 0.4, (k) => {
             pie.position.lerpVectors(from, to, k);
             pie.position.y += Math.sin(k * Math.PI) * 1.4;
@@ -1158,11 +1181,13 @@ export class Renderer3D {
     c.position.set(h.x, y, h.y);
     c.scale.setScalar(1.3);
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
-    const fig = c.userData.fig as THREE.Group;
-    const head = c.userData.head as THREE.Sprite | undefined;
-    const legs = c.userData.legs as THREE.Object3D[];
-    const arm = c.userData.arm as THREE.Object3D;
+    const ud = c.userData;
+    const fig = ud.fig as THREE.Group;
+    const head = ud.head as THREE.Sprite | undefined;
+    const legs = ud.legs as THREE.Object3D[];
     fig.rotation.y = h.facing === 1 ? 0 : Math.PI;
+    this.heroSwung += dt;
+    this.heroPie += dt;
     if (h.down > 0) {
       fig.rotation.z = -1.2;
       fig.position.y = 0.1;
@@ -1171,18 +1196,103 @@ export class Renderer3D {
         (head.material as THREE.SpriteMaterial).map = this.faceWorried;
       }
       if (Math.random() < dt * 6) this.sparks.emit(h.x, y + 0.6, h.y, "#ffe66b", 1, 0.4, 0.1, 0.6, 0);
+      this.swayHair(ud, dt, 0, t);
       return;
     }
-    fig.rotation.z = 0;
-    fig.position.y = walking ? Math.abs(Math.sin(t * 12)) * 0.03 : Math.sin(t * 2) * 0.005;
+    const [sh, el, wr, sh2, el2, lean] = this.heroPose(game, t, walking);
+    const arm = ud.arm as THREE.Object3D;
+    arm.rotation.set(-0.08, 0, sh);
+    (ud.elbow as THREE.Object3D).rotation.z = el;
+    (ud.wrist as THREE.Object3D).rotation.z = wr;
+    (ud.arm2 as THREE.Object3D).rotation.set(0.08, 0, sh2);
+    (ud.elbow2 as THREE.Object3D).rotation.z = el2;
+    // A light step: a bob twice a stride, and a little forward lean while she walks.
+    const bob = walking ? Math.abs(Math.sin(t * 12)) * 0.028 : Math.sin(t * 2) * 0.005;
+    fig.rotation.z = lean;
+    fig.position.y = bob;
     if (head) {
-      head.position.set(0, 0.72 + fig.position.y, 0);
+      // The portrait rides on her shoulders: it follows the lean and the bob.
+      head.position.set(-Math.sin(lean) * 0.72 * h.facing, 0.72 * Math.cos(lean) + bob, 0);
       (head.material as THREE.SpriteMaterial).map = this.faceTex;
     }
     legs.forEach((l, i) => (l.rotation.z = walking ? Math.sin(t * 12 + i * Math.PI) * 0.6 : 0));
-    this.heroSwung += dt;
-    const sw = this.heroSwung < 0.25 ? Math.sin((this.heroSwung / 0.25) * Math.PI) : 0;
-    arm.rotation.z = -0.3 - sw * 1.8;
+    this.swayHair(ud, dt, (walking ? -0.32 + Math.sin(t * 24) * 0.05 : Math.sin(t * 1.3) * 0.03) - lean * 1.6, t);
+  }
+
+  /**
+   * Cath's pose: [rolling-pin shoulder, elbow, wrist, free shoulder, free elbow, body lean] (radians; positive
+   * swings an arm forward and leans her back). A swing winds up while her next blow comes due, chops through
+   * on the "swing" event and follows through; a pie is thrown overarm with the free hand; she swings her arms
+   * as she walks.
+   */
+  private heroPose(game: Game, t: number, walking: boolean): Pose {
+    const h = game.hero;
+    const REST: Pose = [0.35, 1.15, 0.55, -0.08, 0.35, 0];
+    const WIND: Pose = [2.75, 1.5, 0.75, 0.55, 0.6, 0.12];
+    const STRIKE: Pose = [1.05, 0.15, 0.3, -0.5, 0.45, -0.17];
+    const FOLLOW: Pose = [-0.25, 0.35, 0.2, -0.3, 0.3, -0.08];
+    const mix = <T extends number[]>(a: T, b: T, k: number): T => a.map((v, i) => v + (b[i]! - v) * k) as T;
+    const ease = (k: number) => k * k * (3 - 2 * k);
+    let pose = REST;
+    const s = this.heroSwung;
+    if (s < 0.07) pose = mix(WIND, STRIKE, (s / 0.07) ** 2);
+    else if (s < 0.2) pose = mix(STRIKE, FOLLOW, ease((s - 0.07) / 0.13));
+    else if (s < 0.45) pose = mix(FOLLOW, REST, ease((s - 0.2) / 0.25));
+    else if (h.cd > 0 && h.cd < 0.25 && (h.holding.length > 0 || this.enemyNearHero(game, 0.8))) {
+      // Her next blow is due: wind up for it.
+      pose = mix(REST, WIND, ease(1 - h.cd / 0.25));
+    }
+    pose = [...pose];
+    // The free hand throws a pie overarm: back, over and through.
+    const p = this.heroPie;
+    if (p < 0.5) {
+      type Arm = [number, number, number];
+      const BACK: Arm = [3.4, 1.3, 0.1];
+      const RELEASE: Arm = [1.75, 0.1, -0.12];
+      const DOWN: Arm = [0.4, 0.4, -0.04];
+      const rest: Arm = [pose[3], pose[4], 0];
+      const q =
+        p < 0.1 ? mix(rest, BACK, ease(p / 0.1)) : p < 0.2 ? mix(BACK, RELEASE, ((p - 0.1) / 0.1) ** 2) : p < 0.3 ? mix(RELEASE, DOWN, ease((p - 0.2) / 0.1)) : mix(DOWN, rest, ease((p - 0.3) / 0.2));
+      [pose[3], pose[4], pose[5]] = [q[0], q[1], pose[5] + q[2]];
+    }
+    if (walking) {
+      // Arms swing against her stride (the swing itself overrides the pin arm).
+      const w = Math.sin(t * 12);
+      if (s >= 0.45) pose[0] -= w * 0.3;
+      if (p >= 0.5) pose[3] += w * 0.45;
+      pose[5] -= 0.06;
+    }
+    return pose;
+  }
+
+  private enemyNearHero(game: Game, r: number): boolean {
+    const h = game.hero;
+    for (const e of game.enemies) {
+      if (e.hp <= 0) continue;
+      const p = enemyPoint(game.level, e);
+      if (Math.abs(p.x - h.x) < r && Math.abs(p.y - h.y) < r) return true;
+    }
+    return false;
+  }
+
+  /** Her hair trails behind on a spring, each layer a little slower than the one beneath. */
+  private swayHair(ud: Record<string, unknown>, dt: number, target: number, t: number): void {
+    const hair = ud.hair as THREE.Object3D[] | undefined;
+    const vel = ud.hairVel as number[] | undefined;
+    if (!hair || !vel) return;
+    const step = Math.min(dt, 1 / 30);
+    hair.forEach((p, i) => {
+      const k = 70 - i * 16;
+      const a = p.rotation.z;
+      const want = Math.max(-0.8, Math.min(0.5, target * (1 + i * 0.15)));
+      vel[i] = vel[i]! + ((want - a) * k - vel[i]! * 7) * step;
+      p.rotation.z = a + vel[i]! * step;
+      p.rotation.x = Math.sin(t * 1.7 + i) * 0.03;
+    });
+    for (const [i, l] of ((ud.locks as THREE.Object3D[] | undefined) ?? []).entries()) {
+      l.rotation.z = hair[0]!.rotation.z * 0.6;
+      l.rotation.x = (i ? 1 : -1) * 0.06;
+    }
   }
 
   private syncSelection(game: Game, t: number): void {

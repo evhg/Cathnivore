@@ -1322,7 +1322,88 @@ export function buildEnemy(kind: EnemyKind): THREE.Group {
 
 // ---- Cath ----
 
-/** Cath: an olive field jacket over a cream blouse, slim trousers, boots, a rolling pin; her head is her portrait. */
+// Her hair, from OWNER.md and the shared Cath art (shared/cath/cath.ts): deep brown-black with a warm shine band.
+const HAIR = { deep: "#1A110E", base: "#2E211C", mid: "#4A362D", shine: "#7E5D4D" };
+const SKIN = "#F7DCCB";
+
+/**
+ * A lock of long hair hanging down from y = 0: a tapered, flattened tube (x is its thickness, z its width) with
+ * soft waves along its length and a gentle outward curl at the tips. Vertex colours shade it from the crown
+ * down to darker ends, with a light shine band near the top, so the layers read without extra materials.
+ */
+function hairLock(len: number, width: number, thick: number, wave: number, curl: number, shine = 0.22): THREE.BufferGeometry {
+  return geo(`hairlock${len},${width},${thick},${wave},${curl},${shine}`, () => {
+    const g = new THREE.CylinderGeometry(1, 0.45, len, 10, 8, false);
+    g.translate(0, -len / 2, 0);
+    const pos = g.attributes.position as THREE.BufferAttribute;
+    const col = new Float32Array(pos.count * 3);
+    const base = new THREE.Color(HAIR.base);
+    const deep = new THREE.Color(HAIR.deep);
+    const mid = new THREE.Color(HAIR.mid);
+    const sh = new THREE.Color(HAIR.shine);
+    const c = new THREE.Color();
+    for (let i = 0; i < pos.count; i++) {
+      const k = -pos.getY(i) / len; // 0 at the crown, 1 at the tips
+      const sx = pos.getX(i);
+      const sz = pos.getZ(i);
+      // Flatten into a curtain, slightly thicker in the middle of its width.
+      let x = sx * thick * (0.75 + 0.25 * Math.cos(sz * 1.4));
+      const z = sz * width;
+      x += Math.sin(k * Math.PI * 2.3 + sz * 1.7) * wave * k + -curl * k * k;
+      pos.setXYZ(i, x, pos.getY(i), z);
+      c.copy(mid).lerp(base, Math.min(1, k * 1.6)).lerp(deep, Math.max(0, k - 0.45) * 1.4);
+      // The shine band runs across the outer face (the back, -x) a little below the crown.
+      const band = Math.max(0, 1 - Math.abs(k - shine) / 0.07) * Math.max(0, -sx);
+      c.lerp(sh, band * 0.85);
+      col.set([c.r, c.g, c.b], i * 3);
+    }
+    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    g.computeVertexNormals();
+    return g;
+  });
+}
+
+let hairMat: THREE.MeshStandardMaterial | null = null;
+/** Glossy hair: smooth-shaded so the sun leaves a soft highlight along each layer. */
+function hairMaterial(): THREE.MeshStandardMaterial {
+  hairMat ??= Object.assign(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 0.05 }), { shared: true });
+  return hairMat;
+}
+
+/** The pasture-green leaf clip she wears in her hair (VISION: "a cute touch"): a cupped leaf with a pale midrib. */
+function leafClip(): THREE.Group {
+  const leaf = scaled(ball(1, gloss("#5B7F3A", 0.05), 0, 0, 0, 1), 0.012, 0.042, 0.022);
+  const rib = scaled(ball(1, matte("#86AC5B", 0.6), 0.006, 0, 0, 0), 0.005, 0.034, 0.004);
+  const tip = scaled(ball(1, matte("#3E5C26", 0.7), 0, -0.04, 0, 0), 0.008, 0.01, 0.01);
+  return group(leaf, rib, tip);
+}
+
+/** An arm hanging from the shoulder: the upper sleeve, an elbow joint, a rolled-up forearm and a hand. */
+function cathArm(sleeveM: M, cuffM: M, skinM: M): { shoulder: THREE.Group; elbow: THREE.Group; hand: THREE.Group } {
+  const shoulder = new THREE.Group();
+  shoulder.add(ball(0.03, sleeveM, 0, -0.005, 0, 1));
+  shoulder.add(cyl(0.026, 0.023, 0.13, sleeveM, 0, -0.13, 0, 8));
+  const elbow = new THREE.Group();
+  elbow.position.y = -0.13;
+  elbow.add(ball(0.023, sleeveM, 0, 0, 0, 1));
+  // The sleeve is rolled to just below the elbow: a cuff, then her forearm.
+  elbow.add(cyl(0.023, 0.022, 0.04, sleeveM, 0, -0.04, 0, 8));
+  elbow.add(cyl(0.027, 0.027, 0.022, cuffM, 0, -0.052, 0, 8));
+  elbow.add(cyl(0.017, 0.015, 0.075, skinM, 0, -0.112, 0, 8));
+  const hand = new THREE.Group();
+  hand.position.y = -0.115;
+  hand.add(scaled(ball(0.022, skinM, 0, -0.008, 0, 1), 1, 1.15, 0.9));
+  elbow.add(hand);
+  shoulder.add(elbow);
+  return { shoulder, elbow, hand };
+}
+
+/**
+ * Cath: an olive field jacket over a cream blouse, slim trousers, boots, a rolling pin; her head is her
+ * portrait. She faces +X. The renderer animates `arm`/`elbow`/`wrist` (the rolling-pin arm), `arm2`/`elbow2`
+ * (the free arm, which throws the pies), `legs`, `hair` (layers of her long back hair, each on its own pivot
+ * so they sway out of step) and `locks` (the front locks framing her face).
+ */
 export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   const root = new THREE.Group();
   const fig = new THREE.Group();
@@ -1334,35 +1415,62 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   const jacketM = matte(o.jacket, 0.7).clone();
   const blouseM = matte(o.blouse, 0.5).clone();
   const sleeveM = matte(o.sleeve, 0.7).clone();
+  const skinM = matte(SKIN, 0.6, false);
   root.userData.dress = { id: o.id, mats: { trousers: trousersM, boots: bootsM, jacket: jacketM, blouse: blouseM, sleeve: sleeveM } };
   for (const z of [-0.05, 0.05]) {
     const leg = new THREE.Group();
     leg.position.set(0, 0.24, z);
-    leg.add(box(0.06, 0.22, 0.06, trousersM, 0, -0.24, 0));
-    leg.add(box(0.08, 0.05, 0.07, bootsM, 0.015, -0.26, 0));
+    leg.add(cyl(0.03, 0.026, 0.22, trousersM, 0, -0.24, 0, 8));
+    leg.add(box(0.08, 0.05, 0.065, bootsM, 0.015, -0.26, 0));
     fig.add(leg);
     legs.push(leg);
   }
   // Jacket: a gently flared lathe, collar up.
   const pts = [new THREE.Vector2(0.12, 0), new THREE.Vector2(0.11, 0.1), new THREE.Vector2(0.1, 0.2), new THREE.Vector2(0.11, 0.26), new THREE.Vector2(0.05, 0.3)];
-  const jacket = mesh(new THREE.LatheGeometry(pts, 12), jacketM, 0, 0.22, 0);
+  const jacket = mesh(geo("cathJacket", () => new THREE.LatheGeometry(pts, 12)), jacketM, 0, 0.22, 0);
   fig.add(jacket);
   fig.add(box(0.02, 0.1, 0.08, blouseM, 0.1, 0.38, 0));
   fig.add(ball(0.012, glow("#ffe9a8", 1), 0.112, 0.44, 0.02, 0));
-  const arm = new THREE.Group();
-  arm.position.set(0, 0.48, 0.12);
-  arm.add(box(0.05, 0.18, 0.05, sleeveM, 0, -0.14, 0));
-  const pin = cyl(0.025, 0.025, 0.26, matte("#d9b384", 0.6), 0, -0.3, 0, 8);
-  pin.rotation.z = Math.PI / 2;
-  pin.position.set(0.05, -0.24, 0.02);
-  arm.add(pin);
-  fig.add(arm);
-  const arm2 = new THREE.Group();
-  arm2.position.set(0, 0.48, -0.12);
-  arm2.add(box(0.05, 0.18, 0.05, sleeveM, 0, -0.14, 0));
-  fig.add(arm2);
-  // Hair falling down her back.
-  fig.add(box(0.05, 0.3, 0.2, matte("#2E211C", 0.5), -0.07, 0.32, 0));
+  // Arms from the shoulders. The near one (+Z) holds the rolling pin by one handle, like a club.
+  const right = cathArm(sleeveM, jacketM, skinM);
+  right.shoulder.position.set(0, 0.47, 0.115);
+  const wood = matte("#d9b384", 0.6, false);
+  const handle = matte("#b98a5a", 0.6, false);
+  const pin = group(cyl(0.011, 0.011, 0.06, handle, 0, -0.03, 0, 6), cyl(0.028, 0.028, 0.17, wood, 0, -0.2, 0, 10), cyl(0.011, 0.011, 0.05, handle, 0, -0.25, 0, 6));
+  pin.position.y = 0.02;
+  right.hand.add(pin);
+  fig.add(right.shoulder);
+  const left = cathArm(sleeveM, jacketM, skinM);
+  left.shoulder.position.set(0, 0.47, -0.115);
+  fig.add(left.shoulder);
+  // Long, centre-parted hair falling down her back in three layers, each hung from its own pivot at the nape
+  // so they sway out of step; the top layer carries the leaf clip.
+  const hair: THREE.Group[] = [];
+  const layer = (x: number, y: number, g: THREE.BufferGeometry, ox: number): THREE.Group => {
+    const p = new THREE.Group();
+    p.position.set(x, y, 0);
+    const m = mesh(g, hairMaterial(), ox, 0, 0);
+    p.add(m);
+    fig.add(p);
+    hair.push(p);
+    return p;
+  };
+  layer(-0.1, 0.62, hairLock(0.42, 0.105, 0.06, 0.012, 0.02, 0.18), -0.045);
+  layer(-0.11, 0.63, hairLock(0.38, 0.092, 0.05, 0.016, 0.035, 0.2), -0.065);
+  const top = layer(-0.12, 0.64, hairLock(0.31, 0.078, 0.04, 0.014, 0.045, 0.24), -0.085);
+  const clip = leafClip();
+  clip.position.set(-0.035, -0.08, 0.07);
+  clip.rotation.set(0.5, 0, 0.35);
+  top.add(clip);
+  // Front locks: they fall from under her portrait over her shoulders, framing her face.
+  const locks: THREE.Group[] = [];
+  for (const z of [-0.06, 0.06]) {
+    const p = new THREE.Group();
+    p.position.set(0.15, 0.62, z);
+    p.add(mesh(hairLock(0.27, 0.034, 0.042, 0.008, -0.015, 0.3), hairMaterial(), 0, 0, 0));
+    fig.add(p);
+    locks.push(p);
+  }
   // Her face, always turned to the camera.
   if (faceTexture) {
     const head = new THREE.Sprite(new THREE.SpriteMaterial({ map: faceTexture, transparent: true }));
@@ -1374,9 +1482,18 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   fig.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
-  root.userData.legs = legs;
-  root.userData.arm = arm;
-  root.userData.fig = fig;
+  Object.assign(root.userData, {
+    legs,
+    fig,
+    arm: right.shoulder,
+    elbow: right.elbow,
+    wrist: right.hand,
+    arm2: left.shoulder,
+    elbow2: left.elbow,
+    hair,
+    hairVel: hair.map(() => 0),
+    locks,
+  });
   return root;
 }
 
