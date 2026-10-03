@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-03 11:52 session:** ROADMAP 57 part 1 (phone map 45vh, bigger labels, e2e spec; `npm run check` green). Left: bigger tokens + shadows, then 58-62. 4 releases already used today; release after 00:00 UTC.
 - **2026-10-03 10:51 session:** planning (fewer than 3 open items): audited Cathnivore shots with a subagent, added ROADMAP 57-62; end-screen stats now 4-across on wide screens. Next: 57 (phone map hero), then 58-62. 4 releases already used today; release after 00:00 UTC.
 - **2026-10-03 07:44-10:30 (owner chat session):** owner said Hedgerow is too easy and money isn't scarce: counters, heavy plant, slow floor, leaner economy, fast Endless climb, full re-tune (BALANCE.md). Also committed ROADMAP 44's 3D polish (Cath's hair and swing, tower build-up, lane surfaces per act). Unreleased: today's 4 releases are used; release after 00:00 UTC.
 - **2026-10-03 05:08-06:10 (owner chat session):** built ROADMAP 53 (replays), 54 (set pieces), 50's turntable, illustrated outfits for the wardrobe, and fixed no sound on iPhone (audio session, silent switch, interrupted context). Released `1980312` (2nd release today). Next: ROADMAP 44 leftovers, then plan new items (fewer than 3 open).

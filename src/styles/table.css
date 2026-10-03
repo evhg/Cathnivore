@@ -159,7 +159,25 @@
      own viewBox, instead of spilling below the fold. */
   .map-wrap {
     flex: 1 1 0;
-    min-height: 200px;
+    min-height: calc(45vh + 6px);
+    padding: 2px;
+  }
+
+  /* ROADMAP 57: the map is the hero on a phone, so the action list peeks at about two rows. */
+  .action-tray .actions {
+    max-height: 92px;
+  }
+
+  .map-legend {
+    flex: none;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 4px 10px;
+  }
+
+  .region-name {
+    font-size: 14.5px;
   }
 
   .map {

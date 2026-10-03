@@ -454,9 +454,9 @@ export default function Map({ state, highlight, onSelect }: Props) {
         return (
           <g key={`name-${id}`} className="region-sign" pointerEvents="none">
             <rect
-              x={x - def.name.length * 4.3 - 6}
+              x={x - def.name.length * 4.9 - 6}
               y={y - HEX_R * 0.62 - 12}
-              width={def.name.length * 8.6 + 12}
+              width={def.name.length * 9.8 + 12}
               height={17}
               rx={3}
               fill="var(--paper)"
