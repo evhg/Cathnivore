@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-03 02:51 session:** ROADMAP 52 part 2: Drone carrier (`launch` field, sprites, 3D, test, 1 in level 80; level tests green). Left for 52: rival hero (Pell). Then 44, 51, 53, 54. Unreleased (batching).
 - **2026-10-03 01:51 session:** ROADMAP 52 part 1: Lobbyist enemy (`lobby` field, `lobbied()`, sprites, 3D model, test, 2 in level 80; level test green). Left for 52: drone carrier, rival hero (Pell). Then 44, 51, 53, 54.
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
 - **2026-10-03 01:00 session:** released `19f6541` (ROADMAP 48, 49, 50 part 1 + Almanac mega lore). Gate 5 first failed on the Almanac button having no accessible name on phones (fixed with aria-label). Next: 50's 3D turntable, then 44, 51-54.
@@ -67,6 +68,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-03 02:51-~03:20 UTC: ROADMAP 52 part 2 (Drone carrier). Level tests take ~13 min. Not released.
 - 2026-10-03 01:51-~02:20 UTC: ROADMAP 52 part 1 (Lobbyist). Not released (1 release already today; batching).
 - 2026-10-02 21:52-22:15 UTC: released round 3 (`285d90b`). Release gates take ~20 min. No further slice (release used the session). Next: ROADMAP 48-54, 44.
 - 2026-10-02 15:22-21:00 UTC (owner chat session): round 3 (ROADMAP 47). All checks green: 729 unit/level tests, fuzz, build, 44 site e2e. Naive Scarecrow bot wins 9 of 93 levels from 8 (was 25). Unreleased: 4/day cap already used on 2026-10-02; the next session after 00:00 UTC should `npm run release`.

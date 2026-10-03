@@ -366,6 +366,14 @@ describe("hedgerow engine", () => {
     expect(lobbied(g, tw)).toBe(false);
   });
 
+  it("a drone carrier launches drones on a timer", () => {
+    const g = newGame(classic(63));
+    g.enemies.push({ id: 900, kind: "carrier", dist: 3, hp: 1e6, slowed: false, stun: 0 });
+    g.phase = "wave";
+    for (let i = 0; i < 30 * 6; i++) stepGame(g);
+    expect(g.enemies.filter((e) => e.kind === "drone").length).toBeGreaterThanOrEqual(2);
+  });
+
   it("a Union Hall lifts every tower's damage from anywhere on the map", () => {
     const lv = classic(75);
     const dealt = (hall: boolean) => {

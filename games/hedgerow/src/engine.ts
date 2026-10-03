@@ -36,6 +36,7 @@ export type EnemyKind =
   | "ship"
   | "lawyer"
   | "lobbyist"
+  | "carrier"
   | "swarm"
   | "bus"
   | "board"
@@ -259,6 +260,8 @@ export interface EnemySpec {
   jam?: number;
   /** Towers within this many cells of it forget their specialisation and fight as plain tier 3 (megastructures are immune). */
   lobby?: number;
+  /** Launches this many of a kind every `every` seconds while it is on the lane. */
+  launch?: { kind: EnemyKind; count: number; every: number };
   /** Flies over the lane: Cath cannot hold it. */
   flying?: boolean;
   /** Bubble wrap: single-target shots do only WRAP_LEAK of their damage until something area-wide (splash,
@@ -366,6 +369,15 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     bounty: 18,
     leak: 2,
     lobby: 1.6,
+  },
+  carrier: {
+    name: "Drone carrier",
+    hp: 360,
+    speed: 0.6,
+    bounty: 20,
+    leak: 3,
+    flying: true,
+    launch: { kind: "drone", count: 2, every: 5 },
   },
   lawyer: {
     name: "Corporate lawyer",
@@ -1253,6 +1265,8 @@ export interface Enemy {
   /** Bosses: seconds until the next signature move, and which move is next. */
   moveCd?: number;
   moveIdx?: number;
+  /** Seconds until a carrier launches its next drones. */
+  launchCd?: number;
   /** Seconds left charging at double speed. */
   charge?: number;
   /** Bubble wrap left: single-target hits it still shrugs off. */
@@ -2270,6 +2284,20 @@ export function stepGame(game: Game): void {
       enemy.poisonLeft -= STEP;
     }
   }
+
+  // Carriers launch drones from their own spot on the lane.
+  const launched: Enemy[] = [];
+  for (const c of game.enemies) {
+    const l = ENEMIES[c.kind].launch;
+    if (!l || c.hp <= 0 || c.dist <= 0) continue;
+    c.launchCd = (c.launchCd ?? l.every) - STEP;
+    if (c.launchCd > 0) continue;
+    c.launchCd = l.every;
+    for (let i = 0; i < l.count; i++) launched.push(makeEnemy(game, l.kind, Math.max(0, c.dist - i * 0.3), c.lane, c.wave));
+    const p = enemyPoint(game.level, c);
+    game.events.push({ type: "split", x: p.x, y: p.y, kind: l.kind });
+  }
+  game.enemies.push(...launched);
 
   // Clinic-in-a-Box and friends patch up whatever is beside them.
   for (const h of game.enemies) {

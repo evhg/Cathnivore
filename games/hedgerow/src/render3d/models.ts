@@ -970,7 +970,7 @@ export function enemyScale(kind: EnemyKind): number {
 }
 
 export function enemyLift(kind: EnemyKind): number {
-  return kind === "drone" ? 0.55 : kind === "blimp" ? 0.9 : kind === "candor" || kind === "hollowcandor" ? 0.2 : 0;
+  return kind === "drone" ? 0.55 : kind === "carrier" ? 0.6 : kind === "blimp" ? 0.9 : kind === "candor" || kind === "hollowcandor" ? 0.2 : 0;
 }
 
 interface VehicleOpts {
@@ -1186,6 +1186,7 @@ export function buildEnemy(kind: EnemyKind): THREE.Group {
       g.add(ball(0.025, glow("#ff9a1a", 3), -0.12, 0.6, 0, 0));
       break;
     }
+    case "carrier":
     case "drone": {
       g = new THREE.Group();
       g.add(box(0.26, 0.07, 0.26, gloss("#e6eaee", 0.2), 0, 0, 0));
@@ -1209,6 +1210,7 @@ export function buildEnemy(kind: EnemyKind): THREE.Group {
       g.add(box(0.14, 0.11, 0.14, matte("#c79a62"), 0, -0.16, 0));
       g.add(box(0.145, 0.02, 0.145, glow(C.teal, 0.6), 0, -0.12, 0));
       for (const x of [-0.06, 0.06]) g.add(box(0.006, 0.12, 0.006, metal("#5a5e63"), x, -0.08, 0));
+      if (kind === "carrier") g.scale.setScalar(1.7);
       break;
     }
     case "influencer": {

@@ -697,6 +697,8 @@ export function enemyScale(kind: EnemyKind): number {
   switch (kind) {
     case "drone":
       return 0.75;
+    case "carrier":
+      return 1.1;
     case "lawyer":
     case "lobbyist":
     case "influencer":
@@ -726,7 +728,7 @@ export function enemyScale(kind: EnemyKind): number {
 
 /** Height above the ground the sprite floats (flying things). */
 export function enemyLift(kind: EnemyKind): number {
-  return kind === "drone" ? 0.32 : kind === "blimp" ? 0.55 : kind === "candor" || kind === "hollowcandor" ? 0.15 : 0;
+  return kind === "drone" ? 0.32 : kind === "carrier" ? 0.4 : kind === "blimp" ? 0.55 : kind === "candor" || kind === "hollowcandor" ? 0.15 : 0;
 }
 
 function wheel(ctx: C, x: number, y: number, r: number, spin: number): void {
@@ -1048,6 +1050,19 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
         ctx.fill();
       });
       break;
+    case "carrier": {
+      rr(ctx, -s * 0.32, -s * 0.16, s * 0.64, s * 0.14, s * 0.06, "#5b6572");
+      rr(ctx, -s * 0.2, -s * 0.24, s * 0.4, s * 0.1, s * 0.04, "#7a8594");
+      for (const sx of [-0.34, 0, 0.34]) {
+        ctx.fillStyle = "rgba(200,210,220,0.6)";
+        ctx.beginPath();
+        ctx.ellipse(sx * s, -s * 0.27, s * 0.16 * Math.abs(Math.cos(tt * 30 + sx * 5)) + s * 0.02, s * 0.025, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#d4b24a";
+      ctx.fillRect(-s * 0.06, -s * 0.06, s * 0.12, s * 0.04);
+      break;
+    }
     case "swarm":
       for (let i = 0; i < 4; i++) {
         ctx.save();

@@ -230,3 +230,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-03: Almanac part 1 built; towers/megas always visible, enemies unlock via data.seen; no turntable yet.
 2026-10-03: release gate 5 failed on icon-only #btn-almanac (axe name-role-value); fixed with aria-label. Lesson: any button whose label hides at <=520px needs aria-label. Playwright site config needs PLAYWRIGHT_CHROMIUM_PATH.
 2026-10-03: Lobbyist added with only 2 in level 80 (4 made the best bot lose); no full re-tune yet, run hedgerow-tune --verify before next release.
+- 2026-10-03: Drone carrier launches via a generic `launch` spec on EnemySpec (kind/count/every), reusable for later enemies; 3D reuses the drone model at 1.7x.
