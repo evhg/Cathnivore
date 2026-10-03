@@ -1768,6 +1768,13 @@ const TIPS: Record<string, () => string> = {
   "btn-bank": () => "The Seed Bank: spend stars on perks for every level.",
 };
 
+const HOVER = (() => {
+  try {
+    return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  } catch {
+    return true;
+  }
+})();
 let tipTimer = 0;
 let tipHide = 0;
 let tipSuppress = false;
@@ -1796,7 +1803,8 @@ for (const id of Object.keys(TIPS)) {
   if (!el) continue;
   el.classList.add("has-tip");
   el.addEventListener("pointerenter", (e) => {
-    if (e.pointerType !== "mouse") return;
+    // Hover tips only where there's real hover (a phone's emulated mouse events don't count).
+    if (e.pointerType !== "mouse" || !HOVER) return;
     clearTimeout(tipTimer);
     tipTimer = window.setTimeout(() => showTip(el), 380);
   });
