@@ -117,8 +117,9 @@ function RegionTextureDefs() {
 export function Outlet() {
   return (
     <g className="enemy-piece enemy-outlet">
-      <rect width={12} height={12} rx={2} fill="var(--hollowell)" />
-      <circle cx={9} cy={3} r={2.2} fill="var(--hollowell-highlight)" />
+      {/* sawtooth-roofed warehouse: reads apart from Buyout's peak and Doubt's bubble in outline alone */}
+      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={0.4} strokeLinejoin="round" />
+      <circle cx={9} cy={5.5} r={1.8} fill="var(--hollowell-highlight)" />
       <g transform="translate(7,9) rotate(18)">
         <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
         <circle cx={1.3} cy={1.3} r={0.5} fill="var(--ink)" />
