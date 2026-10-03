@@ -1,7 +1,7 @@
 // Hedgerow's levels. H1 ships the first three of act 1, Brindle Hills (docs/design/hedgerow.md). Story
 // follows SPEC 3.2's voice: short, specific, dry, warm. Later acts append to LEVELS.
 
-import { BOSS_MOVES, ENEMIES, TOWERS, type Level, type TwistId, type WaveGroup } from "./engine";
+import { BOSS_MOVES, ENEMIES, TOWERS, laneCellsOf, pathLength, pointAt, type Level, type SetPiece, type TwistId, type WaveGroup } from "./engine";
 import { ACTS_1_TO_5 } from "./story/acts1to5";
 import { ACTS_6_TO_10 } from "./story/acts6to10";
 import type { Beat } from "./story/types";
@@ -6491,6 +6491,39 @@ for (const l of LEVELS) {
 
 // The barn is raised in level 36 (the story's barn raising), not at the start of act 4.
 for (const l of LEVELS) if (l.id >= 31 && l.id < 36) l.towers = l.towers.filter((t) => t !== "barn");
+
+// Set pieces (ROADMAP 54): the field itself changes mid-fight. The river rises at the Ford and the Grain
+// Silo, the Saltmarsh and Oakvale have a swing bridge, and two night levels in the Rift and the Merger are
+// a blackout lit only by the towers and Cath.
+function floodPiece(l: Level): SetPiece {
+  const len = pathLength(l.path);
+  const from = Math.round(len * 0.35);
+  const to = Math.round(len * 0.6);
+  const lane = laneCellsOf(l);
+  const cells = new Map<string, [number, number]>();
+  for (let d = from; d <= to; d += 0.5) {
+    const p = pointAt(l.path, d);
+    const [c0, r0] = [Math.floor(p.x), Math.floor(p.y)];
+    for (let dr = -1; dr <= 1; dr++)
+      for (let dc = -1; dc <= 1; dc++) {
+        const c = c0 + dc;
+        const r = r0 + dr;
+        if (c < 0 || r < 0 || c >= l.cols || r >= l.rows || lane.has(`${c},${r}`)) continue;
+        cells.set(`${c},${r}`, [c, r]);
+      }
+  }
+  return { kind: "flood", wave: Math.ceil(l.waves.length / 2), cells: [...cells.values()], from, to };
+}
+const SET_PIECES: Record<number, (l: Level) => SetPiece> = {
+  27: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.5), period: 14, open: 4 }),
+  34: floodPiece,
+  38: floodPiece,
+  45: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.55), period: 12, open: 4 }),
+  63: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.45), period: 13, open: 4.5 }),
+  67: () => ({ kind: "blackout", light: 2 }),
+  86: () => ({ kind: "blackout", light: 2 }),
+};
+for (const l of LEVELS) if (SET_PIECES[l.id]) l.setPieces = [SET_PIECES[l.id]!(l)];
 
 /** What clearing a level opens up, in plain words: the next level's new towers, abilities and enemies. */
 function unlockText(id: number): string {

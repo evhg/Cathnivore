@@ -7,6 +7,8 @@
 import {
   ENEMIES,
   MEGAS,
+  bridgeOpen,
+  setPiece,
   hasTwist,
   maxHpOf,
   charmed,
@@ -140,6 +142,7 @@ export class Renderer {
   aim: { x: number; y: number; r: number } | null = null;
   /** The tower being considered for the selected plot: its range is previewed. */
   preview: TowerKind | null = null;
+  private darkCanvas: HTMLCanvasElement | null = null;
   reducedMotion = false;
   private dpr = 1;
   private cssW = 1;
@@ -383,6 +386,13 @@ export class Renderer {
         case "duelEnd":
           this.kick(0.4);
           this.float(game.hero.x, game.hero.y - 1.2, e.won ? "Cath wins the duel!" : "Cath's knocked back", e.won ? "#fff2b8" : "#ffd0c4", 1.3);
+          break;
+        case "flood":
+          this.ring(e.x, e.y, "#4f93b8", 3);
+          this.float(e.x, e.y - 0.8, e.warn ? "The river's rising…" : "FLOOD!", "#bfe4ff", 1.2);
+          break;
+        case "bridge":
+          this.float(e.x, e.y - 0.7, e.open ? "Bridge up!" : "Bridge down", e.open ? "#ffb3a8" : "#e8ffd0", 0.9);
           break;
         case "wave":
           this.leaksThisWave = 0;
@@ -665,6 +675,37 @@ export class Renderer {
     });
     items.sort((a, b) => a.y - b.y);
     for (const it of items) it.draw();
+    // Blackout: the field is dark except where the towers and Cath give light.
+    const dark = setPiece(level, "blackout");
+    if (dark) {
+      const c = (this.darkCanvas ??= document.createElement("canvas"));
+      c.width = ctx.canvas.width;
+      c.height = ctx.canvas.height;
+      const d = c.getContext("2d");
+      if (d) {
+        d.setTransform(ctx.getTransform());
+        d.fillStyle = "rgba(8,10,24,0.82)";
+        d.fillRect(-1e4, -1e4, 2e4, 2e4);
+        d.globalCompositeOperation = "destination-out";
+        const lights: Array<[number, number]> = game.towers.filter((tw) => (tw.out ?? 0) <= 0).map((tw) => [tw.col + 0.5, tw.row + 0.5]);
+        if (game.hero.down <= 0) lights.push([game.hero.x, game.hero.y]);
+        for (const [lx, ly] of lights) {
+          const g = d.createRadialGradient(X(lx), Y(ly), 0, X(lx), Y(ly), dark.light * s);
+          g.addColorStop(0, "rgba(0,0,0,1)");
+          g.addColorStop(0.75, "rgba(0,0,0,0.9)");
+          g.addColorStop(1, "rgba(0,0,0,0)");
+          d.fillStyle = g;
+          d.beginPath();
+          d.arc(X(lx), Y(ly), dark.light * s, 0, Math.PI * 2);
+          d.fill();
+        }
+        d.globalCompositeOperation = "source-over";
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(c, 0, 0);
+        ctx.restore();
+      }
+    }
 
     // Cath's health and where she's heading.
     if (walking) this.flag(X(h.tx), Y(h.ty + 0.2), s, t);
@@ -711,6 +752,35 @@ export class Renderer {
         ctx.lineTo(xx - f * s * 0.35, yy);
         ctx.stroke();
       }
+    }
+
+    // Set pieces: floodwater over the plots, and the swing bridge (up and red while it's open).
+    const flood = setPiece(level, "flood");
+    if (flood && game.wave >= flood.wave) {
+      ctx.fillStyle = `rgba(79,147,184,${0.55 + Math.sin(t * 2) * 0.05})`;
+      for (const [c, r] of flood.cells) ctx.fillRect(X(c) + 1, Y(r) + 1, X(c + 1) - X(c) - 2, Y(r + 1) - Y(r) - 2);
+    }
+    const bridge = setPiece(level, "bridge");
+    if (bridge) {
+      const bp = enemyPoint(level, { dist: bridge.dist, lane: bridge.lane });
+      const open = bridgeOpen(game);
+      ctx.save();
+      ctx.translate(X(bp.x), Y(bp.y));
+      ctx.fillStyle = "#4f93b8";
+      ctx.fillRect(-s * 0.5, -s * 0.5, s, s);
+      ctx.fillStyle = open ? "#c4433a" : "#8a5a35";
+      ctx.strokeStyle = "#2b2320";
+      ctx.lineWidth = 2;
+      if (open) {
+        ctx.fillRect(-s * 0.48, -s * 0.12, s * 0.96, s * 0.16);
+        ctx.strokeRect(-s * 0.48, -s * 0.12, s * 0.96, s * 0.16);
+      } else {
+        for (let i = 0; i < 5; i++) {
+          ctx.fillRect(-s * 0.45 + i * s * 0.18, -s * 0.45, s * 0.16, s * 0.9);
+          ctx.strokeRect(-s * 0.45 + i * s * 0.18, -s * 0.45, s * 0.16, s * 0.9);
+        }
+      }
+      ctx.restore();
     }
 
     // Call the Neighbours: three farmhands with a hay bale, wobbling as the vans lean on them.

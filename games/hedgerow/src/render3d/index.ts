@@ -13,6 +13,8 @@ import { cathSvg } from "../../../../shared/cath/cath";
 import {
   ENEMIES,
   MEGAS,
+  bridgeOpen,
+  setPiece,
   charmed,
   enemyPoint,
   hasTwist,
@@ -287,7 +289,8 @@ export class Renderer3D {
     const fogDim = hasTwist(game.level, "fog") ? 0.78 : hasTwist(game.level, "night") ? 0.85 : 1;
     this.scene.fog = new THREE.Fog(L.fog, L.fogNear * fogDim, L.fogFar * fogDim);
     const night = hasTwist(game.level, "night") || game.level.id > 90;
-    this.renderer.toneMappingExposure = L.exposure * (hasTwist(game.level, "night") ? 0.9 : 1) * (game.level.id > 90 ? 1.25 : 1);
+    this.renderer.toneMappingExposure =
+      L.exposure * (hasTwist(game.level, "night") ? 0.9 : 1) * (game.level.id > 90 ? 1.25 : 1) * (setPiece(game.level, "blackout") ? 0.55 : 1);
     this.hemi.color.set(L.hemiSky);
     this.hemi.groundColor.set(L.hemiGround);
     this.hemi.intensity = L.hemiIntensity * (night ? 1.4 : 0.65);
@@ -626,6 +629,18 @@ export class Renderer3D {
           this.floaters.add("Ambush here!", new THREE.Vector3(e.x, y + 1.2, e.y), "#ffb3a8", 1.2);
           break;
         }
+        case "flood": {
+          const y = this.height(e.x, e.y);
+          this.fx.ring(e.x, y + 0.1, e.y, "#4f93b8", 3.5, 0.9);
+          this.floaters.add(e.warn ? "The river's rising…" : "FLOOD!", new THREE.Vector3(e.x, y + 1.4, e.y), "#bfe4ff", 1.3);
+          if (!e.warn) this.shake = Math.max(this.shake, 0.4);
+          break;
+        }
+        case "bridge": {
+          const y = this.height(e.x, e.y);
+          this.floaters.add(e.open ? "Bridge up!" : "Bridge down", new THREE.Vector3(e.x, y + 1.1, e.y), e.open ? "#ffb3a8" : "#e8ffd0", 0.9);
+          break;
+        }
         case "duelEnd":
           this.shake = Math.max(this.shake, 0.5);
           this.floaters.add(e.won ? "Cath wins the duel!" : "Cath's knocked back", new THREE.Vector3(game.hero.x, 1.6, game.hero.y), e.won ? "#fff2b8" : "#ffd0c4", 1.3);
@@ -868,6 +883,7 @@ export class Renderer3D {
     this.syncHero(game, dt, t);
     this.syncSelection(game, t);
     this.syncBoss(game);
+    this.syncSetPieces(game, t);
     // Farmhouse smoke, darker as Goodwill falls.
     if (this.ground && Math.random() < dt * 3) {
       const c = this.ground.farmhouse.localToWorld((this.ground.farmhouse.userData.chimney as THREE.Vector3).clone());
@@ -1231,6 +1247,105 @@ export class Renderer3D {
     if (this.aim) {
       this.aimDisc.position.set(this.aim.x, this.height(this.aim.x, this.aim.y) + 0.05, this.aim.y);
       this.aimDisc.scale.setScalar(this.aim.r);
+    }
+  }
+
+  // ---- set pieces: floodwater, the swing bridge, pools of light in a blackout ----
+
+  private pieces: { level: number; flood?: THREE.InstancedMesh; bridge?: THREE.Group; deck?: THREE.Object3D; pools?: THREE.InstancedMesh } | null = null;
+
+  private syncSetPieces(game: Game, t: number): void {
+    const lv = game.level;
+    if (this.pieces?.level !== lv.id) {
+      if (this.pieces) for (const o of [this.pieces.flood, this.pieces.bridge, this.pieces.pools]) if (o) this.scene.remove(o);
+      this.pieces = { level: lv.id };
+      const flood = setPiece(lv, "flood");
+      if (flood) {
+        const m = new THREE.InstancedMesh(
+          new THREE.BoxGeometry(0.98, 0.06, 0.98),
+          new THREE.MeshPhysicalMaterial({ color: "#4f93b8", roughness: 0.08, transparent: true, opacity: 0.78, clearcoat: 1 }),
+          flood.cells.length,
+        );
+        const mat = new THREE.Matrix4();
+        flood.cells.forEach(([c, r], i) => {
+          mat.makeTranslation(c + 0.5, this.height(c + 0.5, r + 0.5) + 0.12, r + 0.5);
+          m.setMatrixAt(i, mat);
+        });
+        m.visible = false;
+        this.scene.add(m);
+        this.pieces.flood = m;
+      }
+      const bridge = setPiece(lv, "bridge");
+      if (bridge) {
+        const p = enemyPoint(lv, { dist: bridge.dist, lane: bridge.lane });
+        const h = enemyPoint(lv, { dist: bridge.dist + 0.3, lane: bridge.lane });
+        const g = new THREE.Group();
+        g.position.set(p.x, this.height(p.x, p.y), p.y);
+        g.rotation.y = Math.atan2(h.x - p.x, h.y - p.y);
+        const water = new THREE.Mesh(
+          new THREE.BoxGeometry(1.1, 0.04, 0.9),
+          new THREE.MeshPhysicalMaterial({ color: "#3f7fa6", roughness: 0.1, clearcoat: 1 }),
+        );
+        water.position.y = -0.02;
+        const pivot = new THREE.Group();
+        pivot.position.set(-0.5, 0.06, 0);
+        const deck = new THREE.Mesh(new THREE.BoxGeometry(1, 0.08, 0.86), new THREE.MeshStandardMaterial({ color: "#8a5a35", roughness: 0.8, flatShading: true }));
+        deck.position.x = 0.5;
+        deck.castShadow = true;
+        pivot.add(deck);
+        const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), new THREE.MeshStandardMaterial({ color: "#ff3b30", emissive: "#ff3b30", emissiveIntensity: 2 }));
+        lamp.position.set(-0.55, 0.45, 0.48);
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.45), new THREE.MeshStandardMaterial({ color: "#2b2320" }));
+        post.position.set(-0.55, 0.22, 0.48);
+        g.add(water, pivot, post, lamp);
+        g.userData.lamp = lamp;
+        this.scene.add(g);
+        this.pieces.bridge = g;
+        this.pieces.deck = pivot;
+      }
+      if (setPiece(lv, "blackout")) {
+        const c = document.createElement("canvas");
+        c.width = c.height = 64;
+        const x = c.getContext("2d")!;
+        const grad = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+        grad.addColorStop(0, "rgba(255,214,140,0.9)");
+        grad.addColorStop(0.7, "rgba(255,190,110,0.35)");
+        grad.addColorStop(1, "rgba(255,190,110,0)");
+        x.fillStyle = grad;
+        x.fillRect(0, 0, 64, 64);
+        const tex = new THREE.CanvasTexture(c);
+        const pools = new THREE.InstancedMesh(
+          new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
+          new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }),
+          96,
+        );
+        pools.count = 0;
+        this.scene.add(pools);
+        this.pieces.pools = pools;
+      }
+    }
+    const pc = this.pieces;
+    if (pc.flood) pc.flood.visible = game.wave >= (setPiece(lv, "flood")?.wave ?? 99);
+    if (pc.deck && pc.bridge) {
+      const open = bridgeOpen(game);
+      const want = open ? -1.1 : 0;
+      pc.deck.rotation.z += (want - pc.deck.rotation.z) * 0.15;
+      (pc.bridge.userData.lamp as THREE.Mesh).visible = open && Math.sin(t * 8) > 0;
+    }
+    const dark = setPiece(lv, "blackout");
+    if (pc.pools && dark) {
+      const m = new THREE.Matrix4();
+      let n = 0;
+      const put = (x: number, z: number) => {
+        if (n >= 96) return;
+        const d = dark.light * 2.1;
+        m.makeScale(d, 1, d).setPosition(x, this.height(x, z) + 0.05, z);
+        pc.pools!.setMatrixAt(n++, m);
+      };
+      for (const tw of game.towers) if ((tw.out ?? 0) <= 0) put(tw.col + 0.5, tw.row + 0.5);
+      if (game.hero.down <= 0) put(game.hero.x, game.hero.y);
+      pc.pools.count = n;
+      pc.pools.instanceMatrix.needsUpdate = true;
     }
   }
 

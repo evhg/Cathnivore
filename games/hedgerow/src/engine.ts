@@ -1167,6 +1167,40 @@ export interface Level {
   hpScale?: number;
   /** An Endless field: generated waves that never stop growing (endless.ts). The run ends when Goodwill does. */
   endless?: boolean;
+  /** Set pieces (ROADMAP 54): the level itself changes during the fight. */
+  setPieces?: SetPiece[];
+}
+
+/**
+ * - flood: when wave `wave` is called the river rises over `cells`: towers there (bar Duck Ponds) are washed
+ *   out for 15 s, the plots take only ponds from then on, and vehicles wade through lane `from`-`to` at 60%.
+ *   Scouts warn a wave ahead.
+ * - bridge: a swing bridge at lane distance `dist` opens for `open` seconds out of every `period`; while it's
+ *   open nothing crosses, so traffic bunches up in front of it.
+ * - blackout: a night with no lamps. Towers and Cath light `light` cells around them; anything outside that
+ *   can't be targeted.
+ */
+export type SetPiece =
+  | { kind: "flood"; wave: number; cells: Array<[number, number]>; from: number; to: number }
+  | { kind: "bridge"; dist: number; lane?: 1; period: number; open: number }
+  | { kind: "blackout"; light: number };
+
+export function setPiece<K extends SetPiece["kind"]>(level: Pick<Level, "setPieces">, kind: K): Extract<SetPiece, { kind: K }> | undefined {
+  return level.setPieces?.find((p) => p.kind === kind) as Extract<SetPiece, { kind: K }> | undefined;
+}
+
+/** Whether the flood is up and this plot is under it. */
+export function flooded(game: Game, col: number, row: number): boolean {
+  const f = setPiece(game.level, "flood");
+  return !!f && game.wave >= f.wave && f.cells.some(([c, r]) => c === col && r === row);
+}
+
+/** Whether the swing bridge is open (impassable) right now. */
+export function bridgeOpen(game: Pick<Game, "level" | "tick">, tick = game.tick): boolean {
+  const b = setPiece(game.level, "bridge");
+  if (!b) return false;
+  const t = (tick * STEP) % b.period;
+  return t >= b.period - b.open;
 }
 
 export type TwistId =
@@ -1403,6 +1437,8 @@ export type GameEvent =
   | { type: "heroUp" }
   | { type: "injunction"; x: number; y: number }
   | { type: "split"; x: number; y: number; kind: EnemyKind }
+  | { type: "flood"; x: number; y: number; warn: boolean }
+  | { type: "bridge"; open: boolean; x: number; y: number }
   | { type: "gust"; tower: number; x: number; y: number; radius: number }
   | { type: "pop"; x: number; y: number }
   | { type: "rankUp"; tower: number; rank: number; x: number; y: number }
@@ -1701,6 +1737,8 @@ export function place(
     return { ok: false, reason: "You can only build beside the lane." };
   if (towerAt(game, col, row))
     return { ok: false, reason: "That plot is taken." };
+  if (kind !== "pond" && flooded(game, col, row))
+    return { ok: false, reason: "Flooded: only a Duck Pond goes here now." };
   const ground = plotKind(game.level, col, row);
   if (ground === "water" && kind !== "pond")
     return { ok: false, reason: "Too wet: only a Duck Pond goes on water." };
@@ -1898,6 +1936,17 @@ export function sendWave(game: Game, forced = false): ActionResult {
   game.wave = wave;
   game.phase = "wave";
   game.marks += early;
+  const flood = setPiece(game.level, "flood");
+  if (flood && wave === flood.wave) {
+    for (const t of game.towers)
+      if (t.kind !== "pond" && flood.cells.some(([c, r]) => (c === t.col && r === t.row) || (t.annex && t.annex[0] === c && t.annex[1] === r)))
+        t.out = Math.max(t.out ?? 0, 15);
+    const mid = pointAt(game.level.path, (flood.from + flood.to) / 2);
+    game.events.push({ type: "flood", x: mid.x, y: mid.y, warn: false });
+  } else if (flood && wave === flood.wave - 1) {
+    const mid = pointAt(game.level.path, (flood.from + flood.to) / 2);
+    game.events.push({ type: "flood", x: mid.x, y: mid.y, warn: true });
+  }
   // Scouts spot the ambushes: where they'll burst out, and how soon.
   const warned = new Set<string>();
   for (const q of game.spawnQueue) {
@@ -2001,12 +2050,26 @@ export function markMultiplier(game: Game, e: Enemy): number {
 }
 
 export function isRevealed(game: Game, e: Enemy): boolean {
+  const dark = setPiece(game.level, "blackout");
+  if (dark && !lit(game, e, dark.light)) return false;
   if (!ENEMIES[e.kind].stealth || markMultiplier(game, e) > 1) return true;
   // Cath spots anything sneaking past close to her (unless she's down or away).
   const h = game.hero;
   if (h.down > 0 || hasTwist(game.level, "nocath")) return false;
   const p = enemyPoint(game.level, e);
   return Math.hypot(p.x - h.x, p.y - h.y) <= CATH_SPOTS;
+}
+
+/** Blackout: is the enemy within the light of a working tower, or of Cath? */
+function lit(game: Game, e: Enemy, light: number): boolean {
+  const p = enemyPoint(game.level, e);
+  const h = game.hero;
+  if (h.down <= 0 && !hasTwist(game.level, "nocath") && Math.hypot(p.x - h.x, p.y - h.y) <= light) return true;
+  for (const t of game.towers) {
+    if ((t.out ?? 0) > 0) continue;
+    if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= light) return true;
+  }
+  return false;
 }
 
 /** How close a stealth vehicle has to come before Cath sees it. */
@@ -2227,6 +2290,11 @@ export function stepGame(game: Game): void {
     return;
   }
   game.tick += 1;
+  const bridge = setPiece(game.level, "bridge");
+  if (bridge && bridgeOpen(game) !== bridgeOpen(game, game.tick - 1)) {
+    const p = enemyPoint(game.level, { dist: bridge.dist, lane: bridge.lane });
+    game.events.push({ type: "bridge", open: bridgeOpen(game), x: p.x, y: p.y });
+  }
   game.waveClock += STEP;
   if (game.pieCd > 0) game.pieCd = Math.max(0, game.pieCd - STEP);
   if (game.neighboursCd > 0) game.neighboursCd = Math.max(0, game.neighboursCd - STEP);
@@ -2288,6 +2356,12 @@ export function stepGame(game: Game): void {
     else if (!enemy.held) {
       let move =
         speedOf(game, enemy) * Math.max(0.05, factor) * (enemy.charge && enemy.charge > 0 ? 2.2 : 1) * STEP;
+      const flood = setPiece(game.level, "flood");
+      if (flood && !enemy.lane && game.wave >= flood.wave && enemy.dist >= flood.from && enemy.dist <= flood.to && !ENEMIES[enemy.kind].flying)
+        move *= 0.6;
+      const bridge = setPiece(game.level, "bridge");
+      if (bridge && (enemy.lane ?? 0) === (bridge.lane ?? 0) && enemy.dist <= bridge.dist && !ENEMIES[enemy.kind].flying && bridgeOpen(game))
+        move = Math.max(0, Math.min(move, bridge.dist - enemy.dist));
       const bar = game.barricade;
       if (bar && enemy.lane === bar.lane && enemy.dist <= bar.dist) {
         // Farmhands stop anything on foot dead; bosses only slow to a crawl.

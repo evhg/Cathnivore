@@ -679,6 +679,17 @@ function wavePreview(p: HTMLElement, g: Game): void {
     const tw = line(g.level.twists.map((t) => `${TWISTS[t].name}: ${TWISTS[t].rule}`).join(" "), "twist-line");
     p.append(tw);
   }
+  for (const sp of g.level.setPieces ?? [])
+    p.append(
+      line(
+        sp.kind === "flood"
+          ? `Flood: from wave ${sp.wave} the river covers the plots by the ford; only Duck Ponds stand there, and vehicles wade.`
+          : sp.kind === "bridge"
+            ? `Swing bridge: it opens for ${sp.open}s every ${sp.period}s, and nothing crosses while it's up.`
+            : "Blackout: no lamps tonight. Towers and Cath light the lane around them; nothing in the dark can be targeted.",
+        "twist-line",
+      ),
+    );
   const row = document.createElement("ul");
   row.className = "preview-row";
   for (const { kind, count } of waveSummary(next)) {
@@ -1184,6 +1195,16 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "duelEnd":
         toast(ev.won ? `Cath wins the duel: the ${ENEMIES[ev.kind].name} reels.` : "Cath's knocked back. She'll be up in a moment.");
+        break;
+      case "flood":
+        if (ev.warn) banner("The river's rising", "Next wave it floods the plots by the ford. Only Duck Ponds will stand there.");
+        else {
+          banner("Flood!", "The plots by the ford are under water; anything but a pond is washed out for a while.", true);
+          haptic.boss();
+        }
+        break;
+      case "bridge":
+        if (ev.open) tip("bridge", "The swing bridge is up! Nothing crosses while it's open, so they bunch up in front of it. Splash them there.", "determined");
         break;
       case "bossMove":
         sfx.playBossMove(ev.move);

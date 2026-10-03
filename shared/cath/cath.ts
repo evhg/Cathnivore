@@ -7,7 +7,7 @@
 // art is right even without the CSS), .cath-hair-front (sway), .cath-body (breathing), .cath-head (tilt).
 
 export type CathExpression = 'smirk' | 'delighted' | 'determined' | 'worried' | 'wink'
-export type CathOutfit = 'field' | 'market'
+export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown'
 export type CathFraming = 'face' | 'bust' | 'half'
 
 export interface CathOptions {
@@ -84,7 +84,7 @@ export function cathSvg(options: CathOptions = {}): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" ${a11y}>
 ${defs(id)}
 <g class="cath-hair-back">${hairBack(id)}</g>
-<g class="cath-body">${outfit === 'market' ? marketOutfit(id) : fieldOutfit(id)}</g>
+<g class="cath-body">${OUTFITS[outfit](id)}</g>
 <g class="cath-head">
 ${neckAndFace(id)}
 ${features(expression)}
@@ -296,6 +296,65 @@ ${JACKET}"/>
 <path fill="none" stroke="${C.blouse}" stroke-width="1.2" stroke-linecap="round" opacity="0.5" d="M186 254 L165 270 M214 254 L235 270"/>
 <circle cx="200" cy="418" r="4.4" fill="${C.oliveShade}" stroke="${C.ink}" stroke-width="1.3"/>
 ${hands(C.oliveShade, 404)}`
+}
+
+function waxOutfit(): string {
+  // A waxed country jacket in deep green, a brown corduroy collar turned up, brass poppers, a quilted
+  // gilet showing at the front and a cream roll-neck: the farm in October.
+  return `<path fill="${C.knit}" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="M180 244 C192 252 208 252 220 244 L224 300 L176 300 Z"/>
+<path fill="none" stroke="${C.knitShade}" stroke-width="1.6" stroke-linecap="round" d="M182 256 Q200 264 218 256 M182 266 Q200 274 218 266"/>
+<path fill="#2F3A2C" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="
+${JACKET.replace('L200 404', 'L200 300')}"/>
+<path fill="none" stroke="#4A5A44" stroke-width="1.8" stroke-linecap="round" opacity="0.7" d="M124 288 Q118 340 122 400 M276 288 Q282 340 278 400"/>
+<path fill="#7A4E2E" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M181 246 L154 262 L162 284 L184 270 Z M219 246 L246 262 L238 284 L216 270 Z"/>
+<path fill="none" stroke="#5E3A20" stroke-width="1.2" d="M160 266 L170 280 M166 262 L176 276 M240 266 L230 280 M234 262 L224 276"/>
+<path fill="#3E5A6E" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M186 296 L200 300 L214 296 L216 420 L184 420 Z"/>
+<path fill="none" stroke="#2C4252" stroke-width="1.3" d="M186 320 L214 320 M186 346 L214 346 M186 372 L214 372 M186 398 L214 398"/>
+<path fill="none" stroke="#1F281E" stroke-width="2" stroke-linecap="round" d="M182 300 L182 500 M218 300 L218 500"/>
+${[318, 352, 386].map((y) => `<circle cx="180" cy="${y}" r="3.2" fill="${C.gold}" stroke="${C.ink}" stroke-width="1"/>`).join('')}
+<path fill="#25301F" stroke="${C.ink}" stroke-width="1.6" d="M136 360 L166 356 L168 384 L138 388 Z M264 360 L234 356 L232 384 L262 388 Z"/>
+${hands('#1F281E', 404)}`
+}
+
+function pinnyOutfit(id: string): string {
+  // Market-day baking: a striped cotton blouse with rolled sleeves under a rose-print pinafore, a little
+  // ruffle at the bib, and flour on one cheek's side of the apron.
+  return `<path fill="#F4EEF2" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="
+${JACKET.replace('L200 404', 'L200 268')}"/>
+<path fill="none" stroke="#9FB6D8" stroke-width="3" opacity="0.8" d="M126 292 L126 500 M140 286 L140 500 M154 280 L154 500 M246 280 L246 500 M260 286 L260 500 M274 292 L274 500"/>
+<path fill="url(#${id}-blouse)" stroke="${C.ink}" stroke-width="1.8" d="M183 250 C192 256 208 256 217 250 L210 270 L190 270 Z"/>
+<path fill="#F2C6CF" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="M164 300 C176 292 224 292 236 300 L240 420 C246 452 252 478 256 500 L144 500 C148 478 154 452 160 420 Z"/>
+<path fill="none" stroke="${C.white}" stroke-width="3" stroke-linecap="round" d="M166 300 Q200 288 234 300"/>
+<path fill="none" stroke="#E7A9B6" stroke-width="2" d="M164 300 L150 262 M236 300 L250 262"/>
+${[[176, 330], [214, 346], [190, 380], [226, 402], [172, 424], [206, 452], [236, 468], [180, 478]]
+  .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#C9566B"/><circle cx="${x! + 6}" cy="${y! + 3}" r="2.6" fill="${C.leafLight}"/>`)
+  .join('')}
+<path fill="#E7A9B6" stroke="${C.ink}" stroke-width="1.6" d="M184 404 L216 404 L218 430 L182 430 Z"/>
+<ellipse cx="226" cy="440" rx="10" ry="6" fill="${C.white}" opacity="0.55"/>
+${hands('#9FB6D8', 404)}`
+}
+
+function gownOutfit(): string {
+  // Kingsmarket, the night it's won: a deep claret wrap gown with a modest crossover neckline, a fine gold
+  // brooch at the waist and a sheer champagne wrap over her shoulders. Elegant, never showy.
+  return `<path fill="#6E1F33" stroke="${C.ink}" stroke-width="2" stroke-linejoin="round" d="
+${JACKET.replace('L200 404', 'L200 292')}"/>
+<path fill="${SKIN}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M181 250 C192 256 208 256 219 250 L200 292 Z"/>
+<path fill="#8E2C45" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="M181 250 L200 292 L238 380 L214 384 Z"/>
+<path fill="none" stroke="#A8435C" stroke-width="1.6" stroke-linecap="round" opacity="0.7" d="M190 270 L224 368 M136 318 C142 360 142 420 134 500 M264 318 C258 360 258 420 266 500"/>
+<path fill="none" stroke="${C.gold}" stroke-width="1.2" d="M186 254 Q200 276 214 254"/>
+<circle cx="200" cy="270" r="3" fill="${C.pearl}" stroke="${C.ink}" stroke-width="0.9"/>
+<g transform="translate(226 388)"><circle r="7" fill="${C.gold}" stroke="${C.ink}" stroke-width="1.3"/><circle r="3" fill="#F6E7B8"/></g>
+<path fill="#F3E3C8" fill-opacity="0.55" stroke="#D9C39C" stroke-width="1.4" d="M118 280 C140 258 168 254 183 252 C170 300 150 360 132 430 C122 400 112 330 118 280 Z M282 280 C260 258 232 254 217 252 C230 300 250 360 268 430 C278 400 288 330 282 280 Z"/>
+${hands('#4E1424', 404)}`
+}
+
+const OUTFITS: Record<CathOutfit, (id: string) => string> = {
+  field: fieldOutfit,
+  market: marketOutfit,
+  wax: waxOutfit,
+  pinny: pinnyOutfit,
+  gown: gownOutfit,
 }
 
 // Shared tailored silhouette: sloped shoulders, a nipped waist and a slight flare at the hip.
