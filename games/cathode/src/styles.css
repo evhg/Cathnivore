@@ -66,7 +66,7 @@ body {
   font-family: var(--display);
   font-weight: 700;
   letter-spacing: 0.18em;
-  font-size: clamp(44px, 9vw, 112px);
+  font-size: clamp(40px, min(6.2vw, 14vh), 100px);
   line-height: 1;
   color: var(--ink);
   text-shadow:
@@ -244,7 +244,7 @@ input[type="radio"] {
 .title-cath {
   justify-self: center;
   width: min(460px, 90%);
-  filter: grayscale(0.85) contrast(1.25) brightness(0.92) drop-shadow(0 0 40px rgba(255, 46, 136, 0.25));
+  filter: grayscale(0.6) contrast(1.2) brightness(0.92) drop-shadow(0 0 40px rgba(255, 46, 136, 0.25));
 }
 .title-cath svg {
   width: 100%;
@@ -805,4 +805,49 @@ input[type="radio"] {
 .hud-quit {
   font-size: 14px;
   color: var(--ink-muted);
+}
+
+/* ---- phones: touch HUD placement, short landscape title ---- */
+@media (pointer: coarse) {
+  .hud-arms {
+    top: max(10px, env(safe-area-inset-top));
+    bottom: auto;
+    right: calc(96px + env(safe-area-inset-right));
+  }
+  .hud-ammo {
+    font-size: 26px;
+  }
+  .hud-objective {
+    font-size: 14px;
+    max-width: 34ch;
+  }
+  .hud-vitals {
+    width: min(220px, 30vw);
+  }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  .title {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .title .wordmark {
+    font-size: clamp(36px, 12vh, 72px);
+  }
+  .title-cath {
+    width: min(300px, 70vh);
+  }
+  .tagline {
+    margin-top: 10px;
+    font-size: 15px;
+  }
+  .voice {
+    margin-bottom: 14px;
+    font-size: 15px;
+  }
+  .title .eyebrow {
+    margin-bottom: 4px;
+  }
+  .hint {
+    display: none;
+  }
 }

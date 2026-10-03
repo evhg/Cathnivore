@@ -34,7 +34,7 @@ $<HTMLButtonElement>("gate-yes").addEventListener("click", () => {
 
 // ---- the title ----
 function openTitle(): void {
-  $("title-cath").innerHTML = cathSvg({ expression: "determined", framing: "half", outfit: "gown" });
+  $("title-cath").innerHTML = cathSvg({ expression: "determined", framing: "half", outfit: "trench" });
   show("screen-title");
   $<HTMLButtonElement>("btn-begin").focus();
 }

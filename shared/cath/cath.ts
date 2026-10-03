@@ -15,7 +15,7 @@
 // ever cross her skin.
 
 export type CathExpression = 'smirk' | 'delighted' | 'determined' | 'worried' | 'wink'
-export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown'
+export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown' | 'trench'
 export type CathFraming = 'face' | 'bust' | 'half'
 
 export interface CathOptions {
@@ -686,7 +686,35 @@ ${brush([252, 340], [262, 352], [258, 366], 0.3, 1.6, 0.3, '#7E5A2E', ' opacity=
 ${hands(id, C.camelShade, 380)}`
 }
 
+function trenchOutfit(id: string): string {
+  // CATHODE's noir edition: a charcoal gabardine trench, collar up, belted, over a cream silk blouse, with
+  // a single strand of pearls. Black leather gloves at her clasped hands.
+  const coat = JACKET.replace('L200 404', 'L200 380')
+  const lapel = (f: 1 | -1) => {
+    const x = mirror(f)
+    return `M${x(183)} 250 L${x(146)} 272 L${x(160)} 292 L${x(146)} 306 L200 380 Z`
+  }
+  const collar = 'M181 244 L150 258 L156 282 L184 268 Z M219 244 L250 258 L244 282 L216 268 Z'
+  return `<path fill="url(#${id}-blouse)" stroke="${C.ink}" stroke-width="1.6" d="M182 254 L218 254 L222 420 L178 420 Z"/>
+<path fill="none" stroke="#F4EFE6" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="0.1 4.4" d="M184 258 Q200 290 216 258"/>
+${garment(id, 'tn', coat, '#2C2D33', '#0E0F12', '#131418', 'gab')}
+<path fill="#0E0F12" opacity="0.6" transform="translate(-3 4)" d="${lapel(1)}"/>
+<path fill="#0E0F12" opacity="0.45" transform="translate(-3 4)" d="${lapel(-1)}"/>
+<path fill="#33353C" stroke="#0E0F12" stroke-width="1.6" stroke-linejoin="round" d="${lapel(1)}"/>
+<path fill="#41434B" stroke="#0E0F12" stroke-width="1.6" stroke-linejoin="round" d="${lapel(-1)}"/>
+<path fill="#2A2B31" stroke="#0E0F12" stroke-width="1.6" stroke-linejoin="round" d="${collar}"/>
+${brush([222, 248], [238, 256], [246, 264], 0.3, 1.6, 0.3, '#6A6D78', ' opacity="0.8"')}
+<path fill="none" stroke="#4A4C55" stroke-width="0.9" stroke-dasharray="2.2 2" d="M178 258 L154 274 M222 258 L246 274 M120 300 C116 340 118 380 122 410 M280 300 C284 340 282 380 278 410"/>
+<path fill="#1C1D22" stroke="#0E0F12" stroke-width="1.6" d="M122 412 C170 420 230 420 278 412 L278 428 C230 436 170 436 122 428 Z"/>
+<rect x="191" y="410" width="18" height="24" rx="3" fill="none" stroke="#8A8F96" stroke-width="2.4"/>
+${brush([136, 318], [142, 370], [138, 412], 0.3, 2.2, 0.3, '#0E0F12', ' opacity="0.7"')}
+${brush([264, 318], [258, 370], [262, 412], 0.3, 2, 0.3, '#5A5D66', ' opacity="0.5"')}
+<circle cx="168" cy="330" r="3.2" fill="#1C1D22" stroke="#0E0F12" stroke-width="1"/><circle cx="232" cy="330" r="3.2" fill="#1C1D22" stroke="#0E0F12" stroke-width="1"/>
+${hands(id, '#0E0F12', 380)}`
+}
+
 const OUTFITS: Record<CathOutfit, (id: string) => string> = {
+  trench: trenchOutfit,
   field: fieldOutfit,
   market: marketOutfit,
   wax: waxOutfit,
@@ -697,6 +725,7 @@ const OUTFITS: Record<CathOutfit, (id: string) => string> = {
 // Pieces that sit over the neck (drawn in the head group, beneath the chin).
 const NECKWEAR: Record<CathOutfit, (id: string) => string> = {
   field: () => '',
+  trench: () => '',
   pinny: () => '',
   gown: () => '',
   wax: (id) => {
