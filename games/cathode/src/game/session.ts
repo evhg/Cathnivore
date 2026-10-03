@@ -244,6 +244,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       player.aiming = arsenal.aiming;
       player.step(Math.max(dt, realDt * 0.35), intent);
     }
+    if (input.isTouch && !dead && progress.character.difficulty !== "hellWeek") aimAssist(intent.aim || intent.fire, realDt);
     player.applyCamera(world.camera, realDt);
     // Scope sway: a slow figure-of-eight; held breath (Focus while scoped) all but stills it.
     if (arsenal.scopedIn) {
@@ -411,6 +412,38 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       speed: player.speed,
       stealth: dead ? 0 : progress.stats.detectionMultiplier * actives.running().camo,
     };
+  }
+
+  /** Touch aim assist: within a few degrees of an Enforcer, the crosshair is pulled onto them. */
+  function aimAssist(engaged: boolean, dt: number): void {
+    const cam = world.camera;
+    const camPos = cam.position;
+    const look = new THREE.Vector3();
+    cam.getWorldDirection(look);
+    let best: THREE.Vector3 | null = null;
+    let bestA = engaged ? 0.09 : 0.05;
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      const pt = (arsenal.aiming ? e.head : e.body.joints.chest).clone();
+      const to = pt.clone().sub(camPos);
+      const d = to.length();
+      if (d > 60) continue;
+      const a = to.normalize().angleTo(look);
+      if (a < bestA && rays.clear(camPos, pt)) {
+        bestA = a;
+        best = pt;
+      }
+    }
+    if (!best) return;
+    const to = best.clone().sub(camPos);
+    const wantYaw = Math.atan2(-to.x, -to.z);
+    const wantPitch = Math.atan2(to.y, Math.hypot(to.x, to.z));
+    let dy = wantYaw - player.yaw;
+    while (dy > Math.PI) dy -= Math.PI * 2;
+    while (dy < -Math.PI) dy += Math.PI * 2;
+    const k = 1 - Math.exp(-dt * (engaged ? 9 : 3));
+    player.yaw += dy * k;
+    player.pitch += (wantPitch - player.pitch) * k;
   }
 
   function takedownTarget(): Enemy | null {
