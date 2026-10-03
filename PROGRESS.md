@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **2026-10-03 03:51 session:** ROADMAP 52 finished: rival hero (Pell on a quad bike: `ram` field, 2D+3D art, test, 1 in level 80). Level tests + tune --verify running; then release (0 releases today), then 44, 51, 53, 54.
+- **2026-10-03 03:51 session:** ROADMAP 52 finished: rival hero (Pell on a quad bike: `ram` field, 2D+3D art, test, 1 in level 80). Level 80 test + tune --verify clean; unreleased: release first thing next session (0 releases today), then 44, 51, 53, 54.
 - **2026-10-03 02:51 session:** ROADMAP 52 part 2: Drone carrier (`launch` field, sprites, 3D, test, 1 in level 80; level tests green). Left for 52: rival hero (Pell). Then 44, 51, 53, 54. Unreleased (batching).
 - **2026-10-03 01:51 session:** ROADMAP 52 part 1: Lobbyist enemy (`lobby` field, `lobbied()`, sprites, 3D model, test, 2 in level 80; level test green). Left for 52: drone carrier, rival hero (Pell). Then 44, 51, 53, 54.
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
