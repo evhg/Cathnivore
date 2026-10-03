@@ -9,7 +9,6 @@ import {
   PIE_STUN,
   RALLY_SECS,
   RANKS,
-  duelStrike,
   megaFor,
   megasUnlocked,
   merge,
@@ -29,21 +28,15 @@ import {
   isBig,
   isPlot,
   laneCellsOf,
-  newGame,
   pieRadius,
   pieUnlocked,
   place,
-  sell,
   sellValue,
   sendWave,
-  setTarget,
   specCost,
   specsUnlocked,
   stars as starsOf,
   stepGame,
-  throwPie,
-  callNeighbours,
-  callRally,
   neighboursUnlocked,
   rallyUnlocked,
   NEIGHBOURS_COOLDOWN,
@@ -88,6 +81,7 @@ import {
 } from "./store";
 import { dailyLevel, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
+import { Player, Recorder, applyAction, decodeReplay, encodeReplay, startGame, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
 import { OUTFITS, outfitFor, wear } from "./wardrobe";
@@ -173,6 +167,11 @@ const ui = {
   resultSecondary: $<HTMLButtonElement>("result-secondary"),
   btnBank: $<HTMLButtonElement>("btn-bank"),
   btnDaily: $<HTMLButtonElement>("btn-daily"),
+  resultWatch: $<HTMLButtonElement>("result-watch"),
+  resultShare: $<HTMLButtonElement>("result-share"),
+  replayBar: $<HTMLElement>("replay-bar"),
+  replayFill: $<HTMLElement>("replay-fill"),
+  replayExit: $<HTMLButtonElement>("replay-exit"),
   btnHeroic: $<HTMLButtonElement>("btn-heroic"),
   bankStars: $<HTMLElement>("bank-stars"),
   dlgBank: $<HTMLDialogElement>("dlg-bank"),
@@ -269,7 +268,7 @@ function say(text: string): void {
 function renderLevels(): void {
   ui.bankStars.textContent = String(freeStars(data));
   renderCathButton();
-  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; startLevel(endlessLevel(act, weekOf(Date.now())), false); });
+  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; const week = weekOf(Date.now()); endlessArgs = { act, week }; startLevel(endlessLevel(act, week), false); });
 }
 
 let typing = 0;
@@ -392,10 +391,40 @@ ui.btnDaily.addEventListener("click", () => {
   startLevel(dailyLevel(day), false);
 });
 
+/** Endless runs: which act and week, so a replay can rebuild the field. */
+let endlessArgs: { act: number; week: number } | null = null;
+/** The live run's recorder (null in the sandbox), or the replay being watched. */
+let recorder: Recorder | null = null;
+let player: Player | null = null;
+let lastReplay: Replay | null = null;
+
+function levelFor(setup: Setup): Level | undefined {
+  if (setup.mode === "daily") return dailyLevel(setup.id);
+  if (setup.mode === "endless") return endlessLevel(setup.id, setup.week ?? 0);
+  return LEVELS.find((l) => l.id === setup.id);
+}
+
+/** Every input goes through here: applied, and recorded for the replay. Nothing is accepted while watching. */
+function doAct(a: Action): boolean {
+  if (!game || player) return false;
+  const g = game;
+  return act(() => (recorder ? recorder.act(g, a) : applyAction(g, a)));
+}
+
 function startLevel(lv: Level, heroic = heroicMode): void {
-  game = newGame(lv, dailyDay !== null ? NO_PERKS : perksOf(data), { hero: true, abilities: true }, heroic && !lv.endless);
-  // One-on-one boss duels are a player's moment; the tuner and sims never see them.
-  game.duels = true;
+  const setup: Setup = {
+    mode: dailyDay !== null ? "daily" : lv.endless ? "endless" : "level",
+    id: dailyDay ?? (lv.endless ? (endlessArgs?.act ?? 0) : lv.id),
+    ...(lv.endless ? { week: endlessArgs?.week ?? 0 } : {}),
+    heroic: heroic && !lv.endless,
+    perks: dailyDay !== null ? NO_PERKS : perksOf(data),
+  };
+  // One-on-one boss duels are a player's moment (on in startGame); the tuner and sims never see them.
+  game = startGame(lv, setup);
+  recorder = SANDBOX ? null : new Recorder(setup);
+  player = null;
+  ui.replayBar.hidden = true;
+  document.documentElement.classList.remove("watching");
   if (SANDBOX) {
     game.marks = 99999;
     game.goodwill = game.maxGoodwill = 999;
@@ -435,6 +464,9 @@ function startLevel(lv: Level, heroic = heroicMode): void {
 
 function leaveLevel(): void {
   dailyDay = null;
+  player = null;
+  ui.replayBar.hidden = true;
+  document.documentElement.classList.remove("watching");
   cancelAnimationFrame(raf);
   sfx.stopMusic();
   game = null;
@@ -694,7 +726,7 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     b.addEventListener("pointerenter", show);
     b.addEventListener("focus", show);
     b.onclick = () => {
-      if (act(() => place(g, kind, sel.col, sel.row))) {
+      if (doAct({ t: "place", kind, col: sel.col, row: sel.row })) {
         sfx.playBuild();
         haptic.build();
         const nt = g.towers[g.towers.length - 1];
@@ -808,7 +840,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     tb.setAttribute("aria-label", `Target ${TARGET_LABEL[mode]}. Change target`);
     tb.onclick = () => {
       const next = TARGET_MODES[(TARGET_MODES.indexOf(mode) + 1) % TARGET_MODES.length]!;
-      setTarget(g, t.id, next);
+      doAct({ t: "target", id: t.id, mode: next });
       renderPanel(true);
     };
     titles.append(tb);
@@ -832,7 +864,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     up.textContent = `Upgrade to tier ${t.tier + 1} · ${cost}`;
     up.disabled = g.marks < cost;
     up.onclick = () => {
-      if (act(() => upgrade(g, t.id))) {
+      if (doAct({ t: "upgrade", id: t.id })) {
         sfx.playUpgrade();
         haptic.upgrade();
         renderer?.built_(t.id, t.col, t.row, true);
@@ -868,7 +900,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
       b.append(top, d, statGrid(st, towerStats({ kind: t.kind, tier: 4, spec: i })));
       b.setAttribute("aria-label", `${sp.name}, ${cost} Marks. ${sp.blurb}`);
       b.onclick = () => {
-        if (act(() => upgrade(g, t.id, i))) {
+        if (doAct({ t: "upgrade", id: t.id, spec: i })) {
           haptic.upgrade();
           renderer?.built_(t.id, t.col, t.row, true);
           sfx.playUpgrade();
@@ -887,7 +919,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   sl.id = "btn-sell";
   sl.textContent = `Sell +${sellValue(t)}`;
   sl.onclick = () => {
-    if (act(() => sell(g, t.id))) sfx.playSell();
+    if (doAct({ t: "sell", id: t.id })) sfx.playSell();
     deselect();
   };
   row.append(sl);
@@ -914,7 +946,7 @@ function mergeSection(p: HTMLElement, g: Game, t: Tower): void {
     d.textContent = m.blurb;
     b.append(top, d, statGrid(st0(t), towerStats({ kind: t.kind, tier: 4, mega: o.mega })));
     b.onclick = () => {
-      if (act(() => merge(g, t.id, o.partner))) {
+      if (doAct({ t: "merge", id: t.id, partner: o.partner })) {
         renderer?.built_(t.id, t.col, t.row, true);
         renderPanel(true);
       }
@@ -1004,7 +1036,7 @@ function fire(x?: number, y?: number): void {
   if (!game || !renderer) return;
   aiming = false;
   renderer.aim = null;
-  if (act(() => throwPie(game!, x, y))) sfx.playPie();
+  if (doAct({ t: "pie", x, y })) sfx.playPie();
   renderPanel(true);
   syncControls();
 }
@@ -1173,22 +1205,34 @@ function frame(now: number): void {
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   if (!paused && !ui.dlgStory.open && !ui.dlgResult.open) {
-    if (g.phase === "build" && g.wave > 0 && g.wave < g.level.waves.length && autoNext) {
+    if (!player && g.phase === "build" && g.wave > 0 && g.wave < g.level.waves.length && autoNext) {
       // Hold the countdown while the player is choosing something.
       if (!selected) autoLeft -= dt * speed;
       if (autoLeft <= 0) {
         autoLeft = AUTO_SECS;
-        act(() => sendWave(g));
+        doAct({ t: "wave" });
       }
       syncControls();
     } else if (g.phase !== "build") autoLeft = AUTO_SECS;
-    // A duel runs in real time, whatever the game speed.
-    acc += dt * (g.duel ? 1 : speed);
+    // A duel runs in real time, whatever the game speed; a replay runs at least x2.
+    acc += dt * (player ? Math.max(2, speed) : g.duel ? 1 : speed);
     let stepped = false;
     while (acc >= STEP) {
       acc -= STEP;
-      stepGame(g);
+      if (player) player.step();
+      else if (recorder) recorder.step(g);
+      else stepGame(g);
       stepped = true;
+    }
+    if (player) {
+      ui.replayFill.style.setProperty("--p", String(player.progress));
+      if (player.done && !finished) {
+        finished = true;
+        toast("End of the replay.");
+        window.setTimeout(() => {
+          if (game === g) leaveLevel();
+        }, 2500);
+      }
     }
     if (stepped) {
       const evs = drainEvents(g);
@@ -1204,8 +1248,10 @@ function frame(now: number): void {
   }
   renderer.draw(g, paused ? 0 : dt * Math.min(speed, 2));
   drawDuel(g);
-  if (!finished && (g.phase === "won" || g.phase === "lost")) {
+  if (!finished && !player && (g.phase === "won" || g.phase === "lost")) {
     finished = true;
+    lastReplay = recorder?.replay() ?? null;
+    ui.resultWatch.hidden = ui.resultShare.hidden = !lastReplay;
     sfx.setIntensity(0);
     if (g.phase === "won") {
       sfx.playWin();
@@ -1566,7 +1612,7 @@ ui.canvas.addEventListener("keydown", (e) => {
 ui.btnSend.addEventListener("click", () => {
   if (!game) return;
   sfx.unlock();
-  act(() => sendWave(game!));
+  doAct({ t: "wave" });
 });
 ui.btnPie.addEventListener("click", () => {
   sfx.unlock();
@@ -1575,13 +1621,13 @@ ui.btnPie.addEventListener("click", () => {
 ui.btnNeighbours.addEventListener("click", () => {
   if (!game) return;
   sfx.unlock();
-  if (act(() => callNeighbours(game!))) sfx.playNeighbours();
+  if (doAct({ t: "neighbours" })) sfx.playNeighbours();
   syncControls();
 });
 ui.btnRally.addEventListener("click", () => {
   if (!game) return;
   sfx.unlock();
-  if (act(() => callRally(game!))) sfx.playRally();
+  if (doAct({ t: "rally" })) sfx.playRally();
   syncControls();
 });
 ui.btnHero.addEventListener("click", () => {
@@ -1658,7 +1704,7 @@ function strike(): void {
   const d = game.duel;
   const off = Math.abs(duelPos(d.clock, d.round) - 0.5);
   const q = Math.max(0, Math.min(1, 1 - Math.max(0, off - 0.06) * 2.6));
-  duelStrike(game, q);
+  if (!doAct({ t: "strike", q })) return;
   const evs = drainEvents(game);
   onEvents(game, evs);
   renderer?.feed(evs, game);
@@ -1915,3 +1961,56 @@ ui.cathRespec.addEventListener("click", () => {
 });
 
 renderLevels();
+
+// ---- replays: watch a finished run again, or share it as a link ----
+
+function watch(r: Replay): void {
+  const lv = levelFor(r.setup);
+  if (!lv) {
+    toast("That replay is for a field this version doesn't have.");
+    return;
+  }
+  dailyDay = null;
+  startLevel(lv, r.setup.heroic);
+  recorder = null;
+  player = new Player(lv, r);
+  game = player.game;
+  renderer?.reset();
+  renderer?.resize(game);
+  ui.hudTitle.textContent = `Replay · ${ui.hudTitle.textContent}`;
+  ui.replayBar.hidden = false;
+  document.documentElement.classList.add("watching");
+  hideBubble();
+  syncControls();
+  renderPanel(true);
+}
+
+ui.resultWatch.addEventListener("click", () => {
+  if (!lastReplay) return;
+  ui.dlgResult.close();
+  watch(lastReplay);
+});
+ui.resultShare.addEventListener("click", async () => {
+  if (!lastReplay) return;
+  try {
+    const url = `${location.origin}${location.pathname}#replay=${await encodeReplay(lastReplay)}`;
+    await navigator.clipboard.writeText(url);
+    toast("Replay link copied.");
+  } catch {
+    toast("Couldn't copy the link here.");
+  }
+});
+ui.replayExit.addEventListener("click", () => {
+  history.replaceState(null, "", location.pathname + location.search);
+  leaveLevel();
+});
+
+/** A shared replay link opens straight into the replay. */
+async function openSharedReplay(): Promise<void> {
+  const m = /^#replay=([A-Za-z0-9_-]+)$/.exec(location.hash);
+  if (!m) return;
+  const r = await decodeReplay(m[1]!);
+  if (r) watch(r);
+  else toast("That replay link is damaged.");
+}
+void openSharedReplay();
