@@ -1357,6 +1357,9 @@ button.destructive {
   background: var(--paper-2);
   animation: stat-in var(--dur-moment) var(--ease-pop, ease) both;
 }
+@media (min-width: 560px) {
+  .end-screen-stats { grid-template-columns: repeat(4, 1fr); max-width: 560px; }
+}
 .stat-card:nth-child(2) { animation-delay: 0.08s; }
 .stat-card:nth-child(3) { animation-delay: 0.16s; }
 .stat-card:nth-child(4) { animation-delay: 0.24s; }

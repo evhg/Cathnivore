@@ -234,6 +234,15 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 33. [ ] **Fresh-eyes audit of all three games and the landing page:** `npm run shots` plus Hedgerow and Runnel screenshots, critiqued by a subagent against `VISION.md`'s eight bars; turn its findings into new ranked items here.
 34. [~] *(2026-10-03: Hedgerow first load 329 KB -> 150 KB gzipped: three.js and the 3D renderer are a lazy chunk prefetched on the map; map banners are cached images. Frame time with 60 enemies is being measured under ROADMAP 44.)* **Performance pass:** bundle sizes, first-load time, and frame time in Hedgerow with 50+ enemies on screen; fix anything over budget (VISION 7).
 
+### Cathnivore audit (2026-10-03, subagent critique of `npm run shots` against VISION.md)
+
+57. [ ] **Phone map as hero:** at 390x844 the board takes at least 45% of the viewport height; tokens at least 18px with distinct silhouettes; region labels at least 11px; piece shadows (bar 2).
+58. [ ] **Chapter scenes staged like a graphic novel:** every named speaker on screen at 50% viewport height with a pose per line, a coloured backdrop per chapter, AA contrast, staged entrances (bar 5).
+59. [ ] **End screens with payoff:** a 400-1200ms choreographed win/loss sequence, centred full-opacity stat cards, primary action visible at 390x844 without scrolling (bars 4, 6).
+60. [ ] **In-game panels:** Sell collapses to one stepper, no overlapping badge glyphs on Squeeze/Expand/Scout chips, category colour and icons in side panels (bar 1).
+61. [ ] **Cath on the game screen:** companion at least 48px with expression changes on events; phone title keeps her inside the frame (bar 5).
+62. [ ] **Campaign and setup:** illustrated header per chapter card, teaser silhouettes for locked chapters, colour portraits at 48px, a visible progress track, a mode illustration on setup (bars 1, 6).
+
 ## Postponed by the owner (2026-09-28)
 
 - **iPhone App Store launch:** postponed until the games are truly impressive. Don't dispatch `ios.yml` or `store.yml`, and don't work on store listings or screenshots. Keep `npm run build` (the iPhone app's web bundle) passing. Only the owner reopens this, through `FEEDBACK.md`.

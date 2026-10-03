@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-03 10:51 session:** planning (fewer than 3 open items): audited Cathnivore shots with a subagent, added ROADMAP 57-62; end-screen stats now 4-across on wide screens. Next: 57 (phone map hero), then 58-62. 4 releases already used today; release after 00:00 UTC.
 - **2026-10-03 07:44-10:30 (owner chat session):** owner said Hedgerow is too easy and money isn't scarce: counters, heavy plant, slow floor, leaner economy, fast Endless climb, full re-tune (BALANCE.md). Also committed ROADMAP 44's 3D polish (Cath's hair and swing, tower build-up, lane surfaces per act). Unreleased: today's 4 releases are used; release after 00:00 UTC.
 - **2026-10-03 05:08-06:10 (owner chat session):** built ROADMAP 53 (replays), 54 (set pieces), 50's turntable, illustrated outfits for the wardrobe, and fixed no sound on iPhone (audio session, silent switch, interrupted context). Released `1980312` (2nd release today). Next: ROADMAP 44 leftovers, then plan new items (fewer than 3 open).
 - **2026-10-03 04:51 session:** released `b6275ef` (ROADMAP 52 incl. Pell; 1st release today). Then ROADMAP 51 (wardrobe: `wardrobe.ts`, picker in Cath's sheet, 2D+3D, test; `npm run check` green; unreleased, no visual shots taken). Next: 53, 54, 44.
@@ -76,6 +77,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   site matches; `deploy-1` tag push failed with the known 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-10-03 10:51-~11:15 UTC: Cathnivore audit, ROADMAP 57-62 added, end-screen stats tweak. Not released (cap).
 - 2026-10-03 02:51-~03:20 UTC: ROADMAP 52 part 2 (Drone carrier). Level tests take ~13 min. Not released.
 - 2026-10-03 01:51-~02:20 UTC: ROADMAP 52 part 1 (Lobbyist). Not released (1 release already today; batching).
 - 2026-10-02 21:52-22:15 UTC: released round 3 (`285d90b`). Release gates take ~20 min. No further slice (release used the session). Next: ROADMAP 48-54, 44.
