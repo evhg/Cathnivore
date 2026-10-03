@@ -50,6 +50,9 @@
             <span>Cath <b id="cath-level">1</b></span>
             <span class="cath-dot" id="cath-dot" hidden aria-label="Points to spend"></span>
           </button>
+          <button class="bank-btn almanac-btn" id="btn-almanac" type="button">
+            <span aria-hidden="true">&#128214;</span> <span class="bank-word">Almanac</span>
+          </button>
           <button class="bank-btn daily-btn" id="btn-daily" type="button">
             <span aria-hidden="true">☀</span> <span class="bank-word">Daily</span>
           </button>
@@ -263,6 +266,13 @@
         <button class="btn" type="button" id="cath-close">Done</button>
         <button class="btn btn-quiet" type="button" id="cath-respec">Respec</button>
       </div>
+    </dialog>
+    <dialog id="dlg-almanac" class="sheet almanac" aria-labelledby="almanac-title">
+      <p class="eyebrow">Cath's field notes</p>
+      <h2 id="almanac-title">The Almanac</h2>
+      <div class="almanac-tabs" role="tablist" id="almanac-tabs"></div>
+      <div class="almanac-list" id="almanac-list"></div>
+      <div class="win-actions"><button class="btn" type="button" id="almanac-close">Done</button></div>
     </dialog>
     <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
     <dialog id="dlg-bank" class="sheet bank" aria-labelledby="bank-title">

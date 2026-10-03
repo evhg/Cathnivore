@@ -89,6 +89,7 @@ import {
 import { dailyLevel, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
 import { ROSETTES, newRosettes } from "./rosettes";
+import { setupAlmanac } from "./almanac";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
 import { FINALE } from "./story/acts6to10";
@@ -1851,6 +1852,16 @@ function renderCath(): void {
     ui.cathTalents.append(row);
   }
 }
+
+const openAlmanac = setupAlmanac(
+  $<HTMLDialogElement>("dlg-almanac"),
+  $<HTMLElement>("almanac-tabs"),
+  $<HTMLElement>("almanac-list"),
+  () => data.seen,
+  describeEnemy,
+);
+$<HTMLButtonElement>("btn-almanac").addEventListener("click", openAlmanac);
+$<HTMLButtonElement>("almanac-close").addEventListener("click", () => $<HTMLDialogElement>("dlg-almanac").close());
 
 ui.btnCath.addEventListener("click", () => {
   renderCath();
