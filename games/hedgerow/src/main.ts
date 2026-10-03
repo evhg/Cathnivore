@@ -1155,6 +1155,7 @@ function introduce(kinds: EnemyKind[]): void {
 
 function onEvents(g: Game, evs: GameEvent[]): void {
   let shots = 0;
+  let gusts = 0;
   for (const ev of evs) {
     switch (ev.type) {
       case "shot":
@@ -1209,8 +1210,12 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "split":
         break;
+      case "gust":
+        if (gusts++ < 1) sfx.playGust();
+        break;
       case "pop":
-        tip("pop", "Bubble wrap! Single shots just pop it. Splash (bees, ponds, the Seed Cannon), slows and my pies go straight through.", "determined");
+        sfx.playPop();
+        tip("pop", "Bubble wrap! Single shots barely dent it. Splash (bees, ponds, the Seed Cannon), gusts and my pies burst it.", "determined");
         break;
       case "rankUp":
         toast(`${TOWERS[g.towers.find((t) => t.id === ev.tower)?.kind ?? "scarecrow"].name} is a veteran now: ${"★".repeat(ev.rank)}`);

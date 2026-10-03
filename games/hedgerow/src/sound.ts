@@ -76,6 +76,15 @@ function context(): AudioContext | null {
   musicBus = ctx.createGain();
   musicBus.gain.value = 0.5;
   fxBus.connect(master);
+  // A little room on the effects: a short send into the shared reverb, so hits sit in a space.
+  const room = ctx.createConvolver();
+  room.buffer = reverbImpulse(ctx);
+  const send = ctx.createGain();
+  send.gain.value = 0.14;
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 350;
+  fxBus.connect(send).connect(hp).connect(room).connect(master);
   musicBus.connect(master);
   master.connect(comp).connect(ctx.destination);
   return ctx;
@@ -189,113 +198,216 @@ function noise(at: number, dur: number, peak: number, filter?: { type: BiquadFil
   src.stop(t0 + dur + 0.02);
 }
 
+/** A random nudge to pitch (a few per cent) so repeated sounds never machine-gun. */
+const j = (f: number, amt = 0.04): number => f * (1 + (Math.random() * 2 - 1) * amt);
+
+/** A shaped synth voice: two detuned oscillators through a lowpass, with attack and release. */
+function voice(
+  freq: number,
+  at: number,
+  dur: number,
+  o: { type?: OscillatorType; peak?: number; slide?: number; cutoff?: number; attack?: number; detune?: number } = {},
+): void {
+  const c = ctx;
+  if (!c || !fxBus) return;
+  const t0 = c.currentTime + at;
+  const g = c.createGain();
+  const f = c.createBiquadFilter();
+  f.type = "lowpass";
+  f.frequency.setValueAtTime(o.cutoff ?? 2400, t0);
+  f.frequency.exponentialRampToValueAtTime(Math.max(120, (o.cutoff ?? 2400) * 0.4), t0 + dur);
+  const peak = o.peak ?? 0.05;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(peak, t0 + (o.attack ?? 0.01));
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  f.connect(g).connect(fxBus);
+  for (const d of [-(o.detune ?? 7), o.detune ?? 7]) {
+    const osc = c.createOscillator();
+    osc.type = o.type ?? "sawtooth";
+    osc.detune.value = d;
+    osc.frequency.setValueAtTime(freq, t0);
+    if (o.slide) osc.frequency.exponentialRampToValueAtTime(o.slide, t0 + dur);
+    osc.connect(f);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.03);
+  }
+}
+
+/** A small bell or coin: inharmonic partials that ring and fade. */
+function bell(freq: number, at: number, dur: number, peak = 0.03): void {
+  tone(freq, at, dur, "sine", peak);
+  tone(freq * 2.76, at, dur * 0.6, "sine", peak * 0.45);
+  tone(freq * 5.4, at, dur * 0.35, "sine", peak * 0.2);
+}
+
+/** Air moving: noise through a bandpass that sweeps. */
+function whoosh(at: number, dur: number, peak: number, from: number, to: number): void {
+  const c = ctx;
+  if (!c || !fxBus) return;
+  const t0 = c.currentTime + at;
+  const src = c.createBufferSource();
+  src.buffer = noiseBuffer(c);
+  const f = c.createBiquadFilter();
+  f.type = "bandpass";
+  f.Q.value = 1.4;
+  f.frequency.setValueAtTime(from, t0);
+  f.frequency.exponentialRampToValueAtTime(to, t0 + dur);
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(peak, t0 + dur * 0.35);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  src.connect(f).connect(g).connect(fxBus);
+  src.start(t0, Math.random() * 0.5);
+  src.stop(t0 + dur + 0.02);
+}
+
 export function playBuild(): void {
   if (!ready()) return;
-  noise(0, 0.08, 0.12, { type: "lowpass", freq: 900 });
-  tone(220, 0.02, 0.09, "triangle", 0.07, 330);
-  tone(330, 0.09, 0.14, "triangle", 0.06);
+  // Timber knocked into place: two wooden knocks and a settling thud.
+  noise(0, 0.05, 0.14, { type: "bandpass", freq: j(1300), q: 4 });
+  tone(j(190), 0, 0.12, "triangle", 0.08, 120);
+  noise(0.09, 0.05, 0.12, { type: "bandpass", freq: j(1050), q: 4 });
+  tone(j(160), 0.09, 0.14, "triangle", 0.07, 100);
+  noise(0.16, 0.2, 0.06, { type: "lowpass", freq: 500 });
 }
 export function playUpgrade(): void {
   if (!ready()) return;
-  [392, 523, 659, 784].forEach((f, i) => tone(f, i * 0.05, 0.16, "triangle", 0.05));
+  [523, 659, 784, 1047].forEach((f, i) => bell(f, i * 0.055, 0.45, 0.028));
+  whoosh(0, 0.35, 0.03, 800, 5000);
 }
 export function playSell(): void {
   if (!ready()) return;
-  tone(500, 0, 0.1, "square", 0.03, 250);
-  tone(988, 0.08, 0.12, "sine", 0.03);
+  noise(0, 0.05, 0.08, { type: "bandpass", freq: 900, q: 3 });
+  bell(1319, 0.06, 0.35, 0.03);
+  bell(1760, 0.14, 0.4, 0.025);
 }
 export function playMove(): void {
   if (!ready()) return;
-  tone(520, 0, 0.06, "sine", 0.04, 640);
+  tone(j(520), 0, 0.06, "sine", 0.04, 640);
 }
 export function playShot(kind: string, crit = false): void {
   if (!ready()) return;
   switch (kind) {
     case "beehive":
-      tone(180, 0, 0.16, "sawtooth", 0.012, 240);
+      // A swarm: buzzing, detuned and wavering.
+      voice(j(170, 0.08), 0, 0.22, { peak: 0.014, slide: j(230), cutoff: 1800, detune: 25 });
       break;
     case "pond":
-      tone(400, 0, 0.08, "sine", 0.04, 900);
+      // A plop and a splash.
+      tone(j(380), 0, 0.09, "sine", 0.05, 950);
+      noise(0.05, 0.12, 0.04, { type: "highpass", freq: 2500 });
       break;
     case "barn":
-      noise(0, 0.07, 0.08, { type: "lowpass", freq: 500 });
+      noise(0, 0.07, 0.1, { type: "lowpass", freq: 500 });
+      tone(j(110), 0, 0.12, "triangle", 0.06, 70);
       break;
     case "silo":
-      tone(90, 0, 0.22, "sine", 0.12, 45);
-      noise(0, 0.12, 0.06, { type: "lowpass", freq: 700 });
+      // A heavy shot of grain: a deep thump and a hiss of grain.
+      tone(j(85), 0, 0.26, "sine", 0.13, 40);
+      noise(0, 0.05, 0.1, { type: "bandpass", freq: 300, q: 1 });
+      noise(0.02, 0.22, 0.05, { type: "highpass", freq: 3000 });
+      break;
+    case "cannon":
+      // A muffled boom and the sack whistling away.
+      tone(j(70), 0, 0.3, "sine", 0.14, 38);
+      noise(0, 0.25, 0.12, { type: "lowpass", freq: 400 });
+      tone(j(900), 0.05, 0.35, "sine", 0.012, 500);
       break;
     default:
-      noise(0, 0.05, 0.05, { type: "bandpass", freq: 1800, q: 2 });
-      tone(700, 0, 0.05, "triangle", 0.02, 380);
+      // A thrown turnip: a whip of air and a soft thunk.
+      whoosh(0, 0.09, 0.05, j(3200), 900);
+      tone(j(240), 0.06, 0.06, "triangle", 0.035, 150);
   }
   if (crit) {
-    // A crow's caw.
-    tone(900, 0.02, 0.12, "sawtooth", 0.025, 600);
-    tone(850, 0.14, 0.1, "sawtooth", 0.02, 560);
+    // A crow's caw, rough and nasal.
+    voice(j(820), 0.02, 0.13, { peak: 0.02, slide: 560, cutoff: 2600, detune: 30 });
+    voice(j(780), 0.15, 0.11, { peak: 0.018, slide: 520, cutoff: 2400, detune: 30 });
   }
+}
+export function playGust(): void {
+  if (!ready()) return;
+  whoosh(0, 0.6, 0.06, j(400), 2200);
+  whoosh(0.08, 0.5, 0.03, j(1200), 300);
+}
+export function playPop(): void {
+  if (!ready()) return;
+  for (let i = 0; i < 4; i++) noise(i * 0.025 + Math.random() * 0.01, 0.02, 0.06, { type: "bandpass", freq: j(2600, 0.3), q: 6 });
 }
 export function playKill(big = false): void {
   if (!ready()) return;
-  noise(0, big ? 0.6 : 0.12, big ? 0.2 : 0.07, { type: "lowpass", freq: big ? 600 : 1400 });
-  tone(1175, 0.04, 0.1, "sine", 0.025);
-  tone(1568, 0.09, 0.12, "sine", 0.02);
-  if (big) [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.2 + i * 0.08, 0.3, "triangle", 0.05));
+  // A crunch of panels, then the bounty: a coin.
+  noise(0, big ? 0.7 : 0.14, big ? 0.22 : 0.08, { type: "lowpass", freq: big ? 700 : 1600 });
+  noise(0, 0.04, 0.06, { type: "bandpass", freq: j(2400), q: 3 });
+  bell(j(1568, 0.02), 0.06, 0.3, 0.022);
+  if (big) {
+    tone(55, 0, 0.9, "sine", 0.14, 30);
+    [523, 659, 784, 1047, 1319].forEach((f, i) => bell(f, 0.25 + i * 0.08, 0.7, 0.03));
+  }
 }
 export function playLeak(): void {
   if (!ready()) return;
-  tone(150, 0, 0.25, "sawtooth", 0.05, 70);
-  noise(0, 0.15, 0.05, { type: "lowpass", freq: 400 });
+  voice(150, 0, 0.35, { peak: 0.05, slide: 70, cutoff: 900 });
+  noise(0, 0.2, 0.06, { type: "lowpass", freq: 400 });
 }
 export function playWave(): void {
   if (!ready()) return;
-  // A hunting horn.
-  tone(262, 0, 0.2, "sawtooth", 0.03);
-  tone(392, 0.18, 0.32, "sawtooth", 0.035);
-  tone(262, 0, 0.2, "triangle", 0.05);
-  tone(392, 0.18, 0.32, "triangle", 0.05);
+  // A hunting horn: brassy, with a little breath at the start.
+  noise(0, 0.08, 0.02, { type: "bandpass", freq: 1200, q: 1 });
+  voice(262, 0, 0.26, { peak: 0.045, cutoff: 1400, attack: 0.04, type: "sawtooth" });
+  voice(392, 0.22, 0.5, { peak: 0.05, cutoff: 1700, attack: 0.05, type: "sawtooth" });
+  tone(196, 0.22, 0.5, "triangle", 0.04);
 }
 export function playBoss(): void {
   if (!ready()) return;
-  [110, 104, 98].forEach((f, i) => tone(f, i * 0.35, 0.5, "sawtooth", 0.06));
-  noise(0, 1.2, 0.05, { type: "lowpass", freq: 200 });
+  // Low brass and a drum roll of thunder.
+  [110, 104, 98].forEach((f, i) => voice(f, i * 0.35, 0.6, { peak: 0.07, cutoff: 700, attack: 0.06, detune: 12 }));
+  tone(49, 0, 1.4, "sine", 0.12, 41);
+  noise(0, 1.3, 0.07, { type: "lowpass", freq: 220 });
 }
 export function playBossMove(move: string): void {
   if (!ready()) return;
   if (move === "stomp" || move === "takeover") {
-    tone(70, 0, 0.4, "sawtooth", 0.08, 35);
-    noise(0, 0.35, 0.18, { type: "lowpass", freq: 500 });
+    tone(70, 0, 0.45, "sine", 0.14, 32);
+    noise(0, 0.4, 0.2, { type: "lowpass", freq: 500 });
   } else if (move === "pulse") {
-    [880, 660, 880, 660].forEach((f, i) => tone(f, i * 0.08, 0.1, "square", 0.02));
+    [880, 660, 880, 660].forEach((f, i) => voice(f, i * 0.08, 0.12, { peak: 0.02, type: "square", cutoff: 3000 }));
   } else if (move === "charge") {
-    tone(120, 0, 0.6, "sawtooth", 0.05, 240);
+    voice(110, 0, 0.7, { peak: 0.06, slide: 260, cutoff: 1200 });
+    whoosh(0.1, 0.6, 0.05, 300, 2500);
   } else if (move === "mend") {
-    [523, 784, 1047].forEach((f, i) => tone(f, i * 0.06, 0.25, "sine", 0.03));
+    [523, 784, 1047].forEach((f, i) => bell(f, i * 0.06, 0.6, 0.03));
   } else {
-    tone(196, 0, 0.2, "triangle", 0.05);
-    tone(147, 0.18, 0.3, "triangle", 0.05);
+    voice(196, 0, 0.22, { peak: 0.05, cutoff: 900 });
+    voice(147, 0.18, 0.34, { peak: 0.05, cutoff: 800 });
   }
 }
 export function playCleared(): void {
   if (!ready()) return;
-  [784, 988, 1175].forEach((f, i) => tone(f, i * 0.07, 0.16, "sine", 0.035));
+  [784, 988, 1175, 1568].forEach((f, i) => bell(f, i * 0.07, 0.5, 0.028));
 }
 export function playPie(): void {
   if (!ready()) return;
-  tone(300, 0, 0.3, "sine", 0.05, 900);
-  noise(0.32, 0.25, 0.14, { type: "lowpass", freq: 900 });
+  // Thrown, spinning, and a big wet splat.
+  whoosh(0, 0.3, 0.05, 600, 2600);
+  noise(0.32, 0.3, 0.18, { type: "lowpass", freq: 900 });
+  tone(140, 0.32, 0.2, "sine", 0.08, 70);
 }
 export function playNeighbours(): void {
   if (!ready()) return;
-  [330, 392, 494].forEach((f, i) => tone(f, i * 0.06, 0.14, "triangle", 0.05));
+  // A cheer and boots on the lane.
+  for (let i = 0; i < 4; i++) noise(i * 0.09, 0.06, 0.08, { type: "lowpass", freq: 600 });
+  [330, 392, 494].forEach((f, i) => voice(f, i * 0.06, 0.2, { peak: 0.03, type: "triangle", cutoff: 2000 }));
 }
 export function playRally(): void {
   if (!ready()) return;
-  [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.07, 0.18, "square", 0.025));
+  [523, 659, 784, 1047].forEach((f, i) => voice(f, i * 0.07, 0.26, { peak: 0.03, type: "square", cutoff: 2600 }));
+  noise(0, 0.6, 0.03, { type: "highpass", freq: 4000 });
 }
 export function playSwing(): void {
   if (!ready()) return;
-  noise(0, 0.06, 0.04, { type: "highpass", freq: 2000 });
-  tone(180, 0.04, 0.08, "triangle", 0.06, 120);
+  whoosh(0, 0.12, 0.05, j(1800), 500);
+  tone(j(170), 0.08, 0.1, "triangle", 0.08, 110);
+  noise(0.08, 0.04, 0.06, { type: "bandpass", freq: 900, q: 2 });
 }
 export function playHeroDown(): void {
   if (!ready()) return;
@@ -304,16 +416,20 @@ export function playHeroDown(): void {
 }
 export function playInjunction(): void {
   if (!ready()) return;
-  noise(0, 0.05, 0.15, { type: "bandpass", freq: 700, q: 3 });
-  noise(0.14, 0.05, 0.15, { type: "bandpass", freq: 700, q: 3 });
+  // The gavel, twice, in a big room.
+  for (const t of [0, 0.16]) {
+    noise(t, 0.06, 0.18, { type: "bandpass", freq: 700, q: 3 });
+    tone(140, t, 0.12, "sine", 0.08, 90);
+  }
 }
 export function playWin(): void {
   if (!ready()) return;
-  [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.11, 0.4, "triangle", 0.06));
+  [523, 659, 784, 1047, 1319].forEach((f, i) => bell(f, i * 0.11, 0.9, 0.04));
+  [262, 330, 392].forEach((f) => voice(f, 0.5, 1.4, { peak: 0.025, type: "triangle", cutoff: 1800, attack: 0.2 }));
 }
 export function playLose(): void {
   if (!ready()) return;
-  [392, 330, 262, 196].forEach((f, i) => tone(f, i * 0.16, 0.34, "triangle", 0.05));
+  [392, 330, 262, 196].forEach((f, i) => voice(f, i * 0.16, 0.4, { peak: 0.04, type: "triangle", cutoff: 1200 }));
 }
 
 // ---- music: harmony and score (pure, unit-tested) ----
