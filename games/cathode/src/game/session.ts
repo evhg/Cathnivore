@@ -111,6 +111,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   } catch {
     // No WebAudio: play on in silence.
   }
+  // Lightning: its thunder rolls in after the flash, and covers a gunshot for a couple of seconds.
+  let thunderCover = 0;
+  if (world.on && audio) {
+    audio.externalThunder = true;
+    world.on((ev) => {
+      if (ev.type === "thunder") {
+        setTimeout(() => audio?.thunder(), Math.max(0, ev.delay) * 1000);
+        thunderCover = 2 + Math.max(0, ev.delay);
+      } else if (ev.type === "casing") audio?.casing();
+    });
+  }
   const wake = () => audio?.resume();
   addEventListener("pointerdown", wake);
   addEventListener("keydown", wake);
@@ -228,6 +239,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       scale = 0.35;
     } else s.focus = Math.min(progress.stats.bulletTimeSeconds, s.focus + realDt * 0.15);
     const dt = o.shot ? 0 : realDt * scale;
+    thunderCover = Math.max(0, thunderCover - realDt);
     // Slow motion looks it: the noir grade deepens while time is held.
     if (!killcam.active) {
       const want = focusing || run.timeScale < 1 ? 0.4 : 0;
@@ -281,8 +293,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const spreadMul = (1 + Math.min(1.5, player.speed / 4)) * (player.onGround ? 1 : 2) * (1 - player.crouchAmt * 0.3);
     const shot = dead ? null : arsenal.update(dt || realDt, trigger, eye, fwd, world.camera.quaternion, spreadMul);
     if (shot) {
+      if (thunderCover > 0) shot.weapon = { ...shot.weapon, noise: shot.weapon.noise * 0.25 };
       const r = combat.fire(shot, build());
+      if (thunderCover > 0) hud.feedLine("Covered by the thunder");
       audio?.shot(shot.weapon.weaponClass);
+      if (shot.weapon.weaponClass !== "melee") {
+        // Brass out of the port, to the right and up; the world rings it on landing.
+        const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+        const port = shot.muzzle.clone().addScaledVector(fwd, shot.weapon.weaponClass === "pistol" ? -0.25 : -0.45);
+        world.fx.casing(port, right.multiplyScalar(2.2 + Math.random()).add(new THREE.Vector3(0, 2.4, 0)).addScaledVector(fwd, -0.3));
+      }
       if (r.killcam) {
         killcam.start(r.killcam);
         audio?.killcamWhoosh();

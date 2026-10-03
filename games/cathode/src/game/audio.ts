@@ -21,6 +21,8 @@ export class Audio {
   private tension = 0;
   private heartT = 0;
   private sirenT = 8;
+  /** The world's lightning drives thunder when it has any; otherwise thunder comes on its own. */
+  externalThunder = false;
   private thunderT = 14;
   private stepDist = 0;
   enabled = true;
@@ -226,6 +228,11 @@ export class Audio {
     }
   }
 
+  casing(): void {
+    this.thump(3200 + Math.random() * 900, 2600, 0.06, 0.05, 0, "triangle");
+    this.thump(2800 + Math.random() * 600, 2200, 0.05, 0.035, 0.09, "triangle");
+  }
+
   reload(): void {
     this.clack(0, 0.16, 1700);
     this.clack(0.35, 0.2, 1200);
@@ -384,7 +391,7 @@ export class Audio {
       this.siren();
     }
     this.thunderT -= dt;
-    if (this.thunderT <= 0) {
+    if (!this.externalThunder && this.thunderT <= 0) {
       this.thunderT = 30 + Math.random() * 40;
       this.thunder();
     }
