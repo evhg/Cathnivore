@@ -45,6 +45,8 @@ export const SLICE_WEAPONS: WeaponDef[] = [
   { id: "rattlecan", name: "Rattlecan", model: "smg", weaponClass: "smg", kind: "hitscan", damage: 15, pellets: 1, cycle: 0.075, mag: 30, reserve: 150, reload: 1.8, spread: [0.04, 0.016], noise: 40, kick: 0.5, range: 45 },
   { id: "corridorAR", name: "Corridor AR", model: "rifle", weaponClass: "rifle", kind: "hitscan", damage: 24, pellets: 1, cycle: 0.11, mag: 30, reserve: 120, reload: 2.1, spread: [0.03, 0.006], noise: 60, kick: 0.9, range: 120 },
   { id: "bargainBin", name: "Bargain Bin", model: "launcher", weaponClass: "launcher", kind: "hitscan", damage: 140, pellets: 1, cycle: 0.9, mag: 4, reserve: 12, reload: 3.2, spread: [0.02, 0.004], noise: 90, kick: 2.6, range: 140, blast: 5, brutal: 1 },
+  { id: "nightShift", name: "Night Shift", model: "blade", weaponClass: "melee", kind: "melee", damage: 75, pellets: 1, cycle: 0.4, mag: 0, reserve: 0, reload: 0, spread: [0, 0], noise: 2, kick: 0, range: 2.0, brutal: 0.8 },
+  { id: "repossessor", name: "Repossessor", model: "sledge", weaponClass: "melee", kind: "melee", damage: 150, pellets: 1, cycle: 1.0, mag: 0, reserve: 0, reload: 0, spread: [0, 0], noise: 10, kick: 0, range: 2.4, brutal: 1 },
 ];
 
 export interface Shot {

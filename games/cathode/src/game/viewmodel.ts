@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
-export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle" | "launcher";
+export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle" | "launcher" | "sledge" | "blade";
 
 const M = {
   glove: new THREE.MeshStandardMaterial({ color: 0x0d0c0c, roughness: 0.42, metalness: 0.0 }),
@@ -345,6 +345,42 @@ function buildLauncher(): GunRig {
   return r;
 }
 
+/** The Repossessor: a long-hafted sledge with a brass-banded head, swung from over the shoulder like the Pin. */
+function buildSledge(): GunRig {
+  const r = rig(new THREE.Vector3(0.2, -0.22, -0.4), new THREE.Vector3(0.12, -0.16, -0.34), 70);
+  const b = new THREE.Group();
+  b.add(at(cyl(0.017, 0.5, M.walnut, 14), 0, 0, -0.1)); // haft
+  b.add(at(cyl(0.019, 0.1, M.rubber, 14), 0, 0, 0.1)); // grip
+  b.add(at(box(0.07, 0.07, 0.17, M.steel, 0.008), 0, 0, -0.4)); // head
+  b.add(at(box(0.074, 0.074, 0.02, M.brass, 0.004), 0, 0, -0.33)); // band
+  b.add(at(box(0.074, 0.074, 0.02, M.brass, 0.004), 0, 0, -0.47));
+  b.rotation.x = 1.0;
+  b.position.set(0, 0.02, 0);
+  r.root.add(b);
+  r.action = b;
+  r.muzzle.position.set(0, 0.3, -0.3);
+  attachHands(r, [0, 0, 0.1], [0, 0, -0.05], 0);
+  return r;
+}
+
+/** Night Shift: a short black-bladed security machete, quick and quiet. */
+function buildBlade(): GunRig {
+  const r = rig(new THREE.Vector3(0.2, -0.2, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
+  const b = new THREE.Group();
+  b.add(at(cyl(0.016, 0.13, M.rubber, 14), 0, 0, 0.02)); // handle
+  b.add(at(box(0.07, 0.01, 0.02, M.steel, 0.003), 0, 0, -0.05)); // guard
+  const blade = at(box(0.006, 0.045, 0.42, M.blued, 0.002), 0, 0.005, -0.28);
+  b.add(blade);
+  b.add(at(box(0.002, 0.008, 0.4, M.steel, 0.001), 0, -0.018, -0.28)); // edge
+  b.rotation.x = 1.0;
+  b.position.set(0, 0.02, 0);
+  r.root.add(b);
+  r.action = b;
+  r.muzzle.position.set(0, 0.3, -0.25);
+  attachHands(r, [0, 0, 0.03], null);
+  return r;
+}
+
 export function buildGun(model: GunModel): GunRig {
   const r =
     model === "pin" ? buildPin()
@@ -354,6 +390,8 @@ export function buildGun(model: GunModel): GunRig {
     : model === "smg" ? buildAuto(false)
     : model === "rifle" ? buildAuto(true)
     : model === "launcher" ? buildLauncher()
+    : model === "sledge" ? buildSledge()
+    : model === "blade" ? buildBlade()
     : buildSniper();
   r.root.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) {
