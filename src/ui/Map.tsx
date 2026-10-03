@@ -24,7 +24,7 @@ const SIZE = 250 // viewBox half-width; hexes drawn within [-SIZE, SIZE]
 const HEX_R = 92 // circumradius (centre to vertex)
 const RING_DISTANCE = HEX_R * Math.sqrt(3)
 const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap between them (STYLE.md 7)
-const PIECE_SCALE = 1.5 // enlarge the enemy-piece cluster in place (see the comment where it's used)
+const PIECE_SCALE = 1.9 // enlarge the enemy-piece cluster in place (see the comment where it's used)
 
 function hexCenter(id: RegionId): { x: number; y: number } {
   const angle = HEX_ANGLES[id]

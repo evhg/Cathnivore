@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-03 13:52 session:** ROADMAP 57: enemy tokens scaled 1.5x -> 1.9x (`npm run check` green, shots reviewed). Left: distinct silhouettes, then 58-62. Release cap used today; no release.
 - **2026-10-03 12:52 session:** ROADMAP 57: piece drop-shadows (`npm run check` green). Left for 57: bigger tokens; then 58-62. Release cap used today; no release.
 - **2026-10-03 11:52 session:** ROADMAP 57 part 1 (phone map 45vh, bigger labels, e2e spec; `npm run check` green). Left: bigger tokens + shadows, then 58-62. 4 releases already used today; release after 00:00 UTC.
 - **2026-10-03 10:51 session:** planning (fewer than 3 open items): audited Cathnivore shots with a subagent, added ROADMAP 57-62; end-screen stats now 4-across on wide screens. Next: 57 (phone map hero), then 58-62. 4 releases already used today; release after 00:00 UTC.

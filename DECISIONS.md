@@ -239,3 +239,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-03: Owner: too easy, money not scarce. Added hard counters (light, heavy and air, via `TOWER_VS`; megastructures are even-handed), heavy plant (half slows, no gust or knockback; all bosses count), a 30% slow floor, about a third less Marks everywhere (crowd levels pay half bounty), and compounding Endless health (×1.075 a wave) with a boss every tenth wave. Full re-tune; numbers are in BALANCE.md.
 - 2026-10-03: Audit session added ROADMAP 57-62 (Cathnivore art critique); no release, daily cap reached.
 - 2026-10-03: Piece shadows via CSS drop-shadow on .enemy-piece/.stall-piece; short session, no release (cap reached).
+- 2026-10-03: Map enemy tokens PIECE_SCALE 1.9 (fits 390px and desktop hexes); short session, no release (cap reached).
