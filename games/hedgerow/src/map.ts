@@ -129,9 +129,9 @@ function glow(b: Brush, x: number, y: number, r: number, color: string, a = 0.9)
 function cloud(b: Brush, x: number, y: number, w: number, light: string, shade: string, opacity = 1, lx = -1, flat = true): string {
   const h = w * 0.38;
   const g = b.def(`cg${x},${y},${w}`, (id) => `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" y1="${f(y - h)}" x2="0" y2="${f(y)}"><stop offset="0" stop-color="${light}"/><stop offset=".45" stop-color="${light}"/><stop offset="1" stop-color="${shade}"/></linearGradient>`);
-  const c = b.def(`cc${x},${y},${w}`, (id) => `<clipPath id="${id}"><rect x="${f(x - w)}" y="${f(y - h * 2)}" width="${f(w * 2)}" height="${f(h * 2 + 0.5)}"/></clipPath>`);
+  const c = b.def(`cc${x},${y},${w}`, (id) => `<clipPath id="${id}"><rect x="${f(x - w)}" y="${f(y - h * 2)}" width="${f(w * 2)}" height="${f(h * 2 + w * 0.03)}"/></clipPath>`);
   const n = 5 + Math.floor(w / 36);
-  let o = "";
+  let o = flat ? `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(w * 0.46)}" ry="${f(w * 0.03)}" fill="${shade}"/>` : "";
   for (let i = 0; i < n; i++) {
     const t = i / (n - 1) - 0.5;
     const env = Math.pow(1 - 4 * t * t, 0.6);
@@ -397,7 +397,7 @@ function shafts(b: Brush, x: number, y: number, angles: number[], len: number, c
 /** Paper grain, a little mottling, a vignette: the storybook finish. */
 function finish(b: Brush, seed: number, tint = "#2a1a10", vig = 0.38): string {
   const grain = b.def("grain", (id) =>
-    `<filter id="${id}" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="${seed}" stitchTiles="stitch" result="a"/><feColorMatrix in="a" type="matrix" values="0 0 0 0 .2 0 0 0 0 .14 0 0 0 0 .08 .2 0 0 0 -.075" result="g"/><feTurbulence type="fractalNoise" baseFrequency=".012 .02" numOctaves="2" seed="${seed + 7}" result="b"/><feColorMatrix in="b" type="matrix" values="0 0 0 0 .24 0 0 0 0 .17 0 0 0 0 .1 .34 0 0 0 -.12" result="m"/><feMerge><feMergeNode in="m"/><feMergeNode in="g"/></feMerge></filter>`,
+    `<filter id="${id}" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="${seed}" stitchTiles="stitch" result="a"/><feColorMatrix in="a" type="matrix" values="0 0 0 0 .2 0 0 0 0 .14 0 0 0 0 .08 .16 0 0 0 -.06" result="g"/><feTurbulence type="fractalNoise" baseFrequency=".012 .02" numOctaves="2" seed="${seed + 7}" result="b"/><feColorMatrix in="b" type="matrix" values="0 0 0 0 .24 0 0 0 0 .17 0 0 0 0 .1 .34 0 0 0 -.12" result="m"/><feMerge><feMergeNode in="m"/><feMergeNode in="g"/></feMerge></filter>`,
   );
   return `<rect width="${SW}" height="${SH}" filter="url(#${grain})" opacity=".9"/>` +
     `<rect x="-10" y="-10" width="${SW + 20}" height="${SH + 20}" fill="${b.rad([[0, tint, 0], [0.62, tint, 0], [1, tint, vig]], 0.5, 0.42, 0.72)}"/>`;
@@ -450,8 +450,8 @@ function stripes(x0: number, y0: number, dx: number, n: number, gap: number, len
 function clumps(pts: [number, number, number][], dark: string, light: string, lx = 1): string {
   let d = "";
   let l = "";
-  for (const [x, y, r] of pts) {
-    d += `M${f(x - r)} ${f(y)}a${f(r)} ${f(r * 0.75)} 0 0 1 ${f(2 * r)} 0Z`;
+  for (const [x, y, r] of pts.slice().sort((p, q) => p[1] - q[1])) {
+    d += `M${f(x - r)} ${f(y)}a${f(r)} ${f(r * 0.62)} 0 0 1 ${f(2 * r)} 0Z`;
     l += `M${f(x - r * 0.55 + lx * r * 0.2)} ${f(y - r * 0.32)}a${f(r * 0.5)} ${f(r * 0.32)} 0 0 1 ${f(r)} 0Z`;
   }
   return `<path d="${d}" fill="${dark}"/><path d="${l}" fill="${light}" opacity=".85"/>`;
@@ -488,15 +488,15 @@ function brindle(b: Brush): string {
   const near = roll(b, 188, 7, 1.3);
   const nearD = landD(near);
   o += `<path d="${nearD}" fill="${b.lin([[0, "#7aab4c"], [1, "#5f9139"]])}"/>`;
-  o += clipTo(b, nearD, stripes(-60, 180, 70, 30, 24, 80, "#9cc768", 9, 0.22) + pools(b, [[380, 214, 120]], "#28401a", 0.22) + pools(b, [[110, 206, 110]], "#fff6c8", 0.3));
+  o += clipTo(b, nearD, stripes(-60, 180, 70, 30, 24, 80, "#9cc768", 9, 0.14) + pools(b, [[380, 214, 120]], "#28401a", 0.22) + pools(b, [[110, 206, 110]], "#fff6c8", 0.3));
   // the lane winding up to the farm
-  o += `<path d="${ribbon([[242, 176, 2.5], [236, 186, 4], [256, 204, 7], [246, 226, 11], [232, 256, 17], [240, 300, 30]])}" fill="${b.lin([[0, "#eadbb0"], [1, "#cdb382"]])}"/>`;
-  o += `<path d="M240 184l10 20M236 228l-6 30M248 236l2 40" stroke="#b39a68" stroke-width="1" opacity=".55"/>`;
   o += stoneWall([[-10, 214], [60, 206], [130, 204], [196, 198], [234, 192]], 4.5);
   o += stoneWall([[262, 196], [330, 200], [400, 206], [490, 212]], 4.5);
   for (const [x, y, s] of [[90, 222, 6], [118, 228, 5.5], [360, 220, 6], [404, 226, 5.5], [150, 218, 5]] as const) o += sheep(b, x, y, s / 4.5);
   const fore = roll(b, 246, 9, 1);
   o += land(fore, b.lin([[0, "#5f9136"], [1, "#3f6a27"]]));
+  o += `<path d="${ribbon([[242, 176, 2.5], [236, 186, 4], [256, 204, 7], [246, 226, 11], [232, 256, 17], [240, 300, 30]])}" fill="${b.lin([[0, "#eadbb0"], [1, "#cdb382"]])}"/>`;
+  o += `<path d="M240 184l10 20M236 228l-6 30M248 236l2 40" stroke="#b39a68" stroke-width="1" opacity=".55"/>`;
   o += tree(b, 18, 252, 34, SPRING, lx, 0.8) + tree(b, 466, 250, 30, SPRING, lx, 0.8);
   o += blades(b, 90, -10, 490, (x) => fore(x) + 8 + b.r(0, 40), 6, 14, "#86b84e", 0.9, 0.3, 0.8);
   o += dotPath(drifts(b, [[90, 262], [170, 276], [330, 270], [410, 262]], 14, 30, 1, 1.9), "#fff6d6") + dotPath(drifts(b, [[60, 280], [140, 258], [300, 284], [380, 276]], 12, 26, 1, 1.8), "#f6cf3e");
@@ -520,7 +520,7 @@ function highmoor(b: Brush): string {
   const lx = 1;
   let o = sky(b, [[0, "#5a92c6"], [0.45, "#a6c6de"], [0.8, "#e5e4d8"], [1, "#efe1c6"]]);
   o += glow(b, 396, 46, 140, "#fff2cf", 0.85) + `<circle cx="396" cy="46" r="11" fill="#fffbec"/>`;
-  o += cloud(b, 240, 96, 220, "#fdfcf6", "#9aaac0", 1, 1) + cloud(b, 70, 70, 120, "#fbfbf6", "#a9b8ca", 0.95, 1) + cloud(b, 446, 112, 70, "#fdfbf4", "#c0c9d3", 0.85, 1);
+  o += cloud(b, 280, 56, 190, "#fdfcf6", "#9aaac0", 1, 1) + cloud(b, 70, 78, 130, "#fbfbf6", "#a9b8ca", 0.95, 1) + cloud(b, 446, 112, 70, "#fdfbf4", "#c0c9d3", 0.85, 1);
   o += streak(b, 120, 22, 150, "#ffffff", 0.45) + streak(b, 380, 18, 110, "#ffffff", 0.4) + streak(b, 300, 30, 70, "#ffffff", 0.35);
   const far = roll(b, 126, 10, 1.6);
   o += land(far, b.lin([[0, "#97a5bd"], [1, "#aeb5c4"]]));
@@ -534,25 +534,30 @@ function highmoor(b: Brush): string {
   // the great granite tor, with clitter at its foot
   const ty = mid(240) + 3;
   o += `<ellipse cx="${f(240 - lx * 34)}" cy="${f(ty + 1)}" rx="66" ry="4.5" fill="#2a2030" opacity=".3"/>`;
-  const slabs: [number, number, number, number][] = [[188, -8, 108, 9], [194, -21, 54, 15], [250, -20, 42, 14], [198, -35, 46, 15], [254, -33, 32, 14], [203, -49, 38, 15], [258, -45, 22, 13], [210, -61, 26, 13], [214, -71, 16, 11]];
-  for (const [x, dy, w, h] of slabs) o += slab(b, x, ty + dy, w, h, lx);
-  o += `<path d="M226 ${f(ty - 20)}v12M232 ${f(ty - 34)}v13M222 ${f(ty - 48)}v12M270 ${f(ty - 19)}v12M228 ${f(ty - 60)}v10" stroke="#4d4840" stroke-width=".9" opacity=".75"/>`;
+  const torPts: Pt[] = [[184, 0], [186, -9], [194, -12], [194, -24], [199, -27], [200, -39], [206, -43], [207, -55], [213, -59], [216, -68], [226, -70], [230, -60], [236, -57], [238, -45], [244, -42], [246, -30], [252, -28], [256, -32], [262, -40], [272, -41], [276, -31], [282, -28], [284, -17], [292, -14], [296, 0]];
+  const torD = curve(torPts.map(([x, y]) => [x, ty + y] as Pt)) + "Z";
+  o += `<path d="${torD}" fill="${b.lin([[0, "#77705f"], [0.45, "#a9a291"], [1, "#d9d3c4"]], 1, 0)}"/>`;
+  o += clipTo(b, torD, `<rect x="180" y="${f(ty - 80)}" width="120" height="80" fill="${b.lin([[0, "#ffffff", 0.35], [0.5, "#ffffff", 0], [1, "#2a2030", 0.25]])}"/>` +
+    `<path d="M186 ${f(ty - 11)}q20 2 40 -1M236 ${f(ty - 12)}q24 3 50 0M196 ${f(ty - 25)}q14 2 30 -1M248 ${f(ty - 28)}q10 1 22 -2M203 ${f(ty - 40)}q12 2 26 0M209 ${f(ty - 55)}q10 1 20 -1M262 ${f(ty - 40)}q6 1 12 0" fill="none" stroke="#4f493f" stroke-width="1.2" opacity=".6"/>` +
+    `<path d="M188 ${f(ty - 12.6)}q20 2 40 -1M238 ${f(ty - 13.6)}q24 3 50 0M198 ${f(ty - 26.6)}q14 2 30 -1M205 ${f(ty - 41.6)}q12 2 26 0" fill="none" stroke="#f4efe2" stroke-width=".7" opacity=".45"/>` +
+    `<path d="M214 ${f(ty)}v-12M232 ${f(ty - 12)}v-13M222 ${f(ty - 25)}v-13M268 ${f(ty - 14)}v-14M248 ${f(ty)}v-12M226 ${f(ty - 52)}v-11M216 ${f(ty - 38)}v-14" stroke="#4d4840" stroke-width="1" opacity=".7"/>`);
   o += dotPath(scatter(b, 14, 196, 286, ty - 50, ty - 4, 0.6, 1.4), "#b8bd84", 0.8);
-  for (const [x, w] of [[176, 9], [300, 11], [316, 7], [164, 6], [290, 6]] as const) o += slab(b, x, ty - w * 0.4 + b.r(0, 4), w, w * 0.6, lx);
+  for (const [x, w] of [[172, 9], [302, 11], [318, 7], [160, 6], [334, 5]] as const) o += slab(b, x, ty - w * 0.4 + b.r(0, 4), w, w * 0.6, lx);
   o += dotPath(drifts(b, [[60, 160], [150, 166], [330, 164], [430, 156]], 18, 30, 0.7, 1.3), "#b77fbe", 0.85) + dotPath(drifts(b, [[100, 158], [380, 162]], 12, 22, 0.7, 1.2), "#e2c04c", 0.85);
+  o += clumps(drifts(b, [[60, 172], [150, 178], [330, 176], [420, 170], [240, 182]], 16, 40, 1.2, 2.2).map(([x, y, r]) => [x, Math.max(y, mid(x) + 6), r] as [number, number, number]), "#7a5a7a", "#a77aa8");
   for (const x of [70, 100, 150, 330, 360]) o += sheep(b, x, mid(x) + b.r(8, 18), 0.8);
   const near = roll(b, 196, 10, 1.1);
   const nearD = landD(near);
   o += `<path d="${nearD}" fill="${b.lin([[0, "#86706a"], [0.4, "#77615c"], [1, "#5e4b4d"]])}"/>`;
   o += clipTo(b, nearD, pools(b, [[90, 214, 90], [300, 220, 110], [450, 206, 60]], "#9a5d96", 0.55) + pools(b, [[200, 208, 70], [400, 226, 60]], "#a0703a", 0.45) + pools(b, [[260, 206, 140]], "#ffe2b0", 0.25));
   o += stoneWall([[-10, 206], [80, 198], [170, 202], [250, 196], [340, 200], [490, 194]], 4, "#8e8b80", "#cbc6b8", "#4d4a42");
-  o += clumps(drifts(b, [[40, 222], [120, 216], [210, 228], [300, 220], [380, 230], [460, 216]], 8, 34, 2, 3.6).map(([x, y, r]) => [x, Math.max(y, near(x) + 4), r] as [number, number, number]), "#7a4a78", "#b57ab4");
+  o += clumps(drifts(b, [[40, 222], [120, 216], [210, 228], [300, 220], [380, 230], [460, 216], [80, 236], [250, 238], [420, 240]], 24, 30, 1.6, 3).map(([x, y, r]) => [x, Math.max(y, near(x) + 4), r] as [number, number, number]), "#7a4a78", "#b57ab4");
   o += clumps(drifts(b, [[160, 216], [420, 222]], 6, 22, 2, 3.4).map(([x, y, r]) => [x, Math.max(y, near(x) + 4), r] as [number, number, number]), "#5c6a2c", "#e3c044");
   for (const x of [120, 300, 420]) o += sheep(b, x, near(x) + b.r(14, 26), 1.25);
   const fore = roll(b, 248, 10, 1);
   o += land(fore, b.lin([[0, "#5d4757"], [1, "#3a2c38"]]));
   o += blades(b, 80, -10, 490, (x) => fore(x) + 4 + b.r(0, 44), 8, 18, "#9a7b5c", 1, 0.35, 0.8);
-  o += clumps(drifts(b, [[30, 268], [110, 286], [200, 272], [290, 290], [380, 266], [460, 284]], 9, 40, 4, 8).map(([x, y, r]) => [x, Math.max(y, fore(x) + 6), r] as [number, number, number]), "#6b3a68", "#b06cae");
+  o += clumps(drifts(b, [[30, 268], [110, 286], [200, 272], [290, 290], [380, 266], [460, 284], [150, 300], [340, 300]], 14, 40, 5, 10).map(([x, y, r]) => [x, Math.max(y, fore(x) + 6), r] as [number, number, number]), "#6b3a68", "#b06cae");
   o += dotPath(drifts(b, [[80, 274], [250, 280], [420, 274]], 14, 40, 0.8, 1.5), "#e2b4e0", 0.85);
   o += birds(b, 3, 140, 200, 104, 120, 3.4, "#4a3f4f") + birds(b, 2, 320, 360, 120, 130, 2.6, "#4a3f4f");
   return o;
@@ -596,7 +601,6 @@ function saltmarsh(b: Brush): string {
   const water = b.lin([[0, "#f6f0e0"], [0.5, "#cfdfdc"], [1, "#94b9c4"]]);
   const creek = (pts: [number, number, number][]): string =>
     `<path d="${ribbon(pts.map(([x, y, w]) => [x, y + 0.8, w + 0.8 + w * 0.15]))}" fill="#5f5a3a" opacity=".6"/><path d="${ribbon(pts)}" fill="${water}"/>`;
-  o += creek([[150, 142, 0.6], [110, 147, 1.2], [60, 154, 2], [-20, 164, 3]]);
   o += creek([[362, 142, 0.6], [338, 152, 2], [356, 168, 4], [320, 190, 7], [344, 230, 12], [300, 300, 22]]);
   o += creek([[262, 143, 0.6], [226, 152, 1.8], [190, 166, 3.5], [140, 182, 6], [104, 206, 9], [140, 250, 14], [90, 300, 22]]);
   o += glints(b, 14, 300, 350, 196, 270, 6, "#ffffff", 0.8) + glints(b, 10, 100, 150, 196, 270, 6, "#ffffff", 0.7);
@@ -604,7 +608,8 @@ function saltmarsh(b: Brush): string {
   // a hide on stilts
   o += `<path d="M392 152v12M410 152v12M398 152v12" stroke="#4a3a2a" stroke-width="1.2"/><rect x="388" y="140" width="26" height="13" fill="#8a6a48"/><rect x="408" y="140" width="6" height="13" fill="#5f4834"/><path d="M386 141l14 -8l16 8Z" fill="#5a4a3e"/><rect x="393" y="145" width="9" height="3" fill="#2a2018"/>`;
   o += pools(b, [[191, 154, 50], [421, 164, 60]], "#8a6a3a", 0.55) + reeds(b, 150, 232, 152, 12, 40) + reeds(b, 372, 470, 162, 15, 40);
-  o += clumps(drifts(b, [[60, 176], [200, 196], [420, 210], [270, 176]], 7, 30, 1.5, 3), "#6e7a3a", "#a9b45c");
+  o += clumps(drifts(b, [[60, 176], [200, 196], [420, 210], [270, 176], [40, 220], [380, 186]], 9, 34, 1.5, 3.4), "#6e7a3a", "#a9b45c");
+  o += blades(b, 120, -10, 490, (x) => flats(x) + 6 + b.r(0, 90), 2, 5, "#7c7d40", 0.6, 0.3, 0.7);
   o += egret(212, 168, 1.3, 1) + egret(352, 196, 1.6, -1) + egret(120, 212, 1.9, 1);
   o += `<path d="M150 92q8 -6 14 1q6 -8 14 -2" fill="none" stroke="#fbfaf4" stroke-width="2.2" stroke-linecap="round"/><path d="M178 86l4 1" stroke="#e0b030" stroke-width=".8"/>`;
   // the boardwalk into the marsh, with a handrail
@@ -689,7 +694,7 @@ function rivermead(b: Brush): string {
   // the stone bridge
   const by = 186;
   const span = (x: number, r: number): string => `M${x - r} ${by + 10}A${r} ${r * 0.85} 0 0 1 ${x + r} ${by + 10}`;
-  o += clipTo(b, rivD, `<path d="M150 ${by + 10}H330L326 ${by + 22}H154Z" fill="#c9bfa6" opacity=".35"/><path d="M178 ${by + 10}a18 15 0 0 0 36 0ZM218 ${by + 10}a22 19 0 0 0 44 0ZM266 ${by + 10}a18 15 0 0 0 36 0Z" fill="#4f5a54" opacity=".28"/>` +
+  o += clipTo(b, rivD, `<path d="M150 ${by + 10}H330L326 ${by + 22}H154Z" fill="#c9bfa6" opacity=".35"/><path d="M178 ${by + 10}a18 8 0 0 0 36 0ZM218 ${by + 10}a22 10 0 0 0 44 0ZM266 ${by + 10}a18 8 0 0 0 36 0Z" fill="#4f5a54" opacity=".25"/>` +
     pools(b, [[150, 210, 40], [330, 206, 40]], "#3f5a2a", 0.5) + glints(b, 22, 140, 300, 214, 296, 10, "#ffffff", 0.55));
   const deck = `M150 ${by - 6}Q240 ${by - 16} 330 ${by - 6}L330 ${by + 10}L150 ${by + 10}Z`;
   o += `<path d="${deck}${span(196, 18)}Z${span(240, 22)}Z${span(284, 18)}Z" fill="${b.lin([[0, "#ddd3bc"], [1, "#a99b80"]])}" fill-rule="evenodd"/>`;
@@ -699,6 +704,7 @@ function rivermead(b: Brush): string {
   let stones = "";
   for (let i = 0; i < 40; i++) stones += `M${f(b.r(152, 326))} ${f(b.r(by - 4, by + 8))}h${f(b.r(2.5, 5))}`;
   o += `<path d="${stones}" stroke="#7e7058" stroke-width=".7" opacity=".5"/>`;
+  o += blades(b, 40, 120, 176, (x) => 300 - (x - 120) * 1.6 + b.r(-6, 2), 6, 14, "#5f8a34", 1, 0.2) + blades(b, 40, 300, 360, (x) => 214 + (x - 300) * 1.4 + b.r(-4, 4), 6, 14, "#5f8a34", 1, 0.2);
   o += willow(b, 150, 196, 20, lx) + willow(b, 334, 192, 18, lx) + willow(b, 104, 168, 9, lx);
   o += tree(b, 400, 160, 10, SPRING, lx) + tree(b, 60, 156, 8, SPRING, lx);
   const cow = (x: number, y: number, s: number): string => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="1" rx="6" ry="1" fill="#1a160c" opacity=".25"/><path d="M-3.5 -1v2.5M3 -1v2.5" stroke="#2a2420" stroke-width="1"/><rect x="-5" y="-5" width="10" height="5" rx="2.4" fill="#f2ede2"/><path d="M-3 -5h4v3h-4ZM2 -4h2v3h-2Z" fill="#2a2420"/><rect x="4" y="-6" width="3" height="3.4" rx="1" fill="#2a2420"/></g>`;
@@ -746,7 +752,6 @@ function oakvale(b: Brush): string {
   o += `<path d="${masses([[-50, -70, 24], [-20, -86, 30], [20, -88, 30], [52, -72, 24], [0, -66, 26], [-36, -96, 20], [36, -100, 20], [2, -110, 22]], 0)}" fill="${crown.dark}"/>`;
   o += `<path d="${masses([[-10, -98, 20], [30, -98, 19], [54, -82, 14], [10, -118, 13], [-40, -84, 12]], lx * 6)}" fill="${crown.mid}"/>`;
   o += `<path d="${masses([[40, -106, 9], [60, -88, 7], [16, -126, 7], [-2, -110, 7], [28, -118, 6]], lx * 4)}" fill="${crown.light}" opacity=".85"/>`;
-  o += `<path d="M${ox - 70} ${oy - 56}Q${ox} ${oy - 40} ${ox + 72} ${oy - 58}Q${ox} ${oy - 50} ${ox - 70} ${oy - 56}Z" fill="#2c4019" opacity=".5"/>`;
   o += dotPath(scatter(b, 26, ox - 10, ox + 70, oy - 130, oy - 80, 0.6, 1.4), crown.light, 0.75);
   // great trunks framing the wood
   const trunk = (x: number, w: number, dir: number): string =>
@@ -764,10 +769,10 @@ function oakvale(b: Brush): string {
     }
     return `<path d="${d}" fill="${c}"${a < 1 ? ` opacity="${a}"` : ""}/>`;
   };
-  o += `<rect x="-10" y="-10" width="${SW + 20}" height="22" fill="#2c4019"/>`;
+  o += `<rect x="-10" y="-10" width="${SW + 20}" height="32" fill="#2c4019"/>`;
   o += leafy(16, 34, 16, 14, 22, "#2c4019") + leafy(8, 26, 20, 10, 16, "#3f5a24") + leafy(14, 30, 26, 5, 9, "#5a7a2e", 0.95) + leafy(6, 26, 30, 2.5, 5, "#8aa63e", 0.8);
   o += dotPath(drifts(b, [[300, 22], [360, 30], [420, 20], [250, 26]], 12, 24, 1.2, 2.8), "#d2dc72", 0.85);
-  o += shafts(b, 380, -10, [0.38, 0.5, 0.62, 0.78, 0.92], 300, "#fff8d2", 0.32);
+  o += shafts(b, 400, -10, [0.32, 0.44, 0.55, 0.66, 0.8, 0.95], 340, "#fff6c8", 0.36);
   // dappled light, bluebells and ferns
   o += pools(b, [[150, 196, 26], [300, 204, 34], [210, 230, 30], [380, 222, 22], [96, 220, 20], [256, 178, 20]], "#fff3b0", 0.55);
   const bells: Pt[] = [[70, 214], [140, 232], [110, 260], [350, 222], [410, 246], [330, 266], [180, 200], [300, 196]];
@@ -808,15 +813,15 @@ function shingleBay(b: Brush): string {
   }
   o += `<path d="${caps}" fill="none" stroke="#e9f0ee" stroke-width="1.1" stroke-linecap="round" opacity=".7"/>`;
   // the cliffs and lighthouse
-  const cliff = `M296 300L300 210C302 190 290 176 300 160C310 140 318 126 326 116C340 104 380 98 420 100C450 102 470 106 490 110V300Z`;
-  o += `<path d="${cliff}" fill="${b.lin([[0, "#d8cdb3"], [0.6, "#b5a688"], [1, "#8c7d66"]], 1, 0)}"/>`;
+  const cliff = `M310 300L314 214C316 194 306 178 316 162C324 144 330 128 338 118C352 106 384 98 420 100C450 102 470 106 490 110V300Z`;
+  o += `<path d="${cliff}" fill="${b.lin([[0, "#9a8b72"], [0.25, "#cfc3a8"], [0.7, "#b2a386"], [1, "#857660"]], 1, 0)}"/>`;
+  o += clipTo(b, cliff, `<rect x="300" y="96" width="200" height="210" fill="${b.lin([[0, "#ffffff", 0.15], [0.6, "#000000", 0], [1, "#1a1408", 0.35]])}"/>`);
   let strata = "";
   for (let i = 0; i < 9; i++) strata += `M${f(306 + i * 2)} ${f(130 + i * 16)}C${f(360)} ${f(126 + i * 16)} ${f(420)} ${f(134 + i * 16)} 490 ${f(128 + i * 16)}`;
   o += `<path d="${strata}" fill="none" stroke="#8b7b61" stroke-width="1" opacity=".4"/>`;
   o += `<path d="M352 112L344 170L356 240L346 300H366L374 230L362 160Z M410 104L404 150L416 214L408 300H424L430 220L420 150Z M452 106L446 160L458 230L452 300H470L474 210L464 150Z" fill="#7f705a" opacity=".38"/>`;
   o += `<path d="M330 120L326 180L340 250M384 106L380 170L392 250M436 106L432 180" fill="none" stroke="#efe6d0" stroke-width="2" opacity=".45"/>`;
   o += clumps([[312, 296, 12], [334, 300, 14], [300, 300, 8], [354, 302, 9]], "#6f6250", "#a89a80", -1);
-  o += `<path d="M300 210C302 190 290 176 300 160C310 140 318 126 326 116L340 116C330 140 322 170 320 210L318 300H296Z" fill="#6d6150" opacity=".55"/>`;
   o += `<path d="M322 118C340 104 380 96 420 98C450 100 470 104 490 108V114C460 108 420 104 380 106C360 108 340 112 326 120Z" fill="#7d9a52"/>`;
   o += `<path d="M330 114C350 104 380 99 420 100" fill="none" stroke="#a8c06c" stroke-width="2"/>`;
   // lighthouse
@@ -938,7 +943,7 @@ function theBallot(b: Brush): string {
   const near = (x: number): number => 176 + Math.sin(x / 70) * 2;
   const nearD = landD(near);
   o += `<path d="${nearD}" fill="${b.lin([[0, "#86bb58"], [1, "#5f9a3e"]])}"/>`;
-  o += clipTo(b, nearD, stripes(-200, 176, 120, 34, 26, 130, "#a3d070", 12, 0.22) + pools(b, [[110, 200, 120]], "#fff4c8", 0.3) + pools(b, [[400, 230, 100]], "#25401a", 0.2));
+  o += clipTo(b, nearD, stripes(-200, 176, 120, 34, 26, 130, "#a3d070", 12, 0.12) + pools(b, [[110, 200, 120]], "#fff4c8", 0.3) + pools(b, [[400, 230, 100]], "#25401a", 0.2));
   o += `<path d="${ribbon([[240, 172, 9], [240, 200, 14], [240, 240, 22], [240, 300, 34]])}" fill="${b.lin([[0, "#ecdcb4"], [1, "#cdb88a"]])}"/>`;
   let flags = "";
   for (let y = 178; y < 300; y += 5 + (y - 170) * 0.06) {
@@ -955,7 +960,7 @@ function theBallot(b: Brush): string {
   o += tree(b, 120, 196, 22, SPRING, lx, 1.2) + tree(b, 380, 198, 20, SPRING, lx, 1.2);
   const board = (x: number, y: number, c: string, t1: string, t2: string): string =>
     `<path d="M${x + 2} ${y}l-4 16M${x + 22} ${y}l4 16" stroke="#5a4232" stroke-width="1.6"/><rect x="${x - 2}" y="${y - 24}" width="28" height="26" rx="1.5" fill="${c}" stroke="#2b2320" stroke-width=".8"/><text x="${x + 12}" y="${y - 13}" text-anchor="middle" font-size="7" font-weight="800" fill="#fff" font-family="sans-serif">${t1}</text><text x="${x + 12}" y="${y - 5}" text-anchor="middle" font-size="5.2" font-weight="700" fill="#fff" font-family="sans-serif">${t2}</text>`;
-  o += board(170, 200, "#1f8a8a", "VOTE", "PELL") + board(298, 202, "#4f8a3a", "KEEP", "THE LANES");
+  o += board(170, 200, "#1f8a8a", "VOTE", "PELL") + board(298, 202, "#4f8a3a", "KEEP", "LANES");
   const bunting = (x1: number, y1: number, x2: number, y2: number, sag: number): string => {
     const cols = ["#d9473b", "#f2c94c", "#3f6fb5", "#ffffff", "#4f9a5a"];
     const paths = cols.map(() => "");
@@ -996,14 +1001,14 @@ function theMerger(b: Brush): string {
   // a patchwork of small fields in front
   const far = roll(b, 158, 3, 1.6);
   o += land(far, b.lin([[0, "#9fae86"], [1, "#93a37a"]]));
-  const fields: [string, string][] = [["M-10 172L120 164L160 176L-10 190Z", "#a7b56e"], ["M120 164L250 162L262 176L160 176Z", "#c4b876"], ["M250 162L380 164L396 178L262 176Z", "#8fae6a"], ["M380 164L490 166L490 182L396 178Z", "#b3b377"], ["M-10 190L160 176L190 206L-10 222Z", "#8aa85e"], ["M160 176L262 176L300 208L190 206Z", "#9db766"], ["M262 176L396 178L440 210L300 208Z", "#c8bb72"], ["M396 178L490 182L490 214L440 210Z", "#89a65c"]];
+  const fields: [string, string][] = [["M-10 172L120 164L160 176L-10 190Z", "#a7b56e"], ["M120 164L250 162L262 176L160 176Z", "#c4b876"], ["M250 162L380 164L396 178L262 176Z", "#8fae6a"], ["M380 164L490 166L490 182L396 178Z", "#b3b377"], ["M-10 190L160 176L190 206L-10 222Z", "#8aa85e"], ["M160 176L262 176L300 208L190 206Z", "#9db766"], ["M262 176L396 178L440 210L300 208Z", "#c8bb72"], ["M396 178L490 182L490 214L440 210Z", "#89a65c"], ["M-10 222L190 206L210 242L-10 246Z", "#b6b06c"], ["M190 206L300 208L320 240L210 242Z", "#7f9f56"], ["M300 208L440 210L470 238L320 240Z", "#a3b465"], ["M440 210L490 214L490 238L470 238Z", "#c2b874"]];
   o += fields.map(([d, c]) => `<path d="${d}" fill="${c}"/>`).join("");
   let furrows = "";
   for (let i = 0; i < 8; i++) furrows += `M${170 + i * 14} 178L${200 + i * 14} 206M${270 + i * 16} 178L${310 + i * 16} 208`;
   o += `<path d="${furrows}" stroke="#6f7a3a" stroke-width=".7" opacity=".45"/>`;
   const H9: Leaf = { trunk: "#4a3e30", dark: "#3f5a34", mid: "#5f7a46", light: "#8ea068" };
   o += hedge(b, -10, 172, 120, 164, 3, H9) + hedge(b, 120, 164, 250, 162, 3, H9) + hedge(b, 250, 162, 490, 166, 3, H9) + hedge(b, -10, 190, 160, 176, 4, H9) + hedge(b, 160, 176, 396, 178, 4, H9) + hedge(b, 396, 178, 490, 182, 4, H9);
-  o += hedge(b, 160, 176, 190, 206, 4, H9) + hedge(b, 396, 178, 440, 210, 4, H9);
+  o += hedge(b, 160, 176, 190, 206, 4, H9) + hedge(b, 396, 178, 440, 210, 4, H9) + hedge(b, -10, 222, 190, 206, 4, H9) + hedge(b, 190, 206, 440, 210, 4, H9) + hedge(b, 300, 208, 320, 240, 4, H9);
   o += tree(b, 120, 166, 9, H9, lx) + tree(b, 400, 180, 10, H9, lx);
   o += house(b, 206, 196, { w: 34, h: 13, e: 14, rh: 10, wall: "#efe4cc", wallShade: "#a9997c", roof: "#6a6e78", roofDark: "#454852", cols: 2, rows: 1, door: "#4a3a2a", smoke: "#e6e8ea" });
   o += house(b, 256, 198, { w: 26, h: 12, e: 12, rh: 8, wall: "#9e5a40", wallShade: "#6a3a2a", roof: "#5a5c62", roofDark: "#3a3c42", cols: 1, rows: 1, chimney: false });
@@ -1024,7 +1029,7 @@ function kingsmarket(b: Brush): string {
   let o = sky(b, [[0, "#0d1230"], [0.45, "#232a58"], [0.78, "#4a3f6a"], [1, "#7a4f5e"]]);
   o += dotPath(scatter(b, 90, -10, 490, 0, 130, 0.3, 0.8), "#ffffff", 0.8) + dotPath(scatter(b, 14, -10, 490, 0, 100, 0.9, 1.3), "#fff6d8", 0.95);
   o += glow(b, 400, 46, 70, "#e8eeff", 0.55);
-  o += `<circle cx="400" cy="46" r="13" fill="#f6f2e2"/><circle cx="406" cy="42" r="12" fill="#1f2650" opacity=".92"/>`;
+  o += `<path d="M402 33A13 13 0 1 0 402 59A10.5 13 0 1 1 402 33Z" fill="#f6f2e2"/>`;
   o += streak(b, 130, 70, 200, "#6a6a9a", 0.35) + streak(b, 330, 88, 160, "#7a6a90", 0.3);
   // distant roofs
   const far = roll(b, 150, 4, 1.5);
@@ -1042,7 +1047,7 @@ function kingsmarket(b: Brush): string {
   cat += `M${cx + 66} ${cy}V${cy - 60}L${cx + 92} ${cy - 76}V${cy}Z`;
   o += `<path d="${cat}" fill="${c}"/>`;
   // moonlit edges
-  o += `<path d="M${cx + 113} ${cy - 156}L${cx + 126} ${cy - 84}V${cy - 50}M${cx + 34} ${cy}V${cy - 50}H${cx + 66}M${cx + 34} ${cy}V${cy - 50}" fill="none" stroke="#6a6aa8" stroke-width=".9" opacity=".7"/>`;
+  o += `<path d="M${cx + 113} ${cy - 156}L${cx + 126} ${cy - 84}V${cy - 50}" fill="none" stroke="#6a6aa8" stroke-width=".9" opacity=".7"/>`;
   // rose window and lancets aglow
   o += glow(b, cx + 17, cy - 30, 20, "#ffb84a", 0.6);
   o += `<circle cx="${cx + 17}" cy="${cy - 30}" r="7" fill="${b.rad([[0, "#ffe7a0"], [0.6, "#f2a446"], [1, "#b8582a"]])}"/><path d="M${cx + 10} ${cy - 30}h14M${cx + 17} ${cy - 37}v14M${cx + 12} ${cy - 35}l10 10M${cx + 22} ${cy - 35}l-10 10" stroke="${c}" stroke-width=".8"/>`;
@@ -1098,7 +1103,7 @@ function kingsmarket(b: Brush): string {
 
 const ACTS: ((b: Brush) => string)[] = [brindle, highmoor, saltmarsh, rivermead, oakvale, shingleBay, theRift, theBallot, theMerger, kingsmarket];
 /** The canvas y where each act's banner crop starts, and the vignette tint for each act. */
-const BANNER_TOP = [88, 84, 90, 100, 52, 60, 66, 80, 22, 70];
+const BANNER_TOP = [88, 84, 90, 116, 52, 60, 76, 80, 46, 56];
 const TINT = ["#2a1a10", "#1e1828", "#2a2010", "#18202a", "#1a200c", "#10141e", "#1e0e20", "#1e180c", "#1a1e26", "#05040e"];
 
 /**
@@ -1134,7 +1139,15 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     const got = lvs.reduce((a, lv) => a + (data.stars[String(lv.id)] ?? 0), 0);
     const head = document.createElement("div");
     head.className = "act-head";
-    head.innerHTML = actScene(n, "banner");
+    // Banners are painted once as images (lazy, cached by the browser): ten live SVG scenes with grain
+    // filters made the map heavy to scroll on phones. The story scene stays live SVG.
+    const img = document.createElement("img");
+    img.className = "act-scene";
+    img.alt = "";
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(actScene(n, "banner").replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" '))}`;
+    head.replaceChildren(img);
     const title = document.createElement("div");
     title.className = "act-title";
     const num = document.createElement("span");
