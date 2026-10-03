@@ -474,115 +474,113 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
   41: {
     name: "Oakvale Water",
     before: [
-      { who: "vane", text: "Octavia Vane, Candor Health. Oakvale Water is free, for everyone, for as long as our wellness study runs." },
-      { who: "tomas", text: "There's a lorry on Oakvale green handing out bottles. No label. Just a sign-up form taped to each one." },
-      { who: "ines", text: "The form asks for your date of birth and your address. You need neither to drink water." },
-      { who: "cath", text: "And the lorries come up our lane to do it. Hedges for the road, scarecrows for anything that flies." },
+      { who: "narrator", text: "Oakvale, a village in the woods. A new company has arrived: Candor Health, Hollowell's partner." },
+      { who: "vane", text: "Dr Octavia Vane, Candor Health. We're giving Oakvale free bottled water. Just fill in our health form." },
+      { who: "ines", text: "That form asks for your address, your date of birth and your medical history. For a bottle of water." },
+      { who: "cath", expression: "determined", text: "They want the village's data. Stop their lorries: hedges for the road, scarecrows for the drones." },
     ],
     after: [
-      { who: "vane", text: "'Nobody has to take part. We're simply making it easier to say yes.'" },
+      { who: "ines", text: "Not one form got delivered. Oakvale keeps its privacy." },
     ],
   },
   42: {
     name: "No Livery",
     before: [
-      { who: "sol", text: "Unmarked couriers, no livery, no lights, and they've waited for fog. I can hear them on the scanner. Can't see them." },
-      { who: "sol", text: "Give me a week and an antenna and they'll light up like a fairground." },
-      { who: "cath", text: "Until then, fog cuts our reach. Build tight to the lane and stop everything we can see, early." },
+      { who: "sol", text: "Candor are sending couriers with no logos and no lights, in the fog, on two roads." },
+      { who: "cath", text: "Fog shortens every tower's reach. And those couriers are hard to spot: only I can see them up close." },
+      { who: "cath", expression: "determined", text: "Build right beside both roads, and I'll catch what the towers can't see." },
     ],
     after: [
-      { who: "ines", text: "Three got through. Every doorstep on Mill Row has a bottle on it and a form underneath." },
+      { who: "sol", text: "We need a way to see those couriers coming. Give me a week, Cath. I've got an idea." },
     ],
   },
   43: {
     name: "Under Review",
     before: [
-      { who: "tomas", text: "Leaflet through every door: 'Oakvale's well water is under review.' Half the market's stopped buying cordial." },
-      { who: "ines", text: "Under review by whom? It doesn't say. I've tested that well every spring for nine years. I'll test it again." },
-      { who: "cath", text: "Nobody's buying, so the tin's thin. Cheap first, and let the lane pay us." },
+      { who: "tomas", text: "Candor put a leaflet through every door saying our well water might be unsafe. Nobody's buying at the market." },
+      { who: "ines", text: "It's a lie. I test that well every year. It's perfectly clean." },
+      { who: "cath", expression: "determined", text: "With no sales, money's tight. Build cheap first and let each wave pay for the next tower." },
     ],
     after: [
-      { who: "vane", text: "'The leaflet says the water is under review. It is. We're reviewing it.'" },
-      { who: "ines", text: "My results: the same as every year. They're pinned to the church door." },
+      { who: "ines", text: "I've pinned the test results to the church door. Clean, like always." },
     ],
   },
   44: {
     name: "Unlabelled",
     before: [
-      { who: "ines", text: "Vans with no names on them, after dark, parked outside the school." },
-      { who: "cath", expression: "worried", text: "Night. They're quicker and we see less. Build close to the lane. Nobody goes home early." },
+      { who: "ines", text: "Unmarked vans are parking outside the school after dark, handing out free crates of water." },
+      { who: "cath", text: "At night the towers can't see as far, and some of these couriers are invisible until they're close." },
+      { who: "cath", expression: "determined", text: "Build tight to the lane. I'll spot the hidden ones when they pass me." },
     ],
     after: [
-      { who: "bea", text: "Miss Okafor got a free crate of water for our class. The box says 'Thank you for taking part.'" },
-      { who: "cath", text: "Bring a bottle home for Dr Ines. She'll want to test it." },
+      { who: "bea", text: "My teacher got a crate for our class. The label says 'Thank you for taking part'. Taking part in what?" },
+      { who: "cath", expression: "worried", text: "Good question, Bea. Bring a bottle home for Dr Ines to test." },
     ],
   },
   45: {
     name: "Sol's Mast",
     before: [
-      { who: "sol", text: "Forty metres of scaffold, two car batteries and every cable I own. Ladies and gentlemen: the mast." },
-      { who: "sol", text: "Anything inside its signal shows up on my screen, couriers included, and whatever it marks gets hit harder." },
-      { who: "pip", text: "Smashing. How far does it reach, Sol? Roughly? Only for the planning form." },
-      { who: "cath", text: "Put it where they've been slipping through, with hedges round it." },
+      { who: "sol", text: "Ta-da! My radio mast. Anything inside its signal shows up, hidden couriers included." },
+      { who: "sol", text: "And it marks everything nearby, so the other towers hit it harder." },
+      { who: "cath", expression: "determined", text: "Put the mast where the couriers slip through. There's a swing bridge today too: hit them while it's up." },
     ],
     after: [
-      { who: "sol", text: "Fourteen couriers spotted, fourteen stopped. They really don't like being on the radio." },
+      { who: "sol", text: "Fourteen hidden couriers spotted, fourteen stopped. They can't hide from the mast." },
     ],
   },
   46: {
     name: "Static",
     before: [
-      { who: "sol", text: "Static on every channel. Drones are flying circles round the mast, right at the edge of its range." },
-      { who: "cath", expression: "determined", text: "Right at the edge. Someone measured. Scarecrows and hives by the mast: bring the drones down and the signal comes back." },
+      { who: "sol", text: "Drones are circling right at the edge of the mast's signal, jamming it. And they're coming up two roads." },
+      { who: "cath", expression: "worried", text: "Right at the edge. How do they know exactly how far it reaches?" },
+      { who: "cath", expression: "determined", text: "Put scarecrows and bees around the mast to knock the drones down." },
     ],
     after: [
-      { who: "sol", text: "Signal's back. I never broadcast the range, you know. Not once." },
+      { who: "sol", text: "Signal's back. But I never told anyone the mast's range. Except the planning form Pip helped me fill in." },
     ],
   },
   47: {
     name: "Two Glasses",
     before: [
-      { who: "ines", text: "Noon, Oakvale square. Two glasses: one from the well, one from their bottles. Same lab. I'll read out both results." },
-      { who: "vane", text: "'Candor welcomes an open debate. We've arranged for a great many people to attend it.'" },
-      { who: "cath", text: "Hundreds of them, packed close and none of them sturdy. That's work for the bees." },
+      { who: "ines", text: "At noon I'll test two glasses in the square: our well water and Candor's bottled water. In front of everyone." },
+      { who: "vane", text: "Candor welcomes a public debate. We've sent a lot of people to watch." },
+      { who: "cath", expression: "determined", text: "Hundreds of them, packed together. That's a job for the bees." },
     ],
     after: [
-      { who: "ines", text: "I read the results to two hundred people. Forty stayed to the end. Thirty-nine asked for a copy." },
+      { who: "ines", text: "Our well water was cleaner than theirs. Everyone saw it." },
     ],
   },
   48: {
     name: "Cold Chain",
     before: [
-      { who: "tomas", text: "Refrigerated trucks for the new clinic. Insulated walls, steel doors, about five miles an hour." },
-      { who: "ines", text: "A clinic, in my district. Nobody has asked the district's doctor." },
-      { who: "cath", text: "Armoured and slow: silo work. Put the silos where the trucks spend longest." },
+      { who: "tomas", text: "Candor are building a clinic in Oakvale. Their supply trucks are armoured fridges on wheels." },
+      { who: "ines", text: "A clinic in my village, and nobody asked the village doctor." },
+      { who: "cath", expression: "determined", text: "Armoured and slow. Silos fire straight through armour: put them where the trucks spend longest." },
     ],
     after: [
-      { who: "ines", text: "The clinic opens Monday. The staff are on two-week contracts. The study runs for two weeks." },
+      { who: "ines", text: "The clinic opens on Monday. Its staff are only hired for two weeks. Exactly as long as their 'study'." },
     ],
   },
   49: {
     name: "The Night Before",
     before: [
-      { who: "sol", text: "Scanner says every van they've got is rolling tonight, back to back. They won't wait for each other." },
-      { who: "cath", expression: "determined", text: "No gaps, then. Build everything before the first one, and keep the pie for when they stack up." },
-      { who: "pip", text: "Big day tomorrow. What time will you lot be up? I'll bring coffee." },
-      { who: "cath", expression: "smirk", text: "Early, Pip." },
+      { who: "sol", text: "Every Candor van is on the road tonight, one wave straight after another. No breaks." },
+      { who: "cath", expression: "determined", text: "No time to build between waves, then. Build everything now, and save the pie for when they pile up." },
     ],
     after: [
-      { who: "bea", text: "Page one of my project is done. It's you in the dark with a pie. Miss Okafor says it's very atmospheric." },
+      { who: "bea", text: "I drew you in the dark with a pie, for my school project. It's very spooky." },
     ],
   },
   50: {
     name: "Clinic-in-a-Box",
     before: [
-      { who: "narrator", text: "Vane's Clinic-in-a-Box: a clinic on a flatbed, with its own staff patching it up as it drives." },
-      { who: "vane", text: "'We'll be offering free wellness checks. We're not saying anyone needs one. We're saying they're free.'" },
-      { who: "cath", expression: "determined", text: "It mends itself on the move. Hit it with everything at once, so the patching can't keep up." },
+      { who: "narrator", text: "Dr Vane's Clinic-in-a-Box: a whole clinic on a lorry. Its crew keeps repairing it as it drives." },
+      { who: "vane", text: "Free health checks for everyone in Oakvale. Nobody has to say yes. We just make it easy." },
+      { who: "cath", expression: "determined", text: "It heals itself and anything near it. Hit it with everything at once, so the repairs can't keep up." },
     ],
     after: [
-      { who: "sol", text: "Photo from the clinic car park: Pip Talbot, getting into the back of Julian Crisp's car. He's laughing." },
-      { who: "cath", expression: "worried", text: "The depot rota. The stall list. The mast's range. He's been passing on every plan since the long lane." },
+      { who: "sol", text: "Cath, look at this photo. That's Pip, getting into Julian Crisp's car." },
+      { who: "cath", expression: "worried", text: "Pip, our friendly inspector. He's been telling Hollowell every plan we made, from the very first lane." },
     ],
   },
 };
