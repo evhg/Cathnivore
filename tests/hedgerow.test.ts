@@ -366,6 +366,18 @@ describe("hedgerow engine", () => {
     expect(lobbied(g, tw)).toBe(false);
   });
 
+  it("Pell's quad bike rams Cath when she is beside it and not holding it", () => {
+    const g = newGame(classic(63));
+    g.phase = "wave";
+    const p = enemyPoint(g.level, { dist: 3 });
+    g.hero.x = g.hero.tx = p.x;
+    g.hero.y = g.hero.ty = p.y;
+    g.enemies.push({ id: 901, kind: "rival", dist: 3, hp: 1e6, slowed: false, stun: 0 });
+    const before = g.hero.hp;
+    for (let i = 0; i < 30; i++) stepGame(g);
+    expect(g.hero.hp).toBeLessThan(before);
+  });
+
   it("a drone carrier launches drones on a timer", () => {
     const g = newGame(classic(63));
     g.enemies.push({ id: 900, kind: "carrier", dist: 3, hp: 1e6, slowed: false, stun: 0 });

@@ -37,6 +37,7 @@ export type EnemyKind =
   | "lawyer"
   | "lobbyist"
   | "carrier"
+  | "rival"
   | "swarm"
   | "bus"
   | "board"
@@ -260,6 +261,8 @@ export interface EnemySpec {
   jam?: number;
   /** Towers within this many cells of it forget their specialisation and fight as plain tier 3 (megastructures are immune). */
   lobby?: number;
+  /** Rams Cath for this many hit points a second while within 1.1 cells of her, held or not. */
+  ram?: number;
   /** Launches this many of a kind every `every` seconds while it is on the lane. */
   launch?: { kind: EnemyKind; count: number; every: number };
   /** Flies over the lane: Cath cannot hold it. */
@@ -378,6 +381,14 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     leak: 3,
     flying: true,
     launch: { kind: "drone", count: 2, every: 5 },
+  },
+  rival: {
+    name: "Pell on a quad bike",
+    hp: 1100,
+    speed: 1.25,
+    bounty: 60,
+    leak: 5,
+    ram: 12,
   },
   lawyer: {
     name: "Corporate lawyer",
@@ -2064,6 +2075,12 @@ function stepHero(game: Game): void {
   // Held enemies hit back.
   let hurt = 0;
   for (const e of game.enemies) if (e.held) hurt += enemyHit(e.kind);
+  for (const e of game.enemies) {
+    const ram = ENEMIES[e.kind].ram;
+    if (!ram || e.hp <= 0 || e.dist <= 0) continue;
+    const p = enemyPoint(game.level, e);
+    if (Math.hypot(p.x - h.x, p.y - h.y) <= 1.1 && !e.held) hurt += ram;
+  }
   if (hurt > 0) h.hp -= hurt * game.perks.holdGuard * STEP;
   else h.hp = Math.min(h.maxHp, h.hp + HERO.regen * STEP);
   if (h.hp <= 0) {

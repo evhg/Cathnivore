@@ -699,6 +699,8 @@ export function enemyScale(kind: EnemyKind): number {
       return 0.75;
     case "carrier":
       return 1.1;
+    case "rival":
+      return 1.15;
     case "lawyer":
     case "lobbyist":
     case "influencer":
@@ -1040,6 +1042,9 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
         ctx.arc(hx, hy - s * 0.03, s * 0.08, Math.PI, 0);
         ctx.fill();
       });
+      break;
+    case "rival":
+      vehicle(ctx, 0, 0, s, tt, { len: 0.5, h: 0.24, body: "#c9a227", cab: "#7a5a12", label: "P", wheels: 2 });
       break;
     case "lobbyist":
       person(ctx, 0, 0, s, tt, "#2f4a3c", "#efd6c4", (hx, hy) => {

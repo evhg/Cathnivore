@@ -93,6 +93,12 @@ const lobbyist = (count: number, gap: number, delay = 0): WaveGroup => ({
   gap,
   delay,
 });
+const rival = (count: number, gap: number, delay = 0): WaveGroup => ({
+  enemy: "rival",
+  count,
+  gap,
+  delay,
+});
 const carrier = (count: number, gap: number, delay = 0): WaveGroup => ({
   enemy: "carrier",
   count,
@@ -5242,6 +5248,7 @@ export const LEVELS: Level[] = [
         lawyer(6, 2, 6),
         lobbyist(2, 3, 8),
         carrier(1, 3, 10),
+        rival(1, 3, 12),
         bulldozer(5, 3, 8),
         van(14, 1.2, 8),
         drone(16, 0.55, 10),
