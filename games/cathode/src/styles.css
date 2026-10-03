@@ -761,3 +761,48 @@ input[type="radio"] {
     opacity: 1;
   }
 }
+
+.hud-pause {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(4, 5, 8, 0.72);
+  -webkit-backdrop-filter: blur(6px) grayscale(0.6);
+  backdrop-filter: blur(6px) grayscale(0.6);
+  pointer-events: none;
+}
+.hud-pause-card {
+  width: min(520px, calc(100% - 32px));
+  padding: 24px 28px;
+  border: 1px solid var(--rule);
+  background: rgba(15, 17, 23, 0.9);
+  pointer-events: auto;
+}
+.hud-pause-title {
+  margin: 0 0 16px;
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.hud-keys {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 18px;
+  margin: 0 0 18px;
+  font-size: 14px;
+}
+.hud-keys dt {
+  font-weight: 700;
+  color: var(--neon-amber);
+  letter-spacing: 0.08em;
+}
+.hud-keys dd {
+  margin: 0;
+  color: var(--ink);
+}
+.hud-quit {
+  font-size: 14px;
+  color: var(--ink-muted);
+}

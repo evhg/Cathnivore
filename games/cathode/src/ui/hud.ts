@@ -161,6 +161,39 @@ export class Hud {
     this.banner.classList.add("on");
   }
 
+  private pause?: HTMLElement;
+
+  /** The desktop pause card: the game waits behind it until a click captures the mouse again. */
+  showPause(on: boolean): void {
+    if (!this.pause) {
+      this.pause = el("div", "hud-pause", this.root.parentElement ?? this.root);
+      const card = el("div", "hud-pause-card", this.pause);
+      const h = el("p", "hud-pause-title", card);
+      h.textContent = "Click to play";
+      const keys: Array<[string, string]> = [
+        ["WASD", "Move"],
+        ["Mouse", "Look · Left fire · Right aim"],
+        ["Shift", "Sprint"],
+        ["C", "Crouch · slide when sprinting"],
+        ["Space", "Jump · climb a ledge"],
+        ["Q / E", "Lean"],
+        ["F", "Takedown from behind"],
+        ["X", "Focus: slow time"],
+        ["R", "Reload"],
+        ["1–4", "The Pin · Kestrel 9 · Fishmonger · Widowmaker"],
+      ];
+      const dl = el("dl", "hud-keys", card);
+      for (const [k, v] of keys) {
+        el("dt", "", dl).textContent = k;
+        el("dd", "", dl).textContent = v;
+      }
+      const quit = el("a", "hud-quit", card);
+      quit.textContent = "Back to the title";
+      quit.setAttribute("href", "./");
+    }
+    this.pause.hidden = !on;
+  }
+
   set visible(v: boolean) {
     this.root.hidden = !v;
   }

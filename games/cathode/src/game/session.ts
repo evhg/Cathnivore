@@ -7,11 +7,12 @@ import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
 import { ENFORCER, Enemy, type Sight } from "./enemy";
-import { RayWorld } from "./ray";
+import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
 import { KillCam } from "./killcam";
 import { Hud } from "../ui/hud";
+import { Audio } from "./audio";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -79,6 +80,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const combat = new Combat(world, rays, enemies, o.intensity === "full");
   const killcam = new KillCam(world);
   const hud = new Hud(o.hud);
+  let audio: Audio | null = null;
+  try {
+    audio = new Audio();
+  } catch {
+    // No WebAudio: play on in silence.
+  }
+  const wake = () => audio?.resume();
+  addEventListener("pointerdown", wake);
+  addEventListener("keydown", wake);
+  wake();
   const s: Session = {
     world,
     player,
@@ -127,6 +138,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       s.maxHp += 8;
       s.hp = s.maxHp;
       hud.showBanner(`Level ${s.level}`, "5 attribute points · 1 skill point");
+      audio?.levelUp();
     }
   };
 
@@ -165,7 +177,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const realDt = Math.min(0.05, (now - last) / 1000);
     last = now;
     const intent = input.read();
-    if (s.paused) {
+    // On desktop the game waits while the mouse is free (Esc, or before the first click).
+    const away = !input.isTouch && !input.locked && !o.shot && !dead && !navigator.webdriver;
+    hud.showPause(away);
+    if (s.paused || away) {
+      last = performance.now();
       world.render();
       requestAnimationFrame(frame);
       return;
@@ -182,11 +198,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     time += dt;
 
     if (killcam.active) {
+      // The kill-cam is cinema: no gun in hand, no HUD.
+      arsenal.rig.root.visible = false;
+      hud.visible = false;
       if (intent.fire && !wasFire) killcam.skip();
       wasFire = intent.fire;
       combat.update(dt, build());
       for (const e of enemies) e.update(dt, sightOf(), rays, world.colliders, ground);
       killcam.update(realDt);
+      audio?.update(realDt, 0.2, 1);
       drainEvents();
       world.update(dt, time);
       render();
@@ -194,6 +214,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       return;
     }
 
+    hud.visible = true;
     if (!dead) {
       // Movement looks in real time (so aiming stays crisp in bullet-time) but moves in game time.
       player.aiming = arsenal.aiming;
@@ -215,9 +236,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const shot = dead ? null : arsenal.update(dt || realDt, trigger, eye, fwd, world.camera.quaternion, spreadMul);
     if (shot) {
       const r = combat.fire(shot, build());
-      if (r.killcam) killcam.start(r.killcam);
+      audio?.shot(shot.weapon.weaponClass);
+      if (r.killcam) {
+        killcam.start(r.killcam);
+        audio?.killcamWhoosh();
+      }
     }
-    if (arsenal.meleeNow) combat.melee(eye, fwd, arsenal.weapon, build());
+    if (arsenal.meleeNow) audio?.pin(combat.melee(eye, fwd, arsenal.weapon, build()));
+    if (intent.reload && arsenal.weapon.kind !== "melee") audio?.reload();
     const canTakedown = !dead && takedownTarget() !== null;
     if (intent.takedown && canTakedown) {
       const pin = arsenal.held[0]!.def;
@@ -238,11 +264,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
           s.hp = Math.max(0, s.hp - e.kit.damage);
           world.fx.tracer(sh.from, sight.chest);
+          audio?.hitFlesh(false);
         } else if (hitWorld) {
           world.fx.impact(hitWorld.point, hitWorld.normal, world.surfaceAt(hitWorld.point));
           world.fx.tracer(sh.from, hitWorld.point);
         }
         combat.noise(sh.from, 40);
+        const rel = sh.from.clone().sub(eye);
+        const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+        audio?.enemyShot(rel.length(), THREE.MathUtils.clamp(rel.normalize().dot(right), -1, 1));
       }
     }
     discoverBodies();
@@ -264,6 +294,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       hud.showBanner("Job done", `Level ${s.level} · ${s.xp} XP`);
     }
 
+    // Sound: footsteps, the score's tension, slow motion.
+    if (audio) {
+      if (player.onGround) audio.steps(player.speed * realDt * (dt > 0 ? dt / realDt : 1), player.speed, player.crouchAmt);
+      let tension = 0;
+      for (const e of enemies) if (e.alive) tension = Math.max(tension, e.state === "combat" ? 1 : e.state === "searching" ? 0.6 : e.detect * 0.5);
+      audio.update(realDt, tension, focusing ? 0.7 : 0);
+    }
+
     // Camera zoom while aiming, and the weapon rig.
     world.camera.fov = arsenal.worldFov;
     world.camera.updateProjectionMatrix();
@@ -272,6 +310,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
     // HUD.
     const ahead = rays.cast(eye, fwd, 800);
+    const groundT = rayGround(eye, fwd, world.groundHeight(eye.x, eye.z), 800);
     hud.update(realDt, {
       hp: s.hp,
       maxHp: s.maxHp,
@@ -285,7 +324,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       spread: (arsenal.aiming ? 0 : 10) * spreadMul,
       scoped: arsenal.scopedIn,
       threats: threats(),
-      scopeRange: ahead ? ahead.dist : 800,
+      scopeRange: Math.min(ahead ? ahead.dist : 800, groundT ?? 800),
       wind: world.wind.x,
       objective,
       takedown: canTakedown,
@@ -349,8 +388,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
 
   function drainEvents(): void {
-    for (const k of combat.kills) onKill(k);
-    for (const h of combat.hits) if (!h.killed) hud.hitMarker(false);
+    for (const k of combat.kills) {
+      onKill(k);
+      if (k.severed.length) audio?.sever();
+    }
+    for (const h of combat.hits) {
+      if (!h.killed) hud.hitMarker(false);
+      audio?.hitFlesh(h.damage > 40);
+    }
     combat.kills.length = 0;
     combat.hits.length = 0;
   }

@@ -165,15 +165,15 @@ export class KillCam {
       // Swing to the side of the target as the round arrives.
       const k = Math.min(1, this.t / 0.35);
       const want = aimPt.clone().addScaledVector(side, 1.4).addScaledVector(dir, -0.6).add(new THREE.Vector3(0, 0.15, 0));
-      cam.position.lerp(want, 0.15 + 0.5 * k);
-      this.lookAt.lerp(aimPt, 0.3);
+      cam.position.lerp(want, 1 - Math.exp(-realDt * (6 + 12 * k)));
+      this.lookAt.lerp(aimPt, 1 - Math.exp(-realDt * 10));
     } else {
       // The fall: a slow orbit out.
       const centre = tgt.body.joints.chest;
       const a = this.t * 0.5 * this.orbit;
-      const off = side.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(2.2 + this.t * 0.6);
-      cam.position.lerp(centre.clone().add(off).add(new THREE.Vector3(0, 0.9, 0)), 0.08);
-      this.lookAt.lerp(centre, 0.2);
+      const off = side.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(3 + this.t * 0.8);
+      cam.position.lerp(centre.clone().add(off).add(new THREE.Vector3(0, 1.1, 0)), 1 - Math.exp(-realDt * 4));
+      this.lookAt.lerp(centre, 1 - Math.exp(-realDt * 8));
       if (this.t > 0.45) this.xray(false);
       if (this.t > 1.7) this.finish();
     }
