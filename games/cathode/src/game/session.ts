@@ -186,6 +186,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let last = performance.now();
   let time = 0;
   let wasFire = false;
+  let swayT = 0;
   let dead = false;
   let jobDone = false;
   const eye = new THREE.Vector3();
@@ -239,6 +240,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       player.step(Math.max(dt, realDt * 0.35), intent);
     }
     player.applyCamera(world.camera, realDt);
+    // Scope sway: a slow figure-of-eight; held breath (Focus while scoped) all but stills it.
+    if (arsenal.scopedIn) {
+      swayT += realDt;
+      const amp = 0.0045 * progress.stats.swayMultiplier * (focusing ? 0.12 : 1) * (1 + player.speed * 0.4);
+      world.camera.rotation.x += Math.sin(swayT * 0.9) * amp;
+      world.camera.rotation.y += Math.sin(swayT * 0.45) * amp * 1.4;
+    }
     world.camera.getWorldPosition(eye);
     world.camera.getWorldDirection(fwd);
 
