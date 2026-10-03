@@ -193,7 +193,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 30. [x] **Level select as a journey:** a map of Marrow with the ten acts as regions and the levels as stops on a path, stars and boss markers, and the current level glowing (like Cathnivore's campaign).
 31. [ ] **Balance pass:** a bot run over all 100 levels logged in `BALANCE.md` (stars per level, a difficulty curve); every level winnable with what's unlocked by then; 3 stars needs real skill; no sudden spikes except the bosses.
    _26-30 shipped 2026-10-02 by the owner's chat session (`5a8ec91`..`aadfc2c`), after the owner said Hedgerow was "pretty boring" and should be worth 50 USD: painted acts, sprites for every tier and specialisation, Cath as a hero unit, graphic-novel story scenes, an icon build menu with range preview (a bottom panel, not radial: better one-handed), the journey map. Plus tier-4 specialisations, targeting, early calls, an aimed pie, boss signature moves, the Seed Bank, music. Use `/hedgerow/?sandbox=1` (unlimited Marks) to screenshot late waves._
-32. [ ] **Story pass:** read all 100 levels' beats end to end and tighten them into one arc with setups and payoffs, Bea's thread, each boss's introduction, and Cath's voice (SPEC 3.2).
+32. [x] *(2026-10-03: all 100 levels and the finale rewritten to the clarity rules in docs/design/hedgerow-v2.md 7; live `7e0c69a`.)* **Story pass:** read all 100 levels' beats end to end and tighten them into one arc with setups and payoffs, Bea's thread, each boss's introduction, and Cath's voice (SPEC 3.2).
 
 ### Hedgerow: from good to worth 50 USD (owner's feedback 2026-10-02; Kingdom Rush is the bar)
 
@@ -227,7 +227,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 ## Phase 5: second passes (keep going)
 
 33. [ ] **Fresh-eyes audit of all three games and the landing page:** `npm run shots` plus Hedgerow and Runnel screenshots, critiqued by a subagent against `VISION.md`'s eight bars; turn its findings into new ranked items here.
-34. [ ] **Performance pass:** bundle sizes, first-load time, and frame time in Hedgerow with 50+ enemies on screen; fix anything over budget (VISION 7).
+34. [~] *(2026-10-03: Hedgerow first load 329 KB -> 150 KB gzipped: three.js and the 3D renderer are a lazy chunk prefetched on the map; map banners are cached images. Frame time with 60 enemies is being measured under ROADMAP 44.)* **Performance pass:** bundle sizes, first-load time, and frame time in Hedgerow with 50+ enemies on screen; fix anything over budget (VISION 7).
 
 ## Postponed by the owner (2026-09-28)
 
