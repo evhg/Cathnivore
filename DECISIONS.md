@@ -241,3 +241,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-03: Piece shadows via CSS drop-shadow on .enemy-piece/.stall-piece; short session, no release (cap reached).
 - 2026-10-03: Map enemy tokens PIECE_SCALE 1.9 (fits 390px and desktop hexes); short session, no release (cap reached).
 - 2026-10-03: Outlet silhouette = sawtooth warehouse (ROADMAP 57 done); short session, no release (cap).
+- 2026-10-03: End-screen payoff is pure CSS (staggered rise-ins, sticky action button); no e2e run, short session, no release (cap).

@@ -238,7 +238,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 
 57. [~] *(2026-10-03: piece shadows done; map >= 45vh, 14.5px labels, legend kept on one row, e2e `phone-map-hero`; tokens scaled 1.5x -> 1.9x (2026-10-03); silhouettes done: Outlet sawtooth roof.)* **Phone map as hero:** at 390x844 the board takes at least 45% of the viewport height; tokens at least 18px with distinct silhouettes; region labels at least 11px; piece shadows (bar 2).
 58. [ ] **Chapter scenes staged like a graphic novel:** every named speaker on screen at 50% viewport height with a pose per line, a coloured backdrop per chapter, AA contrast, staged entrances (bar 5).
-59. [ ] **End screens with payoff:** a 400-1200ms choreographed win/loss sequence, centred full-opacity stat cards, primary action visible at 390x844 without scrolling (bars 4, 6).
+59. [~] *(2026-10-03: staggered entrance + sticky action done)* **End screens with payoff:** a 400-1200ms choreographed win/loss sequence, centred full-opacity stat cards, primary action visible at 390x844 without scrolling (bars 4, 6).
 60. [ ] **In-game panels:** Sell collapses to one stepper, no overlapping badge glyphs on Squeeze/Expand/Scout chips, category colour and icons in side panels (bar 1).
 61. [ ] **Cath on the game screen:** companion at least 48px with expression changes on events; phone title keeps her inside the frame (bar 5).
 62. [ ] **Campaign and setup:** illustrated header per chapter card, teaser silhouettes for locked chapters, colour portraits at 48px, a visible progress track, a mode illustration on setup (bars 1, 6).
