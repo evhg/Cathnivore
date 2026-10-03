@@ -2205,3 +2205,13 @@ img.act-scene {
   object-fit: cover;
   object-position: center top;
 }
+/* The dotted trail passes behind each stop: stars and names sit on a pill of the card's colour so the dots
+   never run through them. */
+.node .level-stars:not(:empty),
+.node .level-name {
+  position: relative;
+  z-index: 1;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--surface);
+}
