@@ -698,6 +698,7 @@ export function enemyScale(kind: EnemyKind): number {
     case "drone":
       return 0.75;
     case "lawyer":
+    case "lobbyist":
     case "influencer":
       return 0.85;
     case "boss":
@@ -1033,6 +1034,15 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       person(ctx, 0, 0, s, tt, "#5b6370", "#efd6c4", (hx, hy) => {
         rr(ctx, s * 0.06, hy + s * 0.3, s * 0.14, s * 0.1, s * 0.01, "#3a2a24");
         ctx.fillStyle = "#3a3d44";
+        ctx.beginPath();
+        ctx.arc(hx, hy - s * 0.03, s * 0.08, Math.PI, 0);
+        ctx.fill();
+      });
+      break;
+    case "lobbyist":
+      person(ctx, 0, 0, s, tt, "#2f4a3c", "#efd6c4", (hx, hy) => {
+        rr(ctx, s * 0.06, hy + s * 0.3, s * 0.14, s * 0.1, s * 0.01, "#8a5a2a");
+        ctx.fillStyle = "#d4b24a";
         ctx.beginPath();
         ctx.arc(hx, hy - s * 0.03, s * 0.08, Math.PI, 0);
         ctx.fill();

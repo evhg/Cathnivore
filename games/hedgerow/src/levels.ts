@@ -87,6 +87,12 @@ const lawyer = (count: number, gap: number, delay = 0): WaveGroup => ({
   gap,
   delay,
 });
+const lobbyist = (count: number, gap: number, delay = 0): WaveGroup => ({
+  enemy: "lobbyist",
+  count,
+  gap,
+  delay,
+});
 const swarm = (delay = 0): WaveGroup => ({
   enemy: "swarm",
   count: 1,
@@ -5228,6 +5234,7 @@ export const LEVELS: Level[] = [
         bus(0),
         influencer(6, 1.8, 6),
         lawyer(6, 2, 6),
+        lobbyist(2, 3, 8),
         bulldozer(5, 3, 8),
         van(14, 1.2, 8),
         drone(16, 0.55, 10),

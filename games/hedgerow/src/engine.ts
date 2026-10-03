@@ -35,6 +35,7 @@ export type EnemyKind =
   | "tender"
   | "ship"
   | "lawyer"
+  | "lobbyist"
   | "swarm"
   | "bus"
   | "board"
@@ -256,6 +257,8 @@ export interface EnemySpec {
   heal?: number;
   /** Towers within this many cells of it fire at half rate (paperwork). */
   jam?: number;
+  /** Towers within this many cells of it forget their specialisation and fight as plain tier 3 (megastructures are immune). */
+  lobby?: number;
   /** Flies over the lane: Cath cannot hold it. */
   flying?: boolean;
   /** Bubble wrap: single-target shots do only WRAP_LEAK of their damage until something area-wide (splash,
@@ -355,6 +358,14 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     leak: 10,
     armor: 0.35,
     splits: { kind: "tender", count: 4 },
+  },
+  lobbyist: {
+    name: "Lobbyist",
+    hp: 420,
+    speed: 0.75,
+    bounty: 18,
+    leak: 2,
+    lobby: 1.6,
   },
   lawyer: {
     name: "Corporate lawyer",
@@ -1923,6 +1934,18 @@ function jammed(game: Game, t: Tower): boolean {
   return false;
 }
 
+/** A lobbyist's whispers: a specialised tower in range forgets its branch and fights as a plain tier 3. */
+export function lobbied(game: Game, t: Tower): boolean {
+  if (t.tier < 4 || t.mega) return false;
+  for (const e of game.enemies) {
+    const r = ENEMIES[e.kind].lobby;
+    if (!r || e.hp <= 0) continue;
+    const p = enemyPoint(game.level, e);
+    if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= r) return true;
+  }
+  return false;
+}
+
 /** An influencer's followers are watching it, not the road: towers in its charm range hold fire. */
 export function charmed(game: Game, t: Tower): boolean {
   for (const c of game.towers) {
@@ -2260,7 +2283,7 @@ export function stepGame(game: Game): void {
   }
 
   for (const t of game.towers) {
-    const spec = towerStats(t);
+    const spec = lobbied(game, t) ? towerStats({ ...t, tier: 3, spec: null }) : towerStats(t);
     if (!towerActive(t)) continue;
     // Blackthorn scratches everything in reach, all the time.
     if (spec.thorns > 0) {

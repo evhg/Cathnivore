@@ -9,6 +9,7 @@ import {
   place,
   pointAt,
   enemyPoint,
+  lobbied,
   laneCellsOf,
   sell,
   sellValue,
@@ -348,6 +349,21 @@ describe("hedgerow engine", () => {
       return 1e9 - g.enemies.find((e) => e.id === 91)!.hp;
     };
     expect(shots(true)).toBeLessThan(shots(false));
+  });
+
+  it("a lobbyist strips a specialised tower back to tier 3 while in range", () => {
+    const g = newGame(classic(63));
+    place(g, "scarecrow", 5, 0);
+    const tw = g.towers[0]!;
+    tw.tier = 4;
+    tw.spec = 0;
+    expect(lobbied(g, tw)).toBe(false);
+    const p = enemyPoint(g.level, { dist: 4.5 });
+    expect(Math.hypot(tw.col + 0.5 - p.x, tw.row + 0.5 - p.y)).toBeLessThan(1.6);
+    g.enemies.push({ id: 1, kind: "lobbyist", dist: 4.5, hp: 10, slowed: false, stun: 0 });
+    expect(lobbied(g, tw)).toBe(true);
+    tw.mega = "harvester";
+    expect(lobbied(g, tw)).toBe(false);
   });
 
   it("a Union Hall lifts every tower's damage from anywhere on the map", () => {

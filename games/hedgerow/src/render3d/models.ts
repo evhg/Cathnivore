@@ -941,6 +941,7 @@ export function enemyScale(kind: EnemyKind): number {
     case "drone":
       return 0.75;
     case "lawyer":
+    case "lobbyist":
     case "influencer":
       return 0.85;
     case "wrapped":
@@ -1250,6 +1251,10 @@ export function buildEnemy(kind: EnemyKind): THREE.Group {
     case "lawyer":
       g = person("#4a5260", "#efd6c4", "#7a1f2a", "#9a9aa0");
       g.add(box(0.12, 0.09, 0.03, matte("#3a2a24"), 0.02, 0.1, 0.13), box(0.04, 0.012, 0.012, metal(C.gold, 0.3), 0.02, 0.19, 0.13));
+      break;
+    case "lobbyist":
+      g = person("#2f4a3c", "#efd6c4", "#d4b24a", "#9a9aa0");
+      g.add(box(0.12, 0.09, 0.03, matte("#8a5a2a"), 0.02, 0.1, 0.13), box(0.04, 0.012, 0.012, metal(C.gold, 0.3), 0.02, 0.19, 0.13));
       break;
     case "swarm": {
       g = new THREE.Group();
