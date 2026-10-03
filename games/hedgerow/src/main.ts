@@ -60,7 +60,32 @@ import {
 } from "./engine";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
-import { Renderer3D } from "./render3d";
+import type { Renderer3D } from "./render3d";
+
+/** The 3D renderer and three.js load as their own chunk: the map screen doesn't need them, so the first
+ * load is a third the size. They're prefetched while the map is up, and awaited before the first level. */
+type R3D = typeof import("./render3d");
+let r3d: R3D | null = null;
+let r3dLoading: Promise<R3D | null> | null = null;
+/** Resolves with the module, or null if it couldn't load (offline): the game then falls back to 2D. */
+function loadR3D(): Promise<R3D | null> {
+  r3dLoading ??= import("./render3d").then(
+    (m) => (r3d = m),
+    () => null,
+  );
+  return r3dLoading;
+}
+/** True once the 3D chunk has loaded or failed: either way, levels stop waiting for it. */
+let r3dSettled = false;
+const is3D = (r: unknown): r is Renderer3D => !!r3d && r instanceof r3d.Renderer3D;
+function webglSupported(): boolean {
+  try {
+    const c = document.createElement("canvas");
+    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
 import { enemyIcon, img, towerIcon } from "./icons";
 import * as sfx from "./sound";
 import { haptic, setHaptics } from "./haptics";
@@ -227,7 +252,12 @@ ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined", out
 let game: Game | null = null;
 /** 3D when WebGL is there (and `?2d` isn't asked for); the 2D canvas renderer otherwise. */
 let renderer: Renderer | Renderer3D | null = null;
-const USE_3D = !new URLSearchParams(location.search).has("2d") && Renderer3D.supported();
+const USE_3D = !new URLSearchParams(location.search).has("2d") && webglSupported();
+if (USE_3D) {
+  const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback;
+  if (idle) idle(() => void loadR3D());
+  else window.setTimeout(() => void loadR3D(), 1500);
+}
 setHaptics(!sfx.isMuted());
 let selected: { col: number; row: number } | null = null;
 /** Auto-continue: the next wave starts by itself after a countdown (the auto-battler default). */
@@ -414,6 +444,14 @@ function doAct(a: Action): boolean {
 }
 
 function startLevel(lv: Level, heroic = heroicMode): void {
+  // First level of the visit: wait for the 3D chunk (usually already prefetched), then start.
+  if (USE_3D && !r3d && !r3dSettled) {
+    void loadR3D().then(() => {
+      r3dSettled = true;
+      startLevel(lv, heroic);
+    });
+    return;
+  }
   const setup: Setup = {
     mode: dailyDay !== null ? "daily" : lv.endless ? "endless" : "level",
     id: dailyDay ?? (lv.endless ? (endlessArgs?.act ?? 0) : lv.id),
@@ -442,8 +480,8 @@ function startLevel(lv: Level, heroic = heroicMode): void {
   ui.play.hidden = false;
   ui.hudTitle.textContent = `${game.heroic ? "◆ " : ""}${lv.endless ? "∞" : `${lv.id}.`} ${lv.name}`;
   ui.hudPlace.textContent = lv.place;
-  renderer ??= USE_3D ? new Renderer3D(ui.canvas, $<HTMLElement>("fx-layer")) : new Renderer(ui.canvas);
-  document.documentElement.classList.toggle("hedgerow-3d", renderer instanceof Renderer3D);
+  renderer ??= USE_3D && r3d ? new r3d.Renderer3D(ui.canvas, $<HTMLElement>("fx-layer")) : new Renderer(ui.canvas);
+  document.documentElement.classList.toggle("hedgerow-3d", is3D(renderer));
   renderer.reset();
   renderer.selected = null;
   renderer.heroSelected = false;
@@ -1518,7 +1556,7 @@ ui.canvas.addEventListener("pointerdown", (e) => {
 });
 ui.canvas.addEventListener("pointermove", (e) => {
   const prev = pointers.get(e.pointerId);
-  if (!prev || !(renderer instanceof Renderer3D)) return;
+  if (!prev || !is3D(renderer)) return;
   const dx = e.clientX - prev.x;
   const dy = e.clientY - prev.y;
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -1541,14 +1579,14 @@ for (const ev of ["pointerup", "pointercancel", "pointerleave"] as const)
 ui.canvas.addEventListener(
   "wheel",
   (e) => {
-    if (!(renderer instanceof Renderer3D)) return;
+    if (!is3D(renderer)) return;
     e.preventDefault();
     renderer.zoomBy(Math.exp(-e.deltaY * 0.0015));
   },
   { passive: false },
 );
 ui.canvas.addEventListener("dblclick", () => {
-  if (renderer instanceof Renderer3D) renderer.resetView();
+  if (is3D(renderer)) renderer.resetView();
 });
 
 ui.canvas.addEventListener("click", (e) => {
@@ -2000,6 +2038,13 @@ renderLevels();
 // ---- replays: watch a finished run again, or share it as a link ----
 
 function watch(r: Replay): void {
+  if (USE_3D && !r3d && !r3dSettled) {
+    void loadR3D().then(() => {
+      r3dSettled = true;
+      watch(r);
+    });
+    return;
+  }
   const lv = levelFor(r.setup);
   if (!lv) {
     toast("That replay is for a field this version doesn't have.");
