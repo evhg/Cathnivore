@@ -23,11 +23,14 @@ import {
   itemWeaponStats,
   makeItem,
   slotKind,
+  socketChip,
+  CHIP_BY_ID,
+  EQUIP_SLOTS,
   type EquipSlot,
   type Equipment,
   type Item,
 } from "./loot";
-import type { WeaponStats } from "./weapons";
+import { WEAPON_PARTS, partFits, upgradeCost, WEAPON_BASES, type Tier, type WeaponStats } from "./weapons";
 import type { AttributeId, Attributes, ClassId, Difficulty } from "./types";
 
 export interface Character {
@@ -208,4 +211,75 @@ export function characterStats(c: Character): DerivedStats {
 export function activeWeaponStats(c: Character): WeaponStats | null {
   const item = c.equipment[c.activeWeapon];
   return item ? itemWeaponStats(item) : null;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// The gunsmith (Ana Ruiz) and the pawn counter: tiers, parts, sockets and selling
+// ---------------------------------------------------------------------------------------------------------
+
+/** Finds an item by uid in the inventory or on Cath, and a way to put a changed copy back. */
+function locate(c: Character, uid: string): { item: Item; put: (next: Item) => Character } | null {
+  const inv = c.inventory.findIndex((i) => i.uid === uid);
+  if (inv >= 0) {
+    return { item: c.inventory[inv]!, put: (n) => ({ ...c, inventory: c.inventory.map((i, k) => (k === inv ? n : i)) }) };
+  }
+  const slot = EQUIP_SLOTS.find((s) => c.equipment[s]?.uid === uid);
+  if (slot) return { item: c.equipment[slot]!, put: (n) => ({ ...c, equipment: { ...c.equipment, [slot]: n } }) };
+  return null;
+}
+
+/** Raises a weapon one gunsmith tier for Scrip. */
+export function upgradeWeaponTier(c: Character, uid: string): Result<Character> {
+  const at = locate(c, uid);
+  if (!at || at.item.kind !== "weapon") return { ok: false, reason: "Ana only works on weapons" };
+  const cost = upgradeCost(at.item.tier, at.item.level);
+  if (cost === null) return { ok: false, reason: `${at.item.name} is already tier V` };
+  if (c.scrip < cost) return { ok: false, reason: `needs ${cost} Scrip` };
+  const next = { ...at.item, tier: (at.item.tier + 1) as Tier };
+  return { ok: true, value: { ...at.put(next), scrip: c.scrip - cost } };
+}
+
+/** Buys a part from Ana and fits it, replacing whatever sat in that slot. */
+export function fitWeaponPart(c: Character, uid: string, partId: string): Result<Character> {
+  const at = locate(c, uid);
+  const part = WEAPON_PARTS[partId];
+  if (!at || at.item.kind !== "weapon" || !part) return { ok: false, reason: "no such weapon or part" };
+  const cls = WEAPON_BASES[at.item.base]?.cls;
+  if (!cls || !partFits(part, cls)) return { ok: false, reason: `${part.name} doesn't fit a ${cls ?? "weapon"}` };
+  if (at.item.parts[part.slot] === partId) return { ok: false, reason: `${part.name} is already fitted` };
+  if (c.scrip < part.cost) return { ok: false, reason: `needs ${part.cost} Scrip` };
+  const next = { ...at.item, parts: { ...at.item.parts, [part.slot]: partId } };
+  return { ok: true, value: { ...at.put(next), scrip: c.scrip - part.cost } };
+}
+
+/** Takes a part off (it is lost: Ana scraps it). */
+export function stripWeaponPart(c: Character, uid: string, slot: keyof Item["parts"]): Result<Character> {
+  const at = locate(c, uid);
+  if (!at || !at.item.parts[slot]) return { ok: false, reason: "nothing fitted there" };
+  const parts = { ...at.item.parts };
+  delete parts[slot];
+  return { ok: true, value: at.put({ ...at.item, parts }) };
+}
+
+/** Sockets a chip from the inventory into a weapon or gear piece. The chip is used up. */
+export function socketInto(c: Character, uid: string, chipUid: string): Result<Character> {
+  const at = locate(c, uid);
+  const chip = c.inventory.find((i) => i.uid === chipUid);
+  if (!at || !chip || chip.kind !== "chip" || !CHIP_BY_ID[chip.base]) return { ok: false, reason: "needs an item and a chip" };
+  const next = socketChip(at.item, chip.base);
+  if (!next) return { ok: false, reason: `${at.item.name} has no free socket` };
+  const c2 = at.put(next);
+  return { ok: true, value: { ...c2, inventory: c2.inventory.filter((i) => i.uid !== chipUid) } };
+}
+
+/** Scrip a fence pays for an inventory item (never equipped ones). */
+export function sellValue(item: Item): number {
+  const mult = { standard: 1, modded: 3, rare: 10, unique: 60, set: 40 }[item.rarity];
+  return Math.max(1, Math.round((item.level + 2) * mult * (item.kind === "chip" ? 2 : 1)));
+}
+
+export function sellItem(c: Character, uid: string): Result<Character> {
+  const item = c.inventory.find((i) => i.uid === uid);
+  if (!item) return { ok: false, reason: "not in the inventory" };
+  return { ok: true, value: { ...c, inventory: c.inventory.filter((i) => i.uid !== uid), scrip: c.scrip + sellValue(item) } };
 }
