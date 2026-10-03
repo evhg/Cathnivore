@@ -73,8 +73,8 @@ export class Combat {
   ) {}
 
   /** Explosions: damage falls off from the centre; close ones tear limbs off. */
-  explode(at: THREE.Vector3, radius: number, damage: number, build: Build): void {
-    this.noise(at, 60);
+  explode(at: THREE.Vector3, radius: number, damage: number, build: Build, silent = false): void {
+    if (!silent) this.noise(at, 60);
     for (const e of this.enemies) {
       const d = e.body.joints.chest.distanceTo(at);
       if (d > radius) continue;
@@ -88,7 +88,7 @@ export class Combat {
       if (this.gore) {
         this.world.fx.blood(e.body.joints.chest, dir, Math.min(1, dmg / 50));
         // Close to the blast, limbs go.
-        if (k > 0.55 || (killed && k > 0.3))
+        if (!silent && (k > 0.55 || (killed && k > 0.3)))
           for (const seg of ["forearmL", "forearmR", "shinL", "shinR"])
             if (Math.random() < k * 0.7) e.body.sever(seg, dir.clone().multiplyScalar(6 + k * 8).add(new THREE.Vector3(0, 4, 0)));
       }

@@ -321,12 +321,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     combat.update(dt, build());
 
     // Active skills: quick-slots, thrown things, explosions, the lunge's strike.
-    const ctx = { player, eye, fwd, enemies, world };
+    const ctx = { player, eye, fwd, enemies, world, maxHp: s.maxHp };
     if (!dead && intent.skill1) actives.use(0, progress.character, progress.stats, ctx);
     if (!dead && intent.skill2) actives.use(1, progress.character, progress.stats, ctx);
     actives.update(dt, progress.stats, world, world.colliders, ground);
-    for (const b of actives.blasts) combat.explode(b.pos, b.radius, b.damage, build());
+    for (const b of actives.blasts) combat.explode(b.pos, b.radius, b.damage, build(), b.silent);
     actives.blasts.length = 0;
+    if (actives.heal > 0) {
+      s.hp = Math.min(s.maxHp, s.hp + actives.heal);
+      actives.heal = 0;
+    }
     if (actives.lungeAt && actives.lungeT <= 0.05) {
       arsenal.strike();
       audio?.pin(combat.melee(eye, fwd, arsenal.held[0]!.def, build()));
@@ -346,7 +350,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const along = toChest.dot(sh.dir);
         const miss = toChest.clone().addScaledVector(sh.dir, -along).length();
         if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
-          s.hp = Math.max(0, s.hp - e.kit.damage);
+          s.hp = Math.max(0, s.hp - e.kit.damage * run.guard);
           world.fx.tracer(sh.from, sight.chest);
           audio?.hitFlesh(false);
         } else if (hitWorld) {

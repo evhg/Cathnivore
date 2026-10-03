@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-03 19:51 session:** ROADMAP 70 part 1: Stim, Juggernaut, Cleave, Overload, Short Fuse, Monowire Whip and Gas now work as active skills (`game/actives.ts`, `tests/cathode-actives.test.ts`). Left for 70: mines, turrets, hacking, Gunslinger actives, dual-class at 15, hybrid capstones. Release cap used today; release after 00:00 UTC.
 - **2026-10-03 16:21–19:00 (owner chat session): CATHODE, the fourth game.** Owner: "I'm okay with month long, start building. Push the limits." ROADMAP 63–69 (the vertical slice) are done and pushed:
   - the Drowned Market renderer;
   - the rules core (160 skills, loot, stealth);

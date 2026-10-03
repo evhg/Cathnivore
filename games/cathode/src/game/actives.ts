@@ -21,13 +21,15 @@ export interface Running {
   timeScale: number;
   /** Marked enemies take this much extra damage. */
   markBonus: number;
+  /** Damage taken is multiplied by this (Juggernaut): 1 when nothing is running. */
+  guard: number;
 }
 
 interface Thrown {
   pos: THREE.Vector3;
   vel: THREE.Vector3;
   fuse: number;
-  kind: "grenade" | "molotov";
+  kind: "grenade" | "molotov" | "gas";
   damage: number;
   radius: number;
   mesh: THREE.Mesh;
@@ -38,6 +40,7 @@ interface Fire {
   radius: number;
   dps: number;
   left: number;
+  silent?: boolean;
 }
 
 const GLOW = new THREE.MeshBasicMaterial({ color: 0xffb347 });
@@ -54,7 +57,10 @@ export class Actives {
   /** Lines for the HUD feed ("Optic Camo", "Not in this build yet"). */
   readonly said: string[] = [];
   /** Explosions this frame, for the session to resolve damage against enemies. */
-  readonly blasts: Array<{ pos: THREE.Vector3; radius: number; damage: number }> = [];
+  readonly blasts: Array<{ pos: THREE.Vector3; radius: number; damage: number; silent?: boolean }> = [];
+  /** Health to give Cath this frame (Stim), for the session to apply. */
+  heal = 0;
+  private healing: { left: number; rate: number } | null = null;
 
   /** Picks the first two learned actives, in tree order, unless the player has set them. */
   assign(c: Character): void {
@@ -79,11 +85,12 @@ export class Actives {
       sway: on("heldBreath") ? 1 - Number(this.params.get("heldBreath")?.sway ?? 50) / 100 : 1,
       timeScale: on("bulletTime") ? 0.25 : 1,
       markBonus: 1.25,
+      guard: on("juggernaut") ? 1 - Number(this.params.get("juggernaut")?.reduction ?? 40) / 100 : 1,
     };
   }
 
   /** Fires a slot. Returns false (and why, in `said`) when it can't. */
-  use(slot: number, c: Character, d: DerivedStats, ctx: { player: Player; eye: THREE.Vector3; fwd: THREE.Vector3; enemies: Enemy[]; world: World }): boolean {
+  use(slot: number, c: Character, d: DerivedStats, ctx: { player: Player; eye: THREE.Vector3; fwd: THREE.Vector3; enemies: Enemy[]; world: World; maxHp: number }): boolean {
     const a = this.state(c, d, slot);
     if (!a) {
       this.said.push(slot === 0 ? "No active skill learned yet (K)" : "Learn a second active skill (K)");
@@ -176,6 +183,42 @@ export class Actives {
         });
         break;
       }
+      case "stim": {
+        const secs = num("seconds", 3);
+        this.healing = { left: secs, rate: (ctx.maxHp * num("heal", 30)) / 100 / secs };
+        break;
+      }
+      case "juggernaut":
+        timed("juggernaut", num("seconds", 10));
+        break;
+      case "cleave": {
+        // A wide swing: everything within reach in front of her.
+        this.blasts.push({ pos: ctx.eye.clone().addScaledVector(ctx.fwd, 1.4), radius: num("radius", 2.5), damage: num("damage", 120) * 0.6, silent: true });
+        break;
+      }
+      case "overload":
+      case "shortFuse":
+      case "monowireWhip": {
+        // Shock or wire on whoever she is looking at; the fuse also catches their neighbours.
+        const range = fx.type === "monowireWhip" ? num("range", 8) : 35;
+        const t = this.aimed(ctx, range);
+        if (!t) {
+          this.said.push("No target");
+          return false;
+        }
+        const radius = fx.type === "shortFuse" ? num("radius", 4) : 1.2;
+        this.blasts.push({ pos: t.body.joints.chest.clone(), radius, damage: num("damage", 100) * 0.7, silent: true });
+        ctx.world.fx.tracer(ctx.eye.clone().addScaledVector(ctx.fwd, 0.4), t.body.joints.chest);
+        break;
+      }
+      case "gas": {
+        const pos = ctx.eye.clone().addScaledVector(ctx.fwd, 0.5);
+        const vel = ctx.fwd.clone().multiplyScalar(14).add(new THREE.Vector3(0, 3, 0));
+        const m = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), new THREE.MeshStandardMaterial({ color: 0x3c5a2a, roughness: 0.5, metalness: 0.3 }));
+        ctx.world.scene.add(m);
+        this.thrown.push({ pos, vel, fuse: 1.2, kind: "gas", damage: num("dps", 12), radius: num("radius", 5), mesh: m });
+        break;
+      }
       default:
         this.said.push(`${a.name}: coming in a later build`);
         return false;
@@ -184,6 +227,24 @@ export class Actives {
     this.cd.set(a.id, a.cooldown);
     this.said.push(a.name);
     return true;
+  }
+
+  /** The living enemy nearest the crosshair within `range` and a 12 degree cone. */
+  private aimed(ctx: { eye: THREE.Vector3; fwd: THREE.Vector3; enemies: Enemy[] }, range: number): Enemy | null {
+    let best: Enemy | null = null;
+    let bestDot = Math.cos((12 * Math.PI) / 180);
+    for (const e of ctx.enemies) {
+      if (!e.alive) continue;
+      const to = e.body.joints.chest.clone().sub(ctx.eye);
+      const dist = to.length();
+      if (dist > range) continue;
+      const dot = to.normalize().dot(ctx.fwd);
+      if (dot > bestDot) {
+        best = e;
+        bestDot = dot;
+      }
+    }
+    return best;
   }
 
   lungeAt: Enemy | null = null;
@@ -200,6 +261,11 @@ export class Actives {
       }
     }
     this.lungeT = Math.max(0, this.lungeT - dt);
+    if (this.healing) {
+      this.heal += this.healing.rate * Math.min(dt, this.healing.left);
+      this.healing.left -= dt;
+      if (this.healing.left <= 0) this.healing = null;
+    }
     // Thrown things: arcs, bounces off walls and the floor, then the bang.
     for (const t of this.thrown) {
       t.vel.y -= 9.81 * dt;
@@ -219,13 +285,13 @@ export class Actives {
         t.mesh.removeFromParent();
         world.fx.explosion(t.pos.clone(), t.kind === "grenade" ? t.radius : t.radius * 0.6);
         if (t.kind === "grenade") this.blasts.push({ pos: t.pos.clone(), radius: t.radius, damage: t.damage });
-        else this.fires.push({ pos: t.pos.clone(), radius: t.radius, dps: t.damage, left: 6 });
+        else this.fires.push({ pos: t.pos.clone(), radius: t.radius, dps: t.damage, left: t.kind === "gas" ? 8 : 6, silent: t.kind === "gas" });
       }
     }
     this.thrown = this.thrown.filter((t) => t.fuse > 0);
     for (const f of this.fires) {
       f.left -= dt;
-      this.blasts.push({ pos: f.pos, radius: f.radius, damage: f.dps * dt });
+      this.blasts.push({ pos: f.pos, radius: f.radius, damage: f.dps * dt, silent: f.silent });
     }
     this.fires = this.fires.filter((f) => f.left > 0);
   }
