@@ -238,3 +238,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-03: Owner called the dialogue cryptic AI slop: replaced the deadpan voice rules with clarity rules (design doc 7) and rewrote all 100 levels and the finale. Dr Vane stays a woman (canon), despite a stale first-draft line in levels.ts.
 - 2026-10-03: Owner: too easy, money not scarce. Added hard counters (light, heavy and air, via `TOWER_VS`; megastructures are even-handed), heavy plant (half slows, no gust or knockback; all bosses count), a 30% slow floor, about a third less Marks everywhere (crowd levels pay half bounty), and compounding Endless health (×1.075 a wave) with a boss every tenth wave. Full re-tune; numbers are in BALANCE.md.
 - 2026-10-03: Audit session added ROADMAP 57-62 (Cathnivore art critique); no release, daily cap reached.
+- 2026-10-03: Piece shadows via CSS drop-shadow on .enemy-piece/.stall-piece; short session, no release (cap reached).

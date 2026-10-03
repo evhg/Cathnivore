@@ -1872,6 +1872,12 @@ html.native-app body {
   }
 }
 
+/* ROADMAP 57: soft ground shadows so pieces sit on the board instead of floating (bar 2). */
+.stall-piece,
+.enemy-piece {
+  filter: drop-shadow(0 1.2px 0.8px rgba(40, 30, 20, 0.45));
+}
+
 .stall-piece {
   transform-box: fill-box;
   transform-origin: center;
