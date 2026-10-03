@@ -1165,3 +1165,4 @@ kbd {
   stroke-width: 1;
   opacity: 0.45;
 }
+@media (hover: none), (pointer: coarse) { .mouse-only { display: none; } }
