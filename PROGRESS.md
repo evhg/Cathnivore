@@ -39,6 +39,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-03 ~07:30 UTC: Hedgerow story rewritten to clarity rules (design doc 7), repainted act backdrops, cel-shaded portraits. Gates passed; HTTP check passed; tag push 403 (harmless). 4th release today (cap reached).
 - 2026-10-03 ~06:30 UTC: iPhone 17 Pro Max map fixes (header tools row, act titles, next-level disc). Gates passed; HTTP check passed; tag push 403 (harmless). 3rd release today.
 - 2026-10-03 ~06:05 UTC (`1980312`): replays, set pieces, Almanac turntable, illustrated wardrobe, iPhone sound fix. Gates passed; HTTP check passed; tag push 403 (harmless).
 - 2026-10-03 ~05:10 UTC (`b6275ef`): ROADMAP 52 (Lobbyist, drone carrier, Pell). All gates passed; HTTP check passed; tag push 403 (harmless). 1st release today.

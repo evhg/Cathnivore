@@ -235,4 +235,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-03: Wardrobe outfits unlock from stars/rosettes (wax: levels 1-10, market: 6 rosettes, gown: level 100); 3D recolours cloned materials since matte() is cached and shared.
 - 2026-10-03: Wardrobe built twice in the same hour (hourly session and owner chat): kept the session's wardrobe.ts system and gave each outfit an `art` field for the illustrated shared-Cath outfits; added a fifth (camel trench, level 50).
 - 2026-10-03: iPhone sound: navigator.audioSession "playback" (iOS 17+), a looping silent /hedgerow/silence.wav for older iOS (data: audio is blocked by the CSP), resume on any state but "running", unlock on any first tap.
+- 2026-10-03: Owner called the dialogue cryptic AI slop: replaced the deadpan voice rules with clarity rules (design doc 7) and rewrote all 100 levels and the finale. Dr Vane stays a woman (canon), despite a stale first-draft line in levels.ts.
 
