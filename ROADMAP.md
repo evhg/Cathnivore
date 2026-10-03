@@ -213,6 +213,11 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 45. [x] *(2026-10-02: naive bot now wins 10 of levels 8-40: 10,11,15,20,21,22,26,30,32,38; unreleased)* **Early acts still fall to Scarecrow spam** (2026-10-02 measurement: the naive Scarecrows-only bot wins levels 8-30 even at the tuned curve; from 31 it loses all but 32, 38, 43). Tuning can't fix it: with three tower types early, spam is near-optimal. Fix with content: early enemies that shrug off turnips (a "crate van" that only splash or slows stop), Scarecrow bans or limited plots on more act 1-3 levels, an earlier pond or barn. Then teach bot.ts early calls and targeting, re-tune and re-verify; target: the naive bot loses most levels from 8.
 46. [ ] **Owner's next playtest:** act on FEEDBACK.md first.
 
+### Small polish found on the iPhone 17 Pro Max check (2026-10-03)
+
+55. [ ] Cathnivore title screen on phones: Cath covers the "Brindle Hills" hex label; nudge her or the hex grid so every label reads.
+56. [ ] Runnel How to Play on phones: say "Tap" and "Hold" only (the Shift-click line wraps badly and doesn't apply on a phone).
+
 ### Hedgerow round 3 (owner's third playtest, 2026-10-02 afternoon; design: docs/design/hedgerow-v2.md 6)
 
 47. [x] Bubble-wrapped vans against Scarecrow spam; Windmill and Seed Cannon; eight megastructures; veteran ranks; ambushes; winding routes on bigger fields with pan and zoom; Cath's character sheet (XP, six attributes, ten talents); one-on-one boss duels; tooltips on every control; dialogs that fit a phone; a synthwave score; richer 3D models.
