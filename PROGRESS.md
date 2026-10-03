@@ -4,7 +4,8 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Mode:** continuous improvement, indefinitely (SPEC 16). Work from `FEEDBACK.md`, then anything broken, then `ROADMAP.md`. **Never idle** (CLAUDE.md step 4).
-- **2026-10-03 00:00 session:** ROADMAP 50 part 1 pushed (Almanac dialog: `almanac.ts`; `npm run check` green). Still to do for 50: 3D turntable, more lore, a test. Not released (the 4/day cap and a long check run). Then 44, 51-54.
+- **2026-10-03 01:00 session:** released `19f6541` (ROADMAP 48, 49, 50 part 1 + Almanac mega lore). Gate 5 first failed on the Almanac button having no accessible name on phones (fixed with aria-label). Next: 50's 3D turntable, then 44, 51-54.
+- 2026-10-03 00:00 session: ROADMAP 50 part 1 pushed (Almanac dialog: `almanac.ts`; `npm run check` green). Still to do for 50: 3D turntable, more lore, a test. Not released (the 4/day cap and a long check run). Then 44, 51-54.
 - **Next (2026-10-02 night session):** ROADMAP 48 and 49 are built and pushed but unreleased (daily release cap; release first thing after midnight UTC), then 50 (Almanac), 44, 51-54. Earlier: FEEDBACK.md's round-3 note is answered (ROADMAP 47, design doc 6). Release it if today's cap allows (4 releases already on 2026-10-02, so the next session after midnight UTC), then ROADMAP 48-54 and 44's leftovers. Don't undo the 3D renderer, the auto-battler, duels or the Cath sheet: the owner asked for all of them.
 - 2026-10-02 (owner's chat session, 15:22-~19:30 UTC): owner's third playtest. Built ROADMAP 47: bubble-wrapped vans, Scarecrow crowding, Windmill, Seed Cannon, eight megastructures, veterans, ambushes, winding routes on bigger fields (pan/zoom), Cath's character sheet, boss duels, tooltips, phone-fit dialogs, a synth score, richer 3D models and battlefield; bots `balanced`/`best`, re-tuned, `--antispam`.
 - 2026-10-02 (owner's chat session, 09:28-12:30 UTC): owner's second playtest. Shipped ROADMAP 40-43 and 36, 39.
@@ -33,6 +34,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-03 ~01:50 UTC (`19f6541`): ROADMAP 48-50 (Almanac). All gates passed; HTTP check passed; tag push 403 (harmless). 1st release today.
 - 2026-10-02 ~22:10 UTC (`285d90b`): Hedgerow round 3 (ROADMAP 47 + 45). All gates passed; live version.json matches; browser smoke inconclusive (proxy cert), tag push 403 (harmless). 5th release today (cap exceeded: it was the first session after the owner's chat session's work; the owner's own sessions released at 4).
 - 2026-10-02 ~12:30 UTC (`4f67320`): Hedgerow round 2 (auto-battler, stats, story rewrite, twists, layouts, bot-tuned curve, 3D battlefield). All gates passed; HTTP check passed; tag push 403 (harmless). 4th release today (cap reached).
 - 2026-10-02 ~09:25 UTC (`bdd2809`): ROADMAP 35, 36 (terrain, forks), 38 slices. main==build; tag push 403 (harmless).

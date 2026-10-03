@@ -228,3 +228,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 2026-10-02: Released round 3 at session start (unreleased work, new UTC day); spent session on the release gates.
 - 2026-10-02 (night): Heroic is a map toggle and a save field (`heroic`), not a save-version bump; Endless reuses the act's 9th level with generated waves and per-wave health growth; the daily challenge picks a tuned non-boss level by date and switches the Seed Bank off so scores compare.
 - 2026-10-03: Almanac part 1 built; towers/megas always visible, enemies unlock via data.seen; no turntable yet.
+2026-10-03: release gate 5 failed on icon-only #btn-almanac (axe name-role-value); fixed with aria-label. Lesson: any button whose label hides at <=520px needs aria-label. Playwright site config needs PLAYWRIGHT_CHROMIUM_PATH.
