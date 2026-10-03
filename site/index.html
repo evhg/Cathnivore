@@ -78,17 +78,51 @@
         <a class="card reveal" href="/hedgerow/" data-cath="determined">
           <span class="card-art art-hedgerow" aria-hidden="true">
             <svg viewBox="-60 -60 120 120">
-              <path class="hg-lane" d="M-50 30 H0 V-30 H50" />
-              <rect class="hg-hedge" x="-38" y="-30" width="34" height="22" rx="11" />
-              <circle class="hg-foe" r="6" />
-              <circle class="hg-head" cx="26" cy="20" r="9" />
-              <path class="hg-hat" d="M14 12 L26 -6 L38 12 Z" />
+              <defs>
+                <linearGradient id="hg-sky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#bfe0f0" />
+                  <stop offset="1" stop-color="#f4e6c0" />
+                </linearGradient>
+                <linearGradient id="hg-field" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#9cc069" />
+                  <stop offset="1" stop-color="#6e9a45" />
+                </linearGradient>
+              </defs>
+              <rect x="-60" y="-60" width="120" height="120" fill="url(#hg-sky)" />
+              <path d="M-60 -22 Q-30 -34 0 -26 T60 -30 V60 H-60 Z" fill="#b7c98a" />
+              <path d="M-60 -14 Q-20 -24 20 -16 T60 -18 V60 H-60 Z" fill="url(#hg-field)" />
+              <path class="hg-lane" d="M-64 40 C-30 40 -36 6 -6 6 S 22 -10 40 -10" />
+              <g class="hg-house">
+                <rect x="34" y="-22" width="20" height="14" fill="#f2e8d4" stroke="#5b4636" stroke-width="1.5" />
+                <path d="M31 -21 L44 -32 L57 -21 Z" fill="#b5523b" stroke="#5b4636" stroke-width="1.5" />
+                <rect x="42" y="-16" width="5" height="8" fill="#6b4a2b" />
+                <circle class="hg-smoke" cx="51" cy="-36" r="3" fill="#ffffff" />
+              </g>
+              <g class="hg-row">
+                <circle cx="-44" cy="20" r="7" /><circle cx="-34" cy="18" r="8" /><circle cx="-24" cy="21" r="6.5" />
+                <circle cx="6" cy="22" r="7" /><circle cx="16" cy="20" r="8" />
+              </g>
+              <g class="hg-mill" transform="translate(-20 -18)">
+                <path d="M-5 14 L-3 -6 H3 L5 14 Z" fill="#f1ead9" stroke="#5b4636" stroke-width="1.4" />
+                <g class="hg-sails">
+                  <path d="M0 -6 L1.5 -22 L-1.5 -22 Z M0 -6 L16 -4.5 L16 -7.5 Z M0 -6 L-1.5 10 L1.5 10 Z M0 -6 L-16 -7.5 L-16 -4.5 Z" fill="#fffaf0" stroke="#5b4636" stroke-width="1" />
+                </g>
+              </g>
+              <g class="hg-crow" transform="translate(-2 -6)">
+                <path d="M0 4 V16" stroke="#6b4a2b" stroke-width="2" />
+                <path d="M-7 8 H7" stroke="#6b4a2b" stroke-width="2" />
+                <circle r="4" fill="#e9c98a" stroke="#5b4636" stroke-width="1.2" />
+                <path d="M-6 -1 L0 -8 L6 -1 Z" fill="#6b4a2b" />
+              </g>
+              <rect class="hg-van hg-van-a" x="-6" y="-4" width="12" height="8" rx="2" />
+              <rect class="hg-van hg-van-b" x="-6" y="-4" width="12" height="8" rx="2" />
+              <circle class="hg-turnip" r="2.6" />
             </svg>
           </span>
           <span class="card-body">
             <span class="card-title">Hedgerow <span class="badge">New</span></span>
-            <span class="card-text">Cath's tower defence. Build hedges and scarecrows to hold the lane, one story level at a time.</span>
-            <span class="card-meta">Tower defence · Story levels · Unlocks as you go</span>
+            <span class="card-text">Cath's tower defence. Hold the lanes of Marrow with hedges, windmills and megastructures, and face the bosses one on one.</span>
+            <span class="card-meta">Tower defence · 100 story levels · Daily challenge</span>
           </span>
           <span class="card-go" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6" /></svg>

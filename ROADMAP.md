@@ -179,7 +179,7 @@ H11. [x] **Act 10 and level 100:** the multi-phase HollowCandor boss fight and t
 
 22. [x] **Runnel feel:** *(2026-10-01: verified in code: sound.ts, wet-plot sparkle, seasonal crops, streak calendar and tolerant drop thresholds all shipped.)* a sound set, a water-arrival sparkle, crops varied by season, a streak calendar, and a fairer par (log the sim before and after).
 23. [x] **Runnel variety:** new tile types (bridges, sluice gates, reservoirs) introduced gradually by day of the week, each with generator support and a solvability test.
-24. [ ] **Landing page:** a live miniature preview of each game on its card, and a frame-time check on real mid-range phones.
+24. [~] *(2026-10-03: Hedgerow card is a live miniature: lane, hedges, scarecrow, turning windmill, smoking farmhouse, vans on the lane, turnips; card text updated. Phone frame-time check still open.)* **Landing page:** a live miniature preview of each game on its card, and a frame-time check on real mid-range phones.
 25. [x] **Known small issues:** the `sim/run.ts` worker timeout (fixed earlier), `scene.ts` `deleteShader`, and `scene.ts` WebGL context restore (fixed 2026-09-28 `cb050ee`; see `PROGRESS.md`).
 
 ## Phase 4: Hedgerow to world-class (owner's chat session, 2026-10-02)
