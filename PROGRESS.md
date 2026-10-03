@@ -3,14 +3,12 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **2026-10-03 16:21– (owner chat session): CATHODE, the fourth game.** Owner: "I'm okay with month long, start building. Push the limits."
-  - Built so far:
-    - the bible (`docs/design/cathode.md`) and ROADMAP Phase 6 (63–80);
-    - the scaffold, 18+ gate and landing card;
-    - the rules core (160 skills, loot, ballistics, stealth; 76 tests);
-    - gameplay: Enforcers with ragdolls and dismemberment, 3 enemy roles, 4 weapons, the kill-cam, bullet-time, takedowns, loot drops, synthesised audio, voiceover, the HUD.
-  - In flight: the Drowned Market renderer (ROADMAP 65) and the progression screens (ROADMAP 69).
-  - Not released yet: today's 4 releases are used.
+- **2026-10-03 16:21–19:00 (owner chat session): CATHODE, the fourth game.** Owner: "I'm okay with month long, start building. Push the limits." ROADMAP 63–69 (the vertical slice) are done and pushed:
+  - the Drowned Market renderer;
+  - the rules core (160 skills, loot, stealth);
+  - the class pick and character screens;
+  - Enforcers in 3 roles, 4 weapons, the kill-cam, bullet-time, takedowns, active skills, loot, audio and voiceover.
+  `npm run check` and `e2e:site` pass. **Not released** (today's 4 releases are used up): release first thing after 00:00 UTC. Next: ROADMAP 70 (all classes playable), then 71–78.
 - **2026-10-03 15:51 session:** ROADMAP 59: end-screen choreography (staggered ~1.1s entrance, sticky primary action; `npm run check` green, e2e not run). Next: 59 loss-state polish, 58, 60-62. Release cap used today; no release.
 - **2026-10-03 14:52 session:** ROADMAP 57 silhouettes (Outlet gets a sawtooth roof; `npm run check` green). 57 done bar release; next 58-62. Release cap used today; no release.
 - **2026-10-03 13:52 session:** ROADMAP 57: enemy tokens scaled 1.5x -> 1.9x (`npm run check` green, shots reviewed). Left: distinct silhouettes, then 58-62. Release cap used today; no release.
