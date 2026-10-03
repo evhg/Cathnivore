@@ -134,8 +134,28 @@ export class Combat {
     }
     this.shotDamage.clear();
     const unseen = !this.anyHunting();
+    if (w.weaponClass === "smart") this.curve(shot);
     for (const dir of shot.dirs) this.hitscan(shot.origin, dir, w, build, unseen);
     return { killcam: null };
+  }
+
+  /** Smart rounds bend toward the living enemy nearest her crosshair, inside an 8 degree cone and in the clear. */
+  private curve(shot: Shot): void {
+    const aim = shot.dirs[0]!;
+    let best: Enemy | null = null;
+    let bestAng = 0.14;
+    for (const e of this.enemies) {
+      if (!e.alive) continue;
+      const to = e.body.joints.chest.clone().sub(shot.origin);
+      const ang = to.clone().normalize().angleTo(aim);
+      if (ang < bestAng && this.rays.clear(shot.origin, e.body.joints.chest)) {
+        best = e;
+        bestAng = ang;
+      }
+    }
+    if (!best) return;
+    const lock = best.body.joints.chest.clone().sub(shot.origin).normalize();
+    for (const d of shot.dirs) d.lerp(lock, 0.85).normalize();
   }
 
   private hitscan(origin: THREE.Vector3, dir: THREE.Vector3, w: WeaponDef, build: Build, unseen: boolean): void {

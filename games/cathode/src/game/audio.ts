@@ -199,7 +199,7 @@ export class Audio {
       this.thump(70, 28, 0.45, 1.0, 0, "sine", 0.7);
       this.burst({ type: "lowpass", freq: 1800, sweepTo: 250, decay: 0.7, gain: 0.8, verb: 1.2 });
       this.clack(0.5, 0.2, 900);
-    } else if (weapon === "smg" || weapon === "rifle") {
+    } else if (weapon === "smg" || weapon === "smart" || weapon === "rifle") {
       const big = weapon === "rifle";
       this.thump(big ? 140 : 190, 70, 0.07, big ? 0.7 : 0.45);
       this.burst({ type: "highpass", freq: 2600, decay: 0.045, gain: big ? 0.7 : 0.5 });

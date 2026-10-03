@@ -47,6 +47,7 @@ export const SLICE_WEAPONS: WeaponDef[] = [
   { id: "bargainBin", name: "Bargain Bin", model: "launcher", weaponClass: "launcher", kind: "hitscan", damage: 140, pellets: 1, cycle: 0.9, mag: 4, reserve: 12, reload: 3.2, spread: [0.02, 0.004], noise: 90, kick: 2.6, range: 140, blast: 5, brutal: 1 },
   { id: "nightShift", name: "Night Shift", model: "blade", weaponClass: "melee", kind: "melee", damage: 75, pellets: 1, cycle: 0.4, mag: 0, reserve: 0, reload: 0, spread: [0, 0], noise: 2, kick: 0, range: 2.0, brutal: 0.8 },
   { id: "repossessor", name: "Repossessor", model: "sledge", weaponClass: "melee", kind: "melee", damage: 150, pellets: 1, cycle: 1.0, mag: 0, reserve: 0, reload: 0, spread: [0, 0], noise: 10, kick: 0, range: 2.4, brutal: 1 },
+  { id: "candorSeeker", name: "Candor Seeker", model: "smg", weaponClass: "smart", kind: "hitscan", damage: 17, pellets: 1, cycle: 0.14, mag: 24, reserve: 120, reload: 2.0, spread: [0.05, 0.02], noise: 45, kick: 0.5, range: 120 },
 ];
 
 export interface Shot {
