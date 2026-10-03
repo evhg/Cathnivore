@@ -851,3 +851,24 @@ input[type="radio"] {
     display: none;
   }
 }
+.hud-feed-line.item {
+  font-family: var(--display);
+  font-size: 15px;
+  animation-duration: 3.4s;
+}
+.rarity-standard {
+  color: var(--ink);
+}
+.rarity-modded {
+  color: #6fb7ff;
+}
+.rarity-rare {
+  color: #ffd84a;
+}
+.rarity-unique {
+  color: #c9a25a;
+  text-shadow: 0 0 10px rgba(201, 162, 90, 0.7);
+}
+.rarity-set {
+  color: #4fd27a;
+}

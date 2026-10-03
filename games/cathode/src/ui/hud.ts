@@ -150,6 +150,14 @@ export class Hud {
     while (this.feed.children.length > 5) this.feed.firstElementChild?.remove();
   }
 
+  /** A pickup line in the item's rarity colour. */
+  feedItem(name: string, rarity: string): void {
+    const p = el("p", `hud-feed-line item rarity-${rarity}`, this.feed);
+    p.textContent = name;
+    setTimeout(() => p.remove(), 3400);
+    while (this.feed.children.length > 6) this.feed.firstElementChild?.remove();
+  }
+
   showBanner(title: string, sub: string): void {
     this.banner.replaceChildren();
     const h = el("p", "hud-banner-title", this.banner);

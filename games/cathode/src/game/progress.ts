@@ -5,7 +5,8 @@ import { characterStats, gainXp, newCharacter, type Character } from "../sim/cha
 import { deserialize, makeSave, serialize, SAVE_KEY } from "../sim/save";
 import { killXp, type DerivedStats } from "../sim/stats";
 import { makeEnemy } from "../sim/enemies";
-import { createRng } from "../sim/rng";
+import { createRng, type Rng } from "../sim/rng";
+import { rollDrop, type Item } from "../sim/loot";
 import type { ClassId } from "../sim/types";
 import type { Build } from "./combat";
 import type { EnemyKit } from "./enemy";
@@ -91,4 +92,13 @@ export class Progress {
     return g.levelUps;
   }
   lastXp = 0;
+  private rng: Rng = createRng(Date.now() >>> 0);
+
+  /** What a kill drops: Scrip and items go straight into Cath's coat (auto-pickup in the slice). */
+  loot(monsterLevel: number, elite: boolean): { items: Item[]; scrip: number } {
+    const d = rollDrop(this.rng, monsterLevel, this.character.difficulty, this.stats.magicFind, elite);
+    this.character = { ...this.character, inventory: [...this.character.inventory, ...d.items], scrip: this.character.scrip + d.scrip };
+    if (d.items.length) this.save();
+    return d;
+  }
 }

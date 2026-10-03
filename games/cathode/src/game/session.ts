@@ -171,6 +171,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     levelUp(progress.kill(k.enemy.kit.xp, k.enemy.level, k.unseen, bonus));
     const xp = progress.lastXp;
     hud.feedLine(`+${xp} XP${bits.length ? " · " + bits.join(" · ") : ""}`, k.headshot || k.unseen);
+    const drop = progress.loot(k.enemy.level, false);
+    if (drop.scrip) hud.feedLine(`+${drop.scrip} Scrip`);
+    for (const it of drop.items) hud.feedItem(it.name, it.rarity);
     hud.hitMarker(true);
   };
 
