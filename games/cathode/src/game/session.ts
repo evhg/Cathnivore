@@ -315,7 +315,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         audio?.killcamWhoosh();
       }
     }
-    if (arsenal.meleeNow) audio?.pin(combat.melee(eye, fwd, arsenal.weapon, build()));
+    if (arsenal.meleeNow) {
+      const struck = combat.melee(eye, fwd, arsenal.weapon, build());
+      audio?.pin(struck);
+      if (struck && run.lifeSteal > 0) s.hp = Math.min(s.maxHp, s.hp + arsenal.weapon.damage * run.lifeSteal);
+    }
     if (intent.reload && arsenal.weapon.kind !== "melee") audio?.reload();
     const canTakedown = !dead && takedownTarget() !== null;
     if (intent.takedown && canTakedown) {
@@ -331,7 +335,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const ctx = { player, eye, fwd, enemies, world, maxHp: s.maxHp };
     if (!dead && intent.skill1) actives.use(0, progress.character, progress.stats, ctx);
     if (!dead && intent.skill2) actives.use(1, progress.character, progress.stats, ctx);
-    actives.update(dt, progress.stats, world, world.colliders, ground);
+    actives.update(dt, progress.stats, world, world.colliders, ground, enemies);
     if (actives.refill) {
       arsenal.topUp();
       actives.refill = false;
@@ -361,7 +365,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const along = toChest.dot(sh.dir);
         const miss = toChest.clone().addScaledVector(sh.dir, -along).length();
         if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
-          s.hp = Math.max(0, s.hp - e.kit.damage * run.guard);
+          s.hp = Math.max(0, s.hp - actives.absorb(e.kit.damage * run.guard));
           world.fx.tracer(sh.from, sight.chest);
           audio?.hitFlesh(false);
         } else if (hitWorld) {

@@ -79,3 +79,41 @@ describe("CATHODE gun-buff actives", () => {
     expect(a.takeNextShot("pistol").mul).toBe(1);
   });
 });
+
+describe("CATHODE deployables and utility actives", () => {
+  const mk = (cls: "fixer" | "butcher" | "gunslinger" | "ghost" | "wirewitch", skill: string) => {
+    const c = { ...newCharacter(cls as never), skills: { [`${cls}.${skill}`]: 5 } };
+    return { c, d: characterStats(c) };
+  };
+  const world = { scene: { add() {} }, fx: { explosion() {}, tracer() {} } } as never;
+  const dctx = (enemies: never[] = []) => ({ ...ctx(enemies), player: { pos: new THREE.Vector3() } as never, world });
+  const foe = (x: number) =>
+    ({ alive: true, hp: 100, kit: { maxHp: 100 }, position: new THREE.Vector3(x, 0, 0), body: { joints: { chest: new THREE.Vector3(x, 1.2, 0) } } }) as never;
+
+  it("a planted mine blows when an enemy walks over it", () => {
+    {
+      const { c, d } = mk("fixer", "claymore");
+      const a = new Actives();
+      a.assign(c);
+      expect(a.slots[0]).not.toBeNull();
+      expect(a.use(0, c, d, dctx()), a.said.join()).toBe(true);
+      const w = { scene: { add() {} }, fx: { explosion() {}, tracer() {} } } as never;
+      a.update(0.1, d, w, [], () => 0, [foe(30)]);
+      expect(a.blasts).toHaveLength(0);
+      a.update(0.1, d, w, [], () => 0, [foe(0)]);
+      expect(a.blasts).toHaveLength(1);
+    }
+  });
+
+  it("a sentry turret shoots the nearest enemy in range", () => {
+    {
+      const { c, d } = mk("fixer", "sentryKit");
+      const a = new Actives();
+      a.assign(c);
+      expect(a.slots[0]).not.toBeNull();
+      expect(a.use(0, c, d, dctx()), a.said.join()).toBe(true);
+      a.update(0.3, d, world, [], () => 0, [foe(10)]);
+      expect(a.blasts.length).toBeGreaterThan(0);
+    }
+  });
+});
