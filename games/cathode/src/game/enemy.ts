@@ -362,7 +362,8 @@ export class Enemy {
     }
     this.vel.lerp(step, 1 - Math.exp(-8 * dt));
     this.moveWithCollision(this.vel.clone().multiplyScalar(dt), colliders);
-    this.motion.pos.y = ground(this.motion.pos.x, this.motion.pos.z);
+    // Snipers stand on their perch (a roof or walkway above the street's floor).
+    this.motion.pos.y = this.kit.role === "sniper" ? Math.max(ground(this.motion.pos.x, this.motion.pos.z), this.route[0]!.y) : ground(this.motion.pos.x, this.motion.pos.z);
     this.motion.speed = Math.hypot(this.vel.x, this.vel.z);
     this.motion.phase += this.motion.speed * dt * 3.1;
     const lookAt = face ?? (this.motion.speed > 0.2 ? this.motion.pos.clone().add(this.vel) : null);

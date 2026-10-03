@@ -85,6 +85,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.scene.add(e.body.root);
     enemies.push(e);
   }
+  // A Hollowell sniper holds the far perch: take him first, or cross the street under his laser.
+  const far = world.markers.perch?.[1];
+  if (far) {
+    const e = new Enemy({ ...Progress.kit(ENFORCER_SNIPER, "enforcerSniper", areaLevel, seed++), role: "sniper" }, [far.clone()], areaLevel);
+    world.scene.add(e.body.root);
+    enemies.push(e);
+  }
   const arsenal = new Arsenal(world.viewScene);
   // The gun reflects the same neon city as the street.
   if (world.scene.environment && !world.viewScene.environment) world.viewScene.environment = world.scene.environment;
