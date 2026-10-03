@@ -14,6 +14,7 @@ import { KillCam } from "./killcam";
 import { Hud } from "../ui/hud";
 import { Audio } from "./audio";
 import { Progress } from "./progress";
+import { Voice } from "./voice";
 import { xpForLevel, xpToNext as simXpToNext } from "../sim/stats";
 
 export interface SessionOptions {
@@ -135,6 +136,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   let objective = "Get to the fish market. Somebody there knows who put Tomas in the water.";
   hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
+  const voice = new Voice((t) => hud.subtitle(t));
+  setTimeout(() => voice.say("start"), 2600);
 
   const resize = () => {
     const dpr = Math.min(devicePixelRatio, o.quality === "ultra" ? 3 : 2);
@@ -149,6 +152,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       s.maxHp = progress.stats.maxHealth;
       s.hp = s.maxHp;
       hud.showBanner(`Level ${l}`, "5 attribute points · 1 skill point · K to spend");
+      voice.say("levelUp");
       audio?.levelUp();
     }
     s.level = progress.character.level;
@@ -168,6 +172,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (k.severed.length) bits.push(k.severed.includes("head") ? "Decapitated" : "Dismembered");
     if (k.unseen) bits.push("Unseen");
+    if (k.headshot && k.distance > 25) voice.say("headshot");
+    else if (k.unseen) voice.say("unseenKill");
     levelUp(progress.kill(k.enemy.kit.xp, k.enemy.level, k.unseen, bonus));
     const xp = progress.lastXp;
     hud.feedLine(`+${xp} XP${bits.length ? " · " + bits.join(" · ") : ""}`, k.headshot || k.unseen);
@@ -293,6 +299,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     discoverBodies();
     drainEvents();
 
+    // Voice cues from the street's state.
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      if (e.state === "suspicious") voice.say("seen");
+      if (e.state === "combat") voice.say(e.kit.role === "shield" ? "shield" : "spotted");
+      if (e.laser?.visible) voice.say("laser");
+    }
+    if (s.hp > 0 && s.hp < s.maxHp * 0.3) voice.say("lowHealth");
+    voice.update(realDt);
+
     if (!dead && s.hp <= 0) {
       dead = true;
       hud.showBanner("Cath is down", "Click or tap to try again");
@@ -302,6 +318,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       jobDone = true;
       objective = "The street's quiet. Walk to the fish market's back door.";
       hud.showBanner("Street clear", "The Drowned Market");
+      voice.say("clear");
     }
     if (jobDone && ex && player.pos.distanceTo(ex) < 3) {
       jobDone = false;
@@ -309,6 +326,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (!progress.jobsDone.includes("fishMarket")) progress.jobsDone.push("fishMarket");
       progress.save();
       hud.showBanner("Job done", `Level ${progress.character.level}`);
+      voice.say("done");
     }
 
     // Sound: footsteps, the score's tension, slow motion.
@@ -385,6 +403,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         body.found = true;
         for (const f of enemies) if (f.position.distanceTo(body.position) < 40) f.alert(body.position);
         hud.feedLine("They've found a body", true);
+        voice.say("bodyFound");
         break;
       }
     }

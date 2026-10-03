@@ -158,6 +158,22 @@ export class Hud {
     while (this.feed.children.length > 6) this.feed.firstElementChild?.remove();
   }
 
+  private sub?: HTMLElement;
+  private subTimer = 0;
+
+  /** Cath's voiceover, as a subtitle. */
+  subtitle(text: string): void {
+    if (!this.sub) {
+      this.sub = el("p", "hud-sub", this.root);
+    }
+    this.sub.replaceChildren();
+    el("span", "hud-sub-name", this.sub).textContent = "Cath";
+    this.sub.append(text);
+    this.sub.classList.add("on");
+    clearTimeout(this.subTimer);
+    this.subTimer = window.setTimeout(() => this.sub?.classList.remove("on"), 1800 + text.length * 45);
+  }
+
   showBanner(title: string, sub: string): void {
     this.banner.replaceChildren();
     const h = el("p", "hud-banner-title", this.banner);

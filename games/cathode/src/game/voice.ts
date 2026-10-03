@@ -1,0 +1,54 @@
+// Cath's voiceover in the slice: short, plain lines on the moments that matter, each said once a job.
+// Writing rules (docs/design/cathode.md 2): concrete, dry, one zinger at most; never cryptic.
+
+export type Cue =
+  | "start"
+  | "seen"
+  | "spotted"
+  | "unseenKill"
+  | "headshot"
+  | "laser"
+  | "bodyFound"
+  | "shield"
+  | "lowHealth"
+  | "levelUp"
+  | "clear"
+  | "done";
+
+const LINES: Record<Cue, string> = {
+  start: "The Drowned Market. Tomas sold eggs here for thirty years. Somebody on this street saw him go in the water.",
+  seen: "Hollowell Enforcers. Company men, company guns.",
+  spotted: "So much for quiet.",
+  unseenKill: "One less witness.",
+  headshot: "He never heard it.",
+  laser: "Red dot on my coat. Move.",
+  bodyFound: "They've found him. Now they'll come looking for me.",
+  shield: "Riot shield. Go round it, not through it.",
+  lowHealth: "Not here. Not tonight.",
+  levelUp: "Older. Better at this.",
+  clear: "Quiet again. The fish market's back door is down by the water.",
+  done: "A water taxi, and a name left on the seat: Julian Crisp.",
+};
+
+export class Voice {
+  private said = new Set<Cue>();
+  private queue: Cue[] = [];
+  private busy = 0;
+
+  constructor(private readonly show: (text: string) => void) {}
+
+  say(cue: Cue): void {
+    if (this.said.has(cue)) return;
+    this.said.add(cue);
+    this.queue.push(cue);
+  }
+
+  update(dt: number): void {
+    this.busy = Math.max(0, this.busy - dt);
+    if (this.busy > 0 || !this.queue.length) return;
+    const cue = this.queue.shift()!;
+    const text = LINES[cue];
+    this.show(text);
+    this.busy = 1.2 + text.length * 0.045;
+  }
+}

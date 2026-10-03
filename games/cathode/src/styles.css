@@ -872,3 +872,33 @@ input[type="radio"] {
 .rarity-set {
   color: #4fd27a;
 }
+.hud-sub {
+  position: absolute;
+  left: 50%;
+  bottom: max(70px, calc(env(safe-area-inset-bottom) + 60px));
+  width: min(720px, calc(100% - 40px));
+  margin: 0;
+  transform: translateX(-50%);
+  text-align: center;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(16px, 2vw, 20px);
+  line-height: 1.4;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+.hud-sub.on {
+  opacity: 1;
+}
+.hud-sub-name {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--ui);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--blood-hot);
+}
