@@ -22,6 +22,9 @@ export interface HudState {
   objective: string;
   takedown: boolean;
   bulletTime: number;
+  /** The two active-skill slots (name and readiness 0..1), and the battery 0..1. */
+  skills: Array<{ name: string; ready: number; key: string } | null>;
+  battery: number;
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, parent?: HTMLElement): HTMLElementTagNameMap[K] {
@@ -51,6 +54,8 @@ export class Hud {
   private prompt: HTMLElement;
   private banner: HTMLElement;
   private focus: HTMLElement;
+  private slots: HTMLElement;
+  private bat: HTMLElement;
   private lastHp = -1;
   private hurt = 0;
   private hitT = 0;
@@ -74,6 +79,9 @@ export class Hud {
     const arms = el("div", "hud-arms", this.root);
     this.weapon = el("p", "hud-weapon", arms);
     this.ammo = el("p", "hud-ammo", arms);
+    this.slots = el("div", "hud-slots", arms);
+    const bat = el("div", "hud-bar hud-battery", arms);
+    this.bat = el("span", "hud-fill", bat);
     // The middle: crosshair, hit marker, threat arcs.
     this.cross = el("div", "hud-cross", this.root);
     for (const k of ["t", "b", "l", "r"]) el("span", `hud-cross-${k}`, this.cross);
@@ -117,6 +125,21 @@ export class Hud {
       this.scopeWind.textContent = `Wind ${s.wind > 0 ? "→" : "←"} ${Math.abs(s.wind).toFixed(1)} m/s`;
     }
     this.objective.textContent = s.objective;
+    set(this.bat, "--w", `${Math.round(s.battery * 100)}%`);
+    while (this.slots.children.length < 2) {
+      const c = el("div", "hud-slot", this.slots);
+      el("span", "hud-slot-key", c);
+      el("span", "hud-slot-name", c);
+    }
+    s.skills.forEach((k, i) => {
+      const c = this.slots.children[i] as HTMLElement;
+      c.hidden = !k;
+      if (!k) return;
+      (c.children[0] as HTMLElement).textContent = k.key;
+      (c.children[1] as HTMLElement).textContent = k.name;
+      set(c, "--ready", k.ready.toFixed(2));
+      c.classList.toggle("ready", k.ready >= 1);
+    });
     this.prompt.textContent = s.takedown ? "F  Takedown" : "";
     this.prompt.hidden = !s.takedown;
     set(this.focus, "--a", s.bulletTime.toFixed(2));

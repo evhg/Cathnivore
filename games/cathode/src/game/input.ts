@@ -23,9 +23,12 @@ export interface Intent {
   focus: boolean;
   pause: boolean;
   skills: boolean;
+  /** Active skill quick-slots. */
+  skill1: boolean;
+  skill2: boolean;
 }
 
-const BUTTONS = ["fire", "aim", "jump", "crouch", "reload", "focus", "takedown", "cycle"] as const;
+const BUTTONS = ["fire", "aim", "jump", "crouch", "reload", "focus", "takedown", "cycle", "skill"] as const;
 type TouchButton = (typeof BUTTONS)[number];
 
 export class Input {
@@ -116,6 +119,7 @@ export class Input {
       focus: "Focus",
       takedown: "Takedown",
       cycle: "Swap",
+      skill: "Skill",
     };
     for (const b of BUTTONS) {
       const btn = el("button", `tbtn tbtn-${b}`);
@@ -242,6 +246,8 @@ export class Input {
       focus: k("AltLeft") || k("KeyX") || this.touchHeld.has("focus"),
       pause: p("Escape") || p("KeyP"),
       skills: p("KeyK") || p("Tab"),
+      skill1: p("KeyG") || tt.has("skill"),
+      skill2: p("KeyZ"),
     };
     Object.assign(intent, this.forced);
     this.forced = {};

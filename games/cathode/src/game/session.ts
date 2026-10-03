@@ -15,6 +15,7 @@ import { Hud } from "../ui/hud";
 import { Audio } from "./audio";
 import { Progress } from "./progress";
 import { Voice } from "./voice";
+import { Actives } from "./actives";
 import { xpForLevel, xpToNext as simXpToNext } from "../sim/stats";
 
 export interface SessionOptions {
@@ -137,6 +138,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let objective = "Get to the fish market. Somebody there knows who put Tomas in the water.";
   hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
   const voice = new Voice((t) => hud.subtitle(t));
+  const actives = new Actives();
+  actives.assign(progress.character);
+  actives.battery = progress.stats.battery;
   setTimeout(() => voice.say("start"), 2600);
 
   const resize = () => {
@@ -207,7 +211,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
 
     // Time: the kill-cam slows the world right down; held focus (bullet-time) slows it while it lasts.
-    let scale = killcam.timeScale;
+    const run = actives.running();
+    let scale = killcam.timeScale * (killcam.active ? 1 : run.timeScale);
     const focusing = !killcam.active && intent.focus && s.focus > 0;
     if (focusing) {
       s.focus = Math.max(0, s.focus - realDt);
@@ -243,7 +248,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Scope sway: a slow figure-of-eight; held breath (Focus while scoped) all but stills it.
     if (arsenal.scopedIn) {
       swayT += realDt;
-      const amp = 0.0045 * progress.stats.swayMultiplier * (focusing ? 0.12 : 1) * (1 + player.speed * 0.4);
+      const amp = 0.0045 * progress.stats.swayMultiplier * run.sway * (focusing ? 0.12 : 1) * (1 + player.speed * 0.4);
       world.camera.rotation.x += Math.sin(swayT * 0.9) * amp;
       world.camera.rotation.y += Math.sin(swayT * 0.45) * amp * 1.4;
     }
@@ -279,6 +284,21 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
     }
     combat.update(dt, build());
+
+    // Active skills: quick-slots, thrown things, explosions, the lunge's strike.
+    const ctx = { player, eye, fwd, enemies, world };
+    if (!dead && intent.skill1) actives.use(0, progress.character, progress.stats, ctx);
+    if (!dead && intent.skill2) actives.use(1, progress.character, progress.stats, ctx);
+    actives.update(dt, progress.stats, world, world.colliders, ground);
+    for (const b of actives.blasts) combat.explode(b.pos, b.radius, b.damage, build());
+    actives.blasts.length = 0;
+    if (actives.lungeAt && actives.lungeT <= 0.05) {
+      arsenal.strike();
+      audio?.pin(combat.melee(eye, fwd, arsenal.held[0]!.def, build()));
+      actives.lungeAt = null;
+    }
+    for (const line of actives.said) hud.feedLine(line);
+    actives.said.length = 0;
 
     // Enemies: perception, movement, shooting back.
     const sight = sightOf();
@@ -372,6 +392,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       objective,
       takedown: canTakedown,
       bulletTime: focusing ? 1 : 0,
+      skills: [0, 1].map((i) => {
+        const st = actives.state(progress.character, progress.stats, i);
+        return st ? { name: st.name, ready: st.ready, key: i === 0 ? "G" : "Z" } : null;
+      }),
+      battery: actives.battery / Math.max(1, progress.stats.battery),
     });
     render();
     requestAnimationFrame(frame);
@@ -384,7 +409,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       light: world.lightAt(player.pos.clone().add(new THREE.Vector3(0, 1, 0))),
       low: player.crouchAmt,
       speed: player.speed,
-      stealth: dead ? 0 : progress.stats.detectionMultiplier,
+      stealth: dead ? 0 : progress.stats.detectionMultiplier * actives.running().camo,
     };
   }
 

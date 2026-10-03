@@ -353,6 +353,16 @@ export class Enemy {
       }
     }
 
+    if (this.fleeT > 0) {
+      this.fleeT -= dt;
+      this.shots.length = 0;
+      const away = this.motion.pos.clone().sub(this.fleeFrom).setY(0).normalize().multiplyScalar(6);
+      target = this.motion.pos.clone().add(away);
+      speed = this.kit.run;
+      face = null;
+      aim = 0;
+    }
+    if (this.tag) this.tag.position.copy(this.head).add(new THREE.Vector3(0, 0.45, 0));
     const step = new THREE.Vector3();
     if (target) {
       step.subVectors(target, this.motion.pos).setY(0);
@@ -448,6 +458,46 @@ export class Enemy {
     }
     place(this.rifle, b.joints.handR, b.joints.handL, b.facing.clone().set(0, 1, 0));
   }
+
+  private fleeT = 0;
+  private fleeFrom = new THREE.Vector3();
+  private tag: THREE.Mesh | null = null;
+
+  /** Vanish: they lose her and go back to searching somewhere near where she was. */
+  lose(at: THREE.Vector3): void {
+    if (!this.alive) return;
+    this.state = "searching";
+    this.detect = 0.15;
+    this.searchLeft = 12;
+    this.lastKnown.copy(at).add(new THREE.Vector3((Math.random() - 0.5) * 12, 0, (Math.random() - 0.5) * 12));
+  }
+
+  /** War Cry: they run from her for a while and don't shoot. */
+  panic(seconds: number, from: THREE.Vector3): void {
+    if (!this.alive) return;
+    this.fleeT = seconds;
+    this.fleeFrom.copy(from);
+    if (this.state !== "combat") this.state = "combat";
+    this.detect = 1;
+  }
+
+  get fleeing(): boolean {
+    return this.fleeT > 0;
+  }
+
+  /** Mark: an amber tag over the head, visible through walls. */
+  setMarked(on: boolean, mat: THREE.Material): void {
+    if (on && !this.tag) {
+      const g = new THREE.OctahedronGeometry(0.09, 0);
+      this.tag = new THREE.Mesh(g, mat);
+      this.tag.renderOrder = 999;
+      (this.tag.material as THREE.Material).depthTest = false;
+      this.body.root.add(this.tag);
+    }
+    if (this.tag) this.tag.visible = on;
+    this.marked = on;
+  }
+  marked = false;
 
   /** A hit: knocks the body (flinch), and returns true if it died. */
   damage(amount: number, push: THREE.Vector3): boolean {

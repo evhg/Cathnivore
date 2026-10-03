@@ -8,6 +8,7 @@ import type { Enemy } from "./enemy";
 import type { RayWorld } from "./ray";
 import type { Shot, WeaponDef } from "./weapons";
 import type { Zone } from "./body";
+import type { WeaponClass } from "../sim/types";
 
 export interface KillEvent {
   enemy: Enemy;
@@ -44,11 +45,13 @@ interface Projectile {
 
 export interface Build {
   /** Damage multiplier per weapon class, from attributes and skills. */
-  damage: (weaponClass: WeaponDef["weaponClass"]) => number;
+  damage: (weaponClass: WeaponClass) => number;
   headshot: number;
   crit: number;
   critMul: number;
 }
+
+const EXPLOSIVE: WeaponDef = { id: "frag", name: "Frag grenade", model: "pin", weaponClass: "melee", kind: "melee", damage: 0, pellets: 1, cycle: 0, mag: 0, reserve: 0, reload: 0, spread: [0, 0], noise: 60, kick: 0, range: 0 };
 
 const ZONE_MUL: Record<Zone, number> = { head: 2.5, torso: 1, armL: 0.7, armR: 0.7, legL: 0.75, legR: 0.75 };
 const GRAVITY = 9.81;
@@ -68,6 +71,33 @@ export class Combat {
     private readonly enemies: Enemy[],
     private readonly gore: boolean,
   ) {}
+
+  /** Explosions: damage falls off from the centre; close ones tear limbs off. */
+  explode(at: THREE.Vector3, radius: number, damage: number, build: Build): void {
+    this.noise(at, 60);
+    for (const e of this.enemies) {
+      const d = e.body.joints.chest.distanceTo(at);
+      if (d > radius) continue;
+      if (!this.rays.clear(at.clone().add(new THREE.Vector3(0, 0.3, 0)), e.body.joints.chest)) continue;
+      const k = 1 - d / radius;
+      const dmg = damage * k * build.damage("launcher") * (1 - e.kit.armour * 0.5);
+      const dir = e.body.joints.chest.clone().sub(at).normalize();
+      const unseen = !this.anyHunting();
+      const wasAlive = e.alive;
+      const killed = wasAlive && e.damage(dmg, dir.clone().multiplyScalar(6));
+      if (this.gore) {
+        this.world.fx.blood(e.body.joints.chest, dir, Math.min(1, dmg / 50));
+        // Close to the blast, limbs go.
+        if (k > 0.55 || (killed && k > 0.3))
+          for (const seg of ["forearmL", "forearmR", "shinL", "shinR"])
+            if (Math.random() < k * 0.7) e.body.sever(seg, dir.clone().multiplyScalar(6 + k * 8).add(new THREE.Vector3(0, 4, 0)));
+      }
+      if (killed) {
+        e.die(dir.clone().multiplyScalar(8 + 10 * k).add(new THREE.Vector3(0, 5 * k, 0)), at);
+        this.kills.push({ enemy: e, weapon: EXPLOSIVE, zone: "torso", headshot: false, distance: d, unseen, severed: [], takedown: false });
+      } else if (wasAlive) this.hits.push({ enemy: e, zone: "torso", damage: dmg, point: e.body.joints.chest.clone(), killed: false });
+    }
+  }
 
   /** Wakes every enemy within earshot of a noise. */
   noise(at: THREE.Vector3, radius: number): void {
@@ -166,6 +196,7 @@ export class Combat {
     const armour = w.weaponClass === "sniper" ? e.kit.armour * 0.3 : e.kit.armour;
     let dmg = w.damage * build.damage(w.weaponClass) * mul * falloff * (crit ? build.critMul : 1) * (1 - armour);
     if (!e.alive) dmg *= 0.5;
+    if (e.marked) dmg *= 1.25;
     const wasAlive = e.alive;
 
     this.shotDamage.set(segName, (this.shotDamage.get(segName) ?? 0) + dmg);
