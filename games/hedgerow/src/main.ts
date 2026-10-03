@@ -21,11 +21,14 @@ import {
   STEP,
   TARGET_MODES,
   TOWERS,
+  TOWER_VS,
   TWISTS,
   canCallEarly,
   drainEvents,
   earlyBonus,
   isBig,
+  isHeavy,
+  enemyClass,
   isPlot,
   laneCellsOf,
   pieRadius,
@@ -49,6 +52,8 @@ import {
   plotKind,
   upgrade,
   upgradeCost,
+  type EnemyClass,
+  type TowerKind,
   type EnemyKind,
   type Game,
   type GameEvent,
@@ -739,10 +744,31 @@ function wavePreview(p: HTMLElement, g: Game): void {
     const label = document.createElement("span");
     label.textContent = `${count} × ${ENEMIES[kind].name}`;
     li.append(label);
+    const cls = enemyClass(kind);
+    if (cls !== "light") {
+      const tag = document.createElement("span");
+      tag.className = `chip-tag ${cls}`;
+      tag.textContent = cls === "air" ? "Air" : "Heavy";
+      li.append(tag);
+    }
     row.append(li);
   }
   p.append(row);
   if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Tap the lane to move Cath.", "hint"));
+}
+
+const CLASS_NAMES: Record<EnemyClass, string> = { light: "light traffic", heavy: "heavy plant", air: "air" };
+
+/** " Strong vs air; weak vs heavy plant." for the build menu, from TOWER_VS. */
+function counterLine(kind: TowerKind): string {
+  const vs = TOWER_VS[kind] ?? {};
+  const ks = Object.keys(vs) as EnemyClass[];
+  const strong = ks.filter((k) => vs[k]! > 1).map((k) => CLASS_NAMES[k]);
+  const weak = ks.filter((k) => vs[k]! < 1).map((k) => CLASS_NAMES[k]);
+  const bits = [strong.length ? `Strong vs ${strong.join(", ")}` : "", weak.length ? `weak vs ${weak.join(", ")}` : ""].filter(Boolean);
+  if (!bits.length) return "";
+  const text = bits.join("; ");
+  return ` ${text[0]!.toUpperCase()}${text.slice(1)}.`;
 }
 
 function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): void {
@@ -761,7 +787,7 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     b.dataset.cost = String(cost);
     const wet = ground === "water" && kind !== "pond";
     b.disabled = g.marks < cost || wet;
-    b.setAttribute("aria-label", `${spec.name}, ${cost} Marks. ${spec.blurb}${wet ? " Too wet here." : ""}`);
+    b.setAttribute("aria-label", `${spec.name}, ${cost} Marks. ${spec.blurb}${counterLine(kind)}${wet ? " Too wet here." : ""}`);
     b.append(img(towerIcon(kind), "build-icon"));
     const name = document.createElement("span");
     name.className = "build-name";
@@ -771,7 +797,7 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     price.textContent = String(cost);
     b.append(name, price);
     const show = () => {
-      info.textContent = `${spec.name}: ${spec.blurb}`;
+      info.textContent = `${spec.name}: ${spec.blurb}${counterLine(kind)}`;
       if (renderer) renderer.preview = kind;
     };
     b.addEventListener("pointerenter", show);
@@ -813,6 +839,14 @@ function statList(st: Stats): Array<[string, string]> {
   if (st.range) rows.push(["Range", st.range.toFixed(1)]);
   if (st.damage || st.slow < 1 || st.thorns) rows.push(["Hits", st.air ? "air + ground" : "ground only"]);
   if (st.splash) rows.push(["Splash", st.splash.toFixed(1)]);
+  if (st.damage || st.gustEvery) {
+    const pct = (k: EnemyClass) => `${CLASS_NAMES[k]} ×${+st.vs[k].toFixed(2)}`;
+    const classes = (Object.keys(CLASS_NAMES) as EnemyClass[]).filter((k) => st.air || k !== "air");
+    const strong = classes.filter((k) => st.vs[k] > 1);
+    const weak = classes.filter((k) => st.vs[k] < 1);
+    if (strong.length) rows.push(["Strong vs", strong.map(pct).join(", ")]);
+    if (weak.length) rows.push(["Weak vs", weak.map(pct).join(", ")]);
+  }
   if (st.slow < 1) rows.push(["Slows to", `${Math.round(st.slow * 100)}%`]);
   if (st.thorns) rows.push(["Thorns", `${st.thorns}/s`]);
   if (st.poison) rows.push(["Poison", `${st.poison.dps}/s for ${st.poison.secs}s`]);
@@ -1113,7 +1147,9 @@ function describeEnemy(kind: EnemyKind): string {
   const e = ENEMIES[kind];
   const bits: string[] = [];
   if (isBig(kind)) bits.push("A boss: Cath can't hold it and pies only stun it half as long.");
-  if (e.flying) bits.push("Flies over Cath.");
+  if (e.flying) bits.push("Flies over Cath. Scarecrows and Windmills bring it down fastest.");
+  else if (isHeavy(kind))
+    bits.push("Heavy plant: hedges and honey only half slow it, gusts can't shift it, and turnips and stings barely dent it. Grain Silos and Seed Cannons do.");
   if (e.armor) bits.push(`Armoured: shrugs off ${Math.round(e.armor * 100)}% of ordinary shots. Grain Silos go straight through.`);
   if (e.stealth) bits.push("Invisible until a Radio Mast has it in range.");
   if (e.charm) bits.push("Charms nearby towers into holding fire. A Clinic Tent cures it.");

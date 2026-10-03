@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-03 07:44-10:30 (owner chat session):** owner said Hedgerow is too easy and money isn't scarce: counters, heavy plant, slow floor, leaner economy, fast Endless climb, full re-tune (BALANCE.md). Also committed ROADMAP 44's 3D polish (Cath's hair and swing, tower build-up, lane surfaces per act). Unreleased: today's 4 releases are used; release after 00:00 UTC.
 - **2026-10-03 05:08-06:10 (owner chat session):** built ROADMAP 53 (replays), 54 (set pieces), 50's turntable, illustrated outfits for the wardrobe, and fixed no sound on iPhone (audio session, silent switch, interrupted context). Released `1980312` (2nd release today). Next: ROADMAP 44 leftovers, then plan new items (fewer than 3 open).
 - **2026-10-03 04:51 session:** released `b6275ef` (ROADMAP 52 incl. Pell; 1st release today). Then ROADMAP 51 (wardrobe: `wardrobe.ts`, picker in Cath's sheet, 2D+3D, test; `npm run check` green; unreleased, no visual shots taken). Next: 53, 54, 44.
 - **2026-10-03 03:51 session:** ROADMAP 52 finished: rival hero (Pell on a quad bike: `ram` field, 2D+3D art, test, 1 in level 80). Level 80 test + tune --verify clean; unreleased: release first thing next session (0 releases today), then 44, 51, 53, 54.

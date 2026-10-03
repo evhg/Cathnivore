@@ -281,3 +281,23 @@ like "The opportunity is called Margaret. She's nineteen.": punchlines with no s
 9. Keep the plot of section 4 (who, where, what the twist is); change how it's told.
 
 Act 1 (levels 1-10) in `story/acts1to5.ts` is the model.
+
+## 8. Counters and scarcity (owner, 2026-10-03: "so easy it's not fun"; "look at how much money is collected, it's not scarce")
+- **Three classes of enemy** (`enemyClass` in engine.ts): **air** (anything that flies), **heavy plant** (trucks, bulldozers, tenders, lobbyists, company directors, and every boss) and **light traffic** (everything else).
+- **Hard counters** (`TOWER_VS`), a damage multiplier per tower per class:
+
+  | Tower | Strong vs | Weak vs |
+  |---|---|---|
+  | Scarecrow | air ×1.6 | heavy ×0.45 |
+  | Beehive | light ×1.4 | heavy ×0.3 |
+  | Duck Pond | light ×1.2 | heavy ×0.4 |
+  | Co-op Barn | | heavy ×0.6 |
+  | Grain Silo | heavy ×1.8 | light ×0.55 |
+  | Windmill | air ×1.7 | heavy ×0.4 |
+  | Seed Cannon | heavy ×1.35 | light ×0.8 |
+
+  Specialisations inherit their tower's counters. Megastructures are even-handed (×1 against everything): that is part of what they cost.
+- **Slows have limits.** Heavy plant takes only half of any slow or honey, and gusts and knockback can't move it. Nothing goes slower than 30% of its speed (`SLOW_FLOOR`), however many effects stack.
+- **Scarce Marks.** A wave pays 14 + 3 a wave (was 20 + 5). Income is cut about a third: Market Stall 8/13/20, Union Hall 12/20/30, Farmers' Market 36, Pie Stand 20, Co-op Bank 55, Grand Market 80. The early-call bonus is 8 + 2 a wave. Bounties are unchanged. The tuner re-fit every level's enemy health to the leaner economy.
+- **Endless climbs fast.** Health compounds ×1.075 a wave (×4 by wave 20, ×18 by wave 40; it was +7% a wave, linear). From wave 20 the act's boss returns every tenth wave, with company from wave 30. Waves pay 10 + 2 a wave, capped at wave 15, and income pays half.
+- **Shown to the player.** Tower panels and the Almanac list "Strong vs" and "Weak vs"; Almanac enemies show their class; a new enemy's intro says when it is heavy plant and what moves it.

@@ -9,6 +9,10 @@ import {
   NO_PERKS,
   STEP,
   TOWERS,
+  TOWER_VS,
+  SLOW_FLOOR,
+  enemyClass,
+  isHeavy,
   duelStrike,
   makeEnemy,
   merge,
@@ -90,7 +94,7 @@ describe("hedgerow round 3: bubble-wrapped vans", () => {
     w.stun = 100;
     g2.enemies.push(w);
     stepGame(g2);
-    expect(1000 - w.hp).toBeCloseTo(TOWERS.beehive.damage[0]);
+    expect(1000 - w.hp).toBeCloseTo(TOWERS.beehive.damage[0] * TOWER_VS.beehive!.light!);
     expect(w.shield).toBe(0);
     expect(g2.events.some((ev) => ev.type === "pop")).toBe(true);
   });
@@ -281,5 +285,58 @@ describe("hedgerow round 3: boss duels", () => {
     stepGame(bad);
     for (let r = 0; r < DUEL_ROUNDS; r++) duelStrike(bad, 0.1);
     expect(bad.hero.down).toBeGreaterThan(0);
+  });
+});
+
+describe("hedgerow: hard counters and heavy plant", () => {
+  it("sorts enemies into light, heavy and air", () => {
+    expect(enemyClass("van")).toBe("light");
+    expect(enemyClass("bulldozer")).toBe("heavy");
+    expect(enemyClass("boss")).toBe("heavy");
+    expect(enemyClass("drone")).toBe("air");
+    expect(enemyClass("blimp")).toBe("air");
+    expect(isHeavy("truck")).toBe(true);
+  });
+
+  it("turnips hit drones hard and bulldozers barely; grain-shot the other way round", () => {
+    const dealt = (tower: TowerKind, kind: "van" | "drone" | "tender") => {
+      const game = started();
+      grow(game, tower, 3, 0, 1);
+      const e = makeEnemy(game, kind, 3, undefined, 1);
+      e.hp = e.maxHp = 5000;
+      e.stun = 100;
+      game.enemies.push(e);
+      stepGame(game);
+      return 5000 - e.hp;
+    };
+    expect(dealt("scarecrow", "drone")).toBeCloseTo(TOWERS.scarecrow.damage[0] * TOWER_VS.scarecrow!.air!);
+    expect(dealt("scarecrow", "drone")).toBeGreaterThan(dealt("scarecrow", "van"));
+    expect(dealt("silo", "tender")).toBeGreaterThan(dealt("silo", "van") * 3);
+    expect(dealt("beehive", "van")).toBeGreaterThan(dealt("beehive", "tender") * 4);
+  });
+
+  it("heavy plant takes half the slow, can't be gusted back, and nothing goes below the slow floor", () => {
+    const moved = (kind: "van" | "bulldozer", tower: TowerKind) => {
+      const game = started();
+      grow(game, tower, 3, 0, 3);
+      const e = makeEnemy(game, kind, 3, undefined, 1);
+      e.hp = e.maxHp = 1e6;
+      game.enemies.push(e);
+      const d = e.dist;
+      for (let i = 0; i < 30; i++) stepGame(game);
+      return (e.dist - d) / (30 * STEP * ENEMY_SPEED[kind]);
+    };
+    const ENEMY_SPEED = { van: 0.9, bulldozer: 0.7 } as const;
+    const hedge = 1 - (1 - TOWERS.hedgerow.slow[2]);
+    expect(moved("van", "hedgerow")).toBeCloseTo(Math.max(SLOW_FLOOR, hedge), 1);
+    expect(moved("bulldozer", "hedgerow")).toBeCloseTo(Math.max(SLOW_FLOOR, 1 - (1 - hedge) / 2), 1);
+    expect(moved("bulldozer", "windmill")).toBeGreaterThan(0.9);
+  });
+
+  it("shows the counters in each tower's stats; megastructures are even-handed", () => {
+    expect(towerStats({ kind: "silo", tier: 1 }).vs.heavy).toBe(TOWER_VS.silo!.heavy);
+    expect(towerStats({ kind: "hedgerow", tier: 1 }).vs).toEqual({ light: 1, heavy: 1, air: 1 });
+    const mega = Object.keys(MEGAS)[0] as keyof typeof MEGAS;
+    expect(towerStats({ kind: MEGAS[mega].from[0], tier: 3, mega }).vs).toEqual({ light: 1, heavy: 1, air: 1 });
   });
 });

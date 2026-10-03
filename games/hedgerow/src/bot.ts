@@ -14,6 +14,7 @@ import {
   enemyPoint,
   hasTwist,
   isBig,
+  isHeavy,
   isPlot,
   isProtected,
   megaFor,
@@ -43,6 +44,7 @@ export type Skill = "competent" | "naive" | "balanced" | "best" | "idle";
 interface Threat {
   total: number;
   flying: number;
+  heavy: number;
   armoured: number;
   stealth: number;
   charm: number;
@@ -54,13 +56,14 @@ interface Threat {
 }
 
 function threatOf(level: Level, from: number, n: number): Threat {
-  const t: Threat = { total: 0, flying: 0, armoured: 0, stealth: 0, charm: 0, jam: 0, heal: 0, split: 0, shield: 0, boss: false };
+  const t: Threat = { total: 0, flying: 0, heavy: 0, armoured: 0, stealth: 0, charm: 0, jam: 0, heal: 0, split: 0, shield: 0, boss: false };
   for (const groups of level.waves.slice(from, from + n)) {
     for (const g of groups) {
       const e = ENEMIES[g.enemy];
       const w = g.count * (e.hp / 100);
       t.total += w;
       if (e.flying) t.flying += w;
+      else if (isHeavy(g.enemy)) t.heavy += w;
       if (e.armor || hasTwist(level, "armoured")) t.armoured += w;
       if (e.stealth) t.stealth += w;
       if (e.charm) t.charm += w;
@@ -155,6 +158,7 @@ function wanted(game: Game): TowerKind[] {
   };
   const air = th.total ? th.flying / th.total : 0;
   const armour = th.total ? th.armoured / th.total : 0;
+  const heavy = th.total ? th.heavy / th.total : 0;
   // Economy early, unless it's a rush.
   if (!hasTwist(lv, "rush") && game.wave < lv.waves.length - 3) set("stall", n >= 3 ? (n >= 10 ? 2 : 1) : 0);
   set("hedgerow", 1 + n / 6);
@@ -163,18 +167,19 @@ function wanted(game: Game): TowerKind[] {
   if (th.stealth || all.stealth) set("mast", Math.min(4, 2 + Math.floor(n / 6)));
   else if (n > 7) set("mast", 1);
   if (th.charm) set("tent", 1 + n / 10);
-  if (armour > 0.2) set("silo", 1 + dmgTowers * armour * 0.6);
+  // Heavy plant shrugs off turnips and stings: grain-shot and seed sacks are what move it.
+  if (armour > 0.2 || heavy > 0.15) set("silo", 1 + dmgTowers * Math.max(armour * 0.6, heavy * 0.7));
   if (all.boss) set("court", game.wave >= lv.waves.length - 2 ? 1 : 0);
   if (n > 9) set("hall", 1);
   const wrapped = th.total ? th.shield / th.total : 0;
   if (th.split || th.total > 30 || hasTwist(lv, "crowd") || wrapped > 0.1)
     set("beehive", 1 + dmgTowers * (0.35 + wrapped * 0.5));
   if (ok("windmill")) set("windmill", 1 + n / 8);
-  if (ok("cannon")) set("cannon", 1 + dmgTowers * (0.2 + wrapped * 0.4 + (th.total > 30 ? 0.15 : 0)));
+  if (ok("cannon")) set("cannon", 1 + dmgTowers * (0.2 + wrapped * 0.4 + heavy * 0.3 + (th.total > 30 ? 0.15 : 0)));
   // Anti-air and the backbone: scarecrows (or bees when scarecrows are banned).
   const airKind: TowerKind = ok("scarecrow") ? "scarecrow" : "beehive";
   // Bubble wrap makes single-target shots weak: lean on splash when it's about.
-  set(airKind, 2 + dmgTowers * Math.max(0.4 * (1 - wrapped), air));
+  set(airKind, 2 + dmgTowers * Math.max(0.4 * (1 - wrapped) * (1 - heavy), air));
   const order = Object.entries(want)
     .map(([k, v]) => [k as TowerKind, (v ?? 0) - count(game, k as TowerKind)] as const)
     .filter(([, d]) => d > 0)
@@ -234,6 +239,7 @@ function spend(game: Game, skill: Skill, samples: ReturnType<typeof laneSamples>
         ["beehive", 1],
         ["windmill", 0.5],
         ["cannon", 0.7],
+        ["silo", 0.6],
         ["pond", 0.4],
         ["hedgerow", 0.3],
       ];

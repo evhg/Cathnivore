@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { endlessLevel, endlessUnlocked, weekOf, ENDLESS_WAVES } from "../games/hedgerow/src/endless";
-import { newGame, spawnHp } from "../games/hedgerow/src/engine";
+import { ENDLESS_HP_GROWTH, isBig, newGame, spawnHp } from "../games/hedgerow/src/engine";
 import { emptySave, parseSave, recordEndless } from "../games/hedgerow/src/store";
 
 describe("endless fields", () => {
@@ -21,6 +21,15 @@ describe("endless fields", () => {
     g.wave = 20;
     expect(spawnHp(g, "van")).toBeGreaterThan(a * 2);
     expect(weekOf(Date.UTC(2026, 0, 12))).toBe(1);
+  });
+  it("compound health every wave and bring the act's boss back every tenth wave from 20", () => {
+    const g = newGame(endlessLevel(1, 0));
+    const a = spawnHp(g, "van");
+    g.wave = 40;
+    expect(spawnHp(g, "van") / a / Math.pow(ENDLESS_HP_GROWTH, 40)).toBeCloseTo(1, 1);
+    const lv = endlessLevel(1, 0);
+    const bossWaves = lv.waves.map((w, i) => (w.some((gr) => isBig(gr.enemy)) ? i + 1 : 0)).filter(Boolean);
+    expect(bossWaves.slice(0, 3)).toEqual([20, 30, 40]);
   });
   it("keeps the best wave only", () => {
     const d = emptySave();

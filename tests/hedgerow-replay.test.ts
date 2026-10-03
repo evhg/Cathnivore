@@ -36,7 +36,7 @@ describe("hedgerow replays", () => {
 
   it("plays a recorded run back to exactly the same result", () => {
     const { game, replay } = record();
-    expect(replay.log.length).toBeGreaterThan(5);
+    expect(replay.log.length).toBeGreaterThan(3);
     const back = new Player(level, replay).finish();
     expect([back.phase, back.goodwill, back.marks, back.tick, back.towers.length]).toEqual([
       game.phase,

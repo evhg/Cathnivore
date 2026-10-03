@@ -17,3 +17,21 @@ Keep this under 300 lines (SPEC 16). v1's full balance log (12 iterations, 2026-
 - **Changes:** bubble-wrapped vans (single-target shots do 15% until area damage pops the wrap; 60% of vans in levels 5-20, 50% in act 3, 30% after), Scarecrow crowding (-20% fire rate per adjacent Scarecrow), Scarecrow damage 7/11.5/17.5 and upgrades 80/125, new winding routes on bigger fields, Windmill (8+), Seed Cannon (26+), megastructures (12+), ambushes (12+). Scarecrow bans cut from 17 levels to 2 (17, 29).
 - **Benchmark:** the tuner and level tests now use `"best"` = the better of `competent` and the new `balanced` bot (a simple plan with a weighted mix of damage dealers); the old competent bot played worse than pure spam, which had tuned the curve too soft. Full run: tune, `--verify`, then the new `--antispam` (from level 8, +6% health steps while spam still wins and the best bot still passes verify).
 - **Result:** best bot keeps 75% of its Goodwill on average, 50% at worst; the naive Scarecrows-only bot wins 9 of the 93 levels from 8 (8, 11, 12, 14, 18, 21, 28, 30, 40), down from 25 at the last release. 8, 14 and 30 are air levels and 18 is rain (Beehives halved), where Scarecrows are the right counter. Duels and Cath's sheet are not in the bots' game, so people get extra margin from them.
+
+## Hedgerow counters and scarcity (2026-10-03, owner: "so easy it's not fun"; "look at how much money is collected, it's not scarce")
+- **Changes** (docs/design/hedgerow-v2.md 8):
+  - Hard counters (`TOWER_VS`): light, heavy and air enemies, with a damage multiplier for each tower against each class.
+  - Heavy plant takes half of any slow, and gusts and knockback can't move it. Every boss counts as heavy plant.
+  - A 30% slow floor (`SLOW_FLOOR`).
+  - Wave pay is 14+3w (was 20+5w), income towers are cut by about a third, the early bonus is 8+2w, and bounties are cut by 20%.
+  - Crowd levels pay half bounty. Level 96 had been raining about 2,000 Marks a wave from kills.
+  - Endless health compounds ×1.075 a wave, starting at 0.5× the story level's tuned health. The act's boss comes every tenth wave from wave 20. Endless wave pay is 10+2w (capped at w=15), at half income.
+- **Bots:**
+  - competent: counts heavy plant and builds Silos and Cannons for it;
+  - balanced: adds the Silo to its mix.
+  - Full re-tune: tune, `--verify`, `--antispam 8 100`.
+- **Result:**
+  - Health per level is about the same as before (×0.99 on average), with much less money, so winning now takes counters.
+  - The best bot wins all 100 levels, keeping 81% of its Goodwill on average.
+  - The naive Scarecrows-only bot wins 5 of the 93 levels from 8 (8, 14, 20, 21, 30), down from 9.
+- **Endless** (`scripts/hedgerow-endless-measure.ts`, week 39): the best bot dies at wave 30, 15, 40, 29, 26, 11, 25, 30, 19 and 15 (acts 1 to 10). It used to coast past wave 100.

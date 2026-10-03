@@ -125,7 +125,7 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     cooldown: [1, 1, 1],
     slow: [1, 1, 1],
     buff: [1.2, 1.3, 1.45],
-    income: [12, 20, 30],
+    income: [8, 13, 20],
   },
   pond: {
     name: "Duck Pond",
@@ -211,7 +211,7 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     cooldown: [1, 1, 1],
     slow: [1, 1, 1],
     aura: [1.1, 1.17, 1.25],
-    income: [18, 30, 45],
+    income: [12, 20, 30],
   },
   windmill: {
     name: "Windmill",
@@ -267,34 +267,37 @@ export interface EnemySpec {
   launch?: { kind: EnemyKind; count: number; every: number };
   /** Flies over the lane: Cath cannot hold it. */
   flying?: boolean;
+  /** Heavy plant: slows and honey only half work on it, and gusts and knockback can't move it. Every boss is heavy. */
+  heavy?: boolean;
   /** Bubble wrap: single-target shots do only WRAP_LEAK of their damage until something area-wide (splash,
    * a piercing shot, a gust, a pie) pops it. Thorns, poison and Cath hit it in full. */
   shield?: number;
 }
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
-  van: { name: "Delivery van", hp: 98, speed: 0.9, bounty: 9, leak: 1 },
-  wrapped: { name: "Bubble-wrapped van", hp: 90, speed: 0.85, bounty: 11, leak: 1, shield: 1 },
+  van: { name: "Delivery van", hp: 98, speed: 0.9, bounty: 7, leak: 1 },
+  wrapped: { name: "Bubble-wrapped van", hp: 90, speed: 0.85, bounty: 9, leak: 1, shield: 1 },
   boss: {
     name: "The Acquisition Van",
     hp: 1800,
     speed: 0.55,
-    bounty: 150,
+    bounty: 120,
     leak: 5,
   },
   drone: {
     name: "Delivery drone",
     hp: 35,
     speed: 1.8,
-    bounty: 6,
+    bounty: 5,
     leak: 1,
     flying: true,
   },
   truck: {
     name: "0.99 price-war truck",
+    heavy: true,
     hp: 150,
     speed: 0.8,
-    bounty: 10,
+    bounty: 8,
     leak: 2,
     splits: { kind: "drone", count: 2 },
   },
@@ -302,7 +305,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Mr Crisp's Price-War Convoy",
     hp: 2700,
     speed: 0.5,
-    bounty: 200,
+    bounty: 160,
     leak: 6,
     splits: { kind: "truck", count: 3 },
   },
@@ -310,7 +313,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Lifestyle influencer",
     hp: 70,
     speed: 1.0,
-    bounty: 10,
+    bounty: 8,
     leak: 1,
     charm: 1.2,
   },
@@ -318,16 +321,17 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "The Brand Ambassador Blimp",
     hp: 3300,
     speed: 0.45,
-    bounty: 250,
+    bounty: 200,
     leak: 7,
     charm: 1.8,
     flying: true,
   },
   bulldozer: {
     name: "Site-clearance bulldozer",
+    heavy: true,
     hp: 260,
     speed: 0.7,
-    bounty: 14,
+    bounty: 11,
     leak: 3,
     armor: 0.5,
   },
@@ -335,7 +339,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "The Mega-Dozer",
     hp: 4200,
     speed: 0.42,
-    bounty: 300,
+    bounty: 240,
     leak: 8,
     armor: 0.5,
     splits: { kind: "bulldozer", count: 2 },
@@ -344,15 +348,16 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Unbranded courier",
     hp: 90,
     speed: 1.2,
-    bounty: 12,
+    bounty: 10,
     leak: 1,
     stealth: true,
   },
   tender: {
     name: "Fast tender",
+    heavy: true,
     hp: 190,
     speed: 1.1,
-    bounty: 13,
+    bounty: 10,
     leak: 2,
     armor: 0.3,
   },
@@ -360,16 +365,17 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "The Container Ship",
     hp: 5600,
     speed: 0.4,
-    bounty: 400,
+    bounty: 320,
     leak: 10,
     armor: 0.35,
     splits: { kind: "tender", count: 4 },
   },
   lobbyist: {
     name: "Lobbyist",
+    heavy: true,
     hp: 420,
     speed: 0.75,
-    bounty: 18,
+    bounty: 14,
     leak: 2,
     lobby: 1.6,
   },
@@ -377,7 +383,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Drone carrier",
     hp: 360,
     speed: 0.6,
-    bounty: 20,
+    bounty: 16,
     leak: 3,
     flying: true,
     launch: { kind: "drone", count: 2, every: 5 },
@@ -386,7 +392,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Pell on a quad bike",
     hp: 1100,
     speed: 1.25,
-    bounty: 60,
+    bounty: 48,
     leak: 5,
     ram: 12,
   },
@@ -394,7 +400,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Corporate lawyer",
     hp: 170,
     speed: 0.95,
-    bounty: 13,
+    bounty: 10,
     leak: 2,
     jam: 1.3,
   },
@@ -402,7 +408,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "The Lawyer Swarm",
     hp: 6000,
     speed: 0.45,
-    bounty: 450,
+    bounty: 360,
     leak: 10,
     jam: 2,
     splits: { kind: "lawyer", count: 5 },
@@ -411,16 +417,17 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Pell's Campaign Bus",
     hp: 7200,
     speed: 0.5,
-    bounty: 500,
+    bounty: 400,
     leak: 10,
     armor: 0.2,
     splits: { kind: "influencer", count: 6 },
   },
   director: {
     name: "Company director",
+    heavy: true,
     hp: 1500,
     speed: 0.7,
-    bounty: 40,
+    bounty: 32,
     leak: 3,
     armor: 0.25,
   },
@@ -428,7 +435,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "The Board of Directors",
     hp: 8000,
     speed: 0.5,
-    bounty: 550,
+    bounty: 440,
     leak: 10,
     armor: 0.2,
     splits: { kind: "director", count: 5 },
@@ -437,7 +444,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "HollowCandor",
     hp: 7000,
     speed: 0.45,
-    bounty: 400,
+    bounty: 320,
     leak: 10,
     armor: 0.25,
     jam: 1.5,
@@ -447,7 +454,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Candor, unmerged",
     hp: 4500,
     speed: 0.6,
-    bounty: 300,
+    bounty: 240,
     leak: 6,
     armor: 0.15,
     heal: 20,
@@ -457,7 +464,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Hollow remnant",
     hp: 1400,
     speed: 0.9,
-    bounty: 60,
+    bounty: 48,
     leak: 3,
     stealth: true,
   },
@@ -465,7 +472,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
     name: "Vane's Clinic-in-a-Box",
     hp: 4800,
     speed: 0.42,
-    bounty: 350,
+    bounty: 280,
     leak: 9,
     heal: 14,
     splits: { kind: "phantom", count: 3 },
@@ -576,14 +583,14 @@ export const SPECIALISATIONS: Record<
       name: "Farmers' Market",
       blurb: "A proper Saturday market. Takes a fortune and cheers louder.",
       cost: 200,
-      income: 55,
+      income: 36,
       buff: 1.55,
     },
     {
       name: "Pie Stand",
       blurb: "Cath's pies, on sale. Every stand gets her next pie out of the oven sooner.",
       cost: 180,
-      income: 30,
+      income: 20,
       buff: 1.45,
       pieHaste: 0.3,
     },
@@ -697,7 +704,7 @@ export const SPECIALISATIONS: Record<
       name: "Co-op Bank",
       blurb: "Tomas opens a bank that lends to farms. It pays out handsomely after every wave.",
       cost: 300,
-      income: 85,
+      income: 55,
     },
   ],
   windmill: [
@@ -770,6 +777,8 @@ export interface TowerStats {
   gustEvery: number;
   /** Veteran rank from kills (0 to 3). */
   rank: number;
+  /** Damage multiplier against each class of enemy (TOWER_VS; megastructures are even-handed). */
+  vs: Record<EnemyClass, number>;
 }
 
 // ---- megastructures: two grown towers side by side merge into one ----
@@ -839,7 +848,7 @@ export const MEGAS: Record<MegaId, MegaSpec> = {
     range: 2.6,
     buff: 1.6,
     aura: 1.22,
-    income: 120,
+    income: 80,
   },
   tribunal: {
     from: ["mast", "court"],
@@ -947,6 +956,7 @@ export function towerStats(
     gustPush: s.gust?.push[i] ?? 0,
     gustEvery: s.gust?.every[i] ?? 0,
     rank,
+    vs: { light: 1, heavy: 1, air: 1, ...TOWER_VS[t.kind] },
   };
   const over: Partial<MegaSpec> | null = t.mega
     ? { ...MEGAS[t.mega] }
@@ -960,7 +970,7 @@ export function towerStats(
     delete over.from;
     if (t.mega) {
       // A megastructure is its own building: it keeps only what its recipe gives it.
-      Object.assign(stats, { damage: 0, slow: 1, splash: 0, buff: 1, income: 0, reveal: 1, injunction: 0, aura: 1, pierce: false, air: true, cleanse: false, gustPush: 0, gustEvery: 0 });
+      Object.assign(stats, { damage: 0, slow: 1, splash: 0, buff: 1, income: 0, reveal: 1, injunction: 0, aura: 1, pierce: false, air: true, cleanse: false, gustPush: 0, gustEvery: 0, vs: { light: 1, heavy: 1, air: 1 } });
     }
     Object.assign(stats, over);
   }
@@ -1234,7 +1244,7 @@ export const TWISTS: Record<TwistId, { name: string; rule: string }> = {
   protected: { name: "Protected land", rule: "Only half the plots can be built on." },
   nocath: { name: "Cath's away", rule: "Cath isn't on the field." },
   noscarecrow: { name: "Scarecrow ban", rule: "No Scarecrows this level." },
-  crowd: { name: "Crowds", rule: "Twice as many enemies at half health, packed close." },
+  crowd: { name: "Crowds", rule: "Twice as many enemies at half health and half bounty, packed close." },
   fast: { name: "Express", rule: "Enemies are 25% faster; bounties +50%." },
   fortified: { name: "Fortified", rule: "Enemies have 30% more health." },
   market: { name: "Market day", rule: "Income +50%." },
@@ -1778,10 +1788,13 @@ export function isProtected(level: Level, col: number, row: number): boolean {
   return hasTwist(level, "protected") && (col + row) % 2 === 1;
 }
 
+/** Endless: every wave's enemies have this much more health than the last one's (compounding). */
+export const ENDLESS_HP_GROWTH = 1.075;
+
 /** Full health for a new enemy: the kind's, scaled by the tuner and by fortified and crowd twists. */
 export function spawnHp(game: Game, kind: EnemyKind): number {
   let hp = ENEMIES[kind].hp * (game.level.hpScale ?? 1);
-  if (game.level.endless) hp *= 1 + 0.07 * game.wave;
+  if (game.level.endless) hp *= Math.pow(ENDLESS_HP_GROWTH, game.wave);
   if (hasTwist(game.level, "fortified")) hp *= 1.3;
   if (hasTwist(game.level, "crowd") && !isBig(kind)) hp *= 0.5;
   return Math.round(hp);
@@ -1885,7 +1898,7 @@ export function setTarget(
 
 /** Marks for calling the next wave before the current one is cleared. */
 export function earlyBonus(game: Game): number {
-  return Math.round((12 + game.wave * 3) * game.perks.earlyBonus);
+  return Math.round((8 + game.wave * 2) * game.perks.earlyBonus);
 }
 
 /** True while a wave is out but fully spawned and more waves remain: the next one can be called early. */
@@ -1982,6 +1995,32 @@ export function isBig(kind: EnemyKind): boolean {
   return ENEMIES[kind].hp >= 1500;
 }
 
+/** Heavy plant (bulldozers, trucks, tenders...) and every boss: half-slowed, and too heavy to blow or knock back. */
+export function isHeavy(kind: EnemyKind): boolean {
+  return !!ENEMIES[kind].heavy || isBig(kind);
+}
+
+export type EnemyClass = "light" | "heavy" | "air";
+
+/** What sort of target an enemy is, for TOWER_VS: anything that flies is air, whatever its size. */
+export function enemyClass(kind: EnemyKind): EnemyClass {
+  return ENEMIES[kind].flying ? "air" : isHeavy(kind) ? "heavy" : "light";
+}
+
+/**
+ * Hard counters: each tower's damage against each class of enemy. Turnips and gusts bring down drones,
+ * stings and splashes shred light traffic, and only grain-shot and seed sacks really dent heavy plant.
+ */
+export const TOWER_VS: Partial<Record<TowerKind, Partial<Record<EnemyClass, number>>>> = {
+  scarecrow: { air: 1.6, heavy: 0.45 },
+  beehive: { light: 1.4, heavy: 0.3 },
+  pond: { light: 1.2, heavy: 0.4 },
+  barn: { heavy: 0.6 },
+  silo: { heavy: 1.8, light: 0.55 },
+  windmill: { air: 1.7, heavy: 0.4 },
+  cannon: { heavy: 1.35, light: 0.8 },
+};
+
 /** How hard an enemy hits Cath while she holds it, in hit points a second. */
 export function enemyHit(kind: EnemyKind): number {
   return Math.min(30, Math.max(5, ENEMIES[kind].hp / 14));
@@ -2071,6 +2110,9 @@ function lit(game: Game, e: Enemy, light: number): boolean {
   }
   return false;
 }
+
+/** The slowest anything can be made to go, as a share of its speed. */
+export const SLOW_FLOOR = 0.3;
 
 /** How close a stealth vehicle has to come before Cath sees it. */
 export const CATH_SPOTS = 1.3;
@@ -2350,12 +2392,15 @@ export function stepGame(game: Game): void {
       factor = Math.min(factor, enemy.sticky ?? 1);
       enemy.stickyLeft -= STEP;
     }
+    // Heavy plant ploughs on through hedges and honey at half the slow, and nothing stops anything outright.
+    if (isHeavy(enemy.kind)) factor = 1 - (1 - factor) / 2;
+    factor = Math.max(SLOW_FLOOR, factor);
     enemy.slowed = factor < 1;
     if (enemy.gustCd && enemy.gustCd > 0) enemy.gustCd -= STEP;
     if (enemy.stun > 0) enemy.stun -= STEP;
     else if (!enemy.held) {
       let move =
-        speedOf(game, enemy) * Math.max(0.05, factor) * (enemy.charge && enemy.charge > 0 ? 2.2 : 1) * STEP;
+        speedOf(game, enemy) * factor * (enemy.charge && enemy.charge > 0 ? 2.2 : 1) * STEP;
       const flood = setPiece(game.level, "flood");
       if (flood && !enemy.lane && game.wave >= flood.wave && enemy.dist >= flood.from && enemy.dist <= flood.to && !ENEMIES[enemy.kind].flying)
         move *= 0.6;
@@ -2427,8 +2472,9 @@ export function stepGame(game: Game): void {
           blew = true;
           e.lastHit = t.id;
           popWrap(game, e);
-          if (!spec.splash && spec.damage > 0) damageEnemy(game, e, spec.damage * game.perks.towerDamage, spec.pierce);
-          if (!isBig(e.kind) && !e.held && (e.gustCd ?? 0) <= 0) {
+          if (!spec.splash && spec.damage > 0)
+            damageEnemy(game, e, spec.damage * game.perks.towerDamage * spec.vs[enemyClass(e.kind)], spec.pierce);
+          if (!isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0) {
             e.dist = Math.max(0, e.dist - spec.gustPush);
             e.gustCd = 2;
           }
@@ -2485,10 +2531,11 @@ export function stepGame(game: Game): void {
     const area = spec.splash > 0 || spec.pierce;
     const hit = (e: Enemy) => {
       e.lastHit = t.id;
-      if (e.shield && !area) damageEnemy(game, e, dmg * WRAP_LEAK, false);
+      const d = dmg * spec.vs[enemyClass(e.kind)];
+      if (e.shield && !area) damageEnemy(game, e, d * WRAP_LEAK, false);
       else {
         popWrap(game, e);
-        damageEnemy(game, e, dmg, spec.pierce);
+        damageEnemy(game, e, d, spec.pierce);
       }
       if (spec.poison) {
         e.poison = spec.poison.dps;
@@ -2498,7 +2545,7 @@ export function stepGame(game: Game): void {
         e.sticky = spec.sticky.factor;
         e.stickyLeft = spec.sticky.secs;
       }
-      if (spec.knockback && !isBig(e.kind) && !e.held)
+      if (spec.knockback && !isHeavy(e.kind) && !e.held)
         e.dist = Math.max(0, e.dist - spec.knockback);
     };
     hit(target);
@@ -2530,7 +2577,9 @@ export function stepGame(game: Game): void {
   for (const e of game.enemies) {
     const p = enemyPoint(game.level, e);
     if (e.hp <= 0) {
-      const bounty = Math.round(ENEMIES[e.kind].bounty * (hasTwist(game.level, "fast") ? 1.5 : 1));
+      // Crowds come at half health and pay half a bounty, or a crowd level would rain Marks.
+      const crowd = hasTwist(game.level, "crowd") && !isBig(e.kind) ? 0.5 : 1;
+      const bounty = Math.max(1, Math.round(ENEMIES[e.kind].bounty * crowd * (hasTwist(game.level, "fast") ? 1.5 : 1)));
       game.marks += bounty;
       const killer = e.lastHit !== undefined ? game.towers.find((t) => t.id === e.lastHit) : undefined;
       if (killer) {
@@ -2570,7 +2619,8 @@ export function stepGame(game: Game): void {
       game.enemies.some((e) => (e.wave ?? game.wave) === w);
     if (pending) break;
     game.paid = w;
-    let reward = 20 + w * 5;
+    // Marks are meant to be scarce: a wave pays a little, and Endless pays less the longer it runs.
+    let reward = game.level.endless ? 10 + Math.min(w, 15) * 2 : 14 + w * 3;
     let mend = 0;
     let income = 0;
     for (const t of game.towers) {
@@ -2580,6 +2630,7 @@ export function stepGame(game: Game): void {
     }
     if (hasTwist(game.level, "tight")) reward *= 1.5;
     if (hasTwist(game.level, "market")) income *= 1.5;
+    if (game.level.endless) income *= 0.5;
     reward = Math.round(reward + income);
     game.marks += reward;
     if (mend > 0)

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   STEP,
   TOWERS,
+  TOWER_VS,
   isPlot,
   plotKind,
   HIGH_GROUND_RANGE,
@@ -159,7 +160,7 @@ describe("hedgerow engine", () => {
     sendWave(g2);
     g2.spawnQueue = [];
     stepGame(g2);
-    expect(g2.marks).toBe(before + 20 + 5 + TOWERS.stall.income![0]);
+    expect(g2.marks).toBe(before + 14 + 3 + TOWERS.stall.income![0]);
   });
 
   it("a price-war truck breaks into drones", () => {
@@ -238,8 +239,9 @@ describe("hedgerow engine", () => {
       stepGame(g);
       return g.enemies[0]!.hp;
     };
-    expect(hpAfter("scarecrow")).toBeCloseTo(1000 - TOWERS.scarecrow.damage[0] * 0.5);
-    expect(hpAfter("silo")).toBe(960);
+    // A bulldozer is heavy plant too: turnips barely dent it, grain-shot hits it extra hard.
+    expect(hpAfter("scarecrow")).toBeCloseTo(1000 - TOWERS.scarecrow.damage[0] * TOWER_VS.scarecrow!.heavy! * 0.5);
+    expect(hpAfter("silo")).toBeCloseTo(1000 - TOWERS.silo.damage[0] * TOWER_VS.silo!.heavy!);
   });
 
   it("stealth units are untouchable until a Radio Mast reveals them, and the mast marks targets", () => {
@@ -846,7 +848,7 @@ describe("hedgerow: calling waves early", () => {
     const m = game.marks;
     stepGame(game);
     expect(game.paid).toBe(2);
-    expect(game.marks).toBe(m + 2 * ENEMIES_VAN_BOUNTY + (20 + 5) + (20 + 10));
+    expect(game.marks).toBe(m + 2 * ENEMIES_VAN_BOUNTY + (14 + 3) + (14 + 6));
     expect(game.phase).toBe("build");
   });
 });
@@ -871,7 +873,7 @@ describe("hedgerow: perks", () => {
   });
 });
 
-const ENEMIES_VAN_BOUNTY = 9;
+const ENEMIES_VAN_BOUNTY = 7;
 
 
 describe("hedgerow saves", () => {

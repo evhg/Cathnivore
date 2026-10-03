@@ -1,8 +1,8 @@
 // The Almanac: Cath's field notes on every tower, specialisation, megastructure and enemy. Towers and
 // megastructures are always open; enemies and bosses unlock the first time they are met (data.seen).
 
-import { ENEMIES, MEGAS, SPECIALISATIONS, TOWERS, isBig } from "./engine";
-import type { EnemyKind, MegaId, TowerKind } from "./engine";
+import { ENEMIES, MEGAS, SPECIALISATIONS, TOWERS, TOWER_VS, enemyClass, isBig } from "./engine";
+import type { EnemyClass, EnemyKind, MegaId, TowerKind } from "./engine";
 import { enemyIcon, img, towerIcon } from "./icons";
 import type { Subject } from "./render3d/turntable";
 
@@ -89,12 +89,22 @@ function card(icon: string, title: string, text: string, stats: HTMLElement[], l
   return li;
 }
 
+const CLASS_NAME: Record<EnemyClass, string> = { light: "Light traffic", heavy: "Heavy plant", air: "Air" };
+
 function towers(): HTMLElement[] {
   const out: HTMLElement[] = [];
   for (const kind of Object.keys(TOWERS) as TowerKind[]) {
     const t = TOWERS[kind];
     const stats = [stat("Cost", String(t.cost)), stat("Range", t.range.join(" / "))];
     if (t.damage[0] > 0) stats.push(stat("Damage", t.damage.join(" / ")));
+    const vs = TOWER_VS[kind] ?? {};
+    const by = (good: boolean) =>
+      (Object.keys(vs) as EnemyClass[])
+        .filter((k) => (vs[k]! > 1) === good)
+        .map((k) => `${CLASS_NAME[k]} ×${vs[k]}`)
+        .join(", ");
+    if (by(true)) stats.push(stat("Strong vs", by(true)));
+    if (by(false)) stats.push(stat("Weak vs", by(false)));
     out.push(card(towerIcon(kind), t.name, t.blurb, stats, TOWER_LORE[kind], { tower: kind, tier: 3, spec: null }));
     SPECIALISATIONS[kind].forEach((s, i) => {
       const st = [stat("Cost", String(s.cost))];
@@ -129,6 +139,7 @@ function enemies(boss: boolean, seen: Record<string, boolean>, describe: (k: Ene
       return c;
     }
     return card(enemyIcon(k), e.name, describe(k), [
+      stat("Type", CLASS_NAME[enemyClass(k)]),
       stat("Health", String(e.hp)),
       stat("Speed", String(e.speed)),
       stat("Bounty", String(e.bounty)),

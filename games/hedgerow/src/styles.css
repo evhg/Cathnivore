@@ -786,6 +786,22 @@ button {
   color: #fff8e6;
   font-weight: 700;
 }
+/* What counters it: heavy plant wants Silos and Cannons, air wants Scarecrows and Windmills. */
+.chip-tag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff8e6;
+}
+.chip-tag.heavy {
+  background: #6b5a3a;
+}
+.chip-tag.air {
+  background: #3a5a7a;
+}
 .chip-icon {
   width: 34px;
   height: 34px;

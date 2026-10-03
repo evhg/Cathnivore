@@ -1,12 +1,16 @@
 // Endless fields: one per act, unlocked by clearing the act's boss. The field is the act's ninth level; the
 // waves are generated from the enemies that level uses, seeded by act and week so everyone gets the same run
-// for a week. Enemy health also climbs each wave (engine.ts spawnHp). Goodwill running out ends the run and
-// the best wave is kept per act (store.ts recordEndless). No stars, no rosettes, no bot tuning.
+// for a week. Enemy health compounds each wave (engine.ts spawnHp), the act boss returns every tenth wave and
+// wave pay is lean. Goodwill running out ends the run and the best wave is kept per act (store.ts
+// recordEndless). No stars, no rosettes, no bot tuning.
 
-import type { EnemyKind, Level, WaveGroup } from "./engine";
+import { isBig, type EnemyKind, type Level, type WaveGroup } from "./engine";
 import { LEVELS } from "./levels";
 
 export const ENDLESS_WAVES = 200;
+
+/** Endless wave 1 is this share of the story level's tuned enemy health. */
+export const ENDLESS_START = 0.5;
 
 /** The act's Endless field is open once its boss level (act x 10) has a star. */
 export function endlessUnlocked(stars: Record<string, number>, act: number): boolean {
@@ -32,6 +36,8 @@ export function endlessLevel(act: number, week: number): Level {
   const base = LEVELS.find((l) => l.id === act * 10 - 1)!;
   const pool: EnemyKind[] = [];
   for (const wave of base.waves) for (const g of wave) if (!pool.includes(g.enemy) && g.enemy !== "boss") pool.push(g.enemy);
+  const bossLevel = LEVELS.find((l) => l.id === act * 10);
+  const boss = bossLevel?.waves.flat().find((g) => isBig(g.enemy))?.enemy;
   const rand = rng(act * 1000 + week);
   const waves: WaveGroup[][] = [];
   for (let n = 0; n < ENDLESS_WAVES; n++) {
@@ -49,7 +55,10 @@ export function endlessLevel(act: number, week: number): Level {
         ...(base.path2 && rand() < 0.5 ? { lane: 1 as const } : {}),
       });
     }
+    // From wave 20 the act's boss comes back every tenth wave, and from wave 30 it brings company.
+    if (boss && n % 10 === 9 && n >= 19) groups.push({ enemy: boss, count: 1 + Math.floor(n / 30), gap: 4, delay: count * 2.5 });
     waves.push(groups);
   }
-  return { ...base, name: `Endless: ${base.place}`, waves, endless: true, goodwill: Math.max(base.goodwill, 15), before: [], after: [] };
+  // It opens gentler than the story level (ENDLESS_START of its tuned health), then compounds past it fast.
+  return { ...base, name: `Endless: ${base.place}`, waves, endless: true, hpScale: (base.hpScale ?? 1) * ENDLESS_START, goodwill: Math.max(base.goodwill, 15), before: [], after: [] };
 }
