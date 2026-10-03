@@ -7,6 +7,7 @@
 // Static detail is merged per material at the end of every builder (`bake`), so a richly detailed tower is
 // still only a handful of draw calls; anything the renderer animates is left as its own object.
 
+import { wornOutfit } from "../wardrobe";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { EnemyKind, MegaId, TowerKind } from "../engine";
@@ -1327,23 +1328,30 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   const fig = new THREE.Group();
   root.add(fig);
   const legs: THREE.Object3D[] = [];
+  const o = wornOutfit();
+  const trousersM = matte(o.trousers, 0.7).clone();
+  const bootsM = matte(o.boots, 0.5).clone();
+  const jacketM = matte(o.jacket, 0.7).clone();
+  const blouseM = matte(o.blouse, 0.5).clone();
+  const sleeveM = matte(o.sleeve, 0.7).clone();
+  root.userData.dress = { id: o.id, mats: { trousers: trousersM, boots: bootsM, jacket: jacketM, blouse: blouseM, sleeve: sleeveM } };
   for (const z of [-0.05, 0.05]) {
     const leg = new THREE.Group();
     leg.position.set(0, 0.24, z);
-    leg.add(box(0.06, 0.22, 0.06, matte("#3a3340", 0.7), 0, -0.24, 0));
-    leg.add(box(0.08, 0.05, 0.07, matte("#5a3a28", 0.5), 0.015, -0.26, 0));
+    leg.add(box(0.06, 0.22, 0.06, trousersM, 0, -0.24, 0));
+    leg.add(box(0.08, 0.05, 0.07, bootsM, 0.015, -0.26, 0));
     fig.add(leg);
     legs.push(leg);
   }
   // Jacket: a gently flared lathe, collar up.
   const pts = [new THREE.Vector2(0.12, 0), new THREE.Vector2(0.11, 0.1), new THREE.Vector2(0.1, 0.2), new THREE.Vector2(0.11, 0.26), new THREE.Vector2(0.05, 0.3)];
-  const jacket = mesh(new THREE.LatheGeometry(pts, 12), matte(C.olive, 0.7), 0, 0.22, 0);
+  const jacket = mesh(new THREE.LatheGeometry(pts, 12), jacketM, 0, 0.22, 0);
   fig.add(jacket);
-  fig.add(box(0.02, 0.1, 0.08, matte("#F7F0E3", 0.5), 0.1, 0.38, 0));
+  fig.add(box(0.02, 0.1, 0.08, blouseM, 0.1, 0.38, 0));
   fig.add(ball(0.012, glow("#ffe9a8", 1), 0.112, 0.44, 0.02, 0));
   const arm = new THREE.Group();
   arm.position.set(0, 0.48, 0.12);
-  arm.add(box(0.05, 0.18, 0.05, matte("#56623A", 0.7), 0, -0.14, 0));
+  arm.add(box(0.05, 0.18, 0.05, sleeveM, 0, -0.14, 0));
   const pin = cyl(0.025, 0.025, 0.26, matte("#d9b384", 0.6), 0, -0.3, 0, 8);
   pin.rotation.z = Math.PI / 2;
   pin.position.set(0.05, -0.24, 0.02);
@@ -1351,7 +1359,7 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   fig.add(arm);
   const arm2 = new THREE.Group();
   arm2.position.set(0, 0.48, -0.12);
-  arm2.add(box(0.05, 0.18, 0.05, matte("#56623A", 0.7), 0, -0.14, 0));
+  arm2.add(box(0.05, 0.18, 0.05, sleeveM, 0, -0.14, 0));
   fig.add(arm2);
   // Hair falling down her back.
   fig.add(box(0.05, 0.3, 0.2, matte("#2E211C", 0.5), -0.07, 0.32, 0));
@@ -1370,6 +1378,15 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   root.userData.arm = arm;
   root.userData.fig = fig;
   return root;
+}
+
+/** Re-colours Cath's 3D model when the wardrobe's worn outfit changes. Cheap when nothing changed. */
+export function dressCath(root: THREE.Group): void {
+  const o = wornOutfit();
+  const d = root.userData.dress as { id: string; mats: Record<"trousers" | "boots" | "jacket" | "blouse" | "sleeve", THREE.MeshStandardMaterial> } | undefined;
+  if (!d || d.id === o.id) return;
+  d.id = o.id;
+  for (const k of Object.keys(d.mats) as Array<keyof typeof d.mats>) d.mats[k].color.set(o[k]);
 }
 
 // ---- landmarks ----

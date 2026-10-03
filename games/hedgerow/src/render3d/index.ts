@@ -28,7 +28,7 @@ import {
   type TowerKind,
 } from "../engine";
 import { actLight, actMood, matte } from "./palette";
-import { buildCath, buildEnemy, buildMega, buildTower, enemyLift, enemyScale } from "./models";
+import { buildCath, dressCath, buildEnemy, buildMega, buildTower, enemyLift, enemyScale } from "./models";
 import { buildGround, type Ground } from "./terrain";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 
@@ -1134,6 +1134,7 @@ export class Renderer3D {
   private syncHero(game: Game, dt: number, t: number): void {
     const c = this.cath;
     if (!c) return;
+    dressCath(c);
     c.visible = !hasTwist(game.level, "nocath");
     if (!c.visible) return;
     const h = game.hero;

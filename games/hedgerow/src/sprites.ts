@@ -5,6 +5,7 @@
 // (STYLE.md 2).
 
 import type { EnemyKind, TowerKind } from "./engine";
+import { wornOutfit } from "./wardrobe";
 
 export const INK = "#2b2320";
 
@@ -1160,6 +1161,7 @@ export interface HeroLook {
  * rolling pin, and her face from shared/cath (passed in as an image so she always looks like herself).
  */
 export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number, t: number, face: HTMLImageElement | null): void {
+  const o = wornOutfit();
   ctx.lineWidth = lw(s);
   ctx.strokeStyle = INK;
   ctx.lineJoin = "round";
@@ -1182,8 +1184,8 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   if (look.down) {
     // Sitting on the verge, catching her breath.
     ctx.scale(look.facing, 1);
-    rr(ctx, -s * 0.16, -s * 0.12, s * 0.28, s * 0.1, s * 0.04, "#3a3340");
-    rr(ctx, -s * 0.13, -s * 0.38, s * 0.24, s * 0.28, s * 0.07, "#6E7C4B");
+    rr(ctx, -s * 0.16, -s * 0.12, s * 0.28, s * 0.1, s * 0.04, o.trousers);
+    rr(ctx, -s * 0.13, -s * 0.38, s * 0.24, s * 0.28, s * 0.07, o.jacket);
     if (face) ctx.drawImage(face, -s * 0.19, -s * 0.72, s * 0.36, s * 0.43);
     for (let i = 0; i < 3; i++) {
       const a = t * 3 + (i * Math.PI * 2) / 3;
@@ -1199,7 +1201,7 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   const walk = look.walking ? Math.sin(t * 12) : 0;
   const bounce = look.walking ? Math.abs(Math.sin(t * 12)) * s * 0.03 : Math.sin(t * 2) * s * 0.006;
   // Legs and boots.
-  ctx.strokeStyle = "#3a3340";
+  ctx.strokeStyle = o.trousers;
   ctx.lineWidth = Math.max(2, s * 0.06);
   ctx.beginPath();
   ctx.moveTo(-s * 0.04, -s * 0.2 - bounce);
@@ -1207,7 +1209,7 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   ctx.moveTo(s * 0.04, -s * 0.2 - bounce);
   ctx.lineTo(s * 0.04 + walk * s * 0.05, -s * 0.03);
   ctx.stroke();
-  ctx.fillStyle = "#5a3a28";
+  ctx.fillStyle = o.boots;
   ctx.strokeStyle = INK;
   ctx.lineWidth = lw(s) * 0.8;
   for (const lx of [-0.04 - walk * 0.05, 0.04 + walk * 0.05]) {
@@ -1219,7 +1221,7 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   ctx.lineWidth = lw(s);
   // Blazer, with the cream blouse at the neck and a leaf brooch.
   ctx.translate(0, -bounce);
-  ctx.fillStyle = "#6E7C4B";
+  ctx.fillStyle = o.jacket;
   ctx.beginPath();
   ctx.moveTo(-s * 0.13, -s * 0.18);
   ctx.lineTo(-s * 0.11, -s * 0.44);
@@ -1228,14 +1230,14 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = "#F7F0E3";
+  ctx.fillStyle = o.blouse;
   ctx.beginPath();
   ctx.moveTo(-s * 0.04, -s * 0.47);
   ctx.lineTo(0, -s * 0.34);
   ctx.lineTo(s * 0.04, -s * 0.47);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "#86AC5B";
+  ctx.fillStyle = o.brooch;
   ctx.beginPath();
   ctx.ellipse(-s * 0.07, -s * 0.36, s * 0.022, s * 0.012, -0.6, 0, Math.PI * 2);
   ctx.fill();
@@ -1245,7 +1247,7 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   ctx.save();
   ctx.translate(s * 0.1, -s * 0.4);
   ctx.rotate(-0.4 + sw * 1.6 - th * 1.2 + Math.sin(t * 2) * 0.03);
-  ctx.strokeStyle = "#56623A";
+  ctx.strokeStyle = o.sleeve;
   ctx.lineWidth = Math.max(2, s * 0.06);
   ctx.beginPath();
   ctx.moveTo(0, 0);

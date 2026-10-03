@@ -27,6 +27,8 @@ export interface SaveData {
   heroic?: Record<string, boolean>;
   /** Cath's character sheet: attributes and talents (cath.ts). Optional in old saves. */
   cath?: CathSave;
+  /** The wardrobe outfit she is wearing (wardrobe.ts). Optional in old saves. */
+  outfit?: string;
 }
 
 const KEY = "hedgerow:v1";
@@ -54,6 +56,7 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.endless ?? {})) if (typeof v === "number" && v >= 1) (data.endless ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
       if (obj.cath) data.cath = parseCath(obj.cath);
+      if (typeof obj.outfit === "string") data.outfit = obj.outfit.slice(0, 20);
       for (const [k, v] of Object.entries(obj.bank ?? {})) {
         const perk = PERKS.find((p) => p.id === k);
         if (perk && typeof v === "number" && v >= 1) data.bank[k] = Math.min(perk.costs.length, Math.floor(v));

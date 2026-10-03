@@ -90,6 +90,7 @@ import { dailyLevel, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
+import { OUTFITS, outfitFor, wear } from "./wardrobe";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
 import { FINALE } from "./story/acts6to10";
@@ -218,6 +219,7 @@ const NAMES: Record<StoryLine["who"], string> = {
 const cath = (expression: CathExpression) => cathSvg({ framing: "face", expression, animate: true });
 
 const data = load();
+wear(outfitFor(data));
 ui.hostFace.innerHTML = cath("smirk");
 ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined" });
 
@@ -1775,6 +1777,42 @@ function renderCathButton(): void {
   if (!ui.cathBtnFace.innerHTML) ui.cathBtnFace.innerHTML = cathSvg({ framing: "face", expression: "smirk" });
 }
 
+function renderWardrobe(): void {
+  const box = $<HTMLElement>("cath-wardrobe");
+  box.replaceChildren();
+  const h = document.createElement("h3");
+  h.className = "rosette-head";
+  h.textContent = "Wardrobe";
+  const row = document.createElement("div");
+  row.className = "wardrobe";
+  const on = outfitFor(data);
+  for (const o of OUTFITS) {
+    const ok = o.unlocked(data);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `outfit${o === on ? " picked" : ""}`;
+    b.disabled = !ok;
+    b.setAttribute("aria-pressed", String(o === on));
+    const sw = document.createElement("span");
+    sw.className = "outfit-swatch";
+    sw.style.background = ok ? `linear-gradient(135deg, ${o.jacket} 55%, ${o.boots} 55%)` : "#9a958c";
+    const n = document.createElement("strong");
+    n.textContent = ok ? o.name : "Locked";
+    const d = document.createElement("small");
+    d.textContent = ok ? "" : o.how;
+    b.append(sw, n, d);
+    b.onclick = () => {
+      data.outfit = o.id;
+      wear(o);
+      save(data);
+      sfx.playUpgrade();
+      renderWardrobe();
+    };
+    row.append(b);
+  }
+  box.append(h, row);
+}
+
 function renderCath(): void {
   const { c, level, into, need, xp } = cathState();
   ui.cathPortrait.innerHTML ||= cath("delighted");
@@ -1814,6 +1852,7 @@ function renderCath(): void {
     li.append(text, b);
     ui.cathAttrs.append(li);
   }
+  renderWardrobe();
   ui.cathTalents.replaceChildren();
   const head = document.createElement("h3");
   head.className = "rosette-head";
