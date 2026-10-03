@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
+import { LEVELS } from '../games/hedgerow/src/levels'
+import { NO_PERKS } from '../games/hedgerow/src/engine'
+import { Recorder, encodeReplay, startGame } from '../games/hedgerow/src/replay'
 import AxeBuilder from '@axe-core/playwright'
 import { dailyPuzzle, tapsToSolve, utcDateString } from '../games/runnel/src/engine'
 
@@ -299,6 +302,27 @@ test.describe('Hedgerow', () => {
     await page.locator('button.level[data-level="1"]').click()
     await expect(page.locator('#hud-wave')).toHaveText('0/5')
     await page.waitForTimeout(1500)
+    expect(errors).toEqual([])
+  })
+
+  test('a shared replay link plays the run back', async ({ page }) => {
+    const errors = trackErrors(page)
+    const setup = { mode: 'level' as const, id: 1, heroic: false, perks: NO_PERKS }
+    const rec = new Recorder(setup)
+    const g = startGame(LEVELS[0]!, setup)
+    rec.act(g, { t: 'place', kind: 'scarecrow', col: 0, row: 0 })
+    rec.act(g, { t: 'wave' })
+    for (let i = 0; i < 240; i++) rec.step(g)
+    const link = await encodeReplay(rec.replay())
+    await page.goto(HEDGEROW_2D)
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars: {}, seenBefore: { '1': true }, tips: { build: true } })))
+    await page.goto(`${HEDGEROW_2D}#replay=${link}`)
+    await page.reload()
+    await expect(page.locator('#replay-bar')).toBeVisible()
+    await expect(page.locator('#hud-title')).toContainText('Replay')
+    await expect(page.locator('#hud-wave')).toHaveText('1/5', { timeout: 10_000 })
+    await page.locator('#replay-exit').click()
+    await expect(page.locator('#screen-select')).toBeVisible()
     expect(errors).toEqual([])
   })
 

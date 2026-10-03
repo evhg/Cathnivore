@@ -162,6 +162,11 @@
           </div>
           <div class="intro" id="intro" hidden></div>
           <p class="paused-note" id="paused-note" hidden>Paused</p>
+          <div class="replay-bar" id="replay-bar" hidden>
+            <span class="replay-tag">Replay</span>
+            <span class="replay-track" aria-hidden="true"><span id="replay-fill"></span></span>
+            <button class="btn btn-quiet" type="button" id="replay-exit">Leave</button>
+          </div>
           <div class="duel" id="duel" hidden>
             <p class="eyebrow">One on one</p>
             <strong class="duel-title" id="duel-title">Cath vs the boss</strong>
@@ -251,6 +256,10 @@
         <button class="btn btn-quiet" type="button" id="result-secondary">
           All levels
         </button>
+      </div>
+      <div class="replay-actions">
+        <button class="btn btn-quiet" type="button" id="result-watch">Watch the replay</button>
+        <button class="btn btn-quiet" type="button" id="result-share">Copy replay link</button>
       </div>
     </dialog>
 

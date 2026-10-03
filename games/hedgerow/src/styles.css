@@ -2008,3 +2008,62 @@ button {
 .alm-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.8rem; }
 .alm-lore { display: block; margin-top: 4px; font-style: italic; opacity: 0.8; }
 @media (max-width: 520px) { .almanac-btn .bank-word { display: none; } }
+
+/* ---- replays ---- */
+.replay-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.replay-actions .btn {
+  min-height: 40px;
+  font-size: 14px;
+}
+.replay-bar {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 14px;
+  border-radius: 999px;
+  background: rgba(30, 22, 18, 0.82);
+  color: #fff6e6;
+  z-index: 4;
+  width: min(90%, 420px);
+}
+.replay-bar[hidden] {
+  display: none;
+}
+.replay-tag {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: #f2c94c;
+}
+.replay-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+.replay-track span {
+  display: block;
+  height: 100%;
+  width: calc(var(--p, 0) * 100%);
+  background: #f2c94c;
+}
+.replay-bar .btn {
+  min-height: 36px;
+  padding: 0 12px;
+}
+.watching .controls,
+.watching .panel {
+  display: none;
+}
