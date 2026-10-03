@@ -1,7 +1,7 @@
 // Portraits for Hedgerow's cast beside Cath (who comes from shared/cath): Mara, the bean farmer in her
 // sixties; Bea, Cath's daughter, six; Tomas, the union man who runs the Highmoor market; Sol, who
 // broadcasts from a radio mast; Ines, who runs the clinic tent; Pip, the young inventor; and the other
-// side: Pell the politician, Mr Crisp the discount king and Dr Vane of the wellness division. Marrow
+// side: Pell the politician, Mr Crisp the discount king and Dr Octavia Vane of the wellness division. Marrow
 // itself, the narrator, is a hedgerow badge.
 //
 // Same drawing language as Cath (owner feedback 2026-10-03: "the art is simplistic"): storybook cel
@@ -610,40 +610,44 @@ ${brush([58, 96], [62, 89], [68, 87], 0.3, 1.4, 0.3, "#FFFFFF", 0.6)}${brush([86
 }
 
 function vane(k: Kit): string {
-  // Dr Vane of the wellness division: a slick platinum undercut, rimless glasses, flawless pale skin, a
-  // practised thin smile, a black mock-neck under a crisp white coat with a glowing teal clinic badge and
-  // a sleek earpiece. Over-lit and clinical, with the cold rim.
+  // Dr Octavia Vane of the wellness division (docs/design/hedgerow-v2.md section 4: elegant, never
+  // technically lies): a sleek platinum chignon with a deep side part, rimless glasses, diamond studs,
+  // subtle rose lipstick and a composed half-smile; a black mock-neck under a tailored white coat with the
+  // glowing teal Candor clinic badge. Over-lit and clinical, with the cold rim.
   const coat = k.linear([[0, "#FFFFFF"], [0.6, "#EEF2F6"], [1, "#C9D2DC"]], 1, 0.3);
-  const coatD = vee(TORSO.man, 184);
+  const coatD = vee(TORSO.woman, 184);
   const lapel = (f: 1 | -1) => {
     const x = (v: number) => 80 + (v - 80) * f;
-    return `M${x(70)} 138 L${x(54)} 152 L${x(60)} 158 L${x(52)} 162 L80 184 Z`;
+    return `M${x(68)} 140 L${x(55)} 152 L${x(61)} 157 L${x(53)} 161 L80 184 Z`;
   };
-  const sides = "M50 94 C46 76 50 62 58 54 L62 72 C56 78 52 86 50 94 Z M110 94 C114 76 110 62 102 54 L98 72 C104 78 108 86 110 94 Z";
-  const top = "M50 84 C44 52 62 34 86 35 C106 36 120 50 113 76 C110 66 104 60 96 58 C88 63 78 64 70 70 C63 74 56 77 50 84 Z";
-  return `${k.cloth(coatD, coat, "#6A7888", "#9AA8B8", "", 0.5)}
-<path fill="#16181C" d="M66 138 L80 184 L94 138 Z"/>
-${k.neck(118, 140)}
-<path fill="${k.linear([[0, "#2A2E36"], [0.6, "#16181C"], [1, "#0A0B0D"]], 1, 0)}" stroke="#000000" stroke-width="1.2" d="M68 124 C74 130 86 130 92 124 L94 142 C86 148 74 148 66 142 Z"/>
-${brush([70, 128], [70, 136], [69, 142], 0.3, 1.4, 0.3, "#5A6270", 0.8)}
+  const top =
+    "M50 92 C44 56 60 36 84 36 C104 36 118 52 110 92 C108 78 106 70 101 64 C97 59 93 56 92 51 C84 60 70 62 60 69 C55 75 52 83 50 92 Z";
+  const bun = "M104 100 C108 90 124 92 124 106 C124 118 110 122 104 114 Z";
+  return `${k.hair(bun, "#D6DBE4", "#8E95A1", "#FFFFFF", [[[108, 98], [116, 96], [121, 104], 1.6], [[106, 108], [114, 112], [121, 110], 1.4]])}
+${k.cloth(coatD, coat, "#6A7888", "#9AA8B8", "", 0.5)}
+<path fill="#16181C" d="M68 140 L80 184 L92 140 Z"/>
+${k.neck(118, 142)}
+<path fill="${k.linear([[0, "#2A2E36"], [0.6, "#16181C"], [1, "#0A0B0D"]], 1, 0)}" stroke="#000000" stroke-width="1.2" d="M69 126 C74 131 86 131 91 126 L93 142 C86 147 74 147 67 142 Z"/>
+${brush([71, 129], [71, 136], [70, 142], 0.3, 1.3, 0.3, "#5A6270", 0.8)}
 <path fill="#8A98A8" opacity="0.5" transform="translate(-1.5 2.5)" d="${lapel(1)}"/><path fill="#6A7888" opacity="0.6" transform="translate(-1.5 2.5)" d="${lapel(-1)}"/>
 <path fill="${coat}" stroke="#6A7888" stroke-width="1.3" stroke-linejoin="round" d="${lapel(1)}"/><path fill="${coat}" stroke="#6A7888" stroke-width="1.3" stroke-linejoin="round" d="${lapel(-1)}"/>
-<path fill="none" stroke="#9AA8B8" stroke-width="1" d="M110 166 L128 166"/><rect x="114" y="156" width="2.4" height="11" rx="1" fill="#C9D2DC" stroke="#6A7888" stroke-width="0.6"/>
-<circle cx="44" cy="166" r="7" fill="#0E2A2E"/><circle cx="44" cy="166" r="5.6" fill="none" stroke="#3EE0D0" stroke-width="1.4"/><path d="M44 162.4 V169.6 M40.4 166 H47.6" stroke="#9AFFF4" stroke-width="1.6"/>
-<circle cx="44" cy="166" r="9" fill="#3EE0D0" opacity="0.18"/>
-${k.ears(96)}
-<path fill="#F4F6F8" stroke="#6A7888" stroke-width="0.9" d="M106 92 C110 90 112 94 110 98 L107 99 Z"/><circle cx="109.5" cy="94" r="0.9" fill="#3EE0D0"/>
-${k.face(FACE.long, `<path fill="${k.s.shade}" opacity="0.7" transform="translate(1 4)" d="${top}"/>`)}
-${k.blush(105, 0.3)}
-${k.eyes(93, "#5A6B8A", "cool")}
-${k.brows(82, "#A8AEB8", 2, [0, -1.5, 0.5], [-0.5, -2.5, 0.5])}
+${brush([58, 152], [68, 164], [78, 180], 0.3, 1.3, 0.3, COOL_RIM, 0.7)}
+<path fill="none" stroke="#9AA8B8" stroke-width="1" d="M106 168 L124 168"/><rect x="110" y="158" width="2.4" height="11" rx="1" fill="#C9D2DC" stroke="#6A7888" stroke-width="0.6"/>
+<circle cx="46" cy="168" r="9" fill="#3EE0D0" opacity="0.18"/>
+<circle cx="46" cy="168" r="7" fill="#0E2A2E"/><circle cx="46" cy="168" r="5.6" fill="none" stroke="#3EE0D0" stroke-width="1.4"/><path d="M46 164.4 V171.6 M42.4 168 H49.6" stroke="#9AFFF4" stroke-width="1.6"/>
+${k.ears(96, "#F8FBFF")}
+${brush([46.5, 105.4], [48.5, 106.2], [50.5, 105.4], 0.2, 0.8, 0.2, "#FFFFFF")}${brush([104.5, 105.4], [106.5, 106.2], [108.5, 105.4], 0.2, 0.8, 0.2, "#FFFFFF")}
+${k.face(FACE.oval, `<path fill="${k.s.shade}" opacity="0.7" transform="translate(1 4)" d="${top}"/>`)}
+${k.blush(106, 0.35)}
+${k.eyes(93, "#5A6B8A", "cool", true)}
+${k.brows(81, "#9CA3AE", 1.9, [1.5, -3, 0.5], [0.5, -4, 0.5])}
 ${k.nose(93, "pointed")}
-${k.closedMouth(121, 8, 1.6, "#B88480", 0.8, 1.6, -0.6)}
-${k.hair(sides, "#8A8F99", "#5A606A", "#B8BEC8", [], false)}
+${k.closedMouth(121, 8, 1.2, "#B4596A", 1.3, 2.4, -0.7)}
 ${k.hair(top, "#DDE2EA", "#9198A4", "#FFFFFF", [
-    [[54, 76], [66, 50], [100, 42], 2.4], [[60, 72], [78, 52], [106, 50], 1.8], [[66, 70], [86, 58], [108, 62], 1.4],
-    [[58, 64], [70, 44], [92, 40], 1.6], [[72, 66], [90, 58], [104, 58], 1.2], [[52, 80], [56, 64], [66, 54], 1.2],
+    [[92, 52], [70, 56], [54, 80], 2.4], [[90, 48], [66, 50], [52, 70], 1.8], [[94, 54], [80, 62], [60, 70], 1.4],
+    [[92, 46], [102, 46], [108, 64], 1.8], [[96, 52], [104, 58], [108, 78], 1.2], [[88, 42], [72, 42], [58, 54], 1.2],
   ])}
+${brush([92, 51], [91, 44], [88, 38], 0.4, 1, 0.2, "#8E95A1", 0.7)}
 <g fill="none" stroke="#B8C2CE" stroke-width="1" opacity="0.9"><rect x="56" y="86" width="21" height="14" rx="5"/><rect x="83" y="86" width="21" height="14" rx="5"/></g>
 <path fill="none" stroke="#8A96A4" stroke-width="1.2" d="M77 91 L83 91 M56 90 L50 88 M104 90 L108 88"/>
 ${brush([59, 97], [61, 90], [66, 88], 0.3, 1.2, 0.3, "#FFFFFF", 0.8)}${brush([86, 97], [88, 90], [93, 88], 0.3, 1.2, 0.3, "#FFFFFF", 0.8)}`;
