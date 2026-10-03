@@ -206,6 +206,8 @@ function leafMaterial(): THREE.Material {
   return leafMat;
 }
 
+let dustGeo: THREE.BufferGeometry | null = null;
+
 interface Timed {
   obj: THREE.Object3D;
   age: number;
@@ -282,6 +284,33 @@ export class Transients {
         m.setMatrixAt(i, mx);
       }
       m.instanceMatrix.needsUpdate = true;
+    });
+  }
+
+  /** A puff of dust rolling out from the base of something just built. One draw call. */
+  dust(x: number, y: number, z: number, radius: number, color: string, n = 10, life = 0.7): void {
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 1, transparent: true, opacity: 0.7, depthWrite: false, flatShading: true });
+    dustGeo ??= sharedGeometry(new THREE.IcosahedronGeometry(1, 0));
+    const m = new THREE.InstancedMesh(dustGeo, mat, n);
+    m.frustumCulled = false;
+    m.position.set(x, y, z);
+    const seeds = Array.from({ length: n }, (_, i) => [(i / n) * Math.PI * 2 + Math.random() * 0.4, 0.7 + Math.random() * 0.6, Math.random()] as const);
+    const mx = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const pv = new THREE.Vector3();
+    const sv = new THREE.Vector3();
+    this.add(m, life, (k) => {
+      const out = 1 - (1 - k) * (1 - k) * (1 - k);
+      for (let i = 0; i < n; i++) {
+        const [a, sp, ph] = seeds[i]!;
+        const r = radius * (0.55 + 0.6 * out * sp);
+        pv.set(Math.cos(a) * r, 0.03 + out * 0.12 * (0.5 + ph), Math.sin(a) * r);
+        const sc = radius * (0.12 + 0.2 * out) * (0.7 + ph * 0.6);
+        mx.compose(pv, q, sv.set(sc, sc * 0.7, sc));
+        m.setMatrixAt(i, mx);
+      }
+      m.instanceMatrix.needsUpdate = true;
+      mat.opacity = 0.7 * (1 - k) * (1 - k);
     });
   }
 

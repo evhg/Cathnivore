@@ -321,6 +321,8 @@ const SPEC_RING = ["#e0503a", "#3f8fe0"];
 /** The plinth every tower stands on; its rim shows the tier (wood, silver, gold) or the specialisation (glowing). */
 function plinth(tier: number, spec: 0 | 1 | null): THREE.Group {
   const g = group(cyl(0.4, 0.44, 0.08, matte(C.stoneDark, 0.95), 0, 0, 0, 12), cyl(0.37, 0.4, 0.012, matte(C.stone, 0.95), 0, 0.075, 0, 12));
+  // Named, so bake() merges it on its own: the renderer lays it first when the tower is built.
+  g.name = "plinth";
   const rim =
     tier === 4 && spec !== null ? glow(SPEC_RING[spec]!, 1.6) : tier >= 2 ? metal(TIER_RING[tier - 1]!, 0.3) : matte(TIER_RING[0]!);
   g.add(ring(0.42, 0.03, rim, 0, 0.08, 0, 24));
@@ -1333,8 +1335,14 @@ const SKIN = "#F7DCCB";
  */
 function hairLock(len: number, width: number, thick: number, wave: number, curl: number, shine = 0.22): THREE.BufferGeometry {
   return geo(`hairlock${len},${width},${thick},${wave},${curl},${shine}`, () => {
-    const g = new THREE.CylinderGeometry(1, 0.45, len, 10, 8, false);
-    g.translate(0, -len / 2, 0);
+    // A lathe profile: rounded over the crown, full through the length, tapering to a soft tip.
+    const prof: THREE.Vector2[] = [];
+    for (let i = 0; i <= 10; i++) {
+      const k = i / 10;
+      const r = k < 0.12 ? Math.sqrt(Math.max(0.0001, k / 0.12)) : k > 0.94 ? 0.45 * Math.sqrt(Math.max(0, (1 - k) / 0.06)) : 1 - 0.55 * ((k - 0.12) / 0.82);
+      prof.push(new THREE.Vector2(Math.max(0.001, r), -k * len));
+    }
+    const g = new THREE.LatheGeometry(prof.reverse(), 10);
     const pos = g.attributes.position as THREE.BufferAttribute;
     const col = new Float32Array(pos.count * 3);
     const base = new THREE.Color(HAIR.base);
@@ -1401,7 +1409,7 @@ function cathArm(sleeveM: M, cuffM: M, skinM: M): { shoulder: THREE.Group; elbow
 /**
  * Cath: an olive field jacket over a cream blouse, slim trousers, boots, a rolling pin; her head is her
  * portrait. She faces +X. The renderer animates `arm`/`elbow`/`wrist` (the rolling-pin arm), `arm2`/`elbow2`
- * (the free arm, which throws the pies), `legs`, `hair` (layers of her long back hair, each on its own pivot
+ * (the free arm, which throws the pies; `pie` is the one in its hand), `legs`, `hair` (layers of her long back hair, each on its own pivot
  * so they sway out of step) and `locks` (the front locks framing her face).
  */
 export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
@@ -1443,6 +1451,12 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   const left = cathArm(sleeveM, jacketM, skinM);
   left.shoulder.position.set(0, 0.47, -0.115);
   fig.add(left.shoulder);
+  // The pie in her free hand, shown while she winds up to throw it.
+  const pie = group(cyl(0.05, 0.042, 0.022, matte("#e0b26a", 0.7), 0, 0, 0, 12), scaled(ball(0.04, matte("#fff6e0", 0.5, false), 0, 0.02, 0, 1), 1, 0.55, 1));
+  pie.position.set(0, -0.035, 0);
+  pie.rotation.x = Math.PI / 2;
+  pie.visible = false;
+  left.hand.add(pie);
   // Long, centre-parted hair falling down her back in three layers, each hung from its own pivot at the nape
   // so they sway out of step; the top layer carries the leaf clip.
   const hair: THREE.Group[] = [];
@@ -1459,21 +1473,23 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   layer(-0.11, 0.63, hairLock(0.38, 0.092, 0.05, 0.016, 0.035, 0.2), -0.065);
   const top = layer(-0.12, 0.64, hairLock(0.31, 0.078, 0.04, 0.014, 0.045, 0.24), -0.085);
   const clip = leafClip();
-  clip.position.set(-0.035, -0.08, 0.07);
-  clip.rotation.set(0.5, 0, 0.35);
+  // The clip gathers the top layer low on her back, on the side the camera sees.
+  clip.position.set(-0.08, -0.2, 0.06);
+  clip.rotation.set(0, Math.PI / 2, 0.35);
   top.add(clip);
   // Front locks: they fall from under her portrait over her shoulders, framing her face.
   const locks: THREE.Group[] = [];
   for (const z of [-0.06, 0.06]) {
     const p = new THREE.Group();
-    p.position.set(0.15, 0.62, z);
-    p.add(mesh(hairLock(0.27, 0.034, 0.042, 0.008, -0.015, 0.3), hairMaterial(), 0, 0, 0));
+    p.position.set(0.155, 0.6, z);
+    p.add(mesh(hairLock(0.36, 0.036, 0.045, 0.01, -0.02, 0.3), hairMaterial(), 0, 0, 0));
     fig.add(p);
     locks.push(p);
   }
   // Her face, always turned to the camera.
   if (faceTexture) {
-    const head = new THREE.Sprite(new THREE.SpriteMaterial({ map: faceTexture, transparent: true }));
+    // A touch under white, so her skin stays below the bloom threshold and doesn't glow.
+    const head = new THREE.Sprite(new THREE.SpriteMaterial({ map: faceTexture, transparent: true, color: "#e4e4e4" }));
     head.scale.set(0.42, 0.5, 1);
     head.position.set(0, 0.72, 0);
     root.add(head);
@@ -1482,6 +1498,14 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   fig.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
+  // Merge each limb segment's static pieces per material (fewer draw calls), keeping the joints movable.
+  root.updateMatrixWorld(true);
+  for (const a of [right, left]) {
+    mergeUnder(a.shoulder, new Set([a.elbow]));
+    mergeUnder(a.elbow, new Set([a.hand]));
+    mergeUnder(a.hand, new Set([pie]));
+  }
+  mergeUnder(pin, new Set());
   Object.assign(root.userData, {
     legs,
     fig,
@@ -1493,6 +1517,7 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
     hair,
     hairVel: hair.map(() => 0),
     locks,
+    pie,
   });
   return root;
 }

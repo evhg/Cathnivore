@@ -38,8 +38,25 @@ interface TowerView {
   obj: THREE.Group;
   sig: string;
   fired: number;
+  /** Seconds since it was built or upgraded. */
   pop: number;
+  /** The build-up in progress (null once it has finished, or with reduced motion). */
+  build: BuildUp | null;
 }
+
+/** A tower going up: the plinth is laid, then its parts rise into place from the bottom up. */
+interface BuildUp {
+  plinth: THREE.Object3D | null;
+  parts: Array<{ o: THREE.Object3D; y: number; s: THREE.Vector3; delay: number }>;
+  /** When the last part is in place. */
+  end: number;
+}
+
+/** How long each part of a tower takes to rise into place, and the spread of their start times. */
+const RISE = 0.24;
+const RISE_SPREAD = 0.22;
+/** How long the plinth takes to settle (parts start rising once it's down, unless it's an upgrade). */
+const PLINTH = 0.12;
 
 interface EnemyView {
   obj: THREE.Group;
@@ -75,8 +92,11 @@ interface ShotKit {
   drop: THREE.Material;
 }
 
-/** Cath's pose: rolling-pin shoulder, elbow, wrist; free shoulder, elbow; body lean (radians). */
-type Pose = [number, number, number, number, number, number];
+/** Cath's pose: rolling-pin shoulder, elbow, wrist; free shoulder, elbow; body lean; body twist (radians). */
+type Pose = [number, number, number, number, number, number, number];
+
+/** Seconds into Cath's throw when the pie leaves her hand. */
+const HERO_PIE_RELEASE = 0.15;
 
 /** How long a hit flash lasts, in seconds. */
 const FLASH = 0.07;
@@ -483,7 +503,9 @@ export class Renderer3D {
     const v = this.towers.get(id);
     if (v) v.pop = 0;
     const y = this.height(col + 0.5, row + 0.5);
-    this.debris.emit(col + 0.5, y + 0.05, row + 0.5, ["#8a6a43", "#6b4a2b", "#b48a5a"], upgrade ? 6 : 12, 0.05, 1.6);
+    // Wood and stone chips, and dust rolling out from the plinth as it goes down.
+    this.debris.emit(col + 0.5, y + 0.05, row + 0.5, ["#8a6a43", "#9a9183", "#6b4a2b", "#c8bfae", "#b48a5a"], upgrade ? 6 : 12, 0.05, 1.6);
+    if (!this.reducedMotion) this.fx.dust(col + 0.5, y, row + 0.5, upgrade ? 0.45 : 0.6, "#cdbb98", upgrade ? 7 : 11);
     this.sparks.emit(col + 0.5, y + 0.3, row + 0.5, upgrade ? "#ffd76a" : "#fff6d6", upgrade ? 24 : 10, 2, 0.12, 0.6, -2);
     if (upgrade) this.fx.ring(col + 0.5, y + 0.05, row + 0.5, "#ffd76a", 0.9);
   }
@@ -551,7 +573,13 @@ export class Renderer3D {
           cream.position.y = 0.03;
           pie.add(crust, cream);
           this.heroPie = 0;
-          this.fx.add(pie, 0.4, (k) => {
+          // It leaves her hand as her arm comes over (HERO_PIE_RELEASE s in), from in front of her shoulder.
+          from.x += h.facing * 0.3;
+          pie.visible = false;
+          const lead = HERO_PIE_RELEASE / (HERO_PIE_RELEASE + 0.4);
+          this.fx.add(pie, HERO_PIE_RELEASE + 0.4, (kk) => {
+            const k = Math.max(0, (kk - lead) / (1 - lead));
+            pie.visible = kk >= lead;
             pie.position.lerpVectors(from, to, k);
             pie.position.y += Math.sin(k * Math.PI) * 1.4;
             pie.rotation.x = k * 8;
@@ -970,7 +998,8 @@ export class Renderer3D {
           obj.position.set(tw.col + 0.5, this.height(tw.col + 0.5, tw.row + 0.5), tw.row + 0.5);
         }
         this.dynamic.add(obj);
-        v = { obj, sig, fired: 9, pop: v ? 0 : 0 };
+        obj.scale.setScalar(obj.userData.scale as number);
+        v = { obj, sig, fired: 9, pop: 0, build: this.reducedMotion ? null : this.buildUp(obj, !!v) };
         this.towers.set(tw.id, v);
       }
       this.animateTower(game, tw, v, dt, t);
@@ -987,10 +1016,7 @@ export class Renderer3D {
     v.fired += dt;
     v.pop += dt;
     const ud = v.obj.userData;
-    // Pop in when built or upgraded.
-    const p = Math.min(1, v.pop / 0.35);
-    const s = p < 1 ? 0.6 + Math.sin(p * Math.PI * 0.75) * 0.5 : 1;
-    v.obj.scale.setScalar(((ud.scale as number | undefined) ?? 1.22) * (this.reducedMotion ? 1 : Math.min(1.15, s)));
+    if (v.build && !this.animateBuild(v.build, v.pop)) v.build = null;
     // Turn to the latest target.
     const turret = ud.turret as THREE.Group | undefined;
     const target = this.lastTarget(game, tw);
@@ -1030,6 +1056,45 @@ export class Renderer3D {
       this.sparks.emit(v.obj.position.x, v.obj.position.y + 0.9, v.obj.position.z, (tw.out ?? 0) > 0 ? "#b0b4bc" : "#ff9ad0", 1, 0.6, 0.12, 0.6, 0.5);
     if (game.rallyLeft > 0 && Math.random() < dt * 5)
       this.sparks.emit(v.obj.position.x, v.obj.position.y + 0.2, v.obj.position.z, "#ffd76a", 1, 1, 0.1, 0.6, 1.5);
+  }
+
+  /** Plans a tower's build-up: its parts (merged meshes and moving pieces) rise in order of height. */
+  private buildUp(obj: THREE.Group, upgrade: boolean): BuildUp {
+    const plinth = upgrade ? null : (obj.children.find((c) => c.name === "plinth") ?? null);
+    obj.updateMatrixWorld(true);
+    const box = new THREE.Box3();
+    const items = obj.children
+      .filter((c) => c.name !== "plinth")
+      .map((o) => {
+        box.setFromObject(o);
+        return { o, y: o.position.y, s: o.scale.clone(), h: box.isEmpty() ? 0 : (box.min.y + box.max.y) / 2 };
+      });
+    const lo = Math.min(...items.map((i) => i.h));
+    const hi = Math.max(...items.map((i) => i.h));
+    const start = upgrade ? 0 : PLINTH * 0.7;
+    const parts = items.map((i) => ({ o: i.o, y: i.y, s: i.s, delay: start + (hi > lo ? (i.h - lo) / (hi - lo) : 0) * RISE_SPREAD }));
+    const b: BuildUp = { plinth, parts, end: start + RISE_SPREAD + RISE };
+    this.animateBuild(b, 0);
+    return b;
+  }
+
+  /** Poses a build-up at time p; false once it has finished (everything is back exactly where it was built). */
+  private animateBuild(b: BuildUp, p: number): boolean {
+    const done = p >= b.end;
+    if (b.plinth) {
+      const q = done ? 1 : Math.min(1, p / PLINTH);
+      const e = 1 - (1 - q) * (1 - q);
+      b.plinth.scale.set(0.75 + 0.25 * e, Math.max(0.001, e), 0.75 + 0.25 * e);
+    }
+    for (const it of b.parts) {
+      const q = done ? 1 : Math.max(0, Math.min(1, (p - it.delay) / RISE));
+      // Ease out with a little overshoot, so each part lands with a bounce.
+      const c = 1.6;
+      const e = q <= 0 ? 0 : 1 + (c + 1) * (q - 1) ** 3 + c * (q - 1) ** 2;
+      it.o.scale.set(it.s.x * Math.max(0.001, 0.55 + 0.45 * e), it.s.y * Math.max(0.001, e), it.s.z * Math.max(0.001, 0.55 + 0.45 * e));
+      it.o.position.y = it.y - (1 - Math.min(1, e)) * 0.12;
+    }
+    return !done;
   }
 
   private targets = new Map<number, { x: number; y: number }>();
@@ -1185,11 +1250,13 @@ export class Renderer3D {
     const fig = ud.fig as THREE.Group;
     const head = ud.head as THREE.Sprite | undefined;
     const legs = ud.legs as THREE.Object3D[];
-    fig.rotation.y = h.facing === 1 ? 0 : Math.PI;
+    // Mirrored, not turned, to face left: her rolling-pin arm is always the one nearer the camera.
+    fig.scale.x = h.facing;
+    fig.rotation.y = 0;
     this.heroSwung += dt;
     this.heroPie += dt;
     if (h.down > 0) {
-      fig.rotation.z = -1.2;
+      fig.rotation.set(0, 0, -1.2 * h.facing);
       fig.position.y = 0.1;
       if (head) {
         head.position.set(0, 0.28, 0);
@@ -1199,7 +1266,7 @@ export class Renderer3D {
       this.swayHair(ud, dt, 0, t);
       return;
     }
-    const [sh, el, wr, sh2, el2, lean] = this.heroPose(game, t, walking);
+    const [sh, el, wr, sh2, el2, lean, twist] = this.heroPose(game, t, walking);
     const arm = ud.arm as THREE.Object3D;
     arm.rotation.set(-0.08, 0, sh);
     (ud.elbow as THREE.Object3D).rotation.z = el;
@@ -1208,8 +1275,10 @@ export class Renderer3D {
     (ud.elbow2 as THREE.Object3D).rotation.z = el2;
     // A light step: a bob twice a stride, and a little forward lean while she walks.
     const bob = walking ? Math.abs(Math.sin(t * 12)) * 0.028 : Math.sin(t * 2) * 0.005;
-    fig.rotation.z = lean;
+    fig.rotation.set(0, twist * h.facing, lean * h.facing);
     fig.position.y = bob;
+    const held = ud.pie as THREE.Object3D | undefined;
+    if (held) held.visible = this.heroPie < HERO_PIE_RELEASE;
     if (head) {
       // The portrait rides on her shoulders: it follows the lean and the bob.
       head.position.set(-Math.sin(lean) * 0.72 * h.facing, 0.72 * Math.cos(lean) + bob, 0);
@@ -1221,39 +1290,41 @@ export class Renderer3D {
 
   /**
    * Cath's pose: [rolling-pin shoulder, elbow, wrist, free shoulder, free elbow, body lean] (radians; positive
-   * swings an arm forward and leans her back). A swing winds up while her next blow comes due, chops through
+   * swings an arm forward and leans her back). A swing winds back while her next blow comes due, sweeps through
    * on the "swing" event and follows through; a pie is thrown overarm with the free hand; she swings her arms
    * as she walks.
    */
   private heroPose(game: Game, t: number, walking: boolean): Pose {
     const h = game.hero;
-    const REST: Pose = [0.35, 1.15, 0.55, -0.08, 0.35, 0];
-    const WIND: Pose = [2.75, 1.5, 0.75, 0.55, 0.6, 0.12];
-    const STRIKE: Pose = [1.05, 0.15, 0.3, -0.5, 0.45, -0.17];
-    const FOLLOW: Pose = [-0.25, 0.35, 0.2, -0.3, 0.3, -0.08];
+    const REST: Pose = [0.35, 1.15, 0.55, -0.08, 0.35, 0, 0];
+    const WIND: Pose = [-1.9, 0.3, -0.7, 0.6, 0.5, 0.1, -0.15];
+    const STRIKE: Pose = [1.25, 0.1, 0.25, -0.6, 0.4, -0.18, 0.2];
+    const FOLLOW: Pose = [0.2, 0.2, 0.1, -0.3, 0.3, -0.1, 0.1];
     const mix = <T extends number[]>(a: T, b: T, k: number): T => a.map((v, i) => v + (b[i]! - v) * k) as T;
     const ease = (k: number) => k * k * (3 - 2 * k);
     let pose = REST;
     const s = this.heroSwung;
-    if (s < 0.07) pose = mix(WIND, STRIKE, (s / 0.07) ** 2);
-    else if (s < 0.2) pose = mix(STRIKE, FOLLOW, ease((s - 0.07) / 0.13));
+    if (s < 0.08) pose = mix(WIND, STRIKE, (s / 0.08) ** 2);
+    else if (s < 0.2) pose = mix(STRIKE, FOLLOW, ease((s - 0.08) / 0.12));
     else if (s < 0.45) pose = mix(FOLLOW, REST, ease((s - 0.2) / 0.25));
     else if (h.cd > 0 && h.cd < 0.25 && (h.holding.length > 0 || this.enemyNearHero(game, 0.8))) {
       // Her next blow is due: wind up for it.
       pose = mix(REST, WIND, ease(1 - h.cd / 0.25));
     }
     pose = [...pose];
-    // The free hand throws a pie overarm: back, over and through.
+    // The free hand throws a pie overarm: back, over and through. She twists into it, which brings her
+    // throwing arm (on her far side) round where it can be seen.
     const p = this.heroPie;
     if (p < 0.5) {
-      type Arm = [number, number, number];
-      const BACK: Arm = [3.4, 1.3, 0.1];
-      const RELEASE: Arm = [1.75, 0.1, -0.12];
-      const DOWN: Arm = [0.4, 0.4, -0.04];
-      const rest: Arm = [pose[3], pose[4], 0];
+      type Arm = [number, number, number, number];
+      const BACK: Arm = [-1.8, 0.4, 0.1, 0.8];
+      const RELEASE: Arm = [1.9, 0.1, -0.12, -0.35];
+      const DOWN: Arm = [0.4, 0.4, -0.04, -0.15];
+      const rest: Arm = [pose[3], pose[4], 0, 0];
+      const r = HERO_PIE_RELEASE;
       const q =
-        p < 0.1 ? mix(rest, BACK, ease(p / 0.1)) : p < 0.2 ? mix(BACK, RELEASE, ((p - 0.1) / 0.1) ** 2) : p < 0.3 ? mix(RELEASE, DOWN, ease((p - 0.2) / 0.1)) : mix(DOWN, rest, ease((p - 0.3) / 0.2));
-      [pose[3], pose[4], pose[5]] = [q[0], q[1], pose[5] + q[2]];
+        p < 0.1 ? mix(rest, BACK, ease(p / 0.1)) : p < r ? mix(BACK, RELEASE, ((p - 0.1) / (r - 0.1)) ** 2) : p < 0.3 ? mix(RELEASE, DOWN, ease((p - r) / (0.3 - r))) : mix(DOWN, rest, ease((p - 0.3) / 0.2));
+      [pose[3], pose[4], pose[5], pose[6]] = [q[0], q[1], pose[5] + q[2], pose[6] + q[3]];
     }
     if (walking) {
       // Arms swing against her stride (the swing itself overrides the pin arm).

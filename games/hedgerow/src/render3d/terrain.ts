@@ -22,6 +22,7 @@ import {
   buildWindmill,
 } from "./models";
 import { actMood, matte } from "./palette";
+import { buildLanes, laneStyle } from "./lanes";
 
 const MARGIN = 9;
 
@@ -514,7 +515,11 @@ export function buildGround(level: Level): Ground {
     if (deco() < mood.flowerRate * 0.6) flowers.push({ x, y: heightAt(x, z), z, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 1, color: flowerCols[Math.floor(deco() * flowerCols.length)]! });
     else tuft(x, z, 1.25, 1.2);
   }
-  // Stones and gravel along the lane's verges, a few kicked into the ruts.
+  // The lane's own surface for the act (earth, boardwalk, tarmac, cobbles...).
+  const laneAct = Math.max(0, Math.min(9, act));
+  for (const m of buildLanes(level, laneAct, heightAt, withCloudShadows, rng(level.id * 6271 + 5)).meshes) group.add(m);
+  const loose = laneStyle(laneAct).looseStones;
+  // Stones and gravel along the lane's verges, a few kicked into the ruts (not on a paved or boarded lane).
   for (const path of [level.path, level.path2].filter(Boolean) as Array<Level["path"]>) {
     const pts = path.map(([c, r]) => [c + 0.5, r + 0.5] as const);
     for (let i = 1; i < pts.length; i++) {
@@ -533,6 +538,7 @@ export function buildGround(level: Level): Ground {
         const z = ay + (by - ay) * (t / len) + ny * off + (deco() - 0.5) * 0.05;
         if (!inLane && (laneDistance(level, x, z) < 0.4 || nearWater(x, z, 0.12))) continue;
         const sz = inLane ? 0.012 + deco() * 0.01 : 0.018 + deco() * 0.03;
+        if (inLane && !loose) continue;
         stones.push({ x, y: heightAt(x, z) + sz * 0.2, z, ry: deco() * 6.3, s: sz, sy: 0.55, color: stoneCols[Math.floor(deco() * stoneCols.length)]! });
         if (!inLane && deco() < 0.35) tuft(x - nx * side * 0.06, z - ny * side * 0.06, 0.9);
       }
