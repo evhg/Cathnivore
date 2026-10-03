@@ -30,6 +30,8 @@ let master: GainNode | null = null;
 let fxBus: GainNode | null = null;
 let musicBus: GainNode | null = null;
 let muted = false;
+let unlocked = false;
+let silence: HTMLAudioElement | null = null;
 try {
   muted = localStorage.getItem(KEY) === "off";
 } catch {
@@ -48,6 +50,10 @@ export function setMuted(value: boolean): void {
     /* ignore */
   }
   if (master && ctx) master.gain.setTargetAtTime(value ? 0 : 0.9, ctx.currentTime, 0.05);
+  if (silence) {
+    if (value) silence.pause();
+    else void silence.play().catch(() => undefined);
+  }
 }
 
 function context(): AudioContext | null {
@@ -75,17 +81,62 @@ function context(): AudioContext | null {
   return ctx;
 }
 
-/** Call from any tap: creates or resumes the audio context. */
+
+/**
+ * Call from any tap: creates or resumes the audio context. iPhones need three things here, all inside the
+ * tap itself: the context resumed (it can also be "interrupted" after a call or a trip to the background),
+ * a sound actually started (a one-sample silent buffer), and the page's audio session switched to
+ * "playback" so the ring/silent switch doesn't mute the game (navigator.audioSession on iOS 17+; on older
+ * iOS, playing a silent HTML audio file does the same).
+ */
 export function unlock(): void {
+  const nav = navigator as Navigator & { audioSession?: { type: string } };
+  try {
+    if (nav.audioSession && nav.audioSession.type !== "playback") nav.audioSession.type = "playback";
+  } catch {
+    /* not supported */
+  }
   const c = context();
-  if (c && c.state === "suspended") void c.resume();
+  if (!c) return;
+  if (c.state !== "running") void c.resume();
+  if (unlocked) return;
+  unlocked = true;
+  try {
+    const src = c.createBufferSource();
+    src.buffer = c.createBuffer(1, 1, 22050);
+    src.connect(c.destination);
+    src.start(0);
+  } catch {
+    /* ignore */
+  }
+  if (!nav.audioSession) {
+    try {
+      silence ??= new Audio(`${import.meta.env.BASE_URL}silence.wav`);
+      silence.loop = true;
+      silence.volume = 0;
+      silence.setAttribute("playsinline", "");
+      void silence.play().catch(() => undefined);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+// Any first tap or key anywhere unlocks the sound (not only the buttons that remember to ask), and coming
+// back to the tab wakes the context again.
+if (typeof document !== "undefined") {
+  for (const ev of ["pointerdown", "touchend", "click", "keydown"] as const)
+    document.addEventListener(ev, () => unlock(), { capture: true, passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && ctx && ctx.state !== "running") void ctx.resume();
+  });
 }
 
 function ready(): boolean {
   if (muted) return false;
   const c = context();
   if (!c) return false;
-  if (c.state === "suspended") void c.resume();
+  if (c.state !== "running") void c.resume();
   return true;
 }
 
