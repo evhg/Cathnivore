@@ -6,7 +6,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
-import { ENFORCER, Enemy, type Sight } from "./enemy";
+import { ENFORCER, ENFORCER_SNIPER, Enemy, RIOT_SHIELD, type Sight } from "./enemy";
 import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
@@ -73,7 +73,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let seed = 1;
   for (const [key, route] of Object.entries(world.markers)) {
     if (!key.startsWith("patrol:") || !route.length) continue;
-    const e = new Enemy(Progress.kit(ENFORCER, "enforcer", areaLevel, seed++), route.map((p) => p.clone()), areaLevel);
+    // The route's name picks the role: "...sniper..." on a rooftop, "...shield..." for a riot team, and every
+    // fourth patrol carries a shield anyway.
+    const n = enemies.length;
+    const [base, archetype] = key.includes("sniper")
+      ? [ENFORCER_SNIPER, "enforcerSniper"]
+      : key.includes("shield") || n % 4 === 3
+        ? [RIOT_SHIELD, "riotShield"]
+        : [ENFORCER, "enforcer"];
+    const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++), role: base.role }, route.map((p) => p.clone()), areaLevel);
     world.scene.add(e.body.root);
     enemies.push(e);
   }

@@ -26,7 +26,41 @@ export interface EnemyKit {
   hearing: number;
   xp: number;
   visor: number;
+  /** Rifleman, a shield bearer (a riot shield stops rounds from the front), or a sniper with a laser. */
+  role?: "rifle" | "shield" | "sniper";
 }
+
+export const RIOT_SHIELD: EnemyKit = {
+  name: "Riot-Shield Enforcer",
+  maxHp: 130,
+  armour: 0.35,
+  damage: 6,
+  burst: [2, 0.25, 1.2],
+  spread: 0.06,
+  walk: 1.2,
+  run: 3,
+  vision: { range: 30, fov: (90 * Math.PI) / 180 },
+  hearing: 1,
+  xp: 80,
+  visor: 0xff3040,
+  role: "shield",
+};
+
+export const ENFORCER_SNIPER: EnemyKit = {
+  name: "Enforcer Sniper",
+  maxHp: 80,
+  armour: 0.15,
+  damage: 34,
+  burst: [1, 0, 3.2],
+  spread: 0.004,
+  walk: 1.1,
+  run: 3.5,
+  vision: { range: 80, fov: (60 * Math.PI) / 180 },
+  hearing: 0.7,
+  xp: 90,
+  visor: 0x30d0ff,
+  role: "sniper",
+};
 
 export const ENFORCER: EnemyKit = {
   name: "Hollowell Enforcer",
@@ -60,6 +94,9 @@ export interface Sight {
 
 let nextId = 1;
 
+/** Seconds of steady aim a sniper needs before firing. */
+export const SNIPER_CHARGE = 1.5;
+
 export class Enemy {
   readonly id = nextId++;
   readonly body: Body;
@@ -83,6 +120,11 @@ export class Enemy {
   /** Set when the session found this body and raised the alarm. */
   found = false;
   readonly vel = new THREE.Vector3();
+  /** The riot shield (shield bearers only), and the sniper's laser. */
+  shield: THREE.Mesh | null = null;
+  laser: THREE.Mesh | null = null;
+  /** Sniper: seconds of steady aim built up; fires at SNIPER_CHARGE. */
+  charge = 0;
   /** Shots this frame, for the session to resolve: from, direction. */
   readonly shots: Array<{ from: THREE.Vector3; dir: THREE.Vector3 }> = [];
 
@@ -109,6 +151,25 @@ export class Enemy {
     };
     this.rifle = buildRifle(look);
     this.body.root.add(this.rifle);
+    if (kit.role === "shield") {
+      const g = new RoundedBoxGeometry(0.62, 1.05, 0.05, 2, 0.02);
+      this.shield = new THREE.Mesh(
+        g,
+        new THREE.MeshStandardMaterial({ color: 0x1a2028, roughness: 0.25, metalness: 0.4, transparent: true, opacity: 0.82 }),
+      );
+      const slot = new THREE.Mesh(new RoundedBoxGeometry(0.34, 0.06, 0.055, 1, 0.01), look.visor);
+      slot.position.set(0, 0.32, 0);
+      this.shield.add(slot);
+      this.body.root.add(this.shield);
+    }
+    if (kit.role === "sniper") {
+      const lg = new THREE.CylinderGeometry(0.004, 0.004, 1, 4, 1, true);
+      lg.translate(0, 0.5, 0);
+      lg.rotateX(Math.PI / 2);
+      this.laser = new THREE.Mesh(lg, new THREE.MeshBasicMaterial({ color: 0xff2030, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+      this.laser.visible = false;
+      this.body.root.add(this.laser);
+    }
   }
 
   get alive(): boolean {
@@ -248,6 +309,29 @@ export class Enemy {
         const along = flat.clone().multiplyScalar(d > want + 4 ? 1 : d < want - 6 ? -1 : 0);
         target = this.motion.pos.clone().add(side.add(along).multiplyScalar(3));
         speed = d > want + 8 ? this.kit.run : this.kit.walk * 1.4;
+        if (this.kit.role === "shield") {
+          // Shield bearers walk straight at her behind the shield.
+          target = d > 4 ? sight.chest.clone() : null;
+          speed = this.kit.walk;
+        }
+        if (this.kit.role === "sniper") {
+          // Snipers hold their spot and build a steady aim; the laser gives her a second to move.
+          target = null;
+          this.charge = seen ? this.charge + dt : Math.max(0, this.charge - dt * 2);
+          if (this.charge >= SNIPER_CHARGE) {
+            this.charge = 0;
+            const from = new THREE.Vector3();
+            const dir = new THREE.Vector3();
+            muzzleOf(this.body, from, dir);
+            const aimDir = new THREE.Vector3().subVectors(sight.chest, from).normalize();
+            const spread = this.kit.spread * (1 + Math.min(3, sight.speed / 2));
+            aimDir.x += (Math.random() - 0.5) * spread;
+            aimDir.y += (Math.random() - 0.5) * spread;
+            this.shots.push({ from, dir: aimDir.normalize() });
+            this.motion.kick = 1;
+          }
+          break;
+        }
         // Fire in bursts while she's in sight.
         this.fireCd -= dt;
         if (seen && this.fireCd <= 0) {
@@ -294,6 +378,7 @@ export class Enemy {
       }
     }
     this.motion.aim = THREE.MathUtils.damp(this.motion.aim, aim, 5, dt);
+    if (this.kit.role === "sniper" && this.state !== "combat") this.charge = 0;
     animate(this.body, this.motion);
     this.body.carry();
     this.body.pose();
@@ -330,6 +415,32 @@ export class Enemy {
 
   private placeRifle(): void {
     const b = this.body;
+    if (this.shield) {
+      // Held on the left forearm, square to the way they face.
+      const s = this.shield;
+      const lost = b.lost.has("forearmL") || b.lost.has("upperArmL") || !this.alive;
+      if (lost && s.parent === b.root && !this.alive) {
+        // Dropped: it falls flat where they stood.
+        s.position.set(this.motion.pos.x, this.motion.pos.y + 0.03, this.motion.pos.z);
+        s.rotation.set(-Math.PI / 2, 0, this.motion.yaw);
+      } else if (!lost) {
+        s.position.copy(b.joints.handL).addScaledVector(b.facing, 0.12).add(new THREE.Vector3(0, 0.08, 0));
+        s.rotation.set(0, this.motion.yaw, 0);
+      }
+    }
+    if (this.laser) {
+      const show = this.alive && this.state === "combat" && this.charge > 0.05;
+      this.laser.visible = show;
+      if (show) {
+        const from = new THREE.Vector3();
+        const dir = new THREE.Vector3();
+        muzzleOf(b, from, dir);
+        this.laser.position.copy(from);
+        this.laser.lookAt(from.clone().add(dir));
+        this.laser.scale.set(1 + this.charge, 1 + this.charge, 60);
+        (this.laser.material as THREE.MeshBasicMaterial).opacity = 0.35 + 0.6 * (this.charge / SNIPER_CHARGE);
+      }
+    }
     if (b.lost.has("forearmR") && b.lost.has("forearmL")) {
       this.rifle.visible = false;
       return;

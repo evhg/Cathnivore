@@ -57,6 +57,8 @@ export class Combat {
   readonly projectiles: Projectile[] = [];
   readonly kills: KillEvent[] = [];
   readonly hits: HitEvent[] = [];
+  /** The last round a riot shield stopped (for sparks). */
+  blocked: { point: THREE.Vector3; normal: THREE.Vector3 } | null = null;
   /** Damage dealt to each segment by the current shot (pellets add up). */
   private shotDamage = new Map<string, number>();
 
@@ -109,7 +111,14 @@ export class Combat {
   private hitscan(origin: THREE.Vector3, dir: THREE.Vector3, w: WeaponDef, build: Build, unseen: boolean): void {
     const hitW = this.rays.cast(origin, dir, w.range);
     const maxD = hitW ? hitW.dist : w.range;
+    this.blocked = null;
     const hitE = this.nearestEnemy(origin, dir, maxD);
+    if (!hitE && this.blocked) {
+      const b = this.blocked as { point: THREE.Vector3; normal: THREE.Vector3 };
+      this.world.fx.impact(b.point, b.normal, "metal");
+      this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), b.point);
+      return;
+    }
     if (hitE) {
       this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), hitE.point);
       this.strike(hitE.enemy, hitE.seg, hitE.point, dir, w, build, origin.distanceTo(hitE.point), unseen, false);
@@ -130,7 +139,16 @@ export class Combat {
       if (along < 0 || along > maxD + 1.5) continue;
       if (to.addScaledVector(dir, -along).length() > 1.5) continue;
       const h = e.body.raycast(origin, dir, maxD);
-      if (h && (!best || h.dist < best.dist)) best = { enemy: e, seg: h.seg.name, zone: h.seg.zone, point: h.point, dist: h.dist };
+      if (!h || (best && h.dist >= best.dist)) continue;
+      // A riot shield in the way stops the round.
+      if (e.shield && e.alive) {
+        const t = rayShield(e.shield, origin, dir);
+        if (t !== null && t < h.dist) {
+          this.blocked = { point: origin.clone().addScaledVector(dir, t), normal: dir.clone().negate() };
+          continue;
+        }
+      }
+      best = { enemy: e, seg: h.seg.name, zone: h.seg.zone, point: h.point, dist: h.dist };
     }
     return best;
   }
@@ -304,3 +322,14 @@ export class Combat {
 }
 
 export type { Projectile };
+
+/** Distance along a ray to a riot shield (an oriented thin box), or null. */
+function rayShield(shield: THREE.Mesh, origin: THREE.Vector3, dir: THREE.Vector3): number | null {
+  shield.updateMatrixWorld();
+  const inv = new THREE.Matrix4().copy(shield.matrixWorld).invert();
+  const o = origin.clone().applyMatrix4(inv);
+  const d = dir.clone().transformDirection(inv);
+  const box = new THREE.Box3(new THREE.Vector3(-0.31, -0.53, -0.04), new THREE.Vector3(0.31, 0.53, 0.04));
+  const hit = new THREE.Ray(o, d).intersectBox(box, new THREE.Vector3());
+  return hit ? hit.applyMatrix4(shield.matrixWorld).distanceTo(origin) : null;
+}
