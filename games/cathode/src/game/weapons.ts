@@ -119,6 +119,20 @@ export class Arsenal {
     this.swingT = -1;
   }
 
+  private returnTo = -1;
+
+  /** A takedown: the Pin comes out for one blow, then the gun she was holding comes back. */
+  strike(): void {
+    const prev = this.current;
+    if (prev !== 0) {
+      this.equip(0);
+      this.raising = 0;
+      this.returnTo = prev;
+    }
+    this.swingT = 0.06;
+    this.cd = this.weapon.cycle;
+  }
+
   reload(): void {
     const h = this.held[this.current]!;
     if (h.def.mag === 0 || h.ammo >= h.def.mag || h.reserve <= 0 || this.reloading > 0) return;
@@ -171,7 +185,13 @@ export class Arsenal {
       if (this.swingT >= 0) {
         this.swingT += dt;
         if (this.swingT >= 0.12 && this.swingT - dt < 0.12) this.meleeNow = true;
-        if (this.swingT > def.cycle) this.swingT = -1;
+        if (this.swingT > def.cycle) {
+          this.swingT = -1;
+          if (this.returnTo >= 0) {
+            this.equip(this.returnTo);
+            this.returnTo = -1;
+          }
+        }
       } else if (trigger && this.cd <= 0 && this.raising <= 0) {
         this.swingT = 0;
         this.cd = def.cycle;

@@ -256,7 +256,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const canTakedown = !dead && takedownTarget() !== null;
     if (intent.takedown && canTakedown) {
       const pin = arsenal.held[0]!.def;
-      if (combat.takedown(eye, fwd, pin)) arsenal.equip(arsenal.current);
+      if (combat.takedown(eye, fwd, pin)) {
+        arsenal.strike();
+        audio?.pin(true);
+      }
     }
     combat.update(dt, build());
 
