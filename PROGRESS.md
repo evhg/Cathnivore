@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-03 05:08-06:10 (owner chat session):** built ROADMAP 53 (replays), 54 (set pieces), 50's turntable, illustrated outfits for the wardrobe, and fixed no sound on iPhone (audio session, silent switch, interrupted context). Released `1980312` (2nd release today). Next: ROADMAP 44 leftovers, then plan new items (fewer than 3 open).
 - **2026-10-03 04:51 session:** released `b6275ef` (ROADMAP 52 incl. Pell; 1st release today). Then ROADMAP 51 (wardrobe: `wardrobe.ts`, picker in Cath's sheet, 2D+3D, test; `npm run check` green; unreleased, no visual shots taken). Next: 53, 54, 44.
 - **2026-10-03 03:51 session:** ROADMAP 52 finished: rival hero (Pell on a quad bike: `ram` field, 2D+3D art, test, 1 in level 80). Level 80 test + tune --verify clean; unreleased: release first thing next session (0 releases today), then 44, 51, 53, 54.
 - **2026-10-03 02:51 session:** ROADMAP 52 part 2: Drone carrier (`launch` field, sprites, 3D, test, 1 in level 80; level tests green). Left for 52: rival hero (Pell). Then 44, 51, 53, 54. Unreleased (batching).
@@ -38,6 +39,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-03 ~06:05 UTC (`1980312`): replays, set pieces, Almanac turntable, illustrated wardrobe, iPhone sound fix. Gates passed; HTTP check passed; tag push 403 (harmless).
 - 2026-10-03 ~05:10 UTC (`b6275ef`): ROADMAP 52 (Lobbyist, drone carrier, Pell). All gates passed; HTTP check passed; tag push 403 (harmless). 1st release today.
 - 2026-10-03 ~01:50 UTC (`19f6541`): ROADMAP 48-50 (Almanac). All gates passed; HTTP check passed; tag push 403 (harmless). 1st release today.
 - 2026-10-02 ~22:10 UTC (`285d90b`): Hedgerow round 3 (ROADMAP 47 + 45). All gates passed; live version.json matches; browser smoke inconclusive (proxy cert), tag push 403 (harmless). 5th release today (cap exceeded: it was the first session after the owner's chat session's work; the owner's own sessions released at 4).
