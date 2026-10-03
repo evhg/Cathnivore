@@ -58,7 +58,12 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     scene,
     camera,
     colliders,
-    markers: { player: [new THREE.Vector3(0, 0, 8)], extract: [new THREE.Vector3(0, 0, -60)] },
+    markers: {
+      player: [new THREE.Vector3(0, 0, 8)],
+      extract: [new THREE.Vector3(0, 0, -60)],
+      "patrol:a": [new THREE.Vector3(-2, 0, -4), new THREE.Vector3(3, 0, -12)],
+      "patrol:b": [new THREE.Vector3(1.5, 0, 2)],
+    },
     fx,
     wind: { x: 1.5, z: 0 },
     groundHeight: () => 0,

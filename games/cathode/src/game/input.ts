@@ -38,6 +38,8 @@ export class Input {
   private lookTouch = { id: -1, x: 0, y: 0 };
   private touchHeld = new Set<TouchButton>();
   private touchTapped = new Set<TouchButton>();
+  /** Test and replay hook: fields here override what the devices say for the next read. */
+  forced: Partial<Intent> = {};
   sensitivity = 0.0022;
   touchSensitivity = 0.0055;
   readonly isTouch: boolean;
@@ -241,6 +243,8 @@ export class Input {
       pause: p("Escape") || p("KeyP"),
       skills: p("KeyK") || p("Tab"),
     };
+    Object.assign(intent, this.forced);
+    this.forced = {};
     this.mouse.x = this.mouse.y = 0;
     this.touchLook.x = this.touchLook.y = 0;
     this.wheel = 0;
