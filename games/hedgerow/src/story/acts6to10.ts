@@ -1,8 +1,6 @@
-// Hedgerow's script for acts 6-10 (levels 51-100) and the finale.
-// Written from the story bible in docs/design/hedgerow-v2.md section 4.
-// Recurring threads: the Oakvale water inquiry (act 7), Ines standing against Pell (act 8),
-// Pip's board minutes (act 9), the 1342 charter and the traders' licences (act 10),
-// and Bea's school project, "What my mum does", which she reads in the finale.
+// Hedgerow's script for acts 6-10 (levels 51-100) and the finale. Rewritten 2026-10-03 to the clarity
+// rules in docs/design/hedgerow-v2.md section 7: every scene says what's happening, why it matters and
+// what to build, and makes sense on its own.
 
 import type { StoryLine } from "../engine";
 import type { Beat } from "./types";
@@ -12,1291 +10,547 @@ export const ACTS_6_TO_10: Record<number, Beat> = {
   51: {
     name: "Shingle Bay",
     before: [
-      {
-        who: "narrator",
-        text: "Shingle Bay: six boats, one ice plant, and since Tuesday a container ship anchored a mile out with its lights off.",
-      },
-      {
-        who: "tomas",
-        text: "Dot Varley landed forty boxes of crab yesterday. The Kingsmarket fish van took none. It had bought the ship's, at half her price.",
-      },
-      {
-        who: "cath",
-        expression: "determined",
-        text: "They run it ashore at night in fast tenders and drive it up the beach road. So we hold the beach road.",
-      },
-      {
-        who: "mara",
-        text: "And we hold it without telling Pip Talbot where.",
-      },
+      { who: "narrator", text: "Shingle Bay, a fishing village. A huge container ship has anchored offshore, full of cheap imports." },
+      { who: "tomas", text: "The fish van stopped buying from our boats. It buys the ship's catch now, at half the price." },
+      { who: "cath", expression: "determined", text: "They land it at night in fast boats and drive it up the beach road. So we hold the beach road." },
+      { who: "mara", text: "And this time, nobody tells Pip Talbot our plans." },
     ],
     after: [
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "Pip rang twice tonight to ask how it went. I said quiet. Let's see who he tells.",
-      },
+      { who: "cath", expression: "smirk", text: "Pip rang twice to ask how it went. I told him it was quiet. Let's see what Hollowell does with that." },
     ],
   },
   52: {
     name: "Low Tide",
     before: [
-      {
-        who: "sol",
-        text: "Shingle Bay tide report: low water at 5:12. That's eight hundred yards of hard sand and no reason for a tender to slow down.",
-      },
-      {
-        who: "cath",
-        text: "Ponds at the top of the beach to take the speed off them. Every one we turn back pays the co-op tin a bit extra today.",
-      },
+      { who: "sol", text: "Low tide this morning. The beach is long, flat and hard, so their boats can race straight up it." },
+      { who: "cath", expression: "determined", text: "Fast boats get past quickly. Put duck ponds at the top of the beach to slow them, then hit them. Fast ones pay extra." },
     ],
     after: [
-      {
-        who: "tomas",
-        text: "Eleven tenders turned round. Dot's selling crab off the sea wall and the queue's twenty deep.",
-      },
+      { who: "tomas", text: "Eleven boats turned back. Our fishermen are selling crab on the sea wall, and the queue is huge." },
     ],
   },
   53: {
     name: "Net Mending",
     before: [
-      {
-        who: "tomas",
-        text: "After diesel, ice and Dot's new nets, the co-op tin's light. Four good things on that lane, maybe. Turn boats back and it refills.",
-      },
-      {
-        who: "bea",
-        text: "Miss Penrose says we have to find out what our mums do. For a project. What do you do?",
-      },
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "This week? Mostly arithmetic.",
-      },
+      { who: "tomas", text: "The fishing co-op spent everything mending nets this week. There's hardly any money for towers." },
+      { who: "cath", expression: "determined", text: "Then start cheap: a few hedges and ponds. Each wave we hold pays for the next tower." },
     ],
     after: [
-      {
-        who: "bea",
-        text: "I put 'arithmetic and pies'.",
-      },
-      {
-        who: "cath",
-        text: "Close enough to hand in.",
-      },
+      { who: "tomas", text: "The nets are fixed and the boats are going out again tomorrow." },
     ],
   },
   54: {
     name: "Two Slips",
     before: [
-      {
-        who: "sol",
-        text: "Gale warning, force eight by noon. Their drones will fly with it, and the scarecrows and silos will be throwing into it.",
-      },
-      {
-        who: "cath",
-        expression: "wink",
-        text: "I told Pip we'd only hold the north slip.",
-      },
-      {
-        who: "mara",
-        text: "Dot says the tenders are lining up at both: the north slip and the old lifeboat slip. Two roads up from the beach.",
-      },
+      { who: "sol", text: "Storm warning. They're landing on two slipways at once, and the wind is wild." },
+      { who: "cath", text: "Scarecrows and silos can't aim well in this wind, and their drones fly faster." },
+      { who: "cath", expression: "determined", text: "Cover both roads with bees, ponds and windmills. Windmills love a gale." },
     ],
     after: [
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "Half to each slip. Crisp only half believes him.",
-      },
+      { who: "sol", text: "Both slipways held, in the worst storm this year. The village is proud of itself." },
     ],
   },
   55: {
     name: "Ines's Tent",
     before: [
-      {
-        who: "narrator",
-        text: "Crisp has hired six lifestyle influencers to film the imported catch as 'fresh from Shingle Bay'.",
-      },
-      {
-        who: "sol",
-        text: "Last time one walked past my scarecrow, it stopped work to be in the shot. Twenty minutes. Lovely footage.",
-      },
-      {
-        who: "ines",
-        text: "I've brought the clinic tent. Anything standing near it gets a cup of tea and a firm word, and goes back to work.",
-      },
-      {
-        who: "cath",
-        text: "Tent beside the scarecrows, then.",
-      },
+      { who: "ines", text: "I've set up a clinic tent by the road. Influencers keep turning up to film the beach." },
+      { who: "cath", text: "When an influencer stands near a tower, it stops to watch them. Ines's tent stops that." },
+      { who: "cath", expression: "determined", text: "Towers near the tent ignore the influencers and fire faster too. Put it among your best towers." },
     ],
     after: [
-      {
-        who: "ines",
-        text: "Nothing within twenty yards of the tent was charmed. Small sample. I'd like more data, ideally fewer influencers.",
-      },
+      { who: "ines", text: "Lots of tea, a few plasters, and not one tower distracted. A good day's work." },
     ],
   },
   56: {
     name: "Fog Bank",
     before: [
-      {
-        who: "sol",
-        text: "Fog's in off the water. I can't see the end of my own mic lead, and I own a lot of mic lead.",
-      },
-      {
-        who: "cath",
-        text: "Nobody can hit what they can't see. Build right up against the road.",
-      },
+      { who: "sol", text: "A fog bank has rolled in off the sea. You can't see the end of the pier." },
+      { who: "cath", expression: "determined", text: "In fog the towers can't reach as far. Build close to the road, and watch the red rings for ambushes." },
     ],
     after: [
-      {
-        who: "mara",
-        text: "Dot's boats went out at dawn. First time this week.",
-      },
+      { who: "tomas", text: "The fog's lifting, and the ship is still out there, waiting." },
     ],
   },
   57: {
     name: "The Gale",
     before: [
-      {
-        who: "narrator",
-        text: "The gale arrives on time. Dot hauls the boats up past the pub.",
-      },
-      {
-        who: "sol",
-        text: "Gusts of sixty. Their drones will come in fast with the wind behind them, and anything our scarecrows throw goes sideways.",
-      },
-      {
-        who: "cath",
-        text: "Hives, then. Bees keep low.",
-      },
+      { who: "sol", text: "Full gale. Even the gulls have given up." },
+      { who: "cath", text: "Wind spoils the aim of scarecrows and silos, and speeds the drones up." },
+      { who: "cath", expression: "determined", text: "Bees, ponds and windmills carry the day. Spread them out." },
     ],
     after: [
-      {
-        who: "tomas",
-        text: "One shed roof gone, no boats. Dot says that's a good gale.",
-      },
+      { who: "sol", text: "Three of their boats were blown back out to sea. The weather is on our side for once." },
     ],
   },
   58: {
     name: "Salvage",
     before: [
-      {
-        who: "narrator",
-        text: "The gale has split two containers on the beach: tinned peaches, flip-flops and nine hundred phone cases.",
-      },
-      {
-        who: "mara",
-        text: "Wreck law, section four: goods left below the tide line go to the finder. Unless the owner would like to explain them in court.",
-      },
-      {
-        who: "tomas",
-        text: "Peaches on the stall at a mark a tin. Best morning's trade all year. It all goes in the tin for the lane.",
-      },
+      { who: "tomas", text: "Crates from the ship keep washing up, and by law whatever lands on the beach is ours to sell." },
+      { who: "cath", expression: "determined", text: "Market day: the money comes in fast. They're coming two ways, so spend quickly and cover both roads." },
     ],
     after: [
-      {
-        who: "bea",
-        text: "I drew the peaches for my project. Are we rich?",
-      },
-      {
-        who: "cath",
-        text: "Until Thursday.",
-      },
+      { who: "tomas", text: "We sold the salvage at the market. The fishing co-op has never had so much money." },
     ],
   },
   59: {
     name: "Ship in the Fog",
     before: [
-      {
-        who: "sol",
-        text: "The ship's weighed anchor. It's coming into the bay through the fog with its horn going.",
-      },
-      {
-        who: "mara",
-        text: "Dot says the tenders it's sent ahead have steel plate bolted to the bows.",
-      },
-      {
-        who: "cath",
-        expression: "determined",
-        text: "Silos go through steel. Build them close. Nobody's seeing far tonight.",
-      },
+      { who: "sol", text: "Fog again, and this time their boats are armour-plated." },
+      { who: "cath", text: "The towers can't see far, and armour soaks up weak hits." },
+      { who: "cath", expression: "determined", text: "Build close to the road and upgrade. Silos fire straight through armour, if the wind lets them." },
     ],
     after: [
-      {
-        who: "narrator",
-        text: "The ship drops anchor four hundred yards out. Up on the cliff road, Crisp's car is parked with its engine running.",
-      },
+      { who: "sol", text: "The ship is pulling up its anchor. It's coming in itself." },
     ],
   },
   60: {
     name: "The Container Ship",
     before: [
-      {
-        who: "crisp",
-        text: "Statement: the vessel is a routine logistics asset bringing affordable protein to a coastal community in need.",
-      },
-      {
-        who: "tomas",
-        text: "In need. Dot's got forty boxes of crab in the ice plant.",
-      },
-      {
-        who: "cath",
-        expression: "determined",
-        text: "It'll beach and break open into tenders. Silos on the hull, ponds for whatever climbs off it.",
-      },
+      { who: "narrator", text: "The Container Ship: a floating warehouse. It drops fast boats as it comes, and more pour out when it breaks." },
+      { who: "pell", text: "Graham Pell. Shingle Bay can have everything cheaper, forever. All it costs is your boats." },
+      { who: "cath", expression: "determined", text: "Keep towers all along the road. When the ship breaks up, its boats come out fighting." },
     ],
     after: [
-      {
-        who: "sol",
-        text: "Found the manifest in the surf. Half the cargo's Hollowell fish. The other half is Candor's Oakvale Water, no labels.",
-      },
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "Two companies, one ship. I wonder who paid for the fuel.",
-      },
+      { who: "tomas", text: "The ship's gone and the fish van is buying from our boats again!" },
+      { who: "sol", text: "And I hear Hollowell and Candor are blaming each other for Oakvale. Their partnership is cracking." },
     ],
   },
-
   // Act 7, The Rift: the companies fall out.
   61: {
     name: "The Falling-Out",
     before: [
-      {
-        who: "narrator",
-        text: "The Oakvale water inquiry opens on Monday. Somebody has to have known about the bottles.",
-      },
-      {
-        who: "crisp",
-        text: "On behalf of Hollowell Group: Hollowell had no knowledge of Candor Health's activities in Oakvale.",
-      },
-      {
-        who: "crisp",
-        text: "On behalf of Candor Health: Candor acted under a logistics plan agreed in full with Hollowell Group.",
-      },
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "Both before breakfast. Now both want Ines's water samples before the inquiry sees them, and they're sending vans.",
-      },
+      { who: "narrator", text: "The Rift. Hollowell and Candor have fallen out, and both companies' lawyers are on our lanes." },
+      { who: "mara", text: "Their lawyers are serving papers on every farm. Anywhere near a lawyer, a tower drowns in paperwork." },
+      { who: "cath", expression: "determined", text: "Towers near a lawyer fire at half speed. Stop them early, before they get close to the towers." },
     ],
     after: [
-      {
-        who: "ines",
-        text: "The samples went to the inquiry on the four o'clock train. I sat with them the whole way.",
-      },
-      {
-        who: "mara",
-        text: "Two letters in the afternoon post. Hollowell's says we're Candor's witnesses. Candor's says we're Hollowell's.",
-      },
+      { who: "mara", text: "Not one paper got served. I used to be a lawyer myself, you know. I know how they think." },
     ],
   },
   62: {
     name: "Two Logos",
     before: [
-      {
-        who: "sol",
-        text: "Traffic on the Rift Road: Hollowell vans, Candor vans, racing to be first at our gates with a witness statement for us to sign.",
-      },
-      {
-        who: "tomas",
-        text: "I make it sixty in the first lot. Small ones, nose to tail.",
-      },
-      {
-        who: "cath",
-        text: "Hives and ponds. Anything that hits a crowd.",
-      },
+      { who: "sol", text: "Both companies are racing each other up our lanes. Two fleets, two roads, packed close." },
+      { who: "cath", expression: "determined", text: "Packed close is perfect for bees. Cover both roads." },
     ],
     after: [
-      {
-        who: "narrator",
-        text: "A Hollowell van and a Candor van meet head on at the Rift bridge. By teatime, both companies have blamed the bridge.",
-      },
+      { who: "sol", text: "They spent half the day getting in each other's way. It helped." },
     ],
   },
   63: {
     name: "Paperwork",
     before: [
-      {
-        who: "narrator",
-        text: "The lawyers come in person: grey saloons, one lawyer each, a briefcase on every passenger seat.",
-      },
-      {
-        who: "mara",
-        text: "A lawyer who stops beside your scarecrow ties it up in correspondence. Stop them early, before they park by anything good.",
-      },
-      {
-        who: "tomas",
-        text: "And answering their letters has cost us forty marks a time. The tin's thin, so build cheap and make it count.",
-      },
+      { who: "mara", text: "They've frozen our bank account with paperwork. We're starting with almost nothing." },
+      { who: "cath", expression: "determined", text: "Cheap towers first. There's a swing bridge on the lane: when it's up, they queue in front of it. Hit the queue." },
     ],
     after: [
-      {
-        who: "mara",
-        text: "I've answered all nineteen letters with one word: 'Noted.' It's the only cheap thing in law.",
-      },
+      { who: "mara", text: "Account unfrozen. A judge called their paperwork 'creative'. It wasn't a compliment." },
     ],
   },
   64: {
     name: "Hostile Takeover",
     before: [
-      {
-        who: "sol",
-        text: "On the business wire: Hollowell has bid for Candor. Candor's board calls it 'opportunistic'. Hollowell calls it 'a homecoming'.",
-      },
-      {
-        who: "cath",
-        text: "Neither of them can look weak this week, so everything they send will take more stopping.",
-      },
-      {
-        who: "bea",
-        text: "What's a hostile takeover?",
-      },
-      {
-        who: "cath",
-        text: "When someone buys a thing that doesn't want to be bought.",
-      },
+      { who: "mara", text: "Hollowell is trying to buy Candor, and Candor is fighting back. Our lane is in the middle." },
+      { who: "cath", text: "Both sides sent their toughest vehicles today. They'll take a lot of hits." },
+      { who: "cath", expression: "determined", text: "Upgrade before you build more. Strong towers beat lots of weak ones." },
     ],
     after: [
-      {
-        who: "pell",
-        text: "Candor's board has said no. Hollowell is disappointed, and Hollowell is patient.",
-      },
+      { who: "mara", text: "Neither company won. Their shareholders are getting nervous." },
     ],
   },
   65: {
     name: "Injunction",
     before: [
-      {
-        who: "narrator",
-        text: "Mara has bought the old magistrates' court at Rift Cross for one mark. It came with a bench, a bell and a working seal.",
-      },
-      {
-        who: "mara",
-        text: "An injunction stops a named party from proceeding. I've named all their big ones in advance.",
-      },
-      {
-        who: "cath",
-        text: "Put it where the big lorries have to pass. Let the scarecrows deal with the small stuff.",
-      },
+      { who: "mara", text: "I've built us a courthouse. It serves an injunction on any boss in reach: a court order that stops it dead." },
+      { who: "cath", expression: "determined", text: "Put the courthouse where the biggest enemies pass. A frozen boss is an easy target." },
     ],
     after: [
-      {
-        who: "mara",
-        text: "Their lead lorry sat in the lane for four minutes with its engine off. In my old job that took eighteen months.",
-      },
+      { who: "mara", text: "Every boss we meet from now on gets a court order. I've missed this." },
     ],
   },
   66: {
     name: "Cross-Examination",
     before: [
-      {
-        who: "narrator",
-        text: "Day three of the inquiry. Mara has Hollowell's head of logistics in the witness chair. Outside, it's raining on the lane.",
-      },
-      {
-        who: "mara",
-        text: "Mr Ashby, the second line of the ship's manifest, please. Aloud. Slowly.",
-      },
-      {
-        who: "cath",
-        text: "Rain keeps the bees in and slows everything on the wet. Ponds and barns carry today.",
-      },
+      { who: "mara", text: "Rain, and they're coming up both roads. The bees will stay in today." },
+      { who: "cath", expression: "determined", text: "Rain slows them down. Lean on hedges, ponds and scarecrows, and cover both roads." },
     ],
     after: [
-      {
-        who: "ines",
-        text: "He read it: 'Candor freight, Hollowell account.' Hollowell paid for the fuel.",
-      },
+      { who: "mara", text: "In court today their own witness admitted the Oakvale water study was a sham." },
     ],
   },
   67: {
     name: "The Merger Rumour",
     before: [
-      {
-        who: "sol",
-        text: "Off air: my cousin drives a cab in Kingsmarket. Last night, Pell and Dr Vane, same dinner, same cab, same folder.",
-      },
-      {
-        who: "mara",
-        text: "Suing each other on Tuesday, sharing a cab on Thursday. That isn't a feud. It's a negotiation.",
-      },
-      {
-        who: "cath",
-        text: "They'll come tonight to show they still can. Short sight, quick vans. Build close to the lane.",
-      },
+      { who: "sol", text: "Rumour: the two companies are about to make up and merge. And there's a power cut. No lights at all tonight." },
+      { who: "cath", text: "In the dark, we can only see what's near a tower or near me. Anything else can't be hit." },
+      { who: "cath", expression: "determined", text: "Line the lane with towers so there's light all the way along." },
     ],
     after: [
-      {
-        who: "vane",
-        text: "Candor does not comment on rumours, and nothing has been agreed.",
-      },
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "'Nothing has been agreed.' She didn't say nothing's happening.",
-      },
+      { who: "sol", text: "The rumour's true. Hollowell and Candor are merging. Together they'll be bigger than ever." },
     ],
   },
   68: {
     name: "Small Print",
     before: [
-      {
-        who: "mara",
-        text: "Clause nineteen of Hollowell's new bid: Candor's water rights in Oakvale pass to Hollowell. That's the wells under Tomas's fields.",
-      },
-      {
-        who: "cath",
-        text: "So we're an asset now. Assets get guarded: armoured lorries, slow ones. That's what the silos are for.",
-      },
+      { who: "mara", text: "The merger papers have armoured lorries carrying them. Slow, heavy and full of small print." },
+      { who: "cath", expression: "determined", text: "Armour soaks up weak hits. Silos fire straight through, so put them where the lorries crawl." },
     ],
     after: [
-      {
-        who: "bea",
-        text: "The nativity's on Friday. You said you'd come.",
-      },
-      {
-        who: "cath",
-        expression: "worried",
-        text: "I did say that.",
-      },
+      { who: "mara", text: "I've read the small print. They plan to buy the whole valley in one go." },
     ],
   },
   69: {
     name: "Recess",
     before: [
-      {
-        who: "narrator",
-        text: "Friday, two o'clock, Oakvale Primary. Bea is Star Number Two.",
-      },
-      {
-        who: "cath",
-        text: "Third row, phone off. Mara has the lane, Tomas has the tin.",
-      },
-      {
-        who: "mara",
-        text: "Go. Without you on the lane, everything we put up does the whole job. I've planned for that.",
-      },
+      { who: "bea", text: "Mum, it's my nativity play tonight. I'm the star. You promised you'd come." },
+      { who: "cath", expression: "delighted", text: "And I will. Mara, can you hold the lane without me?" },
+      { who: "mara", text: "Go and watch your star. The towers will have to do it alone tonight, so build plenty." },
     ],
     after: [
-      {
-        who: "bea",
-        text: "I forgot my line, so I just shone.",
-      },
-      {
-        who: "tomas",
-        text: "Lane held. Mara stood in the gateway the whole time. Nobody tell her she enjoyed it.",
-      },
+      { who: "bea", text: "You came! I saw you in the second row!" },
+      { who: "mara", text: "And the lane held. Not one van got through." },
     ],
   },
   70: {
     name: "The Lawyer Swarm",
     before: [
-      {
-        who: "crisp",
-        text: "Statement: Hollowell and Candor have jointly instructed counsel to resolve outstanding matters with local landholders.",
-      },
-      {
-        who: "mara",
-        text: "Jointly. Two companies who sued each other on Tuesday have hired the same forty lawyers.",
-      },
-      {
-        who: "cath",
-        expression: "determined",
-        text: "Courthouse on the big one. When it breaks, five lawyers get out, and each slows whatever it stands next to.",
-      },
+      { who: "narrator", text: "The Lawyer Swarm: a bus of lawyers. More jump out every few seconds, and the rest pour out when it stops." },
+      { who: "mara", text: "Every tower near them slows down with paperwork. Keep them away from your towers if you can." },
+      { who: "cath", expression: "determined", text: "Use the courthouse to freeze the bus, and bees for the crowd that spills out." },
     ],
     after: [
-      {
-        who: "narrator",
-        text: "The lawyers withdraw at dusk. By morning there's a poster on every gate in Marrow: PELL FOR COUNCIL.",
-      },
-      {
-        who: "pell",
-        text: "If Marrow won't sell, Marrow can choose.",
-      },
+      { who: "mara", text: "They've withdrawn every case. We beat the lawyers." },
+      { who: "tomas", text: "Pell's not giving up, though. He's standing for election to the valley council." },
     ],
   },
-
   // Act 8, The Ballot: Pell runs for council.
   71: {
     name: "The Ballot Box",
     before: [
-      {
-        who: "pell",
-        text: "Graham Pell, for a Corridor of Opportunity: jobs, roads and convenience for every family in Marrow.",
-      },
-      {
-        who: "tomas",
-        text: "Council votes on the Corridor's planning in May. Put Pell on it and it's three seats to two.",
-      },
-      {
-        who: "ines",
-        text: "Then someone stands against him. I've told the surgery I'll be late on Thursdays.",
-      },
-      {
-        who: "cath",
-        text: "Meanwhile his vans are back on our lane with his face on the side.",
-      },
+      { who: "narrator", text: "Election time. Graham Pell is standing for the valley council. If he wins, he can approve his own motorway." },
+      { who: "tomas", text: "His campaign vans are everywhere, covering the valley in posters." },
+      { who: "cath", expression: "determined", text: "Then they don't get up our lanes. Watch the red rings: some are already waiting halfway." },
     ],
     after: [
-      {
-        who: "tomas",
-        text: "Ines needed ten nominations. I've got eighty-four, and I know where every one of them lives.",
-      },
+      { who: "tomas", text: "Ines is standing against him. She says somebody has to." },
     ],
   },
   72: {
     name: "Free Tea Tent",
     before: [
-      {
-        who: "narrator",
-        text: "Pell has put up a free tea tent every half mile along the lane. With biscuits.",
-      },
-      {
-        who: "tomas",
-        text: "People will drink his tea and vote how they like. And they're all walking past our stall to get it.",
-      },
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "Sell everything. The tin's about to have its best day.",
-      },
+      { who: "tomas", text: "Pell's set up free tea tents along the lane to win votes. People are queuing for them." },
+      { who: "cath", expression: "determined", text: "Market day for us too: money comes in fast. Spend it as it arrives." },
     ],
     after: [
-      {
-        who: "sol",
-        text: "Vox pop from the tea tent: 'Lovely tea. Not voting for him.' Eleven people said that. Word for word.",
-      },
+      { who: "ines", text: "I gave a speech next to his tea tent. People listened, and kept the tea." },
     ],
   },
   73: {
     name: "Doorstep Canvass",
     before: [
-      {
-        who: "sol",
-        text: "Pell's canvass vans are doing the whole valley at thirty doors an hour, and they don't slow down for gates.",
-      },
-      {
-        who: "cath",
-        text: "Fast, then. Slow them at the top of the lane. Every one we turn back pays well today.",
-      },
+      { who: "tomas", text: "Pell's campaigners are racing door to door in fast vans." },
+      { who: "cath", expression: "determined", text: "Fast vans: slow them early with hedges and ponds. Every fast one we stop pays extra." },
     ],
     after: [
-      {
-        who: "bea",
-        text: "A man knocked and asked if Mummy was in. I said she was out defending the lane. He wrote it down.",
-      },
+      { who: "ines", text: "I knocked on doors too, on foot. People like a doctor who listens." },
     ],
   },
   74: {
     name: "Leaflet Drop",
     before: [
-      {
-        who: "narrator",
-        text: "Pell has found a new use for the survey drones: ten thousand leaflets, dropped over every farm in Marrow.",
-      },
-      {
-        who: "cath",
-        text: "They come over the hedges, so the hedges won't help. Scarecrows and hives.",
-      },
-      {
-        who: "bea",
-        text: "It says 'Pell for You'. Is he?",
-      },
+      { who: "sol", text: "Pell is dropping leaflets by drone over the whole valley. Two roads, and the sky full." },
+      { who: "cath", expression: "determined", text: "Lots of drones: scarecrows, bees and windmills along both roads." },
     ],
     after: [
-      {
-        who: "ines",
-        text: "His leaflet makes nine promises. I've costed them. They come to four times the council's budget.",
-      },
+      { who: "bea", text: "I caught a leaflet. There's a picture of Mr Pell smiling. It looks like it hurts." },
     ],
   },
   75: {
     name: "Union Hall",
     before: [
-      {
-        who: "tomas",
-        text: "The Farmers' Union Hall at Rift Cross. Shut since 1987. I've had the keys since 1988.",
-      },
-      {
-        who: "tomas",
-        text: "Campaign office, tea urn, a board for the count. Everyone on the lane fights better knowing it's open.",
-      },
-      {
-        who: "cath",
-        text: "It's dear, but it lifts everything on the lane at once, and it pays its way.",
-      },
+      { who: "tomas", text: "I've opened the Farmers' Union Hall. Every farm in the valley meets there now." },
+      { who: "cath", text: "The hall makes every tower on the map hit harder, and it earns money every wave." },
+      { who: "cath", expression: "determined", text: "It doesn't need to be near the lane, so put it on a spare plot and keep the good spots for towers." },
     ],
     after: [
-      {
-        who: "narrator",
-        text: "Two hundred and six people come to the hall's first meeting. Tomas greets every one by name.",
-      },
+      { who: "tomas", text: "Two hundred people came to the first meeting. The valley is standing together." },
     ],
   },
   76: {
     name: "Market Day Rally",
     before: [
-      {
-        who: "sol",
-        text: "Pell's rally in the market square at noon, free coach from every village. The coaches are queuing at the crossroads already.",
-      },
-      {
-        who: "cath",
-        text: "A lot of them, close together, none of them hard to stop. Hives and ponds.",
-      },
+      { who: "tomas", text: "Pell's holding a rally in the market square, with crowds of supporters on buses." },
+      { who: "cath", expression: "determined", text: "Big crowds packed close: bees and cannons. Lots of them." },
     ],
     after: [
-      {
-        who: "pell",
-        text: "Today Marrow came together. Tomorrow, Marrow moves forward.",
-      },
-      {
-        who: "sol",
-        text: "Attendance: three hundred. Two hundred and forty used the free coach to go shopping.",
-      },
+      { who: "tomas", text: "His rally was half empty by the end. People came for our market instead." },
     ],
   },
   77: {
     name: "The Opinion Poll",
     before: [
-      {
-        who: "narrator",
-        text: "The eve of the vote. At dusk, Crisp publishes a poll: Pell 58 percent, Dr Farrow 31.",
-      },
-      {
-        who: "sol",
-        text: "Four hundred people asked. It doesn't say where.",
-      },
-      {
-        who: "cath",
-        text: "It's meant to keep our lot at home. And they'll run vans tonight, fast and dark. Build close to the lane.",
-      },
+      { who: "sol", text: "Tonight's poll says it's neck and neck. Pell's vans are out all night." },
+      { who: "cath", expression: "determined", text: "At night the towers can't see as far. Build close to the lane, and watch for ambushes." },
     ],
     after: [
-      {
-        who: "ines",
-        text: "I found where. The Hollowell canteen. It's a very thorough survey of the Hollowell canteen.",
-      },
+      { who: "sol", text: "Ines is two points ahead. Two points!" },
     ],
   },
   78: {
     name: "Polling Day",
     before: [
-      {
-        who: "narrator",
-        text: "Polling day. The village school is a polling station, and nobody may campaign within a hundred yards of it.",
-      },
-      {
-        who: "mara",
-        text: "Our scarecrows are wearing Farrow rosettes, so inside that line they count as campaigning. Build only on the plots I've marked.",
-      },
-      {
-        who: "tomas",
-        text: "I've forty cars bringing voters in. Keep the lane open till ten.",
-      },
+      { who: "mara", text: "It's polling day. Pell's people have fenced off half our fields as 'car parks for voters'." },
+      { who: "cath", expression: "determined", text: "So we can only build on half the plots, and they're coming two ways. Every tower has to count." },
     ],
     after: [
-      {
-        who: "tomas",
-        text: "Two thousand through the school gate by noon. I know because I waved at all of them.",
-      },
+      { who: "mara", text: "I'm watching every ballot box until the count. Nobody's touching them." },
     ],
   },
   79: {
     name: "Rain on Polling Day",
     before: [
-      {
-        who: "sol",
-        text: "Rain since two. Turnout's dropping, and Pell's laid on free cars to the polls. Ours are walking.",
-      },
-      {
-        who: "tomas",
-        text: "Then ours get lifts too. Forty cars, four trips each, and every trip uses our lane.",
-      },
-      {
-        who: "cath",
-        text: "Bees stay in, and everything's slow on the wet. Ponds, barns and silos.",
-      },
+      { who: "tomas", text: "Pouring rain. Pell's sending buses to drive his voters in, and to keep ours at home." },
+      { who: "cath", expression: "determined", text: "Rain slows everything and keeps the bees in. Hedges, ponds and scarecrows today." },
     ],
     after: [
-      {
-        who: "tomas",
-        text: "Mrs Abel, ninety-one, voted at quarter past four. She told me who for. I said she shouldn't. She told me again.",
-      },
+      { who: "tomas", text: "Our people walked to the polls in the rain anyway. Every single one." },
     ],
   },
   80: {
     name: "Pell's Campaign Bus",
     before: [
-      {
-        who: "narrator",
-        text: "The last hour of polling. Pell's campaign bus sets off down the lane, his face on the side and his influencers on board.",
-      },
-      {
-        who: "pell",
-        text: "Every vote is a conversation. I intend to have six thousand of them by ten o'clock.",
-      },
-      {
-        who: "cath",
-        expression: "determined",
-        text: "When it stops, six influencers get off, all charming. Courthouse for the bus, the tent by the scarecrows.",
-      },
+      { who: "narrator", text: "Pell's Campaign Bus, full of influencers, with his lobbyists, his drone carriers and Pell himself on a quad bike." },
+      { who: "pell", text: "The count is tonight. Let's make sure the right people get there." },
+      { who: "cath", text: "The lobbyists switch off a tower's special upgrade, and Pell will try to ram me. Keep him busy." },
+      { who: "cath", expression: "determined", text: "When the bus breaks, influencers pour out. Ines's tents keep the towers from staring at them." },
     ],
     after: [
-      {
-        who: "narrator",
-        text: "Count night at the Union Hall. Pell asks for a recount, and Mara watches all 6,140 ballots. Dr Ines Farrow wins by 212.",
-      },
-      {
-        who: "pell",
-        text: "Marrow has spoken, and Hollowell is listening.",
-      },
+      { who: "tomas", text: "Ines has won! By two hundred and twelve votes!" },
+      { who: "ines", text: "The motorway is cancelled. Now let's see what Pell does next." },
     ],
   },
-
   // Act 9, The Merger.
   81: {
     name: "Two Logos, One Door",
     before: [
-      {
-        who: "narrator",
-        text: "Nine days after the count, a press conference in Kingsmarket. Pell and Dr Vane, one lectern.",
-      },
-      {
-        who: "vane",
-        text: "Hollowell Group and Candor Health will combine as HollowCandor, to nourish and care for Marrow from field to pharmacy.",
-      },
-      {
-        who: "cath",
-        text: "They lost a vote, so they've become a bigger company. And their vans are already out with both names on.",
-      },
+      { who: "narrator", text: "Pell lost the vote. Now Hollowell and Candor have merged into one giant company, HollowCandor." },
+      { who: "tomas", text: "One company, twice the vans. They're coming to buy whatever the council can't protect." },
+      { who: "cath", expression: "determined", text: "Same as always: slow them, stop them, don't let them reach the farm." },
     ],
     after: [
-      {
-        who: "narrator",
-        text: "Pip Talbot has left Cath three messages since the announcement. The last one just says, 'Not on the phone.'",
-      },
+      { who: "tomas", text: "Their new logo is both old logos stuck together. Bea says it looks like a sandwich." },
     ],
   },
   82: {
     name: "The Joint Statement",
     before: [
-      {
-        who: "crisp",
-        text: "Joint statement: from day one, the combined fleet will serve all of Marrow by every available route.",
-      },
-      {
-        who: "sol",
-        text: "Translation: twice the vans, both roads, packed nose to tail.",
-      },
-      {
-        who: "cath",
-        text: "Two lanes, a crowd on each. Split the hives between them.",
-      },
+      { who: "sol", text: "Their first joint statement: 'One company, one valley.' And both fleets, on two roads, packed close." },
+      { who: "cath", expression: "determined", text: "Crowds on two roads: bees on both. Lots of them." },
     ],
     after: [
-      {
-        who: "sol",
-        text: "Day one of the merger, and their two fleets can't share a radio channel. I can hear both. I'm recording.",
-      },
+      { who: "sol", text: "I read their statement out on the podcast, very slowly. It sounded even worse." },
     ],
   },
   83: {
     name: "Rebrand Day",
     before: [
-      {
-        who: "narrator",
-        text: "Overnight, every Hollowell and Candor van in Marrow has been repainted silver with one new word on the side: HollowCandor.",
-      },
-      {
-        who: "sol",
-        text: "New paint, new plates, steel in the doors. They want the new name to look like it can take a knock.",
-      },
-      {
-        who: "cath",
-        text: "Then it'll take a lot of them. Fewer pieces, built up higher.",
-      },
+      { who: "tomas", text: "They repainted every truck overnight, and added armour while they were at it." },
+      { who: "cath", expression: "determined", text: "Tougher trucks today. Upgrade your best towers before building new ones." },
     ],
     after: [
-      {
-        who: "bea",
-        text: "Why is it called HollowCandor?",
-      },
-      {
-        who: "cath",
-        text: "Because 'Hollowell and Candor' didn't fit on a van.",
-      },
+      { who: "tomas", text: "New paint, same trucks. And they still turned back." },
     ],
   },
   84: {
     name: "Redundancies",
     before: [
-      {
-        who: "bea",
-        text: "Mum, Mr Talbot's at the door. He's crying a bit but he says it's the wind.",
-      },
-      {
-        who: "pip",
-        text: "Crisp let me go this morning. 'The merger has rationalised our relationship.' I've brought you something. I should have brought it sooner.",
-      },
-      {
-        who: "tomas",
-        text: "He can wait in the kitchen. The vans can't. The election emptied the tin, so build small and let the turned-back vans pay.",
-      },
+      { who: "pip", text: "Cath. It's Pip. They've sacked me. I'm sorry for everything I did." },
+      { who: "pip", text: "I've brought something to make up for it: a copy of their secret board meeting notes." },
+      { who: "cath", expression: "determined", text: "Thank you, Pip. Money's tight today, so we build cheap and let the waves pay." },
     ],
     after: [
-      {
-        who: "cath",
-        text: "Pip. You've got one cup of tea to tell me why I should read this.",
-      },
-      {
-        who: "pip",
-        text: "It's the board minutes. Page six has your farm on it. And Tomas's. And the market square in Kingsmarket.",
-      },
+      { who: "mara", text: "These notes are real. Pip has given us exactly what we need." },
     ],
   },
   85: {
     name: "The Minutes",
     before: [
-      {
-        who: "narrator",
-        text: "HollowCandor board minutes, item seven: 'Acquire Kingsmarket market square as the northern end of the Marrow Corridor.'",
-      },
-      {
-        who: "mara",
-        text: "Item seven needs the shareholders' approval. So it goes to the annual general meeting.",
-      },
-      {
-        who: "cath",
-        text: "They'll guard the plan until then. Armoured lorries today. Silos.",
-      },
+      { who: "mara", text: "The notes say their real plan is to buy Kingsmarket's market square, the heart of the whole valley." },
+      { who: "pip", text: "And they're moving the money in armoured trucks today." },
+      { who: "cath", expression: "determined", text: "Silos fire straight through armour. Put them where the trucks go slowest." },
     ],
     after: [
-      {
-        who: "pip",
-        text: "Every board paper is on a server I still have the password for. I'll get you all of them. It's the least I can do.",
-      },
+      { who: "mara", text: "Next, they meet to vote on it. We need to be ready." },
     ],
   },
   86: {
     name: "Board Meeting Nine",
     before: [
-      {
-        who: "pip",
-        text: "Board meeting nine is tonight at the Rift Cross offices. The directors come in by both roads, after dark, so nobody photographs them.",
-      },
-      {
-        who: "sol",
-        text: "I'll photograph them.",
-      },
-      {
-        who: "cath",
-        text: "Two lanes, short sight, quick cars. Build close on both.",
-      },
+      { who: "pip", text: "The board meets tonight. They've cut the street lights so nobody sees them coming." },
+      { who: "cath", text: "In the dark, we only see what's near a tower or near me. And they're coming two ways." },
+      { who: "cath", expression: "determined", text: "Line both roads with towers so the whole lane is lit." },
     ],
     after: [
-      {
-        who: "sol",
-        text: "All nine directors on camera. One of them waved. He thought I was press, which, technically, I am.",
-      },
+      { who: "pip", text: "They voted to buy the square. The sale goes through at their meeting in Kingsmarket." },
     ],
   },
   87: {
     name: "The Co-op's Bank",
     before: [
-      {
-        who: "tomas",
-        text: "HollowCandor has bought the Marrow Mutual. That's our bank. The co-op's loan is now owed to them.",
-      },
-      {
-        who: "mara",
-        text: "Clause twelve: the lender may call in the loan on a 'material change'. They'll call it in by Friday.",
-      },
-      {
-        who: "cath",
-        text: "Then we pay it. First there's a gale: their drones will ride it, and the scarecrows will struggle. Hives.",
-      },
+      { who: "tomas", text: "They're trying to buy the bank that lends money to all our farms. And there's a gale blowing." },
+      { who: "cath", expression: "determined", text: "Wind spoils the aim of scarecrows and silos. Bees, ponds and windmills today." },
     ],
     after: [
-      {
-        who: "tomas",
-        text: "Eighteen thousand marks from three hundred and twelve households. It's in a biscuit tin and I'm sleeping next to it.",
-      },
+      { who: "tomas", text: "The bank said no. It's a co-op too: it belongs to the farmers." },
     ],
   },
   88: {
     name: "The Golden Parachute",
     before: [
-      {
-        who: "sol",
-        text: "Three Hollowell directors leave HollowCandor today, each with a payoff that'd buy Shingle Bay. They're flying out from the Rift.",
-      },
-      {
-        who: "cath",
-        text: "And the drones are covering their exit, straight over our hedges. Scarecrows and hives.",
-      },
-      {
-        who: "bea",
-        text: "What's a golden parachute?",
-      },
-      {
-        who: "cath",
-        text: "A soft landing for people who've crashed something.",
-      },
+      { who: "sol", text: "Their bosses are flying out by helicopter and drone, with bags of money." },
+      { who: "cath", expression: "determined", text: "The sky's full of drones today. Scarecrows, bees and windmills." },
     ],
     after: [
-      {
-        who: "pip",
-        text: "One of the three was Crisp's oldest client. He's had to take a desk in the HollowCandor building. A shared one.",
-      },
+      { who: "sol", text: "Half their managers have quit. The rest are packing for Kingsmarket." },
     ],
   },
   89: {
     name: "Quarterly Results",
     before: [
-      {
-        who: "crisp",
-        text: "Statement: HollowCandor expects to report significant progress in Marrow this quarter.",
-      },
-      {
-        who: "mara",
-        text: "The quarter ends on Friday. They have four days to make that true.",
-      },
-      {
-        who: "cath",
-        text: "So nothing will wait for us. One lot after another, no breathers. Build ahead of them.",
-      },
+      { who: "pip", text: "They need a win before their shareholders meet, so they're sending everything. No breaks between waves." },
+      { who: "cath", expression: "determined", text: "No time to build between waves. Build everything first, and save the pie for when they pile up." },
     ],
     after: [
-      {
-        who: "sol",
-        text: "Results are out. 'Significant progress in Marrow' has become 'continued engagement with Marrow'.",
-      },
+      { who: "pip", text: "Their results are terrible. The board is coming to deal with us in person." },
     ],
   },
   90: {
     name: "The Board of Directors",
     before: [
-      {
-        who: "pip",
-        text: "The whole board is coming down the lane in one car to 'see the asset in person'.",
-      },
-      {
-        who: "vane",
-        text: "We are simply visiting our stakeholders.",
-      },
-      {
-        who: "cath",
-        expression: "determined",
-        text: "Courthouse for the car. When it stops, five directors get out, and every one is armoured. Silos.",
-      },
+      { who: "narrator", text: "The Board of Directors in one armoured limousine. It takes over our best tower, and directors spill out when it stops." },
+      { who: "pell", text: "Graham Pell, chairman of HollowCandor. Every farm has a price. We're here to pay it." },
+      { who: "cath", expression: "determined", text: "It's armoured, so bring silos and the courthouse. Spread your towers so a takeover doesn't hurt." },
     ],
     after: [
-      {
-        who: "pell",
-        text: "The board will put the purchase of Kingsmarket square to shareholders at our AGM, in Kingsmarket, on the fourteenth.",
-      },
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "Shareholders. Tomas, what does a share cost?",
-      },
+      { who: "mara", text: "The board turned back. But they've called a shareholders' meeting in Kingsmarket, to buy the square." },
+      { who: "cath", expression: "determined", text: "Then that's where we're going. All of us." },
     ],
   },
-
   // Act 10, Kingsmarket.
   91: {
     name: "The Charter",
     before: [
-      {
-        who: "tomas",
-        text: "Forty-one marks a share. Four hundred and twelve of us have bought one. Mrs Abel bought two.",
-      },
-      {
-        who: "mara",
-        text: "And this: a certified copy of the Kingsmarket charter of 1342. It has hung in my downstairs loo for eleven years.",
-      },
-      {
-        who: "mara",
-        text: "It says the square belongs to those who trade on it, and no lord, guild or heir may sell it.",
-      },
-      {
-        who: "cath",
-        text: "And HollowCandor knows Mara has a copy. Expect company on her lane.",
-      },
+      { who: "narrator", text: "Kingsmarket, the valley's old market town. HollowCandor's meeting is in the square they want to buy." },
+      { who: "mara", text: "This is the town charter, from the 1300s. It says the square belongs to the traders, forever." },
+      { who: "cath", expression: "determined", text: "Then we keep their trucks out of the square until Mara can read it to them." },
     ],
     after: [
-      {
-        who: "pip",
-        text: "Every trader's licence in Kingsmarket goes through my office. By the fourteenth, I could make all four hundred and twelve of you traders.",
-      },
-      {
-        who: "cath",
-        text: "Do that, Pip.",
-      },
+      { who: "mara", text: "They can't buy what was never for sale. I just have to say it in front of the shareholders." },
     ],
   },
   92: {
     name: "The Clock Tower",
     before: [
-      {
-        who: "narrator",
-        text: "Kingsmarket, eleven days to the meeting. HollowCandor has rented every loading bay around the clock tower.",
-      },
-      {
-        who: "sol",
-        text: "They're sending vans every quarter hour, on the chime. No gaps, no breather.",
-      },
-      {
-        who: "cath",
-        text: "So build before it strikes, and keep building while it does.",
-      },
+      { who: "tomas", text: "When the clock strikes, they all come at once. No gaps between waves." },
+      { who: "cath", expression: "determined", text: "Build everything you can before the first wave. Save the pie for when they bunch up." },
     ],
     after: [
-      {
-        who: "tomas",
-        text: "The stall never shut. Two hundred and eight sales, twelve of them to HollowCandor drivers.",
-      },
+      { who: "tomas", text: "The clock struck twelve and we're still here." },
     ],
   },
   93: {
     name: "Fishwives' Row",
     before: [
-      {
-        who: "narrator",
-        text: "At dawn, six boats from Shingle Bay tie up at Fishwives' Row, packed with ice and crab.",
-      },
-      {
-        who: "tomas",
-        text: "Dot Varley says she owes us for the beach road. She's paying in crab, and the crab is selling.",
-      },
-      {
-        who: "cath",
-        expression: "delighted",
-        text: "Market day, then. Every stall we open pays for the lane.",
-      },
+      { who: "sol", text: "The boats from Shingle Bay have sailed in to help, and they've brought fish to sell." },
+      { who: "cath", expression: "delighted", text: "Market day, then. The money comes in fast, so spend it as it arrives." },
     ],
     after: [
-      {
-        who: "bea",
-        text: "Mrs Varley let me hold a crab. It's going in my project. Not the crab. A drawing of it.",
-      },
+      { who: "tomas", text: "Every farm and every boat in the valley is in Kingsmarket now." },
     ],
   },
   94: {
     name: "The Grain Exchange",
     before: [
-      {
-        who: "narrator",
-        text: "HollowCandor has parked its armoured lorries in the old grain exchange on Corn Street.",
-      },
-      {
-        who: "mara",
-        text: "Booked for 'secure document storage'. Armoured lorries for paper. They're expecting a fight about paper.",
-      },
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "Silos. Grain through steel, at the grain exchange.",
-      },
+      { who: "ines", text: "They're sending armoured trucks through the old grain exchange." },
+      { who: "cath", expression: "determined", text: "Armour soaks up weak hits. Silos and upgraded towers." },
     ],
     after: [
-      {
-        who: "mara",
-        text: "Pip got me their reply to the charter. Eighty pages. It disputes its age, its spelling and its seal. Not what it says.",
-      },
+      { who: "ines", text: "The exchange held. The traders have locked its doors for us." },
     ],
   },
   95: {
     name: "Bell Lane",
     before: [
-      {
-        who: "pip",
-        text: "There's a back way into the square up Bell Lane. I know because it's where I used to meet Mr Crisp.",
-      },
-      {
-        who: "sol",
-        text: "No streetlights on Bell Lane since the cuts, and their vans are coming up it quick.",
-      },
-      {
-        who: "cath",
-        text: "Then we hold it. Short sight tonight, so build tight to the lane.",
-      },
+      { who: "sol", text: "Night on Bell Lane, and they're hiding in the side streets." },
+      { who: "cath", expression: "determined", text: "At night the towers can't see as far. Build tight to the lane, and watch the red rings." },
     ],
     after: [
-      {
-        who: "narrator",
-        text: "At two in the morning, Crisp's car turns into Bell Lane, stops at the farms' barricade, and reverses all the way down.",
-      },
+      { who: "sol", text: "Every bell in Kingsmarket is ringing for us tonight." },
     ],
   },
   96: {
     name: "The Long Table",
     before: [
-      {
-        who: "narrator",
-        text: "Sunday, three days out. One long table down the middle of Kingsmarket square, every farm in Marrow at it.",
-      },
-      {
-        who: "tomas",
-        text: "And HollowCandor has sent a crowd of its own: hundreds of little vans, packed close, to block the deliveries.",
-      },
-      {
-        who: "cath",
-        text: "Hives and ponds along the table. Nobody leaves before pudding.",
-      },
+      { who: "tomas", text: "Every farm in the valley is eating together at one long table in the square." },
+      { who: "tomas", text: "And HollowCandor has sent crowds to break it up." },
+      { who: "cath", expression: "determined", text: "Big crowds: bees and cannons. Nobody spoils this dinner." },
     ],
     after: [
-      {
-        who: "bea",
-        text: "I read my project to Mrs Keel. She said it was admissible.",
-      },
-      {
-        who: "mara",
-        text: "I said it was compelling. Admissible is a separate question.",
-      },
+      { who: "bea", text: "Mrs Keel let me sit next to her. She said I'm brave." },
     ],
   },
   97: {
     name: "The Charter Steps",
     before: [
-      {
-        who: "narrator",
-        text: "Monday. HollowCandor's biggest shareholders arrive at the Guildhall for a private briefing. Mara is on the steps.",
-      },
-      {
-        who: "mara",
-        text: "'The square of Kingsmarket shall belong to those who trade upon it, and to no lord nor guild nor heir.' Good morning.",
-      },
-      {
-        who: "cath",
-        text: "The steps are listed, and so is half the square. Build on the plots that aren't.",
-      },
+      { who: "mara", text: "I'm reading the charter on the steps today. They've fenced off half the plots to stop us." },
+      { who: "cath", expression: "determined", text: "Half the plots, so every tower counts. Put them on the bends." },
     ],
     after: [
-      {
-        who: "narrator",
-        text: "Eleven shareholders stop to listen. Two ask for a copy. One of them manages the Marrow teachers' pension fund.",
-      },
+      { who: "mara", text: "I read it out. The shareholders went very quiet." },
     ],
   },
   98: {
     name: "Vane's Last Memo",
     before: [
-      {
-        who: "sol",
-        text: "Leaked memo, Dr Vane to Candor staff: 'The charter is a historical document of considerable interest.' Every word true.",
-      },
-      {
-        who: "ines",
-        text: "Her researchers read it too. Eleven resigned this morning. Two are in my surgery having tea.",
-      },
-      {
-        who: "cath",
-        text: "And a river fog's come up. Their couriers will be on us before we see them. Build close.",
-      },
+      { who: "vane", text: "Octavia Vane. I've resigned from HollowCandor. Here's every memo I sent. I'm sorry." },
+      { who: "sol", text: "Fog's rolling in, and they're coming two ways." },
+      { who: "cath", expression: "determined", text: "In fog the towers can't see as far. Build close to both roads." },
     ],
     after: [
-      {
-        who: "vane",
-        text: "I have accepted a new role outside Marrow. I leave HollowCandor in excellent hands.",
-      },
-      {
-        who: "cath",
-        expression: "smirk",
-        text: "Every word true. Again.",
-      },
+      { who: "vane", text: "Those memos prove they knew their water study was fake. Use them." },
     ],
   },
   99: {
     name: "The Eve of Kingsmarket",
     before: [
-      {
-        who: "pip",
-        text: "Done. As of nine tomorrow, all four hundred and twelve of you hold a Kingsmarket trader's licence. I stamped them myself.",
-      },
-      {
-        who: "pell",
-        text: "HollowCandor will attend tomorrow's meeting with confidence, and with every resource at its disposal.",
-      },
-      {
-        who: "cath",
-        text: "Every resource tonight, then. The heaviest they've got, and each one will take a lot of stopping.",
-      },
-      {
-        who: "bea",
-        text: "Can I read my project tomorrow? Our class trip is to the square.",
-      },
+      { who: "tomas", text: "The vote is tomorrow. Tonight they're sending their toughest vehicles." },
+      { who: "cath", expression: "determined", text: "Upgrade your best towers, and merge them into megastructures if you can." },
     ],
     after: [
-      {
-        who: "cath",
-        text: "Yes. Stand on Tomas's crate, so the back row can hear.",
-      },
+      { who: "cath", text: "Tomorrow it all ends, one way or another. Get some sleep, everyone." },
     ],
   },
   100: {
     name: "HollowCandor",
     before: [
-      {
-        who: "narrator",
-        text: "Wednesday the fourteenth. The meeting opens at ten. At nine, HollowCandor's flagship turns into the square.",
-      },
-      {
-        who: "crisp",
-        text: "Statement: HollowCandor looks forward to an orderly meeting.",
-      },
-      {
-        who: "cath",
-        expression: "determined",
-        text: "Courthouse on it early: it slows anything of ours it passes. When it breaks, Candor's half mends itself. Hit it hard.",
-      },
-      {
-        who: "cath",
-        text: "Then Hollowell's half goes dark. Masts out, or we won't see it coming.",
-      },
+      { who: "narrator", text: "HollowCandor itself, in one giant machine. It jams towers, heals itself, and breaks into smaller pieces when hit." },
+      { who: "pell", text: "Ms Hale. One signature, and every farm in the valley is rich. Why fight it?" },
+      { who: "cath", expression: "determined", text: "Because it isn't for sale, Mr Pell. It never was." },
+      { who: "cath", expression: "determined", text: "Everything we've got, everyone. Silos and the courthouse for the big one, masts for the hidden pieces." },
     ],
     after: [
-      {
-        who: "narrator",
-        text: "11:40. Item seven is withdrawn. Four hundred and twelve people in the room are licensed traders of the square.",
-      },
-      {
-        who: "pell",
-        text: "HollowCandor remains committed to Marrow, and to listening.",
-      },
+      { who: "narrator", text: "The machine breaks apart in the square. The shareholders vote to sell nothing, and to go home." },
+      { who: "mara", text: "The square belongs to the traders. The valley belongs to the people who farm it." },
+      { who: "cath", expression: "delighted", text: "Then let's eat. Bea has something she wants to read to everyone." },
     ],
   },
 };
 
-/** After level 100: Bea reads her school project in Kingsmarket square. */
 export const FINALE: StoryLine[] = [
-  {
-    who: "narrator",
-    text: "Thursday. Kingsmarket square, Tomas's stall. Bea stands on a crate with three pages and a drawing.",
-  },
-  {
-    who: "bea",
-    text: "What my mum does, by Bea Hale. My mum has cows. She gets up before them and she does not like it.",
-  },
-  {
-    who: "bea",
-    text: "She makes pies. Most of them are for eating. She does arithmetic and she knows what everything costs.",
-  },
-  {
-    who: "bea",
-    text: "When men in nice coats come to buy our farm, she gives them tea. Then she says no thank you.",
-  },
-  {
-    who: "bea",
-    text: "One day she missed the vans to watch me be a star. Mrs Keel did the vans. The end.",
-  },
-  {
-    who: "narrator",
-    text: "Tomas buys the drawing for a mark, the first sale of the day, and pins it to the front of the stall.",
-  },
+  { who: "narrator", text: "Kingsmarket square, the next morning. Bea stands on a crate in front of the whole valley." },
+  { who: "bea", text: "My school project, by Bea Hale. It's called 'What my mum does'." },
+  { who: "bea", text: "My mum gets up very early. She bakes pies, and sometimes she throws them at vans." },
+  { who: "bea", text: "When people tried to take our farms, she didn't shout. She just got everybody to help each other." },
+  { who: "bea", text: "Mrs Keel says my mum is the bravest person she knows. I think so too. The end." },
+  { who: "narrator", text: "The whole square claps. Tomas pins Bea's drawing to the front of his stall, where it stays." },
 ];
