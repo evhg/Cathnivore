@@ -13,12 +13,19 @@ import {
   allocateAttribute,
   characterStats,
   equip,
+  fitWeaponPart,
+  sellItem,
+  sellValue,
+  socketInto,
+  stripWeaponPart,
+  upgradeWeaponTier,
   respecCharacter,
   respecRefund,
   takeSecondClass,
   unequip,
   type Character,
 } from "../sim/character";
+import type { Result } from "../sim/skills";
 import { CLASSES, DUAL_CLASS_LEVEL, SKILLS, TREES, hybridFor, treeSkills, type SkillDef } from "../sim/classes";
 import {
   CHIP_BY_ID,
@@ -51,7 +58,7 @@ import {
 } from "../sim/skills";
 import { sumModifiers, xpForLevel, xpToNext, MAX_LEVEL, type DerivedStats, type StatTotals } from "../sim/stats";
 import { ATTRIBUTES, CLASS_IDS, WEAPON_CLASSES, type AttributeId, type ClassId, type WeaponClass } from "../sim/types";
-import { TIER_NAMES, WEAPON_BASES } from "../sim/weapons";
+import { PART_SLOTS, TIER_NAMES, WEAPON_BASES, WEAPON_PARTS, partFits, upgradeCost } from "../sim/weapons";
 import { CLASS_COPY, classEmblem, itemGlyph } from "./classart";
 import { ATTRIBUTE_LABEL } from "./classpick";
 import { attrs, button, cssVar, el, num, reducedMotion, svg, trapTab } from "./dom";
@@ -1148,6 +1155,71 @@ export function openCharacter(
     const fill = Math.max(0, 24 - c.inventory.length) + ((8 - ((Math.max(24, c.inventory.length)) % 8)) % 8);
     for (let i = 0; i < fill; i++) el("div", "cx-bag-empty", grid).setAttribute("aria-hidden", "true");
     if (c.inventory.length === 0) el("p", "cx-hint", bag, "Nothing in the bag yet. The Drowned Market will see to that.");
+    renderGunsmith(c, wrap);
+  }
+
+  // ---- gunsmith: tiers, parts, chips and the fence ----
+  let smithUid: string | null = null;
+  function renderGunsmith(c: Character, wrap: HTMLElement): void {
+    const all = [...EQUIP_SLOTS.map((s) => c.equipment[s]).filter((i): i is Item => !!i), ...c.inventory];
+    const pickable = all.filter((i) => i.kind !== "chip");
+    const sec = el("section", "cx-smith", wrap);
+    sec.setAttribute("aria-labelledby", "cx-smith-h");
+    const sh = el("header", "cx-sec-head", sec);
+    el("h3", "cx-sec-title", sh, "Ana's gunsmith").id = "cx-smith-h";
+    el("p", "cx-sec-note", sh, `${c.scrip} Scrip`);
+    if (pickable.length === 0) return void el("p", "cx-hint", sec, "Bring Ana a gun or a coat and she'll make it better. For a price.");
+    const item = pickable.find((i) => i.uid === smithUid) ?? pickable[0]!;
+    smithUid = item.uid;
+    const sel = document.createElement("select");
+    sel.className = "cx-smith-pick";
+    sel.setAttribute("aria-label", "Item to work on");
+    sel.dataset.k = "smith:pick";
+    for (const i of pickable) {
+      const o = document.createElement("option");
+      o.value = i.uid;
+      o.textContent = i.name + (c.inventory.includes(i) ? "" : " (worn)");
+      o.selected = i.uid === item.uid;
+      sel.append(o);
+    }
+    sel.addEventListener("change", () => {
+      smithUid = sel.value;
+      render();
+    });
+    sec.append(sel);
+    const row = (label: string, cost: number | null, enabled: boolean, run: () => Result<Character>, key: string) => {
+      const b = button("cx-smith-act", sec);
+      b.dataset.k = key;
+      el("span", "", b, label);
+      if (cost !== null) el("span", "cx-smith-cost", b, `${cost} Scrip`);
+      b.disabled = !enabled;
+      b.addEventListener("click", () => {
+        const r = run();
+        if (!r.ok) return say(capital(r.reason) + ".");
+        commit(r.value, key);
+        say("Done.", "good");
+      });
+    };
+    if (item.kind === "weapon") {
+      const cost = upgradeCost(item.tier, item.level);
+      row(cost === null ? "Tier V (maximum)" : `Raise to tier ${TIER_NAMES[Math.min(4, item.tier)]}`, cost, cost !== null && c.scrip >= cost, () => upgradeWeaponTier(getChar(), item.uid), "smith:tier");
+      const cls = WEAPON_BASES[item.base]?.cls;
+      for (const part of Object.values(WEAPON_PARTS)) {
+        if (!cls || !partFits(part, cls)) continue;
+        const on = item.parts[part.slot] === part.id;
+        row(`${part.name} (${part.slot})${on ? " · fitted" : ""}`, on ? null : part.cost, !on && c.scrip >= part.cost, () => fitWeaponPart(getChar(), item.uid, part.id), `smith:part:${part.id}`);
+      }
+      for (const slot of PART_SLOTS) {
+        if (item.parts[slot]) row(`Strip the ${slot}`, null, true, () => stripWeaponPart(getChar(), item.uid, slot), `smith:strip:${slot}`);
+      }
+    }
+    if (item.sockets > item.chips.length) {
+      for (const chip of c.inventory.filter((i) => i.kind === "chip")) {
+        row(`Socket ${chip.name}`, null, true, () => socketInto(getChar(), item.uid, chip.uid), `smith:chip:${chip.uid}`);
+      }
+    }
+    if (c.inventory.includes(item)) row("Sell to the fence", null, true, () => sellItem(getChar(), item.uid), "smith:sell");
+    el("p", "cx-hint", sec, c.inventory.includes(item) ? `The fence pays ${sellValue(item)} Scrip.` : "Take it off to sell it.");
   }
 
   // ---- render, focus and keys ----

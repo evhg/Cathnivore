@@ -2214,3 +2214,11 @@ input[type="radio"] {
   .cx-node:hover,
   .cx-node:focus-visible { transform: none; }
 }
+
+/* Gunsmith panel in the inventory tab */
+.cx-smith { margin-top: 18px; display: flex; flex-direction: column; gap: 6px; }
+.cx-smith-pick { background: #12151d; color: inherit; border: 1px solid #2a2f3c; border-radius: 6px; padding: 8px 10px; font: inherit; min-height: 44px; }
+.cx-smith-act { display: flex; justify-content: space-between; gap: 12px; min-height: 44px; padding: 8px 12px; text-align: left; background: #12151d; color: inherit; border: 1px solid #2a2f3c; border-radius: 6px; font: inherit; cursor: pointer; }
+.cx-smith-act:hover:not(:disabled), .cx-smith-act:focus-visible { border-color: #e8b04a; }
+.cx-smith-act:disabled { opacity: 0.45; cursor: default; }
+.cx-smith-cost { color: #e8b04a; white-space: nowrap; }
