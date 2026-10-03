@@ -53,3 +53,7 @@ Add short, durable notes here that will help later sessions, such as commands th
 - Don't wait on a process with `pgrep -f <pattern>` inside a loop: the loop's own command line contains the pattern, so it never ends. Poll a log file instead.
 - **Hedgerow bots:** the tuner and level tests use `playLevel(level, "best")` (the better of `competent` and `balanced`), so a simple spam strategy can't beat the curve because the benchmark played badly. Measure Scarecrow spam with `"naive"`. A full tune takes about an hour on 4 cores.
 - `?sandbox=1` exposes `window.hedgerow` (`game()`, `place`, `upgrade`, `merge`, `sendWave`) so screenshot scripts can set up fields (megastructures, late waves) without clicking.
+- **CATHODE** (owner, 2026-10-03; `docs/design/cathode.md`, ROADMAP Phase 6 comes first): `/cathode/` (`games/cathode/`), R-rated behind an 18+ gate.
+  - Layout: `src/sim/` holds the pure rules, tested in `tests/cathode-*.test.ts`; `src/render/` is the three.js world implementing `render/types.ts`; `src/game/` has the session loop, player, enemies (jointed segment bodies, Verlet ragdolls), weapons, combat, kill-cam and synthesised audio; `src/ui/` is the DOM HUD and screens.
+  - Test hooks: `?play` skips the title, `?shot` freezes time. `window.cathode` is the session; `window.cathode.input.forced = {fire: true}` drives one frame. The pause card doesn't show under webdriver.
+  - Headless WebGL runs at about 3 fps under swiftshader: wait 1 s or more between scripted inputs.
