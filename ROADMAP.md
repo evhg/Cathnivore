@@ -215,7 +215,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 
 ### Small polish found on the iPhone 17 Pro Max check (2026-10-03)
 
-55. [ ] Cathnivore title screen on phones: Cath covers the "Brindle Hills" hex label; nudge her or the hex grid so every label reads.
+55. [x] *(2026-10-03)* Cathnivore title screen on phones: Cath covers the "Brindle Hills" hex label; nudge her or the hex grid so every label reads.
 56. [x] *(2026-10-03)* Runnel How to Play on phones: say "Tap" and "Hold" only (the Shift-click line wraps badly and doesn't apply on a phone).
 
 ### Hedgerow round 3 (owner's third playtest, 2026-10-02 afternoon; design: docs/design/hedgerow-v2.md 6)

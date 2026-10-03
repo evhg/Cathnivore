@@ -399,10 +399,11 @@
   .title-menu {
     width: 100%;
   }
+  /* Low and to the left, so her head sits below the Brindle Hills hex's label rather than over it. */
   .title-cath {
-    width: 40%;
-    left: -5%;
-    bottom: 2%;
+    width: 36%;
+    left: -7%;
+    bottom: -3%;
   }
 }
 
