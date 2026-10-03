@@ -221,7 +221,7 @@ function buildShotgun(): GunRig {
 
 /** The Widowmaker: a bolt-action rifle with a long scope, a suppressor and a folding bipod. */
 function buildSniper(): GunRig {
-  const r = rig(new THREE.Vector3(0.17, -0.18, -0.46), new THREE.Vector3(0, -0.11, -0.28), 9);
+  const r = rig(new THREE.Vector3(0.2, -0.21, -0.5), new THREE.Vector3(0, -0.095, -0.28), 9);
   r.scoped = true;
   const g = new THREE.Group();
   g.add(at(cyl(0.02, 0.24, M.blued, 18), 0, 0, -0.02)); // receiver
@@ -253,7 +253,9 @@ function buildSniper(): GunRig {
   g.add(at(box(0.04, 0.035, 0.06, M.blued, 0.006), 0, -0.07, 0.0)); // magazine
   r.root.add(g);
   r.action = bolt;
-  r.muzzle.position.set(0, 0, -0.95);
+  // A long rifle up close swamps the frame: carry it a little smaller and lower.
+  g.scale.setScalar(0.82);
+  r.muzzle.position.set(0, 0, -0.95 * 0.82);
   r.port.position.set(0.02, 0.01, 0.02);
   attachHands(r, [0, -0.07, 0.17], [-0.005, -0.06, -0.24], -1.3);
   return r;

@@ -78,6 +78,12 @@ export interface World {
   on?(listener: (e: WorldEvent) => void): () => void;
   /** Optional: the highest walkable surface at (x, z) at or below y + 0.5 (stairs, walkways, roofs, else the ground). */
   floorAt?(x: number, y: number, z: number): number;
+  /**
+   * Optional: dress a game-layer MeshStandardMaterial for the street: the baked neon light volume as
+   * indirect light, and rain wetness (darker, glossier, streaked). Replaces its onBeforeCompile. Safe in
+   * viewScene too (no fog there, so it only keeps the standard shading).
+   */
+  wetten?(material: THREE.MeshStandardMaterial, wetness?: number): void;
   /** Optional: the last render's CPU time in ms, draw calls and triangles (for ?perf). */
   readonly perf?: { renderMs: number; drawCalls: number; triangles: number };
 }

@@ -6,7 +6,8 @@
 //   Grade       AgX-style tone map + noir grading: desaturated midtones while saturated neon keeps its
 //               colour, lifted cool blacks, vignette, edge chromatic aberration, and the kill-cam drama
 //               (heavier desaturation, vignette and a radial depth-of-field blur);
-//   Final       FXAA (phone) + film grain + dither, to the screen in sRGB.
+//   FXAA        phone only (high and ultra have 4x MSAA);
+//   Final       film grain + dither, to the screen.
 
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -14,6 +15,7 @@ import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
+import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 
 /** Renders the world, then the first-person layer on top after clearing depth, into one HDR buffer. */
 class ScenePass extends Pass {
@@ -130,6 +132,8 @@ const GradeShader = {
       // Lifted, cool blacks and a gentle S.
       mapped = mapped * 0.99 + vec3( 0.0012, 0.0022, 0.0042 );
       mapped = mix( mapped, mapped * mapped * ( 3.0 - 2.0 * mapped ), 0.25 );
+      // Encode to sRGB here so FXAA (phone) works on perceptual values.
+      mapped = mix( mapped * 12.92, 1.055 * pow( max( mapped, 0.0 ), vec3( 1.0 / 2.4 ) ) - 0.055, step( 0.0031308, mapped ) );
       gl_FragColor = vec4( mapped, 1.0 );
     }`,
 };
@@ -139,8 +143,7 @@ const FinalShader = {
     tDiffuse: { value: null as THREE.Texture | null },
     uRes: { value: new THREE.Vector2(1, 1) },
     uTime: { value: 0 },
-    uGrain: { value: 0.03 },
-    uFxaa: { value: 1 },
+    uGrain: { value: 0.035 },
   },
   vertexShader: GradeShader.vertexShader,
   fragmentShader: /* glsl */ `
@@ -148,38 +151,21 @@ const FinalShader = {
     uniform vec2 uRes;
     uniform float uTime;
     uniform float uGrain;
-    uniform float uFxaa;
     varying vec2 vUv;
-    float h( vec2 p ) { return fract( sin( dot( p, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); }
-    vec3 fxaa( vec2 uv ) {
-      vec2 px = 1.0 / uRes;
-      vec3 rgbNW = texture2D( tDiffuse, uv + vec2( -1.0, -1.0 ) * px ).rgb;
-      vec3 rgbNE = texture2D( tDiffuse, uv + vec2( 1.0, -1.0 ) * px ).rgb;
-      vec3 rgbSW = texture2D( tDiffuse, uv + vec2( -1.0, 1.0 ) * px ).rgb;
-      vec3 rgbSE = texture2D( tDiffuse, uv + vec2( 1.0, 1.0 ) * px ).rgb;
-      vec3 rgbM = texture2D( tDiffuse, uv ).rgb;
-      vec3 luma = vec3( 0.299, 0.587, 0.114 );
-      float lNW = dot( rgbNW, luma ), lNE = dot( rgbNE, luma ), lSW = dot( rgbSW, luma ), lSE = dot( rgbSE, luma ), lM = dot( rgbM, luma );
-      float lMin = min( lM, min( min( lNW, lNE ), min( lSW, lSE ) ) );
-      float lMax = max( lM, max( max( lNW, lNE ), max( lSW, lSE ) ) );
-      vec2 dir = vec2( -( ( lNW + lNE ) - ( lSW + lSE ) ), ( ( lNW + lSW ) - ( lNE + lSE ) ) );
-      float red = max( ( lNW + lNE + lSW + lSE ) * 0.03125, 1.0 / 128.0 );
-      float rcp = 1.0 / ( min( abs( dir.x ), abs( dir.y ) ) + red );
-      dir = clamp( dir * rcp, -8.0, 8.0 ) * px;
-      vec3 a = 0.5 * ( texture2D( tDiffuse, uv + dir * ( 1.0 / 3.0 - 0.5 ) ).rgb + texture2D( tDiffuse, uv + dir * ( 2.0 / 3.0 - 0.5 ) ).rgb );
-      vec3 b = a * 0.5 + 0.25 * ( texture2D( tDiffuse, uv + dir * -0.5 ).rgb + texture2D( tDiffuse, uv + dir * 0.5 ).rgb );
-      float lB = dot( b, luma );
-      return ( lB < lMin || lB > lMax ) ? a : b;
+    // Dave Hoskins' hash: no sin(), so no moire at odd render scales.
+    float h( vec2 p ) {
+      vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
+      p3 += dot( p3, p3.yzx + 33.33 );
+      return fract( ( p3.x + p3.y ) * p3.z );
     }
     void main() {
-      vec3 c = uFxaa > 0.5 ? fxaa( vUv ) : texture2D( tDiffuse, vUv ).rgb;
-      // Film grain, stronger in the shadows; and dither against banding in the fog.
+      vec3 c = texture2D( tDiffuse, vUv ).rgb;
+      // Film grain in display space (even in the blacks), then dither against banding in the fog.
+      vec2 px = floor( vUv * uRes );
       float l = dot( c, vec3( 0.333 ) );
-      float g = h( vUv * uRes + fract( uTime * 61.0 ) * 100.0 ) - 0.5;
-      c += g * uGrain * ( 1.0 - l * 0.7 );
-      // Linear to sRGB.
-      c = mix( c * 12.92, 1.055 * pow( max( c, 0.0 ), vec3( 1.0 / 2.4 ) ) - 0.055, step( 0.0031308, c ) );
-      c += ( h( vUv * uRes + 17.0 ) - 0.5 ) / 255.0;
+      float g = h( px + floor( fract( uTime * 7.31 ) * 997.0 ) ) - 0.5;
+      c += g * uGrain * ( 1.0 - l * 0.6 );
+      c += ( h( px * 1.37 + 11.0 ) - 0.5 ) / 255.0;
       gl_FragColor = vec4( c, 1.0 );
     }`,
 };
@@ -220,8 +206,10 @@ export function createPost(
   composer.addPass(bloom);
   const grade = new ShaderPass(GradeShader);
   composer.addPass(grade);
+  // Phone has no MSAA: FXAA on the graded (sRGB) image.
+  const fxaa = quality === "phone" ? new ShaderPass(FXAAShader) : null;
+  if (fxaa) composer.addPass(fxaa);
   const final = new ShaderPass(FinalShader);
-  final.uniforms.uFxaa!.value = quality === "phone" ? 1 : 0;
   composer.addPass(final);
   return {
     composer,
@@ -236,6 +224,7 @@ export function createPost(
       const ph = Math.round(h * dpr);
       grade.uniforms.uRes!.value.set(pw, ph);
       final.uniforms.uRes!.value.set(pw, ph);
+      fxaa?.uniforms.resolution!.value.set(1 / pw, 1 / ph);
       // Bloom at half resolution on phone.
       if (quality === "phone") bloom.setSize(Math.round(pw / 2), Math.round(ph / 2));
     },

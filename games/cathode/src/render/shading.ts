@@ -184,11 +184,13 @@ function bindShared(shader: THREE.WebGLProgramParametersWithUniforms, s: SharedU
 /** Indirect diffuse from the light volume, sampled half a metre off the surface along its normal. */
 const VOLUME_LIGHT = /* glsl */ `
 #include <lights_fragment_maps>
+#ifdef USE_FOG
 {
   vec3 cWorldN = inverseTransformDirection( normal, viewMatrix );
   vec3 vol = cathodeVolume( vFogWorld + cWorldN * 0.55 ) * uVolGain;
   irradiance += vol * CATHODE_VOL_SCALE;
 }
+#endif
 `;
 
 export type SurfaceKind = "wall" | "ground" | "water" | "prop";
@@ -242,14 +244,18 @@ function wetWall(fs: string): string {
     .replace(
       "#include <color_fragment>",
       /* glsl */ `#include <color_fragment>
+      float cWet = 0.0;
+      float cUp = 0.0;
+      #ifdef USE_FOG
       // World-space face normal from derivatives: color_fragment runs before normal_fragment_begin.
       vec3 cWN = normalize( cross( dFdx( vFogWorld ), dFdy( vFogWorld ) ) );
       cWN *= sign( dot( cWN, cameraPosition - vFogWorld ) );
-      float cUp = clamp( cWN.y, 0.0, 1.0 );
+      cUp = clamp( cWN.y, 0.0, 1.0 );
       vec2 cStreakUv = vec2( ( vFogWorld.x + vFogWorld.z ) * 0.31, vFogWorld.y * 0.018 + uTime * 0.004 );
       float cStreak = smoothstep( 0.42, 0.75, texture2D( uNoise, cStreakUv ).g + texture2D( uNoise, cStreakUv * vec2( 3.1, 0.6 ) ).b * 0.35 );
       float cSplash = 1.0 - smoothstep( 0.15, 0.9, vFogWorld.y );
-      float cWet = clamp( ( 0.35 + cStreak * 0.65 + cSplash + cUp ) * CATHODE_WET, 0.0, 1.0 );
+      cWet = clamp( ( 0.35 + cStreak * 0.65 + cSplash + cUp ) * CATHODE_WET, 0.0, 1.0 );
+      #endif
       diffuseColor.rgb *= mix( 1.0, 0.5, cWet );`,
     )
     .replace(

@@ -204,7 +204,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const fwd = new THREE.Vector3();
 
   const frame = (now: number) => {
-    const realDt = Math.min(0.05, (now - last) / 1000);
+    // rAF timestamps can trail performance.now() (set when resuming), so never let time run backwards.
+    const realDt = Math.max(0, Math.min(0.05, (now - last) / 1000));
     last = now;
     const intent = input.read();
     // On desktop the game waits while the mouse is free (Esc, or before the first click).
@@ -212,7 +213,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.showPause(away);
     if (intent.skills && !charScreen && !killcam.active) openSheet();
     if (s.paused || away) {
-      last = performance.now();
+      last = now;
       world.render();
       requestAnimationFrame(frame);
       return;

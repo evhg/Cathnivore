@@ -243,10 +243,11 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
             blocked = true;
             break;
           }
-        if (!blocked) l += (1100 / (dist * dist)) * 0.35 * THREE.MathUtils.smoothstep(cosA, Math.cos(Math.PI * 0.16), Math.cos(Math.PI * 0.12));
+        if (!blocked) l += (1100 / (dist * dist)) * 0.1 * THREE.MathUtils.smoothstep(cosA, Math.cos(Math.PI * 0.16), Math.cos(Math.PI * 0.12));
       }
-      for (const fl of fxs.lights) if (fl.intensity > 0) l += fl.intensity / (1 + fl.position.distanceToSquared(p)) * 0.05;
-      return THREE.MathUtils.clamp(1 - Math.exp(-l * 0.35), 0, 1);
+      for (const fl of fxs.lights) if (fl.intensity > 0) l += (fl.intensity / (1 + fl.position.distanceToSquared(p))) * 0.004;
+      // Calibrated: under a streetlamp ~0.75, open street ~0.15–0.3, the alleys' back corners 0.
+      return THREE.MathUtils.clamp(1 - Math.exp(-l * 20), 0, 1);
     },
     surfaceAt(p) {
       let best: Surface | null = null;
@@ -325,6 +326,10 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     setDrama(amount) {
       drama = THREE.MathUtils.clamp(amount, 0, 1);
     },
+    wetten(material, wetness = 0.5) {
+      patchMaterial(material, shared, { kind: "prop", wet: wetness });
+      material.needsUpdate = true;
+    },
     on(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
@@ -341,6 +346,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       renderer.dispose();
     },
   };
+  // Not part of the contract: a handle for screenshot and tuning scripts.
+  Object.assign(world, { debug: { post, reflection, pool, shared, key, volume } });
   progress(1, "Ready");
   return world;
 };

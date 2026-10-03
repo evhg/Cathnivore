@@ -5,6 +5,7 @@
 
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 export const JOINTS = [
   "pelvis",
@@ -194,6 +195,7 @@ function buildSegment(name: string, len: number, look: BodyLook): THREE.Group {
       g.add(mesh(rbox(0.135, 0.03, 0.28, 0.01), s, 0, len + 0.06, 0.05)); // sole
       break;
   }
+  mergeByMaterial(g);
   const capA = mesh(cyl(0.05, 0.05, 0.02, 10), look.gore, 0, 0, 0);
   const capB = mesh(cyl(0.05, 0.05, 0.02, 10), look.gore, 0, len, 0);
   capA.name = "capFrom";
@@ -201,6 +203,33 @@ function buildSegment(name: string, len: number, look: BodyLook): THREE.Group {
   capA.visible = capB.visible = false;
   g.add(capA, capB);
   return g;
+}
+
+/**
+ * Merges a segment's meshes that share a material into one mesh each, so an Enforcer costs a handful of
+ * draw calls per segment instead of dozens (it's drawn again for reflections and shadows).
+ */
+function mergeByMaterial(g: THREE.Group): void {
+  const groups = new Map<THREE.Material, THREE.BufferGeometry[]>();
+  for (const c of [...g.children]) {
+    const m = c as THREE.Mesh;
+    if (!m.isMesh) continue;
+    c.updateMatrix();
+    const geo = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+    geo.applyMatrix4(c.matrix);
+    for (const k of Object.keys(geo.attributes)) if (!["position", "normal", "uv"].includes(k)) geo.deleteAttribute(k);
+    const mat = m.material as THREE.Material;
+    if (!groups.has(mat)) groups.set(mat, []);
+    groups.get(mat)!.push(geo);
+    g.remove(c);
+  }
+  for (const [mat, geos] of groups) {
+    const merged = mergeGeometries(geos, false);
+    if (!merged) continue;
+    const m = new THREE.Mesh(merged, mat);
+    m.castShadow = true;
+    g.add(m);
+  }
 }
 
 /** Joint positions in body space (feet on y=0, facing +Z), for the rest pose and as animation anchors. */

@@ -347,7 +347,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       b.add("tarp", aw, 0);
       for (let z = bd.z0 + 1.2; z < bd.z1 - 1; z += r(1.5, 3)) drips.push(V(W + 1.4, gf - 1.2, z));
     }
-    if (rand() < 0.75 && bd.storeys > 2) {
+    if (rand() < 0.75 && bd.storeys > 2 && !(bd.z0 < 52 && bd.z1 > 25)) {
       const stack = [pick(["酒", "鮨", "薬", "宿", "麺", "茶", "灯"]), pick(["BAR", "24H", "ATM", "OPEN", "VAPE"]), pick(["占", "魚", "肉", "湯"])];
       stack.forEach((t, i) => {
         const c = pick([NEON.pink, NEON.cyan, NEON.amber, NEON.green, NEON.violet, NEON.white]);
@@ -370,7 +370,8 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
         const z = bd.z0 + bay * (i + 0.5);
         const lit = rand() < 0.36;
         windows.push({ pos: V(W + 0.03, y + 0.85, z), normal: V(1, 0, 0), w: 1.25, h: 1.75, tile: winTile(rand, lit), lit: lit ? r(1.1, 2.4) : 0 });
-        if (rand() < 0.22) {
+        const onWalkway = k === 1 && z > 25 && z < 52;
+        if (rand() < 0.22 && !onWalkway) {
           b.box("acUnit", W + 0.32, y - 0.25, z + r(-0.3, 0.3), 0.62, 0.55, 0.85, { uv: 1 });
           drips.push(V(W + 0.55, y - 0.55, z));
         }
@@ -951,7 +952,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     "patrol:street": [P(-3, 40), P(-3, 18), P(-0.5, -6), P(-1, -22), P(-2.5, -44), P(-1, -22), P(-0.5, -6), P(-3, 18)],
     "patrol:market": [P(5.0, 36), P(5.0, 17), P(4.8, -2), P(5.0, 17)],
     "patrol:alley": [P(-8, 23), P(-19, 23.5), P(-12, 22), P(-8.5, 30)],
-    "patrol:south": [P(-8, -43), P(-19, -43), P(-8, -43), P(1.5, -54), P(6.6, -58), P(1.5, -54)],
+    "patrol:south": [P(-8, -42.5), P(-16.5, -42.2), P(-8, -42.5), P(1.5, -54), P(6.6, -58), P(1.5, -54)],
   };
   void quality;
 
