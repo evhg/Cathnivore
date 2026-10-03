@@ -144,44 +144,54 @@ function buildSegment(name: string, len: number, look: BodyLook): THREE.Group {
       g.add(mesh(rbox(0.07, 0.08, 0.05, 0.015), a, -0.11, len * 0.15, 0.12));
       break;
     case "chest":
-      g.add(mesh(rbox(0.4, len, 0.24, 0.05), s, 0, mid, 0));
-      g.add(mesh(rbox(0.42, len * 0.85, 0.12, 0.04), a, 0, mid + 0.02, 0.09)); // chest plate
-      g.add(mesh(rbox(0.38, len * 0.8, 0.1, 0.04), a, 0, mid + 0.02, -0.1)); // back plate
-      g.add(mesh(rbox(0.08, 0.03, 0.02, 0.01), v, 0.12, len * 0.75, 0.155)); // status light
-      g.add(mesh(rbox(0.16, 0.12, 0.06, 0.02), a, -0.08, len * 0.35, 0.16)); // mag pouch
+      g.add(mesh(rbox(0.42, len, 0.26, 0.06), s, 0, mid, 0));
+      g.add(mesh(rbox(0.44, len * 0.62, 0.12, 0.04), a, 0, len * 0.6, 0.1)); // upper chest plate
+      g.add(mesh(rbox(0.38, len * 0.3, 0.11, 0.035), a, 0, len * 0.22, 0.11)); // lower plate, layered
+      g.add(mesh(rbox(0.4, len * 0.8, 0.1, 0.04), a, 0, mid + 0.02, -0.11)); // back plate
+      g.add(mesh(rbox(0.3, 0.09, 0.26, 0.03), a, 0, len - 0.02, 0)); // gorget
+      g.add(mesh(rbox(0.1, 0.025, 0.02, 0.008), v, 0.13, len * 0.8, 0.165)); // status light
+      g.add(mesh(rbox(0.03, len * 0.5, 0.012, 0.005), v, -0.17, len * 0.55, 0.162)); // amber trim
+      for (const x of [-0.1, 0, 0.1]) g.add(mesh(rbox(0.085, 0.13, 0.06, 0.02), s, x, len * 0.18, 0.18)); // mag pouches
+      g.add(mesh(rbox(0.26, 0.3, 0.1, 0.03), a, 0, mid, -0.19)); // radio pack
+      g.add(mesh(cyl(0.008, 0.008, 0.34, 6), s, 0.1, len + 0.08, -0.2)); // radio whip
       break;
     case "head": {
       g.add(mesh(cyl(0.05, 0.06, 0.08), s, 0, 0.03, 0)); // neck
-      const helm = mesh(sphere(0.135), a, 0, 0.15, -0.005);
-      helm.scale.set(1, 1.05, 1.12);
+      const helm = mesh(sphere(0.145), a, 0, 0.15, -0.005);
+      helm.scale.set(1, 1.05, 1.15);
+      g.add(mesh(rbox(0.27, 0.05, 0.25, 0.02), a, 0, 0.21, -0.02)); // brow ridge
       g.add(helm);
-      g.add(mesh(rbox(0.2, 0.05, 0.08, 0.02), v, 0, 0.15, 0.11)); // the visor strip
+      g.add(mesh(rbox(0.22, 0.05, 0.08, 0.02), v, 0, 0.15, 0.12)); // the visor strip
       g.add(mesh(rbox(0.22, 0.09, 0.06, 0.02), a, 0, 0.08, 0.1)); // jaw guard
       g.add(mesh(cyl(0.012, 0.012, 0.12, 6), a, 0.1, 0.27, -0.04)); // antenna
       break;
     }
     case "upperArmL":
     case "upperArmR":
-      g.add(mesh(cyl(0.06, 0.055, len, 10), s, 0, mid, 0));
-      g.add(mesh(rbox(0.16, 0.1, 0.16, 0.04), a, 0, 0.02, 0)); // pauldron
+      g.add(mesh(cyl(0.075, 0.065, len, 12), s, 0, mid, 0));
+      g.add(mesh(rbox(0.19, 0.13, 0.19, 0.05), a, 0, 0.03, 0)); // pauldron
+      g.add(mesh(rbox(0.12, len * 0.4, 0.13, 0.03), a, 0, len * 0.5, 0)); // bicep guard
       break;
     case "forearmL":
     case "forearmR":
-      g.add(mesh(cyl(0.05, 0.045, len, 10), s, 0, mid, 0));
-      g.add(mesh(rbox(0.09, len * 0.6, 0.1, 0.025), a, 0, mid, 0.01)); // vambrace
+      g.add(mesh(cyl(0.062, 0.05, len, 12), s, 0, mid, 0));
+      g.add(mesh(rbox(0.11, len * 0.65, 0.12, 0.03), a, 0, mid, 0.01)); // vambrace
+      g.add(mesh(rbox(0.11, 0.06, 0.12, 0.025), a, 0, 0.02, 0)); // elbow cop
       g.add(mesh(rbox(0.07, 0.09, 0.05, 0.02), b, 0, len + 0.03, 0.01)); // glove
       break;
     case "thighL":
     case "thighR":
-      g.add(mesh(cyl(0.085, 0.07, len, 10), s, 0, mid, 0));
-      g.add(mesh(rbox(0.15, len * 0.55, 0.06, 0.025), a, 0, mid, 0.07)); // thigh plate
+      g.add(mesh(cyl(0.105, 0.085, len, 12), s, 0, mid, 0));
+      g.add(mesh(rbox(0.18, len * 0.6, 0.07, 0.03), a, 0, mid, 0.085)); // thigh plate
+      g.add(mesh(rbox(0.09, 0.14, 0.08, 0.02), s, 0.1, len * 0.4, 0)); // holster pouch
       break;
     case "shinL":
     case "shinR":
-      g.add(mesh(cyl(0.065, 0.055, len, 10), s, 0, mid, 0));
-      g.add(mesh(rbox(0.11, len * 0.6, 0.06, 0.025), a, 0, mid, 0.06)); // shin guard
-      g.add(mesh(rbox(0.12, 0.08, 0.1, 0.025), a, 0, 0.02, 0.05)); // knee pad
-      g.add(mesh(rbox(0.11, 0.08, 0.24, 0.03), b, 0, len + 0.02, 0.05)); // boot
+      g.add(mesh(cyl(0.08, 0.065, len, 12), s, 0, mid, 0));
+      g.add(mesh(rbox(0.13, len * 0.62, 0.07, 0.03), a, 0, mid, 0.07)); // shin guard
+      g.add(mesh(rbox(0.15, 0.11, 0.12, 0.035), a, 0, 0.03, 0.06)); // knee pad
+      g.add(mesh(rbox(0.13, 0.1, 0.27, 0.035), b, 0, len + 0.01, 0.05)); // boot
+      g.add(mesh(rbox(0.135, 0.03, 0.28, 0.01), s, 0, len + 0.06, 0.05)); // sole
       break;
   }
   const capA = mesh(cyl(0.05, 0.05, 0.02, 10), look.gore, 0, 0, 0);
