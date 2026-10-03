@@ -1322,7 +1322,17 @@ export function buildEnemy(kind: EnemyKind): THREE.Group {
 // ---- Cath ----
 
 /** Cath: an olive field jacket over a cream blouse, slim trousers, boots, a rolling pin; her head is her portrait. */
-export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
+/** Cath's outfits on the field: jacket, sleeve and blouse colours (shared/cath outfits). */
+const CATH_CLOTHES: Record<string, { jacket: string; sleeve: string; blouse: string }> = {
+  field: { jacket: C.olive, sleeve: "#56623A", blouse: "#F7F0E3" },
+  market: { jacket: "#C99A61", sleeve: "#AA7D48", blouse: "#F1E6D0" },
+  wax: { jacket: "#2F3A2C", sleeve: "#1F281E", blouse: "#F1E6D0" },
+  pinny: { jacket: "#F2C6CF", sleeve: "#9FB6D8", blouse: "#F4EEF2" },
+  gown: { jacket: "#6E1F33", sleeve: "#4E1424", blouse: "#F3E3C8" },
+};
+
+export function buildCath(faceTexture: THREE.Texture | null, outfit = "field"): THREE.Group {
+  const clothes = CATH_CLOTHES[outfit] ?? CATH_CLOTHES.field!;
   const root = new THREE.Group();
   const fig = new THREE.Group();
   root.add(fig);
@@ -1337,13 +1347,13 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   }
   // Jacket: a gently flared lathe, collar up.
   const pts = [new THREE.Vector2(0.12, 0), new THREE.Vector2(0.11, 0.1), new THREE.Vector2(0.1, 0.2), new THREE.Vector2(0.11, 0.26), new THREE.Vector2(0.05, 0.3)];
-  const jacket = mesh(new THREE.LatheGeometry(pts, 12), matte(C.olive, 0.7), 0, 0.22, 0);
+  const jacket = mesh(new THREE.LatheGeometry(pts, 12), matte(clothes.jacket, 0.7), 0, 0.22, 0);
   fig.add(jacket);
-  fig.add(box(0.02, 0.1, 0.08, matte("#F7F0E3", 0.5), 0.1, 0.38, 0));
+  fig.add(box(0.02, 0.1, 0.08, matte(clothes.blouse, 0.5), 0.1, 0.38, 0));
   fig.add(ball(0.012, glow("#ffe9a8", 1), 0.112, 0.44, 0.02, 0));
   const arm = new THREE.Group();
   arm.position.set(0, 0.48, 0.12);
-  arm.add(box(0.05, 0.18, 0.05, matte("#56623A", 0.7), 0, -0.14, 0));
+  arm.add(box(0.05, 0.18, 0.05, matte(clothes.sleeve, 0.7), 0, -0.14, 0));
   const pin = cyl(0.025, 0.025, 0.26, matte("#d9b384", 0.6), 0, -0.3, 0, 8);
   pin.rotation.z = Math.PI / 2;
   pin.position.set(0.05, -0.24, 0.02);
@@ -1351,7 +1361,7 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   fig.add(arm);
   const arm2 = new THREE.Group();
   arm2.position.set(0, 0.48, -0.12);
-  arm2.add(box(0.05, 0.18, 0.05, matte("#56623A", 0.7), 0, -0.14, 0));
+  arm2.add(box(0.05, 0.18, 0.05, matte(clothes.sleeve, 0.7), 0, -0.14, 0));
   fig.add(arm2);
   // Hair falling down her back.
   fig.add(box(0.05, 0.3, 0.2, matte("#2E211C", 0.5), -0.07, 0.32, 0));

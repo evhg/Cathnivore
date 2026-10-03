@@ -88,6 +88,8 @@ import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
 import { FINALE } from "./story/acts6to10";
 import {
+  WARDROBE,
+  outfitOf,
   ATTRS,
   ATTR_CAP,
   TALENTS,
@@ -214,11 +216,13 @@ const NAMES: Record<StoryLine["who"], string> = {
   vane: "Dr Vane",
   narrator: "Marrow",
 };
-const cath = (expression: CathExpression) => cathSvg({ framing: "face", expression, animate: true });
+/** What Cath is wearing (her wardrobe in cath.ts). */
+const wearing = () => outfitOf(data.cath, data.stars, Object.keys(data.rosettes ?? {}).length);
+const cath = (expression: CathExpression) => cathSvg({ framing: "face", expression, animate: true, outfit: wearing() });
 
 const data = load();
 ui.hostFace.innerHTML = cath("smirk");
-ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined" });
+ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined", outfit: wearing() });
 
 let game: Game | null = null;
 /** 3D when WebGL is there (and `?2d` isn't asked for); the 2D canvas renderer otherwise. */
@@ -308,7 +312,7 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
     ui.storyPlace.textContent = place;
     ui.storyWho.textContent = NAMES[line.who];
     ui.storyFull.textContent = line.text;
-    ui.storyLeft.innerHTML = cathSvg({ framing: "bust", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", animate: true });
+    ui.storyLeft.innerHTML = cathSvg({ framing: "bust", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", animate: true, outfit: wearing() });
     ui.storyLeft.classList.toggle("speaking", line.who === "cath");
     ui.storyRight.classList.toggle("speaking", line.who === other);
     ui.storySpeech.dataset.who = line.who;
@@ -439,6 +443,7 @@ function startLevel(lv: Level, heroic = heroicMode): void {
   ui.hudTitle.textContent = `${game.heroic ? "◆ " : ""}${lv.endless ? "∞" : `${lv.id}.`} ${lv.name}`;
   ui.hudPlace.textContent = lv.place;
   renderer ??= USE_3D ? new Renderer3D(ui.canvas, $<HTMLElement>("fx-layer")) : new Renderer(ui.canvas);
+  if (renderer instanceof Renderer3D) renderer.outfit = wearing();
   document.documentElement.classList.toggle("hedgerow-3d", renderer instanceof Renderer3D);
   renderer.reset();
   renderer.selected = null;
@@ -677,6 +682,17 @@ function wavePreview(p: HTMLElement, g: Game): void {
     const tw = line(g.level.twists.map((t) => `${TWISTS[t].name}: ${TWISTS[t].rule}`).join(" "), "twist-line");
     p.append(tw);
   }
+  for (const sp of g.level.setPieces ?? [])
+    p.append(
+      line(
+        sp.kind === "flood"
+          ? `Flood: from wave ${sp.wave} the river covers the plots by the ford; only Duck Ponds stand there, and vehicles wade.`
+          : sp.kind === "bridge"
+            ? `Swing bridge: it opens for ${sp.open}s every ${sp.period}s, and nothing crosses while it's up.`
+            : "Blackout: no lamps tonight. Towers and Cath light the lane around them; nothing in the dark can be targeted.",
+        "twist-line",
+      ),
+    );
   const row = document.createElement("ul");
   row.className = "preview-row";
   for (const { kind, count } of waveSummary(next)) {
@@ -1182,6 +1198,16 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "duelEnd":
         toast(ev.won ? `Cath wins the duel: the ${ENEMIES[ev.kind].name} reels.` : "Cath's knocked back. She'll be up in a moment.");
+        break;
+      case "flood":
+        if (ev.warn) banner("The river's rising", "Next wave it floods the plots by the ford. Only Duck Ponds will stand there.");
+        else {
+          banner("Flood!", "The plots by the ford are under water; anything but a pond is washed out for a while.", true);
+          haptic.boss();
+        }
+        break;
+      case "bridge":
+        if (ev.open) tip("bridge", "The swing bridge is up! Nothing crosses while it's open, so they bunch up in front of it. Splash them there.", "determined");
         break;
       case "bossMove":
         sfx.playBossMove(ev.move);
@@ -1818,12 +1844,12 @@ function renderCathButton(): void {
   const { c, level } = cathState();
   ui.cathLevel.textContent = String(level);
   ui.cathDot.hidden = freePoints(c, level) === 0 && talentsWaiting(c, level).length === 0;
-  if (!ui.cathBtnFace.innerHTML) ui.cathBtnFace.innerHTML = cathSvg({ framing: "face", expression: "smirk" });
+  ui.cathBtnFace.innerHTML = cathSvg({ framing: "face", expression: "smirk", outfit: wearing() });
 }
 
 function renderCath(): void {
   const { c, level, into, need, xp } = cathState();
-  ui.cathPortrait.innerHTML ||= cath("delighted");
+  ui.cathPortrait.innerHTML = cath("delighted");
   ui.cathTitle.textContent = `Cath, level ${level}`;
   ui.cathXpFill.style.setProperty("--xp", String(into / need));
   const free = freePoints(c, level);
@@ -1859,6 +1885,34 @@ function renderCath(): void {
     };
     li.append(text, b);
     ui.cathAttrs.append(li);
+  }
+  const wardrobe = $<HTMLElement>("cath-wardrobe");
+  wardrobe.replaceChildren();
+  const rosettes = Object.keys(data.rosettes ?? {}).length;
+  const now = wearing();
+  for (const o of WARDROBE) {
+    const has = o.earned(data.stars, rosettes);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `outfit${o.id === now ? " picked" : ""}`;
+    b.disabled = !has;
+    b.setAttribute("aria-pressed", String(o.id === now));
+    b.setAttribute("aria-label", has ? o.name : `${o.name}, locked. ${o.how}`);
+    const pic = document.createElement("span");
+    pic.className = "outfit-pic";
+    pic.innerHTML = cathSvg({ framing: "bust", expression: "smirk", outfit: o.id });
+    const n = document.createElement("small");
+    n.textContent = has ? o.name : o.how;
+    b.append(pic, n);
+    b.onclick = () => {
+      c.outfit = o.id;
+      save(data);
+      ui.cathPortrait.innerHTML = cath("delighted");
+      ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined", outfit: o.id });
+      renderCath();
+      renderCathButton();
+    };
+    wardrobe.append(b);
   }
   ui.cathTalents.replaceChildren();
   const head = document.createElement("h3");

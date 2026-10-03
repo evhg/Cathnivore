@@ -2067,3 +2067,48 @@ button {
 .watching .panel {
   display: none;
 }
+
+/* ---- Cath's wardrobe ---- */
+.wardrobe {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin: 0 0 12px;
+}
+.outfit {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 4px 2px 6px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--paper-2);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.outfit-pic {
+  width: 100%;
+  aspect-ratio: 5 / 6;
+  overflow: hidden;
+}
+.outfit-pic svg {
+  width: 100%;
+  height: 100%;
+}
+.outfit small {
+  font-size: 10px;
+  line-height: 1.15;
+  color: var(--ink-muted);
+}
+.outfit:disabled {
+  cursor: default;
+}
+.outfit:disabled .outfit-pic {
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.5;
+}
+.outfit.picked {
+  background: #f2c94c;
+  box-shadow: inset 0 0 0 2px #b8923e;
+}

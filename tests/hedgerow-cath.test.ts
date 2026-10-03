@@ -65,3 +65,19 @@ describe("Cath's character sheet", () => {
     expect(perksOf(data).heroHolds).toBe(0);
   });
 });
+
+describe("Cath's wardrobe", () => {
+  it("unlocks outfits by playing and only wears what's earned", async () => {
+    const { WARDROBE, outfitOf } = await import("../games/hedgerow/src/cath");
+    expect(WARDROBE.map((w) => w.id)).toEqual(["field", "market", "wax", "pinny", "gown"]);
+    const c = emptyCath();
+    c.outfit = "gown";
+    expect(outfitOf(c, {}, 0)).toBe("field");
+    expect(outfitOf(c, { "90": 1 }, 0)).toBe("gown");
+    c.outfit = "wax";
+    expect(outfitOf(c, {}, 4)).toBe("field");
+    expect(outfitOf(c, {}, 5)).toBe("wax");
+    expect(parseCath({ attrs: {}, talents: {}, outfit: "pyjamas" }).outfit).toBeUndefined();
+    expect(parseCath({ attrs: {}, talents: {}, outfit: "pinny" }).outfit).toBe("pinny");
+  });
+});

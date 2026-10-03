@@ -5,6 +5,7 @@
 // Pure functions over the save; main.ts draws the sheet and perksOf (store.ts) folds it into the Perks.
 
 import type { Perks } from "./engine";
+import type { CathOutfit } from "../../../shared/cath/cath";
 
 export type Attr = "strength" | "grit" | "pace" | "baking" | "leadership" | "wits";
 
@@ -91,6 +92,34 @@ export interface CathSave {
   attrs: Partial<Record<Attr, number>>;
   /** Talent picked at each talent level (keyed by the level). */
   talents: Record<string, 0 | 1>;
+  /** What she's wearing (her wardrobe, below). Missing = the olive field blazer. */
+  outfit?: CathOutfit;
+}
+
+// ---- her wardrobe (ROADMAP 51): outfits earned by playing, worn in the story, the HUD and on the field ----
+
+export interface Outfit {
+  id: CathOutfit;
+  name: string;
+  /** How it's earned, for the locked card. */
+  how: string;
+  earned: (stars: Record<string, number>, rosettes: number) => boolean;
+}
+
+const cleared = (stars: Record<string, number>, id: number) => (stars[String(id)] ?? 0) > 0;
+
+export const WARDROBE: Outfit[] = [
+  { id: "field", name: "Olive field blazer", how: "Her everyday best.", earned: () => true },
+  { id: "market", name: "Camel trench and knit scarf", how: "Clear Brindle Hills (level 10).", earned: (s) => cleared(s, 10) },
+  { id: "wax", name: "Waxed country jacket", how: "Earn 5 Rosettes.", earned: (_, r) => r >= 5 },
+  { id: "pinny", name: "Market-day pinny", how: "Clear the Saltmarsh (level 30).", earned: (s) => cleared(s, 30) },
+  { id: "gown", name: "Kingsmarket gown", how: "Clear the Merger (level 90).", earned: (s) => cleared(s, 90) },
+];
+
+/** What she wears: the chosen outfit if it's still earned, else the blazer. */
+export function outfitOf(c: CathSave | undefined, stars: Record<string, number>, rosettes: number): CathOutfit {
+  const o = WARDROBE.find((w) => w.id === c?.outfit);
+  return o && o.earned(stars, rosettes) ? o.id : "field";
 }
 
 export function emptyCath(): CathSave {
@@ -110,6 +139,7 @@ export function parseCath(raw: unknown): CathSave {
     const v = o.talents?.[String(lv)];
     if (v === 0 || v === 1) out.talents[String(lv)] = v;
   }
+  if (WARDROBE.some((w) => w.id === o.outfit)) out.outfit = o.outfit;
   return out;
 }
 
