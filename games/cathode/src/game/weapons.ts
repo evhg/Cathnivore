@@ -133,6 +133,14 @@ export class Arsenal {
     this.cd = this.weapon.cycle;
   }
 
+  /** Fills the held magazine from nowhere and cancels a reload (Spin Reload, Bullet Hose, Bang Bang). */
+  topUp(): void {
+    const h = this.held[this.current]!;
+    if (h.def.mag === 0) return;
+    h.ammo = h.def.mag;
+    this.reloading = 0;
+  }
+
   reload(): void {
     const h = this.held[this.current]!;
     if (h.def.mag === 0 || h.ammo >= h.def.mag || h.reserve <= 0 || this.reloading > 0) return;

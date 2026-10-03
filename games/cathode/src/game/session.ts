@@ -179,6 +179,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
 
   const onKill = (k: KillEvent) => {
+    actives.onKill();
     const bits: string[] = [];
     let bonus = 1;
     if (k.takedown) bits.push("Takedown");
@@ -291,8 +292,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     wasFire = intent.fire;
     const trigger = arsenal.weapon.kind === "melee" ? intent.fire : press;
     const spreadMul = (1 + Math.min(1.5, player.speed / 4)) * (player.onGround ? 1 : 2) * (1 - player.crouchAmt * 0.3);
-    const shot = dead ? null : arsenal.update(dt || realDt, trigger, eye, fwd, world.camera.quaternion, spreadMul);
+    const gun = actives.weaponMod(arsenal.weapon.weaponClass);
+    if (gun.noReload) arsenal.topUp();
+    const shot = dead ? null : arsenal.update((dt || realDt) * gun.rate, trigger, eye, fwd, world.camera.quaternion, spreadMul);
     if (shot) {
+      const nx = actives.takeNextShot(shot.weapon.weaponClass);
+      const mul = gun.dmg * nx.mul;
+      if (mul !== 1) shot.weapon = { ...shot.weapon, damage: shot.weapon.damage * mul };
+      if (nx.pellets > 0) shot.dirs = shot.dirs.slice(0, nx.pellets);
       if (thunderCover > 0) shot.weapon = { ...shot.weapon, noise: shot.weapon.noise * 0.25 };
       const r = combat.fire(shot, build());
       if (thunderCover > 0) hud.feedLine("Covered by the thunder");
@@ -325,6 +332,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!dead && intent.skill1) actives.use(0, progress.character, progress.stats, ctx);
     if (!dead && intent.skill2) actives.use(1, progress.character, progress.stats, ctx);
     actives.update(dt, progress.stats, world, world.colliders, ground);
+    if (actives.refill) {
+      arsenal.topUp();
+      actives.refill = false;
+    }
     for (const b of actives.blasts) combat.explode(b.pos, b.radius, b.damage, build(), b.silent);
     actives.blasts.length = 0;
     if (actives.heal > 0) {

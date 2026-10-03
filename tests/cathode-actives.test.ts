@@ -53,3 +53,29 @@ describe("CATHODE active skills (Fixer and Butcher)", () => {
     expect(a.blasts[0]!.pos.z).toBeLessThan(0);
   });
 });
+
+describe("CATHODE gun-buff actives", () => {
+  const gs = (skill: string) => {
+    const c = { ...newCharacter("gunslinger"), skills: { [`gunslinger.${skill}`]: 5 } };
+    return { c, d: characterStats(c) };
+  };
+  it("Six for Six raises pistol damage while it runs", () => {
+    const { c, d } = gs("sixForSix");
+    const a = new Actives();
+    a.assign(c);
+    expect(a.weaponMod("pistol").dmg).toBe(1);
+    expect(a.use(0, c, d, ctx()), a.said.join()).toBe(true);
+    expect(a.weaponMod("pistol").dmg).toBeGreaterThan(1.5);
+    expect(a.weaponMod("sniper").dmg).toBe(1);
+  });
+  it("Spin Reload refills the magazine and boosts the next shots, then runs out", () => {
+    const { c, d } = gs("spinReload");
+    const a = new Actives();
+    a.assign(c);
+    expect(a.use(0, c, d, ctx()), a.said.join()).toBe(true);
+    expect(a.refill).toBe(true);
+    expect(a.takeNextShot("pistol").mul).toBeCloseTo(1.2);
+    for (let i = 0; i < 10; i++) a.takeNextShot("pistol");
+    expect(a.takeNextShot("pistol").mul).toBe(1);
+  });
+});

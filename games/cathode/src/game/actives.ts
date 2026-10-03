@@ -60,6 +60,14 @@ export class Actives {
   readonly blasts: Array<{ pos: THREE.Vector3; radius: number; damage: number; silent?: boolean }> = [];
   /** Health to give Cath this frame (Stim), for the session to apply. */
   heal = 0;
+  /** Set by Spin Reload, Fan the Hammer and Bang Bang: the session tops up the held magazine, then clears it. */
+  refill = false;
+  /** Next-shot buffs: shots left and damage multiplier, per kind ("spin", "oneShot", "slug"). */
+  private next = new Map<string, { shots: number; mul: number }>();
+  private shells: Array<{ at: number; pos: THREE.Vector3 }> = [];
+  private clock = 0;
+  private groundAt: (x: number, z: number) => number = () => 0;
+  private bangStacks = 0;
   private healing: { left: number; rate: number } | null = null;
 
   /** Picks the first two learned actives, in tree order, unless the player has set them. */
@@ -87,6 +95,54 @@ export class Actives {
       markBonus: 1.25,
       guard: on("juggernaut") ? 1 - Number(this.params.get("juggernaut")?.reduction ?? 40) / 100 : 1,
     };
+  }
+
+  /** Gun buffs for the weapon class in hand: damage and fire-rate multipliers, and whether reloads are free. */
+  weaponMod(cls: string): { dmg: number; rate: number; noReload: boolean } {
+    const on = (k: string) => (this.timers.get(k) ?? 0) > 0;
+    const v = (k: string, f: string, dflt = 0) => Number(this.params.get(k)?.[f] ?? dflt) / 100;
+    let dmg = 1;
+    let rate = 1;
+    let noReload = false;
+    if (on("bulletHose") && (cls === "smg" || cls === "pistol")) {
+      rate += v("bulletHose", "fireRate", 40);
+      noReload = true;
+    }
+    if (on("fan") && (cls === "revolver" || cls === "pistol")) {
+      rate += 5;
+      noReload = true;
+      dmg *= v("fan", "damage", 60);
+    }
+    if (on("sixForSix") && (cls === "revolver" || cls === "pistol")) dmg *= 1 + v("sixForSix", "damage", 20) + 0.5;
+    if (on("leadRain") && cls === "smg") dmg *= 1 + v("leadRain", "damage", 30);
+    if (on("dragonsBreath") && cls === "shotgun") dmg *= 1 + v("dragonsBreath", "burn", 40);
+    if (on("bangBang")) dmg *= 1 + this.bangStacks * v("bangBang", "damagePerKill", 8);
+    return { dmg, rate, noReload };
+  }
+
+  /** A kill landed: Bang Bang refills the magazine and stacks damage while it runs. */
+  onKill(): void {
+    if ((this.timers.get("bangBang") ?? 0) > 0) {
+      this.bangStacks++;
+      this.refill = true;
+    }
+  }
+
+  /** A shot is leaving the gun: next-shot buffs apply to it and are used up. */
+  takeNextShot(cls: string): { mul: number; pellets: number } {
+    let mul = 1;
+    let pellets = 0;
+    const eat = (k: string, ok: boolean) => {
+      const n = this.next.get(k);
+      if (!n || !ok) return;
+      mul *= n.mul;
+      if (k === "slug") pellets = 1;
+      if (--n.shots <= 0) this.next.delete(k);
+    };
+    eat("spin", cls !== "sniper" && cls !== "shotgun" && cls !== "melee");
+    eat("oneShot", cls === "sniper");
+    eat("slug", cls === "shotgun");
+    return { mul, pellets };
   }
 
   /** Fires a slot. Returns false (and why, in `said`) when it can't. */
@@ -188,6 +244,58 @@ export class Actives {
         this.healing = { left: secs, rate: (ctx.maxHp * num("heal", 30)) / 100 / secs };
         break;
       }
+      case "bulletHose":
+      case "sixForSix":
+      case "leadRain":
+      case "dragonsBreath":
+        timed(fx.type, num("seconds", 6));
+        break;
+      case "bangBang":
+        this.bangStacks = 0;
+        timed("bangBang", num("seconds", 8));
+        break;
+      case "fanTheHammer":
+        timed("fan", num("duration", 0.6));
+        this.refill = true;
+        break;
+      case "spinReload":
+        this.refill = true;
+        this.next.set("spin", { shots: Math.max(1, num("shots", 3)), mul: 1 + num("damage", 20) / 100 });
+        break;
+      case "oneShot":
+        this.next.set("oneShot", { shots: 1, mul: 1 + num("damage", 100) / 100 });
+        break;
+      case "slug":
+        this.next.set("slug", { shots: 1, mul: 9 * (num("damage", 130) / 100) });
+        break;
+      case "deadEye": {
+        // Time slows and the nearest few enemies in front are painted: they take bonus damage.
+        timed("bulletTime", num("seconds", 3));
+        const cands = ctx.enemies
+          .filter((e) => e.alive && e.body.joints.chest.clone().sub(ctx.eye).normalize().dot(ctx.fwd) > 0.5)
+          .sort((a, b) => a.position.distanceTo(ctx.player.pos) - b.position.distanceTo(ctx.player.pos))
+          .slice(0, Math.max(1, num("marks", 3)));
+        for (const e of cands) {
+          this.marked.add(e);
+          e.setMarked(true, GLOW);
+        }
+        timed("mark", num("seconds", 3) + 2);
+        break;
+      }
+      case "barrage": {
+        // Shells walk in on the spot she is looking at.
+        const p = ctx.eye.clone();
+        for (let i = 0; i < 60 && p.y > this.groundAt(p.x, p.z) + 0.1; i++) p.addScaledVector(ctx.fwd, 1);
+        const n = Math.max(1, num("shells", 8));
+        const span = num("seconds", 4);
+        this.params.set("barrage", fx);
+        for (let i = 0; i < n; i++) {
+          const q = p.clone().add(new THREE.Vector3((Math.random() - 0.5) * 8, 0, (Math.random() - 0.5) * 8));
+          q.y = this.groundAt(q.x, q.z) + 0.2;
+          this.shells.push({ at: this.clock + 0.5 + (i / n) * span, pos: q });
+        }
+        break;
+      }
       case "juggernaut":
         timed("juggernaut", num("seconds", 10));
         break;
@@ -252,6 +360,14 @@ export class Actives {
 
   update(dt: number, d: DerivedStats, world: World, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
     this.battery = Math.min(d.battery, this.battery + d.batteryRegen * dt);
+    this.clock += dt;
+    this.groundAt = ground;
+    const due = this.shells.filter((sh) => sh.at <= this.clock);
+    for (const sh of due) {
+      world.fx.explosion(sh.pos.clone(), 3);
+      this.blasts.push({ pos: sh.pos.clone(), radius: 4, damage: Number(this.params.get("barrage")?.damage ?? 200) });
+    }
+    this.shells = this.shells.filter((sh) => sh.at > this.clock);
     for (const [k, v] of this.cd) this.cd.set(k, Math.max(0, v - dt));
     for (const [k, v] of this.timers) {
       this.timers.set(k, Math.max(0, v - dt));
