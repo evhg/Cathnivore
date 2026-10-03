@@ -247,12 +247,12 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the first unfinished item here before any other phase. Each item ships playable on `/cathode/` behind the 18+ gate.
 
 **Phase 1: vertical slice.**
-63. [ ] **Scaffold:**
+63. [x] *(2026-10-03: done)* **Scaffold:**
     - `games/cathode/` with the `/cathode/` site build;
     - an 18+ age gate with an Intensity setting;
     - a landing-page card;
     - an e2e boot test.
-64. [ ] **Rules core (`src/sim/`):**
+64. [x] *(2026-10-03: done: 160 skills, loot, ballistics, stealth, 76 tests)* **Rules core (`src/sim/`):**
     - attributes, XP and levels;
     - the 5 classes with all 150 skills as data (trees, rows, synergies, dual-class rules and capstones);
     - the 9 weapon classes' bases, rarities and affixes, sockets, chips and firmware chains;
@@ -260,25 +260,25 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
     - ballistics;
     - stealth detection;
     - unit tests for all of it.
-65. [ ] **The Drowned Market street:**
+65. [x] *(2026-10-03: done: the Drowned Market, see CREDITS.md)* **The Drowned Market street:**
     - wet planar reflections and noir-graded HDR post-processing;
     - neon signage, height fog and light shafts, rain and splashes;
     - Poly Haven CC0 materials;
     - phone and high quality presets, `?shot` and `?perf`.
-66. [ ] **First person:**
+66. [x] *(2026-10-03: done; still to do: gyro aim, gamepad polish)* **First person:**
     - movement (sprint, crouch, slide, jump, mantle, lean) with collision;
     - desktop and phone controls;
     - viewmodels for the Pin, a pistol, a shotgun and a sniper with procedural animation and muzzle lights.
-67. [ ] **Enforcers:**
+67. [x] *(2026-10-03: done: 3 roles (rifle, riot shield, sniper))* **Enforcers:**
     - procedural segmented armoured humanoids with IK walking;
     - AI that patrols, investigates, searches and fights, with vision and hearing;
     - hit zones, dismemberment, blood decals, Verlet ragdolls;
     - takedowns.
-68. [ ] **The long shot:**
+68. [x] *(2026-10-03: done)* **The long shot:**
     - scope and range ladder, bullet travel with drop and wind;
     - held breath and bullet-time;
     - the bullet kill-cam with an X-ray cut.
-69. [ ] **Progression UI:**
+69. [x] *(2026-10-03: mostly done: class pick, character screen, level-up toast; the job flow ends at the water taxi)* **Progression UI:**
     - HUD, XP and level-ups;
     - an attribute screen and a Diablo II-style skill tree screen;
     - Ghost and Butcher playable;
