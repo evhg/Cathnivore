@@ -334,3 +334,40 @@ test.describe('Hedgerow', () => {
     await expect(page.locator('button.level[data-level="1"] .level-stars')).toHaveText('★★☆')
   })
 })
+
+test.describe('CATHODE', () => {
+  test('asks for age first, then shows the title, accessibly and without sideways scroll', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.goto('/cathode/')
+    await expect(page.locator('#screen-gate')).toBeVisible()
+    await expect(page.locator('#screen-title')).toBeHidden()
+    await assertNoSeriousIssues(page)
+    await page.getByRole('radio', { name: /Reduced: hits/ }).check()
+    await page.getByRole('button', { name: "I'm 18 or over" }).click()
+    await expect(page.locator('#screen-title')).toBeVisible()
+    await expect(page.locator('#title-word')).toHaveText('CATHODE')
+    await noSideways(page)
+    await assertNoSeriousIssues(page)
+    const prefs = await page.evaluate(() => JSON.parse(localStorage.getItem('cathode:prefs:v1') ?? '{}'))
+    expect(prefs).toMatchObject({ adult: true, intensity: 'reduced' })
+    await page.reload()
+    await expect(page.locator('#screen-title')).toBeVisible()
+    expect(errors).toEqual([])
+  })
+
+  test('the street boots and renders frames without errors', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.goto('/cathode/')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/cathode/?play&shot')
+    await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number } } }).cathode?.stats.frames ?? 0) > 3, null, { timeout: 60_000 })
+    await expect(page.locator('#loading')).toBeHidden()
+    expect(errors).toEqual([])
+  })
+
+  test('the landing page links to it with an 18+ badge', async ({ page }) => {
+    await page.goto('/')
+    const card = page.locator('a[href="/cathode/"]')
+    await expect(card).toContainText('18+')
+  })
+})

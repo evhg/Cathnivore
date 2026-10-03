@@ -701,3 +701,79 @@ body {
     opacity: 0;
   }
 }
+
+/* CATHODE: a rain-soaked noir skyline, two neon signs reflected in the street, and Cath's silhouette. */
+.art-cathode {
+  background: #05060a;
+}
+.art-cathode svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.cd-towers {
+  fill: #11131b;
+}
+.cd-windows rect {
+  fill: #ffb347;
+  opacity: 0.55;
+}
+.cd-sign-pink {
+  fill: #ff2e88;
+  filter: drop-shadow(0 0 3px #ff2e88);
+}
+.cd-sign-cyan {
+  fill: #2ee6ff;
+  filter: drop-shadow(0 0 3px #2ee6ff);
+}
+.cd-reflect {
+  opacity: 0.35;
+}
+.cd-reflect-pink {
+  fill: #ff2e88;
+}
+.cd-reflect-cyan {
+  fill: #2ee6ff;
+}
+.cd-rain path {
+  stroke: #9fb4d8;
+  stroke-width: 0.6;
+  opacity: 0.45;
+  animation: cd-rain 0.7s linear infinite;
+}
+@keyframes cd-rain {
+  to {
+    transform: translate(-6px, 30px);
+  }
+}
+.cd-sign-pink {
+  animation: cd-flicker 4s steps(1) infinite;
+}
+@keyframes cd-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  71% {
+    opacity: 0.35;
+  }
+  73% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  77% {
+    opacity: 1;
+  }
+}
+.badge-adult {
+  color: #fff;
+  background: #c8102e;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cd-rain path,
+  .cd-sign-pink {
+    animation: none;
+  }
+}

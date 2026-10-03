@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07080b" />
+    <meta name="color-scheme" content="dark" />
+    <title>CATHODE</title>
+    <meta name="description" content="A noir cyberpunk shooter. Cath Hale walks back into Hollowell Proper with a list of names. Rated 18." />
+    <link rel="icon" href="/cathode/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content="CATHODE" />
+    <meta property="og:description" content="A noir cyberpunk shooter from cathnivore.com. Rated 18." />
+  </head>
+  <body>
+    <main class="app">
+      <section id="screen-gate" class="screen gate" aria-labelledby="gate-title" hidden>
+        <div class="gate-card">
+          <p class="eyebrow">Rated 18</p>
+          <h1 id="gate-title" class="wordmark">CATHODE</h1>
+          <p class="gate-text">Strong bloody violence and strong language throughout. It's a game for adults.</p>
+          <fieldset class="intensity">
+            <legend>Violence</legend>
+            <label><input type="radio" name="intensity" value="full" checked /> <span>Full: blood, severed limbs, kill-cams</span></label>
+            <label><input type="radio" name="intensity" value="reduced" /> <span>Reduced: hits and falls, no gore</span></label>
+          </fieldset>
+          <div class="gate-actions">
+            <button type="button" id="gate-yes" class="btn btn-primary">I'm 18 or over</button>
+            <a class="btn btn-ghost" href="/">Take me back</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-title" class="screen title" aria-labelledby="title-word" hidden>
+        <a class="back" href="/" aria-label="All games">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
+          <span>Games</span>
+        </a>
+        <div class="title-cath" id="title-cath" aria-hidden="true"></div>
+        <div class="title-copy">
+          <p class="eyebrow">Hollowell Proper · 2079</p>
+          <h1 id="title-word" class="wordmark">CATHODE</h1>
+          <p class="tagline">Tomas Reed sold eggs for thirty years. They found him in the harbour with a debt tag in his mouth.</p>
+          <p class="voice">"I had a list once. I put it away. Tonight I took it out again."</p>
+          <div class="title-actions">
+            <button type="button" id="btn-begin" class="btn btn-primary">Begin: The Fish Market</button>
+            <button type="button" id="btn-settings" class="btn btn-ghost">Settings</button>
+          </div>
+          <p class="hint" id="title-hint">Best with mouse and keyboard, or an iPhone held sideways.</p>
+        </div>
+      </section>
+
+      <section id="screen-game" class="screen game" aria-label="CATHODE" hidden>
+        <canvas id="view"></canvas>
+        <div id="hud" class="hud"></div>
+        <div id="touch" class="touch" hidden></div>
+        <div id="loading" class="loading" role="status" hidden>
+          <p class="eyebrow">Loading</p>
+          <p class="loading-line" id="loading-line">Rain over the Drowned Market…</p>
+          <div class="loading-bar"><span id="loading-fill"></span></div>
+        </div>
+      </section>
+
+      <dialog id="dlg-settings" class="dialog" aria-labelledby="settings-title">
+        <h2 id="settings-title">Settings</h2>
+        <fieldset>
+          <legend>Graphics</legend>
+          <label><input type="radio" name="quality" value="auto" checked /> <span>Auto</span></label>
+          <label><input type="radio" name="quality" value="phone" /> <span>Phone</span></label>
+          <label><input type="radio" name="quality" value="high" /> <span>High</span></label>
+          <label><input type="radio" name="quality" value="ultra" /> <span>Ultra</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Violence</legend>
+          <label><input type="radio" name="intensity2" value="full" /> <span>Full</span></label>
+          <label><input type="radio" name="intensity2" value="reduced" /> <span>Reduced</span></label>
+        </fieldset>
+        <button type="button" id="settings-close" class="btn btn-primary">Done</button>
+      </dialog>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

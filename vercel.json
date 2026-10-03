@@ -8,6 +8,7 @@
     { "source": "/cathnivore", "destination": "/cathnivore/", "permanent": true },
     { "source": "/runnel", "destination": "/runnel/", "permanent": true },
     { "source": "/hedgerow", "destination": "/hedgerow/", "permanent": true },
+    { "source": "/cathode", "destination": "/cathode/", "permanent": true },
     {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "www.cathnivore.com" }],
@@ -20,11 +21,12 @@
     { "source": "/support", "destination": "/support/index.html" },
     { "source": "/cathnivore/((?!assets/|.*\\..*).*)", "destination": "/cathnivore/index.html" },
     { "source": "/runnel/((?!assets/|.*\\..*).*)", "destination": "/runnel/index.html" },
-    { "source": "/hedgerow/((?!assets/|.*\\..*).*)", "destination": "/hedgerow/index.html" }
+    { "source": "/hedgerow/((?!assets/|.*\\..*).*)", "destination": "/hedgerow/index.html" },
+    { "source": "/cathode/((?!assets/|.*\\..*).*)", "destination": "/cathode/index.html" }
   ],
   "headers": [
     {
-      "source": "/:dir(cathnivore|runnel|hedgerow)/assets/(.*)",
+      "source": "/:dir(cathnivore|runnel|hedgerow|cathode)/assets/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]

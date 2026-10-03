@@ -243,6 +243,64 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 61. [ ] **Cath on the game screen:** companion at least 48px with expression changes on events; phone title keeps her inside the frame (bar 5).
 62. [ ] **Campaign and setup:** illustrated header per chapter card, teaser silhouettes for locked chapters, colour portraits at 48px, a visible progress track, a mode illustration on setup (bars 1, 6).
 
+## Phase 6: CATHODE, the fourth game (owner, 2026-10-03: "I'm okay with month long, start building. Push the limits.")
+Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the first unfinished item here before any other phase. Each item ships playable on `/cathode/` behind the 18+ gate.
+
+**Phase 1: vertical slice.**
+63. [ ] **Scaffold:**
+    - `games/cathode/` with the `/cathode/` site build;
+    - an 18+ age gate with an Intensity setting;
+    - a landing-page card;
+    - an e2e boot test.
+64. [ ] **Rules core (`src/sim/`):**
+    - attributes, XP and levels;
+    - the 5 classes with all 150 skills as data (trees, rows, synergies, dual-class rules and capstones);
+    - the 9 weapon classes' bases, rarities and affixes, sockets, chips and firmware chains;
+    - damage and hit zones;
+    - ballistics;
+    - stealth detection;
+    - unit tests for all of it.
+65. [ ] **The Drowned Market street:**
+    - wet planar reflections and noir-graded HDR post-processing;
+    - neon signage, height fog and light shafts, rain and splashes;
+    - Poly Haven CC0 materials;
+    - phone and high quality presets, `?shot` and `?perf`.
+66. [ ] **First person:**
+    - movement (sprint, crouch, slide, jump, mantle, lean) with collision;
+    - desktop and phone controls;
+    - viewmodels for the Pin, a pistol, a shotgun and a sniper with procedural animation and muzzle lights.
+67. [ ] **Enforcers:**
+    - procedural segmented armoured humanoids with IK walking;
+    - AI that patrols, investigates, searches and fights, with vision and hearing;
+    - hit zones, dismemberment, blood decals, Verlet ragdolls;
+    - takedowns.
+68. [ ] **The long shot:**
+    - scope and range ladder, bullet travel with drop and wind;
+    - held breath and bullet-time;
+    - the bullet kill-cam with an X-ray cut.
+69. [ ] **Progression UI:**
+    - HUD, XP and level-ups;
+    - an attribute screen and a Diablo II-style skill tree screen;
+    - Ghost and Butcher playable;
+    - the job "The Fish Market" from briefing to extraction.
+
+**Phase 2: systems.**
+70. [ ] All 5 classes playable, dual-classing at level 15, the 10 hybrid capstones.
+71. [ ] Loot drops, inventory, Rare/Unique/Set generation, sockets and firmware chains, the gunsmith (tiers I–V, parts).
+72. [ ] The remaining weapon classes (revolver, SMG, assault rifle, launcher, smart gun, katana and monowire, sledgehammer) with alt-fires.
+73. [ ] Elites with Diablo-style modifiers; damage types and resistances; saves, checkpoints and an export code.
+
+**Phase 3: act 1, the Drowned Market.**
+74. [ ] The hub street, the case board, Cath's voiceover and dialogue, calls to Bea.
+75. [ ] Four story jobs, side contracts, secrets.
+76. [ ] Julian Crisp, the boss fight.
+77. [ ] Audio: convolution reverb, weapon sets, rain beds, an alert-reactive synth score.
+78. [ ] Performance and phone pass on an iPhone 17 Pro Max profile: 60 fps, quality auto-scaling, thermals.
+
+**Phase 4 and 5:**
+79. [ ] Acts 2–3: the Candor clinic (Vane) and Hollowell Plaza (Pell).
+80. [ ] Acts 4–5: the Spire (the Board) and the vault (HollowCandor); Hardboiled and Hell Week; the weekly Most Wanted contract.
+
 ## Postponed by the owner (2026-09-28)
 
 - **iPhone App Store launch:** postponed until the games are truly impressive. Don't dispatch `ios.yml` or `store.yml`, and don't work on store listings or screenshots. Keep `npm run build` (the iPhone app's web bundle) passing. Only the owner reopens this, through `FEEDBACK.md`.
