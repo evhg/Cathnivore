@@ -5,6 +5,10 @@ import "../../../shared/cath/cath.css";
 import "./styles.css";
 import { cathSvg } from "../../../shared/cath/cath";
 import { loadPrefs, resolveQuality, savePrefs, type Intensity, type QualityChoice } from "./prefs";
+import { openClassPick } from "./ui/classpick";
+import { Progress } from "./game/progress";
+import { newCharacter } from "./sim/character";
+import type { ClassId } from "./sim/types";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -56,6 +60,20 @@ $<HTMLButtonElement>("settings-close").addEventListener("click", () => {
 
 // ---- the game ----
 async function begin(): Promise<void> {
+  // A new game starts with the case file: who walks back in?
+  // (?class=ghost picks for tests and links; ?shot skips it for screenshots.)
+  const given = params.get("class") as ClassId | null;
+  if (!Progress.hasSave() && (given || params.has("shot"))) new Progress(given ?? "ghost").set(newCharacter(given ?? "ghost"));
+  if (!Progress.hasSave()) {
+    const cls = await new Promise<ClassId>((resolve) => {
+      const h = openClassPick(document.body, (c) => {
+        h.close();
+        resolve(c);
+      });
+    });
+    const p = new Progress(cls);
+    p.set(newCharacter(cls));
+  }
   show("screen-game");
   const loading = $("loading");
   const fill = $("loading-fill");

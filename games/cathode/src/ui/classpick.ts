@@ -132,7 +132,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
 
   function select(cls: ClassId, focus: boolean): void {
     selected = cls;
-    root.className = `cp cls-${cls}`;
+    for (const k of CLASS_IDS) root.classList.toggle(`cls-${k}`, k === cls);
     for (const [c, opt] of options) {
       const on = c === cls;
       opt.setAttribute("aria-checked", String(on));

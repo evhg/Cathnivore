@@ -120,7 +120,7 @@ export function installFog(): void {
     float fogLen = min( length( fogRay ), 40.0 );
     vec3 fogDir = fogRay / max( length( fogRay ), 0.001 );
     vec3 fogIn = cathodeVolume( cameraPosition + fogDir * fogLen * 0.35 ) + cathodeVolume( cameraPosition + fogDir * fogLen * 0.8 );
-    fogTint += fogIn * 0.035 * uVolGain;
+    fogTint += fogIn * 0.014 * uVolGain;
   #endif
   gl_FragColor.rgb = mix( gl_FragColor.rgb, fogTint, fogFactor );
 #endif`;
@@ -296,9 +296,9 @@ function mirrorGround(fs: string, water: boolean): string {
         cRip += cSwell;`
             : ""
         }
-        vec3 cRipW = normalize( vec3( - cRip.x * ${water ? "0.6" : "0.45"}, 1.0, - cRip.y * ${water ? "0.6" : "0.45"} ) );
+        vec3 cRipW = normalize( vec3( - cRip.x * ${water ? "0.35" : "0.22"}, 1.0, - cRip.y * ${water ? "0.35" : "0.22"} ) );
         vec3 cRipV = normalize( ( viewMatrix * vec4( cRipW, 0.0 ) ).xyz );
-        normal = normalize( mix( normal, cRipV, mix( 0.25, 1.0, cPuddle ) ) );
+        normal = normalize( mix( normal, cRipV, mix( 0.2, 0.85, cPuddle ) ) );
       }`,
     )
     .replace(
@@ -308,7 +308,7 @@ function mirrorGround(fs: string, water: boolean): string {
         vec4 cRC = uReflMatrix * vec4( vFogWorld, 1.0 );
         vec2 cUv = cRC.xy / cRC.w;
         vec3 cNW = inverseTransformDirection( normal, viewMatrix );
-        cUv += cNW.xz * 0.06;
+        cUv += cNW.xz * 0.035;
         float cLod = clamp( material.roughness * 5.5 - 0.2, 0.0, 5.0 );
         vec2 cTap = vec2( 0.004 + material.roughness * 0.02, 0.0 );
         vec3 cRefl = textureLod( uRefl, cUv, cLod ).rgb * 0.4

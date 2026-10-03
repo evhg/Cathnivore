@@ -123,7 +123,7 @@ interface StatRow {
   delta(d: number): string;
 }
 
-const pct = (v: number) => `${v >= 0 ? "+" : "−"}${Math.abs(Math.round(v))}%`;
+const pct = (v: number) => (Math.abs(v) < 0.5 ? "0%" : `${v >= 0 ? "+" : "−"}${Math.abs(Math.round(v))}%`);
 const dp = (v: number, n = 1) => (Math.round(v * 10 ** n) / 10 ** n).toFixed(n);
 const signed = (v: number, n = 0) => `${v >= 0 ? "+" : "−"}${n ? dp(Math.abs(v), n) : Math.round(Math.abs(v))}`;
 
@@ -252,6 +252,7 @@ export function openCharacter(
   xp.setAttribute("aria-label", "Experience to the next level");
   const xpFill = el("span", "cx-xp-fill", xp);
   const xpText = el("p", "cx-xp-text", id);
+  const quote = el("p", "cx-quote", head);
   const badges = el("div", "cx-badges", head);
   const closeBtn = button("cx-close", head);
   closeBtn.setAttribute("aria-label", "Close (Esc)");
@@ -355,6 +356,7 @@ export function openCharacter(
     });
     name.textContent = c.name === "Cath" ? "Cath Hale" : c.name;
     levelLine.textContent = `Level ${c.level}`;
+    quote.textContent = `“${CLASS_COPY[c.classes[0] ?? "ghost"].line}”`;
     const base = xpForLevel(c.level);
     const need = xpToNext(c.level);
     const share = c.level >= MAX_LEVEL || need === 0 ? 1 : Math.max(0, Math.min(1, (c.xp - base) / need));

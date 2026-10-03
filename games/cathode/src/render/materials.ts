@@ -63,18 +63,18 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.rubber = plain("#0b0b0c", 0.7, 0, 0.4);
   m.cable = plain("#050506", 0.55, 0.1, 0.3, 0.6);
   m.bag = plain("#060708", 0.22, 0.1, 0.4);
-  m.ice = plain("#b9d4dc", 0.25, 0, 0.2);
+  m.ice = plain("#6f8890", 0.25, 0, 0.2);
   m.fish = plain("#8e9aa0", 0.22, 0.75, 0.2);
-  m.styro = plain("#c8c8c0", 0.85, 0, 0.5);
+  m.styro = plain("#7a7a74", 0.85, 0, 0.5);
   m.yellowPaint = plain("#a07a08", 0.45, 0.1);
   m.plasticRed = plain("#7a0c0c", 0.35, 0);
-  m.plasticWhite = plain("#b8b8b0", 0.35, 0);
+  m.plasticWhite = plain("#7a7a74", 0.35, 0);
   // Car paints: low roughness and some metal so the neon slides over them.
   m.carRed = plain("#4a0609", 0.22, 0.65, 0.3);
   m.carTeal = plain("#0b3236", 0.22, 0.65, 0.3);
-  m.carWhite = plain("#a8a8a4", 0.25, 0.4, 0.3);
+  m.carWhite = plain("#70706c", 0.25, 0.4, 0.3);
   m.carBlack = plain("#060607", 0.18, 0.7, 0.3);
-  m.vanWhite = plain("#b4b4ae", 0.3, 0.3, 0.3);
+  m.vanWhite = plain("#6c6c68", 0.25, 0.3, 0.3);
   m.carGlass = plain("#030405", 0.04, 0.0, 0.1, 0.3);
   m.glass = plain("#06080b", 0.05, 0.0, 0.1, 0.4);
   const tarp = new THREE.MeshStandardMaterial({ map: tarpTexture(), roughness: 0.55, metalness: 0, side: THREE.DoubleSide });
@@ -82,14 +82,16 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
 
   // Emissives (HDR, unlit, fogged).
   const glow = (hex: string, k: number) => new THREE.MeshBasicMaterial({ color: new THREE.Color(hex).multiplyScalar(k) });
-  m.glowWarm = glow("#ffc890", 7);
+  m.glowWarm = glow("#ffc890", 5);
   m.glowSodium = glow("#ff9a40", 9);
-  m.glowCool = glow("#d8f0ff", 7);
+  m.glowCool = glow("#d8f0ff", 4);
   m.glowCoolDim = glow("#cfe6ff", 1.6);
   m.glowRed = glow("#ff1a10", 5);
   m.glowAmber = glow("#ffa020", 6);
   m.glowPink = glow("#ff3a9a", 6);
-  m.glowWhite = glow("#f0f6ff", 14);
+  m.glowCyan = glow("#3ae8ff", 5);
+  m.glowViolet = glow("#a85cff", 5);
+  m.glowWhite = glow("#f0f6ff", 6);
   void quality;
   return m;
 }

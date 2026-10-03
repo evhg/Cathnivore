@@ -128,7 +128,7 @@ const GradeShader = {
       col *= vig;
       vec3 mapped = agx( col );
       // Lifted, cool blacks and a gentle S.
-      mapped = mapped * 0.965 + vec3( 0.006, 0.010, 0.016 );
+      mapped = mapped * 0.99 + vec3( 0.0012, 0.0022, 0.0042 );
       mapped = mix( mapped, mapped * mapped * ( 3.0 - 2.0 * mapped ), 0.25 );
       gl_FragColor = vec4( mapped, 1.0 );
     }`,
@@ -139,7 +139,7 @@ const FinalShader = {
     tDiffuse: { value: null as THREE.Texture | null },
     uRes: { value: new THREE.Vector2(1, 1) },
     uTime: { value: 0 },
-    uGrain: { value: 0.045 },
+    uGrain: { value: 0.03 },
     uFxaa: { value: 1 },
   },
   vertexShader: GradeShader.vertexShader,
@@ -216,7 +216,7 @@ export function createPost(
     gtao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.5, thickness: 1, scale: 1, samples: 12 });
     composer.addPass(gtao);
   }
-  const bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.6, 0.5, 1.4);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.5, 0.42, 1.6);
   composer.addPass(bloom);
   const grade = new ShaderPass(GradeShader);
   composer.addPass(grade);

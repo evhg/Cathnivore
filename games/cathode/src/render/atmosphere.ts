@@ -279,7 +279,7 @@ export function buildAtmosphere(o: AtmoOptions, uniforms: AtmoUniforms): Atmosph
         if ( t < 0.04 ) uv.x += sin( vUv.y * 80.0 + uTime * 50.0 ) * 0.02;
         vec3 c = texture2D( uMap, uv ).rgb;
         float scan = 0.85 + 0.15 * sin( vUv.y * 600.0 );
-        gl_FragColor = vec4( c * 7.0 * scan, 1.0 );
+        gl_FragColor = vec4( c * 3.2 * scan, 1.0 );
         gl_FragColor.rgb *= 1.0 - cathodeFogAmount( cameraPosition, vFogWorld, fogDensity ) * 0.82;
       }`,
     fog: true,
@@ -435,15 +435,15 @@ export function buildAtmosphere(o: AtmoOptions, uniforms: AtmoUniforms): Atmosph
           float k = t / 0.45;
           vec2 p = vUv - vec2( 0.5, 0.0 );
           // A crown: a flattened ring at the base and droplets thrown up and out.
-          float ring = 1.0 - smoothstep( 0.0, 0.06, abs( length( p * vec2( 1.0, 3.5 ) ) - k * 0.42 ) );
+          float ring = 1.0 - smoothstep( 0.0, 0.035, abs( length( p * vec2( 1.0, 3.5 ) ) - k * 0.42 ) );
           float drops = 0.0;
           for ( int i = 0; i < 5; i++ ) {
             float a = ( float( i ) - 2.0 ) * 0.32;
             vec2 c = vec2( sin( a ) * k * 0.42, ( 1.0 - ( 2.0 * k - 1.0 ) * ( 2.0 * k - 1.0 ) ) * 0.55 + 0.04 );
-            drops += 1.0 - smoothstep( 0.015, 0.04, length( p - c ) );
+            drops += 1.0 - smoothstep( 0.008, 0.025, length( p - c ) );
           }
           float a = ( ring * 0.7 + drops ) * ( 1.0 - k ) * vA;
-          gl_FragColor = vec4( vCol * a * 0.9, 1.0 );
+          gl_FragColor = vec4( vCol * a * 0.45, 1.0 );
         }`,
       transparent: true,
       depthWrite: false,

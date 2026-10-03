@@ -169,6 +169,7 @@ export function modText(stat: StatKey | WeaponStatKey, kind: ModKind, value: num
   if (cls) label = `${WEAPON_CLASS_LABEL[cls]?.toLowerCase() ?? cls} ${label}`;
   if (local && !cls && kind !== "flat") label = `weapon ${label}`;
   if (base === "subsonic") return "Fires subsonic rounds";
+  if (kind !== "flat") label = label.trim().replace(/^s /, "");
   if (kind === "more") return `${v}% ${value < 0 ? "less" : "more"} ${label}`;
   if (kind === "increased") return `${s}${v}% ${label}`;
   if (base === "bulletTime" || base === "bulletTimeOnKill") return `${s}${v}${label}`;

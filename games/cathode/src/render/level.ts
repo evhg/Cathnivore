@@ -310,7 +310,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       b.boxMinMax("shutter", sx, bottom, shopZ0, sx + 0.05, top, shopZ1, { uv: 2.5 });
       b.boxMinMax("darkMetal", sx - 0.05, top - 0.35, shopZ0, sx + 0.12, top, shopZ1);
       if (bd.shop === "halfShutter") {
-        interiors.push({ pos: V(sx - 0.02, bottom / 2 + 0.05, (shopZ0 + shopZ1) / 2), normal: V(1, 0, 0), w: shopZ1 - shopZ0, h: bottom, tint: "#ffcc88", seed: seed++ });
+        interiors.push({ pos: V(sx - 0.4, bottom / 2 + 0.05, (shopZ0 + shopZ1) / 2), normal: V(1, 0, 0), w: shopZ1 - shopZ0, h: bottom, tint: "#7a4a22", seed: seed++ });
         light(V(W + 0.3, 0.4, (shopZ0 + shopZ1) / 2), "#ffb070", 2.2, 5, V(1, 0, 0));
       }
     } else if (bd.shop === "glass") {
@@ -336,6 +336,22 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
         flicker: bd.fascia.flicker ?? 1,
         intensity: bd.fascia.style === "tube" ? 5.5 : 2.4,
         broken: bd.fascia.broken,
+      });
+    }
+    // Awnings over lit shopfronts, and a low stack of small blade signs at the south corner.
+    if (bd.shop === "glass") {
+      const aw = new THREE.PlaneGeometry(1.5, len - 1.6, 1, 1);
+      aw.rotateX(-Math.PI / 2);
+      aw.rotateZ(-0.32);
+      aw.translate(W + 0.7, gf - 0.95, zc);
+      b.add("tarp", aw, 0);
+      for (let z = bd.z0 + 1.2; z < bd.z1 - 1; z += r(1.5, 3)) drips.push(V(W + 1.4, gf - 1.2, z));
+    }
+    if (rand() < 0.75 && bd.storeys > 2) {
+      const stack = [pick(["酒", "鮨", "薬", "宿", "麺", "茶", "灯"]), pick(["BAR", "24H", "ATM", "OPEN", "VAPE"]), pick(["占", "魚", "肉", "湯"])];
+      stack.forEach((t, i) => {
+        const c = pick([NEON.pink, NEON.cyan, NEON.amber, NEON.green, NEON.violet, NEON.white]);
+        blade(t, c, V(W + 0.62, 6.4 - i * 0.62, bd.z0 + 1.0), 0.52, 0.86, "blade", i === 1 ? 2 : 1);
       });
     }
     // A blade sign near the north corner, high.
@@ -702,6 +718,16 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       blade(text, color, V(E - 1.3, gf + 2 + h / 2, ed.z1 - 1.0), h, 1.6, rand() < 0.5 ? "bladeTube" : "blade", 1);
       b.box("darkMetal", E - 0.6, gf + 2.2, ed.z1 - 1.0, 1.2, 0.08, 0.08);
       b.box("darkMetal", E - 0.6, gf + 1.8 + h, ed.z1 - 1.0, 1.2, 0.08, 0.08);
+    }
+    // LED strips along some floor bands (a cheap, very Hollowell glow).
+    if (rand() < 0.55) {
+      const col = pick([NEON.pink, NEON.cyan, NEON.violet, NEON.red]);
+      const key = col === NEON.pink ? "glowPink" : col === NEON.cyan ? "glowCyan" : col === NEON.violet ? "glowViolet" : "glowRed";
+      for (let k = 2; k < ed.storeys; k += 2 + Math.floor(rand() * 2)) {
+        const y = gf + st * (k - 1) + 0.12;
+        b.boxMinMax(key, E - 0.2, y, ed.z0 + 0.2, E - 0.14, y + 0.07, ed.z1 - 0.2);
+        for (let z = ed.z0 + 2; z < ed.z1; z += 5) light(V(E - 0.8, y, z), col, 1.6, 5, V(-1, 0, 0), 0, false);
+      }
     }
     // Rooftop: aerials, a billboard frame now and then.
     if (rand() < 0.5) b.cylinder("darkMetal", V(E + 4, H + 0.5, zc), V(E + 4, H + r(5, 11), zc), 0.05, 4);

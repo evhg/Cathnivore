@@ -16,6 +16,8 @@ import { Audio } from "./audio";
 import { Progress } from "./progress";
 import { Voice } from "./voice";
 import { Actives } from "./actives";
+import { openCharacter } from "../ui/character";
+import { levelUpToast } from "../ui/levelup";
 import { xpForLevel, xpToNext as simXpToNext } from "../sim/stats";
 
 export interface SessionOptions {
@@ -95,6 +97,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     enemies.push(e);
   }
   const arsenal = new Arsenal(world.viewScene);
+  // Each class walks in holding its own weapon: the Ghost the rifle, the Butcher the shotgun.
+  const cls = progress.character.classes[0];
+  arsenal.equip(cls === "ghost" ? 3 : cls === "butcher" ? 2 : 1);
   // The gun reflects the same neon city as the street.
   if (world.scene.environment && !world.viewScene.environment) world.viewScene.environment = world.scene.environment;
   const combat = new Combat(world, rays, enemies, o.intensity === "full");
@@ -155,7 +160,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     for (const l of levels) {
       s.maxHp = progress.stats.maxHealth;
       s.hp = s.maxHp;
-      hud.showBanner(`Level ${l}`, "5 attribute points · 1 skill point · K to spend");
+      void levelUpToast(o.hud.parentElement ?? o.hud, l, { attributes: 5, skills: 1 });
       voice.say("levelUp");
       audio?.levelUp();
     }
@@ -190,6 +195,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let last = performance.now();
   let time = 0;
   let wasFire = false;
+  let charScreen: { close(): void; refresh(): void } | null = null;
   let swayT = 0;
   let drama = 0;
   let dead = false;
@@ -202,8 +208,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     last = now;
     const intent = input.read();
     // On desktop the game waits while the mouse is free (Esc, or before the first click).
-    const away = !input.isTouch && !input.locked && !o.shot && !dead && !navigator.webdriver;
+    const away = !input.isTouch && !input.locked && !o.shot && !dead && !navigator.webdriver && !charScreen;
     hud.showPause(away);
+    if (intent.skills && !charScreen && !killcam.active) openSheet();
     if (s.paused || away) {
       last = performance.now();
       world.render();
@@ -450,6 +457,31 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const k = 1 - Math.exp(-dt * (engaged ? 9 : 3));
     player.yaw += dy * k;
     player.pitch += (wantPitch - player.pitch) * k;
+  }
+
+  /** The character screen (K or Tab): the game waits behind it. */
+  function openSheet(): void {
+    s.paused = true;
+    document.exitPointerLock?.();
+    const wasFocus = s.focus;
+    charScreen = openCharacter(
+      o.hud.parentElement ?? o.hud,
+      () => progress.character,
+      (next) => {
+        progress.set(next);
+        actives.assign(next);
+        const ratio = s.hp / s.maxHp;
+        s.maxHp = progress.stats.maxHealth;
+        s.hp = Math.round(s.maxHp * ratio);
+      },
+      () => {
+        charScreen = null;
+        s.paused = false;
+        s.focus = wasFocus;
+        input.lock();
+      },
+      { tab: progress.character.unspentSkills > 0 ? "skills" : "attributes" },
+    );
   }
 
   function takedownTarget(): Enemy | null {

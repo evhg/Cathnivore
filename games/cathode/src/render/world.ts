@@ -39,8 +39,8 @@ const PRESETS: Record<Quality, Preset> = {
 };
 
 /** Fog: a cold blue-grey haze, linear RGB. */
-const FOG_COLOR = new THREE.Color(0.006, 0.008, 0.0125);
-const FOG_DENSITY = 0.022;
+const FOG_COLOR = new THREE.Color(0.0042, 0.0058, 0.0095);
+const FOG_DENSITY = 0.019;
 
 export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const quality = options.quality;
@@ -103,7 +103,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   // ------------------------------------------------------------ lights
   const hemi = new THREE.HemisphereLight(0x6f86b0, 0x0a0a0c, 0.06);
   scene.add(hemi);
-  const key = new THREE.SpotLight(level.key.color, 2600, 110, Math.PI * 0.16, 0.55, 2);
+  const key = new THREE.SpotLight(level.key.color, 1100, 110, Math.PI * 0.16, 0.55, 2);
   key.position.copy(level.key.pos);
   key.target.position.copy(level.key.target);
   key.castShadow = true;
@@ -117,7 +117,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const lightning = new THREE.DirectionalLight(0xc8d8ff, 0);
   lightning.position.set(-40, 80, -60);
   scene.add(lightning);
-  const pool = new LightPool(scene, level.lights, P.pool, 1.6);
+  const pool = new LightPool(scene, level.lights, P.pool, 0.7);
 
   // ------------------------------------------------------------ atmosphere
   const keyDir = level.key.target.clone().sub(level.key.pos).normalize();
@@ -243,7 +243,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
             blocked = true;
             break;
           }
-        if (!blocked) l += (2600 / (dist * dist)) * 0.35 * THREE.MathUtils.smoothstep(cosA, Math.cos(Math.PI * 0.16), Math.cos(Math.PI * 0.12));
+        if (!blocked) l += (1100 / (dist * dist)) * 0.35 * THREE.MathUtils.smoothstep(cosA, Math.cos(Math.PI * 0.16), Math.cos(Math.PI * 0.12));
       }
       for (const fl of fxs.lights) if (fl.intensity > 0) l += fl.intensity / (1 + fl.position.distanceToSquared(p)) * 0.05;
       return THREE.MathUtils.clamp(1 - Math.exp(-l * 0.35), 0, 1);
@@ -297,7 +297,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       lightning.intensity = flash * 2.2;
       hemi.intensity = 0.06 + flash * 0.5;
       // The floodlight hums and sways a hair in the wind.
-      key.intensity = 2600 * (0.97 + 0.03 * Math.sin(time * 37 + hash1(Math.floor(time * 3))));
+      key.intensity = 1100 * (0.97 + 0.03 * Math.sin(time * 37 + hash1(Math.floor(time * 3))));
     },
     render() {
       const t0 = performance.now();
