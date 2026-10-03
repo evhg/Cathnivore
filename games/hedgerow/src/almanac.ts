@@ -2,7 +2,7 @@
 // megastructures are always open; enemies and bosses unlock the first time they are met (data.seen).
 
 import { ENEMIES, MEGAS, SPECIALISATIONS, TOWERS, isBig } from "./engine";
-import type { EnemyKind, TowerKind } from "./engine";
+import type { EnemyKind, MegaId, TowerKind } from "./engine";
 import { enemyIcon, img, towerIcon } from "./icons";
 
 export type AlmanacTab = "towers" | "megas" | "enemies" | "bosses";
@@ -14,7 +14,7 @@ const TABS: [AlmanacTab, string][] = [
   ["bosses", "Bosses"],
 ];
 
-const TOWER_LORE: Partial<Record<TowerKind, string>> = {
+export const TOWER_LORE: Partial<Record<TowerKind, string>> = {
   hedgerow: "\"Three hundred years of hawthorn. Nothing gets through that hasn't been invited.\"",
   scarecrow: "\"Pip made him from Bea's old duffel coat. He has never once blinked.\"",
   beehive: "\"They work for honey and spite, in that order.\"",
@@ -28,6 +28,17 @@ const TOWER_LORE: Partial<Record<TowerKind, string>> = {
   hall: "\"Solidarity: every tower on the field hits harder.\"",
   windmill: "\"Gusts of honest wind. Vans do not enjoy it.\"",
   cannon: "\"Seeds, mostly. Occasionally a surprise turnip.\"",
+};
+
+export const MEGA_LORE: Record<MegaId, string> = {
+  harvester: "\"Pip built it in a weekend and has not been allowed to forget it.\"",
+  honeymarsh: "\"Sweet, sticky, and entirely unfair to anything with wheels.\"",
+  fortress: "\"Three hundred years of hawthorn, now with battlements.\"",
+  grandmarket: "\"Everyone on the field gets a discount on courage.\"",
+  tribunal: "\"Court is in session. The defendant is a van.\"",
+  stormhive: "\"Do not shake it. Do not even look at it sternly.\"",
+  barrage: "\"Cath calls it 'gardening, at pace'.\"",
+  sanctuary: "\"Tea for the wounded, and a very firm word for the rest.\"",
 };
 
 function stat(label: string, value: string): HTMLElement {
@@ -82,12 +93,13 @@ function towers(): HTMLElement[] {
 }
 
 function megas(): HTMLElement[] {
-  return Object.values(MEGAS).map((m) =>
+  return (Object.entries(MEGAS) as Array<[MegaId, (typeof MEGAS)[MegaId]]>).map(([id, m]) =>
     card(
       towerIcon(m.from[0], 4, 0),
       m.name,
       `${m.blurb} Built from a ${TOWERS[m.from[0]].name} and a ${TOWERS[m.from[1]].name}, side by side.`,
       [stat("Fee", String(m.cost)), ...(m.range ? [stat("Range", String(m.range))] : [])],
+      MEGA_LORE[id],
     ),
   );
 }
