@@ -84,7 +84,7 @@ import { endlessLevel, weekOf } from "./endless";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, startGame, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
-import { OUTFITS, outfitFor, wear } from "./wardrobe";
+import { OUTFITS, outfitFor, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
 import { FINALE } from "./story/acts6to10";
@@ -215,12 +215,14 @@ const NAMES: Record<StoryLine["who"], string> = {
   vane: "Dr Vane",
   narrator: "Marrow",
 };
-const cath = (expression: CathExpression) => cathSvg({ framing: "face", expression, animate: true });
+/** Cath's illustrated outfit, from her wardrobe (wardrobe.ts). */
+const art = () => wornOutfit().art;
+const cath = (expression: CathExpression) => cathSvg({ framing: "face", expression, animate: true, outfit: art() });
 
 const data = load();
 wear(outfitFor(data));
 ui.hostFace.innerHTML = cath("smirk");
-ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined" });
+ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined", outfit: art() });
 
 let game: Game | null = null;
 /** 3D when WebGL is there (and `?2d` isn't asked for); the 2D canvas renderer otherwise. */
@@ -310,7 +312,7 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
     ui.storyPlace.textContent = place;
     ui.storyWho.textContent = NAMES[line.who];
     ui.storyFull.textContent = line.text;
-    ui.storyLeft.innerHTML = cathSvg({ framing: "bust", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", animate: true });
+    ui.storyLeft.innerHTML = cathSvg({ framing: "bust", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", animate: true, outfit: art() });
     ui.storyLeft.classList.toggle("speaking", line.who === "cath");
     ui.storyRight.classList.toggle("speaking", line.who === other);
     ui.storySpeech.dataset.who = line.who;
@@ -1841,7 +1843,7 @@ function renderCathButton(): void {
   const { c, level } = cathState();
   ui.cathLevel.textContent = String(level);
   ui.cathDot.hidden = freePoints(c, level) === 0 && talentsWaiting(c, level).length === 0;
-  if (!ui.cathBtnFace.innerHTML) ui.cathBtnFace.innerHTML = cathSvg({ framing: "face", expression: "smirk" });
+  ui.cathBtnFace.innerHTML = cathSvg({ framing: "face", expression: "smirk", outfit: art() });
 }
 
 function renderWardrobe(): void {
@@ -1861,8 +1863,8 @@ function renderWardrobe(): void {
     b.disabled = !ok;
     b.setAttribute("aria-pressed", String(o === on));
     const sw = document.createElement("span");
-    sw.className = "outfit-swatch";
-    sw.style.background = ok ? `linear-gradient(135deg, ${o.jacket} 55%, ${o.boots} 55%)` : "#9a958c";
+    sw.className = "outfit-pic";
+    sw.innerHTML = cathSvg({ framing: "bust", expression: "smirk", outfit: o.art });
     const n = document.createElement("strong");
     n.textContent = ok ? o.name : "Locked";
     const d = document.createElement("small");
@@ -1872,6 +1874,9 @@ function renderWardrobe(): void {
       data.outfit = o.id;
       wear(o);
       save(data);
+      ui.cathPortrait.innerHTML = cath("delighted");
+      ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined", outfit: o.art });
+      renderCathButton();
       sfx.playUpgrade();
       renderWardrobe();
     };
@@ -1965,6 +1970,7 @@ const openAlmanac = setupAlmanac(
   $<HTMLElement>("almanac-list"),
   () => data.seen,
   describeEnemy,
+  { box: $<HTMLElement>("almanac-view"), canvas: $<HTMLCanvasElement>("almanac-canvas"), caption: $<HTMLElement>("almanac-caption") },
 );
 $<HTMLButtonElement>("btn-almanac").addEventListener("click", openAlmanac);
 $<HTMLButtonElement>("almanac-close").addEventListener("click", () => $<HTMLDialogElement>("dlg-almanac").close());

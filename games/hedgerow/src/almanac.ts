@@ -4,6 +4,10 @@
 import { ENEMIES, MEGAS, SPECIALISATIONS, TOWERS, isBig } from "./engine";
 import type { EnemyKind, MegaId, TowerKind } from "./engine";
 import { enemyIcon, img, towerIcon } from "./icons";
+import type { Subject } from "./render3d/turntable";
+
+/** Set by setupAlmanac: shows a model on the turntable (null without WebGL). */
+let viewer: ((s: Subject, title: string) => void) | null = null;
 
 export type AlmanacTab = "towers" | "megas" | "enemies" | "bosses";
 
@@ -50,7 +54,7 @@ function stat(label: string, value: string): HTMLElement {
   return s;
 }
 
-function card(icon: string, title: string, text: string, stats: HTMLElement[], lore?: string): HTMLElement {
+function card(icon: string, title: string, text: string, stats: HTMLElement[], lore?: string, subject?: Subject): HTMLElement {
   const li = document.createElement("article");
   li.className = "alm-card";
   const body = document.createElement("div");
@@ -72,6 +76,16 @@ function card(icon: string, title: string, text: string, stats: HTMLElement[], l
     body.append(q);
   }
   li.append(img(icon, "alm-icon"), body);
+  if (subject && viewer) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "alm-view";
+    b.textContent = "3D";
+    b.setAttribute("aria-label", `Turn the ${title} round in 3D`);
+    const show = viewer;
+    b.onclick = () => show(subject, title);
+    li.append(b);
+  }
   return li;
 }
 
@@ -81,12 +95,12 @@ function towers(): HTMLElement[] {
     const t = TOWERS[kind];
     const stats = [stat("Cost", String(t.cost)), stat("Range", t.range.join(" / "))];
     if (t.damage[0] > 0) stats.push(stat("Damage", t.damage.join(" / ")));
-    out.push(card(towerIcon(kind), t.name, t.blurb, stats, TOWER_LORE[kind]));
+    out.push(card(towerIcon(kind), t.name, t.blurb, stats, TOWER_LORE[kind], { tower: kind, tier: 3, spec: null }));
     SPECIALISATIONS[kind].forEach((s, i) => {
       const st = [stat("Cost", String(s.cost))];
       if (s.range) st.push(stat("Range", String(s.range)));
       if (s.damage) st.push(stat("Damage", String(s.damage)));
-      out.push(card(towerIcon(kind, 4, i as 0 | 1), `${s.name} (${t.name}, tier 4)`, s.blurb, st));
+      out.push(card(towerIcon(kind, 4, i as 0 | 1), `${s.name} (${t.name}, tier 4)`, s.blurb, st, undefined, { tower: kind, tier: 4, spec: i as 0 | 1 }));
     });
   }
   return out;
@@ -100,6 +114,7 @@ function megas(): HTMLElement[] {
       `${m.blurb} Built from a ${TOWERS[m.from[0]].name} and a ${TOWERS[m.from[1]].name}, side by side.`,
       [stat("Fee", String(m.cost)), ...(m.range ? [stat("Range", String(m.range))] : [])],
       MEGA_LORE[id],
+      { mega: id },
     ),
   );
 }
@@ -118,7 +133,7 @@ function enemies(boss: boolean, seen: Record<string, boolean>, describe: (k: Ene
       stat("Speed", String(e.speed)),
       stat("Bounty", String(e.bounty)),
       stat("Leak", String(e.leak)),
-    ]);
+    ], undefined, { enemy: k });
   });
 }
 
@@ -128,8 +143,29 @@ export function setupAlmanac(
   list: HTMLElement,
   getSeen: () => Record<string, boolean>,
   describe: (k: EnemyKind) => string,
+  view?: { box: HTMLElement; canvas: HTMLCanvasElement; caption: HTMLElement },
 ): () => void {
   let tab: AlmanacTab = "towers";
+  if (view) {
+    // The turntable (and three.js with it) loads the first time someone asks for a model.
+    let table: { show: (s: Subject) => void; stop: () => void } | null = null;
+    viewer = (s, title) => {
+      view.box.hidden = false;
+      view.caption.textContent = title;
+      void import("./render3d/turntable").then(({ Turntable }) => {
+        if (!Turntable.supported()) {
+          view.box.hidden = true;
+          return;
+        }
+        table ??= new Turntable(view.canvas);
+        table.show(s);
+      });
+    };
+    dlg.addEventListener("close", () => {
+      table?.stop();
+      view.box.hidden = true;
+    });
+  }
   const render = (): void => {
     tabs.replaceChildren();
     for (const [id, label] of TABS) {

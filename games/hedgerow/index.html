@@ -280,6 +280,10 @@
     <dialog id="dlg-almanac" class="sheet almanac" aria-labelledby="almanac-title">
       <p class="eyebrow">Cath's field notes</p>
       <h2 id="almanac-title">The Almanac</h2>
+      <div class="almanac-view" id="almanac-view" hidden>
+        <canvas id="almanac-canvas" aria-label="The model, turning. Drag to spin it."></canvas>
+        <p class="almanac-caption" id="almanac-caption"></p>
+      </div>
       <div class="almanac-tabs" role="tablist" id="almanac-tabs"></div>
       <div class="almanac-list" id="almanac-list"></div>
       <div class="win-actions"><button class="btn" type="button" id="almanac-close">Done</button></div>

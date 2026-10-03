@@ -22,6 +22,7 @@ describe("wardrobe", () => {
     const d = emptySave();
     d.outfit = "wax";
     expect(parseSave(JSON.stringify(d)).outfit).toBe("wax");
-    expect(OUTFITS.length).toBe(4);
+    expect(OUTFITS.length).toBe(5);
+    expect(OUTFITS.map((o) => o.art)).toEqual(["field", "wax", "pinny", "market", "gown"]);
   });
 });

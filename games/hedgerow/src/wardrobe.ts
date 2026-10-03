@@ -3,6 +3,7 @@
 // stored in SaveData.outfit (an optional field, so no version bump).
 
 import type { SaveData } from "./store";
+import type { CathOutfit } from "../../../shared/cath/cath";
 
 export interface Outfit {
   id: string;
@@ -15,6 +16,8 @@ export interface Outfit {
   boots: string;
   blouse: string;
   brooch: string;
+  /** Her illustrated outfit in the shared Cath art (portraits, story scenes, the Cath sheet). */
+  art: CathOutfit;
   unlocked: (d: SaveData) => boolean;
 }
 
@@ -26,6 +29,7 @@ const won = (d: SaveData, from: number, to: number): boolean => {
 export const OUTFITS: Outfit[] = [
   {
     id: "blazer",
+    art: "field",
     name: "Olive blazer",
     how: "Hers from the start.",
     jacket: "#6E7C4B",
@@ -38,6 +42,7 @@ export const OUTFITS: Outfit[] = [
   },
   {
     id: "wax",
+    art: "wax",
     name: "Wellies and wax jacket",
     how: "Clear levels 1 to 10.",
     jacket: "#4B5A3A",
@@ -50,6 +55,7 @@ export const OUTFITS: Outfit[] = [
   },
   {
     id: "market",
+    art: "pinny",
     name: "Market-day dress",
     how: "Earn 6 rosettes.",
     jacket: "#d96b7f",
@@ -61,14 +67,28 @@ export const OUTFITS: Outfit[] = [
     unlocked: (d) => Object.keys(d.rosettes ?? {}).length >= 6,
   },
   {
+    id: "trench",
+    art: "market",
+    name: "Camel trench and knit scarf",
+    how: "Clear level 50.",
+    jacket: "#C99A61",
+    sleeve: "#AA7D48",
+    trousers: "#3a3340",
+    boots: "#6b4a2b",
+    blouse: "#F1E6D0",
+    brooch: "#D4AE58",
+    unlocked: (d) => won(d, 50, 50),
+  },
+  {
     id: "gown",
+    art: "gown",
     name: "Kingsmarket gown",
     how: "Clear level 100.",
-    jacket: "#2f3f8f",
-    sleeve: "#243170",
-    trousers: "#1c2352",
-    boots: "#e8d28a",
-    blouse: "#f5f0ff",
+    jacket: "#6E1F33",
+    sleeve: "#4E1424",
+    trousers: "#5A1829",
+    boots: "#D4AE58",
+    blouse: "#F3E3C8",
     brooch: "#f2c94c",
     unlocked: (d) => won(d, 100, 100),
   },
