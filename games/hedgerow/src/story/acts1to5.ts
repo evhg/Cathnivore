@@ -61,6 +61,7 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
       { who: "mara", text: "Hollowell sent me a letter: three times what my farm is worth, if I sign this week." },
       { who: "mara", text: "But they only pay if they win planning permission. If they lose, I've given my farm away for nothing." },
       { who: "cath", expression: "determined", text: "Then don't sign. Money's tight today, so build cheap hedges first and add more as the waves pay out." },
+      { who: "cath", text: "Some vans are wrapped in bubble wrap. Single shots barely dent it, but bees burst it straight away." },
     ],
     after: [
       { who: "mara", text: "I've written back. The answer is no." },
@@ -93,7 +94,7 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
     before: [
       { who: "mara", text: "Look up. Hollowell are sending forty drones over the farm to film it for their buyers." },
       { who: "cath", text: "Drones fly over the hedges, and over me too. Hedges can't touch them." },
-      { who: "cath", expression: "determined", text: "Scarecrows and bees can. Put them where they can reach the sky over the lane." },
+      { who: "cath", expression: "determined", text: "Scarecrows and bees can. And the old windmill can be rebuilt: its gusts blow everything back down the lane." },
     ],
     after: [
       { who: "bea", text: "One fell in the garden. Can I keep it?" },
@@ -144,6 +145,7 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
       { who: "crisp", text: "Julian Crisp, for Hollowell. Our trucks are selling eggs at the market gate today, for 99p a dozen." },
       { who: "tomas", text: "That's less than it costs to keep the hens! They want to bankrupt our farmers, then put prices back up." },
       { who: "cath", expression: "determined", text: "Their trucks are fast: in, sell, out. Slow them early with hedges, then hit them hard." },
+      { who: "tomas", text: "And some are hiding behind the walls halfway up the road. Watch for the red ring: that's where they'll jump out." },
     ],
     after: [
       { who: "tomas", text: "People bought our eggs anyway. They know what Hollowell is up to." },
@@ -165,7 +167,7 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
     before: [
       { who: "bea", text: "Mum, when you stop one of those trucks, drones fly out of the back. Why?" },
       { who: "tomas", text: "It's their backup plan. If a truck is stopped, the drones fly the parcels the rest of the way." },
-      { who: "cath", expression: "determined", text: "So every truck we stop lets two drones loose. Keep scarecrows and bees behind the hedges for them." },
+      { who: "cath", expression: "determined", text: "So every truck we stop lets two drones loose, and they're coming up two roads today. Cover both." },
     ],
     after: [
       { who: "bea", text: "I drew the truck with the drones coming out. It looks like it's sneezing." },
@@ -243,112 +245,114 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
   21: {
     name: "On Air",
     before: [
-      { who: "sol", text: "Morning, Saltmarsh, this is The Salt Hour. Four hundred people with ring lights got off a coach at seven." },
-      { who: "sol", text: "They're here to film our lanes, sponsored by guess who. They walk slowly and they don't look where they're going." },
-      { who: "cath", text: "Saltmarsh has ponds. A duck pond slows anything that passes it. Put them where the hedges can finish the job." },
+      { who: "narrator", text: "Saltmarsh, on the coast. Sol Abara keeps sheep here and runs a farming podcast called The Salt Hour." },
+      { who: "sol", text: "Cath! A coachload of influencers just arrived. Hollowell paid them to film our lanes and say they're empty." },
+      { who: "cath", text: "Then let's keep them slow. Duck ponds slow everything that passes, and we've got water everywhere here." },
+      { who: "cath", expression: "determined", text: "Some of them are already hiding down the lane. Watch the red rings." },
     ],
     after: [
-      { who: "sol", text: "We're number one in Agriculture and number four in Comedy. I didn't enter Comedy." },
+      { who: "sol", text: "I told the whole story on the podcast. People are sharing it. Hollowell won't like that." },
     ],
   },
   22: {
     name: "Going Live",
     before: [
-      { who: "sol", text: "Two hundred influencers, packed tight. Anyone near one gets filmed, and anyone being filmed stops working. Scarecrows too." },
-      { who: "cath", text: "So build back from the verge, out of shot, and let the bees reach in. Ponds hold them while we do it." },
-      { who: "sol", text: "And I'm going live. If they want an audience, they can share mine." },
+      { who: "sol", text: "Two coachloads today, on two roads. When an influencer stands near a tower, it stops to watch them." },
+      { who: "cath", text: "So build a little back from the road, out of their shot, and let the bees reach in." },
+      { who: "cath", expression: "determined", text: "They come packed together, which bees love. Cover both roads." },
     ],
     after: [
-      { who: "sol", text: "Nine thousand watching at the peak. Most of them came for the woman in the trench coat with the pie." },
-      { who: "cath", expression: "wink", text: "Apple. Tell them it was apple." },
+      { who: "sol", text: "I filmed the whole thing live. Nine thousand people watched them run from the bees." },
     ],
   },
   23: {
     name: "Beach Clean",
     before: [
-      { who: "crisp", text: "'Hollowell is proud to sponsor the Saltmarsh Beach Clean. Our express fleet will carry the volunteers.'" },
-      { who: "sol", text: "I cleaned that beach on Sunday. There's nothing on it. They've shut the coast road to film nothing." },
-      { who: "pip", text: "I've sorted you a slipway permit, Sol, in case you need the boats. Just tell me which morning." },
-      { who: "cath", text: "Express vans: quicker, and worth more stopped. Ponds early on the road, so they're slow by the time they reach us." },
+      { who: "sol", text: "Hollowell are 'cleaning the beach' for the cameras. They've closed the coast road and sent their fastest vans." },
+      { who: "sol", text: "I cleaned that beach myself on Sunday. There's nothing on it." },
+      { who: "cath", expression: "determined", text: "Fast vans: put ponds early on the road to slow them. Every fast one we stop pays extra." },
     ],
     after: [
-      { who: "sol", text: "Total collected by the clean-up: one crisp packet. Hollowell's own brand." },
+      { who: "sol", text: "Their big clean-up found one crisp packet. Hollowell's own brand." },
     ],
   },
   24: {
     name: "Discount Code",
     before: [
-      { who: "sol", text: "It's raining vouchers. Twenty per cent off, code SALTMARSH. There's one stuck to every ewe on the marsh." },
-      { who: "cath", text: "Vouchers come by drone, and hedges can't reach drones. Hives and scarecrows along the marsh path." },
+      { who: "sol", text: "Drones are dropping Hollowell discount vouchers all over the marsh. They're stuck to my sheep." },
+      { who: "cath", text: "Lots of drones today. Hedges and ponds can't reach anything in the air." },
+      { who: "cath", expression: "determined", text: "Scarecrows, bees and windmills can. Spread them along the marsh path." },
     ],
     after: [
-      { who: "bea", text: "I picked up thirty-one vouchers for my project. Miss Okafor says that's a lot of evidence." },
+      { who: "bea", text: "I collected thirty vouchers for my school project. My teacher says that's evidence." },
     ],
   },
   25: {
     name: "The Unboxing",
     before: [
-      { who: "sol", text: "Today's content: forty trucks, unboxed live. Extra-thick packaging for the camera, so they'll take some stopping." },
-      { who: "cath", text: "Heavier trucks. Upgrade before you spread. Three strong hedges beat six thin ones." },
+      { who: "sol", text: "They're filming a parade of delivery trucks for the internet. Extra-tough trucks, so they look impressive." },
+      { who: "cath", text: "Tougher trucks take more hits to stop." },
+      { who: "cath", expression: "determined", text: "Upgrade before you build more. Three strong towers beat six weak ones today." },
     ],
     after: [
-      { who: "sol", text: "Every unboxing ended with a Wholesome Hollow hamper. That's our label. That's my lamb in there." },
-      { who: "cath", text: "Who paid for the hampers?" },
+      { who: "sol", text: "Every truck carried a 'Wholesome Hollow' hamper. That's the organic label we sell our lamb through." },
+      { who: "cath", expression: "worried", text: "Why would Hollowell be giving away our label's hampers?" },
     ],
   },
   26: {
     name: "Sea Fret",
     before: [
-      { who: "sol", text: "Sea fret's in. Thirty metres of visibility. Lovely for radio. Terrible for everything else." },
-      { who: "cath", text: "Like the moor. Everything reaches less. Build tight to the road and let the ponds keep them close." },
+      { who: "sol", text: "Thick sea fog, and they're coming up two roads at once." },
+      { who: "cath", text: "In fog the towers can't see as far. Build close to the roads." },
+      { who: "pip", text: "And I've brought you something from the market: a seed cannon. It lobs sacks of seed potatoes a very long way." },
     ],
     after: [
-      { who: "sol", text: "Wholesome Hollow pays us through a company called WH Holdings. Registered office: Marrow House, Kingsmarket." },
+      { who: "sol", text: "I looked up Wholesome Hollow. It's owned by a company in Kingsmarket called WH Holdings." },
     ],
   },
   27: {
     name: "Brand Deal",
     before: [
-      { who: "crisp", text: "'Sol, we love the show. Fifty thousand marks for a season, and only very small changes to the content.'" },
-      { who: "sol", text: "Reading it on air. Page four: 'Talent will describe the lanes as underused.' Talent says no thank you." },
-      { who: "sol", text: "Our one sponsor was the feed shop, and the feed shop got bought this morning. We're broke this week." },
-      { who: "cath", text: "Then we spend like it. Cheap first, and build as the road pays out. It pays well today." },
+      { who: "crisp", text: "Sol, Hollowell would love to sponsor your podcast. Fifty thousand. You'd just say nice things about us." },
+      { who: "sol", text: "No thanks. But they bought my only sponsor this morning, so we're broke this week." },
+      { who: "cath", expression: "determined", text: "Then build cheap and let the waves pay. The swing bridge stops the vans while it's up: hit them while they wait." },
     ],
     after: [
-      { who: "crisp", text: "'We respect Mr Abara's decision, and his right to a smaller audience.'" },
+      { who: "crisp", text: "We respect Mr Abara's choice. And his much smaller audience." },
     ],
   },
   28: {
     name: "Golden Hour",
     before: [
-      { who: "sol", text: "Golden hour. They all want the sunset behind them, so they'll come late and fast." },
-      { who: "cath", text: "And it's dark right after. Shorter reach for us, quicker vans for them. Build close and keep the ponds working." },
+      { who: "sol", text: "The influencers want sunset in their videos, so they're coming late and fast." },
+      { who: "cath", text: "And then it gets dark. The towers can't see as far at night." },
+      { who: "cath", expression: "determined", text: "Build right beside the road, and keep the ponds slowing them." },
     ],
     after: [
-      { who: "sol", text: "Marrow House is nine floors. Floor one's a dentist. Two to eight are empty. Nine is locked." },
+      { who: "sol", text: "WH Holdings is on the top floor of Marrow House in Kingsmarket. The floor is locked. I'm going to find out why." },
     ],
   },
   29: {
     name: "The Blimp",
     before: [
-      { who: "crisp", text: "'The Brand Ambassador will visit Saltmarsh this week to meet its many fans.'" },
-      { who: "sol", text: "There's a blimp over the estuary with a forty-metre smile on the side. And the wind's got up." },
-      { who: "cath", text: "High wind: drones come in quicker and scarecrows can't throw straight. Hives do the work today." },
+      { who: "sol", text: "There's a giant Hollowell blimp over the estuary, and the wind's blowing a gale." },
+      { who: "cath", text: "Scarecrows can't throw in this wind, so they're no use today. Drones will fly faster, too." },
+      { who: "cath", expression: "determined", text: "Bees, ponds and windmills, then. Spread the hives along the road." },
     ],
     after: [
-      { who: "sol", text: "The dentist on floor one signs for floor nine's post. I've booked a check-up." },
+      { who: "sol", text: "The blimp is coming down the coast road tomorrow. It's huge, and it flies." },
     ],
   },
   30: {
     name: "Brand Ambassador",
     before: [
-      { who: "narrator", text: "The Brand Ambassador Blimp: a screen the size of a barn, flying low. Anyone under it stops to watch." },
-      { who: "sol", text: "Only scarecrows and bees can reach it, and they'll stop to watch too if it gets close." },
-      { who: "cath", expression: "determined", text: "Every hive we have, then, set a little back from its path. Close enough to sting, too far to watch." },
+      { who: "narrator", text: "Hollowell's Brand Ambassador blimp: a flying TV screen. Anyone under it stops to watch the adverts." },
+      { who: "sol", text: "Only things that can hit the sky can reach it. Scarecrows, bees, windmills." },
+      { who: "cath", expression: "determined", text: "Build them a little back from its path: close enough to hit it, far enough not to stare." },
     ],
     after: [
-      { who: "sol", text: "Check-up done. Floor nine's post says 'WH Holdings, a Hollowell Group company'. The dentist let me read it." },
-      { who: "sol", text: "Wholesome Hollow is Hollowell. Every jar we've sold under that label, we sold to them. Hampers included." },
+      { who: "sol", text: "I got into Marrow House. WH Holdings is Hollowell. Wholesome Hollow, our organic label, belongs to them." },
+      { who: "cath", expression: "worried", text: "So every jar we sold under that label made Hollowell money. We have to tell everyone." },
     ],
   },
 
@@ -356,87 +360,87 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
   31: {
     name: "The River Rises",
     before: [
-      { who: "cath", text: "Every farm has pulled out of Wholesome Hollow. Rivermead sells direct from today." },
-      { who: "ines", text: "Ines Farrow. The river's two feet up since midnight. I've moved the herd to the top field. From there I can see the bypass." },
-      { who: "ines", text: "Nine bulldozers on it, engines warm. They're waiting for the water to do the first part." },
-      { who: "cath", text: "Rain slows everything on the lane, them too. But bees won't fly in it. Lean on hedges and ponds." },
+      { who: "narrator", text: "Rivermead, a valley of dairy farms. Every farm has quit Hollowell's fake organic label and sells direct now." },
+      { who: "ines", text: "Dr Ines Farrow: I'm the village doctor and I farm cows. The river's flooding, and bulldozers are waiting on the bypass." },
+      { who: "ines", text: "They want to flatten the farms while we're busy with the water." },
+      { who: "cath", expression: "determined", text: "Rain slows them down, but it keeps the bees in. Hedges and ponds do the work today." },
     ],
     after: [
-      { who: "ines", text: "The dozers turned back at the ford. I've written down all nine registrations, in case anyone asks later." },
+      { who: "ines", text: "The bulldozers turned back at the river. They'll try again when the water drops." },
     ],
   },
   32: {
     name: "Sandbag Sunday",
     before: [
-      { who: "tomas", text: "Sandbag Sunday. Sixty-three volunteers, eleven shovels, soup for all, and Mr Ashby's ladder, returned at last." },
-      { who: "ines", text: "Every mark we had went on sand. The tin's nearly empty." },
-      { who: "pip", text: "Brought a van of sand from the depot. Where are you building the wall? I'll tell the lads." },
-      { who: "cath", text: "Small and often, then. Cheap hedges now, and spend what the lane pays as it comes." },
+      { who: "tomas", text: "Sandbag Sunday! The whole village is out filling bags to hold back the river." },
+      { who: "ines", text: "We spent nearly all our money on sand. There's very little left for towers." },
+      { who: "cath", expression: "determined", text: "Then start cheap, with hedges, and build more as each wave pays out." },
     ],
     after: [
-      { who: "tomas", text: "Four thousand sandbags. Mr Ashby used the ladder to stack them. He says that makes us even." },
+      { who: "tomas", text: "Four thousand sandbags, and the farmhouses are dry. What a day." },
     ],
   },
   33: {
     name: "Compulsory Purchase",
     before: [
-      { who: "mara", text: "A compulsory purchase notice for Rivermead, 'for flood resilience'. I've read it twice." },
-      { who: "mara", text: "The second time, I held it up to the light. Council letterhead. Hollowell watermark." },
-      { who: "ines", text: "And the dozers are back, with steel on the blades." },
-      { who: "cath", expression: "determined", text: "Armour halves what we hit them with. Upgrade the hedges, and save the pie for the big ones." },
+      { who: "mara", text: "The council has ordered Rivermead's farms to be sold, 'to protect against floods'. Hollowell wrote that order." },
+      { who: "ines", text: "And the bulldozers are back, with steel plates on them." },
+      { who: "cath", expression: "determined", text: "Armour soaks up weak hits. Upgrade your towers so every hit is a big one." },
     ],
     after: [
-      { who: "mara", text: "Objection lodged. That buys us twenty-eight days and a hearing in Kingsmarket." },
+      { who: "mara", text: "I've challenged the order in court. The hearing is in Kingsmarket in four weeks." },
     ],
   },
   34: {
     name: "The Ford",
     before: [
-      { who: "ines", text: "The road splits at the ford. They'll send half the dozers each way and see which side we forgot." },
-      { who: "cath", text: "So we don't forget either. Hedges on both roads. I'll go wherever it's worst." },
+      { who: "ines", text: "The road splits at the ford, so they're coming two ways at once." },
+      { who: "ines", text: "And the river will flood the fields by the ford halfway through. Anything built there gets washed out." },
+      { who: "cath", expression: "determined", text: "Cover both roads, and only put duck ponds by the ford. They don't mind getting wet." },
     ],
     after: [
-      { who: "ines", text: "Nobody got through on either side. One driver asked me for a plaster. I'm still a doctor. I gave him two." },
+      { who: "ines", text: "Not one bulldozer got across. The river did half the work for us." },
     ],
   },
   35: {
     name: "Silt and Ruts",
     before: [
-      { who: "ines", text: "Silt to the ankle on every field. Everything's crawling, and when they crawl, they bunch." },
-      { who: "bea", text: "Is silt the same as mud?" },
-      { who: "ines", text: "Finer. Rub it between your fingers and it feels like flour." },
-      { who: "cath", text: "Bunched up means one hive gets six at once. Bees where the ruts are deepest." },
+      { who: "ines", text: "The flood left thick mud everywhere. Everything crawls through it, so the bulldozers bunch up." },
+      { who: "bea", text: "Can I jump in it?" },
+      { who: "cath", expression: "determined", text: "Not today, Bea. Bunched-up bulldozers are perfect for bees. Put hives where it's muddiest." },
     ],
     after: [
-      { who: "bea", text: "I asked Dr Ines what my mum does, for my project. She said, 'Arithmetic, mostly.'" },
+      { who: "bea", text: "I drew the bulldozers stuck in the mud with bees all over them." },
     ],
   },
   36: {
     name: "The Barn Raising",
     before: [
-      { who: "tomas", text: "Barn raising at Ferris's. Forty-one people, three hundred pegs, and stalls in the yard to pay for the timber." },
-      { who: "cath", text: "Market day, so the money comes quick. A barn full of farmhands can block the lane solid. Put it on the narrowest bit." },
+      { who: "tomas", text: "The whole village is building a new barn today, and the market's open to pay for the wood." },
+      { who: "cath", text: "A barn full of farmhands can step into the lane and block it. It's very strong on the narrow bits." },
+      { who: "cath", expression: "determined", text: "Market day means money comes in fast. Build the barn where the lane is tightest." },
     ],
     after: [
-      { who: "ines", text: "Forty-one people built a barn in a day. The bypass has been in planning for six years." },
+      { who: "ines", text: "Forty people built a barn in a day. Hollowell's bypass has taken six years and isn't finished." },
     ],
   },
   37: {
     name: "Dozer Alley",
     before: [
-      { who: "ines", text: "They're working through the night now. Floodlights on the bypass, clearance crews, dozers on the lane." },
-      { who: "pell", text: "Graham Pell, on the radio: 'Hollowell doesn't flatten communities. We make room for them to grow.'" },
-      { who: "cath", text: "Night: we see less, they move faster. Build close, and put the barn in front." },
+      { who: "ines", text: "They're working through the night now, with floodlights and bulldozers." },
+      { who: "pell", text: "Graham Pell here. Hollowell doesn't flatten communities. We make room for them to grow." },
+      { who: "cath", expression: "determined", text: "At night the towers can't see as far, and the bulldozers go faster. Build close, barn in front." },
     ],
     after: [
-      { who: "mara", text: "The hearing's on Friday. The notice says 'flood resilience' nineteen times. I counted, with a highlighter." },
+      { who: "mara", text: "The court hearing is this Friday. I've got all the evidence we need." },
     ],
   },
   38: {
     name: "The Grain Silo",
     before: [
-      { who: "ines", text: "The flood missed the grain store. Ten tonnes of seed in a silo, and Mr Ferris, who is very cross." },
-      { who: "cath", expression: "determined", text: "Grain fired that hard goes straight through plating. Silos where the dozers slow down, and armour stops mattering." },
+      { who: "ines", text: "The flood missed our grain store. Mr Ferris says we can fire his grain at the bulldozers." },
+      { who: "cath", text: "A silo fires grain so hard it goes straight through armour. Perfect for plated bulldozers." },
+      { who: "cath", expression: "determined", text: "The river floods the fields by the ford again halfway through. Keep the silos on high ground." },
     ],
     after: [
       { who: "bea", text: "For my project I wrote: 'My mum gets everyone to build things, and then she says thank you.'" },
@@ -445,23 +449,24 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
   39: {
     name: "High Water",
     before: [
-      { who: "ines", text: "No ponds today. The fields are already ponds. We've had enough water." },
-      { who: "cath", text: "And the ground's too soft to hold anything back, so slowing them works less. Build to hit hard instead." },
+      { who: "ines", text: "The fields are under water, so we can't dig duck ponds today." },
+      { who: "cath", text: "And the soft ground means hedges and slowing towers work less well." },
+      { who: "cath", expression: "determined", text: "So hit hard instead: silos, scarecrows and cannons." },
     ],
     after: [
-      { who: "ines", text: "River's down three inches. And there's a bulldozer on the bypass the size of the chapel." },
+      { who: "ines", text: "The river's going down. But there's a bulldozer on the bypass as big as the chapel." },
     ],
   },
   40: {
     name: "The Mega-Dozer",
     before: [
-      { who: "narrator", text: "The Mega-Dozer: sixty tonnes, plated all over, with a blade wider than the lane." },
-      { who: "pell", text: "'We're not here to knock anything down, Dr Farrow. We're here to make room.'" },
-      { who: "cath", expression: "determined", text: "Plated all over. That's silo work. Everything else keeps it slow while they fire." },
+      { who: "narrator", text: "The Mega-Dozer: sixty tonnes of plated steel, with a blade wider than the lane." },
+      { who: "pell", text: "We're not here to knock anything down, Dr Farrow. We're here to make room." },
+      { who: "cath", expression: "determined", text: "It's armoured all over, so silos do the real damage. Everything else keeps it slow while they fire." },
     ],
     after: [
-      { who: "mara", text: "Notice quashed. The judge said flood resilience rarely needs sixty tonnes. I agreed with him, quietly." },
-      { who: "pell", text: "'Hollowell is stepping back from Rivermead. Our partners at Candor Health will lead on the valley's wellbeing.'" },
+      { who: "mara", text: "We won in court! The judge threw out the order. Rivermead's farms stay with the farmers." },
+      { who: "pell", text: "Hollowell is stepping back. Our friends at Candor Health will look after the valley now." },
     ],
   },
 
