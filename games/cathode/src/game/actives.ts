@@ -324,6 +324,44 @@ export class Actives {
         }
         break;
       }
+      case "hackCamera":
+      case "hijackMachine":
+      case "puppeteer": {
+        // No street cameras yet: the hack lands on whoever she is looking at (see DECISIONS).
+        const t = this.nearestInFront(ctx, fx.type === "hackCamera" ? num("range", 20) : 40);
+        if (!t) {
+          this.said.push("No target in sight");
+          return false;
+        }
+        if (fx.type === "hackCamera") {
+          this.marked.add(t);
+          t.setMarked(true, GLOW);
+          timed("mark", 8);
+        } else if (fx.type === "hijackMachine") {
+          t.panic(num("seconds", 6), ctx.player.pos);
+          this.puppets.push({ e: t, left: num("seconds", 6), boom: 0 });
+        } else {
+          t.panic(12, ctx.player.pos);
+          this.puppets.push({ e: t, left: 12, boom: num("detonation", 150) });
+        }
+        break;
+      }
+      case "loopCamera":
+        this.timers.set("opticCamo", num("seconds", 6));
+        this.params.set("opticCamo", { type: "opticCamo", detection: 0.4 });
+        break;
+      case "rootAccess": {
+        const r = num("radius", 40);
+        for (const e of ctx.enemies) {
+          if (!e.alive || e.position.distanceTo(ctx.player.pos) > r) continue;
+          e.panic(num("seconds", 8), ctx.player.pos);
+          this.puppets.push({ e, left: num("seconds", 8), boom: 0 });
+        }
+        break;
+      }
+      case "takedownRange":
+        this.said.push("Passive: takedowns reach further");
+        return false;
       case "juggernaut":
         timed("juggernaut", num("seconds", 10));
         break;
@@ -513,6 +551,22 @@ export class Actives {
 
   lungeAt: Enemy | null = null;
   lungeT = 0;
+  private puppets: Array<{ e: Enemy; left: number; boom: number }> = [];
+
+  private nearestInFront(ctx: { eye: THREE.Vector3; fwd: THREE.Vector3; enemies: Enemy[] }, reach: number): Enemy | null {
+    let best: Enemy | null = null;
+    let bestD = reach;
+    for (const e of ctx.enemies) {
+      if (!e.alive) continue;
+      const to = e.body.joints.chest.clone().sub(ctx.eye);
+      const dist = to.length();
+      if (dist < bestD && to.normalize().dot(ctx.fwd) > 0.9) {
+        best = e;
+        bestD = dist;
+      }
+    }
+    return best;
+  }
 
   update(dt: number, d: DerivedStats, world: World, colliders: THREE.Box3[], ground: (x: number, z: number) => number, enemies: Enemy[] = []): void {
     this.battery = Math.min(d.battery, this.battery + d.batteryRegen * dt);
@@ -533,6 +587,18 @@ export class Actives {
       }
     }
     this.lungeT = Math.max(0, this.lungeT - dt);
+    for (const p of this.puppets) {
+      p.left -= dt;
+      if (p.left > 0) {
+        if (p.e.alive && !p.e.fleeing) p.e.panic(1, p.e.position);
+        continue;
+      }
+      if (p.e.alive && p.boom > 0) {
+        world.fx.explosion(p.e.body.joints.chest.clone(), 2);
+        this.blasts.push({ pos: p.e.body.joints.chest.clone(), radius: 4, damage: (p.e.hp * p.boom) / 100 + 40, silent: false });
+      }
+    }
+    this.puppets = this.puppets.filter((p) => p.left > 0);
     if ((this.timers.get("shieldDrone") ?? 0) <= 0) this.shield = 0;
     this.updateDeployed(dt, world, enemies);
     if (this.healing) {

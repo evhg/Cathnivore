@@ -117,3 +117,33 @@ describe("CATHODE deployables and utility actives", () => {
     }
   });
 });
+
+describe("CATHODE hacking skills (no street cameras yet: they hit what she looks at)", () => {
+  const fake = () => {
+    const e = {
+      alive: true,
+      hp: 100,
+      fleeing: false,
+      marked: false,
+      body: { joints: { chest: new THREE.Vector3(0, 1.6, -10) } },
+      position: new THREE.Vector3(0, 0, -10),
+      panic() {
+        e.fleeing = true;
+      },
+      setMarked(on: boolean) {
+        e.marked = on;
+      },
+    };
+    return e;
+  };
+  it("Turncoat panics the target for its duration; Root Access hits everyone near", () => {
+    const c = { ...newCharacter("wirewitch"), skills: { "wirewitch.turncoat": 5 } } as ReturnType<typeof newCharacter>;
+    const d = characterStats(c);
+    const a = new Actives();
+    a.assign(c);
+    const e = fake();
+    expect(a.use(0, c, d, { ...ctx(), enemies: [e] as never })).toBe(true);
+    expect(e.fleeing).toBe(true);
+    expect(a.use(0, c, d, { ...ctx(), enemies: [] as never })).toBe(false);
+  });
+});
