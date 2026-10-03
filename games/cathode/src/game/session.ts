@@ -13,6 +13,8 @@ import { Combat, type Build, type KillEvent } from "./combat";
 import { KillCam } from "./killcam";
 import { Hud } from "../ui/hud";
 import { Audio } from "./audio";
+import { Progress } from "./progress";
+import { xpForLevel, xpToNext as simXpToNext } from "../sim/stats";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -41,6 +43,7 @@ export interface Session {
   xp: number;
   /** Bullet-time battery, seconds. */
   focus: number;
+  progress: Progress;
   /** Frames rendered and a rolling frame time, for ?perf and tests. */
   stats: { frames: number; ms: number };
   /** Test hook: freeze the AI and the clock. */
@@ -53,12 +56,9 @@ declare global {
   }
 }
 
-/** XP needed to go from level L to L+1 (docs/design/cathode.md 4.1). */
-export function xpToNext(level: number): number {
-  return Math.round(120 * Math.pow(level, 1.85));
-}
 
 const BASE_FOV = 75;
+
 
 export async function startSession(o: SessionOptions): Promise<Session> {
   const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot }, o.onProgress);
@@ -67,10 +67,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const player = new Player(start, world.colliders, ground);
   const input = new Input(o.canvas, o.touch);
   const rays = new RayWorld(world.colliders);
+  const progress = new Progress();
+  const areaLevel = Math.max(1, progress.character.level);
   const enemies: Enemy[] = [];
+  let seed = 1;
   for (const [key, route] of Object.entries(world.markers)) {
     if (!key.startsWith("patrol:") || !route.length) continue;
-    const e = new Enemy(ENFORCER, route.map((p) => p.clone()));
+    const e = new Enemy(Progress.kit(ENFORCER, "enforcer", areaLevel, seed++), route.map((p) => p.clone()), areaLevel);
     world.scene.add(e.body.root);
     enemies.push(e);
   }
@@ -99,11 +102,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     arsenal,
     combat,
     killcam,
-    hp: 100,
-    maxHp: 100,
-    level: 1,
-    xp: 0,
-    focus: 4,
+    hp: progress.stats.maxHealth,
+    maxHp: progress.stats.maxHealth,
+    level: progress.character.level,
+    xp: progress.character.xp,
+    focus: progress.stats.bulletTimeSeconds,
+    progress,
     stats: { frames: 0, ms: 16 },
     paused: false,
   };
@@ -112,12 +116,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const ex = world.markers.extract?.[0];
   if (ex) player.yaw = Math.atan2(-(ex.x - start.x), -(ex.z - start.z));
 
-  const build = (): Build => ({
-    damage: () => 1 + 0.04 * (s.level - 1),
-    headshot: 1,
-    crit: 0.05,
-    critMul: 1.5,
-  });
+  const build = (): Build => progress.build();
 
   let objective = "Get to the fish market. Somebody there knows who put Tomas in the water.";
   hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
@@ -130,37 +129,32 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   addEventListener("resize", resize);
   resize();
 
-  const gainXp = (amount: number) => {
-    s.xp += amount;
-    while (s.xp >= xpToNext(s.level)) {
-      s.xp -= xpToNext(s.level);
-      s.level++;
-      s.maxHp += 8;
+  const levelUp = (levels: number[]) => {
+    for (const l of levels) {
+      s.maxHp = progress.stats.maxHealth;
       s.hp = s.maxHp;
-      hud.showBanner(`Level ${s.level}`, "5 attribute points · 1 skill point");
+      hud.showBanner(`Level ${l}`, "5 attribute points · 1 skill point · K to spend");
       audio?.levelUp();
     }
+    s.level = progress.character.level;
   };
 
   const onKill = (k: KillEvent) => {
     const bits: string[] = [];
-    let xp = k.enemy.kit.xp;
+    let bonus = 1;
     if (k.takedown) bits.push("Takedown");
     if (k.headshot) {
       bits.push("Headshot");
-      xp *= 1.25;
+      bonus *= 1.25;
     }
     if (k.distance > 40) {
       bits.push(`${Math.round(k.distance)} m`);
-      xp *= 1.2;
+      bonus *= 1.2;
     }
     if (k.severed.length) bits.push(k.severed.includes("head") ? "Decapitated" : "Dismembered");
-    if (k.unseen) {
-      bits.push("Unseen");
-      xp *= 1.5;
-    }
-    xp = Math.round(xp);
-    gainXp(xp);
+    if (k.unseen) bits.push("Unseen");
+    levelUp(progress.kill(k.enemy.kit.xp, k.enemy.level, k.unseen, bonus));
+    const xp = progress.lastXp;
     hud.feedLine(`+${xp} XP${bits.length ? " · " + bits.join(" · ") : ""}`, k.headshot || k.unseen);
     hud.hitMarker(true);
   };
@@ -193,7 +187,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (focusing) {
       s.focus = Math.max(0, s.focus - realDt);
       scale = 0.35;
-    } else s.focus = Math.min(4, s.focus + realDt * 0.15);
+    } else s.focus = Math.min(progress.stats.bulletTimeSeconds, s.focus + realDt * 0.15);
     const dt = o.shot ? 0 : realDt * scale;
     time += dt;
 
@@ -291,7 +285,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (jobDone && ex && player.pos.distanceTo(ex) < 3) {
       jobDone = false;
       objective = "Job done. More of the Drowned Market is coming (ROADMAP 74-76).";
-      hud.showBanner("Job done", `Level ${s.level} · ${s.xp} XP`);
+      if (!progress.jobsDone.includes("fishMarket")) progress.jobsDone.push("fishMarket");
+      progress.save();
+      hud.showBanner("Job done", `Level ${progress.character.level}`);
     }
 
     // Sound: footsteps, the score's tension, slow motion.
@@ -315,8 +311,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       hp: s.hp,
       maxHp: s.maxHp,
       level: s.level,
-      xp: s.xp,
-      xpNext: xpToNext(s.level),
+      xp: progress.character.xp - xpForLevel(progress.character.level),
+      xpNext: simXpToNext(progress.character.level),
       weapon: arsenal.weapon.name,
       mag: arsenal.ammo.mag,
       reserve: arsenal.ammo.reserve,
@@ -341,7 +337,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       light: world.lightAt(player.pos.clone().add(new THREE.Vector3(0, 1, 0))),
       low: player.crouchAmt,
       speed: player.speed,
-      stealth: dead ? 0 : 1,
+      stealth: dead ? 0 : progress.stats.detectionMultiplier,
     };
   }
 
