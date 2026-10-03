@@ -171,17 +171,38 @@ function ribbon(pts: [number, number, number][]): string {
 const streak = (b: Brush, x: number, y: number, w: number, color: string, a = 0.6): string =>
   `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(w / 2)}" ry="${f(Math.max(2.5, w * 0.045))}" fill="${b.rad([[0, color, a], [0.6, color, a * 0.7], [1, color, 0]])}"/>`;
 
-/** A broadleaf tree: cast shadow, tapered trunk, a dark crown and lighter masses toward the light (lx = -1 lit from the left). */
+/** A leafy mass: a circle whose edge is a ring of small bulges, so crowns read as foliage, not balls. */
+function leafBlob(b: Brush, cx: number, cy: number, r: number, squash = 0.92): string {
+  const n = Math.max(7, Math.round(r / 2.2));
+  const a0 = b.r(0, 6.28);
+  let d = "";
+  let prev: Pt | null = null;
+  for (let i = 0; i <= n; i++) {
+    const a = a0 + (i / n) * Math.PI * 2;
+    const rr = r * (i === n ? 1 : b.r(0.88, 1.04));
+    const p: Pt = [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * squash];
+    if (!prev) d += `M${f(p[0])} ${f(p[1])}`;
+    else {
+      const am = a - Math.PI / n;
+      const k = r * b.r(1.12, 1.24);
+      d += `Q${f(cx + Math.cos(am) * k)} ${f(cy + Math.sin(am) * k * squash)} ${f(p[0])} ${f(p[1])}`;
+    }
+    prev = p;
+  }
+  return d + "Z";
+}
+
+/** A broadleaf tree: cast shadow, tapered trunk, a dark leafy crown and lighter masses toward the light (lx = -1 lit from the left). */
 function tree(b: Brush, x: number, y: number, s: number, p: Leaf, lx: number, shadow = 1, blossom?: string): string {
   let o = `<ellipse cx="${f(x - lx * s * 0.7 * shadow)}" cy="${f(y + 0.5)}" rx="${f(s * (0.6 + 0.8 * shadow))}" ry="${f(s * 0.14)}" fill="#14180c" opacity=".24"/>`;
   o += `<path d="M${f(x - s * 0.12)} ${f(y)}Q${f(x - s * 0.04)} ${f(y - s * 0.6)} ${f(x - s * 0.2)} ${f(y - s * 1.2)}L${f(x + s * 0.18)} ${f(y - s * 1.2)}Q${f(x + s * 0.05)} ${f(y - s * 0.6)} ${f(x + s * 0.12)} ${f(y)}Z" fill="${p.trunk}"/>`;
   const cy = y - s * 1.5;
-  const blob = (dx: number, dy: number, r: number, c: string, a = 1): string =>
-    `<circle cx="${f(x + dx * s + b.r(-0.05, 0.05) * s)}" cy="${f(cy + dy * s + b.r(-0.05, 0.05) * s)}" r="${f(r * s * b.r(0.9, 1.1))}" fill="${c}"${a < 1 ? ` opacity="${a}"` : ""}/>`;
-  o += blob(-0.5, 0.2, 0.5, p.dark) + blob(0.5, 0.18, 0.5, p.dark) + blob(0, -0.25, 0.62, p.dark) + blob(0, 0.25, 0.55, p.dark);
-  o += blob(lx * 0.3 - 0.05, -0.2, 0.42, p.mid) + blob(lx * 0.05 + 0.15, -0.38, 0.34, p.mid) + blob(lx * 0.5, 0.05, 0.34, p.mid);
-  o += blob(lx * 0.35, -0.42, 0.2, p.light, 0.9) + blob(lx * 0.58, -0.08, 0.15, p.light, 0.85);
-  if (s > 9) o += dotPath(scatter(b, Math.round(s * 0.9), x - s * 0.9, x + s * 0.9, cy - s * 0.75, cy + s * 0.55, s * 0.04, s * 0.08), p.dark, 0.7) + dotPath(scatter(b, Math.round(s * 0.6), x + lx * s * 0.1 - s * 0.5, x + lx * s * 0.1 + s * 0.5, cy - s * 0.75, cy, s * 0.03, s * 0.06), p.light, 0.75);
+  const blobs = (list: [number, number, number][]): string =>
+    list.map(([dx, dy, r]) => leafBlob(b, x + dx * s + b.r(-0.05, 0.05) * s, cy + dy * s + b.r(-0.05, 0.05) * s, r * s * b.r(0.92, 1.08))).join("");
+  o += `<path d="${blobs([[-0.5, 0.2, 0.5], [0.5, 0.18, 0.5], [0, -0.25, 0.62], [0, 0.25, 0.55]])}" fill="${p.dark}"/>`;
+  o += `<path d="${blobs([[lx * 0.3 - 0.05, -0.2, 0.4], [lx * 0.05 + 0.12, -0.4, 0.3], [lx * 0.5, 0.05, 0.3]])}" fill="${p.mid}"/>`;
+  o += `<path d="${blobs([[lx * 0.38, -0.44, 0.17], [lx * 0.6, -0.1, 0.13]])}" fill="${p.light}" opacity=".9"/>`;
+  if (s > 9) o += dotPath(scatter(b, Math.round(s * 0.6), x + lx * s * 0.1 - s * 0.5, x + lx * s * 0.1 + s * 0.5, cy - s * 0.75, cy, s * 0.025, s * 0.05), p.light, 0.7);
   if (blossom) o += dotPath(scatter(b, 14, x - s * 0.8, x + s * 0.8, cy - s * 0.7, cy + s * 0.55, s * 0.05, s * 0.09), blossom, 0.95);
   return o;
 }
@@ -721,12 +742,12 @@ function oakvale(b: Brush): string {
   o += `<path d="M${ox - 14} ${oy}C${ox - 10} ${oy - 20} ${ox - 6} ${oy - 34} ${ox - 22} ${oy - 52}L${ox - 40} ${oy - 64}L${ox - 36} ${oy - 68}L${ox - 14} ${oy - 56}C${ox - 6} ${oy - 54} ${ox - 2} ${oy - 70} ${ox - 6} ${oy - 84}L${ox + 2} ${oy - 84}C${ox + 6} ${oy - 70} ${ox + 6} ${oy - 58} ${ox + 18} ${oy - 60}L${ox + 42} ${oy - 70}L${ox + 44} ${oy - 66}L${ox + 20} ${oy - 50}C${ox + 8} ${oy - 36} ${ox + 10} ${oy - 18} ${ox + 18} ${oy}Z" fill="#4c3b2a"/>`;
   o += `<path d="M${ox + 2} ${oy}C${ox + 2} ${oy - 20} ${ox + 2} ${oy - 40} ${ox + 6} ${oy - 52}L${ox + 18} ${oy - 58}C${ox + 8} ${oy - 36} ${ox + 10} ${oy - 18} ${ox + 18} ${oy}Z" fill="#8a7050" opacity=".75"/>`;
   const crown: Leaf = { trunk: "#4c3b2a", dark: "#4f6a2c", mid: "#76913a", light: "#c9d470" };
-  const blob = (x: number, y: number, r: number, c: string, a = 1): string => `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="${c}"${a < 1 ? ` opacity="${a}"` : ""}/>`;
-  for (const [dx, dy, r] of [[-50, -70, 24], [-20, -86, 30], [20, -88, 30], [52, -72, 24], [0, -66, 26], [-36, -96, 20], [36, -100, 20], [2, -110, 22]] as const) o += blob(ox + dx, oy + dy, r, crown.dark);
-  for (const [dx, dy, r] of [[-10, -96, 22], [30, -96, 20], [54, -80, 15], [10, -116, 14], [-40, -82, 14]] as const) o += blob(ox + dx + lx * 6, oy + dy, r, crown.mid);
-  for (const [dx, dy, r] of [[40, -104, 8], [60, -86, 6], [16, -124, 6], [-4, -108, 6], [28, -116, 5]] as const) o += blob(ox + dx + lx * 4, oy + dy, r, crown.light, 0.8);
+  const masses = (list: [number, number, number][], dx0: number): string => list.map(([dx, dy, r]) => leafBlob(b, ox + dx + dx0, oy + dy, r)).join("");
+  o += `<path d="${masses([[-50, -70, 24], [-20, -86, 30], [20, -88, 30], [52, -72, 24], [0, -66, 26], [-36, -96, 20], [36, -100, 20], [2, -110, 22]], 0)}" fill="${crown.dark}"/>`;
+  o += `<path d="${masses([[-10, -98, 20], [30, -98, 19], [54, -82, 14], [10, -118, 13], [-40, -84, 12]], lx * 6)}" fill="${crown.mid}"/>`;
+  o += `<path d="${masses([[40, -106, 9], [60, -88, 7], [16, -126, 7], [-2, -110, 7], [28, -118, 6]], lx * 4)}" fill="${crown.light}" opacity=".85"/>`;
   o += `<path d="M${ox - 70} ${oy - 56}Q${ox} ${oy - 40} ${ox + 72} ${oy - 58}Q${ox} ${oy - 50} ${ox - 70} ${oy - 56}Z" fill="#2c4019" opacity=".5"/>`;
-  o += dotPath(scatter(b, 40, ox - 64, ox + 70, oy - 128, oy - 52, 1, 2.6), crown.mid, 0.8) + dotPath(scatter(b, 26, ox - 20, ox + 70, oy - 130, oy - 80, 0.8, 2), crown.light, 0.75) + dotPath(scatter(b, 26, ox - 70, ox + 50, oy - 90, oy - 50, 1, 2.4), "#3a5222", 0.7);
+  o += dotPath(scatter(b, 26, ox - 10, ox + 70, oy - 130, oy - 80, 0.6, 1.4), crown.light, 0.75);
   // great trunks framing the wood
   const trunk = (x: number, w: number, dir: number): string =>
     `<path d="M${f(x - w)} 310C${f(x - w * 0.6)} 220 ${f(x - w * 0.5)} 120 ${f(x - w * 0.3)} -10H${f(x + w * 0.5)}C${f(x + w * 0.4)} 120 ${f(x + w * 0.6)} 220 ${f(x + w * 1.1)} 310Z" fill="#3a2c20"/>` +
@@ -739,7 +760,7 @@ function oakvale(b: Brush): string {
     for (let i = 0; i < n; i++) {
       const x = -20 + (i + b.r(-0.3, 0.3)) * (520 / n);
       const r = b.r(r0, r1);
-      d += `M${f(x - r)} ${f(b.r(y0, y1))}a${f(r)} ${f(r * 0.85)} 0 1 0 ${f(2 * r)} 0a${f(r)} ${f(r * 0.85)} 0 1 0 ${f(-2 * r)} 0`;
+      d += leafBlob(b, x, b.r(y0, y1), r, 0.85);
     }
     return `<path d="${d}" fill="${c}"${a < 1 ? ` opacity="${a}"` : ""}/>`;
   };
