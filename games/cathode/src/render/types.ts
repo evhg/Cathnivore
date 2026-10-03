@@ -34,6 +34,14 @@ export interface Effects {
   explosion(pos: THREE.Vector3, radius: number): void;
 }
 
+/**
+ * Things the world tells the game layer about (optional to consume): thunder (sound, and masking for
+ * subsonic shots, design bible §4.5) and casings landing (the ring of brass on wet concrete).
+ */
+export type WorldEvent =
+  | { type: "thunder"; strength: number; delay: number }
+  | { type: "casing"; pos: THREE.Vector3; surface: Surface };
+
 export interface World {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene: THREE.Scene;
@@ -66,6 +74,12 @@ export interface World {
   /** Wind for ballistics and rain, metres per second along x and z. */
   readonly wind: { x: number; z: number };
   dispose(): void;
+  /** Optional: subscribe to world events; returns an unsubscribe function. */
+  on?(listener: (e: WorldEvent) => void): () => void;
+  /** Optional: the highest walkable surface at (x, z) at or below y + 0.5 (stairs, walkways, roofs, else the ground). */
+  floorAt?(x: number, y: number, z: number): number;
+  /** Optional: the last render's CPU time in ms, draw calls and triangles (for ?perf). */
+  readonly perf?: { renderMs: number; drawCalls: number; triangles: number };
 }
 
 export type CreateWorld = (
