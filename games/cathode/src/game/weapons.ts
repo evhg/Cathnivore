@@ -77,6 +77,11 @@ export class Arsenal {
   private boltLeft = 0;
   private swingT = -1;
   private flashT = 0;
+  /** Alt-fire in progress: shots still queued, the cycle they fire at, how wide, how many barrels. */
+  private altQueue = 0;
+  private altCycle = 0;
+  private altSpread = 1;
+  private altBarrels = 1;
   aiming = false;
   /** Set when a melee swing lands its hit frame. */
   meleeNow = false;
@@ -127,6 +132,7 @@ export class Arsenal {
     this.reloading = 0;
     this.boltLeft = 0;
     this.swingT = -1;
+    this.altQueue = 0;
   }
 
   private returnTo = -1;
@@ -149,6 +155,52 @@ export class Arsenal {
     if (h.def.mag === 0) return;
     h.ammo = h.def.mag;
     this.reloading = 0;
+  }
+
+  /** What the alt-fire button does with the weapon in hand, for the HUD and tests. */
+  get altKind(): "burst" | "fan" | "both" | "slam" | null {
+    switch (this.weapon.weaponClass) {
+      case "pistol":
+      case "smg":
+      case "rifle":
+        return "burst";
+      case "revolver":
+        return "fan";
+      case "shotgun":
+        return "both";
+      default:
+        return this.weapon.id === "repossessor" ? "slam" : null;
+    }
+  }
+
+  /** Set when a slam lands; the session turns it into a knockdown blast. */
+  slamNow = false;
+
+  /** Starts the weapon's alt-fire (burst, fanned hammer, both barrels, ground slam). Returns whether it began. */
+  altFire(): boolean {
+    const h = this.held[this.current]!;
+    const kind = this.altKind;
+    if (!kind || this.cd > 0 || this.busy || this.altQueue > 0) return false;
+    if (kind === "slam") {
+      this.swingT = 0;
+      this.cd = this.weapon.cycle * 1.3;
+      this.slamNow = true;
+      return true;
+    }
+    if (h.ammo <= 0) return false;
+    this.altSpread = 1;
+    this.altBarrels = 1;
+    this.altCycle = this.weapon.cycle;
+    if (kind === "burst") this.altQueue = Math.min(h.ammo, this.weapon.weaponClass === "rifle" ? 5 : 3);
+    else if (kind === "fan") {
+      this.altQueue = h.ammo;
+      this.altCycle = this.weapon.cycle * 0.22;
+      this.altSpread = 3;
+    } else {
+      this.altQueue = 1;
+      this.altBarrels = Math.min(2, h.ammo);
+    }
+    return true;
   }
 
   reload(): void {
@@ -214,15 +266,21 @@ export class Arsenal {
         this.swingT = 0;
         this.cd = def.cycle;
       }
-    } else if (trigger && this.cd <= 0 && !this.busy) {
-      if (h.ammo <= 0) this.reload();
-      else {
-        h.ammo--;
-        this.cd = def.cycle;
+    } else if ((trigger || this.altQueue > 0) && this.cd <= 0 && !this.busy) {
+      if (h.ammo <= 0) {
+        this.altQueue = 0;
+        this.reload();
+      } else {
+        const barrels = this.altQueue > 0 ? this.altBarrels : 1;
+        const widen = this.altQueue > 0 ? this.altSpread : 1;
+        h.ammo -= barrels;
+        this.cd = this.altQueue > 0 ? this.altCycle : def.cycle;
+        if (barrels > 1) this.cd = def.cycle * 1.2;
+        if (this.altQueue > 0) this.altQueue--;
         if (def.weaponClass === "sniper") this.boltLeft = def.cycle * 0.85;
-        const spread = (this.aiming ? def.spread[1] : def.spread[0]) * spreadMul;
+        const spread = (this.aiming ? def.spread[1] : def.spread[0]) * spreadMul * widen;
         const dirs: THREE.Vector3[] = [];
-        for (let i = 0; i < def.pellets; i++) {
+        for (let i = 0; i < def.pellets * barrels; i++) {
           const d = dir.clone();
           // A cone: random angle and radius (square root for an even spread).
           const a = Math.random() * Math.PI * 2;

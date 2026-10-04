@@ -209,6 +209,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let last = performance.now();
   let time = 0;
   let wasFire = false;
+  let wasAlt = false;
   let charScreen: { close(): void; refresh(): void } | null = null;
   let swayT = 0;
   let drama = 0;
@@ -294,6 +295,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     wasFire = intent.fire;
     const trigger = arsenal.weapon.kind === "melee" ? intent.fire : press;
     const spreadMul = (1 + Math.min(1.5, player.speed / 4)) * (player.onGround ? 1 : 2) * (1 - player.crouchAmt * 0.3);
+    const altPress = intent.alt && !wasAlt;
+    wasAlt = intent.alt;
+    if (altPress && !dead) arsenal.altFire();
     const gun = actives.weaponMod(arsenal.weapon.weaponClass);
     if (gun.noReload) arsenal.topUp();
     const shot = dead ? null : arsenal.update((dt || realDt) * gun.rate, trigger, eye, fwd, world.camera.quaternion, spreadMul);
@@ -321,6 +325,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const struck = combat.melee(eye, fwd, arsenal.weapon, build());
       audio?.pin(struck);
       if (struck && run.lifeSteal > 0) s.hp = Math.min(s.maxHp, s.hp + arsenal.weapon.damage * run.lifeSteal);
+    }
+    if (arsenal.slamNow) {
+      arsenal.slamNow = false;
+      // The sledge's ground slam: a knockdown blast just ahead of her boots.
+      const at = eye.clone().addScaledVector(fwd.clone().setY(0).normalize(), 2.2);
+      at.y = Math.max(0, eye.y - 1.5);
+      combat.explode(at, 3, 60, build(), false);
     }
     if (intent.reload && arsenal.weapon.kind !== "melee") audio?.reload();
     const canTakedown = !dead && takedownTarget() !== null;

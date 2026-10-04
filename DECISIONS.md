@@ -252,3 +252,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-03: Gunsmith lives in the Inventory tab (select an item, buy tiers/parts, socket chips, sell); chips are consumed, stripped parts are lost.
 - 2026-10-04: Elites are rolled per patrol at spawn (ELITE_CHANCE by difficulty); modifiers are baked into the EnemyKit (speed, burst rate, armour, damage) except multipleShots (2 extra side shots in Enemy) and cursed (`drain` on hit). Never run `npm run release` under `timeout`: it takes ~20 minutes.
 - 2026-10-04: Live weapon damage is scaled by the equipped item's resolved damage relative to a fresh one of the same base (clamped 0.5-6x).
+- 2026-10-04: alt-fires implemented as Arsenal queue (burst/fan/both) keyed by weaponClass, not by sim altFire tables; sim tables stay the long-term source.
