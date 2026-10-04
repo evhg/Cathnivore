@@ -18,6 +18,7 @@ import { CLASS_WEAPON, Progress } from "./progress";
 import { Pickups } from "./pickups";
 import type { Item } from "../sim/loot";
 import { FirstJob } from "./firstjob";
+import { openCaseBoard } from "../ui/caseboard";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
 import { ELITE_CHANCE } from "../sim/enemies";
@@ -311,6 +312,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let grace = o.shot ? 0 : GRACE;
   // First time on a touch screen: how the controls work, before anything can shoot at her.
   let coaching = false;
+  let boardShown = false;
   if (input.isTouch && !o.shot && !navigator.webdriver) {
     let seen = false;
     try {
@@ -605,6 +607,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (job) {
       job.update(dt);
       objective = job.objective;
+      if (job.done && !boardShown && !o.shot) {
+        boardShown = true;
+        setTimeout(() => {
+          coaching = true;
+          openCaseBoard(o.hud.parentElement ?? o.hud, progress.jobsDone, () => (coaching = false));
+        }, 9000);
+      }
     }
     input.allow(progress.unlocks.features, arsenal.ownedIndices.length);
 

@@ -286,12 +286,12 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 **Phase 2: systems.**
 70. [x] *(2026-10-03: all actives play; hacking hits what she looks at until street cameras exist; unreleased)* All 5 classes playable, dual-classing at level 15, the 10 hybrid capstones.
-71. [ ] *(2026-10-03: gunsmith rules + inventory panel done; world pickups done 2026-10-04; left: armour/stat display in play)* Loot drops, inventory, Rare/Unique/Set generation, sockets and firmware chains, the gunsmith (tiers I–V, parts).
+71. [x] *(2026-10-04: done; 2026-10-03: gunsmith rules + inventory panel done; world pickups done 2026-10-04; left: armour/stat display in play)* Loot drops, inventory, Rare/Unique/Set generation, sockets and firmware chains, the gunsmith (tiers I–V, parts).
 72. [ ] *(2026-10-03: revolver, SMG, assault rifle, grenade launcher, Candor Seeker smart gun (rounds curve to the crosshair target), Night Shift blade and Repossessor sledge now playable, with models and sounds; left: katana/monowire, the rest of the weapon table, alt-fires, picking guns up instead of carrying all)* The remaining weapon classes (revolver, SMG, assault rifle, launcher, smart gun, katana and monowire, sledgehammer) with alt-fires.
 73. [ ] *(2026-10-04: elites now spawn in play with extraFast, stoneskin, multipleShots, cursed, shock; left: explosive death, resist display, checkpoints UI, export code UI)* Elites with Diablo-style modifiers; damage types and resistances; saves, checkpoints and an export code.
 
 **Phase 3: act 1, the Drowned Market.**
-74. [ ] The hub street, the case board, Cath's voiceover and dialogue, calls to Bea.
+74. [ ] *(2026-10-04: Bea's call and a case board done; left: the hub street, more dialogue)* The hub street, the case board, Cath's voiceover and dialogue, calls to Bea.
 75. [ ] Four story jobs, side contracts, secrets.
 76. [ ] Julian Crisp, the boss fight.
 77. [ ] Audio: convolution reverb, weapon sets, rain beds, an alert-reactive synth score.
