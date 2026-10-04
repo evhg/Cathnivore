@@ -231,8 +231,9 @@ export class Hud {
       this.sub = el("p", "hud-sub", this.root);
     }
     this.sub.replaceChildren();
-    el("span", "hud-sub-name", this.sub).textContent = "Cath";
-    this.sub.append(text);
+    const m = /^(Bea|Cath): /.exec(text);
+    el("span", "hud-sub-name", this.sub).textContent = m?.[1] ?? "Cath";
+    this.sub.append(m ? text.slice(m[0].length) : text);
     this.sub.classList.add("on");
     clearTimeout(this.subTimer);
     this.subTimer = window.setTimeout(() => this.sub?.classList.remove("on"), 1800 + text.length * 45);

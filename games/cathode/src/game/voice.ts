@@ -13,7 +13,10 @@ export type Cue =
   | "lowHealth"
   | "levelUp"
   | "clear"
-  | "done";
+  | "done"
+  | "beaCall1"
+  | "beaCall2"
+  | "beaCall3";
 
 const LINES: Record<Cue, string> = {
   start: "The Drowned Market. Tomas sold eggs here for thirty years. Somebody on this street saw him go in the water.",
@@ -28,6 +31,9 @@ const LINES: Record<Cue, string> = {
   levelUp: "Older. Better at this.",
   clear: "Quiet again. The fish market's back door is down by the water.",
   done: "A water taxi, and a name left on the seat: Julian Crisp.",
+  beaCall1: "Bea: Mum? Are you still at work? Nana made me do my spellings twice.",
+  beaCall2: "Cath: Spellings are important, darling. I'll be home before the rain stops.",
+  beaCall3: "Bea: It never stops raining. I drew you an umbrella. Don't be late.",
 };
 
 export class Voice {

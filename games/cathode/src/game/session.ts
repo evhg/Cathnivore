@@ -636,6 +636,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       progress.save();
       hud.showBanner("Job done", `Level ${progress.character.level}`);
       voice.say("done");
+      voice.say("beaCall1");
+      voice.say("beaCall2");
+      voice.say("beaCall3");
     }
 
     // Sound: footsteps, the score's tension, slow motion.
