@@ -102,3 +102,15 @@ describe("CATHODE alt-fires, heavy weapons", () => {
     expect(run(a, 2)).toBe(5);
   });
 });
+
+describe("CATHODE scavenging", () => {
+  it("a kill refills the held gun's reserve up to a cap", () => {
+    const a = new Arsenal(new THREE.Scene());
+    a.equip(1);
+    const start = a.ammo.reserve;
+    expect(a.scavenge()).toBe(6);
+    expect(a.ammo.reserve).toBe(start + 6);
+    for (let i = 0; i < 40; i++) a.scavenge();
+    expect(a.ammo.reserve).toBe(90);
+  });
+});

@@ -203,6 +203,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const drop = progress.loot(k.enemy.level, !!k.enemy.kit.elite);
     if (drop.scrip) hud.feedLine(`+${drop.scrip} Scrip`);
     for (const it of drop.items) hud.feedItem(it.name, it.rarity);
+    const ammo = arsenal.scavenge();
+    if (ammo) hud.feedLine(`+${ammo} rounds`);
     hud.hitMarker(true);
   };
 

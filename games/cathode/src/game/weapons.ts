@@ -151,6 +151,19 @@ export class Arsenal {
     this.cd = this.weapon.cycle;
   }
 
+  /** Ammo scavenged off a body: about half a magazine for the gun in hand, a little for the rest, capped at the starting reserve x1.5. Returns what the held gun got. */
+  scavenge(): number {
+    let got = 0;
+    this.held.forEach((h, i) => {
+      if (h.def.mag === 0) return;
+      const room = Math.floor(h.def.reserve * 1.5) - h.reserve;
+      const n = Math.max(0, Math.min(room, Math.ceil(h.def.mag * (i === this.current ? 0.5 : 0.2))));
+      h.reserve += n;
+      if (i === this.current) got = n;
+    });
+    return got;
+  }
+
   /** Fills the held magazine from nowhere and cancels a reload (Spin Reload, Bullet Hose, Bang Bang). */
   topUp(): void {
     const h = this.held[this.current]!;
