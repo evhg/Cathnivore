@@ -72,3 +72,33 @@ describe("CATHODE parry", () => {
     expect(a.parryT).toBe(0);
   });
 });
+
+describe("CATHODE alt-fires, heavy weapons", () => {
+  const idx = (id: string) => new Arsenal(new THREE.Scene()).held.findIndex((h) => h.def.id === id);
+  it("the sniper overcharges one round for 60% more", () => {
+    const a = new Arsenal(new THREE.Scene());
+    a.equip(idx("widowmaker"));
+    run(a, 0.5);
+    const eye = new THREE.Vector3();
+    const dir = new THREE.Vector3(0, 0, -1);
+    const q = new THREE.Quaternion();
+    expect(a.altFire()).toBe(true);
+    let dmg = 0;
+    for (let t = 0; t < 1; t += 1 / 60) {
+      const s = a.update(1 / 60, false, eye, dir, q, 1);
+      if (s) dmg = s.weapon.damage;
+    }
+    expect(dmg).toBeCloseTo(140 * 1.6);
+  });
+  it("the launcher fires two grenades and the smart gun five rounds", () => {
+    const a = new Arsenal(new THREE.Scene());
+    a.equip(idx("bargainBin"));
+    run(a, 0.5);
+    expect(a.altFire()).toBe(true);
+    expect(run(a, 2)).toBe(2);
+    a.equip(idx("candorSeeker"));
+    run(a, 0.5);
+    expect(a.altFire()).toBe(true);
+    expect(run(a, 2)).toBe(5);
+  });
+});

@@ -83,6 +83,7 @@ export class Arsenal {
   private altCycle = 0;
   private altSpread = 1;
   private altBarrels = 1;
+  private altDmg = 1;
   aiming = false;
   /** Set when a melee swing lands its hit frame. */
   meleeNow = false;
@@ -159,12 +160,16 @@ export class Arsenal {
   }
 
   /** What the alt-fire button does with the weapon in hand, for the HUD and tests. */
-  get altKind(): "burst" | "fan" | "both" | "slam" | "parry" | null {
+  get altKind(): "burst" | "fan" | "both" | "slam" | "parry" | "charge" | null {
     switch (this.weapon.weaponClass) {
       case "pistol":
       case "smg":
       case "rifle":
+      case "smart":
+      case "launcher":
         return "burst";
+      case "sniper":
+        return "charge";
       case "revolver":
         return "fan";
       case "shotgun":
@@ -201,8 +206,18 @@ export class Arsenal {
     this.altSpread = 1;
     this.altBarrels = 1;
     this.altCycle = this.weapon.cycle;
-    if (kind === "burst") this.altQueue = Math.min(h.ammo, this.weapon.weaponClass === "rifle" ? 5 : 3);
-    else if (kind === "fan") {
+    this.altDmg = 1;
+    if (kind === "charge") {
+      // An overcharged round: a held breath and a hotter load, steadier and 60% harder, then a long bolt.
+      this.altQueue = 1;
+      this.altSpread = 0.3;
+      this.altDmg = 1.6;
+      this.altCycle = this.weapon.cycle * 1.4;
+    } else if (kind === "burst") {
+      const wc = this.weapon.weaponClass;
+      this.altQueue = Math.min(h.ammo, wc === "rifle" || wc === "smart" ? 5 : wc === "launcher" ? 2 : 3);
+      if (wc === "launcher") this.altCycle = this.weapon.cycle * 0.35;
+    } else if (kind === "fan") {
       this.altQueue = h.ammo;
       this.altCycle = this.weapon.cycle * 0.22;
       this.altSpread = 3;
@@ -283,6 +298,7 @@ export class Arsenal {
         this.reload();
       } else {
         const barrels = this.altQueue > 0 ? this.altBarrels : 1;
+        const dmgMul = this.altQueue > 0 ? this.altDmg : 1;
         const widen = this.altQueue > 0 ? this.altSpread : 1;
         h.ammo -= barrels;
         this.cd = this.altQueue > 0 ? this.altCycle : def.cycle;
@@ -306,7 +322,7 @@ export class Arsenal {
         const local = new THREE.Vector3();
         this.rig.muzzle.getWorldPosition(local);
         const worldMuzzle = eye.clone().add(local.applyQuaternion(camQuat));
-        shot = { weapon: def, origin: eye.clone(), dirs, muzzle: worldMuzzle };
+        shot = { weapon: dmgMul !== 1 ? { ...def, damage: def.damage * dmgMul } : def, origin: eye.clone(), dirs, muzzle: worldMuzzle };
         this.anim.fire(def.kick * (this.aiming ? 0.55 : 1));
         this.flashT = 0.06;
         this.flash.position.copy(this.rig.muzzle.getWorldPosition(new THREE.Vector3()));
