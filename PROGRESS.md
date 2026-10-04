@@ -3,6 +3,12 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-04 14:20–14:45 (owner chat):** owner's iPhone playtest: couldn't find the guard, poor visibility, no in-game menu, no sound, the baton swing looks basic. All fixed in `552896a` (unreleased: today's release cap is used up; **the first session after 00:00 UTC should release it**):
+  - iOS audio unlock (`audio.resume`: touchend/click gestures, `navigator.audioSession`, a silent `public/silence.wav` loop);
+  - a phone menu button opens the pause card (resume, volume, graphics, violence, title);
+  - the first guard stands under a lamp with the waypoint on him (`World.light` pool lights, no recompiles), and exposure is up;
+  - keyframed forehand and backhand swings with a smear, hit-stop and camera jolt (`viewmodel.ts` `SWING_FORE`/`SWING_BACK`, `SwingTrail`);
+  - `?shot&job` runs the first job in screenshot mode.
 - **2026-10-04 13:51 session:** ROADMAP 73: the character screen has a "Save code" button (copy the export code, paste one to load; `openSaveCode` in `ui/character.ts`). Explosive death already existed. `npm run check` green. Left for 73: checkpoints UI. Unreleased.
 - **2026-10-04 12:51 session:** ROADMAP 71: the HUD shows armour and resistances under the health bar (`defenceLine` in `session.ts`). `npm run check` green. Left for 73: explosive death, checkpoint/export-code UI. Unreleased.
 - **2026-10-04 11:51 session:** ROADMAP 71 world pickups: kills leave a glowing bundle (rarity-tinted, `game/pickups.ts`, `Progress.rollLoot/take`, `tests/cathode-pickups.test.ts`); she collects it by walking over it. `npm run check` green. Left for 71: armour/stat display in play. Released `70e8031` (gates passed, live version.json matches; tag push 403, harmless; 1st release today).
