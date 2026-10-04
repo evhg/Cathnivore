@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-04 07:51 session:** released `c570c32` (CATHODE through garrotte + scope zoom; gates passed, live version.json matches; tag push 403, harmless; 3rd release today). ROADMAP 72: sniper scope zoom steps on the wheel (`Arsenal.stepZoom`, test). Left for 72: underbarrel, world weapon pickups.
 - **2026-10-04 06:51 session:** ROADMAP 72 part 6: Cat's Cradle garrotte (takedown reach 3 m with the wire in hand; `combat.takedown(..., reach)`; `npm run check` green). Left for 72: underbarrel/zoom, world weapon pickups. Unreleased (2 releases today so far).
 - **2026-10-04 05:51 session:** released `f945e3a` (CATHODE through ROADMAP 72 part 4; gates passed, live version.json matches; tag push 403, harmless; 2nd release today). ROADMAP 72 part 5: Cat's Cradle monowire lash alt-fire (`lashNow`, test; `npm run check` green, 880 tests). Left for 72: underbarrel/zoom, garrotte, world weapon pickups.
 - **2026-10-04 04:51 session:** ROADMAP 72 part 4: sniper Overcharge (x1.6 round), launcher double grenade, smart-gun 5-round burst alt-fires; kills now scavenge ammo (`Arsenal.scavenge`, previously no ammo ever came back). `npm run check` green (878 tests). Left for 72: underbarrel/zoom, garrotte, world weapon pickups. Unreleased (release next session).

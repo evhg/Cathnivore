@@ -254,3 +254,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-04: Live weapon damage is scaled by the equipped item's resolved damage relative to a fresh one of the same base (clamped 0.5-6x).
 - 2026-10-04: alt-fires implemented as Arsenal queue (burst/fan/both) keyed by weaponClass, not by sim altFire tables; sim tables stay the long-term source.
 - 2026-10-04: Parry is a 0.5 s window read by the session against incoming enemy shots (no stagger yet); Cat's Cradle is hitscan-melee at 4.5 m, appended to SLICE_WEAPONS to keep indices stable.
+- 2026-10-04: Scope zoom: 3 steps (1.6x/1x/0.55x of the scope FOV), wheel moves it while scoped in instead of cycling weapons.
