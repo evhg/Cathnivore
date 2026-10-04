@@ -36,6 +36,13 @@ const CASES: { id: string; title: string; done: string; open: string; needs?: st
     open: "A courier's dead drop under the south arcade. Bea marked it on your map.",
     needs: "quayContracts",
   },
+  {
+    id: "crispBoss",
+    title: "Julian Crisp",
+    done: "Crisp is finished. Act 1 is closed.",
+    open: "Page nine names Crisp as Candor's man on the quay. He will not go quietly.",
+    needs: "candorManifest",
+  },
 ];
 
 /** The board for a given set of finished jobs. A case is open when its predecessor is done. */

@@ -21,6 +21,7 @@ import { FirstJob } from "./firstjob";
 import { CrispJob } from "./crispjob";
 import { QuayJob } from "./quayjob";
 import { ManifestJob } from "./manifestjob";
+import { CrispBossJob } from "./crispboss";
 import { openCaseBoard } from "../ui/caseboard";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
@@ -261,6 +262,23 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const manifest =
     !tutorial && progress.jobsDone.includes("quayContracts") && !progress.jobsDone.includes("candorManifest") && !o.shot
       ? new ManifestJob({
+          player,
+          progress,
+          scene: world.scene,
+          markers: world.markers,
+          ground,
+          touch: input.isTouch,
+          spawn,
+          arm,
+          say: (t) => hud.subtitle(t),
+          teach: (t) => hud.teach(t),
+          banner: (a, b) => hud.showBanner(a, b),
+          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+        })
+      : null;
+  const crispBoss =
+    !tutorial && progress.jobsDone.includes("candorManifest") && !progress.jobsDone.includes("crispBoss") && !o.shot
+      ? new CrispBossJob({
           player,
           progress,
           scene: world.scene,
@@ -682,6 +700,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       manifest.update(dt);
       objective = manifest.objective;
     }
+    if (crispBoss) {
+      crispBoss.update(dt);
+      objective = crispBoss.objective;
+    }
     input.allow(progress.unlocks.features, arsenal.ownedIndices.length);
 
     // Voice cues from the street's state.
@@ -842,7 +864,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   /** The objective on screen, for the waypoint diamond. */
   function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
-    const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target;
+    const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target;
     if (!t || dead) return null;
     const p = t.clone().add(new THREE.Vector3(0, 1.2, 0)).project(world.camera);
     const behind = p.z > 1;
