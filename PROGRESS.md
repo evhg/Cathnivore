@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-04 14:51 session:** ROADMAP 73: checkpoint banners at the flyover and walkway stages of the first job (resume already follows the unlocks). tsc clean; full `npm run check` was still running when the session ended. Unreleased (release cap used today).
 - **2026-10-04 14:20–14:45 (owner chat):** owner's iPhone playtest: couldn't find the guard, poor visibility, no in-game menu, no sound, the baton swing looks basic. All fixed in `552896a` (unreleased: today's release cap is used up; **the first session after 00:00 UTC should release it**):
   - iOS audio unlock (`audio.resume`: touchend/click gestures, `navigator.audioSession`, a silent `public/silence.wav` loop);
   - a phone menu button opens the pause card (resume, volume, graphics, violence, title);

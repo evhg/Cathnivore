@@ -184,6 +184,7 @@ export class FirstJob {
         this.objective = "Two Enforcers under the flyover. Deal with them.";
         this.teachFeatures("aim", "reload");
         if (!resumed) h.arm("kestrel");
+        h.banner(resumed ? "Checkpoint" : "Checkpoint saved", resumed ? "Back at the flyover" : "Dying now restarts you here");
         this.wave = [h.spawn("rifle", [this.P(-4, 15), this.P(1.5, 15)]), h.spawn("rifle", [this.P(5, 6), this.P(5, 18)])];
         this.target = this.P(-1, 12);
         h.teach(this.key("fire"));
@@ -209,6 +210,7 @@ export class FirstJob {
         const cls = h.progress.character.classes[0]!;
         const w = CLASS_WEAPON[cls] ?? "kestrel";
         if (!resumed) h.arm(w);
+        h.banner(resumed ? "Checkpoint" : "Checkpoint saved", resumed ? "Back on the walkway" : "Dying now restarts you here");
         const far = h.markers.perch?.[1];
         this.wave = [
           ...(far ? [h.spawn("sniper", [far.clone()])] : []),
