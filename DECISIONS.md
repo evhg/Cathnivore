@@ -261,3 +261,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-04: CATHODE exposure raised (1.35 desktop, 1.7 phone) after the owner couldn't see the first guard; game-placed lights go through the pooled real lights (`World.light`) so they never change the light count. Release cap honoured: the owner's 14:20 fixes ship after 00:00 UTC.
 - 2026-10-04: Calls reuse the voiceover queue; a "Bea: "/"Cath: " prefix on a line picks the subtitle's speaker name.
 - 2026-10-04: Job 2 (Crisp's ledger) is a small `CrispJob` reusing the Fish Market street and `JobHost`; it starts at session load when `fishMarket` is done and `crispLead` isn't, ambushing from the north after the ledger pickup.
+- 2026-10-04: Job 3 is Ana's quay contract (QuayJob): a marked rifleman plus two guards at the north quay; starts once crispLead is done; waypoint follows whichever job is active.

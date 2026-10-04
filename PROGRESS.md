@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-04 18:52 session:** ROADMAP 75 part 2: the third job, Ana's quay contract (`game/quayjob.ts`: kill Marlow guarded by two, extract; closes `quayContracts`; `tests/cathode-quayjob.test.ts`); the waypoint now follows jobs 2 and 3. Unreleased (release cap used today; the first session after 00:00 UTC should release).
 - **2026-10-04 17:51 session:** ROADMAP 75 part 1: the second job, Crisp's ledger (`game/crispjob.ts`: ledger on the walkway, Crisp's men ambush from the north, extract at the taxi; closes `crispLead`; `tests/cathode-crispjob.test.ts`). Starts on the next load after the Fish Market. `npm run check` green. Unreleased (release cap used today; the first session after 00:00 UTC should release).
 - **2026-10-04 16:52 session:** ROADMAP 74 part 2: a case board (`sim/casefile.ts`, `ui/caseboard.ts`, test) opens 9 s after the first job with the next leads (Crisp, side contracts). `npm run check` green. Unreleased (6 releases already today; the first session after 00:00 UTC should release).
 - **2026-10-04 15:52 session:** ROADMAP 74 part 1: Bea phones Cath after the first job (three-line call in the subtitles, speaker-aware `hud.subtitle`, `tests/cathode-voice.test.ts`). `npm run check` green. Unreleased (cap used today; the first session after 00:00 UTC should release).

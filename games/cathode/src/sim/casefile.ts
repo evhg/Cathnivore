@@ -24,7 +24,7 @@ const CASES: { id: string; title: string; done: string; open: string; needs?: st
   },
   {
     id: "quayContracts",
-    title: "Side contracts",
+    title: "Ana's contract",
     done: "The quay is quiet.",
     open: "Ana pins small jobs here once Crisp's name is out.",
     needs: "crispLead",
