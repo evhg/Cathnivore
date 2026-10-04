@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-04 05:51 session:** released `f945e3a` (CATHODE through ROADMAP 72 part 4; gates passed, live version.json matches; tag push 403, harmless; 2nd release today). ROADMAP 72 part 5: Cat's Cradle monowire lash alt-fire (`lashNow`, test; `npm run check` green, 880 tests). Left for 72: underbarrel/zoom, garrotte, world weapon pickups.
 - **2026-10-04 04:51 session:** ROADMAP 72 part 4: sniper Overcharge (x1.6 round), launcher double grenade, smart-gun 5-round burst alt-fires; kills now scavenge ammo (`Arsenal.scavenge`, previously no ammo ever came back). `npm run check` green (878 tests). Left for 72: underbarrel/zoom, garrotte, world weapon pickups. Unreleased (release next session).
 - **2026-10-04 03:51 session:** released `ca00b4a` (all CATHODE work to ROADMAP 72 part 2; gates passed, live version.json matches; tag push 403, harmless; 1st release today). ROADMAP 72 part 3: Night Shift parry alt-fire deflects enemy rounds for 0.5 s (`Arsenal.parryT`), Cat's Cradle monowire playable (4.5 m reach, new viewmodel; last in the weapon list so indices hold). `npm run check` green before the Cradle; Cradle verified by tsc + altfire/weapons tests. Left for 72: slug/underbarrel/charge/zoom, garrotte, pickups. Then 71 pickups, 73 remainder.
 - **2026-10-04 02:51 session:** ROADMAP 72 part 2: alt-fires play (middle mouse/V): pistol/SMG/rifle burst, revolver fans the hammer, shotgun both barrels, sledge ground slam (`Arsenal.altFire`, `tests/cathode-altfire.test.ts`; `npm run check` green, ~15 min). Left for 72: slug/underbarrel/charge/zoom/parry, katana/monowire, pickups. Unreleased (0 releases today so far; release next session).
@@ -62,6 +63,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-04 ~06:20 UTC: `f945e3a`, CATHODE through monowire lash. Gates passed; live version matches; tag push 403 (harmless). 2nd release today.
 - 2026-10-04 ~04:10 UTC: `ca00b4a`, CATHODE through alt-fires. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
 - 2026-10-04 ~01:25 UTC: `ca91c2f`, CATHODE slice through gunsmith plus elites. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
 - 2026-10-03 ~07:30 UTC: Hedgerow story rewritten to clarity rules (design doc 7), repainted act backdrops, cel-shaded portraits. Gates passed; HTTP check passed; tag push 403 (harmless). 4th release today (cap reached).
