@@ -63,6 +63,7 @@ import { CLASS_COPY, classEmblem, itemGlyph } from "./classart";
 import { ATTRIBUTE_LABEL } from "./classpick";
 import { attrs, button, cssVar, el, num, reducedMotion, svg, trapTab } from "./dom";
 import { RARITY_LABEL, WEAPON_CLASS_LABEL, baseName, fixedModText, itemTypeLine, modText, scripText } from "./itemtext";
+import { importCode } from "../sim/save";
 import { cachedLayout, tracePath } from "./treelayout";
 
 export type CharacterTab = "attributes" | "skills" | "inventory";
@@ -70,6 +71,8 @@ export type CharacterTab = "attributes" | "skills" | "inventory";
 export interface CharacterOptions {
   /** The tab to open on (default: skills if there are skill points to spend, else attributes). */
   tab?: CharacterTab;
+  /** The save's export code; when given, the tab bar gets a "Save code" button to copy it or paste one. */
+  exportCode?: () => string;
 }
 
 export interface CharacterHandle {
@@ -279,6 +282,10 @@ export function openCharacter(
     el("span", "cx-tab-dot", b).setAttribute("aria-hidden", "true");
     b.addEventListener("click", () => show(t.id, true));
     tabBtns.set(t.id, b);
+  }
+  if (opts.exportCode) {
+    const code = opts.exportCode;
+    button("cx-savecode", tabs, "Save code").addEventListener("click", () => openSaveCode(code));
   }
   tabs.addEventListener("keydown", (ev) => {
     const order = TABS.map((t) => t.id);
@@ -847,6 +854,38 @@ export function openCharacter(
       if (ev.target === back) done();
     });
     requestAnimationFrame(() => (d.querySelector<HTMLElement>("[data-autofocus]") ?? d.querySelector<HTMLElement>("button"))?.focus());
+  }
+
+  function openSaveCode(code: () => string): void {
+    openDialog("Save code", (body, done) => {
+      el("p", "cx-dlg-text", body, "Copy this code to keep Cath safe or move her to another device. To load one, paste it below.");
+      const out = el("textarea", "cx-code", body);
+      attrs(out, { readonly: "", rows: "3", "aria-label": "Your save code" });
+      out.value = code();
+      const inn = el("textarea", "cx-code", body);
+      attrs(inn, { rows: "3", placeholder: "Paste a code here", "aria-label": "Paste a save code", "data-autofocus": "" });
+      const why = el("p", "cx-dlg-why", body);
+      const acts = el("div", "cx-dlg-acts", body);
+      const copy = button("btn", acts, "Copy");
+      copy.addEventListener("click", () => {
+        out.select();
+        navigator.clipboard?.writeText(out.value).then(
+          () => (copy.textContent = "Copied"),
+          () => (copy.textContent = "Press Ctrl+C"),
+        );
+      });
+      const load = button("btn btn-primary", acts, "Load code");
+      load.addEventListener("click", () => {
+        const r = importCode(inn.value);
+        if (!r.ok) {
+          why.textContent = `Can't load that: ${r.error}.`;
+          return;
+        }
+        apply(r.save.character);
+        done();
+      });
+      button("btn", acts, "Close").addEventListener("click", done);
+    });
   }
 
   function openSecondClass(): void {

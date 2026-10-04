@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-04 13:51 session:** ROADMAP 73: the character screen has a "Save code" button (copy the export code, paste one to load; `openSaveCode` in `ui/character.ts`). Explosive death already existed. `npm run check` green. Left for 73: checkpoints UI. Unreleased.
 - **2026-10-04 12:51 session:** ROADMAP 71: the HUD shows armour and resistances under the health bar (`defenceLine` in `session.ts`). `npm run check` green. Left for 73: explosive death, checkpoint/export-code UI. Unreleased.
 - **2026-10-04 11:51 session:** ROADMAP 71 world pickups: kills leave a glowing bundle (rarity-tinted, `game/pickups.ts`, `Progress.rollLoot/take`, `tests/cathode-pickups.test.ts`); she collects it by walking over it. `npm run check` green. Left for 71: armour/stat display in play. Released `70e8031` (gates passed, live version.json matches; tag push 403, harmless; 1st release today).
 - **2026-10-04 10:10–10:50 (owner chat, continued):** the owner played again.

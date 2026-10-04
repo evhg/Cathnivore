@@ -23,6 +23,7 @@ import { ELITE_CHANCE } from "../sim/enemies";
 import { Voice } from "./voice";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
+import { exportCode, makeSave } from "../sim/save";
 import { levelUpToast } from "../ui/levelup";
 import { xpForLevel, xpToNext as simXpToNext } from "../sim/stats";
 
@@ -722,7 +723,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         s.focus = wasFocus;
         input.lock();
       },
-      { tab: progress.character.unspentSkills > 0 ? "skills" : "attributes" },
+      {
+        tab: progress.character.unspentSkills > 0 ? "skills" : "attributes",
+        exportCode: () => exportCode(makeSave(progress.character, new Date().toISOString(), { jobsDone: progress.jobsDone })),
+      },
     );
   }
 
