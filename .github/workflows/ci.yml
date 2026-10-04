@@ -3,6 +3,14 @@ name: CI
 on:
   push:
     branches: [build, main]
+    # Lock and notes commits change no code: don't spend Actions minutes on them (owner's account ran out
+    # of minutes on 2026-10-04 with every session pushing ~6 times an hour).
+    paths-ignore: ["**/*.md", "*.md", ".build-lock", "docs/**"]
+
+# A newer push to the same branch supersedes a run still going.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write

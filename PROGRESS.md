@@ -66,6 +66,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - 2026-10-02 (owner's chat session, 02:48-04:15 UTC): owner said Hedgerow was boring. Shipped ROADMAP 26-30 and much more (see Recent releases); live at `aadfc2c`.
 
 ## Blocked
+- **GitHub Actions has failed every run since 2026-10-04 ~06:20 UTC:** "The job was not started because recent account payments have failed or your spending limit needs to be increased" (the owner's GitHub billing; the free minutes are used up). Only the owner can fix it (github.com/settings/billing). CI now skips lock- and notes-only commits to use fewer minutes. Until it's fixed, `ci-status` isn't updated; local `npm run check`/`gates` remain the release gate.
 Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
 
 ## Known limitations (not blockers; the owner confirmed on 2026-09-28 that none of these hold up work)
