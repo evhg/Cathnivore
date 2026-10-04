@@ -285,12 +285,12 @@ export class Combat {
   }
 
   /** A silent takedown from behind (or on anyone not yet hunting her) within reach: instant and quiet. */
-  takedown(eye: THREE.Vector3, dir: THREE.Vector3, pin: WeaponDef): Enemy | null {
+  takedown(eye: THREE.Vector3, dir: THREE.Vector3, pin: WeaponDef, reach = 1.9): Enemy | null {
     for (const e of this.enemies) {
       if (!e.alive || e.state === "combat") continue;
       const to = new THREE.Vector3().subVectors(e.body.joints.chest, eye);
       const d = to.length();
-      if (d > 1.9 || to.normalize().dot(dir) < 0.5) continue;
+      if (d > reach || to.normalize().dot(dir) < 0.5) continue;
       const theirFwd = new THREE.Vector3(Math.sin(e.motion.yaw), 0, Math.cos(e.motion.yaw));
       const behind = theirFwd.dot(new THREE.Vector3(dir.x, 0, dir.z).normalize()) > 0.2;
       if (!behind && e.state !== "unaware") continue;

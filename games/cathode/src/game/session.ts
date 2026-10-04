@@ -345,8 +345,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (intent.reload && arsenal.weapon.kind !== "melee") audio?.reload();
     const canTakedown = !dead && takedownTarget() !== null;
     if (intent.takedown && canTakedown) {
-      const pin = arsenal.held[0]!.def;
-      if (combat.takedown(eye, fwd, pin)) {
+      // With Cat's Cradle in hand the takedown is a garrotte: the wire reaches further (3 m) than the Pin.
+      const garrotte = arsenal.weapon.id === "catsCradle";
+      const pin = garrotte ? arsenal.weapon : arsenal.held[0]!.def;
+      if (combat.takedown(eye, fwd, pin, garrotte ? 3 : 1.9)) {
         arsenal.strike();
         audio?.pin(true);
       }
@@ -555,7 +557,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     for (const e of enemies) {
       if (!e.alive || e.state === "combat") continue;
       const to = new THREE.Vector3().subVectors(e.body.joints.chest, eye);
-      if (to.length() > 1.9 || to.normalize().dot(fwd) < 0.5) continue;
+      if (to.length() > (arsenal.weapon.id === "catsCradle" ? 3 : 1.9) || to.normalize().dot(fwd) < 0.5) continue;
       const theirFwd = new THREE.Vector3(Math.sin(e.motion.yaw), 0, Math.cos(e.motion.yaw));
       if (theirFwd.dot(new THREE.Vector3(fwd.x, 0, fwd.z).normalize()) > 0.2 || e.state === "unaware") return e;
     }
