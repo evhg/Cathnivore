@@ -281,7 +281,30 @@ export class Audio {
     this.burst({ freq: 1800, q: 2, decay: 0.12, gain: 0.35, when: 0.02 });
   }
 
-  pin(hit: boolean): void {
+  pin(hit: boolean, model = "pin"): void {
+    if (!this.enabled) return;
+    if (model === "blade") {
+      // A steel "shing" and, on contact, a bright ring.
+      this.burst({ type: "highpass", freq: 3000, sweepTo: 7000, decay: 0.2, gain: 0.35 });
+      if (hit) {
+        this.burst({ freq: 4200, q: 12, decay: 0.35, gain: 0.3, when: 0.08, verb: 0.5 });
+        this.thump(150, 60, 0.08, 0.5, 0.08);
+      }
+      return;
+    }
+    if (model === "sledge") {
+      this.burst({ type: "lowpass", freq: 500, sweepTo: 150, decay: 0.3, gain: 0.45, noise: "brown" });
+      if (hit) {
+        this.thump(85, 30, 0.4, 1.0, 0.18, "sine", 0.6);
+        this.burst({ type: "lowpass", freq: 1800, sweepTo: 300, decay: 0.35, gain: 0.5, when: 0.18, verb: 0.8 });
+      }
+      return;
+    }
+    if (model === "wire") {
+      this.burst({ freq: 2600, sweepTo: 5200, q: 8, decay: 0.12, gain: 0.2 });
+      if (hit) this.burst({ type: "highpass", freq: 3500, decay: 0.12, gain: 0.3, when: 0.06 });
+      return;
+    }
     this.burst({ freq: 700, sweepTo: 2200, q: 2, decay: 0.15, gain: 0.25 });
     if (hit) {
       this.thump(120, 45, 0.12, 0.7, 0.1);
@@ -350,6 +373,25 @@ export class Audio {
     g.gain.value = 0.055;
     rain.connect(hp).connect(lp).connect(g).connect(this.master);
     rain.start();
+    // Gusts: a slow swell on a second, lower sheet of rain, and a tin-roof patter that drifts in and out.
+    const sheet = c.createBufferSource();
+    sheet.buffer = this.noise.pink;
+    sheet.loop = true;
+    sheet.playbackRate.value = 0.8;
+    const sbp = c.createBiquadFilter();
+    sbp.type = "bandpass";
+    sbp.frequency.value = 700;
+    sbp.Q.value = 0.6;
+    const sg = c.createGain();
+    sg.gain.value = 0.03;
+    const lfo = c.createOscillator();
+    lfo.frequency.value = 0.07;
+    const lfoGain = c.createGain();
+    lfoGain.gain.value = 0.025;
+    lfo.connect(lfoGain).connect(sg.gain);
+    sheet.connect(sbp).connect(sg).connect(this.master);
+    sheet.start();
+    lfo.start();
     const city = c.createBufferSource();
     city.buffer = this.noise.brown;
     city.loop = true;

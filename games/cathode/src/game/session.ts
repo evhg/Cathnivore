@@ -585,7 +585,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (arsenal.meleeNow) {
       const struck = combat.melee(eye, fwd, arsenal.weapon, build());
-      audio?.pin(struck);
+      audio?.pin(struck, arsenal.weapon.model);
       if (struck) {
         hitStop = 0.07;
         jolt = 1;
@@ -637,7 +637,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (actives.lungeAt && actives.lungeT <= 0.05) {
       arsenal.strike();
-      audio?.pin(combat.melee(eye, fwd, arsenal.held[0]!.def, build()));
+      audio?.pin(combat.melee(eye, fwd, arsenal.held[0]!.def, build()), arsenal.held[0]!.def.model);
       actives.lungeAt = null;
     }
     for (const line of actives.said) hud.feedLine(line);
