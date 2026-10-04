@@ -206,6 +206,30 @@ export class Input {
     }
   };
   private btnTouches = new Map<number, TouchButton>();
+  /** Shows only the touch buttons the game has introduced so far (one thing at a time). */
+  allow(features: readonly string[], weapons: number): void {
+    const need: Record<string, string | null> = {
+      fire: null,
+      jump: null,
+      aim: "aim",
+      reload: "reload",
+      crouch: "crouch",
+      takedown: "takedown",
+      focus: "focus",
+      skill: "skills",
+      sheet: "skills",
+      cycle: "swap",
+    };
+    const key = features.join(",") + "|" + weapons;
+    if (key === this.allowedKey) return;
+    this.allowedKey = key;
+    for (const b of this.touchLayer.querySelectorAll<HTMLElement>("[data-btn]")) {
+      const f = need[b.dataset.btn!];
+      b.hidden = !!f && !features.includes(f) && !(b.dataset.btn === "cycle" && weapons > 1);
+    }
+  }
+  private allowedKey = "";
+
   /** Set once the player has moved with the stick (the coach card waits for it). */
   touched = false;
   /** Touch auto-fire: the session pulls the trigger when aim assist has her on a target. */

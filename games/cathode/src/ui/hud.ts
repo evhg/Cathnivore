@@ -25,6 +25,8 @@ export interface HudState {
   /** The two active-skill slots (name and readiness 0..1), and the battery 0..1. */
   skills: Array<{ name: string; ready: number; key: string } | null>;
   battery: number;
+  /** Where the objective is on screen (0..1 each way), metres away, and whether it's behind her. */
+  waypoint?: { x: number; y: number; dist: number; behind: boolean } | null;
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, parent?: HTMLElement): HTMLElementTagNameMap[K] {
@@ -125,6 +127,24 @@ export class Hud {
       this.scopeWind.textContent = `Wind ${s.wind > 0 ? "→" : "←"} ${Math.abs(s.wind).toFixed(1)} m/s`;
     }
     this.objective.textContent = s.objective;
+    // The waypoint: a diamond over the objective, pinned to the screen edge when it's off screen.
+    if (!this.wp) {
+      this.wp = el("div", "hud-wp", this.root);
+      el("span", "hud-wp-dist", this.wp);
+    }
+    this.wp.hidden = !s.waypoint;
+    if (s.waypoint) {
+      const w = s.waypoint;
+      let x = w.x;
+      let y = w.y;
+      if (w.behind) {
+        x = x < 0.5 ? 0.04 : 0.96;
+        y = 0.5;
+      }
+      set(this.wp, "--x", `${Math.min(0.96, Math.max(0.04, x)) * 100}%`);
+      set(this.wp, "--y", `${Math.min(0.9, Math.max(0.1, y)) * 100}%`);
+      (this.wp.firstElementChild as HTMLElement).textContent = `${Math.round(w.dist)} m`;
+    }
     set(this.bat, "--w", `${Math.round(s.battery * 100)}%`);
     while (this.slots.children.length < 2) {
       const c = el("div", "hud-slot", this.slots);
@@ -179,6 +199,19 @@ export class Hud {
     p.textContent = name;
     setTimeout(() => p.remove(), 3400);
     while (this.feed.children.length > 6) this.feed.firstElementChild?.remove();
+  }
+
+  private teachEl?: HTMLElement;
+  private teachText: string | null = null;
+  private wp?: HTMLElement;
+
+  /** The how-to line for what the game is teaching right now (null hides it). */
+  teach(text: string | null): void {
+    if (text === this.teachText) return;
+    this.teachText = text;
+    if (!this.teachEl) this.teachEl = el("p", "hud-teach", this.root);
+    this.teachEl.textContent = text ?? "";
+    this.teachEl.classList.toggle("on", !!text);
   }
 
   private sub?: HTMLElement;

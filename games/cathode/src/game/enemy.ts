@@ -240,7 +240,7 @@ export class Enemy {
     const range = this.kit.vision.range * (alert ? 1.3 : 1);
     const inCone = angle < (this.kit.vision.fov / 2) * (alert ? 1.3 : 1) || dist < 2.2;
     let seen = false;
-    if (dist < range && inCone && (rays.clear(eye, sight.chest) || rays.clear(eye, sight.eye))) {
+    if (!(this.passive && this.state === "unaware") && dist < range && inCone && (rays.clear(eye, sight.chest) || rays.clear(eye, sight.eye))) {
       seen = true;
       // How fast the meter fills: close, lit, upright and moving fills fastest.
       const near = 1 - dist / range;
@@ -521,6 +521,8 @@ export class Enemy {
     this.marked = on;
   }
   marked = false;
+  /** Tutorial guards: they don't notice her until something happens to them. */
+  passive = false;
 
   /** A hit: knocks the body (flinch), and returns true if it died. */
   damage(amount: number, push: THREE.Vector3): boolean {

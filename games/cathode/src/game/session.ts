@@ -13,7 +13,10 @@ import { Combat, type Build, type KillEvent } from "./combat";
 import { KillCam } from "./killcam";
 import { Hud } from "../ui/hud";
 import { Audio } from "./audio";
-import { Progress } from "./progress";
+import { CLASS_WEAPON, Progress } from "./progress";
+import { FirstJob } from "./firstjob";
+import { SLICE_WEAPONS } from "./weapons";
+import { WEAPON_BASES } from "../sim/weapons";
 import { ELITE_CHANCE } from "../sim/enemies";
 import { Voice } from "./voice";
 import { Actives } from "./actives";
@@ -49,6 +52,8 @@ export interface Session {
   /** Bullet-time battery, seconds. */
   focus: number;
   progress: Progress;
+  /** The first job's script, while it runs (tests read its stage). */
+  job?: FirstJob | null;
   /** Frames rendered and a rolling frame time, for ?perf and tests. */
   stats: { frames: number; ms: number };
   /** Test hook: freeze the AI and the clock. */
@@ -81,32 +86,55 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const areaLevel = Math.max(1, progress.character.level);
   const enemies: Enemy[] = [];
   let seed = 1;
-  for (const [key, route] of Object.entries(world.markers)) {
-    if (!key.startsWith("patrol:") || !route.length) continue;
-    // The route's name picks the role: "...sniper..." on a rooftop, "...shield..." for a riot team, and every
-    // fourth patrol carries a shield anyway.
-    const n = enemies.length;
-    const [base, archetype] = key.includes("sniper")
-      ? [ENFORCER_SNIPER, "enforcerSniper"]
-      : key.includes("shield") || n % 4 === 3
-        ? [RIOT_SHIELD, "riotShield"]
-        : [ENFORCER, "enforcer"];
-    const elite = Math.random() < ELITE_CHANCE[progress.character.difficulty];
-    const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++, elite), role: base.role }, route.map((p) => p.clone()), areaLevel);
+  // The first job teaches the game one thing at a time and brings its own enemies; after that the street
+  // is fully patrolled.
+  const tutorial = !progress.jobsDone.includes("fishMarket") && !o.shot;
+  const KITS = {
+    rifle: [ENFORCER, "enforcer"],
+    shield: [RIOT_SHIELD, "riotShield"],
+    sniper: [ENFORCER_SNIPER, "enforcerSniper"],
+  } as const;
+  const spawn = (role: "rifle" | "shield" | "sniper", route: THREE.Vector3[], opts: { yaw?: number; passive?: boolean } = {}): Enemy => {
+    const [base, archetype] = KITS[role];
+    const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++), role: base.role }, route.map((p) => p.clone()), areaLevel);
+    if (opts.yaw !== undefined) e.motion.yaw = opts.yaw;
+    e.passive = !!opts.passive;
     world.scene.add(e.body.root);
     enemies.push(e);
-  }
-  // A Hollowell sniper holds the far perch: take him first, or cross the street under his laser.
-  const far = world.markers.perch?.[1];
-  if (far) {
-    const e = new Enemy({ ...Progress.kit(ENFORCER_SNIPER, "enforcerSniper", areaLevel, seed++), role: "sniper" }, [far.clone()], areaLevel);
-    world.scene.add(e.body.root);
-    enemies.push(e);
+    return e;
+  };
+  if (!tutorial) {
+    for (const [key, route] of Object.entries(world.markers)) {
+      if (!key.startsWith("patrol:") || !route.length) continue;
+      // The route's name picks the role: "...sniper..." on a rooftop, "...shield..." for a riot team, and every
+      // fourth patrol carries a shield anyway.
+      const n = enemies.length;
+      const [base, archetype] = key.includes("sniper")
+        ? [ENFORCER_SNIPER, "enforcerSniper"]
+        : key.includes("shield") || n % 4 === 3
+          ? [RIOT_SHIELD, "riotShield"]
+          : [ENFORCER, "enforcer"];
+      const elite = Math.random() < ELITE_CHANCE[progress.character.difficulty];
+      const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++, elite), role: base.role }, route.map((p) => p.clone()), areaLevel);
+      world.scene.add(e.body.root);
+      enemies.push(e);
+    }
+    // A Hollowell sniper holds the far perch: take him first, or cross the street under his laser.
+    const far = world.markers.perch?.[1];
+    if (far) {
+      const e = new Enemy({ ...Progress.kit(ENFORCER_SNIPER, "enforcerSniper", areaLevel, seed++), role: "sniper" }, [far.clone()], areaLevel);
+      world.scene.add(e.body.root);
+      enemies.push(e);
+    }
   }
   const arsenal = new Arsenal(world.viewScene);
   // Each class walks in holding its own weapon: the Ghost the rifle, the Butcher the shotgun.
   const cls = progress.character.classes[0];
-  arsenal.equip(cls === "ghost" ? 3 : cls === "butcher" ? 2 : cls === "gunslinger" ? 4 : 1);
+  arsenal.owned.clear();
+  for (const id of progress.unlocks.weapons) arsenal.owned.add(id);
+  // In hand: her class weapon if she has it, else the Kestrel, else the Pin.
+  const classGun = CLASS_WEAPON[cls!] ?? "kestrel";
+  arsenal.equipId(arsenal.owned.has(classGun) ? classGun : arsenal.owned.has("kestrel") ? "kestrel" : "pin");
   // The gun reflects the same neon city as the street.
   if (world.scene.environment && !world.viewScene.environment) world.viewScene.environment = world.scene.environment;
   const combat = new Combat(world, rays, enemies, o.intensity === "full");
@@ -161,6 +189,30 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let objective = "Get to the fish market. Somebody there knows who put Tomas in the water.";
   hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
   const voice = new Voice((t) => hud.subtitle(t));
+  /** Puts a weapon in her hands for good: owned from now on. */
+  const arm = (id: string) => {
+    const isNew = progress.grantWeapon(id);
+    arsenal.owned.add(id);
+    arsenal.equipId(id);
+    const def = SLICE_WEAPONS.find((w) => w.id === id);
+    if (isNew && def) hud.feedLine(`New weapon: ${def.name}`, true);
+  };
+  const job = tutorial
+    ? new FirstJob({
+        player,
+        progress,
+        scene: world.scene,
+        markers: world.markers,
+        ground,
+        touch: input.isTouch,
+        spawn,
+        arm,
+        say: (t) => hud.subtitle(t),
+        teach: (t) => hud.teach(t),
+        banner: (a, b) => hud.showBanner(a, b),
+      })
+    : null;
+  s.job = job;
   const actives = new Actives();
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;
@@ -207,7 +259,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.feedLine(`+${xp} XP${bits.length ? " · " + bits.join(" · ") : ""}`, k.headshot || k.unseen);
     const drop = progress.loot(k.enemy.level, !!k.enemy.kit.elite);
     if (drop.scrip) hud.feedLine(`+${drop.scrip} Scrip`);
-    for (const it of drop.items) hud.feedItem(it.name, it.rarity);
+    for (const it of drop.items) {
+      hud.feedItem(it.name, it.rarity);
+      // After the first job, a weapon of a kind she hasn't carried yet joins her kit: one new toy at a time.
+      if (it.kind === "weapon" && (!job || job.done)) {
+        const cls = WEAPON_BASES[it.base]?.cls;
+        const fresh = SLICE_WEAPONS.find((w) => w.weaponClass === cls && !arsenal.owned.has(w.id));
+        if (fresh) {
+          progress.grantWeapon(fresh.id);
+          arsenal.owned.add(fresh.id);
+          hud.feedLine(`New weapon: ${fresh.name} (scroll or Swap)`, true);
+        }
+      }
+    }
     const ammo = arsenal.scavenge();
     if (ammo) hud.feedLine(`+${ammo} rounds`);
     hud.hitMarker(true);
@@ -227,6 +291,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     });
   }
   let wasFire = false;
+  const safe = player.pos.clone();
+  let safeT = 0;
   let grace = o.shot ? 0 : GRACE;
   // First time on a touch screen: how the controls work, before anything can shoot at her.
   let coaching = false;
@@ -346,6 +412,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // Movement looks in real time (so aiming stays crisp in bullet-time) but moves in game time.
       player.aiming = arsenal.aiming;
       player.step(Math.max(dt, realDt * 0.35), intent);
+      keepInBounds();
     }
     // Touch: aim assist, and auto-fire on anyone already shooting at her (stealth kills stay a deliberate tap).
     input.autoFire = false;
@@ -367,9 +434,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.camera.getWorldDirection(fwd);
 
     // Weapons.
-    if (intent.slot >= 0) arsenal.equip(intent.slot);
+    if (intent.slot >= 0) arsenal.equipSlot(intent.slot);
     if (intent.cycle && arsenal.scopedIn) arsenal.stepZoom(-intent.cycle);
-    else if (intent.cycle) arsenal.equip((arsenal.current + intent.cycle + arsenal.held.length) % arsenal.held.length);
+    else if (intent.cycle) arsenal.cycleOwned(intent.cycle);
     if (intent.reload) arsenal.reload();
     arsenal.aiming = intent.aim && !dead;
     const press = intent.fire && !wasFire;
@@ -491,6 +558,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     discoverBodies();
     drainEvents();
 
+    // The first job: its stages, objective and waypoint.
+    if (job) {
+      job.update(dt);
+      objective = job.objective;
+    }
+    input.allow(progress.unlocks.features, arsenal.ownedIndices.length);
+
     // Voice cues from the street's state.
     for (const e of enemies) {
       if (!e.alive) continue;
@@ -506,7 +580,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       hud.showBanner("Cath is down", "Click or tap to try again");
       setTimeout(() => addEventListener("pointerdown", () => location.reload(), { once: true }), 900);
     }
-    if (!jobDone && enemies.length && enemies.every((e) => !e.alive)) {
+    if (!job && !jobDone && enemies.length && enemies.every((e) => !e.alive)) {
       jobDone = true;
       objective = "The street's quiet. Walk to the fish market's back door.";
       hud.showBanner("Street clear", "The Drowned Market");
@@ -554,6 +628,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       scopeRange: Math.min(ahead ? ahead.dist : 800, groundT ?? 800),
       wind: world.wind.x,
       objective,
+      waypoint: waypoint(),
       takedown: canTakedown,
       bulletTime: focusing ? 1 : 0,
       skills: [0, 1].map((i) => {
@@ -637,6 +712,38 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       },
       { tab: progress.character.unspentSkills > 0 ? "skills" : "attributes" },
     );
+  }
+
+  /** The objective on screen, for the waypoint diamond. */
+  function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
+    const t = job?.target;
+    if (!t || dead) return null;
+    const p = t.clone().add(new THREE.Vector3(0, 1.2, 0)).project(world.camera);
+    const behind = p.z > 1;
+    return { x: (behind ? -p.x : p.x) * 0.5 + 0.5, y: -p.y * 0.5 + 0.5, dist: player.pos.distanceTo(t), behind };
+  }
+
+  /**
+   * The street's edges: if Cath ends up somewhere the level doesn't go (over a rail into the canal, off a
+   * roof, outside the buildings), she's back at the last place she stood safely.
+   */
+  function keepInBounds(): void {
+    const p = player.pos;
+    const inside = p.x > -26 && p.x < 16 && p.z > -70 && p.z < 66;
+    const fell = p.y < -1.2 || p.y < world.groundHeight(p.x, p.z) - 1.5;
+    if (inside && !fell) {
+      if (player.onGround) {
+        safeT += 1;
+        if (safeT > 20) {
+          safe.copy(p);
+          safeT = 0;
+        }
+      }
+      return;
+    }
+    p.copy(safe);
+    player.vel.set(0, 0, 0);
+    hud.feedLine("Back on the street");
   }
 
   function takedownTarget(): Enemy | null {

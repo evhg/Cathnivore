@@ -125,8 +125,36 @@ export class Arsenal {
     return this.reloading > 0 || this.raising > 0 || this.boltLeft > 0;
   }
 
+  /** Weapons Cath actually has: everything else stays in the case until she finds or earns it. */
+  readonly owned = new Set<string>(SLICE_WEAPONS.map((w) => w.id));
+
+  /** The owned weapons, in display order (number keys pick from these). */
+  get ownedIndices(): number[] {
+    return this.held.map((h, i) => (this.owned.has(h.def.id) ? i : -1)).filter((i) => i >= 0);
+  }
+
+  /** Number key n picks the n-th owned weapon. */
+  equipSlot(n: number): void {
+    const i = this.ownedIndices[n];
+    if (i !== undefined) this.equip(i);
+  }
+
+  /** The next (or previous) owned weapon. */
+  cycleOwned(dir: number): void {
+    const list = this.ownedIndices;
+    if (list.length < 2) return;
+    const at = Math.max(0, list.indexOf(this.current));
+    this.equip(list[(at + dir + list.length) % list.length]!);
+  }
+
+  equipId(id: string): void {
+    const i = this.held.findIndex((h) => h.def.id === id);
+    if (i >= 0) this.equip(i);
+  }
+
   equip(i: number): void {
     if (i < 0 || i >= this.held.length || (i === this.current && this.rig.root.visible)) return;
+    if (!this.owned.has(this.held[i]!.def.id)) return;
     this.rig.root.visible = false;
     this.current = i;
     this.rig.root.visible = true;

@@ -71,6 +71,7 @@ async function begin(): Promise<void> {
         resolve(c);
       });
     });
+    Progress.resetUnlocks();
     const p = new Progress(cls);
     p.set(newCharacter(cls));
   }

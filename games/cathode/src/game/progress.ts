@@ -21,6 +21,7 @@ export class Progress {
     this.character = loaded?.character ?? newCharacter(cls);
     this.jobsDone = loaded?.jobsDone ?? [];
     this.stats = characterStats(this.character);
+    this.unlocks = Progress.loadUnlocks(this);
   }
 
   static load(): { character: Character; jobsDone: string[] } | null {
@@ -115,4 +116,77 @@ export class Progress {
     if (d.items.length) this.save();
     return d;
   }
+
+  // ---- what she owns and what the game has taught her (one thing at a time) ----
+  unlocks: Unlocks = { weapons: ["pin"], features: [] };
+
+  static loadUnlocks(p: Progress): Unlocks {
+    try {
+      const raw = localStorage.getItem(UNLOCKS_KEY);
+      if (raw) {
+        const u = JSON.parse(raw) as Partial<Unlocks>;
+        if (Array.isArray(u.weapons) && Array.isArray(u.features)) return { weapons: u.weapons, features: u.features };
+      }
+    } catch {
+      // Fall through to the defaults.
+    }
+    // A save that already finished the first job keeps its kit; everyone else starts with the Pin.
+    if (p.jobsDone.includes("fishMarket"))
+      return { weapons: ["pin", "kestrel", CLASS_WEAPON[p.character.classes[0]!] ?? "kestrel"], features: [...FEATURES] };
+    return { weapons: ["pin"], features: [] };
+  }
+
+  /** A new Cath starts from scratch: only the Pin, nothing taught. */
+  static resetUnlocks(): void {
+    try {
+      localStorage.removeItem(UNLOCKS_KEY);
+    } catch {
+      // Nothing stored anyway.
+    }
+  }
+
+  saveUnlocks(): void {
+    try {
+      localStorage.setItem(UNLOCKS_KEY, JSON.stringify(this.unlocks));
+    } catch {
+      // Unsaved: the tutorial would just show again.
+    }
+  }
+
+  /** Gives her a weapon (once); true if it's new. */
+  grantWeapon(id: string): boolean {
+    if (this.unlocks.weapons.includes(id)) return false;
+    this.unlocks.weapons.push(id);
+    this.saveUnlocks();
+    return true;
+  }
+
+  /** Marks a control or system as taught (it appears on screen from now on). */
+  teach(f: Feature): boolean {
+    if (this.unlocks.features.includes(f)) return false;
+    this.unlocks.features.push(f);
+    this.saveUnlocks();
+    return true;
+  }
+
+  knows(f: Feature): boolean {
+    return this.unlocks.features.includes(f);
+  }
 }
+
+export type Feature = "crouch" | "takedown" | "aim" | "reload" | "focus" | "skills" | "swap";
+export const FEATURES: Feature[] = ["crouch", "takedown", "aim", "reload", "focus", "skills", "swap"];
+export interface Unlocks {
+  weapons: string[];
+  features: string[];
+}
+const UNLOCKS_KEY = "cathode:unlocks:v1";
+
+/** Each class's own weapon, handed over on the walkway in the first job. */
+export const CLASS_WEAPON: Partial<Record<ClassId, string>> = {
+  ghost: "widowmaker",
+  butcher: "fishmonger",
+  gunslinger: "oldTestament",
+  wirewitch: "candorSeeker",
+  fixer: "bargainBin",
+};
