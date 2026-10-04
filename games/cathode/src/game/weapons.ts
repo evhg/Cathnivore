@@ -158,7 +158,7 @@ export class Arsenal {
   }
 
   /** What the alt-fire button does with the weapon in hand, for the HUD and tests. */
-  get altKind(): "burst" | "fan" | "both" | "slam" | null {
+  get altKind(): "burst" | "fan" | "both" | "slam" | "parry" | null {
     switch (this.weapon.weaponClass) {
       case "pistol":
       case "smg":
@@ -169,18 +169,27 @@ export class Arsenal {
       case "shotgun":
         return "both";
       default:
-        return this.weapon.id === "repossessor" ? "slam" : null;
+        return this.weapon.id === "repossessor" ? "slam" : this.weapon.id === "nightShift" ? "parry" : null;
     }
   }
 
   /** Set when a slam lands; the session turns it into a knockdown blast. */
   slamNow = false;
 
+  /** Seconds left of a parry: while above zero, incoming bullets are deflected. */
+  parryT = 0;
+
   /** Starts the weapon's alt-fire (burst, fanned hammer, both barrels, ground slam). Returns whether it began. */
   altFire(): boolean {
     const h = this.held[this.current]!;
     const kind = this.altKind;
     if (!kind || this.cd > 0 || this.busy || this.altQueue > 0) return false;
+    if (kind === "parry") {
+      this.swingT = 0;
+      this.parryT = 0.5;
+      this.cd = 0.9;
+      return true;
+    }
     if (kind === "slam") {
       this.swingT = 0;
       this.cd = this.weapon.cycle * 1.3;
@@ -225,6 +234,7 @@ export class Arsenal {
     const h = this.held[this.current]!;
     const def = h.def;
     this.cd -= dt;
+    this.parryT = Math.max(0, this.parryT - dt);
     this.meleeNow = false;
     if (this.raising > 0) this.raising = Math.max(0, this.raising - dt);
     this.flashT = Math.max(0, this.flashT - dt);

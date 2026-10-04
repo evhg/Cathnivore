@@ -58,3 +58,17 @@ describe("CATHODE alt-fires", () => {
     expect(a.altFire()).toBe(false);
   });
 });
+
+describe("CATHODE parry", () => {
+  it("the Night Shift parries for half a second, then recovers", () => {
+    const a = new Arsenal(new THREE.Scene());
+    const i = a.held.findIndex((h) => h.def.id === "nightShift");
+    a.equip(i);
+    run(a, 1);
+    expect(a.altKind).toBe("parry");
+    expect(a.altFire()).toBe(true);
+    expect(a.parryT).toBeGreaterThan(0.4);
+    run(a, 0.6);
+    expect(a.parryT).toBe(0);
+  });
+});

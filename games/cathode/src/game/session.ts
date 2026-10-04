@@ -377,7 +377,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const toChest = sight.chest.clone().sub(sh.from);
         const along = toChest.dot(sh.dir);
         const miss = toChest.clone().addScaledVector(sh.dir, -along).length();
-        if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
+        if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along) && arsenal.parryT > 0) {
+          // Parried: the blade turns the round aside in a spark.
+          world.fx.impact(sight.chest, sh.dir.clone().negate(), world.surfaceAt(sight.chest));
+          world.fx.tracer(sh.from, sight.chest);
+        } else if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
           s.hp = Math.max(0, s.hp - actives.absorb(e.kit.damage * run.guard));
           if (e.kit.drain) s.focus = Math.max(0, s.focus - e.kit.drain);
           world.fx.tracer(sh.from, sight.chest);
