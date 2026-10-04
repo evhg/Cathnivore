@@ -290,7 +290,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
     // Weapons.
     if (intent.slot >= 0) arsenal.equip(intent.slot);
-    if (intent.cycle) arsenal.equip((arsenal.current + intent.cycle + arsenal.held.length) % arsenal.held.length);
+    if (intent.cycle && arsenal.scopedIn) arsenal.stepZoom(-intent.cycle);
+    else if (intent.cycle) arsenal.equip((arsenal.current + intent.cycle + arsenal.held.length) % arsenal.held.length);
     if (intent.reload) arsenal.reload();
     arsenal.aiming = intent.aim && !dead;
     const press = intent.fire && !wasFire;

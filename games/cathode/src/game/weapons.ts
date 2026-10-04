@@ -384,13 +384,26 @@ export class Arsenal {
     }
     // The scope: past 85% aim the rig hides and the overlay takes over.
     r.root.visible = !(r.scoped && a.aim > 0.85);
-    const fov = THREE.MathUtils.lerp(baseFov, def.weaponClass === "sniper" ? r.adsFov : baseFov * 0.82, a.aim);
+    const fov = THREE.MathUtils.lerp(baseFov, def.weaponClass === "sniper" ? r.adsFov * Arsenal.ZOOMS[this.zoom]! : baseFov * 0.82, a.aim);
     if (Math.abs(viewCamera.fov - 55) > 0.01) viewCamera.fov = 55;
     viewCamera.updateProjectionMatrix();
     this.worldFov = fov;
   }
   /** The world camera's FOV this frame (zoom when aiming). */
   worldFov = 75;
+
+  /** Scope magnification steps: multipliers on the scope's FOV (wider to tighter). */
+  static readonly ZOOMS = [1.6, 1, 0.55] as const;
+  /** Current scope step; the wheel moves it while scoped in. */
+  zoom = 1;
+
+  /** Steps the scope zoom by dir (+1 tighter, -1 wider); returns whether it changed. */
+  stepZoom(dir: number): boolean {
+    const z = Math.max(0, Math.min(Arsenal.ZOOMS.length - 1, this.zoom + Math.sign(dir)));
+    const changed = z !== this.zoom;
+    this.zoom = z;
+    return changed;
+  }
 
   get scopedIn(): boolean {
     return !!this.rig.scoped && this.anim.aim > 0.85;

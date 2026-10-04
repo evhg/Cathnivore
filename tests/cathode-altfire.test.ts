@@ -126,3 +126,18 @@ describe("CATHODE scavenging", () => {
     expect(a.ammo.reserve).toBe(90);
   });
 });
+
+describe("scope zoom", () => {
+  it("steps and clamps between magnifications", async () => {
+    const { Arsenal } = await import("../games/cathode/src/game/weapons");
+    const a = Object.create(Arsenal.prototype) as InstanceType<typeof Arsenal>;
+    a.zoom = 1;
+    expect(a.stepZoom(1)).toBe(true);
+    expect(a.zoom).toBe(2);
+    expect(a.stepZoom(1)).toBe(false);
+    expect(a.stepZoom(-1)).toBe(true);
+    a.stepZoom(-1);
+    expect(a.zoom).toBe(0);
+    expect(a.stepZoom(-1)).toBe(false);
+  });
+});
