@@ -264,3 +264,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-04: Job 3 is Ana's quay contract (QuayJob): a marked rifleman plus two guards at the north quay; starts once crispLead is done; waypoint follows whichever job is active.
 - 2026-10-04: Job 4 is the Candor manifest (ManifestJob): a cache pickup at (-5,-28) guarded by patrols and a passive sniper; starts once quayContracts is done.
 - 2026-10-04: Job 5 is Crisp the boss (CrispBossJob): a shield-role Enemy with 4x health and 1.15x scale, a half-health reinforcement call; starts once candorManifest is done.
+- 2026-10-04 21:51: ROADMAP 77 part 1 (alert-reactive score); no release, cap used today.

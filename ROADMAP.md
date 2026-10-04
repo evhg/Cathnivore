@@ -294,7 +294,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 74. [ ] *(2026-10-04: Bea's call and a case board done; left: the hub street, more dialogue)* The hub street, the case board, Cath's voiceover and dialogue, calls to Bea.
 75. [ ] *(2026-10-04: jobs 2 (Crisp's ledger), 3 (Ana's quay contract) and 4 (the Candor manifest dead drop) done; left: secrets, side contracts)* Four story jobs, side contracts, secrets.
 76. [x] *(2026-10-04: `game/crispboss.ts`, a 4x-health Crisp who calls his men at half health; unreleased)* Julian Crisp, the boss fight.
-77. [ ] Audio: convolution reverb, weapon sets, rain beds, an alert-reactive synth score.
+77. [ ] *(2026-10-04: reverb exists; alert sting, ostinato done; left: weapon sets, rain beds)* Audio: convolution reverb, weapon sets, rain beds, an alert-reactive synth score.
 78. [ ] Performance and phone pass on an iPhone 17 Pro Max profile: 60 fps, quality auto-scaling, thermals.
 
 **Phase 4 and 5:**

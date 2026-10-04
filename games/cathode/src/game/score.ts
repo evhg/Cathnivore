@@ -56,6 +56,7 @@ export class Score {
   private n = 0;
   private pass = 0;
   private tension = 0;
+  private lastSting = -99;
   private readonly delay: DelayNode;
   private readonly noise: AudioBuffer;
 
@@ -84,8 +85,13 @@ export class Score {
 
   /** Schedules the next quarter-second of music. Call every frame. */
   update(tension: number): void {
-    this.tension = tension;
     const now = this.ctx.currentTime;
+    // Spotted: a rising minor-second stab the moment the street turns on her, then not again for 12 s.
+    if (tension - this.tension > 0.3 && tension > 0.5 && now - this.lastSting > 12) {
+      this.lastSting = now;
+      this.stinger(now + 0.02);
+    }
+    this.tension = tension;
     if (this.next < now) this.next = now + 0.1; // first call, or after a stall: never cram the backlog in
     while (this.next < now + 0.25) {
       this.step(this.n, this.next);
@@ -122,6 +128,9 @@ export class Score {
     // The lead, every other pass, and not in a fight.
     if (this.pass % 2 === 1 && T < 0.7) for (const [at, note, len] of MELODY) if (at === s) this.lead(midi(note), t, STEP * len);
 
+    // Hunted: a driving sixteenth synth ostinato on the chord's root and fifth, louder as it gets worse.
+    if (T > 0.55) this.pulse(midi(chord.root + 24 + ([0, 0, 7, 0, 10, 7, 12, 7][bar % 8] ?? 0)), t, Math.min(1, (T - 0.55) * 3));
+
     // Brushes, then a kick.
     if (T > 0.25 && bar % 2 === 0) this.brush(swung, (bar % 4 === 0 ? 0.5 : 1) * Math.min(1, (T - 0.25) * 2.5));
     if (T > 0.6 && (bar === 0 || bar === 7 || bar === 10)) this.kick(t, Math.min(1, (T - 0.6) * 3));
@@ -141,7 +150,7 @@ export class Score {
     const c = this.ctx;
     const lp = c.createBiquadFilter();
     lp.type = "lowpass";
-    lp.frequency.value = 900;
+    lp.frequency.value = 600 + this.tension * 1800; // the pad opens as the street closes in
     lp.Q.value = 0.5;
     const g = this.env(t, 1.8, 0.035, len - 0.6, 2.2);
     lp.connect(g);
@@ -240,6 +249,45 @@ export class Score {
       x.start(t);
       x.stop(t + len + 0.9);
     }
+  }
+
+  /** A short plucked sawtooth with a closing filter: the hunted ostinato. */
+  private pulse(f: number, t: number, vel: number): void {
+    const c = this.ctx;
+    const o = c.createOscillator();
+    o.type = "sawtooth";
+    o.frequency.value = f;
+    const lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.Q.value = 4;
+    lp.frequency.setValueAtTime(2600, t);
+    lp.frequency.exponentialRampToValueAtTime(380, t + 0.12);
+    const g = this.env(t, 0.004, 0.035 * vel, 0.02, 0.1);
+    o.connect(lp).connect(g).connect(this.out);
+    o.start(t);
+    o.stop(t + 0.2);
+  }
+
+  /** The alert sting: a detuned minor-second cluster that swells up an octave and rings into the reverb. */
+  private stinger(t: number): void {
+    const c = this.ctx;
+    const g = this.env(t, 0.03, 0.09, 0.25, 1.6);
+    g.connect(this.out);
+    g.connect(this.verb);
+    for (const n of [50, 51, 62, 63]) {
+      const o = c.createOscillator();
+      o.type = "sawtooth";
+      o.frequency.setValueAtTime(midi(n - 12), t);
+      o.frequency.exponentialRampToValueAtTime(midi(n), t + 0.35);
+      const lp = c.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.setValueAtTime(500, t);
+      lp.frequency.exponentialRampToValueAtTime(3200, t + 0.4);
+      o.connect(lp).connect(g);
+      o.start(t);
+      o.stop(t + 2);
+    }
+    this.kick(t, 1);
   }
 
   private hit(t: number, type: BiquadFilterType, freq: number, decay: number, gain: number): void {
