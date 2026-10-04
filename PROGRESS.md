@@ -3,6 +3,14 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-04 10:10–10:50 (owner chat, continued):** the owner played again.
+  - Phone: fell off a platform into the void, and had too many weapons at once. The Fish Market is now a step-by-step first job (`game/firstjob.ts`):
+    - she starts with only the Pin;
+    - she is shown one thing per stage: a takedown, then the Kestrel, then her class weapon and Focus, then the extract;
+    - touch buttons appear once taught, and a waypoint marks the objective;
+    - falling or wandering out of bounds respawns her on the street.
+  - Desktop: the middle of the screen was black. The likely cause is a half-float HDR overflow (Inf/NaN) smeared by bloom; it can't be reproduced in swiftshader. Fixed by sanitising the bloom high pass and the grade input (`render/post.ts`).
+  - The music was noise. It is now a sequenced noir score (`game/score.ts`), and the rain and city beds were turned down.
 - **2026-10-04 08:51–10:10 (owner chat):** owner's iPhone playtest of CATHODE: dead in 10 s, couldn't work the touch controls. Fixed and released `4fab1df` (3rd release today):
   - a fair start: 12 s grace, a 0.9 s reaction time, Noir takes 55% damage, health regenerates;
   - touch: a visible stick, auto-fire on people shooting at her, a coach card, a turn-sideways screen, a Cath button;

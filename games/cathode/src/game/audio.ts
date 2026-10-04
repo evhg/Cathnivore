@@ -3,6 +3,8 @@
 // sirens and thunder, a heartbeat in bullet-time, and a noir synth score that tightens as the street
 // notices Cath. Everything goes through a lowpass the slow-motion closes, so time itself sounds heavy.
 
+import { Score } from "./score";
+
 type Noise = "white" | "pink" | "brown";
 
 export class Audio {
@@ -15,9 +17,7 @@ export class Audio {
   private noise: Record<Noise, AudioBuffer>;
   private music: GainNode;
   private musicFilter: BiquadFilterNode;
-  private padOsc: OscillatorNode[] = [];
-  private nextBeat = 0;
-  private beat = 0;
+  private score: Score;
   private tension = 0;
   private heartT = 0;
   private sirenT = 8;
@@ -53,11 +53,11 @@ export class Audio {
     this.music.gain.value = 0.22;
     this.musicFilter = c.createBiquadFilter();
     this.musicFilter.type = "lowpass";
-    this.musicFilter.frequency.value = 500;
-    this.musicFilter.Q.value = 6;
+    this.musicFilter.frequency.value = 2400;
+    this.musicFilter.Q.value = 0.5;
     this.music.connect(this.musicFilter).connect(this.master);
     this.ambience();
-    this.pads();
+    this.score = new Score(c, this.music, this.verbSend);
   }
 
   resume(): void {
@@ -65,7 +65,7 @@ export class Audio {
   }
 
   private makeNoise(kind: Noise): AudioBuffer {
-    const len = this.ctx.sampleRate * 2;
+    const len = this.ctx.sampleRate * 5; // long enough that the rain doesn't audibly loop
     const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
     const d = buf.getChannelData(0);
     let b0 = 0,
@@ -294,12 +294,12 @@ export class Audio {
     rain.loop = true;
     const hp = c.createBiquadFilter();
     hp.type = "highpass";
-    hp.frequency.value = 900;
+    hp.frequency.value = 1400;
     const lp = c.createBiquadFilter();
     lp.type = "lowpass";
-    lp.frequency.value = 7000;
+    lp.frequency.value = 6000;
     const g = c.createGain();
-    g.gain.value = 0.16;
+    g.gain.value = 0.055;
     rain.connect(hp).connect(lp).connect(g).connect(this.master);
     rain.start();
     const city = c.createBufferSource();
@@ -307,33 +307,11 @@ export class Audio {
     city.loop = true;
     const cl = c.createBiquadFilter();
     cl.type = "lowpass";
-    cl.frequency.value = 180;
+    cl.frequency.value = 140;
     const cg = c.createGain();
-    cg.gain.value = 0.12;
+    cg.gain.value = 0.05;
     city.connect(cl).connect(cg).connect(this.master);
     city.start();
-  }
-
-  private pads(): void {
-    const c = this.ctx;
-    // A dark minor drone: detuned saws on D and A, and a high F that comes and goes.
-    for (const [f, det] of [
-      [73.42, -6],
-      [73.42, 7],
-      [110, -4],
-      [110, 5],
-      [174.61, 0],
-    ] as const) {
-      const o = c.createOscillator();
-      o.type = "sawtooth";
-      o.frequency.value = f;
-      o.detune.value = det;
-      const g = c.createGain();
-      g.gain.value = f > 150 ? 0.05 : 0.1;
-      o.connect(g).connect(this.music);
-      o.start();
-      this.padOsc.push(o);
-    }
   }
 
   private siren(): void {
@@ -374,22 +352,10 @@ export class Audio {
     const c = this.ctx;
     const t = c.currentTime;
     this.tension += (tension - this.tension) * Math.min(1, dt * 1.5);
-    this.musicFilter.frequency.setTargetAtTime(380 + this.tension * 2600, t, 0.3);
-    this.music.gain.setTargetAtTime(0.16 + this.tension * 0.14, t, 0.5);
+    this.musicFilter.frequency.setTargetAtTime(1600 + this.tension * 5000, t, 0.3);
+    this.music.gain.setTargetAtTime(0.5 + this.tension * 0.2, t, 0.5);
     this.slowFilter.frequency.setTargetAtTime(slow > 0 ? 700 + (1 - slow) * 6000 : 20000, t, 0.08);
-    // The pulse: a bass note on the beat once they're searching, a kick once they're shooting.
-    if (this.nextBeat < t) this.nextBeat = t + 0.05;
-    while (this.nextBeat < t + 0.1) {
-      const when = this.nextBeat - t;
-      if (this.tension > 0.35) {
-        const notes = [73.42, 73.42, 87.31, 65.41];
-        this.thump(notes[(this.beat >> 1) % 4]! * 2, notes[(this.beat >> 1) % 4]! * 1.98, 0.22, 0.12 * this.tension, when, "sawtooth");
-      }
-      if (this.tension > 0.75 && this.beat % 2 === 0) this.thump(140, 45, 0.18, 0.5, when);
-      if (this.tension > 0.75 && this.beat % 4 === 2) this.burst({ type: "highpass", freq: 5000, decay: 0.04, gain: 0.08, when });
-      this.beat++;
-      this.nextBeat += 60 / 104 / 2;
-    }
+    this.score.update(this.tension);
     if (slow > 0.2) {
       this.heartT -= dt;
       if (this.heartT <= 0) {

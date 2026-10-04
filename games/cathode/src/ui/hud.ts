@@ -260,7 +260,8 @@ export class Hud {
         ["F", "Takedown from behind"],
         ["X", "Focus: slow time"],
         ["R", "Reload"],
-        ["1–4", "The Pin · Kestrel 9 · Fishmonger · Widowmaker"],
+        ["1–9 · Wheel", "Switch weapons"],
+        ["K", "Cath's sheet: skills and kit"],
       ];
       const dl = el("dl", "hud-keys", card);
       for (const [k, v] of keys) {

@@ -17,6 +17,18 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 
+/**
+ * NaN and Inf to 0 and a ceiling, per channel. On a real GPU the HDR buffer is half float: a wet-street
+ * specular glint on a low-roughness surface can pass 65504 and store Inf (or NaN, e.g. 0 * Inf), and the
+ * bloom's blur chain then smears it across most of the screen as black (owner's desktop playtest,
+ * 2026-10-04: "the middle of the screen is just black, only the edges are rendering"). SwiftShader keeps
+ * full precision, so headless tests never saw it. Comparisons are false for NaN, so the ternaries catch it.
+ */
+const SANITIZE = /* glsl */ `
+    float hdrSafe( float x ) { return x < 256.0 ? max( x, 0.0 ) : ( x >= 256.0 ? 256.0 : 0.0 ); }
+    vec3 hdrSafe( vec3 c ) { return vec3( hdrSafe( c.r ), hdrSafe( c.g ), hdrSafe( c.b ) ); }
+`;
+
 /** Renders the world, then the first-person layer on top after clearing depth, into one HDR buffer. */
 class ScenePass extends Pass {
   constructor(
@@ -62,7 +74,7 @@ const GradeShader = {
     uniform float uExposure;
     uniform float uFlash;
     varying vec2 vUv;
-
+    ${SANITIZE}
     // AgX (Troy Sobotka's, as fitted in three.js): filmic, graceful with saturated neon.
     mat3 AgXIn = mat3( vec3( 0.856627153315983, 0.137318972929847, 0.11189821299995 ), vec3( 0.0951212405381588, 0.761241990602591, 0.0767994186031903 ), vec3( 0.0482516061458583, 0.101439036467562, 0.811302368396859 ) );
     mat3 AgXOut = mat3( vec3( 1.1271005818144368, -0.1413297634984383, -0.14132976349843826 ), vec3( -0.11060664309660323, 1.157823702216272, -0.11060664309660294 ), vec3( -0.016493938717834573, -0.016493938717834257, 1.2519364065950405 ) );
@@ -89,7 +101,7 @@ const GradeShader = {
 
     vec3 sampleCA( vec2 uv, float amt ) {
       vec2 d = ( uv - 0.5 ) * amt;
-      return vec3( texture2D( tDiffuse, uv + d ).r, texture2D( tDiffuse, uv ).g, texture2D( tDiffuse, uv - d ).b );
+      return hdrSafe( vec3( texture2D( tDiffuse, uv + d ).r, texture2D( tDiffuse, uv ).g, texture2D( tDiffuse, uv - d ).b ) );
     }
 
     void main() {
@@ -108,7 +120,7 @@ const GradeShader = {
           float a = float( i ) * 2.39996;
           float rr = sqrt( float( i ) + 0.5 ) / sqrt( 12.0 );
           vec2 o = vec2( cos( a ), sin( a ) ) * rr * rad * vec2( uRes.y / uRes.x, 1.0 ) * 1.6;
-          acc += texture2D( tDiffuse, uv + o ).rgb;
+          acc += hdrSafe( texture2D( tDiffuse, uv + o ).rgb );
           wsum += 1.0;
         }
         col = mix( col, acc / wsum, smoothstep( 0.0, 0.3, uDrama ) );
@@ -203,6 +215,12 @@ export function createPost(
     composer.addPass(gtao);
   }
   const bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.5, 0.42, 1.6);
+  // Everything the bloom blurs goes through its high pass first: clean it there.
+  const hp = bloom.materialHighPassFilter;
+  hp.fragmentShader = hp.fragmentShader
+    .replace("void main() {", `${SANITIZE}\nvoid main() {`)
+    .replace("vec4 texel = texture2D( tDiffuse, vUv );", "vec4 texel = texture2D( tDiffuse, vUv ); texel.rgb = hdrSafe( texel.rgb );");
+  hp.needsUpdate = true;
   composer.addPass(bloom);
   const grade = new ShaderPass(GradeShader);
   composer.addPass(grade);
