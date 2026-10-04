@@ -14,6 +14,7 @@ import { KillCam } from "./killcam";
 import { Hud } from "../ui/hud";
 import { Audio } from "./audio";
 import { Progress } from "./progress";
+import { ELITE_CHANCE } from "../sim/enemies";
 import { Voice } from "./voice";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
@@ -85,7 +86,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       : key.includes("shield") || n % 4 === 3
         ? [RIOT_SHIELD, "riotShield"]
         : [ENFORCER, "enforcer"];
-    const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++), role: base.role }, route.map((p) => p.clone()), areaLevel);
+    const elite = Math.random() < ELITE_CHANCE[progress.character.difficulty];
+    const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++, elite), role: base.role }, route.map((p) => p.clone()), areaLevel);
     world.scene.add(e.body.root);
     enemies.push(e);
   }
@@ -198,7 +200,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     levelUp(progress.kill(k.enemy.kit.xp, k.enemy.level, k.unseen, bonus));
     const xp = progress.lastXp;
     hud.feedLine(`+${xp} XP${bits.length ? " · " + bits.join(" · ") : ""}`, k.headshot || k.unseen);
-    const drop = progress.loot(k.enemy.level, false);
+    const drop = progress.loot(k.enemy.level, !!k.enemy.kit.elite);
     if (drop.scrip) hud.feedLine(`+${drop.scrip} Scrip`);
     for (const it of drop.items) hud.feedItem(it.name, it.rarity);
     hud.hitMarker(true);
@@ -366,6 +368,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const miss = toChest.clone().addScaledVector(sh.dir, -along).length();
         if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
           s.hp = Math.max(0, s.hp - actives.absorb(e.kit.damage * run.guard));
+          if (e.kit.drain) s.focus = Math.max(0, s.focus - e.kit.drain);
           world.fx.tracer(sh.from, sight.chest);
           audio?.hitFlesh(false);
         } else if (hitWorld) {

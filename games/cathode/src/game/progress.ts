@@ -64,17 +64,22 @@ export class Progress {
   }
 
   /** The game's enemy kit for an archetype at a level, from the rules' tables. */
-  static kit(base: EnemyKit, archetype: string, level: number, seed: number): EnemyKit {
-    const e = makeEnemy(archetype, level, createRng(seed));
+  static kit(base: EnemyKit, archetype: string, level: number, seed: number, elite = false): EnemyKit {
+    const e = makeEnemy(archetype, level, createRng(seed), elite);
+    const fast = e.mods.includes("extraFast");
     return {
       ...base,
       name: e.name,
       maxHp: Math.round(e.maxHealth),
       armour: e.armour,
-      damage: e.damage,
+      damage: e.damage * (1 + e.addedShock),
       xp: e.xp,
-      walk: e.walk || base.walk,
-      run: e.run || base.run,
+      walk: (e.walk || base.walk) * (fast ? 1.5 : 1),
+      run: (e.run || base.run) * (fast ? 1.5 : 1),
+      burst: fast ? [base.burst[0], base.burst[1] / 1.33, base.burst[2] / 1.33] : base.burst,
+      elite: e.elite,
+      mods: e.mods,
+      drain: e.drainsBulletTime,
       vision: { range: e.vision.range || base.vision.range, fov: e.vision.cone ? (e.vision.cone * Math.PI) / 180 : base.vision.fov },
     };
   }

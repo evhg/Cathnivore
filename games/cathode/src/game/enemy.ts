@@ -28,6 +28,11 @@ export interface EnemyKit {
   visor: number;
   /** Rifleman, a shield bearer (a riot shield stops rounds from the front), or a sniper with a laser. */
   role?: "rifle" | "shield" | "sniper";
+  /** Elite modifiers (sim/enemies.ts): extraFast, stoneskin, multipleShots and the rest. */
+  elite?: boolean;
+  mods?: readonly string[];
+  /** Seconds of Cath's bullet-time each hit drains (Cursed). */
+  drain?: number;
 }
 
 export const RIOT_SHIELD: EnemyKit = {
@@ -347,6 +352,14 @@ export class Enemy {
           aimDir.y += (Math.random() - 0.5) * spread;
           aimDir.z += (Math.random() - 0.5) * spread;
           this.shots.push({ from, dir: aimDir.normalize() });
+          if (this.kit.mods?.includes("multipleShots")) {
+            for (const side of [-1, 1]) {
+              const d = aimDir.clone();
+              d.x += -aimDir.z * 0.05 * side;
+              d.z += aimDir.x * 0.05 * side;
+              this.shots.push({ from: from.clone(), dir: d.normalize() });
+            }
+          }
           this.motion.kick = 1;
         }
         break;
