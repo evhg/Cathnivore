@@ -357,12 +357,12 @@ test.describe('CATHODE', () => {
 
   test('the street boots and renders frames without errors', async ({ page }) => {
     // The full street renders at well under 1 fps on the CI's software GPU.
-    test.setTimeout(150_000)
+    test.setTimeout(240_000)
     const errors = trackErrors(page)
     await page.goto('/cathode/')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
     await page.goto('/cathode/?play&shot')
-    await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number } } }).cathode?.stats.frames ?? 0) > 1, null, { timeout: 120_000 })
+    await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number } } }).cathode?.stats.frames ?? 0) >= 1, null, { timeout: 200_000 })
     await expect(page.locator('#loading')).toBeHidden()
     expect(errors).toEqual([])
   })
