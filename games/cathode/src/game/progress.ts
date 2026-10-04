@@ -6,7 +6,7 @@ import { deserialize, makeSave, serialize, SAVE_KEY } from "../sim/save";
 import { killXp, type DerivedStats } from "../sim/stats";
 import { makeEnemy } from "../sim/enemies";
 import { createRng, type Rng } from "../sim/rng";
-import { rollDrop, type Item } from "../sim/loot";
+import { itemWeaponStats, makeItem, rollDrop, type Item } from "../sim/loot";
 import type { ClassId } from "../sim/types";
 import type { Build } from "./combat";
 import type { EnemyKit } from "./enemy";
@@ -61,6 +61,15 @@ export class Progress {
       crit: d.critChance.sniper,
       critMul: d.critMultiplier.sniper,
     };
+  }
+
+  /** Damage scale for a live weapon from the gear on Cath: its tier, parts, chips and rolls against a fresh one. */
+  weaponScale(id: string): number {
+    const worn = [this.character.equipment.weapon1, this.character.equipment.weapon2].find((i) => i?.base === id);
+    if (!worn) return 1;
+    const have = itemWeaponStats(worn)?.damage;
+    const fresh = itemWeaponStats(makeItem(id, { uid: "baseline" }))?.damage;
+    return have && fresh ? Math.min(6, Math.max(0.5, have / fresh)) : 1;
   }
 
   /** The game's enemy kit for an archetype at a level, from the rules' tables. */

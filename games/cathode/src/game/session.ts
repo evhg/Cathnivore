@@ -299,7 +299,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const shot = dead ? null : arsenal.update((dt || realDt) * gun.rate, trigger, eye, fwd, world.camera.quaternion, spreadMul);
     if (shot) {
       const nx = actives.takeNextShot(shot.weapon.weaponClass);
-      const mul = gun.dmg * nx.mul;
+      const mul = gun.dmg * nx.mul * progress.weaponScale(shot.weapon.id);
       if (mul !== 1) shot.weapon = { ...shot.weapon, damage: shot.weapon.damage * mul };
       if (nx.pellets > 0) shot.dirs = shot.dirs.slice(0, nx.pellets);
       if (thunderCover > 0) shot.weapon = { ...shot.weapon, noise: shot.weapon.noise * 0.25 };
