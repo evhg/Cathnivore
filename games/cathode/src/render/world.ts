@@ -164,6 +164,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   shared.uRefl.value = reflection.target.texture;
   shared.uReflMatrix.value = reflection.matrix;
   const post = createPost(renderer, scene, camera, viewScene, viewCamera, quality);
+  // Brighter than the moody first pass: people kept losing enemies in the dark (owner, 2026-10-04:
+  // "visibility is really bad"). Phones get more, since they're played on small screens in lit rooms.
+  post.grade.uniforms.uExposure!.value = quality === "phone" ? 1.7 : 1.35;
 
   // ------------------------------------------------------------ environment (neon reflections for the game's materials)
   progress(0.8, "Neon in the puddles…");
@@ -325,6 +328,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     },
     setDrama(amount) {
       drama = THREE.MathUtils.clamp(amount, 0, 1);
+    },
+    light(pos, color, intensity, range) {
+      return pool.add({ pos: pos.clone(), color: color.clone(), intensity, range, normal: null, flicker: 0, seed: 0, real: true });
     },
     wetten(material, wetness = 0.5) {
       patchMaterial(material, shared, { kind: "prop", wet: wetness });

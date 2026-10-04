@@ -157,6 +157,17 @@ export class LightPool {
     this.level = new Array(count).fill(0);
   }
 
+  /** A light the game places (a lamp over a guard, a glowing case): it competes for a pooled real light. */
+  add(l: VLight): () => void {
+    this.cand.push(l);
+    this.timer = 0;
+    return () => {
+      const i = this.cand.indexOf(l);
+      if (i >= 0) this.cand.splice(i, 1);
+      this.timer = 0;
+    };
+  }
+
   update(camera: THREE.Camera, dt: number, time: number, instant: boolean): void {
     this.timer -= dt;
     if (this.timer <= 0 || instant) {

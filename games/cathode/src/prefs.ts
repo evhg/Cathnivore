@@ -8,10 +8,12 @@ export interface Prefs {
   adult: boolean;
   intensity: Intensity;
   quality: QualityChoice;
+  /** Master volume, 0..1. */
+  volume: number;
 }
 
 const KEY = "cathode:prefs:v1";
-const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto" };
+const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1 };
 
 export function loadPrefs(): Prefs {
   try {
@@ -22,6 +24,7 @@ export function loadPrefs(): Prefs {
       adult: p.adult === true,
       intensity: p.intensity === "reduced" ? "reduced" : "full",
       quality: p.quality === "phone" || p.quality === "high" || p.quality === "ultra" ? p.quality : "auto",
+      volume: typeof p.volume === "number" && p.volume >= 0 && p.volume <= 1 ? p.volume : 1,
     };
   } catch {
     return { ...DEFAULTS };

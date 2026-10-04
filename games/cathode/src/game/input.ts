@@ -84,7 +84,8 @@ export class Input {
   private onMouse = (e: MouseEvent) => {
     const down = e.type === "mousedown";
     if (down && !this.locked) {
-      this.lock();
+      // Clicks on the pause card's controls (volume, graphics) stay with the card.
+      if (!(e.target as Element | null)?.closest?.(".hud-pause-card, .cx, dialog")) this.lock();
       return;
     }
     if (e.button === 0) this.mouse.left = down;
@@ -136,6 +137,13 @@ export class Input {
       btn.dataset.btn = b;
       layer.append(btn);
     }
+    // The way into the pause menu (settings, the title), top right where a thumb won't hit it by accident.
+    const menu = el("button", "tbtn-menu");
+    menu.setAttribute("type", "button");
+    menu.setAttribute("aria-label", "Menu");
+    for (let i = 0; i < 2; i++) menu.append(el("span", "tbtn-menu-bar"));
+    menu.addEventListener("click", () => (this.menuTapped = true));
+    layer.append(menu);
     const area = this.canvas.parentElement!;
     area.addEventListener("touchstart", this.onTouch, { passive: false });
     area.addEventListener("touchmove", this.onTouch, { passive: false });
@@ -229,6 +237,14 @@ export class Input {
     }
   }
   private allowedKey = "";
+
+  private menuTapped = false;
+  /** True once after the phone's menu button is tapped. */
+  takeMenu(): boolean {
+    const m = this.menuTapped;
+    this.menuTapped = false;
+    return m;
+  }
 
   /** Set once the player has moved with the stick (the coach card waits for it). */
   touched = false;

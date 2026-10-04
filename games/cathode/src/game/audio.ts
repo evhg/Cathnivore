@@ -60,8 +60,56 @@ export class Audio {
     this.score = new Score(c, this.music, this.verbSend);
   }
 
+  private unlocked = false;
+  /** Master volume, 0..1 (the pause menu's slider). */
+  set volume(v: number) {
+    this.master.gain.setTargetAtTime(0.8 * Math.max(0, Math.min(1, v)), this.ctx.currentTime, 0.05);
+  }
+
+  /**
+   * Call from inside a tap or key press. iOS only starts WebAudio in a user gesture, and mutes it under the
+   * ringer's silent switch unless the page's audio session is "playback": set that where Safari has it
+   * (17+), and otherwise play a silent <audio> once, which moves the session to playback (owner, iPhone,
+   * 2026-10-04: "still no sound").
+   */
   resume(): void {
     if (this.ctx.state !== "running") void this.ctx.resume();
+    if (this.unlocked) return;
+    this.unlocked = true;
+    const nav = navigator as Navigator & { audioSession?: { type: string } };
+    try {
+      if (nav.audioSession) nav.audioSession.type = "playback";
+    } catch {
+      // Not settable here: the <audio> below does the same job.
+    }
+    try {
+      const el = new window.Audio(`${import.meta.env.BASE_URL}silence.wav`);
+      el.setAttribute("playsinline", "");
+      el.loop = true;
+      el.volume = 0.01;
+      void el.play().catch(() => (this.unlocked = false));
+      this.keepAlive = el;
+    } catch {
+      // No media element: WebAudio alone.
+    }
+    // A one-sample buffer played inside the gesture is what finally wakes older iOS.
+    const b = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
+    const src = this.ctx.createBufferSource();
+    src.buffer = b;
+    src.connect(this.ctx.destination);
+    src.start();
+  }
+  private keepAlive: HTMLAudioElement | null = null;
+
+  /** The tab was hidden or shown: stop the silent loop too, so iOS doesn't keep a media session open. */
+  suspend(hidden: boolean): void {
+    if (hidden) {
+      void this.ctx.suspend();
+      this.keepAlive?.pause();
+    } else {
+      void this.ctx.resume();
+      void this.keepAlive?.play().catch(() => undefined);
+    }
   }
 
   private makeNoise(kind: Noise): AudioBuffer {

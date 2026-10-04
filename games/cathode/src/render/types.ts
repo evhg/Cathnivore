@@ -84,6 +84,11 @@ export interface World {
    * viewScene too (no fog there, so it only keeps the standard shading).
    */
   wetten?(material: THREE.MeshStandardMaterial, wetness?: number): void;
+  /**
+   * Optional: a game-placed light (linear colour), shared out through the real-light pool so adding one
+   * never changes the scene's light count (no shader recompile hitch). Returns its remover.
+   */
+  light?(pos: THREE.Vector3, color: THREE.Color, intensity: number, range: number): () => void;
   /** Optional: the last render's CPU time in ms, draw calls and triangles (for ?perf). */
   readonly perf?: { renderMs: number; drawCalls: number; triangles: number };
 }

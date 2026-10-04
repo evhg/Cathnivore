@@ -1,6 +1,7 @@
 // One play session: builds the world, puts Cath in it and runs the frame loop that ties everything
 // together: input, movement, weapons, combat, enemies, stealth, the kill-cam, bullet-time, XP and the HUD.
 
+import { loadPrefs } from "../prefs";
 import * as THREE from "three";
 import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
@@ -91,7 +92,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let seed = 1;
   // The first job teaches the game one thing at a time and brings its own enemies; after that the street
   // is fully patrolled.
-  const tutorial = !progress.jobsDone.includes("fishMarket") && !o.shot;
+  // Screenshots skip the first job unless they ask for it (?shot&job).
+  const tutorial = !progress.jobsDone.includes("fishMarket") && (!o.shot || new URLSearchParams(location.search).has("job"));
   const KITS = {
     rifle: [ENFORCER, "enforcer"],
     shield: [RIOT_SHIELD, "riotShield"],
@@ -160,10 +162,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       } else if (ev.type === "casing") audio?.casing();
     });
   }
+  if (audio) audio.volume = loadPrefs().volume;
   const wake = () => audio?.resume();
-  addEventListener("pointerdown", wake);
-  addEventListener("keydown", wake);
-  wake();
+  // iOS counts touchend and click as gestures that may start audio, not pointerdown.
+  for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, wake, { capture: true });
+  document.addEventListener("visibilitychange", () => audio?.suspend(document.hidden));
   const s: Session = {
     world,
     player,
@@ -213,6 +216,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         say: (t) => hud.subtitle(t),
         teach: (t) => hud.teach(t),
         banner: (a, b) => hud.showBanner(a, b),
+        light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
       })
     : null;
   s.job = job;
@@ -354,6 +358,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
   }
   let sinceHurt = 99;
+  let hitStop = 0;
+  let jolt = 0;
+  // The pause menu, opened by the phone's menu button (desktop pauses whenever the mouse is free).
+  let menuOpen = false;
+  hud.onResume = () => {
+    menuOpen = false;
+    input.lock();
+  };
+  hud.onVolume = (v) => {
+    if (audio) audio.volume = v;
+  };
   let wasAlt = false;
   let charScreen: { close(): void; refresh(): void } | null = null;
   let swayT = 0;
@@ -370,8 +385,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const intent = input.read();
     // On desktop the game waits while the mouse is free (Esc, or before the first click).
     const portrait = input.isTouch && innerHeight > innerWidth;
-    const away = (!input.isTouch && !input.locked && !o.shot && !dead && !navigator.webdriver && !charScreen) || portrait || coaching;
-    hud.showPause(away && !portrait && !coaching);
+    if (input.takeMenu() && !dead && !charScreen) menuOpen = true;
+    const away = (!input.isTouch && !input.locked && !o.shot && !dead && !navigator.webdriver && !charScreen) || portrait || coaching || menuOpen;
+    hud.showPause(away && !portrait && !coaching, input.isTouch);
     if (intent.skills && !charScreen && !killcam.active) openSheet();
     if (s.paused || away) {
       last = now;
@@ -388,6 +404,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       s.focus = Math.max(0, s.focus - realDt);
       scale = 0.35;
     } else s.focus = Math.min(progress.stats.bulletTimeSeconds, s.focus + realDt * 0.15);
+    // Hit-stop: a landed blow holds the world for a few frames, so it lands with weight.
+    if (hitStop > 0) {
+      hitStop -= realDt;
+      scale *= 0.06;
+    }
     const dt = o.shot ? 0 : realDt * scale;
     thunderCover = Math.max(0, thunderCover - realDt);
     grace = Math.max(0, grace - dt);
@@ -441,6 +462,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.camera.rotation.x += Math.sin(swayT * 0.9) * amp;
       world.camera.rotation.y += Math.sin(swayT * 0.45) * amp * 1.4;
     }
+    // The camera jolts with a landed blow, in the swing's direction.
+    if (jolt > 0.01) {
+      jolt *= Math.exp(-realDt * 14);
+      world.camera.rotation.z += jolt * 0.035 * arsenal.anim.meleeSide;
+      world.camera.rotation.x -= jolt * 0.02;
+    }
     world.camera.getWorldPosition(eye);
     world.camera.getWorldDirection(fwd);
 
@@ -484,6 +511,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (arsenal.meleeNow) {
       const struck = combat.melee(eye, fwd, arsenal.weapon, build());
       audio?.pin(struck);
+      if (struck) {
+        hitStop = 0.07;
+        jolt = 1;
+      }
       if (struck && run.lifeSteal > 0) s.hp = Math.min(s.maxHp, s.hp + arsenal.weapon.damage * run.lifeSteal);
     }
     if (arsenal.slamNow) {

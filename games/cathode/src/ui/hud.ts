@@ -1,6 +1,8 @@
 // The HUD, in the DOM over the canvas. CSP-safe: no inline style attributes, only classes and CSS custom
 // properties set through the CSSOM. Noir-quiet by default: thin rules, small caps, red only for blood.
 
+import { loadPrefs, savePrefs, type Intensity, type QualityChoice } from "../prefs";
+
 export interface HudState {
   hp: number;
   maxHp: number;
@@ -248,36 +250,105 @@ export class Hud {
   }
 
   private pause?: HTMLElement;
+  private pauseTitle?: HTMLElement;
+  /** The pause card's Resume button (and, on desktop, a click anywhere behind the card). */
+  onResume?: () => void;
+  /** The volume slider moved (0..1). */
+  onVolume?: (v: number) => void;
 
-  /** The desktop pause card: the game waits behind it until a click captures the mouse again. */
-  showPause(on: boolean): void {
+  /**
+   * The pause menu: Esc on desktop, the menu button on a phone (owner, iPhone, 2026-10-04: "once started no
+   * way to open settings or access a menu"). Resume, volume, graphics, violence, the controls, and the way out.
+   */
+  showPause(on: boolean, touch = false): void {
     if (!this.pause) {
       this.pause = el("div", "hud-pause", this.root.parentElement ?? this.root);
       const card = el("div", "hud-pause-card", this.pause);
-      const h = el("p", "hud-pause-title", card);
-      h.textContent = "Click to play";
-      const keys: Array<[string, string]> = [
-        ["WASD", "Move"],
-        ["Mouse", "Look · Left fire · Right aim"],
-        ["Shift", "Sprint"],
-        ["C", "Crouch · slide when sprinting"],
-        ["Space", "Jump · climb a ledge"],
-        ["Q / E", "Lean"],
-        ["F", "Takedown from behind"],
-        ["X", "Focus: slow time"],
-        ["R", "Reload"],
-        ["1–9 · Wheel", "Switch weapons"],
-        ["K", "Cath's sheet: skills and kit"],
-      ];
-      const dl = el("dl", "hud-keys", card);
-      for (const [k, v] of keys) {
-        el("dt", "", dl).textContent = k;
-        el("dd", "", dl).textContent = v;
+      card.setAttribute("role", "dialog");
+      card.setAttribute("aria-label", "Paused");
+      this.pauseTitle = el("p", "hud-pause-title", card);
+      const resume = el("button", "btn btn-primary hud-resume", card);
+      resume.setAttribute("type", "button");
+      resume.textContent = "Resume";
+      resume.addEventListener("click", () => this.onResume?.());
+
+      const prefs = loadPrefs();
+      const set = el("div", "hud-settings", card);
+      const vol = el("label", "hud-set", set);
+      el("span", "hud-set-name", vol).textContent = "Volume";
+      const slider = el("input", "hud-slider", vol) as HTMLInputElement;
+      slider.type = "range";
+      slider.min = "0";
+      slider.max = "100";
+      slider.value = String(Math.round(prefs.volume * 100));
+      slider.addEventListener("input", () => {
+        const v = Number(slider.value) / 100;
+        this.onVolume?.(v);
+        savePrefs({ ...loadPrefs(), volume: v });
+      });
+      // Graphics and violence take effect on a reload into the same job (the street is built for them).
+      const choice = <T extends string>(name: string, opts: Array<[T, string]>, current: T, apply: (v: T) => void) => {
+        const row = el("div", "hud-set", set);
+        el("span", "hud-set-name", row).textContent = name;
+        const seg = el("div", "hud-seg", row);
+        for (const [v, label] of opts) {
+          const b = el("button", "hud-seg-btn", seg);
+          b.setAttribute("type", "button");
+          b.textContent = label;
+          b.setAttribute("aria-pressed", String(v === current));
+          b.addEventListener("click", () => {
+            if (v === current) return;
+            apply(v);
+            location.reload();
+          });
+        }
+      };
+      choice<QualityChoice>(
+        "Graphics",
+        [
+          ["auto", "Auto"],
+          ["phone", "Fast"],
+          ["high", "High"],
+          ["ultra", "Ultra"],
+        ],
+        prefs.quality,
+        (v) => savePrefs({ ...loadPrefs(), quality: v }),
+      );
+      choice<Intensity>(
+        "Violence",
+        [
+          ["full", "Full"],
+          ["reduced", "Reduced"],
+        ],
+        prefs.intensity,
+        (v) => savePrefs({ ...loadPrefs(), intensity: v }),
+      );
+
+      if (!touch) {
+        const keys: Array<[string, string]> = [
+          ["WASD", "Move"],
+          ["Mouse", "Look · Left fire · Right aim"],
+          ["Shift", "Sprint"],
+          ["C", "Crouch · slide when sprinting"],
+          ["Space", "Jump · climb a ledge"],
+          ["Q / E", "Lean"],
+          ["F", "Takedown from behind"],
+          ["X", "Focus: slow time"],
+          ["R", "Reload"],
+          ["1–9 · Wheel", "Switch weapons"],
+          ["K", "Cath's sheet: skills and kit"],
+        ];
+        const dl = el("dl", "hud-keys", card);
+        for (const [k, v] of keys) {
+          el("dt", "", dl).textContent = k;
+          el("dd", "", dl).textContent = v;
+        }
       }
       const quit = el("a", "hud-quit", card);
       quit.textContent = "Back to the title";
       quit.setAttribute("href", "./");
     }
+    if (this.pauseTitle) this.pauseTitle.textContent = touch ? "Paused" : "Paused · click to play";
     this.pause.hidden = !on;
   }
 

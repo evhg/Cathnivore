@@ -151,7 +151,7 @@ function buildPin(): GunRig {
   b.position.set(0, 0.02, 0);
   r.root.add(b);
   r.action = b;
-  r.muzzle.position.set(0, 0.3, -0.25);
+  r.muzzle.position.set(0, 0.42, -0.26); // the ball end: the swing trail follows it
   attachHands(r, [0, 0, 0.02], null);
   return r;
 }
@@ -419,6 +419,36 @@ export function buildGun(model: GunModel): GunRig {
   return r;
 }
 
+/**
+ * A melee swing as keyframes (seconds, rig offset, rig rotation), forehand: wind up and back over the
+ * shoulder, then a fast diagonal chop down and across the screen through the hit at 0.12 s, a heavy
+ * follow-through, and the recovery. Backhands mirror it (owner, 2026-10-04: "the animation when firing a
+ * baton is super basic").
+ */
+type Key = [number, [number, number, number], [number, number, number]];
+// Tuned by projecting the tip through the view camera: each arc starts just past a top corner and cuts
+// through the middle of the screen at the hit.
+const SWING_FORE: Key[] = [
+  [0, [0, 0, 0], [0, 0, 0]],
+  [0.07, [0.05, 0.05, 0.04], [-0.35, -0.15, -0.3]],
+  [0.1, [0, 0, -0.08], [0.35, 0.3, 0.3]],
+  [0.12, [-0.1, -0.03, -0.14], [0.85, 0.5, 0.4]],
+  [0.18, [-0.25, -0.17, -0.07], [1.4, 0.8, 0.65]],
+  [0.3, [-0.17, -0.13, 0], [1.0, 0.5, 0.45]],
+  [0.5, [0, 0, 0], [0, 0, 0]],
+];
+/** The backhand: the arm crosses her body, so the hand starts on the left and cuts back to the right. */
+const SWING_BACK: Key[] = [
+  [0, [0, 0, 0], [0, 0, 0]],
+  [0.07, [-0.32, 0.05, 0.04], [-0.35, 0.35, 0.5]],
+  [0.1, [-0.3, 0, -0.08], [0.35, 0.1, 0.1]],
+  [0.12, [-0.16, -0.03, -0.14], [0.85, -0.35, -0.4]],
+  [0.18, [0, -0.17, -0.07], [1.4, -0.75, -0.65]],
+  [0.3, [0, -0.13, 0], [1.0, -0.5, -0.45]],
+  [0.5, [0, 0, 0], [0, 0, 0]],
+];
+const ease = (t: number) => t * t * (3 - 2 * t);
+
 /** Springs that drive the rig's offsets: sway from looking, bob from walking, recoil from firing. */
 export class ViewAnim {
   readonly pos = new THREE.Vector3();
@@ -437,6 +467,30 @@ export class ViewAnim {
   /** Pump/slide/bolt travel 0..1. */
   action = 0;
   swing = 0;
+  /** Seconds into a melee swing (-1 when not swinging), and which way: 1 forehand, -1 backhand. */
+  meleeT = -1;
+  meleeSide = -1; // flips before each swing, so the first is a forehand
+  private readonly mPos = new THREE.Vector3();
+  private readonly mRot = new THREE.Vector3();
+
+  private meleePose(): void {
+    this.mPos.set(0, 0, 0);
+    this.mRot.set(0, 0, 0);
+    const t = this.meleeT;
+    if (t < 0) return;
+    const K = this.meleeSide > 0 ? SWING_FORE : SWING_BACK;
+    for (let i = 1; i < K.length; i++) {
+      const [t1, p1, r1] = K[i]!;
+      if (t > t1 && i < K.length - 1) continue;
+      const [t0, p0, r0] = K[i - 1]!;
+      const u = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
+      // Accelerate out of the wind-up, full speed through the hit, decelerate into the follow-through.
+      const k = i === 2 ? u * u : i === 3 ? u : i === 4 ? 1 - (1 - u) * (1 - u) : ease(u);
+      this.mPos.set(p0[0] + (p1[0] - p0[0]) * k, p0[1] + (p1[1] - p0[1]) * k, p0[2] + (p1[2] - p0[2]) * k);
+      this.mRot.set(r0[0] + (r1[0] - r0[0]) * k, r0[1] + (r1[1] - r0[1]) * k, r0[2] + (r1[2] - r0[2]) * k);
+      break;
+    }
+  }
 
   fire(strength: number): void {
     this.kickVel += strength * 3.2;
@@ -466,15 +520,90 @@ export class ViewAnim {
     const steady = 1 - this.aim * 0.85;
     const bob = Math.min(1, speed / 7) * steady;
     const sprintTilt = sprint ? 1 : 0;
+    this.meleePose();
+    const m = this.mPos;
+    const mr = this.mRot;
     this.pos.set(
-      this.sway.x * 0.02 * steady + Math.cos(stride * 0.95) * 0.012 * bob,
+      m.x + this.sway.x * 0.02 * steady + Math.cos(stride * 0.95) * 0.012 * bob,
       this.sway.y * 0.02 * steady - Math.abs(Math.sin(stride * 0.95)) * 0.014 * bob - landed * 0.03 - this.dip * 0.25 - sprintTilt * 0.03,
-      this.kick * 0.06,
+      m.z + this.kick * 0.06,
     );
+    this.pos.y += m.y;
     this.rot.set(
-      this.kickRot * 0.09 + this.sway.y * 0.04 * steady - this.dip * 0.9 + this.swing * 1.4,
-      this.sway.x * 0.05 * steady + sprintTilt * 0.5 - this.swing * 0.6,
-      this.roll + this.sway.x * 0.03 * steady + sprintTilt * 0.25,
+      -mr.x + this.kickRot * 0.09 + this.sway.y * 0.04 * steady - this.dip * 0.9 + this.swing * 1.4,
+      mr.y + this.sway.x * 0.05 * steady + sprintTilt * 0.5 - this.swing * 0.6,
+      mr.z + this.roll + this.sway.x * 0.03 * steady + sprintTilt * 0.25,
     );
+  }
+}
+
+/**
+ * The swing's smear: a ribbon traced by the weapon's tip and mid-shaft over the last few hundredths of a
+ * second, bright at the head and fading behind, in the first-person layer so it blooms like the street.
+ */
+export class SwingTrail {
+  private static readonly N = 18;
+  readonly mesh: THREE.Mesh;
+  private readonly pos: Float32Array;
+  private readonly col: Float32Array;
+  private readonly samples: Array<{ a: THREE.Vector3; b: THREE.Vector3; t: number }> = [];
+  private time = 0;
+  private readonly tint = new THREE.Color(0.75, 0.9, 1.4);
+
+  constructor(scene: THREE.Scene) {
+    const n = SwingTrail.N;
+    const g = new THREE.BufferGeometry();
+    this.pos = new Float32Array(n * 2 * 3);
+    this.col = new Float32Array(n * 2 * 3);
+    g.setAttribute("position", new THREE.BufferAttribute(this.pos, 3));
+    g.setAttribute("color", new THREE.BufferAttribute(this.col, 3));
+    const idx: number[] = [];
+    for (let i = 0; i < n - 1; i++) {
+      const a = i * 2;
+      idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+    g.setIndex(idx);
+    this.mesh = new THREE.Mesh(
+      g,
+      new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
+    );
+    this.mesh.frustumCulled = false;
+    this.mesh.renderOrder = 5;
+    scene.add(this.mesh);
+  }
+
+  /** Each frame: `tip` and `mid` in view-scene space while the swing is live, else null to let it fade. */
+  update(dt: number, tip: THREE.Vector3 | null, mid: THREE.Vector3 | null): void {
+    this.time += dt;
+    if (tip && mid) {
+      this.samples.unshift({ a: tip.clone(), b: mid.clone(), t: this.time });
+      if (this.samples.length > SwingTrail.N) this.samples.length = SwingTrail.N;
+    }
+    const LIFE = 0.11;
+    while (this.samples.length && this.time - this.samples[this.samples.length - 1]!.t > LIFE) this.samples.pop();
+    const n = SwingTrail.N;
+    for (let i = 0; i < n; i++) {
+      const sm = this.samples[Math.min(i, this.samples.length - 1)];
+      const o = i * 6;
+      if (!sm) {
+        this.pos.fill(0, o, o + 6);
+        this.col.fill(0, o, o + 6);
+        continue;
+      }
+      sm.a.toArray(this.pos, o);
+      sm.b.toArray(this.pos, o + 3);
+      const k = i < this.samples.length ? Math.max(0, 1 - (this.time - sm.t) / LIFE) ** 1.5 * 0.55 : 0;
+      this.col[o] = this.tint.r * k;
+      this.col[o + 1] = this.tint.g * k;
+      this.col[o + 2] = this.tint.b * k;
+      // The inner edge fades out, so the smear thins toward the hand.
+      this.col[o + 3] = this.tint.r * k * 0.15;
+      this.col[o + 4] = this.tint.g * k * 0.15;
+      this.col[o + 5] = this.tint.b * k * 0.15;
+    }
+    const g = this.mesh.geometry;
+    g.attributes.position!.needsUpdate = true;
+    g.attributes.color!.needsUpdate = true;
+    this.mesh.visible = this.samples.length > 1;
   }
 }

@@ -4,7 +4,7 @@
 
 import * as THREE from "three";
 import type { WeaponClass } from "../sim/types";
-import { buildGun, ViewAnim, type GunModel, type GunRig } from "./viewmodel";
+import { buildGun, SwingTrail, ViewAnim, type GunModel, type GunRig } from "./viewmodel";
 
 export type FireKind = "hitscan" | "ballistic" | "melee";
 
@@ -91,7 +91,12 @@ export class Arsenal {
   /** A soft key and a cool rim so the gun reads against the dark street; the muzzle light flashes on fire. */
   readonly flash = new THREE.PointLight(0xffc477, 0, 1.2, 2);
 
+  private readonly trail: SwingTrail;
+  private readonly tipV = new THREE.Vector3();
+  private readonly midV = new THREE.Vector3();
+
   constructor(scene: THREE.Scene) {
+    this.trail = new SwingTrail(scene);
     const key = new THREE.DirectionalLight(0xfff0e0, 1.1);
     key.position.set(-0.5, 1, 0.6);
     const rim = new THREE.DirectionalLight(0x6fd8ff, 1.6);
@@ -396,12 +401,25 @@ export class Arsenal {
     const cycle = def.cycle;
     const since = cycle - Math.max(0, this.cd);
     a.action = def.weaponClass === "pistol" ? Math.max(0, 1 - since / 0.07) : def.weaponClass === "shotgun" || def.weaponClass === "sniper" ? Math.max(0, Math.sin(Math.min(1, Math.max(0, (since - 0.15) / (cycle * 0.6))) * Math.PI)) : 0;
-    a.swing = this.swingT >= 0 ? Math.sin(Math.min(1, this.swingT / 0.25) * Math.PI) * (this.swingT < 0.25 ? 1 : 0) : 0;
+    const melee = def.kind === "melee";
+    const swinging = this.swingT >= 0;
+    // Melee weapons swing on keyframes, alternating forehand and backhand; others keep the old nudge (parry).
+    if (melee && swinging && a.meleeT < 0) a.meleeSide = -a.meleeSide;
+    a.meleeT = melee && swinging ? this.swingT : -1;
+    a.swing = !melee && swinging ? Math.sin(Math.min(1, this.swingT / 0.25) * Math.PI) * (this.swingT < 0.25 ? 1 : 0) : 0;
     a.roll = this.reloading > 0 && !this.shellReload ? 0.5 : 0;
     a.update(dt, look, stride, speed, sprint && !this.aiming, landed);
     const base = r.hip.clone().lerp(r.ads, a.aim);
     r.root.position.copy(base).add(a.pos);
     r.root.rotation.copy(a.rot);
+    // The smear behind a melee swing, through the strike only.
+    if (melee && swinging && this.swingT > 0.07 && this.swingT < 0.24) {
+      r.root.updateMatrixWorld(true);
+      const tip = r.muzzle.getWorldPosition(this.tipV);
+      const mid = this.midV.copy(r.muzzle.position).multiplyScalar(0.45);
+      r.root.localToWorld(mid);
+      this.trail.update(dt, tip, mid);
+    } else this.trail.update(dt, null, null);
     if (r.action) {
       if (def.weaponClass === "pistol") r.action.position.z = a.action * 0.03;
       else if (def.weaponClass === "shotgun") r.action.position.z = a.action * 0.08;
