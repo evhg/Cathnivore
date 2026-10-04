@@ -647,6 +647,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         return st ? { name: st.name, ready: st.ready, key: i === 0 ? "G" : "Z" } : null;
       }),
       battery: actives.battery / Math.max(1, progress.stats.battery),
+      defence: defenceLine(progress.stats),
     });
     render();
     requestAnimationFrame(frame);
@@ -823,4 +824,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   requestAnimationFrame(frame);
   return s;
+}
+
+const RESIST_TAG: Record<string, string> = { kinetic: "KIN", shock: "SHK", toxic: "TOX", incendiary: "FIRE", monowire: "WIRE" };
+
+/** One short line for the HUD: armour rating and every non-zero resistance. */
+function defenceLine(st: { armour: number; resistances: Record<string, number> }): string {
+  const bits: string[] = [];
+  if (st.armour > 0) bits.push(`ARM ${Math.round(st.armour)}`);
+  for (const [k, v] of Object.entries(st.resistances)) {
+    if (Math.abs(v) >= 0.005) bits.push(`${RESIST_TAG[k] ?? k.slice(0, 3).toUpperCase()} ${Math.round(v * 100)}%`);
+  }
+  return bits.join(" · ");
 }

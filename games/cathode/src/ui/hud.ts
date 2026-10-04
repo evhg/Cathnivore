@@ -25,6 +25,8 @@ export interface HudState {
   /** The two active-skill slots (name and readiness 0..1), and the battery 0..1. */
   skills: Array<{ name: string; ready: number; key: string } | null>;
   battery: number;
+  /** Armour and resistances, one short line (empty when she has none). */
+  defence?: string;
   /** Where the objective is on screen (0..1 each way), metres away, and whether it's behind her. */
   waypoint?: { x: number; y: number; dist: number; behind: boolean } | null;
 }
@@ -58,6 +60,7 @@ export class Hud {
   private focus: HTMLElement;
   private slots: HTMLElement;
   private bat: HTMLElement;
+  private defence: HTMLElement;
   private lastHp = -1;
   private hurt = 0;
   private hitT = 0;
@@ -75,6 +78,7 @@ export class Hud {
     const hp = el("div", "hud-bar hud-hp", vit);
     this.hpFill = el("span", "hud-fill", hp);
     this.hpText = el("span", "hud-hp-text", vit);
+    this.defence = el("p", "hud-defence", vit);
     const xp = el("div", "hud-bar hud-xp", vit);
     this.xpFill = el("span", "hud-fill", xp);
     // Weapon and ammo, bottom right.
@@ -114,6 +118,8 @@ export class Hud {
     this.lastHp = s.hp;
     this.hurt = Math.max(0, this.hurt - dt * 1.2);
     set(this.vignette, "--a", (this.hurt * 0.9 + (s.hp / s.maxHp < 0.3 ? 0.35 : 0)).toFixed(3));
+    this.defence.textContent = s.defence ?? "";
+    this.defence.hidden = !s.defence;
     this.lvl.textContent = `Level ${s.level}`;
     set(this.xpFill, "--w", `${Math.min(100, (s.xp / Math.max(1, s.xpNext)) * 100)}%`);
     this.weapon.textContent = s.weapon;
