@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
-export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle" | "launcher" | "sledge" | "blade";
+export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle" | "launcher" | "sledge" | "blade" | "wire";
 
 const M = {
   glove: new THREE.MeshStandardMaterial({ color: 0x0d0c0c, roughness: 0.42, metalness: 0.0 }),
@@ -381,6 +381,22 @@ function buildBlade(): GunRig {
   return r;
 }
 
+/** Cat's Cradle: a monowire on a knuckle ring, the filament glowing red and trailing past the fist. */
+function buildWire(): GunRig {
+  const r = rig(new THREE.Vector3(0.2, -0.2, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
+  const b = new THREE.Group();
+  b.add(at(cyl(0.018, 0.1, M.rubber, 14), 0, 0, 0.02)); // grip
+  b.add(at(box(0.05, 0.012, 0.02, M.steel, 0.003), 0, 0, -0.04)); // ring bar
+  b.add(at(box(0.002, 0.002, 0.7, M.red, 0.001), 0, 0.01, -0.4)); // the wire
+  b.rotation.x = 0.5;
+  b.position.set(0, 0.02, 0);
+  r.root.add(b);
+  r.action = b;
+  r.muzzle.position.set(0, 0.2, -0.6);
+  attachHands(r, [0, 0, 0.03], null);
+  return r;
+}
+
 export function buildGun(model: GunModel): GunRig {
   const r =
     model === "pin" ? buildPin()
@@ -392,6 +408,7 @@ export function buildGun(model: GunModel): GunRig {
     : model === "launcher" ? buildLauncher()
     : model === "sledge" ? buildSledge()
     : model === "blade" ? buildBlade()
+    : model === "wire" ? buildWire()
     : buildSniper();
   r.root.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) {

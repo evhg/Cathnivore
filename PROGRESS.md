@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-04 03:51 session:** released `ca00b4a` (all CATHODE work to ROADMAP 72 part 2; gates passed, live version.json matches; tag push 403, harmless; 1st release today). ROADMAP 72 part 3: Night Shift parry alt-fire deflects enemy rounds for 0.5 s (`Arsenal.parryT`), Cat's Cradle monowire playable (4.5 m reach, new viewmodel; last in the weapon list so indices hold). `npm run check` green before the Cradle; Cradle verified by tsc + altfire/weapons tests. Left for 72: slug/underbarrel/charge/zoom, garrotte, pickups. Then 71 pickups, 73 remainder.
 - **2026-10-04 02:51 session:** ROADMAP 72 part 2: alt-fires play (middle mouse/V): pistol/SMG/rifle burst, revolver fans the hammer, shotgun both barrels, sledge ground slam (`Arsenal.altFire`, `tests/cathode-altfire.test.ts`; `npm run check` green, ~15 min). Left for 72: slug/underbarrel/charge/zoom/parry, katana/monowire, pickups. Unreleased (0 releases today so far; release next session).
 - **2026-10-04 01:51 session:** ROADMAP 71 part 2: gear on Cath now drives live damage (`Progress.weaponScale`: tier, parts, chips vs a fresh weapon; `tests/cathode-weaponscale.test.ts`; `npm run check` green). Left for 71: world loot pickups, armour/stat display in play. Then 72 alt-fires, 73 remainder. Unreleased.
 - **2026-10-04 00:51 session:** released `ca91c2f` (all CATHODE work to ROADMAP 71 part 1; gates passed, live version.json matches; tag push 403, harmless; 1st release today). ROADMAP 73 part 1: elite Enforcers spawn by difficulty with extraFast, stoneskin, multipleShots, cursed, shock-enchanted (`Progress.kit(..., elite)`, `tests/cathode-elites-play.test.ts`); elite loot rolls. Left for 73: explosive death, resist display, checkpoint and export-code UI. Then 71 pickups, 72 remainder. Note: never wrap `npm run release` in `timeout`, it needs ~20 min.
@@ -60,6 +61,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-04 ~04:10 UTC: `ca00b4a`, CATHODE through alt-fires. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
 - 2026-10-04 ~01:25 UTC: `ca91c2f`, CATHODE slice through gunsmith plus elites. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
 - 2026-10-03 ~07:30 UTC: Hedgerow story rewritten to clarity rules (design doc 7), repainted act backdrops, cel-shaded portraits. Gates passed; HTTP check passed; tag push 403 (harmless). 4th release today (cap reached).
 - 2026-10-03 ~06:30 UTC: iPhone 17 Pro Max map fixes (header tools row, act titles, next-level disc). Gates passed; HTTP check passed; tag push 403 (harmless). 3rd release today.
