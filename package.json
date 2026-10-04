@@ -28,7 +28,9 @@
     "@fontsource/fraunces": "^5.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "three": "^0.170.0"
+    "stats-gl": "^2.4.2",
+    "three": "^0.170.0",
+    "three-mesh-bvh": "^0.8.3"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
