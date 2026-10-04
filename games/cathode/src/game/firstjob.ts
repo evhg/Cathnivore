@@ -36,7 +36,7 @@ const AMBER = new THREE.Color(0xffb347).convertSRGBToLinear();
 const SODIUM = new THREE.Color(0xffa860).convertSRGBToLinear();
 
 /** A glowing case to walk into: the next thing she's handed. */
-class Case {
+export class Case {
   readonly group = new THREE.Group();
   private t = Math.random() * 6;
   private unlight: (() => void) | null = null;

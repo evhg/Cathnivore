@@ -292,7 +292,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 **Phase 3: act 1, the Drowned Market.**
 74. [ ] *(2026-10-04: Bea's call and a case board done; left: the hub street, more dialogue)* The hub street, the case board, Cath's voiceover and dialogue, calls to Bea.
-75. [ ] Four story jobs, side contracts, secrets.
+75. [ ] *(2026-10-04: job 2, Crisp's ledger, done; left: three more jobs)* Four story jobs, side contracts, secrets.
 76. [ ] Julian Crisp, the boss fight.
 77. [ ] Audio: convolution reverb, weapon sets, rain beds, an alert-reactive synth score.
 78. [ ] Performance and phone pass on an iPhone 17 Pro Max profile: 60 fps, quality auto-scaling, thermals.

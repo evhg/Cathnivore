@@ -18,6 +18,7 @@ import { CLASS_WEAPON, Progress } from "./progress";
 import { Pickups } from "./pickups";
 import type { Item } from "../sim/loot";
 import { FirstJob } from "./firstjob";
+import { CrispJob } from "./crispjob";
 import { openCaseBoard } from "../ui/caseboard";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
@@ -220,6 +221,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
       })
     : null;
+  // The second job, Crisp's ledger, picks up once the Fish Market is closed.
+  const crisp =
+    !tutorial && progress.jobsDone.includes("fishMarket") && !progress.jobsDone.includes("crispLead") && !o.shot
+      ? new CrispJob({
+          player,
+          progress,
+          scene: world.scene,
+          markers: world.markers,
+          ground,
+          touch: input.isTouch,
+          spawn,
+          arm,
+          say: (t) => hud.subtitle(t),
+          teach: (t) => hud.teach(t),
+          banner: (a, b) => hud.showBanner(a, b),
+          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+        })
+      : null;
   s.job = job;
   const actives = new Actives();
   actives.assign(progress.character);
@@ -614,6 +633,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           openCaseBoard(o.hud.parentElement ?? o.hud, progress.jobsDone, () => (coaching = false));
         }, 9000);
       }
+    }
+    if (crisp) {
+      crisp.update(dt);
+      objective = crisp.objective;
     }
     input.allow(progress.unlocks.features, arsenal.ownedIndices.length);
 
