@@ -173,7 +173,7 @@ export class Arsenal {
   }
 
   /** What the alt-fire button does with the weapon in hand, for the HUD and tests. */
-  get altKind(): "burst" | "fan" | "both" | "slam" | "parry" | "charge" | null {
+  get altKind(): "burst" | "fan" | "both" | "slam" | "parry" | "charge" | "lash" | null {
     switch (this.weapon.weaponClass) {
       case "pistol":
       case "smg":
@@ -188,12 +188,15 @@ export class Arsenal {
       case "shotgun":
         return "both";
       default:
-        return this.weapon.id === "repossessor" ? "slam" : this.weapon.id === "nightShift" ? "parry" : null;
+        return this.weapon.id === "repossessor" ? "slam" : this.weapon.id === "nightShift" ? "parry" : this.weapon.id === "catsCradle" ? "lash" : null;
     }
   }
 
   /** Set when a slam lands; the session turns it into a knockdown blast. */
   slamNow = false;
+
+  /** Set when the monowire's lash cracks; the session turns it into a wide, shallow sweep. */
+  lashNow = false;
 
   /** Seconds left of a parry: while above zero, incoming bullets are deflected. */
   parryT = 0;
@@ -207,6 +210,12 @@ export class Arsenal {
       this.swingT = 0;
       this.parryT = 0.5;
       this.cd = 0.9;
+      return true;
+    }
+    if (kind === "lash") {
+      this.swingT = 0;
+      this.cd = this.weapon.cycle * 1.6;
+      this.lashNow = true;
       return true;
     }
     if (kind === "slam") {

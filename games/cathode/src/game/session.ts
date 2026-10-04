@@ -335,6 +335,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       at.y = Math.max(0, eye.y - 1.5);
       combat.explode(at, 3, 60, build(), false);
     }
+    if (arsenal.lashNow) {
+      arsenal.lashNow = false;
+      // Cat's Cradle's lash: the wire whips out in a wide arc and drags everything in it.
+      const at = eye.clone().addScaledVector(fwd.clone().setY(0).normalize(), 2.6);
+      at.y = Math.max(0, eye.y - 1.2);
+      combat.explode(at, 2.6, 38, build(), false);
+    }
     if (intent.reload && arsenal.weapon.kind !== "melee") audio?.reload();
     const canTakedown = !dead && takedownTarget() !== null;
     if (intent.takedown && canTakedown) {

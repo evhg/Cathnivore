@@ -103,6 +103,18 @@ describe("CATHODE alt-fires, heavy weapons", () => {
   });
 });
 
+describe("CATHODE monowire lash", () => {
+  it("Cat's Cradle lashes in a wide arc", () => {
+    const a = new Arsenal(new THREE.Scene());
+    a.equip(a.held.findIndex((h) => h.def.id === "catsCradle"));
+    run(a, 1);
+    expect(a.altKind).toBe("lash");
+    expect(a.altFire()).toBe(true);
+    expect(a.lashNow).toBe(true);
+    expect(a.altFire()).toBe(false);
+  });
+});
+
 describe("CATHODE scavenging", () => {
   it("a kill refills the held gun's reserve up to a cap", () => {
     const a = new Arsenal(new THREE.Scene());
