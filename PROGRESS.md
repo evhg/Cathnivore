@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-04 11:51 session:** ROADMAP 71 world pickups: kills leave a glowing bundle (rarity-tinted, `game/pickups.ts`, `Progress.rollLoot/take`, `tests/cathode-pickups.test.ts`); she collects it by walking over it. `npm run check` green. Left for 71: armour/stat display in play. Releasing this session (0 releases today so far).
 - **2026-10-04 10:10–10:50 (owner chat, continued):** the owner played again.
   - Phone: fell off a platform into the void, and had too many weapons at once. The Fish Market is now a step-by-step first job (`game/firstjob.ts`):
     - she starts with only the Pin;

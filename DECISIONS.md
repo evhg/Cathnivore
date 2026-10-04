@@ -257,3 +257,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-04: Scope zoom: 3 steps (1.6x/1x/0.55x of the scope FOV), wheel moves it while scoped in instead of cycling weapons.
 - 2026-10-04: CATHODE difficulty after the owner's playtest: Noir is the story setting (55% damage taken, 12 s start grace, enemy reaction 0.9 s, regen after 5 s). Touch auto-fires only on enemies already in combat, so stealth kills stay deliberate.
 - 2026-10-04: CATHODE's first job gates weapons and controls by stage (`Progress.unlocks`); after it, loot drops grant new guns. The HDR post chain sanitises NaN/Inf (cap 256) before bloom and grading, a defence against a desktop black-centre report not reproducible headless.
+- 2026-10-04: Loot lies on the ground as rarity-tinted pickups (150 s life, 1.6 m radius, walk-over); weapon-class unlocks happen on collection, not on kill.

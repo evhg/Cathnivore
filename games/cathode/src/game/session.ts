@@ -14,6 +14,8 @@ import { KillCam } from "./killcam";
 import { Hud } from "../ui/hud";
 import { Audio } from "./audio";
 import { CLASS_WEAPON, Progress } from "./progress";
+import { Pickups } from "./pickups";
+import type { Item } from "../sim/loot";
 import { FirstJob } from "./firstjob";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
@@ -237,6 +239,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     s.level = progress.character.level;
   };
 
+  const pickups = new Pickups(world.scene);
+  const collect = (drop: { items: Item[]; scrip: number }) => {
+    progress.take(drop);
+    if (drop.scrip) hud.feedLine(`+${drop.scrip} Scrip`);
+    for (const it of drop.items) {
+      hud.feedItem(it.name, it.rarity);
+      // After the first job, a weapon of a kind she hasn't carried yet joins her kit: one new toy at a time.
+      if (it.kind === "weapon" && (!job || job.done)) {
+        const cls = WEAPON_BASES[it.base]?.cls;
+        const fresh = SLICE_WEAPONS.find((w) => w.weaponClass === cls && !arsenal.owned.has(w.id));
+        if (fresh) {
+          progress.grantWeapon(fresh.id);
+          arsenal.owned.add(fresh.id);
+          hud.feedLine(`New weapon: ${fresh.name} (scroll or Swap)`, true);
+        }
+      }
+    }
+  };
+
   const onKill = (k: KillEvent) => {
     actives.onKill();
     const bits: string[] = [];
@@ -257,21 +278,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     levelUp(progress.kill(k.enemy.kit.xp, k.enemy.level, k.unseen, bonus));
     const xp = progress.lastXp;
     hud.feedLine(`+${xp} XP${bits.length ? " · " + bits.join(" · ") : ""}`, k.headshot || k.unseen);
-    const drop = progress.loot(k.enemy.level, !!k.enemy.kit.elite);
-    if (drop.scrip) hud.feedLine(`+${drop.scrip} Scrip`);
-    for (const it of drop.items) {
-      hud.feedItem(it.name, it.rarity);
-      // After the first job, a weapon of a kind she hasn't carried yet joins her kit: one new toy at a time.
-      if (it.kind === "weapon" && (!job || job.done)) {
-        const cls = WEAPON_BASES[it.base]?.cls;
-        const fresh = SLICE_WEAPONS.find((w) => w.weaponClass === cls && !arsenal.owned.has(w.id));
-        if (fresh) {
-          progress.grantWeapon(fresh.id);
-          arsenal.owned.add(fresh.id);
-          hud.feedLine(`New weapon: ${fresh.name} (scroll or Swap)`, true);
-        }
-      }
-    }
+    const found = progress.rollLoot(k.enemy.level, !!k.enemy.kit.elite);
+    const at = k.enemy.position.clone();
+    at.y = world.groundHeight(at.x, at.z);
+    pickups.drop(at, found);
     const ammo = arsenal.scavenge();
     if (ammo) hud.feedLine(`+${ammo} rounds`);
     hud.hitMarker(true);
@@ -507,6 +517,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!dead && intent.skill1) actives.use(0, progress.character, progress.stats, ctx);
     if (!dead && intent.skill2) actives.use(1, progress.character, progress.stats, ctx);
     actives.update(dt, progress.stats, world, world.colliders, ground, enemies);
+    if (!dead) for (const d of pickups.update(dt, player.pos)) collect(d);
     if (actives.refill) {
       arsenal.topUp();
       actives.refill = false;

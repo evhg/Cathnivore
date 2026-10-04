@@ -111,10 +111,20 @@ export class Progress {
 
   /** What a kill drops: Scrip and items go straight into Cath's coat (auto-pickup in the slice). */
   loot(monsterLevel: number, elite: boolean): { items: Item[]; scrip: number } {
-    const d = rollDrop(this.rng, monsterLevel, this.character.difficulty, this.stats.magicFind, elite);
+    const d = this.rollLoot(monsterLevel, elite);
+    this.take(d);
+    return d;
+  }
+
+  /** Roll a drop without pocketing it: it lies on the ground until she walks over it. */
+  rollLoot(monsterLevel: number, elite: boolean): { items: Item[]; scrip: number } {
+    return rollDrop(this.rng, monsterLevel, this.character.difficulty, this.stats.magicFind, elite);
+  }
+
+  /** Pocket a drop. */
+  take(d: { items: Item[]; scrip: number }): void {
     this.character = { ...this.character, inventory: [...this.character.inventory, ...d.items], scrip: this.character.scrip + d.scrip };
     if (d.items.length) this.save();
-    return d;
   }
 
   // ---- what she owns and what the game has taught her (one thing at a time) ----
