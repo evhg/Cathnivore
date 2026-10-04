@@ -99,6 +99,9 @@ export interface Sight {
 
 let nextId = 1;
 
+/** Seconds between an enemy spotting Cath and its first shot. */
+export const REACTION = 0.9;
+
 /** Seconds of steady aim a sniper needs before firing. */
 export const SNIPER_CHARGE = 1.5;
 
@@ -154,6 +157,9 @@ export class Enemy {
       flinch: new THREE.Vector3(),
       kick: 0,
     };
+    // Face along the route from the start, not at whatever happens to lie north.
+    const next = this.route[1];
+    if (next) this.motion.yaw = Math.atan2(next.x - start.x, next.z - start.z);
     this.rifle = buildRifle(look);
     this.body.root.add(this.rifle);
     if (kit.role === "shield") {
@@ -250,7 +256,11 @@ export class Enemy {
     }
 
     // ---- state ----
-    if (this.detect >= 1) this.state = "combat";
+    if (this.detect >= 1 && this.state !== "combat") {
+      this.state = "combat";
+      // A beat to react: the first round comes a moment after they've seen her, not instantly.
+      this.fireCd = Math.max(this.fireCd, REACTION);
+    }
     else if (this.state === "unaware" && this.detect > 0.45) {
       this.state = "suspicious";
       this.searchLeft = 10;

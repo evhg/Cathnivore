@@ -367,14 +367,15 @@ input[type="radio"] {
 }
 .stick {
   position: absolute;
-  left: var(--sx, 120px);
-  top: var(--sy, 70%);
-  width: 112px;
-  height: 112px;
-  margin: -56px 0 0 -56px;
-  border: 1px solid rgba(235, 230, 220, 0.25);
+  left: var(--sx, calc(96px + env(safe-area-inset-left)));
+  top: var(--sy, calc(100% - 100px - env(safe-area-inset-bottom)));
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  border: 2px solid rgba(235, 230, 220, 0.45);
   border-radius: 50%;
-  opacity: 0;
+  background: radial-gradient(circle, rgba(10, 12, 18, 0.15), rgba(10, 12, 18, 0.45));
+  opacity: 0.7;
   transition: opacity 120ms ease-out;
   pointer-events: none;
 }
@@ -823,6 +824,8 @@ input[type="radio"] {
   }
   .hud-vitals {
     width: min(220px, 30vw);
+    top: calc(max(16px, env(safe-area-inset-top)) + 46px);
+    bottom: auto;
   }
 }
 @media (max-height: 560px) and (orientation: landscape) {
@@ -2222,3 +2225,119 @@ input[type="radio"] {
 .cx-smith-act:hover:not(:disabled), .cx-smith-act:focus-visible { border-color: #e8b04a; }
 .cx-smith-act:disabled { opacity: 0.45; cursor: default; }
 .cx-smith-cost { color: #e8b04a; white-space: nowrap; }
+
+/* ---- touch: readable at a glance (owner's iPhone playtest, 2026-10-04) ---- */
+.stick-label {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 6px);
+  transform: translateX(-50%);
+  font: 700 11px/1 var(--ui);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(235, 230, 220, 0.75);
+}
+.stick.on .stick-label {
+  opacity: 0;
+}
+.stick-knob {
+  background: rgba(235, 230, 220, 0.6);
+  box-shadow: 0 0 12px rgba(235, 230, 220, 0.35);
+}
+.look-hint {
+  position: absolute;
+  right: 40%;
+  top: 38%;
+  font: 700 11px/1 var(--ui);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(235, 230, 220, 0.4);
+  pointer-events: none;
+}
+.tbtn {
+  border: 2px solid rgba(235, 230, 220, 0.55);
+  background: rgba(10, 12, 18, 0.55);
+  color: #fff;
+  font-size: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+.tbtn-fire {
+  width: 92px;
+  height: 92px;
+  border-color: var(--blood-hot);
+  background: rgba(200, 16, 46, 0.55);
+  font-size: 15px;
+}
+.coach {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: rgba(4, 5, 8, 0.72);
+  pointer-events: auto;
+}
+.coach-card {
+  width: min(560px, calc(100% - 32px));
+  padding: 18px 22px;
+  border: 1px solid var(--rule);
+  background: rgba(15, 17, 23, 0.95);
+}
+.coach-card h2 {
+  margin: 0 0 10px;
+  font-family: var(--display);
+  font-size: 24px;
+}
+.coach-card ol {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.coach-card b {
+  color: var(--neon-amber);
+}
+.rotate {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  place-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  background: var(--night);
+  font-family: var(--display);
+  font-size: 22px;
+}
+.rotate svg {
+  width: 72px;
+  height: 72px;
+  justify-self: center;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+@media (orientation: portrait) and (pointer: coarse) {
+  .game .rotate {
+    display: grid;
+  }
+}
+
+.perf-panel {
+  z-index: 40;
+  pointer-events: none;
+}
+.tbtn-sheet {
+  right: calc(96px + env(safe-area-inset-right));
+  top: calc(16px + env(safe-area-inset-top));
+  width: 56px;
+  height: 40px;
+  border-radius: 8px;
+  border-color: rgba(255, 179, 71, 0.7);
+}
+@media (pointer: coarse) {
+  .hud-arms {
+    right: calc(166px + env(safe-area-inset-right));
+  }
+}

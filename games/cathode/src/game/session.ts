@@ -64,6 +64,11 @@ declare global {
 
 const BASE_FOV = 75;
 
+/** How hard enemy rounds hit Cath by difficulty (Noir is the story setting). */
+const DAMAGE_TAKEN: Record<string, number> = { noir: 0.55, hardboiled: 0.85, hellWeek: 1 };
+/** Seconds at the start of a job before anyone can spot her. */
+const GRACE = 12;
+
 
 export async function startSession(o: SessionOptions): Promise<Session> {
   const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot }, o.onProgress);
@@ -210,7 +215,68 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   let last = performance.now();
   let time = 0;
+  // ?perf: a frame-time panel with real GPU timings (stats-gl), for checking the game on a phone.
+  let perfPanel: { update(): void } | null = null;
+  if (new URLSearchParams(location.search).has("perf")) {
+    void import("stats-gl").then(({ default: Stats }) => {
+      const st = new Stats({ trackGPU: true, horizontal: true, minimal: false });
+      void st.init(world.renderer);
+      st.domElement.classList.add("perf-panel");
+      (o.hud.parentElement ?? o.hud).append(st.domElement);
+      perfPanel = st;
+    });
+  }
   let wasFire = false;
+  let grace = o.shot ? 0 : GRACE;
+  // First time on a touch screen: how the controls work, before anything can shoot at her.
+  let coaching = false;
+  if (input.isTouch && !o.shot && !navigator.webdriver) {
+    let seen = false;
+    try {
+      seen = localStorage.getItem("cathode:coach") === "1";
+    } catch {
+      // No storage: show it every time.
+    }
+    if (!seen) {
+      coaching = true;
+      const c = document.createElement("div");
+      c.className = "coach";
+      const card = document.createElement("div");
+      card.className = "coach-card";
+      const h = document.createElement("h2");
+      h.textContent = "How to play on a phone";
+      const ol = document.createElement("ol");
+      for (const [b, t] of [
+        ["Left thumb:", " drag anywhere on the left to move. Push to the edge to run."],
+        ["Right thumb:", " drag anywhere on the right to look and aim."],
+        ["Fire:", " the red button. Aim help pulls you onto targets, and once they're shooting at you, Cath fires on her own."],
+        ["Crouch", " to sneak, and get behind someone for a silent Takedown."],
+      ]) {
+        const li = document.createElement("li");
+        const bb = document.createElement("b");
+        bb.textContent = b!;
+        li.append(bb, t!);
+        ol.append(li);
+      }
+      const go = document.createElement("button");
+      go.type = "button";
+      go.className = "btn btn-primary";
+      go.textContent = "Got it";
+      go.addEventListener("click", () => {
+        coaching = false;
+        c.remove();
+        try {
+          localStorage.setItem("cathode:coach", "1");
+        } catch {
+          // Fine: it'll show again next time.
+        }
+      });
+      card.append(h, ol, go);
+      c.append(card);
+      (o.hud.parentElement ?? o.hud).append(c);
+    }
+  }
+  let sinceHurt = 99;
   let wasAlt = false;
   let charScreen: { close(): void; refresh(): void } | null = null;
   let swayT = 0;
@@ -226,8 +292,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     last = now;
     const intent = input.read();
     // On desktop the game waits while the mouse is free (Esc, or before the first click).
-    const away = !input.isTouch && !input.locked && !o.shot && !dead && !navigator.webdriver && !charScreen;
-    hud.showPause(away);
+    const portrait = input.isTouch && innerHeight > innerWidth;
+    const away = (!input.isTouch && !input.locked && !o.shot && !dead && !navigator.webdriver && !charScreen) || portrait || coaching;
+    hud.showPause(away && !portrait && !coaching);
     if (intent.skills && !charScreen && !killcam.active) openSheet();
     if (s.paused || away) {
       last = now;
@@ -246,6 +313,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     } else s.focus = Math.min(progress.stats.bulletTimeSeconds, s.focus + realDt * 0.15);
     const dt = o.shot ? 0 : realDt * scale;
     thunderCover = Math.max(0, thunderCover - realDt);
+    grace = Math.max(0, grace - dt);
+    // Out of the fight for a few seconds, she gets her breath back.
+    sinceHurt += dt;
+    if (!dead && sinceHurt > 5 && s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.06 * dt);
     // Slow motion looks it: the noir grade deepens while time is held.
     if (!killcam.active) {
       const want = focusing || run.timeScale < 1 ? 0.4 : 0;
@@ -276,7 +347,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       player.aiming = arsenal.aiming;
       player.step(Math.max(dt, realDt * 0.35), intent);
     }
-    if (input.isTouch && !dead && progress.character.difficulty !== "hellWeek") aimAssist(intent.aim || intent.fire, realDt);
+    // Touch: aim assist, and auto-fire on anyone already shooting at her (stealth kills stay a deliberate tap).
+    input.autoFire = false;
+    if (input.isTouch && !dead && progress.character.difficulty !== "hellWeek") {
+      const t = aimAssist(intent.aim || intent.fire, realDt);
+      const w = arsenal.weapon;
+      input.autoFire =
+        !!t && t.enemy.state === "combat" && t.angle < 0.04 && w.kind !== "melee" && t.enemy.position.distanceTo(player.pos) < w.range && arsenal.ammo.mag > 0;
+    }
     player.applyCamera(world.camera, realDt);
     // Scope sway: a slow figure-of-eight; held breath (Focus while scoped) all but stills it.
     if (arsenal.scopedIn) {
@@ -310,6 +388,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (mul !== 1) shot.weapon = { ...shot.weapon, damage: shot.weapon.damage * mul };
       if (nx.pellets > 0) shot.dirs = shot.dirs.slice(0, nx.pellets);
       if (thunderCover > 0) shot.weapon = { ...shot.weapon, noise: shot.weapon.noise * 0.25 };
+      grace = 0;
       const r = combat.fire(shot, build());
       if (thunderCover > 0) hud.feedLine("Covered by the thunder");
       audio?.shot(shot.weapon.weaponClass);
@@ -394,7 +473,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           world.fx.impact(sight.chest, sh.dir.clone().negate(), world.surfaceAt(sight.chest));
           world.fx.tracer(sh.from, sight.chest);
         } else if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
-          s.hp = Math.max(0, s.hp - actives.absorb(e.kit.damage * run.guard));
+          s.hp = Math.max(0, s.hp - actives.absorb(e.kit.damage * run.guard * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)));
+          sinceHurt = 0;
           if (e.kit.drain) s.focus = Math.max(0, s.focus - e.kit.drain);
           world.fx.tracer(sh.from, sight.chest);
           audio?.hitFlesh(false);
@@ -493,18 +573,21 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       light: world.lightAt(player.pos.clone().add(new THREE.Vector3(0, 1, 0))),
       low: player.crouchAmt,
       speed: player.speed,
-      stealth: dead ? 0 : progress.stats.detectionMultiplier * actives.running().camo,
+      // The first seconds of a job are hers: nobody can spot her until she's had a look round (or fires).
+      stealth: dead || grace > 0 ? 0 : progress.stats.detectionMultiplier * actives.running().camo,
     };
   }
 
   /** Touch aim assist: within a few degrees of an Enforcer, the crosshair is pulled onto them. */
-  function aimAssist(engaged: boolean, dt: number): void {
+  /** Returns the enemy it's pulling onto and how far off the crosshair it is, for auto-fire. */
+  function aimAssist(engaged: boolean, dt: number): { enemy: Enemy; angle: number } | null {
     const cam = world.camera;
     const camPos = cam.position;
     const look = new THREE.Vector3();
     cam.getWorldDirection(look);
     let best: THREE.Vector3 | null = null;
-    let bestA = engaged ? 0.09 : 0.05;
+    let bestE: Enemy | null = null;
+    let bestA = engaged ? 0.09 : 0.06;
     for (const e of enemies) {
       if (!e.alive) continue;
       const pt = (arsenal.aiming ? e.head : e.body.joints.chest).clone();
@@ -515,9 +598,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (a < bestA && rays.clear(camPos, pt)) {
         bestA = a;
         best = pt;
+        bestE = e;
       }
     }
-    if (!best) return;
+    if (!best || !bestE) return null;
     const to = best.clone().sub(camPos);
     const wantYaw = Math.atan2(-to.x, -to.z);
     const wantPitch = Math.atan2(to.y, Math.hypot(to.x, to.z));
@@ -527,6 +611,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const k = 1 - Math.exp(-dt * (engaged ? 9 : 3));
     player.yaw += dy * k;
     player.pitch += (wantPitch - player.pitch) * k;
+    return { enemy: bestE, angle: bestA };
   }
 
   /** The character screen (K or Tab): the game waits behind it. */
@@ -613,6 +698,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   function render(): void {
     const t0 = performance.now();
     world.render();
+    perfPanel?.update();
     s.stats.ms = s.stats.ms * 0.9 + (performance.now() - t0) * 0.1;
     s.stats.frames++;
   }

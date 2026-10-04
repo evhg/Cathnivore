@@ -28,7 +28,7 @@ export interface Intent {
   skill2: boolean;
 }
 
-const BUTTONS = ["fire", "aim", "jump", "crouch", "reload", "focus", "takedown", "cycle", "skill"] as const;
+const BUTTONS = ["fire", "aim", "jump", "crouch", "reload", "focus", "takedown", "cycle", "skill", "sheet"] as const;
 type TouchButton = (typeof BUTTONS)[number];
 
 export class Input {
@@ -106,10 +106,16 @@ export class Input {
   private buildTouch(): void {
     const layer = this.touchLayer;
     layer.hidden = false;
+    // The stick rests visibly at its home spot (bottom left) and follows the thumb wherever it lands.
     this.stickEl = el("div", "stick");
     this.knobEl = el("div", "stick-knob");
-    this.stickEl.append(this.knobEl);
+    const label = el("span", "stick-label");
+    label.textContent = "Move";
+    this.stickEl.append(this.knobEl, label);
     layer.append(this.stickEl);
+    const look = el("div", "look-hint");
+    look.textContent = "Drag to aim";
+    layer.append(look);
     const labels: Record<TouchButton, string> = {
       fire: "Fire",
       aim: "Aim",
@@ -120,6 +126,7 @@ export class Input {
       takedown: "Takedown",
       cycle: "Swap",
       skill: "Skill",
+      sheet: "Cath",
     };
     for (const b of BUTTONS) {
       const btn = el("button", `tbtn tbtn-${b}`);
@@ -137,6 +144,10 @@ export class Input {
   }
 
   private onTouch = (e: TouchEvent) => {
+    // Menus over the game (the coach card, the character screen, dialogs) take their own taps: cancelling
+    // the touch here would stop iOS from ever turning it into a click.
+    const tgt = e.target as Element | null;
+    if (tgt?.closest(".coach, .cx, .cp, dialog, a, button:not([data-btn]), input, label")) return;
     e.preventDefault();
     for (const t of Array.from(e.changedTouches)) {
       const target = document.elementFromPoint(t.clientX, t.clientY) as HTMLElement | null;
@@ -148,7 +159,8 @@ export class Input {
           this.btnTouches.set(t.identifier, btn);
           // Fire and aim double as look: keep turning while the thumb drags off the button.
           if (btn === "fire" || btn === "aim") this.lookTouch = { id: t.identifier, x: t.clientX, y: t.clientY };
-        } else if (t.clientX < innerWidth * 0.42 && this.stick.id < 0) {
+        } else if (t.clientX < innerWidth * 0.45 && this.stick.id < 0) {
+          this.touched = true;
           this.stick = { x: 0, y: 0, id: t.identifier, ox: t.clientX, oy: t.clientY };
           this.stickEl?.classList.add("on");
           this.stickEl?.style.setProperty("--sx", `${t.clientX}px`);
@@ -179,6 +191,8 @@ export class Input {
         if (t.identifier === this.stick.id) {
           this.stick = { x: 0, y: 0, id: -1, ox: 0, oy: 0 };
           this.stickEl?.classList.remove("on");
+          this.stickEl?.style.removeProperty("--sx");
+          this.stickEl?.style.removeProperty("--sy");
           this.knobEl?.style.setProperty("--kx", "0px");
           this.knobEl?.style.setProperty("--ky", "0px");
         }
@@ -192,6 +206,10 @@ export class Input {
     }
   };
   private btnTouches = new Map<number, TouchButton>();
+  /** Set once the player has moved with the stick (the coach card waits for it). */
+  touched = false;
+  /** Touch auto-fire: the session pulls the trigger when aim assist has her on a target. */
+  autoFire = false;
 
   /** Reads and clears this frame's input. */
   read(): Intent {
@@ -235,7 +253,7 @@ export class Input {
       sprint: k("ShiftLeft") || k("ShiftRight") || padSprint || (this.isTouch && Math.hypot(this.stick.x, this.stick.y) > 0.95),
       crouch: p("ControlLeft") || p("KeyC") || padCrouch || tt.has("crouch"),
       jump: p("Space") || padJump || tt.has("jump"),
-      fire: this.mouse.left || padFire || this.touchHeld.has("fire"),
+      fire: this.mouse.left || padFire || this.touchHeld.has("fire") || this.autoFire,
       aim: this.mouse.right || padAim || this.touchHeld.has("aim"),
       alt: this.mouse.middle || k("KeyV"),
       reload: p("KeyR") || padReload || tt.has("reload"),
@@ -245,7 +263,7 @@ export class Input {
       cycle: Math.sign(this.wheel) + (tt.has("cycle") ? 1 : 0),
       focus: k("AltLeft") || k("KeyX") || this.touchHeld.has("focus"),
       pause: p("Escape") || p("KeyP"),
-      skills: p("KeyK") || p("Tab"),
+      skills: p("KeyK") || p("Tab") || tt.has("sheet"),
       skill1: p("KeyG") || tt.has("skill"),
       skill2: p("KeyZ"),
     };
