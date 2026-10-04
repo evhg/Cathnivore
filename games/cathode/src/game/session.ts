@@ -298,7 +298,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (intent.skills && !charScreen && !killcam.active) openSheet();
     if (s.paused || away) {
       last = now;
-      world.render();
+      render();
       requestAnimationFrame(frame);
       return;
     }

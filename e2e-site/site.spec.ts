@@ -364,6 +364,9 @@ test.describe('CATHODE', () => {
     await page.goto('/cathode/?play&shot')
     await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number } } }).cathode?.stats.frames ?? 0) >= 1, null, { timeout: 200_000 })
     await expect(page.locator('#loading')).toBeHidden()
+    // A portrait touch screen waits behind "turn your phone sideways".
+    const portraitTouch = await page.evaluate(() => matchMedia('(pointer: coarse)').matches && innerHeight > innerWidth)
+    if (portraitTouch) await expect(page.locator('.rotate')).toBeVisible()
     expect(errors).toEqual([])
   })
 
