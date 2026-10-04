@@ -11,6 +11,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
     - falling or wandering out of bounds respawns her on the street.
   - Desktop: the middle of the screen was black. The likely cause is a half-float HDR overflow (Inf/NaN) smeared by bloom; it can't be reproduced in swiftshader. Fixed by sanitising the bloom high pass and the grade input (`render/post.ts`).
   - The music was noise. It is now a sequenced noir score (`game/score.ts`), and the rain and city beds were turned down.
+  - Released `7427b78` (the 4th release today; gates passed; the live version.json matches; the tag push 403 is harmless). Next: the owner replays on desktop and phone.
 - **2026-10-04 08:51–10:10 (owner chat):** owner's iPhone playtest of CATHODE: dead in 10 s, couldn't work the touch controls. Fixed and released `4fab1df` (3rd release today):
   - a fair start: 12 s grace, a 0.9 s reaction time, Noir takes 55% damage, health regenerates;
   - touch: a visible stick, auto-fire on people shooting at her, a coach card, a turn-sideways screen, a Cath button;
@@ -78,6 +79,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-04 11:04 `7427b78`: CATHODE step-by-step first job, world bounds, noir score, HDR NaN guard.
 - 2026-10-04 ~06:20 UTC: `f945e3a`, CATHODE through monowire lash. Gates passed; live version matches; tag push 403 (harmless). 2nd release today.
 - 2026-10-04 ~04:10 UTC: `ca00b4a`, CATHODE through alt-fires. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
 - 2026-10-04 ~01:25 UTC: `ca91c2f`, CATHODE slice through gunsmith plus elites. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
