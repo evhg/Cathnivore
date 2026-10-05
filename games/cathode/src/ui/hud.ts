@@ -257,6 +257,9 @@ export class Hud {
   /** The volume slider moved (0..1). */
   onVolume?: (v: number) => void;
   /** The difficulties she may pick and the current one; the pause card shows a row when more than Noir is open. */
+  /** The last checkpoint's name, shown in the pause card (null before the first one). */
+  checkpoint: (() => string | null) | null = null;
+  private pauseCheck?: HTMLElement;
   difficulty?: { current: string; options: Array<[string, string]>; apply: (v: string) => void };
 
   /**
@@ -270,6 +273,7 @@ export class Hud {
       card.setAttribute("role", "dialog");
       card.setAttribute("aria-label", "Paused");
       this.pauseTitle = el("p", "hud-pause-title", card);
+      this.pauseCheck = el("p", "hud-pause-check", card);
       const resume = el("button", "btn btn-primary hud-resume", card);
       resume.setAttribute("type", "button");
       resume.textContent = "Resume";
@@ -355,6 +359,11 @@ export class Hud {
       quit.setAttribute("href", "./");
     }
     if (this.pauseTitle) this.pauseTitle.textContent = touch ? "Paused" : "Paused · click to play";
+    if (this.pauseCheck) {
+      const c = this.checkpoint?.() ?? null;
+      this.pauseCheck.textContent = c ? `Checkpoint: ${c}. Dying restarts you there.` : "";
+      this.pauseCheck.hidden = !c;
+    }
     this.pause.hidden = !on;
   }
 

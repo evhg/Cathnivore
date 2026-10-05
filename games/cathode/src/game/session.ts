@@ -592,6 +592,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       progress.save();
     },
   };
+  hud.checkpoint = () => (!job ? null : job.stage >= 4 ? "the walkway" : job.stage >= 3 ? "the flyover" : null);
   hud.onVolume = (v) => {
     if (audio) audio.volume = v;
   };

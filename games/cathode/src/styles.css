@@ -787,6 +787,11 @@ input[type="radio"] {
   font-weight: 700;
   letter-spacing: 0.06em;
 }
+.hud-pause-check {
+  margin: -8px 0 14px;
+  font-size: 13px;
+  opacity: 0.7;
+}
 .hud-keys {
   display: grid;
   grid-template-columns: max-content 1fr;
