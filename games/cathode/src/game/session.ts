@@ -37,6 +37,7 @@ import { ELITE_CHANCE } from "../sim/enemies";
 import { DIFFICULTY_LABEL, unlockedDifficulties } from "../sim/difficulty";
 import type { Difficulty } from "../sim/types";
 import { Voice } from "./voice";
+import { nearLandmark } from "./landmarks";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
 import { exportCode, makeSave } from "../sim/save";
@@ -770,6 +771,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!dead && intent.skill2) actives.use(1, progress.character, progress.stats, ctx);
     actives.update(dt, progress.stats, world, world.colliders, ground, enemies);
     if (!dead) for (const d of pickups.update(dt, player.pos)) collect(d);
+    if (!dead && s.hp > 0) {
+      const lm = nearLandmark(progress.jobsDone, player.pos.x, player.pos.z);
+      if (lm) {
+        hud.subtitle(lm.text);
+        progress.save();
+      }
+    }
     if (!dead) {
       for (const f of secrets.update(dt, player.pos)) {
         if (f.kind === "stash") collect({ items: [], scrip: f.scrip ?? 0 });

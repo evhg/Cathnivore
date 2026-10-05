@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-05 10:52 session:** ROADMAP 74: hub street observations (`game/landmarks.ts`: Cath comments once on five quay landmarks as she passes, recorded as `look:<id>`; `tests/cathode-landmarks.test.ts`). tsc clean; `npm run check` run at session end. Unreleased (4 releases already today). Next: ROADMAP 79 districts.
 - **2026-10-05 09:51 session:** ROADMAP 78: `?perf` now shows the live render scale and a "rescued" flag beside the GPU panel (`.perf-scale`). tsc clean; `npm run check` run at session end. Unreleased. Next: ROADMAP 74 hub street, 79 districts.
 - **2026-10-05 08:51 session:** ROADMAP 75 secrets: six hidden audio logs and Scrip stashes on the quay (`game/secrets.ts`, recorded as `secret:<id>`, glow until collected; `tests/cathode-secrets.test.ts`). Unreleased (4 releases already today). Next: ROADMAP 74 hub street, 79 districts, 78 perf HUD.
 - **2026-10-05 07:51 session:** ROADMAP 75: Ana's late contracts (`game/sidejob.ts`, repeatable post-story kill-and-extract side jobs that grow each time; `tests/cathode-sidejob.test.ts` passes, tsc clean; `npm run check` green). Unreleased.
