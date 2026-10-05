@@ -301,7 +301,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   setTimeout(() => voice.say("start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
-  const auto = new AutoScale({ min: 0.55, max: 1, target: 1000 / 60 });
+  const auto = new AutoScale({ min: 0.55, max: 1, target: 1000 / 60, rescueMin: 0.35 });
   const autoOn = !o.shot && !navigator.webdriver;
   const resize = () => {
     const dpr = Math.min(devicePixelRatio, o.quality === "ultra" ? 3 : 2);

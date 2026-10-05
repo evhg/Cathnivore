@@ -6,6 +6,8 @@ export interface AutoScaleOptions {
   max: number;
   /** Frame budget in ms; slower than this on average is "too slow". */
   target: number;
+  /** Lowest scale allowed once frames stay slow even at `min` (a hot or weak phone). Defaults to `min`. */
+  rescueMin?: number;
 }
 
 export class AutoScale {
@@ -13,8 +15,13 @@ export class AutoScale {
   private acc = 0;
   private frames = 0;
   private calm = 0;
+  private pinned = 0;
+  /** True once the controller has had to dip below `min` to hold the frame rate. */
+  rescued = false;
+  private floor: number;
   constructor(private o: AutoScaleOptions) {
     this.scale = o.max;
+    this.floor = o.min;
   }
 
   /** Feed one frame's duration in ms. Returns the new scale when it changed, else null. */
@@ -27,11 +34,20 @@ export class AutoScale {
     const avg = this.acc / this.frames;
     this.acc = 0;
     this.frames = 0;
-    if (avg > this.o.target * 1.2 && this.scale > this.o.min) {
+    if (avg > this.o.target * 1.2) {
       this.calm = 0;
-      this.scale = Math.max(this.o.min, +(this.scale - 0.1).toFixed(2));
-      return this.scale;
+      // Slow even at the floor for ~2 s: unlock the rescue floor (once).
+      if (this.scale <= this.floor && ++this.pinned >= 4 && this.floor > (this.o.rescueMin ?? this.floor)) {
+        this.floor = this.o.rescueMin ?? this.floor;
+        this.rescued = true;
+      }
+      if (this.scale > this.floor) {
+        this.scale = Math.max(this.floor, +(this.scale - 0.1).toFixed(2));
+        return this.scale;
+      }
+      return null;
     }
+    this.pinned = 0;
     if (avg < this.o.target * 0.8) {
       // Up only after several calm windows in a row, so it doesn't oscillate.
       if (++this.calm >= 6 && this.scale < this.o.max) {

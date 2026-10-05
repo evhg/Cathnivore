@@ -32,4 +32,13 @@ describe("AutoScale", () => {
     run(a, 500, 300);
     expect(a.scale).toBe(1);
   });
+  it("dips below min only after staying slow at the floor", () => {
+    const a = new AutoScale({ min: 0.6, max: 1, target: 16.7, rescueMin: 0.35 });
+    run(a, 30, 30 * 6);
+    expect(a.scale).toBe(0.6);
+    expect(a.rescued).toBe(false);
+    run(a, 30, 30 * 8);
+    expect(a.rescued).toBe(true);
+    expect(a.scale).toBe(0.35);
+  });
 });
