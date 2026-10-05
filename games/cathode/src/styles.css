@@ -2410,6 +2410,16 @@ input[type="radio"] {
   z-index: 40;
   pointer-events: none;
 }
+.perf-scale {
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  z-index: 40;
+  pointer-events: none;
+  font: 11px/1 monospace;
+  color: #9fe;
+  text-shadow: 0 0 3px #000;
+}
 .tbtn-sheet {
   right: calc(96px + env(safe-area-inset-right));
   top: calc(16px + env(safe-area-inset-top));

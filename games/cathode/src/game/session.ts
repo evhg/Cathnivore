@@ -498,7 +498,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let time = 0;
   // ?perf: a frame-time panel with real GPU timings (stats-gl), for checking the game on a phone.
   let perfPanel: { update(): void } | null = null;
+  let perfScale: HTMLElement | null = null;
   if (new URLSearchParams(location.search).has("perf")) {
+    perfScale = document.createElement("div");
+    perfScale.className = "perf-scale";
+    (o.hud.parentElement ?? o.hud).append(perfScale);
     void import("stats-gl").then(({ default: Stats }) => {
       const st = new Stats({ trackGPU: true, horizontal: true, minimal: false });
       void st.init(world.renderer);
@@ -595,6 +599,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (autoOn && !s.paused && !menuOpen && auto.frame(now - last) !== null) {
       if (auto.rescued) world.cool?.();
       resize();
+      if (perfScale) perfScale.textContent = `res ${Math.round(auto.scale * 100)}%${auto.rescued ? " (rescued, cool)" : ""}`;
     }
     last = now;
     const intent = input.read();
