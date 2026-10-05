@@ -271,3 +271,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-05: Pell (act 3) is a shield-role 6x-health boss on the plaza steps with a three-rifle rally at half health; like Vane he reuses the quay map until district maps exist.
 - 2026-10-05: Act 4 boss (the Chair of the Board) reuses the Pell job pattern with an added sniper; unlocks after pellBoss.
 - 2026-10-05: Act 5 (HollowCandor) is a 9x shield-role boss with two rally thresholds; finishing it pushes `hardboiledOpen` into jobsDone, the unlock flag for Hardboiled.
+- 2026-10-05: Difficulty switches keep jobsDone (levels scale by monsterLevel); Hell Week opens by finishing act 5 on Hardboiled. Most Wanted twists/bonusDrops are generated but not yet applied in play.
