@@ -12,6 +12,10 @@ export class MostWantedJob {
   done = false;
   target: THREE.Vector3 | null = null;
   boss: Enemy | null = null;
+  /** Bullet-time is jammed while the target lives (the noFocus twist). */
+  get focusJammed(): boolean {
+    return this.contract.twist === "noFocus" && !this.done;
+  }
 
   constructor(
     private readonly h: JobHost,
@@ -23,11 +27,22 @@ export class MostWantedJob {
     b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * (2 + c.levelBump * 0.25));
     b.body.root.scale.setScalar(1.1);
     this.boss = b;
+    const crew = [b];
     for (let i = 0; i < c.guards; i++)
-      h.spawn("rifle", [this.P(-12 + i * 5, 34), this.P(-10 + i * 5, 46)]);
+      crew.push(h.spawn("rifle", [this.P(-12 + i * 5, 34), this.P(-10 + i * 5, 46)]));
     for (let i = 0; i < c.snipers; i++)
-      h.spawn("sniper", [this.P(-14 + i * 12, 50), this.P(-8 + i * 12, 50)]);
+      crew.push(h.spawn("sniper", [this.P(-14 + i * 12, 50), this.P(-8 + i * 12, 50)]));
+    // The week's twist (sim/mostwanted.ts): plated crews, quicker crews; noFocus is read by the session.
+    for (const e of crew) {
+      if (c.twist === "armoured") e.kit.armour = Math.min(0.8, e.kit.armour + 0.25);
+      if (c.twist === "fastRounds") {
+        e.kit.walk *= 1.25;
+        e.kit.run *= 1.25;
+        e.kit.burst = [e.kit.burst[0], e.kit.burst[1] * 0.75, e.kit.burst[2] * 0.75];
+      }
+    }
     h.banner("Most Wanted", `${c.name}, ${c.alias}`);
+    if (c.twist === "noFocus") h.say("Bea: His crew jams the focus implant. No bullet-time on this one.");
     h.say(
       `Bea: This week's bounty. ${c.name}. Everyone is hunting ${c.alias}.`,
     );
@@ -47,6 +62,7 @@ export class MostWantedJob {
       const flag = `mostWanted:${this.contract.week}`;
       if (!this.h.progress.jobsDone.includes(flag))
         this.h.progress.jobsDone.push(flag);
+      if (this.boss) this.h.drop?.(this.boss.position.clone(), this.contract.bonusDrops);
       this.h.progress.save();
       this.h.banner("Bounty paid", this.contract.alias);
     }

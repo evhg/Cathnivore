@@ -29,6 +29,8 @@ export interface JobHost {
   teach(text: string | null): void;
   banner(title: string, sub: string): void;
   /** A pooled real light (see World.light); absent in tests. */
+  /** Extra loot rolls dropped at a point (bounties); absent in tests. */
+  drop?(pos: THREE.Vector3, rolls: number): void;
   light?(pos: THREE.Vector3, color: THREE.Color, intensity: number, range: number): () => void;
 }
 

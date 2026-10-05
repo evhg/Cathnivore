@@ -387,6 +387,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           teach: (t) => hud.teach(t),
           banner: (a, b) => hud.showBanner(a, b),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          drop: (p, n) => {
+            for (let i = 0; i < n; i++) {
+              const at = p.clone().add(new THREE.Vector3((i - (n - 1) / 2) * 0.9, 0, 0.6));
+              at.y = world.groundHeight(at.x, at.z);
+              pickups.drop(at, progress.rollLoot(areaLevel, true));
+            }
+          },
         },
         mostWanted(wantedWeek),
       )
@@ -584,7 +591,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Time: the kill-cam slows the world right down; held focus (bullet-time) slows it while it lasts.
     const run = actives.running();
     let scale = killcam.timeScale * (killcam.active ? 1 : run.timeScale);
-    const focusing = !killcam.active && intent.focus && s.focus > 0;
+    const focusing = !killcam.active && intent.focus && s.focus > 0 && !wanted?.focusJammed;
     if (focusing) {
       s.focus = Math.max(0, s.focus - realDt);
       scale = 0.35;
