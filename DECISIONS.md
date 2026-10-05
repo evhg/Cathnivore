@@ -282,3 +282,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-05: Plaza, tower and vault wings stack down the quay east edge (z bands), same banner/map mechanics as the Clinic Bay.
 - 2026-10-05: Phone profile = pixel ratio capped at 1.5x on touch devices, on top of AutoScale.
 - 2026-10-05: Side contract marks rotate through the quay spots plus one spot per opened wing.
+- 2026-10-05: Wing side contracts pick marks from a per-wing pool and name the wing in objective and Ana's line.

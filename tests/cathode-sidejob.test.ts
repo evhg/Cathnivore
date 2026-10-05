@@ -48,4 +48,11 @@ describe("Ana's late contracts", () => {
     expect(spots).toHaveLength(7);
     expect(spots[5]![0]).toBeGreaterThan(14);
   });
+
+  it("names the wing for a wing contract", () => {
+    const jobs = ["crispBoss", "anaSide:0", "anaSide:1", "anaSide:2", "anaSide:3", "anaSide:4"];
+    const job = new SideContractJob(host(jobs).h as never);
+    expect(job.wing?.id).toBe("clinicBay");
+    expect(job.objective).toContain("Clinic Bay");
+  });
 });

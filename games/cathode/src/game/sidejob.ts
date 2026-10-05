@@ -4,7 +4,7 @@
 import * as THREE from "three";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
-import { WINGS } from "./zones";
+import { WINGS, wingAt, type Wing } from "./zones";
 
 const MARKS = ["Dunmore", "Ketch", "Ostler", "Brandt", "Vasco", "Imre", "Teague", "Halloran"];
 const SPOTS: [number, number][] = [[0, 48], [-10, 30], [12, 20], [-6, -10], [8, 38]];
@@ -14,6 +14,13 @@ export function sideSpots(jobsDone: readonly string[]): [number, number][] {
   const wings = WINGS.filter((w) => jobsDone.includes(w.needs)).map((w): [number, number] => [14.5, (w.zMin + w.zMax) / 2]);
   return [...SPOTS, ...wings];
 }
+
+const WING_MARKS: Record<string, string[]> = {
+  clinicBay: ["Nurse Pryce", "Doctor Lund"],
+  plazaSteps: ["Alderman Voss", "Clerk Moy"],
+  towerLobby: ["Director Hale", "Auditor Sern"],
+  vaultGate: ["Warden Kell", "Teller Ibbs"],
+};
 
 /** How many contracts she has finished. */
 export function sideCount(jobsDone: readonly string[]): number {
@@ -26,12 +33,16 @@ export class SideContractJob {
   done = false;
   target: THREE.Vector3 | null = null;
   readonly markName: string;
+  readonly wing: Wing | undefined;
   readonly guards: number;
   private mark: Enemy | null = null;
 
   constructor(private readonly h: JobHost) {
     const n = sideCount(h.progress.jobsDone);
-    this.markName = MARKS[n % MARKS.length]!;
+    const [sx, sz] = sideSpots(h.progress.jobsDone)[n % sideSpots(h.progress.jobsDone).length]!;
+    this.wing = wingAt(h.progress.jobsDone, sx, sz);
+    const pool = (this.wing && WING_MARKS[this.wing.id]) || MARKS;
+    this.markName = pool[n % pool.length]!;
     this.guards = Math.min(5, 1 + Math.floor(n / 2));
     this.goto(0);
   }
@@ -47,13 +58,14 @@ export class SideContractJob {
       const n = sideCount(h.progress.jobsDone);
       const spots = sideSpots(h.progress.jobsDone);
       const [x, z] = spots[n % spots.length]!;
-      this.objective = `Ana's contract: ${this.markName} is on the quay. Remove them.`;
+      const where = this.wing ? this.wing.name : "the quay";
+      this.objective = `Ana's contract: ${this.markName} is in ${where}. Remove them.`;
       this.mark = h.spawn("rifle", [this.P(x, z), this.P(x + 2, z - 2)], { passive: true });
       for (let i = 0; i < this.guards; i++) {
         const gx = x + (i % 2 ? 5 : -5) + i;
         h.spawn(i % 3 === 2 ? "shield" : "rifle", [this.P(gx, z + 2), this.P(gx, z - 4)]);
       }
-      h.say(`Ana: ${this.markName} again owes Candor. Collect.`);
+      h.say(this.wing ? `Ana: ${this.markName} hides in ${this.wing.name}. Quietly, if you can.` : `Ana: ${this.markName} again owes Candor. Collect.`);
     } else if (stage === 1) {
       this.objective = `${this.markName} is down. Get to the water taxi.`;
       h.banner("Contract complete", this.markName);
