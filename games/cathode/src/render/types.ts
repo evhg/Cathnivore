@@ -68,6 +68,8 @@ export interface World {
   /** Per-frame animation: rain, signs flickering, steam, effects. */
   update(dt: number, time: number): void;
   render(): void;
+  /** Sheds work when the device is running hot (shadow refresh rate); optional so test worlds can skip it. */
+  cool?(): void;
   resize(width: number, height: number, pixelRatio: number): void;
   /** Slow-motion/kill-cam grading: 0 normal, 1 full (desaturated, vignetted, depth of field). */
   setDrama(amount: number): void;

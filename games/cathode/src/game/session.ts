@@ -572,7 +572,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const frame = (now: number) => {
     // rAF timestamps can trail performance.now() (set when resuming), so never let time run backwards.
     const realDt = Math.max(0, Math.min(0.05, (now - last) / 1000));
-    if (autoOn && !s.paused && !menuOpen && auto.frame(now - last) !== null) resize();
+    if (autoOn && !s.paused && !menuOpen && auto.frame(now - last) !== null) {
+      if (auto.rescued) world.cool?.();
+      resize();
+    }
     last = now;
     const intent = input.read();
     // On desktop the game waits while the mouse is free (Esc, or before the first click).

@@ -45,6 +45,7 @@ const FOG_DENSITY = 0.019;
 export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const quality = options.quality;
   const P = PRESETS[quality];
+  let shadowEvery = P.shadowEvery;
   const shot = options.shot === true;
   const progress = (s: number, label: string) => onProgress?.(s, label);
   progress(0.02, "Rain over the Drowned Market…");
@@ -307,7 +308,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       const t0 = performance.now();
       renderer.info.reset();
       frameNo++;
-      if (frameNo % P.shadowEvery === 0) renderer.shadowMap.needsUpdate = true;
+      if (frameNo % shadowEvery === 0) renderer.shadowMap.needsUpdate = true;
       camera.updateMatrixWorld();
       reflection.render(renderer, scene, camera);
       post.grade.uniforms.uDrama!.value = drama;
@@ -316,6 +317,10 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       perf.renderMs = performance.now() - t0;
       perf.drawCalls = renderer.info.render.calls;
       perf.triangles = renderer.info.render.triangles;
+    },
+    cool() {
+      // Thermal rescue: the phone is struggling even at low resolution, so shadows refresh a quarter as often.
+      shadowEvery = Math.max(shadowEvery, 4);
     },
     resize(width, height, pixelRatio) {
       renderer.setPixelRatio(pixelRatio);
