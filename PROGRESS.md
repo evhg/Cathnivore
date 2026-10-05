@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-05 22:52 session:** ROADMAP 79: Cath comments on a landmark in each wing once its boss is down (`needs` on `LANDMARKS`; test). `npm run check` green. Unreleased (release cap used: 4 today). Next: ROADMAP 79 wing story jobs, 73 checkpoints UI.
 - **2026-10-05 21:51 session:** ROADMAP 73: explosive-on-death elites now blow up in play (`deathBlasts` in `game/session.ts`: 4 m blast, 40% max health, hurts Cath and enemies). `npm run check` green. Unreleased (release cap used: 4 today). Next: ROADMAP 73 resist display, 79 wing story jobs.
 - **2026-10-05 20:52 session:** ROADMAP 79: wing side contracts name their wing and use wing-specific marks and Ana lines (`WING_MARKS` in `game/sidejob.ts`; test). tsc and sidejob test green; full `npm run check` was still running at commit. Unreleased (release cap used: 4 today). Next: ROADMAP 79 wing story jobs.
 - **2026-10-05 19:52 session:** ROADMAP 79: Ana's side contracts now also hide marks in each opened wing (`sideSpots` in `game/sidejob.ts`; test). `npm run check` green. Unreleased (release cap used: 4 today). Next: ROADMAP 79 wing-specific jobs.

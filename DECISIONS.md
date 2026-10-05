@@ -284,3 +284,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-05: Side contract marks rotate through the quay spots plus one spot per opened wing.
 - 2026-10-05: Wing side contracts pick marks from a per-wing pool and name the wing in objective and Ana's line.
 - 2026-10-05: elite death explosions queue to the next frame (outside the kill loop) so combat.explode can't recurse into kills.
+- 2026-10-05: Wing landmarks reuse the hub `look:<id>` mechanism, gated by a `needs` boss flag.
