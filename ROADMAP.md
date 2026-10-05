@@ -292,7 +292,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 **Phase 3: act 1, the Drowned Market.**
 74. [ ] *(2026-10-04: Bea's call and a case board done; left: the hub street, more dialogue)* The hub street, the case board, Cath's voiceover and dialogue, calls to Bea.
-75. [ ] *(2026-10-04: jobs 2 (Crisp's ledger), 3 (Ana's quay contract) and 4 (the Candor manifest dead drop) done; left: secrets, side contracts)* Four story jobs, side contracts, secrets.
+75. [ ] *(2026-10-04: jobs 2 (Crisp's ledger), 3 (Ana's quay contract) and 4 (the Candor manifest dead drop) done; left: side contracts done (Ana's late contracts); secrets: six quay secrets done 2026-10-05)* Four story jobs, side contracts, secrets.
 76. [x] *(2026-10-04: `game/crispboss.ts`, a 4x-health Crisp who calls his men at half health; unreleased)* Julian Crisp, the boss fight.
 77. [x] *(2026-10-05: reverb, alert score, weapon sets and rain beds all done)* Audio: convolution reverb, weapon sets, rain beds, an alert-reactive synth score.
 78. [ ] *(2026-10-05: dynamic resolution auto-scaler done, live `83ba165`; left: thermals/phone profile)* Performance and phone pass on an iPhone 17 Pro Max profile: 60 fps, quality auto-scaling, thermals.

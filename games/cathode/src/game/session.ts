@@ -27,6 +27,7 @@ import { PellBossJob } from "./pellboss";
 import { BoardBossJob } from "./boardboss";
 import { VaultBossJob } from "./vaultboss";
 import { SideContractJob } from "./sidejob";
+import { Secrets, found as secretsFound, SECRETS } from "./secrets";
 import { MostWantedJob } from "./mostwantedjob";
 import { mostWanted, weekKey } from "../sim/mostwanted";
 import { openCaseBoard } from "../ui/caseboard";
@@ -445,6 +446,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
 
   const pickups = new Pickups(world.scene);
+  const secrets = new Secrets(progress.jobsDone, ground, world.scene);
   const collect = (drop: { items: Item[]; scrip: number }) => {
     progress.take(drop);
     if (drop.scrip) hud.feedLine(`+${drop.scrip} Scrip`);
@@ -763,6 +765,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!dead && intent.skill2) actives.use(1, progress.character, progress.stats, ctx);
     actives.update(dt, progress.stats, world, world.colliders, ground, enemies);
     if (!dead) for (const d of pickups.update(dt, player.pos)) collect(d);
+    if (!dead) {
+      for (const f of secrets.update(dt, player.pos)) {
+        if (f.kind === "stash") collect({ items: [], scrip: f.scrip ?? 0 });
+        else if (f.text) hud.subtitle(f.text);
+        hud.feedLine(`Secret found (${secretsFound(progress.jobsDone)}/${SECRETS.length})`, true);
+        progress.save();
+      }
+    }
     if (actives.refill) {
       arsenal.topUp();
       actives.refill = false;
