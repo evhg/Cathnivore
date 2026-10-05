@@ -13,4 +13,9 @@ describe("hub street landmarks", () => {
     expect(done).toContain(lookKey(l.id));
     expect(nearLandmark(done, l.x, l.z)?.id).not.toBe(l.id);
   });
+  it("wing landmarks wait for the boss that opens them", () => {
+    const l = LANDMARKS.find((x) => x.needs)!;
+    expect(nearLandmark([], l.x, l.z)).toBeUndefined();
+    expect(nearLandmark([l.needs!], l.x, l.z)?.id).toBe(l.id);
+  });
 });
