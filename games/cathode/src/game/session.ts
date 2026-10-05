@@ -39,7 +39,7 @@ import { DIFFICULTY_LABEL, unlockedDifficulties } from "../sim/difficulty";
 import type { Difficulty } from "../sim/types";
 import { Voice } from "./voice";
 import { nearLandmark } from "./landmarks";
-import { ZoneWatch } from "./zones";
+import { WingWatch, ZoneWatch } from "./zones";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
 import { exportCode, makeSave } from "../sim/save";
@@ -214,6 +214,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let objective = "Get to the fish market. Somebody there knows who put Tomas in the water.";
   hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
   const zones = new ZoneWatch();
+  const wings = new WingWatch();
   const voice = new Voice((t) => hud.subtitle(t));
   /** Puts a weapon in her hands for good: owned from now on. */
   const arm = (id: string) => {
@@ -783,6 +784,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!dead && s.hp > 0) {
       const zone = zones.update(player.pos.z);
       if (zone) hud.showBanner(zone.name, zone.sub);
+      const wing = wings.update(progress.jobsDone, player.pos.x, player.pos.z);
+      if (wing) hud.showBanner(wing.name, wing.sub);
       const lm = nearLandmark(progress.jobsDone, player.pos.x, player.pos.z);
       if (lm) {
         hud.subtitle(lm.text);

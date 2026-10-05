@@ -1,4 +1,4 @@
-import { zoneBands, mapPoint, districtLeads } from "../game/zones";
+import { zoneBands, mapPoint, districtLeads, WINGS } from "../game/zones";
 import { SECRETS, found, secretKey } from "../game/secrets";
 import { button, el } from "./dom";
 
@@ -33,6 +33,14 @@ export function openDistrictMap(
     const s = svg("text", { x: 8, y: y0 * H + 29, fill: "#5d7a99", "font-size": 9 }, map);
     s.textContent = zone.sub;
   });
+  for (const w of WINGS) {
+    if (!jobsDone.includes(w.needs)) continue;
+    const a = mapPoint(w.xMin, w.zMin);
+    const b = mapPoint(w.xMin, w.zMax);
+    svg("rect", { x: a.x * W - 36, y: a.y * H, width: W - a.x * W + 36, height: (b.y - a.y) * H, fill: "#3a2a1a", "fill-opacity": 0.7, stroke: "#c98a4a" }, map);
+    const t = svg("text", { x: a.x * W - 32, y: a.y * H + 14, fill: "#e0a96b", "font-size": 10 }, map);
+    t.textContent = w.name;
+  }
   if (objective) {
     const o = mapPoint(objective.x, objective.z);
     svg("circle", { cx: o.x * W, cy: o.y * H, r: 7, fill: "none", stroke: "#ffcf4a", "stroke-width": 2 }, map);

@@ -40,3 +40,17 @@ d2("district leads", () => {
     e2(districtLeads(["crispBoss", "vaneBoss"]).filter((x) => x.open).map((x) => x.id)).toEqual(["clinic", "plaza"]);
   });
 });
+
+import { WingWatch, wingAt } from "../games/cathode/src/game/zones";
+
+d2("wings", () => {
+  i2("open only after the previous boss and announce once", () => {
+    e2(wingAt([], 20, 30)).toBeUndefined();
+    const w = new WingWatch();
+    e2(w.update(["crispBoss"], 0, 30)).toBeUndefined();
+    e2(w.update(["crispBoss"], 20, 30)?.id).toBe("clinicBay");
+    e2(w.update(["crispBoss"], 22, 31)).toBeUndefined();
+    e2(w.update(["crispBoss"], 0, 30)).toBeUndefined();
+    e2(w.update(["crispBoss"], 20, 30)?.id).toBe("clinicBay");
+  });
+});

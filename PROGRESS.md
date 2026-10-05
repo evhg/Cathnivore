@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-05 16:52 session:** ROADMAP 79: the Clinic Bay wing (`WINGS`/`WingWatch` in `game/zones.ts`): banner on entering Vane's patch once act 2 opens, and a map mark on M; test. `npm run check` green. Unreleased (release cap used). Next: ROADMAP 79 plaza wing.
 - **2026-10-05 15:52 session:** ROADMAP 79: the district map lists the act 2-5 districts as locked/on-the-board teasers (`districtLeads` in `game/zones.ts`; test). `npm run check` green. Unreleased (release cap used). Next: ROADMAP 79 clinic district map itself.
 - **2026-10-05 14:52 session:** ROADMAP 79: the district map (M) now marks found secrets (teal diamonds) with a found/total count. Unreleased (4 releases already today). Next: ROADMAP 79 clinic/plaza district maps.
 - **2026-10-05 13:51 session:** ROADMAP 72: three hidden weapon caches on the quay (Rattlecan, Night Shift, Old Testament; `kind: "cache"` secrets that open only after the Fish Market, grant via `arm`; test). `npm run check` green. Unreleased (4 releases already today). Next: ROADMAP 79 clinic/plaza districts.

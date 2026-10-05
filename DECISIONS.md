@@ -278,3 +278,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-05: District map is an SVG overlay (M) built from the zone bands over the existing quay bounds; real clinic/plaza maps are still deferred.
 - 2026-10-05: District map shows only found secrets (no spoilers), read from jobsDone.
 - 2026-10-05: District teasers on the map are derived from boss jobsDone flags; real clinic/plaza maps still deferred.
+- 2026-10-05: Districts beyond the quay start as "wings" (rect regions with a banner and map mark, opened by the previous boss) rather than separate maps.

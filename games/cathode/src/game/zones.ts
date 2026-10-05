@@ -66,3 +66,34 @@ export function districtLeads(jobsDone: readonly string[]): DistrictLead[] {
   ];
   return rows.map((r) => ({ ...r, open: jobsDone.includes(r.needs) }));
 }
+
+export interface Wing {
+  id: string;
+  name: string;
+  sub: string;
+  xMin: number;
+  zMin: number;
+  zMax: number;
+  /** The job that opens it. */
+  needs: string;
+}
+
+/** Districts reached from the quay's east edge; their banners and map marks appear once the previous boss is down. */
+export const WINGS: readonly Wing[] = [
+  { id: "clinicBay", name: "The Clinic Bay", sub: "Candor's surgery, Dr Vane's patch", xMin: 14, zMin: 16, zMax: 42, needs: "crispBoss" },
+];
+
+export function wingAt(jobsDone: readonly string[], x: number, z: number): Wing | undefined {
+  return WINGS.find((w) => jobsDone.includes(w.needs) && x >= w.xMin && z >= w.zMin && z < w.zMax);
+}
+
+/** Announces a wing once on entry, and again after she leaves and returns. */
+export class WingWatch {
+  private cur: string | undefined;
+  update(jobsDone: readonly string[], x: number, z: number): Wing | undefined {
+    const w = wingAt(jobsDone, x, z);
+    if (w?.id === this.cur) return undefined;
+    this.cur = w?.id;
+    return w;
+  }
+}
