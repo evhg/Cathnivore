@@ -43,6 +43,13 @@ const CASES: { id: string; title: string; done: string; open: string; needs?: st
     open: "Page nine names Crisp as Candor's man on the quay. He will not go quietly.",
     needs: "candorManifest",
   },
+  {
+    id: "vaneBoss",
+    title: "Dr Octavia Vane",
+    done: "Vane is finished. Act 2 is closed.",
+    open: "Crisp's ledger points to the Candor clinic. Vane stitches the people Candor breaks.",
+    needs: "crispBoss",
+  },
 ];
 
 /** The board for a given set of finished jobs. A case is open when its predecessor is done. */
