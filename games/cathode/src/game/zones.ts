@@ -46,3 +46,23 @@ export function mapPoint(x: number, z: number): { x: number; y: number } {
 export function zoneBands(): { zone: Zone; y0: number; y1: number }[] {
   return ZONES.map((zone) => ({ zone, y0: mapPoint(0, zone.zMin).y, y1: mapPoint(0, zone.zMax).y }));
 }
+
+export interface DistrictLead {
+  id: string;
+  name: string;
+  act: number;
+  /** The job that opens it. */
+  needs: string;
+  open: boolean;
+}
+
+/** The districts beyond the quay: teasers on the map, open once the previous act's boss is down. */
+export function districtLeads(jobsDone: readonly string[]): DistrictLead[] {
+  const rows = [
+    { id: "clinic", name: "Candor Clinic", act: 2, needs: "crispBoss" },
+    { id: "plaza", name: "Hollowell Plaza", act: 3, needs: "vaneBoss" },
+    { id: "tower", name: "The Board Tower", act: 4, needs: "pellBoss" },
+    { id: "vault", name: "The Hollow Vault", act: 5, needs: "boardBoss" },
+  ];
+  return rows.map((r) => ({ ...r, open: jobsDone.includes(r.needs) }));
+}

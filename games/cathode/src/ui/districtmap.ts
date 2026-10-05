@@ -1,4 +1,4 @@
-import { zoneBands, mapPoint } from "../game/zones";
+import { zoneBands, mapPoint, districtLeads } from "../game/zones";
 import { SECRETS, found, secretKey } from "../game/secrets";
 import { button, el } from "./dom";
 
@@ -45,6 +45,8 @@ export function openDistrictMap(
   const p = mapPoint(at.x, at.z);
   svg("circle", { cx: p.x * W, cy: p.y * H, r: 5, fill: "#ff3d8b" }, map);
   el("p", "", card, `Pink: Cath. Gold ring: the objective. Teal diamonds: secrets found (${found(jobsDone)}/${SECRETS.length}).`);
+  const leads = el("ul", "", card);
+  for (const d of districtLeads(jobsDone)) el("li", "", leads, `Act ${d.act}: ${d.name} ${d.open ? "(on the board)" : "(locked)"}`);
   const close = (): void => {
     window.removeEventListener("keydown", onKey);
     wrap.remove();

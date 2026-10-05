@@ -30,3 +30,13 @@ describe("district map", () => {
     for (let i = 1; i < b.length; i++) expect(b[i]?.y0).toBeCloseTo(b[i - 1]?.y1 ?? -1, 9);
   });
 });
+
+import { districtLeads } from "../games/cathode/src/game/zones";
+import { describe as d2, it as i2, expect as e2 } from "vitest";
+
+d2("district leads", () => {
+  i2("open one act at a time", () => {
+    e2(districtLeads([]).filter((x) => x.open)).toHaveLength(0);
+    e2(districtLeads(["crispBoss", "vaneBoss"]).filter((x) => x.open).map((x) => x.id)).toEqual(["clinic", "plaza"]);
+  });
+});
