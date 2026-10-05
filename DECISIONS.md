@@ -267,3 +267,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-04 21:51: ROADMAP 77 part 1 (alert-reactive score); no release, cap used today.
 - 2026-10-05: Dynamic resolution is a pure frame-time controller (AutoScale, 0.55-1x, down fast/up slow) multiplied into the canvas pixel ratio; disabled under webdriver and ?shot.
 - 2026-10-05: AutoScale gains a one-shot rescue floor (0.35) when frames stay slow at the normal minimum.
+- 2026-10-05: ROADMAP 79 part 1 shipped Vane as a boss job in the existing quay map; the clinic district is deferred.
