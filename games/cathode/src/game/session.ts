@@ -30,6 +30,8 @@ import { openCaseBoard } from "../ui/caseboard";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
 import { ELITE_CHANCE } from "../sim/enemies";
+import { DIFFICULTY_LABEL, unlockedDifficulties } from "../sim/difficulty";
+import type { Difficulty } from "../sim/types";
 import { Voice } from "./voice";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
@@ -516,6 +518,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   hud.onResume = () => {
     menuOpen = false;
     input.lock();
+  };
+  hud.difficulty = {
+    current: progress.character.difficulty,
+    options: unlockedDifficulties(progress.jobsDone).map((d) => [d, DIFFICULTY_LABEL[d]]),
+    apply: (v) => {
+      progress.character.difficulty = v as Difficulty;
+      progress.save();
+    },
   };
   hud.onVolume = (v) => {
     if (audio) audio.volume = v;

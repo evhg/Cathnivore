@@ -5,6 +5,7 @@
 import * as THREE from "three";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
+import { actFiveUnlock } from "../sim/difficulty";
 
 export class VaultBossJob {
   stage = 0;
@@ -45,15 +46,17 @@ export class VaultBossJob {
         this.target = h.markers.extract?.[0]?.clone() ?? null;
         h.say("Cath: Five off the list. All of them.");
         break;
-      case 2:
+      case 2: {
         this.done = true;
         this.target = null;
         this.objective = "Act 5 complete. Candor is dark.";
-        for (const id of ["vaultBoss", "hardboiledOpen"]) if (!h.progress.jobsDone.includes(id)) h.progress.jobsDone.push(id);
+        const next = actFiveUnlock(h.progress.character?.difficulty ?? "noir");
+        for (const id of next ? ["vaultBoss", "hardboiledOpen", next] : ["vaultBoss", "hardboiledOpen"]) if (!h.progress.jobsDone.includes(id)) h.progress.jobsDone.push(id);
         h.progress.save();
-        h.banner("Act 5 complete", "Hardboiled unlocked");
+        h.banner("Act 5 complete", next === "hellWeekOpen" ? "Hell Week unlocked" : "Hardboiled unlocked");
         h.say("Bea: It is over. Or it starts again, harder. Your call.");
         break;
+      }
     }
   }
 

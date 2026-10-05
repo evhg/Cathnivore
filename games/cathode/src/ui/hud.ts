@@ -256,6 +256,8 @@ export class Hud {
   onResume?: () => void;
   /** The volume slider moved (0..1). */
   onVolume?: (v: number) => void;
+  /** The difficulties she may pick and the current one; the pause card shows a row when more than Noir is open. */
+  difficulty?: { current: string; options: Array<[string, string]>; apply: (v: string) => void };
 
   /**
    * The pause menu: Esc on desktop, the menu button on a phone (owner, iPhone, 2026-10-04: "once started no
@@ -304,6 +306,9 @@ export class Hud {
           });
         }
       };
+      if (this.difficulty && this.difficulty.options.length > 1) {
+        choice<string>("Difficulty", this.difficulty.options, this.difficulty.current, this.difficulty.apply);
+      }
       choice<QualityChoice>(
         "Graphics",
         [
