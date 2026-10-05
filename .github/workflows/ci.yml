@@ -1,11 +1,13 @@
 name: CI
 
 on:
-  push:
-    branches: [build, main]
-    # Lock and notes commits change no code: don't spend Actions minutes on them (owner's account ran out
-    # of minutes on 2026-10-04 with every session pushing ~6 times an hour).
-    paths-ignore: ["**/*.md", "*.md", ".build-lock", "docs/**"]
+  # Manual only while the owner's GitHub Actions billing is blocked (since 2026-10-04 06:20 UTC every job
+  # failed before starting, and each push mailed the owner a failure). Releases are gated by the local
+  # `npm run gates` either way. To restore CI on every push once billing is fixed, put this back:
+  #   push:
+  #     branches: [build, main]
+  #     paths-ignore: ["**/*.md", "*.md", ".build-lock", "docs/**"]
+  workflow_dispatch:
 
 # A newer push to the same branch supersedes a run still going.
 concurrency:
