@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-05 12:51 session:** ROADMAP 79: district map overlay on M (`ui/districtmap.ts`, `mapPoint`/`zoneBands` in `game/zones.ts`, pauses like the case board; tests). `npm run check` green. Unreleased (4 releases already today). Next: ROADMAP 79 clinic/plaza district maps.
 - **2026-10-05 11:52 session:** ROADMAP 79: named quay zones with entry banners (`game/zones.ts`, `tests/cathode-zones.test.ts`). `npm run check` green. Unreleased (4 releases already today). Next: ROADMAP 79 district maps.
 - **2026-10-05 10:52 session:** ROADMAP 74: hub street observations (`game/landmarks.ts`: Cath comments once on five quay landmarks as she passes, recorded as `look:<id>`; `tests/cathode-landmarks.test.ts`). tsc clean; `npm run check` run at session end. Unreleased (4 releases already today). Next: ROADMAP 79 districts.
 - **2026-10-05 09:51 session:** ROADMAP 78: `?perf` now shows the live render scale and a "rescued" flag beside the GPU panel (`.perf-scale`). tsc clean; `npm run check` run at session end. Unreleased. Next: ROADMAP 74 hub street, 79 districts.

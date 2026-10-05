@@ -25,8 +25,8 @@ describe("district map", () => {
   });
   it("bands tile the map without gaps", () => {
     const b = zoneBands().sort((a, c) => a.y0 - c.y0);
-    expect(b[0].y0).toBe(0);
-    expect(b[b.length - 1].y1).toBe(1);
-    for (let i = 1; i < b.length; i++) expect(b[i].y0).toBeCloseTo(b[i - 1].y1, 9);
+    expect(b[0]?.y0).toBe(0);
+    expect(b[b.length - 1]?.y1).toBe(1);
+    for (let i = 1; i < b.length; i++) expect(b[i]?.y0).toBeCloseTo(b[i - 1]?.y1 ?? -1, 9);
   });
 });
