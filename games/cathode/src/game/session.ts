@@ -32,6 +32,7 @@ import { openCharacter } from "../ui/character";
 import { exportCode, makeSave } from "../sim/save";
 import { levelUpToast } from "../ui/levelup";
 import { xpForLevel, xpToNext as simXpToNext } from "../sim/stats";
+import { AutoScale } from "./autoscale";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -299,9 +300,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   actives.battery = progress.stats.battery;
   setTimeout(() => voice.say("start"), 2600);
 
+  // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
+  const auto = new AutoScale({ min: 0.55, max: 1, target: 1000 / 60 });
+  const autoOn = !o.shot && !navigator.webdriver;
   const resize = () => {
     const dpr = Math.min(devicePixelRatio, o.quality === "ultra" ? 3 : 2);
-    const scale = o.quality === "phone" ? 0.8 : 1;
+    const scale = (o.quality === "phone" ? 0.8 : 1) * auto.scale;
     world.resize(o.canvas.clientWidth, o.canvas.clientHeight, dpr * scale);
   };
   addEventListener("resize", resize);
@@ -456,6 +460,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const frame = (now: number) => {
     // rAF timestamps can trail performance.now() (set when resuming), so never let time run backwards.
     const realDt = Math.max(0, Math.min(0.05, (now - last) / 1000));
+    if (autoOn && !s.paused && !menuOpen && auto.frame(now - last) !== null) resize();
     last = now;
     const intent = input.read();
     // On desktop the game waits while the mouse is free (Esc, or before the first click).
