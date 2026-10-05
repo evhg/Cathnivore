@@ -64,6 +64,13 @@ const CASES: { id: string; title: string; done: string; open: string; needs?: st
     open: "Pell's permits all trace to the Spire, where the Candor Board sits.",
     needs: "pellBoss",
   },
+  {
+    id: "vaultBoss",
+    title: "HollowCandor",
+    done: "HollowCandor is silent. Hardboiled is open.",
+    open: "The Board's accounts all lead to the vault, and the machine that runs it.",
+    needs: "boardBoss",
+  },
 ];
 
 /** The board for a given set of finished jobs. A case is open when its predecessor is done. */

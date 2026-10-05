@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-05 04:51 session:** ROADMAP 80 part 2: HollowCandor, the act 5 vault boss (`game/vaultboss.ts`: 9x-health shield-role body, rifle squad at 2/3, sniper and rifles at 1/3; closes `vaultBoss`, sets `hardboiledOpen`; case entry; test). `npm run check` green. Left for 80: difficulty selector UI, Hell Week, Most Wanted. Releasing.
 - **2026-10-05 03:52 session:** ROADMAP 80 part 1: the Chair of the Board, the act 4 boss job (`game/boardboss.ts`: shield guards plus a sniper, rifle squad at half health; closes `boardBoss`; case entry; test). `npm run check` green. Left for 80: the vault, Hardboiled, Hell Week, Most Wanted. Unreleased.
 - **2026-10-05 02:51 session:** ROADMAP 79 part 2: Councillor Pell, the act 3 boss job (`game/pellboss.ts`: 6x-health shield-role Pell behind two shield guards, calls three riflemen at half health; closes `pellBoss`; case entry; test). `npm run check` green. Left for 79: district maps, side jobs. Unreleased.
 - **2026-10-05 02:00 session:** ROADMAP 79 part 1: Dr Vane boss job (`game/vaneboss.ts`: 5x-health Vane, patches to 70% once at half health, calls guards; closes `vaneBoss` after Crisp; case entry; test). `npm run check` green. Left for 79: the clinic district itself, jobs, Pell. Released `0f75fa0` (gates passed; tag push 403, harmless; 2nd release today).
