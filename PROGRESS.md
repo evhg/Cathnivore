@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-05 02:00 session:** ROADMAP 79 part 1: Dr Vane boss job (`game/vaneboss.ts`: 5x-health Vane, patches to 70% once at half health, calls guards; closes `vaneBoss` after Crisp; case entry; test). `npm run check` green. Left for 79: the clinic district itself, jobs, Pell. Unreleased (release today: 83ba165 only; release due).
 - **2026-10-05 01:51 session:** ROADMAP 78 part 2: AutoScale thermal rescue floor (`rescueMin` 0.35 after ~2 s slow at the 0.55 floor; `rescued` flag; test). `npm run check` green. Left for 78: perf HUD review. Unreleased (1 release today already).
 - **2026-10-05 00:51 session:** released `83ba165` (all CATHODE work through ROADMAP 77 part 2; gates passed, live version.json matches; tag push 403, harmless; 1st release today). ROADMAP 78 part 1: dynamic resolution (`game/autoscale.ts`, steps the render scale 0.55-1 to hold 60 fps; off under webdriver/shot; `tests/cathode-autoscale.test.ts`). `npm run check` green (897 tests). Left for 78: thermals/phone profile, perf HUD review.
 - **2026-10-04 22:51 session:** ROADMAP 77 part 2: melee weapon sound sets (blade shing, sledge boom, wire zing via `audio.pin(hit, model)`) and a gusting second rain sheet. tsc clean; full `npm run check` was still running at session end. Unreleased (release cap used today; first session after 00:00 UTC should release).
