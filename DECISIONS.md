@@ -269,3 +269,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-05: AutoScale gains a one-shot rescue floor (0.35) when frames stay slow at the normal minimum.
 - 2026-10-05: ROADMAP 79 part 1 shipped Vane as a boss job in the existing quay map; the clinic district is deferred.
 - 2026-10-05: Pell (act 3) is a shield-role 6x-health boss on the plaza steps with a three-rifle rally at half health; like Vane he reuses the quay map until district maps exist.
+- 2026-10-05: Act 4 boss (the Chair of the Board) reuses the Pell job pattern with an added sniper; unlocks after pellBoss.

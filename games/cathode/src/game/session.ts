@@ -24,6 +24,7 @@ import { ManifestJob } from "./manifestjob";
 import { CrispBossJob } from "./crispboss";
 import { VaneBossJob } from "./vaneboss";
 import { PellBossJob } from "./pellboss";
+import { BoardBossJob } from "./boardboss";
 import { openCaseBoard } from "../ui/caseboard";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
@@ -316,6 +317,23 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const pellBoss =
     !tutorial && progress.jobsDone.includes("vaneBoss") && !progress.jobsDone.includes("pellBoss") && !o.shot
       ? new PellBossJob({
+          player,
+          progress,
+          scene: world.scene,
+          markers: world.markers,
+          ground,
+          touch: input.isTouch,
+          spawn,
+          arm,
+          say: (t) => hud.subtitle(t),
+          teach: (t) => hud.teach(t),
+          banner: (a, b) => hud.showBanner(a, b),
+          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+        })
+      : null;
+  const boardBoss =
+    !tutorial && progress.jobsDone.includes("pellBoss") && !progress.jobsDone.includes("boardBoss") && !o.shot
+      ? new BoardBossJob({
           player,
           progress,
           scene: world.scene,
@@ -753,6 +771,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       pellBoss.update(dt);
       objective = pellBoss.objective;
     }
+    if (boardBoss) {
+      boardBoss.update(dt);
+      objective = boardBoss.objective;
+    }
     input.allow(progress.unlocks.features, arsenal.ownedIndices.length);
 
     // Voice cues from the street's state.
@@ -913,7 +935,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   /** The objective on screen, for the waypoint diamond. */
   function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
-    const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneBoss?.target ?? pellBoss?.target;
+    const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneBoss?.target ?? pellBoss?.target ?? boardBoss?.target;
     if (!t || dead) return null;
     const p = t.clone().add(new THREE.Vector3(0, 1.2, 0)).project(world.camera);
     const behind = p.z > 1;

@@ -299,7 +299,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 **Phase 4 and 5:**
 79. [ ] *(2026-10-05: Vane and Pell boss jobs done; left: clinic and plaza districts, side jobs)* Acts 2–3: the Candor clinic (Vane) and Hollowell Plaza (Pell).
-80. [ ] Acts 4–5: the Spire (the Board) and the vault (HollowCandor); Hardboiled and Hell Week; the weekly Most Wanted contract.
+80. [ ] *(2026-10-05: Board boss job done)* Acts 4–5: the Spire (the Board) and the vault (HollowCandor); Hardboiled and Hell Week; the weekly Most Wanted contract.
 
 ## Postponed by the owner (2026-09-28)
 
