@@ -432,7 +432,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const auto = new AutoScale({ min: 0.55, max: 1, target: 1000 / 60, rescueMin: 0.35 });
   const autoOn = !o.shot && !navigator.webdriver;
   const resize = () => {
-    const dpr = Math.min(devicePixelRatio, o.quality === "ultra" ? 3 : 2);
+    const dpr = Math.min(devicePixelRatio, input.isTouch ? 1.5 : o.quality === "ultra" ? 3 : 2); // phones: 1.5x keeps them cool
     const scale = (o.quality === "phone" ? 0.8 : 1) * auto.scale;
     world.resize(o.canvas.clientWidth, o.canvas.clientHeight, dpr * scale);
   };
