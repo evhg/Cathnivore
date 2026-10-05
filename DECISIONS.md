@@ -276,3 +276,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-05: secrets are static positions on the quay recorded in jobsDone (no new save schema).
 - 2026-10-05: Zone banners are keyed on z-bands of the quay, transient (not saved), and skip the spawn zone.
 - 2026-10-05: District map is an SVG overlay (M) built from the zone bands over the existing quay bounds; real clinic/plaza maps are still deferred.
+- 2026-10-05: District map shows only found secrets (no spoilers), read from jobsDone.

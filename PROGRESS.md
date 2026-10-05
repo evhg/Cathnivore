@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-05 14:52 session:** ROADMAP 79: the district map (M) now marks found secrets (teal diamonds) with a found/total count. Unreleased (4 releases already today). Next: ROADMAP 79 clinic/plaza district maps.
 - **2026-10-05 13:51 session:** ROADMAP 72: three hidden weapon caches on the quay (Rattlecan, Night Shift, Old Testament; `kind: "cache"` secrets that open only after the Fish Market, grant via `arm`; test). `npm run check` green. Unreleased (4 releases already today). Next: ROADMAP 79 clinic/plaza districts.
 - **2026-10-05 12:51 session:** ROADMAP 79: district map overlay on M (`ui/districtmap.ts`, `mapPoint`/`zoneBands` in `game/zones.ts`, pauses like the case board; tests). `npm run check` green. Unreleased (4 releases already today). Next: ROADMAP 79 clinic/plaza district maps.
 - **2026-10-05 11:52 session:** ROADMAP 79: named quay zones with entry banners (`game/zones.ts`, `tests/cathode-zones.test.ts`). `npm run check` green. Unreleased (4 releases already today). Next: ROADMAP 79 district maps.

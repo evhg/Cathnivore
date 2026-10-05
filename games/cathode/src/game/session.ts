@@ -617,7 +617,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       coaching = true;
       document.exitPointerLock?.();
       const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneBoss?.target ?? pellBoss?.target ?? boardBoss?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
-      openDistrictMap(o.hud.parentElement ?? o.hud, player.pos, t ? { x: t.x, z: t.z } : null, () => (coaching = false));
+      openDistrictMap(o.hud.parentElement ?? o.hud, player.pos, t ? { x: t.x, z: t.z } : null, () => (coaching = false), progress.jobsDone);
     }
     if (s.paused || away) {
       last = now;

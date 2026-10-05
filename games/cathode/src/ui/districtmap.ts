@@ -1,4 +1,5 @@
 import { zoneBands, mapPoint } from "../game/zones";
+import { SECRETS, found, secretKey } from "../game/secrets";
 import { button, el } from "./dom";
 
 const NS = "http://www.w3.org/2000/svg";
@@ -16,6 +17,7 @@ export function openDistrictMap(
   at: { x: number; z: number },
   objective: { x: number; z: number } | null,
   onClose: () => void = () => {},
+  jobsDone: readonly string[] = [],
 ): () => void {
   const wrap = el("div", "coach case-board district-map", parent);
   const card = el("div", "coach-card", wrap);
@@ -35,9 +37,14 @@ export function openDistrictMap(
     const o = mapPoint(objective.x, objective.z);
     svg("circle", { cx: o.x * W, cy: o.y * H, r: 7, fill: "none", stroke: "#ffcf4a", "stroke-width": 2 }, map);
   }
+  for (const sc of SECRETS) {
+    if (!jobsDone.includes(secretKey(sc.id))) continue;
+    const q = mapPoint(sc.x, sc.z);
+    svg("rect", { x: q.x * W - 3, y: q.y * H - 3, width: 6, height: 6, fill: "#6fe3c1", transform: `rotate(45 ${q.x * W} ${q.y * H})` }, map);
+  }
   const p = mapPoint(at.x, at.z);
   svg("circle", { cx: p.x * W, cy: p.y * H, r: 5, fill: "#ff3d8b" }, map);
-  el("p", "", card, "Pink: Cath. Gold ring: the objective.");
+  el("p", "", card, `Pink: Cath. Gold ring: the objective. Teal diamonds: secrets found (${found(jobsDone)}/${SECRETS.length}).`);
   const close = (): void => {
     window.removeEventListener("keydown", onKey);
     wrap.remove();
