@@ -5,13 +5,15 @@ import * as THREE from "three";
 
 export interface Secret {
   id: string;
-  kind: "log" | "stash";
+  kind: "log" | "stash" | "cache";
   x: number;
   z: number;
   /** The line played for a log. */
   text?: string;
   /** Scrip in a stash. */
   scrip?: number;
+  /** The weapon in a cache (only collectable once the first job is done). */
+  weapon?: string;
 }
 
 export const SECRETS: readonly Secret[] = [
@@ -21,6 +23,9 @@ export const SECRETS: readonly Secret[] = [
   { id: "stash-roof", kind: "stash", x: -8, z: 8, scrip: 200 },
   { id: "log-bea2", kind: "log", x: 0, z: 60, text: "Bea (tape): I drew your face on the wall so the rain would remember it. Silly. Come home." },
   { id: "stash-dock", kind: "stash", x: 9, z: 50, scrip: 160 },
+  { id: "cache-rattlecan", kind: "cache", x: -12, z: 22, weapon: "rattlecan" },
+  { id: "cache-nightshift", kind: "cache", x: 12, z: -26, weapon: "nightShift" },
+  { id: "cache-testament", kind: "cache", x: -14, z: -52, weapon: "oldTestament" },
 ];
 
 export const SECRET_RADIUS = 1.8;
@@ -44,7 +49,7 @@ export class Secrets {
   ) {
     if (!scene) return;
     for (const s of this.remaining()) {
-      const colour = new THREE.Color(s.kind === "log" ? 0x7fe8ff : 0xffd27a);
+      const colour = new THREE.Color(s.kind === "log" ? 0x7fe8ff : s.kind === "cache" ? 0xff6a9a : 0xffd27a);
       const m = new THREE.Mesh(
         new THREE.OctahedronGeometry(0.1),
         new THREE.MeshStandardMaterial({ color: colour, emissive: colour, emissiveIntensity: 1.6, roughness: 0.4 }),
@@ -63,7 +68,9 @@ export class Secrets {
   update(dt: number, at: THREE.Vector3): Secret[] {
     this.t += dt;
     const got: Secret[] = [];
+    const armed = this.jobsDone.includes("fishMarket");
     for (const s of this.remaining()) {
+      if (s.kind === "cache" && !armed) continue;
       const dx = at.x - s.x;
       const dz = at.z - s.z;
       if (dx * dx + dz * dz > SECRET_RADIUS * SECRET_RADIUS || Math.abs(at.y - this.ground(s.x, s.z)) > 2.5) continue;

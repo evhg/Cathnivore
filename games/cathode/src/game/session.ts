@@ -792,6 +792,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!dead) {
       for (const f of secrets.update(dt, player.pos)) {
         if (f.kind === "stash") collect({ items: [], scrip: f.scrip ?? 0 });
+        else if (f.kind === "cache" && f.weapon) arm(f.weapon);
         else if (f.text) hud.subtitle(f.text);
         hud.feedLine(`Secret found (${secretsFound(progress.jobsDone)}/${SECRETS.length})`, true);
         progress.save();
