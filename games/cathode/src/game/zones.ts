@@ -31,3 +31,18 @@ export class ZoneWatch {
     return first ? undefined : q;
   }
 }
+
+/** The street's extent, matching the session's bounds (north, -z, is up on the map). */
+export const MAP_BOUNDS = { xMin: -26, xMax: 16, zMin: -70, zMax: 66 } as const;
+
+/** A world point as 0-1 map coordinates (x right, y down), clamped to the map. */
+export function mapPoint(x: number, z: number): { x: number; y: number } {
+  const b = MAP_BOUNDS;
+  const c = (v: number): number => Math.max(0, Math.min(1, v));
+  return { x: c((x - b.xMin) / (b.xMax - b.xMin)), y: c((z - b.zMin) / (b.zMax - b.zMin)) };
+}
+
+/** Zone bands as 0-1 vertical spans on the map. */
+export function zoneBands(): { zone: Zone; y0: number; y1: number }[] {
+  return ZONES.map((zone) => ({ zone, y0: mapPoint(0, zone.zMin).y, y1: mapPoint(0, zone.zMax).y }));
+}

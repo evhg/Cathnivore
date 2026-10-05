@@ -26,6 +26,7 @@ function intent(over: Partial<Intent> = {}): Intent {
     focus: false,
     pause: false,
     skills: false,
+    map: false,
     skill1: false,
     skill2: false,
     ...over,

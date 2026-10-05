@@ -23,6 +23,7 @@ export interface Intent {
   focus: boolean;
   pause: boolean;
   skills: boolean;
+  map: boolean;
   /** Active skill quick-slots. */
   skill1: boolean;
   skill2: boolean;
@@ -304,6 +305,7 @@ export class Input {
       focus: k("AltLeft") || k("KeyX") || this.touchHeld.has("focus"),
       pause: p("Escape") || p("KeyP"),
       skills: p("KeyK") || p("Tab") || tt.has("sheet"),
+      map: p("KeyM"),
       skill1: p("KeyG") || tt.has("skill"),
       skill2: p("KeyZ"),
     };
