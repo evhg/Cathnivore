@@ -4,9 +4,16 @@
 import * as THREE from "three";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
+import { WINGS } from "./zones";
 
 const MARKS = ["Dunmore", "Ketch", "Ostler", "Brandt", "Vasco", "Imre", "Teague", "Halloran"];
 const SPOTS: [number, number][] = [[0, 48], [-10, 30], [12, 20], [-6, -10], [8, 38]];
+
+/** Quay spots, plus the middle of every wing she has opened (marks hide in the districts she has earned). */
+export function sideSpots(jobsDone: readonly string[]): [number, number][] {
+  const wings = WINGS.filter((w) => jobsDone.includes(w.needs)).map((w): [number, number] => [14.5, (w.zMin + w.zMax) / 2]);
+  return [...SPOTS, ...wings];
+}
 
 /** How many contracts she has finished. */
 export function sideCount(jobsDone: readonly string[]): number {
@@ -38,7 +45,8 @@ export class SideContractJob {
     this.stage = stage;
     if (stage === 0) {
       const n = sideCount(h.progress.jobsDone);
-      const [x, z] = SPOTS[n % SPOTS.length]!;
+      const spots = sideSpots(h.progress.jobsDone);
+      const [x, z] = spots[n % spots.length]!;
       this.objective = `Ana's contract: ${this.markName} is on the quay. Remove them.`;
       this.mark = h.spawn("rifle", [this.P(x, z), this.P(x + 2, z - 2)], { passive: true });
       for (let i = 0; i < this.guards; i++) {

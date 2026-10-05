@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { SideContractJob, sideCount } from "../games/cathode/src/game/sidejob";
+import { SideContractJob, sideCount, sideSpots } from "../games/cathode/src/game/sidejob";
 
 function host(jobsDone: string[]) {
   const spawned: { alive: boolean; position: THREE.Vector3 }[] = [];
@@ -40,5 +40,12 @@ describe("Ana's late contracts", () => {
     const b = host([...jobs, "anaSide:0", "anaSide:1", "anaSide:2"]);
     new SideContractJob(b.h as never);
     expect(b.spawned).toHaveLength(4);
+  });
+
+  it("adds a spot in each opened wing", () => {
+    expect(sideSpots([])).toHaveLength(5);
+    const spots = sideSpots(["crispBoss", "vaneBoss"]);
+    expect(spots).toHaveLength(7);
+    expect(spots[5]![0]).toBeGreaterThan(14);
   });
 });
