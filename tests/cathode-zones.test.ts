@@ -54,3 +54,12 @@ d2("wings", () => {
     e2(w.update(["crispBoss"], 20, 30)?.id).toBe("clinicBay");
   });
 });
+
+d2("later wings", () => {
+  i2("each opens with its predecessor's boss", () => {
+    e2(wingAt(["crispBoss"], 20, 0)).toBeUndefined();
+    e2(wingAt(["vaneBoss"], 20, 0)?.id).toBe("plazaSteps");
+    e2(wingAt(["pellBoss"], 20, -30)?.id).toBe("towerLobby");
+    e2(wingAt(["boardBoss"], 20, -60)?.id).toBe("vaultGate");
+  });
+});

@@ -81,6 +81,9 @@ export interface Wing {
 /** Districts reached from the quay's east edge; their banners and map marks appear once the previous boss is down. */
 export const WINGS: readonly Wing[] = [
   { id: "clinicBay", name: "The Clinic Bay", sub: "Candor's surgery, Dr Vane's patch", xMin: 14, zMin: 16, zMax: 42, needs: "crispBoss" },
+  { id: "plazaSteps", name: "Hollowell Plaza", sub: "Councillor Pell's steps", xMin: 14, zMin: -20, zMax: 16, needs: "vaneBoss" },
+  { id: "towerLobby", name: "The Board Tower", sub: "Glass, marble, the Chair", xMin: 14, zMin: -40, zMax: -20, needs: "pellBoss" },
+  { id: "vaultGate", name: "The Hollow Vault", sub: "Where Candor keeps its debts", xMin: 14, zMin: -70, zMax: -40, needs: "boardBoss" },
 ];
 
 export function wingAt(jobsDone: readonly string[], x: number, z: number): Wing | undefined {
