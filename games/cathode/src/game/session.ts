@@ -497,7 +497,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const ammo = arsenal.scavenge();
     if (ammo) hud.feedLine(`+${ammo} rounds`);
     hud.hitMarker(true);
+    // Volatile elites blow up where they fall (applied next frame, outside the kill loop).
+    if (k.enemy.kit.mods?.includes("explosiveOnDeath")) {
+      deathBlasts.push({ pos: k.enemy.body.joints.chest.clone(), radius: 4, damage: Math.round(k.enemy.kit.maxHp * 0.4) });
+      hud.feedLine("Volatile: it goes up", true);
+    }
   };
+  const deathBlasts: { pos: THREE.Vector3; radius: number; damage: number }[] = [];
 
   let last = performance.now();
   let time = 0;
@@ -807,6 +813,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     for (const b of actives.blasts) combat.explode(b.pos, b.radius, b.damage, build(), b.silent);
     actives.blasts.length = 0;
+    for (const b of deathBlasts.splice(0)) {
+      world.fx.explosion(b.pos.clone(), b.radius);
+      combat.explode(b.pos, b.radius, b.damage, build(), false);
+      const d = b.pos.distanceTo(eye);
+      if (!dead && d < b.radius) {
+        s.hp = Math.max(0, s.hp - actives.absorb(b.damage * (1 - d / b.radius) * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)));
+        sinceHurt = 0;
+      }
+    }
     if (actives.heal > 0) {
       s.hp = Math.min(s.maxHp, s.hp + actives.heal);
       actives.heal = 0;
