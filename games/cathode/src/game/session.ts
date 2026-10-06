@@ -15,7 +15,7 @@ import { KillCam } from "./killcam";
 import { Hud } from "../ui/hud";
 import { Audio } from "./audio";
 import { CLASS_WEAPON, Progress } from "./progress";
-import { Pickups } from "./pickups";
+import { Pickups, gunDrop } from "./pickups";
 import type { Item } from "../sim/loot";
 import { FirstJob } from "./firstjob";
 import { CrispJob } from "./crispjob";
@@ -524,9 +524,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   const pickups = new Pickups(world.scene);
   const secrets = new Secrets(progress.jobsDone, ground, world.scene);
-  const collect = (drop: { items: Item[]; scrip: number }) => {
+  const collect = (drop: { items: Item[]; scrip: number; gun?: string }) => {
     progress.take(drop);
     if (drop.scrip) hud.feedLine(`+${drop.scrip} Scrip`);
+    if (drop.gun) {
+      const gdef = SLICE_WEAPONS.find((w) => w.id === drop.gun);
+      if (gdef && arsenal.owned.has(gdef.id)) {
+        const n = arsenal.giveAmmo(gdef.id);
+        hud.feedLine(n ? `+${n} rounds (${gdef.name})` : `${gdef.name}: ammo full`);
+      } else if (gdef && (!job || job.done)) {
+        progress.grantWeapon(gdef.id);
+        arsenal.owned.add(gdef.id);
+        hud.feedLine(`New weapon: ${gdef.name} (scroll or Swap)`, true);
+      }
+    }
     for (const it of drop.items) {
       hud.feedItem(it.name, it.rarity);
       // After the first job, a weapon of a kind she hasn't carried yet joins her kit: one new toy at a time.
@@ -563,6 +574,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const xp = progress.lastXp;
     hud.feedLine(`+${xp} XP${bits.length ? " · " + bits.join(" · ") : ""}`, k.headshot || k.unseen);
     const found = progress.rollLoot(k.enemy.level, !!k.enemy.kit.elite);
+    if (!k.takedown) found.gun = gunDrop(k.enemy.kit.role, Math.random());
     const at = k.enemy.position.clone();
     at.y = world.groundHeight(at.x, at.z);
     pickups.drop(at, found);

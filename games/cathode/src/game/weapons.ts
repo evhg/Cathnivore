@@ -197,6 +197,15 @@ export class Arsenal {
     return got;
   }
 
+  /** Ammo from a dropped gun: a magazine and a half of reserve for that weapon (capped at 2x its starting reserve). Returns rounds added. */
+  giveAmmo(id: string): number {
+    const h = this.held.find((x) => x.def.id === id);
+    if (!h || h.def.mag === 0) return 0;
+    const n = Math.max(0, Math.min(Math.ceil(h.def.mag * 1.5), h.def.reserve * 2 - h.reserve));
+    h.reserve += n;
+    return n;
+  }
+
   /** Fills the held magazine from nowhere and cancels a reload (Spin Reload, Bullet Hose, Bang Bang). */
   topUp(): void {
     const h = this.held[this.current]!;

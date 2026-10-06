@@ -117,7 +117,7 @@ export class Progress {
   }
 
   /** Roll a drop without pocketing it: it lies on the ground until she walks over it. */
-  rollLoot(monsterLevel: number, elite: boolean): { items: Item[]; scrip: number } {
+  rollLoot(monsterLevel: number, elite: boolean): { items: Item[]; scrip: number; gun?: string } {
     return rollDrop(this.rng, monsterLevel, this.character.difficulty, this.stats.magicFind, elite);
   }
 

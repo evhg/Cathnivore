@@ -7,6 +7,15 @@ import { RARITY_COLOURS, type Item, type Rarity } from "../sim/loot";
 export interface Drop {
   items: Item[];
   scrip: number;
+  /** A gun dropped by an armed enemy (weapon id): ammo for it, or the gun itself if she hasn't carried one. */
+  gun?: string;
+}
+
+/** The gun an armed enemy drops, if any; `roll` is a 0-1 random number. Shields drop nothing (the shield is theirs). */
+export function gunDrop(role: "rifle" | "shield" | "sniper" | undefined, roll: number): string | undefined {
+  if (role === "shield") return undefined;
+  if (roll >= (role === "sniper" ? 0.5 : 0.35)) return undefined;
+  return role === "sniper" ? "widowmaker" : role === "rifle" ? "corridorAR" : "kestrel";
 }
 
 export interface Pickup {
@@ -31,11 +40,11 @@ export class Pickups {
   constructor(private readonly scene?: THREE.Scene) {}
 
   drop(pos: THREE.Vector3, d: Drop): Pickup | null {
-    if (!d.items.length && !d.scrip) return null;
+    if (!d.items.length && !d.scrip && !d.gun) return null;
     const p: Pickup = { drop: d, pos: pos.clone(), age: 0 };
     if (this.scene) {
       const rarity = bestRarity(d);
-      const colour = new THREE.Color(RARITY_COLOURS[rarity]);
+      const colour = new THREE.Color(d.gun && !d.items.length ? "#9fb4c7" : RARITY_COLOURS[rarity]);
       const m = new THREE.Mesh(
         new THREE.OctahedronGeometry(d.items.length ? 0.16 : 0.1),
         new THREE.MeshStandardMaterial({ color: colour, emissive: colour, emissiveIntensity: rarity === "standard" ? 1.2 : 3, roughness: 0.3 }),

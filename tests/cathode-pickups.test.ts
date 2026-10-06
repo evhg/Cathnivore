@@ -28,3 +28,28 @@ describe("loot pickups", () => {
     expect(bestRarity({ items: [item("standard"), item("rare")], scrip: 0 })).toBe("rare");
   });
 });
+
+import { gunDrop } from "../games/cathode/src/game/pickups";
+import { Arsenal } from "../games/cathode/src/game/weapons";
+
+describe("dropped guns", () => {
+  it("rolls by role", () => {
+    expect(gunDrop("rifle", 0.1)).toBe("corridorAR");
+    expect(gunDrop("sniper", 0.4)).toBe("widowmaker");
+    expect(gunDrop(undefined, 0.2)).toBe("kestrel");
+    expect(gunDrop("rifle", 0.9)).toBeUndefined();
+    expect(gunDrop("shield", 0)).toBeUndefined();
+  });
+  it("a gun-only drop is kept", () => {
+    const p = new Pickups();
+    expect(p.drop(new THREE.Vector3(), { items: [], scrip: 0, gun: "kestrel" })).not.toBeNull();
+  });
+  it("gives ammo up to the cap", () => {
+    const a = new Arsenal(new THREE.Scene());
+    a.owned.add("kestrel");
+    expect(a.giveAmmo("kestrel")).toBeGreaterThan(0);
+    for (let i = 0; i < 20; i++) a.giveAmmo("kestrel");
+    expect(a.giveAmmo("kestrel")).toBe(0);
+    expect(a.giveAmmo("nope")).toBe(0);
+  });
+});
