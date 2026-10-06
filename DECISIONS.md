@@ -303,3 +303,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-06: Hedgerow Cath scale 1.3 -> 0.98 rather than an outline pass.
 - 2026-10-06: Hedgerow roster table shows tier-1 stats only and is hidden under 900px wide or 520px tall, so phone layouts are unchanged.
 - 2026-10-06: Landscape-phone tower card keeps its sticky action row; the stats were compacted rather than scrolled.
+- 2026-10-06: ROADMAP was down to 2 items, so planned Runnel Phase 7 (114-118) from screenshots.

@@ -345,8 +345,15 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 109. [x] **CATHODE phone touch buttons visible:** the touch shot shows only Fire and Jump; aim, reload, crouch, takedown and weapon cycle report 0x0 (hidden until needed). Show Aim and Reload always, and shot-verify at 844x390 (`games/cathode/src/ui/hud.ts`, `styles.css`).
 110. [x] **CATHODE look-drag hint timing:** "DRAG TO AIM" sits over the crosshair; move it to the right half low, fade after the first drag.
 111. [x] **CATHODE subtitle clipping:** the phone subtitle's second line is clipped under the crosshair strip; raise the subtitle plate above the touch zone or cap to one line on touch.
-112. [ ] **Runnel fresh-eyes pass:** screenshot Runnel at phone and desktop, critique against VISION bars, add findings here (`games/runnel/`).
+112. [x] **Runnel fresh-eyes pass:** *(2026-10-06 22:52: shots checked; findings 114-118; 114 done)* screenshot Runnel at phone and desktop, critique against VISION bars, add findings here (`games/runnel/`).
 113. [ ] **Hedgerow act variety audit:** compare level 10/20/30 route and tower shots and list what differs; add one distinct structure or hazard per act if they look alike (`games/hedgerow/`).
+
+**Phase 7: Runnel polish, planned 2026-10-06 22:52 (from the 112 critique).**
+114. [x] **Runnel progress label:** the hint line shows "N of M fields watered" once play starts (`games/runnel/src/main.ts`).
+115. [ ] **Runnel Cath bubble size:** Cath's portrait is 48px and the bubble is one line; make her 64px on desktop with a short pose change when water spreads (bar 5).
+116. [ ] **Runnel spring visibility:** the spring is small against the beige tiles; add a soft pulsing glow ring and a distinct tile tint (`games/runnel/src/board.ts`).
+117. [ ] **Runnel stage background:** the page is flat cream; add a faint field-furrow pattern or vignette so the board sits in a landscape (bar 1).
+118. [ ] **Runnel solved moment:** when solved, wave-sprout animation across fields plus a share card with the puzzle number (`games/runnel/`).
 
 ## Later (only when the owner asks in FEEDBACK.md)
 

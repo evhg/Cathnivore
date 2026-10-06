@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-06 22:52 session:** ROADMAP 112 done (Runnel shots critiqued; planned Phase 7, 114-118), 114 done ("N of M fields watered" hint). `npm run check` green. Unreleased (release cap used: 4 today). Next: 115 Cath bubble, 116 spring glow, 113 Hedgerow act audit.
 - **2026-10-06 20:52 session:** ROADMAP 97 done (touch shot in `npm run shots:cathode`; plate clear of stick, buttons 56px+, cycle button 56x56). Planned 109-113 (Phase 6f; shot shows Aim/Reload hidden, subtitle clipped). `npm run check` was still in the unit-test stage at commit. Unreleased (release cap used: 4 today). Next: 109 visible aim/reload, 111 subtitle clip.
 - **2026-10-06 19:52 session:** ROADMAP 108 done (landscape phone Hedgerow tower card: smaller icon, tighter stats, no-shrink children; e2e:site 52 passed). Unreleased (release cap used: 4 today). Next: 97 touch check, then plan Phase 6e.
 - **2026-10-06 18:52 session:** ROADMAP 101 done (`?play&shot` skips the 18+ gate; `npm run shots:cathode`, run with preview on :4180 and a 180s screenshot timeout since swiftshader is slow). Phone landscape HUD: subtitle lifted clear of the health plate, objective wraps to 2 lines. `npm run check` green. Unreleased (release cap used: 4 today). Next: 108 landscape Hedgerow, 97 touch check.

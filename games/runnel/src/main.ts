@@ -237,7 +237,11 @@ function render(): void {
     ui.btnNew.hidden = false
     ui.btnNew.textContent = isDaily ? 'See result' : 'New puzzle'
   } else {
-    ui.hint.textContent = 'Tap a tile to turn it. Hold to pin it in place.'
+    const wet = Math.max(0, flow.wet.size - 1)
+    ui.hint.textContent =
+      game.taps === 0
+        ? 'Tap a tile to turn it. Hold to pin it in place.'
+        : `${wet} of ${playable - 1} fields watered. Hold a tile to pin it.`
     ui.btnNew.hidden = isDaily
     ui.btnNew.textContent = 'New puzzle'
   }
