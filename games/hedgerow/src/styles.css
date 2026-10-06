@@ -1450,7 +1450,8 @@ button {
     height: 50px;
   }
   .node .level-name {
-    font-size: 11px;
+    font-size: 12px;
+    color: var(--ink);
   }
   .intro {
     left: 10px;
