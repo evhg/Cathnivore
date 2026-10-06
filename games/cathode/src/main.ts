@@ -111,7 +111,9 @@ async function begin(): Promise<void> {
   loading.hidden = true;
 }
 
-if (!prefs.adult) {
+// ?play&shot is for screenshots: skip the gate for this visit only, without saving the 18+ answer.
+const shotBypass = params.has("play") && params.has("shot");
+if (!prefs.adult && !shotBypass) {
   $("gate-cath").innerHTML = cathSvg({ expression: "smirk", framing: "half", outfit: "trench" });
   show("screen-gate");
 }
