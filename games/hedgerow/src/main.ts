@@ -754,6 +754,12 @@ function wavePreview(p: HTMLElement, g: Game): void {
     row.append(li);
   }
   p.append(row);
+  if (g.towers.length) {
+    const counts = new Map<TowerKind, number>();
+    for (const t of g.towers) counts.set(t.kind, (counts.get(t.kind) ?? 0) + 1);
+    const list = [...counts].map(([k, n]) => `${n} × ${TOWERS[k].name}`).join(", ");
+    p.append(line(`On the field: ${list}. Tap a tower for its range, upgrades and sell price.`, "hint field-summary"));
+  }
   if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Tap the lane to move Cath.", "hint"));
 }
 

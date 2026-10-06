@@ -329,13 +329,17 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 99. [x] **Age gate fits phone landscape:** at 844x390 the "I'm 18 or over" buttons fall below the fold; make the card scroll-free (two-column choices or compact type, `max-height:480px`) (`games/cathode/src/ui/`, `styles.css`).
 100. [x] **Age gate title overflow:** at 1440x900 the letter-spaced CATHODE wordmark overflows the 560px card edges; use `clamp()` font size and less tracking so it sits inside the card.
 101. [ ] **Gate bypass for shots:** let `?play&shot` skip the age gate (default Full) so `npm run shots` and a new `e2e/screenshots.spec.ts` case capture in-game CATHODE HUD at phone and desktop sizes (`games/cathode/src/main.ts`, `e2e/screenshots.spec.ts`).
-102. [ ] **Hedgerow header collision:** the "Hedgerow" title touches the Cath pill at 844 and 1440 widths; add a gap, shrink pills or wrap them below the title on phones (`games/hedgerow/src/` level-select styles).
-103. [ ] **Hedgerow level-select polish:** node labels are about 11px and pale; raise to 13px and darker, show a star count under each node, and add a locked-node padlock style so progress reads at a glance.
-104. [ ] **Hedgerow in-field shots:** add `?sandbox=1` screenshots of a mid-wave field (3D and `?2d`) to `npm run shots` so tower, enemy and Cath readability can be critiqued next session (`e2e/screenshots.spec.ts`).
+102. [x] **Hedgerow header collision:** the "Hedgerow" title touches the Cath pill at 844 and 1440 widths; add a gap, shrink pills or wrap them below the title on phones (`games/hedgerow/src/` level-select styles).
+103. [x] **Hedgerow level-select polish:** node labels are about 11px and pale; raise to 13px and darker, show a star count under each node, and add a locked-node padlock style so progress reads at a glance.
+104. [x] **Hedgerow in-field shots:** add `?sandbox=1` screenshots of a mid-wave field (3D and `?2d`) to `npm run shots` so tower, enemy and Cath readability can be critiqued next session (`e2e/screenshots.spec.ts`).
 
 ## Postponed by the owner (2026-09-28)
 
 - **iPhone App Store launch:** postponed until the games are truly impressive. Don't dispatch `ios.yml` or `store.yml`, and don't work on store listings or screenshots. Keep `npm run build` (the iPhone app's web bundle) passing. Only the owner reopens this, through `FEEDBACK.md`.
+105. [ ] **Hedgerow field panel:** the desktop side panel is a large empty white column between waves; fill it with tower stats, Cath's tip of the wave and the next wave's roster with threat icons (`games/hedgerow/src/main.ts` panel render).
+106. [ ] **Hedgerow sandbox shots:** `scripts/hedgerow-shots.mjs` places few towers because most plots are not buildable cells; pick plots from the level's buildable list so the shot shows 8 towers, a merge and a boss wave.
+107. [ ] **Hedgerow 3D readability:** Cath is larger than a tower in the 3D desktop view and hides the lane; scale her down 25% or add an outline pass, and add range rings when a tower is selected.
+108. [ ] **Hedgerow landscape phone:** check the build row and tower sheet inside the 250px side column at 844x390 and 932x430 (selected tower, upgrade choice, merge) with `shots:hedgerow`.
 
 ## Later (only when the owner asks in FEEDBACK.md)
 
