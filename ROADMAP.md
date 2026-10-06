@@ -303,8 +303,8 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 **Phase 6b: polish and reach (planned 2026-10-06, after Phase 6 finished).**
 81. [ ] **Remappable keys and gamepad:** a Controls page in the pause card (rebind, invert Y, sensitivity), standard-mapping gamepad support with aim assist.
-82. [ ] *(2026-10-06: large subtitles and calm camera toggles done; left: colour-blind colours, hold-to-toggle)* **Accessibility:** subtitle size and background, colour-blind-safe alert/ping colours, reduced-motion (camera shake, bloom flicker), a hold-to-toggle option for ADS and sprint.
-83. [ ] **Photo mode:** pause, free camera, hide HUD, depth-of-field and filter presets, save a PNG.
+82. [x] *(2026-10-06: large subtitles, calm camera, colour-blind palette (`:root.colour-safe`) and toggle sprint/aim (`Input.holdToggle`) all in the pause card)* **Accessibility:** subtitle size and background, colour-blind-safe alert/ping colours, reduced-motion (camera shake, bloom flicker), a hold-to-toggle option for ADS and sprint.
+83. [~] *(2026-10-06: B opens photo mode on desktop: HUD hidden, five filter presets, Save PNG; left: free camera, depth of field)* **Photo mode:** pause, free camera, hide HUD, depth-of-field and filter presets, save a PNG.
 84. [x] *(2026-10-06: letterbox bars + big name card via `banner(..., "boss")`; non-blocking so nothing to skip)* **Boss intros:** a short letterboxed camera move and name card for Crisp, Vane, Pell, the Chair and HollowCandor, skippable.
 85. [ ] **New Game+:** after act 5, restart the story with her kit and tougher elites, a title-screen entry and a save-code flag.
 

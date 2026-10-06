@@ -41,6 +41,14 @@
   --ui: "Atkinson Hyperlegible", system-ui, sans-serif;
 }
 
+/* Colour-blind-safe palette (Okabe-Ito leaning): the red/amber/pink trio becomes vermillion, yellow and violet-blue. */
+:root.colour-safe {
+  --blood: #b84a00;
+  --blood-hot: #ff7a1a;
+  --neon-amber: #f0e442;
+  --neon-pink: #56b4e9;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -2532,3 +2540,11 @@ input[type="radio"] {
 .case-list .case-done b {
   color: var(--ink-dim, #8a8f9c);
 }
+
+/* Photo mode: a slim bar at the bottom while the world holds still. */
+.photo-mode { position: absolute; inset: 0; z-index: 40; pointer-events: none; display: flex; align-items: flex-end; justify-content: center; padding: 16px; }
+.photo-bar { pointer-events: auto; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 10px 12px; background: rgba(7, 8, 11, 0.82); border: 1px solid var(--rule); border-radius: 10px; }
+.photo-bar button { font: 600 14px var(--ui); color: var(--ink); background: var(--night-3); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 14px; min-height: 40px; cursor: pointer; }
+.photo-bar button[aria-pressed="true"] { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+.photo-bar .photo-save { background: var(--blood); border-color: var(--blood); }
+.photo-on .hud-root { visibility: hidden; }

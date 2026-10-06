@@ -14,10 +14,14 @@ export interface Prefs {
   bigSubs: boolean;
   /** Less camera shake and sway (also on when the system asks for reduced motion). */
   calmCamera: boolean;
+  /** Colour-blind-safe palette: red and amber UI colours swap for vermillion, yellow and blue-leaning tones. */
+  colourSafe: boolean;
+  /** Sprint and aim toggle on a press instead of being held. */
+  holdToggle: boolean;
 }
 
 const KEY = "cathode:prefs:v1";
-const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false };
+const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false };
 
 export function loadPrefs(): Prefs {
   try {
@@ -31,6 +35,8 @@ export function loadPrefs(): Prefs {
       volume: typeof p.volume === "number" && p.volume >= 0 && p.volume <= 1 ? p.volume : 1,
       bigSubs: p.bigSubs === true,
       calmCamera: p.calmCamera === true,
+      colourSafe: p.colourSafe === true,
+      holdToggle: p.holdToggle === true,
     };
   } catch {
     return { ...DEFAULTS };

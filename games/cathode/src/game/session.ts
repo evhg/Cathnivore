@@ -1,6 +1,7 @@
 // One play session: builds the world, puts Cath in it and runs the frame loop that ties everything
 // together: input, movement, weapons, combat, enemies, stealth, the kill-cam, bullet-time, XP and the HUD.
 
+import { openPhotoMode } from "../ui/photomode";
 import { calmCameraOn, loadPrefs } from "../prefs";
 import * as THREE from "three";
 import { createWorld } from "../render/world";
@@ -108,6 +109,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const ground = (x: number, z: number) => world.groundHeight(x, z);
   const player = new Player(start, world.colliders, ground);
   const input = new Input(o.canvas, o.touch);
+  input.holdToggle = loadPrefs().holdToggle;
+  window.addEventListener("cathode:prefs", () => (input.holdToggle = loadPrefs().holdToggle));
   const rays = new RayWorld(world.colliders);
   const progress = new Progress();
   const areaLevel = Math.max(1, progress.character.level);
@@ -711,6 +714,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       document.exitPointerLock?.();
       const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
       openDistrictMap(o.hud.parentElement ?? o.hud, player.pos, t ? { x: t.x, z: t.z } : null, () => (coaching = false), progress.jobsDone);
+    }
+    if (intent.photo && !coaching && !charScreen && !killcam.active && !dead && !input.isTouch) {
+      coaching = true;
+      document.exitPointerLock?.();
+      openPhotoMode(o.hud.parentElement ?? o.hud, o.canvas, render, () => {
+        coaching = false;
+        input.lock();
+      });
     }
     if (s.paused || away) {
       last = now;

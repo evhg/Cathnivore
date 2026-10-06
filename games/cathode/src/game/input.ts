@@ -24,6 +24,7 @@ export interface Intent {
   pause: boolean;
   skills: boolean;
   map: boolean;
+  photo: boolean;
   /** Active skill quick-slots. */
   skill1: boolean;
   skill2: boolean;
@@ -90,7 +91,10 @@ export class Input {
       return;
     }
     if (e.button === 0) this.mouse.left = down;
-    if (e.button === 2) this.mouse.right = down;
+    if (e.button === 2) {
+      this.mouse.right = down;
+      if (down && this.holdToggle) this.aimLatched = !this.aimLatched;
+    }
     if (e.button === 1) this.mouse.middle = down;
   };
 
@@ -252,6 +256,11 @@ export class Input {
   /** Touch auto-fire: the session pulls the trigger when aim assist has her on a target. */
   autoFire = false;
 
+  /** Accessibility: sprint and aim switch on and off with a press instead of being held. */
+  holdToggle = false;
+  private aimLatched = false;
+  private sprintLatched = false;
+
   /** Reads and clears this frame's input. */
   read(): Intent {
     const k = (c: string) => this.keys.has(c);
@@ -288,14 +297,21 @@ export class Input {
     let slot = -1;
     for (let i = 1; i <= 9; i++) if (p(`Digit${i}`)) slot = i - 1;
     const tt = this.touchTapped;
+    if (this.holdToggle) {
+      if (p("ShiftLeft") || p("ShiftRight")) this.sprintLatched = !this.sprintLatched;
+      if (len === 0) this.sprintLatched = false;
+    } else {
+      this.aimLatched = false;
+      this.sprintLatched = false;
+    }
     const intent: Intent = {
       move: { x: mx, y: my },
       look: { yaw, pitch },
-      sprint: k("ShiftLeft") || k("ShiftRight") || padSprint || (this.isTouch && Math.hypot(this.stick.x, this.stick.y) > 0.95),
+      sprint: (this.holdToggle ? this.sprintLatched : k("ShiftLeft") || k("ShiftRight")) || padSprint || (this.isTouch && Math.hypot(this.stick.x, this.stick.y) > 0.95),
       crouch: p("ControlLeft") || p("KeyC") || padCrouch || tt.has("crouch"),
       jump: p("Space") || padJump || tt.has("jump"),
       fire: this.mouse.left || padFire || this.touchHeld.has("fire") || this.autoFire,
-      aim: this.mouse.right || padAim || this.touchHeld.has("aim"),
+      aim: (this.holdToggle ? this.aimLatched : this.mouse.right) || padAim || this.touchHeld.has("aim"),
       alt: this.mouse.middle || k("KeyV"),
       reload: p("KeyR") || padReload || tt.has("reload"),
       takedown: p("KeyF") || tt.has("takedown"),
@@ -306,6 +322,7 @@ export class Input {
       pause: p("Escape") || p("KeyP"),
       skills: p("KeyK") || p("Tab") || tt.has("sheet"),
       map: p("KeyM"),
+      photo: p("KeyB"),
       skill1: p("KeyG") || tt.has("skill"),
       skill2: p("KeyZ"),
     };
