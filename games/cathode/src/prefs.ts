@@ -10,10 +10,14 @@ export interface Prefs {
   quality: QualityChoice;
   /** Master volume, 0..1. */
   volume: number;
+  /** Larger subtitles on a solid backing. */
+  bigSubs: boolean;
+  /** Less camera shake and sway (also on when the system asks for reduced motion). */
+  calmCamera: boolean;
 }
 
 const KEY = "cathode:prefs:v1";
-const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1 };
+const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false };
 
 export function loadPrefs(): Prefs {
   try {
@@ -25,6 +29,8 @@ export function loadPrefs(): Prefs {
       intensity: p.intensity === "reduced" ? "reduced" : "full",
       quality: p.quality === "phone" || p.quality === "high" || p.quality === "ultra" ? p.quality : "auto",
       volume: typeof p.volume === "number" && p.volume >= 0 && p.volume <= 1 ? p.volume : 1,
+      bigSubs: p.bigSubs === true,
+      calmCamera: p.calmCamera === true,
     };
   } catch {
     return { ...DEFAULTS };
@@ -44,4 +50,14 @@ export function resolveQuality(choice: QualityChoice): "phone" | "high" | "ultra
   if (choice !== "auto") return choice;
   const coarse = matchMedia("(pointer: coarse)").matches;
   return coarse && Math.min(screen.width, screen.height) < 600 ? "phone" : "high";
+}
+
+/** Whether camera jolt and scope sway should be damped: the setting, or the system's reduced-motion request. */
+export function calmCameraOn(p: Prefs = loadPrefs()): boolean {
+  if (p.calmCamera) return true;
+  try {
+    return matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
 }

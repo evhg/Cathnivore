@@ -1,7 +1,7 @@
 // One play session: builds the world, puts Cath in it and runs the frame loop that ties everything
 // together: input, movement, weapons, combat, enemies, stealth, the kill-cam, bullet-time, XP and the HUD.
 
-import { loadPrefs } from "../prefs";
+import { calmCameraOn, loadPrefs } from "../prefs";
 import * as THREE from "three";
 import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
@@ -662,6 +662,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let sinceHurt = 99;
   let hitStop = 0;
   let jolt = 0;
+  const calm = calmCameraOn();
   // The pause menu, opened by the phone's menu button (desktop pauses whenever the mouse is free).
   let menuOpen = false;
   hud.onResume = () => {
@@ -780,15 +781,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Scope sway: a slow figure-of-eight; held breath (Focus while scoped) all but stills it.
     if (arsenal.scopedIn) {
       swayT += realDt;
-      const amp = 0.0045 * progress.stats.swayMultiplier * run.sway * (focusing ? 0.12 : 1) * (1 + player.speed * 0.4);
+      const amp = (calm ? 0.4 : 1) * 0.0045 * progress.stats.swayMultiplier * run.sway * (focusing ? 0.12 : 1) * (1 + player.speed * 0.4);
       world.camera.rotation.x += Math.sin(swayT * 0.9) * amp;
       world.camera.rotation.y += Math.sin(swayT * 0.45) * amp * 1.4;
     }
     // The camera jolts with a landed blow, in the swing's direction.
     if (jolt > 0.01) {
       jolt *= Math.exp(-realDt * 14);
-      world.camera.rotation.z += jolt * 0.035 * arsenal.anim.meleeSide;
-      world.camera.rotation.x -= jolt * 0.02;
+      world.camera.rotation.z += (calm ? 0.25 : 1) * jolt * 0.035 * arsenal.anim.meleeSide;
+      world.camera.rotation.x -= (calm ? 0.25 : 1) * jolt * 0.02;
     }
     world.camera.getWorldPosition(eye);
     world.camera.getWorldDirection(fwd);

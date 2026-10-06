@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-06 04:52 session:** released `2a00c4b` (all CATHODE work incl. gun drops and lead jobs; gates passed; tag push 403 harmless; 2nd release today). Ticked ROADMAP 72, 74, 75, 78, 79; added Phase 6b (81-85). ROADMAP 82: Large subtitles and Calm camera toggles in the pause card (`prefs.ts`, test). `npm run check` green. Unreleased. Next: ROADMAP 82 colour-blind/hold-to-toggle, 84 boss intros.
 - **2026-10-06 03:51 session:** ROADMAP 72: armed enemies drop guns (`gunDrop`/`Drop.gun` in `game/pickups.ts`, `Arsenal.giveAmmo`; ammo for an owned gun, or a new weapon after the first job; test). `npm run check` green. Unreleased. Next: ROADMAP 79 side jobs, 78 perf.
 - **2026-10-06 02:52 session:** ROADMAP 79: lead jobs before the Chair and HollowCandor (`game/boardlead.ts`, `vaultlead.ts`; chain pellBoss -> boardLead -> boardBoss -> vaultLead -> vaultBoss; case board entries; tests). `npm run check` green. Unreleased. Next: ROADMAP 72 pickups, 78 perf.
 - **2026-10-06 01:51 session:** ROADMAP 79: lead jobs before Vane and Pell (`game/vanelead.ts`, `pelllead.ts`; chain crispBoss -> vaneLead -> vaneBoss -> pellLead -> pellBoss; case board entry; test). ROADMAP 73 ticked done. Next: ROADMAP 79 plaza lead before Pell, 72 pickups.

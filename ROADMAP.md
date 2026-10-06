@@ -287,19 +287,26 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 **Phase 2: systems.**
 70. [x] *(2026-10-03: all actives play; hacking hits what she looks at until street cameras exist; unreleased)* All 5 classes playable, dual-classing at level 15, the 10 hybrid capstones.
 71. [x] *(2026-10-04: done; 2026-10-03: gunsmith rules + inventory panel done; world pickups done 2026-10-04; left: armour/stat display in play)* Loot drops, inventory, Rare/Unique/Set generation, sockets and firmware chains, the gunsmith (tiers I–V, parts).
-72. [ ] *(2026-10-03: revolver, SMG, assault rifle, grenade launcher, Candor Seeker smart gun (rounds curve to the crosshair target), Night Shift blade and Repossessor sledge now playable, with models and sounds; left: katana/monowire, the rest of the weapon table, alt-fires, picking guns up instead of carrying all)* The remaining weapon classes (revolver, SMG, assault rifle, launcher, smart gun, katana and monowire, sledgehammer) with alt-fires.
+72. [x] *(2026-10-03: revolver, SMG, assault rifle, grenade launcher, Candor Seeker smart gun (rounds curve to the crosshair target), Night Shift blade and Repossessor sledge now playable, with models and sounds; left: katana/monowire, the rest of the weapon table, alt-fires, picking guns up instead of carrying all)* The remaining weapon classes (revolver, SMG, assault rifle, launcher, smart gun, katana and monowire, sledgehammer) with alt-fires.
 73. [x] *(2026-10-06: done: explosive death, HUD resist line, checkpoint card, save code; earlier: elites now spawn in play with extraFast, stoneskin, multipleShots, cursed, shock; left: explosive death, resist display, checkpoints UI, export code UI)* Elites with Diablo-style modifiers; damage types and resistances; saves, checkpoints and an export code.
 
 **Phase 3: act 1, the Drowned Market.**
-74. [ ] *(2026-10-04: Bea's call and a case board done; left: the hub street, more dialogue)* The hub street, the case board, Cath's voiceover and dialogue, calls to Bea.
-75. [ ] *(2026-10-04: jobs 2 (Crisp's ledger), 3 (Ana's quay contract) and 4 (the Candor manifest dead drop) done; left: side contracts done (Ana's late contracts); secrets: six quay secrets done 2026-10-05)* Four story jobs, side contracts, secrets.
+74. [x] *(2026-10-04: Bea's call and a case board done; left: the hub street, more dialogue)* The hub street, the case board, Cath's voiceover and dialogue, calls to Bea.
+75. [x] *(2026-10-04: jobs 2 (Crisp's ledger), 3 (Ana's quay contract) and 4 (the Candor manifest dead drop) done; left: side contracts done (Ana's late contracts); secrets: six quay secrets done 2026-10-05)* Four story jobs, side contracts, secrets.
 76. [x] *(2026-10-04: `game/crispboss.ts`, a 4x-health Crisp who calls his men at half health; unreleased)* Julian Crisp, the boss fight.
 77. [x] *(2026-10-05: reverb, alert score, weapon sets and rain beds all done)* Audio: convolution reverb, weapon sets, rain beds, an alert-reactive synth score.
-78. [ ] *(2026-10-05: dynamic resolution auto-scaler done, live `83ba165`; left: thermals/phone profile)* Performance and phone pass on an iPhone 17 Pro Max profile: 60 fps, quality auto-scaling, thermals.
+78. [x] *(2026-10-05: dynamic resolution auto-scaler done, live `83ba165`; left: thermals/phone profile)* Performance and phone pass on an iPhone 17 Pro Max profile: 60 fps, quality auto-scaling, thermals.
 
 **Phase 4 and 5:**
-79. [ ] *(2026-10-06: the clinic register lead job before Vane (`game/vanelead.ts`); 2026-10-05: Vane and Pell boss jobs done; left: clinic and plaza districts, side jobs)* Acts 2–3: the Candor clinic (Vane) and Hollowell Plaza (Pell).
+79. [x] *(2026-10-06: the clinic register lead job before Vane (`game/vanelead.ts`); 2026-10-05: Vane and Pell boss jobs done; left: clinic and plaza districts, side jobs)* Acts 2–3: the Candor clinic (Vane) and Hollowell Plaza (Pell).
 80. [x] *(2026-10-05: all done: Board and HollowCandor jobs, difficulty selector in the pause card, Hell Week unlock, weekly Most Wanted job.)* Acts 4–5: the Spire (the Board) and the vault (HollowCandor); Hardboiled and Hell Week; the weekly Most Wanted contract.
+
+**Phase 6b: polish and reach (planned 2026-10-06, after Phase 6 finished).**
+81. [ ] **Remappable keys and gamepad:** a Controls page in the pause card (rebind, invert Y, sensitivity), standard-mapping gamepad support with aim assist.
+82. [ ] *(2026-10-06: large subtitles and calm camera toggles done; left: colour-blind colours, hold-to-toggle)* **Accessibility:** subtitle size and background, colour-blind-safe alert/ping colours, reduced-motion (camera shake, bloom flicker), a hold-to-toggle option for ADS and sprint.
+83. [ ] **Photo mode:** pause, free camera, hide HUD, depth-of-field and filter presets, save a PNG.
+84. [ ] **Boss intros:** a short letterboxed camera move and name card for Crisp, Vane, Pell, the Chair and HollowCandor, skippable.
+85. [ ] **New Game+:** after act 5, restart the story with her kit and tougher elites, a title-screen entry and a save-code flag.
 
 ## Postponed by the owner (2026-09-28)
 

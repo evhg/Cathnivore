@@ -70,6 +70,7 @@ export class Hud {
   constructor(host: HTMLElement) {
     host.replaceChildren();
     this.root = el("div", "hud-root", host);
+    if (loadPrefs().bigSubs) this.root.classList.add("big-subs");
     // Objective, top left.
     this.objective = el("p", "hud-objective", this.root);
     // Health and level, bottom left.
@@ -333,6 +334,27 @@ export class Hud {
         prefs.intensity,
         (v) => savePrefs({ ...loadPrefs(), intensity: v }),
       );
+
+      const toggle = (name: string, key: "bigSubs" | "calmCamera", apply?: (on: boolean) => void) => {
+        const row = el("div", "hud-set", set);
+        el("span", "hud-set-name", row).textContent = name;
+        const seg = el("div", "hud-seg", row);
+        const cur = loadPrefs()[key];
+        const btns = ([false, true] as const).map((on) => {
+          const b = el("button", "hud-seg-btn", seg);
+          b.setAttribute("type", "button");
+          b.textContent = on ? "On" : "Off";
+          b.setAttribute("aria-pressed", String(on === cur));
+          b.addEventListener("click", () => {
+            savePrefs({ ...loadPrefs(), [key]: on });
+            btns.forEach((x, i) => x.setAttribute("aria-pressed", String((i === 1) === on)));
+            apply?.(on);
+          });
+          return b;
+        });
+      };
+      toggle("Large subtitles", "bigSubs", (on) => this.root.classList.toggle("big-subs", on));
+      toggle("Calm camera", "calmCamera");
 
       if (!touch) {
         const keys: Array<[string, string]> = [
