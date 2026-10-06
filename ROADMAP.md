@@ -316,6 +316,15 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 90. [x] *(2026-10-06: rain+neon backdrop, Cath silhouette, choice cards; unreleased)* **Designed age gate:** rain and neon backdrop, Cath silhouette, a styled violence-choice card.
 91. [x] *(2026-10-06: CATHODE card art enlarged; header already fine; phone node labels 12px, darker)* **Hedgerow level-select header and landing CATHODE card:** unclipped title, lighter pills, larger node labels; a taller CATHODE card on the landing page (`games/hedgerow/src/`, `site/`).
 
+**Phase 6d: from the 2026-10-06 session-2 critique (hands, crosshair and title already handled in 86-89).**
+92. [x] *(2026-10-06: max-height:480px block; unreleased)* **Phone HUD scale:** at 844x390 the name, health, armour and weapon labels are 10-13px and low contrast; add a `max-height:480px` block with larger type, a dark corner plate, safe-area insets (`ui/hud.ts`, `styles.css`).
+93. [x] *(2026-10-06: sub clamp 2 lines 60%, objective one line; auto-fade not changed)* **Phone subtitles and objective:** cap voiceover to 2 lines and ~60% width, auto-fade, one-line objective with an icon (`ui/hud.ts`).
+94. [ ] **Touch-aware tutorial hint:** show thumb instructions on touch instead of "WASD", place it away from the waypoint (`game/firstjob.ts`).
+95. [ ] **Phone rain and dither:** longer, thinner alpha-faded rain streaks on the phone tier, lower dither amplitude in darks, clamp AutoScale minimum (`render/atmosphere.ts`, `post.ts`, `game/autoscale.ts`).
+96. [ ] **Combat feedback on small screens:** bigger hit X (red on headshot), directional damage arc, short enemy health bars after a hit, melee kill hit-stop (`game/combat.ts`, `ui/hud.ts`, `render/fx.ts`).
+97. [ ] **Touch controls check:** screenshot with `hasTouch`, ensure 56px buttons, health plate clear of the stick zone.
+98. [ ] **Bloom/chromatic budget:** cap bloom on emissive signs, reduce chromatic aberration to the screen edges (`render/post.ts`).
+
 ## Postponed by the owner (2026-09-28)
 
 - **iPhone App Store launch:** postponed until the games are truly impressive. Don't dispatch `ios.yml` or `store.yml`, and don't work on store listings or screenshots. Keep `npm run build` (the iPhone app's web bundle) passing. Only the owner reopens this, through `FEEDBACK.md`.
