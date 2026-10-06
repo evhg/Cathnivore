@@ -240,7 +240,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         arm,
         say: (t) => hud.subtitle(t),
         teach: (t) => hud.teach(t),
-        banner: (a, b) => hud.showBanner(a, b),
+        banner: (a, b, k) => hud.showBanner(a, b, k),
         light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
       })
     : null;
@@ -258,7 +258,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -275,7 +275,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -292,7 +292,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -309,7 +309,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -326,7 +326,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -343,7 +343,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -360,7 +360,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -377,7 +377,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -394,7 +394,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -411,7 +411,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -428,7 +428,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -445,7 +445,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
@@ -464,7 +464,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
           drop: (p, n) => {
             for (let i = 0; i < n; i++) {
@@ -490,7 +490,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           arm,
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
-          banner: (a, b) => hud.showBanner(a, b),
+          banner: (a, b, k) => hud.showBanner(a, b, k),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;

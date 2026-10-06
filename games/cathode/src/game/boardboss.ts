@@ -35,7 +35,7 @@ export class BoardBossJob {
         h.spawn("shield", [this.P(-28, 30), this.P(-28, 38)]);
         h.spawn("shield", [this.P(-18, 30), this.P(-16, 38)]);
         h.spawn("sniper", [this.P(-24, 44), this.P(-18, 44)]);
-        h.banner("The Chair of the Board", "The Spire");
+        h.banner("The Chair of the Board", "The Spire", "boss");
         h.say("Bea: The Chair hides behind her guards, with a sniper above. Break the line, then break her.");
         break;
       }

@@ -36,7 +36,7 @@ export class VaultBossJob {
         h.spawn("shield", [this.P(-28, 30), this.P(-28, 38)]);
         h.spawn("shield", [this.P(-18, 30), this.P(-16, 38)]);
         h.spawn("sniper", [this.P(-24, 44), this.P(-18, 44)]);
-        h.banner("HollowCandor", "The vault");
+        h.banner("HollowCandor", "The vault", "boss");
         h.say("Bea: It is not a man, it is the building. Break the guards, then break it.");
         break;
       }

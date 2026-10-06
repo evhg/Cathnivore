@@ -749,6 +749,25 @@ input[type="radio"] {
   text-transform: uppercase;
   color: var(--neon-amber);
 }
+/* Boss intro: letterbox bars slide in and the name card drops to the middle (the game keeps running; nothing to skip). */
+.hud-root::before,
+.hud-root::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: #000;
+  transition: height 0.5s ease-out;
+  z-index: 3;
+  pointer-events: none;
+}
+.hud-root::before { top: 0; }
+.hud-root::after { bottom: 0; }
+.hud-root.boss-intro::before,
+.hud-root.boss-intro::after { height: 11vh; }
+.hud-root.boss-intro .hud-banner { top: 42%; }
+.hud-root.boss-intro .hud-banner-title { font-size: clamp(36px, 6vw, 72px); color: var(--neon-amber); }
 @keyframes banner {
   0% { opacity: 0; transform: translate(-50%, 8px); }
   10% { opacity: 1; transform: translate(-50%, 0); }

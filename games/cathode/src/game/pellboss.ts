@@ -34,7 +34,7 @@ export class PellBossJob {
         this.boss = b;
         h.spawn("shield", [this.P(-28, 30), this.P(-28, 38)]);
         h.spawn("shield", [this.P(-18, 30), this.P(-16, 38)]);
-        h.banner("Councillor Pell", "Hollowell Plaza");
+        h.banner("Councillor Pell", "Hollowell Plaza", "boss");
         h.say("Bea: Pell hides behind his guards. Break the line, then break him.");
         break;
       }

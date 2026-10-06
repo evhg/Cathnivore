@@ -34,7 +34,7 @@ export class VaneBossJob {
         this.boss = b;
         h.spawn("shield", [this.P(18, 32), this.P(18, 26)]);
         h.spawn("rifle", [this.P(28, 34), this.P(24, 36)]);
-        h.banner("Dr Octavia Vane", "Candor's surgeon");
+        h.banner("Dr Octavia Vane", "Candor's surgeon", "boss");
         h.say("Bea: Vane stitches herself back together. Hit her hard and fast.");
         break;
       }

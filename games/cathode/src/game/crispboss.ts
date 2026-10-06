@@ -33,7 +33,7 @@ export class CrispBossJob {
         this.boss = b;
         h.spawn("rifle", [this.P(-5, 46), this.P(-5, 52)]);
         h.spawn("shield", [this.P(6, 52), this.P(6, 45)]);
-        h.banner("Julian Crisp", "Candor's man on the quay");
+        h.banner("Julian Crisp", "Candor's man on the quay", "boss");
         h.say("Bea: That is Crisp. He does not run. Make him.");
         break;
       }

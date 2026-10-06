@@ -240,8 +240,12 @@ export class Hud {
     this.subTimer = window.setTimeout(() => this.sub?.classList.remove("on"), 1800 + text.length * 45);
   }
 
-  showBanner(title: string, sub: string): void {
+  private introTimer = 0;
+  showBanner(title: string, sub: string, kind?: "boss"): void {
     this.banner.replaceChildren();
+    this.root.classList.toggle("boss-intro", kind === "boss");
+    clearTimeout(this.introTimer);
+    if (kind === "boss") this.introTimer = window.setTimeout(() => this.root.classList.remove("boss-intro"), 3200);
     const h = el("p", "hud-banner-title", this.banner);
     h.textContent = title;
     const p = el("p", "hud-banner-sub", this.banner);
