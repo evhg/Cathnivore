@@ -44,11 +44,18 @@ const CASES: { id: string; title: string; done: string; open: string; needs?: st
     needs: "candorManifest",
   },
   {
+    id: "vaneLead",
+    title: "The clinic register",
+    done: "The register names Vane's night shift.",
+    open: "Candor logs every patient it breaks. Bea traced the register to a cabinet in the Clinic Bay.",
+    needs: "crispBoss",
+  },
+  {
     id: "vaneBoss",
     title: "Dr Octavia Vane",
     done: "Vane is finished. Act 2 is closed.",
     open: "Crisp's ledger points to the Candor clinic. Vane stitches the people Candor breaks.",
-    needs: "crispBoss",
+    needs: "vaneLead",
   },
   {
     id: "pellBoss",

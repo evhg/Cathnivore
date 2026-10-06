@@ -23,6 +23,7 @@ import { QuayJob } from "./quayjob";
 import { ManifestJob } from "./manifestjob";
 import { CrispBossJob } from "./crispboss";
 import { VaneBossJob } from "./vaneboss";
+import { VaneLeadJob } from "./vanelead";
 import { PellBossJob } from "./pellboss";
 import { BoardBossJob } from "./boardboss";
 import { VaultBossJob } from "./vaultboss";
@@ -309,8 +310,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
+  const vaneLead =
+    !tutorial && progress.jobsDone.includes("crispBoss") && !progress.jobsDone.includes("vaneLead") && !o.shot
+      ? new VaneLeadJob({
+          player,
+          progress,
+          scene: world.scene,
+          markers: world.markers,
+          ground,
+          touch: input.isTouch,
+          spawn,
+          arm,
+          say: (t) => hud.subtitle(t),
+          teach: (t) => hud.teach(t),
+          banner: (a, b) => hud.showBanner(a, b),
+          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+        })
+      : null;
   const vaneBoss =
-    !tutorial && progress.jobsDone.includes("crispBoss") && !progress.jobsDone.includes("vaneBoss") && !o.shot
+    !tutorial && progress.jobsDone.includes("vaneLead") && !progress.jobsDone.includes("vaneBoss") && !o.shot
       ? new VaneBossJob({
           player,
           progress,
@@ -624,7 +642,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (intent.map && !coaching && !charScreen && !killcam.active && !dead) {
       coaching = true;
       document.exitPointerLock?.();
-      const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneBoss?.target ?? pellBoss?.target ?? boardBoss?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
+      const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellBoss?.target ?? boardBoss?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
       openDistrictMap(o.hud.parentElement ?? o.hud, player.pos, t ? { x: t.x, z: t.z } : null, () => (coaching = false), progress.jobsDone);
     }
     if (s.paused || away) {
@@ -896,6 +914,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       crispBoss.update(dt);
       objective = crispBoss.objective;
     }
+    if (vaneLead) {
+      vaneLead.update(dt);
+      objective = vaneLead.objective;
+    }
     if (vaneBoss) {
       vaneBoss.update(dt);
       objective = vaneBoss.objective;
@@ -1080,7 +1102,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   /** The objective on screen, for the waypoint diamond. */
   function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
-    const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneBoss?.target ?? pellBoss?.target ?? boardBoss?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
+    const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellBoss?.target ?? boardBoss?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
     if (!t || dead) return null;
     const p = t.clone().add(new THREE.Vector3(0, 1.2, 0)).project(world.camera);
     const behind = p.z > 1;

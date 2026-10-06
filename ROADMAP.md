@@ -288,7 +288,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 70. [x] *(2026-10-03: all actives play; hacking hits what she looks at until street cameras exist; unreleased)* All 5 classes playable, dual-classing at level 15, the 10 hybrid capstones.
 71. [x] *(2026-10-04: done; 2026-10-03: gunsmith rules + inventory panel done; world pickups done 2026-10-04; left: armour/stat display in play)* Loot drops, inventory, Rare/Unique/Set generation, sockets and firmware chains, the gunsmith (tiers I–V, parts).
 72. [ ] *(2026-10-03: revolver, SMG, assault rifle, grenade launcher, Candor Seeker smart gun (rounds curve to the crosshair target), Night Shift blade and Repossessor sledge now playable, with models and sounds; left: katana/monowire, the rest of the weapon table, alt-fires, picking guns up instead of carrying all)* The remaining weapon classes (revolver, SMG, assault rifle, launcher, smart gun, katana and monowire, sledgehammer) with alt-fires.
-73. [ ] *(2026-10-04: elites now spawn in play with extraFast, stoneskin, multipleShots, cursed, shock; left: explosive death, resist display, checkpoints UI, export code UI)* Elites with Diablo-style modifiers; damage types and resistances; saves, checkpoints and an export code.
+73. [x] *(2026-10-06: done: explosive death, HUD resist line, checkpoint card, save code; earlier: elites now spawn in play with extraFast, stoneskin, multipleShots, cursed, shock; left: explosive death, resist display, checkpoints UI, export code UI)* Elites with Diablo-style modifiers; damage types and resistances; saves, checkpoints and an export code.
 
 **Phase 3: act 1, the Drowned Market.**
 74. [ ] *(2026-10-04: Bea's call and a case board done; left: the hub street, more dialogue)* The hub street, the case board, Cath's voiceover and dialogue, calls to Bea.
@@ -298,7 +298,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 78. [ ] *(2026-10-05: dynamic resolution auto-scaler done, live `83ba165`; left: thermals/phone profile)* Performance and phone pass on an iPhone 17 Pro Max profile: 60 fps, quality auto-scaling, thermals.
 
 **Phase 4 and 5:**
-79. [ ] *(2026-10-05: Vane and Pell boss jobs done; left: clinic and plaza districts, side jobs)* Acts 2–3: the Candor clinic (Vane) and Hollowell Plaza (Pell).
+79. [ ] *(2026-10-06: the clinic register lead job before Vane (`game/vanelead.ts`); 2026-10-05: Vane and Pell boss jobs done; left: clinic and plaza districts, side jobs)* Acts 2–3: the Candor clinic (Vane) and Hollowell Plaza (Pell).
 80. [x] *(2026-10-05: all done: Board and HollowCandor jobs, difficulty selector in the pause card, Hell Week unlock, weekly Most Wanted job.)* Acts 4–5: the Spire (the Board) and the vault (HollowCandor); Hardboiled and Hell Week; the weekly Most Wanted contract.
 
 ## Postponed by the owner (2026-09-28)
