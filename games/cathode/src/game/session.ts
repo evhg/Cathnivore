@@ -790,10 +790,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     // Touch: aim assist, and auto-fire on anyone already shooting at her (stealth kills stay a deliberate tap).
     input.autoFire = false;
-    if (input.isTouch && !dead && progress.character.difficulty !== "hellWeek") {
+    if ((input.isTouch || input.padActive) && !dead && progress.character.difficulty !== "hellWeek") {
       const t = aimAssist(intent.aim || intent.fire, realDt);
       const w = arsenal.weapon;
       input.autoFire =
+        input.isTouch &&
         !!t && t.enemy.state === "combat" && t.angle < 0.04 && w.kind !== "melee" && t.enemy.position.distanceTo(player.pos) < w.range && arsenal.ammo.mag > 0;
     }
     player.applyCamera(world.camera, realDt);
@@ -1134,7 +1135,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     };
   }
 
-  /** Touch aim assist: within a few degrees of an Enforcer, the crosshair is pulled onto them. */
+  /** Touch and gamepad aim assist: within a few degrees of an Enforcer, the crosshair is pulled onto them. */
   /** Returns the enemy it's pulling onto and how far off the crosshair it is, for auto-fire. */
   function aimAssist(engaged: boolean, dt: number): { enemy: Enemy; angle: number } | null {
     const cam = world.camera;

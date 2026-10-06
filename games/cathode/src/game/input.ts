@@ -52,6 +52,8 @@ export class Input {
   lookScale = 1;
   invertY = false;
   binds: Binds = {};
+  /** True while a gamepad is connected and has been used (stick moved or a button pressed): the session turns on aim assist. */
+  padActive = false;
   touchSensitivity = 0.0055;
   readonly isTouch: boolean;
   private stickEl?: HTMLElement;
@@ -285,11 +287,15 @@ export class Input {
       padReload = false,
       padSprint = false;
     if (pad) {
+      if (pad.buttons.some((b) => b.pressed) || pad.axes.some((a) => Math.abs(a) > 0.3)) this.padActive = true;
+    }
+    if (this.mouse.x !== 0 || this.mouse.y !== 0 || this.keys.size > 0) this.padActive = false;
+    if (pad) {
       const dz = (v: number) => (Math.abs(v) < 0.15 ? 0 : v);
       mx += dz(pad.axes[0] ?? 0);
       my -= dz(pad.axes[1] ?? 0);
-      yaw += dz(pad.axes[2] ?? 0) * 0.05;
-      pitch -= dz(pad.axes[3] ?? 0) * 0.04;
+      yaw += dz(pad.axes[2] ?? 0) * 0.05 * this.lookScale;
+      pitch -= dz(pad.axes[3] ?? 0) * 0.04 * this.lookScale * (this.invertY ? -1 : 1);
       padFire = (pad.buttons[7]?.value ?? 0) > 0.4;
       padAim = (pad.buttons[6]?.value ?? 0) > 0.4;
       padJump = !!pad.buttons[0]?.pressed;
