@@ -346,7 +346,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 110. [x] **CATHODE look-drag hint timing:** "DRAG TO AIM" sits over the crosshair; move it to the right half low, fade after the first drag.
 111. [x] **CATHODE subtitle clipping:** the phone subtitle's second line is clipped under the crosshair strip; raise the subtitle plate above the touch zone or cap to one line on touch.
 112. [x] **Runnel fresh-eyes pass:** *(2026-10-06 22:52: shots checked; findings 114-118; 114 done)* screenshot Runnel at phone and desktop, critique against VISION bars, add findings here (`games/runnel/`).
-113. [ ] **Hedgerow act variety audit:** compare level 10/20/30 route and tower shots and list what differs; add one distinct structure or hazard per act if they look alike (`games/hedgerow/`).
+113. [x] **Hedgerow act variety audit:** *(2026-10-07: data audit done: every non-boss level has twists and 17 have a second lane, but only 7 of 100 have set pieces (27,34,38,45,63,67,86) and the grid is identical across an act; findings are 119-120)* compare level 10/20/30 route and tower shots and list what differs; add one distinct structure or hazard per act if they look alike (`games/hedgerow/`).
 
 **Phase 7: Runnel polish, planned 2026-10-06 22:52 (from the 112 critique).**
 114. [x] **Runnel progress label:** the hint line shows "N of M fields watered" once play starts (`games/runnel/src/main.ts`).
@@ -354,6 +354,8 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 116. [x] **Runnel spring visibility:** the spring is small against the beige tiles; add a soft pulsing glow ring and a distinct tile tint (`games/runnel/src/board.ts`).
 117. [x] **Runnel stage background:** the page is flat cream; add a faint field-furrow pattern or vignette so the board sits in a landscape (bar 1).
 118. [x] **Runnel solved moment:** when solved, wave-sprout animation across fields plus a share card with the puzzle number (`games/runnel/`).
+119. [ ] **Hedgerow set pieces for the acts without one:** acts 1, 2, 5, 7, 9 and 10 have no set piece (flood/bridge/blackout); add one mid-act per act, then run `hedgerow-tune.ts` and `--verify` (`games/hedgerow/src/levels.ts`).
+120. [ ] **Hedgerow per-level grid variety:** every level of an act shares one grid size; vary rows/cols by one on alternating levels so the field shape changes (tuner required).
 
 ## Later (only when the owner asks in FEEDBACK.md)
 
