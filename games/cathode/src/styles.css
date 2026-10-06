@@ -2548,3 +2548,5 @@ input[type="radio"] {
 .photo-bar button[aria-pressed="true"] { border-color: var(--neon-cyan); color: var(--neon-cyan); }
 .photo-bar .photo-save { background: var(--blood); border-color: var(--blood); }
 .photo-on .hud-root { visibility: hidden; }
+.hud-set-head { margin: 12px 0 4px; font: 700 12px var(--ui); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted); }
+.hud-bind { min-width: 84px; }

@@ -1,6 +1,7 @@
 // The HUD, in the DOM over the canvas. CSP-safe: no inline style attributes, only classes and CSS custom
 // properties set through the CSSOM. Noir-quiet by default: thin rules, small caps, red only for blood.
 
+import { BINDABLE, codesFor, keyLabel, rebind } from "../controls";
 import { loadPrefs, savePrefs, type Intensity, type QualityChoice } from "../prefs";
 
 export interface HudState {
@@ -376,6 +377,45 @@ export class Hud {
       toggle("Calm camera", "calmCamera");
       toggle("Colour-blind colours", "colourSafe", (on) => document.documentElement.classList.toggle("colour-safe", on));
       toggle("Toggle sprint and aim", "holdToggle", () => window.dispatchEvent(new Event("cathode:prefs")));
+
+      if (!touch) {
+        el("h3", "hud-set-head", set).textContent = "Keys (click to rebind)";
+        const rows = el("div", "hud-binds", set);
+        const drawBinds = () => {
+          rows.replaceChildren();
+          const cur = loadPrefs().binds;
+          for (const b of BINDABLE) {
+            const row = el("div", "hud-set", rows);
+            el("span", "hud-set-name", row).textContent = b.label;
+            const btn = el("button", "hud-seg-btn hud-bind", row);
+            btn.setAttribute("type", "button");
+            btn.textContent = keyLabel(codesFor(cur, b.id)[0]);
+            btn.addEventListener("click", () => {
+              btn.textContent = "Press a key…";
+              const onKey = (e: KeyboardEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                removeEventListener("keydown", onKey, true);
+                if (e.code !== "Escape") {
+                  savePrefs({ ...loadPrefs(), binds: rebind(loadPrefs().binds, b.id, e.code) });
+                  window.dispatchEvent(new Event("cathode:prefs"));
+                }
+                drawBinds();
+              };
+              addEventListener("keydown", onKey, true);
+            });
+          }
+          const reset = el("button", "hud-seg-btn", rows);
+          reset.setAttribute("type", "button");
+          reset.textContent = "Reset keys";
+          reset.addEventListener("click", () => {
+            savePrefs({ ...loadPrefs(), binds: {} });
+            window.dispatchEvent(new Event("cathode:prefs"));
+            drawBinds();
+          });
+        };
+        drawBinds();
+      }
 
       if (!touch) {
         const keys: Array<[string, string]> = [

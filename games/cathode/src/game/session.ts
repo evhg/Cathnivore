@@ -114,6 +114,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     input.holdToggle = p.holdToggle;
     input.lookScale = p.lookScale;
     input.invertY = p.invertY;
+    input.binds = p.binds;
   };
   syncInput();
   window.addEventListener("cathode:prefs", syncInput);

@@ -1,5 +1,7 @@
 // Input: keyboard and mouse (pointer lock), touch (a left stick, swipe-to-look on the right, buttons) and
 // gamepads, all folded into one Intent the game reads each frame. Look deltas are in radians.
+import { codesFor, type Binds } from "../controls";
+
 
 export interface Intent {
   /** Movement on the ground plane, each axis -1..1 (x right, y forward). */
@@ -49,6 +51,7 @@ export class Input {
   /** Player look-speed multiplier and vertical invert (prefs). */
   lookScale = 1;
   invertY = false;
+  binds: Binds = {};
   touchSensitivity = 0.0055;
   readonly isTouch: boolean;
   private stickEl?: HTMLElement;
@@ -268,9 +271,11 @@ export class Input {
   read(): Intent {
     const k = (c: string) => this.keys.has(c);
     const p = (c: string) => this.pressed.has(c);
+    const ka = (id: string) => codesFor(this.binds, id).some(k);
+    const pa = (id: string) => codesFor(this.binds, id).some(p);
     const pad = navigator.getGamepads?.().find((g) => g && g.connected) ?? null;
-    let mx = (k("KeyD") ? 1 : 0) - (k("KeyA") ? 1 : 0) + this.stick.x;
-    let my = (k("KeyW") ? 1 : 0) - (k("KeyS") ? 1 : 0) + this.stick.y;
+    let mx = (ka("right") ? 1 : 0) - (ka("left") ? 1 : 0) + this.stick.x;
+    let my = (ka("forward") ? 1 : 0) - (ka("back") ? 1 : 0) + this.stick.y;
     let yaw = this.mouse.x * this.sensitivity * this.lookScale + this.touchLook.x * this.touchSensitivity;
     let pitch = (-this.mouse.y * this.sensitivity * this.lookScale) * (this.invertY ? -1 : 1) - this.touchLook.y * this.touchSensitivity;
     let padFire = false,
@@ -301,7 +306,7 @@ export class Input {
     for (let i = 1; i <= 9; i++) if (p(`Digit${i}`)) slot = i - 1;
     const tt = this.touchTapped;
     if (this.holdToggle) {
-      if (p("ShiftLeft") || p("ShiftRight")) this.sprintLatched = !this.sprintLatched;
+      if (pa("sprint")) this.sprintLatched = !this.sprintLatched;
       if (len === 0) this.sprintLatched = false;
     } else {
       this.aimLatched = false;
@@ -310,14 +315,14 @@ export class Input {
     const intent: Intent = {
       move: { x: mx, y: my },
       look: { yaw, pitch },
-      sprint: (this.holdToggle ? this.sprintLatched : k("ShiftLeft") || k("ShiftRight")) || padSprint || (this.isTouch && Math.hypot(this.stick.x, this.stick.y) > 0.95),
-      crouch: p("ControlLeft") || p("KeyC") || padCrouch || tt.has("crouch"),
-      jump: p("Space") || padJump || tt.has("jump"),
+      sprint: (this.holdToggle ? this.sprintLatched : ka("sprint")) || padSprint || (this.isTouch && Math.hypot(this.stick.x, this.stick.y) > 0.95),
+      crouch: pa("crouch") || padCrouch || tt.has("crouch"),
+      jump: pa("jump") || padJump || tt.has("jump"),
       fire: this.mouse.left || padFire || this.touchHeld.has("fire") || this.autoFire,
       aim: (this.holdToggle ? this.aimLatched : this.mouse.right) || padAim || this.touchHeld.has("aim"),
       alt: this.mouse.middle || k("KeyV"),
-      reload: p("KeyR") || padReload || tt.has("reload"),
-      takedown: p("KeyF") || tt.has("takedown"),
+      reload: pa("reload") || padReload || tt.has("reload"),
+      takedown: pa("takedown") || tt.has("takedown"),
       lean: k("KeyQ") ? -1 : k("KeyE") ? 1 : 0,
       slot,
       cycle: Math.sign(this.wheel) + (tt.has("cycle") ? 1 : 0),
