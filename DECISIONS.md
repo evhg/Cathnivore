@@ -302,3 +302,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-06 16:35: Hedgerow shots live in `scripts/hedgerow-shots.mjs` (needs the site preview on :4180), not the Cathnivore-only `npm run shots`. Landscape-phone layout reuses the desktop grid with a 250px column.
 - 2026-10-06: Hedgerow Cath scale 1.3 -> 0.98 rather than an outline pass.
 - 2026-10-06: Hedgerow roster table shows tier-1 stats only and is hidden under 900px wide or 520px tall, so phone layouts are unchanged.
+- 2026-10-06: Landscape-phone tower card keeps its sticky action row; the stats were compacted rather than scrolled.
