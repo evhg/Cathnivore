@@ -66,6 +66,10 @@ export class Hud {
   private defence: HTMLElement;
   private lastHp = -1;
   private hurt = 0;
+  private hurtArc: HTMLElement;
+  private hurtArcT = 0;
+  private target: HTMLElement;
+  private targetT = 0;
   private hitT = 0;
 
   constructor(host: HTMLElement) {
@@ -104,6 +108,10 @@ export class Hud {
     this.focus = el("div", "hud-focus", this.root);
     // Overlays.
     this.vignette = el("div", "hud-hurt", this.root);
+    this.target = el("div", "hud-target", this.root);
+    el("span", "hud-target-name", this.target);
+    el("i", "hud-target-fill", el("b", "hud-target-bar", this.target));
+    this.hurtArc = el("div", "hud-hurt-arc", this.root);
     this.scope = el("div", "hud-scope", this.root);
     const ret = el("div", "hud-reticle", this.scope);
     for (const m of [1, 2, 3, 4, 5]) {
@@ -123,6 +131,10 @@ export class Hud {
     if (this.lastHp >= 0 && s.hp < this.lastHp) this.hurt = Math.min(1, this.hurt + (this.lastHp - s.hp) / 30);
     this.lastHp = s.hp;
     this.hurt = Math.max(0, this.hurt - dt * 1.2);
+    this.hurtArcT = Math.max(0, this.hurtArcT - dt);
+    this.targetT = Math.max(0, this.targetT - dt);
+    this.target.hidden = this.targetT <= 0;
+    set(this.hurtArc, "--a", Math.min(1, this.hurtArcT * 1.6).toFixed(2));
     set(this.vignette, "--a", (this.hurt * 0.9 + (s.hp / s.maxHp < 0.3 ? 0.35 : 0)).toFixed(3));
     this.defence.textContent = s.defence ?? "";
     this.defence.hidden = !s.defence;
@@ -190,6 +202,19 @@ export class Hud {
       set(a, "--fill", t.amount.toFixed(2));
       a.classList.toggle("hunting", t.hunting);
     }
+  }
+
+  /** A red arc at the screen edge pointing to where the shot came from. */
+  hurtFrom(bearing: number): void {
+    this.hurtArcT = 0.9;
+    this.hurtArc.style.setProperty("--rot", `${bearing}rad`);
+  }
+
+  /** A short health bar for whoever she just hit. */
+  targetHit(name: string, frac: number): void {
+    this.targetT = 2.5;
+    (this.target.firstElementChild as HTMLElement).textContent = name;
+    this.target.style.setProperty("--w", `${Math.max(0, Math.min(1, frac)) * 100}%`);
   }
 
   hitMarker(kill: boolean, head = false): void {

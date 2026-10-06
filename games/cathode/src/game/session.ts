@@ -957,6 +957,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         } else if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
           s.hp = Math.max(0, s.hp - actives.absorb(e.kit.damage * run.guard * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)));
           sinceHurt = 0;
+          hud.hurtFrom(bearingTo(sh.from));
           if (e.kit.drain) s.focus = Math.max(0, s.focus - e.kit.drain);
           world.fx.tracer(sh.from, sight.chest);
           audio?.hitFlesh(false);
@@ -1260,6 +1261,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
   }
 
+  function bearingTo(at: THREE.Vector3): number {
+    const yaw = Math.atan2(-fwd.x, -fwd.z);
+    let b = yaw - Math.atan2(-(at.x - player.pos.x), -(at.z - player.pos.z));
+    while (b > Math.PI) b -= Math.PI * 2;
+    while (b < -Math.PI) b += Math.PI * 2;
+    return b;
+  }
+
   function threats() {
     const out: Array<{ bearing: number; amount: number; hunting: boolean }> = [];
     const yaw = Math.atan2(-fwd.x, -fwd.z);
@@ -1280,7 +1289,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (k.severed.length) audio?.sever();
     }
     for (const h of combat.hits) {
-      if (!h.killed) hud.hitMarker(false, h.zone === "head");
+      if (!h.killed) {
+        hud.hitMarker(false, h.zone === "head");
+        hud.targetHit(h.enemy.kit.name, h.enemy.hp / h.enemy.kit.maxHp);
+      }
       audio?.hitFlesh(h.damage > 40);
     }
     combat.kills.length = 0;

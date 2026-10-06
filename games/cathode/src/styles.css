@@ -697,6 +697,60 @@ input[type="radio"] {
     linear-gradient(45deg, transparent 44%, var(--blood-hot) 44% 56%, transparent 56%),
     linear-gradient(-45deg, transparent 44%, var(--blood-hot) 44% 56%, transparent 56%);
 }
+.hud-hurt-arc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: var(--a, 0);
+  transform: rotate(var(--rot, 0rad));
+}
+.hud-hurt-arc::before {
+  content: "";
+  position: absolute;
+  left: -70px;
+  top: -190px;
+  width: 140px;
+  height: 36px;
+  transform-origin: 70px 190px;
+  border-top: 5px solid var(--blood-hot);
+  border-radius: 50% 50% 0 0;
+  background: radial-gradient(ellipse at 50% 0, rgba(255, 42, 71, 0.55), transparent 70%);
+  filter: drop-shadow(0 0 6px var(--blood-hot));
+}
+.hud-target {
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  width: min(240px, 50vw);
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+.hud-target[hidden] { display: none; }
+.hud-target-name {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f2e9dc;
+  text-shadow: 0 1px 3px #000;
+}
+.hud-target-bar {
+  display: block;
+  height: 5px;
+  margin-top: 3px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.hud-target-fill {
+  display: block;
+  height: 100%;
+  width: var(--w, 100%);
+  background: var(--blood-hot);
+}
 .hud-threats {
   position: absolute;
   left: 50%;
