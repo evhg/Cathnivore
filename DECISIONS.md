@@ -286,3 +286,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-05: elite death explosions queue to the next frame (outside the kill loop) so combat.explode can't recurse into kills.
 - 2026-10-05: Wing landmarks reuse the hub `look:<id>` mechanism, gated by a `needs` boss flag.
 - 2026-10-06: Each wing gets two landmark observations, same needs-gated mechanism.
+- 2026-10-06: the owner made the repo public to end the Actions billing block; CI back on push (skipping lock/notes-only commits, cancelling superseded runs).
