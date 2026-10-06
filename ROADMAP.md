@@ -327,7 +327,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 **Phase 6e: from the 2026-10-06 session-3 critique (screenshots at 844x390 and 1440x900).**
 99. [x] **Age gate fits phone landscape:** at 844x390 the "I'm 18 or over" buttons fall below the fold; make the card scroll-free (two-column choices or compact type, `max-height:480px`) (`games/cathode/src/ui/`, `styles.css`).
-100. [ ] **Age gate title overflow:** at 1440x900 the letter-spaced CATHODE wordmark overflows the 560px card edges; use `clamp()` font size and less tracking so it sits inside the card.
+100. [x] **Age gate title overflow:** at 1440x900 the letter-spaced CATHODE wordmark overflows the 560px card edges; use `clamp()` font size and less tracking so it sits inside the card.
 101. [ ] **Gate bypass for shots:** let `?play&shot` skip the age gate (default Full) so `npm run shots` and a new `e2e/screenshots.spec.ts` case capture in-game CATHODE HUD at phone and desktop sizes (`games/cathode/src/main.ts`, `e2e/screenshots.spec.ts`).
 102. [ ] **Hedgerow header collision:** the "Hedgerow" title touches the Cath pill at 844 and 1440 widths; add a gap, shrink pills or wrap them below the title on phones (`games/hedgerow/src/` level-select styles).
 103. [ ] **Hedgerow level-select polish:** node labels are about 11px and pale; raise to 13px and darker, show a star count under each node, and add a locked-node padlock style so progress reads at a glance.
