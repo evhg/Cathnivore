@@ -336,8 +336,8 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 ## Postponed by the owner (2026-09-28)
 
 - **iPhone App Store launch:** postponed until the games are truly impressive. Don't dispatch `ios.yml` or `store.yml`, and don't work on store listings or screenshots. Keep `npm run build` (the iPhone app's web bundle) passing. Only the owner reopens this, through `FEEDBACK.md`.
-105. [ ] **Hedgerow field panel:** the desktop side panel is a large empty white column between waves; fill it with tower stats, Cath's tip of the wave and the next wave's roster with threat icons (`games/hedgerow/src/main.ts` panel render).
-106. [ ] **Hedgerow sandbox shots:** `scripts/hedgerow-shots.mjs` places few towers because most plots are not buildable cells; pick plots from the level's buildable list so the shot shows 8 towers, a merge and a boss wave.
+105. [x] **Hedgerow field panel:** the desktop side panel is a large empty white column between waves; fill it with tower stats, Cath's tip of the wave and the next wave's roster with threat icons (`games/hedgerow/src/main.ts` panel render).
+106. [x] **Hedgerow sandbox shots:** `scripts/hedgerow-shots.mjs` places few towers because most plots are not buildable cells; pick plots from the level's buildable list so the shot shows 8 towers, a merge and a boss wave.
 107. [x] **Hedgerow 3D readability:** Cath is larger than a tower in the 3D desktop view and hides the lane; scale her down 25% or add an outline pass, and add range rings when a tower is selected.
 108. [ ] **Hedgerow landscape phone:** check the build row and tower sheet inside the 250px side column at 844x390 and 932x430 (selected tower, upgrade choice, merge) with `shots:hedgerow`.
 

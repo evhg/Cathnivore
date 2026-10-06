@@ -2291,3 +2291,12 @@ img.act-scene {
   .build-row { flex-wrap: wrap; overflow: visible; }
   .controls .btn.send { flex: 1 1 100%; min-height: 44px; }
 }
+
+.cath-tip { margin: 0.5rem 0 0; padding: 0.5rem 0.65rem; border-left: 3px solid var(--accent, #c2410c); background: rgba(0, 0, 0, 0.05); border-radius: 0 8px 8px 0; font-size: 0.9rem; }
+.roster { width: 100%; margin-top: 0.6rem; border-collapse: collapse; font-size: 0.78rem; }
+.roster caption { text-align: left; font-weight: 700; padding-bottom: 0.25rem; }
+.roster th { text-align: left; font-weight: 600; padding: 0.15rem 0.4rem 0.15rem 0.3rem; white-space: nowrap; }
+.roster td { padding: 0.15rem 0; opacity: 0.8; }
+.roster tr + tr { border-top: 1px solid rgba(0, 0, 0, 0.08); }
+.roster-icon { width: 22px; height: 22px; vertical-align: middle; }
+@media (max-width: 899px), (max-height: 520px) { .roster { display: none; } }

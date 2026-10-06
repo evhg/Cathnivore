@@ -27,9 +27,14 @@ for (const [name, w, h] of [['phone', 844, 390], ['desktop', 1440, 900]]) {
       const g = hg.game()
       const kinds = ['scarecrow', 'beehive', 'hedgerow', 'stall', 'pond', 'barn']
       let k = 0
-      for (let r = 0; r < g.level.rows && k < 8; r++)
-        for (let c = 0; c < g.level.cols && k < 8; c++)
-          if (hg.place(g, kinds[k % kinds.length], c, r).ok) k++
+      // Spread towers over the whole map: walk every cell with a stride coprime to the cell count.
+      const n = g.level.rows * g.level.cols
+      let stride = 7
+      while (n % stride === 0) stride += 2
+      for (let i = 0; i < n && k < 8; i++) {
+        const idx = (i * stride) % n
+        if (hg.place(g, kinds[k % kinds.length], idx % g.level.cols, Math.floor(idx / g.level.cols)).ok) k++
+      }
       hg.sendWave(g, true)
     })
     await page.waitForTimeout(mode === '2d' ? 3000 : 6000)

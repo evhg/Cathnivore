@@ -760,7 +760,48 @@ function wavePreview(p: HTMLElement, g: Game): void {
     const list = [...counts].map(([k, n]) => `${n} × ${TOWERS[k].name}`).join(", ");
     p.append(line(`On the field: ${list}. Tap a tower for its range, upgrades and sell price.`, "hint field-summary"));
   }
+  const advice = cathAdvice(g, next);
+  if (advice) p.append(line(`Cath: ${advice}`, "cath-tip"));
+  towerRoster(p, g);
   if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Tap the lane to move Cath.", "hint"));
+}
+
+/** One line from Cath about the coming wave, from its enemy classes. */
+function cathAdvice(g: Game, next: Level["waves"][number]): string {
+  const kinds = waveSummary(next).map((w) => w.kind);
+  const classes = new Set(kinds.map(enemyClass));
+  const bits: string[] = [];
+  if (kinds.some(isBig)) bits.push("A big one is coming. Save Marks for upgrades and keep the pie ready.");
+  if (classes.has("air")) bits.push("There's air traffic: ground-only towers can't touch it.");
+  if (classes.has("heavy")) bits.push("Heavy plant is slow but tough. Slow it and hit it hard.");
+  if (!bits.length) bits.push(g.towers.length < 4 ? "Spread a few towers along the bends and let them work." : "Plenty of light traffic. Keep the lane tidy.");
+  return bits.slice(0, 2).join(" ");
+}
+
+/** A compact stats table of the towers this level allows: cost, damage, range and rate at tier 1. */
+function towerRoster(p: HTMLElement, g: Game): void {
+  const table = document.createElement("table");
+  table.className = "roster";
+  const cap = document.createElement("caption");
+  cap.textContent = "Towers this level";
+  table.append(cap);
+  for (const kind of g.level.towers) {
+    const s = TOWERS[kind];
+    const tr = document.createElement("tr");
+    const icon = document.createElement("td");
+    icon.append(img(towerIcon(kind), "roster-icon"));
+    const name = document.createElement("th");
+    name.scope = "row";
+    name.textContent = s.name;
+    const stat = document.createElement("td");
+    const bits = [`${s.cost} Marks`];
+    if (s.damage[0] > 0) bits.push(`${s.damage[0]} dmg`, `${(1 / s.cooldown[0]).toFixed(1)}/s`);
+    bits.push(`range ${s.range[0]}`);
+    stat.textContent = bits.join(" · ");
+    tr.append(icon, name, stat);
+    table.append(tr);
+  }
+  p.append(table);
 }
 
 const CLASS_NAMES: Record<EnemyClass, string> = { light: "light traffic", heavy: "heavy plant", air: "air" };
