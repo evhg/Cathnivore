@@ -109,8 +109,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const ground = (x: number, z: number) => world.groundHeight(x, z);
   const player = new Player(start, world.colliders, ground);
   const input = new Input(o.canvas, o.touch);
-  input.holdToggle = loadPrefs().holdToggle;
-  window.addEventListener("cathode:prefs", () => (input.holdToggle = loadPrefs().holdToggle));
+  const syncInput = () => {
+    const p = loadPrefs();
+    input.holdToggle = p.holdToggle;
+    input.lookScale = p.lookScale;
+    input.invertY = p.invertY;
+  };
+  syncInput();
+  window.addEventListener("cathode:prefs", syncInput);
   const rays = new RayWorld(world.colliders);
   const progress = new Progress();
   const areaLevel = Math.max(1, progress.character.level);

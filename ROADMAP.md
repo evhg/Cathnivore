@@ -302,7 +302,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 80. [x] *(2026-10-05: all done: Board and HollowCandor jobs, difficulty selector in the pause card, Hell Week unlock, weekly Most Wanted job.)* Acts 4–5: the Spire (the Board) and the vault (HollowCandor); Hardboiled and Hell Week; the weekly Most Wanted contract.
 
 **Phase 6b: polish and reach (planned 2026-10-06, after Phase 6 finished).**
-81. [ ] **Remappable keys and gamepad:** a Controls page in the pause card (rebind, invert Y, sensitivity), standard-mapping gamepad support with aim assist.
+81. [~] *(2026-10-06: Look speed slider and Invert Y in the pause card; left: rebinding, gamepad aim assist)* **Remappable keys and gamepad:** a Controls page in the pause card (rebind, invert Y, sensitivity), standard-mapping gamepad support with aim assist.
 82. [x] *(2026-10-06: large subtitles, calm camera, colour-blind palette (`:root.colour-safe`) and toggle sprint/aim (`Input.holdToggle`) all in the pause card)* **Accessibility:** subtitle size and background, colour-blind-safe alert/ping colours, reduced-motion (camera shake, bloom flicker), a hold-to-toggle option for ADS and sprint.
 83. [~] *(2026-10-06: B opens photo mode on desktop: HUD hidden, five filter presets, Save PNG; left: free camera, depth of field)* **Photo mode:** pause, free camera, hide HUD, depth-of-field and filter presets, save a PNG.
 84. [x] *(2026-10-06: letterbox bars + big name card via `banner(..., "boss")`; non-blocking so nothing to skip)* **Boss intros:** a short letterboxed camera move and name card for Crisp, Vane, Pell, the Chair and HollowCandor, skippable.

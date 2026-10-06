@@ -18,10 +18,14 @@ export interface Prefs {
   colourSafe: boolean;
   /** Sprint and aim toggle on a press instead of being held. */
   holdToggle: boolean;
+  /** Look sensitivity multiplier, 0.4..2.5. */
+  lookScale: number;
+  /** Moving the mouse or stick up looks down. */
+  invertY: boolean;
 }
 
 const KEY = "cathode:prefs:v1";
-const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false };
+const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false, lookScale: 1, invertY: false };
 
 export function loadPrefs(): Prefs {
   try {
@@ -37,6 +41,8 @@ export function loadPrefs(): Prefs {
       calmCamera: p.calmCamera === true,
       colourSafe: p.colourSafe === true,
       holdToggle: p.holdToggle === true,
+      lookScale: typeof p.lookScale === "number" && p.lookScale >= 0.4 && p.lookScale <= 2.5 ? p.lookScale : 1,
+      invertY: p.invertY === true,
     };
   } catch {
     return { ...DEFAULTS };

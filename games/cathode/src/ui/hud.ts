@@ -340,7 +340,7 @@ export class Hud {
         (v) => savePrefs({ ...loadPrefs(), intensity: v }),
       );
 
-      const toggle = (name: string, key: "bigSubs" | "calmCamera" | "colourSafe" | "holdToggle", apply?: (on: boolean) => void) => {
+      const toggle = (name: string, key: "bigSubs" | "calmCamera" | "colourSafe" | "holdToggle" | "invertY", apply?: (on: boolean) => void) => {
         const row = el("div", "hud-set", set);
         el("span", "hud-set-name", row).textContent = name;
         const seg = el("div", "hud-seg", row);
@@ -359,6 +359,20 @@ export class Hud {
         });
       };
       toggle("Large subtitles", "bigSubs", (on) => this.root.classList.toggle("big-subs", on));
+      if (!touch) {
+        const sens = el("label", "hud-set", set);
+        el("span", "hud-set-name", sens).textContent = "Look speed";
+        const ss = el("input", "hud-slider", sens) as HTMLInputElement;
+        ss.type = "range";
+        ss.min = "40";
+        ss.max = "250";
+        ss.value = String(Math.round(prefs.lookScale * 100));
+        ss.addEventListener("input", () => {
+          savePrefs({ ...loadPrefs(), lookScale: Number(ss.value) / 100 });
+          window.dispatchEvent(new Event("cathode:prefs"));
+        });
+        toggle("Invert look Y", "invertY", () => window.dispatchEvent(new Event("cathode:prefs")));
+      }
       toggle("Calm camera", "calmCamera");
       toggle("Colour-blind colours", "colourSafe", (on) => document.documentElement.classList.toggle("colour-safe", on));
       toggle("Toggle sprint and aim", "holdToggle", () => window.dispatchEvent(new Event("cathode:prefs")));

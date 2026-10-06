@@ -46,6 +46,9 @@ export class Input {
   /** Test and replay hook: fields here override what the devices say for the next read. */
   forced: Partial<Intent> = {};
   sensitivity = 0.0022;
+  /** Player look-speed multiplier and vertical invert (prefs). */
+  lookScale = 1;
+  invertY = false;
   touchSensitivity = 0.0055;
   readonly isTouch: boolean;
   private stickEl?: HTMLElement;
@@ -268,8 +271,8 @@ export class Input {
     const pad = navigator.getGamepads?.().find((g) => g && g.connected) ?? null;
     let mx = (k("KeyD") ? 1 : 0) - (k("KeyA") ? 1 : 0) + this.stick.x;
     let my = (k("KeyW") ? 1 : 0) - (k("KeyS") ? 1 : 0) + this.stick.y;
-    let yaw = this.mouse.x * this.sensitivity + this.touchLook.x * this.touchSensitivity;
-    let pitch = -this.mouse.y * this.sensitivity - this.touchLook.y * this.touchSensitivity;
+    let yaw = this.mouse.x * this.sensitivity * this.lookScale + this.touchLook.x * this.touchSensitivity;
+    let pitch = (-this.mouse.y * this.sensitivity * this.lookScale) * (this.invertY ? -1 : 1) - this.touchLook.y * this.touchSensitivity;
     let padFire = false,
       padAim = false,
       padJump = false,

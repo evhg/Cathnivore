@@ -26,3 +26,16 @@ describe("accessibility prefs", () => {
     expect(loadPrefs().holdToggle).toBe(true)
   })
 })
+
+describe("look prefs", () => {
+  beforeEach(stubStorage)
+  it("defaults, round-trips and rejects out-of-range sensitivity", () => {
+    expect(loadPrefs().lookScale).toBe(1)
+    expect(loadPrefs().invertY).toBe(false)
+    savePrefs({ ...loadPrefs(), lookScale: 1.8, invertY: true })
+    expect(loadPrefs().lookScale).toBe(1.8)
+    expect(loadPrefs().invertY).toBe(true)
+    savePrefs({ ...loadPrefs(), lookScale: 9 })
+    expect(loadPrefs().lookScale).toBe(1)
+  })
+})
