@@ -1398,7 +1398,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       numEl.textContent = String(lv.id);
       const st = document.createElement("span");
       st.className = "level-stars";
-      st.textContent = unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) + (data.heroic?.[String(lv.id)] ? "◆" : "") : "";
+      st.textContent = unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) + (data.heroic?.[String(lv.id)] ? "◆" : "") : "🔒";
+      if (!unlocked) st.classList.add("level-lock");
       const name = document.createElement("span");
       name.className = "level-name";
       name.textContent = lv.name;

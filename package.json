@@ -20,6 +20,7 @@
     "release": "tsx scripts/release.ts",
     "build:site": "tsc -b && tsx scripts/build-site.ts",
     "e2e:site": "playwright test -c playwright.site.config.ts",
+    "shots:hedgerow": "node scripts/hedgerow-shots.mjs",
     "shots": "playwright test --project=phone --project=desktop-chromium e2e/screenshots.spec.ts"
   },
   "dependencies": {

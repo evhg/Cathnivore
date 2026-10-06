@@ -2166,7 +2166,7 @@ button {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 /* Phones: the title on its own row, then the five tools as one even row of buttons that always fits. */
-@media (max-width: 760px) {
+@media (max-width: 1000px) {
   .top {
     grid-template-columns: 1fr auto 1fr;
     row-gap: 8px;
@@ -2231,4 +2231,32 @@ img.act-scene {
   padding: 0 6px;
   border-radius: 999px;
   background: var(--surface);
+}
+
+/* ROADMAP 102-103: the title never touches the tool row; node labels are bigger and darker; locked stops show a padlock. */
+@media (min-width: 1001px) {
+  .top {
+    grid-template-columns: auto 1fr auto;
+    column-gap: 16px;
+  }
+  .wordmark {
+    text-align: center;
+  }
+}
+.node .level-name {
+  font-size: 13px;
+  color: var(--ink);
+  opacity: 0.85;
+}
+.node:disabled .level-name {
+  color: var(--ink-muted);
+  opacity: 0.8;
+}
+.node .level-stars {
+  font-size: 15px;
+}
+.node .level-stars.level-lock {
+  font-size: 12px;
+  opacity: 0.55;
+  letter-spacing: 0;
 }
