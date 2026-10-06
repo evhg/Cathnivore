@@ -6515,13 +6515,17 @@ function floodPiece(l: Level): SetPiece {
   return { kind: "flood", wave: Math.ceil(l.waves.length / 2), cells: [...cells.values()], from, to };
 }
 const SET_PIECES: Record<number, (l: Level) => SetPiece> = {
+  13: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.5), period: 15, open: 3.5 }),
   27: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.5), period: 14, open: 4 }),
   34: floodPiece,
   38: floodPiece,
   45: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.55), period: 12, open: 4 }),
+  53: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.5), period: 13, open: 4 }),
   63: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.45), period: 13, open: 4.5 }),
   67: () => ({ kind: "blackout", light: 2 }),
+  72: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.5), period: 13, open: 4 }),
   86: () => ({ kind: "blackout", light: 2 }),
+  93: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.55), period: 12, open: 4 }),
 };
 for (const l of LEVELS) if (SET_PIECES[l.id]) l.setPieces = [SET_PIECES[l.id]!(l)];
 

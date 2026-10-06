@@ -354,7 +354,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 116. [x] **Runnel spring visibility:** the spring is small against the beige tiles; add a soft pulsing glow ring and a distinct tile tint (`games/runnel/src/board.ts`).
 117. [x] **Runnel stage background:** the page is flat cream; add a faint field-furrow pattern or vignette so the board sits in a landscape (bar 1).
 118. [x] **Runnel solved moment:** when solved, wave-sprout animation across fields plus a share card with the puzzle number (`games/runnel/`).
-119. [ ] **Hedgerow set pieces for the acts without one:** acts 1, 2, 5, 7, 9 and 10 have no set piece (flood/bridge/blackout); add one mid-act per act, then run `hedgerow-tune.ts` and `--verify` (`games/hedgerow/src/levels.ts`).
+119. [x] *(2026-10-07: bridges at 13, 53, 72, 93; level tests pass)* **Hedgerow set pieces for the acts without one:** acts 1, 2, 5, 7, 9 and 10 have no set piece (flood/bridge/blackout); add one mid-act per act, then run `hedgerow-tune.ts` and `--verify` (`games/hedgerow/src/levels.ts`).
 120. [ ] **Hedgerow per-level grid variety:** every level of an act shares one grid size; vary rows/cols by one on alternating levels so the field shape changes (tuner required).
 
 ## Later (only when the owner asks in FEEDBACK.md)
