@@ -40,6 +40,7 @@ export class Input {
   private pressed = new Set<string>();
   private mouse = { x: 0, y: 0, left: false, right: false, middle: false };
   private wheel = 0;
+  private lookHintEl: HTMLElement | null = null;
   private touchLook = { x: 0, y: 0 };
   private stick = { x: 0, y: 0, id: -1, ox: 0, oy: 0 };
   private lookTouch = { id: -1, x: 0, y: 0 };
@@ -130,6 +131,7 @@ export class Input {
     const look = el("div", "look-hint");
     look.textContent = "Drag to aim";
     layer.append(look);
+    this.lookHintEl = look;
     const labels: Record<TouchButton, string> = {
       fire: "Fire",
       aim: "Aim",
@@ -203,6 +205,7 @@ export class Input {
           this.knobEl?.style.setProperty("--ky", `${dy * r}px`);
         }
         if (t.identifier === this.lookTouch.id) {
+          this.lookHintEl?.classList.add("gone");
           this.touchLook.x += t.clientX - this.lookTouch.x;
           this.touchLook.y += t.clientY - this.lookTouch.y;
           this.lookTouch.x = t.clientX;
@@ -232,8 +235,9 @@ export class Input {
     const need: Record<string, string | null> = {
       fire: null,
       jump: null,
-      aim: "aim",
-      reload: "reload",
+      // Aim and Reload are always on screen: a phone player should never wonder how to do either.
+      aim: null,
+      reload: null,
       crouch: "crouch",
       takedown: "takedown",
       focus: "focus",
