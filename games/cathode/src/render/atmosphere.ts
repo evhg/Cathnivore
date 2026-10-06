@@ -321,6 +321,7 @@ export function buildAtmosphere(o: AtmoOptions, uniforms: AtmoUniforms): Atmosph
     for (let i = 0; i < seeds.length; i++) seeds[i] = rand();
     geo.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seeds, 4));
     geo.instanceCount = o.rain;
+    const sparse = o.rain < 8000; // phone tier: fewer, longer, thinner streaks read better on a small screen
     const mat = new THREE.ShaderMaterial({
       uniforms: shared({ uBox: { value: rainBox } }),
       vertexShader: /* glsl */ `
@@ -346,8 +347,8 @@ export function buildAtmosphere(o: AtmoOptions, uniforms: AtmoUniforms): Atmosph
           vec3 toCam = uCam - p;
           float dist = length( toCam );
           vec3 side = normalize( cross( axis, toCam / dist ) );
-          float len = 0.42 + aSeed.w * 0.25;
-          float width = 0.0045 + dist * 0.0009;
+          float len = ${sparse ? "0.7 + aSeed.w * 0.4" : "0.42 + aSeed.w * 0.25"};
+          float width = ${sparse ? "0.003 + dist * 0.0006" : "0.0045 + dist * 0.0009"};
           vec3 wp = p + axis * position.y * len + side * position.x * width;
           vUv = uv;
           vCol = vec3( 0.16, 0.18, 0.22 ) + cLightAt( p ) * 0.35;
@@ -360,7 +361,7 @@ export function buildAtmosphere(o: AtmoOptions, uniforms: AtmoUniforms): Atmosph
         varying float vA;
         void main() {
           float across = 1.0 - abs( vUv.x - 0.5 ) * 2.0;
-          float along = smoothstep( 0.0, 0.4, vUv.y ) * smoothstep( 1.0, 0.7, vUv.y );
+          float along = smoothstep( 0.0, 0.5, vUv.y ) * smoothstep( 1.0, 0.45, vUv.y );
           gl_FragColor = vec4( vCol * across * along * vA * 0.5, 1.0 );
         }`,
       transparent: true,

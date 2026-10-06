@@ -676,9 +676,9 @@ input[type="radio"] {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 26px;
-  height: 26px;
-  margin: -13px 0 0 -13px;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
   opacity: var(--a, 0);
   background:
     linear-gradient(45deg, transparent 46%, #fff 46% 54%, transparent 54%),
@@ -688,6 +688,11 @@ input[type="radio"] {
   mask: radial-gradient(circle, transparent 6px, #000 7px);
 }
 .hud-hit.kill {
+  background:
+    linear-gradient(45deg, transparent 44%, var(--blood-hot) 44% 56%, transparent 56%),
+    linear-gradient(-45deg, transparent 44%, var(--blood-hot) 44% 56%, transparent 56%);
+}
+.hud-hit.head:not(.kill) {
   background:
     linear-gradient(45deg, transparent 44%, var(--blood-hot) 44% 56%, transparent 56%),
     linear-gradient(-45deg, transparent 44%, var(--blood-hot) 44% 56%, transparent 56%);

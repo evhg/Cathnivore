@@ -109,7 +109,7 @@ const GradeShader = {
       vec2 c = uv - 0.5;
       float r2 = dot( c, c );
       // Chromatic aberration: only toward the edges.
-      float ca = 0.006 * r2 * 4.0 + uDrama * 0.006;
+      float ca = 0.005 * smoothstep( 0.06, 0.5, r2 ) + uDrama * 0.006;
       vec3 col = sampleCA( uv, ca );
       // Kill-cam depth of field: a radial blur that grows away from the centre.
       if ( uDrama > 0.01 ) {
@@ -177,7 +177,7 @@ const FinalShader = {
       float l = dot( c, vec3( 0.333 ) );
       float g = h( px + floor( fract( uTime * 7.31 ) * 997.0 ) ) - 0.5;
       c += g * uGrain * ( 1.0 - l * 0.6 );
-      c += ( h( px * 1.37 + 11.0 ) - 0.5 ) / 255.0;
+      c += ( h( px * 1.37 + 11.0 ) - 0.5 ) * ( 0.6 + l * 0.6 ) / 255.0;
       gl_FragColor = vec4( c, 1.0 );
     }`,
 };
@@ -214,7 +214,7 @@ export function createPost(
     gtao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.5, thickness: 1, scale: 1, samples: 12 });
     composer.addPass(gtao);
   }
-  const bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.5, 0.42, 1.6);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.4, 0.4, 1.8);
   // Everything the bloom blurs goes through its high pass first: clean it there.
   const hp = bloom.materialHighPassFilter;
   hp.fragmentShader = hp.fragmentShader

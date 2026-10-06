@@ -512,7 +512,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   setTimeout(() => voice.say("start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
-  const auto = new AutoScale({ min: 0.55, max: 1, target: 1000 / 60, rescueMin: 0.35 });
+  const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, rescueMin: 0.4 });
   const autoOn = !o.shot && !navigator.webdriver;
   const resize = () => {
     const dpr = Math.min(devicePixelRatio, input.isTouch ? 1.5 : o.quality === "ultra" ? 3 : 2); // phones: 1.5x keeps them cool
@@ -1280,7 +1280,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (k.severed.length) audio?.sever();
     }
     for (const h of combat.hits) {
-      if (!h.killed) hud.hitMarker(false);
+      if (!h.killed) hud.hitMarker(false, h.zone === "head");
       audio?.hitFlesh(h.damage > 40);
     }
     combat.kills.length = 0;

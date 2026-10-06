@@ -192,9 +192,10 @@ export class Hud {
     }
   }
 
-  hitMarker(kill: boolean): void {
+  hitMarker(kill: boolean, head = false): void {
     this.hitT = 0.25;
     this.hit.classList.toggle("kill", kill);
+    this.hit.classList.toggle("head", head);
   }
 
   /** A line in the feed: "+90 XP · Headshot · Unseen". */
