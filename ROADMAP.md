@@ -325,6 +325,14 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 97. [ ] **Touch controls check:** screenshot with `hasTouch`, ensure 56px buttons, health plate clear of the stick zone.
 98. [x] **Bloom/chromatic budget:** cap bloom on emissive signs, reduce chromatic aberration to the screen edges (`render/post.ts`).
 
+**Phase 6e: from the 2026-10-06 session-3 critique (screenshots at 844x390 and 1440x900).**
+99. [x] **Age gate fits phone landscape:** at 844x390 the "I'm 18 or over" buttons fall below the fold; make the card scroll-free (two-column choices or compact type, `max-height:480px`) (`games/cathode/src/ui/`, `styles.css`).
+100. [ ] **Age gate title overflow:** at 1440x900 the letter-spaced CATHODE wordmark overflows the 560px card edges; use `clamp()` font size and less tracking so it sits inside the card.
+101. [ ] **Gate bypass for shots:** let `?play&shot` skip the age gate (default Full) so `npm run shots` and a new `e2e/screenshots.spec.ts` case capture in-game CATHODE HUD at phone and desktop sizes (`games/cathode/src/main.ts`, `e2e/screenshots.spec.ts`).
+102. [ ] **Hedgerow header collision:** the "Hedgerow" title touches the Cath pill at 844 and 1440 widths; add a gap, shrink pills or wrap them below the title on phones (`games/hedgerow/src/` level-select styles).
+103. [ ] **Hedgerow level-select polish:** node labels are about 11px and pale; raise to 13px and darker, show a star count under each node, and add a locked-node padlock style so progress reads at a glance.
+104. [ ] **Hedgerow in-field shots:** add `?sandbox=1` screenshots of a mid-wave field (3D and `?2d`) to `npm run shots` so tower, enemy and Cath readability can be critiqued next session (`e2e/screenshots.spec.ts`).
+
 ## Postponed by the owner (2026-09-28)
 
 - **iPhone App Store launch:** postponed until the games are truly impressive. Don't dispatch `ios.yml` or `store.yml`, and don't work on store listings or screenshots. Keep `npm run build` (the iPhone app's web bundle) passing. Only the owner reopens this, through `FEEDBACK.md`.
