@@ -72,18 +72,32 @@ const CASES: { id: string; title: string; done: string; open: string; needs?: st
     needs: "pellLead",
   },
   {
+    id: "boardLead",
+    title: "The visitor pass",
+    done: "The keycard opens the Spire's private lift.",
+    open: "Pell's permits all trace to the Board Tower, where a courier's keycard sits in a lobby safe.",
+    needs: "pellBoss",
+  },
+  {
     id: "boardBoss",
     title: "The Chair of the Board",
     done: "The Chair is finished. Act 4 is closed.",
-    open: "Pell's permits all trace to the Spire, where the Candor Board sits.",
-    needs: "pellBoss",
+    open: "The keycard rides the lift to the Spire, where the Candor Board sits.",
+    needs: "boardLead",
+  },
+  {
+    id: "vaultLead",
+    title: "The vault ledger",
+    done: "The index holds the vault's door code.",
+    open: "The Board's accounts lead to the Hollow Vault, where a clerk's cage holds the debt-book index.",
+    needs: "boardBoss",
   },
   {
     id: "vaultBoss",
     title: "HollowCandor",
     done: "HollowCandor is silent. Hardboiled is open.",
-    open: "The Board's accounts all lead to the vault, and the machine that runs it.",
-    needs: "boardBoss",
+    open: "The door code opens the vault, and the machine that runs it.",
+    needs: "vaultLead",
   },
 ];
 

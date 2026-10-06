@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-06 02:52 session:** ROADMAP 79: lead jobs before the Chair and HollowCandor (`game/boardlead.ts`, `vaultlead.ts`; chain pellBoss -> boardLead -> boardBoss -> vaultLead -> vaultBoss; case board entries; tests). `npm run check` green. Unreleased. Next: ROADMAP 72 pickups, 78 perf.
 - **2026-10-06 01:51 session:** ROADMAP 79: lead jobs before Vane and Pell (`game/vanelead.ts`, `pelllead.ts`; chain crispBoss -> vaneLead -> vaneBoss -> pellLead -> pellBoss; case board entry; test). ROADMAP 73 ticked done. Next: ROADMAP 79 plaza lead before Pell, 72 pickups.
 - **2026-10-06 00:51 session:** released `a3b1095` (all CATHODE work through the 73 checkpoint card; gates passed, HTTP check passed, tag push 403 harmless; 1st release today). ROADMAP 79: a second landmark observation per wing (`LANDMARKS`). `npm run check` run at commit. Next: ROADMAP 79 wing story jobs, 73 resist display.
 - **2026-10-05 23:52 session:** ROADMAP 73: the pause card shows the last checkpoint (`hud.checkpoint`). tsc clean; full `npm run check` still running at commit, verify next session. Unreleased (release cap used). Next: ROADMAP 79 wing story jobs.

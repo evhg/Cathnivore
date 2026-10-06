@@ -26,6 +26,8 @@ import { VaneBossJob } from "./vaneboss";
 import { VaneLeadJob } from "./vanelead";
 import { PellLeadJob } from "./pelllead";
 import { PellBossJob } from "./pellboss";
+import { BoardLeadJob } from "./boardlead";
+import { VaultLeadJob } from "./vaultlead";
 import { BoardBossJob } from "./boardboss";
 import { VaultBossJob } from "./vaultboss";
 import { SideContractJob } from "./sidejob";
@@ -379,8 +381,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
+  const boardLead =
+    !tutorial && progress.jobsDone.includes("pellBoss") && !progress.jobsDone.includes("boardLead") && !o.shot
+      ? new BoardLeadJob({
+          player,
+          progress,
+          scene: world.scene,
+          markers: world.markers,
+          ground,
+          touch: input.isTouch,
+          spawn,
+          arm,
+          say: (t) => hud.subtitle(t),
+          teach: (t) => hud.teach(t),
+          banner: (a, b) => hud.showBanner(a, b),
+          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+        })
+      : null;
   const boardBoss =
-    !tutorial && progress.jobsDone.includes("pellBoss") && !progress.jobsDone.includes("boardBoss") && !o.shot
+    !tutorial && progress.jobsDone.includes("boardLead") && !progress.jobsDone.includes("boardBoss") && !o.shot
       ? new BoardBossJob({
           player,
           progress,
@@ -396,8 +415,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
+  const vaultLead =
+    !tutorial && progress.jobsDone.includes("boardBoss") && !progress.jobsDone.includes("vaultLead") && !o.shot
+      ? new VaultLeadJob({
+          player,
+          progress,
+          scene: world.scene,
+          markers: world.markers,
+          ground,
+          touch: input.isTouch,
+          spawn,
+          arm,
+          say: (t) => hud.subtitle(t),
+          teach: (t) => hud.teach(t),
+          banner: (a, b) => hud.showBanner(a, b),
+          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+        })
+      : null;
   const vaultBoss =
-    !tutorial && progress.jobsDone.includes("boardBoss") && !progress.jobsDone.includes("vaultBoss") && !o.shot
+    !tutorial && progress.jobsDone.includes("vaultLead") && !progress.jobsDone.includes("vaultBoss") && !o.shot
       ? new VaultBossJob({
           player,
           progress,
@@ -660,7 +696,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (intent.map && !coaching && !charScreen && !killcam.active && !dead) {
       coaching = true;
       document.exitPointerLock?.();
-      const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardBoss?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
+      const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
       openDistrictMap(o.hud.parentElement ?? o.hud, player.pos, t ? { x: t.x, z: t.z } : null, () => (coaching = false), progress.jobsDone);
     }
     if (s.paused || away) {
@@ -948,9 +984,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       pellBoss.update(dt);
       objective = pellBoss.objective;
     }
+    if (boardLead) {
+      boardLead.update(dt);
+      objective = boardLead.objective;
+    }
     if (boardBoss) {
       boardBoss.update(dt);
       objective = boardBoss.objective;
+    }
+    if (vaultLead) {
+      vaultLead.update(dt);
+      objective = vaultLead.objective;
     }
     if (vaultBoss) {
       vaultBoss.update(dt);
@@ -1124,7 +1168,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   /** The objective on screen, for the waypoint diamond. */
   function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
-    const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardBoss?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
+    const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
     if (!t || dead) return null;
     const p = t.clone().add(new THREE.Vector3(0, 1.2, 0)).project(world.camera);
     const behind = p.z > 1;
