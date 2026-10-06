@@ -1244,7 +1244,7 @@ export class Renderer3D {
     const h = game.hero;
     const y = this.height(h.x, h.y);
     c.position.set(h.x, y, h.y);
-    c.scale.setScalar(1.3);
+    c.scale.setScalar(0.98);
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
     const ud = c.userData;
     const fig = ud.fig as THREE.Group;
