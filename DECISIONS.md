@@ -289,3 +289,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-06: the owner made the repo public to end the Actions billing block; CI back on push (skipping lock/notes-only commits, cancelling superseded runs).
 - 2026-10-06: Wing story jobs are "lead" jobs inserted before each act boss (vaneLead first), gating the boss on a new jobsDone flag.
 - 2026-10-06: ROADMAP 73 ticked done (resist display already covered by the HUD defence line); 72 left only for gun pickups.
+- 2026-10-06: Pell gets a permit-ledger lead job on the plaza, same pattern.

@@ -58,11 +58,18 @@ const CASES: { id: string; title: string; done: string; open: string; needs?: st
     needs: "vaneLead",
   },
   {
+    id: "pellLead",
+    title: "The permit ledger",
+    done: "The ledger puts Pell on the plaza steps at midnight.",
+    open: "Candor's permits all carry one signature. Bea traced the strongbox to Hollowell Plaza.",
+    needs: "vaneBoss",
+  },
+  {
     id: "pellBoss",
     title: "Councillor Marcus Pell",
     done: "Pell is finished. Act 3 is closed.",
     open: "Vane's patient files name Pell, who signs Candor's permits from Hollowell Plaza.",
-    needs: "vaneBoss",
+    needs: "pellLead",
   },
   {
     id: "boardBoss",
