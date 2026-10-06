@@ -291,3 +291,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-06: ROADMAP 73 ticked done (resist display already covered by the HUD defence line); 72 left only for gun pickups.
 - 2026-10-06: Pell gets a permit-ledger lead job on the plaza, same pattern.
 - 2026-10-06: Board and vault leads follow the Pell lead pattern (keycard in the tower lobby, debt-book index at the vault gate).
+- 2026-10-06: Dropped guns: 35% on non-takedown kills (rifle->Corridor AR, sniper->Widowmaker, else Kestrel); pickup gives 1.5 mags or unlocks the gun.
