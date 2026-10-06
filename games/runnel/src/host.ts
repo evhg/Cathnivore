@@ -31,12 +31,19 @@ export interface HostView {
 export function createHost(face: HTMLElement, line: HTMLElement): HostView {
   let current: CathExpression | null = null
   let milestone = 0
+  let shown = ''
   const show = (expression: CathExpression, text: string) => {
     if (expression !== current) {
       face.innerHTML = cathSvg({ framing: 'face', expression, animate: true })
       current = expression
     }
     line.textContent = text
+    if (text !== shown && shown) {
+      face.classList.remove('perk')
+      void face.offsetWidth
+      face.classList.add('perk')
+    }
+    shown = text
   }
   return {
     greet(daily, dayNumber) {

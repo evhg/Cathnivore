@@ -230,6 +230,8 @@ export class Board {
 
   private drawSpring(root: SVGGElement): void {
     const g = el('g', { class: 'spring-well' }, root)
+    el('circle', { r: S * 0.46, class: 'well-glow' }, g)
+    el('circle', { r: S * 0.46, class: 'well-glow well-glow-2' }, g)
     el('circle', { r: S * 0.36, class: 'well-ring' }, g)
     el('circle', { r: S * 0.27, class: 'well-water' }, g)
     el('circle', { r: S * 0.12, class: 'well-ripple' }, g)
