@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-06 11:52 session:** ROADMAP 90 (designed age gate), 91 (CATHODE card art, phone Hedgerow labels), 92-93 (phone landscape HUD, subtitle/objective caps), 94 ticked; planned Phase 6d (92-98) from a subagent critique. `npm run check` green. A release attempt failed gate 5 only because the e2e-site age-gate test matched the old radio label (fixed: `/Reduced.*no gore/`, test passes); **next session should run `npm run release` first** (3 releases used today). Next: 95 rain/dither, 96 combat feedback, 97 touch check, 98 bloom.
 - **2026-10-06 10:51 session:** ROADMAP 89 done (title portrait: smirk expression, rain-streaked neon window `.title-cath::before`). `npm run check` green, screenshot checked. Unreleased. Next: 90 age gate, 91 level-select header.
 - **2026-10-06 09:52 session:** ROADMAP 86 done (hand nails/knuckles/cuff seam, Pin rim line in `viewmodel.ts`). tsc and cathode tests green (187); no screenshots taken. Unreleased. Next: 89 title portrait, 90 age gate.
 - **2026-10-06 08:52 session:** ROADMAP 88 done (crosshair/hit marker/waypoint outlines, `crossScale` pref + slider). tsc clean; full `npm run check` still running at commit. Unreleased. Next: 86 hands, 89 title portrait.

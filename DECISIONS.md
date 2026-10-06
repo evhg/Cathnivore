@@ -297,3 +297,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-06: New Game+ keeps only the difficulty unlock flags; secrets, landmarks and story jobs reset. Key rebinds replace all default keys of an action and evict duplicates.
 - 2026-10-06: Photo mode free camera edits world.camera directly (the paused loop doesn't reapply it); closing restores on the next frame.
 - 2026-10-06: Hands polish kept to small meshes (nails, knuckles, seam) plus an emissive rim strip on the Pin instead of a new light.
+- 2026-10-06: Age gate radios are now choice cards; site e2e matches the label by regex /Reduced.*no gore/.
