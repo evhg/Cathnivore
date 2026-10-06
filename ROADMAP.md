@@ -357,6 +357,12 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 119. [x] *(2026-10-07: bridges at 13, 53, 72, 93; level tests pass)* **Hedgerow set pieces for the acts without one:** acts 1, 2, 5, 7, 9 and 10 have no set piece (flood/bridge/blackout); add one mid-act per act, then run `hedgerow-tune.ts` and `--verify` (`games/hedgerow/src/levels.ts`).
 120. [ ] **Hedgerow per-level grid variety:** every level of an act shares one grid size; vary rows/cols by one on alternating levels so the field shape changes (tuner required).
 
+121. [ ] **Runnel daily streak flair:** show a small streak flame and best streak on the stats dialog and on the header after a win (`games/runnel/src/main.ts`, `store.ts`).
+122. [ ] **Runnel hint button:** a once-per-puzzle "Cath's tip" that pulses one wrongly turned tile, with a Practice-only default (bar 5).
+123. [ ] **Landing page Cath:** the `/` games page shows Cath welcoming the player with a line that changes per day and highlights today's Runnel (`site/`).
+124. [ ] **Hedgerow Endless set pieces:** Endless fields rotate a bridge or flood every 10 waves so long runs differ (`games/hedgerow/src/endless.ts`; tuner).
+125. [ ] **CATHODE phone shots after 109-111:** run `npm run shots:cathode`, check Aim/Reload and subtitle clamp at 844x390 and 390x844; fix whatever clips.
+
 ## Later (only when the owner asks in FEEDBACK.md)
 
 - A fourth game, starring Cath, with a design note first in `docs/design/`.
