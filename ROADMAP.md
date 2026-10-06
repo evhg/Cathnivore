@@ -319,7 +319,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 **Phase 6d: from the 2026-10-06 session-2 critique (hands, crosshair and title already handled in 86-89).**
 92. [x] *(2026-10-06: max-height:480px block; unreleased)* **Phone HUD scale:** at 844x390 the name, health, armour and weapon labels are 10-13px and low contrast; add a `max-height:480px` block with larger type, a dark corner plate, safe-area insets (`ui/hud.ts`, `styles.css`).
 93. [x] *(2026-10-06: sub clamp 2 lines 60%, objective one line; auto-fade not changed)* **Phone subtitles and objective:** cap voiceover to 2 lines and ~60% width, auto-fade, one-line objective with an icon (`ui/hud.ts`).
-94. [ ] **Touch-aware tutorial hint:** show thumb instructions on touch instead of "WASD", place it away from the waypoint (`game/firstjob.ts`).
+94. [x] *(2026-10-06: already touch-aware in firstjob.ts)* **Touch-aware tutorial hint:** show thumb instructions on touch instead of "WASD", place it away from the waypoint (`game/firstjob.ts`).
 95. [ ] **Phone rain and dither:** longer, thinner alpha-faded rain streaks on the phone tier, lower dither amplitude in darks, clamp AutoScale minimum (`render/atmosphere.ts`, `post.ts`, `game/autoscale.ts`).
 96. [ ] **Combat feedback on small screens:** bigger hit X (red on headshot), directional damage arc, short enemy health bars after a hit, melee kill hit-stop (`game/combat.ts`, `ui/hud.ts`, `render/fx.ts`).
 97. [ ] **Touch controls check:** screenshot with `hasTouch`, ensure 56px buttons, health plate clear of the stick zone.
