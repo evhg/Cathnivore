@@ -73,6 +73,7 @@ export class Hud {
     this.root = el("div", "hud-root", host);
     if (loadPrefs().bigSubs) this.root.classList.add("big-subs");
     document.documentElement.classList.toggle("colour-safe", loadPrefs().colourSafe);
+    this.root.style.setProperty("--xs", String(loadPrefs().crossScale));
     // Objective, top left.
     this.objective = el("p", "hud-objective", this.root);
     // Health and level, bottom left.
@@ -374,6 +375,17 @@ export class Hud {
         });
         toggle("Invert look Y", "invertY", () => window.dispatchEvent(new Event("cathode:prefs")));
       }
+      const xs = el("label", "hud-set", set);
+      el("span", "hud-set-name", xs).textContent = "Crosshair size";
+      const xi = el("input", "hud-slider", xs) as HTMLInputElement;
+      xi.type = "range";
+      xi.min = "70";
+      xi.max = "200";
+      xi.value = String(Math.round(prefs.crossScale * 100));
+      xi.addEventListener("input", () => {
+        savePrefs({ ...loadPrefs(), crossScale: Number(xi.value) / 100 });
+        this.root.style.setProperty("--xs", String(Number(xi.value) / 100));
+      });
       toggle("Calm camera", "calmCamera");
       toggle("Colour-blind colours", "colourSafe", (on) => document.documentElement.classList.toggle("colour-safe", on));
       toggle("Toggle sprint and aim", "holdToggle", () => window.dispatchEvent(new Event("cathode:prefs")));

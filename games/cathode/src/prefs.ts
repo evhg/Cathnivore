@@ -24,12 +24,14 @@ export interface Prefs {
   lookScale: number;
   /** Moving the mouse or stick up looks down. */
   invertY: boolean;
+  /** Crosshair size multiplier, 0.7..2. */
+  crossScale: number;
   /** Rebound keys by action id (see controls.ts). */
   binds: Binds;
 }
 
 const KEY = "cathode:prefs:v1";
-const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false, lookScale: 1, invertY: false, binds: {} };
+const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false, lookScale: 1, invertY: false, crossScale: 1, binds: {} };
 
 export function loadPrefs(): Prefs {
   try {
@@ -47,6 +49,7 @@ export function loadPrefs(): Prefs {
       holdToggle: p.holdToggle === true,
       lookScale: typeof p.lookScale === "number" && p.lookScale >= 0.4 && p.lookScale <= 2.5 ? p.lookScale : 1,
       invertY: p.invertY === true,
+      crossScale: typeof p.crossScale === "number" && p.crossScale >= 0.7 && p.crossScale <= 2 ? p.crossScale : 1,
       binds: cleanBinds(p.binds),
     };
   } catch {

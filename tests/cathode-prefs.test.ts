@@ -14,9 +14,10 @@ describe("accessibility prefs", () => {
   it("defaults off and round-trips", () => {
     expect(loadPrefs().bigSubs).toBe(false)
     expect(loadPrefs().calmCamera).toBe(false)
-    savePrefs({ ...loadPrefs(), bigSubs: true, calmCamera: true })
+    savePrefs({ ...loadPrefs(), bigSubs: true, calmCamera: true, crossScale: 1.5 })
     expect(loadPrefs().bigSubs).toBe(true)
     expect(calmCameraOn()).toBe(true)
+    expect(loadPrefs().crossScale).toBe(1.5)
   })
   it("colour-safe and hold-toggle default off and round-trip", () => {
     expect(loadPrefs().colourSafe).toBe(false)
