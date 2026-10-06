@@ -111,6 +111,9 @@ async function begin(): Promise<void> {
   loading.hidden = true;
 }
 
-if (!prefs.adult) show("screen-gate");
+if (!prefs.adult) {
+  $("gate-cath").innerHTML = cathSvg({ expression: "smirk", framing: "half", outfit: "trench" });
+  show("screen-gate");
+}
 else if (params.has("play")) void begin();
 else openTitle();

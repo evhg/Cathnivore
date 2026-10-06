@@ -144,9 +144,71 @@ body {
     radial-gradient(ellipse at 50% 120%, rgba(200, 16, 46, 0.25), transparent 60%),
     linear-gradient(180deg, #0b0d13, var(--night));
 }
+.gate {
+  position: relative;
+  overflow: hidden;
+}
+.gate-rain {
+  /* Neon bokeh and falling rain behind the card. */
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 30%, rgba(255, 46, 136, 0.35) 0 9%, transparent 10%),
+    radial-gradient(circle at 88% 20%, rgba(46, 230, 255, 0.3) 0 8%, transparent 9%),
+    radial-gradient(circle at 80% 75%, rgba(255, 190, 70, 0.22) 0 6%, transparent 7%),
+    repeating-linear-gradient(100deg, transparent 0 26px, rgba(200, 220, 255, 0.07) 26px 27px, transparent 27px 47px);
+  background-size: auto, auto, auto, 120px 240px;
+  animation: gate-rain 1.6s linear infinite;
+  filter: blur(0.5px);
+}
+@keyframes gate-rain {
+  to { background-position: 0 0, 0 0, 0 0, -30px 240px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gate-rain { animation: none; }
+}
+.gate-cath {
+  /* Cath as a neon-rimmed silhouette behind the card. */
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: min(420px, 80vw);
+  transform: translateX(-50%);
+  opacity: 0.55;
+  filter: brightness(0) drop-shadow(0 0 2px var(--neon-cyan)) drop-shadow(0 0 26px rgba(255, 46, 136, 0.55));
+  pointer-events: none;
+}
+.gate-cath svg { width: 100%; height: auto; display: block; }
 .gate-card {
+  position: relative;
+  z-index: 1;
   width: min(560px, 100%);
   text-align: center;
+  padding: 28px 22px;
+  background: rgba(7, 8, 11, 0.82);
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--blood-hot);
+  border-radius: 4px;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.7);
+}
+.intensity { border: 0; padding: 0; display: grid; gap: 10px; }
+.intensity legend { margin: 0 auto 10px; }
+label.choice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--night-2);
+  cursor: pointer;
+}
+label.choice b { display: block; font-size: 17px; color: var(--ink); }
+label.choice span { font-size: 14px; color: var(--ink-muted); }
+label.choice:has(input:checked) {
+  border-color: var(--blood-hot);
+  box-shadow: 0 0 18px rgba(255, 42, 71, 0.25);
 }
 .gate-card .eyebrow {
   color: var(--blood-hot);

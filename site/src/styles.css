@@ -777,3 +777,16 @@ body {
     animation: none;
   }
 }
+
+/* The CATHODE card is taller than the others: its art needs room for the skyline and Cath. */
+.card-cathode .card-art {
+  width: 104px;
+  height: 104px;
+  border-radius: 22px;
+}
+@media (max-width: 560px) {
+  .card-cathode .card-art {
+    width: 84px;
+    height: 84px;
+  }
+}

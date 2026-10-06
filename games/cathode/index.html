@@ -14,14 +14,16 @@
   <body>
     <main class="app">
       <section id="screen-gate" class="screen gate" aria-labelledby="gate-title" hidden>
+        <div class="gate-rain" aria-hidden="true"></div>
+        <div class="gate-cath" id="gate-cath" aria-hidden="true"></div>
         <div class="gate-card">
           <p class="eyebrow">Rated 18</p>
           <h1 id="gate-title" class="wordmark">CATHODE</h1>
           <p class="gate-text">Strong bloody violence and strong language throughout. It's a game for adults.</p>
           <fieldset class="intensity">
             <legend>Violence</legend>
-            <label><input type="radio" name="intensity" value="full" checked /> <span>Full: blood, severed limbs, kill-cams</span></label>
-            <label><input type="radio" name="intensity" value="reduced" /> <span>Reduced: hits and falls, no gore</span></label>
+            <label class="choice"><input type="radio" name="intensity" value="full" checked /> <span><b>Full</b>Blood, severed limbs, kill-cams</span></label>
+            <label class="choice"><input type="radio" name="intensity" value="reduced" /> <span><b>Reduced</b>Hits and falls, no gore</span></label>
           </fieldset>
           <div class="gate-actions">
             <button type="button" id="gate-yes" class="btn btn-primary">I'm 18 or over</button>

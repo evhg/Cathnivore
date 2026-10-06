@@ -313,8 +313,8 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 87. [x] *(2026-10-06: objective and caption backing, nowrap name plate, caption lifted on phones)* **CATHODE phone HUD layout:** dark gradient backing for the caption and objective line, no wrap on the "CATH HALE / LEVEL 1" plate, safe-area insets (`games/cathode/src/ui/hud.ts`, `styles.css`).
 88. [x] *(2026-10-06: outlines + crosshair size slider)* **CATHODE crosshair and marker contrast:** dark outline on crosshair, hit markers and diamond markers; a crosshair size setting in the pause card.
 89. [x] *(2026-10-06: smirk half-smile, neon window pane with bokeh behind her; unreleased)* **Noir Cath title portrait:** relaxed brow, half-smile, red lips, in front of a rain-streaked neon window instead of a void (`shared/cath/`, title screen).
-90. [ ] **Designed age gate:** rain and neon backdrop, Cath silhouette, a styled violence-choice card.
-91. [ ] **Hedgerow level-select header and landing CATHODE card:** unclipped title, lighter pills, larger node labels; a taller CATHODE card on the landing page (`games/hedgerow/src/`, `site/`).
+90. [x] *(2026-10-06: rain+neon backdrop, Cath silhouette, choice cards; unreleased)* **Designed age gate:** rain and neon backdrop, Cath silhouette, a styled violence-choice card.
+91. [ ] *(2026-10-06: landing CATHODE card art enlarged; Hedgerow level-select header still open)* **Hedgerow level-select header and landing CATHODE card:** unclipped title, lighter pills, larger node labels; a taller CATHODE card on the landing page (`games/hedgerow/src/`, `site/`).
 
 ## Postponed by the owner (2026-09-28)
 
