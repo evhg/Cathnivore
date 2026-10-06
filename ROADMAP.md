@@ -309,7 +309,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 85. [x] *(2026-10-06: `sim/newgameplus.ts`; title button after act 5, `ngPlus<n>` lap flag, +8% elite chance per lap; test)* **New Game+:** after act 5, restart the story with her kit and tougher elites, a title-screen entry and a save-code flag.
 
 **Phase 6c: polish from the 2026-10-06 critique.**
-86. [ ] **CATHODE first-person hands:** Cath's gloved hands, trench cuff and pearl bracelet on the viewmodel; a proper Pin baton model with rim light and idle sway (`games/cathode/src/game/viewmodel.ts`, `shared/cath/`).
+86. [x] *(2026-10-06: polished nails, knuckles, gold glove-cuff seam, neon rim line on the Pin; unreleased)* **CATHODE first-person hands:** Cath's gloved hands, trench cuff and pearl bracelet on the viewmodel; a proper Pin baton model with rim light and idle sway (`games/cathode/src/game/viewmodel.ts`, `shared/cath/`).
 87. [x] *(2026-10-06: objective and caption backing, nowrap name plate, caption lifted on phones)* **CATHODE phone HUD layout:** dark gradient backing for the caption and objective line, no wrap on the "CATH HALE / LEVEL 1" plate, safe-area insets (`games/cathode/src/ui/hud.ts`, `styles.css`).
 88. [x] *(2026-10-06: outlines + crosshair size slider)* **CATHODE crosshair and marker contrast:** dark outline on crosshair, hit markers and diamond markers; a crosshair size setting in the pause card.
 89. [ ] **Noir Cath title portrait:** relaxed brow, half-smile, red lips, in front of a rain-streaked neon window instead of a void (`shared/cath/`, title screen).

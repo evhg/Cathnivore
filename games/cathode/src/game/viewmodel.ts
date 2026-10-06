@@ -21,6 +21,10 @@ const M = {
   glass: new THREE.MeshStandardMaterial({ color: 0x0a1a24, roughness: 0.05, metalness: 0.4, emissive: 0x041016 }),
   brass: new THREE.MeshStandardMaterial({ color: 0xb08d3c, roughness: 0.3, metalness: 1 }),
   red: new THREE.MeshStandardMaterial({ color: 0x220000, emissive: 0xff2a47, emissiveIntensity: 4 }),
+  /** Glossy red nail polish showing at the finger tips. */
+  polish: new THREE.MeshStandardMaterial({ color: 0x9a0f2a, roughness: 0.12, metalness: 0.2, emissive: 0x2a0309 }),
+  /** A thin neon rim along the Pin's shaft, so the baton reads against the dark. */
+  rim: new THREE.MeshStandardMaterial({ color: 0x111418, roughness: 0.3, emissive: 0x2ad8ff, emissiveIntensity: 1.6 }),
 };
 
 function box(w: number, h: number, d: number, m: THREE.Material, r = 0.004): THREE.Mesh {
@@ -46,11 +50,16 @@ function hand(left = false): THREE.Group {
     f.position.set(s * (-0.018 + i * 0.0125), -0.02, -0.03);
     f.rotation.x = 1.2;
     g.add(f);
+    // A knuckle bump on the back of the hand, and a polished nail at the tip.
+    g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.0085, 10, 8), M.glove), f.position.x, 0.014, -0.034));
+    g.add(at(box(0.011, 0.004, 0.012, M.polish, 0.002), f.position.x, -0.046, -0.058));
   }
   const thumb = box(0.016, 0.017, 0.045, M.glove, 0.008);
   thumb.position.set(s * 0.028, 0.01, -0.025);
   thumb.rotation.set(0.2, s * 0.6, 0);
   g.add(thumb);
+  // The thumb's polished nail.
+  g.add(at(box(0.01, 0.004, 0.011, M.polish, 0.002), s * 0.039, 0.0, -0.05));
   // Stitching seam on the back of the glove, a little sheen.
   g.add(at(box(0.004, 0.002, 0.05, M.steel, 0.001), 0, 0.018, 0));
   return g;
@@ -61,6 +70,8 @@ function forearm(left = false): THREE.Group {
   const g = new THREE.Group();
   g.add(at(cyl(0.028, 0.03, M.glove, 14), 0, 0, 0.035));
   g.add(at(cyl(0.034, 0.02, M.silk, 14), 0, 0, 0.06));
+  // A fine gold seam at the glove cuff.
+  g.add(at(cyl(0.0295, 0.004, M.gold, 14), 0, 0, 0.02));
   const sleeve = cyl(0.05, 0.34, M.coat, 16, 0.042);
   sleeve.position.set(0, 0, 0.24);
   g.add(sleeve);
@@ -145,6 +156,8 @@ function buildPin(): GunRig {
   for (let i = 0; i < 7; i++) b.add(at(cyl(0.0185, 0.004, M.rubber, 18), 0, 0, -0.07 + i * 0.022));
   b.add(at(cyl(0.019, 0.02, M.brass, 18), 0, 0, 0.09));
   b.add(at(cyl(0.013, 0.2, M.steel, 16), 0, 0, -0.18));
+  b.add(at(box(0.003, 0.0035, 0.19, M.rim, 0.001), 0.0112, 0.0065, -0.18));
+  b.add(at(box(0.0025, 0.003, 0.19, M.rim, 0.001), 0.0085, 0.0045, -0.37));
   b.add(at(cyl(0.01, 0.2, M.steel, 16), 0, 0, -0.37));
   b.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.014, 14, 10), M.steel), 0, 0, -0.475));
   b.rotation.x = 1.0; // held up over the shoulder, ready to swing
