@@ -2260,3 +2260,34 @@ img.act-scene {
   opacity: 0.55;
   letter-spacing: 0;
 }
+
+/* Landscape phones: the field takes the left, the panel and controls a narrow column on the right, so the
+   field is never squeezed to a strip (seen at 844x390). Same grid as the desktop layout. */
+@media (orientation: landscape) and (max-height: 520px) and (min-width: 560px) and (max-width: 899.98px) {
+  .play {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 250px;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "hud hud"
+      "stage panel"
+      "stage controls";
+    column-gap: 10px;
+    row-gap: 6px;
+  }
+  .hud { grid-area: hud; min-height: 40px; }
+  .hud-title { display: grid; }
+  .hud-place { display: none; }
+  .stage { grid-area: stage; }
+  .panel {
+    grid-area: panel;
+    height: auto;
+    min-height: 0;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding: 8px 10px;
+  }
+  .controls { grid-area: controls; flex-wrap: wrap; }
+  .build-row { flex-wrap: wrap; overflow: visible; }
+  .controls .btn.send { flex: 1 1 100%; min-height: 44px; }
+}
