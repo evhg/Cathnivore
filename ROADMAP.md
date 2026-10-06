@@ -322,7 +322,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 94. [x] *(2026-10-06: already touch-aware in firstjob.ts)* **Touch-aware tutorial hint:** show thumb instructions on touch instead of "WASD", place it away from the waypoint (`game/firstjob.ts`).
 95. [x] **Phone rain and dither:** longer, thinner alpha-faded rain streaks on the phone tier, lower dither amplitude in darks, clamp AutoScale minimum (`render/atmosphere.ts`, `post.ts`, `game/autoscale.ts`).
 96. [x] *(2026-10-06: hit X, red-on-headshot, damage arc `hud.hurtFrom`, target health bar `hud.targetHit`; melee hit-stop already existed.)* **Combat feedback on small screens:** bigger hit X (red on headshot), directional damage arc, short enemy health bars after a hit, melee kill hit-stop (`game/combat.ts`, `ui/hud.ts`, `render/fx.ts`).
-97. [ ] **Touch controls check:** screenshot with `hasTouch`, ensure 56px buttons, health plate clear of the stick zone.
+97. [x] *(2026-10-06: touch shot added to shots:cathode; plate clear of stick, buttons 56px+, cycle button 56x56)* **Touch controls check:** screenshot with `hasTouch`, ensure 56px buttons, health plate clear of the stick zone.
 98. [x] **Bloom/chromatic budget:** cap bloom on emissive signs, reduce chromatic aberration to the screen edges (`render/post.ts`).
 
 **Phase 6e: from the 2026-10-06 session-3 critique (screenshots at 844x390 and 1440x900).**
@@ -340,6 +340,13 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 106. [x] **Hedgerow sandbox shots:** `scripts/hedgerow-shots.mjs` places few towers because most plots are not buildable cells; pick plots from the level's buildable list so the shot shows 8 towers, a merge and a boss wave.
 107. [x] **Hedgerow 3D readability:** Cath is larger than a tower in the 3D desktop view and hides the lane; scale her down 25% or add an outline pass, and add range rings when a tower is selected.
 108. [x] **Hedgerow landscape phone:** *(2026-10-06 19:52: tower card compacted in the 250px column, stats no longer clipped; checked at 844x390 and 932x430)* check the build row and tower sheet inside the 250px side column at 844x390 and 932x430 (selected tower, upgrade choice, merge) with `shots:hedgerow`.
+
+**Phase 6f: planned 2026-10-06 21:00 (session after 108).**
+109. [ ] **CATHODE phone touch buttons visible:** the touch shot shows only Fire and Jump; aim, reload, crouch, takedown and weapon cycle report 0x0 (hidden until needed). Show Aim and Reload always, and shot-verify at 844x390 (`games/cathode/src/ui/hud.ts`, `styles.css`).
+110. [ ] **CATHODE look-drag hint timing:** "DRAG TO AIM" sits over the crosshair; move it to the right half low, fade after the first drag.
+111. [ ] **CATHODE subtitle clipping:** the phone subtitle's second line is clipped under the crosshair strip; raise the subtitle plate above the touch zone or cap to one line on touch.
+112. [ ] **Runnel fresh-eyes pass:** screenshot Runnel at phone and desktop, critique against VISION bars, add findings here (`games/runnel/`).
+113. [ ] **Hedgerow act variety audit:** compare level 10/20/30 route and tower shots and list what differs; add one distinct structure or hazard per act if they look alike (`games/hedgerow/`).
 
 ## Later (only when the owner asks in FEEDBACK.md)
 

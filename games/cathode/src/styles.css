@@ -530,8 +530,8 @@ input[type="radio"] {
   right: calc(28px + env(safe-area-inset-right));
   top: calc(16px + env(safe-area-inset-top));
   width: 56px;
-  height: 40px;
-  border-radius: 8px;
+  height: 56px;
+  border-radius: 10px;
 }
 
 /* ---- HUD ---- */
