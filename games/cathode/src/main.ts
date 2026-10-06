@@ -39,7 +39,7 @@ $<HTMLButtonElement>("gate-yes").addEventListener("click", () => {
 
 // ---- the title ----
 function openTitle(): void {
-  $("title-cath").innerHTML = cathSvg({ expression: "determined", framing: "half", outfit: "trench" });
+  $("title-cath").innerHTML = cathSvg({ expression: "smirk", framing: "half", outfit: "trench" });
   show("screen-title");
   const ng = $<HTMLButtonElement>("btn-ngplus");
   const done = Progress.load()?.jobsDone ?? [];

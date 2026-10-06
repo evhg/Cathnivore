@@ -250,9 +250,28 @@ input[type="radio"] {
   stroke-width: 2.2;
 }
 .title-cath {
+  position: relative;
   justify-self: center;
   width: min(460px, 90%);
-  filter: grayscale(0.6) contrast(1.2) brightness(0.92) drop-shadow(0 0 40px rgba(255, 46, 136, 0.25));
+  filter: grayscale(0.35) contrast(1.15) brightness(0.95) drop-shadow(0 0 40px rgba(255, 46, 136, 0.25));
+}
+.title-cath::before {
+  /* A rain-streaked neon window behind her: a lit pane, bokeh signs and running drops. */
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 4% -6% 0;
+  border: 2px solid rgba(46, 230, 255, 0.35);
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 0 36px rgba(46, 230, 255, 0.2), inset 0 0 60px rgba(255, 46, 136, 0.18);
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255, 46, 136, 0.55) 0 7%, transparent 8%),
+    radial-gradient(circle at 78% 22%, rgba(46, 230, 255, 0.5) 0 6%, transparent 7%),
+    radial-gradient(circle at 70% 62%, rgba(255, 190, 70, 0.4) 0 5%, transparent 6%),
+    repeating-linear-gradient(97deg, transparent 0 22px, rgba(200, 220, 255, 0.1) 22px 23px, transparent 23px 41px),
+    linear-gradient(90deg, transparent calc(50% - 1px), rgba(46, 230, 255, 0.25) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(180deg, rgba(20, 24, 40, 0.9), rgba(10, 12, 20, 0.7));
+  filter: blur(0.6px);
 }
 .title-cath svg {
   width: 100%;
