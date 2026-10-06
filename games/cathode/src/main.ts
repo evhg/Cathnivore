@@ -7,6 +7,7 @@ import { cathSvg } from "../../../shared/cath/cath";
 import { loadPrefs, resolveQuality, savePrefs, type Intensity, type QualityChoice } from "./prefs";
 import { openClassPick } from "./ui/classpick";
 import { Progress } from "./game/progress";
+import { canStartNewGamePlus, ngPlusLap, startNewGamePlus } from "./sim/newgameplus";
 import { newCharacter } from "./sim/character";
 import type { ClassId } from "./sim/types";
 
@@ -40,10 +41,22 @@ $<HTMLButtonElement>("gate-yes").addEventListener("click", () => {
 function openTitle(): void {
   $("title-cath").innerHTML = cathSvg({ expression: "determined", framing: "half", outfit: "trench" });
   show("screen-title");
+  const ng = $<HTMLButtonElement>("btn-ngplus");
+  const done = Progress.load()?.jobsDone ?? [];
+  const lap = ngPlusLap(done);
+  ng.hidden = !canStartNewGamePlus(done);
+  ng.textContent = `New Game+ (lap ${lap + 2})`;
   $<HTMLButtonElement>("btn-begin").focus();
 }
 
 $<HTMLButtonElement>("btn-begin").addEventListener("click", () => void begin());
+$<HTMLButtonElement>("btn-ngplus").addEventListener("click", () => {
+  const p = new Progress();
+  if (!canStartNewGamePlus(p.jobsDone)) return;
+  p.jobsDone = startNewGamePlus(p.jobsDone);
+  p.save();
+  void begin();
+});
 
 const dlg = $<HTMLDialogElement>("dlg-settings");
 $<HTMLButtonElement>("btn-settings").addEventListener("click", () => {

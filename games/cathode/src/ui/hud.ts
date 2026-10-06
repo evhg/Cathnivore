@@ -389,7 +389,7 @@ export class Hud {
             el("span", "hud-set-name", row).textContent = b.label;
             const btn = el("button", "hud-seg-btn hud-bind", row);
             btn.setAttribute("type", "button");
-            btn.textContent = keyLabel(codesFor(cur, b.id)[0]);
+            btn.textContent = keyLabel(codesFor(cur, b.id)[0] ?? "");
             btn.addEventListener("click", () => {
               btn.textContent = "Press a key…";
               const onKey = (e: KeyboardEvent) => {

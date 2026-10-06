@@ -28,7 +28,7 @@ export function openPhotoMode(parent: Element, canvas: HTMLCanvasElement, rerend
   const bar = el("div", "photo-bar", wrap);
   let idx = 0;
   const apply = () => {
-    canvas.style.filter = PHOTO_FILTERS[idx].css;
+    canvas.style.filter = (PHOTO_FILTERS[idx]?.css ?? "none");
     bar.querySelectorAll(".photo-filter").forEach((b, i) => b.setAttribute("aria-pressed", String(i === idx)));
   };
   PHOTO_FILTERS.forEach((f, i) => {
@@ -42,7 +42,7 @@ export function openPhotoMode(parent: Element, canvas: HTMLCanvasElement, rerend
   save.addEventListener("click", () => {
     rerender();
     const a = document.createElement("a");
-    a.href = snapshot(canvas, PHOTO_FILTERS[idx].css);
+    a.href = snapshot(canvas, (PHOTO_FILTERS[idx]?.css ?? "none"));
     a.download = "cathode-photo.png";
     a.click();
   });

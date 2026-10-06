@@ -39,6 +39,7 @@ import { openCaseBoard } from "../ui/caseboard";
 import { openDistrictMap } from "../ui/districtmap";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
+import { ngPlusEliteBonus, ngPlusLap } from "../sim/newgameplus";
 import { ELITE_CHANCE } from "../sim/enemies";
 import { DIFFICULTY_LABEL, unlockedDifficulties } from "../sim/difficulty";
 import type { Difficulty } from "../sim/types";
@@ -152,7 +153,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         : key.includes("shield") || n % 4 === 3
           ? [RIOT_SHIELD, "riotShield"]
           : [ENFORCER, "enforcer"];
-      const elite = Math.random() < ELITE_CHANCE[progress.character.difficulty];
+      const elite = Math.random() < ELITE_CHANCE[progress.character.difficulty] + ngPlusEliteBonus(ngPlusLap(progress.jobsDone));
       const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++, elite), role: base.role }, route.map((p) => p.clone()), areaLevel);
       world.scene.add(e.body.root);
       enemies.push(e);
