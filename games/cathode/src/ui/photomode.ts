@@ -1,3 +1,4 @@
+import type { PerspectiveCamera } from "three";
 import { button, el } from "./dom";
 
 /** Filter presets for photo mode: a CSS filter for the preview and the same string for the saved PNG. */
@@ -22,7 +23,7 @@ export function snapshot(canvas: HTMLCanvasElement, css: string): string {
 }
 
 /** Photo mode (B): the world holds still, the HUD hides, and the player picks a filter and saves a PNG. Returns close. */
-export function openPhotoMode(parent: Element, canvas: HTMLCanvasElement, rerender: () => void, onClose: () => void): () => void {
+export function openPhotoMode(parent: Element, canvas: HTMLCanvasElement, rerender: () => void, onClose: () => void, camera?: PerspectiveCamera): () => void {
   const wrap = el("div", "photo-mode", parent);
   parent.classList.add("photo-on");
   const bar = el("div", "photo-bar", wrap);
@@ -46,9 +47,70 @@ export function openPhotoMode(parent: Element, canvas: HTMLCanvasElement, rerend
     a.download = "cathode-photo.png";
     a.click();
   });
+  // Free camera: WASD slides, Q/E down and up, drag looks, the slider sets the field of view.
+  const held = new Set<string>();
+  let raf = 0;
+  let free = 0;
+  let dragging = false;
+  const onDown = () => (dragging = true);
+  const onUp = () => (dragging = false);
+  const onMove = (e: MouseEvent) => {
+    if (!camera || !dragging) return;
+    camera.rotation.order = "YXZ";
+    camera.rotation.y -= e.movementX * 0.003;
+    camera.rotation.x = Math.max(-1.5, Math.min(1.5, camera.rotation.x - e.movementY * 0.003));
+    rerender();
+  };
+  const step = (t: number) => {
+    const dt = Math.min(0.1, (t - free) / 1000);
+    free = t;
+    if (camera && held.size) {
+      const f = (held.has("KeyW") ? 1 : 0) - (held.has("KeyS") ? 1 : 0);
+      const r = (held.has("KeyD") ? 1 : 0) - (held.has("KeyA") ? 1 : 0);
+      const u = (held.has("KeyE") ? 1 : 0) - (held.has("KeyQ") ? 1 : 0);
+      const fast = held.has("ShiftLeft") ? 3 : 1;
+      camera.translateZ(-f * 3 * fast * dt);
+      camera.translateX(r * 3 * fast * dt);
+      camera.position.y += u * 3 * fast * dt;
+      rerender();
+    }
+    raf = requestAnimationFrame(step);
+  };
+  if (camera) {
+    const row = el("label", "photo-fov", bar);
+    row.append("Zoom ");
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.min = "20";
+    slider.max = "90";
+    slider.value = String(Math.round(camera.fov));
+    slider.addEventListener("input", () => {
+      camera.fov = Number(slider.value);
+      camera.updateProjectionMatrix();
+      rerender();
+    });
+    row.append(slider);
+    canvas.addEventListener("mousedown", onDown);
+    addEventListener("mouseup", onUp);
+    addEventListener("mousemove", onMove);
+    raf = requestAnimationFrame((t) => {
+      free = t;
+      step(t);
+    });
+  }
+  const onKeyDown = (e: KeyboardEvent) => held.add(e.code);
+  const onKeyUp = (e: KeyboardEvent) => held.delete(e.code);
+  addEventListener("keydown", onKeyDown);
+  addEventListener("keyup", onKeyUp);
   const done = button("photo-done", bar, "Done");
   const close = () => {
+    cancelAnimationFrame(raf);
     removeEventListener("keydown", onKey);
+    removeEventListener("keydown", onKeyDown);
+    removeEventListener("keyup", onKeyUp);
+    removeEventListener("mouseup", onUp);
+    removeEventListener("mousemove", onMove);
+    canvas.removeEventListener("mousedown", onDown);
     canvas.style.filter = "";
     wrap.remove();
     parent.classList.remove("photo-on");

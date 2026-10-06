@@ -729,7 +729,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       openPhotoMode(o.hud.parentElement ?? o.hud, o.canvas, render, () => {
         coaching = false;
         input.lock();
-      });
+      }, world.camera);
     }
     if (s.paused || away) {
       last = now;

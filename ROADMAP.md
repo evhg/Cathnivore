@@ -304,9 +304,17 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 **Phase 6b: polish and reach (planned 2026-10-06, after Phase 6 finished).**
 81. [x] *(2026-10-06: gamepad aim assist (`Input.padActive`) and look speed/invert apply to the stick; Look speed slider and Invert Y in the pause card; left: gamepad aim assist; 2026-10-06 later: key rebinding for move/sprint/crouch/jump/reload/takedown in the pause card, `controls.ts`)* **Remappable keys and gamepad:** a Controls page in the pause card (rebind, invert Y, sensitivity), standard-mapping gamepad support with aim assist.
 82. [x] *(2026-10-06: large subtitles, calm camera, colour-blind palette (`:root.colour-safe`) and toggle sprint/aim (`Input.holdToggle`) all in the pause card)* **Accessibility:** subtitle size and background, colour-blind-safe alert/ping colours, reduced-motion (camera shake, bloom flicker), a hold-to-toggle option for ADS and sprint.
-83. [~] *(2026-10-06: B opens photo mode on desktop: HUD hidden, five filter presets, Save PNG; left: free camera, depth of field)* **Photo mode:** pause, free camera, hide HUD, depth-of-field and filter presets, save a PNG.
+83. [x] *(2026-10-06 later: free camera (WASD/QE/drag) and zoom slider in photo mode; depth of field not done; earlier: B opens photo mode on desktop: HUD hidden, five filter presets, Save PNG; left: free camera, depth of field)* **Photo mode:** pause, free camera, hide HUD, depth-of-field and filter presets, save a PNG.
 84. [x] *(2026-10-06: letterbox bars + big name card via `banner(..., "boss")`; non-blocking so nothing to skip)* **Boss intros:** a short letterboxed camera move and name card for Crisp, Vane, Pell, the Chair and HollowCandor, skippable.
 85. [x] *(2026-10-06: `sim/newgameplus.ts`; title button after act 5, `ngPlus<n>` lap flag, +8% elite chance per lap; test)* **New Game+:** after act 5, restart the story with her kit and tougher elites, a title-screen entry and a save-code flag.
+
+**Phase 6c: polish from the 2026-10-06 critique.**
+86. [ ] **CATHODE first-person hands:** Cath's gloved hands, trench cuff and pearl bracelet on the viewmodel; a proper Pin baton model with rim light and idle sway (`games/cathode/src/game/viewmodel.ts`, `shared/cath/`).
+87. [ ] **CATHODE phone HUD layout:** dark gradient backing for the caption and objective line, no wrap on the "CATH HALE / LEVEL 1" plate, safe-area insets (`games/cathode/src/ui/hud.ts`, `styles.css`).
+88. [ ] **CATHODE crosshair and marker contrast:** dark outline on crosshair, hit markers and diamond markers; a crosshair size setting in the pause card.
+89. [ ] **Noir Cath title portrait:** relaxed brow, half-smile, red lips, in front of a rain-streaked neon window instead of a void (`shared/cath/`, title screen).
+90. [ ] **Designed age gate:** rain and neon backdrop, Cath silhouette, a styled violence-choice card.
+91. [ ] **Hedgerow level-select header and landing CATHODE card:** unclipped title, lighter pills, larger node labels; a taller CATHODE card on the landing page (`games/hedgerow/src/`, `site/`).
 
 ## Postponed by the owner (2026-09-28)
 
