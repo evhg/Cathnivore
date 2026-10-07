@@ -834,3 +834,11 @@ body {
 .card-cathode .card-meta {
   color: rgba(242, 234, 245, 0.82);
 }
+
+/* ROADMAP 127: a bigger Cath on phones, still tucked behind the first card. */
+@media (max-width: 520px) {
+  .hero-cath {
+    height: clamp(230px, 31vh, 300px);
+    margin-bottom: -7vh;
+  }
+}

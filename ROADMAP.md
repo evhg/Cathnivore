@@ -364,13 +364,20 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 125. [x] *(2026-10-07: touch shot checked: Aim/Reload visible, subtitle clear)* **CATHODE phone shots after 109-111:** run `npm run shots:cathode`, check Aim/Reload and subtitle clamp at 844x390 and 390x844; fix whatever clips.
 
 126. [x] *(already done: mouse-only hint, 4px blur; 3-frame diagram left)* **Runnel tutorial:** hide the "Shift+click" line on touch devices, lighter backdrop blur, and a 3-frame mini diagram (turn, connect, sprout) (`games/runnel/src/main.ts`, styles).
-127. [ ] *(2026-10-07: phone scrim + 2-line card text done; lede/Cath size left)* **Landing page first screen on phone:** shorter lede, bigger Cath, scrim behind the cards, 3 cards above the fold; on desktop keep the grid off Cath (`site/`).
+127. [x] *(2026-10-07: bigger phone Cath done)* **Landing page first screen on phone:** shorter lede, bigger Cath, scrim behind the cards, 3 cards above the fold; on desktop keep the grid off Cath (`site/`).
 128. [x] **Landing page CATHODE card:** separate "mature" row with a darker treatment so it doesn't sit level with the family games (`site/`).
 129. [x] *(2026-10-07: curved trail; start tag moved beside node, hidden on phone; silhouettes and clamp already there)* **Hedgerow map:** winding path between nodes, locked nodes as silhouettes, 2-line label clamp, tighter desktop spacing (`games/hedgerow/src/`).
 130. [x] **Hedgerow map current node:** pulsing gold ring and "Start here" tag, nodes pop in, reduced-motion fallback.
 131. [x] **Hedgerow top bar:** distinct icon chips (Almanac, Daily with a new badge, Seed Bank with coin count).
 132. [x] *(2026-10-07: water band + shimmer done; Cath size kept to avoid covering a hex label)* **Cathnivore title:** larger unclipped Cath on phone, fill the empty bottom third, ambient water shimmer gated on reduced motion.
-133. [ ] **Re-shoot Runnel with the tutorial dismissed and Hedgerow in a battle**, critique the board and field, plan from that.
+133. [x] *(2026-10-07: shot + critiqued, planned 134-140; Runnel shot only showed the tutorial modal)* **Re-shoot Runnel with the tutorial dismissed and Hedgerow in a battle**, critique the board and field, plan from that.
+134. [ ] **Hedgerow phone-landscape map:** collapse the Cath banner and tab row, keep the act banner readable, show both level rows (`games/hedgerow/src/styles.css`).
+135. [ ] **Hedgerow phone field:** auto-dismiss toasts after 3 s, dock the Cath tip into the side panel on short viewports, smaller HUD pills.
+136. [ ] **Hedgerow 3D plots:** glowing corner ticks on buildable plots, warm rim light or vignette (`render3d/`).
+137. [ ] **Hedgerow desktop side panel:** tower list as tappable cards with icon, cost and hotkey; AA contrast on Cath's tip.
+138. [ ] **Hedgerow wave button disabled state:** progress bar with wave number, dark text, AA contrast.
+139. [ ] **Hedgerow map locked nodes and Act 2 banner:** stronger locked contrast, larger padlock, own palette for Act 2.
+140. [ ] **Runnel how-to modal:** three illustrated steps, text 14px+ and darker; then shoot the board itself.
 
 ## Later (only when the owner asks in FEEDBACK.md)
 

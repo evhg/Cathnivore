@@ -307,3 +307,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-07: bridges added to Hedgerow levels 13/53/72/93 without a full re-tune (level tests pass); run hedgerow-tune --verify when next touching levels.
 - 2026-10-07: Endless bridge is one weekly seeded swing bridge per field (no 10-wave rotation, which would need engine changes).
 - 2026-10-07: release gates take ~50 min wall-clock here (unit tests alone 10 min); start it first and only edit small CSS meanwhile.
+- 2026-10-07: Hedgerow Start-here tag hidden under 560px (Cath face marks the node); trail curve keeps node rows unchanged.
