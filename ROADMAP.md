@@ -361,7 +361,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 122. [ ] **Runnel hint button:** a once-per-puzzle "Cath's tip" that pulses one wrongly turned tile, with a Practice-only default (bar 5).
 123. [ ] **Landing page Cath:** the `/` games page shows Cath welcoming the player with a line that changes per day and highlights today's Runnel (`site/`).
 124. [ ] **Hedgerow Endless set pieces:** Endless fields rotate a bridge or flood every 10 waves so long runs differ (`games/hedgerow/src/endless.ts`; tuner).
-125. [ ] **CATHODE phone shots after 109-111:** run `npm run shots:cathode`, check Aim/Reload and subtitle clamp at 844x390 and 390x844; fix whatever clips.
+125. [x] *(2026-10-07: touch shot checked: Aim/Reload visible, subtitle clear)* **CATHODE phone shots after 109-111:** run `npm run shots:cathode`, check Aim/Reload and subtitle clamp at 844x390 and 390x844; fix whatever clips.
 
 ## Later (only when the owner asks in FEEDBACK.md)
 
