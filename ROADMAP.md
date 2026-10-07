@@ -369,7 +369,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 129. [ ] **Hedgerow map:** winding path between nodes, locked nodes as silhouettes, 2-line label clamp, tighter desktop spacing (`games/hedgerow/src/`).
 130. [x] **Hedgerow map current node:** pulsing gold ring and "Start here" tag, nodes pop in, reduced-motion fallback.
 131. [x] **Hedgerow top bar:** distinct icon chips (Almanac, Daily with a new badge, Seed Bank with coin count).
-132. [ ] **Cathnivore title:** larger unclipped Cath on phone, fill the empty bottom third, ambient water shimmer gated on reduced motion.
+132. [x] *(2026-10-07: water band + shimmer done; Cath size kept to avoid covering a hex label)* **Cathnivore title:** larger unclipped Cath on phone, fill the empty bottom third, ambient water shimmer gated on reduced motion.
 133. [ ] **Re-shoot Runnel with the tutorial dismissed and Hedgerow in a battle**, critique the board and field, plan from that.
 
 ## Later (only when the owner asks in FEEDBACK.md)
