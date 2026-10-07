@@ -368,7 +368,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 128. [x] **Landing page CATHODE card:** separate "mature" row with a darker treatment so it doesn't sit level with the family games (`site/`).
 129. [ ] **Hedgerow map:** winding path between nodes, locked nodes as silhouettes, 2-line label clamp, tighter desktop spacing (`games/hedgerow/src/`).
 130. [x] **Hedgerow map current node:** pulsing gold ring and "Start here" tag, nodes pop in, reduced-motion fallback.
-131. [ ] **Hedgerow top bar:** distinct icon chips (Almanac, Daily with a new badge, Seed Bank with coin count).
+131. [x] **Hedgerow top bar:** distinct icon chips (Almanac, Daily with a new badge, Seed Bank with coin count).
 132. [ ] **Cathnivore title:** larger unclipped Cath on phone, fill the empty bottom third, ambient water shimmer gated on reduced motion.
 133. [ ] **Re-shoot Runnel with the tutorial dismissed and Hedgerow in a battle**, critique the board and field, plan from that.
 

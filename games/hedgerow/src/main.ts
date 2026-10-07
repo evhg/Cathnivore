@@ -304,6 +304,7 @@ function say(text: string): void {
 
 function renderLevels(): void {
   ui.bankStars.textContent = String(freeStars(data));
+  $<HTMLElement>("daily-new").hidden = data.daily?.[String(dayOf(Date.now()))] !== undefined;
   renderCathButton();
   renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; const week = weekOf(Date.now()); endlessArgs = { act, week }; startLevel(endlessLevel(act, week), false); });
 }

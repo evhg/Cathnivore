@@ -2331,3 +2331,33 @@ img.act-scene {
 .roster tr + tr { border-top: 1px solid rgba(0, 0, 0, 0.08); }
 .roster-icon { width: 22px; height: 22px; vertical-align: middle; }
 @media (max-width: 899px), (max-height: 520px) { .roster { display: none; } }
+
+/* ROADMAP 131: top-bar chips get their own colour; Daily shows a dot until today's is played. */
+.bank-btn span.chip-ico[aria-hidden] {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 13px;
+  line-height: 1;
+  color: #2b1d10;
+}
+.almanac-btn .chip-ico { background: #8fd0e6; }
+.daily-btn .chip-ico { background: #f6b04a; }
+#btn-bank .chip-ico { background: #f2c94c; }
+.daily-btn { position: relative; }
+.new-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #e5484d;
+  border: 2px solid #fff8e6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .new-dot { animation: newdot-pulse 1.8s ease-in-out infinite; }
+}
+@keyframes newdot-pulse { 50% { transform: scale(1.25); } }
