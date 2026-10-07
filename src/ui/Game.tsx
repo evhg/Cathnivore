@@ -504,6 +504,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             title={state.result.won ? 'Cath, delighted' : 'Cath, undeterred'}
           />
         </div>
+        <div className={`end-stamp ${state.result.won ? 'is-win' : 'is-loss'}`} aria-hidden="true">
+          {state.result.won ? 'Liberated' : 'Repossessed'}
+        </div>
         <h1>{state.result.won ? 'You liberated Marrow.' : 'Not this time.'}</h1>
         <p className="end-screen-verdict">
           {state.result.won ? 'Win' : `Loss: ${LOSS_REASON_LABEL[state.result.lossReason!]}`}

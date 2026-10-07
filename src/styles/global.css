@@ -2368,3 +2368,16 @@ html.no-animations .card-enter {
 .producer-card:has(input:checked) .pc-pick { transform: scale(1); }
 .setup > button.primary { position: sticky; bottom: 12px; z-index: 5; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
 @media (prefers-reduced-motion: reduce) { .producer-card .pc-pick { transition: none; } }
+
+/* ROADMAP 141: stamped verdict banner on the end screen. */
+.end-stamp {
+  display: inline-block; margin: -0.5rem auto 0.5rem; padding: 0.15rem 0.9rem;
+  font: 800 1.1rem/1.2 var(--font-display, inherit); letter-spacing: 0.22em; text-transform: uppercase;
+  border: 3px solid currentColor; border-radius: 6px; transform: rotate(-4deg);
+  animation: end-stamp-in 0.45s 0.35s cubic-bezier(.2,1.6,.4,1) both;
+}
+.end-stamp.is-win { color: #2f8f4e; }
+.end-stamp.is-loss { color: #b3362f; }
+@keyframes end-stamp-in { from { opacity: 0; transform: rotate(-4deg) scale(2.2); } to { opacity: 0.92; transform: rotate(-4deg) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .end-stamp { animation: none; opacity: 0.92; } }
+html.no-animations .end-stamp { animation: none; opacity: 0.92; }
