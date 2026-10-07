@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 05:51 session:** released `a6e56dd` (gates passed, ~20 min each run; tag push 403 harmless; 3rd release today). ROADMAP 134 (short-landscape map) and 138 (legible disabled Send wave) done, not screenshotted. Next: 135, 136, 137, 139, 140.
 - **2026-10-07 04:51 session:** ROADMAP 127-129, 131, 132, 133 done (landing mature row and bigger phone Cath, Hedgerow chips/Daily dot, curved trail, title water band); critique planned 134-140. `npm run check` green before 129/127 CSS+map change. Unreleased. Next: 134, 135.
 - **2026-10-07 03:52 session:** released `873fc19` (all gates passed, live smoke passed, version.json matches; tag push 403 harmless; 2nd release today). ROADMAP 130 done (Hedgerow map "Start here" tag, node pop-in, reduced-motion safe; not screenshotted). Next: 129 map path, 131 top bar chips, 127/128 landing.
 - **2026-10-07 02:52 session:** ROADMAP 124 done (weekly seeded swing bridge on Endless fields; test). Subagent critique -> planned 126-133; landing phone scrim/2-line card text (127 part). `npm run check` green. Unreleased. Next: 127 rest, 129, 120.
