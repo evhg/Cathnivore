@@ -1760,6 +1760,8 @@ html.native-app body {
   margin-top: 20px;
 }
 
+.setup-header-text { flex: 1; min-width: 0; }
+.setup-cath-line { margin: 2px 0 0; font-style: italic; font-size: 0.9em; opacity: 0.8; }
 .setup-header {
   display: flex;
   align-items: center;

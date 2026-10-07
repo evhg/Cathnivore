@@ -40,10 +40,13 @@ export default function Setup({ onStart }: Props) {
   return (
     <main className="setup">
       <header className="setup-header">
-        <h1>Quick Game</h1>
+        <div className="setup-header-text">
+          <h1>Quick Game</h1>
+          <p className="setup-cath-line">“Pick two producers who'll cover each other, love.”</p>
+        </div>
         {/* ROADMAP "Cath on the title, Campaign, setup and end screens": her default warm smirk, since
             no game state exists yet to react to here. */}
-        <CathArt className="setup-header-cath" framing="bust" expression="smirk" animate width={56} height={56} title="Cath" />
+        <CathArt className="setup-header-cath" framing="bust" expression="smirk" animate width={80} height={80} title="Cath" />
       </header>
 
       <section className="settings-card">

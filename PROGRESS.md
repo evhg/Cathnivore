@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **2026-10-07 16:51 session:** ROADMAP 145 part (72px round portraits on setup producer cards; phone shot checked); `npm run check` running at commit. Unreleased (4 releases today). Next: 144 tabs/viewBox, 145 Cath line.
+- **2026-10-07 16:51 session:** ROADMAP 145 done (setup portraits, Cath line, 80px Cath; shots checked); `npm run check` green before the Cath line (tsc clean after). Unreleased (4 releases today). Next: 144 tabs/viewBox, 146.
 - **2026-10-07 15:52 session:** ROADMAP 144 part (phone price/SOLD tags ~1.3x, CSS only, not screenshotted); `npm run check` green. Unreleased (4 releases today). Next: 144 rest (tabs, viewBox), 145 portraits.
 - **2026-10-07 14:52 session:** ROADMAP 143 part (gold accent on the first affordable Invest action, CSS only, not screenshotted); tsc clean, `npm run check` running at commit. CI green on `7fbea33`. Unreleased (4 releases today). Next: 145 portraits, 144.
 - **2026-10-07 13:51 session:** ROADMAP 141 done (`.end-stamp` verdict banner on the end screen, rotated, reduced-motion safe; not screenshotted). `npm run check` running at commit. Unreleased (4 releases today). Next: 145 portraits, 144, 143.
