@@ -6,7 +6,7 @@ import type { RegionId } from '../engine/types'
 // reaction lines in her voice (SPEC 3.2 — short sentences, dry, specific, at most an occasional "!").
 // Deterministic, not random: each reaction picks a line by hashing the region/detail it's about, so the
 // same event always shows the same line (screenshots and e2e stay stable; SPEC 9's determinism spirit).
-export type CathReaction = 'liberated' | 'expand' | 'squeezeLostLand' | 'squeeze' | 'riftSplit' | 'win' | 'loss' | 'greeting'
+export type CathReaction = 'liberated' | 'expand' | 'squeezeLostLand' | 'squeeze' | 'riftSplit' | 'win' | 'loss' | 'greeting' | 'sell' | 'invest'
 
 export const CATH_REACTION_EXPRESSION: Record<CathReaction, CathExpression> = {
   liberated: 'delighted',
@@ -17,6 +17,8 @@ export const CATH_REACTION_EXPRESSION: Record<CathReaction, CathExpression> = {
   win: 'delighted',
   loss: 'worried',
   greeting: 'smirk',
+  sell: 'smirk',
+  invest: 'delighted',
 }
 
 const LINES: Record<CathReaction, string[]> = {
@@ -62,6 +64,18 @@ const LINES: Record<CathReaction, string[]> = {
     "Not this round. We still know how to farm.",
     "That one goes to them. Doesn't change what we grow.",
     "We'll be back at the stall tomorrow regardless.",
+  ],
+  sell: [
+    "Sold. Nobody ever went broke selling honest produce at a fair price.",
+    'Cash in the tin. Bea will count it twice.',
+    "That's the stall earning its keep.",
+    "Fair price, fair weight. They can't say the same.",
+  ],
+  invest: [
+    "Money well spent. Roots first, signs later.",
+    'Now that is a proper investment. It will still be here in ten years.',
+    "A good tool pays for itself. Ask anyone who's mended a fence.",
+    "Spent, and I'd do it again.",
   ],
   greeting: [
     "Right. Let's get something honest into the ground.",

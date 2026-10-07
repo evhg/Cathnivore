@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 21:51 session:** previous session's `npm run check` verified green; ROADMAP 150 done (Cath reacts to Sell and Invest with new lines, rank 0.5; not screenshotted). `npm run check` green. Unreleased (4 releases today). Next: 149, 151, 120.
 - **2026-10-07 20:51 session:** ROADMAP 147 (bolder map labels, warmer Kingsmarket hex) and 148 (sticky fade under the capped action list) done, CSS only, not screenshotted; `npm run check` was still running in the unit-test stage at commit, verify next session. Unreleased (4 releases today). Next: 149, 150, 151, 120.
 - **2026-10-07 19:52 session:** screenshots critiqued; ROADMAP 146 closed (locked chapter cards get a tinted left edge, CSS only); planned 147-151 (Phase 9). `npm run check` green. Unreleased (4 releases today, cap used). Next: 147, 148, 120.
 - **2026-10-07 18:51 session:** ROADMAP 143 closed (no H/C faction badges exist in the action list; icons already per action). Desktop title: Cath moved left (-34%) so she clears the Brindle Hills hex and stall (shot checked). `npm run check` green. Unreleased (4 releases today, cap used). Next: 146 drawn scene, 120.

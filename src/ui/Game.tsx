@@ -145,6 +145,12 @@ function cathReactionFor(event: GameEvent): { reaction: CathReaction; rank: numb
       return event.lostLand
         ? { reaction: 'squeezeLostLand', rank: 3, line: cathLineForRegion('squeezeLostLand', event.region) }
         : { reaction: 'squeeze', rank: 2, line: cathLineForRegion('squeeze', event.region) }
+    case 'invest':
+      return { reaction: 'invest', rank: 0.5, line: cathLine('invest', event.improvementId) }
+    case 'action':
+      return event.action.kind === 'sell'
+        ? { reaction: 'sell', rank: 0.5, line: cathLine('sell', `${event.action.count}${event.producer}${event.action.count}`) }
+        : null
     case 'riftSplit':
       return { reaction: 'riftSplit', rank: 4, line: cathLine('riftSplit', event.faction) }
     default:
