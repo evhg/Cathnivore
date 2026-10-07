@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 03:52 session:** released `873fc19` (all gates passed, live smoke passed, version.json matches; tag push 403 harmless; 2nd release today). ROADMAP 130 done (Hedgerow map "Start here" tag, node pop-in, reduced-motion safe; not screenshotted). Next: 129 map path, 131 top bar chips, 127/128 landing.
 - **2026-10-07 02:52 session:** ROADMAP 124 done (weekly seeded swing bridge on Endless fields; test). Subagent critique -> planned 126-133; landing phone scrim/2-line card text (127 part). `npm run check` green. Unreleased. Next: 127 rest, 129, 120.
 - **2026-10-07 01:52 session:** ROADMAP 122 done (Runnel "Cath's tip" button, Practice only, once per puzzle, pulses the nearest wrongly turned tile). tsc stage passed; full `npm run check` still running at commit. Unreleased. Next: 124, 120.
 - **2026-10-07 00:52 session:** ROADMAP 121 (Runnel streak flame, best streak in win note) and 123 (landing lede rotates daily, points at Runnel) done. `npm run check` green. Unreleased. Next: 122 Runnel hint, 124, 120.
