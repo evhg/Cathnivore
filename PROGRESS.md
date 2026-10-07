@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 17:51 session:** ROADMAP 146 part (phone title Cath 41% wide, clear of the Brindle Hills label; shot checked); 144 viewBox is already tight (hexes fill ±250), no region tabs exist, so left as is. `npm run check` green. Unreleased (4 releases today). Next: 143 faction glyphs, 146 drawn scene.
 - **2026-10-07 16:51 session:** ROADMAP 145 done (setup portraits, Cath line, 80px Cath; shots checked); `npm run check` green before the Cath line (tsc clean after). Unreleased (4 releases today). Next: 144 tabs/viewBox, 146.
 - **2026-10-07 15:52 session:** ROADMAP 144 part (phone price/SOLD tags ~1.3x, CSS only, not screenshotted); `npm run check` green. Unreleased (4 releases today). Next: 144 rest (tabs, viewBox), 145 portraits.
 - **2026-10-07 14:52 session:** ROADMAP 143 part (gold accent on the first affordable Invest action, CSS only, not screenshotted); tsc clean, `npm run check` running at commit. CI green on `7fbea33`. Unreleased (4 releases today). Next: 145 portraits, 144.
