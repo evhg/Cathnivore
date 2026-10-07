@@ -397,4 +397,4 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 148. [x] **Action list scroll cue:** on phone the Sell/Invest list is cut at the fold; add a fade and "more actions" cue above the bottom bar.
 149. [ ] **Campaign chapter art:** a small drawn scene per chapter card in place of the minimap only (bar 1).
 150. [x] **Cath companion reactions:** her line changes after each action (sell, invest, squeeze) with a short pose swap.
-151. [ ] **Settings and credits shots:** critique `phone-8-settings`/`phone-9-credits` against VISION and fix spacing.
+151. [x] *(2026-10-07: Cath tagline under Settings title, full-width Back on phone; credits fine)* **Settings and credits shots:** critique `phone-8-settings`/`phone-9-credits` against VISION and fix spacing.

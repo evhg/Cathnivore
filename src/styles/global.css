@@ -2402,3 +2402,8 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
   border-color: #d9a441;
   box-shadow: 0 0 0 1px #d9a441, 0 2px 8px rgba(217, 164, 65, 0.35);
 }
+
+.settings-tip { margin: 0.25rem 0 0; font-size: 0.9rem; opacity: 0.75; font-style: italic; }
+@media (max-width: 600px) {
+  .settings-back { width: 100%; min-height: 48px; margin-top: 0.5rem; }
+}

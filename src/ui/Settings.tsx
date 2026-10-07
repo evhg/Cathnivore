@@ -35,7 +35,10 @@ export default function Settings({ onClose }: Props) {
   return (
     <main className="settings">
       <header className="settings-header">
-        <h1>Settings</h1>
+        <div>
+          <h1>Settings</h1>
+          <p className="settings-tip">Tweak it your way, love. Nothing here costs a Mark.</p>
+        </div>
         <CathArt framing="bust" expression="smirk" animate width={64} height={64} title="Cath" />
       </header>
 
@@ -114,7 +117,7 @@ export default function Settings({ onClose }: Props) {
         )}
       </section>
 
-      <button onClick={onClose}>Back</button>
+      <button className="settings-back" onClick={onClose}>Back</button>
     </main>
   )
 }
