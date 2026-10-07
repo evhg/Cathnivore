@@ -313,3 +313,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-07: topbar chips are CSS-only on existing `.hud-value`; action dimming uses `:has(.action-why-not)` rather than new markup.
 - 2026-10-07: phone price/SOLD tags 4.6/4.1px (not 1.4x) so SOLD stays inside its 10-unit sign.
 - 2026-10-07 17:51: ROADMAP 144 closed: map viewBox already tight, region tabs not needed (one hex board).
+- 2026-10-07 19:52: fewer than 3 ROADMAP items left, so planned Phase 9 (147-151); locked-chapter tint is by stop index, not true region.

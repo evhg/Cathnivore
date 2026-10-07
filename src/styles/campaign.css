@@ -289,6 +289,18 @@
   box-shadow: none;
 }
 
+.cmp-stop:nth-child(2n) button.cmp-card.chapter-locked {
+  border-left: 5px solid #b9c7d3;
+}
+
+.cmp-stop:nth-child(3n) button.cmp-card.chapter-locked {
+  border-left: 5px solid #d9c9a0;
+}
+
+.cmp-stop:nth-child(5n+1) button.cmp-card.chapter-locked {
+  border-left: 5px solid #bcd0a8;
+}
+
 .cmp-path button.cmp-card.chapter-completed {
   border-color: var(--pasture);
 }
