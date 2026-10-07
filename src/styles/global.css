@@ -2356,3 +2356,15 @@ html.no-animations .card-enter {
 .actions .action-item:has(.action-why-not) > button:first-child {
   opacity: 0.8;
 }
+
+/* ROADMAP 145: colour band on each producer card, tick badge, sticky Start */
+.setup .producer-card { border-top: 6px solid var(--wheat); overflow: hidden; }
+.setup .producer-card:nth-child(4n+1) { border-top-color: var(--sea); }
+.setup .producer-card:nth-child(4n+2) { border-top-color: var(--clay-deep); }
+.setup .producer-card:nth-child(4n+3) { border-top-color: var(--wheat); }
+.setup .producer-card:nth-child(4n) { border-top-color: var(--ink-muted); }
+.producer-card .pc-name { font-size: 1.05em; }
+.producer-card .pc-pick { position: absolute; top: 8px; right: 8px; align-self: auto; padding: 2px 8px; border-radius: 999px; background: var(--wheat); color: #2b2118; transform: scale(0.8); transition: opacity var(--dur-quick) ease, transform var(--dur-quick) var(--ease-pop, ease); }
+.producer-card:has(input:checked) .pc-pick { transform: scale(1); }
+.setup > button.primary { position: sticky; bottom: 12px; z-index: 5; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+@media (prefers-reduced-motion: reduce) { .producer-card .pc-pick { transition: none; } }

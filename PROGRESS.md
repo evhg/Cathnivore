@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 11:52 session:** ROADMAP 145 part (setup producer colour band, ✓ Picked badge, sticky Start); `npm run check` was still running at commit, not screenshotted. Unreleased (4 releases today). Next: verify check, 145 rest, 141, 144.
 - **2026-10-07 10:51 session:** ROADMAP 143 headers done (Sell/Invest/Play `.action-head`, aria-hidden, full row on phone and desktop grid); `npm run check` green, not screenshotted. Unreleased (4 releases already today). Next: 145 setup screen, 141, 144.
 - **2026-10-07 09:51 session:** ROADMAP 142 (topbar stat pills) done, 143 part (disabled actions dimmed); phone/desktop shots checked, `npm run check` green. Unreleased (4 releases already today). Next: 143 headers, 145, 141.
 - **2026-10-07 08:51 session:** released `5f3034d` (gates passed, live version.json matches; tag push 403 harmless; 4th release today, cap used). Subagent critique -> planned ROADMAP 141-146 (Phase 8); end-screen shot now waits for animations; singular "1 Mark" in action labels. `npm run check` green before the label change (tsc clean after). Unreleased. Next: 142 top bar chips, 143, 120.

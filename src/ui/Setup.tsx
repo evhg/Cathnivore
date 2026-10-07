@@ -68,13 +68,13 @@ export default function Setup({ onStart }: Props) {
         </button>
         <div className="producer-grid">
           {ALL_PRODUCER_IDS.map((id) => (
-            <label key={id} className="producer-card">
+            <label key={id} className="producer-card" data-producer={id}>
               <input type="checkbox" checked={producers.includes(id)} onChange={() => toggleProducer(id)} />
               <span className="pc-name">{PRODUCERS[id].name}</span>
               <span className="pc-role">{PRODUCERS[id].roleName}</span>
               <span className="pc-ability">{PRODUCERS[id].roleAbility}</span>
               {RECOMMENDED_PAIR.includes(id) && <span className="recommended-badge">Recommended</span>}
-              <span className="pc-pick" aria-hidden="true">Picked</span>
+              <span className="pc-pick" aria-hidden="true">✓ Picked</span>
             </label>
           ))}
         </div>
