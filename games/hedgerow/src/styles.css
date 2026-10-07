@@ -2369,3 +2369,21 @@ img.act-scene {
 @media (max-width: 560px) {
   .start-tag { display: none; }
 }
+
+/* ROADMAP 134: short landscape phones. The host card collapses to one line and act banners shrink so both
+   level rows show without scrolling past the Cath banner. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .host { padding: 4px 10px; min-height: 0; }
+  .host-face { width: 28px; height: 28px; }
+  .host-line { font-size: 13px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .act-head { height: 72px; }
+  .act-place { font-size: 20px; }
+}
+
+/* ROADMAP 138: a waiting Send-wave button stays legible (dark text on a pale fill, no 45% fade). */
+.btn.send:disabled {
+  opacity: 1;
+  background: #d8d2bf;
+  color: #3b3426;
+  box-shadow: inset 0 0 0 2px rgba(107, 74, 43, 0.25);
+}
