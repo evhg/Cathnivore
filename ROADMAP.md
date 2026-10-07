@@ -387,7 +387,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 **Phase 8: Cathnivore chrome, planned 2026-10-07 09:30 (art-director critique of phone/desktop shots).**
 141. [ ] *(2026-10-07: shot now waits 2.5 s; the end screen was fine, only mid-animation)* **End screen payoff:** saturated backdrop for Cath; stamped LIBERATED/REPOSSESSED banner (`Game.tsx`, `global.css`).
 142. [x] *(2026-10-07: pill chips in CSS, screenshot checked; Cath speech bubble not done)* **Game top bar as four chips:** icon, bold number, caption (Round, Trust, Lost Land, Rift), pulse on change; Cath companion as a speech bubble with her bust overlapping (`Game.tsx`, `CathCompanion.tsx`).
-143. [ ] *(2026-10-07: disabled actions dimmed to 0.8; headers/accent/glyphs not done)* **Action list grouping:** headers (Sell, Invest, Play), one accent on the recommended action, dim disabled further, faction glyphs replace H/C badges. *(Singular "1 Mark" done 2026-10-07.)*
+143. [ ] *(2026-10-07: disabled dimmed, Sell/Invest/Play headers done; accent and faction glyphs left)* **Action list grouping:** headers (Sell, Invest, Play), one accent on the recommended action, dim disabled further, faction glyphs replace H/C badges. *(Singular "1 Mark" done 2026-10-07.)*
 144. [ ] **Map as hero on phone:** tighter viewBox, small-caps region tabs, price/Stall tags 1.4x, glossy outlets.
 145. [ ] **Setup screen:** 72px producer portraits with colour band, tick badge for picked, bigger Cath with a line, sticky Start.
 146. [ ] **Title and campaign polish:** Cath 1.5x on title, replace the blurred stripe with a drawn scene; locked chapters tinted with region colour plus teaser; progress track with 6 notches.

@@ -830,6 +830,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         )
       ) : (
         <>
+          {sellEntries.length > 0 && <span className="action-head" aria-hidden="true">Sell</span>}
           {sellEntries.map(({ index, action: a }) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
@@ -867,6 +868,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
               </Tooltip>
             </span>
           ))}
+          {investEntries.length > 0 && <span className="action-head" aria-hidden="true">Invest</span>}
           {investEntries.map(({ index, action: a }) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
@@ -908,6 +910,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
               </span>
             )
           })}
+          {(otherStandalone.length > 0 || groups.size > 0) && (sellEntries.length > 0 || investEntries.length > 0) && (
+            <span className="action-head" aria-hidden="true">Play</span>
+          )}
           {otherStandalone.map(({ index, action: a }) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]

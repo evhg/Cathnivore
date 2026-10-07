@@ -889,6 +889,17 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
 /* An action button paired with its SPEC 10.5 "?" tooltip trigger (same sibling pattern as
    `.plan-strip-item`: a button nested in a button is invalid HTML and would make one tap ambiguous
    between "do the action" and "show the tooltip"). */
+.actions .action-head {
+  flex: 1 0 100%;
+  grid-column: 1 / -1;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+
 .actions .action-item {
   display: flex;
   align-items: center;
