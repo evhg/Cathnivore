@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 07:52 session:** ROADMAP 137 done (1-9 plant the nth tower, hotkey badge on build cards, hidden on touch). tsc clean; full `npm run check` still running at commit. Unreleased. Next: 120, plan more.
 - **2026-10-07 06:51 session:** ROADMAP 135 (phone chips, tip clamp), 136 (gold corner ticks on 3D plots, not screenshotted), 137 part (tip AA contrast), 139 (locked nodes), 140 (Runnel three-step how-to, screenshot checked) done. `npm run check` and e2e:site (52) green. Needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`. Next: 137 tower cards, 120, plan more.
 - **2026-10-07 05:51 session:** released `a6e56dd` (gates passed, ~20 min each run; tag push 403 harmless; 3rd release today). ROADMAP 134 (short-landscape map) and 138 (legible disabled Send wave) done, not screenshotted. Next: 135, 136, 137, 139, 140.
 - **2026-10-07 04:51 session:** ROADMAP 127-129, 131, 132, 133 done (landing mature row and bigger phone Cath, Hedgerow chips/Daily dot, curved trail, title water band); critique planned 134-140. `npm run check` green before 129/127 CSS+map change. Unreleased. Next: 134, 135.
