@@ -799,3 +799,38 @@ body {
     height: 84px;
   }
 }
+
+/* ROADMAP 128: CATHODE sits in its own "for grown-ups" row, darker than the family games. */
+.mature-label {
+  grid-column: 1 / -1;
+  margin: 10px 0 -4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.mature-label::before,
+.mature-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+}
+.card-cathode {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: 100%;
+  max-width: 904px;
+  background: linear-gradient(135deg, #0d0a14, #1b1022 60%, #260f2a);
+  color: #f2eaf5;
+  border: 1px solid rgba(255, 60, 140, 0.35);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 14px 40px rgba(255, 40, 130, 0.18);
+}
+.card-cathode .card-text,
+.card-cathode .card-meta {
+  color: rgba(242, 234, 245, 0.82);
+}
