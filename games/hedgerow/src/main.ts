@@ -843,7 +843,11 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     const price = document.createElement("span");
     price.className = "build-cost";
     price.textContent = String(cost);
-    b.append(name, price);
+    const hot = document.createElement("span");
+    hot.className = "build-key";
+    hot.setAttribute("aria-hidden", "true");
+    hot.textContent = String(row.children.length + 1);
+    b.append(hot, name, price);
     const show = () => {
       info.textContent = `${spec.name}: ${spec.blurb}${counterLine(kind)}`;
       if (renderer) renderer.preview = kind;
@@ -1865,6 +1869,14 @@ ui.duelStrike.addEventListener("click", () => {
   strike();
 });
 document.addEventListener("keydown", (e) => {
+  // 1-9 plant the nth tower in the open build menu (the badge on each card).
+  if (/^[1-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey && !(e.target instanceof HTMLInputElement)) {
+    const b = document.querySelectorAll<HTMLButtonElement>(".panel-build .btn-build")[Number(e.key) - 1];
+    if (b && !b.disabled) {
+      e.preventDefault();
+      b.click();
+    }
+  }
   if (game?.duel && (e.key === " " || e.key === "Enter")) {
     e.preventDefault();
     strike();
