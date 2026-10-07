@@ -360,8 +360,17 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 121. [x] **Runnel daily streak flair:** show a small streak flame and best streak on the stats dialog and on the header after a win (`games/runnel/src/main.ts`, `store.ts`).
 122. [x] **Runnel hint button:** a once-per-puzzle "Cath's tip" that pulses one wrongly turned tile, with a Practice-only default (bar 5).
 123. [x] **Landing page Cath:** the `/` games page shows Cath welcoming the player with a line that changes per day and highlights today's Runnel (`site/`).
-124. [ ] **Hedgerow Endless set pieces:** Endless fields rotate a bridge or flood every 10 waves so long runs differ (`games/hedgerow/src/endless.ts`; tuner).
+124. [x] *(2026-10-07: weekly seeded swing bridge on every Endless field lacking one; rotation every 10 waves dropped)* **Hedgerow Endless set pieces:** Endless fields rotate a bridge or flood every 10 waves so long runs differ (`games/hedgerow/src/endless.ts`; tuner).
 125. [x] *(2026-10-07: touch shot checked: Aim/Reload visible, subtitle clear)* **CATHODE phone shots after 109-111:** run `npm run shots:cathode`, check Aim/Reload and subtitle clamp at 844x390 and 390x844; fix whatever clips.
+
+126. [x] *(already done: mouse-only hint, 4px blur; 3-frame diagram left)* **Runnel tutorial:** hide the "Shift+click" line on touch devices, lighter backdrop blur, and a 3-frame mini diagram (turn, connect, sprout) (`games/runnel/src/main.ts`, styles).
+127. [ ] *(2026-10-07: phone scrim + 2-line card text done; lede/Cath size left)* **Landing page first screen on phone:** shorter lede, bigger Cath, scrim behind the cards, 3 cards above the fold; on desktop keep the grid off Cath (`site/`).
+128. [ ] **Landing page CATHODE card:** separate "mature" row with a darker treatment so it doesn't sit level with the family games (`site/`).
+129. [ ] **Hedgerow map:** winding path between nodes, locked nodes as silhouettes, 2-line label clamp, tighter desktop spacing (`games/hedgerow/src/`).
+130. [ ] **Hedgerow map current node:** pulsing gold ring and "Start here" tag, nodes pop in, reduced-motion fallback.
+131. [ ] **Hedgerow top bar:** distinct icon chips (Almanac, Daily with a new badge, Seed Bank with coin count).
+132. [ ] **Cathnivore title:** larger unclipped Cath on phone, fill the empty bottom third, ambient water shimmer gated on reduced motion.
+133. [ ] **Re-shoot Runnel with the tutorial dismissed and Hedgerow in a battle**, critique the board and field, plan from that.
 
 ## Later (only when the owner asks in FEEDBACK.md)
 

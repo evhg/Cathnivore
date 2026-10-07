@@ -31,6 +31,12 @@ describe("endless fields", () => {
     const bossWaves = lv.waves.map((w, i) => (w.some((gr) => isBig(gr.enemy)) ? i + 1 : 0)).filter(Boolean);
     expect(bossWaves.slice(0, 3)).toEqual([20, 30, 40]);
   });
+  it("swing a weekly bridge across the field", () => {
+    const a = endlessLevel(2, 4).setPieces!.find((p) => p.kind === "bridge");
+    const b = endlessLevel(2, 5).setPieces!.find((p) => p.kind === "bridge");
+    expect(a).toBeTruthy();
+    expect(a).not.toEqual(b);
+  });
   it("keeps the best wave only", () => {
     const d = emptySave();
     expect(recordEndless(d, 3, 12)).toBe(true);

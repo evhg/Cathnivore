@@ -4,7 +4,7 @@
 // wave pay is lean. Goodwill running out ends the run and the best wave is kept per act (store.ts
 // recordEndless). No stars, no rosettes, no bot tuning.
 
-import { isBig, type EnemyKind, type Level, type WaveGroup } from "./engine";
+import { isBig, pathLength, type EnemyKind, type Level, type SetPiece, type WaveGroup } from "./engine";
 import { LEVELS } from "./levels";
 
 export const ENDLESS_WAVES = 200;
@@ -59,6 +59,11 @@ export function endlessLevel(act: number, week: number): Level {
     if (boss && n % 10 === 9 && n >= 19) groups.push({ enemy: boss, count: 1 + Math.floor(n / 30), gap: 4, delay: count * 2.5 });
     waves.push(groups);
   }
+  // A swing bridge, placed and timed by the week's seed, unless the story level already has one.
+  const setPieces: SetPiece[] = [...(base.setPieces ?? [])];
+  if (!setPieces.some((p) => p.kind === "bridge")) {
+    setPieces.push({ kind: "bridge", dist: Math.round(pathLength(base.path) * (0.35 + rand() * 0.3)), period: 12 + Math.floor(rand() * 5), open: 3 + Math.floor(rand() * 2) });
+  }
   // It opens gentler than the story level (ENDLESS_START of its tuned health), then compounds past it fast.
-  return { ...base, name: `Endless: ${base.place}`, waves, endless: true, hpScale: (base.hpScale ?? 1) * ENDLESS_START, goodwill: Math.max(base.goodwill, 15), before: [], after: [] };
+  return { ...base, name: `Endless: ${base.place}`, waves, endless: true, setPieces, hpScale: (base.hpScale ?? 1) * ENDLESS_START, goodwill: Math.max(base.goodwill, 15), before: [], after: [] };
 }
