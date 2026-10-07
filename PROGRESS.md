@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 23:51 session:** ROADMAP 153 done (pass-device screen: Cath face and line, 56px "I'm ready" button; hotseat e2e updated). tsc clean; full `npm run check` still running at commit, verify next session (also run `e2e/hotseat.spec.ts`). Unreleased (4 releases on 10-07; first session after 00:00 UTC should release). Next: 152, 154, 155.
 - **2026-10-07 22:51 session:** ROADMAP 151 (Settings Cath tagline, full-width Back on phone) and 149 (drawn hill scene per chapter card) done, shots checked, `npm run check` green. Planned 152-156. Unreleased (4 releases today; first session after 00:00 UTC should release). Next: 152, 153, 120.
 - **2026-10-07 21:51 session:** previous session's `npm run check` verified green; ROADMAP 150 done (Cath reacts to Sell and Invest with new lines, rank 0.5; not screenshotted). `npm run check` green. Unreleased (4 releases today). Next: 149, 151, 120.
 - **2026-10-07 20:51 session:** ROADMAP 147 (bolder map labels, warmer Kingsmarket hex) and 148 (sticky fade under the capped action list) done, CSS only, not screenshotted; `npm run check` was still running in the unit-test stage at commit, verify next session. Unreleased (4 releases today). Next: 149, 150, 151, 120.
