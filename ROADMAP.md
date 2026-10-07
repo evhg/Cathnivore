@@ -390,4 +390,4 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 143. [ ] *(2026-10-07: disabled dimmed, Sell/Invest/Play headers done; accent and faction glyphs left)* **Action list grouping:** headers (Sell, Invest, Play), one accent on the recommended action, dim disabled further, faction glyphs replace H/C badges. *(Singular "1 Mark" done 2026-10-07.)*
 144. [ ] **Map as hero on phone:** tighter viewBox, small-caps region tabs, price/Stall tags 1.4x, glossy outlets.
 145. [~] *(2026-10-07: colour band, tick badge, sticky Start done; portraits/Cath line left)* **Setup screen:** 72px producer portraits with colour band, tick badge for picked, bigger Cath with a line, sticky Start.
-146. [ ] **Title and campaign polish:** Cath 1.5x on title, replace the blurred stripe with a drawn scene; locked chapters tinted with region colour plus teaser; progress track with 6 notches.
+146. [~] *(2026-10-07: progress notches done)* **Title and campaign polish:** Cath 1.5x on title, replace the blurred stripe with a drawn scene; locked chapters tinted with region colour plus teaser; progress track with 6 notches.

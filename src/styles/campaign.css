@@ -85,8 +85,9 @@
 }
 
 .cmp-progress-bar {
+  position: relative;
   flex: 0 1 180px;
-  height: 8px;
+  height: 10px;
   border-radius: 99px;
   background: var(--paper-2);
   overflow: hidden;
@@ -99,6 +100,21 @@
   background: var(--pasture);
   transform-origin: left;
   animation: cmp-grow 900ms var(--ease-settle) both 300ms;
+}
+
+/* ROADMAP 146: six notches, one per chapter. */
+.cmp-progress-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(16.6667% - 2px),
+    var(--paper) calc(16.6667% - 2px),
+    var(--paper) 16.6667%
+  );
+  pointer-events: none;
 }
 
 .cmp-fill-0 { transform: scaleX(0); }
