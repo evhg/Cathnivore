@@ -2294,6 +2294,7 @@ html.no-animations .card-enter {
 }
 .setup .producer-card:has(input:checked) { border-color: var(--wheat); background: var(--paper-2); box-shadow: 0 0 0 2px var(--wheat); transform: translateY(-2px); }
 .setup .producer-card:has(input:focus-visible) { outline: 3px solid var(--sea); outline-offset: 2px; }
+.producer-card .pc-portrait { align-self: center; border-radius: 50%; overflow: hidden; line-height: 0; border: 2px solid var(--ink); background: var(--paper-2); }
 .producer-card .pc-name { font-weight: 800; }
 .producer-card .pc-role { font-size: 0.85em; opacity: 0.85; }
 .producer-card .pc-ability { font-size: 0.8em; opacity: 0.8; }

@@ -3,6 +3,7 @@ import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/produc
 import { ALL_REGION_IDS } from '../content/map'
 import type { GameConfig, ProducerId } from '../engine/types'
 import CathArt from './CathArt'
+import Portrait from './portraits/Portrait'
 
 export type Mode = 'solo' | 'hotseat'
 
@@ -70,6 +71,9 @@ export default function Setup({ onStart }: Props) {
           {ALL_PRODUCER_IDS.map((id) => (
             <label key={id} className="producer-card" data-producer={id}>
               <input type="checkbox" checked={producers.includes(id)} onChange={() => toggleProducer(id)} />
+              <span className="pc-portrait" aria-hidden="true">
+                <Portrait character={id} size={72} />
+              </span>
               <span className="pc-name">{PRODUCERS[id].name}</span>
               <span className="pc-role">{PRODUCERS[id].roleName}</span>
               <span className="pc-ability">{PRODUCERS[id].roleAbility}</span>
