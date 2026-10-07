@@ -395,6 +395,13 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 **Phase 9: planned 2026-10-07 20:00.**
 147. [x] **Game screen map hex labels:** raise label contrast and size on phone, and soften the grey Kingsmarket hex so it reads as a market (`src/ui/`).
 148. [x] **Action list scroll cue:** on phone the Sell/Invest list is cut at the fold; add a fade and "more actions" cue above the bottom bar.
-149. [ ] **Campaign chapter art:** a small drawn scene per chapter card in place of the minimap only (bar 1).
+149. [x] *(2026-10-07: drawn hill scene + motif per chapter card)* **Campaign chapter art:** a small drawn scene per chapter card in place of the minimap only (bar 1).
 150. [x] **Cath companion reactions:** her line changes after each action (sell, invest, squeeze) with a short pose swap.
 151. [x] *(2026-10-07: Cath tagline under Settings title, full-width Back on phone; credits fine)* **Settings and credits shots:** critique `phone-8-settings`/`phone-9-credits` against VISION and fix spacing.
+
+**Phase 10: planned 2026-10-07 23:15.**
+152. [ ] **Rules reference polish:** screenshot `phone-2-rules-reference` and critique spacing and Cath's presence.
+153. [ ] **Pass-device screen:** `phone-12-pass-device` critique; add Cath line and a bigger "I'm ready" target.
+154. [ ] **Chapter scenes in colour when done:** completed cards tint the scene with the region colour.
+155. [ ] **Title screen idle motion:** subtle Cath blink/sway, reduced-motion safe.
+156. [ ] **Runnel and Hedgerow landing cards:** compare against Cathnivore's polish bar and fix gaps.

@@ -77,6 +77,25 @@ function Medallion({ n, state }: { n: number; state: 'done' | 'current' | 'locke
   )
 }
 
+// ROADMAP 149: a small drawn scene along the foot of each chapter card (hills plus one motif).
+const SCENE_MOTIFS = [
+  <path key="barn" d="M20 40v-14l9-7 9 7v14zM24 40v-7h10v7z" />,
+  <path key="stall" d="M18 40V28h24v12zM15 28l5-8h20l5 8z" />,
+  <path key="rows" d="M10 40l12-14M20 40l12-14M30 40l12-14M40 40l12-14" strokeWidth="2.5" fill="none" stroke="currentColor" />,
+  <path key="mill" d="M28 40V26h6v14zM31 26l-9-9M31 26l9-9M31 26l-9 9M31 26l9 9" strokeWidth="2.5" stroke="currentColor" />,
+  <path key="boat" d="M14 36h32l-6 6H20zM30 36V20l10 14z" />,
+  <path key="clock" d="M26 40V16h8v24zM24 16l6-7 6 7z" />,
+]
+function ChapterScene({ index }: { index: number }) {
+  return (
+    <svg className="cmp-scene" viewBox="0 0 120 44" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+      <path d="M0 44V30q20-12 40 0t40-4 40 6v12z" opacity="0.5" />
+      <path d="M0 44V36q30-10 60 0t60-4v12z" opacity="0.8" />
+      <g transform={`translate(${46 + (index % 2) * 6} 0)`}>{SCENE_MOTIFS[index % SCENE_MOTIFS.length]}</g>
+    </svg>
+  )
+}
+
 export default function CampaignScreen({
   chapters,
   completed,
@@ -147,6 +166,7 @@ export default function CampaignScreen({
                     {current && <span className="cmp-badge cmp-badge-next">Up next</span>}
                   </span>
                 </span>
+                <ChapterScene index={i} />
                 <MiniMap chapter={chapter} />
               </button>
             </li>

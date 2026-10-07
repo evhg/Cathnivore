@@ -2407,3 +2407,8 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
 @media (max-width: 600px) {
   .settings-back { width: 100%; min-height: 48px; margin-top: 0.5rem; }
 }
+
+.cmp-card { position: relative; overflow: hidden; }
+.cmp-scene { position: absolute; right: 0; bottom: 0; width: 70%; height: 46%; color: var(--green, #4f6b34); fill: currentColor; opacity: 0.16; pointer-events: none; }
+.cmp-card > *:not(.cmp-scene) { position: relative; }
+.chapter-locked .cmp-scene { opacity: 0.08; }
