@@ -66,3 +66,20 @@ if ('serviceWorker' in navigator) {
     for (const reg of regs) if (new URL(reg.scope).pathname === '/') reg.update().catch(() => {})
   }).catch(() => {})
 }
+
+// A daily line from Cath, rotating by calendar day, pointing at today's Runnel.
+const lede = document.querySelector<HTMLElement>('.lede')
+if (lede) {
+  const now = new Date()
+  const day = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86_400_000)
+  const lines = [
+    "Today's Runnel is up. Water every field and keep your streak alive.",
+    'The daily Runnel is fresh this morning. Come and turn some pipes with me.',
+    "I've set today's Runnel out for you. How few taps can you manage?",
+    "New day, new Runnel. The fields are thirsty and I'm putting the kettle on.",
+    'Fancy a quick Runnel before the corporations wake up? Today\'s is ready.',
+    "Today's Runnel is a tricky one. I believe in you.",
+    'Water the fields, share the result, and come back tomorrow.',
+  ]
+  lede.textContent = lines[day % lines.length] ?? null
+}

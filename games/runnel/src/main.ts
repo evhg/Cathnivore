@@ -289,7 +289,7 @@ function showWin(): void {
   ui.winPar.textContent = String(puzzle.par)
   const stats = dailyStats(data, today)
   ui.winNote.textContent = isDaily
-    ? `${parNote(game.taps, puzzle.par)} Streak: ${stats.streak} day${stats.streak === 1 ? '' : 's'}. Next puzzle in ${untilTomorrow()}.`
+    ? `${parNote(game.taps, puzzle.par)} ${stats.streak > 1 ? '🔥 ' : ''}Streak: ${stats.streak} day${stats.streak === 1 ? '' : 's'} (best ${stats.maxStreak}). Next puzzle in ${untilTomorrow()}.`
     : parNote(game.taps, puzzle.par)
   ui.btnNext.textContent = isDaily ? 'Play practice' : 'Next puzzle'
   ui.toast.textContent = ''
@@ -326,7 +326,7 @@ function showStats(): void {
   const s = dailyStats(data, today)
   const cells: Array<[string, string]> = [
     [String(s.played), 'dailies solved'],
-    [String(s.streak), 'current streak'],
+    [`${s.streak > 1 ? '🔥 ' : ''}${s.streak}`, 'current streak'],
     [String(s.maxStreak), 'best streak'],
     [s.averageMs === null ? '–' : formatTime(s.averageMs), 'average daily time'],
     [String(data.practiceSolved), 'practice solved'],
