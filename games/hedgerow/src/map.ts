@@ -1416,7 +1416,11 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         me.className = "you";
         me.setAttribute("aria-hidden", "true");
         me.innerHTML = cathSvg({ framing: "face", expression: "smirk" });
-        b.append(me);
+        const tag = document.createElement("span");
+        tag.className = "start-tag";
+        tag.setAttribute("aria-hidden", "true");
+        tag.textContent = "Start here";
+        b.append(me, tag);
         current = b;
       }
       b.addEventListener("click", () => open(lv));

@@ -401,6 +401,31 @@ button {
   border-color: var(--wheat);
   animation: next-pulse 1.8s ease-in-out infinite;
 }
+.start-tag {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--wheat);
+  color: #3a2a08;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 0 rgba(60, 90, 40, 0.35);
+}
+.stop {
+  animation: node-pop 0.4s ease-out both;
+}
+@keyframes node-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
 @keyframes next-pulse {
   50% {
     box-shadow: 0 4px 0 rgba(60, 90, 40, 0.35), 0 0 0 8px rgba(217, 180, 90, 0.35);
@@ -1465,6 +1490,7 @@ button {
   .chip.hurt,
   .stars .star.earned,
   .you,
+  .stop,
   .node.next .level-num,
   #btn-pie.ready,
   #btn-neighbours.ready,
