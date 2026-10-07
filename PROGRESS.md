@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 18:51 session:** ROADMAP 143 closed (no H/C faction badges exist in the action list; icons already per action). Desktop title: Cath moved left (-34%) so she clears the Brindle Hills hex and stall (shot checked). `npm run check` green. Unreleased (4 releases today, cap used). Next: 146 drawn scene, 120.
 - **2026-10-07 17:51 session:** ROADMAP 146 part (phone title Cath 41% wide, clear of the Brindle Hills label; shot checked); 144 viewBox is already tight (hexes fill ±250), no region tabs exist, so left as is. `npm run check` green. Unreleased (4 releases today). Next: 143 faction glyphs, 146 drawn scene.
 - **2026-10-07 16:51 session:** ROADMAP 145 done (setup portraits, Cath line, 80px Cath; shots checked); `npm run check` green before the Cath line (tsc clean after). Unreleased (4 releases today). Next: 144 tabs/viewBox, 146.
 - **2026-10-07 15:52 session:** ROADMAP 144 part (phone price/SOLD tags ~1.3x, CSS only, not screenshotted); `npm run check` green. Unreleased (4 releases today). Next: 144 rest (tabs, viewBox), 145 portraits.

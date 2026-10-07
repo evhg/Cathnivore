@@ -303,7 +303,7 @@
 
 .title-cath {
   position: absolute;
-  left: -20%;
+  left: -34%;
   bottom: -14%;
   width: 50%;
   animation: title-fade-rise 900ms var(--ease-settle) both 500ms;
