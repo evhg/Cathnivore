@@ -2381,3 +2381,9 @@ html.no-animations .card-enter {
 @keyframes end-stamp-in { from { opacity: 0; transform: rotate(-4deg) scale(2.2); } to { opacity: 0.92; transform: rotate(-4deg) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .end-stamp { animation: none; opacity: 0.92; } }
 html.no-animations .end-stamp { animation: none; opacity: 0.92; }
+
+/* ROADMAP 143: the first affordable Invest is the one accent in the action list. */
+.actions .action-recommended > button:not(:disabled) {
+  border-color: #d9a441;
+  box-shadow: 0 0 0 1px #d9a441, 0 2px 8px rgba(217, 164, 65, 0.35);
+}

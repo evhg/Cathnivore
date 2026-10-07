@@ -872,11 +872,11 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             </span>
           ))}
           {investEntries.length > 0 && <span className="action-head" aria-hidden="true">Invest</span>}
-          {investEntries.map(({ index, action: a }) => {
+          {investEntries.map(({ index, action: a }, position) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className="action-item">
+              <span key={index} className={position === 0 ? 'action-item action-recommended' : 'action-item'}>
                 <button onClick={() => act(index)}>
                   <span className="action-label">
                     {Icon && <Icon size={18} />}

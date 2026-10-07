@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 14:52 session:** ROADMAP 143 part (gold accent on the first affordable Invest action, CSS only, not screenshotted); tsc clean, `npm run check` running at commit. CI green on `7fbea33`. Unreleased (4 releases today). Next: 145 portraits, 144.
 - **2026-10-07 13:51 session:** ROADMAP 141 done (`.end-stamp` verdict banner on the end screen, rotated, reduced-motion safe; not screenshotted). `npm run check` running at commit. Unreleased (4 releases today). Next: 145 portraits, 144, 143.
 - **2026-10-07 12:52 session:** previous session's `npm run check` verified green; ROADMAP 146 part (campaign progress bar has six notches, CSS only, not screenshotted). Unreleased (4 releases today). Next: 145 rest, 141, 144.
 - **2026-10-07 11:52 session:** ROADMAP 145 part (setup producer colour band, ✓ Picked badge, sticky Start); `npm run check` was still running at commit, not screenshotted. Unreleased (4 releases today). Next: verify check, 145 rest, 141, 144.
