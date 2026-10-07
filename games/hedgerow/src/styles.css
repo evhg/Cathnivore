@@ -2387,3 +2387,17 @@ img.act-scene {
   color: #3b3426;
   box-shadow: inset 0 0 0 2px rgba(107, 74, 43, 0.25);
 }
+
+/* ROADMAP 135/137: smaller HUD chips on short or phone viewports; Cath's tip is AA-legible and clamped to 3 lines. */
+.cath-tip { color: #2f2a1f; background: rgba(255, 248, 225, 0.85); }
+@media (max-height: 700px), (max-width: 560px) {
+  .chip { padding: 2px 8px 2px 4px; gap: 3px; }
+  .chip svg { width: 16px; height: 16px; }
+  .chip b { font-size: 14px; }
+  .cath-tip { font-size: 0.8rem; padding: 0.35rem 0.5rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+}
+
+/* ROADMAP 139: locked stops read as locked (stronger label contrast, larger padlock); a locked act is dimmer but legible. */
+.node:disabled .level-name { color: #4a3f2e; opacity: 1; }
+.node .level-stars.level-lock { font-size: 16px; opacity: 0.85; }
+.act-locked { filter: saturate(0.55); opacity: 0.88; }
