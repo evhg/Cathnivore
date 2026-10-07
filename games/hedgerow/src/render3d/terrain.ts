@@ -163,6 +163,33 @@ function tuftGeometry(): THREE.BufferGeometry {
   return g;
 }
 
+let tickTex: THREE.Texture | null = null;
+/** ROADMAP 136: glowing corner ticks that mark a plot as buildable. */
+function tickTexture(): THREE.Texture {
+  if (tickTex) return tickTex;
+  const S = 64;
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const ctx = c.getContext("2d")!;
+  ctx.strokeStyle = "#ffe08a";
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.shadowColor = "#ffcf5a";
+  ctx.shadowBlur = 4;
+  const a = 5;
+  const l = 14;
+  for (const [x, y, dx, dy] of [[a, a, 1, 1], [S - a, a, -1, 1], [a, S - a, 1, -1], [S - a, S - a, -1, -1]] as const) {
+    ctx.beginPath();
+    ctx.moveTo(x + dx * l, y);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x, y + dy * l);
+    ctx.stroke();
+  }
+  tickTex = new THREE.CanvasTexture(c);
+  tickTex.colorSpace = THREE.SRGBColorSpace;
+  return tickTex;
+}
+
 let plotTex: THREE.Texture | null = null;
 /** A tilled plot: soft-edged soil with furrows, so every building plot reads as worked land. */
 function plotTexture(): THREE.Texture {
@@ -454,6 +481,7 @@ export function buildGround(level: Level): Ground {
   // Building plots: a subtle tilled square on every plot; protected land gets a stone marker instead.
   // All of them are instanced (one draw call each), as are the grass, flowers and stones below.
   const plotMat = new THREE.MeshStandardMaterial({ color: "#6a5534", roughness: 1, transparent: true, opacity: 0.34, map: plotTexture(), depthWrite: false });
+  const tickMat = new THREE.MeshBasicMaterial({ map: tickTexture(), transparent: true, opacity: 0.55, depthWrite: false });
   const plotGeo = new THREE.PlaneGeometry(0.8, 0.8).rotateX(-Math.PI / 2);
   const plots: Inst[] = [];
   const markers: Inst[] = [];
@@ -551,6 +579,7 @@ export function buildGround(level: Level): Ground {
   const padGeo = new THREE.CircleGeometry(0.07, 9, 0.35, Math.PI * 2 - 0.35).rotateX(-Math.PI / 2);
   for (const m of [
     instanced(plotGeo, plotMat, plots),
+    instanced(plotGeo, tickMat, plots.map((p) => ({ ...p, y: p.y + 0.006 }))),
     instanced(new THREE.CylinderGeometry(0.05, 0.07, 0.22, 6), matte("#ffffff", 0.9), markers, true),
     instanced(tuftGeometry(), tuftMat, tufts),
     instanced(flowerGeo, flowerMat, flowers),
