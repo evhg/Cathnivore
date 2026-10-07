@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 09:51 session:** ROADMAP 142 (topbar stat pills) done, 143 part (disabled actions dimmed); phone/desktop shots checked, `npm run check` green. Unreleased (4 releases already today). Next: 143 headers, 145, 141.
 - **2026-10-07 08:51 session:** released `5f3034d` (gates passed, live version.json matches; tag push 403 harmless; 4th release today, cap used). Subagent critique -> planned ROADMAP 141-146 (Phase 8); end-screen shot now waits for animations; singular "1 Mark" in action labels. `npm run check` green before the label change (tsc clean after). Unreleased. Next: 142 top bar chips, 143, 120.
 - **2026-10-07 07:52 session:** ROADMAP 137 done (1-9 plant the nth tower, hotkey badge on build cards, hidden on touch). tsc clean; full `npm run check` still running at commit. Unreleased. Next: 120, plan more.
 - **2026-10-07 06:51 session:** ROADMAP 135 (phone chips, tip clamp), 136 (gold corner ticks on 3D plots, not screenshotted), 137 part (tip AA contrast), 139 (locked nodes), 140 (Runnel three-step how-to, screenshot checked) done. `npm run check` and e2e:site (52) green. Needs `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`. Next: 137 tower cards, 120, plan more.

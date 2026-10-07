@@ -310,3 +310,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-07: Hedgerow Start-here tag hidden under 560px (Cath face marks the node); trail curve keeps node rows unchanged.
 - 2026-10-07: uncommitted edits block release.ts's checkout of main; commit before running release.
 - 2026-10-07: plot corner ticks are a second instanced plane with a canvas texture (MeshBasicMaterial), not baked into the tilled texture, so they stay gold.
+- 2026-10-07: topbar chips are CSS-only on existing `.hud-value`; action dimming uses `:has(.action-why-not)` rather than new markup.
