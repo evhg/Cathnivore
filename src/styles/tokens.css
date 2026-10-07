@@ -22,7 +22,7 @@
   --region-pasture: #CFE0B4;
   --region-crop: #EBD9A6;
   --region-coast: #BFD6DA;
-  --region-capital: #D8CFC4;
+  --region-capital: #E2C9A0;
 
   --p-mara: #8C2F39;
   --p-tomas: #C9962B;
@@ -62,7 +62,7 @@
     --region-pasture: #3E4A30;
     --region-crop: #574A2A;
     --region-coast: #2F474C;
-    --region-capital: #45403B;
+    --region-capital: #52432F;
   }
 }
 
@@ -81,5 +81,5 @@
   --region-pasture: #3E4A30;
   --region-crop: #574A2A;
   --region-coast: #2F474C;
-  --region-capital: #45403B;
+  --region-capital: #52432F;
 }

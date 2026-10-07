@@ -147,6 +147,18 @@ h3 {
   overflow-y: auto;
 }
 
+/* ROADMAP 148: a sticky fade at the foot of the capped list cues that more actions scroll below. */
+.action-tray .actions::after {
+  content: '';
+  flex: 0 0 100%;
+  position: sticky;
+  bottom: 0;
+  height: 22px;
+  margin-top: -22px;
+  background: linear-gradient(to bottom, transparent, var(--paper));
+  pointer-events: none;
+}
+
 @media (max-width: 1023.98px) {
   .game {
     height: 100vh;
@@ -683,7 +695,7 @@ h3 {
 .region-name {
   font-family: 'Fraunces', Georgia, serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   fill: var(--ink);
   text-transform: uppercase;
 }
