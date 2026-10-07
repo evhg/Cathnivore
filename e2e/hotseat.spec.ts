@@ -34,7 +34,7 @@ test('Hot-seat: two full turns, undo, and reload mid-turn resume an identical st
   await graft()
   await graft()
   await expect(page.getByText('Pass the device')).toBeVisible()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await page.getByRole('button', { name: "I'm ready" }).click()
   await expect(page.locator('.active-producer strong')).not.toHaveText(firstName)
 
   // SPEC 4.6: undo is scoped to "the current turn" — once the turn has passed to the next producer, the

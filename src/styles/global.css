@@ -1602,6 +1602,25 @@ html.no-animations .stat-card { animation: none; }
   text-align: center;
 }
 
+.pass-device-cath {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 320px;
+  text-align: left;
+}
+
+.pass-device-cath p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.pass-device-ready {
+  min-height: 56px;
+  min-width: min(280px, 100%);
+  font-size: 18px;
+}
+
 .pass-device h2 {
   font-family: 'Fraunces', serif;
   font-size: 24px;

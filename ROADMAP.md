@@ -401,7 +401,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 **Phase 10: planned 2026-10-07 23:15.**
 152. [ ] **Rules reference polish:** screenshot `phone-2-rules-reference` and critique spacing and Cath's presence.
-153. [ ] **Pass-device screen:** `phone-12-pass-device` critique; add Cath line and a bigger "I'm ready" target.
+153. [x] *(2026-10-08: Cath face + line, 56px "I'm ready" button; hotseat e2e updated)* **Pass-device screen:** `phone-12-pass-device` critique; add Cath line and a bigger "I'm ready" target.
 154. [ ] **Chapter scenes in colour when done:** completed cards tint the scene with the region colour.
 155. [ ] **Title screen idle motion:** subtle Cath blink/sway, reduced-motion safe.
 156. [ ] **Runnel and Hedgerow landing cards:** compare against Cathnivore's polish bar and fix gaps.

@@ -572,13 +572,18 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         <Portrait character={passDeviceFor} size={96} />
         <h2>Pass the device</h2>
         <p>It's {PRODUCERS[passDeviceFor].name}'s turn.</p>
+        <div className="pass-device-cath">
+          <CathArt framing="face" expression="smirk" width={44} height={54} title="Cath" />
+          <p>No peeking at the other hand. Tap when you've got the device.</p>
+        </div>
         <button
+          className="pass-device-ready"
           onClick={() => {
             passAckRef.current = passDeviceFor
             setPassDeviceFor(null)
           }}
         >
-          Continue
+          I'm ready
         </button>
       </main>
     )
