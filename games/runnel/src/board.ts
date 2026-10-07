@@ -139,6 +139,14 @@ export class Board {
     this.describe(index)
   }
 
+  /** Pulses one tile so the player can spot it. */
+  pulse(index: number): void {
+    const root = this.views[index]?.root
+    if (!root) return
+    root.classList.add('tip')
+    window.setTimeout(() => root.classList.remove('tip'), 3200)
+  }
+
   celebrate(): void {
     this.svg.classList.add('won')
   }

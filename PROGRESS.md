@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-07 01:52 session:** ROADMAP 122 done (Runnel "Cath's tip" button, Practice only, once per puzzle, pulses the nearest wrongly turned tile). tsc stage passed; full `npm run check` still running at commit. Unreleased. Next: 124, 120.
 - **2026-10-07 00:52 session:** ROADMAP 121 (Runnel streak flame, best streak in win note) and 123 (landing lede rotates daily, points at Runnel) done. `npm run check` green. Unreleased. Next: 122 Runnel hint, 124, 120.
 - **2026-10-07 00:00 session:** ROADMAP 115-119, 125 done (Runnel spring glow, bigger Cath, furrow stage, crop wave; Hedgerow bridge set pieces at 13/53/72/93, level tests pass; CATHODE touch shot ok). Planned 121-125. `npm run check` green. Released `ab19e64` (gates passed, live smoke passed; tag push 403 harmless). Next: 120, 121-124.
 - **2026-10-06 22:52 session:** ROADMAP 112 done (Runnel shots critiqued; planned Phase 7, 114-118), 114 done ("N of M fields watered" hint). `npm run check` green. Unreleased (release cap used: 4 today). Next: 115 Cath bubble, 116 spring glow, 113 Hedgerow act audit.

@@ -9,6 +9,8 @@ import {
   dailyPuzzle,
   generatePuzzle,
   rotateCell,
+  tapsToSolve,
+  hexDistance,
   utcDateString,
   type Puzzle,
 } from './engine'
@@ -31,6 +33,7 @@ const ui = {
   progress: $<HTMLDivElement>('progress-fill'),
   hint: $<HTMLParagraphElement>('hint'),
   btnNew: $<HTMLButtonElement>('btn-new'),
+  btnTip: $<HTMLButtonElement>('btn-tip'),
   announce: $<HTMLParagraphElement>('announce'),
   dlgHelp: $<HTMLDialogElement>('dlg-help'),
   dlgStats: $<HTMLDialogElement>('dlg-stats'),
@@ -245,6 +248,8 @@ function render(): void {
     ui.btnNew.hidden = isDaily
     ui.btnNew.textContent = 'New puzzle'
   }
+  ui.btnTip.hidden = isDaily || game.solved
+  ui.btnTip.disabled = !!game.hinted
 }
 
 let hintTimer = 0
@@ -395,6 +400,26 @@ ui.sizes.addEventListener('click', (e) => {
   pauseClock()
   size = next
   openGame()
+})
+ui.btnTip.addEventListener('click', () => {
+  if (mode !== 'practice' || game.solved || game.hinted) return
+  const spring = puzzle.cells.find((c) => c.kind === 'spring') ?? puzzle.cells[0]!
+  let pick = -1
+  let best = Infinity
+  puzzle.cells.forEach((c, i) => {
+    if (c.kind !== 'channel' || c.fixed || c.reservoir || tapsToSolve(c) === 0) return
+    const d = hexDistance(c, spring)
+    if (d < best) {
+      best = d
+      pick = i
+    }
+  })
+  if (pick < 0) return
+  game.hinted = true
+  board.pulse(pick)
+  flashHint("Cath: this one's facing the wrong way.")
+  save(data)
+  render()
 })
 ui.btnNew.addEventListener('click', () => {
   if (mode === 'daily') showWin()

@@ -1260,3 +1260,15 @@ body {
     animation: none;
   }
 }
+
+/* Cath's tip: one tile glows until it is turned. */
+.cell.tip .tile {
+  animation: tip-pulse 0.9s ease-in-out 3;
+}
+@keyframes tip-pulse {
+  0%, 100% { filter: none; }
+  50% { filter: drop-shadow(0 0 7px #f2b64a) brightness(1.18); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cell.tip .tile { animation: none; filter: drop-shadow(0 0 7px #f2b64a); }
+}

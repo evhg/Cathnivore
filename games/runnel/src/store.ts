@@ -15,6 +15,8 @@ export interface SavedGame {
   taps: number
   elapsedMs: number
   solved: boolean
+  /** Cath's tip was used on this puzzle. */
+  hinted?: boolean
 }
 
 export interface DailyResult {
