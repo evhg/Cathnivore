@@ -180,6 +180,15 @@
     font-size: 14.5px;
   }
 
+  /* ROADMAP 144: price and sold tags 1.4x so they read on a phone-sized map. */
+  .price-tag-text {
+    font-size: 4.6px;
+  }
+
+  .sold-text {
+    font-size: 4.1px;
+  }
+
   .map {
     max-width: none;
     width: 100%;
