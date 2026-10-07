@@ -856,7 +856,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                 <span className="action-label-group">
                   <span className="action-label">
                     <SellIcon size={18} />
-                    {`Sell ${count} Produce for ${count} Marks`}
+                    {`Sell ${count} Produce for ${count} ${count === 1 ? 'Mark' : 'Marks'}`}
                   </span>
                   <span className="action-why-not">Need {missing} more Produce</span>
                 </span>
@@ -892,7 +892,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             if (!card) return null
             return (
               <span key={`disabled-invest-${improvementId}`} className="action-item">
-                <button disabled title={`Need ${missing} more Marks`}>
+                <button disabled title={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}>
                   <span className="action-label-group">
                     <span className="action-label">
                       <InvestIcon size={18} />

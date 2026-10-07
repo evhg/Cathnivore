@@ -61,7 +61,7 @@ test('Invest shows a disabled, explained placeholder for market cards the player
   await expect(investItems).toHaveCount(4)
   for (const item of await investItems.all()) {
     await expect(item.getByRole('button', { name: /^Invest/ })).toBeDisabled()
-    await expect(item.locator('.action-why-not')).toHaveText(/^Need \d+ more Marks$/)
+    await expect(item.locator('.action-why-not')).toHaveText(/^Need \d+ more Marks?$/)
   }
   await expect(investItems.filter({ hasText: 'Wholesale Account' }).locator('.action-why-not')).toHaveText('Need 2 more Marks')
 

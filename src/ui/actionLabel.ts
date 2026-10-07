@@ -41,7 +41,7 @@ export function actionLabel(action: Action, state: GameState): string {
       return `Invest: buy ${card?.name ?? action.improvementId} (${card?.cost ?? '?'} Marks)`
     }
     case 'sell':
-      return `Sell ${action.count} Produce for ${action.count} Marks`
+      return `Sell ${action.count} Produce for ${action.count} ${action.count === 1 ? 'Mark' : 'Marks'}`
     case 'scheme': {
       const card = SCHEMES_BY_ID.get(action.schemeId)
       const target = action.targetRegion ? ` in ${REGIONS[action.targetRegion].name}` : ''

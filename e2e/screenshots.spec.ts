@@ -44,6 +44,7 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.end-screen').waitFor({ timeout: 30_000 })
+  await page.waitForTimeout(2500)
   await shoot(page, project, '6-end-screen')
 
   await page.goto('/')
