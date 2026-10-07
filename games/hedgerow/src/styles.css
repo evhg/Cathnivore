@@ -315,7 +315,7 @@ button {
   height: calc(100% - 24px);
   pointer-events: none;
 }
-.trail-path polyline {
+.trail-path path {
   fill: none;
   stroke: var(--soil);
   stroke-opacity: 0.35;
@@ -403,9 +403,8 @@ button {
 }
 .start-tag {
   position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 6px;
+  left: calc(100% + 2px);
   padding: 2px 8px;
   border-radius: 999px;
   background: var(--wheat);
@@ -2361,3 +2360,12 @@ img.act-scene {
   .new-dot { animation: newdot-pulse 1.8s ease-in-out infinite; }
 }
 @keyframes newdot-pulse { 50% { transform: scale(1.25); } }
+
+/* The tag sits beside the node (not under it, where it hid the next row); the last column flips it left. */
+.c5 .start-tag {
+  left: auto;
+  right: calc(100% + 2px);
+}
+@media (max-width: 560px) {
+  .start-tag { display: none; }
+}

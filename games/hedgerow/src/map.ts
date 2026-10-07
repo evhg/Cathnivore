@@ -1300,6 +1300,22 @@ export function actScene(n: number, crop: "story" | "banner" = "story"): string 
   return `<svg class="act-scene" viewBox="${vb}" preserveAspectRatio="${fit}" aria-hidden="true"><defs>${b.defs.join("")}</defs>${body}</svg>`;
 }
 
+/** A smooth cubic curve through the stops (Catmull-Rom converted to Beziers). */
+export function trailPath(pts: [number, number][]): string {
+  if (pts.length === 0) return "";
+  let d = `M${pts[0]![0]},${pts[0]![1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i]!;
+    const p1 = pts[i]!;
+    const p2 = pts[i + 1]!;
+    const p3 = pts[i + 2] ?? p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+
 export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, open: (lv: Level) => void, openEndless?: (act: number) => void): void {
   list.replaceChildren();
   const acts = new Map<number, Level[]>();
@@ -1362,14 +1378,14 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     path.setAttribute("viewBox", "0 0 100 100");
     path.setAttribute("preserveAspectRatio", "none");
     path.setAttribute("aria-hidden", "true");
-    const pts: string[] = [];
+    const pts: [number, number][] = [];
     lvs.forEach((_, i) => {
       const row = Math.floor(i / 5);
       const col = row % 2 === 0 ? i % 5 : 4 - (i % 5);
-      pts.push(`${(col + 0.5) * 20},${row === 0 ? 30 : 76}`);
+      pts.push([(col + 0.5) * 20, row === 0 ? 30 : 76]);
     });
-    const pl = document.createElementNS(svgNS, "polyline");
-    pl.setAttribute("points", pts.join(" "));
+    const pl = document.createElementNS(svgNS, "path");
+    pl.setAttribute("d", trailPath(pts));
     pl.setAttribute("vector-effect", "non-scaling-stroke");
     path.append(pl);
     trail.append(path);
