@@ -377,7 +377,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 137. [ ] **Hedgerow desktop side panel:** tower list as tappable cards with icon, cost and hotkey; AA contrast on Cath's tip.
 138. [x] **Hedgerow wave button disabled state:** progress bar with wave number, dark text, AA contrast.
 139. [x] **Hedgerow map locked nodes and Act 2 banner:** stronger locked contrast, larger padlock, own palette for Act 2.
-140. [ ] **Runnel how-to modal:** three illustrated steps, text 14px+ and darker; then shoot the board itself.
+140. [x] **Runnel how-to modal:** three illustrated steps, text 14px+ and darker; then shoot the board itself.
 
 ## Later (only when the owner asks in FEEDBACK.md)
 
