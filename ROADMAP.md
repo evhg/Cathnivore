@@ -446,7 +446,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 ### Phase 15 (planned 2026-10-08 13:30)
 183. [x] **Chapter scene contrast:** `.scene-speaker`/`.scene-text` to full ink tokens, AA check, chapter title card in the dead top area on phone.
 184. [x] **Pass-device screen:** tint background with the next producer's accent, portrait ~120px, centred Cath line.
-185. [ ] **Credits:** show small producer portraits beside cast names (reuse Setup portraits).
-186. [ ] **Phone game legend:** collapse the legend row into a "Legend" chip; keep chip text >= 12px.
-187. [ ] **Title phone:** Cath still covers part of the Brindle Hills hex; shift or shrink so the label is readable.
+185. [x] **Credits:** show small producer portraits beside cast names (reuse Setup portraits).
+186. [ ] *(skipped 10-08: needs a details/JS toggle and tooltip e2e care)* **Phone game legend:** collapse the legend row into a "Legend" chip; keep chip text >= 12px.
+187. [x] *(2026-10-08: width 36%, lower; not screenshotted)* **Title phone:** Cath still covers part of the Brindle Hills hex; shift or shrink so the label is readable.
 188. [x] *(2026-10-08: paper halo shadow, CSS only)* **Sticky end-screen button:** add a paper gradient behind it so tiles don't show through when scrolling.

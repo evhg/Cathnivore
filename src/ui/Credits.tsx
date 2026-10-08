@@ -1,4 +1,5 @@
 import CathArt from './CathArt'
+import Portrait from './portraits/Portrait'
 
 interface Props {
   onClose(): void
@@ -6,16 +7,16 @@ interface Props {
 
 // SPEC 10.1's title-screen nav list includes Credits. The cast list mirrors SPEC 3.2-3.4 (playable
 // producers, antagonists and secrets); Cath is left off the "written for" line since she's the narrator.
-const CAST: { name: string; note: string }[] = [
-  { name: 'Cath Hale ("the Cathnivore")', note: 'Guide, narrator, occasional zinger' },
-  { name: 'Mara Keel', note: 'Cattle rancher, Brindle Hills' },
-  { name: 'Tomas Reed', note: 'Vegetable grower, Oakvale' },
-  { name: 'Dr Ines Farrow', note: 'Dairy farmer and country doctor, Rivermead' },
-  { name: 'Sol Abara', note: 'Salt-marsh lamb farmer and podcaster, Saltmarsh' },
-  { name: 'Graham Pell', note: 'Hollowell Group, CEO' },
-  { name: 'Dr Octavia Vane', note: 'Candor Health, Head of Public Understanding' },
-  { name: 'Julian Crisp', note: 'PR fixer, works for both companies' },
-  { name: 'Pip Talbot', note: 'Kingsmarket market inspector' },
+const CAST: { id: string; name: string; note: string }[] = [
+  { id: 'cath', name: 'Cath Hale ("the Cathnivore")', note: 'Guide, narrator, occasional zinger' },
+  { id: 'mara', name: 'Mara Keel', note: 'Cattle rancher, Brindle Hills' },
+  { id: 'tomas', name: 'Tomas Reed', note: 'Vegetable grower, Oakvale' },
+  { id: 'ines', name: 'Dr Ines Farrow', note: 'Dairy farmer and country doctor, Rivermead' },
+  { id: 'sol', name: 'Sol Abara', note: 'Salt-marsh lamb farmer and podcaster, Saltmarsh' },
+  { id: 'pell', name: 'Graham Pell', note: 'Hollowell Group, CEO' },
+  { id: 'vane', name: 'Dr Octavia Vane', note: 'Candor Health, Head of Public Understanding' },
+  { id: 'crisp', name: 'Julian Crisp', note: 'PR fixer, works for both companies' },
+  { id: 'pip', name: 'Pip Talbot', note: 'Kingsmarket market inspector' },
 ]
 
 export default function Credits({ onClose }: Props) {
@@ -31,8 +32,13 @@ export default function Credits({ onClose }: Props) {
         <ul>
           {CAST.map((c) => (
             <li key={c.name}>
-              <strong>{c.name}</strong>
-              <span>{c.note}</span>
+              <span className="credit-portrait" aria-hidden="true">
+                <Portrait character={c.id} size={44} />
+              </span>
+              <span className="credit-text">
+                <strong>{c.name}</strong>
+                <span>{c.note}</span>
+              </span>
             </li>
           ))}
         </ul>
