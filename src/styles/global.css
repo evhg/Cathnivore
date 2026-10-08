@@ -381,6 +381,8 @@ h3 {
   gap: 1px;
   line-height: 1;
 }
+.plan-strip-card-brand svg { width: 10px; height: 10px; }
+.plan-strip-item > button:first-child { padding-top: 9px; }
 
 /* STYLE.md 8's Pressure card meta (stage numeral + region-type icon), pinned to the button's own corner
    rather than sharing its text line: the plan-strip row already sits at zero vertical slack against

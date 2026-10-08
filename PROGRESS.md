@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-08 06:51 session:** planned Phase 12 (ROADMAP 168-172) from fresh shots; 168 done (plan-chip logos no longer overlap labels, phone shot checked, CSS only). Full `npm run check` running at commit, verify next session. Unreleased since `426eaa1`. Next: 169, 170, 171.
 - **2026-10-08 05:52 session:** verified `npm run check` green on the Phase 11 CSS slices, then released `426eaa1` (all gates passed, live smoke passed; tag push 403 harmless; 3rd release today). The release run used the whole session (~50 min of gates), so no new ROADMAP slice. Next: plan Phase 12 from fresh screenshots (fewer than 3 real items left; 120 and 160 skipped).
 - **2026-10-08 04:52 session:** ROADMAP 163-167 done (map piles wrap every 6, lighter region plates, pulsing Up next border, taller Settings rows with secondary Back; 167 was already 148). `tsc -b` clean; full `npm run check` still running at commit, verify next session; not screenshotted. Unreleased since `ce98454` (2 releases today).
 - **2026-10-08 03:51 session:** screenshots critiqued by subagent (several points were stale); ROADMAP 162 done (phone action bar nowrap, shot checked); planned 163-167 (Phase 11). `npm run check` green. Unreleased since `ce98454` (2 releases today). Next: 163, 164, 120.
