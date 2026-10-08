@@ -324,3 +324,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-08 13:30: critique mostly stale (sticky button overlaps are full-page shot artefacts); planned Phase 15 from the real findings only.
 - 2026-10-08 13:51: CSS-only slices 183/184 part; release cap used, still unreleased.
 - 2026-10-08 14:51: skipped 186 (legend collapse) as markup-risky without screenshots; 185/187 committed after check.
+- 2026-10-08 15:51: phone title Cath bottom -3% (clears eyebrow and map label); shots verified.

@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-08 15:51 session:** `npm ci` + `npm run check` green on HEAD (CI green on `5f3f294`); full shots checked. Phone title Cath raised (bottom -3%) so her feet no longer overlap the eyebrow, label still clear. Unreleased since 08:51 (cap used; first session after 00:00 UTC should release). Next: plan Phase 16 from shots.
 - **2026-10-08 14:51 session:** ROADMAP 185 (Credits cast portraits) and 187 (phone title Cath 36%, lower; not screenshotted) done; 186 skipped (needs toggle markup). Unreleased since 08:51 (cap used). Next: plan Phase 16 from fresh shots, then release when allowed.
 - **2026-10-08 13:51 session:** short session. ROADMAP 183 (scene text and speaker use full ink) and 184 part (pass-device Cath line centred; no tint/portrait yet), CSS only, not screenshotted. Unreleased since 08:51 (4 releases today). Next: 185, 186, 187.
 - **2026-10-08 12:52 session:** `npm run check` green. ROADMAP 182 done (shots + subagent critique; most points stale), planned Phase 15 (183-188), 188 done (paper halo behind the sticky end-screen button, CSS only, not screenshotted). Unreleased since the 08:51 release (4 releases today, cap used; first session after 00:00 UTC should release). Next: 183, 184, 185.
