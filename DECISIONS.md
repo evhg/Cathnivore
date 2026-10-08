@@ -318,3 +318,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-08: Skipped 160/161 as written (px sizes, scripted tutorial chapters); noted caveats in ROADMAP.
 - 2026-10-08: skipped 120 (hand-authored paths per level, tuner-heavy); planned Phase 11 from shots instead.
 - 2026-10-08: Phase 11 CSS slices committed with tsc clean but full check unverified; next session verify and screenshot.
+- 2026-10-08 05:52: released 426eaa1 (Phase 11); release gates consumed the session.
