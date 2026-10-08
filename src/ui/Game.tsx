@@ -1139,6 +1139,9 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {roundTick > 0 && (
         <div key={roundTick} className="round-banner" aria-hidden="true">
           {state.pressureDeck.length === 0 ? `Final round ${state.round}` : `Round ${state.round}`}
+          <span className="round-banner-sub">
+            {Object.values(state.regions).filter((r) => r.liberated).length} regions liberated
+          </span>
         </div>
       )}
       {/* tabIndex so axe's "scrollable-region-focusable" rule is satisfied unconditionally, not just when

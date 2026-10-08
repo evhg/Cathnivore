@@ -408,7 +408,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 ### Phase 10 (planned 2026-10-08)
 157. [ ] **Screenshot sweep after release:** once the release finishes, run `npm run shots` and critique the Rules reference header, the tinted chapter scenes and the pass-device screen; fix any clipping.
-158. [ ] **Cathnivore end-of-round summary:** a short Cath line summarising what changed this round (Marks, regions held) on the round banner.
-159. [ ] **Game-over share card:** a copy-to-clipboard text result (rounds, regions, Cath emoji line) on the end screen, like Runnel's share.
-160. [ ] **Settings: text size toggle:** a Large text option that scales the base font 12% (accessibility; check no-scroll gates).
-161. [ ] **Tutorial skip memory:** returning players who finished chapter 1 never see tutorial prompts unless re-enabled in Settings.
+158. [x] *(2026-10-08: round banner shows regions liberated; not screenshotted)* **Cathnivore end-of-round summary:** a short Cath line summarising what changed this round (Marks, regions held) on the round banner.
+159. [x] *(already shipped: end-screen Share result in Game.tsx)* **Game-over share card:** a copy-to-clipboard text result (rounds, regions, Cath emoji line) on the end screen, like Runnel's share.
+160. [ ] *(note: most CSS sizes are px, so root scaling won't work; needs a zoom approach)* **Settings: text size toggle:** a Large text option that scales the base font 12% (accessibility; check no-scroll gates).
+161. [ ] *(note: scripted chapters need tutorial steps; make skip only affect non-scripted prompts)* **Tutorial skip memory:** returning players who finished chapter 1 never see tutorial prompts unless re-enabled in Settings.
