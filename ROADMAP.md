@@ -431,7 +431,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 ### Phase 13 (planned 2026-10-08 10:30)
 173. [x] *(2026-10-08: desktop plan chips trimmed padding, "?" no longer overlaps next card; shot checked)* **Desktop plan chips squeezed:** Squeeze/Expand/Scout cards narrower than their padding.
-174. [ ] **Desktop Actions list clip:** the last Invest row is cut off above Undo with no fade; add the sticky fade used on phone.
-175. [ ] **Desktop Market/Plan cards:** price and "Need N more" text is small and grey; raise to 13px and darken for contrast.
-176. [ ] **Desktop Farm panel:** two producers each get a "No Improvements bought yet." block; collapse to one line per producer.
+174. [x] *(2026-10-08)* **Desktop Actions list clip:** the last Invest row is cut off above Undo with no fade; add the sticky fade used on phone.
+175. [x] *(2026-10-08: CSS only, unverified)* **Desktop Market/Plan cards:** price and "Need N more" text is small and grey; raise to 13px and darken for contrast.
+176. [x] *(2026-10-08: quiet italic empty line)* **Desktop Farm panel:** two producers each get a "No Improvements bought yet." block; collapse to one line per producer.
 177. [ ] **Log panel:** show newest first with a round marker, and a Cath-coloured left rule.

@@ -1168,6 +1168,18 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
     overflow-y: auto;
   }
 
+  /* ROADMAP 174: the same sticky foot fade as the phone tray, so a clipped last row reads as scrollable. */
+  .desktop-col-left .actions-sheet .actions::after {
+    content: '';
+    grid-column: 1 / -1;
+    position: sticky;
+    bottom: 0;
+    height: 24px;
+    margin-top: -24px;
+    background: linear-gradient(to bottom, transparent, var(--surface, var(--paper)));
+    pointer-events: none;
+  }
+
   /* The Log (SPEC 10.2's "Log: turn history") grows by design over a game's up to 10 rounds and has no
      natural upper bound, so no fixed-height desktop layout can guarantee it never needs its own scroll —
      capping it here and letting only this one inner panel scroll is what makes "no scrolling" achievable at
@@ -2483,3 +2495,19 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
 .cmp-scene-crop { color: var(--region-crop); opacity: 0.34; }
 .cmp-scene-coast { color: var(--region-coast); opacity: 0.34; }
 .cmp-scene-capital { color: var(--region-capital); opacity: 0.34; }
+
+/* ROADMAP 176: the empty-tableau line is a quiet note, not a full paragraph per producer. */
+.farm-empty {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+/* ROADMAP 175: the "Need N more" reason beside a collapsed card's price keeps readable contrast. */
+.card-list-collapsible .card-cost-row .card-why-not,
+.card-list-collapsible .card-cost-row [class*='why-not'] {
+  font-size: 13px;
+  color: var(--ink);
+  opacity: 0.8;
+}
