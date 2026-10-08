@@ -476,7 +476,7 @@ h3 {
 .map {
   width: 100%;
   max-width: 420px;
-  aspect-ratio: 1;
+  aspect-ratio: 500 / 476;
 }
 
 .enemy-turn-playback {

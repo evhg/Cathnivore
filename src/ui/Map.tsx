@@ -311,7 +311,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
   const colourBlindPatterns = loadSettings().colourBlindPatterns
 
   return (
-    <svg viewBox={`${-SIZE} ${-SIZE} ${SIZE * 2} ${SIZE * 2}`} className="map" role="img" aria-label="Map of Marrow">
+    <svg viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role="img" aria-label="Map of Marrow">
       <RegionTextureDefs />
       {active.map((id) => {
         const def = REGIONS[id]
