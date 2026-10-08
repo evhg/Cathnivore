@@ -458,3 +458,10 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 192. [x] **Desktop legend:** the legend sits in two ragged rows above the board; align it as one right-aligned line.
 193. [x] **Phone game:** the player card (Mara Keel) is large before any action shows; shrink portrait and tighten rows so the first Sell action is visible without scrolling.
 194. [x] **End screen stat tiles:** labels ("Regions liberated", "Round") are pale on the tint; use full ink.
+
+### Phase 17 (planned 2026-10-08 20:15)
+195. [ ] **Phone map top gap:** about 35px of empty space sits above Highmoor in the phone game shot; trim the viewBox top (check the hex labels do not clip, desktop unaffected).
+196. [ ] **Phone action tray:** only one Sell row is visible below the player card at 390x844; try a one-line player card (portrait, name, resources inline).
+197. [ ] **Title phone:** a faint blue blur band sits above the footer text (water band); make it read as intentional water or remove it.
+198. [ ] **Hedgerow shots sweep:** run `npm run shots:hedgerow` (build:site + preview on :4180), critique the 3D field against Kingsmarket-style polish, plan Phase 18.
+199. [ ] **Release:** first session after 00:00 UTC runs `npm run release` (4 used on 10-08).
