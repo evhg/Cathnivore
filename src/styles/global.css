@@ -550,6 +550,16 @@ h3 {
   margin-bottom: 6px;
 }
 
+/* ROADMAP 177: newest-first log with a Cath-gold left rule; the newest entry is set apart. */
+.log-sheet ol {
+  border-left: 2px solid var(--gold, #c9a227);
+  padding-left: 24px;
+}
+
+.log-sheet li:first-child {
+  font-weight: 600;
+}
+
 .card-list {
   list-style: none;
   margin: 0;

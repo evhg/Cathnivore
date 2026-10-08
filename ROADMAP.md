@@ -434,4 +434,11 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 174. [x] *(2026-10-08)* **Desktop Actions list clip:** the last Invest row is cut off above Undo with no fade; add the sticky fade used on phone.
 175. [x] *(2026-10-08: CSS only, unverified)* **Desktop Market/Plan cards:** price and "Need N more" text is small and grey; raise to 13px and darken for contrast.
 176. [x] *(2026-10-08: quiet italic empty line)* **Desktop Farm panel:** two producers each get a "No Improvements bought yet." block; collapse to one line per producer.
-177. [ ] **Log panel:** show newest first with a round marker, and a Cath-coloured left rule.
+177. [x] *(2026-10-08: already newest first; added gold left rule, newest bold, CSS only)* **Log panel:** newest first with a Cath-coloured left rule.
+
+### Phase 14 (planned 2026-10-08 11:00)
+178. [ ] **Log panel phone:** add a round marker ("R3") before each entry group; check the phone sheet shot.
+179. [ ] **Focus rings:** audit every button for a visible gold `:focus-visible` ring on both dark and light surfaces.
+180. [ ] **End screen:** add a one-line Cath sign-off that changes with the verdict (win, loss, narrow win).
+181. [ ] **Round banner:** reduced-motion variant check and a 44px minimum height on phone.
+182. [ ] **Screenshot sweep:** run `npm run shots`, have a subagent critique against VISION.md, and plan Phase 15.
