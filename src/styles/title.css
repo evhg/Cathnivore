@@ -316,6 +316,24 @@
   filter: drop-shadow(0 10px 16px color-mix(in srgb, var(--ink) 25%, transparent));
 }
 
+/* A slow weight shift on top of her blink and breathing (shared/cath/cath.css). */
+@media (prefers-reduced-motion: no-preference) {
+  .title-cath svg {
+    transform-origin: 50% 100%;
+    animation: title-cath-sway 9s ease-in-out infinite 1.6s;
+  }
+}
+
+@keyframes title-cath-sway {
+  0%,
+  100% {
+    transform: rotate(-0.5deg);
+  }
+  50% {
+    transform: rotate(0.6deg);
+  }
+}
+
 /* Keep the long drop of her figure from covering the menu on narrow screens. */
 .title-cath .cath-art {
   display: block;
