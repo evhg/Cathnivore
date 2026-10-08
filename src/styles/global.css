@@ -2554,3 +2554,6 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
   justify-content: center;
   box-sizing: border-box;
 }
+
+/* ROADMAP 190: tag list sits on its own muted line under the card name. */
+.card-row summary .card-tags { display: block; font-size: 0.8em; opacity: 0.75; font-weight: 400; }

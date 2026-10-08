@@ -95,7 +95,8 @@ export default function MarketSheet({
               <li key={id} className={`card-enter card-row card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
                 <details>
                   <summary>
-                    <CardTagIcon tag={card.tags[0]} /> <strong>{card.name}</strong> ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+                    <CardTagIcon tag={card.tags[0]} /> <strong>{card.name}</strong>
+                    <span className="card-tags">{card.tags.map((t) => TAG_LABEL[t]).join(', ')}</span>
                   </summary>
                   <p className="card-text">{card.text}</p>
                   {card.flavor && <p className="card-flavor">{card.flavor}</p>}

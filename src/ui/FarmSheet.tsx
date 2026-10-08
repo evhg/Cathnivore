@@ -63,7 +63,7 @@ function FarmColumn({ state, producer, hideSummary }: { state: GameState; produc
         </Tooltip>
       </p>}
       {p.improvements.length === 0 ? (
-        <p className="farm-empty">No Improvements bought yet.</p>
+        <p className="farm-empty">{hideSummary || state.config.producers.length < 2 ? 'No Improvements bought yet.' : 'No Improvements yet.'}</p>
       ) : (
         <ul className="farm-tableau">
           {p.improvements.map((id) => {
