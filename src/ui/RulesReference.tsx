@@ -200,7 +200,10 @@ export default function RulesReference({ onClose, initialTerm }: Props) {
   return (
     <main className="rules-reference">
       <header className="rules-header">
-        <h1>How to Play</h1>
+        <span className="rules-cath">
+          <CathArt framing="bust" expression="delighted" width={40} height={40} title="Cath" />
+        </span>
+        <h1 style={{ flex: 1, margin: 0 }}>How to Play</h1>
         <button onClick={onClose}>Close</button>
       </header>
 
