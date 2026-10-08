@@ -439,6 +439,6 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 ### Phase 14 (planned 2026-10-08 11:00)
 178. [ ] **Log panel phone:** add a round marker ("R3") before each entry group; check the phone sheet shot.
 179. [ ] **Focus rings:** audit every button for a visible gold `:focus-visible` ring on both dark and light surfaces.
-180. [ ] **End screen:** add a one-line Cath sign-off that changes with the verdict (win, loss, narrow win).
+180. [x] *(2026-10-08: already covered by WIN_LINE/LOSS_LINE story text)* **End screen:** add a one-line Cath sign-off that changes with the verdict (win, loss, narrow win).
 181. [ ] **Round banner:** reduced-motion variant check and a 44px minimum height on phone.
 182. [ ] **Screenshot sweep:** run `npm run shots`, have a subagent critique against VISION.md, and plan Phase 15.
