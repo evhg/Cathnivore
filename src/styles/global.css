@@ -2521,3 +2521,31 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
   color: var(--ink);
   opacity: 0.8;
 }
+
+/* ROADMAP 178: round marker closing each group of log entries. */
+.log-sheet li.log-round {
+  list-style: none;
+  margin: 10px 0 8px -4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--ink-muted, #6b5a5a);
+}
+.log-sheet li.log-round:first-child { font-weight: 700; }
+
+/* ROADMAP 179: one visible keyboard focus ring everywhere: gold with a dark inner line so it reads on
+   both light and dark surfaces. */
+:is(button, a, [role="button"], summary, select, textarea, input):focus-visible {
+  outline: 3px solid var(--wheat, #d9b45a);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(40, 28, 28, 0.55);
+}
+
+/* ROADMAP 181: the round banner never drops under a 44px tap-sized height. */
+.round-banner {
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}

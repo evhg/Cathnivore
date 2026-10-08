@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-08 11:53 session:** ROADMAP 178 (Log round markers R<n>), 179 (global gold focus ring), 181 (round banner 44px min height; already hidden under reduced motion) done, not screenshotted. `npm run check` green. Unreleased since the 08:51 release (4 releases today, cap used). Next: 182 sweep + plan Phase 15.
 - **2026-10-08 10:52 session:** ROADMAP 177 (Log panel gold left rule, newest bold, CSS only, not screenshotted) done, 180 closed (already covered); planned Phase 14 (178-182). `npm run check` green. Unreleased since the 08:51 release (4 releases today, cap used). Next: 178, 179, 181, 182.
 - **2026-10-08 09:51 session:** planned Phase 13 (ROADMAP 173-177); 173 (desktop plan chips no longer overlap their "?"), 174 (sticky fade under the desktop Actions list), 175 (Need-more text contrast, unverified), 176 (quiet empty-Improvements line) done, shots checked. `npm run check` green; desktop-no-scroll e2e result in next session's first look. Unreleased since the 08:51 release (cap used). Next: 177 Log, plan Phase 14.
 - **2026-10-08 08:51 session:** `npm run check` green, then released current `build` HEAD (all gates passed, live smoke passed; tag push 403 harmless; 4th release today, cap used). The release run used the whole session, so no new slice. Next: plan Phase 13 from fresh shots (fewer than 3 real ROADMAP items left).

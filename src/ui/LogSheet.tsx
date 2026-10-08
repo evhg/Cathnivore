@@ -15,22 +15,35 @@ export default function LogSheet({
   onClose(): void
   inline?: boolean
 }) {
+  // ROADMAP 178: each Agenda card opens the opposition's turn, so it closes a round; entries are grouped
+  // under an "R<n>" marker at the oldest line of each round.
+  let round = 1
   const lines = log
     .map((event, i) => {
       const caption = logCaption(event)
+      const r = round
+      if (event.type === 'agenda') round += 1
       if (caption === null) return null
       const reason = aiReasons?.[i]
-      return reason ? `${caption} ${reason}` : caption
+      return { text: reason ? `${caption} ${reason}` : caption, round: r }
     })
-    .filter((line): line is string => line !== null)
+    .filter((line): line is { text: string; round: number } => line !== null)
   const entries = (
     <ol reversed>
       {lines
         .slice()
         .reverse()
-        .map((line, i) => (
-          <li key={lines.length - i}>{line}</li>
-        ))}
+        .flatMap((line, i, arr) => {
+          const item = <li key={lines.length - i}>{line.text}</li>
+          const older = arr[i + 1]
+          if (older && older.round === line.round) return [item]
+          return [
+            item,
+            <li key={`r${line.round}`} className="log-round" aria-label={`Round ${line.round}`}>
+              R{line.round}
+            </li>,
+          ]
+        })}
     </ol>
   )
 
