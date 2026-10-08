@@ -329,3 +329,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-08 17:51: 191 done minimally (shorter repeated empty line) rather than collapsing, to avoid markup risk.
 - 2026-10-08 19:51: check green, shots fine; planned Phase 17 only (no slice; map tweak judged marginal).
 - 2026-10-08 20:51: 195 trimmed map viewBox rather than shifting layout; webkit e2e projects can't run in this sandbox.
+- 2026-10-08 22:51: 196 done as a wrapped-row card (small gain); release still waits for UTC day rollover.

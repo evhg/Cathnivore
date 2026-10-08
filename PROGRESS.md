@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-08 22:51 session:** ROADMAP 196 done (phone player card wraps as a row; shot checked, quick-game e2e passes; modest gain). Unreleased since 08:51 (cap used; first session after 00:00 UTC should release, ROADMAP 199). Next: 198, 199.
 - **2026-10-08 21:51 session:** ROADMAP 197 done (phone title water band and shimmer removed, CSS only, not screenshotted; tsc clean). Unreleased since 08:51 (cap used; first session after 00:00 UTC should release, ROADMAP 199). Next: 196, 198.
 - **2026-10-08 20:51 session:** ROADMAP 195 done (map viewBox trimmed 12 units top and bottom, aspect 500/476; tsc clean; quick-game, desktop-no-scroll, phone-map-hero pass on chromium projects; webkit projects unavailable here; not screenshotted). Unreleased since 08:51 (cap used). Next: 196, 197, 198.
 - **2026-10-08 19:51 session:** `npm ci` + `npm run check` green on HEAD; full shots checked (title, game fine; map already letterboxed). Planned Phase 17 (ROADMAP 195-199); no code slice. Unreleased since 08:51 (cap used; first session after 00:00 UTC should release). Next: 195, 196, 199.

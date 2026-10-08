@@ -2568,3 +2568,8 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
   .active-producer-header > :first-child { width: 36px; height: 36px; }
   .active-producer { padding: 6px 10px; gap: 2px; }
 }
+
+/* ROADMAP 196: phone player card flows as a wrapped row (portrait and name, then resources inline). */
+@media (max-width: 600px) {
+  .active-producer { flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: 10px; row-gap: 0; font-size: 14px; }
+}
