@@ -444,8 +444,8 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 182. [x] *(2026-10-08: shots + subagent critique; most points stale or screenshot artefacts of sticky buttons)* **Screenshot sweep:** run `npm run shots`, have a subagent critique against VISION.md, and plan Phase 15.
 
 ### Phase 15 (planned 2026-10-08 13:30)
-183. [ ] **Chapter scene contrast:** `.scene-speaker`/`.scene-text` to full ink tokens, AA check, chapter title card in the dead top area on phone.
-184. [ ] **Pass-device screen:** tint background with the next producer's accent, portrait ~120px, centred Cath line.
+183. [x] **Chapter scene contrast:** `.scene-speaker`/`.scene-text` to full ink tokens, AA check, chapter title card in the dead top area on phone.
+184. [x] **Pass-device screen:** tint background with the next producer's accent, portrait ~120px, centred Cath line.
 185. [ ] **Credits:** show small producer portraits beside cast names (reuse Setup portraits).
 186. [ ] **Phone game legend:** collapse the legend row into a "Legend" chip; keep chip text >= 12px.
 187. [ ] **Title phone:** Cath still covers part of the Brindle Hills hex; shift or shrink so the label is readable.

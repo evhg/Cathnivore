@@ -1588,6 +1588,7 @@ html.no-animations .stat-card { animation: none; }
 }
 
 .scene-text {
+  color: var(--ink);
   font-size: 17px;
   line-height: 1.4;
 }
@@ -1637,7 +1638,7 @@ html.no-animations .stat-card { animation: none; }
 .scene-speaker {
   font-family: 'Fraunces', serif;
   font-weight: 600;
-  color: var(--soil);
+  color: var(--ink);
 }
 
 /* Hot-seat "pass the device" screen (SPEC 2/10.2, Known issues) */
@@ -1659,6 +1660,8 @@ html.no-animations .stat-card { animation: none; }
   font-size: 14px;
 }
 
+.pass-device h2 + .pass-device-cath { align-self: center; }
+.pass-device-cath p { text-align: center; }
 .pass-device-ready {
   min-height: 56px;
   min-width: min(280px, 100%);

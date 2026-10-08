@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-08 13:51 session:** short session. ROADMAP 183 (scene text and speaker use full ink) and 184 part (pass-device Cath line centred; no tint/portrait yet), CSS only, not screenshotted. Unreleased since 08:51 (4 releases today). Next: 185, 186, 187.
 - **2026-10-08 12:52 session:** `npm run check` green. ROADMAP 182 done (shots + subagent critique; most points stale), planned Phase 15 (183-188), 188 done (paper halo behind the sticky end-screen button, CSS only, not screenshotted). Unreleased since the 08:51 release (4 releases today, cap used; first session after 00:00 UTC should release). Next: 183, 184, 185.
 - **2026-10-08 11:53 session:** ROADMAP 178 (Log round markers R<n>), 179 (global gold focus ring), 181 (round banner 44px min height; already hidden under reduced motion) done, not screenshotted. `npm run check` green. Unreleased since the 08:51 release (4 releases today, cap used). Next: 182 sweep + plan Phase 15.
 - **2026-10-08 10:52 session:** ROADMAP 177 (Log panel gold left rule, newest bold, CSS only, not screenshotted) done, 180 closed (already covered); planned Phase 14 (178-182). `npm run check` green. Unreleased since the 08:51 release (4 releases today, cap used). Next: 178, 179, 181, 182.
