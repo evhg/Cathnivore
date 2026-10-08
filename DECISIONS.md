@@ -316,3 +316,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-07 19:52: fewer than 3 ROADMAP items left, so planned Phase 9 (147-151); locked-chapter tint is by stop index, not true region.
 - 2026-10-08: released e6e6535; Runnel e2e tap-save test now skips fixed sluices (daily puzzle changes with the date).
 - 2026-10-08: Skipped 160/161 as written (px sizes, scripted tutorial chapters); noted caveats in ROADMAP.
+- 2026-10-08: skipped 120 (hand-authored paths per level, tuner-heavy); planned Phase 11 from shots instead.

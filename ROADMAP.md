@@ -412,3 +412,11 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 159. [x] *(already shipped: end-screen Share result in Game.tsx)* **Game-over share card:** a copy-to-clipboard text result (rounds, regions, Cath emoji line) on the end screen, like Runnel's share.
 160. [ ] *(note: most CSS sizes are px, so root scaling won't work; needs a zoom approach)* **Settings: text size toggle:** a Large text option that scales the base font 12% (accessibility; check no-scroll gates).
 161. [x] *(2026-10-08: replays of finished chapters drop talk-only prompts)* *(note: scripted chapters need tutorial steps; make skip only affect non-scripted prompts)* **Tutorial skip memory:** returning players who finished chapter 1 never see tutorial prompts unless re-enabled in Settings.
+
+### Phase 11 (planned 2026-10-08)
+162. [x] *(2026-10-08)* **Phone action bar:** equal-width buttons, no wrapping "Cath's Plan".
+163. [ ] **End-screen map overflow:** outlet/doubt piles on a lost board run past the right edge of the framed map; wrap or scale the pieces.
+164. [ ] **Phone map label plates:** soften the hex name plates (translucent, smaller) so pieces read first.
+165. [ ] **Locked chapter cards:** lighter lock glow and a pulsing "Up next" border (reduced-motion safe).
+166. [ ] **Settings rows:** 4px more row padding and a secondary-style Back.
+167. [ ] **Fade under Sell list on phone:** clipped second row sits under the action bar with no fade.

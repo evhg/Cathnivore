@@ -1333,6 +1333,10 @@ button.destructive {
   gap: 8px;
   margin-top: auto;
 }
+/* Phone: five buttons share the row, so keep labels on one line instead of wrapping "Cath's Plan". */
+@media (max-width: 480px) {
+  .controls > button { flex: 1 1 auto; min-width: 0; padding-inline: 6px; white-space: nowrap; font-size: 0.82em; }
+}
 
 /* `.controls`'s `margin-top: auto` above pins Undo to the bottom of the phone screen's fixed footer —
    right for a single-screen mobile layout, but on desktop it instead stretches through the centre column's
