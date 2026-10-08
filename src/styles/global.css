@@ -641,7 +641,7 @@ h3 {
 }
 
 .card-list-collapsible .card-row > details {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -664,6 +664,9 @@ h3 {
   gap: 4px;
   font-size: 14px;
   flex: 0 0 auto;
+  min-width: 72px;
+  justify-content: flex-end;
+  white-space: nowrap; /* ROADMAP 172: price stays on the name's line, right-aligned */
 }
 
 .farm-column {
@@ -2436,6 +2439,7 @@ html.no-animations .card-enter {
 .producer-card .pc-pick { position: absolute; top: 8px; right: 8px; align-self: auto; padding: 2px 8px; border-radius: 999px; background: var(--wheat); color: #2b2118; transform: scale(0.8); transition: opacity var(--dur-quick) ease, transform var(--dur-quick) var(--ease-pop, ease); }
 .producer-card:has(input:checked) .pc-pick { transform: scale(1); }
 .setup > button.primary { position: sticky; bottom: 12px; z-index: 5; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+.setup { padding-bottom: 88px; } /* ROADMAP 171: last card clears the sticky Start */
 @media (prefers-reduced-motion: reduce) { .producer-card .pc-pick { transition: none; } }
 
 /* ROADMAP 141: stamped verdict banner on the end screen. */

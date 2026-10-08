@@ -16,7 +16,7 @@ export default function FarmSheet({ state, onClose, inline }: { state: GameState
       <div className="sheet-panel farm-sheet">
         <h2>Farm</h2>
         {state.config.producers.map((id) => (
-          <FarmColumn key={id} state={state} producer={id} />
+          <FarmColumn key={id} state={state} producer={id} hideSummary={state.config.producers.length === 1} />
         ))}
       </div>
     )
@@ -37,7 +37,8 @@ export default function FarmSheet({ state, onClose, inline }: { state: GameState
   )
 }
 
-function FarmColumn({ state, producer }: { state: GameState; producer: ProducerId }) {
+// `hideSummary`: the desktop top-left card already shows a lone producer's name and stats (ROADMAP 169).
+function FarmColumn({ state, producer, hideSummary }: { state: GameState; producer: ProducerId; hideSummary?: boolean }) {
   const p = state.producers[producer]
   const def = PRODUCERS[producer]
   const tagCounts: Partial<Record<string, number>> = {}
@@ -49,8 +50,8 @@ function FarmColumn({ state, producer }: { state: GameState; producer: ProducerI
 
   return (
     <section className="farm-column">
-      <h3>{def.name}</h3>
-      <p className="farm-production">
+      {!hideSummary && <h3>{def.name}</h3>}
+      {!hideSummary && <p className="farm-production">
         <Tooltip term="Produce">
           <ProduceIcon /> Produce {p.resources.produce} ({p.production.produce}/round)
         </Tooltip>{' '}
@@ -60,7 +61,7 @@ function FarmColumn({ state, producer }: { state: GameState; producer: ProducerI
         · <Tooltip term="Goodwill">
           <GoodwillIcon /> Goodwill {p.resources.goodwill} ({p.production.goodwill}/round)
         </Tooltip>
-      </p>
+      </p>}
       {p.improvements.length === 0 ? (
         <p className="farm-empty">No Improvements bought yet.</p>
       ) : (

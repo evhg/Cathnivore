@@ -423,8 +423,8 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 ### Phase 12 (planned 2026-10-08 07:30)
 168. [x] *(2026-10-08: plan-chip logos 10px, label drops below them)* **Plan chip badge overlap:** the Hollowell/Candor logos overlap the Squeeze/Expand/Scout label on phone and desktop.
-169. [ ] **Desktop Farm panel duplicate:** the Farm card repeats the producer name and stats already shown in the top-left card; merge or drop the repeat.
-170. [ ] **Desktop Cath companion size:** the Cath bubble face is ~24px on desktop; raise to 48px with a taller line box.
-171. [ ] **Setup phone sticky Start:** the Start button overlaps producer card text; add bottom padding so the last card clears it.
-172. [ ] **Market card hierarchy:** Market entries on desktop have inconsistent price alignment (Buy card wraps tags to a second line); fix the grid.
+169. [x] **Desktop Farm panel duplicate:** the Farm card repeats the producer name and stats already shown in the top-left card; merge or drop the repeat.
+170. [x] **Desktop Cath companion size:** the Cath bubble face is ~24px on desktop; raise to 48px with a taller line box.
+171. [x] **Setup phone sticky Start:** the Start button overlaps producer card text; add bottom padding so the last card clears it.
+172. [x] **Market card hierarchy:** Market entries on desktop have inconsistent price alignment (Buy card wraps tags to a second line); fix the grid.
 
