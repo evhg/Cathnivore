@@ -318,7 +318,12 @@ export default function App() {
         initial={screen.state}
         seed={screen.seed}
         mode={screen.mode}
-        tutorialSteps={screen.chapter.tutorialSteps}
+        tutorialSteps={
+          // Replaying a finished chapter: drop the talk-only prompts, keep the forced action steps (ROADMAP 161).
+          loadCampaign().completed.includes(screen.chapter.id)
+            ? screen.chapter.tutorialSteps.filter((t) => t.highlight)
+            : screen.chapter.tutorialSteps
+        }
         midGameScenes={midGameScenes}
         chapterId={screen.chapter.id}
         initialDismissedMidScenes={screen.dismissedMidScenes}
