@@ -441,4 +441,12 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 179. [x] **Focus rings:** audit every button for a visible gold `:focus-visible` ring on both dark and light surfaces.
 180. [x] *(2026-10-08: already covered by WIN_LINE/LOSS_LINE story text)* **End screen:** add a one-line Cath sign-off that changes with the verdict (win, loss, narrow win).
 181. [x] **Round banner:** reduced-motion variant check and a 44px minimum height on phone.
-182. [ ] **Screenshot sweep:** run `npm run shots`, have a subagent critique against VISION.md, and plan Phase 15.
+182. [x] *(2026-10-08: shots + subagent critique; most points stale or screenshot artefacts of sticky buttons)* **Screenshot sweep:** run `npm run shots`, have a subagent critique against VISION.md, and plan Phase 15.
+
+### Phase 15 (planned 2026-10-08 13:30)
+183. [ ] **Chapter scene contrast:** `.scene-speaker`/`.scene-text` to full ink tokens, AA check, chapter title card in the dead top area on phone.
+184. [ ] **Pass-device screen:** tint background with the next producer's accent, portrait ~120px, centred Cath line.
+185. [ ] **Credits:** show small producer portraits beside cast names (reuse Setup portraits).
+186. [ ] **Phone game legend:** collapse the legend row into a "Legend" chip; keep chip text >= 12px.
+187. [ ] **Title phone:** Cath still covers part of the Brindle Hills hex; shift or shrink so the label is readable.
+188. [x] *(2026-10-08: paper halo shadow, CSS only)* **Sticky end-screen button:** add a paper gradient behind it so tiles don't show through when scrolling.

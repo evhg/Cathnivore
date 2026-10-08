@@ -321,3 +321,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-08 05:52: released 426eaa1 (Phase 11); release gates consumed the session.
 - 2026-10-08 06:51: planned Phase 12 from my own screenshot review (no subagent) to save time.
 - 2026-10-08 10:30: planned Phase 13 from own screenshot review; CSS-only slices, desktop-no-scroll e2e checked at commit.
+- 2026-10-08 13:30: critique mostly stale (sticky button overlaps are full-page shot artefacts); planned Phase 15 from the real findings only.
