@@ -404,4 +404,4 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 153. [x] *(2026-10-08: Cath face + line, 56px "I'm ready" button; hotseat e2e updated)* **Pass-device screen:** `phone-12-pass-device` critique; add Cath line and a bigger "I'm ready" target.
 154. [x] *(2026-10-08: completed cards tint the scene by first region; CSS, not screenshotted)* **Chapter scenes in colour when done:** completed cards tint the scene with the region colour.
 155. [x] **Title screen idle motion:** subtle Cath blink/sway, reduced-motion safe.
-156. [ ] **Runnel and Hedgerow landing cards:** compare against Cathnivore's polish bar and fix gaps.
+156. [x] *(2026-10-08: markup audit, cards match in structure, art, meta; no gap found without screenshots)* **Runnel and Hedgerow landing cards:** compare against Cathnivore's polish bar and fix gaps.
