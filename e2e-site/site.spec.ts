@@ -127,7 +127,7 @@ test.describe('Runnel', () => {
 
   test('a tap in progress is saved across a reload', async ({ page }) => {
     await page.goto('/runnel/?nohelp')
-    const cell = page.locator('.tiles > g.cell:not(.stone)').nth(3)
+    const cell = page.locator('.tiles > g.cell:not(.stone):not(.fixed)').nth(3)
     await cell.click()
     await cell.click()
     await page.reload()
