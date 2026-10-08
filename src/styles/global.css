@@ -1092,8 +1092,17 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
     min-width: 0;
   }
 
+  /* ROADMAP 173: the cards were squeezed narrower than their own padding, so the "?" overlapped the
+     next card; trim the side padding and keep the "?" from shrinking. */
+  .plan-legend-row .plan-strip-item > button:first-child {
+    padding-left: 16px;
+    padding-right: 6px;
+    min-width: 0;
+    font-size: 13px;
+  }
+
   .plan-legend-row .map-legend {
-    flex: 0 1 auto;
+    flex: 0 2 auto;
     min-width: 0;
     flex-wrap: wrap;
     justify-content: flex-end;

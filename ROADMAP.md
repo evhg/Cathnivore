@@ -428,3 +428,10 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 171. [x] **Setup phone sticky Start:** the Start button overlaps producer card text; add bottom padding so the last card clears it.
 172. [x] **Market card hierarchy:** Market entries on desktop have inconsistent price alignment (Buy card wraps tags to a second line); fix the grid.
 
+
+### Phase 13 (planned 2026-10-08 10:30)
+173. [x] *(2026-10-08: desktop plan chips trimmed padding, "?" no longer overlaps next card; shot checked)* **Desktop plan chips squeezed:** Squeeze/Expand/Scout cards narrower than their padding.
+174. [ ] **Desktop Actions list clip:** the last Invest row is cut off above Undo with no fade; add the sticky fade used on phone.
+175. [ ] **Desktop Market/Plan cards:** price and "Need N more" text is small and grey; raise to 13px and darken for contrast.
+176. [ ] **Desktop Farm panel:** two producers each get a "No Improvements bought yet." block; collapse to one line per producer.
+177. [ ] **Log panel:** show newest first with a round marker, and a Cath-coloured left rule.
