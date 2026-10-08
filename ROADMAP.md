@@ -455,6 +455,6 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 189. [x] **Singular "Mark":** market cards and Invest rows say "Need 1 more Mark" (was "1 more Marks").
 190. [x] **Market card type tags:** "(Media, Community)" wraps awkwardly beside the price; move the type tags to their own muted line under the name (desktop panel).
 191. [x] **Desktop Farm panel:** the second producer repeats "No Improvements bought yet."; show it once, collapse when both are empty.
-192. [ ] **Desktop legend:** the legend sits in two ragged rows above the board; align it as one right-aligned line.
-193. [ ] **Phone game:** the player card (Mara Keel) is large before any action shows; shrink portrait and tighten rows so the first Sell action is visible without scrolling.
-194. [ ] **End screen stat tiles:** labels ("Regions liberated", "Round") are pale on the tint; use full ink.
+192. [x] **Desktop legend:** the legend sits in two ragged rows above the board; align it as one right-aligned line.
+193. [x] **Phone game:** the player card (Mara Keel) is large before any action shows; shrink portrait and tighten rows so the first Sell action is visible without scrolling.
+194. [x] **End screen stat tiles:** labels ("Regions liberated", "Round") are pale on the tint; use full ink.

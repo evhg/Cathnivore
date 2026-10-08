@@ -1119,6 +1119,11 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
     gap: 8px 14px;
   }
 
+  /* ROADMAP 192: each legend entry stays on one line so the key reads as a single right-aligned run. */
+  .plan-legend-row .map-legend-item {
+    white-space: nowrap;
+  }
+
   .topbar {
     padding: 6px 12px;
   }
@@ -1468,7 +1473,7 @@ html.no-animations .end-screen-hero, html.no-animations .end-screen h1, html.no-
 html.no-animations .end-screen-story, html.no-animations .end-screen-map,
 html.no-animations .end-screen > button:last-child, html.no-animations .stat-card { animation: none; }
 .stat-card dd { margin: 0; font-size: 28px; font-weight: 800; font-family: var(--font-display, inherit); }
-.stat-card dt { font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-card dt { font-size: 12px; color: var(--ink); text-transform: uppercase; letter-spacing: 0.04em; }
 @keyframes stat-in { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
 @media (prefers-reduced-motion: reduce) { .stat-card { animation: none; } }
 html.no-animations .stat-card { animation: none; }
@@ -2557,3 +2562,9 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
 
 /* ROADMAP 190: tag list sits on its own muted line under the card name. */
 .card-row summary .card-tags { display: block; font-size: 0.8em; opacity: 0.75; font-weight: 400; }
+
+/* ROADMAP 193: on phones the active-producer card is compact so the first Sell action shows sooner. */
+@media (max-width: 600px) {
+  .active-producer-header > :first-child { width: 36px; height: 36px; }
+  .active-producer { padding: 6px 10px; gap: 2px; }
+}

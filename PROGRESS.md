@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-08 18:51 session:** ROADMAP 192 (legend entries nowrap, right-aligned), 193 (phone active-producer card portrait 36px, tighter), 194 (end stat labels full ink) done, CSS only, not screenshotted; tsc clean, quick-game e2e passes (phone, desktop; needs `PLAYWRIGHT_CHROMIUM_PATH`). Unreleased since 08:51 (cap used; first session after 00:00 UTC should release). Next: plan Phase 17 from fresh shots.
 - **2026-10-08 17:51 session:** `npm run check` green. ROADMAP 190 (market card tags on own muted line) and 191 (shorter repeat empty-Improvements line when two producers) done, not screenshotted. Unreleased since 08:51 (cap used). Next: 192-194.
 - **2026-10-08 16:51 session:** full shots checked; planned Phase 16 (ROADMAP 189-194); 189 done (singular "1 more Mark" in market cards and Invest rows; tsc clean). Unreleased since 08:51 (cap used). Next: 190-194.
 - **2026-10-08 15:51 session:** `npm ci` + `npm run check` green on HEAD (CI green on `5f3f294`); full shots checked. Phone title Cath raised (bottom -3%) so her feet no longer overlap the eyebrow, label still clear. Unreleased since 08:51 (cap used; first session after 00:00 UTC should release). Next: plan Phase 16 from shots.
