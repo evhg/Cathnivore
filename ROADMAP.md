@@ -415,8 +415,8 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 ### Phase 11 (planned 2026-10-08)
 162. [x] *(2026-10-08)* **Phone action bar:** equal-width buttons, no wrapping "Cath's Plan".
-163. [ ] **End-screen map overflow:** outlet/doubt piles on a lost board run past the right edge of the framed map; wrap or scale the pieces.
-164. [ ] **Phone map label plates:** soften the hex name plates (translucent, smaller) so pieces read first.
-165. [ ] **Locked chapter cards:** lighter lock glow and a pulsing "Up next" border (reduced-motion safe).
-166. [ ] **Settings rows:** 4px more row padding and a secondary-style Back.
-167. [ ] **Fade under Sell list on phone:** clipped second row sits under the action bar with no fade.
+163. [x] *(2026-10-08: piles wrap every 6 pieces)* **End-screen map overflow:** outlet/doubt piles on a lost board run past the right edge of the framed map; wrap or scale the pieces.
+164. [x] *(2026-10-08: 13px plate with soft paper halo)* **Phone map label plates:** soften the hex name plates (translucent, smaller) so pieces read first.
+165. [x] *(2026-10-08: pulsing Up next border)* **Locked chapter cards:** lighter lock glow and a pulsing "Up next" border (reduced-motion safe).
+166. [x] *(2026-10-08)* **Settings rows:** 4px more row padding and a secondary-style Back.
+167. [x] *(already shipped as 148)* **Fade under Sell list on phone:** clipped second row sits under the action bar with no fade.

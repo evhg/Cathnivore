@@ -698,6 +698,10 @@ h3 {
   font-weight: 700;
   fill: var(--ink);
   text-transform: uppercase;
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 3px;
+  stroke-opacity: 0.55;
 }
 
 .badge-text {
@@ -1834,7 +1838,7 @@ html.native-app body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 12px 10px;
   border-radius: 8px;
 }
 
@@ -2453,7 +2457,7 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
 
 .settings-tip { margin: 0.25rem 0 0; font-size: 0.9rem; opacity: 0.75; font-style: italic; }
 @media (max-width: 600px) {
-  .settings-back { width: 100%; min-height: 48px; margin-top: 0.5rem; }
+  .settings-back { width: 100%; min-height: 48px; margin-top: 0.5rem; background: transparent; color: inherit; border: 2px solid var(--wheat); }
 }
 
 .cmp-card { position: relative; overflow: hidden; }

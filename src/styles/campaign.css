@@ -444,6 +444,14 @@
   }
 }
 
+/* ROADMAP 165: the next locked stop gets a gently pulsing border. */
+.cmp-stop-next .cmp-card.chapter-locked {
+  animation: cmp-up-next 2.4s ease-in-out infinite;
+}
+@keyframes cmp-up-next {
+  50% { border-color: var(--wheat); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .campaign-screen * {
     animation: none !important;

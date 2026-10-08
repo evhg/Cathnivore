@@ -24,6 +24,9 @@ const SIZE = 250 // viewBox half-width; hexes drawn within [-SIZE, SIZE]
 const HEX_R = 92 // circumradius (centre to vertex)
 const RING_DISTANCE = HEX_R * Math.sqrt(3)
 const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap between them (STYLE.md 7)
+/* Piles wrap after this many pieces so a heavy board never runs past the hex edge. */
+const PIECE_ROW = 6
+const pieceXY = (n: number) => `${(n % PIECE_ROW) * 16}, ${Math.floor(n / PIECE_ROW) * 14}`
 const PIECE_SCALE = 1.9 // enlarge the enemy-piece cluster in place (see the comment where it's used)
 
 function hexCenter(id: RegionId): { x: number; y: number } {
@@ -396,24 +399,24 @@ export default function Map({ state, highlight, onSelect }: Props) {
                 this via a real screenshot review, confirmed by inspection — not just trusted). Each hex has
                 ample empty space around this cluster (confirmed visually), so scaling it up in place is
                 safe without widening the map or risking the desktop no-scroll layout. */}
-            <g transform={`translate(${x - (r.outlets + r.buyouts + r.doubt) * 8 * PIECE_SCALE}, ${y - HEX_R * 0.1}) scale(${PIECE_SCALE})`}>
+            <g transform={`translate(${x - Math.min(r.outlets + r.buyouts + r.doubt, PIECE_ROW) * 8 * PIECE_SCALE}, ${y - HEX_R * 0.1}) scale(${PIECE_SCALE})`}>
               {/* Each piece's own SVG `transform` attribute positions it (its offset in the row); the
                   animation class goes on an inner <g> instead of that same element, since a CSS
                   `animation`/`transform` would otherwise override the positioning attribute rather than
                   compose with it (SVG2: a CSS transform replaces the presentation attribute, it doesn't
                   add to it). */}
               {Array.from({ length: r.outlets }).map((_, i) => (
-                <g key={`o${i}`} transform={`translate(${i * 16}, 0)`}>
+                <g key={`o${i}`} transform={`translate(${pieceXY(i)})`}>
                   <Outlet />
                 </g>
               ))}
               {Array.from({ length: r.buyouts }).map((_, i) => (
-                <g key={`b${i}`} transform={`translate(${(r.outlets + i) * 16}, 0)`}>
+                <g key={`b${i}`} transform={`translate(${pieceXY(r.outlets + i)})`}>
                   <Buyout />
                 </g>
               ))}
               {Array.from({ length: r.doubt }).map((_, i) => (
-                <g key={`d${i}`} transform={`translate(${(r.outlets + r.buyouts + i) * 16}, 0)`}>
+                <g key={`d${i}`} transform={`translate(${pieceXY(r.outlets + r.buyouts + i)})`}>
                   <Doubt />
                 </g>
               ))}
