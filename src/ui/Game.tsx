@@ -914,7 +914,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                       <InvestIcon size={18} />
                       {`Invest: buy ${card.name} (${cost} Marks)`}
                     </span>
-                    <span className="action-why-not">Need {missing} more Marks</span>
+                    <span className="action-why-not">Need {missing} more {missing === 1 ? "Mark" : "Marks"}</span>
                   </span>
                   <ActionCostChip cost={{ resource: 'marks', amount: cost }} />
                 </button>

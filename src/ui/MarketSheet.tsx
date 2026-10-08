@@ -69,7 +69,7 @@ export default function MarketSheet({
             {canBuy(id) ? (
               <button onClick={() => buy(id)}>Buy</button>
             ) : (
-              missingMarks(id) !== undefined && <p className="card-why-not">Need {missingMarks(id)} more Marks</p>
+              missingMarks(id) !== undefined && <p className="card-why-not">Need {missingMarks(id)} more {missingMarks(id) === 1 ? "Mark" : "Marks"}</p>
             )}
           </li>
         )
@@ -114,7 +114,7 @@ export default function MarketSheet({
                 {canBuy(id) ? (
                   <button onClick={() => buy(id)}>Buy</button>
                 ) : (
-                  missingMarks(id) !== undefined && <p className="card-why-not">Need {missingMarks(id)} more Marks</p>
+                  missingMarks(id) !== undefined && <p className="card-why-not">Need {missingMarks(id)} more {missingMarks(id) === 1 ? "Mark" : "Marks"}</p>
                 )}
               </li>
             )

@@ -450,3 +450,11 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 186. [ ] *(skipped 10-08: needs a details/JS toggle and tooltip e2e care)* **Phone game legend:** collapse the legend row into a "Legend" chip; keep chip text >= 12px.
 187. [x] *(2026-10-08: width 36%, lower; not screenshotted)* **Title phone:** Cath still covers part of the Brindle Hills hex; shift or shrink so the label is readable.
 188. [x] *(2026-10-08: paper halo shadow, CSS only)* **Sticky end-screen button:** add a paper gradient behind it so tiles don't show through when scrolling.
+
+### Phase 16 (planned 2026-10-08 16:51)
+189. [x] **Singular "Mark":** market cards and Invest rows say "Need 1 more Mark" (was "1 more Marks").
+190. [ ] **Market card type tags:** "(Media, Community)" wraps awkwardly beside the price; move the type tags to their own muted line under the name (desktop panel).
+191. [ ] **Desktop Farm panel:** the second producer repeats "No Improvements bought yet."; show it once, collapse when both are empty.
+192. [ ] **Desktop legend:** the legend sits in two ragged rows above the board; align it as one right-aligned line.
+193. [ ] **Phone game:** the player card (Mara Keel) is large before any action shows; shrink portrait and tighten rows so the first Sell action is visible without scrolling.
+194. [ ] **End screen stat tiles:** labels ("Regions liberated", "Round") are pale on the tint; use full ink.
