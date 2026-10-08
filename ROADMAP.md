@@ -407,7 +407,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 156. [x] *(2026-10-08: markup audit, cards match in structure, art, meta; no gap found without screenshots)* **Runnel and Hedgerow landing cards:** compare against Cathnivore's polish bar and fix gaps.
 
 ### Phase 10 (planned 2026-10-08)
-157. [ ] **Screenshot sweep after release:** once the release finishes, run `npm run shots` and critique the Rules reference header, the tinted chapter scenes and the pass-device screen; fix any clipping.
+157. [x] *(2026-10-08: shots checked, no clipping; scene shots are captured mid-fade)* **Screenshot sweep after release:** once the release finishes, run `npm run shots` and critique the Rules reference header, the tinted chapter scenes and the pass-device screen; fix any clipping.
 158. [x] *(2026-10-08: round banner shows regions liberated; not screenshotted)* **Cathnivore end-of-round summary:** a short Cath line summarising what changed this round (Marks, regions held) on the round banner.
 159. [x] *(already shipped: end-screen Share result in Game.tsx)* **Game-over share card:** a copy-to-clipboard text result (rounds, regions, Cath emoji line) on the end screen, like Runnel's share.
 160. [ ] *(note: most CSS sizes are px, so root scaling won't work; needs a zoom approach)* **Settings: text size toggle:** a Large text option that scales the base font 12% (accessibility; check no-scroll gates).
