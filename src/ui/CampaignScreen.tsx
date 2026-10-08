@@ -86,9 +86,9 @@ const SCENE_MOTIFS = [
   <path key="boat" d="M14 36h32l-6 6H20zM30 36V20l10 14z" />,
   <path key="clock" d="M26 40V16h8v24zM24 16l6-7 6 7z" />,
 ]
-function ChapterScene({ index }: { index: number }) {
+function ChapterScene({ index, tint }: { index: number; tint?: string }) {
   return (
-    <svg className="cmp-scene" viewBox="0 0 120 44" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+    <svg className={tint ? `cmp-scene cmp-scene-${tint}` : 'cmp-scene'} viewBox="0 0 120 44" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
       <path d="M0 44V30q20-12 40 0t40-4 40 6v12z" opacity="0.5" />
       <path d="M0 44V36q30-10 60 0t60-4v12z" opacity="0.8" />
       <g transform={`translate(${46 + (index % 2) * 6} 0)`}>{SCENE_MOTIFS[index % SCENE_MOTIFS.length]}</g>
@@ -166,7 +166,7 @@ export default function CampaignScreen({
                     {current && <span className="cmp-badge cmp-badge-next">Up next</span>}
                   </span>
                 </span>
-                <ChapterScene index={i} />
+                <ChapterScene index={i} tint={isDone ? REGIONS[chapter.activeRegions[0]!].type : undefined} />
                 <MiniMap chapter={chapter} />
               </button>
             </li>
