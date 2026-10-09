@@ -132,6 +132,16 @@ export const HUNTER: EnemyKit = {
   visor: 0x30ffe0,
   role: "hunter",
 };
+/** A council police drone: a sturdier hunter in civic blue that patrols the plaza and hounds Cath through the rain. */
+export const POLICE_DRONE: EnemyKit = {
+  ...HUNTER,
+  name: "Police Drone",
+  maxHp: 80,
+  damage: 5,
+  burst: [3, 0.1, 1.0],
+  xp: 80,
+  visor: 0x4a8cff,
+};
 /** A bystander at the plaza rally: unarmed, wanders, bolts at gunfire. Killing one costs Cath (see session onKill). */
 export const CIVILIAN: EnemyKit = {
   name: "Bystander",

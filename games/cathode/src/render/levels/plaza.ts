@@ -189,6 +189,8 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     "patrol:civ-rally-a": [V(-6, 0, -20), V(-3, 0, -17), V(-6, 0, -14)],
     "patrol:civ-rally-b": [V(4, 0, -20), V(7, 0, -16), V(3, 0, -14)],
     "patrol:civ-rally-c": [V(-1, 0, -24), V(2, 0, -21)],
+    "patrol:police-a": [V(-12, 0, 14), V(12, 0, 14), V(12, 0, -2), V(-12, 0, -2)],
+    "patrol:police-b": [V(20, 0, 44), V(20, 0, 24), V(-4, 0, 30)],
     "patrol:sniper-roof": [V(34, 8, -4)],
   };
 

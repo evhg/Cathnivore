@@ -9,7 +9,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
-import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, RIOT_SHIELD, type Sight } from "./enemy";
+import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, type Sight } from "./enemy";
 import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
@@ -161,6 +161,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         ? [CIVILIAN, "candorChrome"]
         : key.includes("turret")
         ? [TURRET, "enforcer"]
+        : key.includes("police")
+        ? [POLICE_DRONE, "candorChrome"]
         : key.includes("hunter")
         ? [HUNTER, "candorChrome"]
         : key.includes("nurse")

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { Enemy, HUNTER, TURRET, type EnemyKit, type Sight } from "../games/cathode/src/game/enemy";
+import { Enemy, HUNTER, POLICE_DRONE, TURRET, type EnemyKit, type Sight } from "../games/cathode/src/game/enemy";
 import { Progress } from "../games/cathode/src/game/progress";
+import { buildPlaza } from "../games/cathode/src/render/levels/plaza";
 import { buildVault } from "../games/cathode/src/render/levels/vault";
 
 const sightAt = (x: number, z: number): Sight => ({
@@ -41,5 +42,11 @@ describe("vault enemies", () => {
     const m = buildVault("high").markers;
     expect(Object.keys(m).filter((k) => k.includes("turret")).length).toBeGreaterThanOrEqual(2);
     expect(Object.keys(m).filter((k) => k.includes("hunter")).length).toBeGreaterThanOrEqual(2);
+  });
+  it("police drones are sturdier hunters and the plaza patrols them", () => {
+    expect(POLICE_DRONE.role).toBe("hunter");
+    expect(POLICE_DRONE.maxHp).toBeGreaterThan(HUNTER.maxHp);
+    const m = buildPlaza("high").markers;
+    expect(Object.keys(m).filter((k) => k.includes("police")).length).toBeGreaterThanOrEqual(2);
   });
 });
