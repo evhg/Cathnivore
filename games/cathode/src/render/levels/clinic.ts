@@ -85,6 +85,8 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     extract: [V(0, 0, zS - 1.5)],
     "patrol:hall": [V(0, 0, 30), V(0, 0, 10), V(0, 0, -10), V(0, 0, -30), V(0, 0, -10), V(0, 0, 10)],
     "patrol:wards": [V(6, 0, 18), V(6, 0, 2), V(6, 0, -18), V(6, 0, 2)],
+    "patrol:orderly-ward": [V(6, 0, 10), V(6, 0, -10), V(6, 0, -30), V(6, 0, -10)],
+    "patrol:orderly-theatre": [V(-2, 0, -36), V(2, 0, -36)],
     "patrol:waiting": [V(-6, 0, 24), V(-6, 0, 8), V(-6, 0, -22), V(-6, 0, 8)],
   };
 

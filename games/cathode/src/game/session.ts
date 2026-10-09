@@ -8,7 +8,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
-import { ENFORCER, ENFORCER_SNIPER, Enemy, RIOT_SHIELD, type Sight } from "./enemy";
+import { ENFORCER, ENFORCER_SNIPER, Enemy, ORDERLY, RIOT_SHIELD, type Sight } from "./enemy";
 import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
@@ -150,7 +150,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // The route's name picks the role: "...sniper..." on a rooftop, "...shield..." for a riot team, and every
       // fourth patrol carries a shield anyway.
       const n = enemies.length;
-      const [base, archetype] = key.includes("sniper")
+      const [base, archetype] = key.includes("orderly")
+        ? [ORDERLY, "candorChrome"]
+        : key.includes("sniper")
         ? [ENFORCER_SNIPER, "enforcerSniper"]
         : key.includes("shield") || n % 4 === 3
           ? [RIOT_SHIELD, "riotShield"]
@@ -947,8 +949,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     for (const e of enemies) {
       e.update(dt, sight, rays, world.colliders, ground);
       for (const sh of e.shots) {
-        world.fx.muzzle(sh.from, sh.dir, 0.6);
-        const hitWorld = rays.cast(sh.from, sh.dir, 120);
+        if (!sh.melee) world.fx.muzzle(sh.from, sh.dir, 0.6);
+        const hitWorld = rays.cast(sh.from, sh.dir, sh.melee ? 3 : 120);
         const toChest = sight.chest.clone().sub(sh.from);
         const along = toChest.dot(sh.dir);
         const miss = toChest.clone().addScaledVector(sh.dir, -along).length();
@@ -961,13 +963,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           sinceHurt = 0;
           hud.hurtFrom(bearingTo(sh.from));
           if (e.kit.drain) s.focus = Math.max(0, s.focus - e.kit.drain);
-          world.fx.tracer(sh.from, sight.chest);
-          audio?.hitFlesh(false);
+          if (!sh.melee) world.fx.tracer(sh.from, sight.chest);
+          audio?.hitFlesh(!!sh.melee);
         } else if (hitWorld) {
           world.fx.impact(hitWorld.point, hitWorld.normal, world.surfaceAt(hitWorld.point));
           world.fx.tracer(sh.from, hitWorld.point);
         }
-        combat.noise(sh.from, 40);
+        combat.noise(sh.from, sh.melee ? 8 : 40);
+        if (sh.melee) continue;
         const rel = sh.from.clone().sub(eye);
         const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
         audio?.enemyShot(rel.length(), THREE.MathUtils.clamp(rel.normalize().dot(right), -1, 1));

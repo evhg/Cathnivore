@@ -27,7 +27,7 @@ export interface EnemyKit {
   xp: number;
   visor: number;
   /** Rifleman, a shield bearer (a riot shield stops rounds from the front), or a sniper with a laser. */
-  role?: "rifle" | "shield" | "sniper";
+  role?: "rifle" | "shield" | "sniper" | "orderly";
   /** Elite modifiers (sim/enemies.ts): extraFast, stoneskin, multipleShots and the rest. */
   elite?: boolean;
   mods?: readonly string[];
@@ -66,6 +66,27 @@ export const ENFORCER_SNIPER: EnemyKit = {
   visor: 0x30d0ff,
   role: "sniper",
 };
+
+/** A Candor orderly: unarmed but augmented. Sprints at Cath and lunges when close (clinic, act 2). */
+export const ORDERLY: EnemyKit = {
+  name: "Candor Orderly",
+  maxHp: 120,
+  armour: 0.2,
+  damage: 14,
+  burst: [1, 0, 0.9],
+  spread: 0,
+  walk: 2,
+  run: 6.5,
+  vision: { range: 26, fov: (120 * Math.PI) / 180 },
+  hearing: 1.2,
+  xp: 70,
+  visor: 0x58ffb0,
+  role: "orderly",
+};
+
+/** Metres within which an orderly strikes, and the lunge speed it closes the last few metres at. */
+export const ORDERLY_REACH = 2.1;
+export const ORDERLY_LUNGE = 11;
 
 export const ENFORCER: EnemyKit = {
   name: "Hollowell Enforcer",
@@ -134,7 +155,7 @@ export class Enemy {
   /** Sniper: seconds of steady aim built up; fires at SNIPER_CHARGE. */
   charge = 0;
   /** Shots this frame, for the session to resolve: from, direction. */
-  readonly shots: Array<{ from: THREE.Vector3; dir: THREE.Vector3 }> = [];
+  readonly shots: Array<{ from: THREE.Vector3; dir: THREE.Vector3; melee?: boolean }> = [];
 
   constructor(
     readonly kit: EnemyKit,
@@ -329,6 +350,19 @@ export class Enemy {
           target = d > 4 ? sight.chest.clone() : null;
           speed = this.kit.walk;
         }
+        if (this.kit.role === "orderly") {
+          // Orderlies never keep their distance: sprint, lunge over the last few metres, then strike.
+          target = d > 1.3 ? sight.chest.clone() : null;
+          speed = d < 7 && d > ORDERLY_REACH ? ORDERLY_LUNGE : this.kit.run;
+          this.fireCd -= dt;
+          if (seen && d <= ORDERLY_REACH && this.fireCd <= 0) {
+            this.fireCd = this.kit.burst[2] * (0.8 + Math.random() * 0.4);
+            const from = this.motion.pos.clone().setY(sight.chest.y);
+            this.shots.push({ from, dir: new THREE.Vector3().subVectors(sight.chest, from).normalize(), melee: true });
+            this.motion.kick = 1;
+          }
+          break;
+        }
         if (this.kit.role === "sniper") {
           // Snipers hold their spot and build a steady aim; the laser gives her a second to move.
           target = null;
@@ -475,7 +509,7 @@ export class Enemy {
         (this.laser.material as THREE.MeshBasicMaterial).opacity = 0.35 + 0.6 * (this.charge / SNIPER_CHARGE);
       }
     }
-    if (b.lost.has("forearmR") && b.lost.has("forearmL")) {
+    if (this.kit.role === "orderly" || (b.lost.has("forearmR") && b.lost.has("forearmL"))) {
       this.rifle.visible = false;
       return;
     }
