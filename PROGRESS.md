@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-09 03:51 session:** ROADMAP 204 done (locked Hedgerow map nodes show a faint lane silhouette; shot checked, tsc clean, e2e:site 52 passed). 1 release today (`aa94954`), unreleased since. Next: plan Phase 19 from fresh shots.
 - **2026-10-09 02:51 session:** ROADMAP 202 (hedge ring swells/thins with gaps, seeded per field) and 203 (landscape phone tip 1 line) done; hedgerow vitest green (172), not screenshotted. 1 release today (`aa94954`). Next: 204.
 - **2026-10-09 01:51 session:** `npm ci` + `npm run check` green. ROADMAP 198 done (Hedgerow shots swept; map and field look good); planned Phase 18 (200-204), closed 200 and 201 as already covered (shot caught the bubble mid-fade). 1 release today (`aa94954`). Next: 202, 203, 204.
 - **2026-10-09 00:51 session (started 23:51):** `npm run check` green, then released `aa94954` (gates passed, live smoke passed; tag push 403 harmless; 1st release on 10-09). Gate 5 first failed on `ai-teammate.spec.ts` expecting a two-sentence AI log line; relaxed to one sentence. ROADMAP 199 done. Next: 198 Hedgerow shots sweep, plan Phase 18.

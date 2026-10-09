@@ -471,4 +471,4 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 201. [x] *(closed: plots already have a striped soil fill; brackets are the highlight)* **Hedgerow empty plots:** plots read as faint corner brackets; add a soft tilled-soil fill so buildable spots are obvious at a glance.
 202. [x] **Hedgerow field border:** the outer hedge ring is a uniform wall; vary height and add gaps/trees so fields differ visually.
 203. [x] **Hedgerow phone side panel:** the Coming-next card takes 40% of landscape width; collapse its tip text to one line.
-204. [ ] **Hedgerow map:** locked levels are all identical; show a faint silhouette of the field layout per level.
+204. [x] **Hedgerow map:** locked levels are all identical; show a faint silhouette of the field layout per level.

@@ -2425,3 +2425,16 @@ img.act-scene {
   .cath-tip { -webkit-line-clamp: 1; }
   .twist-line { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 }
+
+/* Locked nodes show a faint silhouette of their lane (ROADMAP 204). */
+.node .level-sil {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  color: var(--ink-muted);
+  opacity: 0.3;
+  pointer-events: none;
+}

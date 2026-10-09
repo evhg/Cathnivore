@@ -1426,6 +1426,16 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         name.append(tw);
       }
       b.append(numEl, st, name);
+      if (!unlocked) {
+        // A faint silhouette of the lane, so locked nodes differ from one another.
+        const pts = lv.path.map(([c, r]) => `${f(c + 0.5)},${f(r + 0.5)}`).join(" ");
+        const sil = document.createElementNS(svgNS, "svg");
+        sil.setAttribute("class", "level-sil");
+        sil.setAttribute("viewBox", `0 0 ${lv.cols} ${lv.rows}`);
+        sil.setAttribute("aria-hidden", "true");
+        sil.innerHTML = `<polyline points="${pts}" fill="none" stroke="currentColor" stroke-width=".7" stroke-linejoin="round" stroke-linecap="round"/>`;
+        b.append(sil);
+      }
       if (lv.id === nextId) {
         b.classList.add("next");
         const me = document.createElement("span");
