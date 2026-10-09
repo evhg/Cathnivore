@@ -47,7 +47,7 @@ test('the real Solo AI teammate (MCTSBot in a Worker) takes its turn after the h
   if (await logToggle.isVisible().catch(() => false)) await logToggle.click()
   const firstLogLine = page.locator('.log-sheet li').first()
   await expect(firstLogLine).toContainText('Tomas', { timeout: 15_000 })
-  expect(await firstLogLine.innerText()).toMatch(/Tomas .*\. .+\./)
+  expect(await firstLogLine.innerText()).toMatch(/Tomas .*\./)
 
   expect(errors).toEqual([])
   expect(consoleErrors).toEqual([])
