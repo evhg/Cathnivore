@@ -18,6 +18,11 @@ export class PellBossJob {
     this.goto(0);
   }
 
+  /** A level marker if it has one (the plaza steps), else the quay-side fallback coordinates. */
+  private M(key: string, i: number, x: number, z: number): THREE.Vector3 {
+    return this.h.markers[key]?.[i]?.clone() ?? this.P(x, z);
+  }
+
   private P(x: number, z: number): THREE.Vector3 {
     return new THREE.Vector3(x, this.h.ground(x, z), z);
   }
@@ -28,12 +33,12 @@ export class PellBossJob {
     switch (stage) {
       case 0: {
         this.objective = "Councillor Pell holds the plaza steps. Bring him down.";
-        const b = h.spawn("shield", [this.P(-24, 34), this.P(-20, 36)]);
+        const b = h.spawn("shield", [this.M("boss:pell", 0, -24, 34), this.M("boss:pell", 1, -20, 36)]);
         b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 6);
         b.body.root.scale.setScalar(1.12);
         this.boss = b;
-        h.spawn("shield", [this.P(-28, 30), this.P(-28, 38)]);
-        h.spawn("shield", [this.P(-18, 30), this.P(-16, 38)]);
+        h.spawn("shield", [this.M("boss:guard", 0, -28, 30), this.M("boss:guard", 1, -28, 38)]);
+        h.spawn("shield", [this.M("boss:guard", 2, -18, 30), this.M("boss:guard", 3, -16, 38)]);
         h.banner("Councillor Pell", "Hollowell Plaza", "boss");
         h.say("Bea: Pell hides behind his guards. Break the line, then break him.");
         break;
@@ -61,9 +66,9 @@ export class PellBossJob {
       this.target = this.boss.position.clone().setY(this.boss.position.y + 2.2);
       if (!this.rallied && this.boss.alive && this.boss.hp < this.boss.kit.maxHp / 2) {
         this.rallied = true;
-        this.h.spawn("rifle", [this.P(-40, 26), this.P(-34, 28)]);
-        this.h.spawn("rifle", [this.P(-6, 26), this.P(-12, 28)]);
-        this.h.spawn("rifle", [this.P(-24, 20), this.P(-20, 22)]);
+        this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
+        this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
+        this.h.spawn("rifle", [this.M("boss:reinforce", 4, -24, 20), this.M("boss:reinforce", 5, -20, 22)]);
         this.h.say("Pell: Security! Everyone, now!");
       }
       if (!this.boss.alive) this.goto(1);

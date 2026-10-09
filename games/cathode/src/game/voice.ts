@@ -13,6 +13,7 @@ export type Cue =
   | "lowHealth"
   | "levelUp"
   | "startClinic"
+  | "startPlaza"
   | "clear"
   | "done"
   | "beaCall1"
@@ -22,6 +23,7 @@ export type Cue =
 const LINES: Record<Cue, string> = {
   start: "The Drowned Market. Tomas sold eggs here for thirty years. Somebody on this street saw him go in the water.",
   startClinic: "The Candor Clinic. Clean floors, clean books, and a doctor who wrote half the debts in Marrow. Vane's theatre is at the far end.",
+  startPlaza: "Hollowell Plaza. Pell wants a crowd tonight, and a crowd is cover. Permits first, then the steps.",
   seen: "Hollowell Enforcers. Company men, company guns.",
   spotted: "So much for quiet.",
   unseenKill: "One less witness.",

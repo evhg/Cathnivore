@@ -141,6 +141,8 @@ export interface DistrictTheme {
   probe: THREE.Vector3;
   /** False for interiors: no flood water, canal or skyline. */
   outdoor: boolean;
+  /** False for outdoor districts without the market's canal and flood plane. */
+  water?: boolean;
   /** Walkable bounds the session clamps the player to. */
   bounds: { xMin: number; xMax: number; zMin: number; zMax: number };
   len?: number;

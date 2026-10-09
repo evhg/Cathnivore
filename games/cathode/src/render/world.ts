@@ -104,7 +104,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const surfaces = level.builder.surfaces;
   level.builder.build(materials, statics, { shadows: true, layer: (k) => (k === "asphalt" || k === "pavement" ? LAYER_NO_REFLECT : 0) });
   scene.add(statics);
-  if (outdoor) addWater(scene, materials.water!);
+  if (outdoor && theme?.water !== false) addWater(scene, materials.water!);
   addWindows(scene, level, shared);
   addInteriors(scene, level);
   addPosters(scene, level, shared);
@@ -280,7 +280,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       }
       if (best) return best;
       const g = level.groundHeight(p.x, p.z);
-      if (outdoor && (g < FLOOD.water + 0.01 || (p.x > L.quayEdge && p.x < L.canalE))) return "water";
+      if (outdoor && theme?.water !== false && (g < FLOOD.water + 0.01 || (p.x > L.quayEdge && p.x < L.canalE))) return "water";
       return "concrete";
     },
     update(dt, time) {

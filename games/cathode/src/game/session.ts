@@ -229,15 +229,21 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // Face down the street from the start marker, towards the extraction point.
   const ex = world.markers.extract?.[0];
   if (o.district === "clinic") player.yaw = 0;
+  else if (o.district === "plaza") player.yaw = 0;
   else if (ex) player.yaw = Math.atan2(-(ex.x - start.x), -(ex.z - start.z));
 
   const build = (): Build => progress.build();
 
   const inClinic = o.district === "clinic";
-  let objective = inClinic
+  const inPlaza = o.district === "plaza";
+  const inMarket = !inClinic && !inPlaza;
+  let objective = inPlaza
+    ? "Councillor Pell's permit strongbox is under the market awnings, west side of the square."
+    : inClinic
     ? "Find Dr Vane. Her theatre is at the north end of the clinic."
     : "Get to the fish market. Somebody there knows who put Tomas in the water.";
-  if (inClinic) hud.showBanner("The Candor Clinic", "Act 2 · 02:10");
+  if (inPlaza) hud.showBanner("Hollowell Plaza", "Act 3 · 00:00");
+  else if (inClinic) hud.showBanner("The Candor Clinic", "Act 2 · 02:10");
   else hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
   const zones = new ZoneWatch();
   const wings = new WingWatch();
@@ -372,7 +378,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       : null;
   let vaneBoss = makeVaneBoss();
   const pellLead =
-    !tutorial && progress.jobsDone.includes("vaneBoss") && !progress.jobsDone.includes("pellLead") && !o.shot
+    !tutorial && (inPlaza || progress.jobsDone.includes("vaneBoss")) && !progress.jobsDone.includes("pellLead") && !o.shot
       ? new PellLeadJob({
           player,
           progress,
@@ -388,7 +394,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
-  const pellBoss =
+  const makePellBoss = (): PellBossJob | null =>
     !tutorial && progress.jobsDone.includes("pellLead") && !progress.jobsDone.includes("pellBoss") && !o.shot
       ? new PellBossJob({
           player,
@@ -405,6 +411,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
+  let pellBoss = makePellBoss();
   const boardLead =
     !tutorial && progress.jobsDone.includes("pellBoss") && !progress.jobsDone.includes("boardLead") && !o.shot
       ? new BoardLeadJob({
@@ -522,7 +529,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const actives = new Actives();
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;
-  setTimeout(() => voice.say(inClinic ? "startClinic" : "start"), 2600);
+  setTimeout(() => voice.say(inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
   const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, rescueMin: 0.4 });
@@ -907,11 +914,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     actives.update(dt, progress.stats, world, world.colliders, ground, enemies);
     if (!dead) for (const d of pickups.update(dt, player.pos)) collect(d);
     if (!dead && s.hp > 0) {
-      const zone = zones.update(player.pos.z);
+      const zone = inMarket ? zones.update(player.pos.z) : undefined;
       if (zone) hud.showBanner(zone.name, zone.sub);
-      const wing = wings.update(progress.jobsDone, player.pos.x, player.pos.z);
+      const wing = inMarket ? wings.update(progress.jobsDone, player.pos.x, player.pos.z) : undefined;
       if (wing) hud.showBanner(wing.name, wing.sub);
-      const lm = nearLandmark(progress.jobsDone, player.pos.x, player.pos.z);
+      const lm = inMarket ? nearLandmark(progress.jobsDone, player.pos.x, player.pos.z) : undefined;
       if (lm) {
         hud.subtitle(lm.text);
         progress.save();
@@ -1040,6 +1047,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (pellLead) {
       pellLead.update(dt);
       objective = pellLead.objective;
+      if (inPlaza && pellLead.done && !pellBoss) {
+        pellBoss = makePellBoss();
+        if (pellBoss) objective = pellBoss.objective;
+      }
     }
     if (pellBoss) {
       pellBoss.update(dt);

@@ -40,3 +40,28 @@ describe("cathode travel", () => {
     expect(travelUrl("market", "?play&district=clinic")).toBe("?play");
   });
 });
+
+import { plazaGround, PLAZA } from "../games/cathode/src/render/levels/plaza";
+
+describe("hollowell plaza", () => {
+  it("opens after Vane and keeps every marker inside the bounds", () => {
+    expect(travelOptions(["crispBoss", "vaneBoss"]).map((d) => d.id)).toEqual(["market", "clinic", "plaza"]);
+    const lv = buildDistrict("plaza", "phone");
+    const b = lv.theme!.bounds;
+    for (const key of ["player", "boss:pell", "boss:guard", "boss:reinforce", "lead:register", "lead:guard"]) {
+      for (const p of lv.markers[key]!) {
+        expect(p.x, key).toBeGreaterThan(b.xMin);
+        expect(p.x, key).toBeLessThan(b.xMax);
+        expect(p.z, key).toBeGreaterThan(b.zMin);
+        expect(p.z, key).toBeLessThan(b.zMax);
+      }
+    }
+    expect(lv.theme!.water).toBe(false);
+  });
+  it("climbs the council steps in 30 cm risers to the landing", () => {
+    expect(plazaGround(0, 0)).toBe(0);
+    expect(plazaGround(0, PLAZA.stepZ0 - 0.1)).toBeCloseTo(PLAZA.stepRise);
+    expect(plazaGround(0, -45)).toBeCloseTo(PLAZA.stepCount * PLAZA.stepRise);
+    expect(plazaGround(15, -45)).toBe(0);
+  });
+});
