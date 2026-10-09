@@ -336,7 +336,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   const vaneLead =
-    !tutorial && !inClinic && progress.jobsDone.includes("crispBoss") && !progress.jobsDone.includes("vaneLead") && !o.shot
+    !tutorial && (inClinic || progress.jobsDone.includes("crispBoss")) && !progress.jobsDone.includes("vaneLead") && !o.shot
       ? new VaneLeadJob({
           player,
           progress,
@@ -352,9 +352,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
-  // In the clinic, Vane is in her theatre whatever the quest state: the district is the boss arena.
-  const vaneBoss =
-    !tutorial && (inClinic || progress.jobsDone.includes("vaneLead")) && !progress.jobsDone.includes("vaneBoss") && !o.shot
+  // Vane's boss fight starts once the register is taken (in the clinic, right after the lead job).
+  const makeVaneBoss = (): VaneBossJob | null =>
+    !tutorial && progress.jobsDone.includes("vaneLead") && !progress.jobsDone.includes("vaneBoss") && !o.shot
       ? new VaneBossJob({
           player,
           progress,
@@ -370,6 +370,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
+  let vaneBoss = makeVaneBoss();
   const pellLead =
     !tutorial && progress.jobsDone.includes("vaneBoss") && !progress.jobsDone.includes("pellLead") && !o.shot
       ? new PellLeadJob({
@@ -1027,6 +1028,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (vaneLead) {
       vaneLead.update(dt);
       objective = vaneLead.objective;
+      if (inClinic && vaneLead.done && !vaneBoss) {
+        vaneBoss = makeVaneBoss();
+        if (vaneBoss) objective = vaneBoss.objective;
+      }
     }
     if (vaneBoss) {
       vaneBoss.update(dt);

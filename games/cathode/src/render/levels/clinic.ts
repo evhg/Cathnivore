@@ -118,6 +118,9 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     perch: [V(-6.2, 0.5, 8), V(0, 0, zN + 6)],
     extract: [V(0, 0, zS - 1.5)],
     // Vane works at the table under the surgical lamps; guards flank her, reinforcements come through the doors.
+    // The night register sits in a cabinet in the east ward, two guards on it.
+    "lead:register": [V(7.2, 0, -14)],
+    "lead:guard": [V(5, 0, -12), V(5, 0, -16), V(6, 0, -10), V(6, 0, -18)],
     "boss:vane": [V(0, 0, -47), V(1.5, 0, -46)],
     "boss:guard": [V(-4, 0, -42), V(-4, 0, -47), V(4, 0, -42), V(4, 0, -47)],
     "boss:reinforce": [V(-2, 0, -30), V(-2, 0, -36), V(2, 0, -30), V(2, 0, -36)],
