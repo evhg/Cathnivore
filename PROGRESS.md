@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-09 08:51 session:** ROADMAP 206 (phone Actions left beside producer name; shot checked, quick-game e2e passes) and 215 (Hedgerow shots look good) done; released `0112929` (all gates passed, live version.json matches; tag push 403 harmless; 3rd release today). Next: 214, then plan Phase 20 from fresh shots.
 - **2026-10-09 07:51 session:** ROADMAP 209, 210 (CATHODE and Runnel shots look good), 211 (phone Drag-to-aim hint raised), 212, 213 (closed, width-bound) done; `npm run check` green before 212. Planned 214, 215. Next: 206, 214, 215.
 - **2026-10-09 06:52 session:** ROADMAP 207 (paper halo behind sticky Start) and 208 (`hedgerow-tune --verify`, all 100 levels, table unchanged, logged in BALANCE.md) done; `npm run check` green. 2 releases today. Next: 206, 209, 210.
 - **2026-10-09 05:52 session:** ROADMAP 101 found already done (`scripts/cathode-shots.mjs`); planned Phase 19 (205-210); 205 done (desktop sticky Start spans column; shot checked, quick-game e2e run). 2 releases today. Next: 206, 207, 208.
