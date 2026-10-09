@@ -78,6 +78,40 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   b.box("glowRed", 0, 3.0, zS - 0.05, 1.2, 0.3, 0.05);
   light(V(0, 2.8, zS - 1), "#ff2a2a", 8, 6, 0, false);
 
+  // Waiting room (west): rows of chairs facing a debt-tag screen, a drinks cooler, a dead plant.
+  const signs: Level["signs"] = [];
+  for (let row = 0; row < 3; row++) {
+    for (let i = 0; i < 4; i++) {
+      const z = 16 - row * 7 - i * 0.9;
+      b.box("paintMetal", -7.4, 0.22, z, 0.5, 0.44, 0.6, { collide: "metal" });
+      b.box("paintMetal", -7.75, 0.6, z, 0.1, 0.5, 0.6);
+    }
+  }
+  b.box("glowCool", xW + 0.02, 2.1, 18, 0.04, 0.9, 2.4);
+  signs.push({ text: "DEBT BEFORE DIGNITY", sub: "NOW SERVING 0412", style: "screen", color: "#7dffc0", w: 2.4, h: 0.9, center: V(xW + 0.06, 2.1, 18), normal: V(1, 0, 0), flicker: 2, intensity: 2.5 });
+  b.box("chrome", -8.4, 0.5, 30, 0.5, 1.0, 0.5, { collide: "metal" });
+
+  // Flooded morgue (east, behind the far ward): steel drawer wall, gurneys, a shin-deep slick of water.
+  b.boxMinMax("darkMetal", xE - 0.9, 0, -23, xE - 0.1, 2.4, -9, { collide: "metal" });
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 6; c++) b.box("chrome", xE - 1.0, 0.45 + r * 0.7, -22 + c * 2.2, 0.06, 0.55, 1.9);
+  for (const z of [-14, -19]) {
+    b.box("chrome", 6.4, 0.45, z, 0.8, 0.1, 2.0, { collide: "metal" });
+    b.box("darkMetal", 6.4, 0.2, z, 0.5, 0.4, 1.6);
+  }
+  b.box("glass", 6.5, 0.02, -16, 4.6, 0.04, 12);
+  signs.push({ text: "MORGUE", sub: "LEVEL B", style: "box", color: "#2ee6ff", w: 1.6, h: 0.4, center: V(xE - 0.08, 2.7, -16), normal: V(-1, 0, 0), flicker: 1, intensity: 3 });
+
+  // Main theatre: glass gallery wall, instrument trolleys, IV stands, vital-sign monitors.
+  b.boxMinMax("glass", -3.1, 0.9, -52, -3.0, 3.0, -38);
+  b.boxMinMax("glass", 3.0, 0.9, -52, 3.1, 3.0, -38);
+  for (const x of [-1.6, 1.6]) {
+    b.box("chrome", x, 0.45, -44, 0.5, 0.9, 0.8, { collide: "metal" });
+    b.box("chrome", x * 1.5, 0.9, -46, 0.05, 1.8, 0.05);
+  }
+  b.box("glowCoolDim", 0, 1.6, zN + 0.05, 1.4, 0.7, 0.05);
+  signs.push({ text: "VITALS 61 BPM", sub: "SEDATED", style: "screen", color: "#7dffc0", w: 1.4, h: 0.7, center: V(0, 1.6, zN + 0.09), normal: V(0, 0, 1), flicker: 1, intensity: 2.5 });
+  light(V(0, 1.6, zN + 1), "#7dffc0", 8, 6, 1, false);
+
   const gh = () => 0;
   const markers: Level["markers"] = {
     player: [V(0, 0, zS - 3)],
@@ -102,7 +136,7 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     builder: b,
     markers,
     lights,
-    signs: [],
+    signs,
     windows: [],
     cones: [],
     posters: [],

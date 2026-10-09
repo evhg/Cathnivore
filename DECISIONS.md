@@ -343,3 +343,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-09 14:51: D1 travel = page reload into ?district= from the map (save lives in storage); clinic map still draws market zones.
 - 2026-10-09 15:52: orderly reuses the `candorChrome` archetype and strikes via a melee `shots` entry (3 m ray, no muzzle fx) so combat/damage code is unchanged.
 - 2026-10-09 16:51: nurse is a ground healer (no flying drone body exists); in the clinic the Vane boss job runs regardless of vaneLead.
+- 2026-10-09 17:52: clinic art uses existing materials (glass, glowCoolDim) and screen signs; no new textures.
