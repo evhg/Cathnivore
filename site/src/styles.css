@@ -842,3 +842,13 @@ body {
     margin-bottom: -7vh;
   }
 }
+
+/* ROADMAP 218: the third family game sits centred under the pair, not orphaned at the left. */
+@media (min-width: 900px) {
+  .games > a.card[href="/hedgerow/"] {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: 100%;
+    max-width: 440px;
+  }
+}

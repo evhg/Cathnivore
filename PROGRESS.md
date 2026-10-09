@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-09 10:51 session (short):** ROADMAP 218 done (desktop landing: Hedgerow card centred in its own row, CSS only; shot checked, e2e:site 52 passed). Unreleased since `0112929` (3 releases today). Next: 217, 219, 220.
 - **2026-10-09 09:52 session (short):** ROADMAP 214 (Runnel desktop fine; progress bar 8px), 216 (stats sheet fine) done; planned Phase 20 (216-220). 217 needs a solve hook for Runnel (none exists). tsc clean. Unreleased since `0112929` (3 releases today). Next: 217, 218, 219, 220.
 - **2026-10-09 08:51 session:** ROADMAP 206 (phone Actions left beside producer name; shot checked, quick-game e2e passes) and 215 (Hedgerow shots look good) done; released `0112929` (all gates passed, live version.json matches; tag push 403 harmless; 3rd release today). Next: 214, then plan Phase 20 from fresh shots.
 - **2026-10-09 07:51 session:** ROADMAP 209, 210 (CATHODE and Runnel shots look good), 211 (phone Drag-to-aim hint raised), 212, 213 (closed, width-bound) done; `npm run check` green before 212. Planned 214, 215. Next: 206, 214, 215.
