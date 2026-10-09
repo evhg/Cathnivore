@@ -487,7 +487,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 215. [x] **Hedgerow:** run `hedgerow-shots.mjs` and critique level 1 and a mid map.
 
 ### Phase 20 (planned 2026-10-09 10:20)
-216. [ ] **Runnel stats sheet:** screenshot the stats dialog at phone and desktop, critique, fix.
+216. [x] *(phone shot checked, fine)* **Runnel stats sheet:** screenshot the stats dialog at phone and desktop, critique, fix.
 217. [ ] **Runnel win dialog:** screenshot a solved board (phone and desktop) and check Cath, share button and next-puzzle timer.
 218. [ ] **Landing page desktop:** re-shot after Phase 19; check card alignment and Cath.
 219. [ ] **CATHODE title and class-select shots:** critique against VISION.md.
