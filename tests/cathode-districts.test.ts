@@ -27,3 +27,16 @@ describe("cathode district registry", () => {
     expect(p.z).toBeLessThan(b.zMax);
   });
 });
+
+import { travelOptions, travelUrl } from "../games/cathode/src/game/zones";
+
+describe("cathode travel", () => {
+  it("offers the clinic only after the act 1 boss", () => {
+    expect(travelOptions([]).map((d) => d.id)).toEqual(["market"]);
+    expect(travelOptions(["crispBoss"]).map((d) => d.id)).toEqual(["market", "clinic"]);
+  });
+  it("builds addresses that keep play and set the district", () => {
+    expect(travelUrl("clinic", "?play")).toBe("?play&district=clinic");
+    expect(travelUrl("market", "?play&district=clinic")).toBe("?play");
+  });
+});

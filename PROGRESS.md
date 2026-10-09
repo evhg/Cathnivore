@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-09 14:51 session (short):** D1 slice 2: map offers water-taxi travel (`travelOptions`/`travelUrl` in zones.ts, reload into `?district=`), map title uses the district name; 192 cathode tests, tsc, lint green. Unreleased (milestone only). Next: D1 loading card + per-district checkpoints, then D2 clinic art/enemies.
 - **2026-10-09 13:52 session:** ROADMAP D1 slice 1 (owner's new direction): district registry (`render/levels/`), `Level.theme`, `?district=clinic` first-pass Clinic interior (tiles, tubes, theatre lamp); tsc, lint, cathode tests green (190); shot checked. Unreleased (milestone releases only). Next: D1 travel + saves, then D2 clinic art/enemies.
 - **2026-10-09 12:52 session (release only):** `npm ci` + `npm run release` shipped `2e8b881` (gates passed, live version.json matches; tag push 403 harmless; 4th release today, cap used). Next: 217, 219, plan Phase 21 (fewer than 3 items left).
 - **2026-10-09 11:52 session (short):** ROADMAP 220 done (tower card legible; upgrade button label shortened so it no longer wraps to 3 lines; tsc clean). Unreleased since `0112929` (3 releases today). Next: 217, 219.

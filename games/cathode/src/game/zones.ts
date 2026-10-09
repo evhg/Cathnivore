@@ -67,6 +67,23 @@ export function districtLeads(jobsDone: readonly string[]): DistrictLead[] {
   return rows.map((r) => ({ ...r, open: jobsDone.includes(r.needs) }));
 }
 
+/** Districts the player can travel to from the map: the market always, others once built and unlocked. */
+const BUILT_DISTRICTS = ["clinic"];
+export function travelOptions(jobsDone: readonly string[]): { id: string; name: string }[] {
+  const out = [{ id: "market", name: "The Drowned Market" }];
+  for (const d of districtLeads(jobsDone)) if (d.open && BUILT_DISTRICTS.includes(d.id)) out.push({ id: d.id, name: d.name });
+  return out;
+}
+
+/** The address that loads a district (travel reloads the page into it; the save is already in storage). */
+export function travelUrl(id: string, search: string): string {
+  const p = new URLSearchParams(search);
+  p.set("play", "");
+  if (id === "market") p.delete("district");
+  else p.set("district", id);
+  return `?${p.toString().replace("play=", "play")}`;
+}
+
 export interface Wing {
   id: string;
   name: string;

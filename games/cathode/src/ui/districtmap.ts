@@ -1,5 +1,6 @@
-import { zoneBands, mapPoint, districtLeads, WINGS } from "../game/zones";
+import { zoneBands, mapPoint, districtLeads, travelOptions, travelUrl, WINGS } from "../game/zones";
 import { SECRETS, found, secretKey } from "../game/secrets";
+import { districtInfo } from "../render/levels";
 import { button, el } from "./dom";
 
 const NS = "http://www.w3.org/2000/svg";
@@ -21,7 +22,7 @@ export function openDistrictMap(
 ): () => void {
   const wrap = el("div", "coach case-board district-map", parent);
   const card = el("div", "coach-card", wrap);
-  el("h2", "", card, "The Drowned Market");
+  el("h2", "", card, districtInfo(new URLSearchParams(location.search).get("district") ?? undefined).name);
   const W = 210;
   const H = 440;
   const map = svg("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", style: "max-height:56vh;display:block;margin:0 auto" }, card);
@@ -55,6 +56,16 @@ export function openDistrictMap(
   el("p", "", card, `Pink: Cath. Gold ring: the objective. Teal diamonds: secrets found (${found(jobsDone)}/${SECRETS.length}).`);
   const leads = el("ul", "", card);
   for (const d of districtLeads(jobsDone)) el("li", "", leads, `Act ${d.act}: ${d.name} ${d.open ? "(on the board)" : "(locked)"}`);
+  const here = new URLSearchParams(location.search).get("district") ?? "market";
+  const trips = travelOptions(jobsDone).filter((d) => d.id !== here);
+  if (trips.length) {
+    el("p", "", card, "Water taxi:");
+    for (const d of trips) {
+      button("btn", card, `Travel to ${d.name}`).addEventListener("click", () => {
+        location.search = travelUrl(d.id, location.search);
+      });
+    }
+  }
   const close = (): void => {
     window.removeEventListener("keydown", onKey);
     wrap.remove();
