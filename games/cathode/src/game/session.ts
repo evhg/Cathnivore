@@ -8,7 +8,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
-import { ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, RIOT_SHIELD, type Sight } from "./enemy";
+import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, RIOT_SHIELD, type Sight } from "./enemy";
 import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
@@ -150,7 +150,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // The route's name picks the role: "...sniper..." on a rooftop, "...shield..." for a riot team, and every
       // fourth patrol carries a shield anyway.
       const n = enemies.length;
-      const [base, archetype] = key.includes("nurse")
+      const civ = key.includes("civ");
+      const [base, archetype] = civ
+        ? [CIVILIAN, "candorChrome"]
+        : key.includes("nurse")
         ? [NURSE, "candorChrome"]
         : key.includes("orderly")
         ? [ORDERLY, "candorChrome"]
@@ -161,6 +164,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           : [ENFORCER, "enforcer"];
       const elite = Math.random() < ELITE_CHANCE[progress.character.difficulty] + ngPlusEliteBonus(ngPlusLap(progress.jobsDone));
       const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++, elite), role: base.role }, route.map((p) => p.clone()), areaLevel);
+      if (civ) {
+        e.passive = true;
+        e.kit.maxHp = e.hp = CIVILIAN.maxHp;
+        e.kit.name = CIVILIAN.name;
+        e.kit.xp = 0;
+        e.kit.damage = 0;
+      }
       world.scene.add(e.body.root);
       enemies.push(e);
     }
@@ -584,8 +594,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
   };
 
+  let bystanders = 0;
   const onKill = (k: KillEvent) => {
     actives.onKill();
+    if (k.enemy.kit.role === "civilian") {
+      // No XP, no loot, and the square knows: every guard turns to where she stands.
+      bystanders++;
+      hud.feedLine(`Bystander down (${bystanders}). The guards heard.`, true);
+      if (bystanders === 1) hud.subtitle("Bea: That was a civilian, Cath. Pell will say you did it for him.");
+      for (const e of enemies) if (e.kit.role !== "civilian") e.alert(player.pos);
+      return;
+    }
     const bits: string[] = [];
     let bonus = 1;
     if (k.takedown) bits.push("Takedown");

@@ -27,7 +27,7 @@ export interface EnemyKit {
   xp: number;
   visor: number;
   /** Rifleman, a shield bearer (a riot shield stops rounds from the front), or a sniper with a laser. */
-  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse";
+  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | "civilian";
   /** Elite modifiers (sim/enemies.ts): extraFast, stoneskin, multipleShots and the rest. */
   elite?: boolean;
   mods?: readonly string[];
@@ -100,6 +100,23 @@ export const NURSE: EnemyKit = {
   visor: 0xff7ad0,
   role: "nurse",
 };
+/** A bystander at the plaza rally: unarmed, wanders, bolts at gunfire. Killing one costs Cath (see session onKill). */
+export const CIVILIAN: EnemyKit = {
+  name: "Bystander",
+  maxHp: 40,
+  armour: 0,
+  damage: 0,
+  burst: [1, 0, 9],
+  spread: 0,
+  walk: 1.2,
+  run: 5,
+  vision: { range: 20, fov: (120 * Math.PI) / 180 },
+  hearing: 1.6,
+  xp: 0,
+  visor: 0xffd9a0,
+  role: "civilian",
+};
+
 /** Metres within which a nurse heals allies, the fraction of max health restored per second, and the cap. */
 export const NURSE_RANGE = 9;
 export const NURSE_HEAL = 0.06;
@@ -242,6 +259,10 @@ export class Enemy {
     if (!this.alive) return;
     const d = at.distanceTo(this.motion.pos);
     if (d > radius * this.kit.hearing) return;
+    if (this.kit.role === "civilian") {
+      this.panic(6, at);
+      return;
+    }
     if (this.state === "combat") return;
     this.lastKnown.copy(at);
     if (d < radius * 0.5) this.state = "searching";
@@ -260,6 +281,8 @@ export class Enemy {
 
   update(dt: number, sight: Sight, rays: RayWorld, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
     this.shots.length = 0;
+    // Bystanders never fight: once they stop running they calm down and wander again.
+    if (this.kit.role === "civilian" && this.state === "combat" && this.fleeT <= 0) this.state = "unaware";
     this.motion.flinch.multiplyScalar(Math.max(0, 1 - dt * 6));
     this.motion.kick = Math.max(0, this.motion.kick - dt * 8);
     if (!this.alive) {

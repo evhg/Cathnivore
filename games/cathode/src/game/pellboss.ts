@@ -69,6 +69,8 @@ export class PellBossJob {
         this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
         this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
         this.h.spawn("rifle", [this.M("boss:reinforce", 4, -24, 20), this.M("boss:reinforce", 5, -20, 22)]);
+        // In the plaza the rally turns into an ambush: marksmen open up from both rooftops too.
+        for (const perch of this.h.markers.perch ?? []) this.h.spawn("sniper", [perch.clone()]);
         this.h.say("Pell: Security! Everyone, now!");
       }
       if (!this.boss.alive) this.goto(1);

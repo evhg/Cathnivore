@@ -171,6 +171,16 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     "patrol:plaza-b": [V(10, 0, 4), V(-10, 0, 4), V(-10, 0, -8), V(10, 0, -8)],
     "patrol:shield-steps": [V(-6, 0, -22), V(6, 0, -22)],
     "patrol:market": [V(-14, 0, 24), V(-14, 0, 38), V(-8, 0, 38), V(-8, 0, 24)],
+    // The rally crowd: bystanders drifting round the fountain, the stalls, the tram stop and the steps.
+    "patrol:civ-fountain-a": [V(5, 0, 8), V(0, 0, 13), V(-5, 0, 8), V(0, 0, 3)],
+    "patrol:civ-fountain-b": [V(-6, 0, 12), V(6, 0, 12), V(6, 0, 4), V(-6, 0, 4)],
+    "patrol:civ-market-a": [V(-17, 0, 22), V(-17, 0, 34)],
+    "patrol:civ-market-b": [V(-19, 0, 40), V(-12, 0, 40)],
+    "patrol:civ-tram-a": [V(24, 0, 40), V(24, 0, 48)],
+    "patrol:civ-tram-b": [V(18, 0, 30), V(18, 0, 38)],
+    "patrol:civ-rally-a": [V(-6, 0, -20), V(-3, 0, -17), V(-6, 0, -14)],
+    "patrol:civ-rally-b": [V(4, 0, -20), V(7, 0, -16), V(3, 0, -14)],
+    "patrol:civ-rally-c": [V(-1, 0, -24), V(2, 0, -21)],
     "patrol:sniper-roof": [V(34, 8, -4)],
   };
 
