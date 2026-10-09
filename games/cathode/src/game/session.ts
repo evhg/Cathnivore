@@ -4,6 +4,7 @@
 import { openPhotoMode } from "../ui/photomode";
 import { calmCameraOn, loadPrefs } from "../prefs";
 import * as THREE from "three";
+import { LASER_COOLDOWN, LASER_DAMAGE, laserState, laserTouches, lasersFrom } from "./lasers";
 import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
@@ -725,6 +726,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
   }
   let sinceHurt = 99;
+  // Laser grids from `laser:*` level markers: a red curtain per pair, drawn here and checked each frame.
+  const lasers = lasersFrom(world.markers);
+  let laserCool = 0;
+  const laserMat = new THREE.MeshBasicMaterial({ color: 0xff2a3a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+  const laserMeshes = lasers.map((l) => {
+    const len = l.a.distanceTo(l.b);
+    const g = new THREE.Group();
+    // Seven thin beams at stepped heights read as a grid, not a slab.
+    for (let k = 0; k < 7; k++) {
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(len, 0.025, 0.025), laserMat);
+      beam.position.y = 0.15 + k * 0.32;
+      g.add(beam);
+    }
+    g.position.set((l.a.x + l.b.x) / 2, l.a.y, (l.a.z + l.b.z) / 2);
+    g.rotation.y = -Math.atan2(l.b.z - l.a.z, l.b.x - l.a.x);
+    world.scene.add(g);
+    return g;
+  });
   let hitStop = 0;
   let jolt = 0;
   const calm = calmCameraOn();
@@ -982,6 +1001,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         sinceHurt = 0;
       }
     }
+    for (let i = 0; i < lasers.length; i++) {
+      const st = laserState(time, lasers[i]!.phase);
+      const beam = laserMeshes[i]!;
+      beam.visible = st.live || (st.warn && Math.floor(time * 12) % 2 === 0);
+      if (st.live && !dead && laserCool <= 0 && laserTouches(lasers[i]!, player.pos)) {
+        s.hp = Math.max(0, s.hp - actives.absorb(LASER_DAMAGE * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)));
+        sinceHurt = 0;
+        laserCool = LASER_COOLDOWN;
+        hud.hurtFrom(0);
+        audio?.hitFlesh(false);
+      }
+    }
+    laserCool -= dt;
     if (actives.heal > 0) {
       s.hp = Math.min(s.maxHp, s.hp + actives.heal);
       actives.heal = 0;

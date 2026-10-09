@@ -151,6 +151,10 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
     "patrol:server": [V(11, H1, -12), V(11, H1, -24)],
     "patrol:boardroom": [V(-9, H2, -52), V(9, H2, -52)],
     "patrol:sniper-mezz": [V(-12, H1, -8)],
+    // Laser grids across the office floor: they pulse, alternating, so a run through can be timed.
+    "laser:offices-a": [V(-7, H1, -7), V(7, H1, -7)],
+    "laser:offices-b": [V(-7, H1, -15), V(7, H1, -15)],
+    "laser:offices-c": [V(-7, H1, -23), V(7, H1, -23)],
   };
 
   return {
