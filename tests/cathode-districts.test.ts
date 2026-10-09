@@ -96,3 +96,27 @@ describe("the board tower", () => {
     }
   });
 });
+
+import { vaultGround, VAULT } from "../games/cathode/src/render/levels/vault";
+
+describe("the hollow vault", () => {
+  it("opens after the Chair and keeps its markers in bounds, on solid floor", () => {
+    expect(travelOptions(["crispBoss", "vaneBoss", "pellBoss", "boardBoss"]).map((d) => d.id)).toEqual(["market", "clinic", "plaza", "tower", "vault"]);
+    const lv = buildDistrict("vault", "phone");
+    const b = lv.theme!.bounds;
+    for (const [key, list] of Object.entries(lv.markers)) {
+      for (const p of list) {
+        expect(p.x, key).toBeGreaterThan(b.xMin);
+        expect(p.x, key).toBeLessThan(b.xMax);
+        expect(p.z, key).toBeGreaterThan(b.zMin);
+        expect(p.z, key).toBeLessThan(b.zMax);
+        expect(vaultGround(p.x, p.z), key).toBe(0);
+      }
+    }
+  });
+  it("drops into the chasm off the bridge", () => {
+    expect(vaultGround(0, 0)).toBe(0);
+    expect(vaultGround(7, 0)).toBe(VAULT.drop);
+    expect(vaultGround(7, 12)).toBe(0);
+  });
+});

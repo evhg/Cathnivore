@@ -4,8 +4,9 @@ import { buildLevel, type Level } from "../level";
 import { buildClinic } from "./clinic";
 import { buildPlaza } from "./plaza";
 import { buildTower } from "./tower";
+import { buildVault } from "./vault";
 
-export type DistrictId = "market" | "clinic" | "plaza" | "tower";
+export type DistrictId = "market" | "clinic" | "plaza" | "tower" | "vault";
 
 export interface DistrictInfo {
   id: DistrictId;
@@ -19,6 +20,7 @@ export const DISTRICTS: readonly DistrictInfo[] = [
   { id: "clinic", name: "The Candor Clinic", act: 2, build: buildClinic },
   { id: "plaza", name: "Hollowell Plaza", act: 3, build: buildPlaza },
   { id: "tower", name: "The Board Tower", act: 4, build: buildTower },
+  { id: "vault", name: "The Hollow Vault", act: 5, build: buildVault },
 ];
 
 export function districtInfo(id: string | undefined): DistrictInfo {

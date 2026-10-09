@@ -19,6 +19,10 @@ export class VaultBossJob {
     this.goto(0);
   }
 
+  private M(key: string, i: number, x: number, z: number): THREE.Vector3 {
+    return this.h.markers[key]?.[i]?.clone() ?? this.P(x, z);
+  }
+
   private P(x: number, z: number): THREE.Vector3 {
     return new THREE.Vector3(x, this.h.ground(x, z), z);
   }
@@ -29,13 +33,13 @@ export class VaultBossJob {
     switch (stage) {
       case 0: {
         this.objective = "HollowCandor runs the vault. Pull the plug.";
-        const b = h.spawn("shield", [this.P(-24, 34), this.P(-20, 36)]);
+        const b = h.spawn("shield", [this.M("boss:core", 0, -24, 34), this.M("boss:core", 1, -20, 36)]);
         b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 9);
         b.body.root.scale.setScalar(1.2);
         this.boss = b;
-        h.spawn("shield", [this.P(-28, 30), this.P(-28, 38)]);
-        h.spawn("shield", [this.P(-18, 30), this.P(-16, 38)]);
-        h.spawn("sniper", [this.P(-24, 44), this.P(-18, 44)]);
+        h.spawn("shield", [this.M("boss:guard", 0, -28, 30), this.M("boss:guard", 1, -28, 38)]);
+        h.spawn("shield", [this.M("boss:guard", 2, -18, 30), this.M("boss:guard", 3, -16, 38)]);
+        h.spawn("sniper", [this.M("boss:sniper", 0, -24, 44), this.M("boss:sniper", 1, -18, 44)]);
         h.banner("HollowCandor", "The vault", "boss");
         h.say("Bea: It is not a man, it is the building. Break the guards, then break it.");
         break;
@@ -66,15 +70,15 @@ export class VaultBossJob {
       const frac = this.boss.hp / this.boss.kit.maxHp;
       if (this.boss.alive && this.rallied < 1 && frac < 2 / 3) {
         this.rallied = 1;
-        this.h.spawn("rifle", [this.P(-40, 26), this.P(-34, 28)]);
-        this.h.spawn("rifle", [this.P(-6, 26), this.P(-12, 28)]);
+        this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
+        this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
         this.h.say("HollowCandor: Security response initiated.");
       }
       if (this.boss.alive && this.rallied < 2 && frac < 1 / 3) {
         this.rallied = 2;
-        this.h.spawn("sniper", [this.P(-30, 44), this.P(-14, 44)]);
-        this.h.spawn("rifle", [this.P(-24, 20), this.P(-20, 22)]);
-        this.h.spawn("rifle", [this.P(-30, 22), this.P(-16, 22)]);
+        this.h.spawn("sniper", [this.M("boss:sniper", 0, -30, 44), this.M("boss:sniper", 1, -14, 44)]);
+        this.h.spawn("rifle", [this.M("boss:reinforce", 4, -24, 20), this.M("boss:reinforce", 5, -20, 22)]);
+        this.h.spawn("rifle", [this.M("boss:reinforce", 2, -30, 22), this.M("boss:reinforce", 4, -16, 22)]);
         this.h.say("HollowCandor: Escalating. Escalating.");
       }
       if (!this.boss.alive) this.goto(1);

@@ -110,7 +110,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const inClinic = o.district === "clinic";
   const inPlaza = o.district === "plaza";
   const inTower = o.district === "tower";
-  const inMarket = !inClinic && !inPlaza && !inTower;
+  const inVault = o.district === "vault";
+  const inMarket = !inClinic && !inPlaza && !inTower && !inVault;
   const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress);
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
@@ -243,19 +244,22 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // Face down the street from the start marker, towards the extraction point.
   const ex = world.markers.extract?.[0];
   if (o.district === "clinic") player.yaw = 0;
-  else if (o.district === "plaza" || o.district === "tower") player.yaw = 0;
+  else if (o.district === "plaza" || o.district === "tower" || o.district === "vault") player.yaw = 0;
   else if (ex) player.yaw = Math.atan2(-(ex.x - start.x), -(ex.z - start.z));
 
   const build = (): Build => progress.build();
 
-  let objective = inTower
+  let objective = inVault
+    ? "The debt-book index is in the clerk's cage, west of the gate hall."
+    : inTower
     ? "A courier's keycard is in the lobby safe, east of the marble desk."
     : inPlaza
     ? "Councillor Pell's permit strongbox is under the market awnings, west side of the square."
     : inClinic
     ? "Find Dr Vane. Her theatre is at the north end of the clinic."
     : "Get to the fish market. Somebody there knows who put Tomas in the water.";
-  if (inTower) hud.showBanner("The Board Tower", "Act 4 · 03:30");
+  if (inVault) hud.showBanner("The Hollow Vault", "Act 5 · 04:50");
+  else if (inTower) hud.showBanner("The Board Tower", "Act 4 · 03:30");
   else if (inPlaza) hud.showBanner("Hollowell Plaza", "Act 3 · 00:00");
   else if (inClinic) hud.showBanner("The Candor Clinic", "Act 2 · 02:10");
   else hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
@@ -462,7 +466,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       : null;
   let boardBoss = makeBoardBoss();
   const vaultLead =
-    !tutorial && progress.jobsDone.includes("boardBoss") && !progress.jobsDone.includes("vaultLead") && !o.shot
+    !tutorial && (inVault || progress.jobsDone.includes("boardBoss")) && !progress.jobsDone.includes("vaultLead") && !o.shot
       ? new VaultLeadJob({
           player,
           progress,
@@ -478,7 +482,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
-  const vaultBoss =
+  const makeVaultBoss = (): VaultBossJob | null =>
     !tutorial && progress.jobsDone.includes("vaultLead") && !progress.jobsDone.includes("vaultBoss") && !o.shot
       ? new VaultBossJob({
           player,
@@ -495,6 +499,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
+  let vaultBoss = makeVaultBoss();
   const wantedWeek = weekKey(new Date());
   const wanted =
     !tutorial && progress.jobsDone.includes("hardboiledOpen") && progress.character.difficulty !== "noir" && !progress.jobsDone.includes(`mostWanted:${wantedWeek}`) && !o.shot
@@ -544,7 +549,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const actives = new Actives();
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;
-  setTimeout(() => voice.say(inTower ? "startTower" : inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
+  setTimeout(() => voice.say(inVault ? "startVault" : inTower ? "startTower" : inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
   const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, rescueMin: 0.4 });
@@ -1095,6 +1100,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (vaultLead) {
       vaultLead.update(dt);
       objective = vaultLead.objective;
+      if (inVault && vaultLead.done && !vaultBoss) {
+        vaultBoss = makeVaultBoss();
+        if (vaultBoss) objective = vaultBoss.objective;
+      }
     }
     if (vaultBoss) {
       vaultBoss.update(dt);

@@ -15,6 +15,7 @@ export type Cue =
   | "startClinic"
   | "startPlaza"
   | "startTower"
+  | "startVault"
   | "clear"
   | "done"
   | "beaCall1"
@@ -26,6 +27,7 @@ const LINES: Record<Cue, string> = {
   startClinic: "The Candor Clinic. Clean floors, clean books, and a doctor who wrote half the debts in Marrow. Vane's theatre is at the far end.",
   startPlaza: "Hollowell Plaza. Pell wants a crowd tonight, and a crowd is cover. Permits first, then the steps.",
   startTower: "The Board Tower. Forty floors of glass, and not one of them let in the rain. The Chair is two flights up.",
+  startVault: "The Hollow Vault. Every debt in Marrow lives down here, and something is keeping count. Index first, then the core.",
   seen: "Hollowell Enforcers. Company men, company guns.",
   spotted: "So much for quiet.",
   unseenKill: "One less witness.",
