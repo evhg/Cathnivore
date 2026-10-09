@@ -27,7 +27,7 @@ export interface EnemyKit {
   xp: number;
   visor: number;
   /** Rifleman, a shield bearer (a riot shield stops rounds from the front), or a sniper with a laser. */
-  role?: "rifle" | "shield" | "sniper" | "orderly";
+  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse";
   /** Elite modifiers (sim/enemies.ts): extraFast, stoneskin, multipleShots and the rest. */
   elite?: boolean;
   mods?: readonly string[];
@@ -83,6 +83,26 @@ export const ORDERLY: EnemyKit = {
   visor: 0x58ffb0,
   role: "orderly",
 };
+
+/** A Candor nurse: frail and armed with a dart pistol, but patches every ally within NURSE_RANGE. Kill her first. */
+export const NURSE: EnemyKit = {
+  name: "Candor Nurse",
+  maxHp: 70,
+  armour: 0,
+  damage: 4,
+  burst: [1, 0, 1.4],
+  spread: 0.05,
+  walk: 1.6,
+  run: 4.5,
+  vision: { range: 24, fov: (110 * Math.PI) / 180 },
+  hearing: 1.2,
+  xp: 60,
+  visor: 0xff7ad0,
+  role: "nurse",
+};
+/** Metres within which a nurse heals allies, the fraction of max health restored per second, and the cap. */
+export const NURSE_RANGE = 9;
+export const NURSE_HEAL = 0.06;
 
 /** Metres within which an orderly strikes, and the lunge speed it closes the last few metres at. */
 export const ORDERLY_REACH = 2.1;

@@ -8,7 +8,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
-import { ENFORCER, ENFORCER_SNIPER, Enemy, ORDERLY, RIOT_SHIELD, type Sight } from "./enemy";
+import { ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, RIOT_SHIELD, type Sight } from "./enemy";
 import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
@@ -150,7 +150,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // The route's name picks the role: "...sniper..." on a rooftop, "...shield..." for a riot team, and every
       // fourth patrol carries a shield anyway.
       const n = enemies.length;
-      const [base, archetype] = key.includes("orderly")
+      const [base, archetype] = key.includes("nurse")
+        ? [NURSE, "candorChrome"]
+        : key.includes("orderly")
         ? [ORDERLY, "candorChrome"]
         : key.includes("sniper")
         ? [ENFORCER_SNIPER, "enforcerSniper"]
@@ -952,6 +954,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
     // Enemies: perception, movement, shooting back.
     const sight = sightOf();
+    // Nurses patch the wounded around them while they live.
+    for (const n of enemies) {
+      if (n.kit.role !== "nurse" || !n.alive) continue;
+      for (const a of enemies) {
+        if (a !== n && a.alive && a.hp < a.kit.maxHp && a.position.distanceTo(n.position) < NURSE_RANGE) {
+          a.hp = Math.min(a.kit.maxHp, a.hp + a.kit.maxHp * NURSE_HEAL * dt);
+        }
+      }
+    }
     for (const e of enemies) {
       e.update(dt, sight, rays, world.colliders, ground);
       for (const sh of e.shots) {

@@ -90,6 +90,8 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     "patrol:hall": [V(0, 0, 30), V(0, 0, 10), V(0, 0, -10), V(0, 0, -30), V(0, 0, -10), V(0, 0, 10)],
     "patrol:wards": [V(6, 0, 18), V(6, 0, 2), V(6, 0, -18), V(6, 0, 2)],
     "patrol:orderly-ward": [V(6, 0, 10), V(6, 0, -10), V(6, 0, -30), V(6, 0, -10)],
+    "patrol:nurse-ward": [V(6, 0, -14), V(6, 0, -24)],
+    "patrol:nurse-hall": [V(-1, 0, -20), V(1, 0, -24)],
     "patrol:orderly-theatre": [V(-2, 0, -36), V(2, 0, -36)],
     "patrol:waiting": [V(-6, 0, 24), V(-6, 0, 8), V(-6, 0, -22), V(-6, 0, 8)],
   };

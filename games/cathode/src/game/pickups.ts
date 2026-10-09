@@ -12,7 +12,7 @@ export interface Drop {
 }
 
 /** The gun an armed enemy drops, if any; `roll` is a 0-1 random number. Shields drop nothing (the shield is theirs). */
-export function gunDrop(role: "rifle" | "shield" | "sniper" | "orderly" | undefined, roll: number): string | undefined {
+export function gunDrop(role: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | undefined, roll: number): string | undefined {
   if (role === "shield") return undefined;
   if (roll >= (role === "sniper" ? 0.5 : 0.35)) return undefined;
   return role === "sniper" ? "widowmaker" : role === "rifle" ? "corridorAR" : "kestrel";
