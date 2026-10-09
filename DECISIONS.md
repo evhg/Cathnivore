@@ -335,3 +335,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-09: 204 (map silhouettes) left for a session with time to screenshot; 202/203 committed after hedgerow tests only.
 - 2026-10-09 03:51: 204 done as an inline SVG polyline of lv.path in locked node circles.
 - 2026-10-09 05:52: 101 was already satisfied by cathode-shots.mjs; planned Phase 19 from own shots.
+- 2026-10-09: verify pass left HP table unchanged; 207 fixed with CSS outline halo, not screenshotted.

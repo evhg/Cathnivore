@@ -477,6 +477,6 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 205. [x] **Desktop setup Start:** the sticky Start button is a small pill at the left edge; make it span the column on wide screens.
 206. [ ] **Phone game:** one Sell row visible under the player card; try a two-column compact action row.
 207. [x] **Setup producer cards:** card text under the sticky Start is clipped at rest; add bottom fade/padding on desktop.
-208. [ ] **Hedgerow level tune verify:** run `hedgerow-tune --verify` (bridges 13/53/72/93 were never re-tuned) and log in BALANCE.md.
+208. [x] **Hedgerow level tune verify:** run `hedgerow-tune --verify` (bridges 13/53/72/93 were never re-tuned) and log in BALANCE.md.
 209. [ ] **CATHODE in-game shots sweep:** run `scripts/cathode-shots.mjs`, critique HUD against VISION.md, plan fixes.
 210. [ ] **Runnel shots sweep:** screenshot Runnel at phone and desktop, critique, plan fixes.

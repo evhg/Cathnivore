@@ -35,3 +35,6 @@ Keep this under 300 lines (SPEC 16). v1's full balance log (12 iterations, 2026-
   - The best bot wins all 100 levels, keeping 81% of its Goodwill on average.
   - The naive Scarecrows-only bot wins 5 of the 93 levels from 8 (8, 14, 20, 21, 30), down from 9.
 - **Endless** (`scripts/hedgerow-endless-measure.ts`, week 39): the best bot dies at wave 30, 15, 40, 29, 26, 11, 25, 30, 19 and 15 (acts 1 to 10). It used to coast past wave 100.
+
+## 2026-10-09 verify pass
+`hedgerow-tune --verify` over levels 1-100 (incl. bridges 13/53/72/93): all 100 completed and the generated HP table is unchanged, so shipped values still hold.
