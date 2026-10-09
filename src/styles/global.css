@@ -2483,6 +2483,8 @@ html.no-animations .card-enter {
 /* ROADMAP 205: on wide screens the sticky Start spans the setup column, so it reads as the primary action */
 @media (min-width: 700px) { .setup > button.primary { width: 100%; min-height: 52px; font-size: 1.1rem; } }
 .setup { padding-bottom: 88px; } /* ROADMAP 171: last card clears the sticky Start */
+/* ROADMAP 207: a paper halo behind the sticky Start hides card text scrolling under it */
+.setup > button.primary { outline: 14px solid var(--paper, #f6efe0); }
 @media (prefers-reduced-motion: reduce) { .producer-card .pc-pick { transition: none; } }
 
 /* ROADMAP 141: stamped verdict banner on the end screen. */
