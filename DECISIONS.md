@@ -345,3 +345,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-09 16:51: nurse is a ground healer (no flying drone body exists); in the clinic the Vane boss job runs regardless of vaneLead.
 - 2026-10-09 17:52: clinic art uses existing materials (glass, glowCoolDim) and screen signs; no new textures.
 - 2026-10-09 18:52: clinic lead job reuses VaneLeadJob via markers; no taxi leg inside the clinic, boss job built lazily after the register.
+- 2026-10-09 19:51: civilians are Enemy kits with role "civilian" (passive, flee at noise); a kill gives no XP and alerts guards, no persisted reputation (save schema untouched).
+- 2026-10-09 19:51: D3-D5 reuse the D2 pattern: level markers (`lead:*`, `boss:*`, `patrol:*`) drive the existing jobs, which skip the taxi leg inside the district.
+- 2026-10-09 19:51: score variants are tempo/chord/melody tables in score.ts, chosen by district in Audio's constructor.
