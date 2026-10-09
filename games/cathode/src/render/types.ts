@@ -12,6 +12,8 @@ export interface WorldOptions {
   intensity: "full" | "reduced";
   /** Screenshot mode: fixed time and seed, rain frozen mid-fall, so shots compare cleanly. */
   shot?: boolean;
+  /** District id from the registry (render/levels); default "market". */
+  district?: string;
 }
 
 /** What a bullet hit, for impact effects and sound. */
@@ -74,6 +76,8 @@ export interface World {
   /** Slow-motion/kill-cam grading: 0 normal, 1 full (desaturated, vignetted, depth of field). */
   setDrama(amount: number): void;
   /** Wind for ballistics and rain, metres per second along x and z. */
+  /** The district's walkable bounds, when it defines them (interiors). */
+  readonly bounds?: { xMin: number; xMax: number; zMin: number; zMax: number };
   readonly wind: { x: number; z: number };
   dispose(): void;
   /** Optional: subscribe to world events; returns an unsubscribe function. */

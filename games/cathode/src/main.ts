@@ -105,6 +105,7 @@ async function begin(): Promise<void> {
     quality: resolveQuality(prefs.quality),
     intensity: prefs.intensity,
     shot: params.has("shot"),
+    district: params.get("district") ?? undefined,
     onProgress: progress,
     onExit: () => openTitle(),
   });

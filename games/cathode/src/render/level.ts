@@ -125,6 +125,25 @@ export interface Level {
   /** The shadow-casting key light: a security floodlight at the south end, raking up the street. */
   key: { pos: THREE.Vector3; target: THREE.Vector3; color: THREE.Color };
   groundHeight(x: number, z: number): number;
+  /** Optional per-district look; the Drowned Market's defaults apply when absent. */
+  theme?: DistrictTheme;
+}
+
+export interface DistrictTheme {
+  name: string;
+  loading: string;
+  /** Linear RGB fog colour. */
+  fog: [number, number, number];
+  fogDensity: number;
+  volMin: THREE.Vector3;
+  volMax: THREE.Vector3;
+  /** Where the reflection probe sits. */
+  probe: THREE.Vector3;
+  /** False for interiors: no flood water, canal or skyline. */
+  outdoor: boolean;
+  /** Walkable bounds the session clamps the player to. */
+  bounds: { xMin: number; xMax: number; zMin: number; zMax: number };
+  len?: number;
 }
 
 const C = (hex: string) => new THREE.Color(hex);

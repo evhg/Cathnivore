@@ -60,6 +60,8 @@ export interface SessionOptions {
   quality: Quality;
   intensity: "full" | "reduced";
   shot: boolean;
+  /** District id (render/levels); default the Drowned Market. */
+  district?: string;
   onProgress: (share: number, label: string) => void;
   onExit: () => void;
 }
@@ -105,7 +107,7 @@ const GRACE = 12;
 
 
 export async function startSession(o: SessionOptions): Promise<Session> {
-  const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot }, o.onProgress);
+  const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress);
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
   const player = new Player(start, world.colliders, ground);
@@ -1215,7 +1217,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    */
   function keepInBounds(): void {
     const p = player.pos;
-    const inside = p.x > -26 && p.x < 16 && p.z > -70 && p.z < 66;
+    const bd = world.bounds ?? { xMin: -26, xMax: 16, zMin: -70, zMax: 66 };
+    const inside = p.x > bd.xMin && p.x < bd.xMax && p.z > bd.zMin && p.z < bd.zMax;
     const fell = p.y < -1.2 || p.y < world.groundHeight(p.x, p.z) - 1.5;
     if (inside && !fell) {
       if (player.onGround) {

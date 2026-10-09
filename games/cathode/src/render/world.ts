@@ -10,7 +10,8 @@ import * as THREE from "three";
 import type { CreateWorld, Quality, Surface, World, WorldEvent } from "./types";
 import { installFog, createShared, patchMaterial, FLOOD } from "./shading";
 import { loadPbr, noiseTexture, windowAtlas, WIN_COLS, WIN_ROWS, posterAtlas, POSTER_COUNT, shopInterior, vendingFront } from "./textures";
-import { buildLevel, L, type Level } from "./level";
+import { L, type Level } from "./level";
+import { buildDistrict } from "./levels";
 import { createMaterials } from "./materials";
 import { bakeVolume, LightPool, hash1 } from "./lighting";
 import { buildSigns } from "./signs";
@@ -50,6 +51,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const progress = (s: number, label: string) => onProgress?.(s, label);
   progress(0.02, "Rain over the Drowned Market…");
   installFog();
+  const fogColor = new THREE.Color(FOG_COLOR);
+  let fogDensity = FOG_DENSITY;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance", stencil: false });
   renderer.toneMapping = THREE.NoToneMapping;
@@ -61,8 +64,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   renderer.setClearColor(0x000000, 1);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(FOG_COLOR.getHex(THREE.LinearSRGBColorSpace), FOG_DENSITY);
-  (scene.fog as THREE.FogExp2).color.copy(FOG_COLOR);
+
   const camera = new THREE.PerspectiveCamera(75, 16 / 9, 0.05, 1000);
   camera.layers.enable(LAYER_NO_REFLECT);
   const viewScene = new THREE.Scene();
@@ -76,9 +78,17 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const pbr = await loadPbr(renderer, (d, t) => progress(0.05 + 0.5 * (d / t), d < t * 0.5 ? "Wet asphalt, cold brick…" : "Rust, tarps, fish on ice…"));
   progress(0.58, "Laying out the street…");
   await frame();
-  const level = buildLevel(quality);
-  const volMin = new THREE.Vector3(-26, -3, L.zSouth - 8);
-  const volMax = new THREE.Vector3(34, 26, L.zNorth + 8);
+  const level = buildDistrict(options.district, quality);
+  const theme = level.theme;
+  const outdoor = theme?.outdoor !== false;
+  if (theme) {
+    fogColor.setRGB(...theme.fog, THREE.LinearSRGBColorSpace);
+    fogDensity = theme.fogDensity;
+  }
+  scene.fog = new THREE.FogExp2(fogColor.getHex(THREE.LinearSRGBColorSpace), fogDensity);
+  (scene.fog as THREE.FogExp2).color.copy(fogColor);
+  const volMin = theme?.volMin.clone() ?? new THREE.Vector3(-26, -3, L.zSouth - 8);
+  const volMax = theme?.volMax.clone() ?? new THREE.Vector3(34, 26, L.zNorth + 8);
   const volume = bakeVolume(level.lights, volMin, volMax, [0.75, 1.5, 1]);
   shared.uVolume.value = volume.texture;
   shared.uVolMin.value.copy(volMin);
@@ -94,7 +104,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const surfaces = level.builder.surfaces;
   level.builder.build(materials, statics, { shadows: true, layer: (k) => (k === "asphalt" || k === "pavement" ? LAYER_NO_REFLECT : 0) });
   scene.add(statics);
-  addWater(scene, materials.water!);
+  if (outdoor) addWater(scene, materials.water!);
   addWindows(scene, level, shared);
   addInteriors(scene, level);
   addPosters(scene, level, shared);
@@ -148,7 +158,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       steamPer: P.steam,
       cones: level.cones,
       skyline: P.skyline,
-      fogColor: FOG_COLOR,
+      fogColor,
     },
     atmoU,
   );
@@ -178,7 +188,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   pool.update(camera, 0, 1, true);
   {
     const pmrem = new THREE.PMREMGenerator(renderer);
-    const probe = new THREE.Vector3(-1, 3.5, 22);
+    const probe = theme?.probe.clone() ?? new THREE.Vector3(-1, 3.5, 22);
     scene.position.copy(probe).negate();
     atmo.sky.position.copy(probe);
     scene.updateMatrixWorld(true);
@@ -217,6 +227,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     camera,
     colliders,
     markers: level.markers,
+    bounds: theme?.bounds,
     viewScene,
     viewCamera,
     fx: fxs.fx,
@@ -267,7 +278,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       }
       if (best) return best;
       const g = level.groundHeight(p.x, p.z);
-      if (g < FLOOD.water + 0.01 || (p.x > L.quayEdge && p.x < L.canalE)) return "water";
+      if (outdoor && (g < FLOOD.water + 0.01 || (p.x > L.quayEdge && p.x < L.canalE))) return "water";
       return "concrete";
     },
     update(dt, time) {
