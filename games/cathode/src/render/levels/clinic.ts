@@ -83,6 +83,10 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     player: [V(0, 0, zS - 3)],
     perch: [V(-6.2, 0.5, 8), V(0, 0, zN + 6)],
     extract: [V(0, 0, zS - 1.5)],
+    // Vane works at the table under the surgical lamps; guards flank her, reinforcements come through the doors.
+    "boss:vane": [V(0, 0, -47), V(1.5, 0, -46)],
+    "boss:guard": [V(-4, 0, -42), V(-4, 0, -47), V(4, 0, -42), V(4, 0, -47)],
+    "boss:reinforce": [V(-2, 0, -30), V(-2, 0, -36), V(2, 0, -30), V(2, 0, -36)],
     "patrol:hall": [V(0, 0, 30), V(0, 0, 10), V(0, 0, -10), V(0, 0, -30), V(0, 0, -10), V(0, 0, 10)],
     "patrol:wards": [V(6, 0, 18), V(6, 0, 2), V(6, 0, -18), V(6, 0, 2)],
     "patrol:orderly-ward": [V(6, 0, 10), V(6, 0, -10), V(6, 0, -30), V(6, 0, -10)],

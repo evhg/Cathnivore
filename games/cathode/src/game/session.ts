@@ -334,7 +334,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   const vaneLead =
-    !tutorial && progress.jobsDone.includes("crispBoss") && !progress.jobsDone.includes("vaneLead") && !o.shot
+    !tutorial && !inClinic && progress.jobsDone.includes("crispBoss") && !progress.jobsDone.includes("vaneLead") && !o.shot
       ? new VaneLeadJob({
           player,
           progress,
@@ -350,8 +350,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
+  // In the clinic, Vane is in her theatre whatever the quest state: the district is the boss arena.
   const vaneBoss =
-    !tutorial && progress.jobsDone.includes("vaneLead") && !progress.jobsDone.includes("vaneBoss") && !o.shot
+    !tutorial && (inClinic || progress.jobsDone.includes("vaneLead")) && !progress.jobsDone.includes("vaneBoss") && !o.shot
       ? new VaneBossJob({
           player,
           progress,

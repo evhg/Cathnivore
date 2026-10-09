@@ -18,6 +18,11 @@ export class VaneBossJob {
     this.goto(0);
   }
 
+  /** A level marker if it has one (the clinic theatre), else the quay-side fallback coordinates. */
+  private M(key: string, i: number, x: number, z: number): THREE.Vector3 {
+    return this.h.markers[key]?.[i]?.clone() ?? this.P(x, z);
+  }
+
   private P(x: number, z: number): THREE.Vector3 {
     return new THREE.Vector3(x, this.h.ground(x, z), z);
   }
@@ -28,12 +33,12 @@ export class VaneBossJob {
     switch (stage) {
       case 0: {
         this.objective = "Dr Octavia Vane is in the clinic bay. End her.";
-        const b = h.spawn("rifle", [this.P(22, 30), this.P(25, 28)]);
+        const b = h.spawn("rifle", [this.M("boss:vane", 0, 22, 30), this.M("boss:vane", 1, 25, 28)]);
         b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 5);
         b.body.root.scale.setScalar(1.1);
         this.boss = b;
-        h.spawn("shield", [this.P(18, 32), this.P(18, 26)]);
-        h.spawn("rifle", [this.P(28, 34), this.P(24, 36)]);
+        h.spawn("shield", [this.M("boss:guard", 0, 18, 32), this.M("boss:guard", 1, 18, 26)]);
+        h.spawn("rifle", [this.M("boss:guard", 2, 28, 34), this.M("boss:guard", 3, 24, 36)]);
         h.banner("Dr Octavia Vane", "Candor's surgeon", "boss");
         h.say("Bea: Vane stitches herself back together. Hit her hard and fast.");
         break;
@@ -62,8 +67,8 @@ export class VaneBossJob {
       if (!this.patched && this.boss.alive && this.boss.hp < this.boss.kit.maxHp / 2) {
         this.patched = true;
         this.boss.hp = Math.round(this.boss.kit.maxHp * 0.7);
-        this.h.spawn("rifle", [this.P(16, 22), this.P(22, 22)]);
-        this.h.spawn("rifle", [this.P(30, 22), this.P(26, 24)]);
+        this.h.spawn("rifle", [this.M("boss:reinforce", 0, 16, 22), this.M("boss:reinforce", 1, 22, 22)]);
+        this.h.spawn("rifle", [this.M("boss:reinforce", 2, 30, 22), this.M("boss:reinforce", 3, 26, 24)]);
         this.h.say("Vane: A little stitch. Nothing personal.");
       }
       if (!this.boss.alive) this.goto(1);
