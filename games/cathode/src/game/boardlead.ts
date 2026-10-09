@@ -19,19 +19,37 @@ export class BoardLeadJob {
     return new THREE.Vector3(x, this.h.ground(x, z), z);
   }
 
+  private M(key: string, i: number, x: number, z: number): THREE.Vector3 {
+    return this.h.markers[key]?.[i]?.clone() ?? this.P(x, z);
+  }
+
+  private get inTower(): boolean {
+    return !!this.h.markers["lead:register"];
+  }
+
   private goto(stage: number): void {
     const h = this.h;
     this.stage = stage;
     switch (stage) {
       case 0:
-        this.objective = "Bea traced a courier's Spire keycard to a lobby safe in the Board Tower, east of the quay.";
-        this.target = this.P(20, -30).setY(this.h.ground(20, -30) + 0.6);
-        h.spawn("rifle", [this.P(18, -32), this.P(22, -28)]);
-        h.spawn("shield", [this.P(24, -32), this.P(24, -26)]);
-        h.spawn("sniper", [this.P(27, -22)], { passive: true });
+        this.objective = this.inTower
+          ? "A courier's Spire keycard is in the lobby safe, east of the marble desk. Take it."
+          : "Bea traced a courier's Spire keycard to a lobby safe in the Board Tower, east of the quay.";
+        this.target = this.M("lead:register", 0, 20, -30);
+        this.target.y += 0.6;
+        h.spawn("rifle", [this.M("lead:guard", 0, 18, -32), this.M("lead:guard", 1, 22, -28)]);
+        h.spawn("shield", [this.M("lead:guard", 2, 24, -32), this.M("lead:guard", 3, 24, -26)]);
+        h.spawn("sniper", [this.M("lead:sniper", 0, 27, -22)], { passive: true });
         h.say("Bea: Lobby safe, behind the marble desk. Two guards, and a rifle on the mezzanine.");
         break;
       case 1:
+        if (this.inTower) {
+          // The keycard rides the private lift: the climb is the way on, so no taxi run.
+          h.banner("Keycard recovered", "The Board Tower");
+          h.say("Cath: A courier's pass. Two floors up, the boardroom. She's waiting.");
+          this.goto(2);
+          return;
+        }
         this.objective = "Keycard taken. Get to the water taxi.";
         h.banner("Keycard recovered", "The Board Tower");
         this.target = h.markers.extract?.[0]?.clone() ?? null;
@@ -40,11 +58,13 @@ export class BoardLeadJob {
       case 2:
         this.done = true;
         this.target = null;
-        this.objective = "Keycard delivered. Bea is wiring it to the Spire lift.";
+        this.objective = this.inTower
+          ? "Keycard taken. Climb the grand stairs to the boardroom, north end, two floors up."
+          : "Keycard delivered. Bea is wiring it to the Spire lift.";
         if (!h.progress.jobsDone.includes("boardLead")) h.progress.jobsDone.push("boardLead");
         h.progress.save();
-        h.banner("Job done", "The visitor pass");
-        h.say("Bea: The lift will take you to the Chair. Go when you are ready.");
+        if (!this.inTower) h.banner("Job done", "The visitor pass");
+        if (!this.inTower) h.say("Bea: The lift will take you to the Chair. Go when you are ready.");
         break;
     }
   }

@@ -109,7 +109,8 @@ const GRACE = 12;
 export async function startSession(o: SessionOptions): Promise<Session> {
   const inClinic = o.district === "clinic";
   const inPlaza = o.district === "plaza";
-  const inMarket = !inClinic && !inPlaza;
+  const inTower = o.district === "tower";
+  const inMarket = !inClinic && !inPlaza && !inTower;
   const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress);
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
@@ -242,17 +243,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // Face down the street from the start marker, towards the extraction point.
   const ex = world.markers.extract?.[0];
   if (o.district === "clinic") player.yaw = 0;
-  else if (o.district === "plaza") player.yaw = 0;
+  else if (o.district === "plaza" || o.district === "tower") player.yaw = 0;
   else if (ex) player.yaw = Math.atan2(-(ex.x - start.x), -(ex.z - start.z));
 
   const build = (): Build => progress.build();
 
-  let objective = inPlaza
+  let objective = inTower
+    ? "A courier's keycard is in the lobby safe, east of the marble desk."
+    : inPlaza
     ? "Councillor Pell's permit strongbox is under the market awnings, west side of the square."
     : inClinic
     ? "Find Dr Vane. Her theatre is at the north end of the clinic."
     : "Get to the fish market. Somebody there knows who put Tomas in the water.";
-  if (inPlaza) hud.showBanner("Hollowell Plaza", "Act 3 · 00:00");
+  if (inTower) hud.showBanner("The Board Tower", "Act 4 · 03:30");
+  else if (inPlaza) hud.showBanner("Hollowell Plaza", "Act 3 · 00:00");
   else if (inClinic) hud.showBanner("The Candor Clinic", "Act 2 · 02:10");
   else hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
   const zones = new ZoneWatch();
@@ -423,7 +427,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       : null;
   let pellBoss = makePellBoss();
   const boardLead =
-    !tutorial && progress.jobsDone.includes("pellBoss") && !progress.jobsDone.includes("boardLead") && !o.shot
+    !tutorial && (inTower || progress.jobsDone.includes("pellBoss")) && !progress.jobsDone.includes("boardLead") && !o.shot
       ? new BoardLeadJob({
           player,
           progress,
@@ -439,7 +443,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
-  const boardBoss =
+  const makeBoardBoss = (): BoardBossJob | null =>
     !tutorial && progress.jobsDone.includes("boardLead") && !progress.jobsDone.includes("boardBoss") && !o.shot
       ? new BoardBossJob({
           player,
@@ -456,6 +460,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;
+  let boardBoss = makeBoardBoss();
   const vaultLead =
     !tutorial && progress.jobsDone.includes("boardBoss") && !progress.jobsDone.includes("vaultLead") && !o.shot
       ? new VaultLeadJob({
@@ -539,7 +544,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const actives = new Actives();
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;
-  setTimeout(() => voice.say(inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
+  setTimeout(() => voice.say(inTower ? "startTower" : inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
   const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, rescueMin: 0.4 });
@@ -1078,6 +1083,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (boardLead) {
       boardLead.update(dt);
       objective = boardLead.objective;
+      if (inTower && boardLead.done && !boardBoss) {
+        boardBoss = makeBoardBoss();
+        if (boardBoss) objective = boardBoss.objective;
+      }
     }
     if (boardBoss) {
       boardBoss.update(dt);

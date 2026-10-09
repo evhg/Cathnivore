@@ -65,3 +65,34 @@ describe("hollowell plaza", () => {
     expect(plazaGround(15, -45)).toBe(0);
   });
 });
+
+import { towerGround, TOWER, TOWER_H1, TOWER_H2 } from "../games/cathode/src/render/levels/tower";
+
+describe("the board tower", () => {
+  it("opens after Pell and keeps its markers in bounds and on the floor they belong to", () => {
+    expect(travelOptions(["crispBoss", "vaneBoss", "pellBoss"]).map((d) => d.id)).toEqual(["market", "clinic", "plaza", "tower"]);
+    const lv = buildDistrict("tower", "phone");
+    const b = lv.theme!.bounds;
+    for (const [key, list] of Object.entries(lv.markers)) {
+      for (const p of list) {
+        expect(p.x, key).toBeGreaterThan(b.xMin);
+        expect(p.x, key).toBeLessThan(b.xMax);
+        expect(p.z, key).toBeGreaterThan(b.zMin);
+        expect(p.z, key).toBeLessThan(b.zMax);
+        expect(p.y, key).toBeCloseTo(towerGround(p.x, p.z), 5);
+      }
+    }
+  });
+  it("climbs in risers the player can step over", () => {
+    expect(towerGround(0, TOWER.zS - 5)).toBe(0);
+    expect(towerGround(0, -10)).toBeCloseTo(TOWER_H1);
+    expect(towerGround(0, -55)).toBeCloseTo(TOWER_H2);
+    expect(TOWER.rise).toBeLessThan(0.42);
+    let prev = 0;
+    for (let z = TOWER.zS; z > TOWER.zN; z -= 0.1) {
+      const g = towerGround(0, z);
+      expect(g - prev).toBeLessThan(0.36);
+      prev = g;
+    }
+  });
+});
