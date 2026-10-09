@@ -10,11 +10,12 @@ You are improving the games described in `SPEC.md` and `VISION.md`, fully unatte
    - If the push is rejected, end.
 3. **Read, in this order:** `FEEDBACK.md`, `PROGRESS.md`, `ROADMAP.md`, `VISION.md`, the last 60 lines of `DECISIONS.md`, `git log --oneline -15` and `origin/ci-status`. Read `SPEC.md` sections 1, 15 and 16 in full; read other SPEC sections, `STYLE.md` and `BALANCE.md` when the task touches them. Never read `docs/archive/` in full; search it with grep.
 4. **Pick the work:** an open `FEEDBACK.md` note, then anything broken (CI, gates, the live site, saves, rules), then the first unfinished `ROADMAP.md` item. Write it under **Now** in `PROGRESS.md`.
-   - **Never idle** (owner, 2026-10-02): a "health check only" session wastes an hour. If fewer than 3 unfinished ROADMAP items remain, plan instead: screenshot every game, have a subagent critique them against `VISION.md`, add at least 5 concrete items to `ROADMAP.md`, then start the first one.
+   - **Never idle** (owner, 2026-10-02): a "health check only" session wastes an hour, and so does a "short" session that stops after one small item.
+   - **Owner direction (2026-10-09, FEEDBACK.md):** work ROADMAP Phase D (CATHODE districts, about 70% of sessions) and Phase H (Hedgerow depth, about 30%) before anything else. Batch small polish into at most one session a day. Don't plan micro-items: every new ROADMAP item must be something a player would notice. If both phases ever run out, plan big items the same way: screenshot the games, have a subagent critique them against `VISION.md`, and add whole features, not tweaks.
 5. **Work for about 50 minutes, in slices.** After each slice, run its checks (`npm run check`; `npm run shots` before and after any visual change; the e2e specs it touches), commit and push to `build`. Each slice leaves the game better and never half-broken.
    - **Use the full ~50 minutes** (owner instruction, 2026-09-25). Finishing one or two slices is not a reason to stop: keep starting the next one until about 45 minutes have passed.
    - **Don't start anything long after about 40 minutes** (a sim run, a big refactor). Wrap up by about 55 minutes so the lock is released before the next session starts at :51.
-6. **Release** with `npm run release` when a slice is complete and every gate passes (at most 4 times a day). Tick the ROADMAP item when it ships.
+6. **Release** with `npm run release` only when a whole milestone (one ROADMAP item) is finished and every gate passes, or to ship a bug fix for a live game (owner, 2026-10-09; at most 4 times a day). Tick the ROADMAP item when it ships.
 7. **Before ending,** keep the notes short (SPEC 16): update **Now**, the **Session log** and **Recent releases** in `PROGRESS.md`, append at most 5 lines to `DECISIONS.md`, and archive anything over the size limits. Then delete `.build-lock`, commit and push.
 
 ## Non-negotiables (full list in SPEC section 1)

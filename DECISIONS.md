@@ -338,3 +338,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-09: verify pass left HP table unchanged; 207 fixed with CSS outline halo, not screenshotted.
 - 2026-10-09 07:51: 209/210 sweeps found only two minor CATHODE phone nits; Runnel looks fine, no subagent used.
 - 2026-10-09 12:52: released 2e8b881 (4th today); release consumed the session.
+- 2026-10-09: owner's direction in chat: 70% CATHODE districts (ROADMAP Phase D), 30% Hedgerow depth (Phase H), polish batched to at most one session a day, releases at milestones only. Recorded in FEEDBACK.md, ROADMAP.md and CLAUDE.md.
