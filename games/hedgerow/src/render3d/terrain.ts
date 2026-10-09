@@ -609,9 +609,14 @@ export function buildGround(level: Level): Ground {
   const bushes: Inst[] = [];
   const blooms: Inst[] = [];
   const bloomCol = new THREE.Color(mood.blossom);
+  // Slow wobble along the ring so hedges swell, thin out and open into gaps (differs per field).
+  const ph1 = rand() * 6.3;
+  const ph2 = rand() * 6.3;
   const hedgeAt = (x: number, y: number) => {
     if (laneDistance(level, x, y) < 0.85) return;
-    const r = 0.13 + rand() * 0.05;
+    const wob = Math.sin((x + y) * 1.7 + ph1) * 0.6 + Math.sin((x - y) * 0.9 + ph2) * 0.4;
+    if (wob < -0.72) return; // a gap in the hedge
+    const r = (0.13 + rand() * 0.05) * (0.8 + 0.3 * (wob + 1) * 0.5 + (wob > 0.7 ? 0.25 : 0));
     const color = hedgeCols[Math.floor(rand() * 3)]!;
     bushes.push({ x, y: heightAt(x, y) + r * 0.8, z: y, ry: deco() * 6.3, s: r, sy: 0.85 + rand() * 0.3, color });
     if (rand() < 0.15) blooms.push({ x: x + (rand() - 0.5) * 0.1, y: heightAt(x, y) + r * 1.6, z: y + (rand() - 0.5) * 0.1, ry: 0, s: 0.03, sy: 1, color: bloomCol });
