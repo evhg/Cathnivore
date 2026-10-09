@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **2026-10-09 03:51 session (2nd run):** `npm ci` + `npm run check` green on HEAD. Started `npm run release`, but the gate 1-2 vitest run made no visible progress for the rest of the session, so it was abandoned; nothing released (1 release today, `aa94954`). Next session: run `npm run release` early, and plan Phase 19 from fresh shots.
+- **2026-10-09 03:51 session (2nd run):** `npm ci` + `npm run check` green on HEAD. Started `npm run release`, but the gate 1-2 vitest run was slow (gates 1-2 passed, fuzz was running) and I killed it at wrap-up; nothing released (1 release today, `aa94954`). Next session: run `npm run release` early, and plan Phase 19 from fresh shots.
 - **2026-10-09 03:51 session:** ROADMAP 204 done (locked Hedgerow map nodes show a faint lane silhouette; shot checked, tsc clean, e2e:site 52 passed). 1 release today (`aa94954`), unreleased since. Next: plan Phase 19 from fresh shots.
 - **2026-10-09 02:51 session:** ROADMAP 202 (hedge ring swells/thins with gaps, seeded per field) and 203 (landscape phone tip 1 line) done; hedgerow vitest green (172), not screenshotted. 1 release today (`aa94954`). Next: 204.
 - **2026-10-09 01:51 session:** `npm ci` + `npm run check` green. ROADMAP 198 done (Hedgerow shots swept; map and field look good); planned Phase 18 (200-204), closed 200 and 201 as already covered (shot caught the bubble mid-fade). 1 release today (`aa94954`). Next: 202, 203, 204.
