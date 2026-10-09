@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-09 04:51 session:** `npm ci`, then `npm run release` shipped `1dc5e2a` (all gates passed, fast-forward ran, live version.json matches; tag push 403 harmless; 2nd release today). Release used the session, no new slice. Next: plan Phase 19 from fresh shots.
 - **2026-10-09 03:51 session (2nd run):** `npm ci` + `npm run check` green on HEAD. Started `npm run release`, but the gate 1-2 vitest run passed gates 1-8 (check, fuzz, build, e2e 74+52, axe, Lighthouse, shots) on `7f5d3ca` but the script ended before the fast-forward (likely killed by my wrap-up pkill); nothing released (1 release today, `aa94954`). Next session: run `npm run release` early, and plan Phase 19 from fresh shots.
 - **2026-10-09 03:51 session:** ROADMAP 204 done (locked Hedgerow map nodes show a faint lane silhouette; shot checked, tsc clean, e2e:site 52 passed). 1 release today (`aa94954`), unreleased since. Next: plan Phase 19 from fresh shots.
 - **2026-10-09 02:51 session:** ROADMAP 202 (hedge ring swells/thins with gaps, seeded per field) and 203 (landscape phone tip 1 line) done; hedgerow vitest green (172), not screenshotted. 1 release today (`aa94954`). Next: 204.
