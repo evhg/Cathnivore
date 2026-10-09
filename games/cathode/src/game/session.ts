@@ -500,6 +500,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
+          finale: () => hud.showCredits(() => location.assign(location.pathname)),
           light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         })
       : null;

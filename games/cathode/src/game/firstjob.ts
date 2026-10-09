@@ -28,6 +28,8 @@ export interface JobHost {
   say(text: string): void;
   teach(text: string | null): void;
   banner(title: string, sub: string, kind?: "boss"): void;
+  /** Rolls the ending credits (vault finale); absent in tests. */
+  finale?(): void;
   /** A pooled real light (see World.light); absent in tests. */
   /** Extra loot rolls dropped at a point (bounties); absent in tests. */
   drop?(pos: THREE.Vector3, rolls: number): void;

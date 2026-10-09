@@ -14,6 +14,7 @@ export class VaultBossJob {
   target: THREE.Vector3 | null = null;
   boss: Enemy | null = null;
   private rallied = 0;
+  private finaleIn = 0;
 
   constructor(private readonly h: JobHost) {
     this.goto(0);
@@ -49,6 +50,8 @@ export class VaultBossJob {
         h.banner("HollowCandor is down", "Act 5");
         this.target = h.markers.extract?.[0]?.clone() ?? null;
         h.say("Cath: Five off the list. All of them.");
+        // In the vault itself the machine's death is the end: no lift ride, the credits roll after a beat.
+        if (h.markers["boss:core"]) this.finaleIn = 4;
         break;
       case 2: {
         this.done = true;
@@ -64,7 +67,15 @@ export class VaultBossJob {
     }
   }
 
-  update(_dt: number): void {
+  update(dt: number): void {
+    if (this.stage === 1 && this.finaleIn > 0) {
+      this.finaleIn -= dt;
+      if (this.finaleIn <= 0) {
+        this.goto(2);
+        this.h.finale?.();
+      }
+      return;
+    }
     if (this.stage === 0 && this.boss) {
       this.target = this.boss.position.clone().setY(this.boss.position.y + 2.2);
       const frac = this.boss.hp / this.boss.kit.maxHp;

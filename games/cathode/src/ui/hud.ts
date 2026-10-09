@@ -3,6 +3,7 @@
 
 import { BINDABLE, codesFor, keyLabel, rebind } from "../controls";
 import { loadPrefs, savePrefs, type Intensity, type QualityChoice } from "../prefs";
+import { showCredits } from "./credits";
 
 export interface HudState {
   hp: number;
@@ -282,6 +283,12 @@ export class Hud {
     this.banner.classList.remove("on");
     void this.banner.offsetWidth;
     this.banner.classList.add("on");
+  }
+
+  /** The ending credits (vault finale). */
+  showCredits(onDone: () => void): void {
+    if (document.pointerLockElement) document.exitPointerLock();
+    showCredits(this.root, onDone);
   }
 
   private pause?: HTMLElement;
