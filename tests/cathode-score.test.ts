@@ -60,3 +60,18 @@ describe("score", () => {
     expect(stung).toBeGreaterThan(steady);
   });
 });
+
+describe("district scores", () => {
+  it("each variant plays and keeps its own tempo", () => {
+    for (const v of ["market", "clinic", "plaza"] as const) {
+      const { ctx, counts, sink } = fakeCtx();
+      const score = new Score(ctx, sink, sink, v);
+      const c = ctx as unknown as { currentTime: number };
+      for (let t = 0; t < 12; t += 1 / 30) {
+        c.currentTime = t;
+        score.update(0.3);
+      }
+      expect(counts.osc, v).toBeGreaterThan(10);
+    }
+  });
+});

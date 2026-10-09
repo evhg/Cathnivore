@@ -3,7 +3,7 @@
 // sirens and thunder, a heartbeat in bullet-time, and a noir synth score that tightens as the street
 // notices Cath. Everything goes through a lowpass the slow-motion closes, so time itself sounds heavy.
 
-import { Score } from "./score";
+import { Score, type ScoreVariant } from "./score";
 
 type Noise = "white" | "pink" | "brown";
 
@@ -27,7 +27,7 @@ export class Audio {
   private stepDist = 0;
   enabled = true;
 
-  constructor() {
+  constructor(variant: ScoreVariant = "market") {
     const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     this.ctx = new AC();
     const c = this.ctx;
@@ -57,7 +57,7 @@ export class Audio {
     this.musicFilter.Q.value = 0.5;
     this.music.connect(this.musicFilter).connect(this.master);
     this.ambience();
-    this.score = new Score(c, this.music, this.verbSend);
+    this.score = new Score(c, this.music, this.verbSend, variant);
   }
 
   private unlocked = false;

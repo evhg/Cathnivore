@@ -4,9 +4,7 @@
 // other pass. Tension (0 calm .. 1 hunted) adds brushes, then a kick and a busier bass, and opens the filter.
 
 const BPM = 76;
-const STEP = 60 / BPM / 4; // a sixteenth
 const LOOP = 128; // 8 bars of 16ths
-const SWING = STEP * 0.3;
 
 const midi = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
@@ -51,6 +49,53 @@ const ARP_STEPS: [number, number][] = [
   [14, 0.35],
 ];
 
+/** Each district's own loop: tempo, chords and lead (act 2's clinic is cold and sparse, act 3's plaza a minor-key march). */
+export type ScoreVariant = "market" | "clinic" | "plaza";
+interface Voicing {
+  bpm: number;
+  chords: Chord[];
+  melody: [number, number, number][];
+}
+
+const CLINIC_CHORDS: Chord[] = [
+  { root: 40, pad: [52, 55, 59, 62], arp: [64, 67, 71, 74, 76] },
+  { root: 36, pad: [48, 52, 55, 59, 66], arp: [64, 67, 71, 72, 78] },
+  { root: 44, pad: [51, 56, 59, 63], arp: [63, 68, 71, 75, 80] },
+  { root: 43, pad: [50, 55, 59, 62, 65], arp: [62, 67, 71, 74, 77] },
+];
+const CLINIC_MELODY: [number, number, number][] = [
+  [4, 76, 10],
+  [44, 71, 12],
+  [76, 72, 10],
+  [108, 66, 18],
+];
+const PLAZA_CHORDS: Chord[] = [
+  { root: 43, pad: [55, 58, 62, 65], arp: [67, 70, 74, 77, 79] },
+  { root: 39, pad: [51, 55, 58, 62], arp: [67, 70, 74, 75, 79] },
+  { root: 36, pad: [48, 51, 55, 58], arp: [67, 70, 72, 75, 79] },
+  { root: 38, pad: [50, 54, 57, 60], arp: [66, 69, 72, 74, 78] },
+];
+const PLAZA_MELODY: [number, number, number][] = [
+  [0, 74, 4],
+  [4, 74, 2],
+  [6, 79, 6],
+  [12, 77, 4],
+  [32, 75, 4],
+  [36, 74, 4],
+  [40, 70, 8],
+  [64, 72, 4],
+  [68, 70, 4],
+  [72, 67, 8],
+  [96, 69, 4],
+  [100, 74, 2],
+  [102, 78, 10],
+];
+const VOICINGS: Record<ScoreVariant, Voicing> = {
+  market: { bpm: BPM, chords: CHORDS, melody: MELODY },
+  clinic: { bpm: 62, chords: CLINIC_CHORDS, melody: CLINIC_MELODY },
+  plaza: { bpm: 88, chords: PLAZA_CHORDS, melody: PLAZA_MELODY },
+};
+
 export class Score {
   private next = 0;
   private n = 0;
@@ -59,15 +104,22 @@ export class Score {
   private lastSting = -99;
   private readonly delay: DelayNode;
   private readonly noise: AudioBuffer;
+  private readonly voicing: Voicing;
+  private readonly stepLen: number;
+  private readonly swing: number;
 
   constructor(
     private readonly ctx: AudioContext,
     private readonly out: AudioNode,
     private readonly verb: AudioNode,
+    variant: ScoreVariant = "market",
   ) {
+    this.voicing = VOICINGS[variant];
+    this.stepLen = 60 / this.voicing.bpm / 4; // a sixteenth
+    this.swing = this.stepLen * 0.3;
     // A dotted-eighth echo for the piano and the lead, into the street's reverb.
     this.delay = ctx.createDelay(2);
-    this.delay.delayTime.value = STEP * 3;
+    this.delay.delayTime.value = this.stepLen * 3;
     const fb = ctx.createGain();
     fb.gain.value = 0.32;
     const tone = ctx.createBiquadFilter();
@@ -97,25 +149,25 @@ export class Score {
       this.step(this.n, this.next);
       this.n++;
       if (this.n % LOOP === 0) this.pass++;
-      this.next += STEP;
+      this.next += this.stepLen;
     }
   }
 
   private step(n: number, t: number): void {
     const s = n % LOOP;
     const bar = s % 16;
-    const chord = CHORDS[Math.floor(s / 32)]!;
+    const chord = this.voicing.chords[Math.floor(s / 32)]!;
     const T = this.tension;
-    const swung = bar % 4 === 2 ? t + SWING : t;
+    const swung = bar % 4 === 2 ? t + this.swing : t;
 
-    if (s % 32 === 0) for (const p of chord.pad) this.pad(midi(p), t, STEP * 32);
+    if (s % 32 === 0) for (const p of chord.pad) this.pad(midi(p), t, this.stepLen * 32);
 
     // Bass: the root on one, a pickup to the fifth; walking eighths once the street is hunting her.
     const busy = T > 0.55;
-    if (bar === 0) this.bass(midi(chord.root), t, STEP * (busy ? 2 : 7), 1);
-    else if (bar === 10) this.bass(midi(chord.root + 7), swung, STEP * 3, 0.7);
-    else if (bar === 14 && s % 32 === 30) this.bass(midi(chord.root + (s < 96 ? -2 : 1)), swung, STEP * 2, 0.6);
-    else if (busy && bar % 2 === 0) this.bass(midi(chord.root + [0, 12, 7, 10][(bar >> 1) % 4]!), swung, STEP * 1.5, 0.55);
+    if (bar === 0) this.bass(midi(chord.root), t, this.stepLen * (busy ? 2 : 7), 1);
+    else if (bar === 10) this.bass(midi(chord.root + 7), swung, this.stepLen * 3, 0.7);
+    else if (bar === 14 && s % 32 === 30) this.bass(midi(chord.root + (s < 96 ? -2 : 1)), swung, this.stepLen * 2, 0.6);
+    else if (busy && bar % 2 === 0) this.bass(midi(chord.root + [0, 12, 7, 10][(bar >> 1) % 4]!), swung, this.stepLen * 1.5, 0.55);
 
     // Piano.
     for (const [at, chance] of ARP_STEPS) {
@@ -126,7 +178,7 @@ export class Score {
     }
 
     // The lead, every other pass, and not in a fight.
-    if (this.pass % 2 === 1 && T < 0.7) for (const [at, note, len] of MELODY) if (at === s) this.lead(midi(note), t, STEP * len);
+    if (this.pass % 2 === 1 && T < 0.7) for (const [at, note, len] of this.voicing.melody) if (at === s) this.lead(midi(note), t, this.stepLen * len);
 
     // Hunted: a driving sixteenth synth ostinato on the chord's root and fifth, louder as it gets worse.
     if (T > 0.55) this.pulse(midi(chord.root + 24 + ([0, 0, 7, 0, 10, 7, 12, 7][bar % 8] ?? 0)), t, Math.min(1, (T - 0.55) * 3));

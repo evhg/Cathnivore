@@ -107,6 +107,9 @@ const GRACE = 12;
 
 
 export async function startSession(o: SessionOptions): Promise<Session> {
+  const inClinic = o.district === "clinic";
+  const inPlaza = o.district === "plaza";
+  const inMarket = !inClinic && !inPlaza;
   const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress);
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
@@ -197,7 +200,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const hud = new Hud(o.hud);
   let audio: Audio | null = null;
   try {
-    audio = new Audio();
+    audio = new Audio(inPlaza ? "plaza" : inClinic ? "clinic" : "market");
   } catch {
     // No WebAudio: play on in silence.
   }
@@ -244,9 +247,6 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   const build = (): Build => progress.build();
 
-  const inClinic = o.district === "clinic";
-  const inPlaza = o.district === "plaza";
-  const inMarket = !inClinic && !inPlaza;
   let objective = inPlaza
     ? "Councillor Pell's permit strongbox is under the market awnings, west side of the square."
     : inClinic
