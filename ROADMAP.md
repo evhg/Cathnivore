@@ -483,5 +483,12 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 211. [x] **CATHODE phone:** the "Drag to aim" hint sat under the subtitle bar; moved up to 38%.
 212. [x] **CATHODE phone:** objective line sits tight above the player card; give them 6px of air.
 213. [x] *(closed: board is width-bound at 390px, already full width)* **Runnel phone:** the board leaves ~120px empty above the hint; scale it up to use the height.
-214. [ ] **Runnel desktop:** shot the board behind the how-to only; check the desktop board at rest.
+214. [x] **Runnel desktop (checked, board fine; progress bar thickened to 8px):** shot the board behind the how-to only; check the desktop board at rest.
 215. [x] **Hedgerow:** run `hedgerow-shots.mjs` and critique level 1 and a mid map.
+
+### Phase 20 (planned 2026-10-09 10:20)
+216. [ ] **Runnel stats sheet:** screenshot the stats dialog at phone and desktop, critique, fix.
+217. [ ] **Runnel win dialog:** screenshot a solved board (phone and desktop) and check Cath, share button and next-puzzle timer.
+218. [ ] **Landing page desktop:** re-shot after Phase 19; check card alignment and Cath.
+219. [ ] **CATHODE title and class-select shots:** critique against VISION.md.
+220. [ ] **Hedgerow tower-info card:** screenshot a selected tower's specialisation panel at phone size; check stats legibility.
