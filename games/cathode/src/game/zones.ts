@@ -67,6 +67,12 @@ export function districtLeads(jobsDone: readonly string[]): DistrictLead[] {
   return rows.map((r) => ({ ...r, open: jobsDone.includes(r.needs) }));
 }
 
+/** The loading card's heading for a district id (default: the market). */
+export function loadingTitle(id: string | undefined): string {
+  if (id === "clinic") return "Act 2 · The Candor Clinic";
+  return "Act 1 · The Drowned Market";
+}
+
 /** Districts the player can travel to from the map: the market always, others once built and unlocked. */
 const BUILT_DISTRICTS = ["clinic"];
 export function travelOptions(jobsDone: readonly string[]): { id: string; name: string }[] {
