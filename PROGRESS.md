@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-09 11:52 session (short):** ROADMAP 220 done (tower card legible; upgrade button label shortened so it no longer wraps to 3 lines; tsc clean). Unreleased since `0112929` (3 releases today). Next: 217, 219.
 - **2026-10-09 10:51 session (short):** ROADMAP 218 done (desktop landing: Hedgerow card centred in its own row, CSS only; shot checked, e2e:site 52 passed). Unreleased since `0112929` (3 releases today). Next: 217, 219, 220.
 - **2026-10-09 09:52 session (short):** ROADMAP 214 (Runnel desktop fine; progress bar 8px), 216 (stats sheet fine) done; planned Phase 20 (216-220). 217 needs a solve hook for Runnel (none exists). tsc clean. Unreleased since `0112929` (3 releases today). Next: 217, 218, 219, 220.
 - **2026-10-09 08:51 session:** ROADMAP 206 (phone Actions left beside producer name; shot checked, quick-game e2e passes) and 215 (Hedgerow shots look good) done; released `0112929` (all gates passed, live version.json matches; tag push 403 harmless; 3rd release today). Next: 214, then plan Phase 20 from fresh shots.

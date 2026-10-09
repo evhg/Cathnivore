@@ -998,7 +998,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     up.className = "btn";
     up.id = "btn-upgrade";
     up.dataset.cost = String(cost);
-    up.textContent = `Upgrade to tier ${t.tier + 1} · ${cost}`;
+    up.textContent = `Upgrade → T${t.tier + 1} · ${cost}`;
     up.disabled = g.marks < cost;
     up.onclick = () => {
       if (doAct({ t: "upgrade", id: t.id })) {
