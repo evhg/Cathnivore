@@ -484,4 +484,4 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 212. [x] **CATHODE phone:** objective line sits tight above the player card; give them 6px of air.
 213. [x] *(closed: board is width-bound at 390px, already full width)* **Runnel phone:** the board leaves ~120px empty above the hint; scale it up to use the height.
 214. [ ] **Runnel desktop:** shot the board behind the how-to only; check the desktop board at rest.
-215. [ ] **Hedgerow:** run `hedgerow-shots.mjs` and critique level 1 and a mid map.
+215. [x] **Hedgerow:** run `hedgerow-shots.mjs` and critique level 1 and a mid map.
