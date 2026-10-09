@@ -63,7 +63,7 @@ describe("score", () => {
 
 describe("district scores", () => {
   it("each variant plays and keeps its own tempo", () => {
-    for (const v of ["market", "clinic", "plaza"] as const) {
+    for (const v of ["market", "clinic", "plaza", "tower", "vault"] as const) {
       const { ctx, counts, sink } = fakeCtx();
       const score = new Score(ctx, sink, sink, v);
       const c = ctx as unknown as { currentTime: number };

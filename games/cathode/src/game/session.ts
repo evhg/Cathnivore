@@ -202,7 +202,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const hud = new Hud(o.hud);
   let audio: Audio | null = null;
   try {
-    audio = new Audio(inPlaza ? "plaza" : inClinic ? "clinic" : "market");
+    audio = new Audio(inVault ? "vault" : inTower ? "tower" : inPlaza ? "plaza" : inClinic ? "clinic" : "market");
   } catch {
     // No WebAudio: play on in silence.
   }

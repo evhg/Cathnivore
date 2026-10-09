@@ -50,7 +50,7 @@ const ARP_STEPS: [number, number][] = [
 ];
 
 /** Each district's own loop: tempo, chords and lead (act 2's clinic is cold and sparse, act 3's plaza a minor-key march). */
-export type ScoreVariant = "market" | "clinic" | "plaza";
+export type ScoreVariant = "market" | "clinic" | "plaza" | "tower" | "vault";
 interface Voicing {
   bpm: number;
   chords: Chord[];
@@ -90,10 +90,37 @@ const PLAZA_MELODY: [number, number, number][] = [
   [100, 74, 2],
   [102, 78, 10],
 ];
+// The tower: slick, major-seventh corporate jazz at a glide. The vault: a slow, heavy, low pulse.
+const TOWER_CHORDS: Chord[] = [
+  { root: 41, pad: [53, 57, 60, 64, 67], arp: [65, 69, 72, 76, 79] }, // Fmaj9
+  { root: 36, pad: [48, 52, 55, 59, 62], arp: [64, 67, 71, 74, 79] }, // Cmaj9
+  { root: 38, pad: [50, 53, 57, 60, 64], arp: [62, 65, 69, 72, 76] }, // Dm9
+  { root: 43, pad: [53, 55, 59, 62, 65], arp: [62, 65, 67, 71, 77] }, // G13
+];
+const TOWER_MELODY: [number, number, number][] = [
+  [8, 81, 8],
+  [24, 79, 6],
+  [40, 77, 12],
+  [72, 76, 6],
+  [88, 81, 8],
+  [104, 79, 16],
+];
+const VAULT_CHORDS: Chord[] = [
+  { root: 28, pad: [40, 47, 52, 55], arp: [59, 64, 67, 71, 76] },
+  { root: 28, pad: [40, 46, 52, 56], arp: [58, 64, 68, 71, 76] },
+  { root: 26, pad: [38, 45, 50, 54], arp: [57, 62, 66, 69, 74] },
+  { root: 27, pad: [39, 46, 51, 55], arp: [58, 63, 67, 70, 75] },
+];
+const VAULT_MELODY: [number, number, number][] = [
+  [16, 71, 24],
+  [80, 68, 28],
+];
 const VOICINGS: Record<ScoreVariant, Voicing> = {
   market: { bpm: BPM, chords: CHORDS, melody: MELODY },
   clinic: { bpm: 62, chords: CLINIC_CHORDS, melody: CLINIC_MELODY },
   plaza: { bpm: 88, chords: PLAZA_CHORDS, melody: PLAZA_MELODY },
+  tower: { bpm: 70, chords: TOWER_CHORDS, melody: TOWER_MELODY },
+  vault: { bpm: 54, chords: VAULT_CHORDS, melody: VAULT_MELODY },
 };
 
 export class Score {
