@@ -28,6 +28,7 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   const lights: VLight[] = [];
   const signs: SignDef[] = [];
   const windows: WindowDef[] = [];
+  const cones: Level["cones"] = [];
   let seed = 1;
   const light = (pos: THREE.Vector3, color: string, intensity: number, range: number, flicker = 0, real = false) =>
     lights.push({ pos, color: C(color), intensity, range, normal: null, flicker, seed: seed++, real });
@@ -127,6 +128,7 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
       b.cylinder("pipe", V(x, 0, z), V(x, 5.2, z), 0.07, 8, "metal");
       b.box("glowSodium", x, 5.25, z, 0.5, 0.1, 0.5);
       light(V(x, 5, z), "#ff9a3a", 20, 12, z % 24 === 0 ? 1 : 0, Math.abs(z) < 30);
+      cones.push({ top: V(x, 5.2, z), length: 5.2, radius: 2.4, color: C("#ff9a3a"), strength: 0.5 });
     }
   }
 
@@ -145,6 +147,12 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     b.box("glowCyan", x + 0.5, 1.4, stepZ0 + 7, 0.5, 0.12, 0.2);
     light(V(x - 0.5, 1.6, stepZ0 + 7), "#ff2a2a", 14, 9, 3);
     light(V(x + 0.5, 1.6, stepZ0 + 7), "#2e8bff", 14, 9, 3);
+  }
+  // Police searchlights from the hall roof rake the square through the rain.
+  for (const [x, tx] of [[-12, -4], [12, 6]] as const) {
+    const top = V(x, 21, zN + 2);
+    const dir = V(tx - x, -21, 14 - (zN + 2)).normalize();
+    cones.push({ top, dir, length: 46, radius: 5, color: C("#cfe6ff"), strength: 0.7 });
   }
   // Barriers and cover across the square.
   for (const [x, z] of [[-8, 30], [8, 24], [-6, -2], [6, 16], [0, -18], [-12, 14], [12, -22]] as const) {
@@ -191,7 +199,7 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     lights,
     signs,
     windows,
-    cones: [],
+    cones,
     posters: [],
     vending: [],
     interiors: [],
