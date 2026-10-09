@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-09 00:51 session (started 23:51):** `npm run check` green, then released `aa94954` (gates passed, live smoke passed; tag push 403 harmless; 1st release on 10-09). Gate 5 first failed on `ai-teammate.spec.ts` expecting a two-sentence AI log line; relaxed to one sentence. ROADMAP 199 done. Next: 198 Hedgerow shots sweep, plan Phase 18.
 - **2026-10-08 22:51 session:** ROADMAP 196 done (phone player card wraps as a row; shot checked, quick-game e2e passes; modest gain). Unreleased since 08:51 (cap used; first session after 00:00 UTC should release, ROADMAP 199). Next: 198, 199.
 - **2026-10-08 21:51 session:** ROADMAP 197 done (phone title water band and shimmer removed, CSS only, not screenshotted; tsc clean). Unreleased since 08:51 (cap used; first session after 00:00 UTC should release, ROADMAP 199). Next: 196, 198.
 - **2026-10-08 20:51 session:** ROADMAP 195 done (map viewBox trimmed 12 units top and bottom, aspect 500/476; tsc clean; quick-game, desktop-no-scroll, phone-map-hero pass on chromium projects; webkit projects unavailable here; not screenshotted). Unreleased since 08:51 (cap used). Next: 196, 197, 198.
