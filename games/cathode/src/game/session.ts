@@ -226,12 +226,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   window.cathode = s;
   // Face down the street from the start marker, towards the extraction point.
   const ex = world.markers.extract?.[0];
-  if (ex) player.yaw = Math.atan2(-(ex.x - start.x), -(ex.z - start.z));
+  if (o.district === "clinic") player.yaw = 0;
+  else if (ex) player.yaw = Math.atan2(-(ex.x - start.x), -(ex.z - start.z));
 
   const build = (): Build => progress.build();
 
-  let objective = "Get to the fish market. Somebody there knows who put Tomas in the water.";
-  hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
+  const inClinic = o.district === "clinic";
+  let objective = inClinic
+    ? "Find Dr Vane. Her theatre is at the north end of the clinic."
+    : "Get to the fish market. Somebody there knows who put Tomas in the water.";
+  if (inClinic) hud.showBanner("The Candor Clinic", "Act 2 · 02:10");
+  else hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
   const zones = new ZoneWatch();
   const wings = new WingWatch();
   const voice = new Voice((t) => hud.subtitle(t));
@@ -513,7 +518,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const actives = new Actives();
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;
-  setTimeout(() => voice.say("start"), 2600);
+  setTimeout(() => voice.say(inClinic ? "startClinic" : "start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
   const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, rescueMin: 0.4 });

@@ -341,3 +341,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-09: owner's direction in chat: 70% CATHODE districts (ROADMAP Phase D), 30% Hedgerow depth (Phase H), polish batched to at most one session a day, releases at milestones only. Recorded in FEEDBACK.md, ROADMAP.md and CLAUDE.md.
 - 2026-10-09 13:52: D1 started: Level gets an optional `theme` (indoor flag skips water/rain), districts selected by `?district=` until travel UI exists.
 - 2026-10-09 14:51: D1 travel = page reload into ?district= from the map (save lives in storage); clinic map still draws market zones.
+- 2026-10-09 15:52: orderly reuses the `candorChrome` archetype and strikes via a melee `shots` entry (3 m ray, no muzzle fx) so combat/damage code is unchanged.

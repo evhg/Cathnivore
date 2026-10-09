@@ -112,7 +112,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   scene.add(signs.tubes, signs.boxes);
 
   // ------------------------------------------------------------ lights
-  const hemi = new THREE.HemisphereLight(0x6f86b0, 0x0a0a0c, 0.06);
+  // Indoors (the clinic) a pale green wash stands in for bounce light; the street stays near-black.
+  const ambient = outdoor ? 0.06 : 0.7;
+  const hemi = new THREE.HemisphereLight(outdoor ? 0x6f86b0 : 0xcfeee0, outdoor ? 0x0a0a0c : 0x20302a, ambient);
   scene.add(hemi);
   const key = new THREE.SpotLight(level.key.color, 1100, 110, Math.PI * 0.16, 0.55, 2);
   key.position.copy(level.key.pos);
@@ -311,7 +313,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       }
       shared.uLightning.value = flash;
       lightning.intensity = flash * 2.2;
-      hemi.intensity = 0.06 + flash * 0.5;
+      hemi.intensity = ambient + flash * 0.5;
       // The floodlight hums and sways a hair in the wind.
       key.intensity = 1100 * (0.97 + 0.03 * Math.sin(time * 37 + hash1(Math.floor(time * 3))));
     },
