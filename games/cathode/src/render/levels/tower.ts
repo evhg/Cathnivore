@@ -5,7 +5,7 @@
 
 import * as THREE from "three";
 import { Builder } from "../builder";
-import { prng, WIN_COLS, WIN_ROWS } from "../textures";
+import { prng } from "../textures";
 import type { Level, SignDef, VLight, WindowDef } from "../level";
 
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
@@ -114,15 +114,28 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
   b.box("darkMetal", 0, H2 + 0.35, -52, 1.2, 0.7, 11);
   for (let i = 0; i < 6; i++) for (const s of [-1, 1]) b.box("blackPaint", s * 2.4, H2 + 0.45, -57 + i * 2, 0.7, 0.9, 0.7, { collide: "metal" });
   b.box("chrome", 0, H2 + 0.7, -58.6, 0.9, 1.4, 0.9);
-  b.boxMinMax("glass", xW, H2, zN, xE, H2 + 5, zN + 0.1, { collide: "metal" });
+  // The window wall is open to the skyline: chrome mullions and a transom, with an invisible collider so nobody walks out.
+  b.collide(new THREE.Box3(V(xW, H2, zN), V(xE, H2 + 5, zN + 0.1)), "metal");
+  for (let x = xW; x <= xE + 0.01; x += 4) b.box("chrome", x, H2 + 2.5, zN + 0.05, 0.14, 5, 0.14);
+  b.box("chrome", 0, H2 + 4.9, zN + 0.05, xE - xW, 0.14, 0.14);
   signs.push({ text: "THE BOARD", sub: "QUARTERLY SESSION", style: "screen", color: "#ffd9a0", w: 4, h: 1.2, center: V(-13.9, H2 + 3, -50), normal: V(1, 0, 0), flicker: 0, intensity: 2.2 });
 
   // The city beyond the glass: a dark backdrop of towers with lit windows, far below and far across.
   b.boxMinMax("blackPaint", -90, H2 - 60, zN - 46, 90, H2 + 50, zN - 45, { uv: 1 });
-  for (let row = 0; row < 18; row++) {
-    for (let i = 0; i < 40; i++) {
-      if (rand() > 0.55) continue;
-      windows.push({ pos: V(-78 + i * 4, H2 - 40 + row * 4.5, zN - 44.9), normal: V(0, 0, 1), w: 1.8, h: 2.4, tile: Math.floor(rand() * WIN_COLS * WIN_ROWS), lit: 1.2 + rand() * 2 });
+  // Skyline: towers of varied height at two depths, their windows plain glow boxes so fog and the lighting
+  // pass cannot swallow them.
+  for (let i = 0; i < 40; i++) {
+    const x = -88 + i * 4.5 + rand() * 2;
+    const w = 3.5 + rand() * 3;
+    const near = i % 2 === 0;
+    const z = zN - (near ? 18 : 32) - rand() * 6;
+    const top = H2 - 30 + rand() * (near ? 34 : 50);
+    b.boxMinMax(near ? "paintMetal" : "darkMetal", x - w / 2, H2 - 60, z - 4, x + w / 2, top, z + 4, { uv: 1 });
+    for (let wy = H2 - 28; wy < top - 1; wy += 3) {
+      for (let wx = x - w / 2 + 0.8; wx < x + w / 2 - 0.5; wx += 1.6) {
+        if (rand() > 0.7) continue;
+        b.box(rand() > 0.3 ? "glowWarm" : "glowCool", wx, wy, z + 4.05, 0.7, 0.9, 0.05);
+      }
     }
   }
   // Lights: cool lobby, office strips, a warm boardroom and a skylit glow from the city window.

@@ -350,3 +350,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-09 19:51: score variants are tempo/chord/melody tables in score.ts, chosen by district in Audio's constructor.
 - 2026-10-09 20:51: turret/hunter reuse Enemy kits with roles (no new bodies); credits are a DOM overlay and Continue reloads the page.
 - 2026-10-09 21:51: laser grids are marker pairs (`laser:*`) drawn as seven thin additive beams, alternating phase; no crouch-under rule.
+- 2026-10-09 22:51: boardroom `glass` material is near-opaque black, so the skyline was hidden; replaced the pane with mullions plus a collider-only box and made skyline windows glow boxes.
