@@ -27,7 +27,7 @@ export interface EnemyKit {
   xp: number;
   visor: number;
   /** Rifleman, a shield bearer (a riot shield stops rounds from the front), or a sniper with a laser. */
-  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | "civilian";
+  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | "civilian" | "turret" | "hunter";
   /** Elite modifiers (sim/enemies.ts): extraFast, stoneskin, multipleShots and the rest. */
   elite?: boolean;
   mods?: readonly string[];
@@ -99,6 +99,38 @@ export const NURSE: EnemyKit = {
   xp: 60,
   visor: 0xff7ad0,
   role: "nurse",
+};
+/** A vault sentry turret: bolted down, thick plating, wide fast bursts. Never moves; flank it or break line of sight. */
+export const TURRET: EnemyKit = {
+  name: "Vault Turret",
+  maxHp: 240,
+  armour: 0.45,
+  damage: 7,
+  burst: [5, 0.08, 1.3],
+  spread: 0.05,
+  walk: 0,
+  run: 0,
+  vision: { range: 46, fov: (150 * Math.PI) / 180 },
+  hearing: 0.8,
+  xp: 110,
+  visor: 0xff2a2a,
+  role: "turret",
+};
+/** A vault hunter drone: fragile and quick, it circles Cath at mid range firing short bursts. */
+export const HUNTER: EnemyKit = {
+  name: "Hunter Drone",
+  maxHp: 55,
+  armour: 0,
+  damage: 6,
+  burst: [2, 0.1, 0.8],
+  spread: 0.04,
+  walk: 4,
+  run: 9.5,
+  vision: { range: 40, fov: (140 * Math.PI) / 180 },
+  hearing: 1.4,
+  xp: 65,
+  visor: 0x30ffe0,
+  role: "hunter",
 };
 /** A bystander at the plaza rally: unarmed, wanders, bolts at gunfire. Killing one costs Cath (see session onKill). */
 export const CIVILIAN: EnemyKit = {
@@ -377,7 +409,7 @@ export class Enemy {
         face = sight.chest;
         aim = 1;
         // Keep a fighting distance: close in from far, back off when she's on top of them, strafe between.
-        const want = 14;
+        const want = this.kit.role === "hunter" ? 9 : 14;
         const d = flatDist(this.motion.pos, sight.chest);
         this.strafeT -= dt;
         if (this.strafeT <= 0) {
@@ -388,6 +420,12 @@ export class Enemy {
         const along = flat.clone().multiplyScalar(d > want + 4 ? 1 : d < want - 6 ? -1 : 0);
         target = this.motion.pos.clone().add(side.add(along).multiplyScalar(3));
         speed = d > want + 8 ? this.kit.run : this.kit.walk * 1.4;
+        if (this.kit.role === "turret") target = null;
+        if (this.kit.role === "hunter") {
+          this.strafeT -= dt * 1.5;
+          speed = this.kit.run;
+          target = this.motion.pos.clone().add(side.clone().multiplyScalar(2)).add(along.clone().multiplyScalar(2));
+        }
         if (this.kit.role === "shield") {
           // Shield bearers walk straight at her behind the shield.
           target = d > 4 ? sight.chest.clone() : null;
