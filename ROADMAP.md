@@ -478,5 +478,10 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 206. [ ] **Phone game:** one Sell row visible under the player card; try a two-column compact action row.
 207. [x] **Setup producer cards:** card text under the sticky Start is clipped at rest; add bottom fade/padding on desktop.
 208. [x] **Hedgerow level tune verify:** run `hedgerow-tune --verify` (bridges 13/53/72/93 were never re-tuned) and log in BALANCE.md.
-209. [ ] **CATHODE in-game shots sweep:** run `scripts/cathode-shots.mjs`, critique HUD against VISION.md, plan fixes.
-210. [ ] **Runnel shots sweep:** screenshot Runnel at phone and desktop, critique, plan fixes.
+209. [x] **CATHODE in-game shots sweep:** run `scripts/cathode-shots.mjs`, critique HUD against VISION.md, plan fixes.
+210. [x] **Runnel shots sweep:** screenshot Runnel at phone and desktop, critique, plan fixes.
+211. [x] **CATHODE phone:** the "Drag to aim" hint sat under the subtitle bar; moved up to 38%.
+212. [x] **CATHODE phone:** objective line sits tight above the player card; give them 6px of air.
+213. [x] *(closed: board is width-bound at 390px, already full width)* **Runnel phone:** the board leaves ~120px empty above the hint; scale it up to use the height.
+214. [ ] **Runnel desktop:** shot the board behind the how-to only; check the desktop board at rest.
+215. [ ] **Hedgerow:** run `hedgerow-shots.mjs` and critique level 1 and a mid map.

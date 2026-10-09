@@ -2509,7 +2509,7 @@ input[type="radio"] {
 .look-hint {
   position: absolute;
   right: 22%;
-  top: 56%;
+  top: 38%;
   transition: opacity 600ms ease-out;
   font: 700 11px/1 var(--ui);
   letter-spacing: 0.2em;
@@ -2735,6 +2735,7 @@ input[type="radio"] {
     overflow: hidden;
   }
   .hud-objective {
+    margin-bottom: 6px;
     font-size: 13px;
     max-width: 52%;
     display: -webkit-box;
