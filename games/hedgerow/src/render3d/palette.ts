@@ -147,9 +147,9 @@ export const ACT_LIGHT: ActLight[] = [
   // 7 The Rift: dusk, long orange shadows.
   { skyTop: "#3e3a5e", skyBottom: "#f09a6a", fog: "#a8786a", fogNear: 12, fogFar: 34, sun: "#ffad70", sunIntensity: 2.8, sunAz: 270, sunEl: 14, hemiSky: "#8a7aa8", hemiGround: "#3a2a24", hemiIntensity: 0.7, grass: ["#8a8a52", "#767644", "#9a9a5e"], dirt: ["#93734c", "#6e5038"], exposure: 1.05 },
   // 8 The Ballot: polling day afternoon.
-  { skyTop: "#7aa2cc", skyBottom: "#f2e2c4", fog: "#e4d8c0", fogNear: 15, fogFar: 42, sun: "#fff0d8", sunIntensity: 2.4, sunAz: 210, sunEl: 32, hemiSky: "#d8e4f2", hemiGround: "#4a5a36", hemiIntensity: 0.9, grass: ["#7fa85a", "#6c954a", "#8fb86a"], dirt: ["#b39d77", "#8d7051"], exposure: 1.0 },
+  { skyTop: "#7aa2cc", skyBottom: "#f2e2c4", fog: "#e4d8c0", fogNear: 15, fogFar: 42, sun: "#fff0d8", sunIntensity: 2.4, sunAz: 210, sunEl: 32, hemiSky: "#d8e4f2", hemiGround: "#4a5a36", hemiIntensity: 0.9, grass: ["#8aa468", "#789458", "#98b278"], dirt: ["#b39d77", "#8d7051"], exposure: 1.0 },
   // 9 The Merger: overcast, cold glass light.
-  { skyTop: "#5a6676", skyBottom: "#c4ccd4", fog: "#aab4be", fogNear: 12, fogFar: 34, sun: "#e8f0ff", sunIntensity: 1.8, sunAz: 190, sunEl: 50, hemiSky: "#c8d4e2", hemiGround: "#3a4440", hemiIntensity: 1.1, grass: ["#6f8a62", "#5e7854", "#7f9a72"], dirt: ["#978d7b", "#6f675c"], exposure: 0.95 },
+  { skyTop: "#5a6676", skyBottom: "#c4ccd4", fog: "#aab4be", fogNear: 12, fogFar: 34, sun: "#e8f0ff", sunIntensity: 1.8, sunAz: 190, sunEl: 50, hemiSky: "#c8d4e2", hemiGround: "#3a4440", hemiIntensity: 1.1, grass: ["#7a8c72", "#6a7c64", "#8a9c82"], dirt: ["#978d7b", "#6f675c"], exposure: 0.95 },
   // 10 Kingsmarket: night, lanterns and fire.
   { skyTop: "#141a33", skyBottom: "#5a2e3a", fog: "#2a1e2e", fogNear: 10, fogFar: 30, sun: "#ffb070", sunIntensity: 1.6, sunAz: 300, sunEl: 22, hemiSky: "#3a3a6a", hemiGround: "#1e1414", hemiIntensity: 0.75, grass: ["#4f6a3a", "#425a32", "#5a7642"], dirt: ["#7a5a3a", "#5a4028"], exposure: 1.15 },
 ];

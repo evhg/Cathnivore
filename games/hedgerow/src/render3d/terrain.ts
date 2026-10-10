@@ -333,6 +333,117 @@ export interface Ground {
   update: (t: number, dt: number) => void;
 }
 
+
+/** What fences each act's field in: hedgerows in the hills, dry-stone on the moor, driftwood by the sea, reeds
+ * on the river, orchard rows at Oakvale, rubble at the Rift, kerbs and railings in town, planters at the Merger. */
+type BorderStyle = "hedge" | "dark-hedge" | "wall" | "rubble" | "fence" | "reeds" | "orchard" | "rail" | "planters";
+const BORDER_OF_ACT: BorderStyle[] = ["hedge", "wall", "fence", "reeds", "orchard", "fence", "rubble", "rail", "planters", "dark-hedge"];
+
+/** The ring of the field's edge as (x, z, along-x?) segment centres every `step` cells, `off` outside the grid. */
+function ringPoints(cols: number, rows: number, off: number, step: number): Array<[number, number, boolean]> {
+  const pts: Array<[number, number, boolean]> = [];
+  for (let c = -off + step / 2; c < cols + off; c += step) pts.push([c, -off, true], [c, rows + off, true]);
+  for (let r = -off + step / 2; r < rows + off; r += step) pts.push([-off, r, false], [cols + off, r, false]);
+  return pts;
+}
+
+function buildBorder(
+  style: BorderStyle,
+  level: Level,
+  cols: number,
+  rows: number,
+  heightAt: (x: number, y: number) => number,
+  rand: () => number,
+  tuftCols: THREE.Color[],
+): THREE.Object3D[] {
+  const out: THREE.Object3D[] = [];
+  const open = (x: number, z: number) => laneDistance(level, x, z) < 0.85;
+  const c = (hex: string) => new THREE.Color(hex);
+  const shade = (hex: string, k: number) => c(hex).multiplyScalar(k);
+  const items: Inst[] = [];
+  const push = (geo: THREE.BufferGeometry, mat: THREE.Material, list: Inst[], shadows = true) => {
+    const m = instanced(geo, mat, list, shadows);
+    if (m) out.push(m);
+  };
+  if (style === "wall" || style === "rubble") {
+    const tones = style === "wall" ? ["#a8a396", "#8f8a7c", "#b9b4a5", "#7d786b"] : ["#8a7a68", "#6e6254", "#9a8a76", "#5a5046"];
+    for (const [x, z, alongX] of ringPoints(cols, rows, 0.55, 0.2)) {
+      if (open(x, z)) continue;
+      if (style === "rubble" && rand() < 0.22) continue;
+      for (let course = 0; course < (style === "wall" ? 2 : 1 + Math.floor(rand() * 2)); course++) {
+        const jitter = (rand() - 0.5) * 0.04;
+        items.push({
+          x: x + (alongX ? course * 0.1 : jitter),
+          y: heightAt(x, z) + 0.05 + course * 0.1 + (style === "rubble" ? rand() * 0.04 : 0),
+          z: z + (alongX ? jitter : course * 0.1),
+          ry: (alongX ? 0 : Math.PI / 2) + (style === "rubble" ? (rand() - 0.5) * 0.8 : 0),
+          s: 1,
+          sy: style === "rubble" ? 0.7 + rand() * 0.9 : 1,
+          color: shade(tones[Math.floor(rand() * tones.length)]!, 0.92 + rand() * 0.16),
+        });
+      }
+    }
+    push(new THREE.BoxGeometry(0.22, 0.1, 0.15), matte("#ffffff", 0.95), items);
+  } else if (style === "fence" || style === "rail") {
+    const posts: Inst[] = [];
+    const rails: Inst[] = [];
+    const wood = style === "fence" ? ["#b9a888", "#a39373", "#c7b898"] : ["#2d3036"];
+    for (const [x, z, alongX] of ringPoints(cols, rows, 0.55, 0.5)) {
+      if (open(x, z)) continue;
+      const h = heightAt(x, z);
+      for (const d of [-0.25, 0.25]) {
+        const px = alongX ? x + d : x;
+        const pz = alongX ? z : z + d;
+        posts.push({ x: px, y: h + 0.14, z: pz, ry: 0, s: 1, sy: 1 + (style === "fence" ? (rand() - 0.5) * 0.3 : 0), color: shade(wood[Math.floor(rand() * wood.length)]!, 0.9 + rand() * 0.2) });
+      }
+      for (const y of style === "fence" ? [0.1, 0.21] : [0.27]) rails.push({ x, y: h + y, z, ry: alongX ? 0 : Math.PI / 2, s: 1, sy: 1, color: shade(wood[0]!, 1) });
+      if (style === "rail") items.push({ x, y: h + 0.02, z, ry: alongX ? 0 : Math.PI / 2, s: 1, sy: 1, color: c("#b8b4aa") });
+    }
+    push(new THREE.CylinderGeometry(0.018, 0.022, 0.3, 5), matte("#ffffff", 0.85), posts);
+    push(new THREE.BoxGeometry(0.52, style === "fence" ? 0.035 : 0.02, 0.02), matte("#ffffff", style === "fence" ? 0.9 : 0.4), rails, false);
+    push(new THREE.BoxGeometry(0.52, 0.04, 0.1), matte("#ffffff", 0.9), items, false);
+  } else if (style === "planters") {
+    const plants: Inst[] = [];
+    for (const [x, z, alongX] of ringPoints(cols, rows, 0.6, 0.62)) {
+      if (open(x, z)) continue;
+      const h = heightAt(x, z);
+      items.push({ x, y: h + 0.07, z, ry: alongX ? 0 : Math.PI / 2, s: 1, sy: 1, color: shade("#c9ccd0", 0.92 + rand() * 0.12) });
+      plants.push({ x, y: h + 0.17, z, ry: rand() * 6, s: 0.1 + rand() * 0.04, sy: 0.8, color: shade("#5f8a52", 0.9 + rand() * 0.25) });
+    }
+    push(new THREE.BoxGeometry(0.58, 0.14, 0.2), matte("#ffffff", 0.35), items);
+    push(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff"), plants);
+  } else if (style === "reeds") {
+    const reeds: Inst[] = [];
+    const cols2 = ["#a7a867", "#8f9a58", "#b9b075"].map((h) => c(h));
+    for (let row = 0; row < 3; row++)
+      for (const [x, z] of ringPoints(cols, rows, 0.5 + row * 0.16, 0.07)) {
+        if (open(x, z) || rand() < 0.25) continue;
+        reeds.push({ x: x + (rand() - 0.5) * 0.05, y: heightAt(x, z) - 0.005, z: z + (rand() - 0.5) * 0.05, ry: rand() * 6.3, s: 1.5 + rand() * 0.8, sy: 2.4 + rand() * 1.8, color: cols2[Math.floor(rand() * 3)]!.clone().lerp(tuftCols[0]!, 0.15) });
+      }
+    push(tuftGeometry(), withSway(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }), 0.02, "hedgerow-reed"), reeds, false);
+  } else if (style === "orchard") {
+    const trunks: Inst[] = [];
+    const crowns: Inst[] = [];
+    const fruit: Inst[] = [];
+    const leafCols = ["#5f8a3a", "#6c9a40", "#527d34"].map((h) => c(h));
+    for (const [x, z] of ringPoints(cols, rows, 0.85, 0.85)) {
+      if (laneDistance(level, x, z) < 1.05) continue;
+      const h = heightAt(x, z);
+      const k = 0.85 + rand() * 0.35;
+      trunks.push({ x, y: h + 0.12 * k, z, ry: 0, s: k, sy: 1, color: c("#5a4028") });
+      crowns.push({ x, y: h + 0.34 * k, z, ry: rand() * 6, s: 0.22 * k, sy: 0.9, color: leafCols[Math.floor(rand() * 3)]! });
+      for (let i = 0; i < 4; i++) {
+        const a = rand() * 6.3;
+        fruit.push({ x: x + Math.cos(a) * 0.19 * k, y: h + (0.28 + rand() * 0.14) * k, z: z + Math.sin(a) * 0.19 * k, ry: 0, s: 0.028, sy: 1, color: c(rand() < 0.6 ? "#c94a3a" : "#e8c24a") });
+      }
+    }
+    push(new THREE.CylinderGeometry(0.025, 0.04, 0.24, 6), matte("#ffffff", 0.95), trunks);
+    push(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff"), crowns);
+    push(new THREE.IcosahedronGeometry(1, 0), matte("#ffffff", 0.5), fruit, false);
+  }
+  return out;
+}
+
 export function buildGround(level: Level): Ground {
   const light = actLight(level.id);
   const rand = rng(level.id * 7919 + 17);
@@ -621,10 +732,16 @@ export function buildGround(level: Level): Ground {
     bushes.push({ x, y: heightAt(x, y) + r * 0.8, z: y, ry: deco() * 6.3, s: r, sy: 0.85 + rand() * 0.3, color });
     if (rand() < 0.15) blooms.push({ x: x + (rand() - 0.5) * 0.1, y: heightAt(x, y) + r * 1.6, z: y + (rand() - 0.5) * 0.1, ry: 0, s: 0.03, sy: 1, color: bloomCol });
   };
-  for (let c = -0.9; c <= cols + 0.9; c += 0.22)
-    for (const r of [-0.62, -0.42, rows + 0.42, rows + 0.62]) hedgeAt(c + (rand() - 0.5) * 0.08, r);
-  for (let r = -0.4; r <= rows + 0.4; r += 0.22)
-    for (const c of [-0.62, -0.42, cols + 0.42, cols + 0.62]) hedgeAt(c, r + (rand() - 0.5) * 0.08);
+  const border = BORDER_OF_ACT[Math.max(0, Math.min(9, act))]!;
+  if (border === "hedge" || border === "dark-hedge") {
+    if (border === "dark-hedge") hedgeCols.forEach((c) => c.multiplyScalar(0.7));
+    for (let c = -0.9; c <= cols + 0.9; c += 0.22)
+      for (const r of [-0.62, -0.42, rows + 0.42, rows + 0.62]) hedgeAt(c + (rand() - 0.5) * 0.08, r);
+    for (let r = -0.4; r <= rows + 0.4; r += 0.22)
+      for (const c of [-0.62, -0.42, cols + 0.42, cols + 0.62]) hedgeAt(c, r + (rand() - 0.5) * 0.08);
+  } else {
+    for (const m of buildBorder(border, level, cols, rows, heightAt, rand, tuftCols)) group.add(m);
+  }
   for (const m of [
     instanced(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff"), bushes, true),
     instanced(new THREE.IcosahedronGeometry(1, 0), matte("#ffffff", 0.6), blooms),

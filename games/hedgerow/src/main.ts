@@ -412,6 +412,12 @@ const SANDBOX = new URLSearchParams(location.search).has("sandbox");
 // Sandbox only: a handle for screenshot scripts to set up a field (towers, merges) without clicking.
 if (SANDBOX)
   (window as unknown as { hedgerow: object }).hedgerow = { game: () => game, place, upgrade, merge, sendWave };
+// Sandbox only: `?sandbox=1&level=N` jumps straight into level N (screenshots of each act's biome).
+if (SANDBOX) {
+  const jump = Number(new URLSearchParams(location.search).get("level"));
+  const target = LEVELS.find((l) => l.id === jump);
+  if (target) setTimeout(() => startLevel(target, false), 300);
+}
 
 /** The Heroic toggle on the level map: the next level starts with one Goodwill and no pies. */
 let heroicMode = false;
