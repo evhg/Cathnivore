@@ -38,3 +38,6 @@ Keep this under 300 lines (SPEC 16). v1's full balance log (12 iterations, 2026-
 
 ## 2026-10-09 verify pass
 `hedgerow-tune --verify` over levels 1-100 (incl. bridges 13/53/72/93): all 100 completed and the generated HP table is unchanged, so shipped values still hold.
+
+## 2026-10-10 Hedgerow 2 M1 retune (Cath on a post, manual abilities)
+Cath no longer walks to the lead vehicle (she holds a post, 66% down the lane) and her whack is 6, not 15; nothing casts unless it is on Auto, so the bots now call `castAbilities` themselves twice a second. Full `hedgerow-tune.ts` (levels 1-100, about 40 min on 4 cores) then `--verify` (backed off on 62 levels). Median shipped HP scale versus the old table, by act: 0.88, 0.80, 0.79, 0.83, 0.95, 1.03, 1.01, 0.90, 0.98, 1.01 (Cath carried the early acts; late acts barely move). `best` bot, Cath's share of kills: level 1 13%, level 3 10%, level 8 4%, level 50 2%. All 201 Hedgerow tests pass (levels 1-100 won with at least 50% Goodwill).

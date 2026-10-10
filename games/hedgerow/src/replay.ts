@@ -7,6 +7,7 @@ import {
   callRally,
   duelStrike,
   merge,
+  moveHero,
   newGame,
   place,
   sell,
@@ -15,6 +16,7 @@ import {
   stepGame,
   throwPie,
   upgrade,
+  type Ability,
   type ActionResult,
   type Game,
   type Level,
@@ -33,7 +35,11 @@ export type Action =
   | { t: "neighbours" }
   | { t: "rally" }
   | { t: "merge"; id: number; partner: number }
-  | { t: "strike"; q: number };
+  | { t: "strike"; q: number }
+  /** Cath takes a new post (between rounds only). */
+  | { t: "hero"; x: number; y: number }
+  /** An ability's Auto toggle. */
+  | { t: "auto"; ability: Ability; on: boolean };
 
 /** How the game was started: which field, which mode, and the perks Cath brought. */
 export interface Setup {
@@ -46,8 +52,11 @@ export interface Setup {
   perks: Perks;
 }
 
+/** v2 (Hedgerow 2 M1): Cath holds a post and abilities are manual, so a v1 run no longer plays back the same. */
+export const REPLAY_VERSION = 2;
+
 export interface Replay {
-  v: 1;
+  v: typeof REPLAY_VERSION;
   setup: Setup;
   /** [engine steps before it, the action]. */
   log: Array<[number, Action]>;
@@ -77,12 +86,17 @@ export function applyAction(game: Game, a: Action): ActionResult {
       return merge(game, a.id, a.partner);
     case "strike":
       return duelStrike(game, a.q);
+    case "hero":
+      return moveHero(game, a.x, a.y);
+    case "auto":
+      game.auto[a.ability] = a.on;
+      return { ok: true };
   }
 }
 
 /** A fresh game exactly as a run started (the browser's duels included). */
 export function startGame(level: Level, setup: Setup): Game {
-  const game = newGame(level, setup.perks, { hero: true, abilities: true }, setup.heroic && !level.endless);
+  const game = newGame(level, setup.perks, {}, setup.heroic && !level.endless);
   game.duels = true;
   return game;
 }
@@ -105,7 +119,7 @@ export class Recorder {
   }
 
   replay(): Replay {
-    return { v: 1, setup: this.setup, log: this.log.slice(), steps: this.steps };
+    return { v: REPLAY_VERSION, setup: this.setup, log: this.log.slice(), steps: this.steps };
   }
 }
 
@@ -175,7 +189,7 @@ export async function decodeReplay(text: string): Promise<Replay | null> {
   try {
     const json = await pipe(fromB64url(text), new DecompressionStream("deflate-raw"));
     const r = JSON.parse(new TextDecoder().decode(json)) as Replay;
-    if (r?.v !== 1 || !r.setup || !Array.isArray(r.log) || typeof r.steps !== "number") return null;
+    if (r?.v !== REPLAY_VERSION || !r.setup || !Array.isArray(r.log) || typeof r.steps !== "number") return null;
     if (!["level", "endless", "daily"].includes(r.setup.mode)) return null;
     return r;
   } catch {

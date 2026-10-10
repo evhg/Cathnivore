@@ -1354,7 +1354,8 @@ export const HERO = {
   hp: 150,
   speed: 2.6,
   reach: 0.62,
-  damage: 15,
+  /** Hedgerow 2 M1: 15 → 6. She holds vehicles for the towers; she no longer takes the kills herself. */
+  damage: 6,
   cooldown: 0.6,
   regen: 9,
   respawn: 9,
@@ -1503,9 +1504,12 @@ export interface Game {
   perks: Perks;
   /** Goodwill at the start, after perks: stars are measured against it. */
   maxGoodwill: number;
-  /** The auto-battler: Cath walks to the trouble herself, and uses her abilities herself. */
-  auto: { hero: boolean; abilities: boolean };
-  /** Seconds until the autonomous Cath and abilities think again. */
+  /**
+   * Which of Cath's abilities cast themselves (Hedgerow 2 section 7: manual by default; a player earns each
+   * Auto toggle by casting it by hand three times). Cath herself always holds her post: she never roams.
+   */
+  auto: AutoCast;
+  /** Seconds until the Auto abilities think again. */
   aiCd: number;
   /** Rush hour: seconds until the next wave is forced. */
   rushIn?: number;
@@ -1641,10 +1645,21 @@ export function heroPost(level: Level): { x: number; y: number } {
   return pointAt(level.path, pathLength(level.path) * 0.66);
 }
 
+/** Cath's abilities that can be cast by hand or left on Auto. */
+export type Ability = "pie" | "neighbours" | "rally";
+export const ABILITIES: readonly Ability[] = ["pie", "neighbours", "rally"];
+export type AutoCast = Record<Ability, boolean>;
+/** Nothing casts itself: the default for a player and for the bots, which cast for themselves. */
+export const MANUAL: AutoCast = { pie: false, neighbours: false, rally: false };
+/** Hand casts before an ability earns its Auto toggle. */
+export const AUTO_AFTER_CASTS = 3;
+/** How far Cath may stand from her post (she re-aims from it; she never walks to the trouble). */
+export const POST_RADIUS = 0.05;
+
 export function newGame(
   level: Level,
   perks: Perks = NO_PERKS,
-  auto: Game["auto"] = { hero: true, abilities: true },
+  auto: Partial<AutoCast> = {},
   heroic = false,
 ): Game {
   const post = heroPost(level);
@@ -1674,7 +1689,7 @@ export function newGame(
     barricade: null,
     rallyLeft: 0,
     perks,
-    auto: { ...auto },
+    auto: { ...MANUAL, ...auto },
     aiCd: 0,
     duels: false,
     duel: null,
@@ -1898,7 +1913,7 @@ export function setTarget(
 
 /** Marks for calling the next wave before the current one is cleared. */
 export function earlyBonus(game: Game): number {
-  return Math.round((8 + game.wave * 2) * game.perks.earlyBonus);
+  return Math.round((10 + game.wave) * game.perks.earlyBonus);
 }
 
 /** True while a wave is out but fully spawned and more waves remain: the next one can be called early. */
@@ -1977,12 +1992,22 @@ export function sendWave(game: Game, forced = false): ActionResult {
   return { ok: true };
 }
 
-/** Sends Cath somewhere on the map. She walks; she can't hold anything while she walks. */
+/** True between rounds: nothing on the lane and nothing still to come, so Cath may change post. */
+export function betweenRounds(game: Game): boolean {
+  return game.phase === "build" || (game.phase === "wave" && game.enemies.length === 0 && game.spawnQueue.length === 0);
+}
+
+/**
+ * Gives Cath a new post (Hedgerow 2 section 6). Only between rounds: during a round she holds her post.
+ * She walks there; she can't hold anything while she walks.
+ */
 export function moveHero(game: Game, x: number, y: number): ActionResult {
   if (game.phase === "won" || game.phase === "lost")
     return { ok: false, reason: "The level is over." };
   if (game.hero.down > 0)
     return { ok: false, reason: "Cath is catching her breath." };
+  if (!betweenRounds(game))
+    return { ok: false, reason: "Cath holds her post during a wave. Move her between waves." };
   const cx = Math.min(game.level.cols - 0.3, Math.max(0.3, x));
   const cy = Math.min(game.level.rows - 0.3, Math.max(0.3, y));
   game.hero.tx = cx;
@@ -2232,34 +2257,13 @@ function toGo(game: Game, e: Enemy): number {
 }
 
 /**
- * Autonomous Cath: she meets the ground vehicle nearest the farmhouse a little ahead of it, so it walks
- * into her. With nothing to hold she goes back to her post. She never abandons what she's already holding.
+ * Casting sense: the pie on the thickest crowd or a boss, the neighbours when something nears the farmhouse,
+ * a rally on a big wave. The engine runs it only for abilities on Auto; the level bots call it themselves
+ * (they stand in for a competent player pressing the buttons).
  */
-function heroBrain(game: Game): void {
-  const h = game.hero;
-  if (hasTwist(game.level, "nocath")) return;
-  if (h.down > 0 || h.holding.length > 0) return;
-  let lead: Enemy | undefined;
-  for (const e of game.enemies) {
-    if (e.hp <= 0 || ENEMIES[e.kind].flying || isBig(e.kind) || !isRevealed(game, e)) continue;
-    if (!lead || toGo(game, e) < toGo(game, lead)) lead = e;
-  }
-  const spot = lead
-    ? enemyPoint(game.level, {
-        dist: Math.min((lead.lane ? game.pathLength2 : game.pathLength) - 0.5, lead.dist + 0.7),
-        lane: lead.lane,
-      })
-    : heroPost(game.level);
-  if (Math.hypot(spot.x - h.tx, spot.y - h.ty) > 0.4) {
-    h.tx = spot.x;
-    h.ty = spot.y;
-  }
-}
-
-/** Auto-cast: the pie on the thickest crowd or a boss, the neighbours when something nears the farmhouse, a rally on a big wave. */
-function abilityBrain(game: Game): void {
+export function castAbilities(game: Game, which: Partial<AutoCast> = { pie: true, neighbours: true, rally: true }): void {
   if (game.phase !== "wave" || game.enemies.length === 0) return;
-  if (!game.heroic && pieUnlocked(game.level) && game.pieCd <= 0) {
+  if (which.pie && !game.heroic && pieUnlocked(game.level) && game.pieCd <= 0) {
     const r = pieRadius(game);
     let best: Enemy | undefined;
     let bestScore = 0;
@@ -2282,9 +2286,10 @@ function abilityBrain(game: Game): void {
       throwPie(game, p.x, p.y);
     }
   }
-  if (neighboursUnlocked(game.level) && game.neighboursCd <= 0 && game.enemies.some((e) => e.hp > 0 && toGo(game, e) < 3))
+  if (which.neighbours && neighboursUnlocked(game.level) && game.neighboursCd <= 0 && game.enemies.some((e) => e.hp > 0 && toGo(game, e) < 3))
     callNeighbours(game);
   if (
+    which.rally &&
     rallyUnlocked(game.level) &&
     game.rallyCd <= 0 &&
     (game.enemies.length >= 10 || game.enemies.some((e) => isBig(e.kind)))
@@ -2349,8 +2354,7 @@ export function stepGame(game: Game): void {
   game.aiCd -= STEP;
   if (game.aiCd <= 0) {
     game.aiCd = 0.5;
-    if (game.auto.hero) heroBrain(game);
-    if (game.auto.abilities) abilityBrain(game);
+    if (game.auto.pie || game.auto.neighbours || game.auto.rally) castAbilities(game, game.auto);
   }
 
   while (

@@ -3,7 +3,7 @@
 // storage failure degrades to an in-memory copy so the game still plays. Bump `version` and add a
 // migration (with a test) for every shape change. v1 -> v2 (2026-10-02): added seen, tips and bank.
 
-import { NO_PERKS, type Perks } from "./engine";
+import { ABILITIES, AUTO_AFTER_CASTS, NO_PERKS, type Ability, type Perks } from "./engine";
 import { applyCath, levelOf, parseCath, xpOf, type CathSave } from "./cath";
 
 export interface SaveData {
@@ -29,6 +29,54 @@ export interface SaveData {
   cath?: CathSave;
   /** The wardrobe outfit she is wearing (wardrobe.ts). Optional in old saves. */
   outfit?: string;
+  /** Play settings (Hedgerow 2 M1). Optional in old saves. */
+  settings?: {
+    /** Keep Going: the next round starts by itself 2 s after a clear. Unset = on (from level 6). */
+    keepGoing?: boolean;
+  };
+  /** Hand casts per ability: three earn its Auto toggle (Hedgerow 2 section 7). Optional in old saves. */
+  casts?: Partial<Record<Ability, number>>;
+  /** Abilities the player has switched to Auto (only honoured once earned). Optional in old saves. */
+  autoCast?: Partial<Record<Ability, boolean>>;
+}
+
+/** Levels where Keep Going is always off, while new players learn the Go and stack rhythm. */
+export const KEEP_GOING_FROM = 6;
+
+/** Is Keep Going on for this level? Off on levels 1-5; after that on unless the player turned it off. */
+export function keepGoingFor(data: SaveData, levelId: number): boolean {
+  if (levelId < KEEP_GOING_FROM) return false;
+  return data.settings?.keepGoing ?? true;
+}
+
+export function setKeepGoing(data: SaveData, on: boolean): void {
+  (data.settings ??= {}).keepGoing = on;
+}
+
+/** Counts a hand cast; returns the new total. */
+export function recordCast(data: SaveData, ability: Ability): number {
+  const casts = (data.casts ??= {});
+  casts[ability] = Math.min(9999, (casts[ability] ?? 0) + 1);
+  return casts[ability]!;
+}
+
+/** Has this ability earned its Auto toggle (three hand casts)? */
+export function autoEarned(data: SaveData, ability: Ability): boolean {
+  return (data.casts?.[ability] ?? 0) >= AUTO_AFTER_CASTS;
+}
+
+/** Is this ability on Auto? Only once earned. */
+export function autoOn(data: SaveData, ability: Ability): boolean {
+  return autoEarned(data, ability) && data.autoCast?.[ability] === true;
+}
+
+export function setAuto(data: SaveData, ability: Ability, on: boolean): void {
+  (data.autoCast ??= {})[ability] = on;
+}
+
+/** x5 opens on a level once it has been won. */
+export function fastestSpeed(data: SaveData, levelId: number): 3 | 5 {
+  return (data.stars[String(levelId)] ?? 0) >= 1 ? 5 : 3;
 }
 
 const KEY = "hedgerow:v1";
@@ -57,6 +105,13 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
       if (obj.cath) data.cath = parseCath(obj.cath);
       if (typeof obj.outfit === "string") data.outfit = obj.outfit.slice(0, 20);
+      if (obj.settings && typeof obj.settings === "object" && typeof obj.settings.keepGoing === "boolean")
+        data.settings = { keepGoing: obj.settings.keepGoing };
+      for (const a of ABILITIES) {
+        const n = obj.casts?.[a];
+        if (typeof n === "number" && n >= 1) (data.casts ??= {})[a] = Math.min(9999, Math.floor(n));
+        if (obj.autoCast?.[a] === true) (data.autoCast ??= {})[a] = true;
+      }
       for (const [k, v] of Object.entries(obj.bank ?? {})) {
         const perk = PERKS.find((p) => p.id === k);
         if (perk && typeof v === "number" && v >= 1) data.bank[k] = Math.min(perk.costs.length, Math.floor(v));

@@ -2,14 +2,15 @@
 // - "competent" reads the next two waves and the level's twists and buys counters: something that hits air
 //   when drones come, Silos for armour, a Radio Mast for stealth, a Clinic Tent for charm, Beehives for
 //   crowds, hedges to slow, a Market Stall for income, the Courthouse for bosses; it places each where it
-//   covers the most lane, upgrades, and picks specialisations to match. Cath and her abilities run
-//   themselves (the auto-battler).
+//   covers the most lane, upgrades, and picks specialisations to match. Cath holds her post; every bot but
+//   "idle" casts her abilities itself, as a player pressing the buttons would (castAbilities in engine.ts).
 // - "naive" plants Scarecrows on the best plots and upgrades them, never specialising.
 // - "balanced" follows the same simple plan with a weighted mix of damage dealers (splash included).
 // - "best" is the better of competent and balanced: what the tuner and the level tests use.
 // A level is tuned so the competent bot wins keeping 40-85% of its Goodwill (docs/design/hedgerow-v2.md 2).
 
 import {
+  castAbilities,
   ENEMIES,
   enemyPoint,
   hasTwist,
@@ -312,9 +313,11 @@ export function playLevel(level: Level, skill: Skill): Game {
     if (game.phase === "build") {
       if (skill !== "idle") spend(game, skill, samples);
       sendWave(game);
-    } else if ((skill === "competent" || skill === "balanced") && game.tick % 90 === 0) {
+    } else {
+      // Abilities are manual (Hedgerow 2 M1): the bots press the buttons, twice a second.
+      if (skill !== "idle" && game.tick % 15 === 0) castAbilities(game);
       // Between spawns the competent bot keeps spending what the lane pays.
-      spend(game, skill, samples);
+      if ((skill === "competent" || skill === "balanced") && game.tick % 90 === 0) spend(game, skill, samples);
     }
     stepGame(game);
   }

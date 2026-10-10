@@ -14,7 +14,7 @@ import {
 } from "../games/hedgerow/src/engine";
 import { LEVELS } from "../games/hedgerow/src/levels";
 
-const MANUAL = { hero: false, abilities: false };
+const MANUAL = {};
 
 function strip(setPieces: SetPiece[], waves = 3): Level {
   return {

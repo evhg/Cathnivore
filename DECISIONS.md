@@ -357,3 +357,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-10: H1 started with per-act field borders (BORDER_OF_ACT in render3d/terrain.ts); H1 stays open until ground, props and weather also differ per act.
 - 2026-10-10 06:51: per-act scenery is data tables in terrain.ts; no new models.
 - 2026-10-10: Hedgerow 2 (`docs/design/hedgerow-2.md`) after a Bloons TD research workflow. Layered Fleet enemies, one Round Book, 3x4 paths with Crowns, hard-lock properties and Cath on a post. Keep Going stays (on from level 6) and abilities earn Auto, to honour the owner's round 2 'mostly watches' wish. ROADMAP H2–H13.
+- 2026-10-10 H2/M1: the owner's "mostly watches" wish is kept as Keep Going (off on levels 1-5, then on by default and remembered, 2 s gap) plus abilities that earn Auto after 3 hand casts; Cath never farms kills.
+- 2026-10-10 H2/M1: Cath holds her post (heroBrain removed, moves only between waves) and HERO.damage 15 -> 6, so she holds vehicles for the towers; level 1 kill share is now under 20% (test).
+- 2026-10-10 H2/M1: `castAbilities` is shared by Auto and the level bots (they press the buttons twice a second); the engine never casts unless an ability is on Auto. Full retune + verify logged in BALANCE.md.
+- 2026-10-10 H2/M1: kept "wave" wording until the Round Book (M2); early bonus is now 10 + wave; speed is x1/x3, x5 after a win; replays bumped to v2 (v1 links stop decoding) with new `hero` and `auto` actions.

@@ -20,6 +20,9 @@ describe("hedgerow replays", () => {
         if (rec.act(game, { t: "place", kind: i % 2 ? "beehive" : "scarecrow", col: c, row: r }).ok) i++;
       }
     };
+    // Hedgerow 2 M1: Cath takes a post and the pie goes on Auto; both are inputs the replay keeps.
+    rec.act(game, { t: "hero", x: 2.5, y: 3.5 });
+    rec.act(game, { t: "auto", ability: "pie", on: true });
     let guard = 0;
     while (game.phase !== "won" && game.phase !== "lost" && guard++ < 200_000) {
       if (game.phase === "build") {
@@ -37,6 +40,8 @@ describe("hedgerow replays", () => {
   it("plays a recorded run back to exactly the same result", () => {
     const { game, replay } = record();
     expect(replay.log.length).toBeGreaterThan(3);
+    expect(replay.v).toBe(2);
+    expect(replay.log.some(([, a]) => a.t === "auto")).toBe(true);
     const back = new Player(level, replay).finish();
     expect([back.phase, back.goodwill, back.marks, back.tick, back.towers.length]).toEqual([
       game.phase,
@@ -45,6 +50,7 @@ describe("hedgerow replays", () => {
       game.tick,
       game.towers.length,
     ]);
+    expect([back.hero.x, back.hero.y, back.auto.pie]).toEqual([game.hero.x, game.hero.y, true]);
     const t = game.towers[0]!;
     expect(towerAt(back, t.col, t.row)?.tier).toBe(t.tier);
   });

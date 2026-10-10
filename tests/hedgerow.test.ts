@@ -27,6 +27,8 @@ import {
   canCallEarly,
   earlyBonus,
   moveHero,
+  MANUAL as MANUAL_CAST,
+  POST_RADIUS,
   pieCooldown,
   setTarget,
   towerStats,
@@ -48,11 +50,18 @@ import {
   perksOf,
   recordStars,
   refundAll,
+  keepGoingFor,
+  setKeepGoing,
+  recordCast,
+  autoEarned,
+  autoOn,
+  setAuto,
+  fastestSpeed,
 } from "../games/hedgerow/src/store";
 
 
 /** Cath and her abilities left to the test, not the auto-battler. */
-const MANUAL = { hero: false, abilities: false };
+const MANUAL = {};
 
 describe("hedgerow engine", () => {
   const level = LEVELS[0]!;
@@ -530,31 +539,112 @@ function spawn(
   return e;
 }
 
-describe("hedgerow: the auto-battler", () => {
-  it("Cath walks to meet the vehicle nearest the farmhouse by herself", () => {
-    const game = newGame(strip());
-    sendWave(game);
-    game.spawnQueue = [];
-    spawn(game, "van", 8, 1e6);
-    spawn(game, "van", 2, 1e6);
-    for (let i = 0; i < 90; i++) stepGame(game);
-    expect(game.hero.x).toBeGreaterThan(8);
-    expect(game.enemies.some((e) => e.held)).toBe(true);
+describe("hedgerow 2 M1: hands-on pacing", () => {
+  it("Cath stays within her post radius all level long, whatever comes", () => {
+    for (const lv of [LEVELS[0]!, LEVELS[4]!, LEVELS[11]!]) {
+      const game = newGame(lv);
+      const post = { x: game.hero.x, y: game.hero.y };
+      sendWave(game);
+      let far = 0;
+      for (let i = 0; i < 30 * 400 && game.phase !== "won" && game.phase !== "lost"; i++) {
+        if (game.phase === "build") sendWave(game);
+        stepGame(game);
+        far = Math.max(far, Math.hypot(game.hero.x - post.x, game.hero.y - post.y));
+      }
+      expect(far).toBeLessThanOrEqual(POST_RADIUS);
+    }
   });
 
-  it("she throws the pie at the thickest crowd by herself", () => {
-    const game = newGame(strip({ id: 50 }));
+  it("Cath changes post only between rounds", () => {
+    const game = newGame(strip());
+    expect(moveHero(game, 2.5, 0.5).ok).toBe(true);
     sendWave(game);
-    game.spawnQueue = [];
-    for (let i = 0; i < 6; i++) spawn(game, "van", 3 + i * 0.2, 1e6);
-    stepGame(game);
-    expect(game.pieCd).toBeGreaterThan(0);
-    const off = newGame(strip({ id: 50 }), NO_PERKS, MANUAL);
-    sendWave(off);
-    off.spawnQueue = [];
-    for (let i = 0; i < 6; i++) spawn(off, "van", 3 + i * 0.2, 1e6);
-    stepGame(off);
+    expect(moveHero(game, 8.5, 0.5).ok).toBe(false);
+    expect(game.hero.tx).toBe(2.5);
+  });
+
+  it("abilities never fire without Auto, and fire with it", () => {
+    const crowd = (auto: Parameters<typeof newGame>[2]) => {
+      const game = newGame(strip({ id: 50 }), NO_PERKS, auto);
+      place(game, "hedgerow", 0, 0);
+      sendWave(game);
+      game.spawnQueue = [];
+      for (let i = 0; i < 12; i++) spawn(game, "van", 8 + i * 0.2, 1e6);
+      for (let i = 0; i < 30 * 20; i++) stepGame(game);
+      return game;
+    };
+    const off = crowd({});
     expect(off.pieCd).toBe(0);
+    expect(off.neighboursCd).toBe(0);
+    expect(off.rallyCd).toBe(0);
+    expect(off.events.some((e) => e.type === "pie" || e.type === "neighbours" || e.type === "rally")).toBe(false);
+    const pieOnly = crowd({ pie: true });
+    expect(pieOnly.events.some((e) => e.type === "pie")).toBe(true);
+    expect(pieOnly.events.some((e) => e.type === "neighbours" || e.type === "rally")).toBe(false);
+    const all = crowd({ pie: true, neighbours: true, rally: true });
+    expect(all.events.some((e) => e.type === "rally")).toBe(true);
+    // Every ability starts manual.
+    expect(newGame(LEVELS[60]!).auto).toEqual(MANUAL_CAST);
+  });
+
+  it("stacking rounds is deterministic and pays the early bonus", () => {
+    const run = () => {
+      const game = newGame(LEVELS[7]!);
+      game.marks = 5000;
+      place(game, "scarecrow", 1, 0);
+      sendWave(game);
+      const bonuses: number[] = [];
+      for (let i = 0; i < 30 * 300 && game.phase !== "won" && game.phase !== "lost"; i++) {
+        if (game.phase === "build" || (canCallEarly(game) && game.waveClock > 2)) {
+          const before = game.marks;
+          const early = game.phase === "wave" ? earlyBonus(game) : 0;
+          if (sendWave(game).ok && early) bonuses.push(game.marks - before);
+        }
+        stepGame(game);
+      }
+      return { bonuses, tick: game.tick, marks: game.marks, goodwill: game.goodwill, wave: game.wave, phase: game.phase };
+    };
+    const a = run();
+    expect(a.bonuses.length).toBeGreaterThan(2);
+    expect(a.bonuses[0]).toBe(10 + 1);
+    expect(run()).toEqual(a);
+  });
+
+  it("Keep Going is off on levels 1-5, then on by default and remembered", () => {
+    const d = emptySave();
+    for (let id = 1; id <= 5; id++) expect(keepGoingFor(d, id)).toBe(false);
+    expect(keepGoingFor(d, 6)).toBe(true);
+    setKeepGoing(d, false);
+    const back = parseSave(JSON.stringify(d));
+    expect(keepGoingFor(back, 40)).toBe(false);
+    expect(keepGoingFor(back, 3)).toBe(false);
+    setKeepGoing(back, true);
+    expect(keepGoingFor(parseSave(JSON.stringify(back)), 40)).toBe(true);
+  });
+
+  it("an ability earns Auto after three hand casts, and x5 opens after a win", () => {
+    const d = emptySave();
+    setAuto(d, "pie", true);
+    expect(autoOn(d, "pie")).toBe(false);
+    recordCast(d, "pie");
+    recordCast(d, "pie");
+    expect(autoEarned(d, "pie")).toBe(false);
+    expect(recordCast(d, "pie")).toBe(3);
+    const back = parseSave(JSON.stringify(d));
+    expect(autoEarned(back, "pie")).toBe(true);
+    expect(autoOn(back, "pie")).toBe(true);
+    expect(autoEarned(back, "rally")).toBe(false);
+    expect(fastestSpeed(back, 4)).toBe(3);
+    recordStars(back, 4, 1);
+    expect(fastestSpeed(back, 4)).toBe(5);
+  });
+
+  it("on level 1 the best bot wins with Cath taking under 20% of the kills", () => {
+    const g = playLevel(LEVELS[0]!, "best");
+    expect(g.phase).toBe("won");
+    const kills = g.events.filter((e) => e.type === "kill").length;
+    expect(g.hero.kills / kills).toBeLessThan(0.2);
+    expect(g.events.some((e) => e.type === "pie" || e.type === "neighbours" || e.type === "rally")).toBe(false);
   });
 });
 

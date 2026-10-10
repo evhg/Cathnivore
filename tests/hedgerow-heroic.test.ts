@@ -7,7 +7,7 @@ import { emptySave, parseSave, recordHeroic } from "../games/hedgerow/src/store"
 describe("heroic runs", () => {
   it("start with one Goodwill and no pies, whatever the perks", () => {
     const lv = LEVELS[19]!;
-    const g = newGame(lv, { ...NO_PERKS, goodwill: 5 }, { hero: true, abilities: true }, true);
+    const g = newGame(lv, { ...NO_PERKS, goodwill: 5 }, { pie: true, neighbours: true, rally: true }, true);
     expect(g.goodwill).toBe(1);
     expect(g.maxGoodwill).toBe(1);
     g.phase = "wave";

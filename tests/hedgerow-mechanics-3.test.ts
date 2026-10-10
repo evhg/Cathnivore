@@ -32,7 +32,7 @@ import {
 } from "../games/hedgerow/src/engine";
 import { LEVELS } from "../games/hedgerow/src/levels";
 
-const MANUAL = { hero: false, abilities: false };
+const MANUAL = {};
 const ALL: TowerKind[] = Object.keys(TOWERS) as TowerKind[];
 
 /** A straight lane along row 1 of a 12x3 field, every tower unlocked. */
