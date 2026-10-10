@@ -131,6 +131,8 @@ export interface Level {
 
 export interface DistrictTheme {
   name: string;
+  /** Signature lighting moment that rolls through the district's lights (see lighting.ts signatureGain). */
+  signature?: "brownout" | "alarm" | "surge";
   loading: string;
   /** Linear RGB fog colour. */
   fog: [number, number, number];

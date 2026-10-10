@@ -154,6 +154,7 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     groundHeight: gh,
     theme: {
       name: "The Candor Clinic",
+      signature: "brownout",
       loading: "Failing fluorescents, cold tile…",
       fog: [0.0035, 0.0075, 0.0065],
       fogDensity: 0.012,

@@ -13,6 +13,7 @@ import { loadPbr, noiseTexture, windowAtlas, WIN_COLS, WIN_ROWS, posterAtlas, PO
 import { L, type Level } from "./level";
 import { buildDistrict } from "./levels";
 import { createMaterials } from "./materials";
+import { addTraffic } from "./traffic";
 import { bakeVolume, LightPool, hash1 } from "./lighting";
 import { buildSigns } from "./signs";
 import { buildAtmosphere, type AtmoUniforms } from "./atmosphere";
@@ -130,7 +131,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const lightning = new THREE.DirectionalLight(0xc8d8ff, 0);
   lightning.position.set(-40, 80, -60);
   scene.add(lightning);
-  const pool = new LightPool(scene, level.lights, P.pool, 0.7);
+  const traffic = outdoor ? addTraffic(scene, P.skyline > 120 ? 8 : 5) : null;
+  const pool = new LightPool(scene, level.lights, P.pool, 0.7, theme?.signature);
 
   // ------------------------------------------------------------ atmosphere
   const keyDir = level.key.target.clone().sub(level.key.pos).normalize();
@@ -288,6 +290,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       shared.uTime.value = time;
       signs.uniforms.uTime.value = time;
       atmo.update(camera, time);
+      traffic?.update(time);
       pool.update(camera, dt, time, shot || dt === 0);
       fxs.update(dt, camera);
       // Lightning: two or three quick pulses, then thunder a few seconds later.

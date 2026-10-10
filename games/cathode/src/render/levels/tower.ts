@@ -189,6 +189,7 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
     groundHeight: towerGround,
     theme: {
       name: "The Board Tower",
+      signature: "surge",
       loading: "Glass, marble, a private lift…",
       fog: [0.004, 0.006, 0.009],
       fogDensity: 0.006,

@@ -125,6 +125,30 @@ export function flicker(mode: number, seed: number, t: number): number {
   return h > 0.97 ? 0.15 : 1;
 }
 
+/**
+ * A district's signature lighting moment as a multiplier on every pooled light.
+ * brownout: every ~24 s the clinic's power stutters out for a second and comes back.
+ * alarm: the vault's red alarm swells and fades every 6 s (a breathing 0.75..1.25).
+ * surge: the tower's grid surges every ~30 s, a short bright swell.
+ */
+export function signatureGain(kind: string | undefined, t: number): number {
+  switch (kind) {
+    case "brownout": {
+      const p = t % 24;
+      if (p < 18 || p > 19.4) return 1;
+      return hash1(Math.floor(t * 14)) > 0.45 ? 0.12 : 0.7;
+    }
+    case "alarm":
+      return 1 + 0.25 * Math.sin((t / 6) * Math.PI * 2);
+    case "surge": {
+      const p = t % 30;
+      return p > 22 && p < 23.2 ? 1 + 0.6 * Math.sin(((p - 22) / 1.2) * Math.PI) : 1;
+    }
+    default:
+      return 1;
+  }
+}
+
 export function hash1(x: number): number {
   const s = Math.sin(x * 127.1 + 311.7) * 43758.5453;
   return s - Math.floor(s);
@@ -145,6 +169,8 @@ export class LightPool {
     all: VLight[],
     count: number,
     private readonly gain: number,
+    /** Signature lighting kind (DistrictTheme.signature); scales every light over time. */
+    public signature?: string,
   ) {
     this.cand = all.filter((l) => l.real);
     for (let i = 0; i < count; i++) {
@@ -188,7 +214,7 @@ export class LightPool {
       l.color.copy(a.color);
       l.distance = a.range * 1.15;
       // Intensity in candela-ish units with physically correct decay: scale up with range.
-      l.intensity = a.intensity * this.gain * this.level[i]! * flicker(a.flicker, a.seed, time);
+      l.intensity = a.intensity * this.gain * signatureGain(this.signature, time) * this.level[i]! * flicker(a.flicker, a.seed, time);
     }
   }
 

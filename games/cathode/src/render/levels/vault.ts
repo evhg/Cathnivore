@@ -146,6 +146,7 @@ export function buildVault(quality: "phone" | "high" | "ultra"): Level {
     groundHeight: vaultGround,
     theme: {
       name: "The Hollow Vault",
+      signature: "alarm",
       loading: "Coolant fog, red alarms…",
       fog: [0.006, 0.01, 0.016],
       fogDensity: 0.016,
