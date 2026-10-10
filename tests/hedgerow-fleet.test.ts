@@ -415,6 +415,35 @@ describe("hedgerow fleet: the live cap", () => {
     expect(run()).toBe(run());
   });
 
+  it("the Book waits too: the lane never holds more than the cap, and nothing is lost by waiting", () => {
+    const run = () => {
+      const g = newGame(LEVELS[3]!);
+      g.goodwill = 1e9;
+      let maxLive = 0;
+      let rounds = 0;
+      let sent = 0;
+      for (let i = 0; i < 200_000 && g.phase !== "won" && g.phase !== "lost"; i++) {
+        if (g.phase === "build") {
+          const before = g.spawnQueue.reduce((a, q) => a + fvOf(q.kind), 0);
+          sendWave(g);
+          rounds++;
+          sent += g.spawnQueue.reduce((a, q) => a + fvOf(q.kind), 0) - before;
+        }
+        stepGame(g);
+        g.events.length = 0;
+        maxLive = Math.max(maxLive, g.enemies.length);
+      }
+      expect(g.phase).toBe("won");
+      expect(rounds).toBe(LEVELS[3]!.waves.length);
+      expect(g.leaked + g.popped).toBeCloseTo(sent, 6);
+      return { maxLive, leaked: g.leaked, tick: g.tick };
+    };
+    const a = run();
+    expect(a.maxLive).toBeLessThanOrEqual(LIVE_CAP);
+    expect(a.maxLive).toBeGreaterThan(LIVE_CAP - 20);
+    expect(run()).toEqual(a);
+  });
+
   it("the lane index's windows hold exactly the lane points within reach (targeting by binary search)", () => {
     for (const lv of [LEVELS[0]!, LEVELS[40]!, LEVELS[6]!]) {
       const len = lv.path.slice(1).reduce((a, [x, y], i) => a + Math.abs(x - lv.path[i]![0]) + Math.abs(y - lv.path[i]![1]), 0);

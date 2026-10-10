@@ -73,7 +73,7 @@ import {
   NO_PERKS,
   isFleet,
 } from "./engine";
-import { RUNGS, fvOf } from "./fleet";
+import { LIVE_CAP, RUNGS, fvOf } from "./fleet";
 import { roundFor } from "./rounds";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
@@ -1648,6 +1648,21 @@ function canCallEarlyHintable(g: Game): boolean {
   return g.level.id <= 4 && canCallEarly(g);
 }
 
+/** Phones: x5 steps down to x3 while the lane is crowded, so a big cascade doesn't cost frames (section 5). */
+const PHONE_BUSY = Math.round(LIVE_CAP * 0.85);
+const coarse = (() => {
+  try {
+    return window.matchMedia("(pointer: coarse)");
+  } catch {
+    return null;
+  }
+})();
+function runSpeed(g: Game): number {
+  const capped = speed > 3 && !!coarse?.matches && g.enemies.length >= PHONE_BUSY;
+  ui.btnSpeed.classList.toggle("capped", capped);
+  return capped ? 3 : speed;
+}
+
 function frame(now: number): void {
   raf = requestAnimationFrame(frame);
   if (!game || !renderer) return;
@@ -1666,7 +1681,7 @@ function frame(now: number): void {
     } else if (g.phase !== "build") autoLeft = AUTO_SECS;
     // A duel runs in real time, whatever the game speed; a replay runs at least x2.
     const slow = now < slowUntil ? 0.4 : 1;
-    acc += dt * (player ? Math.max(2, speed) : g.duel ? 1 : speed * slow);
+    acc += dt * (player ? Math.max(2, speed) : g.duel ? 1 : runSpeed(g) * slow);
     let stepped = false;
     while (acc >= STEP) {
       acc -= STEP;

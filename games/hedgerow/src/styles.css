@@ -2501,6 +2501,10 @@ img.act-scene {
   background: #d9822b;
   box-shadow: 0 3px 0 rgba(120, 60, 10, 0.5);
 }
+/* Phones: x5 running at x3 while the lane is crowded. */
+.speed-btn.capped {
+  background: #b98a52;
+}
 .auto-btn .auto-word {
   display: block;
   font-size: 12px;

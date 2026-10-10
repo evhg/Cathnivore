@@ -2838,20 +2838,26 @@ function step(game: Game): void {
     if (game.auto.pie || game.auto.neighbours || game.auto.rally) castAbilities(game, game.auto);
   }
 
+  // Fleet children that waited for room on the lane come out first, in the order they popped.
+  while (game.emitQueue.length > 0 && game.enemies.length < LIVE_CAP) {
+    const q = game.emitQueue.shift()!;
+    game.enemies.push(makeEnemy(game, q.kind, q.dist, q.lane, q.wave));
+  }
+  // The live cap holds the Book too (section 8): while the lane is full the whole schedule waits a step,
+  // so what's held keeps its spacing instead of arriving in one clump when room opens.
+  if (fleet && (game.enemies.length >= LIVE_CAP || game.emitQueue.length > 0)) {
+    for (const q of game.spawnQueue) if (q.at <= game.waveClock) q.at += STEP;
+  }
   while (
     game.spawnQueue.length > 0 &&
-    game.spawnQueue[0]!.at <= game.waveClock
+    game.spawnQueue[0]!.at <= game.waveClock &&
+    !(fleet && game.enemies.length >= LIVE_CAP)
   ) {
     const next = game.spawnQueue.shift()!;
     const len = next.lane ? game.pathLength2 : game.pathLength;
     const e = makeEnemy(game, next.kind, next.ambush ? next.ambush * len : 0, next.lane, next.wave ?? game.wave);
     game.enemies.push(e);
     if (game.duels && isBig(next.kind) && !game.duel && !game.dueled.includes(next.kind)) startDuel(game, e);
-  }
-  // Fleet children that waited for room on the lane come out in the order they popped.
-  while (game.emitQueue.length > 0 && game.enemies.length < LIVE_CAP) {
-    const q = game.emitQueue.shift()!;
-    game.enemies.push(makeEnemy(game, q.kind, q.dist, q.lane, q.wave));
   }
   // Rush hour: once a wave is all on the lane, the next follows 6 s later whether you're ready or not.
   if (hasTwist(game.level, "rush") && game.spawnQueue.length === 0 && game.wave < game.level.waves.length) {
