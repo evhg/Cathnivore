@@ -191,6 +191,10 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     "patrol:civ-rally-c": [V(-1, 0, -24), V(2, 0, -21)],
     "patrol:police-a": [V(-12, 0, 14), V(12, 0, 14), V(12, 0, -2), V(-12, 0, -2)],
     "patrol:police-b": [V(20, 0, 44), V(20, 0, 24), V(-4, 0, 30)],
+    "crowd:fountain": [V(0, 0, 8)],
+    "crowd:market": [V(-14, 0, 30)],
+    "crowd:tram": [V(21, 0, 38)],
+    "crowd:rally": [V(0, 0, -17)],
     "patrol:sniper-roof": [V(34, 8, -4)],
   };
 

@@ -30,3 +30,15 @@ describe("air traffic", () => {
     }
   });
 });
+
+import { crowdSpots, crowdSway } from "../games/cathode/src/render/crowd";
+describe("ambient crowds", () => {
+  it("scatters deterministically inside the radius and sways a little", () => {
+    const a = crowdSpots(10, -4, 20, 3, 2);
+    expect(a).toEqual(crowdSpots(10, -4, 20, 3, 2));
+    for (const s of a) {
+      expect(Math.hypot(s.x - 10, s.z + 4)).toBeLessThanOrEqual(3.001);
+      for (const t of [0, 5, 99]) expect(Math.abs(crowdSway(s, t))).toBeLessThanOrEqual(0.061);
+    }
+  });
+});

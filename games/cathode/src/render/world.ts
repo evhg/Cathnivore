@@ -14,6 +14,7 @@ import { L, type Level } from "./level";
 import { buildDistrict } from "./levels";
 import { createMaterials } from "./materials";
 import { addTraffic } from "./traffic";
+import { addCrowd } from "./crowd";
 import { bakeVolume, LightPool, hash1 } from "./lighting";
 import { buildSigns } from "./signs";
 import { buildAtmosphere, type AtmoUniforms } from "./atmosphere";
@@ -132,6 +133,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   lightning.position.set(-40, 80, -60);
   scene.add(lightning);
   const traffic = outdoor ? addTraffic(scene, P.skyline > 120 ? 8 : 5) : null;
+  const crowd = addCrowd(scene, Object.entries(level.markers).filter(([k]) => k.startsWith("crowd:")).flatMap(([, v]) => v), P.skyline > 120 ? 14 : 8);
   const pool = new LightPool(scene, level.lights, P.pool, 0.7, theme?.signature);
 
   // ------------------------------------------------------------ atmosphere
@@ -291,6 +293,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       signs.uniforms.uTime.value = time;
       atmo.update(camera, time);
       traffic?.update(time);
+      if (!shot && dt > 0) crowd?.update(time);
       pool.update(camera, dt, time, shot || dt === 0);
       fxs.update(dt, camera);
       // Lightning: two or three quick pulses, then thunder a few seconds later.
