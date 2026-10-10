@@ -192,8 +192,8 @@ describe("hedgerow M3: properties on the lane", () => {
   });
 
   it("names a vehicle by the properties it carries beyond its own", () => {
-    expect(vehicleName("lorry", P.stealth)).toBe("Stealth box lorry");
-    expect(vehicleName("van", P.plated | P.reinforced)).toBe("Plated Reinforced delivery van");
+    expect(vehicleName("lorry", P.stealth)).toBe("Stealth Box lorry");
+    expect(vehicleName("van", P.plated | P.reinforced)).toBe("Plated Reinforced Delivery van");
     expect(vehicleName("artic", P.wrapped | P.reefer)).toBe("Artic");
     expect(vehicleName("quad", P.airborne)).toBe("Cargo quadcopter");
   });
@@ -228,7 +228,7 @@ describe("hedgerow M3: lessons", () => {
     expect(top.round).toBe(22);
     expect(top.towers).toContain("mast");
     const banner = leakReport({ kind: "lorry", pm: P.stealth, lost: 11, cause: "stealth" });
-    expect(banner.title).toBe("Leaked: Stealth box lorry (11)");
+    expect(banner.title).toBe("Leaked: Stealth Box lorry (11)");
     expect(`${banner.title} ${banner.sub}`).toMatch(/Stealth.*Radio Mast reveals stealth/);
     // With the Mast, the same bot wins.
     expect(playLevel(lv, "best").phase).toBe("won");

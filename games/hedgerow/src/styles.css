@@ -2696,3 +2696,108 @@ img.act-scene {
     flex: 1 1 100%;
   }
 }
+
+/* Hedgerow 2 M3: property icons, lock badges, the round card, the "can't answer" warning, loss causes. */
+.prop-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  vertical-align: -3px;
+}
+.chip-props,
+.prop-row {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+.round-card {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+.preview-then {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.field-warn {
+  margin: 6px 0 2px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border-left: 4px solid var(--clay);
+  background: color-mix(in srgb, var(--clay) 14%, var(--surface));
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 2px;
+}
+.lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px 1px 2px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff8e6;
+}
+.lock-badge.ok {
+  background: #3f7a2e;
+}
+.lock-badge.no {
+  background: #9a3a2a;
+}
+.loss-causes {
+  margin: 8px 0 0;
+  text-align: left;
+}
+.loss-causes .loss-head {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.loss-causes ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.loss-causes li {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 13px;
+}
+.loss-causes .prop-icon {
+  width: 20px;
+  height: 20px;
+}
+.loss-keys {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: auto;
+  flex: none;
+}
+.loss-key {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--wheat) 45%, transparent);
+  outline: 2px solid var(--wheat);
+}
+.dmg-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

@@ -18,8 +18,16 @@ describe("hedgerow almanac", () => {
     expect(lorry.get("Fleet Value")).toBe("11");
     expect(lorry.get("Pops into")).toMatch(/^2 × /);
     const crow = new Map(towerRows("scarecrow"));
-    expect(crow.get("Cost")).toMatch(/^200 in act 1/);
-    expect(crow.get("Act 1 layers a hit")).toBe("1 / 1 / 2");
-    expect(crow.get("Act 1 pierce")).toBe("2 / 4 / 4");
+    expect(crow.get("Cost")).toMatch(/^200 in acts 1-3/);
+    expect(crow.get("Acts 1-3 layers a hit")).toBe("1 / 1 / 2");
+    expect(crow.get("Acts 1-3 pierce")).toBe("2 / 4 / 4");
+  });
+  it("names each tower's damage type and what it can't touch, and each rung's own properties (M3)", () => {
+    const crow = new Map(towerRows("scarecrow"));
+    expect(crow.get("Damage")).toBe("Sharp");
+    expect(crow.get("Can't touch")).toBe("Plated");
+    expect(new Map(towerRows("beehive")).get("Can't touch")).toBe("Sealed");
+    expect(new Map(enemyRows("artic")).get("Always")).toBe("Wrapped, Reefer");
+    expect(new Map(enemyRows("steel")).get("Always")).toBe("Plated");
   });
 });

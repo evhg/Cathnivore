@@ -16,7 +16,7 @@ export function vehicleName(kind: Parameters<typeof inherentProps>[0], pm = 0): 
   const extra = propsOf(pm & ~own & ~P.airborne & ~P.plant);
   const name = ENEMIES[kind].name;
   if (!extra.length) return name;
-  return `${extra.map((p) => PROPERTIES[p].adj).join(" ")} ${name.charAt(0).toLowerCase()}${name.slice(1)}`;
+  return `${extra.map((p) => PROPERTIES[p].adj).join(" ")} ${name}`;
 }
 
 /** Every property a round (a level's wave) brings: its groups', its rungs' own, and the Armoured/Fortified twists'. */

@@ -1215,7 +1215,7 @@ export class Renderer3D {
         const ghost = !isRevealed(game, e);
         if (!ghost || Math.sin(t * 25 + e.id) > 0.75) this.rungs.add(e.kind, p.x, this.height(p.x, p.y), p.y, heading, bob, ghost, e.pm);
         // Its property icons (section 2): a row of roundels over the vehicle.
-        if (e.pm) this.rungs.addIcons(e.pm, p.x, this.height(p.x, p.y) + enemyLift(e.kind) + 0.62 * enemyScale(e.kind), p.y);
+        if (e.pm) this.rungs.addIcons(e.pm, p.x, this.height(p.x, p.y) + enemyLift(e.kind) + 0.95 * enemyScale(e.kind), p.y);
         if (e.stun > 0 && Math.random() < dt * 6) this.sparks.emit(p.x, this.height(p.x, p.y) + 0.6, p.y, "#fff6b0", 1, 0.8, 0.1, 0.4, 0);
         if (e.slowed && Math.random() < dt * 2) this.sparks.emit(p.x, this.height(p.x, p.y) + 0.05, p.y, "#7fd06a", 1, 0.5, 0.09, 0.5, 0.5);
         continue;

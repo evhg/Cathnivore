@@ -3,17 +3,19 @@
 
 import { ENEMIES, MEGAS, SPECIALISATIONS, TOWERS, TOWER_VS, enemyClass, isBig } from "./engine";
 import type { EnemyClass, EnemyKind, MegaId, TowerKind } from "./engine";
-import { FLEET_TOWERS, RUNGS, fleetSpecPrice, fvOf } from "./fleet";
-import { enemyIcon, img, towerIcon } from "./icons";
+import { DAMAGE_NAMES, FLEET_TOWERS, PROPERTIES, RUNGS, damageTypeOf, fleetSpecPrice, fvOf } from "./fleet";
+import { propertyEntries, towerBadges } from "./counters";
+import { enemyIcon, img, propIcon, towerIcon } from "./icons";
 import type { Subject } from "./render3d/turntable";
 
 /** Set by setupAlmanac: shows a model on the turntable (null without WebGL). */
 let viewer: ((s: Subject, title: string) => void) | null = null;
 
-export type AlmanacTab = "towers" | "megas" | "enemies" | "bosses";
+export type AlmanacTab = "towers" | "megas" | "enemies" | "bosses" | "props";
 
 const TABS: [AlmanacTab, string][] = [
   ["towers", "Towers"],
+  ["props", "Properties"],
   ["megas", "Megastructures"],
   ["enemies", "Enemies"],
   ["bosses", "Bosses"],
@@ -93,16 +95,22 @@ function card(icon: string, title: string, text: string, stats: HTMLElement[], l
 const CLASS_NAME: Record<EnemyClass, string> = { light: "Light traffic", heavy: "Heavy plant", air: "Air" };
 
 /**
- * A tower's Almanac numbers. Act 1 fights the Fleet (Hedgerow 2): prices and hits in layers, with no soft
- * counters; the later acts still use today's numbers until they move to the Fleet too.
+ * A tower's Almanac numbers. Acts 1-3 fight the Fleet (Hedgerow 2): prices and hits in layers, a damage type
+ * and its hard locks; the later acts still use today's numbers until they move to the Fleet too.
  */
 export function towerRows(kind: TowerKind): Array<[string, string]> {
   const t = TOWERS[kind];
   const f = FLEET_TOWERS[kind];
-  const rows: Array<[string, string]> = [["Cost", `${f.cost} in act 1 · ${t.cost} later`], ["Range", t.range.join(" / ")]];
+  const rows: Array<[string, string]> = [["Cost", `${f.cost} in acts 1-3 · ${t.cost} later`], ["Range", t.range.join(" / ")]];
   if (f.damage[0] > 0) {
-    rows.push(["Act 1 layers a hit", f.damage.join(" / ")]);
-    rows.push(["Act 1 pierce", f.pierce.join(" / ")]);
+    rows.push(["Acts 1-3 layers a hit", f.damage.join(" / ")]);
+    rows.push(["Acts 1-3 pierce", f.pierce.join(" / ")]);
+  }
+  const type = damageTypeOf(kind, null);
+  if (type && (f.damage[0] > 0 || kind === "hedgerow")) {
+    rows.push(["Damage", DAMAGE_NAMES[type]]);
+    const cant = towerBadges({ kind, tier: 1, spec: null }).filter((b) => !b.ok && b.prop !== "stealth" && b.prop !== "airborne");
+    if (cant.length && f.damage[0] > 0) rows.push(["Can't touch", cant.map((b) => PROPERTIES[b.prop].name).join(", ")]);
   }
   if (t.damage[0] > 0) rows.push(["Later damage", t.damage.join(" / ")]);
   const vs = TOWER_VS[kind] ?? {};
@@ -128,6 +136,7 @@ export function enemyRows(k: EnemyKind): Array<[string, string]> {
     });
     return [
       ["Type", CLASS_NAME[enemyClass(k)]],
+      ...(r.props?.length ? [["Always", r.props.map((p) => PROPERTIES[p].name).join(", ")] as [string, string]] : []),
       ["Layers", String(r.shell)],
       ["Fleet Value", String(fvOf(k))],
       ["Pops into", counted.length ? counted.join(", ") : "nothing"],
@@ -151,13 +160,20 @@ function towers(): HTMLElement[] {
     const stats = towerRows(kind).map(([l, v]) => stat(l, v));
     out.push(card(towerIcon(kind), t.name, t.blurb, stats, TOWER_LORE[kind], { tower: kind, tier: 3, spec: null }));
     SPECIALISATIONS[kind].forEach((s, i) => {
-      const st = [stat("Cost", `${fleetSpecPrice(kind)} in act 1 · ${s.cost} later`)];
+      const st = [stat("Cost", `${fleetSpecPrice(kind)} in acts 1-3 · ${s.cost} later`)];
+      const ty = damageTypeOf(kind, i as 0 | 1);
+      if (ty && FLEET_TOWERS[kind].damage[0] > 0) st.push(stat("Damage", DAMAGE_NAMES[ty]));
       if (s.range) st.push(stat("Range", String(s.range)));
       if (s.damage) st.push(stat("Later damage", String(s.damage)));
       out.push(card(towerIcon(kind, 4, i as 0 | 1), `${s.name} (${t.name}, tier 4)`, s.blurb, st, undefined, { tower: kind, tier: 4, spec: i as 0 | 1 }));
     });
   }
   return out;
+}
+
+/** The Fleet's properties (Hedgerow 2 section 2): the look, the lock and the key, one card each. */
+function props(): HTMLElement[] {
+  return propertyEntries().map((e) => card(propIcon(e.prop), e.name, e.lock, [stat("Answer", e.key)]));
 }
 
 function megas(): HTMLElement[] {
@@ -232,7 +248,7 @@ export function setupAlmanac(
     }
     const seen = getSeen();
     const cards =
-      tab === "towers" ? towers() : tab === "megas" ? megas() : enemies(tab === "bosses", seen, describe);
+      tab === "towers" ? towers() : tab === "props" ? props() : tab === "megas" ? megas() : enemies(tab === "bosses", seen, describe);
     list.replaceChildren(...cards);
     list.scrollTop = 0;
   };

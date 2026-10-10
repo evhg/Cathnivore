@@ -21,7 +21,7 @@ const TINTS: Array<[number, THREE.Color]> = [
 const WHITE = new THREE.Color(1, 1, 1);
 
 /** Icons are drawn this many world units across, a row of them over the vehicle. */
-const ICON = 0.17;
+const ICON = 0.24;
 const ICON_CAPACITY = 700;
 
 /** One billboard InstancedMesh per property: its icon, drawn by the same code as the 2D field. */

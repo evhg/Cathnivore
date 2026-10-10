@@ -31,6 +31,7 @@ import {
   TWISTS,
   twistRule,
   bookRound,
+  inherentProps,
   canCallEarly,
   drainEvents,
   earlyBonus,
@@ -73,7 +74,8 @@ import {
   NO_PERKS,
   isFleet,
 } from "./engine";
-import { LIVE_CAP, RUNGS, fvOf } from "./fleet";
+import { LIVE_CAP, P, PROPERTIES, RUNGS, fvOf, propsOf } from "./fleet";
+import { damageLabel, leakReport as fleetLeakReport, lockLine, lossCauses, roundProps, towerBadges, unanswered, vehicleName } from "./counters";
 import { roundFor } from "./rounds";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
@@ -103,7 +105,7 @@ function webglSupported(): boolean {
     return false;
   }
 }
-import { enemyIcon, img, towerIcon } from "./icons";
+import { enemyIcon, img, towerIcon, propIcon } from "./icons";
 import * as sfx from "./sound";
 import { haptic, setHaptics } from "./haptics";
 import {
@@ -884,9 +886,10 @@ function wavePreview(p: HTMLElement, g: Game): void {
         "twist-line",
       ),
     );
+  if (isFleet(g.level)) fleetPreview(p, g);
   const row = document.createElement("ul");
   row.className = "preview-row";
-  for (const { kind, count } of waveSummary(next)) {
+  for (const { kind, count } of isFleet(g.level) ? [] : waveSummary(next)) {
     const li = document.createElement("li");
     li.className = "preview-chip" + (isBig(kind) ? " boss" : "");
     li.append(img(enemyIcon(kind), "chip-icon"));
@@ -913,6 +916,109 @@ function wavePreview(p: HTMLElement, g: Game): void {
   if (advice) p.append(line(`Cath: ${advice}`, "cath-tip"));
   towerRoster(p, g);
   if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
+}
+
+/** A tower's lock badges: green for what it can hit (or reveal), red for what it can't. */
+function badgeRow(kind: TowerKind, tier: Tower["tier"], spec: 0 | 1 | null): HTMLElement {
+  const row = document.createElement("div");
+  row.className = "badge-row";
+  const label = lockLine(kind, spec, tier).trim();
+  if (label) row.title = label;
+  // Its damage type, in words, before the badges ("Sharp", "Blast").
+  const type = damageLabel({ kind, tier, spec });
+  if (type) {
+    const t = document.createElement("span");
+    t.className = "dmg-type";
+    t.textContent = type;
+    row.append(t);
+  }
+  for (const b of towerBadges({ kind, tier, spec })) {
+    const el = document.createElement("span");
+    el.className = `lock-badge ${b.ok ? "ok" : "no"}`;
+    el.dataset.prop = b.prop;
+    el.title = b.text;
+    el.setAttribute("aria-label", b.text);
+    el.append(img(propIcon(b.prop), "prop-icon"));
+    const mark = document.createElement("span");
+    mark.className = "badge-mark";
+    mark.setAttribute("aria-hidden", "true");
+    mark.textContent = b.ok ? "✓" : "✕";
+    el.append(mark);
+    row.append(el);
+  }
+  return row;
+}
+
+/** A row of property icons (Hedgerow 2 section 2), each with its name for screen readers and tooltips. */
+function propRow(pm: number, cls = "prop-row"): HTMLSpanElement {
+  const row = document.createElement("span");
+  row.className = cls;
+  for (const prop of propsOf(pm)) {
+    const i = img(propIcon(prop), "prop-icon");
+    i.removeAttribute("aria-hidden");
+    i.alt = PROPERTIES[prop].name;
+    i.title = `${PROPERTIES[prop].name}: ${PROPERTIES[prop].lock}`;
+    row.append(i);
+  }
+  return row;
+}
+
+/**
+ * Fleet levels: the next two rounds by name with their vehicles and property icons (section 2's round preview),
+ * and a warning when nothing on the field holds the key to a property that's coming.
+ */
+function fleetPreview(p: HTMLElement, g: Game): void {
+  const lv = g.level;
+  let pm = 0;
+  for (let i = 0; i < 2; i++) {
+    const groups = lv.waves[g.wave + i];
+    if (!groups) break;
+    const r = bookRound(lv, g.wave + 1 + i);
+    const page = roundFor(lv.id, r);
+    const props = roundProps(lv, groups);
+    pm |= props;
+    if (i === 0) {
+      if (page) {
+        const head = line(`${page.theme}. ${page.card}`, "round-card");
+        p.append(head);
+      }
+      const row = document.createElement("ul");
+      row.className = "preview-row";
+      const seen = new Map<string, { kind: EnemyKind; pm: number; count: number }>();
+      for (const gr of groups) {
+        const key = `${gr.enemy}:${gr.pm ?? 0}`;
+        const e = seen.get(key) ?? { kind: gr.enemy, pm: gr.pm ?? 0, count: 0 };
+        e.count += gr.count;
+        seen.set(key, e);
+      }
+      for (const { kind, pm: gpm, count } of seen.values()) {
+        const li = document.createElement("li");
+        li.className = "preview-chip" + (isBig(kind) ? " boss" : "");
+        li.append(img(enemyIcon(kind), "chip-icon"));
+        const label = document.createElement("span");
+        label.textContent = `${count} × ${vehicleName(kind, gpm)}`;
+        li.append(label);
+        const own = gpm | inherentProps(kind);
+        if (own) li.append(propRow(own, "chip-props"));
+        row.append(li);
+      }
+      p.append(row);
+    } else if (page) {
+      const then = line(`Then round ${r}: ${page.theme}`, "preview-then");
+      if (props) then.append(" ", propRow(props, "chip-props"));
+      p.append(then);
+    }
+  }
+  const miss = unanswered(g, pm);
+  if (miss.length) {
+    const warn = line(`Your field can't answer this: ${miss.map((m) => `${PROPERTIES[m].name}. ${PROPERTIES[m].key}`).join(" ")}`, "field-warn");
+    warn.prepend(propRow(miss.reduce((a, m) => a | P[m], 0), "chip-props"), " ");
+    warn.setAttribute("role", "status");
+    // Up top, under the round's title: on a phone the panel is short and this is the line that matters.
+    const head = p.querySelector(".preview-head");
+    if (head) head.after(warn);
+    else p.prepend(warn);
+  }
 }
 
 /** One line from Cath about the coming wave, from its enemy classes. */
@@ -960,8 +1066,8 @@ const CLASS_NAMES: Record<EnemyClass, string> = { light: "light traffic", heavy:
 
 /** " Strong vs air; weak vs heavy plant." for the build menu, from TOWER_VS. */
 function counterLine(kind: TowerKind): string {
-  // Fleet levels have no soft counters (Hedgerow 2 cuts TOWER_VS; M3 brings hard property locks).
-  if (game && isFleet(game.level)) return "";
+  // Fleet levels have no soft counters (Hedgerow 2 cuts TOWER_VS): a damage type and its hard locks instead.
+  if (game && isFleet(game.level)) return lockLine(kind);
   const vs = TOWER_VS[kind] ?? {};
   const ks = Object.keys(vs) as EnemyClass[];
   const strong = ks.filter((k) => vs[k]! > 1).map((k) => CLASS_NAMES[k]);
@@ -1003,6 +1109,7 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     b.append(hot, name, price);
     const show = () => {
       info.textContent = `${spec.name}: ${spec.blurb}${counterLine(kind)}`;
+      if (isFleet(g.level)) info.append(badgeRow(kind, 1, null));
       if (renderer) renderer.preview = kind;
     };
     b.addEventListener("pointerenter", show);
@@ -1135,6 +1242,8 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     );
     titles.append(vet);
   }
+  // Fleet: its damage type, and a green or red badge for every lock (Hedgerow 2 section 2).
+  if (t.fleet && !t.mega) titles.append(badgeRow(t.kind, t.tier, t.spec ?? null));
   if (st.damage > 0) {
     // Targeting is one small cycling button: it rarely needs changing.
     const tb = document.createElement("button");
@@ -1566,7 +1675,14 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         // The first leak of a round gets a moment of slow motion and a banner naming the cause.
         if (ev.kind && !player && leakReported !== g.wave) {
           leakReported = g.wave;
-          leakReport(g, ev.kind, !!ev.dropped, ev.lost ?? 0);
+          if (isFleet(g.level)) {
+            // Hedgerow 2 section 2: the property that got through, what it cost, and the key to it.
+            const r = fleetLeakReport({ kind: ev.kind, pm: ev.pm, lost: ev.lost, cause: ev.cause });
+            banner(r.title, r.sub);
+            say(`${r.title}. ${r.sub}`);
+            haptic.leakReport();
+            if (!REDUCED) slowUntil = performance.now() + 600;
+          } else leakReport(g, ev.kind, !!ev.dropped, ev.lost ?? 0);
         }
         if (g.goodwill <= g.maxGoodwill / 2 && g.goodwill > 0)
           tip(`low-${g.level.id}`, "They're getting through! Hedges near the farmhouse, and between waves move me to the end of the lane.", "worried", true);
@@ -1775,6 +1891,8 @@ function frame(now: number): void {
 
 function finish(g: Game): void {
   if (game !== g) return;
+  document.getElementById("loss-causes")?.remove();
+  ui.resultNote.hidden = false;
   const lv = g.level;
   if (lv.endless) return finishEndless(g, lv);
   if (dailyDay !== null) return finishDaily(g, lv, dailyDay);
@@ -1807,6 +1925,7 @@ function finish(g: Game): void {
   ui.resultNote.textContent = won
     ? `${lv.reward}${gained ? ` · +${gained} star${gained > 1 ? "s" : ""} for the Seed Bank.` : ""}`
     : "Regroup and try again. Hedges slow them, scarecrows finish them, and Cath can hold the lane where it bends. Stars buy perks in the Seed Bank.";
+  renderLossCauses(g, won);
   if (won) {
     const cathBefore = levelOf(xpOf(data.stars)).level;
     recordStars(data, lv.id, n);
@@ -1864,6 +1983,49 @@ function finish(g: Game): void {
   };
   ui.dlgResult.classList.toggle("lost", !won);
   ui.dlgResult.showModal();
+}
+
+/**
+ * The loss screen's top three leak causes (Hedgerow 2 section 2): what got through, the Goodwill it cost from
+ * which round, and the towers this level has that answer it, highlighted.
+ */
+function renderLossCauses(g: Game, won: boolean): void {
+  if (won || !isFleet(g.level)) return;
+  const causes = lossCauses(g);
+  if (!causes.length) return;
+  // The causes and their answers are the advice: the generic line goes.
+  ui.resultNote.textContent = "";
+  ui.resultNote.hidden = true;
+  const box = document.createElement("div");
+  box.id = "loss-causes";
+  box.className = "loss-causes";
+  box.append(line("What got through", "loss-head"));
+  const list = document.createElement("ol");
+  for (const c of causes) {
+    const li = document.createElement("li");
+    li.dataset.cause = c.cause;
+    if (c.cause in PROPERTIES) li.append(img(propIcon(c.cause as keyof typeof PROPERTIES), "prop-icon"));
+    const text = document.createElement("span");
+    const strong = document.createElement("strong");
+    strong.textContent = `${c.title}: ${c.lost} Goodwill from round ${c.round}.`;
+    text.append(strong, ` ${c.why} ${c.key}`);
+    li.append(text);
+    if (c.towers.length) {
+      const keys = document.createElement("span");
+      keys.className = "loss-keys";
+      for (const k of c.towers) {
+        const k1 = img(towerIcon(k), "loss-key");
+        k1.removeAttribute("aria-hidden");
+        k1.alt = TOWERS[k].name;
+        k1.title = `${TOWERS[k].name} answers it`;
+        keys.append(k1);
+      }
+      li.append(keys);
+    }
+    list.append(li);
+  }
+  box.append(list);
+  ui.resultNote.after(box);
 }
 
 /** A daily challenge ends: the score, today's best and a share card to copy. */
