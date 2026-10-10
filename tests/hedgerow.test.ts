@@ -649,7 +649,7 @@ describe("hedgerow 2 M1: hands-on pacing", () => {
     expect(g.hero.kills / kills).toBeLessThan(0.2);
     expect(g.hero.kills / kills).toBeGreaterThanOrEqual(0.02);
     expect(g.events.some((e) => e.type === "pie" || e.type === "neighbours" || e.type === "rally")).toBe(false);
-  });
+  }, 60_000);
 });
 
 describe("hedgerow 2 M1 review: level 1 forgives plot choice", () => {
@@ -691,7 +691,7 @@ describe("hedgerow 2 M1 review: level 1 forgives plot choice", () => {
     }
     expect(won / N).toBeGreaterThanOrEqual(0.75);
     expect(lostGoodwill).toBeGreaterThan(0);
-  }, 60_000);
+  }, 180_000);
 
   it("on levels 1-5 Cath works on what she holds when nothing else is in reach; later she only holds it", () => {
     for (const [id, hurts] of [

@@ -11,7 +11,9 @@ import {
   isFleet,
   laneCellsOf,
   isPlot,
+  laneWindows,
   makeEnemy,
+  pointAt,
   newGame,
   place,
   remainingFV,
@@ -256,8 +258,26 @@ describe("hedgerow fleet: the live cap", () => {
     expect(run()).toBe(run());
   });
 
+  it("the lane index's windows hold exactly the lane points within reach (targeting by binary search)", () => {
+    for (const lv of [LEVELS[0]!, LEVELS[40]!, LEVELS[6]!]) {
+      const len = lv.path.slice(1).reduce((a, [x, y], i) => a + Math.abs(x - lv.path[i]![0]) + Math.abs(y - lv.path[i]![1]), 0);
+      for (let k = 0; k < 40; k++) {
+        const x = ((k * 7919) % (lv.cols * 100)) / 100;
+        const y = ((k * 104729) % (lv.rows * 100)) / 100;
+        const r = 0.5 + (k % 7) * 0.5;
+        const w = laneWindows(lv.path, x, y, r);
+        for (let d = 0; d <= len + 2; d += 0.05) {
+          const p = pointAt(lv.path, d);
+          const inside = Math.hypot(p.x - x, p.y - y) <= r;
+          const held = w.some(([lo, hi]) => d >= lo && d <= hi);
+          if (inside) expect(held).toBe(true);
+        }
+      }
+    }
+  });
+
   it(
-    "the sim steps in 2 ms or less with 350 vehicles and 40 towers",
+    "the sim steps in 2 ms or less with 350 vehicles and 40 towers, popping for real",
     () => {
       // A big field (level 41's) on fleet rules, so 40 towers fit beside the lane.
       const lv: Level = { ...LEVELS[40]!, rules: "fleet", book: { from: 1, to: 12 }, twists: undefined, setPieces: undefined, hpScale: undefined };
@@ -277,27 +297,35 @@ describe("hedgerow fleet: the live cap", () => {
       }
       sendWave(g);
       g.spawnQueue = [];
-      const kinds = ["lorry", "sprinter", "pickup", "van", "quad", "courier"] as const;
+      // Real Box Lorries with real shells: every hit pops a layer, children burst out and the emission
+      // queue fills, so the step pays for pierce, pops and the live cap, not just for aiming.
+      let n = 0;
       const fill = () => {
-        while (g.enemies.length < LIVE_CAP) {
-          const e = makeEnemy(g, kinds[g.enemies.length % kinds.length]!, ((g.enemies.length * 7) % 97) / 97 * g.pathLength * 0.9, undefined, 1);
-          e.hp = 1e9;
-          g.enemies.push(e);
-        }
+        while (g.enemies.length < LIVE_CAP) g.enemies.push(makeEnemy(g, "lorry", ((n++ * 0.37) % (g.pathLength * 0.5)), undefined, 1));
       };
       fill();
-      for (let i = 0; i < 60; i++) {
+      for (let i = 0; i < 100; i++) {
         stepGame(g);
-        fill();
+        g.events.length = 0;
+        if (i % 5 === 0) fill();
       }
-      const t0 = performance.now();
-      for (let i = 0; i < 1000; i++) {
-        stepGame(g);
-        if (i % 10 === 0) fill();
+      const popped0 = g.popped;
+      // The median of ten 100-step batches, so one GC pause or a busy runner doesn't decide it.
+      const batches: number[] = [];
+      for (let b = 0; b < 10; b++) {
+        const t0 = performance.now();
+        for (let i = 0; i < 100; i++) {
+          stepGame(g);
+          g.events.length = 0;
+          if (i % 5 === 0) fill();
+        }
+        batches.push((performance.now() - t0) / 100);
       }
-      const ms = (performance.now() - t0) / 1000;
+      batches.sort((x, y) => x - y);
+      expect(g.popped - popped0).toBeGreaterThan(5000);
+      expect(g.emitQueue.length).toBeGreaterThan(0);
       expect(g.enemies.length).toBeGreaterThan(300);
-      expect(ms).toBeLessThanOrEqual(2);
+      expect(batches[5]!).toBeLessThanOrEqual(2);
       void STEP;
     },
     60_000,

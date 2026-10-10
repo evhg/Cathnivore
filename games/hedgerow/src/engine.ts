@@ -929,10 +929,26 @@ export function megaFor(a: TowerKind, b: TowerKind): MegaId | null {
 export const RANKS = [15, 40, 90];
 
 export function rankOf(kills: number): number {
-  return RANKS.filter((k) => kills >= k).length;
+  let n = 0;
+  for (const k of RANKS) if (kills >= k) n++;
+  return n;
 }
 
-const statCache = new WeakMap<object, { key: string; stats: TowerStats }>();
+// The cache compares the fields stats depend on one by one (no string key: towerStats runs thousands of
+// times a step on a big field, docs/design/hedgerow-2.md section 8).
+interface StatKey {
+  kind: TowerKind;
+  tier: number;
+  spec: 0 | 1 | null | undefined;
+  high: boolean | undefined;
+  rangeMul: number | undefined;
+  dmgMul: number | undefined;
+  mega: MegaId | undefined;
+  rank: number;
+  fleet: boolean | undefined;
+  stats: TowerStats;
+}
+const statCache = new WeakMap<object, StatKey>();
 
 /** The numbers a tower fights with at its tier, and with its specialisation at tier 4. */
 export function towerStats(
@@ -948,9 +964,20 @@ export function towerStats(
 ): TowerStats {
   // Fleet towers have no veteran ranks: their Knockouts are the counter (Hedgerow 2 cuts RANKS).
   const rank = t.fleet ? 0 : rankOf(t.kills ?? 0);
-  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}:${t.high ? 1 : 0}:${t.rangeMul ?? 1}:${t.dmgMul ?? 1}:${t.mega ?? ""}:${rank}:${t.fleet ? 1 : 0}`;
   const hit = statCache.get(t);
-  if (hit && hit.key === key) return hit.stats;
+  if (
+    hit &&
+    hit.kind === t.kind &&
+    hit.tier === t.tier &&
+    (hit.spec ?? null) === (t.spec ?? null) &&
+    !!hit.high === !!t.high &&
+    (hit.rangeMul ?? 1) === (t.rangeMul ?? 1) &&
+    (hit.dmgMul ?? 1) === (t.dmgMul ?? 1) &&
+    hit.mega === t.mega &&
+    hit.rank === rank &&
+    !!hit.fleet === !!t.fleet
+  )
+    return hit.stats;
   const s = TOWERS[t.kind];
   const i = Math.min(t.tier, 3) - 1;
   const stats: TowerStats = {
@@ -1009,7 +1036,7 @@ export function towerStats(
     stats.damage *= 1 + 0.1 * rank;
     stats.thorns *= 1 + 0.1 * rank;
   }
-  statCache.set(t, { key, stats });
+  statCache.set(t, { kind: t.kind, tier: t.tier, spec: t.spec, high: t.high, rangeMul: t.rangeMul, dmgMul: t.dmgMul, mega: t.mega, rank, fleet: t.fleet, stats });
   return stats;
 }
 
@@ -2161,6 +2188,7 @@ export function crowding(game: Game, t: Tower): number {
 
 /** Lawyers' paperwork: towers in range fire at half rate. */
 function jammed(game: Game, t: Tower): boolean {
+  if (ctx && !ctx.jam) return false;
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].jam;
     if (!r || e.hp <= 0) continue;
@@ -2173,6 +2201,7 @@ function jammed(game: Game, t: Tower): boolean {
 /** A lobbyist's whispers: a specialised tower in range forgets its branch and fights as a plain tier 3. */
 export function lobbied(game: Game, t: Tower): boolean {
   if (t.tier < 4 || t.mega) return false;
+  if (ctx && !ctx.lobby) return false;
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].lobby;
     if (!r || e.hp <= 0) continue;
@@ -2184,6 +2213,7 @@ export function lobbied(game: Game, t: Tower): boolean {
 
 /** An influencer's followers are watching it, not the road: towers in its charm range hold fire. */
 export function charmed(game: Game, t: Tower): boolean {
+  if (ctx && !ctx.charm) return false;
   for (const c of game.towers) {
     const cs = towerStats(c);
     if (cs.cleanse && Math.hypot(c.col - t.col, c.row - t.row) <= cs.range)
@@ -2200,6 +2230,7 @@ export function charmed(game: Game, t: Tower): boolean {
 
 /** Radio Masts see through stealth: an enemy within a mast's range is revealed and marked. */
 export function markMultiplier(game: Game, e: Enemy): number {
+  if (ctx && !ctx.reveal) return 1;
   const p = enemyPoint(game.level, e);
   let m = 1;
   for (const t of game.towers) {
@@ -2306,7 +2337,7 @@ function payLayers(game: Game, layers: number, by?: number): void {
     game.popMilli -= whole * 1000;
   }
   if (by !== undefined && by >= 0) {
-    const t = game.towers.find((x) => x.id === by);
+    const t = ctx ? ctx.byId.get(by) : game.towers.find((x) => x.id === by);
     if (t) t.ko = (t.ko ?? 0) + layers;
   }
 }
@@ -2508,6 +2539,25 @@ function pickTarget(
   let target: Enemy | undefined;
   let best = -Infinity;
   const air = towerStats(t).air;
+  if (ctx && isFleet(game.level)) {
+    // Fleet levels: only what the lane index puts in reach; ties go to the earliest on the lane list, as a scan would.
+    let bestAt = Infinity;
+    for (const i of candidates(game, towerWindowsOf(game, t, range))) {
+      const e = game.enemies[i]!;
+      if (e.hp <= 0 || !isRevealed(game, e)) continue;
+      if (!air && ENEMIES[e.kind].flying) continue;
+      const p = enemyPoint(game.level, e);
+      const d = Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y);
+      if (d > range) continue;
+      const score = mode === "first" ? e.dist : mode === "last" ? -e.dist : mode === "strong" ? e.hp : -d;
+      if (score > best || (score === best && i < bestAt)) {
+        best = score;
+        bestAt = i;
+        target = e;
+      }
+    }
+    return target;
+  }
   for (const e of game.enemies) {
     if (e.hp <= 0 || !isRevealed(game, e)) continue;
     if (!air && ENEMIES[e.kind].flying) continue;
@@ -2530,6 +2580,143 @@ function pickTarget(
   return target;
 }
 
+// ---- per-step lookups (docs/design/hedgerow-2.md section 8: 350 vehicles and 40 towers in 2 ms) ----
+
+/**
+ * Built once at the top of a step and dropped at its end, so the hot loops don't redo work that can't change
+ * within a step: towers by id, which towers slow, boost or reveal, whether any disruptor is on the lane, and
+ * (fleet levels) the vehicles sorted by lane distance so a tower finds what's in its reach by binary search
+ * instead of scanning every vehicle. Every answer is exactly what the plain scan would give.
+ */
+interface StepCtx {
+  byId: Map<number, Tower>;
+  /** Any tower that reveals (and marks) stealth. */
+  reveal: boolean;
+  charm: boolean;
+  jam: boolean;
+  lobby: boolean;
+  /** Towers whose buff or aura multiplies others' damage, in field order. */
+  boosters: Array<{ t: Tower; s: TowerStats }>;
+  /** Fleet levels: the lane index (null until first asked for, or after something moved). */
+  lanes: LaneIndex | null;
+}
+interface LaneIndex {
+  /** Per lane (0 and 1): vehicles sorted by distance, then by place in game.enemies. */
+  dist: [number[], number[]];
+  at: [number[], number[]];
+  /** game.enemies.length when built: anything after it (children popped this step) is checked one by one. */
+  built: number;
+}
+let ctx: StepCtx | null = null;
+
+function laneIndex(game: Game): LaneIndex {
+  if (ctx!.lanes) return ctx!.lanes;
+  const rows: [Array<[number, number]>, Array<[number, number]>] = [[], []];
+  game.enemies.forEach((e, i) => rows[e.lane && game.level.path2 ? 1 : 0].push([e.dist, i]));
+  const idx: LaneIndex = { dist: [[], []], at: [[], []], built: game.enemies.length };
+  for (const l of [0, 1] as const) {
+    rows[l].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    idx.dist[l] = rows[l].map((r) => r[0]);
+    idx.at[l] = rows[l].map((r) => r[1]);
+  }
+  ctx!.lanes = idx;
+  return idx;
+}
+
+/** Something moved along the lane mid-step (knockback, a gust): rebuild the index when next asked. */
+function laneMoved(): void {
+  if (ctx) ctx.lanes = null;
+}
+
+const WINDOW_EPS = 1e-6;
+/**
+ * The stretches of a lane (as [from, to] distances) whose points lie within `r` of (x, y): one per straight
+ * at most, since distance to a line is convex. Padded by a hair so an exact range check on what they hold
+ * gives the same answer as checking every vehicle.
+ */
+export function laneWindows(path: Level["path"], x: number, y: number, r: number): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  if (path.length < 2) return [[-Infinity, Infinity]];
+  const rr = r + WINDOW_EPS;
+  let acc = 0;
+  for (let i = 1; i < path.length; i++) {
+    const [ax, ay] = path[i - 1]!;
+    const [bx, by] = path[i]!;
+    const len = Math.abs(bx - ax) + Math.abs(by - ay);
+    const last = i === path.length - 1;
+    if (len === 0) {
+      if (last && Math.hypot(ax + 0.5 - x, ay + 0.5 - y) <= rr) out.push([acc - WINDOW_EPS, Infinity]);
+      continue;
+    }
+    // Point at s along this straight: A + (B - A) * s / len. Solve |P(s) - C|^2 <= rr^2 for s.
+    const ux = (bx - ax) / len;
+    const uy = (by - ay) / len;
+    const ox = ax + 0.5 - x;
+    const oy = ay + 0.5 - y;
+    const qa = ux * ux + uy * uy;
+    const qb = 2 * (ox * ux + oy * uy);
+    const qc = ox * ox + oy * oy - rr * rr;
+    const disc = qb * qb - 4 * qa * qc;
+    if (disc >= 0) {
+      const sq = Math.sqrt(disc);
+      const s1 = (-qb - sq) / (2 * qa);
+      const s2 = (-qb + sq) / (2 * qa);
+      if (s2 >= -WINDOW_EPS && s1 <= len + WINDOW_EPS) {
+        const lo = acc + Math.max(0, s1) - WINDOW_EPS;
+        // Past the lane's end everything stands on its last point.
+        const hi = last && s2 >= len ? Infinity : acc + Math.min(len, s2) + WINDOW_EPS;
+        out.push([lo, hi]);
+      }
+    }
+    acc += len;
+  }
+  // Merge touching stretches.
+  out.sort((a, b) => a[0] - b[0]);
+  const merged: Array<[number, number]> = [];
+  for (const w of out) {
+    const top = merged[merged.length - 1];
+    if (top && w[0] <= top[1]) top[1] = Math.max(top[1], w[1]);
+    else merged.push([w[0], w[1]]);
+  }
+  return merged;
+}
+
+const towerWindows = new WeakMap<Tower, { col: number; row: number; r: number; level: Level; w: [Array<[number, number]>, Array<[number, number]>] }>();
+function windowsOf(game: Game, x: number, y: number, r: number): [Array<[number, number]>, Array<[number, number]>] {
+  return [laneWindows(game.level.path, x, y, r), game.level.path2 ? laneWindows(game.level.path2, x, y, r) : []];
+}
+function towerWindowsOf(game: Game, t: Tower, r: number) {
+  const hit = towerWindows.get(t);
+  if (hit && hit.col === t.col && hit.row === t.row && hit.r === r && hit.level === game.level) return hit.w;
+  const w = windowsOf(game, t.col + 0.5, t.row + 0.5, r);
+  towerWindows.set(t, { col: t.col, row: t.row, r, level: game.level, w });
+  return w;
+}
+
+/**
+ * Places in game.enemies of every vehicle that might be inside these windows (a superset: callers still check
+ * the exact range), plus everything that joined the lane since the index was built.
+ */
+function candidates(game: Game, w: [Array<[number, number]>, Array<[number, number]>]): number[] {
+  const idx = laneIndex(game);
+  const out: number[] = [];
+  for (const l of [0, 1] as const) {
+    const ds = idx.dist[l];
+    for (const [lo, hi] of w[l]) {
+      let a = 0;
+      let b = ds.length;
+      while (a < b) {
+        const m = (a + b) >> 1;
+        if (ds[m]! < lo) a = m + 1;
+        else b = m;
+      }
+      for (let k = a; k < ds.length && ds[k]! <= hi; k++) out.push(idx.at[l][k]!);
+    }
+  }
+  for (let i = idx.built; i < game.enemies.length; i++) out.push(i);
+  return out;
+}
+
 export function stepGame(game: Game): void {
   if (game.phase !== "wave") return;
   if (game.duel) {
@@ -2538,6 +2725,24 @@ export function stepGame(game: Game): void {
     if (game.duel.clock >= DUEL_AUTO) duelStrike(game, 0.5);
     return;
   }
+  const byId = new Map<number, Tower>();
+  const boosters: StepCtx["boosters"] = [];
+  let reveal = false;
+  for (const t of game.towers) {
+    byId.set(t.id, t);
+    const s = towerStats(t);
+    if (s.reveal > 1) reveal = true;
+    if (s.buff > 1 || s.aura > 1) boosters.push({ t, s });
+  }
+  ctx = { byId, reveal, charm: true, jam: true, lobby: true, boosters, lanes: null };
+  try {
+    step(game);
+  } finally {
+    ctx = null;
+  }
+}
+
+function step(game: Game): void {
   game.tick += 1;
   const fleet = isFleet(game.level);
   const bridge = setPiece(game.level, "bridge");
@@ -2590,13 +2795,17 @@ export function stepGame(game: Game): void {
   for (const t of game.towers) if (t.out && t.out > 0) t.out = Math.max(0, t.out - STEP);
 
   // Hedgerows slow whatever is in range; the strongest one wins, they don't stack. Honey sticks.
+  const slowers: Array<{ t: Tower; s: TowerStats }> = [];
+  for (const t of game.towers) {
+    const s = towerStats(t);
+    if (s.slow < 1 && towerActive(t)) slowers.push({ t, s });
+  }
   for (const enemy of game.enemies) {
     const p = enemyPoint(game.level, enemy);
     const flying = !!ENEMIES[enemy.kind].flying;
     let factor = 1;
-    for (const t of game.towers) {
-      const s = towerStats(t);
-      if (s.slow >= 1 || !towerActive(t) || (flying && !s.air)) continue;
+    for (const { t, s } of slowers) {
+      if (flying && !s.air) continue;
       if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= s.range)
         factor = Math.min(factor, 1 - ((1 - s.slow) / game.perks.slow) * (hasTwist(game.level, "drought") ? 0.7 : 1));
     }
@@ -2659,6 +2868,14 @@ export function stepGame(game: Game): void {
     }
   }
 
+  // Disruptors on the lane (children popped below can't be one, so this holds for the rest of the step).
+  ctx!.charm = ctx!.jam = ctx!.lobby = false;
+  for (const e of game.enemies) {
+    const k = ENEMIES[e.kind];
+    if (k.charm) ctx!.charm = true;
+    if (k.jam) ctx!.jam = true;
+    if (k.lobby) ctx!.lobby = true;
+  }
   for (const t of game.towers) {
     const spec = lobbied(game, t) ? towerStats({ ...t, tier: 3, spec: null }) : towerStats(t);
     if (!towerActive(t)) continue;
@@ -2698,6 +2915,7 @@ export function stepGame(game: Game): void {
           if (!isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0) {
             e.dist = Math.max(0, e.dist - spec.gustPush);
             e.gustCd = 2;
+            laneMoved();
           }
         }
         if (blew) {
@@ -2740,8 +2958,7 @@ export function stepGame(game: Game): void {
     }
     const p = enemyPoint(game.level, target);
     let dmg = spec.damage * game.perks.towerDamage;
-    for (const b of game.towers) {
-      const bs = towerStats(b);
+    for (const { t: b, s: bs } of ctx!.boosters) {
       if (bs.buff > 1 && Math.hypot(b.col - t.col, b.row - t.row) <= bs.range)
         dmg *= bs.buff;
       if (bs.aura > 1) dmg *= bs.aura;
@@ -2768,8 +2985,10 @@ export function stepGame(game: Game): void {
         e.sticky = spec.sticky.factor;
         e.stickyLeft = spec.sticky.secs;
       }
-      if (spec.knockback && !isHeavy(e.kind) && !e.held)
+      if (spec.knockback && !isHeavy(e.kind) && !e.held) {
         e.dist = Math.max(0, e.dist - spec.knockback);
+        laneMoved();
+      }
     };
     hit(target);
     if (fleet) {
@@ -2778,9 +2997,11 @@ export function stepGame(game: Game): void {
       const reach = spec.splash > 0 ? spec.splash : PIERCE_REACH;
       const done = new Set<number>([target.id]);
       let left = spec.pierce - 1;
+      const w = windowsOf(game, p.x, p.y, reach);
       for (let pass = 0; pass < 4 && left > 0; pass++) {
         const near: Array<{ e: Enemy; d: number }> = [];
-        for (const e of game.enemies) {
+        for (const i of candidates(game, w)) {
+          const e = game.enemies[i]!;
           if (done.has(e.id) || e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying) || !isRevealed(game, e)) continue;
           const q = enemyPoint(game.level, e);
           const d = Math.hypot(q.x - p.x, q.y - p.y);
