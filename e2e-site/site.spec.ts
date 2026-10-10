@@ -421,12 +421,14 @@ test.describe('Hedgerow', () => {
         await page.reload()
         await page.locator(`button.level[data-level="${level}"]`).click()
         const pos = await page.evaluate(() => {
-          const H = (window as any).hedgerow
+          type T = { id: number }
+          type G = { level: { rows: number; cols: number }; towers: T[] }
+          const H = (window as unknown as { hedgerow: { game(): G; place(g: G, k: string, c: number, r: number): { ok: boolean }; upgrade(g: G, id: number): unknown } }).hedgerow
           const g = H.game()
           for (let r = 0; r < g.level.rows; r++)
             for (let c = 0; c < g.level.cols; c++)
               if (H.place(g, 'scarecrow', c, r).ok) {
-                const t = g.towers.at(-1)
+                const t = g.towers.at(-1)!
                 H.upgrade(g, t.id)
                 H.upgrade(g, t.id)
                 return [c, r] as const
