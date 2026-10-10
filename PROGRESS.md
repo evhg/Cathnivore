@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-10 07:26–17:50 (owner chat):** Bloons TD research, then Hedgerow 2 (`docs/design/hedgerow-2.md`). M1 and M2 were built by a workflow with two review-and-fix rounds each, and released as `68a1f7c` (ROADMAP H2 and H3 ticked). Next: M3 (H4) and M4 (H5), from this chat.
 - **2026-10-10 owner chat (2):** ROADMAP H3 (Hedgerow 2 M2, the Fleet in act 1) done on `build`: layered rungs (`fleet.ts`), Round Book rounds 1-30 (`rounds.ts`), levels 1-10 on fleet rules (Goodwill 120, a Mark a layer, FV leaks, numeric pierce, 350 live cap with a queue), instanced rungs in 3D (`render3d/rungs.ts`) and rung sprites/pops in 2D, pop bus, Knockouts counter, round cards, replays v3; tuner fits start-Marks k (all 0.7, act 1 easier than target: M3 should tighten). Acceptance played headless in `?2d` and 3D. Unreleased. Next: H4 (M3 properties).
 - **2026-10-10 owner chat:** ROADMAP H2 (Hedgerow 2 M1, hands-on pacing) done on `build`: Go/Next/speed pill with stacking, x5 after a win, Keep Going off on 1-5, Cath on a post (level 1 kill share 3-10%), manual abilities that earn Auto, leak-cause banner, choose chip, one-tap story, phone spec choice visible; full retune + verify; `npm run check` 980 tests and Hedgerow site e2e 24/24 green. Unreleased. Next: H3 (M2 the Fleet).
 - **2026-10-10 06:51 session (short):** H1 scenery per act (`SCENERY_LEAVES/COUNT/TREES` in terrain.ts: autumn orchard, grey moor, dead Rift, dark Keep). `npm run check` green; not screenshotted. Unreleased (milestone only). Next: H1 lane shapes/props, then H2.
@@ -226,6 +227,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-10 17:44 `68a1f7c`: Hedgerow 2 M1 (hands-on pacing) and M2 (the layered Fleet in act 1). All gates passed; the live version.json matches; the tag push 403 is harmless. 1st release today.
 - 2026-10-04 11:04 `7427b78`: CATHODE step-by-step first job, world bounds, noir score, HDR NaN guard.
 - 2026-10-04 ~06:20 UTC: `f945e3a`, CATHODE through monowire lash. Gates passed; live version matches; tag push 403 (harmless). 2nd release today.
 - 2026-10-04 ~04:10 UTC: `ca00b4a`, CATHODE through alt-fires. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
