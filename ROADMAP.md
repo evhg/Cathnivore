@@ -23,8 +23,19 @@ These two phases come before every older unfinished item below. About 70% of ses
 
 **Phase H: Hedgerow depth (owner round 2–3 notes).** Bigger, player-visible changes only.
 - H1. [ ] **Distinct biomes per act:** each act gets its own ground, props, palette, weather and lane shapes (marsh, orchard, quarry, snow, town), so no two acts look alike. The 3D renderer should look closer to StarCraft 2 than to placeholders.
-- H2. [ ] **Strategic variety:** enemy types that demand specific counters, map features you build around (high ground, chokepoints, fords) and per-level rules. No single tower spam may beat an act, and the bot tuner proves it (`scripts/hedgerow-tune.ts`, BALANCE.md).
-- H3. [ ] **Cath's progression:** an RPG layer between levels (attributes, a skill tree and gear for Cath) that changes how levels play, plus the 1-on-1 boss duels made into real set pieces.
+- H2–H13: **Hedgerow 2, "Second Planting"** (owner, 2026-10-10: "Bloons TD is way more addictive. Why? Upgrade our game and build it"). The spec is `docs/design/hedgerow-2.md`; build the milestones in order. Each is shippable, gets a release when finished, and keeps the existing level tests passing through the `Level.rules: "classic" | "fleet"` flag until H9. These replace the old H2 (strategic variety) and H3 (Cath's progression).
+  - H2. [ ] **M1 Hands-on pacing:** Go, x3 and stack in one button, with an early-send bonus. Cath stands on a post and no longer farms kills. Manual abilities sit in a tray and earn Auto after 3 casts. Keep Going is off on levels 1–5. x5 opens after a win. A leak banner names the cause. Add a "paused while you choose" chip, one tap per story line, and a visible spec choice on phones.
+  - H3. [ ] **M2 The Fleet in act 1:** layered enemies that pop one rung at a time, with sound, particles and 1 Mark per layer. Add Knockouts counters, Round Book rounds 1–30, levels 1–10 on fleet rules, Goodwill 120 with Fleet Value leak cost, and instanced rung rendering.
+  - H4. [ ] **M3 Properties and readability:** the 9 properties as hard locks with icons, damage types, tower badges, "can't answer this" warnings, the leak report and loss causes. Acts 2–3 move to fleet rules; Book rounds go to 45.
+  - H5. [ ] **M4 Three upgrade paths** (T1–T3) for Scarecrow, Hedgerow, Beehive, Seed Cannon and Radio Mast, with the crosspath rule. Add a 3-column sheet, "affordable in about N rounds", silhouettes for each tier and drag-to-place.
+  - H6. [ ] **M5 Plants, Crowns and tower abilities:** Skip, Bulldozer, Crane, Exec Car and Tunnel Borer. T4 Crowns with abilities, Book rounds 46–80, and Freeplay.
+  - H7. [ ] **M6 Cath the hero:** levels 1–20 within a run, Pie, Neighbours and Last Orders, kits chosen on the level card, the RPG re-pointed and duel rewards.
+  - H8. [ ] **M7 The full roster and the economy:** paths for the other 5 towers, Heirlooms replacing megastructures, the sell and bank rules, the income falloff, and every tower unlocked by level 24.
+  - H9. [ ] **M8 Campaign conversion:** acts 4–10 on Book windows with bosses as phased Plants. Delete `ramp()`, `HP_SCALE` and the classic rules.
+  - H10. [ ] **M9 Difficulties, modes, medals** (Easy, Normal, Hard, Hollow and 3 remixes), the medal grid, close-call slow motion, the end screen, and Continue or retry from a round snapshot.
+  - H11. [ ] **M10 Long-term meta:** tower XP gating T3 and T4, Acorns, the Compost Heap, Seed Bank v2 and Seed Packets.
+  - H12. [ ] **M11 Events and map gimmicks:** a Daily with tower limits, the weekly County Show, line-of-sight blockers, removable obstacles and fords. Merges with H1.
+  - H13. [ ] **M12 Spectacle pass:** rung liveries, Crown and Heirloom idles, comic deaths and spike-round music stingers.
 
 ## Phase 1: Cath, the face of every game (owner's top priority)
 
