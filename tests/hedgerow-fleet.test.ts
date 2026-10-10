@@ -8,6 +8,7 @@ import {
   earlyBonus,
   enemyPoint,
   hitEnemy,
+  isBig,
   isFleet,
   laneCellsOf,
   isPlot,
@@ -194,7 +195,8 @@ describe("hedgerow fleet: twists keep a round's weight and length", () => {
         expect(sendWave(g).ok).toBe(true);
         const last = Math.max(...g.spawnQueue.map((q) => q.at));
         expect(last, `level ${lv.id} wave ${w + 1}`).toBeLessThanOrEqual(25);
-        const fv = g.spawnQueue.reduce((a, q) => a + (q.kind === "boss" ? 0 : fvOf(q.kind)), 0);
+        // Bosses aside; a Reinforced vehicle (the Fortified twist) carries one more layer.
+        const fv = g.spawnQueue.reduce((a, q) => a + (isBig(q.kind) ? 0 : fvOf(q.kind, q.pm ?? 0)), 0);
         const want = roundFV(bookRound(lv, w + 1), lv.id);
         expect(fv / want, `level ${lv.id} wave ${w + 1}`).toBeGreaterThan(0.85);
         expect(fv / want, `level ${lv.id} wave ${w + 1}`).toBeLessThan(1.15);
@@ -276,8 +278,8 @@ describe("hedgerow fleet: pops you can hear", () => {
 });
 
 describe("hedgerow fleet: rounds and levels", () => {
-  it("the Book has 30 rounds, each within 10% of its budget, none spawning for more than 25 s", () => {
-    expect(BOOK_ROUNDS).toBe(30);
+  it("the Book has 45 rounds, each within 10% of its budget, none spawning for more than 25 s", () => {
+    expect(BOOK_ROUNDS).toBe(45);
     for (let r = 1; r <= BOOK_ROUNDS; r++) {
       expect(Math.abs(roundFV(r) / budget(r) - 1)).toBeLessThan(0.1);
       const spawn = Math.max(...BOOK[r - 1]!.groups.map((x) => (x.delay ?? 0) + x.count * x.gap));
@@ -288,23 +290,26 @@ describe("hedgerow fleet: rounds and levels", () => {
     expect(Math.round(budget(10))).toBe(569);
   });
 
-  it("levels 1-10 play windows of the Book on fleet rules; level 11 stays classic", () => {
+  it("levels 1-30 play windows of the Book on fleet rules; level 31 stays classic", () => {
     expect(windowFor(1)).toEqual({ from: 1, to: 12 });
     expect(windowFor(10)).toEqual({ from: 5, to: 18 });
     expect(windowFor(50)).toEqual({ from: 24, to: 45 });
     expect(windowFor(100)).toEqual({ from: 51, to: 80 });
-    for (const lv of LEVELS.slice(0, 10)) {
+    for (const lv of LEVELS.slice(0, 30)) {
       expect(isFleet(lv)).toBe(true);
       expect(lv.goodwill).toBe(FLEET_GOODWILL);
       expect(lv.hpScale).toBeUndefined();
       const w = windowFor(lv.id);
       expect(lv.book).toEqual(w);
       expect(lv.waves).toHaveLength(w.to - w.from + 1);
-      expect(lv.startMarks).toBeGreaterThanOrEqual(Math.round(0.4 * (500 + incomeBefore(w.from))));
-      expect(lv.startMarks).toBeLessThanOrEqual(Math.round(1.2 * (500 + incomeBefore(w.from))));
+      // M3: k back inside the spec's [0.7, 1.0], bar the tutorial (level 1 opens on 1.2 x 500: random builds must win).
+      expect(lv.startMarks).toBeGreaterThanOrEqual(Math.round(0.7 * (500 + incomeBefore(w.from))));
+      expect(lv.startMarks).toBeLessThanOrEqual(Math.round((lv.id === 1 ? 1.2 : 1.0) * (500 + incomeBefore(w.from))));
     }
     expect(LEVELS[9]!.waves.at(-1)!.some((g) => g.enemy === "boss")).toBe(true);
-    expect(isFleet(LEVELS[10]!)).toBe(false);
+    expect(LEVELS[19]!.waves.at(-1)!.some((g) => g.enemy === "convoy")).toBe(true);
+    expect(LEVELS[29]!.waves.at(-1)!.some((g) => g.enemy === "blimp")).toBe(true);
+    expect(isFleet(LEVELS[30]!)).toBe(false);
   });
 
   it("neighbouring levels never play the same rounds: a shared window gets act-themed swaps of the same weight", () => {
@@ -316,8 +321,8 @@ describe("hedgerow fleet: rounds and levels", () => {
         const ratio = roundFV(r, Number(id)) / roundFV(r);
         expect(ratio, `level ${id} round ${r}`).toBeGreaterThan(0.97);
         expect(ratio, `level ${id} round ${r}`).toBeLessThan(1.03);
-        // The rounds to remember stay the Book's.
-        expect([6, 10, 12, 14]).not.toContain(r);
+        // The rounds to remember stay the Book's, and so do the rounds that first bring each property.
+        expect([6, 10, 12, 14, 15, 18, 22, 26, 30]).not.toContain(r);
       }
   });
 
@@ -522,14 +527,16 @@ describe("hedgerow fleet: the live cap", () => {
 });
 
 describe("hedgerow fleet: level 1 (M1 review)", () => {
-  it("act 1 isn't free (M2 review): Scarecrow spam bleeds Goodwill on levels 1-3 and loses most of 4-10", () => {
-    let lost = 0;
-    for (const lv of LEVELS.filter(isFleet)) {
+  it("act 1 isn't free (M2 review): Scarecrow spam bleeds Goodwill on levels 1-3 and on most of 4-10", () => {
+    // M3 brought k back to [0.7, 1.0], so act 1 opens richer than M2's 0.4-0.49: spam now bleeds rather than
+    // loses there, and act 2's locks finish it off (tests/hedgerow-lessons.test.ts).
+    let bled = 0;
+    for (const lv of LEVELS.filter((l) => isFleet(l) && l.id <= 10)) {
       const naive = kept(playLevel(lv, "naive"));
       if (lv.id <= 3) expect(naive, `level ${lv.id}`).toBeLessThan(0.95);
-      else if (naive === 0) lost++;
+      else if (naive < 1) bled++;
     }
-    expect(lost).toBeGreaterThanOrEqual(5);
+    expect(bled).toBeGreaterThanOrEqual(4);
   }, 180_000);
 
   it("a lazy build (3 Scarecrows, never upgraded) loses Goodwill visibly; the best bot keeps nearly all of it", () => {

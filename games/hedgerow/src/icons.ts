@@ -2,7 +2,8 @@
 // the same sprite code as the battlefield and cached as data URLs (the CSP allows data: images).
 
 import type { EnemyKind, TowerKind } from "./engine";
-import { drawEnemy, drawTower, enemyLift, enemyScale } from "./sprites";
+import type { Property } from "./fleet";
+import { drawEnemy, drawPropIcon, drawTower, enemyLift, enemyScale } from "./sprites";
 
 const cache = new Map<string, string>();
 
@@ -45,4 +46,9 @@ export function img(src: string, cls: string): HTMLImageElement {
   el.className = cls;
   el.setAttribute("aria-hidden", "true");
   return el;
+}
+
+/** A Fleet property's icon (Hedgerow 2 section 2), as on the field, for chips, badges and the Almanac. */
+export function propIcon(prop: Property): string {
+  return render(`p:${prop}`, 32, (ctx, size) => drawPropIcon(ctx, prop, size / 2, size / 2, size - 2));
 }

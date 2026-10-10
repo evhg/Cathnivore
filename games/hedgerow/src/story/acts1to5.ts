@@ -61,7 +61,7 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
       { who: "mara", text: "Hollowell sent me a letter: three times what my farm is worth, if I sign this week." },
       { who: "mara", text: "But they only pay if they win planning permission. If they lose, I've given my farm away for nothing." },
       { who: "cath", expression: "determined", text: "Then don't sign. Money's tight today, so build cheap hedges first and add more as the waves pay out." },
-      { who: "cath", text: "Some vans are wrapped in bubble wrap. Single shots barely dent it, but bees burst it straight away." },
+      { who: "cath", text: "Some vans come in bubble wrap. It cushions explosions, so shells bounce off, but a beak or a sting pops it straight away." },
     ],
     after: [
       { who: "mara", text: "I've written back. The answer is no." },
@@ -133,6 +133,7 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
       { who: "narrator", text: "Highmoor. Hollowell bought Oakvale's market square, so the Saturday market has moved up onto the moor." },
       { who: "tomas", text: "Tomas Reed, I run the market. Ninety stalls in a borrowed field, and they still came. I could cry." },
       { who: "cath", text: "Hollowell will send vans to scare the customers off. Today's a market day, so the towers earn extra." },
+      { who: "tomas", text: "And the old radio mast on the moor still works. Anything inside its signal shows up, even a van that hides." },
       { who: "cath", expression: "determined", text: "Spend as the money comes in, and keep the lane to the field gate clear." },
     ],
     after: [
@@ -155,7 +156,7 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
     name: "The Market Stall",
     before: [
       { who: "tomas", text: "Money's tight, so here's my idea: a market stall by the lane. It earns money every wave." },
-      { who: "tomas", text: "And the cheering crowd makes the towers next to it hit harder." },
+      { who: "tomas", text: "And the cheering crowd makes the towers next to it work faster." },
       { who: "cath", text: "Build the stall first and put your strongest towers beside it. It pays for the rest." },
     ],
     after: [
@@ -179,6 +180,8 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
       { who: "crisp", text: "Every home on Highmoor has a free Hollowell loyalty card. Today, we deliver to all of them." },
       { who: "tomas", text: "Look at the road. Hundreds of little trucks, bumper to bumper." },
       { who: "cath", expression: "determined", text: "When they're packed this close, bees sting a whole group at once. Build more hives." },
+      { who: "tomas", text: "And the last lorries are painted like the hedges. You won't see them coming." },
+      { who: "cath", text: "Then a Radio Mast goes where the lane runs longest. Nothing can hit what nobody can see." },
     ],
     after: [
       { who: "tomas", text: "Mrs Penhale cut her loyalty card in half and posted it back to them. Good for her." },
@@ -221,8 +224,8 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
     name: "The Cattle Grid",
     before: [
       { who: "tomas", text: "Hollowell have put steel plates on their trucks. They've been watching how we beat them." },
-      { who: "cath", text: "Armour blocks part of every hit, so weak hits barely scratch them." },
-      { who: "cath", expression: "determined", text: "Upgrade your towers so each hit lands hard, and keep the trucks under fire the whole way." },
+      { who: "cath", text: "Beaks and thorns just bounce off steel. Stings, gusts and blasts don't." },
+      { who: "cath", expression: "determined", text: "Mix in beehives and windmills, and keep the plated trucks under fire the whole way." },
     ],
     after: [
       { who: "tomas", text: "They're lining up at the cattle grid for one last push. Crisp himself is leading it." },
@@ -520,7 +523,7 @@ export const ACTS_1_TO_5: Record<number, Beat> = {
   45: {
     name: "Sol's Mast",
     before: [
-      { who: "sol", text: "Ta-da! My radio mast. Anything inside its signal shows up, hidden couriers included." },
+      { who: "sol", text: "Ta-da! My podcast transmitter, rigged to the radio mast. Anything inside its signal shows up, hidden couriers included." },
       { who: "sol", text: "And it marks everything nearby, so the other towers hit it harder." },
       { who: "cath", expression: "determined", text: "Put the mast where the couriers slip through. There's a swing bridge today too: hit them while it's up." },
     ],

@@ -1,7 +1,7 @@
 // Hedgerow's levels. H1 ships the first three of act 1, Brindle Hills (docs/design/hedgerow.md). Story
 // follows SPEC 3.2's voice: short, specific, dry, warm. Later acts append to LEVELS.
 
-import { BOSS_MOVES, ENEMIES, TOWERS, laneCellsOf, pathLength, pointAt, type Level, type SetPiece, type TwistId, type WaveGroup } from "./engine";
+import { BOSS_MOVES, ENEMIES, TOWERS, laneCellsOf, megasUnlocked, pathLength, pointAt, type Level, type SetPiece, type TwistId, type WaveGroup } from "./engine";
 import { ACTS_1_TO_5 } from "./story/acts1to5";
 import { ACTS_6_TO_10 } from "./story/acts6to10";
 import type { Beat } from "./story/types";
@@ -6373,7 +6373,8 @@ const TWIST_PLAN: Record<number, TwistId[]> = {
   14: ["air"],
   15: ["crowd"],
   16: ["fog"],
-  17: ["fortified", "noscarecrow"],
+  // Level 17 lost its Scarecrow ban in M3: on the Fleet a bees-only field could not hold round 14's convoy spike.
+  17: ["fortified"],
   18: ["rain"],
   19: ["armoured"],
   22: ["crowd"],
@@ -6439,10 +6440,11 @@ const TWIST_PLAN: Record<number, TwistId[]> = {
 };
 for (const l of LEVELS) if (TWIST_PLAN[l.id]) l.twists = TWIST_PLAN[l.id];
 
-// Hedgerow 2 M2: act 1 plays the Fleet. Each level plays its window of the Round Book (rounds.ts windowFor),
-// starts with a tuned share k of 500 Marks plus what the Book pays before its first round, has 120 Goodwill
-// and pays a Mark a layer. The boss level's last round brings the Acquisition Van in on top of the Book's.
-export const FLEET_LEVELS = (id: number) => id >= 1 && id <= 10;
+// Hedgerow 2: acts 1-3 play the Fleet (act 1 from M2, acts 2-3 from M3). Each level plays its window of the
+// Round Book (rounds.ts windowFor), starts with a tuned share k of 500 Marks plus what the Book pays before its
+// first round, has 120 Goodwill and pays a Mark a layer. A boss level's last round brings its boss (the
+// Acquisition Van, Mr Crisp's Convoy, the Blimp) in on top of the Book's.
+export const FLEET_LEVELS = (id: number) => id >= 1 && id <= 30;
 export function fleetStart(id: number, k = START_K[id] ?? 0.85): number {
   // k scales the opening 500 too (M2 review): with k only on the Book's income, level 1 (no income before
   // round 1) always opened on 500, and the tuner had no way to make it anything but free.
@@ -6455,9 +6457,10 @@ for (const l of LEVELS) {
   l.book = book;
   l.goodwill = FLEET_GOODWILL;
   l.startMarks = fleetStart(l.id);
+  const boss = l.waves.flat().find((g) => BOSS_MOVES[g.enemy])?.enemy ?? "boss";
   const waves: WaveGroup[][] = [];
   for (let r = book.from; r <= book.to; r++) waves.push(bookWave(r, l.id));
-  if (l.id % 10 === 0) waves[waves.length - 1] = [{ enemy: "boss", count: 1, gap: 1, delay: 0 }, ...waves[waves.length - 1]!.map((g) => ({ ...g, delay: g.delay + 4 }))];
+  if (l.id % 10 === 0) waves[waves.length - 1] = [{ enemy: boss, count: 1, gap: 1, delay: 0 }, ...waves[waves.length - 1]!.map((g) => ({ ...g, delay: g.delay + 4 }))];
   l.waves = waves;
 }
 
@@ -6492,9 +6495,12 @@ for (const l of LEVELS) {
   );
 }
 
-// New towers: Bea's Windmill from level 8, Pip's Seed Cannon from level 26.
+// New towers: Bea's Windmill from level 8, the moor's Radio Mast on the Fleet's levels from 11 (Hedgerow 2 M3:
+// stealth arrives in round 22, which level 15 is the first to play), Pip's Seed Cannon from level 26. The classic
+// levels 31-44 keep the tower lists they were tuned with (no Mast until Sol's at 45) until M8 moves them over.
 for (const l of LEVELS) {
   if (l.id >= 8 && !l.towers.includes("windmill")) l.towers = [...l.towers, "windmill"];
+  if (FLEET_LEVELS(l.id) && l.id >= 11 && !l.towers.includes("mast")) l.towers = [...l.towers, "mast"];
   if (l.id >= 26 && !l.towers.includes("cannon")) l.towers = [...l.towers, "cannon"];
 }
 
@@ -6566,7 +6572,7 @@ function unlockText(id: number): string {
   if (next.id === 6) bits.push("towers can specialise at tier 4");
   if (next.id === 12) bits.push("Cath can call the neighbours");
   if (next.id === 25) bits.push("Cath can rally the towers");
-  if (next.id === 12) bits.push("grown towers side by side can merge into megastructures");
+  if (megasUnlocked(next) && !megasUnlocked(prev)) bits.push("grown towers side by side can merge into megastructures");
   const seen = new Set(LEVELS.slice(0, id).flatMap((l) => l.waves.flat().map((g) => g.enemy)));
   const fresh = [...new Set(next.waves.flat().map((g) => g.enemy))].filter((k) => !seen.has(k));
   for (const k of fresh) bits.push(`watch for the ${ENEMIES[k].name}`);

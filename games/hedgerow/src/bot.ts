@@ -40,7 +40,7 @@ import {
   type Tower,
   type TowerKind,
 } from "./engine";
-import { RUNGS, fvOf } from "./fleet";
+import { P, RUNGS, fvOf } from "./fleet";
 
 export type Skill = "competent" | "naive" | "balanced" | "best" | "idle";
 
@@ -55,20 +55,34 @@ interface Threat {
   heal: number;
   split: number;
   shield: number;
+  /** Fleet properties (Hedgerow 2 M3): Fleet Value carrying each lock. */
+  plated: number;
+  sealed: number;
+  reefer: number;
   boss: boolean;
 }
 
 function threatOf(level: Level, from: number, n: number): Threat {
-  const t: Threat = { total: 0, flying: 0, heavy: 0, armoured: 0, stealth: 0, charm: 0, jam: 0, heal: 0, split: 0, shield: 0, boss: false };
+  const t: Threat = { total: 0, flying: 0, heavy: 0, armoured: 0, stealth: 0, charm: 0, jam: 0, heal: 0, split: 0, shield: 0, plated: 0, sealed: 0, reefer: 0, boss: false };
+  const fleet = isFleet(level);
   for (const groups of level.waves.slice(from, from + n)) {
     for (const g of groups) {
       const e = ENEMIES[g.enemy];
+      const pm = (g.pm ?? 0) | (fleet ? propsOfRung(g.enemy) : 0);
       // Fleet levels weigh a group by its Fleet Value (a van's 3 layers ~ a classic van's 98 health).
-      const w = g.count * (isFleet(level) ? fvOf(g.enemy) / 3 : e.hp / 100);
+      const w = g.count * (fleet ? fvOf(g.enemy, pm) / 3 : e.hp / 100);
       t.total += w;
       if (e.flying) t.flying += w;
       else if (isHeavy(g.enemy)) t.heavy += w;
-      if (e.armor || hasTwist(level, "armoured")) t.armoured += w;
+      if (fleet) {
+        // The Fleet's locks: the Plated twist plates a third of the road traffic.
+        if (pm & P.plated) t.plated += w;
+        else if (hasTwist(level, "armoured") && !e.flying) t.plated += w / 3;
+        if (pm & P.sealed) t.sealed += w;
+        if (pm & P.reefer) t.reefer += w;
+        if (pm & P.wrapped) t.shield += w;
+        if (pm & P.stealth) t.stealth += w;
+      } else if (e.armor || hasTwist(level, "armoured")) t.armoured += w;
       if (e.stealth) t.stealth += w;
       if (e.charm) t.charm += w;
       if (e.jam) t.jam += w;
@@ -80,6 +94,13 @@ function threatOf(level: Level, from: number, n: number): Threat {
   }
   if (hasTwist(level, "air")) t.flying += t.total * 0.25;
   return t;
+}
+
+/** A rung's own properties (an Artic is always Wrapped and Reefer; a Plated Lorry is Plated). */
+function propsOfRung(kind: TowerKind | Level["waves"][number][number]["enemy"]): number {
+  let pm = 0;
+  for (const p of RUNGS[kind as keyof typeof RUNGS]?.props ?? []) pm |= P[p];
+  return pm;
 }
 
 /** Lane sample points, each weighted towards the farmhouse end (that's where a miss costs Goodwill). */
@@ -163,34 +184,44 @@ function wanted(game: Game): TowerKind[] {
   const air = th.total ? th.flying / th.total : 0;
   const armour = th.total ? th.armoured / th.total : 0;
   const heavy = th.total ? th.heavy / th.total : 0;
-  // Economy early, unless it's a rush.
-  if (!hasTwist(lv, "rush") && game.wave < lv.waves.length - 3) set("stall", n >= 3 ? (n >= 10 ? 2 : 1) : 0);
+  const fleetLv = isFleet(lv);
+  // Economy early, unless it's a rush. On the Fleet a stall costs a field's worth of Marks: only once there is one.
+  if (!hasTwist(lv, "rush") && game.wave < lv.waves.length - 3) set("stall", fleetLv ? (n >= 8 && game.wave < lv.waves.length - 6 ? 1 : 0) : n >= 3 ? (n >= 10 ? 2 : 1) : 0);
   // Fleet levels: a hedge does no popping, so it waits until there's a field for it to slow things into.
-  set("hedgerow", isFleet(lv) ? (n >= 4 ? 1 + n / 8 : 0) : 1 + n / 6);
+  set("hedgerow", fleetLv ? (n >= 4 ? 1 + n / 8 : 0) : 1 + n / 6);
   if (ok("pond")) set("pond", n / 10);
   if (ok("barn")) set("barn", n / 8);
-  if (th.stealth || all.stealth) set("mast", Math.min(4, 2 + Math.floor(n / 6)));
+  // Fleet: masts pop nothing, so they come when stealth is two rounds off, enough to cover the lane.
+  if (fleetLv) {
+    if (threatOf(lv, game.wave, 3).stealth) set("mast", Math.min(4, 1 + Math.floor(n / 6)));
+  } else if (th.stealth || all.stealth) set("mast", Math.min(4, 2 + Math.floor(n / 6)));
   else if (n > 7) set("mast", 1);
   if (th.charm) set("tent", 1 + n / 10);
   // Heavy plant shrugs off turnips and stings: grain-shot and seed sacks are what move it.
   if (armour > 0.2 || heavy > 0.15) set("silo", 1 + dmgTowers * Math.max(armour * 0.6, heavy * 0.7));
   if (all.boss) set("court", game.wave >= lv.waves.length - 2 ? 1 : 0);
   if (n > 9) set("hall", 1);
-  const wrapped = th.total ? th.shield / th.total : 0;
-  if (th.split || th.total > 30 || hasTwist(lv, "crowd") || wrapped > 0.1)
-    set("beehive", 1 + dmgTowers * (0.35 + wrapped * 0.5));
-  if (ok("windmill")) set("windmill", 1 + n / 8);
-  if (ok("cannon")) set("cannon", 1 + dmgTowers * (0.2 + wrapped * 0.4 + heavy * 0.3 + (th.total > 30 ? 0.15 : 0)));
+  const fleet = isFleet(lv);
+  // Fleet: wrap only stops blasts, so it no longer calls for splash; steel calls for anything but beaks.
+  const wrapped = th.total && !fleet ? th.shield / th.total : 0;
+  const plated = th.total ? th.plated / th.total : 0;
+  const sealed = th.total ? th.sealed / th.total : 0;
+  if (th.split || th.total > 30 || hasTwist(lv, "crowd") || wrapped > 0.1 || plated > 0.1)
+    set("beehive", (1 + dmgTowers * (0.35 + wrapped * 0.5 + plated * 0.4)) * (1 - sealed * 0.7));
+  if (ok("windmill")) set("windmill", 1 + n / 8 + dmgTowers * plated * 0.3);
+  if (ok("cannon")) set("cannon", 1 + dmgTowers * (0.2 + wrapped * 0.4 + heavy * 0.3 + plated * 0.3 + (th.total > 30 ? 0.15 : 0)));
   // Anti-air and the backbone: scarecrows (or bees when scarecrows are banned).
   const airKind: TowerKind = ok("scarecrow") ? "scarecrow" : "beehive";
   // Bubble wrap makes single-target shots weak: lean on splash when it's about.
-  set(airKind, 2 + dmgTowers * Math.max(0.4 * (1 - wrapped) * (1 - heavy), air));
+  set(airKind, 2 + dmgTowers * Math.max(0.4 * (1 - wrapped) * (1 - heavy) * (1 - plated * 0.6), air));
   const order = Object.entries(want)
     .map(([k, v]) => [k as TowerKind, (v ?? 0) - count(game, k as TowerKind)] as const)
     .filter(([, d]) => d > 0)
     .sort((a, b) => b[1] - a[1]);
   const out = order.map(([k]) => k);
   if (!out.includes(airKind) && ok(airKind)) out.push(airKind);
+  // Fleet: with stealth on its way, nothing else pops what it can't see, so the masts come first.
+  if (fleetLv && out.includes("mast")) return ["mast", ...out.filter((k) => k !== "mast")];
   return out;
 }
 
@@ -199,6 +230,8 @@ function specFor(game: Game, t: Tower): 0 | 1 {
   const air = th.total ? th.flying / th.total : 0;
   switch (t.kind) {
     case "scarecrow":
+      // Fleet: Pumpkin Lobber lobs pumpkins (Blast), the Scarecrow's answer to steel; Crow Caller pecks (Sharp).
+      if (isFleet(game.level)) return th.plated > th.total * 0.15 || hasTwist(game.level, "armoured") ? 0 : air > 0.25 ? 1 : 0;
       return air > 0.25 ? 1 : 0;
     case "hedgerow":
       return hasTwist(game.level, "drought") || th.total > 40 ? 0 : 1;
@@ -218,7 +251,9 @@ function upgradeSomething(game: Game, samples: ReturnType<typeof laneSamples>, s
     .filter((t) => t.tier < (specs ? 4 : 3))
     .map((t) => {
       const st = towerStats(t);
-      const value = (st.damage ? st.damage / st.cooldown : 8) * (1 + coverage(samples, t.col, t.row, st.range) / 20);
+      // Fleet: a hit is layers times pierce; a tower that pops nothing (mast, hedge, stall) upgrades last.
+      const fleet = isFleet(game.level);
+      const value = (st.damage ? (st.damage / st.cooldown) * (fleet ? Math.sqrt(st.pierce) : 1) : fleet ? 0.3 : 8) * (1 + coverage(samples, t.col, t.row, st.range) / 20);
       return { t, value };
     })
     .sort((a, b) => b.value - a.value);
@@ -276,11 +311,17 @@ function spend(game: Game, skill: Skill, samples: ReturnType<typeof laneSamples>
     // Competent: keep a balance between new towers and upgrades.
     const dmg = game.towers.filter((t) => towerStats(t).damage > 0);
     const avgTier = dmg.length ? dmg.reduce((a, t) => a + t.tier, 0) / dmg.length : 0;
-    const preferUpgrade = dmg.length >= 4 + game.wave * 0.6 && avgTier < 3.6;
+    // Fleet: a specialisation costs five towers' worth, so the field comes first and specs wait for eight poppers.
+    const fleet = isFleet(game.level);
+    const preferUpgrade = dmg.length >= (fleet ? 5 + game.wave * 0.5 : 4 + game.wave * 0.6) && avgTier < 3.6;
+    const specsOk = !fleet || dmg.length >= 8;
     if (mergeSomething(game)) continue;
-    if (preferUpgrade && upgradeSomething(game, samples, true)) continue;
+    if (preferUpgrade && !(fleet && wanted(game)[0] === "mast") && upgradeSomething(game, samples, specsOk)) continue;
     let built = false;
-    for (const kind of wanted(game)) {
+    const want = wanted(game);
+    // Saving for a mast before stealth arrives: don't fritter the Marks on anything else.
+    if (isFleet(game.level) && want[0] === "mast" && game.marks < towerCost(game, "mast")) return;
+    for (const kind of want) {
       if (game.marks < towerCost(game, kind)) continue;
       const spot = bestPlot(game, kind, samples);
       if (spot && place(game, kind, spot[0], spot[1]).ok) {
@@ -289,7 +330,7 @@ function spend(game: Game, skill: Skill, samples: ReturnType<typeof laneSamples>
       }
     }
     if (built) continue;
-    if (upgradeSomething(game, samples, true)) continue;
+    if (upgradeSomething(game, samples, specsOk)) continue;
     return;
   }
 }

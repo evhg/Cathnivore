@@ -33,12 +33,15 @@ function rng(seed: number): () => number {
 }
 
 /**
- * Act 1's story levels play the Fleet (Hedgerow 2 M2), but its Endless stays the classic field it was until M8
+ * Acts 1-3's story levels play the Fleet (Hedgerow 2 M2, M3), but their Endless stays the classic field it was until M8
  * turns Endless into Freeplay: level 9's old enemies (vans, bubble-wrapped vans, drones, lorries), purse and
  * health, not Fleet rungs given made-up classic numbers nothing has tuned.
  */
 const CLASSIC_POOL: Partial<Record<number, { pool: EnemyKind[]; startMarks: number; hpScale: number }>> = {
   1: { pool: ["van", "wrapped", "drone", "truck"], startMarks: 640, hpScale: 1.4 },
+  // Acts 2 and 3 joined the Fleet in M3: their Endless keeps levels 19 and 29's classic pools, purses and health.
+  2: { pool: ["van", "drone", "wrapped", "truck"], startMarks: 640, hpScale: 0.99 },
+  3: { pool: ["van", "drone", "influencer", "wrapped", "truck"], startMarks: 810, hpScale: 1.28 },
 };
 
 export function endlessLevel(act: number, week: number): Level {

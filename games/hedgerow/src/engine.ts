@@ -6,7 +6,7 @@
 
 export const STEP = 1 / 30;
 
-import { CHILD_GAP, FLEET_HERO_DAMAGE, FLEET_PIE_DAMAGE, FLEET_TOWERS, LIVE_CAP, PIERCE_REACH, RUNGS, fleetSpecPrice, fleetUpgradePrice, fvOf, popRate, roundBonus, stackBonus } from "./fleet";
+import { CATH_DAMAGE, CHILD_GAP, FLEET_HERO_DAMAGE, FLEET_PIE_DAMAGE, FLEET_TOWERS, INHERITED, LIVE_CAP, P, PIERCE_REACH, REBRAND_SECS, RUNGS, canControl, canHurt, damageTypeOf, fleetSpecPrice, fleetUpgradePrice, fvOf, popRate, propMask, roundBonus, rungAbove, stackBonus, type DamageType } from "./fleet";
 
 export type TowerKind =
   | "hedgerow"
@@ -54,7 +54,10 @@ export type EnemyKind =
   | "pickup"
   | "sprinter"
   | "lorry"
-  | "quad";
+  | "quad"
+  | "steel"
+  | "artic"
+  | "transporter";
 
 export interface TowerSpec {
   name: string;
@@ -175,7 +178,7 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
   mast: {
     name: "Radio Mast",
     blurb:
-      "Sol's mast. Shows up stealth units in range and marks everything there for extra damage.",
+      "The moor's old radio mast. Shows up stealth vehicles in range and marks everything there for extra damage.",
     cost: 90,
     upgrades: [70, 110],
     range: [2.2, 2.5, 2.8],
@@ -294,6 +297,9 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   lorry: { name: "Box lorry", hp: 170, speed: 0.9, bounty: 12, leak: 2 },
   quad: { name: "Cargo quadcopter", hp: 60, speed: 1.5, bounty: 6, leak: 1, flying: true },
   wrapped: { name: "Bubble-wrapped van", hp: 90, speed: 0.85, bounty: 9, leak: 1, shield: 1 },
+  steel: { name: "Plated lorry", hp: 260, speed: 0.8, bounty: 16, leak: 3, armor: 0.4 },
+  artic: { name: "Artic", hp: 260, speed: 0.9, bounty: 16, leak: 3 },
+  transporter: { name: "Car transporter", hp: 420, speed: 1.0, bounty: 24, leak: 4 },
   boss: {
     name: "The Acquisition Van",
     hp: 1800,
@@ -799,6 +805,8 @@ export interface TowerStats {
   rank: number;
   /** Damage multiplier against each class of enemy (TOWER_VS; megastructures are even-handed). */
   vs: Record<EnemyClass, number>;
+  /** Its damage type (fleet levels' hard locks; fleet.ts damageTypeOf). Null for towers that don't hit, and megastructures. */
+  type: DamageType | null;
 }
 
 // ---- megastructures: two grown towers side by side merge into one ----
@@ -1007,6 +1015,7 @@ export function towerStats(
     gustEvery: s.gust?.every[i] ?? 0,
     rank,
     vs: { light: 1, heavy: 1, air: 1, ...TOWER_VS[t.kind] },
+    type: t.mega ? null : damageTypeOf(t.kind, t.tier === 4 ? t.spec : null),
   };
   const over: Partial<MegaSpec> | null = t.mega
     ? { ...MEGAS[t.mega] }
@@ -1028,7 +1037,9 @@ export function towerStats(
   if (t.high && stats.range > 0) stats.range *= HIGH_GROUND_RANGE;
   if (t.rangeMul) stats.range *= t.rangeMul;
   if (t.dmgMul) {
-    stats.damage *= t.dmgMul;
+    // Fleet hits are whole layers: a twist that weakens a tower (rain, wind) slows its throwing instead.
+    if (t.fleet && stats.damage > 0) stats.cooldown /= t.dmgMul;
+    else stats.damage *= t.dmgMul;
     stats.thorns *= t.dmgMul;
   }
   if (rank > 0) {
@@ -1064,6 +1075,9 @@ function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; meg
   const i = Math.min(t.tier, 3) - 1;
   stats.damage = f.damage[i]!;
   stats.pierce = f.pierce[i]!;
+  // Air (section 2): Scarecrows, Beehives, Windmills, Grain Silos, and a Seed Cannon's Scatter Shot.
+  if (f.air || (t.kind === "cannon" && t.tier === 4 && t.spec === 1)) stats.air = true;
+  if (f.income) stats.income = f.income[i]!;
   if (f.cooldown && !(t.tier === 4 && t.spec != null && SPECIALISATIONS[t.kind][t.spec].cooldown)) stats.cooldown = f.cooldown[i]!;
   if (t.tier === 4 && t.spec != null) {
     const fs = f.spec[t.spec];
@@ -1227,6 +1241,8 @@ export interface WaveGroup {
   lane?: 1;
   /** An ambush: the group bursts out of cover this fraction of the way down the lane instead of at the spawn. */
   ambush?: number;
+  /** Fleet levels: the group's properties (fleet.ts P bits: Stealth, Plated...). */
+  pm?: number;
 }
 
 export interface StoryLine {
@@ -1336,19 +1352,19 @@ export type TwistId =
 export const TWISTS: Record<TwistId, { name: string; rule: string; fleetRule?: string }> = {
   fog: { name: "Fog", rule: "Towers reach 20% less far." },
   night: { name: "Night", rule: "Towers reach 25% less far; vehicles are 10% faster.", fleetRule: "Towers reach 15% less far." },
-  rain: { name: "Rain", rule: "Everything on the lane is 15% slower; Beehives do half damage." },
-  wind: { name: "High wind", rule: "Scarecrows and Silos do 25% less damage; drones fly 30% faster." },
+  rain: { name: "Rain", rule: "Everything on the lane is 15% slower; Beehives do half damage.", fleetRule: "Everything on the lane is 15% slower; Beehives sting half as often." },
+  wind: { name: "High wind", rule: "Scarecrows and Silos do 25% less damage; drones fly 30% faster.", fleetRule: "Scarecrows and Silos throw 25% slower; drones fly 30% faster." },
   drought: { name: "Drought", rule: "No Duck Ponds; slowing towers are 30% weaker." },
   tight: { name: "Tight budget", rule: "40% fewer Marks to start; wave rewards +50%." },
   rush: { name: "Rush hour", rule: "Waves don't wait: the next starts 6 s after the last has arrived." },
-  armoured: { name: "Armoured", rule: "Every enemy has 25% more armour." },
+  armoured: { name: "Armoured", rule: "Every enemy has 25% more armour.", fleetRule: "Every third vehicle on the road comes Plated: beaks and thorns bounce off." },
   air: { name: "Air drop", rule: "Every wave brings extra drones.", fleetRule: "A third of every round flies in: drones and quadcopters in place of vans." },
   protected: { name: "Protected land", rule: "Only half the plots can be built on." },
   nocath: { name: "Cath's away", rule: "Cath isn't on the field." },
   noscarecrow: { name: "Scarecrow ban", rule: "No Scarecrows this level." },
   crowd: { name: "Crowds", rule: "Twice as many enemies at half health and half bounty, packed close.", fleetRule: "Every vehicle comes a size smaller, and there are more of them, packed close." },
   fast: { name: "Express", rule: "Enemies are 25% faster; bounties +50%.", fleetRule: "Vehicles are 25% faster." },
-  fortified: { name: "Fortified", rule: "Enemies have 30% more health." },
+  fortified: { name: "Fortified", rule: "Enemies have 30% more health.", fleetRule: "Every third vehicle on the road comes Reinforced: its shell takes two hits." },
   market: { name: "Market day", rule: "Income +50%." },
 };
 
@@ -1410,6 +1426,11 @@ export interface Enemy {
   id: number;
   kind: EnemyKind;
   dist: number;
+  /** Fleet levels: its properties as fleet.ts P bits (Stealth, Plated, Wrapped...). */
+  pm?: number;
+  /** Rebrand: the rung it started as (it grows back towards it), and seconds until it regains one. */
+  top?: EnemyKind;
+  regrow?: number;
   /** 1 = walks the level's second lane. */
   lane?: 1;
   hp: number;
@@ -1550,7 +1571,7 @@ export type GameEvent =
       spec?: 0 | 1 | null;
     }
   | { type: "kill"; x: number; y: number; bounty: number; kind: EnemyKind }
-  | { type: "leak"; x: number; y: number; kind?: EnemyKind; lost?: number; dropped?: boolean }
+  | { type: "leak"; x: number; y: number; kind?: EnemyKind; lost?: number; dropped?: boolean; pm?: number; cause?: LeakCause }
   | { type: "wave"; wave: number; early?: number }
   | { type: "cleared"; wave: number; reward: number }
   | { type: "pie"; x?: number; y?: number; radius?: number }
@@ -1565,6 +1586,8 @@ export type GameEvent =
   | { type: "bridge"; open: boolean; x: number; y: number }
   | { type: "gust"; tower: number; x: number; y: number; radius: number }
   | { type: "pop"; x: number; y: number }
+  /** Rebrand: a vehicle grew back a rung. */
+  | { type: "regrow"; x: number; y: number; kind: EnemyKind }
   /**
    * Fleet levels: a hit knocked `n` whole layers off (slivers of thorns and poison only report the tick a layer
    * finally comes off); `from` is what was hit and `to` what it is now (null: gone).
@@ -1602,7 +1625,7 @@ export interface Game {
   /** Waves cleared and paid for. */
   paid: number;
   waveClock: number;
-  spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number; lane?: 1; ambush?: number }>;
+  spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number; lane?: 1; ambush?: number; pm?: number }>;
   enemies: Enemy[];
   towers: Tower[];
   nextId: number;
@@ -1638,13 +1661,23 @@ export interface Game {
   /** Boss kinds Cath has already duelled this level. */
   dueled: EnemyKind[];
   /** Fleet levels: children waiting at their parent while the lane is at LIVE_CAP, oldest first. */
-  emitQueue: Array<{ kind: EnemyKind; dist: number; lane?: 1; wave?: number }>;
+  emitQueue: Array<{ kind: EnemyKind; dist: number; lane?: 1; wave?: number; pm?: number }>;
   /** Fleet levels: pop income not yet paid, in thousandths of a Mark (paid out as whole Marks). */
   popMilli: number;
   /** Fleet levels: every layer knocked off so far, and every layer that leaked (Fleet Value). */
   popped: number;
   leaked: number;
+  /** Fleet levels: Goodwill lost to each leak cause (the loss screen's top three), and in which rounds. */
+  leakLog: Partial<Record<LeakCause, { lost: number; round: number }>>;
+  /** The last wave sent on top of one still out (a leak from it or the one before names the stacking). */
+  stacked?: number;
 }
+
+/**
+ * Why a fleet leak got through (Hedgerow 2 section 2): a property the field had no key for, or the plain
+ * causes (too little damage, a stacked round, Cath knocked down holding it).
+ */
+export type LeakCause = "stealth" | "airborne" | "plated" | "wrapped" | "sealed" | "reefer" | "reinforced" | "rebrand" | "plant" | "dropped" | "stacked" | "damage";
 
 export interface Duel {
   enemy: number;
@@ -1823,6 +1856,7 @@ export function newGame(
     popMilli: 0,
     popped: 0,
     leaked: 0,
+    leakLog: {},
     hero: {
       x: post.x,
       y: post.y,
@@ -1943,10 +1977,11 @@ export function isProtected(level: Level, col: number, row: number): boolean {
 export const ENDLESS_HP_GROWTH = 1.075;
 
 /** Full health for a new enemy: the kind's, scaled by the tuner and by fortified and crowd twists. */
-export function spawnHp(game: Game, kind: EnemyKind): number {
+export function spawnHp(game: Game, kind: EnemyKind, pm = 0): number {
   // Fleet levels never scale health: a rung's shell is its shell (difficulty comes from the Round Book).
+  // Reinforced (hazard bands) doubles it.
   const rung = isFleet(game.level) ? RUNGS[kind] : undefined;
-  if (rung) return rung.shell;
+  if (rung) return rung.shell * (pm & P.reinforced ? 2 : 1);
   let hp = ENEMIES[kind].hp * (game.level.hpScale ?? 1);
   if (game.level.endless) hp *= Math.pow(ENDLESS_HP_GROWTH, game.wave);
   if (hasTwist(game.level, "fortified")) hp *= 1.3;
@@ -1955,8 +1990,10 @@ export function spawnHp(game: Game, kind: EnemyKind): number {
 }
 
 /** A new enemy on the lane. */
-export function makeEnemy(game: Game, kind: EnemyKind, dist: number, lane: 1 | undefined, wave: number | undefined): Enemy {
-  const hp = spawnHp(game, kind);
+export function makeEnemy(game: Game, kind: EnemyKind, dist: number, lane: 1 | undefined, wave: number | undefined, pm = 0): Enemy {
+  const fleet = isFleet(game.level);
+  if (fleet) pm |= inherentProps(kind);
+  const hp = spawnHp(game, kind, pm);
   const shield = ENEMIES[kind].shield;
   return {
     id: game.nextId++,
@@ -1969,7 +2006,22 @@ export function makeEnemy(game: Game, kind: EnemyKind, dist: number, lane: 1 | u
     stun: 0,
     wave,
     ...(shield ? { shield } : {}),
+    ...(fleet && pm ? { pm } : {}),
+    ...(fleet && pm & P.rebrand ? { top: kind, regrow: REBRAND_SECS } : {}),
   };
+}
+
+/** Fleet levels: what a rung always carries (an Artic's wrap and frost box, a drone's wings, a boss's bulk). */
+export function inherentProps(kind: EnemyKind): number {
+  let pm = propMask(RUNGS[kind]?.props);
+  if (ENEMIES[kind].flying) pm |= P.airborne;
+  if (isBig(kind)) pm |= P.plant;
+  return pm;
+}
+
+/** A vehicle's properties (fleet levels; 0 on classic ones). */
+export function pmOf(e: Pick<Enemy, "pm">): number {
+  return e.pm ?? 0;
 }
 
 /** What a single-target shot does to an enemy still in its bubble wrap. */
@@ -2108,6 +2160,7 @@ export function sendWave(game: Game, forced = false): ActionResult {
   game.wave = wave;
   game.phase = "wave";
   game.marks += early;
+  if (game.phase === "wave" && pending.length + game.enemies.length > 0) game.stacked = wave;
   const flood = setPiece(game.level, "flood");
   if (flood && wave === flood.wave) {
     for (const t of game.towers)
@@ -2147,6 +2200,10 @@ const CROWD_PACK = 0.7;
 function fleetQueue(game: Game, groups: WaveGroup[], wave: number, queue: Game["spawnQueue"]): void {
   const crowd = hasTwist(game.level, "crowd");
   const air = hasTwist(game.level, "air");
+  // Armoured and Fortified play as properties on the Fleet: every third road vehicle comes Plated, or Reinforced.
+  const armour = hasTwist(game.level, "armoured") ? P.plated : 0;
+  const fortify = hasTwist(game.level, "fortified") ? P.reinforced : 0;
+  let nth = 0;
   for (const g of groups) {
     let kind = g.enemy;
     let count = g.count;
@@ -2160,7 +2217,9 @@ function fleetQueue(game: Game, groups: WaveGroup[], wave: number, queue: Game["
     }
     for (let i = 0; i < count; i++) {
       const at = g.delay + i * gap;
-      const base = { wave, lane: g.lane, ...(g.ambush ? { ambush: g.ambush } : {}) };
+      let pm = g.pm ?? 0;
+      if ((armour || fortify) && !isBig(kind) && !ENEMIES[kind].flying && nth++ % 3 === 2) pm |= armour | fortify;
+      const base = { wave, lane: g.lane, ...(g.ambush ? { ambush: g.ambush } : {}), ...(pm ? { pm } : {}) };
       if (air && !isBig(kind) && !ENEMIES[kind].flying && i % 3 === 1) {
         const fv = fvOf(kind);
         const flyer: EnemyKind = fv >= 3 ? "quad" : "drone";
@@ -2299,7 +2358,13 @@ export function markMultiplier(game: Game, e: Enemy): number {
 export function isRevealed(game: Game, e: Enemy): boolean {
   const dark = setPiece(game.level, "blackout");
   if (dark && !lit(game, e, dark.light)) return false;
-  if (!ENEMIES[e.kind].stealth || markMultiplier(game, e) > 1) return true;
+  // Fleet levels: Stealth is a property (it passes down to what a vehicle pops into); classic: the kind's.
+  const fleet = isFleet(game.level);
+  const stealth = fleet ? (pmOf(e) & P.stealth) !== 0 : !!ENEMIES[e.kind].stealth;
+  if (!stealth || markMultiplier(game, e) > 1) return true;
+  // Fleet: Cath shows the towers only what she has hold of (two at a time), so a field built round her post
+  // still needs a Radio Mast for a stealth round (M3; the spec's 1.6-cell sight answered every stealth round).
+  if (fleet) return !!e.held;
   // Cath spots anything sneaking past close to her (unless she's down or away).
   const h = game.hero;
   if (h.down > 0 || hasTwist(game.level, "nocath")) return false;
@@ -2372,15 +2437,22 @@ export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number): num
       e.hp = 0;
       break;
     }
-    // Pop: the shell is gone, the next rung down carries on from the same spot.
+    // Pop: the shell is gone, the next rung down carries on from the same spot. Stealth and Rebrand pass
+    // down; the rest of a vehicle's properties came off with its shell (an Artic's lorries get their own).
     const first = kids[0]!;
+    const pass = pmOf(e) & INHERITED;
+    const cp = RUNGS[e.kind]?.childProps;
     e.kind = first;
-    e.hp = e.maxHp = spawnHp(game, first);
+    const pm = pass | inherentProps(first) | propMask(cp?.[0]);
+    e.pm = pm || undefined;
+    e.hp = e.maxHp = spawnHp(game, first, pm);
     e.shield = undefined;
     for (let i = 1; i < kids.length; i++) {
       const dist = Math.max(0, e.dist - i * CHILD_GAP);
-      if (game.enemies.length >= LIVE_CAP) game.emitQueue.push({ kind: kids[i]!, dist, lane: e.lane, wave: e.wave });
-      else game.enemies.push(makeEnemy(game, kids[i]!, dist, e.lane, e.wave));
+      const kpm = pass | propMask(cp?.[i]);
+      if (game.enemies.length >= LIVE_CAP) game.emitQueue.push({ kind: kids[i]!, dist, lane: e.lane, wave: e.wave, ...(kpm ? { pm: kpm } : {}) });
+      // Extra children grow back only as far as what they came out as (a Rebrand can't multiply).
+      else game.enemies.push(makeEnemy(game, kids[i]!, dist, e.lane, e.wave, kpm));
     }
   }
   if (removed <= 0) return 0;
@@ -2406,6 +2478,57 @@ function payLayers(game: Game, layers: number, by?: number): void {
     const t = ctx ? ctx.byId.get(by) : game.towers.find((x) => x.id === by);
     if (t) t.ko = (t.ko ?? 0) + layers;
   }
+}
+
+/** Rebrand (section 2): every REBRAND_SECS it gets back one rung, up to what it started as. */
+function regrow(game: Game, e: Enemy): void {
+  e.regrow = (e.regrow ?? REBRAND_SECS) - STEP;
+  if (e.regrow > 0) return;
+  e.regrow = REBRAND_SECS;
+  const up = rungAbove(e.top!, e.kind);
+  if (!up) return;
+  e.kind = up;
+  const pm = (pmOf(e) & INHERITED) | inherentProps(up);
+  e.pm = pm || undefined;
+  e.hp = e.maxHp = spawnHp(game, up, pm);
+  const p = enemyPoint(game.level, e);
+  game.events.push({ type: "regrow", x: p.x, y: p.y, kind: up });
+}
+
+/** Does a placed, working tower on the field hold the key to this property? (The "can't answer this" check.) */
+export function fieldAnswers(game: Game, prop: "stealth" | "airborne" | "plated" | "wrapped" | "sealed" | "reefer"): boolean {
+  for (const t of game.towers) {
+    const s = towerStats(t);
+    if (prop === "stealth") {
+      if (s.reveal > 1) return true;
+      continue;
+    }
+    if (s.damage <= 0 && s.thorns <= 0) continue;
+    if (prop === "airborne") {
+      if (s.air && s.damage > 0) return true;
+    } else if (canHurt(s.type, P[prop])) return true;
+  }
+  return false;
+}
+
+/**
+ * Why a fleet vehicle got through (section 2's leak report): the first of its properties the field had no
+ * answer for, then Cath being knocked down holding it, a stacked round, or plain shortage of damage.
+ */
+export function leakCauseOf(game: Game, e: Enemy): LeakCause {
+  const pm = pmOf(e);
+  if (pm & P.stealth && !game.towers.some((t) => towerStats(t).reveal > 1 && towerActive(t))) return "stealth";
+  for (const prop of ["airborne", "plated", "wrapped", "sealed", "reefer"] as const)
+    if (pm & P[prop] && !fieldAnswers(game, prop)) return prop;
+  if (e.dropped) return "dropped";
+  if (pm & P.stealth) return "stealth";
+  if (game.stacked && (e.wave === game.stacked || e.wave === game.stacked - 1)) return "stacked";
+  if (pm & P.rebrand) return "rebrand";
+  if (pm & P.reinforced) return "reinforced";
+  if (pm & P.plant) return "plant";
+  // A property the field only partly answers still names it: most of the field couldn't touch it.
+  for (const prop of ["plated", "wrapped", "sealed", "reefer"] as const) if (pm & P[prop]) return prop;
+  return "damage";
 }
 
 /** Fleet Value still on a vehicle: what's left of its shell plus all its children. */
@@ -2450,8 +2573,11 @@ function stepHero(game: Game): void {
         .filter((e) => {
           if (e.hp <= 0 || h.holding.includes(e.id)) return false;
           const spec = ENEMIES[e.kind];
-          if (spec.flying || isBig(e.kind) || !isRevealed(game, e))
+          // Fleet: she feels for what she can't see, and what she holds the towers can see.
+          if (spec.flying || isBig(e.kind) || (!isRevealed(game, e) && !(isFleet(game.level) && pmOf(e) & P.stealth)))
             return false;
+          // A Reefer can't be held (section 2), nor can Heavy Plant.
+          if (isFleet(game.level) && !canControl(pmOf(e), "hold")) return false;
           const p = enemyPoint(game.level, e);
           return Math.hypot(p.x - h.x, p.y - h.y) <= HERO.reach;
         })
@@ -2493,8 +2619,11 @@ function stepHero(game: Game): void {
   if (h.cd > 0) return;
   let target: Enemy | undefined;
   let best = Infinity;
+  const fleetSwing = isFleet(game.level);
   for (const e of game.enemies) {
     if (e.hp <= 0 || e.held || !isRevealed(game, e)) continue;
+    // Fleet: her rolling pin is the Baker kit's Blast, so bubble wrap cushions it.
+    if (fleetSwing && !canHurt(CATH_DAMAGE, pmOf(e))) continue;
     const p = enemyPoint(game.level, e);
     const dd = Math.hypot(p.x - h.x, p.y - h.y);
     if (dd <= HERO.reach + 0.15 && dd < best) {
@@ -2506,7 +2635,7 @@ function stepHero(game: Game): void {
   if (!target && learning(game.level)) {
     // Levels 1-5: with nothing else in reach she works on what she holds, gently, so a thin build that
     // misses her post doesn't lose the van she has pinned. The towers still take most of the kills.
-    target = game.enemies.find((e) => e.held && e.hp > 0);
+    target = game.enemies.find((e) => e.held && e.hp > 0 && (!fleetSwing || canHurt(CATH_DAMAGE, pmOf(e))));
     dmg = h.damage * HELD_SWING;
   }
   if (!target) {
@@ -2609,10 +2738,13 @@ function pickTarget(
     // Fleet levels: only what the lane index puts in reach; ties go to the earliest on the lane list, as a scan would.
     let bestAt = Infinity;
     let bestTie = -Infinity;
+    const type = towerStats(t).type;
     for (const i of candidates(game, towerWindowsOf(game, t, range))) {
       const e = game.enemies[i]!;
-      if (e.hp <= 0 || !isRevealed(game, e)) continue;
+      if (e.hp <= 0) continue;
       if (!air && ENEMIES[e.kind].flying) continue;
+      // Hard locks (section 2): a tower doesn't waste a shot on what its damage type can't touch.
+      if (!canHurt(type, pmOf(e)) || !isRevealed(game, e)) continue;
       const p = enemyPoint(game.level, e);
       const d = Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y);
       if (d > range) continue;
@@ -2841,7 +2973,7 @@ function step(game: Game): void {
   // Fleet children that waited for room on the lane come out first, in the order they popped.
   while (game.emitQueue.length > 0 && game.enemies.length < LIVE_CAP) {
     const q = game.emitQueue.shift()!;
-    game.enemies.push(makeEnemy(game, q.kind, q.dist, q.lane, q.wave));
+    game.enemies.push(makeEnemy(game, q.kind, q.dist, q.lane, q.wave, q.pm));
   }
   // The live cap holds the Book too (section 8): while the lane is full the whole schedule waits a step,
   // so what's held keeps its spacing instead of arriving in one clump when room opens.
@@ -2855,7 +2987,7 @@ function step(game: Game): void {
   ) {
     const next = game.spawnQueue.shift()!;
     const len = next.lane ? game.pathLength2 : game.pathLength;
-    const e = makeEnemy(game, next.kind, next.ambush ? next.ambush * len : 0, next.lane, next.wave ?? game.wave);
+    const e = makeEnemy(game, next.kind, next.ambush ? next.ambush * len : 0, next.lane, next.wave ?? game.wave, next.pm);
     game.enemies.push(e);
     if (game.duels && isBig(next.kind) && !game.duel && !game.dueled.includes(next.kind)) startDuel(game, e);
   }
@@ -2882,14 +3014,17 @@ function step(game: Game): void {
   for (const enemy of game.enemies) {
     const p = enemyPoint(game.level, enemy);
     const flying = !!ENEMIES[enemy.kind].flying;
+    // Fleet: a Reefer's frost box shrugs off every slow (section 2).
+    const slowable = !fleet || canControl(pmOf(enemy), "slow");
     let factor = 1;
     for (const { t, s } of slowers) {
+      if (!slowable) break;
       if (flying && !s.air) continue;
       if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= s.range)
         factor = Math.min(factor, 1 - ((1 - s.slow) / game.perks.slow) * (hasTwist(game.level, "drought") ? 0.7 : 1));
     }
     if (enemy.stickyLeft && enemy.stickyLeft > 0) {
-      factor = Math.min(factor, enemy.sticky ?? 1);
+      if (slowable) factor = Math.min(factor, enemy.sticky ?? 1);
       enemy.stickyLeft -= STEP;
     }
     // Heavy plant ploughs on through hedges and honey at half the slow, and nothing stops anything outright.
@@ -2897,6 +3032,7 @@ function step(game: Game): void {
     factor = Math.max(SLOW_FLOOR, factor);
     enemy.slowed = factor < 1;
     if (enemy.gustCd && enemy.gustCd > 0) enemy.gustCd -= STEP;
+    if (enemy.regrow !== undefined && enemy.top && enemy.hp > 0) regrow(game, enemy);
     if (enemy.stun > 0) enemy.stun -= STEP;
     else if (!enemy.held) {
       let move =
@@ -2908,8 +3044,8 @@ function step(game: Game): void {
       if (bridge && (enemy.lane ?? 0) === (bridge.lane ?? 0) && enemy.dist <= bridge.dist && !ENEMIES[enemy.kind].flying && bridgeOpen(game))
         move = Math.max(0, Math.min(move, bridge.dist - enemy.dist));
       const bar = game.barricade;
-      if (bar && enemy.lane === bar.lane && enemy.dist <= bar.dist) {
-        // Farmhands stop anything on foot dead; bosses only slow to a crawl.
+      if (bar && enemy.lane === bar.lane && enemy.dist <= bar.dist && slowable) {
+        // Farmhands stop anything on foot dead; bosses only slow to a crawl. A Reefer drives straight through.
         if (isBig(enemy.kind)) move *= 0.25;
         else move = Math.max(0, Math.min(move, bar.dist - enemy.dist));
       }
@@ -2962,6 +3098,7 @@ function step(game: Game): void {
     if (spec.thorns > 0) {
       for (const e of game.enemies) {
         if (e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying)) continue;
+        if (fleet && !canHurt(spec.type, pmOf(e))) continue;
         const p = enemyPoint(game.level, e);
         if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range) {
           damageEnemy(game, e, spec.thorns * STEP, false, t.id);
@@ -2983,7 +3120,7 @@ function step(game: Game): void {
           blew = true;
           e.lastHit = t.id;
           popWrap(game, e);
-          if (!spec.splash && spec.damage > 0 && batter-- > 0)
+          if (!spec.splash && spec.damage > 0 && (!fleet || canHurt(spec.type, pmOf(e))) && batter-- > 0)
             damageEnemy(
               game,
               e,
@@ -2991,7 +3128,7 @@ function step(game: Game): void {
               spec.ignoresArmour,
               t.id,
             );
-          if (!isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0) {
+          if (!isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0 && (!fleet || canControl(pmOf(e), "push"))) {
             e.dist = Math.max(0, e.dist - spec.gustPush);
             e.gustCd = 2;
             laneMoved();
@@ -3037,11 +3174,14 @@ function step(game: Game): void {
     }
     const p = enemyPoint(game.level, target);
     let dmg = spec.damage * game.perks.towerDamage;
+    let boost = 1;
     for (const { t: b, s: bs } of ctx!.boosters) {
       if (bs.buff > 1 && Math.hypot(b.col - t.col, b.row - t.row) <= bs.range)
-        dmg *= bs.buff;
-      if (bs.aura > 1) dmg *= bs.aura;
+        boost *= bs.buff;
+      if (bs.aura > 1) boost *= bs.aura;
     }
+    // Fleet hits are whole layers, so a cheering crowd makes towers throw faster rather than harder.
+    if (!fleet) dmg *= boost;
     t.shots = (t.shots ?? 0) + 1;
     const crit = !!spec.crit && t.shots % spec.crit.every === 0;
     if (crit) dmg *= spec.crit!.mult;
@@ -3051,6 +3191,7 @@ function step(game: Game): void {
     const hit = (e: Enemy) => {
       e.lastHit = t.id;
       const d = fleet ? dmg : dmg * spec.vs[enemyClass(e.kind)];
+      const pm = pmOf(e);
       if (e.shield && !area) damageEnemy(game, e, d * WRAP_LEAK, false, t.id);
       else {
         popWrap(game, e);
@@ -3060,11 +3201,11 @@ function step(game: Game): void {
         e.poison = spec.poison.dps;
         e.poisonLeft = spec.poison.secs;
       }
-      if (spec.sticky) {
+      if (spec.sticky && (!fleet || canControl(pm, "slow"))) {
         e.sticky = spec.sticky.factor;
         e.stickyLeft = spec.sticky.secs;
       }
-      if (spec.knockback && !isHeavy(e.kind) && !e.held) {
+      if (spec.knockback && !isHeavy(e.kind) && !e.held && (!fleet || canControl(pm, "push"))) {
         e.dist = Math.max(0, e.dist - spec.knockback);
         laneMoved();
       }
@@ -3081,7 +3222,7 @@ function step(game: Game): void {
         const near: Array<{ e: Enemy; d: number }> = [];
         for (const i of candidates(game, w)) {
           const e = game.enemies[i]!;
-          if (done.has(e.id) || e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying) || !isRevealed(game, e)) continue;
+          if (done.has(e.id) || e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying) || !canHurt(spec.type, pmOf(e)) || !isRevealed(game, e)) continue;
           const q = enemyPoint(game.level, e);
           const d = Math.hypot(q.x - p.x, q.y - p.y);
           if (d <= reach) near.push({ e, d });
@@ -3103,7 +3244,7 @@ function step(game: Game): void {
         if (Math.hypot(q.x - p.x, q.y - p.y) <= spec.splash) hit(e);
       }
     }
-    t.cd = spec.cooldown * (fleet ? 1 : crowding(game, t));
+    t.cd = fleet ? spec.cooldown / boost : spec.cooldown * crowding(game, t);
     game.events.push({
       type: "shot",
       kind: t.kind,
@@ -3149,9 +3290,15 @@ function step(game: Game): void {
     } else if (e.dist >= (e.lane ? game.pathLength2 : game.pathLength)) {
       // Fleet: a leak costs every layer that got through (rounded up); classic: the kind's leak.
       const lost = fleet ? Math.ceil(remainingFV(e) - 1e-9) : ENEMIES[e.kind].leak;
-      if (fleet) game.leaked += remainingFV(e);
+      let cause: LeakCause | undefined;
+      if (fleet) {
+        game.leaked += remainingFV(e);
+        cause = leakCauseOf(game, e);
+        const log = (game.leakLog[cause] ??= { lost: 0, round: bookRound(game.level, e.wave ?? game.wave) });
+        log.lost += lost;
+      }
       game.goodwill -= lost;
-      game.events.push({ type: "leak", x: p.x, y: p.y, kind: e.kind, lost, ...(e.dropped ? { dropped: true } : {}) });
+      game.events.push({ type: "leak", x: p.x, y: p.y, kind: e.kind, lost, ...(e.dropped ? { dropped: true } : {}), ...(e.pm ? { pm: e.pm } : {}), ...(cause ? { cause } : {}) });
     } else alive.push(e);
   }
   game.enemies = alive.concat(spawned);
@@ -3286,7 +3433,8 @@ export function throwPie(game: Game, x?: number, y?: number): ActionResult {
     if (Math.hypot(p.x - x, p.y - y) > radius) continue;
     popWrap(game, e);
     const stun = PIE_STUN * game.perks.pieStun;
-    e.stun = Math.max(e.stun, isBig(e.kind) ? stun / 2 : stun);
+    // A pie is untyped (it lands on anything), but a Reefer's frost box shrugs off the stun.
+    if (!isFleet(game.level) || canControl(pmOf(e), "stun")) e.stun = Math.max(e.stun, isBig(e.kind) ? stun / 2 : stun);
     if (isFleet(game.level)) hitEnemy(game, e, Math.round(FLEET_PIE_DAMAGE * game.perks.pieDamage), -1);
     else e.hp -= PIE_DAMAGE * game.perks.pieDamage;
     if (game.perks.pieBurn > 0) {
@@ -3362,7 +3510,8 @@ export interface MergeOption {
 }
 
 export function megasUnlocked(level: Level): boolean {
-  return level.id >= MEGA_FIRST_LEVEL;
+  // The Fleet has no megastructures: they come back as Heirlooms from act 4 (Hedgerow 2 section 3, M7).
+  return level.id >= MEGA_FIRST_LEVEL && !isFleet(level);
 }
 
 /** Megastructures a tower could become with a grown neighbour beside it (empty below tier 3 or before level 12). */

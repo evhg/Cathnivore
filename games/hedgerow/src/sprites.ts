@@ -5,6 +5,7 @@
 // (STYLE.md 2).
 
 import type { EnemyKind, TowerKind } from "./engine";
+import { PROPERTIES, propsOf, type Property } from "./fleet";
 import { wornOutfit } from "./wardrobe";
 
 export const INK = "#2b2320";
@@ -706,6 +707,11 @@ export function enemyScale(kind: EnemyKind): number {
       return 0.85;
     case "lorry":
       return 1.15;
+    case "steel":
+    case "artic":
+      return 1.2;
+    case "transporter":
+      return 1.25;
     case "carrier":
       return 1.1;
     case "rival":
@@ -985,6 +991,26 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     case "lorry":
       vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.42, body: "#24345e", cab: "#e9ecef", stripe: "#5ab0ff", wheels: 3 });
+      break;
+    case "steel":
+      // The Plated Lorry: riveted steel, rivets along the top.
+      vehicle(ctx, 0, 0, s, tt, { len: 0.84, h: 0.44, body: "#7d8894", cab: "#5a636d", stripe: "#c9d0d6", wheels: 3 });
+      ctx.fillStyle = "#dfe4e8";
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc((-0.36 + i * 0.13) * s, -s * 0.44, s * 0.018, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      break;
+    case "artic":
+      // The Artic: a frost-box trailer behind a bubble-wrapped cab.
+      vehicle(ctx, 0, 0, s, tt, { len: 0.94, h: 0.42, body: "#dfe9f2", cab: "#9fd3ff", stripe: "#6fd0f0", wheels: 3 });
+      break;
+    case "transporter":
+      // The Car Transporter: a red cab and a two-deck rack of cars.
+      vehicle(ctx, 0, 0, s, tt, { len: 0.96, h: 0.2, body: "#3b3f44", cab: "#b23a3a", wheels: 3 });
+      for (const [x, y, c] of [[-0.3, -0.3, "#e8b23a"], [0.02, -0.3, "#4a7fc4"], [-0.3, -0.52, "#f4f6f8"], [0.02, -0.52, "#e8b23a"]] as const)
+        rr(ctx, x * s, y * s, s * 0.26, s * 0.12, s * 0.03, c);
       break;
     case "quad": {
       rr(ctx, -s * 0.2, -s * 0.14, s * 0.4, s * 0.12, s * 0.04, "#f08a3c");
@@ -1368,4 +1394,115 @@ export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number
       ctx.fill();
     }
   }
+}
+
+// ---- property icons (Hedgerow 2 section 2: a small icon row above every vehicle that carries one) ----
+
+/**
+ * One property's icon, centred on (x, y), `d` pixels across: a coloured roundel with a pictogram. Shared by the
+ * 2D field, the build-menu badges and chips (icons.ts) and the 3D billboards (render3d/index.ts).
+ */
+export function drawPropIcon(ctx: C, prop: Property, x: number, y: number, d: number): void {
+  const r = d / 2;
+  const info = PROPERTIES[prop];
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = info.colour;
+  ctx.fill();
+  ctx.lineWidth = Math.max(1, d * 0.1);
+  ctx.strokeStyle = "rgba(20,22,28,0.85)";
+  ctx.stroke();
+  const ink = prop === "airborne" || prop === "wrapped" || prop === "reefer" || prop === "reinforced" ? "#1d2430" : "#ffffff";
+  ctx.strokeStyle = ink;
+  ctx.fillStyle = ink;
+  ctx.lineWidth = Math.max(1, d * 0.11);
+  ctx.lineCap = "round";
+  const k = r * 0.55;
+  switch (prop) {
+    case "stealth": // an eye, struck through
+      ctx.beginPath();
+      ctx.ellipse(x, y, k, k * 0.55, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x - k, y + k);
+      ctx.lineTo(x + k, y - k);
+      ctx.stroke();
+      break;
+    case "airborne": // a rotor
+      ctx.beginPath();
+      ctx.moveTo(x - k, y - k * 0.5);
+      ctx.lineTo(x + k, y - k * 0.5);
+      ctx.moveTo(x, y - k * 0.5);
+      ctx.lineTo(x, y + k * 0.6);
+      ctx.stroke();
+      break;
+    case "plated": // rivets
+      for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
+        ctx.beginPath();
+        ctx.arc(x + dx * k * 0.6, y + dy * k * 0.6, Math.max(0.8, d * 0.08), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      break;
+    case "wrapped": // bubbles
+      for (const [dx, dy] of [[-0.5, -0.3], [0.45, -0.35], [0, 0.45]] as const) {
+        ctx.beginPath();
+        ctx.arc(x + dx * k, y + dy * k, k * 0.38, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      break;
+    case "sealed": // a mesh grille
+      ctx.lineWidth = Math.max(0.8, d * 0.07);
+      ctx.beginPath();
+      for (const o of [-0.5, 0, 0.5]) {
+        ctx.moveTo(x + o * k * 1.4, y - k);
+        ctx.lineTo(x + o * k * 1.4, y + k);
+        ctx.moveTo(x - k, y + o * k * 1.4);
+        ctx.lineTo(x + k, y + o * k * 1.4);
+      }
+      ctx.stroke();
+      break;
+    case "reefer": // a snowflake
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a = (i * Math.PI) / 3;
+        ctx.moveTo(x - Math.cos(a) * k, y - Math.sin(a) * k);
+        ctx.lineTo(x + Math.cos(a) * k, y + Math.sin(a) * k);
+      }
+      ctx.stroke();
+      break;
+    case "reinforced": // hazard bands
+      ctx.lineWidth = Math.max(1, d * 0.14);
+      ctx.beginPath();
+      for (const o of [-0.6, 0.1]) {
+        ctx.moveTo(x + (o - 0.3) * k * 1.4, y + k * 0.8);
+        ctx.lineTo(x + (o + 0.5) * k * 1.4, y - k * 0.8);
+      }
+      ctx.stroke();
+      break;
+    case "rebrand": // a circular arrow
+      ctx.beginPath();
+      ctx.arc(x, y, k * 0.8, -Math.PI * 0.2, Math.PI * 1.3);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + k * 0.9, y - k * 0.75);
+      ctx.lineTo(x + k * 0.65, y - k * 0.1);
+      ctx.lineTo(x + k * 0.1, y - k * 0.5);
+      ctx.fill();
+      break;
+    case "plant": // caterpillar tracks
+      ctx.beginPath();
+      ctx.moveTo(x - k, y + k * 0.4);
+      ctx.lineTo(x + k, y + k * 0.4);
+      ctx.moveTo(x - k * 0.7, y - k * 0.5);
+      ctx.lineTo(x + k * 0.7, y - k * 0.5);
+      ctx.stroke();
+      break;
+  }
+  ctx.restore();
+}
+
+/** The properties to show over a vehicle: everything it carries except what its look already says (an Artic's own). */
+export function propIconsFor(pm: number): Property[] {
+  return propsOf(pm);
 }

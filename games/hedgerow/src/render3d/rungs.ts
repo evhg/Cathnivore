@@ -6,10 +6,44 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { EnemyKind } from "../engine";
+import { P, PROPERTY_ORDER, type Property } from "../fleet";
+import { drawPropIcon } from "../sprites";
 import { buildEnemy, buildRung, enemyLift, enemyScale } from "./models";
 
+/** Per-instance tints for the Fleet's materials (section 2): steel, bubble wrap, mesh, frost, hazard bands. */
+const TINTS: Array<[number, THREE.Color]> = [
+  [P.plated, new THREE.Color(0.72, 0.78, 0.86)],
+  [P.sealed, new THREE.Color(0.78, 0.58, 1.0)],
+  [P.reefer, new THREE.Color(0.8, 0.96, 1.0)],
+  [P.wrapped, new THREE.Color(0.88, 0.97, 1.0)],
+  [P.reinforced, new THREE.Color(1.0, 0.88, 0.45)],
+];
+const WHITE = new THREE.Color(1, 1, 1);
+
+/** Icons are drawn this many world units across, a row of them over the vehicle. */
+const ICON = 0.17;
+const ICON_CAPACITY = 700;
+
+/** One billboard InstancedMesh per property: its icon, drawn by the same code as the 2D field. */
+function iconMesh(prop: Property): THREE.InstancedMesh {
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const ctx = c.getContext("2d")!;
+  drawPropIcon(ctx, prop, 32, 32, 60);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false });
+  const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(ICON, ICON), mat, ICON_CAPACITY);
+  mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  mesh.count = 0;
+  mesh.frustumCulled = false;
+  mesh.renderOrder = 12;
+  mesh.name = `prop:${prop}`;
+  return mesh;
+}
+
 /** The kinds drawn instanced on fleet levels (the boss keeps its own animated model). */
-export const INSTANCED_RUNGS: readonly EnemyKind[] = ["courier", "hatchback", "van", "pickup", "sprinter", "lorry", "drone", "quad"];
+export const INSTANCED_RUNGS: readonly EnemyKind[] = ["courier", "hatchback", "van", "pickup", "sprinter", "lorry", "drone", "quad", "steel", "artic", "transporter"];
 
 /** Per-kind instance capacity: the engine's live cap, plus a little room. */
 const CAPACITY = 360;
@@ -52,6 +86,11 @@ export class RungInstances {
   private s = new THREE.Vector3();
   private p = new THREE.Vector3();
   private up = new THREE.Vector3(0, 1, 0);
+  private tint = new THREE.Color();
+  private icons = new Map<Property, THREE.InstancedMesh>();
+  private iconUsed = new Map<Property, number>();
+  private face = new THREE.Quaternion();
+  private right = new THREE.Vector3(1, 0, 0);
 
   constructor() {
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.08 });
@@ -65,8 +104,14 @@ export class RungInstances {
       mesh.castShadow = true;
       mesh.frustumCulled = false;
       mesh.name = `rungs:${kind}`;
+      mesh.setColorAt(0, WHITE);
       this.meshes.set(kind, mesh);
       this.group.add(mesh);
+    }
+    for (const prop of PROPERTY_ORDER) {
+      const m = iconMesh(prop);
+      this.icons.set(prop, m);
+      this.group.add(m);
     }
   }
 
@@ -74,12 +119,38 @@ export class RungInstances {
     return this.meshes.has(kind);
   }
 
-  begin(): void {
+  /** Starts a frame; `camera` turns the property icons to face it. */
+  begin(camera?: THREE.Camera): void {
     for (const k of this.meshes.keys()) this.used.set(k, 0);
+    for (const k of this.icons.keys()) this.iconUsed.set(k, 0);
+    if (camera) {
+      this.face.copy(camera.quaternion);
+      this.right.set(1, 0, 0).applyQuaternion(this.face);
+    }
+  }
+
+  /** A vehicle's row of property icons, centred over (x, top, z). Works for any enemy, instanced or not. */
+  addIcons(pm: number, x: number, top: number, z: number): void {
+    if (!pm) return;
+    const props = PROPERTY_ORDER.filter((p) => pm & P[p]);
+    const step = ICON * 1.1;
+    let off = (-(props.length - 1) * step) / 2;
+    for (const prop of props) {
+      const mesh = this.icons.get(prop)!;
+      const i = this.iconUsed.get(prop) ?? 0;
+      if (i < ICON_CAPACITY) {
+        this.p.set(x + this.right.x * off, top + this.right.y * off, z + this.right.z * off);
+        this.s.setScalar(1);
+        this.m.compose(this.p, this.face, this.s);
+        mesh.setMatrixAt(i, this.m);
+        this.iconUsed.set(prop, i + 1);
+      }
+      off += step;
+    }
   }
 
   /** One vehicle this frame: where it stands on the ground, its heading, and a bob for its id. */
-  add(kind: EnemyKind, x: number, ground: number, z: number, heading: number, bob: number, ghost = false): void {
+  add(kind: EnemyKind, x: number, ground: number, z: number, heading: number, bob: number, ghost = false, pm = 0): void {
     const mesh = this.meshes.get(kind);
     if (!mesh) return;
     const i = this.used.get(kind) ?? 0;
@@ -90,12 +161,21 @@ export class RungInstances {
     this.s.setScalar(k);
     this.m.compose(this.p, this.q, this.s);
     mesh.setMatrixAt(i, this.m);
+    // Its materials: steel, wrap, mesh, frost and hazard bands tint the whole vehicle.
+    this.tint.copy(WHITE);
+    for (const [bit, c] of TINTS) if (pm & bit) this.tint.multiply(c);
+    mesh.setColorAt(i, this.tint);
     this.used.set(kind, i + 1);
   }
 
   end(): void {
     for (const [k, mesh] of this.meshes) {
       mesh.count = this.used.get(k) ?? 0;
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    }
+    for (const [k, mesh] of this.icons) {
+      mesh.count = this.iconUsed.get(k) ?? 0;
       mesh.instanceMatrix.needsUpdate = true;
     }
   }
@@ -104,6 +184,7 @@ export class RungInstances {
   drawCalls(): number {
     let n = 0;
     for (const mesh of this.meshes.values()) if (mesh.count > 0) n++;
+    for (const mesh of this.icons.values()) if (mesh.count > 0) n++;
     return n;
   }
 }

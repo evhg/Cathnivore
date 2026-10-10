@@ -4,7 +4,7 @@
 // Projectiles and particles are fed from the engine's event list: the engine is hitscan, so the flight
 // times here are short and only for show.
 
-import { RUNGS } from "./fleet";
+import { P, PROPERTIES, RUNGS } from "./fleet";
 import {
   ENEMIES,
   MEGAS,
@@ -30,6 +30,8 @@ import { paintBackground, rng, themeFor } from "./theme";
 import {
   INK,
   drawEnemy,
+  drawPropIcon,
+  propIconsFor,
   drawFarmhouse,
   drawHero,
   drawTower,
@@ -685,6 +687,8 @@ export class Renderer {
             e.stun > 0 || e.held ? t * 0.15 : t,
           );
           this.drawStatus(e, X(p.x), Y(gy), s, t);
+          // Fleet properties (Hedgerow 2 section 2): each lock tints the body in its own material.
+          if (e.pm) this.drawMaterial(ctx, e.pm, e.kind, X(p.x), Y(gy), s);
         },
       });
     }
@@ -759,6 +763,19 @@ export class Renderer {
     // Cath's health and where she's heading.
     if (walking) this.flag(X(h.tx), Y(h.ty + 0.2), s, t);
     if (!hasTwist(level, "nocath")) this.heroBar(game, X(h.x), Y(h.y + 0.22) - s * 0.98, s);
+
+    // Property icons: a row of small roundels over every vehicle that carries one (at least 10 px).
+    const icon = Math.max(10, s * 0.17);
+    for (const e of game.enemies) {
+      if (!e.pm) continue;
+      const props = propIconsFor(e.pm);
+      if (!props.length) continue;
+      const p = enemyPoint(level, e);
+      const k = enemyScale(e.kind);
+      const top = Y(p.y + 0.2) - s * (0.5 * k + enemyLift(e.kind) + 0.12) - icon * 0.9;
+      const x0 = X(p.x) - ((props.length - 1) * icon * 1.05) / 2;
+      props.forEach((pr, i) => drawPropIcon(ctx, pr, x0 + i * icon * 1.05, top, icon));
+    }
 
     // Health bars over sprites.
     for (const e of game.enemies) {
@@ -1009,6 +1026,42 @@ export class Renderer {
       ctx.arc(x + Math.cos(a) * s * 0.25, y - s * 0.3 + Math.sin(a) * s * 0.06, s * 0.05, 0, Math.PI * 2);
       ctx.fill();
     }
+  }
+
+  /** A vehicle's property materials over its sprite: steel sheen, bubble-wrap gloss, purple mesh, frost. */
+  private drawMaterial(ctx: CanvasRenderingContext2D, pm: number, kind: EnemyKind, x: number, y: number, s: number): void {
+    const k = enemyScale(kind);
+    const w = s * 0.78 * k;
+    const h = s * 0.42 * k;
+    const top = y - s * (0.08 + enemyLift(kind)) - h;
+    ctx.save();
+    const layer = (colour: string, alpha: number, dash: number[] = []) => {
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = Math.max(1.5, s * 0.045);
+      ctx.setLineDash(dash);
+      ctx.beginPath();
+      ctx.roundRect(x - w / 2, top, w, h, s * 0.08);
+      ctx.stroke();
+    };
+    if (pm & P.plated) layer(PROPERTIES.plated.colour, 0.9, [s * 0.04, s * 0.05]);
+    if (pm & P.wrapped) {
+      ctx.globalAlpha = 0.28;
+      ctx.fillStyle = PROPERTIES.wrapped.colour;
+      ctx.beginPath();
+      ctx.roundRect(x - w / 2, top, w, h, s * 0.12);
+      ctx.fill();
+      layer("#ffffff", 0.7);
+    }
+    if (pm & P.sealed) layer(PROPERTIES.sealed.colour, 0.9, [s * 0.02, s * 0.03]);
+    if (pm & P.reefer) {
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = "#e8f8ff";
+      ctx.fillRect(x - w / 2, top, w, h * 0.35);
+      layer(PROPERTIES.reefer.colour, 0.85);
+    }
+    if (pm & P.reinforced) layer(PROPERTIES.reinforced.colour, 0.95, [s * 0.06, s * 0.06]);
+    ctx.restore();
   }
 
   private drawStatus(e: Game["enemies"][number], x: number, y: number, s: number, t: number): void {
