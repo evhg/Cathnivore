@@ -981,7 +981,7 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     }
     case "sprinter":
-      vehicle(ctx, 0, 0, s, tt, { len: 0.66, h: 0.34, body: "#8a4fd0", stripe: "#ffd23f", label: "SAME DAY", labelColor: "#ffd23f", wheels: 2 });
+      vehicle(ctx, 0, 0, s, tt, { len: 0.66, h: 0.34, body: "#8a4fd0", stripe: "#ffd23f", label: "24h", labelColor: "#ffd23f", wheels: 2 });
       break;
     case "lorry":
       vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.42, body: "#24345e", cab: "#e9ecef", stripe: "#5ab0ff", wheels: 3 });

@@ -5,6 +5,11 @@
 // `npx tsx scripts/hedgerow-tune.ts --verify` to check every level at the value that ships, then
 // `--antispam` to push levels the Scarecrows-only bot still wins as far as the best bot allows.
 // Levels run in parallel worker processes. Log the run in BALANCE.md.
+//
+// Fleet levels (Hedgerow 2, Level.rules "fleet": act 1 from M2) never scale health. For them the tuner fits k,
+// the share of the Round Book's income before the level's first round that it starts with (levels.ts
+// fleetStart), in [0.7, 1.0]: the smallest k at which the best bot keeps its target, then made non-increasing
+// within the act (each level gets at least what any later level of the act needed). Written to START_K.
 
 import { spawn } from "node:child_process";
 import { cpus } from "node:os";
@@ -28,6 +33,15 @@ export function humanMargin(id: number): number {
  * aren't perfectly monotonic in enemy health, so back off in 8% steps until they are.
  */
 async function verify(id: number): Promise<number> {
+  if (await isFleetLevel(id)) {
+    // Fleet: the shipped k must give the best bot a clean win (at least 50% Goodwill); raise it if not.
+    const { LEVELS, fleetStart } = await import("../games/hedgerow/src/levels");
+    const { playLevel, kept } = await import("../games/hedgerow/src/bot");
+    const { START_K } = await import("../games/hedgerow/src/tuning");
+    let k = START_K[id] ?? 0.85;
+    while (k < K_MAX && kept(playLevel({ ...LEVELS[id - 1]!, startMarks: fleetStart(id, k) }, "best")) < 0.5) k = Math.round((k + 0.05) * 100) / 100;
+    return Math.min(K_MAX, k);
+  }
   const { LEVELS } = await import("../games/hedgerow/src/levels");
   const { playLevel, kept } = await import("../games/hedgerow/src/bot");
   const { HP_SCALE } = await import("../games/hedgerow/src/tuning");
@@ -42,7 +56,37 @@ async function verify(id: number): Promise<number> {
   return Math.round(tuned * 100) / 100;
 }
 
+const K_MIN = 0.7;
+const K_MAX = 1.0;
+
+/** Fleet levels: the smallest start-Marks share k in [K_MIN, K_MAX] at which the best bot keeps its target. */
+async function fitK(id: number, need = target(id)): Promise<number> {
+  const { LEVELS, fleetStart } = await import("../games/hedgerow/src/levels");
+  const { playLevel, kept } = await import("../games/hedgerow/src/bot");
+  const base = LEVELS[id - 1]!;
+  const ok = (k: number) => kept(playLevel({ ...base, startMarks: fleetStart(id, k) }, "best")) >= need;
+  if (ok(K_MIN)) return K_MIN;
+  if (!ok(K_MAX)) {
+    console.error(`level ${id}: the best bot misses its target even at k = ${K_MAX}`);
+    return K_MAX;
+  }
+  let lo = K_MIN;
+  let hi = K_MAX;
+  for (let i = 0; i < 6; i++) {
+    const mid = (lo + hi) / 2;
+    if (ok(mid)) hi = mid;
+    else lo = mid;
+  }
+  return Math.ceil(hi * 100) / 100;
+}
+
+async function isFleetLevel(id: number): Promise<boolean> {
+  const { LEVELS } = await import("../games/hedgerow/src/levels");
+  return LEVELS[id - 1]?.rules === "fleet";
+}
+
 async function worker(id: number): Promise<number> {
+  if (await isFleetLevel(id)) return fitK(id);
   const { LEVELS } = await import("../games/hedgerow/src/levels");
   const { playLevel, kept } = await import("../games/hedgerow/src/bot");
   const base = LEVELS[id - 1]!;
@@ -65,6 +109,10 @@ async function worker(id: number): Promise<number> {
  * best bot still passes the verify rule. Stops at whichever comes first. Run it after `--verify`.
  */
 async function antispam(id: number): Promise<number> {
+  if (await isFleetLevel(id)) {
+    const { START_K } = await import("../games/hedgerow/src/tuning");
+    return START_K[id] ?? 0.85;
+  }
   const { LEVELS } = await import("../games/hedgerow/src/levels");
   const { playLevel, kept } = await import("../games/hedgerow/src/bot");
   const { HP_SCALE } = await import("../games/hedgerow/src/tuning");
@@ -103,15 +151,21 @@ async function main(): Promise<void> {
   const from = verifying || anti ? Number(process.argv[3] ?? 1) : Number(arg ?? 1);
   const to = verifying || anti ? Number(process.argv[4] ?? 100) : Number(process.argv[3] ?? 100);
   const existing: Record<number, number> = {};
+  const existingK: Record<number, number> = {};
   try {
     const src = readFileSync(OUT, "utf8");
-    for (const m of src.matchAll(/(\d+): ([\d.]+),/g)) existing[Number(m[1])] = Number(m[2]);
+    const [hp, k = ""] = src.split("START_K");
+    for (const m of hp!.matchAll(/(\d+): ([\d.]+),/g)) existing[Number(m[1])] = Number(m[2]);
+    for (const m of k.matchAll(/(\d+): ([\d.]+),/g)) existingK[Number(m[1])] = Number(m[2]);
   } catch {
     /* first run */
   }
+  const { LEVELS } = await import("../games/hedgerow/src/levels");
+  const fleet = new Set(LEVELS.filter((l) => l.rules === "fleet").map((l) => l.id));
+  for (const id of fleet) delete existing[id];
   const ids = Array.from({ length: to - from + 1 }, (_, i) => from + i);
   const self = fileURLToPath(import.meta.url);
-  const results: Record<number, number> = { ...existing };
+  const results: Record<number, number> = { ...existing, ...existingK };
   let next = 0;
   const run = async (): Promise<void> => {
     while (next < ids.length) {
@@ -125,17 +179,26 @@ async function main(): Promise<void> {
         p.on("close", (code) => (code === 0 ? resolve(buf) : reject(new Error(`level ${id} exited ${code}`))));
       });
       results[id] = Number(out.trim());
-      console.log(`level ${id}: hpScale ${results[id]}`);
+      console.log(`level ${id}: ${fleet.has(id) ? "k" : "hpScale"} ${results[id]}`);
     }
   };
   await Promise.all(Array.from({ length: Math.max(1, cpus().length - 1) }, run));
-  const lines = Object.keys(results)
+  // Fleet k: non-increasing within each act, each level keeping at least what any later one needed.
+  if (!anti) {
+    const ks = [...fleet].sort((a, b) => b - a);
+    for (const id of ks) {
+      const later = ks.filter((o) => o > id && Math.ceil(o / 10) === Math.ceil(id / 10)).map((o) => results[o] ?? 0);
+      results[id] = Math.max(results[id] ?? K_MIN, ...later);
+    }
+  }
+  const ids2 = Object.keys(results)
     .map(Number)
-    .sort((a, b) => a - b)
-    .map((id) => `  ${id}: ${results[id]},`);
+    .sort((a, b) => a - b);
+  const lines = ids2.filter((id) => !fleet.has(id)).map((id) => `  ${id}: ${results[id]},`);
+  const kLines = ids2.filter((id) => fleet.has(id)).map((id) => `  ${id}: ${results[id]},`);
   writeFileSync(
     OUT,
-    `// Generated by scripts/hedgerow-tune.ts: enemy health per level, so the competent bot only just keeps\n// its target Goodwill (docs/design/hedgerow-v2.md section 2). Don't edit by hand; re-run the tuner.\n\nexport const HP_SCALE: Record<number, number> = {\n${lines.join("\n")}\n};\n`,
+    `// Generated by scripts/hedgerow-tune.ts: enemy health per level, so the competent bot only just keeps\n// its target Goodwill (docs/design/hedgerow-v2.md section 2). Don't edit by hand; re-run the tuner.\n\nexport const HP_SCALE: Record<number, number> = {\n${lines.join("\n")}\n};\n\n// Fleet levels (Hedgerow 2): start Marks = 500 + k * the Round Book's income before the level's first round.\n// The tuner fits k in [0.7, 1.0]; it never touches health on fleet levels.\nexport const START_K: Record<number, number> = {\n${kLines.join("\n")}\n};\n`,
   );
 }
 

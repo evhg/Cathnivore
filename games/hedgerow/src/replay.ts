@@ -52,8 +52,12 @@ export interface Setup {
   perks: Perks;
 }
 
-/** v2 (Hedgerow 2 M1): Cath holds a post and abilities are manual, so a v1 run no longer plays back the same. */
-export const REPLAY_VERSION = 2;
+/**
+ * v2 (Hedgerow 2 M1): Cath holds a post and abilities are manual, so a v1 run no longer plays back the same.
+ * v3 (Hedgerow 2 M2): act 1 plays the Fleet (layered rungs, the Round Book, a Mark a layer), so a v2 run of
+ * levels 1-10 no longer plays back the same either. Older links get the "older Hedgerow" notice.
+ */
+export const REPLAY_VERSION = 3;
 
 export interface Replay {
   v: typeof REPLAY_VERSION;

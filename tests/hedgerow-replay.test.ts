@@ -40,7 +40,7 @@ describe("hedgerow replays", () => {
   it("plays a recorded run back to exactly the same result", () => {
     const { game, replay } = record();
     expect(replay.log.length).toBeGreaterThan(3);
-    expect(replay.v).toBe(2);
+    expect(replay.v).toBe(3);
     expect(replay.log.some(([, a]) => a.t === "auto")).toBe(true);
     const back = new Player(level, replay).finish();
     expect([back.phase, back.goodwill, back.marks, back.tick, back.towers.length]).toEqual([
@@ -65,5 +65,28 @@ describe("hedgerow replays", () => {
     // A link from before Hedgerow 2 (v1) is recognised as old, not called damaged.
     const old = await encodeReplay({ ...replay, v: 1 } as unknown as typeof replay);
     expect(await decodeReplay(old)).toBe("old");
+    // So is one from before the Fleet (v2, Hedgerow 2 M1).
+    const m1 = await encodeReplay({ ...replay, v: 2 } as unknown as typeof replay);
+    expect(await decodeReplay(m1)).toBe("old");
+  });
+
+  it("a fleet level (level 1) plays back to exactly the same pops, Marks and Goodwill", () => {
+    const lv = LEVELS[0]!;
+    const s: Setup = { mode: "level", id: 1, heroic: false, perks: NO_PERKS };
+    const rec = new Recorder(s);
+    const game = startGame(lv, s);
+    const spots: Array<[number, number]> = [[2, 2], [3, 4], [2, 4], [3, 2], [4, 4], [1, 2]];
+    let guard = 0;
+    while (game.phase !== "won" && game.phase !== "lost" && guard++ < 200_000) {
+      if (game.phase === "build") {
+        for (const [c, r] of spots) rec.act(game, { t: "place", kind: "scarecrow", col: c, row: r });
+        for (const t of game.towers) rec.act(game, { t: "upgrade", id: t.id });
+        rec.act(game, { t: "wave" });
+      } else if (game.wave === 3 && game.waveClock > 6 && game.waveClock < 6.05) rec.act(game, { t: "wave" });
+      rec.step(game);
+    }
+    const back = new Player(lv, rec.replay()).finish();
+    expect(game.popped).toBeGreaterThan(1000);
+    expect([back.phase, back.goodwill, back.marks, back.tick, back.popped]).toEqual([game.phase, game.goodwill, game.marks, game.tick, game.popped]);
   });
 });

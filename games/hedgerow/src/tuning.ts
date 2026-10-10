@@ -2,16 +2,6 @@
 // its target Goodwill (docs/design/hedgerow-v2.md section 2). Don't edit by hand; re-run the tuner.
 
 export const HP_SCALE: Record<number, number> = {
-  1: 1.54,
-  2: 1.23,
-  3: 1.38,
-  4: 2.17,
-  5: 1.55,
-  6: 1.57,
-  7: 2.21,
-  8: 1.58,
-  9: 1.4,
-  10: 0.53,
   11: 2.4,
   12: 1.69,
   13: 1.59,
@@ -107,14 +97,14 @@ export const HP_SCALE: Record<number, number> = {
 // Fleet levels (Hedgerow 2): start Marks = 500 + k * the Round Book's income before the level's first round.
 // The tuner fits k in [0.7, 1.0]; it never touches health on fleet levels.
 export const START_K: Record<number, number> = {
-  1: 0.85,
-  2: 0.85,
-  3: 0.85,
-  4: 0.85,
-  5: 0.85,
-  6: 0.85,
-  7: 0.85,
-  8: 0.85,
-  9: 0.85,
-  10: 0.85,
+  1: 0.7,
+  2: 0.7,
+  3: 0.7,
+  4: 0.7,
+  5: 0.7,
+  6: 0.7,
+  7: 0.7,
+  8: 0.7,
+  9: 0.7,
+  10: 0.7,
 };

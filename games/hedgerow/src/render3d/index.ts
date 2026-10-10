@@ -19,6 +19,7 @@ import {
   enemyPoint,
   hasTwist,
   isBig,
+  isFleet,
   isRevealed,
   maxHpOf,
   postMarker,
@@ -34,6 +35,8 @@ import { actLight, actMood, matte } from "./palette";
 import { buildCath, dressCath, buildEnemy, buildMega, buildTower, enemyLift, enemyScale } from "./models";
 import { buildGround, type Ground } from "./terrain";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
+import { RungInstances } from "./rungs";
+import { RUNGS } from "../fleet";
 
 interface TowerView {
   obj: THREE.Group;
@@ -113,6 +116,9 @@ const ACT_WEATHER: ({ count: number; color: string; size: number; fall: number; 
 
 const HERO_PIE_RELEASE = 0.15;
 
+/** Gold floaters from fleet knocks merge over this many seconds (section 8). */
+const GOLD_WINDOW = 0.15;
+
 /** How long a hit flash lasts, in seconds. */
 const FLASH = 0.07;
 
@@ -140,6 +146,10 @@ export class Renderer3D {
   private levelId = -1;
   private towers = new Map<number, TowerView>();
   private enemies = new Map<number, EnemyView>();
+  /** Fleet levels: every rung kind is one InstancedMesh (Hedgerow 2 M2); built on the first fleet level. */
+  private rungs: RungInstances | null = null;
+  /** Fleet knocks' Marks not yet floated: one "+N" every GOLD_WINDOW seconds. */
+  private gold = { n: 0, x: 0, y: 0, age: 0 };
   private cath: THREE.Group | null = null;
   private faceTex: THREE.Texture | null = null;
   private faceWorried: THREE.Texture | null = null;
@@ -573,9 +583,24 @@ export class Renderer3D {
           this.projectile(e.kind, e.spec ?? null, e.fromX, fy, e.fromY, e.toX, ty, e.toY, !!e.crit, e.enemy);
           break;
         }
+        case "knock": {
+          // A layer off: a burst of chips in the colour of the rung underneath (12 for a lorry's box).
+          const y = this.height(e.x, e.y);
+          const under = (e.to ? RUNGS[e.to]?.colour : RUNGS[e.from]?.colour) ?? "#f4f6f8";
+          this.sparks.emit(e.x, y + 0.3, e.y, under, e.from === "lorry" && e.to ? 12 : 4, 2.2, 0.1, 0.45, -5);
+          this.gold.n += e.n;
+          this.gold.x = e.x;
+          this.gold.y = e.y;
+          break;
+        }
         case "kill": {
           const y = this.height(e.x, e.y);
           const big = isBig(e.kind);
+          if (e.bounty === 0 && !big) {
+            // Fleet: the last layer's pop already paid; leave a scrap of parcel tape, no decal or floater.
+            this.debris.emit(e.x, y + 0.2, e.y, ["#c79a62", "#ffe27a"], 3, 0.05, 1.6);
+            break;
+          }
           this.debris.emit(e.x, y + 0.2, e.y, ["#f4f6f8", "#c79a62", "#1f8a8a", "#2b2b30"], big ? 40 : 10, big ? 0.1 : 0.06, big ? 3.5 : 2.2);
           this.sparks.emit(e.x, y + 0.25, e.y, "#ffb04a", big ? 80 : 18, big ? 4 : 2.4, big ? 0.3 : 0.16, 0.5, -1);
           this.sparks.emit(e.x, y + 0.25, e.y, "#ffe9a8", big ? 40 : 8, 1.2, 0.2, 0.3, 0);
@@ -1163,7 +1188,36 @@ export class Renderer3D {
 
   private syncEnemies(game: Game, dt: number, t: number): void {
     const seen = new Set<number>();
+    const fleet = isFleet(game.level);
+    if (fleet && !this.rungs) {
+      this.rungs = new RungInstances();
+      this.dynamic.add(this.rungs.group);
+    }
+    this.rungs?.begin();
+    // Gold floaters for the Marks the knocks paid, merged into one every GOLD_WINDOW.
+    this.gold.age += dt;
+    if (this.gold.age >= GOLD_WINDOW) {
+      const n = Math.floor(this.gold.n);
+      if (n >= 1) {
+        this.floaters.add(`+${n}`, new THREE.Vector3(this.gold.x, this.height(this.gold.x, this.gold.y) + 0.7, this.gold.y), "#ffe27a", Math.min(1.4, 0.7 + Math.log10(n) * 0.4));
+        this.gold.n -= n;
+      }
+      this.gold.age = 0;
+    }
     for (const e of game.enemies) {
+      if (fleet && this.rungs?.has(e.kind)) {
+        // Instanced: heading from the lane's direction, a little bob, no per-vehicle objects.
+        const p = enemyPoint(game.level, e);
+        const ahead = enemyPoint(game.level, { dist: e.dist + 0.08, lane: e.lane });
+        const heading = Math.atan2(-(ahead.y - p.y), ahead.x - p.x);
+        const moving = !(e.stun > 0 || e.held);
+        const bob = moving ? Math.abs(Math.sin(t * 9 + e.id)) * 0.012 + (enemyLift(e.kind) ? Math.sin(t * 3 + e.id) * 0.04 : 0) : 0;
+        const ghost = !isRevealed(game, e);
+        if (!ghost || Math.sin(t * 25 + e.id) > 0.75) this.rungs.add(e.kind, p.x, this.height(p.x, p.y), p.y, heading, bob, ghost);
+        if (e.stun > 0 && Math.random() < dt * 6) this.sparks.emit(p.x, this.height(p.x, p.y) + 0.6, p.y, "#fff6b0", 1, 0.8, 0.1, 0.4, 0);
+        if (e.slowed && Math.random() < dt * 2) this.sparks.emit(p.x, this.height(p.x, p.y) + 0.05, p.y, "#7fd06a", 1, 0.5, 0.09, 0.5, 0.5);
+        continue;
+      }
       seen.add(e.id);
       let v = this.enemies.get(e.id);
       const p = enemyPoint(game.level, e);
@@ -1256,6 +1310,7 @@ export class Renderer3D {
       const flash = v.hit < FLASH && v.obj.visible;
       if (flash !== v.flashing) this.setFlash(v, flash);
     }
+    this.rungs?.end();
     for (const [id, v] of this.enemies)
       if (!seen.has(id)) {
         this.dynamic.remove(v.bar);

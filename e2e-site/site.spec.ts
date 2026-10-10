@@ -229,20 +229,21 @@ test.describe('Hedgerow', () => {
     // Next finishes the typing, then moves on; Skip ends the scene.
     await page.locator('#story-next').click()
     await page.locator('#story-skip').click()
-    await expect(page.locator('#hud-marks')).toHaveText('210')
+    // Hedgerow 2 M2: level 1 plays the Fleet: 500 Marks, a 200-Mark Scarecrow, Round Book rounds 1-12.
+    await expect(page.locator('#hud-marks')).toHaveText('500')
     await expect(page.locator('#btn-pie')).toBeHidden()
     // Tap a plot beside the lane (column 0, row 0 is grass in level 1).
     // The keyboard cursor starts on (0, 0), a plot in level 1; Enter selects it (works in 2D and 3D).
     await selectCell(page, 0, 0)
     await page.locator('button.btn-build[data-kind="scarecrow"]').click()
-    await expect(page.locator('#hud-marks')).toHaveText('130')
+    await expect(page.locator('#hud-marks')).toHaveText('300')
     // Escape on the battlefield clears the selection and the panel goes back to the wave preview.
     await page.locator('#canvas').focus()
     await page.keyboard.press('Escape')
-    await expect(page.locator('#panel')).toContainText('Wave 1 of 5')
+    await expect(page.locator('#panel')).toContainText('Wave 1 of 12')
     await page.locator('#btn-send').click()
-    await expect(page.locator('#hud-wave')).toHaveText('1/5')
-    await expect(page.locator('#banner')).toContainText('Wave 1')
+    await expect(page.locator('#hud-wave')).toHaveText('1/12')
+    await expect(page.locator('#banner')).toContainText('Round 1')
     // Scan with the Next button in its stacking colour (it turns a second into the wave), so the
     // contrast check always sees the same state instead of racing it.
     await expect(page.locator('#btn-send')).toHaveClass(/early/, { timeout: 8000 })
@@ -270,7 +271,8 @@ test.describe('Hedgerow', () => {
 
   test('a tower grows to tier 3 and specialises from level 6', async ({ page }) => {
     const errors = trackErrors(page)
-    await page.goto(HEDGEROW_2D)
+    // Sandbox Marks: on the Fleet (Hedgerow 2 M2) a tier 3 costs more than level 6 starts with.
+    await page.goto(HEDGEROW_2D + '&sandbox=1')
     const stars: Record<string, number> = {}
     for (let i = 1; i <= 5; i++) stars[String(i)] = 3
     await page.evaluate((stars) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars, seenBefore: { '6': true }, tips: { spec: true } })), stars)
@@ -322,7 +324,7 @@ test.describe('Hedgerow', () => {
     await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars: {}, seenBefore: { '1': true }, tips: { build: true } })))
     await page.reload()
     await page.locator('button.level[data-level="1"]').click()
-    await expect(page.locator('#hud-wave')).toHaveText('0/5')
+    await expect(page.locator('#hud-wave')).toHaveText('0/12')
     await page.waitForTimeout(1500)
     expect(errors).toEqual([])
   })
@@ -342,7 +344,7 @@ test.describe('Hedgerow', () => {
     await page.reload()
     await expect(page.locator('#replay-bar')).toBeVisible()
     await expect(page.locator('#hud-title')).toContainText('Replay')
-    await expect(page.locator('#hud-wave')).toHaveText('1/5', { timeout: 10_000 })
+    await expect(page.locator('#hud-wave')).toHaveText('1/12', { timeout: 10_000 })
     await page.locator('#replay-exit').click()
     await expect(page.locator('#screen-select')).toBeVisible()
     expect(errors).toEqual([])
@@ -363,13 +365,13 @@ test.describe('Hedgerow', () => {
     await page.locator('#btn-speed').click()
     await expect(page.locator('#btn-speed')).toHaveText('x1')
     await page.locator('#btn-send').click()
-    await expect(page.locator('#hud-wave')).toHaveText('1/5')
+    await expect(page.locator('#hud-wave')).toHaveText('1/12')
     // During the wave the same button stacks the next one on top, for the early bonus.
     await expect(page.locator('#btn-send')).toHaveText(/^Next \+\d+$/, { timeout: 8000 })
     const before = Number(await page.locator('#hud-marks').textContent())
     const bonus = Number((await page.locator('#btn-send').textContent())!.replace(/\D/g, ''))
     await page.locator('#btn-send').click()
-    await expect(page.locator('#hud-wave')).toHaveText('2/5')
+    await expect(page.locator('#hud-wave')).toHaveText('2/12')
     expect(Number(await page.locator('#hud-marks').textContent())).toBeGreaterThanOrEqual(before + bonus)
     await expect(page.locator('#banner')).toContainText('Stacked early')
     // The whole pill is on screen.
@@ -417,7 +419,7 @@ test.describe('Hedgerow', () => {
 
   test('Hedgerow 2 M1: the specialisation choice shows on a landscape phone without scrolling', async ({ page }) => {
     await page.setViewportSize({ width: 844, height: 390 })
-    await page.goto(HEDGEROW_2D)
+    await page.goto(HEDGEROW_2D + '&sandbox=1')
     const stars: Record<string, number> = {}
     for (let i = 1; i <= 5; i++) stars[String(i)] = 3
     await page.evaluate((stars) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars, seenBefore: { '6': true }, tips: { spec: true } })), stars)
