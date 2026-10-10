@@ -1234,7 +1234,9 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   titles.append(title);
   // Fleet: its damage type, and a green or red badge for every lock (Hedgerow 2 section 2), as a compact
   // strip in the header, so a phone held sideways shows them without scrolling past Upgrade and Sell.
-  if (t.fleet && !t.mega) titles.append(badgeRow(t.kind, t.tier, t.spec ?? null));
+  // (At tier 3 the specialisation choice owns the top of the card, so the strip goes below it.)
+  const badges = t.fleet && !t.mega ? badgeRow(t.kind, t.tier, t.spec ?? null) : null;
+  if (badges && t.tier !== 3) titles.append(badges);
   // Veterans: kills, rank, and how far to the next.
   const kills = t.kills ?? 0;
   const rank = rankOf(kills);
@@ -1353,6 +1355,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   };
   row.append(sl);
   p.append(row);
+  if (badges && t.tier === 3) p.append(badges);
 }
 
 /** Megastructures: merge buttons for grown neighbours, or a hint about what this tower could become. */
