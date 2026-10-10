@@ -355,3 +355,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-10 02:51: crowds are one InstancedMesh of capsule silhouettes (CPU sway), no shadows or lights; markers `crowd:*` place clusters.
 - 2026-10-10: D1-D6 milestone complete; phone 60 fps unmeasurable headless, closed D6 on instancing; running npm run release.
 - 2026-10-10: H1 started with per-act field borders (BORDER_OF_ACT in render3d/terrain.ts); H1 stays open until ground, props and weather also differ per act.
+- 2026-10-10 06:51: per-act scenery is data tables in terrain.ts; no new models.
