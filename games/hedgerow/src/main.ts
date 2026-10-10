@@ -895,8 +895,10 @@ function towerRoster(p: HTMLElement, g: Game): void {
   const cap = document.createElement("caption");
   cap.textContent = "Towers this level";
   table.append(cap);
+  const fleet = isFleet(g.level);
   for (const kind of g.level.towers) {
     const s = TOWERS[kind];
+    const st = towerStats({ kind, tier: 1, spec: null, fleet });
     const tr = document.createElement("tr");
     const icon = document.createElement("td");
     icon.append(img(towerIcon(kind), "roster-icon"));
@@ -904,9 +906,10 @@ function towerRoster(p: HTMLElement, g: Game): void {
     name.scope = "row";
     name.textContent = s.name;
     const stat = document.createElement("td");
-    const bits = [`${s.cost} Marks`];
-    if (s.damage[0] > 0) bits.push(`${s.damage[0]} dmg`, `${(1 / s.cooldown[0]).toFixed(1)}/s`);
-    bits.push(`range ${s.range[0]}`);
+    const bits = [`${towerCost(g, kind)} Marks`];
+    // Fleet towers hit in layers, and one shot can hit `pierce` vehicles.
+    if (st.damage > 0) bits.push(fleet ? `${st.damage} layer${st.damage === 1 ? "" : "s"} × ${st.pierce}` : `${st.damage} dmg`, `${(1 / st.cooldown).toFixed(1)}/s`);
+    bits.push(`range ${st.range}`);
     stat.textContent = bits.join(" · ");
     tr.append(icon, name, stat);
     table.append(tr);
@@ -918,6 +921,8 @@ const CLASS_NAMES: Record<EnemyClass, string> = { light: "light traffic", heavy:
 
 /** " Strong vs air; weak vs heavy plant." for the build menu, from TOWER_VS. */
 function counterLine(kind: TowerKind): string {
+  // Fleet levels have no soft counters (Hedgerow 2 cuts TOWER_VS; M3 brings hard property locks).
+  if (game && isFleet(game.level)) return "";
   const vs = TOWER_VS[kind] ?? {};
   const ks = Object.keys(vs) as EnemyClass[];
   const strong = ks.filter((k) => vs[k]! > 1).map((k) => CLASS_NAMES[k]);
@@ -1000,6 +1005,7 @@ function statList(st: Stats): Array<[string, string]> {
     rows.push(["Hit", st.damage.toFixed(0)]);
     rows.push(["Rate", `${(1 / st.cooldown).toFixed(1)}/s`]);
   }
+  if (st.pierce > 1) rows.push(["Pierce", `${st.pierce} vehicles`]);
   if (st.range) rows.push(["Range", st.range.toFixed(1)]);
   if (st.damage || st.slow < 1 || st.thorns) rows.push(["Hits", st.air ? "air + ground" : "ground only"]);
   if (st.splash) rows.push(["Splash", st.splash.toFixed(1)]);

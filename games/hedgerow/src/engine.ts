@@ -1018,6 +1018,8 @@ export function towerStats(
 /** Fleet levels: a tower's hits in layers and pierce (fleet.ts FLEET_TOWERS); range, splash and slows stay. */
 function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; mega?: MegaId }, stats: TowerStats): void {
   const f = FLEET_TOWERS[t.kind];
+  // No soft counters on the Fleet: TOWER_VS is cut (M3 brings hard property locks instead).
+  stats.vs = { light: 1, heavy: 1, air: 1 };
   if (t.mega) {
     // Megastructures: today's numbers in layers (about 8 health to a layer), hitting up to 10 vehicles.
     if (stats.damage > 0) stats.damage = Math.max(1, Math.round(stats.damage / 8));

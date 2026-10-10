@@ -372,7 +372,8 @@ test.describe('Hedgerow', () => {
     const bonus = Number((await page.locator('#btn-send').textContent())!.replace(/\D/g, ''))
     await page.locator('#btn-send').click()
     await expect(page.locator('#hud-wave')).toHaveText('2/12')
-    expect(Number(await page.locator('#hud-marks').textContent())).toBeGreaterThanOrEqual(before + bonus)
+    // On the Fleet the Marks counter rolls up towards the purse, so give it a moment to catch up.
+    await expect.poll(async () => Number(await page.locator('#hud-marks').textContent()), { timeout: 5000 }).toBeGreaterThanOrEqual(before + bonus)
     await expect(page.locator('#banner')).toContainText('Stacked early')
     // The whole pill is on screen.
     for (const id of ['#btn-send', '#btn-speed']) {
