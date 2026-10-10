@@ -1327,24 +1327,29 @@ export type TwistId =
   | "fortified"
   | "market";
 
-export const TWISTS: Record<TwistId, { name: string; rule: string }> = {
+export const TWISTS: Record<TwistId, { name: string; rule: string; fleetRule?: string }> = {
   fog: { name: "Fog", rule: "Towers reach 20% less far." },
-  night: { name: "Night", rule: "Towers reach 25% less far; vehicles are 10% faster." },
+  night: { name: "Night", rule: "Towers reach 25% less far; vehicles are 10% faster.", fleetRule: "Towers reach 15% less far." },
   rain: { name: "Rain", rule: "Everything on the lane is 15% slower; Beehives do half damage." },
   wind: { name: "High wind", rule: "Scarecrows and Silos do 25% less damage; drones fly 30% faster." },
   drought: { name: "Drought", rule: "No Duck Ponds; slowing towers are 30% weaker." },
   tight: { name: "Tight budget", rule: "40% fewer Marks to start; wave rewards +50%." },
   rush: { name: "Rush hour", rule: "Waves don't wait: the next starts 6 s after the last has arrived." },
   armoured: { name: "Armoured", rule: "Every enemy has 25% more armour." },
-  air: { name: "Air drop", rule: "Every wave brings extra drones." },
+  air: { name: "Air drop", rule: "Every wave brings extra drones.", fleetRule: "A third of every round flies in: drones and quadcopters in place of vans." },
   protected: { name: "Protected land", rule: "Only half the plots can be built on." },
   nocath: { name: "Cath's away", rule: "Cath isn't on the field." },
   noscarecrow: { name: "Scarecrow ban", rule: "No Scarecrows this level." },
-  crowd: { name: "Crowds", rule: "Twice as many enemies at half health and half bounty, packed close." },
-  fast: { name: "Express", rule: "Enemies are 25% faster; bounties +50%." },
+  crowd: { name: "Crowds", rule: "Twice as many enemies at half health and half bounty, packed close.", fleetRule: "Every vehicle comes a size smaller, and there are more of them, packed close." },
+  fast: { name: "Express", rule: "Enemies are 25% faster; bounties +50%.", fleetRule: "Vehicles are 25% faster." },
   fortified: { name: "Fortified", rule: "Enemies have 30% more health." },
   market: { name: "Market day", rule: "Income +50%." },
 };
+
+/** A twist's rule as it plays on this level (fleet levels play some twists differently). */
+export function twistRule(level: Pick<Level, "rules">, id: TwistId): string {
+  return (isFleet(level) && TWISTS[id].fleetRule) || TWISTS[id].rule;
+}
 
 export function hasTwist(level: Pick<Level, "twists">, id: TwistId): boolean {
   return !!level.twists?.includes(id);
@@ -1915,7 +1920,9 @@ export function twistMods(level: Level, kind: TowerKind): { rangeMul?: number; d
   let range = 1;
   let dmg = 1;
   if (hasTwist(level, "fog")) range *= 0.8;
-  if (hasTwist(level, "night")) range *= 0.75;
+  // On the Fleet, night only shortens reach (and less): a pierce shot that misses its first target loses the
+  // whole cascade, so the classic quarter off plus faster vehicles was a wall, not a twist.
+  if (hasTwist(level, "night")) range *= isFleet(level) ? 0.85 : 0.75;
   if (hasTwist(level, "wind") && (kind === "scarecrow" || kind === "silo")) dmg *= 0.75;
   if (hasTwist(level, "rain") && kind === "beehive") dmg *= 0.5;
   return { ...(range !== 1 ? { rangeMul: range } : {}), ...(dmg !== 1 ? { dmgMul: dmg } : {}) };
@@ -1977,7 +1984,7 @@ export function maxHpOf(e: Enemy): number {
 /** How fast an enemy moves under the level's twists (before slows). */
 export function speedOf(game: Game, e: Enemy): number {
   let v = (isFleet(game.level) ? RUNGS[e.kind]?.speed : undefined) ?? ENEMIES[e.kind].speed;
-  if (hasTwist(game.level, "night")) v *= 1.1;
+  if (hasTwist(game.level, "night") && !isFleet(game.level)) v *= 1.1;
   if (hasTwist(game.level, "rain")) v *= 0.85;
   if (hasTwist(game.level, "fast")) v *= 1.25;
   if (hasTwist(game.level, "wind") && ENEMIES[e.kind].flying) v *= 1.3;
@@ -2072,7 +2079,10 @@ export function sendWave(game: Game, forced = false): ActionResult {
   const queue: Game["spawnQueue"] = [];
   const crowd = hasTwist(game.level, "crowd");
   let total = 0;
-  for (const g of groups) {
+  if (isFleet(game.level)) {
+    fleetQueue(game, groups, wave, queue);
+    total = Infinity;
+  } else for (const g of groups) {
     const big = isBig(g.enemy);
     const n = crowd && !big ? g.count * 2 : g.count;
     const gap = crowd && !big ? g.gap / 2 : g.gap;
@@ -2080,7 +2090,7 @@ export function sendWave(game: Game, forced = false): ActionResult {
     for (let i = 0; i < n; i++)
       queue.push({ at: g.delay + i * gap, kind: g.enemy, wave, lane: g.lane, ...(g.ambush ? { ambush: g.ambush } : {}) });
   }
-  if (hasTwist(game.level, "air")) {
+  if (hasTwist(game.level, "air") && total !== Infinity) {
     const extra = Math.ceil(total * 0.4);
     for (let i = 0; i < extra; i++) queue.push({ at: 1.5 + i * 0.7, kind: "drone", wave, lane: i % 2 && game.level.path2 ? 1 : undefined });
   }
@@ -2118,6 +2128,41 @@ export function sendWave(game: Game, forced = false): ActionResult {
     early ? { type: "wave", wave, early } : { type: "wave", wave },
   );
   return { ok: true };
+}
+
+/**
+ * A fleet round's spawns, with the twists that reshape a round played the Fleet's way: the same Fleet Value
+ * over the same seconds or fewer, so a twist changes the question, not the round's length or its weight.
+ * - Crowds: every vehicle comes a rung smaller, as many more as keep the group's Fleet Value, packed into
+ *   CROWD_PACK of the time.
+ * - Air drop: every third vehicle flies in instead, as quadcopters (or drones) worth about what it was.
+ */
+const CROWD_PACK = 0.7;
+function fleetQueue(game: Game, groups: WaveGroup[], wave: number, queue: Game["spawnQueue"]): void {
+  const crowd = hasTwist(game.level, "crowd");
+  const air = hasTwist(game.level, "air");
+  for (const g of groups) {
+    let kind = g.enemy;
+    let count = g.count;
+    let gap = g.gap;
+    const down = crowd && !isBig(kind) ? RUNGS[kind]?.children[0] : undefined;
+    if (down) {
+      const ratio = fvOf(kind) / fvOf(down);
+      count = Math.round(g.count * ratio);
+      gap = (g.gap * g.count * CROWD_PACK) / count;
+      kind = down;
+    }
+    for (let i = 0; i < count; i++) {
+      const at = g.delay + i * gap;
+      const base = { wave, lane: g.lane, ...(g.ambush ? { ambush: g.ambush } : {}) };
+      if (air && !isBig(kind) && !ENEMIES[kind].flying && i % 3 === 1) {
+        const fv = fvOf(kind);
+        const flyer: EnemyKind = fv >= 3 ? "quad" : "drone";
+        const n = Math.max(1, Math.round(fv / fvOf(flyer)));
+        for (let k = 0; k < n; k++) queue.push({ ...base, at: at + k * Math.min(0.1, gap / n), kind: flyer, lane: k % 2 && game.level.path2 ? 1 : g.lane });
+      } else queue.push({ ...base, at, kind });
+    }
+  }
 }
 
 /** True between rounds: nothing on the lane and nothing still to come, so Cath may change post. */

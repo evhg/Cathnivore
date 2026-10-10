@@ -27,7 +27,7 @@ import {
   type Level,
 } from "../games/hedgerow/src/engine";
 import { CHILD_GAP, FLEET_GOODWILL, LIVE_CAP, RUNGS, fvOf, roundBonus } from "../games/hedgerow/src/fleet";
-import { BOOK, BOOK_ROUNDS, budget, incomeBefore, roundFV, windowFor } from "../games/hedgerow/src/rounds";
+import { BOOK, BOOK_ROUNDS, SWAPS, budget, incomeBefore, roundFV, windowFor } from "../games/hedgerow/src/rounds";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import { kept, playLevel } from "../games/hedgerow/src/bot";
 
@@ -132,6 +132,42 @@ describe("hedgerow fleet: rungs", () => {
   });
 });
 
+describe("hedgerow fleet: twists keep a round's weight and length", () => {
+  it("every fleet level's every round spawns within 25 s and sends about its Book Fleet Value, twists included", () => {
+    for (const lv of LEVELS.filter(isFleet)) {
+      for (let w = 0; w < lv.waves.length; w++) {
+        const g = newGame(lv);
+        g.wave = w;
+        expect(sendWave(g).ok).toBe(true);
+        const last = Math.max(...g.spawnQueue.map((q) => q.at));
+        expect(last, `level ${lv.id} wave ${w + 1}`).toBeLessThanOrEqual(25);
+        const fv = g.spawnQueue.reduce((a, q) => a + (q.kind === "boss" ? 0 : fvOf(q.kind)), 0);
+        const want = roundFV(bookRound(lv, w + 1), lv.id);
+        expect(fv / want, `level ${lv.id} wave ${w + 1}`).toBeGreaterThan(0.85);
+        expect(fv / want, `level ${lv.id} wave ${w + 1}`).toBeLessThan(1.15);
+      }
+    }
+  });
+
+  it("Air drop flies a third of a round in; Crowds bring the round a rung smaller and more of it", () => {
+    const air = LEVELS[7]!;
+    expect(air.twists).toContain("air");
+    const g = newGame(air);
+    sendWave(g);
+    const flyers = g.spawnQueue.filter((q) => q.kind === "drone" || q.kind === "quad").length;
+    expect(flyers / g.spawnQueue.length).toBeGreaterThan(0.25);
+    const crowd = LEVELS[3]!;
+    expect(crowd.twists).toContain("crowd");
+    const c = newGame(crowd);
+    const plain = newGame({ ...crowd, twists: undefined });
+    sendWave(c);
+    sendWave(plain);
+    expect(c.spawnQueue.length).toBeGreaterThan(plain.spawnQueue.length * 1.3);
+    expect(c.spawnQueue.some((q) => q.kind === "van")).toBe(false);
+    expect(plain.spawnQueue.some((q) => q.kind === "van")).toBe(true);
+  });
+});
+
 describe("hedgerow fleet: pops you can hear", () => {
   it("thorns and poison pay their slivers silently: a knock (sound, particles) only when a whole layer comes off", () => {
     const g = bare();
@@ -211,11 +247,25 @@ describe("hedgerow fleet: rounds and levels", () => {
       const w = windowFor(lv.id);
       expect(lv.book).toEqual(w);
       expect(lv.waves).toHaveLength(w.to - w.from + 1);
-      expect(lv.startMarks).toBeGreaterThanOrEqual(500 + Math.round(0.7 * incomeBefore(w.from)));
-      expect(lv.startMarks).toBeLessThanOrEqual(500 + Math.round(1.0 * incomeBefore(w.from)));
+      expect(lv.startMarks).toBeGreaterThanOrEqual(Math.round(0.4 * (500 + incomeBefore(w.from))));
+      expect(lv.startMarks).toBeLessThanOrEqual(Math.round(1.2 * (500 + incomeBefore(w.from))));
     }
     expect(LEVELS[9]!.waves.at(-1)!.some((g) => g.enemy === "boss")).toBe(true);
     expect(isFleet(LEVELS[10]!)).toBe(false);
+  });
+
+  it("neighbouring levels never play the same rounds: a shared window gets act-themed swaps of the same weight", () => {
+    const fleet = LEVELS.filter(isFleet);
+    for (let i = 1; i < fleet.length; i++)
+      expect(JSON.stringify(fleet[i]!.waves), `levels ${fleet[i - 1]!.id} and ${fleet[i]!.id}`).not.toBe(JSON.stringify(fleet[i - 1]!.waves));
+    for (const [id, rounds] of Object.entries(SWAPS))
+      for (const r of Object.keys(rounds).map(Number)) {
+        const ratio = roundFV(r, Number(id)) / roundFV(r);
+        expect(ratio, `level ${id} round ${r}`).toBeGreaterThan(0.97);
+        expect(ratio, `level ${id} round ${r}`).toBeLessThan(1.03);
+        // The rounds to remember stay the Book's.
+        expect([6, 10, 12, 14]).not.toContain(r);
+      }
   });
 
   it("FV is conserved: everything a round sends is either popped or leaked", () => {
@@ -387,6 +437,16 @@ describe("hedgerow fleet: the live cap", () => {
 });
 
 describe("hedgerow fleet: level 1 (M1 review)", () => {
+  it("act 1 isn't free (M2 review): Scarecrow spam bleeds Goodwill on levels 1-3 and loses most of 4-10", () => {
+    let lost = 0;
+    for (const lv of LEVELS.filter(isFleet)) {
+      const naive = kept(playLevel(lv, "naive"));
+      if (lv.id <= 3) expect(naive, `level ${lv.id}`).toBeLessThan(0.95);
+      else if (naive === 0) lost++;
+    }
+    expect(lost).toBeGreaterThanOrEqual(5);
+  }, 180_000);
+
   it("a lazy build (3 Scarecrows, never upgraded) loses Goodwill visibly; the best bot keeps nearly all of it", () => {
     const ps = plots(L1);
     const g = newGame(L1);
@@ -403,7 +463,17 @@ describe("hedgerow fleet: level 1 (M1 review)", () => {
   }, 60_000);
 
   it("stacking is a graded choice: one stacked round pays, stacking every round loses", () => {
-    const ps = plots(L1);
+    // A sensible field: Scarecrows on the six plots that see the most lane, upgraded as Marks allow.
+    const len = L1.path.slice(1).reduce((a, [x, y], i) => a + Math.abs(x - L1.path[i]![0]) + Math.abs(y - L1.path[i]![1]), 0);
+    const cover = ([c, r]: [number, number]) => {
+      let n = 0;
+      for (let d = 0; d < len; d += 0.1) {
+        const p = pointAt(L1.path, d);
+        if (Math.hypot(p.x - c - 0.5, p.y - r - 0.5) <= 2.4) n++;
+      }
+      return n;
+    };
+    const ps = [...plots(L1)].sort((a, b) => cover(b) - cover(a) || a[1] - b[1] || a[0] - b[0]).slice(0, 6);
     const play = (stackFrom: number, stackTo: number) => {
       const g = newGame(L1);
       while (g.phase !== "won" && g.phase !== "lost" && g.tick < 30 * 2000) {

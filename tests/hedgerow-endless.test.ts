@@ -43,4 +43,11 @@ describe("endless fields", () => {
     expect(recordEndless(d, 3, 9)).toBe(false);
     expect(parseSave(JSON.stringify(d)).endless).toEqual({ "3": 12 });
   });
+  it("act 1's Endless stays the classic field it was (no untuned Fleet rungs on classic rules)", () => {
+    const lv = endlessLevel(1, 7);
+    expect(lv.rules).toBe("classic");
+    const kinds = new Set(lv.waves.flat().map((g) => g.enemy));
+    for (const k of ["courier", "hatchback", "pickup", "sprinter", "lorry", "quad"]) expect(kinds.has(k as never)).toBe(false);
+    expect(kinds.has("van")).toBe(true);
+  });
 });

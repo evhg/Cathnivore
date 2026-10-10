@@ -6440,11 +6440,13 @@ const TWIST_PLAN: Record<number, TwistId[]> = {
 for (const l of LEVELS) if (TWIST_PLAN[l.id]) l.twists = TWIST_PLAN[l.id];
 
 // Hedgerow 2 M2: act 1 plays the Fleet. Each level plays its window of the Round Book (rounds.ts windowFor),
-// starts with 500 Marks plus a tuned share k of what the Book pays before its first round, has 120 Goodwill
+// starts with a tuned share k of 500 Marks plus what the Book pays before its first round, has 120 Goodwill
 // and pays a Mark a layer. The boss level's last round brings the Acquisition Van in on top of the Book's.
 export const FLEET_LEVELS = (id: number) => id >= 1 && id <= 10;
 export function fleetStart(id: number, k = START_K[id] ?? 0.85): number {
-  return 500 + Math.round(k * incomeBefore(windowFor(id).from));
+  // k scales the opening 500 too (M2 review): with k only on the Book's income, level 1 (no income before
+  // round 1) always opened on 500, and the tuner had no way to make it anything but free.
+  return Math.round(k * (500 + incomeBefore(windowFor(id).from)));
 }
 for (const l of LEVELS) {
   if (!FLEET_LEVELS(l.id)) continue;
@@ -6454,7 +6456,7 @@ for (const l of LEVELS) {
   l.goodwill = FLEET_GOODWILL;
   l.startMarks = fleetStart(l.id);
   const waves: WaveGroup[][] = [];
-  for (let r = book.from; r <= book.to; r++) waves.push(bookWave(r));
+  for (let r = book.from; r <= book.to; r++) waves.push(bookWave(r, l.id));
   if (l.id % 10 === 0) waves[waves.length - 1] = [{ enemy: "boss", count: 1, gap: 1, delay: 0 }, ...waves[waves.length - 1]!.map((g) => ({ ...g, delay: g.delay + 4 }))];
   l.waves = waves;
 }

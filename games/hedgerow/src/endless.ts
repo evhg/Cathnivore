@@ -32,10 +32,20 @@ function rng(seed: number): () => number {
   };
 }
 
+/**
+ * Act 1's story levels play the Fleet (Hedgerow 2 M2), but its Endless stays the classic field it was until M8
+ * turns Endless into Freeplay: level 9's old enemies (vans, bubble-wrapped vans, drones, lorries), purse and
+ * health, not Fleet rungs given made-up classic numbers nothing has tuned.
+ */
+const CLASSIC_POOL: Partial<Record<number, { pool: EnemyKind[]; startMarks: number; hpScale: number }>> = {
+  1: { pool: ["van", "wrapped", "drone", "truck"], startMarks: 640, hpScale: 1.4 },
+};
+
 export function endlessLevel(act: number, week: number): Level {
   const base = LEVELS.find((l) => l.id === act * 10 - 1)!;
-  const pool: EnemyKind[] = [];
-  for (const wave of base.waves) for (const g of wave) if (!pool.includes(g.enemy) && g.enemy !== "boss") pool.push(g.enemy);
+  const classic = base.rules === "fleet" ? CLASSIC_POOL[act] : undefined;
+  const pool: EnemyKind[] = classic ? [...classic.pool] : [];
+  if (!classic) for (const wave of base.waves) for (const g of wave) if (!pool.includes(g.enemy) && g.enemy !== "boss") pool.push(g.enemy);
   const bossLevel = LEVELS.find((l) => l.id === act * 10);
   const boss = bossLevel?.waves.flat().find((g) => isBig(g.enemy))?.enemy;
   const rand = rng(act * 1000 + week);
@@ -65,18 +75,16 @@ export function endlessLevel(act: number, week: number): Level {
     setPieces.push({ kind: "bridge", dist: Math.round(pathLength(base.path) * (0.35 + rand() * 0.3)), period: 12 + Math.floor(rand() * 5), open: 3 + Math.floor(rand() * 2) });
   }
   // It opens gentler than the story level (ENDLESS_START of its tuned health), then compounds past it fast.
-  // Act 1's story levels play the Fleet (Hedgerow 2 M2); its Endless stays a classic field until M8 turns
-  // Endless into Freeplay, so it runs on classic rules with today's purse and Goodwill.
-  const fleet = base.rules === "fleet";
+  // A fleet act's Endless runs on classic rules (CLASSIC_POOL above).
   return {
     ...base,
-    ...(fleet ? { rules: "classic" as const, book: undefined, startMarks: 380, hpScale: 1.4 } : {}),
+    ...(classic ? { rules: "classic" as const, book: undefined, startMarks: classic.startMarks } : {}),
     name: `Endless: ${base.place}`,
     waves,
     endless: true,
     setPieces,
-    hpScale: ((fleet ? 1.4 : base.hpScale) ?? 1) * ENDLESS_START,
-    goodwill: fleet ? 15 : Math.max(base.goodwill, 15),
+    hpScale: ((classic ? classic.hpScale : base.hpScale) ?? 1) * ENDLESS_START,
+    goodwill: classic ? 15 : Math.max(base.goodwill, 15),
     before: [],
     after: [],
   };
