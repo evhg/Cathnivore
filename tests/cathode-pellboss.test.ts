@@ -44,4 +44,32 @@ describe("Councillor Pell", () => {
     expect(job.done).toBe(true);
     expect(progress.jobsDone).toContain("pellBoss");
   });
+
+  it("springs the rooftop ambush once when the player nears the steps", () => {
+    const player = { pos: new THREE.Vector3(0, 0, 0) };
+    const progress = { jobsDone: [] as string[], save: vi.fn() };
+    let n = 0;
+    const h = {
+      player,
+      progress,
+      scene: new THREE.Scene(),
+      markers: { perch: [new THREE.Vector3(5, 10, 5), new THREE.Vector3(-5, 8, 5)] },
+      ground: () => 0,
+      touch: false,
+      spawn: () => {
+        n++;
+        return { alive: true, hp: 100, kit: { maxHp: 100 }, position: new THREE.Vector3(0, 0, 10), body: { root: new THREE.Group() } };
+      },
+      arm: vi.fn(),
+      say: vi.fn(),
+      teach: vi.fn(),
+      banner: vi.fn(),
+    };
+    const job = new PellBossJob(h as never);
+    expect(n).toBe(3);
+    job.update(0.1);
+    expect(n).toBe(5);
+    job.update(0.1);
+    expect(n).toBe(5);
+  });
 });

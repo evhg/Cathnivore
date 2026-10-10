@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-10 00:51 session (short):** D3 rally-to-ambush: Pell's rooftop marksmen spring when the player comes within 30 m of him (banner, Pell/Bea lines); half-health rally keeps the rifle squads. Test added; tsc, lint green. Unreleased (milestone only). Next: D3 plaza sound/art, then D6 polish.
 - **2026-10-09 23:51 session (short):** D3 police drones: `POLICE_DRONE` kit (hunter role, 80 hp, blue visor) with `patrol:police-a/b` markers in the plaza; test added. tsc, lint, 211 cathode tests green. Unreleased (milestone only). Next: D3 rally-to-ambush scripting, then D6 polish.
 - **2026-10-09 22:51 session:** D5 HollowCandor phases now show on the body (visor cyan, amber, red; grows) with phase banners; D4 boardroom window is now open (chrome mullions, invisible collider) onto a lit skyline of ~40 towers (shot checked). tsc, lint, 210 cathode tests green. Unreleased (milestone only). Next: D3 civilians/police drones, then D6 polish.
 - **2026-10-09 21:51 session:** D4 laser grids: `game/lasers.ts` (pulse cycle, warning flicker, touch test) plus `laser:*` markers; three grids on the Tower office floor, 14 damage with cooldown; shot checked, tsc/lint/cathode tests green. Unreleased (milestone only). Next: multi-phase HollowCandor art, D6 polish.

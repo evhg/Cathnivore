@@ -13,6 +13,7 @@ export class PellBossJob {
   target: THREE.Vector3 | null = null;
   boss: Enemy | null = null;
   private rallied = false;
+  private sprung = false;
 
   constructor(private readonly h: JobHost) {
     this.goto(0);
@@ -64,13 +65,22 @@ export class PellBossJob {
   update(_dt: number): void {
     if (this.stage === 0 && this.boss) {
       this.target = this.boss.position.clone().setY(this.boss.position.y + 2.2);
+      // Plaza only (rooftop perches exist): the rally speech turns into an ambush when the player nears the steps.
+      const perches = this.h.markers.perch ?? [];
+      if (!this.sprung && perches.length && this.h.player.pos.distanceTo(this.boss.position) < 30) {
+        this.sprung = true;
+        for (const perch of perches) this.h.spawn("sniper", [perch.clone()]);
+        this.h.banner("Ambush", "Marksmen on the rooftops", "boss");
+        this.h.say("Pell: Citizens, here is the assassin they warned you about!");
+        this.h.say("Bea: Rooftops! Find cover behind the fountain.");
+      }
       if (!this.rallied && this.boss.alive && this.boss.hp < this.boss.kit.maxHp / 2) {
         this.rallied = true;
         this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
         this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
         this.h.spawn("rifle", [this.M("boss:reinforce", 4, -24, 20), this.M("boss:reinforce", 5, -20, 22)]);
-        // In the plaza the rally turns into an ambush: marksmen open up from both rooftops too.
-        for (const perch of this.h.markers["boss:pell"] ? this.h.markers.perch ?? [] : []) this.h.spawn("sniper", [perch.clone()]);
+        // Where the ambush never sprang (no rooftops, or the player stayed back), the marksmen join the rally.
+        if (!this.sprung) for (const perch of this.h.markers.perch ?? []) this.h.spawn("sniper", [perch.clone()]);
         this.h.say("Pell: Security! Everyone, now!");
       }
       if (!this.boss.alive) this.goto(1);
