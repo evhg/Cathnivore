@@ -889,7 +889,7 @@ function wavePreview(p: HTMLElement, g: Game): void {
   if (isFleet(g.level)) fleetPreview(p, g);
   const row = document.createElement("ul");
   row.className = "preview-row";
-  for (const { kind, count } of isFleet(g.level) ? [] : waveSummary(next)) {
+  for (const { kind, count } of waveSummary(next)) {
     const li = document.createElement("li");
     li.className = "preview-chip" + (isBig(kind) ? " boss" : "");
     li.append(img(enemyIcon(kind), "chip-icon"));
@@ -905,7 +905,8 @@ function wavePreview(p: HTMLElement, g: Game): void {
     }
     row.append(li);
   }
-  p.append(row);
+  // Fleet levels show their round in fleetPreview above.
+  if (!isFleet(g.level)) p.append(row);
   if (g.towers.length) {
     const counts = new Map<TowerKind, number>();
     for (const t of g.towers) counts.set(t.kind, (counts.get(t.kind) ?? 0) + 1);
@@ -984,6 +985,9 @@ function fleetPreview(p: HTMLElement, g: Game): void {
       }
       const row = document.createElement("ul");
       row.className = "preview-row";
+      // It scrolls sideways on a phone: keyboard users can reach it too.
+      row.tabIndex = 0;
+      row.setAttribute("aria-label", "Vehicles in this round");
       const seen = new Map<string, { kind: EnemyKind; pm: number; count: number }>();
       for (const gr of groups) {
         const key = `${gr.enemy}:${gr.pm ?? 0}`;
@@ -1242,8 +1246,6 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     );
     titles.append(vet);
   }
-  // Fleet: its damage type, and a green or red badge for every lock (Hedgerow 2 section 2).
-  if (t.fleet && !t.mega) titles.append(badgeRow(t.kind, t.tier, t.spec ?? null));
   if (st.damage > 0) {
     // Targeting is one small cycling button: it rarely needs changing.
     const tb = document.createElement("button");
@@ -1341,6 +1343,9 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   };
   row.append(sl);
   p.append(row);
+  // Fleet: its damage type, and a green or red badge for every lock (Hedgerow 2 section 2). Last, so on a
+  // phone the upgrade and specialisation buttons stay in view above it.
+  if (t.fleet && !t.mega) p.append(badgeRow(t.kind, t.tier, t.spec ?? null));
 }
 
 /** Megastructures: merge buttons for grown neighbours, or a hint about what this tower could become. */
