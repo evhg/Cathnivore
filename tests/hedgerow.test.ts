@@ -649,7 +649,7 @@ describe("hedgerow 2 M1: hands-on pacing", () => {
 });
 
 describe("hedgerow: Cath on the battlefield", () => {
-  it("holds a van in place, whacks it and takes hits back", () => {
+  it("holds two vans in place, takes hits back and whacks only a third (the towers finish what she holds)", () => {
     const game = newGame(strip(), NO_PERKS, MANUAL);
     moveHero(game, 6.5, 1.5);
     for (let i = 0; i < 120; i++) stepGame(game); // build phase: nothing moves
@@ -658,11 +658,17 @@ describe("hedgerow: Cath on the battlefield", () => {
     game.hero.x = 6.5;
     game.hero.y = 1.5;
     const van = spawn(game, "van", 6, 500);
+    const van2 = spawn(game, "van", 6.05, 500);
     for (let i = 0; i < 30; i++) stepGame(game);
     expect(van.held).toBe(true);
+    expect(van2.held).toBe(true);
     expect(van.dist).toBe(6);
-    expect(van.hp).toBeLessThan(500);
+    expect(van.hp).toBe(500);
     expect(game.hero.hp).toBeLessThan(game.hero.maxHp);
+    const third = spawn(game, "van", 6.1, 500);
+    for (let i = 0; i < 30; i++) stepGame(game);
+    expect(third.held).toBe(false);
+    expect(third.hp).toBeLessThan(500);
   });
 
   it("can't hold drones or bosses", () => {

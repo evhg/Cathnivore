@@ -1354,8 +1354,8 @@ export const HERO = {
   hp: 150,
   speed: 2.6,
   reach: 0.62,
-  /** Hedgerow 2 M1: 15 → 6. She holds vehicles for the towers; she no longer takes the kills herself. */
-  damage: 6,
+  /** Hedgerow 2 M1: 15 → 10, and only at what she isn't holding: she holds vehicles for the towers. */
+  damage: 10,
   cooldown: 0.6,
   regen: 9,
   respawn: 9,
@@ -2222,20 +2222,19 @@ function stepHero(game: Game): void {
     return;
   }
 
-  // Swinging the rolling pin at whatever she holds, or anything in reach.
+  // Swinging the rolling pin (Hedgerow 2 M1): her hands are full with what she holds (the towers finish
+  // those), so she swings only at anything else within reach. She holds the line without farming the kills.
   h.cd -= STEP;
   if (h.cd > 0) return;
-  let target = game.enemies.find((e) => e.held && e.hp > 0);
-  if (!target) {
-    let best = Infinity;
-    for (const e of game.enemies) {
-      if (e.hp <= 0 || !isRevealed(game, e)) continue;
-      const p = enemyPoint(game.level, e);
-      const dd = Math.hypot(p.x - h.x, p.y - h.y);
-      if (dd <= HERO.reach + 0.15 && dd < best) {
-        best = dd;
-        target = e;
-      }
+  let target: Enemy | undefined;
+  let best = Infinity;
+  for (const e of game.enemies) {
+    if (e.hp <= 0 || e.held || !isRevealed(game, e)) continue;
+    const p = enemyPoint(game.level, e);
+    const dd = Math.hypot(p.x - h.x, p.y - h.y);
+    if (dd <= HERO.reach + 0.15 && dd < best) {
+      best = dd;
+      target = e;
     }
   }
   if (!target) {
