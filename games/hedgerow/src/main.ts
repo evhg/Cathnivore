@@ -29,6 +29,8 @@ import {
   TOWERS,
   TOWER_VS,
   TWISTS,
+  twistRule,
+  bookRound,
   canCallEarly,
   drainEvents,
   earlyBonus,
@@ -71,7 +73,7 @@ import {
   isFleet,
 } from "./engine";
 import { RUNGS, fvOf } from "./fleet";
-import { BOOK } from "./rounds";
+import { roundFor } from "./rounds";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
 import type { Renderer3D } from "./render3d";
@@ -609,7 +611,7 @@ function levelTips(lv: Level): void {
   if (lv.twists?.length)
     window.setTimeout(() => {
       if (game?.level.id !== lv.id) return;
-      banner(lv.twists!.map((t) => TWISTS[t].name).join(" · "), lv.twists!.map((t) => TWISTS[t].rule).join(" "));
+      banner(lv.twists!.map((t) => TWISTS[t].name).join(" · "), lv.twists!.map((t) => twistRule(lv, t)).join(" "));
     }, 400);
   if (lv.id === 1)
     tip("build", "Tap a plot beside the lane to build. Hedges slow them down; scarecrows throw turnips.", "wink");
@@ -690,20 +692,20 @@ function syncControls(): void {
   ui.btnSend.textContent =
     g.phase === "build" && more
       ? counting
-        ? `Wave ${g.wave + 1} in ${Math.ceil(autoLeft)}`
+        ? `${Word(g)} ${waveNo(g, g.wave + 1)} in ${Math.ceil(autoLeft)}`
         : g.wave === 0
           ? "Go"
-          : `Go: wave ${g.wave + 1}`
+          : `Go: ${waveWord(g)} ${waveNo(g, g.wave + 1)}`
       : early
         ? `Next +${earlyBonus(g)}`
         : g.phase === "wave"
-          ? `Wave ${g.wave} of ${g.level.waves.length}`
+          ? `${Word(g)} ${waveNo(g, g.wave)} of ${lastNo(g)}`
           : g.phase === "won" || g.phase === "lost"
             ? "Level over"
-            : "Last wave";
+            : `Last ${waveWord(g)}`;
   ui.btnSend.setAttribute(
     "aria-label",
-    early ? `Stack wave ${g.wave + 1} on now for ${earlyBonus(g)} bonus Marks` : ui.btnSend.textContent ?? "",
+    early ? `Stack ${waveWord(g)} ${waveNo(g, g.wave + 1)} on now for ${earlyBonus(g)} bonus Marks` : ui.btnSend.textContent ?? "",
   );
   // Choosing something (a plot, Cath's new post, a pie's aim) holds the Keep Going countdown: say so.
   ui.chooseChip.hidden = !(counting && (selected || posting || aiming) && !player);
@@ -722,6 +724,23 @@ function syncKnockouts(): void {
     big.textContent = text;
     el.querySelector(".ko-m")!.textContent = `· ${text} Marks earned`;
   }
+}
+
+/**
+ * One word for one count (M2 review): fleet levels number the Round Book's rounds ("Round 6 of 13"), classic
+ * levels their own waves. `w` is the level's wave (1-based); the result is what the player sees.
+ */
+function waveWord(g: Game): string {
+  return isFleet(g.level) ? "round" : "wave";
+}
+function Word(g: Game): string {
+  return isFleet(g.level) ? "Round" : "Wave";
+}
+function waveNo(g: Game, w: number): number {
+  return isFleet(g.level) ? bookRound(g.level, w) : w;
+}
+function lastNo(g: Game): number {
+  return isFleet(g.level) && g.level.book ? g.level.book.to : g.level.waves.length;
 }
 
 const shown = { goodwill: -1, marks: -1, wave: "", bumped: 0 };
@@ -747,7 +766,8 @@ function updateHud(): void {
     ui.hudMarks.textContent = String(shown.marks);
     refreshAffordability();
   }
-  const w = `${g.wave}/${g.level.waves.length}`;
+  // Fleet levels count the Book's rounds: level 2 runs from round 2 to 13 (shown 1/13 before it starts).
+  const w = `${isFleet(g.level) ? waveNo(g, g.wave) : g.wave}/${lastNo(g)}`;
   if (w !== shown.wave) {
     ui.hudWave.textContent = w;
     shown.wave = w;
@@ -824,14 +844,14 @@ function wavePreview(p: HTMLElement, g: Game): void {
   const head = document.createElement("div");
   head.className = "preview-head";
   if (!next) {
-    head.append(line(g.phase === "wave" ? "Last wave on the lane. Hold them." : "", "preview-title"));
+    head.append(line(g.phase === "wave" ? `Last ${waveWord(g)} on the lane. Hold them.` : "", "preview-title"));
     p.append(head);
     return;
   }
-  head.append(line(g.phase === "wave" ? `Coming next: wave ${g.wave + 1}` : `Wave ${g.wave + 1} of ${g.level.waves.length}`, "preview-title"));
+  head.append(line(g.phase === "wave" ? `Coming next: ${waveWord(g)} ${waveNo(g, g.wave + 1)}` : `${Word(g)} ${waveNo(g, g.wave + 1)} of ${lastNo(g)}`, "preview-title"));
   p.append(head);
   if (g.level.twists?.length) {
-    const tw = line(g.level.twists.map((t) => `${TWISTS[t].name}: ${TWISTS[t].rule}`).join(" "), "twist-line");
+    const tw = line(g.level.twists.map((t) => `${TWISTS[t].name}: ${twistRule(g.level, t)}`).join(" "), "twist-line");
     p.append(tw);
   }
   for (const sp of g.level.setPieces ?? [])
@@ -1462,12 +1482,24 @@ function introduce(kinds: EnemyKind[]): void {
   d.textContent = describeEnemy(k);
   box.append(eb, n, d);
   ui.intro.append(box);
+  // Keep the card off the side the Fleet comes in from: that corner is where the first pops happen.
+  const spawn = game && renderer ? spawnSide(game) : "left";
+  ui.intro.classList.toggle("left", spawn === "right");
   ui.intro.hidden = false;
   ui.intro.classList.remove("pop");
   void ui.intro.offsetWidth;
   ui.intro.classList.add("pop");
   say(`${ENEMIES[k].name}. ${describeEnemy(k)}`);
   window.setTimeout(() => (ui.intro.hidden = true), 5200);
+}
+
+/** Which half of the screen the lane starts in. */
+function spawnSide(g: Game): "left" | "right" {
+  const [c, r] = g.level.path[0]!;
+  const rect = ui.canvas.getBoundingClientRect();
+  const p = renderer?.cellCenter(c, r);
+  if (!p || !rect.width) return c < g.level.cols / 2 ? "left" : "right";
+  return p.x < rect.left + rect.width / 2 ? "left" : "right";
 }
 
 // ---- the loop ----
@@ -1479,10 +1511,12 @@ function onEvents(g: Game, evs: GameEvent[]): void {
   let shots = 0;
   let gusts = 0;
   const knocks: number[] = [];
+  let peeled = false;
   for (const ev of evs) {
     switch (ev.type) {
       case "knock":
         knocks.push(RUNG_STEP[ev.from] ?? 3);
+        if (ev.to) peeled = true;
         break;
       case "shot":
         if (shots++ < 2) sfx.playShot(ev.kind, !!ev.crit);
@@ -1514,10 +1548,12 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         } else if (isFleet(g.level) && g.level.book) {
           // Fleet levels name the Round Book's round and read its one-line card.
           const r = g.level.book.from + ev.wave - 1;
-          const page = BOOK[r - 1];
-          banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : (page?.card ?? `Wave ${ev.wave} of ${g.level.waves.length}`));
+          const page = roundFor(g.level.id, r);
+          banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : (page?.card ?? `Round ${r} of ${lastNo(g)}`));
         } else banner(`Wave ${ev.wave}`, ev.early ? `Stacked early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
-        introduce(kinds);
+        // Let the round's banner say its piece first: the new-unit card follows it rather than stacking on it.
+        if (isFleet(g.level) && !boss) window.setTimeout(() => game === g && introduce(kinds), 1800);
+        else introduce(kinds);
         if (ev.early) {
           earlyCalls += 1;
           stackedWave = ev.wave;
@@ -1600,7 +1636,8 @@ function onEvents(g: Game, evs: GameEvent[]): void {
   }
   if (knocks.length) {
     sfx.playKnocks(knocks);
-    if (g.level.id === 1 && g.wave === 1) tip("knock", "Every pop knocks a layer off and pays a Mark. Vans peel down to hatchbacks, then couriers.", "delighted");
+    // The first time something actually peels down a rung (not a courier vanishing), say what happened.
+    if (peeled && isFleet(g.level)) tip("knock", "Every pop knocks a layer off and pays a Mark. A hatchback peels down to a courier; vans peel to hatchbacks.", "delighted");
   }
 }
 
@@ -1707,8 +1744,8 @@ function finish(g: Game): void {
     `Cath's knockouts ${g.hero.kills}`,
   ];
   if (g.heroic) stats.push("Heroic run ◆");
-  if (earlyCalls) stats.push(`Waves called early ${earlyCalls}`);
-  ui.resultStats.textContent = won ? stats.join(" · ") : `Reached wave ${g.wave} of ${lv.waves.length}`;
+  if (earlyCalls) stats.push(`${Word(g)}s called early ${earlyCalls}`);
+  ui.resultStats.textContent = won ? stats.join(" · ") : `Reached ${waveWord(g)} ${waveNo(g, g.wave)} of ${lastNo(g)}`;
   const gained = won ? Math.max(0, n - before) : 0;
   ui.resultNote.textContent = won
     ? `${lv.reward}${gained ? ` · +${gained} star${gained > 1 ? "s" : ""} for the Seed Bank.` : ""}`

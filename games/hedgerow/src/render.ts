@@ -159,6 +159,13 @@ export class Renderer {
 
   constructor(private canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext("2d")!;
+    // A shrinking ring or a pulse a frame past its end can ask for a hair under zero radius, which throws
+    // (IndexSizeError) and drops the frame: clamp every arc and ellipse on this canvas (sprites.ts draws on it too).
+    const arc = this.ctx.arc.bind(this.ctx);
+    this.ctx.arc = (x: number, y: number, r: number, a0: number, a1: number, ccw?: boolean) => arc(x, y, Math.max(0, r), a0, a1, ccw);
+    const ellipse = this.ctx.ellipse.bind(this.ctx);
+    this.ctx.ellipse = (x: number, y: number, rx: number, ry: number, rot: number, a0: number, a1: number, ccw?: boolean) =>
+      ellipse(x, y, Math.max(0, rx), Math.max(0, ry), rot, a0, a1, ccw);
     this.face = svgImage(cathSvg({ framing: "face", expression: "determined" }));
     this.faceWorried = svgImage(cathSvg({ framing: "face", expression: "worried" }));
     this.faceCheer = svgImage(cathSvg({ framing: "face", expression: "delighted" }));
@@ -233,6 +240,12 @@ export class Renderer {
       x: (clientX - rect.left - this.view.offX) / this.view.cellSize,
       y: (clientY - rect.top - this.view.offY) / this.view.cellSize,
     };
+  }
+
+  /** The screen position of a cell's centre, in client pixels. */
+  cellCenter(col: number, row: number): { x: number; y: number } {
+    const rect = this.canvas.getBoundingClientRect();
+    return { x: rect.left + this.view.offX + (col + 0.5) * this.view.cellSize, y: rect.top + this.view.offY + (row + 0.5) * this.view.cellSize };
   }
 
   /** Which way the enemy nearest this x was walking, so a fallen one tips forward. */

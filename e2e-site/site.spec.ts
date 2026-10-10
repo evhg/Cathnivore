@@ -229,18 +229,18 @@ test.describe('Hedgerow', () => {
     // Next finishes the typing, then moves on; Skip ends the scene.
     await page.locator('#story-next').click()
     await page.locator('#story-skip').click()
-    // Hedgerow 2 M2: level 1 plays the Fleet: 500 Marks, a 200-Mark Scarecrow, Round Book rounds 1-12.
-    await expect(page.locator('#hud-marks')).toHaveText('500')
+    // Hedgerow 2 M2: level 1 plays the Fleet: 600 Marks, a 200-Mark Scarecrow, Round Book rounds 1-12.
+    await expect(page.locator('#hud-marks')).toHaveText('600')
     await expect(page.locator('#btn-pie')).toBeHidden()
     // Tap a plot beside the lane (column 0, row 0 is grass in level 1).
     // The keyboard cursor starts on (0, 0), a plot in level 1; Enter selects it (works in 2D and 3D).
     await selectCell(page, 0, 0)
     await page.locator('button.btn-build[data-kind="scarecrow"]').click()
-    await expect(page.locator('#hud-marks')).toHaveText('300')
+    await expect(page.locator('#hud-marks')).toHaveText('400')
     // Escape on the battlefield clears the selection and the panel goes back to the wave preview.
     await page.locator('#canvas').focus()
     await page.keyboard.press('Escape')
-    await expect(page.locator('#panel')).toContainText('Wave 1 of 12')
+    await expect(page.locator('#panel')).toContainText('Round 1 of 12')
     await page.locator('#btn-send').click()
     await expect(page.locator('#hud-wave')).toHaveText('1/12')
     await expect(page.locator('#banner')).toContainText('Round 1')
@@ -396,22 +396,22 @@ test.describe('Hedgerow', () => {
     await page.reload()
     await expect(page.locator('#btn-send')).toHaveText('Go', { timeout: 8000 })
     await page.locator('#btn-send').click()
-    await expect(page.locator('#hud-wave')).toHaveText(/^1\//)
-    // Clear wave 1 by hand: Keep Going (on from level 6) starts its 2 s countdown.
+    await expect(page.locator('#hud-wave')).toHaveText(/^3\//)
+    // Clear the first round (Book round 3: level 6 plays rounds 3-15) by hand: Keep Going (on from level 6) starts its 2 s countdown.
     await page.evaluate(() => {
       const g = (window as unknown as { hedgerow: { game(): { spawnQueue: unknown[]; enemies: unknown[] } } }).hedgerow.game()
       g.spawnQueue.length = 0
       g.enemies.length = 0
     })
-    await expect(page.locator('#btn-send')).toHaveText(/^Wave 2 in/, { timeout: 8000 })
+    await expect(page.locator('#btn-send')).toHaveText(/^Round 4 in/, { timeout: 8000 })
     await page.locator('#btn-hero').click()
     await expect(page.locator('#choose-chip')).toBeVisible()
     await page.waitForTimeout(3000)
-    await expect(page.locator('#hud-wave')).toHaveText(/^1\//)
-    await expect(page.locator('#btn-send')).toHaveText(/^Wave 2 in/)
+    await expect(page.locator('#hud-wave')).toHaveText(/^3\//)
+    await expect(page.locator('#btn-send')).toHaveText(/^Round 4 in/)
     // Go starts the round and puts her down: the next tap is for the field again.
     await page.locator('#btn-send').click()
-    await expect(page.locator('#hud-wave')).toHaveText(/^2\//)
+    await expect(page.locator('#hud-wave')).toHaveText(/^4\//)
     await expect(page.locator('#choose-chip')).toBeHidden()
     await page.locator('#btn-hero').click()
     await expect(page.locator('#toast')).toContainText('holds her post')
