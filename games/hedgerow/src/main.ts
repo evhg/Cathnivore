@@ -133,7 +133,7 @@ import {
 } from "./store";
 import { dailyLevel, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
-import { Player, Recorder, applyAction, decodeReplay, encodeReplay, startGame, type Action, type Replay, type Setup } from "./replay";
+import { Player, Recorder, applyAction, decodeReplay, encodeReplay, rewindToWave, startGame, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
 import { OUTFITS, outfitFor, wear, wornOutfit } from "./wardrobe";
@@ -511,12 +511,16 @@ function doAct(a: Action): boolean {
   return act(() => (recorder ? recorder.act(g, a) : applyAction(g, a)));
 }
 
-function startLevel(lv: Level, heroic = heroicMode): void {
+/**
+ * Starts a level. With `resume`, play picks up from a rewound run instead (Retry from round N): the field, the
+ * purse and the recorder exactly as they stood before the lost round was sent.
+ */
+function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recorder: Recorder }): void {
   // First level of the visit: wait for the 3D chunk (usually already prefetched), then start.
   if (USE_3D && !r3d && !r3dSettled) {
     void loadR3D().then(() => {
       r3dSettled = true;
-      startLevel(lv, heroic);
+      startLevel(lv, heroic, resume);
     });
     return;
   }
@@ -528,8 +532,8 @@ function startLevel(lv: Level, heroic = heroicMode): void {
     perks: dailyDay !== null ? NO_PERKS : perksOf(data),
   };
   // One-on-one boss duels are a player's moment (on in startGame); the tuner and sims never see them.
-  game = startGame(lv, setup);
-  recorder = SANDBOX ? null : new Recorder(setup);
+  game = resume?.game ?? startGame(lv, setup);
+  recorder = resume?.recorder ?? (SANDBOX ? null : new Recorder(setup));
   player = null;
   ui.replayBar.hidden = true;
   document.documentElement.classList.remove("watching");
@@ -554,7 +558,8 @@ function startLevel(lv: Level, heroic = heroicMode): void {
   maxSpeed = story ? fastestSpeed(data, lv.id) : 3;
   if (speed > maxSpeed) speed = maxSpeed;
   // Abilities the player has put on Auto (earned by casting each by hand three times).
-  if (!SANDBOX) for (const a of ABILITIES) if (autoOn(data, a)) doAct({ t: "auto", ability: a, on: true });
+  // (A resumed run already has them in its log.)
+  if (!SANDBOX && !resume) for (const a of ABILITIES) if (autoOn(data, a)) doAct({ t: "auto", ability: a, on: true });
   for (const a of ABILITIES) wasReady[a] = false;
   startPerkRanks = Object.values(data.bank).reduce((a, b) => a + b, 0);
   ui.select.hidden = true;
@@ -1908,6 +1913,8 @@ function frame(now: number): void {
 function finish(g: Game): void {
   if (game !== g) return;
   document.getElementById("loss-causes")?.remove();
+  document.getElementById("result-retry")?.remove();
+  ui.resultPrimary.classList.remove("btn-quiet");
   ui.resultNote.hidden = false;
   ui.resultStars.hidden = false;
   ui.dlgResult.classList.remove("has-causes");
@@ -1996,6 +2003,7 @@ function finish(g: Game): void {
       ui.dlgResult.close();
       startLevel(lv);
     };
+    retryButton(g, lv);
   }
   ui.resultSecondary.onclick = () => {
     ui.dlgResult.close();
@@ -2003,6 +2011,32 @@ function finish(g: Game): void {
   };
   ui.dlgResult.classList.toggle("lost", !won);
   ui.dlgResult.showModal();
+}
+
+/**
+ * Retry from round N (Hedgerow 2 section 2): on a lost fleet level, a button that replays the run up to just
+ * before the lost round and hands it back, so a fix (a Radio Mast for the stealth round) can be tried without
+ * replaying every clean round first. The rewind is a deterministic re-run of the recorded inputs.
+ */
+function retryButton(g: Game, lv: Level): void {
+  const replay = lastReplay;
+  if (!isFleet(lv) || !replay || replay.setup.mode !== "level" || g.wave <= 1) return;
+  const lost = g.wave;
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "btn";
+  b.id = "result-retry";
+  b.textContent = `Retry from ${waveWord(g)} ${waveNo(g, lost)}`;
+  b.onclick = () => {
+    const back = rewindToWave(lv, replay, lost);
+    ui.dlgResult.close();
+    if (!back) return startLevel(lv);
+    startLevel(lv, back.game.heroic, back);
+    toast(`Back to the start of ${waveWord(g)} ${waveNo(g, lost)}: your field, Marks and Goodwill as they were.`);
+  };
+  ui.resultPrimary.before(b);
+  ui.resultPrimary.textContent = "Start over";
+  ui.resultPrimary.classList.add("btn-quiet");
 }
 
 /**

@@ -166,6 +166,31 @@ export class Player {
   }
 }
 
+/**
+ * Retry from round N (Hedgerow 2 section 2, the loss screen): replays a run up to the moment just before it
+ * sent its `wave`th wave (in-level numbering) and hands back that game with a recorder that has logged exactly
+ * the same, so play carries on from there and the run's replay still plays back. Deterministic, so it needs no
+ * snapshots. Null if the run never got as far as sending that wave, or for wave 1 (that's just "Try again").
+ */
+export function rewindToWave(level: Level, replay: Replay, wave: number): { game: Game; recorder: Recorder } | null {
+  if (wave <= 1) return null;
+  const game = startGame(level, replay.setup);
+  const rec = new Recorder(replay.setup);
+  const log = replay.log;
+  let next = 0;
+  for (;;) {
+    while (next < log.length && log[next]![0] <= rec.steps) {
+      const a = log[next]![1];
+      // About to send the wave we're retrying: stop here, with the field as it stood.
+      if (a.t === "wave" && game.wave + 1 >= wave) return game.phase === "lost" || game.phase === "won" ? null : { game, recorder: rec };
+      rec.act(game, a);
+      next++;
+    }
+    if (rec.steps >= replay.steps) return null;
+    rec.step(game);
+  }
+}
+
 // ---- sharing: a compact, URL-safe string ----
 
 function toB64url(bytes: Uint8Array): string {
