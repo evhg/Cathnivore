@@ -1315,6 +1315,8 @@ export interface Enemy {
   stickyLeft?: number;
   /** Held up by Cath. */
   held?: boolean;
+  /** Cath was holding it when she was knocked down (so a leak names her, not the towers). */
+  dropped?: boolean;
   /** Full health after the level's scaling and twists (defaults to the kind's). */
   maxHp?: number;
   /** Bosses: seconds until the next signature move, and which move is next. */
@@ -1437,7 +1439,7 @@ export type GameEvent =
       spec?: 0 | 1 | null;
     }
   | { type: "kill"; x: number; y: number; bounty: number; kind: EnemyKind }
-  | { type: "leak"; x: number; y: number; kind?: EnemyKind; lost?: number }
+  | { type: "leak"; x: number; y: number; kind?: EnemyKind; lost?: number; dropped?: boolean }
   | { type: "wave"; wave: number; early?: number }
   | { type: "cleared"; wave: number; reward: number }
   | { type: "pie"; x?: number; y?: number; radius?: number }
@@ -2217,7 +2219,10 @@ function stepHero(game: Game): void {
     h.hp = 0;
     h.down = HERO.respawn * game.perks.heroRespawn;
     h.holding = [];
-    for (const e of game.enemies) e.held = false;
+    for (const e of game.enemies) {
+      if (e.held) e.dropped = true;
+      e.held = false;
+    }
     game.events.push({ type: "heroDown" });
     return;
   }
@@ -2603,7 +2608,7 @@ export function stepGame(game: Game): void {
     } else if (e.dist >= (e.lane ? game.pathLength2 : game.pathLength)) {
       const lost = ENEMIES[e.kind].leak;
       game.goodwill -= lost;
-      game.events.push({ type: "leak", x: p.x, y: p.y, kind: e.kind, lost });
+      game.events.push({ type: "leak", x: p.x, y: p.y, kind: e.kind, lost, ...(e.dropped ? { dropped: true } : {}) });
     } else alive.push(e);
   }
   game.enemies = alive.concat(spawned);

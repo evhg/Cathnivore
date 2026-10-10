@@ -184,11 +184,16 @@ export async function encodeReplay(r: Replay): Promise<string> {
   return toB64url(await pipe(json, new CompressionStream("deflate-raw")));
 }
 
-/** Decodes a shared replay, or null if it's damaged or not one. */
-export async function decodeReplay(text: string): Promise<Replay | null> {
+/**
+ * Decodes a shared replay: the replay, "old" for a well-formed link from an older Hedgerow (its rules have
+ * changed, so it can't be played back), or null if it's damaged or not one.
+ */
+export async function decodeReplay(text: string): Promise<Replay | "old" | null> {
   try {
     const json = await pipe(fromB64url(text), new DecompressionStream("deflate-raw"));
     const r = JSON.parse(new TextDecoder().decode(json)) as Replay;
+    const v = (r as { v?: unknown } | null)?.v;
+    if (typeof v === "number" && Number.isInteger(v) && v >= 1 && v < REPLAY_VERSION && r.setup && Array.isArray(r.log)) return "old";
     if (r?.v !== REPLAY_VERSION || !r.setup || !Array.isArray(r.log) || typeof r.steps !== "number") return null;
     if (!["level", "endless", "daily"].includes(r.setup.mode)) return null;
     return r;

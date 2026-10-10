@@ -62,5 +62,8 @@ describe("hedgerow replays", () => {
     expect(text.length).toBeLessThan(6000);
     expect(await decodeReplay(text)).toEqual(replay);
     expect(await decodeReplay("not-a-replay")).toBeNull();
+    // A link from before Hedgerow 2 (v1) is recognised as old, not called damaged.
+    const old = await encodeReplay({ ...replay, v: 1 } as unknown as typeof replay);
+    expect(await decodeReplay(old)).toBe("old");
   });
 });

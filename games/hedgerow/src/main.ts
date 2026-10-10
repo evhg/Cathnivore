@@ -662,7 +662,7 @@ function syncControls(): void {
     "aria-label",
     h.down > 0
       ? `Cath is catching her breath, back in ${Math.ceil(h.down)} seconds`
-      : `Cath, ${Math.round(h.hp)} of ${h.maxHp} health, ${h.kills} knockouts. She goes where she's needed.`,
+      : `Cath, ${Math.round(h.hp)} of ${h.maxHp} health, ${h.kills} knockouts. She holds her post; move her between waves.`,
   );
   const more = g.wave < g.level.waves.length;
   const early = canCallEarly(g);
@@ -766,7 +766,7 @@ function renderPanel(force = false): void {
     return;
   }
   if (!isPlot(g.level, sel.col, sel.row)) {
-    p.append(line("That's the lane. Tap it again to send Cath there."));
+    p.append(line("That's the lane: towers go on the grass beside it. To move Cath, tap her between waves, then tap her new post."));
     return;
   }
   buildMenu(p, g, sel);
@@ -1279,8 +1279,10 @@ function toggleAuto(a: Ability): void {
 }
 
 /** Why a leak happened, in today's traits, with the counter that answers it (Hedgerow 2 section 2). */
-function leakCause(g: Game, k: EnemyKind): string {
+function leakCause(g: Game, k: EnemyKind, dropped = false): string {
   const e = ENEMIES[k];
+  // Cath went down holding it: her post is out of the towers' reach, not short of damage near the farmhouse.
+  if (dropped) return "Cath was knocked down holding them. Put towers in range of her post so they finish what she holds.";
   const have = (kind: TowerKind) => g.level.towers.includes(kind);
   const named = (kinds: TowerKind[]) => kinds.filter(have).map((x) => TOWERS[x].name);
   const list = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} or ${xs[xs.length - 1]}`);
@@ -1304,12 +1306,14 @@ function leakCause(g: Game, k: EnemyKind): string {
     return `Heavy plant ploughs on and hedges slow it only half as much.${movers.length ? ` ${list(movers)} move it.` : " Stack damage where it bunches up."}`;
   }
   if (e.armor) return have("silo") ? "Armour shrugged off the hits. Grain Silos ignore armour." : "Armour shrugged off the hits. Bigger hits get through it: upgrade.";
+  if (g.hero.down > 0) return "Cath was knocked down, and they got past her post. Put towers in range of her post so they finish what she holds.";
   return "Not enough damage near the farmhouse. Build or upgrade along the last stretch of lane.";
 }
 
-function leakReport(g: Game, k: EnemyKind): void {
-  banner(`Leaked: ${ENEMIES[k].name}`, leakCause(g, k));
-  say(`Leaked: ${ENEMIES[k].name}. ${leakCause(g, k)}`);
+function leakReport(g: Game, k: EnemyKind, dropped = false): void {
+  const cause = leakCause(g, k, dropped);
+  banner(`Leaked: ${ENEMIES[k].name}`, cause);
+  say(`Leaked: ${ENEMIES[k].name}. ${cause}`);
   haptic.leakReport();
   if (!REDUCED) slowUntil = performance.now() + 600;
 }
@@ -1421,7 +1425,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         // The first leak of a round gets a moment of slow motion and a banner naming the cause.
         if (ev.kind && !player && leakReported !== g.wave) {
           leakReported = g.wave;
-          leakReport(g, ev.kind);
+          leakReport(g, ev.kind, !!ev.dropped);
         }
         if (g.goodwill <= g.maxGoodwill / 2 && g.goodwill > 0)
           tip(`low-${g.level.id}`, "They're getting through! Hedges near the farmhouse, and between waves move me to the end of the lane.", "worried", true);
@@ -2390,7 +2394,8 @@ async function openSharedReplay(): Promise<void> {
   const m = /^#replay=([A-Za-z0-9_-]+)$/.exec(location.hash);
   if (!m) return;
   const r = await decodeReplay(m[1]!);
-  if (r) watch(r);
+  if (r === "old") toast("This replay is from an older Hedgerow and can't be played back.");
+  else if (r) watch(r);
   else toast("That replay link is damaged.");
 }
 void openSharedReplay();

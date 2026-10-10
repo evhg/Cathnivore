@@ -703,6 +703,25 @@ describe("hedgerow: Cath on the battlefield", () => {
     ).toBe(false);
   });
 
+  it("marks what she was holding when she goes down, so its leak names her", () => {
+    const game = newGame(strip());
+    sendWave(game);
+    game.spawnQueue = [];
+    game.hero.x = game.hero.tx = 6.5;
+    game.hero.y = game.hero.ty = 1.5;
+    const a = spawn(game, "tender", 6, 100000);
+    const b = spawn(game, "tender", 6.1, 100000);
+    const leaks: GameEvent[] = [];
+    for (let i = 0; i < 30 * 120 && game.phase === "wave"; i++) {
+      game.events = [];
+      stepGame(game);
+      leaks.push(...game.events.filter((e) => e.type === "leak"));
+    }
+    expect(a.dropped && b.dropped).toBe(true);
+    expect(leaks.length).toBeGreaterThan(0);
+    expect(leaks.every((e) => e.type === "leak" && e.dropped)).toBe(true);
+  });
+
   it("walks where she is sent, and lets go while walking", () => {
     const game = newGame(strip(), NO_PERKS, MANUAL);
     expect(moveHero(game, 2.5, 0.5).ok).toBe(true);
