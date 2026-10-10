@@ -1739,9 +1739,16 @@ function frame(now: number): void {
       updateHud();
       sfx.setIntensity(g.phase !== "wave" ? 0 : g.enemies.some((e) => isBig(e.kind)) ? 2 : 1);
       // The stacking tip waits for the wave banner and any new-unit card to clear, and goes once Next can't stack.
-      if (canCallEarly(g) && g.level.id <= 3 && g.waveClock >= 4 && ui.intro.hidden)
+      if (canCallEarly(g) && g.level.id <= 3 && g.waveClock >= 4 && ui.intro.hidden && ui.bubble.hidden)
         tip("early", "Feeling brave? Tap Next to stack the next wave on this one for bonus Marks.", "wink");
       if (bubbleTip === "early" && !canCallEarly(g)) hideBubble();
+      // Act 1's cliff is the player who keeps building and never upgrades (M2 review): once Marks pile up,
+      // Cath says what to spend them on, before the rounds that need it.
+      if (isFleet(g.level) && g.level.id <= 3 && g.wave >= 3 && ui.intro.hidden && bubbleTip !== "early") {
+        const cheapest = Math.min(...g.towers.filter((t) => t.tier < 3 && !t.mega).map((t) => upgradeCost(t) ?? Infinity));
+        if (cheapest < Infinity && g.marks >= cheapest + 100)
+          tip("upgrade", "Marks burning a hole in your apron? Tap a tower and upgrade it: a tier-two Scarecrow knocks four vehicles a throw.", "wink");
+      }
       if (pieUnlocked(g.level) && g.pieCd === 0 && g.phase === "wave" && g.enemies.length > 3)
         tip("pie-ready", "Pie's ready. Tap it, then tap the thick of them.", "delighted");
     }
