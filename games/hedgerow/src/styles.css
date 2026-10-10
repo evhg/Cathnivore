@@ -1095,8 +1095,9 @@ button {
   text-overflow: ellipsis;
 }
 .btn.send.early {
-  background: #d9822b;
-  box-shadow: 0 3px 0 rgba(120, 60, 10, 0.5);
+  /* Dark enough for white bold text at 4.5:1 or better (WCAG AA): #d9822b was only 2.9:1. */
+  background: #a85a16;
+  box-shadow: 0 3px 0 rgba(90, 45, 8, 0.55);
 }
 
 /* ---- dialogs ---- */

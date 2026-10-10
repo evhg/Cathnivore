@@ -15,6 +15,7 @@ import {
   isBig,
   isRevealed,
   enemyPoint,
+  postMarker,
   towerAt,
   towerStats,
   plotKind,
@@ -138,6 +139,8 @@ export class Renderer {
   cursor: { col: number; row: number } | null = null;
   /** Cath is selected: the next tap moves her. */
   heroSelected = false;
+  /** While Cath is picked up: where she'd stand if put down here. */
+  postPreview: { x: number; y: number } | null = null;
   /** Pie aiming: a splash preview under the pointer. */
   aim: { x: number; y: number; r: number } | null = null;
   /** The tower being considered for the selected plot: its range is previewed. */
@@ -828,6 +831,21 @@ export class Renderer {
     this.drawShots(dt, X, Y, s);
     this.drawPies(dt, X, Y, s);
     this.drawParticles(dt, X, Y, s);
+
+    // Cath's post between rounds: green when a tower reaches it, amber when nothing does.
+    const post = postMarker(game, this.heroSelected ? this.postPreview : null);
+    if (post) {
+      ctx.strokeStyle = post.covered ? "rgba(141,255,138,0.95)" : "rgba(255,179,71,0.95)";
+      ctx.fillStyle = post.covered ? "rgba(141,255,138,0.16)" : "rgba(255,179,71,0.16)";
+      ctx.lineWidth = 3;
+      ctx.setLineDash(this.heroSelected ? [6, 5] : []);
+      ctx.lineDashOffset = -t * 20;
+      ctx.beginPath();
+      ctx.arc(X(post.x), Y(post.y), s * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
     // Pie aim preview.
     if (this.aim) {

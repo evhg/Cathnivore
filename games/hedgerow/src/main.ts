@@ -5,6 +5,7 @@ import {
   ABILITIES,
   AUTO_AFTER_CASTS,
   betweenRounds,
+  heroCovered,
   towerActive,
   type Ability,
   ENEMIES,
@@ -313,6 +314,10 @@ let speed = (() => {
 let maxSpeed: 3 | 5 = 3;
 /** Cath is waiting to be given a new post (between rounds: tap her, then tap the field). */
 let posting = false;
+/** The tip Cath's bubble is showing ("" when hidden). */
+let bubbleTip = "";
+/** The last wave that was stacked on early (0 = none this level): a leak soon after names the stacking. */
+let stackedWave = 0;
 /** The round whose first leak has already been reported, and when the leak slow-motion ends. */
 let leakReported = 0;
 let slowUntil = 0;
@@ -522,6 +527,7 @@ function startLevel(lv: Level, heroic = heroicMode): void {
   slowUntil = 0;
   panelKey = "";
   earlyCalls = 0;
+  stackedWave = 0;
   const story = !lv.endless && dailyDay === null;
   autoNext = keepGoingFor(data, story ? lv.id : KEEP_GOING_FROM);
   autoLeft = AUTO_SECS;
@@ -578,6 +584,7 @@ function tip(id: string, text: string, expression: CathExpression = "smirk", for
   if (!force && data.tips[id]) return;
   data.tips[id] = true;
   save(data);
+  bubbleTip = id;
   ui.bubbleFace.innerHTML = cath(expression);
   ui.bubbleText.textContent = text;
   ui.bubble.hidden = false;
@@ -591,6 +598,7 @@ function tip(id: string, text: string, expression: CathExpression = "smirk", for
 
 function hideBubble(): void {
   ui.bubble.hidden = true;
+  bubbleTip = "";
 }
 
 function levelTips(lv: Level): void {
@@ -629,6 +637,11 @@ function syncControls(): void {
   ui.pausedNote.hidden = !paused;
   if (!game) return;
   const g = game;
+  // Picking Cath up only lasts between rounds: once a round starts, the next tap is for the field again.
+  if (posting && !betweenRounds(g)) {
+    posting = false;
+    if (renderer) renderer.heroSelected = false;
+  }
   ui.btnPie.hidden = !pieUnlocked(g.level);
   ui.btnPie.disabled = g.phase !== "wave" || g.pieCd > 0 || g.enemies.length === 0;
   ui.btnPie.setAttribute("aria-pressed", String(aiming));
@@ -689,8 +702,8 @@ function syncControls(): void {
     "aria-label",
     early ? `Stack wave ${g.wave + 1} on now for ${earlyBonus(g)} bonus Marks` : ui.btnSend.textContent ?? "",
   );
-  // Choosing something holds the Keep Going countdown: say so.
-  ui.chooseChip.hidden = !(counting && selected && !player);
+  // Choosing something (a plot, Cath's new post, a pie's aim) holds the Keep Going countdown: say so.
+  ui.chooseChip.hidden = !(counting && (selected || posting || aiming) && !player);
 }
 
 const shown = { goodwill: -1, marks: -1, wave: "" };
@@ -931,8 +944,11 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
         const nt = g.towers[g.towers.length - 1];
         if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
         renderPanel(true);
-        if (g.level.id === 1 && g.towers.length === 1)
-          tip("send", "Lovely. When you're ready, send the wave. I'll be in the lane.", "delighted");
+        // Cath's post (the ring in the lane) is where she holds vans for the towers: say so while building.
+        if (g.level.id <= 5 && !heroCovered(g))
+          tip("post-uncovered", "That one can't reach my post, the amber ring in the lane. I hold vans there for the towers: build one in reach and it turns green, or tap me and move me.", "worried");
+        else if (g.level.id === 1)
+          tip("send", "Lovely: the ring's green, so that tower finishes what I hold at my post. When you're ready, send the wave.", "delighted");
       }
     };
     row.append(b);
@@ -1226,6 +1242,7 @@ function heroStatus(): void {
   if (!player && h.down <= 0 && betweenRounds(game) && game.phase !== "won" && game.phase !== "lost") {
     posting = !posting;
     renderer.heroSelected = posting;
+    renderer.postPreview = null;
     if (posting) {
       selected = null;
       renderer.selected = null;
@@ -1279,7 +1296,7 @@ function toggleAuto(a: Ability): void {
 }
 
 /** Why a leak happened, in today's traits, with the counter that answers it (Hedgerow 2 section 2). */
-function leakCause(g: Game, k: EnemyKind, dropped = false): string {
+function leakCause(g: Game, k: EnemyKind, dropped = false, stacked = false): string {
   const e = ENEMIES[k];
   // Cath went down holding it: her post is out of the towers' reach, not short of damage near the farmhouse.
   if (dropped) return "Cath was knocked down holding them. Put towers in range of her post so they finish what she holds.";
@@ -1306,12 +1323,13 @@ function leakCause(g: Game, k: EnemyKind, dropped = false): string {
     return `Heavy plant ploughs on and hedges slow it only half as much.${movers.length ? ` ${list(movers)} move it.` : " Stack damage where it bunches up."}`;
   }
   if (e.armor) return have("silo") ? "Armour shrugged off the hits. Grain Silos ignore armour." : "Armour shrugged off the hits. Bigger hits get through it: upgrade.";
-  if (g.hero.down > 0) return "Cath was knocked down, and they got past her post. Put towers in range of her post so they finish what she holds.";
+  if (stacked)
+    return "Too many at once: the next wave was stacked on before this one was through. Stack only when the towers clear a wave with room to spare.";
   return "Not enough damage near the farmhouse. Build or upgrade along the last stretch of lane.";
 }
 
 function leakReport(g: Game, k: EnemyKind, dropped = false): void {
-  const cause = leakCause(g, k, dropped);
+  const cause = leakCause(g, k, dropped, stackedWave > 0 && stackedWave === g.wave);
   banner(`Leaked: ${ENEMIES[k].name}`, cause);
   say(`Leaked: ${ENEMIES[k].name}. ${cause}`);
   haptic.leakReport();
@@ -1441,7 +1459,10 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           haptic.boss();
         } else banner(`Wave ${ev.wave}`, ev.early ? `Stacked early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
         introduce(kinds);
-        if (ev.early) earlyCalls += 1;
+        if (ev.early) {
+          earlyCalls += 1;
+          stackedWave = ev.wave;
+        }
         break;
       }
       case "cleared":
@@ -1533,7 +1554,7 @@ function frame(now: number): void {
   if (!paused && !ui.dlgStory.open && !ui.dlgResult.open) {
     if (!player && g.phase === "build" && g.wave > 0 && g.wave < g.level.waves.length && autoNext) {
       // Hold the countdown while the player is choosing something.
-      if (!selected) autoLeft -= dt * speed;
+      if (!selected && !posting && !aiming) autoLeft -= dt * speed;
       if (autoLeft <= 0) {
         autoLeft = AUTO_SECS;
         doAct({ t: "wave" });
@@ -1567,8 +1588,10 @@ function frame(now: number): void {
       renderer.feed(evs, g);
       updateHud();
       sfx.setIntensity(g.phase !== "wave" ? 0 : g.enemies.some((e) => isBig(e.kind)) ? 2 : 1);
-      if (canCallEarly(g) && g.level.id <= 3)
+      // The stacking tip waits for the wave banner and any new-unit card to clear, and goes once Next can't stack.
+      if (canCallEarly(g) && g.level.id <= 3 && g.waveClock >= 4 && ui.intro.hidden)
         tip("early", "Feeling brave? Tap Next to stack the next wave on this one for bonus Marks.", "wink");
+      if (bubbleTip === "early" && !canCallEarly(g)) hideBubble();
       if (pieUnlocked(g.level) && g.pieCd === 0 && g.phase === "wave" && g.enemies.length > 3)
         tip("pie-ready", "Pie's ready. Tap it, then tap the thick of them.", "delighted");
     }
@@ -1891,12 +1914,18 @@ ui.canvas.addEventListener("click", (e) => {
   select(c.col, c.row);
 });
 ui.canvas.addEventListener("pointermove", (e) => {
-  if (!game || !renderer || !aiming) return;
+  if (!game || !renderer) return;
+  if (posting) {
+    const w = renderer.worldAt(e.clientX, e.clientY);
+    renderer.postPreview = { x: w.x, y: w.y };
+  }
+  if (!aiming) return;
   const w = renderer.worldAt(e.clientX, e.clientY);
   renderer.aim = { x: w.x, y: w.y, r: pieRadius(game) };
 });
 ui.canvas.addEventListener("pointerleave", () => {
   if (renderer && aiming) renderer.aim = null;
+  if (renderer) renderer.postPreview = null;
 });
 
 ui.canvas.addEventListener("keydown", (e) => {

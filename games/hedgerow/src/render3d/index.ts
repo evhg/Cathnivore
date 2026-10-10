@@ -21,6 +21,7 @@ import {
   isBig,
   isRevealed,
   maxHpOf,
+  postMarker,
   towerAt,
   towerStats,
   type Enemy,
@@ -158,6 +159,10 @@ export class Renderer3D {
   private selection: THREE.Group;
   private rangeRing: THREE.Mesh;
   private aimDisc: THREE.Mesh;
+  /** Cath's post between rounds: green when a tower reaches it, amber when nothing does. */
+  private postRing: THREE.Mesh;
+  /** A halo on Cath while she's picked up. */
+  private heroHalo: THREE.Mesh;
   private ghost: THREE.Group | null = null;
   private ghostKey = "";
   private bossBar: HTMLElement;
@@ -184,6 +189,8 @@ export class Renderer3D {
   selected: { col: number; row: number } | null = null;
   cursor: { col: number; row: number } | null = null;
   heroSelected = false;
+  /** While Cath is picked up: where she'd stand if put down here. */
+  postPreview: { x: number; y: number } | null = null;
   aim: { x: number; y: number; r: number } | null = null;
   preview: TowerKind | null = null;
   reducedMotion = false;
@@ -247,7 +254,22 @@ export class Renderer3D {
     );
     this.aimDisc.rotation.x = -Math.PI / 2;
     this.aimDisc.visible = false;
-    this.scene.add(this.selection, this.rangeRing, this.aimDisc);
+    this.postRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.34, 0.44, 40),
+      new THREE.MeshBasicMaterial({ color: "#8dff8a", transparent: true, opacity: 0.85, depthWrite: false, side: THREE.DoubleSide }),
+    );
+    this.postRing.add(
+      new THREE.Mesh(new THREE.CircleGeometry(0.34, 40), new THREE.MeshBasicMaterial({ color: "#8dff8a", transparent: true, opacity: 0.16, depthWrite: false })),
+    );
+    this.postRing.rotation.x = -Math.PI / 2;
+    this.postRing.visible = false;
+    this.heroHalo = new THREE.Mesh(
+      new THREE.RingGeometry(0.42, 0.5, 40),
+      new THREE.MeshBasicMaterial({ color: "#ffd76a", transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide }),
+    );
+    this.heroHalo.rotation.x = -Math.PI / 2;
+    this.heroHalo.visible = false;
+    this.scene.add(this.selection, this.rangeRing, this.aimDisc, this.postRing, this.heroHalo);
 
     // Boss bar: HTML over the canvas.
     this.bossBar = document.createElement("div");
@@ -1449,6 +1471,22 @@ export class Renderer3D {
     if (this.aim) {
       this.aimDisc.position.set(this.aim.x, this.height(this.aim.x, this.aim.y) + 0.05, this.aim.y);
       this.aimDisc.scale.setScalar(this.aim.r);
+    }
+    // Cath's post between rounds, and her halo (plus where she'd go) while she's picked up.
+    const post = postMarker(game, this.heroSelected ? this.postPreview : null);
+    this.postRing.visible = !!post;
+    if (post) {
+      const col = post.covered ? "#8dff8a" : "#ffb347";
+      this.postRing.position.set(post.x, this.height(post.x, post.y) + 0.06, post.y);
+      this.postRing.scale.setScalar(this.heroSelected ? 1 + Math.sin(t * 6) * 0.08 : 1);
+      (this.postRing.material as THREE.MeshBasicMaterial).color.set(col);
+      ((this.postRing.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.set(col);
+    }
+    const h = game.hero;
+    this.heroHalo.visible = this.heroSelected && h.down <= 0;
+    if (this.heroHalo.visible) {
+      this.heroHalo.position.set(h.x, this.height(h.x, h.y) + 0.07, h.y);
+      this.heroHalo.scale.setScalar(1 + Math.sin(t * 8) * 0.1);
     }
   }
 

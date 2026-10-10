@@ -243,6 +243,9 @@ test.describe('Hedgerow', () => {
     await page.locator('#btn-send').click()
     await expect(page.locator('#hud-wave')).toHaveText('1/5')
     await expect(page.locator('#banner')).toContainText('Wave 1')
+    // Scan with the Next button in its stacking colour (it turns a second into the wave), so the
+    // contrast check always sees the same state instead of racing it.
+    await expect(page.locator('#btn-send')).toHaveClass(/early/, { timeout: 8000 })
     await noSideways(page)
     await assertNoSeriousIssues(page)
     expect(errors).toEqual([])
@@ -379,6 +382,36 @@ test.describe('Hedgerow', () => {
     await page.locator('#btn-hero').click()
     await expect(page.locator('#toast')).toContainText('holds her post')
     await noSideways(page)
+    expect(errors).toEqual([])
+  })
+
+  test('Hedgerow 2 M1: picking Cath up holds the Keep Going countdown, and the round puts her down', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.setViewportSize({ width: 844, height: 390 })
+    await page.goto(HEDGEROW_2D + '&sandbox=1&level=6')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars: {}, seenBefore: { '6': true }, tips: { build: true, hero: true, early: true } })))
+    await page.reload()
+    await expect(page.locator('#btn-send')).toHaveText('Go', { timeout: 8000 })
+    await page.locator('#btn-send').click()
+    await expect(page.locator('#hud-wave')).toHaveText(/^1\//)
+    // Clear wave 1 by hand: Keep Going (on from level 6) starts its 2 s countdown.
+    await page.evaluate(() => {
+      const g = (window as unknown as { hedgerow: { game(): { spawnQueue: unknown[]; enemies: unknown[] } } }).hedgerow.game()
+      g.spawnQueue.length = 0
+      g.enemies.length = 0
+    })
+    await expect(page.locator('#btn-send')).toHaveText(/^Wave 2 in/, { timeout: 8000 })
+    await page.locator('#btn-hero').click()
+    await expect(page.locator('#choose-chip')).toBeVisible()
+    await page.waitForTimeout(3000)
+    await expect(page.locator('#hud-wave')).toHaveText(/^1\//)
+    await expect(page.locator('#btn-send')).toHaveText(/^Wave 2 in/)
+    // Go starts the round and puts her down: the next tap is for the field again.
+    await page.locator('#btn-send').click()
+    await expect(page.locator('#hud-wave')).toHaveText(/^2\//)
+    await expect(page.locator('#choose-chip')).toBeHidden()
+    await page.locator('#btn-hero').click()
+    await expect(page.locator('#toast')).toContainText('holds her post')
     expect(errors).toEqual([])
   })
 
