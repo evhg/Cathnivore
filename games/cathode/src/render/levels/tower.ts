@@ -148,6 +148,7 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
 
   const markers: Level["markers"] = {
     player: [V(0, 0, zS - 4)],
+    "crowd:lobby": [V(-8, 0, 30)],
     perch: [V(-12, H1, -4), V(12, H1, -20)],
     extract: [V(0, 0, zS - 1.5)],
     "lead:register": [V(9.5, 0, 31)],

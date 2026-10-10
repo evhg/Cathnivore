@@ -115,6 +115,7 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   const gh = () => 0;
   const markers: Level["markers"] = {
     player: [V(0, 0, zS - 3)],
+    "crowd:waiting": [V(-7.5, 0, 14)],
     perch: [V(-6.2, 0.5, 8), V(0, 0, zN + 6)],
     extract: [V(0, 0, zS - 1.5)],
     // Vane works at the table under the surgical lamps; guards flank her, reinforcements come through the doors.
