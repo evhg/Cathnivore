@@ -385,6 +385,12 @@ export interface MoteOptions {
   /** Fixed points (lantern halos) instead of drifting motes. */
   at?: readonly THREE.Vector3[];
   wind?: number;
+  /** Fall speed in cells per second (negative rises, as embers do). The motes wrap top to bottom. */
+  fall?: number;
+  /** Peak opacity of a mote (soft mist wants far less than a seed). */
+  alphaMax?: number;
+  /** Glow additively (embers) instead of blending normally. */
+  additive?: boolean;
 }
 
 /**
@@ -424,7 +430,7 @@ export class Motes {
     geo.setAttribute("position", new THREE.BufferAttribute(this.pos, 3));
     geo.setAttribute("alpha", new THREE.BufferAttribute(this.alpha, 1));
     geo.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
-    const additive = o.kind !== "pollen";
+    const additive = o.additive ?? o.kind !== "pollen";
     const mat = new THREE.ShaderMaterial({
       uniforms: { scale: { value: 300 }, color: { value: new THREE.Color(o.color) } },
       vertexShader: `attribute float size; attribute float alpha; varying float vAlpha; uniform float scale;
@@ -474,10 +480,22 @@ export class Motes {
       let x = this.pos[j]! + dt * wind * (0.25 + Math.sin(ph) * 0.08);
       if (x > b.x1) x -= w;
       this.pos[j] = x;
-      this.pos[j + 1] = this.home[j + 1]! + Math.sin(t * 0.9 + ph) * 0.15;
-      this.pos[j + 2] = this.home[j + 2]! + Math.sin(t * 0.5 + ph * 1.7) * 0.3;
+      const fall = this.o.fall ?? 0;
+      let fade = 1;
+      if (fall) {
+        const h = b.y1 - b.y0;
+        let y = this.pos[j + 1]! - dt * fall;
+        if (y < b.y0) y += h;
+        else if (y > b.y1) y -= h;
+        this.pos[j + 1] = y;
+        fade = Math.min(1, (y - b.y0) / 0.4, (b.y1 - y) / 0.4);
+        this.pos[j + 2] = this.home[j + 2]! + Math.sin(t * 0.9 + ph * 1.3) * 0.45;
+      } else {
+        this.pos[j + 1] = this.home[j + 1]! + Math.sin(t * 0.9 + ph) * 0.15;
+        this.pos[j + 2] = this.home[j + 2]! + Math.sin(t * 0.5 + ph * 1.7) * 0.3;
+      }
       const edge = Math.min(1, (x - b.x0) / 1.5, (b.x1 - x) / 1.5);
-      this.alpha[i] = Math.max(0, edge) * (0.55 + 0.35 * Math.sin(t * 2 + ph));
+      this.alpha[i] = Math.max(0, edge) * Math.max(0, fade) * (0.55 + 0.35 * Math.sin(t * 2 + ph)) * (this.o.alphaMax ?? 1);
     }
     const g = this.points.geometry;
     g.attributes.position!.needsUpdate = true;

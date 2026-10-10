@@ -96,6 +96,20 @@ interface ShotKit {
 type Pose = [number, number, number, number, number, number, number];
 
 /** Seconds into Cath's throw when the pie leaves her hand. */
+/** Each act's weather over the field: falling leaves, drifting sea mist, embers, confetti and ash. */
+const ACT_WEATHER: ({ count: number; color: string; size: number; fall: number; wind: number; alpha: number; additive?: boolean } | null)[] = [
+  null,
+  { count: 26, color: "#c8a8d8", size: 0.09, fall: 0.25, wind: 2.4, alpha: 0.8 }, // Highmoor: heather blown on the wind
+  { count: 22, color: "#eef6f8", size: 1.3, fall: 0, wind: 0.5, alpha: 0.16 }, // Saltmarsh: sea mist
+  { count: 60, color: "#dfeaf2", size: 0.05, fall: 2.6, wind: 0.3, alpha: 0.7 }, // Rivermead: fine drizzle
+  { count: 34, color: "#d98a38", size: 0.12, fall: 0.5, wind: 1.2, alpha: 0.95 }, // Oakvale: falling leaves
+  { count: 20, color: "#f4fafc", size: 1.1, fall: 0, wind: 1.4, alpha: 0.14 }, // Shingle Bay: spray
+  { count: 40, color: "#ff8a3a", size: 0.1, fall: -0.45, wind: 0.8, alpha: 0.9, additive: true }, // The Rift: embers rise
+  { count: 36, color: "#e8433a", size: 0.1, fall: 0.35, wind: 1, alpha: 0.9 }, // The Ballot: confetti
+  { count: 40, color: "#9a9a9a", size: 0.08, fall: 0.3, wind: 0.8, alpha: 0.7 }, // The Merger: drifting ash
+  null,
+];
+
 const HERO_PIE_RELEASE = 0.15;
 
 /** How long a hit flash lasts, in seconds. */
@@ -383,7 +397,14 @@ export class Renderer3D {
       if (this.ground?.lamps.length) this.motes.push(new Motes(0, { kind: "glow", color: "#ffa850", size: 0.85, box, at: this.ground.lamps }));
       this.birds = new Birds(4, cx, cz, span, true);
     } else {
-      if (!hasTwist(lv, "rain")) this.motes.push(new Motes(70, { kind: "pollen", color: mood.mote, size: 0.05, box, wind: hasTwist(lv, "wind") ? 3 : 1 }));
+      const wind = hasTwist(lv, "wind") ? 3 : 1;
+      const act = Math.min(9, Math.floor((lv.id - 1) / 10));
+      const weather = ACT_WEATHER[act]!;
+      const sky = { ...box, y0: 0.1, y1: 3.2 };
+      if (!hasTwist(lv, "rain")) this.motes.push(new Motes(70, { kind: "pollen", color: mood.mote, size: 0.05, box, wind }));
+      if (weather && !this.reducedMotion) {
+        this.motes.push(new Motes(weather.count, { kind: "pollen", color: weather.color, size: weather.size, box: weather.fall && weather.fall < 0 ? { ...sky, y1: 2.2 } : weather.fall ? sky : { ...box, y0: 0.1, y1: 0.9 }, wind: weather.wind * wind, fall: weather.fall, alphaMax: weather.alpha, additive: weather.additive }));
+      }
       const coast = lv.id > 20 && lv.id <= 30 ? true : lv.id > 50 && lv.id <= 60;
       if (mood.birds && !hasTwist(lv, "fog")) this.birds = new Birds(mood.birds, cx, cz, span, false, coast ? "#f4f2ec" : "#2e2a2a");
     }
