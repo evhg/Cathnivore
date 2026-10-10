@@ -463,6 +463,7 @@ Why this works: the addictive decisions are spending ones, between and during ro
   - an immunity-matrix unit test
   - lesson tests: a bot without detection leaks on R22, a Sharp-only bot leaks on R26, a Scarecrow-only (`naive`) bot loses by act 2, and the `best` bot wins
 - **Acceptance:** losing level 15 without a Mast shows "Stealth ... Radio Mast reveals stealth".
+- **Also (M2 review, 2026-10-10):** act 1's curve is not monotone and the start-Marks lever saturates (tuned k sits at both ends of [0.4, 1.2] on `k·(500 + income)`, a logged deviation from the [0.7, 1.0] spec; L9 plays harder than boss L10, L4–6 open on about 339 Marks). Use act-themed property rounds to make L9 easier and L10 harder instead of leaning on k, and bring k back inside its range. Level 1 still runs flat 120/120 for a good build: add some pressure (a spike a T2 build has to answer) without making the lazy build's round-6 cliff steeper.
 
 **M4. Three paths, T1–T3, for Scarecrow, Hedgerow, Beehive, Seed Cannon and Radio Mast.** Size L.
 - **Goal:** the crosspath rule, a 3-column bottom sheet with affordable glow and "in about N rounds", per-tier model parts and T3 silhouettes, drag-to-place. The other 5 towers use a legacy adapter that maps old tiers to path A.
@@ -485,6 +486,7 @@ Why this works: the addictive decisions are spending ones, between and during ro
 **M6. Cath the hero: in-run levels and kits.** Size M.
 - **Goal:** levels 1–20 shown on her portrait; Pie, Neighbours, the level-10 kit ability and Last Orders; a kit picker on the level card; outfit and kit linkage; RPG attributes re-pointed; duel rewards.
 - **Files:** new `hero.ts` (moved out of `engine.ts`), `cath.ts`, `wardrobe.ts`, `main.ts`, `render3d/models.ts`, `bot.ts`.
+- **Also (M2 review, 2026-10-10):** the M1 Cath-share check was loosened from 5–20% to 2–20% (the best bot gives her about 4% of level 1's kills). The kits should bring her back to the 10–15% target; restore the 5% floor here.
 - **Tests:** `tests/hedgerow-cath.test.ts` covers the XP curve (about level 10 by R24), unlock levels, Organiser income, an existing-save migration, and Cath's kill share staying under 20%.
 - **Acceptance:** H3 can be ticked once the duel reward shows.
 
