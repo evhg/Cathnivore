@@ -6440,7 +6440,9 @@ for (const l of LEVELS) if (TWIST_PLAN[l.id]) l.twists = TWIST_PLAN[l.id];
 // Enemy health per level from the difficulty tuner.
 // The tuner finds where the competent bot only just keeps its target. People get a margin on top in the
 // tutorial and first act (the bot never hesitates); from level 8 the fight is close to the bot's own.
-const humanMargin = (id: number) => (id <= 7 ? 0.9 : id <= 10 ? 0.97 : 1);
+// Level 1 gets the widest margin (M1 review): a first build of a few Scarecrows on whichever plots look
+// right must win most of the time, losing some Goodwill (tests/hedgerow.test.ts checks random builds).
+const humanMargin = (id: number) => (id === 1 ? 0.65 : id <= 7 ? 0.9 : id <= 10 ? 0.97 : 1);
 for (const l of LEVELS) if (HP_SCALE[l.id]) l.hpScale = Math.round(HP_SCALE[l.id]! * humanMargin(l.id) * 100) / 100;
 
 // Round 3 (owner's third playtest): the early acts were won by planting nothing but Scarecrows.

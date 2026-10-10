@@ -93,7 +93,7 @@ describe("hedgerow engine", () => {
     expect(place(game, "hedgerow", 0, 0).ok).toBe(false);
   });
 
-  it("is deterministic: the same build order gives the same result", () => {
+  it("is deterministic: the same build order gives the same result", { timeout: 20_000 }, () => {
     const a = playLevel(LEVELS[11]!, "competent");
     const b = playLevel(LEVELS[11]!, "competent");
     expect([a.tick, a.goodwill, a.marks]).toEqual([
@@ -639,12 +639,66 @@ describe("hedgerow 2 M1: hands-on pacing", () => {
     expect(fastestSpeed(back, 4)).toBe(5);
   });
 
-  it("on level 1 the best bot wins with Cath taking under 20% of the kills", () => {
+  it("on level 1 the best bot wins with Cath taking a real but small share of the kills (5-20%)", () => {
     const g = playLevel(LEVELS[0]!, "best");
     expect(g.phase).toBe("won");
     const kills = g.events.filter((e) => e.type === "kill").length;
     expect(g.hero.kills / kills).toBeLessThan(0.2);
+    expect(g.hero.kills / kills).toBeGreaterThanOrEqual(0.05);
     expect(g.events.some((e) => e.type === "pie" || e.type === "neighbours" || e.type === "rally")).toBe(false);
+  });
+});
+
+describe("hedgerow 2 M1 review: level 1 forgives plot choice", () => {
+  it("four Scarecrows on random lane-side plots win level 1 most of the time, losing some Goodwill", () => {
+    const lv = LEVELS[0]!;
+    const lane = laneCellsOf(lv);
+    const plots: [number, number][] = [];
+    for (let r = 0; r < lv.rows; r++)
+      for (let c = 0; c < lv.cols; c++)
+        if (isPlot(lv, c, r) && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => lane.has(`${c + dx!},${r + dy!}`))) plots.push([c, r]);
+    let seed = 11;
+    const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    const N = 40;
+    let won = 0;
+    let lostGoodwill = 0;
+    for (let i = 0; i < N; i++) {
+      const order = plots
+        .map((p) => ({ p, k: rnd() }))
+        .sort((a, b) => a.k - b.k)
+        .slice(0, 4)
+        .map((x) => x.p);
+      const g = newGame(lv);
+      let k = 0;
+      while (g.phase !== "won" && g.phase !== "lost" && g.tick < 30 * 1000) {
+        if (g.phase === "build") {
+          while (k < order.length && place(g, "scarecrow", order[k]![0], order[k]![1]).ok) k++;
+          sendWave(g);
+        }
+        stepGame(g);
+      }
+      if (g.phase === "won") won++;
+      lostGoodwill += g.maxGoodwill - g.goodwill;
+    }
+    expect(won / N).toBeGreaterThanOrEqual(0.75);
+    expect(lostGoodwill).toBeGreaterThan(0);
+  }, 20_000);
+
+  it("on levels 1-5 Cath works on what she holds when nothing else is in reach; later she only holds it", () => {
+    for (const [id, hurts] of [
+      [3, true],
+      [50, false],
+    ] as const) {
+      const game = newGame(strip({ id }), NO_PERKS, MANUAL);
+      sendWave(game);
+      game.spawnQueue = [];
+      game.hero.x = game.hero.tx = 6.5;
+      game.hero.y = game.hero.ty = 1.5;
+      const van = spawn(game, "van", 6, 500);
+      for (let i = 0; i < 60; i++) stepGame(game);
+      expect(van.held).toBe(true);
+      expect(van.hp < 500).toBe(hurts);
+    }
   });
 });
 

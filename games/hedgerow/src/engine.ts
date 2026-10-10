@@ -2213,7 +2213,7 @@ function stepHero(game: Game): void {
     const p = enemyPoint(game.level, e);
     if (Math.hypot(p.x - h.x, p.y - h.y) <= 1.1 && !e.held) hurt += ram;
   }
-  if (hurt > 0) h.hp -= hurt * game.perks.holdGuard * STEP;
+  if (hurt > 0) h.hp -= hurt * game.perks.holdGuard * (learning(game.level) ? LEARNING_HURT : 1) * STEP;
   else h.hp = Math.min(h.maxHp, h.hp + HERO.regen * STEP);
   if (h.hp <= 0) {
     h.hp = 0;
@@ -2242,18 +2242,53 @@ function stepHero(game: Game): void {
       target = e;
     }
   }
+  let dmg = h.damage;
+  if (!target && learning(game.level)) {
+    // Levels 1-5: with nothing else in reach she works on what she holds, gently, so a thin build that
+    // misses her post doesn't lose the van she has pinned. The towers still take most of the kills.
+    target = game.enemies.find((e) => e.held && e.hp > 0);
+    dmg = h.damage * HELD_SWING;
+  }
   if (!target) {
     h.cd = 0;
     return;
   }
   const before = target.hp;
-  damageEnemy(game, target, h.damage, false);
+  damageEnemy(game, target, dmg, false);
   if (before > 0 && target.hp <= 0) h.kills += 1;
   const p = enemyPoint(game.level, target);
   h.facing = p.x >= h.x ? 1 : -1;
   h.cd = HERO.cooldown;
   game.events.push({ type: "swing", x: p.x, y: p.y });
 }
+
+/** Is Cath's post inside the reach of a tower that does damage? She holds vehicles for the towers to finish. */
+export function heroCovered(game: Game, x = game.hero.tx, y = game.hero.ty): boolean {
+  for (const t of game.towers) {
+    const s = towerStats(t);
+    if (s.damage > 0 && Math.hypot(t.col + 0.5 - x, t.row + 0.5 - y) <= s.range) return true;
+  }
+  return false;
+}
+
+/**
+ * Where to draw Cath's post between rounds (M1 review): her post, or where she'd stand if put down at
+ * `preview`, and whether a tower reaches it. Nothing during a round, while she's down or on a no-Cath level.
+ */
+export function postMarker(game: Game, preview: { x: number; y: number } | null = null): { x: number; y: number; covered: boolean } | null {
+  if (hasTwist(game.level, "nocath") || game.hero.down > 0 || game.phase === "won" || game.phase === "lost" || !betweenRounds(game)) return null;
+  const p = preview ?? { x: game.hero.tx, y: game.hero.ty };
+  return { x: p.x, y: p.y, covered: heroCovered(game, p.x, p.y) };
+}
+
+/** Levels 1-5 teach the game: Cath finishes what she holds (gently) and takes less from it. */
+export function learning(level: Level): boolean {
+  return level.id <= 5 && !level.endless;
+}
+/** Her swing at a held vehicle on the learning levels, as a share of her damage. */
+export const HELD_SWING = 0.2;
+/** What held vehicles do to her on the learning levels, as a share. */
+export const LEARNING_HURT = 0.6;
 
 /** Lane distance remaining to the farmhouse for an enemy (on whichever lane it's on). */
 function toGo(game: Game, e: Enemy): number {

@@ -20,7 +20,7 @@ export function target(id: number): number {
 
 /** What ships is the tuned value times this (levels.ts humanMargin): the verify pass checks that. */
 export function humanMargin(id: number): number {
-  return id <= 7 ? 0.9 : id <= 10 ? 0.97 : 1;
+  return id === 1 ? 0.65 : id <= 7 ? 0.9 : id <= 10 ? 0.97 : 1;
 }
 
 /**
