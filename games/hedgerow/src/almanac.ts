@@ -3,6 +3,7 @@
 
 import { ENEMIES, MEGAS, SPECIALISATIONS, TOWERS, TOWER_VS, enemyClass, isBig } from "./engine";
 import type { EnemyClass, EnemyKind, MegaId, TowerKind } from "./engine";
+import { FLEET_TOWERS, RUNGS, fleetSpecPrice, fvOf } from "./fleet";
 import { enemyIcon, img, towerIcon } from "./icons";
 import type { Subject } from "./render3d/turntable";
 
@@ -91,25 +92,68 @@ function card(icon: string, title: string, text: string, stats: HTMLElement[], l
 
 const CLASS_NAME: Record<EnemyClass, string> = { light: "Light traffic", heavy: "Heavy plant", air: "Air" };
 
+/**
+ * A tower's Almanac numbers. Act 1 fights the Fleet (Hedgerow 2): prices and hits in layers, with no soft
+ * counters; the later acts still use today's numbers until they move to the Fleet too.
+ */
+export function towerRows(kind: TowerKind): Array<[string, string]> {
+  const t = TOWERS[kind];
+  const f = FLEET_TOWERS[kind];
+  const rows: Array<[string, string]> = [["Cost", `${f.cost} in act 1 · ${t.cost} later`], ["Range", t.range.join(" / ")]];
+  if (f.damage[0] > 0) {
+    rows.push(["Act 1 layers a hit", f.damage.join(" / ")]);
+    rows.push(["Act 1 pierce", f.pierce.join(" / ")]);
+  }
+  if (t.damage[0] > 0) rows.push(["Later damage", t.damage.join(" / ")]);
+  const vs = TOWER_VS[kind] ?? {};
+  const by = (good: boolean) =>
+    (Object.keys(vs) as EnemyClass[])
+      .filter((k) => (vs[k]! > 1) === good)
+      .map((k) => `${CLASS_NAME[k]} ×${vs[k]}`)
+      .join(", ");
+  if (by(true)) rows.push(["Later strong vs", by(true)]);
+  if (by(false)) rows.push(["Later weak vs", by(false)]);
+  return rows;
+}
+
+/** An enemy's Almanac numbers: a fleet rung in layers and children, anything else in today's numbers. */
+export function enemyRows(k: EnemyKind): Array<[string, string]> {
+  const e = ENEMIES[k];
+  const r = RUNGS[k];
+  if (r) {
+    const kids = r.children.map((c) => ENEMIES[c].name);
+    const counted = [...new Set(kids)].map((n) => {
+      const c = kids.filter((x) => x === n).length;
+      return c > 1 ? `${c} × ${n}` : n;
+    });
+    return [
+      ["Type", CLASS_NAME[enemyClass(k)]],
+      ["Layers", String(r.shell)],
+      ["Fleet Value", String(fvOf(k))],
+      ["Pops into", counted.length ? counted.join(", ") : "nothing"],
+      ["Speed", String(r.speed)],
+      ["Leak", `${fvOf(k)} Goodwill`],
+    ];
+  }
+  return [
+    ["Type", CLASS_NAME[enemyClass(k)]],
+    ["Health", String(e.hp)],
+    ["Speed", String(e.speed)],
+    ["Bounty", String(e.bounty)],
+    ["Leak", String(e.leak)],
+  ];
+}
+
 function towers(): HTMLElement[] {
   const out: HTMLElement[] = [];
   for (const kind of Object.keys(TOWERS) as TowerKind[]) {
     const t = TOWERS[kind];
-    const stats = [stat("Cost", String(t.cost)), stat("Range", t.range.join(" / "))];
-    if (t.damage[0] > 0) stats.push(stat("Damage", t.damage.join(" / ")));
-    const vs = TOWER_VS[kind] ?? {};
-    const by = (good: boolean) =>
-      (Object.keys(vs) as EnemyClass[])
-        .filter((k) => (vs[k]! > 1) === good)
-        .map((k) => `${CLASS_NAME[k]} ×${vs[k]}`)
-        .join(", ");
-    if (by(true)) stats.push(stat("Strong vs", by(true)));
-    if (by(false)) stats.push(stat("Weak vs", by(false)));
+    const stats = towerRows(kind).map(([l, v]) => stat(l, v));
     out.push(card(towerIcon(kind), t.name, t.blurb, stats, TOWER_LORE[kind], { tower: kind, tier: 3, spec: null }));
     SPECIALISATIONS[kind].forEach((s, i) => {
-      const st = [stat("Cost", String(s.cost))];
+      const st = [stat("Cost", `${fleetSpecPrice(kind)} in act 1 · ${s.cost} later`)];
       if (s.range) st.push(stat("Range", String(s.range)));
-      if (s.damage) st.push(stat("Damage", String(s.damage)));
+      if (s.damage) st.push(stat("Later damage", String(s.damage)));
       out.push(card(towerIcon(kind, 4, i as 0 | 1), `${s.name} (${t.name}, tier 4)`, s.blurb, st, undefined, { tower: kind, tier: 4, spec: i as 0 | 1 }));
     });
   }
@@ -138,13 +182,7 @@ function enemies(boss: boolean, seen: Record<string, boolean>, describe: (k: Ene
       c.classList.add("locked");
       return c;
     }
-    return card(enemyIcon(k), e.name, describe(k), [
-      stat("Type", CLASS_NAME[enemyClass(k)]),
-      stat("Health", String(e.hp)),
-      stat("Speed", String(e.speed)),
-      stat("Bounty", String(e.bounty)),
-      stat("Leak", String(e.leak)),
-    ], undefined, { enemy: k });
+    return card(enemyIcon(k), e.name, describe(k), enemyRows(k).map(([l, v]) => stat(l, v)), undefined, { enemy: k });
   });
 }
 
