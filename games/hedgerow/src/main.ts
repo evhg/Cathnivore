@@ -57,6 +57,7 @@ import {
   towerAt,
   towerCost,
   towerStats,
+  previewStats,
   plotKind,
   upgrade,
   upgradeCost,
@@ -1021,7 +1022,9 @@ type Stats = ReturnType<typeof towerStats>;
 function statList(st: Stats): Array<[string, string]> {
   const rows: Array<[string, string]> = [];
   if (st.damage) {
-    rows.push(["Damage/s", (st.damage / st.cooldown).toFixed(0)]);
+    // Fleet hits are a layer or two: small rates need a decimal or every tier reads "1".
+    const dps = st.damage / st.cooldown;
+    rows.push(["Damage/s", dps < 10 ? `${+dps.toFixed(1)}` : dps.toFixed(0)]);
     rows.push(["Hit", st.damage.toFixed(0)]);
     rows.push(["Rate", `${(1 / st.cooldown).toFixed(1)}/s`]);
   }
@@ -1138,7 +1141,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     p.append(line(MEGAS[t.mega].blurb, "hint"), statGrid(st));
   } else if (t.tier < 3) {
     const cost = upgradeCost(t)!;
-    const nextStats = towerStats({ kind: t.kind, tier: (t.tier + 1) as 2 | 3, spec: null });
+    const nextStats = previewStats(t, { tier: (t.tier + 1) as 2 | 3, spec: null });
     p.append(statGrid(st, nextStats));
     const up = document.createElement("button");
     up.type = "button";
@@ -1183,7 +1186,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
       top.append(n, c);
       const d = document.createElement("small");
       d.textContent = sp.blurb;
-      b.append(top, d, statGrid(st, towerStats({ kind: t.kind, tier: 4, spec: i })));
+      b.append(top, d, statGrid(st, previewStats(t, { tier: 4, spec: i })));
       b.setAttribute("aria-label", `${sp.name}, ${cost} Marks. ${sp.blurb}`);
       b.onclick = () => {
         if (doAct({ t: "upgrade", id: t.id, spec: i })) {
@@ -1231,7 +1234,7 @@ function mergeSection(p: HTMLElement, g: Game, t: Tower): void {
     top.textContent = `Merge with the ${TOWERS[partner.kind].name} → ${m.name} · ${o.cost}`;
     const d = document.createElement("small");
     d.textContent = m.blurb;
-    b.append(top, d, statGrid(st0(t), towerStats({ kind: t.kind, tier: 4, mega: o.mega })));
+    b.append(top, d, statGrid(st0(t), previewStats(t, { tier: 4, mega: o.mega })));
     b.onclick = () => {
       if (doAct({ t: "merge", id: t.id, partner: o.partner })) {
         renderer?.built_(t.id, t.col, t.row, true);

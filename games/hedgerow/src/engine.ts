@@ -1040,6 +1040,12 @@ export function towerStats(
   return stats;
 }
 
+/** What this very tower would become after an upgrade, a specialisation or a merge. Its fleet rules, high
+ * ground, the level's twists and its rank carry over, so the panel's diff shows only what the upgrade changes. */
+export function previewStats(t: Tower, next: { tier: Tower["tier"]; spec?: 0 | 1 | null; mega?: MegaId }): TowerStats {
+  return towerStats({ kind: t.kind, high: t.high, rangeMul: t.rangeMul, dmgMul: t.dmgMul, kills: t.kills, fleet: t.fleet, spec: null, ...next });
+}
+
 // ---- bosses: every boss has signature moves on a timer ----
 
 /** Fleet levels: a tower's hits in layers and pierce (fleet.ts FLEET_TOWERS); range, splash and slows stay. */
@@ -2602,6 +2608,7 @@ function pickTarget(
   if (ctx && isFleet(game.level)) {
     // Fleet levels: only what the lane index puts in reach; ties go to the earliest on the lane list, as a scan would.
     let bestAt = Infinity;
+    let bestTie = -Infinity;
     for (const i of candidates(game, towerWindowsOf(game, t, range))) {
       const e = game.enemies[i]!;
       if (e.hp <= 0 || !isRevealed(game, e)) continue;
@@ -2609,9 +2616,13 @@ function pickTarget(
       const p = enemyPoint(game.level, e);
       const d = Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y);
       if (d > range) continue;
-      const score = mode === "first" ? e.dist : mode === "last" ? -e.dist : mode === "strong" ? e.hp : -d;
-      if (score > best || (score === best && i < bestAt)) {
+      // Strongest on the Fleet is the most layers still aboard (every rung shell is 1 HP, so HP would tie
+      // everything); equal weights go to the one furthest along.
+      const score = mode === "first" ? e.dist : mode === "last" ? -e.dist : mode === "strong" ? remainingFV(e) : -d;
+      const tie = mode === "strong" ? e.dist : 0;
+      if (score > best || (score === best && (tie > bestTie || (tie === bestTie && i < bestAt)))) {
         best = score;
+        bestTie = tie;
         bestAt = i;
         target = e;
       }
@@ -2630,7 +2641,9 @@ function pickTarget(
         : mode === "last"
           ? -e.dist
           : mode === "strong"
-            ? e.hp
+            ? isFleet(game.level)
+              ? remainingFV(e) + e.dist * 1e-6
+              : e.hp
             : -d;
     if (score > best) {
       best = score;
