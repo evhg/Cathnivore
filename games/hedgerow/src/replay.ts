@@ -173,7 +173,8 @@ export class Player {
  * snapshots. Null if the run never got as far as sending that wave, or for wave 1 (that's just "Try again").
  */
 export function rewindToWave(level: Level, replay: Replay, wave: number): { game: Game; recorder: Recorder } | null {
-  if (wave <= 1) return null;
+  // Round 1 rewinds to the field as it was built, just before the first send (an opener can wipe a field out).
+  if (wave < 1) return null;
   const game = startGame(level, replay.setup);
   const rec = new Recorder(replay.setup);
   const log = replay.log;

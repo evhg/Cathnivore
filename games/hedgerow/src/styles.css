@@ -2815,6 +2815,10 @@ img.act-scene {
   width: 14px;
   height: 14px;
 }
+.badge-name {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
 .tower-titles .dmg-type {
   padding: 0 6px;
   font-size: 10px;
@@ -2843,6 +2847,17 @@ img.act-scene {
   .banner.boss strong {
     font-size: 22px;
   }
+}
+
+/* M3 review: a round's banner sits at the top edge of the field, clear of the lane entry and the gold "+N"
+   floaters over the vehicles; leak and boss banners keep the middle. */
+.banner.round {
+  top: 8px;
+  padding: 6px 18px 7px;
+  background: rgba(43, 35, 32, 0.72);
+}
+.banner.round strong {
+  font-size: clamp(18px, 2.6vw, 26px);
 }
 
 /* M3 review: on a loss the causes come straight after the title; on a short screen the portrait shrinks so

@@ -133,6 +133,11 @@ describe("hedgerow replays", () => {
     // And play carries on from there: the player sends the round again.
     expect(back.recorder.act(back.game, { t: "wave" }).ok).toBe(true);
     expect(back.game.wave).toBe(lostWave);
-    expect(rewindToWave(lv, replay, 1)).toBeNull();
+    // Round 1 rewinds to the field as first built, before anything was sent.
+    const first = rewindToWave(lv, replay, 1)!;
+    expect(first).not.toBeNull();
+    expect(first.game.wave).toBe(0);
+    expect(first.game.towers.length).toBeGreaterThan(0);
+    expect(rewindToWave(lv, replay, 0)).toBeNull();
   }, 60_000);
 });

@@ -46,8 +46,8 @@ function iconMesh(prop: Property): THREE.InstancedMesh {
   return mesh;
 }
 
-/** The kinds drawn instanced on fleet levels (the boss keeps its own animated model). */
-export const INSTANCED_RUNGS: readonly EnemyKind[] = ["courier", "hatchback", "van", "pickup", "sprinter", "lorry", "drone", "quad", "steel", "artic", "transporter"];
+/** The kinds drawn instanced on fleet levels (the boss keeps its own animated model; the Influencer is its pink hatchback). */
+export const INSTANCED_RUNGS: readonly EnemyKind[] = ["courier", "hatchback", "van", "pickup", "sprinter", "lorry", "drone", "quad", "steel", "artic", "transporter", "influencer"];
 
 /** Per-kind instance capacity: the engine's live cap, plus a little room. */
 const CAPACITY = 360;

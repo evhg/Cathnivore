@@ -1112,6 +1112,17 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       g.add(box(0.2, 0.09, 0.22, gloss("#e8b23a"), -0.02, 0.27, 0), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, 0.112), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, -0.112));
       return g;
     }
+    case "influencer": {
+      // The Influencer (fleet.ts): a pink hatchback with a ring light on a pole through the sunroof. Baked into
+      // the instanced rungs, so the ring is a vertex colour, not a light, and a parade costs one draw call.
+      const g = vehicle({ len: 0.46, h: 0.2, w: 0.26, body: "#f27ab0", stripe: "#ffd6ea", logo: null });
+      g.add(box(0.2, 0.09, 0.22, gloss("#f27ab0"), -0.02, 0.27, 0), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, 0.112), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, -0.112));
+      g.add(cyl(0.01, 0.01, 0.16, metal("#5a5e63"), -0.02, 0.38, 0, 5));
+      const ring = mesh(new THREE.TorusGeometry(0.08, 0.016, 6, 16), glow("#ffd6ea", 1), -0.02, 0.5, 0);
+      ring.rotation.y = Math.PI / 2;
+      g.add(ring);
+      return g;
+    }
     case "pickup": {
       const g = vehicle({ len: 0.6, h: 0.18, w: 0.3, body: "#4a7fc4", stripe: "#f4f6f8", logo: null });
       g.add(box(0.22, 0.12, 0.28, gloss("#4a7fc4"), 0.12, 0.25, 0), box(0.006, 0.08, 0.24, glass(), 0.231, 0.27, 0));

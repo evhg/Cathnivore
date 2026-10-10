@@ -337,8 +337,8 @@ const shortScreen = (): boolean => {
 };
 /** The last wave that was stacked on early (0 = none this level): a leak soon after names the stacking. */
 let stackedWave = 0;
-/** The round whose first leak has already been reported, and when the leak slow-motion ends. */
-let leakReported = 0;
+/** The causes a round's leak banners have already named (Fleet: one banner per cause per round), and when the leak slow-motion ends. */
+const leakCauses = { wave: -1, seen: new Set<string>() };
 let slowUntil = 0;
 /** Which abilities were ready last frame (a tick under the thumb when one comes back). */
 const wasReady: Record<Ability, boolean> = { pie: false, neighbours: false, rally: false };
@@ -546,7 +546,8 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   paused = false;
   aiming = false;
   posting = false;
-  leakReported = 0;
+  leakCauses.wave = -1;
+  leakCauses.seen.clear();
   slowUntil = 0;
   panelKey = "";
   earlyCalls = 0;
@@ -924,7 +925,12 @@ function wavePreview(p: HTMLElement, g: Game): void {
   if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
 }
 
-/** A tower's lock badges: green for what it can hit (or reveal), red for what it can't. */
+/** The locks a level's rounds bring (its badges show only these: level 1 asks about wrap and the air, not stealth). */
+function levelLocks(level: Level): number {
+  return roundProps(level, level.waves.flat());
+}
+
+/** A tower's lock badges: green for what it can hit (or reveal), red for what it can't, for the locks this level brings. */
 function badgeRow(kind: TowerKind, tier: Tower["tier"], spec: 0 | 1 | null): HTMLElement {
   const row = document.createElement("div");
   row.className = "badge-row";
@@ -938,18 +944,25 @@ function badgeRow(kind: TowerKind, tier: Tower["tier"], spec: 0 | 1 | null): HTM
     t.textContent = type;
     row.append(t);
   }
+  const here = game ? levelLocks(game.level) : ~0;
   for (const b of towerBadges({ kind, tier, spec })) {
+    if (!(here & P[b.prop])) continue;
     const el = document.createElement("span");
     el.className = `lock-badge ${b.ok ? "ok" : "no"}`;
     el.dataset.prop = b.prop;
     el.title = b.text;
     el.setAttribute("aria-label", b.text);
     el.append(img(propIcon(b.prop), "prop-icon"));
+    // Its name in words, so a phone reads "Plated ✕" without a tooltip.
+    const name = document.createElement("span");
+    name.className = "badge-name";
+    name.setAttribute("aria-hidden", "true");
+    name.textContent = PROPERTIES[b.prop].name;
     const mark = document.createElement("span");
     mark.className = "badge-mark";
     mark.setAttribute("aria-hidden", "true");
     mark.textContent = b.ok ? "✓" : "✕";
-    el.append(mark);
+    el.append(name, mark);
     row.append(el);
   }
   return row;
@@ -1340,6 +1353,8 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
       choices.append(b);
     });
     p.append(choices);
+    // Right under the choice, above the fold on a phone held upright.
+    if (badges) p.append(badges);
     if (!open) p.append(line(`Specialisations open at level ${SPEC_FIRST_LEVEL}.`, "hint"));
     p.append(ownStats);
   } else p.append(statGrid(st));
@@ -1355,7 +1370,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   };
   row.append(sl);
   p.append(row);
-  if (badges && t.tier === 3) p.append(badges);
+  if (badges && t.tier === 3 && !badges.isConnected) p.append(badges);
 }
 
 /** Megastructures: merge buttons for grown neighbours, or a hint about what this tower could become. */
@@ -1573,7 +1588,7 @@ function fire(x?: number, y?: number): void {
 
 // ---- banners and enemy introductions ----
 
-function banner(text: string, sub = "", boss = false): void {
+function banner(text: string, sub = "", boss = false, cls = ""): void {
   ui.banner.replaceChildren();
   const big = document.createElement("strong");
   big.textContent = text;
@@ -1583,7 +1598,7 @@ function banner(text: string, sub = "", boss = false): void {
     s.textContent = sub;
     ui.banner.append(s);
   }
-  ui.banner.className = `banner show${boss ? " boss" : ""}`;
+  ui.banner.className = `banner show${boss ? " boss" : ""}${cls ? ` ${cls}` : ""}`;
   clearTimeout(bannerTimer);
   bannerTimer = window.setTimeout(() => (ui.banner.className = "banner"), boss ? 2600 : 1700);
 }
@@ -1687,9 +1702,14 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       case "leak":
         sfx.playLeak();
         haptic.leak();
-        // The first leak of a round gets a moment of slow motion and a banner naming the cause.
-        if (ev.kind && !player && leakReported !== g.wave) {
-          leakReported = g.wave;
+        // The first leak of a round gets a moment of slow motion and a banner naming the cause; on the Fleet so
+        // does the first leak of each further cause in it (scouts after a filler leak still get named).
+        if (leakCauses.wave !== g.wave) {
+          leakCauses.wave = g.wave;
+          leakCauses.seen.clear();
+        }
+        if (ev.kind && !player && !leakCauses.seen.has(isFleet(g.level) ? (ev.cause ?? "damage") : "any")) {
+          leakCauses.seen.add(isFleet(g.level) ? (ev.cause ?? "damage") : "any");
           if (isFleet(g.level)) {
             // Hedgerow 2 section 2: the property that got through, what it cost, and the key to it.
             const r = fleetLeakReport({ kind: ev.kind, pm: ev.pm, lost: ev.lost, cause: ev.cause });
@@ -1724,7 +1744,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           // Fleet levels name the Round Book's round and read its one-line card.
           const r = g.level.book.from + ev.wave - 1;
           const page = roundFor(g.level.id, r);
-          banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : page ? cardBody(page.card) : `Round ${r} of ${lastNo(g)}`);
+          banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : page ? cardBody(page.card) : `Round ${r} of ${lastNo(g)}`, false, "round");
         } else banner(`Wave ${ev.wave}`, ev.early ? `Stacked early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
         // Let the round's banner say its piece first: the new-unit card follows it rather than stacking on it.
         if (isFleet(g.level) && !boss) window.setTimeout(() => game === g && introduce(kinds), 1800);
@@ -2023,7 +2043,7 @@ function finish(g: Game): void {
  */
 function retryButton(g: Game, lv: Level): void {
   const replay = lastReplay;
-  if (!isFleet(lv) || !replay || replay.setup.mode !== "level" || g.wave <= 1) return;
+  if (!isFleet(lv) || !replay || replay.setup.mode !== "level" || g.wave < 1) return;
   const lost = g.wave;
   const b = document.createElement("button");
   b.type = "button";
