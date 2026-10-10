@@ -2801,3 +2801,76 @@ img.act-scene {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+
+/* M3 review: the tower card's lock badges sit in its header as a compact strip. */
+.tower-titles .badge-row {
+  margin: 2px 0;
+  gap: 3px;
+}
+.tower-titles .lock-badge {
+  padding: 0 4px 0 1px;
+  font-size: 10px;
+}
+.tower-titles .lock-badge .prop-icon {
+  width: 14px;
+  height: 14px;
+}
+.tower-titles .dmg-type {
+  padding: 0 6px;
+  font-size: 10px;
+}
+
+/* M3 review: banners fit the stage on a phone held sideways. The centred box is as wide as its words (not
+   squeezed to half the stage by left: 50%), and on short screens it sits small at the top of the field, out of
+   the way of the lane's middle and of Cath's tip bubble at the bottom. */
+.banner {
+  width: max-content;
+  max-width: calc(100% - 24px);
+}
+@media (max-height: 520px) {
+  .banner:not(.small) {
+    top: 6px;
+    padding: 5px 14px 6px;
+    border-radius: 12px;
+  }
+  .banner:not(.small) strong {
+    font-size: 19px;
+  }
+  .banner:not(.small) span {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .banner.boss strong {
+    font-size: 22px;
+  }
+}
+
+/* M3 review: on a loss the causes come straight after the title; on a short screen the portrait shrinks so
+   the top cause is above the Try again row. */
+.sheet.lost.has-causes h2 {
+  margin-bottom: 4px;
+}
+@media (max-height: 520px) {
+  .sheet.lost .story-cath {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 2px;
+  }
+  .sheet.lost h2 {
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .sheet.lost .eyebrow {
+    margin: 0;
+  }
+  .sheet.lost.has-causes {
+    padding-top: 12px;
+  }
+  .loss-causes li {
+    font-size: 12px;
+  }
+  .loss-key {
+    width: 24px;
+    height: 24px;
+  }
+}

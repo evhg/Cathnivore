@@ -75,7 +75,7 @@ import {
   isFleet,
 } from "./engine";
 import { LIVE_CAP, P, PROPERTIES, RUNGS, fvOf, propsOf } from "./fleet";
-import { damageLabel, leakReport as fleetLeakReport, lockLine, lossCauses, roundProps, towerBadges, unanswered, vehicleName } from "./counters";
+import { cardBody, damageLabel, leakReport as fleetLeakReport, lockLine, lossCauses, roundProps, towerBadges, unanswered, vehicleName } from "./counters";
 import { roundFor } from "./rounds";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
@@ -1176,8 +1176,10 @@ function statList(st: Stats): Array<[string, string]> {
   if (st.knockback) rows.push(["Knockback", st.knockback.toFixed(2)]);
   if (st.crit) rows.push(["Crit", `every ${st.crit.every} shots ×${st.crit.mult}`]);
   if (st.ignoresArmour) rows.push(["Armour", "ignored"]);
-  if (st.buff > 1) rows.push(["Nearby towers", `+${Math.round((st.buff - 1) * 100)}% damage`]);
-  if (st.aura > 1) rows.push(["Every tower", `+${Math.round((st.aura - 1) * 100)}% damage`]);
+  // On the Fleet a boost speeds a tower's firing instead of adding damage (engine: cooldown / boost).
+  const boostWord = game && isFleet(game.level) ? "faster" : "damage";
+  if (st.buff > 1) rows.push(["Nearby towers", `+${Math.round((st.buff - 1) * 100)}% ${boostWord}`]);
+  if (st.aura > 1) rows.push(["Every tower", `+${Math.round((st.aura - 1) * 100)}% ${boostWord}`]);
   if (st.income) rows.push(["Income", `+${st.income} a wave`]);
   if (st.reveal > 1) rows.push(["Marked", `+${Math.round((st.reveal - 1) * 100)}% damage taken`]);
   if (st.injunction) rows.push(["Injunction", `${st.injunction}s on ${st.classAction ? "everything" : "bosses"}`]);
@@ -1225,6 +1227,9 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   pips.textContent = t.mega ? "◆" : "★".repeat(t.tier) + "☆".repeat(4 - t.tier);
   title.append(" ", pips);
   titles.append(title);
+  // Fleet: its damage type, and a green or red badge for every lock (Hedgerow 2 section 2), as a compact
+  // strip in the header, so a phone held sideways shows them without scrolling past Upgrade and Sell.
+  if (t.fleet && !t.mega) titles.append(badgeRow(t.kind, t.tier, t.spec ?? null));
   // Veterans: kills, rank, and how far to the next.
   const kills = t.kills ?? 0;
   const rank = rankOf(kills);
@@ -1343,9 +1348,6 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   };
   row.append(sl);
   p.append(row);
-  // Fleet: its damage type, and a green or red badge for every lock (Hedgerow 2 section 2). Last, so on a
-  // phone the upgrade and specialisation buttons stay in view above it.
-  if (t.fleet && !t.mega) p.append(badgeRow(t.kind, t.tier, t.spec ?? null));
 }
 
 /** Megastructures: merge buttons for grown neighbours, or a hint about what this tower could become. */
@@ -1689,8 +1691,17 @@ function onEvents(g: Game, evs: GameEvent[]): void {
             if (!REDUCED) slowUntil = performance.now() + 600;
           } else leakReport(g, ev.kind, !!ev.dropped, ev.lost ?? 0);
         }
-        if (g.goodwill <= g.maxGoodwill / 2 && g.goodwill > 0)
-          tip(`low-${g.level.id}`, "They're getting through! Hedges near the farmhouse, and between waves move me to the end of the lane.", "worried", true);
+        if (g.goodwill <= g.maxGoodwill / 2 && g.goodwill > 0) {
+          // When the leak report named a property, Cath backs it up rather than giving generic advice that
+          // would contradict it (hedges don't help against stealth).
+          const lock = isFleet(g.level) && ev.cause && ev.cause in PROPERTIES ? PROPERTIES[ev.cause as keyof typeof PROPERTIES] : null;
+          tip(
+            `low-${g.level.id}`,
+            lock ? `They're getting through! ${lock.why} ${lock.key}` : "They're getting through! Hedges near the farmhouse, and between waves move me to the end of the lane.",
+            "worried",
+            true,
+          );
+        }
         break;
       case "wave": {
         sfx.playWave();
@@ -1705,7 +1716,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           // Fleet levels name the Round Book's round and read its one-line card.
           const r = g.level.book.from + ev.wave - 1;
           const page = roundFor(g.level.id, r);
-          banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : (page?.card ?? `Round ${r} of ${lastNo(g)}`));
+          banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : page ? cardBody(page.card) : `Round ${r} of ${lastNo(g)}`);
         } else banner(`Wave ${ev.wave}`, ev.early ? `Stacked early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
         // Let the round's banner say its piece first: the new-unit card follows it rather than stacking on it.
         if (isFleet(g.level) && !boss) window.setTimeout(() => game === g && introduce(kinds), 1800);
@@ -1898,6 +1909,8 @@ function finish(g: Game): void {
   if (game !== g) return;
   document.getElementById("loss-causes")?.remove();
   ui.resultNote.hidden = false;
+  ui.resultStars.hidden = false;
+  ui.dlgResult.classList.remove("has-causes");
   const lv = g.level;
   if (lv.endless) return finishEndless(g, lv);
   if (dailyDay !== null) return finishDaily(g, lv, dailyDay);
@@ -1919,6 +1932,8 @@ function finish(g: Game): void {
     }
   }
   ui.resultStars.setAttribute("aria-label", won ? `${n} of 3 stars` : "");
+  // A loss has no stars: don't leave an empty row where the causes should be.
+  ui.resultStars.hidden = !won;
   const stats = [
     `Goodwill kept ${g.goodwill}/${g.maxGoodwill}`,
     `Cath's knockouts ${g.hero.kills}`,
@@ -2030,7 +2045,9 @@ function renderLossCauses(g: Game, won: boolean): void {
     list.append(li);
   }
   box.append(list);
-  ui.resultNote.after(box);
+  // Right under the title, so the top cause is on screen even on a phone held sideways (390 px tall).
+  ui.resultTitle.after(box);
+  ui.dlgResult.classList.add("has-causes");
 }
 
 /** A daily challenge ends: the score, today's best and a share card to copy. */
