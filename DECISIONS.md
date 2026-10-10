@@ -353,3 +353,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-09 22:51: boardroom `glass` material is near-opaque black, so the skyline was hidden; replaced the pane with mullions plus a collider-only box and made skyline windows glow boxes.
 - 2026-10-10 01:51: signature lighting is a time-based multiplier on the whole light pool, set per district theme; plaza keeps its lightning. Screenshot attempt stalled in headless WebGL, so air traffic is unverified visually.
 - 2026-10-10 02:51: crowds are one InstancedMesh of capsule silhouettes (CPU sway), no shadows or lights; markers `crowd:*` place clusters.
+- 2026-10-10: D1-D6 milestone complete; phone 60 fps unmeasurable headless, closed D6 on instancing; running npm run release.
