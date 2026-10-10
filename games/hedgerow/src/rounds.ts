@@ -168,9 +168,93 @@ export const SWAPS: Record<number, Record<number, BookRound>> = {
   },
 };
 
-/** The round a level plays: its act-themed swap, or the Book's. */
+/** The Book's lock rounds to remember (section 5), and the words their scouts' card adds. */
+export const LOCK_ROUNDS: ReadonlyArray<readonly [number, Property]> = [
+  [15, "sealed"],
+  [18, "reefer"],
+  [22, "stealth"],
+  [26, "plated"],
+  [30, "rebrand"],
+];
+const SCOUT_NAMES: Partial<Record<Property, string>> = { sealed: "Sealed", reefer: "Reefer", stealth: "Stealth", plated: "Plated", rebrand: "Rebranded" };
+/** How many scouts ride ahead of a lock round: delivery vans, 3 layers each, so a field that can't answer them loses 24 Goodwill, not 120. */
+export const SCOUTS = 8;
+
+/**
+ * Scouts (M3 review: "acts 2-3 fall off a one-round cliff"). When an act 2-3 level's window ends on (or two
+ * rounds after) a lock round it hasn't shown before, a few small vehicles with that lock ride in three or so
+ * rounds earlier, so a field that can't answer it leaks a little, hears why, and has rounds left to build the
+ * key. Returns the lock and the round it warns of, or null.
+ */
+export function scoutsFor(levelId: number | undefined, round: number): { prop: Property; lockRound: number } | null {
+  if (levelId === undefined || levelId < 11 || levelId > 30) return null;
+  const w = windowFor(levelId);
+  const base = (r: number) => SWAPS[levelId]?.[r] ?? BOOK[r - 1];
+  const isLock = (r: number) => LOCK_ROUNDS.some(([l]) => l === r);
+  for (const [R, prop] of LOCK_ROUNDS) {
+    if (R < w.to - 2 || R > w.to) continue;
+    const at = [R - 3, R - 4, R - 2].find((r) => r >= w.from && !isLock(r) && !base(r)?.spike);
+    if (at !== round) continue;
+    let seen = false;
+    for (let r = w.from; r < R; r++) if (base(r)?.groups.some((x) => x.props?.includes(prop))) seen = true;
+    if (!seen) return { prop, lockRound: R };
+  }
+  return null;
+}
+
+/**
+ * Traffic (M3 review: acts 2-3 ran flat, the best bot kept 100% on most of them and k sat on its floor). Act 2's
+ * rounds bring about 1.4 times the Book's vehicles and act 3's about 1.6 times, spawned that much closer together so a round
+ * lasts as long; act 1 plays the Book as written. Income grows with it (a Mark a layer), so the purse that
+ * opens a level is what the tuner's k now has to cover, and the middle of a level presses a modest build.
+ */
+export function trafficOf(levelId: number | undefined): number {
+  if (levelId === undefined) return 1;
+  return TRAFFIC[levelId] ?? 1;
+}
+/**
+ * Per level, set by hand from the tuner's fits (BALANCE.md): about 1.4 in act 2 and 1.6 in act 3, less where a
+ * twist already presses (Fortified, fog, night) and on the boss levels, more where the twist helps the field
+ * (Crowds, rain, Air drop). The tuner still fits only k.
+ */
+const TRAFFIC: Record<number, number> = {
+  11: 1.45, 12: 1.4, 13: 1.4, 14: 1.45, 15: 1.6, 16: 1.45, 17: 1.25, 18: 1.5, 19: 1.4, 20: 1.15,
+  21: 1.7, 22: 1.7, 23: 1.7, 24: 1.7, 25: 1.45, 26: 1.05, 27: 1.5, 28: 1.2, 29: 1.7, 30: 1.6,
+};
+
+const VEHICLE_WORDS = "lorries|vans|quadcopters|transporters|influencers|drones|pickups|hatchbacks|artics|couriers";
+const NUMBER_WORDS: Record<string, number> = {
+  twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+  "a hundred": 100, "a hundred and twenty": 120, "a hundred and forty": 140, "a hundred and fifty": 150, "a hundred and sixty": 160,
+  "two hundred": 200, "three hundred": 300,
+};
+const COUNT_RE = new RegExp(
+  `\\b(${Object.keys(NUMBER_WORDS).sort((a, b) => b.length - a.length).join("|")}|\\d{2,3})(?= (?:[A-Za-z-]+ ){0,2}(?:${VEHICLE_WORDS})\\b)`,
+  "gi",
+);
+
+/** A card's vehicle counts ("Thirty Box Lorries", "a hundred rush vans") times a level's traffic, as numbers. */
+export function scaleCard(card: string, m: number): string {
+  if (m === 1) return card;
+  return card.replace(COUNT_RE, (w) => String(Math.round((NUMBER_WORDS[w.toLowerCase()] ?? Number(w)) * m)));
+}
+
+/** The round a level plays: its act-themed swap, or the Book's, at the act's traffic, with any scouts riding in it. */
 export function roundFor(levelId: number | undefined, round: number): BookRound | undefined {
-  return (levelId !== undefined ? SWAPS[levelId]?.[round] : undefined) ?? BOOK[round - 1];
+  const base = (levelId !== undefined ? SWAPS[levelId]?.[round] : undefined) ?? BOOK[round - 1];
+  const m = trafficOf(levelId);
+  const r =
+    base && m !== 1
+      ? { ...base, card: scaleCard(base.card, m), groups: base.groups.map((x) => ({ ...x, count: Math.round(x.count * m), gap: x.gap / m, ...(x.delay ? { delay: x.delay / m } : {}) })) }
+      : base;
+  const sc = r && scoutsFor(levelId, round);
+  if (!r || !sc) return r;
+  const name = SCOUT_NAMES[sc.prop] ?? sc.prop;
+  return {
+    ...r,
+    card: `${r.card} Scouts: ${SCOUTS} ${name} vans ride ahead of round ${sc.lockRound}.`,
+    groups: [...r.groups, g("van", SCOUTS, 0.45, 2.5, [sc.prop])],
+  };
 }
 
 /** The rounds the Book has so far. */

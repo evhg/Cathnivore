@@ -29,7 +29,7 @@ import {
   type Level,
 } from "../games/hedgerow/src/engine";
 import { CHILD_GAP, FLEET_GOODWILL, LIVE_CAP, RUNGS, fvOf, roundBonus } from "../games/hedgerow/src/fleet";
-import { BOOK, BOOK_ROUNDS, SWAPS, budget, incomeBefore, roundFV, windowFor } from "../games/hedgerow/src/rounds";
+import { BOOK, BOOK_ROUNDS, SWAPS, budget, incomeBefore, roundFV, trafficOf, windowFor } from "../games/hedgerow/src/rounds";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import { kept, playLevel } from "../games/hedgerow/src/bot";
 
@@ -318,7 +318,8 @@ describe("hedgerow fleet: rounds and levels", () => {
       expect(JSON.stringify(fleet[i]!.waves), `levels ${fleet[i - 1]!.id} and ${fleet[i]!.id}`).not.toBe(JSON.stringify(fleet[i - 1]!.waves));
     for (const [id, rounds] of Object.entries(SWAPS))
       for (const r of Object.keys(rounds).map(Number)) {
-        const ratio = roundFV(r, Number(id)) / roundFV(r);
+        // Acts 2-3 play every round at their traffic (rounds.ts TRAFFIC), swaps included.
+        const ratio = roundFV(r, Number(id)) / (roundFV(r) * trafficOf(Number(id)));
         expect(ratio, `level ${id} round ${r}`).toBeGreaterThan(0.97);
         expect(ratio, `level ${id} round ${r}`).toBeLessThan(1.03);
         // The rounds to remember stay the Book's, and so do the rounds that first bring each property.
