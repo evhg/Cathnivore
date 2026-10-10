@@ -18,6 +18,8 @@ export interface BookGroup {
   delay?: number;
   /** Properties every vehicle in the group carries (Stealth, Plated...), on top of its rung's own. */
   props?: Property[];
+  /** Lock scouts: they slip past Cath, so only the field's key stops them. */
+  scout?: true;
 }
 
 export interface BookRound {
@@ -96,11 +98,14 @@ export const BOOK: BookRound[] = [
  * Keyed by level id, then by Book round.
  */
 export const SWAPS: Record<number, Record<number, BookRound>> = {
-  // Mara's Field (M3, the M2 review's "flat 120/120"): the breather before the drones becomes a jam at the
-  // farm gate, the same Fleet Value in a few seconds, so a good build has to have grown to answer it.
+  // Mara's Field (M3 review, "flat 120/120, then a cliff"): the farm gate brings graded pressure. The first Box
+  // Lorries come spaced out and a little lighter, so a tier 2 field bleeds over rounds 10-12 rather than dying in
+  // two; round 11 is a short sharp Same-Day rush; and the drone round closes on a long rush that a field still on
+  // tier 2 has to answer, and that dents a small or badly placed tier 3 field (four on random plots still win).
   1: {
-    9: { theme: "Lorry jam", card: "Box Lorries early, nose to tail at the farm gate, and the vans stuck behind them.", groups: [g("lorry", 25, 0.15), g("van", 70, 0.2, 2)] },
-    11: { theme: "Traffic jam", card: "Everything at once at the farm gate: lorries and the pickups behind them.", breather: true, groups: [g("lorry", 30, 0.1), g("pickup", 16, 0.12, 1)] },
+    10: { theme: "The first Box Lorry", card: "Round 10: Box Lorries. Pop the box and two Same-Day vans burst out.", groups: [g("lorry", 10, 1.0, 2.8), g("sprinter", 40, 0.26), g("pickup", 38, 0.26, 1.4)] },
+    11: { theme: "Farm gate rush", card: "A spike: forty-five Same-Day vans through the farm gate in two seconds.", spike: true, groups: [g("sprinter", 45, 0.035)] },
+    12: { theme: "Drone swarm", card: "Round 12: drones and quadcopters, then a hundred Same-Day vans racing home under them.", spike: true, groups: [g("drone", 100, 0.1), g("quad", 45, 0.22, 2.1), g("sprinter", 100, 0.07, 10)] },
   },
   // Pie for the Road: the village fete.
   3: {
@@ -177,12 +182,17 @@ export const LOCK_ROUNDS: ReadonlyArray<readonly [number, Property]> = [
   [30, "rebrand"],
 ];
 const SCOUT_NAMES: Partial<Record<Property, string>> = { sealed: "Sealed", reefer: "Reefer", stealth: "Stealth", plated: "Plated", rebrand: "Rebranded" };
-/** How many scouts ride ahead of a lock round: delivery vans, 3 layers each, so a field that can't answer them loses 24 Goodwill, not 120. */
+/**
+ * How many scouts ride ahead of a lock round: Same-Day vans, 5 layers each and quick, which slip past Cath (she
+ * can't hold them, so she can't show them to the towers either). A field without the key loses up to 40
+ * Goodwill to them, not 120, and its leak report names the lock.
+ */
 export const SCOUTS = 8;
 
 /**
- * Scouts (M3 review: "acts 2-3 fall off a one-round cliff"). When an act 2-3 level's window ends on (or two
- * rounds after) a lock round it hasn't shown before, a few small vehicles with that lock ride in three or so
+ * Scouts (M3 review: "acts 2-3 fall off a one-round cliff"). When an act 2-3 level's window reaches a lock round
+ * whose lock it hasn't shown before (Stealth and Plated anywhere in the window, the others when the window ends
+ * on them, or two rounds after), a few small vehicles with that lock ride in three or so
  * rounds earlier, so a field that can't answer it leaks a little, hears why, and has rounds left to build the
  * key. Returns the lock and the round it warns of, or null.
  */
@@ -192,7 +202,9 @@ export function scoutsFor(levelId: number | undefined, round: number): { prop: P
   const base = (r: number) => SWAPS[levelId]?.[r] ?? BOOK[r - 1];
   const isLock = (r: number) => LOCK_ROUNDS.some(([l]) => l === r);
   for (const [R, prop] of LOCK_ROUNDS) {
-    if (R < w.to - 2 || R > w.to) continue;
+    // Stealth and Plated stop most of a field (nothing sees the one; beaks and thorns bounce off the other), so
+    // they're scouted wherever the window meets them; the rest only where the window ends on them.
+    if (R > w.to || (R < w.to - 2 && prop !== "stealth" && prop !== "plated")) continue;
     const at = [R - 3, R - 4, R - 2].find((r) => r >= w.from && !isLock(r) && !base(r)?.spike);
     if (at !== round) continue;
     let seen = false;
@@ -252,8 +264,8 @@ export function roundFor(levelId: number | undefined, round: number): BookRound 
   const name = SCOUT_NAMES[sc.prop] ?? sc.prop;
   return {
     ...r,
-    card: `${r.card} Scouts: ${SCOUTS} ${name} vans ride ahead of round ${sc.lockRound}.`,
-    groups: [...r.groups, g("van", SCOUTS, 0.45, 2.5, [sc.prop])],
+    card: `${r.card} Scouts: ${SCOUTS} ${name} Same-Day vans ride ahead of round ${sc.lockRound}, too quick for Cath to catch.`,
+    groups: [...r.groups, { ...g("sprinter", SCOUTS, 0.45, 2.5, [sc.prop]), scout: true }],
   };
 }
 
@@ -280,7 +292,7 @@ export function bookWave(round: number, levelId?: number): WaveGroup[] {
   if (!r) throw new Error(`The Round Book has no round ${round} yet.`);
   return r.groups.map((x) => {
     const pm = propMask(x.props);
-    return { enemy: x.rung, count: x.count, gap: x.gap, delay: x.delay ?? 0, ...(pm ? { pm } : {}) };
+    return { enemy: x.rung, count: x.count, gap: x.gap, delay: x.delay ?? 0, ...(pm ? { pm } : {}), ...(x.scout ? { scout: true as const } : {}) };
   });
 }
 

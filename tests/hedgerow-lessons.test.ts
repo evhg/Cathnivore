@@ -20,6 +20,7 @@ import {
   fieldAnswers,
   hitEnemy,
   isFleet,
+  leakCauseOf,
   isPlot,
   pointAt,
   makeEnemy,
@@ -156,6 +157,55 @@ describe("hedgerow M3: properties on the lane", () => {
     expect(b.kind).toBe("van"); // never above what it started as
   });
 
+  it("a Rebrand can't multiply: popping a regrown vehicle again makes no more extra children", () => {
+    const g = bare(L);
+    const e = makeEnemy(g, "lorry", 0.5, undefined, 1, P.rebrand);
+    g.enemies.push(e);
+    const lane = () => g.enemies.reduce((a, x) => a + fvOf(x.kind), 0);
+    const counts: number[] = [];
+    for (let cycle = 0; cycle < 4; cycle++) {
+      hitEnemy(g, e, 1);
+      for (const x of g.enemies) x.stun = 999;
+      for (let i = 0; i < 95; i++) stepGame(g);
+      counts.push(g.enemies.length);
+    }
+    expect(e.kind).toBe("lorry"); // it did grow back
+    expect(counts).toEqual([2, 2, 2, 2]);
+    expect(lane()).toBe(fvOf("lorry") + fvOf("sprinter"));
+  });
+
+  it("overflow stops at a hard lock: a Blast hit on a Car Transporter doesn't carry into its Wrapped Artic", () => {
+    const g = bare(L);
+    const e = makeEnemy(g, "transporter", 5, undefined, 1);
+    g.enemies.push(e);
+    hitEnemy(g, e, 3, undefined, "blast");
+    expect(e.kind).toBe("artic");
+    expect(g.enemies.filter((x) => x.kind === "artic")).toHaveLength(2);
+    // A Sharp hit does carry on into the Artic (wrap doesn't stop beaks), and stops at nothing.
+    const h = bare(L);
+    const f = makeEnemy(h, "transporter", 5, undefined, 1);
+    h.enemies.push(f);
+    hitEnemy(h, f, 3, undefined, "sharp");
+    expect(f.kind).toBe("sprinter");
+  });
+
+  it("the leak report blames a property only when most of the field couldn't touch it", () => {
+    const C = LEVELS.find((l) => isFleet(l) && l.towers.includes("cannon"))!;
+    const g = bare(C);
+    g.marks = 1e6;
+    const plots: Array<[number, number]> = [];
+    for (let r = 0; r < C.rows && plots.length < 4; r++) for (let c = 0; c < C.cols && plots.length < 4; c++) if (isPlot(C, c, r)) plots.push([c, r]);
+    const wrapped = makeEnemy(g, "van", 1, undefined, 1, P.wrapped);
+    // A Scarecrow field (Sharp pops wrap): too little damage, not the wrap.
+    for (const [c, r] of plots.slice(0, 3)) expect(place(g, "scarecrow", c, r).ok).toBe(true);
+    expect(leakCauseOf(g, wrapped)).toBe("damage");
+    // A Seed Cannon field with one Scarecrow: most of it bounced off the wrap.
+    const h = bare(C);
+    h.marks = 1e6;
+    for (const [i, [c, r]] of plots.entries()) expect(place(h, i === 0 ? "scarecrow" : "cannon", c, r).ok).toBe(true);
+    expect(leakCauseOf(h, wrapped)).toBe("wrapped");
+  });
+
   it("a Scarecrow won't shoot a Plated lorry it can't hurt, and lets it through; a Beehive pops it", () => {
     const trial = (kind: TowerKind) => {
       const g = bare(L);
@@ -198,7 +248,8 @@ describe("hedgerow M3: properties on the lane", () => {
     const scouts = r19.groups.filter((x) => x.props?.includes("stealth"));
     expect(scouts).toHaveLength(1);
     expect(scouts[0]!.count).toBe(SCOUTS);
-    expect(r19.card).toContain("Stealth vans");
+    expect(r19.card).toContain("Stealth Same-Day vans");
+    expect(scouts[0]!.scout).toBe(true);
     // Only once per level, and not where the level already showed the lock (Moor Fog's stealth pickups).
     const lv15 = LEVELS[14]!;
     // The level plays them (its Crowds twist brings them a size smaller), and no stealth before round 19.
@@ -232,7 +283,7 @@ describe("hedgerow M3: properties on the lane", () => {
   });
 
   it("names a vehicle by the properties it carries beyond its own", () => {
-    expect(vehicleName("lorry", P.stealth)).toBe("Stealth Box lorry");
+    expect(vehicleName("lorry", P.stealth)).toBe("Stealth Box Lorry");
     expect(vehicleName("van", P.plated | P.reinforced)).toBe("Plated Reinforced Delivery van");
     expect(vehicleName("artic", P.wrapped | P.reefer)).toBe("Artic");
     expect(vehicleName("quad", P.airborne)).toBe("Cargo quadcopter");
@@ -265,13 +316,48 @@ describe("hedgerow M3: lessons", () => {
     expect(bookRound(lv, g.wave)).toBe(22);
     const top = lossCauses(g)[0]!;
     expect(top.cause).toBe("stealth");
-    expect(top.round).toBe(22);
+    // It first cost Goodwill in round 19, to the scouts, three rounds before the cliff.
+    expect(top.round).toBe(19);
     expect(top.towers).toContain("mast");
     const banner = leakReport({ kind: "lorry", pm: P.stealth, lost: 11, cause: "stealth" });
-    expect(banner.title).toBe("Leaked: Stealth Box lorry (11)");
+    expect(banner.title).toBe("Leaked: Stealth Box Lorry (11)");
     expect(`${banner.title} ${banner.sub}`).toMatch(/Stealth.*Radio Mast reveals stealth/);
     // With the Mast, the same bot wins.
     expect(playLevel(lv, "best").phase).toBe("won");
+  }, 120_000);
+
+  it("scouts slip past Cath: a field with no Mast loses Goodwill to Stealth in the scout round, not first at the cliff", () => {
+    // Level 15 plays rounds 8-22; stopping after round 19 leaves just the scouts' lesson.
+    const lv = LEVELS[14]!;
+    const cut = { ...lv, towers: lv.towers.filter((t) => t !== "mast"), waves: lv.waves.slice(0, 19 - lv.book!.from + 1) };
+    const g = playLevel(cut, "balanced");
+    expect(g.phase).toBe("won");
+    expect(g.leakLog.stealth?.round).toBe(19);
+    expect(g.leakLog.stealth!.lost).toBeGreaterThan(0);
+    // A little, not the round-22 cliff.
+    expect(g.goodwill).toBeGreaterThan(g.maxGoodwill / 2);
+    // Cath never holds a scout.
+    const h = newGame(lv);
+    sendWave(h);
+    h.spawnQueue = [];
+    // Right at her post, where she'd pick up anything else.
+    let at = 0;
+    for (let d = 0, best = Infinity; d < h.pathLength; d += 0.1) {
+      const q = pointAt(lv.path, d);
+      const gap = Math.hypot(q.x - h.hero.x, q.y - h.hero.y);
+      if (gap < best) [best, at] = [gap, d];
+    }
+    const s = makeEnemy(h, "sprinter", Math.max(0, at - 0.3), undefined, 1, P.stealth);
+    s.scout = true;
+    const twin = makeEnemy(h, "sprinter", Math.max(0, at - 0.3), undefined, 1, P.stealth);
+    h.enemies.push(s, twin);
+    let twinHeld = false;
+    for (let i = 0; i < 60; i++) {
+      stepGame(h);
+      expect(s.held).toBeFalsy();
+      twinHeld ||= !!twin.held;
+    }
+    expect(twinHeld).toBe(true);
   }, 120_000);
 
   it("a bot without detection leaks on round 22, whichever level plays it", () => {
@@ -280,7 +366,8 @@ describe("hedgerow M3: lessons", () => {
     for (const id of [17, 18, 21]) {
       const lv = LEVELS[id - 1]!;
       const g = playLevel(only(lv, lv.towers.filter((t) => t !== "mast")), "best");
-      expect(g.leakLog.stealth?.round, `level ${id}`).toBe(22);
+      // The scouts in round 19 are the first stealth to cost anything.
+      expect(g.leakLog.stealth?.round, `level ${id}`).toBe(19);
       expect(g.leakLog.stealth!.lost, `level ${id}`).toBeGreaterThan(20);
     }
   }, 180_000);
@@ -314,7 +401,8 @@ describe("hedgerow M3: lessons", () => {
       }
       while (g.phase === "wave") stepGame(g);
       expect(Object.keys(g.leakLog), `level ${id}`).toEqual(["plated"]);
-      expect(g.leakLog.plated!.round, `level ${id}`).toBe(26);
+      // First to the Plated scouts in round 23, then round 26's lorries.
+      expect(g.leakLog.plated!.round, `level ${id}`).toBe(23);
       expect(g.leakLog.plated!.lost, `level ${id}`).toBeGreaterThan(20);
     }
   }, 180_000);

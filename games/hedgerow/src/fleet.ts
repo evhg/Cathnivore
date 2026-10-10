@@ -45,7 +45,7 @@ export function propsOf(pm: number): Property[] {
 export interface PropertyInfo {
   /** "Stealth", as a chip says it. */
   name: string;
-  /** Before a rung's name: "Stealth Van", "Plated Box lorry". */
+  /** Before a rung's name: "Stealth Van", "Plated Box Lorry". */
   adj: string;
   /** Icon colour (both renderers and the chips). */
   colour: string;

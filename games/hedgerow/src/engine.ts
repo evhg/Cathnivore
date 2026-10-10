@@ -294,7 +294,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   hatchback: { name: "Hatchback", hp: 60, speed: 1.2, bounty: 5, leak: 1 },
   pickup: { name: "Pickup", hp: 110, speed: 1.4, bounty: 8, leak: 1 },
   sprinter: { name: "Same-Day van", hp: 80, speed: 1.6, bounty: 8, leak: 1 },
-  lorry: { name: "Box lorry", hp: 170, speed: 0.9, bounty: 12, leak: 2 },
+  lorry: { name: "Box Lorry", hp: 170, speed: 0.9, bounty: 12, leak: 2 },
   quad: { name: "Cargo quadcopter", hp: 60, speed: 1.5, bounty: 6, leak: 1, flying: true },
   wrapped: { name: "Bubble-wrapped van", hp: 90, speed: 0.85, bounty: 9, leak: 1, shield: 1 },
   steel: { name: "Plated lorry", hp: 260, speed: 0.8, bounty: 16, leak: 3, armor: 0.4 },
@@ -1243,6 +1243,8 @@ export interface WaveGroup {
   ambush?: number;
   /** Fleet levels: the group's properties (fleet.ts P bits: Stealth, Plated...). */
   pm?: number;
+  /** Fleet levels: lock scouts, which slip past Cath (she can't hold them), so only the field's key stops them. */
+  scout?: true;
 }
 
 export interface StoryLine {
@@ -1428,9 +1430,13 @@ export interface Enemy {
   dist: number;
   /** Fleet levels: its properties as fleet.ts P bits (Stealth, Plated, Wrapped...). */
   pm?: number;
+  /** A lock scout (rounds.ts scoutsFor): it slips past Cath, so a field without the key leaks it. */
+  scout?: true;
   /** Rebrand: the rung it started as (it grows back towards it), and seconds until it regains one. */
   top?: EnemyKind;
   regrow?: number;
+  /** Rebrand: the rungs it has already popped out of, whose extra children it doesn't make again when it regrows. */
+  spent?: EnemyKind[];
   /** 1 = walks the level's second lane. */
   lane?: 1;
   hp: number;
@@ -1625,7 +1631,7 @@ export interface Game {
   /** Waves cleared and paid for. */
   paid: number;
   waveClock: number;
-  spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number; lane?: 1; ambush?: number; pm?: number }>;
+  spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number; lane?: 1; ambush?: number; pm?: number; scout?: true }>;
   enemies: Enemy[];
   towers: Tower[];
   nextId: number;
@@ -2219,7 +2225,7 @@ function fleetQueue(game: Game, groups: WaveGroup[], wave: number, queue: Game["
       const at = g.delay + i * gap;
       let pm = g.pm ?? 0;
       if ((armour || fortify) && !isBig(kind) && !ENEMIES[kind].flying && nth++ % 3 === 2) pm |= armour | fortify;
-      const base = { wave, lane: g.lane, ...(g.ambush ? { ambush: g.ambush } : {}), ...(pm ? { pm } : {}) };
+      const base = { wave, lane: g.lane, ...(g.ambush ? { ambush: g.ambush } : {}), ...(pm ? { pm } : {}), ...(g.scout ? { scout: true as const } : {}) };
       if (air && !isBig(kind) && !ENEMIES[kind].flying && i % 3 === 1) {
         const fv = fvOf(kind);
         const flyer: EnemyKind = fv >= 3 ? "quad" : "drone";
@@ -2396,9 +2402,10 @@ function damageEnemy(
   amount: number,
   ignoresArmour: boolean,
   by?: number,
+  type?: DamageType | null,
 ): void {
   if (isFleet(game.level)) {
-    hitEnemy(game, e, amount, by);
+    hitEnemy(game, e, amount, by, type);
     return;
   }
   const armor = armorOf(game, e);
@@ -2410,9 +2417,10 @@ function damageEnemy(
  * and counts towards the hitting tower's Knockouts. When the shell is gone the vehicle becomes its first
  * child on the same frame (same id, same spot) and the overflow carries into it; further children spawn
  * CHILD_GAP cells behind, or wait in the emission queue while the lane is at LIVE_CAP. Returns the layers
- * knocked off. Deterministic: children are made in the rung table's order.
+ * knocked off. Deterministic: children are made in the rung table's order. With a damage `type`, overflow stops
+ * at a child the type can't hurt (a Blast hit on a Car Transporter doesn't carry into its Wrapped Artic).
  */
-export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number): number {
+export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number, type?: DamageType | null): number {
   if (!(amount > 0) || e.hp <= 0) return 0;
   const from = e.kind;
   let left = amount;
@@ -2442,18 +2450,28 @@ export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number): num
     const first = kids[0]!;
     const pass = pmOf(e) & INHERITED;
     const cp = RUNGS[e.kind]?.childProps;
+    const shell = e.kind;
     e.kind = first;
     const pm = pass | inherentProps(first) | propMask(cp?.[0]);
     e.pm = pm || undefined;
     e.hp = e.maxHp = spawnHp(game, first, pm);
     e.shield = undefined;
-    for (let i = 1; i < kids.length; i++) {
+    // A Rebrand that grew back makes its extra children only the first time it pops out of a rung, so it
+    // can't multiply: popping it again costs the player time, not a growing lane.
+    let again = false;
+    if (e.top !== undefined) {
+      again = (e.spent ??= []).includes(shell);
+      if (!again) e.spent.push(shell);
+    }
+    for (let i = again ? kids.length : 1; i < kids.length; i++) {
       const dist = Math.max(0, e.dist - i * CHILD_GAP);
       const kpm = pass | propMask(cp?.[i]);
       if (game.enemies.length >= LIVE_CAP) game.emitQueue.push({ kind: kids[i]!, dist, lane: e.lane, wave: e.wave, ...(kpm ? { pm: kpm } : {}) });
       // Extra children grow back only as far as what they came out as (a Rebrand can't multiply).
       else game.enemies.push(makeEnemy(game, kids[i]!, dist, e.lane, e.wave, kpm));
     }
+    // Overflow stops at a child the hit's damage type can't hurt (a hard lock is a lock all the way down).
+    if (type !== undefined && !canHurt(type, pm)) break;
   }
   if (removed <= 0) return 0;
   payLayers(game, removed, by);
@@ -2527,9 +2545,24 @@ export function leakCauseOf(game: Game, e: Enemy): LeakCause {
   if (pm & P.rebrand) return "rebrand";
   if (pm & P.reinforced) return "reinforced";
   if (pm & P.plant) return "plant";
-  // A property the field only partly answers still names it: most of the field couldn't touch it.
-  for (const prop of ["plated", "wrapped", "sealed", "reefer"] as const) if (pm & P[prop]) return prop;
+  // A property the field only partly answers still names it, but only when most of the field couldn't touch
+  // it: a Scarecrow field that lost Wrapped vans lost them to too little damage, not to the wrap (M3 review).
+  for (const prop of ["plated", "wrapped", "sealed", "reefer"] as const) if (pm & P[prop] && fieldShare(game, prop) < 0.5) return prop;
   return "damage";
+}
+
+/** The share of the field's working damage towers that can hurt a property (1 when there are none to ask). */
+export function fieldShare(game: Game, prop: "plated" | "wrapped" | "sealed" | "reefer"): number {
+  let hitters = 0;
+  let can = 0;
+  for (const t of game.towers) {
+    if (!towerActive(t)) continue;
+    const s = towerStats(t);
+    if (s.damage <= 0 && s.thorns <= 0) continue;
+    hitters++;
+    if (canHurt(s.type, P[prop])) can++;
+  }
+  return hitters ? can / hitters : 1;
 }
 
 /** Fleet Value still on a vehicle: what's left of its shell plus all its children. */
@@ -2572,7 +2605,7 @@ function stepHero(game: Game): void {
     if (h.holding.length < holds) {
       const near = game.enemies
         .filter((e) => {
-          if (e.hp <= 0 || h.holding.includes(e.id)) return false;
+          if (e.hp <= 0 || h.holding.includes(e.id) || e.scout) return false;
           const spec = ENEMIES[e.kind];
           // Fleet: she feels for what she can't see, and what she holds the towers can see.
           if (spec.flying || isBig(e.kind) || (!isRevealed(game, e) && !(isFleet(game.level) && pmOf(e) & P.stealth)))
@@ -2644,7 +2677,7 @@ function stepHero(game: Game): void {
     return;
   }
   const before = target.hp;
-  damageEnemy(game, target, dmg, false, -1);
+  damageEnemy(game, target, dmg, false, -1, CATH_DAMAGE);
   if (before > 0 && target.hp <= 0) h.kills += 1;
   const p = enemyPoint(game.level, target);
   h.facing = p.x >= h.x ? 1 : -1;
@@ -2989,6 +3022,7 @@ function step(game: Game): void {
     const next = game.spawnQueue.shift()!;
     const len = next.lane ? game.pathLength2 : game.pathLength;
     const e = makeEnemy(game, next.kind, next.ambush ? next.ambush * len : 0, next.lane, next.wave ?? game.wave, next.pm);
+    if (next.scout) e.scout = true;
     game.enemies.push(e);
     if (game.duels && isBig(next.kind) && !game.duel && !game.dueled.includes(next.kind)) startDuel(game, e);
   }
@@ -3053,7 +3087,7 @@ function step(game: Game): void {
       enemy.dist += move;
     }
     if (enemy.poisonLeft && enemy.poisonLeft > 0) {
-      if (fleet) hitEnemy(game, enemy, (enemy.poison ?? 0) * STEP, enemy.lastHit);
+      if (fleet) hitEnemy(game, enemy, (enemy.poison ?? 0) * STEP, enemy.lastHit, "sting");
       else enemy.hp -= (enemy.poison ?? 0) * STEP;
       enemy.poisonLeft -= STEP;
     }
@@ -3102,7 +3136,7 @@ function step(game: Game): void {
         if (fleet && !canHurt(spec.type, pmOf(e))) continue;
         const p = enemyPoint(game.level, e);
         if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range) {
-          damageEnemy(game, e, spec.thorns * STEP, false, t.id);
+          damageEnemy(game, e, spec.thorns * STEP, false, t.id, spec.type);
           e.lastHit = t.id;
         }
       }
@@ -3128,6 +3162,7 @@ function step(game: Game): void {
               fleet ? Math.max(1, Math.round(spec.damage * game.perks.towerDamage)) : spec.damage * game.perks.towerDamage * spec.vs[enemyClass(e.kind)],
               spec.ignoresArmour,
               t.id,
+              spec.type,
             );
           if (!isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0 && (!fleet || canControl(pmOf(e), "push"))) {
             e.dist = Math.max(0, e.dist - spec.gustPush);
@@ -3193,10 +3228,10 @@ function step(game: Game): void {
       e.lastHit = t.id;
       const d = fleet ? dmg : dmg * spec.vs[enemyClass(e.kind)];
       const pm = pmOf(e);
-      if (e.shield && !area) damageEnemy(game, e, d * WRAP_LEAK, false, t.id);
+      if (e.shield && !area) damageEnemy(game, e, d * WRAP_LEAK, false, t.id, spec.type);
       else {
         popWrap(game, e);
-        damageEnemy(game, e, d, spec.ignoresArmour, t.id);
+        damageEnemy(game, e, d, spec.ignoresArmour, t.id, spec.type);
       }
       if (spec.poison) {
         e.poison = spec.poison.dps;

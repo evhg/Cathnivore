@@ -10,7 +10,7 @@ import { DAMAGE_NAMES, P, PROPERTIES, RUNGS, canHurt, propsOf, type Property } f
 export const LOCKS = ["stealth", "airborne", "plated", "wrapped", "sealed", "reefer"] as const;
 export type Lock = (typeof LOCKS)[number];
 
-/** "Stealth Box lorry", "Plated Van": the rung's name with the properties it carries beyond its own. */
+/** "Stealth Box Lorry", "Plated Van": the rung's name with the properties it carries beyond its own. */
 export function vehicleName(kind: Parameters<typeof inherentProps>[0], pm = 0): string {
   const own = inherentProps(kind);
   const extra = propsOf(pm & ~own & ~P.airborne & ~P.plant);
@@ -95,8 +95,8 @@ export function causeText(cause: LeakCause): { why: string; key: string } {
 }
 
 /**
- * The banner for the first leak of a round: "Leaked: Stealth Box lorry (11)" and "Nothing could see it. A Radio
- * Mast reveals stealth, and Cath spots it within 1.6 cells of her post."
+ * The banner for a leak: "Leaked: Stealth Box Lorry (11)" and the property's why and key lines ("Nothing
+ * could see it. A Radio Mast reveals stealth..."). Cath shows the towers only what she holds (M3).
  */
 export function leakReport(ev: { kind: Parameters<typeof inherentProps>[0]; pm?: number; lost?: number; cause?: LeakCause }): { title: string; sub: string } {
   const name = vehicleName(ev.kind, ev.pm ?? 0);

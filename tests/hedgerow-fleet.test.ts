@@ -318,6 +318,12 @@ describe("hedgerow fleet: rounds and levels", () => {
       expect(JSON.stringify(fleet[i]!.waves), `levels ${fleet[i - 1]!.id} and ${fleet[i]!.id}`).not.toBe(JSON.stringify(fleet[i - 1]!.waves));
     for (const [id, rounds] of Object.entries(SWAPS))
       for (const r of Object.keys(rounds).map(Number)) {
+        // Level 1 shapes its own curve (the M3 review's graded pressure, rounds.ts): it may reweigh its rounds,
+        // but a round to remember keeps its theme there.
+        if (id === "1") {
+          if ([6, 10, 12, 14].includes(r)) expect(rounds[r]!.theme, `level 1 round ${r}`).toBe(BOOK[r - 1]!.theme);
+          continue;
+        }
         // Acts 2-3 play every round at their traffic (rounds.ts TRAFFIC), swaps included.
         const ratio = roundFV(r, Number(id)) / (roundFV(r) * trafficOf(Number(id)));
         expect(ratio, `level ${id} round ${r}`).toBeGreaterThan(0.97);
@@ -540,6 +546,47 @@ describe("hedgerow fleet: level 1 (M1 review)", () => {
     }
     expect(bled).toBeGreaterThanOrEqual(4);
   }, 180_000);
+
+  it("level 1's pressure is graded (M3 review): a lazy field falls at round 6 as before, tier 2 bleeds, a small tier 3 field is dented", () => {
+    const spots: Array<[number, number]> = [[2, 2], [3, 2], [2, 4], [3, 4], [1, 2], [4, 4], [0, 3], [5, 3]];
+    const curve = (n: number, maxTier: number) => {
+      const g = newGame(L1);
+      const after: number[] = [];
+      let built = 0;
+      while (g.phase !== "won" && g.phase !== "lost") {
+        if (g.phase === "build") {
+          for (let spent = true; spent; ) {
+            spent = false;
+            if (built < n && place(g, "scarecrow", spots[built]![0], spots[built]![1]).ok) {
+              built++;
+              spent = true;
+              continue;
+            }
+            for (const t of g.towers) if (t.tier < maxTier && upgrade(g, t.id).ok) { spent = true; break; }
+          }
+          sendWave(g);
+        }
+        stepGame(g);
+        if (g.phase !== "wave" && after.length < g.wave) after.push(g.goodwill);
+      }
+      return { won: g.phase === "won", after };
+    };
+    // The lazy cliff is no steeper than M2's: untouched to round 4, gone by round 6.
+    const lazy = curve(3, 1);
+    expect(lazy.after.slice(0, 4)).toEqual([120, 120, 120, 120]);
+    expect(lazy.won).toBe(false);
+    expect(lazy.after.length).toBe(6);
+    // Four tier 2 Scarecrows bleed for at least three rounds before they fall, rather than 120 to 0 in two.
+    const t2 = curve(4, 2);
+    const drops = t2.after.filter((v, i) => i > 0 && v < t2.after[i - 1]! && v > 0).length;
+    expect(drops).toBeGreaterThanOrEqual(3);
+    // A small tier 3 field is dented by the closing rush, not untouched, and still wins.
+    const t3 = curve(3, 3);
+    expect(t3.won).toBe(true);
+    expect(t3.after.slice(0, 11).every((v) => v === 120)).toBe(true);
+    expect(t3.after.at(-1)!).toBeGreaterThanOrEqual(20);
+    expect(t3.after.at(-1)!).toBeLessThanOrEqual(110);
+  }, 60_000);
 
   it("a lazy build (3 Scarecrows, never upgraded) loses Goodwill visibly; the best bot keeps nearly all of it", () => {
     const ps = plots(L1);
