@@ -115,15 +115,6 @@
           <div class="hud-tools">
             <button
               class="icon-btn"
-              id="btn-speed"
-              type="button"
-              aria-label="Game speed"
-              aria-pressed="false"
-            >
-              x1
-            </button>
-            <button
-              class="icon-btn"
               id="btn-pause"
               type="button"
               aria-pressed="false"
@@ -163,6 +154,7 @@
           </div>
           <div class="intro" id="intro" hidden></div>
           <p class="paused-note" id="paused-note" hidden>Paused</p>
+          <p class="choose-chip" id="choose-chip" hidden>Paused while you choose</p>
           <div class="replay-bar" id="replay-bar" hidden>
             <span class="replay-tag">Replay</span>
             <span class="replay-track" aria-hidden="true"><span id="replay-fill"></span></span>
@@ -194,6 +186,7 @@
               <ellipse cx="16" cy="16" rx="10" ry="4.5" fill="#fff6e0" stroke="#2b2320" stroke-width="1.5"/>
               <circle cx="16" cy="13" r="2.4" fill="#c4433a" stroke="#2b2320" stroke-width="1.2"/>
             </svg>
+            <span class="auto-badge" id="pie-auto" hidden>Auto</span>
             <span class="ability-label" id="pie-label">Pie</span>
           </button>
           <button class="ability" id="btn-neighbours" type="button" hidden>
@@ -206,6 +199,7 @@
               <rect x="12" y="13" width="8" height="14" rx="3" fill="#c4433a" stroke="#2b2320" stroke-width="1.6"/>
               <rect x="20" y="15" width="8" height="12" rx="3" fill="#7fa65a" stroke="#2b2320" stroke-width="1.6"/>
             </svg>
+            <span class="auto-badge" id="neighbours-auto" hidden>Auto</span>
             <span class="ability-label" id="neighbours-label">Neighbours</span>
           </button>
           <button class="ability" id="btn-rally" type="button" hidden>
@@ -214,12 +208,16 @@
               <path d="M7 28V4" stroke="#2b2320" stroke-width="2.4" stroke-linecap="round"/>
               <path d="M8 5h18l-5 6 5 6H8z" fill="#f2c94c" stroke="#2b2320" stroke-width="1.8" stroke-linejoin="round"/>
             </svg>
+            <span class="auto-badge" id="rally-auto" hidden>Auto</span>
             <span class="ability-label" id="rally-label">Rally</span>
           </button>
-          <button class="auto-btn" id="btn-auto" type="button" aria-pressed="true" title="Start the next wave by itself">
-            Auto
+          <button class="auto-btn" id="btn-auto" type="button" aria-pressed="true" aria-label="Keep Going: start the next round by itself">
+            <span class="auto-word">Keep<br />Going</span>
           </button>
-          <button class="btn send" id="btn-send" type="button">Send wave 1</button>
+          <div class="go-pill">
+            <button class="btn send" id="btn-send" type="button">Go</button>
+            <button class="speed-btn" id="btn-speed" type="button" aria-label="Game speed x1" aria-pressed="false">x1</button>
+          </div>
         </footer>
       </section>
       <p class="sr-only" id="announce" aria-live="polite"></p>

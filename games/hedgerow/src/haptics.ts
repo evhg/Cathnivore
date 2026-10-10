@@ -22,4 +22,8 @@ export const haptic = {
   boss: () => buzz([30, 40, 60]),
   win: () => buzz([20, 50, 20, 50, 40]),
   lose: () => buzz(120),
+  /** An ability is ready again: a tiny tick under the thumb. */
+  ready: () => buzz(8),
+  /** Something got through: the first leak of a round. */
+  leakReport: () => buzz([30, 30, 50]),
 };

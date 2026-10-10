@@ -2,6 +2,11 @@ import "./styles.css";
 import "../../../shared/cath/cath.css";
 import { cathSvg, type CathExpression } from "../../../shared/cath/cath";
 import {
+  ABILITIES,
+  AUTO_AFTER_CASTS,
+  betweenRounds,
+  towerActive,
+  type Ability,
   ENEMIES,
   MEGAS,
   NEIGHBOURS_SECS,
@@ -95,6 +100,14 @@ import { enemyIcon, img, towerIcon } from "./icons";
 import * as sfx from "./sound";
 import { haptic, setHaptics } from "./haptics";
 import {
+  KEEP_GOING_FROM,
+  autoEarned,
+  autoOn,
+  fastestSpeed,
+  keepGoingFor,
+  recordCast,
+  setAuto,
+  setKeepGoing,
   PERKS,
   buyPerk,
   freeStars,
@@ -173,6 +186,12 @@ const ui = {
   bubbleText: $<HTMLElement>("bubble-text"),
   intro: $<HTMLElement>("intro"),
   pausedNote: $<HTMLElement>("paused-note"),
+  chooseChip: $<HTMLElement>("choose-chip"),
+  autoBadge: {
+    pie: $<HTMLElement>("pie-auto"),
+    neighbours: $<HTMLElement>("neighbours-auto"),
+    rally: $<HTMLElement>("rally-auto"),
+  } as Record<Ability, HTMLElement>,
   announce: $<HTMLElement>("announce"),
   dlgStory: $<HTMLDialogElement>("dlg-story"),
   storyBg: $<HTMLElement>("story-bg"),
@@ -265,25 +284,40 @@ if (USE_3D) {
 }
 setHaptics(!sfx.isMuted());
 let selected: { col: number; row: number } | null = null;
-/** Auto-continue: the next wave starts by itself after a countdown (the auto-battler default). */
-const AUTO_SECS = 6;
-let autoNext = (() => {
-  try {
-    return localStorage.getItem("hedgerow:auto") !== "off";
-  } catch {
-    return true;
-  }
-})();
+/**
+ * Keep Going (Hedgerow 2 M1): the next round starts by itself 2 s after a clear. Off on levels 1-5 while
+ * new players learn the Go-and-stack rhythm; after that on by default, and the choice is remembered.
+ */
+const AUTO_SECS = 2;
+let autoNext = false;
 let autoLeft = AUTO_SECS;
+// The old Auto switch's "off" carries over as Keep Going off.
+try {
+  if (localStorage.getItem("hedgerow:auto") === "off" && data.settings?.keepGoing === undefined) {
+    setKeepGoing(data, false);
+    save(data);
+  }
+} catch {
+  /* storage blocked */
+}
 
+/** x1 and x3; x5 opens on a level once it has been won. */
 let speed = (() => {
   try {
     const v = Number(localStorage.getItem("hedgerow:speed"));
-    return v === 2 || v === 3 ? v : 1;
+    return v === 3 || v === 5 ? v : v === 2 ? 3 : 1;
   } catch {
     return 1;
   }
 })();
+let maxSpeed: 3 | 5 = 3;
+/** Cath is waiting to be given a new post (between rounds: tap her, then tap the field). */
+let posting = false;
+/** The round whose first leak has already been reported, and when the leak slow-motion ends. */
+let leakReported = 0;
+let slowUntil = 0;
+/** Which abilities were ready last frame (a tick under the thumb when one comes back). */
+const wasReady: Record<Ability, boolean> = { pie: false, neighbours: false, rally: false };
 let paused = false;
 let aiming = false;
 let last = 0;
@@ -368,11 +402,9 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
       if (n >= line.text.length) finishTyping();
     }, 22);
   };
+  // One tap per line (Hedgerow 2 M1): Next always moves on, even mid-typing.
   ui.storyNext.onclick = () => {
-    if (typing) {
-      finishTyping();
-      return;
-    }
+    finishTyping();
     i += 1;
     if (i >= lines.length) {
       ui.dlgStory.close();
@@ -485,8 +517,20 @@ function startLevel(lv: Level, heroic = heroicMode): void {
   finished = false;
   paused = false;
   aiming = false;
+  posting = false;
+  leakReported = 0;
+  slowUntil = 0;
   panelKey = "";
   earlyCalls = 0;
+  const story = !lv.endless && dailyDay === null;
+  autoNext = keepGoingFor(data, story ? lv.id : KEEP_GOING_FROM);
+  autoLeft = AUTO_SECS;
+  ui.btnAuto.hidden = story && lv.id < KEEP_GOING_FROM;
+  maxSpeed = story ? fastestSpeed(data, lv.id) : 3;
+  if (speed > maxSpeed) speed = maxSpeed;
+  // Abilities the player has put on Auto (earned by casting each by hand three times).
+  if (!SANDBOX) for (const a of ABILITIES) if (autoOn(data, a)) doAct({ t: "auto", ability: a, on: true });
+  for (const a of ABILITIES) wasReady[a] = false;
   startPerkRanks = Object.values(data.bank).reduce((a, b) => a + b, 0);
   ui.select.hidden = true;
   ui.play.hidden = false;
@@ -559,7 +603,7 @@ function levelTips(lv: Level): void {
   if (lv.id === 1)
     tip("build", "Tap a plot beside the lane to build. Hedges slow them down; scarecrows throw turnips.", "wink");
   else if (lv.id === 2)
-    tip("hero", "I'm in the lane too. Tap the lane to send me somewhere: I hold two at a time. Drones fly over me.", "determined");
+    tip("hero", "I hold my post in the lane: two at a time, so your towers get a clean shot. Between waves, tap me, then tap where I should stand.", "determined");
   else if (lv.id === PIE_FIRST_LEVEL)
     tip("pie", "Pies are out of the oven. Tap the pie, then tap where it should land.", "delighted");
   else if (lv.id === NEIGHBOURS_FIRST_LEVEL)
@@ -574,6 +618,7 @@ function levelTips(lv: Level): void {
 
 function syncControls(): void {
   ui.btnSpeed.textContent = `x${speed}`;
+  ui.btnSpeed.classList.toggle("fast", speed > 1);
   ui.btnSpeed.setAttribute("aria-pressed", String(speed > 1));
   ui.btnSpeed.setAttribute("aria-label", `Game speed x${speed}`);
   ui.btnSound.setAttribute("aria-pressed", String(!sfx.isMuted()));
@@ -601,6 +646,15 @@ function syncControls(): void {
   ui.btnRally.classList.toggle("ready", !ui.btnRally.disabled);
   ui.rallyLabel.textContent = g.rallyLeft > 0 ? "Go!" : g.rallyCd > 0 ? `${Math.ceil(g.rallyCd)}s` : "Rally";
   ui.rallyRing.style.setProperty("--cd", String(g.rallyCd / RALLY_COOLDOWN));
+  const buttons: Record<Ability, HTMLButtonElement> = { pie: ui.btnPie, neighbours: ui.btnNeighbours, rally: ui.btnRally };
+  for (const a of ABILITIES) {
+    const b = buttons[a];
+    ui.autoBadge[a].hidden = !g.auto[a];
+    b.classList.toggle("on-auto", g.auto[a]);
+    const ready = !b.hidden && b.classList.contains("ready");
+    if (ready && !wasReady[a] && g.phase === "wave" && !g.auto[a]) haptic.ready();
+    wasReady[a] = ready;
+  }
   const h = g.hero;
   ui.btnHero.classList.toggle("down", h.down > 0);
   ui.heroHp.style.setProperty("--hp", String(h.down > 0 ? 0 : h.hp / h.maxHp));
@@ -615,18 +669,28 @@ function syncControls(): void {
   ui.btnSend.disabled = !(g.phase === "build" && more) && !early;
   ui.btnSend.classList.toggle("early", early);
   ui.btnAuto.setAttribute("aria-pressed", String(autoNext));
+  // Go, then (during a round) Next stacks the following round on top for the early bonus.
+  const counting = g.phase === "build" && more && autoNext && g.wave > 0 && autoLeft > 0;
   ui.btnSend.textContent =
     g.phase === "build" && more
-      ? autoNext && g.wave > 0 && autoLeft > 0
-        ? `Wave ${g.wave + 1} in ${Math.ceil(autoLeft)}…`
-        : `Send wave ${g.wave + 1}`
+      ? counting
+        ? `Wave ${g.wave + 1} in ${Math.ceil(autoLeft)}`
+        : g.wave === 0
+          ? "Go"
+          : `Go: wave ${g.wave + 1}`
       : early
-        ? `Call wave ${g.wave + 1} early +${earlyBonus(g)}`
+        ? `Next +${earlyBonus(g)}`
         : g.phase === "wave"
-          ? `Wave ${g.wave} on the lane`
+          ? `Wave ${g.wave} of ${g.level.waves.length}`
           : g.phase === "won" || g.phase === "lost"
             ? "Level over"
-            : "All waves sent";
+            : "Last wave";
+  ui.btnSend.setAttribute(
+    "aria-label",
+    early ? `Stack wave ${g.wave + 1} on now for ${earlyBonus(g)} bonus Marks` : ui.btnSend.textContent ?? "",
+  );
+  // Choosing something holds the Keep Going countdown: say so.
+  ui.chooseChip.hidden = !(counting && selected && !player);
 }
 
 const shown = { goodwill: -1, marks: -1, wave: "" };
@@ -770,7 +834,7 @@ function wavePreview(p: HTMLElement, g: Game): void {
   const advice = cathAdvice(g, next);
   if (advice) p.append(line(`Cath: ${advice}`, "cath-tip"));
   towerRoster(p, g);
-  if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Tap the lane to move Cath.", "hint"));
+  if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
 }
 
 /** One line from Cath about the coming wave, from its enemy classes. */
@@ -1016,7 +1080,9 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     };
     row.append(up);
   } else if (t.tier === 3) {
-    p.append(statGrid(st));
+    // The choice comes first, right under the name, so a phone's short panel shows it without scrolling.
+    p.classList.add("choosing");
+    const ownStats = statGrid(st);
     const choices = document.createElement("div");
     choices.className = "spec-row";
     const open = specsUnlocked(g.level);
@@ -1054,6 +1120,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     });
     p.append(choices);
     if (!open) p.append(line(`Specialisations open at level ${SPEC_FIRST_LEVEL}.`, "hint"));
+    p.append(ownStats);
   } else p.append(statGrid(st));
   if (!t.mega && t.tier >= 3) mergeSection(p, g, t);
   const sl = document.createElement("button");
@@ -1149,15 +1216,102 @@ function select(col: number, row: number): void {
   syncControls();
 }
 
-/** Cath runs herself (the auto-battler): tapping her shows how she's doing. */
+/**
+ * Cath holds a post (Hedgerow 2 section 6). Between rounds, tapping her picks her up: the next tap on the
+ * field is her new post. During a round, tapping her shows how she's doing.
+ */
 function heroStatus(): void {
-  if (!game) return;
+  if (!game || !renderer) return;
   const h = game.hero;
+  if (!player && h.down <= 0 && betweenRounds(game) && game.phase !== "won" && game.phase !== "lost") {
+    posting = !posting;
+    renderer.heroSelected = posting;
+    if (posting) {
+      selected = null;
+      renderer.selected = null;
+      renderPanel(true);
+    }
+    toast(posting ? "Tap where Cath should stand. She holds that post through the next wave." : "Cath stays put.");
+    syncControls();
+    return;
+  }
   toast(
     h.down > 0
       ? `Cath is catching her breath: back in ${Math.ceil(h.down)}s.`
-      : `Cath: ${Math.round(h.hp)}/${h.maxHp} health, ${h.kills} knockouts. She goes where she's needed.`,
+      : `Cath: ${Math.round(h.hp)}/${h.maxHp} health, ${h.kills} knockouts. She holds her post; move her between waves.`,
   );
+}
+
+function placeHero(x: number, y: number): void {
+  if (!game || !renderer) return;
+  posting = false;
+  renderer.heroSelected = false;
+  if (doAct({ t: "hero", x, y })) {
+    sfx.playSwing();
+    toast("Cath takes her new post.");
+  }
+  syncControls();
+}
+
+const ABILITY_NAME: Record<Ability, string> = { pie: "The pie", neighbours: "Neighbours", rally: "Rally" };
+
+/** A cast by hand: three of them earn the ability its Auto toggle. */
+function noteCast(a: Ability): void {
+  const n = recordCast(data, a);
+  save(data);
+  if (n === AUTO_AFTER_CASTS)
+    toast(`${ABILITY_NAME[a]} has earned Auto: press and hold it (or right-click) to let it cast itself.`);
+}
+
+function toggleAuto(a: Ability): void {
+  if (!game || player) return;
+  if (!autoEarned(data, a)) {
+    const left = AUTO_AFTER_CASTS - (data.casts?.[a] ?? 0);
+    toast(`Cast it by hand ${left} more time${left === 1 ? "" : "s"} to earn Auto.`);
+    return;
+  }
+  const on = !game.auto[a];
+  if (!doAct({ t: "auto", ability: a, on })) return;
+  setAuto(data, a, on);
+  save(data);
+  toast(`${ABILITY_NAME[a]}: Auto ${on ? "on" : "off"}`);
+  syncControls();
+}
+
+/** Why a leak happened, in today's traits, with the counter that answers it (Hedgerow 2 section 2). */
+function leakCause(g: Game, k: EnemyKind): string {
+  const e = ENEMIES[k];
+  const have = (kind: TowerKind) => g.level.towers.includes(kind);
+  const named = (kinds: TowerKind[]) => kinds.filter(have).map((x) => TOWERS[x].name);
+  const list = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} or ${xs[xs.length - 1]}`);
+  if (e.stealth) {
+    const seen = g.towers.some((t) => t.kind === "mast" && towerActive(t));
+    return have("mast")
+      ? `${seen ? "It slipped past where your Masts could see." : "Nothing could see it."} A Radio Mast reveals stealth, and Cath spots it close to her post.`
+      : "Nothing could see it. Cath spots stealth close to her post: put her where it will pass.";
+  }
+  if (e.flying) {
+    const air = (g.level.towers as TowerKind[]).filter((x) => towerStats({ kind: x, tier: 1, spec: null }).air).map((x) => TOWERS[x].name);
+    return `It flew over the hedges. Only towers that hit air touch it${air.length ? `: ${list(air)}` : ""}.`;
+  }
+  if (e.shield) {
+    const splash = named(["beehive", "pond", "cannon"]);
+    return `Bubble wrap soaked up the single shots. Splash bursts it${splash.length ? `: ${list(splash)}` : ""}, and so does a pie.`;
+  }
+  if (isBig(k)) return "A boss shrugs off a lot. Upgrade along the last stretch, and save a pie or an Injunction for it.";
+  if (isHeavy(k)) {
+    const movers = named(["silo", "cannon"]);
+    return `Heavy plant ploughs on and hedges slow it only half as much.${movers.length ? ` ${list(movers)} move it.` : " Stack damage where it bunches up."}`;
+  }
+  if (e.armor) return have("silo") ? "Armour shrugged off the hits. Grain Silos ignore armour." : "Armour shrugged off the hits. Bigger hits get through it: upgrade.";
+  return "Not enough damage near the farmhouse. Build or upgrade along the last stretch of lane.";
+}
+
+function leakReport(g: Game, k: EnemyKind): void {
+  banner(`Leaked: ${ENEMIES[k].name}`, leakCause(g, k));
+  say(`Leaked: ${ENEMIES[k].name}. ${leakCause(g, k)}`);
+  haptic.leakReport();
+  if (!REDUCED) slowUntil = performance.now() + 600;
 }
 
 function startAim(): void {
@@ -1179,7 +1333,10 @@ function fire(x?: number, y?: number): void {
   if (!game || !renderer) return;
   aiming = false;
   renderer.aim = null;
-  if (doAct({ t: "pie", x, y })) sfx.playPie();
+  if (doAct({ t: "pie", x, y })) {
+    sfx.playPie();
+    noteCast("pie");
+  }
   renderPanel(true);
   syncControls();
 }
@@ -1261,8 +1418,13 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       case "leak":
         sfx.playLeak();
         haptic.leak();
+        // The first leak of a round gets a moment of slow motion and a banner naming the cause.
+        if (ev.kind && !player && leakReported !== g.wave) {
+          leakReported = g.wave;
+          leakReport(g, ev.kind);
+        }
         if (g.goodwill <= g.maxGoodwill / 2 && g.goodwill > 0)
-          tip(`low-${g.level.id}`, "They're getting through! Hedges near the farmhouse, and send me to the end of the lane.", "worried", true);
+          tip(`low-${g.level.id}`, "They're getting through! Hedges near the farmhouse, and between waves move me to the end of the lane.", "worried", true);
         break;
       case "wave": {
         sfx.playWave();
@@ -1273,7 +1435,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           banner(ENEMIES[boss].name, "Boss incoming", true);
           sfx.playBoss();
           haptic.boss();
-        } else banner(`Wave ${ev.wave}`, ev.early ? `Called early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
+        } else banner(`Wave ${ev.wave}`, ev.early ? `Stacked early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
         introduce(kinds);
         if (ev.early) earlyCalls += 1;
         break;
@@ -1375,7 +1537,8 @@ function frame(now: number): void {
       syncControls();
     } else if (g.phase !== "build") autoLeft = AUTO_SECS;
     // A duel runs in real time, whatever the game speed; a replay runs at least x2.
-    acc += dt * (player ? Math.max(2, speed) : g.duel ? 1 : speed);
+    const slow = now < slowUntil ? 0.4 : 1;
+    acc += dt * (player ? Math.max(2, speed) : g.duel ? 1 : speed * slow);
     let stepped = false;
     while (acc >= STEP) {
       acc -= STEP;
@@ -1401,7 +1564,7 @@ function frame(now: number): void {
       updateHud();
       sfx.setIntensity(g.phase !== "wave" ? 0 : g.enemies.some((e) => isBig(e.kind)) ? 2 : 1);
       if (canCallEarly(g) && g.level.id <= 3)
-        tip("early", "Feeling brave? Call the next wave early for bonus Marks.", "wink");
+        tip("early", "Feeling brave? Tap Next to stack the next wave on this one for bonus Marks.", "wink");
       if (pieUnlocked(g.level) && g.pieCd === 0 && g.phase === "wave" && g.enemies.length > 3)
         tip("pie-ready", "Pie's ready. Tap it, then tap the thick of them.", "delighted");
     }
@@ -1700,6 +1863,10 @@ ui.canvas.addEventListener("click", (e) => {
     fire(w.x, w.y);
     return;
   }
+  if (posting && !renderer.onHero(e.clientX, e.clientY, game)) {
+    placeHero(w.x, w.y);
+    return;
+  }
   if (renderer.onHero(e.clientX, e.clientY, game)) {
     heroStatus();
     return;
@@ -1752,13 +1919,22 @@ ui.canvas.addEventListener("keydown", (e) => {
   } else if (e.key === "Enter" || e.key === " ") {
     e.preventDefault();
     if (aiming) fire(cur.col + 0.5, cur.row + 0.5);
+    else if (posting) placeHero(cur.col + 0.5, cur.row + 0.5);
     else if (!laneCellsOf(g.level).has(`${cur.col},${cur.row}`)) select(cur.col, cur.row);
   } else if (e.key === "Escape") {
     aiming = false;
+    posting = false;
+    renderer.heroSelected = false;
     renderer.aim = null;
     deselect();
   } else if (e.key === "c" || e.key === "C") {
     heroStatus();
+  } else if ((e.key === "p" || e.key === "P") && e.shiftKey) {
+    toggleAuto("pie");
+  } else if ((e.key === "b" || e.key === "B") && e.shiftKey) {
+    toggleAuto("neighbours");
+  } else if ((e.key === "r" || e.key === "R") && e.shiftKey) {
+    toggleAuto("rally");
   } else if (e.key === "p" || e.key === "P") {
     if (!ui.btnPie.disabled) startAim();
   } else if (e.key === "b" || e.key === "B") {
@@ -1781,13 +1957,19 @@ ui.btnPie.addEventListener("click", () => {
 ui.btnNeighbours.addEventListener("click", () => {
   if (!game) return;
   sfx.unlock();
-  if (doAct({ t: "neighbours" })) sfx.playNeighbours();
+  if (doAct({ t: "neighbours" })) {
+    sfx.playNeighbours();
+    noteCast("neighbours");
+  }
   syncControls();
 });
 ui.btnRally.addEventListener("click", () => {
   if (!game) return;
   sfx.unlock();
-  if (doAct({ t: "rally" })) sfx.playRally();
+  if (doAct({ t: "rally" })) {
+    sfx.playRally();
+    noteCast("rally");
+  }
   syncControls();
 });
 ui.btnHero.addEventListener("click", () => {
@@ -1797,15 +1979,13 @@ ui.btnHero.addEventListener("click", () => {
 ui.btnAuto.addEventListener("click", () => {
   autoNext = !autoNext;
   autoLeft = AUTO_SECS;
-  try {
-    localStorage.setItem("hedgerow:auto", autoNext ? "on" : "off");
-  } catch {
-    /* storage blocked */
-  }
+  setKeepGoing(data, autoNext);
+  save(data);
   syncControls();
 });
 ui.btnSpeed.addEventListener("click", () => {
-  speed = speed === 1 ? 2 : speed === 2 ? 3 : 1;
+  speed = speed === 1 ? 3 : speed === 3 && maxSpeed === 5 ? 5 : 1;
+  if (speed === 3 && maxSpeed === 3) tip("x5", "Win this level once and x5 opens here.", "wink");
   try {
     localStorage.setItem("hedgerow:speed", String(speed));
   } catch {
@@ -1891,21 +2071,25 @@ document.addEventListener("keydown", (e) => {
 
 // ---- tooltips: hover (or press and hold) any control to see what it does ----
 
+const AUTO_HINT = ` Cast it by hand ${AUTO_AFTER_CASTS} times and it earns Auto: press and hold (or right-click) to switch it on.`;
+const AUTO_BUTTONS: Record<string, Ability> = { "btn-pie": "pie", "btn-neighbours": "neighbours", "btn-rally": "rally" };
+let lastPointer = "mouse";
+
 const TIPS: Record<string, () => string> = {
   "btn-pie": () =>
-    `Cath's pie. Tap it, then tap where it should land: everything in the splash freezes for ${PIE_STUN}s (bosses half that) and takes ${PIE_DAMAGE} damage. Ready again ${Math.round(game ? pieCooldown(game) : 30)}s later. Tap the pie twice to throw at the front of the queue.`,
+    `Cath's pie. Tap it, then tap where it should land: everything in the splash freezes for ${PIE_STUN}s (bosses half that) and takes ${PIE_DAMAGE} damage. Ready again ${Math.round(game ? pieCooldown(game) : 30)}s later. Tap the pie twice to throw at the front of the queue.${AUTO_HINT}`,
   "btn-neighbours": () =>
-    `Call the neighbours: three farmhands block the lane just ahead of the leading vehicle for ${NEIGHBOURS_SECS}s. Nothing on wheels gets past; bosses crawl. Unlocks at level ${NEIGHBOURS_FIRST_LEVEL}.`,
-  "btn-rally": () => `Rally: every tower fires half as fast again for ${RALLY_SECS}s. Unlocks at level ${RALLY_FIRST_LEVEL}.`,
+    `Call the neighbours: three farmhands block the lane just ahead of the leading vehicle for ${NEIGHBOURS_SECS}s. Nothing on wheels gets past; bosses crawl. Unlocks at level ${NEIGHBOURS_FIRST_LEVEL}.${AUTO_HINT}`,
+  "btn-rally": () => `Rally: every tower fires half as fast again for ${RALLY_SECS}s. Unlocks at level ${RALLY_FIRST_LEVEL}.${AUTO_HINT}`,
   "btn-auto": () =>
     autoNext
-      ? "Auto is on: the next wave starts by itself a few seconds after the last one is cleared, and Cath and her abilities run themselves. Tap to send waves yourself."
-      : "Auto is off: you send each wave yourself. Tap to let the waves roll on their own.",
-  "btn-hero": () => "Cath. She walks to the trouble herself, holds vehicles in the lane and whacks them. Tap her for her health.",
-  "btn-speed": () => `Game speed (now x${speed}). Tap to cycle x1, x2, x3; it's remembered.`,
+      ? "Keep Going is on: the next wave starts by itself 2 seconds after the last is cleared. Tap to send each wave yourself."
+      : "Keep Going is off: you press Go for each wave. Tap to let the waves roll on.",
+  "btn-hero": () => "Cath holds her post: two vehicles at a time, so your towers get a clean shot. Between waves, tap her, then tap where she should stand.",
+  "btn-speed": () => `Game speed (now x${speed}). Tap to cycle x1, x3${maxSpeed === 5 ? ", x5" : " (x5 once you've won this level)"}; it's remembered.`,
   "btn-pause": () => (paused ? "Resume the game." : "Pause the game."),
   "btn-sound": () => (sfx.isMuted() ? "Sound and vibration are off." : "Sound and vibration are on."),
-  "btn-send": () => "Send the next wave. While a wave is on the lane you can call the next early for bonus Marks.",
+  "btn-send": () => "Go starts the next wave. While a wave is on the lane, Next stacks the following one on top for bonus Marks.",
   "btn-levels": () => "Back to the map.",
   "btn-cath": () => "Cath's character sheet: spend skill points on her attributes and pick talents as she levels up.",
   "btn-daily": () => "Today's challenge: one level a day, no Seed Bank, and a score to share.",
@@ -1958,13 +2142,17 @@ for (const id of Object.keys(TIPS)) {
   });
   // Press and hold on a touch screen: the tip, and the press doesn't count as a tap.
   el.addEventListener("pointerdown", (e) => {
+    lastPointer = e.pointerType;
     if (e.pointerType === "mouse") return;
     tipSuppress = false;
     clearTimeout(tipTimer);
     tipTimer = window.setTimeout(() => {
       tipSuppress = true;
-      showTip(el);
       haptic.build();
+      // An ability that has earned Auto: press and hold switches it.
+      const ab = AUTO_BUTTONS[el.id];
+      if (ab && game && autoEarned(data, ab)) toggleAuto(ab);
+      else showTip(el);
     }, 450);
   });
   for (const ev of ["pointerup", "pointercancel"] as const) el.addEventListener(ev, () => clearTimeout(tipTimer));
@@ -1980,7 +2168,12 @@ for (const id of Object.keys(TIPS)) {
     },
     true,
   );
-  el.addEventListener("contextmenu", (e) => e.preventDefault());
+  el.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    // Right-click switches an ability's Auto (a touch long-press is handled above).
+    const ab = AUTO_BUTTONS[el.id];
+    if (ab && lastPointer === "mouse") toggleAuto(ab);
+  });
 }
 
 // ---- Cath's character sheet ----

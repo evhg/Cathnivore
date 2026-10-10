@@ -326,6 +326,75 @@ test.describe('Hedgerow', () => {
     expect(errors).toEqual([])
   })
 
+  test('Hedgerow 2 M1: Go, stack the next wave and speed in one pill at 844x390', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.setViewportSize({ width: 844, height: 390 })
+    await page.goto(HEDGEROW_2D)
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars: {}, seenBefore: { '1': true }, tips: { build: true, hero: true, early: true } })))
+    await page.reload()
+    await page.locator('button.level[data-level="1"]').click()
+    // Keep Going is off (and hidden) on levels 1-5; x5 only after a win.
+    await expect(page.locator('#btn-auto')).toBeHidden()
+    await expect(page.locator('#btn-send')).toHaveText('Go')
+    await page.locator('#btn-speed').click()
+    await expect(page.locator('#btn-speed')).toHaveText('x3')
+    await page.locator('#btn-speed').click()
+    await expect(page.locator('#btn-speed')).toHaveText('x1')
+    await page.locator('#btn-send').click()
+    await expect(page.locator('#hud-wave')).toHaveText('1/5')
+    // During the wave the same button stacks the next one on top, for the early bonus.
+    await expect(page.locator('#btn-send')).toHaveText(/^Next \+\d+$/, { timeout: 8000 })
+    const before = Number(await page.locator('#hud-marks').textContent())
+    const bonus = Number((await page.locator('#btn-send').textContent())!.replace(/\D/g, ''))
+    await page.locator('#btn-send').click()
+    await expect(page.locator('#hud-wave')).toHaveText('2/5')
+    expect(Number(await page.locator('#hud-marks').textContent())).toBeGreaterThanOrEqual(before + bonus)
+    await expect(page.locator('#banner')).toContainText('Stacked early')
+    // The whole pill is on screen.
+    for (const id of ['#btn-send', '#btn-speed']) {
+      const box = (await page.locator(id).boundingBox())!
+      expect(box.y + box.height).toBeLessThanOrEqual(390)
+      expect(box.x + box.width).toBeLessThanOrEqual(844)
+    }
+    // Cath holds her post during a wave.
+    await page.locator('#btn-hero').click()
+    await expect(page.locator('#toast')).toContainText('holds her post')
+    await noSideways(page)
+    expect(errors).toEqual([])
+  })
+
+  test('Hedgerow 2 M1: the specialisation choice shows on a landscape phone without scrolling', async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 })
+    await page.goto(HEDGEROW_2D)
+    const stars: Record<string, number> = {}
+    for (let i = 1; i <= 5; i++) stars[String(i)] = 3
+    await page.evaluate((stars) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars, seenBefore: { '6': true }, tips: { spec: true } })), stars)
+    await page.reload()
+    await page.locator('button.level[data-level="6"]').click()
+    // From level 6 Keep Going is on by default.
+    await expect(page.locator('#btn-auto')).toHaveAttribute('aria-pressed', 'true')
+    await selectCell(page, PLOT6[0], PLOT6[1])
+    await page.locator('button.btn-build[data-kind="scarecrow"]').click()
+    await page.locator('#btn-upgrade').click()
+    await page.locator('#btn-upgrade').click()
+    await expect(page.locator('button.spec')).toHaveCount(2)
+    const panel = (await page.locator('#panel').boundingBox())!
+    for (const b of await page.locator('button.spec').all()) {
+      await expect(b).toBeInViewport({ ratio: 1 })
+      const box = (await b.boundingBox())!
+      expect(box.y + box.height).toBeLessThanOrEqual(panel.y + panel.height)
+    }
+    expect(await page.locator('#panel').evaluate((el) => el.scrollTop)).toBe(0)
+  })
+
+  test('Hedgerow 2 M1: the story moves on one tap per line', async ({ page }) => {
+    await page.goto(HEDGEROW_2D)
+    await page.locator('button.level[data-level="1"]').click()
+    const first = await page.locator('#story-full').textContent()
+    await page.locator('#story-next').click()
+    await expect(page.locator('#story-full')).not.toHaveText(first!)
+  })
+
   test('keeps progress in localStorage', async ({ page }) => {
     await page.goto(HEDGEROW_2D)
     await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 1, stars: { '1': 2 }, seenBefore: { '1': true } })))

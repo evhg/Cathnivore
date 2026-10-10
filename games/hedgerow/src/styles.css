@@ -2438,3 +2438,143 @@ img.act-scene {
   opacity: 0.3;
   pointer-events: none;
 }
+
+/* ---- Hedgerow 2 M1: hands-on pacing ---- */
+
+/* Go and the speed switch are one pill, bottom right: Go, Next (stack a round), x1 / x3 / x5. */
+.go-pill {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  border-radius: 16px;
+}
+.go-pill .btn.send {
+  flex: 1;
+  min-width: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.speed-btn {
+  flex: none;
+  min-width: 52px;
+  border: 0;
+  border-radius: 0 16px 16px 0;
+  border-left: 2px solid rgba(255, 255, 255, 0.35);
+  background: #3d6a2f;
+  color: #fff;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(30, 50, 20, 0.45);
+}
+.speed-btn.fast {
+  background: #d9822b;
+  box-shadow: 0 3px 0 rgba(120, 60, 10, 0.5);
+}
+.auto-btn .auto-word {
+  display: block;
+  font-size: 12px;
+  line-height: 1.1;
+}
+/* An ability on Auto: a small badge, and no pulsing (it doesn't need your thumb). */
+.auto-badge {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--pasture);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+}
+#btn-pie.on-auto.ready,
+#btn-neighbours.on-auto.ready,
+#btn-rally.on-auto.ready {
+  animation: none;
+}
+/* Keep Going's countdown waits while a plot or tower is selected: say so. */
+.choose-chip {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(29, 20, 5, 0.78);
+  color: #fff8e6;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+}
+/* Phones: the specialisation choice is compact (name, cost, one line) and sits at the top of the card. */
+@media (max-width: 899.98px), (max-height: 520px) {
+  .panel .spec .stats {
+    display: none;
+  }
+  .panel .spec small {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 11px;
+  }
+  .panel .spec-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .panel .spec-top strong {
+    font-size: 13px;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) and (min-width: 560px) and (max-width: 899.98px) {
+  .panel .spec-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+  .panel .spec {
+    padding: 4px 5px;
+  }
+  .panel .spec small {
+    display: none;
+  }
+  .panel .spec-top {
+    flex-wrap: wrap;
+    gap: 2px 4px;
+  }
+  .panel .spec-icon {
+    width: 26px;
+    height: 26px;
+  }
+  .panel .spec-top strong {
+    font-size: 12px;
+    line-height: 1.15;
+  }
+  .panel.choosing .vet-line {
+    display: none;
+  }
+  .controls .go-pill {
+    flex: 1 1 100%;
+    min-height: 44px;
+  }
+}
+@media (max-height: 700px) and (max-width: 899.98px) {
+  .speed-btn {
+    min-height: 50px;
+  }
+}
+@media (min-width: 900px) {
+  /* The side column is narrow: Go and the speed switch take their own full-width row under the abilities. */
+  .controls {
+    flex-wrap: wrap;
+  }
+  .controls .go-pill {
+    flex: 1 1 100%;
+  }
+}
