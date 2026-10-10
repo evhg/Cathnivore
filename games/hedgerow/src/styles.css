@@ -1619,7 +1619,8 @@ button {
   color: #fff;
 }
 @media (max-width: 520px) {
-  /* Cath runs herself; on a phone she's tapped on the field, so her button makes room for the abilities. */
+  /* On a phone Cath is tapped on the field (and dragged to a new post between rounds), so her button makes
+     room for the abilities. */
   #btn-hero {
     display: none;
   }
@@ -2575,6 +2576,41 @@ img.act-scene {
     flex-wrap: wrap;
   }
   .controls .go-pill {
+    flex: 1 1 100%;
+  }
+}
+
+/* Phones: while a tower is choosing its specialisation, the choice must show without scrolling at every tray
+   size (844x390 with three abilities, 375x667). The head shrinks to one line, and the Sell row stops being
+   sticky so it can't draw over the choice; it scrolls in under the stats instead. */
+@media (max-width: 899.98px), (max-height: 520px) {
+  .panel.choosing .vet-line {
+    display: none;
+  }
+  .panel.choosing .tower-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .panel.choosing .tower-titles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+  }
+  .panel.choosing .target-btn {
+    min-height: 28px;
+  }
+  .panel.choosing .panel-row {
+    position: static;
+  }
+}
+/* Portrait phones from level 25: with three abilities and Keep Going in the tray, the Go pill gets its own
+   full-width row, so "Next +12" (the early bonus) is never cut to "Next ...". */
+@media (max-width: 520px) {
+  .controls:has(#btn-rally:not([hidden])) {
+    flex-wrap: wrap;
+  }
+  .controls:has(#btn-rally:not([hidden])) .go-pill {
     flex: 1 1 100%;
   }
 }

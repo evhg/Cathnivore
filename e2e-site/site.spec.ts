@@ -200,6 +200,25 @@ async function selectCell(page: Page, col: number, row: number) {
   await page.keyboard.press('Enter')
 }
 
+/** Both specialisation buttons are inside the panel, unscrolled, and nothing (such as a sticky Sell row) covers them. */
+async function expectSpecChoiceVisible(page: Page) {
+  const panel = (await page.locator('#panel').boundingBox())!
+  for (const b of await page.locator('button.spec').all()) {
+    await expect(b).toBeInViewport({ ratio: 1 })
+    const box = (await b.boundingBox())!
+    expect(box.y + box.height).toBeLessThanOrEqual(panel.y + panel.height)
+    const uncovered = await b.evaluate((el) => {
+      const r = el.getBoundingClientRect()
+      return [0.25, 0.5, 0.8].every((f) => {
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height * f)
+        return !!hit && el.contains(hit)
+      })
+    })
+    expect(uncovered).toBe(true)
+  }
+  expect(await page.locator('#panel').evaluate((el) => el.scrollTop)).toBe(0)
+}
+
 test.describe('Hedgerow', () => {
   test('story, build a scarecrow, send a wave', async ({ page }) => {
     const errors = trackErrors(page)
@@ -378,14 +397,54 @@ test.describe('Hedgerow', () => {
     await page.locator('#btn-upgrade').click()
     await page.locator('#btn-upgrade').click()
     await expect(page.locator('button.spec')).toHaveCount(2)
-    const panel = (await page.locator('#panel').boundingBox())!
-    for (const b of await page.locator('button.spec').all()) {
-      await expect(b).toBeInViewport({ ratio: 1 })
-      const box = (await b.boundingBox())!
-      expect(box.y + box.height).toBeLessThanOrEqual(panel.y + panel.height)
-    }
-    expect(await page.locator('#panel').evaluate((el) => el.scrollTop)).toBe(0)
+    await expectSpecChoiceVisible(page)
   })
+
+  // Later levels crowd the tray (Neighbours from 12, Rally from 25), which squeezes the panel; and the iPhone SE
+  // is the shortest portrait phone. The choice must still show, uncovered by the Sell row, and Go must stay legible.
+  for (const [w, h] of [[844, 390], [375, 667], [390, 844]] as const) {
+    for (const level of [12, 40]) {
+      test(`Hedgerow 2 M1: spec choice and Go pill fit at ${w}x${h} on level ${level}`, async ({ page }, info) => {
+        test.skip(info.project.name !== 'site-phone', 'a phone layout check')
+        await page.setViewportSize({ width: w, height: h })
+        await page.goto(`${HEDGEROW_2D}&sandbox=1`)
+        const stars: Record<string, number> = {}
+        for (let i = 1; i < level; i++) stars[String(i)] = 3
+        await page.evaluate(
+          ([stars, level]) =>
+            localStorage.setItem(
+              'hedgerow:v1',
+              JSON.stringify({ version: 2, stars, seenBefore: { [level]: true }, tips: { spec: true, build: true, hero: true, early: true, pie: true, neighbours: true, rally: true } }),
+            ),
+          [stars, level] as const,
+        )
+        await page.reload()
+        await page.locator(`button.level[data-level="${level}"]`).click()
+        const pos = await page.evaluate(() => {
+          const H = (window as any).hedgerow
+          const g = H.game()
+          for (let r = 0; r < g.level.rows; r++)
+            for (let c = 0; c < g.level.cols; c++)
+              if (H.place(g, 'scarecrow', c, r).ok) {
+                const t = g.towers.at(-1)
+                H.upgrade(g, t.id)
+                H.upgrade(g, t.id)
+                return [c, r] as const
+              }
+          return null
+        })
+        expect(pos).not.toBeNull()
+        await selectCell(page, pos![0], pos![1])
+        await expect(page.locator('button.spec')).toHaveCount(2)
+        await expectSpecChoiceVisible(page)
+        await page.keyboard.press('Escape')
+        await page.locator('#btn-send').click()
+        await expect(page.locator('#btn-send')).toHaveText(/^Next \+\d+$/, { timeout: 8000 })
+        expect(await page.locator('#btn-send').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true)
+        await noSideways(page)
+      })
+    }
+  }
 
   test('Hedgerow 2 M1: the story moves on one tap per line', async ({ page }) => {
     await page.goto(HEDGEROW_2D)
