@@ -322,6 +322,17 @@ let maxSpeed: 3 | 5 = 3;
 let posting = false;
 /** The tip Cath's bubble is showing ("" when hidden). */
 let bubbleTip = "";
+let bubbleFace: CathExpression = "smirk";
+/** A tip that waits for the new-unit card to go, so the two never cover the lane together. */
+let pendingTip: { id: string; text: string; expression: CathExpression } | null = null;
+let introTimer = 0;
+const shortScreen = (): boolean => {
+  try {
+    return window.matchMedia("(max-height: 520px)").matches;
+  } catch {
+    return false;
+  }
+};
 /** The last wave that was stacked on early (0 = none this level): a leak soon after names the stacking. */
 let stackedWave = 0;
 /** The round whose first leak has already been reported, and when the leak slow-motion ends. */
@@ -557,6 +568,8 @@ function startLevel(lv: Level, heroic = heroicMode): void {
   renderer.cursor = { col: 0, row: 0 };
   hideBubble();
   ui.intro.hidden = true;
+  clearTimeout(introTimer);
+  pendingTip = null;
   syncControls();
   renderer.resize(game);
   updateHud();
@@ -590,7 +603,12 @@ function tip(id: string, text: string, expression: CathExpression = "smirk", for
   if (!force && data.tips[id]) return;
   data.tips[id] = true;
   save(data);
+  if (!ui.intro.hidden) {
+    pendingTip = { id, text, expression };
+    return;
+  }
   bubbleTip = id;
+  bubbleFace = expression;
   ui.bubbleFace.innerHTML = cath(expression);
   ui.bubbleText.textContent = text;
   ui.bubble.hidden = false;
@@ -1493,7 +1511,21 @@ function introduce(kinds: EnemyKind[]): void {
   void ui.intro.offsetWidth;
   ui.intro.classList.add("pop");
   say(`${ENEMIES[k].name}. ${describeEnemy(k)}`);
-  window.setTimeout(() => (ui.intro.hidden = true), 5200);
+  // A short landscape phone has no room for both: Cath's tip steps aside and comes back after the card.
+  if (shortScreen() && !ui.bubble.hidden && bubbleTip) {
+    pendingTip = { id: bubbleTip, text: ui.bubbleText.textContent ?? "", expression: bubbleFace };
+    clearTimeout(bubbleTimer);
+    hideBubble();
+  }
+  clearTimeout(introTimer);
+  introTimer = window.setTimeout(hideIntro, shortScreen() ? 3600 : 5200);
+}
+
+function hideIntro(): void {
+  ui.intro.hidden = true;
+  const p = pendingTip;
+  pendingTip = null;
+  if (p && game) tip(p.id, p.text, p.expression, true);
 }
 
 /** Which half of the screen the lane starts in. */

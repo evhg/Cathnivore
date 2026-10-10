@@ -730,6 +730,55 @@ button {
   font-size: 13px;
   line-height: 1.35;
 }
+/* A short landscape phone: the new-unit card is a slim pill in the corner, its description trimmed to a line
+   (the full line is read out and lives in the Almanac), so the lane under it stays visible. */
+@media (max-height: 520px) {
+  .bubble {
+    left: 6px;
+    bottom: 6px;
+    max-width: 380px;
+    gap: 8px;
+    padding: 5px 10px 5px 5px;
+    border-radius: 14px;
+  }
+  .bubble-face {
+    width: 34px;
+    height: 34px;
+  }
+  .bubble p {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+  .intro {
+    top: 6px;
+    right: 6px;
+    max-width: 230px;
+    gap: 6px;
+    padding: 5px 10px 5px 5px;
+    border-radius: 12px;
+  }
+  .intro.left {
+    left: 6px;
+  }
+  .intro-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+  .intro .eyebrow {
+    font-size: 9px;
+  }
+  .intro strong {
+    font-size: 13px;
+  }
+  .intro p {
+    font-size: 11px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
 .paused-note {
   position: absolute;
   inset: 0;
