@@ -66,8 +66,8 @@ export interface TowerSpec {
   buff?: [number, number, number];
   /** Marks earned at the end of every wave. */
   income?: [number, number, number];
-  /** Shots ignore armour (the Grain Silo). */
-  pierce?: boolean;
+  /** Shots ignore armour (the Grain Silo). Was `pierce` before Hedgerow 2 gave pierce a number. */
+  ignoresArmour?: boolean;
   /** Can't reach flying enemies (drones, the Blimp). */
   groundOnly?: boolean;
   /** Reveals stealth units in range and marks everything in range: they take this much extra damage (the Radio Mast). */
@@ -161,7 +161,7 @@ export const TOWERS: Record<TowerKind, TowerSpec> = {
     damage: [40, 66, 100],
     cooldown: [2.2, 2, 1.8],
     slow: [1, 1, 1],
-    pierce: true,
+    ignoresArmour: true,
   },
   mast: {
     name: "Radio Mast",
@@ -514,7 +514,7 @@ export interface Specialisation {
   /** Gust overrides (Windmill): push and seconds between gusts. */
   gustPush?: number;
   gustEvery?: number;
-  pierce?: boolean;
+  ignoresArmour?: boolean;
   /** Can hit flying enemies (a megastructure overriding a ground-only tower). */
   air?: boolean;
   cleanse?: boolean;
@@ -723,7 +723,7 @@ export const SPECIALISATIONS: Record<
       damage: 48,
       gustPush: 0.6,
       gustEvery: 1.6,
-      pierce: true,
+      ignoresArmour: true,
     },
   ],
   cannon: [
@@ -761,7 +761,10 @@ export interface TowerStats {
   reveal: number;
   injunction: number;
   aura: number;
-  pierce: boolean;
+  /** Shots ignore armour (the Grain Silo, Mill Stones, the Harvester). */
+  ignoresArmour: boolean;
+  /** How many vehicles one shot can hit (fleet levels; 1 on classic ones). */
+  pierce: number;
   /** Can hit flying enemies. */
   air: boolean;
   cleanse: boolean;
@@ -810,7 +813,7 @@ export const MEGAS: Record<MegaId, MegaSpec> = {
     range: 3.6,
     damage: 150,
     cooldown: 0.9,
-    pierce: true,
+    ignoresArmour: true,
     air: true,
     crit: { every: 4, mult: 2.5 },
   },
@@ -942,7 +945,8 @@ export function towerStats(
     reveal: s.reveal?.[i] ?? 1,
     injunction: s.injunction?.[i] ?? 0,
     aura: s.aura?.[i] ?? 1,
-    pierce: !!s.pierce,
+    ignoresArmour: !!s.ignoresArmour,
+    pierce: 1,
     air: !s.groundOnly,
     cleanse: !!s.cleanse,
     thorns: 0,
@@ -970,7 +974,7 @@ export function towerStats(
     delete over.from;
     if (t.mega) {
       // A megastructure is its own building: it keeps only what its recipe gives it.
-      Object.assign(stats, { damage: 0, slow: 1, splash: 0, buff: 1, income: 0, reveal: 1, injunction: 0, aura: 1, pierce: false, air: true, cleanse: false, gustPush: 0, gustEvery: 0, vs: { light: 1, heavy: 1, air: 1 } });
+      Object.assign(stats, { damage: 0, slow: 1, splash: 0, buff: 1, income: 0, reveal: 1, injunction: 0, aura: 1, ignoresArmour: false, air: true, cleanse: false, gustPush: 0, gustEvery: 0, vs: { light: 1, heavy: 1, air: 1 } });
     }
     Object.assign(stats, over);
   }
@@ -2148,10 +2152,10 @@ function damageEnemy(
   game: Game,
   e: Enemy,
   amount: number,
-  pierce: boolean,
+  ignoresArmour: boolean,
 ): void {
   const armor = armorOf(game, e);
-  e.hp -= (pierce ? amount : amount * (1 - armor)) * markMultiplier(game, e);
+  e.hp -= (ignoresArmour ? amount : amount * (1 - armor)) * markMultiplier(game, e);
 }
 
 function stepHero(game: Game): void {
@@ -2516,7 +2520,7 @@ export function stepGame(game: Game): void {
           e.lastHit = t.id;
           popWrap(game, e);
           if (!spec.splash && spec.damage > 0)
-            damageEnemy(game, e, spec.damage * game.perks.towerDamage * spec.vs[enemyClass(e.kind)], spec.pierce);
+            damageEnemy(game, e, spec.damage * game.perks.towerDamage * spec.vs[enemyClass(e.kind)], spec.ignoresArmour);
           if (!isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0) {
             e.dist = Math.max(0, e.dist - spec.gustPush);
             e.gustCd = 2;
@@ -2571,14 +2575,14 @@ export function stepGame(game: Game): void {
     t.shots = (t.shots ?? 0) + 1;
     const crit = !!spec.crit && t.shots % spec.crit.every === 0;
     if (crit) dmg *= spec.crit!.mult;
-    const area = spec.splash > 0 || spec.pierce;
+    const area = spec.splash > 0 || spec.ignoresArmour;
     const hit = (e: Enemy) => {
       e.lastHit = t.id;
       const d = dmg * spec.vs[enemyClass(e.kind)];
       if (e.shield && !area) damageEnemy(game, e, d * WRAP_LEAK, false);
       else {
         popWrap(game, e);
-        damageEnemy(game, e, d, spec.pierce);
+        damageEnemy(game, e, d, spec.ignoresArmour);
       }
       if (spec.poison) {
         e.poison = spec.poison.dps;

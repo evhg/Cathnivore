@@ -991,7 +991,7 @@ function statList(st: Stats): Array<[string, string]> {
   if (st.sticky) rows.push(["Honey", `${Math.round(st.sticky.factor * 100)}% speed, ${st.sticky.secs}s`]);
   if (st.knockback) rows.push(["Knockback", st.knockback.toFixed(2)]);
   if (st.crit) rows.push(["Crit", `every ${st.crit.every} shots ×${st.crit.mult}`]);
-  if (st.pierce) rows.push(["Armour", "ignored"]);
+  if (st.ignoresArmour) rows.push(["Armour", "ignored"]);
   if (st.buff > 1) rows.push(["Nearby towers", `+${Math.round((st.buff - 1) * 100)}% damage`]);
   if (st.aura > 1) rows.push(["Every tower", `+${Math.round((st.aura - 1) * 100)}% damage`]);
   if (st.income) rows.push(["Income", `+${st.income} a wave`]);
