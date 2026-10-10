@@ -6,6 +6,8 @@
 
 export const STEP = 1 / 30;
 
+import { CHILD_GAP, FLEET_HERO_DAMAGE, FLEET_PIE_DAMAGE, FLEET_TOWERS, LIVE_CAP, PIERCE_REACH, RUNGS, fleetSpecPrice, fleetUpgradePrice, fvOf, popRate, roundBonus, stackBonus } from "./fleet";
+
 export type TowerKind =
   | "hedgerow"
   | "scarecrow"
@@ -45,7 +47,14 @@ export type EnemyKind =
   | "hollowcandor"
   | "candor"
   | "remnant"
-  | "wrapped";
+  | "wrapped"
+  // The Fleet's rungs (Hedgerow 2, fleet.ts). "van" and "drone" double as the Van and Drone rungs.
+  | "courier"
+  | "hatchback"
+  | "pickup"
+  | "sprinter"
+  | "lorry"
+  | "quad";
 
 export interface TowerSpec {
   name: string;
@@ -276,6 +285,14 @@ export interface EnemySpec {
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   van: { name: "Delivery van", hp: 98, speed: 0.9, bounty: 7, leak: 1 },
+  // The Fleet's rungs. On fleet levels their shells, children and speeds come from fleet.ts RUNGS; these
+  // health pools only apply if one ever turns up on a classic field (act 1's Endless).
+  courier: { name: "Scooter courier", hp: 40, speed: 0.9, bounty: 3, leak: 1 },
+  hatchback: { name: "Hatchback", hp: 60, speed: 1.2, bounty: 5, leak: 1 },
+  pickup: { name: "Pickup", hp: 110, speed: 1.4, bounty: 8, leak: 1 },
+  sprinter: { name: "Same-Day van", hp: 80, speed: 1.6, bounty: 8, leak: 1 },
+  lorry: { name: "Box lorry", hp: 170, speed: 0.9, bounty: 12, leak: 2 },
+  quad: { name: "Cargo quadcopter", hp: 60, speed: 1.5, bounty: 6, leak: 1, flying: true },
   wrapped: { name: "Bubble-wrapped van", hp: 90, speed: 0.85, bounty: 9, leak: 1, shield: 1 },
   boss: {
     name: "The Acquisition Van",
@@ -926,10 +943,12 @@ export function towerStats(
     dmgMul?: number;
     mega?: MegaId;
     kills?: number;
+    fleet?: boolean;
   },
 ): TowerStats {
-  const rank = rankOf(t.kills ?? 0);
-  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}:${t.high ? 1 : 0}:${t.rangeMul ?? 1}:${t.dmgMul ?? 1}:${t.mega ?? ""}:${rank}`;
+  // Fleet towers have no veteran ranks: their Knockouts are the counter (Hedgerow 2 cuts RANKS).
+  const rank = t.fleet ? 0 : rankOf(t.kills ?? 0);
+  const key = `${t.kind}:${t.tier}:${t.spec ?? ""}:${t.high ? 1 : 0}:${t.rangeMul ?? 1}:${t.dmgMul ?? 1}:${t.mega ?? ""}:${rank}:${t.fleet ? 1 : 0}`;
   const hit = statCache.get(t);
   if (hit && hit.key === key) return hit.stats;
   const s = TOWERS[t.kind];
@@ -978,6 +997,7 @@ export function towerStats(
     }
     Object.assign(stats, over);
   }
+  if (t.fleet) fleetStats(t, stats);
   if (t.high && stats.range > 0) stats.range *= HIGH_GROUND_RANGE;
   if (t.rangeMul) stats.range *= t.rangeMul;
   if (t.dmgMul) {
@@ -994,6 +1014,31 @@ export function towerStats(
 }
 
 // ---- bosses: every boss has signature moves on a timer ----
+
+/** Fleet levels: a tower's hits in layers and pierce (fleet.ts FLEET_TOWERS); range, splash and slows stay. */
+function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; mega?: MegaId }, stats: TowerStats): void {
+  const f = FLEET_TOWERS[t.kind];
+  if (t.mega) {
+    // Megastructures: today's numbers in layers (about 8 health to a layer), hitting up to 10 vehicles.
+    if (stats.damage > 0) stats.damage = Math.max(1, Math.round(stats.damage / 8));
+    stats.thorns /= 12;
+    if (stats.poison) stats.poison = { dps: stats.poison.dps / 12, secs: stats.poison.secs };
+    stats.pierce = 10;
+    return;
+  }
+  const i = Math.min(t.tier, 3) - 1;
+  stats.damage = f.damage[i]!;
+  stats.pierce = f.pierce[i]!;
+  if (f.cooldown && !(t.tier === 4 && t.spec != null && SPECIALISATIONS[t.kind][t.spec].cooldown)) stats.cooldown = f.cooldown[i]!;
+  if (t.tier === 4 && t.spec != null) {
+    const fs = f.spec[t.spec];
+    if (fs.damage !== undefined) stats.damage = fs.damage;
+    if (fs.pierce !== undefined) stats.pierce = fs.pierce;
+    if (fs.cooldown !== undefined) stats.cooldown = fs.cooldown;
+    stats.thorns = fs.thorns ?? (stats.thorns > 0 ? stats.thorns / 12 : 0);
+    if (stats.poison) stats.poison = { dps: fs.poison ?? 1, secs: stats.poison.secs };
+  }
+}
 
 export interface BossMove {
   kind: "spawn" | "charge" | "stomp" | "pulse" | "mend" | "takeover";
@@ -1183,6 +1228,24 @@ export interface Level {
   endless?: boolean;
   /** Set pieces (ROADMAP 54): the level itself changes during the fight. */
   setPieces?: SetPiece[];
+  /**
+   * Hedgerow 2's transition flag (docs/design/hedgerow-2.md "What changes"): "fleet" levels play layered
+   * Fleet rungs from the Round Book (fleet.ts, rounds.ts), pay a Mark a layer and charge leaks their Fleet
+   * Value; "classic" (the default) levels keep health pools, bounties and HP_SCALE until they convert.
+   */
+  rules?: "classic" | "fleet";
+  /** Fleet levels: the window of the Round Book this level plays (wave 1 is Book round `from`). */
+  book?: { from: number; to: number };
+}
+
+/** Is this a Hedgerow 2 fleet level? */
+export function isFleet(level: Pick<Level, "rules">): boolean {
+  return level.rules === "fleet";
+}
+
+/** The Round Book's number for one of a fleet level's waves (1-based); the wave itself on classic levels. */
+export function bookRound(level: Pick<Level, "book">, wave: number): number {
+  return level.book ? level.book.from + wave - 1 : wave;
 }
 
 /**
@@ -1297,6 +1360,10 @@ export interface Tower {
   kills?: number;
   /** Seconds until its next gust (windmills). */
   gustCd?: number;
+  /** Built on a fleet level: priced and fighting in layers (fleet.ts FLEET_TOWERS). */
+  fleet?: boolean;
+  /** Layers knocked off (fleet levels): the tower's Knockouts, and the Marks it has earned. */
+  ko?: number;
 }
 
 export interface Enemy {
@@ -1458,6 +1525,8 @@ export type GameEvent =
   | { type: "bridge"; open: boolean; x: number; y: number }
   | { type: "gust"; tower: number; x: number; y: number; radius: number }
   | { type: "pop"; x: number; y: number }
+  /** Fleet levels: a hit knocked `n` layers off; `from` is what was hit and `to` what it is now (null: gone). */
+  | { type: "knock"; x: number; y: number; from: EnemyKind; to: EnemyKind | null; n: number; tower?: number }
   | { type: "rankUp"; tower: number; rank: number; x: number; y: number }
   | { type: "merge"; tower: number; mega: MegaId; x: number; y: number }
   | { type: "ambush"; x: number; y: number; kind: EnemyKind; lane?: 1; in: number }
@@ -1525,6 +1594,13 @@ export interface Game {
   duel: Duel | null;
   /** Boss kinds Cath has already duelled this level. */
   dueled: EnemyKind[];
+  /** Fleet levels: children waiting at their parent while the lane is at LIVE_CAP, oldest first. */
+  emitQueue: Array<{ kind: EnemyKind; dist: number; lane?: 1; wave?: number }>;
+  /** Fleet levels: pop income not yet paid, in thousandths of a Mark (paid out as whole Marks). */
+  popMilli: number;
+  /** Fleet levels: every layer knocked off so far, and every layer that leaked (Fleet Value). */
+  popped: number;
+  leaked: number;
 }
 
 export interface Duel {
@@ -1700,6 +1776,10 @@ export function newGame(
     duels: false,
     duel: null,
     dueled: [],
+    emitQueue: [],
+    popMilli: 0,
+    popped: 0,
+    leaked: 0,
     hero: {
       x: post.x,
       y: post.y,
@@ -1707,7 +1787,7 @@ export function newGame(
       ty: post.y,
       hp: maxHp,
       maxHp,
-      damage: HERO.damage * perks.heroDamage,
+      damage: (isFleet(level) ? FLEET_HERO_DAMAGE : HERO.damage) * perks.heroDamage,
       cd: 0,
       down: 0,
       holding: [],
@@ -1731,17 +1811,21 @@ export function sellValue(tower: Tower): number {
   return Math.floor(tower.spent * 0.7);
 }
 
-export function towerCost(game: Game, kind: TowerKind): number {
-  return Math.round(TOWERS[kind].cost * (1 - game.perks.discount));
+export function towerCost(game: Pick<Game, "perks" | "level">, kind: TowerKind): number {
+  const base = isFleet(game.level) ? FLEET_TOWERS[kind].cost : TOWERS[kind].cost;
+  return Math.round(base * (1 - game.perks.discount));
 }
 
 /** The price of the next tier (null at tier 3, where the two specialisations are priced separately, and at 4). */
-export function upgradeCost(tower: Tower): number | null {
-  return tower.tier >= 3 ? null : TOWERS[tower.kind].upgrades[tower.tier - 1]!;
+export function upgradeCost(tower: Pick<Tower, "kind" | "tier" | "fleet">): number | null {
+  if (tower.tier >= 3) return null;
+  if (tower.fleet) return fleetUpgradePrice(tower.kind, tower.tier as 1 | 2);
+  return TOWERS[tower.kind].upgrades[tower.tier - 1]!;
 }
 
-export function specCost(tower: Tower, spec: 0 | 1): number | null {
-  return tower.tier === 3 ? SPECIALISATIONS[tower.kind][spec].cost : null;
+export function specCost(tower: Pick<Tower, "kind" | "tier" | "fleet">, spec: 0 | 1): number | null {
+  if (tower.tier !== 3) return null;
+  return tower.fleet ? fleetSpecPrice(tower.kind) : SPECIALISATIONS[tower.kind][spec].cost;
 }
 
 export function specsUnlocked(level: Level): boolean {
@@ -1789,6 +1873,7 @@ export function place(
     shots: 0,
     cd: 0,
     spent: cost,
+    ...(isFleet(game.level) ? { fleet: true, ko: 0 } : {}),
   });
   return { ok: true };
 }
@@ -1814,6 +1899,9 @@ export const ENDLESS_HP_GROWTH = 1.075;
 
 /** Full health for a new enemy: the kind's, scaled by the tuner and by fortified and crowd twists. */
 export function spawnHp(game: Game, kind: EnemyKind): number {
+  // Fleet levels never scale health: a rung's shell is its shell (difficulty comes from the Round Book).
+  const rung = isFleet(game.level) ? RUNGS[kind] : undefined;
+  if (rung) return rung.shell;
   let hp = ENEMIES[kind].hp * (game.level.hpScale ?? 1);
   if (game.level.endless) hp *= Math.pow(ENDLESS_HP_GROWTH, game.wave);
   if (hasTwist(game.level, "fortified")) hp *= 1.3;
@@ -1856,7 +1944,7 @@ export function maxHpOf(e: Enemy): number {
 
 /** How fast an enemy moves under the level's twists (before slows). */
 export function speedOf(game: Game, e: Enemy): number {
-  let v = ENEMIES[e.kind].speed;
+  let v = (isFleet(game.level) ? RUNGS[e.kind]?.speed : undefined) ?? ENEMIES[e.kind].speed;
   if (hasTwist(game.level, "night")) v *= 1.1;
   if (hasTwist(game.level, "rain")) v *= 0.85;
   if (hasTwist(game.level, "fast")) v *= 1.25;
@@ -1882,7 +1970,7 @@ export function upgrade(game: Game, id: number, spec?: 0 | 1): ActionResult {
       };
     if (spec !== 0 && spec !== 1)
       return { ok: false, reason: "Choose a specialisation." };
-    const cost = SPECIALISATIONS[tower.kind][spec].cost;
+    const cost = specCost(tower, spec)!;
     if (game.marks < cost) return { ok: false, reason: `Needs ${cost} Marks.` };
     game.marks -= cost;
     tower.spent += cost;
@@ -1919,7 +2007,9 @@ export function setTarget(
 
 /** Marks for calling the next wave before the current one is cleared. */
 export function earlyBonus(game: Game): number {
-  return Math.round((10 + game.wave) * game.perks.earlyBonus);
+  // Fleet levels: 10 + the stacked round's Book number (section 4).
+  const base = isFleet(game.level) ? stackBonus(bookRound(game.level, game.wave + 1)) : 10 + game.wave;
+  return Math.round(base * game.perks.earlyBonus);
 }
 
 /** True while a wave is out but fully spawned and more waves remain: the next one can be called early. */
@@ -2000,7 +2090,7 @@ export function sendWave(game: Game, forced = false): ActionResult {
 
 /** True between rounds: nothing on the lane and nothing still to come, so Cath may change post. */
 export function betweenRounds(game: Game): boolean {
-  return game.phase === "build" || (game.phase === "wave" && game.enemies.length === 0 && game.spawnQueue.length === 0);
+  return game.phase === "build" || (game.phase === "wave" && game.enemies.length === 0 && game.spawnQueue.length === 0 && game.emitQueue.length === 0);
 }
 
 /**
@@ -2153,9 +2243,76 @@ function damageEnemy(
   e: Enemy,
   amount: number,
   ignoresArmour: boolean,
+  by?: number,
 ): void {
+  if (isFleet(game.level)) {
+    hitEnemy(game, e, amount, by);
+    return;
+  }
   const armor = armorOf(game, e);
   e.hp -= (ignoresArmour ? amount : amount * (1 - armor)) * markMultiplier(game, e);
+}
+
+/**
+ * Fleet levels (Hedgerow 2 section 1): `amount` layers off a vehicle. Each layer pays a Mark (in fixed point)
+ * and counts towards the hitting tower's Knockouts. When the shell is gone the vehicle becomes its first
+ * child on the same frame (same id, same spot) and the overflow carries into it; further children spawn
+ * CHILD_GAP cells behind, or wait in the emission queue while the lane is at LIVE_CAP. Returns the layers
+ * knocked off. Deterministic: children are made in the rung table's order.
+ */
+export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number): number {
+  if (!(amount > 0) || e.hp <= 0) return 0;
+  const from = e.kind;
+  let left = amount;
+  let removed = 0;
+  while (left > 1e-9 && e.hp > 0) {
+    const take = Math.min(left, e.hp);
+    e.hp -= take;
+    left -= take;
+    removed += take;
+    if (e.hp > 1e-9) break;
+    const kids = RUNGS[e.kind]?.children ?? [];
+    if (!kids.length) {
+      e.hp = 0;
+      break;
+    }
+    // Pop: the shell is gone, the next rung down carries on from the same spot.
+    const first = kids[0]!;
+    e.kind = first;
+    e.hp = e.maxHp = spawnHp(game, first);
+    e.shield = undefined;
+    for (let i = 1; i < kids.length; i++) {
+      const dist = Math.max(0, e.dist - i * CHILD_GAP);
+      if (game.enemies.length >= LIVE_CAP) game.emitQueue.push({ kind: kids[i]!, dist, lane: e.lane, wave: e.wave });
+      else game.enemies.push(makeEnemy(game, kids[i]!, dist, e.lane, e.wave));
+    }
+  }
+  if (removed <= 0) return 0;
+  payLayers(game, removed, by);
+  const p = enemyPoint(game.level, e);
+  game.events.push({ type: "knock", x: p.x, y: p.y, from, to: e.hp > 0 ? e.kind : null, n: removed, ...(by !== undefined ? { tower: by } : {}) });
+  return removed;
+}
+
+/** Fleet levels: a Mark a layer (less after round 50), paid as whole Marks, and the tower's Knockouts. */
+function payLayers(game: Game, layers: number, by?: number): void {
+  game.popped += layers;
+  game.popMilli += Math.round(layers * popRate(bookRound(game.level, Math.max(1, game.wave))));
+  const whole = Math.floor(game.popMilli / 1000);
+  if (whole > 0) {
+    game.marks += whole;
+    game.popMilli -= whole * 1000;
+  }
+  if (by !== undefined && by >= 0) {
+    const t = game.towers.find((x) => x.id === by);
+    if (t) t.ko = (t.ko ?? 0) + layers;
+  }
+}
+
+/** Fleet Value still on a vehicle: what's left of its shell plus all its children. */
+export function remainingFV(e: Pick<Enemy, "kind" | "hp">): number {
+  const kids = RUNGS[e.kind]?.children ?? [];
+  return Math.max(0, e.hp) + kids.reduce((a, k) => a + fvOf(k), 0);
 }
 
 function stepHero(game: Game): void {
@@ -2258,7 +2415,7 @@ function stepHero(game: Game): void {
     return;
   }
   const before = target.hp;
-  damageEnemy(game, target, dmg, false);
+  damageEnemy(game, target, dmg, false, -1);
   if (before > 0 && target.hp <= 0) h.kills += 1;
   const p = enemyPoint(game.level, target);
   h.facing = p.x >= h.x ? 1 : -1;
@@ -2380,6 +2537,7 @@ export function stepGame(game: Game): void {
     return;
   }
   game.tick += 1;
+  const fleet = isFleet(game.level);
   const bridge = setPiece(game.level, "bridge");
   if (bridge && bridgeOpen(game) !== bridgeOpen(game, game.tick - 1)) {
     const p = enemyPoint(game.level, { dist: bridge.dist, lane: bridge.lane });
@@ -2409,6 +2567,11 @@ export function stepGame(game: Game): void {
     const e = makeEnemy(game, next.kind, next.ambush ? next.ambush * len : 0, next.lane, next.wave ?? game.wave);
     game.enemies.push(e);
     if (game.duels && isBig(next.kind) && !game.duel && !game.dueled.includes(next.kind)) startDuel(game, e);
+  }
+  // Fleet children that waited for room on the lane come out in the order they popped.
+  while (game.emitQueue.length > 0 && game.enemies.length < LIVE_CAP) {
+    const q = game.emitQueue.shift()!;
+    game.enemies.push(makeEnemy(game, q.kind, q.dist, q.lane, q.wave));
   }
   // Rush hour: once a wave is all on the lane, the next follows 6 s later whether you're ready or not.
   if (hasTwist(game.level, "rush") && game.spawnQueue.length === 0 && game.wave < game.level.waves.length) {
@@ -2463,7 +2626,8 @@ export function stepGame(game: Game): void {
       enemy.dist += move;
     }
     if (enemy.poisonLeft && enemy.poisonLeft > 0) {
-      enemy.hp -= (enemy.poison ?? 0) * STEP;
+      if (fleet) hitEnemy(game, enemy, (enemy.poison ?? 0) * STEP, enemy.lastHit);
+      else enemy.hp -= (enemy.poison ?? 0) * STEP;
       enemy.poisonLeft -= STEP;
     }
   }
@@ -2502,7 +2666,7 @@ export function stepGame(game: Game): void {
         if (e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying)) continue;
         const p = enemyPoint(game.level, e);
         if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range) {
-          damageEnemy(game, e, spec.thorns * STEP, false);
+          damageEnemy(game, e, spec.thorns * STEP, false, t.id);
           e.lastHit = t.id;
         }
       }
@@ -2512,15 +2676,23 @@ export function stepGame(game: Game): void {
       t.gustCd = (t.gustCd ?? spec.gustEvery * 0.5) - STEP;
       if (t.gustCd <= 0) {
         let blew = false;
-        for (const e of game.enemies) {
+        // On fleet levels a gust batters at most `pierce` vehicles (it still blows back everything in reach).
+        let batter = fleet ? spec.pierce : Infinity;
+        for (const e of [...game.enemies]) {
           if (e.hp <= 0 || !isRevealed(game, e) || (!spec.air && ENEMIES[e.kind].flying)) continue;
           const q = enemyPoint(game.level, e);
           if (Math.hypot(t.col + 0.5 - q.x, t.row + 0.5 - q.y) > spec.range) continue;
           blew = true;
           e.lastHit = t.id;
           popWrap(game, e);
-          if (!spec.splash && spec.damage > 0)
-            damageEnemy(game, e, spec.damage * game.perks.towerDamage * spec.vs[enemyClass(e.kind)], spec.ignoresArmour);
+          if (!spec.splash && spec.damage > 0 && batter-- > 0)
+            damageEnemy(
+              game,
+              e,
+              fleet ? Math.max(1, Math.round(spec.damage * game.perks.towerDamage)) : spec.damage * game.perks.towerDamage * spec.vs[enemyClass(e.kind)],
+              spec.ignoresArmour,
+              t.id,
+            );
           if (!isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0) {
             e.dist = Math.max(0, e.dist - spec.gustPush);
             e.gustCd = 2;
@@ -2575,14 +2747,16 @@ export function stepGame(game: Game): void {
     t.shots = (t.shots ?? 0) + 1;
     const crit = !!spec.crit && t.shots % spec.crit.every === 0;
     if (crit) dmg *= spec.crit!.mult;
+    // Fleet hits are whole layers.
+    if (fleet) dmg = Math.max(1, Math.round(dmg));
     const area = spec.splash > 0 || spec.ignoresArmour;
     const hit = (e: Enemy) => {
       e.lastHit = t.id;
-      const d = dmg * spec.vs[enemyClass(e.kind)];
-      if (e.shield && !area) damageEnemy(game, e, d * WRAP_LEAK, false);
+      const d = fleet ? dmg : dmg * spec.vs[enemyClass(e.kind)];
+      if (e.shield && !area) damageEnemy(game, e, d * WRAP_LEAK, false, t.id);
       else {
         popWrap(game, e);
-        damageEnemy(game, e, d, spec.ignoresArmour);
+        damageEnemy(game, e, d, spec.ignoresArmour, t.id);
       }
       if (spec.poison) {
         e.poison = spec.poison.dps;
@@ -2596,7 +2770,30 @@ export function stepGame(game: Game): void {
         e.dist = Math.max(0, e.dist - spec.knockback);
     };
     hit(target);
-    if (spec.splash) {
+    if (fleet) {
+      // Pierce: the shot carries on into whatever is beside its target (or, for splash, under the burst),
+      // nearest first, and leftover pierce reaches children that popped out this very tick.
+      const reach = spec.splash > 0 ? spec.splash : PIERCE_REACH;
+      const done = new Set<number>([target.id]);
+      let left = spec.pierce - 1;
+      for (let pass = 0; pass < 4 && left > 0; pass++) {
+        const near: Array<{ e: Enemy; d: number }> = [];
+        for (const e of game.enemies) {
+          if (done.has(e.id) || e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying) || !isRevealed(game, e)) continue;
+          const q = enemyPoint(game.level, e);
+          const d = Math.hypot(q.x - p.x, q.y - p.y);
+          if (d <= reach) near.push({ e, d });
+        }
+        if (!near.length) break;
+        near.sort((a, b) => a.d - b.d || a.e.id - b.e.id);
+        for (const { e } of near) {
+          if (left <= 0) break;
+          done.add(e.id);
+          hit(e);
+          left--;
+        }
+      }
+    } else if (spec.splash) {
       for (const e of game.enemies) {
         if (e === target || e.hp <= 0) continue;
         if (!spec.air && ENEMIES[e.kind].flying) continue;
@@ -2604,7 +2801,7 @@ export function stepGame(game: Game): void {
         if (Math.hypot(q.x - p.x, q.y - p.y) <= spec.splash) hit(e);
       }
     }
-    t.cd = spec.cooldown * crowding(game, t);
+    t.cd = spec.cooldown * (fleet ? 1 : crowding(game, t));
     game.events.push({
       type: "shot",
       kind: t.kind,
@@ -2623,7 +2820,10 @@ export function stepGame(game: Game): void {
   const spawned: Enemy[] = [];
   for (const e of game.enemies) {
     const p = enemyPoint(game.level, e);
-    if (e.hp <= 0) {
+    if (e.hp <= 0 && fleet) {
+      // Fleet: every layer was paid as it came off; the last one just leaves a scrap of parcel tape.
+      game.events.push({ type: "kill", x: p.x, y: p.y, bounty: 0, kind: e.kind });
+    } else if (e.hp <= 0) {
       // Crowds come at half health and pay half a bounty, or a crowd level would rain Marks.
       const crowd = hasTwist(game.level, "crowd") && !isBig(e.kind) ? 0.5 : 1;
       const bounty = Math.max(1, Math.round(ENEMIES[e.kind].bounty * crowd * (hasTwist(game.level, "fast") ? 1.5 : 1)));
@@ -2645,7 +2845,9 @@ export function stepGame(game: Game): void {
       }
       game.events.push({ type: "kill", x: p.x, y: p.y, bounty, kind: e.kind });
     } else if (e.dist >= (e.lane ? game.pathLength2 : game.pathLength)) {
-      const lost = ENEMIES[e.kind].leak;
+      // Fleet: a leak costs every layer that got through (rounded up); classic: the kind's leak.
+      const lost = fleet ? Math.ceil(remainingFV(e) - 1e-9) : ENEMIES[e.kind].leak;
+      if (fleet) game.leaked += remainingFV(e);
       game.goodwill -= lost;
       game.events.push({ type: "leak", x: p.x, y: p.y, kind: e.kind, lost, ...(e.dropped ? { dropped: true } : {}) });
     } else alive.push(e);
@@ -2663,11 +2865,12 @@ export function stepGame(game: Game): void {
     const w = game.paid + 1;
     const pending =
       game.spawnQueue.some((q) => (q.wave ?? game.wave) === w) ||
+      game.emitQueue.some((q) => (q.wave ?? game.wave) === w) ||
       game.enemies.some((e) => (e.wave ?? game.wave) === w);
     if (pending) break;
     game.paid = w;
     // Marks are meant to be scarce: a wave pays a little, and Endless pays less the longer it runs.
-    let reward = game.level.endless ? 10 + Math.min(w, 15) * 2 : 14 + w * 3;
+    let reward = fleet ? roundBonus(bookRound(game.level, w)) : game.level.endless ? 10 + Math.min(w, 15) * 2 : 14 + w * 3;
     let mend = 0;
     let income = 0;
     for (const t of game.towers) {
@@ -2685,7 +2888,7 @@ export function stepGame(game: Game): void {
     game.events.push({ type: "cleared", wave: w, reward });
   }
 
-  if (game.spawnQueue.length === 0 && game.enemies.length === 0) {
+  if (game.spawnQueue.length === 0 && game.enemies.length === 0 && game.emitQueue.length === 0) {
     game.phase = game.wave >= game.level.waves.length ? "won" : "build";
   }
 }
@@ -2776,13 +2979,14 @@ export function throwPie(game: Game, x?: number, y?: number): ActionResult {
     y = p.y;
   }
   const radius = pieRadius(game);
-  for (const e of game.enemies) {
+  for (const e of [...game.enemies]) {
     const p = enemyPoint(game.level, e);
     if (Math.hypot(p.x - x, p.y - y) > radius) continue;
     popWrap(game, e);
     const stun = PIE_STUN * game.perks.pieStun;
     e.stun = Math.max(e.stun, isBig(e.kind) ? stun / 2 : stun);
-    e.hp -= PIE_DAMAGE * game.perks.pieDamage;
+    if (isFleet(game.level)) hitEnemy(game, e, Math.round(FLEET_PIE_DAMAGE * game.perks.pieDamage), -1);
+    else e.hp -= PIE_DAMAGE * game.perks.pieDamage;
     if (game.perks.pieBurn > 0) {
       e.poison = Math.max(e.poison ?? 0, game.perks.pieBurn);
       e.poisonLeft = 4;
@@ -2830,7 +3034,9 @@ export function duelStrike(game: Game, quality: number): ActionResult {
   const boss = game.enemies.find((e) => e.id === d.enemy);
   const won = total >= 1.5;
   if (boss && boss.hp > 0) {
-    boss.hp -= maxHpOf(boss) * DUEL_BITE * total * game.perks.duel;
+    const bite = maxHpOf(boss) * DUEL_BITE * total * game.perks.duel;
+    if (isFleet(game.level)) hitEnemy(game, boss, Math.min(bite, boss.hp - 1), -1);
+    else boss.hp -= bite;
     boss.stun = Math.max(boss.stun, won ? 1 + total : 0.5);
   }
   if (!won) {

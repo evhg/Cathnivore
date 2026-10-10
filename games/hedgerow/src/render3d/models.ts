@@ -975,7 +975,7 @@ export function enemyScale(kind: EnemyKind): number {
 }
 
 export function enemyLift(kind: EnemyKind): number {
-  return kind === "drone" ? 0.55 : kind === "carrier" ? 0.6 : kind === "blimp" ? 0.9 : kind === "candor" || kind === "hollowcandor" ? 0.2 : 0;
+  return kind === "drone" || kind === "quad" ? 0.55 : kind === "carrier" ? 0.6 : kind === "blimp" ? 0.9 : kind === "candor" || kind === "hollowcandor" ? 0.2 : 0;
 }
 
 interface VehicleOpts {
@@ -1090,9 +1090,75 @@ function bubbleWrap(l: number, h: number, w: number, x: number, y: number): THRE
   return shell;
 }
 
+/**
+ * The Fleet's rungs (Hedgerow 2 M2): small, chunky silhouettes that read at a glance, one colour per rung so
+ * a pop (the model swapping to the next rung down) is obvious even when hundreds are on the lane.
+ */
+export function buildRung(kind: EnemyKind): THREE.Group | null {
+  switch (kind) {
+    case "courier": {
+      // An e-scooter: deck, stem, bars, a rider in teal with a parcel box on the back.
+      const g = new THREE.Group();
+      g.add(box(0.32, 0.03, 0.08, matte("#2b2b30"), 0, 0.04, 0));
+      g.add(cyl(0.015, 0.015, 0.26, chrome(), 0.14, 0.06, 0, 6), box(0.02, 0.02, 0.16, chrome(), 0.14, 0.31, 0));
+      for (const x of [-0.13, 0.14]) g.add(rot(cyl(0.045, 0.045, 0.04, matte("#1d1b1b", 0.9, false), x, 0.0, -0.02, 10), Math.PI / 2));
+      g.add(box(0.1, 0.18, 0.12, matte("#5ec0a8", 0.6), 0, 0.07, 0), ball(0.06, matte("#efd6c4", 0.6), 0.01, 0.33, 0, 1));
+      g.add(scaled(ball(0.065, gloss("#5ec0a8"), 0.0, 0.36, 0, 1), 1, 0.6, 1));
+      g.add(box(0.12, 0.12, 0.14, matte("#c79a62"), -0.1, 0.18, 0));
+      return g;
+    }
+    case "hatchback": {
+      const g = vehicle({ len: 0.46, h: 0.2, w: 0.26, body: "#e8b23a", stripe: "#2b2b30", logo: null });
+      g.add(box(0.2, 0.09, 0.22, gloss("#e8b23a"), -0.02, 0.27, 0), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, 0.112), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, -0.112));
+      return g;
+    }
+    case "pickup": {
+      const g = vehicle({ len: 0.6, h: 0.18, w: 0.3, body: "#4a7fc4", stripe: "#f4f6f8", logo: null });
+      g.add(box(0.22, 0.12, 0.28, gloss("#4a7fc4"), 0.12, 0.25, 0), box(0.006, 0.08, 0.24, glass(), 0.231, 0.27, 0));
+      for (const side of [-1, 1]) g.add(box(0.3, 0.06, 0.02, gloss("#3a6aa8"), -0.16, 0.25, side * 0.14));
+      g.add(box(0.12, 0.08, 0.12, matte("#c79a62"), -0.18, 0.25, 0));
+      return g;
+    }
+    case "sprinter": {
+      const g = vehicle({ len: 0.66, h: 0.34, body: "#8a4fd0", stripe: "#ffd23f", logo: "#ffd23f" });
+      for (const side of [-1, 1]) g.add(box(0.22, 0.05, 0.005, glow("#ffffff", 0.9), -0.14, 0.24, side * 0.153));
+      return g;
+    }
+    case "lorry": {
+      const g = new THREE.Group();
+      g.add(box(0.62, 0.36, 0.34, matte("#24345e", 0.55), -0.1, 0.1, 0));
+      g.add(box(0.2, 0.28, 0.32, gloss("#e9ecef"), 0.33, 0.07, 0), box(0.006, 0.12, 0.26, glass(), 0.432, 0.22, 0));
+      for (const side of [-1, 1]) g.add(box(0.5, 0.05, 0.005, glow("#5ab0ff", 0.7), -0.1, 0.36, side * 0.172));
+      for (const x of [-0.3, -0.12, 0.33]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.16));
+      g.add(box(0.7, 0.04, 0.3, matte("#26282d", 0.6, false), 0.02, 0.04, 0));
+      return g;
+    }
+    case "quad": {
+      const g = new THREE.Group();
+      g.add(box(0.3, 0.08, 0.3, gloss("#f08a3c", 0.3), 0, 0, 0));
+      for (const [x, z] of [[0.2, 0.2], [-0.2, 0.2], [0.2, -0.2], [-0.2, -0.2]] as const) {
+        g.add(cyl(0.03, 0.03, 0.04, metal("#3b3f44"), x, 0.05, z, 8));
+        g.add(mesh(geo("quadrotor", () => new THREE.CylinderGeometry(0.11, 0.11, 0.005, 12)), matte("#cfd6dc", 0.5), x, 0.1, z));
+      }
+      g.add(box(0.2, 0.14, 0.2, matte("#c79a62"), 0, -0.2, 0), box(0.21, 0.03, 0.03, matte("#e0c48a"), 0, -0.13, 0));
+      return g;
+    }
+    default:
+      return null;
+  }
+}
+
 export function buildEnemy(kind: EnemyKind): THREE.Group {
   let g: THREE.Group;
   switch (kind) {
+    case "courier":
+    case "hatchback":
+    case "pickup":
+    case "sprinter":
+    case "lorry":
+    case "quad":
+      g = buildRung(kind)!;
+      break;
     case "van":
       g = vehicle({ len: 0.62, h: 0.3, body: "#f4f6f8", stripe: C.teal });
       g.add(box(0.3, 0.015, 0.22, metal("#5a5e63"), -0.12, 0.38, 0));

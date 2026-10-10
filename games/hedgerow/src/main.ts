@@ -68,7 +68,10 @@ import {
   type TargetMode,
   type Tower,
   NO_PERKS,
+  isFleet,
 } from "./engine";
+import { RUNGS, fvOf } from "./fleet";
+import { BOOK } from "./rounds";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
 import type { Renderer3D } from "./render3d";
@@ -706,19 +709,42 @@ function syncControls(): void {
   ui.chooseChip.hidden = !(counting && (selected || posting || aiming) && !player);
 }
 
-const shown = { goodwill: -1, marks: -1, wave: "" };
+/** The selected fleet tower's Knockouts and Marks earned, ticking live in its panel. */
+function syncKnockouts(): void {
+  const el = document.querySelector<HTMLElement>(".ko-line");
+  if (!el || !game) return;
+  const t = game.towers.find((x) => String(x.id) === el.dataset.tower);
+  if (!t) return;
+  const n = Math.floor(t.ko ?? 0);
+  const big = el.querySelector(".ko-n")!;
+  const text = n.toLocaleString("en-GB");
+  if (big.textContent !== text) {
+    big.textContent = text;
+    el.querySelector(".ko-m")!.textContent = `· ${text} Marks earned`;
+  }
+}
+
+const shown = { goodwill: -1, marks: -1, wave: "", bumped: 0 };
 function updateHud(): void {
   if (!game) return;
   const g = game;
+  syncKnockouts();
   if (g.goodwill !== shown.goodwill) {
     if (shown.goodwill > g.goodwill) bump(ui.hudGoodwill.parentElement!, "hurt");
     ui.hudGoodwill.textContent = String(g.goodwill);
     shown.goodwill = g.goodwill;
   }
   if (g.marks !== shown.marks) {
-    if (shown.marks >= 0 && g.marks > shown.marks) bump(ui.hudMarks.parentElement!, "gain");
-    ui.hudMarks.textContent = String(g.marks);
-    shown.marks = g.marks;
+    const now = performance.now();
+    if (shown.marks >= 0 && g.marks > shown.marks && now - shown.bumped > 250) {
+      bump(ui.hudMarks.parentElement!, "gain");
+      shown.bumped = now;
+    }
+    // Fleet pops pay a Mark a layer: the counter rolls up towards the purse rather than jumping (spending
+    // snaps straight down).
+    const rolling = isFleet(g.level) && shown.marks >= 0 && g.marks > shown.marks && !player;
+    shown.marks = rolling ? shown.marks + Math.max(1, Math.ceil((g.marks - shown.marks) * 0.3)) : g.marks;
+    ui.hudMarks.textContent = String(shown.marks);
     refreshAffordability();
   }
   const w = `${g.wave}/${g.level.waves.length}`;
@@ -1044,7 +1070,16 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   // Veterans: kills, rank, and how far to the next.
   const kills = t.kills ?? 0;
   const rank = rankOf(kills);
-  if (st.damage > 0 || st.thorns > 0 || st.gustEvery > 0) {
+  if (t.fleet && (st.damage > 0 || st.thorns > 0 || st.gustEvery > 0)) {
+    // Hedgerow 2: every layer a tower knocks off is a Knockout and a Mark. A big live counter (updateHud
+    // keeps it ticking without rebuilding the panel).
+    const ko = document.createElement("p");
+    ko.className = "ko-line";
+    ko.dataset.tower = String(t.id);
+    ko.innerHTML = `<strong class="ko-n"></strong> <span>Knockouts</span> <span class="ko-m"></span>`;
+    titles.append(ko);
+    syncKnockouts();
+  } else if (st.damage > 0 || st.thorns > 0 || st.gustEvery > 0) {
     const vet = line(
       rank > 0
         ? `Veteran ${"★".repeat(rank)} · ${kills} knockouts${rank < 3 ? ` · next rank at ${RANKS[rank]}` : ""}`
@@ -1328,10 +1363,12 @@ function leakCause(g: Game, k: EnemyKind, dropped = false, stacked = false): str
   return "Not enough damage near the farmhouse. Build or upgrade along the last stretch of lane.";
 }
 
-function leakReport(g: Game, k: EnemyKind, dropped = false): void {
+function leakReport(g: Game, k: EnemyKind, dropped = false, lost = 0): void {
   const cause = leakCause(g, k, dropped, stackedWave > 0 && stackedWave === g.wave);
-  banner(`Leaked: ${ENEMIES[k].name}`, cause);
-  say(`Leaked: ${ENEMIES[k].name}. ${cause}`);
+  // Fleet levels: the banner says what the leak cost (its Fleet Value), "Leaked: Same-Day van (5)".
+  const name = isFleet(g.level) && lost > 0 ? `${ENEMIES[k].name} (${lost})` : ENEMIES[k].name;
+  banner(`Leaked: ${name}`, cause);
+  say(`Leaked: ${name}. ${cause}`);
   haptic.leakReport();
   if (!REDUCED) slowUntil = performance.now() + 600;
 }
@@ -1381,6 +1418,9 @@ function banner(text: string, sub = "", boss = false): void {
 }
 
 function describeEnemy(kind: EnemyKind): string {
+  // Fleet rungs (Hedgerow 2): what it looks like, what it pops into and what a leak costs.
+  const rung = game && isFleet(game.level) ? RUNGS[kind] : undefined;
+  if (rung && !isBig(kind)) return `${rung.look} Worth ${fvOf(kind)} Mark${fvOf(kind) === 1 ? "" : "s"} popped; a leak costs ${fvOf(kind)} Goodwill.`;
   const e = ENEMIES[kind];
   const bits: string[] = [];
   if (isBig(kind)) bits.push("A boss: Cath can't hold it and pies only stun it half as long.");
@@ -1426,16 +1466,24 @@ function introduce(kinds: EnemyKind[]): void {
 
 // ---- the loop ----
 
+/** Pop pitch steps by rung: the smaller the rung that was hit, the higher the pop. */
+const RUNG_STEP: Partial<Record<EnemyKind, number>> = { courier: 7, drone: 7, hatchback: 5, quad: 5, van: 4, pickup: 2, sprinter: 1, lorry: 0, boss: -5 };
+
 function onEvents(g: Game, evs: GameEvent[]): void {
   let shots = 0;
   let gusts = 0;
+  const knocks: number[] = [];
   for (const ev of evs) {
     switch (ev.type) {
+      case "knock":
+        knocks.push(RUNG_STEP[ev.from] ?? 3);
+        break;
       case "shot":
         if (shots++ < 2) sfx.playShot(ev.kind, !!ev.crit);
         break;
       case "kill":
-        sfx.playKill(isBig(ev.kind));
+        // Fleet: the last layer's pop already sounded (its Mark came with the knock); bosses still crash.
+        if (ev.bounty > 0 || isBig(ev.kind)) sfx.playKill(isBig(ev.kind));
         break;
       case "leak":
         sfx.playLeak();
@@ -1443,7 +1491,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         // The first leak of a round gets a moment of slow motion and a banner naming the cause.
         if (ev.kind && !player && leakReported !== g.wave) {
           leakReported = g.wave;
-          leakReport(g, ev.kind, !!ev.dropped);
+          leakReport(g, ev.kind, !!ev.dropped, ev.lost ?? 0);
         }
         if (g.goodwill <= g.maxGoodwill / 2 && g.goodwill > 0)
           tip(`low-${g.level.id}`, "They're getting through! Hedges near the farmhouse, and between waves move me to the end of the lane.", "worried", true);
@@ -1457,6 +1505,11 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           banner(ENEMIES[boss].name, "Boss incoming", true);
           sfx.playBoss();
           haptic.boss();
+        } else if (isFleet(g.level) && g.level.book) {
+          // Fleet levels name the Round Book's round and read its one-line card.
+          const r = g.level.book.from + ev.wave - 1;
+          const page = BOOK[r - 1];
+          banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : (page?.card ?? `Wave ${ev.wave} of ${g.level.waves.length}`));
         } else banner(`Wave ${ev.wave}`, ev.early ? `Stacked early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
         introduce(kinds);
         if (ev.early) {
@@ -1538,6 +1591,10 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         if (ev.towers.length) tip("boss-move", "Bosses have tricks. Knocked-out towers come back in a few seconds; a pie or an Injunction buys time.", "determined");
         break;
     }
+  }
+  if (knocks.length) {
+    sfx.playKnocks(knocks);
+    if (g.level.id === 1 && g.wave === 1) tip("knock", "Every pop knocks a layer off and pays a Mark. Vans peel down to hatchbacks, then couriers.", "delighted");
   }
 }
 

@@ -64,7 +64,7 @@ import {
 const MANUAL = {};
 
 describe("hedgerow engine", () => {
-  const level = LEVELS[0]!;
+  const level = classic(1);
 
   it("places, upgrades and sells towers with the right costs", () => {
     const game = newGame(level);
@@ -122,7 +122,7 @@ describe("hedgerow engine", () => {
   });
 
   it("Cath's pie freezes and dents what it lands on, then cools down", () => {
-    const game = newGame(LEVELS[2]!);
+    const game = newGame(classic(3));
     expect(throwPie(game).ok).toBe(false);
     sendWave(game);
     for (let i = 0; i < 90; i++) stepGame(game);
@@ -492,7 +492,8 @@ describe("hedgerow engine", () => {
 /** A level as first designed: its original serpentine lane, no fork, no terrain, no twist, no tuning. */
 function classic(id: number): Level {
   const lv = LEVELS[id - 1]!;
-  return { ...lv, path: ORIGINAL_PATHS.get(id)!, path2: undefined, terrain: undefined, twists: undefined, hpScale: undefined };
+  // Levels 1-10 play the Fleet now (Hedgerow 2 M2); the mechanics tests run them on classic rules.
+  return { ...lv, path: ORIGINAL_PATHS.get(id)!, path2: undefined, terrain: undefined, twists: undefined, hpScale: undefined, rules: "classic", book: undefined };
 }
 
 /** A bare level for mechanics tests: a straight lane along row 1 of a 12x3 field. */
@@ -589,7 +590,7 @@ describe("hedgerow 2 M1: hands-on pacing", () => {
 
   it("stacking rounds is deterministic and pays the early bonus", () => {
     const run = () => {
-      const game = newGame(LEVELS[7]!);
+      const game = newGame(classic(8));
       game.marks = 5000;
       place(game, "scarecrow", 1, 0);
       sendWave(game);
@@ -639,18 +640,22 @@ describe("hedgerow 2 M1: hands-on pacing", () => {
     expect(fastestSpeed(back, 4)).toBe(5);
   });
 
-  it("on level 1 the best bot wins with Cath taking a real but small share of the kills (5-20%)", () => {
+  // Hedgerow 2 M2: on the Fleet a kill is a final pop; Cath knocks two layers a swing and holds the rest for
+  // the towers, so her share is real but small (2-20%). Her kits (M6) bring it up to the 10-15% the design wants.
+  it("on level 1 the best bot wins with Cath taking a real but small share of the kills (2-20%)", () => {
     const g = playLevel(LEVELS[0]!, "best");
     expect(g.phase).toBe("won");
     const kills = g.events.filter((e) => e.type === "kill").length;
     expect(g.hero.kills / kills).toBeLessThan(0.2);
-    expect(g.hero.kills / kills).toBeGreaterThanOrEqual(0.05);
+    expect(g.hero.kills / kills).toBeGreaterThanOrEqual(0.02);
     expect(g.events.some((e) => e.type === "pie" || e.type === "neighbours" || e.type === "rally")).toBe(false);
   });
 });
 
 describe("hedgerow 2 M1 review: level 1 forgives plot choice", () => {
-  it("four Scarecrows on random lane-side plots win level 1 most of the time, losing some Goodwill", () => {
+  // Hedgerow 2 M2: level 1 plays the Fleet. A simple build (four Scarecrows on random lane-side plots, upgraded
+  // as the Marks come in) wins most of the time losing some Goodwill; the lazy build loses (hedgerow-fleet).
+  it("four Scarecrows on random lane-side plots, upgraded as Marks allow, win level 1 most of the time, losing some Goodwill", () => {
     const lv = LEVELS[0]!;
     const lane = laneCellsOf(lv);
     const plots: [number, number][] = [];
@@ -673,6 +678,10 @@ describe("hedgerow 2 M1 review: level 1 forgives plot choice", () => {
       while (g.phase !== "won" && g.phase !== "lost" && g.tick < 30 * 1000) {
         if (g.phase === "build") {
           while (k < order.length && place(g, "scarecrow", order[k]![0], order[k]![1]).ok) k++;
+          for (let u = 0; u < 8; u++) {
+            const t = [...g.towers].sort((a, b) => a.tier - b.tier)[0];
+            if (!t || t.tier >= 3 || !upgrade(g, t.id).ok) break;
+          }
           sendWave(g);
         }
         stepGame(g);
@@ -682,7 +691,7 @@ describe("hedgerow 2 M1 review: level 1 forgives plot choice", () => {
     }
     expect(won / N).toBeGreaterThanOrEqual(0.75);
     expect(lostGoodwill).toBeGreaterThan(0);
-  }, 20_000);
+  }, 60_000);
 
   it("on levels 1-5 Cath works on what she holds when nothing else is in reach; later she only holds it", () => {
     for (const [id, hurts] of [

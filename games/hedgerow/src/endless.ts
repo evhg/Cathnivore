@@ -65,5 +65,19 @@ export function endlessLevel(act: number, week: number): Level {
     setPieces.push({ kind: "bridge", dist: Math.round(pathLength(base.path) * (0.35 + rand() * 0.3)), period: 12 + Math.floor(rand() * 5), open: 3 + Math.floor(rand() * 2) });
   }
   // It opens gentler than the story level (ENDLESS_START of its tuned health), then compounds past it fast.
-  return { ...base, name: `Endless: ${base.place}`, waves, endless: true, setPieces, hpScale: (base.hpScale ?? 1) * ENDLESS_START, goodwill: Math.max(base.goodwill, 15), before: [], after: [] };
+  // Act 1's story levels play the Fleet (Hedgerow 2 M2); its Endless stays a classic field until M8 turns
+  // Endless into Freeplay, so it runs on classic rules with today's purse and Goodwill.
+  const fleet = base.rules === "fleet";
+  return {
+    ...base,
+    ...(fleet ? { rules: "classic" as const, book: undefined, startMarks: 380, hpScale: 1.4 } : {}),
+    name: `Endless: ${base.place}`,
+    waves,
+    endless: true,
+    setPieces,
+    hpScale: ((fleet ? 1.4 : base.hpScale) ?? 1) * ENDLESS_START,
+    goodwill: fleet ? 15 : Math.max(base.goodwill, 15),
+    before: [],
+    after: [],
+  };
 }

@@ -15,6 +15,7 @@ import {
   enemyPoint,
   hasTwist,
   isBig,
+  isFleet,
   isHeavy,
   isPlot,
   isProtected,
@@ -39,6 +40,7 @@ import {
   type Tower,
   type TowerKind,
 } from "./engine";
+import { RUNGS, fvOf } from "./fleet";
 
 export type Skill = "competent" | "naive" | "balanced" | "best" | "idle";
 
@@ -61,7 +63,8 @@ function threatOf(level: Level, from: number, n: number): Threat {
   for (const groups of level.waves.slice(from, from + n)) {
     for (const g of groups) {
       const e = ENEMIES[g.enemy];
-      const w = g.count * (e.hp / 100);
+      // Fleet levels weigh a group by its Fleet Value (a van's 3 layers ~ a classic van's 98 health).
+      const w = g.count * (isFleet(level) ? fvOf(g.enemy) / 3 : e.hp / 100);
       t.total += w;
       if (e.flying) t.flying += w;
       else if (isHeavy(g.enemy)) t.heavy += w;
@@ -70,7 +73,7 @@ function threatOf(level: Level, from: number, n: number): Threat {
       if (e.charm) t.charm += w;
       if (e.jam) t.jam += w;
       if (e.heal) t.heal += w;
-      if (e.splits) t.split += w;
+      if (e.splits || RUNGS[g.enemy]?.children.length) t.split += w;
       if (e.shield) t.shield += w;
       if (isBig(g.enemy)) t.boss = true;
     }
@@ -162,7 +165,8 @@ function wanted(game: Game): TowerKind[] {
   const heavy = th.total ? th.heavy / th.total : 0;
   // Economy early, unless it's a rush.
   if (!hasTwist(lv, "rush") && game.wave < lv.waves.length - 3) set("stall", n >= 3 ? (n >= 10 ? 2 : 1) : 0);
-  set("hedgerow", 1 + n / 6);
+  // Fleet levels: a hedge does no popping, so it waits until there's a field for it to slow things into.
+  set("hedgerow", isFleet(lv) ? (n >= 4 ? 1 + n / 8 : 0) : 1 + n / 6);
   if (ok("pond")) set("pond", n / 10);
   if (ok("barn")) set("barn", n / 8);
   if (th.stealth || all.stealth) set("mast", Math.min(4, 2 + Math.floor(n / 6)));
@@ -257,8 +261,10 @@ function spend(game: Game, skill: Skill, samples: ReturnType<typeof laneSamples>
         }
         return best;
       };
+      // Fleet levels: three poppers before anything fancier (a field of one of everything pops nothing).
+      const opening = isFleet(game.level) && game.towers.length < 3 && towerAllowed(game.level, "scarecrow");
       const kind: TowerKind =
-        skill === "balanced" ? pickBalanced() : towerAllowed(game.level, "scarecrow") ? "scarecrow" : "hedgerow";
+        skill === "balanced" && !opening ? pickBalanced() : towerAllowed(game.level, "scarecrow") ? "scarecrow" : "hedgerow";
       const spot = bestPlot(game, kind, samples);
       if (spot && game.marks >= towerCost(game, kind) && game.towers.length < 3 + game.wave) {
         if (place(game, kind, spot[0], spot[1]).ok) continue;

@@ -4,6 +4,7 @@
 // Projectiles and particles are fed from the engine's event list: the engine is hitscan, so the flight
 // times here are short and only for show.
 
+import { RUNGS } from "./fleet";
 import {
   ENEMIES,
   MEGAS,
@@ -48,6 +49,9 @@ interface Shot {
   life: number;
   crit: boolean;
 }
+
+/** Gold floaters from fleet knocks merge over this many seconds. */
+const GOLD_WINDOW = 0.15;
 
 interface Particle {
   x: number;
@@ -108,6 +112,8 @@ export class Renderer {
   private bgKey = "";
   private shots: Shot[] = [];
   private parts: Particle[] = [];
+  /** Fleet levels: Marks from knocks not yet shown, flushed as one "+N" floater every GOLD_WINDOW seconds. */
+  private gold = { n: 0, x: 0, y: 0, age: 0 };
   private decals: Decal[] = [];
   private pies: PieFlight[] = [];
   /** Defeated enemies tipping over and fading where they fell. */
@@ -279,7 +285,25 @@ export class Renderer {
           });
           break;
         }
+        case "knock": {
+          // A layer (or several) knocked off: a puff in the colour of the rung underneath, and the Marks it paid
+          // gathered into one gold floater per moment (merged over GOLD_WINDOW).
+          const under = e.to ? RUNGS[e.to]?.colour : RUNGS[e.from]?.colour;
+          if (this.parts.length < 400) {
+            const n = e.from === "lorry" && e.to ? 8 : 4;
+            for (let i = 0; i < n; i++) this.parts.push(this.particle(e.x, e.y - 0.15, under ?? "#f4f6f8", "square", 0.06, 0.45));
+          }
+          this.gold.n += e.n;
+          this.gold.x = e.x;
+          this.gold.y = e.y;
+          break;
+        }
         case "kill": {
+          if (e.bounty === 0) {
+            // Fleet: the last layer just leaves a scrap of parcel tape (its Mark came with the knock).
+            if (this.parts.length < 400) for (let i = 0; i < 3; i++) this.parts.push(this.particle(e.x, e.y - 0.1, i ? "#c79a62" : "#ffe27a", "square", 0.05, 0.5));
+            break;
+          }
           if (this.fallen.length < 24)
             this.fallen.push({ kind: e.kind, x: e.x, y: e.y, facing: this.lastFacing(e.x), age: 0 });
           this.burst(e.x, e.y, isBig(e.kind) ? 2.5 : 1);
@@ -478,6 +502,15 @@ export class Renderer {
     const { cellSize: s, offX, offY } = this.view;
     this.clock += dt;
     this.cheer = Math.max(0, this.cheer - dt);
+    this.gold.age += dt;
+    if (this.gold.age >= GOLD_WINDOW) {
+      const n = Math.floor(this.gold.n);
+      if (n >= 1) {
+        this.float(this.gold.x, this.gold.y - 0.3, `+${n}`, "#ffe27a", Math.min(1.5, 0.75 + Math.log10(n) * 0.4));
+        this.gold.n -= n;
+      }
+      this.gold.age = 0;
+    }
     if (this.parade > 0) {
       this.parade -= dt;
       const cols = ["#f2c94c", "#d93a2f", "#7fd1b9", "#fff6d6", "#e58fb3"];
@@ -717,7 +750,8 @@ export class Renderer {
     // Health bars over sprites.
     for (const e of game.enemies) {
       const max = maxHpOf(e);
-      if (e.hp >= max || !isRevealed(game, e)) continue;
+      // Health bars only on shells with more than one layer to them (section 8's budget).
+      if (e.hp >= max || max <= 1 || !isRevealed(game, e)) continue;
       const p = enemyPoint(level, e);
       const k = enemyScale(e.kind);
       const top = Y(p.y + 0.2) - s * (0.5 * k + enemyLift(e.kind) + 0.12);

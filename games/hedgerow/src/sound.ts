@@ -333,6 +333,37 @@ export function playPop(): void {
   if (!ready()) return;
   for (let i = 0; i < 4; i++) noise(i * 0.025 + Math.random() * 0.01, 0.02, 0.06, { type: "bandpass", freq: j(2600, 0.3), q: 6 });
 }
+// ---- the Fleet's pop bus (Hedgerow 2 section 8) ----
+const KNOCK_DEDUPE = 0.03;
+const KNOCK_VOICES = 10;
+let knockAt = -1;
+let knockLive = 0;
+/**
+ * The pops from one frame of fleet knocks: each a short bright pop pitched by the rung it came off (`steps`
+ * are semitones), with 8% jitter, at most one every 30 ms and 10 at once. More than 8 in a frame play as
+ * one rattle whose level grows with the log of the count.
+ */
+export function playKnocks(steps: number[]): void {
+  if (!ready() || !ctx || !steps.length) return;
+  const now = ctx.currentTime;
+  if (steps.length > 8) {
+    if (now - knockAt < KNOCK_DEDUPE) return;
+    knockAt = now;
+    const level = Math.min(0.11, 0.025 * Math.log2(1 + steps.length));
+    noise(0, 0.09, level, { type: "bandpass", freq: j(2100, 0.08), q: 1.4 });
+    tone(j(880 * Math.pow(2, Math.max(...steps) / 12), 0.08), 0, 0.05, "triangle", level * 0.6, 500);
+    return;
+  }
+  for (const st of steps) {
+    if (now - knockAt < KNOCK_DEDUPE || knockLive >= KNOCK_VOICES) return;
+    knockAt = now;
+    knockLive += 1;
+    window.setTimeout(() => (knockLive = Math.max(0, knockLive - 1)), 90);
+    const f = j(620 * Math.pow(2, st / 12), 0.08);
+    tone(f, 0, 0.06, "triangle", 0.05, f * 0.55);
+    noise(0, 0.025, 0.035, { type: "bandpass", freq: f * 3, q: 4 });
+  }
+}
 export function playKill(big = false): void {
   if (!ready()) return;
   // A crunch of panels, then the bounty: a coin.

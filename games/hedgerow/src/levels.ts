@@ -5,7 +5,9 @@ import { BOSS_MOVES, ENEMIES, TOWERS, laneCellsOf, pathLength, pointAt, type Lev
 import { ACTS_1_TO_5 } from "./story/acts1to5";
 import { ACTS_6_TO_10 } from "./story/acts6to10";
 import type { Beat } from "./story/types";
-import { HP_SCALE } from "./tuning";
+import { HP_SCALE, START_K } from "./tuning";
+import { bookWave, incomeBefore, windowFor } from "./rounds";
+import { FLEET_GOODWILL } from "./fleet";
 import { relayout, rewind } from "./layouts";
 import { addTerrain } from "./terrain";
 
@@ -6437,13 +6439,33 @@ const TWIST_PLAN: Record<number, TwistId[]> = {
 };
 for (const l of LEVELS) if (TWIST_PLAN[l.id]) l.twists = TWIST_PLAN[l.id];
 
+// Hedgerow 2 M2: act 1 plays the Fleet. Each level plays its window of the Round Book (rounds.ts windowFor),
+// starts with 500 Marks plus a tuned share k of what the Book pays before its first round, has 120 Goodwill
+// and pays a Mark a layer. The boss level's last round brings the Acquisition Van in on top of the Book's.
+export const FLEET_LEVELS = (id: number) => id >= 1 && id <= 10;
+export function fleetStart(id: number, k = START_K[id] ?? 0.85): number {
+  return 500 + Math.round(k * incomeBefore(windowFor(id).from));
+}
+for (const l of LEVELS) {
+  if (!FLEET_LEVELS(l.id)) continue;
+  const book = windowFor(l.id);
+  l.rules = "fleet";
+  l.book = book;
+  l.goodwill = FLEET_GOODWILL;
+  l.startMarks = fleetStart(l.id);
+  const waves: WaveGroup[][] = [];
+  for (let r = book.from; r <= book.to; r++) waves.push(bookWave(r));
+  if (l.id % 10 === 0) waves[waves.length - 1] = [{ enemy: "boss", count: 1, gap: 1, delay: 0 }, ...waves[waves.length - 1]!.map((g) => ({ ...g, delay: g.delay + 4 }))];
+  l.waves = waves;
+}
+
 // Enemy health per level from the difficulty tuner.
 // The tuner finds where the competent bot only just keeps its target. People get a margin on top in the
 // tutorial and first act (the bot never hesitates); from level 8 the fight is close to the bot's own.
 // Level 1 gets the widest margin (M1 review): a first build of a few Scarecrows on whichever plots look
 // right must win most of the time, losing some Goodwill (tests/hedgerow.test.ts checks random builds).
 const humanMargin = (id: number) => (id === 1 ? 0.65 : id <= 7 ? 0.9 : id <= 10 ? 0.97 : 1);
-for (const l of LEVELS) if (HP_SCALE[l.id]) l.hpScale = Math.round(HP_SCALE[l.id]! * humanMargin(l.id) * 100) / 100;
+for (const l of LEVELS) if (HP_SCALE[l.id] && l.rules !== "fleet") l.hpScale = Math.round(HP_SCALE[l.id]! * humanMargin(l.id) * 100) / 100;
 
 // Round 3 (owner's third playtest): the early acts were won by planting nothing but Scarecrows.
 // Bubble-wrapped vans take a quarter damage from single-target shots until something area-wide pops the
@@ -6453,7 +6475,7 @@ for (const l of LEVELS) if (HP_SCALE[l.id]) l.hpScale = Math.round(HP_SCALE[l.id
 const wrapShare = (id: number) => (id < 5 ? 0 : id <= 12 ? 0.6 : id <= 20 ? 0.6 : id <= 30 ? 0.5 : 0.3);
 for (const l of LEVELS) {
   const share = wrapShare(l.id);
-  if (!share) continue;
+  if (!share || l.rules === "fleet") continue;
   l.waves = l.waves.map((groups, wi) =>
     groups.flatMap((g) => {
       if (g.enemy !== "van" || wi === 0) return [g];

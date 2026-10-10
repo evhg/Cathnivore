@@ -698,6 +698,14 @@ export function enemyScale(kind: EnemyKind): number {
   switch (kind) {
     case "drone":
       return 0.75;
+    case "courier":
+      return 0.8;
+    case "hatchback":
+      return 0.9;
+    case "quad":
+      return 0.85;
+    case "lorry":
+      return 1.15;
     case "carrier":
       return 1.1;
     case "rival":
@@ -731,7 +739,7 @@ export function enemyScale(kind: EnemyKind): number {
 
 /** Height above the ground the sprite floats (flying things). */
 export function enemyLift(kind: EnemyKind): number {
-  return kind === "drone" ? 0.32 : kind === "carrier" ? 0.4 : kind === "blimp" ? 0.55 : kind === "candor" || kind === "hollowcandor" ? 0.15 : 0;
+  return kind === "drone" || kind === "quad" ? 0.32 : kind === "carrier" ? 0.4 : kind === "blimp" ? 0.55 : kind === "candor" || kind === "hollowcandor" ? 0.15 : 0;
 }
 
 function wheel(ctx: C, x: number, y: number, r: number, spin: number): void {
@@ -946,6 +954,48 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       ctx.beginPath();
       ctx.arc(-s * 0.24, -s * (0.56 + ph * 0.2), s * (0.03 + ph * 0.05), 0, Math.PI * 2);
       ctx.fill();
+      break;
+    }
+    // The Fleet's rungs (Hedgerow 2 M2): one colour per rung, so a pop reads at a glance.
+    case "courier": {
+      // An e-scooter courier: deck, stem, rider in teal, a parcel box behind.
+      wheel(ctx, -s * 0.15, -s * 0.05, s * 0.05, tt * 12);
+      wheel(ctx, s * 0.15, -s * 0.05, s * 0.05, tt * 12);
+      rr(ctx, -s * 0.18, -s * 0.1, s * 0.34, s * 0.04, s * 0.02, "#2b2b30");
+      ctx.beginPath();
+      ctx.moveTo(s * 0.15, -s * 0.1);
+      ctx.lineTo(s * 0.15, -s * 0.4);
+      ctx.lineTo(s * 0.08, -s * 0.42);
+      ctx.stroke();
+      rr(ctx, -s * 0.06, -s * 0.38, s * 0.12, s * 0.28, s * 0.04, "#5ec0a8");
+      blob(ctx, 0, -s * 0.46, s * 0.07, "#efd6c4");
+      rr(ctx, -s * 0.24, -s * 0.3, s * 0.14, s * 0.14, s * 0.02, "#c79a62");
+      break;
+    }
+    case "hatchback":
+      vehicle(ctx, 0, 0, s, tt, { len: 0.46, h: 0.24, body: "#e8b23a", stripe: "#2b2b30", wheels: 2 });
+      break;
+    case "pickup": {
+      vehicle(ctx, 0, 0, s, tt, { len: 0.6, h: 0.2, body: "#4a7fc4", stripe: "#f4f6f8", wheels: 2 });
+      rr(ctx, -s * 0.2, -s * 0.36, s * 0.13, s * 0.1, s * 0.01, "#c79a62");
+      break;
+    }
+    case "sprinter":
+      vehicle(ctx, 0, 0, s, tt, { len: 0.66, h: 0.34, body: "#8a4fd0", stripe: "#ffd23f", label: "SAME DAY", labelColor: "#ffd23f", wheels: 2 });
+      break;
+    case "lorry":
+      vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.42, body: "#24345e", cab: "#e9ecef", stripe: "#5ab0ff", wheels: 3 });
+      break;
+    case "quad": {
+      rr(ctx, -s * 0.2, -s * 0.14, s * 0.4, s * 0.12, s * 0.04, "#f08a3c");
+      for (const sx of [-0.34, -0.12, 0.12, 0.34]) {
+        ctx.fillStyle = "rgba(200,210,220,0.6)";
+        ctx.beginPath();
+        ctx.ellipse(sx * s, -s * 0.2, s * 0.1 * Math.abs(Math.cos(tt * 40 + sx * 5)) + s * 0.02, s * 0.02, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      rr(ctx, -s * 0.1, s * 0.0, s * 0.2, s * 0.14, s * 0.01, "#c79a62");
       break;
     }
     case "drone": {

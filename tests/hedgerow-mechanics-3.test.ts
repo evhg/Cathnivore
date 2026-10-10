@@ -166,7 +166,7 @@ describe("hedgerow round 3: megastructures", () => {
     expect(a.spent).toBe(spent + MEGAS.harvester.cost);
     const st = towerStats(a);
     expect(st.damage).toBe(MEGAS.harvester.damage);
-    expect(st.pierce).toBe(true);
+    expect(st.ignoresArmour).toBe(true);
     expect(place(game, "hedgerow", 4, 0).ok).toBe(false);
   });
 

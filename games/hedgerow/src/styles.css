@@ -1956,6 +1956,27 @@ button {
   color: #a07c2c !important;
   font-weight: 700;
 }
+/* Hedgerow 2: a fleet tower's Knockouts, big and ticking, with the Marks it has earned. */
+.ko-line {
+  margin: 2px 0 0;
+  font-size: 12px !important;
+  color: #8a6a1f !important;
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.ko-line .ko-n {
+  font-size: 22px;
+  line-height: 1;
+  color: #5a3f0c;
+  font-variant-numeric: tabular-nums;
+}
+.ko-line .ko-m {
+  font-weight: 600;
+  opacity: 0.8;
+}
 .merge-row {
   display: grid;
   gap: 6px;
@@ -2558,7 +2579,8 @@ img.act-scene {
     font-size: 12px;
     line-height: 1.15;
   }
-  .panel.choosing .vet-line {
+  .panel.choosing .vet-line,
+  .panel.choosing .ko-line {
     display: none;
   }
   .controls .go-pill {
@@ -2585,7 +2607,8 @@ img.act-scene {
    size (844x390 with three abilities, 375x667). The head shrinks to one line, and the Sell row stops being
    sticky so it can't draw over the choice; it scrolls in under the stats instead. */
 @media (max-width: 899.98px), (max-height: 520px) {
-  .panel.choosing .vet-line {
+  .panel.choosing .vet-line,
+  .panel.choosing .ko-line {
     display: none;
   }
   .panel.choosing .tower-icon {

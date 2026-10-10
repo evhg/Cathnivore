@@ -103,3 +103,18 @@ export const HP_SCALE: Record<number, number> = {
   99: 6.29,
   100: 1.19,
 };
+
+// Fleet levels (Hedgerow 2): start Marks = 500 + k * the Round Book's income before the level's first round.
+// The tuner fits k in [0.7, 1.0]; it never touches health on fleet levels.
+export const START_K: Record<number, number> = {
+  1: 0.85,
+  2: 0.85,
+  3: 0.85,
+  4: 0.85,
+  5: 0.85,
+  6: 0.85,
+  7: 0.85,
+  8: 0.85,
+  9: 0.85,
+  10: 0.85,
+};
