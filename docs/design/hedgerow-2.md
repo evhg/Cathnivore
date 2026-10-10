@@ -454,6 +454,7 @@ Why this works: the addictive decisions are spending ones, between and during ro
   - a perf test: 350 units and 40 towers for 1,000 steps at ≤ 2 ms a step
   - `hedgerow-levels-1` passes
 - **Acceptance:** level 1, round 1 shows layers visibly popping with a cash tick per pop, and shots show a dense cascade on round 10.
+- **Also (M1 review, 2026-10-10):** level 1 must stop being slow and free: no round longer than about 35 s at x1 with a simple build, a lazy build (3 Scarecrows, no upgrades) loses Goodwill visibly, and stacking is a graded choice (stacking one round pays, stacking every round loses) rather than all-or-nothing.
 
 **M3. Properties, damage types and readability; acts 2–3 on fleet.** Size M.
 - **Goal:** all 9 properties with icons, damage types on today's tiers, tower badges, preview chips with the "can't answer" warning, the full leak report and loss-screen causes, Book rounds to 45.
