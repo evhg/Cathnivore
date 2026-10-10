@@ -132,6 +132,60 @@ describe("hedgerow fleet: rungs", () => {
   });
 });
 
+describe("hedgerow fleet: pops you can hear", () => {
+  it("thorns and poison pay their slivers silently: a knock (sound, particles) only when a whole layer comes off", () => {
+    const g = bare();
+    const m0 = g.marks;
+    const van = makeEnemy(g, "van", 3, undefined, 1);
+    g.enemies.push(van);
+    // Thirty slivers of a thirtieth: one layer, one knock, one Mark.
+    for (let i = 0; i < 30; i++) hitEnemy(g, van, 1 / 30, 0);
+    const knocks = g.events.filter((e) => e.type === "knock") as Array<{ n: number; from: string; to: string | null }>;
+    expect(knocks).toHaveLength(1);
+    expect(knocks[0]!.n).toBe(1);
+    expect(knocks[0]!.from).toBe("van");
+    expect(van.kind).toBe("hatchback");
+    expect(g.marks - m0).toBe(1);
+    // A sliver that crosses into the next shell still reports one whole layer.
+    hitEnemy(g, van, 0.5, 0);
+    expect(g.events.filter((e) => e.type === "knock")).toHaveLength(1);
+    hitEnemy(g, van, 0.75, 0);
+    expect(g.events.filter((e) => e.type === "knock")).toHaveLength(2);
+  });
+
+  it("a Blackthorn hedge and a Killer Queen hive over a round knock whole layers only", () => {
+    const lv = LEVELS[7]!;
+    const g = newGame(lv);
+    g.marks = 1e6;
+    const ps = plots(lv);
+    expect(place(g, "hedgerow", ps[0]![0], ps[0]![1]).ok).toBe(true);
+    expect(place(g, "beehive", ps[3]![0], ps[3]![1]).ok).toBe(true);
+    for (const t of g.towers) {
+      upgrade(g, t.id);
+      upgrade(g, t.id);
+      upgrade(g, t.id, 0);
+    }
+    expect(g.towers.map((t) => t.tier)).toEqual([4, 4]);
+    for (let i = 6; i < 12; i++) place(g, "scarecrow", ps[i]![0], ps[i]![1]);
+    sendWave(g);
+    let knocks = 0;
+    let layers = 0;
+    while (g.phase === "wave" && g.tick < 30 * 200) {
+      stepGame(g);
+      for (const e of g.events) if (e.type === "knock") {
+        knocks++;
+        layers += e.n;
+        expect(Number.isInteger(e.n) && e.n >= 1).toBe(true);
+      }
+      g.events.length = 0;
+    }
+    expect(knocks).toBeGreaterThan(50);
+    // Every whole layer shows up once (a vehicle's last sliver may still be on it when it leaks).
+    expect(layers).toBeLessThanOrEqual(Math.ceil(g.popped) + 1);
+    expect(layers).toBeGreaterThan(g.popped * 0.9);
+  });
+});
+
 describe("hedgerow fleet: rounds and levels", () => {
   it("the Book has 30 rounds, each within 10% of its budget, none spawning for more than 25 s", () => {
     expect(BOOK_ROUNDS).toBe(30);

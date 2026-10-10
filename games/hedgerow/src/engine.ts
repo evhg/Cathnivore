@@ -1554,7 +1554,10 @@ export type GameEvent =
   | { type: "bridge"; open: boolean; x: number; y: number }
   | { type: "gust"; tower: number; x: number; y: number; radius: number }
   | { type: "pop"; x: number; y: number }
-  /** Fleet levels: a hit knocked `n` layers off; `from` is what was hit and `to` what it is now (null: gone). */
+  /**
+   * Fleet levels: a hit knocked `n` whole layers off (slivers of thorns and poison only report the tick a layer
+   * finally comes off); `from` is what was hit and `to` what it is now (null: gone).
+   */
   | { type: "knock"; x: number; y: number; from: EnemyKind; to: EnemyKind | null; n: number; tower?: number }
   | { type: "rankUp"; tower: number; rank: number; x: number; y: number }
   | { type: "merge"; tower: number; mega: MegaId; x: number; y: number }
@@ -2298,12 +2301,21 @@ export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number): num
   const from = e.kind;
   let left = amount;
   let removed = 0;
+  // Whole layers crossed: thorns and poison shave slivers off every tick, and only a layer actually coming
+  // off is a pop the player hears and sees (the slivers still pay, in fixed point, silently).
+  let crossed = 0;
+  const whole = (hp: number) => Math.ceil(hp - 1e-9);
   while (left > 1e-9 && e.hp > 0) {
     const take = Math.min(left, e.hp);
+    const before = whole(e.hp);
     e.hp -= take;
     left -= take;
     removed += take;
-    if (e.hp > 1e-9) break;
+    if (e.hp > 1e-9) {
+      crossed += before - whole(e.hp);
+      break;
+    }
+    crossed += Math.max(1, before);
     const kids = RUNGS[e.kind]?.children ?? [];
     if (!kids.length) {
       e.hp = 0;
@@ -2322,16 +2334,19 @@ export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number): num
   }
   if (removed <= 0) return 0;
   payLayers(game, removed, by);
-  const p = enemyPoint(game.level, e);
-  game.events.push({ type: "knock", x: p.x, y: p.y, from, to: e.hp > 0 ? e.kind : null, n: removed, ...(by !== undefined ? { tower: by } : {}) });
+  if (crossed > 0) {
+    const p = enemyPoint(game.level, e);
+    game.events.push({ type: "knock", x: p.x, y: p.y, from, to: e.hp > 0 ? e.kind : null, n: crossed, ...(by !== undefined ? { tower: by } : {}) });
+  }
   return removed;
 }
 
 /** Fleet levels: a Mark a layer (less after round 50), paid as whole Marks, and the tower's Knockouts. */
 function payLayers(game: Game, layers: number, by?: number): void {
   game.popped += layers;
-  game.popMilli += Math.round(layers * popRate(bookRound(game.level, Math.max(1, game.wave))));
-  const whole = Math.floor(game.popMilli / 1000);
+  // Slivers (thorns, poison) add up exactly (no rounding per sliver), so thirty thirtieths make a Mark.
+  game.popMilli += layers * popRate(bookRound(game.level, Math.max(1, game.wave)));
+  const whole = Math.floor((game.popMilli + 1e-6) / 1000);
   if (whole > 0) {
     game.marks += whole;
     game.popMilli -= whole * 1000;
