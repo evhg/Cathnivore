@@ -40,7 +40,7 @@ describe("hedgerow replays", () => {
   it("plays a recorded run back to exactly the same result", () => {
     const { game, replay } = record();
     expect(replay.log.length).toBeGreaterThan(3);
-    expect(replay.v).toBe(3);
+    expect(replay.v).toBe(4);
     expect(replay.log.some(([, a]) => a.t === "auto")).toBe(true);
     const back = new Player(level, replay).finish();
     expect([back.phase, back.goodwill, back.marks, back.tick, back.towers.length]).toEqual([
@@ -68,6 +68,9 @@ describe("hedgerow replays", () => {
     // So is one from before the Fleet (v2, Hedgerow 2 M1).
     const m1 = await encodeReplay({ ...replay, v: 2 } as unknown as typeof replay);
     expect(await decodeReplay(m1)).toBe("old");
+    // A v3 link (Hedgerow 2 M2, before acts 2-3 moved to the Fleet) is old too.
+    const m2 = await encodeReplay({ ...replay, v: 3 } as unknown as typeof replay);
+    expect(await decodeReplay(m2)).toBe("old");
   });
 
   it("a fleet level (level 1) plays back to exactly the same pops, Marks and Goodwill", () => {

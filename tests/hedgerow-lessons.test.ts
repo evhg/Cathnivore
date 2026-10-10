@@ -191,6 +191,14 @@ describe("hedgerow M3: properties on the lane", () => {
     expect(fieldAnswers(g, "stealth")).toBe(false);
   });
 
+  it("a round's chips look all the way down: a Car Transporter round brings its Artics' Wrapped and Reefer lorries", () => {
+    const lv = LEVELS[14]!;
+    const pm = roundProps(lv, [{ enemy: "transporter", count: 1, gap: 1, delay: 0 }]);
+    expect(pm & P.wrapped).toBeTruthy();
+    expect(pm & P.reefer).toBeTruthy();
+    expect(pm & P.plated).toBeFalsy();
+  });
+
   it("names a vehicle by the properties it carries beyond its own", () => {
     expect(vehicleName("lorry", P.stealth)).toBe("Stealth Box lorry");
     expect(vehicleName("van", P.plated | P.reinforced)).toBe("Plated Reinforced Delivery van");

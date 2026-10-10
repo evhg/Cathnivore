@@ -62,7 +62,7 @@ export const BOOK: BookRound[] = [
   { theme: "Long haul", card: "Ninety lorries and a hundred rush vans.", groups: [g("lorry", 90, 0.154), g("sprinter", 100, 0.119, 2.1)] },
   { theme: "The hundred and sixty", card: "A spike: a hundred and sixty Box Lorries. Everything you've got.", spike: true, groups: [g("lorry", 160, 0.084), g("sprinter", 163, 0.07, 2.1)] },
   { theme: "Air lift", card: "A hundred quadcopters over a hundred lorries.", groups: [g("lorry", 110, 0.126), g("quad", 100, 0.126, 2.1), g("sprinter", 44, 0.21, 5.6)] },
-  { theme: "Stealth lorries", card: "Round 22: Stealth lorries. Bring a Radio Mast, or put Cath where they'll pass.", groups: [g("lorry", 120, 0.119, 0, ["stealth"]), g("sprinter", 108, 0.112, 2.1)] },
+  { theme: "Stealth lorries", card: "Round 22: Stealth lorries. Bring a Radio Mast: Cath only shows the two she holds.", groups: [g("lorry", 120, 0.119, 0, ["stealth"]), g("sprinter", 108, 0.112, 2.1)] },
   { theme: "A breather", card: "Pickups and a few lorries. Catch your breath.", breather: true, groups: [g("lorry", 60, 0.21), g("pickup", 100, 0.126, 1.4), g("sprinter", 26, 0.35, 4.2)] },
   { theme: "Gridlock", card: "A spike: lorries end to end.", spike: true, groups: [g("lorry", 224, 0.063), g("sprinter", 184, 0.07, 2.1)] },
   { theme: "Drone cloud", card: "Two hundred quadcopters. Look up.", groups: [g("lorry", 150, 0.091), g("quad", 200, 0.063, 1.4)] },

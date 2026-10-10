@@ -19,13 +19,26 @@ export function vehicleName(kind: Parameters<typeof inherentProps>[0], pm = 0): 
   return `${extra.map((p) => PROPERTIES[p].adj).join(" ")} ${name}`;
 }
 
+/**
+ * Every property a vehicle's children (and theirs, all the way down) carry: their own and what their parent
+ * gives them. A Car Transporter pops into Artics, which pop into a Wrapped and a Reefer lorry.
+ */
+export function descendantProps(kind: Parameters<typeof inherentProps>[0], seen = 0): number {
+  const r = RUNGS[kind];
+  if (!r || seen > 8) return 0;
+  let pm = 0;
+  r.children.forEach((c, i) => {
+    pm |= inherentProps(c) | descendantProps(c, seen + 1);
+    for (const p of r.childProps?.[i] ?? []) pm |= P[p];
+  });
+  return pm;
+}
+
 /** Every property a round (a level's wave) brings: its groups', its rungs' own, and the Armoured/Fortified twists'. */
 export function roundProps(level: Level, groups: WaveGroup[] | undefined): number {
   let pm = 0;
   for (const g of groups ?? []) {
-    pm |= (g.pm ?? 0) | inherentProps(g.enemy);
-    // What the vehicles pop into counts too: an Artic's wrapped and reefer lorries.
-    for (const c of RUNGS[g.enemy]?.childProps ?? []) for (const p of c) pm |= P[p];
+    pm |= (g.pm ?? 0) | inherentProps(g.enemy) | descendantProps(g.enemy);
   }
   if (hasTwist(level, "armoured")) pm |= P.plated;
   if (hasTwist(level, "fortified")) pm |= P.reinforced;
@@ -119,3 +132,9 @@ export function propertyEntries(): Array<{ prop: Property; name: string; lock: s
 }
 
 
+
+/** A round card under a "Round N: theme" title: its own "Round N:" prefix would say it twice. */
+export function cardBody(card: string): string {
+  const body = card.replace(/^Round \d+:\s*/, "");
+  return body.charAt(0).toUpperCase() + body.slice(1);
+}

@@ -447,7 +447,8 @@ describe("hedgerow fleet: the live cap", () => {
     expect(a.maxLive).toBeLessThanOrEqual(LIVE_CAP);
     expect(a.maxLive).toBeGreaterThan(LIVE_CAP - 20);
     expect(run()).toEqual(a);
-  });
+    // Two whole level-4 runs: about 3 s idle, over 7 s with the tuner on every core.
+  }, 30_000);
 
   it("the lane index's windows hold exactly the lane points within reach (targeting by binary search)", () => {
     for (const lv of [LEVELS[0]!, LEVELS[40]!, LEVELS[6]!]) {

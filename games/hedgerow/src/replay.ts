@@ -55,9 +55,12 @@ export interface Setup {
 /**
  * v2 (Hedgerow 2 M1): Cath holds a post and abilities are manual, so a v1 run no longer plays back the same.
  * v3 (Hedgerow 2 M2): act 1 plays the Fleet (layered rungs, the Round Book, a Mark a layer), so a v2 run of
- * levels 1-10 no longer plays back the same either. Older links get the "older Hedgerow" notice.
+ * levels 1-10 no longer plays back the same either.
+ * v4 (Hedgerow 2 M3): acts 2-3 (levels 11-30) moved to the Fleet, the Book gained property and act-themed
+ * rounds, and levels 1, 9 and 10 changed their swaps and start Marks, so a v3 run no longer plays back the same.
+ * Older links get the "older Hedgerow" notice.
  */
-export const REPLAY_VERSION = 3;
+export const REPLAY_VERSION = 4;
 
 export interface Replay {
   v: typeof REPLAY_VERSION;

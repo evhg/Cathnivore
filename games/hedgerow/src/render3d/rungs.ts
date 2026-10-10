@@ -12,6 +12,7 @@ import { buildEnemy, buildRung, enemyLift, enemyScale } from "./models";
 
 /** Per-instance tints for the Fleet's materials (section 2): steel, bubble wrap, mesh, frost, hazard bands. */
 const TINTS: Array<[number, THREE.Color]> = [
+  [P.stealth, new THREE.Color(0.8, 1.0, 0.78)],
   [P.plated, new THREE.Color(0.72, 0.78, 0.86)],
   [P.sealed, new THREE.Color(0.78, 0.58, 1.0)],
   [P.reefer, new THREE.Color(0.8, 0.96, 1.0)],
@@ -19,6 +20,9 @@ const TINTS: Array<[number, THREE.Color]> = [
   [P.reinforced, new THREE.Color(1.0, 0.88, 0.45)],
 ];
 const WHITE = new THREE.Color(1, 1, 1);
+/** A stealth vehicle nothing can see: hedge-camo green, drawn see-through (section 2: "hedge-camo, 60% alpha"). */
+const CAMO = new THREE.Color(0.45, 0.85, 0.45);
+const GHOST_ALPHA = 0.5;
 
 /** Icons are drawn this many world units across, a row of them over the vehicle. */
 const ICON = 0.24;
@@ -81,6 +85,9 @@ export class RungInstances {
   readonly group = new THREE.Group();
   private meshes = new Map<EnemyKind, THREE.InstancedMesh>();
   private used = new Map<EnemyKind, number>();
+  /** The same rungs, translucent and camo-tinted, for unrevealed stealth vehicles. */
+  private ghosts = new Map<EnemyKind, THREE.InstancedMesh>();
+  private ghostUsed = new Map<EnemyKind, number>();
   private m = new THREE.Matrix4();
   private q = new THREE.Quaternion();
   private s = new THREE.Vector3();
@@ -94,6 +101,7 @@ export class RungInstances {
 
   constructor() {
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.08 });
+    const ghostMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, metalness: 0, transparent: true, opacity: GHOST_ALPHA, depthWrite: false });
     for (const kind of INSTANCED_RUNGS) {
       const model = buildRung(kind) ?? (buildEnemy(kind).userData.inner as THREE.Group);
       model.scale.setScalar(1);
@@ -107,6 +115,15 @@ export class RungInstances {
       mesh.setColorAt(0, WHITE);
       this.meshes.set(kind, mesh);
       this.group.add(mesh);
+      const ghost = new THREE.InstancedMesh(geo, ghostMat, CAPACITY);
+      ghost.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      ghost.count = 0;
+      ghost.frustumCulled = false;
+      ghost.renderOrder = 5;
+      ghost.name = `ghosts:${kind}`;
+      ghost.setColorAt(0, WHITE);
+      this.ghosts.set(kind, ghost);
+      this.group.add(ghost);
     }
     for (const prop of PROPERTY_ORDER) {
       const m = iconMesh(prop);
@@ -122,6 +139,7 @@ export class RungInstances {
   /** Starts a frame; `camera` turns the property icons to face it. */
   begin(camera?: THREE.Camera): void {
     for (const k of this.meshes.keys()) this.used.set(k, 0);
+    for (const k of this.ghosts.keys()) this.ghostUsed.set(k, 0);
     for (const k of this.icons.keys()) this.iconUsed.set(k, 0);
     if (camera) {
       this.face.copy(camera.quaternion);
@@ -151,9 +169,10 @@ export class RungInstances {
 
   /** One vehicle this frame: where it stands on the ground, its heading, and a bob for its id. */
   add(kind: EnemyKind, x: number, ground: number, z: number, heading: number, bob: number, ghost = false, pm = 0): void {
-    const mesh = this.meshes.get(kind);
+    const mesh = (ghost ? this.ghosts : this.meshes).get(kind);
     if (!mesh) return;
-    const i = this.used.get(kind) ?? 0;
+    const used = ghost ? this.ghostUsed : this.used;
+    const i = used.get(kind) ?? 0;
     if (i >= CAPACITY) return;
     const k = enemyScale(kind) * 1.3 * (ghost ? 0.92 : 1);
     this.p.set(x, ground + enemyLift(kind) + bob, z);
@@ -164,13 +183,19 @@ export class RungInstances {
     // Its materials: steel, wrap, mesh, frost and hazard bands tint the whole vehicle.
     this.tint.copy(WHITE);
     for (const [bit, c] of TINTS) if (pm & bit) this.tint.multiply(c);
+    if (ghost) this.tint.multiply(CAMO);
     mesh.setColorAt(i, this.tint);
-    this.used.set(kind, i + 1);
+    used.set(kind, i + 1);
   }
 
   end(): void {
     for (const [k, mesh] of this.meshes) {
       mesh.count = this.used.get(k) ?? 0;
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    }
+    for (const [k, mesh] of this.ghosts) {
+      mesh.count = this.ghostUsed.get(k) ?? 0;
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
@@ -184,6 +209,7 @@ export class RungInstances {
   drawCalls(): number {
     let n = 0;
     for (const mesh of this.meshes.values()) if (mesh.count > 0) n++;
+    for (const mesh of this.ghosts.values()) if (mesh.count > 0) n++;
     for (const mesh of this.icons.values()) if (mesh.count > 0) n++;
     return n;
   }

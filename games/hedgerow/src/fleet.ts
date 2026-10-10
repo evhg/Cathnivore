@@ -67,7 +67,7 @@ export const PROPERTIES: Record<Property, PropertyInfo> = {
     glyph: "S",
     lock: "Hedge-camo: no tower can target it unless something reveals it. Passes to what it pops into.",
     why: "Nothing could see it.",
-    key: "A Radio Mast reveals stealth. Cath only shows the towers the two she has hold of.",
+    key: "A Radio Mast reveals stealth. Cath can only show the towers the two vehicles she is holding.",
   },
   airborne: {
     name: "Airborne",

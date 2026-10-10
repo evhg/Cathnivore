@@ -2498,6 +2498,8 @@ function regrow(game: Game, e: Enemy): void {
 /** Does a placed, working tower on the field hold the key to this property? (The "can't answer this" check.) */
 export function fieldAnswers(game: Game, prop: "stealth" | "airborne" | "plated" | "wrapped" | "sealed" | "reefer"): boolean {
   for (const t of game.towers) {
+    // A charmed, jammed or flooded tower answers nothing while it's out (the same test the leak report uses).
+    if (!towerActive(t)) continue;
     const s = towerStats(t);
     if (prop === "stealth") {
       if (s.reveal > 1) return true;
@@ -2517,8 +2519,7 @@ export function fieldAnswers(game: Game, prop: "stealth" | "airborne" | "plated"
  */
 export function leakCauseOf(game: Game, e: Enemy): LeakCause {
   const pm = pmOf(e);
-  if (pm & P.stealth && !game.towers.some((t) => towerStats(t).reveal > 1 && towerActive(t))) return "stealth";
-  for (const prop of ["airborne", "plated", "wrapped", "sealed", "reefer"] as const)
+  for (const prop of ["stealth", "airborne", "plated", "wrapped", "sealed", "reefer"] as const)
     if (pm & P[prop] && !fieldAnswers(game, prop)) return prop;
   if (e.dropped) return "dropped";
   if (pm & P.stealth) return "stealth";
@@ -3339,6 +3340,8 @@ function step(game: Game): void {
 
   if (game.spawnQueue.length === 0 && game.enemies.length === 0 && game.emitQueue.length === 0) {
     game.phase = game.wave >= game.level.waves.length ? "won" : "build";
+    // The stacked rounds are over: later leaks from rounds with the same numbers aren't the stack's fault.
+    game.stacked = undefined;
   }
 }
 
