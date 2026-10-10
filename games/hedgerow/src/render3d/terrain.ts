@@ -337,6 +337,21 @@ export interface Ground {
 /** What fences each act's field in: hedgerows in the hills, dry-stone on the moor, driftwood by the sea, reeds
  * on the river, orchard rows at Oakvale, rubble at the Rift, kerbs and railings in town, planters at the Merger. */
 type BorderStyle = "hedge" | "dark-hedge" | "wall" | "rubble" | "fence" | "reeds" | "orchard" | "rail" | "planters";
+/** Scenery beyond the field per act: leaf colours, how many objects, and the share that are trees (the rest rocks). */
+const SCENERY_LEAVES: string[][] = [
+  ["#4f8a3a", "#5e9a43", "#6ea04c", "#7bb050"],
+  ["#3f6a3a", "#467548", "#557f4a", "#6b8c52"],
+  ["#6d8a4f", "#7f9a58", "#8aa461", "#6a8a62"],
+  ["#5a7a48", "#6a8a50", "#7a9a58", "#889a60"],
+  ["#c9742f", "#d6902f", "#b85a2a", "#e0a53a"],
+  ["#5f8a5a", "#6f9a68", "#7aa070", "#88a878"],
+  ["#7a7a42", "#6d6b3c", "#85803f", "#5f5a38"],
+  ["#4c5f45", "#56694c", "#5d6f50", "#46563f"],
+  ["#5e7a58", "#6a8864", "#547050", "#75906c"],
+  ["#2f3d2c", "#38482f", "#2b3628", "#40503a"],
+];
+const SCENERY_COUNT = [70, 90, 55, 60, 95, 50, 55, 40, 30, 60];
+const SCENERY_TREES = [0.7, 0.75, 0.45, 0.6, 0.9, 0.4, 0.3, 0.5, 0.35, 0.55];
 const BORDER_OF_ACT: BorderStyle[] = ["hedge", "wall", "fence", "reeds", "orchard", "fence", "rubble", "rail", "planters", "dark-hedge"];
 
 /** The ring of the field's edge as (x, z, along-x?) segment centres every `step` cells, `off` outside the grid. */
@@ -700,9 +715,10 @@ export function buildGround(level: Level): Ground {
     if (m) group.add(m);
 
   // Scenery out beyond the field.
-  const leaves = [light.grass[1], "#4f7f37", "#5e8f41", act >= 6 ? "#7a7a42" : "#6ea04c"];
+  const leaves = (SCENERY_LEAVES[act] ?? [light.grass[1], "#4f7f37", "#5e8f41", "#6ea04c"]).slice();
   const treeKind = act === 6 ? "dead" : act === 1 || act === 4 ? "pine" : "oak";
-  const nDecor = 70;
+  const nDecor = SCENERY_COUNT[act] ?? 70;
+  const treeShare = SCENERY_TREES[act] ?? 0.7;
   for (let i = 0; i < nDecor; i++) {
     const x = -MARGIN + rand() * W;
     const y = -MARGIN + rand() * H;
@@ -710,7 +726,7 @@ export function buildGround(level: Level): Ground {
     if (laneDistance(level, x, y) < 1.1) continue;
     const h = heightAt(x, y);
     if (h < -0.05 || nearWater(x, y, 0.4)) continue;
-    const o = rand() < 0.7 ? buildTree(rand() < 0.25 ? "pine" : treeKind, rand, leaves) : buildRock(rand);
+    const o = rand() < treeShare ? buildTree(rand() < 0.25 ? "pine" : treeKind, rand, leaves) : buildRock(rand);
     o.position.set(x, h, y);
     group.add(o);
   }
