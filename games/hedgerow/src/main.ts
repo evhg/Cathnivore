@@ -848,6 +848,14 @@ function refreshAffordability(): void {
 function refreshPaths(): void {
   if (!game) return;
   const g = game;
+  for (const b of ui.panel.querySelectorAll<HTMLButtonElement>("button.crown-use")) {
+    const t = g.towers.find((x) => x.id === Number(b.dataset.tower));
+    const eta = b.querySelector<HTMLElement>(".path-eta");
+    const wait = t?.crownCd ? Math.ceil(t.crownCd) : 0;
+    b.disabled = !t || wait > 0 || g.phase !== "wave";
+    b.classList.toggle("afford", !b.disabled);
+    if (eta) eta.textContent = wait > 0 ? `Ready in ${wait} s` : g.phase === "wave" ? "Ready" : "Ready in a round";
+  }
   for (const b of ui.panel.querySelectorAll<HTMLButtonElement>("button.path-buy[data-cost]")) {
     const cost = Number(b.dataset.cost);
     const locked = b.dataset.locked === "1";
@@ -879,7 +887,7 @@ function renderPanel(force = false): void {
   const g = game;
   const sel = selected;
   const t = sel ? towerAt(g, sel.col, sel.row) : undefined;
-  const key = [sel?.col, sel?.row, t?.id, t?.tier, t?.spec, t?.path?.join(""), t?.target, t?.mega, rankOf(t?.kills ?? 0), g.wave, g.phase, renderer?.heroSelected, aiming].join("|");
+  const key = [sel?.col, sel?.row, t?.id, t?.tier, t?.spec, t?.path?.join(""), t?.crown, t?.target, t?.mega, rankOf(t?.kills ?? 0), g.wave, g.phase, renderer?.heroSelected, aiming].join("|");
   if (!force && key === panelKey) return;
   panelKey = key;
   const p = ui.panel;
@@ -1698,6 +1706,27 @@ function pathColumn(g: Game, t: Tower, kind: PathKind, i: PathIndex, path: Path,
     const crown = def.crown;
     if (!crown || t.crown === i) {
       col.append(line(t.crown === i ? `Crowned: ${crown!.name}.` : "Complete. Its Crown comes later.", "path-done"));
+      const ab = t.crown === i ? crown?.ability : undefined;
+      if (ab) {
+        const ub = document.createElement("button");
+        ub.type = "button";
+        ub.className = "path-buy crown-use";
+        ub.dataset.tower = String(t.id);
+        ub.innerHTML = `<span class="path-tier">Ability</span><strong class="path-next"></strong><span class="path-adds"></span><span class="path-foot"><span class="path-eta"></span></span>`;
+        ub.querySelector(".path-next")!.textContent = ab.name;
+        ub.querySelector(".path-adds")!.textContent = ab.blurb;
+        ub.title = ab.blurb;
+        ub.onclick = () => {
+          if (doAct({ t: "crownUse", id: t.id })) {
+            sfx.playBoss();
+            haptic.boss();
+            banner(ab.name, `${crown!.name}`, false, "small");
+            refreshPaths();
+          } else toast(`${ab.name} isn't ready.`);
+        };
+        col.append(ub);
+        refreshPaths();
+      }
       return col;
     }
     const cblock = crownBlock(g, t, i);

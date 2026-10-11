@@ -20,6 +20,7 @@ import {
   upgrade,
   upgradeToward,
   crownBlock,
+  fireCrown,
   type Game,
   type Level,
   type Tower,
@@ -540,5 +541,31 @@ describe("hedgerow paths: Crowns (M5)", () => {
     for (const p of PATHS.scarecrow.paths) expect(p.crown!.cost).toBeGreaterThanOrEqual(20000);
     expect(PATHS.scarecrow.paths[1].crown!.mod.shellMul).toBe(3);
   });
+  it("Crown abilities: Blackout Sky triples fire rate and cools down, Stoop breaks a Plant's shell, Stand Up reaches neighbours", () => {
+    const g = field();
+    const ps = plots(L8);
+    for (let k = 0; k < 3; k++) place(g, "scarecrow", ps[k]![0], ps[k]![1]);
+    const [a, b, c] = g.towers as [Tower, Tower, Tower];
+    // Crown all three on different paths (Crowns are unique per path).
+    for (const [t, i] of [[a, 0], [b, 1], [c, 2]] as const) for (let k = 0; k < 4; k++) expect(upgrade(g, t.id, i).ok).toBe(true);
+    expect([a.crown, b.crown, c.crown]).toEqual([0, 1, 2]);
+    expect(fireCrown(g, a.id).ok).toBe(false); // not in a round
+    live(g);
+    expect(fireCrown(g, a.id).ok).toBe(true);
+    expect(a.surge).toBe(8);
+    expect(a.crownCd).toBe(45);
+    expect(fireCrown(g, a.id).ok).toBe(false);
+    // Stoop needs a Plant.
+    expect(fireCrown(g, b.id).ok).toBe(false);
+    const dozer = makeEnemy(g, "plantdozer", 3, undefined, 1);
+    g.enemies.push(dozer);
+    expect(fireCrown(g, b.id).ok).toBe(true);
+    expect(dozer.kind).toBe("steel");
+    // Stand Up lights up Scarecrows within 3 cells, once; and the surge runs out.
+    expect(fireCrown(g, c.id).ok).toBe(true);
+    expect(c.surge).toBe(8);
+    for (let k = 0; k < 8 * 30 + 2; k++) stepGame(g);
+    expect(a.surge).toBeLessThan(8);
+    expect(a.crownCd).toBeGreaterThan(0);
+  });
 });
-

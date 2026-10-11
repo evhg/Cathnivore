@@ -1565,6 +1565,9 @@ export interface Tower {
   path?: Path;
   /** A Crown (tier 4, paths.ts): the path whose Crown it wears. Each Crown exists once per field. */
   crown?: PathIndex;
+  /** Crown ability: seconds of triple fire rate left, and seconds until it can be used again. */
+  surge?: number;
+  crownCd?: number;
   /** Seconds until it lays its next thorn pile, or holds the next vehicles (path towers). */
   pileCd?: number;
   holdCd?: number;
@@ -1750,6 +1753,7 @@ export type GameEvent =
   | { type: "pop"; x: number; y: number }
   /** Rebrand: a vehicle grew back a rung. */
   | { type: "crown"; tower: number; name: string }
+  | { type: "crownUse"; tower: number; name: string }
   | { type: "wreck"; x: number; y: number; kind: EnemyKind; marks: number }
   | { type: "regrow"; x: number; y: number; kind: EnemyKind }
   /**
@@ -2298,6 +2302,35 @@ function upgradePath(game: Game, tower: Tower, i: number | undefined): ActionRes
   tower.spent += cost;
   tower.path = nextPath(tower.path!, i);
   tower.tier = pathTier(tower.path);
+  return { ok: true };
+}
+
+/** How much faster a surging Crown fires (Blackout Sky, Stand Up). */
+export const CROWN_SURGE = 3;
+const STAND_UP_RANGE = 3;
+
+/** A Crown's ability, used by hand: Blackout Sky, Stoop or Stand Up. Deterministic; one cooldown per tower. */
+export function fireCrown(game: Game, id: number): ActionResult {
+  const t = game.towers.find((x) => x.id === id);
+  if (!t || t.crown === undefined || !hasPaths(t.kind)) return { ok: false, reason: "No Crown to use." };
+  const ab = PATHS[t.kind].paths[t.crown].crown?.ability;
+  if (!ab) return { ok: false, reason: "This Crown has no ability." };
+  if (game.phase !== "wave") return { ok: false, reason: "Save it for a round." };
+  if (t.crownCd) return { ok: false, reason: `${ab.name} needs ${Math.ceil(t.crownCd)} s.` };
+  if (ab.kind === "blackout") t.surge = ab.secs!;
+  else if (ab.kind === "standup") {
+    t.surge = ab.secs!;
+    for (const o of game.towers)
+      if (o.kind === t.kind && Math.hypot(o.col - t.col, o.row - t.row) <= STAND_UP_RANGE) o.surge = ab.secs!;
+  } else {
+    // Stoop: the strongest Heavy Plant's whole shell comes off (what it carries underneath is left to the field).
+    let best: Enemy | null = null;
+    for (const e of game.enemies) if (pmOf(e) & P.plant && e.hp > 1.5 && (!best || e.hp > best.hp)) best = e;
+    if (!best) return { ok: false, reason: "No Heavy Plant to stoop on." };
+    hitEnemy(game, best, best.hp, t.id);
+  }
+  t.crownCd = ab.cooldown;
+  game.events.push({ type: "crownUse", tower: t.id, name: ab.name });
   return { ok: true };
 }
 
@@ -3425,6 +3458,10 @@ function step(game: Game): void {
   if (game.neighboursCd > 0) game.neighboursCd = Math.max(0, game.neighboursCd - STEP);
   if (game.rallyCd > 0) game.rallyCd = Math.max(0, game.rallyCd - STEP);
   if (game.rallyLeft > 0) game.rallyLeft = Math.max(0, game.rallyLeft - STEP);
+  for (const t of game.towers) {
+    if (t.surge) t.surge = t.surge > STEP ? t.surge - STEP : 0;
+    if (t.crownCd) t.crownCd = t.crownCd > STEP ? t.crownCd - STEP : 0;
+  }
   if (game.barricade) {
     game.barricade.left -= STEP;
     if (game.barricade.left <= 0) game.barricade = null;
@@ -3595,7 +3632,7 @@ function step(game: Game): void {
     // Whirling Scythe spins the same way and pushes nothing.
     if (spec.gustEvery > 0) {
       // A Whirling Scythe is a Scarecrow swinging: Rally, paperwork and influencers work on it as on a throw.
-      const swing = spec.sweep && game.rallyLeft > 0 ? STEP * RALLY_SPEEDUP : STEP;
+      const swing = (spec.sweep && game.rallyLeft > 0 ? STEP * RALLY_SPEEDUP : STEP) * (spec.sweep && t.surge ? CROWN_SURGE : 1);
       t.gustCd = (t.gustCd ?? spec.gustEvery * 0.5) - swing;
       if (spec.sweep && t.gustCd > 0 && jammed(game, t)) t.gustCd += STEP / 2;
       if (spec.sweep && t.gustCd <= 0 && charmed(game, t)) t.gustCd = 0;
@@ -3652,7 +3689,7 @@ function step(game: Game): void {
       continue;
     }
     if (spec.damage === 0) continue;
-    t.cd -= game.rallyLeft > 0 ? STEP * RALLY_SPEEDUP : STEP;
+    t.cd -= (game.rallyLeft > 0 ? STEP * RALLY_SPEEDUP : STEP) * (t.surge ? CROWN_SURGE : 1);
     if (t.cd > 0 && jammed(game, t)) t.cd += STEP / 2;
     if (t.cd > 0) continue;
     if (charmed(game, t)) {

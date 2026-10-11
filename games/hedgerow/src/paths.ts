@@ -100,6 +100,19 @@ export interface PathTier {
   /** One short line for the sheet: what it adds. */
   adds: string;
   mod: PathMod;
+  /** A Crown's ability (M5): used by hand from the tower's sheet, then on a cooldown. */
+  ability?: CrownAbility;
+}
+
+export interface CrownAbility {
+  kind: "blackout" | "stoop" | "standup";
+  name: string;
+  /** What it does, for the button. */
+  blurb: string;
+  /** Seconds before it can be used again. */
+  cooldown: number;
+  /** Seconds a surge lasts (blackout, standup). */
+  secs?: number;
 }
 
 export interface PathDef {
@@ -138,6 +151,7 @@ export const PATHS: Record<PathKind, TowerPaths> = {
           adds: "12 crows a shot, 2 layers each, pierce 6",
           blurb: "The whole sky comes down: twelve crows, each a heavier hit than the Caller's, and every third still lands three times over.",
           mod: { fan: 12, damage: 1, pierce: 1 },
+          ability: { kind: "blackout", name: "Blackout Sky", blurb: "Fires three times as fast for 8 seconds.", cooldown: 45, secs: 8 },
         },
       },
       {
@@ -160,6 +174,7 @@ export const PATHS: Record<PathKind, TowerPaths> = {
           adds: "30 layers a strike, ×3 on Plants",
           blurb: "A falconer with a gauntlet and a very large bird. Anywhere on the field, thirty layers at a time, and three times that to a Plant's shell.",
           mod: { damage: 26, shellMul: 3 },
+          ability: { kind: "stoop", name: "Stoop", blurb: "Breaks the shell of the strongest Heavy Plant on the field.", cooldown: 40 },
         },
       },
       {
@@ -183,6 +198,7 @@ export const PATHS: Record<PathKind, TowerPaths> = {
           adds: "spins 2× as fast, pierce +2",
           blurb: "Straw, willow and spite, three storeys of it. It flails twice as fast as the Scythe, and nothing gets past an arm that long.",
           mod: { rate: 2.2, pierce: 2 },
+          ability: { kind: "standup", name: "Stand Up", blurb: "Scarecrows within 3 cells fire three times as fast for 8 seconds.", cooldown: 50, secs: 8 },
         },
       },
     ],

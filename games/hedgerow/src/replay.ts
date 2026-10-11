@@ -15,6 +15,7 @@ import {
   setTarget,
   stepGame,
   throwPie,
+  fireCrown,
   upgrade,
   type Ability,
   type ActionResult,
@@ -35,6 +36,8 @@ export type Action =
   | { t: "pie"; x?: number; y?: number }
   | { t: "neighbours" }
   | { t: "rally" }
+  /** A Crown's ability. */
+  | { t: "crownUse"; id: number }
   | { t: "merge"; id: number; partner: number }
   | { t: "strike"; q: number }
   /** Cath takes a new post (between rounds only). */
@@ -92,6 +95,8 @@ export function applyAction(game: Game, a: Action): ActionResult {
       return callNeighbours(game);
     case "rally":
       return callRally(game);
+    case "crownUse":
+      return fireCrown(game, a.id);
     case "merge":
       return merge(game, a.id, a.partner);
     case "strike":
