@@ -11,6 +11,9 @@ function run(label: string, cmd: string) {
 
 run('Gate 1-2: typecheck, lint, test', 'npm run typecheck && npm run lint && npm run test')
 
+// AAA UI (docs/design/aaa-ui.md): every page's woff2 total stays within 180 KiB and latin only.
+run('Gate 1: font budget', 'npm run build:site && npx tsx scripts/font-budget.ts')
+
 // SPEC 11.4 gate 3 is literal: "10,000 RandomBot games and 1,000 HeuristicBot games." `npm run check`
 // (the fast dev-loop command) intentionally uses `sim/fuzz.ts --quick`'s 200/100 instead — fine for a
 // quick local check, but this is the pre-release gate every push to `main` must actually pass, so it needs

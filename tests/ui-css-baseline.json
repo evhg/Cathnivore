@@ -1,0 +1,65 @@
+{
+  "games/cathode/src/styles.css": {
+    "px-font-size": 150,
+    "z-index-literal": 27,
+    "raw-colour": 236,
+    "italic-without-face": 5,
+    "font-face-legacy-path": 4,
+    "house-font-in-cathode": 6
+  },
+  "games/cathode/src/ui/photomode.ts": {
+    "style-prop-assign": 2
+  },
+  "games/hedgerow/src/main.ts": {
+    "style-prop-assign": 2
+  },
+  "games/hedgerow/src/styles.css": {
+    "px-font-size": 135,
+    "z-index-literal": 10,
+    "raw-colour": 237,
+    "italic-without-face": 2,
+    "font-face-legacy-path": 3
+  },
+  "games/runnel/src/styles.css": {
+    "px-font-size": 21,
+    "raw-colour": 88,
+    "italic-without-face": 1,
+    "font-face-legacy-path": 3
+  },
+  "public/pages.css": {
+    "px-font-size": 1,
+    "raw-colour": 5,
+    "font-face-legacy-path": 4
+  },
+  "shared/ui/cath-frame.css": {
+    "raw-colour": 5
+  },
+  "shared/ui/studio.css": {
+    "raw-colour": 1
+  },
+  "site/src/styles.css": {
+    "px-font-size": 9,
+    "z-index-literal": 2,
+    "raw-colour": 82,
+    "font-face-legacy-path": 4
+  },
+  "src/styles/campaign.css": {
+    "px-font-size": 9,
+    "z-index-literal": 1,
+    "raw-colour": 3
+  },
+  "src/styles/global.css": {
+    "px-font-size": 56,
+    "z-index-literal": 10,
+    "raw-colour": 54,
+    "italic-without-face": 6
+  },
+  "src/styles/table.css": {
+    "px-font-size": 9
+  },
+  "src/styles/title.css": {
+    "px-font-size": 5,
+    "z-index-literal": 1,
+    "italic-without-face": 1
+  }
+}

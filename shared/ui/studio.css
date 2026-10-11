@@ -1,0 +1,48 @@
+/* The house back link (studioBack()): a 44 px icon button with the hex-and-leaf monogram plus "Games",
+   top-left inside the safe area, set in the host game's UI face. Colours come from the host game:
+   --studio-ink (text and stroke), --studio-fill (button fill), --studio-leaf (the leaf). */
+.studio-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 var(--sp-3, 12px) 0 var(--sp-1, 4px);
+  border-radius: var(--r-pill, 999px);
+  color: var(--studio-ink, currentColor);
+  background: var(--studio-fill, transparent);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: .01em;
+  text-decoration: none;
+  transition: transform var(--dur-1, 120ms) var(--ease-out, ease-out), background-color var(--dur-2, 200ms);
+}
+.studio-back:active {
+  transform: scale(.96);
+}
+.studio-back svg {
+  width: 32px;
+  height: 32px;
+  flex: none;
+}
+.studio-back .studio-hex {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+.studio-back .studio-leaf {
+  fill: var(--studio-leaf, currentColor);
+}
+.studio-back .studio-chev {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (hover: hover) {
+  .studio-back:hover {
+    background: var(--studio-hover, rgb(127 127 127 / .12));
+  }
+}

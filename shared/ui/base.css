@@ -1,0 +1,135 @@
+/* AAA UI shared foundation (docs/design/aaa-ui.md "Shared foundation"). Imported first by every page.
+   Tokens for spacing, safe areas, motion and font roles; the focus grammar; the stagger; .num. Games set
+   the values (font roles, --focus, durations); they never redefine the names. */
+:root {
+  /* spacing, 4-based */
+  --sp-0: 2px; --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
+  --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px;
+  --safe-t: env(safe-area-inset-top, 0px); --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px); --safe-l: env(safe-area-inset-left, 0px);
+  --gutter: max(var(--sp-4), var(--safe-l), var(--safe-r));
+  --r-pill: 999px;
+
+  /* type floors (STYLE §4): label 12 caps only, small 14, body 16 */
+  --fs-floor-label: 0.75rem;
+  --fs-floor-small: 0.875rem;
+  --fs-floor-body: 1rem;
+
+  /* motion: one vocabulary; games may retune durations */
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-in: cubic-bezier(.7, 0, .84, 0);
+  --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --ease-back: cubic-bezier(.34, 1.56, .64, 1);
+  --spring: var(--ease-back);
+  --dur-press: 50ms; --dur-1: 120ms; --dur-2: 200ms; --dur-3: 320ms; --dur-4: 480ms; --dur-hero: 900ms;
+  --stagger: 45ms;
+
+  /* font roles: every game defines all four */
+  --font-display: serif;
+  --font-ui: system-ui, sans-serif;
+  --font-num: var(--font-ui);
+  --font-voice: var(--font-display);
+
+  /* focus: games set the colour (at least 3:1 against what it sits next to) */
+  --focus: #1F5F99;
+  --focus-halo: transparent;
+  --focus-w: 3px;
+
+  font-synthesis: none; /* no faux bold or italic, portfolio-wide */
+}
+
+/* iOS before 17.2 has no linear(): keep --ease-back there, or the whole transition is dropped. */
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --spring: linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121 24%,
+      1.149 26.8%, 1.159, 1.154 31.7%, 1.106 37.6%, 1.031 46.5%, 1.003 51.3%, .986 56.8%, .991 69.4%, 1 100%);
+  }
+}
+
+/* Every counted number: the game's figures face, tabular, lining, no slashed zero. */
+.num,
+[data-num] {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* ---- focus grammar ---- */
+:where(a, button, [role="tab"], [tabindex], input, select, summary):focus-visible {
+  outline: var(--focus-w) solid var(--focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 calc(var(--focus-w) + 4px) var(--focus-halo);
+}
+:where(button, a):focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ---- stagger: set --i with setProperty (or motion.ts stagger()), never a style attribute ---- */
+@keyframes ui-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ui-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes ui-pop {
+  0% { opacity: 0; transform: scale(.9); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes ui-tick {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-2px) scale(1.06); }
+  100% { transform: none; }
+}
+@keyframes ui-burst {
+  from { opacity: 1; transform: translate(-50%, -50%) rotate(var(--ang, 0deg)) translateX(0) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -50%) rotate(var(--ang, 0deg)) translateX(var(--dist, 40px)) scale(.4); }
+}
+.stagger > * {
+  animation: ui-rise var(--dur-3) var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 10) * var(--stagger) + 60ms);
+}
+.ui-tick {
+  animation: ui-tick var(--dur-2) var(--spring);
+}
+.ui-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ui-burst > i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--burst, currentColor);
+  animation: ui-burst var(--dur-4) var(--ease-out) forwards;
+}
+.ui-burst.ring > i {
+  background: transparent;
+  border: 2px solid var(--burst, currentColor);
+}
+
+/* ---- reduced motion is a designed state: fades of at most 200 ms stay, movement goes ---- */
+@media (prefers-reduced-motion: reduce) {
+  .stagger > * { animation: ui-fade var(--dur-2) linear both; animation-delay: 0ms; }
+  .ui-tick, .ui-burst { animation: none; display: none; }
+}
+:root.reduce-motion .stagger > * { animation: ui-fade var(--dur-2) linear both; animation-delay: 0ms; }
+:root.reduce-motion .ui-tick { animation: none; }
+:root.reduce-motion .ui-burst { display: none; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -48,6 +48,18 @@ export default defineConfig({
       },
     },
     {
+      // AAA UI M1: the L size (844x390, an iPhone held sideways) for `npm run shots` only; the regression
+      // suite still runs at P and D.
+      name: 'phone-landscape',
+      testMatch: 'e2e/screenshots.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 844, height: 390 },
+        hasTouch: true,
+        launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH },
+      },
+    },
+    {
       name: 'phone-webkit',
       // Same reason as `phone` above.
       testIgnore: 'e2e/store-screenshots.spec.ts',

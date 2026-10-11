@@ -1,0 +1,44 @@
+/* Cath's presentation (docs/design/aaa-ui.md). Cath is always mounted in a .cath-frame wrapper and every
+   treatment goes on the wrapper: a drop-shadow anywhere; in CATHODE only, a mild grade and rim lights.
+   Never hue-rotate, blend, blur, glitch, silhouette or crop through her face. shared/cath/* is untouched. */
+.cath-frame {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  line-height: 0;
+  filter: drop-shadow(0 6px 14px rgb(30 20 14 / .22));
+}
+.cath-frame svg {
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+/* Cameo sizes (STYLE §9): 32, 48, 96, 160. The ring colour is the host game's. */
+.cath-frame.cameo {
+  --cameo: 48px;
+  width: var(--cameo);
+  height: var(--cameo);
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px var(--cameo-ring, #D9B45A), 0 2px 6px rgb(30 20 14 / .25);
+  filter: none;
+}
+.cath-frame.cameo.s32 { --cameo: 32px; }
+.cath-frame.cameo.s96 { --cameo: 96px; }
+.cath-frame.cameo.s160 { --cameo: 160px; }
+.cath-frame.cameo > svg { width: 100%; height: 100%; }
+/* CATHODE only: the grade stays inside brightness >= .88, contrast <= 1.08, saturate >= .82. */
+.cath-frame.grade-noir {
+  filter: brightness(.9) contrast(1.06) saturate(.85)
+    drop-shadow(-2px 0 0 rgb(60 220 255 / .45)) drop-shadow(2px 0 0 rgb(255 60 90 / .35));
+}
+/* Idle breathing goes on the frame, never the SVG, and only when motion is allowed. */
+@keyframes cath-breathe {
+  from { transform: scale(1); }
+  to { transform: scale(1.012); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root:not(.reduce-motion) .cath-frame.breathe {
+    transform-origin: 50% 100%;
+    animation: cath-breathe 3.2s ease-in-out infinite alternate;
+  }
+}
