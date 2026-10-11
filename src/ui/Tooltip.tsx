@@ -49,6 +49,7 @@ export default function Tooltip({ term, children, label }: Props) {
       pop.style.setProperty('--tt-x', `${Math.round(left)}px`)
       pop.style.setProperty('--tt-y', `${Math.round(top)}px`)
       pop.style.setProperty('--tt-origin', `${Math.round(r.left + r.width / 2 - left)}px ${above ? '100%' : '0'}`)
+      pop.style.setProperty('--tt-arrow-x', `${Math.round(Math.min(Math.max(r.left + r.width / 2 - left - 7, 20), w - 22))}px`)
       pop.dataset.side = above ? 'above' : 'below'
     }
     place()
@@ -66,16 +67,21 @@ export default function Tooltip({ term, children, label }: Props) {
       const t = e.target as Node
       if (rootRef.current && !rootRef.current.contains(t) && !popRef.current?.contains(t)) setPinned(false)
     }
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setPinned(false)
-    }
     document.addEventListener('pointerdown', onDocPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', onDocPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-    }
+    return () => document.removeEventListener('pointerdown', onDocPointerDown)
   }, [pinned])
+
+  // WCAG 1.4.13: Escape dismisses the popover however it was opened (tap, hover or keyboard focus).
+  useEffect(() => {
+    if (!open) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return
+      setPinned(false)
+      setHovering(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open])
 
   // A term with no glossary entry renders its children plain, so a typo in `term` fails loud in review
   // (an obviously-untouched label) rather than silently swallowing the tooltip.
@@ -105,9 +111,11 @@ export default function Tooltip({ term, children, label }: Props) {
       </button>
       {open &&
         createPortal(
-          <span role="tooltip" id={id} className="tooltip-popover" ref={popRef}>
-            <span className="tooltip-title">{term}</span>
-            {body}
+          <span role="tooltip" id={id} className={pinned ? 'tooltip-popover' : 'tooltip-popover tooltip-popover--passive'} ref={popRef}>
+            <span className="tooltip-tag">
+              <span className="tooltip-title">{term}</span>
+              {body}
+            </span>
           </span>,
           document.body,
         )}

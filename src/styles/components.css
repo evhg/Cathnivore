@@ -263,6 +263,9 @@ button.btn-quiet {
   inset: -9px;
 }
 
+/* The hanging price tag (AAA UI M4 fix): an angled, punched left end with its eyelet, a short tongue
+   toward the trigger, a paper lift and a slight resting tilt. The outline and lift are drop-shadows on the
+   outer element so they follow the clipped silhouette and the tongue as one shape. */
 .tooltip-popover {
   position: fixed;
   left: var(--tt-x, 8px);
@@ -270,34 +273,71 @@ button.btn-quiet {
   z-index: var(--z-modal);
   width: max-content;
   max-width: min(34ch, calc(100vw - 16px));
-  padding: var(--sp-2) var(--sp-3) var(--sp-3) calc(var(--sp-4) + 8px);
-  background: var(--mat-card-flat);
   color: var(--ink);
-  border: 1.5px solid var(--btn-edge);
-  border-radius: var(--r-sm);
-  box-shadow: var(--e4);
   font: 400 var(--fs-small)/1.4 var(--font-text);
   text-align: left;
   text-wrap: pretty;
   white-space: normal;
   letter-spacing: 0;
   text-transform: none;
+  rotate: -.6deg;
+  filter:
+    drop-shadow(0 0 .5px var(--ink-a60))
+    drop-shadow(0 0 .5px var(--ink-a60))
+    drop-shadow(0 2px 0 var(--ink-a15))
+    drop-shadow(0 10px 14px rgb(var(--shadow-ink) / .3));
   transform-origin: var(--tt-origin, 50% 100%);
   animation: tt-in var(--dur-2) var(--ease-out) both;
 }
 
-/* the tag's eyelet */
-.tooltip-popover::before {
+/* opened by hover or focus only: it never blocks the controls under it (a tap pins it, and then it can) */
+.tooltip-popover--passive {
+  pointer-events: none;
+}
+
+.tooltip-tag {
+  position: relative;
+  display: block;
+  padding: var(--sp-2) var(--sp-3) var(--sp-3) calc(var(--sp-4) + 12px);
+  background: var(--mat-card-flat);
+  box-shadow: var(--inset-hi);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  clip-path: polygon(16px 0, 100% 0, 100% 100%, 16px 100%, 0 calc(50% + 10px), 0 calc(50% - 10px));
+}
+
+/* the tag's eyelet, punched through the angled end */
+.tooltip-tag::before {
   content: "";
   position: absolute;
-  left: 9px;
+  left: 7px;
   top: 50%;
   width: 7px;
   height: 7px;
   margin-top: -3.5px;
   border-radius: 50%;
   background: var(--paper);
-  box-shadow: inset 0 0 0 1.5px var(--btn-edge);
+  box-shadow: inset 0 0 0 1.5px var(--ink-a60);
+}
+
+/* the tongue toward the trigger */
+.tooltip-popover::after {
+  content: "";
+  position: absolute;
+  left: var(--tt-arrow-x, 50%);
+  top: 100%;
+  width: 14px;
+  height: 7px;
+  margin-top: -1px;
+  background: var(--card-lo);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.tooltip-popover[data-side="below"]::after {
+  top: auto;
+  bottom: 100%;
+  margin: 0 0 -1px;
+  background: var(--surface);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 
 .tooltip-popover .tooltip-title {
