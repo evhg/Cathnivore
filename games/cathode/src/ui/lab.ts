@@ -3,6 +3,9 @@
 // Not part of the shipped build (vite builds only index.html).
 
 import "../../../../shared/cath/cath.css";
+import "../../../../shared/ui/base.css";
+import "../styles/fonts.css";
+import "../styles/tokens.css";
 import "../styles.css";
 import { gainXp, newCharacter, type Character } from "../sim/character";
 import { makeItem, makeUnique, rollItem, socketChip, type Item } from "../sim/loot";

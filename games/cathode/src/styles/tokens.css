@@ -1,0 +1,16 @@
+/* CATHODE type tokens (the colour tokens still live at the top of styles.css until M2 moves them here).
+   One vocabulary with the rest of the portfolio: --font-display, --font-ui, --font-num, --font-voice;
+   --display and --ui stay as aliases for the rules not yet migrated. */
+:root {
+  --font-display: "Cathode Display", "Cathode Display Fallback", "Didot", serif;
+  --font-voice: "Cathode Voice", "Cathode Voice Fallback", "Didot", serif;
+  --font-ui: "Cathode UI", "Cathode UI Fallback", system-ui, sans-serif;
+  --font-num: "Cathode Mono", "Cathode Mono Fallback", ui-monospace, monospace;
+  --display: var(--font-display);
+  --ui: var(--font-ui);
+  --mono: var(--font-num);
+  /* hero numerals (ammo, level): JetBrains Mono 700, tightened */
+  --num-hero-track: -0.04em;
+  --focus: #2ee6ff;
+  --focus-halo: rgba(46, 230, 255, 0.25);
+}

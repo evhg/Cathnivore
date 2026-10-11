@@ -251,7 +251,7 @@ export function openCharacter(
   const head = el("header", "cx-head", panel);
   const portrait = el("div", "cx-portrait", head);
   portrait.setAttribute("aria-hidden", "true");
-  portrait.innerHTML = cathSvg({ framing: "bust", expression: "determined", outfit: "gown" });
+  portrait.innerHTML = cathSvg({ framing: "bust", expression: "determined", outfit: "trench" });
   const id = el("div", "cx-id", head);
   const classLine = el("p", "cx-classes", id);
   const name = el("h2", "cx-name", id);

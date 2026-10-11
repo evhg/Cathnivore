@@ -2,10 +2,7 @@
   "games/cathode/src/styles.css": {
     "px-font-size": 150,
     "z-index-literal": 27,
-    "raw-colour": 236,
-    "italic-without-face": 5,
-    "font-face-legacy-path": 4,
-    "house-font-in-cathode": 6
+    "raw-colour": 236
   },
   "games/cathode/src/ui/photomode.ts": {
     "style-prop-assign": 2
@@ -16,7 +13,7 @@
   "games/hedgerow/src/styles.css": {
     "px-font-size": 135,
     "z-index-literal": 10,
-    "raw-colour": 214
+    "raw-colour": 213
   },
   "games/runnel/src/styles.css": {
     "raw-colour": 34

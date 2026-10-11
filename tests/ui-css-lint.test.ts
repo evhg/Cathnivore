@@ -61,7 +61,9 @@ const ALLOWED_WEIGHTS: Array<[RegExp, (w: number) => boolean]> = [
 type Counts = Record<string, number>
 
 function measure(f: string, italics: Map<string, Set<string>>): Counts {
-  const src = readFileSync(resolve(root, f), 'utf8')
+  const raw = readFileSync(resolve(root, f), 'utf8')
+  // comments don't count (a note may name a font the file must not use)
+  const src = f.endsWith('.css') ? raw.replace(/\/\*[\s\S]*?\*\//g, '') : raw
   const c: Counts = {}
   const put = (k: string, n: number) => {
     if (n) c[k] = n

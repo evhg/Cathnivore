@@ -29,7 +29,7 @@ export function levelUpToast(host: HTMLElement, level: number, points: LevelUpPo
   const portrait = el("div", "lvl-cath", root);
   portrait.setAttribute("aria-hidden", "true");
   // cathSvg is our own generator's markup (no user data), so innerHTML is safe here.
-  portrait.innerHTML = cathSvg({ framing: "face", expression: "determined", outfit: "gown" });
+  portrait.innerHTML = cathSvg({ framing: "face", expression: "determined", outfit: "trench" });
 
   const words = el("div", "lvl-words", root);
   el("p", "lvl-eyebrow", words, "Level");

@@ -2,6 +2,9 @@
 // everything heavy load only after "Begin"). Design: docs/design/cathode.md.
 
 import "../../../shared/cath/cath.css";
+import "../../../shared/ui/base.css";
+import "./styles/fonts.css";
+import "./styles/tokens.css";
 import "./styles.css";
 import { cathSvg } from "../../../shared/cath/cath";
 import { loadPrefs, resolveQuality, savePrefs, type Intensity, type QualityChoice } from "./prefs";
@@ -116,9 +119,21 @@ async function begin(): Promise<void> {
 
 // ?play&shot is for screenshots: skip the gate for this visit only, without saving the 18+ answer.
 const shotBypass = params.has("play") && params.has("shot");
+// AAA UI M1: give the display and UI faces up to 600 ms before the first screen, so the wordmark doesn't
+// visibly swap from the fallback. Never blocks longer than that.
+function fontsReady(ms = 600): Promise<void> {
+  const fonts = document.fonts;
+  if (!fonts?.load) return Promise.resolve();
+  const loads = Promise.all([fonts.load('560 64px "Cathode Display"'), fonts.load('500 16px "Cathode UI"')]).then(
+    () => undefined,
+    () => undefined,
+  );
+  return Promise.race([loads, new Promise<void>((resolve) => setTimeout(resolve, ms))]);
+}
+
 if (!prefs.adult && !shotBypass) {
   $("gate-cath").innerHTML = cathSvg({ expression: "smirk", framing: "half", outfit: "trench" });
-  show("screen-gate");
+  void fontsReady().then(() => show("screen-gate"));
 }
 else if (params.has("play")) void begin();
-else openTitle();
+else void fontsReady().then(openTitle);

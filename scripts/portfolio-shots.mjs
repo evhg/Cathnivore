@@ -135,7 +135,7 @@ if (all && want('cathode')) {
   s = await fresh('/cathode/?play&shot', { webgl: true })
   await s.page.waitForTimeout(8000)
   await shoot(s.page, 'cathode-hud', ['L', 'D'], { dir, settle: (p) => p.waitForTimeout(4000) })
-  report.fonts.cathode = await fontOf(s.page, '#hud [class*="ammo"], #hud [class*="mag"], #hud b, #hud span')
+  report.fonts.cathode = await fontOf(s.page, '.hud-hp-text')
   await done(s, 'cathode-hud')
 }
 
