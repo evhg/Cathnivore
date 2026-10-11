@@ -1507,24 +1507,6 @@ body:has(#dlg-pause[open]) .paused-note {
 .play .twist-line {
   color: var(--clay-deep) !important;
 }
-.play .roster td {
-  opacity: 1;
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-}
-.play .roster caption {
-  font: 850 var(--fs-label) / 1.2 var(--font-ui);
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--ink-2);
-}
-.play .roster th {
-  font-weight: 800;
-  color: var(--ink);
-}
-.play .roster tr + tr {
-  border-top: 1px dashed var(--ink-a16);
-}
 /* The tray of towers: little seed packets you drag onto a plot */
 .play .tray-tower {
   width: 62px;
@@ -2612,6 +2594,320 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .ability {
     width: auto;
     min-width: 50px;
+  }
+}
+
+/* ================================================================= the round ticket and tray (M3 review 2) */
+/* The tray: a row of kraft seed packets. A long roster scrolls under a brass "more" tab, never a cut packet */
+.tray-wrap {
+  position: relative;
+  flex: none;
+  min-width: 0;
+}
+.play .tray-wrap .tray {
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 2px;
+  padding-inline-end: 2px;
+  -webkit-mask: none;
+  mask: none;
+}
+.play .tray-wrap.overflows .tray {
+  padding-inline-end: 44px;
+}
+.play .tray-tower {
+  scroll-snap-align: start;
+}
+.tray-more {
+  position: absolute;
+  top: 50%;
+  right: -2px;
+  width: 34px;
+  height: 52px;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: var(--r-pill) 0 0 var(--r-pill);
+  background: var(--mat-oak) padding-box, var(--mat-brass) border-box;
+  background-blend-mode: multiply, normal, normal;
+  box-shadow: 0 0 0 1.5px var(--line), -6px 0 12px -4px var(--shade-a35);
+  cursor: pointer;
+}
+.tray-more[hidden] {
+  display: none;
+}
+.tray-more::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border: solid var(--on-fill);
+  border-width: 3px 3px 0 0;
+  rotate: 45deg;
+}
+.tray-more:focus-visible {
+  outline: 3px solid var(--focus-ink);
+  outline-offset: 2px;
+}
+.tray-more:active {
+  translate: 2px -50%;
+}
+
+/* The round ticket: a perforated paper stub with the round's number, the ticket with its name, tags and vehicles */
+.round-ticket {
+  --stub: 62px;
+  position: relative;
+  flex: none;
+  display: grid;
+  grid-template-columns: var(--stub) minmax(0, 1fr);
+  min-height: 76px;
+  margin: 0;
+  border-radius: var(--r-m);
+  background: var(--mat-paper);
+  background-blend-mode: multiply, normal;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  color: var(--ink);
+  /* the punched notches where the stub tears off */
+  -webkit-mask:
+    radial-gradient(circle 7px at var(--stub) 0, transparent 96%, black) top / 100% 51% no-repeat,
+    radial-gradient(circle 7px at var(--stub) 100%, transparent 96%, black) bottom / 100% 51% no-repeat;
+  mask:
+    radial-gradient(circle 7px at var(--stub) 0, transparent 96%, black) top / 100% 51% no-repeat,
+    radial-gradient(circle 7px at var(--stub) 100%, transparent 96%, black) bottom / 100% 51% no-repeat;
+}
+.ticket-stub {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: var(--r-m) 0 0 var(--r-m);
+  background: var(--mat-kraft);
+  background-blend-mode: multiply, normal;
+  box-shadow: inset 1.5px 1.5px 0 var(--line), inset 0 -1.5px 0 var(--line);
+  /* the perforation: a dotted tear line down the stub's edge */
+  border-right: 2px dashed var(--ink-a45);
+}
+.ticket-label,
+.ticket-of {
+  font: 850 var(--fs-label) / 1 var(--font-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.ticket-no {
+  font: 740 var(--fs-d1) / 0.95 var(--font-display);
+  font-variation-settings: var(--display-axes);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.ticket-body {
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px 10px 8px 12px;
+}
+.ticket-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-width: 0;
+}
+.play .panel .ticket-title {
+  flex: 0 1 auto;
+  margin: 0 4px 0 0;
+  font: 690 var(--fs-d3) / 1.1 var(--font-display);
+  font-variation-settings: var(--display-axes);
+  letter-spacing: -0.005em;
+  color: var(--ink) !important;
+  text-wrap: balance;
+}
+/* Luggage tags (spec 4.7): an eyelet, a short caps word */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px 0 5px;
+  border-radius: 5px var(--r-pill) var(--r-pill) 5px;
+  background: var(--card);
+  color: var(--ink);
+  font: 850 var(--fs-label) / 1 var(--font-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1.5px var(--line);
+}
+.tag::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+.tag.twist {
+  background: var(--harvest-hi, var(--card));
+}
+.tag.warn {
+  background: var(--clay-deep);
+  color: var(--on-fill);
+}
+.tag .chip-props {
+  gap: 2px;
+}
+.tag .prop-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+/* The vehicles: roundels with a count */
+.play .ticket-chips {
+  gap: 6px;
+  padding: 0 0 2px;
+}
+.play .ticket-chips .preview-chip {
+  min-height: 34px;
+  gap: 4px;
+  padding: 0 9px 0 0;
+  background: var(--card);
+  box-shadow: 0 0 0 1.5px var(--line);
+}
+.ticket-chips .chip-icon {
+  width: 34px;
+  height: 34px;
+  padding: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, var(--paper-hi), var(--kraft));
+  box-shadow: 0 0 0 1.5px var(--line);
+}
+.ticket-chips .chip-n {
+  font: 950 var(--fs-body) / 1 var(--font-ui);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.ticket-chips .chip-name {
+  font: 700 var(--fs-small) / 1 var(--font-ui);
+  white-space: nowrap;
+}
+.play .ticket-chips .preview-chip.boss {
+  background: var(--mat-plastic);
+  color: var(--corp-ink);
+}
+/* A boss round: the ticket turns into Hollowell's advert material */
+.round-ticket.boss {
+  background: var(--mat-plastic);
+  box-shadow: inset 0 0 0 1.5px var(--corp);
+}
+.round-ticket.boss .ticket-stub {
+  background: var(--corp);
+  box-shadow: none;
+  border-right-color: var(--white-a55);
+}
+.round-ticket.boss :is(.ticket-label, .ticket-of, .ticket-no) {
+  color: var(--white-a90, #fff);
+}
+.play .panel .ticket-note {
+  margin: 0;
+  font: 500 var(--fs-small) / 1.4 var(--font-ui);
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.play .panel .preview-then {
+  margin: 0;
+  font: 600 var(--fs-small) / 1.35 var(--font-ui);
+  color: var(--ink-2);
+}
+.play .panel .field-warn {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.35;
+}
+/* Phones: the tray and the ticket, nothing more; the names, rules and advice wait for the side panel (or the
+   ticket's tags and Cath's own bubble). Nothing in the preview scrolls or fades a line in half. */
+@media (max-width: 899.98px), (max-height: 520px) {
+  .panel.panel-preview {
+    gap: 8px;
+  }
+  .panel.panel-preview::after {
+    display: none;
+  }
+  .panel-preview :is(.ticket-note, .twist-line, .field-warn, .preview-then, .cath-tip, .hint) {
+    display: none;
+  }
+  .ticket-chips .chip-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  /* Each vehicle is its roundel with the count on a little oak badge, so a round's worth fits the ticket */
+  .play .ticket-chips {
+    gap: 14px;
+    padding: 5px 12px 2px 2px;
+  }
+  .play .ticket-chips .preview-chip {
+    position: relative;
+    min-height: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .play .ticket-chips .preview-chip.boss {
+    background: none;
+  }
+  .ticket-chips .preview-chip.boss .chip-icon {
+    background: var(--mat-plastic);
+    box-shadow: 0 0 0 2px var(--corp);
+  }
+  .ticket-chips .chip-n {
+    position: absolute;
+    top: -5px;
+    right: -12px;
+    min-width: 22px;
+    padding: 2px 4px 1px;
+    border-radius: var(--r-pill);
+    background: var(--oak-ink);
+    color: var(--on-fill);
+    font: 900 var(--fs-label) / 1.1 var(--font-ui);
+    text-align: center;
+    box-shadow: 0 0 0 1.5px var(--line);
+  }
+  .ticket-chips .chip-tag,
+  .ticket-chips .chip-props {
+    display: none;
+  }
+  .play .tray-tower {
+    width: 58px;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .panel.panel-preview {
+    gap: 6px;
+  }
+  .round-ticket {
+    --stub: 54px;
+    min-height: 0;
+  }
+  .ticket-no {
+    font-size: var(--fs-d2);
+  }
+  .ticket-body {
+    gap: 4px;
+    padding: 6px 8px 6px 10px;
+  }
+  .ticket-chips .chip-icon {
+    width: 30px;
+    height: 30px;
+  }
+  .play .ticket-chips .preview-chip {
+    min-height: 30px;
   }
 }
 

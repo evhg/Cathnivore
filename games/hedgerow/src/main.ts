@@ -1004,65 +1004,167 @@ function line(text: string, cls = ""): HTMLParagraphElement {
   return el;
 }
 
+/**
+ * The round preview (AAA UI M3, spec 4.10): the tower tray, then a perforated ticket for the next round. Its stub
+ * carries the round's number; the ticket its name, the level's twist and any lock the field can't answer as
+ * luggage tags, and the vehicles as roundels with their counts. A phone shows just that; the side panel adds the
+ * round's card, the twist's rule, the warning in full, the round after, and Cath's advice.
+ */
 function wavePreview(p: HTMLElement, g: Game): void {
   p.classList.add("panel-preview");
   if (!player && g.phase !== "won" && g.phase !== "lost") towerTray(p, g);
   const next = g.level.waves[g.wave];
+  const fleet = isFleet(g.level);
+  const ticket = document.createElement("section");
+  ticket.className = "round-ticket";
+  const stub = document.createElement("div");
+  stub.className = "ticket-stub";
+  stub.setAttribute("aria-hidden", "true");
+  const label = document.createElement("span");
+  label.className = "ticket-label";
+  const no = document.createElement("span");
+  no.className = "ticket-no";
+  const of = document.createElement("span");
+  of.className = "ticket-of";
+  stub.append(label, no, of);
+  const body = document.createElement("div");
+  body.className = "ticket-body";
   const head = document.createElement("div");
-  head.className = "preview-head";
+  head.className = "ticket-head";
+  const title = document.createElement("p");
+  title.className = "ticket-title preview-title";
+  head.append(title);
+  body.append(head);
+  ticket.append(stub, body);
   if (!next) {
-    head.append(line(g.phase === "wave" ? `Last ${waveWord(g)} on the lane. Hold them.` : "", "preview-title"));
-    p.append(head);
+    if (g.phase !== "wave") return;
+    label.textContent = "Last";
+    no.textContent = String(lastNo(g));
+    of.textContent = Word(g);
+    title.textContent = `Last ${waveWord(g)} on the lane. Hold them.`;
+    p.append(ticket);
     return;
   }
-  head.append(line(g.phase === "wave" ? `Coming next: ${waveWord(g)} ${waveNo(g, g.wave + 1)}` : `${Word(g)} ${waveNo(g, g.wave + 1)} of ${lastNo(g)}`, "preview-title"));
-  p.append(head);
-  if (g.level.twists?.length) {
-    const tw = line(g.level.twists.map((t) => `${TWISTS[t].name}: ${twistRule(g.level, t)}`).join(" "), "twist-line");
-    p.append(tw);
+  const n = waveNo(g, g.wave + 1);
+  label.textContent = g.phase === "wave" ? "Next" : Word(g);
+  no.textContent = String(n);
+  of.textContent = `of ${lastNo(g)}`;
+  const r = fleet ? bookRound(g.level, g.wave + 1) : 0;
+  const page = fleet ? roundFor(g.level.id, r) : undefined;
+  // The vehicles, merged by kind (and, on Round Book levels, by their properties).
+  const seen = new Map<string, { kind: EnemyKind; pm: number; count: number }>();
+  for (const gr of next) {
+    const pm = fleet ? (gr.pm ?? 0) : 0;
+    const key = `${gr.enemy}:${pm}`;
+    const e = seen.get(key) ?? { kind: gr.enemy, pm, count: 0 };
+    e.count += gr.count;
+    seen.set(key, e);
   }
-  for (const sp of g.level.setPieces ?? [])
-    p.append(
-      line(
-        sp.kind === "flood"
-          ? `Flood: from wave ${sp.wave} the river covers the plots by the ford; only Duck Ponds stand there, and vehicles wade.`
-          : sp.kind === "bridge"
-            ? `Swing bridge: it opens for ${sp.open}s every ${sp.period}s, and nothing crosses while it's up.`
-            : "Blackout: no lamps tonight. Towers and Cath light the lane around them; nothing in the dark can be targeted.",
-        "twist-line",
-      ),
-    );
-  if (isFleet(g.level)) fleetPreview(p, g);
+  const total = [...seen.values()].reduce((a, e) => a + e.count, 0);
+  title.textContent = page?.theme ?? `${total} on the lane`;
+  const boss = [...seen.values()].some((e) => isBig(e.kind));
+  if (boss) ticket.classList.add("boss");
+  // The stub is drawn for the eye; a screen reader (and the page's text) gets it as words.
+  const said = document.createElement("span");
+  said.className = "sr-only";
+  said.textContent = g.phase === "wave" ? `Coming next: ${waveWord(g)} ${n} of ${lastNo(g)}. ` : `${Word(g)} ${n} of ${lastNo(g)}. `;
+  ticket.prepend(said);
+  // The level's twists and set pieces, as tags; their rules in full in the side panel.
+  const notes: HTMLElement[] = [];
+  for (const tw of g.level.twists ?? []) {
+    const rule = `${TWISTS[tw].name}: ${twistRule(g.level, tw)}`;
+    head.append(tag(TWISTS[tw].name, "twist", rule));
+    notes.push(line(rule, "twist-line"));
+  }
+  for (const sp of g.level.setPieces ?? []) {
+    const [name, rule] =
+      sp.kind === "flood"
+        ? ["Flood", `Flood: from wave ${sp.wave} the river covers the plots by the ford; only Duck Ponds stand there, and vehicles wade.`]
+        : sp.kind === "bridge"
+          ? ["Swing bridge", `Swing bridge: it opens for ${sp.open}s every ${sp.period}s, and nothing crosses while it's up.`]
+          : ["Blackout", "Blackout: no lamps tonight. Towers and Cath light the lane around them; nothing in the dark can be targeted."];
+    head.append(tag(name, "twist", rule));
+    notes.push(line(rule, "twist-line"));
+  }
   const row = document.createElement("ul");
-  row.className = "preview-row";
-  for (const { kind, count } of waveSummary(next)) {
+  row.className = "preview-row ticket-chips";
+  // It can scroll sideways on a phone: keyboard users can reach it too.
+  row.tabIndex = 0;
+  row.setAttribute("aria-label", fleet ? "Vehicles in this round" : "Vehicles in this wave");
+  for (const { kind, pm, count } of seen.values()) {
     const li = document.createElement("li");
     li.className = "preview-chip" + (isBig(kind) ? " boss" : "");
+    const name = fleet ? vehicleName(kind, pm) : ENEMIES[kind].name;
+    li.title = `${count} × ${name}`;
     li.append(img(enemyIcon(kind), "chip-icon"));
-    const label = document.createElement("span");
-    label.textContent = `${count} × ${ENEMIES[kind].name}`;
-    li.append(label);
-    const cls = enemyClass(kind);
-    if (cls !== "light") {
-      const tag = document.createElement("span");
-      tag.className = `chip-tag ${cls}`;
-      tag.textContent = cls === "air" ? "Air" : "Heavy";
-      li.append(tag);
+    const c = document.createElement("span");
+    c.className = "chip-n";
+    c.textContent = `×${count}`;
+    const nm = document.createElement("span");
+    nm.className = "chip-name";
+    nm.textContent = ` ${name}`;
+    li.append(c, nm);
+    if (fleet) {
+      const own = pm | inherentProps(kind);
+      if (own) li.append(propRow(own, "chip-props"));
+    } else {
+      const cls = enemyClass(kind);
+      if (cls !== "light") {
+        const t = document.createElement("span");
+        t.className = `chip-tag ${cls}`;
+        t.textContent = cls === "air" ? "Air" : "Heavy";
+        li.append(t);
+      }
     }
     row.append(li);
   }
-  // Fleet levels show their round in fleetPreview above.
-  if (!isFleet(g.level)) p.append(row);
-  if (g.towers.length) {
-    const counts = new Map<TowerKind, number>();
-    for (const t of g.towers) counts.set(t.kind, (counts.get(t.kind) ?? 0) + 1);
-    const list = [...counts].map(([k, n]) => `${n} × ${TOWERS[k].name}`).join(", ");
-    p.append(line(`On the field: ${list}. Tap a tower for its range, upgrades and sell price.`, "hint field-summary"));
+  body.append(row);
+  // What the field can't answer in the next two rounds: a red tag on the ticket, the keys in the side panel.
+  let warn: HTMLElement | null = null;
+  let then: HTMLElement | null = null;
+  if (fleet) {
+    let pm = roundProps(g.level, next);
+    const after = g.level.waves[g.wave + 1];
+    if (after) {
+      const r2 = bookRound(g.level, g.wave + 2);
+      const page2 = roundFor(g.level.id, r2);
+      const props = roundProps(g.level, after);
+      pm |= props;
+      if (page2) {
+        then = line(`Then round ${r2}: ${page2.theme}`, "preview-then");
+        if (props) then.append(" ", propRow(props, "chip-props"));
+      }
+    }
+    const miss = unanswered(g, pm);
+    if (miss.length) {
+      const names = miss.map((m) => PROPERTIES[m].name);
+      const t = tag(`Can't answer`, "warn", `Your field can't answer ${names.join(", ")}`);
+      t.append(propRow(miss.reduce((a, m) => a | P[m], 0), "chip-props"));
+      head.append(t);
+      warn = line(`Your field can't answer this: ${miss.map((m) => `${PROPERTIES[m].name}. ${PROPERTIES[m].key}`).join(" ")}`, "field-warn");
+      warn.setAttribute("role", "status");
+    }
   }
+  p.append(ticket);
+  // The side panel's longer read (a phone shows the ticket alone: styles hide these there).
+  if (warn) p.append(warn);
+  if (page) p.append(line(page.card, "ticket-note"));
+  p.append(...notes);
+  if (then) p.append(then);
   const advice = cathAdvice(g, next);
   if (advice) p.append(line(`Cath: ${advice}`, "cath-tip"));
-  towerRoster(p, g);
   if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
+}
+
+/** A luggage tag (spec 4.7): an eyelet, then a short caps word; `title` carries the full sentence. */
+function tag(text: string, cls: string, title: string): HTMLSpanElement {
+  const t = document.createElement("span");
+  t.className = `tag ${cls}`;
+  t.title = title;
+  const w = document.createElement("span");
+  w.textContent = text;
+  t.append(w);
+  return t;
 }
 
 /** The locks a level's rounds bring (its badges show only these: level 1 asks about wrap and the air, not stealth). */
@@ -1122,67 +1224,6 @@ function propRow(pm: number, cls = "prop-row"): HTMLSpanElement {
   return row;
 }
 
-/**
- * Fleet levels: the next two rounds by name with their vehicles and property icons (section 2's round preview),
- * and a warning when nothing on the field holds the key to a property that's coming.
- */
-function fleetPreview(p: HTMLElement, g: Game): void {
-  const lv = g.level;
-  let pm = 0;
-  for (let i = 0; i < 2; i++) {
-    const groups = lv.waves[g.wave + i];
-    if (!groups) break;
-    const r = bookRound(lv, g.wave + 1 + i);
-    const page = roundFor(lv.id, r);
-    const props = roundProps(lv, groups);
-    pm |= props;
-    if (i === 0) {
-      if (page) {
-        const head = line(`${page.theme}. ${page.card}`, "round-card");
-        p.append(head);
-      }
-      const row = document.createElement("ul");
-      row.className = "preview-row";
-      // It scrolls sideways on a phone: keyboard users can reach it too.
-      row.tabIndex = 0;
-      row.setAttribute("aria-label", "Vehicles in this round");
-      const seen = new Map<string, { kind: EnemyKind; pm: number; count: number }>();
-      for (const gr of groups) {
-        const key = `${gr.enemy}:${gr.pm ?? 0}`;
-        const e = seen.get(key) ?? { kind: gr.enemy, pm: gr.pm ?? 0, count: 0 };
-        e.count += gr.count;
-        seen.set(key, e);
-      }
-      for (const { kind, pm: gpm, count } of seen.values()) {
-        const li = document.createElement("li");
-        li.className = "preview-chip" + (isBig(kind) ? " boss" : "");
-        li.append(img(enemyIcon(kind), "chip-icon"));
-        const label = document.createElement("span");
-        label.textContent = `${count} × ${vehicleName(kind, gpm)}`;
-        li.append(label);
-        const own = gpm | inherentProps(kind);
-        if (own) li.append(propRow(own, "chip-props"));
-        row.append(li);
-      }
-      p.append(row);
-    } else if (page) {
-      const then = line(`Then round ${r}: ${page.theme}`, "preview-then");
-      if (props) then.append(" ", propRow(props, "chip-props"));
-      p.append(then);
-    }
-  }
-  const miss = unanswered(g, pm);
-  if (miss.length) {
-    const warn = line(`Your field can't answer this: ${miss.map((m) => `${PROPERTIES[m].name}. ${PROPERTIES[m].key}`).join(" ")}`, "field-warn");
-    warn.prepend(propRow(miss.reduce((a, m) => a | P[m], 0), "chip-props"), " ");
-    warn.setAttribute("role", "status");
-    // Up top, under the round's title: on a phone the panel is short and this is the line that matters.
-    const head = p.querySelector(".preview-head");
-    if (head) head.after(warn);
-    else p.prepend(warn);
-  }
-}
-
 /** One line from Cath about the coming wave, from its enemy classes. */
 function cathAdvice(g: Game, next: Level["waves"][number]): string {
   const kinds = waveSummary(next).map((w) => w.kind);
@@ -1195,33 +1236,15 @@ function cathAdvice(g: Game, next: Level["waves"][number]): string {
   return bits.slice(0, 2).join(" ");
 }
 
-/** A compact stats table of the towers this level allows: cost, damage, range and rate at tier 1. */
-function towerRoster(p: HTMLElement, g: Game): void {
-  const table = document.createElement("table");
-  table.className = "roster";
-  const cap = document.createElement("caption");
-  cap.textContent = "Towers this level";
-  table.append(cap);
+/** A tower's tier-1 numbers in one line (the tray's tooltip and tap note): cost, hit, rate and range. */
+function towerStatLine(g: Game, kind: TowerKind): string {
   const fleet = isFleet(g.level);
-  for (const kind of g.level.towers) {
-    const s = TOWERS[kind];
-    const st = towerStats({ kind, tier: 1, spec: null, fleet });
-    const tr = document.createElement("tr");
-    const icon = document.createElement("td");
-    icon.append(img(towerIcon(kind), "roster-icon"));
-    const name = document.createElement("th");
-    name.scope = "row";
-    name.textContent = s.name;
-    const stat = document.createElement("td");
-    const bits = [`${towerCost(g, kind)} Marks`];
-    // Fleet towers hit in layers, and one shot can hit `pierce` vehicles.
-    if (st.damage > 0) bits.push(fleet ? `${st.damage} layer${st.damage === 1 ? "" : "s"} × ${st.pierce}` : `${st.damage} dmg`, `${(1 / st.cooldown).toFixed(1)}/s`);
-    bits.push(`range ${st.range}`);
-    stat.textContent = bits.join(" · ");
-    tr.append(icon, name, stat);
-    table.append(tr);
-  }
-  p.append(table);
+  const st = towerStats({ kind, tier: 1, spec: null, fleet });
+  const bits = [`${towerCost(g, kind)} Marks`];
+  // Fleet towers hit in layers, and one shot can hit `pierce` vehicles.
+  if (st.damage > 0) bits.push(fleet ? `${st.damage} layer${st.damage === 1 ? "" : "s"} × ${st.pierce}` : `${st.damage} dmg`, `${(1 / st.cooldown).toFixed(1)}/s`);
+  bits.push(`range ${st.range}`);
+  return bits.join(" · ");
 }
 
 const CLASS_NAMES: Record<EnemyClass, string> = { light: "light traffic", heavy: "heavy plant", air: "air" };
@@ -1323,8 +1346,14 @@ function dragEnded(): boolean {
   return performance.now() - dragEndedAt < 350;
 }
 
-/** The tower tray over the round preview: drag one onto a plot to build it there. */
+/**
+ * The tower tray over the round preview: drag one onto a plot to build it there. A long roster scrolls sideways
+ * under a brass "more" tab at the far end (it pages the row along, and hides at the end). Hover a packet, or tap
+ * it, for its numbers.
+ */
 function towerTray(p: HTMLElement, g: Game): void {
+  const wrap = document.createElement("div");
+  wrap.className = "tray-wrap";
   const tray = document.createElement("div");
   tray.className = "tray";
   tray.setAttribute("role", "group");
@@ -1338,20 +1367,43 @@ function towerTray(p: HTMLElement, g: Game): void {
     b.dataset.kind = kind;
     b.dataset.cost = String(cost);
     b.disabled = g.marks < cost;
-    b.setAttribute("aria-label", `${TOWERS[kind].name}, ${cost} Marks. Drag onto a plot, or pick a plot first.`);
-    b.title = `${TOWERS[kind].name}: drag onto a plot`;
+    const stats = towerStatLine(g, kind);
+    b.setAttribute("aria-label", `${TOWERS[kind].name}, ${cost} Marks. ${TOWERS[kind].blurb} ${stats}. Drag onto a plot, or pick a plot first.`);
     const price = document.createElement("span");
     price.className = "build-cost";
     price.textContent = String(cost);
     b.append(img(towerIcon(kind), "tray-icon"), price);
     b.addEventListener("pointerdown", (e) => startDrag(e, kind));
+    b.addEventListener("pointerenter", (e) => {
+      if (e.pointerType !== "mouse" || !HOVER) return;
+      clearTimeout(tipTimer);
+      tipTimer = window.setTimeout(() => showTipText(b, `${TOWERS[kind].name}: ${stats}. ${TOWERS[kind].blurb}`), 380);
+    });
+    b.addEventListener("pointerleave", (e) => {
+      if (e.pointerType === "mouse") hideTip();
+    });
     b.onclick = () => {
       if (dragEnded()) return;
-      toast(`Drag the ${TOWERS[kind].name} onto a plot beside the lane, or tap a plot first.`);
+      hideTip();
+      toast(`Drag the ${TOWERS[kind].name} onto a plot beside the lane, or tap a plot first. ${stats}.`);
     };
     tray.append(b);
   }
-  p.append(tray);
+  const more = document.createElement("button");
+  more.type = "button";
+  more.className = "tray-more";
+  more.setAttribute("aria-label", "More towers");
+  more.hidden = true;
+  more.onclick = () => tray.scrollBy({ left: tray.clientWidth * 0.8, behavior: reducedMotion() ? "auto" : "smooth" });
+  const sync = () => {
+    const over = tray.scrollWidth > tray.clientWidth + 2;
+    more.hidden = !over || tray.scrollLeft + tray.clientWidth >= tray.scrollWidth - 4;
+    wrap.classList.toggle("overflows", over);
+  };
+  tray.addEventListener("scroll", sync, { passive: true });
+  requestAnimationFrame(sync);
+  wrap.append(tray, more);
+  p.append(wrap);
 }
 
 function startDrag(e: PointerEvent, kind: TowerKind): void {
@@ -3242,7 +3294,10 @@ let tipHide = 0;
 let tipSuppress = false;
 function showTip(el: HTMLElement): void {
   const text = TIPS[el.id]?.();
-  if (!text) return;
+  if (text) showTipText(el, text);
+}
+/** The paper-tag tooltip over (or under) `el`, saying `text`. */
+function showTipText(el: HTMLElement, text: string): void {
   ui.tooltip.textContent = text;
   ui.tooltip.hidden = false;
   const r = el.getBoundingClientRect();
