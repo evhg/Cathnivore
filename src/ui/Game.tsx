@@ -54,7 +54,8 @@ import {
   SellIcon,
   SupplyIcon,
 } from './icons/ActionIcons'
-import { RegionTypeIcon, romanStage } from './icons/RegionTypeIcon'
+import { RegionTypeIcon } from './icons/RegionTypeIcon'
+import { romanStage } from './romanStage'
 import { CandorLogo, HollowellLogo } from './icons/EnemyLogos'
 import type { Action, GameEvent, GameState, ProducerId, RegionId, RegionType, ResourceKind } from '../engine/types'
 import type { Mode } from './Setup'

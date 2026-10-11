@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react'
-import { captionFor } from './enemyTurnLog'
+import { captionFor, eventRegion } from './enemyTurnLog'
 import type { GameEvent, RegionId } from '../engine/types'
-
-// The region an enemy-turn step happens in, if it has one (agenda steps are global).
-export function eventRegion(event: GameEvent): RegionId | undefined {
-  return 'region' in event ? (event.region as RegionId) : undefined
-}
 
 const STEP_MS = 1000
 

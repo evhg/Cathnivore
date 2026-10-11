@@ -1,7 +1,7 @@
 import { REGIONS } from '../content/map'
 import { AGENDA_CARDS_BY_ID } from '../content/agenda'
 import { PRODUCERS } from '../content/producers'
-import type { GameEvent, GameState } from '../engine/types'
+import type { GameEvent, GameState, RegionId } from '../engine/types'
 
 // SPEC 10.2: "the enemy turn plays back as a short series of steps, at most 1 second each, each with a
 // caption such as 'Squeeze in Highmoor: 1 Lost Land.'" `runEnemyTurn`/`cleanup` already append one
@@ -67,4 +67,9 @@ export function pendingMidSceneTrigger(
     if (dismissedIds.includes(event.sceneId)) return false
     return !log.slice(i + 1).some((later) => later.type === 'action')
   }) as Extract<GameEvent, { type: 'trigger' }> | undefined
+}
+
+// The region an enemy-turn step happens in, if it has one (agenda steps are global).
+export function eventRegion(event: GameEvent): RegionId | undefined {
+  return 'region' in event ? (event.region as RegionId) : undefined
 }
