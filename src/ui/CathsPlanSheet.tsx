@@ -53,11 +53,19 @@ export default function CathsPlanSheet({
         if (!card) return null
         return (
           <li key={id} className={`card-enter card-framed card-plan${playing === id ? ' card-playing' : ''}`} data-tag="plan">
-            <CathArt className="card-plan-avatar" framing="face" width={32} height={32} title="Cath" />
-            <strong>{card.name}</strong> —{' '}
-            <Tooltip term="Goodwill">
-              <GoodwillIcon /> {card.cost} Goodwill
-            </Tooltip>
+            <div className="card-head">
+              <span className="card-head-name">
+                <CathArt className="card-plan-avatar" framing="face" width={32} height={32} title="Cath" />
+                <strong>{card.name}</strong>
+              </span>
+              <Tooltip term="Goodwill">
+                <span className="coin coin--goodwill num">
+                  <GoodwillIcon size={14} />
+                  {card.cost}
+                </span>
+                <span className="visually-hidden"> Goodwill</span>
+              </Tooltip>
+            </div>
             {/* SPEC 10.5: "All rules text is generated from card and rules data" — `card.text` is the
                 plain-English effect, checked against the card's actual `effect` by tests/rules-text.test.ts.
                 It was previously only shown in the Rules Reference, never here, so a player deciding whether

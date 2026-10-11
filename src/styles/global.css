@@ -394,17 +394,24 @@ h3 {
   color: var(--ink-muted);
 }
 
+/* AAA UI M4 fix: sentence case (a display face is never set in caps), 16.5 units so a 370px-wide phone
+   map still sets it at 12px or more. */
 .region-name {
   font-family: var(--font-display);
   font-variation-settings: "opsz" 24;
-  font-size: 13px;
+  font-size: 16.5px;
   font-weight: 700;
   fill: var(--ink);
-  text-transform: uppercase;
   paint-order: stroke;
   stroke: var(--paper);
   stroke-width: 3px;
   stroke-opacity: 0.55;
+}
+
+@media (min-width: 1024px) {
+  .region-name {
+    font-size: 14px;
+  }
 }
 
 .badge-text {

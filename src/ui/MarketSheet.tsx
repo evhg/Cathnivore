@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
-import { MarksIcon } from './icons/ResourceIcons'
 import CardTagIcon from './icons/CardTagIcon'
 import Tooltip from './Tooltip'
 import type { GameState } from '../engine/types'
@@ -54,11 +53,18 @@ export default function MarketSheet({
         if (!card) return null
         return (
           <li key={id} className={`card-enter card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
-            <CardTagIcon tag={card.tags[0]} /> <strong>{card.name}</strong> —{' '}
-            <Tooltip term="Marks">
-              <MarksIcon /> {card.cost} Marks
-            </Tooltip>{' '}
-            ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
+            {/* AAA UI M4 fix: the same mini-card head as the desktop Market (tag band, name, tags line,
+                cost coin), with the effect under it, so one card has one look everywhere. */}
+            <div className="card-head">
+              <span className="card-head-name">
+                <CardTagIcon tag={card.tags[0]} /> <strong>{card.name}</strong>
+                <span className="card-tags">{card.tags.map((t) => TAG_LABEL[t]).join(', ')}</span>
+              </span>
+              <Tooltip term="Marks">
+                <span className="coin num">{card.cost}</span>
+                <span className="visually-hidden"> Marks</span>
+              </Tooltip>
+            </div>
             {/* SPEC 10.5: "All rules text is generated from card and rules data" — `card.text` is the
                 plain-English effect (STYLE.md 8: "rules text in Atkinson Hyperlegible"), checked against
                 the card's actual `onBuy` by tests/rules-text.test.ts. It was previously only shown in the

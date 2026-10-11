@@ -890,9 +890,6 @@
     font-size: var(--fs-small);
   }
 
-  .region-name {
-    font-size: 13px;
-  }
 
   /* ROADMAP 144: price and sold tags 1.4x so they read on a phone-sized map. */
   .price-tag-text {
@@ -1353,6 +1350,84 @@
   min-height: 0;
 }
 
+/* the seed pips say what they count (desktop producer frame; the phone tray keeps them bare) */
+.pips-label {
+  display: none;
+}
+
+.producer-sheet .pips {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  column-gap: 7px;
+  row-gap: 5px;
+}
+
+.producer-sheet .pips-label {
+  display: block;
+  grid-column: 1 / -1;
+  justify-self: end;
+  font: 760 var(--fs-label)/1 var(--font-text);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* The phone Market / Cath's Plan sheets use the desktop mini-card head: tag band, name, tags line and
+   the cost coin, with the effect text under it. */
+.sheet .card-list .card-framed {
+  padding: 9px 12px 12px;
+  background: var(--mat-card-flat);
+  border: 1px solid var(--ink-a35);
+  border-top: 4px solid var(--frame);
+  border-radius: var(--r-sm);
+  box-shadow: var(--inset-hi), var(--e2);
+}
+
+.sheet .card-plan {
+  background: var(--mat-ledger-flat);
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.card-head-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  min-width: 0;
+  font: 640 var(--fs-body)/1.25 var(--font-display);
+  font-variation-settings: "opsz" 24;
+}
+
+.card-head-name strong {
+  font-weight: inherit;
+}
+
+.card-head-name .card-tags {
+  flex: 1 0 100%;
+  margin-top: 1px;
+  font: 500 var(--fs-caption)/1.3 var(--font-text);
+  color: var(--ink-muted);
+}
+
+.card-head .card-plan-avatar {
+  float: none;
+  flex: none;
+  margin: 0;
+  width: 28px;
+  height: 28px;
+}
+
+.sheet .card-framed > button {
+  display: block;
+  margin: var(--sp-2) 0 0 auto;
+}
+
 /* the price coin on the Market and Cath's Plan mini cards */
 .coin {
   display: inline-grid;
@@ -1369,8 +1444,8 @@
 
 .coin--goodwill {
   display: inline-flex;
-  gap: 2px;
-  padding: 0 7px 0 4px;
+  gap: 3px;
+  padding: 0 10px 0 5px;
   background: var(--wheat-hi);
 }
 

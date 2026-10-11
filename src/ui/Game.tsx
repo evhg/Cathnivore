@@ -1176,6 +1176,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} />
           </span>
           <span className="pips" role="img" aria-label={`Actions left: ${state.actionsLeft} of ${ACTIONS_PER_ROUND}`}>
+            <span className="pips-label">Actions</span>
             {Array.from({ length: ACTIONS_PER_ROUND }, (_, i) => (
               <i key={i} className={i < state.actionsLeft ? 'pip on' : 'pip'} />
             ))}

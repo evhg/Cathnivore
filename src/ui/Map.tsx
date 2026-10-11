@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { REGIONS, regionMatchesPressureSlot } from '../content/map'
 import { loadSettings } from '../platform/settings'
 import type { GameState, ProducerId, RegionId, RegionType } from '../engine/types'
@@ -310,8 +311,20 @@ export default function Map({ state, highlight, onSelect }: Props) {
   const targeting = highlighted.size > 0
   const colourBlindPatterns = loadSettings().colourBlindPatterns
 
+  const svgRef = useRef<SVGSVGElement>(null)
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+    fitPlaques(svg)
+    let live = true
+    document.fonts?.ready.then(() => live && fitPlaques(svg)).catch(() => {})
+    return () => {
+      live = false
+    }
+  }, [active.length])
+
   return (
-    <svg viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role="img" aria-label="Map of Marrow">
+    <svg ref={svgRef} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role="img" aria-label="Map of Marrow">
       <RegionTextureDefs />
       {active.map((id) => {
         const def = REGIONS[id]
@@ -457,12 +470,15 @@ export default function Map({ state, highlight, onSelect }: Props) {
         const { x, y } = hexCenter(id)
         return (
           <g key={`name-${id}`} className="region-sign" pointerEvents="none">
+            {/* AAA UI M4 fix: a sentence-case Fraunces plaque, sized to the set name once the face has
+                loaded (see `fitPlaques`); the estimate below is only the first paint. */}
             <rect
-              x={x - def.name.length * 4.9 - 6}
-              y={y - HEX_R * 0.62 - 12}
-              width={def.name.length * 9.8 + 12}
-              height={17}
-              rx={3}
+              className="region-plaque"
+              x={x - def.name.length * 4.3 - 8}
+              y={y - HEX_R * 0.62 - 15}
+              width={def.name.length * 8.6 + 16}
+              height={21}
+              rx={4}
               fill="var(--paper)"
               stroke="var(--ink)"
               strokeWidth={1.5}
@@ -475,6 +491,25 @@ export default function Map({ state, highlight, onSelect }: Props) {
       })}
     </svg>
   )
+}
+
+// Sizes each region's plaque to its name as actually set (attributes only: CSP allows no style attributes).
+function fitPlaques(svg: SVGSVGElement) {
+  for (const sign of Array.from(svg.querySelectorAll('.region-sign'))) {
+    const text = sign.querySelector<SVGTextElement>('.region-name')
+    const plate = sign.querySelector<SVGRectElement>('.region-plaque')
+    if (!text || !plate) continue
+    let w = 0
+    try {
+      w = text.getComputedTextLength()
+    } catch {
+      continue
+    }
+    if (!w) continue
+    const cx = Number(text.getAttribute('x'))
+    plate.setAttribute('x', String(cx - w / 2 - 8))
+    plate.setAttribute('width', String(w + 16))
+  }
 }
 
 function matchesSlot(state: GameState, region: RegionId, slot: 'squeeze' | 'expand'): boolean {
