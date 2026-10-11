@@ -156,8 +156,9 @@ export const PATHS: Record<PathKind, TowerPaths> = {
             name: "Whirling Scythe",
             cost: 1300,
             adds: "spins: hits 8 around it every 0.4 s",
-            blurb: "It takes up the scythe and spins: everything in reach, all round it, every 0.4 seconds.",
-            mod: { sweep: 0.4, pierce: 6 },
+            blurb: "It takes up the scythe and spins: everything in reach, all round it, every 0.4 seconds. Quick Arms, Two Hands, Rally and a Siren all spin it faster.",
+            // 0.6 s before the path's own rate tiers (x1.3, x1.15), so 0.4 s as bought.
+            mod: { sweep: 0.6, pierce: 6 },
           },
         ],
       },

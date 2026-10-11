@@ -1202,6 +1202,8 @@ function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKin
     }
   }
   stats.cooldown /= rate;
+  // The Scythe's spin speeds up with the path's own rate tiers (Quick Arms, Two Hands) like a throw would.
+  if (stats.sweep) stats.gustEvery /= rate;
   stats.range = stats.range * range + rangeAdd;
   if (stats.splash) stats.splash *= splash;
   // A hedge that rams (Tractor Shed) hits Sharp like its thorns.
@@ -3298,6 +3300,16 @@ function holdBales(game: Game, t: Tower, hold: NonNullable<TowerStats["hold"]>, 
   t.holdCd = hold.every;
 }
 
+/** How much the buffs and auras around a tower speed it up (Fleet) or harden its hits (classic). */
+function boostOf(t: Tower): number {
+  let boost = 1;
+  for (const { t: b, s: bs } of ctx!.boosters) {
+    if (bs.buff > 1 && Math.hypot(b.col - t.col, b.row - t.row) <= bs.range) boost *= bs.buff;
+    if (bs.aura > 1) boost *= bs.aura;
+  }
+  return boost;
+}
+
 /** Pirate Radio: a hit on a vehicle inside a marking mast's range carries extra layers, paid as they add up. */
 function vulnerable(game: Game, t: Tower, e: Enemy, d: number): number {
   const p = enemyPoint(game.level, e);
@@ -3533,8 +3545,12 @@ function step(game: Game): void {
     // Windmills: a gust every few seconds shoves everything in reach back up the lane and batters it. A
     // Whirling Scythe spins the same way and pushes nothing.
     if (spec.gustEvery > 0) {
-      t.gustCd = (t.gustCd ?? spec.gustEvery * 0.5) - STEP;
-      if (t.gustCd <= 0) {
+      // A Whirling Scythe is a Scarecrow swinging: Rally, paperwork and influencers work on it as on a throw.
+      const swing = spec.sweep && game.rallyLeft > 0 ? STEP * RALLY_SPEEDUP : STEP;
+      t.gustCd = (t.gustCd ?? spec.gustEvery * 0.5) - swing;
+      if (spec.sweep && t.gustCd > 0 && jammed(game, t)) t.gustCd += STEP / 2;
+      if (spec.sweep && t.gustCd <= 0 && charmed(game, t)) t.gustCd = 0;
+      else if (t.gustCd <= 0) {
         let blew = false;
         // On fleet levels a gust batters at most `pierce` vehicles (it still blows back everything in reach).
         let batter = fleet ? spec.pierce : Infinity;
@@ -3548,15 +3564,12 @@ function step(game: Game): void {
           blew = true;
           e.lastHit = t.id;
           popWrap(game, e);
-          if (!spec.splash && spec.damage > 0 && (!fleet || canHurt(spec.type, pmOf(e))) && batter-- > 0)
-            damageEnemy(
-              game,
-              e,
-              fleet ? Math.max(1, Math.round(spec.damage * game.perks.towerDamage)) : spec.damage * game.perks.towerDamage * spec.vs[enemyClass(e.kind)],
-              spec.ignoresArmour,
-              t.id,
-              spec.type,
-            );
+          if (!spec.splash && spec.damage > 0 && (!fleet || canHurt(spec.type, pmOf(e))) && batter-- > 0) {
+            let d = fleet ? Math.max(1, Math.round(spec.damage * game.perks.towerDamage)) : spec.damage * game.perks.towerDamage * spec.vs[enemyClass(e.kind)];
+            // A Pirate Radio mast's marking adds layers to a Scythe's blade as to any hit.
+            if (fleet && spec.sweep && ctx!.vulns.length) d = vulnerable(game, t, e, d);
+            damageEnemy(game, e, d, spec.ignoresArmour, t.id, spec.type);
+          }
           if (spec.gustPush > 0 && !isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0 && (!fleet || canControl(pmOf(e), "push"))) {
             e.dist = Math.max(0, e.dist - spec.gustPush);
             e.gustCd = 2;
@@ -3565,7 +3578,8 @@ function step(game: Game): void {
         }
         if (blew) {
           game.events.push({ type: "gust", tower: t.id, x: t.col + 0.5, y: t.row + 0.5, radius: reach, ...(spec.sweep ? { sweep: true } : {}) });
-          t.gustCd = spec.gustEvery;
+          // Siren and Pollinator speed up a spin the way they speed up a throw.
+          t.gustCd = spec.sweep && fleet ? spec.gustEvery / boostOf(t) : spec.gustEvery;
         } else t.gustCd = 0;
       }
       // A plain windmill does all its work in the gust.
@@ -3603,12 +3617,7 @@ function step(game: Game): void {
     }
     const p = enemyPoint(game.level, target);
     let dmg = spec.damage * game.perks.towerDamage;
-    let boost = 1;
-    for (const { t: b, s: bs } of ctx!.boosters) {
-      if (bs.buff > 1 && Math.hypot(b.col - t.col, b.row - t.row) <= bs.range)
-        boost *= bs.buff;
-      if (bs.aura > 1) boost *= bs.aura;
-    }
+    const boost = boostOf(t);
     // Fleet hits are whole layers, so a cheering crowd makes towers throw faster rather than harder.
     if (!fleet) dmg *= boost;
     t.shots = (t.shots ?? 0) + 1;

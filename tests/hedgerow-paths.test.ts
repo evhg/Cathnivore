@@ -250,6 +250,58 @@ describe("hedgerow paths: tier 3s play differently", () => {
     expect(flock).not.toBe(scythe);
   });
 
+  it("the Whirling Scythe answers rate and marking like a throw: its tiers, a Siren, Rally and Pirate Radio (M4 review)", () => {
+    const ps = plots(L8);
+    const [c, r] = ps[4]!;
+    /** Sweeps and layers knocked off in 3 s by a 2-0-3 Scythe at (c, r) with parked Box Lorries in reach. */
+    const spin = (extra?: { mast: Path; at: [number, number] }, rally = false): [number, number] => {
+      const g = field();
+      place(g, "scarecrow", c, r);
+      const sc = g.towers[0]!;
+      while (upgradeToward(g, sc.id, [2, 0, 3]).ok);
+      if (extra) {
+        expect(place(g, "mast", extra.at[0], extra.at[1]).ok).toBe(true);
+        while (upgradeToward(g, g.towers[1]!.id, extra.mast).ok);
+      }
+      live(g);
+      const d = nearestDist(g, c, r);
+      for (let k = 0; k < 40; k++) {
+        const e = makeEnemy(g, "lorry", d - 0.5 + (k % 8) * 0.12, undefined, 1);
+        e.stun = 1e9;
+        g.enemies.push(e);
+      }
+      if (rally) g.rallyLeft = 1e9;
+      let sweeps = 0;
+      const ko0 = sc.ko ?? 0;
+      for (let k = 0; k < 90; k++) {
+        stepGame(g);
+        sweeps += g.events.filter((e) => e.type === "gust" && e.tower === sc.id).length;
+        g.events.length = 0;
+      }
+      return [sweeps, (sc.ko ?? 0) - ko0];
+    };
+    // Quick Arms and Two Hands still count once the Scythe is bought: 0.6 s / (1.3 x 1.15), the 0.4 s it says;
+    // a crosspath's Quick Crows (x1.3) spins it faster again.
+    const every = (goal: Path) => {
+      const g = field();
+      place(g, "scarecrow", c, r);
+      while (upgradeToward(g, g.towers[0]!.id, goal).ok);
+      return towerStats(g.towers[0]!).gustEvery;
+    };
+    expect(every([0, 2, 3])).toBeCloseTo(0.4, 2);
+    expect(every([2, 0, 3])).toBeCloseTo(0.4 / 1.3, 2);
+    const [base, baseKo] = spin();
+    expect(base).toBeGreaterThanOrEqual(7);
+    // A Siren (towers in range fire 15% faster) and Rally spin it faster.
+    const [siren] = spin({ mast: [0, 0, 2], at: ps[5]! });
+    expect(siren).toBeGreaterThan(base);
+    const [rallied] = spin(undefined, true);
+    expect(rallied).toBeGreaterThan(base);
+    // Pirate Radio's marking adds layers to every blade.
+    const [, radioKo] = spin({ mast: [2, 0, 0], at: ps[5]! });
+    expect(radioKo).toBeGreaterThan(baseKo);
+  });
+
   it("Lantern Eyes and Scent see Stealth for themselves; the same tower without them doesn't", () => {
     for (const [kind, goal] of [
       ["scarecrow", [0, 2, 0]],
