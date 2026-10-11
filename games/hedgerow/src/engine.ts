@@ -6,7 +6,7 @@
 
 export const STEP = 1 / 30;
 
-import { boughtTiers, capPath, stepToward, hasPaths, nextPath, pathBlock, pathCost, pathTier, topPath, type Path, type PathIndex, type PathKind } from "./paths";
+import { PATHS, boughtTiers, capPath, stepToward, hasPaths, nextPath, pathBlock, pathCost, pathTier, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import { CATH_DAMAGE, CHILD_GAP, FLEET_HERO_DAMAGE, FLEET_PIE_DAMAGE, FLEET_TOWERS, INHERITED, LIVE_CAP, P, PIERCE_REACH, REBRAND_SECS, RUNGS, canControl, canHurt, damageTypeOf, fleetSpecPrice, fleetUpgradePrice, fvOf, popRate, propMask, roundBonus, rungAbove, stackBonus, type DamageType } from "./fleet";
 
 export type TowerKind =
@@ -995,7 +995,7 @@ interface StatKey {
   path: number;
   stats: TowerStats;
 }
-const packPath = (p: readonly number[] | undefined): number => (p ? p[0]! * 16 + p[1]! * 4 + p[2]! : -1);
+const packPath = (p: readonly number[] | undefined, crown?: number): number => (p ? p[0]! * 16 + p[1]! * 4 + p[2]! + (crown === undefined ? 0 : 100 * (crown + 1)) : -1);
 const statCache = new WeakMap<object, StatKey>();
 
 /** The numbers a tower fights with at its tier, and with its specialisation at tier 4. */
@@ -1009,6 +1009,7 @@ export function towerStats(
     kills?: number;
     fleet?: boolean;
     path?: Path;
+    crown?: PathIndex;
   },
 ): TowerStats {
   // Fleet towers have no veteran ranks: their Knockouts are the counter (Hedgerow 2 cuts RANKS).
@@ -1025,7 +1026,7 @@ export function towerStats(
     hit.mega === t.mega &&
     hit.rank === rank &&
     !!hit.fleet === !!t.fleet &&
-    hit.path === packPath(t.path)
+    hit.path === packPath(t.path, t.crown)
   )
     return hit.stats;
   const s = TOWERS[t.kind];
@@ -1104,14 +1105,14 @@ export function towerStats(
   }
   // Map-wide reach isn't stretched by high ground or shortened by fog.
   if (stats.global) stats.range = GLOBAL_RANGE;
-  statCache.set(t, { kind: t.kind, tier: t.tier, spec: t.spec, high: t.high, rangeMul: t.rangeMul, dmgMul: t.dmgMul, mega: t.mega, rank, fleet: t.fleet, path: packPath(t.path), stats });
+  statCache.set(t, { kind: t.kind, tier: t.tier, spec: t.spec, high: t.high, rangeMul: t.rangeMul, dmgMul: t.dmgMul, mega: t.mega, rank, fleet: t.fleet, path: packPath(t.path, t.crown), stats });
   return stats;
 }
 
 /** What this very tower would become after an upgrade, a specialisation or a merge. Its fleet rules, high
  * ground, the level's twists and its rank carry over, so the panel's diff shows only what the upgrade changes. */
 export function previewStats(t: Tower, next: { tier: Tower["tier"]; spec?: 0 | 1 | null; mega?: MegaId; path?: Path }): TowerStats {
-  return towerStats({ kind: t.kind, high: t.high, rangeMul: t.rangeMul, dmgMul: t.dmgMul, kills: t.kills, fleet: t.fleet, spec: null, ...next });
+  return towerStats({ kind: t.kind, high: t.high, rangeMul: t.rangeMul, dmgMul: t.dmgMul, kills: t.kills, fleet: t.fleet, spec: null, ...(t.crown !== undefined ? { crown: t.crown } : {}), ...next });
 }
 
 /** What a path tower would become with path `i`'s next tier (null if it can't take it). */
@@ -1127,7 +1128,7 @@ export const GLOBAL_RANGE = 99;
 // ---- bosses: every boss has signature moves on a timer ----
 
 /** Fleet levels: a tower's hits in layers and pierce (fleet.ts FLEET_TOWERS); range, splash and slows stay. */
-function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; mega?: MegaId; path?: Path }, stats: TowerStats): void {
+function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; mega?: MegaId; path?: Path; crown?: PathIndex }, stats: TowerStats): void {
   const f = FLEET_TOWERS[t.kind];
   // No soft counters on the Fleet: TOWER_VS is cut (M3 brings hard property locks instead).
   stats.vs = { light: 1, heavy: 1, air: 1 };
@@ -1140,7 +1141,7 @@ function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; meg
     return;
   }
   if (t.path && hasPaths(t.kind)) {
-    pathStats(t.kind, t.path, f, stats);
+    pathStats(t.kind, t.path, f, stats, t.crown);
     return;
   }
   const i = Math.min(t.tier, 3) - 1;
@@ -1164,7 +1165,7 @@ function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; meg
  * A path tower on the Fleet (Hedgerow 2 M4): its tier 1 numbers (FLEET_TOWERS and today's range, splash and
  * slow), then every tier it has bought along its paths (paths.ts), adds and multipliers in any order.
  */
-function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKind], stats: TowerStats): void {
+function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKind], stats: TowerStats, crown?: PathIndex): void {
   stats.damage = f.damage[0]!;
   stats.pierce = f.pierce[0]!;
   if (f.air) stats.air = true;
@@ -1173,7 +1174,10 @@ function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKin
   let range = 1;
   let rangeAdd = 0;
   let splash = 1;
-  for (const tier of boughtTiers(kind, path)) {
+  const tiers = boughtTiers(kind, path);
+  const crowned = crown !== undefined ? PATHS[kind].paths[crown].crown : undefined;
+  if (crowned) tiers.push(crowned);
+  for (const tier of tiers) {
     const m = tier.mod;
     if (m.damage) stats.damage += m.damage;
     if (m.pierce) stats.pierce += m.pierce;
@@ -1559,6 +1563,8 @@ export interface Tower {
    * then only for show (paths.ts pathTier) and `spec` stays null.
    */
   path?: Path;
+  /** A Crown (tier 4, paths.ts): the path whose Crown it wears. Each Crown exists once per field. */
+  crown?: PathIndex;
   /** Seconds until it lays its next thorn pile, or holds the next vehicles (path towers). */
   pileCd?: number;
   holdCd?: number;
@@ -1743,6 +1749,7 @@ export type GameEvent =
   | { type: "pile"; tower: number; x: number; y: number }
   | { type: "pop"; x: number; y: number }
   /** Rebrand: a vehicle grew back a rung. */
+  | { type: "crown"; tower: number; name: string }
   | { type: "wreck"; x: number; y: number; kind: EnemyKind; marks: number }
   | { type: "regrow"; x: number; y: number; kind: EnemyKind }
   /**
@@ -2281,6 +2288,8 @@ function upgradePath(game: Game, tower: Tower, i: number | undefined): ActionRes
   if (game.phase === "won" || game.phase === "lost") return { ok: false, reason: "The level is over." };
   if (i !== 0 && i !== 1 && i !== 2) return { ok: false, reason: "Choose a path." };
   const kind = tower.kind as PathKind;
+  // A path at tier 3 takes its Crown next: one per field, and only if the path has one.
+  if (tower.path![i] >= 3) return buyCrown(game, tower, kind, i);
   const block = pathBlock(tower.path!, i, game.level.id);
   if (block) return { ok: false, reason: block };
   const cost = pathCost(kind, tower.path!, i)!;
@@ -2289,6 +2298,29 @@ function upgradePath(game: Game, tower: Tower, i: number | undefined): ActionRes
   tower.spent += cost;
   tower.path = nextPath(tower.path!, i);
   tower.tier = pathTier(tower.path);
+  return { ok: true };
+}
+
+/** Why a path tower can't take path `i`'s Crown (null if it can). Each specific Crown exists once per field. */
+export function crownBlock(game: Pick<Game, "towers">, tower: Pick<Tower, "kind" | "path" | "crown" | "id">, i: PathIndex): string | null {
+  if (!tower.path || !hasPaths(tower.kind)) return "No Crown here.";
+  const def = PATHS[tower.kind].paths[i];
+  if (tower.path[i] < 3) return "Its tier 3 comes first.";
+  if (!def.crown) return "This path's Crown comes later.";
+  if (tower.crown !== undefined) return "It already wears a Crown.";
+  if (game.towers.some((o) => o.id !== tower.id && o.kind === tower.kind && o.crown === i)) return `Only one ${def.crown.name} on the field.`;
+  return null;
+}
+
+function buyCrown(game: Game, tower: Tower, kind: PathKind, i: PathIndex): ActionResult {
+  const block = crownBlock(game, tower, i);
+  if (block) return { ok: false, reason: block };
+  const crown = PATHS[kind].paths[i].crown!;
+  if (game.marks < crown.cost) return { ok: false, reason: `Needs ${crown.cost} Marks.` };
+  game.marks -= crown.cost;
+  tower.spent += crown.cost;
+  tower.crown = i;
+  game.events.push({ type: "crown", tower: tower.id, name: crown.name });
   return { ok: true };
 }
 

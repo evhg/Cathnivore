@@ -36,6 +36,7 @@ import {
   drainEvents,
   earlyBonus,
   isBig,
+  crownBlock,
   makeEnemy,
   isHeavy,
   enemyClass,
@@ -1559,6 +1560,7 @@ const PATH_COLOURS = ["#d4543c", "#3f7fd0", "#4f9a3e"];
 function towerName(t: Tower): string {
   if (t.path && hasPaths(t.kind)) {
     const top = topPath(t.path);
+    if (t.crown !== undefined) return PATHS[t.kind].paths[t.crown].crown?.name ?? PATHS[t.kind].paths[t.crown].tiers[2].name;
     if (top !== null) return PATHS[t.kind].paths[top].tiers[2].name;
   }
   if (t.tier === 4 && t.spec != null) return SPECIALISATIONS[t.kind][t.spec].name;
@@ -1684,9 +1686,45 @@ function pathColumn(g: Game, t: Tower, kind: PathKind, i: PathIndex, path: Path,
     li.title = `${tier.name}: ${tier.blurb}`;
     steps.append(li);
   });
+  if (def.crown) {
+    const li = document.createElement("li");
+    li.className = t.crown === i ? "bought t4" : done >= PATH_TIERS ? "next t4" : "later t4";
+    li.textContent = def.crown.name;
+    li.title = `${def.crown.name} (Crown): ${def.crown.blurb}`;
+    steps.append(li);
+  }
   col.append(steps);
   if (done >= PATH_TIERS) {
-    col.append(line("Complete. Its Crown comes later.", "path-done"));
+    const crown = def.crown;
+    if (!crown || t.crown === i) {
+      col.append(line(t.crown === i ? `Crowned: ${crown!.name}.` : "Complete. Its Crown comes later.", "path-done"));
+      return col;
+    }
+    const cblock = crownBlock(g, t, i);
+    const cb = document.createElement("button");
+    cb.type = "button";
+    cb.className = "path-buy t4";
+    cb.dataset.path = String(i);
+    cb.dataset.cost = String(crown.cost);
+    cb.dataset.locked = cblock ? "1" : "0";
+    cb.disabled = !!cblock || g.marks < crown.cost;
+    cb.innerHTML = `<span class="path-tier"></span><strong class="path-next"></strong><span class="path-adds"></span><span class="path-foot"><span class="build-cost"></span><span class="path-eta"></span></span>`;
+    cb.querySelector(".path-tier")!.textContent = "Crown";
+    cb.querySelector(".path-next")!.textContent = crown.name;
+    cb.querySelector(".path-adds")!.textContent = crown.adds;
+    cb.querySelector(".build-cost")!.textContent = String(crown.cost);
+    cb.querySelector(".path-eta")!.textContent = cblock ?? "";
+    cb.setAttribute("aria-label", `${def.name} Crown: ${crown.name}, ${crown.cost} Marks. ${crown.blurb}${cblock ? ` ${cblock}` : ""}`);
+    cb.title = crown.blurb;
+    cb.onclick = () => {
+      if (doAct({ t: "upgrade", id: t.id, path: i })) {
+        sfx.playUpgrade();
+        haptic.upgrade();
+        renderer?.built_(t.id, t.col, t.row, true);
+        renderPanel(true);
+      }
+    };
+    col.append(cb);
     return col;
   }
   const tier = def.tiers[done]!;
@@ -2124,6 +2162,13 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         knocks.push(RUNG_STEP[ev.from] ?? 3);
         if (ev.to) peeled = true;
         break;
+      case "crown": {
+        // A Crown is a moment: a gold banner and a stinger (the camera beat is the banner's 1 s).
+        banner(ev.name, "Crown", true);
+        sfx.playBoss();
+        haptic.boss();
+        break;
+      }
       case "wreck":
         banner(`${ENEMIES[ev.kind].name.toUpperCase()} WRECKED`, `+${ev.marks} layers`);
         sfx.playKill(true);

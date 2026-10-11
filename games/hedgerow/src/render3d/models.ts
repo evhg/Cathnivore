@@ -1260,6 +1260,16 @@ function crown(y: number, w: number): THREE.Group {
   return g;
 }
 
+/** A Crown on a tower (M5): a floating gold crown over a gold glow ring on the ground. */
+export function crownTopper(): THREE.Group {
+  const g = new THREE.Group();
+  g.add(crown(1.05, 0.17));
+  const ring = mesh(new THREE.TorusGeometry(0.42, 0.025, 6, 32), glow("#ffd35a", 1.4), 0, 0.04, 0);
+  ring.rotation.x = Math.PI / 2;
+  g.add(ring);
+  return g;
+}
+
 /** A suited figure facing +x: legs (animated), torso with arms, a tie, a head with neat hair. */
 function person(suit: string, head = "#efd6c4", tie = "#c4433a", hair = "#3a2a24"): THREE.Group {
   const g = new THREE.Group();

@@ -19,8 +19,10 @@ import {
   towerStats,
   upgrade,
   upgradeToward,
+  crownBlock,
   type Game,
   type Level,
+  type Tower,
 } from "../games/hedgerow/src/engine";
 import { P } from "../games/hedgerow/src/fleet";
 import { LEVELS } from "../games/hedgerow/src/levels";
@@ -120,6 +122,12 @@ describe("hedgerow paths: the crosspath rule", () => {
         const i = Math.floor(rand() * 3) as 0 | 1 | 2;
         const before: Path = [...t.path!] as Path;
         const allowed = pathBlock(before, i, L8.id) === null;
+        // A path at tier 3 buys its Crown instead (tested below): the build itself doesn't change.
+        if (before[i]! >= 3) {
+          upgrade(g, t.id, i);
+          expect(t.path).toEqual(before);
+          continue;
+        }
         const ok = upgrade(g, t.id, i).ok;
         expect(ok, `${kind} ${buildName(before)} + ${i}`).toBe(allowed);
         expect(t.path).toEqual(ok ? nextPath(before, i) : before);
@@ -162,6 +170,7 @@ describe("hedgerow paths: prices and refunds", () => {
       expect(t.spent).toBe(base);
       for (let k = 0; k < 12; k++) {
         const i = Math.floor(rand() * 3) as 0 | 1 | 2;
+        if (t.path![i]! >= 3) continue; // a Crown is priced on its own (Crowns, below)
         const price = pathUpgradeCost(g, t, i);
         const m0 = g.marks;
         const ok = upgrade(g, t.id, i).ok;
@@ -498,3 +507,38 @@ describe("hedgerow paths: the legacy adapter, named builds and save v3", () => {
     expect(parseSave(JSON.stringify(e)).builds).toEqual({ cannon: [2, 3, 0] });
   });
 });
+
+describe("hedgerow paths: Crowns (M5)", () => {
+  it("a Crown is bought on a path at tier 3, once per field, and changes the stats", () => {
+    const g = field();
+    const ps = plots(L8);
+    expect(place(g, "scarecrow", ps[0]![0], ps[0]![1]).ok).toBe(true);
+    expect(place(g, "scarecrow", ps[1]![0], ps[1]![1]).ok).toBe(true);
+    const [a, b] = g.towers as [Tower, Tower];
+    expect(upgrade(g, a.id, 0).ok).toBe(true);
+    // Not yet at tier 3: no Crown.
+    expect(crownBlock(g, a, 0)).toMatch(/tier 3/);
+    for (let k = 0; k < 2; k++) expect(upgrade(g, a.id, 0).ok).toBe(true);
+    expect(a.path).toEqual([3, 0, 0]);
+    expect(crownBlock(g, a, 0)).toBeNull();
+    const before = towerStats(a).fan;
+    expect(upgrade(g, a.id, 0).ok).toBe(true);
+    expect(a.crown).toBe(0);
+    expect(a.path).toEqual([3, 0, 0]);
+    expect(towerStats(a).fan).toBe(12);
+    expect(before).toBe(3);
+    expect(g.events.some((ev) => ev.type === "crown")).toBe(true);
+    // The same Crown can't be worn twice.
+    for (let k = 0; k < 3; k++) upgrade(g, b.id, 0);
+    expect(b.path).toEqual([3, 0, 0]);
+    expect(crownBlock(g, b, 0)).toMatch(/Only one Murder of Crows/);
+    expect(upgrade(g, b.id, 0).ok).toBe(false);
+    // A tower with a Crown doesn't take a second.
+    expect(upgrade(g, a.id, 0).ok).toBe(false);
+  });
+  it("Crowns cost 100 times a base tier 2-ish and the Falconer hits Plants three times as hard", () => {
+    for (const p of PATHS.scarecrow.paths) expect(p.crown!.cost).toBeGreaterThanOrEqual(20000);
+    expect(PATHS.scarecrow.paths[1].crown!.mod.shellMul).toBe(3);
+  });
+});
+

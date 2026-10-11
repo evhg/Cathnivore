@@ -663,6 +663,29 @@ export class Renderer {
             s,
             t + tw.id * 0.37,
           );
+          if (tw.crown !== undefined) {
+            // A Crown (M5): a gold ring under the tower and a little crown over it.
+            ctx.save();
+            ctx.strokeStyle = "#ffd35a";
+            ctx.lineWidth = Math.max(2, s * 0.05);
+            ctx.beginPath();
+            ctx.ellipse(X(tw.col + 0.5), Y(tw.row + 0.5) + s * 0.3, s * 0.42, s * 0.16, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillStyle = "#ffd35a";
+            const cx = X(tw.col + 0.5);
+            const cy = Y(tw.row + 0.5) - s * 0.62;
+            ctx.beginPath();
+            ctx.moveTo(cx - s * 0.14, cy + s * 0.1);
+            ctx.lineTo(cx - s * 0.14, cy - s * 0.04);
+            ctx.lineTo(cx - s * 0.07, cy + s * 0.03);
+            ctx.lineTo(cx, cy - s * 0.08);
+            ctx.lineTo(cx + s * 0.07, cy + s * 0.03);
+            ctx.lineTo(cx + s * 0.14, cy - s * 0.04);
+            ctx.lineTo(cx + s * 0.14, cy + s * 0.1);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          }
           if (pop !== 1) ctx.restore();
           this.knockedOut(tw.out ?? 0, X(tw.col + 0.5), Y(tw.row + 0.5), s, t);
         },

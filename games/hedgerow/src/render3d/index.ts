@@ -32,7 +32,7 @@ import {
   type TowerKind,
 } from "../engine";
 import { actLight, actMood, matte } from "./palette";
-import { buildCath, dressCath, buildEnemy, buildMega, buildThornPile, buildTower, enemyLift, enemyScale } from "./models";
+import { buildCath, dressCath, buildEnemy, buildMega, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
@@ -1078,7 +1078,7 @@ export class Renderer3D {
     const seen = new Set<number>();
     for (const tw of game.towers) {
       seen.add(tw.id);
-      const sig = `${tw.kind}:${tw.tier}:${tw.spec ?? ""}:${tw.mega ?? ""}:${tw.path?.join("") ?? ""}`;
+      const sig = `${tw.kind}:${tw.tier}:${tw.spec ?? ""}:${tw.mega ?? ""}:${tw.path?.join("") ?? ""}:${tw.crown ?? ""}`;
       let v = this.towers.get(tw.id);
       if (!v || v.sig !== sig) {
         if (v) this.dynamic.remove(v.obj);
@@ -1093,7 +1093,8 @@ export class Renderer3D {
           obj.rotation.y = tw.annex[1] !== tw.row ? -Math.PI / 2 : 0;
         } else {
           obj = buildTower(tw.kind, tw.tier, tw.spec ?? null, tw.path);
-          obj.userData.scale = 1.22;
+          if (tw.crown !== undefined) obj.add(crownTopper());
+          obj.userData.scale = tw.crown !== undefined ? 1.4 : 1.22;
           obj.position.set(tw.col + 0.5, this.height(tw.col + 0.5, tw.row + 0.5), tw.row + 0.5);
         }
         this.dynamic.add(obj);

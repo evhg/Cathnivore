@@ -107,6 +107,8 @@ export interface PathDef {
   /** One word for the column heading on a phone. */
   short: string;
   tiers: [PathTier, PathTier, PathTier];
+  /** The Crown (tier 4, M5): bought on a path at tier 3, once per field. Not every path has one yet. */
+  crown?: PathTier;
 }
 
 export interface TowerPaths {
@@ -130,6 +132,13 @@ export const PATHS: Record<PathKind, TowerPaths> = {
             mod: { fan: 3, pierce: 1, crit: { every: 3, mult: 3 } },
           },
         ],
+        crown: {
+          name: "Murder of Crows",
+          cost: 20000,
+          adds: "12 crows a shot, 2 layers each, pierce 6",
+          blurb: "The whole sky comes down: twelve crows, each a heavier hit than the Caller's, and every third still lands three times over.",
+          mod: { fan: 12, damage: 1, pierce: 1 },
+        },
       },
       {
         name: "Lookout",
@@ -145,6 +154,13 @@ export const PATHS: Record<PathKind, TowerPaths> = {
             mod: { global: true, damage: 3, type: "crush" },
           },
         ],
+        crown: {
+          name: "Falconer",
+          cost: 24000,
+          adds: "30 layers a strike, ×3 on Plants",
+          blurb: "A falconer with a gauntlet and a very large bird. Anywhere on the field, thirty layers at a time, and three times that to a Plant's shell.",
+          mod: { damage: 26, shellMul: 3 },
+        },
       },
       {
         name: "Scythe",
@@ -161,6 +177,13 @@ export const PATHS: Record<PathKind, TowerPaths> = {
             mod: { sweep: 0.6, pierce: 6 },
           },
         ],
+        crown: {
+          name: "Wicker Giant",
+          cost: 28000,
+          adds: "spins 2× as fast, pierce +2",
+          blurb: "Straw, willow and spite, three storeys of it. It flails twice as fast as the Scythe, and nothing gets past an arm that long.",
+          mod: { rate: 2.2, pierce: 2 },
+        },
       },
     ],
   },
