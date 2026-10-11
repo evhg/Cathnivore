@@ -34,8 +34,8 @@
     "raw-colour": 3
   },
   "src/styles/global.css": {
-    "px-font-size": 55,
-    "raw-colour": 52
+    "px-font-size": 49,
+    "raw-colour": 48
   },
   "src/styles/table.css": {
     "px-font-size": 9

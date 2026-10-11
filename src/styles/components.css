@@ -78,3 +78,508 @@
   text-transform: uppercase;
   color: var(--ink-muted);
 }
+
+/* ---- 4.2 Buttons: card stock on a lip; every press goes physically down and springs back ---- */
+@property --lip {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 3px;
+}
+
+button {
+  --lip: 3px;
+  --lip-c: var(--paper-3);
+  position: relative;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px var(--sp-4);
+  border-radius: var(--r-btn);
+  border: 1.5px solid var(--btn-edge);
+  background: var(--mat-card);
+  color: var(--ink);
+  font: 700 var(--fs-small)/1.15 var(--font-text);
+  letter-spacing: .01em;
+  cursor: pointer;
+  box-shadow: var(--inset-hi), 0 var(--lip) 0 var(--lip-c), var(--e2);
+  transform: translateY(0);
+  transition:
+    transform var(--dur-1) var(--spring),
+    --lip var(--dur-1) var(--spring),
+    filter var(--dur-2) var(--ease-out),
+    background-color var(--dur-2) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.primary {
+  --lip: 4px;
+  --lip-c: var(--seal);
+  background: var(--grain-paper), linear-gradient(180deg, var(--primary-hi), var(--pasture-deep));
+  border-color: var(--seal);
+  color: var(--paper-on-fixed-fill);
+}
+
+button.destructive,
+button.danger {
+  --lip: 4px;
+  --lip-c: var(--danger-lip);
+  background: var(--grain-paper), linear-gradient(180deg, var(--danger-hi), var(--clay-deep));
+  border-color: var(--danger-lip);
+  color: var(--paper-on-fixed-fill);
+}
+
+@media (hover: hover) {
+  button:hover:not(:disabled) {
+    --lip: 4px;
+    transform: translateY(-1px);
+    filter: brightness(1.03) saturate(1.05);
+  }
+
+  button.primary:hover:not(:disabled),
+  button.destructive:hover:not(:disabled) {
+    --lip: 5px;
+  }
+}
+
+button:active:not(:disabled) {
+  --lip: 1px;
+  transform: translateY(2px);
+  transition-duration: 40ms;
+  transition-timing-function: linear;
+}
+
+/* Hatched, dashed and flat: it can't be pressed, so it has no lip. Text stays ink-muted (4.5:1+). */
+button:disabled,
+button.primary:disabled {
+  background:
+    var(--grain-paper),
+    repeating-linear-gradient(-45deg, var(--ink-a08) 0 2px, transparent 2px 7px),
+    var(--paper-2);
+  color: var(--ink-muted);
+  border-style: dashed;
+  border-color: var(--ink-a35);
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+button:disabled .action-label svg,
+button:disabled .action-cost svg {
+  opacity: .55;
+}
+
+.btn-icon {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  --lip: 2px;
+  display: inline-grid;
+  place-items: center;
+}
+
+.btn-quiet,
+button.btn-quiet {
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+  background: linear-gradient(currentColor 0 0) 0 85% / 0 1.5px no-repeat;
+  border: 0;
+  box-shadow: none;
+  font-weight: 600;
+  color: var(--soil);
+  transition: background-size var(--dur-2) var(--ease-out);
+}
+
+.btn-quiet:hover,
+.btn-quiet:focus-visible {
+  background-size: 100% 1.5px;
+}
+
+.btn-lg {
+  min-height: 56px;
+  font-size: var(--fs-lead);
+  padding: 0 var(--sp-6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: opacity var(--dur-1) var(--ease-out);
+  }
+
+  button:hover:not(:disabled),
+  button:active:not(:disabled) {
+    transform: none;
+  }
+
+  button:active:not(:disabled) {
+    opacity: .75;
+  }
+}
+
+/* ---- 4.4 Tooltip: a hanging price tag ---- */
+.tooltip-trigger {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-trigger-button {
+  all: unset;
+  cursor: help;
+  border-radius: var(--r-xs);
+}
+
+.tooltip-trigger-button:focus-visible {
+  outline: var(--focus-w) solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* The "?" info triggers read as a small italic "i" (the "?" stays as the text e2e and screen readers
+   already know; the aria-label names the term). 28px to the eye, 44px to the finger. */
+.tooltip-trigger-button.tooltip-info {
+  position: relative;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-a60);
+  background: var(--mat-card);
+  box-shadow: var(--inset-hi), 0 1px 0 var(--ink-a15);
+  color: var(--ink);
+  font-size: 0;
+}
+
+.tooltip-trigger-button.tooltip-info::before {
+  content: "i";
+  font: italic 760 1rem/1 var(--font-display);
+  font-variation-settings: "opsz" 24;
+  translate: -.5px .5px;
+}
+
+.tooltip-trigger-button.tooltip-info::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+
+.tooltip-popover {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  translate: -50% 0;
+  z-index: var(--z-tooltip);
+  width: max-content;
+  max-width: min(34ch, 78vw);
+  padding: var(--sp-2) var(--sp-3) var(--sp-3) calc(var(--sp-4) + 8px);
+  background: var(--mat-card);
+  color: var(--ink);
+  border: 1.5px solid var(--btn-edge);
+  border-radius: var(--r-sm);
+  box-shadow: var(--e4);
+  font: 400 var(--fs-small)/1.4 var(--font-text);
+  text-align: left;
+  text-wrap: pretty;
+  white-space: normal;
+  letter-spacing: 0;
+  text-transform: none;
+  transform-origin: 50% 100%;
+  animation: tt-in var(--dur-2) var(--ease-out) both;
+  pointer-events: auto;
+}
+
+/* the tag's eyelet */
+.tooltip-popover::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1.5px var(--btn-edge);
+}
+
+.tooltip-popover strong {
+  display: block;
+  margin-bottom: 2px;
+  font: 640 var(--fs-body)/1.2 var(--font-display);
+  font-variation-settings: "opsz" 24;
+  color: var(--soil);
+}
+
+@keyframes tt-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(.96) rotate(-1deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip-popover {
+    animation: ui-fade 160ms ease-out both;
+  }
+}
+
+/* ---- 4.6 Price-tag chips, badges and stamps ---- */
+.chip,
+.action-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 26px;
+  padding: 0 9px 0 7px;
+  border-radius: var(--r-xs) var(--r-pill) var(--r-pill) var(--r-xs);
+  background: var(--surface);
+  border: 1.5px solid var(--btn-edge);
+  color: var(--ink);
+  font: 760 var(--fs-caption)/1 var(--font-num);
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+}
+
+.chip--short,
+.action-why-not {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: var(--paper-2);
+  border: 1.5px dashed var(--clay-deep);
+  color: var(--clay-deep);
+  font: 700 var(--fs-caption)/1.2 var(--font-text);
+}
+
+:root[data-theme="dark"] .chip--short,
+:root[data-theme="dark"] .action-why-not {
+  border-color: var(--clay);
+  color: var(--clay);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .chip--short,
+  :root:not([data-theme="light"]) .action-why-not {
+    border-color: var(--clay);
+    color: var(--clay);
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--r-pill);
+  border: 1.5px solid var(--ink-on-fixed-fill);
+  box-shadow: var(--inset-hi), 0 2px 0 var(--ink-a35);
+  font: 800 var(--fs-label)/1 var(--font-text);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.badge--squeeze {
+  background: var(--clay-deep);
+  color: var(--paper-on-fixed-fill);
+}
+
+.badge--expand {
+  background: var(--wheat);
+  color: var(--ink-on-fixed-fill);
+}
+
+.badge--ribbon {
+  border-radius: 0;
+  padding-right: 14px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 0 100%);
+}
+
+.stamp {
+  display: inline-block;
+  padding: .15em .5em;
+  border: 4px double currentColor;
+  color: var(--clay-deep);
+  font: 800 var(--fs-h2)/1 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  transform: rotate(-7deg);
+  -webkit-mask: var(--stamp-wear) 0 0 / 120px;
+  mask: var(--stamp-wear) 0 0 / 120px;
+  opacity: .92;
+}
+
+.stamp--win {
+  color: var(--pasture-deep);
+}
+
+/* ---- 4.7 Meters: segmented seed-packet strips (Trust, Lost Land, Rift, rounds) ---- */
+.meter {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  height: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meter > i {
+  border-radius: 2px;
+  background: var(--ink-a08);
+  box-shadow: inset 0 0 0 1px var(--ink-a15);
+}
+
+.meter > i.on {
+  background: var(--pasture-deep);
+  box-shadow: inset 0 1px 0 var(--white-a55);
+}
+
+.meter--danger > i.on {
+  background: var(--clay-deep);
+}
+
+.meter--wheat > i.on {
+  background: var(--wheat);
+}
+
+/* the Rift is corporate: plastic segments, Candor teal into Hollowell orange */
+.meter--plastic > i.on {
+  background: var(--mat-plastic-c);
+}
+
+.meter--plastic > i.on:nth-child(n + 4) {
+  background: var(--mat-plastic-h);
+}
+
+.meter > i.on.last {
+  animation: seg-pop var(--dur-3) var(--spring);
+}
+
+@keyframes seg-pop {
+  from {
+    transform: scaleY(1.9);
+  }
+}
+
+/* ---- 4.3 Tabs: folder tabs ---- */
+.tabs {
+  position: relative;
+  z-index: var(--z-raised);
+  display: flex;
+  gap: var(--sp-1);
+  padding-inline: var(--sp-3);
+}
+
+.tab {
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--ink-a35);
+  border-bottom: 0;
+  border-radius: var(--r-card) var(--r-card) 0 0;
+  background: var(--paper-2);
+  box-shadow: none;
+  color: var(--ink-muted);
+  font: 700 var(--fs-caption)/1 var(--font-text);
+  letter-spacing: .02em;
+  transform: translateY(3px);
+}
+
+.tab[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  transform: none;
+  box-shadow: inset 0 3px 0 var(--wheat);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter > i.on.last {
+    animation: none;
+  }
+}
+
+html.no-animations .meter > i.on.last,
+html.no-animations .tooltip-popover {
+  animation: none;
+}
+
+/* ---- Action rows (Game.tsx `actionsPanel`): a card-stock key per action, icon + verb label on the
+   left, the price-tag chip on the right, and the italic-i term tag tucked inside the row's padding ---- */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.actions > p {
+  margin: 0;
+  font-size: var(--fs-small);
+}
+
+.actions .action-head {
+  margin: var(--sp-2) 0 0;
+  font: 760 var(--fs-label)/1.2 var(--font-text);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.actions .action-head:first-child {
+  margin-top: 0;
+}
+
+.actions .action-item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.actions .action-item > button:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: 7px 44px 7px var(--sp-3);
+  text-align: left;
+  font-size: var(--fs-small);
+  line-height: 1.2;
+}
+
+.actions .action-item > .tooltip-trigger {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.action-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  text-wrap: balance;
+}
+
+.action-label svg {
+  flex: none;
+}
+
+.action-label-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* the one recommended Invest is the single accent in the list: a wheat key, still card stock */
+.actions .action-recommended > button:not(:disabled) {
+  box-shadow: var(--inset-hi), 0 var(--lip) 0 var(--lip-c), var(--glow-select);
+}

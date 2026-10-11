@@ -302,40 +302,6 @@ h3 {
   }
 }
 
-/* SPEC 10.5: in-game tap/hover tooltip on game terms (Squeeze, Expand, Public Trust and so on), alongside
-   the same explanation in the rules reference. `.tooltip-trigger-button` inherits its font/layout from
-   whatever it wraps (a topbar label, a plan-strip card, an action button) rather than looking like a
-   separate control of its own. */
-.tooltip-trigger {
-  position: relative;
-  display: inline-flex;
-}
-
-.tooltip-trigger-button {
-  all: unset;
-  cursor: help;
-  border-bottom: 1px dotted currentColor;
-}
-
-.tooltip-popover {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: var(--z-tooltip);
-  width: max-content;
-  max-width: 240px;
-  background: var(--ink);
-  color: var(--paper);
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.3;
-  padding: 8px 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  text-align: left;
-}
-
 .plan-strip {
   display: flex;
   gap: 8px;
@@ -411,20 +377,6 @@ h3 {
   font-size: 9px;
   font-weight: 600;
   opacity: 0.7;
-}
-
-/* The small "?" tooltip trigger next to each plan-strip card (SPEC 10.5) — a separate, deliberately
-   compact affordance so it never competes with the card's own tap-to-highlight target above. */
-.plan-strip-item .tooltip-trigger-button {
-  width: 22px;
-  height: 22px;
-  flex: none;
-  border: 1px solid var(--rule);
-  border-radius: 50%;
-  text-align: center;
-  font-size: 12px;
-  cursor: help;
-  color: inherit;
 }
 
 /* SPEC 10.2: the tapped plan-strip card stays visibly selected while its regions are highlighted. */
@@ -905,135 +857,7 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
   filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 25%, transparent));
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.actions button {
-  flex: 1 1 auto;
-}
-
-/* An action button paired with its SPEC 10.5 "?" tooltip trigger (same sibling pattern as
-   `.plan-strip-item`: a button nested in a button is invalid HTML and would make one tap ambiguous
-   between "do the action" and "show the tooltip"). */
-.actions .action-head {
-  flex: 1 0 100%;
-  grid-column: 1 / -1;
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--ink-muted);
-  margin-top: 2px;
-}
-
-.actions .action-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1 1 auto;
-}
-
-.actions .action-item > button:first-child {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  text-align: left;
-}
-
-/* ROADMAP 9 "an icon per action" (STYLE.md 5.1): the icon and the label text share this wrapper so the
-   button's own `justify-content: space-between` (above) only ever splits 2 children — this span and
-   `.action-cost` — instead of spreading an icon/text/chip trio unevenly across the row. `min-width: 0`
-   lets the label itself still wrap/shrink inside it on narrow layouts (desktop's 3-column action grid
-   already relies on that, see the `.action-item > button:first-child` override further down). */
-.action-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.action-label svg {
-  flex: none;
-}
-
-/* ROADMAP 9 "clear disabled and why-not states": a disabled action button needs its reason on a second
-   line, not squeezed onto the same row as the icon/label (which is already tight against the cost chip
-   on the right) — this wrapper stacks `.action-label` above `.action-why-not`, so the button's own
-   `justify-content: space-between` still only ever splits 2 children (this wrapper, and `.action-cost`). */
-.action-label-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  min-width: 0;
-}
-
-.action-why-not {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--ink-muted);
-}
-
-/* ROADMAP 9 "cost chips shown with resource tokens": a small pill inside the action button, additive to
-   `actionLabel`'s existing text cost (not a replacement — several e2e tests match button names by
-   prefix, so the text stays exactly as it was). Reuses the same resource icons the topbar/active-producer
-   panel already draw with (`ProduceIcon`/`MarksIcon`/`GoodwillIcon`), so this needed no new art. */
-.action-cost {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex: none;
-  padding: 2px 6px;
-  border-radius: 10px;
-  background: var(--paper-2);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-}
-
-.actions .action-item .tooltip-trigger-button {
-  width: 22px;
-  height: 22px;
-  flex: none;
-  border: 1px solid var(--rule);
-  border-radius: 50%;
-  text-align: center;
-  font-size: 12px;
-  cursor: help;
-  color: inherit;
-}
-
-/* SPEC 10.3: the phone layout's `.actions` above relies on `flex-wrap`, sizing each button by its own
-   label. On desktop (ROADMAP 8: now the right tray's ~320px column, not the phone's 480px-capped column)
-   that still wraps to close to one button per row when a full game's action list can have 10+ specific
-   entries (region-scoped Supply/Rebut/Scheme/Role labels, one Sell entry per quantity). A fixed-column grid
-   packs the same buttons into far fewer rows; `min-width: 0` on the grid item is required because a flex/
-   grid item's default `min-width: auto` otherwise refuses to shrink `.action-item` below its label's full
-   intrinsic width, which defeats the grid track sizing entirely (confirmed directly: without it every item
-   still claimed a full row). This rule must come after the unconditional `.actions`/`.action-item` rules
-   above so it wins the cascade at the same specificity — placing it back in the earlier
-   `@media (min-width: 1024px)` block (grouped with the rest of SPEC 10.3's desktop layout) silently lost to
-   these later, unconditional rules regardless of viewport width. */
 @media (min-width: 1024px) {
-  .actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .actions .action-item {
-    min-width: 0;
-  }
-
-  .actions .action-item > button:first-child {
-    min-width: 0;
-    white-space: normal;
-  }
-
   /* ROADMAP 8 "the table, part 1: layout": the action list moved out of the centre column entirely (into
      the left tray, `.desktop-col-left`, below) — measured directly (repeated runs against
      desktop-no-scroll.spec.ts's own chapter-5 mid-game fixture) that it barely changes the map's own
@@ -1245,18 +1069,6 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
   }
 
 
-  /* `.actions` (13 items in a full game, 5 rows in the 3-column grid above) measured at 380px — the single
-     largest contributor to the centre column's remaining shortfall. The 44px `min-height` on the base
-     `button` rule is a touch-target minimum (STYLE.md/WCAG, needed on phone); desktop is mouse-driven, so a
-     smaller minimum here doesn't cost accessibility (axe's target-size rule isn't part of the default
-     ruleset `e2e/accessibility.spec.ts` runs, and isn't a WCAG 2.1 AA requirement either — 2.5.5 is AAA).
-     Scoped to the action buttons specifically, not all desktop buttons, since other button rows (Continue,
-     Menu, etc.) aren't part of this dense list. */
-  .actions .action-item > button:first-child {
-    min-height: 32px;
-    padding: 6px 10px;
-  }
-
   /* The topbar's 5 items (Round/Trust/Lost Land/Rift/Menu) wrap to 2 rows in the centre column's ~596px
      width (measured at 111px tall vs. a single row's ~44px), the 3rd-largest contributor after `.actions`
      and the map. Tightening gap/padding and the Menu button's own padding keeps every label readable
@@ -1269,93 +1081,6 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
   .topbar button {
     padding: 8px 10px;
   }
-}
-
-button {
-  font-family: var(--font-text);
-  font-size: 14px;
-  font-weight: 700;
-  padding: 10px 14px;
-  min-height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--rule);
-  background: var(--surface);
-  color: var(--ink);
-  cursor: pointer;
-  transition: transform var(--dur-quick) var(--ease-settle);
-}
-
-/* ROADMAP 9's "press feedback" for the table's action tiles, applied to every button rather than just
-   those (STYLE.md has no per-screen exception, and a press effect on some buttons but not others would
-   read as inconsistent/broken, not selectively finished). `:not(:disabled)` matches `button.primary`'s
-   own disabled styling above — a disabled button shouldn't visibly react to a tap it can't take.
-   STYLE.md 11: "With reduced motion switched on, use fades only" — the scale becomes a plain opacity dip
-   instead of disappearing outright, so a tap still gets *some* feedback either way. */
-button:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  button {
-    transition: opacity var(--dur-quick) var(--ease-settle);
-  }
-
-  button:active:not(:disabled) {
-    transform: none;
-    opacity: 0.7;
-  }
-}
-
-/* ROADMAP 9 "clear disabled ... states": a secondary/default button (this app's `button.primary` already
-   has its own disabled style above) had no disabled treatment at all before this — it inherited the same
-   solid ink text/border as an enabled one, so the existing `disabled` Undo button only ever looked
-   disabled by its cursor. A first pass used `opacity` on the whole button for "can't tap this," but a
-   gate-8 review measured the result: `--ink-muted` text at 55% opacity compounds into an even lighter
-   grey that drops to ~2.3:1 contrast, failing STYLE.md 3.6's 4.5:1 floor and making the label and its
-   "why not" reason nearly illegible rather than clearly muted. `--ink-muted` alone (no opacity) already
-   passes contrast on its own everywhere else it's used, so the border and background carry the dimming
-   instead, and only non-text children (the leading icon, the cost chip) get the opacity treatment. */
-button:disabled {
-  cursor: not-allowed;
-  color: var(--ink-muted);
-  border-color: var(--rule);
-  background: var(--paper-2);
-}
-
-button:disabled .action-label svg,
-button:disabled .action-cost {
-  opacity: 0.5;
-}
-
-/* STYLE.md 10: "Primary is pasture-deep fill with paper text." Reserved for the one clear next action on
-   a screen (SPEC 10.1's Setup "Start", SPEC 10.2's targeting-mode "Confirm") — every other button stays
-   the default secondary style above, per STYLE.md 2's "one accent per screen". */
-button.primary {
-  background: var(--pasture-deep);
-  border-color: var(--pasture-deep);
-  /* tokens.css: pasture-deep is a fixed-in-both-themes fill, so its text needs the matching fixed
-     token, not `--paper` (which redefines to a dark value in dark mode and breaks contrast — the same
-     bug the "Recommended" badge had). */
-  color: var(--paper-on-fixed-fill);
-}
-
-button.primary:disabled {
-  background: var(--surface);
-  border-color: var(--rule);
-  color: var(--ink-muted);
-}
-
-/* STYLE.md 10: "Destructive is clay-deep." Only the confirming "Yes, reset all data" button (the one
-   irreversible action, SPEC 10.1) uses this — the "Reset all data" button that opens the confirmation
-   stays a normal secondary button, since it isn't itself destructive yet. */
-button.destructive {
-  background: var(--clay-deep);
-  border-color: var(--clay-deep);
-  /* Same fixed-fill/fixed-text pairing as `button.primary` above — clay-deep never changes with the
-     theme, so `--paper` text on it drops well below 4.5:1 in dark mode (found by direct contrast check
-     while adding `button.primary`, same root cause as the "Recommended" badge and the SQUEEZE/EXPAND
-     badges, which were already fixed this way). */
-  color: var(--paper-on-fixed-fill);
 }
 
 .controls {
@@ -2450,12 +2175,6 @@ html.no-animations .card-enter {
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .tour-dots { letter-spacing: 0.15em; }
 
-/* ROADMAP 143: actions that can't be taken yet (they carry a "Need N more" reason) sit back so the
-   playable ones read as the accent. */
-.actions .action-item:has(.action-why-not) > button:first-child {
-  opacity: 0.8;
-}
-
 /* ROADMAP 145: colour band on each producer card, tick badge, sticky Start */
 .setup .producer-card { border-top: 6px solid var(--wheat); overflow: hidden; }
 .setup .producer-card:nth-child(4n+1) { border-top-color: var(--sea); }
@@ -2485,12 +2204,6 @@ html.no-animations .card-enter {
 @keyframes end-stamp-in { from { opacity: 0; transform: rotate(-4deg) scale(2.2); } to { opacity: 0.92; transform: rotate(-4deg) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .end-stamp { animation: none; opacity: 0.92; } }
 html.no-animations .end-stamp { animation: none; opacity: 0.92; }
-
-/* ROADMAP 143: the first affordable Invest is the one accent in the action list. */
-.actions .action-recommended > button:not(:disabled) {
-  border-color: #d9a441;
-  box-shadow: 0 0 0 1px #d9a441, 0 2px 8px rgba(217, 164, 65, 0.35);
-}
 
 .settings-tip { margin: 0.25rem 0 0; font-size: 0.9rem; opacity: 0.75; }
 @media (max-width: 600px) {

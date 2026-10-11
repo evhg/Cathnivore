@@ -73,6 +73,7 @@
   --candor-ink: #0B4F5C;
   --hollowell-lo: #E5620A;
   --candor-lo: #23A6BF;
+  --btn-edge: #2B2320;
   --ink-a08: rgb(43 35 32 / .08);
   --ink-a15: rgb(43 35 32 / .15);
   --ink-a35: rgb(43 35 32 / .35);
@@ -158,7 +159,9 @@
     --wheat-ink: #E5C46F;
     --kraft: #5A4631;
     --kraft-lo: #4C3B29;
-    --ink-a08: rgb(241 233 220 / .06);
+    --btn-edge: rgb(241 233 220 / .42);
+    --btn-edge: rgb(241 233 220 / .42);
+  --ink-a08: rgb(241 233 220 / .06);
     --ink-a15: rgb(241 233 220 / .12);
     --ink-a35: rgb(241 233 220 / .28);
     --ink-a60: rgb(241 233 220 / .55);

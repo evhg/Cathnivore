@@ -240,6 +240,29 @@ function ActionCostChip({ cost }: { cost: { resource: ResourceKind; amount: numb
   )
 }
 
+function ActionButton({ action, state, Icon, onClick }: { action: Action; state: GameState; Icon?: typeof OpenStallIcon; onClick(): void }) {
+  const cost = actionCost(action, state)
+  const { text, aria } = chipLabel(actionLabel(action, state), !!cost)
+  return (
+    <button aria-label={aria} onClick={onClick}>
+      <span className="action-label">
+        {Icon && <Icon size={18} />}
+        {text}
+      </span>
+      <ActionCostChip cost={cost} />
+    </button>
+  )
+}
+
+// AAA UI M4 (aaa-ui-specs.md "cathnivore" 4.2): a label that ends in its own cost ("Invest: buy Cold
+// Store (5 Marks)") shows the cost once, in the price-tag chip; the button keeps the full label as its
+// accessible name through aria-label, so every e2e name regex (`/^Invest/`) still matches.
+const TRAILING_COST = /\s*\(\d+ (?:Marks?|Produce|Goodwill)\)$/
+function chipLabel(label: string, hasChip: boolean): { text: string; aria?: string } {
+  if (!hasChip || !TRAILING_COST.test(label)) return { text: label }
+  return { text: label.replace(TRAILING_COST, ''), aria: label }
+}
+
 // A region-targeting group (e.g. "Supply: remove 2 Outlets…") can cover several regions whose actual
 // cost differs (Supply's per-Outlet Produce cost varies by region type and Improvements, SPEC 7) — the
 // group button itself doesn't commit to a region yet, so it can only show one number if every entry in
@@ -851,13 +874,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             const Icon = ACTION_ICON[a.kind]
             return (
               <span key={index} className="action-item">
-                <button onClick={() => act(index)}>
-                  <span className="action-label">
-                    {Icon && <Icon size={18} />}
-                    {actionLabel(a, state)}
-                  </span>
-                  <ActionCostChip cost={actionCost(a, state)} />
-                </button>
+                <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?
@@ -889,13 +906,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             const Icon = ACTION_ICON[a.kind]
             return (
               <span key={index} className={position === 0 ? 'action-item action-recommended' : 'action-item'}>
-                <button onClick={() => act(index)}>
-                  <span className="action-label">
-                    {Icon && <Icon size={18} />}
-                    {actionLabel(a, state)}
-                  </span>
-                  <ActionCostChip cost={actionCost(a, state)} />
-                </button>
+                <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?
@@ -909,11 +920,15 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             if (!card) return null
             return (
               <span key={`disabled-invest-${improvementId}`} className="action-item">
-                <button disabled title={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}>
+                <button
+                  disabled
+                  title={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
+                  aria-label={`Invest: buy ${card.name} (${cost} Marks). Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
+                >
                   <span className="action-label-group">
                     <span className="action-label">
                       <InvestIcon size={18} />
-                      {`Invest: buy ${card.name} (${cost} Marks)`}
+                      {`Invest: buy ${card.name}`}
                     </span>
                     <span className="action-why-not">Need {missing} more {missing === 1 ? "Mark" : "Marks"}</span>
                   </span>
@@ -933,13 +948,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             const Icon = ACTION_ICON[a.kind]
             return (
               <span key={index} className="action-item">
-                <button onClick={() => act(index)}>
-                  <span className="action-label">
-                    {Icon && <Icon size={18} />}
-                    {actionLabel(a, state)}
-                  </span>
-                  <ActionCostChip cost={actionCost(a, state)} />
-                </button>
+                <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?
@@ -1045,13 +1054,18 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             const Icon = ACTION_ICON[firstAction.kind]
             return (
               <span key={key} className="action-item">
-                <button onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
-                  <span className="action-label">
-                    {Icon && <Icon size={18} />}
-                    {single ? actionLabel(firstAction, state) : `${group.label}…`}
-                  </span>
-                  <ActionCostChip cost={cost} />
-                </button>
+                {(() => {
+                  const { text, aria } = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
+                  return (
+                    <button aria-label={aria} onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
+                      <span className="action-label">
+                        {Icon && <Icon size={18} />}
+                        {text}
+                      </span>
+                      <ActionCostChip cost={cost} />
+                    </button>
+                  )
+                })()}
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?

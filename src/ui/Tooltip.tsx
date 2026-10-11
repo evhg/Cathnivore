@@ -55,7 +55,7 @@ export default function Tooltip({ term, children, label }: Props) {
     >
       <button
         type="button"
-        className="tooltip-trigger-button"
+        className={children === '?' ? 'tooltip-trigger-button tooltip-info' : 'tooltip-trigger-button'}
         aria-label={label}
         aria-describedby={open ? id : undefined}
         aria-expanded={open}
@@ -70,6 +70,7 @@ export default function Tooltip({ term, children, label }: Props) {
       </button>
       {open && (
         <span role="tooltip" id={id} className="tooltip-popover">
+          <strong>{term}</strong>
           {body}
         </span>
       )}
