@@ -16,7 +16,7 @@ These two phases come before every older unfinished item below. About 70% of ses
 **Phase U: AAA UI** (owner, 2026-10-11: "fonts and css is especially rudimentary … take it to the next level of AAA games"). The spec is `docs/design/aaa-ui.md`. Build the milestones in order and release each one when it passes `npm run gates` (font budget included). This is a standing owner request: sessions take Phase U items alongside D and H, about a third each, until U is done.
 - U1. [x] **M1 Shared foundation and fonts (every page, no layout changes)** *(2026-10-11: shipped to `build`, unreleased; fonts per page 119.5/167.1/171.2/160.1/171.2 KB; logotype marks moved to U5)*
 - U2. [x] **M2 CATHODE component layer and HUD** *(2026-10-11: shipped to `build`, unreleased; Wet Ink tokens/components/HUD, 0 raw z-index, 0 HUD overlaps at P/L/D, 0 layouts per steady frame)*
-- U3. [ ] **M3 Hedgerow field: kit, HUD and upgrade sheet**
+- U3. [x] **M3 Hedgerow field: kit, HUD and upgrade sheet** *(2026-10-11: shipped to `build`, unreleased; px font-sizes 135 to 0, z-literals 10 to 0, phone sheet 48svh (field 52%), no panel ellipsis, no text under 12px, Next 5.6:1, pill test green at L)*
 - U4. [ ] **M4 Cathnivore table**
 - U5. [ ] **M5 Landing hero, poster cards and key art**
 - U6. [ ] **M6 Runnel puzzle and win sheet**
