@@ -264,13 +264,12 @@ button.btn-quiet {
 }
 
 .tooltip-popover {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  translate: -50% 0;
-  z-index: var(--z-tooltip);
+  position: fixed;
+  left: var(--tt-x, 8px);
+  top: var(--tt-y, 8px);
+  z-index: var(--z-modal);
   width: max-content;
-  max-width: min(34ch, 78vw);
+  max-width: min(34ch, calc(100vw - 16px));
   padding: var(--sp-2) var(--sp-3) var(--sp-3) calc(var(--sp-4) + 8px);
   background: var(--mat-card);
   color: var(--ink);
@@ -283,9 +282,8 @@ button.btn-quiet {
   white-space: normal;
   letter-spacing: 0;
   text-transform: none;
-  transform-origin: 50% 100%;
+  transform-origin: var(--tt-origin, 50% 100%);
   animation: tt-in var(--dur-2) var(--ease-out) both;
-  pointer-events: auto;
 }
 
 /* the tag's eyelet */
@@ -314,6 +312,17 @@ button.btn-quiet {
   from {
     opacity: 0;
     transform: translateY(4px) scale(.96) rotate(-1deg);
+  }
+}
+
+.tooltip-popover[data-side="below"] {
+  animation-name: tt-in-below;
+}
+
+@keyframes tt-in-below {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(.96) rotate(1deg);
   }
 }
 

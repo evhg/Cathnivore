@@ -59,7 +59,7 @@ test.describe('AAA UI fonts', () => {
     await page.getByText('Quick Game').click()
     await page.getByRole('button', { name: 'Start' }).click()
     await page.locator('.game').waitFor()
-    const p = await probe(page, '.hud-value .num')
+    const p = await probe(page, '.market-board .board-num')
     expectHouseRules(p, 'Marrow Figures')
     expect(p.numeric).toContain('tabular-nums')
   })

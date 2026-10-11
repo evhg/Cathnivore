@@ -42,6 +42,7 @@
 }
 
 .board-cell {
+  container: cell / inline-size;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -78,7 +79,7 @@
   grid-area: label;
   overflow: hidden;
   font: 760 var(--fs-label)/1.1 var(--font-text);
-  letter-spacing: .12em;
+  letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--ink-muted);
   white-space: nowrap;
@@ -99,6 +100,20 @@
   color: var(--ink-muted);
 }
 
+@container cell (width < 140px) {
+  .board-label {
+    letter-spacing: .03em;
+  }
+
+  .board-cell {
+    padding-inline: var(--sp-2);
+  }
+
+  .board-head {
+    column-gap: 6px;
+  }
+}
+
 .board-cell--danger .board-label {
   color: var(--short-ink);
 }
@@ -106,21 +121,6 @@
 .board-menu {
   align-self: center;
   margin-left: var(--sp-1);
-}
-
-/* the board's tooltips hang below it, aligned to the cell's edge so they stay on screen */
-.market-board .tooltip-popover {
-  top: calc(100% + 12px);
-  bottom: auto;
-  left: -4px;
-  translate: none;
-  transform-origin: 20% 0;
-}
-
-.market-board .board-cell:nth-child(n + 3) .tooltip-popover {
-  left: auto;
-  right: -4px;
-  transform-origin: 80% 0;
 }
 
 /* ---- Cath's aside (4.9): a wheat-ringed cameo and a torn paper strip in her voice ---- */
@@ -365,21 +365,6 @@
   bottom: 6px;
 }
 
-.plan-strip-item .tooltip-popover {
-  rotate: 1deg;
-}
-
-.plan-strip-item:first-child .tooltip-popover {
-  left: -10px;
-  translate: none;
-}
-
-.plan-strip-item:last-child .tooltip-popover {
-  left: auto;
-  right: -8px;
-  translate: none;
-}
-
 /* the clipping whose regions are lit on the map straightens, lifts and glows wheat */
 .plan-strip-item:has(.plan-strip-active) {
   rotate: 0deg;
@@ -487,12 +472,6 @@
   white-space: nowrap;
 }
 
-.map-legend-item .tooltip-popover {
-  left: auto;
-  right: 0;
-  translate: none;
-}
-
 /* ---- the active producer's ledger (4.9) ---- */
 .decision,
 .active-producer {
@@ -525,12 +504,11 @@
 }
 
 .active-producer-header strong {
-  overflow: hidden;
+  min-width: 0;
   font: 640 var(--fs-h3)/1.1 var(--font-display);
   font-variation-settings: "opsz" 36;
   color: var(--soil);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-wrap: balance;
 }
 
 .producer-cameo {
@@ -760,7 +738,8 @@
 
   /* The map takes what's left between the clippings and the tray, letterboxed by its own viewBox. */
   .map-wrap {
-    min-height: calc(45vh + 12px);
+    min-height: calc(45vh + 8px);
+    padding: 2px;
   }
 
   .action-tray .active-producer {
@@ -954,7 +933,7 @@
 @media (min-width: 1024px) {
   .game-layout {
     display: grid;
-    grid-template-columns: 320px minmax(0, 1fr) 320px;
+    grid-template-columns: clamp(296px, 22vw, 320px) minmax(0, 1fr) clamp(296px, 22vw, 320px);
     gap: var(--sp-5);
     max-width: 1680px;
     height: 100vh;
@@ -1231,4 +1210,12 @@ html.no-animations .sheet,
 html.no-animations .map-key .map-legend,
 html.no-animations .cath-companion .cameo {
   animation: none;
+}
+
+/* The `font` shorthands above reset font-variant; every counted figure stays tabular and lining. */
+.num,
+.chip,
+.action-cost,
+.coin {
+  font-variant-numeric: tabular-nums lining-nums;
 }
