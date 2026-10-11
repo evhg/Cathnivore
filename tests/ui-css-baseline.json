@@ -44,15 +44,13 @@
   "src/styles/global.css": {
     "px-font-size": 56,
     "z-index-literal": 10,
-    "raw-colour": 54,
-    "italic-without-face": 6
+    "raw-colour": 54
   },
   "src/styles/table.css": {
     "px-font-size": 9
   },
   "src/styles/title.css": {
     "px-font-size": 5,
-    "z-index-literal": 1,
-    "italic-without-face": 1
+    "z-index-literal": 1
   }
 }

@@ -1,0 +1,56 @@
+/* Cathnivore type ("Market Day Press", docs/design/aaa-ui.md): Marrow Display (Fraunces opsz + wght, with
+   the wght italic for Cath's voice and the Agenda headlines), Marrow Text (Atkinson Hyperlegible Next)
+   and Marrow Figures (Figtree, digits, x and minus only, composed in front of Marrow Text by
+   unicode-range so no slashed zero reaches the screen). Latin files only. The Display normal and Text
+   files are preloaded by the vite.config.ts fontPreload() plugin; the fallbacks are metric-matched. */
+@font-face {
+  font-family: "Marrow Display";
+  src: url("../../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Marrow Display";
+  src: url("../../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Marrow Text";
+  src: url("../../node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Marrow Figures";
+  src: url("../../node_modules/@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039, U+00D7, U+2212;
+}
+@font-face {
+  font-family: "Marrow Display Fallback";
+  src: local("Times New Roman"), local("Liberation Serif"), local("Georgia");
+  size-adjust: 93.3%;
+  ascent-override: 105%;
+  descent-override: 27.9%;
+}
+@font-face {
+  font-family: "Marrow Voice Fallback";
+  font-style: italic;
+  src: local("Times New Roman Italic"), local("Liberation Serif Italic"), local("Georgia Italic");
+  size-adjust: 110.6%;
+  ascent-override: 88.6%;
+  descent-override: 23.5%;
+}
+@font-face {
+  font-family: "Marrow Text Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 98.8%;
+  ascent-override: 99.1%;
+  descent-override: 32.4%;
+}

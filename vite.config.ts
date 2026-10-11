@@ -30,11 +30,34 @@ function versionFile(): Plugin {
   }
 }
 
+// AAA UI M1: preload the two faces every first screen needs (Marrow Display normal and Marrow Text) with
+// their hashed build names. Build-time tags only, so the CSP gains no inline code.
+const PRELOAD_FONTS = [/fraunces-latin-opsz-normal-[\w-]+\.woff2$/, /atkinson-hyperlegible-next-latin-wght-normal-[\w-]+\.woff2$/]
+
+function fontPreload(): Plugin {
+  return {
+    name: 'cathnivore-font-preload',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, ctx) {
+        const files = Object.keys(ctx.bundle ?? {}).filter((f) => PRELOAD_FONTS.some((re) => re.test(f)))
+        return files.map((f) => ({
+          tag: 'link',
+          attrs: { rel: 'preload', href: `${base}${f}`, as: 'font', type: 'font/woff2', crossorigin: '' },
+          injectTo: 'head' as const,
+        }))
+      },
+    },
+  }
+}
+
 export default defineConfig({
   base,
   plugins: [
     react(),
     versionFile(),
+    fontPreload(),
     // SPEC 11.1: offline play and home-screen install on the web. The SW is never bundled into the
     // iPhone app (Capacitor never serves this dist output through vite-plugin-pwa's registration
     // script — main.tsx only calls registerSW() when Capacitor.isNativePlatform() is false).

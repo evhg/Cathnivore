@@ -148,7 +148,7 @@ if (all && want('cathnivore')) {
   await s.page.getByRole('button', { name: 'Start' }).click()
   await s.page.locator('.game').waitFor()
   await shoot(s.page, 'cathnivore-game', PLD, { dir, variants: ['light', 'dark'], settle: (p) => p.waitForTimeout(700) })
-  report.fonts.cathnivore = await fontOf(s.page, '.game .num, .game [data-num], .game .chip-value, .game b')
+  report.fonts.cathnivore = await fontOf(s.page, '.game .hud-value .num')
   report.contrast.cathnivore = await contrastWalk(s.page)
   await done(s, 'cathnivore')
 }

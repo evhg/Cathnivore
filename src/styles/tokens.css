@@ -44,10 +44,19 @@
      override, on purpose. */
   --ink-on-fixed-fill: #2B2320;
   --paper-on-fixed-fill: #F4EDE1;
+
+  /* AAA UI M1: font roles and the focus colour */
+  --font-display: "Marrow Display", "Marrow Display Fallback", Georgia, serif;
+  --font-text: "Marrow Figures", "Marrow Text", "Marrow Text Fallback", system-ui, sans-serif;
+  --font-ui: var(--font-text);
+  --font-num: "Marrow Figures", "Marrow Text", "Marrow Text Fallback", system-ui, sans-serif;
+  --font-voice: "Marrow Display", "Marrow Voice Fallback", Georgia, serif;
+  --focus: #1F5F99;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    --focus: #8EC5F5;
     --paper: #1E1A17;
     --paper-2: #2A2420;
     --surface: #332C27;
@@ -67,6 +76,7 @@
 }
 
 :root[data-theme="dark"] {
+  --focus: #8EC5F5;
   --paper: #1E1A17;
   --paper-2: #2A2420;
   --surface: #332C27;

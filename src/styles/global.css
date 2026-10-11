@@ -12,9 +12,11 @@ body {
 }
 
 body {
-  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  font-family: var(--font-text);
   font-size: 16px;
   line-height: 1.4;
+  /* every figure is Marrow Figures (unicode-range) and tabular */
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 /* STYLE.md 3.1: "--sea: Links, information" — found unset while reviewing the new dark theme's
@@ -35,8 +37,8 @@ a:visited {
 h1,
 h2,
 h3 {
-  font-family: 'Fraunces', Georgia, serif;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-weight: 640;
   margin: 0;
 }
 
@@ -400,9 +402,10 @@ h3 {
 
 .plan-strip-headline {
   /* ROADMAP 10: the slot name reads as the clipping's headline (STYLE.md 8); same line, so no height change. */
-  font-family: var(--font-display, inherit);
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-family: var(--font-voice);
+  font-style: italic;
+  font-weight: 780;
+  letter-spacing: 0.01em;
 }
 
 .plan-strip-effect {
@@ -411,7 +414,7 @@ h3 {
 }
 
 .plan-strip-stage {
-  font-family: var(--font-display, inherit);
+  font-family: var(--font-display);
   font-size: 9px;
   font-weight: 600;
   opacity: 0.7;
@@ -497,7 +500,7 @@ h3 {
 }
 
 .enemy-turn-playback p {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 18px;
   margin: 0;
   max-width: 320px;
@@ -594,7 +597,7 @@ h3 {
 .card-framed[data-tag='plan'] { --frame: var(--p-mara); }
 .card-plan-avatar { float: right; margin: 0 0 4px 8px; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 2px solid var(--frame); background: var(--paper); }
 .card-plan-avatar svg { width: 100%; height: 100%; display: block; }
-.card-hand { font-family: 'Segoe Print', 'Bradley Hand', 'Noteworthy', 'Comic Sans MS', cursive; font-style: normal; }
+.voice { font-family: var(--font-voice); font-style: italic; font-weight: 420; }
 .card-framed[data-tag='science'] { --frame: var(--p-ines); }
 
 .card-list .card-empty {
@@ -627,7 +630,6 @@ h3 {
 .card-why-not {
   margin: 4px 0 0;
   font-size: 13px;
-  font-style: italic;
   color: var(--ink-muted);
 }
 
@@ -708,7 +710,8 @@ h3 {
 }
 
 .region-name {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 24;
   font-size: 13px;
   font-weight: 700;
   fill: var(--ink);
@@ -720,7 +723,7 @@ h3 {
 }
 
 .badge-text {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-family: var(--font-text);
   font-size: 10px;
   font-weight: 700;
   /* See tokens.css's `--*-on-fixed-fill` comment: the SQUEEZE/EXPAND pills use `--clay-deep`/`--wheat`,
@@ -734,7 +737,7 @@ h3 {
 }
 
 .stall-initial {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-family: var(--font-text);
   font-size: 8px;
   font-weight: 700;
   fill: var(--paper);
@@ -742,7 +745,7 @@ h3 {
 }
 
 .doubt-mark {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-family: var(--font-text);
   font-size: 8px;
   font-weight: 700;
   fill: var(--ink);
@@ -750,7 +753,7 @@ h3 {
 }
 
 .price-tag-text {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-family: var(--font-text);
   font-size: 3.6px;
   font-weight: 700;
   fill: var(--ink);
@@ -758,7 +761,7 @@ h3 {
 }
 
 .sold-text {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-family: var(--font-text);
   font-size: 3.4px;
   font-weight: 700;
   fill: var(--ink);
@@ -853,7 +856,9 @@ h3 {
 
 .cath-companion-line {
   margin: 0;
+  font-family: var(--font-voice);
   font-style: italic;
+  font-weight: 460;
   font-size: 14px;
   animation: cath-line-in var(--dur-base) var(--ease-settle) both;
 }
@@ -978,7 +983,6 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
 .action-why-not {
   font-size: 12px;
   font-weight: 400;
-  font-style: italic;
   color: var(--ink-muted);
 }
 
@@ -1286,7 +1290,7 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
 }
 
 button {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-family: var(--font-text);
   font-size: 14px;
   font-weight: 700;
   padding: 10px 14px;
@@ -1472,7 +1476,7 @@ button.destructive {
 html.no-animations .end-screen-hero, html.no-animations .end-screen h1, html.no-animations .end-screen-verdict,
 html.no-animations .end-screen-story, html.no-animations .end-screen-map,
 html.no-animations .end-screen > button:last-child, html.no-animations .stat-card { animation: none; }
-.stat-card dd { margin: 0; font-size: 28px; font-weight: 800; font-family: var(--font-display, inherit); }
+.stat-card dd { margin: 0; font-size: 28px; font-weight: 800; font-family: var(--font-num); }
 .stat-card dt { font-size: 12px; color: var(--ink); text-transform: uppercase; letter-spacing: 0.04em; }
 @keyframes stat-in { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
 @media (prefers-reduced-motion: reduce) { .stat-card { animation: none; } }
@@ -1641,7 +1645,7 @@ html.no-animations .stat-card { animation: none; }
 }
 
 .scene-speaker {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-weight: 600;
   color: var(--ink);
 }
@@ -1674,7 +1678,7 @@ html.no-animations .stat-card { animation: none; }
 }
 
 .pass-device h2 {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-size: 24px;
   font-weight: 600;
   margin: 0;
@@ -1859,7 +1863,7 @@ html.native-app body {
 }
 
 .setup-header-text { flex: 1; min-width: 0; }
-.setup-cath-line { margin: 2px 0 0; font-style: italic; font-size: 0.9em; opacity: 0.8; }
+.setup-cath-line { margin: 2px 0 0; font-family: var(--font-voice); font-style: italic; font-weight: 460; font-size: 0.9em; opacity: 0.8; }
 .setup-header {
   display: flex;
   align-items: center;
@@ -2506,7 +2510,7 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
   box-shadow: 0 0 0 1px #d9a441, 0 2px 8px rgba(217, 164, 65, 0.35);
 }
 
-.settings-tip { margin: 0.25rem 0 0; font-size: 0.9rem; opacity: 0.75; font-style: italic; }
+.settings-tip { margin: 0.25rem 0 0; font-size: 0.9rem; opacity: 0.75; }
 @media (max-width: 600px) {
   .settings-back { width: 100%; min-height: 48px; margin-top: 0.5rem; background: transparent; color: inherit; border: 2px solid var(--wheat); }
 }
@@ -2524,7 +2528,6 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
 .farm-empty {
   margin: 2px 0 0;
   font-size: 13px;
-  font-style: italic;
   color: var(--ink-muted);
 }
 

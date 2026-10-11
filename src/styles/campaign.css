@@ -226,7 +226,7 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 22px;
   background: var(--wheat);
@@ -321,7 +321,7 @@
 }
 
 .cmp-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 22px;
   line-height: 1.1;
   color: var(--ink);

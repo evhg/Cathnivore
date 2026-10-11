@@ -1187,7 +1187,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
               <RoundIcon />
               <GaugeRing value={state.round} max={state.round + state.pressureDeck.length} />
             </span>{' '}
-            <span className="hud-label">Round </span>{state.round}/{state.round + state.pressureDeck.length}
+            <span className="hud-label">Round </span><span className="num">{state.round}/{state.round + state.pressureDeck.length}</span>
           </span>
         </span>
         <span>
@@ -1197,7 +1197,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                 <PublicTrustIcon />
                 <GaugeRing value={state.publicTrust} max={TRUST_MAX} />
               </span>{' '}
-              <span className="hud-label">Trust </span>{state.publicTrust}
+              <span className="hud-label">Trust </span><span className="num">{state.publicTrust}</span>
             </span>
           </Tooltip>
         </span>
@@ -1208,7 +1208,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                 <LostLandIcon />
                 <GaugeRing value={state.lostLandPool} max={lostLandStartingPool(state)} />
               </span>{' '}
-              <span className="hud-label">Lost Land left </span>{state.lostLandPool}
+              <span className="hud-label">Lost Land left </span><span className="num">{state.lostLandPool}</span>
             </span>
           </Tooltip>
         </span>
@@ -1219,7 +1219,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                 <RiftIcon />
                 <GaugeRing value={state.rift} max={RIFT_MAX} />
               </span>{' '}
-              <span className="hud-label">Rift </span>{state.rift}
+              <span className="hud-label">Rift </span><span className="num">{state.rift}</span>
             </span>
           </Tooltip>
         </span>

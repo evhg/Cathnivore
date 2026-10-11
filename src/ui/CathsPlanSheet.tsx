@@ -64,7 +64,7 @@ export default function CathsPlanSheet({
                 to play a Scheme during play had no way to see what it does without leaving Cath's Plan sheet
                 to search for it separately. Cath's own voice line stays as the flavour text below it. */}
             <p className="card-text">{card.text}</p>
-            <p className="card-flavor card-hand">&ldquo;{card.line}&rdquo;</p>
+            <p className="card-flavor voice">&ldquo;{card.line}&rdquo;</p>
             {canPlay(id) ? (
               <button onClick={() => play(id)}>Play</button>
             ) : (
@@ -98,7 +98,7 @@ export default function CathsPlanSheet({
                     <strong>{card.name}</strong>
                   </summary>
                   <p className="card-text">{card.text}</p>
-                  <p className="card-flavor card-hand">&ldquo;{card.line}&rdquo;</p>
+                  <p className="card-flavor voice">&ldquo;{card.line}&rdquo;</p>
                 </details>
                 {/* Sibling of <details>, not a descendant — see MarketSheet.tsx for why. */}
                 <div className="card-cost-row">
