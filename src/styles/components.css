@@ -37,6 +37,7 @@
 
 .frame--ledger {
   background: var(--mat-ledger);
+  line-height: 24px; /* the --ruled period, so ruled lines sit under the text, not through it */
 }
 
 /* The Market: a kraft produce tray. Text never sits on bare kraft: the cards carry their own card stock. */
@@ -347,6 +348,20 @@ button.btn-quiet {
   font: 760 var(--fs-caption)/1 var(--font-num);
   font-variant-numeric: tabular-nums lining-nums;
   white-space: nowrap;
+}
+
+/* Sell's chip is what you get: a plain receipt, no price-tag notch */
+.action-gain {
+  gap: 3px;
+  padding: 0 8px;
+  border-radius: var(--r-pill);
+  border-style: dashed;
+  color: var(--gain-ink, var(--ink));
+}
+
+.action-gain-arrow {
+  color: var(--ink-muted);
+  font-weight: 600;
 }
 
 .chip--short,

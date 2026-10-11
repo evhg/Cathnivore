@@ -327,7 +327,51 @@ h3 {
 }
 
 .farm-production {
+  margin: 4px 0;
+  padding: 0;
+  list-style: none;
   font-size: 14px;
+}
+
+/* the desktop Farm ledger: name and three figures on one line a producer */
+.farm-column--compact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: var(--sp-2);
+  margin: 0;
+}
+
+.farm-column--compact > h3 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.farm-column--compact > .farm-production {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+}
+
+.farm-column--compact > :not(h3, .farm-production) {
+  grid-column: 1 / -1;
+}
+
+.farm-column--compact .farm-income {
+  color: var(--gain-ink);
+  font-size: var(--fs-caption);
+}
+
+.farm-column--compact .farm-tableau {
+  padding-left: 0;
+  list-style: none;
+}
+
+.farm-column--compact .farm-tableau summary {
+  cursor: pointer;
 }
 
 .farm-tableau {

@@ -57,7 +57,8 @@ test('Invest shows a disabled, explained placeholder for market cards the player
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
-  const investItems = page.locator('.action-item', { hasText: 'Invest' })
+  // The visible label is "Buy <card>" under the INVEST head; the button's accessible name keeps "Invest: buy".
+  const investItems = page.locator('.action-item', { has: page.getByRole('button', { name: /^Invest/ }) })
   await expect(investItems).toHaveCount(4)
   for (const item of await investItems.all()) {
     await expect(item.getByRole('button', { name: /^Invest/ })).toBeDisabled()
@@ -82,7 +83,7 @@ test('Invest shows a disabled, explained placeholder for market cards the player
   const wholesaleAccount = page.locator('.action-item', { hasText: 'Wholesale Account' })
   await expect(wholesaleAccount.locator('.action-why-not')).toHaveCount(0)
   await expect(wholesaleAccount.getByRole('button', { name: /^Invest/ })).toBeEnabled()
-  await expect(page.locator('.action-item', { hasText: 'Invest' }).locator('.action-why-not')).toHaveCount(3)
+  await expect(page.locator('.action-item', { has: page.getByRole('button', { name: /^Invest/ }) }).locator('.action-why-not')).toHaveCount(3)
 })
 
 // ROADMAP 9, continued: a `targeting: 'none'` Scheme (never needs a region) gets the same per-card

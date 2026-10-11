@@ -58,6 +58,7 @@ import { romanStage } from './romanStage'
 import { CandorLogo, HollowellLogo } from './icons/EnemyLogos'
 import type { Action, GameEvent, GameState, ProducerId, RegionId, RegionType, ResourceKind } from '../engine/types'
 import type { Mode } from './Setup'
+import { useScrollCues } from './useScrollCues'
 import type { TutorialStep } from '../content/chapters'
 import type { Scene as SceneData } from '../content/story/types'
 
@@ -269,7 +270,30 @@ function LedgerChip({ term, Icon, value, income, tick }: { term: string; Icon: t
   )
 }
 
+// AAA UI M4 fix: Sell's chip shows what you get (the Marks), since the label already says the Produce
+// it takes; the visible label stays on one line ("Sell 2 Produce"), the full one is the accessible name.
+function SellGainChip({ count }: { count: number }) {
+  return (
+    <span className="action-cost action-gain" aria-hidden="true">
+      <span className="action-gain-arrow">{'\u2192'}</span>
+      <MarksIcon size={14} />
+      {count}
+    </span>
+  )
+}
+
 function ActionButton({ action, state, Icon, onClick }: { action: Action; state: GameState; Icon?: typeof OpenStallIcon; onClick(): void }) {
+  if (action.kind === 'sell') {
+    return (
+      <button aria-label={actionLabel(action, state)} onClick={onClick}>
+        <span className="action-label">
+          {Icon && <Icon size={18} />}
+          {`Sell ${action.count} Produce`}
+        </span>
+        <SellGainChip count={action.count} />
+      </button>
+    )
+  }
   const cost = actionCost(action, state)
   const { text, aria } = chipLabel(actionLabel(action, state), !!cost)
   return (
@@ -289,7 +313,8 @@ function ActionButton({ action, state, Icon, onClick }: { action: Action; state:
 const TRAILING_COST = /\s*\(\d+ (?:Marks?|Produce|Goodwill)\)$/
 function chipLabel(label: string, hasChip: boolean): { text: string; aria?: string } {
   if (!hasChip || !TRAILING_COST.test(label)) return { text: label }
-  return { text: label.replace(TRAILING_COST, ''), aria: label }
+  // Under the INVEST head the verb is already said: "Buy Cold Store" fits the key on one line.
+  return { text: label.replace(TRAILING_COST, '').replace(/^Invest: buy /, 'Buy '), aria: label }
 }
 
 // A region-targeting group (e.g. "Supply: remove 2 Outlets…") can cover several regions whose actual
@@ -312,6 +337,7 @@ function uniformGroupCost(
 
 export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
+  const layoutRef = useScrollCues()
   // ROADMAP 10's HUD tick animation (see `useHudTick`'s own comment) — called unconditionally here,
   // before any of this component's early returns (pass-device, end screen, tutorial rules), so the Rules
   // of Hooks hold regardless of which branch below actually renders.
@@ -883,7 +909,8 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   // two at a time — not both with CSS hiding one, which left a second `.actions`/`.action-item` permanently
   // in the DOM and broke every Playwright strict-mode locator that queried it (e2e/tooltip.spec.ts).
   const actionsPanel = (
-    <section className="actions" tabIndex={0} role="region" aria-label="Actions">
+    <div className="actions-well">
+      <section className="actions" tabIndex={0} role="region" aria-label="Actions" data-scroll-cue="">
       {pendingEnemyTurn.length > 0 ? null : waitingOnAi ? (
         <p>AI teammate is deciding…</p>
       ) : selectedGroup ? (
@@ -901,7 +928,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         )
       ) : (
         <>
-          {sellEntries.length > 0 && <span className="action-head" aria-hidden="true">Sell</span>}
+          {(sellEntries.length > 0 || disabledSell.length > 0) && <span className="action-head" aria-hidden="true">Sell</span>}
           {sellEntries.map(({ index, action: a }) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
@@ -922,18 +949,19 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                 <span className="action-label-group">
                   <span className="action-label">
                     <SellIcon size={18} />
-                    {`Sell ${count} Produce for ${count} ${count === 1 ? 'Mark' : 'Marks'}`}
+                    {`Sell ${count} Produce`}
+                    <span className="visually-hidden">{` for ${count} ${count === 1 ? 'Mark' : 'Marks'}`}</span>
                   </span>
                   <span className="action-why-not">Need {missing} more Produce</span>
                 </span>
-                <ActionCostChip cost={{ resource: 'produce', amount: count }} />
+                <SellGainChip count={count} />
               </button>
               <Tooltip term="Sell" label="What is Sell?">
                 ?
               </Tooltip>
             </span>
           ))}
-          {investEntries.length > 0 && <span className="action-head" aria-hidden="true">Invest</span>}
+          {(investEntries.length > 0 || disabledInvest.length > 0) && <span className="action-head" aria-hidden="true">Invest</span>}
           {investEntries.map(({ index, action: a }, position) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
@@ -961,7 +989,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                   <span className="action-label-group">
                     <span className="action-label">
                       <InvestIcon size={18} />
-                      {`Invest: buy ${card.name}`}
+                      {`Buy ${card.name}`}
                     </span>
                     <span className="action-why-not">Need {missing} more {missing === 1 ? "Mark" : "Marks"}</span>
                   </span>
@@ -1110,6 +1138,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
         </>
       )}
     </section>
+    </div>
   )
 
   // SPEC 10.3 desktop 3-column layout (1024px+): both producers' Farms on the left, the map/plan strip in
@@ -1194,7 +1223,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   )
 
   return (
-    <div className="game-layout">
+    <div className="game-layout" ref={layoutRef}>
       {(lostLandTick > 0 || riftTick > 0) && (
         <div key={`${lostLandTick}-${riftTick}`} className={riftTick > 0 && (state.rift === 3 || state.rift === 6) ? 'danger-flash danger-flash-deep' : 'danger-flash'} aria-hidden="true" />
       )}
@@ -1217,8 +1246,14 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           focusable descendants of its own, which the right column hit at random in this session's
           testing. */}
       <aside className="desktop-col desktop-col-left" tabIndex={0}>
-        {isDesktop && <div className="sheet-panel producer-sheet frame">{producerPanel}</div>}
-        <FarmSheet state={state} onClose={() => {}} inline />
+        {/* AAA UI M4 fix: the Farm ledger folds into the producer frame (one line a producer) so the
+            Actions frame below keeps the column's height for the verbs. */}
+        {isDesktop && (
+          <div className="sheet-panel producer-sheet frame">
+            {producerPanel}
+            <FarmSheet state={state} onClose={() => {}} inline />
+          </div>
+        )}
         {/* ROADMAP 8: the actions tray lives here on desktop, not the right column — Market/Cath's Plan/Log
             already claim nearly all of the right column's height budget on their own (measured directly:
             close to the full 768px at 1280x800), while the Farm panel leaves real headroom. Mounted only

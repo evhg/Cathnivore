@@ -86,7 +86,7 @@ export default function MarketSheet({
     return (
       <div className="sheet-panel card-sheet frame frame--tray">
         <h2 className="frame-title">Market</h2>
-        <ul className="card-list card-list-collapsible">
+        <ul className="card-list card-list-collapsible" data-scroll-cue="">
           {state.market.map((id, slot) => {
             if (!id) return <li key={slot} className="card-empty" />
             const card = IMPROVEMENTS_BY_ID.get(id)

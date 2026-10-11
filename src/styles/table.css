@@ -897,6 +897,10 @@
     min-height: 0;
   }
 
+  .action-tray .actions-well {
+    flex: 1 1 auto;
+  }
+
   .action-tray .actions {
     flex: 1 1 auto;
     max-height: none;
@@ -995,16 +999,42 @@
     padding-block: 7px 8px;
   }
 
-  /* Left column: Producer and Farm keep their natural size; Actions absorbs the rest and scrolls. */
+  /* Left column (AAA UI M4 fix): the Actions frame holds the core verbs, so it takes the height. The
+     producer keeps its natural size; Farm is one line a producer and gives way first (it scrolls inside
+     itself past about a fifth of the column). */
   .desktop-col-left > .frame {
     flex: none;
+  }
+
+  .farm-inline {
+    margin-top: var(--sp-3);
+    padding-top: var(--sp-2);
+    background:
+      linear-gradient(var(--ink-a35) 0 0) top / 100% 1px no-repeat,
+      linear-gradient(var(--ink-a15) 0 0) 0 3px / 100% 1px no-repeat;
+  }
+
+  .farm-inline-title {
+    margin: 2px 0 2px;
+    font: 760 var(--fs-label)/1.6 var(--font-text);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .farm-inline .farm-column + .farm-column {
+    margin-top: 2px;
   }
 
   .desktop-col-left > .actions-sheet {
     display: flex;
     flex-direction: column;
+    flex: 1 1 0;
+    min-height: 260px;
+  }
+
+  .actions-sheet .actions-well {
     flex: 1 1 auto;
-    min-height: 120px;
   }
 
   .actions-sheet .actions {
@@ -1015,19 +1045,26 @@
     padding: 4px 6px 8px;
   }
 
+  .actions-sheet .actions {
+    gap: 6px;
+  }
+
   .actions-sheet .actions .action-item > button:first-child {
-    min-height: 44px;
+    min-height: 42px;
+    padding-block: 5px;
   }
 
   .actions-sheet .controls {
-    margin: var(--sp-3) 0 0;
-    padding: var(--sp-3) 0 0;
+    margin: var(--sp-2) 0 0;
+    padding: var(--sp-2) 0 0;
     background: none;
     box-shadow: inset 0 1px 0 var(--ink-a15);
   }
 
   .actions-sheet .rail-undo {
     width: 100%;
+    height: 40px;
+    min-height: 40px;
     border-radius: var(--r-btn);
     display: flex;
     gap: var(--sp-2);
@@ -1045,35 +1082,78 @@
     gap: var(--sp-3);
   }
 
-  /* Right column: Market, Cath's Plan and Log share the height and scroll inside themselves. */
+  /* Right column: the Market takes the flexible height; Cath's Plan and the Log keep to their content
+     up to a cap. Each frame stays whole and only its list scrolls, behind an edge fade and an "n more"
+     tab (useScrollCues), so a cut card reads as "more below", not as broken layout. */
   .desktop-col-right > .frame {
-    flex: 0 1 auto;
-    min-height: 96px;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding-bottom: var(--sp-3);
   }
 
-  .desktop-col .log-sheet {
-    max-height: 240px;
+  .desktop-col-right > .frame--tray {
+    flex: 1 1 0;
+    min-height: 200px;
+  }
+
+  .desktop-col-right > .card-sheet:not(.frame--tray) {
+    flex: 0 1 auto;
+    min-height: 150px;
+    max-height: 36%;
+  }
+
+  .desktop-col-right > .log-sheet {
+    flex: 0 1 auto;
+    min-height: 110px;
+    max-height: 200px;
+  }
+
+  .desktop-col-right > .frame > .card-list,
+  .desktop-col-right > .frame > .log-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    margin: -4px -6px 0;
+    padding: 4px 6px 6px;
   }
 
   /* Farm: a ledger, dense */
   .farm-sheet h3 {
-    font: 640 var(--fs-body)/1.2 var(--font-display);
+    font: 640 var(--fs-small)/1.5 var(--font-display);
+    font-variation-settings: "opsz" 24;
     color: var(--ink);
   }
 
-  .farm-sheet .farm-column {
-    margin-bottom: var(--sp-2);
+  .farm-inline .farm-production {
+    gap: 6px;
+  }
+
+  .actions-sheet .action-label-group {
+    gap: 2px;
+  }
+
+  .actions-sheet .action-why-not {
+    min-height: 18px;
+    padding-block: 0;
+    font-size: var(--fs-label);
   }
 
   .farm-production,
   .farm-empty {
     font-size: var(--fs-small);
-    margin: 4px 0;
+  }
+
+  .farm-empty {
+    margin: 0;
   }
 
   .farm-production .tooltip-trigger {
     display: inline;
+  }
+
+  .farm-sheet .farm-column {
+    margin-bottom: 0;
   }
 
   /* Market and Cath's Plan cards as mini cards: a tag band, the name, a cost coin; Buy beside it */
@@ -1163,6 +1243,45 @@
   .cath-companion .cameo {
     --cameo: 44px;
   }
+}
+
+/* ---- scroll cues (useScrollCues): an edge fade where there is more, and an "n more" tab ---- */
+[data-scroll-cue][data-fade-bottom] {
+  mask-image: linear-gradient(#000 calc(100% - 40px), transparent);
+}
+
+[data-scroll-cue][data-fade-top] {
+  mask-image: linear-gradient(transparent, #000 22px);
+}
+
+[data-scroll-cue][data-fade-top][data-fade-bottom] {
+  mask-image: linear-gradient(transparent, #000 22px, #000 calc(100% - 40px), transparent);
+}
+
+.frame[data-more]::after,
+.actions-well[data-more]::after {
+  content: attr(data-more) " more \2193";
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 4px;
+  translate: -50% 0;
+  padding: 3px 10px 4px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  border: 1px solid var(--ink-a35);
+  box-shadow: var(--e2);
+  color: var(--ink-muted);
+  font: 700 var(--fs-label)/1 var(--font-text);
+  letter-spacing: .06em;
+  pointer-events: none;
+}
+
+.actions-well {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* the price coin on the Market and Cath's Plan mini cards */

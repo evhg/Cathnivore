@@ -83,7 +83,7 @@ export default function CathsPlanSheet({
     return (
       <div className="sheet-panel card-sheet frame">
         <h2 className="frame-title">Cath&rsquo;s Plan</h2>
-        <ul className="card-list card-list-collapsible">
+        <ul className="card-list card-list-collapsible" data-scroll-cue="">
           {state.freeSchemePlays > 0 && (
             <li className="card-note">Cath&rsquo;s Plan grants a free Scheme play — no Goodwill needed this once.</li>
           )}
