@@ -2799,12 +2799,13 @@ body:has(#dlg-pause[open]) .paused-note {
   background: var(--card);
   box-shadow: 0 0 0 1.5px var(--line);
 }
+/* Vehicles are Hollowell's: their roundels are the company's white plastic, in either light */
 .ticket-chips .chip-icon {
   width: 34px;
   height: 34px;
   padding: 3px;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 35%, var(--paper-hi), var(--kraft));
+  background: var(--mat-plastic);
   box-shadow: 0 0 0 1.5px var(--line);
 }
 .ticket-chips .chip-n {
@@ -2905,6 +2906,18 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .play .tray-tower {
     width: 58px;
+    padding: 3px 2px 4px;
+  }
+  .play .tray-tower img {
+    width: 30px;
+    height: 30px;
+  }
+  .ticket-body {
+    padding-block: 6px;
+  }
+  /* What the field can't answer outranks the round's name on a phone: the tags take the head */
+  .ticket-head:has(.tag.warn) .ticket-title {
+    display: none;
   }
 }
 @media (orientation: landscape) and (max-height: 520px) {
@@ -2912,8 +2925,37 @@ body:has(#dlg-pause[open]) .paused-note {
     gap: 6px;
   }
   .round-ticket {
-    --stub: 54px;
+    --stub: 50px;
     min-height: 0;
+  }
+  .ticket-head .tag {
+    gap: 4px;
+    padding: 0 7px 0 4px;
+    letter-spacing: 0.03em;
+  }
+  /* A landscape ticket is one row of tags over one row of vehicles: the round's name and the warning's words
+     wait for a roomier screen (the red tag keeps its lock icons; its words stay for screen readers) */
+  .play .panel .ticket-title {
+    display: none;
+  }
+  .ticket-head:not(:has(.tag)) {
+    display: none;
+  }
+  .ticket-head .tag.warn > span:first-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .ticket-head .tag.warn::before {
+    order: -2;
+  }
+  .ticket-head .tag.warn::after {
+    content: "!";
+    order: -1;
+    font: 950 var(--fs-small) / 1 var(--font-ui);
   }
   .ticket-no {
     font-size: var(--fs-d2);
