@@ -365,6 +365,47 @@ function say(text: string): void {
   ui.announce.textContent = text;
 }
 
+/** Crown abilities on the field, in the thumb-reach strip beside Cath's own (one button per crowned tower). */
+const crownTray = new Map<number, HTMLButtonElement>();
+function syncCrownTray(g: Game): void {
+  const seen = new Set<number>();
+  for (const t of g.towers) {
+    if (t.crown === undefined || !hasPaths(t.kind)) continue;
+    const crown = PATHS[t.kind].paths[t.crown].crown;
+    const ab = crown?.ability;
+    if (!ab) continue;
+    seen.add(t.id);
+    let b = crownTray.get(t.id);
+    if (!b) {
+      b = document.createElement("button");
+      b.type = "button";
+      b.className = "ability crown-ability";
+      b.innerHTML = `<span class="ability-ring" aria-hidden="true"></span><span class="crown-glyph" aria-hidden="true">\u265B</span><span class="ability-label"></span>`;
+      b.title = `${ab.name}: ${ab.blurb}`;
+      const id = t.id;
+      b.onclick = () => {
+        if (doAct({ t: "crownUse", id })) {
+          sfx.playBoss();
+          haptic.boss();
+          banner(ab.name, crown!.name, false, "small");
+        } else toast(`${ab.name} isn't ready.`);
+      };
+      ui.btnRally.after(b);
+      crownTray.set(t.id, b);
+    }
+    const cd = t.crownCd ?? 0;
+    b.disabled = g.phase !== "wave" || cd > 0;
+    b.classList.toggle("ready", !b.disabled);
+    (b.querySelector(".ability-label") as HTMLElement).textContent = cd > 0 ? `${Math.ceil(cd)}s` : ab.name;
+    (b.querySelector(".ability-ring") as HTMLElement).style.setProperty("--cd", String(Math.min(1, cd / ab.cooldown)));
+  }
+  for (const [id, b] of crownTray)
+    if (!seen.has(id)) {
+      b.remove();
+      crownTray.delete(id);
+    }
+}
+
 // ---- level select ----
 
 function renderLevels(): void {
@@ -536,6 +577,8 @@ function doAct(a: Action): boolean {
  * purse and the recorder exactly as they stood before the lost round was sent.
  */
 function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recorder: Recorder }): void {
+  for (const b of crownTray.values()) b.remove();
+  crownTray.clear();
   // First level of the visit: wait for the 3D chunk (usually already prefetched), then start.
   if (USE_3D && !r3d && !r3dSettled) {
     void loadR3D().then(() => {
@@ -720,6 +763,7 @@ function syncControls(): void {
     if (ready && !wasReady[a] && g.phase === "wave" && !g.auto[a]) haptic.ready();
     wasReady[a] = ready;
   }
+  syncCrownTray(g);
   const h = g.hero;
   ui.btnHero.classList.toggle("down", h.down > 0);
   ui.heroHp.style.setProperty("--hp", String(h.down > 0 ? 0 : h.hp / h.maxHp));

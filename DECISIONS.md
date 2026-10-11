@@ -393,3 +393,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-11: Crowns for the 4 other path towers are passive (no ability) to keep M5 small; abilities can follow.
 - 2026-10-11: Board Security kit lives in enemy.ts (bash flag); session.ts `guarded()` applies its HP/plating on top of the riotShield archetype.
 - 2026-10-11: Marked D4 done after the lobby shot; bots buy Crowns when a tier 3 path is finished, so START_K/hpScale were retuned.
+- 2026-10-11: Crown ability tray is a button per crowned tower (not a separate panel); Auto toggle for them waits on M6.
