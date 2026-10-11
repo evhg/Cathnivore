@@ -287,7 +287,7 @@
   flex: 1 1 auto;
   min-width: 0;
   min-height: 56px;
-  padding: 13px 30px 8px 9px;
+  padding: 11px 30px 8px 9px;
   border: 0;
   border-radius: 0;
   background: var(--mat-news-flat);
@@ -330,10 +330,18 @@
   text-transform: capitalize;
 }
 
+.plan-strip-dateline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 12px;
+  margin: 0 -21px 3px 0;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgb(43 35 32 / .22);
+}
+
 .plan-strip-card-brand {
-  position: absolute;
-  top: 6px;
-  left: 8px;
   display: inline-flex;
   gap: 2px;
   line-height: 1;
@@ -345,17 +353,16 @@
 }
 
 .plan-strip-card-meta {
-  position: absolute;
-  top: 6px;
-  right: 8px;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   line-height: 1;
 }
 
 .plan-strip-stage {
-  font: 700 var(--fs-label)/1 var(--font-display);
+  font: 700 10px/1 var(--font-text);
+  letter-spacing: .1em;
+  text-transform: uppercase;
   color: var(--newsprint-ink);
 }
 
@@ -834,8 +841,13 @@
   }
 
   .plan-strip-item > button:first-child {
-    padding: 14px 6px 8px 8px;
+    padding: 6px 6px 5px 8px;
     min-height: 62px;
+  }
+
+  .plan-strip-dateline {
+    margin: 0 0 1px;
+    padding-bottom: 1px;
   }
 
   .plan-strip-headline {
@@ -915,7 +927,7 @@
 
   .plan-strip-item > button:first-child {
     min-height: 54px;
-    padding-top: 13px;
+    padding-top: 10px;
   }
 
   .cath-companion-line {
@@ -991,7 +1003,7 @@
 
   .plan-strip-item > button:first-child {
     min-height: 54px;
-    padding-top: 12px;
+    padding-top: 9px;
     padding-bottom: 7px;
   }
 

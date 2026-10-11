@@ -167,6 +167,8 @@
     --wheat-ink: #E5C46F;
     --kraft: #5A4631;
     --kraft-lo: #4C3B29;
+    --newsprint: #C2B9A8;        /* aged grey-cream: still an object, no longer the brightest thing on the table */
+    --newsprint-lo: #B5AB99;
     --btn-edge: rgb(241 233 220 / .42);
     --gain-ink: #A5C982;
     --short-ink: #E8957F;
@@ -208,6 +210,8 @@
   --wheat-ink: #E5C46F;
   --kraft: #5A4631;
   --kraft-lo: #4C3B29;
+  --newsprint: #C2B9A8;
+  --newsprint-lo: #B5AB99;
   --btn-edge: rgb(241 233 220 / .42);
   --gain-ink: #A5C982;
   --short-ink: #E8957F;

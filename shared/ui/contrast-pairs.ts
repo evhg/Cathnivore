@@ -43,7 +43,8 @@ export const CONTRAST_PAIRS: Record<string, ContrastPair[]> = {
     { label: 'dark: soil on surface (frame titles)', fg: '#D9B98A', bg: '#332C27' },
     { label: 'dark: gain-ink on surface', fg: '#A5C982', bg: '#332C27' },
     { label: 'dark: short-ink on paper-2', fg: '#E8957F', bg: '#2A2420' },
-    { label: 'dark: newsprint-ink on newsprint', fg: '#2B2320', bg: '#EFEAE0' },
+    { label: 'dark: newsprint-ink on newsprint', fg: '#2B2320', bg: '#C2B9A8' },
+    { label: 'dark: newsprint-ink on newsprint-lo (clipping foot)', fg: '#2B2320', bg: '#B5AB99' },
   ],
   runnel: [
     { label: 'ink on surface', fg: '#2B2320', bg: '#FBF8F1' },

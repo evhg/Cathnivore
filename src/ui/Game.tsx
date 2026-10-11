@@ -1377,21 +1377,26 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
                     cards put "the faction logo top-left"; both corporations act through every slot
                     (SPEC 4.7's Scout/Expand/Squeeze all place or count Hollowell pieces, several also
                     count or add Candor Doubt), so both logos brand every card rather than picking one. */}
-                <span className="plan-strip-card-brand">
-                  <HollowellLogo size={12} />
-                  <CandorLogo size={12} />
+                {/* AAA UI M4 fix: a dateline row in normal flow (the logos used to sit on the headline's
+                    first letter), with the Pressure card's stage spelled out. */}
+                <span className="plan-strip-dateline" aria-hidden="true">
+                  <span className="plan-strip-card-brand">
+                    <HollowellLogo size={12} />
+                    <CandorLogo size={12} />
+                  </span>
+                  {card && (
+                    <span className="plan-strip-card-meta">
+                      <span className="plan-strip-stage">Stage {romanStage(card.stage)}</span>
+                      {pressureIconTypes(card).map((type) => (
+                        <RegionTypeIcon key={type} type={type} size={13} />
+                      ))}
+                    </span>
+                  )}
                 </span>
                 <span className="plan-strip-headline">{slotLabel}</span>
                 <span className="visually-hidden">: </span>
                 <span className="plan-strip-effect">{pressureLabel(state[slot])}</span>
-                {card && (
-                  <span className="plan-strip-card-meta">
-                    <span className="plan-strip-stage">{romanStage(card.stage)}</span>
-                    {pressureIconTypes(card).map((type) => (
-                      <RegionTypeIcon key={type} type={type} size={13} />
-                    ))}
-                  </span>
-                )}
+                {card && <span className="visually-hidden">{`, stage ${card.stage}`}</span>}
               </button>
               {/* A separate trigger, not nested inside the button above: that button already has its own
                   tap meaning (toggle the map highlight), so a tooltip needs its own affordance rather than
