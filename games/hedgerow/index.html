@@ -47,7 +47,7 @@
           <div class="top-tools">
           <button class="bank-btn cath-btn" id="btn-cath" type="button">
             <span class="cath-btn-face" id="cath-btn-face" aria-hidden="true"></span>
-            <span>Cath <b id="cath-level">1</b></span>
+            <span>Cath <b class="num" id="cath-level">1</b></span>
             <span class="cath-dot" id="cath-dot" hidden aria-label="Points to spend"></span>
           </button>
           <button class="bank-btn almanac-btn" id="btn-almanac" type="button" aria-label="Almanac">
@@ -61,7 +61,7 @@
             <span aria-hidden="true">◆</span> <span class="bank-word">Heroic</span>
           </button>
           <button class="bank-btn" id="btn-bank" type="button">
-            <span class="chip-ico" aria-hidden="true">★</span> <span id="bank-stars">0</span>
+            <span class="chip-ico" aria-hidden="true">★</span> <span class="num" id="bank-stars">0</span>
             <span class="bank-word">Seed Bank</span>
           </button>
           </div>
@@ -97,19 +97,19 @@
                 <path
                   d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"
                 /></svg
-              ><b id="hud-goodwill">10</b
+              ><b class="num" id="hud-goodwill">10</b
               ><span class="sr-only"> Goodwill</span></span
             >
             <span class="chip chip-coin" title="Marks"
               ><svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="8" />
                 <path d="M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4" /></svg
-              ><b id="hud-marks">0</b><span class="sr-only"> Marks</span></span
+              ><b class="num" id="hud-marks">0</b><span class="sr-only"> Marks</span></span
             >
             <span class="chip chip-wave" title="Wave (on Round Book levels, the round)"
               ><svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M5 19V5l10 4-10 4" /></svg
-              ><b id="hud-wave">0/0</b><span class="sr-only"> Wave</span></span
+              ><b class="num" id="hud-wave">0/0</b><span class="sr-only"> Wave</span></span
             >
           </div>
           <div class="hud-tools">

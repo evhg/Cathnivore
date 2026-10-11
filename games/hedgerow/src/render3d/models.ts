@@ -1957,7 +1957,7 @@ export function buildGate(label: string): THREE.Group {
     ctx.fillStyle = "#1f8a8a";
     ctx.fillRect(0, 0, 512, 96);
     ctx.fillStyle = "#f4fbfb";
-    ctx.font = "bold 56px 'Atkinson Hyperlegible', sans-serif";
+    ctx.font = "bold 56px 'Hedgerow UI', system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(label, 256, 50);

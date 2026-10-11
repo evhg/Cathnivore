@@ -1,0 +1,32 @@
+/* Hedgerow type ("The Fête Noticeboard", docs/design/aaa-ui.md): Hedgerow Display is Fraunces with all
+   four axes (SOFT is the storybook warmth; WONK roman is Cath's voice, so no italic file ships), and
+   Hedgerow UI is Nunito, whose figures are equal width with an unslashed zero. Latin files only;
+   fallbacks are metric-matched local fonts. */
+@font-face {
+  font-family: "Hedgerow Display";
+  src: url("../../../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-full-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Hedgerow UI";
+  src: url("../../../node_modules/@fontsource-variable/nunito/files/nunito-latin-wght-normal.woff2") format("woff2");
+  font-weight: 200 1000;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Hedgerow Display Fallback";
+  src: local("Times New Roman"), local("Liberation Serif"), local("Georgia");
+  size-adjust: 97.1%;
+  ascent-override: 101%;
+  descent-override: 26.8%;
+}
+@font-face {
+  font-family: "Hedgerow UI Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 96.9%;
+  ascent-override: 104.2%;
+  descent-override: 36.1%;
+}

@@ -1322,7 +1322,7 @@ function vehicle(ctx: C, x: number, y: number, s: number, t: number, o: VehicleO
   }
   if (o.label) {
     ctx.fillStyle = o.labelColor ?? "#1f8a8a";
-    ctx.font = `800 ${Math.max(6, Math.round(H * 0.32))}px 'Atkinson Hyperlegible', sans-serif`;
+    ctx.font = `800 ${Math.max(6, Math.round(H * 0.32))}px 'Hedgerow UI', system-ui, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(o.label, x0 + L * 0.37, top + H * 0.38);
@@ -1637,7 +1637,7 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       rr(ctx, -s * 0.1, -s * 0.12, s * 0.2, s * 0.08, s * 0.02, "#f4f6f8");
       shine(ctx, -s * 0.1, -s * 0.42, s * 0.16, s * 0.04);
       ctx.fillStyle = "#fff";
-      ctx.font = `800 ${Math.max(6, Math.round(s * 0.11))}px 'Atkinson Hyperlegible', sans-serif`;
+      ctx.font = `800 ${Math.max(6, Math.round(s * 0.11))}px 'Hedgerow UI', system-ui, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("#BLESSED", 0, -s * 0.3);

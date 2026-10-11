@@ -1,54 +1,4 @@
-@font-face {
-  font-family: "Fraunces";
-  src: url("/fonts/fraunces-latin-700-normal.woff2") format("woff2");
-  font-weight: 700;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Atkinson Hyperlegible";
-  src: url("/fonts/atkinson-hyperlegible-latin-400-normal.woff2")
-    format("woff2");
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Atkinson Hyperlegible";
-  src: url("/fonts/atkinson-hyperlegible-latin-700-normal.woff2")
-    format("woff2");
-  font-weight: 700;
-  font-display: swap;
-}
 
-:root {
-  color-scheme: light;
-  --paper: #f4ede1;
-  --paper-2: #eae0cf;
-  --surface: #fbf8f1;
-  --ink: #2b2320;
-  --ink-muted: #6e625a;
-  --soil: #6b4a2b;
-  --pasture: #4c7a34;
-  --clay: #b5523b;
-  --wheat: #d9b45a;
-  --focus: #2b2320;
-  --backdrop: rgba(43, 35, 32, 0.45);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --paper: #1c1714;
-    --paper-2: #2a221d;
-    --surface: #332a24;
-    --ink: #f3e9d8;
-    --ink-muted: #b9aa98;
-    --soil: #d6b58c;
-    --pasture: #86b15c;
-    --clay: #e0775d;
-    --wheat: #e2bf68;
-    --focus: #f3e9d8;
-    --backdrop: rgba(0, 0, 0, 0.6);
-  }
-}
 
 * {
   box-sizing: border-box;
@@ -59,7 +9,10 @@ body {
   height: 100%;
   background: var(--paper);
   color: var(--ink);
-  font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+  font-family: var(--font-ui);
+  font-weight: 560;
+  /* Nunito's own line gap is taller than Atkinson's was; this keeps every 'normal' line where it was. */
+  line-height: 1.24;
   -webkit-text-size-adjust: 100%;
 }
 body {
@@ -128,7 +81,8 @@ button {
 }
 .wordmark {
   margin: 0;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 26px;
   letter-spacing: 0.01em;
 }
@@ -290,7 +244,8 @@ button {
   text-transform: uppercase;
 }
 .act-place {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 24px;
 }
 .act-tally {
@@ -353,7 +308,8 @@ button {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 20px;
   background: #fffaf0;
   border: 3px solid var(--pasture);
@@ -480,7 +436,8 @@ button {
   color: var(--ink-muted);
 }
 .hud-name {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 19px;
   white-space: nowrap;
   overflow: hidden;
@@ -613,7 +570,8 @@ button {
   transform: translate(-50%, 0) scale(1);
 }
 .banner strong {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: clamp(24px, 4vw, 36px);
   line-height: 1.1;
 }
@@ -722,7 +680,8 @@ button {
 }
 .intro strong {
   display: block;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 17px;
 }
 .intro p {
@@ -787,7 +746,8 @@ button {
   place-items: center;
   background: rgba(43, 35, 32, 0.35);
   color: #fff8e6;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 34px;
   pointer-events: none;
 }
@@ -1152,7 +1112,7 @@ button {
 }
 .btn.send.early {
   /* Dark enough for white bold text at 4.5:1 or better (WCAG AA): #d9822b was only 2.9:1. */
-  background: #a85a16;
+  background: var(--harvest);
   box-shadow: 0 3px 0 rgba(90, 45, 8, 0.55);
 }
 
@@ -1197,7 +1157,8 @@ button {
 .story-cath.letter {
   display: grid;
   place-items: center;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 54px;
   color: #fff8e6;
   background: var(--soil);
@@ -1226,7 +1187,8 @@ button {
 }
 .sheet h2 {
   margin: 4px 0 8px;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 24px;
 }
 .story-text {
@@ -1372,7 +1334,9 @@ button {
   color: #f2c94c;
 }
 .speech.caption .story-text {
-  font-style: italic;
+  font-family: var(--font-voice);
+  font-variation-settings: var(--voice-axes);
+  font-weight: 430;
 }
 .speech .story-text {
   margin: 0;
@@ -1704,7 +1668,7 @@ button {
   position: absolute;
   left: 0;
   top: 0;
-  font: 800 calc(18px * var(--s, 1)) "Atkinson Hyperlegible", system-ui, sans-serif;
+  font: 800 calc(18px * var(--s, 1)) var(--font-ui);
   color: var(--c, #fff);
   white-space: nowrap;
   text-shadow: 0 2px 0 rgba(20, 14, 10, 0.85), 0 0 8px rgba(20, 14, 10, 0.6);
@@ -1964,7 +1928,8 @@ button {
   color: #f2c94c;
 }
 .duel-title {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 20px;
 }
 .duel-rounds {
@@ -2150,7 +2115,7 @@ button {
 .alm-card p { margin: 2px 0 4px; font-size: 0.9rem; }
 .alm-icon { width: 56px; height: 56px; flex: none; }
 .alm-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.8rem; }
-.alm-lore { display: block; margin-top: 4px; font-style: italic; opacity: 0.8; }
+.alm-lore { display: block; margin-top: 4px; font-family: var(--font-voice); font-variation-settings: var(--voice-axes); font-weight: 430; opacity: 0.8; }
 @media (max-width: 520px) { .almanac-btn .bank-word { display: none; } }
 
 /* Cath's wardrobe (ROADMAP 51) */
@@ -3029,7 +2994,8 @@ img.act-scene {
   line-height: 1.15;
 }
 .path-buy.t3 .path-next {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
   font-size: 14px;
 }
 .path-adds {

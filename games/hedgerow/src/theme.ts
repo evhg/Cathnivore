@@ -615,7 +615,7 @@ function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = "#f4fbfb";
-  ctx.font = `700 ${Math.max(7, Math.round(s * 0.12))}px 'Atkinson Hyperlegible', sans-serif`;
+  ctx.font = `700 ${Math.max(7, Math.round(s * 0.12))}px 'Hedgerow UI', system-ui, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 ? "CANDOR" : "HOLLOWELL", sx + s * 0.42, sy + s * 0.135);
@@ -962,7 +962,7 @@ export function drawDecor(
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = "#f4fbfb";
-      ctx.font = `700 ${Math.max(6, Math.round(s * 0.11))}px 'Atkinson Hyperlegible', sans-serif`;
+      ctx.font = `700 ${Math.max(6, Math.round(s * 0.11))}px 'Hedgerow UI', system-ui, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       const lines = [

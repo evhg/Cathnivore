@@ -1,0 +1,32 @@
+/* Hedgerow tokens on top of the shared house palette (shared/ui/palette.css). The hand-copied palette is
+   gone, so --pasture is the house #5B7F3A again. */
+:root {
+  color-scheme: light;
+  --harvest: #9a4f12; /* the Next (stack a round) fill: 5.6:1 under white bold text */
+  --focus: #2b2320;
+  --backdrop: rgba(43, 35, 32, 0.45);
+
+  --font-display: "Hedgerow Display", "Hedgerow Display Fallback", Georgia, serif;
+  --font-ui: "Hedgerow UI", "Hedgerow UI Fallback", system-ui, sans-serif;
+  --font-num: var(--font-ui);
+  --font-voice: var(--font-display);
+  /* SOFT 100 everywhere the display face is set; Cath's voice adds WONK 1 (a roman, never an italic) */
+  --display-axes: "SOFT" 100, "WONK" 0;
+  --voice-axes: "SOFT" 100, "WONK" 1, "opsz" 18;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #1c1714;
+    --paper-2: #2a221d;
+    --surface: #332a24;
+    --ink: #f3e9d8;
+    --ink-muted: #b9aa98;
+    --soil: #d6b58c;
+    --pasture: #86b15c;
+    --clay: #e0775d;
+    --wheat: #e2bf68;
+    --focus: #f3e9d8;
+    --backdrop: rgba(0, 0, 0, 0.6);
+  }
+}

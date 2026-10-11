@@ -105,7 +105,7 @@ export interface View {
   offY: number;
 }
 
-const FONT = "'Atkinson Hyperlegible', system-ui, sans-serif";
+const FONT = "'Hedgerow UI', system-ui, sans-serif";
 
 /** Overshoot ease for a tower popping in: 0 -> 1 with a small bounce. */
 function popScale(k: number): number {

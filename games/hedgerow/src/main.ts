@@ -1,3 +1,7 @@
+import "../../../shared/ui/base.css";
+import "../../../shared/ui/palette.css";
+import "./fonts.css";
+import "./tokens.css";
 import "./styles.css";
 import "../../../shared/cath/cath.css";
 import { cathSvg, type CathExpression } from "../../../shared/cath/cath";

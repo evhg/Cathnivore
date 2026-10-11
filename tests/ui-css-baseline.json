@@ -16,9 +16,7 @@
   "games/hedgerow/src/styles.css": {
     "px-font-size": 135,
     "z-index-literal": 10,
-    "raw-colour": 237,
-    "italic-without-face": 2,
-    "font-face-legacy-path": 3
+    "raw-colour": 214
   },
   "games/runnel/src/styles.css": {
     "raw-colour": 34
