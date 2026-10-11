@@ -933,7 +933,18 @@ function refreshPaths(): void {
     b.classList.toggle("afford", afford);
     b.style.setProperty("--fill", String(Math.min(1, g.marks / Math.max(1, cost))));
     const eta = b.querySelector<HTMLElement>(".path-eta");
-    if (eta && !locked) eta.textContent = afford ? "Ready" : etaText(g, cost);
+    if (eta && !locked) {
+      // "In about 4 rounds": a narrow packet drops the "In about" (styled away, still read out) to keep one line.
+      const text = afford ? "Ready" : etaText(g, cost);
+      const m = /^(In about )(.*)$/.exec(text);
+      if (!m) eta.textContent = text;
+      else {
+        const pre = document.createElement("span");
+        pre.className = "eta-pre";
+        pre.textContent = m[1]!;
+        eta.replaceChildren(pre, m[2]!);
+      }
+    }
   }
 }
 

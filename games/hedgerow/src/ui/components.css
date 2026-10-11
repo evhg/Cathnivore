@@ -2222,7 +2222,7 @@ body:has(#dlg-pause[open]) .paused-note {
 /* A wide desktop gives the side column room for three packets that read without squinting */
 @media (min-width: 1200px) and (min-height: 521px) {
   .play {
-    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-columns: minmax(0, 1fr) clamp(380px, 30vw, 440px);
   }
 }
 
@@ -2457,18 +2457,154 @@ body:has(#dlg-pause[open]) .paused-note {
     flex: none;
   }
 }
-/* A tall phone keeps half the screen for the field with the sheet open: the head is two tight lines and the
-   sheet stops at 42svh (the packets still fit; tags, Details and the rest scroll under the fade) */
+/* A tall phone keeps half the screen for the field with the sheet open (AAA UI M3 review 2). The sheet stops at
+   41.5svh with the home-indicator inset inside that cap, so the head is tight and the packets are built to fit:
+   two lines of head (name and build; Target and Sell), cost and Ready on one row, and every packet's foot pinned
+   level. Badges and Details scroll under the fade below them. e2e-site checks every buy button clears the inset. */
 @media (max-width: 899.98px) and (min-height: 701px) {
   .panel.panel-paths {
-    max-height: 42svh;
-    padding-top: 2px;
+    max-height: 41.5svh;
+    gap: 6px;
+    padding: 0 10px calc(4px + var(--safe-b));
   }
   .panel.panel-paths::before {
-    margin-bottom: 0;
+    margin: 5px auto -2px;
+  }
+  .panel-paths .tower-head {
+    gap: 8px;
+  }
+  .panel-paths .tower-icon {
+    width: 40px;
+    height: 40px;
+    padding: 3px;
   }
   .panel-paths .tower-titles {
-    gap: 2px 8px;
+    gap: 4px 6px;
+  }
+  .panel-paths .ko-line {
+    display: none;
+  }
+  .panel-paths .target-btn,
+  .panel-paths .sell-btn {
+    min-height: 30px;
+  }
+  .panel-paths .sheet-close {
+    width: 40px;
+    height: 40px;
+    align-self: center;
+  }
+  .path-sheet {
+    gap: 5px;
+  }
+  .path-col {
+    gap: 3px;
+    padding-bottom: 4px;
+  }
+  .path-name {
+    gap: 2px;
+    padding: 4px 7px 9px;
+  }
+  .path-buy {
+    margin: 0 4px;
+    gap: 2px;
+    padding: 6px 6px 11px;
+  }
+}
+/* Every packet's buy button fills its packet, its price pinned to the foot: three packets end level */
+.path-col > .path-buy {
+  flex: 1 1 auto;
+}
+.path-buy {
+  grid-template-rows: auto auto 1fr auto;
+}
+.path-buy > .path-foot {
+  align-self: end;
+}
+/* Narrow packets: the price and its state share one row; "Ready" is a tick in the path's colour beside the
+   price (the glow says it too; the word stays for screen readers) */
+@container panel (width < 520px) {
+  .path-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 6px;
+  }
+  .path-buy .build-cost::before {
+    width: 16px;
+    height: 16px;
+  }
+  .path-buy.afford .path-eta {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    letter-spacing: 0;
+    color: transparent;
+    box-shadow: 0 0 0 2px var(--line);
+  }
+  /* "In about 4 rounds" becomes an hourglass and "4 rounds", on one line */
+  .path-eta .eta-pre {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .path-eta:has(.eta-pre) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .path-eta:has(.eta-pre)::before {
+    content: "";
+    flex: none;
+    width: 10px;
+    height: 13px;
+    background: currentColor;
+    clip-path: polygon(0 0, 100% 0, 100% 12%, 62% 50%, 100% 88%, 100% 100%, 0 100%, 0 88%, 38% 50%, 0 12%);
+  }
+  .path-buy.afford .path-eta::after {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    background: var(--on-fill);
+    clip-path: polygon(14% 52%, 30% 36%, 42% 50%, 72% 16%, 88% 32%, 42% 82%);
+  }
+}
+/* Landscape phones: the side sheet's packets are about 100px wide, so the price row runs tighter to keep the
+   tick beside the price */
+@media (orientation: landscape) and (max-height: 520px) {
+  .path-buy {
+    margin: 0 3px;
+    padding: 5px 5px 10px;
+  }
+  .path-buy .build-cost {
+    gap: 4px;
+    font-size: 1.125rem;
+  }
+  .path-buy .build-cost::before {
+    width: 14px;
+    height: 14px;
+  }
+  .path-foot {
+    column-gap: 4px;
+  }
+  .path-buy.afford .path-eta {
+    width: 20px;
+    height: 20px;
+  }
+  .path-buy.afford .path-eta::after {
+    inset: 4px;
+  }
+}
+/* Desktop: the Details grid runs tight enough to show whole at 900px tall */
+@media (min-width: 900px) and (min-height: 521px) {
+  .panel-paths .stats {
+    row-gap: 2px;
   }
 }
 /* Landscape tray: a medallion is as wide as its name, so Neighbours never runs under the lever */

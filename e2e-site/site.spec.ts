@@ -446,6 +446,71 @@ test.describe('Hedgerow', () => {
     expect(at.x < sheet.x || at.x > sheet.x + sheet.width).toBe(true)
   })
 
+  // AAA UI M3 review 2: the portrait sheet stops at about 42svh with the home-indicator inset inside it, and every
+  // packet's buy button (price, Ready or the ETA) must still clear that inset, with half the screen left for the field.
+  test('AAA UI M3: every seed packet\'s buy button fits above the home indicator at 390x844', async ({ page }, info) => {
+    test.skip(info.project.name !== 'site-phone', 'a phone layout check')
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(HEDGEROW_2D + '&sandbox=1')
+    const stars: Record<string, number> = {}
+    for (let i = 1; i < 12; i++) stars[String(i)] = 3
+    const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+    await page.evaluate(([stars, tips]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { '12': true }, tips })), [stars, tips] as const)
+    await page.goto(HEDGEROW_2D + '&sandbox=1&level=12')
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: { game(): unknown } }).hedgerow?.game())
+    // An iPhone's home indicator: the inset the sheet pads itself with.
+    await page.evaluate(() => document.documentElement.style.setProperty('--safe-b', '34px'))
+    const at = await page.evaluate(() => {
+      type G = { level: { cols: number; rows: number }; towers: Array<{ id: number }>; marks: number }
+      const hg = (window as unknown as { hedgerow: { game(): G; place(g: G, k: string, c: number, r: number): { ok: boolean }; upgrade(g: G, id: number, p: number): void; refresh(): void } }).hedgerow
+      const g = hg.game()
+      g.marks = 99999
+      for (let r = 0; r < g.level.rows; r++)
+        for (let c = 0; c < g.level.cols; c++)
+          if (hg.place(g, 'scarecrow', c, r).ok) {
+            hg.upgrade(g, g.towers.at(-1)!.id, 0)
+            hg.refresh()
+            return [c, r] as const
+          }
+      return null
+    })
+    expect(at).not.toBeNull()
+    // Level 12's field is wider than selectCell's walk home: walk the cursor to the corner first.
+    await page.locator('#canvas').focus()
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.press('ArrowLeft')
+      await page.keyboard.press('ArrowUp')
+    }
+    await selectCell(page, at![0], at![1])
+    await expect(page.locator('#panel .path-buy')).toHaveCount(3)
+    const fits = async () =>
+      page.evaluate(async () => {
+        // The sheet slides up: measure where it comes to rest.
+        await Promise.all(document.querySelector('#panel')!.getAnimations().map((a) => a.finished))
+        const inset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-b')) || 0
+        const panel = document.querySelector('#panel')!.getBoundingClientRect()
+        const canvas = document.querySelector('#canvas')!.getBoundingClientRect()
+        return {
+          over: [...document.querySelectorAll('#panel .path-buy')].map((b) => Math.round(b.getBoundingClientRect().bottom - (innerHeight - inset))),
+          field: (panel.top - canvas.top) / innerHeight,
+        }
+      })
+    let r = await fits()
+    for (const o of r.over) expect(o).toBeLessThanOrEqual(0)
+    expect(r.field).toBeGreaterThanOrEqual(0.5)
+    // Saving up: the ETA line takes the Ready tick's place and still fits.
+    await page.evaluate(() => {
+      const hg = (window as unknown as { hedgerow: { game(): { marks: number; roundIncome: number[] }; refresh(): void } }).hedgerow
+      const g = hg.game()
+      g.marks = 60
+      g.roundIncome = [40, 50, 45]
+      hg.refresh()
+    })
+    await expect(page.locator('#panel .path-buy .path-eta').first()).toContainText('round')
+    r = await fits()
+    for (const o of r.over) expect(o).toBeLessThanOrEqual(0)
+  })
+
   test('Hedgerow 2 M4: buys every path of all five path towers at 844x390, and the crosspath rule shuts the third', async ({ page }) => {
     test.setTimeout(180_000)
     const errors = trackErrors(page)
