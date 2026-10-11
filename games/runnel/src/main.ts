@@ -1,3 +1,7 @@
+import '../../../shared/ui/base.css'
+import '../../../shared/ui/palette.css'
+import './fonts.css'
+import './tokens.css'
 import './styles.css'
 import '../../../shared/cath/cath.css'
 import { cathMarkup, createHost } from './host'
@@ -341,6 +345,7 @@ function showStats(): void {
     ...cells.map(([value, label]) => {
       const div = document.createElement('div')
       const b = document.createElement('b')
+      b.className = 'num'
       b.textContent = value
       const span = document.createElement('span')
       span.textContent = label

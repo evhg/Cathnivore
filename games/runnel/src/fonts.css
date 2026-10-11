@@ -1,0 +1,54 @@
+/* Runnel type ("Dawn Ledger", docs/design/aaa-ui.md): Runnel Display (Fraunces, opsz + wght), Runnel UI
+   (Atkinson Hyperlegible Next, with a real italic for Cath's voice), Runnel Figures (Outfit). Runnel
+   Digits is Outfit cut to 0-9 by unicode-range and set first in --font-ui, so a stray digit in prose
+   never shows Atkinson's slashed zero. Latin files only; fallbacks are metric-matched local fonts. */
+@font-face {
+  font-family: "Runnel Display";
+  src: url("../../../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Runnel UI";
+  src: url("../../../node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Runnel UI";
+  src: url("../../../node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-italic.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Runnel Figures";
+  src: url("../../../node_modules/@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Runnel Digits";
+  src: url("../../../node_modules/@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Runnel Display Fallback";
+  src: local("Times New Roman"), local("Liberation Serif"), local("Georgia");
+  size-adjust: 93.3%;
+  ascent-override: 105%;
+  descent-override: 27.9%;
+}
+@font-face {
+  font-family: "Runnel UI Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 98.8%;
+  ascent-override: 99.1%;
+  descent-override: 32.4%;
+}

@@ -1,0 +1,78 @@
+/* Runnel tokens: the house palette comes from shared/ui/palette.css; these are Runnel's own additions,
+   its dark ("night") values and its type. Board variables are untouched. */
+:root {
+  color-scheme: light;
+  --dry: #ecd7a9;
+  --dry-edge: #c9a56d;
+  --wet: #c4dc9c;
+  --wet-edge: #8fae62;
+  --groove: #a57c4c;
+  --groove-wet: #7f5c35;
+  --water: #3b8db0;
+  --water-hi: #bfeaf4;
+  --grain: rgba(107, 74, 43, 0.14);
+  --stone: #b9ada0;
+  --stone-2: #cfc4b7;
+  --plinth: rgba(107, 74, 43, 0.16);
+  --on-fill: #fbf8f1;
+  --help-ink: #3b3426;
+  --help-ink-2: #2f2a1f;
+  --help-ink-3: #4a3f2e;
+  --focus: #2b2320;
+  --backdrop: rgba(43, 35, 32, 0.38);
+
+  /* calm motion retune */
+  --dur-2: 240ms;
+  --dur-3: 420ms;
+  --dur-4: 640ms;
+
+  --font-display: "Runnel Display", "Runnel Display Fallback", Georgia, serif;
+  --font-ui: "Runnel Digits", "Runnel UI", "Runnel UI Fallback", system-ui, sans-serif;
+  --font-voice: "Runnel UI", "Runnel UI Fallback", system-ui, sans-serif;
+  --font-num: "Runnel Figures", "Runnel UI Fallback", system-ui, sans-serif;
+
+  --fs-wordmark: clamp(1.875rem, 1.65rem + 0.9vw, 2.5rem);
+  --fs-head: clamp(1.5rem, 1.4rem + 0.4vw, 1.75rem);
+  --fs-hud-num: clamp(1.375rem, 1.3rem + 0.3vw, 1.625rem);
+  --fs-stat-num: clamp(1.75rem, 1.65rem + 0.4vw, 2rem);
+  --fs-voice: clamp(1rem, 0.97rem + 0.15vw, 1.125rem);
+  --fs-body: clamp(1rem, 0.98rem + 0.1vw, 1.0625rem);
+  --fs-button: 1rem;
+  --fs-small: clamp(0.875rem, 0.86rem + 0.08vw, 0.9375rem);
+  --fs-label: 0.8125rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #1c1714;
+    --paper-2: #2a221d;
+    --surface: #332a24;
+    --ink: #f3e9d8;
+    --ink-muted: #b9aa98;
+    --soil: #d6b58c;
+    --wheat: #e2bf68;
+    --pasture: #86b15c;
+    --pasture-deep: #5e8a3c;
+    --clay: #e0775d;
+    --sea: #7fb8c8;
+
+    --dry: #5e4a35;
+    --dry-edge: #7a6045;
+    --wet: #3f5b2f;
+    --wet-edge: #5f8445;
+    --groove: #3a2c20;
+    --groove-wet: #2a2018;
+    --water: #4fb3d9;
+    --water-hi: #d4f5ff;
+    --grain: rgba(0, 0, 0, 0.2);
+    --stone: #6f655b;
+    --stone-2: #857a6e;
+    --plinth: rgba(0, 0, 0, 0.35);
+    --help-ink: #f3e9d8;
+    --help-ink-2: #f3e9d8;
+    --help-ink-3: #b9aa98;
+    --focus: #f3e9d8;
+    --backdrop: rgba(0, 0, 0, 0.55);
+  }
+}

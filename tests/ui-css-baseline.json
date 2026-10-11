@@ -21,10 +21,7 @@
     "font-face-legacy-path": 3
   },
   "games/runnel/src/styles.css": {
-    "px-font-size": 21,
-    "raw-colour": 88,
-    "italic-without-face": 1,
-    "font-face-legacy-path": 3
+    "raw-colour": 34
   },
   "public/pages.css": {
     "px-font-size": 1,
