@@ -197,45 +197,81 @@
   }
 }
 
-/* ---- tutorial: Cath's note pinned to the table ---- */
+/* ---- tutorial: Cath's note pinned to the table (AAA UI M4 fix) ----
+   A slip of card stock taped down, her cameo on the left, the italic "i" for the rules reference, and
+   (phone) a fold key that tucks it into a pill so the map keeps its aspect. */
 .tutorial-prompt {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  margin: 0;
+  margin: 4px 0 0;
   padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
   background: var(--mat-card-flat);
   border: 1px solid var(--ink-a35);
-  border-left: 4px solid var(--wheat);
   border-radius: var(--r-sm);
-  box-shadow: var(--e2);
+  box-shadow: var(--inset-hi), var(--e2), inset 4px 0 0 var(--wheat);
   color: var(--ink);
+  rotate: -.3deg;
+}
+
+.tutorial-prompt::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 22px;
+  width: 38px;
+  height: 12px;
+  rotate: -5deg;
+  background: var(--tape);
+  pointer-events: none;
+}
+
+.tutorial-prompt-cameo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--paper-2);
+  box-shadow: 0 0 0 2px var(--wheat), 0 0 0 3px var(--ink-a35);
+}
+
+.tutorial-prompt-cath {
+  display: block;
 }
 
 .tutorial-prompt p {
   flex: 1 1 auto;
   min-width: 0;
   margin: 0;
-  font-size: var(--fs-small);
-  line-height: 1.35;
+  font: 500 var(--fs-small)/1.4 var(--font-text);
   text-wrap: pretty;
 }
 
-.tutorial-prompt > button {
+.tutorial-rules-link.tooltip-info {
+  margin-left: 2px;
+  vertical-align: -7px;
+  cursor: pointer;
+}
+
+.tutorial-prompt-keys {
   flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.tutorial-prompt-keys > button {
   min-height: 40px;
   white-space: nowrap;
 }
 
-.tutorial-rules-link {
-  width: 24px;
-  height: 24px;
-  margin-left: 2px;
-  vertical-align: -6px;
-  border: 1.5px solid var(--ink-a60);
-  background: var(--surface);
-  color: var(--ink);
-  font: italic 760 .9rem/1 var(--font-display);
+.tutorial-fold,
+.tutorial-pill {
+  display: none;
 }
 
 /* ---- tomorrow's papers: the Agenda clippings (4.5) ---- */
@@ -894,14 +930,35 @@
   .plan-strip { grid-area: clips; padding-top: 6px; }
   .map-wrap { grid-area: map; min-height: 0; margin-bottom: var(--sp-2); }
 
+  /* During a tutorial step Cath's note takes her companion line's place in the right column, so the
+     map stays whole. */
+  .game:has(.tutorial-prompt, .tutorial-pill) .cath-companion {
+    display: none;
+  }
+
+  .tutorial-prompt,
+  .tutorial-pill {
+    grid-area: aside;
+    margin: 0;
+  }
+
   .tutorial-prompt {
-    grid-area: map;
-    z-index: var(--z-map-fx);
-    align-self: start;
-    justify-self: start;
-    max-width: calc(100% - 64px);
-    margin: var(--sp-2) 0 0 var(--sp-2);
-    rotate: -.6deg;
+    gap: var(--sp-2);
+    padding: 4px 4px 4px var(--sp-2);
+  }
+
+  .tutorial-prompt p {
+    font-size: var(--fs-caption);
+    line-height: 1.3;
+  }
+
+  .tutorial-prompt-cameo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tutorial-prompt::before {
+    display: none;
   }
 
   .action-tray {
@@ -1349,4 +1406,67 @@ html.no-animations .cath-companion .cameo {
 .action-cost,
 .coin {
   font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Phone, portrait: Cath's note sits above the clippings; it can fold to a pill so the map keeps its
+   full aspect. */
+@media (max-width: 1023.98px) and (orientation: portrait) {
+  /* her note is her line for this step: one Cath voice at a time */
+  .game:has(.tutorial-prompt, .tutorial-pill) .cath-companion {
+    display: none;
+  }
+
+  .tutorial-prompt {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "cam text fold" "cam keys keys";
+    align-items: start;
+    column-gap: var(--sp-2);
+    row-gap: 4px;
+    padding: var(--sp-2) 4px var(--sp-2) var(--sp-3);
+  }
+
+  .tutorial-prompt-cameo { grid-area: cam; }
+  .tutorial-prompt p { grid-area: text; padding-top: 2px; }
+
+  .tutorial-prompt-keys {
+    display: contents;
+  }
+
+  .tutorial-prompt-keys > button:not(.tutorial-fold) {
+    grid-area: keys;
+    justify-self: end;
+    min-height: 36px;
+    margin-right: 4px;
+  }
+
+  .tutorial-fold {
+    grid-area: fold;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    font: 700 1rem/1 var(--font-text);
+  }
+
+  .tutorial-pill {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: var(--sp-2);
+    min-height: 36px;
+    margin-top: 2px;
+    padding: 4px 14px 4px 5px;
+    border-radius: var(--r-pill);
+    font: 700 var(--fs-caption)/1 var(--font-text);
+    box-shadow: var(--inset-hi), var(--e2), inset 0 0 0 1.5px var(--wheat);
+  }
+
+  .tutorial-pill .tutorial-prompt-cath {
+    border-radius: 50%;
+    background: var(--paper-2);
+  }
 }

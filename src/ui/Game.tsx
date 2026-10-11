@@ -338,6 +338,8 @@ function uniformGroupCost(
 export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
   const layoutRef = useScrollCues()
+  // The tutorial step whose note the player folded away (phone); a new step opens again.
+  const [tipCollapsedAt, setTipCollapsedAt] = useState<number | null>(null)
   // ROADMAP 10's HUD tick animation (see `useHudTick`'s own comment) — called unconditionally here,
   // before any of this component's early returns (pass-device, end screen, tutorial rules), so the Rules
   // of Hooks hold regardless of which branch below actually renders.
@@ -1336,23 +1338,37 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       <CathCompanion expression={cathReaction.expression} line={cathReaction.line} />
 
       {tutorialSteps && tutorialIndex < tutorialSteps.length && (
-        <section className="tutorial-prompt">
-          <p>
-            {/* ROADMAP "tutorial prompts spoken by her": a small face so the line reads as Cath teaching,
-                not an anonymous system message. Decorative (the section's own text already says it). */}
+        tipCollapsedAt === tutorialIndex ? (
+          // AAA UI M4 fix: on a phone the note folds to a pill so the map keeps its full aspect.
+          <button type="button" className="tutorial-pill" aria-expanded="false" onClick={() => setTipCollapsedAt(null)}>
             <CathArt className="tutorial-prompt-cath" framing="face" width={22} height={27} />
+            Cath&rsquo;s tip
+          </button>
+        ) : (
+        <section className="tutorial-prompt" aria-label="Cath's tip">
+          {/* ROADMAP "tutorial prompts spoken by her": her face, so the line reads as Cath teaching,
+              not an anonymous system message. Decorative (the section's own text already says it). */}
+          <span className="tutorial-prompt-cameo" aria-hidden="true">
+            <CathArt className="tutorial-prompt-cath" framing="face" width={30} height={37} />
+          </span>
+          <p>
             {tutorialSteps[tutorialIndex]!.text}{' '}
-            {/* SPEC 8.1: "a '?' link to the rules reference," alongside every tutorial prompt, not just
-                the ones teaching an action — a step can be explaining Public Trust or the Scout slot with
-                nothing to click. */}
-            <button type="button" className="tutorial-rules-link" aria-label="Open the rules reference" onClick={() => setShowRulesFromTutorial(true)}>
+            {/* SPEC 8.1: "a '?' link to the rules reference," alongside every tutorial prompt. It wears
+                the same italic "i" as every other explain-this trigger. */}
+            <button type="button" className="tooltip-trigger-button tooltip-info tutorial-rules-link" aria-label="Open the rules reference" onClick={() => setShowRulesFromTutorial(true)}>
               ?
             </button>
           </p>
-          {/* SPEC 8.1: a step teaching one action/region advances by taking it (see `act`'s auto-advance);
-              an informational step (no highlight) has nothing to take, so it still needs a manual tap. */}
-          {!tutorialSteps[tutorialIndex]!.highlight && <button onClick={() => setTutorialIndex((i) => i + 1)}>Got it</button>}
+          <span className="tutorial-prompt-keys">
+            {/* SPEC 8.1: a step teaching one action/region advances by taking it (see `act`'s auto-advance);
+                an informational step (no highlight) has nothing to take, so it still needs a manual tap. */}
+            {!tutorialSteps[tutorialIndex]!.highlight && <button onClick={() => setTutorialIndex((i) => i + 1)}>Got it</button>}
+            <button type="button" className="tutorial-fold" aria-label="Fold Cath's tip away" aria-expanded="true" onClick={() => setTipCollapsedAt(tutorialIndex)}>
+              <span aria-hidden="true">{'\u2303'}</span>
+            </button>
+          </span>
         </section>
+        )
       )}
 
       {/* ROADMAP 8: the plan strip and the map legend used to be two separate full-width rows stacked
