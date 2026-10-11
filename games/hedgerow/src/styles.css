@@ -3259,3 +3259,14 @@ img.act-scene {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* AAA UI M1: the font credit at the foot of the Almanac */
+.type-credit {
+  margin: 10px 0 0;
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+.type-credit a {
+  color: inherit;
+  text-underline-offset: 3px;
+}

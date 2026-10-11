@@ -10,6 +10,7 @@ export const CREDITS: readonly (readonly [string, string])[] = [
   ["Dr Vane, Councillor Pell, the Chair", "Gone, and the debts with them. Mostly."],
   ["HollowCandor", "Silent at last. The lights in Candor Tower went out one floor at a time."],
   ["Built with", "three.js, Poly Haven textures (CC0) and a great many neon tubes."],
+  ["Set in", "Bodoni Moda, Rajdhani and JetBrains Mono, under the SIL Open Font License."],
   ["Thank you for playing", "The city is still hers. Hardboiled is waiting."],
 ];
 

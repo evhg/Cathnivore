@@ -1223,3 +1223,12 @@ body {
 .help-steps figcaption { font-size: var(--fs-small); font-weight: 700; color: var(--help-ink); margin-top: 2px; }
 .rules { font-size: var(--fs-body); color: var(--help-ink-2); }
 #dlg-help .muted { font-size: var(--fs-small); color: var(--help-ink-3); }
+
+/* AAA UI M1: the font credit under the stats */
+.type-credit {
+  font-size: var(--fs-small);
+}
+.type-credit a {
+  color: inherit;
+  text-underline-offset: 3px;
+}

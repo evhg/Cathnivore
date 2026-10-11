@@ -80,22 +80,23 @@ Define all colours as CSS custom properties. Never hard-code a colour outside th
 Text must reach at least 4.5:1 against its background (3:1 for text 24 px and larger). Automated accessibility checks enforce this. Paper-coloured text fails on `--pasture` and `--clay`, so any fill that carries text uses the `-deep` version.
 
 ## 4. Typography
-Use two families only, bundled with @fontsource:
-- **Fraunces** for headings, card names, story speaker names and Agenda headlines (italic).
-- **Atkinson Hyperlegible** for all interface and rules text. It was designed for readers with low vision, which suits small rules text on phones, and it looks less generic than the usual interface fonts.
+Owner's AAA direction (2026-10-11), full spec in `docs/design/aaa-ui.md`. Fraunces stays the house display face. Each game has its own type system of **at most four faces**: one display voice, one reading face, one figures face, and optionally one face for Cath's voice. Every face is self-hosted, latin only, SIL OFL, hand-written `@font-face` against the specific latin file, and under 180 KiB per page (`scripts/font-budget.ts`, gate 1).
 
-Use tabular numbers for every count and resource.
+| Game | Display | Reading / UI | Figures | Cath's voice |
+|---|---|---|---|---|
+| Cathnivore | Marrow Display (Fraunces opsz) | Marrow Text (Atkinson Hyperlegible Next) | Marrow Figures (Figtree, digits by `unicode-range`) | Fraunces italic |
+| Runnel | Fraunces, wordmark at 560 | Atkinson Hyperlegible Next | Outfit | Atkinson Next italic |
+| Hedgerow | Fraunces with SOFT 100 | Nunito | Nunito | Fraunces WONK 1, roman |
+| CATHODE | Bodoni Moda | Rajdhani 500/700 | JetBrains Mono (Rajdhani has no tabular figures) | Bodoni Moda italic, 20 px or more, on a solid plate |
+| Landing | Fraunces | Instrument Sans | Instrument Sans | Instrument Serif italic |
 
-| Role | Font | Size (phone) | Weight |
-|---|---|---|---|
-| Title | Fraunces | 32 | 700 |
-| Screen heading | Fraunces | 24 | 600 |
-| Section heading | Fraunces | 20 | 600 |
-| Body, rules detail, story lines | Atkinson Hyperlegible | 16 | 400 |
-| Card rules text (compact card view) | Atkinson Hyperlegible | 14 | 400 |
-| Labels (uppercase, tracking +0.04em) | Atkinson Hyperlegible | 12 | 700 |
-
-Nothing players must read is smaller than 14 px, and running text is 16 px. Body line height is 1.4. Desktop sizes go up about 10%.
+- **Size floors:** nothing a player must read is under 14 px. Running text is at least 16 px. 12 px only for uppercase labels of four words or fewer, at weight 700 or more, that duplicate an icon or a value.
+- **Units:** sizes in rem through tokens, with `clamp()` between 390 and 1440. No new px font sizes (`tests/ui-css-lint.test.ts` ratchets them down).
+- **Casing:** sentence case for headings and running text; Verb Title Case for Cathnivore action buttons (section 12); tracked caps (+0.12 to +0.18em) only for labels. A display face is never set in caps, except a wordmark or a stamp.
+- **Wrapping:** `text-wrap: balance` on headings, `pretty` on body. Multi-line text is left-aligned.
+- **Numerals:** every counted number is `.num` or comes from a figures face composed by `unicode-range`, and is tabular. No slashed zero anywhere.
+- **No faux styles:** `font-synthesis: none` portfolio-wide (`shared/ui/base.css`). An italic is only ever a real italic file; Cath's voice is always a distinct real face.
+- Body line height is 1.4.
 
 ## 5. Icons (24 px grid)
 Icons are flat fills with a 2 px `--ink` outline and rounded joins, and must stay readable at 16 px.
@@ -179,7 +180,8 @@ Neither may resemble any real brand. In particular, avoid red-and-yellow food lo
 ## 10. Layout and spacing
 - The base unit is 4 px, with a spacing scale of 4, 8, 12, 16, 24 and 32.
 - Corner radii: cards 10, sheets 14, buttons 12, pills fully rounded.
-- **Shadows:** player UI uses a flat paper edge (`0 1px 0` of ink at 15%). Glossy enemy items get an inner highlight instead of a drop shadow.
+- **Spacing tokens** live in `shared/ui/base.css` (`--sp-0` 2 px to `--sp-9` 96 px, 4-based), with safe-area and motion tokens beside them.
+- **Shadows and elevation:** player UI uses a flat paper edge (`0 1px 0` of ink at 15%), and each game may define elevation tokens (`--e1`...) for its materials. Glossy enemy items get an inner highlight instead of a drop shadow.
 - **Buttons:** primary is pasture-deep fill with paper text. Secondary is a paper fill with an ink outline. Destructive is clay-deep. Every tap target is at least 44×44.
 - Respect iOS safe areas (the notch and the home indicator) on every screen.
 
@@ -211,8 +213,8 @@ Neither may resemble any real brand. In particular, avoid red-and-yellow food lo
 
 ## 14. Never
 - Real brand colours or logos, or anything resembling them.
-- Gradients on player-side elements.
-- More than two fonts.
+- Gradients on player-side elements, beyond one painted top-light of at most 6% lightness plus grain. Only enemy and corporate things get gloss.
+- More than four faces in one game, a font from an external host, or a faux bold or italic.
 - Text over busy texture.
 - Drop shadows heavier than section 10 allows.
 - Decorative clutter that competes with the enemy plan strip.

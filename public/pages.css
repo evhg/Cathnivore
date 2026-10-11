@@ -1,35 +1,21 @@
 /* Shared stylesheet for the static /privacy and /support pages (SPEC 11.5). External, not inline, so
    the CSP's `style-src` doesn't need `'unsafe-inline'` — these two pages are the only ones that ever
-   needed it. Fonts are self-hosted at this stable, non-content-hashed path (`/fonts/*.woff2`) rather than
-   the main app's bundler-hashed filenames, matching STYLE.md 4's Fraunces/Atkinson Hyperlegible instead of
-   the previous Georgia fallback. */
+   needed it. Fonts are self-hosted at a stable, non-content-hashed path (`/type/*.woff2`, emitted by vite.config.ts's
+   pageFonts() plugin and copied to the site root by scripts/build-site.ts): Cathnivore's Marrow Display
+   (Fraunces) and Marrow Text (Atkinson Hyperlegible Next). */
 @font-face {
-  font-family: 'Fraunces';
+  font-family: 'Marrow Display';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/fraunces-latin-400-normal.woff2') format('woff2');
+  src: url('/type/fraunces-latin-opsz-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Fraunces';
+  font-family: 'Marrow Text';
   font-style: normal;
-  font-weight: 700;
+  font-weight: 200 800;
   font-display: swap;
-  src: url('/fonts/fraunces-latin-700-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Atkinson Hyperlegible';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/atkinson-hyperlegible-latin-400-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Atkinson Hyperlegible';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/atkinson-hyperlegible-latin-700-normal.woff2') format('woff2');
+  src: url('/type/atkinson-hyperlegible-next-latin-wght-normal.woff2') format('woff2');
 }
 
 body {
@@ -37,7 +23,7 @@ body {
   padding: 24px 16px 64px;
   background: #F4EDE1;
   color: #2B2320;
-  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  font-family: 'Marrow Text', system-ui, sans-serif;
   line-height: 1.5;
 }
 main {
@@ -46,8 +32,8 @@ main {
 }
 h1,
 h2 {
-  font-family: 'Fraunces', Georgia, serif;
-  font-weight: 700;
+  font-family: 'Marrow Display', Georgia, serif;
+  font-weight: 640;
 }
 a {
   color: #6B4A2B;

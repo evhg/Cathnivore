@@ -2,7 +2,7 @@ import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'node:child_process'
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 // `npm run build` (the iPhone app, e2e and gates) builds the game at `/` into `dist/`. The website build
@@ -52,12 +52,32 @@ function fontPreload(): Plugin {
   }
 }
 
+// The static /privacy and /support pages (public/pages.css) can't import hashed assets, so the two faces
+// they use are emitted at a stable path, /type/<file>.woff2. scripts/build-site.ts copies them to the root.
+const PAGE_FONTS = [
+  'node_modules/@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2',
+  'node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2',
+]
+
+function pageFonts(): Plugin {
+  return {
+    name: 'cathnivore-page-fonts',
+    apply: 'build',
+    generateBundle() {
+      for (const file of PAGE_FONTS) {
+        this.emitFile({ type: 'asset', fileName: `type/${file.split('/').pop()}`, source: readFileSync(resolve(import.meta.dirname, file)) })
+      }
+    },
+  }
+}
+
 export default defineConfig({
   base,
   plugins: [
     react(),
     versionFile(),
     fontPreload(),
+    pageFonts(),
     // SPEC 11.1: offline play and home-screen install on the web. The SW is never bundled into the
     // iPhone app (Capacitor never serves this dist output through vite-plugin-pwa's registration
     // script — main.tsx only calls registerSW() when Capacitor.isNativePlatform() is false).

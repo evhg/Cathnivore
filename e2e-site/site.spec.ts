@@ -74,7 +74,7 @@ test.describe('landing page', () => {
   })
 
   test('shared root pages are still served', async ({ request }) => {
-    for (const path of ['/privacy/', '/support/', '/version.json', '/fonts/fraunces-latin-700-normal.woff2']) {
+    for (const path of ['/privacy/', '/support/', '/version.json', '/type/fraunces-latin-opsz-normal.woff2', '/licences/fonts/']) {
       expect((await request.get(path)).ok(), path).toBe(true)
     }
   })

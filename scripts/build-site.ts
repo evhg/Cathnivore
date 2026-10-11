@@ -5,7 +5,7 @@
 //   /runnel/      Runnel, the daily irrigation puzzle (games/runnel/)
 //   /hedgerow/    Hedgerow, Cath's tower defence (games/hedgerow/)
 //   /cathode/     CATHODE, the noir shooter (games/cathode/), behind an 18+ gate
-//   /privacy, /support, /fonts, icons, version.json   shared files at the root
+//   /privacy, /support, /type, /licences/fonts, icons, version.json   shared files at the root
 //
 // `npm run build` is unchanged and still builds Cathnivore alone into dist/ for the iPhone app, e2e and
 // gates. Usage: `npm run build:site`.
@@ -31,6 +31,54 @@ function commit(): string {
 // UI work); the full build (no flag) is what Vercel runs.
 const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7).split(',')
 const want = (name: string): boolean => !only || only.includes(name)
+
+// AAA UI: every face the site ships, with its OFL text at /licences/fonts/ (VISION.md "Illustration").
+const FONT_FAMILIES: Array<[string, string, string]> = [
+  ['Fraunces', '@fontsource-variable/fraunces', 'Landing, Cathnivore, Runnel, Hedgerow'],
+  ['Instrument Sans', '@fontsource-variable/instrument-sans', 'Landing'],
+  ['Instrument Serif', '@fontsource/instrument-serif', 'Landing'],
+  ['Atkinson Hyperlegible Next', '@fontsource-variable/atkinson-hyperlegible-next', 'Cathnivore, Runnel'],
+  ['Figtree', '@fontsource-variable/figtree', 'Cathnivore'],
+  ['Outfit', '@fontsource-variable/outfit', 'Runnel'],
+  ['Nunito', '@fontsource-variable/nunito', 'Hedgerow'],
+  ['Bodoni Moda', '@fontsource-variable/bodoni-moda', 'CATHODE'],
+  ['Rajdhani', '@fontsource/rajdhani', 'CATHODE'],
+  ['JetBrains Mono', '@fontsource-variable/jetbrains-mono', 'CATHODE'],
+]
+
+function writeFontLicences(): void {
+  const dir = resolve(out, 'licences/fonts')
+  mkdirSync(dir, { recursive: true })
+  const rows: string[] = []
+  for (const [family, pkg, where] of FONT_FAMILIES) {
+    const slug = family.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    writeFileSync(resolve(dir, `${slug}.txt`), readFileSync(resolve(root, 'node_modules', pkg, 'LICENSE'), 'utf8'))
+    rows.push(`        <li><a href="/licences/fonts/${slug}.txt">${family}</a> <span>${where}</span></li>`)
+  }
+  writeFileSync(
+    resolve(dir, 'index.html'),
+    `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Font licences: cathnivore.com</title>
+    <link rel="stylesheet" href="/pages.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Font licences</h1>
+      <p>Every typeface on cathnivore.com is self-hosted and free under the SIL Open Font License 1.1. Thank you to their designers.</p>
+      <ul>
+${rows.join('\n')}
+      </ul>
+      <p><a href="/">Back to the games</a></p>
+    </main>
+  </body>
+</html>
+`,
+  )
+}
 
 async function main(): Promise<void> {
   if (!only) rmSync(out, { recursive: true, force: true })
@@ -97,9 +145,12 @@ async function main(): Promise<void> {
     )
   }
 
-  // Shared root files: Cathnivore's store listing links to /privacy and /support, its manifest and
-  // social card use root icon paths, and every page loads fonts from /fonts.
-  for (const name of ['fonts', 'privacy', 'support', 'pages.css', 'favicon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'social-preview.png']) {
+  // Shared root files: Cathnivore's store listing links to /privacy and /support, and its manifest and
+  // social card use root icon paths. /type holds the two faces the static pages use (see vite.config.ts).
+  const pageType = resolve(out, 'cathnivore/type')
+  if (existsSync(pageType)) cpSync(pageType, resolve(out, 'type'), { recursive: true })
+  writeFontLicences()
+  for (const name of ['privacy', 'support', 'pages.css', 'favicon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'social-preview.png']) {
     const from = resolve(root, 'public', name)
     if (existsSync(from) && !existsSync(resolve(out, name))) cpSync(from, resolve(out, name), { recursive: true })
   }

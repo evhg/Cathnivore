@@ -47,6 +47,7 @@ export default function Credits({ onClose }: Props) {
       <section className="settings-card">
         <h2>Made with</h2>
         <p>TypeScript, React and Vite. The map, cards, pieces and portraits are all drawn in code — no stock art.</p>
+        <p>Set in Fraunces, Atkinson Hyperlegible Next and Figtree, all under the SIL Open Font License.</p>
       </section>
 
       <section className="settings-card">

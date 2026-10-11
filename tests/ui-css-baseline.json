@@ -20,8 +20,7 @@
   },
   "public/pages.css": {
     "px-font-size": 1,
-    "raw-colour": 5,
-    "font-face-legacy-path": 4
+    "raw-colour": 5
   },
   "shared/ui/cath-frame.css": {
     "raw-colour": 5
