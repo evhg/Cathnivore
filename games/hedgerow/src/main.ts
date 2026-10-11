@@ -3225,6 +3225,9 @@ function showTip(el: HTMLElement): void {
   const y = above > 8 ? above : Math.min(window.innerHeight - h - 8, r.bottom + 10);
   ui.tooltip.style.setProperty("--x", `${x}px`);
   ui.tooltip.style.setProperty("--y", `${y}px`);
+  // The paper tag's tail points at the control, above or below it.
+  ui.tooltip.style.setProperty("--tail-x", `${Math.round(Math.max(14, Math.min(w - 14, r.left + r.width / 2 - x)))}px`);
+  ui.tooltip.classList.toggle("below", !(above > 8));
   clearTimeout(tipHide);
   tipHide = window.setTimeout(hideTip, Math.max(3500, text.length * 55));
 }
