@@ -30,6 +30,15 @@
   ascent-override: 105%;
   descent-override: 27.9%;
 }
+/* The wordmark is set at 700 with a high optical size, far wider than Times Bold: its own fallback is
+   scaled to the measured width of "Cathnivore" so the hero doesn't jump when Fraunces arrives. */
+@font-face {
+  font-family: "Site Title Fallback";
+  src: local("Times New Roman"), local("Liberation Serif"), local("Georgia");
+  size-adjust: 119.1%;
+  ascent-override: 82.3%;
+  descent-override: 21.9%;
+}
 @font-face {
   font-family: "Site UI Fallback";
   src: local("Arial"), local("Liberation Sans"), local("Helvetica");

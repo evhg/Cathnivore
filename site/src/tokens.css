@@ -14,6 +14,7 @@
   --on-blood: #fbf1df;
 
   --font-display: "Site Display", "Site Display Fallback", Georgia, serif;
+  --font-title: "Site Display", "Site Title Fallback", Georgia, serif;
   --font-ui: "Site UI", "Site UI Fallback", system-ui, sans-serif;
   --font-voice: "Site Voice", "Site Voice Fallback", Georgia, serif;
   --font-num: var(--font-ui);

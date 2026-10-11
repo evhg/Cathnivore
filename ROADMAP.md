@@ -14,7 +14,7 @@ Every visual item is done only when:
 These two phases come before every older unfinished item below. About 70% of sessions take the first open **D** item, and about 30% take the first open **H** item; when in doubt, do D. Small polish is batched into at most one session a day, not planned as separate items. Release only when a milestone (one whole item below) is finished.
 
 **Phase U: AAA UI** (owner, 2026-10-11: "fonts and css is especially rudimentary … take it to the next level of AAA games"). The spec is `docs/design/aaa-ui.md`. Build the milestones in order and release each one when it passes `npm run gates` (font budget included). This is a standing owner request: sessions take Phase U items alongside D and H, about a third each, until U is done.
-- U1. [ ] **M1 Shared foundation and fonts (every page, no layout changes)**
+- U1. [x] **M1 Shared foundation and fonts (every page, no layout changes)** *(2026-10-11: shipped to `build`, unreleased; fonts per page 119.5/167.1/171.2/160.1/171.2 KB; logotype marks moved to U5)*
 - U2. [ ] **M2 CATHODE component layer and HUD**
 - U3. [ ] **M3 Hedgerow field: kit, HUD and upgrade sheet**
 - U4. [ ] **M4 Cathnivore table**

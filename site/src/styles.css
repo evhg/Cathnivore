@@ -157,7 +157,7 @@ body {
 
 .title {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-title);
   font-weight: 700;
   font-size: var(--fs-mark);
   line-height: 0.92;
@@ -434,6 +434,10 @@ body {
   text-wrap: balance;
   color: var(--gold);
   opacity: 0.9;
+}
+
+.card-meta .seg {
+  white-space: nowrap;
 }
 
 .card-go {
