@@ -3196,6 +3196,19 @@ function candidates(game: Game, w: [Array<[number, number]>, Array<[number, numb
   return out;
 }
 
+/**
+ * Fleet levels: calls `fn` on every vehicle the lane index puts inside these windows, in game.enemies order,
+ * so it gives what a scan of game.enemies would (callers still check the exact range). With `live`, children
+ * that pop out during the loop are visited too, as a live `for...of` over game.enemies would.
+ */
+function forEachNear(game: Game, w: [Array<[number, number]>, Array<[number, number]>], fn: (e: Enemy) => void, live: boolean): void {
+  const n0 = game.enemies.length;
+  const idx = candidates(game, w);
+  idx.sort((a, b) => a - b);
+  for (const i of idx) fn(game.enemies[i]!);
+  if (live) for (let i = n0; i < game.enemies.length; i++) fn(game.enemies[i]!);
+}
+
 // ---- path tower behaviours (Hedgerow 2 M4, paths.ts) ----
 
 /** How far a thorn pile reaches along the lane either side of where it lies, in cells. */
@@ -3238,19 +3251,24 @@ function layPiles(game: Game, t: Tower, piles: NonNullable<TowerStats["piles"]>,
 function stepPiles(game: Game): void {
   if (!game.piles.length) return;
   for (const pile of game.piles) {
-    for (const e of game.enemies) {
-      if (pile.hits <= 0) break;
-      if (e.hp <= 0 || (e.lane ?? 0) !== (pile.lane ?? 0) || ENEMIES[e.kind].flying) continue;
+    const cross = (e: Enemy) => {
+      if (pile.hits <= 0) return;
+      if (e.hp <= 0 || (e.lane ?? 0) !== (pile.lane ?? 0) || ENEMIES[e.kind].flying) return;
       // A stealth vehicle steers round a pile nobody has pointed out (detection is a Mast's, Lantern Eyes' or Scent's job).
-      if (pmOf(e) & P.stealth && !isRevealed(game, e)) continue;
-      if (Math.abs(e.dist - pile.dist) > PILE_REACH || pile.hit.includes(e.id)) continue;
-      if (!canHurt("sharp", pmOf(e))) continue;
+      if (pmOf(e) & P.stealth && !isRevealed(game, e)) return;
+      if (Math.abs(e.dist - pile.dist) > PILE_REACH || pile.hit.includes(e.id)) return;
+      if (!canHurt("sharp", pmOf(e))) return;
       pile.hit.push(e.id);
       if (pile.hit.length > 40) pile.hit.shift();
       pile.hits--;
       e.lastHit = pile.tower;
       hitEnemy(game, e, 1, ctx?.byId.has(pile.tower) ? pile.tower : undefined, "sharp");
-    }
+    };
+    // Only what the lane index has beside the pile (piles are a Fleet path's, so the index is there).
+    if (ctx && isFleet(game.level)) {
+      const span: Array<[number, number]> = [[pile.dist - PILE_REACH - WINDOW_EPS, pile.dist + PILE_REACH + WINDOW_EPS]];
+      forEachNear(game, pile.lane && game.level.path2 ? [[], span] : [span, []], cross, true);
+    } else for (const e of game.enemies) cross(e);
   }
   game.piles = game.piles.filter((p) => p.hits > 0);
 }
@@ -3260,11 +3278,14 @@ function holdBales(game: Game, t: Tower, hold: NonNullable<TowerStats["hold"]>, 
   if (t.holdCd > 0) return;
   // The ones furthest along go first.
   const inReach: Enemy[] = [];
-  for (const e of game.enemies) {
-    if (e.hp <= 0 || e.stun > 0 || ENEMIES[e.kind].flying || isBig(e.kind) || !canControl(pmOf(e), "hold")) continue;
+  const look = (e: Enemy) => {
+    if (e.hp <= 0 || e.stun > 0 || ENEMIES[e.kind].flying || isBig(e.kind) || !canControl(pmOf(e), "hold")) return;
     const q = enemyPoint(game.level, e);
     if (Math.hypot(t.col + 0.5 - q.x, t.row + 0.5 - q.y) <= reach) inReach.push(e);
-  }
+  };
+  // Only what the lane index puts in reach, so an idle bale (checked every step) costs a binary search.
+  if (ctx && isFleet(game.level)) forEachNear(game, towerWindowsOf(game, t, reach), look, false);
+  else for (const e of game.enemies) look(e);
   if (!inReach.length) {
     t.holdCd = 0;
     return;
@@ -3404,7 +3425,11 @@ function step(game: Game): void {
     for (const { t, s } of slowers) {
       if (!slowable) break;
       if (flying && !s.air) continue;
-      if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= s.range)
+      // A box check first: most slowers are nowhere near most vehicles, and hypot is the slow part.
+      const dx = t.col + 0.5 - p.x;
+      const dy = t.row + 0.5 - p.y;
+      if (dx > s.range || dx < -s.range || dy > s.range || dy < -s.range) continue;
+      if (Math.hypot(dx, dy) <= s.range)
         factor = Math.min(factor, 1 - ((1 - s.slow) / game.perks.slow) * (hasTwist(game.level, "drought") ? 0.7 : 1));
     }
     if (enemy.stickyLeft && enemy.stickyLeft > 0) {
@@ -3485,18 +3510,21 @@ function step(game: Game): void {
         if (bs.rangeAura > 1 && b !== t && Math.hypot(b.col - t.col, b.row - t.row) <= bs.range) reach = Math.max(reach, spec.range * bs.rangeAura);
     // Blackthorn scratches everything in reach, all the time.
     if (spec.thorns > 0) {
-      for (const e of game.enemies) {
-        if (e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying)) continue;
-        if (fleet && !canHurt(spec.type, pmOf(e))) continue;
+      const scratch = (e: Enemy) => {
+        if (e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying)) return;
+        if (fleet && !canHurt(spec.type, pmOf(e))) return;
         // M4: thorns come cheap on the Blackthorn path, so on the Fleet they need something to point the
         // stealth out too (detection stays the Mast's, Lantern Eyes' and Scent's job).
-        if (fleet && pmOf(e) & P.stealth && !isRevealed(game, e)) continue;
+        if (fleet && pmOf(e) & P.stealth && !isRevealed(game, e)) return;
         const p = enemyPoint(game.level, e);
         if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= reach) {
           damageEnemy(game, e, spec.thorns * STEP, false, t.id, spec.type);
           e.lastHit = t.id;
         }
-      }
+      };
+      // Fleet: only what the lane index puts in reach (section 8: no towers x vehicles scan).
+      if (fleet) forEachNear(game, towerWindowsOf(game, t, reach), scratch, true);
+      else for (const e of game.enemies) scratch(e);
     }
     // Thorn piles: laid on the lane in reach, a few at a time (they need no sight: a trap is a trap).
     if (spec.piles) layPiles(game, t, spec.piles, reach);
@@ -3510,7 +3538,9 @@ function step(game: Game): void {
         let blew = false;
         // On fleet levels a gust batters at most `pierce` vehicles (it still blows back everything in reach).
         let batter = fleet ? spec.pierce : Infinity;
-        for (const e of [...game.enemies]) {
+        // Fleet: only what the lane index puts in reach, in field order (a scan of a copy, as before).
+        const near = fleet ? candidates(game, towerWindowsOf(game, t, reach)).sort((a, b) => a - b).map((i) => game.enemies[i]!) : [...game.enemies];
+        for (const e of near) {
           if (e.hp <= 0 || !isRevealed(game, e, spec.detect) || (!spec.air && ENEMIES[e.kind].flying)) continue;
           const q = enemyPoint(game.level, e);
           if (Math.hypot(t.col + 0.5 - q.x, t.row + 0.5 - q.y) > reach) continue;

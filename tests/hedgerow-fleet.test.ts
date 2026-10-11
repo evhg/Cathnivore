@@ -29,10 +29,12 @@ import {
   upgradeToward,
   type Game,
   type Level,
+  type TowerKind,
 } from "../games/hedgerow/src/engine";
 import { CHILD_GAP, FLEET_GOODWILL, LIVE_CAP, RUNGS, fvOf, roundBonus } from "../games/hedgerow/src/fleet";
 import { BOOK, BOOK_ROUNDS, SWAPS, budget, incomeBefore, roundFV, trafficOf, windowFor } from "../games/hedgerow/src/rounds";
 import { LEVELS } from "../games/hedgerow/src/levels";
+import type { Path } from "../games/hedgerow/src/paths";
 import { kept, playLevel } from "../games/hedgerow/src/bot";
 
 const L1 = LEVELS[0]!;
@@ -478,58 +480,86 @@ describe("hedgerow fleet: the live cap", () => {
     }
   });
 
-  it(
-    "the sim steps in 2 ms or less with 350 vehicles and 40 towers, popping for real",
-    () => {
-      // A big field (level 41's) on fleet rules, so 40 towers fit beside the lane.
-      const lv: Level = { ...LEVELS[40]!, rules: "fleet", book: { from: 1, to: 12 }, twists: undefined, setPieces: undefined, hpScale: undefined };
-      const g = newGame(lv);
-      g.marks = 1e7;
-      const ps = plots(lv);
-      for (let r = 0; r < lv.rows && g.towers.length < 40; r++)
-        for (let c = 0; c < lv.cols && g.towers.length < 40; c++) {
-          const kind = (["scarecrow", "beehive", "scarecrow", "hedgerow", "windmill", "cannon"] as const)[g.towers.length % 6]!;
-          place(g, kind, c, r);
-        }
-      for (const [c, r] of ps) if (g.towers.length < 40) place(g, "scarecrow", c, r);
-      expect(g.towers.length).toBe(40);
-      // Every tower grown: path towers to 2-0-2, the rest to tier 3.
-      for (const t of g.towers) for (let i = 0; i < 4; i++) upgradeToward(g, t.id);
-      sendWave(g);
-      g.spawnQueue = [];
-      // Real Box Lorries with real shells: every hit pops a layer, children burst out and the emission
-      // queue fills, so the step pays for pierce, pops and the live cap, not just for aiming.
-      let n = 0;
-      const fill = () => {
-        while (g.enemies.length < LIVE_CAP) g.enemies.push(makeEnemy(g, "lorry", ((n++ * 0.37) % (g.pathLength * 0.5)), undefined, 1));
-      };
-      fill();
+  /**
+   * Level 41's big field on fleet rules (so 40 towers fit beside the lane), every tower grown toward `goal`,
+   * and the live cap kept full of real Box Lorries: every hit pops a layer, children burst out and the
+   * emission queue fills, so the step pays for pierce, pops and the live cap, not just for aiming.
+   * Returns ten 100-step batches (ms a step), sorted, so one GC pause or a busy runner doesn't decide it.
+   */
+  function perfRun(kinds: readonly TowerKind[], goal: (kind: TowerKind, i: number) => Path, check?: (g: Game) => void): number[] {
+    const base = LEVELS[40]!;
+    const towers = [...new Set([...base.towers, ...kinds])];
+    const lv: Level = { ...base, towers, rules: "fleet", book: { from: 1, to: 12 }, twists: undefined, setPieces: undefined, hpScale: undefined };
+    const g = newGame(lv);
+    g.marks = 1e7;
+    const ps = plots(lv);
+    for (let r = 0; r < lv.rows && g.towers.length < 40; r++)
+      for (let c = 0; c < lv.cols && g.towers.length < 40; c++) place(g, kinds[g.towers.length % kinds.length]!, c, r);
+    for (const [c, r] of ps) if (g.towers.length < 40) place(g, "scarecrow", c, r);
+    expect(g.towers.length).toBe(40);
+    g.towers.forEach((t, i) => {
+      for (let k = 0; k < 8; k++) upgradeToward(g, t.id, goal(t.kind, i));
+    });
+    check?.(g);
+    sendWave(g);
+    g.spawnQueue = [];
+    let n = 0;
+    const fill = () => {
+      while (g.enemies.length < LIVE_CAP) g.enemies.push(makeEnemy(g, "lorry", ((n++ * 0.37) % (g.pathLength * 0.5)), undefined, 1));
+    };
+    fill();
+    for (let i = 0; i < 100; i++) {
+      stepGame(g);
+      g.events.length = 0;
+      if (i % 5 === 0) fill();
+    }
+    const popped0 = g.popped;
+    const batches: number[] = [];
+    for (let b = 0; b < 10; b++) {
+      const t0 = performance.now();
       for (let i = 0; i < 100; i++) {
         stepGame(g);
         g.events.length = 0;
         if (i % 5 === 0) fill();
       }
-      const popped0 = g.popped;
-      // Ten 100-step batches, so one GC pause or a busy runner doesn't decide it.
-      const batches: number[] = [];
-      for (let b = 0; b < 10; b++) {
-        const t0 = performance.now();
-        for (let i = 0; i < 100; i++) {
-          stepGame(g);
-          g.events.length = 0;
-          if (i % 5 === 0) fill();
-        }
-        batches.push((performance.now() - t0) / 100);
-      }
-      batches.sort((x, y) => x - y);
-      expect(g.popped - popped0).toBeGreaterThan(5000);
-      expect(g.emitQueue.length).toBeGreaterThan(0);
-      expect(g.enemies.length).toBeGreaterThan(300);
-      // The fastest batch measures the code (a loaded machine only ever slows a batch down); the median is a
-      // looser guard so a regression that's slow every time still fails on a busy runner.
-      expect(batches[0]!).toBeLessThanOrEqual(2);
-      expect(batches[5]!).toBeLessThanOrEqual(3.5);
+      batches.push((performance.now() - t0) / 100);
+    }
+    batches.sort((x, y) => x - y);
+    expect(g.popped - popped0).toBeGreaterThan(5000);
+    expect(g.emitQueue.length).toBeGreaterThan(0);
+    expect(g.enemies.length).toBeGreaterThan(300);
+    return batches;
+  }
+  // The fastest batch measures the code (a loaded machine only ever slows a batch down); the median is a
+  // looser guard so a regression that's slow every time still fails on a busy runner. The code runs at
+  // about 0.8-1.2 ms a step, so 2 ms leaves room for a busy runner without hiding a real slowdown.
+  const budgetOk = (batches: number[]) => {
+    expect(batches[0]!).toBeLessThanOrEqual(2);
+    expect(batches[5]!).toBeLessThanOrEqual(3.5);
+  };
+
+  it(
+    "the sim steps in 2 ms or less with 350 vehicles and 40 towers, popping for real",
+    () => {
+      // Path towers at 2-0-2, the rest at tier 3.
+      budgetOk(perfRun(["scarecrow", "beehive", "scarecrow", "hedgerow", "windmill", "cannon"], () => [2, 0, 2]));
       void STEP;
+    },
+    60_000,
+  );
+
+  it(
+    "...and with tier 3 paths: thorns, piles, bales, rams, the Scythe and a Broadcast Tower (M4 review)",
+    () => {
+      // Half the field Hedgerows (Hawthorn Spikes 3-2-0 and Tractor Shed 2-0-3, which scratch, lay piles, hold
+      // and ram every step), Scarecrows on the Scythe and Flock tier 3, and a Broadcast mast.
+      const goal = (kind: TowerKind, i: number): Path =>
+        kind === "hedgerow" ? (i % 4 === 0 ? [3, 2, 0] : [2, 0, 3]) : kind === "scarecrow" ? (i % 4 === 1 ? [2, 0, 3] : [3, 0, 2]) : [3, 0, 2];
+      budgetOk(perfRun(["hedgerow", "scarecrow", "hedgerow", "scarecrow", "hedgerow", "mast"], goal, (g) => {
+        // The builds really are tier 3.
+        const builds = new Set(g.towers.map((t) => `${t.kind}-${t.path?.join("")}`));
+        for (const b of ["hedgerow-320", "hedgerow-203", "scarecrow-203", "scarecrow-302", "mast-302"]) expect(builds).toContain(b);
+      }));
     },
     60_000,
   );
