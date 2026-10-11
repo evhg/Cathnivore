@@ -510,6 +510,13 @@ describe("hedgerow paths: the legacy adapter, named builds and save v3", () => {
 });
 
 describe("hedgerow paths: Crowns (M5)", () => {
+  it("every path of every path tower has a Crown costing well over its tier 3", () => {
+    for (const kind of Object.keys(PATHS) as (keyof typeof PATHS)[])
+      for (const p of PATHS[kind].paths) {
+        expect(p.crown, `${kind}/${p.name}`).toBeDefined();
+        expect(p.crown!.cost).toBeGreaterThanOrEqual(p.tiers[2].cost * 10);
+      }
+  });
   it("a Crown is bought on a path at tier 3, once per field, and changes the stats", () => {
     const g = field();
     const ps = plots(L8);

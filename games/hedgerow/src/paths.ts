@@ -383,6 +383,34 @@ export const PATHS: Record<PathKind, TowerPaths> = {
   },
 };
 
+/** Crowns for the other four path towers (M5): passive, one per path, one of each per field. */
+const C = (name: string, cost: number, adds: string, blurb: string, mod: PathMod): PathTier => ({ name, cost, adds, blurb, mod });
+const PASSIVE_CROWNS: Record<Exclude<PathKind, "scarecrow">, [PathTier, PathTier, PathTier]> = {
+  hedgerow: [
+    C("Impenetrable Thicket", 18000, "60-hit piles, laid 2× as fast, scratches +1/s", "A thicket no lorry has ever left. Piles of sixty, laid twice as fast, and every thorn bites.", { piles: { hits: 60, every: 0.8, max: 6 }, thorns: 1 }),
+    C("Labyrinth", 16000, "slows to 22%, +50% range", "The hedge maze of a stately home, laid across the lane. Nothing finds its way out.", { slow: 0.22, range: 1.5 }),
+    C("Hay Barn", 20000, "holds 6 for 2 s, rams 4 layers", "A whole barn of hay, a whole barn of farmhands: six held still, and the tractor hits like a train.", { hold: { secs: 2, every: 4, count: 6 }, damage: 2, knockback: 1 }),
+  ],
+  beehive: [
+    C("Hornet Nest", 22000, "+6 pierce, +2 layers, poison spreads 3 layers/s", "The bees have called in the hornets. Nobody asked them to.", { pierce: 6, damage: 2, poison: { dps: 3, secs: 4, spread: true } }),
+    C("Royal Jelly", 20000, "slows to 35%, stuck for 3 s, +25% range", "Royal jelly by the bucket. The whole lane is a sticky floor.", { slow: 0.35, sticky: { factor: 0.35, secs: 3 }, range: 1.25 }),
+    C("Colony", 24000, "towers in range fire 30% faster", "A whole colony working the field: every tower in reach fires faster, and the hive fastest of all.", { buff: 1.3, rate: 1.4 }),
+  ],
+  cannon: [
+    C("Giant Pumpkin Mortar", 26000, "+50% splash, +3 layers, +8 pierce", "The village giant-vegetable winner, loaded with its own prize.", { splash: 1.5, damage: 3, pierce: 8 }),
+    C("Grapeshot", 22000, "fires 2× as fast, hits Airborne, +30% range", "Pip's scrapyard flak storm: a hail of bolts at the whole sky.", { rate: 2, air: true, range: 1.3 }),
+    C("Siege Cannon", 28000, "×3 on big shells, +6 layers on Plants", "Hand-me-down from a castle. It does not care what the shell is made of.", { shellMul: 3, plantDamage: 6 }),
+  ],
+  mast: [
+    C("Radio Free Hedgerow", 26000, "reveals the field, vehicles take +90%", "Sol broadcasts the whole county's weak spots on every frequency.", { global: true, detect: true, vuln: 1.9 }),
+    C("Field Hospital", 24000, "+40% range aura, +5 Goodwill a round", "Ines turns the village hall into a field hospital. Everyone feels better, and sees further.", { rangeAura: 1.4, cleanse: true, mend: 5 }),
+    C("Emergency Broadcast", 26000, "towers in range fire 30% faster", "Every siren in the county, at once. Nobody in range is slow now.", { buff: 1.3, rate: 1.2 }),
+  ],
+};
+for (const [k, crowns] of Object.entries(PASSIVE_CROWNS) as [Exclude<PathKind, "scarecrow">, [PathTier, PathTier, PathTier]][])
+  crowns.forEach((c, i) => (PATHS[k].paths[i]!.crown = c));
+
+
 /** Is this build allowed? At most two paths bought into, at most one past tier 2, none past PATH_TIERS. */
 export function pathLegal(p: readonly number[]): boolean {
   if (p.length !== 3) return false;
@@ -408,7 +436,7 @@ export function nextPath(p: Path, i: PathIndex): Path {
  * open on this level yet.
  */
 export function pathBlock(p: Path, i: PathIndex, levelId: number): string | null {
-  if (p[i] >= PATH_TIERS) return "Top tier (Crowns come later).";
+  if (p[i] >= PATH_TIERS) return "Top tier.";
   const n = nextPath(p, i);
   if (!pathLegal(n)) {
     const used = p.filter((x) => x > 0).length;
