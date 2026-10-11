@@ -2,6 +2,8 @@
 // attributes through `setAttribute`, and any per-element number through a CSS custom property set with
 // the CSSOM (`el.style.setProperty`), never a `style` attribute or innerHTML with data.
 
+import { setVars as sharedSetVars, stagger as sharedStagger } from "../../../../shared/ui/motion";
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /** Makes an element with a class, optional text and an optional parent. */
@@ -50,8 +52,19 @@ export function cssVar(e: HTMLElement | SVGElement, name: string, value: string 
   e.style.setProperty(name, String(value));
 }
 
-/** True when the player asked for less motion. */
+/** Sets several CSS custom properties at once (`{ v: 0.5, "--trail": 0.8 }`), through the CSSOM. */
+export function setVars(e: HTMLElement | SVGElement, values: Record<string, string | number>): void {
+  sharedSetVars(e, values);
+}
+
+/** Staggers a parent's children in (base.css `.stagger`): each child gets its `--i`, capped at `cap`. */
+export function stagger(parent: HTMLElement, cap = 10): void {
+  sharedStagger(parent, cap);
+}
+
+/** True when the player asked for less motion: the system setting, or Settings → Reduce motion. */
 export function reducedMotion(): boolean {
+  if (typeof document !== "undefined" && document.documentElement.classList.contains("reduce-motion")) return true;
   return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 

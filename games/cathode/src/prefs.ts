@@ -28,10 +28,12 @@ export interface Prefs {
   crossScale: number;
   /** Rebound keys by action id (see controls.ts). */
   binds: Binds;
+  /** Settings → Reduce motion; null follows the system setting. */
+  reduceMotion: boolean | null;
 }
 
 const KEY = "cathode:prefs:v1";
-const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false, lookScale: 1, invertY: false, crossScale: 1, binds: {} };
+const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false, lookScale: 1, invertY: false, crossScale: 1, binds: {}, reduceMotion: null };
 
 export function loadPrefs(): Prefs {
   try {
@@ -51,6 +53,7 @@ export function loadPrefs(): Prefs {
       invertY: p.invertY === true,
       crossScale: typeof p.crossScale === "number" && p.crossScale >= 0.7 && p.crossScale <= 2 ? p.crossScale : 1,
       binds: cleanBinds(p.binds),
+      reduceMotion: typeof p.reduceMotion === "boolean" ? p.reduceMotion : null,
     };
   } catch {
     return { ...DEFAULTS };
@@ -80,4 +83,20 @@ export function calmCameraOn(p: Prefs = loadPrefs()): boolean {
   } catch {
     return false;
   }
+}
+
+/** Whether menus and the HUD should hold still: the Reduce motion setting, else the system's request. */
+export function reduceMotionOn(p: Prefs = loadPrefs()): boolean {
+  if (p.reduceMotion !== null) return p.reduceMotion;
+  try {
+    return matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+}
+
+/** Puts `reduce-motion` on <html> from the setting (and keeps following the system while it's on Auto). */
+export function applyMotionPref(p: Prefs = loadPrefs()): void {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle("reduce-motion", reduceMotionOn(p));
 }

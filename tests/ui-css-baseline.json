@@ -1,8 +1,7 @@
 {
   "games/cathode/src/styles.css": {
-    "px-font-size": 150,
-    "z-index-literal": 27,
-    "raw-colour": 236
+    "px-font-size": 119,
+    "raw-colour": 128
   },
   "games/cathode/src/ui/photomode.ts": {
     "style-prop-assign": 2
@@ -40,7 +39,7 @@
   "src/styles/global.css": {
     "px-font-size": 56,
     "z-index-literal": 10,
-    "raw-colour": 54
+    "raw-colour": 52
   },
   "src/styles/table.css": {
     "px-font-size": 9

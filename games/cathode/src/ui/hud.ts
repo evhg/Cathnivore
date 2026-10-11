@@ -1,8 +1,10 @@
-// The HUD, in the DOM over the canvas. CSP-safe: no inline style attributes, only classes and CSS custom
-// properties set through the CSSOM. Noir-quiet by default: thin rules, small caps, red only for blood.
+// The HUD, in the DOM over the canvas ("Wet Ink", docs/design/aaa-ui-specs.md §4.11). CSP-safe: no inline
+// style attributes, only classes and CSS custom properties set through the CSSOM. Per frame it touches only
+// transform-driving custom properties (--v, --trail, --px, --gap), opacity and classes, and writes text only
+// when it changed, so a steady frame does no layout. Blood red is danger, cyan is system, amber is reward.
 
 import { BINDABLE, codesFor, keyLabel, rebind } from "../controls";
-import { loadPrefs, savePrefs, type Intensity, type QualityChoice } from "../prefs";
+import { applyMotionPref, loadPrefs, savePrefs, type Intensity, type QualityChoice } from "../prefs";
 import { showCredits } from "./credits";
 
 export interface HudState {
@@ -14,6 +16,8 @@ export interface HudState {
   weapon: string;
   mag: number;
   reserve: number;
+  /** Rounds a full magazine holds (the low-ammo colour starts at a quarter of it). */
+  magSize?: number;
   melee: boolean;
   /** Crosshair gap, pixels. */
   spread: number;
@@ -24,11 +28,15 @@ export interface HudState {
   scopeRange: number;
   wind: number;
   objective: string;
+  /** The case the objective belongs to ("The Drowned Market"); shown as the note's eyebrow. */
+  caseName?: string;
   takedown: boolean;
   bulletTime: number;
   /** The two active-skill slots (name and readiness 0..1), and the battery 0..1. */
   skills: Array<{ name: string; ready: number; key: string } | null>;
   battery: number;
+  /** Armour rating (0 hides the armour bar). */
+  armour?: number;
   /** Armour and resistances, one short line (empty when she has none). */
   defence?: string;
   /** Where the objective is on screen (0..1 each way), metres away, and whether it's behind her. */
@@ -42,14 +50,35 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, pa
   return e;
 }
 
+/** A segmented bar: a track with a damage-trail ghost and the fill, both driven by transform. */
+function bar(className: string, parent: HTMLElement): { root: HTMLElement; fill: HTMLElement; trail: HTMLElement | null } {
+  const root = el("div", `c-bar ${className}`, parent);
+  const trail = /\bhud-hp\b/.test(className) ? el("span", "trail", root) : null;
+  const fill = el("span", "fill", root);
+  return { root, fill, trail };
+}
+
+/** Speaker colours for subtitles (the case file's map): Cath in blood, Bea on the wire in cyan. */
+const SPEAKER: Record<string, string> = { Cath: "var(--blood-hot)", Bea: "var(--cyan)" };
+
+/** HP below this share is "low": the bar pulses and the number turns blood. */
+const LOW_HP = 0.3;
+/** Armour shown against this cap (the bar is full at 100). */
+const ARMOUR_CAP = 100;
+
 export class Hud {
   private root: HTMLElement;
-  private hpFill: HTMLElement;
+  private hpBar: ReturnType<typeof bar>;
   private hpText: HTMLElement;
   private lvl: HTMLElement;
-  private xpFill: HTMLElement;
+  private xpBar: ReturnType<typeof bar>;
+  private armRow: HTMLElement;
+  private armBar: ReturnType<typeof bar>;
+  private armText: HTMLElement;
   private weapon: HTMLElement;
   private ammo: HTMLElement;
+  private mag: HTMLElement;
+  private reserve: HTMLElement;
   private cross: HTMLElement;
   private hit: HTMLElement;
   private vignette: HTMLElement;
@@ -59,59 +88,79 @@ export class Hud {
   private threats: HTMLElement;
   private feed: HTMLElement;
   private objective: HTMLElement;
+  private objText: HTMLElement;
   private prompt: HTMLElement;
   private banner: HTMLElement;
   private focus: HTMLElement;
   private slots: HTMLElement;
-  private bat: HTMLElement;
+  private batBar: ReturnType<typeof bar>;
   private defence: HTMLElement;
   private lastHp = -1;
+  private trailHp = -1;
+  private trailT = 0;
   private hurt = 0;
   private hurtArc: HTMLElement;
   private hurtArcT = 0;
   private target: HTMLElement;
+  private targetFill: HTMLElement;
   private targetT = 0;
   private hitT = 0;
+  /** Last value written per element and property, so a steady frame writes nothing. */
+  private written = new WeakMap<Element, Map<string, string>>();
 
   constructor(host: HTMLElement) {
     host.replaceChildren();
-    this.root = el("div", "hud-root", host);
+    this.root = el("div", "hud-root is-booting", host);
+    window.setTimeout(() => this.root.classList.remove("is-booting"), 1100);
     if (loadPrefs().bigSubs) this.root.classList.add("big-subs");
     document.documentElement.classList.toggle("colour-safe", loadPrefs().colourSafe);
     this.root.style.setProperty("--xs", String(loadPrefs().crossScale));
-    // Objective, top left.
-    this.objective = el("p", "hud-objective", this.root);
-    // Health and level, bottom left.
-    const vit = el("div", "hud-vitals", this.root);
+    // Objective, top left: a case note with the case as its eyebrow.
+    // On touch the objective and vitals stack in the top-left corner, the arms and feed in the top right; on
+    // desktop these wrappers are `display: contents` and each cluster takes its own corner.
+    const tl = el("div", "hud-tl", this.root);
+    const tr = el("div", "hud-tr", this.root);
+    this.objective = el("p", "hud-objective", tl);
+    this.objective.dataset.case = "Case";
+    this.objText = el("span", "hud-objective-text", this.objective);
+    // Vitals, bottom left (top left on touch): name and level, hero HP over a segmented bar, armour, XP.
+    const vit = el("div", "hud-vitals", tl);
     const name = el("p", "hud-name", vit);
-    name.textContent = "Cath Hale";
-    this.lvl = el("span", "hud-level", name);
-    const hp = el("div", "hud-bar hud-hp", vit);
-    this.hpFill = el("span", "hud-fill", hp);
-    this.hpText = el("span", "hud-hp-text", vit);
+    el("span", "hud-name-text", name).textContent = "Cath Hale";
+    this.lvl = el("span", "c-chip lvl hud-level", name);
+    const hpRow = el("div", "hud-hp-row", vit);
+    this.hpText = el("span", "hud-hp-text num", hpRow);
+    this.hpBar = bar("is-seg hud-hp", hpRow);
+    this.armRow = el("div", "hud-arm-row", vit);
+    el("span", "hud-arm-label", this.armRow).textContent = "Arm";
+    this.armBar = bar("armour hud-armour", this.armRow);
+    this.armText = el("span", "hud-arm-text num", this.armRow);
     this.defence = el("p", "hud-defence", vit);
-    const xp = el("div", "hud-bar hud-xp", vit);
-    this.xpFill = el("span", "hud-fill", xp);
-    // Weapon and ammo, bottom right.
-    const arms = el("div", "hud-arms", this.root);
+    this.xpBar = bar("xp hud-xp", vit);
+    // Arms, bottom right (top right on touch): weapon, mag over reserve, skill slots, battery.
+    const arms = el("div", "hud-arms", tr);
     this.weapon = el("p", "hud-weapon", arms);
     this.ammo = el("p", "hud-ammo", arms);
+    this.mag = el("span", "hud-mag num", this.ammo);
+    this.reserve = el("span", "hud-reserve num", this.ammo);
     this.slots = el("div", "hud-slots", arms);
-    const bat = el("div", "hud-bar hud-battery", arms);
-    this.bat = el("span", "hud-fill", bat);
+    this.batBar = bar("sys hud-battery", arms);
     // The middle: crosshair, hit marker, threat arcs.
     this.cross = el("div", "hud-cross", this.root);
     for (const k of ["t", "b", "l", "r"]) el("span", `hud-cross-${k}`, this.cross);
     el("span", "hud-cross-dot", this.cross);
     this.hit = el("div", "hud-hit", this.root);
+    for (const k of ["a", "b", "c", "d"]) el("i", `hud-hit-${k}`, this.hit);
     this.threats = el("div", "hud-threats", this.root);
     this.prompt = el("p", "hud-prompt", this.root);
+    el("span", "c-key", this.prompt).textContent = "F";
+    el("span", "hud-prompt-text", this.prompt).textContent = "Takedown";
     this.focus = el("div", "hud-focus", this.root);
     // Overlays.
     this.vignette = el("div", "hud-hurt", this.root);
     this.target = el("div", "hud-target", this.root);
     el("span", "hud-target-name", this.target);
-    el("i", "hud-target-fill", el("b", "hud-target-bar", this.target));
+    this.targetFill = el("i", "hud-target-fill", el("b", "hud-target-bar", this.target));
     this.hurtArc = el("div", "hud-hurt-arc", this.root);
     this.scope = el("div", "hud-scope", this.root);
     const ret = el("div", "hud-reticle", this.scope);
@@ -119,77 +168,140 @@ export class Hud {
       const t = el("span", "hud-mil", ret);
       t.dataset.mil = String(m);
     }
-    this.scopeRange = el("p", "hud-scope-range", this.scope);
-    this.scopeWind = el("p", "hud-scope-wind", this.scope);
-    this.feed = el("div", "hud-feed", this.root);
+    this.scopeRange = el("p", "hud-scope-range num", this.scope);
+    this.scopeWind = el("p", "hud-scope-wind num", this.scope);
+    this.feed = el("div", "hud-feed", tr);
     this.banner = el("div", "hud-banner", this.root);
   }
 
+  /** Sets a custom property only when its value changed. */
+  private prop(e: HTMLElement, k: string, v: string): void {
+    let m = this.written.get(e);
+    if (!m) this.written.set(e, (m = new Map()));
+    if (m.get(k) === v) return;
+    m.set(k, v);
+    e.style.setProperty(k, v);
+  }
+
+  /** Sets text only when it changed. */
+  private text(e: HTMLElement, v: string): void {
+    if (e.textContent !== v) e.textContent = v;
+  }
+
+  /** Shows or hides an element only when that changes. */
+  private show(e: HTMLElement, on: boolean): void {
+    if (e.hidden === on) e.hidden = !on;
+  }
+
   update(dt: number, s: HudState): void {
-    const set = (e: HTMLElement, k: string, v: string) => e.style.setProperty(k, v);
-    set(this.hpFill, "--w", `${Math.max(0, (s.hp / s.maxHp) * 100)}%`);
-    this.hpText.textContent = `${Math.ceil(s.hp)}`;
-    if (this.lastHp >= 0 && s.hp < this.lastHp) this.hurt = Math.min(1, this.hurt + (this.lastHp - s.hp) / 30);
+    const set = (e: HTMLElement, k: string, v: string) => this.prop(e, k, v);
+    // Health: the hero numeral, the fill, and a pale trail that holds where she was, then drains.
+    const frac = Math.max(0, Math.min(1, s.hp / Math.max(1, s.maxHp)));
+    if (this.trailHp < 0 || frac > this.trailHp) this.trailHp = frac;
+    if (this.lastHp >= 0 && s.hp < this.lastHp) {
+      this.hurt = Math.min(1, this.hurt + (this.lastHp - s.hp) / 30);
+      this.trailT = 0.55;
+      if (this.lastHp - s.hp >= 4) this.punch(this.hpText, "hit");
+    }
+    this.trailT = Math.max(0, this.trailT - dt);
+    if (this.trailT <= 0) this.trailHp = frac;
+    set(this.hpBar.root, "--v", frac.toFixed(3));
+    if (this.hpBar.trail) set(this.hpBar.root, "--trail", this.trailHp.toFixed(3));
+    set(this.hpBar.root, "--max", String(Math.max(1, Math.round(s.maxHp))));
+    this.text(this.hpText, `${Math.ceil(s.hp)}`);
+    const low = frac < LOW_HP;
+    this.hpBar.root.classList.toggle("is-low", low);
+    this.hpText.classList.toggle("low", low);
     this.lastHp = s.hp;
     this.hurt = Math.max(0, this.hurt - dt * 1.2);
     this.hurtArcT = Math.max(0, this.hurtArcT - dt);
     this.targetT = Math.max(0, this.targetT - dt);
-    this.target.hidden = this.targetT <= 0;
+    this.show(this.target, this.targetT > 0);
     set(this.hurtArc, "--a", Math.min(1, this.hurtArcT * 1.6).toFixed(2));
-    set(this.vignette, "--a", (this.hurt * 0.9 + (s.hp / s.maxHp < 0.3 ? 0.35 : 0)).toFixed(3));
-    this.defence.textContent = s.defence ?? "";
-    this.defence.hidden = !s.defence;
-    this.lvl.textContent = `Level ${s.level}`;
-    set(this.xpFill, "--w", `${Math.min(100, (s.xp / Math.max(1, s.xpNext)) * 100)}%`);
-    this.weapon.textContent = s.weapon;
-    this.ammo.textContent = s.melee ? "" : `${s.mag} / ${s.reserve}`;
-    this.ammo.classList.toggle("low", !s.melee && s.mag <= 2);
-    set(this.cross, "--gap", `${Math.round(6 + s.spread)}px`);
-    this.cross.hidden = s.scoped;
-    this.scope.hidden = !s.scoped;
-    if (s.scoped) {
-      this.scopeRange.textContent = `${Math.round(s.scopeRange)} m`;
-      this.scopeWind.textContent = `Wind ${s.wind > 0 ? "→" : "←"} ${Math.abs(s.wind).toFixed(1)} m/s`;
+    set(this.vignette, "--a", (this.hurt * 0.9 + (low ? 0.35 : 0)).toFixed(3));
+    // Armour as its own bar; the resistances line only when she has some.
+    const arm = Math.max(0, Math.round(s.armour ?? 0));
+    this.show(this.armRow, arm > 0);
+    if (arm > 0) {
+      set(this.armBar.root, "--v", Math.min(1, arm / ARMOUR_CAP).toFixed(3));
+      this.text(this.armText, String(arm));
     }
-    this.objective.textContent = s.objective;
-    // The waypoint: a diamond over the objective, pinned to the screen edge when it's off screen.
+    const resist = (s.defence ?? "").split(" · ").filter((b) => b && !/^ARM /.test(b)).join(" · ");
+    this.text(this.defence, resist);
+    this.show(this.defence, !!resist);
+    this.text(this.lvl, `Lv ${String(s.level).padStart(2, "0")}`);
+    set(this.xpBar.root, "--v", Math.min(1, s.xp / Math.max(1, s.xpNext)).toFixed(3));
+    // Arms: mag goes amber at a quarter, blood at empty (with a reload prompt).
+    this.text(this.weapon, s.weapon);
+    this.show(this.ammo, !s.melee);
+    if (!s.melee) {
+      this.text(this.mag, String(s.mag));
+      this.text(this.reserve, `/ ${s.reserve}`);
+      const quarter = Math.max(1, Math.floor((s.magSize ?? 8) / 4));
+      this.ammo.classList.toggle("low", s.mag > 0 && s.mag <= quarter);
+      this.ammo.classList.toggle("empty", s.mag <= 0);
+    }
+    set(this.cross, "--gap", `${Math.round(6 + s.spread)}px`);
+    this.show(this.cross, !s.scoped);
+    this.show(this.scope, s.scoped);
+    if (s.scoped) {
+      this.text(this.scopeRange, `Rng ${Math.round(s.scopeRange)} m`);
+      this.text(this.scopeWind, `Wnd ${s.wind > 0 ? "→" : "←"}${Math.abs(s.wind).toFixed(1)}`);
+    }
+    // The objective: a case note that wipes in whenever it changes.
+    if (s.caseName && this.objective.dataset.case !== `Case · ${s.caseName}`) this.objective.dataset.case = `Case · ${s.caseName}`;
+    if (this.objText.textContent !== s.objective) {
+      const first = this.objText.textContent === "";
+      this.objText.textContent = s.objective;
+      if (!first) this.punch(this.objective, "is-new", 1000);
+    }
+    this.show(this.objective, !!s.objective);
+    // The waypoint: a diamond over the objective, pinned to the screen edge with a chevron when it's off screen.
     if (!this.wp) {
       this.wp = el("div", "hud-wp", this.root);
-      el("span", "hud-wp-dist", this.wp);
+      el("span", "hud-wp-mark", this.wp);
+      this.wpDist = el("span", "hud-wp-dist num", this.wp);
     }
-    this.wp.hidden = !s.waypoint;
+    this.show(this.wp, !!s.waypoint);
     if (s.waypoint) {
       const w = s.waypoint;
       let x = w.x;
       let y = w.y;
       if (w.behind) {
-        x = x < 0.5 ? 0.04 : 0.96;
+        x = x < 0.5 ? 0 : 1;
         y = 0.5;
       }
-      set(this.wp, "--x", `${Math.min(0.96, Math.max(0.04, x)) * 100}%`);
-      set(this.wp, "--y", `${Math.min(0.9, Math.max(0.1, y)) * 100}%`);
-      (this.wp.firstElementChild as HTMLElement).textContent = `${Math.round(w.dist)} m`;
+      const off = w.behind || x < 0.04 || x > 0.96 || y < 0.1 || y > 0.9;
+      const cx = Math.min(0.96, Math.max(0.04, x));
+      const cy = Math.min(0.9, Math.max(0.1, y));
+      // Chevron angle: from the screen centre towards where the objective really is.
+      const ang = Math.atan2(y - 0.5, x - 0.5);
+      set(this.wp, "--px", `${Math.round(cx * innerWidth)}px`);
+      set(this.wp, "--py", `${Math.round(cy * innerHeight)}px`);
+      set(this.wp, "--ang", `${ang.toFixed(2)}rad`);
+      this.wp.classList.toggle("off", off);
+      this.wp.classList.toggle("near", w.dist < 8);
+      this.text(this.wpDist!, `${Math.round(w.dist)} m`);
     }
-    set(this.bat, "--w", `${Math.round(s.battery * 100)}%`);
+    set(this.batBar.root, "--v", Math.max(0, Math.min(1, s.battery)).toFixed(3));
     while (this.slots.children.length < 2) {
       const c = el("div", "hud-slot", this.slots);
-      el("span", "hud-slot-key", c);
+      el("span", "c-key hud-slot-key", c);
       el("span", "hud-slot-name", c);
     }
     s.skills.forEach((k, i) => {
       const c = this.slots.children[i] as HTMLElement;
-      c.hidden = !k;
+      this.show(c, !!k);
       if (!k) return;
-      (c.children[0] as HTMLElement).textContent = k.key;
-      (c.children[1] as HTMLElement).textContent = k.name;
+      this.text(c.children[0] as HTMLElement, k.key);
+      this.text(c.children[1] as HTMLElement, k.name);
       set(c, "--ready", k.ready.toFixed(2));
       c.classList.toggle("ready", k.ready >= 1);
     });
-    this.prompt.textContent = s.takedown ? "F  Takedown" : "";
-    this.prompt.hidden = !s.takedown;
+    this.show(this.prompt, s.takedown);
     set(this.focus, "--a", s.bulletTime.toFixed(2));
     this.hitT = Math.max(0, this.hitT - dt);
-    set(this.hit, "--a", (this.hitT * 4).toFixed(2));
+    set(this.hit, "--a", Math.min(1, this.hitT * 4).toFixed(2));
 
     // Threat arcs: one per enemy that has noticed her, pointing their way.
     const arcs = this.threats.children;
@@ -197,12 +309,20 @@ export class Hud {
     for (let i = 0; i < arcs.length; i++) {
       const a = arcs[i] as HTMLElement;
       const t = s.threats[i];
-      a.hidden = !t;
+      this.show(a, !!t);
       if (!t) continue;
-      set(a, "--rot", `${t.bearing}rad`);
+      set(a, "--rot", `${t.bearing.toFixed(2)}rad`);
       set(a, "--fill", t.amount.toFixed(2));
       a.classList.toggle("hunting", t.hunting);
     }
+  }
+
+  /** Restarts a one-shot class animation (the HP hit punch, the objective wipe). */
+  private punch(e: HTMLElement, cls: string, ms = 260): void {
+    e.classList.remove(cls);
+    void e.offsetWidth; // restart the animation; only on the frame something happened
+    e.classList.add(cls);
+    window.setTimeout(() => e.classList.remove(cls), ms);
   }
 
   /** A red arc at the screen edge pointing to where the shot came from. */
@@ -214,57 +334,82 @@ export class Hud {
   /** A short health bar for whoever she just hit. */
   targetHit(name: string, frac: number): void {
     this.targetT = 2.5;
-    (this.target.firstElementChild as HTMLElement).textContent = name;
-    this.target.style.setProperty("--w", `${Math.max(0, Math.min(1, frac)) * 100}%`);
+    this.text(this.target.firstElementChild as HTMLElement, name);
+    this.targetFill.style.setProperty("--v", String(Math.max(0, Math.min(1, frac))));
   }
 
   hitMarker(kill: boolean, head = false): void {
     this.hitT = 0.25;
     this.hit.classList.toggle("kill", kill);
-    this.hit.classList.toggle("head", head);
+    this.hit.classList.toggle("head", head && !kill);
+    this.punch(this.hit, "pop", 220);
+  }
+
+  /** Lays a feed line out as data: "+90 XP" in amber mono, short modifiers in cyan caps, the rest in ink. */
+  private feedBits(p: HTMLElement, text: string): void {
+    text.split(" · ").forEach((bit, i) => {
+      if (i > 0) el("span", "sep", p).textContent = "·";
+      const xp = /^\+\d[\d,]*\s+(XP|Scrip)$/.test(bit);
+      const mod = !xp && /^[A-Z][a-z]+( [a-z]+)?$/.test(bit) && bit.length <= 14;
+      el("span", xp ? "xp" : mod ? "mod" : "noun", p).textContent = bit;
+    });
+  }
+
+  private feedPush(p: HTMLElement, ms: number, cap: number): void {
+    const lines = Array.from(this.feed.children) as HTMLElement[];
+    lines.forEach((l, i) => l.style.setProperty("--i", String(lines.length - i)));
+    setTimeout(() => p.remove(), ms);
+    while (this.feed.children.length > cap) this.feed.firstElementChild?.remove();
   }
 
   /** A line in the feed: "+90 XP · Headshot · Unseen". */
   feedLine(text: string, strong = false): void {
     const p = el("p", strong ? "hud-feed-line strong" : "hud-feed-line", this.feed);
-    p.textContent = text;
-    setTimeout(() => p.remove(), 2600);
-    while (this.feed.children.length > 5) this.feed.firstElementChild?.remove();
+    this.feedBits(p, text);
+    this.feedPush(p, 4400, 4);
   }
 
   /** A pickup line in the item's rarity colour. */
   feedItem(name: string, rarity: string): void {
-    const p = el("p", `hud-feed-line item rarity-${rarity}`, this.feed);
-    p.textContent = name;
-    setTimeout(() => p.remove(), 3400);
-    while (this.feed.children.length > 6) this.feed.firstElementChild?.remove();
+    const p = el("p", `hud-feed-line item r-${rarity}`, this.feed);
+    el("span", "hud-feed-tag", p).textContent = "Picked up";
+    el("span", "noun", p).textContent = name;
+    this.feedPush(p, 4400, 4);
   }
 
   private teachEl?: HTMLElement;
   private teachText: string | null = null;
   private wp?: HTMLElement;
+  private wpDist?: HTMLElement;
 
-  /** The how-to line for what the game is teaching right now (null hides it). */
+  /** The how-to line for what the game is teaching right now (null hides it). Key names become keycaps. */
   teach(text: string | null): void {
     if (text === this.teachText) return;
     this.teachText = text;
     if (!this.teachEl) this.teachEl = el("p", "hud-teach", this.root);
-    this.teachEl.textContent = text ?? "";
+    this.teachEl.replaceChildren();
+    for (const part of (text ?? "").split(/(\b(?:WASD|Shift|Space|Esc|[A-Z])\b)/)) {
+      if (!part) continue;
+      if (/^(WASD|Shift|Space|Esc|[A-Z])$/.test(part) && part !== "I" && part !== "A") el("span", "c-key", this.teachEl).textContent = part;
+      else this.teachEl.append(part);
+    }
     this.teachEl.classList.toggle("on", !!text);
   }
 
   private sub?: HTMLElement;
   private subTimer = 0;
 
-  /** Cath's voiceover, as a subtitle. */
+  /** Cath's voiceover (or Bea on the wire), as a subtitle on per-line plates with the speaker's colour. */
   subtitle(text: string): void {
     if (!this.sub) {
       this.sub = el("p", "hud-sub", this.root);
     }
     this.sub.replaceChildren();
     const m = /^(Bea|Cath): /.exec(text);
-    el("span", "hud-sub-name", this.sub).textContent = m?.[1] ?? "Cath";
-    this.sub.append(m ? text.slice(m[0].length) : text);
+    const who = m?.[1] ?? "Cath";
+    this.sub.style.setProperty("--speaker", SPEAKER[who] ?? "var(--ink-2)");
+    el("span", "hud-sub-name", this.sub).textContent = who;
+    el("span", "line", this.sub).textContent = m ? text.slice(m[0].length) : text;
     this.sub.classList.add("on");
     clearTimeout(this.subTimer);
     this.subTimer = window.setTimeout(() => this.sub?.classList.remove("on"), 1800 + text.length * 45);
@@ -276,10 +421,10 @@ export class Hud {
     this.root.classList.toggle("boss-intro", kind === "boss");
     clearTimeout(this.introTimer);
     if (kind === "boss") this.introTimer = window.setTimeout(() => this.root.classList.remove("boss-intro"), 3200);
-    const h = el("p", "hud-banner-title", this.banner);
-    h.textContent = title;
     const p = el("p", "hud-banner-sub", this.banner);
     p.textContent = sub;
+    const h = el("p", "hud-banner-title", this.banner);
+    h.textContent = title;
     this.banner.classList.remove("on");
     void this.banner.offsetWidth;
     this.banner.classList.add("on");
@@ -420,6 +565,31 @@ export class Hud {
         this.root.style.setProperty("--xs", String(Number(xi.value) / 100));
       });
       toggle("Calm camera", "calmCamera");
+      {
+        // Reduce motion: Auto follows the system; On or Off overrides it (menus, the HUD boot, count-ups).
+        const row = el("div", "hud-set", set);
+        el("span", "hud-set-name", row).textContent = "Reduce motion";
+        const seg = el("div", "hud-seg", row);
+        const opts: Array<[boolean | null, string]> = [
+          [null, "Auto"],
+          [true, "On"],
+          [false, "Off"],
+        ];
+        const cur = loadPrefs().reduceMotion;
+        const btns = opts.map(([v, label]) => {
+          const b = el("button", "hud-seg-btn", seg);
+          b.setAttribute("type", "button");
+          b.textContent = label;
+          b.setAttribute("aria-pressed", String(v === cur));
+          b.addEventListener("click", () => {
+            const p = { ...loadPrefs(), reduceMotion: v };
+            savePrefs(p);
+            applyMotionPref(p);
+            btns.forEach((x, i) => x.setAttribute("aria-pressed", String(opts[i]![0] === v)));
+          });
+          return b;
+        });
+      }
       toggle("Colour-blind colours", "colourSafe", (on) => document.documentElement.classList.toggle("colour-safe", on));
       toggle("Toggle sprint and aim", "holdToggle", () => window.dispatchEvent(new Event("cathode:prefs")));
 

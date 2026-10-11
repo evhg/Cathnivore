@@ -5,9 +5,11 @@ import "../../../shared/cath/cath.css";
 import "../../../shared/ui/base.css";
 import "./styles/fonts.css";
 import "./styles/tokens.css";
+import "./styles/components.css";
+import "./styles/hud.css";
 import "./styles.css";
 import { cathSvg } from "../../../shared/cath/cath";
-import { loadPrefs, resolveQuality, savePrefs, type Intensity, type QualityChoice } from "./prefs";
+import { applyMotionPref, loadPrefs, resolveQuality, savePrefs, type Intensity, type QualityChoice } from "./prefs";
 import { openClassPick } from "./ui/classpick";
 import { Progress } from "./game/progress";
 import { canStartNewGamePlus, ngPlusLap, startNewGamePlus } from "./sim/newgameplus";
@@ -18,6 +20,13 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 
 const prefs = loadPrefs();
 const params = new URLSearchParams(location.search);
+// Reduce motion: html.reduce-motion from Settings, else from the system (and it follows a system change).
+applyMotionPref(prefs);
+try {
+  matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", () => applyMotionPref(loadPrefs()));
+} catch {
+  // Very old Safari: the setting still applies on the next load.
+}
 
 function show(id: "screen-gate" | "screen-title" | "screen-game"): void {
   for (const s of document.querySelectorAll<HTMLElement>(".screen")) s.hidden = s.id !== id;
@@ -65,12 +74,16 @@ const dlg = $<HTMLDialogElement>("dlg-settings");
 $<HTMLButtonElement>("btn-settings").addEventListener("click", () => {
   setChecked("quality", prefs.quality);
   setChecked("intensity2", prefs.intensity);
+  setChecked("motion", prefs.reduceMotion === null ? "auto" : prefs.reduceMotion ? "on" : "off");
   dlg.showModal();
 });
 $<HTMLButtonElement>("settings-close").addEventListener("click", () => {
   prefs.quality = (checked("quality") as QualityChoice | undefined) ?? "auto";
   prefs.intensity = (checked("intensity2") as Intensity | undefined) ?? prefs.intensity;
+  const motion = checked("motion");
+  prefs.reduceMotion = motion === "on" ? true : motion === "off" ? false : null;
   savePrefs(prefs);
+  applyMotionPref(prefs);
   dlg.close();
 });
 

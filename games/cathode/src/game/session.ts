@@ -46,7 +46,7 @@ import { DIFFICULTY_LABEL, unlockedDifficulties } from "../sim/difficulty";
 import type { Difficulty } from "../sim/types";
 import { Voice } from "./voice";
 import { nearLandmark } from "./landmarks";
-import { WingWatch, ZoneWatch } from "./zones";
+import { WingWatch, ZoneWatch, loadingTitle } from "./zones";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
 import { exportCode, makeSave } from "../sim/save";
@@ -90,6 +90,8 @@ export interface Session {
   stats: { frames: number; ms: number };
   /** Test hook: freeze the AI and the clock. */
   paused: boolean;
+  /** Test and screenshot hook: the HUD (subtitles, feed lines, banners). */
+  hud?: Hud;
 }
 
 declare global {
@@ -210,6 +212,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const combat = new Combat(world, rays, enemies, o.intensity === "full");
   const killcam = new KillCam(world);
   const hud = new Hud(o.hud);
+  // The case note's eyebrow: the district the job is in ("Case · The Drowned Market").
+  const caseName = loadingTitle(o.district).split(" · ").pop() ?? "";
   let audio: Audio | null = null;
   try {
     audio = new Audio(inVault ? "vault" : inTower ? "tower" : inPlaza ? "plaza" : inClinic ? "clinic" : "market");
@@ -251,6 +255,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     paused: false,
   };
   window.cathode = s;
+  s.hud = hud;
   // Face down the street from the start marker, towards the extraction point.
   const ex = world.markers.extract?.[0];
   if (o.district === "clinic") player.yaw = 0;
@@ -1220,6 +1225,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       weapon: arsenal.weapon.name,
       mag: arsenal.ammo.mag,
       reserve: arsenal.ammo.reserve,
+      magSize: arsenal.weapon.mag,
       melee: arsenal.weapon.kind === "melee",
       spread: (arsenal.aiming ? 0 : 10) * spreadMul,
       scoped: arsenal.scopedIn,
@@ -1227,6 +1233,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       scopeRange: Math.min(ahead ? ahead.dist : 800, groundT ?? 800),
       wind: world.wind.x,
       objective,
+      caseName,
       waypoint: waypoint(),
       takedown: canTakedown,
       bulletTime: focusing ? 1 : 0,
@@ -1235,6 +1242,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         return st ? { name: st.name, ready: st.ready, key: i === 0 ? "G" : "Z" } : null;
       }),
       battery: actives.battery / Math.max(1, progress.stats.battery),
+      armour: progress.stats.armour,
       defence: defenceLine(progress.stats),
     });
     render();
