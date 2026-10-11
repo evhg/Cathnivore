@@ -318,11 +318,16 @@ export class Hud {
   }
 
   /** Restarts a one-shot class animation (the HP hit punch, the objective wipe). */
+  private punchTimers = new WeakMap<HTMLElement, number>();
   private punch(e: HTMLElement, cls: string, ms = 260): void {
-    e.classList.remove(cls);
-    void e.offsetWidth; // restart the animation; only on the frame something happened
-    e.classList.add(cls);
-    window.setTimeout(() => e.classList.remove(cls), ms);
+    // Restart a running punch by dropping the class and adding it back next frame, rather than remove/reflow/add,
+    // so a hit frame never forces a synchronous layout inside the rAF update.
+    clearTimeout(this.punchTimers.get(e));
+    if (e.classList.contains(cls)) {
+      e.classList.remove(cls);
+      requestAnimationFrame(() => e.classList.add(cls));
+    } else e.classList.add(cls);
+    this.punchTimers.set(e, window.setTimeout(() => e.classList.remove(cls), ms));
   }
 
   /** A red arc at the screen edge pointing to where the shot came from. */
@@ -416,18 +421,28 @@ export class Hud {
   }
 
   private introTimer = 0;
+  /**
+   * The district or boss banner. While it is up the HUD gives it the stage: `banner-on` fades the feed and
+   * the touch look hint (they sit in the band's path on a short landscape phone), and a boss intro's
+   * letterbox fades every corner cluster instead of slicing through them.
+   */
   showBanner(title: string, sub: string, kind?: "boss"): void {
     this.banner.replaceChildren();
     this.root.classList.toggle("boss-intro", kind === "boss");
+    this.root.classList.add("banner-on");
+    document.documentElement.classList.add("hud-banner-on");
     clearTimeout(this.introTimer);
-    if (kind === "boss") this.introTimer = window.setTimeout(() => this.root.classList.remove("boss-intro"), 3200);
+    this.introTimer = window.setTimeout(() => {
+      this.root.classList.remove("boss-intro", "banner-on");
+      document.documentElement.classList.remove("hud-banner-on");
+    }, 3200);
     const p = el("p", "hud-banner-sub", this.banner);
     p.textContent = sub;
     const h = el("p", "hud-banner-title", this.banner);
     h.textContent = title;
+    // Restart the entrance without forcing a layout: drop the class now, put it back on the next frame.
     this.banner.classList.remove("on");
-    void this.banner.offsetWidth;
-    this.banner.classList.add("on");
+    requestAnimationFrame(() => this.banner.classList.add("on"));
   }
 
   /** The ending credits (vault finale). */

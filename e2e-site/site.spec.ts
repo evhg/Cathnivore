@@ -326,7 +326,8 @@ test.describe('Hedgerow', () => {
     await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars: {}, seenBefore: { '1': true }, tips: { build: true } })))
     await page.reload()
     await page.locator('button.level[data-level="1"]').click()
-    await expect(page.locator('#hud-wave')).toHaveText('0/12')
+    // Under swiftshader the 3D field can take several seconds to build before the HUD shows the wave count.
+    await expect(page.locator('#hud-wave')).toHaveText('0/12', { timeout: 20_000 })
     await page.waitForTimeout(1500)
     expect(errors).toEqual([])
   })

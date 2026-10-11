@@ -513,6 +513,23 @@
 .hud-root::after { bottom: 0; transform-origin: bottom; }
 .hud-root.boss-intro::before,
 .hud-root.boss-intro::after { transform: none; }
+/* While a banner is up it owns the middle: the feed steps back (the touch look hint too, in styles below),
+   and a boss intro's letterbox clears every corner cluster rather than half-covering it. Opacity only. */
+.hud-objective,
+.hud-vitals,
+.hud-arms,
+.hud-feed,
+.hud-teach,
+.hud-prompt { transition: opacity var(--d-3) var(--ease-out); }
+.hud-root.banner-on .hud-feed,
+.hud-root.boss-intro .hud-objective,
+.hud-root.boss-intro .hud-vitals,
+.hud-root.boss-intro .hud-arms,
+.hud-root.boss-intro .hud-teach,
+.hud-root.boss-intro .hud-prompt { opacity: 0; }
+:root.hud-banner-on .look-hint { opacity: 0; }
+/* Subtitles ride above the bottom bar during the intro, so a boss's line is never cut by it. */
+.hud-root.boss-intro .hud-sub { bottom: calc(11vh + var(--sp-3)); }
 .hud-root.boss-intro .hud-banner { top: 38%; padding-block: var(--sp-5); }
 .hud-root.boss-intro .hud-banner-sub { color: var(--blood-hot); }
 .hud-root.boss-intro .hud-banner-title { font-size: calc(var(--t-display-l) * 1.2); }
@@ -808,6 +825,19 @@
 @media (max-height: 430px) and (orientation: landscape) {
   .hud-objective { max-width: 36ch; }
   .hud-hp { height: 6px; }
+  /* A short landscape phone has no free full-width row: the banner sits low in the gap between the stick
+     and the action buttons, under the corner clusters and over the subtitle line. */
+  .hud-banner,
+  .hud-root.boss-intro .hud-banner {
+    left: calc(var(--safe-l) + 172px);
+    right: calc(var(--safe-r) + 204px);
+    top: 51%;
+    padding: var(--sp-3) var(--sp-3);
+  }
+  .hud-banner-title { font-size: calc(var(--t-display-l) * .82); }
+  /* The intro clears the corners, so the boss card can stand higher, clear of the subtitle line. */
+  .hud-root.boss-intro .hud-banner { top: 22%; }
+  .hud-root.boss-intro .hud-banner-title { font-size: var(--t-display-l); }
 }
 
 /* ---- reduced motion: no boot, no slides, no punches; fades stay ---- */

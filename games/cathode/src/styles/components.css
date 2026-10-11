@@ -184,11 +184,22 @@
   background: rgb(var(--ink-rgb) / .05);
 }
 .btn-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; }
-.btn:focus-visible,
-.btn-primary:focus-visible {
-  outline: none;
-  box-shadow: none;
-  filter: drop-shadow(0 0 1px var(--cyan)) drop-shadow(0 0 1px var(--cyan)) drop-shadow(0 0 6px rgb(var(--cyan-rgb) / .8));
+/* Focus: the button is clip-pathed, and clip-path cuts anything drawn outside the shape (an outline, a
+   drop-shadow halo), so the ring is drawn inside it: ::after becomes a 2px cyan band clipped to a ring that
+   follows the ticket cut (an even-odd polygon: the outline, then the same shape inset by --ring). */
+.btn:focus-visible { outline: none; }
+.btn:focus-visible::after {
+  --ring: 2px;
+  --ring-d: calc(var(--ring) * .414); /* where the inset diagonal meets the inset edges */
+  transform: none;
+  transition: none;
+  background: var(--cyan);
+  clip-path: polygon(evenodd,
+    0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 0,
+    var(--ring) var(--ring), var(--ring) calc(100% - var(--ring)),
+    calc(100% - var(--cut) - var(--ring-d)) calc(100% - var(--ring)),
+    calc(100% - var(--ring)) calc(100% - var(--cut) - var(--ring-d)),
+    calc(100% - var(--ring)) var(--ring), var(--ring) var(--ring));
 }
 .btn[disabled],
 .btn[aria-disabled="true"] {
@@ -331,8 +342,14 @@
 @keyframes low-pulse { 50% { opacity: .55; } }
 .c-bar.armour > .fill { background: linear-gradient(90deg, var(--steel-deep), var(--steel)); }
 .c-bar.sys > .fill { background: var(--cyan); }
-.c-bar.xp { height: 2px; }
+/* XP: a thin but legible strip, a lit track with a dark keyline so it reads over any part of the street. */
+.c-bar.xp {
+  height: 3px;
+  background: rgb(var(--ink-rgb) / .2);
+  box-shadow: 0 0 0 1px rgb(var(--black-rgb) / .55), inset 0 1px 0 rgb(var(--white-rgb) / .08);
+}
 .c-bar.xp > .fill { background: var(--amber); }
+@media (min-width: 1024px) and (hover: hover) { .c-bar.xp { height: 4px; } }
 
 /* ---- chips and point counters ---- */
 .c-chip {

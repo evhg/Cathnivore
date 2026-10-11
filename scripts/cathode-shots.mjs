@@ -4,14 +4,14 @@
 // any CSP violations.
 // Usage: npm run build:site && npx vite preview --outDir dist-site --port 4180 &  then  node scripts/cathode-shots.mjs
 // Env: CATHODE_URL (default http://localhost:4180/cathode/), OUT (default e2e/screenshots), ONLY (comma list
-// of scenes: gate,hud,busy,boss,pause), SIZES (comma list of P,L,D), RM=0 to skip the reduced-motion pass.
+// of scenes: gate,focus,hud,busy,boss,pause; focus shoots the keyboard focus ring on the gate and pause buttons), SIZES (comma list of P,L,D), RM=0 to skip the reduced-motion pass.
 // Set PLAYWRIGHT_CHROMIUM_PATH if the pinned Chromium revision is missing (see CLAUDE.md).
 import { chromium } from '@playwright/test'
 import { mkdirSync } from 'node:fs'
 
 const base = process.env.CATHODE_URL ?? 'http://localhost:4180/cathode/'
 const out = process.env.OUT ?? 'e2e/screenshots'
-const only = (process.env.ONLY ?? 'gate,hud,busy,boss,pause').split(',')
+const only = (process.env.ONLY ?? 'gate,focus,hud,busy,boss,pause').split(',')
 const sizeKeys = (process.env.SIZES ?? 'P,L,D').split(',')
 mkdirSync(out, { recursive: true })
 const SIZES = {
@@ -104,7 +104,17 @@ for (const rm of process.env.RM === '0' ? [false] : [false, true]) {
       await page.waitForTimeout(2500)
       await page.screenshot({ path: `${out}/cathode-gate-${tag}.png` })
     }
-    if (only.some((s) => s !== 'gate')) {
+    if (only.includes('focus') && !size.hasTouch) {
+      // A real Tab, so :focus-visible matches; the ring must show on the clip-pathed ticket button.
+      if (!only.includes('gate')) { await page.goto(base); await page.waitForTimeout(2500) }
+      for (let i = 0; i < 8; i++) {
+        await page.keyboard.press('Tab')
+        if (await page.evaluate(() => document.activeElement?.id === 'gate-yes')) break
+      }
+      await settle(page)
+      await page.screenshot({ path: `${out}/cathode-gate-focus-${tag}.png` })
+    }
+    if (only.some((s) => s !== 'gate' && s !== 'focus')) {
       await page.goto(`${base}?play&shot`)
       await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) > 2, null, { timeout: 120_000 })
       await page.waitForTimeout(5000)
@@ -123,17 +133,46 @@ for (const rm of process.env.RM === '0' ? [false] : [false, true]) {
           window.cathode?.hud?.showBanner('Mother Crisp', 'The butcher of Pier 9', 'boss')
           window.setTimeout = st
         })
-        await page.waitForTimeout(1500)
-        await page.evaluate(() => { for (const a of document.getAnimations()) if (a.animationName === 'banner' || a.animationName === 'feed-fade') { a.currentTime = 1200; a.pause() } })
+        // The banner restarts its entrance on the next frame, and a frame can take seconds here: wait until
+        // that animation has really started, freeze it mid-hold, and wait for the pause to commit.
+        const ready = () => {
+          const a = document.querySelector('.hud-banner.on')?.getAnimations().find((x) => x.animationName === 'banner' || x.animationName === 'feed-fade')
+          return !!a && !a.pending
+        }
+        await page.waitForFunction(ready, null, { timeout: 90_000 })
+        await page.evaluate(() => {
+          for (const a of document.getAnimations()) if (a.animationName === 'banner' || a.animationName === 'feed-fade') { a.pause(); a.currentTime = 1200 }
+        })
+        await page.waitForFunction(ready, null, { timeout: 90_000 })
         await settle(page)
         await page.screenshot({ path: `${out}/cathode-hud-boss-${tag}.png`, timeout: 180_000 })
       }
       if (only.includes('pause')) {
-        await page.evaluate(() => { window.cathode.input.menuTapped = true })
-        await page.waitForTimeout(2500)
+        // The boss scene's banner timer was swallowed above, so end its intro by hand before pausing.
+        await page.evaluate(() => {
+          document.querySelector('.hud-root')?.classList.remove('boss-intro', 'banner-on')
+          document.documentElement.classList.remove('hud-banner-on')
+          window.cathode.input.menuTapped = true
+        })
+        // The session loop opens the card on its next frame, which under swiftshader can take seconds: wait
+        // for a card with a real rect, and fail loudly rather than shoot a dimmed world.
+        const shown = await page
+          .waitForFunction(() => {
+            const c = document.querySelector('.hud-pause:not([hidden]) .hud-pause-card')
+            const r = c?.getBoundingClientRect()
+            return !!r && r.width > 0 && r.height > 0
+          }, null, { timeout: 60_000 })
+          .then(() => true, () => false)
+        if (!shown) problems.push(`pause ${tag}: the pause card never showed`)
         await settle(page)
         await page.waitForTimeout(2500)
         await page.screenshot({ path: `${out}/cathode-pause-${tag}.png`, timeout: 180_000 })
+        if (only.includes('focus') && !size.hasTouch) {
+          await page.keyboard.press('Shift')
+          await page.evaluate(() => document.querySelector('.hud-resume')?.focus({ focusVisible: true }))
+          await page.waitForTimeout(1500)
+          await page.screenshot({ path: `${out}/cathode-pause-focus-${tag}.png`, timeout: 180_000 })
+        }
       }
     }
     await ctx.close()
