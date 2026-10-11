@@ -779,7 +779,9 @@ function syncControls(): void {
   syncCrownTray(g);
   const h = g.hero;
   ui.btnHero.classList.toggle("down", h.down > 0);
-  ui.heroHp.style.setProperty("--hp", String(h.down > 0 ? 0 : h.hp / h.maxHp));
+  const hpFrac = h.down > 0 ? 0 : h.hp / h.maxHp;
+  ui.heroHp.style.setProperty("--p", hpFrac.toFixed(3));
+  ui.heroHp.classList.toggle("low", hpFrac < 0.35);
   ui.btnHero.setAttribute(
     "aria-label",
     h.down > 0
@@ -868,7 +870,7 @@ function updateHud(): void {
   }
   if (g.marks !== shown.marks) {
     const now = performance.now();
-    if (shown.marks >= 0 && g.marks > shown.marks && now - shown.bumped > 250) {
+    if (shown.marks >= 0 && g.marks > shown.marks && now - shown.bumped > 600) {
       bump(ui.hudMarks.parentElement!, "gain");
       shown.bumped = now;
     }
@@ -876,7 +878,7 @@ function updateHud(): void {
     if (shown.marks >= 0 && g.marks < shown.marks) bump(ui.hudMarks.parentElement!, "spend");
     // Fleet pops pay a Mark a layer: the counter rolls up towards the purse rather than jumping (spending
     // snaps straight down).
-    const rolling = isFleet(g.level) && shown.marks >= 0 && g.marks > shown.marks && !player;
+    const rolling = isFleet(g.level) && shown.marks >= 0 && g.marks > shown.marks && !player && !reducedMotion();
     shown.marks = rolling ? rollTowards(shown.marks, g.marks) : g.marks;
     ui.hudMarks.textContent = String(shown.marks);
     refreshAffordability();
@@ -1691,6 +1693,18 @@ function pathCard(p: HTMLElement, g: Game, t: Tower): void {
     };
     titles.append(tb);
   }
+  // Sell sits in the head beside Target (AAA UI M3 review): always in view, never below the fold of the
+  // packets and Details, and away from the close button.
+  const sl = document.createElement("button");
+  sl.type = "button";
+  sl.className = "sell-btn";
+  sl.id = "btn-sell";
+  sl.textContent = `Sell +${sellValue(t)}`;
+  sl.onclick = () => {
+    if (doAct({ t: "sell", id: t.id })) sfx.playSell();
+    deselect();
+  };
+  titles.append(sl);
   head.append(titles);
   // On a phone the sheet covers the bottom of the field: a clear way to put it away.
   const close = document.createElement("button");
@@ -1727,19 +1741,6 @@ function pathCard(p: HTMLElement, g: Game, t: Tower): void {
   details.append(summary, grid);
   details.addEventListener("toggle", () => (statsOpen = details.open));
   p.append(details);
-  const row = document.createElement("div");
-  row.className = "panel-row";
-  const sl = document.createElement("button");
-  sl.type = "button";
-  sl.className = "btn btn-quiet";
-  sl.id = "btn-sell";
-  sl.textContent = `Sell +${sellValue(t)}`;
-  sl.onclick = () => {
-    if (doAct({ t: "sell", id: t.id })) sfx.playSell();
-    deselect();
-  };
-  row.append(sl);
-  p.append(row);
   refreshPaths();
 }
 
@@ -2223,6 +2224,8 @@ function banner(text: string, sub = "", boss = false, cls = ""): void {
     ui.banner.append(s);
   }
   ui.banner.className = `banner show${boss ? " boss" : ""}${cls ? ` ${cls}` : ""}`;
+  // A "New on the lane" advert already up steps down out of the ribbon's way (short screens; CSS .dodge).
+  if (!ui.intro.hidden) ui.intro.classList.add("dodge");
   clearTimeout(bannerTimer);
   bannerTimer = window.setTimeout(() => ui.banner.classList.remove("show"), boss ? 2600 : 1700);
 }
@@ -2262,13 +2265,27 @@ function introduce(kinds: EnemyKind[]): void {
   eb.textContent = isBig(k) ? "Boss" : "New on the lane";
   const n = document.createElement("strong");
   n.textContent = ENEMIES[k].name;
+  // The lead sentence, then the rest: a short landscape phone shows only the lead, whole, never an ellipsis
+  // (the full text is read out and lives in the Almanac).
   const d = document.createElement("p");
-  d.textContent = describeEnemy(k);
+  const desc = describeEnemy(k);
+  const cut = desc.search(/\.\s/);
+  const lead = document.createElement("span");
+  lead.className = "intro-lead";
+  lead.textContent = cut > 0 ? desc.slice(0, cut + 1) : desc;
+  d.append(lead);
+  if (cut > 0) {
+    const more = document.createElement("span");
+    more.className = "intro-more";
+    more.textContent = desc.slice(cut + 1);
+    d.append(more);
+  }
   box.append(eb, n, d);
   ui.intro.append(box);
   // Keep the card off the side the Fleet comes in from: that corner is where the first pops happen.
   const spawn = game && renderer ? spawnSide(game) : "left";
   ui.intro.classList.toggle("left", spawn === "right");
+  ui.intro.classList.toggle("dodge", ui.banner.classList.contains("show"));
   ui.intro.hidden = false;
   ui.intro.classList.remove("pop");
   void ui.intro.offsetWidth;

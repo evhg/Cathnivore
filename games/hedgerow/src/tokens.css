@@ -17,6 +17,8 @@
   --paper-shade: #e9dfcb;
   /* Text on oak, brass, ribbons and coloured fills: cream in both themes */
   --on-fill: #fff7e6;
+  /* Quieter text on oak (off switches, spent abilities, the Knockouts line): kraft, fixed in both themes */
+  --on-oak-dim: #e6d9bf;
   /* Ink: --ink-2 secondary, --ink-3 the minimum for text on card (5.35:1) */
   --ink-2: #5e5249;
   --ink-3: #6e625a;

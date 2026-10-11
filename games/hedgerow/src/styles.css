@@ -544,7 +544,7 @@ button {
   .intro {
     top: 6px;
     right: 6px;
-    max-width: 230px;
+    max-width: 280px;
     gap: 6px;
     padding: 5px 10px 5px 5px;
     border-radius: 12px;
@@ -565,10 +565,15 @@ button {
   }
   .intro p {
     font-size: var(--fs-small);
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    line-height: 1.25;
+  }
+  .intro .intro-more {
+    display: none;
+  }
+  /* A round ribbon came up while the advert shows: the advert moves to the field's foot */
+  .intro.dodge {
+    top: auto;
+    bottom: 6px;
   }
 }
 .paused-note {

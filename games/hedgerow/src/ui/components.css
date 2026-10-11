@@ -419,6 +419,7 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 .chip b {
   display: inline-block;
+  transform-origin: right center;
   font: 950 var(--fs-num-l) / 1 var(--font-ui);
   font-variant-numeric: tabular-nums lining-nums;
   min-width: 2ch;
@@ -444,7 +445,7 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 @keyframes tick {
   from {
-    transform: scale(1.22);
+    transform: scale(1.08);
   }
 }
 @keyframes hurt-shake {
@@ -1003,22 +1004,30 @@ body:has(#dlg-pause[open]) .paused-note {
   color: var(--on-fill);
   text-shadow: 0 1px 0 var(--line), 0 0 4px var(--black-a40);
 }
+/* Cath's health: a ring round the brass rim (never a bar across her face), green draining to clay */
 .play .ability-hp {
-  --c: var(--goodwill);
-  grid-row: 1;
-  grid-column: 1;
-  align-self: end;
-  width: 44px;
-  height: 8px;
+  --ring: 62px;
+  grid-area: 1 / 1;
+  align-self: center;
+  width: var(--ring);
+  height: var(--ring);
+  border-radius: 50%;
+  background: none;
+  box-shadow: none;
   z-index: var(--z-raise-2);
-  margin-bottom: -2px;
-  box-shadow: var(--groove), 0 0 0 1.5px var(--line);
+  pointer-events: none;
 }
 .play .ability-hp > span {
-  --p: var(--hp, 1);
-  inset: 1px auto 1px 1px;
-  width: calc(100% - 2px);
-  background: linear-gradient(var(--white-a35), transparent 50%), var(--hp);
+  inset: 0;
+  width: 100%;
+  border-radius: 50%;
+  transform: none;
+  background: conic-gradient(var(--hp) calc(var(--p, 1) * 360deg), var(--oak-ink) 0);
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 4px), black calc(100% - 3.5px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 4px), black calc(100% - 3.5px));
+}
+.play .ability-hp > span.low {
+  background: conic-gradient(var(--goodwill-hi) calc(var(--p, 1) * 360deg), var(--oak-ink) 0);
 }
 .play .ability:disabled {
   cursor: default;
@@ -1028,7 +1037,7 @@ body:has(#dlg-pause[open]) .paused-note {
   filter: saturate(0.5);
 }
 .play .ability:disabled .ability-label {
-  color: var(--kraft);
+  color: var(--on-oak-dim);
 }
 .play .ability.ready .pie-icon {
   box-shadow: 0 0 0 2px var(--line), 0 3px 0 var(--line), var(--glow-brass);
@@ -1177,7 +1186,7 @@ body:has(#dlg-pause[open]) .paused-note {
   text-align: center;
 }
 .play .auto-btn[aria-pressed="false"] .auto-word {
-  color: var(--kraft);
+  color: var(--on-oak-dim);
 }
 .play .auto-btn:focus-visible {
   outline: 3px solid var(--brass-hi);
@@ -1222,7 +1231,7 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 .play .btn.send:disabled {
   --fill: var(--oak-lo);
-  color: var(--kraft);
+  color: var(--on-oak-dim);
   text-shadow: none;
   background: var(--fill);
   font-size: var(--fs-btn);
@@ -1236,13 +1245,27 @@ body:has(#dlg-pause[open]) .paused-note {
   transform: translateY(2px);
   box-shadow: inset 0 3px 0 var(--black-a25);
 }
-.play .btn.send:not(:disabled):not(.early) {
+/* Between rounds Go breathes: a highlight layer fades in and out (opacity only, composited, no repaint) */
+.play .btn.send {
+  position: relative;
+  isolation: isolate;
+}
+.play .btn.send::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--z-canvas) - var(--z-raise)); /* under the label, over the fill */
+  background: linear-gradient(var(--white-a20), var(--white-a00) 70%);
+  box-shadow: inset 0 0 0 3px var(--white-a28);
+  opacity: 0;
+  pointer-events: none;
+}
+.play .btn.send:not(:disabled):not(.early)::after {
   animation: go-breathe 2.4s ease-in-out infinite;
 }
 @keyframes go-breathe {
   50% {
-    filter: brightness(1.1);
-    box-shadow: var(--bevel), inset 0 0 0 3px var(--white-a28);
+    opacity: 1;
   }
 }
 .play .btn.send:focus-visible,
@@ -1302,6 +1325,9 @@ body:has(#dlg-pause[open]) .paused-note {
     width: 54px;
     height: 54px;
   }
+  .play .ability-hp {
+    --ring: 58px;
+  }
   .play .ability-label,
   .play .auto-btn .auto-word {
     letter-spacing: 0;
@@ -1353,6 +1379,9 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .ability-ring {
     width: 46px;
     height: 46px;
+  }
+  .play .ability-hp {
+    --ring: 51px;
   }
   .play .ability-label,
   .play .auto-btn .auto-word {
@@ -1934,7 +1963,8 @@ body:has(#dlg-pause[open]) .paused-note {
     linear-gradient(105deg, transparent calc(var(--sheen) - 18%), var(--white-a55) var(--sheen), transparent calc(var(--sheen) + 18%)),
     var(--soft);
   box-shadow: inset 0 0 0 3px var(--c), 0 3px 0 var(--line), 0 0 0 3px var(--glow), 0 0 18px 3px color-mix(in srgb, var(--glow) 70%, transparent);
-  animation: glint 1.6s var(--ease-io) infinite;
+  /* Once, as the packet becomes affordable: a sweep, then still (no repaint every frame through a round) */
+  animation: glint 1.1s var(--ease-io) 1 both;
 }
 .path-buy.afford .path-bar {
   display: none;
@@ -2112,21 +2142,39 @@ body:has(#dlg-pause[open]) .paused-note {
 .panel-paths .panel-row {
   position: static;
 }
-.panel-paths #btn-sell {
-  flex: 1;
-  min-height: 48px;
+.panel-paths .sell-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px 0 8px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--mat-paper);
+  background-blend-mode: multiply, normal;
+  color: var(--ink);
+  font: 850 var(--fs-small) / 1 var(--font-ui);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1.5px var(--line), 0 2px 0 var(--line);
+  cursor: pointer;
 }
-.panel-paths #btn-sell::before {
+.panel-paths .sell-btn::before {
   content: "";
-  display: inline-block;
+  flex: none;
   width: 16px;
   height: 16px;
-  margin-right: 8px;
-  vertical-align: -0.15em;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, var(--brass-hi), var(--brass) 50%, var(--brass-mid));
   box-shadow: 0 0 0 1.5px var(--line);
+}
+.panel-paths .sell-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 1.5px var(--line);
+}
+.panel-paths .sell-btn:focus-visible {
+  outline: 3px solid var(--focus-ink);
+  outline-offset: 2px;
 }
 .panel-paths .last-build {
   font-size: var(--fs-small) !important;
@@ -2152,7 +2200,7 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .panel-paths .tower-head .ko-line,
   .panel-paths .tower-head .ko-line span {
-    color: var(--kraft);
+    color: var(--on-oak-dim);
   }
   .panel-paths .tower-head .ko-line .ko-n {
     color: var(--on-fill);
@@ -2219,7 +2267,8 @@ body:has(#dlg-pause[open]) .paused-note {
   .panel-paths .panel-title {
     font-size: var(--fs-d3) !important;
   }
-  .panel-paths .target-btn {
+  .panel-paths .target-btn,
+  .panel-paths .sell-btn {
     min-height: 30px;
   }
   .panel-paths .sheet-close {
@@ -2269,9 +2318,14 @@ body:has(#dlg-pause[open]) .paused-note {
   .panel-paths .tower-titles {
     gap: 2px 8px;
   }
-  .panel-paths .target-btn {
+  .panel-paths .target-btn,
+  .panel-paths .sell-btn {
     min-height: 28px;
-    padding: 0 10px;
+    padding: 0 8px;
+  }
+  /* Target and Sell share the head's second line: the coin waits for a roomier sheet */
+  .panel-paths .sell-btn::before {
+    display: none;
   }
   /* One line of head: the Knockouts tally waits for the side panel or a portrait sheet */
   .panel-paths .ko-line {
@@ -2367,6 +2421,64 @@ body:has(#dlg-pause[open]) .paused-note {
   --fg: var(--ink-3);
 }
 
+/* ================================================================= scroll edges (M3 review) */
+/* A panel that scrolls ends on a paper fade, never a hard cut through a line of text */
+.play .panel::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  flex: none;
+  display: block;
+  height: 22px;
+  margin: calc(-1 * var(--sp-2)) 0 -22px;
+  background: linear-gradient(transparent, var(--card) 85%);
+  pointer-events: none;
+}
+/* Rows that scroll sideways (the tower tray, the round's chips, a phone's counter tags) fade at the far edge;
+   the end padding lets the last item scroll clear of the fade */
+.play .tray,
+.play .preview-row {
+  padding-inline-end: 22px;
+  -webkit-mask: linear-gradient(90deg, black calc(100% - 22px), transparent);
+  mask: linear-gradient(90deg, black calc(100% - 22px), transparent);
+  scrollbar-width: none;
+}
+@media (max-width: 899.98px), (max-height: 520px) {
+  .panel-paths .badge-row {
+    flex: none;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 2px 22px 4px 2px;
+    -webkit-mask: linear-gradient(90deg, black calc(100% - 22px), transparent);
+    mask: linear-gradient(90deg, black calc(100% - 22px), transparent);
+    scrollbar-width: none;
+  }
+  .panel-paths .badge-row > * {
+    flex: none;
+  }
+}
+/* A tall phone keeps half the screen for the field with the sheet open: the head is two tight lines and the
+   sheet stops at 42svh (the packets still fit; tags, Details and the rest scroll under the fade) */
+@media (max-width: 899.98px) and (min-height: 701px) {
+  .panel.panel-paths {
+    max-height: 42svh;
+    padding-top: 2px;
+  }
+  .panel.panel-paths::before {
+    margin-bottom: 0;
+  }
+  .panel-paths .tower-titles {
+    gap: 2px 8px;
+  }
+}
+/* Landscape tray: a medallion is as wide as its name, so Neighbours never runs under the lever */
+@media (orientation: landscape) and (max-height: 520px) {
+  .play .ability {
+    width: auto;
+    min-width: 50px;
+  }
+}
+
 /* ================================================================= dark: "Evening at the fête" for the field */
 @media (prefers-color-scheme: dark) {
   .play .bubble p,
@@ -2390,6 +2502,14 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .path-buy[data-locked="1"] .path-eta::before {
     background: var(--ink);
+  }
+  /* Sell's paper pill needs a light edge to stand off the evening sheet */
+  .panel-paths .sell-btn {
+    box-shadow: 0 0 0 1.5px var(--ink-3), 0 2px 0 var(--line);
+  }
+  /* Tier labels: the path's light tint on its dark soft fill (the deep path colour sinks under 3:1) */
+  .path-tier {
+    color: var(--glow);
   }
 }
 
@@ -2415,7 +2535,7 @@ body:has(#dlg-pause[open]) .paused-note {
   .chip.spend b,
   .chip.hurt,
   .play .ability.ready .pie-icon,
-  .play .btn.send:not(:disabled):not(.early),
+  .play .btn.send:not(:disabled):not(.early)::after,
   .path-buy.afford,
   .path-col.just-bought .path-buy,
   .path-col.just-bought .path-pips i.fresh,
@@ -2446,13 +2566,43 @@ body:has(#dlg-pause[open]) .paused-note {
     opacity: 0;
   }
 }
-:root.reduce-motion .banner,
-:root.reduce-motion .banner.show {
+:root.reduce-motion :is(.banner, .banner.show, .banner.boss, .banner.boss.show, .banner.small, .banner.small.show) {
   clip-path: none;
+  transform: translate(-50%, 0);
   transition: opacity 150ms linear;
 }
-:root.reduce-motion .play .btn.send:not(:disabled):not(.early),
-:root.reduce-motion .path-buy.afford,
-:root.reduce-motion .chip.hurt {
+:root.reduce-motion :is(.banner.boss, .banner.boss.show) {
+  transform: translate(-50%, 0) rotate(0deg);
+}
+/* The in-game setting mirrors the media query in full (one list, kept in step with the block above) */
+:root.reduce-motion :is(
+    .banner.show strong,
+    .banner.leak.show,
+    .chip.gain b,
+    .chip.spend b,
+    .chip.hurt,
+    .play .ability.ready .pie-icon,
+    .path-buy.afford,
+    .path-col.just-bought .path-buy,
+    .path-col.just-bought .path-pips i.fresh,
+    .path-col.flash .path-name,
+    .panel-paths .build-chip.ticked,
+    .panel-paths .panel-title.renamed,
+    .tooltip
+  ),
+:root.reduce-motion .play .btn.send:not(:disabled):not(.early)::after {
   animation: none;
+}
+:root.reduce-motion .chip.hurt {
+  box-shadow: var(--groove), 0 0 0 2px var(--clay);
+}
+:root.reduce-motion .path-burst {
+  display: none;
+}
+:root.reduce-motion .panel.panel-paths {
+  animation: fade-in 150ms linear;
+}
+:root.reduce-motion .play .auto-btn::after,
+:root.reduce-motion :is(.btn, .icon-btn, .path-buy) {
+  transition: none;
 }

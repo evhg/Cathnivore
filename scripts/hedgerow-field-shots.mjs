@@ -9,6 +9,9 @@ import { mkdirSync } from 'node:fs'
 const base = process.env.HEDGEROW_URL ?? 'http://localhost:4180/hedgerow/'
 const out = process.env.OUT ?? 'e2e/screenshots/hedgerow-m3'
 const only = process.env.ONLY ? process.env.ONLY.split(',') : null
+// SCHEME=dark shoots the busy level in the dark theme too (names prefixed dark-)
+const busySchemes = process.env.SCHEME === 'dark' ? ['light', 'dark'] : ['light']
+const sizes = process.env.SIZES ? process.env.SIZES.split(',') : ['P', 'L', 'D']
 mkdirSync(out, { recursive: true })
 const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
@@ -86,7 +89,7 @@ async function snap(page, name) {
 
 const BUSY = [['scarecrow', [2, 0, 1]], ['cannon', [1, 2, 0]], ['beehive', [0, 2, 1]], ['hedgerow', [2, 1, 0]], ['mast', [1, 0, 2]], ['scarecrow', [0, 1, 2]]]
 
-for (const size of ['P', 'L', 'D']) {
+for (const size of sizes) {
   // 1. Field with a tower selected: level 6, a Scarecrow on 1-0-0 with its sheet open, between rounds.
   if (!only || only.includes('selected')) {
     for (const variant of size === 'P' ? ['light', 'dark'] : ['light']) {
@@ -99,15 +102,16 @@ for (const size of ['P', 'L', 'D']) {
     }
   }
   // 2. The busy level 12: six towers on paths, a round in flight; then a tower's sheet over it.
-  if (!only || only.includes('busy')) {
-    const { page, ctx, errors } = await open(size, 12)
+  if (!only || only.includes('busy')) for (const scheme of busySchemes) {
+    const pre = scheme === 'dark' ? 'dark-' : ''
+    const { page, ctx, errors } = await open(size, 12, { scheme })
     const at = await build(page, BUSY)
     await page.evaluate(() => { const hg = window.hedgerow; hg.sendWave(hg.game(), true); hg.refresh() })
     await page.waitForFunction(() => window.hedgerow.game().enemies.length > 6, null, { timeout: 60000 }).catch(() => {})
     await page.waitForTimeout(1500)
-    await snap(page, `busy-12-${size}`)
+    await snap(page, `${pre}busy-12-${size}`)
     if (at) await select(page, at)
-    await snap(page, `busy-12-selected-${size}`)
+    await snap(page, `${pre}busy-12-selected-${size}`)
     if (errors.length) console.log(size, 'errors', errors.slice(0, 3))
     await ctx.close()
   }
