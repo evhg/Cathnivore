@@ -3140,10 +3140,29 @@ img.act-scene {
   }
 }
 @media (orientation: landscape) and (max-height: 520px) {
+  /* Landscape phones: a side sheet, docked away from the tower being grown (main.ts pathCard), so the field
+     and the tower stay in view while you choose. */
   .panel.panel-paths {
-    max-height: 82vh;
-    left: max(0px, calc(50% - 360px));
-    right: max(0px, calc(50% - 360px));
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: 0;
+    width: min(440px, 52vw);
+    max-height: none;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom)) 12px;
+    border-radius: 18px 0 0 18px;
+    box-shadow: -8px 0 30px rgba(43, 35, 32, 0.3);
+    animation-name: sheet-in-right;
+  }
+  .panel.panel-paths.dock-left {
+    left: 0;
+    right: auto;
+    border-radius: 0 18px 18px 0;
+    box-shadow: 8px 0 30px rgba(43, 35, 32, 0.3);
+    animation-name: sheet-in-left;
+  }
+  .panel.panel-paths::before {
+    display: none;
   }
   .panel-paths .tower-head {
     gap: 8px;
@@ -3169,6 +3188,18 @@ img.act-scene {
   }
   .path-adds {
     font-size: 10.5px;
+  }
+}
+@keyframes sheet-in-right {
+  from {
+    transform: translateX(40%);
+    opacity: 0.4;
+  }
+}
+@keyframes sheet-in-left {
+  from {
+    transform: translateX(-40%);
+    opacity: 0.4;
   }
 }
 @keyframes sheet-up {

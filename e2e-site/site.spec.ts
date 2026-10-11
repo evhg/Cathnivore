@@ -439,6 +439,10 @@ test.describe('Hedgerow', () => {
     await expect(page.locator('#panel .build-chip')).toHaveText('2-0-0')
     await expect(page.locator('button.path-buy')).toHaveCount(3)
     await expectSpecChoiceVisible(page, 'button.path-buy')
+    // The sheet docks to one side, so the tower being grown stays in view beside it (M4 review).
+    const at = await page.evaluate(([c, r]) => (window as unknown as { hedgerow: { cellCenter(c: number, r: number): { x: number; y: number } } }).hedgerow.cellCenter(c, r), PLOT6)
+    const sheet = (await page.locator('#panel').boundingBox())!
+    expect(at.x < sheet.x || at.x > sheet.x + sheet.width).toBe(true)
   })
 
   test('Hedgerow 2 M4: buys every path of all five path towers at 844x390, and the crosspath rule shuts the third', async ({ page }) => {

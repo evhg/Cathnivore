@@ -1558,6 +1558,10 @@ function towerName(t: Tower): string {
  */
 function pathCard(p: HTMLElement, g: Game, t: Tower): void {
   p.classList.add("panel-tower", "panel-paths");
+  // A landscape phone docks the sheet to the side away from the tower, so the tower being grown stays in view
+  // (styles.css; portrait keeps the bottom sheet, under the field's top half).
+  const at = renderer?.cellCenter(t.col, t.row);
+  p.classList.toggle("dock-left", !!at && at.x > window.innerWidth / 2);
   const st = towerStats(t);
   const path: Path = t.path ?? legacyPath(t.tier, t.spec);
   const head = document.createElement("div");
