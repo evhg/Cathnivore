@@ -27,64 +27,75 @@ function commit(): string {
   }
 }
 
+// `--only=landing,runnel` rebuilds just those parts into an existing dist-site/ (a quick local loop for
+// UI work); the full build (no flag) is what Vercel runs.
+const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7).split(',')
+const want = (name: string): boolean => !only || only.includes(name)
+
 async function main(): Promise<void> {
-  rmSync(out, { recursive: true, force: true })
+  if (!only) rmSync(out, { recursive: true, force: true })
   mkdirSync(out, { recursive: true })
 
-  console.log('\n=== Landing page ===')
-  await build({
-    configFile: false,
-    root: resolve(root, 'site'),
-    base: '/',
-    publicDir: resolve(root, 'site/public'),
-    logLevel: 'warn',
-    build: { outDir: out, emptyOutDir: false, assetsDir: 'site-assets' },
-  })
+  if (want('landing')) {
+    console.log('\n=== Landing page ===')
+    await build({
+      configFile: false,
+      root: resolve(root, 'site'),
+      base: '/',
+      publicDir: resolve(root, 'site/public'),
+      logLevel: 'warn',
+      build: { outDir: out, emptyOutDir: false, assetsDir: 'site-assets' },
+    })
+  }
+  if (want('runnel')) {
+    console.log('\n=== Runnel ===')
+    await build({
+      configFile: false,
+      root: resolve(root, 'games/runnel'),
+      base: '/runnel/',
+      publicDir: resolve(root, 'games/runnel/public'),
+      logLevel: 'warn',
+      build: { outDir: resolve(out, 'runnel'), emptyOutDir: true },
+    })
+  }
+  if (want('hedgerow')) {
+    console.log('\n=== Hedgerow ===')
+    await build({
+      configFile: false,
+      root: resolve(root, 'games/hedgerow'),
+      base: '/hedgerow/',
+      publicDir: resolve(root, 'games/hedgerow/public'),
+      logLevel: 'warn',
+      build: { outDir: resolve(out, 'hedgerow'), emptyOutDir: true },
+    })
+  }
+  if (want('cathode')) {
+    console.log('\n=== CATHODE ===')
+    await build({
+      configFile: false,
+      root: resolve(root, 'games/cathode'),
+      base: '/cathode/',
+      publicDir: resolve(root, 'games/cathode/public'),
+      logLevel: 'warn',
+      build: { outDir: resolve(out, 'cathode'), emptyOutDir: true, chunkSizeWarningLimit: 1500 },
+    })
+  }
+  if (want('cathnivore')) {
+    console.log('\n=== Cathnivore ===')
+    process.env.CATHNIVORE_BASE = '/cathnivore/'
+    process.env.CATHNIVORE_OUT_DIR = 'dist-site/cathnivore'
+    await build({ configFile: resolve(root, 'vite.config.ts'), root, logLevel: 'warn' })
+    delete process.env.CATHNIVORE_BASE
+    delete process.env.CATHNIVORE_OUT_DIR
 
-  console.log('\n=== Runnel ===')
-  await build({
-    configFile: false,
-    root: resolve(root, 'games/runnel'),
-    base: '/runnel/',
-    publicDir: resolve(root, 'games/runnel/public'),
-    logLevel: 'warn',
-    build: { outDir: resolve(out, 'runnel'), emptyOutDir: true },
-  })
-
-  console.log('\n=== Hedgerow ===')
-  await build({
-    configFile: false,
-    root: resolve(root, 'games/hedgerow'),
-    base: '/hedgerow/',
-    publicDir: resolve(root, 'games/hedgerow/public'),
-    logLevel: 'warn',
-    build: { outDir: resolve(out, 'hedgerow'), emptyOutDir: true },
-  })
-
-  console.log('\n=== CATHODE ===')
-  await build({
-    configFile: false,
-    root: resolve(root, 'games/cathode'),
-    base: '/cathode/',
-    publicDir: resolve(root, 'games/cathode/public'),
-    logLevel: 'warn',
-    build: { outDir: resolve(out, 'cathode'), emptyOutDir: true, chunkSizeWarningLimit: 1500 },
-  })
-
-  console.log('\n=== Cathnivore ===')
-  process.env.CATHNIVORE_BASE = '/cathnivore/'
-  process.env.CATHNIVORE_OUT_DIR = 'dist-site/cathnivore'
-  await build({ configFile: resolve(root, 'vite.config.ts'), root, logLevel: 'warn' })
-  delete process.env.CATHNIVORE_BASE
-  delete process.env.CATHNIVORE_OUT_DIR
-
-  // The game's index.html hard-codes a root manifest link next to the one vite-plugin-pwa injects under
-  // the base path; drop the root one so the browser only sees the game's own manifest.
-  const gameHtml = resolve(out, 'cathnivore/index.html')
-  writeFileSync(
-    gameHtml,
-    readFileSync(gameHtml, 'utf8').replace('<link rel="manifest" href="/manifest.webmanifest" />\n', ''),
-  )
+    // The game's index.html hard-codes a root manifest link next to the one vite-plugin-pwa injects under
+    // the base path; drop the root one so the browser only sees the game's own manifest.
+    const gameHtml = resolve(out, 'cathnivore/index.html')
+    writeFileSync(
+      gameHtml,
+      readFileSync(gameHtml, 'utf8').replace('<link rel="manifest" href="/manifest.webmanifest" />\n', ''),
+    )
+  }
 
   // Shared root files: Cathnivore's store listing links to /privacy and /support, its manifest and
   // social card use root icon paths, and every page loads fonts from /fonts.

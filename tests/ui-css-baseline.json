@@ -38,10 +38,8 @@
     "raw-colour": 1
   },
   "site/src/styles.css": {
-    "px-font-size": 9,
     "z-index-literal": 2,
-    "raw-colour": 82,
-    "font-face-legacy-path": 4
+    "raw-colour": 72
   },
   "src/styles/campaign.css": {
     "px-font-size": 9,

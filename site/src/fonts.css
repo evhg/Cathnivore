@@ -1,0 +1,47 @@
+/* Landing type (docs/design/aaa-ui.md "Landing"): Site Display (Fraunces, opsz + wght), Site UI
+   (Instrument Sans), Site Voice (Instrument Serif italic, Cath's line). Latin files only, hashed by Vite.
+   The *Fallback faces are local fonts metric-matched to each webfont (measured in Chromium against the
+   metric-compatible Liberation fonts), so the swap doesn't shift the layout. */
+@font-face {
+  font-family: "Site Display";
+  src: url("../../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Site UI";
+  src: url("../../node_modules/@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Site Voice";
+  src: url("../../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Site Display Fallback";
+  src: local("Times New Roman"), local("Liberation Serif"), local("Georgia");
+  size-adjust: 93.3%;
+  ascent-override: 105%;
+  descent-override: 27.9%;
+}
+@font-face {
+  font-family: "Site UI Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 102.3%;
+  ascent-override: 94.8%;
+  descent-override: 24.4%;
+}
+@font-face {
+  font-family: "Site Voice Fallback";
+  font-style: italic;
+  src: local("Times New Roman Italic"), local("Liberation Serif Italic"), local("Georgia Italic");
+  size-adjust: 86.2%;
+  ascent-override: 114.9%;
+  descent-override: 36%;
+}
