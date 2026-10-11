@@ -1,0 +1,80 @@
+/* Cathnivore components, "Market Day Press" (AAA UI M4; docs/design/aaa-ui-specs.md "cathnivore" §4).
+   Loaded after global.css. Tokens only: colours, materials, radii, elevation and z-layers live in
+   tokens.css. Player-side things are paper, card stock, ink and wax; only the corporations get gloss. */
+
+/* ---- 4.1 Frame: card stock ---- */
+.frame {
+  position: relative;
+  isolation: isolate;
+  background: var(--mat-card);
+  border-radius: var(--r-card);
+  border: 1px solid var(--ink-a35);
+  box-shadow: var(--inset-hi), var(--inset-lo), var(--e3);
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  container: frame / inline-size;
+}
+
+/* A double rule under the title, like a ledger head. Replaces the bare h2/h3 of the old panels. */
+.frame > .frame-title,
+.frame > header > .frame-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-3);
+  padding-bottom: var(--sp-2);
+  font: 640 var(--fs-h3)/1.15 var(--font-display);
+  font-variation-settings: "opsz" 36;
+  color: var(--soil);
+  text-wrap: balance;
+  background:
+    linear-gradient(var(--ink-a35) 0 0) bottom / 100% 1px no-repeat,
+    linear-gradient(var(--ink-a15) 0 0) 0 calc(100% - 3px) / 100% 1px no-repeat;
+}
+
+.frame-title .label {
+  margin-left: auto;
+}
+
+.frame--ledger {
+  background: var(--mat-ledger);
+}
+
+/* The Market: a kraft produce tray. Text never sits on bare kraft: the cards carry their own card stock. */
+.frame--tray {
+  background: var(--mat-kraft);
+  border-color: rgb(var(--shadow-ink) / .5);
+}
+
+.frame--tray > .frame-title {
+  color: var(--ink);
+  background:
+    linear-gradient(var(--ink-a60) 0 0) bottom / 100% 1px no-repeat,
+    linear-gradient(var(--ink-a35) 0 0) 0 calc(100% - 3px) / 100% 1px no-repeat;
+}
+
+@container frame (width < 300px) {
+  .frame-title {
+    font-size: var(--fs-body);
+  }
+}
+
+/* A frame never sits inside a frame: a nested group is a hairline and some air. */
+.group {
+  border-top: 1px solid var(--ink-a15);
+  padding-top: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+.group:first-child {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* A small tracked-caps label (four words or fewer, weight 700+, STYLE §4). */
+.label {
+  font: 760 var(--fs-label)/1.2 var(--font-text);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}

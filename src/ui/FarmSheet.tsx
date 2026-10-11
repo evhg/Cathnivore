@@ -13,8 +13,8 @@ const TAG_LABEL = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community:
 export default function FarmSheet({ state, onClose, inline }: { state: GameState; onClose(): void; inline?: boolean }) {
   if (inline) {
     return (
-      <div className="sheet-panel farm-sheet">
-        <h2>Farm</h2>
+      <div className="sheet-panel farm-sheet frame frame--ledger">
+        <h2 className="frame-title">Farm</h2>
         {state.config.producers.map((id) => (
           <FarmColumn key={id} state={state} producer={id} hideSummary={state.config.producers.length === 1} />
         ))}

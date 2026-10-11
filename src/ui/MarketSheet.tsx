@@ -84,8 +84,8 @@ export default function MarketSheet({
   // outside the <details> so buying never requires expanding a card first.
   if (inline) {
     return (
-      <div className="sheet-panel card-sheet">
-        <h2>Market</h2>
+      <div className="sheet-panel card-sheet frame frame--tray">
+        <h2 className="frame-title">Market</h2>
         <ul className="card-list card-list-collapsible">
           {state.market.map((id, slot) => {
             if (!id) return <li key={slot} className="card-empty" />

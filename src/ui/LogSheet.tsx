@@ -56,8 +56,8 @@ export default function LogSheet({
   // first added, see DECISIONS.md).
   if (inline) {
     return (
-      <div className="sheet-panel log-sheet" tabIndex={0} role="region" aria-label="Turn log">
-        <h2>Log</h2>
+      <div className="sheet-panel log-sheet frame frame--ledger" tabIndex={0} role="region" aria-label="Turn log">
+        <h2 className="frame-title">Log</h2>
         {entries}
       </div>
     )

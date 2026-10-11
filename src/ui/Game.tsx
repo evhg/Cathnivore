@@ -1151,7 +1151,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           focusable descendants of its own, which the right column hit at random in this session's
           testing. */}
       <aside className="desktop-col desktop-col-left" tabIndex={0}>
-        {isDesktop && <div className="sheet-panel producer-sheet">{producerPanel}</div>}
+        {isDesktop && <div className="sheet-panel producer-sheet frame">{producerPanel}</div>}
         <FarmSheet state={state} onClose={() => {}} inline />
         {/* ROADMAP 8: the actions tray lives here on desktop, not the right column — Market/Cath's Plan/Log
             already claim nearly all of the right column's height budget on their own (measured directly:
@@ -1161,8 +1161,8 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             DOM matches regardless of `display: none` — e2e/tooltip.spec.ts caught this directly. Wrapped in
             `.sheet-panel` to match the tray it sits alongside. */}
         {isDesktop && (
-          <div className="sheet-panel actions-sheet">
-            <h2>Actions</h2>
+          <div className="sheet-panel actions-sheet frame">
+            <h2 className="frame-title">Actions</h2>
             {actionsPanel}
             {controls}
           </div>

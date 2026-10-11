@@ -81,8 +81,8 @@ export default function CathsPlanSheet({
   // expanded, cutting the right column's fixed height while the Play button stays outside the <details>.
   if (inline) {
     return (
-      <div className="sheet-panel card-sheet">
-        <h2>Cath&rsquo;s Plan</h2>
+      <div className="sheet-panel card-sheet frame">
+        <h2 className="frame-title">Cath&rsquo;s Plan</h2>
         <ul className="card-list card-list-collapsible">
           {state.freeSchemePlays > 0 && (
             <li className="card-note">Cath&rsquo;s Plan grants a free Scheme play — no Goodwill needed this once.</li>

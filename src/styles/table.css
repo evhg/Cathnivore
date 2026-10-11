@@ -43,9 +43,6 @@
   /* The producer card heads the left tray, above the Farm panel and the actions it acts with. */
   .desktop-col-left > .producer-sheet {
     flex: none;
-    padding: 10px 14px;
-    background:
-      linear-gradient(180deg, var(--surface) 0%, var(--paper-2) 100%);
   }
 
   .producer-sheet .active-producer,
@@ -212,4 +209,9 @@
     width: 34px;
     height: 41px;
   }
+}
+
+/* ---- AAA UI M4: the table sits on paper; the side columns are frames with no outer box ---- */
+.game-layout {
+  background: var(--mat-paper);
 }

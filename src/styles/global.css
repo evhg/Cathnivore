@@ -199,13 +199,6 @@ h3 {
     min-height: 0;
   }
 
-  .desktop-col .sheet-panel {
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 12px;
-    padding: 12px 16px;
-  }
-
   .game {
     max-width: none;
     min-height: 0;
@@ -329,7 +322,7 @@ h3 {
   bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 20;
+  z-index: var(--z-tooltip);
   width: max-content;
   max-width: 240px;
   background: var(--ink);
@@ -518,7 +511,7 @@ h3 {
   align-items: flex-end;
   justify-content: center;
   background: color-mix(in srgb, var(--ink) 45%, transparent);
-  z-index: 10;
+  z-index: var(--z-sheet);
 }
 
 .sheet {
@@ -889,7 +882,7 @@ h3 {
   border-radius: 50% 50% 16px 16px;
   overflow: hidden;
 }
-.end-screen-hero > * { position: relative; z-index: 1; }
+.end-screen-hero > * { position: relative; z-index: var(--z-raised); }
 .end-screen-hero::before {
   content: '';
   position: absolute;
@@ -1251,17 +1244,6 @@ html.no-animations .end-screen-hero.is-win::before { animation: none; }
     gap: 10px;
   }
 
-  .desktop-col .sheet-panel {
-    padding: 8px 10px;
-  }
-
-  /* Sheet-panel headings (Farm/Market/Cath's Plan/Log) were still at the browser's UA-default h2 size
-     (~24px, since `h2 { margin: 0 }` above never sets a size) — comfortably above STYLE.md's legibility
-     floors even shrunk, and each of the 4 desktop panels pays this cost once. */
-  .desktop-col h2 {
-    font-size: 18px;
-    margin-bottom: 4px;
-  }
 
   /* `.actions` (13 items in a full game, 5 rows in the 3-column grid above) measured at 380px — the single
      largest contributor to the centre column's remaining shortfall. The 44px `min-height` on the base
@@ -1462,7 +1444,7 @@ button.destructive {
 .end-screen > button:last-child {
   position: sticky;
   bottom: 12px;
-  z-index: 5;
+  z-index: var(--z-sticky);
   min-width: 200px;
   box-shadow: 0 0 14px 12px color-mix(in srgb, var(--paper) 85%, transparent), 0 6px 18px color-mix(in srgb, var(--ink) 30%, transparent);
   animation: end-rise 0.4s ease 0.9s both;
@@ -1629,11 +1611,11 @@ html.no-animations .stat-card { animation: none; }
 
 /* Horizon silhouettes under each chapter's wash: rolling hills for the countryside chapters, a town skyline for the last two. */
 .scene[class*='scene-bg-']::before {
-  content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 22vh; max-height: 180px; pointer-events: none; z-index: 0;
+  content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 22vh; max-height: 180px; pointer-events: none; z-index: var(--z-base);
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80' preserveAspectRatio='none'%3E%3Cpath d='M0 50 Q60 20 120 44 T240 38 T400 46 V80 H0Z' fill='%23000' fill-opacity='.12'/%3E%3Cpath d='M0 64 Q80 44 170 60 T400 58 V80 H0Z' fill='%23000' fill-opacity='.14'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
 }
 .scene.scene-bg-friends-in-low-places::before, .scene.scene-bg-kingsmarket::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80' preserveAspectRatio='none'%3E%3Cpath d='M0 80V52h22v-12h18v12h16V30h14v22h24V44h20v8h18V24l8-8 8 8v28h22V46h20v6h26V36h16v16h28V42h20v10h24H400V80Z' fill='%23000' fill-opacity='.16'/%3E%3C/svg%3E") !important; }
-.scene[class*='scene-bg-'] > * { position: relative; z-index: 1; }
+.scene[class*='scene-bg-'] > * { position: relative; z-index: var(--z-raised); }
 
 @keyframes scene-in {
   from { opacity: 0; transform: translateY(8px); }
@@ -1739,7 +1721,7 @@ html.no-animations .stat-card { animation: none; }
   top: 0;
   background: var(--paper);
   padding: 8px 0;
-  z-index: 2;
+  z-index: var(--z-lift);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
@@ -2168,7 +2150,7 @@ html.native-app body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 50;
+  z-index: var(--z-fx);
   box-shadow: inset 0 0 90px 10px rgba(190, 40, 40, 0.55);
   animation: danger-flash 700ms var(--ease-settle) forwards;
 }
@@ -2198,7 +2180,7 @@ html.native-app body {
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
-  z-index: 40;
+  z-index: var(--z-banner);
   padding: 6px 22px;
   border-radius: 999px;
   background: var(--paper, #fbf3e2);
@@ -2483,7 +2465,7 @@ html.no-animations .card-enter {
 .producer-card .pc-name { font-size: 1.05em; }
 .producer-card .pc-pick { position: absolute; top: 8px; right: 8px; align-self: auto; padding: 2px 8px; border-radius: 999px; background: var(--wheat); color: #2b2118; transform: scale(0.8); transition: opacity var(--dur-quick) ease, transform var(--dur-quick) var(--ease-pop, ease); }
 .producer-card:has(input:checked) .pc-pick { transform: scale(1); }
-.setup > button.primary { position: sticky; bottom: 12px; z-index: 5; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+.setup > button.primary { position: sticky; bottom: 12px; z-index: var(--z-sticky); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
 /* ROADMAP 205: on wide screens the sticky Start spans the setup column, so it reads as the primary action */
 @media (min-width: 700px) { .setup > button.primary { width: 100%; min-height: 52px; font-size: 1.1rem; } }
 .setup { padding-bottom: 88px; } /* ROADMAP 171: last card clears the sticky Start */

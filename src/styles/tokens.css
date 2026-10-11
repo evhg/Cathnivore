@@ -53,6 +53,84 @@
   --font-voice: "Marrow Display", "Marrow Voice Fallback", Georgia, serif;
   --focus: #1F5F99;
   --focus-halo: #F4EDE1;
+
+  /* ---- AAA UI M4 "Market Day Press" (docs/design/aaa-ui.md, aaa-ui-specs.md "cathnivore" §3) ---- */
+  --paper-3: #DDCFB8;          /* stacked-sheet edge, deckle shadow, the tabletop */
+  --paper-hi: #FBF6EC;         /* paper tooth highlight (at most 6% lighter, STYLE §14) */
+  --card-lo: #F6F0E4;          /* card stock foot */
+  --newsprint: #F7F4EC;        /* Agenda clippings (stay light in dark mode: they are objects) */
+  --newsprint-lo: #EFEAE0;
+  --newsprint-ink: #2B2320;
+  --kraft: #CFAE7E;            /* market tray, tab rail: a fill only, never under bare text */
+  --kraft-lo: #C49F6E;
+  --wheat-ink: #7A5B14;        /* wheat as text: 5.41:1 on paper */
+  --wheat-hi: #E8C877;         /* wheat foil highlight */
+  --seal: #2F4A1F;             /* wax-seal dark */
+  --primary-hi: #4E7631;       /* primary button top-light */
+  --danger-hi: #A94B36;
+  --danger-lip: #6A2B1E;
+  --hollowell-ink: #7A2E00;
+  --candor-ink: #0B4F5C;
+  --hollowell-lo: #E5620A;
+  --candor-lo: #23A6BF;
+  --ink-a08: rgb(43 35 32 / .08);
+  --ink-a15: rgb(43 35 32 / .15);
+  --ink-a35: rgb(43 35 32 / .35);
+  --ink-a60: rgb(43 35 32 / .60);
+  --white-a55: rgb(255 255 255 / .55);
+  --shadow-ink: 28 18 10;      /* warm brown shadow channel, never black */
+  --scrim: rgb(30 22 16 / .52);
+  --tape: rgb(217 180 90 / .55);
+  --foil-wheat: linear-gradient(135deg, var(--wheat-hi), var(--wheat) 45%, var(--wheat-ink) 55%, var(--wheat-hi));
+
+  /* materials: a static grain (alpha capped so it averages about .06) plus paper tooth */
+  --grain-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.62' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .17 0 0 0 0 .13 0 0 0 0 .1 0 0 0 .13 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --fibres: repeating-linear-gradient(97deg, rgb(43 35 32 / .018) 0 1px, transparent 1px 7px);
+  --halftone: radial-gradient(rgb(43 35 32 / .10) .7px, transparent .9px) 0 0 / 4px 4px;
+  --ruled: repeating-linear-gradient(transparent 0 23px, rgb(62 110 126 / .16) 23px 24px);
+  --mat-paper: var(--grain-paper), var(--fibres), radial-gradient(140% 90% at 30% 0%, var(--paper-hi), var(--paper));
+  --mat-card: var(--grain-paper), linear-gradient(180deg, var(--surface), var(--card-lo));
+  --mat-ledger: var(--grain-paper), var(--ruled), linear-gradient(var(--surface), var(--card-lo));
+  --mat-news: var(--halftone), var(--grain-paper), linear-gradient(var(--newsprint), var(--newsprint-lo));
+  --mat-kraft: var(--grain-paper), linear-gradient(180deg, var(--kraft), var(--kraft-lo));
+  --mat-plastic-h: linear-gradient(180deg, var(--hollowell-highlight) 0 14%, var(--hollowell) 42%, var(--hollowell-lo));
+  --mat-plastic-c: linear-gradient(180deg, var(--candor-highlight) 0 14%, var(--candor) 42%, var(--candor-lo));
+  --stamp-wear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  --torn-top: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 6 L3 1.5 L6 4 L9 0.5 L12 6 Z'/%3E%3C/svg%3E");
+  --torn-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='12'%3E%3Cpath d='M0 0 L1.5 3 L4.5 6 L1 9 L0 12 Z'/%3E%3C/svg%3E");
+
+  /* radii, elevation (paper edge plus a warm soft lift), glows */
+  --r-xs: 4px; --r-sm: 8px; --r-card: 10px; --r-btn: 12px; --r-sheet: 16px;
+  --e1: 0 1px 0 var(--ink-a15);
+  --e2: 0 1px 0 var(--ink-a15), 0 3px 8px -3px rgb(var(--shadow-ink) / .22);
+  --e3: 0 1px 0 var(--ink-a15), 0 2px 0 -1px var(--paper-3), 0 10px 22px -10px rgb(var(--shadow-ink) / .35);
+  --e4: 0 1px 0 var(--ink-a15), 0 18px 40px -16px rgb(var(--shadow-ink) / .45);
+  --e5: 0 30px 70px -24px rgb(var(--shadow-ink) / .55);
+  --inset-hi: inset 0 1px 0 var(--white-a55);
+  --inset-lo: inset 0 -2px 0 var(--ink-a08);
+  --glow-select: 0 0 0 3px var(--wheat), 0 0 0 7px rgb(217 180 90 / .30);
+  --glow-target: 0 0 0 3px var(--wheat), 0 0 18px 4px rgb(217 180 90 / .55);
+  --glow-danger: 0 0 0 2px var(--clay-deep), 0 0 16px rgb(158 68 48 / .45);
+
+  /* z-layers: every z-index in src/styles names one of these */
+  --z-under: -1; --z-base: 0; --z-raised: 1; --z-lift: 2; --z-map-fx: 5; --z-hud: 10; --z-sticky: 20;
+  --z-tooltip: 30; --z-sheet: 40; --z-banner: 50; --z-modal: 60; --z-toast: 70; --z-fx: 80; --z-pass-device: 90;
+
+  /* type scale, fluid between 390 and 1440 */
+  --fs-label: clamp(.75rem, .74rem + .05vw, .78rem);
+  --fs-caption: clamp(.8125rem, .79rem + .1vw, .875rem);
+  --fs-small: clamp(.875rem, .85rem + .1vw, .9375rem);
+  --fs-body: clamp(1rem, .97rem + .1vw, 1.0625rem);
+  --fs-lead: clamp(1.0625rem, 1rem + .29vw, 1.25rem);
+  --fs-voice: clamp(1.0625rem, 1.02rem + .19vw, 1.1875rem);
+  --fs-h3: clamp(1.125rem, 1.08rem + .29vw, 1.3125rem);
+  --fs-h2: clamp(1.625rem, 1.44rem + .76vw, 2.125rem);
+  --fs-h1: clamp(2.25rem, 1.65rem + 2.29vw, 3.75rem);
+  --fs-num-hud: clamp(1.125rem, 1.08rem + .19vw, 1.25rem);
+  --fs-num-hero: clamp(3rem, 2.07rem + 3.8vw, 5.5rem);
+
+  /* motion: corporations are mechanical and never overshoot */
+  --ease-corp: cubic-bezier(.45, 0, .55, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -74,6 +152,22 @@
     --region-crop: #574A2A;
     --region-coast: #2F474C;
     --region-capital: #52432F;
+    --paper-3: #3A322C;
+    --paper-hi: #24201C;
+    --card-lo: #2D2722;
+    --wheat-ink: #E5C46F;
+    --kraft: #5A4631;
+    --kraft-lo: #4C3B29;
+    --ink-a08: rgb(241 233 220 / .06);
+    --ink-a15: rgb(241 233 220 / .12);
+    --ink-a35: rgb(241 233 220 / .28);
+    --ink-a60: rgb(241 233 220 / .55);
+    --white-a55: rgb(255 255 255 / .07);
+    --shadow-ink: 0 0 0;
+    --scrim: rgb(0 0 0 / .6);
+    --grain-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.62' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .95 0 0 0 0 .9 0 0 0 0 .82 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --fibres: repeating-linear-gradient(97deg, rgb(241 233 220 / .012) 0 1px, transparent 1px 7px);
+    --ruled: repeating-linear-gradient(transparent 0 23px, rgb(111 163 179 / .14) 23px 24px);
   }
 }
 
@@ -95,4 +189,20 @@
   --region-crop: #574A2A;
   --region-coast: #2F474C;
   --region-capital: #52432F;
+  --paper-3: #3A322C;
+  --paper-hi: #24201C;
+  --card-lo: #2D2722;
+  --wheat-ink: #E5C46F;
+  --kraft: #5A4631;
+  --kraft-lo: #4C3B29;
+  --ink-a08: rgb(241 233 220 / .06);
+  --ink-a15: rgb(241 233 220 / .12);
+  --ink-a35: rgb(241 233 220 / .28);
+  --ink-a60: rgb(241 233 220 / .55);
+  --white-a55: rgb(255 255 255 / .07);
+  --shadow-ink: 0 0 0;
+  --scrim: rgb(0 0 0 / .6);
+  --grain-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.62' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .95 0 0 0 0 .9 0 0 0 0 .82 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --fibres: repeating-linear-gradient(97deg, rgb(241 233 220 / .012) 0 1px, transparent 1px 7px);
+  --ruled: repeating-linear-gradient(transparent 0 23px, rgb(111 163 179 / .14) 23px 24px);
 }
