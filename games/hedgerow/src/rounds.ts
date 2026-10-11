@@ -103,6 +103,9 @@ export const SWAPS: Record<number, Record<number, BookRound>> = {
   // two; round 11 is a short sharp Same-Day rush; and the drone round closes on a long rush that a field still on
   // tier 2 has to answer, and that dents a small or badly placed tier 3 field (four on random plots still win).
   1: {
+    // M4: a little lighter on the farm (towers now grow a tier at a time along paths), so four Scarecrows on
+    // whichever plots looked right still see the wrap off.
+    8: { theme: "Bubble wrap", card: "Round 8: the first bubble-wrapped Same-Day vans. Wrap cushions blasts; beaks and stings pop it.", groups: [g("pickup", 40, 0.3), g("sprinter", 16, 0.595, 3.4, ["wrapped"]), g("van", 34, 0.3, 1.7)] },
     10: { theme: "The first Box Lorry", card: "Round 10: Box Lorries. Pop the box and two Same-Day vans burst out.", groups: [g("lorry", 10, 1.0, 2.8), g("sprinter", 40, 0.26), g("pickup", 38, 0.26, 1.4)] },
     11: { theme: "Farm gate rush", card: "A spike: forty-five Same-Day vans through the farm gate in two seconds.", spike: true, groups: [g("sprinter", 45, 0.035)] },
     12: { theme: "Drone swarm", card: "Round 12: drones and quadcopters, then a hundred Same-Day vans racing home under them.", spike: true, groups: [g("drone", 100, 0.1), g("quad", 45, 0.22, 2.1), g("sprinter", 100, 0.07, 10)] },

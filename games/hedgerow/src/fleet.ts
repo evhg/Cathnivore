@@ -67,7 +67,7 @@ export const PROPERTIES: Record<Property, PropertyInfo> = {
     glyph: "S",
     lock: "Hedge-camo: no tower can target it unless something reveals it. Passes to what it pops into.",
     why: "Nothing could see it.",
-    key: "A Radio Mast reveals stealth. Cath can only show the towers the two vehicles she is holding.",
+    key: "A Radio Mast reveals stealth; a Scarecrow's Lantern Eyes or a Beehive's Scent see it for themselves. Cath can only show the towers the two vehicles she is holding.",
   },
   airborne: {
     name: "Airborne",
@@ -76,7 +76,7 @@ export const PROPERTIES: Record<Property, PropertyInfo> = {
     glyph: "A",
     lock: "Flies over the hedges: only towers that hit the air can reach it.",
     why: "It flew over everything that only hits the ground.",
-    key: "Scarecrows, Beehives, Windmills and Grain Silos hit the air.",
+    key: "Scarecrows, Beehives, Windmills and Grain Silos hit the air, and so does a Seed Cannon with Air Burst.",
   },
   plated: {
     name: "Plated",
@@ -85,7 +85,7 @@ export const PROPERTIES: Record<Property, PropertyInfo> = {
     glyph: "P",
     lock: "Steel and rivets: immune to Sharp (beaks, thorns, millstones).",
     why: "Beaks and thorns bounced off the steel.",
-    key: "Anything but Sharp gets through steel: a Beehive's stings, a Windmill's gust, a Seed Cannon or Pumpkin Lobber blast, a Grain Silo.",
+    key: "Anything but Sharp gets through steel: a Beehive's stings, a Windmill's gust, a Seed Cannon's blast, a Hawk Post's talons, a Grain Silo.",
   },
   wrapped: {
     name: "Wrapped",
@@ -94,7 +94,7 @@ export const PROPERTIES: Record<Property, PropertyInfo> = {
     glyph: "W",
     lock: "Glossy bubble wrap: it cushions explosions, so it's immune to Blast.",
     why: "The bubble wrap cushioned the blasts.",
-    key: "Beaks, stings and gusts pop bubble wrap; shells and pumpkins don't.",
+    key: "Beaks, stings and gusts pop bubble wrap, and so does a Seed Cannon's Scatter Shot; shells and pumpkins don't.",
   },
   sealed: {
     name: "Sealed",

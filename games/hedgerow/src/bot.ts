@@ -24,7 +24,10 @@ import {
   merge,
   mergeOptions,
   newGame,
+  pathUpgradeCost,
   place,
+  previewPath,
+  previewStats,
   plotKind,
   sendWave,
   specCost,
@@ -41,6 +44,7 @@ import {
   type TowerKind,
 } from "./engine";
 import { P, RUNGS, fvOf } from "./fleet";
+import { BUILD_PREFIX, hasPaths, parseBuild, stepToward, type Path, type PathKind } from "./paths";
 
 export type Skill = "competent" | "naive" | "balanced" | "best" | "idle";
 
@@ -246,19 +250,113 @@ function specFor(game: Game, t: Tower): 0 | 1 {
   }
 }
 
-function upgradeSomething(game: Game, samples: ReturnType<typeof laneSamples>, specs: boolean): boolean {
+/**
+ * Named builds (Hedgerow 2 M4): what a bot grows a path tower into, read from the next few rounds like
+ * specFor. `crow-3-0-2` is a Scarecrow with Flock to 3 and Scythe to 2.
+ */
+export function buildFor(game: Game, t: Tower, smart = true): string {
+  // The naive and balanced bots grow every tower the same plain way, with no detection on the way (a field
+  // without a Mast still learns what stealth is).
+  if (!smart) return SIMPLE_BUILDS[t.kind as PathKind];
+  const th = threatOf(game.level, game.wave, 3);
+  const air = th.total ? th.flying / th.total : 0;
+  const plated = th.total ? th.plated / th.total : 0;
+  const wrapped = th.total ? th.shield / th.total : 0;
+  const stealth = th.stealth > 0;
+  const mast = game.towers.some((o) => o.kind === "mast");
+  const armour = plated > 0.15 || hasTwist(game.level, "armoured");
+  switch (t.kind as PathKind) {
+    case "scarecrow":
+      // Steel: Hawk Post's Crush talons. Stealth with no mast: Lantern Eyes beside the crows.
+      // (Flock first, so it pops in the meantime: BUILD_FIRST.)
+      if (armour) return "crow-2-3-0";
+      if (stealth && !mast) return "crow-3-2-0";
+      return "crow-3-0-2";
+    case "beehive":
+      return th.split || th.total > 30 ? "bees-3-0-2" : "bees-2-0-3";
+    case "cannon":
+      // Bubble wrap cushions blasts: Scatter Shot's Sharp seeds. Air: Air Burst on the way.
+      if (wrapped > 0.15) return "cannon-2-3-0";
+      if (th.boss) return "cannon-0-2-3";
+      return air > 0.15 ? "cannon-3-2-0" : "cannon-3-0-2";
+    case "hedgerow":
+      // The Maze slows; Blackthorn's piles add pops. In a drought slows are weak, so the piles lead.
+      return hasTwist(game.level, "drought") ? "hedge-3-2-0" : "hedge-2-3-0";
+    case "mast":
+      return "mast-2-0-3";
+  }
+}
+
+export const SIMPLE_BUILDS: Record<PathKind, string> = {
+  scarecrow: "crow-3-0-2",
+  hedgerow: "hedge-2-3-0",
+  beehive: "bees-3-2-0",
+  cannon: "cannon-3-2-0",
+  mast: "mast-2-0-3",
+};
+
+/** Builds whose tier 2 path comes first (the bots' order is otherwise the main path to tier 2 first). */
+const BUILD_FIRST: Record<string, 0 | 1 | 2> = { "crow-2-3-0": 0 };
+
+/** The goal build for a path tower: its named build if the tower can still get there, else more of what it has. */
+function goalPath(game: Game, t: Tower, t3: boolean, smart: boolean): Path {
+  const cur = t.path!;
+  const name = buildFor(game, t, smart);
+  const named = parseBuild(name)!.path;
+  // A build that wants its tier 2 path first: until that's done, that's the goal.
+  const first = BUILD_FIRST[name];
+  if (first !== undefined && cur[first] < named[first] && cur.every((n, i) => n <= named[i]!)) {
+    const g: Path = [...cur] as Path;
+    g[first] = named[first];
+    return g;
+  }
+  let goal: Path = cur.every((n, i) => n <= named[i]!) ? named : ([0, 1, 2].map((i) => (cur[i]! > 0 ? Math.max(cur[i]!, named[i]!) : 0)) as Path);
+  if (!t3) goal = goal.map((n) => Math.min(2, n)) as Path;
+  return goal;
+}
+
+/** A path tower's next step towards its goal, and what it costs (null if none or not allowed here). */
+function pathStep(game: Game, t: Tower, t3: boolean, smart: boolean): { i: 0 | 1 | 2; cost: number } | null {
+  const i = stepToward(t.path!, goalPath(game, t, t3, smart));
+  if (i === null) return null;
+  const cost = pathUpgradeCost(game, t, i);
+  return cost === null ? null : { i, cost };
+}
+
+/** The bots' build names, so logs and tests can say what a bot made ("crow-3-0-2"). */
+export function buildOf(t: Tower): string | null {
+  return t.path && hasPaths(t.kind) ? `${BUILD_PREFIX[t.kind]}-${t.path.join("-")}` : null;
+}
+
+function upgradeSomething(game: Game, samples: ReturnType<typeof laneSamples>, specs: boolean, smart = true): boolean {
   const ranked = [...game.towers]
-    .filter((t) => t.tier < (specs ? 4 : 3))
+    .filter((t) => (t.path ? pathStep(game, t, specs, smart) !== null : t.tier < (specs ? 4 : 3)))
     .map((t) => {
-      const st = towerStats(t);
-      // Fleet: a hit is layers times pierce; a tower that pops nothing (mast, hedge, stall) upgrades last.
       const fleet = isFleet(game.level);
-      const value = (st.damage ? (st.damage / st.cooldown) * (fleet ? Math.sqrt(st.pierce) : 1) : fleet ? 0.3 : 8) * (1 + coverage(samples, t.col, t.row, st.range) / 20);
+      // Fleet: a hit is layers times pierce; a tower that pops nothing (mast, hedge, stall) upgrades last.
+      const worth = (st: ReturnType<typeof towerStats>) =>
+        (st.damage ? ((st.damage * st.fan) / st.cooldown) * (fleet ? Math.sqrt(st.pierce) : 1) : fleet ? 0.3 : 8) * (1 + coverage(samples, t.col, t.row, st.range) / 20);
+      const st = towerStats(t);
+      let value = worth(st);
+      // The competent bot on paths (M4): what the next step adds per Mark, so a cheap tier that doubles a
+      // Scarecrow beats a dear one that adds a little to a Seed Cannon.
+      if (smart && fleet && t.path) {
+        const step = pathStep(game, t, specs, smart);
+        const next = step ? previewPath(t, step.i) : null;
+        if (step && next) value = (Math.max(0, worth(next) - value) + 0.05) / step.cost;
+      } else if (smart && fleet) {
+        const cost = t.tier < 3 ? upgradeCost(t) : specCost(t, specFor(game, t));
+        const next = t.tier < 3 ? previewStats(t, { tier: (t.tier + 1) as 2 | 3, spec: null }) : previewStats(t, { tier: 4, spec: specFor(game, t) });
+        value = cost ? (Math.max(0, worth(next) - value) + 0.05) / cost : 0;
+      }
       return { t, value };
     })
     .sort((a, b) => b.value - a.value);
   for (const { t } of ranked) {
-    if (t.tier < 3) {
+    if (t.path) {
+      const st = pathStep(game, t, specs, smart);
+      if (st && game.marks >= st.cost && upgrade(game, t.id, st.i).ok) return true;
+    } else if (t.tier < 3) {
       const c = upgradeCost(t)!;
       if (game.marks >= c && upgrade(game, t.id).ok) return true;
     } else if (specs) {
@@ -304,7 +402,7 @@ function spend(game: Game, skill: Skill, samples: ReturnType<typeof laneSamples>
       if (spot && game.marks >= towerCost(game, kind) && game.towers.length < 3 + game.wave) {
         if (place(game, kind, spot[0], spot[1]).ok) continue;
       }
-      if (upgradeSomething(game, samples, false)) continue;
+      if (upgradeSomething(game, samples, false, false)) continue;
       if (spot && place(game, kind, spot[0], spot[1]).ok) continue;
       return;
     }
@@ -347,7 +445,7 @@ function mergeSomething(game: Game): boolean {
 /** Plays a whole level and returns the finished game. "best" plays it both the competent and the balanced
  * way and returns the better result: the benchmark the tuner uses, so no simple strategy beats the curve
  * just because the benchmark played badly. */
-export function playLevel(level: Level, skill: Skill): Game {
+export function playLevel(level: Level, skill: Skill, watch?: (game: Game) => void): Game {
   if (skill === "best") {
     const a = playLevel(level, "competent");
     const b = playLevel(level, "balanced");
@@ -358,6 +456,7 @@ export function playLevel(level: Level, skill: Skill): Game {
   let guard = 0;
   while (game.phase !== "won" && game.phase !== "lost" && guard++ < 400_000) {
     if (game.phase === "build") {
+      watch?.(game);
       if (skill !== "idle") spend(game, skill, samples);
       sendWave(game);
     } else {

@@ -2,12 +2,16 @@
 // which tips Cath has given, and the Seed Bank (perks bought with stars). One localStorage key; any
 // storage failure degrades to an in-memory copy so the game still plays. Bump `version` and add a
 // migration (with a test) for every shape change. v1 -> v2 (2026-10-02): added seen, tips and bank.
+// v2 -> v3 (2026-10-10, Hedgerow 2 M4): towers grow along three paths; `builds` keeps each path tower's last
+// build. A v2 save had no per-tower data, so it migrates as it is (its tips and stars carry over); an old
+// spec name anywhere maps to its nearest path through paths.ts specToPath.
 
 import { ABILITIES, AUTO_AFTER_CASTS, NO_PERKS, type Ability, type Perks } from "./engine";
 import { applyCath, levelOf, parseCath, xpOf, type CathSave } from "./cath";
+import { PATH_KINDS, pathLegal, specToPath, type Path, type PathKind } from "./paths";
 
 export interface SaveData {
-  version: 2;
+  version: 3;
   /** Best stars per level id (1 to 3). Missing = not cleared. */
   stars: Record<string, number>;
   seenBefore: Record<string, boolean>;
@@ -38,6 +42,17 @@ export interface SaveData {
   casts?: Partial<Record<Ability, number>>;
   /** Abilities the player has switched to Auto (only honoured once earned). Optional in old saves. */
   autoCast?: Partial<Record<Ability, boolean>>;
+  /**
+   * Each path tower's last finished build ("3-0-2"), shown on its sheet as "Last time" (Hedgerow 2 M4).
+   * Optional in old saves.
+   */
+  builds?: Partial<Record<PathKind, Path>>;
+}
+
+/** Remembers the build a path tower ended a level on (its sheet shows it next time). */
+export function recordBuild(data: SaveData, kind: PathKind, path: Path): void {
+  if (!pathLegal(path) || path.every((n) => n === 0)) return;
+  (data.builds ??= {})[kind] = [path[0], path[1], path[2]];
 }
 
 /** Levels where Keep Going is always off, while new players learn the Go and stack rhythm. */
@@ -83,10 +98,10 @@ const KEY = "hedgerow:v1";
 let memory: SaveData | null = null;
 
 export function emptySave(): SaveData {
-  return { version: 2, stars: {}, seenBefore: {}, seen: {}, tips: {}, bank: {} };
+  return { version: 3, stars: {}, seenBefore: {}, seen: {}, tips: {}, bank: {} };
 }
 
-/** Parses stored JSON (v1 or v2), repairing anything unexpected instead of throwing. */
+/** Parses stored JSON (v1, v2 or v3), repairing anything unexpected instead of throwing. */
 export function parseSave(raw: string | null): SaveData {
   const data = emptySave();
   if (!raw) return data;
@@ -111,6 +126,18 @@ export function parseSave(raw: string | null): SaveData {
         const n = obj.casts?.[a];
         if (typeof n === "number" && n >= 1) (data.casts ??= {})[a] = Math.min(9999, Math.floor(n));
         if (obj.autoCast?.[a] === true) (data.autoCast ??= {})[a] = true;
+      }
+      // v3: builds as three tiers; an illegal one (the crosspath rule) is dropped. A build written the old way,
+      // as a tier and a specialisation ({ tier: 4, spec: 1 }), maps to its nearest path.
+      for (const kind of PATH_KINDS) {
+        const b = (obj.builds as Record<string, unknown> | undefined)?.[kind];
+        let path: Path | null = null;
+        if (Array.isArray(b) && b.length === 3 && b.every((n) => typeof n === "number")) path = [b[0], b[1], b[2]] as Path;
+        else if (b && typeof b === "object" && typeof (b as { tier?: unknown }).tier === "number") {
+          const old = b as { tier: number; spec?: unknown };
+          path = specToPath(kind, old.tier, old.spec === 0 || old.spec === 1 ? old.spec : null);
+        }
+        if (path && pathLegal(path) && path.some((n) => n > 0)) (data.builds ??= {})[kind] = path;
       }
       for (const [k, v] of Object.entries(obj.bank ?? {})) {
         const perk = PERKS.find((p) => p.id === k);

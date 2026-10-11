@@ -335,9 +335,48 @@ function plinth(tier: number, spec: 0 | 1 | null): THREE.Group {
   return g;
 }
 
-export function buildTower(kind: TowerKind, tier: number, spec: 0 | 1 | null): THREE.Group {
+/** Path colours (A, B, C), as the sheet and the 2D pips show them. */
+const PATH_RING = ["#e0503a", "#3f8fe0", "#5fb04a"];
+
+/** Which old specialisation body a path tower's tier 3 wears, if any (sprites.ts does the same in 2D). */
+function pathSpecLook(kind: TowerKind, path: readonly number[]): 0 | 1 | null {
+  const top = path.findIndex((n) => n >= 3);
+  if (top < 0) return null;
+  const map: Partial<Record<TowerKind, Array<0 | 1 | null>>> = {
+    scarecrow: [1, null, null],
+    hedgerow: [0, 1, null],
+    beehive: [0, 1, null],
+    cannon: [0, 1, null],
+    mast: [0, null, 1],
+  };
+  return map[kind]?.[top] ?? null;
+}
+
+/** A heap of cut thorn on the lane (a Blackthorn hedge's pile). */
+export function buildThornPile(): THREE.Group {
+  const g = group(scaled(ball(0.13, matte("#5b4330"), 0, 0.0, 0, 0), 1, 0.4, 1));
+  const thorn = matte("#e9e1cf", 0.6);
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2;
+    const c = cone(0.018, 0.12, thorn, Math.cos(a) * 0.08, 0.0, Math.sin(a) * 0.08, 4);
+    c.rotation.z = -Math.cos(a) * 0.9;
+    c.rotation.x = Math.sin(a) * 0.9;
+    g.add(c);
+  }
+  g.add(cone(0.02, 0.14, thorn, 0, 0.02, 0, 4));
+  g.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+  });
+  bake(g);
+  return g;
+}
+
+export function buildTower(kind: TowerKind, tier: number, specIn: 0 | 1 | null, path?: readonly number[]): THREE.Group {
   const root = new THREE.Group();
-  root.add(plinth(tier, spec));
+  // A path tower (Hedgerow 2 M4): its tier 3 may wear an old specialisation's body; addPathParts adds a part
+  // for every tier bought and the tier 3's silhouette.
+  const spec = path ? pathSpecLook(kind, path) : specIn;
+  root.add(plinth(tier, path ? null : spec));
   const body = new THREE.Group();
   body.position.y = 0.08;
   root.add(body);
@@ -927,6 +966,10 @@ export function buildTower(kind: TowerKind, tier: number, spec: 0 | 1 | null): T
     }
   }
   if (!turret.parent) body.add(turret);
+  if (path) {
+    addPathParts(kind, path, body, turret, ud);
+    root.add(pathRim(path));
+  }
   root.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) {
       o.castShadow = true;
@@ -935,6 +978,170 @@ export function buildTower(kind: TowerKind, tier: number, spec: 0 | 1 | null): T
   });
   bake(root);
   return root;
+}
+
+/** Round the plinth's front: a stud per tier bought in its path's colour, and a glowing ring for a tier 3. */
+function pathRim(path: readonly number[]): THREE.Group {
+  const g = new THREE.Group();
+  let k = 0;
+  const n = path.reduce((a, b) => a + b, 0);
+  path.forEach((m, i) => {
+    for (let j = 0; j < m; j++, k++) {
+      const a = Math.PI / 2 + (k - (n - 1) / 2) * 0.32;
+      g.add(ball(j === 2 ? 0.034 : 0.024, glow(PATH_RING[i]!, j === 2 ? 2.2 : 1.2), Math.cos(a) * 0.43, 0.1, Math.sin(a) * 0.43, 0));
+    }
+  });
+  const top = path.findIndex((m) => m >= 3);
+  if (top >= 0) g.add(ring(0.45, 0.022, glow(PATH_RING[top]!, 1.6), 0, 0.085, 0, 28));
+  return g;
+}
+
+/**
+ * Hedgerow 2 M4: what each tier bought looks like on the model (crows, a taller hat, bales, flowers, a hopper,
+ * a flag...), and each tier 3's new outline (a hawk on a perch, a scythe, a tractor, sunflowers, a wrecking
+ * ball, a bell). Parts on the scarecrow's arm swing with it; the rest is static and baked.
+ */
+function addPathParts(kind: TowerKind, path: readonly number[], body: THREE.Group, turret: THREE.Group, ud: Record<string, THREE.Object3D | THREE.Object3D[]>): void {
+  const [a = 0, b = 0, c = 0] = path;
+  const crow = (x: number, y: number, z: number, side: number, s = 1, colour = "#1d1b22") =>
+    scaled(group(ball(0.06, matte(colour), 0, 0, 0, 0), cone(0.02, 0.06, matte(C.gold), 0.06 * side, 0.01, 0, 4), ball(0.012, glow("#ffd23f", 2), 0.04 * side, 0.03, 0.03, 0)), s, s, s).translateX(x).translateY(y).translateZ(z);
+  switch (kind) {
+    case "scarecrow": {
+      const arm = (ud.arm as THREE.Object3D | undefined) ?? turret;
+      // Flock: a crow per tier on the arms; Crow Caller (whose dark coat and arm crows come from the body)
+      // adds a big crow on the hat.
+      if (a >= 1 && a < 3) turret.add(crow(-0.32, 0.03, 0, -1));
+      if (a === 2) turret.add(crow(0.32, 0.03, 0, 1));
+      if (a >= 3) turret.add(crow(0, 0.47, 0.02, 1, 1.5));
+      // Lookout: a taller hat; lantern eyes and a lantern; Hawk Post's perch with a hawk.
+      if (b >= 1) turret.add(cone(0.075, 0.14, matte(C.straw), 0, 0.38, 0, 8));
+      if (b >= 2) {
+        turret.add(ball(0.024, glow("#ffd23f", 3), -0.045, 0.18, 0.115, 0), ball(0.024, glow("#ffd23f", 3), 0.045, 0.18, 0.115, 0));
+        arm.add(lantern(0.33, -0.12, 0.02, "#ffd27a", 1));
+      }
+      if (b >= 3) {
+        body.add(cyl(0.022, 0.03, 1.25, matte(C.woodDark), 0.3, 0, -0.22, 6));
+        body.add(box(0.26, 0.03, 0.03, matte(C.woodDark), 0.3, 1.22, -0.22));
+        const hawk = group(
+          scaled(ball(0.07, matte("#7a4f2a"), 0, 0, 0, 1), 1, 1.25, 1),
+          ball(0.045, matte("#f4ede1"), 0, 0.1, 0.02, 0),
+          rot(cone(0.016, 0.04, matte(C.gold), 0, 0.09, 0.07, 4), Math.PI / 2),
+          rot(box(0.2, 0.012, 0.08, matte("#5c3a1e"), -0.12, 0.02, 0), 0, 0, 0.5),
+          rot(box(0.2, 0.012, 0.08, matte("#5c3a1e"), 0.12, 0.02, 0), 0, 0, -0.5),
+        );
+        body.add(at(hawk, 0.3, 1.34, -0.22));
+      }
+      // Scythe: straw at the wrists; a turnip in each hand; then a scythe and the ring it sweeps.
+      if (c >= 1) for (const sd of [-1, 1]) arm.add(rot(cone(0.05, 0.1, matte(C.straw), sd * 0.42, -0.04, 0, 5), 0, 0, -sd * Math.PI / 2));
+      if (c === 2) for (const sd of [-1, 1]) arm.add(ball(0.05, matte("#efe2f0"), sd * 0.4, 0.02, 0.05, 1), ball(0.035, matte("#8e4a93"), sd * 0.4, -0.01, 0.06, 0));
+      if (c >= 3) {
+        const scythe = group(rot(cyl(0.014, 0.014, 0.8, matte(C.woodDark), 0, -0.4, 0, 6), 0, 0, 0.0));
+        const blade = mesh(geo("scytheBlade", () => new THREE.TorusGeometry(0.2, 0.025, 3, 12, Math.PI * 0.7)), metal("#c9d1d8", 0.25), 0.18, 0.38, 0);
+        blade.rotation.z = Math.PI * 0.35;
+        scythe.add(blade);
+        scythe.rotation.z = -0.9;
+        arm.add(at(scythe, 0.36, 0, 0.06));
+        body.add(ring(0.52, 0.012, glow("#e2c06a", 0.8), 0, 0.03, 0, 32));
+      }
+      break;
+    }
+    case "hedgerow": {
+      const thorn = matte("#e9e1cf", 0.6);
+      if (a >= 1 && a < 3)
+        for (let i = 0; i < 6; i++) {
+          const ang = (i / 6) * Math.PI * 2 + 0.3;
+          const t = cone(0.02, 0.12, thorn, Math.cos(ang) * 0.32, 0.25, Math.sin(ang) * 0.32, 4);
+          t.rotation.z = -Math.cos(ang) * 1.2;
+          t.rotation.x = Math.sin(ang) * 1.2;
+          body.add(t);
+        }
+      if (a >= 2) body.add(at(scaled(buildThornPile(), 0.8, 0.8, 0.8), 0.3, 0.02, 0.3));
+      if (a >= 3) for (let i = 0; i < 7; i++) body.add(cone(0.03, 0.34 + (i % 2) * 0.1, thorn, Math.cos(i * 0.9) * 0.16, 0.5, Math.sin(i * 0.9) * 0.16, 4));
+      if (b >= 1) for (let i = 0; i < 6; i++) body.add(ball(0.03, matte("#5b2a5e", 0.6), Math.cos(i * 1.7) * 0.3, 0.3 + (i % 3) * 0.06, Math.sin(i * 1.7) * 0.3, 0));
+      if (b >= 2) for (const sd of [-1, 1]) body.add(ball(0.17, matte("#3f6e33"), sd * 0.36, 0.16, 0, 1));
+      if (b >= 3) {
+        const wall = matte("#2f5a2a");
+        body.add(box(0.36, 0.18, 0.08, wall, -0.2, 0, 0.42), box(0.08, 0.18, 0.3, wall, -0.4, 0, 0.3), box(0.36, 0.18, 0.08, wall, 0.2, 0, -0.42), box(0.08, 0.18, 0.3, wall, 0.4, 0, -0.3));
+      }
+      if (c >= 1) body.add(box(0.2, 0.12, 0.13, matte(C.straw), -0.36, 0, 0.18), box(0.21, 0.015, 0.135, matte(C.strawDark), -0.36, 0.06, 0.18));
+      if (c >= 2) body.add(hayBale(0.36, 0.2, 0.1, 0.4));
+      if (c >= 3) {
+        const red = matte("#c4433a");
+        const tractor = group(
+          box(0.26, 0.11, 0.14, red, 0, 0.06, 0),
+          box(0.12, 0.14, 0.13, red, -0.06, 0.17, 0),
+          box(0.1, 0.09, 0.135, glass("#bfe8ff"), -0.06, 0.19, 0),
+          cyl(0.012, 0.012, 0.12, iron(), 0.08, 0.17, 0.03, 5),
+        );
+        for (const sd of [-1, 1]) tractor.add(at(rot(cyl(0.085, 0.085, 0.04, matte(C.ink), 0, -0.02, 0, 10), Math.PI / 2), -0.08, 0.085, sd * 0.09), at(rot(cyl(0.05, 0.05, 0.03, matte(C.ink), 0, -0.015, 0, 8), Math.PI / 2), 0.1, 0.05, sd * 0.08));
+        body.add(at(tractor, 0.05, 0, 0.4));
+      }
+      break;
+    }
+    case "beehive": {
+      if (a >= 1) body.add(ring(0.27, 0.025, matte("#c4433a"), 0, 0.35, 0, 16));
+      if (a >= 2) body.add(cyl(0.03, 0.03, 0.07, glow("#7fe06a", 1.2), 0.19, 0.1, -0.19, 8));
+      if (a >= 3) for (let i = 0; i < 4; i++) body.add(ball(0.026, glow("#ff5a4a", 1.6), Math.cos(i * 1.6) * 0.36, 0.5 + (i % 2) * 0.15, Math.sin(i * 1.6) * 0.36, 0));
+      if (b >= 1) body.add(flower(-0.3, 0.32, "#c46ad9", 0.1), flower(0.32, -0.3, "#f2c94c", 0.09));
+      if (b === 2) for (let i = 0; i < 3; i++) body.add(cone(0.03, 0.1, gloss("#f0b429", 0), Math.cos(i * 2.1) * 0.27, 0.14, Math.sin(i * 2.1) * 0.27, 6));
+      if (b >= 3) body.add(at(scaled(cyl(0.5, 0.5, 0.02, gloss("#f0b429", 0), 0, 0, 0, 20), 1, 1, 1), 0, 0.0, 0));
+      if (c >= 1) for (const sd of [-1, 1]) body.add(scaled(ball(0.08, matte("#ffffff", 0.3), sd * 0.3, 0.5, 0, 1), 1, 0.25, 0.6));
+      if (c >= 2) for (let i = 0; i < 4; i++) body.add(flower(Math.cos(i * 1.5 + 0.8) * 0.4, Math.sin(i * 1.5 + 0.8) * 0.4, "#9a7fe8", 0.12));
+      if (c >= 3)
+        for (const sd of [-1, 1]) {
+          body.add(cyl(0.015, 0.02, 0.9, matte(C.leafDark), sd * 0.38, 0, -0.2, 5));
+          const head = group(rot(cyl(0.11, 0.11, 0.02, matte("#f2c94c"), 0, 0, 0, 12), Math.PI / 2), rot(cyl(0.06, 0.06, 0.03, matte("#6b4a2b"), 0, 0, 0, 10), Math.PI / 2));
+          body.add(at(head, sd * 0.38, 0.92, -0.17));
+        }
+      break;
+    }
+    case "cannon": {
+      const barrel = ud.barrel as THREE.Object3D | undefined;
+      if (a >= 1) turret.add(ring(0.12, 0.012, metal("#c9a14a", 0.3), 0, 0.2, 0.0, 14));
+      if (a >= 2) for (const [x, y, z] of [[0.3, 0.04, 0.2], [0.36, 0.04, 0.12], [0.33, 0.1, 0.16]] as const) body.add(ball(0.045, matte(a >= 3 ? "#e98a2b" : "#b08a5a"), x, y, z, 1));
+      if (b >= 1) turret.add(box(0.12, 0.1, 0.12, matte(C.wood), 0, 0.24, -0.14), cone(0.07, 0.06, matte(C.woodDark), 0, 0.34, -0.14, 4));
+      if (b >= 2) {
+        const aa = rot(cyl(0.025, 0.025, 0.28, metal("#5c6066", 0.5), 0, 0, 0, 8), -0.25);
+        turret.add(at(aa, -0.16, 0.12, 0.02));
+      }
+      if (c >= 1 && barrel) barrel.add(rot(cyl(0.05, 0.05, 0.14, metal("#3b3f44", 0.5), 0, 0, 0, 10), Math.PI / 2).translateY(0.0).translateZ(0.38));
+      if (c >= 2 && barrel) for (const z of [0.12, 0.26]) barrel.add(torus(0.065, 0.012, iron(), 0, 0, z, 12));
+      if (c >= 3) {
+        const brass = metal("#c9a14a", 0.35);
+        body.add(cyl(0.025, 0.03, 0.95, brass, -0.32, 0, -0.26, 6));
+        body.add(at(rot(cyl(0.02, 0.02, 0.5, brass, 0, -0.25, 0, 6), 0, 0, Math.PI / 2), -0.08, 0.93, -0.26));
+        body.add(cyl(0.006, 0.006, 0.32, iron(), 0.14, 0.6, -0.26, 4));
+        body.add(ball(0.09, metal("#3b3f44", 0.3), 0.14, 0.55, -0.26, 1));
+      }
+      break;
+    }
+    case "mast": {
+      if (a >= 1) turret.add(cyl(0.005, 0.005, 0.45, metal("#5a5e63", 0.5), 0.04, 0.1, 0, 4), ball(0.02, glow("#ff6a3a", 2), 0.04, 0.56, 0, 0));
+      if (a >= 2) body.add(pennant("#1d1b22", 0.16, 0.6, 0.16, 0.3, 0.14), ball(0.02, matte("#f4ede1"), 0.25, 0.83, 0.16, 0));
+      if (a >= 3) {
+        const big = mesh(geo("bigDish", () => new THREE.SphereGeometry(0.22, 14, 4, 0, Math.PI * 2, 0, Math.PI / 3)), metal("#d9dde2", 0.3), 0, 0, 0);
+        big.rotation.x = -Math.PI / 2;
+        body.add(at(group(big, ball(0.03, glow("#ff3b30", 2.5), 0, 0, 0.12, 0)), 0, 0.62, 0.16));
+      }
+      if (b >= 1) {
+        const flag = group(box(0.16, 0.1, 0.006, matte("#ffffff"), 0.09, 0, 0), box(0.03, 0.08, 0.008, matte("#d9433a"), 0.09, 0, 0), box(0.08, 0.03, 0.008, matte("#d9433a"), 0.09, 0, 0));
+        body.add(at(group(cyl(0.007, 0.007, 0.3, matte(C.woodDark), 0, 0, 0, 5), at(flag, 0, 0.25, 0)), -0.18, 0.3, 0.12));
+      }
+      if (b >= 2) body.add(cone(0.14, 0.2, matte("#fffbe6"), -0.3, 0, 0.26, 4));
+      if (b >= 3) body.add(cone(0.18, 0.26, matte("#fffbe6"), 0.3, 0, -0.28, 4), ball(0.035, glow("#ff3b30", 2), 0.3, 0.3, -0.28, 0));
+      if (c >= 1) turret.add(rot(cone(0.05, 0.12, metal("#9aa0a6", 0.4), 0, -0.06, 0.1, 8), -Math.PI / 2));
+      if (c >= 2) turret.add(ball(0.03, glow("#3f7fd0", 3), -0.08, 0.05, 0, 0));
+      if (c >= 3) {
+        const wood = matte(C.woodDark);
+        turret.add(cyl(0.012, 0.012, 0.22, wood, -0.12, 0.2, 0, 5), cyl(0.012, 0.012, 0.22, wood, 0.12, 0.2, 0, 5), box(0.28, 0.025, 0.025, wood, 0, 0.42, 0));
+        const bell = mesh(geo("bell", () => new THREE.CylinderGeometry(0.035, 0.075, 0.1, 12, 1, true)), metal(C.gold, 0.25), 0, 0.33, 0);
+        turret.add(bell, ball(0.022, glow("#3f7fd0", 2.5), 0.16, 0.3, 0, 0), ball(0.022, glow("#ff3b30", 2.5), -0.16, 0.3, 0, 0));
+      }
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 // ---- enemies ----

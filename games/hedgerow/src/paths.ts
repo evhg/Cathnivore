@@ -1,0 +1,480 @@
+// Upgrade paths (Hedgerow 2 section 3, milestone M4): on fleet levels the Scarecrow, Hedgerow, Beehive, Seed
+// Cannon and Radio Mast grow along three paths of three tiers each (the Crown, tier 4, arrives in M5). A
+// tower's build is `Tower.path`, three numbers such as [3, 2, 0]: "3-2-0".
+//
+// The crosspath rule: a tower buys into at most two paths, and only one of them goes past tier 2. Tier 1 and 2
+// are stat changes you can see, with one utility on tier 2 (detection, air, plating); tier 3 adds a new
+// behaviour and a new silhouette, and opens at level 6 (where specialisations used to).
+//
+// The other towers keep today's tiers and two specialisations; the panel shows them through the legacy
+// adapter (`legacyPath`): tier 2 and tier 3 as path A's first two steps, a specialisation as its third.
+//
+// Rules data only: the engine (engine.ts towerStats, upgrade) applies it. Type-only imports keep this module
+// free of a cycle with engine.ts.
+
+import type { TowerKind } from "./engine";
+import type { DamageType } from "./fleet";
+
+/** A tower's build: tiers bought along paths A, B and C. */
+export type Path = [number, number, number];
+export type PathIndex = 0 | 1 | 2;
+
+/** The towers that grow along paths (M4). The rest use the legacy adapter until M7. */
+export const PATH_KINDS = ["scarecrow", "hedgerow", "beehive", "cannon", "mast"] as const;
+export type PathKind = (typeof PATH_KINDS)[number];
+
+export function hasPaths(kind: TowerKind): kind is PathKind {
+  return (PATH_KINDS as readonly string[]).includes(kind);
+}
+
+/** Tiers per path in M4 (the Crown, tier 4, comes in M5). */
+export const PATH_TIERS = 3;
+/** The level from which a tier 3 can be bought (where the old specialisations opened). */
+export const T3_FIRST_LEVEL = 6;
+
+/**
+ * What one tier changes. Adds and multipliers stack across a tower's tiers in any order; the "set" fields
+ * (type, global, sweep, slow, sticky...) belong to exactly one tier of a tower, so the order never matters.
+ */
+export interface PathMod {
+  /** + layers per hit. */
+  damage?: number;
+  /** + vehicles per shot. */
+  pierce?: number;
+  /** × fire rate (the cooldown is divided by it). */
+  rate?: number;
+  /** × range, then + cells. */
+  range?: number;
+  rangeAdd?: number;
+  /** × splash radius. */
+  splash?: number;
+  /** Sees Stealth itself (only this tower: a Mast reveals for everyone). */
+  detect?: boolean;
+  /** Hits Airborne. */
+  air?: boolean;
+  /** Its damage type changes (Scatter Shot's Sharp seeds, Hawk Post's Crush talons). */
+  type?: DamageType;
+  crit?: { every: number; mult: number };
+  /** Separate targets per shot (Crow Caller's fan of crows). */
+  fan?: number;
+  /** Instead of aimed shots, a 360° sweep of everything in range every this many seconds (Whirling Scythe). */
+  sweep?: number;
+  /** Reaches anywhere on the field (Hawk Post, Broadcast Tower). */
+  global?: boolean;
+  /** Seconds a hit stuns what it hits (not Heavy Plant or Reefer). */
+  stun?: number;
+  /** × layers against a vehicle with a shell of more than one layer (bosses, Plant). */
+  shellMul?: number;
+  /** Layers a hit knocks off Heavy Plant and bosses, at least. */
+  plantDamage?: number;
+  /** Cells a hit shoves what it hits back up the lane (not Heavy Plant or Reefer). */
+  knockback?: number;
+  /** Layers a second for `secs` after a sting; `spread` passes it to everything the vehicle pops into. */
+  poison?: { dps: number; secs: number; spread?: boolean };
+  /** Speed factor everything in range is slowed to (the strongest slow on a vehicle wins). */
+  slow?: number;
+  /** Whatever it hits is slowed to `factor` for `secs`. */
+  sticky?: { factor: number; secs: number };
+  /** Sharp damage a second to everything in reach. */
+  thorns?: number;
+  /** Thorn piles on the lane: each one takes a layer off the next `hits` vehicles to cross it. */
+  piles?: { hits: number; every: number; max: number };
+  /** Every `every` seconds, holds the first `count` non-Plant vehicles in range still for `secs`. */
+  hold?: { secs: number; every: number; count: number };
+  /** Vehicles in range take this much extra (whole layers, carried in fractions per tower). */
+  vuln?: number;
+  /** × fire rate for every tower in range (towers here; the Siren and the Pollinator). */
+  buff?: number;
+  /** × range for every tower in range (the Clinic). */
+  rangeAura?: number;
+  /** Towers in range shake off charm and jam. */
+  cleanse?: boolean;
+  /** Goodwill back after every cleared round. */
+  mend?: number;
+}
+
+export interface PathTier {
+  name: string;
+  blurb: string;
+  cost: number;
+  /** One short line for the sheet: what it adds. */
+  adds: string;
+  mod: PathMod;
+}
+
+export interface PathDef {
+  name: string;
+  /** One word for the column heading on a phone. */
+  short: string;
+  tiers: [PathTier, PathTier, PathTier];
+}
+
+export interface TowerPaths {
+  paths: [PathDef, PathDef, PathDef];
+}
+
+export const PATHS: Record<PathKind, TowerPaths> = {
+  scarecrow: {
+    paths: [
+      {
+        name: "Flock",
+        short: "Flock",
+        tiers: [
+          { name: "Sharp Beaks", cost: 100, adds: "+1 pierce, +10% range", blurb: "The crows on its arms join in: every throw goes through one more vehicle, and they spot from further off.", mod: { pierce: 1, range: 1.1 } },
+          { name: "Quick Crows", cost: 200, adds: "fires 30% faster, +1 pierce, +10% range", blurb: "The crows fetch the turnips back and spot for it from further still: faster throws that go through one more.", mod: { rate: 1.3, pierce: 1, range: 1.1 } },
+          {
+            name: "Crow Caller",
+            cost: 1000,
+            adds: "3 crows a shot, every 3rd crits ×3",
+            blurb: "It calls the whole rookery: three crows to three targets, and every third swoop lands three times as hard.",
+            mod: { fan: 3, pierce: 1, crit: { every: 3, mult: 3 } },
+          },
+        ],
+      },
+      {
+        name: "Lookout",
+        short: "Lookout",
+        tiers: [
+          { name: "Tall Hat", cost: 90, adds: "+25% range", blurb: "A taller hat. It sees further down the lane.", mod: { range: 1.25 } },
+          { name: "Lantern Eyes", cost: 220, adds: "sees Stealth", blurb: "Lanterns behind the eyes: it spots hedge-camo for itself.", mod: { detect: true } },
+          {
+            name: "Hawk Post",
+            cost: 1200,
+            adds: "map-wide, 4 layers, Crush cracks Plated",
+            blurb: "A hawk on the post. It strikes anywhere on the field, and its talons crush steel.",
+            mod: { global: true, damage: 3, type: "crush" },
+          },
+        ],
+      },
+      {
+        name: "Scythe",
+        short: "Scythe",
+        tiers: [
+          { name: "Quick Arms", cost: 110, adds: "fires 30% faster", blurb: "Looser straw in the shoulders. It throws faster.", mod: { rate: 1.3 } },
+          { name: "Two Hands", cost: 240, adds: "2 layers a throw, 15% faster", blurb: "A turnip in each hand: every throw knocks two layers off.", mod: { rate: 1.15, damage: 1 } },
+          {
+            name: "Whirling Scythe",
+            cost: 1300,
+            adds: "spins: hits 8 around it every 0.4 s",
+            blurb: "It takes up the scythe and spins: everything in reach, all round it, every 0.4 seconds.",
+            mod: { sweep: 0.4, pierce: 6 },
+          },
+        ],
+      },
+    ],
+  },
+  hedgerow: {
+    paths: [
+      {
+        name: "Blackthorn",
+        short: "Thorn",
+        tiers: [
+          { name: "Thorny", cost: 60, adds: "scratches: ½ layer/s", blurb: "Blackthorn in the mix. Everything in reach gets scratched.", mod: { thorns: 0.5 } },
+          { name: "Thorn Piles", cost: 130, adds: "drops 8-hit thorn piles", blurb: "Cut thorn heaped in the lane: each pile takes a layer off the next eight vehicles over it.", mod: { piles: { hits: 8, every: 2.5, max: 3 } } },
+          {
+            name: "Hawthorn Spikes",
+            cost: 550,
+            adds: "20-hit piles, faster",
+            blurb: "Hawthorn, the longest spikes in the county. Bigger piles, laid faster.",
+            mod: { piles: { hits: 20, every: 1.6, max: 4 }, thorns: 0.5 },
+          },
+        ],
+      },
+      {
+        name: "Bramble Maze",
+        short: "Maze",
+        tiers: [
+          { name: "Brambles", cost: 50, adds: "slows to 52%", blurb: "Brambles through the hedge: everything slows right down.", mod: { slow: 0.52 } },
+          { name: "Thick Hedge", cost: 110, adds: "slows to 45%, +0.3 range", blurb: "Let it grow out across the lane. It reaches further, and grips harder.", mod: { slow: 0.45, rangeAdd: 0.3 } },
+          { name: "The Maze", cost: 500, adds: "slows to 35%, +30% range", blurb: "A maze of hedge across the lane. Nothing comes through it quickly.", mod: { slow: 0.35, range: 1.3 } },
+        ],
+      },
+      {
+        name: "Haybale",
+        short: "Hay",
+        tiers: [
+          { name: "Loose Bales", cost: 55, adds: "slows to 55%", blurb: "Bales tumbled into the lane slow the traffic down.", mod: { slow: 0.55 } },
+          { name: "Haybale", cost: 130, adds: "holds 3 still for 1 s", blurb: "Every few seconds a round bale rolls out and holds three vehicles still (not Heavy Plant).", mod: { hold: { secs: 1, every: 3, count: 3 } } },
+          {
+            name: "Tractor Shed",
+            cost: 600,
+            adds: "tractors ram: 2 layers, knockback",
+            blurb: "The farmhands bring the tractor. It rams vehicles back up the lane.",
+            mod: { damage: 2, pierce: 3, knockback: 0.5, rate: 0.85 },
+          },
+        ],
+      },
+    ],
+  },
+  beehive: {
+    paths: [
+      {
+        name: "Killer Bees",
+        short: "Killer",
+        tiers: [
+          { name: "Angry Swarm", cost: 150, adds: "+3 pierce", blurb: "An angrier swarm stings more of them.", mod: { pierce: 3 } },
+          { name: "Venom", cost: 300, adds: "poison: 1 layer/s for 3 s", blurb: "The stings keep burning.", mod: { poison: { dps: 1, secs: 3 } } },
+          {
+            name: "Killer Queen",
+            cost: 1500,
+            adds: "+1 layer, poison spreads on pop",
+            blurb: "An ill-tempered queen. Harder stings, and the poison spreads to whatever a vehicle pops into.",
+            mod: { damage: 1, poison: { dps: 2, secs: 3, spread: true } },
+          },
+        ],
+      },
+      {
+        name: "Honey",
+        short: "Honey",
+        tiers: [
+          { name: "Wide Swarm", cost: 130, adds: "+15% range", blurb: "The bees range further from the hive.", mod: { range: 1.15 } },
+          { name: "Honey", cost: 300, adds: "stuck: 65% speed for 1.5 s", blurb: "The swarm drips honey. Whatever it stings is stuck in it.", mod: { sticky: { factor: 0.65, secs: 1.5 } } },
+          {
+            name: "Honey Marsh",
+            cost: 1600,
+            adds: "a honey patch: everything in range at 50%",
+            blurb: "Honey all over the lane. Everything in reach wades through it, and the stings stick harder.",
+            mod: { slow: 0.5, sticky: { factor: 0.5, secs: 2 }, pierce: 4 },
+          },
+        ],
+      },
+      {
+        name: "Scent",
+        short: "Scent",
+        tiers: [
+          { name: "Quick Wings", cost: 150, adds: "fires 25% faster", blurb: "Faster wings, faster stings.", mod: { rate: 1.25 } },
+          { name: "Scent", cost: 280, adds: "sees Stealth", blurb: "The bees smell what the eye can't: it stings hedge-camo.", mod: { detect: true } },
+          {
+            name: "Pollinator",
+            cost: 1500,
+            adds: "towers in range fire 15% faster",
+            blurb: "The bees work the whole field: every tower in reach fires faster, this one most of all.",
+            mod: { buff: 1.15, rate: 1.2 },
+          },
+        ],
+      },
+    ],
+  },
+  cannon: {
+    paths: [
+      {
+        name: "Big Shells",
+        short: "Shells",
+        tiers: [
+          { name: "Bigger Bore", cost: 250, adds: "+20% splash, +4 pierce", blurb: "A wider barrel, a wider burst.", mod: { splash: 1.2, pierce: 4 } },
+          { name: "Heavy Shells", cost: 450, adds: "+1 layer a hit", blurb: "Seed potatoes the size of a fist.", mod: { damage: 1 } },
+          {
+            name: "Pumpkin Lobber",
+            cost: 2400,
+            adds: "pumpkins: +2 layers, stun 0.3 s",
+            blurb: "Prize pumpkins. They burst wide and leave everything under them dazed (not Heavy Plant).",
+            mod: { damage: 2, splash: 1.25, stun: 0.3 },
+          },
+        ],
+      },
+      {
+        name: "Flak",
+        short: "Flak",
+        tiers: [
+          { name: "Fast Loader", cost: 200, adds: "fires 30% faster", blurb: "Pip rigs a hopper. It reloads faster.", mod: { rate: 1.3 } },
+          { name: "Air Burst", cost: 300, adds: "hits Airborne, fires 15% faster", blurb: "Shells that burst in the air: drones too.", mod: { air: true, rate: 1.15 } },
+          {
+            name: "Scatter Shot",
+            cost: 1900,
+            adds: "Sharp seeds: +8 pierce, beats Wrapped",
+            blurb: "Every shell splits into a spray of sharp seed. Bubble wrap can't cushion it.",
+            mod: { type: "sharp", pierce: 8, rate: 1.3 },
+          },
+        ],
+      },
+      {
+        name: "Wrecker",
+        short: "Wreck",
+        tiers: [
+          { name: "Long Barrel", cost: 150, adds: "+0.5 range", blurb: "A drainpipe for a barrel. It reaches further.", mod: { rangeAdd: 0.5 } },
+          { name: "Shell Cracker", cost: 500, adds: "×2 on big shells", blurb: "Hardened shot: double layers off anything with a long shell.", mod: { shellMul: 2 } },
+          {
+            name: "Wrecking Shot",
+            cost: 2600,
+            adds: "12 layers off Plant and bosses, knockback",
+            blurb: "One shot that wrecks heavy plant. Smaller vehicles are blown back up the lane.",
+            mod: { plantDamage: 12, knockback: 0.5 },
+          },
+        ],
+      },
+    ],
+  },
+  mast: {
+    paths: [
+      {
+        name: "Pirate Radio",
+        short: "Pirate",
+        tiers: [
+          { name: "Tall Aerial", cost: 200, adds: "+25% range", blurb: "A longer aerial reveals more lane.", mod: { range: 1.25 } },
+          { name: "Pirate Radio", cost: 400, adds: "vehicles in range take +25%", blurb: "Sol goes live and reads out their number plates: everything in range takes more.", mod: { vuln: 1.25 } },
+          { name: "Broadcast Tower", cost: 2000, adds: "reveals the whole field, +50% taken", blurb: "It broadcasts to the whole county. Nothing on the field hides, and everything takes half again.", mod: { global: true, vuln: 1.5 } },
+        ],
+      },
+      {
+        name: "Clinic",
+        short: "Clinic",
+        tiers: [
+          { name: "First Aid", cost: 180, adds: "towers in range shrug off charm and jam", blurb: "Ines sets up a first-aid post: towers in reach ignore influencers and paperwork.", mod: { cleanse: true } },
+          { name: "Clinic", cost: 360, adds: "towers in range +15% range", blurb: "Tea, biscuits and a better view: towers in reach see further.", mod: { rangeAura: 1.15 } },
+          { name: "Ward Round", cost: 1800, adds: "+25% range aura, +2 Goodwill a round", blurb: "A proper ward. Towers in reach see much further, and the village mends after every round.", mod: { rangeAura: 1.25, mend: 2, range: 1.2 } },
+        ],
+      },
+      {
+        name: "Siren",
+        short: "Siren",
+        tiers: [
+          { name: "Loudhailer", cost: 200, adds: "towers in range fire 8% faster", blurb: "A loudhailer on the mast gees everyone up.", mod: { buff: 1.08 } },
+          { name: "Siren", cost: 400, adds: "towers in range fire 15% faster", blurb: "A wailing siren. Every tower in reach fires faster.", mod: { buff: 1.15 } },
+          {
+            name: "Village Alarm",
+            cost: 2000,
+            adds: "+25% fire rate aura, slows to 80%",
+            blurb: "The whole village turns out: towers in reach fire much faster, and drivers slow down to look.",
+            mod: { buff: 1.25, slow: 0.8, range: 1.15 },
+          },
+        ],
+      },
+    ],
+  },
+};
+
+/** Is this build allowed? At most two paths bought into, at most one past tier 2, none past PATH_TIERS. */
+export function pathLegal(p: readonly number[]): boolean {
+  if (p.length !== 3) return false;
+  let used = 0;
+  let deep = 0;
+  for (const n of p) {
+    if (!Number.isInteger(n) || n < 0 || n > PATH_TIERS) return false;
+    if (n > 0) used++;
+    if (n > 2) deep++;
+  }
+  return used <= 2 && deep <= 1;
+}
+
+/** The build after buying the next tier of path `i`. */
+export function nextPath(p: Path, i: PathIndex): Path {
+  const n: Path = [p[0], p[1], p[2]];
+  n[i] += 1;
+  return n;
+}
+
+/**
+ * Why path `i` can't take its next tier (null if it can): it's at the top, the crosspath rule, or tier 3 isn't
+ * open on this level yet.
+ */
+export function pathBlock(p: Path, i: PathIndex, levelId: number): string | null {
+  if (p[i] >= PATH_TIERS) return "Top tier (Crowns come later).";
+  const n = nextPath(p, i);
+  if (!pathLegal(n)) {
+    const used = p.filter((x) => x > 0).length;
+    if (p[i] === 0 && used >= 2) return "Crosspath: a tower takes at most two paths.";
+    return "Crosspath: only one path goes past tier 2.";
+  }
+  if (n[i] >= 3 && levelId < T3_FIRST_LEVEL) return `Tier 3 opens at level ${T3_FIRST_LEVEL}.`;
+  return null;
+}
+
+/** The price of path `i`'s next tier (null at the top). */
+export function pathCost(kind: PathKind, p: Path, i: PathIndex): number | null {
+  if (p[i] >= PATH_TIERS) return null;
+  return PATHS[kind].paths[i].tiers[p[i]]!.cost;
+}
+
+/** Everything a build has cost in upgrades. */
+export function pathSpent(kind: PathKind, p: Path): number {
+  let s = 0;
+  for (const i of [0, 1, 2] as const) for (let k = 0; k < p[i]; k++) s += PATHS[kind].paths[i].tiers[k]!.cost;
+  return s;
+}
+
+/** The tiers a build has bought, in path order. */
+export function boughtTiers(kind: PathKind, p: Path): PathTier[] {
+  const out: PathTier[] = [];
+  for (const i of [0, 1, 2] as const) for (let k = 0; k < p[i]; k++) out.push(PATHS[kind].paths[i].tiers[k]!);
+  return out;
+}
+
+/** "3-2-0". */
+export function buildName(p: readonly number[]): string {
+  return p.join("-");
+}
+
+/** The tier-3 path of a build, if it has one (it decides the tower's silhouette). */
+export function topPath(p: readonly number[]): PathIndex | null {
+  const i = p.findIndex((n) => n >= 3);
+  return i < 0 ? null : (i as PathIndex);
+}
+
+/** The display tier (1-3) for a path tower: 1 plus its deepest path, capped at 3 (a tier 3 shows its own look). */
+export function pathTier(p: readonly number[]): 1 | 2 | 3 {
+  return Math.min(3, 1 + Math.min(2, Math.max(p[0]!, p[1]!, p[2]!))) as 1 | 2 | 3;
+}
+
+/** A build with every path held to tier 2 (a lobbyist's whispers make a tower forget its tier 3). */
+export function capPath(p: Path): Path {
+  return [Math.min(2, p[0]), Math.min(2, p[1]), Math.min(2, p[2])];
+}
+
+/**
+ * The legacy adapter: a tower without paths shows its tiers as path A (tier 2 and 3 as A1 and A2, a
+ * specialisation as A3). It is also how an old spec maps to a path (save v3, replays).
+ */
+export function legacyPath(tier: number, spec: 0 | 1 | null | undefined): Path {
+  return [Math.max(0, Math.min(2, tier - 1)) + (tier >= 4 && spec != null ? 1 : 0), 0, 0];
+}
+
+/**
+ * The nearest path for an old specialisation of a path tower: the path whose tier 3 does the same job
+ * (Scarecrow Pumpkin Lobber → Flock... see the table). Used to read old saves' and replays' spec choices.
+ */
+export const SPEC_TO_PATH: Record<PathKind, [PathIndex, PathIndex]> = {
+  // Pumpkin Lobber (splash) → Scythe (crowds); Crow Caller → Flock.
+  scarecrow: [2, 0],
+  // Blackthorn → Blackthorn; Bramble Maze → Bramble Maze.
+  hedgerow: [0, 1],
+  // Killer Queen → Killer Bees; Honey Trap → Honey.
+  beehive: [0, 1],
+  // Pumpkin Mortar → Big Shells; Scatter Shot → Flak.
+  cannon: [0, 1],
+  // Pirate Radio → Pirate Radio; Emergency Siren → Siren.
+  mast: [0, 2],
+};
+
+/** An old tier and spec as a build on paths (tiers 2 and 3 along the spec's path; the spec its tier 3). */
+export function specToPath(kind: PathKind, tier: number, spec: 0 | 1 | null | undefined): Path {
+  const i = spec != null ? SPEC_TO_PATH[kind][spec] : SPEC_TO_PATH[kind][0];
+  const p: Path = [0, 0, 0];
+  p[i] = Math.max(0, Math.min(2, tier - 1)) + (tier >= 4 && spec != null ? 1 : 0);
+  return p;
+}
+
+/**
+ * Named builds for the bots (and the tuner's logs): `crow-3-2-0` is a Scarecrow taking Flock to 3 and
+ * Lookout to 2. The order in which a bot buys a build's tiers: every path's tier 1, then tier 2, then the 3.
+ */
+export const BUILD_PREFIX: Record<PathKind, string> = { scarecrow: "crow", hedgerow: "hedge", beehive: "bees", cannon: "cannon", mast: "mast" };
+
+export function parseBuild(name: string): { kind: PathKind; path: Path } | null {
+  const m = /^([a-z]+)-(\d)-(\d)-(\d)$/.exec(name);
+  if (!m) return null;
+  const kind = (Object.keys(BUILD_PREFIX) as PathKind[]).find((k) => BUILD_PREFIX[k] === m[1]);
+  const path: Path = [Number(m[2]), Number(m[3]), Number(m[4])];
+  return kind && pathLegal(path) ? { kind, path } : null;
+}
+
+/**
+ * The next path to buy towards `goal` from `p`, or null if it's there (or past it). The main path (the deepest
+ * in the goal) goes to tier 2 first, then the other path to its goal, then the main path's tier 3: the order a
+ * player saving for a tier 3 buys in.
+ */
+export function stepToward(p: Path, goal: Path): PathIndex | null {
+  const order = ([0, 1, 2] as const).filter((i) => goal[i] > 0).sort((a, b) => goal[b] - goal[a] || a - b);
+  for (const i of order) if (p[i] < Math.min(2, goal[i])) return i;
+  for (const i of order) if (p[i] < goal[i]) return i;
+  return null;
+}

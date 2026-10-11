@@ -5,6 +5,7 @@
 
 import { ENEMIES, fieldAnswers, hasTwist, inherentProps, towerStats, type Game, type LeakCause, type Level, type Tower, type TowerKind, type WaveGroup } from "./engine";
 import { DAMAGE_NAMES, P, PROPERTIES, RUNGS, canHurt, propsOf, type Property } from "./fleet";
+import { hasPaths, pathTier, type Path } from "./paths";
 
 /** The properties the player has to answer, in the order chips and badges show them. */
 export const LOCKS = ["stealth", "airborne", "plated", "wrapped", "sealed", "reefer"] as const;
@@ -51,14 +52,16 @@ export function unanswered(game: Game, pm: number): Lock[] {
 }
 
 /** What a tower can do about each lock: a green or red badge on its card. */
-export function towerBadges(t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null; fleet?: boolean }): Array<{ prop: Lock; ok: boolean; text: string }> {
+export function towerBadges(t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null; fleet?: boolean; path?: Path }): Array<{ prop: Lock; ok: boolean; text: string }> {
   const s = towerStats({ ...t, fleet: true });
-  const hits = s.damage > 0 || s.thorns > 0;
+  const hits = s.damage > 0 || s.thorns > 0 || !!s.piles;
   return LOCKS.map((prop) => {
     const info = PROPERTIES[prop];
     if (prop === "stealth") {
-      const ok = s.reveal > 1;
-      return { prop, ok, text: ok ? "Reveals Stealth in its range" : "Can't see Stealth without a Radio Mast nearby" };
+      if (s.reveal > 1) return { prop, ok: true, text: "Reveals Stealth in its range" };
+      // Lantern Eyes and Scent (M4): it sees Stealth for itself.
+      if (s.detect && hits) return { prop, ok: true, text: "Sees Stealth for itself" };
+      return { prop, ok: false, text: "Can't see Stealth without a Radio Mast nearby" };
     }
     if (!hits) return { prop, ok: false, text: `Doesn't hit ${info.name}` };
     if (prop === "airborne") return { prop, ok: s.air, text: s.air ? "Hits the air" : "Ground only: can't reach Airborne" };
@@ -68,9 +71,9 @@ export function towerBadges(t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | n
 }
 
 /** The damage type a tower deals, as its card says it ("Sharp", "Blast"), or "" for towers that don't hit. */
-export function damageLabel(t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null }): string {
+export function damageLabel(t: Pick<Tower, "kind" | "tier"> & { spec?: 0 | 1 | null; path?: Path }): string {
   const s = towerStats({ ...t, fleet: true });
-  return s.type && (s.damage > 0 || s.thorns > 0) ? DAMAGE_NAMES[s.type] : "";
+  return s.type && (s.damage > 0 || s.thorns > 0 || s.piles) ? DAMAGE_NAMES[s.type] : "";
 }
 
 /** The towers this level allows that answer a lock. */
@@ -78,6 +81,15 @@ export function keysFor(level: Level, prop: Lock): TowerKind[] {
   return level.towers.filter((k) => towerBadges({ kind: k, tier: 1, spec: null }).find((b) => b.prop === prop)?.ok || specAnswers(k, prop));
 }
 function specAnswers(kind: TowerKind, prop: Lock): boolean {
+  // A path tower answers it if any single path's tiers do (Lantern Eyes, Air Burst, Scatter Shot, Hawk Post...).
+  if (hasPaths(kind))
+    return ([0, 1, 2] as const).some((i) =>
+      [1, 2, 3].some((n) => {
+        const path: Path = [0, 0, 0];
+        path[i] = n;
+        return towerBadges({ kind, tier: pathTier(path), spec: null, path }).find((b) => b.prop === prop)?.ok;
+      }),
+    );
   return ([0, 1] as const).some((spec) => towerBadges({ kind, tier: 4, spec }).find((b) => b.prop === prop)?.ok);
 }
 
@@ -118,9 +130,9 @@ export function lossCauses(game: Game): Array<{ cause: LeakCause; lost: number; 
 }
 
 /** A short "what it is" for a tower's damage type and locks, for the build menu and the tower card. */
-export function lockLine(kind: TowerKind, spec: 0 | 1 | null = null, tier: Tower["tier"] = 1): string {
-  const label = damageLabel({ kind, tier, spec });
-  const red = towerBadges({ kind, tier, spec }).filter((b) => !b.ok && b.prop !== "stealth");
+export function lockLine(kind: TowerKind, spec: 0 | 1 | null = null, tier: Tower["tier"] = 1, path?: Path): string {
+  const label = damageLabel({ kind, tier, spec, path });
+  const red = towerBadges({ kind, tier, spec, path }).filter((b) => !b.ok && b.prop !== "stealth");
   if (!label) return "";
   const cant = red.map((b) => PROPERTIES[b.prop].name);
   return ` ${label}${cant.length ? `: can't touch ${cant.join(", ")}` : ": hits everything it can see"}.`;

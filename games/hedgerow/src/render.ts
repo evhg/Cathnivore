@@ -38,11 +38,14 @@ import {
   enemyLift,
   enemyScale,
   star,
+  drawThornPile,
 } from "./sprites";
 
 interface Shot {
   kind: TowerKind;
   spec: 0 | 1 | null;
+  /** A path tower's tier 3 look (engine.ts shotLook): "crow", "hawk", "pumpkin", "scatter", "wreck", "ram"... */
+  look?: string;
   x: number;
   y: number;
   toX: number;
@@ -51,6 +54,9 @@ interface Shot {
   life: number;
   crit: boolean;
 }
+
+/** Path tier 3 looks that draw like an old specialisation's shot (the rest have their own). */
+const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
 
 /** Gold floaters from fleet knocks merge over this many seconds. */
 const GOLD_WINDOW = 0.15;
@@ -285,11 +291,13 @@ export class Renderer {
         case "shot": {
           this.fired.set(e.tower, 0);
           this.hitAt.set(e.enemy, 0);
+          const spec = e.spec ?? (e.look ? (LOOK_SPEC[e.look] ?? null) : null);
           const life =
-            e.kind === "silo" ? 0.12 : e.kind === "beehive" ? 0.35 : e.kind === "scarecrow" && e.spec === 0 ? 0.32 : 0.22;
+            e.look === "hawk" ? 0.16 : e.kind === "silo" ? 0.12 : e.kind === "beehive" ? 0.35 : e.kind === "cannon" ? 0.4 : e.kind === "scarecrow" && spec === 0 ? 0.32 : 0.22;
           this.shots.push({
             kind: e.kind,
-            spec: e.spec ?? null,
+            spec,
+            ...(e.look ? { look: e.look } : {}),
             x: e.fromX,
             y: e.fromY - 0.35,
             toX: e.toX,
@@ -404,8 +412,24 @@ export class Renderer {
           break;
         }
         case "gust":
+          if (e.sweep) {
+            // Whirling Scythe: a ring of cut straw.
+            this.ring(e.x, e.y, "#e2c06a", e.radius);
+            for (let i = 0; i < 10; i++) this.parts.push(this.particle(e.x, e.y - 0.3, "#e2c06a", "square", 0.05, 0.5));
+            this.fired.set(e.tower, 0);
+            break;
+          }
           this.ring(e.x, e.y, "#e8f4ff", e.radius);
           for (let i = 0; i < 8; i++) this.parts.push(this.particle(e.x, e.y - 0.2, "#ffffff", "dot", 0.06, 0.6));
+          break;
+        case "bale":
+          // A round bale rolls out: straw flies where it lands.
+          this.ring(e.x, e.y, "#d8b45a", 0.5);
+          for (let i = 0; i < 8; i++) this.parts.push(this.particle(e.x, e.y - 0.2, "#d8b45a", "square", 0.05, 0.6));
+          this.fired.set(e.tower, 0);
+          break;
+        case "pile":
+          for (let i = 0; i < 5; i++) this.parts.push(this.particle(e.x, e.y - 0.1, "#e9e1cf", "dot", 0.04, 0.4));
           break;
         case "pop":
           this.float(e.x, e.y - 0.5, "POP!", "#d2ecff", 0.9);
@@ -628,6 +652,7 @@ export class Renderer {
               spec: tw.spec ?? null,
               fired: since,
               dazed: game.phase === "wave" && towerStats(tw).damage > 0 && charmed(game, tw),
+              ...(tw.path ? { path: tw.path } : {}),
             },
             X(tw.col + 0.5),
             Y(tw.row + 0.5),
@@ -848,6 +873,12 @@ export class Renderer {
         }
       }
       ctx.restore();
+    }
+
+    // Thorn piles on the lane (Blackthorn path): a heap of cut thorn, smaller as its hits run out.
+    for (const pile of game.piles) {
+      const pp = enemyPoint(level, { dist: pile.dist, lane: pile.lane });
+      drawThornPile(ctx, X(pp.x), Y(pp.y), s, Math.min(1, 0.45 + pile.hits / 20));
     }
 
     // Call the Neighbours: three farmhands with a hay bale, wobbling as the vans lean on them.
@@ -1176,16 +1207,17 @@ export class Renderer {
       switch (sh.kind) {
         case "scarecrow": {
           if (sh.spec === 1) {
-            // A crow, wings beating.
-            const flap = Math.sin(sh.age * 40) * s * 0.06;
-            ctx.fillStyle = "#1d1b22";
+            // A crow, wings beating (or the Hawk Post's hawk: bigger and brown).
+            const hawk = sh.look === "hawk" ? 1.6 : 1;
+            const flap = Math.sin(sh.age * 40) * s * 0.06 * hawk;
+            ctx.fillStyle = hawk > 1 ? "#7a4f2a" : "#1d1b22";
             ctx.beginPath();
-            ctx.ellipse(X(x), Y(y), s * 0.07, s * 0.04, 0, 0, Math.PI * 2);
+            ctx.ellipse(X(x), Y(y), s * 0.07 * hawk, s * 0.04 * hawk, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.moveTo(X(x) - s * 0.1, Y(y) - flap);
+            ctx.moveTo(X(x) - s * 0.1 * hawk, Y(y) - flap);
             ctx.lineTo(X(x), Y(y));
-            ctx.lineTo(X(x) + s * 0.1, Y(y) - flap);
+            ctx.lineTo(X(x) + s * 0.1 * hawk, Y(y) - flap);
             ctx.stroke();
           } else {
             const big = sh.spec === 0 ? 1.7 : 1;
@@ -1211,11 +1243,41 @@ export class Renderer {
           }
           break;
         }
+        case "cannon": {
+          // A sack of seed potatoes; a prize pumpkin (Pumpkin Lobber), a spray of seed (Scatter Shot) or an
+          // iron wrecking shot.
+          if (sh.look === "scatter" || sh.spec === 1) {
+            for (let i = 0; i < 5; i++) {
+              ctx.fillStyle = "#e9d8a6";
+              ctx.beginPath();
+              ctx.arc(X(x + Math.cos(i * 1.3) * 0.12 * k), Y(y + Math.sin(i * 1.3) * 0.12 * k), s * 0.03, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            break;
+          }
+          const r = sh.look === "pumpkin" || sh.spec === 0 ? 0.11 : sh.look === "wreck" ? 0.09 : 0.07;
+          ctx.fillStyle = sh.look === "pumpkin" || sh.spec === 0 ? "#e98a2b" : sh.look === "wreck" ? "#3b3f44" : "#b08a5a";
+          ctx.beginPath();
+          ctx.arc(X(x), Y(y), s * r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          break;
+        }
+        case "hedgerow":
+          // Tractor Shed: a tractor rams out along the lane (a red block with a wheel).
+          ctx.fillStyle = "#c4433a";
+          ctx.fillRect(X(x) - s * 0.08, Y(y) - s * 0.05, s * 0.16, s * 0.1);
+          ctx.strokeRect(X(x) - s * 0.08, Y(y) - s * 0.05, s * 0.16, s * 0.1);
+          ctx.fillStyle = INK;
+          ctx.beginPath();
+          ctx.arc(X(x) - s * 0.04, Y(y) + s * 0.06, s * 0.04, 0, Math.PI * 2);
+          ctx.fill();
+          break;
         case "beehive":
           for (let i = 0; i < 5; i++) {
             const bx = x + Math.sin(sh.age * 25 + i * 1.7) * 0.14;
             const by = y + Math.cos(sh.age * 21 + i * 2.1) * 0.14;
-            ctx.fillStyle = sh.spec === 0 ? "#d9433a" : "#f2c94c";
+            ctx.fillStyle = sh.spec === 0 ? "#d9433a" : sh.look === "pollen" ? "#fff4b8" : "#f2c94c";
             ctx.beginPath();
             ctx.ellipse(X(bx), Y(by), s * 0.035, s * 0.025, 0, 0, Math.PI * 2);
             ctx.fill();
@@ -1260,6 +1322,7 @@ export class Renderer {
         const n = sh.spec === 0 && (sh.kind === "scarecrow" || sh.kind === "silo") ? 8 : 3;
         for (let i = 0; i < n; i++) this.parts.push(this.particle(sh.toX, sh.toY, color, "dot", 0.05, 0.4));
         if (sh.kind === "scarecrow" && sh.spec === 0) this.ring(sh.toX, sh.toY, "#e98a2b", 0.95);
+        if (sh.kind === "cannon") this.ring(sh.toX, sh.toY, sh.look === "pumpkin" || sh.spec === 0 ? "#e98a2b" : "#e9d8a6", sh.look === "pumpkin" ? 1.4 : 1.1);
         if (sh.kind === "silo" && sh.spec === 1) this.ring(sh.toX, sh.toY, "#f2c94c", 1.1);
         if (sh.crit) {
           this.float(sh.toX, sh.toY - 0.4, sh.kind === "scarecrow" ? "CAW!" : "CRIT!", "#ffffff", 1.3);

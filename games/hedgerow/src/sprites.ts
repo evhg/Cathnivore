@@ -56,12 +56,17 @@ export interface TowerLook {
   fired: number;
   /** Charmed or jammed: it droops. */
   dazed: boolean;
+  /** A path tower's build (Hedgerow 2 M4): per-tier parts, and a tier 3's own silhouette. */
+  path?: readonly number[];
 }
 
 const SPEC_COLOURS: [string, string] = ["#c4433a", "#3f6fb5"];
 
 export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: number, t: number): void {
-  const { kind, tier, spec, fired } = look;
+  const { kind, tier, fired } = look;
+  // A path tower's tier 3 borrows the old specialisation's body where it is the same idea (Crow Caller's dark
+  // coat, the Pumpkin Lobber's barrel, Killer Queen's crown...); drawPathParts adds the rest.
+  const spec = look.path ? pathSpecLook(kind, look.path) : look.spec;
   ctx.lineWidth = lw(s);
   ctx.strokeStyle = INK;
   ctx.lineJoin = "round";
@@ -633,6 +638,12 @@ export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: numb
   }
   ctx.restore();
 
+  if (look.path) {
+    drawPathParts(ctx, kind, look.path, x, base, s, t, kick);
+    pathPips(ctx, look.path, x, base, s);
+    return;
+  }
+
   // Tier: gold studs below; tier 4 wears its specialisation's rosette.
   if (tier >= 2 && tier <= 3) {
     for (let i = 0; i < tier; i++) {
@@ -665,6 +676,491 @@ export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: numb
     star(ctx, rx, ry, s * 0.045);
     ctx.fill();
   }
+}
+
+// ---- upgrade paths (Hedgerow 2 M4): a part for every tier bought, and a silhouette for each tier 3 ----
+
+/** Path colours: A, B, C (the sheet's column tops, the pips under a tower, the 3D plinth's glow). */
+export const PATH_COLOURS = ["#d4543c", "#3f7fd0", "#4f9a3e"];
+
+/** Which old specialisation body a path tower's tier 3 wears, if any. */
+function pathSpecLook(kind: TowerKind, path: readonly number[]): 0 | 1 | null {
+  const top = path.findIndex((n) => n >= 3);
+  if (top < 0) return null;
+  const map: Partial<Record<TowerKind, Array<0 | 1 | null>>> = {
+    scarecrow: [1, null, null],
+    hedgerow: [0, 1, null],
+    beehive: [0, 1, null],
+    cannon: [0, 1, null],
+    mast: [0, null, 1],
+  };
+  return map[kind]?.[top] ?? null;
+}
+
+/** Under the tower: one pip per tier bought, in its path's colour; a tier 3 is a diamond. */
+function pathPips(ctx: C, path: readonly number[], x: number, base: number, s: number): void {
+  const pips: Array<{ c: string; big: boolean }> = [];
+  path.forEach((n, i) => {
+    for (let k = 0; k < n; k++) pips.push({ c: PATH_COLOURS[i]!, big: k === 2 });
+  });
+  if (!pips.length) return;
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = Math.max(1, s * 0.018);
+  pips.forEach((p, k) => {
+    const px = x + (k - (pips.length - 1) / 2) * s * 0.1;
+    const py = base + s * 0.08;
+    const r = s * (p.big ? 0.05 : 0.033);
+    ctx.fillStyle = p.c;
+    ctx.beginPath();
+    if (p.big) {
+      ctx.moveTo(px, py - r);
+      ctx.lineTo(px + r, py);
+      ctx.lineTo(px, py + r);
+      ctx.lineTo(px - r, py);
+      ctx.closePath();
+    } else ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  });
+}
+
+function crowAt(ctx: C, cx: number, cy: number, s: number, side: number, colour = "#1d1b22"): void {
+  blob(ctx, cx, cy, s * 0.06, colour);
+  ctx.fillStyle = "#f2c94c";
+  ctx.beginPath();
+  ctx.moveTo(cx + side * s * 0.05, cy);
+  ctx.lineTo(cx + side * s * 0.1, cy + s * 0.01);
+  ctx.lineTo(cx + side * s * 0.05, cy + s * 0.02);
+  ctx.fill();
+}
+
+function flowerAt(ctx: C, fx: number, fy: number, r: number, petal: string, heart = "#f2c94c"): void {
+  ctx.fillStyle = petal;
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(fx + Math.cos(a) * r, fy + Math.sin(a) * r, r * 0.75, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = heart;
+  ctx.beginPath();
+  ctx.arc(fx, fy, r * 0.7, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/** A heap of cut thorn on the lane (Blackthorn's piles), `k` its size from 0 to 1. */
+export function drawThornPile(ctx: C, x: number, y: number, s: number, k = 1): void {
+  ctx.save();
+  ctx.lineWidth = Math.max(1.2, s * 0.022);
+  ctx.strokeStyle = INK;
+  ctx.fillStyle = "#5b4330";
+  ctx.beginPath();
+  ctx.ellipse(x, y + s * 0.02, s * 0.2 * k, s * 0.08 * k, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = "#e9e1cf";
+  for (let i = 0; i < 7; i++) {
+    const a = -Math.PI + (i / 6) * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(x + Math.cos(a) * s * 0.08 * k, y);
+    ctx.lineTo(x + Math.cos(a) * s * 0.2 * k, y + Math.sin(a) * s * 0.14 * k);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** Every tier bought shows: crows, hats, bales, flowers, barrels; a tier 3 changes the outline. */
+function drawPathParts(ctx: C, kind: TowerKind, path: readonly number[], x: number, base: number, s: number, t: number, kick: number): void {
+  const [a = 0, b = 0, c = 0] = path;
+  ctx.save();
+  ctx.lineWidth = lw(s);
+  ctx.strokeStyle = INK;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  switch (kind) {
+    case "scarecrow": {
+      // Flock: a crow per tier on the arms; Crow Caller adds one on the hat and two circling overhead.
+      if (a >= 1 && a < 3) crowAt(ctx, x - s * 0.3, base - s * 0.55 + Math.sin(t * 4) * s * 0.01, s, -1);
+      if (a === 2) crowAt(ctx, x + s * 0.3, base - s * 0.55 + Math.sin(t * 4 + 1) * s * 0.01, s, 1);
+      if (a >= 3) {
+        crowAt(ctx, x + s * 0.05, base - s * 0.95, s, 1);
+        for (let i = 0; i < 2; i++) {
+          const ang = t * 2.2 + i * Math.PI;
+          crowAt(ctx, x + Math.cos(ang) * s * 0.36, base - s * 1.08 + Math.sin(ang * 1.4) * s * 0.06, s * 0.8, Math.cos(ang) > 0 ? 1 : -1);
+        }
+      }
+      // Lookout: a taller hat, then lantern eyes; Hawk Post a perch with a hawk, taller than anything near.
+      if (b >= 1) rr(ctx, x - s * 0.08, base - s * 1.02, s * 0.16, s * 0.14, s * 0.03, "#e2c06a");
+      if (b >= 2) {
+        ctx.fillStyle = "#ffd23f";
+        ctx.shadowColor = "#ffd23f";
+        ctx.shadowBlur = s * 0.12;
+        ctx.beginPath();
+        ctx.arc(x - s * 0.045, base - s * 0.67, s * 0.028, 0, Math.PI * 2);
+        ctx.arc(x + s * 0.045, base - s * 0.67, s * 0.028, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        rr(ctx, x + s * 0.3, base - s * 0.48, s * 0.07, s * 0.09, s * 0.02, "#ffd27a");
+      }
+      if (b >= 3) {
+        rr(ctx, x + s * 0.36, base - s * 1.2, s * 0.05, s * 1.2, s * 0.02, "#7a5634");
+        rr(ctx, x + s * 0.26, base - s * 1.2, s * 0.25, s * 0.04, s * 0.02, "#7a5634");
+        const flap = Math.sin(t * 3) * s * 0.03;
+        ctx.fillStyle = "#7a4f2a";
+        ctx.beginPath();
+        ctx.ellipse(x + s * 0.39, base - s * 1.29, s * 0.07, s * 0.09, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + s * 0.33, base - s * 1.3);
+        ctx.lineTo(x + s * 0.2, base - s * 1.22 - flap);
+        ctx.lineTo(x + s * 0.33, base - s * 1.24);
+        ctx.moveTo(x + s * 0.45, base - s * 1.3);
+        ctx.lineTo(x + s * 0.58, base - s * 1.22 - flap);
+        ctx.lineTo(x + s * 0.45, base - s * 1.24);
+        ctx.fill();
+        ctx.stroke();
+        blob(ctx, x + s * 0.4, base - s * 1.4, s * 0.04, "#f4ede1");
+        ctx.fillStyle = "#f2c94c";
+        ctx.beginPath();
+        ctx.moveTo(x + s * 0.43, base - s * 1.41);
+        ctx.lineTo(x + s * 0.48, base - s * 1.39);
+        ctx.lineTo(x + s * 0.43, base - s * 1.37);
+        ctx.fill();
+      }
+      // Scythe: straw at the wrists, a turnip in each hand, then a scythe and the ring it cuts.
+      if (c >= 1) {
+        ctx.strokeStyle = "#e2c06a";
+        for (const side of [-1, 1]) {
+          ctx.beginPath();
+          ctx.moveTo(x + side * s * 0.34, base - s * 0.48);
+          ctx.lineTo(x + side * s * 0.42, base - s * 0.42);
+          ctx.moveTo(x + side * s * 0.34, base - s * 0.48);
+          ctx.lineTo(x + side * s * 0.43, base - s * 0.5);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = INK;
+      }
+      if (c === 2)
+        for (const side of [-1, 1]) {
+          blob(ctx, x + side * s * 0.38, base - s * 0.5 - kick * s * 0.05, s * 0.05, "#efe2f0");
+          ctx.fillStyle = "#8e4a93";
+          ctx.beginPath();
+          ctx.arc(x + side * s * 0.38, base - s * 0.48, s * 0.03, 0, Math.PI);
+          ctx.fill();
+        }
+      if (c >= 3) {
+        ctx.save();
+        ctx.translate(x, base - s * 0.5);
+        ctx.rotate(t * 5);
+        rr(ctx, -s * 0.03, -s * 0.5, s * 0.05, s * 0.6, s * 0.02, "#8a5a35");
+        ctx.fillStyle = "#c9d1d8";
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.02, -s * 0.5);
+        ctx.quadraticCurveTo(s * 0.3, -s * 0.56, s * 0.38, -s * 0.36);
+        ctx.quadraticCurveTo(s * 0.22, -s * 0.46, -s * 0.02, -s * 0.42);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        ctx.strokeStyle = "rgba(226,192,106,0.5)";
+        ctx.beginPath();
+        ctx.ellipse(x, base - s * 0.2, s * 0.5, s * 0.16, 0, t * 5, t * 5 + Math.PI * 1.2);
+        ctx.stroke();
+      }
+      break;
+    }
+    case "hedgerow": {
+      // Blackthorn: thorns, then a pile at the foot, then tall hawthorn spikes.
+      ctx.strokeStyle = "#e9e1cf";
+      if (a >= 1 && a < 3)
+        for (let i = 0; i < 4; i++) {
+          const ang = -Math.PI * (0.15 + i * 0.23);
+          const cx = x + Math.cos(ang) * s * 0.3;
+          const cy = base - s * 0.24 + Math.sin(ang) * s * 0.2;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(cx + Math.cos(ang) * s * 0.08, cy + Math.sin(ang) * s * 0.08);
+          ctx.stroke();
+        }
+      if (a >= 3)
+        for (let i = 0; i < 5; i++) {
+          const sx = x + (i - 2) * s * 0.12;
+          ctx.beginPath();
+          ctx.moveTo(sx, base - s * 0.42);
+          ctx.lineTo(sx + (i - 2) * s * 0.03, base - s * 0.72 - (i % 2) * s * 0.08);
+          ctx.stroke();
+        }
+      ctx.strokeStyle = INK;
+      if (a >= 2) drawThornPile(ctx, x + s * 0.32, base - s * 0.02, s * 0.8, a >= 3 ? 1 : 0.7);
+      // Bramble Maze: berries, a wider hedge, then low maze walls in front.
+      if (b >= 1) {
+        ctx.fillStyle = "#5b2a5e";
+        for (let i = 0; i < 5; i++) {
+          ctx.beginPath();
+          ctx.arc(x - s * 0.22 + i * s * 0.11, base - s * 0.34 + ((i * 5) % 3) * s * 0.05, s * 0.03, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      if (b >= 2) for (const side of [-1, 1]) blob(ctx, x + side * s * 0.38, base - s * 0.14, s * 0.13, "#3f6e33");
+      if (b >= 3) {
+        ctx.fillStyle = "#2f5a2a";
+        for (const [wx, wy, ww, wh] of [
+          [-0.45, 0.02, 0.32, 0.08],
+          [-0.45, -0.06, 0.08, 0.16],
+          [0.13, 0.02, 0.32, 0.08],
+          [0.37, -0.06, 0.08, 0.16],
+        ] as const) {
+          ctx.beginPath();
+          ctx.roundRect(x + wx * s, base + wy * s - s * 0.08, ww * s, wh * s, s * 0.03);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+      // Haybale: a square bale, then a round one, then the farm tractor.
+      if (c >= 1) {
+        rr(ctx, x - s * 0.46, base - s * 0.14, s * 0.2, s * 0.13, s * 0.02, "#d8b45a");
+        ctx.strokeStyle = "#a8802f";
+        ctx.beginPath();
+        ctx.moveTo(x - s * 0.4, base - s * 0.14);
+        ctx.lineTo(x - s * 0.4, base - s * 0.01);
+        ctx.moveTo(x - s * 0.32, base - s * 0.14);
+        ctx.lineTo(x - s * 0.32, base - s * 0.01);
+        ctx.stroke();
+        ctx.strokeStyle = INK;
+      }
+      if (c >= 2) {
+        blob(ctx, x + s * 0.36, base - s * 0.1, s * 0.11, "#e2c06a");
+        ctx.strokeStyle = "#a8802f";
+        ctx.beginPath();
+        ctx.arc(x + s * 0.36, base - s * 0.1, s * 0.06, 0, Math.PI * 1.6);
+        ctx.stroke();
+        ctx.strokeStyle = INK;
+      }
+      if (c >= 3) {
+        const tx = x - s * 0.05 + kick * s * 0.05;
+        rr(ctx, tx - s * 0.2, base - s * 0.2, s * 0.3, s * 0.13, s * 0.03, "#c4433a");
+        rr(ctx, tx - s * 0.06, base - s * 0.33, s * 0.15, s * 0.14, s * 0.02, "#c4433a");
+        ctx.fillStyle = "#bfe8ff";
+        ctx.fillRect(tx - s * 0.03, base - s * 0.3, s * 0.09, s * 0.07);
+        rr(ctx, tx - s * 0.17, base - s * 0.34, s * 0.03, s * 0.14, s * 0.01, "#3b3f44");
+        blob(ctx, tx + s * 0.06, base - s * 0.07, s * 0.09, "#2b2320");
+        blob(ctx, tx - s * 0.15, base - s * 0.05, s * 0.055, "#2b2320");
+      }
+      break;
+    }
+    case "beehive": {
+      // Killer Bees: a red band, a drop of venom, then the queen's crown (the body).
+      if (a >= 1) {
+        ctx.strokeStyle = "#c4433a";
+        ctx.lineWidth = Math.max(2, s * 0.045);
+        ctx.beginPath();
+        ctx.moveTo(x - s * 0.2, base - s * 0.29);
+        ctx.quadraticCurveTo(x, base - s * 0.25, x + s * 0.2, base - s * 0.29);
+        ctx.stroke();
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = lw(s);
+      }
+      if (a >= 2) {
+        ctx.fillStyle = "#7fc46a";
+        ctx.beginPath();
+        ctx.moveTo(x, base - s * 0.08);
+        ctx.quadraticCurveTo(x + s * 0.04, base, x, base + s * 0.03);
+        ctx.quadraticCurveTo(x - s * 0.04, base, x, base - s * 0.08);
+        ctx.fill();
+        ctx.stroke();
+      }
+      if (a >= 3) for (let i = 0; i < 3; i++) blob(ctx, x + Math.cos(t * 3 + i * 2) * s * 0.42, base - s * 0.5 + Math.sin(t * 4 + i) * s * 0.12, s * 0.03, "#d9433a");
+      // Honey: a flower, honey dripping (the body), then a honey marsh round the stand.
+      if (b >= 1) flowerAt(ctx, x - s * 0.34, base - s * 0.04, s * 0.03, "#c46ad9");
+      if (b >= 3) {
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = "#f0b429";
+        ctx.beginPath();
+        ctx.ellipse(x, base + s * 0.02, s * 0.5, s * 0.14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "rgba(160,110,20,0.8)";
+        ctx.stroke();
+        ctx.strokeStyle = INK;
+      }
+      // Scent: wings on the hive, a ring of flowers, then two sunflowers taller than the hive.
+      if (c >= 1)
+        for (const side of [-1, 1]) {
+          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.beginPath();
+          ctx.ellipse(x + side * s * 0.27, base - s * 0.42 + Math.sin(t * 20) * s * 0.01, s * 0.08, s * 0.045, side * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      if (c >= 2) for (const [fx, col] of [[-0.36, "#e8748b"], [0.34, "#7fa0e8"], [0.24, "#f4ede1"]] as const) flowerAt(ctx, x + fx * s, base - s * 0.02, s * 0.03, col);
+      if (c >= 3)
+        for (const side of [-1, 1]) {
+          ctx.strokeStyle = "#3f7a4a";
+          ctx.lineWidth = Math.max(2, s * 0.03);
+          ctx.beginPath();
+          ctx.moveTo(x + side * s * 0.4, base);
+          ctx.lineTo(x + side * s * 0.42, base - s * 0.8);
+          ctx.stroke();
+          ctx.strokeStyle = INK;
+          ctx.lineWidth = lw(s);
+          flowerAt(ctx, x + side * s * 0.42, base - s * 0.84, s * 0.06, "#f2c94c", "#6b4a2b");
+        }
+      break;
+    }
+    case "cannon": {
+      // Big Shells: a brass band, a stack of shells, then the pumpkin barrel (the body) and a pumpkin.
+      if (a >= 1) {
+        ctx.fillStyle = "#d4ae58";
+        ctx.beginPath();
+        ctx.arc(x + s * 0.05, base - s * 0.34, s * 0.06, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      if (a >= 2) for (const [px, py] of [[0.28, -0.04], [0.38, -0.04], [0.33, -0.12]] as const) blob(ctx, x + px * s, base + py * s, s * 0.05, a >= 3 ? "#e98a2b" : "#b08a5a");
+      // Flak: a hopper, an anti-air barrel pointing up, then Scatter Shot's three barrels (the body).
+      if (b >= 1) rr(ctx, x - s * 0.1, base - s * 0.42, s * 0.14, s * 0.12, s * 0.02, "#8a5a35");
+      if (b >= 2) {
+        ctx.save();
+        ctx.translate(x - s * 0.18, base - s * 0.2);
+        ctx.rotate(-1.35);
+        rr(ctx, 0, -s * 0.03, s * 0.3, s * 0.06, s * 0.02, "#5c6066");
+        ctx.restore();
+      }
+      // Wrecker: a longer barrel, iron bands, then a wrecking ball swinging from a crane arm.
+      if (c >= 1) {
+        ctx.save();
+        ctx.translate(x, base - s * 0.24);
+        ctx.rotate(-0.55 - kick * 0.2);
+        rr(ctx, s * 0.36, -s * 0.06, s * 0.14, s * 0.12, s * 0.03, "#5c6066");
+        if (c >= 2) {
+          ctx.fillStyle = "#2b2320";
+          ctx.fillRect(s * 0.18, -s * 0.09, s * 0.03, s * 0.18);
+          ctx.fillRect(s * 0.3, -s * 0.09, s * 0.03, s * 0.18);
+        }
+        ctx.restore();
+      }
+      if (c >= 3) {
+        rr(ctx, x - s * 0.32, base - s * 0.95, s * 0.05, s * 0.95, s * 0.02, "#c9a14a");
+        rr(ctx, x - s * 0.32, base - s * 0.95, s * 0.5, s * 0.05, s * 0.02, "#c9a14a");
+        const sw = Math.sin(t * 2) * 0.35;
+        const bx = x + s * 0.12 + Math.sin(sw) * s * 0.4;
+        const by = base - s * 0.9 + Math.cos(sw) * s * 0.4;
+        ctx.beginPath();
+        ctx.moveTo(x + s * 0.12, base - s * 0.9);
+        ctx.lineTo(bx, by);
+        ctx.stroke();
+        blob(ctx, bx, by, s * 0.1, "#3b3f44");
+        shine(ctx, bx - s * 0.03, by - s * 0.03, s * 0.03, s * 0.02);
+      }
+      break;
+    }
+    case "mast": {
+      // Pirate Radio: a taller aerial, a pirate flag, then a broadcast dish and bigger waves.
+      if (a >= 1) {
+        ctx.strokeStyle = "#5a5e63";
+        ctx.beginPath();
+        ctx.moveTo(x, base - s * 0.9);
+        ctx.lineTo(x, base - s * 1.15);
+        ctx.stroke();
+        ctx.strokeStyle = INK;
+        blob(ctx, x, base - s * 1.16, s * 0.025, "#d95f3b");
+      }
+      if (a >= 2) {
+        rr(ctx, x - s * 0.26, base - s * 0.78, s * 0.2, s * 0.13, s * 0.01, "#1d1b22");
+        ctx.fillStyle = "#f4ede1";
+        ctx.beginPath();
+        ctx.arc(x - s * 0.16, base - s * 0.73, s * 0.03, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (a >= 3) {
+        ctx.fillStyle = "#d9dde2";
+        ctx.beginPath();
+        ctx.ellipse(x + s * 0.12, base - s * 0.55, s * 0.16, s * 0.2, -0.4, -Math.PI / 2, Math.PI / 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(217,95,59,0.5)";
+        for (let i = 1; i <= 2; i++) {
+          const ph = (t * 0.6 + i / 2) % 1;
+          ctx.beginPath();
+          ctx.arc(x, base - s * 1.15, s * (0.2 + ph * 0.5), -0.9 * Math.PI, -0.1 * Math.PI);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = INK;
+      }
+      // Clinic: a red cross flag, a white tent at the foot, then a ward with its lamp lit.
+      if (b >= 1) {
+        rr(ctx, x + s * 0.03, base - s * 0.98, s * 0.16, s * 0.11, s * 0.01, "#ffffff");
+        ctx.fillStyle = "#d9433a";
+        ctx.fillRect(x + s * 0.095, base - s * 0.965, s * 0.03, s * 0.08);
+        ctx.fillRect(x + s * 0.07, base - s * 0.94, s * 0.08, s * 0.03);
+      }
+      if (b >= 2) {
+        ctx.fillStyle = "#fffbe6";
+        ctx.beginPath();
+        ctx.moveTo(x - s * 0.46, base);
+        ctx.lineTo(x - s * 0.33, base - s * 0.24);
+        ctx.lineTo(x - s * 0.2, base);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+      if (b >= 3) {
+        ctx.fillStyle = "#fffbe6";
+        ctx.beginPath();
+        ctx.moveTo(x + s * 0.2, base);
+        ctx.lineTo(x + s * 0.36, base - s * 0.3);
+        ctx.lineTo(x + s * 0.52, base);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#d9433a";
+        ctx.fillRect(x + s * 0.345, base - s * 0.17, s * 0.03, s * 0.09);
+        ctx.fillRect(x + s * 0.32, base - s * 0.14, s * 0.08, s * 0.03);
+      }
+      // Siren: a loudhailer, a blue light, then a bell in a frame up top.
+      if (c >= 1) {
+        ctx.fillStyle = "#9aa0a6";
+        ctx.beginPath();
+        ctx.moveTo(x - s * 0.02, base - s * 0.62);
+        ctx.lineTo(x - s * 0.2, base - s * 0.7);
+        ctx.lineTo(x - s * 0.2, base - s * 0.54);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+      if (c >= 2) blob(ctx, x + s * 0.1, base - s * 0.42, s * 0.04, Math.sin(t * 8) > 0 ? "#3f7fd0" : "#a9c8ff");
+      if (c >= 3) {
+        ctx.strokeStyle = "#7a5634";
+        ctx.lineWidth = Math.max(2, s * 0.03);
+        ctx.beginPath();
+        ctx.moveTo(x - s * 0.14, base - s * 0.92);
+        ctx.lineTo(x - s * 0.14, base - s * 1.12);
+        ctx.lineTo(x + s * 0.14, base - s * 1.12);
+        ctx.lineTo(x + s * 0.14, base - s * 0.92);
+        ctx.stroke();
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = lw(s);
+        const sw = Math.sin(t * 6) * 0.3;
+        ctx.save();
+        ctx.translate(x, base - s * 1.1);
+        ctx.rotate(sw);
+        ctx.fillStyle = "#d4ae58";
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.07, s * 0.12);
+        ctx.quadraticCurveTo(-s * 0.06, 0, 0, 0);
+        ctx.quadraticCurveTo(s * 0.06, 0, s * 0.07, s * 0.12);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  ctx.restore();
 }
 
 export function star(ctx: C, x: number, y: number, r: number): void {

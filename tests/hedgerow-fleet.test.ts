@@ -17,14 +17,16 @@ import {
   pointAt,
   newGame,
   place,
-  previewStats,
+  pathUpgradeCost,
+  previewPath,
   remainingFV,
   sendWave,
   stepGame,
   towerCost,
   towerStats,
+  stepsBought,
   upgrade,
-  upgradeCost,
+  upgradeToward,
   type Game,
   type Level,
 } from "../games/hedgerow/src/engine";
@@ -156,16 +158,16 @@ describe("hedgerow fleet: the tower panel and targeting (M2 review)", () => {
     expect(place(g, "scarecrow", c, r).ok).toBe(true);
     const t = g.towers[0]!;
     expect(t.fleet).toBe(true);
-    const t2 = previewStats(t, { tier: 2, spec: null });
-    const t3 = previewStats(t, { tier: 3, spec: null });
-    expect([t2.damage, t2.pierce]).toEqual([1, 4]);
-    expect([t3.damage, t3.pierce]).toEqual([2, 4]);
-    for (const s of [t2, t3, previewStats(t, { tier: 4, spec: 0 }), previewStats(t, { tier: 4, spec: 1 })])
-      expect(s.vs).toEqual({ light: 1, heavy: 1, air: 1 });
+    // Hedgerow 2 M4: a Scarecrow grows along paths. Flock's Sharp Beaks add pierce; Scythe's Quick Arms rate.
+    const flock = previewPath(t, 0)!;
+    const scythe = previewPath(t, 2)!;
+    expect([flock.damage, flock.pierce]).toEqual([1, 3]);
+    expect(scythe.cooldown).toBeCloseTo(towerStats(t).cooldown / 1.3);
+    for (const s of [flock, scythe, previewPath(t, 1)!]) expect(s.vs).toEqual({ light: 1, heavy: 1, air: 1 });
     // The preview is exactly what the upgrade then gives.
     g.marks = 1e6;
-    upgrade(g, t.id);
-    expect(towerStats(t)).toEqual(t2);
+    upgrade(g, t.id, 0);
+    expect(towerStats(t)).toEqual(flock);
   });
 
   it("Strongest on the Fleet shoots the vehicle with the most layers aboard, not the first in the list", () => {
@@ -251,12 +253,12 @@ describe("hedgerow fleet: pops you can hear", () => {
     const ps = plots(lv);
     expect(place(g, "hedgerow", ps[0]![0], ps[0]![1]).ok).toBe(true);
     expect(place(g, "beehive", ps[3]![0], ps[3]![1]).ok).toBe(true);
-    for (const t of g.towers) {
-      upgrade(g, t.id);
-      upgrade(g, t.id);
-      upgrade(g, t.id, 0);
-    }
-    expect(g.towers.map((t) => t.tier)).toEqual([4, 4]);
+    // Hedgerow 2 M4: Blackthorn's thorn piles and Killer Queen's spreading poison are path A's tier 3.
+    for (const t of g.towers) for (let i = 0; i < 3; i++) expect(upgrade(g, t.id, 0).ok).toBe(true);
+    expect(g.towers.map((t) => t.path)).toEqual([
+      [3, 0, 0],
+      [3, 0, 0],
+    ]);
     for (let i = 6; i < 12; i++) place(g, "scarecrow", ps[i]![0], ps[i]![1]);
     sendWave(g);
     let knocks = 0;
@@ -380,10 +382,11 @@ describe("hedgerow fleet: rounds and levels", () => {
     place(g, "scarecrow", c, r);
     const t = g.towers[0]!;
     expect(t.fleet).toBe(true);
-    const u1 = upgradeCost(t)!;
+    // Each tier along a path costs more than the one before (M4: 100, 200, 1,000 for Flock).
+    const u1 = pathUpgradeCost(g, t, 0)!;
     g.marks = 1e5;
-    upgrade(g, t.id);
-    expect(upgradeCost(t)!).toBeGreaterThan(u1);
+    upgrade(g, t.id, 0);
+    expect(pathUpgradeCost(g, t, 0)!).toBeGreaterThan(u1);
     sendWave(g);
     for (let i = 0; i < 40; i++) stepGame(g);
     expect(earlyBonus(g)).toBe(10 + 2);
@@ -490,10 +493,8 @@ describe("hedgerow fleet: the live cap", () => {
         }
       for (const [c, r] of ps) if (g.towers.length < 40) place(g, "scarecrow", c, r);
       expect(g.towers.length).toBe(40);
-      for (const t of g.towers) {
-        upgrade(g, t.id);
-        upgrade(g, t.id);
-      }
+      // Every tower grown: path towers to 2-0-2, the rest to tier 3.
+      for (const t of g.towers) for (let i = 0; i < 4; i++) upgradeToward(g, t.id);
       sendWave(g);
       g.spawnQueue = [];
       // Real Box Lorries with real shells: every hit pops a layer, children burst out and the emission
@@ -544,7 +545,8 @@ describe("hedgerow fleet: level 1 (M1 review)", () => {
       if (lv.id <= 3) expect(naive, `level ${lv.id}`).toBeLessThan(0.95);
       else if (naive < 1) bled++;
     }
-    expect(bled).toBeGreaterThanOrEqual(4);
+    // M4 (paths): spam bleeds or loses on levels 6, 7 and 9 of 4-10, as well as on 1-3 (BALANCE.md).
+    expect(bled).toBeGreaterThanOrEqual(3);
   }, 180_000);
 
   it("level 1's pressure is graded (M3 review): a lazy field falls at round 6 as before, tier 2 bleeds, a small tier 3 field is dented", () => {
@@ -562,7 +564,8 @@ describe("hedgerow fleet: level 1 (M1 review)", () => {
               spent = true;
               continue;
             }
-            for (const t of g.towers) if (t.tier < maxTier && upgrade(g, t.id).ok) { spent = true; break; }
+            // M4: old tier 2 is a path tower's first two steps (1-0-1), old tier 3 its first four (2-0-2).
+            for (const t of g.towers) if (stepsBought(t) < (maxTier - 1) * 2 && upgradeToward(g, t.id).ok) { spent = true; break; }
           }
           sendWave(g);
         }
@@ -620,7 +623,7 @@ describe("hedgerow fleet: level 1 (M1 review)", () => {
       while (g.phase !== "won" && g.phase !== "lost" && g.tick < 30 * 2000) {
         if (g.phase === "build") {
           for (const [c, r] of ps) place(g, "scarecrow", c, r);
-          for (const t of [...g.towers].sort((a, b) => a.tier - b.tier)) upgrade(g, t.id);
+          for (const t of [...g.towers].sort((a, b) => stepsBought(a) - stepsBought(b))) upgradeToward(g, t.id);
           sendWave(g);
         } else if (g.wave >= stackFrom && g.wave <= stackTo && g.waveClock > 6) sendWave(g);
         stepGame(g);

@@ -6,6 +6,7 @@
 
 export const STEP = 1 / 30;
 
+import { boughtTiers, capPath, stepToward, hasPaths, nextPath, pathBlock, pathCost, pathTier, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import { CATH_DAMAGE, CHILD_GAP, FLEET_HERO_DAMAGE, FLEET_PIE_DAMAGE, FLEET_TOWERS, INHERITED, LIVE_CAP, P, PIERCE_REACH, REBRAND_SECS, RUNGS, canControl, canHurt, damageTypeOf, fleetSpecPrice, fleetUpgradePrice, fvOf, popRate, propMask, roundBonus, rungAbove, stackBonus, type DamageType } from "./fleet";
 
 export type TowerKind =
@@ -807,6 +808,31 @@ export interface TowerStats {
   vs: Record<EnemyClass, number>;
   /** Its damage type (fleet levels' hard locks; fleet.ts damageTypeOf). Null for towers that don't hit, and megastructures. */
   type: DamageType | null;
+  // Upgrade paths (Hedgerow 2 M4, paths.ts PathMod): what the tiers of a path tower add.
+  /** Sees Stealth itself (Lantern Eyes, Scent). */
+  detect: boolean;
+  /** Separate targets a shot (Crow Caller). */
+  fan: number;
+  /** Its "gust" is a 360° sweep that pushes nothing (Whirling Scythe). */
+  sweep: boolean;
+  /** Reaches anywhere on the field. */
+  global: boolean;
+  /** Seconds a hit stuns non-Plant. */
+  stun: number;
+  /** × layers against long shells. */
+  shellMul: number;
+  /** Layers off Heavy Plant and bosses, at least. */
+  plantDamage: number;
+  /** Poison passes to what a vehicle pops into. */
+  poisonSpread: boolean;
+  /** Thorn piles it lays on the lane. */
+  piles: { hits: number; every: number; max: number } | null;
+  /** Holds the first few non-Plant in range still every few seconds. */
+  hold: { secs: number; every: number; count: number } | null;
+  /** Fleet: vehicles in range take this much more (whole layers, carried). */
+  vuln: number;
+  /** × range for towers in range. */
+  rangeAura: number;
 }
 
 // ---- megastructures: two grown towers side by side merge into one ----
@@ -954,8 +980,11 @@ interface StatKey {
   mega: MegaId | undefined;
   rank: number;
   fleet: boolean | undefined;
+  /** A path tower's build, packed as a*16 + b*4 + c (-1 without paths). */
+  path: number;
   stats: TowerStats;
 }
+const packPath = (p: readonly number[] | undefined): number => (p ? p[0]! * 16 + p[1]! * 4 + p[2]! : -1);
 const statCache = new WeakMap<object, StatKey>();
 
 /** The numbers a tower fights with at its tier, and with its specialisation at tier 4. */
@@ -968,6 +997,7 @@ export function towerStats(
     mega?: MegaId;
     kills?: number;
     fleet?: boolean;
+    path?: Path;
   },
 ): TowerStats {
   // Fleet towers have no veteran ranks: their Knockouts are the counter (Hedgerow 2 cuts RANKS).
@@ -983,11 +1013,13 @@ export function towerStats(
     (hit.dmgMul ?? 1) === (t.dmgMul ?? 1) &&
     hit.mega === t.mega &&
     hit.rank === rank &&
-    !!hit.fleet === !!t.fleet
+    !!hit.fleet === !!t.fleet &&
+    hit.path === packPath(t.path)
   )
     return hit.stats;
   const s = TOWERS[t.kind];
-  const i = Math.min(t.tier, 3) - 1;
+  // A path tower starts from its tier 1 numbers; its paths add the rest (fleetStats).
+  const i = t.path ? 0 : Math.min(t.tier, 3) - 1;
   const stats: TowerStats = {
     range: s.range[i]!,
     damage: s.damage[i]!,
@@ -1016,6 +1048,18 @@ export function towerStats(
     rank,
     vs: { light: 1, heavy: 1, air: 1, ...TOWER_VS[t.kind] },
     type: t.mega ? null : damageTypeOf(t.kind, t.tier === 4 ? t.spec : null),
+    detect: false,
+    fan: 1,
+    sweep: false,
+    global: false,
+    stun: 0,
+    shellMul: 1,
+    plantDamage: 0,
+    poisonSpread: false,
+    piles: null,
+    hold: null,
+    vuln: 1,
+    rangeAura: 1,
   };
   const over: Partial<MegaSpec> | null = t.mega
     ? { ...MEGAS[t.mega] }
@@ -1047,20 +1091,32 @@ export function towerStats(
     stats.damage *= 1 + 0.1 * rank;
     stats.thorns *= 1 + 0.1 * rank;
   }
-  statCache.set(t, { kind: t.kind, tier: t.tier, spec: t.spec, high: t.high, rangeMul: t.rangeMul, dmgMul: t.dmgMul, mega: t.mega, rank, fleet: t.fleet, stats });
+  // Map-wide reach isn't stretched by high ground or shortened by fog.
+  if (stats.global) stats.range = GLOBAL_RANGE;
+  statCache.set(t, { kind: t.kind, tier: t.tier, spec: t.spec, high: t.high, rangeMul: t.rangeMul, dmgMul: t.dmgMul, mega: t.mega, rank, fleet: t.fleet, path: packPath(t.path), stats });
   return stats;
 }
 
 /** What this very tower would become after an upgrade, a specialisation or a merge. Its fleet rules, high
  * ground, the level's twists and its rank carry over, so the panel's diff shows only what the upgrade changes. */
-export function previewStats(t: Tower, next: { tier: Tower["tier"]; spec?: 0 | 1 | null; mega?: MegaId }): TowerStats {
+export function previewStats(t: Tower, next: { tier: Tower["tier"]; spec?: 0 | 1 | null; mega?: MegaId; path?: Path }): TowerStats {
   return towerStats({ kind: t.kind, high: t.high, rangeMul: t.rangeMul, dmgMul: t.dmgMul, kills: t.kills, fleet: t.fleet, spec: null, ...next });
 }
+
+/** What a path tower would become with path `i`'s next tier (null if it can't take it). */
+export function previewPath(t: Tower, i: PathIndex): TowerStats | null {
+  if (!t.path || t.path[i] >= 3) return null;
+  const path = nextPath(t.path, i);
+  return previewStats(t, { tier: pathTier(path), path });
+}
+
+/** "Everywhere": a global tower's range (Hawk Post, Broadcast Tower). */
+export const GLOBAL_RANGE = 99;
 
 // ---- bosses: every boss has signature moves on a timer ----
 
 /** Fleet levels: a tower's hits in layers and pierce (fleet.ts FLEET_TOWERS); range, splash and slows stay. */
-function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; mega?: MegaId }, stats: TowerStats): void {
+function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; mega?: MegaId; path?: Path }, stats: TowerStats): void {
   const f = FLEET_TOWERS[t.kind];
   // No soft counters on the Fleet: TOWER_VS is cut (M3 brings hard property locks instead).
   stats.vs = { light: 1, heavy: 1, air: 1 };
@@ -1070,6 +1126,10 @@ function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; meg
     stats.thorns /= 12;
     if (stats.poison) stats.poison = { dps: stats.poison.dps / 12, secs: stats.poison.secs };
     stats.pierce = 10;
+    return;
+  }
+  if (t.path && hasPaths(t.kind)) {
+    pathStats(t.kind, t.path, f, stats);
     return;
   }
   const i = Math.min(t.tier, 3) - 1;
@@ -1087,6 +1147,65 @@ function fleetStats(t: { kind: TowerKind; tier: number; spec?: 0 | 1 | null; meg
     stats.thorns = fs.thorns ?? (stats.thorns > 0 ? stats.thorns / 12 : 0);
     if (stats.poison) stats.poison = { dps: fs.poison ?? 1, secs: stats.poison.secs };
   }
+}
+
+/**
+ * A path tower on the Fleet (Hedgerow 2 M4): its tier 1 numbers (FLEET_TOWERS and today's range, splash and
+ * slow), then every tier it has bought along its paths (paths.ts), adds and multipliers in any order.
+ */
+function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKind], stats: TowerStats): void {
+  stats.damage = f.damage[0]!;
+  stats.pierce = f.pierce[0]!;
+  if (f.air) stats.air = true;
+  if (f.cooldown) stats.cooldown = f.cooldown[0]!;
+  let rate = 1;
+  let range = 1;
+  let rangeAdd = 0;
+  let splash = 1;
+  for (const tier of boughtTiers(kind, path)) {
+    const m = tier.mod;
+    if (m.damage) stats.damage += m.damage;
+    if (m.pierce) stats.pierce += m.pierce;
+    if (m.rate) rate *= m.rate;
+    if (m.range) range *= m.range;
+    if (m.rangeAdd) rangeAdd += m.rangeAdd;
+    if (m.splash) splash *= m.splash;
+    if (m.detect) stats.detect = true;
+    if (m.air) stats.air = true;
+    if (m.type) stats.type = m.type;
+    if (m.crit) stats.crit = { ...m.crit };
+    if (m.fan) stats.fan = m.fan;
+    if (m.global) stats.global = true;
+    if (m.stun) stats.stun = Math.max(stats.stun, m.stun);
+    if (m.shellMul) stats.shellMul *= m.shellMul;
+    if (m.plantDamage) stats.plantDamage = Math.max(stats.plantDamage, m.plantDamage);
+    if (m.knockback) stats.knockback = Math.max(stats.knockback, m.knockback);
+    if (m.poison) {
+      stats.poison = { dps: Math.max(stats.poison?.dps ?? 0, m.poison.dps), secs: Math.max(stats.poison?.secs ?? 0, m.poison.secs) };
+      if (m.poison.spread) stats.poisonSpread = true;
+    }
+    if (m.slow) stats.slow = Math.min(stats.slow, m.slow);
+    if (m.sticky && (!stats.sticky || m.sticky.factor < stats.sticky.factor)) stats.sticky = { ...m.sticky };
+    if (m.thorns) stats.thorns += m.thorns;
+    if (m.piles && (!stats.piles || m.piles.hits > stats.piles.hits)) stats.piles = { ...m.piles };
+    if (m.hold) stats.hold = { ...m.hold };
+    if (m.vuln) stats.vuln = Math.max(stats.vuln, m.vuln);
+    if (m.buff) stats.buff = Math.max(stats.buff, m.buff);
+    if (m.rangeAura) stats.rangeAura = Math.max(stats.rangeAura, m.rangeAura);
+    if (m.cleanse) stats.cleanse = true;
+    if (m.mend) stats.mend += m.mend;
+    if (m.sweep) {
+      // Whirling Scythe: the windmill's gust machinery, as a spin that pushes nothing.
+      stats.sweep = true;
+      stats.gustEvery = m.sweep;
+      stats.gustPush = 0;
+    }
+  }
+  stats.cooldown /= rate;
+  stats.range = stats.range * range + rangeAdd;
+  if (stats.splash) stats.splash *= splash;
+  // A hedge that rams (Tractor Shed) hits Sharp like its thorns.
+  if (stats.damage > 0 && !stats.type) stats.type = damageTypeOf(kind, null);
 }
 
 export interface BossMove {
@@ -1422,6 +1541,16 @@ export interface Tower {
   fleet?: boolean;
   /** Layers knocked off (fleet levels): the tower's Knockouts, and the Marks it has earned. */
   ko?: number;
+  /**
+   * Fleet levels, path towers (Hedgerow 2 M4, paths.ts): tiers bought along paths A, B and C. Its `tier` is
+   * then only for show (paths.ts pathTier) and `spec` stays null.
+   */
+  path?: Path;
+  /** Seconds until it lays its next thorn pile, or holds the next vehicles (path towers). */
+  pileCd?: number;
+  holdCd?: number;
+  /** Pirate Radio: the fraction of a layer its marking still owes (whole layers come off as they add up). */
+  vulnCarry?: number;
 }
 
 export interface Enemy {
@@ -1470,6 +1599,8 @@ export interface Enemy {
   lastHit?: number;
   /** Seconds before another gust can move it (gusts don't chain-lock a vehicle in place). */
   gustCd?: number;
+  /** Killer Queen poison: it passes to whatever this vehicle pops into. */
+  spreads?: boolean;
 }
 
 /** Cath on the battlefield: she walks where she's told, holds up to two vehicles and whacks them. */
@@ -1575,6 +1706,8 @@ export type GameEvent =
       toY: number;
       crit?: boolean;
       spec?: 0 | 1 | null;
+      /** A path tower's tier 3 look for the projectile ("crow", "hawk", "pumpkin", "scatter", "wreck", "ram"...). */
+      look?: string;
     }
   | { type: "kill"; x: number; y: number; bounty: number; kind: EnemyKind }
   | { type: "leak"; x: number; y: number; kind?: EnemyKind; lost?: number; dropped?: boolean; pm?: number; cause?: LeakCause }
@@ -1590,7 +1723,11 @@ export type GameEvent =
   | { type: "split"; x: number; y: number; kind: EnemyKind }
   | { type: "flood"; x: number; y: number; warn: boolean }
   | { type: "bridge"; open: boolean; x: number; y: number }
-  | { type: "gust"; tower: number; x: number; y: number; radius: number }
+  | { type: "gust"; tower: number; x: number; y: number; radius: number; sweep?: boolean }
+  /** A Haybale tower rolled out a bale and held these vehicles. */
+  | { type: "bale"; tower: number; x: number; y: number; held: number }
+  /** A thorn pile was laid on the lane. */
+  | { type: "pile"; tower: number; x: number; y: number }
   | { type: "pop"; x: number; y: number }
   /** Rebrand: a vehicle grew back a rung. */
   | { type: "regrow"; x: number; y: number; kind: EnemyKind }
@@ -1677,6 +1814,23 @@ export interface Game {
   leakLog: Partial<Record<LeakCause, { lost: number; round: number }>>;
   /** The last wave sent on top of one still out (a leak from it or the one before names the stacking). */
   stacked?: number;
+  /** Thorn piles on the lane (Hedgerow Blackthorn path): where, which tower laid it, hits left, and who it hit. */
+  piles: Pile[];
+  /** Marks paid for each cleared round, latest last (the sheet's "affordable in about N rounds"). */
+  roundIncome: number[];
+  /** Every Mark earned in play so far (pops, round pay, stacking), and the count when the last round cleared. */
+  earned: number;
+  earnedAtClear: number;
+}
+
+export interface Pile {
+  id: number;
+  tower: number;
+  dist: number;
+  lane?: 1;
+  hits: number;
+  /** Vehicles it has already scratched (each one once; a popped vehicle keeps its id). */
+  hit: number[];
 }
 
 /**
@@ -1863,6 +2017,10 @@ export function newGame(
     popped: 0,
     leaked: 0,
     leakLog: {},
+    piles: [],
+    roundIncome: [],
+    earned: 0,
+    earnedAtClear: 0,
     hero: {
       x: post.x,
       y: post.y,
@@ -1900,7 +2058,17 @@ export function towerCost(game: Pick<Game, "perks" | "level">, kind: TowerKind):
 }
 
 /** The price of the next tier (null at tier 3, where the two specialisations are priced separately, and at 4). */
-export function upgradeCost(tower: Pick<Tower, "kind" | "tier" | "fleet">): number | null {
+export function upgradeCost(tower: Pick<Tower, "kind" | "tier" | "fleet" | "path">): number | null {
+  // A path tower: its cheapest next tier on any path the crosspath rule allows (null when the build is full).
+  if (tower.path && hasPaths(tower.kind)) {
+    let best: number | null = null;
+    for (const i of [0, 1, 2] as const) {
+      if (pathBlock(tower.path, i, Infinity)) continue;
+      const c = pathCost(tower.kind, tower.path, i)!;
+      if (best === null || c < best) best = c;
+    }
+    return best;
+  }
   if (tower.tier >= 3) return null;
   if (tower.fleet) return fleetUpgradePrice(tower.kind, tower.tier as 1 | 2);
   return TOWERS[tower.kind].upgrades[tower.tier - 1]!;
@@ -1957,6 +2125,7 @@ export function place(
     cd: 0,
     spent: cost,
     ...(isFleet(game.level) ? { fleet: true, ko: 0 } : {}),
+    ...(isFleet(game.level) && hasPaths(kind) ? { path: [0, 0, 0] as Path } : {}),
   });
   return { ok: true };
 }
@@ -2061,9 +2230,10 @@ function armorOf(game: Game, e: Enemy): number {
 }
 
 /** Upgrades a tower one tier. From tier 3 it needs `spec`: which of the two specialisations to take. */
-export function upgrade(game: Game, id: number, spec?: 0 | 1): ActionResult {
+export function upgrade(game: Game, id: number, spec?: number): ActionResult {
   const tower = game.towers.find((t) => t.id === id);
   if (!tower) return { ok: false, reason: "No such tower." };
+  if (tower.path) return upgradePath(game, tower, spec);
   if (tower.tier >= 4) return { ok: false, reason: "Already fully grown." };
   if (tower.tier === 3) {
     if (!specsUnlocked(game.level))
@@ -2089,10 +2259,55 @@ export function upgrade(game: Game, id: number, spec?: 0 | 1): ActionResult {
   return { ok: true };
 }
 
+/**
+ * A path tower's next tier along path `i` (Hedgerow 2 M4): the crosspath rule (two paths, one past tier 2),
+ * tier 3 from level 6, and the price.
+ */
+function upgradePath(game: Game, tower: Tower, i: number | undefined): ActionResult {
+  if (game.phase === "won" || game.phase === "lost") return { ok: false, reason: "The level is over." };
+  if (i !== 0 && i !== 1 && i !== 2) return { ok: false, reason: "Choose a path." };
+  const kind = tower.kind as PathKind;
+  const block = pathBlock(tower.path!, i, game.level.id);
+  if (block) return { ok: false, reason: block };
+  const cost = pathCost(kind, tower.path!, i)!;
+  if (game.marks < cost) return { ok: false, reason: `Needs ${cost} Marks.` };
+  game.marks -= cost;
+  tower.spent += cost;
+  tower.path = nextPath(tower.path!, i);
+  tower.tier = pathTier(tower.path);
+  return { ok: true };
+}
+
+/**
+ * One step of a build: a path tower's next tier towards `goal` (every path's tier 1, then tier 2, then the 3),
+ * or the next tier of a tower without paths. For scripts, tests and simple bots ("upgrade as Marks allow").
+ */
+export function upgradeToward(game: Game, id: number, goal: Path = [2, 0, 2]): ActionResult {
+  const t = game.towers.find((x) => x.id === id);
+  if (!t) return { ok: false, reason: "No such tower." };
+  if (!t.path) return t.tier < 3 ? upgrade(game, id) : { ok: false, reason: "Already fully grown." };
+  const i = stepToward(t.path, goal);
+  if (i === null) return { ok: false, reason: "That build is done." };
+  return upgrade(game, id, i);
+}
+
+/** Tiers bought: a path tower's every step (0-6 in M4), or a legacy tower's tier minus one. */
+export function stepsBought(t: Pick<Tower, "path" | "tier">): number {
+  return t.path ? t.path[0] + t.path[1] + t.path[2] : t.tier - 1;
+}
+
+/** The price of a path tower's next tier along path `i`, or null if the crosspath rule, the level or the top stops it. */
+export function pathUpgradeCost(game: Pick<Game, "level">, tower: Pick<Tower, "kind" | "path">, i: PathIndex): number | null {
+  if (!tower.path || !hasPaths(tower.kind)) return null;
+  if (pathBlock(tower.path, i, game.level.id)) return null;
+  return pathCost(tower.kind, tower.path, i);
+}
+
 export function sell(game: Game, id: number): ActionResult {
   const i = game.towers.findIndex((t) => t.id === id);
   if (i < 0) return { ok: false, reason: "No such tower." };
   game.marks += sellValue(game.towers[i]!);
+  game.piles = game.piles.filter((p) => p.tower !== id);
   game.towers.splice(i, 1);
   return { ok: true };
 }
@@ -2166,6 +2381,7 @@ export function sendWave(game: Game, forced = false): ActionResult {
   game.wave = wave;
   game.phase = "wave";
   game.marks += early;
+  game.earned += early;
   if (game.phase === "wave" && pending.length + game.enemies.length > 0) game.stacked = wave;
   const flood = setPiece(game.level, "flood");
   if (flood && wave === flood.wave) {
@@ -2308,6 +2524,7 @@ export function crowding(game: Game, t: Tower): number {
 /** Lawyers' paperwork: towers in range fire at half rate. */
 function jammed(game: Game, t: Tower): boolean {
   if (ctx && !ctx.jam) return false;
+  if (cleansed(game, t)) return false;
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].jam;
     if (!r || e.hp <= 0) continue;
@@ -2319,7 +2536,9 @@ function jammed(game: Game, t: Tower): boolean {
 
 /** A lobbyist's whispers: a specialised tower in range forgets its branch and fights as a plain tier 3. */
 export function lobbied(game: Game, t: Tower): boolean {
-  if (t.tier < 4 || t.mega) return false;
+  if (t.mega) return false;
+  // A path tower forgets its tier 3 (paths.ts capPath); others their specialisation.
+  if (t.path ? topPath(t.path) === null : t.tier < 4) return false;
   if (ctx && !ctx.lobby) return false;
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].lobby;
@@ -2331,13 +2550,18 @@ export function lobbied(game: Game, t: Tower): boolean {
 }
 
 /** An influencer's followers are watching it, not the road: towers in its charm range hold fire. */
-export function charmed(game: Game, t: Tower): boolean {
-  if (ctx && !ctx.charm) return false;
+/** Is a tower within reach of a Clinic Tent or a First Aid mast (charm and jam don't take)? */
+function cleansed(game: Game, t: Tower): boolean {
   for (const c of game.towers) {
     const cs = towerStats(c);
-    if (cs.cleanse && Math.hypot(c.col - t.col, c.row - t.row) <= cs.range)
-      return false;
+    if (cs.cleanse && Math.hypot(c.col - t.col, c.row - t.row) <= cs.range) return true;
   }
+  return false;
+}
+
+export function charmed(game: Game, t: Tower): boolean {
+  if (ctx && !ctx.charm) return false;
+  if (cleansed(game, t)) return false;
   for (const e of game.enemies) {
     const r = ENEMIES[e.kind].charm;
     if (!r || e.hp <= 0) continue;
@@ -2361,13 +2585,14 @@ export function markMultiplier(game: Game, e: Enemy): number {
   return m;
 }
 
-export function isRevealed(game: Game, e: Enemy): boolean {
+export function isRevealed(game: Game, e: Enemy, detect = false): boolean {
   const dark = setPiece(game.level, "blackout");
   if (dark && !lit(game, e, dark.light)) return false;
   // Fleet levels: Stealth is a property (it passes down to what a vehicle pops into); classic: the kind's.
   const fleet = isFleet(game.level);
   const stealth = fleet ? (pmOf(e) & P.stealth) !== 0 : !!ENEMIES[e.kind].stealth;
-  if (!stealth || markMultiplier(game, e) > 1) return true;
+  // A tower with its own detection (Lantern Eyes, Scent) sees stealth for itself.
+  if (!stealth || detect || markMultiplier(game, e) > 1) return true;
   // Fleet: Cath shows the towers only what she has hold of (two at a time), so a field built round her post
   // still needs a Radio Mast for a stealth round (M3; the spec's 1.6-cell sight answered every stealth round).
   if (fleet) return !!e.held;
@@ -2468,7 +2693,17 @@ export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number, type
       const kpm = pass | propMask(cp?.[i]);
       if (game.enemies.length >= LIVE_CAP) game.emitQueue.push({ kind: kids[i]!, dist, lane: e.lane, wave: e.wave, ...(kpm ? { pm: kpm } : {}) });
       // Extra children grow back only as far as what they came out as (a Rebrand can't multiply).
-      else game.enemies.push(makeEnemy(game, kids[i]!, dist, e.lane, e.wave, kpm));
+      else {
+        const kid = makeEnemy(game, kids[i]!, dist, e.lane, e.wave, kpm);
+        // Killer Queen: the poison spreads to everything it pops into.
+        if (e.spreads && e.poisonLeft && e.poisonLeft > 0) {
+          kid.poison = e.poison;
+          kid.poisonLeft = e.poisonLeft;
+          kid.spreads = true;
+          kid.lastHit = e.lastHit;
+        }
+        game.enemies.push(kid);
+      }
     }
     // Overflow stops at a child the hit's damage type can't hurt (a hard lock is a lock all the way down).
     if (type !== undefined && !canHurt(type, pm)) break;
@@ -2490,6 +2725,7 @@ function payLayers(game: Game, layers: number, by?: number): void {
   const whole = Math.floor((game.popMilli + 1e-6) / 1000);
   if (whole > 0) {
     game.marks += whole;
+    game.earned += whole;
     game.popMilli -= whole * 1000;
   }
   if (by !== undefined && by >= 0) {
@@ -2520,10 +2756,11 @@ export function fieldAnswers(game: Game, prop: "stealth" | "airborne" | "plated"
     if (!towerActive(t)) continue;
     const s = towerStats(t);
     if (prop === "stealth") {
-      if (s.reveal > 1) return true;
+      // A Mast reveals for everyone; Lantern Eyes and Scent see for themselves (and only if they hit something).
+      if (s.reveal > 1 || (s.detect && (s.damage > 0 || s.thorns > 0))) return true;
       continue;
     }
-    if (s.damage <= 0 && s.thorns <= 0) continue;
+    if (s.damage <= 0 && s.thorns <= 0 && !s.piles) continue;
     if (prop === "airborne") {
       if (s.air && s.damage > 0) return true;
     } else if (canHurt(s.type, P[prop])) return true;
@@ -2558,7 +2795,7 @@ export function fieldShare(game: Game, prop: "plated" | "wrapped" | "sealed" | "
   for (const t of game.towers) {
     if (!towerActive(t)) continue;
     const s = towerStats(t);
-    if (s.damage <= 0 && s.thorns <= 0) continue;
+    if (s.damage <= 0 && s.thorns <= 0 && !s.piles) continue;
     hitters++;
     if (canHurt(s.type, P[prop])) can++;
   }
@@ -2709,7 +2946,7 @@ export function learning(level: Level): boolean {
   return level.id <= 5 && !level.endless;
 }
 /** Her swing at a held vehicle on the learning levels, as a share of her damage. */
-export const HELD_SWING = 0.2;
+export const HELD_SWING = 0.35;
 /** What held vehicles do to her on the learning levels, as a share. */
 export const LEARNING_HURT = 0.6;
 
@@ -2763,6 +3000,7 @@ function pickTarget(
   game: Game,
   t: Tower,
   range: number,
+  exclude?: Set<number>,
 ): Enemy | undefined {
   const mode = t.target ?? "first";
   let target: Enemy | undefined;
@@ -2772,13 +3010,13 @@ function pickTarget(
     // Fleet levels: only what the lane index puts in reach; ties go to the earliest on the lane list, as a scan would.
     let bestAt = Infinity;
     let bestTie = -Infinity;
-    const type = towerStats(t).type;
+    const { type, detect } = towerStats(t);
     for (const i of candidates(game, towerWindowsOf(game, t, range))) {
       const e = game.enemies[i]!;
-      if (e.hp <= 0) continue;
+      if (e.hp <= 0 || exclude?.has(e.id)) continue;
       if (!air && ENEMIES[e.kind].flying) continue;
       // Hard locks (section 2): a tower doesn't waste a shot on what its damage type can't touch.
-      if (!canHurt(type, pmOf(e)) || !isRevealed(game, e)) continue;
+      if (!canHurt(type, pmOf(e)) || !isRevealed(game, e, detect)) continue;
       const p = enemyPoint(game.level, e);
       const d = Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y);
       if (d > range) continue;
@@ -2834,8 +3072,10 @@ interface StepCtx {
   charm: boolean;
   jam: boolean;
   lobby: boolean;
-  /** Towers whose buff or aura multiplies others' damage, in field order. */
+  /** Towers whose buff or aura multiplies others' damage (or, on the Fleet, rate or range), in field order. */
   boosters: Array<{ t: Tower; s: TowerStats }>;
+  /** Fleet: Pirate Radio masts (vehicles in their range take extra layers). */
+  vulns: Array<{ t: Tower; s: TowerStats }>;
   /** Fleet levels: the lane index (null until first asked for, or after something moved). */
   lanes: LaneIndex | null;
 }
@@ -2956,6 +3196,113 @@ function candidates(game: Game, w: [Array<[number, number]>, Array<[number, numb
   return out;
 }
 
+// ---- path tower behaviours (Hedgerow 2 M4, paths.ts) ----
+
+/** How far a thorn pile reaches along the lane either side of where it lies, in cells. */
+export const PILE_REACH = 0.22;
+/** Where along a tower's stretch of lane its next pile goes: spread out, the same every time. */
+const PILE_SPOTS = [0.5, 0.25, 0.75, 0.38, 0.62, 0.12, 0.88];
+
+function layPiles(game: Game, t: Tower, piles: NonNullable<TowerStats["piles"]>, reach: number): void {
+  t.pileCd = (t.pileCd ?? 0) - STEP;
+  if (t.pileCd > 0) return;
+  let mine = 0;
+  for (const p of game.piles) if (p.tower === t.id) mine++;
+  if (mine >= piles.max) {
+    t.pileCd = 0;
+    return;
+  }
+  // The longest stretch of lane in reach (the main lane first), and a spot along it.
+  const lanes: Array<[Level["path"], 1 | undefined, number]> = [[game.level.path, undefined, game.pathLength]];
+  if (game.level.path2) lanes.push([game.level.path2, 1, game.pathLength2]);
+  let best: { lo: number; hi: number; lane: 1 | undefined } | null = null;
+  for (const [path, lane, len] of lanes)
+    for (const [lo, hi] of laneWindows(path, t.col + 0.5, t.row + 0.5, reach)) {
+      const a = Math.max(0, lo);
+      const b = Math.min(len, hi);
+      if (b > a && (!best || b - a > best.hi - best.lo)) best = { lo: a, hi: b, lane };
+    }
+  if (!best) {
+    t.pileCd = piles.every;
+    return;
+  }
+  const n = (t.shots = (t.shots ?? 0) + 1);
+  const dist = best.lo + (best.hi - best.lo) * PILE_SPOTS[n % PILE_SPOTS.length]!;
+  game.piles.push({ id: game.nextId++, tower: t.id, dist, ...(best.lane ? { lane: best.lane } : {}), hits: piles.hits, hit: [] });
+  const q = enemyPoint(game.level, { dist, lane: best.lane });
+  game.events.push({ type: "pile", tower: t.id, x: q.x, y: q.y });
+  t.pileCd = piles.every;
+}
+
+/** Every pile takes a layer (Sharp) off each vehicle crossing it once, until its hits run out. */
+function stepPiles(game: Game): void {
+  if (!game.piles.length) return;
+  for (const pile of game.piles) {
+    for (const e of game.enemies) {
+      if (pile.hits <= 0) break;
+      if (e.hp <= 0 || (e.lane ?? 0) !== (pile.lane ?? 0) || ENEMIES[e.kind].flying) continue;
+      // A stealth vehicle steers round a pile nobody has pointed out (detection is a Mast's, Lantern Eyes' or Scent's job).
+      if (pmOf(e) & P.stealth && !isRevealed(game, e)) continue;
+      if (Math.abs(e.dist - pile.dist) > PILE_REACH || pile.hit.includes(e.id)) continue;
+      if (!canHurt("sharp", pmOf(e))) continue;
+      pile.hit.push(e.id);
+      if (pile.hit.length > 40) pile.hit.shift();
+      pile.hits--;
+      e.lastHit = pile.tower;
+      hitEnemy(game, e, 1, ctx?.byId.has(pile.tower) ? pile.tower : undefined, "sharp");
+    }
+  }
+  game.piles = game.piles.filter((p) => p.hits > 0);
+}
+
+function holdBales(game: Game, t: Tower, hold: NonNullable<TowerStats["hold"]>, reach: number): void {
+  t.holdCd = (t.holdCd ?? hold.every * 0.5) - STEP;
+  if (t.holdCd > 0) return;
+  // The ones furthest along go first.
+  const inReach: Enemy[] = [];
+  for (const e of game.enemies) {
+    if (e.hp <= 0 || e.stun > 0 || ENEMIES[e.kind].flying || isBig(e.kind) || !canControl(pmOf(e), "hold")) continue;
+    const q = enemyPoint(game.level, e);
+    if (Math.hypot(t.col + 0.5 - q.x, t.row + 0.5 - q.y) <= reach) inReach.push(e);
+  }
+  if (!inReach.length) {
+    t.holdCd = 0;
+    return;
+  }
+  inReach.sort((a, b) => b.dist - a.dist || a.id - b.id);
+  const held = inReach.slice(0, hold.count);
+  for (const e of held) e.stun = Math.max(e.stun, hold.secs);
+  const q = enemyPoint(game.level, held[0]!);
+  game.events.push({ type: "bale", tower: t.id, x: q.x, y: q.y, held: held.length });
+  t.holdCd = hold.every;
+}
+
+/** Pirate Radio: a hit on a vehicle inside a marking mast's range carries extra layers, paid as they add up. */
+function vulnerable(game: Game, t: Tower, e: Enemy, d: number): number {
+  const p = enemyPoint(game.level, e);
+  let m = 1;
+  for (const { t: v, s } of ctx!.vulns) if (Math.hypot(v.col + 0.5 - p.x, v.row + 0.5 - p.y) <= s.range) m = Math.max(m, s.vuln);
+  if (m <= 1) return d;
+  const extra = d * (m - 1) + (t.vulnCarry ?? 0);
+  const whole = Math.floor(extra + 1e-9);
+  t.vulnCarry = extra - whole;
+  return d + whole;
+}
+
+/** What a path tower's shot looks like: its tier 3 when it has one (renderers draw crows, hawks, pumpkins...). */
+export function shotLook(kind: TowerKind, path: Path): string | undefined {
+  const top = topPath(path);
+  if (top === null) return undefined;
+  return SHOT_LOOKS[kind]?.[top];
+}
+const SHOT_LOOKS: Partial<Record<TowerKind, [string, string, string]>> = {
+  scarecrow: ["crow", "hawk", "scythe"],
+  hedgerow: ["thorn", "maze", "ram"],
+  beehive: ["queen", "honey", "pollen"],
+  cannon: ["pumpkin", "scatter", "wreck"],
+  mast: ["radio", "clinic", "siren"],
+};
+
 export function stepGame(game: Game): void {
   if (game.phase !== "wave") return;
   if (game.duel) {
@@ -2966,14 +3313,16 @@ export function stepGame(game: Game): void {
   }
   const byId = new Map<number, Tower>();
   const boosters: StepCtx["boosters"] = [];
+  const vulns: StepCtx["vulns"] = [];
   let reveal = false;
   for (const t of game.towers) {
     byId.set(t.id, t);
     const s = towerStats(t);
     if (s.reveal > 1) reveal = true;
-    if (s.buff > 1 || s.aura > 1) boosters.push({ t, s });
+    if (s.buff > 1 || s.aura > 1 || s.rangeAura > 1) boosters.push({ t, s });
+    if (s.vuln > 1 && towerActive(t)) vulns.push({ t, s });
   }
-  ctx = { byId, reveal, charm: true, jam: true, lobby: true, boosters, lanes: null };
+  ctx = { byId, reveal, charm: true, jam: true, lobby: true, boosters, vulns, lanes: null };
   try {
     step(game);
   } finally {
@@ -3127,21 +3476,34 @@ function step(game: Game): void {
     if (k.lobby) ctx!.lobby = true;
   }
   for (const t of game.towers) {
-    const spec = lobbied(game, t) ? towerStats({ ...t, tier: 3, spec: null }) : towerStats(t);
+    const spec = lobbied(game, t) ? towerStats(t.path ? { ...t, path: capPath(t.path), tier: pathTier(capPath(t.path)) } : { ...t, tier: 3, spec: null }) : towerStats(t);
     if (!towerActive(t)) continue;
+    // A Clinic mast nearby stretches a tower's reach (path towers, Hedgerow 2 M4); a global one reaches everywhere.
+    let reach = spec.range;
+    if (fleet && !spec.global)
+      for (const { t: b, s: bs } of ctx!.boosters)
+        if (bs.rangeAura > 1 && b !== t && Math.hypot(b.col - t.col, b.row - t.row) <= bs.range) reach = Math.max(reach, spec.range * bs.rangeAura);
     // Blackthorn scratches everything in reach, all the time.
     if (spec.thorns > 0) {
       for (const e of game.enemies) {
         if (e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying)) continue;
         if (fleet && !canHurt(spec.type, pmOf(e))) continue;
+        // M4: thorns come cheap on the Blackthorn path, so on the Fleet they need something to point the
+        // stealth out too (detection stays the Mast's, Lantern Eyes' and Scent's job).
+        if (fleet && pmOf(e) & P.stealth && !isRevealed(game, e)) continue;
         const p = enemyPoint(game.level, e);
-        if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= spec.range) {
+        if (Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= reach) {
           damageEnemy(game, e, spec.thorns * STEP, false, t.id, spec.type);
           e.lastHit = t.id;
         }
       }
     }
-    // Windmills: a gust every few seconds shoves everything in reach back up the lane and batters it.
+    // Thorn piles: laid on the lane in reach, a few at a time (they need no sight: a trap is a trap).
+    if (spec.piles) layPiles(game, t, spec.piles, reach);
+    // Haybales: every few seconds the first few non-Plant vehicles in reach are held still.
+    if (spec.hold) holdBales(game, t, spec.hold, reach);
+    // Windmills: a gust every few seconds shoves everything in reach back up the lane and batters it. A
+    // Whirling Scythe spins the same way and pushes nothing.
     if (spec.gustEvery > 0) {
       t.gustCd = (t.gustCd ?? spec.gustEvery * 0.5) - STEP;
       if (t.gustCd <= 0) {
@@ -3149,9 +3511,10 @@ function step(game: Game): void {
         // On fleet levels a gust batters at most `pierce` vehicles (it still blows back everything in reach).
         let batter = fleet ? spec.pierce : Infinity;
         for (const e of [...game.enemies]) {
-          if (e.hp <= 0 || !isRevealed(game, e) || (!spec.air && ENEMIES[e.kind].flying)) continue;
+          if (e.hp <= 0 || !isRevealed(game, e, spec.detect) || (!spec.air && ENEMIES[e.kind].flying)) continue;
           const q = enemyPoint(game.level, e);
-          if (Math.hypot(t.col + 0.5 - q.x, t.row + 0.5 - q.y) > spec.range) continue;
+          if (Math.hypot(t.col + 0.5 - q.x, t.row + 0.5 - q.y) > reach) continue;
+          if (spec.sweep && (batter <= 0 || !canHurt(spec.type, pmOf(e)))) continue;
           blew = true;
           e.lastHit = t.id;
           popWrap(game, e);
@@ -3164,14 +3527,14 @@ function step(game: Game): void {
               t.id,
               spec.type,
             );
-          if (!isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0 && (!fleet || canControl(pmOf(e), "push"))) {
+          if (spec.gustPush > 0 && !isHeavy(e.kind) && !e.held && (e.gustCd ?? 0) <= 0 && (!fleet || canControl(pmOf(e), "push"))) {
             e.dist = Math.max(0, e.dist - spec.gustPush);
             e.gustCd = 2;
             laneMoved();
           }
         }
         if (blew) {
-          game.events.push({ type: "gust", tower: t.id, x: t.col + 0.5, y: t.row + 0.5, radius: spec.range });
+          game.events.push({ type: "gust", tower: t.id, x: t.col + 0.5, y: t.row + 0.5, radius: reach, ...(spec.sweep ? { sweep: true } : {}) });
           t.gustCd = spec.gustEvery;
         } else t.gustCd = 0;
       }
@@ -3203,7 +3566,7 @@ function step(game: Game): void {
       t.cd = 0;
       continue;
     }
-    const target = pickTarget(game, t, spec.range);
+    const target = pickTarget(game, t, reach);
     if (!target) {
       t.cd = 0;
       continue;
@@ -3226,8 +3589,15 @@ function step(game: Game): void {
     const area = spec.splash > 0 || spec.ignoresArmour;
     const hit = (e: Enemy) => {
       e.lastHit = t.id;
-      const d = fleet ? dmg : dmg * spec.vs[enemyClass(e.kind)];
+      let d = fleet ? dmg : dmg * spec.vs[enemyClass(e.kind)];
       const pm = pmOf(e);
+      if (fleet) {
+        // Path tiers (M4): Shell Cracker doubles up on long shells, Wrecking Shot hits Plant and bosses hard,
+        // and a Pirate Radio mast's marking adds whole layers as they add up.
+        if (spec.shellMul > 1 && maxHpOf(e) > 1) d *= spec.shellMul;
+        if (spec.plantDamage > 0 && (pm & P.plant || isBig(e.kind))) d = Math.max(d, spec.plantDamage);
+        if (ctx!.vulns.length) d = vulnerable(game, t, e, d);
+      }
       if (e.shield && !area) damageEnemy(game, e, d * WRAP_LEAK, false, t.id, spec.type);
       else {
         popWrap(game, e);
@@ -3236,64 +3606,82 @@ function step(game: Game): void {
       if (spec.poison) {
         e.poison = spec.poison.dps;
         e.poisonLeft = spec.poison.secs;
+        if (spec.poisonSpread) e.spreads = true;
       }
       if (spec.sticky && (!fleet || canControl(pm, "slow"))) {
         e.sticky = spec.sticky.factor;
         e.stickyLeft = spec.sticky.secs;
       }
+      if (spec.stun > 0 && e.hp > 0 && !isBig(e.kind) && !(pm & P.plant) && canControl(pm, "stun")) e.stun = Math.max(e.stun, spec.stun);
       if (spec.knockback && !isHeavy(e.kind) && !e.held && (!fleet || canControl(pm, "push"))) {
         e.dist = Math.max(0, e.dist - spec.knockback);
         laneMoved();
       }
     };
-    hit(target);
-    if (fleet) {
-      // Pierce: the shot carries on into whatever is beside its target (or, for splash, under the burst),
-      // nearest first, and leftover pierce reaches children that popped out this very tick.
-      const reach = spec.splash > 0 ? spec.splash : PIERCE_REACH;
-      const done = new Set<number>([target.id]);
-      let left = spec.pierce - 1;
-      const w = windowsOf(game, p.x, p.y, reach);
-      for (let pass = 0; pass < 4 && left > 0; pass++) {
-        const near: Array<{ e: Enemy; d: number }> = [];
-        for (const i of candidates(game, w)) {
-          const e = game.enemies[i]!;
-          if (done.has(e.id) || e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying) || !canHurt(spec.type, pmOf(e)) || !isRevealed(game, e)) continue;
+    // Crow Caller: one shot sends `fan` crows to separate targets; each carries its own pierce.
+    const done = new Set<number>();
+    const struck: Enemy[] = [];
+    for (let f = 0; f < spec.fan; f++) {
+      const aim = f === 0 ? target : pickTarget(game, t, reach, done);
+      if (!aim) break;
+      struck.push(aim);
+      const ap = f === 0 ? p : enemyPoint(game.level, aim);
+      done.add(aim.id);
+      hit(aim);
+      if (fleet) {
+        // Pierce: the shot carries on into whatever is beside its target (or, for splash, under the burst),
+        // nearest first, and leftover pierce reaches children that popped out this very tick.
+        const reachP = spec.splash > 0 ? spec.splash : PIERCE_REACH;
+        let left = spec.pierce - 1;
+        const w = windowsOf(game, ap.x, ap.y, reachP);
+        for (let pass = 0; pass < 4 && left > 0; pass++) {
+          const near: Array<{ e: Enemy; d: number }> = [];
+          for (const i of candidates(game, w)) {
+            const e = game.enemies[i]!;
+            if (done.has(e.id) || e.hp <= 0 || (!spec.air && ENEMIES[e.kind].flying) || !canHurt(spec.type, pmOf(e)) || !isRevealed(game, e, spec.detect)) continue;
+            const q = enemyPoint(game.level, e);
+            const d = Math.hypot(q.x - ap.x, q.y - ap.y);
+            if (d <= reachP) near.push({ e, d });
+          }
+          if (!near.length) break;
+          near.sort((a, b) => a.d - b.d || a.e.id - b.e.id);
+          for (const { e } of near) {
+            if (left <= 0) break;
+            done.add(e.id);
+            hit(e);
+            left--;
+          }
+        }
+      } else if (spec.splash) {
+        for (const e of game.enemies) {
+          if (e === aim || e.hp <= 0) continue;
+          if (!spec.air && ENEMIES[e.kind].flying) continue;
           const q = enemyPoint(game.level, e);
-          const d = Math.hypot(q.x - p.x, q.y - p.y);
-          if (d <= reach) near.push({ e, d });
+          if (Math.hypot(q.x - ap.x, q.y - ap.y) <= spec.splash) hit(e);
         }
-        if (!near.length) break;
-        near.sort((a, b) => a.d - b.d || a.e.id - b.e.id);
-        for (const { e } of near) {
-          if (left <= 0) break;
-          done.add(e.id);
-          hit(e);
-          left--;
-        }
-      }
-    } else if (spec.splash) {
-      for (const e of game.enemies) {
-        if (e === target || e.hp <= 0) continue;
-        if (!spec.air && ENEMIES[e.kind].flying) continue;
-        const q = enemyPoint(game.level, e);
-        if (Math.hypot(q.x - p.x, q.y - p.y) <= spec.splash) hit(e);
       }
     }
     t.cd = fleet ? spec.cooldown / boost : spec.cooldown * crowding(game, t);
-    game.events.push({
-      type: "shot",
-      kind: t.kind,
-      tower: t.id,
-      enemy: target.id,
-      fromX: t.col + 0.5,
-      fromY: t.row + 0.5,
-      toX: p.x,
-      toY: p.y,
-      crit,
-      spec: t.spec ?? null,
-    });
+    const look = t.path ? shotLook(t.kind, t.path) : undefined;
+    for (const aim of struck) {
+      const ap = aim === target ? p : enemyPoint(game.level, aim);
+      game.events.push({
+        type: "shot",
+        kind: t.kind,
+        tower: t.id,
+        enemy: aim.id,
+        fromX: t.col + 0.5,
+        fromY: t.row + 0.5,
+        toX: ap.x,
+        toY: ap.y,
+        crit,
+        spec: t.spec ?? null,
+        ...(look ? { look } : {}),
+      });
+    }
   }
+
+  stepPiles(game);
 
   const alive: Enemy[] = [];
   const spawned: Enemy[] = [];
@@ -3368,6 +3756,10 @@ function step(game: Game): void {
     if (game.level.endless) income *= 0.5;
     reward = Math.round(reward + income);
     game.marks += reward;
+    game.earned += reward;
+    game.roundIncome.push(game.earned - game.earnedAtClear);
+    if (game.roundIncome.length > 3) game.roundIncome.shift();
+    game.earnedAtClear = game.earned;
     if (mend > 0)
       game.goodwill = Math.min(game.maxGoodwill, game.goodwill + mend);
     game.events.push({ type: "cleared", wave: w, reward });

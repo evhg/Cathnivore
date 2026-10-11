@@ -59,6 +59,9 @@ import {
   towerCost,
   towerStats,
   previewStats,
+  previewPath,
+  pathUpgradeCost,
+  towerAllowed,
   plotKind,
   upgrade,
   upgradeCost,
@@ -106,6 +109,7 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
+import { PATHS, PATH_TIERS, buildName, hasPaths, legacyPath, pathBlock, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import * as sfx from "./sound";
 import { haptic, setHaptics } from "./haptics";
 import {
@@ -128,6 +132,7 @@ import {
   recordHeroic,
   recordEndless,
   recordDaily,
+  recordBuild,
   refundAll,
   save,
 } from "./store";
@@ -467,7 +472,7 @@ function openLevel(lv: Level): void {
 const SANDBOX = new URLSearchParams(location.search).has("sandbox");
 // Sandbox only: a handle for screenshot scripts to set up a field (towers, merges) without clicking.
 if (SANDBOX)
-  (window as unknown as { hedgerow: object }).hedgerow = { game: () => game, place, upgrade, merge, sendWave };
+  (window as unknown as { hedgerow: object }).hedgerow = { game: () => game, place, upgrade, merge, sendWave, cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null };
 // Sandbox only: `?sandbox=1&level=N` jumps straight into level N (screenshots of each act's biome).
 if (SANDBOX) {
   const jump = Number(new URLSearchParams(location.search).get("level"));
@@ -818,6 +823,34 @@ function refreshAffordability(): void {
     const locked = b.dataset.locked === "1";
     b.disabled = locked || game.marks < cost;
   }
+  refreshPaths();
+}
+
+/**
+ * The goal gradient on the path sheet (Hedgerow 2 section 4): each next tier's fill bar, an "affordable" glow,
+ * and "in about N rounds" from the last three rounds' income.
+ */
+function refreshPaths(): void {
+  if (!game) return;
+  const g = game;
+  for (const b of ui.panel.querySelectorAll<HTMLButtonElement>("button.path-buy[data-cost]")) {
+    const cost = Number(b.dataset.cost);
+    const locked = b.dataset.locked === "1";
+    const afford = !locked && g.marks >= cost;
+    b.classList.toggle("afford", afford);
+    b.style.setProperty("--fill", String(Math.min(1, g.marks / Math.max(1, cost))));
+    const eta = b.querySelector<HTMLElement>(".path-eta");
+    if (eta && !locked) eta.textContent = afford ? "Affordable now" : etaText(g, cost);
+  }
+}
+
+/** "In about 3 rounds": what's still needed over the average of the last three rounds' income. */
+function etaText(g: Game, cost: number): string {
+  const need = cost - g.marks;
+  const inc = g.roundIncome.length ? g.roundIncome.reduce((a, b) => a + b, 0) / g.roundIncome.length : 0;
+  if (inc <= 0) return `${need} more Marks`;
+  const n = Math.max(1, Math.ceil(need / inc));
+  return n === 1 ? "In about 1 round" : `In about ${n} rounds`;
 }
 
 function waveSummary(groups: Level["waves"][number]): Array<{ kind: EnemyKind; count: number }> {
@@ -831,11 +864,13 @@ function renderPanel(force = false): void {
   const g = game;
   const sel = selected;
   const t = sel ? towerAt(g, sel.col, sel.row) : undefined;
-  const key = [sel?.col, sel?.row, t?.id, t?.tier, t?.target, t?.mega, rankOf(t?.kills ?? 0), g.wave, g.phase, renderer?.heroSelected, aiming].join("|");
+  const key = [sel?.col, sel?.row, t?.id, t?.tier, t?.spec, t?.path?.join(""), t?.target, t?.mega, rankOf(t?.kills ?? 0), g.wave, g.phase, renderer?.heroSelected, aiming].join("|");
   if (!force && key === panelKey) return;
   panelKey = key;
   const p = ui.panel;
   p.innerHTML = "";
+  // A new card starts at its top (a phone's sheet kept the last card's scroll otherwise).
+  p.scrollTop = 0;
   p.className = "panel";
   if (renderer) renderer.preview = null;
 
@@ -867,6 +902,7 @@ function line(text: string, cls = ""): HTMLParagraphElement {
 
 function wavePreview(p: HTMLElement, g: Game): void {
   p.classList.add("panel-preview");
+  if (!player && g.phase !== "won" && g.phase !== "lost") towerTray(p, g);
   const next = g.level.waves[g.wave];
   const head = document.createElement("div");
   head.className = "preview-head";
@@ -931,13 +967,13 @@ function levelLocks(level: Level): number {
 }
 
 /** A tower's lock badges: green for what it can hit (or reveal), red for what it can't, for the locks this level brings. */
-function badgeRow(kind: TowerKind, tier: Tower["tier"], spec: 0 | 1 | null): HTMLElement {
+function badgeRow(kind: TowerKind, tier: Tower["tier"], spec: 0 | 1 | null, path?: Path): HTMLElement {
   const row = document.createElement("div");
   row.className = "badge-row";
-  const label = lockLine(kind, spec, tier).trim();
+  const label = lockLine(kind, spec, tier, path).trim();
   if (label) row.title = label;
   // Its damage type, in words, before the badges ("Sharp", "Blast").
-  const type = damageLabel({ kind, tier, spec });
+  const type = damageLabel({ kind, tier, spec, path });
   if (type) {
     const t = document.createElement("span");
     t.className = "dmg-type";
@@ -945,7 +981,7 @@ function badgeRow(kind: TowerKind, tier: Tower["tier"], spec: 0 | 1 | null): HTM
     row.append(t);
   }
   const here = game ? levelLocks(game.level) : ~0;
-  for (const b of towerBadges({ kind, tier, spec })) {
+  for (const b of towerBadges({ kind, tier, spec, path })) {
     if (!(here & P[b.prop])) continue;
     const el = document.createElement("span");
     el.className = `lock-badge ${b.ok ? "ok" : "no"}`;
@@ -1136,7 +1172,10 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     };
     b.addEventListener("pointerenter", show);
     b.addEventListener("focus", show);
+    // Drag it from here onto any plot instead (Hedgerow 2 M4: drag-to-place on touch).
+    b.addEventListener("pointerdown", (e) => startDrag(e, kind));
     b.onclick = () => {
+      if (dragEnded()) return;
       if (doAct({ t: "place", kind, col: sel.col, row: sel.row })) {
         sfx.playBuild();
         haptic.build();
@@ -1161,6 +1200,114 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
   p.append(row, info);
 }
 
+// ---- drag-to-place (Hedgerow 2 M4): drag a tower from the tray or the build menu onto a plot ----
+
+let drag: {
+  kind: TowerKind;
+  id: number;
+  x0: number;
+  y0: number;
+  moved: boolean;
+  ghost: HTMLImageElement | null;
+  cell: { col: number; row: number } | null;
+  ok: boolean;
+} | null = null;
+let dragEndedAt = 0;
+
+/** A click that ends a drag isn't also a tap. */
+function dragEnded(): boolean {
+  return performance.now() - dragEndedAt < 350;
+}
+
+/** The tower tray over the round preview: drag one onto a plot to build it there. */
+function towerTray(p: HTMLElement, g: Game): void {
+  const tray = document.createElement("div");
+  tray.className = "tray";
+  tray.setAttribute("role", "group");
+  tray.setAttribute("aria-label", "Towers: drag one onto a plot");
+  for (const kind of g.level.towers) {
+    if (!towerAllowed(g.level, kind)) continue;
+    const cost = towerCost(g, kind);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tray-tower";
+    b.dataset.kind = kind;
+    b.dataset.cost = String(cost);
+    b.disabled = g.marks < cost;
+    b.setAttribute("aria-label", `${TOWERS[kind].name}, ${cost} Marks. Drag onto a plot, or pick a plot first.`);
+    b.title = `${TOWERS[kind].name}: drag onto a plot`;
+    const price = document.createElement("span");
+    price.className = "build-cost";
+    price.textContent = String(cost);
+    b.append(img(towerIcon(kind), "tray-icon"), price);
+    b.addEventListener("pointerdown", (e) => startDrag(e, kind));
+    b.onclick = () => {
+      if (dragEnded()) return;
+      toast(`Drag the ${TOWERS[kind].name} onto a plot beside the lane, or tap a plot first.`);
+    };
+    tray.append(b);
+  }
+  p.append(tray);
+}
+
+function startDrag(e: PointerEvent, kind: TowerKind): void {
+  if (!game || player || e.button > 0) return;
+  // No native image drag (it would cancel the pointer stream) and no text selection.
+  e.preventDefault();
+  drag = { kind, id: e.pointerId, x0: e.clientX, y0: e.clientY, moved: false, ghost: null, cell: null, ok: false };
+}
+
+/** Can `kind` be built on this cell right now (the same checks the engine makes, bar the price)? */
+function canDrop(g: Game, kind: TowerKind, c: { col: number; row: number } | null): boolean {
+  if (!c || !isPlot(g.level, c.col, c.row) || towerAt(g, c.col, c.row)) return false;
+  if (laneCellsOf(g.level).has(`${c.col},${c.row}`)) return false;
+  const ground = plotKind(g.level, c.col, c.row);
+  return !(ground === "water" && kind !== "pond") && towerAllowed(g.level, kind);
+}
+
+window.addEventListener("pointermove", (e) => {
+  if (!drag || e.pointerId !== drag.id || !game || !renderer) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 10) return;
+  if (!drag.moved) {
+    drag.moved = true;
+    drag.ghost = img(towerIcon(drag.kind), "drag-ghost");
+    document.body.append(drag.ghost);
+    renderer.preview = drag.kind;
+  }
+  drag.ghost!.style.left = `${e.clientX}px`;
+  drag.ghost!.style.top = `${e.clientY}px`;
+  const r = ui.canvas.getBoundingClientRect();
+  const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+  drag.cell = inside ? renderer.cellAt(e.clientX, e.clientY, game) : null;
+  drag.ok = canDrop(game, drag.kind, drag.cell);
+  drag.ghost!.classList.toggle("bad", !drag.ok);
+  renderer.selected = drag.cell;
+});
+
+function endDrag(e: PointerEvent, cancel: boolean): void {
+  if (!drag || e.pointerId !== drag.id) return;
+  const d = drag;
+  drag = null;
+  if (!d.moved) return;
+  dragEndedAt = performance.now();
+  d.ghost?.remove();
+  if (renderer) {
+    renderer.selected = selected;
+    renderer.preview = null;
+  }
+  if (cancel || !game || !d.cell || !d.ok) return;
+  if (doAct({ t: "place", kind: d.kind, col: d.cell.col, row: d.cell.row })) {
+    sfx.playBuild();
+    haptic.build();
+    const nt = game.towers[game.towers.length - 1];
+    if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
+    if (selected) deselect();
+    else renderPanel(true);
+  }
+}
+window.addEventListener("pointerup", (e) => endDrag(e, false));
+window.addEventListener("pointercancel", (e) => endDrag(e, true));
+
 const TARGET_LABEL: Record<TargetMode, string> = { first: "First", last: "Last", strong: "Strongest", close: "Closest" };
 
 type Stats = ReturnType<typeof towerStats>;
@@ -1168,15 +1315,27 @@ type Stats = ReturnType<typeof towerStats>;
 /** The numbers a player compares: label and value, for a tower at some tier. */
 function statList(st: Stats): Array<[string, string]> {
   const rows: Array<[string, string]> = [];
-  if (st.damage) {
+  if (st.damage && st.sweep) {
+    // Whirling Scythe: no aimed shots, a spin every so often.
+    rows.push(["Sweep", `every ${+st.gustEvery.toFixed(2)}s`], ["Hit", st.damage.toFixed(0)]);
+  } else if (st.damage) {
     // Fleet hits are a layer or two: small rates need a decimal or every tier reads "1".
-    const dps = st.damage / st.cooldown;
+    const dps = (st.damage * st.fan) / st.cooldown;
     rows.push(["Damage/s", dps < 10 ? `${+dps.toFixed(1)}` : dps.toFixed(0)]);
     rows.push(["Hit", st.damage.toFixed(0)]);
     rows.push(["Rate", `${(1 / st.cooldown).toFixed(1)}/s`]);
   }
+  if (st.fan > 1) rows.push(["Targets", `${st.fan} a shot`]);
   if (st.pierce > 1) rows.push(["Pierce", `${st.pierce} vehicles`]);
-  if (st.range) rows.push(["Range", st.range.toFixed(1)]);
+  if (st.range) rows.push(["Range", st.global ? "the whole field" : st.range.toFixed(1)]);
+  if (st.detect) rows.push(["Stealth", "sees it"]);
+  if (st.stun) rows.push(["Stun", `${st.stun}s`]);
+  if (st.shellMul > 1) rows.push(["Long shells", `×${st.shellMul}`]);
+  if (st.plantDamage) rows.push(["vs Plant", `${st.plantDamage} layers`]);
+  if (st.piles) rows.push(["Thorn piles", `${st.piles.hits} hits, up to ${st.piles.max}`]);
+  if (st.hold) rows.push(["Holds", `${st.hold.count} for ${st.hold.secs}s, every ${st.hold.every}s`]);
+  if (st.vuln > 1) rows.push(["Marked", `+${Math.round((st.vuln - 1) * 100)}% layers taken`]);
+  if (st.rangeAura > 1) rows.push(["Nearby towers", `+${Math.round((st.rangeAura - 1) * 100)}% range`]);
   if (st.damage || st.slow < 1 || st.thorns) rows.push(["Hits", st.air ? "air + ground" : "ground only"]);
   if (st.splash) rows.push(["Splash", st.splash.toFixed(1)]);
   if (st.damage || st.gustEvery) {
@@ -1199,7 +1358,8 @@ function statList(st: Stats): Array<[string, string]> {
   if (st.buff > 1) rows.push(["Nearby towers", `+${Math.round((st.buff - 1) * 100)}% ${boostWord}`]);
   if (st.aura > 1) rows.push(["Every tower", `+${Math.round((st.aura - 1) * 100)}% ${boostWord}`]);
   if (st.income) rows.push(["Income", `+${st.income} a wave`]);
-  if (st.reveal > 1) rows.push(["Marked", `+${Math.round((st.reveal - 1) * 100)}% damage taken`]);
+  // On the Fleet a Mast's reveal is detection only (Pirate Radio's marking is `vuln`, above).
+  if (st.reveal > 1) rows.push(game && isFleet(game.level) ? ["Reveals", st.global ? "stealth everywhere" : "stealth in range"] : ["Marked", `+${Math.round((st.reveal - 1) * 100)}% damage taken`]);
   if (st.injunction) rows.push(["Injunction", `${st.injunction}s on ${st.classAction ? "everything" : "bosses"}`]);
   if (st.mend) rows.push(["Mends", `+${st.mend} Goodwill a wave`]);
   if (st.pieHaste) rows.push(["Pie", `${Math.round(st.pieHaste * 100)}% faster`]);
@@ -1228,6 +1388,12 @@ function statGrid(st: Stats, next?: Stats): HTMLElement {
 }
 
 function towerCard(p: HTMLElement, g: Game, t: Tower): void {
+  // Fleet levels: every tower grows on the three-column path sheet (Hedgerow 2 M4; the towers without paths
+  // yet show their tiers as path A through the legacy adapter).
+  if (t.fleet && !t.mega) {
+    pathCard(p, g, t);
+    return;
+  }
   p.classList.add("panel-tower");
   const spec = TOWERS[t.kind];
   const st = towerStats(t);
@@ -1371,6 +1537,254 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   row.append(sl);
   p.append(row);
   if (badges && t.tier === 3 && !badges.isConnected) p.append(badges);
+}
+
+const PATH_COLOURS = ["#d4543c", "#3f7fd0", "#4f9a3e"];
+
+/** A path tower's name as it stands: its tier 3's name once it has one. */
+function towerName(t: Tower): string {
+  if (t.path && hasPaths(t.kind)) {
+    const top = topPath(t.path);
+    if (top !== null) return PATHS[t.kind].paths[top].tiers[2].name;
+  }
+  if (t.tier === 4 && t.spec != null) return SPECIALISATIONS[t.kind][t.spec].name;
+  return TOWERS[t.kind].name;
+}
+
+/**
+ * The tower sheet on fleet levels (Hedgerow 2 M4): a header (name, build, Knockouts, targeting), then three path
+ * columns. Each shows its tiers, bought ones filled, and its next tier as a button with the price, a fill bar,
+ * an "affordable" glow and "in about N rounds". On a phone the panel becomes a bottom sheet over the field.
+ */
+function pathCard(p: HTMLElement, g: Game, t: Tower): void {
+  p.classList.add("panel-tower", "panel-paths");
+  const st = towerStats(t);
+  const path: Path = t.path ?? legacyPath(t.tier, t.spec);
+  const head = document.createElement("div");
+  head.className = "tower-head";
+  head.append(img(towerIcon(t.kind, t.tier, t.spec ?? null, t.path), "tower-icon"));
+  const titles = document.createElement("div");
+  titles.className = "tower-titles";
+  const name = towerName(t);
+  const title = line(name, "panel-title");
+  const chip = document.createElement("span");
+  chip.className = "build-chip";
+  chip.textContent = buildName(path);
+  chip.title = `Build ${buildName(path)}: tiers bought along each path`;
+  title.setAttribute("aria-label", `${name}, build ${buildName(path)}`);
+  title.append(" ", chip);
+  titles.append(title);
+  if (st.damage > 0 || st.thorns > 0 || st.gustEvery > 0 || st.piles) {
+    const ko = document.createElement("p");
+    ko.className = "ko-line";
+    ko.dataset.tower = String(t.id);
+    ko.innerHTML = `<strong class="ko-n"></strong> <span>Knockouts</span> <span class="ko-m"></span>`;
+    titles.append(ko);
+    syncKnockouts();
+  }
+  if (st.damage > 0) {
+    const tb = document.createElement("button");
+    tb.type = "button";
+    tb.className = "target-btn";
+    const mode = t.target ?? "first";
+    tb.textContent = `Target: ${TARGET_LABEL[mode]}`;
+    tb.setAttribute("aria-label", `Target ${TARGET_LABEL[mode]}. Change target`);
+    tb.onclick = () => {
+      const next = TARGET_MODES[(TARGET_MODES.indexOf(mode) + 1) % TARGET_MODES.length]!;
+      doAct({ t: "target", id: t.id, mode: next });
+      renderPanel(true);
+    };
+    titles.append(tb);
+  }
+  head.append(titles);
+  // On a phone the sheet covers the bottom of the field: a clear way to put it away.
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "sheet-close";
+  close.setAttribute("aria-label", "Close the tower sheet");
+  close.textContent = "×";
+  close.onclick = () => deselect();
+  head.append(close);
+  p.append(head);
+
+  const grid = statGrid(st);
+  const sheet = document.createElement("div");
+  sheet.className = "path-sheet";
+  sheet.setAttribute("role", "group");
+  sheet.setAttribute("aria-label", "Upgrade paths");
+  if (t.path && hasPaths(t.kind)) {
+    const kind = t.kind;
+    for (const i of [0, 1, 2] as const) sheet.append(pathColumn(g, t, kind, i, path, () => grid));
+  } else sheet.append(...legacyColumns(g, t));
+  p.append(sheet);
+  const badges = badgeRow(t.kind, t.tier, t.spec ?? null, t.path);
+  p.append(badges);
+  // Last time's build for this tower, as a reminder of a plan that worked.
+  const last = t.path && hasPaths(t.kind) ? data.builds?.[t.kind] : undefined;
+  if (last && buildName(last) !== buildName(path)) p.append(line(`Last time: ${buildName(last)}`, "hint last-build"));
+  p.append(grid);
+  const row = document.createElement("div");
+  row.className = "panel-row";
+  const sl = document.createElement("button");
+  sl.type = "button";
+  sl.className = "btn btn-quiet";
+  sl.id = "btn-sell";
+  sl.textContent = `Sell +${sellValue(t)}`;
+  sl.onclick = () => {
+    if (doAct({ t: "sell", id: t.id })) sfx.playSell();
+    deselect();
+  };
+  row.append(sl);
+  p.append(row);
+  refreshPaths();
+}
+
+/** One path's column: its name, its three tiers (bought ones filled) and the button for the next. */
+function pathColumn(g: Game, t: Tower, kind: PathKind, i: PathIndex, path: Path, grid: () => HTMLElement): HTMLElement {
+  const def = PATHS[kind].paths[i];
+  const col = document.createElement("section");
+  col.className = "path-col";
+  col.dataset.path = String(i);
+  col.style.setProperty("--path", PATH_COLOURS[i]!);
+  const block = pathBlock(path, i, g.level.id);
+  const done = path[i];
+  if (done > 0) col.classList.add("taken");
+  if (block && done < PATH_TIERS) col.classList.add("shut");
+  const h = document.createElement("h4");
+  h.className = "path-name";
+  h.innerHTML = `<span class="path-long"></span><span class="path-short"></span>`;
+  h.querySelector(".path-long")!.textContent = def.name;
+  h.querySelector(".path-short")!.textContent = def.short;
+  col.append(h);
+  const steps = document.createElement("ol");
+  steps.className = "path-steps";
+  def.tiers.forEach((tier, k) => {
+    const li = document.createElement("li");
+    li.className = k < done ? "bought" : k === done ? "next" : "later";
+    if (k === 2) li.classList.add("t3");
+    li.textContent = tier.name;
+    li.title = `${tier.name}: ${tier.blurb}`;
+    steps.append(li);
+  });
+  col.append(steps);
+  if (done >= PATH_TIERS) {
+    col.append(line("Complete. Its Crown comes later.", "path-done"));
+    return col;
+  }
+  const tier = def.tiers[done]!;
+  const cost = pathUpgradeCost(g, t, i) ?? tier.cost;
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "path-buy";
+  b.dataset.path = String(i);
+  b.dataset.cost = String(cost);
+  b.dataset.locked = block ? "1" : "0";
+  b.disabled = !!block || g.marks < cost;
+  if (done === 2) b.classList.add("t3");
+  b.innerHTML = `<span class="path-tier"></span><strong class="path-next"></strong><span class="path-adds"></span><span class="path-foot"><span class="build-cost"></span><span class="path-eta"></span></span><span class="path-bar" aria-hidden="true"></span>`;
+  b.querySelector(".path-tier")!.textContent = `Tier ${done + 1}`;
+  b.querySelector(".path-next")!.textContent = tier.name;
+  b.querySelector(".path-adds")!.textContent = tier.adds;
+  b.querySelector(".build-cost")!.textContent = String(cost);
+  b.querySelector(".path-eta")!.textContent = block ?? "";
+  b.setAttribute("aria-label", `${def.name} tier ${done + 1}: ${tier.name}, ${cost} Marks. ${tier.blurb}${block ? ` ${block}` : ""}`);
+  b.title = tier.blurb;
+  // Hover or focus: the stat grid shows what it would change.
+  const next = previewPath(t, i);
+  let shown: HTMLElement | null = null;
+  const show = () => {
+    if (!next || shown) return;
+    const base = grid();
+    shown = statGrid(towerStats(t), next);
+    shown.classList.add("stats-preview");
+    base.hidden = true;
+    base.after(shown);
+  };
+  const hide = () => {
+    shown?.remove();
+    shown = null;
+    grid().hidden = false;
+  };
+  b.addEventListener("pointerenter", show);
+  b.addEventListener("pointerleave", hide);
+  b.addEventListener("focus", show);
+  b.addEventListener("blur", hide);
+  b.onclick = () => {
+    if (doAct({ t: "upgrade", id: t.id, path: i })) {
+      sfx.playUpgrade();
+      haptic.upgrade();
+      renderer?.built_(t.id, t.col, t.row, true);
+      // A tier 3 is a new tower: say its name.
+      if (done === 2) banner(tier.name, `${TOWERS[t.kind].name}, ${def.name} tier 3`, false, "small");
+      renderPanel(true);
+    }
+  };
+  col.append(b);
+  return col;
+}
+
+/**
+ * The legacy adapter (M4): a tower without paths yet shows its tiers as path A (tier 2, tier 3, then a choice
+ * of its two specialisations), beside two quiet columns saying its other paths come later.
+ */
+function legacyColumns(g: Game, t: Tower): HTMLElement[] {
+  const col = document.createElement("section");
+  col.className = "path-col taken legacy";
+  col.dataset.path = "0";
+  col.style.setProperty("--path", PATH_COLOURS[0]!);
+  const h = document.createElement("h4");
+  h.className = "path-name";
+  h.textContent = "Grow";
+  col.append(h);
+  const steps = document.createElement("ol");
+  steps.className = "path-steps";
+  const names = ["Tier 2", "Tier 3", t.tier === 4 && t.spec != null ? SPECIALISATIONS[t.kind][t.spec].name : "Specialise"];
+  names.forEach((n, k) => {
+    const li = document.createElement("li");
+    li.className = k < t.tier - 1 ? "bought" : k === t.tier - 1 ? "next" : "later";
+    li.textContent = n;
+    steps.append(li);
+  });
+  col.append(steps);
+  const buy = (label: string, adds: string, cost: number, locked: string | null, act: () => void, cls = "") => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `path-buy ${cls}`.trim();
+    b.dataset.path = "0";
+    b.dataset.cost = String(cost);
+    b.dataset.locked = locked ? "1" : "0";
+    b.disabled = !!locked || g.marks < cost;
+    b.innerHTML = `<strong class="path-next"></strong><span class="path-adds"></span><span class="path-foot"><span class="build-cost"></span><span class="path-eta"></span></span><span class="path-bar" aria-hidden="true"></span>`;
+    b.querySelector(".path-next")!.textContent = label;
+    b.querySelector(".path-adds")!.textContent = adds;
+    b.querySelector(".build-cost")!.textContent = String(cost);
+    b.querySelector(".path-eta")!.textContent = locked ?? "";
+    b.setAttribute("aria-label", `${label}, ${cost} Marks. ${adds}${locked ? ` ${locked}` : ""}`);
+    b.onclick = act;
+    col.append(b);
+  };
+  const grown = () => {
+    sfx.playUpgrade();
+    haptic.upgrade();
+    renderer?.built_(t.id, t.col, t.row, true);
+    renderPanel(true);
+  };
+  if (t.tier < 3) buy(`Tier ${t.tier + 1}`, "Bigger numbers all round.", upgradeCost(t)!, null, () => doAct({ t: "upgrade", id: t.id }) && grown());
+  else if (t.tier === 3) {
+    const open = specsUnlocked(g.level);
+    ([0, 1] as const).forEach((i) => {
+      const sp = SPECIALISATIONS[t.kind][i];
+      buy(sp.name, sp.blurb, specCost(t, i)!, open ? null : `Opens at level ${SPEC_FIRST_LEVEL}.`, () => doAct({ t: "upgrade", id: t.id, spec: i }) && grown(), `spec spec-${i}`);
+    });
+  } else col.append(line("Complete.", "path-done"));
+  const later = (k: number) => {
+    const c = document.createElement("section");
+    c.className = "path-col shut legacy-later";
+    c.dataset.path = String(k);
+    c.append(line("Two more paths for this tower arrive in a later update.", "hint"));
+    return c;
+  };
+  return [col, later(1), later(2)];
 }
 
 /** Megastructures: merge buttons for grown neighbours, or a hint about what this tower could become. */
@@ -1933,6 +2347,19 @@ function frame(now: number): void {
 }
 
 
+/** Save v3: each path tower kind's most grown build this run, for its sheet's "Last time" next run. */
+function rememberBuilds(g: Game): void {
+  if (player) return;
+  const best = new Map<PathKind, Path>();
+  for (const t of g.towers) {
+    if (!t.path || !hasPaths(t.kind)) continue;
+    const have = best.get(t.kind);
+    if (!have || t.path[0] + t.path[1] + t.path[2] > have[0] + have[1] + have[2]) best.set(t.kind, t.path);
+  }
+  for (const [k, p] of best) recordBuild(data, k, p);
+  if (best.size) save(data);
+}
+
 function finish(g: Game): void {
   if (game !== g) return;
   document.getElementById("loss-causes")?.remove();
@@ -1942,6 +2369,7 @@ function finish(g: Game): void {
   ui.resultStars.hidden = false;
   ui.dlgResult.classList.remove("has-causes");
   const lv = g.level;
+  rememberBuilds(g);
   if (lv.endless) return finishEndless(g, lv);
   if (dailyDay !== null) return finishDaily(g, lv, dailyDay);
   const won = g.phase === "won";

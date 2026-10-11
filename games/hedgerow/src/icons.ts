@@ -2,6 +2,7 @@
 // the same sprite code as the battlefield and cached as data URLs (the CSP allows data: images).
 
 import type { EnemyKind, TowerKind } from "./engine";
+import type { Path } from "./paths";
 import type { Property } from "./fleet";
 import { drawEnemy, drawPropIcon, drawTower, enemyLift, enemyScale } from "./sprites";
 
@@ -23,10 +24,10 @@ function render(key: string, size: number, draw: (ctx: CanvasRenderingContext2D,
   return url;
 }
 
-export function towerIcon(kind: TowerKind, tier = 1, spec: 0 | 1 | null = null): string {
-  return render(`t:${kind}:${tier}:${spec}`, 64, (ctx, size) => {
+export function towerIcon(kind: TowerKind, tier = 1, spec: 0 | 1 | null = null, path?: Path): string {
+  return render(`t:${kind}:${tier}:${spec}:${path?.join("") ?? ""}`, 64, (ctx, size) => {
     const s = size * 0.95;
-    drawTower(ctx, { kind, tier, spec, fired: 9, dazed: false }, size / 2, size * 0.5, s, 0.6);
+    drawTower(ctx, { kind, tier, spec, fired: 9, dazed: false, ...(path ? { path } : {}) }, size / 2, size * 0.5, s, 0.6);
   });
 }
 

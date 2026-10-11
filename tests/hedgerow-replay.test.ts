@@ -28,7 +28,8 @@ describe("hedgerow replays", () => {
       if (game.phase === "build") {
         build();
         const first = game.towers[0];
-        if (first) rec.act(game, { t: "upgrade", id: first.id });
+        // Hedgerow 2 M4: a fleet Scarecrow's upgrade names its path (Flock, then Scythe).
+        if (first) rec.act(game, { t: "upgrade", id: first.id, path: (first.path?.[0] ?? 0) < 2 ? 0 : 2 });
         rec.act(game, { t: "wave" });
       }
       if (game.tick === 400) rec.act(game, { t: "pie", x: 3.25, y: 4.5 });
@@ -40,7 +41,8 @@ describe("hedgerow replays", () => {
   it("plays a recorded run back to exactly the same result", () => {
     const { game, replay } = record();
     expect(replay.log.length).toBeGreaterThan(3);
-    expect(replay.v).toBe(4);
+    expect(replay.v).toBe(5);
+    expect(replay.log.some(([, a]) => a.t === "upgrade" && a.path !== undefined)).toBe(true);
     expect(replay.log.some(([, a]) => a.t === "auto")).toBe(true);
     const back = new Player(level, replay).finish();
     expect([back.phase, back.goodwill, back.marks, back.tick, back.towers.length]).toEqual([
@@ -53,6 +55,7 @@ describe("hedgerow replays", () => {
     expect([back.hero.x, back.hero.y, back.auto.pie]).toEqual([game.hero.x, game.hero.y, true]);
     const t = game.towers[0]!;
     expect(towerAt(back, t.col, t.row)?.tier).toBe(t.tier);
+    expect(towerAt(back, t.col, t.row)?.path).toEqual(t.path);
   });
 
   it("packs into a short URL-safe string and back", async () => {
@@ -71,6 +74,9 @@ describe("hedgerow replays", () => {
     // A v3 link (Hedgerow 2 M2, before acts 2-3 moved to the Fleet) is old too.
     const m2 = await encodeReplay({ ...replay, v: 3 } as unknown as typeof replay);
     expect(await decodeReplay(m2)).toBe("old");
+    // M3's v4 links (tiers and specs on fleet levels) are old once towers grow along paths.
+    const m3 = await encodeReplay({ ...replay, v: 4 } as unknown as typeof replay);
+    expect(await decodeReplay(m3)).toBe("old");
   });
 
   it("a fleet level (level 1) plays back to exactly the same pops, Marks and Goodwill", () => {

@@ -32,7 +32,10 @@ import {
   type TowerKind,
 } from "../engine";
 import { actLight, actMood, matte } from "./palette";
-import { buildCath, dressCath, buildEnemy, buildMega, buildTower, enemyLift, enemyScale } from "./models";
+import { buildCath, dressCath, buildEnemy, buildMega, buildThornPile, buildTower, enemyLift, enemyScale } from "./models";
+
+/** Path tier 3 looks that throw like an old specialisation's shot. */
+const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
 import { buildGround, type Ground } from "./terrain";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 import { RungInstances } from "./rungs";
@@ -580,7 +583,22 @@ export class Renderer3D {
           if (tv) tv.fired = 0;
           const fy = this.height(e.fromX, e.fromY) + 0.7;
           const ty = this.height(e.toX, e.toY) + 0.25;
-          this.projectile(e.kind, e.spec ?? null, e.fromX, fy, e.fromY, e.toX, ty, e.toY, !!e.crit, e.enemy);
+          // A path tower's tier 3 throws like the old specialisation it grew from (Crow Caller's crows...).
+          const spec = e.spec ?? (e.look ? (LOOK_SPEC[e.look] ?? null) : null);
+          this.projectile(e.kind, spec, e.fromX, fy, e.fromY, e.toX, ty, e.toY, !!e.crit, e.enemy);
+          break;
+        }
+        case "bale": {
+          const bv = this.towers.get(e.tower);
+          if (bv) bv.fired = 0;
+          const y = this.height(e.x, e.y);
+          this.fx.ring(e.x, y + 0.08, e.y, "#e2c06a", 1.0, 0.4);
+          this.debris.emit(e.x, y + 0.3, e.y, ["#d8b45a", "#e2c06a"], 10, 0.05, 1.5);
+          break;
+        }
+        case "pile": {
+          const y = this.height(e.x, e.y);
+          this.debris.emit(e.x, y + 0.2, e.y, ["#e9e1cf", "#5b4330"], 6, 0.04, 1.2);
           break;
         }
         case "knock": {
@@ -717,6 +735,12 @@ export class Renderer3D {
           const gv = this.towers.get(e.tower);
           if (gv) gv.fired = 0;
           const y = this.height(e.x, e.y);
+          if (e.sweep) {
+            // Whirling Scythe: a ring of cut straw round the scarecrow.
+            this.fx.ring(e.x, y + 0.3, e.y, "#e2c06a", e.radius * 2, 0.25);
+            this.sparks.emit(e.x, y + 0.5, e.y, "#f2d98a", 10, 2.6, 0.08, 0.35, -3);
+            break;
+          }
           this.fx.ring(e.x, y + 0.1, e.y, "#e8f4ff", e.radius * 2, 0.35);
           if (!this.reducedMotion) this.fx.swirl(e.x, y, e.y, e.radius, this.gustLeaves);
           this.sparks.emit(e.x, y + 0.15, e.y, "#f4fbff", 14, 2.4, 0.1, 0.45, 0);
@@ -1003,6 +1027,7 @@ export class Renderer3D {
     this.syncSelection(game, t);
     this.syncBoss(game);
     this.syncSetPieces(game, t);
+    this.syncPiles(game);
     // Farmhouse smoke, darker as Goodwill falls.
     if (this.ground && Math.random() < dt * 3) {
       const c = this.ground.farmhouse.localToWorld((this.ground.farmhouse.userData.chimney as THREE.Vector3).clone());
@@ -1047,7 +1072,7 @@ export class Renderer3D {
     const seen = new Set<number>();
     for (const tw of game.towers) {
       seen.add(tw.id);
-      const sig = `${tw.kind}:${tw.tier}:${tw.spec ?? ""}:${tw.mega ?? ""}`;
+      const sig = `${tw.kind}:${tw.tier}:${tw.spec ?? ""}:${tw.mega ?? ""}:${tw.path?.join("") ?? ""}`;
       let v = this.towers.get(tw.id);
       if (!v || v.sig !== sig) {
         if (v) this.dynamic.remove(v.obj);
@@ -1061,7 +1086,7 @@ export class Renderer3D {
           obj.position.set(mx, Math.min(this.height(tw.col + 0.5, tw.row + 0.5), this.height(tw.annex[0] + 0.5, tw.annex[1] + 0.5)), mz);
           obj.rotation.y = tw.annex[1] !== tw.row ? -Math.PI / 2 : 0;
         } else {
-          obj = buildTower(tw.kind, tw.tier, tw.spec ?? null);
+          obj = buildTower(tw.kind, tw.tier, tw.spec ?? null, tw.path);
           obj.userData.scale = 1.22;
           obj.position.set(tw.col + 0.5, this.height(tw.col + 0.5, tw.row + 0.5), tw.row + 0.5);
         }
@@ -1552,6 +1577,30 @@ export class Renderer3D {
   // ---- set pieces: floodwater, the swing bridge, pools of light in a blackout ----
 
   private pieces: { level: number; flood?: THREE.InstancedMesh; bridge?: THREE.Group; deck?: THREE.Object3D; pools?: THREE.InstancedMesh } | null = null;
+
+  /** Thorn piles on the lane (Blackthorn path): one small heap of cut thorn each, shrinking as it's used. */
+  private pileObjs = new Map<number, THREE.Object3D>();
+  private syncPiles(game: Game): void {
+    const live = new Set<number>();
+    for (const p of game.piles) {
+      live.add(p.id);
+      let o = this.pileObjs.get(p.id);
+      if (!o) {
+        o = buildThornPile();
+        const q = enemyPoint(game.level, { dist: p.dist, lane: p.lane });
+        o.position.set(q.x, this.height(q.x, q.y) + 0.02, q.y);
+        o.rotation.y = (p.id * 2.399) % (Math.PI * 2);
+        this.dynamic.add(o);
+        this.pileObjs.set(p.id, o);
+      }
+      o.scale.setScalar(0.6 + Math.min(1, p.hits / 20) * 0.5);
+    }
+    for (const [id, o] of this.pileObjs)
+      if (!live.has(id)) {
+        this.dynamic.remove(o);
+        this.pileObjs.delete(id);
+      }
+  }
 
   private syncSetPieces(game: Game, t: number): void {
     const lv = game.level;

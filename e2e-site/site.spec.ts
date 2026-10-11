@@ -200,10 +200,10 @@ async function selectCell(page: Page, col: number, row: number) {
   await page.keyboard.press('Enter')
 }
 
-/** Both specialisation buttons are inside the panel, unscrolled, and nothing (such as a sticky Sell row) covers them. */
-async function expectSpecChoiceVisible(page: Page) {
+/** Both specialisation buttons (or, on fleet levels, the three paths' next tiers) are inside the panel, unscrolled, and nothing (such as a sticky Sell row) covers them. */
+async function expectSpecChoiceVisible(page: Page, selector = 'button.spec') {
   const panel = (await page.locator('#panel').boundingBox())!
-  for (const b of await page.locator('button.spec').all()) {
+  for (const b of await page.locator(selector).all()) {
     await expect(b).toBeInViewport({ ratio: 1 })
     const box = (await b.boundingBox())!
     expect(box.y + box.height).toBeLessThanOrEqual(panel.y + panel.height)
@@ -269,9 +269,9 @@ test.describe('Hedgerow', () => {
     await noSideways(page)
   })
 
-  test('a tower grows to tier 3 and specialises from level 6', async ({ page }) => {
+  test('a Scarecrow grows along a path to its tier 3 from level 6, and the sheet names it', async ({ page }) => {
     const errors = trackErrors(page)
-    // Sandbox Marks: on the Fleet (Hedgerow 2 M2) a tier 3 costs more than level 6 starts with.
+    // Sandbox Marks: on the Fleet a tier 3 costs more than level 6 starts with.
     await page.goto(HEDGEROW_2D + '&sandbox=1')
     const stars: Record<string, number> = {}
     for (let i = 1; i <= 5; i++) stars[String(i)] = 3
@@ -281,11 +281,13 @@ test.describe('Hedgerow', () => {
     await selectCell(page, PLOT6[0], PLOT6[1])
     await expect(page.locator('#panel')).toContainText('Scarecrow')
     await page.locator('button.btn-build[data-kind="scarecrow"]').click()
-    await page.locator('#btn-upgrade').click()
-    await page.locator('#btn-upgrade').click()
-    await expect(page.locator('button.spec')).toHaveCount(2)
-    await expect(page.locator('#panel')).toContainText('Pumpkin Lobber')
-    await expect(page.locator('#panel')).toContainText('Crow Caller')
+    // Hedgerow 2 M4: three paths; Flock's tier 3 is Crow Caller, and once bought the tower takes its name.
+    await expect(page.locator('#panel')).toContainText('Flock')
+    await expect(page.locator('#panel')).toContainText('Lookout')
+    await expect(page.locator('#panel')).toContainText('Scythe')
+    for (let i = 0; i < 3; i++) await page.locator('button.path-buy[data-path="0"]').click()
+    await expect(page.locator('#panel .panel-title')).toContainText('Crow Caller')
+    await expect(page.locator('#panel .build-chip')).toHaveText('3-0-0')
     expect(errors).toEqual([])
   })
 
@@ -418,7 +420,7 @@ test.describe('Hedgerow', () => {
     expect(errors).toEqual([])
   })
 
-  test('Hedgerow 2 M1: the specialisation choice shows on a landscape phone without scrolling', async ({ page }) => {
+  test('Hedgerow 2 M4: a Scarecrow\'s three paths show side by side on a landscape phone without scrolling', async ({ page }) => {
     await page.setViewportSize({ width: 844, height: 390 })
     await page.goto(HEDGEROW_2D + '&sandbox=1')
     const stars: Record<string, number> = {}
@@ -430,10 +432,98 @@ test.describe('Hedgerow', () => {
     await expect(page.locator('#btn-auto')).toHaveAttribute('aria-pressed', 'true')
     await selectCell(page, PLOT6[0], PLOT6[1])
     await page.locator('button.btn-build[data-kind="scarecrow"]').click()
-    await page.locator('#btn-upgrade').click()
-    await page.locator('#btn-upgrade').click()
-    await expect(page.locator('button.spec')).toHaveCount(2)
-    await expectSpecChoiceVisible(page)
+    // Fleet levels: the tower sheet has three path columns, each with its next tier ready to buy.
+    await expect(page.locator('#panel .path-col')).toHaveCount(3)
+    await page.locator('button.path-buy[data-path="0"]').click()
+    await page.locator('button.path-buy[data-path="0"]').click()
+    await expect(page.locator('#panel .build-chip')).toHaveText('2-0-0')
+    await expect(page.locator('button.path-buy')).toHaveCount(3)
+    await expectSpecChoiceVisible(page, 'button.path-buy')
+  })
+
+  test('Hedgerow 2 M4: buys every path of all five path towers at 844x390, and the crosspath rule shuts the third', async ({ page }) => {
+    test.setTimeout(180_000)
+    const errors = trackErrors(page)
+    await page.setViewportSize({ width: 844, height: 390 })
+    await page.goto(HEDGEROW_2D + '&sandbox=1&level=30')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: {}, seenBefore: { '30': true }, tips: { build: true, hero: true, early: true, spec: true } })))
+    await page.reload()
+    await expect(page.locator('#btn-send')).toBeVisible({ timeout: 10_000 })
+    // Free plots, found through the sandbox hook (placing then selling leaves the plot empty and the Marks as they were).
+    const plots = await page.evaluate(() => {
+      type G = { level: { rows: number; cols: number }; towers: Array<{ id: number }>; marks: number }
+      const H = (window as unknown as { hedgerow: { game(): G; place(g: G, k: string, c: number, r: number): { ok: boolean } } }).hedgerow
+      const g = H.game()
+      const out: Array<[number, number]> = []
+      for (let r = 0; r < g.level.rows; r++)
+        for (let c = 0; c < g.level.cols; c++)
+          if (H.place(g, 'cannon', c, r).ok) {
+            g.towers.pop()
+            out.push([c, r])
+          }
+      return out
+    })
+    expect(plots.length).toBeGreaterThanOrEqual(10)
+    let k = 0
+    for (const kind of ['scarecrow', 'hedgerow', 'beehive', 'cannon', 'mast']) {
+      // One tower takes path A to tier 3 and B to tier 2, which shuts C; a second takes C to tier 3.
+      for (const plan of [[0, 0, 0, 1, 1], [2, 2, 2]]) {
+        const [c, r] = plots[k++]!
+        await selectCell(page, c, r)
+        await page.locator(`button.btn-build[data-kind="${kind}"]`).click()
+        await page.keyboard.press('Escape')
+        await selectCell(page, c, r)
+        await expect(page.locator('#panel .path-col')).toHaveCount(3)
+        for (const i of plan) {
+          const buy = page.locator(`button.path-buy[data-path="${i}"]`)
+          await expect(buy).toBeInViewport()
+          await buy.click()
+        }
+        const want = plan.length === 5 ? '3-2-0' : '0-0-3'
+        await expect(page.locator('#panel .build-chip')).toHaveText(want)
+        if (plan.length === 5) {
+          await expect(page.locator('#panel .path-col[data-path="2"]')).toHaveClass(/shut/)
+          await expect(page.locator('button.path-buy[data-path="2"]')).toBeDisabled()
+          await expect(page.locator('button.path-buy[data-path="2"] .path-eta')).toContainText('two paths')
+        }
+        await page.locator('#panel .sheet-close').click()
+        await expect(page.locator('#panel .path-col')).toHaveCount(0)
+      }
+    }
+    const builds = await page.evaluate(() => (window as unknown as { hedgerow: { game(): { towers: Array<{ kind: string; path?: number[] }> } } }).hedgerow.game().towers.map((t) => `${t.kind}:${t.path?.join('')}`))
+    expect(builds).toHaveLength(10)
+    expect(builds.filter((b) => b.endsWith(':320'))).toHaveLength(5)
+    expect(builds.filter((b) => b.endsWith(':003'))).toHaveLength(5)
+    await noSideways(page)
+    expect(errors).toEqual([])
+  })
+
+  test('Hedgerow 2 M4: a tower dragged from the tray onto a plot is built there', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.setViewportSize({ width: 844, height: 390 })
+    await page.goto(HEDGEROW_2D + '&sandbox=1&level=1')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: {}, seenBefore: { '1': true }, tips: { build: true, hero: true, early: true } })))
+    await page.reload()
+    const tray = page.locator('#panel .tray-tower[data-kind="scarecrow"]')
+    await expect(tray).toBeVisible({ timeout: 10_000 })
+    // Level 1's top-left cell (0, 0) is grass: where is it on screen?
+    const cell = await page.evaluate(() => (window as unknown as { hedgerow: { cellCenter(c: number, r: number): { x: number; y: number } } }).hedgerow.cellCenter(0, 0))
+    const from = (await tray.boundingBox())!
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(from.x - 40, from.y - 40, { steps: 4 })
+    await expect(page.locator('.drag-ghost')).toBeVisible()
+    await page.mouse.move(cell.x, cell.y, { steps: 6 })
+    await page.mouse.up()
+    await expect(page.locator('.drag-ghost')).toHaveCount(0)
+    const towers = await page.evaluate(() => (window as unknown as { hedgerow: { game(): { towers: Array<{ kind: string; col: number; row: number }> } } }).hedgerow.game().towers)
+    expect(towers).toEqual([expect.objectContaining({ kind: 'scarecrow', col: 0, row: 0 })])
+    // A plain tap on the tray explains the drag instead of building anything (a click right as a drag ends is
+    // the drag's own, so wait a moment first).
+    await page.waitForTimeout(500)
+    await tray.click()
+    await expect(page.locator('#toast')).toContainText('Drag the Scarecrow')
+    expect(errors).toEqual([])
   })
 
   // Later levels crowd the tray (Neighbours from 12, Rally from 25), which squeezes the panel; and the iPhone SE
@@ -459,22 +549,24 @@ test.describe('Hedgerow', () => {
         const pos = await page.evaluate(() => {
           type T = { id: number }
           type G = { level: { rows: number; cols: number }; towers: T[] }
-          const H = (window as unknown as { hedgerow: { game(): G; place(g: G, k: string, c: number, r: number): { ok: boolean }; upgrade(g: G, id: number): unknown } }).hedgerow
+          const H = (window as unknown as { hedgerow: { game(): G; place(g: G, k: string, c: number, r: number): { ok: boolean }; upgrade(g: G, id: number, choice?: number): unknown } }).hedgerow
           const g = H.game()
           for (let r = 0; r < g.level.rows; r++)
             for (let c = 0; c < g.level.cols; c++)
               if (H.place(g, 'scarecrow', c, r).ok) {
                 const t = g.towers.at(-1)!
-                H.upgrade(g, t.id)
-                H.upgrade(g, t.id)
+                // Fleet levels (M4) grow along a path; classic ones take tiers.
+                H.upgrade(g, t.id, 0)
+                H.upgrade(g, t.id, 0)
                 return [c, r] as const
               }
           return null
         })
         expect(pos).not.toBeNull()
         await selectCell(page, pos![0], pos![1])
-        await expect(page.locator('button.spec')).toHaveCount(2)
-        await expectSpecChoiceVisible(page)
+        const sel = level <= 30 ? 'button.path-buy' : 'button.spec'
+        await expect(page.locator(sel)).toHaveCount(level <= 30 ? 3 : 2)
+        await expectSpecChoiceVisible(page, sel)
         await page.keyboard.press('Escape')
         await page.locator('#btn-send').click()
         await expect(page.locator('#btn-send')).toHaveText(/^Next \+\d+$/, { timeout: 8000 })

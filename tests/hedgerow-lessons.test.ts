@@ -28,7 +28,8 @@ import {
   place,
   sendWave,
   stepGame,
-  upgrade,
+  upgradeToward,
+  stepsBought,
   type Game,
   type Level,
   type TowerKind,
@@ -365,7 +366,9 @@ describe("hedgerow M3: lessons", () => {
     // need no sight, shred them. The balanced bot's field still loses it to stealth: the acceptance test above.)
     for (const id of [17, 18, 21]) {
       const lv = LEVELS[id - 1]!;
-      const g = playLevel(only(lv, lv.towers.filter((t) => t !== "mast")), "best");
+      // M4: the competent bot grows Lantern Eyes on its Scarecrows when stealth is coming and it has no Mast
+      // (detection without a Mast now exists), so the bot with no detection at all is the balanced one.
+      const g = playLevel(only(lv, lv.towers.filter((t) => t !== "mast")), "balanced");
       // The scouts in round 19 are the first stealth to cost anything.
       expect(g.leakLog.stealth?.round, `level ${id}`).toBe(19);
       expect(g.leakLog.stealth!.lost, `level ${id}`).toBeGreaterThan(20);
@@ -392,7 +395,8 @@ describe("hedgerow M3: lessons", () => {
           const kind: TowerKind = n++ % 6 === 0 ? "mast" : "scarecrow";
           if (place(g, kind, c, r).ok) {
             const t = g.towers[g.towers.length - 1]!;
-            while (t.tier < 3 && upgrade(g, t.id).ok);
+            // M4: path towers to 2-0-2 (old tier 3's worth).
+            while (stepsBought(t) < 4 && upgradeToward(g, t.id).ok);
           }
         }
       while (g.phase !== "won" && g.phase !== "lost" && bookRound(lv, g.wave) < 26) {

@@ -27,7 +27,8 @@ import {
 
 export type Action =
   | { t: "place"; kind: TowerKind; col: number; row: number }
-  | { t: "upgrade"; id: number; spec?: 0 | 1 }
+  /** `spec` picks a specialisation (classic towers, and the legacy towers on the Fleet); `path` a path tower's path. */
+  | { t: "upgrade"; id: number; spec?: 0 | 1; path?: 0 | 1 | 2 }
   | { t: "sell"; id: number }
   | { t: "target"; id: number; mode: TargetMode }
   | { t: "wave" }
@@ -58,9 +59,11 @@ export interface Setup {
  * levels 1-10 no longer plays back the same either.
  * v4 (Hedgerow 2 M3): acts 2-3 (levels 11-30) moved to the Fleet, the Book gained property and act-themed
  * rounds, and levels 1, 9 and 10 changed their swaps and start Marks, so a v3 run no longer plays back the same.
+ * v5 (Hedgerow 2 M4): the Scarecrow, Hedgerow, Beehive, Seed Cannon and Radio Mast grow along three paths on
+ * fleet levels (an upgrade names its path), so a v4 run no longer plays back the same.
  * Older links get the "older Hedgerow" notice.
  */
-export const REPLAY_VERSION = 4;
+export const REPLAY_VERSION = 5;
 
 export interface Replay {
   v: typeof REPLAY_VERSION;
@@ -76,7 +79,7 @@ export function applyAction(game: Game, a: Action): ActionResult {
     case "place":
       return place(game, a.kind, a.col, a.row);
     case "upgrade":
-      return upgrade(game, a.id, a.spec);
+      return upgrade(game, a.id, a.path ?? a.spec);
     case "sell":
       return sell(game, a.id);
     case "target":
