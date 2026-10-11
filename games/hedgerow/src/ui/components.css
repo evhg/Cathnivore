@@ -429,13 +429,20 @@ body:has(#dlg-pause[open]) .paused-note {
   --o: var(--line);
   text-shadow: -1.5px -1.5px 0 var(--o), 1.5px -1.5px 0 var(--o), -1.5px 1.5px 0 var(--o), 1.5px 1.5px 0 var(--o), 0 3px 0 var(--o);
 }
-.chip.gain b {
-  animation: tick var(--dur-2) var(--spring);
-  color: var(--brass-hi);
-}
+.chip.gain b,
 .chip.spend b {
   animation: tick var(--dur-2) var(--spring);
-  color: var(--brass);
+}
+/* The purse keeps its cream digits through a gain (gold digits beside the gold coin read as one blob, M3 review
+   2): the coin glints instead */
+.chip-coin.gain svg {
+  animation: coin-glint var(--dur-3) var(--ease-out);
+}
+@keyframes coin-glint {
+  from {
+    filter: brightness(1.35);
+    scale: 1.08;
+  }
 }
 .chip.hurt {
   animation: hurt-shake 260ms var(--ease-out);
@@ -514,7 +521,7 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .chip {
     height: 36px;
-    gap: 5px;
+    gap: 6px;
     padding: 0 7px 0 3px;
   }
   .chip svg {
@@ -542,6 +549,12 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .play .go-pill .speed-btn {
     width: 42px;
+  }
+  .play .go-pill .btn.send.long {
+    font-size: 0.9375rem;
+    line-height: 1.05;
+    white-space: normal;
+    text-wrap: balance;
   }
 }
 @media (max-width: 360px) {
@@ -612,10 +625,17 @@ body:has(#dlg-pause[open]) .paused-note {
   font: 850 var(--fs-label) / 1.25 var(--font-ui);
   text-transform: uppercase;
   letter-spacing: var(--track-label);
-  color: var(--brass-hi);
+  /* cream, not brass: brass-hi on the pasture ribbon is 4.25:1, short of AA for 12px (M3 review 2) */
+  color: var(--on-fill);
   opacity: 1;
   max-width: 34ch;
   text-wrap: balance;
+}
+/* A twist's rule is a sentence: body type, sentence case */
+.banner.rule span {
+  font: 750 var(--fs-small) / 1.3 var(--font-ui);
+  text-transform: none;
+  letter-spacing: 0;
 }
 .banner.leak {
   background: linear-gradient(var(--white-a16), transparent 40%, var(--black-a20)), var(--clay-deep);
@@ -2965,6 +2985,7 @@ body:has(#dlg-pause[open]) .paused-note {
   .banner.leak.show,
   .chip.gain b,
   .chip.spend b,
+  .chip-coin.gain svg,
   .chip.hurt,
   .play .ability.ready .pie-icon,
   .play .btn.send:not(:disabled):not(.early)::after,
@@ -3012,6 +3033,7 @@ body:has(#dlg-pause[open]) .paused-note {
     .banner.leak.show,
     .chip.gain b,
     .chip.spend b,
+    .chip-coin.gain svg,
     .chip.hurt,
     .play .ability.ready .pie-icon,
     .path-buy.afford,

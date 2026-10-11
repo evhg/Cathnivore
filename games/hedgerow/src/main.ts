@@ -712,7 +712,7 @@ function levelTips(lv: Level): void {
   if (lv.twists?.length)
     window.setTimeout(() => {
       if (game?.level.id !== lv.id) return;
-      banner(lv.twists!.map((t) => TWISTS[t].name).join(" · "), lv.twists!.map((t) => twistRule(lv, t)).join(" "));
+      banner(lv.twists!.map((t) => TWISTS[t].name).join(" · "), lv.twists!.map((t) => twistRule(lv, t)).join(" "), false, "rule");
     }, 400);
   if (lv.id === 1)
     tip("build", "Tap a plot beside the lane to build. Hedges slow them down; scarecrows throw turnips.", "wink");
@@ -805,13 +805,15 @@ function syncControls(): void {
       : early
         ? `Next +${earlyBonus(g)}`
         : g.phase === "wave"
-          ? `${Word(g)} ${waveNo(g, g.wave)} of ${lastNo(g)}`
+          ? `${Word(g)} ${waveNo(g, g.wave)}/${lastNo(g)}`
           : g.phase === "won" || g.phase === "lost"
             ? "Level over"
             : `Last ${waveWord(g)}`;
+  // A long status ("Round 18 in 2") sets smaller on a narrow phone's pill rather than running off it.
+  ui.btnSend.classList.toggle("long", (ui.btnSend.textContent ?? "").length > 9);
   ui.btnSend.setAttribute(
     "aria-label",
-    early ? `Stack ${waveWord(g)} ${waveNo(g, g.wave + 1)} on now for ${earlyBonus(g)} bonus Marks` : ui.btnSend.textContent ?? "",
+    early ? `Stack ${waveWord(g)} ${waveNo(g, g.wave + 1)} on now for ${earlyBonus(g)} bonus Marks` : (ui.btnSend.textContent ?? "").replace("/", " of "),
   );
   // Choosing something (a plot, Cath's new post, a pie's aim) holds the Keep Going countdown: say so.
   ui.chooseChip.hidden = !(counting && (selected || posting || aiming) && !player);
