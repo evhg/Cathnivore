@@ -1676,7 +1676,6 @@ function pathCard(p: HTMLElement, g: Game, t: Tower): void {
     ko.dataset.tower = String(t.id);
     ko.innerHTML = `<strong class="ko-n"></strong> <span>Knockouts</span> <span class="ko-m"></span>`;
     titles.append(ko);
-    syncKnockouts();
   }
   if (st.damage > 0) {
     const tb = document.createElement("button");
@@ -1702,6 +1701,7 @@ function pathCard(p: HTMLElement, g: Game, t: Tower): void {
   close.onclick = () => deselect();
   head.append(close);
   p.append(head);
+  syncKnockouts();
 
   const grid = statGrid(st);
   const sheet = document.createElement("div");
