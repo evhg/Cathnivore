@@ -305,7 +305,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   artic: { name: "Artic", hp: 260, speed: 0.9, bounty: 16, leak: 3 },
   transporter: { name: "Car transporter", hp: 420, speed: 1.0, bounty: 24, leak: 4 },
   skip: { name: "Skip lorry", hp: 600, speed: 1.0, bounty: 30, leak: 4 },
-  plantdozer: { name: "Bulldozer", hp: 2400, speed: 0.6, bounty: 120, leak: 8 },
+  plantdozer: { name: "Bulldozer", hp: 1400, speed: 0.6, bounty: 120, leak: 8 },
   boss: {
     name: "The Acquisition Van",
     hp: 1800,
@@ -1737,6 +1737,7 @@ export type GameEvent =
   | { type: "pile"; tower: number; x: number; y: number }
   | { type: "pop"; x: number; y: number }
   /** Rebrand: a vehicle grew back a rung. */
+  | { type: "wreck"; x: number; y: number; kind: EnemyKind; marks: number }
   | { type: "regrow"; x: number; y: number; kind: EnemyKind }
   /**
    * Fleet levels: a hit knocked `n` whole layers off (slivers of thorns and poison only report the tick a layer
@@ -2680,6 +2681,11 @@ export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number, type
     // Pop: the shell is gone, the next rung down carries on from the same spot. Stealth and Rebrand pass
     // down; the rest of a vehicle's properties came off with its shell (an Artic's lorries get their own).
     const first = kids[0]!;
+    // A Heavy Plant's shell breaking is a moment of its own (hit-stop, a fountain, a banner).
+    if (P.plant & inherentProps(e.kind) && (RUNGS[e.kind]?.shell ?? 0) >= 10 && !isBig(e.kind)) {
+      const wp = enemyPoint(game.level, e);
+      game.events.push({ type: "wreck", x: wp.x, y: wp.y, kind: e.kind, marks: RUNGS[e.kind]!.shell });
+    }
     const pass = pmOf(e) & INHERITED;
     const cp = RUNGS[e.kind]?.childProps;
     const shell = e.kind;

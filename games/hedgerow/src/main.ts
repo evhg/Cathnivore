@@ -36,6 +36,7 @@ import {
   drainEvents,
   earlyBonus,
   isBig,
+  makeEnemy,
   isHeavy,
   enemyClass,
   isPlot,
@@ -478,6 +479,7 @@ if (SANDBOX)
     upgrade,
     merge,
     sendWave,
+    spawn: (kind: EnemyKind, dist: number) => game && game.enemies.push(makeEnemy(game, kind, dist, undefined, game.wave || 1)),
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
     // After setting a field up through the hook: redraw the panel and controls as a tap would have.
     refresh: () => {
@@ -2121,6 +2123,12 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       case "knock":
         knocks.push(RUNG_STEP[ev.from] ?? 3);
         if (ev.to) peeled = true;
+        break;
+      case "wreck":
+        banner(`${ENEMIES[ev.kind].name.toUpperCase()} WRECKED`, `+${ev.marks} layers`);
+        sfx.playKill(true);
+        haptic.boss();
+        if (!REDUCED) slowUntil = performance.now() + 80;
         break;
       case "shot":
         if (shots++ < 2) sfx.playShot(ev.kind, !!ev.crit);

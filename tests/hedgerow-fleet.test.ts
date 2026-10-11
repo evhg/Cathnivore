@@ -690,4 +690,16 @@ describe("hedgerow fleet: Plants (M5)", () => {
     expect(BOOK[35]!.groups.some((x) => x.rung === "plantdozer")).toBe(true);
     for (let r = 46; r <= 54; r++) expect(BOOK[r - 1]!.groups.some((x) => x.rung === "plantdozer" || x.rung === "skip")).toBe(true);
   });
+  it("a Bulldozer's shell breaking is a wreck event, with four plated lorries under the blade", () => {
+    const g = bare();
+    const dozer = makeEnemy(g, "plantdozer", 3, undefined, 1);
+    g.enemies.push(dozer);
+    g.events = [];
+    hitEnemy(g, dozer, 119);
+    expect(g.events.some((ev) => ev.type === "wreck")).toBe(false);
+    hitEnemy(g, dozer, 1);
+    expect(g.events.filter((ev) => ev.type === "wreck")).toHaveLength(1);
+    expect(dozer.kind).toBe("steel");
+    expect(g.enemies.filter((x) => x.kind === "steel")).toHaveLength(4);
+  });
 });

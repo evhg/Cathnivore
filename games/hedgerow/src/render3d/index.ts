@@ -611,6 +611,12 @@ export class Renderer3D {
           this.gold.y = e.y;
           break;
         }
+        case "wreck": {
+          const y = this.height(e.x, e.y);
+          this.debris.emit(e.x, y + 0.3, e.y, [RUNGS[e.kind]?.colour ?? "#f2c230", "#3b3f44", "#c79a62", "#f4f6f8"], 36, 0.09, 3.2);
+          this.sparks.emit(e.x, y + 0.3, e.y, "#ffb04a", 50, 3.6, 0.25, 0.5, -1);
+          break;
+        }
         case "kill": {
           const y = this.height(e.x, e.y);
           const big = isBig(e.kind);

@@ -321,6 +321,10 @@ export class Renderer {
           this.gold.y = e.y;
           break;
         }
+        case "wreck": {
+          if (this.parts.length < 400) for (let i = 0; i < 24; i++) this.parts.push(this.particle(e.x, e.y - 0.15, i % 3 ? (RUNGS[e.kind]?.colour ?? "#f2c230") : "#3b3f44", "square", 0.09, 0.8));
+          break;
+        }
         case "kill": {
           if (e.bounty === 0) {
             // Fleet: the last layer just leaves a scrap of parcel tape (its Mark came with the knock).
