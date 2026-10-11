@@ -24,6 +24,7 @@ import {
   merge,
   mergeOptions,
   newGame,
+  crownBlock,
   pathUpgradeCost,
   place,
   previewPath,
@@ -44,7 +45,7 @@ import {
   type TowerKind,
 } from "./engine";
 import { P, RUNGS, fvOf } from "./fleet";
-import { BUILD_PREFIX, hasPaths, parseBuild, stepToward, type Path, type PathKind } from "./paths";
+import { BUILD_PREFIX, PATHS, hasPaths, parseBuild, stepToward, type Path, type PathKind } from "./paths";
 
 export type Skill = "competent" | "naive" | "balanced" | "best" | "idle";
 
@@ -362,6 +363,17 @@ function upgradeSomething(game: Game, samples: ReturnType<typeof laneSamples>, s
     } else if (specs) {
       const sp = specFor(game, t);
       if (game.marks >= specCost(t, sp)! && upgrade(game, t.id, sp).ok) return true;
+    }
+  }
+  // A finished tier 3 path takes its Crown (the competent and balanced bots, once tier 3 is allowed).
+  if (specs && isFleet(game.level)) {
+    for (const t of game.towers) {
+      if (!t.path || t.crown !== undefined || !hasPaths(t.kind)) continue;
+      for (const i of [0, 1, 2] as const) {
+        if (t.path[i]! < 3 || crownBlock(game, t, i) !== null) continue;
+        const cost = PATHS[t.kind].paths[i].crown!.cost;
+        if (game.marks >= cost && upgrade(game, t.id, i).ok) return true;
+      }
     }
   }
   return false;
