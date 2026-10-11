@@ -3,6 +3,11 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-11 03:35 (owner chat, handing back):** Hedgerow 2 M1–M4 are live (`68a1f7c`, `f159236`). Hourly sessions resume the owner's 70/30 split: Phase D (CATHODE districts) first, and Hedgerow continues at H6 (M5) per `docs/design/hedgerow-2.md`. M4 review minor notes left for M5:
+  - start-Marks k sits at its 0.7 floor on levels 2–10 and 20–30, so add property-spike rounds a plain build can't answer;
+  - a shut path column still shows a filled progress bar (`.path-col.shut .path-bar`);
+  - `upgradeCost` ignores the level-6 tier-3 lock (main.ts and bot.ts callers);
+  - the fleet perf tests are flaky under load: don't run them alongside the tuner.
 - **2026-10-11 owner chat (4):** ROADMAP H5 (Hedgerow 2 M4) done on `build`: `paths.ts` (3 paths x 3 tiers for Scarecrow, Hedgerow, Beehive, Seed Cannon, Radio Mast; crosspath rule; tier 3 from L6; legacy adapter for the rest), new behaviours (Crow Caller fan, Hawk Post map-wide Crush, Whirling Scythe sweep, thorn piles, haybale holds, Pirate Radio marking, auras...), 3-column path sheet (bottom sheet on phones) with fill bar, glow and "in about N rounds", per-tier parts and tier 3 silhouettes in 2D and 3D, drag-to-place tray, save v3, replays v5, named bot builds, retune (k mostly 0.7). `npm run check` 1050 tests, Hedgerow site e2e 36 passed. Unreleased. Next: H6 (M5 Plants and Crowns).
 - **2026-10-10 owner chat (3):** ROADMAP H4 (Hedgerow 2 M3) done on `build`: the 9 properties as hard locks with icons in 2D and 3D, damage types on today's tiers, tower badges, round preview with "can't answer this", leak report and loss-screen causes, Almanac Properties tab; levels 11-30 on fleet rules (Book rounds to 45, Mast from 11); lesson tests; k back in [0.7, 1.0] (L1 tutorial 1.2), L9 now easier than boss L10. `npm run check` 1028 tests, Hedgerow site e2e 32 passed; acceptance (L15 without a Mast loses to "Stealth ... A Radio Mast reveals stealth") played headless in `?2d`. Unreleased. Next: H5 (M4 paths).
 - **2026-10-10 07:26–17:50 (owner chat):** Bloons TD research, then Hedgerow 2 (`docs/design/hedgerow-2.md`). M1 and M2 were built by a workflow with two review-and-fix rounds each, and released as `68a1f7c` (ROADMAP H2 and H3 ticked). Next: M3 (H4) and M4 (H5), from this chat.
@@ -229,6 +234,7 @@ Nothing. (The App Store launch is postponed by the owner, not blocked; see ROADM
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-11 ~03:30 `f159236`: Hedgerow 2 M3 (hard-lock properties, round preview, leak report, Retry from round N, acts 2-3 on the Fleet) and M4 (three upgrade paths for 5 towers). All gates passed; the live version.json matches. 1st release today.
 - 2026-10-10 17:44 `68a1f7c`: Hedgerow 2 M1 (hands-on pacing) and M2 (the layered Fleet in act 1). All gates passed; the live version.json matches; the tag push 403 is harmless. 1st release today.
 - 2026-10-04 11:04 `7427b78`: CATHODE step-by-step first job, world bounds, noir score, HDR NaN guard.
 - 2026-10-04 ~06:20 UTC: `f945e3a`, CATHODE through monowire lash. Gates passed; live version matches; tag push 403 (harmless). 2nd release today.
