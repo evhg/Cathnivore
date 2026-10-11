@@ -44,6 +44,8 @@ export const CONTRAST_PAIRS: Record<string, ContrastPair[]> = {
     { label: 'dark: gain-ink on surface', fg: '#A5C982', bg: '#332C27' },
     { label: 'dark: short-ink on paper-2', fg: '#E8957F', bg: '#2A2420' },
     { label: 'dark: newsprint-ink on newsprint', fg: '#2B2320', bg: '#C2B9A8' },
+    { label: 'round bunting: paper on soil cloth (both themes)', fg: '#F4EDE1', bg: '#6B4A2B' },
+    { label: 'round bunting sub: wheat-hi on soil cloth', fg: '#E8C877', bg: '#6B4A2B' },
     { label: 'dark: newsprint-ink on newsprint-lo (clipping foot)', fg: '#2B2320', bg: '#B5AB99' },
   ],
   runnel: [

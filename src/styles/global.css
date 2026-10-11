@@ -1282,55 +1282,78 @@ html.native-app body {
 }
 
 /* End-of-round moment: a soft "Round N" banner sweeps across the top of the table. */
+/* AAA UI M4 fix: market bunting, a cloth ribbon with swallowtail ends hung across the map's top edge.
+   A fixed object: the same soil cloth and paper lettering in both themes. */
 .round-banner {
-  position: fixed;
-  top: 18%;
+  position: absolute;
+  top: 14px;
   left: 50%;
-  transform: translateX(-50%);
+  translate: -50% 0;
   pointer-events: none;
   z-index: var(--z-banner);
-  padding: 6px 22px;
-  border-radius: 999px;
-  background: var(--paper, #fbf3e2);
-  color: var(--ink, #3a2a2a);
-  border: 2px solid var(--plum, #7a3b5a);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-  animation: round-banner 1300ms var(--ease-settle) forwards;
+  min-width: min(60%, 260px);
+  padding: 9px 40px 10px;
+  background: var(--grain-paper), linear-gradient(180deg, #6B4A2B, #573B21);
+  color: var(--paper-on-fixed-fill);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 50%, 100% 100%, 0 100%, 18px 50%);
+  filter: drop-shadow(0 6px 8px rgb(28 18 10 / .35));
+  font: 700 var(--fs-h3)/1 var(--font-display);
+  font-variation-settings: "opsz" 36;
+  text-align: center;
+  white-space: nowrap;
+  animation: round-banner 1700ms var(--ease-out) forwards;
 }
 
 .round-banner-sub {
   display: block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  text-align: center;
-  color: var(--ink-muted, #6b5a5a);
+  margin-top: 4px;
+  font: 700 var(--fs-label)/1.3 var(--font-text);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--wheat-hi);
 }
 
+/* corporate news is plastic, not cloth */
 .rift-banner {
-  top: 26%;
-  border-color: var(--danger, #a3262a);
-  letter-spacing: 0.06em;
+  top: 74px;
+  padding: 10px 22px;
+  background: var(--mat-plastic-c);
+  color: var(--candor-ink);
+  clip-path: none;
+  border-radius: var(--r-pill);
+  font: 760 var(--fs-body)/1 var(--font-text);
+  letter-spacing: .04em;
 }
 
+/* a wipe in from the left, a hold, then out to the right */
 @keyframes round-banner {
   0% {
     opacity: 0;
-    transform: translate(-50%, -14px);
+    clip-path: polygon(0 0, 0 0, 0 50%, 0 100%, 0 100%, 0 50%);
   }
-  20%,
-  70% {
+  28% {
     opacity: 1;
-    transform: translate(-50%, 0);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 50%, 100% 100%, 0 100%, 18px 50%);
+    transform: none;
+  }
+  82% {
+    opacity: 1;
+    transform: none;
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, 8px);
+    transform: translateX(24px);
   }
+}
+
+.rift-banner {
+  animation-name: rift-banner;
+}
+
+@keyframes rift-banner {
+  0% { opacity: 0; transform: translateY(-8px); }
+  20%, 80% { opacity: 1; transform: none; }
+  100% { opacity: 0; }
 }
 
 @keyframes reduced-motion-fade {

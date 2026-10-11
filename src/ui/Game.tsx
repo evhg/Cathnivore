@@ -1229,19 +1229,6 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       {(lostLandTick > 0 || riftTick > 0) && (
         <div key={`${lostLandTick}-${riftTick}`} className={riftTick > 0 && (state.rift === 3 || state.rift === 6) ? 'danger-flash danger-flash-deep' : 'danger-flash'} aria-hidden="true" />
       )}
-      {riftTick > 0 && (state.rift === 3 || state.rift === 6) && (
-        <div key={`rift-${riftTick}`} className="round-banner rift-banner" role="status">
-          {state.rift === 3 ? 'The Rift widens' : 'The Rift splits open'}
-        </div>
-      )}
-      {roundTick > 0 && (
-        <div key={roundTick} className="round-banner" aria-hidden="true">
-          {state.pressureDeck.length === 0 ? `Final round ${state.round}` : `Round ${state.round}`}
-          <span className="round-banner-sub">
-            {Object.values(state.regions).filter((r) => r.liberated).length} regions liberated
-          </span>
-        </div>
-      )}
       {/* tabIndex so axe's "scrollable-region-focusable" rule is satisfied unconditionally, not just when
           the panel happens to contain a focusable button — the desktop column scrolls (overflow-y: auto,
           SPEC 10.3), and at some game states (nothing affordable yet in Market/Cath's Plan) it can have no
@@ -1426,6 +1413,24 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       </section>
 
       <section className="map-wrap">
+        {/* AAA UI M4 fix: the round's bunting hangs across the map's top edge (it used to float at 18% of
+            the viewport, over the clippings on a phone); the Rift's plastic sign hangs below it. */}
+        {riftTick > 0 && (state.rift === 3 || state.rift === 6) && (
+          <div key={`rift-${riftTick}`} className="round-banner rift-banner" role="status">
+            {state.rift === 3 ? 'The Rift widens' : 'The Rift splits open'}
+          </div>
+        )}
+        {roundTick > 0 && (
+          <div key={roundTick} className="round-banner" aria-hidden="true">
+            {state.pressureDeck.length === 0 ? `Final round ${state.round}` : `Round ${state.round}`}
+            <span className="round-banner-sub">
+              {(() => {
+                const n = Object.values(state.regions).filter((r) => r.liberated).length
+                return `${n} ${n === 1 ? 'region' : 'regions'} liberated`
+              })()}
+            </span>
+          </div>
+        )}
         {/* AAA UI M4: the map key (Outlet, Buyout, Doubt, Co-op marker, Liberated) folds into an "i" tag at
             the map's corner instead of a row of its own, which gives the map the height. Each term keeps
             its own SPEC 10.5 tooltip inside the key. */}
