@@ -515,6 +515,7 @@ describe("hedgerow fleet: the live cap", () => {
     }
     const popped0 = g.popped;
     const batches: number[] = [];
+    let queued = 0;
     for (let b = 0; b < 10; b++) {
       const t0 = performance.now();
       for (let i = 0; i < 100; i++) {
@@ -523,10 +524,12 @@ describe("hedgerow fleet: the live cap", () => {
         if (i % 5 === 0) fill();
       }
       batches.push((performance.now() - t0) / 100);
+      queued = Math.max(queued, g.emitQueue.length);
     }
     batches.sort((x, y) => x - y);
     expect(g.popped - popped0).toBeGreaterThan(5000);
-    expect(g.emitQueue.length).toBeGreaterThan(0);
+    // The live cap was hit and children waited in the queue (a fast field can have it empty at the very end).
+    expect(queued).toBeGreaterThan(0);
     expect(g.enemies.length).toBeGreaterThan(300);
     return batches;
   }
