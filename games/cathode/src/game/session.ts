@@ -9,7 +9,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
-import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, type Sight } from "./enemy";
+import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
 import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
@@ -107,6 +107,9 @@ const DAMAGE_TAKEN: Record<string, number> = { noir: 0.55, hardboiled: 0.85, hel
 const GRACE = 12;
 
 
+/** Board Security is tougher than the archetype it borrows (hp x1.3, plating +0.1) and keeps its own name and bash. */
+const guarded = (k: EnemyKit, base: EnemyKit): EnemyKit =>
+  base.bash ? { ...k, name: base.name, bash: true, maxHp: Math.round(k.maxHp * 1.3), armour: Math.min(0.7, k.armour + 0.1), visor: base.visor } : k;
 export async function startSession(o: SessionOptions): Promise<Session> {
   const inClinic = o.district === "clinic";
   const inPlaza = o.district === "plaza";
@@ -142,8 +145,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     sniper: [ENFORCER_SNIPER, "enforcerSniper"],
   } as const;
   const spawn = (role: "rifle" | "shield" | "sniper", route: THREE.Vector3[], opts: { yaw?: number; passive?: boolean } = {}): Enemy => {
-    const [base, archetype] = KITS[role];
-    const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++), role: base.role }, route.map((p) => p.clone()), areaLevel);
+    const [base, archetype]: readonly [EnemyKit, string] = inTower && role === "shield" ? [BOARD_GUARD, "riotShield"] : KITS[role];
+    const e = new Enemy({ ...guarded(Progress.kit(base, archetype, areaLevel, seed++), base), role: base.role }, route.map((p) => p.clone()), areaLevel);
     if (opts.yaw !== undefined) e.motion.yaw = opts.yaw;
     e.passive = !!opts.passive;
     world.scene.add(e.body.root);
@@ -172,10 +175,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         : key.includes("sniper")
         ? [ENFORCER_SNIPER, "enforcerSniper"]
         : key.includes("shield") || n % 4 === 3
-          ? [RIOT_SHIELD, "riotShield"]
+          ? [inTower ? BOARD_GUARD : RIOT_SHIELD, "riotShield"]
           : [ENFORCER, "enforcer"];
       const elite = Math.random() < ELITE_CHANCE[progress.character.difficulty] + ngPlusEliteBonus(ngPlusLap(progress.jobsDone));
-      const e = new Enemy({ ...Progress.kit(base, archetype, areaLevel, seed++, elite), role: base.role }, route.map((p) => p.clone()), areaLevel);
+      const e = new Enemy({ ...guarded(Progress.kit(base, archetype, areaLevel, seed++, elite), base), role: base.role }, route.map((p) => p.clone()), areaLevel);
       if (civ) {
         e.passive = true;
         e.kit.maxHp = e.hp = CIVILIAN.maxHp;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { Enemy, ORDERLY, ORDERLY_REACH, type Sight } from "../games/cathode/src/game/enemy";
+import { BOARD_GUARD, Enemy, ORDERLY, ORDERLY_REACH, type Sight } from "../games/cathode/src/game/enemy";
 import { Progress } from "../games/cathode/src/game/progress";
 
 const sightAt = (x: number, z: number): Sight => ({
@@ -31,5 +31,22 @@ describe("Candor orderly", () => {
     expect(ranged).toBe(0);
     expect(melee).toBeGreaterThan(0);
     expect(Math.hypot(e.motion.pos.x, e.motion.pos.z - 12)).toBeLessThan(ORDERLY_REACH + 0.5);
+  });
+});
+
+describe("Board Security", () => {
+  it("bashes in melee when Cath is within reach, behind its shield", () => {
+    const kit = { ...Progress.kit(BOARD_GUARD, "riotShield", 3, 5), role: "shield" as const, bash: true };
+    const e = new Enemy(kit, [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)], 3);
+    const rays = { cast: () => null, clear: () => true } as never;
+    e.state = "combat";
+    e.detect = 1;
+    let melee = 0;
+    for (let i = 0; i < 400; i++) {
+      e.update(0.05, sightAt(0, 1.5), rays, [], () => 0);
+      for (const s of e.shots) if (s.melee) melee++;
+    }
+    expect(melee).toBeGreaterThan(0);
+    expect(e.shield).not.toBeNull();
   });
 });

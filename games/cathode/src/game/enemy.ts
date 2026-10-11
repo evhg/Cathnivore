@@ -33,6 +33,8 @@ export interface EnemyKit {
   mods?: readonly string[];
   /** Seconds of Cath's bullet-time each hit drains (Cursed). */
   drain?: number;
+  /** Shield bearers with this slam the shield into Cath when she's within reach (melee). */
+  bash?: boolean;
 }
 
 export const RIOT_SHIELD: EnemyKit = {
@@ -49,6 +51,19 @@ export const RIOT_SHIELD: EnemyKit = {
   xp: 80,
   visor: 0xff3040,
   role: "shield",
+};
+
+/** Board Tower security: a heavier corporate shield guard that slams the shield when Cath gets close (act 4). */
+export const BOARD_GUARD: EnemyKit = {
+  ...RIOT_SHIELD,
+  name: "Board Security",
+  maxHp: 170,
+  armour: 0.45,
+  damage: 8,
+  walk: 1.4,
+  xp: 110,
+  visor: 0xffc040,
+  bash: true,
 };
 
 export const ENFORCER_SNIPER: EnemyKit = {
@@ -230,6 +245,7 @@ export class Enemy {
   readonly vel = new THREE.Vector3();
   /** The riot shield (shield bearers only), and the sniper's laser. */
   shield: THREE.Mesh | null = null;
+  private bashCd = 0;
   laser: THREE.Mesh | null = null;
   /** Sniper: seconds of steady aim built up; fires at SNIPER_CHARGE. */
   charge = 0;
@@ -440,6 +456,13 @@ export class Enemy {
           // Shield bearers walk straight at her behind the shield.
           target = d > 4 ? sight.chest.clone() : null;
           speed = this.kit.walk;
+          this.bashCd -= dt;
+          if (this.kit.bash && seen && d <= ORDERLY_REACH && this.bashCd <= 0) {
+            this.bashCd = 1.6;
+            const from = this.motion.pos.clone().setY(sight.chest.y);
+            this.shots.push({ from, dir: new THREE.Vector3().subVectors(sight.chest, from).normalize(), melee: true });
+            this.motion.kick = 1;
+          }
         }
         if (this.kit.role === "orderly") {
           // Orderlies never keep their distance: sprint, lunge over the last few metres, then strike.
