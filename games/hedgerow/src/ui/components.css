@@ -514,8 +514,8 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .chip {
     height: 36px;
-    gap: 3px;
-    padding: 0 9px 0 3px;
+    gap: 5px;
+    padding: 0 7px 0 3px;
   }
   .chip svg {
     width: 28px;
