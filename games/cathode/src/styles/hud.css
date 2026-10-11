@@ -766,7 +766,7 @@
 /* ---- phones held upright (a desktop browser this narrow): clusters stack under a full-width subtitle ---- */
 @media (max-width: 600px) and (orientation: portrait) {
   .hud-objective { max-width: calc(100% - 2 * var(--hud-edge)); }
-  .hud-vitals { width: min(220px, 50vw); }
+  .hud-vitals { width: min(220px, 46vw); }
   .hud-arms { max-width: 46vw; }
   .hud-weapon { white-space: normal; font-size: var(--t-label); }
   .hud-sub { width: calc(100vw - 2 * var(--gutter)); bottom: calc(var(--edge-b) + 128px); }
