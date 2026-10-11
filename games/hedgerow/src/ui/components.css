@@ -2773,7 +2773,7 @@ body:has(#dlg-pause[open]) .paused-note {
   box-shadow: inset 0 0 0 1.5px var(--line);
 }
 .tag.twist {
-  background: var(--harvest-hi, var(--card));
+  background: var(--harvest-hi);
 }
 .tag.warn {
   background: var(--clay-deep);
@@ -2831,7 +2831,7 @@ body:has(#dlg-pause[open]) .paused-note {
   border-right-color: var(--white-a55);
 }
 .round-ticket.boss :is(.ticket-label, .ticket-of, .ticket-no) {
-  color: var(--white-a90, #fff);
+  color: var(--white-a90);
 }
 .play .panel .ticket-note {
   margin: 0;
