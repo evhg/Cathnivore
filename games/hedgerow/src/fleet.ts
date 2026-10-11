@@ -393,3 +393,14 @@ export function fleetUpgradePrice(kind: TowerKind, tier: 1 | 2): number {
 export function fleetSpecPrice(kind: TowerKind): number {
   return Math.round((FLEET_TOWERS[kind].cost * FLEET_SPEC_PRICE) / 5) * 5;
 }
+
+/**
+ * Crack stages (Hedgerow 2 M5): a Heavy Plant's shell shows its wear as it goes. 0 is fresh; 1 (under 75% of the
+ * shell left) scuffs it, 2 (under 50%) cracks it and 3 (under 25%) leaves it smoking. Anything with a short
+ * shell has none.
+ */
+export function crackStage(kind: string, hp: number, maxHp: number): 0 | 1 | 2 | 3 {
+  if ((RUNGS[kind as keyof typeof RUNGS]?.shell ?? 0) < 10 || maxHp <= 0) return 0;
+  const f = hp / maxHp;
+  return f < 0.25 ? 3 : f < 0.5 ? 2 : f < 0.75 ? 1 : 0;
+}

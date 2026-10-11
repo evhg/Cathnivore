@@ -4,7 +4,7 @@
 // Projectiles and particles are fed from the engine's event list: the engine is hitscan, so the flight
 // times here are short and only for show.
 
-import { P, PROPERTIES, RUNGS } from "./fleet";
+import { P, PROPERTIES, RUNGS, crackStage } from "./fleet";
 import {
   ENEMIES,
   MEGAS,
@@ -741,6 +741,8 @@ export class Renderer {
           this.drawStatus(e, X(p.x), Y(gy), s, t);
           // Fleet properties (Hedgerow 2 section 2): each lock tints the body in its own material.
           if (e.pm) this.drawMaterial(ctx, e.pm, e.kind, X(p.x), Y(gy), s);
+          const crack = crackStage(e.kind, e.hp, maxHpOf(e));
+          if (crack) this.drawCracks(ctx, crack, e.kind, X(p.x), Y(gy), s, t);
         },
       });
     }
@@ -1084,6 +1086,39 @@ export class Renderer {
       ctx.arc(x + Math.cos(a) * s * 0.25, y - s * 0.3 + Math.sin(a) * s * 0.06, s * 0.05, 0, Math.PI * 2);
       ctx.fill();
     }
+  }
+
+  /** Crack stages (M5): dark fractures across a Heavy Plant's shell, and smoke from the last stage. */
+  private drawCracks(ctx: CanvasRenderingContext2D, stage: number, kind: EnemyKind, x: number, y: number, s: number, t: number): void {
+    const k = enemyScale(kind);
+    const w = s * 0.78 * k;
+    const h = s * 0.42 * k;
+    const cy = y - s * (0.08 + enemyLift(kind)) - h * 0.5;
+    ctx.save();
+    ctx.strokeStyle = "#161616";
+    ctx.lineWidth = Math.max(1.2, s * 0.03);
+    ctx.lineCap = "round";
+    const lines: [number, number][][] = [
+      [[-0.1, -0.4], [0, -0.1], [-0.12, 0.15], [-0.05, 0.4]],
+      [[0.2, -0.35], [0.12, -0.05], [0.28, 0.2]],
+      [[-0.35, 0], [-0.2, 0.1], [-0.28, 0.32]],
+    ];
+    for (const l of lines.slice(0, stage)) {
+      ctx.beginPath();
+      l.forEach(([px, py], i) => (i ? ctx.lineTo(x + px * w, cy + py * h) : ctx.moveTo(x + px * w, cy + py * h)));
+      ctx.stroke();
+    }
+    if (stage >= 3) {
+      for (let i = 0; i < 3; i++) {
+        const u = (t * 0.9 + i / 3) % 1;
+        ctx.globalAlpha = 0.5 * (1 - u);
+        ctx.fillStyle = "#6b6b6b";
+        ctx.beginPath();
+        ctx.arc(x + Math.sin(u * 6 + i) * w * 0.12, cy - h * 0.45 - u * h * 0.9, s * (0.05 + u * 0.06), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
   }
 
   /** A vehicle's property materials over its sprite: steel sheen, bubble-wrap gloss, purple mesh, frost. */

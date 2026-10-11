@@ -39,7 +39,7 @@ const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter
 import { buildGround, type Ground } from "./terrain";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 import { RungInstances } from "./rungs";
-import { RUNGS } from "../fleet";
+import { RUNGS, crackStage } from "../fleet";
 
 interface TowerView {
   obj: THREE.Group;
@@ -78,6 +78,7 @@ interface EnemyView {
   meshes: THREE.Mesh[];
   mats: Array<THREE.Material | THREE.Material[]>;
   flashing: boolean;
+  crack?: number;
 }
 
 /** Geometry and materials every projectile of a kind borrows (created once, never disposed by an effect). */
@@ -1331,6 +1332,12 @@ export class Renderer3D {
       // Health bar.
       v.hit += dt;
       const max = maxHpOf(e);
+      // Crack stages (M5): a Heavy Plant sparks as it passes each stage, and smokes from the last.
+      const crack = crackStage(e.kind, e.hp, max);
+      if (crack > (v.crack ?? 0)) this.sparks.emit(p.x, top, p.y, "#2a2a2a", 10 + crack * 4, 2.4, 0.16, 0.7, -2);
+      v.crack = crack;
+      if (crack >= 3 && Math.random() < dt * 7) this.sparks.emit(p.x, top + 0.15, p.y, "#7a7a7a", 1, 0.3, 0.18, 1.1, 1.2);
+      else if (crack === 2 && Math.random() < dt * 2) this.sparks.emit(p.x, top, p.y, "#555", 1, 0.3, 0.12, 0.8, 0.6);
       const frac = Math.max(0, Math.min(1, e.hp / max));
       if (fleet && e.pm) this.rungs?.addIcons(e.pm, p.x, top + 0.34, p.y);
       v.bar.visible = frac < 1 && !ghost && !isBig(e.kind);
