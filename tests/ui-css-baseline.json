@@ -10,8 +10,6 @@
     "style-prop-assign": 2
   },
   "games/hedgerow/src/styles.css": {
-    "px-font-size": 135,
-    "z-index-literal": 10,
     "raw-colour": 213
   },
   "games/runnel/src/styles.css": {

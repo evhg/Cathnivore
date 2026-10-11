@@ -3,8 +3,10 @@ import "../../../shared/ui/palette.css";
 import "./fonts.css";
 import "./tokens.css";
 import "./styles.css";
+import "./ui/components.css";
 import "../../../shared/cath/cath.css";
 import { cathSvg, type CathExpression } from "../../../shared/cath/cath";
+import { burst, reducedMotion } from "../../../shared/ui/motion";
 import {
   ABILITIES,
   AUTO_AFTER_CASTS,
@@ -199,6 +201,11 @@ const ui = {
   btnSpeed: $<HTMLButtonElement>("btn-speed"),
   btnPause: $<HTMLButtonElement>("btn-pause"),
   btnSound: $<HTMLButtonElement>("btn-sound"),
+  btnMenu: $<HTMLButtonElement>("btn-menu"),
+  dlgPause: $<HTMLDialogElement>("dlg-pause"),
+  pauseResume: $<HTMLButtonElement>("pause-resume"),
+  pauseSound: $<HTMLButtonElement>("pause-sound"),
+  pauseLevels: $<HTMLButtonElement>("pause-levels"),
   banner: $<HTMLElement>("banner"),
   toast: $<HTMLElement>("toast"),
   bubble: $<HTMLElement>("bubble"),
@@ -731,6 +738,8 @@ function syncControls(): void {
   ui.btnSound.setAttribute("aria-pressed", String(!sfx.isMuted()));
   ui.btnSound.classList.toggle("muted", sfx.isMuted());
   ui.btnSound.setAttribute("aria-label", sfx.isMuted() ? "Sound off" : "Sound on");
+  ui.pauseSound.setAttribute("aria-pressed", String(!sfx.isMuted()));
+  ui.pauseSound.textContent = sfx.isMuted() ? "Sound off" : "Sound on";
   ui.btnPause.setAttribute("aria-pressed", String(paused));
   ui.btnPause.setAttribute("aria-label", paused ? "Resume" : "Pause");
   ui.pausedNote.hidden = !paused;
@@ -747,17 +756,17 @@ function syncControls(): void {
   ui.btnPie.classList.toggle("ready", !ui.btnPie.disabled);
   ui.pieLabel.textContent = g.pieCd > 0 ? `Pie ${Math.ceil(g.pieCd)}s` : aiming ? "Aim" : "Pie";
   const cdFrac = g.pieCd > 0 ? g.pieCd / 30 : 0;
-  ui.pieRing.style.setProperty("--cd", String(Math.min(1, cdFrac)));
+  ui.pieRing.style.setProperty("--p", String(1 - Math.min(1, cdFrac)));
   ui.btnNeighbours.hidden = !neighboursUnlocked(g.level);
   ui.btnNeighbours.disabled = g.phase !== "wave" || g.neighboursCd > 0 || g.enemies.length === 0;
   ui.btnNeighbours.classList.toggle("ready", !ui.btnNeighbours.disabled);
   ui.neighboursLabel.textContent = g.neighboursCd > 0 ? `${Math.ceil(g.neighboursCd)}s` : "Neighbours";
-  ui.neighboursRing.style.setProperty("--cd", String(g.neighboursCd / NEIGHBOURS_COOLDOWN));
+  ui.neighboursRing.style.setProperty("--p", String(1 - Math.min(1, g.neighboursCd / NEIGHBOURS_COOLDOWN)));
   ui.btnRally.hidden = !rallyUnlocked(g.level);
   ui.btnRally.disabled = g.phase !== "wave" || g.rallyCd > 0 || g.towers.length === 0;
   ui.btnRally.classList.toggle("ready", !ui.btnRally.disabled);
   ui.rallyLabel.textContent = g.rallyLeft > 0 ? "Go!" : g.rallyCd > 0 ? `${Math.ceil(g.rallyCd)}s` : "Rally";
-  ui.rallyRing.style.setProperty("--cd", String(g.rallyCd / RALLY_COOLDOWN));
+  ui.rallyRing.style.setProperty("--p", String(1 - Math.min(1, g.rallyCd / RALLY_COOLDOWN)));
   const buttons: Record<Ability, HTMLButtonElement> = { pie: ui.btnPie, neighbours: ui.btnNeighbours, rally: ui.btnRally };
   for (const a of ABILITIES) {
     const b = buttons[a];
@@ -838,15 +847,24 @@ function lastNo(g: Game): number {
   return isFleet(g.level) && g.level.book ? g.level.book.to : g.level.waves.length;
 }
 
-const shown = { goodwill: -1, marks: -1, wave: "", bumped: 0 };
+const shown = { goodwill: -1, marks: -1, wave: "", bumped: 0, goodBumped: 0 };
+/** The next value a rolling counter shows on its way up: about 350 ms to arrive at 60 fps, never a jump. */
+const rollTowards = (from: number, to: number): number => from + Math.max(1, Math.ceil((to - from) * 0.3));
 function updateHud(): void {
   if (!game) return;
   const g = game;
   syncKnockouts();
   if (g.goodwill !== shown.goodwill) {
+    const now = performance.now();
+    // A leak shakes the heart and snaps down; mending rolls up like the purse (reduced motion: straight there).
     if (shown.goodwill > g.goodwill) bump(ui.hudGoodwill.parentElement!, "hurt");
-    ui.hudGoodwill.textContent = String(g.goodwill);
-    shown.goodwill = g.goodwill;
+    else if (shown.goodwill >= 0 && now - shown.goodBumped > 90) {
+      bump(ui.hudGoodwill.parentElement!, "gain");
+      shown.goodBumped = now;
+    }
+    const rolling = shown.goodwill >= 0 && g.goodwill > shown.goodwill && !player && !reducedMotion();
+    shown.goodwill = rolling ? rollTowards(shown.goodwill, g.goodwill) : g.goodwill;
+    ui.hudGoodwill.textContent = String(shown.goodwill);
   }
   if (g.marks !== shown.marks) {
     const now = performance.now();
@@ -854,10 +872,12 @@ function updateHud(): void {
       bump(ui.hudMarks.parentElement!, "gain");
       shown.bumped = now;
     }
+    // Spending ticks the coin in brass (not the clay of a hurt).
+    if (shown.marks >= 0 && g.marks < shown.marks) bump(ui.hudMarks.parentElement!, "spend");
     // Fleet pops pay a Mark a layer: the counter rolls up towards the purse rather than jumping (spending
     // snaps straight down).
     const rolling = isFleet(g.level) && shown.marks >= 0 && g.marks > shown.marks && !player;
-    shown.marks = rolling ? shown.marks + Math.max(1, Math.ceil((g.marks - shown.marks) * 0.3)) : g.marks;
+    shown.marks = rolling ? rollTowards(shown.marks, g.marks) : g.marks;
     ui.hudMarks.textContent = String(shown.marks);
     refreshAffordability();
   }
@@ -872,7 +892,7 @@ function updateHud(): void {
 }
 
 function bump(el: HTMLElement, cls: string): void {
-  el.classList.remove("gain", "hurt");
+  el.classList.remove("gain", "hurt", "spend");
   void el.offsetWidth;
   el.classList.add(cls);
 }
@@ -911,7 +931,7 @@ function refreshPaths(): void {
     b.classList.toggle("afford", afford);
     b.style.setProperty("--fill", String(Math.min(1, g.marks / Math.max(1, cost))));
     const eta = b.querySelector<HTMLElement>(".path-eta");
-    if (eta && !locked) eta.textContent = afford ? "Affordable now" : etaText(g, cost);
+    if (eta && !locked) eta.textContent = afford ? "Ready" : etaText(g, cost);
   }
 }
 
@@ -1698,7 +1718,15 @@ function pathCard(p: HTMLElement, g: Game, t: Tower): void {
   // Last time's build for this tower, as a reminder of a plan that worked.
   const last = t.path && hasPaths(t.kind) ? data.builds?.[t.kind] : undefined;
   if (last && buildName(last) !== buildName(path)) p.append(line(`Last time: ${buildName(last)}`, "hint last-build"));
-  p.append(grid);
+  // The numbers fold away under "Details" on a phone, so the three packets come first; the side panel shows them.
+  const details = document.createElement("details");
+  details.className = "stat-details";
+  details.open = statsOpen ?? !phoneSheet();
+  const summary = document.createElement("summary");
+  summary.textContent = "Details";
+  details.append(summary, grid);
+  details.addEventListener("toggle", () => (statsOpen = details.open));
+  p.append(details);
   const row = document.createElement("div");
   row.className = "panel-row";
   const sl = document.createElement("button");
@@ -1713,6 +1741,38 @@ function pathCard(p: HTMLElement, g: Game, t: Tower): void {
   row.append(sl);
   p.append(row);
   refreshPaths();
+}
+
+/** Whether the tower sheet is a phone's bottom or side sheet (styles: max-width 899.98px or max-height 520px). */
+function phoneSheet(): boolean {
+  return matchMedia("(max-width: 899.98px), (max-height: 520px)").matches;
+}
+/** The "Details" fold's last state this visit (null: open on a desktop, shut on a phone). */
+let statsOpen: boolean | null = null;
+
+/**
+ * The upgrade-bought beat (AAA UI M3): the button squashes, the new pip fills with an ink-splat ring in the
+ * path's colour, the packet's header flashes, the build code ticks, and a tier 3's new name flips in. The sound
+ * and haptic already fired with the purchase. Reduced motion keeps only the end state.
+ */
+function celebrate(path: number, tier: number, renamed: boolean): void {
+  const col = ui.panel.querySelector<HTMLElement>(`.path-col[data-path="${path}"]`);
+  if (!col) return;
+  col.classList.add("just-bought", "flash");
+  ui.panel.querySelector(".build-chip")?.classList.add("ticked");
+  if (renamed) ui.panel.querySelector(".panel-title")?.classList.add("renamed");
+  const pip = col.querySelectorAll<HTMLElement>(".path-pips i")[tier];
+  if (!pip || reducedMotion()) return;
+  pip.classList.add("fresh");
+  const a = pip.getBoundingClientRect();
+  const b = col.getBoundingClientRect();
+  const host = document.createElement("span");
+  host.className = "path-burst";
+  host.style.setProperty("left", `${a.left - b.left + a.width / 2 - 6}px`);
+  host.style.setProperty("top", `${a.top - b.top + a.height / 2 - 6}px`);
+  col.append(host);
+  burst(host, { color: "var(--c)", n: 8, ring: true, dist: 26 });
+  setTimeout(() => host.remove(), 1300);
 }
 
 /** One path's column: its name, its three tiers (bought ones filled) and the button for the next. */
@@ -1731,6 +1791,22 @@ function pathColumn(g: Game, t: Tower, kind: PathKind, i: PathIndex, path: Path,
   h.innerHTML = `<span class="path-long"></span><span class="path-short"></span>`;
   h.querySelector(".path-long")!.textContent = def.name;
   h.querySelector(".path-short")!.textContent = def.short;
+  // The ladder at a glance, on the packet's header: one pip a tier (tier 3 a diamond), then the Crown.
+  const pips = document.createElement("span");
+  pips.className = "path-pips";
+  pips.setAttribute("aria-hidden", "true");
+  def.tiers.forEach((_, k) => {
+    const pip = document.createElement("i");
+    if (k < done) pip.className = "on";
+    if (k === 2) pip.classList.add("t3");
+    pips.append(pip);
+  });
+  if (def.crown) {
+    const pip = document.createElement("i");
+    pip.className = t.crown === i ? "t4 on" : "t4";
+    pips.append(pip);
+  }
+  h.append(pips);
   col.append(h);
   const steps = document.createElement("ol");
   steps.className = "path-steps";
@@ -1850,6 +1926,7 @@ function pathColumn(g: Game, t: Tower, kind: PathKind, i: PathIndex, path: Path,
       // A tier 3 is a new tower: say its name.
       if (done === 2) banner(tier.name, `${TOWERS[t.kind].name}, ${def.name} tier 3`, false, "small");
       renderPanel(true);
+      celebrate(i, done, done === 2);
     }
   };
   col.append(b);
@@ -2100,7 +2177,7 @@ function leakReport(g: Game, k: EnemyKind, dropped = false, lost = 0): void {
   const cause = leakCause(g, k, dropped, stackedWave > 0 && stackedWave === g.wave);
   // Fleet levels: the banner says what the leak cost (its Fleet Value), "Leaked: Same-Day van (5)".
   const name = isFleet(g.level) && lost > 0 ? `${ENEMIES[k].name} (${lost})` : ENEMIES[k].name;
-  banner(`Leaked: ${name}`, cause);
+  banner(`Leaked: ${name}`, cause, false, "leak");
   say(`Leaked: ${name}. ${cause}`);
   haptic.leakReport();
   if (!REDUCED) slowUntil = performance.now() + 600;
@@ -2147,7 +2224,7 @@ function banner(text: string, sub = "", boss = false, cls = ""): void {
   }
   ui.banner.className = `banner show${boss ? " boss" : ""}${cls ? ` ${cls}` : ""}`;
   clearTimeout(bannerTimer);
-  bannerTimer = window.setTimeout(() => (ui.banner.className = "banner"), boss ? 2600 : 1700);
+  bannerTimer = window.setTimeout(() => ui.banner.classList.remove("show"), boss ? 2600 : 1700);
 }
 
 function describeEnemy(kind: EnemyKind): string {
@@ -2241,7 +2318,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "crown": {
         // A Crown is a moment: a gold banner and a stinger (the camera beat is the banner's 1 s).
-        banner(ev.name, "Crown", true);
+        banner(ev.name, "Crown", false, "hero");
         sfx.playBoss();
         haptic.boss();
         break;
@@ -2273,7 +2350,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           if (isFleet(g.level)) {
             // Hedgerow 2 section 2: the property that got through, what it cost, and the key to it.
             const r = fleetLeakReport({ kind: ev.kind, pm: ev.pm, lost: ev.lost, cause: ev.cause });
-            banner(r.title, r.sub);
+            banner(r.title, r.sub, false, "leak");
             say(`${r.title}. ${r.sub}`);
             haptic.leakReport();
             if (!REDUCED) slowUntil = performance.now() + 600;
@@ -2352,7 +2429,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         toast(`${TOWERS[g.towers.find((t) => t.id === ev.tower)?.kind ?? "scarecrow"].name} is a veteran now: ${"★".repeat(ev.rank)}`);
         break;
       case "merge":
-        banner(MEGAS[ev.mega].name, "Megastructure raised", true);
+        banner(MEGAS[ev.mega].name, "Megastructure raised", false, "hero");
         sfx.playUpgrade();
         haptic.boss();
         break;
@@ -3008,6 +3085,29 @@ ui.btnPause.addEventListener("click", () => {
   syncControls();
 });
 ui.btnLevels.addEventListener("click", leaveLevel);
+// Phones fold Pause and Sound into one button: it pauses and opens the pause card; closing it resumes.
+let pausedByMenu = false;
+ui.btnMenu.addEventListener("click", () => {
+  pausedByMenu = !paused;
+  paused = true;
+  syncControls();
+  ui.dlgPause.showModal();
+});
+ui.dlgPause.addEventListener("close", () => {
+  if (pausedByMenu) paused = false;
+  pausedByMenu = false;
+  syncControls();
+});
+ui.pauseResume.addEventListener("click", () => {
+  pausedByMenu = true;
+  ui.dlgPause.close();
+});
+ui.pauseSound.addEventListener("click", () => ui.btnSound.click());
+ui.pauseLevels.addEventListener("click", () => {
+  pausedByMenu = false;
+  ui.dlgPause.close();
+  leaveLevel();
+});
 window.addEventListener("resize", () => {
   if (game && renderer) renderer.resize(game);
 });

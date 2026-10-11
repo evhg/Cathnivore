@@ -1,10 +1,150 @@
 /* Hedgerow tokens on top of the shared house palette (shared/ui/palette.css). The hand-copied palette is
-   gone, so --pasture is the house #5B7F3A again. */
+   gone, so --pasture is the house #5B7F3A again. "The Fête Noticeboard" (docs/design/aaa-ui-specs.md,
+   hedgerow §2-3): the players own painted oak, cream card, brass pins and inked lettering; Hollowell owns
+   white gloss plastic and corporate teal. */
 :root {
   color-scheme: light;
   --harvest: #9a4f12; /* the Next (stack a round) fill: 5.6:1 under white bold text */
+  --harvest-hi: #c47a2c;
+  --harvest-ink: #4e2606;
   --focus: #2b2320;
   --backdrop: rgba(43, 35, 32, 0.45);
+
+  /* Paper (content) */
+  --paper-hi: #fff7e6;
+  --card: #fbf3e2;
+  --kraft: #d9c9a8;
+  --paper-shade: #e9dfcb;
+  /* Ink: --ink-2 secondary, --ink-3 the minimum for text on card (5.35:1) */
+  --ink-2: #5e5249;
+  --ink-3: #6e625a;
+  /* The outline every cartoon object wears (STYLE §5). It stays dark in both themes. */
+  --line: #2b2320;
+  /* Oak (chrome) */
+  --oak-hi: #8a6238;
+  --oak: #6b4a2b;
+  --oak-lo: #4a3220;
+  --oak-ink: #3a2716;
+  /* Brass (rims, currency, focus halo) */
+  --brass-hi: #f2d27a;
+  --brass: #e7c36a;
+  --brass-mid: #b88a2e;
+  --brass-lo: #7a5718;
+  /* Player semantic */
+  --pasture-ink: #2c4519;
+  --goodwill: #c4433a;
+  --goodwill-hi: #f08a80;
+  --marks: #d9b45a;
+  --marks-ink: #7a5718;
+  --cath: #7a3b52;
+  /* Upgrade paths (left, middle, right) */
+  --path-0: #8f3b27;
+  --path-0-soft: #f6ddd3;
+  --path-0-glow: #e59a86;
+  --path-1: #365a8a;
+  --path-1-soft: #dce6f2;
+  --path-1-glow: #9dbbe0;
+  --path-2: #466a2b;
+  --path-2-soft: #e1ebd4;
+  --path-2-glow: #9ccb6e;
+  /* Enemy material (Hollowell): never on player UI */
+  --corp: #0e5e63;
+  --corp-hi: #1e8c8c;
+  --plastic: #ffffff;
+  --plastic-shade: #e6eef0;
+  --corp-ink: #0b2e31;
+  /* Overlays */
+  --scrim: rgb(28 20 14 / 0.55);
+  --scrim-strong: rgb(28 20 14 / 0.72);
+  --focus-ink: var(--line);
+  --focus-halo: var(--brass-hi);
+
+  /* Materials (STYLE §14 as amended: one painted top-light of at most 6% plus grain on player things; the
+     hard gloss line is the enemy's) */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .17 0 0 0 0 .13 0 0 0 0 .1 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  --woodgrain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='60'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.004 .35' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .06 0 0 0 0 .03 0 0 0 .9 -.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  --mat-paper: var(--grain), linear-gradient(180deg, var(--paper-hi), var(--card) 40%, var(--card));
+  --mat-oak: var(--woodgrain), linear-gradient(180deg, var(--oak-hi), var(--oak) 45%, var(--oak-lo));
+  --mat-brass: linear-gradient(180deg, var(--brass-hi), var(--brass) 38%, var(--brass-mid) 55%, var(--brass) 78%, var(--brass-hi));
+  --mat-kraft: var(--grain), linear-gradient(var(--kraft), var(--kraft));
+  --mat-plastic: linear-gradient(180deg, #fff 0 48%, var(--plastic-shade) 52% 100%);
+
+  /* Radii, outline and elevation: an ink outline plus a hard drop (cartoon), then a soft lift for floating things */
+  --r-xs: 6px;
+  --r-s: 10px;
+  --r-m: 14px;
+  --r-l: 20px;
+  --r-xl: 28px;
+  --r-note: 5px 9px 6px 8px;
+  --stroke: 2px;
+  --sh-0: 0 0 0 var(--stroke) var(--line);
+  --sh-1: 0 0 0 var(--stroke) var(--line), 0 3px 0 var(--line);
+  --sh-2: 0 0 0 var(--stroke) var(--line), 0 4px 0 var(--line), 0 12px 22px -10px rgb(43 35 32 / 0.45);
+  --sh-3: 0 0 0 var(--stroke) var(--line), 0 6px 0 var(--line), 0 24px 44px -16px rgb(28 20 14 / 0.55);
+  --bevel: inset 0 2px 0 rgb(255 255 255 / 0.3), inset 0 -3px 0 rgb(0 0 0 / 0.18);
+  --groove: inset 0 2px 3px rgb(0 0 0 / 0.35), inset 0 -1px 0 rgb(255 255 255 / 0.12);
+  --glow-brass: 0 0 0 3px var(--brass-hi), 0 0 18px 4px rgb(242 210 122 / 0.55);
+  --glow-pasture: 0 0 0 3px #9ccb6e, 0 0 16px 3px rgb(156 203 110 / 0.5);
+  --glow-clay: 0 0 0 3px #e59a86, 0 0 18px 4px rgb(181 82 59 / 0.55);
+
+  /* Tints and shades the component kit uses (components.css names no raw colour) */
+  --black-a04: rgb(0 0 0 / 0.04);
+  --black-a16: rgb(0 0 0 / 0.16);
+  --black-a18: rgb(0 0 0 / 0.18);
+  --black-a20: rgb(0 0 0 / 0.2);
+  --black-a25: rgb(0 0 0 / 0.25);
+  --black-a35: rgb(0 0 0 / 0.35);
+  --black-a40: rgb(0 0 0 / 0.4);
+  --clay-ink: #4a1c10;
+  --corp-a15: rgb(11 46 49 / 0.15);
+  --corp-a18: rgb(11 46 49 / 0.18);
+  --corp-a25: rgb(11 46 49 / 0.25);
+  --corp-a40: rgb(11 46 49 / 0.4);
+  --corp-a55: rgb(11 46 49 / 0.55);
+  --cream-a45: rgb(243 233 216 / 0.45);
+  --crown-soft: #fbefc8;
+  --crown-soft-dark: #3a3020;
+  --hp: #7fc46a;
+  --hurt-hi: #ffb4a6;
+  --ink-a04: rgb(43 35 32 / 0.04);
+  --ink-a14: rgb(43 35 32 / 0.14);
+  --ink-a16: rgb(43 35 32 / 0.16);
+  --ink-a45: rgb(43 35 32 / 0.45);
+  --oak-a35: rgb(58 39 22 / 0.35);
+  --pasture-hi: #a9c98a;
+  --shade-a35: rgb(28 20 14 / 0.35);
+  --shade-a55: rgb(28 20 14 / 0.55);
+  --shade-a62: rgb(28 20 14 / 0.62);
+  --soil-a50: rgb(40 30 10 / 0.5);
+  --white-a00: rgb(255 255 255 / 0);
+  --white-a14: rgb(255 255 255 / 0.14);
+  --white-a16: rgb(255 255 255 / 0.16);
+  --white-a18: rgb(255 255 255 / 0.18);
+  --white-a20: rgb(255 255 255 / 0.2);
+  --white-a22: rgb(255 255 255 / 0.22);
+  --white-a28: rgb(255 255 255 / 0.28);
+  --white-a35: rgb(255 255 255 / 0.35);
+  --white-a50: rgb(255 255 255 / 0.5);
+  --white-a55: rgb(255 255 255 / 0.55);
+  --white-a90: rgb(255 255 255 / 0.9);
+
+  /* Z-layers (they replace the scattered literals; <dialog> sheets use the native top layer) */
+  --z-canvas: 0;
+  --z-raise: 1; /* above a sibling inside one component */
+  --z-raise-2: 2;
+  --z-fx: 10;
+  --z-field-ui: 20;
+  --z-hud: 30;
+  --z-panel: 40;
+  --z-banner: 50;
+  --z-toast: 55;
+  --z-tooltip: 60;
+  --z-drag: 70;
+
+  /* Hedgerow retunes two shared durations: a sheet lands in 380 ms, a hero moment in 650 ms */
+  --dur-press: 40ms;
+  --dur-3: 380ms;
+  --dur-hero: 650ms;
 
   --font-display: "Hedgerow Display", "Hedgerow Display Fallback", Georgia, serif;
   --font-ui: "Hedgerow UI", "Hedgerow UI Fallback", system-ui, sans-serif;
@@ -13,6 +153,23 @@
   /* SOFT 100 everywhere the display face is set; Cath's voice adds WONK 1 (a roman, never an italic) */
   --display-axes: "SOFT" 100, "WONK" 0;
   --voice-axes: "SOFT" 100, "WONK" 1, "opsz" 18;
+
+  /* The type scale (hedgerow §2.3): phone at 390, desktop at 1440, interpolated between. Nothing a player
+     must read is under 14px; 12px only for uppercase weight-850 labels that repeat an icon or a value. */
+  --fs-hero: clamp(2.5rem, 1.4rem + 3.6vw, 4rem);
+  --fs-d1: clamp(1.875rem, 1.3rem + 1.9vw, 2.75rem);
+  --fs-d2: clamp(1.375rem, 1.15rem + 0.7vw, 1.75rem);
+  --fs-d3: clamp(1.0625rem, 1rem + 0.2vw, 1.1875rem);
+  --fs-voice: clamp(1.125rem, 1rem + 0.4vw, 1.3125rem);
+  --fs-body: clamp(1rem, 0.97rem + 0.1vw, 1.0625rem);
+  --fs-small: clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem);
+  --fs-label: 0.75rem;
+  --fs-num-l: clamp(1.375rem, 1.3rem + 0.25vw, 1.5rem);
+  --fs-num-xl: clamp(2.5rem, 1.9rem + 2vw, 3.5rem);
+  --fs-btn: clamp(1.0625rem, 1.04rem + 0.1vw, 1.125rem);
+  --track-label: 0.09em;
+  --track-display: -0.02em;
+  font-synthesis: none;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -28,5 +185,61 @@
     --wheat: #e2bf68;
     --focus: #f3e9d8;
     --backdrop: rgba(0, 0, 0, 0.6);
+    /* "Evening at the fête" */
+    --paper-hi: #3a2f27;
+    --card: #2a221d;
+    --kraft: #4a3b2e;
+    --paper-shade: #241c17;
+    --ink-2: #d6c7b2;
+    --ink-3: #b9aa98;
+    --oak-hi: #7a5634;
+    --oak: #553a22;
+    --oak-lo: #3a2716;
+    --oak-ink: #120c08;
+    --path-0-soft: #3b231c;
+    --path-1-soft: #1e2a3a;
+    --path-2-soft: #23301a;
+    --marks-ink: #e2bf68;
+    --focus-ink: #f3e9d8;
+    --scrim: rgb(0 0 0 / 0.6);
+  }
+}
+
+/* Type roles (hedgerow §2.3) */
+.t-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: var(--display-axes);
+  text-wrap: balance;
+  letter-spacing: var(--track-display);
+}
+.t-voice {
+  font-family: var(--font-voice);
+  font-weight: 430;
+  font-size: var(--fs-voice);
+  line-height: 1.45;
+  font-variation-settings: var(--voice-axes);
+  text-wrap: pretty;
+}
+.t-label {
+  font: 850 var(--fs-label) / 1.15 var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: var(--track-label);
+}
+.t-num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 950;
+}
+/* Outlined BTD6-style numerals for counters over art */
+.t-num-ink {
+  color: var(--paper-hi);
+  -webkit-text-stroke: 0.16em var(--line);
+  paint-order: stroke fill;
+  text-shadow: 0 0.09em 0 var(--line);
+}
+@supports not (paint-order: stroke) {
+  .t-num-ink {
+    -webkit-text-stroke-width: 0.05em;
   }
 }
