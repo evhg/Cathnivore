@@ -70,7 +70,7 @@ export default function Tooltip({ term, children, label }: Props) {
       </button>
       {open && (
         <span role="tooltip" id={id} className="tooltip-popover">
-          <strong>{term}</strong>
+          <span className="tooltip-title">{term}</span>
           {body}
         </span>
       )}

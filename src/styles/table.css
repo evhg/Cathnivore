@@ -1,176 +1,866 @@
-/* The table: the game screen redesign that makes the map the hero (ROADMAP 8, owner's chat session,
-   2026-09-30). Loaded after global.css, so same-specificity rules here win. Tokens only.
+/* The table (AAA UI M4, "Market Day Press"; docs/design/aaa-ui-specs.md "cathnivore" §6.1). Loaded last.
+   The game screen is a tabletop, not a dashboard: the map is the hero on a darker tabletop vignette;
+   the Market Board, Cath's aside and tomorrow's papers (the Agenda clippings) sit above it; the active
+   producer's ledger, the action keys and a kraft tab rail sit below it on a phone. On desktop the side
+   columns hold six card-stock frames (Producer, Farm, Actions | Market, Cath's Plan, Log), never a frame
+   inside a frame. Tokens only (tokens.css); components come from components.css.
 
-   Desktop: the map fills whatever the centre column has left after the HUD, companion and plan strip,
-   on an illustrated tabletop. It's sized by flexbox (`flex: 1 1 0` plus an SVG that fills its box and
-   letterboxes itself through its viewBox), so it grows on big screens and can never overflow the
-   "no scrolling at 1280x800" budget. The active producer and Undo moved to the left tray (Game.tsx).
+   Contracts kept: no page scroll at 1280x800 (desktop-no-scroll), the phone map at 45%+ of the height
+   (phone-map-hero), the class names e2e reads (.game, .actions, .action-item, .active-producer,
+   .plan-strip, .map-wrap, .map-legend-item, .tooltip-trigger-button). */
 
-   Phone: a one-row HUD, a slimmer companion and a compact producer bar, so the whole map fits above the
-   pinned action tray at 390x844. */
+/* ---- shell ---- */
+.game-layout {
+  min-height: 100vh;
+  background: var(--mat-paper);
+}
 
-/* ---- desktop ---- */
+.game {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: var(--sp-2) var(--sp-2) 0;
+}
 
-@media (min-width: 1024px) {
-  .game-layout {
-    max-width: 1680px;
-    grid-template-columns: minmax(280px, 320px) minmax(460px, 1fr) minmax(300px, 340px);
-  }
+.desktop-col {
+  display: none;
+}
 
-  .map-wrap {
-    flex: 1 1 0;
-    min-height: 0;
-    align-items: stretch;
-    padding: 14px;
-    border-radius: 28px;
-    background:
-      radial-gradient(ellipse 70% 60% at 50% 45%, var(--surface) 0%, transparent 72%),
-      radial-gradient(ellipse 120% 100% at 50% 50%, var(--paper) 30%, var(--paper-2) 100%);
-    border: 1px solid var(--rule);
-    box-shadow:
-      inset 0 2px 18px color-mix(in srgb, var(--ink) 9%, transparent),
-      inset 0 0 0 6px color-mix(in srgb, var(--surface) 55%, transparent);
-  }
+/* ---- the Market Board (4.9) ---- */
+.market-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  align-items: stretch;
+  padding: 0 var(--sp-1) 0 0;
+  background: var(--mat-card);
+  border: 1px solid var(--ink-a35);
+  border-radius: var(--r-card);
+  box-shadow: var(--inset-hi), var(--inset-lo), var(--e3);
+}
 
-  .map {
-    max-width: none;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
-    filter: drop-shadow(0 12px 18px color-mix(in srgb, var(--ink) 16%, transparent));
-  }
+.board-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  padding: var(--sp-2) var(--sp-3) 9px;
+}
 
-  /* The producer card heads the left tray, above the Farm panel and the actions it acts with. */
-  .desktop-col-left > .producer-sheet {
-    flex: none;
-  }
+.board-cell + .board-cell {
+  box-shadow: inset 1px 0 0 var(--ink-a15);
+}
 
-  .producer-sheet .active-producer,
-  .producer-sheet .decision {
-    background: none;
-    padding: 0;
-  }
+.board-cell > .tooltip-trigger {
+  display: flex;
+}
 
-  .producer-sheet .active-producer-header strong {
-    font-family: var(--font-display);
-    font-size: 20px;
-  }
+.board-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "icon label" "icon num";
+  align-items: center;
+  column-gap: var(--sp-2);
+  min-width: 0;
+}
 
-  /* Undo sits at the foot of the actions list, full width. */
-  .actions-sheet .controls {
-    margin-top: 8px;
-  }
+.board-head > svg {
+  grid-area: icon;
+  width: 22px;
+  height: 22px;
+}
 
-  .actions-sheet .controls button {
-    width: 100%;
+.board-label {
+  grid-area: label;
+  overflow: hidden;
+  font: 760 var(--fs-label)/1.1 var(--font-text);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.board-num {
+  grid-area: num;
+  justify-self: start;
+  font: 800 var(--fs-num-hud)/1.05 var(--font-num);
+  color: var(--ink);
+}
+
+.board-of {
+  margin-left: 1px;
+  font-size: .72em;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.board-cell--danger .board-label {
+  color: var(--short-ink);
+}
+
+.board-menu {
+  align-self: center;
+  margin-left: var(--sp-1);
+}
+
+/* the board's tooltips hang below it, aligned to the cell's edge so they stay on screen */
+.market-board .tooltip-popover {
+  top: calc(100% + 12px);
+  bottom: auto;
+  left: -4px;
+  translate: none;
+  transform-origin: 20% 0;
+}
+
+.market-board .board-cell:nth-child(n + 3) .tooltip-popover {
+  left: auto;
+  right: -4px;
+  transform-origin: 80% 0;
+}
+
+/* ---- Cath's aside (4.9): a wheat-ringed cameo and a torn paper strip in her voice ---- */
+.cath-companion {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+  padding-left: 3px;
+}
+
+.cath-companion .cameo,
+.producer-cameo {
+  --cameo: 48px;
+  flex: none;
+  width: var(--cameo);
+  height: var(--cameo);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--cameo-ring, var(--wheat)), 0 0 0 4.5px var(--btn-edge), var(--e2);
+}
+
+.cath-companion .cameo .cath-art,
+.cath-companion .cameo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cath-companion .cameo.nod-a {
+  animation: cameo-nod-a 260ms var(--ease-out);
+}
+
+.cath-companion .cameo.nod-b {
+  animation: cameo-nod-b 260ms var(--ease-out);
+}
+
+@keyframes cameo-nod-a {
+  40% { transform: rotate(-3deg); }
+}
+
+@keyframes cameo-nod-b {
+  40% { transform: rotate(-3deg); }
+}
+
+.cath-strip {
+  flex: 1 1 auto;
+  min-width: 0;
+  filter: drop-shadow(0 2px 2px rgb(var(--shadow-ink) / .16));
+}
+
+.cath-companion-line {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-5) var(--sp-2) var(--sp-3);
+  background: var(--mat-card);
+  border-radius: var(--r-xs) 0 0 var(--r-xs);
+  color: var(--ink);
+  font: italic 460 var(--fs-voice)/1.3 var(--font-voice);
+  text-wrap: pretty;
+  -webkit-mask:
+    linear-gradient(black 0 0) left / calc(100% - 6px) 100% no-repeat,
+    var(--torn-right) right / 6px 12px repeat-y;
+  mask:
+    linear-gradient(black 0 0) left / calc(100% - 6px) 100% no-repeat,
+    var(--torn-right) right / 6px 12px repeat-y;
+  animation: aside-in var(--dur-3) var(--ease-out) both;
+}
+
+@keyframes aside-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
   }
 }
 
-/* A taller desktop gives the companion her portrait back. */
-@media (min-width: 1024px) and (min-height: 860px) {
-  .cath-companion .cath-art svg {
-    width: 48px;
-    height: 48px;
+/* ---- tutorial: Cath's note pinned to the table ---- */
+.tutorial-prompt {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
+  background: var(--mat-card);
+  border: 1px solid var(--ink-a35);
+  border-left: 4px solid var(--wheat);
+  border-radius: var(--r-sm);
+  box-shadow: var(--e2);
+  color: var(--ink);
+}
+
+.tutorial-prompt p {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.tutorial-prompt > button {
+  flex: none;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.tutorial-rules-link {
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+  vertical-align: -6px;
+  border: 1.5px solid var(--ink-a60);
+  background: var(--surface);
+  color: var(--ink);
+  font: italic 760 .9rem/1 var(--font-display);
+}
+
+/* ---- tomorrow's papers: the Agenda clippings (4.5) ---- */
+.plan-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+  padding: 7px 3px 3px;
+}
+
+.plan-strip-item {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  rotate: -1.2deg;
+  filter: drop-shadow(0 3px 2px rgb(var(--shadow-ink) / .2));
+  transition: rotate var(--dur-2) var(--ease-out), translate var(--dur-2) var(--ease-out);
+}
+
+.plan-strip-item:nth-child(2) {
+  rotate: .7deg;
+}
+
+.plan-strip-item:nth-child(3) {
+  rotate: -.4deg;
+}
+
+/* washi tape */
+.plan-strip-item::before {
+  content: "";
+  position: absolute;
+  z-index: var(--z-lift);
+  top: -6px;
+  left: 50%;
+  width: 36px;
+  height: 12px;
+  translate: -50% 0;
+  rotate: 4deg;
+  background: var(--tape);
+  pointer-events: none;
+}
+
+.plan-strip-item:nth-child(2)::before {
+  rotate: -3deg;
+}
+
+.plan-strip-item > button:first-child {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 56px;
+  padding: 13px 30px 8px 9px;
+  border: 0;
+  border-radius: 0;
+  background: var(--mat-news);
+  box-shadow: none;
+  color: var(--newsprint-ink);
+  font: 600 var(--fs-caption)/1.25 var(--font-text);
+  text-align: left;
+  transform: none;
+  -webkit-mask:
+    var(--torn-top) top left / 12px 6px repeat-x,
+    linear-gradient(black 0 0) 0 6px / 100% 100% no-repeat;
+  mask:
+    var(--torn-top) top left / 12px 6px repeat-x,
+    linear-gradient(black 0 0) 0 6px / 100% 100% no-repeat;
+}
+
+.plan-strip-item > button:first-child:focus-visible {
+  outline: none;
+}
+
+.plan-strip-item:has(> button:first-child:focus-visible) {
+  outline: var(--focus-w) solid var(--focus);
+  outline-offset: 3px;
+}
+
+.plan-strip-headline {
+  font: italic 780 var(--fs-body)/1.1 var(--font-voice);
+  letter-spacing: .005em;
+}
+
+.plan-strip-headline,
+.plan-strip-effect {
+  display: block;
+}
+
+.plan-strip-effect {
+  margin-top: 2px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  text-transform: capitalize;
+}
+
+.plan-strip-card-brand {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  display: inline-flex;
+  gap: 2px;
+  line-height: 1;
+}
+
+.plan-strip-card-brand svg {
+  width: 11px;
+  height: 11px;
+}
+
+.plan-strip-card-meta {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1;
+}
+
+.plan-strip-stage {
+  font: 700 var(--fs-label)/1 var(--font-display);
+  color: var(--newsprint-ink);
+}
+
+.plan-strip-item > .tooltip-trigger {
+  position: absolute;
+  right: 5px;
+  bottom: 6px;
+}
+
+.plan-strip-item .tooltip-popover {
+  rotate: 1deg;
+}
+
+.plan-strip-item:first-child .tooltip-popover {
+  left: -10px;
+  translate: none;
+}
+
+.plan-strip-item:last-child .tooltip-popover {
+  left: auto;
+  right: -8px;
+  translate: none;
+}
+
+/* the clipping whose regions are lit on the map straightens, lifts and glows wheat */
+.plan-strip-item:has(.plan-strip-active) {
+  rotate: 0deg;
+  translate: 0 -3px;
+  filter: drop-shadow(0 0 2px var(--wheat)) drop-shadow(0 0 4px var(--wheat)) drop-shadow(0 5px 4px rgb(var(--shadow-ink) / .25));
+}
+
+@media (hover: hover) {
+  .plan-strip-item:hover {
+    rotate: 0deg;
+    translate: 0 -2px;
+  }
+}
+
+/* ---- the map on the tabletop ---- */
+.map-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1 1 0;
+  min-height: 0;
+  padding: var(--sp-1);
+  border-radius: var(--r-sheet);
+  background:
+    var(--grain-paper),
+    radial-gradient(ellipse 72% 66% at 50% 47%, var(--paper-hi) 0%, var(--paper-2) 58%, var(--paper-3) 100%);
+  box-shadow: inset 0 0 120px rgb(var(--shadow-ink) / .18), inset 0 1px 0 var(--ink-a08);
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  aspect-ratio: auto;
+  filter: drop-shadow(0 12px 14px rgb(var(--shadow-ink) / .2));
+}
+
+/* the map key: an "i" tag at the corner opening a card of the pieces' names */
+.map-key {
+  position: absolute;
+  z-index: var(--z-map-fx);
+  top: var(--sp-2);
+  right: var(--sp-2);
+}
+
+.map-key > summary {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-a60);
+  background: var(--mat-card);
+  box-shadow: var(--inset-hi), var(--e2);
+  color: var(--ink);
+  font: italic 760 1.05rem/1 var(--font-display);
+  cursor: pointer;
+  list-style: none;
+}
+
+.map-key > summary::-webkit-details-marker {
+  display: none;
+}
+
+.map-key > summary::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
+.map-key[open] > summary {
+  background: var(--wheat);
+  color: var(--ink-on-fixed-fill);
+}
+
+.map-key .map-legend {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: max-content;
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3);
+  background: var(--mat-card);
+  border: 1.5px solid var(--btn-edge);
+  border-radius: var(--r-sm);
+  box-shadow: var(--e4);
+  font: 600 var(--fs-small)/1.2 var(--font-text);
+  color: var(--ink);
+  animation: tt-in var(--dur-2) var(--ease-out) both;
+}
+
+.map-key-title {
+  margin-bottom: 2px;
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  white-space: nowrap;
+}
+
+.map-legend-item .tooltip-popover {
+  left: auto;
+  right: 0;
+  translate: none;
+}
+
+/* ---- the active producer's ledger (4.9) ---- */
+.decision,
+.active-producer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "who pips" "ledger ledger";
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.decision {
+  display: block;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--mat-card);
+  border-left: 4px solid var(--wheat);
+  border-radius: var(--r-sm);
+  font-weight: 700;
+}
+
+.decision p {
+  margin: 0;
+}
+
+.active-producer-header {
+  grid-area: who;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.active-producer-header strong {
+  overflow: hidden;
+  font: 640 var(--fs-h3)/1.1 var(--font-display);
+  font-variation-settings: "opsz" 36;
+  color: var(--soil);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.producer-cameo {
+  display: grid;
+  place-items: end center;
+}
+
+.producer-cameo svg {
+  width: 100%;
+  height: 112%;
+}
+
+.producer-cameo.pc-mara { --cameo-ring: var(--p-mara); }
+.producer-cameo.pc-tomas { --cameo-ring: var(--p-tomas); }
+.producer-cameo.pc-ines { --cameo-ring: var(--p-ines); }
+.producer-cameo.pc-sol { --cameo-ring: var(--p-sol); }
+
+.ledger {
+  grid-area: ledger;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.ledger > .tooltip-trigger {
+  display: flex;
+}
+
+.ledger-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 11px 0 7px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  border: 1px solid var(--ink-a35);
+  box-shadow: var(--inset-hi), var(--e1);
+}
+
+.ledger-value {
+  font: 800 var(--fs-num-hud)/1 var(--font-num);
+  color: var(--ink);
+}
+
+.ledger-income {
+  font: 760 var(--fs-caption)/1 var(--font-num);
+  color: var(--gain-ink);
+}
+
+.pips {
+  grid-area: pips;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding-right: 2px;
+}
+
+/* a seed per action: filled when still to spend, a hollow ring once spent */
+.pip {
+  width: 12px;
+  height: 14px;
+  border-radius: 50% 50% 50% 50% / 58% 58% 42% 42%;
+  border: 1.5px solid var(--btn-edge);
+  rotate: 18deg;
+  transition: scale var(--dur-2) var(--ease-in), translate var(--dur-2) var(--ease-in), background-color var(--dur-2);
+}
+
+.pip.on {
+  background: var(--pip-on);
+  box-shadow: inset 1px 1px 0 var(--white-a55);
+}
+
+.pip:not(.on) {
+  scale: .8;
+  translate: 0 2px;
+  opacity: .7;
+}
+
+/* ---- the action list ---- */
+.actions {
+  position: relative;
+}
+
+/* ---- the phone tab rail (4.3): card keys on a kraft strip, Undo as a round key on its left ---- */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 calc(-1 * var(--sp-2));
+  padding: var(--sp-2) max(var(--sp-2), var(--safe-r)) calc(var(--sp-2) + var(--safe-b)) max(var(--sp-2), var(--safe-l));
+  background: var(--mat-kraft);
+  box-shadow: inset 0 1px 0 var(--white-a55), 0 -1px 0 rgb(var(--shadow-ink) / .35), 0 -8px 18px -12px rgb(var(--shadow-ink) / .4);
+}
+
+.controls > button {
+  min-height: 52px;
+}
+
+.rail-undo {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.rail-undo-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.rail-tab {
+  --lip: 2px;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 0 6px;
+  border-radius: var(--r-sm);
+}
+
+.rail-tab svg {
+  width: 26px;
+  height: 26px;
+}
+
+.rail-tab > span {
+  max-width: 100%;
+  overflow: hidden;
+  font: 760 var(--fs-label)/1 var(--font-text);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-tab.is-open::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  width: 24px;
+  height: 3px;
+  translate: -50% 0;
+  border-radius: 2px;
+  background: var(--wheat);
+}
+
+/* ---- sheets on a phone: paper, a grabber and a scrim ---- */
+.sheet-overlay {
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(3px) saturate(.9);
+  backdrop-filter: blur(3px) saturate(.9);
+}
+
+.sheet {
+  background: var(--mat-paper);
+  border: 0;
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  box-shadow: var(--e5);
+  padding: var(--sp-2) var(--gutter) calc(var(--sp-5) + var(--safe-b));
+  animation: sheet-up var(--dur-3) var(--ease-out) both;
+}
+
+.sheet::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 5px;
+  margin: 0 auto var(--sp-2);
+  border-radius: 3px;
+  background: var(--ink-a35);
+}
+
+.sheet header {
+  background: var(--paper);
+  padding-block: var(--sp-1) var(--sp-3);
+}
+
+.sheet header h2 {
+  font: 640 var(--fs-h2)/1.08 var(--font-display);
+  color: var(--soil);
+}
+
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
   }
 }
 
 /* ---- phone and tablet ---- */
-
 @media (max-width: 1023.98px) {
-  /* One-row HUD: four gauges and Menu share a single line instead of wrapping to two. */
-  .topbar {
-    flex-wrap: nowrap;
-    gap: 4px;
-    padding: 4px 6px 4px 10px;
-    font-size: 14px;
+  .game {
+    height: 100vh;
+    height: 100dvh;
+    padding-inline: max(var(--sp-2), var(--safe-l)) max(var(--sp-2), var(--safe-r));
   }
 
-  .topbar > span {
-    display: contents;
+  .game-scroll {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    min-height: 0;
+    overflow-y: auto;
   }
 
-  .topbar {
-    justify-content: space-between;
+  .action-tray {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
   }
 
-  .topbar .hud-value {
-    white-space: nowrap;
-    font-size: 16px;
+  /* The map takes what's left between the clippings and the tray, letterboxed by its own viewBox. */
+  .map-wrap {
+    min-height: calc(45vh + 12px);
   }
 
-  /* Icons and numbers only on a phone; the words stay for screen readers and tooltips. */
-  .topbar .hud-label {
+  .action-tray .active-producer {
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--mat-card);
+    border: 1px solid var(--ink-a35);
+    border-radius: var(--r-card);
+    box-shadow: var(--inset-hi), var(--e2);
+  }
+
+  .action-tray .producer-cameo {
+    --cameo: 36px;
+  }
+
+  .action-tray .active-producer-header strong {
+    font-size: var(--fs-body);
+  }
+
+  .action-tray .ledger-chip {
+    height: 28px;
+  }
+
+  .action-tray .ledger-value {
+    font-size: var(--fs-body);
+  }
+
+  .action-tray .active-producer {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "who ledger pips";
+  }
+
+  .action-tray .active-producer-header strong {
     position: absolute;
     width: 1px;
     height: 1px;
     overflow: hidden;
     clip: rect(0 0 0 0);
-    white-space: nowrap;
   }
 
-  .topbar button {
-    padding: 6px 10px;
-    min-height: 40px;
+  .action-tray .ledger {
+    flex-wrap: nowrap;
+    gap: var(--sp-1);
   }
 
-  /* A slimmer companion: a small face and at most two lines. */
-  .cath-companion {
-    padding: 4px 10px;
-    gap: 8px;
+  /* ROADMAP 57: the map is the hero on a phone, so the action list peeks at about two keys. */
+  .action-tray .actions {
+    max-height: 112px;
+    overflow-y: auto;
+    padding: 2px 2px 4px;
+    margin: -2px -2px 0;
+    scroll-padding-block: 4px;
   }
 
-  .cath-companion .cath-art svg {
-    width: 34px;
-    height: 34px;
+  .market-board .board-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .board-cell {
+    padding: 7px var(--sp-2) 8px;
+    gap: 6px;
+  }
+
+  .board-head {
+    grid-template-areas: "icon num";
+    column-gap: 5px;
+  }
+
+  .board-head > svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .cath-companion .cameo {
+    --cameo: 40px;
   }
 
   .cath-companion-line {
-    font-size: 13px;
-    line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    padding-block: 6px;
+    font-size: var(--fs-small);
   }
 
-  /* The three enemy slots always fit side by side. */
-  .plan-strip-item {
-    min-width: 0;
+  .plan-strip {
+    gap: var(--sp-2);
   }
 
   .plan-strip-item > button:first-child {
-    min-width: 0;
-    font-size: 12px;
-    padding: 6px 4px 6px 22px;
+    padding: 14px 6px 8px 8px;
+    min-height: 62px;
   }
 
-  /* The map is the table: full width, on the same tabletop as desktop. */
-  .map-wrap {
-    padding: 6px;
-    border-radius: 20px;
-    background: radial-gradient(ellipse 80% 70% at 50% 45%, var(--surface) 0%, var(--paper-2) 100%);
-    box-shadow: inset 0 1px 10px color-mix(in srgb, var(--ink) 8%, transparent);
-  }
-
-  /* The map takes the space left between the plan strip and the action tray, whole, letterboxed by its
-     own viewBox, instead of spilling below the fold. */
-  .map-wrap {
-    flex: 1 1 0;
-    min-height: calc(45vh + 6px);
-    padding: 2px;
-  }
-
-  /* ROADMAP 57: the map is the hero on a phone, so the action list peeks at about two rows. */
-  .action-tray .actions {
-    max-height: 92px;
-  }
-
-  .map-legend {
-    flex: none;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    white-space: nowrap;
-    gap: 4px 10px;
+  .plan-strip-headline {
+    font-size: var(--fs-small);
   }
 
   .region-name {
@@ -185,33 +875,360 @@
   .sold-text {
     font-size: 4.1px;
   }
+}
 
-  .map {
+/* A phone on its side (844x390): the map fills the left, tomorrow's papers and the hand sit on the right,
+   and a tutorial note is pinned to the tabletop's corner. */
+@media (max-width: 1023.98px) and (orientation: landscape) and (max-height: 600px) {
+  .game {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 46%);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "board aside"
+      "map clips"
+      "map tray";
+    column-gap: var(--sp-3);
+    row-gap: var(--sp-2);
     max-width: none;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
-    filter: drop-shadow(0 8px 12px color-mix(in srgb, var(--ink) 14%, transparent));
+    padding: var(--sp-2) max(var(--sp-3), var(--safe-r)) 0 max(var(--sp-3), var(--safe-l));
   }
 
-  /* A compact producer bar: portrait and name, resources and actions left wrap onto one or two lines. */
-  .action-tray .active-producer {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: 14px;
-    row-gap: 2px;
-    padding: 6px 10px;
-    font-size: 14px;
+  .game-scroll {
+    display: contents;
   }
 
-  .action-tray .active-producer-header svg {
-    width: 34px;
-    height: 41px;
+  .market-board { grid-area: board; }
+  .cath-companion { grid-area: aside; }
+  .plan-strip { grid-area: clips; padding-top: 6px; }
+  .map-wrap { grid-area: map; min-height: 0; margin-bottom: var(--sp-2); }
+
+  .tutorial-prompt {
+    grid-area: map;
+    z-index: var(--z-map-fx);
+    align-self: start;
+    justify-self: start;
+    max-width: calc(100% - 64px);
+    margin: var(--sp-2) 0 0 var(--sp-2);
+    rotate: -.6deg;
+  }
+
+  .action-tray {
+    grid-area: tray;
+    min-height: 0;
+  }
+
+  .action-tray .actions {
+    flex: 1 1 auto;
+    max-height: none;
+    min-height: 48px;
+  }
+
+  .controls {
+    margin: 0 calc(-1 * max(var(--sp-3), var(--safe-r))) 0 0;
+    padding-left: var(--sp-2);
+    border-radius: var(--r-card) 0 0 0;
+  }
+
+  .plan-strip-item > button:first-child {
+    min-height: 54px;
+    padding-top: 13px;
+  }
+
+  .cath-companion-line {
+    padding-block: 4px;
+    line-height: 1.25;
+  }
+
+  .controls > button {
+    min-height: 46px;
+  }
+
+  .rail-tab svg {
+    width: 22px;
+    height: 22px;
   }
 }
 
-/* ---- AAA UI M4: the table sits on paper; the side columns are frames with no outer box ---- */
-.game-layout {
-  background: var(--mat-paper);
+/* ---- desktop: three columns, no page scroll at 1280x800 (SPEC 10.3) ---- */
+@media (min-width: 1024px) {
+  .game-layout {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr) 320px;
+    gap: var(--sp-5);
+    max-width: 1680px;
+    height: 100vh;
+    margin: 0 auto;
+    padding: var(--sp-3) var(--sp-5);
+  }
+
+  .desktop-col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    min-height: 0;
+    overflow-y: auto;
+    padding: 2px 6px 12px;
+    margin: -2px -6px 0;
+  }
+
+  .game {
+    max-width: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    gap: 10px;
+    overflow-y: auto;
+  }
+
+  .game-scroll,
+  .action-tray {
+    display: contents;
+  }
+
+  .mobile-only {
+    display: none;
+  }
+
+  /* one line for Cath on the table, two at most */
+  .cath-companion-line {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .map-wrap {
+    padding: 2px;
+  }
+
+  .plan-strip {
+    padding-top: 6px;
+  }
+
+  .plan-strip-item > button:first-child {
+    min-height: 54px;
+    padding-top: 12px;
+    padding-bottom: 7px;
+  }
+
+  .board-cell {
+    padding-block: 7px 8px;
+  }
+
+  /* Left column: Producer and Farm keep their natural size; Actions absorbs the rest and scrolls. */
+  .desktop-col-left > .frame {
+    flex: none;
+  }
+
+  .desktop-col-left > .actions-sheet {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 120px;
+  }
+
+  .actions-sheet .actions {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    margin: -4px -6px 0;
+    padding: 4px 6px 8px;
+  }
+
+  .actions-sheet .actions .action-item > button:first-child {
+    min-height: 44px;
+  }
+
+  .actions-sheet .controls {
+    margin: var(--sp-3) 0 0;
+    padding: var(--sp-3) 0 0;
+    background: none;
+    box-shadow: inset 0 1px 0 var(--ink-a15);
+  }
+
+  .actions-sheet .rail-undo {
+    width: 100%;
+    border-radius: var(--r-btn);
+    display: flex;
+    gap: var(--sp-2);
+    justify-content: center;
+  }
+
+  .actions-sheet .rail-undo-text {
+    position: static;
+    width: auto;
+    height: auto;
+    clip: auto;
+  }
+
+  .producer-sheet .active-producer {
+    gap: var(--sp-3);
+  }
+
+  /* Right column: Market, Cath's Plan and Log share the height and scroll inside themselves. */
+  .desktop-col-right > .frame {
+    flex: 0 1 auto;
+    min-height: 96px;
+    overflow-y: auto;
+  }
+
+  .desktop-col .log-sheet {
+    max-height: 240px;
+  }
+
+  /* Farm: a ledger, dense */
+  .farm-sheet h3 {
+    font: 640 var(--fs-body)/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .farm-sheet .farm-column {
+    margin-bottom: var(--sp-2);
+  }
+
+  .farm-production,
+  .farm-empty {
+    font-size: var(--fs-small);
+    margin: 4px 0;
+  }
+
+  .farm-production .tooltip-trigger {
+    display: inline;
+  }
+
+  /* Market and Cath's Plan cards as mini cards: a tag band, the name, a cost coin; Buy beside it */
+  .desktop-col .card-list {
+    gap: var(--sp-2);
+  }
+
+  .desktop-col .card-list-collapsible li.card-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--sp-2);
+    row-gap: 4px;
+    padding: 7px 8px 8px 10px;
+    background: var(--mat-card);
+    border: 1px solid var(--ink-a35);
+    border-top: 4px solid var(--frame);
+    border-radius: var(--r-sm);
+    box-shadow: var(--inset-hi), var(--e2);
+  }
+
+  .desktop-col .card-list-collapsible li.card-row > details {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    min-width: 0;
+  }
+
+  .desktop-col .card-list-collapsible li.card-row > .card-cost-row {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    min-width: 0;
+  }
+
+  .desktop-col .card-list-collapsible li.card-row > button {
+    grid-column: 2;
+    grid-row: 2;
+    min-height: 32px;
+    padding: 4px var(--sp-3);
+    --lip: 2px;
+  }
+
+  .desktop-col .card-list-collapsible li.card-row > .card-why-not {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin: 0;
+  }
+
+  .desktop-col .card-list-collapsible summary {
+    font-size: var(--fs-small);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  .desktop-col .card-list-collapsible summary::marker {
+    font-size: .8em;
+  }
+
+  .desktop-col .card-text {
+    margin: 4px 0 2px;
+    font-size: var(--fs-small);
+  }
+
+  .desktop-col .card-flavor {
+    margin: 2px 0;
+    font-size: var(--fs-small);
+  }
+
+  .desktop-col .card-plan {
+    --frame: var(--p-mara);
+    background: var(--mat-ledger);
+    border-top-width: 1px;
+    border-left: 4px solid var(--p-mara);
+  }
+
+  .desktop-col .card-list .card-empty {
+    min-height: 44px;
+    background: none;
+    border: 1.5px dashed var(--ink-a35);
+    border-radius: var(--r-sm);
+    box-shadow: none;
+  }
+}
+
+/* A taller desktop gives Cath a little more room. */
+@media (min-width: 1024px) and (max-height: 860px) {
+  .cath-companion .cameo {
+    --cameo: 44px;
+  }
+}
+
+/* the price coin on the Market and Cath's Plan mini cards */
+.coin {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 4px;
+  border-radius: var(--r-pill);
+  background: var(--wheat);
+  box-shadow: inset 0 0 0 2px var(--wheat-hi), 0 0 0 1.5px var(--ink-on-fixed-fill), 0 2px 0 var(--ink-a35);
+  color: var(--ink-on-fixed-fill);
+  font: 800 var(--fs-small)/1 var(--font-num);
+}
+
+.coin--goodwill {
+  display: inline-flex;
+  gap: 2px;
+  padding: 0 7px 0 4px;
+  background: var(--wheat-hi);
+}
+
+/* ---- reduced motion: fades only ---- */
+@media (prefers-reduced-motion: reduce) {
+  .cath-companion-line,
+  .sheet,
+  .map-key .map-legend {
+    animation: ui-fade 160ms ease-out both;
+  }
+
+  .cath-companion .cameo.nod-a,
+  .cath-companion .cameo.nod-b {
+    animation: none;
+  }
+
+  .plan-strip-item,
+  .pip {
+    transition: none;
+  }
+}
+
+html.no-animations .cath-companion-line,
+html.no-animations .sheet,
+html.no-animations .map-key .map-legend,
+html.no-animations .cath-companion .cameo {
+  animation: none;
 }

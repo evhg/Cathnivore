@@ -28,6 +28,22 @@ export const CONTRAST_PAIRS: Record<string, ContrastPair[]> = {
   cathnivore: [
     { label: 'focus ring on paper', fg: '#1F5F99', bg: '#F4EDE1', ui: true },
     { label: 'dark: focus ring on paper', fg: '#8EC5F5', bg: '#1E1A17', ui: true },
+    // AAA UI M4, the table (src/styles/tokens.css "Market Day Press")
+    { label: 'ink on card stock foot', fg: '#2B2320', bg: '#F6F0E4' },
+    { label: 'ink-muted on card stock foot (board labels)', fg: '#6E625A', bg: '#F6F0E4' },
+    { label: 'soil on card stock (frame titles)', fg: '#6B4A2B', bg: '#FBF8F1' },
+    { label: 'newsprint-ink on newsprint (clippings)', fg: '#2B2320', bg: '#EFEAE0' },
+    { label: 'gain-ink on surface (ledger +2)', fg: '#466A2B', bg: '#FBF8F1' },
+    { label: 'short-ink on paper-2 (why-not chips)', fg: '#9E4430', bg: '#EAE0CF' },
+    { label: 'wheat-ink on paper', fg: '#7A5B14', bg: '#F4EDE1' },
+    { label: 'ink on wheat (coins)', fg: '#2B2320', bg: '#D9B45A' },
+    { label: 'clay-deep on card (Last 3 label)', fg: '#9E4430', bg: '#F6F0E4' },
+    { label: 'dark: ink on surface', fg: '#F1E9DC', bg: '#332C27' },
+    { label: 'dark: ink-muted on card foot', fg: '#B8AC9F', bg: '#2D2722' },
+    { label: 'dark: soil on surface (frame titles)', fg: '#D9B98A', bg: '#332C27' },
+    { label: 'dark: gain-ink on surface', fg: '#A5C982', bg: '#332C27' },
+    { label: 'dark: short-ink on paper-2', fg: '#E8957F', bg: '#2A2420' },
+    { label: 'dark: newsprint-ink on newsprint', fg: '#2B2320', bg: '#EFEAE0' },
   ],
   runnel: [
     { label: 'ink on surface', fg: '#2B2320', bg: '#FBF8F1' },

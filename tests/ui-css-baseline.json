@@ -34,11 +34,11 @@
     "raw-colour": 3
   },
   "src/styles/global.css": {
-    "px-font-size": 49,
-    "raw-colour": 48
+    "px-font-size": 39,
+    "raw-colour": 47
   },
   "src/styles/table.css": {
-    "px-font-size": 9
+    "px-font-size": 3
   },
   "src/styles/title.css": {
     "px-font-size": 5

@@ -109,7 +109,8 @@ export default function MarketSheet({
                     forbids a focusable Tooltip button inside <summary> itself. */}
                 <div className="card-cost-row">
                   <Tooltip term="Marks">
-                    <MarksIcon /> {card.cost} Marks
+                    <span className="coin num">{card.cost}</span>
+                    <span className="visually-hidden"> Marks</span>
                   </Tooltip>
                 </div>
                 {canBuy(id) ? (

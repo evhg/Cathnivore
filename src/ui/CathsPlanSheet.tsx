@@ -103,7 +103,11 @@ export default function CathsPlanSheet({
                 {/* Sibling of <details>, not a descendant — see MarketSheet.tsx for why. */}
                 <div className="card-cost-row">
                   <Tooltip term="Goodwill">
-                    <GoodwillIcon /> {card.cost} Goodwill
+                    <span className="coin coin--goodwill num">
+                      <GoodwillIcon size={14} />
+                      {card.cost}
+                    </span>
+                    <span className="visually-hidden"> Goodwill</span>
                   </Tooltip>
                 </div>
                 {canPlay(id) ? (

@@ -75,6 +75,8 @@ test('the map legend explains Outlet/Buyout/Doubt on tap', async ({ page }) => {
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
+  // AAA UI M4: the legend folds into the "i" map key at the map's corner (aaa-ui.md, Cathnivore table).
+  await page.getByLabel('Map key').click()
   const outletTrigger = page.locator('.map-legend-item', { hasText: 'Outlet' }).locator('.tooltip-trigger-button')
   await expect(outletTrigger).toBeVisible()
   await outletTrigger.dispatchEvent('click')

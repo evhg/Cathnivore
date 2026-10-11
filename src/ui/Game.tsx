@@ -34,8 +34,6 @@ import { CATH_REACTION_EXPRESSION, cathLine, cathLineForRegion, type CathReactio
 import type { CathExpression } from '../../shared/cath/cath'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../content/endLines'
 import {
-  ActionsLeftIcon,
-  GaugeRing,
   GoodwillIcon,
   LostLandIcon,
   MarksIcon,
@@ -55,6 +53,7 @@ import {
   SupplyIcon,
 } from './icons/ActionIcons'
 import { RegionTypeIcon } from './icons/RegionTypeIcon'
+import { FarmIcon, LogIcon, MarketIcon, MenuIcon, PlanIcon, UndoIcon } from './icons/RailIcons'
 import { romanStage } from './romanStage'
 import { CandorLogo, HollowellLogo } from './icons/EnemyLogos'
 import type { Action, GameEvent, GameState, ProducerId, RegionId, RegionType, ResourceKind } from '../engine/types'
@@ -240,6 +239,36 @@ function ActionCostChip({ cost }: { cost: { resource: ResourceKind; amount: numb
   )
 }
 
+// AAA UI M4 (aaa-ui-specs.md "cathnivore" 4.7): a segmented seed-packet meter. Decorative: the number
+// beside it is the readable value. The newest lit segment pops once when it changes.
+function Meter({ value, max, variant }: { value: number; max: number; variant?: 'danger' | 'wheat' | 'plastic' }) {
+  const n = Math.max(1, max)
+  const lit = Math.max(0, Math.min(n, value))
+  return (
+    <span className={variant ? `meter meter--${variant}` : 'meter'} aria-hidden="true">
+      {Array.from({ length: n }, (_, i) => (
+        <i key={i} className={i < lit ? (i === lit - 1 ? 'on last' : 'on') : undefined} />
+      ))}
+    </span>
+  )
+}
+
+// AAA UI M4 4.9 "Ledger chips": a resource on the active producer's ledger, icon + count, with this
+// round's income as a small "+2" rather than "(2/round)".
+function LedgerChip({ term, Icon, value, income, tick }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number }) {
+  return (
+    <Tooltip term={term}>
+      <span className="ledger-chip">
+        <Icon size={18} />
+        <span key={tick} className={tick > 0 ? 'num ledger-value hud-tick' : 'num ledger-value'}>{value}</span>
+        <span className="visually-hidden"> {term}, </span>
+        <span className="ledger-income num" aria-hidden="true">+{income}</span>
+        <span className="visually-hidden">plus {income} a round</span>
+      </span>
+    </Tooltip>
+  )
+}
+
 function ActionButton({ action, state, Icon, onClick }: { action: Action; state: GameState; Icon?: typeof OpenStallIcon; onClick(): void }) {
   const cost = actionCost(action, state)
   const { text, aria } = chipLabel(actionLabel(action, state), !!cost)
@@ -290,6 +319,10 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   const trustTick = useHudTick(state.publicTrust)
   const lostLandTick = useHudTick(state.lostLandPool)
   const riftTick = useHudTick(state.rift)
+  const activeResources = state.producers[state.activeProducer]?.resources
+  const produceTick = useHudTick(`${state.activeProducer}:${activeResources?.produce}`)
+  const marksTick = useHudTick(`${state.activeProducer}:${activeResources?.marks}`)
+  const goodwillTick = useHudTick(`${state.activeProducer}:${activeResources?.goodwill}`)
   const cathLogSeenRef = useRef(0)
   const [cathReaction, setCathReaction] = useState<{ expression: CathExpression; line: string }>(() => ({
     expression: CATH_REACTION_EXPRESSION.greeting,
@@ -1101,43 +1134,62 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
       ) : (
         <section className="active-producer">
           <span className="active-producer-header">
-            <Portrait character={state.activeProducer} size={48} />
+            <span className={`producer-cameo pc-${state.activeProducer}`}>
+              <Portrait character={state.activeProducer} size={48} />
+            </span>
             <strong>{PRODUCERS[state.activeProducer].name}</strong>
           </span>
-          <span>
-            <Tooltip term="Produce">
-              <ProduceIcon /> {active.resources.produce} ({active.production.produce}/round)
-            </Tooltip>{' '}
-            <Tooltip term="Marks">
-              <MarksIcon /> {active.resources.marks} ({active.production.marks}/round)
-            </Tooltip>{' '}
-            <Tooltip term="Goodwill">
-              <GoodwillIcon /> {active.resources.goodwill} ({active.production.goodwill}/round)
-            </Tooltip>
+          <span className="ledger">
+            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} />
+            <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} />
+            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} />
           </span>
-          <span>
-            Actions left: <ActionsLeftIcon total={ACTIONS_PER_ROUND} left={state.actionsLeft} />
+          <span className="pips" role="img" aria-label={`Actions left: ${state.actionsLeft} of ${ACTIONS_PER_ROUND}`}>
+            {Array.from({ length: ACTIONS_PER_ROUND }, (_, i) => (
+              <i key={i} className={i < state.actionsLeft ? 'pip on' : 'pip'} />
+            ))}
           </span>
         </section>
       )}
     </>
   )
+  // AAA UI M4 4.3: on a phone the controls are a tab rail on a kraft strip, Undo as a round key on its
+  // left; on desktop only Undo shows, at the foot of the Actions frame. The visible words stay the
+  // accessible names ("Undo", "Farm", "Market", "Cath's Plan", "Log").
   const controls = (
     <footer className="controls">
       <button
+        className="rail-undo"
         disabled={!canUndo(undoStackRef.current) || pendingEnemyTurn.length > 0 || waitingOnAi}
         onClick={undo}
       >
-        Undo
+        <UndoIcon size={22} />
+        <span className="rail-undo-text">Undo</span>
       </button>
-      <button className="mobile-only" onClick={() => setShowFarm(true)}>Farm</button>
+      <button className={showFarm ? 'mobile-only rail-tab is-open' : 'mobile-only rail-tab'} onClick={() => setShowFarm(true)}>
+        <FarmIcon />
+        <span>Farm</span>
+      </button>
       {rules.improvements && (
-        <button className="mobile-only" onClick={() => setShowMarket(true)}>Market</button>
+        <button className={showMarket ? 'mobile-only rail-tab is-open' : 'mobile-only rail-tab'} onClick={() => setShowMarket(true)}>
+          <MarketIcon />
+          <span>Market</span>
+        </button>
       )}
       {rules.schemes && (
-        <button className="mobile-only" onClick={() => setShowPlan(true)}>Cath&rsquo;s Plan</button>
+        <button
+          className={showPlan ? 'mobile-only rail-tab is-open' : 'mobile-only rail-tab'}
+          aria-label={'Cath\u2019s Plan'}
+          onClick={() => setShowPlan(true)}
+        >
+          <PlanIcon />
+          <span aria-hidden="true">Plan</span>
+        </button>
       )}
-      <button className="mobile-only" onClick={() => setShowLog(true)}>Log</button>
+      <button className={showLog ? 'mobile-only rail-tab is-open' : 'mobile-only rail-tab'} onClick={() => setShowLog(true)}>
+        <LogIcon />
+        <span>Log</span>
+      </button>
     </footer>
   )
 
@@ -1195,53 +1247,55 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           desktop (`@media (max-width: 1023.98px)` below) makes both wrappers a no-op there — every element
           still flows directly in `.game`'s own column exactly as before this session. */}
       <div className="game-scroll">
-      <header className="topbar">
-        <span>
-          <span key={roundTick} className={roundTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-            <span className="hud-icon-ring">
-              <RoundIcon />
-              <GaugeRing value={state.round} max={state.round + state.pressureDeck.length} />
-            </span>{' '}
-            <span className="hud-label">Round </span><span className="num">{state.round}/{state.round + state.pressureDeck.length}</span>
+      {/* AAA UI M4 (aaa-ui-specs.md "cathnivore" 4.9): the Market Board, one card-stock strip in four
+          cells (icon, tabular figure, segmented meter) plus the Menu key. The words stay inside each
+          cell's tooltip trigger, visible from landscape up and read by screen readers on a phone. */}
+      <header className="market-board" aria-label="Market board">
+        <div className="board-cell board-round">
+          <span className="board-head">
+            <RoundIcon />
+            <span className="board-label">Round</span>
+            <span key={roundTick} className={roundTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>
+              {state.round}
+              <span className="board-of">/{state.round + state.pressureDeck.length}</span>
+            </span>
           </span>
-        </span>
-        <span>
+          <Meter value={state.round} max={state.round + state.pressureDeck.length} variant="wheat" />
+        </div>
+        <div className="board-cell">
           <Tooltip term="Public Trust">
-            <span key={trustTick} className={trustTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-              <span className="hud-icon-ring">
-                <PublicTrustIcon />
-                <GaugeRing value={state.publicTrust} max={TRUST_MAX} />
-              </span>{' '}
-              <span className="hud-label">Trust </span><span className="num">{state.publicTrust}</span>
+            <span className="board-head">
+              <PublicTrustIcon />
+              <span className="board-label">Trust</span>
+              <span key={trustTick} className={trustTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.publicTrust}</span>
             </span>
           </Tooltip>
-        </span>
-        <span>
+          <Meter value={state.publicTrust} max={TRUST_MAX} />
+        </div>
+        <div className={state.lostLandPool <= 3 ? 'board-cell board-cell--danger' : 'board-cell'}>
           <Tooltip term="Lost Land">
-            <span key={lostLandTick} className={lostLandTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-              <span className="hud-icon-ring">
-                <LostLandIcon />
-                <GaugeRing value={state.lostLandPool} max={lostLandStartingPool(state)} />
-              </span>{' '}
-              <span className="hud-label">Lost Land left </span><span className="num">{state.lostLandPool}</span>
+            <span className="board-head">
+              <LostLandIcon />
+              <span className="board-label">{state.lostLandPool <= 3 ? `Last ${state.lostLandPool}` : 'Lost Land'}</span>
+              <span key={lostLandTick} className={lostLandTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.lostLandPool}</span>
             </span>
           </Tooltip>
-        </span>
-        <span>
+          <Meter value={state.lostLandPool} max={lostLandStartingPool(state)} variant={state.lostLandPool <= 3 ? 'danger' : undefined} />
+        </div>
+        <div className="board-cell">
           <Tooltip term="Rift">
-            <span key={riftTick} className={riftTick > 0 ? 'hud-value hud-tick' : 'hud-value'}>
-              <span className="hud-icon-ring">
-                <RiftIcon />
-                <GaugeRing value={state.rift} max={RIFT_MAX} />
-              </span>{' '}
-              <span className="hud-label">Rift </span><span className="num">{state.rift}</span>
+            <span className="board-head">
+              <RiftIcon />
+              <span className="board-label">Rift</span>
+              <span key={riftTick} className={riftTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.rift}</span>
             </span>
           </Tooltip>
-        </span>
-        {/* SPEC 10.2: "Top bar (fixed): round x/10, Public Trust, Lost Land remaining, Rift and a menu
-            button" — the menu button belongs in the fixed top bar, not the footer, so it stays reachable
-            without scrolling past the bottom action panel. */}
-        <button onClick={onExit}>Menu</button>
+          <Meter value={state.rift} max={RIFT_MAX} variant="plastic" />
+        </div>
+        {/* SPEC 10.2: the menu button belongs in the fixed top bar. */}
+        <button className="btn-icon board-menu" onClick={onExit} aria-label="Menu">
+          <MenuIcon size={22} />
+        </button>
       </header>
 
       <CathCompanion expression={cathReaction.expression} line={cathReaction.line} />
@@ -1272,78 +1326,82 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           grows to fill the leftover width; `.map-legend` keeps its own natural size. Phone keeps the original
           two-row stack (`.plan-legend-row` is a plain block there, see global.css) since the narrower column
           has no spare width to share. */}
-      <div className="plan-legend-row">
-        <section className="plan-strip">
-          {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
-            const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
-            const card = state[slot]
-            return (
-              <span key={slot} className="plan-strip-item">
-                <button
-                  type="button"
-                  aria-pressed={planHighlightSlot === slot}
-                  className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
-                  onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
-                >
-                  {/* ROADMAP 10: the enemy's plan strip becomes agenda-card-like — STYLE.md 8's Agenda
-                      cards put "the faction logo top-left"; both corporations act through every slot
-                      (SPEC 4.7's Scout/Expand/Squeeze all place or count Hollowell pieces, several also
-                      count or add Candor Doubt), so both logos brand every card rather than picking one. */}
-                  <span className="plan-strip-card-brand">
-                    <HollowellLogo size={12} />
-                    <CandorLogo size={12} />
+      <section className="plan-strip" aria-label="Tomorrow's papers">
+        {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
+          const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
+          const card = state[slot]
+          return (
+            <span key={slot} className="plan-strip-item">
+              <button
+                type="button"
+                aria-pressed={planHighlightSlot === slot}
+                className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
+                onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
+              >
+                {/* ROADMAP 10: the enemy's plan strip becomes agenda-card-like — STYLE.md 8's Agenda
+                    cards put "the faction logo top-left"; both corporations act through every slot
+                    (SPEC 4.7's Scout/Expand/Squeeze all place or count Hollowell pieces, several also
+                    count or add Candor Doubt), so both logos brand every card rather than picking one. */}
+                <span className="plan-strip-card-brand">
+                  <HollowellLogo size={12} />
+                  <CandorLogo size={12} />
+                </span>
+                <span className="plan-strip-headline">{slotLabel}</span>
+                <span className="visually-hidden">: </span>
+                <span className="plan-strip-effect">{pressureLabel(state[slot])}</span>
+                {card && (
+                  <span className="plan-strip-card-meta">
+                    <span className="plan-strip-stage">{romanStage(card.stage)}</span>
+                    {pressureIconTypes(card).map((type) => (
+                      <RegionTypeIcon key={type} type={type} size={13} />
+                    ))}
                   </span>
-                  <span className="plan-strip-headline">{slotLabel}</span>: <span className="plan-strip-effect">{pressureLabel(state[slot])}</span>
-                  {card && (
-                    <span className="plan-strip-card-meta">
-                      <span className="plan-strip-stage">{romanStage(card.stage)}</span>
-                      {pressureIconTypes(card).map((type) => (
-                        <RegionTypeIcon key={type} type={type} size={13} />
-                      ))}
-                    </span>
-                  )}
-                </button>
-                {/* A separate trigger, not nested inside the button above: that button already has its own
-                    tap meaning (toggle the map highlight), so a tooltip needs its own affordance rather than
-                    fighting it for the same tap (SPEC 10.5, alongside SPEC 10.2's highlight behaviour). */}
-                <Tooltip term={slotLabel} label={`What is ${slotLabel}?`}>
-                  ?
-                </Tooltip>
-              </span>
-            )
-          })}
-        </section>
-
-        {/* SPEC 10.5: the map's own pieces (Outlet/Buyout/Doubt) are the last piece of the tooltip surface —
-            a compact key, not one trigger per drawn piece (a region can hold several of the same piece, and
-            an in-SVG popover would fight the map's own transforms), same "?"-next-to-the-thing pattern as
-            the topbar and plan-strip above. */}
-        <section className="map-legend">
-          {(
-            [
-              { term: 'Outlet', icon: <Outlet /> },
-              { term: 'Buyout', icon: <Buyout /> },
-              { term: 'Doubt', icon: <Doubt /> },
-              { term: 'Co-op marker', icon: <CoopMarkerIcon /> },
-            ] as const
-          ).map(({ term, icon }) => (
-            <span key={term} className="map-legend-item">
-              <svg className="map-legend-icon" viewBox="0 0 12 14" width={16} height={18} aria-hidden="true">
-                {icon}
-              </svg>
-              <Tooltip term={term}>{term}</Tooltip>
-              {term === 'Co-op marker' && (
-                <>
-                  {' · '}
-                  <Tooltip term="Liberated">Liberated</Tooltip>
-                </>
-              )}
+                )}
+              </button>
+              {/* A separate trigger, not nested inside the button above: that button already has its own
+                  tap meaning (toggle the map highlight), so a tooltip needs its own affordance rather than
+                  fighting it for the same tap (SPEC 10.5, alongside SPEC 10.2's highlight behaviour). */}
+              <Tooltip term={slotLabel} label={`What is ${slotLabel}?`}>
+                ?
+              </Tooltip>
             </span>
-          ))}
-        </section>
-      </div>
+          )
+        })}
+      </section>
 
       <section className="map-wrap">
+        {/* AAA UI M4: the map key (Outlet, Buyout, Doubt, Co-op marker, Liberated) folds into an "i" tag at
+            the map's corner instead of a row of its own, which gives the map the height. Each term keeps
+            its own SPEC 10.5 tooltip inside the key. */}
+        <details className="map-key">
+          <summary aria-label="Map key">
+            <span aria-hidden="true">i</span>
+          </summary>
+          <section className="map-legend">
+            <span className="map-key-title label">Map key</span>
+            {(
+              [
+                { term: 'Outlet', icon: <Outlet /> },
+                { term: 'Buyout', icon: <Buyout /> },
+                { term: 'Doubt', icon: <Doubt /> },
+                { term: 'Co-op marker', icon: <CoopMarkerIcon /> },
+              ] as const
+            ).map(({ term, icon }) => (
+              <span key={term} className="map-legend-item">
+                <svg className="map-legend-icon" viewBox="0 0 12 14" width={16} height={18} aria-hidden="true">
+                  {icon}
+                </svg>
+                <Tooltip term={term}>{term}</Tooltip>
+                {term === 'Co-op marker' && (
+                  <>
+                    {' · '}
+                    <Tooltip term="Liberated">Liberated</Tooltip>
+                  </>
+                )}
+              </span>
+            ))}
+          </section>
+        </details>
         <RegionMap
           state={state}
           highlight={

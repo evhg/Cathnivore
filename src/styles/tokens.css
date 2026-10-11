@@ -74,6 +74,9 @@
   --hollowell-lo: #E5620A;
   --candor-lo: #23A6BF;
   --btn-edge: #2B2320;
+  --gain-ink: #466A2B;
+  --short-ink: #9E4430;
+  --pip-on: #466A2B;
   --ink-a08: rgb(43 35 32 / .08);
   --ink-a15: rgb(43 35 32 / .15);
   --ink-a35: rgb(43 35 32 / .35);
@@ -160,8 +163,10 @@
     --kraft: #5A4631;
     --kraft-lo: #4C3B29;
     --btn-edge: rgb(241 233 220 / .42);
-    --btn-edge: rgb(241 233 220 / .42);
-  --ink-a08: rgb(241 233 220 / .06);
+    --gain-ink: #A5C982;
+    --short-ink: #E8957F;
+    --pip-on: #7FA35A;
+    --ink-a08: rgb(241 233 220 / .06);
     --ink-a15: rgb(241 233 220 / .12);
     --ink-a35: rgb(241 233 220 / .28);
     --ink-a60: rgb(241 233 220 / .55);
@@ -198,6 +203,10 @@
   --wheat-ink: #E5C46F;
   --kraft: #5A4631;
   --kraft-lo: #4C3B29;
+  --btn-edge: rgb(241 233 220 / .42);
+  --gain-ink: #A5C982;
+  --short-ink: #E8957F;
+  --pip-on: #7FA35A;
   --ink-a08: rgb(241 233 220 / .06);
   --ink-a15: rgb(241 233 220 / .12);
   --ink-a35: rgb(241 233 220 / .28);
