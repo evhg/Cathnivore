@@ -6,6 +6,8 @@ Sessions: handle every note under "Open". When a note is done (or turned into a 
 
 ## Open
 
+- 2026-10-11 (owner chat): **"I noticed fonts and css is especially rudimentary in your designs. Take it to the next level of AAA games."** This became ROADMAP Phase U (`docs/design/aaa-ui.md`): its own type and material identity per game, a shared foundation and 14 milestones. (Keep open until Phase U is done.)
+
 - 2026-10-09 (owner chat, answers to five questions): **New direction. It overrides older priorities and the screenshot-critique planning loop.**
   1. **Game split:** about 70% of sessions on CATHODE; the other 30% go to Hedgerow depth. Cathnivore and Runnel get bug fixes only.
   2. **CATHODE next: real districts.** The clinic (act 2, Vane), Hollowell Plaza (act 3, Pell), the Board Tower (act 4) and the Hollow Vault (act 5) become separate walkable places, each with its own look, lighting, music variant, enemy type and boss arena. Their story jobs move into them. Today they are just strips of the one street. ROADMAP Phase D.

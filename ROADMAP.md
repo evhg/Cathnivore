@@ -13,6 +13,22 @@ Every visual item is done only when:
 
 These two phases come before every older unfinished item below. About 70% of sessions take the first open **D** item, and about 30% take the first open **H** item; when in doubt, do D. Small polish is batched into at most one session a day, not planned as separate items. Release only when a milestone (one whole item below) is finished.
 
+**Phase U: AAA UI** (owner, 2026-10-11: "fonts and css is especially rudimentary … take it to the next level of AAA games"). The spec is `docs/design/aaa-ui.md`. Build the milestones in order and release each one when it passes `npm run gates` (font budget included). This is a standing owner request: sessions take Phase U items alongside D and H, about a third each, until U is done.
+- U1. [ ] **M1 Shared foundation and fonts (every page, no layout changes)**
+- U2. [ ] **M2 CATHODE component layer and HUD**
+- U3. [ ] **M3 Hedgerow field: kit, HUD and upgrade sheet**
+- U4. [ ] **M4 Cathnivore table**
+- U5. [ ] **M5 Landing hero, poster cards and key art**
+- U6. [ ] **M6 Runnel puzzle and win sheet**
+- U7. [ ] **M7 Cathnivore story scene and end screen**
+- U8. [ ] **M8 CATHODE front door: gate, title and class pick**
+- U9. [ ] **M9 CATHODE dossier and pause**
+- U10. [ ] **M10 Hedgerow map, story and end screen**
+- U11. [ ] **M11 Cathnivore setup, title, campaign, settings and motion**
+- U12. [ ] **M12 CATHODE rewards and world screens**
+- U13. [ ] **M13 Remaining screens across the portfolio**
+- U14. [ ] **M14 Portfolio polish audit**
+
 **Phase D: CATHODE districts.** Each district is a separate place, loaded on its own and reached by water taxi or the map. It gets its own geometry, materials, lighting, fog colour, music variant, one new enemy type and a boss arena, and the act's story jobs and boss move into it. Build each item in slices and release once at the end.
 - D1. [~] **District engine** *(2026-10-09 slice 1: `render/levels/` registry with `buildDistrict`, `Level.theme` (fog, light volume, probe, bounds, indoor), `?district=clinic` loads a first-pass Clinic corridor; still to do: travel/taxi/map, loading card art, per-district saves, real clinic art)*: a level registry (`render/levels/`) so `createWorld` builds any district, not just the Drowned Market. Add travel between districts (the water taxi at the extract, and the map on M), a loading card with district art, per-district saves and checkpoints, and per-district light pools and bakes. The Drowned Market keeps working unchanged. Tests cover the registry and travel.
 - D2. [~] **The Candor Clinic (act 2, Dr Vane)** *(2026-10-09: orderlies, healing nurses and Vane's boss fight in the theatre done; still to do: waiting room/morgue/theatre art, flooded morgue, vanelead job inside the clinic)*: an interior. Sterile white tile and glass, green-tinted surgical light, failing fluorescents, a flooded basement morgue, operating theatres behind glass and a waiting room full of debt-tagged patients. New enemy: augmented orderlies (fast, melee, they lunge) and drone nurses. Vane's boss fight is in the main theatre, under the surgical lamps. The vanelead and vaneboss jobs move here.

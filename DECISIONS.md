@@ -394,3 +394,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-11: Board Security kit lives in enemy.ts (bash flag); session.ts `guarded()` applies its HP/plating on top of the riotShield archetype.
 - 2026-10-11: Marked D4 done after the lobby shot; bots buy Crowns when a tier 3 path is finished, so START_K/hpScale were retuned.
 - 2026-10-11: Crown ability tray is a button per crowned tower (not a separate panel); Auto toggle for them waits on M6.
+- 2026-10-11: AAA UI direction (`docs/design/aaa-ui.md`). Each game gets its own self-hosted OFL type system: CATHODE Bodoni Moda, Rajdhani and JetBrains Mono; Hedgerow soft Fraunces and Nunito; Cathnivore Fraunces, Atkinson Next and Figtree; Runnel Fraunces and Outfit; the landing page Fraunces and Instrument. Each page stays under 180 KiB of fonts, enforced in gates. Amends VISION Type and STYLE section 4 in U1.
