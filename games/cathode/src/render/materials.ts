@@ -60,6 +60,9 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.paintTeal = plain("#0f3a3a", 0.4, 0.2);
   m.pipe = plain("#2b2a28", 0.5, 0.8);
   m.chrome = plain("#c8ccd0", 0.12, 1.0, 0.2);
+  m.brass = plain("#b08a3a", 0.25, 0.95, 0.2);
+  m.carpetRed = plain("#8a1424", 0.9, 0, 0.3);
+  m.leaf = plain("#1f4a2a", 0.7, 0, 0.4);
   m.rubber = plain("#0b0b0c", 0.7, 0, 0.4);
   m.cable = plain("#050506", 0.55, 0.1, 0.3, 0.6);
   m.bag = plain("#060708", 0.22, 0.1, 0.4);

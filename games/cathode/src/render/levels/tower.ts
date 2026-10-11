@@ -91,6 +91,27 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
   b.box("glass", 0, 1.6, zS - 0.1, 6, 3.2, 0.08);
   b.box("glowRed", 0, 3.6, zS - 0.05, 1.4, 0.3, 0.05);
 
+  // Lobby dressing: a red runner from the doors to the grand stair, brass trim and uplit columns, potted palms,
+  // benches under the glass and a warm gold wash against the cool strips, so the lobby reads as money.
+  b.boxMinMax("carpetRed", -2.2, 0.004, stair1 + 0.2, 2.2, 0.03, zS - 3, { uv: 2 });
+  for (const s of [-1, 1]) b.boxMinMax("brass", s * 2.2 - 0.05, 0.03, stair1 + 0.2, s * 2.2 + 0.05, 0.07, zS - 3, { uv: 1 });
+  for (const x of [-9, -4.5, 4.5, 9]) for (const z of [44, 32]) {
+    b.box("brass", x, 0.25, z, 1.5, 0.5, 1.5, { collide: "metal" });
+    b.box("brass", x, ceil - 0.4, z, 1.5, 0.3, 1.5);
+    light(V(x, 0.4, z + 1.1), "#ffcf8a", 16, 7, 0, false);
+  }
+  for (const [x, z] of [[-12.4, 48], [12.4, 48], [-12.4, 20], [12.4, 20]] as const) {
+    b.cylinder("brass", V(x, 0, z), V(x, 0.7, z), 0.55, 12);
+    b.shape("leaf", new THREE.SphereGeometry(0.85, 10, 8), V(x, 1.5, z), 0, V(1, 1.3, 1));
+  }
+  for (const z of [40, 34]) for (const s of [-1, 1]) {
+    b.box("brass", s * 6.6, 0.42, z, 1.8, 0.1, 0.7, { collide: "metal" });
+    b.box("blackPaint", s * 6.6, 0.18, z, 1.6, 0.36, 0.5);
+  }
+  b.box("brass", 0, 3.1, 24.62, 7.4, 0.12, 0.1);
+  light(V(0, 2.4, 25.4), "#ffcf8a", 22, 9, 0, false);
+  light(V(0, 4, 8), "#ffcf8a", 20, 12, 0, false);
+
   // Offices: cubicle rows, glowing monitors and the server room behind a glass wall in the east.
   for (let r = 0; r < 4; r++) {
     for (const x of [-10.5, -8, 8]) {
