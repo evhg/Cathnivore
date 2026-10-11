@@ -842,6 +842,8 @@ button {
   list-style: none;
   margin: 0;
   padding: 0 0 4px;
+  /* A scroll row in a column panel shrinks to nothing unless told not to (M4 review). */
+  flex: none;
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
@@ -3217,6 +3219,7 @@ img.act-scene {
 /* Drag-to-place (M4): a tray of towers above the round preview, and the tower following the finger. */
 .tray {
   display: flex;
+  flex: none;
   gap: 6px;
   overflow-x: auto;
   padding: 2px;

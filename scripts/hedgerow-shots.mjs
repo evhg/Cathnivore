@@ -72,11 +72,15 @@ for (const [name, w, h] of [['phone', 844, 390], ['desktop', 1440, 900]]) {
         ['hedgerow', [3, 2, 0]],
       ]
       const placed = []
+      const crows = []
       let i = 0
       for (const [kind, goal] of builds) {
         for (; i < plots.length; i++) {
           const [c, r] = plots[i]
+          // The Scarecrows a few cells apart, so each build reads on its own (in 3D adjacent ones merge into one).
+          if (kind === 'scarecrow' && crows.some(([x, y]) => Math.max(Math.abs(x - c), Math.abs(y - r)) < 3)) continue
           if (!hg.place(g, kind, c, r).ok) continue
+          if (kind === 'scarecrow') crows.push([c, r])
           const t = g.towers[g.towers.length - 1]
           // Main path to 2, the other path, then the main path's tier 3.
           const order = [0, 1, 2].filter((k) => goal[k] > 0).sort((a, b) => goal[b] - goal[a])
@@ -86,11 +90,21 @@ for (const [name, w, h] of [['phone', 844, 390], ['desktop', 1440, 900]]) {
           i++
           break
         }
+        // Plots skipped to space the Scarecrows stay open for the towers after them.
+        if (kind === 'scarecrow') i = 0
       }
       hg.sendWave(g, true)
+      // The panel and Go button as a tap would have left them (no stale "can't answer" warning, no "Go").
+      hg.refresh()
       return placed[0]
     })
-    await page.waitForTimeout(mode === '2d' ? 3500 : 8000)
+    // Shoot with the round in flight: vehicles on the lane and every Scarecrow already knocking layers off.
+    await page.waitForFunction(() => {
+      const g = window.hedgerow.game()
+      const crows = g.towers.filter((t) => t.kind === 'scarecrow')
+      return g.enemies.length > 8 && crows.every((t) => (t.ko ?? 0) > 0)
+    }, null, { timeout: 120000 }).catch(() => {})
+    await page.waitForTimeout(mode === '2d' ? 300 : 1000)
     await page.screenshot({ path: `e2e/screenshots/${name}-hedgerow-paths-${mode}.png` })
     if (mode === '2d' && sel) {
       // The first Scarecrow's sheet: the keyboard cursor walks to its plot, Enter selects it.

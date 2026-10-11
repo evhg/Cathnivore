@@ -472,7 +472,19 @@ function openLevel(lv: Level): void {
 const SANDBOX = new URLSearchParams(location.search).has("sandbox");
 // Sandbox only: a handle for screenshot scripts to set up a field (towers, merges) without clicking.
 if (SANDBOX)
-  (window as unknown as { hedgerow: object }).hedgerow = { game: () => game, place, upgrade, merge, sendWave, cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null };
+  (window as unknown as { hedgerow: object }).hedgerow = {
+    game: () => game,
+    place,
+    upgrade,
+    merge,
+    sendWave,
+    cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
+    // After setting a field up through the hook: redraw the panel and controls as a tap would have.
+    refresh: () => {
+      renderPanel(true);
+      syncControls();
+    },
+  };
 // Sandbox only: `?sandbox=1&level=N` jumps straight into level N (screenshots of each act's biome).
 if (SANDBOX) {
   const jump = Number(new URLSearchParams(location.search).get("level"));
