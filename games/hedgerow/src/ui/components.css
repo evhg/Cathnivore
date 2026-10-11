@@ -41,12 +41,25 @@
 #story-next,
 .pause-card .btn-primary {
   --fill: var(--pasture-deep);
-  --fg: var(--paper-hi);
+  --fg: var(--on-fill);
   --edge: var(--pasture-ink);
+}
+.btn[aria-pressed="true"] {
+  --fill: var(--brass);
+  --fg: var(--oak-ink);
+  --edge: var(--line);
+}
+.btn.btn-quiet[aria-pressed="true"] {
+  background: var(--mat-brass);
+  color: var(--oak-ink);
+  box-shadow: 0 0 0 var(--stroke) var(--line), 0 3px 0 var(--line);
+}
+body:has(#dlg-pause[open]) .paused-note {
+  display: none;
 }
 .btn-danger {
   --fill: var(--clay-deep);
-  --fg: var(--paper-hi);
+  --fg: var(--on-fill);
   --edge: var(--clay-ink);
 }
 .btn.btn-quiet {
@@ -100,7 +113,7 @@
   padding: 0;
   border-radius: 50%;
   border: 3px solid transparent;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   background: var(--mat-oak) padding-box, var(--mat-brass) border-box;
   background-blend-mode: multiply, normal, normal;
   box-shadow: 0 0 0 var(--stroke) var(--line), 0 3px 0 var(--line);
@@ -294,7 +307,7 @@
   padding: 0 10px;
   border-radius: var(--r-pill);
   background: var(--line);
-  color: var(--paper-hi);
+  color: var(--on-fill);
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -326,10 +339,10 @@
   background: var(--mat-oak);
   background-blend-mode: multiply, normal;
   box-shadow: var(--sh-2), var(--bevel);
-  color: var(--paper-hi);
+  color: var(--on-fill);
 }
 .play .hud .icon-btn {
-  color: var(--paper-hi);
+  color: var(--on-fill);
 }
 .hud-title {
   gap: 1px;
@@ -346,7 +359,7 @@
   font-weight: 650;
   font-size: var(--fs-d3);
   line-height: 1.1;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   text-shadow: 0 1px 0 var(--line), 0 2px 0 var(--black-a25);
 }
 
@@ -368,7 +381,7 @@
   border-radius: var(--r-pill);
   background: var(--oak-ink);
   box-shadow: var(--groove), 0 0 0 2px var(--line);
-  color: var(--paper-hi);
+  color: var(--on-fill);
 }
 .chip svg {
   flex: none;
@@ -387,7 +400,7 @@
 .chip-heart svg {
   background: radial-gradient(circle at 35% 30%, var(--goodwill-hi), var(--goodwill) 62%);
   stroke: var(--line);
-  fill: var(--paper-hi);
+  fill: var(--on-fill);
 }
 .chip-coin svg {
   fill: none;
@@ -396,7 +409,7 @@
 .chip-wave svg {
   background: radial-gradient(circle at 35% 30%, var(--pasture-hi), var(--pasture-deep) 65%);
   stroke: var(--line);
-  fill: var(--paper-hi);
+  fill: var(--on-fill);
 }
 .chip b {
   display: inline-block;
@@ -404,7 +417,7 @@
   font-variant-numeric: tabular-nums lining-nums;
   min-width: 2ch;
   text-align: right;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   /* An outline drawn with shadows, not text-stroke: readers (and axe) take a thick stroke for the text colour */
   --o: var(--line);
   text-shadow: -1.5px -1.5px 0 var(--o), 1.5px -1.5px 0 var(--o), -1.5px 1.5px 0 var(--o), 1.5px 1.5px 0 var(--o), 0 3px 0 var(--o);
@@ -452,7 +465,7 @@
   background: var(--mat-oak) padding-box, var(--mat-brass) border-box;
   background-blend-mode: multiply, normal, normal;
   box-shadow: 0 0 0 var(--stroke) var(--line), 0 3px 0 var(--line);
-  color: var(--paper-hi);
+  color: var(--on-fill);
 }
 .play .hud-tools .icon-btn[aria-pressed="true"],
 .play .hud-tools #btn-pause[aria-pressed="true"] {
@@ -462,7 +475,7 @@
 .play .hud-tools #btn-sound[aria-pressed="true"] {
   background: var(--mat-oak) padding-box, var(--mat-brass) border-box;
   background-blend-mode: multiply, normal, normal;
-  color: var(--paper-hi);
+  color: var(--on-fill);
 }
 #btn-menu {
   display: none;
@@ -551,7 +564,7 @@
   max-width: calc(100% - 24px);
   padding: var(--sp-3) calc(var(--sp-7) + 4px);
   border-radius: 0;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   background: linear-gradient(var(--white-a18), transparent 40%, var(--black-a18)), var(--pasture-deep);
   clip-path: polygon(0 0, 100% 0, calc(100% - 22px) 50%, 100% 100%, 0 100%, 22px 50%);
   filter: drop-shadow(0 4px 0 var(--line)) drop-shadow(0 14px 18px var(--black-a35));
@@ -574,7 +587,7 @@
   font: 740 var(--fs-d1) / 1 var(--font-display);
   font-variation-settings: var(--display-axes);
   letter-spacing: var(--track-display);
-  color: var(--paper-hi);
+  color: var(--on-fill);
   -webkit-text-stroke: 0.1em var(--line);
   paint-order: stroke fill;
   text-shadow: 0 0.07em 0 var(--line);
@@ -654,9 +667,17 @@
 .banner.boss span {
   color: var(--corp-ink);
 }
-/* Round banners: across the top of the field, clear of the lane entry */
+/* As wide as its words; round banners sit at the top edge of the field, clear of the lane entry and the
+   "+N" floaters; leak and boss banners keep the middle */
+.banner {
+  width: max-content;
+}
 .banner.round {
-  top: 12px;
+  top: 10px;
+  padding: var(--sp-2) var(--sp-7) 10px;
+}
+.banner.round strong {
+  font-size: var(--fs-d2);
 }
 /* The toast: a pinned paper note at the foot of the field (a tip, a line from Cath, a short notice) */
 .banner.small {
@@ -694,7 +715,11 @@
 }
 @media (max-height: 520px) {
   .banner {
+    top: 6px;
     padding: var(--sp-2) var(--sp-7);
+  }
+  .banner.round {
+    top: 6px;
   }
   .banner strong {
     font-size: var(--fs-d2);
@@ -866,7 +891,7 @@
   background: var(--mat-oak);
   background-blend-mode: multiply, normal;
   box-shadow: var(--sh-2), var(--bevel);
-  color: var(--paper-hi);
+  color: var(--on-fill);
 }
 
 /* Ability medallions: brass-rimmed, with a cooldown ring */
@@ -886,7 +911,7 @@
   border-radius: var(--r-m);
   background: none;
   box-shadow: none;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -941,7 +966,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   text-shadow: 0 1px 0 var(--line), 0 0 4px var(--black-a40);
 }
 .play .ability-hp {
@@ -1021,7 +1046,7 @@
   border-radius: 4px;
   rotate: 8deg;
   background: var(--pasture-deep);
-  color: var(--paper-hi);
+  color: var(--on-fill);
   font: 900 0.6875rem / 1 var(--font-ui);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1068,7 +1093,7 @@
   border-radius: var(--r-m);
   background: none;
   box-shadow: none;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1110,7 +1135,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   text-shadow: 0 1px 0 var(--line);
 }
 .play .auto-btn .auto-word {
@@ -1137,7 +1162,7 @@
 }
 .play .btn.send {
   --fill: var(--pasture-deep);
-  --fg: var(--paper-hi);
+  --fg: var(--on-fill);
   --edge: var(--pasture-ink);
   flex: 1;
   min-width: 0;
@@ -1147,7 +1172,7 @@
   font: 950 1.375rem / 1 var(--font-ui);
   letter-spacing: -0.005em;
   font-variant-numeric: tabular-nums;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   background: linear-gradient(var(--white-a20), var(--white-a00) 55%), var(--fill);
   box-shadow: var(--bevel);
   --o: var(--pasture-ink);
@@ -1399,6 +1424,44 @@
   color: var(--corp);
   box-shadow: 0 2px 6px var(--corp-a25);
 }
+/* Cath's advice in the preview card: a pinned note in her voice */
+.play .cath-tip {
+  position: relative;
+  margin: var(--sp-1) 0 0;
+  padding: 10px 12px 10px 14px;
+  border: 0;
+  border-radius: var(--r-note);
+  background: var(--card);
+  box-shadow: inset 4px 0 0 var(--cath), 0 0 0 1.5px var(--line);
+  color: var(--ink);
+  font-family: var(--font-voice);
+  font-weight: 430;
+  font-variation-settings: var(--voice-axes);
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.play .twist-line {
+  color: var(--clay-deep) !important;
+}
+.play .roster td {
+  opacity: 1;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.play .roster caption {
+  font: 850 var(--fs-label) / 1.2 var(--font-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.play .roster th {
+  font-weight: 800;
+  color: var(--ink);
+}
+.play .roster tr + tr {
+  border-top: 1px dashed var(--ink-a16);
+}
 /* The tray of towers: little seed packets you drag onto a plot */
 .play .tray-tower {
   width: 62px;
@@ -1460,7 +1523,7 @@
   border-radius: var(--r-pill);
   background: var(--mat-oak);
   background-blend-mode: multiply, normal;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   font: 850 var(--fs-small) / 1 var(--font-ui);
   box-shadow: 0 0 0 1.5px var(--line), 0 2px 0 var(--line), var(--bevel);
   cursor: pointer;
@@ -1531,7 +1594,7 @@
   border-radius: 50%;
   background: var(--mat-oak) padding-box, var(--mat-brass) border-box;
   background-blend-mode: multiply, normal, normal;
-  color: var(--paper-hi);
+  color: var(--on-fill);
   font: 900 var(--fs-d2) / 1 var(--font-ui);
   box-shadow: 0 0 0 var(--stroke) var(--line), 0 3px 0 var(--line);
 }
@@ -1590,7 +1653,7 @@
   padding: 7px 8px 12px;
   border-radius: var(--r-m) var(--r-m) 0 0;
   background: linear-gradient(var(--white-a14), transparent 60%), var(--c);
-  color: var(--paper-hi);
+  color: var(--on-fill);
   font: 690 var(--fs-d3) / 1.05 var(--font-display);
   font-variation-settings: "SOFT" 60, "WONK" 0;
   letter-spacing: -0.005em;
@@ -1615,10 +1678,10 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 2px var(--paper-hi);
+  box-shadow: inset 0 0 0 2px var(--on-fill);
 }
 .path-pips i.on {
-  background: var(--paper-hi);
+  background: var(--on-fill);
   box-shadow: 0 0 0 1px var(--black-a25);
 }
 .path-pips i.t3 {
@@ -1847,7 +1910,7 @@
   padding: 3px 8px 2px;
   border-radius: var(--r-pill);
   background: var(--c);
-  color: var(--paper-hi);
+  color: var(--on-fill);
   font: 900 var(--fs-label) / 1.1 var(--font-ui);
   letter-spacing: var(--track-label);
   text-transform: uppercase;
@@ -2047,10 +2110,10 @@
     background: var(--mat-oak);
     background-blend-mode: multiply, normal;
     box-shadow: inset 0 -3px 0 var(--line), var(--bevel);
-    color: var(--paper-hi);
+    color: var(--on-fill);
   }
   .panel-paths .tower-head .panel-title {
-    color: var(--paper-hi) !important;
+    color: var(--on-fill) !important;
     text-shadow: 0 2px 0 var(--line);
   }
   .panel-paths .tower-head .ko-line,
@@ -2058,7 +2121,7 @@
     color: var(--kraft);
   }
   .panel-paths .tower-head .ko-line .ko-n {
-    color: var(--paper-hi);
+    color: var(--on-fill);
   }
   .panel-paths .sheet-close {
     display: none;
@@ -2176,6 +2239,21 @@
     min-height: 28px;
     padding: 0 10px;
   }
+  /* One line of head: the Knockouts tally waits for the side panel or a portrait sheet */
+  .panel-paths .ko-line {
+    display: none;
+  }
+  .panel-paths .panel-title {
+    flex: 0 1 auto;
+  }
+  .path-name {
+    gap: 3px;
+    padding: 5px 7px 10px;
+  }
+  .path-buy {
+    gap: 2px;
+    padding: 6px 7px 10px;
+  }
 }
 @container panel (width < 520px) {
   .path-sheet {
@@ -2263,6 +2341,12 @@
   .play .choose-chip,
   .play .paused-note {
     color: var(--ink);
+  }
+  .play .twist-line {
+    color: var(--clay) !important;
+  }
+  .dmg-type {
+    box-shadow: 0 0 0 1.5px var(--ink-3);
   }
   .path-steps li.bought {
     color: var(--cream-a45);
