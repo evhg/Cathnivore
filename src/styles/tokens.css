@@ -94,6 +94,11 @@
   --ruled: repeating-linear-gradient(transparent 0 23px, rgb(62 110 126 / .16) 23px 24px);
   --mat-paper: var(--grain-paper), var(--fibres), radial-gradient(140% 90% at 30% 0%, var(--paper-hi), var(--paper));
   --mat-card: var(--grain-paper), linear-gradient(180deg, var(--surface), var(--card-lo));
+  /* AAA UI perf guardrail (grain on at most about 8 elements a screen): buttons, chips, triggers, coins,
+     mini-cards and popovers use these grain-free twins; only the table, frames and sheets carry grain. */
+  --mat-card-flat: linear-gradient(180deg, var(--surface), var(--card-lo));
+  --mat-ledger-flat: var(--ruled), linear-gradient(var(--surface), var(--card-lo));
+  --mat-news-flat: var(--halftone), linear-gradient(var(--newsprint), var(--newsprint-lo));
   --mat-ledger: var(--grain-paper), var(--ruled), linear-gradient(var(--surface), var(--card-lo));
   --mat-news: var(--halftone), var(--grain-paper), linear-gradient(var(--newsprint), var(--newsprint-lo));
   --mat-kraft: var(--grain-paper), linear-gradient(180deg, var(--kraft), var(--kraft-lo));

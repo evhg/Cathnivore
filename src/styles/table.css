@@ -35,7 +35,7 @@
   grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
   align-items: stretch;
   padding: 0 var(--sp-1) 0 0;
-  background: var(--mat-card);
+  background: var(--mat-card-flat);
   border: 1px solid var(--ink-a35);
   border-radius: var(--r-card);
   box-shadow: var(--inset-hi), var(--inset-lo), var(--e3);
@@ -176,7 +176,7 @@
 .cath-companion-line {
   margin: 0;
   padding: var(--sp-2) var(--sp-5) var(--sp-2) var(--sp-3);
-  background: var(--mat-card);
+  background: var(--mat-card-flat);
   border-radius: var(--r-xs) 0 0 var(--r-xs);
   color: var(--ink);
   font: italic 460 var(--fs-voice)/1.3 var(--font-voice);
@@ -204,7 +204,7 @@
   gap: var(--sp-3);
   margin: 0;
   padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
-  background: var(--mat-card);
+  background: var(--mat-card-flat);
   border: 1px solid var(--ink-a35);
   border-left: 4px solid var(--wheat);
   border-radius: var(--r-sm);
@@ -290,7 +290,7 @@
   padding: 13px 30px 8px 9px;
   border: 0;
   border-radius: 0;
-  background: var(--mat-news);
+  background: var(--mat-news-flat);
   box-shadow: none;
   color: var(--newsprint-ink);
   font: 600 var(--fs-caption)/1.25 var(--font-text);
@@ -420,7 +420,7 @@
   margin-left: auto;
   border-radius: 50%;
   border: 1.5px solid var(--ink-a60);
-  background: var(--mat-card);
+  background: var(--mat-card-flat);
   box-shadow: var(--inset-hi), var(--e2);
   color: var(--ink);
   font: italic 760 1.05rem/1 var(--font-display);
@@ -452,7 +452,7 @@
   gap: var(--sp-2);
   width: max-content;
   padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3);
-  background: var(--mat-card);
+  background: var(--mat-card-flat);
   border: 1.5px solid var(--btn-edge);
   border-radius: var(--r-sm);
   box-shadow: var(--e4);
@@ -485,7 +485,7 @@
 .decision {
   display: block;
   padding: var(--sp-2) var(--sp-3);
-  background: var(--mat-card);
+  background: var(--mat-card-flat);
   border-left: 4px solid var(--wheat);
   border-radius: var(--r-sm);
   font-weight: 700;
@@ -1088,7 +1088,7 @@
     column-gap: var(--sp-2);
     row-gap: 4px;
     padding: 7px 8px 8px 10px;
-    background: var(--mat-card);
+    background: var(--mat-card-flat);
     border: 1px solid var(--ink-a35);
     border-top: 4px solid var(--frame);
     border-radius: var(--r-sm);
@@ -1144,7 +1144,7 @@
 
   .desktop-col .card-plan {
     --frame: var(--p-mara);
-    background: var(--mat-ledger);
+    background: var(--mat-ledger-flat);
     border-top-width: 1px;
     border-left: 4px solid var(--p-mara);
   }

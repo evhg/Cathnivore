@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 // SPEC 11.4 gate 8: "capture screenshots of every screen at both sizes, plus one map screenshot in
 // greyscale. A subagent reviews them against STYLE.md and section 10 and lists problems." This captures
@@ -32,6 +32,19 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
 
   await page.locator('.game').waitFor()
   await shoot(page, project, '4-game')
+
+  // AAA UI performance guardrail: the feTurbulence grain rasterises one SVG-filter tile per layer, so it
+  // stays on the table, frames and sheets only (about 8 a screen). Buttons, chips, triggers and mini-cards
+  // use the grain-free `--mat-*-flat` tokens.
+  const grainLayers = await page.evaluate(() => {
+    let n = 0
+    for (const e of document.querySelectorAll('*')) {
+      if (!e.getClientRects().length) continue
+      for (const pe of [null, '::before', '::after']) if (/feTurbulence/i.test(getComputedStyle(e, pe).backgroundImage)) n++
+    }
+    return n
+  })
+  expect(grainLayers, 'grain layers on the game screen').toBeLessThanOrEqual(9)
 
   // Greyscale map shot (SPEC 11.4 gate 8's "one map screenshot in greyscale," to check the map still
   // reads by shape/contrast alone, not just colour).
