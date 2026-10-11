@@ -10,12 +10,30 @@
   color: var(--ink);
   text-shadow: var(--hud-shadow);
   pointer-events: none;
+  isolation: isolate;
   --edge-l: max(var(--hud-edge), var(--safe-l));
   --edge-r: max(var(--hud-edge), var(--safe-r));
   --edge-t: max(var(--hud-edge), var(--safe-t));
   --edge-b: max(var(--hud-edge), var(--safe-b));
 }
 .hud-root p { margin: 0; }
+/* Layers inside the HUD: screen effects (hurt, focus, scope) sit under the readouts, so text never dims. */
+.hud-hurt,
+.hud-focus,
+.hud-scope,
+.hud-hurt-arc { z-index: var(--z-fx); }
+.hud-objective,
+.hud-vitals,
+.hud-arms,
+.hud-feed,
+.hud-sub,
+.hud-teach,
+.hud-prompt,
+.hud-target,
+.hud-wp,
+.hud-banner,
+.hud-tl,
+.hud-tr { z-index: var(--z-hud); }
 .hud-tl,
 .hud-tr { display: contents; }
 
@@ -133,6 +151,7 @@
   text-align: right;
 }
 .hud-weapon {
+  white-space: nowrap;
   font: 700 var(--t-head)/1.1 var(--font-ui);
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -494,7 +513,7 @@
 .hud-root::after { bottom: 0; transform-origin: bottom; }
 .hud-root.boss-intro::before,
 .hud-root.boss-intro::after { transform: none; }
-.hud-root.boss-intro .hud-banner { top: 40%; background: none; }
+.hud-root.boss-intro .hud-banner { top: 38%; padding-block: var(--sp-5); }
 .hud-root.boss-intro .hud-banner-sub { color: var(--blood-hot); }
 .hud-root.boss-intro .hud-banner-title { font-size: calc(var(--t-display-l) * 1.2); }
 
@@ -650,8 +669,8 @@
 .stick.on .stick-label { opacity: 0; }
 .look-hint {
   position: absolute;
-  right: 22%;
-  top: 38%;
+  right: 24%;
+  top: 52%;
   color: rgb(var(--ink-rgb) / .45);
   transition: opacity 600ms var(--ease-out);
   pointer-events: none;
@@ -675,6 +694,29 @@
   -webkit-tap-highlight-color: transparent;
 }
 .tbtn:active { transform: scale(.94); background-color: rgb(var(--cyan-rgb) / .18); }
+.tbtn {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 3px;
+}
+.tbtn-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: none;
+}
+.tbtn-label { display: block; }
+.tbtn > * { pointer-events: none; }
+.tbtn-cycle,
+.tbtn-sheet { grid-auto-flow: column; gap: 4px; }
+.tbtn-cycle .tbtn-label,
+.tbtn-sheet .tbtn-label { display: none; }
+.tbtn-fire .tbtn-icon { width: 28px; height: 28px; }
 .tbtn-fire {
   right: calc(28px + var(--safe-r));
   bottom: 96px;
@@ -700,8 +742,8 @@
   border-radius: 0;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%);
 }
-.tbtn-cycle { right: calc(28px + var(--safe-r)); }
-.tbtn-sheet { right: calc(96px + var(--safe-r)); box-shadow: inset 0 0 0 1.5px rgb(var(--amber-rgb) / .7); }
+.tbtn-cycle { right: calc(64px + var(--safe-r)); }
+.tbtn-sheet { right: calc(128px + var(--safe-r)); box-shadow: inset 0 0 0 1.5px rgb(var(--amber-rgb) / .7); }
 .tbtn-menu {
   position: absolute;
   top: max(10px, var(--safe-t));
@@ -725,7 +767,8 @@
 @media (max-width: 600px) and (orientation: portrait) {
   .hud-objective { max-width: calc(100% - 2 * var(--hud-edge)); }
   .hud-vitals { width: min(220px, 50vw); }
-  .hud-arms { max-width: 42vw; }
+  .hud-arms { max-width: 46vw; }
+  .hud-weapon { white-space: normal; font-size: var(--t-label); }
   .hud-sub { width: calc(100vw - 2 * var(--gutter)); bottom: calc(var(--edge-b) + 128px); }
   .hud-feed { top: 22%; }
 }
@@ -742,10 +785,10 @@
     gap: var(--sp-4);
   }
   .hud-tl { left: var(--edge-l); align-items: flex-start; }
-  .hud-tr { right: calc(166px + var(--safe-r)); align-items: flex-end; gap: var(--sp-3); }
+  .hud-tr { right: calc(196px + var(--safe-r)); align-items: flex-end; gap: var(--sp-3); }
   .hud-tl > *,
   .hud-tr > * { position: relative; inset: auto; }
-  .hud-objective { max-width: min(36ch, 40vw); font-size: var(--t-body); }
+  .hud-objective { max-width: min(40ch, 46vw); font-size: var(--t-body); }
   .hud-vitals { width: min(220px, 30vw); }
   .hud-feed { max-width: 44vw; }
   .hud-feed-line:nth-last-child(n + 3) { display: none; }

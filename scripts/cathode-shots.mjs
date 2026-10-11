@@ -4,14 +4,14 @@
 // any CSP violations.
 // Usage: npm run build:site && npx vite preview --outDir dist-site --port 4180 &  then  node scripts/cathode-shots.mjs
 // Env: CATHODE_URL (default http://localhost:4180/cathode/), OUT (default e2e/screenshots), ONLY (comma list
-// of scenes: gate,hud,busy,pause), SIZES (comma list of P,L,D), RM=0 to skip the reduced-motion pass.
+// of scenes: gate,hud,busy,boss,pause), SIZES (comma list of P,L,D), RM=0 to skip the reduced-motion pass.
 // Set PLAYWRIGHT_CHROMIUM_PATH if the pinned Chromium revision is missing (see CLAUDE.md).
 import { chromium } from '@playwright/test'
 import { mkdirSync } from 'node:fs'
 
 const base = process.env.CATHODE_URL ?? 'http://localhost:4180/cathode/'
 const out = process.env.OUT ?? 'e2e/screenshots'
-const only = (process.env.ONLY ?? 'gate,hud,busy,pause').split(',')
+const only = (process.env.ONLY ?? 'gate,hud,busy,boss,pause').split(',')
 const sizeKeys = (process.env.SIZES ?? 'P,L,D').split(',')
 mkdirSync(out, { recursive: true })
 const SIZES = {
@@ -44,6 +44,13 @@ async function busy(page) {
     // Swiftshader takes seconds per screenshot: keep the lines on screen until it's taken.
     const st = window.setTimeout
     window.setTimeout = (f, ms, ...a) => (ms > 1000 ? 0 : st(f, ms, ...a))
+    // A gun in hand and a few hits taken, so the numerals, the segmented bar and its trail show.
+    const c = window.cathode
+    try {
+      c.arsenal.owned.add('kestrel')
+      c.arsenal.equipId('kestrel')
+      c.hp = Math.round(c.maxHp * 0.62)
+    } catch {}
     hud.subtitle('Bea: The ledger is in the back office, under the ice trays. Get it and get out before the Hollowell boys finish their smoke.')
     hud.feedLine('+90 XP · Headshot · Unseen', true)
     hud.feedLine('+40 XP · Takedown')
@@ -52,7 +59,7 @@ async function busy(page) {
     for (const a of document.getAnimations()) if (a.animationName === 'feed-life' || a.animationName === 'feed-fade') a.currentTime = 1000
     setTimeout(() => { for (const a of document.getAnimations()) if (a.animationName === 'feed-life' || a.animationName === 'feed-fade') a.pause() }, 50)
   })
-  await page.waitForTimeout(1500)
+  await page.waitForTimeout(4000)
 }
 
 /** Every visible HUD cluster rectangle, overlapping pairs, and touch buttons under 44 px. */
@@ -73,7 +80,6 @@ async function overlapReport(page, label) {
     for (let i = 0; i < boxes.length; i++)
       for (let j = i + 1; j < boxes.length; j++) {
         const a = boxes[i], c = boxes[j]
-        if (a.s.startsWith('.tbtn') && c.s.startsWith('.tbtn')) continue
         if (a.l < c.r - 1 && c.l < a.r - 1 && a.t < c.b - 1 && c.t < a.b - 1) hits.push(`${a.s} x ${c.s}`)
       }
     const small = boxes.filter((b) => b.s.startsWith('.tbtn') && (b.w < 44 || b.h < 44)).map((b) => `${b.s} ${Math.round(b.w)}x${Math.round(b.h)}`)
@@ -106,13 +112,27 @@ for (const rm of process.env.RM === '0' ? [false] : [false, true]) {
       if (only.includes('hud')) await page.screenshot({ path: `${out}/cathode-hud-${tag}.png`, timeout: 180_000 })
       if (only.includes('busy')) {
         await busy(page)
+        await settle(page)
         await page.screenshot({ path: `${out}/cathode-hud-busy-${tag}.png`, timeout: 180_000 })
         await overlapReport(page, tag)
+      }
+      if (only.includes('boss')) {
+        await page.evaluate(() => {
+          const st = window.setTimeout
+          window.setTimeout = (f, ms, ...a) => (ms > 1000 ? 0 : st(f, ms, ...a))
+          window.cathode?.hud?.showBanner('Mother Crisp', 'The butcher of Pier 9', 'boss')
+          window.setTimeout = st
+        })
+        await page.waitForTimeout(1500)
+        await page.evaluate(() => { for (const a of document.getAnimations()) if (a.animationName === 'banner' || a.animationName === 'feed-fade') { a.currentTime = 1200; a.pause() } })
+        await settle(page)
+        await page.screenshot({ path: `${out}/cathode-hud-boss-${tag}.png`, timeout: 180_000 })
       }
       if (only.includes('pause')) {
         await page.evaluate(() => { window.cathode.input.menuTapped = true })
         await page.waitForTimeout(2500)
         await settle(page)
+        await page.waitForTimeout(2500)
         await page.screenshot({ path: `${out}/cathode-pause-${tag}.png`, timeout: 180_000 })
       }
     }

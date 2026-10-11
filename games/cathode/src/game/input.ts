@@ -148,7 +148,11 @@ export class Input {
       const btn = el("button", `tbtn tbtn-${b}`);
       btn.setAttribute("type", "button");
       btn.setAttribute("aria-label", labels[b]);
-      btn.textContent = labels[b];
+      // A line icon over a short caps label (the label duplicates the icon, so 12 px caps is allowed).
+      btn.append(touchIcon(b));
+      const lab = el("span", "tbtn-label");
+      lab.textContent = labels[b];
+      btn.append(lab);
       btn.dataset.btn = b;
       layer.append(btn);
     }
@@ -174,7 +178,7 @@ export class Input {
     e.preventDefault();
     for (const t of Array.from(e.changedTouches)) {
       const target = document.elementFromPoint(t.clientX, t.clientY) as HTMLElement | null;
-      const btn = target?.dataset.btn as TouchButton | undefined;
+      const btn = target?.closest<HTMLElement>("[data-btn]")?.dataset.btn as TouchButton | undefined;
       if (e.type === "touchstart") {
         if (btn) {
           this.touchHeld.add(btn);
@@ -362,6 +366,32 @@ export class Input {
     this.canvas.removeEventListener("mousedown", this.onMouse);
     this.canvas.removeEventListener("wheel", this.onWheel);
   }
+}
+
+/** Line icons for the touch buttons, drawn as code (24-unit box, stroked in currentColor). */
+const ICONS: Record<TouchButton, string> = {
+  fire: "M12 3v5M12 16v5M3 12h5M16 12h5M12 11.2v1.6",
+  aim: "M12 5a7 7 0 1 0 0 14a7 7 0 1 0 0-14M12 9v6M9 12h6",
+  jump: "M6 14l6-6 6 6M6 19l6-6 6 6",
+  crouch: "M6 5l6 6 6-6M6 19h12",
+  reload: "M19 12a7 7 0 1 1-2.05-4.95M19 4v4h-4",
+  focus: "M7 4h10M7 20h10M8 4c0 5 8 5 8 8s-8 3-8 8M16 4c0 5-8 5-8 8",
+  takedown: "M5 19L16 8M14 6l4 4M16 8l3-3",
+  cycle: "M5 9h12l-3-3M19 15H7l3 3",
+  skill: "M13 3L6 13h5l-1 8 7-10h-5z",
+  sheet: "M12 4a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7M5 20c1-4 4-6 7-6s6 2 7 6",
+};
+
+function touchIcon(b: TouchButton): SVGSVGElement {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("class", "tbtn-icon");
+  const path = document.createElementNS(ns, "path");
+  path.setAttribute("d", ICONS[b]);
+  svg.append(path);
+  return svg;
 }
 
 function el(tag: string, className: string): HTMLElement {
