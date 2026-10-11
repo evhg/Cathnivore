@@ -498,14 +498,20 @@ test.describe('Hedgerow', () => {
     expect(errors).toEqual([])
   })
 
-  test('Hedgerow 2 M4: a tower dragged from the tray onto a plot is built there', async ({ page }) => {
+  // Portrait too (M4 review): the fixed-height phone panel used to squeeze the tray to a 4 px sliver there.
+  for (const [w, h] of [[844, 390], [390, 844]] as const)
+  test(`Hedgerow 2 M4: a tower dragged from the tray onto a plot is built there at ${w}x${h}`, async ({ page }) => {
     const errors = trackErrors(page)
-    await page.setViewportSize({ width: 844, height: 390 })
+    await page.setViewportSize({ width: w, height: h })
     await page.goto(HEDGEROW_2D + '&sandbox=1&level=1')
     await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: {}, seenBefore: { '1': true }, tips: { build: true, hero: true, early: true } })))
     await page.reload()
     const tray = page.locator('#panel .tray-tower[data-kind="scarecrow"]')
     await expect(tray).toBeVisible({ timeout: 10_000 })
+    // The tray is a real row of towers, not a squeezed sliver, and the preview chips under it aren't crushed.
+    expect((await page.locator('#panel .tray').boundingBox())!.height).toBeGreaterThanOrEqual(48)
+    const chips = await page.locator('#panel .preview-row').boundingBox()
+    if (chips) expect(chips.height).toBeGreaterThanOrEqual(24)
     // Level 1's top-left cell (0, 0) is grass: where is it on screen?
     const cell = await page.evaluate(() => (window as unknown as { hedgerow: { cellCenter(c: number, r: number): { x: number; y: number } } }).hedgerow.cellCenter(0, 0))
     const from = (await tray.boundingBox())!

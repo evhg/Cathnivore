@@ -1657,6 +1657,10 @@ button {
     overflow-y: auto;
     overscroll-behavior: contain;
   }
+  /* The panel scrolls instead: a scroll row (the tray, the preview chips) would otherwise shrink to a sliver. */
+  .panel > * {
+    flex-shrink: 0;
+  }
 }
 .auto-btn {
   flex: none;
