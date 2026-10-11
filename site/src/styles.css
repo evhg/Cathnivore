@@ -428,16 +428,33 @@ body {
   color: var(--cream-muted);
 }
 
+/* Segments wrap whole; the middot is drawn before each segment in the gutter and clipped at the start of
+   a line, so a separator never dangles at a line end or leads a new one. */
 .card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -1.1em;
+  clip-path: inset(-2px -2px -2px 1.1em);
   font-size: var(--fs-meta);
   font-variant-numeric: tabular-nums;
-  text-wrap: balance;
   color: var(--gold);
   opacity: 0.9;
 }
 
 .card-meta .seg {
+  position: relative;
+  margin-left: 1.1em;
   white-space: nowrap;
+}
+
+.card-meta .seg::before {
+  content: "\00B7";
+  position: absolute;
+  left: -0.75em;
+  width: 0.4em;
+  text-align: center;
+  font-weight: 700;
+  opacity: 0.55;
 }
 
 .card-go {
@@ -522,7 +539,7 @@ body {
   .card-text {
     font-size: 0.9375rem;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
