@@ -141,6 +141,33 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
   b.box("chrome", 0, H2 + 4.9, zN + 0.05, xE - xW, 0.14, 0.14);
   signs.push({ text: "THE BOARD", sub: "QUARTERLY SESSION", style: "screen", color: "#ffd9a0", w: 4, h: 1.2, center: V(-13.9, H2 + 3, -50), normal: V(1, 0, 0), flicker: 0, intensity: 2.2 });
 
+  // Colour pass: a carpet across the office floor with a brass-edged aisle, planters between the cubicles,
+  // and a deep red boardroom carpet, oak wall panelling, bookcases and brass pendants, so the climb ends in luxury.
+  b.boxMinMax("carpetRed", -11.8, H1 + 0.004, -1, 8.8, H1 + 0.03, -26, { uv: 3 });
+  for (const x of [-4.6, 4.6]) b.boxMinMax("brass", x - 0.04, H1 + 0.03, -1, x + 0.04, H1 + 0.06, -26, { uv: 1 });
+  for (const z of [-3, -11, -19, -27]) {
+    for (const x of [-12.3, 12.3]) {
+      b.cylinder("brass", V(x, H1, z), V(x, H1 + 0.6, z), 0.45, 12);
+      b.shape("leaf", new THREE.SphereGeometry(0.7, 10, 8), V(x, H1 + 1.3, z), 0, V(1, 1.2, 1));
+    }
+  }
+  b.boxMinMax("carpetRed", -9, H2 + 0.004, -44, 9, H2 + 0.03, -62, { uv: 3 });
+  b.boxMinMax("brass", -9.05, H2 + 0.03, -44, -8.95, H2 + 0.07, -62, { uv: 1 });
+  b.boxMinMax("brass", 8.95, H2 + 0.03, -44, 9.05, H2 + 0.07, -62, { uv: 1 });
+  for (const s of [-1, 1]) {
+    for (let i = 0; i < 4; i++) {
+      const z = -46 - i * 4.2;
+      b.box("wood", s * 13.5, H2 + 1.6, z, 0.6, 3.2, 3.4, { collide: "metal" });
+      b.box("brass", s * 13.18, H2 + 3.25, z, 0.06, 0.08, 3.4);
+      b.box("glowWarm", s * 13.17, H2 + 1.6, z, 0.03, 0.05, 3.0);
+    }
+  }
+  for (const z of [-44, -52, -60]) {
+    b.cylinder("brass", V(0, H2 + 4.4, z), V(0, ceil, z), 0.04, 6);
+    b.cylinder("brass", V(0, H2 + 3.9, z), V(0, H2 + 4.4, z), 0.7, 14);
+    light(V(0, H2 + 3.7, z), "#ffd49a", 24, 9, 0, false);
+  }
+
   // The city beyond the glass: a dark backdrop of towers with lit windows, far below and far across.
   b.boxMinMax("blackPaint", -90, H2 - 60, zN - 46, 90, H2 + 50, zN - 45, { uv: 1 });
   // Skyline: towers of varied height at two depths, their windows plain glow boxes so fog and the lighting
