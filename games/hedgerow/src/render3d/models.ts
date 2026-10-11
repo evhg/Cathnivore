@@ -1373,6 +1373,24 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       g.add(box(0.86, 0.04, 0.3, matte("#26282d", 0.6, false), -0.06, 0.04, 0));
       return g;
     }
+    case "skip": {
+      // A skip lorry: amber cab, a deep steel skip on a flatbed.
+      const g = new THREE.Group();
+      g.add(box(0.2, 0.3, 0.34, gloss("#e0a82e"), 0.36, 0.1, 0), box(0.006, 0.12, 0.28, glass(), 0.462, 0.24, 0));
+      g.add(box(0.7, 0.04, 0.34, metal("#3b3f44", 0.5), -0.1, 0.1, 0));
+      g.add(box(0.56, 0.28, 0.32, metal("#b9831a", 0.6), -0.1, 0.26, 0), box(0.58, 0.03, 0.34, metal("#8a5f0e", 0.6), -0.1, 0.42, 0));
+      for (const x of [-0.4, -0.2, 0.34]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.17));
+      return g;
+    }
+    case "plantdozer": {
+      // A Bulldozer: yellow body on tracks, a cab, and a steel blade out front.
+      const g = new THREE.Group();
+      g.add(box(0.7, 0.22, 0.36, gloss("#f2c230"), -0.02, 0.16, 0), box(0.28, 0.24, 0.3, gloss("#2a2b31", 0.3), -0.1, 0.38, 0), box(0.006, 0.14, 0.24, glass(), 0.045, 0.4, 0));
+      for (const side of [-1, 1]) g.add(box(0.8, 0.14, 0.1, matte("#1d1b1b", 0.9, false), 0, 0.07, side * 0.24));
+      g.add(box(0.06, 0.34, 0.62, metal("#8a96a3", 0.4), 0.46, 0.2, 0));
+      for (const side of [-1, 1]) g.add(box(0.14, 0.04, 0.04, metal("#5a5e63"), 0.4, 0.12, side * 0.18));
+      return g;
+    }
     case "transporter": {
       // The Car Transporter: a red cab and two open decks with cars on board.
       const g = new THREE.Group();
@@ -1410,6 +1428,8 @@ export function buildEnemy(kind: EnemyKind): THREE.Group {
     case "steel":
     case "artic":
     case "transporter":
+    case "skip":
+    case "plantdozer":
       g = buildRung(kind)!;
       break;
     case "van":

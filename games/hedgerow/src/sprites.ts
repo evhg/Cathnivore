@@ -1208,6 +1208,10 @@ export function enemyScale(kind: EnemyKind): number {
       return 1.2;
     case "transporter":
       return 1.25;
+    case "skip":
+      return 1.3;
+    case "plantdozer":
+      return 1.5;
     case "carrier":
       return 1.1;
     case "rival":
@@ -1501,6 +1505,14 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
     case "artic":
       // The Artic: a frost-box trailer behind a bubble-wrapped cab.
       vehicle(ctx, 0, 0, s, tt, { len: 0.94, h: 0.42, body: "#dfe9f2", cab: "#9fd3ff", stripe: "#6fd0f0", wheels: 3 });
+      break;
+    case "skip":
+      vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.3, body: "#e0a82e", cab: "#b9831a", stripe: "#3b3f44", wheels: 3 });
+      rr(ctx, -s * 0.34, -s * 0.5, s * 0.5, s * 0.16, s * 0.03, "#9a6b12");
+      break;
+    case "plantdozer":
+      vehicle(ctx, 0, 0, s, tt, { len: 0.84, h: 0.36, body: "#f2c230", cab: "#2a2b31", stripe: "#2a2b31", wheels: 4 });
+      rr(ctx, s * 0.36, -s * 0.5, s * 0.1, s * 0.5, s * 0.02, "#8a96a3");
       break;
     case "transporter":
       // The Car Transporter: a red cab and a two-deck rack of cars.

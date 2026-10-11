@@ -260,6 +260,9 @@ export const RUNGS: Partial<Record<EnemyKind, RungSpec>> = {
     look: "An articulated lorry: bubble-wrapped cab, frost-box trailer. Shells and frost do nothing. A wrapped lorry and a reefer lorry inside.",
   },
   transporter: { shell: 1, children: ["artic", "artic"], speed: 2.0, colour: "#b23a3a", look: "A double-deck car transporter, quick and long. Two artics on board." },
+  // Heavy Plants (M5): long shells, no push or hold, and a fleet under the lid.
+  skip: { shell: 10, children: ["pickup", "pickup", "pickup"], props: ["plant"], speed: 1.0, colour: "#e0a82e", look: "A yellow skip lorry: ten layers of plate, no push or hold, and three pickups under the lid." },
+  plantdozer: { shell: 120, children: ["steel", "steel", "steel", "steel"], props: ["plant"], speed: 0.6, colour: "#f2c230", look: "A Bulldozer: 120 layers of yellow plate, no push or hold, and four plated lorries under the blade. First seen in round 36." },
   // Act 1-3 bosses as long shells with their children (Hedgerow 2 section 1: the boss stays, its health is layers).
   boss: { shell: 300, children: ["lorry", "lorry", "lorry"], speed: 0.55, colour: "#1c1d22", look: "The Acquisition Van: a long shell, then three box lorries out of the back." },
   convoy: { shell: 600, children: ["steel", "steel"], props: ["plant"], speed: 0.5, colour: "#c43b2f", look: "Mr Crisp's Price-War Convoy: a long shell of discount signage, then two plated lorries." },

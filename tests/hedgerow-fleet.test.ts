@@ -31,7 +31,7 @@ import {
   type Level,
   type TowerKind,
 } from "../games/hedgerow/src/engine";
-import { CHILD_GAP, FLEET_GOODWILL, LIVE_CAP, RUNGS, fvOf, roundBonus } from "../games/hedgerow/src/fleet";
+import { CHILD_GAP, FLEET_GOODWILL, LIVE_CAP, P, RUNGS, canControl, fvOf, roundBonus } from "../games/hedgerow/src/fleet";
 import { BOOK, BOOK_ROUNDS, SWAPS, budget, incomeBefore, roundFV, trafficOf, windowFor } from "../games/hedgerow/src/rounds";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import type { Path } from "../games/hedgerow/src/paths";
@@ -282,8 +282,8 @@ describe("hedgerow fleet: pops you can hear", () => {
 });
 
 describe("hedgerow fleet: rounds and levels", () => {
-  it("the Book has 45 rounds, each within 10% of its budget, none spawning for more than 25 s", () => {
-    expect(BOOK_ROUNDS).toBe(45);
+  it("the Book has 54 rounds, each within 10% of its budget, none spawning for more than 25 s", () => {
+    expect(BOOK_ROUNDS).toBe(54);
     for (let r = 1; r <= BOOK_ROUNDS; r++) {
       expect(Math.abs(roundFV(r) / budget(r) - 1)).toBeLessThan(0.1);
       const spawn = Math.max(...BOOK[r - 1]!.groups.map((x) => (x.delay ?? 0) + x.count * x.gap));
@@ -674,4 +674,20 @@ describe("hedgerow fleet: level 1 (M1 review)", () => {
     expect(none.goodwill - once.goodwill).toBeLessThanOrEqual(10);
     expect(every.goodwill).toBeLessThan(none.goodwill - 20);
   }, 60_000);
+});
+
+describe("hedgerow fleet: Plants (M5)", () => {
+  it("Skip and Bulldozer are heavy plants with a fleet under the lid", () => {
+    expect(fvOf("skip", P.plant)).toBe(22);
+    expect(fvOf("plantdozer", P.plant)).toBe(120 + 4 * fvOf("steel"));
+    for (const k of ["skip", "plantdozer"] as const) {
+      expect(RUNGS[k]!.props).toContain("plant");
+      expect(canControl(P.plant, "push")).toBe(false);
+      expect(canControl(P.plant, "hold")).toBe(false);
+    }
+  });
+  it("round 36 brings the first Bulldozer and 46-54 are Plant rounds", () => {
+    expect(BOOK[35]!.groups.some((x) => x.rung === "plantdozer")).toBe(true);
+    for (let r = 46; r <= 54; r++) expect(BOOK[r - 1]!.groups.some((x) => x.rung === "plantdozer" || x.rung === "skip")).toBe(true);
+  });
 });

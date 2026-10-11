@@ -79,7 +79,7 @@ export const BOOK: BookRound[] = [
   { theme: "The Artic", card: "Round 33: Artics. Bubble-wrapped cab, frost-box trailer: no blasts, no slows.", groups: [g("artic", 100, 0.2), g("lorry", 60, 0.3, 2), g("sprinter", 90, 0.2, 4)] },
   { theme: "Car transporters", card: "Round 34: Car Transporters, two artics on every deck.", groups: [g("transporter", 50, 0.4), g("lorry", 110, 0.18, 2), g("sprinter", 2, 0.5, 4)] },
   { theme: "A breather", card: "Lorries and pickups. Spend, upgrade, stack if you dare.", breather: true, groups: [g("lorry", 120, 0.18), g("pickup", 150, 0.1, 2), g("sprinter", 63, 0.3, 4)] },
-  { theme: "Heavy haulage", card: "Round 36: transporters and steel lorries, end to end.", groups: [g("transporter", 60, 0.35), g("steel", 46, 0.4, 2), g("sprinter", 2, 0.5, 4)] },
+  { theme: "The first Bulldozer", card: "Round 36: Bulldozers. A heavy plant: 120 layers, no push or hold. Stack damage; it breaks into plated lorries.", groups: [g("plantdozer", 8, 3), g("transporter", 25, 0.8, 2), g("steel", 46, 0.4, 3)] },
   { theme: "Night freight", card: "Round 37: Stealth transporters. Masts along the whole lane.", groups: [g("transporter", 50, 0.4, 0, ["stealth"]), g("steel", 74, 0.25, 2)] },
   { theme: "Gridlock", card: "A spike: a hundred transporters and the artics behind them.", spike: true, groups: [g("transporter", 100, 0.2), g("artic", 89, 0.25, 2)] },
   { theme: "Sealed steel", card: "Round 39: Sealed steel lorries. Neither beaks nor bees: gusts, blasts and silos.", groups: [g("steel", 120, 0.18, 0, ["sealed"]), g("transporter", 34, 0.5, 2), g("sprinter", 5, 0.5, 4)] },
@@ -89,6 +89,16 @@ export const BOOK: BookRound[] = [
   { theme: "Air bridge", card: "Transporters below, three hundred quadcopters above.", groups: [g("transporter", 80, 0.25), g("quad", 300, 0.07, 2), g("artic", 18, 1, 3)] },
   { theme: "The big push", card: "A spike: a hundred and forty transporters. Everything you've got.", spike: true, groups: [g("transporter", 140, 0.15), g("steel", 79, 0.25, 2), g("pickup", 2, 0.5, 4), g("drone", 2, 0.5, 4)] },
   { theme: "End of the line", card: "Round 45: transporters and steel to close the book's first half.", groups: [g("transporter", 90, 0.22), g("steel", 52, 0.38, 2), g("drone", 8, 0.5, 3)] },
+  // Rounds 46-55 (M5): Plants. FV about 18 * r^1.5 (a Bulldozer is 212, a Skip 22).
+  { theme: "Yard work", card: "Round 46: Bulldozers and Skips share the lane. Plants shrug off pushes: pile damage on.", groups: [g("plantdozer", 10, 2.2), g("skip", 40, 0.5, 1), g("transporter", 36, 0.6, 3), g("steel", 40, 0.3, 4)] },
+  { theme: "Skip run", card: "A hundred and twenty Skips, each with three pickups under the lid.", groups: [g("skip", 120, 0.2), g("transporter", 62, 0.35, 2), g("sprinter", 40, 0.4, 3)] },
+  { theme: "Rebrand Skip flood", card: "Round 48: Rebranded Skips. Each regrows a rung every 3 s: pop them together.", spike: true, groups: [g("skip", 220, 0.1, 0, ["rebrand"]), g("transporter", 100, 0.2, 3)] },
+  { theme: "Haulage", card: "Bulldozers in line abreast, transporters behind.", groups: [g("plantdozer", 12, 1.8), g("transporter", 50, 0.4, 2), g("artic", 50, 0.3, 3)] },
+  { theme: "Stealth plant", card: "Round 50: Stealth Bulldozers. A Mast shows them, and Plants can't be held.", groups: [g("plantdozer", 10, 2, 0, ["stealth"]), g("skip", 60, 0.3, 2), g("transporter", 60, 0.3, 3)] },
+  { theme: "Plated yard", card: "Plated Skips and a bulldozer escort.", groups: [g("skip", 80, 0.3, 0, ["plated"]), g("plantdozer", 8, 2.5, 2), g("transporter", 66, 0.3, 3)] },
+  { theme: "Wrapped", card: "Wrapped Skips: blasts are cushioned.", groups: [g("skip", 100, 0.24, 0, ["wrapped"]), g("plantdozer", 9, 2, 3), g("transporter", 58, 0.3, 3)] },
+  { theme: "A breather", card: "A lighter round. Spend your Marks.", breather: true, groups: [g("transporter", 45, 0.3), g("steel", 60, 0.2, 2), g("plantdozer", 3, 4, 4)] },
+  { theme: "Crushing weight", card: "A spike: thirty Bulldozers nose to tail.", spike: true, groups: [g("plantdozer", 26, 0.9), g("skip", 80, 0.2, 2), g("transporter", 88, 0.2, 4)] },
 ];
 
 /**
