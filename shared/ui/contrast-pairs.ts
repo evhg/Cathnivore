@@ -33,6 +33,9 @@ export const CONTRAST_PAIRS: Record<string, ContrastPair[]> = {
     { label: 'ink on surface', fg: '#2B2320', bg: '#FBF8F1' },
     { label: 'dark: ink on paper', fg: '#F3E9D8', bg: '#1C1714' },
     { label: 'dark: ink-muted on paper', fg: '#B9AA98', bg: '#1C1714' },
+    { label: 'focus on paper', fg: '#2B2320', bg: '#F4EDE1', ui: true },
+    { label: 'focus on surface', fg: '#2B2320', bg: '#FBF8F1', ui: true },
+    { label: 'dark: focus on paper', fg: '#F3E9D8', bg: '#1C1714', ui: true },
   ],
   hedgerow: [
     { label: 'paper on harvest (Next button)', fg: '#FBF8F1', bg: '#9A4F12' },
@@ -47,6 +50,7 @@ export const CONTRAST_PAIRS: Record<string, ContrastPair[]> = {
     { label: 'cream on blood (rating plate)', fg: '#FBF1DF', bg: '#C8102E' },
     { label: 'cyan system text on night', fg: '#2EE6FF', bg: '#07080B' },
     { label: 'amber reward text on night', fg: '#FFB347', bg: '#07080B' },
+    { label: 'focus ring on night', fg: '#2EE6FF', bg: '#07080B', ui: true },
   ],
   landing: [
     { label: 'cream on night', fg: '#FBF1DF', bg: '#1A1119' },

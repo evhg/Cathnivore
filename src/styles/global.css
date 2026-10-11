@@ -2333,7 +2333,7 @@ html.no-animations .card-enter {
 .settings input[type='checkbox']:checked { background: var(--wheat); }
 .settings input[type='checkbox']:checked::before { transform: translateX(18px); }
 .settings input[type='checkbox']:disabled { opacity: 0.45; cursor: not-allowed; }
-.settings input:focus-visible { outline: 3px solid var(--sea); outline-offset: 2px; }
+.settings input:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
 .segmented {
   display: flex;
   gap: 4px;
@@ -2363,7 +2363,7 @@ html.no-animations .card-enter {
   cursor: pointer;
 }
 :is(.settings, .setup) .segmented label:has(input:checked) { background: var(--wheat); color: #2b2118; }
-:is(.settings, .setup) .segmented label:has(input:focus-visible) { outline: 3px solid var(--sea); outline-offset: 2px; }
+:is(.settings, .setup) .segmented label:has(input:focus-visible) { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   .settings input[type='checkbox'],
   .settings input[type='checkbox']::before { transition: none; }
@@ -2409,7 +2409,7 @@ html.no-animations .card-enter {
   cursor: pointer;
 }
 .setup .producer-card:has(input:checked) { border-color: var(--wheat); background: var(--paper-2); box-shadow: 0 0 0 2px var(--wheat); transform: translateY(-2px); }
-.setup .producer-card:has(input:focus-visible) { outline: 3px solid var(--sea); outline-offset: 2px; }
+.setup .producer-card:has(input:focus-visible) { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
 .producer-card .pc-portrait { align-self: center; border-radius: 50%; overflow: hidden; line-height: 0; border: 2px solid var(--ink); background: var(--paper-2); }
 .producer-card .pc-name { font-weight: 800; }
 .producer-card .pc-role { font-size: 0.85em; opacity: 0.85; }
@@ -2550,12 +2550,13 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
 }
 .log-sheet li.log-round:first-child { font-weight: 700; }
 
-/* ROADMAP 179: one visible keyboard focus ring everywhere: gold with a dark inner line so it reads on
-   both light and dark surfaces. */
+/* ROADMAP 179 / AAA UI M1: one visible keyboard focus ring everywhere, drawn from the shared tokens
+   (--focus, --focus-halo in tokens.css): the halo is the paper colour, so the ring keeps 3:1 against
+   whatever it sits on, light or dark. */
 :is(button, a, [role="button"], summary, select, textarea, input):focus-visible {
-  outline: 3px solid var(--wheat, #d9b45a);
+  outline: var(--focus-w) solid var(--focus);
   outline-offset: 2px;
-  box-shadow: 0 0 0 5px rgba(40, 28, 28, 0.55);
+  box-shadow: 0 0 0 calc(var(--focus-w) + 4px) var(--focus-halo);
 }
 
 /* ROADMAP 181: the round banner never drops under a 44px tap-sized height. */

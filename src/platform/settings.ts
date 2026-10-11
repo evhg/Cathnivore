@@ -60,6 +60,8 @@ export function saveSettings(settings: Settings): void {
 export function applyAnimationsSetting(animations: boolean): void {
   if (typeof document === 'undefined') return
   document.documentElement.classList.toggle('no-animations', !animations)
+  // AAA UI M1: the in-game setting also drives the shared motion grammar (base.css .stagger, motion.ts).
+  document.documentElement.classList.toggle('reduce-motion', !animations)
 }
 
 // tokens.css already defines both a `prefers-color-scheme: dark` media query and a `[data-theme="dark"]`/

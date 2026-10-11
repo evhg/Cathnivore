@@ -52,11 +52,13 @@
   --font-num: "Marrow Figures", "Marrow Text", "Marrow Text Fallback", system-ui, sans-serif;
   --font-voice: "Marrow Display", "Marrow Voice Fallback", Georgia, serif;
   --focus: #1F5F99;
+  --focus-halo: #F4EDE1;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --focus: #8EC5F5;
+    --focus-halo: #1E1A17;
     --paper: #1E1A17;
     --paper-2: #2A2420;
     --surface: #332C27;
@@ -77,6 +79,7 @@
 
 :root[data-theme="dark"] {
   --focus: #8EC5F5;
+  --focus-halo: #1E1A17;
   --paper: #1E1A17;
   --paper-2: #2A2420;
   --surface: #332C27;

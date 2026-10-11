@@ -288,11 +288,7 @@ button {
   color: var(--ink);
 }
 
-button:focus-visible,
-a:focus-visible {
-  outline: 3px solid var(--wheat);
-  outline-offset: 2px;
-}
+/* Focus rings come from the shared grammar in shared/ui/base.css (--focus in tokens.css). */
 
 /* ---- board pieces ---- */
 
