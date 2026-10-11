@@ -263,6 +263,9 @@ export const RUNGS: Partial<Record<EnemyKind, RungSpec>> = {
   // Heavy Plants (M5): long shells, no push or hold, and a fleet under the lid.
   skip: { shell: 10, children: ["pickup", "pickup", "pickup"], props: ["plant"], speed: 1.0, colour: "#e0a82e", look: "A yellow skip lorry: ten layers of plate, no push or hold, and three pickups under the lid." },
   plantdozer: { shell: 120, children: ["steel", "steel", "steel", "steel"], props: ["plant"], speed: 0.6, colour: "#f2c230", look: "A Bulldozer: 120 layers of yellow plate, no push or hold, and four plated lorries under the blade. First seen in round 36." },
+  crane: { shell: 240, children: ["skip", "skip", "skip"], props: ["plant"], speed: 0.55, colour: "#d9a21b", look: "A mobile Crane: 240 layers of lattice and plate, and three Skips swinging from the hook. First seen in round 54." },
+  execcar: { shell: 80, children: ["transporter", "transporter"], props: ["plant"], speed: 2.4, colour: "#15171c", look: "An Exec Car: a black limousine, quick as a Same-Day van with 80 layers of armour, and a pair of transporters in its wake. First seen in round 62." },
+  borer: { shell: 400, children: ["plantdozer", "plantdozer"], props: ["plant"], speed: 0.5, colour: "#7a828c", look: "A Tunnel Borer: a rotating cutter head and 400 layers of segment ring, with two Bulldozers behind it. First seen in round 78." },
   // Act 1-3 bosses as long shells with their children (Hedgerow 2 section 1: the boss stays, its health is layers).
   boss: { shell: 300, children: ["lorry", "lorry", "lorry"], speed: 0.55, colour: "#1c1d22", look: "The Acquisition Van: a long shell, then three box lorries out of the back." },
   convoy: { shell: 600, children: ["steel", "steel"], props: ["plant"], speed: 0.5, colour: "#c43b2f", look: "Mr Crisp's Price-War Convoy: a long shell of discount signage, then two plated lorries." },

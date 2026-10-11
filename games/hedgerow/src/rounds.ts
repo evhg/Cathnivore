@@ -98,8 +98,57 @@ export const BOOK: BookRound[] = [
   { theme: "Plated yard", card: "Plated Skips and a bulldozer escort.", groups: [g("skip", 80, 0.3, 0, ["plated"]), g("plantdozer", 8, 2.5, 2), g("transporter", 66, 0.3, 3)] },
   { theme: "Wrapped", card: "Wrapped Skips: blasts are cushioned.", groups: [g("skip", 100, 0.24, 0, ["wrapped"]), g("plantdozer", 9, 2, 3), g("transporter", 58, 0.3, 3)] },
   { theme: "A breather", card: "A lighter round. Spend your Marks.", breather: true, groups: [g("transporter", 45, 0.3), g("steel", 60, 0.2, 2), g("plantdozer", 3, 4, 4)] },
-  { theme: "Crushing weight", card: "A spike: thirty Bulldozers nose to tail.", spike: true, groups: [g("plantdozer", 26, 0.9), g("skip", 80, 0.2, 2), g("transporter", 88, 0.2, 4)] },
+  { theme: "Crane Convoy", card: "Round 54: the first Cranes. 240 layers each, and three Skips swinging from the hook. A spike: everything you've got.", spike: true, groups: [g("crane", 14, 1.5), g("plantdozer", 8, 2.5, 2), g("transporter", 115, 0.17, 4)] },
 ];
+
+/**
+ * Rounds 55-80 (M5). Hand-chosen compositions, fitted to the budget: each group is a share of the round's
+ * Fleet Value, spread over `span` seconds, so a round is always within a few percent of 18 * r^1.5.
+ */
+interface Mix {
+  rung: EnemyKind;
+  share: number;
+  span: number;
+  delay?: number;
+  props?: Property[];
+}
+function fit(round: number, theme: string, card: string, mix: Mix[], flag?: "breather" | "spike"): BookRound {
+  const mult = flag === "breather" ? 0.6 : flag === "spike" ? 1.6 : 1;
+  const b = 18 * Math.pow(round, 1.5) * mult;
+  const groups = mix.map((m) => {
+    const count = Math.max(1, Math.round((m.share * b) / fvOf(m.rung, propMask(m.props))));
+    return g(m.rung, count, Math.round((m.span / count) * 1000) / 1000, m.delay ?? 0, m.props);
+  });
+  return { theme, card, groups, ...(flag ? { [flag]: true } : {}) };
+}
+BOOK.push(
+  fit(55, "Convoy line", "Round 55: transporters, Skips and Bulldozers in one long line.", [{ rung: "transporter", share: 0.45, span: 20 }, { rung: "skip", share: 0.3, span: 18, delay: 1 }, { rung: "plantdozer", share: 0.25, span: 16, delay: 2 }]),
+  fit(56, "Frozen yard", "Round 56: Reefer Skips. A frost box shrugs off every slow and hold.", [{ rung: "skip", share: 0.4, span: 20, props: ["reefer"] }, { rung: "transporter", share: 0.6, span: 20, delay: 1 }]),
+  fit(57, "Skip rushes", "Round 57: three tight Skip rushes. One ability can't answer all three.", [{ rung: "skip", share: 0.25, span: 2.5 }, { rung: "skip", share: 0.25, span: 2.5, delay: 8 }, { rung: "skip", share: 0.25, span: 2.5, delay: 16 }, { rung: "transporter", share: 0.25, span: 20 }]),
+  fit(58, "Stealth haulage", "Round 58: Stealth transporters and Bulldozers. A Radio Mast shows them all.", [{ rung: "transporter", share: 0.5, span: 20, props: ["stealth"] }, { rung: "plantdozer", share: 0.25, span: 18, props: ["stealth"], delay: 1 }, { rung: "steel", share: 0.25, span: 18, delay: 2 }]),
+  fit(59, "Plated plant", "Round 59: Plated Bulldozers and Skips. Beaks and thorns bounce off.", [{ rung: "plantdozer", share: 0.4, span: 20, props: ["plated"] }, { rung: "skip", share: 0.3, span: 18, props: ["plated"], delay: 1 }, { rung: "transporter", share: 0.3, span: 18, delay: 2 }]),
+  fit(60, "Rebrand haul", "Round 60: Rebranded transporters and artics. Pop them together.", [{ rung: "transporter", share: 0.5, span: 20, props: ["rebrand"] }, { rung: "artic", share: 0.5, span: 20, delay: 1, props: ["rebrand"] }]),
+  fit(61, "A breather", "A lighter round of lorries and a few Skips. Spend, upgrade, stack.", [{ rung: "transporter", share: 0.6, span: 20 }, { rung: "skip", share: 0.4, span: 18, delay: 1 }], "breather"),
+  fit(62, "The first Exec Car", "Round 62: Exec Cars. Black limos, quick and armoured, with transporters in their wake.", [{ rung: "execcar", share: 0.5, span: 20 }, { rung: "transporter", share: 0.3, span: 20, delay: 1 }, { rung: "skip", share: 0.2, span: 18, delay: 2 }]),
+  fit(63, "Executive rush", "A spike: Exec Cars and Skips, all at once.", [{ rung: "execcar", share: 0.4, span: 16 }, { rung: "skip", share: 0.6, span: 20, delay: 1 }], "spike"),
+  fit(64, "Air bridge", "Round 64: quadcopters above, transporters below.", [{ rung: "quad", share: 0.5, span: 20 }, { rung: "transporter", share: 0.5, span: 20, delay: 1 }]),
+  fit(65, "Sealed plants", "Round 65: Sealed Skips and Bulldozers. A mesh grille keeps the bees out.", [{ rung: "skip", share: 0.4, span: 20, props: ["sealed"] }, { rung: "plantdozer", share: 0.3, span: 18, props: ["sealed"], delay: 1 }, { rung: "transporter", share: 0.3, span: 18, delay: 2 }]),
+  fit(66, "Wrapped haul", "Round 66: Wrapped Cranes. Blasts are cushioned.", [{ rung: "crane", share: 0.4, span: 20, props: ["wrapped"] }, { rung: "transporter", share: 0.6, span: 20, delay: 1 }]),
+  fit(67, "Crane pair", "Round 67: Cranes with Skips on the hook and transporters behind.", [{ rung: "crane", share: 0.4, span: 20 }, { rung: "skip", share: 0.3, span: 18, delay: 1 }, { rung: "transporter", share: 0.3, span: 18, delay: 2 }]),
+  fit(68, "Mixed locks", "Round 68: stealth, steel and a frost box in one line.", [{ rung: "transporter", share: 0.3, span: 20, props: ["stealth"] }, { rung: "plantdozer", share: 0.3, span: 18, props: ["plated"], delay: 1 }, { rung: "skip", share: 0.4, span: 18, props: ["reefer"], delay: 2 }]),
+  fit(69, "A breather", "Catch your breath: a Bulldozer or two and a long line of lorries.", [{ rung: "transporter", share: 0.7, span: 20 }, { rung: "plantdozer", share: 0.3, span: 15, delay: 3 }], "breather"),
+  fit(70, "Reinforced Plants", "Round 70: Reinforced Plants. Hazard bands: every shell takes twice the hits.", [{ rung: "plantdozer", share: 0.4, span: 20, props: ["reinforced"] }, { rung: "skip", share: 0.3, span: 18, props: ["reinforced"], delay: 1 }, { rung: "crane", share: 0.3, span: 18, delay: 2 }]),
+  fit(71, "Executive convoy", "A spike: Exec Cars in procession, transporters in their wake.", [{ rung: "execcar", share: 0.6, span: 18 }, { rung: "transporter", share: 0.4, span: 20, delay: 1 }], "spike"),
+  fit(72, "Rebrand Execs", "Round 72: Rebranded Exec Cars grow a rung back every 3 s.", [{ rung: "execcar", share: 0.5, span: 20, props: ["rebrand"] }, { rung: "artic", share: 0.5, span: 20, delay: 1 }]),
+  fit(73, "Plant parade", "Round 73: every Plant in the yard, one after another.", [{ rung: "skip", share: 0.3, span: 20 }, { rung: "plantdozer", share: 0.3, span: 18, delay: 1 }, { rung: "crane", share: 0.2, span: 16, delay: 2 }, { rung: "execcar", share: 0.2, span: 16, delay: 3 }]),
+  fit(74, "Carrier wing", "Round 74: a wing of quadcopters over Bulldozers and transporters.", [{ rung: "quad", share: 0.5, span: 20 }, { rung: "transporter", share: 0.3, span: 20, delay: 1 }, { rung: "plantdozer", share: 0.2, span: 16, delay: 2 }]),
+  fit(75, "Stealth plants", "Round 75: Stealth Bulldozers and Cranes. Bring the Mast.", [{ rung: "plantdozer", share: 0.35, span: 20, props: ["stealth"] }, { rung: "crane", share: 0.3, span: 18, props: ["stealth"], delay: 1 }, { rung: "transporter", share: 0.35, span: 18, delay: 2 }]),
+  fit(76, "Lockdown", "Round 76: every lock at once. Sealed, Wrapped, Reefer and Plated.", [{ rung: "transporter", share: 0.25, span: 20, props: ["sealed"] }, { rung: "skip", share: 0.25, span: 18, props: ["wrapped"], delay: 1 }, { rung: "plantdozer", share: 0.25, span: 18, props: ["reefer"], delay: 2 }, { rung: "execcar", share: 0.25, span: 16, props: ["plated"], delay: 3 }]),
+  fit(77, "A breather", "The last quiet round before the Borer. Spend everything.", [{ rung: "transporter", share: 0.6, span: 20 }, { rung: "skip", share: 0.4, span: 18, delay: 2 }], "breather"),
+  fit(78, "Tunnel Borer", "Round 78: the Tunnel Borer. 400 layers of segment ring, two Bulldozers behind its cutter head.", [{ rung: "borer", share: 0.6, span: 12 }, { rung: "execcar", share: 0.2, span: 16, delay: 1 }, { rung: "transporter", share: 0.2, span: 18, delay: 2 }]),
+  fit(79, "The last push", "A spike: Cranes, Bulldozers and Skips, nose to tail.", [{ rung: "plantdozer", share: 0.3, span: 20 }, { rung: "skip", share: 0.3, span: 20, delay: 1 }, { rung: "crane", share: 0.3, span: 18, delay: 2 }, { rung: "execcar", share: 0.1, span: 12, delay: 3 }], "spike"),
+  fit(80, "The finale", "Round 80: a Tunnel Borer, Cranes, Bulldozers and Exec Cars. The Book ends here; Freeplay follows.", [{ rung: "borer", share: 0.3, span: 14 }, { rung: "crane", share: 0.2, span: 18, delay: 1 }, { rung: "plantdozer", share: 0.2, span: 18, delay: 2 }, { rung: "execcar", share: 0.15, span: 16, delay: 3 }, { rung: "transporter", share: 0.15, span: 20, delay: 4 }]),
+);
 
 /**
  * Act-themed swaps (section 5: "each act swaps about 3 Book rounds for act-themed ones"). Neighbouring story

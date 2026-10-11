@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-11 03:52 session:** Hedgerow M5 (H6) slice 1-3 on `build`: Heavy Plants as fleet rungs (Skip, Bulldozer = kind `plantdozer` because `bulldozer` is the classic act-4 enemy, Crane, Exec Car, Tunnel Borer) with 2D sprites and 3D models (shots checked), a `wreck` event (banner, 80 ms hit-stop, debris), sandbox `hedgerow.spawn(kind, dist)`, Book rounds 36 and 46-80 (fitted to 18*r^1.5 by `fit()` in rounds.ts). `npm run check` green. Unreleased (milestone only). Next: T4 Crowns (paths.ts tier 4, tray abilities, uniqueness), crack stages, Freeplay; then CATHODE next milestone.
 - **2026-10-11 03:35 (owner chat, handing back):** Hedgerow 2 M1–M4 are live (`68a1f7c`, `f159236`). Hourly sessions resume the owner's 70/30 split: Phase D (CATHODE districts) first, and Hedgerow continues at H6 (M5) per `docs/design/hedgerow-2.md`. M4 review minor notes left for M5:
   - start-Marks k sits at its 0.7 floor on levels 2–10 and 20–30, so add property-spike rounds a plain build can't answer;
   - a shut path column still shows a filled progress bar (`.path-col.shut .path-bar`);

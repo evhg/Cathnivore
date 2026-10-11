@@ -1382,6 +1382,32 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       for (const x of [-0.4, -0.2, 0.34]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.17));
       return g;
     }
+    case "crane": {
+      // A mobile crane: yellow carrier, cab, and a lattice boom with a hook.
+      const g = new THREE.Group();
+      g.add(box(0.8, 0.14, 0.34, gloss("#d9a21b"), -0.05, 0.14, 0), box(0.2, 0.22, 0.3, gloss("#2a2b31", 0.3), 0.3, 0.3, 0));
+      g.add(rot(box(0.9, 0.04, 0.05, metal("#8a96a3", 0.4), -0.1, 0.55, 0), 0.5));
+      g.add(box(0.012, 0.3, 0.012, metal("#3b3f44"), 0.3, 0.55, 0));
+      for (const x of [-0.4, -0.15, 0.1, 0.34]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.18));
+      return g;
+    }
+    case "execcar": {
+      // An Exec Car: a long black limousine with a gold stripe.
+      const g = new THREE.Group();
+      g.add(box(0.9, 0.16, 0.3, gloss("#15171c", 0.2), 0, 0.12, 0), box(0.4, 0.12, 0.26, gloss("#15171c", 0.2), -0.05, 0.27, 0));
+      for (const side of [-1, 1]) g.add(box(0.8, 0.02, 0.006, glow("#d4ae58", 0.9), 0, 0.17, side * 0.153));
+      g.add(box(0.005, 0.07, 0.22, glass(), 0.14, 0.27, 0));
+      for (const x of [-0.3, 0.3]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.15));
+      return g;
+    }
+    case "borer": {
+      // A Tunnel Borer: a segmented drum with a red cutter head.
+      const g = new THREE.Group();
+      g.add(rot(cyl(0.22, 0.22, 0.7, metal("#7a828c", 0.5), -0.1, 0.25, 0, 14), Math.PI / 2));
+      g.add(rot(cyl(0.26, 0.04, 0.18, metal("#c43b2f", 0.4), 0.34, 0.25, 0, 14), Math.PI / 2));
+      for (const side of [-1, 1]) g.add(box(0.8, 0.1, 0.1, matte("#1d1b1b", 0.9, false), 0, 0.05, side * 0.2));
+      return g;
+    }
     case "plantdozer": {
       // A Bulldozer: yellow body on tracks, a cab, and a steel blade out front.
       const g = new THREE.Group();
@@ -1430,6 +1456,9 @@ export function buildEnemy(kind: EnemyKind): THREE.Group {
     case "transporter":
     case "skip":
     case "plantdozer":
+    case "crane":
+    case "execcar":
+    case "borer":
       g = buildRung(kind)!;
       break;
     case "van":

@@ -1212,6 +1212,12 @@ export function enemyScale(kind: EnemyKind): number {
       return 1.3;
     case "plantdozer":
       return 1.5;
+    case "crane":
+      return 1.6;
+    case "execcar":
+      return 1.25;
+    case "borer":
+      return 1.7;
     case "carrier":
       return 1.1;
     case "rival":
@@ -1509,6 +1515,25 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
     case "skip":
       vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.3, body: "#e0a82e", cab: "#b9831a", stripe: "#3b3f44", wheels: 3 });
       rr(ctx, -s * 0.34, -s * 0.5, s * 0.5, s * 0.16, s * 0.03, "#9a6b12");
+      break;
+    case "crane":
+      vehicle(ctx, 0, 0, s, tt, { len: 0.9, h: 0.3, body: "#d9a21b", cab: "#2a2b31", stripe: "#2a2b31", wheels: 4 });
+      ctx.strokeStyle = "#8a96a3";
+      ctx.lineWidth = s * 0.04;
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.1, -s * 0.2);
+      ctx.lineTo(s * 0.4, -s * 0.7);
+      ctx.stroke();
+      break;
+    case "execcar":
+      vehicle(ctx, 0, 0, s, tt, { len: 0.84, h: 0.22, body: "#15171c", cab: "#15171c", stripe: "#d4ae58", wheels: 3 });
+      break;
+    case "borer":
+      rr(ctx, -s * 0.4, -s * 0.38, s * 0.7, s * 0.34, s * 0.04, "#7a828c");
+      ctx.fillStyle = "#c43b2f";
+      ctx.beginPath();
+      ctx.arc(s * 0.36, -s * 0.21, s * 0.2, 0, Math.PI * 2);
+      ctx.fill();
       break;
     case "plantdozer":
       vehicle(ctx, 0, 0, s, tt, { len: 0.84, h: 0.36, body: "#f2c230", cab: "#2a2b31", stripe: "#2a2b31", wheels: 4 });

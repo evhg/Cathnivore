@@ -61,7 +61,10 @@ export type EnemyKind =
   | "transporter"
   // Heavy Plants (Hedgerow 2 M5): long shells that crack, and the fleet they carry.
   | "skip"
-  | "plantdozer";
+  | "plantdozer"
+  | "crane"
+  | "execcar"
+  | "borer";
 
 export interface TowerSpec {
   name: string;
@@ -306,6 +309,9 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   transporter: { name: "Car transporter", hp: 420, speed: 1.0, bounty: 24, leak: 4 },
   skip: { name: "Skip lorry", hp: 600, speed: 1.0, bounty: 30, leak: 4 },
   plantdozer: { name: "Bulldozer", hp: 1400, speed: 0.6, bounty: 120, leak: 8 },
+  crane: { name: "Crane", hp: 1400, speed: 0.55, bounty: 160, leak: 10 },
+  execcar: { name: "Exec Car", hp: 800, speed: 2.4, bounty: 90, leak: 8 },
+  borer: { name: "Tunnel Borer", hp: 1450, speed: 0.5, bounty: 300, leak: 16 },
   boss: {
     name: "The Acquisition Van",
     hp: 1800,

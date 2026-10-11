@@ -282,8 +282,8 @@ describe("hedgerow fleet: pops you can hear", () => {
 });
 
 describe("hedgerow fleet: rounds and levels", () => {
-  it("the Book has 54 rounds, each within 10% of its budget, none spawning for more than 25 s", () => {
-    expect(BOOK_ROUNDS).toBe(54);
+  it("the Book has 80 rounds, each within 10% of its budget, none spawning for more than 25 s", () => {
+    expect(BOOK_ROUNDS).toBe(80);
     for (let r = 1; r <= BOOK_ROUNDS; r++) {
       expect(Math.abs(roundFV(r) / budget(r) - 1)).toBeLessThan(0.1);
       const spawn = Math.max(...BOOK[r - 1]!.groups.map((x) => (x.delay ?? 0) + x.count * x.gap));
@@ -701,5 +701,14 @@ describe("hedgerow fleet: Plants (M5)", () => {
     expect(g.events.filter((ev) => ev.type === "wreck")).toHaveLength(1);
     expect(dozer.kind).toBe("steel");
     expect(g.enemies.filter((x) => x.kind === "steel")).toHaveLength(4);
+  });
+  it("the Book's Plants arrive on schedule: Crane R54, Exec Car R62, Tunnel Borer R78", () => {
+    const first = (k: string) => BOOK.findIndex((r) => r.groups.some((x) => x.rung === k)) + 1;
+    expect(first("plantdozer")).toBe(36);
+    expect(first("crane")).toBe(54);
+    expect(first("execcar")).toBe(62);
+    expect(first("borer")).toBe(78);
+    expect(BOOK[52]!.breather).toBe(true);
+    expect(BOOK[76]!.breather).toBe(true);
   });
 });
