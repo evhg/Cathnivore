@@ -61,6 +61,8 @@
   --newsprint: #F7F4EC;        /* Agenda clippings (stay light in dark mode: they are objects) */
   --newsprint-lo: #EFEAE0;
   --newsprint-ink: #2B2320;
+  --bunting: #6B4A2B;           /* the round banner's soil cloth: a fixed object, the same in both themes */
+  --bunting-lo: #573B21;
   --kraft: #CFAE7E;            /* market tray, tab rail: a fill only, never under bare text */
   --kraft-lo: #C49F6E;
   --wheat-ink: #7A5B14;        /* wheat as text: 5.41:1 on paper */

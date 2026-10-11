@@ -1300,10 +1300,10 @@ html.native-app body {
   z-index: var(--z-banner);
   min-width: min(60%, 260px);
   padding: 9px 40px 10px;
-  background: var(--grain-paper), linear-gradient(180deg, #6B4A2B, #573B21);
+  background: var(--grain-paper), linear-gradient(180deg, var(--bunting), var(--bunting-lo));
   color: var(--paper-on-fixed-fill);
   clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 50%, 100% 100%, 0 100%, 18px 50%);
-  filter: drop-shadow(0 6px 8px rgb(28 18 10 / .35));
+  filter: drop-shadow(0 6px 8px rgb(var(--shadow-ink) / .35));
   font: 700 var(--fs-h3)/1 var(--font-display);
   font-variation-settings: "opsz" 36;
   text-align: center;

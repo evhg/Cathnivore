@@ -374,7 +374,7 @@
   min-height: 12px;
   margin: 0 -21px 3px 0;
   padding-bottom: 3px;
-  border-bottom: 1px solid rgb(43 35 32 / .22);
+  border-bottom: 1px solid color-mix(in srgb, var(--newsprint-ink) 22%, transparent);
 }
 
 .plan-strip-card-brand {
@@ -1313,22 +1313,22 @@
 
 /* ---- scroll cues (useScrollCues): an edge fade where there is more, and an "n more" tab ---- */
 [data-scroll-cue][data-fade-bottom] {
-  mask-image: linear-gradient(#000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(black calc(100% - 40px), transparent);
 }
 
 [data-scroll-cue][data-fade-top] {
-  mask-image: linear-gradient(transparent, #000 22px);
+  mask-image: linear-gradient(transparent, black 22px);
 }
 
 [data-scroll-cue][data-fade-top][data-fade-bottom] {
-  mask-image: linear-gradient(transparent, #000 22px, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(transparent, black 22px, black calc(100% - 40px), transparent);
 }
 
 .frame[data-more]::after,
 .actions-well[data-more]::after {
   content: attr(data-more) " more \2193";
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-lift);
   left: 50%;
   bottom: 4px;
   translate: -50% 0;
