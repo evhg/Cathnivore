@@ -3,6 +3,7 @@
    hedgerow §2-3): the players own painted oak, cream card, brass pins and inked lettering; Hollowell owns
    white gloss plastic and corporate teal. */
 :root {
+  --kit-picked: rgba(255, 255, 255, 0.14);
   color-scheme: light;
   --harvest: #9a4f12; /* the Next (stack a round) fill: 5.6:1 under white bold text */
   --harvest-hi: #c47a2c;

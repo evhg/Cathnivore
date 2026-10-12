@@ -2,6 +2,12 @@
    or danger, cyan is system and selection, amber is reward. Imported after shared/ui/base.css and fonts.css,
    before components.css, hud.css and styles.css. The only file in this game that may hold raw colours. */
 :root {
+  --load-market: radial-gradient(120% 70% at 50% 100%, #0e3a46 0%, var(--night) 70%);
+  --load-clinic: linear-gradient(180deg, #0b1d1a 0%, #163a33 55%, var(--night) 100%);
+  --load-plaza: linear-gradient(180deg, #0a1020 0%, #1b2a4a 60%, #2a1630 100%);
+  --load-tower: linear-gradient(180deg, #05060c 0%, #20180e 70%, #3a2a12 100%);
+  --load-vault: radial-gradient(100% 80% at 50% 110%, #5a0d12 0%, #12060a 65%, var(--night) 100%);
+
   color-scheme: dark;
 
   /* --- font roles (one vocabulary with the portfolio); --display, --ui and --mono are legacy aliases --- */

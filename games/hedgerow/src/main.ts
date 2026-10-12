@@ -459,6 +459,7 @@ function renderLevels(): void {
   ui.bankStars.textContent = String(freeStars(data));
   $<HTMLElement>("daily-new").hidden = data.daily?.[String(dayOf(Date.now()))] !== undefined;
   renderCathButton();
+  renderSelectKits();
   renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; const week = weekOf(Date.now()); endlessArgs = { act, week }; startLevel(endlessLevel(act, week), false); });
 }
 
@@ -3432,6 +3433,33 @@ function renderCathButton(): void {
   ui.cathBtnFace.innerHTML = cathSvg({ framing: "face", expression: "smirk", outfit: art() });
 }
 
+/** Kit chips on the level-select screen, so the kit is chosen before the field, not buried in her sheet. */
+function renderSelectKits(): void {
+  const box = $<HTMLElement>("select-kits");
+  box.replaceChildren();
+  const lab = document.createElement("span");
+  lab.className = "select-kits-label";
+  lab.textContent = "Cath's kit";
+  box.append(lab);
+  for (const k of [null, ...KITS]) {
+    const b = document.createElement("button");
+    b.type = "button";
+    const on = (data.kit ?? null) === (k?.id ?? null);
+    b.className = `kit-chip${on ? " picked" : ""}`;
+    b.setAttribute("aria-pressed", String(on));
+    b.textContent = k?.name ?? "Plain";
+    b.title = k?.blurb ?? "No kit: Cath plays as she is.";
+    b.onclick = () => {
+      if (k) data.kit = k.id;
+      else delete data.kit;
+      save(data);
+      sfx.playUpgrade();
+      renderSelectKits();
+    };
+    box.append(b);
+  }
+}
+
 function renderKits(): void {
   const box = $<HTMLElement>("cath-kits");
   box.replaceChildren();
@@ -3457,6 +3485,7 @@ function renderKits(): void {
       save(data);
       sfx.playUpgrade();
       renderKits();
+      renderSelectKits();
     };
     row.append(b);
   }

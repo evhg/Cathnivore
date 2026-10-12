@@ -412,3 +412,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-12: U6 slice 1: phone board can only grow ~8% (width-bound hex), so accepted below the 15% target; landscape is where the real gain is.
 - 2026-10-12: morgue floor uses the shared "water" material at y=0.1 (no splash surface yet).
 - 2026-10-12: D2 marked done; morgue splash is a `wet` flag on audio.steps decided by a box test in session.ts, not a new surface type.
+- 2026-10-12: kit pick lives as chips on the Hedgerow select screen (no level card exists); per-district saves skipped (character and jobs are already global).

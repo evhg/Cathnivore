@@ -320,11 +320,11 @@ input[type="radio"] {
   text-align: center;
   background: var(--night);
 }
-.loading[data-district="market"] { background: radial-gradient(120% 70% at 50% 100%, #0e3a46 0%, var(--night) 70%); }
-.loading[data-district="clinic"] { background: linear-gradient(180deg, #0b1d1a 0%, #163a33 55%, var(--night) 100%); }
-.loading[data-district="plaza"] { background: linear-gradient(180deg, #0a1020 0%, #1b2a4a 60%, #2a1630 100%); }
-.loading[data-district="tower"] { background: linear-gradient(180deg, #05060c 0%, #20180e 70%, #3a2a12 100%); }
-.loading[data-district="vault"] { background: radial-gradient(100% 80% at 50% 110%, #5a0d12 0%, #12060a 65%, var(--night) 100%); }
+.loading[data-district="market"] { background: var(--load-market); }
+.loading[data-district="clinic"] { background: var(--load-clinic); }
+.loading[data-district="plaza"] { background: var(--load-plaza); }
+.loading[data-district="tower"] { background: var(--load-tower); }
+.loading[data-district="vault"] { background: var(--load-vault); }
 .loading-line {
   margin: 0 0 16px;
   font-family: var(--font-voice);

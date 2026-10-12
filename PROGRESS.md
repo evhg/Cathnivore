@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-12 13:52 session (short):** D1 leftover: per-district loading card art + flavour line (CATHODE, tested). H7 (M6): kit chips on the Hedgerow level-select screen (shot checked). CSS ratchet green (tokens). Unreleased. Left: per-district saves, M6 RPG re-point/duel rewards.
 - **2026-10-12 12:52 session (short):** D2 done: wet slosh footsteps in the flooded morgue (`steps(..., wet)`), vanelead already runs in the clinic. 52 cathode test files pass, tsc clean. Unreleased. Next: D1 leftovers (loading card art, per-district saves), then Phase U/H.
 - **2026-10-12 11:52 session:** H7 (M6) slice 3: Cath's kits (Baker, Organiser, Warden; `KITS` in hero.ts) picked in her sheet, stored as `save.kit`, folded into perks by `perksOf` (daily/bots unaffected); test added. Archived old notes (PROGRESS was 380 lines). Unreleased. Left for M6: kit pick on the level card, RPG re-point, duel reward.
 - **2026-10-12 10:52 session:** H7 (M6) slice 2: Last Orders, Cath's level-10 hand-fired ability (whole field takes 3+ layers, 75 s cooldown, tray button "Orders", replay action, test); her level shows on her tray button ("Cath Lv N"). Shot checked, 135 hedgerow tests green (the fleet perf test flakes under a full-suite load, passes alone). Unreleased. Left for M6: kit picker, Pie/Neighbours re-point, duel rewards, bot use of Last Orders.
