@@ -105,14 +105,19 @@ export interface PathTier {
 }
 
 export interface CrownAbility {
-  kind: "blackout" | "stoop" | "standup";
+  kind: "blackout" | "stoop" | "standup" | "freeze" | "strike" | "triage";
   name: string;
   /** What it does, for the button. */
   blurb: string;
   /** Seconds before it can be used again. */
   cooldown: number;
-  /** Seconds a surge lasts (blackout, standup). */
+  /** Seconds a surge lasts (blackout, standup) or a freeze holds (freeze). */
   secs?: number;
+  /** Cells the effect reaches (standup, freeze). Standup with `all` boosts every tower kind, not just its own. */
+  reach?: number;
+  all?: boolean;
+  /** Layers a strike takes off the strongest enemy; Goodwill a triage mends. */
+  amount?: number;
 }
 
 export interface PathDef {
@@ -384,27 +389,27 @@ export const PATHS: Record<PathKind, TowerPaths> = {
 };
 
 /** Crowns for the other four path towers (M5): passive, one per path, one of each per field. */
-const C = (name: string, cost: number, adds: string, blurb: string, mod: PathMod): PathTier => ({ name, cost, adds, blurb, mod });
+const C = (name: string, cost: number, adds: string, blurb: string, mod: PathMod, ability?: CrownAbility): PathTier => ({ name, cost, adds, blurb, mod, ...(ability ? { ability } : {}) });
 const PASSIVE_CROWNS: Record<Exclude<PathKind, "scarecrow">, [PathTier, PathTier, PathTier]> = {
   hedgerow: [
-    C("Impenetrable Thicket", 18000, "60-hit piles, laid 2× as fast, scratches +1/s", "A thicket no lorry has ever left. Piles of sixty, laid twice as fast, and every thorn bites.", { piles: { hits: 60, every: 0.8, max: 6 }, thorns: 1 }),
-    C("Labyrinth", 16000, "slows to 22%, +50% range", "The hedge maze of a stately home, laid across the lane. Nothing finds its way out.", { slow: 0.22, range: 1.5 }),
-    C("Hay Barn", 20000, "holds 6 for 2 s, rams 4 layers", "A whole barn of hay, a whole barn of farmhands: six held still, and the tractor hits like a train.", { hold: { secs: 2, every: 4, count: 6 }, damage: 2, knockback: 1 }),
+    C("Impenetrable Thicket", 18000, "60-hit piles, laid 2× as fast, scratches +1/s", "A thicket no lorry has ever left. Piles of sixty, laid twice as fast, and every thorn bites.", { piles: { hits: 60, every: 0.8, max: 6 }, thorns: 1 }, { kind: "freeze", name: "Overgrow", blurb: "Every ground enemy within 4 cells is rooted for 2.5 seconds.", cooldown: 40, secs: 2.5, reach: 4 }),
+    C("Labyrinth", 16000, "slows to 22%, +50% range", "The hedge maze of a stately home, laid across the lane. Nothing finds its way out.", { slow: 0.22, range: 1.5 }, { kind: "freeze", name: "Lost in the Maze", blurb: "Every ground enemy within 6 cells is rooted for 3 seconds.", cooldown: 50, secs: 3, reach: 6 }),
+    C("Hay Barn", 20000, "holds 6 for 2 s, rams 4 layers", "A whole barn of hay, a whole barn of farmhands: six held still, and the tractor hits like a train.", { hold: { secs: 2, every: 4, count: 6 }, damage: 2, knockback: 1 }, { kind: "blackout", name: "Hay Rush", blurb: "Fires three times as fast for 8 seconds.", cooldown: 45, secs: 8 }),
   ],
   beehive: [
-    C("Hornet Nest", 22000, "+6 pierce, +2 layers, poison spreads 3 layers/s", "The bees have called in the hornets. Nobody asked them to.", { pierce: 6, damage: 2, poison: { dps: 3, secs: 4, spread: true } }),
-    C("Royal Jelly", 20000, "slows to 35%, stuck for 3 s, +25% range", "Royal jelly by the bucket. The whole lane is a sticky floor.", { slow: 0.35, sticky: { factor: 0.35, secs: 3 }, range: 1.25 }),
-    C("Colony", 24000, "towers in range fire 30% faster", "A whole colony working the field: every tower in reach fires faster, and the hive fastest of all.", { buff: 1.3, rate: 1.4 }),
+    C("Hornet Nest", 22000, "+6 pierce, +2 layers, poison spreads 3 layers/s", "The bees have called in the hornets. Nobody asked them to.", { pierce: 6, damage: 2, poison: { dps: 3, secs: 4, spread: true } }, { kind: "blackout", name: "Swarm Frenzy", blurb: "Fires three times as fast for 8 seconds.", cooldown: 45, secs: 8 }),
+    C("Royal Jelly", 20000, "slows to 35%, stuck for 3 s, +25% range", "Royal jelly by the bucket. The whole lane is a sticky floor.", { slow: 0.35, sticky: { factor: 0.35, secs: 3 }, range: 1.25 }, { kind: "freeze", name: "Honey Flood", blurb: "Every ground enemy within 6 cells is stuck fast for 3 seconds.", cooldown: 50, secs: 3, reach: 6 }),
+    C("Colony", 24000, "towers in range fire 30% faster", "A whole colony working the field: every tower in reach fires faster, and the hive fastest of all.", { buff: 1.3, rate: 1.4 }, { kind: "standup", name: "Hive Mind", blurb: "Every tower within 4 cells fires three times as fast for 6 seconds.", cooldown: 55, secs: 6, reach: 4, all: true }),
   ],
   cannon: [
-    C("Giant Pumpkin Mortar", 26000, "+50% splash, +3 layers, +8 pierce", "The village giant-vegetable winner, loaded with its own prize.", { splash: 1.5, damage: 3, pierce: 8 }),
-    C("Grapeshot", 22000, "fires 2× as fast, hits Airborne, +30% range", "Pip's scrapyard flak storm: a hail of bolts at the whole sky.", { rate: 2, air: true, range: 1.3 }),
-    C("Siege Cannon", 28000, "×3 on big shells, +6 layers on Plants", "Hand-me-down from a castle. It does not care what the shell is made of.", { shellMul: 3, plantDamage: 6 }),
+    C("Giant Pumpkin Mortar", 26000, "+50% splash, +3 layers, +8 pierce", "The village giant-vegetable winner, loaded with its own prize.", { splash: 1.5, damage: 3, pierce: 8 }, { kind: "strike", name: "Pumpkin Drop", blurb: "One enormous pumpkin takes 40 layers off the strongest enemy on the field.", cooldown: 40, amount: 40 }),
+    C("Grapeshot", 22000, "fires 2× as fast, hits Airborne, +30% range", "Pip's scrapyard flak storm: a hail of bolts at the whole sky.", { rate: 2, air: true, range: 1.3 }, { kind: "blackout", name: "Flak Storm", blurb: "Fires three times as fast for 6 seconds.", cooldown: 40, secs: 6 }),
+    C("Siege Cannon", 28000, "×3 on big shells, +6 layers on Plants", "Hand-me-down from a castle. It does not care what the shell is made of.", { shellMul: 3, plantDamage: 6 }, { kind: "strike", name: "Siege Volley", blurb: "A castle's worth of shot takes 80 layers off the strongest enemy on the field.", cooldown: 55, amount: 80 }),
   ],
   mast: [
-    C("Radio Free Hedgerow", 26000, "reveals the field, vehicles take +90%", "Sol broadcasts the whole county's weak spots on every frequency.", { global: true, detect: true, vuln: 1.9 }),
-    C("Field Hospital", 24000, "+40% range aura, +5 Goodwill a round", "Ines turns the village hall into a field hospital. Everyone feels better, and sees further.", { rangeAura: 1.4, cleanse: true, mend: 5 }),
-    C("Emergency Broadcast", 26000, "towers in range fire 30% faster", "Every siren in the county, at once. Nobody in range is slow now.", { buff: 1.3, rate: 1.2 }),
+    C("Radio Free Hedgerow", 26000, "reveals the field, vehicles take +90%", "Sol broadcasts the whole county's weak spots on every frequency.", { global: true, detect: true, vuln: 1.9 }, { kind: "freeze", name: "Dead Air", blurb: "Every ground enemy on the field is rooted for 1.5 seconds.", cooldown: 60, secs: 1.5, reach: 99 }),
+    C("Field Hospital", 24000, "+40% range aura, +5 Goodwill a round", "Ines turns the village hall into a field hospital. Everyone feels better, and sees further.", { rangeAura: 1.4, cleanse: true, mend: 5 }, { kind: "triage", name: "Triage", blurb: "Mends 15 Goodwill at once.", cooldown: 60, amount: 15 }),
+    C("Emergency Broadcast", 26000, "towers in range fire 30% faster", "Every siren in the county, at once. Nobody in range is slow now.", { buff: 1.3, rate: 1.2 }, { kind: "standup", name: "All Hands", blurb: "Every tower within 5 cells fires three times as fast for 6 seconds.", cooldown: 55, secs: 6, reach: 5, all: true }),
   ],
 };
 for (const [k, crowns] of Object.entries(PASSIVE_CROWNS) as [Exclude<PathKind, "scarecrow">, [PathTier, PathTier, PathTier]][])

@@ -404,3 +404,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-11: U4 phone landscape (844x390) is a two-column table (map left; papers, ledger, actions and rail right; tutorial pinned to the tabletop). Phone tab rail shows "Plan" with the accessible name "Cath’s Plan".
 - 2026-10-12: U5 started with desktop poster cards (CSS tokens for new colours to satisfy the CSS ratchet).
 - 2026-10-12: U5 slice 2 drops Cath's tuck behind the cards (acceptance: no card overlaps her) on phone and landscape.
+- 2026-10-12: Crown abilities for all path towers (unbalanced by tuner: bots never fire them; cooldowns 40-60 s keep them modest).

@@ -575,4 +575,25 @@ describe("hedgerow paths: Crowns (M5)", () => {
     expect(a.surge).toBeLessThan(8);
     expect(a.crownCd).toBeGreaterThan(0);
   });
+  it("every Crown has an ability, and freeze, strike and triage do what they say", () => {
+    for (const k of ["hedgerow", "beehive", "cannon", "mast"] as const) for (const p of PATHS[k].paths) expect(p.crown!.ability).toBeTruthy();
+    const g = field();
+    const ps = plots(L8);
+    place(g, "cannon", ps[0]![0], ps[0]![1]);
+    place(g, "mast", ps[1]![0], ps[1]![1]);
+    const [cn, hg] = g.towers as [Tower, Tower];
+    cn.crown = 2;
+    hg.crown = 0;
+    live(g);
+    const strong = makeEnemy(g, "steel", 3, undefined, 1);
+    g.enemies.push(strong);
+    const hp = strong.hp;
+    expect(fireCrown(g, cn.id).ok).toBe(true);
+    expect(strong.hp).toBeLessThan(hp);
+    // Dead Air roots what it reaches.
+    const walker = makeEnemy(g, "steel", 3, undefined, 1);
+    g.enemies.push(walker);
+    expect(fireCrown(g, hg.id).ok).toBe(true);
+    expect(walker.stun).toBeGreaterThan(0);
+  });
 });

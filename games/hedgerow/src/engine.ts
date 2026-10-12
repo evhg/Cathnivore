@@ -2317,11 +2317,30 @@ export function fireCrown(game: Game, id: number): ActionResult {
   if (!ab) return { ok: false, reason: "This Crown has no ability." };
   if (game.phase !== "wave") return { ok: false, reason: "Save it for a round." };
   if (t.crownCd) return { ok: false, reason: `${ab.name} needs ${Math.ceil(t.crownCd)} s.` };
+  const reach = ab.reach ?? STAND_UP_RANGE;
   if (ab.kind === "blackout") t.surge = ab.secs!;
   else if (ab.kind === "standup") {
     t.surge = ab.secs!;
     for (const o of game.towers)
-      if (o.kind === t.kind && Math.hypot(o.col - t.col, o.row - t.row) <= STAND_UP_RANGE) o.surge = ab.secs!;
+      if ((ab.all || o.kind === t.kind) && Math.hypot(o.col - t.col, o.row - t.row) <= reach) o.surge = ab.secs!;
+  } else if (ab.kind === "freeze") {
+    let n = 0;
+    for (const e of game.enemies) {
+      if (e.hp <= 0 || ENEMIES[e.kind].flying || isBig(e.kind) || !canControl(pmOf(e), "stun")) continue;
+      const q = enemyPoint(game.level, e);
+      if (Math.hypot(t.col + 0.5 - q.x, t.row + 0.5 - q.y) > reach) continue;
+      e.stun = Math.max(e.stun, ab.secs!);
+      n++;
+    }
+    if (!n) return { ok: false, reason: "Nothing in reach to hold." };
+  } else if (ab.kind === "strike") {
+    let best: Enemy | null = null;
+    for (const e of game.enemies) if (e.hp > 0 && (!best || e.hp > best.hp)) best = e;
+    if (!best) return { ok: false, reason: "Nothing on the field to hit." };
+    hitEnemy(game, best, ab.amount!, t.id);
+  } else if (ab.kind === "triage") {
+    if (game.goodwill >= game.maxGoodwill) return { ok: false, reason: "Goodwill is already full." };
+    game.goodwill = Math.min(game.maxGoodwill, game.goodwill + ab.amount!);
   } else {
     // Stoop: the strongest Heavy Plant's whole shell comes off (what it carries underneath is left to the field).
     let best: Enemy | null = null;
