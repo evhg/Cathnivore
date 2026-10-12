@@ -830,7 +830,19 @@ body {
 @media (max-width: 520px) {
   .hero-cath {
     height: clamp(230px, 31vh, 300px);
-    margin-bottom: -7vh;
+    margin-bottom: 10px;
+  }
+}
+
+/* U5: no card overlaps Cath on phones (landscape too), and the odd third card sits centred. */
+@media (max-height: 560px) and (orientation: landscape) {
+  .hero-cath {
+    margin-bottom: 10px;
+  }
+  .games > a.card[href="/hedgerow/"] {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc(50% - 8px);
   }
 }
 

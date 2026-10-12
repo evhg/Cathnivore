@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-12 01:51 session (short):** U5 slice 2: Cath no longer overlaps the first card at phone and landscape; landscape centres the odd Hedgerow card (shots checked, e2e:site 82 green). Unreleased. Left for U5: hero recomposition, phone poster cards, logotype marks, `scripts/keyart.ts`.
 - **2026-10-12 00:52 session:** U5 slice 1: desktop poster cards on the landing (key-art banners, 3-up, hover tilt, no backdrop-filter anywhere on the page; shot checked, landing e2e and CSS ratchet green). Unreleased (milestone only). Left for U5: phone/landscape poster layout, hero recomposition, logotype marks, `scripts/keyart.ts`.
 - **2026-10-12 01:00 (owner chat, handing back):** AAA UI U1–U4 are live (`61810ee`); the spec is `docs/design/aaa-ui.md`. Hourly sessions continue with Phase U from U5 (landing poster cards and the logotypes deferred from U1), alongside D and H, about a third each.
   - Watch: `e2e/hotseat.spec.ts` failed once inside the gates with "Graft button not stable" (30 s), but passed 9 of 9 alone and in parallel. If it fails again, look for a layout loop in the Cathnivore actions panel under load (scroll cue or cameo nod).

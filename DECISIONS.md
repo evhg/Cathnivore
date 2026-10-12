@@ -403,3 +403,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-11: U4 portals `Tooltip` popovers to `<body>` (position fixed, coordinates via setProperty, kept 8px inside the viewport, above or below the trigger) so scrolling lists, masked clippings and tilted cards never clip them. "?" triggers render as an italic "i" with the "?" text kept for e2e.
 - 2026-10-11: U4 phone landscape (844x390) is a two-column table (map left; papers, ledger, actions and rail right; tutorial pinned to the tabletop). Phone tab rail shows "Plan" with the accessible name "Cath’s Plan".
 - 2026-10-12: U5 started with desktop poster cards (CSS tokens for new colours to satisfy the CSS ratchet).
+- 2026-10-12: U5 slice 2 drops Cath's tuck behind the cards (acceptance: no card overlaps her) on phone and landscape.
