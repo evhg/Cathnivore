@@ -76,6 +76,15 @@ export function loadingTitle(id: string | undefined): string {
   return "Act 1 · The Drowned Market";
 }
 
+/** The loading card's flavour line for a district id. */
+export function loadingFlavour(id: string | undefined): string {
+  if (id === "clinic") return "Fluorescents hum. Somewhere below, water drips onto tile.";
+  if (id === "plaza") return "Rain on the council steps. Pell's face fills the sky.";
+  if (id === "tower") return "Marble, glass, and a lift that only goes up.";
+  if (id === "vault") return "Coolant fog. Red lamps. The drop waits.";
+  return "Rain over the Drowned Market…";
+}
+
 /** Districts the player can travel to from the map: the market always, others once built and unlocked. */
 const BUILT_DISTRICTS = ["clinic", "plaza", "tower", "vault"];
 export function travelOptions(jobsDone: readonly string[]): { id: string; name: string }[] {

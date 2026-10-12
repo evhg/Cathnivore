@@ -109,7 +109,9 @@ async function begin(): Promise<void> {
   const fill = $("loading-fill");
   const line = $("loading-line");
   loading.hidden = false;
-  const { loadingTitle } = await import("./game/zones");
+  const { loadingTitle, loadingFlavour } = await import("./game/zones");
+  loading.dataset.district = params.get("district") ?? "market";
+  line.textContent = loadingFlavour(params.get("district") ?? undefined);
   $("loading-eyebrow").textContent = loadingTitle(params.get("district") ?? undefined);
   const progress = (share: number, label: string) => {
     fill.style.setProperty("--p", `${Math.round(share * 100)}%`);
