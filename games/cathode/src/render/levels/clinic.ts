@@ -68,6 +68,11 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     const failing = i % 3 === 1;
     light(V(0, ceil - 0.4, z), failing ? "#b8ffd8" : "#d6fff0", failing ? 14 : 22, 11, failing ? 2 : 0);
   }
+  // Wall washers: soft baked lights near each side wall so the white tile reads white, not grey.
+  for (let z: number = zS - 6; z > zN + 4; z -= 9) {
+    light(V(xW + 2.2, 2.4, z), "#dfffee", 9, 8, 0, false);
+    light(V(xE - 2.2, 2.4, z - 4), "#dfffee", 9, 8, 0, false);
+  }
   // Waiting room and ward lamps, dimmer and greener.
   for (const z of [20, 6, -22]) light(V(-6, ceil - 0.4, z), "#9fe8c0", 10, 7, 1);
   for (const z of [18, -6, -30]) light(V(6, ceil - 0.4, z), "#9fe8c0", 10, 7, 0);

@@ -43,7 +43,10 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.plasterPink = wall(set("plastered_wall_04", { color: "#9a7a80" }));
   m.tiles = wall(set("dirty_tiles", { color: "#a0a4a0" }));
   // The Candor Clinic: scrubbed white tile, a green dado band and pale ceiling panels (a clean place that is rotten inside).
-  m.tileWhite = wall(set("dirty_tiles", { color: "#d8dcd8", normal: 0.5 }), 1, 0.5);
+  const tileWhite = set("concrete_slab_wall", { color: "#e4f0ea", normal: 0.5 });
+  tileWhite.emissive = new THREE.Color("#7a9a8c");
+  tileWhite.emissiveIntensity = 0.3;
+  m.tileWhite = wall(tileWhite, 1, 0.5);
   m.tileGreen = wall(set("dirty_tiles", { color: "#5f9a86", normal: 0.5 }), 1, 0.5);
   m.ceilingPanel = wall(set("concrete_slab_wall", { color: "#c4c8c4", normal: 0.3 }), 1, 0.2);
   m.corrugatedWall = wall(set("corrugated_iron_02", { color: "#6a7070", metal: 1 }), 1, 0.9);
