@@ -49,6 +49,20 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   wall(-3.2, [[28, 32], [4, 8], [-24, -20]]);
   wall(3.2, [[20, 24], [-8, -4], [-32, -28]]);
 
+  const signs: Level["signs"] = [];
+  // Door frames at every gap in the dividers: dark jambs and a lintel, a green status strip and a bay number.
+  const doors: Array<[number, number, number, string]> = [
+    [-3.2, 30, 1, "#7dffc0"], [-3.2, 6, 2, "#7dffc0"], [-3.2, -22, 3, "#ffb347"],
+    [3.2, 22, 4, "#7dffc0"], [3.2, -6, 5, "#7dffc0"], [3.2, -30, 6, "#2ee6ff"],
+  ];
+  for (const [x, zc, n, col] of doors) {
+    const face = x < 0 ? 1 : -1; // faces the corridor
+    for (const dz of [-2.05, 2.05]) b.box("darkMetal", x, ceil / 2, zc + dz, 0.4, ceil, 0.12, { collide: "metal" });
+    b.box("darkMetal", x, 2.7, zc, 0.4, 0.14, 4.2);
+    b.box("glowCoolDim", x + face * 0.2, 2.95, zc, 0.04, 0.16, 3.2);
+    signs.push({ text: `BAY ${n}`, sub: n === 3 ? "STAFF ONLY" : "ADMITTANCE", style: "box", color: col, w: 1.2, h: 0.32, center: V(x + face * 0.22, 3.2, zc), normal: V(face, 0, 0), flicker: n === 2 ? 2 : 0, intensity: 2.4 });
+  }
+
   // Reception desk, waiting-room benches, ward beds, theatre table.
   b.box("plasticWhite", -1.4, 0.55, 36, 2.6, 1.1, 0.7, { collide: "metal" });
   for (let i = 0; i < 5; i++) b.box("paintMetal", -6.2, 0.25, 20 + i * 1.6, 0.8, 0.5, 1.2, { collide: "metal" });
@@ -87,7 +101,6 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   light(V(0, 2.8, zS - 1), "#ff2a2a", 8, 6, 0, false);
 
   // Waiting room (west): rows of chairs facing a debt-tag screen, a drinks cooler, a dead plant.
-  const signs: Level["signs"] = [];
   for (let row = 0; row < 3; row++) {
     for (let i = 0; i < 4; i++) {
       const z = 16 - row * 7 - i * 0.9;
