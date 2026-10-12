@@ -814,6 +814,11 @@ function syncControls(): void {
   syncCrownTray(g);
   const h = g.hero;
   ui.btnHero.classList.toggle("down", h.down > 0);
+  const heroName = ui.btnHero.querySelector<HTMLElement>(".ability-label");
+  if (heroName) {
+    const text = isFleet(g.level) && h.level > 1 ? `Cath Lv ${h.level}` : "Cath";
+    if (heroName.textContent !== text) heroName.textContent = text;
+  }
   const hpFrac = h.down > 0 ? 0 : h.hp / h.maxHp;
   ui.heroHp.style.setProperty("--p", hpFrac.toFixed(3));
   ui.heroHp.classList.toggle("low", hpFrac < 0.35);
