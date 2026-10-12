@@ -64,4 +64,14 @@ describe("Cath's character sheet", () => {
     expect(perksOf(data).heroDamage).toBe(1);
     expect(perksOf(data).heroHolds).toBe(0);
   });
+
+  it("applies the chosen kit to the run's perks and drops an unknown one", () => {
+    const base = perksOf(emptySave());
+    const baker = perksOf(parseSave(JSON.stringify({ ...emptySave(), kit: "baker" })));
+    expect(baker.pieCooldown).toBeLessThan(base.pieCooldown);
+    expect(baker.pieDamage).toBeGreaterThan(base.pieDamage);
+    const warden = perksOf(parseSave(JSON.stringify({ ...emptySave(), kit: "warden" })));
+    expect(warden.heroHp).toBeGreaterThan(base.heroHp);
+    expect(parseSave(JSON.stringify({ ...emptySave(), kit: "nonsense" })).kit).toBeUndefined();
+  });
 });

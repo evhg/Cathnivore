@@ -7,6 +7,7 @@
 // spec name anywhere maps to its nearest path through paths.ts specToPath.
 
 import { ABILITIES, AUTO_AFTER_CASTS, NO_PERKS, type Ability, type Perks } from "./engine";
+import { kitOf } from "./hero";
 import { applyCath, levelOf, parseCath, xpOf, type CathSave } from "./cath";
 import { PATH_KINDS, pathLegal, specToPath, type Path, type PathKind } from "./paths";
 
@@ -33,6 +34,8 @@ export interface SaveData {
   cath?: CathSave;
   /** The wardrobe outfit she is wearing (wardrobe.ts). Optional in old saves. */
   outfit?: string;
+  /** Cath's kit (hero.ts KITS). Optional in old saves; unset = none. */
+  kit?: string;
   /** Play settings (Hedgerow 2 M1). Optional in old saves. */
   settings?: {
     /** Keep Going: the next round starts by itself 2 s after a clear. Unset = on (from level 6). */
@@ -120,6 +123,7 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
       if (obj.cath) data.cath = parseCath(obj.cath);
       if (typeof obj.outfit === "string") data.outfit = obj.outfit.slice(0, 20);
+      if (kitOf(obj.kit)) data.kit = obj.kit;
       if (obj.settings && typeof obj.settings === "object" && typeof obj.settings.keepGoing === "boolean")
         data.settings = { keepGoing: obj.settings.keepGoing };
       for (const a of ABILITIES) {
@@ -351,6 +355,7 @@ export function perksOf(data: SaveData): Perks {
     if (r > 0) def.apply(p, r);
   }
   if (data.cath) applyCath(p, data.cath, cathLevel(data));
+  kitOf(data.kit)?.apply(p);
   return p;
 }
 

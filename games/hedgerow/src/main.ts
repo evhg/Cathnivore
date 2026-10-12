@@ -152,6 +152,7 @@ import { endlessLevel, weekOf } from "./endless";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, rewindToWave, startGame, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
+import { KITS } from "./hero";
 import { OUTFITS, outfitFor, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
@@ -3431,6 +3432,37 @@ function renderCathButton(): void {
   ui.cathBtnFace.innerHTML = cathSvg({ framing: "face", expression: "smirk", outfit: art() });
 }
 
+function renderKits(): void {
+  const box = $<HTMLElement>("cath-kits");
+  box.replaceChildren();
+  const h = document.createElement("h3");
+  h.className = "rosette-head";
+  h.textContent = "Kit";
+  const row = document.createElement("div");
+  row.className = "wardrobe";
+  for (const k of [null, ...KITS]) {
+    const b = document.createElement("button");
+    b.type = "button";
+    const on = (data.kit ?? null) === (k?.id ?? null);
+    b.className = `outfit${on ? " picked" : ""}`;
+    b.setAttribute("aria-pressed", String(on));
+    const n = document.createElement("strong");
+    n.textContent = k?.name ?? "Plain";
+    const d = document.createElement("small");
+    d.textContent = k?.blurb ?? "No kit: Cath plays as she is.";
+    b.append(n, d);
+    b.onclick = () => {
+      if (k) data.kit = k.id;
+      else delete data.kit;
+      save(data);
+      sfx.playUpgrade();
+      renderKits();
+    };
+    row.append(b);
+  }
+  box.append(h, row);
+}
+
 function renderWardrobe(): void {
   const box = $<HTMLElement>("cath-wardrobe");
   box.replaceChildren();
@@ -3509,6 +3541,7 @@ function renderCath(): void {
     li.append(text, b);
     ui.cathAttrs.append(li);
   }
+  renderKits();
   renderWardrobe();
   ui.cathTalents.replaceChildren();
   const head = document.createElement("h3");
