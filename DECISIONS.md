@@ -409,3 +409,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-12: clinic walls use neutral slab texture + emissive lift because dirty_tiles albedo is brown.
 - 2026-10-12 H7/M6: in-run Cath level follows layers popped (92*(n)^2.2 curve, +5% damage/HP per level, cap 20), Fleet levels only; no retune yet (bonuses only help the bots); the save-based RPG sheet is untouched.
 - 2026-10-12: clinic door frames + bay signs; quick visual loop: run `npx vite --port 5199` inside games/cathode and screenshot `/?district=clinic&play&shot` with Chromium 1194.
+- 2026-10-12: U6 slice 1: phone board can only grow ~8% (width-bound hex), so accepted below the 15% target; landscape is where the real gain is.

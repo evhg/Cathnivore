@@ -19,7 +19,7 @@ These two phases come before every older unfinished item below. About 70% of ses
 - U3. [x] **M3 Hedgerow field: kit, HUD and upgrade sheet** *(2026-10-11: shipped to `build`, unreleased; px font-sizes 135 to 0, z-literals 10 to 0, phone sheet 48svh (field 52%), no panel ellipsis, no text under 12px, Next 5.6:1, pill test green at L)*
 - U4. [x] **M4 Cathnivore table** *(2026-10-11: shipped to `build`, unreleased; 6 frames and none nested, 0 dotted underlines, map at 1440x900 670x639 -> 706x664, no scroll at 1280x800, axe clean, lint z-literals 0)*
 - U5. [~] **M5 Landing hero, poster cards and key art**
-- U6. [ ] **M6 Runnel puzzle and win sheet**
+- U6. [~] **M6 Runnel puzzle and win sheet** *(2026-10-12: landscape two columns and landscape win sheet on `build`; ledger, voice and motion left)*
 - U7. [ ] **M7 Cathnivore story scene and end screen**
 - U8. [ ] **M8 CATHODE front door: gate, title and class pick**
 - U9. [ ] **M9 CATHODE dossier and pause**
