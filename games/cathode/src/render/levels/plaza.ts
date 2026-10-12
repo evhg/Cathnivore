@@ -154,6 +154,28 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     const dir = V(tx - x, -21, 14 - (zN + 2)).normalize();
     cones.push({ top, dir, length: 46, radius: 5, color: C("#cfe6ff"), strength: 0.7 });
   }
+  // Rain puddles pooled on the stone, catching the lamps and the billboard.
+  for (const [x, z, w, d] of [[-4, 30, 5, 3], [7, 40, 4, 2.4], [-10, 6, 3.4, 5], [11, 0, 4.6, 2.6], [2, -8, 6, 2.4], [-5, -20, 3, 2], [14, 20, 3, 4.2], [-16, 44, 5, 2.4]] as const) {
+    b.box("water", x, 0.012, z, w, 0.02, d);
+  }
+  // A red carpet up the middle of the council steps for the rally, with campaign banners on the portico.
+  for (let i = 0; i < stepCount; i++) b.boxMinMax("paintRed", -2, (i + 1) * stepRise, stepZ0 - i * stepRun - stepRun, 2, (i + 1) * stepRise + 0.02, stepZ0 - i * stepRun);
+  b.boxMinMax("paintRed", -2, 0.01, stepZ0, 2, 0.03, stepZ0 + 12);
+  for (const x of [-10, -5, 0, 5, 10]) {
+    b.box("paintRed", x + 1.6, top + 3.4, -46.4, 1.2, 3.6, 0.06, { uv: 1 });
+    b.box("glowAmber", x + 1.6, top + 1.5, -46.36, 0.7, 0.12, 0.04);
+  }
+  // Flagpoles on the hall roof with limp wet flags.
+  for (const x of [-16, -8, 8, 16]) {
+    b.cylinder("pipe", V(x, 20, zN + 3), V(x, 27, zN + 3), 0.08, 8, "metal");
+    b.box("paintTeal", x + 0.9, 26, zN + 3, 1.6, 1.0, 0.04, { uv: 1 });
+  }
+  // Rally stage lights either side of the lectern.
+  for (const x of [-7, 7]) {
+    b.box("darkMetal", x, top + 0.6, -49, 0.6, 1.2, 0.6);
+    light(V(x, top + 1.4, -48), "#ffd9a0", 14, 10, 0);
+  }
+
   // Barriers and cover across the square.
   for (const [x, z] of [[-8, 30], [8, 24], [-6, -2], [6, 16], [0, -18], [-12, 14], [12, -22]] as const) {
     b.box("jersey", x, 0.45, z, 2.6, 0.9, 0.6, { collide: "concrete" });

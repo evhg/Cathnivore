@@ -414,3 +414,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-12: D2 marked done; morgue splash is a `wet` flag on audio.steps decided by a box test in session.ts, not a new surface type.
 - 2026-10-12: kit pick lives as chips on the Hedgerow select screen (no level card exists); per-district saves skipped (character and jobs are already global).
 - 2026-10-12: release moved main to 32f035c (a lock commit) but Vercel never deployed it; logged as Blocked, retry next release.
+- 2026-10-12: D3 plaza dressing (puddles, carpet, banners, flags) added; no release this session since Vercel hasn't deployed 32f035c.
