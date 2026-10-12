@@ -1741,6 +1741,7 @@ export type GameEvent =
   | { type: "pie"; x?: number; y?: number; radius?: number }
   | { type: "neighbours"; x: number; y: number }
   | { type: "rally" }
+  | { type: "lastOrders"; hit: number }
   | { type: "swing"; x: number; y: number }
   | { type: "heroDown" }
   | { type: "heroUp" }
@@ -1809,6 +1810,8 @@ export interface Game {
   /** Seconds until she can Call the Neighbours / Rally again. */
   neighboursCd: number;
   rallyCd: number;
+  /** Seconds until Last Orders (Cath's level-10 ability) is ready again. */
+  lastOrdersCd: number;
   /** The farmhands' barricade: lane distance and seconds left (0 = none). */
   barricade: { dist: number; left: number; lane?: 1 } | null;
   /** Seconds of Rally left: towers fire faster. */
@@ -2033,6 +2036,7 @@ export function newGame(
     pieCd: 0,
     neighboursCd: 0,
     rallyCd: 0,
+    lastOrdersCd: 0,
     barricade: null,
     rallyLeft: 0,
     perks,
@@ -3497,6 +3501,7 @@ function step(game: Game): void {
   if (game.pieCd > 0) game.pieCd = Math.max(0, game.pieCd - STEP);
   if (game.neighboursCd > 0) game.neighboursCd = Math.max(0, game.neighboursCd - STEP);
   if (game.rallyCd > 0) game.rallyCd = Math.max(0, game.rallyCd - STEP);
+  if (game.lastOrdersCd > 0) game.lastOrdersCd = Math.max(0, game.lastOrdersCd - STEP);
   if (game.rallyLeft > 0) game.rallyLeft = Math.max(0, game.rallyLeft - STEP);
   for (const t of game.towers) {
     if (t.surge) t.surge = t.surge > STEP ? t.surge - STEP : 0;
@@ -3978,6 +3983,32 @@ export function callRally(game: Game): ActionResult {
   game.rallyLeft = RALLY_SECS * game.perks.rally;
   game.rallyCd = RALLY_COOLDOWN;
   game.events.push({ type: "rally" });
+  return { ok: true };
+}
+
+/** Last Orders (Hedgerow 2 M6): Cath's level-10 ability. Every Plant on the field takes a hit, hand-fired only. */
+export const LAST_ORDERS_LEVEL = 10;
+export const LAST_ORDERS_COOLDOWN = 75;
+/** Layers it strips from everything on the field: 3, then one more every four levels. */
+export function lastOrdersDamage(level: number): number {
+  return 3 + Math.floor(Math.max(0, level - LAST_ORDERS_LEVEL) / 4);
+}
+export function lastOrdersUnlocked(game: Pick<Game, "level" | "hero">): boolean {
+  return isFleet(game.level) && game.hero.level >= LAST_ORDERS_LEVEL;
+}
+
+/** "Last orders, please!": the whole field takes a hit and Cath's tray holds the next one for 75 s. */
+export function callLastOrders(game: Game): ActionResult {
+  if (!lastOrdersUnlocked(game)) return { ok: false, reason: "Cath isn't level 10 yet." };
+  if (game.phase !== "wave") return { ok: false, reason: "Save it for a round." };
+  if (game.lastOrdersCd > 0) return { ok: false, reason: "Not ready yet." };
+  const dmg = lastOrdersDamage(game.hero.level);
+  let hit = 0;
+  for (const e of game.enemies.slice())
+    if (e.hp > 0 && hitEnemy(game, e, dmg) > 0) hit++;
+  if (!hit) return { ok: false, reason: "Nothing on the field." };
+  game.lastOrdersCd = LAST_ORDERS_COOLDOWN;
+  game.events.push({ type: "lastOrders", hit });
   return { ok: true };
 }
 

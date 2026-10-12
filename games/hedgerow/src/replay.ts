@@ -5,6 +5,7 @@
 import {
   callNeighbours,
   callRally,
+  callLastOrders,
   duelStrike,
   merge,
   moveHero,
@@ -36,6 +37,7 @@ export type Action =
   | { t: "pie"; x?: number; y?: number }
   | { t: "neighbours" }
   | { t: "rally" }
+  | { t: "lastOrders" }
   /** A Crown's ability. */
   | { t: "crownUse"; id: number }
   | { t: "merge"; id: number; partner: number }
@@ -95,6 +97,8 @@ export function applyAction(game: Game, a: Action): ActionResult {
       return callNeighbours(game);
     case "rally":
       return callRally(game);
+    case "lastOrders":
+      return callLastOrders(game);
     case "crownUse":
       return fireCrown(game, a.id);
     case "merge":

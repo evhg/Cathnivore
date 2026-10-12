@@ -21,3 +21,21 @@ describe("Cath's in-run levels", () => {
     expect(newGame(LEVELS[50]!).hero.level).toBe(1);
   });
 });
+
+describe("Last Orders", () => {
+  it("unlocks at level 10, hits the field, then cools down", async () => {
+    const { callLastOrders, lastOrdersDamage, sendWave, stepGame, LAST_ORDERS_COOLDOWN } = await import("../games/hedgerow/src/engine");
+    const g = newGame(LEVELS[0]!);
+    expect(callLastOrders(g).ok).toBe(false);
+    g.hero.level = 10;
+    expect(callLastOrders(g).ok).toBe(false); // not in a round
+    sendWave(g, true);
+    for (let i = 0; i < 600 && g.enemies.length === 0; i++) stepGame(g);
+    expect(g.enemies.length).toBeGreaterThan(0);
+    expect(callLastOrders(g).ok).toBe(true);
+    expect(g.lastOrdersCd).toBe(LAST_ORDERS_COOLDOWN);
+    expect(callLastOrders(g).ok).toBe(false);
+    expect(lastOrdersDamage(10)).toBe(3);
+    expect(lastOrdersDamage(20)).toBe(5);
+  });
+});

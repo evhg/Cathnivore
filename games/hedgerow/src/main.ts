@@ -59,6 +59,9 @@ import {
   stepGame,
   neighboursUnlocked,
   rallyUnlocked,
+  lastOrdersUnlocked,
+  LAST_ORDERS_LEVEL,
+  LAST_ORDERS_COOLDOWN,
   NEIGHBOURS_COOLDOWN,
   RALLY_COOLDOWN,
   NEIGHBOURS_FIRST_LEVEL,
@@ -377,8 +380,40 @@ function say(text: string): void {
 }
 
 /** Crown abilities on the field, in the thumb-reach strip beside Cath's own (one button per crowned tower). */
+let lastOrdersBtn: HTMLButtonElement | null = null;
+/** Cath's level-10 ability: a tray button that appears once she reaches the level. */
+function syncLastOrders(g: Game): void {
+  if (!lastOrdersUnlocked(g)) {
+    lastOrdersBtn?.remove();
+    lastOrdersBtn = null;
+    return;
+  }
+  let b = lastOrdersBtn;
+  if (!b) {
+    b = document.createElement("button");
+    b.type = "button";
+    b.className = "ability crown-ability last-orders";
+    b.innerHTML = `<span class="ability-ring" aria-hidden="true"></span><span class="crown-glyph" aria-hidden="true">\u{1F37A}</span><span class="ability-label"></span>`;
+    b.title = `Last Orders: every Plant on the field takes a hit. Unlocked at Cath's level ${LAST_ORDERS_LEVEL}.`;
+    b.onclick = () => {
+      if (doAct({ t: "lastOrders" })) {
+        sfx.playBoss();
+        haptic.boss();
+      } else toast("Last Orders isn't ready.");
+    };
+    ui.btnRally.after(b);
+    lastOrdersBtn = b;
+  }
+  const cd = g.lastOrdersCd;
+  b.disabled = g.phase !== "wave" || cd > 0;
+  b.classList.toggle("ready", !b.disabled);
+  (b.querySelector(".ability-label") as HTMLElement).textContent = cd > 0 ? `${Math.ceil(cd)}s` : "Last Orders";
+  (b.querySelector(".ability-ring") as HTMLElement).style.setProperty("--cd", String(Math.min(1, cd / LAST_ORDERS_COOLDOWN)));
+}
+
 const crownTray = new Map<number, HTMLButtonElement>();
 function syncCrownTray(g: Game): void {
+  syncLastOrders(g);
   const seen = new Set<number>();
   for (const t of g.towers) {
     if (t.crown === undefined || !hasPaths(t.kind)) continue;
@@ -2485,6 +2520,9 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "rally":
         tip("rally", "Come on, all of you! Everything fires faster for a few seconds.", "delighted");
+        break;
+      case "lastOrders":
+        banner("Last orders, please!", `${ev.hit} Plants take a hit`, false, "small");
         break;
       case "swing":
         sfx.playSwing();
