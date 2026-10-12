@@ -407,7 +407,7 @@ function syncLastOrders(g: Game): void {
   const cd = g.lastOrdersCd;
   b.disabled = g.phase !== "wave" || cd > 0;
   b.classList.toggle("ready", !b.disabled);
-  (b.querySelector(".ability-label") as HTMLElement).textContent = cd > 0 ? `${Math.ceil(cd)}s` : "Last Orders";
+  (b.querySelector(".ability-label") as HTMLElement).textContent = cd > 0 ? `${Math.ceil(cd)}s` : "Orders";
   (b.querySelector(".ability-ring") as HTMLElement).style.setProperty("--cd", String(Math.min(1, cd / LAST_ORDERS_COOLDOWN)));
 }
 
