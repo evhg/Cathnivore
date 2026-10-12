@@ -86,3 +86,20 @@ if (lede) {
   ]
   lede.textContent = lines[day % lines.length] ?? null
 }
+
+// U5: the poster cards lean a few degrees toward a mouse pointer. Fine pointers only, never under reduced motion.
+if (matchMedia('(hover: hover) and (pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.querySelectorAll<HTMLElement>('.games > a.card:not(.card-cathode)').forEach((card) => {
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect()
+      const x = (e.clientX - r.left) / r.width - 0.5
+      const y = (e.clientY - r.top) / r.height - 0.5
+      card.style.setProperty('--tilt-y', `${(x * 6).toFixed(2)}deg`)
+      card.style.setProperty('--tilt-x', `${(-y * 5).toFixed(2)}deg`)
+    })
+    card.addEventListener('pointerleave', () => {
+      card.style.removeProperty('--tilt-x')
+      card.style.removeProperty('--tilt-y')
+    })
+  })
+}

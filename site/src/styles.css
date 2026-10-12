@@ -246,8 +246,6 @@ body {
   text-decoration: none;
   background: var(--card);
   border: 1px solid var(--card-edge);
-  -webkit-backdrop-filter: blur(18px) saturate(1.25);
-  backdrop-filter: blur(18px) saturate(1.25);
   box-shadow:
     0 1px 0 rgba(255, 240, 210, 0.12) inset,
     0 24px 60px rgba(10, 4, 8, 0.45);
@@ -843,5 +841,64 @@ body {
     justify-self: center;
     width: 100%;
     max-width: 440px;
+  }
+}
+
+/* ---- U5: poster cards (desktop). Each family game is a tall poster: key art on top, title block below.
+   No backdrop-filter anywhere on the page: the card stock is opaque enough on its own. ---- */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .games {
+    grid-template-columns: repeat(3, minmax(0, 340px));
+    gap: clamp(18px, 2vw, 28px);
+    align-items: stretch;
+    perspective: 1200px;
+  }
+  .games > a.card:not(.card-cathode) {
+    grid-column: auto;
+    max-width: none;
+    justify-self: stretch;
+    grid-template-columns: 1fr;
+    align-items: start;
+    align-content: start;
+    gap: 0;
+    padding: 0 0 18px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(40, 26, 30, 0.9), rgba(24, 15, 20, 0.94));
+    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  }
+  .ready .games > a.card:not(.card-cathode):hover {
+    transform: translateY(-6px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  }
+  .games > a.card:not(.card-cathode) .card-art {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    border-radius: 0;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  }
+  .games > a.card:not(.card-cathode) .card-art svg {
+    width: 100%;
+    height: 100%;
+  }
+  .games > a.card:not(.card-cathode) .art-cath svg,
+  .games > a.card:not(.card-cathode) .art-runnel svg {
+    width: auto;
+    height: 100%;
+  }
+  .games > a.card:not(.card-cathode) .card-body {
+    padding: 16px 20px 0;
+    gap: 8px;
+  }
+  .games > a.card:not(.card-cathode) .card-title {
+    font-size: 1.875rem;
+  }
+  .games > a.card:not(.card-cathode) .card-go {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    background: rgba(251, 241, 223, 0.1);
+  }
+  .hero-cath {
+    margin-bottom: 0;
   }
 }
