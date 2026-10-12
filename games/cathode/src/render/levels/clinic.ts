@@ -120,6 +120,22 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   signs.push({ text: "VITALS 61 BPM", sub: "SEDATED", style: "screen", color: "#7dffc0", w: 1.4, h: 0.7, center: V(0, 1.6, zN + 0.09), normal: V(0, 0, 1), flicker: 1, intensity: 2.5 });
   light(V(0, 1.6, zN + 1), "#7dffc0", 8, 6, 1, false);
 
+  // Set dressing: privacy curtains in the wards, wheelchairs in the waiting room, shrouded gurneys in the morgue,
+  // a hanging bag of fluid at every bed, and a hazard stripe down the theatre approach.
+  for (let i = 0; i < 4; i++) {
+    const z = 18 - i * 14 + (i > 1 ? 4 : 0);
+    b.box("plasticWhite", 5.1, 1.5, z, 0.04, 2.0, 2.6);
+    b.box("glowCoolDim", 6.2, 1.7, z + 0.6, 0.08, 0.3, 0.08);
+  }
+  for (const z of [10, 12.5]) {
+    b.box("darkMetal", -6.9, 0.45, z, 0.6, 0.12, 0.6, { collide: "metal" });
+    b.box("darkMetal", -6.9, 0.85, z - 0.28, 0.6, 0.7, 0.06);
+    for (const dz of [-0.3, 0.3]) b.box("chrome", -6.9, 0.2, z + dz, 0.08, 0.4, 0.4);
+  }
+  for (const z of [-14, -19]) b.box("plasticWhite", 6.4, 0.58, z, 0.7, 0.14, 1.8);
+  b.box("glowCool", 0, 0.01, -41, 0.35, 0.02, 12);
+  for (let z = -33; z > -41; z -= 2) b.box("glowRed", 1.2, 0.01, z, 0.5, 0.02, 0.5);
+
   const gh = () => 0;
   const markers: Level["markers"] = {
     player: [V(0, 0, zS - 3)],
