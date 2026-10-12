@@ -75,7 +75,8 @@ function nearestDist(g: Game, c: number, r: number): number {
 
 /** A rich fleet game on level 8 (tier 3 open) with a round in progress and nothing queued. */
 function field(level: Level = L8): Game {
-  const g = newGame(level);
+  // Every path tower is open (the pond and the silo come later than the first five).
+  const g = newGame({ ...level, towers: [...new Set([...level.towers, ...PATH_KINDS])] });
   g.marks = 1e7;
   return g;
 }
@@ -164,7 +165,7 @@ describe("hedgerow paths: prices and refunds", () => {
     const rand = rng(3);
     for (const kind of PATH_KINDS) {
       const g = field();
-      const [c, r] = ps[PATH_KINDS.indexOf(kind)]!;
+      const [c, r] = ps[0]!;
       place(g, kind, c, r);
       const t = g.towers[0]!;
       const base = towerCost(g, kind);

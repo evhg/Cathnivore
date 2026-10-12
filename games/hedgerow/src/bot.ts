@@ -285,6 +285,10 @@ export function buildFor(game: Game, t: Tower, smart = true): string {
       return hasTwist(game.level, "drought") ? "hedge-3-2-0" : "hedge-2-3-0";
     case "mast":
       return "mast-2-0-3";
+    case "pond":
+      return "pond-3-0-2";
+    case "silo":
+      return stealth && !mast ? "silo-3-2-0" : armour || th.boss ? "silo-3-0-2" : "silo-2-0-3";
   }
 }
 
@@ -294,6 +298,8 @@ export const SIMPLE_BUILDS: Record<PathKind, string> = {
   beehive: "bees-3-2-0",
   cannon: "cannon-3-2-0",
   mast: "mast-2-0-3",
+  pond: "pond-3-0-2",
+  silo: "silo-3-0-2",
 };
 
 /** Builds whose tier 2 path comes first (the bots' order is otherwise the main path to tier 2 first). */

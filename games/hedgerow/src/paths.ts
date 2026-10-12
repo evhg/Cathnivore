@@ -20,7 +20,7 @@ export type Path = [number, number, number];
 export type PathIndex = 0 | 1 | 2;
 
 /** The towers that grow along paths (M4). The rest use the legacy adapter until M7. */
-export const PATH_KINDS = ["scarecrow", "hedgerow", "beehive", "cannon", "mast"] as const;
+export const PATH_KINDS = ["scarecrow", "hedgerow", "beehive", "cannon", "mast", "pond", "silo"] as const;
 export type PathKind = (typeof PATH_KINDS)[number];
 
 export function hasPaths(kind: TowerKind): kind is PathKind {
@@ -386,6 +386,68 @@ export const PATHS: Record<PathKind, TowerPaths> = {
       },
     ],
   },
+  pond: {
+    paths: [
+      {
+        name: "Freeze",
+        short: "Freeze",
+        tiers: [
+          { name: "Cold Snap", cost: 140, adds: "slows to 60%", blurb: "A cold morning on the pond. Everything nearby crawls.", mod: { slow: 0.6 } },
+          { name: "Thin Ice", cost: 380, adds: "stuns 0.4 s a hit", blurb: "The ducks skate over thin ice and the lorries stop to look.", mod: { stun: 0.4 } },
+          { name: "Shatter", cost: 2200, adds: "vehicles in range take +40%, +6 pierce", blurb: "Frozen vehicles crack like glass: everything nearby takes far more.", mod: { vuln: 1.4, pierce: 6, slow: 0.5 } },
+        ],
+      },
+      {
+        name: "Mud",
+        short: "Mud",
+        tiers: [
+          { name: "Wet Bank", cost: 120, adds: "+25% range", blurb: "The bank floods a little further each night.", mod: { range: 1.25 } },
+          { name: "Bog", cost: 360, adds: "sticks for 2 s at 40%", blurb: "Whatever is hit sinks in to its axles.", mod: { sticky: { factor: 0.4, secs: 2 } } },
+          { name: "Quagmire", cost: 2000, adds: "slows to 45%, sticks for 4 s", blurb: "A bog nothing leaves in a hurry, and wider than it was.", mod: { slow: 0.45, sticky: { factor: 0.3, secs: 4 }, range: 1.2 } },
+        ],
+      },
+      {
+        name: "Geese",
+        short: "Geese",
+        tiers: [
+          { name: "Honk", cost: 130, adds: "+1 layer", blurb: "Geese on the bank. They bite.", mod: { damage: 1 } },
+          { name: "Gander", cost: 340, adds: "+1 layer, knockback", blurb: "A big gander who shoves lorries back down the lane.", mod: { damage: 1, knockback: 0.4 } },
+          { name: "Goose Army", cost: 2100, adds: "+4 layers, +6 pierce, fires 30% faster", blurb: "The whole flock turns out. Nobody has ever won an argument with them.", mod: { damage: 4, pierce: 6, rate: 1.3, type: "sharp" } },
+        ],
+      },
+    ],
+  },
+  silo: {
+    paths: [
+      {
+        name: "Elevator",
+        short: "Lift",
+        tiers: [
+          { name: "Bigger Hopper", cost: 200, adds: "+2 layers", blurb: "A bigger hopper holds a bigger load.", mod: { damage: 2 } },
+          { name: "Heavy Grain", cost: 500, adds: "×2 on big shells", blurb: "Dense shot that tears through anything with a long shell.", mod: { shellMul: 2 } },
+          { name: "Combine", cost: 2400, adds: "+10 layers, +7 pierce, 12 layers off Plant", blurb: "A combine harvester in a silo. It takes a line of vehicles clean off the road.", mod: { damage: 10, pierce: 7, plantDamage: 12 } },
+        ],
+      },
+      {
+        name: "Spotter",
+        short: "Spot",
+        tiers: [
+          { name: "Binoculars", cost: 180, adds: "+25% range", blurb: "Farmer Hale with a pair of binoculars.", mod: { range: 1.25 } },
+          { name: "Spyglass", cost: 420, adds: "sees Stealth", blurb: "Nothing hides from the old spyglass.", mod: { detect: true } },
+          { name: "Eye of the Shire", cost: 2200, adds: "vehicles in range take +35%, crits", blurb: "The whole shire watches through it: vehicles in reach take more, and some take a lot more.", mod: { vuln: 1.35, crit: { every: 4, mult: 3 } } },
+        ],
+      },
+      {
+        name: "Supply",
+        short: "Supply",
+        tiers: [
+          { name: "Quick Chute", cost: 180, adds: "fires 25% faster", blurb: "A well-oiled chute.", mod: { rate: 1.25 } },
+          { name: "Conveyor", cost: 440, adds: "fires 25% faster, hits Airborne", blurb: "A conveyor raises the grain to the sky.", mod: { rate: 1.25, air: true } },
+          { name: "Harvest Airlift", cost: 2100, adds: "fires 60% faster, +3 pierce", blurb: "Grain by the helicopter-load.", mod: { rate: 1.6, pierce: 3 } },
+        ],
+      },
+    ],
+  },
 };
 
 /** Crowns for the other four path towers (M5): passive, one per path, one of each per field. */
@@ -410,6 +472,16 @@ const PASSIVE_CROWNS: Record<Exclude<PathKind, "scarecrow">, [PathTier, PathTier
     C("Radio Free Hedgerow", 26000, "reveals the field, vehicles take +90%", "Sol broadcasts the whole county's weak spots on every frequency.", { global: true, detect: true, vuln: 1.9 }, { kind: "freeze", name: "Dead Air", blurb: "Every ground enemy on the field is rooted for 1.5 seconds.", cooldown: 60, secs: 1.5, reach: 99 }),
     C("Field Hospital", 24000, "+40% range aura, +5 Goodwill a round", "Ines turns the village hall into a field hospital. Everyone feels better, and sees further.", { rangeAura: 1.4, cleanse: true, mend: 5 }, { kind: "triage", name: "Triage", blurb: "Mends 15 Goodwill at once.", cooldown: 60, amount: 15 }),
     C("Emergency Broadcast", 26000, "towers in range fire 30% faster", "Every siren in the county, at once. Nobody in range is slow now.", { buff: 1.3, rate: 1.2 }, { kind: "standup", name: "All Hands", blurb: "Every tower within 5 cells fires three times as fast for 6 seconds.", cooldown: 55, secs: 6, reach: 5, all: true }),
+  ],
+  pond: [
+    C("Frost Fair", 22000, "vehicles take +80%, slows to 30%, +10 pierce", "The pond freezes over and the whole village skates. Nothing on the lane moves, and everything cracks.", { vuln: 1.8, slow: 0.3, pierce: 10 }, { kind: "freeze", name: "Deep Freeze", blurb: "Every ground enemy within 6 cells is frozen solid for 3 seconds.", cooldown: 60, secs: 3, reach: 6 }),
+    C("Bog of Ages", 20000, "slows to 25%, stuck for 5 s, +40% range", "A bog older than the village. It has never let anything go.", { slow: 0.25, sticky: { factor: 0.2, secs: 5 }, range: 1.4 }, { kind: "freeze", name: "Sinkhole", blurb: "Every ground enemy within 5 cells is stuck fast for 3 seconds.", cooldown: 50, secs: 3, reach: 5 }),
+    C("Goose Army", 21000, "+8 layers, +12 pierce, fires 2× as fast", "Every goose in the county, and a few from the next one over.", { damage: 8, pierce: 12, rate: 2, knockback: 0.6 }, { kind: "blackout", name: "Honk Charge", blurb: "Fires three times as fast for 8 seconds.", cooldown: 45, secs: 8 }),
+  ],
+  silo: [
+    C("Combine Harvester", 28000, "+25 layers, +14 pierce, 40 off Plant", "The silo and the combine are one machine now. The lane is a field.", { damage: 25, pierce: 14, plantDamage: 40 }, { kind: "strike", name: "Full Harvest", blurb: "A whole season's grain takes 60 layers off the strongest enemy on the field.", cooldown: 45, amount: 60 }),
+    C("All-Seeing Eye", 24000, "reveals the field, vehicles take +60%", "Farmer Hale sees everything from up there. So does everyone else, now.", { global: true, detect: true, vuln: 1.6 }, { kind: "freeze", name: "Spotlight", blurb: "Every ground enemy on the field is rooted for 1.5 seconds.", cooldown: 60, secs: 1.5, reach: 99 }),
+    C("Airlift Depot", 26000, "fires 2.5× as fast, +8 pierce", "Grain by the tonne, from the sky, forever.", { rate: 2.5, pierce: 8 }, { kind: "blackout", name: "Airdrop", blurb: "Fires three times as fast for 6 seconds.", cooldown: 40, secs: 6 }),
   ],
 };
 for (const [k, crowns] of Object.entries(PASSIVE_CROWNS) as [Exclude<PathKind, "scarecrow">, [PathTier, PathTier, PathTier]][])
@@ -516,6 +588,10 @@ export const SPEC_TO_PATH: Record<PathKind, [PathIndex, PathIndex]> = {
   cannon: [0, 1],
   // Pirate Radio → Pirate Radio; Emergency Siren → Siren.
   mast: [0, 2],
+  // Duck swarm → Geese; the cold spec → Freeze.
+  pond: [2, 0],
+  // Heavy grain → Elevator; the wide spec → Supply.
+  silo: [0, 2],
 };
 
 /** An old tier and spec as a build on paths (tiers 2 and 3 along the spec's path; the spec its tier 3). */
@@ -530,7 +606,7 @@ export function specToPath(kind: PathKind, tier: number, spec: 0 | 1 | null | un
  * Named builds for the bots (and the tuner's logs): `crow-3-2-0` is a Scarecrow taking Flock to 3 and
  * Lookout to 2. The order in which a bot buys a build's tiers: every path's tier 1, then tier 2, then the 3.
  */
-export const BUILD_PREFIX: Record<PathKind, string> = { scarecrow: "crow", hedgerow: "hedge", beehive: "bees", cannon: "cannon", mast: "mast" };
+export const BUILD_PREFIX: Record<PathKind, string> = { scarecrow: "crow", hedgerow: "hedge", beehive: "bees", cannon: "cannon", mast: "mast", pond: "pond", silo: "silo" };
 
 export function parseBuild(name: string): { kind: PathKind; path: Path } | null {
   const m = /^([a-z]+)-(\d)-(\d)-(\d)$/.exec(name);
