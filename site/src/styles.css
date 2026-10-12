@@ -863,7 +863,7 @@ body {
     gap: 0;
     padding: 0 0 18px;
     overflow: hidden;
-    background: linear-gradient(180deg, rgba(40, 26, 30, 0.9), rgba(24, 15, 20, 0.94));
+    background: linear-gradient(180deg, var(--poster-top), var(--poster-bottom));
     transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
   }
   .ready .games > a.card:not(.card-cathode):hover {
@@ -874,7 +874,7 @@ body {
     height: auto;
     aspect-ratio: 16 / 10;
     border-radius: 0;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 24px var(--poster-shadow);
   }
   .games > a.card:not(.card-cathode) .card-art svg {
     width: 100%;
@@ -896,7 +896,7 @@ body {
     position: absolute;
     right: 16px;
     bottom: 16px;
-    background: rgba(251, 241, 223, 0.1);
+    background: var(--card-go);
   }
   .hero-cath {
     margin-bottom: 0;

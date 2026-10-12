@@ -10,6 +10,10 @@
   --card: rgba(28, 18, 22, 0.46);
   --card-hover: rgba(36, 24, 28, 0.6);
   --card-edge: rgba(255, 226, 180, 0.18);
+  --poster-top: rgba(40, 26, 30, 0.9);
+  --poster-bottom: rgba(24, 15, 20, 0.94);
+  --poster-shadow: rgba(0, 0, 0, 0.4);
+  --card-go: rgba(251, 241, 223, 0.1);
   --cd-blood: #c8102e;
   --on-blood: #fbf1df;
 
