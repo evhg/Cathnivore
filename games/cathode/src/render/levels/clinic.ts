@@ -119,7 +119,7 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     b.box("chrome", 6.4, 0.45, z, 0.8, 0.1, 2.0, { collide: "metal" });
     b.box("darkMetal", 6.4, 0.2, z, 0.5, 0.4, 1.6);
   }
-  b.box("glass", 6.5, 0.02, -16, 4.6, 0.04, 12);
+  b.box("water", 6.5, 0.1, -16, 4.6, 0.02, 12);
   signs.push({ text: "MORGUE", sub: "LEVEL B", style: "box", color: "#2ee6ff", w: 1.6, h: 0.4, center: V(xE - 0.08, 2.7, -16), normal: V(-1, 0, 0), flicker: 1, intensity: 3 });
 
   // Main theatre: glass gallery wall, instrument trolleys, IV stands, vital-sign monitors.
