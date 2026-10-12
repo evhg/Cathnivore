@@ -27,21 +27,24 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   const len = zS - zN;
 
   // Shell: tile floor, ceiling, outer walls.
-  b.boxMinMax("tiles", xW, -0.5, zN, xE, 0, zS, { uv: 2, skip: ["bottom"] });
-  b.boxMinMax("concreteB", xW, ceil, zN, xE, ceil + 0.4, zS, { uv: 2, collide: "concrete" });
-  b.boxMinMax("plasterGreen", xW - 0.5, -0.5, zN, xW, ceil + 0.4, zS, { uv: 2, collide: "concrete" });
-  b.boxMinMax("plasterGreen", xE, -0.5, zN, xE + 0.5, ceil + 0.4, zS, { uv: 2, collide: "concrete" });
-  b.boxMinMax("plasterGreen", xW, -0.5, zS, xE, ceil + 0.4, zS + 0.5, { uv: 2, collide: "concrete" });
-  b.boxMinMax("plasterGreen", xW, -0.5, zN - 0.5, xE, ceil + 0.4, zN, { uv: 2, collide: "concrete" });
+  b.boxMinMax("tileWhite", xW, -0.5, zN, xE, 0, zS, { uv: 2, skip: ["bottom"] });
+  b.boxMinMax("ceilingPanel", xW, ceil, zN, xE, ceil + 0.4, zS, { uv: 2, collide: "concrete" });
+  b.boxMinMax("tileWhite", xW - 0.5, -0.5, zN, xW, ceil + 0.4, zS, { uv: 2, collide: "concrete" });
+  b.boxMinMax("tileWhite", xE, -0.5, zN, xE + 0.5, ceil + 0.4, zS, { uv: 2, collide: "concrete" });
+  b.boxMinMax("tileWhite", xW, -0.5, zS, xE, ceil + 0.4, zS + 0.5, { uv: 2, collide: "concrete" });
+  b.boxMinMax("tileWhite", xW, -0.5, zN - 0.5, xE, ceil + 0.4, zN, { uv: 2, collide: "concrete" });
+
+  // A green dado band along the corridor walls, proud of the tile.
+  for (const x of [xW + 0.02, xE - 0.02]) b.box("tileGreen", x, 0.55, cz, 0.04, 0.5, len - 1);
 
   // Corridor dividers with door gaps: waiting room (west), wards (east).
   const wall = (x: number, gaps: Array<[number, number]>) => {
     let z: number = zS;
     for (const [g0, g1] of gaps) {
-      b.boxMinMax("tiles", x - 0.12, 0, g0, x + 0.12, ceil, z, { uv: 2, collide: "concrete" });
+      b.boxMinMax("tileWhite", x - 0.12, 0, g0, x + 0.12, ceil, z, { uv: 2, collide: "concrete" });
       z = g1;
     }
-    b.boxMinMax("tiles", x - 0.12, 0, zN, x + 0.12, ceil, z, { uv: 2, collide: "concrete" });
+    b.boxMinMax("tileWhite", x - 0.12, 0, zN, x + 0.12, ceil, z, { uv: 2, collide: "concrete" });
   };
   wall(-3.2, [[28, 32], [4, 8], [-24, -20]]);
   wall(3.2, [[20, 24], [-8, -4], [-32, -28]]);
