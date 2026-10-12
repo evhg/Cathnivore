@@ -24,11 +24,14 @@ export class Audio {
   /** The world's lightning drives thunder when it has any; otherwise thunder comes on its own. */
   externalThunder = false;
   private thunderT = 14;
+  private bellT = 6;
+  private readonly variant: ScoreVariant;
   private stepDist = 0;
   enabled = true;
 
   constructor(variant: ScoreVariant = "market") {
     const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    this.variant = variant;
     this.ctx = new AC();
     const c = this.ctx;
     this.master = c.createGain();
@@ -57,6 +60,7 @@ export class Audio {
     this.musicFilter.Q.value = 0.5;
     this.music.connect(this.musicFilter).connect(this.master);
     this.ambience();
+    if (variant === "plaza") this.crowdBed();
     this.score = new Score(c, this.music, this.verbSend, variant);
   }
 
@@ -409,6 +413,54 @@ export class Audio {
     city.start();
   }
 
+  /** Hollowell Plaza: a rally's worth of murmur, swelling and fading, under the rain. */
+  private crowdBed(): void {
+    const c = this.ctx;
+    const src = c.createBufferSource();
+    src.buffer = this.noise.pink;
+    src.loop = true;
+    src.playbackRate.value = 0.7;
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 420;
+    bp.Q.value = 0.9;
+    const g = c.createGain();
+    g.gain.value = 0.03;
+    const lfo = c.createOscillator();
+    lfo.frequency.value = 0.11;
+    const lg = c.createGain();
+    lg.gain.value = 0.018;
+    lfo.connect(lg).connect(g.gain);
+    src.connect(bp).connect(g).connect(this.master);
+    src.start();
+    lfo.start();
+  }
+
+  /** A tram bell somewhere down the line: two bright strikes, panned, with the street's tail. */
+  private tramBell(): void {
+    const c = this.ctx;
+    const t = c.currentTime;
+    const p = c.createStereoPanner();
+    p.pan.value = Math.random() * 1.6 - 0.8;
+    p.connect(this.master);
+    for (let i = 0; i < 2; i++) {
+      for (const f of [1180, 1770]) {
+        const o = c.createOscillator();
+        o.type = "sine";
+        o.frequency.value = f;
+        const g = c.createGain();
+        const at = t + i * 0.32;
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(f < 1500 ? 0.025 : 0.012, at + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 1.1);
+        o.connect(g).connect(p);
+        g.connect(this.verbSend);
+        o.start(at);
+        o.stop(at + 1.2);
+      }
+    }
+  }
+
   private siren(): void {
     const c = this.ctx;
     const t = c.currentTime;
@@ -457,6 +509,13 @@ export class Audio {
         this.heartT = 0.85;
         this.thump(60, 40, 0.12, 0.6);
         this.thump(55, 38, 0.12, 0.45, 0.22);
+      }
+    }
+    if (this.variant === "plaza") {
+      this.bellT -= dt;
+      if (this.bellT <= 0) {
+        this.bellT = 18 + Math.random() * 20;
+        this.tramBell();
       }
     }
     this.sirenT -= dt;

@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-12 16:51 session (short):** D3 plaza sound: crowd murmur bed and random tram bells (plaza variant only, `audio.ts`). tsc clean, 52 cathode test files pass. Unreleased; live still `61810ee` (`main` is `32f035c`, Vercel never deployed it).
 - **2026-10-12 15:51 session (short):** D3 plaza art: rain puddles, rally red carpet up the steps, portico banners, roof flagpoles, stage lights (shot checked, 52 cathode test files pass). Unreleased. Live is still `61810ee`: Vercel never deployed `32f035c`; next release retries.
 - **2026-10-12 14:52 session:** ran `npm run release` (D2 clinic, D1 loading cards, H7 kits): all gates passed, `main` moved to `32f035c`, but no Vercel deployment appeared within 10+ min (live still `61810ee`). Not tagged. Check the Vercel daily count / dashboard; the next release with a new commit retries. No other work this session.
 - **2026-10-12 13:52 session (short):** D1 leftover: per-district loading card art + flavour line (CATHODE, tested). H7 (M6): kit chips on the Hedgerow level-select screen (shot checked). CSS ratchet green (tokens). Unreleased. Left: per-district saves, M6 RPG re-point/duel rewards.
