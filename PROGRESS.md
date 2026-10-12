@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **2026-10-12 17:51 session:** D3 ticked done (civilians, police drones, marksmen, rally ambush, plaza art and sound all in). Running `npm run release` to ship D1-D3 and retry the stuck Vercel deploy.
+- **2026-10-12 17:51 session:** D3 ticked done (civilians, police drones, marksmen, rally ambush, plaza art and sound all in). `npm run release` gate 2 failed under load (hedgerow-fleet perf 'tier 3 paths' and hedgerow-hero-levels timing; both timing-sensitive, machine shared with the release run); stopped it, main untouched. Next session: run those two files alone, then retry release (also retries the stuck Vercel deploy). Consider relaxing the perf budget.
 - **2026-10-12 16:51 session (short):** D3 plaza sound: crowd murmur bed and random tram bells (plaza variant only, `audio.ts`). tsc clean, 52 cathode test files pass. Unreleased; live still `61810ee` (`main` is `32f035c`, Vercel never deployed it).
 - **2026-10-12 15:51 session (short):** D3 plaza art: rain puddles, rally red carpet up the steps, portico banners, roof flagpoles, stage lights (shot checked, 52 cathode test files pass). Unreleased. Live is still `61810ee`: Vercel never deployed `32f035c`; next release retries.
 - **2026-10-12 14:52 session:** ran `npm run release` (D2 clinic, D1 loading cards, H7 kits): all gates passed, `main` moved to `32f035c`, but no Vercel deployment appeared within 10+ min (live still `61810ee`). Not tagged. Check the Vercel daily count / dashboard; the next release with a new commit retries. No other work this session.
