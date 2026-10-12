@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-12 21:52 session:** `npm run release` succeeded on the 2nd try (gate 8 screenshot Graft click flaked under load once, passes alone): `main` and live are `9aee11e` (D2 clinic, D3 plaza, H6 Freeplay, H7 kits, D1 loading cards). Tag push 403 (harmless). No other work. Next: D4 or H8.
 - **2026-10-12 20:51 session:** fixed a TS error from the Freeplay commit (`endless.ts`, tsc had been red; `d` pushed). Three `npm run release` tries: gates 1-4 pass; gate 5 Cathnivore e2e `ai-teammate` 'Graft' click times out ("element is not stable") only under the 2-project parallel run, passes alone and in a desktop-only batch; a second try passed gate 5 and the 10-min background cap killed it at gate 6. main untouched, live still `61810ee`. Next: run the release with a long timeout; if gate 5 flakes again, find the unstable Graft button (animation under load).
 - **2026-10-12 19:51 session:** `npm run release` was denied by the Production Deploy classifier (not retried; main untouched, live still `61810ee`). H6 Freeplay done: acts 1-3's Endless is now Freeplay (the Book from the boss window's end, rounds past 80 replay 51-80 with Plants +2% a round, weekly bridge kept; `freeplayIndex`/`freeplayHp` in rounds.ts); acts 4-5 stay classic Endless. Tests green (endless, replay, fleet, almanac), tsc and lint clean. Unreleased. Left for H6: nothing but tuning.
 - **2026-10-12 18:51 session (release retry, no code change):** fleet perf test 'tier 3 paths' passes alone but fails again under the release's parallel load (2.6 s run, budget 2/3.5 ms per step). Relaxing the budget was blocked by the harness as a CI bypass, so it is unchanged and main untouched. Owner decision needed: relax the budget in `tests/hedgerow-fleet.test.ts` (`budgetOk`) or run gate 2 serially; then release.
@@ -20,7 +21,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - **2026-10-12 06:53 session (short, slow builds):** D2 clinic set dressing: ward privacy curtains, wheelchairs, shrouded morgue gurneys, theatre approach light strip and hazard markers. Typecheck and the 52 cathode test files pass; the full `npm run check` build took over 10 min so it was not awaited; not screenshotted. Unreleased. Next: shot the clinic, then D2 vanelead job or Phase U/H.
 
 ## Blocked
-Vercel did not deploy main 32f035c (2026-10-12; live still 61810ee). Retry with the next release. (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
+None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
 
 ## Known limitations (not blockers; the owner confirmed on 2026-09-28 that none of these hold up work)
 - **Git tag pushes fail with HTTP 403** from session credentials. Tags are only bookmarks: skip them and keep the release list below.
@@ -42,6 +43,7 @@ Vercel did not deploy main 32f035c (2026-10-12; live still 61810ee). Retry with 
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-12 22:20 `9aee11e`: CATHODE D1-D3 (clinic, plaza), Hedgerow H6 Freeplay and H7 kits. All gates passed; live version.json matches. 2nd release today.
 - 2026-10-12 ~01:00 `61810ee`: AAA UI U1–U4 (each game's own fonts, the shared foundation, the CATHODE HUD, the Hedgerow field HUD and upgrade sheet, the Cathnivore table). All gates passed; the live version.json matches. 1st release today.
 - 2026-10-11 ~03:30 `f159236`: Hedgerow 2 M3 (hard-lock properties, round preview, leak report, Retry from round N, acts 2-3 on the Fleet) and M4 (three upgrade paths for 5 towers). All gates passed; the live version.json matches. 1st release today.
 - 2026-10-10 17:44 `68a1f7c`: Hedgerow 2 M1 (hands-on pacing) and M2 (the layered Fleet in act 1). All gates passed; the live version.json matches; the tag push 403 is harmless. 1st release today.
