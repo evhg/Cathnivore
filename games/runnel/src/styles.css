@@ -1228,3 +1228,88 @@ body {
   color: inherit;
   text-underline-offset: 3px;
 }
+
+/* U6: the board bleeds into the page gutters on phones, so the hexes use the full width */
+@media (max-width: 520px) {
+  .stage {
+    margin-inline: -14px;
+  }
+}
+
+/* U6: landscape phones read as two columns: ledger and host on the left, the board on the right */
+@media (orientation: landscape) and (max-height: 520px) {
+  .app {
+    max-width: none;
+    grid-template-columns: minmax(280px, 40%) 1fr;
+    grid-template-rows: auto auto auto auto 1fr auto;
+    grid-template-areas:
+      'top top'
+      'modes stage'
+      'hud stage'
+      'host stage'
+      '. stage'
+      'foot stage';
+    column-gap: 20px;
+    row-gap: 8px;
+  }
+  .top {
+    grid-area: top;
+  }
+  .modes {
+    grid-area: modes;
+  }
+  .hud {
+    grid-area: hud;
+  }
+  .host {
+    grid-area: host;
+    margin: 0;
+    max-width: none;
+  }
+  .host-face {
+    width: 48px;
+    height: 58px;
+  }
+  .stage {
+    grid-area: stage;
+    margin-inline: 0;
+  }
+  .foot {
+    grid-area: foot;
+  }
+  .top {
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+  }
+  .wordmark {
+    justify-self: center;
+  }
+}
+
+/* U6: on a landscape phone the win sheet is wide: Cath sits left of the result, nothing is clipped */
+@media (orientation: landscape) and (max-height: 520px) {
+  .sheet.win {
+    width: min(680px, calc(100vw - 32px));
+    max-height: calc(100dvh - 16px);
+    overflow: auto;
+  }
+  .sheet.win form {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    column-gap: 22px;
+    row-gap: 8px;
+    padding: 16px 22px;
+    align-items: start;
+  }
+  .sheet.win .win-cath {
+    grid-column: 1;
+    grid-row: 1 / span 5;
+    margin: 0;
+    width: 104px;
+    height: 124px;
+    align-self: center;
+  }
+  .sheet.win form > :not(.win-cath) {
+    grid-column: 2;
+  }
+}

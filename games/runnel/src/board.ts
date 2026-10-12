@@ -167,7 +167,7 @@ export class Board {
       minY = Math.min(minY, y - S)
       maxY = Math.max(maxY, y + S)
     }
-    const pad = 14
+    const pad = 6
     this.svg.setAttribute(
       'viewBox',
       `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2 + 8}`,
