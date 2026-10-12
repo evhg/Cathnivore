@@ -81,7 +81,7 @@ function freeplayLevel(act: number, week: number, base: Level): Level {
 export function endlessLevel(act: number, week: number): Level {
   const base = LEVELS.find((l) => l.id === act * 10 - 1)!;
   if (base.rules === "fleet") return freeplayLevel(act, week, base);
-  const classic = base.rules === "fleet" ? CLASSIC_POOL[act] : undefined;
+  const classic = CLASSIC_POOL[act];
   const pool: EnemyKind[] = classic ? [...classic.pool] : [];
   if (!classic) for (const wave of base.waves) for (const g of wave) if (!pool.includes(g.enemy) && g.enemy !== "boss") pool.push(g.enemy);
   const bossLevel = LEVELS.find((l) => l.id === act * 10);
