@@ -5,7 +5,9 @@
 // recordEndless). No stars, no rosettes, no bot tuning.
 
 import { isBig, pathLength, type EnemyKind, type Level, type SetPiece, type WaveGroup } from "./engine";
+import { FLEET_GOODWILL } from "./fleet";
 import { LEVELS } from "./levels";
+import { bookWave, incomeBefore, windowFor } from "./rounds";
 
 export const ENDLESS_WAVES = 200;
 
@@ -44,8 +46,41 @@ const CLASSIC_POOL: Partial<Record<number, { pool: EnemyKind[]; startMarks: numb
   3: { pool: ["van", "drone", "influencer", "wrapped", "truck"], startMarks: 810, hpScale: 1.28 },
 };
 
+/**
+ * Freeplay (Hedgerow 2 M5): a Fleet act's Endless carries on from where its boss level's window ends, round after
+ * round of the Book, then past round 80 replays the Book's last 30 with Plants 2% tougher each round.
+ */
+function weeklyBridge(base: Level, seed: number): SetPiece {
+  const rand = rng(seed + 7);
+  return { kind: "bridge", dist: Math.round(pathLength(base.path) * (0.35 + rand() * 0.3)), period: 12 + Math.floor(rand() * 5), open: 3 + Math.floor(rand() * 2) };
+}
+
+function freeplayLevel(act: number, week: number, base: Level): Level {
+  const boss = LEVELS.find((l) => l.id === act * 10) ?? base;
+  const from = windowFor(boss.id).to + 1;
+  const book = { from, to: from + ENDLESS_WAVES - 1 };
+  const waves: WaveGroup[][] = [];
+  for (let r = book.from; r <= book.to; r++) waves.push(bookWave(r, boss.id));
+  return {
+    ...base,
+    name: `Freeplay: ${base.place}`,
+    rules: "fleet",
+    book,
+    waves,
+    endless: true,
+    startMarks: Math.round(0.85 * (500 + incomeBefore(from))),
+    goodwill: FLEET_GOODWILL,
+    hpScale: undefined,
+    before: [],
+    after: [],
+    setPieces: [...(base.setPieces ?? []), ...(base.setPieces?.some((p) => p.kind === "bridge") ? [] : [weeklyBridge(base, act * 1000 + week)])],
+    twists: base.twists,
+  };
+}
+
 export function endlessLevel(act: number, week: number): Level {
   const base = LEVELS.find((l) => l.id === act * 10 - 1)!;
+  if (base.rules === "fleet") return freeplayLevel(act, week, base);
   const classic = base.rules === "fleet" ? CLASSIC_POOL[act] : undefined;
   const pool: EnemyKind[] = classic ? [...classic.pool] : [];
   if (!classic) for (const wave of base.waves) for (const g of wave) if (!pool.includes(g.enemy) && g.enemy !== "boss") pool.push(g.enemy);
@@ -74,9 +109,7 @@ export function endlessLevel(act: number, week: number): Level {
   }
   // A swing bridge, placed and timed by the week's seed, unless the story level already has one.
   const setPieces: SetPiece[] = [...(base.setPieces ?? [])];
-  if (!setPieces.some((p) => p.kind === "bridge")) {
-    setPieces.push({ kind: "bridge", dist: Math.round(pathLength(base.path) * (0.35 + rand() * 0.3)), period: 12 + Math.floor(rand() * 5), open: 3 + Math.floor(rand() * 2) });
-  }
+  if (!setPieces.some((p) => p.kind === "bridge")) setPieces.push(weeklyBridge(base, act * 1000 + week));
   // It opens gentler than the story level (ENDLESS_START of its tuned health), then compounds past it fast.
   // A fleet act's Endless runs on classic rules (CLASSIC_POOL above).
   return {

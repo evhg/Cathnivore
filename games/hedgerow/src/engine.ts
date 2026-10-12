@@ -9,6 +9,7 @@ export const STEP = 1 / 30;
 import { levelFor, levelScale } from "./hero";
 import { PATHS, boughtTiers, capPath, stepToward, hasPaths, nextPath, pathBlock, pathCost, pathTier, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import { CATH_DAMAGE, CHILD_GAP, FLEET_HERO_DAMAGE, FLEET_PIE_DAMAGE, FLEET_TOWERS, INHERITED, LIVE_CAP, P, PIERCE_REACH, REBRAND_SECS, RUNGS, canControl, canHurt, damageTypeOf, fleetSpecPrice, fleetUpgradePrice, fvOf, popRate, propMask, roundBonus, rungAbove, stackBonus, type DamageType } from "./fleet";
+import { freeplayHp } from "./rounds";
 
 export type TowerKind =
   | "hedgerow"
@@ -2190,7 +2191,7 @@ export function spawnHp(game: Game, kind: EnemyKind, pm = 0): number {
   // Fleet levels never scale health: a rung's shell is its shell (difficulty comes from the Round Book).
   // Reinforced (hazard bands) doubles it.
   const rung = isFleet(game.level) ? RUNGS[kind] : undefined;
-  if (rung) return rung.shell * (pm & P.reinforced ? 2 : 1);
+  if (rung) return Math.round(rung.shell * (pm & P.reinforced ? 2 : 1) * freeplayHp(bookRound(game.level, game.wave)));
   let hp = ENEMIES[kind].hp * (game.level.hpScale ?? 1);
   if (game.level.endless) hp *= Math.pow(ENDLESS_HP_GROWTH, game.wave);
   if (hasTwist(game.level, "fortified")) hp *= 1.3;

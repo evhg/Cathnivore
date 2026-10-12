@@ -416,3 +416,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-12: release moved main to 32f035c (a lock commit) but Vercel never deployed it; logged as Blocked, retry next release.
 - 2026-10-12: D3 plaza dressing (puddles, carpet, banners, flags) added; no release this session since Vercel hasn't deployed 32f035c.
 - 2026-10-12 17:51: D3 ticked done; release failed gate 2 on load-sensitive perf/hero tests, aborted, main untouched.
+- 2026-10-12 19:51: Freeplay replaces the classic Endless on Fleet acts 1-3 (start Marks 0.85 of the Book's income, 120 Goodwill, untuned); release was classifier-denied, left for the owner.

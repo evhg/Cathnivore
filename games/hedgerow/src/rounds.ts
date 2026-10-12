@@ -315,7 +315,7 @@ export function scaleCard(card: string, m: number): string {
 
 /** The round a level plays: its act-themed swap, or the Book's, at the act's traffic, with any scouts riding in it. */
 export function roundFor(levelId: number | undefined, round: number): BookRound | undefined {
-  const base = (levelId !== undefined ? SWAPS[levelId]?.[round] : undefined) ?? BOOK[round - 1];
+  const base = (levelId !== undefined ? SWAPS[levelId]?.[round] : undefined) ?? BOOK[freeplayIndex(round)];
   const m = trafficOf(levelId);
   const r =
     base && m !== 1
@@ -329,6 +329,16 @@ export function roundFor(levelId: number | undefined, round: number): BookRound 
     card: `${r.card} Scouts: ${SCOUTS} ${name} Same-Day vans ride ahead of round ${sc.lockRound}, too quick for Cath to catch.`,
     groups: [...r.groups, { ...g("sprinter", SCOUTS, 0.45, 2.5, [sc.prop]), scout: true }],
   };
+}
+
+/** Freeplay (past round 80) replays the Book's last 30 rounds, ever tougher: the Book index a round reads. */
+export function freeplayIndex(round: number): number {
+  return round > BOOK.length && BOOK.length >= 80 ? 50 + ((round - 51) % 30) : round - 1;
+}
+
+/** Freeplay's Plant health: 2% more for every round past the Book's 80. */
+export function freeplayHp(round: number): number {
+  return round > 80 ? Math.pow(1.02, round - 80) : 1;
 }
 
 /** The rounds the Book has so far. */
