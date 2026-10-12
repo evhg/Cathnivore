@@ -6,6 +6,7 @@
 
 export const STEP = 1 / 30;
 
+import { levelFor, levelScale } from "./hero";
 import { PATHS, boughtTiers, capPath, stepToward, hasPaths, nextPath, pathBlock, pathCost, pathTier, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import { CATH_DAMAGE, CHILD_GAP, FLEET_HERO_DAMAGE, FLEET_PIE_DAMAGE, FLEET_TOWERS, INHERITED, LIVE_CAP, P, PIERCE_REACH, REBRAND_SECS, RUNGS, canControl, canHurt, damageTypeOf, fleetSpecPrice, fleetUpgradePrice, fvOf, popRate, propMask, roundBonus, rungAbove, stackBonus, type DamageType } from "./fleet";
 
@@ -1641,6 +1642,8 @@ export interface Hero {
   holding: number[];
   facing: 1 | -1;
   kills: number;
+  /** In-run level (Hedgerow 2 M6): grows with layers popped on the Fleet; always 1 on classic levels. */
+  level: number;
 }
 
 export const HERO = {
@@ -1741,6 +1744,7 @@ export type GameEvent =
   | { type: "swing"; x: number; y: number }
   | { type: "heroDown" }
   | { type: "heroUp" }
+  | { type: "heroLevel"; level: number }
   | { type: "injunction"; x: number; y: number }
   | { type: "split"; x: number; y: number; kind: EnemyKind }
   | { type: "flood"; x: number; y: number; warn: boolean }
@@ -2059,6 +2063,7 @@ export function newGame(
       holding: [],
       facing: 1,
       kills: 0,
+      level: 1,
     },
   };
 }
@@ -2820,9 +2825,25 @@ export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number, type
   return removed;
 }
 
+/** Cath's in-run level follows the layers popped; her body scales from the level-1 stats. */
+function growHero(game: Game): void {
+  const h = game.hero;
+  const lv = levelFor(game.popped);
+  if (lv <= h.level) return;
+  const from = levelScale(h.level);
+  const to = levelScale(lv);
+  h.level = lv;
+  h.damage *= to.damage / from.damage;
+  const hp = Math.round((h.maxHp * to.hp) / from.hp);
+  h.hp += hp - h.maxHp;
+  h.maxHp = hp;
+  game.events.push({ type: "heroLevel", level: lv });
+}
+
 /** Fleet levels: a Mark a layer (less after round 50), paid as whole Marks, and the tower's Knockouts. */
 function payLayers(game: Game, layers: number, by?: number): void {
   game.popped += layers;
+  growHero(game);
   // Slivers (thorns, poison) add up exactly (no rounding per sliver), so thirty thirtieths make a Mark.
   game.popMilli += layers * popRate(bookRound(game.level, Math.max(1, game.wave)));
   const whole = Math.floor((game.popMilli + 1e-6) / 1000);

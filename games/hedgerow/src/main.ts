@@ -786,7 +786,7 @@ function syncControls(): void {
     "aria-label",
     h.down > 0
       ? `Cath is catching her breath, back in ${Math.ceil(h.down)} seconds`
-      : `Cath, ${Math.round(h.hp)} of ${h.maxHp} health, ${h.kills} knockouts. She holds her post; move her between waves.`,
+      : `Cath, level ${h.level}, ${Math.round(h.hp)} of ${h.maxHp} health, ${h.kills} knockouts. She holds her post; move her between waves.`,
   );
   const more = g.wave < g.level.waves.length;
   const early = canCallEarly(g);
@@ -2494,6 +2494,9 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         tip("down", "Oof. Give me a few seconds. They hit harder than they look.", "worried");
         break;
       case "heroUp":
+        break;
+      case "heroLevel":
+        banner(`Cath is level ${ev.level}`, "Stronger and tougher for the rest of the run");
         break;
       case "injunction":
         sfx.playInjunction();

@@ -407,3 +407,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-12: Crown abilities for all path towers (unbalanced by tuner: bots never fire them; cooldowns 40-60 s keep them modest).
 - 2026-10-12: D2 clinic gets white tile materials; walls still dark, follow-up needed.
 - 2026-10-12: clinic walls use neutral slab texture + emissive lift because dirty_tiles albedo is brown.
+- 2026-10-12 H7/M6: in-run Cath level follows layers popped (92*(n)^2.2 curve, +5% damage/HP per level, cap 20), Fleet levels only; no retune yet (bonuses only help the bots); the save-based RPG sheet is untouched.
