@@ -1201,7 +1201,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
     // Sound: footsteps, the score's tension, slow motion.
     if (audio) {
-      if (player.onGround) audio.steps(player.speed * realDt * (dt > 0 ? dt / realDt : 1), player.speed, player.crouchAmt);
+      if (player.onGround) audio.steps(player.speed * realDt * (dt > 0 ? dt / realDt : 1), player.speed, player.crouchAmt, inClinic && player.pos.x > 4.2 && player.pos.x < 8.8 && player.pos.z > -22 && player.pos.z < -10 && player.pos.y < 0.4);
       let tension = 0;
       for (const e of enemies) if (e.alive) tension = Math.max(tension, e.state === "combat" ? 1 : e.state === "searching" ? 0.6 : e.detect * 0.5);
       audio.update(realDt, tension, focusing ? 0.7 : 0);

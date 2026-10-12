@@ -347,7 +347,7 @@ export class Audio {
   }
 
   /** Footsteps on wet concrete, from distance walked. */
-  steps(dist: number, speed: number, crouch: number): void {
+  steps(dist: number, speed: number, crouch: number, wet = false): void {
     this.stepDist += dist;
     const stride = speed > 5 ? 1.5 : 1.15;
     if (this.stepDist < stride) return;
@@ -355,6 +355,11 @@ export class Audio {
     const g = (0.12 + Math.min(0.2, speed * 0.03)) * (1 - crouch * 0.7);
     this.burst({ type: "lowpass", freq: 900 + Math.random() * 500, decay: 0.07, gain: g, noise: "pink" });
     this.burst({ type: "highpass", freq: 3500, decay: 0.05, gain: g * 0.5, when: 0.01 }); // the splash
+    // Ankle-deep water: a longer, lower slosh and a bright spray on top.
+    if (wet) {
+      this.burst({ type: "bandpass", freq: 500 + Math.random() * 300, q: 0.8, decay: 0.28, gain: g * 1.3, noise: "pink", when: 0.02, verb: 0.3 });
+      this.burst({ type: "highpass", freq: 5200, decay: 0.16, gain: g * 0.7, when: 0.05 });
+    }
   }
 
   // ---- the bed: rain, the city, the score ----
