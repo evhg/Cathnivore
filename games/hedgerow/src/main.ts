@@ -2477,6 +2477,10 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         haptic.boss();
         if (!REDUCED) slowUntil = performance.now() + 80;
         break;
+      case "closeCall":
+        banner("Close call!", "Popped at the gate", false, "leak");
+        if (!REDUCED) slowUntil = performance.now() + 400;
+        break;
       case "shot":
         if (shots++ < 2) sfx.playShot(ev.kind, !!ev.crit);
         break;
@@ -2773,6 +2777,12 @@ function finish(g: Game): void {
     `Goodwill kept ${g.goodwill}/${g.maxGoodwill}`,
     `Cath's knockouts ${g.hero.kills}`,
   ];
+  const crew = g.towers.filter((t) => (t.kills ?? 0) > 0).sort((a, b) => (b.kills ?? 0) - (a.kills ?? 0));
+  const totalKO = crew.reduce((a, t) => a + (t.kills ?? 0), 0);
+  if (totalKO) stats.unshift(`Knockouts ${totalKO.toLocaleString()}`);
+  if (g.closeCalls) stats.push(`Close calls ${g.closeCalls}`);
+  if (crew[0]) stats.push(`MVP ${TOWERS[crew[0].kind].name} (${(crew[0].kills ?? 0).toLocaleString()})`);
+  if (g.difficulty !== "normal") stats.push(`${g.difficulty[0]!.toUpperCase() + g.difficulty.slice(1)} difficulty`);
   if (g.heroic) stats.push("Heroic run ◆");
   if (earlyCalls) stats.push(`${Word(g)}s called early ${earlyCalls}`);
   ui.resultStats.textContent = won ? stats.join(" · ") : `Reached ${waveWord(g)} ${waveNo(g, g.wave)} of ${lastNo(g)}`;

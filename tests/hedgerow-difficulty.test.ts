@@ -1,7 +1,7 @@
 // Hedgerow 2 M9: difficulties, Hollow's rules and medals (docs/design/hedgerow-2.md section 9).
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
-import { isFleet, isPlot, newGame, place, sell, towerCost } from "../games/hedgerow/src/engine";
+import { hitEnemy, makeEnemy, isFleet, isPlot, newGame, place, sell, towerCost } from "../games/hedgerow/src/engine";
 import { emptySave, medalsOf, recordMedal } from "../games/hedgerow/src/store";
 
 const fleet = LEVELS.find((l) => isFleet(l) && !l.endless)!;
@@ -44,5 +44,21 @@ describe("medals", () => {
     expect(medalsOf(d, 4)).toEqual(["easy", "normal", "hollow"]);
     d.stars["5"] = 2;
     expect(medalsOf(d, 5)).toEqual(["easy"]);
+  });
+});
+
+describe("close calls", () => {
+  it("a pop within 1.5 cells of the farmhouse counts once per beat", () => {
+    const g = newGame(fleet);
+    const far = makeEnemy(g, "van", 3, undefined, 1);
+    hitEnemy(g, far, 1);
+    expect(g.closeCalls).toBe(0);
+    const near = makeEnemy(g, "van", g.pathLength - 1, undefined, 1);
+    hitEnemy(g, near, 1);
+    expect(g.closeCalls).toBe(1);
+    expect(g.events.some((e) => e.type === "closeCall")).toBe(true);
+    const again = makeEnemy(g, "van", g.pathLength - 1, undefined, 1);
+    hitEnemy(g, again, 1);
+    expect(g.closeCalls).toBe(1);
   });
 });

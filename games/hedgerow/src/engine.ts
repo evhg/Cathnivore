@@ -1773,6 +1773,8 @@ export type GameEvent =
   /** A thorn pile was laid on the lane. */
   | { type: "pile"; tower: number; x: number; y: number }
   | { type: "pop"; x: number; y: number }
+  /** A unit popped within 1.5 cells of the farmhouse: a beat of slow motion (Fleet only). */
+  | { type: "closeCall"; x: number; y: number }
   /** Rebrand: a vehicle grew back a rung. */
   | { type: "crown"; tower: number; name: string }
   | { type: "crownUse"; tower: number; name: string }
@@ -1807,6 +1809,9 @@ export interface Game {
   heroic: boolean;
   /** Easy, Normal or Hard (Fleet levels only; Hollow is `heroic`). Changes prices and Goodwill. */
   difficulty: Difficulty;
+  /** Pops within 1.5 cells of the farmhouse this run, and the tick before the next one may count. */
+  closeCalls: number;
+  closeCd: number;
   level: Level;
   tick: number;
   phase: Phase;
@@ -2070,6 +2075,8 @@ export function newGame(
     dueled: [],
     emitQueue: [],
     popMilli: 0,
+    closeCalls: 0,
+    closeCd: 0,
     popped: 0,
     leaked: 0,
     leakLog: {},
@@ -2808,6 +2815,12 @@ export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number, type
     // Pop: the shell is gone, the next rung down carries on from the same spot. Stealth and Rebrand pass
     // down; the rest of a vehicle's properties came off with its shell (an Artic's lorries get their own).
     const first = kids[0]!;
+    if (game.tick >= game.closeCd && (e.lane ? game.pathLength2 : game.pathLength) - e.dist < 1.5) {
+      game.closeCalls += 1;
+      game.closeCd = game.tick + 40;
+      const cp0 = enemyPoint(game.level, e);
+      game.events.push({ type: "closeCall", x: cp0.x, y: cp0.y });
+    }
     // A Heavy Plant's shell breaking is a moment of its own (hit-stop, a fountain, a banner).
     if (P.plant & inherentProps(e.kind) && (RUNGS[e.kind]?.shell ?? 0) >= 10 && !isBig(e.kind)) {
       const wp = enemyPoint(game.level, e);
