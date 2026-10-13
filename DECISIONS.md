@@ -424,3 +424,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-13 01:51: Courthouse paths use additive injunction secs + classAction flag; Crowns Habeas/Emergency Hearing freeze the whole field; levels not retuned.
 - 2026-10-13 02:51: roster unlock applies to Fleet levels only (classic 31-44 keep tuned lists); full refund = no wave sent since placement; level 16 needed START_K 0.84 for acts 11-16.
 - 2026-10-13: Heirlooms open from level 12 on Fleet levels (act 4 is still classic); sacrifice bonus and Bank interest dropped (stall paths differ from the doc). Released f5a28b7.
+- 2026-10-13 04:51: high ground fixed by vertex colour on its walls, not geometry; H1 stays open (acts already differ in light, lanes and borders, but the field interior is the same grid).

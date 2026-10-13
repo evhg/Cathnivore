@@ -476,18 +476,21 @@ export function buildGround(level: Level): Ground {
   // Hills out beyond the field: low noise that rises with distance from the grid.
   const noise = (x: number, y: number) =>
     Math.sin(x * 0.7 + level.id) * Math.cos(y * 0.6 - level.id * 0.3) * 0.5 + Math.sin(x * 0.23 + y * 0.31) * 0.8;
+  /** 0 to 1: how far up a raised plot's plinth (x, y) is. */
+  const plinth = (x: number, y: number): number => {
+    const c = Math.floor(x);
+    const r = Math.floor(y);
+    if (!high.has(`${c},${r}`)) return 0;
+    const fx = Math.min(x - c, c + 1 - x);
+    const fy = Math.min(y - r, r + 1 - y);
+    return smooth(Math.min(1, Math.min(fx, fy) / 0.25));
+  };
   const heightAt = (x: number, y: number): number => {
     const ox = Math.max(0, -x, x - cols);
     const oy = Math.max(0, -y, y - rows);
     const out = Math.hypot(ox, oy);
     let h = out > 0 ? smooth(Math.min(1, out / 6)) * (1.2 + noise(x, y) * 0.9) : 0;
-    const c = Math.floor(x);
-    const r = Math.floor(y);
-    if (high.has(`${c},${r}`)) {
-      const fx = Math.min(x - c, c + 1 - x);
-      const fy = Math.min(y - r, r + 1 - y);
-      h += 0.32 * smooth(Math.min(1, Math.min(fx, fy) / 0.25));
-    }
+    h += 0.32 * plinth(x, y);
     const d = laneDistance(level, x, y);
     if (d < 0.5) h -= 0.035 * smooth(1 - d / 0.5);
     return h;
@@ -505,6 +508,7 @@ export function buildGround(level: Level): Ground {
   const d0 = new THREE.Color(light.dirt[0]);
   const d1 = new THREE.Color(light.dirt[1]);
   const sand = new THREE.Color("#c9b88a");
+  const plinthWall = new THREE.Color(light.dirt[0]).lerp(new THREE.Color("#cfc5af"), 0.45);
   const tmp = new THREE.Color();
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i) + cols / 2;
@@ -538,6 +542,12 @@ export function buildGround(level: Level): Ground {
     // A soft, darker verge where the track meets the grass (trodden earth and shade).
     if (d >= 0.42 && d < 0.8) tmp.multiplyScalar(1 - 0.16 * smooth(1 - (d - 0.42) / 0.38));
     if (wet.has(`${Math.floor(x)},${Math.floor(y)}`)) tmp.lerp(sand, 0.6);
+    // Raised plots read as a built plinth: pale earthen walls with a lit, mown top.
+    const up = plinth(x, y);
+    if (up > 0) {
+      if (up < 0.97) tmp.lerp(plinthWall, 0.85 * Math.min(1, (1 - up) * 3)).multiplyScalar(1.15);
+      else tmp.multiplyScalar(1.1);
+    }
     // Darken the far hills a touch so the field reads.
     const out = Math.max(0, -x, x - cols, -y, y - rows);
     if (out > 0) tmp.multiplyScalar(1 - Math.min(0.18, out * 0.03));
