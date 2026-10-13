@@ -114,7 +114,7 @@ for (const rm of process.env.RM === '0' ? [false] : [false, true]) {
       await settle(page)
       await page.screenshot({ path: `${out}/cathode-gate-focus-${tag}.png` })
     }
-    if (only.some((s) => s !== 'gate' && s !== 'focus')) {
+    if (only.some((s) => s !== 'gate' && s !== 'focus' && s !== 'sheet') || only.includes('sheet')) {
       await page.goto(`${base}?play&shot`)
       await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) > 2, null, { timeout: 120_000 })
       await page.waitForTimeout(5000)
@@ -180,6 +180,22 @@ for (const rm of process.env.RM === '0' ? [false] : [false, true]) {
           await page.screenshot({ path: `${out}/cathode-pause-focus-${tag}.png`, timeout: 180_000 })
         }
       }
+    }
+    if (only.includes('sheet')) {
+      // K opens Cath's sheet (the dossier); the page itself must never scroll.
+      await page.evaluate(() => { window.cathode.input.forced = { skills: true } })
+      const open = await page
+        .waitForFunction(() => { const r = document.querySelector('.cx-panel')?.getBoundingClientRect(); return !!r && r.width > 0 }, null, { timeout: 60_000 })
+        .then(() => true, () => false)
+      if (!open) problems.push(`sheet ${tag}: K did not open the sheet`)
+      await page.waitForTimeout(4000)
+      // Land every finite entrance animation on its last frame (the world renders at ~3 fps here).
+      await page.evaluate(() => { for (const a of document.getAnimations()) { try { a.finish() } catch { /* infinite */ } } })
+      await settle(page)
+      await page.waitForTimeout(2500)
+      const over = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)
+      if (over > 1) problems.push(`sheet ${tag}: page scrolls by ${over}px`)
+      await page.screenshot({ path: `${out}/cathode-sheet-${tag}.png`, timeout: 180_000 })
     }
     await ctx.close()
   }
