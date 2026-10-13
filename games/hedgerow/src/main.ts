@@ -142,6 +142,7 @@ import {
   PERKS,
   buyPerk,
   freeStars,
+  freeAcorns,
   isUnlocked,
   load,
   nextCost,
@@ -3100,7 +3101,7 @@ function renderRosettes(): void {
 
 function renderBank(): void {
   renderRosettes();
-  ui.bankFree.textContent = `${freeStars(data)} stars to spend. Earn more by clearing levels with three stars.`;
+  ui.bankFree.textContent = `${freeStars(data)} stars to spend. Earn more by clearing levels with three stars.${(data.acorns ?? 0) > 0 ? ` ${freeAcorns(data)} acorns to spend (earned by winning).` : ""}`;
   ui.perks.replaceChildren();
   for (const p of PERKS) {
     const rank = data.bank[p.id] ?? 0;
@@ -3120,9 +3121,11 @@ function renderBank(): void {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "btn";
-    b.textContent = cost === null ? "Full" : `★ ${cost}`;
-    b.disabled = cost === null || cost > freeStars(data);
-    b.setAttribute("aria-label", cost === null ? `${p.name}: fully grown` : `Buy ${p.name} rank ${rank + 1} for ${cost} stars`);
+    const purse = p.acorns ? freeAcorns(data) : freeStars(data);
+    const coin = p.acorns ? "acorns" : "stars";
+    b.textContent = cost === null ? "Full" : `${p.acorns ? "🌰" : "★"} ${cost}`;
+    b.disabled = cost === null || cost > purse;
+    b.setAttribute("aria-label", cost === null ? `${p.name}: fully grown` : `Buy ${p.name} rank ${rank + 1} for ${cost} ${coin}`);
     b.onclick = () => {
       if (buyPerk(data, p.id)) sfx.playUpgrade();
       renderBank();

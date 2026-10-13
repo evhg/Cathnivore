@@ -45,3 +45,17 @@ describe("XP gates", () => {
     expect(xpBlock({ xpGate: { scarecrow: XP_CROWN } }, "scarecrow", 4)).toBeNull();
   });
 });
+
+describe("Acorn perks", () => {
+  it("cost Acorns, not stars, and apply to the run", async () => {
+    const { buyPerk, freeAcorns, freeStars, perksOf } = await import("../games/hedgerow/src/store");
+    const d = emptySave();
+    d.stars["1"] = 3;
+    expect(buyPerk(d, "pocketchange")).toBe(false);
+    d.acorns = 100;
+    expect(buyPerk(d, "pocketchange")).toBe(true);
+    expect(freeAcorns(d)).toBe(20);
+    expect(freeStars(d)).toBe(3);
+    expect(perksOf(d).marks).toBe(60);
+  });
+});

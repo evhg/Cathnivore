@@ -249,14 +249,34 @@ export interface PerkDef {
   id: string;
   name: string;
   blurb: string;
-  /** Stars for each rank. */
+  /** Stars for each rank (Acorns when `acorns` is set). */
   costs: number[];
+  /** Bought with Acorns from wins instead of stars (Hedgerow 2 M10). */
+  acorns?: true;
   /** What one rank does, for the card. */
   each: string;
   apply: (p: Perks, rank: number) => void;
 }
 
 export const PERKS: PerkDef[] = [
+  {
+    id: "pocketchange",
+    name: "Pocket Change",
+    blurb: "Acorns from the oak by the gate, spent on the first Scarecrow.",
+    each: "+60 starting Marks",
+    costs: [80, 160, 240],
+    acorns: true,
+    apply: (p, r) => (p.marks += 60 * r),
+  },
+  {
+    id: "sharpeyes",
+    name: "Sharp Elbows",
+    blurb: "Every tower works a little harder with the neighbours watching.",
+    each: "Towers hit 3% harder",
+    costs: [120, 240],
+    acorns: true,
+    apply: (p, r) => (p.towerDamage *= 1 + 0.03 * r),
+  },
   {
     id: "pockets",
     name: "Deep Pockets",
@@ -354,10 +374,21 @@ export function totalStars(data: SaveData): number {
 export function spentStars(data: SaveData): number {
   let n = 0;
   for (const p of PERKS) {
+    if (p.acorns) continue;
     const r = data.bank[p.id] ?? 0;
     for (let i = 0; i < r; i++) n += p.costs[i]!;
   }
   return n;
+}
+
+export function freeAcorns(data: SaveData): number {
+  let spent = 0;
+  for (const p of PERKS) {
+    if (!p.acorns) continue;
+    const r = data.bank[p.id] ?? 0;
+    for (let i = 0; i < r; i++) spent += p.costs[i]!;
+  }
+  return (data.acorns ?? 0) - spent;
 }
 
 export function freeStars(data: SaveData): number {
@@ -373,7 +404,8 @@ export function nextCost(data: SaveData, id: string): number | null {
 
 export function buyPerk(data: SaveData, id: string): boolean {
   const cost = nextCost(data, id);
-  if (cost === null || cost > freeStars(data)) return false;
+  const p = PERKS.find((x) => x.id === id)!;
+  if (cost === null || cost > (p.acorns ? freeAcorns(data) : freeStars(data))) return false;
   data.bank[id] = (data.bank[id] ?? 0) + 1;
   save(data);
   return true;
