@@ -69,6 +69,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-04 ~04:10 UTC: `ca00b4a`, CATHODE through alt-fires. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
 
 ## Session log (newest first, last 15)
+- 2026-10-13 11:52-12:30 UTC: H10 finished apart from small leftovers (Long Haul, Hollow +5, e2e); H11 tower XP, Acorns, XP gates, XP bars, Acorn perks; H12 Daily rule. `npm run check` green. Unreleased (H10 and H11 not whole yet).
 - 2026-10-03 10:51-~11:15 UTC: Cathnivore audit, ROADMAP 57-62 added, end-screen stats tweak. Not released (cap).
 - 2026-10-03 02:51-~03:20 UTC: ROADMAP 52 part 2 (Drone carrier). Level tests take ~13 min. Not released.
 - 2026-10-03 01:51-~02:20 UTC: ROADMAP 52 part 1 (Lobbyist). Not released (1 release already today; batching).

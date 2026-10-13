@@ -77,3 +77,5 @@ Fleet levels grow those five along paths (`paths.ts`; tier 3 from level 6); the 
 - **Scarecrow-spam bar on levels 4-10 is 3 bleeding levels, not 4 (deliberate, M4):** k sits on its 0.7 floor for every act 1 level after L1, so the start purse can't be cut further to make spam bleed on a fourth level, and path builds made spam stronger per Mark. Spam bleeds or loses on L6, L7 and L9 (and on L1-3); L4, L5, L8 and L10 hold 120 for it. Raising the bar again needs act 1 round changes (property rounds a plain Flock build can't answer), planned with M5's Book rounds rather than a k cut below the spec's range.
 
 - 2026-10-11: bots buy Crowns; `hedgerow-tune` + `--verify` rerun, all 100 levels beatable (level tests 100/100).
+
+- 2026-10-13: Hollow +5 rounds probe (best bot, normal Goodwill, no Hollow rules): levels 3, 10, 25 still win at full Goodwill; level 16 wins at 60 Goodwill normally and loses shifted. Untuned; Hollow's 1 Goodwill is the real wall.
