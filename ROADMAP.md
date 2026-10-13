@@ -22,7 +22,7 @@ These two phases come before every older unfinished item below. About 70% of ses
 - U6. [~] **M6 Runnel puzzle and win sheet** *(2026-10-12: landscape two columns and landscape win sheet on `build`; ledger, voice and motion left)*
 - U7. [ ] **M7 Cathnivore story scene and end screen**
 - U8. [~] **M8 CATHODE front door: gate, title and class pick** *(2026-10-13: gate shows Cath rim-lit beside the card, title window fades, phone class name no longer clipped; on `build`, unreleased; shots checked at P/L/D; reduced-motion shot and e2e flow not re-run)*
-- U9. [~] **M9 CATHODE dossier and pause** *(2026-10-13: skill sigils and pause-card restyle on `build`, unreleased; keycap table, K e2e, L shots left)*
+- U9. [x] **M9 CATHODE dossier and pause** *(2026-10-13: sigils, pause card, keycap table, K sheet shots at P/L/D checked; no cathode e2e project, so the K check lives in cathode-shots.mjs)*
 - U10. [ ] **M10 Hedgerow map, story and end screen**
 - U11. [ ] **M11 Cathnivore setup, title, campaign, settings and motion**
 - U12. [ ] **M12 CATHODE rewards and world screens**
