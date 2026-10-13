@@ -2775,7 +2775,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         if (ev.quality >= 0.85) haptic.upgrade();
         break;
       case "duelEnd":
-        toast(ev.won ? `Cath wins the duel: the ${ENEMIES[ev.kind].name} reels.` : "Cath's knocked back. She'll be up in a moment.");
+        toast(ev.perfect ? `Perfect duel! The ${ENEMIES[ev.kind].name} loses a tenth of its health, and you pocket 150 Marks.` : ev.won ? `Cath wins the duel: the ${ENEMIES[ev.kind].name} reels.` : "Cath's knocked back. She'll be up in a moment.");
         break;
       case "flood":
         if (ev.warn) banner("The river's rising", "Next wave it floods the plots by the ford. Only Duck Ponds will stand there.");

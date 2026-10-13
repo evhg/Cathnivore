@@ -1799,7 +1799,7 @@ export type GameEvent =
   | { type: "ambush"; x: number; y: number; kind: EnemyKind; lane?: 1; in: number }
   | { type: "duel"; kind: EnemyKind }
   | { type: "duelStrike"; quality: number; round: number }
-  | { type: "duelEnd"; kind: EnemyKind; won: boolean; total: number }
+  | { type: "duelEnd"; kind: EnemyKind; won: boolean; total: number; perfect?: boolean }
   | {
       type: "bossMove";
       kind: EnemyKind;
@@ -4288,19 +4288,27 @@ export function duelStrike(game: Game, quality: number): ActionResult {
   const total = d.strikes.reduce((a, b) => a + b, 0);
   const boss = game.enemies.find((e) => e.id === d.enemy);
   const won = total >= 1.5;
+  const perfect = d.strikes.every((x) => x >= 0.85);
   if (boss && boss.hp > 0) {
     const bite = maxHpOf(boss) * DUEL_BITE * total * game.perks.duel;
     if (isFleet(game.level)) hitEnemy(game, boss, Math.min(bite, boss.hp - 1), -1);
     else boss.hp -= bite;
     boss.stun = Math.max(boss.stun, won ? 1 + total : 0.5);
+    // A perfect duel takes a tenth off the boss and pays 150 Marks (Hedgerow 2 spec).
+    if (perfect) {
+      const extra = maxHpOf(boss) * 0.1;
+      if (isFleet(game.level)) hitEnemy(game, boss, Math.min(extra, boss.hp - 1), -1);
+      else boss.hp -= Math.min(extra, boss.hp - 1);
+    }
   }
+  if (perfect) game.marks += 150;
   if (!won) {
     // She took a beating: back to the farmhouse to recover.
     game.hero.down = HERO.respawn * 0.5 * game.perks.heroRespawn;
     game.hero.holding = [];
     game.events.push({ type: "heroDown" });
   }
-  game.events.push({ type: "duelEnd", kind: d.kind, won, total });
+  game.events.push({ type: "duelEnd", kind: d.kind, won, total, perfect });
   return { ok: true };
 }
 

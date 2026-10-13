@@ -261,9 +261,12 @@ describe("hedgerow round 3: boss duels", () => {
     const hp = boss.hp;
     for (let i = 0; i < 30; i++) stepGame(game);
     expect(boss.dist).toBe(dist);
+    const marks = game.marks;
     for (let r = 0; r < DUEL_ROUNDS; r++) expect(duelStrike(game, 1).ok).toBe(true);
     expect(game.duel).toBeNull();
-    expect(boss.hp).toBeCloseTo(hp - boss.maxHp! * DUEL_BITE * DUEL_ROUNDS);
+    // A perfect duel also pays 150 Marks and takes another tenth off the boss.
+    expect(game.marks).toBe(marks + 150);
+    expect(boss.hp).toBeCloseTo(hp - boss.maxHp! * (DUEL_BITE * DUEL_ROUNDS + 0.1));
     expect(boss.stun).toBeGreaterThan(1);
     expect(game.hero.down).toBe(0);
     // Only once per boss kind.
