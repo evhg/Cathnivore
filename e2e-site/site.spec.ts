@@ -678,6 +678,22 @@ test.describe('Hedgerow', () => {
     expect(g).toEqual({ difficulty: 'hard', remix: 'long', to: 80 })
   })
 
+  test('Hedgerow 2 M11: the County Show starts a kit-limited field with a fallen oak on it', async ({ page }) => {
+    await page.goto(HEDGEROW_2D + '&sandbox=1')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: {}, seenBefore: { '1': true }, tips: { build: true, hero: true, early: true } })))
+    await page.reload()
+    await page.locator('#btn-show').click()
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: { game(): unknown } }).hedgerow?.game())
+    const g = await page.evaluate(() => {
+      const x = (window as unknown as { hedgerow: { game(): { level: { id: number; towers: string[]; oaks?: number[][] } } } }).hedgerow.game()
+      return { id: x.level.id, towers: x.level.towers, oaks: x.level.oaks?.length ?? 0 }
+    })
+    expect(g.id).toBeGreaterThanOrEqual(11)
+    expect(g.towers.length).toBeLessThanOrEqual(6)
+    expect(g.towers).toContain('scarecrow')
+    expect(g.oaks).toBeGreaterThan(0)
+  })
+
   test('keeps progress in localStorage', async ({ page }) => {
     await page.goto(HEDGEROW_2D)
     await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 1, stars: { '1': 2 }, seenBefore: { '1': true } })))
