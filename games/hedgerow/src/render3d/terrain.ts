@@ -459,6 +459,47 @@ function buildBorder(
   return out;
 }
 
+/** Tints a field point (x, y in cells) with the act's own ground: mown stripes, heather, dunes, silt, blossom, scorch, rubble, paving. */
+function fieldGround(act: number, c: THREE.Color, x: number, y: number, seed: number): void {
+  const n = hash2(Math.floor(x * 2), Math.floor(y * 2), seed + 31);
+  const wob = Math.sin(x * 1.9 + y * 0.8) * Math.sin(y * 2.3 - x * 0.5);
+  const mix = (hex: string, k: number) => c.lerp(new THREE.Color(hex), Math.max(0, Math.min(1, k)));
+  switch (act) {
+    case 0: // mown stripes
+      c.multiplyScalar(Math.floor(y * 1.0) % 2 === 0 ? 1.07 : 0.94);
+      break;
+    case 1: // heather and bracken on the moor
+      mix(wob > 0.15 ? "#8a6a9a" : "#a07a4a", Math.abs(wob) * 0.55 * (0.4 + n));
+      break;
+    case 2: // pale dune streaks by the sea
+      mix("#e2d3a6", Math.max(0, wob + 0.1) * 0.7);
+      break;
+    case 3: // river silt
+      mix("#8a7a52", Math.max(0, -wob + 0.05) * 0.6);
+      break;
+    case 4: // orchard rows with fallen blossom
+      c.multiplyScalar(Math.floor(x * 1.0) % 2 === 0 ? 1.05 : 0.95);
+      if (n > 0.9) mix("#f0c8d2", 0.7);
+      break;
+    case 5: // sun-scorched grass
+      mix("#b08a4a", Math.max(0, wob) * 0.55);
+      break;
+    case 6: // rubble scatter
+      mix("#8b8780", n > 0.78 ? 0.7 : Math.max(0, wob) * 0.25);
+      break;
+    case 7: // town paving slabs
+      mix("#aeb0aa", 0.62);
+      if (Math.abs((x % 1) - 0.5) > 0.47 || Math.abs((y % 1) - 0.5) > 0.47) c.multiplyScalar(0.82);
+      break;
+    case 8: // clipped corporate lawn, checkered
+      c.multiplyScalar((Math.floor(x) + Math.floor(y)) % 2 === 0 ? 1.06 : 0.93);
+      break;
+    case 9: // ash and cinders
+      mix("#2c2826", Math.max(0, wob) * 0.5 + (n > 0.85 ? 0.3 : 0));
+      break;
+  }
+}
+
 export function buildGround(level: Level): Ground {
   const light = actLight(level.id);
   const rand = rng(level.id * 7919 + 17);
@@ -533,6 +574,8 @@ export function buildGround(level: Level): Ground {
       tmp.multiplyScalar(0.93 + vn * 0.12);
       tmp.r *= 1 + (vn - 0.5) * 0.06;
     }
+    // Each act's field has its own ground in the plots between the lanes.
+    if (x > 0 && x < cols && y > 0 && y < rows) fieldGround(act, tmp, x, y, level.id);
     const d = laneDistance(level, x, y);
     if (d < 0.42) {
       // Dirt track with two darker wheel ruts.
