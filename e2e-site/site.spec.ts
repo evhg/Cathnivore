@@ -660,6 +660,24 @@ test.describe('Hedgerow', () => {
     await expect(page.locator('#story-full')).not.toHaveText(first!)
   })
 
+  test('Hedgerow 2 M9: the map shows medals, and the Hard and Long Haul choices carry into the run', async ({ page }) => {
+    await page.goto(HEDGEROW_2D + '&sandbox=1')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: { '1': 1 }, medals: { '1': ['hard'] }, seenBefore: { '1': true, '2': true }, tips: { build: true, hero: true, early: true } })))
+    await page.reload()
+    await expect(page.locator('button.level[data-level="1"] .medal-hard.got')).toHaveCount(1)
+    await page.locator('#btn-diff').click()
+    await expect(page.locator('#btn-diff')).toHaveAttribute('aria-label', 'Difficulty: Hard')
+    for (let i = 0; i < 3; i++) await page.locator('#btn-remix').click()
+    await expect(page.locator('#btn-remix')).toHaveAttribute('aria-label', 'Remix: Long Haul')
+    await page.locator('button.level[data-level="2"]').click()
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: { game(): unknown } }).hedgerow?.game())
+    const g = await page.evaluate(() => {
+      const x = (window as unknown as { hedgerow: { game(): { difficulty: string; remix: string; maxGoodwill: number; level: { book: { to: number } } } } }).hedgerow.game()
+      return { difficulty: x.difficulty, remix: x.remix, to: x.level.book.to }
+    })
+    expect(g).toEqual({ difficulty: 'hard', remix: 'long', to: 80 })
+  })
+
   test('keeps progress in localStorage', async ({ page }) => {
     await page.goto(HEDGEROW_2D)
     await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 1, stars: { '1': 2 }, seenBefore: { '1': true } })))

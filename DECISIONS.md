@@ -430,3 +430,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-13: Took U8 (Phase U) because Phase D is all done; fixed Cath hidden on the gate and the clipped class name. Not released (milestone unfinished).
 - 2026-10-13 09:51: U9 K-sheet check lives in `cathode-shots.mjs` (no cathode e2e project exists); swiftshader needs animations finished before shooting.
 - 2026-10-13 11:10: H10 modes apply to Fleet levels only; remix wins earn no difficulty medal; difficulty price applies to new towers only (upgrade prices unchanged); Continue saves the replay at each round start and re-runs it.
+- 2026-10-13 12:10: Hollow's +5 rounds only when `Setup.shift` is set (old Heroic replays unchanged); Long Haul keeps the original boss round and appends Book rounds to 80.
