@@ -50,8 +50,8 @@ These two phases come before every older unfinished item below. About 70% of ses
   - H9. [ ] **M8 Campaign conversion:** acts 4–10 on Book windows with bosses as phased Plants. Delete `ramp()`, `HP_SCALE` and the classic rules.
   - H10. [x] *(2026-10-13: Easy/Normal/Hard, Hollow no-sell, medal dots on the map with star/Heroic migration, Hand Tools and Lean Year remixes, close-call slow motion, end-screen Knockouts/MVP/close calls, Continue from the last round start; 2026-10-13 later: Long Haul, Hollow +5 rounds, e2e; difficulty price applies to new towers only, by decision)* **M9 Difficulties, modes, medals** (Easy, Normal, Hard, Hollow and 3 remixes), the medal grid, close-call slow motion, the end screen, and Continue or retry from a round snapshot.
   - H11. [x] *(2026-10-13: tower XP, Acorns, XP gates, XP bars, two Acorn perks, Compost Heap, five Seed Packets with boss-level drops)* **M10 Long-term meta:** tower XP gating T3 and T4, Acorns, the Compost Heap, Seed Bank v2 and Seed Packets.
-  - H12. [~] *(2026-10-13: Daily rule of the day)* **M11 Events and map gimmicks:** a Daily with tower limits, the weekly County Show, line-of-sight blockers, removable obstacles and fords. Merges with H1.
-  - H13. [ ] **M12 Spectacle pass:** rung liveries, Crown and Heirloom idles, comic deaths and spike-round music stingers.
+  - H12. [~] *(2026-10-13: Daily rule of the day; fallen oaks (500 Marks to clear), barns that block ground fire, weekly County Show (3 fields, 6-tower kit, shared Goodwill, Seed Packet prize); still to do: Pond-only fords, a Show draft pick, Daily tower limits)* **M11 Events and map gimmicks:** a Daily with tower limits, the weekly County Show, line-of-sight blockers, removable obstacles and fords. Merges with H1.
+  - H13. [~] *(2026-10-13: spike-round stinger, comic wreck words, lawyer papers, Crown circlet idle; still to do: rung liveries, Heirloom idles, vans folding up)* **M12 Spectacle pass:** rung liveries, Crown and Heirloom idles, comic deaths and spike-round music stingers.
 
 ## Phase 1: Cath, the face of every game (owner's top priority)
 

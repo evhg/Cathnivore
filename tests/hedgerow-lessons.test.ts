@@ -22,6 +22,8 @@ import {
   isFleet,
   leakCauseOf,
   isPlot,
+  oakAt,
+  barnAt,
   pointAt,
   makeEnemy,
   newGame,
@@ -217,7 +219,7 @@ describe("hedgerow M3: properties on the lane", () => {
         for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
           const c = Math.floor(q.x) + dc;
           const r = Math.floor(q.y) + dr;
-          if (!isPlot(L, c, r)) continue;
+          if (!isPlot(L, c, r) || oakAt(g, c, r) || barnAt(L, c, r)) continue;
           const gap = Math.hypot(c + 0.5 - q.x, r + 0.5 - q.y);
           if (!best || gap < best.gap) best = { c, r, d, gap };
         }

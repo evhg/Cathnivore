@@ -1104,7 +1104,11 @@ export class Renderer3D {
           obj.rotation.y = tw.annex[1] !== tw.row ? -Math.PI / 2 : 0;
         } else {
           obj = buildTower(tw.kind, tw.tier, tw.spec ?? null, tw.path);
-          if (tw.crown !== undefined) obj.add(crownTopper());
+          if (tw.crown !== undefined) {
+            const top = crownTopper();
+            obj.add(top);
+            obj.userData.crownTop = top;
+          }
           obj.userData.scale = tw.crown !== undefined ? 1.4 : 1.22;
           obj.position.set(tw.col + 0.5, this.height(tw.col + 0.5, tw.row + 0.5), tw.row + 0.5);
         }
@@ -1156,6 +1160,13 @@ export class Renderer3D {
       d.position.set(Math.cos(ph) * 0.2, Math.sin(t * 3 + ph) * 0.01, Math.sin(ph) * 0.2);
       d.rotation.y = -ph;
     });
+    // A Crown's circlet turns slowly and bobs; its ring breathes (H13 idle).
+    const top = ud.crownTop as THREE.Object3D | undefined;
+    if (top && !this.reducedMotion) {
+      top.rotation.y = t * 0.9 + tw.id;
+      top.position.y = Math.sin(t * 2 + tw.id) * 0.03;
+      top.scale.setScalar(1 + Math.sin(t * 3 + tw.id) * 0.04);
+    }
     const light = ud.light as THREE.Mesh | undefined;
     if (light) light.visible = Math.sin(t * 4 + tw.id) > -0.3;
     const flag = ud.flag as THREE.Object3D | undefined;
