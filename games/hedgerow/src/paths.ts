@@ -20,7 +20,7 @@ export type Path = [number, number, number];
 export type PathIndex = 0 | 1 | 2;
 
 /** The towers that grow along paths (M4). The rest use the legacy adapter until M7. */
-export const PATH_KINDS = ["scarecrow", "hedgerow", "beehive", "cannon", "mast", "pond", "silo"] as const;
+export const PATH_KINDS = ["scarecrow", "hedgerow", "beehive", "cannon", "mast", "pond", "silo", "windmill"] as const;
 export type PathKind = (typeof PATH_KINDS)[number];
 
 export function hasPaths(kind: TowerKind): kind is PathKind {
@@ -41,8 +41,10 @@ export interface PathMod {
   damage?: number;
   /** + vehicles per shot. */
   pierce?: number;
-  /** × fire rate (the cooldown is divided by it). */
+  /** × fire rate (the cooldown is divided by it; a Windmill's gusts come that much faster). */
   rate?: number;
+  /** + cells a gust shoves everything back (Windmill). */
+  push?: number;
   /** × range, then + cells. */
   range?: number;
   rangeAdd?: number;
@@ -448,6 +450,37 @@ export const PATHS: Record<PathKind, TowerPaths> = {
       },
     ],
   },
+  windmill: {
+    paths: [
+      {
+        name: "Gale",
+        short: "Gale",
+        tiers: [
+          { name: "Stiff Sails", cost: 60, adds: "gust shoves +0.3 cells", blurb: "New canvas on the sails. The gust has real weight now.", mod: { push: 0.3 } },
+          { name: "Headwind", cost: 140, adds: "gust +0.4 cells, +20% range, +2 pierce", blurb: "The mill turns to face the lane: a longer reach and a harder shove.", mod: { push: 0.4, range: 1.2, pierce: 2 } },
+          { name: "Cyclone", cost: 1800, adds: "gust +0.8 cells, +8 pierce", blurb: "The sails spin so hard the air itself throws lorries back down the road.", mod: { push: 0.8, pierce: 8 } },
+        ],
+      },
+      {
+        name: "Tempo",
+        short: "Tempo",
+        tiers: [
+          { name: "Oiled Hub", cost: 60, adds: "gusts 30% faster", blurb: "A drop of oil in the hub. The sails never stop.", mod: { rate: 1.3 } },
+          { name: "Twin Sails", cost: 150, adds: "gusts 30% faster, +1 layer, +2 pierce", blurb: "A second set of sails, turning the other way.", mod: { rate: 1.3, damage: 1, pierce: 2 } },
+          { name: "Whirlwind", cost: 1900, adds: "gusts 50% faster, +2 layers, +6 pierce", blurb: "Bea stops counting the gusts. There is just wind.", mod: { rate: 1.5, damage: 2, pierce: 6 } },
+        ],
+      },
+      {
+        name: "Mill",
+        short: "Mill",
+        tiers: [
+          { name: "Millstone", cost: 60, adds: "+1 layer", blurb: "Everything the gust throws is ground a little finer.", mod: { damage: 1 } },
+          { name: "Sharpened Sails", cost: 140, adds: "+1 layer, Sharp", blurb: "Iron-edged sails that cut, not just batter.", mod: { damage: 1, type: "sharp" } },
+          { name: "Grinder", cost: 1800, adds: "+3 layers, +10 pierce, ×2 on big shells", blurb: "The millstones come out of the cellar and into the wind.", mod: { damage: 3, pierce: 10, shellMul: 2 } },
+        ],
+      },
+    ],
+  },
 };
 
 /** Crowns for the other four path towers (M5): passive, one per path, one of each per field. */
@@ -482,6 +515,11 @@ const PASSIVE_CROWNS: Record<Exclude<PathKind, "scarecrow">, [PathTier, PathTier
     C("Combine Harvester", 28000, "+25 layers, +14 pierce, 40 off Plant", "The silo and the combine are one machine now. The lane is a field.", { damage: 25, pierce: 14, plantDamage: 40 }, { kind: "strike", name: "Full Harvest", blurb: "A whole season's grain takes 60 layers off the strongest enemy on the field.", cooldown: 45, amount: 60 }),
     C("All-Seeing Eye", 24000, "reveals the field, vehicles take +60%", "Farmer Hale sees everything from up there. So does everyone else, now.", { global: true, detect: true, vuln: 1.6 }, { kind: "freeze", name: "Spotlight", blurb: "Every ground enemy on the field is rooted for 1.5 seconds.", cooldown: 60, secs: 1.5, reach: 99 }),
     C("Airlift Depot", 26000, "fires 2.5× as fast, +8 pierce", "Grain by the tonne, from the sky, forever.", { rate: 2.5, pierce: 8 }, { kind: "blackout", name: "Airdrop", blurb: "Fires three times as fast for 6 seconds.", cooldown: 40, secs: 6 }),
+  ],
+  windmill: [
+    C("Hurricane", 22000, "gust +1.5 cells, +12 pierce, +20% range", "A named storm, grinding corn. Nothing on the lane stays where it was.", { push: 1.5, pierce: 12, range: 1.2 }, { kind: "freeze", name: "Eye of the Storm", blurb: "Every ground enemy within 6 cells is rooted for 2.5 seconds.", cooldown: 50, secs: 2.5, reach: 6 }),
+    C("Perpetual Motion", 21000, "gusts 2.2× as fast, +4 layers, +8 pierce", "Bea finally gets the mill to turn itself. Physicists are writing letters.", { rate: 2.2, damage: 4, pierce: 8 }, { kind: "blackout", name: "Full Sail", blurb: "Gusts three times as fast for 8 seconds.", cooldown: 45, secs: 8 }),
+    C("Stone Mill", 24000, "+15 layers, +14 pierce, 30 off Plant", "A mill that grinds anything: lorries, bosses, the occasional bank.", { damage: 15, pierce: 14, plantDamage: 30, shellMul: 2 }, { kind: "strike", name: "Grindstone", blurb: "The great stone takes 50 layers off the strongest enemy on the field.", cooldown: 45, amount: 50 }),
   ],
 };
 for (const [k, crowns] of Object.entries(PASSIVE_CROWNS) as [Exclude<PathKind, "scarecrow">, [PathTier, PathTier, PathTier]][])
@@ -592,6 +630,8 @@ export const SPEC_TO_PATH: Record<PathKind, [PathIndex, PathIndex]> = {
   pond: [2, 0],
   // Heavy grain → Elevator; the wide spec → Supply.
   silo: [0, 2],
+  // Gust-damage spec → Mill; the push spec → Gale.
+  windmill: [2, 0],
 };
 
 /** An old tier and spec as a build on paths (tiers 2 and 3 along the spec's path; the spec its tier 3). */
@@ -606,7 +646,7 @@ export function specToPath(kind: PathKind, tier: number, spec: 0 | 1 | null | un
  * Named builds for the bots (and the tuner's logs): `crow-3-2-0` is a Scarecrow taking Flock to 3 and
  * Lookout to 2. The order in which a bot buys a build's tiers: every path's tier 1, then tier 2, then the 3.
  */
-export const BUILD_PREFIX: Record<PathKind, string> = { scarecrow: "crow", hedgerow: "hedge", beehive: "bees", cannon: "cannon", mast: "mast", pond: "pond", silo: "silo" };
+export const BUILD_PREFIX: Record<PathKind, string> = { scarecrow: "crow", hedgerow: "hedge", beehive: "bees", cannon: "cannon", mast: "mast", pond: "pond", silo: "silo", windmill: "mill" };
 
 export function parseBuild(name: string): { kind: PathKind; path: Path } | null {
   const m = /^([a-z]+)-(\d)-(\d)-(\d)$/.exec(name);

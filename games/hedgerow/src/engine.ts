@@ -1196,6 +1196,7 @@ function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKin
     if (m.stun) stats.stun = Math.max(stats.stun, m.stun);
     if (m.shellMul) stats.shellMul *= m.shellMul;
     if (m.plantDamage) stats.plantDamage = Math.max(stats.plantDamage, m.plantDamage);
+    if (m.push) stats.gustPush += m.push;
     if (m.knockback) stats.knockback = Math.max(stats.knockback, m.knockback);
     if (m.poison) {
       stats.poison = { dps: Math.max(stats.poison?.dps ?? 0, m.poison.dps), secs: Math.max(stats.poison?.secs ?? 0, m.poison.secs) };
@@ -1220,7 +1221,7 @@ function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKin
   }
   stats.cooldown /= rate;
   // The Scythe's spin speeds up with the path's own rate tiers (Quick Arms, Two Hands) like a throw would.
-  if (stats.sweep) stats.gustEvery /= rate;
+  if (stats.gustEvery > 0) stats.gustEvery /= rate;
   stats.range = stats.range * range + rangeAdd;
   if (stats.splash) stats.splash *= splash;
   // A hedge that rams (Tractor Shed) hits Sharp like its thorns.
@@ -3678,7 +3679,7 @@ function step(game: Game): void {
     // Whirling Scythe spins the same way and pushes nothing.
     if (spec.gustEvery > 0) {
       // A Whirling Scythe is a Scarecrow swinging: Rally, paperwork and influencers work on it as on a throw.
-      const swing = (spec.sweep && game.rallyLeft > 0 ? STEP * RALLY_SPEEDUP : STEP) * (spec.sweep && t.surge ? CROWN_SURGE : 1);
+      const swing = (spec.sweep && game.rallyLeft > 0 ? STEP * RALLY_SPEEDUP : STEP) * (t.surge ? CROWN_SURGE : 1);
       t.gustCd = (t.gustCd ?? spec.gustEvery * 0.5) - swing;
       if (spec.sweep && t.gustCd > 0 && jammed(game, t)) t.gustCd += STEP / 2;
       if (spec.sweep && t.gustCd <= 0 && charmed(game, t)) t.gustCd = 0;

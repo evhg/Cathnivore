@@ -436,11 +436,11 @@ describe("hedgerow paths: the legacy adapter, named builds and save v3", () => {
     expect(specToPath("scarecrow", 4, 0)).toEqual([0, 0, 3]); // Pumpkin Lobber → Scythe
     expect(specToPath("mast", 4, 1)).toEqual([0, 0, 3]); // Emergency Siren → Siren
     expect(specToPath("beehive", 3, null)).toEqual([2, 0, 0]);
-    // On a fleet level, a Windmill still grows by tiers and specialisations.
+    // On a fleet level, a Courthouse still grows by tiers and specialisations.
     const g = field();
     const [c, r] = plots(L8)[0]!;
-    if (L8.towers.includes("windmill")) {
-      place(g, "windmill", c, r);
+    if (L8.towers.includes("court")) {
+      place(g, "court", c, r);
       expect(g.towers[0]!.path).toBeUndefined();
       expect(upgrade(g, g.towers[0]!.id).ok).toBe(true);
       expect(g.towers[0]!.tier).toBe(2);
@@ -596,5 +596,18 @@ describe("hedgerow paths: Crowns (M5)", () => {
     g.enemies.push(walker);
     expect(fireCrown(g, hg.id).ok).toBe(true);
     expect(walker.stun).toBeGreaterThan(0);
+  });
+});
+
+describe("hedgerow paths: the Windmill", () => {
+  it("Gale pushes harder, Tempo gusts faster and Mill hits harder", async () => {
+    const { towerStats } = await import("../games/hedgerow/src/engine");
+    const base = towerStats({ kind: "windmill", fleet: true, tier: 1, path: [0, 0, 0] } as never);
+    const gale = towerStats({ kind: "windmill", fleet: true, tier: 3, path: [3, 0, 0] } as never);
+    const tempo = towerStats({ kind: "windmill", fleet: true, tier: 3, path: [0, 3, 0] } as never);
+    const mill = towerStats({ kind: "windmill", fleet: true, tier: 3, path: [0, 0, 3] } as never);
+    expect(gale.gustPush).toBeGreaterThan(base.gustPush + 1);
+    expect(tempo.gustEvery).toBeLessThan(base.gustEvery * 0.6);
+    expect(mill.damage).toBeGreaterThan(base.damage + 3);
   });
 });
