@@ -422,3 +422,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-12 22:51: H8 slice 1 uses only existing PathMod fields for Pond/Silo (no freeze mod: slow, stun, vuln, sticky stand in); level tests not retuned.
 - 2026-10-13: Market Stall paths use an additive `income` mod on the Fleet's 80 Marks base; Cheer buffs 1.25/1.35/1.5 (max, not stacked); levels not retuned.
 - 2026-10-13 01:51: Courthouse paths use additive injunction secs + classAction flag; Crowns Habeas/Emergency Hearing freeze the whole field; levels not retuned.
+- 2026-10-13 02:51: roster unlock applies to Fleet levels only (classic 31-44 keep tuned lists); full refund = no wave sent since placement; level 16 needed START_K 0.84 for acts 11-16.

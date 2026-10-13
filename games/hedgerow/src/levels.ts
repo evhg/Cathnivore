@@ -1,7 +1,7 @@
 // Hedgerow's levels. H1 ships the first three of act 1, Brindle Hills (docs/design/hedgerow.md). Story
 // follows SPEC 3.2's voice: short, specific, dry, warm. Later acts append to LEVELS.
 
-import { BOSS_MOVES, ENEMIES, TOWERS, laneCellsOf, megasUnlocked, pathLength, pointAt, type Level, type SetPiece, type TwistId, type WaveGroup } from "./engine";
+import { BOSS_MOVES, type TowerKind, ENEMIES, TOWERS, laneCellsOf, megasUnlocked, pathLength, pointAt, type Level, type SetPiece, type TwistId, type WaveGroup } from "./engine";
 import { ACTS_1_TO_5 } from "./story/acts1to5";
 import { ACTS_6_TO_10 } from "./story/acts6to10";
 import type { Beat } from "./story/types";
@@ -6502,6 +6502,13 @@ for (const l of LEVELS) {
   if (l.id >= 8 && !l.towers.includes("windmill")) l.towers = [...l.towers, "windmill"];
   if (FLEET_LEVELS(l.id) && l.id >= 11 && !l.towers.includes("mast")) l.towers = [...l.towers, "mast"];
   if (l.id >= 26 && !l.towers.includes("cannon")) l.towers = [...l.towers, "cannon"];
+}
+
+// Hedgerow 2 M7: the whole roster opens by level 24 on the Fleet's levels (the classic levels keep their lists).
+const FLEET_ROSTER: Array<[TowerKind, number]> = [["cannon", 4], ["windmill", 6], ["stall", 8], ["mast", 11], ["pond", 14], ["silo", 18], ["court", 24]];
+for (const l of LEVELS) {
+  if (!FLEET_LEVELS(l.id)) continue;
+  for (const [k, at] of FLEET_ROSTER) if (l.id >= at && !l.towers.includes(k)) l.towers = [...l.towers, k];
 }
 
 // Ambushes from level 12: on two levels in three, from the third wave on, one ordinary group a wave lies

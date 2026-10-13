@@ -185,10 +185,11 @@ describe("hedgerow paths: prices and refunds", () => {
         expect(path.tiers[0].cost).toBeLessThan(path.tiers[1].cost);
         expect(path.tiers[2].cost).toBeGreaterThanOrEqual(3 * path.tiers[1].cost);
       }
+      t.boughtWave = -1; // bought in an earlier round, so the 70% rule applies
       const m0 = g.marks;
       expect(sell(g, t.id).ok).toBe(true);
       expect(g.marks - m0).toBe(Math.floor(t.spent * 0.7));
-      expect(sellValue(t)).toBe(Math.floor(t.spent * 0.7));
+      expect(sellValue(t, g)).toBe(Math.floor(t.spent * 0.7));
     }
   });
 
@@ -439,8 +440,8 @@ describe("hedgerow paths: the legacy adapter, named builds and save v3", () => {
     // On a fleet level, a Courthouse still grows by tiers and specialisations.
     const g = field();
     const [c, r] = plots(L8)[0]!;
-    if (L8.towers.includes("court")) {
-      place(g, "court", c, r);
+    if (L8.towers.includes("hall")) {
+      place(g, "hall", c, r);
       expect(g.towers[0]!.path).toBeUndefined();
       expect(upgrade(g, g.towers[0]!.id).ok).toBe(true);
       expect(g.towers[0]!.tier).toBe(2);
