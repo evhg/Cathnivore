@@ -107,7 +107,7 @@ type Pose = [number, number, number, number, number, number, number];
 /** Seconds into Cath's throw when the pie leaves her hand. */
 /** Each act's weather over the field: falling leaves, drifting sea mist, embers, confetti and ash. */
 const ACT_WEATHER: ({ count: number; color: string; size: number; fall: number; wind: number; alpha: number; additive?: boolean } | null)[] = [
-  null,
+  { count: 18, color: "#fffdf0", size: 0.07, fall: 0.12, wind: 1.8, alpha: 0.85 }, // The home hills: dandelion seed drifting by
   { count: 26, color: "#c8a8d8", size: 0.09, fall: 0.25, wind: 2.4, alpha: 0.8 }, // Highmoor: heather blown on the wind
   { count: 22, color: "#eef6f8", size: 1.3, fall: 0, wind: 0.5, alpha: 0.16 }, // Saltmarsh: sea mist
   { count: 60, color: "#dfeaf2", size: 0.05, fall: 2.6, wind: 0.3, alpha: 0.7 }, // Rivermead: fine drizzle
@@ -116,7 +116,7 @@ const ACT_WEATHER: ({ count: number; color: string; size: number; fall: number; 
   { count: 40, color: "#ff8a3a", size: 0.1, fall: -0.45, wind: 0.8, alpha: 0.9, additive: true }, // The Rift: embers rise
   { count: 36, color: "#e8433a", size: 0.1, fall: 0.35, wind: 1, alpha: 0.9 }, // The Ballot: confetti
   { count: 40, color: "#9a9a9a", size: 0.08, fall: 0.3, wind: 0.8, alpha: 0.7 }, // The Merger: drifting ash
-  null,
+  { count: 48, color: "#f6f1e2", size: 0.13, fall: 0.4, wind: 0.6, alpha: 0.9 }, // Kingsmarket: shredded paper falling like snow
 ];
 
 const HERO_PIE_RELEASE = 0.15;
