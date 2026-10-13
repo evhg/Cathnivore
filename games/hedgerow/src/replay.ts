@@ -11,6 +11,7 @@ import {
   moveHero,
   newGame,
   place,
+  placePacket,
   sell,
   sendWave,
   setTarget,
@@ -35,6 +36,8 @@ import { bookWave, incomeBefore } from "./rounds";
 export type Action =
   | { t: "place"; kind: TowerKind; col: number; row: number }
   /** `spec` picks a specialisation (classic towers, and the legacy towers on the Fleet); `path` a path tower's path. */
+  /** A Seed Packet planted (meta.ts PACKETS): a pre-grown path tower, free. */
+  | { t: "packet"; kind: TowerKind; path: [number, number, number]; col: number; row: number }
   | { t: "upgrade"; id: number; spec?: 0 | 1; path?: 0 | 1 | 2 }
   | { t: "sell"; id: number }
   | { t: "target"; id: number; mode: TargetMode }
@@ -93,6 +96,8 @@ export function applyAction(game: Game, a: Action): ActionResult {
   switch (a.t) {
     case "place":
       return place(game, a.kind, a.col, a.row);
+    case "packet":
+      return placePacket(game, a.kind, a.path, a.col, a.row);
     case "upgrade":
       return upgrade(game, a.id, a.path ?? a.spec);
     case "sell":

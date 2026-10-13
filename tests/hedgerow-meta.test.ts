@@ -1,8 +1,8 @@
 // Hedgerow 2 M10: tower XP and Acorns come from real runs only and survive a save round trip.
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
-import { isFleet, newGame, place, isPlot } from "../games/hedgerow/src/engine";
-import { acornsFor, awardRun, feedCompost, COMPOST_FEED } from "../games/hedgerow/src/meta";
+import { isFleet, newGame, place, placePacket, isPlot } from "../games/hedgerow/src/engine";
+import { acornsFor, awardRun, feedCompost, COMPOST_FEED, buyPacket, spendPacket } from "../games/hedgerow/src/meta";
 import { emptySave, parseSave } from "../games/hedgerow/src/store";
 
 const fleet = LEVELS.find((l) => isFleet(l) && !l.endless)!;
@@ -77,5 +77,32 @@ describe("Acorn perks", () => {
     expect(d.compost).toBe(5000 - COMPOST_FEED * 2);
     expect(feedCompost(d, "scarecrow")).toBe(false);
     expect(parseSave(JSON.stringify(d)).compost).toBe(d.compost);
+  });
+});
+
+describe("Seed Packets", () => {
+  it("plants a pre-grown tower free, sells for nothing, and stays out of Hollow", () => {
+    const lv = LEVELS.find((l) => isFleet(l) && !l.endless && l.towers.includes("silo") && l.id >= 24)!;
+    const spots: [number, number][] = [];
+    for (let r = 0; r < lv.rows; r++) for (let c = 0; c < lv.cols; c++) if (isPlot(lv, c, r)) spots.push([c, r]);
+    const g = newGame(lv);
+    g.marks = 50;
+    const res = placePacket(g, "silo", [2, 0, 3], spots[0]![0], spots[0]![1]);
+    expect(res.ok).toBe(true);
+    expect(g.towers[0]!.path).toEqual([2, 0, 3]);
+    expect(g.marks).toBe(50);
+    expect(g.towers[0]!.spent).toBe(0);
+    const h = newGame(lv, undefined, {}, true);
+    expect(placePacket(h, "silo", [2, 0, 3], spots[0]![0], spots[0]![1]).ok).toBe(false);
+  });
+  it("buys with Acorns and uses one at a time", () => {
+    const d = emptySave();
+    d.acorns = 150;
+    expect(buyPacket(d, "silo-203")).toBe(true);
+    expect(buyPacket(d, "silo-203")).toBe(false);
+    expect(d.packets!["silo-203"]).toBe(1);
+    expect(spendPacket(d, "silo-203")).toBe(true);
+    expect(spendPacket(d, "silo-203")).toBe(false);
+    expect(parseSave(JSON.stringify(d)).packetSpend).toBe(120);
   });
 });

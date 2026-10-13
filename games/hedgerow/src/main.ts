@@ -160,7 +160,7 @@ import {
   refundAll,
   save,
 } from "./store";
-import { awardRun, feedCompost, COMPOST_FEED, COMPOST_RATE } from "./meta";
+import { awardRun, buyPacket, feedCompost, packetCount, spendPacket, COMPOST_FEED, COMPOST_RATE, PACKETS } from "./meta";
 import { dailyLevel, dailyRule, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
@@ -271,6 +271,7 @@ const ui = {
   dlgBank: $<HTMLDialogElement>("dlg-bank"),
   bankFree: $<HTMLElement>("bank-free"),
   compost: $<HTMLElement>("compost"),
+  packets: $<HTMLElement>("packets"),
   compostHead: $<HTMLElement>("compost-head"),
   perks: $<HTMLUListElement>("perks"),
   rosettes: $<HTMLUListElement>("rosettes"),
@@ -1441,6 +1442,37 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
       }
     };
     row.append(b);
+  }
+  if (!(g.heroic && isFleet(g.level)) && !SANDBOX && dailyDay === null) {
+    for (const pk of PACKETS) {
+      const n = packetCount(data, pk.id);
+      if (n < 1 || !g.level.towers.includes(pk.kind)) continue;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn-build btn-packet";
+      b.dataset.packet = pk.id;
+      b.setAttribute("aria-label", `Plant a ${pk.name} Seed Packet, free. You have ${n}.`);
+      b.append(img(towerIcon(pk.kind), "build-icon"));
+      const name = document.createElement("span");
+      name.className = "build-name";
+      name.textContent = pk.name;
+      const price = document.createElement("span");
+      price.className = "build-cost";
+      price.textContent = `🌱 ${n}`;
+      b.append(name, price);
+      b.onclick = () => {
+        if (doAct({ t: "packet", kind: pk.kind, path: pk.path, col: sel.col, row: sel.row })) {
+          spendPacket(data, pk.id);
+          save(data);
+          sfx.playBuild();
+          haptic.build();
+          const nt = g.towers[g.towers.length - 1];
+          if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
+          renderPanel(true);
+        } else info.textContent = "This Packet's top tier is not open on this field yet.";
+      };
+      row.append(b);
+    }
   }
   info.textContent =
     ground === "water"
@@ -2883,6 +2915,7 @@ function finish(g: Game): void {
     const reward = awardRun(data, g, won);
     save(data);
     if (won && reward.acorns) stats.push(`Acorns +${reward.acorns}`);
+    if (reward.packet) stats.push(`Seed Packet: ${reward.packet}`);
     const top = Object.entries(reward.xp).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
     if (won && top) stats.push(`${TOWERS[top[0] as TowerKind].name} XP +${(top[1] ?? 0).toLocaleString()}`);
     renderXpBars(reward.xp);
@@ -3136,8 +3169,37 @@ function renderCompost(): void {
   }
 }
 
+/** The Seed Packet shop: one-use pre-grown towers, bought with Acorns and planted free from the build menu. */
+function renderPackets(): void {
+  ui.packets.replaceChildren();
+  for (const pk of PACKETS) {
+    const li = document.createElement("li");
+    li.className = "perk";
+    const text = document.createElement("div");
+    const n = document.createElement("strong");
+    n.textContent = pk.name;
+    const have = document.createElement("small");
+    have.textContent = `Plants a ready-grown ${TOWERS[pk.kind].name}, free, once. You have ${packetCount(data, pk.id)}.`;
+    text.append(n, have);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn";
+    b.textContent = `🌰 ${pk.cost}`;
+    b.disabled = freeAcorns(data) < pk.cost;
+    b.setAttribute("aria-label", `Buy a ${pk.name} Seed Packet for ${pk.cost} acorns`);
+    b.onclick = () => {
+      if (buyPacket(data, pk.id)) sfx.playUpgrade();
+      save(data);
+      renderBank();
+    };
+    li.append(text, b);
+    ui.packets.append(li);
+  }
+}
+
 function renderBank(): void {
   renderRosettes();
+  renderPackets();
   renderCompost();
   ui.bankFree.textContent = `${freeStars(data)} stars to spend. Earn more by clearing levels with three stars.${(data.acorns ?? 0) > 0 ? ` ${freeAcorns(data)} acorns to spend (earned by winning).` : ""}`;
   ui.perks.replaceChildren();

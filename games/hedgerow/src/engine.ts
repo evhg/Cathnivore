@@ -2472,6 +2472,40 @@ export function pathUpgradeCost(game: Pick<Game, "level">, tower: Pick<Tower, "k
   return pathCost(tower.kind, tower.path, i);
 }
 
+/**
+ * Plants a Seed Packet: a path tower already grown to `path`, for no Marks (Hedgerow 2 M10). It still obeys the
+ * plot rules, tier 3 only opens at its level, and a Hollow run takes no Packets. A packet tower sells for nothing.
+ */
+export function placePacket(game: Game, kind: TowerKind, path: Path, col: number, row: number): ActionResult {
+  if (game.heroic && isFleet(game.level)) return { ok: false, reason: "Hollow takes no Seed Packets." };
+  if (!hasPaths(kind)) return { ok: false, reason: "That Packet has no seeds." };
+  const marks = game.marks;
+  const gate = game.xpGate;
+  game.marks = 1e9;
+  game.xpGate = null;
+  const r = place(game, kind, col, row);
+  const t = game.towers[game.towers.length - 1];
+  if (r.ok && t) {
+    let guard = 12;
+    while (guard-- > 0 && (t.path![0] < path[0] || t.path![1] < path[1] || t.path![2] < path[2])) {
+      const i = ([0, 1, 2] as PathIndex[]).find((x) => t.path![x] < path[x])!;
+      if (!upgrade(game, t.id, i).ok) break;
+    }
+    t.spent = 0;
+    if (t.path![0] < path[0] || t.path![1] < path[1] || t.path![2] < path[2]) {
+      // A tier this field has not opened yet: take the seedling back out and keep the Packet.
+      game.towers.pop();
+      game.nextId--;
+      game.marks = marks;
+      game.xpGate = gate;
+      return { ok: false, reason: "This Packet's top tier is not open on this field yet." };
+    }
+  }
+  game.marks = marks;
+  game.xpGate = gate;
+  return r;
+}
+
 export function sell(game: Game, id: number): ActionResult {
   const i = game.towers.findIndex((t) => t.id === id);
   if (i < 0) return { ok: false, reason: "No such tower." };
