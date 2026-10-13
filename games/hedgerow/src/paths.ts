@@ -20,7 +20,7 @@ export type Path = [number, number, number];
 export type PathIndex = 0 | 1 | 2;
 
 /** The towers that grow along paths (M4). The rest use the legacy adapter until M7. */
-export const PATH_KINDS = ["scarecrow", "hedgerow", "beehive", "cannon", "mast", "pond", "silo", "windmill", "stall"] as const;
+export const PATH_KINDS = ["scarecrow", "hedgerow", "beehive", "cannon", "mast", "pond", "silo", "windmill", "stall", "court"] as const;
 export type PathKind = (typeof PATH_KINDS)[number];
 
 export function hasPaths(kind: TowerKind): kind is PathKind {
@@ -47,6 +47,10 @@ export interface PathMod {
   push?: number;
   /** + Marks paid after every cleared round (Market Stall). */
   income?: number;
+  /** + seconds an injunction holds (Courthouse). */
+  injunction?: number;
+  /** Serves every enemy, not only the big ones (Courthouse). */
+  classAction?: boolean;
   /** × range, then + cells. */
   range?: number;
   rangeAdd?: number;
@@ -514,6 +518,37 @@ export const PATHS: Record<PathKind, TowerPaths> = {
       },
     ],
   },
+  court: {
+    paths: [
+      {
+        name: "Injunction",
+        short: "Writ",
+        tiers: [
+          { name: "Stay of Proceedings", cost: 140, adds: "injunctions hold 1.5 s longer", blurb: "Mara reads the small print aloud. Slowly.", mod: { injunction: 1.5 } },
+          { name: "Gag Order", cost: 320, adds: "injunctions hold 3 s longer", blurb: "The boss will now be quiet. And still.", mod: { injunction: 3 } },
+          { name: "Supreme Court", cost: 1800, adds: "injunctions hold 7 s longer, +30% range", blurb: "There is no appeal. There is only the gavel.", mod: { injunction: 7, range: 1.3 } },
+        ],
+      },
+      {
+        name: "Docket",
+        short: "Docket",
+        tiers: [
+          { name: "Fast Track", cost: 130, adds: "serves 30% more often", blurb: "Mara skips the queue and the tea break.", mod: { rate: 1.3 } },
+          { name: "Duty Solicitor", cost: 300, adds: "serves 60% more often, +20% range", blurb: "Three clerks, one stamp, no waiting.", mod: { rate: 1.6, range: 1.2 } },
+          { name: "Night Court", cost: 1700, adds: "serves twice as often, +40% range", blurb: "The lights never go out and neither do the hearings.", mod: { rate: 2.2, range: 1.4 } },
+        ],
+      },
+      {
+        name: "Class Action",
+        short: "Class",
+        tiers: [
+          { name: "Group Claim", cost: 160, adds: "serves every vehicle in range, not just bosses", blurb: "Mara files on behalf of everyone who ever got a parking ticket.", mod: { classAction: true } },
+          { name: "Summons", cost: 340, adds: "+1 s hold, +20% range", blurb: "A hand-delivered summons, in triplicate.", mod: { injunction: 1, range: 1.2 } },
+          { name: "Mass Tort", cost: 1900, adds: "+2.5 s hold, serves 50% more often", blurb: "Every van in the county, in one filing.", mod: { injunction: 2.5, rate: 1.5 } },
+        ],
+      },
+    ],
+  },
 };
 
 /** Crowns for the other four path towers (M5): passive, one per path, one of each per field. */
@@ -553,6 +588,11 @@ const PASSIVE_CROWNS: Record<Exclude<PathKind, "scarecrow">, [PathTier, PathTier
     C("Hurricane", 22000, "gust +1.5 cells, +12 pierce, +20% range", "A named storm, grinding corn. Nothing on the lane stays where it was.", { push: 1.5, pierce: 12, range: 1.2 }, { kind: "freeze", name: "Eye of the Storm", blurb: "Every ground enemy within 6 cells is rooted for 2.5 seconds.", cooldown: 50, secs: 2.5, reach: 6 }),
     C("Perpetual Motion", 21000, "gusts 2.2× as fast, +4 layers, +8 pierce", "Bea finally gets the mill to turn itself. Physicists are writing letters.", { rate: 2.2, damage: 4, pierce: 8 }, { kind: "blackout", name: "Full Sail", blurb: "Gusts three times as fast for 8 seconds.", cooldown: 45, secs: 8 }),
     C("Stone Mill", 24000, "+15 layers, +14 pierce, 30 off Plant", "A mill that grinds anything: lorries, bosses, the occasional bank.", { damage: 15, pierce: 14, plantDamage: 30, shellMul: 2 }, { kind: "strike", name: "Grindstone", blurb: "The great stone takes 50 layers off the strongest enemy on the field.", cooldown: 45, amount: 50 }),
+  ],
+  court: [
+    C("Eternal Stay", 22000, "injunctions hold 14 s longer, +40% range", "Time itself waits on the paperwork.", { injunction: 14, range: 1.4 }, { kind: "freeze", name: "Habeas Corpus", blurb: "Every enemy on the field stops for 4 seconds.", cooldown: 50, secs: 4 }),
+    C("Round-the-Clock Bench", 20000, "serves 3.5× as often, +50% range", "Four judges in shifts. Nobody has seen the sun in weeks.", { rate: 3.5, range: 1.5 }, { kind: "freeze", name: "Emergency Hearing", blurb: "Everything on the field stops for 3 seconds.", cooldown: 40, secs: 3 }),
+    C("Landmark Ruling", 24000, "serves everything, holds 6 s longer, 2× as often", "A ruling that rewrites the road.", { classAction: true, injunction: 6, rate: 2 }, { kind: "strike", name: "Contempt of Court", blurb: "The strongest enemy on the field loses 40 layers.", cooldown: 45, amount: 40 }),
   ],
   stall: [
     C("Grand Bazaar", 20000, "+900 Marks a round", "Every stall in the county under one roof, and a cut of every sale.", { income: 900 }, { kind: "triage", name: "Flash Sale", blurb: "Everything must go: Goodwill mends at once.", cooldown: 60, amount: 6 }),
@@ -672,6 +712,8 @@ export const SPEC_TO_PATH: Record<PathKind, [PathIndex, PathIndex]> = {
   windmill: [2, 0],
   // Income spec → Trade; the cheer spec → Cheer.
   stall: [0, 1],
+  // Writ spec → Injunction; the class-action spec → Class Action.
+  court: [0, 2],
 };
 
 /** An old tier and spec as a build on paths (tiers 2 and 3 along the spec's path; the spec its tier 3). */
@@ -686,7 +728,7 @@ export function specToPath(kind: PathKind, tier: number, spec: 0 | 1 | null | un
  * Named builds for the bots (and the tuner's logs): `crow-3-2-0` is a Scarecrow taking Flock to 3 and
  * Lookout to 2. The order in which a bot buys a build's tiers: every path's tier 1, then tier 2, then the 3.
  */
-export const BUILD_PREFIX: Record<PathKind, string> = { scarecrow: "crow", hedgerow: "hedge", beehive: "bees", cannon: "cannon", mast: "mast", pond: "pond", silo: "silo", windmill: "mill", stall: "stall" };
+export const BUILD_PREFIX: Record<PathKind, string> = { scarecrow: "crow", hedgerow: "hedge", beehive: "bees", cannon: "cannon", mast: "mast", court: "court", pond: "pond", silo: "silo", windmill: "mill", stall: "stall" };
 
 export function parseBuild(name: string): { kind: PathKind; path: Path } | null {
   const m = /^([a-z]+)-(\d)-(\d)-(\d)$/.exec(name);

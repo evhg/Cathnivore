@@ -1199,6 +1199,8 @@ function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKin
     if (m.plantDamage) stats.plantDamage = Math.max(stats.plantDamage, m.plantDamage);
     if (m.push) stats.gustPush += m.push;
     if (m.income) stats.income += m.income;
+    if (m.injunction) stats.injunction += m.injunction;
+    if (m.classAction) stats.classAction = true;
     if (m.knockback) stats.knockback = Math.max(stats.knockback, m.knockback);
     if (m.poison) {
       stats.poison = { dps: Math.max(stats.poison?.dps ?? 0, m.poison.dps), secs: Math.max(stats.poison?.secs ?? 0, m.poison.secs) };

@@ -623,3 +623,16 @@ describe("hedgerow paths: the Market Stall", () => {
     expect(mk([0, 0, 3]).mend).toBeGreaterThan(base.mend + 5);
   });
 });
+
+describe("hedgerow paths: the Courthouse", () => {
+  it("Writ holds longer, Docket serves faster and Class Action serves everything", async () => {
+    const { towerStats } = await import("../games/hedgerow/src/engine");
+    const mk = (path: number[]) => towerStats({ kind: "court", fleet: true, tier: 1, path } as never);
+    const base = mk([0, 0, 0]);
+    expect(base.injunction).toBeGreaterThan(0);
+    expect(base.classAction).toBe(false);
+    expect(mk([3, 0, 0]).injunction).toBeGreaterThan(base.injunction + 8);
+    expect(mk([0, 3, 0]).cooldown).toBeLessThan(base.cooldown * 0.6);
+    expect(mk([0, 0, 3]).classAction).toBe(true);
+  });
+});

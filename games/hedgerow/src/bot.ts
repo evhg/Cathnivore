@@ -293,6 +293,8 @@ export function buildFor(game: Game, t: Tower, smart = true): string {
       return "mill-0-3-2";
     case "stall":
       return "stall-3-2-0";
+    case "court":
+      return "court-3-0-0";
   }
 }
 
@@ -306,6 +308,7 @@ export const SIMPLE_BUILDS: Record<PathKind, string> = {
   silo: "silo-3-0-2",
   windmill: "mill-0-3-2",
   stall: "stall-3-2-0",
+  court: "court-3-0-0",
 };
 
 /** Builds whose tier 2 path comes first (the bots' order is otherwise the main path to tier 2 first). */
