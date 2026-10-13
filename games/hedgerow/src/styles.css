@@ -229,6 +229,8 @@ button {
   grid-template-rows: auto auto;
   row-gap: 8px;
 }
+.trail:has(.node.next) { padding-top: 40px; }
+.trail:has(.node.next) .trail-path { inset: 40px 6px 10px; height: calc(100% - 50px); }
 .trail-path {
   position: absolute;
   inset: 14px 6px 10px;
@@ -324,10 +326,10 @@ button {
   animation: next-pulse 1.8s ease-in-out infinite;
 }
 .start-tag {
-  position: absolute;
-  top: 6px;
-  left: calc(100% + 2px);
-  padding: 2px 8px;
+  position: static;
+  order: 9;
+  margin-top: 3px;
+  padding: 1px 8px;
   border-radius: 999px;
   background: var(--wheat);
   color: #3a2a08;
@@ -2142,14 +2144,10 @@ img.act-scene {
 }
 @keyframes newdot-pulse { 50% { transform: scale(1.25); } }
 
-/* The tag sits beside the node (not under it, where it hid the next row); the last column flips it left. */
-.c5 .start-tag {
-  left: auto;
-  right: calc(100% + 2px);
-}
-@media (max-width: 560px) {
-  .start-tag { display: none; }
-}
+/* The tag sits in flow under the level name, so it can never collide with a neighbouring node;
+   the current node reserves a strip above for Cath, who stands over it instead of on it. */
+.node.next { padding-top: 34px; margin-top: -30px; }
+.node.next .you { top: -4px; width: 30px; height: 36px; margin-left: -15px; }
 
 /* ROADMAP 134: short landscape phones. The host card collapses to one line and act banners shrink so both
    level rows show without scrolling past the Cath banner. */
