@@ -2,6 +2,8 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import { hitEnemy, makeEnemy, isFleet, isPlot, newGame, place, sell, towerCost } from "../games/hedgerow/src/engine";
+import { Recorder, restoreRun, startGame } from "../games/hedgerow/src/replay";
+import { stepGame } from "../games/hedgerow/src/engine";
 import { emptySave, medalsOf, recordMedal } from "../games/hedgerow/src/store";
 
 const fleet = LEVELS.find((l) => isFleet(l) && !l.endless)!;
@@ -74,5 +76,24 @@ describe("remixes", () => {
     const lean = newGame(fleet, undefined, {}, false, "normal", "lean");
     expect(lean.marks).toBe(Math.round(newGame(fleet).marks / 2));
     expect(newGame(classic, undefined, {}, false, "normal", "lean").remix).toBeNull();
+  });
+});
+
+describe("continue", () => {
+  it("restoreRun rebuilds the exact game a recorder had", () => {
+    const setup = { mode: "level" as const, id: fleet.id, heroic: false, perks: newGame(fleet).perks, difficulty: "hard" as const };
+    const g = startGame(fleet, setup);
+    const rec = new Recorder(setup);
+    rec.act(g, { t: "wave" } as never);
+    for (let i = 0; i < 400; i++) rec.step(g);
+    const back = restoreRun(fleet, JSON.parse(JSON.stringify(rec.replay())));
+    stepGame(g);
+    stepGame(back.game);
+    expect(back.recorder.steps).toBe(rec.steps);
+    expect(back.game.tick).toBe(g.tick);
+    expect(back.game.marks).toBe(g.marks);
+    expect(back.game.goodwill).toBe(g.goodwill);
+    expect(back.game.enemies.length).toBe(g.enemies.length);
+    expect(back.game.difficulty).toBe("hard");
   });
 });

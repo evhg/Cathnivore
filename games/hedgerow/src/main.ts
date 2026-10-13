@@ -146,6 +146,9 @@ import {
   recordStars,
   recordHeroic,
   recordMedal,
+  saveRun,
+  loadRun,
+  clearRun,
   type MedalMode,
   recordEndless,
   recordDaily,
@@ -155,7 +158,7 @@ import {
 } from "./store";
 import { dailyLevel, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
-import { Player, Recorder, applyAction, decodeReplay, encodeReplay, rewindToWave, startGame, type Action, type Replay, type Setup } from "./replay";
+import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
 import { KITS } from "./hero";
@@ -368,6 +371,8 @@ let stackedWave = 0;
 /** The causes a round's leak banners have already named (Fleet: one banner per cause per round), and when the leak slow-motion ends. */
 const leakCauses = { wave: -1, seen: new Set<string>() };
 let slowUntil = 0;
+/** The round last saved for Continue, so each round start saves once. */
+let runSavedWave = -1;
 /** Which abilities were ready last frame (a tick under the thumb when one comes back). */
 const wasReady: Record<Ability, boolean> = { pie: false, neighbours: false, rally: false };
 let paused = false;
@@ -461,11 +466,32 @@ function syncCrownTray(g: Game): void {
 
 // ---- level select ----
 
+/** The Continue button: the run saved at its last round start, if there is one for a level that exists. */
+function renderContinue(): void {
+  const btn = document.getElementById("btn-continue") as HTMLButtonElement | null;
+  if (!btn) return;
+  const run = loadRun();
+  const lv = run ? LEVELS.find((l) => l.id === run.levelId) : undefined;
+  btn.hidden = !run || !lv;
+  if (!run || !lv) return;
+  const word = document.getElementById("continue-word");
+  if (word) word.textContent = `Continue: ${lv.name}, round ${run.wave}`;
+  btn.onclick = () => {
+    const lvl = LEVELS.find((l) => l.id === run.levelId)!;
+    toast("Restoring your run…");
+    window.setTimeout(() => {
+      const back = restoreRun(lvl, run.replay as unknown as Replay);
+      startLevel(lvl, back.game.heroic, back);
+    }, 50);
+  };
+}
+
 function renderLevels(): void {
   ui.bankStars.textContent = String(freeStars(data));
   $<HTMLElement>("daily-new").hidden = data.daily?.[String(dayOf(Date.now()))] !== undefined;
   renderCathButton();
   renderSelectKits();
+  renderContinue();
   renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; const week = weekOf(Date.now()); endlessArgs = { act, week }; startLevel(endlessLevel(act, week), false); });
 }
 
@@ -699,6 +725,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   leakCauses.wave = -1;
   leakCauses.seen.clear();
   slowUntil = 0;
+  runSavedWave = -1;
   panelKey = "";
   earlyCalls = 0;
   stackedWave = 0;
@@ -2705,6 +2732,10 @@ function frame(now: number): void {
         }, 2500);
       }
     }
+    if (stepped && recorder && !SANDBOX && !player && recorder.setup.mode === "level" && isFleet(g.level) && g.phase === "wave" && g.wave !== runSavedWave) {
+      runSavedWave = g.wave;
+      saveRun({ levelId: g.level.id, wave: g.wave, replay: recorder.replay() });
+    }
     if (stepped) {
       const evs = drainEvents(g);
       onEvents(g, evs);
@@ -2730,6 +2761,7 @@ function frame(now: number): void {
   drawDuel(g);
   if (!finished && !player && (g.phase === "won" || g.phase === "lost")) {
     finished = true;
+    clearRun();
     lastReplay = recorder?.replay() ?? null;
     ui.resultWatch.hidden = ui.resultShare.hidden = !lastReplay;
     sfx.setIntensity(0);

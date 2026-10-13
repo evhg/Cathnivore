@@ -209,6 +209,19 @@ export function rewindToWave(level: Level, replay: Replay, wave: number): { game
   }
 }
 
+/** Continue: re-runs a saved run to the step it was saved at, handing back the live game and its recorder. */
+export function restoreRun(level: Level, replay: Replay): { game: Game; recorder: Recorder } {
+  const game = startGame(level, replay.setup);
+  const rec = new Recorder(replay.setup);
+  const log = replay.log;
+  let next = 0;
+  for (;;) {
+    while (next < log.length && log[next]![0] <= rec.steps) rec.act(game, log[next++]![1]);
+    if (rec.steps >= replay.steps) return { game, recorder: rec };
+    rec.step(game);
+  }
+}
+
 // ---- sharing: a compact, URL-safe string ----
 
 function toB64url(bytes: Uint8Array): string {

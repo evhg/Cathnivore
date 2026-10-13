@@ -393,3 +393,42 @@ export function perksOf(data: SaveData): Perks {
 export function cathLevel(data: SaveData): number {
   return levelOf(xpOf(data.stars)).level;
 }
+
+// ---- Continue: the run in progress, saved at each round start (replay.ts restoreRun re-runs it) ----
+
+const RUN_KEY = "hedgerow:run:v1";
+
+export interface SavedRun {
+  levelId: number;
+  wave: number;
+  /** The recorded run so far: its Setup, action log and step count. */
+  replay: { v: number; setup: unknown; log: unknown[]; steps: number };
+}
+
+export function saveRun(run: SavedRun): void {
+  try {
+    localStorage.setItem(RUN_KEY, JSON.stringify(run));
+  } catch {
+    // storage full or blocked: Continue just won't be offered
+  }
+}
+
+export function loadRun(): SavedRun | null {
+  try {
+    const raw = localStorage.getItem(RUN_KEY);
+    if (!raw) return null;
+    const r = JSON.parse(raw) as Partial<SavedRun>;
+    if (r && typeof r.levelId === "number" && typeof r.wave === "number" && r.replay && Array.isArray(r.replay.log) && typeof r.replay.steps === "number") return r as SavedRun;
+  } catch {
+    // unreadable: treat as none
+  }
+  return null;
+}
+
+export function clearRun(): void {
+  try {
+    localStorage.removeItem(RUN_KEY);
+  } catch {
+    // ignore
+  }
+}
