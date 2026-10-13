@@ -39,7 +39,7 @@ import { buildCath, dressCath, buildEnemy, buildBarn, buildMega, buildOak, build
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
 import { buildGround, type Ground } from "./terrain";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
-import { RungInstances } from "./rungs";
+import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
 
 interface TowerView {
@@ -1268,7 +1268,7 @@ export class Renderer3D {
         const bob = moving ? Math.abs(Math.sin(t * 9 + e.id)) * 0.012 + (enemyLift(e.kind) ? Math.sin(t * 3 + e.id) * 0.04 : 0) : 0;
         const ghost = !isRevealed(game, e);
         // Unrevealed stealth is drawn see-through in hedge-camo, never blinked out (its icons stay over it).
-        this.rungs.add(e.kind, p.x, this.height(p.x, p.y), p.y, heading, bob, ghost, e.pm);
+        this.rungs.add(e.kind, p.x, this.height(p.x, p.y), p.y, heading, bob, ghost, e.pm, liveryOf(Math.ceil(game.level.id / 10), e.id));
         // Its property icons (section 2): a row of roundels over the vehicle.
         if (e.pm) this.rungs.addIcons(e.pm, p.x, this.height(p.x, p.y) + enemyLift(e.kind) + 0.95 * enemyScale(e.kind), p.y);
         if (e.stun > 0 && Math.random() < dt * 6) this.sparks.emit(p.x, this.height(p.x, p.y) + 0.6, p.y, "#fff6b0", 1, 0.8, 0.1, 0.4, 0);

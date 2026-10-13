@@ -24,6 +24,21 @@ const WHITE = new THREE.Color(1, 1, 1);
 const CAMO = new THREE.Color(0.45, 0.85, 0.45);
 const GHOST_ALPHA = 0.5;
 
+/** Liveries (H13): each act's fleet wears its own company colours, with a few off-brand vehicles in the mix. */
+const LIVERIES: THREE.Color[][] = [
+  [[1, 1, 1], [1, 0.82, 0.82], [0.85, 0.9, 1], [1, 0.95, 0.75]],
+  [[0.9, 1, 0.92], [0.8, 0.95, 1], [1, 0.9, 0.8], [1, 1, 1]],
+  [[1, 0.92, 0.7], [1, 0.8, 0.6], [0.92, 0.92, 1], [1, 1, 1]],
+  [[0.82, 0.88, 1], [0.7, 0.8, 0.95], [1, 1, 1], [1, 0.85, 0.85]],
+  [[0.95, 0.8, 1], [1, 0.8, 0.9], [0.85, 0.85, 1], [1, 1, 1]],
+].map((row) => row.map((c) => new THREE.Color(c[0]!, c[1]!, c[2]!)));
+
+/** The livery of vehicle `id` on a level of the given act. */
+export function liveryOf(act: number, id: number): THREE.Color {
+  const row = LIVERIES[(Math.max(1, act) - 1) % LIVERIES.length]!;
+  return row[(Math.imul(id, 2654435761) >>> 0) % row.length]!;
+}
+
 /** Icons are drawn this many world units across, a row of them over the vehicle. */
 const ICON = 0.24;
 const ICON_CAPACITY = 700;
@@ -168,7 +183,7 @@ export class RungInstances {
   }
 
   /** One vehicle this frame: where it stands on the ground, its heading, and a bob for its id. */
-  add(kind: EnemyKind, x: number, ground: number, z: number, heading: number, bob: number, ghost = false, pm = 0): void {
+  add(kind: EnemyKind, x: number, ground: number, z: number, heading: number, bob: number, ghost = false, pm = 0, livery: THREE.Color = WHITE): void {
     const mesh = (ghost ? this.ghosts : this.meshes).get(kind);
     if (!mesh) return;
     const used = ghost ? this.ghostUsed : this.used;
@@ -181,7 +196,7 @@ export class RungInstances {
     this.m.compose(this.p, this.q, this.s);
     mesh.setMatrixAt(i, this.m);
     // Its materials: steel, wrap, mesh, frost and hazard bands tint the whole vehicle.
-    this.tint.copy(WHITE);
+    this.tint.copy(livery);
     for (const [bit, c] of TINTS) if (pm & bit) this.tint.multiply(c);
     if (ghost) this.tint.multiply(CAMO);
     mesh.setColorAt(i, this.tint);
