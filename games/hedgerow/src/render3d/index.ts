@@ -1645,6 +1645,21 @@ export class Renderer3D {
       for (const o of this.oakObjs.values()) this.dynamic.remove(o);
       this.oakObjs.clear();
       this.oakLevel = game.level.id;
+      for (const f of game.level.fords ?? []) {
+        const mat = new THREE.MeshBasicMaterial({ color: "#6fb7e8", transparent: true, opacity: 0.45, depthWrite: false });
+        const grp = new THREE.Group();
+        for (let d = f.from; d <= f.to; d += 0.35) {
+          const q = enemyPoint(game.level, { dist: d });
+          const a = enemyPoint(game.level, { dist: d + 0.1 });
+          const m = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.55), mat);
+          m.rotation.x = -Math.PI / 2;
+          m.rotation.z = -Math.atan2(a.y - q.y, a.x - q.x);
+          m.position.set(q.x, this.height(q.x, q.y) + 0.06, q.y);
+          grp.add(m);
+        }
+        this.dynamic.add(grp);
+        this.oakObjs.set(`ford${f.from}`, grp);
+      }
       for (const [c, r] of game.level.barns ?? []) {
         const b = buildBarn();
         b.position.set(c + 0.5, this.height(c + 0.5, r + 0.5) + 0.02, r + 0.5);

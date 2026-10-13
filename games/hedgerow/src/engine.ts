@@ -1412,6 +1412,8 @@ export interface Level {
   oaks?: Array<[number, number]>;
   /** Barns (H12): a plot with a barn on it can't be built on, and ground towers can't shoot through it. */
   barns?: Array<[number, number]>;
+  /** Fords (H12): stretches of the first lane, in path distance, where ground vehicles wade at FORD_SLOW speed. */
+  fords?: Array<{ from: number; to: number }>;
   startMarks: number;
   goodwill: number;
   towers: TowerKind[];
@@ -2268,6 +2270,14 @@ export function sightBlocked(level: Level, ax: number, ay: number, bx: number, b
     if (hit) return true;
   }
   return false;
+}
+
+/** Ground vehicles wade through a ford at this share of their speed. */
+export const FORD_SLOW = 0.75;
+
+/** Is path distance `dist` on the first lane inside one of the level's fords? */
+export function inFord(level: Level, dist: number): boolean {
+  return !!level.fords?.some((f) => dist >= f.from && dist <= f.to);
 }
 
 /** What hauling a fallen oak off a plot costs. */
@@ -3755,6 +3765,7 @@ function step(game: Game): void {
     else if (!enemy.held) {
       let move =
         speedOf(game, enemy) * factor * (enemy.charge && enemy.charge > 0 ? 2.2 : 1) * STEP;
+      if (game.level.fords && !enemy.lane && !ENEMIES[enemy.kind].flying && inFord(game.level, enemy.dist)) move *= FORD_SLOW;
       const flood = setPiece(game.level, "flood");
       if (flood && !enemy.lane && game.wave >= flood.wave && enemy.dist >= flood.from && enemy.dist <= flood.to && !ENEMIES[enemy.kind].flying)
         move *= 0.6;

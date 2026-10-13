@@ -13,3 +13,18 @@ describe("rung liveries", () => {
     }
   });
 });
+
+import { LEVELS } from "../games/hedgerow/src/levels";
+import { inFord } from "../games/hedgerow/src/engine";
+
+describe("fords", () => {
+  it("sit on wet-act fleet levels only", () => {
+    const withFord = LEVELS.filter((l) => l.fords).map((l) => l.id);
+    expect(withFord.length).toBeGreaterThan(0);
+    for (const id of withFord) expect([3, 4, 6]).toContain(Math.ceil(id / 10));
+    const l = LEVELS.find((x) => x.fords)!;
+    const f = l.fords![0]!;
+    expect(inFord(l, (f.from + f.to) / 2)).toBe(true);
+    expect(inFord(l, f.to + 1)).toBe(false);
+  });
+});

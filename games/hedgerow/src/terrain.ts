@@ -1,7 +1,7 @@
 // Terrain that matters: high ground (+25% range) and water (Duck Ponds only). Generated from each level's
 // lane so every level has a few choice plots; hand-built test levels carry no terrain.
 
-import { laneCellsOf, type Level } from "./engine";
+import { laneCellsOf, pathLength, type Level } from "./engine";
 
 /** Act places that are wet: Saltmarsh (3), Rivermead (4), Shingle Bay (6). */
 const WET_ACTS = new Set([3, 4, 6]);
@@ -123,4 +123,12 @@ export function addBarns(level: Level): void {
     apart.push([x.c, x.r]);
   }
   level.barns = out;
+}
+
+/** Fords (H12): wet acts' Fleet levels (from level 3) have one shallow crossing on the first lane that slows ground vehicles. */
+export function addFords(level: Level): void {
+  if (level.id < 3 || level.rules !== "fleet" || !WET_ACTS.has(Math.ceil(level.id / 10))) return;
+  const len = pathLength(level.path);
+  const at = 0.3 + (hash(level.id * 19) % 30) / 100;
+  level.fords = [{ from: len * at, to: len * (at + 0.12) }];
 }

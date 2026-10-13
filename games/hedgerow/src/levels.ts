@@ -9,7 +9,7 @@ import { HP_SCALE, START_K } from "./tuning";
 import { bookWave, incomeBefore, windowFor } from "./rounds";
 import { FLEET_GOODWILL } from "./fleet";
 import { relayout, rewind } from "./layouts";
-import { addBarns, addOaks, addTerrain } from "./terrain";
+import { addBarns, addFords, addOaks, addTerrain } from "./terrain";
 
 const van = (count: number, gap: number, delay = 0): WaveGroup => ({
   enemy: "van",
@@ -6464,6 +6464,7 @@ for (const l of LEVELS) {
   l.waves = waves;
   addOaks(l);
   addBarns(l);
+  addFords(l);
 }
 
 // Enemy health per level from the difficulty tuner.
