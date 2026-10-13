@@ -619,6 +619,9 @@ export class Renderer3D {
           this.sparks.emit(e.x, y + 0.3, e.y, "#ffb04a", 50, 3.6, 0.25, 0.5, -1);
           // Comic death (H13): a hubcap rolls off, a sound-word pops up.
           this.fx.ring(e.x, y + 0.04, e.y, "#d8dde2", 0.5, 0.6);
+          // The wreck leaves a scorch mark and a lazy column of grey smoke.
+          this.fx.decal(e.x, y, e.y, "#1c1814", 0.7);
+          this.sparks.emit(e.x, y + 0.3, e.y, "#8a8d92", 14, 0.6, 0.3, 1.6, 0.5);
           this.floaters.add(["CRUNCH!", "KA-THUNK!", "CLANG!", "SPLAT!"][(Math.floor(e.x * 7 + e.y * 3) >>> 0) % 4]!, new THREE.Vector3(e.x, y + 0.9, e.y), "#fff3c4", 1.5);
           break;
         }
@@ -1166,6 +1169,13 @@ export class Renderer3D {
       top.rotation.y = t * 0.9 + tw.id;
       top.position.y = Math.sin(t * 2 + tw.id) * 0.03;
       top.scale.setScalar(1 + Math.sin(t * 3 + tw.id) * 0.04);
+    }
+    // An Heirloom (merged megastructure) sheds slow gold motes (H13 idle).
+    if (tw.mega && !this.reducedMotion) {
+      if (Math.random() < dt * 3) {
+        const a = Math.random() * Math.PI * 2;
+        this.sparks.emit(v.obj.position.x + Math.cos(a) * 0.5, v.obj.position.y + 0.3, v.obj.position.z + Math.sin(a) * 0.5, "#ffd76a", 1, 0.5, 0.09, 1.4, 0.6);
+      }
     }
     const light = ud.light as THREE.Mesh | undefined;
     if (light) light.visible = Math.sin(t * 4 + tw.id) > -0.3;
