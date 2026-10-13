@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-13 03:51 session:** H8 finished and released: Heirlooms on Fleet levels (two Crowned neighbours, 60,000 Marks, one a field), stall income falloff after round 50, D5 ticked. All gates passed; `main` and live are `f5a28b7`; tag push 403 (harmless). Next: H9 (campaign conversion) or H1 biomes, and Phase U.
 - **2026-10-13 02:51 session:** H8 slice 5: Fleet levels (1-30) now open the full roster by level 24 (cannon 4, windmill 6, stall 8, mast 11, pond 14, silo 18, court 24), and a tower sold before the next wave refunds 100% (else 70%). Level 16 retuned (START_K acts 11-16 to 0.84). Hedgerow level, fleet, paths, almanac tests pass. Unreleased. Left for H8: Heirlooms replacing megastructures.
 - **2026-10-13 01:51 session:** H8 slice 4: Courthouse grows on three paths (Writ hold, Docket rate, Class Action serves all) with Crowns; new `injunction`/`classAction` mods, bots build `court-3-0-0`. Paths, level, endless, replay and almanac tests pass (114). Unreleased. Left for H8: Heirlooms, sell/bank rules, unlocks by level 24.
 - **2026-10-13 00:51 session:** H8 slice 3: Market Stall grows on three paths (Trade income, Cheer buff, Charity mend) with Crowns; new `income` mod, bots build `stall-3-2-0`. All 290 hedgerow tests pass (hero-levels flakes under load, passes alone). Unreleased. Left for H8: Courthouse paths (injunction mod), Heirlooms, sell/bank rules, unlocks by level 24.
@@ -48,6 +49,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-13 `f5a28b7`: Hedgerow H8 (all path towers, Heirlooms, sell refunds, unlocks by level 24). All gates passed; live version.json matches. 1st release today.
 - 2026-10-12 22:20 `9aee11e`: CATHODE D1-D3 (clinic, plaza), Hedgerow H6 Freeplay and H7 kits. All gates passed; live version.json matches. 2nd release today.
 - 2026-10-12 ~01:00 `61810ee`: AAA UI U1–U4 (each game's own fonts, the shared foundation, the CATHODE HUD, the Hedgerow field HUD and upgrade sheet, the Cathnivore table). All gates passed; the live version.json matches. 1st release today.
 - 2026-10-11 ~03:30 `f159236`: Hedgerow 2 M3 (hard-lock properties, round preview, leak report, Retry from round N, acts 2-3 on the Fleet) and M4 (three upgrade paths for 5 towers). All gates passed; the live version.json matches. 1st release today.
