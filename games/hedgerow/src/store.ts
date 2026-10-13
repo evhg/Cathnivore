@@ -34,6 +34,8 @@ export interface SaveData {
   medals?: Record<string, MedalMode[]>;
   /** Tower XP: knockouts per tower kind across real runs (meta.ts). Optional in old saves. */
   xp?: Partial<Record<TowerKind, number>>;
+  /** Compost Heap: XP past a kind's Crown gate, spent on any kind at 2:1 (meta.ts). Optional in old saves. */
+  compost?: number;
   /** Acorns earned by wins (meta.ts). Optional in old saves. */
   acorns?: number;
   /** Cath's character sheet: attributes and talents (cath.ts). Optional in old saves. */
@@ -133,6 +135,7 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.endless ?? {})) if (typeof v === "number" && v >= 1) (data.endless ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.xp ?? {})) if (k in TOWERS && typeof v === "number" && v >= 1) (data.xp ??= {})[k as TowerKind] = Math.min(1e9, Math.floor(v));
+      if (typeof obj.compost === "number" && obj.compost >= 1) data.compost = Math.min(1e9, Math.floor(obj.compost));
       if (typeof obj.acorns === "number" && obj.acorns >= 1) data.acorns = Math.min(1e9, Math.floor(obj.acorns));
       if (obj.cath) data.cath = parseCath(obj.cath);
       if (typeof obj.outfit === "string") data.outfit = obj.outfit.slice(0, 20);

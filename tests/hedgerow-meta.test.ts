@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import { isFleet, newGame, place, isPlot } from "../games/hedgerow/src/engine";
-import { acornsFor, awardRun } from "../games/hedgerow/src/meta";
+import { acornsFor, awardRun, feedCompost, COMPOST_FEED } from "../games/hedgerow/src/meta";
 import { emptySave, parseSave } from "../games/hedgerow/src/store";
 
 const fleet = LEVELS.find((l) => isFleet(l) && !l.endless)!;
@@ -57,5 +57,25 @@ describe("Acorn perks", () => {
     expect(freeAcorns(d)).toBe(20);
     expect(freeStars(d)).toBe(3);
     expect(perksOf(d).marks).toBe(60);
+  });
+  it("collects XP past the Crown gate in the Compost Heap and feeds it at 2:1", () => {
+    const g = newGame(fleet);
+    g.marks = 9999;
+    let spot: [number, number] | null = null;
+    for (let r = 0; r < fleet.rows && !spot; r++) for (let c = 0; c < fleet.cols && !spot; c++) if (isPlot(fleet, c, r)) spot = [c, r];
+    place(g, "scarecrow", spot![0], spot![1]);
+    g.towers[0]!.kills = 300;
+    const d = emptySave();
+    d.xp = { scarecrow: 10000, cannon: 100 };
+    awardRun(d, g, true);
+    expect(d.xp.scarecrow).toBe(10000);
+    expect(d.compost).toBe(300);
+    expect(feedCompost(d, "cannon")).toBe(false);
+    d.compost = 5000;
+    expect(feedCompost(d, "cannon")).toBe(true);
+    expect(d.xp.cannon).toBe(100 + COMPOST_FEED);
+    expect(d.compost).toBe(5000 - COMPOST_FEED * 2);
+    expect(feedCompost(d, "scarecrow")).toBe(false);
+    expect(parseSave(JSON.stringify(d)).compost).toBe(d.compost);
   });
 });

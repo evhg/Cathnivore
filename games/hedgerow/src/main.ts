@@ -160,7 +160,7 @@ import {
   refundAll,
   save,
 } from "./store";
-import { awardRun } from "./meta";
+import { awardRun, feedCompost, COMPOST_FEED, COMPOST_RATE } from "./meta";
 import { dailyLevel, dailyRule, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
@@ -270,6 +270,8 @@ const ui = {
   bankStars: $<HTMLElement>("bank-stars"),
   dlgBank: $<HTMLDialogElement>("dlg-bank"),
   bankFree: $<HTMLElement>("bank-free"),
+  compost: $<HTMLElement>("compost"),
+  compostHead: $<HTMLElement>("compost-head"),
   perks: $<HTMLUListElement>("perks"),
   rosettes: $<HTMLUListElement>("rosettes"),
   rosetteCount: $<HTMLElement>("rosette-count"),
@@ -3099,8 +3101,44 @@ function renderRosettes(): void {
   ui.rosetteCount.textContent = `Rosettes ${got}/${ROSETTES.length}`;
 }
 
+/** The Compost Heap: XP past a kind's Crown gate, spent on any kind that still has room, 2 compost per XP. */
+function renderCompost(): void {
+  const heap = data.compost ?? 0;
+  const show = heap > 0;
+  ui.compost.hidden = ui.compostHead.hidden = !show;
+  ui.compost.replaceChildren();
+  if (!show) return;
+  ui.compostHead.textContent = `Compost Heap ${heap.toLocaleString()}`;
+  for (const [kind, spec] of Object.entries(TOWERS) as [TowerKind, (typeof TOWERS)[TowerKind]][]) {
+    const have = data.xp?.[kind] ?? 0;
+    if (have >= XP_CROWN || have === 0) continue;
+    const li = document.createElement("li");
+    li.className = "perk";
+    const text = document.createElement("div");
+    const n = document.createElement("strong");
+    n.textContent = spec.name;
+    const sm = document.createElement("small");
+    sm.textContent = `XP ${have.toLocaleString()} of ${XP_CROWN.toLocaleString()}`;
+    text.append(n, sm);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn";
+    const give = Math.min(COMPOST_FEED, XP_CROWN - have);
+    b.textContent = `+${give} XP`;
+    b.disabled = heap < give * COMPOST_RATE;
+    b.onclick = () => {
+      if (feedCompost(data, kind)) sfx.playUpgrade();
+      save(data);
+      renderBank();
+    };
+    li.append(text, b);
+    ui.compost.append(li);
+  }
+}
+
 function renderBank(): void {
   renderRosettes();
+  renderCompost();
   ui.bankFree.textContent = `${freeStars(data)} stars to spend. Earn more by clearing levels with three stars.${(data.acorns ?? 0) > 0 ? ` ${freeAcorns(data)} acorns to spend (earned by winning).` : ""}`;
   ui.perks.replaceChildren();
   for (const p of PERKS) {
