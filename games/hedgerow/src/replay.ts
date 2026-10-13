@@ -27,7 +27,10 @@ import {
   type TowerKind,
   type Difficulty,
   type Remix,
+  type WaveGroup,
+  BOSS_MOVES,
 } from "./engine";
+import { bookWave, incomeBefore } from "./rounds";
 
 export type Action =
   | { t: "place"; kind: TowerKind; col: number; row: number }
@@ -60,6 +63,8 @@ export interface Setup {
   /** Easy/Hard on Fleet levels; absent = normal (old replays). */
   difficulty?: Difficulty;
   remix?: Remix;
+  /** Hollow on a Fleet level starts this many rounds further into the Book (absent = 0, old replays). */
+  shift?: number;
   perks: Perks;
 }
 
@@ -118,8 +123,31 @@ export function applyAction(game: Game, a: Action): ActionResult {
   }
 }
 
+/** Hollow's rounds ahead of the Normal window (hedgerow-2.md section 9: "starts at round +5"). */
+export const HOLLOW_SHIFT = 5;
+
+/**
+ * A Fleet level's rules for a run: Hollow slides the window `shift` rounds on (capped at round 80) and the Long Haul
+ * remix runs it on to round 80, the opening purse keeping its tuned share of the Book's income.
+ */
+export function windowedLevel(level: Level, shift: number, longHaul: boolean): Level {
+  const b = level.book;
+  if (!b || level.endless || (!shift && !longHaul)) return level;
+  const move = Math.max(0, Math.min(shift, 80 - b.to));
+  const from = b.from + move;
+  const to = longHaul ? 80 : b.to + move;
+  const waves: WaveGroup[][] = move ? [] : level.waves.map((w) => w);
+  if (move) for (let r = from; r <= b.to + move; r++) waves.push(bookWave(r, level.id));
+  const boss = level.waves.flat().find((g) => BOSS_MOVES[g.enemy]);
+  if (move && boss && waves.length) waves[waves.length - 1] = [{ ...boss }, ...waves[waves.length - 1]!.map((g) => ({ ...g, delay: g.delay + 4 }))];
+  for (let r = b.to + move + 1; r <= to; r++) waves.push(bookWave(r, level.id));
+  const purse = Math.round((level.startMarks * (500 + incomeBefore(from))) / (500 + incomeBefore(b.from)));
+  return { ...level, book: { from, to }, waves, startMarks: move ? purse : level.startMarks };
+}
+
 /** A fresh game exactly as a run started (the browser's duels included). */
-export function startGame(level: Level, setup: Setup): Game {
+export function startGame(base: Level, setup: Setup): Game {
+  const level = base.rules === "fleet" ? windowedLevel(base, setup.heroic ? (setup.shift ?? 0) : 0, setup.remix === "long") : base;
   const game = newGame(level, setup.perks, {}, setup.heroic && !level.endless, setup.difficulty ?? "normal", setup.remix ?? null);
   game.duels = true;
   return game;

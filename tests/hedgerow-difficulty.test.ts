@@ -97,3 +97,20 @@ describe("continue", () => {
     expect(back.game.difficulty).toBe("hard");
   });
 });
+
+describe("Long Haul and Hollow's window", () => {
+  const base = { heroic: false, perks: undefined as never };
+  it("Long Haul runs the window on to round 80", () => {
+    const g = startGame(fleet, { mode: "level", id: fleet.id, ...base, perks: newGame(fleet).perks ?? ({} as never), remix: "long" } as never);
+    expect(g.level.book!.to).toBe(80);
+    expect(g.level.waves).toHaveLength(80 - g.level.book!.from + 1);
+  });
+  it("Hollow starts five rounds further into the Book with a bigger purse", () => {
+    const g = startGame(fleet, { mode: "level", id: fleet.id, heroic: true, shift: 5 } as never);
+    expect(g.level.book!.from).toBe(fleet.book!.from + 5);
+    expect(g.level.waves).toHaveLength(fleet.waves.length);
+    expect(g.level.startMarks).toBeGreaterThan(fleet.startMarks);
+    const old = startGame(fleet, { mode: "level", id: fleet.id, heroic: true } as never);
+    expect(old.level.book).toEqual(fleet.book);
+  });
+});

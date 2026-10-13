@@ -158,7 +158,7 @@ import {
 } from "./store";
 import { dailyLevel, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
-import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, type Action, type Replay, type Setup } from "./replay";
+import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
 import { KITS } from "./hero";
@@ -640,8 +640,8 @@ let difficultyMode: Difficulty = "normal";
 }
 
 /** The remix button: no remix, Hand Tools or Lean Year (Fleet levels). */
-const REMIXES: (Remix | null)[] = [null, "hand", "lean"];
-const REMIX_NAMES = { hand: "Hand Tools", lean: "Lean Year" } as const;
+const REMIXES: (Remix | null)[] = [null, "hand", "lean", "long"];
+const REMIX_NAMES = { hand: "Hand Tools", lean: "Lean Year", long: "Long Haul" } as const;
 let remixMode: Remix | null = null;
 {
   const btn = document.getElementById("btn-remix") as HTMLButtonElement | null;
@@ -703,6 +703,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
     id: dailyDay ?? (lv.endless ? (endlessArgs?.act ?? 0) : lv.id),
     ...(lv.endless ? { week: endlessArgs?.week ?? 0 } : {}),
     heroic: heroic && !lv.endless,
+    ...(heroic && !lv.endless && lv.rules === "fleet" ? { shift: HOLLOW_SHIFT } : {}),
     difficulty: resume ? resume.game.difficulty : lv.endless || dailyDay !== null ? "normal" : difficultyMode,
     ...(!resume && !lv.endless && dailyDay === null && remixMode ? { remix: remixMode } : resume?.game.remix ? { remix: resume.game.remix } : {}),
     perks: dailyDay !== null ? NO_PERKS : perksOf(data),
@@ -730,7 +731,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   earlyCalls = 0;
   stackedWave = 0;
   const story = !lv.endless && dailyDay === null;
-  autoNext = keepGoingFor(data, story ? lv.id : KEEP_GOING_FROM);
+  autoNext = game.remix === "long" || keepGoingFor(data, story ? lv.id : KEEP_GOING_FROM);
   autoLeft = AUTO_SECS;
   ui.btnAuto.hidden = story && lv.id < KEEP_GOING_FROM;
   maxSpeed = story ? fastestSpeed(data, lv.id) : 3;

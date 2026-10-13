@@ -1668,8 +1668,8 @@ export const HERO = {
 
 /** Hedgerow 2 M9: how a level is played. Hollow is the Heroic run (`Game.heroic`), which also bars selling. */
 export type Difficulty = "easy" | "normal" | "hard";
-/** Hedgerow 2 M9 remixes (Fleet levels): Hand Tools builds only the four classic towers, Lean Year halves every Mark earned. */
-export type Remix = "hand" | "lean";
+/** Hedgerow 2 M9 remixes (Fleet levels): Hand Tools builds only the four classic towers, Lean Year halves every Mark earned, Long Haul runs the window on to round 80 with Keep Going forced. */
+export type Remix = "hand" | "lean" | "long";
 export const HAND_TOOLS: TowerKind[] = ["scarecrow", "hedgerow", "beehive", "cannon"];
 /** Tower price multiplier and starting Goodwill by difficulty (hedgerow-2.md section 5). */
 export const DIFFICULTY_RULES: Record<Difficulty, { price: number; goodwill: number }> = {
