@@ -8,6 +8,7 @@
 // CSP-safe: no innerHTML with data (Cath's own SVG generator is the only markup injected), no style
 // attributes; positions and sizes travel as CSS custom properties.
 
+import { skillSigil } from "./skillsigil";
 import { cathSvg } from "../../../../shared/cath/cath";
 import {
   allocateAttribute,
@@ -557,7 +558,9 @@ export function openCharacter(
     const b = button(`cx-node kind-${s.kind} st-${st.state}${st.can ? " can" : ""}${hybrid ? " hybrid" : ""}`, parent);
     b.dataset.k = `node:${s.id}`;
     b.dataset.sid = s.id;
-    el("span", "cx-node-mono", b, monogram(s.name)).setAttribute("aria-hidden", "true");
+    const sigil = el("span", "cx-node-mono", b);
+    sigil.innerHTML = skillSigil(s.id);
+    sigil.setAttribute("aria-hidden", "true");
     const rank = el("span", "cx-node-rank", b, `${st.rank}/${s.maxRank}`);
     rank.setAttribute("aria-hidden", "true");
     const why = st.reason ? ` Locked: ${st.reason}.` : "";
