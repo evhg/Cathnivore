@@ -36,6 +36,8 @@ export interface SaveData {
   xp?: Partial<Record<TowerKind, number>>;
   /** Seed Packets owned, by id (meta.ts PACKETS), and the Acorns they cost (never refunded). Optional in old saves. */
   packets?: Record<string, number>;
+  /** County Shows won, by `show<week>`. */
+  showWon?: Record<string, boolean>;
   packetSpend?: number;
   /** Compost Heap: XP past a kind's Crown gate, spent on any kind at 2:1 (meta.ts). Optional in old saves. */
   compost?: number;
@@ -140,6 +142,7 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.xp ?? {})) if (k in TOWERS && typeof v === "number" && v >= 1) (data.xp ??= {})[k as TowerKind] = Math.min(1e9, Math.floor(v));
       for (const [k, v] of Object.entries(obj.packets ?? {})) if (typeof v === "number" && v >= 1) (data.packets ??= {})[k] = Math.min(99, Math.floor(v));
       if (typeof obj.packetSpend === "number" && obj.packetSpend >= 1) data.packetSpend = Math.min(1e9, Math.floor(obj.packetSpend));
+      for (const [k, v] of Object.entries(obj.showWon ?? {})) if (/^show\d{1,5}$/.test(k) && v === true) (data.showWon ??= {})[k] = true;
       if (typeof obj.compost === "number" && obj.compost >= 1) data.compost = Math.min(1e9, Math.floor(obj.compost));
       if (typeof obj.acorns === "number" && obj.acorns >= 1) data.acorns = Math.min(1e9, Math.floor(obj.acorns));
       if (obj.cath) data.cath = parseCath(obj.cath);

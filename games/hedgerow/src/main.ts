@@ -164,6 +164,7 @@ import {
   save,
 } from "./store";
 import { awardRun, buyPacket, feedCompost, packetCount, spendPacket, COMPOST_FEED, COMPOST_RATE, PACKETS } from "./meta";
+import { showFields, showKit, showPacket } from "./show";
 import { dailyLevel, dailyRule, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
@@ -264,6 +265,7 @@ const ui = {
   resultSecondary: $<HTMLButtonElement>("result-secondary"),
   btnBank: $<HTMLButtonElement>("btn-bank"),
   btnDaily: $<HTMLButtonElement>("btn-daily"),
+  btnShow: $<HTMLButtonElement>("btn-show"),
   resultWatch: $<HTMLButtonElement>("result-watch"),
   resultShare: $<HTMLButtonElement>("result-share"),
   replayBar: $<HTMLElement>("replay-bar"),
@@ -508,7 +510,7 @@ function renderLevels(): void {
   renderCathButton();
   renderSelectKits();
   renderContinue();
-  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; const week = weekOf(Date.now()); endlessArgs = { act, week }; startLevel(endlessLevel(act, week), false); });
+  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; showRun = null; const week = weekOf(Date.now()); endlessArgs = { act, week }; startLevel(endlessLevel(act, week), false); });
 }
 
 let typing = 0;
@@ -592,6 +594,7 @@ const actOf = (lv: Level) => Math.floor((lv.id - 1) / 10) + 1;
 
 function openLevel(lv: Level): void {
   dailyDay = null;
+  showRun = null;
   const start = () => startLevel(lv);
   if (!data.seenBefore[String(lv.id)]) {
     showStory(
@@ -679,6 +682,14 @@ ui.btnDaily.addEventListener("click", () => {
   startLevel(dailyLevel(day), false);
 });
 
+/** The weekly County Show in progress: three fields and a Goodwill purse that carries over. No replay, no Seed Bank. */
+let showRun: { week: number; field: number; carry: number | null } | null = null;
+ui.btnShow.addEventListener("click", () => {
+  dailyDay = null;
+  showRun = { week: weekOf(Date.now()), field: 0, carry: null };
+  startLevel(showFields(showRun.week)[0]!, false);
+});
+
 /** Endless runs: which act and week, so a replay can rebuild the field. */
 let endlessArgs: { act: number; week: number } | null = null;
 /** The live run's recorder (null in the sandbox), or the replay being watched. */
@@ -722,12 +733,13 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
     ...(heroic && !lv.endless && lv.rules === "fleet" ? { shift: HOLLOW_SHIFT } : {}),
     difficulty: resume ? resume.game.difficulty : lv.endless ? "normal" : dailyDay !== null ? dailyRule(dailyDay).difficulty : difficultyMode,
     ...(!resume && !lv.endless && dailyDay === null && remixMode ? { remix: remixMode } : !resume && dailyDay !== null && dailyRule(dailyDay).remix ? { remix: dailyRule(dailyDay).remix! } : resume?.game.remix ? { remix: resume.game.remix } : {}),
-    perks: dailyDay !== null ? NO_PERKS : perksOf(data),
+    perks: dailyDay !== null || showRun ? NO_PERKS : perksOf(data),
   };
   // One-on-one boss duels are a player's moment (on in startGame); the tuner and sims never see them.
   game = resume?.game ?? startGame(lv, setup);
-  if (!SANDBOX && dailyDay === null) game.xpGate = data.xp ??= {};
-  recorder = resume?.recorder ?? (SANDBOX ? null : new Recorder(setup));
+  if (showRun?.carry != null) game.goodwill = Math.min(game.maxGoodwill, Math.max(1, showRun.carry));
+  if (!SANDBOX && dailyDay === null && !showRun) game.xpGate = data.xp ??= {};
+  recorder = resume?.recorder ?? (SANDBOX || showRun ? null : new Recorder(setup));
   player = null;
   ui.replayBar.hidden = true;
   document.documentElement.classList.remove("watching");
@@ -788,6 +800,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
 
 function leaveLevel(): void {
   dailyDay = null;
+  showRun = null;
   player = null;
   ui.replayBar.hidden = true;
   document.documentElement.classList.remove("watching");
@@ -2902,6 +2915,7 @@ function finish(g: Game): void {
   rememberBuilds(g);
   if (lv.endless) return finishEndless(g, lv);
   if (dailyDay !== null) return finishDaily(g, lv, dailyDay);
+  if (showRun) return finishShow(g, lv, showRun);
   const won = g.phase === "won";
   const n = starsOf(g);
   const idx = LEVELS.findIndex((l) => l.id === lv.id);
@@ -3083,6 +3097,56 @@ function renderLossCauses(g: Game, won: boolean): void {
   // Right under the title, so the top cause is on screen even on a phone held sideways (390 px tall).
   ui.resultTitle.after(box);
   ui.dlgResult.classList.add("has-causes");
+}
+
+/** A County Show field ends: on to the next with the Goodwill left, or the prize after the third. */
+function finishShow(g: Game, lv: Level, run: { week: number; field: number; carry: number | null }): void {
+  const won = g.phase === "won";
+  const fields = showFields(run.week);
+  const last = run.field >= fields.length - 1;
+  ui.resultCath.innerHTML = cath(won ? "delighted" : "worried");
+  ui.resultEyebrow.textContent = `County Show · field ${run.field + 1} of ${fields.length}: ${lv.name}`;
+  ui.resultStars.replaceChildren();
+  ui.resultStars.setAttribute("aria-label", "");
+  ui.resultStats.textContent = `Goodwill ${g.goodwill}/${g.maxGoodwill} · kit: ${showKit(run.week).map((k) => TOWERS[k].name).join(", ")}`;
+  ui.resultSecondary.onclick = () => {
+    ui.dlgResult.close();
+    leaveLevel();
+  };
+  if (!won) {
+    ui.resultTitle.textContent = "Out of the running.";
+    ui.resultNote.textContent = "The Show runs all week: have another go.";
+    ui.resultPrimary.textContent = "Try again";
+    ui.resultPrimary.onclick = () => {
+      ui.dlgResult.close();
+      showRun = { week: run.week, field: 0, carry: null };
+      startLevel(fields[0]!, false);
+    };
+  } else if (last) {
+    const id = showPacket(run.week);
+    const key = `show${run.week}`;
+    const first = !(data.showWon ??= {})[key];
+    if (first) {
+      data.showWon[key] = true;
+      (data.packets ??= {})[id] = (data.packets[id] ?? 0) + 1;
+      save(data);
+    }
+    ui.resultTitle.textContent = "Best in Show.";
+    ui.resultNote.textContent = first ? "A Seed Packet for the winner, waiting in the Seed Bank." : "Won again. The ribbon's already yours this week.";
+    ui.resultPrimary.textContent = "Back to the map";
+    ui.resultPrimary.onclick = ui.resultSecondary.onclick;
+  } else {
+    ui.resultTitle.textContent = `Field ${run.field + 1} is yours.`;
+    ui.resultNote.textContent = `${g.goodwill} Goodwill goes with you into the next field.`;
+    ui.resultPrimary.textContent = "Next field";
+    ui.resultPrimary.onclick = () => {
+      ui.dlgResult.close();
+      showRun = { week: run.week, field: run.field + 1, carry: g.goodwill };
+      startLevel(fields[run.field + 1]!, false);
+    };
+  }
+  ui.dlgResult.classList.toggle("lost", !won);
+  ui.dlgResult.showModal();
 }
 
 /** A daily challenge ends: the score, today's best and a share card to copy. */
@@ -3591,6 +3655,7 @@ const TIPS: Record<string, () => string> = {
   "btn-send": () => "Go starts the next wave. While a wave is on the lane, Next stacks the following one on top for bonus Marks.",
   "btn-levels": () => "Back to the map.",
   "btn-cath": () => "Cath's character sheet: spend skill points on her attributes and pick talents as she levels up.",
+  "btn-show": () => "The County Show: three fields, one kit of six towers and one Goodwill purse. A new Show every week; win it for a Seed Packet.",
   "btn-daily": () => "Today's challenge: one level a day, no Seed Bank, and a score to share.",
   "btn-heroic": () => "Heroic: the next level starts with one Goodwill and no pies. Win it for a gold diamond.",
   "btn-bank": () => "The Seed Bank: spend stars on perks for every level.",
