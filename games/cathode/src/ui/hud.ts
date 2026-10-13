@@ -619,9 +619,10 @@ export class Hud {
             el("span", "hud-set-name", row).textContent = b.label;
             const btn = el("button", "hud-seg-btn hud-bind", row);
             btn.setAttribute("type", "button");
-            btn.textContent = keyLabel(codesFor(cur, b.id)[0] ?? "");
+            const cap = el("span", "c-key", btn);
+            cap.textContent = keyLabel(codesFor(cur, b.id)[0] ?? "");
             btn.addEventListener("click", () => {
-              btn.textContent = "Press a key…";
+              cap.textContent = "Press a key…";
               const onKey = (e: KeyboardEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -664,7 +665,12 @@ export class Hud {
         ];
         const dl = el("dl", "hud-keys", card);
         for (const [k, v] of keys) {
-          el("dt", "", dl).textContent = k;
+          const dt = el("dt", "", dl);
+          // "Q / E" and "1–9 · Wheel" become one keycap per key.
+          k.split(/\s*[/·]\s*/).forEach((part, i) => {
+            if (i > 0) dt.append(" ");
+            el("span", "c-key", dt).textContent = part;
+          });
           el("dd", "", dl).textContent = v;
         }
       }

@@ -167,6 +167,12 @@ for (const rm of process.env.RM === '0' ? [false] : [false, true]) {
         await settle(page)
         await page.waitForTimeout(2500)
         await page.screenshot({ path: `${out}/cathode-pause-${tag}.png`, timeout: 180_000 })
+        if (!size.hasTouch) {
+          // The keys table sits at the foot of the card's own scroll.
+          await page.evaluate(() => { document.querySelectorAll('.hud-pause-card, .hud-pause-card *').forEach((e) => { e.scrollTop = e.scrollHeight }) })
+          await page.waitForTimeout(800)
+          await page.screenshot({ path: `${out}/cathode-pause-keys-${tag}.png`, timeout: 180_000 })
+        }
         if (only.includes('focus') && !size.hasTouch) {
           await page.keyboard.press('Shift')
           await page.evaluate(() => document.querySelector('.hud-resume')?.focus({ focusVisible: true }))
