@@ -622,6 +622,11 @@ export class Renderer3D {
           // The wreck leaves a scorch mark and a lazy column of grey smoke.
           this.fx.decal(e.x, y, e.y, "#1c1814", 0.7);
           this.sparks.emit(e.x, y + 0.3, e.y, "#8a8d92", 14, 0.6, 0.3, 1.6, 0.5);
+          // Vans and lorries fold up: a second, wider ring and a slab of flat panels falling out of the roof.
+          if (e.kind === "van" || e.kind === "lorry" || e.kind === "artic") {
+            this.fx.ring(e.x, y + 0.05, e.y, "#b8bec6", 1.1, 0.8);
+            this.debris.emit(e.x, y + 0.6, e.y, [RUNGS[e.kind]?.colour ?? "#f2c230", "#d8dde2"], 14, 0.12, 1.0);
+          }
           this.floaters.add(["CRUNCH!", "KA-THUNK!", "CLANG!", "SPLAT!"][(Math.floor(e.x * 7 + e.y * 3) >>> 0) % 4]!, new THREE.Vector3(e.x, y + 0.9, e.y), "#fff3c4", 1.5);
           break;
         }

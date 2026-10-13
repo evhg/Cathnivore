@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-13 18:51 session (short):** H13: van/lorry/artic wrecks fold up (extra ring and roof panels, render3d only). tsc, lint clean. Unreleased. Phase D is all done; left: H9 (needs a long tune), H1 lanes, H7 RPG re-point, U5-U7/U10+.
 - **2026-10-13 17:51 session (short):** H13: Heirlooms shed slow gold motes; wrecks leave a scorch decal and a smoke column (render3d only). tsc, lint, fleet and livery tests pass. Unreleased. Left: H9 (campaign conversion, needs a long tune), H1 lanes, H13 vans folding, U5-U7/U10+.
 - **2026-10-13 16:52 session (short):** H7 duel reward: a perfect boss duel (all strikes >= 0.85) pays +150 Marks and takes a further 10% off the boss, with its own toast (`duelEnd.perfect`); test updated, tsc/lint clean. Unreleased. Left for H7: RPG re-point, bot use of Last Orders, level-card kit pick.
 - **2026-10-13 15:52 session:** H13 rung liveries (per-act company colours, off-brand vehicles mixed in; `liveryOf` in render3d/rungs.ts) and H12 fords (wet-act Fleet levels: one shallow lane crossing slows ground vehicles to 75%, drawn as a blue strip; `addFords`, `FORD_SLOW`). `tests/hedgerow-livery.test.ts`; tsc, lint clean; level tests run (see log). Unreleased. Left: H9, H13 Heirloom idles/vans folding, H1 lanes, U5-U7/U10+, D1 per-district saves.
