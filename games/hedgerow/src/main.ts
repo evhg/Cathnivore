@@ -156,6 +156,7 @@ import {
   refundAll,
   save,
 } from "./store";
+import { awardRun } from "./meta";
 import { dailyLevel, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
@@ -2837,6 +2838,13 @@ function finish(g: Game): void {
   if (g.remix) stats.push(`${REMIX_NAMES[g.remix]} remix`);
   if (g.heroic) stats.push("Heroic run ◆");
   if (earlyCalls) stats.push(`${Word(g)}s called early ${earlyCalls}`);
+  if (!SANDBOX) {
+    const reward = awardRun(data, g, won);
+    save(data);
+    if (won && reward.acorns) stats.push(`Acorns +${reward.acorns}`);
+    const top = Object.entries(reward.xp).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
+    if (won && top) stats.push(`${TOWERS[top[0] as TowerKind].name} XP +${(top[1] ?? 0).toLocaleString()}`);
+  }
   ui.resultStats.textContent = won ? stats.join(" · ") : `Reached ${waveWord(g)} ${waveNo(g, g.wave)} of ${lastNo(g)}`;
   const gained = won ? Math.max(0, n - before) : 0;
   ui.resultNote.textContent = won

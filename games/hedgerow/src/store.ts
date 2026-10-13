@@ -6,7 +6,7 @@
 // build. A v2 save had no per-tower data, so it migrates as it is (its tips and stars carry over); an old
 // spec name anywhere maps to its nearest path through paths.ts specToPath.
 
-import { ABILITIES, AUTO_AFTER_CASTS, NO_PERKS, type Ability, type Perks } from "./engine";
+import { ABILITIES, AUTO_AFTER_CASTS, NO_PERKS, TOWERS, type Ability, type Perks, type TowerKind } from "./engine";
 import { kitOf } from "./hero";
 import { applyCath, levelOf, parseCath, xpOf, type CathSave } from "./cath";
 import { PATH_KINDS, pathLegal, specToPath, type Path, type PathKind } from "./paths";
@@ -32,6 +32,10 @@ export interface SaveData {
   heroic?: Record<string, boolean>;
   /** Medals won per level id: the modes it was cleared in (Hedgerow 2 M9). Optional in old saves. */
   medals?: Record<string, MedalMode[]>;
+  /** Tower XP: knockouts per tower kind across real runs (meta.ts). Optional in old saves. */
+  xp?: Partial<Record<TowerKind, number>>;
+  /** Acorns earned by wins (meta.ts). Optional in old saves. */
+  acorns?: number;
   /** Cath's character sheet: attributes and talents (cath.ts). Optional in old saves. */
   cath?: CathSave;
   /** The wardrobe outfit she is wearing (wardrobe.ts). Optional in old saves. */
@@ -128,6 +132,8 @@ export function parseSave(raw: string | null): SaveData {
       }
       for (const [k, v] of Object.entries(obj.endless ?? {})) if (typeof v === "number" && v >= 1) (data.endless ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
+      for (const [k, v] of Object.entries(obj.xp ?? {})) if (k in TOWERS && typeof v === "number" && v >= 1) (data.xp ??= {})[k as TowerKind] = Math.min(1e9, Math.floor(v));
+      if (typeof obj.acorns === "number" && obj.acorns >= 1) data.acorns = Math.min(1e9, Math.floor(obj.acorns));
       if (obj.cath) data.cath = parseCath(obj.cath);
       if (typeof obj.outfit === "string") data.outfit = obj.outfit.slice(0, 20);
       if (kitOf(obj.kit)) data.kit = obj.kit;
