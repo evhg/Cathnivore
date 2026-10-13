@@ -839,8 +839,8 @@ input[type="radio"] {
   .cp-opt-name { font-size: 13px; font-family: var(--ui); }
   .cp-opt-fantasy,
   .cp-opt-file { display: none; }
-  .cp-detail { grid-template-columns: 1fr; grid-template-areas: "words" "kit"; padding-bottom: 76px; }
-  .cp-art { position: absolute; top: -8px; right: 0; width: 120px; opacity: 0.5; z-index: var(--z-under); }
+  .cp-detail { grid-template-columns: 1fr; grid-template-areas: "words" "kit"; padding-bottom: 76px; align-content: start; align-self: stretch; }
+  .cp-art { position: absolute; top: 0; right: 0; width: 96px; opacity: 0.35; z-index: var(--z-under); }
   .cp-art-file { display: none; }
   .cp-name { font-size: 46px; }
   .cp-trees { grid-template-columns: 1fr; gap: 10px; }
