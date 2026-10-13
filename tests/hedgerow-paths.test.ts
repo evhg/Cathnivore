@@ -611,3 +611,15 @@ describe("hedgerow paths: the Windmill", () => {
     expect(mill.damage).toBeGreaterThan(base.damage + 3);
   });
 });
+
+describe("hedgerow paths: the Market Stall", () => {
+  it("Trade pays more, Cheer buffs harder and Charity mends", async () => {
+    const { towerStats } = await import("../games/hedgerow/src/engine");
+    const mk = (path: number[]) => towerStats({ kind: "stall", fleet: true, tier: 1, path } as never);
+    const base = mk([0, 0, 0]);
+    expect(base.income).toBeGreaterThan(0);
+    expect(mk([3, 0, 0]).income).toBeGreaterThan(base.income + 300);
+    expect(mk([0, 3, 0]).buff).toBeGreaterThan(base.buff);
+    expect(mk([0, 0, 3]).mend).toBeGreaterThan(base.mend + 5);
+  });
+});

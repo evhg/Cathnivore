@@ -1172,6 +1172,7 @@ function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKin
   stats.pierce = f.pierce[0]!;
   if (f.air) stats.air = true;
   if (f.cooldown) stats.cooldown = f.cooldown[0]!;
+  if (f.income) stats.income = f.income[0]!;
   let rate = 1;
   let range = 1;
   let rangeAdd = 0;
@@ -1197,6 +1198,7 @@ function pathStats(kind: PathKind, path: Path, f: (typeof FLEET_TOWERS)[TowerKin
     if (m.shellMul) stats.shellMul *= m.shellMul;
     if (m.plantDamage) stats.plantDamage = Math.max(stats.plantDamage, m.plantDamage);
     if (m.push) stats.gustPush += m.push;
+    if (m.income) stats.income += m.income;
     if (m.knockback) stats.knockback = Math.max(stats.knockback, m.knockback);
     if (m.poison) {
       stats.poison = { dps: Math.max(stats.poison?.dps ?? 0, m.poison.dps), secs: Math.max(stats.poison?.secs ?? 0, m.poison.secs) };

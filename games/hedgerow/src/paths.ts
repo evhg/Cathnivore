@@ -20,7 +20,7 @@ export type Path = [number, number, number];
 export type PathIndex = 0 | 1 | 2;
 
 /** The towers that grow along paths (M4). The rest use the legacy adapter until M7. */
-export const PATH_KINDS = ["scarecrow", "hedgerow", "beehive", "cannon", "mast", "pond", "silo", "windmill"] as const;
+export const PATH_KINDS = ["scarecrow", "hedgerow", "beehive", "cannon", "mast", "pond", "silo", "windmill", "stall"] as const;
 export type PathKind = (typeof PATH_KINDS)[number];
 
 export function hasPaths(kind: TowerKind): kind is PathKind {
@@ -45,6 +45,8 @@ export interface PathMod {
   rate?: number;
   /** + cells a gust shoves everything back (Windmill). */
   push?: number;
+  /** + Marks paid after every cleared round (Market Stall). */
+  income?: number;
   /** × range, then + cells. */
   range?: number;
   rangeAdd?: number;
@@ -481,6 +483,37 @@ export const PATHS: Record<PathKind, TowerPaths> = {
       },
     ],
   },
+  stall: {
+    paths: [
+      {
+        name: "Trade",
+        short: "Trade",
+        tiers: [
+          { name: "Fresh Produce", cost: 120, adds: "+40 Marks a round", blurb: "Ines stacks the crates higher. People queue.", mod: { income: 40 } },
+          { name: "Loyalty Cards", cost: 280, adds: "+80 Marks a round", blurb: "Stamp ten, get one free. The village is hooked.", mod: { income: 80 } },
+          { name: "Farmers' Market", cost: 1600, adds: "+260 Marks a round", blurb: "The whole county sets up beside her. The till never closes.", mod: { income: 260 } },
+        ],
+      },
+      {
+        name: "Cheer",
+        short: "Cheer",
+        tiers: [
+          { name: "Bunting", cost: 120, adds: "towers in range fire 25% faster", blurb: "Flags over every tower. Spirits lift.", mod: { buff: 1.25 } },
+          { name: "Brass Band", cost: 280, adds: "towers in range fire 35% faster, +25% range", blurb: "A brass band on a crate. Everyone fires in time.", mod: { buff: 1.35, range: 1.25 } },
+          { name: "Street Party", cost: 1700, adds: "towers in range fire 50% faster, +40 Marks a round", blurb: "The road is shut, the bunting is out and every tower is dancing.", mod: { buff: 1.5, range: 1.2, income: 40 } },
+        ],
+      },
+      {
+        name: "Charity",
+        short: "Charity",
+        tiers: [
+          { name: "Tea Urn", cost: 100, adds: "+1 Goodwill a round", blurb: "A tea urn on the counter. Spirits mend.", mod: { mend: 1 } },
+          { name: "Bake Sale", cost: 240, adds: "+2 Goodwill, +25 Marks a round", blurb: "Mrs Okafor's lemon drizzle sells out by ten.", mod: { mend: 2, income: 25 } },
+          { name: "Village Fete", cost: 1500, adds: "+4 Goodwill, +90 Marks a round", blurb: "Tombola, coconut shy and a great deal of goodwill.", mod: { mend: 4, income: 90 } },
+        ],
+      },
+    ],
+  },
 };
 
 /** Crowns for the other four path towers (M5): passive, one per path, one of each per field. */
@@ -520,6 +553,11 @@ const PASSIVE_CROWNS: Record<Exclude<PathKind, "scarecrow">, [PathTier, PathTier
     C("Hurricane", 22000, "gust +1.5 cells, +12 pierce, +20% range", "A named storm, grinding corn. Nothing on the lane stays where it was.", { push: 1.5, pierce: 12, range: 1.2 }, { kind: "freeze", name: "Eye of the Storm", blurb: "Every ground enemy within 6 cells is rooted for 2.5 seconds.", cooldown: 50, secs: 2.5, reach: 6 }),
     C("Perpetual Motion", 21000, "gusts 2.2× as fast, +4 layers, +8 pierce", "Bea finally gets the mill to turn itself. Physicists are writing letters.", { rate: 2.2, damage: 4, pierce: 8 }, { kind: "blackout", name: "Full Sail", blurb: "Gusts three times as fast for 8 seconds.", cooldown: 45, secs: 8 }),
     C("Stone Mill", 24000, "+15 layers, +14 pierce, 30 off Plant", "A mill that grinds anything: lorries, bosses, the occasional bank.", { damage: 15, pierce: 14, plantDamage: 30, shellMul: 2 }, { kind: "strike", name: "Grindstone", blurb: "The great stone takes 50 layers off the strongest enemy on the field.", cooldown: 45, amount: 50 }),
+  ],
+  stall: [
+    C("Grand Bazaar", 20000, "+900 Marks a round", "Every stall in the county under one roof, and a cut of every sale.", { income: 900 }, { kind: "triage", name: "Flash Sale", blurb: "Everything must go: Goodwill mends at once.", cooldown: 60, amount: 6 }),
+    C("Carnival", 22000, "towers in range fire 80% faster, +30% range", "Fairground lights, a brass band and a great deal of candyfloss.", { buff: 1.8, range: 1.3 }, { kind: "standup", name: "Carnival Night", blurb: "Every tower within 4 cells fires three times as fast for 6 seconds.", cooldown: 55, secs: 6, reach: 4, all: true }),
+    C("Jubilee", 18000, "+8 Goodwill, +400 Marks a round", "A royal jubilee: bunting from here to the coast and money in every tin.", { mend: 8, income: 400 }, { kind: "triage", name: "Jubilee Cheer", blurb: "Goodwill mends at once.", cooldown: 60, amount: 8 }),
   ],
 };
 for (const [k, crowns] of Object.entries(PASSIVE_CROWNS) as [Exclude<PathKind, "scarecrow">, [PathTier, PathTier, PathTier]][])
@@ -632,6 +670,8 @@ export const SPEC_TO_PATH: Record<PathKind, [PathIndex, PathIndex]> = {
   silo: [0, 2],
   // Gust-damage spec → Mill; the push spec → Gale.
   windmill: [2, 0],
+  // Income spec → Trade; the cheer spec → Cheer.
+  stall: [0, 1],
 };
 
 /** An old tier and spec as a build on paths (tiers 2 and 3 along the spec's path; the spec its tier 3). */
@@ -646,7 +686,7 @@ export function specToPath(kind: PathKind, tier: number, spec: 0 | 1 | null | un
  * Named builds for the bots (and the tuner's logs): `crow-3-2-0` is a Scarecrow taking Flock to 3 and
  * Lookout to 2. The order in which a bot buys a build's tiers: every path's tier 1, then tier 2, then the 3.
  */
-export const BUILD_PREFIX: Record<PathKind, string> = { scarecrow: "crow", hedgerow: "hedge", beehive: "bees", cannon: "cannon", mast: "mast", pond: "pond", silo: "silo", windmill: "mill" };
+export const BUILD_PREFIX: Record<PathKind, string> = { scarecrow: "crow", hedgerow: "hedge", beehive: "bees", cannon: "cannon", mast: "mast", pond: "pond", silo: "silo", windmill: "mill", stall: "stall" };
 
 export function parseBuild(name: string): { kind: PathKind; path: Path } | null {
   const m = /^([a-z]+)-(\d)-(\d)-(\d)$/.exec(name);
