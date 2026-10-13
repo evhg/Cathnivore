@@ -432,3 +432,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-13 11:10: H10 modes apply to Fleet levels only; remix wins earn no difficulty medal; difficulty price applies to new towers only (upgrade prices unchanged); Continue saves the replay at each round start and re-runs it.
 - 2026-10-13 12:10: Hollow's +5 rounds only when `Setup.shift` is set (old Heroic replays unchanged); Long Haul keeps the original boss round and appends Book rounds to 80.
 - 2026-10-13 12:15: XP gating only in real browser runs (Game.xpGate); existing saves with stars start with 1,500 XP per kind so no one loses tier 3; Daily and sandbox are ungated.
+- 2026-10-13 12:25: Acorn perks live in the Seed Bank list (PerkDef.acorns); Daily rule = plain/Hand Tools/Lean Year/Hard by day hash, Fleet levels only.
