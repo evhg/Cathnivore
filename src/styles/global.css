@@ -1599,7 +1599,8 @@ html.no-animations .card-enter {
 .producer-card:has(input:checked) .pc-pick { transform: scale(1); }
 .setup > button.primary { position: sticky; bottom: 12px; z-index: var(--z-sticky); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
 /* ROADMAP 205: on wide screens the sticky Start spans the setup column, so it reads as the primary action */
-@media (min-width: 700px) { .setup > button.primary { width: 100%; min-height: 52px; font-size: 1.1rem; } }
+/* 2026-10-13 (U11): full width at every size, so Start never floats over a producer card at phone width */
+.setup > button.primary { width: 100%; min-height: 52px; font-size: 1.1rem; }
 .setup { padding-bottom: 88px; } /* ROADMAP 171: last card clears the sticky Start */
 /* ROADMAP 207: a paper halo behind the sticky Start hides card text scrolling under it */
 .setup > button.primary { outline: 14px solid var(--paper, #f6efe0); }
