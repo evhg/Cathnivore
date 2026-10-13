@@ -75,18 +75,43 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .gate-rain { animation: none; }
 }
+.gate {
+  /* Cath stands left in the neon, the card right; on a narrow phone she leans in above it. */
+  grid-template-columns: minmax(0, 440px) minmax(0, 560px);
+  column-gap: clamp(8px, 3vw, 48px);
+  place-items: center;
+  justify-content: center;
+}
 .gate-cath {
-  /* Cath as a neon-rimmed silhouette behind the card. */
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: min(420px, 80vw);
-  transform: translateX(-50%);
-  opacity: 0.55;
-  filter: brightness(0) drop-shadow(0 0 2px var(--neon-cyan)) drop-shadow(0 0 26px rgba(255, 46, 136, 0.55));
+  position: relative;
+  align-self: end;
+  justify-self: stretch;
+  width: 100%;
+  margin-bottom: -24px;
   pointer-events: none;
+  /* A cyan rim on one side and a magenta kick on the other, so she reads as lit, not cut out. */
+  filter: contrast(1.1) brightness(0.92)
+    drop-shadow(-2px 0 1px rgba(46, 230, 255, 0.55))
+    drop-shadow(3px 0 14px rgba(255, 46, 136, 0.45));
 }
 .gate-cath svg { width: 100%; height: auto; display: block; }
+@media (max-width: 760px) and (orientation: portrait) {
+  .gate {
+    grid-template-columns: minmax(0, 560px);
+    grid-template-rows: auto auto;
+    align-content: center;
+    row-gap: 0;
+    padding-top: 12px;
+  }
+  .gate-cath { justify-self: center; width: min(210px, 52vw); height: 200px; overflow: hidden; margin: 0; }
+  .gate-cath svg { width: 100%; }
+  .gate-card { padding-top: 16px; }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  .gate { padding: 8px 16px; }
+  .gate-cath { width: min(300px, 78vh); margin-bottom: -8px; }
+  .gate-card { padding: 12px 18px; }
+}
 .gate-card {
   position: relative;
   z-index: var(--z-lift);
