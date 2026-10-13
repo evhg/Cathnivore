@@ -436,3 +436,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-13 13:05: Compost Heap = XP over 10,000 per kind (2 compost per XP, 500 XP per feed); Packet towers sell for nothing and fail (not consumed) if their top tier is shut on that field; boss levels (id%10==0) drop a rotating Packet; H10 upgrade prices by difficulty dropped (new towers only).
 - 2026-10-13 14:20: oaks/barns assigned by level id from terrain.ts (oak 5+, barn 12+); bots never clear oaks; County Show kit is core four + two picked from six (draft dialog reuses the result dialog) and has no replay; show fields' bot-win tested for weeks 120-122 only.
 - 2026-10-13 15:52: fords are a 75% speed slow on one 12% stretch of lane 1 (ground only), no Pond-only rule; not retuned (it only helps the player).
+- 2026-10-13 16:52: perfect duel = every strike >= 0.85; reward per the Hedgerow 2 spec, no retune (sims have duels off).
