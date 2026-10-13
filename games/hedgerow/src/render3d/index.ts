@@ -617,6 +617,9 @@ export class Renderer3D {
           const y = this.height(e.x, e.y);
           this.debris.emit(e.x, y + 0.3, e.y, [RUNGS[e.kind]?.colour ?? "#f2c230", "#3b3f44", "#c79a62", "#f4f6f8"], 36, 0.09, 3.2);
           this.sparks.emit(e.x, y + 0.3, e.y, "#ffb04a", 50, 3.6, 0.25, 0.5, -1);
+          // Comic death (H13): a hubcap rolls off, a sound-word pops up.
+          this.fx.ring(e.x, y + 0.04, e.y, "#d8dde2", 0.5, 0.6);
+          this.floaters.add(["CRUNCH!", "KA-THUNK!", "CLANG!", "SPLAT!"][(Math.floor(e.x * 7 + e.y * 3) >>> 0) % 4]!, new THREE.Vector3(e.x, y + 0.9, e.y), "#fff3c4", 1.5);
           break;
         }
         case "kill": {
@@ -626,6 +629,11 @@ export class Renderer3D {
             // Fleet: the last layer's pop already paid; leave a scrap of parcel tape, no decal or floater.
             this.debris.emit(e.x, y + 0.2, e.y, ["#c79a62", "#ffe27a"], 3, 0.05, 1.6);
             break;
+          }
+          // A lawyer's briefcase bursts: papers everywhere, drifting down slowly.
+          if (e.kind === "lawyer") {
+            this.debris.emit(e.x, y + 0.5, e.y, ["#ffffff", "#f4f1e6", "#fffbe8"], 22, 0.07, 1.4);
+            this.floaters.add("OBJECTION!", new THREE.Vector3(e.x, y + 0.9, e.y), "#fff3c4", 1.3);
           }
           this.debris.emit(e.x, y + 0.2, e.y, ["#f4f6f8", "#c79a62", "#1f8a8a", "#2b2b30"], big ? 40 : 10, big ? 0.1 : 0.06, big ? 3.5 : 2.2);
           this.sparks.emit(e.x, y + 0.25, e.y, "#ffb04a", big ? 80 : 18, big ? 4 : 2.4, big ? 0.3 : 0.16, 0.5, -1);

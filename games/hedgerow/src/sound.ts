@@ -388,6 +388,14 @@ export function playWave(): void {
   voice(392, 0.22, 0.5, { peak: 0.05, cutoff: 1700, attack: 0.05, type: "sawtooth" });
   tone(196, 0.22, 0.5, "triangle", 0.04);
 }
+/** A spike round (H13): a rising siren over a drum roll, so the player feels the wall coming before they see it. */
+export function playSpike(): void {
+  if (!ready()) return;
+  voice(110, 0, 1.2, { peak: 0.05, slide: 330, cutoff: 1500, attack: 0.15, type: "sawtooth" });
+  voice(165, 0.1, 1.1, { peak: 0.035, slide: 495, cutoff: 1800, attack: 0.2, type: "sawtooth", detune: 9 });
+  for (let i = 0; i < 8; i++) tone(70 - i * 2, i * 0.13, 0.12, "sine", 0.1, 45);
+  noise(0.9, 0.4, 0.06, { type: "lowpass", freq: 300 });
+}
 export function playBoss(): void {
   if (!ready()) return;
   // Low brass and a drum roll of thunder.

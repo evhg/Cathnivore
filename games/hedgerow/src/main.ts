@@ -2661,6 +2661,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           // Fleet levels name the Round Book's round and read its one-line card.
           const r = g.level.book.from + ev.wave - 1;
           const page = roundFor(g.level.id, r);
+          if (page?.spike) sfx.playSpike();
           banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : page ? cardBody(page.card) : `Round ${r} of ${lastNo(g)}`, false, "round");
         } else banner(`Wave ${ev.wave}`, ev.early ? `Stacked early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
         // Let the round's banner say its piece first: the new-unit card follows it rather than stacking on it.
