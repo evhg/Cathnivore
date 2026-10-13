@@ -948,18 +948,26 @@ button {
 .stars .star.earned {
   color: #f2c94c;
   text-shadow: 0 2px 0 #b8862b;
-  animation: star-pop 520ms cubic-bezier(0.2, 1.5, 0.4, 1) both;
+  animation: star-stamp 420ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
 }
 .stars .star.earned:nth-child(2) {
-  animation-delay: 220ms;
+  animation-delay: 260ms;
 }
 .stars .star.earned:nth-child(3) {
-  animation-delay: 440ms;
+  animation-delay: 520ms;
 }
-@keyframes star-pop {
-  from {
-    transform: scale(0) rotate(-40deg);
+/* A rubber stamp: it lands from above the page, squashes once and settles at a slight tilt. */
+@keyframes star-stamp {
+  0% {
+    transform: scale(2.6) rotate(-18deg);
     opacity: 0;
+  }
+  55% {
+    transform: scale(0.88) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-3deg);
   }
 }
 .result-stats {

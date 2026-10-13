@@ -438,3 +438,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-13 15:52: fords are a 75% speed slow on one 12% stretch of lane 1 (ground only), no Pond-only rule; not retuned (it only helps the player).
 - 2026-10-13 16:52: perfect duel = every strike >= 0.85; reward per the Hedgerow 2 spec, no retune (sims have duels off).
 - 2026-10-13 17:51: Heirloom idle = gold motes only (no scale pulse, it would fight the build-up animation); wreck decal reuses fx.decal.
+- 2026-10-13 20:52: U10 stars stamp is CSS only (keyframes star-stamp); reduced motion already disables the animation so stars show static.
