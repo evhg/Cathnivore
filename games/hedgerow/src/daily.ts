@@ -2,7 +2,7 @@
 // that aren't bosses, played with the Seed Bank switched off so scores compare. The result is a share card
 // of plain text. The best score per day is kept in SaveData.daily.
 
-import type { Level } from "./engine";
+import type { Difficulty, Level, Remix } from "./engine";
 import { LEVELS } from "./levels";
 
 /** Whole days since 2026-01-01, UTC. */
@@ -21,7 +21,28 @@ export function dailyScore(won: boolean, kept: number, earlyCalls: number): numb
   return won ? Math.round(kept * 90 + Math.min(10, earlyCalls * 2)) : 0;
 }
 
-export function shareCard(day: number, level: Level, won: boolean, score: number): string {
+export function shareCard(day: number, level: Level, won: boolean, score: number, rule?: DailyRule): string {
   const bar = won ? "🟩".repeat(Math.round(score / 10)) + "⬜".repeat(10 - Math.round(score / 10)) : "🟥".repeat(10);
-  return `Hedgerow daily #${day + 1}: ${level.name}\n${bar} ${score}/100\ncathnivore.com/hedgerow/`;
+  const twist = rule && rule.name !== "Plain day" && level.rules === "fleet" ? ` (${rule.name})` : "";
+  return `Hedgerow daily #${day + 1}: ${level.name}${twist}\n${bar} ${score}/100\ncathnivore.com/hedgerow/`;
+}
+
+/**
+ * The day's rule (Hedgerow 2 M11): a twist on Fleet levels, the same for everyone. One day in four is plain;
+ * the others are Hand Tools, Lean Year or Hard. Classic levels ignore it (the engine drops both).
+ */
+export interface DailyRule {
+  name: string;
+  remix: Remix | null;
+  difficulty: Difficulty;
+}
+const RULES: DailyRule[] = [
+  { name: "Plain day", remix: null, difficulty: "normal" },
+  { name: "Hand Tools", remix: "hand", difficulty: "normal" },
+  { name: "Lean Year", remix: "lean", difficulty: "normal" },
+  { name: "Hard day", remix: null, difficulty: "hard" },
+];
+export function dailyRule(day: number): DailyRule {
+  const h = Math.imul(day + 7, 2246822519) >>> 0;
+  return RULES[(h >>> 8) % RULES.length]!;
 }

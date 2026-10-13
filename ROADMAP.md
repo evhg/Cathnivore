@@ -50,7 +50,7 @@ These two phases come before every older unfinished item below. About 70% of ses
   - H9. [ ] **M8 Campaign conversion:** acts 4–10 on Book windows with bosses as phased Plants. Delete `ramp()`, `HP_SCALE` and the classic rules.
   - H10. [~] *(2026-10-13: Easy/Normal/Hard, Hollow no-sell, medal dots on the map with star/Heroic migration, Hand Tools and Lean Year remixes, close-call slow motion, end-screen Knockouts/MVP/close calls, Continue from the last round start; 2026-10-13 later: Long Haul, Hollow +5 rounds, e2e; still to do: difficulty price on upgrades, medal grid per remix, XP/Acorns on the end screen)* **M9 Difficulties, modes, medals** (Easy, Normal, Hard, Hollow and 3 remixes), the medal grid, close-call slow motion, the end screen, and Continue or retry from a round snapshot.
   - H11. [~] *(2026-10-13: tower XP, Acorns on wins, XP gates on tier 3 and Crowns; XP bars, two Acorn perks; still to do: Compost Heap, more Acorn perks, Seed Packets)* **M10 Long-term meta:** tower XP gating T3 and T4, Acorns, the Compost Heap, Seed Bank v2 and Seed Packets.
-  - H12. [ ] **M11 Events and map gimmicks:** a Daily with tower limits, the weekly County Show, line-of-sight blockers, removable obstacles and fords. Merges with H1.
+  - H12. [~] *(2026-10-13: Daily rule of the day)* **M11 Events and map gimmicks:** a Daily with tower limits, the weekly County Show, line-of-sight blockers, removable obstacles and fords. Merges with H1.
   - H13. [ ] **M12 Spectacle pass:** rung liveries, Crown and Heirloom idles, comic deaths and spike-round music stingers.
 
 ## Phase 1: Cath, the face of every game (owner's top priority)

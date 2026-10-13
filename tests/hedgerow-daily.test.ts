@@ -26,3 +26,14 @@ describe("daily challenge", () => {
     expect(parseSave(JSON.stringify(d)).daily).toEqual({ "7": 50 });
   });
 });
+
+describe("daily rule", () => {
+  it("is the same for everyone on a day, varies across days and shows on the card for Fleet levels", async () => {
+    const { dailyRule } = await import("../games/hedgerow/src/daily");
+    expect(dailyRule(40)).toBe(dailyRule(40));
+    expect(new Set(Array.from({ length: 60 }, (_, d) => dailyRule(d).name)).size).toBe(4);
+    const lv = dailyLevel(0);
+    const hand = { name: "Hand Tools", remix: "hand" as const, difficulty: "normal" as const };
+    expect(shareCard(0, lv, true, 80, hand).includes("Hand Tools")).toBe(lv.rules === "fleet");
+  });
+});

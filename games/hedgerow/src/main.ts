@@ -161,7 +161,7 @@ import {
   save,
 } from "./store";
 import { awardRun } from "./meta";
-import { dailyLevel, dailyScore, dayOf, shareCard } from "./daily";
+import { dailyLevel, dailyRule, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
@@ -714,8 +714,8 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
     ...(lv.endless ? { week: endlessArgs?.week ?? 0 } : {}),
     heroic: heroic && !lv.endless,
     ...(heroic && !lv.endless && lv.rules === "fleet" ? { shift: HOLLOW_SHIFT } : {}),
-    difficulty: resume ? resume.game.difficulty : lv.endless || dailyDay !== null ? "normal" : difficultyMode,
-    ...(!resume && !lv.endless && dailyDay === null && remixMode ? { remix: remixMode } : resume?.game.remix ? { remix: resume.game.remix } : {}),
+    difficulty: resume ? resume.game.difficulty : lv.endless ? "normal" : dailyDay !== null ? dailyRule(dailyDay).difficulty : difficultyMode,
+    ...(!resume && !lv.endless && dailyDay === null && remixMode ? { remix: remixMode } : !resume && dailyDay !== null && dailyRule(dailyDay).remix ? { remix: dailyRule(dailyDay).remix! } : resume?.game.remix ? { remix: resume.game.remix } : {}),
     perks: dailyDay !== null ? NO_PERKS : perksOf(data),
   };
   // One-on-one boss duels are a player's moment (on in startGame); the tuner and sims never see them.
@@ -755,7 +755,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   ui.select.hidden = true;
   ui.play.hidden = false;
   ui.hudTitle.textContent = `${game.heroic ? "◆ " : ""}${lv.endless ? "∞" : `${lv.id}.`} ${lv.name}`;
-  ui.hudPlace.textContent = lv.place;
+  ui.hudPlace.textContent = dailyDay !== null && game.level.rules === "fleet" && dailyRule(dailyDay).name !== "Plain day" ? `${lv.place} · ${dailyRule(dailyDay).name}` : lv.place;
   renderer ??= USE_3D && r3d ? new r3d.Renderer3D(ui.canvas, $<HTMLElement>("fx-layer")) : new Renderer(ui.canvas);
   document.documentElement.classList.toggle("hedgerow-3d", is3D(renderer));
   renderer.reset();
@@ -3037,7 +3037,7 @@ function finishDaily(g: Game, lv: Level, day: number): void {
   ui.resultStars.replaceChildren();
   ui.resultStars.setAttribute("aria-label", "");
   ui.resultStats.textContent = `Today's best ${data.daily?.[String(day)] ?? 0}${record && won ? " (new)" : ""} · Goodwill ${g.goodwill}/${g.maxGoodwill}`;
-  const card = shareCard(day, lv, won, score);
+  const card = shareCard(day, lv, won, score, dailyRule(day));
   ui.resultNote.textContent = "Same field for everyone today, no Seed Bank. Copy your card and send it round.";
   ui.resultPrimary.textContent = "Copy card";
   ui.resultPrimary.onclick = () => {
