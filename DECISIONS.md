@@ -429,3 +429,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-13 06:52: act props are instanced, corner-placed, own seed, so tower plots and tuning are untouched.
 - 2026-10-13: Took U8 (Phase U) because Phase D is all done; fixed Cath hidden on the gate and the clipped class name. Not released (milestone unfinished).
 - 2026-10-13 09:51: U9 K-sheet check lives in `cathode-shots.mjs` (no cathode e2e project exists); swiftshader needs animations finished before shooting.
+- 2026-10-13 11:10: H10 modes apply to Fleet levels only; remix wins earn no difficulty medal; difficulty price applies to new towers only (upgrade prices unchanged); Continue saves the replay at each round start and re-runs it.
