@@ -876,6 +876,17 @@ export class Renderer {
       }
     }
 
+    for (const [c, r] of level.barns ?? []) {
+      const w = X(1) - X(0);
+      ctx.fillStyle = "#a8402f";
+      ctx.fillRect(X(c) + w * 0.1, Y(r) + w * 0.25, w * 0.8, w * 0.6);
+      ctx.fillStyle = "#4a4540";
+      ctx.beginPath();
+      ctx.moveTo(X(c) + w * 0.04, Y(r) + w * 0.3);
+      ctx.lineTo(X(c) + w * 0.5, Y(r) + w * 0.06);
+      ctx.lineTo(X(c) + w * 0.96, Y(r) + w * 0.3);
+      ctx.fill();
+    }
     // Fallen oaks lie across their plots until cleared.
     for (const [c, r] of level.oaks ?? []) {
       if (!oakAt(game, c, r)) continue;

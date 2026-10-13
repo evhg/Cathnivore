@@ -1410,6 +1410,8 @@ export interface Level {
   terrain?: { high: Array<[number, number]>; water: Array<[number, number]> };
   /** Fallen oaks: plots nobody can build on until the oak is cleared for OAK_COST Marks (H12; Fleet levels). */
   oaks?: Array<[number, number]>;
+  /** Barns (H12): a plot with a barn on it can't be built on, and ground towers can't shoot through it. */
+  barns?: Array<[number, number]>;
   startMarks: number;
   goodwill: number;
   towers: TowerKind[];
@@ -2189,6 +2191,8 @@ export function place(
     return { ok: false, reason: "You can only build beside the lane." };
   if (towerAt(game, col, row))
     return { ok: false, reason: "That plot is taken." };
+  if (barnAt(game.level, col, row))
+    return { ok: false, reason: "A barn stands here." };
   if (oakAt(game, col, row))
     return { ok: false, reason: `A fallen oak blocks this plot: clear it for ${OAK_COST} Marks.` };
   if (kind !== "pond" && flooded(game, col, row))
@@ -2233,6 +2237,39 @@ export function twistMods(level: Level, kind: TowerKind): { rangeMul?: number; d
 }
 
 /** Protected land: on those levels, every other plot is off limits. */
+export function barnAt(level: Level, col: number, row: number): boolean {
+  return !!level.barns?.some(([c, r]) => c === col && r === row);
+}
+
+/** Does the straight line from (ax, ay) to (bx, by), in cell units, cross a barn? (Slab test on each barn's footprint.) */
+export function sightBlocked(level: Level, ax: number, ay: number, bx: number, by: number): boolean {
+  if (!level.barns) return false;
+  const dx = bx - ax;
+  const dy = by - ay;
+  for (const [c, r] of level.barns) {
+    let t0 = 0;
+    let t1 = 1;
+    let hit = true;
+    for (const [o, d, lo, hi] of [
+      [ax, dx, c + 0.1, c + 0.9],
+      [ay, dy, r + 0.1, r + 0.9],
+    ] as const) {
+      if (Math.abs(d) < 1e-9) {
+        if (o < lo || o > hi) hit = false;
+      } else {
+        let a = (lo - o) / d;
+        let b = (hi - o) / d;
+        if (a > b) [a, b] = [b, a];
+        t0 = Math.max(t0, a);
+        t1 = Math.min(t1, b);
+        if (t0 > t1) hit = false;
+      }
+    }
+    if (hit) return true;
+  }
+  return false;
+}
+
 /** What hauling a fallen oak off a plot costs. */
 export const OAK_COST = 500;
 
@@ -3275,6 +3312,7 @@ function pickTarget(
       const p = enemyPoint(game.level, e);
       const d = Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y);
       if (d > range) continue;
+      if (!air && sightBlocked(game.level, t.col + 0.5, t.row + 0.5, p.x, p.y)) continue;
       // Strongest on the Fleet is the most layers still aboard (every rung shell is 1 HP, so HP would tie
       // everything); equal weights go to the one furthest along.
       const score = mode === "first" ? e.dist : mode === "last" ? -e.dist : mode === "strong" ? remainingFV(e) : -d;
@@ -3294,6 +3332,7 @@ function pickTarget(
     const p = enemyPoint(game.level, e);
     const d = Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y);
     if (d > range) continue;
+    if (!air && sightBlocked(game.level, t.col + 0.5, t.row + 0.5, p.x, p.y)) continue;
     const score =
       mode === "first"
         ? e.dist

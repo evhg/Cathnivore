@@ -80,6 +80,7 @@ import {
   towerAllowed,
   plotKind,
   oakAt,
+  barnAt,
   OAK_COST,
   upgrade,
   upgradeCost,
@@ -1119,6 +1120,10 @@ function renderPanel(force = false): void {
   }
   if (!isPlot(g.level, sel.col, sel.row)) {
     p.append(line("That's the lane: towers go on the grass beside it. To move Cath, tap her between waves, then tap her new post."));
+    return;
+  }
+  if (barnAt(g.level, sel.col, sel.row)) {
+    p.append(line("A barn. Nothing grows here, and towers on the ground can't shoot through it: build on the far side to see round it."));
     return;
   }
   if (oakAt(g, sel.col, sel.row)) {

@@ -19,6 +19,7 @@ import {
   isHeavy,
   isPlot,
   oakAt,
+  barnAt,
   isProtected,
   megaFor,
   megasUnlocked,
@@ -129,7 +130,7 @@ function coverage(samples: ReturnType<typeof laneSamples>, col: number, row: num
 }
 
 function canBuildAt(game: Game, kind: TowerKind, col: number, row: number): boolean {
-  if (!isPlot(game.level, col, row) || towerAt(game, col, row) || isProtected(game.level, col, row) || oakAt(game, col, row)) return false;
+  if (!isPlot(game.level, col, row) || towerAt(game, col, row) || isProtected(game.level, col, row) || oakAt(game, col, row) || barnAt(game.level, col, row)) return false;
   const ground = plotKind(game.level, col, row);
   return ground !== "water" || kind === "pond";
 }

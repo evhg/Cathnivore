@@ -1,7 +1,7 @@
 // H12: fallen oaks block a plot until cleared for OAK_COST Marks.
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
-import { OAK_COST, clearOak, isPlot, newGame, oakAt, place } from "../games/hedgerow/src/engine";
+import { OAK_COST, barnAt, clearOak, isPlot, newGame, oakAt, place } from "../games/hedgerow/src/engine";
 import { applyAction } from "../games/hedgerow/src/replay";
 
 const lvl = LEVELS.find((l) => l.id === 8)!;
@@ -30,5 +30,22 @@ describe("fallen oaks", () => {
     g.marks = OAK_COST - 1;
     const [c, r] = lvl.oaks![0]!;
     expect(clearOak(g, c, r).ok).toBe(false);
+  });
+});
+
+import { sightBlocked } from "../games/hedgerow/src/engine";
+
+describe("barns", () => {
+  const lv = LEVELS.find((l) => l.id === 14)!;
+  it("stand on plots from level 12, block building and cut sight lines", () => {
+    expect(LEVELS.find((l) => l.id === 11)!.barns).toBeUndefined();
+    expect(lv.barns?.length).toBe(1);
+    const [c, r] = lv.barns![0]!;
+    const g = newGame(lv);
+    g.marks = 100000;
+    expect(barnAt(lv, c, r)).toBe(true);
+    expect(place(g, "scarecrow", c, r).ok).toBe(false);
+    expect(sightBlocked(lv, c - 1, r + 0.5, c + 2, r + 0.5)).toBe(true);
+    expect(sightBlocked(lv, c - 1, r - 1, c + 2, r - 1)).toBe(false);
   });
 });

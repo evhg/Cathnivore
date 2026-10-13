@@ -91,3 +91,36 @@ export function addOaks(level: Level): void {
   }
   level.oaks = out;
 }
+
+/** Barns (H12): from level 12 on, Fleet levels get a barn (two from 22) on a plot that sees a lot of lane, blocking ground fire. */
+export function addBarns(level: Level): void {
+  if (level.id < 12 || level.rules !== "fleet") return;
+  const lane = laneCellsOf(level);
+  const t = level.terrain ?? { high: [], water: [] };
+  const taken = new Set([...t.high, ...t.water, ...(level.oaks ?? [])].map(([c, r]) => `${c},${r}`));
+  const cells: Array<{ c: number; r: number; score: number }> = [];
+  for (let r = 1; r < level.rows - 1; r++)
+    for (let c = 1; c < level.cols - 1; c++) {
+      if (lane.has(`${c},${r}`) || taken.has(`${c},${r}`)) continue;
+      let near = 0;
+      let adj = 0;
+      for (let dr = -2; dr <= 2; dr++)
+        for (let dc = -2; dc <= 2; dc++) {
+          if (!lane.has(`${c + dc},${r + dr}`)) continue;
+          near++;
+          if (Math.abs(dc) + Math.abs(dr) === 1) adj++;
+        }
+      // A barn in the thick of the lanes, but not hard against the road.
+      cells.push({ c, r, score: near - adj * 2 });
+    }
+  cells.sort((a, b) => b.score - a.score || hash(level.id * 17 + a.c * 31 + a.r) - hash(level.id * 17 + b.c * 31 + b.r));
+  const out: Array<[number, number]> = [];
+  const apart = [...(level.oaks ?? [])];
+  for (const x of cells) {
+    if (out.length >= (level.id >= 22 ? 2 : 1)) break;
+    if (apart.some(([c, r]) => Math.hypot(c - x.c, r - x.r) < 3)) continue;
+    out.push([x.c, x.r]);
+    apart.push([x.c, x.r]);
+  }
+  level.barns = out;
+}

@@ -33,7 +33,7 @@ import {
   type TowerKind,
 } from "../engine";
 import { actLight, actMood, matte } from "./palette";
-import { buildCath, dressCath, buildEnemy, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
+import { buildCath, dressCath, buildEnemy, buildBarn, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
@@ -1626,6 +1626,12 @@ export class Renderer3D {
       for (const o of this.oakObjs.values()) this.dynamic.remove(o);
       this.oakObjs.clear();
       this.oakLevel = game.level.id;
+      for (const [c, r] of game.level.barns ?? []) {
+        const b = buildBarn();
+        b.position.set(c + 0.5, this.height(c + 0.5, r + 0.5) + 0.02, r + 0.5);
+        this.dynamic.add(b);
+        this.oakObjs.set(`barn${c},${r}`, b);
+      }
     }
     for (const [c, r] of game.level.oaks ?? []) {
       const key = `${c},${r}`;

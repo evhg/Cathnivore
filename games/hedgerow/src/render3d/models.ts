@@ -353,6 +353,22 @@ function pathSpecLook(kind: TowerKind, path: readonly number[]): 0 | 1 | null {
 }
 
 /** A heap of cut thorn on the lane (a Blackthorn hedge's pile). */
+/** A red barn on a plot (H12): walls, a pitched roof and a pale door. */
+export function buildBarn(): THREE.Group {
+  const wall = matte("#a8402f");
+  const roof = matte("#4a4540");
+  const g = group(box(0.62, 0.34, 0.5, wall, 0, 0, 0), box(0.2, 0.22, 0.02, matte("#efe6d2"), 0, 0, 0.26));
+  const r = rot(box(0.7, 0.04, 0.34, roof, 0, 0, 0), 0.62, 0, 0);
+  r.position.set(0, 0.44, 0.1);
+  const r2 = rot(box(0.7, 0.04, 0.34, roof, 0, 0, 0), -0.62, 0, 0);
+  r2.position.set(0, 0.44, -0.1);
+  g.add(r, r2);
+  g.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+  });
+  return g;
+}
+
 /** A fallen oak across a plot (H12): a long trunk with a split stump end and a tangle of leafy boughs. */
 export function buildOak(): THREE.Group {
   const bark = matte("#5a4128");
