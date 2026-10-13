@@ -26,6 +26,7 @@ import {
   type TargetMode,
   type TowerKind,
   type Difficulty,
+  type Remix,
 } from "./engine";
 
 export type Action =
@@ -58,6 +59,7 @@ export interface Setup {
   heroic: boolean;
   /** Easy/Hard on Fleet levels; absent = normal (old replays). */
   difficulty?: Difficulty;
+  remix?: Remix;
   perks: Perks;
 }
 
@@ -118,7 +120,7 @@ export function applyAction(game: Game, a: Action): ActionResult {
 
 /** A fresh game exactly as a run started (the browser's duels included). */
 export function startGame(level: Level, setup: Setup): Game {
-  const game = newGame(level, setup.perks, {}, setup.heroic && !level.endless, setup.difficulty ?? "normal");
+  const game = newGame(level, setup.perks, {}, setup.heroic && !level.endless, setup.difficulty ?? "normal", setup.remix ?? null);
   game.duels = true;
   return game;
 }

@@ -62,3 +62,17 @@ describe("close calls", () => {
     expect(g.closeCalls).toBe(1);
   });
 });
+
+describe("remixes", () => {
+  it("Hand Tools bars the other towers and Lean Year halves the purse", () => {
+    const hand = newGame(fleet, undefined, {}, false, "normal", "hand");
+    hand.marks = 99999;
+    let spot: [number, number] | null = null;
+    for (let r = 0; r < fleet.rows && !spot; r++) for (let c = 0; c < fleet.cols && !spot; c++) if (isPlot(fleet, c, r)) spot = [c, r];
+    expect(place(hand, "stall", spot![0], spot![1]).ok).toBe(false);
+    expect(place(hand, "scarecrow", spot![0], spot![1]).ok).toBe(true);
+    const lean = newGame(fleet, undefined, {}, false, "normal", "lean");
+    expect(lean.marks).toBe(Math.round(newGame(fleet).marks / 2));
+    expect(newGame(classic, undefined, {}, false, "normal", "lean").remix).toBeNull();
+  });
+});

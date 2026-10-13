@@ -1668,6 +1668,9 @@ export const HERO = {
 
 /** Hedgerow 2 M9: how a level is played. Hollow is the Heroic run (`Game.heroic`), which also bars selling. */
 export type Difficulty = "easy" | "normal" | "hard";
+/** Hedgerow 2 M9 remixes (Fleet levels): Hand Tools builds only the four classic towers, Lean Year halves every Mark earned. */
+export type Remix = "hand" | "lean";
+export const HAND_TOOLS: TowerKind[] = ["scarecrow", "hedgerow", "beehive", "cannon"];
 /** Tower price multiplier and starting Goodwill by difficulty (hedgerow-2.md section 5). */
 export const DIFFICULTY_RULES: Record<Difficulty, { price: number; goodwill: number }> = {
   easy: { price: 0.85, goodwill: 200 },
@@ -1809,6 +1812,8 @@ export interface Game {
   heroic: boolean;
   /** Easy, Normal or Hard (Fleet levels only; Hollow is `heroic`). Changes prices and Goodwill. */
   difficulty: Difficulty;
+  /** An optional remix of the rules (Fleet levels only). */
+  remix: Remix | null;
   /** Pops within 1.5 cells of the farmhouse this run, and the tick before the next one may count. */
   closeCalls: number;
   closeCd: number;
@@ -2036,19 +2041,24 @@ export function newGame(
   auto: Partial<AutoCast> = {},
   heroic = false,
   difficulty: Difficulty = "normal",
+  remix: Remix | null = null,
 ): Game {
   const post = heroPost(level);
   const maxHp = Math.round(HERO.hp * perks.heroHp);
-  if (!isFleet(level) || level.endless) difficulty = "normal";
+  if (!isFleet(level) || level.endless) {
+    difficulty = "normal";
+    remix = null;
+  }
   const baseGoodwill = difficulty === "normal" ? level.goodwill : DIFFICULTY_RULES[difficulty].goodwill;
   const goodwill = heroic ? 1 : baseGoodwill + perks.goodwill;
   return {
     heroic,
     difficulty,
+    remix,
     level,
     tick: 0,
     phase: "build",
-    marks: Math.round(level.startMarks * (hasTwist(level, "tight") ? 0.6 : 1)) + perks.marks,
+    marks: Math.round(level.startMarks * (hasTwist(level, "tight") ? 0.6 : 1) * (remix === "lean" ? 0.5 : 1)) + perks.marks,
     goodwill,
     maxGoodwill: goodwill,
     wave: 0,
@@ -2162,6 +2172,8 @@ export function place(
     return { ok: false, reason: "The level is over." };
   if (!game.level.towers.includes(kind))
     return { ok: false, reason: "Not unlocked yet." };
+  if (game.remix === "hand" && !HAND_TOOLS.includes(kind))
+    return { ok: false, reason: "Hand Tools: scarecrows, hedgerows, beehives and seed cannons only." };
   if (!towerAllowed(game.level, kind))
     return { ok: false, reason: kind === "pond" ? "The ponds have dried up." : "Scarecrows are banned here." };
   if (isProtected(game.level, col, row))
@@ -2890,7 +2902,7 @@ function payLayers(game: Game, layers: number, by?: number): void {
   game.popped += layers;
   growHero(game);
   // Slivers (thorns, poison) add up exactly (no rounding per sliver), so thirty thirtieths make a Mark.
-  game.popMilli += layers * popRate(bookRound(game.level, Math.max(1, game.wave)));
+  game.popMilli += layers * popRate(bookRound(game.level, Math.max(1, game.wave))) * (game.remix === "lean" ? 0.5 : 1);
   const whole = Math.floor((game.popMilli + 1e-6) / 1000);
   if (whole > 0) {
     game.marks += whole;
@@ -3967,7 +3979,7 @@ function step(game: Game): void {
     // The income falloff (section 4): stalls pay like pops do, so after round 50 greed stops being the answer.
     if (fleet) income *= popRate(bookRound(game.level, w)) / 1000;
     if (game.level.endless) income *= 0.5;
-    reward = Math.round(reward + income);
+    reward = Math.round((reward + income) * (game.remix === "lean" ? 0.5 : 1));
     game.marks += reward;
     game.earned += reward;
     game.roundIncome.push(game.earned - game.earnedAtClear);

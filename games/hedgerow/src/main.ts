@@ -82,6 +82,7 @@ import {
   type TowerKind,
   type EnemyKind,
   type Difficulty,
+  type Remix,
   type Game,
   type GameEvent,
   type Level,
@@ -612,6 +613,22 @@ let difficultyMode: Difficulty = "normal";
   });
 }
 
+/** The remix button: no remix, Hand Tools or Lean Year (Fleet levels). */
+const REMIXES: (Remix | null)[] = [null, "hand", "lean"];
+const REMIX_NAMES = { hand: "Hand Tools", lean: "Lean Year" } as const;
+let remixMode: Remix | null = null;
+{
+  const btn = document.getElementById("btn-remix") as HTMLButtonElement | null;
+  const word = document.getElementById("remix-word");
+  btn?.addEventListener("click", () => {
+    remixMode = REMIXES[(REMIXES.indexOf(remixMode) + 1) % REMIXES.length] ?? null;
+    const name = remixMode ? REMIX_NAMES[remixMode] : "No remix";
+    if (word) word.textContent = name;
+    btn.setAttribute("aria-label", `Remix: ${name}`);
+    btn.classList.toggle("on", remixMode !== null);
+  });
+}
+
 /** Set while a daily challenge is on: the day number. Perks are off so scores compare. */
 let dailyDay: number | null = null;
 ui.btnDaily.addEventListener("click", () => {
@@ -661,6 +678,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
     ...(lv.endless ? { week: endlessArgs?.week ?? 0 } : {}),
     heroic: heroic && !lv.endless,
     difficulty: resume ? resume.game.difficulty : lv.endless || dailyDay !== null ? "normal" : difficultyMode,
+    ...(!resume && !lv.endless && dailyDay === null && remixMode ? { remix: remixMode } : resume?.game.remix ? { remix: resume.game.remix } : {}),
     perks: dailyDay !== null ? NO_PERKS : perksOf(data),
   };
   // One-on-one boss duels are a player's moment (on in startGame); the tuner and sims never see them.
@@ -2783,6 +2801,7 @@ function finish(g: Game): void {
   if (g.closeCalls) stats.push(`Close calls ${g.closeCalls}`);
   if (crew[0]) stats.push(`MVP ${TOWERS[crew[0].kind].name} (${(crew[0].kills ?? 0).toLocaleString()})`);
   if (g.difficulty !== "normal") stats.push(`${g.difficulty[0]!.toUpperCase() + g.difficulty.slice(1)} difficulty`);
+  if (g.remix) stats.push(`${REMIX_NAMES[g.remix]} remix`);
   if (g.heroic) stats.push("Heroic run ◆");
   if (earlyCalls) stats.push(`${Word(g)}s called early ${earlyCalls}`);
   ui.resultStats.textContent = won ? stats.join(" · ") : `Reached ${waveWord(g)} ${waveNo(g, g.wave)} of ${lastNo(g)}`;
@@ -2794,7 +2813,7 @@ function finish(g: Game): void {
   if (won) {
     const cathBefore = levelOf(xpOf(data.stars)).level;
     recordStars(data, lv.id, n);
-    if (!lv.endless && dailyDay === null) {
+    if (!lv.endless && dailyDay === null && !g.remix) {
       const mode: MedalMode = g.heroic ? "hollow" : g.difficulty;
       if (recordMedal(data, lv.id, mode)) ui.resultNote.textContent += ` · ${mode[0]!.toUpperCase() + mode.slice(1)} medal ●`;
     }
