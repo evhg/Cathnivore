@@ -1817,6 +1817,8 @@ export interface Game {
   /** Pops within 1.5 cells of the farmhouse this run, and the tick before the next one may count. */
   closeCalls: number;
   closeCd: number;
+  /** Tower XP a real run has banked (meta.ts); tier 3 needs 1,500 and a Crown 10,000. Unset = ungated (bots, tests, sandbox). */
+  xpGate?: Partial<Record<TowerKind, number>> | null;
   level: Level;
   tick: number;
   phase: Phase;
@@ -2351,6 +2353,8 @@ function upgradePath(game: Game, tower: Tower, i: number | undefined): ActionRes
   if (tower.path![i] >= 3) return buyCrown(game, tower, kind, i);
   const block = pathBlock(tower.path!, i, game.level.id);
   if (block) return { ok: false, reason: block };
+  const xp = tower.path![i] === 2 ? xpBlock(game, kind, 3) : null;
+  if (xp) return { ok: false, reason: xp };
   const cost = pathCost(kind, tower.path!, i)!;
   if (game.marks < cost) return { ok: false, reason: `Needs ${cost} Marks.` };
   game.marks -= cost;
@@ -2409,12 +2413,24 @@ export function fireCrown(game: Game, id: number): ActionResult {
 }
 
 /** Why a path tower can't take path `i`'s Crown (null if it can). Each specific Crown exists once per field. */
-export function crownBlock(game: Pick<Game, "towers">, tower: Pick<Tower, "kind" | "path" | "crown" | "id">, i: PathIndex): string | null {
+export const XP_T3 = 1500;
+export const XP_CROWN = 10000;
+/** The reason a tower's tier 3 (`tier` 3) or Crown (4) is still shut for lack of that kind's XP, or null. */
+export function xpBlock(game: { xpGate?: Game["xpGate"] }, kind: TowerKind, tier: 3 | 4): string | null {
+  if (!game.xpGate) return null;
+  const need = tier === 3 ? XP_T3 : XP_CROWN;
+  const have = game.xpGate[kind] ?? 0;
+  return have >= need ? null : `${TOWERS[kind].name} XP ${have.toLocaleString()} of ${need.toLocaleString()}: knockouts in real runs unlock it.`;
+}
+
+export function crownBlock(game: Pick<Game, "towers"> & { xpGate?: Game["xpGate"] }, tower: Pick<Tower, "kind" | "path" | "crown" | "id">, i: PathIndex): string | null {
   if (!tower.path || !hasPaths(tower.kind)) return "No Crown here.";
   const def = PATHS[tower.kind].paths[i];
   if (tower.path[i] < 3) return "Its tier 3 comes first.";
   if (!def.crown) return "This path's Crown comes later.";
   if (tower.crown !== undefined) return "It already wears a Crown.";
+  const xp = xpBlock(game, tower.kind, 4);
+  if (xp) return xp;
   if (game.towers.some((o) => o.id !== tower.id && o.kind === tower.kind && o.crown === i)) return `Only one ${def.crown.name} on the field.`;
   return null;
 }

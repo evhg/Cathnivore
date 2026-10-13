@@ -34,3 +34,14 @@ describe("meta", () => {
     expect(back.acorns).toBe(40);
   });
 });
+
+describe("XP gates", () => {
+  it("a locked tier 3 and Crown name the XP, and ungated games are unaffected", async () => {
+    const { xpBlock, XP_T3, XP_CROWN } = await import("../games/hedgerow/src/engine");
+    expect(xpBlock({}, "scarecrow", 3)).toBeNull();
+    expect(xpBlock({ xpGate: { scarecrow: 100 } }, "scarecrow", 3)).toContain("100 of 1,500");
+    expect(xpBlock({ xpGate: { scarecrow: XP_T3 } }, "scarecrow", 3)).toBeNull();
+    expect(xpBlock({ xpGate: { scarecrow: XP_T3 } }, "scarecrow", 4)).toContain("10,000");
+    expect(xpBlock({ xpGate: { scarecrow: XP_CROWN } }, "scarecrow", 4)).toBeNull();
+  });
+});

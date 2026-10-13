@@ -45,6 +45,8 @@ import {
   earlyBonus,
   isBig,
   crownBlock,
+  xpBlock,
+  XP_T3,
   makeEnemy,
   isHeavy,
   enemyClass,
@@ -310,6 +312,11 @@ const art = () => wornOutfit().art;
 const cath = (expression: CathExpression) => cathSvg({ framing: "face", expression, animate: true, outfit: art() });
 
 const data = load();
+// Tower XP arrives with Hedgerow 2 M10: a save that already has progress opens every tier 3 (1,500 XP a kind).
+if (!data.xp && Object.keys(data.stars).length) {
+  data.xp = {};
+  for (const k of Object.keys(TOWERS)) data.xp[k as TowerKind] = XP_T3;
+}
 wear(outfitFor(data));
 ui.hostFace.innerHTML = cath("smirk");
 ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined", outfit: art() });
@@ -711,6 +718,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   };
   // One-on-one boss duels are a player's moment (on in startGame); the tuner and sims never see them.
   game = resume?.game ?? startGame(lv, setup);
+  if (!SANDBOX && dailyDay === null) game.xpGate = data.xp ??= {};
   recorder = resume?.recorder ?? (SANDBOX ? null : new Recorder(setup));
   player = null;
   ui.replayBar.hidden = true;
@@ -1958,8 +1966,8 @@ function pathColumn(g: Game, t: Tower, kind: PathKind, i: PathIndex, path: Path,
   col.className = "path-col";
   col.dataset.path = String(i);
   col.style.setProperty("--path", PATH_COLOURS[i]!);
-  const block = pathBlock(path, i, g.level.id);
   const done = path[i];
+  const block = pathBlock(path, i, g.level.id) ?? (done === 2 ? xpBlock(g, kind, 3) : null);
   if (done > 0) col.classList.add("taken");
   if (block && done < PATH_TIERS) col.classList.add("shut");
   const h = document.createElement("h4");
