@@ -2593,3 +2593,28 @@ img.act-scene {
 .node .medal-long.got {
   background: var(--oak-ink);
 }
+
+/* County Show draft: two picks from the roster (H12) */
+#result-stars:has(.show-pick) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.show-pick {
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 2px solid var(--ink-a14);
+  border-radius: 999px;
+  background: var(--paper-hi);
+  color: var(--ink-2);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  cursor: pointer;
+}
+.show-pick[aria-pressed="true"] {
+  border-color: var(--oak);
+  background: var(--paper-shade);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--oak);
+}

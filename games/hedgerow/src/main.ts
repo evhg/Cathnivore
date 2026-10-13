@@ -164,7 +164,7 @@ import {
   save,
 } from "./store";
 import { awardRun, buyPacket, feedCompost, packetCount, spendPacket, COMPOST_FEED, COMPOST_RATE, PACKETS } from "./meta";
-import { showFields, showKit, showPacket } from "./show";
+import { SHOW_EXTRAS, showFields, showKit, showPacket } from "./show";
 import { dailyLevel, dailyRule, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
@@ -683,11 +683,52 @@ ui.btnDaily.addEventListener("click", () => {
 });
 
 /** The weekly County Show in progress: three fields and a Goodwill purse that carries over. No replay, no Seed Bank. */
-let showRun: { week: number; field: number; carry: number | null } | null = null;
+type ShowRun = { week: number; field: number; carry: number | null; picks: TowerKind[] };
+let showRun: ShowRun | null = null;
+let lastPicks: TowerKind[] = [];
+/** The draft: the Show's kit is the core four plus two towers picked here. */
 ui.btnShow.addEventListener("click", () => {
   dailyDay = null;
-  showRun = { week: weekOf(Date.now()), field: 0, carry: null };
-  startLevel(showFields(showRun.week)[0]!, false);
+  const week = weekOf(Date.now());
+  const chosen = new Set<TowerKind>(lastPicks);
+  ui.resultCath.innerHTML = cath("smirk");
+  ui.resultEyebrow.textContent = "County Show";
+  ui.resultTitle.textContent = "Pack your stall.";
+  ui.resultStats.textContent = "Three fields, one Goodwill purse. You bring the Scarecrow, Hedgerow, Beehive and Seed Cannon; pick two more.";
+  ui.resultNote.textContent = "Win all three for a Seed Packet.";
+  ui.resultStars.setAttribute("aria-label", "");
+  ui.resultWatch.hidden = ui.resultShare.hidden = true;
+  const chips = SHOW_EXTRAS.map((k) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "show-pick";
+    b.dataset.kind = k;
+    b.textContent = TOWERS[k].name;
+    b.setAttribute("aria-pressed", String(chosen.has(k)));
+    b.onclick = () => {
+      if (chosen.has(k)) chosen.delete(k);
+      else if (chosen.size < 2) chosen.add(k);
+      for (const c of chips) c.setAttribute("aria-pressed", String(chosen.has(c.dataset.kind as TowerKind)));
+      ui.resultPrimary.disabled = chosen.size !== 2;
+    };
+    return b;
+  });
+  ui.resultStars.replaceChildren(...chips);
+  ui.resultPrimary.textContent = "Enter the Show";
+  ui.resultPrimary.disabled = chosen.size !== 2;
+  ui.resultPrimary.onclick = () => {
+    ui.resultPrimary.disabled = false;
+    ui.dlgResult.close();
+    lastPicks = [...chosen];
+    showRun = { week, field: 0, carry: null, picks: lastPicks };
+    startLevel(showFields(week, lastPicks)[0]!, false);
+  };
+  ui.resultSecondary.onclick = () => {
+    ui.resultPrimary.disabled = false;
+    ui.dlgResult.close();
+  };
+  ui.dlgResult.classList.remove("lost");
+  ui.dlgResult.showModal();
 });
 
 /** Endless runs: which act and week, so a replay can rebuild the field. */
@@ -3101,15 +3142,16 @@ function renderLossCauses(g: Game, won: boolean): void {
 }
 
 /** A County Show field ends: on to the next with the Goodwill left, or the prize after the third. */
-function finishShow(g: Game, lv: Level, run: { week: number; field: number; carry: number | null }): void {
+function finishShow(g: Game, lv: Level, run: ShowRun): void {
   const won = g.phase === "won";
-  const fields = showFields(run.week);
+  const fields = showFields(run.week, run.picks);
   const last = run.field >= fields.length - 1;
   ui.resultCath.innerHTML = cath(won ? "delighted" : "worried");
   ui.resultEyebrow.textContent = `County Show · field ${run.field + 1} of ${fields.length}: ${lv.name}`;
   ui.resultStars.replaceChildren();
   ui.resultStars.setAttribute("aria-label", "");
-  ui.resultStats.textContent = `Goodwill ${g.goodwill}/${g.maxGoodwill} · kit: ${showKit(run.week).map((k) => TOWERS[k].name).join(", ")}`;
+  ui.resultWatch.hidden = ui.resultShare.hidden = true;
+  ui.resultStats.textContent = `Goodwill ${g.goodwill}/${g.maxGoodwill} · kit: ${showKit(run.week, run.picks).map((k) => TOWERS[k].name).join(", ")}`;
   ui.resultSecondary.onclick = () => {
     ui.dlgResult.close();
     leaveLevel();
@@ -3120,7 +3162,7 @@ function finishShow(g: Game, lv: Level, run: { week: number; field: number; carr
     ui.resultPrimary.textContent = "Try again";
     ui.resultPrimary.onclick = () => {
       ui.dlgResult.close();
-      showRun = { week: run.week, field: 0, carry: null };
+      showRun = { week: run.week, field: 0, carry: null, picks: run.picks };
       startLevel(fields[0]!, false);
     };
   } else if (last) {
@@ -3142,7 +3184,7 @@ function finishShow(g: Game, lv: Level, run: { week: number; field: number; carr
     ui.resultPrimary.textContent = "Next field";
     ui.resultPrimary.onclick = () => {
       ui.dlgResult.close();
-      showRun = { week: run.week, field: run.field + 1, carry: g.goodwill };
+      showRun = { ...run, field: run.field + 1, carry: g.goodwill };
       startLevel(fields[run.field + 1]!, false);
     };
   }

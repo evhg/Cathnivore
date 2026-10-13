@@ -683,6 +683,11 @@ test.describe('Hedgerow', () => {
     await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: {}, seenBefore: { '1': true }, tips: { build: true, hero: true, early: true } })))
     await page.reload()
     await page.locator('#btn-show').click()
+    await page.locator('button.show-pick[data-kind="windmill"]').click()
+    await expect(page.locator('#result-primary')).toBeDisabled()
+    await page.locator('button.show-pick[data-kind="mast"]').click()
+    await page.screenshot({ path: '/tmp/oakshots/draft.png' })
+    await page.locator('#result-primary').click()
     await page.waitForFunction(() => !!(window as unknown as { hedgerow?: { game(): unknown } }).hedgerow?.game())
     const g = await page.evaluate(() => {
       const x = (window as unknown as { hedgerow: { game(): { level: { id: number; towers: string[]; oaks?: number[][] } } } }).hedgerow.game()
@@ -692,6 +697,8 @@ test.describe('Hedgerow', () => {
     expect(g.towers.length).toBeLessThanOrEqual(6)
     expect(g.towers).toContain('scarecrow')
     expect(g.oaks).toBeGreaterThan(0)
+    expect(g.towers).toContain('windmill')
+    expect(g.towers).toContain('mast')
   })
 
   test('keeps progress in localStorage', async ({ page }) => {
