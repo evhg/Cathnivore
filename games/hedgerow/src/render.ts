@@ -20,6 +20,7 @@ import {
   towerAt,
   towerStats,
   plotKind,
+  oakAt,
   type EnemyKind,
   type Game,
   type GameEvent,
@@ -875,6 +876,16 @@ export class Renderer {
       }
     }
 
+    // Fallen oaks lie across their plots until cleared.
+    for (const [c, r] of level.oaks ?? []) {
+      if (!oakAt(game, c, r)) continue;
+      ctx.fillStyle = "#5a4128";
+      ctx.fillRect(X(c) + (X(1) - X(0)) * 0.1, Y(r) + (Y(1) - Y(0)) * 0.38, (X(1) - X(0)) * 0.8, (Y(1) - Y(0)) * 0.24);
+      ctx.fillStyle = "#4f7d34";
+      ctx.beginPath();
+      ctx.arc(X(c) + (X(1) - X(0)) * 0.25, Y(r) + (Y(1) - Y(0)) * 0.5, (X(1) - X(0)) * 0.16, 0, Math.PI * 2);
+      ctx.fill();
+    }
     // Set pieces: floodwater over the plots, and the swing bridge (up and red while it's open).
     const flood = setPiece(level, "flood");
     if (flood && game.wave >= flood.wave) {

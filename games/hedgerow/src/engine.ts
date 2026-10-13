@@ -1408,6 +1408,8 @@ export interface Level {
   path2?: Array<[number, number]>;
   /** Plots that aren't plain grass: high ground (+range) and water (ponds only). */
   terrain?: { high: Array<[number, number]>; water: Array<[number, number]> };
+  /** Fallen oaks: plots nobody can build on until the oak is cleared for OAK_COST Marks (H12; Fleet levels). */
+  oaks?: Array<[number, number]>;
   startMarks: number;
   goodwill: number;
   towers: TowerKind[];
@@ -1817,6 +1819,8 @@ export interface Game {
   /** Pops within 1.5 cells of the farmhouse this run, and the tick before the next one may count. */
   closeCalls: number;
   closeCd: number;
+  /** Fallen oaks cleared this run ("col,row"). */
+  cleared: string[];
   /** Tower XP a real run has banked (meta.ts); tier 3 needs 1,500 and a Crown 10,000. Unset = ungated (bots, tests, sandbox). */
   xpGate?: Partial<Record<TowerKind, number>> | null;
   level: Level;
@@ -2089,6 +2093,7 @@ export function newGame(
     popMilli: 0,
     closeCalls: 0,
     closeCd: 0,
+    cleared: [],
     popped: 0,
     leaked: 0,
     leakLog: {},
@@ -2184,6 +2189,8 @@ export function place(
     return { ok: false, reason: "You can only build beside the lane." };
   if (towerAt(game, col, row))
     return { ok: false, reason: "That plot is taken." };
+  if (oakAt(game, col, row))
+    return { ok: false, reason: `A fallen oak blocks this plot: clear it for ${OAK_COST} Marks.` };
   if (kind !== "pond" && flooded(game, col, row))
     return { ok: false, reason: "Flooded: only a Duck Pond goes here now." };
   const ground = plotKind(game.level, col, row);
@@ -2226,6 +2233,23 @@ export function twistMods(level: Level, kind: TowerKind): { rangeMul?: number; d
 }
 
 /** Protected land: on those levels, every other plot is off limits. */
+/** What hauling a fallen oak off a plot costs. */
+export const OAK_COST = 500;
+
+/** Is a fallen oak still lying on this plot? */
+export function oakAt(game: Game, col: number, row: number): boolean {
+  return !!game.level.oaks?.some(([c, r]) => c === col && r === row) && !game.cleared.includes(`${col},${row}`);
+}
+
+export function clearOak(game: Game, col: number, row: number): ActionResult {
+  if (game.phase === "won" || game.phase === "lost") return { ok: false, reason: "The level is over." };
+  if (!oakAt(game, col, row)) return { ok: false, reason: "No fallen oak here." };
+  if (game.marks < OAK_COST) return { ok: false, reason: `Needs ${OAK_COST} Marks.` };
+  game.marks -= OAK_COST;
+  game.cleared.push(`${col},${row}`);
+  return { ok: true };
+}
+
 export function isProtected(level: Level, col: number, row: number): boolean {
   return hasTwist(level, "protected") && (col + row) % 2 === 1;
 }

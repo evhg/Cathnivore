@@ -67,3 +67,27 @@ export function addTerrain(level: Level): void {
     : [];
   level.terrain = { high, water };
 }
+
+/** Fallen oaks (H12): from level 5 on, Fleet levels lose their best plain plot to an oak that costs OAK_COST to clear. */
+export function addOaks(level: Level): void {
+  if (level.id < 5 || level.rules !== "fleet") return;
+  const lane = laneCellsOf(level);
+  const t = level.terrain ?? { high: [], water: [] };
+  const taken = new Set([...t.high, ...t.water].map(([c, r]) => `${c},${r}`));
+  const cells: Array<{ c: number; r: number; near: number }> = [];
+  for (let r = 0; r < level.rows; r++)
+    for (let c = 0; c < level.cols; c++) {
+      if (lane.has(`${c},${r}`) || taken.has(`${c},${r}`)) continue;
+      let near = 0;
+      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) if (lane.has(`${c + dc},${r + dr}`)) near++;
+      cells.push({ c, r, near });
+    }
+  cells.sort((a, b) => b.near - a.near || hash(level.id * 13 + a.c * 31 + a.r) - hash(level.id * 13 + b.c * 31 + b.r));
+  const out: Array<[number, number]> = [];
+  for (const x of cells) {
+    if (out.length >= (level.id >= 20 ? 2 : 1)) break;
+    if (out.some(([c, r]) => Math.hypot(c - x.c, r - x.r) < 3)) continue;
+    out.push([x.c, x.r]);
+  }
+  level.oaks = out;
+}

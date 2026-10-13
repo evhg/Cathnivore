@@ -353,6 +353,21 @@ function pathSpecLook(kind: TowerKind, path: readonly number[]): 0 | 1 | null {
 }
 
 /** A heap of cut thorn on the lane (a Blackthorn hedge's pile). */
+/** A fallen oak across a plot (H12): a long trunk with a split stump end and a tangle of leafy boughs. */
+export function buildOak(): THREE.Group {
+  const bark = matte("#5a4128");
+  const leaf = matte("#4f7d34");
+  const trunk = rot(cyl(0.11, 0.14, 0.8, bark, 0, 0.12, 0, 8), 0, 0, Math.PI / 2);
+  const cut = rot(disc(0.14, 0.02, matte("#c9a574"), 0.4, 0.12, 0, 10), 0, 0, Math.PI / 2);
+  const g = group(trunk, cut);
+  for (let i = 0; i < 4; i++) g.add(ball(0.12 + (i % 2) * 0.03, leaf, -0.38 + i * 0.1, 0.17 + (i % 2) * 0.06, ((i * 7) % 5 - 2) * 0.04, 1));
+  g.add(rot(cyl(0.025, 0.045, 0.3, bark, -0.15, 0.2, 0.1, 6), 0.9, 0, 0.3));
+  g.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+  });
+  return g;
+}
+
 export function buildThornPile(): THREE.Group {
   const g = group(scaled(ball(0.13, matte("#5b4330"), 0, 0.0, 0, 0), 1, 0.4, 1));
   const thorn = matte("#e9e1cf", 0.6);

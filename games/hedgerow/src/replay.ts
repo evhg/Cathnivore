@@ -30,6 +30,7 @@ import {
   type Remix,
   type WaveGroup,
   BOSS_MOVES,
+  clearOak,
 } from "./engine";
 import { bookWave, incomeBefore } from "./rounds";
 
@@ -38,6 +39,7 @@ export type Action =
   /** `spec` picks a specialisation (classic towers, and the legacy towers on the Fleet); `path` a path tower's path. */
   /** A Seed Packet planted (meta.ts PACKETS): a pre-grown path tower, free. */
   | { t: "packet"; kind: TowerKind; path: [number, number, number]; col: number; row: number }
+  | { t: "clear"; col: number; row: number }
   | { t: "upgrade"; id: number; spec?: 0 | 1; path?: 0 | 1 | 2 }
   | { t: "sell"; id: number }
   | { t: "target"; id: number; mode: TargetMode }
@@ -98,6 +100,8 @@ export function applyAction(game: Game, a: Action): ActionResult {
       return place(game, a.kind, a.col, a.row);
     case "packet":
       return placePacket(game, a.kind, a.path, a.col, a.row);
+    case "clear":
+      return clearOak(game, a.col, a.row);
     case "upgrade":
       return upgrade(game, a.id, a.path ?? a.spec);
     case "sell":

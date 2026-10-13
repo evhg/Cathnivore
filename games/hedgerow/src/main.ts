@@ -79,6 +79,8 @@ import {
   pathUpgradeCost,
   towerAllowed,
   plotKind,
+  oakAt,
+  OAK_COST,
   upgrade,
   upgradeCost,
   type EnemyClass,
@@ -1117,6 +1119,23 @@ function renderPanel(force = false): void {
   }
   if (!isPlot(g.level, sel.col, sel.row)) {
     p.append(line("That's the lane: towers go on the grass beside it. To move Cath, tap her between waves, then tap her new post."));
+    return;
+  }
+  if (oakAt(g, sel.col, sel.row)) {
+    p.append(line(`A fallen oak lies across this plot. Haul it off for ${OAK_COST} Marks and you can build here.`));
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn-build btn-oak";
+    b.textContent = `Clear the oak (${OAK_COST})`;
+    b.disabled = g.marks < OAK_COST;
+    b.onclick = () => {
+      if (doAct({ t: "clear", col: sel.col, row: sel.row })) {
+        sfx.playBuild();
+        haptic.build();
+        renderPanel(true);
+      }
+    };
+    p.append(b);
     return;
   }
   buildMenu(p, g, sel);

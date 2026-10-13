@@ -21,6 +21,7 @@ import {
   isBig,
   isFleet,
   isRevealed,
+  oakAt,
   maxHpOf,
   postMarker,
   towerAt,
@@ -32,7 +33,7 @@ import {
   type TowerKind,
 } from "../engine";
 import { actLight, actMood, matte } from "./palette";
-import { buildCath, dressCath, buildEnemy, buildMega, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
+import { buildCath, dressCath, buildEnemy, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
@@ -1035,6 +1036,7 @@ export class Renderer3D {
     this.syncBoss(game);
     this.syncSetPieces(game, t);
     this.syncPiles(game);
+    this.syncOaks(game);
     // Farmhouse smoke, darker as Goodwill falls.
     if (this.ground && Math.random() < dt * 3) {
       const c = this.ground.farmhouse.localToWorld((this.ground.farmhouse.userData.chimney as THREE.Vector3).clone());
@@ -1614,6 +1616,32 @@ export class Renderer3D {
         this.dynamic.remove(o);
         this.pileObjs.delete(id);
       }
+  }
+
+  /** Fallen oaks lie on their plots until cleared. */
+  private oakObjs = new Map<string, THREE.Object3D>();
+  private oakLevel = -1;
+  private syncOaks(game: Game): void {
+    if (this.oakLevel !== game.level.id) {
+      for (const o of this.oakObjs.values()) this.dynamic.remove(o);
+      this.oakObjs.clear();
+      this.oakLevel = game.level.id;
+    }
+    for (const [c, r] of game.level.oaks ?? []) {
+      const key = `${c},${r}`;
+      const here = oakAt(game, c, r);
+      const o = this.oakObjs.get(key);
+      if (here && !o) {
+        const m = buildOak();
+        m.position.set(c + 0.5, this.height(c + 0.5, r + 0.5) + 0.02, r + 0.5);
+        m.rotation.y = ((c * 7 + r * 13) % 8) * 0.4;
+        this.dynamic.add(m);
+        this.oakObjs.set(key, m);
+      } else if (!here && o) {
+        this.dynamic.remove(o);
+        this.oakObjs.delete(key);
+      }
+    }
   }
 
   private syncSetPieces(game: Game, t: number): void {
