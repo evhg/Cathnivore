@@ -460,6 +460,32 @@ function buildBorder(
 }
 
 /** Tints a field point (x, y in cells) with the act's own ground: mown stripes, heather, dunes, silt, blossom, scorch, rubble, paving. */
+/** The small set piece scattered through an act's field: hay, standing stones, buoys, logs, crates... */
+function actProp(act: number): { geo: () => THREE.BufferGeometry; colors: string[]; rate: number; size: number } {
+  const bale = () => new THREE.CylinderGeometry(0.07, 0.07, 0.11, 10).rotateZ(Math.PI / 2).translate(0, 0.07, 0);
+  const stone = () => new THREE.CylinderGeometry(0.025, 0.05, 0.22, 5).translate(0, 0.11, 0);
+  const buoy = () => new THREE.SphereGeometry(0.06, 8, 6).translate(0, 0.06, 0);
+  const log = () => new THREE.CylinderGeometry(0.03, 0.03, 0.2, 7).rotateZ(Math.PI / 2).translate(0, 0.03, 0);
+  const crate = () => new THREE.BoxGeometry(0.11, 0.1, 0.11).translate(0, 0.05, 0);
+  const barrel = () => new THREE.CylinderGeometry(0.05, 0.055, 0.12, 8).translate(0, 0.06, 0);
+  const slab = () => new THREE.BoxGeometry(0.17, 0.05, 0.1).rotateZ(0.25).translate(0, 0.05, 0);
+  const bollard = () => new THREE.CylinderGeometry(0.03, 0.035, 0.12, 8).translate(0, 0.06, 0);
+  const topiary = () => new THREE.IcosahedronGeometry(0.07, 1).translate(0, 0.1, 0);
+  const ember = () => new THREE.ConeGeometry(0.06, 0.1, 5).translate(0, 0.05, 0);
+  switch (act) {
+    case 0: return { geo: bale, colors: ["#d9b85a", "#cfa94a", "#e0c070"], rate: 0.16, size: 1.7 };
+    case 1: return { geo: stone, colors: ["#8d8a82", "#79766f", "#9a968c"], rate: 0.14, size: 1.7 };
+    case 2: return { geo: buoy, colors: ["#d8503c", "#f0e6d0", "#3f78b0"], rate: 0.1, size: 1.7 };
+    case 3: return { geo: log, colors: ["#7a5a3a", "#6a4c30", "#8a6a44"], rate: 0.16, size: 1.7 };
+    case 4: return { geo: crate, colors: ["#b8864e", "#a8763e", "#c89a5c"], rate: 0.14, size: 1.7 };
+    case 5: return { geo: barrel, colors: ["#8c5a34", "#7a4c2a", "#9a6a3e"], rate: 0.12, size: 1.7 };
+    case 6: return { geo: slab, colors: ["#8d8b86", "#77756f", "#a09d96"], rate: 0.2, size: 1.7 };
+    case 7: return { geo: bollard, colors: ["#d9c24a", "#555b60", "#d9c24a"], rate: 0.14, size: 1.7 };
+    case 8: return { geo: topiary, colors: ["#3f7a45", "#4a8a50", "#366a3c"], rate: 0.14, size: 1.7 };
+    default: return { geo: ember, colors: ["#3a3230", "#4a3d38", "#5a3a2a"], rate: 0.18, size: 1.7 };
+  }
+}
+
 function fieldGround(act: number, c: THREE.Color, x: number, y: number, seed: number): void {
   const n = hash2(Math.floor(x * 2), Math.floor(y * 2), seed + 31);
   const wob = Math.sin(x * 1.9 + y * 0.8) * Math.sin(y * 2.3 - x * 0.5);
@@ -750,6 +776,24 @@ export function buildGround(level: Level): Ground {
         if (!inLane && deco() < 0.35) tuft(x - nx * side * 0.06, z - ny * side * 0.06, 0.9);
       }
     }
+  }
+  // One kind of prop per act, tucked into plot corners (clear of where a tower stands), so each field has its own set pieces.
+  {
+    const prop = actProp(act);
+    const props: Inst[] = [];
+    const pr = rng(level.id * 15485863 + 11);
+    const cols3 = prop.colors.map((c) => new THREE.Color(c));
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++) {
+        if (lane.has(`${c},${r}`) || isProtected(level, c, r) || plotKind(level, c, r) === "water") continue;
+        if (pr() > prop.rate) continue;
+        const cx = c + (pr() < 0.5 ? 0.14 : 0.86);
+        const cz = r + (pr() < 0.5 ? 0.14 : 0.86);
+        if (laneDistance(level, cx, cz) < 0.55 || nearWater(cx, cz)) continue;
+        props.push({ x: cx, y: heightAt(cx, cz), z: cz, ry: pr() * 6.3, s: prop.size * (0.8 + pr() * 0.4), sy: 1, color: cols3[Math.floor(pr() * cols3.length)]! });
+      }
+    const m = instanced(prop.geo(), matte("#ffffff", 0.85), props, true);
+    if (m) group.add(m);
   }
   const tuftMat = withSway(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }), 0.012, "hedgerow-tuft");
   const flowerGeo = new THREE.IcosahedronGeometry(0.024, 0).scale(1, 0.55, 1).translate(0, 0.075, 0);

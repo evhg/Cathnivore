@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-13 06:52 session (short):** H1 slice 3: each act's field scatters its own set piece in plot corners (hay bales, standing stones, buoys, logs, crates, barrels, slabs, bollards, topiary, cinders; `actProp()` in render3d/terrain.ts), shots of levels 11 and 31 checked. tsc and lint clean. Unreleased. Next: H1 weather/lane shapes, or H9.
 - **2026-10-13 05:52 session (short):** H1 slice 2: each act's field interior now has its own ground (`fieldGround()` in render3d/terrain.ts: mown stripes, heather, dunes, silt, blossom rows, scorch, rubble, paving, checker lawn, ash); shots of acts checked via new `scripts/hedgerow-act-shots.mjs`. tsc and lint clean. Unreleased. Next: H1 interior set pieces/props, or H9.
 - **2026-10-13 04:51 session:** H1 slice 1: raised plots (high ground) were black cliffs in the dusk/night acts; they are now pale earthen plinths with a lit top (`plinth()` in render3d/terrain.ts, shots of levels 37, 61, 91 checked). tsc and lint clean. Unreleased. Next: H1 interior set pieces per act, or H9.
 - **2026-10-13 03:51 session:** H8 finished and released: Heirlooms on Fleet levels (two Crowned neighbours, 60,000 Marks, one a field), stall income falloff after round 50, D5 ticked. All gates passed; `main` and live are `f5a28b7`; tag push 403 (harmless). Next: H9 (campaign conversion) or H1 biomes, and Phase U.

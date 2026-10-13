@@ -426,3 +426,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-13: Heirlooms open from level 12 on Fleet levels (act 4 is still classic); sacrifice bonus and Bank interest dropped (stall paths differ from the doc). Released f5a28b7.
 - 2026-10-13 04:51: high ground fixed by vertex colour on its walls, not geometry; H1 stays open (acts already differ in light, lanes and borders, but the field interior is the same grid).
 - 2026-10-13 05:52: act field ground is a per-act vertex-colour tint in the plots (no new geometry), so levels and tuning are unaffected.
+- 2026-10-13 06:52: act props are instanced, corner-placed, own seed, so tower plots and tuning are untouched.
