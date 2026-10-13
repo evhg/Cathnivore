@@ -47,6 +47,7 @@ import {
   crownBlock,
   xpBlock,
   XP_T3,
+  XP_CROWN,
   makeEnemy,
   isHeavy,
   enemyClass,
@@ -2801,9 +2802,38 @@ function rememberBuilds(g: Game): void {
   if (best.size) save(data);
 }
 
+/** The end screen's XP bars: each kind that scored, filling toward its next gate (tier 3 at 1,500, Crown at 10,000). */
+function renderXpBars(gain: Partial<Record<TowerKind, number>>): void {
+  const box = document.getElementById("result-xp");
+  if (!box) return;
+  box.replaceChildren();
+  const rows = Object.entries(gain).filter(([, n]) => (n ?? 0) > 0).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0)).slice(0, 4);
+  for (const [k, n] of rows) {
+    const have = data.xp?.[k as TowerKind] ?? 0;
+    const goal = have < XP_T3 ? XP_T3 : XP_CROWN;
+    const row = document.createElement("div");
+    row.className = "xp-row";
+    const name = document.createElement("span");
+    name.textContent = TOWERS[k as TowerKind].name;
+    const track = document.createElement("span");
+    track.className = "xp-track";
+    const fill = document.createElement("span");
+    fill.className = "xp-fill";
+    fill.style.setProperty("--fill", `${Math.min(100, Math.round((have / goal) * 100))}%`);
+    track.append(fill);
+    const num = document.createElement("span");
+    num.textContent = have >= XP_CROWN ? `${have.toLocaleString()} XP (+${(n ?? 0).toLocaleString()})` : `${have.toLocaleString()} / ${goal.toLocaleString()} (+${(n ?? 0).toLocaleString()})`;
+    row.append(name, track, num);
+    box.append(row);
+  }
+  box.hidden = rows.length === 0;
+}
+
 function finish(g: Game): void {
   if (game !== g) return;
   document.getElementById("loss-causes")?.remove();
+  const xpBox = document.getElementById("result-xp");
+  if (xpBox) xpBox.hidden = true;
   document.getElementById("result-retry")?.remove();
   ui.resultPrimary.classList.remove("btn-quiet");
   ui.resultNote.hidden = false;
@@ -2852,6 +2882,7 @@ function finish(g: Game): void {
     if (won && reward.acorns) stats.push(`Acorns +${reward.acorns}`);
     const top = Object.entries(reward.xp).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
     if (won && top) stats.push(`${TOWERS[top[0] as TowerKind].name} XP +${(top[1] ?? 0).toLocaleString()}`);
+    renderXpBars(reward.xp);
   }
   ui.resultStats.textContent = won ? stats.join(" · ") : `Reached ${waveWord(g)} ${waveNo(g, g.wave)} of ${lastNo(g)}`;
   const gained = won ? Math.max(0, n - before) : 0;

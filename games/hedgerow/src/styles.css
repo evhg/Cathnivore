@@ -966,6 +966,32 @@ button {
   font-weight: 700;
   color: var(--soil);
 }
+.xp-bars {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 10px;
+  font-size: var(--fs-small);
+  color: var(--ink-2);
+}
+.xp-row {
+  display: grid;
+  grid-template-columns: 7.5em 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+.xp-track {
+  height: 8px;
+  border-radius: var(--r-xs);
+  background: var(--paper-shade);
+  border: 1px solid var(--oak-lo);
+  overflow: hidden;
+}
+.xp-fill {
+  display: block;
+  height: 100%;
+  width: var(--fill, 0%);
+  background: var(--mat-brass);
+}
 .win-actions {
   display: flex;
   gap: 8px;
