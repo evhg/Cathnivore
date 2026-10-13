@@ -4147,20 +4147,30 @@ export interface MergeOption {
 }
 
 export function megasUnlocked(level: Level): boolean {
-  // The Fleet has no megastructures: they come back as Heirlooms from act 4 (Hedgerow 2 section 3, M7).
+  // The Fleet has no megastructures: they come back as Heirlooms (Hedgerow 2 section 3, M7), see `heirloomsUnlocked`.
   return level.id >= MEGA_FIRST_LEVEL && !isFleet(level);
+}
+
+/** Heirlooms: the Fleet's megastructures, a merge of two Crowned towers for a big fee, one per field. */
+export const HEIRLOOM_FEE = 60000;
+export function heirloomsUnlocked(level: Level): boolean {
+  return level.id >= MEGA_FIRST_LEVEL && isFleet(level);
 }
 
 /** Megastructures a tower could become with a grown neighbour beside it (empty below tier 3 or before level 12). */
 export function mergeOptions(game: Game, id: number): MergeOption[] {
   const t = game.towers.find((x) => x.id === id);
-  if (!t || t.mega || t.tier < 3 || !megasUnlocked(game.level)) return [];
+  const heirloom = heirloomsUnlocked(game.level);
+  if (!t || t.mega || t.tier < 3 || !(megasUnlocked(game.level) || heirloom)) return [];
+  // An Heirloom needs a Crown on each tower, and only one stands on a field.
+  if (heirloom && (t.crown === undefined || game.towers.some((x) => x.mega))) return [];
   const out: MergeOption[] = [];
   for (const o of game.towers) {
     if (o === t || o.mega || o.tier < 3) continue;
+    if (heirloom && o.crown === undefined) continue;
     if (Math.abs(o.col - t.col) + Math.abs(o.row - t.row) !== 1) continue;
     const mega = megaFor(t.kind, o.kind);
-    if (mega) out.push({ tower: t.id, partner: o.id, mega, cost: MEGAS[mega].cost });
+    if (mega) out.push({ tower: t.id, partner: o.id, mega, cost: heirloom ? HEIRLOOM_FEE : MEGAS[mega].cost });
   }
   return out;
 }

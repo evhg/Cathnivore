@@ -20,6 +20,10 @@ import {
   upgrade,
   upgradeToward,
   crownBlock,
+  heirloomsUnlocked,
+  HEIRLOOM_FEE,
+  mergeOptions,
+  merge,
   fireCrown,
   type Game,
   type Level,
@@ -635,5 +639,40 @@ describe("hedgerow paths: the Courthouse", () => {
     expect(mk([3, 0, 0]).injunction).toBeGreaterThan(base.injunction + 8);
     expect(mk([0, 3, 0]).cooldown).toBeLessThan(base.cooldown * 0.6);
     expect(mk([0, 0, 3]).classAction).toBe(true);
+  });
+});
+
+describe("hedgerow Heirlooms (M7)", () => {
+  it("forge from two Crowned neighbours for a big fee, one per field", () => {
+    const g = field();
+    expect(heirloomsUnlocked(g.level)).toBe(true);
+    const ps = plots(L8);
+    const pair = ps.flatMap((a) => ps.filter((b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 1).map((b) => [a, b] as const))[0]!;
+    expect(place(g, "scarecrow", pair[0][0], pair[0][1]).ok).toBe(true);
+    expect(place(g, "silo", pair[1][0], pair[1][1]).ok).toBe(true);
+    const [a, b] = g.towers as [Tower, Tower];
+    for (const t of [a, b]) for (let k = 0; k < 4; k++) expect(upgrade(g, t.id, 0).ok).toBe(true);
+    expect(a.crown).toBeDefined();
+    expect(b.crown).toBeDefined();
+    const opts = mergeOptions(g, a.id);
+    expect(opts.length).toBe(1);
+    expect(opts[0]!.cost).toBe(HEIRLOOM_FEE);
+    g.marks = HEIRLOOM_FEE - 1;
+    expect(merge(g, a.id, b.id).ok).toBe(false);
+    g.marks = HEIRLOOM_FEE;
+    expect(merge(g, a.id, b.id).ok).toBe(true);
+    expect(a.mega).toBe("harvester");
+    expect(g.towers.length).toBe(1);
+    expect(mergeOptions(g, a.id)).toEqual([]);
+  });
+  it("an uncrowned pair can't forge", () => {
+    const g = field();
+    const ps = plots(L8);
+    const pair = ps.flatMap((a) => ps.filter((b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 1).map((b) => [a, b] as const))[0]!;
+    place(g, "scarecrow", pair[0][0], pair[0][1]);
+    place(g, "silo", pair[1][0], pair[1][1]);
+    const [a, b] = g.towers as [Tower, Tower];
+    for (const t of [a, b]) for (let k = 0; k < 3; k++) upgrade(g, t.id, 0);
+    expect(mergeOptions(g, a.id)).toEqual([]);
   });
 });

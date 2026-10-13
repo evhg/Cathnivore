@@ -23,6 +23,8 @@ import {
   RANKS,
   megaFor,
   megasUnlocked,
+  heirloomsUnlocked,
+  HEIRLOOM_FEE,
   merge,
   mergeOptions,
   pieCooldown,
@@ -2107,7 +2109,8 @@ function legacyColumns(g: Game, t: Tower): HTMLElement[] {
 
 /** Megastructures: merge buttons for grown neighbours, or a hint about what this tower could become. */
 function mergeSection(p: HTMLElement, g: Game, t: Tower): void {
-  if (!megasUnlocked(g.level)) return;
+  const heirloom = heirloomsUnlocked(g.level);
+  if (!megasUnlocked(g.level) && !heirloom) return;
   const opts = mergeOptions(g, t.id);
   const box = document.createElement("div");
   box.className = "merge-row";
@@ -2120,7 +2123,7 @@ function mergeSection(p: HTMLElement, g: Game, t: Tower): void {
     b.dataset.cost = String(o.cost);
     b.disabled = g.marks < o.cost;
     const top = document.createElement("strong");
-    top.textContent = `Merge with the ${TOWERS[partner.kind].name} → ${m.name} · ${o.cost}`;
+    top.textContent = `${heirloom ? "Forge" : "Merge with"} the ${TOWERS[partner.kind].name} → ${m.name} · ${o.cost}`;
     const d = document.createElement("small");
     d.textContent = m.blurb;
     b.append(top, d, statGrid(st0(t), previewStats(t, { tier: 4, mega: o.mega })));
@@ -2137,7 +2140,9 @@ function mergeSection(p: HTMLElement, g: Game, t: Tower): void {
     if (!partners.length) return;
     box.append(
       line(
-        `Megastructure: grow a ${partners.map((k) => `${TOWERS[k].name} (→ ${MEGAS[megaFor(t.kind, k)!].name})`).join(" or a ")} to tier 3 right beside this one, then merge them.`,
+        heirloom
+          ? `Heirloom: crown a ${partners.map((k) => `${TOWERS[k].name} (→ ${MEGAS[megaFor(t.kind, k)!].name})`).join(" or a ")} right beside this Crowned tower, then forge them (${HEIRLOOM_FEE} Marks, one a field).`
+          : `Megastructure: grow a ${partners.map((k) => `${TOWERS[k].name} (→ ${MEGAS[megaFor(t.kind, k)!].name})`).join(" or a ")} to tier 3 right beside this one, then merge them.`,
         "hint",
       ),
     );
