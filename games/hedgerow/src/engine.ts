@@ -3934,6 +3934,8 @@ function step(game: Game): void {
     }
     if (hasTwist(game.level, "tight")) reward *= 1.5;
     if (hasTwist(game.level, "market")) income *= 1.5;
+    // The income falloff (section 4): stalls pay like pops do, so after round 50 greed stops being the answer.
+    if (fleet) income *= popRate(bookRound(game.level, w)) / 1000;
     if (game.level.endless) income *= 0.5;
     reward = Math.round(reward + income);
     game.marks += reward;
