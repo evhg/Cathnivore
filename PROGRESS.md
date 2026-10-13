@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-13 19:52 session (short):** U10 slice 1: Hedgerow map "Start here" tag is in flow under the level name and Cath stands over the current node (no collisions at P/L/D); story card at short landscape fits whole line and buttons (shots checked). Hedgerow site e2e pass, lint clean. Unreleased. Left for U10: end screen shots (win/loss), star stamp, reduced motion, emoji sweep.
 - **2026-10-13 18:51 session (short):** H13: van/lorry/artic wrecks fold up (extra ring and roof panels, render3d only). tsc, lint clean. Unreleased. Phase D is all done; left: H9 (needs a long tune), H1 lanes, H7 RPG re-point, U5-U7/U10+.
 - **2026-10-13 17:51 session (short):** H13: Heirlooms shed slow gold motes; wrecks leave a scorch decal and a smoke column (render3d only). tsc, lint, fleet and livery tests pass. Unreleased. Left: H9 (campaign conversion, needs a long tune), H1 lanes, H13 vans folding, U5-U7/U10+.
 - **2026-10-13 16:52 session (short):** H7 duel reward: a perfect boss duel (all strikes >= 0.85) pays +150 Marks and takes a further 10% off the boss, with its own toast (`duelEnd.perfect`); test updated, tsc/lint clean. Unreleased. Left for H7: RPG re-point, bot use of Last Orders, level-card kit pick.

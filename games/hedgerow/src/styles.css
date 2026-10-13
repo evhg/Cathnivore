@@ -2616,3 +2616,12 @@ img.act-scene {
   color: var(--ink);
   box-shadow: inset 0 0 0 1px var(--oak);
 }
+
+/* U10: short landscape phones. The scene shrinks so the whole line and both buttons fit (never cut off). */
+@media (orientation: landscape) and (max-height: 520px) {
+  .scene { height: clamp(96px, 32vh, 150px); }
+  .speech { margin-top: -14px; padding: 8px 14px 6px; }
+  .speech .story-text { min-height: 4.05em; font-size: var(--fs-d3); line-height: 1.35; }
+  .speech h2 { font-size: var(--fs-d3); margin-bottom: 2px; }
+  .story-actions { padding: 8px 12px 10px; }
+}
