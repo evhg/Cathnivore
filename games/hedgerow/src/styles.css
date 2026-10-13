@@ -2576,3 +2576,20 @@ img.act-scene {
 .node .medal-hollow.got {
   background: var(--ink);
 }
+
+/* Remix medals: three smaller diamonds after the four mode dots (Hand Tools, Lean Year, Long Haul). */
+.node .medal.remix {
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  transform: rotate(45deg);
+  margin-top: 1px;
+}
+.node .medal-hand {
+  margin-left: 3px;
+}
+.node .medal-hand.got,
+.node .medal-lean.got,
+.node .medal-long.got {
+  background: var(--oak-ink);
+}

@@ -5,7 +5,7 @@
 import { endlessUnlocked } from "./endless";
 import { cathSvg } from "../../../shared/cath/cath";
 import { TWISTS, type Level } from "./engine";
-import { isUnlocked, medalsOf, MEDAL_MODES, type SaveData } from "./store";
+import { isUnlocked, medalsOf, remixMedalsOf, DIFFICULTY_MEDALS, REMIX_MEDALS, type SaveData } from "./store";
 
 // ---- Act scenes: one painted backdrop per act ----
 // Each act is a storybook painting on a 480×300 canvas: a graded sky with a sun or moon glow, three to five
@@ -1419,13 +1419,15 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       const medals = document.createElement("span");
       medals.className = "level-medals";
       const won = medalsOf(data, lv.id);
-      for (const m of MEDAL_MODES) {
+      const remixWon = remixMedalsOf(data, lv.id);
+      for (const m of [...DIFFICULTY_MEDALS, ...REMIX_MEDALS]) {
         const dot = document.createElement("i");
-        dot.className = `medal medal-${m}${won.includes(m) ? " got" : ""}`;
+        dot.className = `medal medal-${m}${(REMIX_MEDALS.includes(m) ? remixWon : won).includes(m) ? " got" : ""}${REMIX_MEDALS.includes(m) ? " remix" : ""}`;
         medals.append(dot);
       }
       medals.hidden = !unlocked;
-      medals.setAttribute("aria-label", `Medals: ${won.length ? won.join(", ") : "none"}`);
+      const all = [...won, ...remixWon];
+      medals.setAttribute("aria-label", `Medals: ${all.length ? all.join(", ") : "none"}`);
       const name = document.createElement("span");
       name.className = "level-name";
       name.textContent = lv.name;

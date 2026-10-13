@@ -2929,8 +2929,8 @@ function finish(g: Game): void {
   if (won) {
     const cathBefore = levelOf(xpOf(data.stars)).level;
     recordStars(data, lv.id, n);
-    if (!lv.endless && dailyDay === null && !g.remix) {
-      const mode: MedalMode = g.heroic ? "hollow" : g.difficulty;
+    if (!lv.endless && dailyDay === null) {
+      const mode: MedalMode = g.remix ?? (g.heroic ? "hollow" : g.difficulty);
       if (recordMedal(data, lv.id, mode)) ui.resultNote.textContent += ` · ${mode[0]!.toUpperCase() + mode.slice(1)} medal ●`;
     }
     if (g.heroic) {

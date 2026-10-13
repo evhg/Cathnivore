@@ -114,3 +114,14 @@ describe("Long Haul and Hollow's window", () => {
     expect(old.level.book).toEqual(fleet.book);
   });
 });
+
+describe("remix medals", () => {
+  it("keeps remix medals apart from the four mode medals", async () => {
+    const { remixMedalsOf } = await import("../games/hedgerow/src/store");
+    const d = emptySave();
+    expect(recordMedal(d, 9, "lean")).toBe(true);
+    expect(recordMedal(d, 9, "lean")).toBe(false);
+    expect(remixMedalsOf(d, 9)).toEqual(["lean"]);
+    expect(medalsOf(d, 9)).toEqual([]);
+  });
+});

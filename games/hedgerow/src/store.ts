@@ -203,8 +203,11 @@ export function recordStars(data: SaveData, levelId: number, stars: number): voi
   save(data);
 }
 
-export type MedalMode = "easy" | "normal" | "hard" | "hollow";
-export const MEDAL_MODES: MedalMode[] = ["easy", "normal", "hard", "hollow"];
+export type MedalMode = "easy" | "normal" | "hard" | "hollow" | "hand" | "lean" | "long";
+/** The four difficulty medals; the three remixes (Hand Tools, Lean Year, Long Haul) have their own row. */
+export const DIFFICULTY_MEDALS: MedalMode[] = ["easy", "normal", "hard", "hollow"];
+export const REMIX_MEDALS: MedalMode[] = ["hand", "lean", "long"];
+export const MEDAL_MODES: MedalMode[] = [...DIFFICULTY_MEDALS, ...REMIX_MEDALS];
 
 /** Every medal a level has: those earned, plus old stars (3 stars = Easy and Normal, fewer = Easy) and Heroic (Hollow). */
 export function medalsOf(data: SaveData, levelId: number): MedalMode[] {
@@ -214,12 +217,18 @@ export function medalsOf(data: SaveData, levelId: number): MedalMode[] {
   if (st >= 1) got.add("easy");
   if (st >= 3) got.add("normal");
   if (data.heroic?.[id]) got.add("hollow");
-  return MEDAL_MODES.filter((m) => got.has(m));
+  return DIFFICULTY_MEDALS.filter((m) => got.has(m));
+}
+
+/** The remix medals a level has (Hand Tools, Lean Year, Long Haul). */
+export function remixMedalsOf(data: SaveData, levelId: number): MedalMode[] {
+  const got = data.medals?.[String(levelId)] ?? [];
+  return REMIX_MEDALS.filter((m) => got.includes(m));
 }
 
 /** Records a win in `mode`; true when it was new. */
 export function recordMedal(data: SaveData, levelId: number, mode: MedalMode): boolean {
-  if (medalsOf(data, levelId).includes(mode)) return false;
+  if ((REMIX_MEDALS.includes(mode) ? remixMedalsOf(data, levelId) : medalsOf(data, levelId)).includes(mode)) return false;
   const list = ((data.medals ??= {})[String(levelId)] ??= []);
   list.push(mode);
   save(data);
