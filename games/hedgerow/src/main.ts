@@ -1729,7 +1729,7 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
   sl.type = "button";
   sl.className = "btn btn-quiet";
   sl.id = "btn-sell";
-  sl.textContent = `Sell +${sellValue(t)}`;
+  sl.textContent = `Sell +${sellValue(t, g)}`;
   sl.onclick = () => {
     if (doAct({ t: "sell", id: t.id })) sfx.playSell();
     deselect();
@@ -1806,7 +1806,7 @@ function pathCard(p: HTMLElement, g: Game, t: Tower): void {
   sl.type = "button";
   sl.className = "sell-btn";
   sl.id = "btn-sell";
-  sl.textContent = `Sell +${sellValue(t)}`;
+  sl.textContent = `Sell +${sellValue(t, g)}`;
   sl.onclick = () => {
     if (doAct({ t: "sell", id: t.id })) sfx.playSell();
     deselect();

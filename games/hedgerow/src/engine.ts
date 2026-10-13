@@ -1554,6 +1554,8 @@ export interface Tower {
   out?: number;
   cd: number;
   spent: number;
+  /** The wave counter when this tower was placed: sold before the next wave is sent, it refunds in full. */
+  boughtWave?: number;
   /** Merged into a megastructure: which one, and the second plot it now also covers. */
   mega?: MegaId;
   annex?: [number, number];
@@ -2088,7 +2090,9 @@ export function towerAt(
   );
 }
 
-export function sellValue(tower: Tower): number {
+export function sellValue(tower: Tower, game?: Pick<Game, "wave" | "level">): number {
+  // Fleet levels: a tower sold before another wave is sent was a mistake, not a trade, so it refunds in full.
+  if (game && isFleet(game.level) && tower.boughtWave === game.wave) return tower.spent;
   return Math.floor(tower.spent * 0.7);
 }
 
@@ -2164,6 +2168,7 @@ export function place(
     shots: 0,
     cd: 0,
     spent: cost,
+    boughtWave: game.wave,
     ...(isFleet(game.level) ? { fleet: true, ko: 0 } : {}),
     ...(isFleet(game.level) && hasPaths(kind) ? { path: [0, 0, 0] as Path } : {}),
   });
@@ -2419,7 +2424,7 @@ export function pathUpgradeCost(game: Pick<Game, "level">, tower: Pick<Tower, "k
 export function sell(game: Game, id: number): ActionResult {
   const i = game.towers.findIndex((t) => t.id === id);
   if (i < 0) return { ok: false, reason: "No such tower." };
-  game.marks += sellValue(game.towers[i]!);
+  game.marks += sellValue(game.towers[i]!, game);
   game.piles = game.piles.filter((p) => p.tower !== id);
   game.towers.splice(i, 1);
   return { ok: true };

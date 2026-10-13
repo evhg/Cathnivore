@@ -20,6 +20,7 @@ import {
   pathUpgradeCost,
   previewPath,
   remainingFV,
+  sellValue,
   sendWave,
   stepGame,
   towerCost,
@@ -107,6 +108,16 @@ describe("hedgerow fleet: rungs", () => {
     hitEnemy(g, q, 1);
     expect([q.kind, g.enemies[g.enemies.length - 1]!.kind]).toEqual(["drone", "drone"]);
     expect(RUNGS.lorry!.children).toEqual(["sprinter", "sprinter"]);
+  });
+
+  it("a tower sold before the next wave refunds in full, later 70%", () => {
+    const g = newGame(L1);
+    const [c, r] = plots(L1)[0]!;
+    const cost = towerCost(g, "scarecrow");
+    place(g, "scarecrow", c, r);
+    expect(sellValue(g.towers[0]!, g)).toBe(cost);
+    sendWave(g);
+    expect(sellValue(g.towers[0]!, g)).toBe(Math.floor(cost * 0.7));
   });
 
   it("leftover pierce reaches the children a pop just made", () => {
