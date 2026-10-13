@@ -81,6 +81,7 @@ import {
   type EnemyClass,
   type TowerKind,
   type EnemyKind,
+  type Difficulty,
   type Game,
   type GameEvent,
   type Level,
@@ -143,6 +144,8 @@ import {
   perksOf,
   recordStars,
   recordHeroic,
+  recordMedal,
+  type MedalMode,
   recordEndless,
   recordDaily,
   recordBuild,
@@ -594,6 +597,21 @@ ui.btnHeroic.addEventListener("click", () => {
   ui.btnHeroic.classList.toggle("on", heroicMode);
 });
 
+/** The difficulty button on the level map: Easy, Normal or Hard for the next Fleet level (Hollow is Heroic). */
+const DIFFS: Difficulty[] = ["easy", "normal", "hard"];
+let difficultyMode: Difficulty = "normal";
+{
+  const btn = document.getElementById("btn-diff") as HTMLButtonElement | null;
+  const word = document.getElementById("diff-word");
+  btn?.addEventListener("click", () => {
+    difficultyMode = DIFFS[(DIFFS.indexOf(difficultyMode) + 1) % DIFFS.length]!;
+    const name = difficultyMode[0]!.toUpperCase() + difficultyMode.slice(1);
+    if (word) word.textContent = name;
+    btn.setAttribute("aria-label", `Difficulty: ${name}`);
+    btn.classList.toggle("on", difficultyMode !== "normal");
+  });
+}
+
 /** Set while a daily challenge is on: the day number. Perks are off so scores compare. */
 let dailyDay: number | null = null;
 ui.btnDaily.addEventListener("click", () => {
@@ -642,6 +660,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
     id: dailyDay ?? (lv.endless ? (endlessArgs?.act ?? 0) : lv.id),
     ...(lv.endless ? { week: endlessArgs?.week ?? 0 } : {}),
     heroic: heroic && !lv.endless,
+    difficulty: resume ? resume.game.difficulty : lv.endless || dailyDay !== null ? "normal" : difficultyMode,
     perks: dailyDay !== null ? NO_PERKS : perksOf(data),
   };
   // One-on-one boss duels are a player's moment (on in startGame); the tuner and sims never see them.
@@ -2765,6 +2784,10 @@ function finish(g: Game): void {
   if (won) {
     const cathBefore = levelOf(xpOf(data.stars)).level;
     recordStars(data, lv.id, n);
+    if (!lv.endless && dailyDay === null) {
+      const mode: MedalMode = g.heroic ? "hollow" : g.difficulty;
+      if (recordMedal(data, lv.id, mode)) ui.resultNote.textContent += ` · ${mode[0]!.toUpperCase() + mode.slice(1)} medal ●`;
+    }
     if (g.heroic) {
       recordHeroic(data, lv.id);
       ui.resultNote.textContent += " · Heroic ◆ earned: one Goodwill, no pies.";

@@ -30,6 +30,8 @@ export interface SaveData {
   endless?: Record<string, number>;
   /** Levels won in a Heroic run (one Goodwill, no pies): the fourth star. Optional in old saves. */
   heroic?: Record<string, boolean>;
+  /** Medals won per level id: the modes it was cleared in (Hedgerow 2 M9). Optional in old saves. */
+  medals?: Record<string, MedalMode[]>;
   /** Cath's character sheet: attributes and talents (cath.ts). Optional in old saves. */
   cath?: CathSave;
   /** The wardrobe outfit she is wearing (wardrobe.ts). Optional in old saves. */
@@ -119,6 +121,11 @@ export function parseSave(raw: string | null): SaveData {
       for (const [k, v] of Object.entries(obj.tips ?? {})) if (v === true) data.tips[k] = true;
       for (const [k, v] of Object.entries(obj.rosettes ?? {})) if (v === true) (data.rosettes ??= {})[k] = true;
       for (const [k, v] of Object.entries(obj.heroic ?? {})) if (v === true) (data.heroic ??= {})[k] = true;
+      for (const [k, v] of Object.entries(obj.medals ?? {})) {
+        if (!Array.isArray(v)) continue;
+        const ok = MEDAL_MODES.filter((m) => v.includes(m));
+        if (ok.length) (data.medals ??= {})[k] = ok;
+      }
       for (const [k, v] of Object.entries(obj.endless ?? {})) if (typeof v === "number" && v >= 1) (data.endless ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
       if (obj.cath) data.cath = parseCath(obj.cath);
@@ -180,6 +187,29 @@ export function save(data: SaveData): void {
 export function recordStars(data: SaveData, levelId: number, stars: number): void {
   if (stars > (data.stars[String(levelId)] ?? 0)) data.stars[String(levelId)] = stars;
   save(data);
+}
+
+export type MedalMode = "easy" | "normal" | "hard" | "hollow";
+export const MEDAL_MODES: MedalMode[] = ["easy", "normal", "hard", "hollow"];
+
+/** Every medal a level has: those earned, plus old stars (3 stars = Easy and Normal, fewer = Easy) and Heroic (Hollow). */
+export function medalsOf(data: SaveData, levelId: number): MedalMode[] {
+  const id = String(levelId);
+  const got = new Set<MedalMode>(data.medals?.[id] ?? []);
+  const st = data.stars[id] ?? 0;
+  if (st >= 1) got.add("easy");
+  if (st >= 3) got.add("normal");
+  if (data.heroic?.[id]) got.add("hollow");
+  return MEDAL_MODES.filter((m) => got.has(m));
+}
+
+/** Records a win in `mode`; true when it was new. */
+export function recordMedal(data: SaveData, levelId: number, mode: MedalMode): boolean {
+  if (medalsOf(data, levelId).includes(mode)) return false;
+  const list = ((data.medals ??= {})[String(levelId)] ??= []);
+  list.push(mode);
+  save(data);
+  return true;
 }
 
 export function recordHeroic(data: SaveData, levelId: number): void {

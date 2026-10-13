@@ -5,7 +5,7 @@
 import { endlessUnlocked } from "./endless";
 import { cathSvg } from "../../../shared/cath/cath";
 import { TWISTS, type Level } from "./engine";
-import { isUnlocked, type SaveData } from "./store";
+import { isUnlocked, medalsOf, MEDAL_MODES, type SaveData } from "./store";
 
 // ---- Act scenes: one painted backdrop per act ----
 // Each act is a storybook painting on a 480×300 canvas: a graded sky with a sun or moon glow, three to five
@@ -1416,6 +1416,16 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       st.className = "level-stars";
       st.textContent = unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) + (data.heroic?.[String(lv.id)] ? "◆" : "") : "🔒";
       if (!unlocked) st.classList.add("level-lock");
+      const medals = document.createElement("span");
+      medals.className = "level-medals";
+      const won = medalsOf(data, lv.id);
+      for (const m of MEDAL_MODES) {
+        const dot = document.createElement("i");
+        dot.className = `medal medal-${m}${won.includes(m) ? " got" : ""}`;
+        medals.append(dot);
+      }
+      medals.hidden = !unlocked;
+      medals.setAttribute("aria-label", `Medals: ${won.length ? won.join(", ") : "none"}`);
       const name = document.createElement("span");
       name.className = "level-name";
       name.textContent = lv.name;
@@ -1425,7 +1435,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         tw.textContent = lv.twists.map((t) => TWISTS[t].name).join(" · ");
         name.append(tw);
       }
-      b.append(numEl, st, name);
+      b.append(numEl, st, medals, name);
       if (!unlocked) {
         // A faint silhouette of the lane, so locked nodes differ from one another.
         const pts = lv.path.map(([c, r]) => `${f(c + 0.5)},${f(r + 0.5)}`).join(" ");

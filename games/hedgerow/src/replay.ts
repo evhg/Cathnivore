@@ -25,6 +25,7 @@ import {
   type Perks,
   type TargetMode,
   type TowerKind,
+  type Difficulty,
 } from "./engine";
 
 export type Action =
@@ -55,6 +56,8 @@ export interface Setup {
   /** Endless only: the weekly seed. */
   week?: number;
   heroic: boolean;
+  /** Easy/Hard on Fleet levels; absent = normal (old replays). */
+  difficulty?: Difficulty;
   perks: Perks;
 }
 
@@ -115,7 +118,7 @@ export function applyAction(game: Game, a: Action): ActionResult {
 
 /** A fresh game exactly as a run started (the browser's duels included). */
 export function startGame(level: Level, setup: Setup): Game {
-  const game = newGame(level, setup.perks, {}, setup.heroic && !level.endless);
+  const game = newGame(level, setup.perks, {}, setup.heroic && !level.endless, setup.difficulty ?? "normal");
   game.duels = true;
   return game;
 }

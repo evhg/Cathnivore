@@ -1666,6 +1666,15 @@ export const HERO = {
   holds: 2,
 };
 
+/** Hedgerow 2 M9: how a level is played. Hollow is the Heroic run (`Game.heroic`), which also bars selling. */
+export type Difficulty = "easy" | "normal" | "hard";
+/** Tower price multiplier and starting Goodwill by difficulty (hedgerow-2.md section 5). */
+export const DIFFICULTY_RULES: Record<Difficulty, { price: number; goodwill: number }> = {
+  easy: { price: 0.85, goodwill: 200 },
+  normal: { price: 1, goodwill: 120 },
+  hard: { price: 1.1, goodwill: 80 },
+};
+
 /** Seed Bank perks bought with stars between levels (store.ts). All neutral by default. */
 export interface Perks {
   marks: number;
@@ -1796,6 +1805,8 @@ export type Phase = "build" | "wave" | "won" | "lost";
 export interface Game {
   /** A Heroic run: one Goodwill and no pies. Winning one earns the level's fourth star. */
   heroic: boolean;
+  /** Easy, Normal or Hard (Fleet levels only; Hollow is `heroic`). Changes prices and Goodwill. */
+  difficulty: Difficulty;
   level: Level;
   tick: number;
   phase: Phase;
@@ -2019,12 +2030,16 @@ export function newGame(
   perks: Perks = NO_PERKS,
   auto: Partial<AutoCast> = {},
   heroic = false,
+  difficulty: Difficulty = "normal",
 ): Game {
   const post = heroPost(level);
   const maxHp = Math.round(HERO.hp * perks.heroHp);
-  const goodwill = heroic ? 1 : level.goodwill + perks.goodwill;
+  if (!isFleet(level) || level.endless) difficulty = "normal";
+  const baseGoodwill = difficulty === "normal" ? level.goodwill : DIFFICULTY_RULES[difficulty].goodwill;
+  const goodwill = heroic ? 1 : baseGoodwill + perks.goodwill;
   return {
     heroic,
+    difficulty,
     level,
     tick: 0,
     phase: "build",
@@ -2096,9 +2111,10 @@ export function sellValue(tower: Tower, game?: Pick<Game, "wave" | "level">): nu
   return Math.floor(tower.spent * 0.7);
 }
 
-export function towerCost(game: Pick<Game, "perks" | "level">, kind: TowerKind): number {
+export function towerCost(game: Pick<Game, "perks" | "level"> & { difficulty?: Difficulty }, kind: TowerKind): number {
   const base = isFleet(game.level) ? FLEET_TOWERS[kind].cost : TOWERS[kind].cost;
-  return Math.round(base * (1 - game.perks.discount));
+  const mult = game.difficulty ? DIFFICULTY_RULES[game.difficulty].price : 1;
+  return Math.round(base * mult * (1 - game.perks.discount));
 }
 
 /** The price of the next tier (null at tier 3, where the two specialisations are priced separately, and at 4). */
@@ -2424,6 +2440,7 @@ export function pathUpgradeCost(game: Pick<Game, "level">, tower: Pick<Tower, "k
 export function sell(game: Game, id: number): ActionResult {
   const i = game.towers.findIndex((t) => t.id === id);
   if (i < 0) return { ok: false, reason: "No such tower." };
+  if (game.heroic && isFleet(game.level)) return { ok: false, reason: "No selling in a Hollow run." };
   game.marks += sellValue(game.towers[i]!, game);
   game.piles = game.piles.filter((p) => p.tower !== id);
   game.towers.splice(i, 1);

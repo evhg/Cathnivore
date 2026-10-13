@@ -2520,3 +2520,33 @@ img.act-scene {
 .select-kits-label { font-size: 0.75rem; opacity: 0.7; margin-right: 4px; }
 .kit-chip { font: inherit; font-size: 0.8125rem; padding: 5px 12px; border-radius: 999px; border: 1px solid currentColor; background: transparent; color: inherit; opacity: 0.7; cursor: pointer; min-height: 32px; }
 .kit-chip.picked { opacity: 1; font-weight: 700; background: var(--kit-picked); }
+
+/* Medals (Hedgerow 2 M9): four dots under each level's stars, lit for each mode cleared. */
+.node .level-medals {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.node .medal {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--ink-muted);
+  opacity: 0.55;
+}
+.node .medal.got {
+  opacity: 1;
+  border-color: var(--oak-ink);
+}
+.node .medal-easy.got {
+  background: var(--pasture);
+}
+.node .medal-normal.got {
+  background: var(--wheat);
+}
+.node .medal-hard.got {
+  background: var(--clay);
+}
+.node .medal-hollow.got {
+  background: var(--ink);
+}
