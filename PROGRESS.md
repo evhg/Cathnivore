@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **2026-10-13 12:53 session:** H11 finished (Compost Heap: XP past the Crown gate collects and feeds other kinds at 2:1; five Seed Packets bought with Acorns, planted free from the build menu via the `packet` replay action, boss levels drop one, Hollow bars them). H10 finished (remix medals row on the map). H10 and H11 ticked; `npm run release` started. Left: H12 (County Show, blockers, fords), H9, H13, H1.
+- **2026-10-13 12:53 session:** H11 finished (Compost Heap: XP past the Crown gate collects and feeds other kinds at 2:1; five Seed Packets bought with Acorns, planted free from the build menu via the `packet` replay action, boss levels drop one, Hollow bars them). H10 finished (remix medals row on the map). H10 and H11 ticked; Released as `bb1ba19` (3rd try; gate 5 campaign and gate 8 screenshot flaked under load, both pass alone; tag push 403, harmless). Left: H12 (County Show, blockers, fords), H9, H13, H1.
 - **2026-10-13 12:15 (same session):** H12 slice 1: the Daily has a rule of the day (plain, Hand Tools, Lean Year or Hard) on Fleet levels, shown in the HUD and on the share card (`dailyRule`). Unreleased. Left for H12: tower-limit rules beyond remixes, County Show, sight blockers, fords.
 - **2026-10-13 12:10 (same session):** H11 slice 1-2: tower XP and Acorns (`meta.ts`, save `xp`/`acorns`, end-screen lines); tier 3 needs 1,500 XP and a Crown 10,000 in real runs (`xpBlock`, `Game.xpGate`; off in sandbox, Daily, bots, tests, replays; saves with progress are grandfathered to 1,500 each). Hedgerow e2e pass. Unreleased. Also XP bars on the end screen and two Acorn perks (Pocket Change, Sharp Elbows) in the Seed Bank (`PerkDef.acorns`). Left for H11: Compost Heap, more Acorn perks, Packets.
 - **2026-10-13 11:52 session:** H10 slice 5-6: Long Haul remix (window to round 80, Keep Going forced), Hollow starts five rounds further into the Book (`windowedLevel` in replay.ts; `Setup.shift` keeps old replays valid), e2e for medals/Hard/Long Haul. `npm run check` green. Unreleased. Left for H10: difficulty price on upgrades, medal grid per remix, XP/Acorns on the end screen (those belong to H11).
@@ -60,6 +60,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-13 13:43 `bb1ba19`: Hedgerow H9-adjacent meta: H10 modes/medals/remixes, H11 XP/Acorns/Compost/Seed Packets, H12 Daily rule. All gates passed; live version.json matches. 2nd release today.
 - 2026-10-13 `f5a28b7`: Hedgerow H8 (all path towers, Heirlooms, sell refunds, unlocks by level 24). All gates passed; live version.json matches. 1st release today.
 - 2026-10-12 22:20 `9aee11e`: CATHODE D1-D3 (clinic, plaza), Hedgerow H6 Freeplay and H7 kits. All gates passed; live version.json matches. 2nd release today.
 - 2026-10-12 ~01:00 `61810ee`: AAA UI U1–U4 (each game's own fonts, the shared foundation, the CATHODE HUD, the Hedgerow field HUD and upgrade sheet, the Cathnivore table). All gates passed; the live version.json matches. 1st release today.
@@ -70,6 +71,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-04 ~04:10 UTC: `ca00b4a`, CATHODE through alt-fires. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
 
 ## Session log (newest first, last 15)
+- 2026-10-13 12:53-13:50 UTC: H11 Compost Heap + Seed Packets, H10 remix medals, released `bb1ba19`.
 - 2026-10-13 11:52-12:30 UTC: H10 finished apart from small leftovers (Long Haul, Hollow +5, e2e); H11 tower XP, Acorns, XP gates, XP bars, Acorn perks; H12 Daily rule. `npm run check` green. Unreleased (H10 and H11 not whole yet).
 - 2026-10-03 10:51-~11:15 UTC: Cathnivore audit, ROADMAP 57-62 added, end-screen stats tweak. Not released (cap).
 - 2026-10-03 02:51-~03:20 UTC: ROADMAP 52 part 2 (Drone carrier). Level tests take ~13 min. Not released.
