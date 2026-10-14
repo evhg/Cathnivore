@@ -31,6 +31,12 @@ export default function Scene({ scene, onContinue, chapterId }: { scene: SceneDa
     return () => window.removeEventListener('keydown', onKey)
   }, [last, onContinue])
   const key = current ? portraitKeyFor(current.speaker) : null
+  // The most recent other speaker stays on stage, dimmed, on the opposite side (graphic-novel staging).
+  let partner: ReturnType<typeof portraitKeyFor> | null = null
+  for (let i = shown - 2; i >= 0 && !partner; i--) {
+    const k = portraitKeyFor(scene.lines[i].speaker)
+    if (k && k !== key) partner = k
+  }
 
   return (
     <main className={`scene${chapterId ? ` scene-bg-${chapterId}` : ''}`}>
@@ -43,8 +49,13 @@ export default function Scene({ scene, onContinue, chapterId }: { scene: SceneDa
       </div>
       {current && (
         <div className={`scene-stage${key === 'cath' ? '' : ' scene-stage-right'}`} key={shown}>
+          {partner && (
+            <span className="scene-portrait scene-partner" aria-hidden="true">
+              <Portrait character={partner} size={96} />
+            </span>
+          )}
           {key && (
-            <span className="scene-portrait">
+            <span className="scene-portrait scene-speaking">
               <Portrait character={key} size={128} expression={moodOf(current.line)} />
             </span>
           )}

@@ -702,6 +702,13 @@ html.no-animations .stat-card { animation: none; }
   filter: drop-shadow(0 6px 5px rgba(60, 40, 20, 0.28));
 }
 
+.scene-partner { order: 3; scale: 0.85; opacity: 0.45; filter: grayscale(0.4) drop-shadow(0 4px 4px rgba(60, 40, 20, 0.2)); margin-inline: 0; }
+.scene-stage-right .scene-partner { order: 3; }
+.scene-speaking { animation: scene-talk 1.6s ease-in-out 240ms 2; }
+@keyframes scene-talk { 50% { transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .scene-speaking { animation: none; } }
+@media (max-width: 480px) { .scene-partner { display: none; } }
+
 /* Non-Cath speakers stand on the right so a conversation reads left to right (ROADMAP 14). */
 .scene-stage-right { flex-direction: row-reverse; }
 .scene-stage-right .scene-bubble { border-radius: 16px 16px 4px 16px; }
