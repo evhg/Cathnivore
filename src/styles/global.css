@@ -512,14 +512,16 @@ h3 {
   place-items: center;
   width: 200px;
   height: 160px;
-  border-radius: 50% 50% 16px 16px;
-  overflow: hidden;
 }
 .end-screen-hero > * { position: relative; z-index: var(--z-raised); }
 .end-screen-hero::before {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: -30px -50px -10px;
+  border-radius: 50%;
+  /* The rays fade out softly instead of being cut by a box edge. */
+  -webkit-mask-image: radial-gradient(ellipse at 50% 60%, #000 35%, transparent 70%);
+  mask-image: radial-gradient(ellipse at 50% 60%, #000 35%, transparent 70%);
 }
 .end-screen-hero.is-win::before {
   background:
@@ -666,9 +668,10 @@ html.no-animations .stat-card { animation: none; }
   flex-direction: column;
   justify-content: center;
   gap: 16px;
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 24px 16px;
+  /* Full bleed: the backdrop spans the viewport, the content keeps a 560px column. */
+  max-width: none;
+  margin: 0;
+  padding: 24px max(16px, calc((100% - 560px) / 2));
 }
 
 .scene-backlog {
@@ -692,6 +695,9 @@ html.no-animations .stat-card { animation: none; }
 
 .scene-portrait {
   flex-shrink: 0;
+  transform-origin: bottom center;
+  scale: 1.25;
+  margin: 0 12px 6px;
   line-height: 0;
   filter: drop-shadow(0 6px 5px rgba(60, 40, 20, 0.28));
 }
