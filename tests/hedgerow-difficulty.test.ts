@@ -7,7 +7,7 @@ import { stepGame } from "../games/hedgerow/src/engine";
 import { emptySave, medalsOf, recordMedal } from "../games/hedgerow/src/store";
 
 const fleet = LEVELS.find((l) => isFleet(l) && !l.endless)!;
-const classic = LEVELS.find((l) => !isFleet(l) && !l.endless)!;
+const classic = { ...LEVELS[0]!, rules: "classic" as const };
 
 describe("difficulty rules", () => {
   it("Easy, Normal and Hard set Goodwill and tower prices on Fleet levels", () => {

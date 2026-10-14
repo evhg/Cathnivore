@@ -1,10 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { LEVELS } from "../games/hedgerow/src/levels";
 import { endlessLevel, endlessUnlocked, weekOf, ENDLESS_WAVES } from "../games/hedgerow/src/endless";
 import { ENDLESS_HP_GROWTH, isBig, newGame, spawnHp } from "../games/hedgerow/src/engine";
 import { freeplayHp, freeplayIndex } from "../games/hedgerow/src/rounds";
 import { emptySave, parseSave, recordEndless } from "../games/hedgerow/src/store";
 
 describe("endless fields", () => {
+  // Every story act is on Fleet rules now, so the classic Endless generator is exercised on act 10's level 99
+  // pinned back to classic (the generator is kept for old saves' fields).
+  const base = LEVELS.find((l) => l.id === 99)!;
+  const rules = base.rules;
+  beforeAll(() => { base.rules = "classic"; });
+  afterAll(() => { base.rules = rules; });
   it("are deterministic per act and week, and different across them", () => {
     expect(endlessLevel(10, 10).waves).toEqual(endlessLevel(10, 10).waves);
     expect(endlessLevel(10, 10).waves).not.toEqual(endlessLevel(10, 11).waves);

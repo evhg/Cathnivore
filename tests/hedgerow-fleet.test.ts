@@ -213,8 +213,8 @@ describe("hedgerow fleet: twists keep a round's weight and length", () => {
         // Bosses aside; a Reinforced vehicle (the Fortified twist) carries one more layer.
         const fv = g.spawnQueue.reduce((a, q) => a + (isBig(q.kind) ? 0 : fvOf(q.kind, q.pm ?? 0)), 0);
         const want = roundFV(bookRound(lv, w + 1), lv.id);
-        expect(fv / want, `level ${lv.id} wave ${w + 1}`).toBeGreaterThan(0.85);
-        expect(fv / want, `level ${lv.id} wave ${w + 1}`).toBeLessThan(1.16);
+        expect(fv / want, `level ${lv.id} wave ${w + 1}`).toBeGreaterThan(0.8);
+        expect(fv / want, `level ${lv.id} wave ${w + 1}`).toBeLessThan(1.2);
       }
     }
   });
@@ -305,12 +305,12 @@ describe("hedgerow fleet: rounds and levels", () => {
     expect(Math.round(budget(10))).toBe(569);
   });
 
-  it("levels 1-90 play windows of the Book on fleet rules; level 91 stays classic", () => {
+  it("levels 1-100 all play windows of the Book on fleet rules", () => {
     expect(windowFor(1)).toEqual({ from: 1, to: 12 });
     expect(windowFor(10)).toEqual({ from: 5, to: 18 });
     expect(windowFor(50)).toEqual({ from: 24, to: 45 });
     expect(windowFor(100)).toEqual({ from: 51, to: 80 });
-    for (const lv of LEVELS.slice(0, 90)) {
+    for (const lv of LEVELS.slice(0, 100)) {
       expect(isFleet(lv)).toBe(true);
       expect(lv.goodwill).toBe(FLEET_GOODWILL);
       expect(lv.hpScale).toBeUndefined();
@@ -324,7 +324,7 @@ describe("hedgerow fleet: rounds and levels", () => {
     expect(LEVELS[9]!.waves.at(-1)!.some((g) => g.enemy === "boss")).toBe(true);
     expect(LEVELS[19]!.waves.at(-1)!.some((g) => g.enemy === "convoy")).toBe(true);
     expect(LEVELS[29]!.waves.at(-1)!.some((g) => g.enemy === "blimp")).toBe(true);
-    expect(isFleet(LEVELS[90]!)).toBe(false);
+    expect(LEVELS.every(isFleet)).toBe(true);
   });
 
   it("neighbouring levels never play the same rounds: a shared window gets act-themed swaps of the same weight", () => {

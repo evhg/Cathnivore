@@ -451,9 +451,9 @@ describe("hedgerow paths: the legacy adapter, named builds and save v3", () => {
       expect(g.towers[0]!.tier).toBe(2);
     }
     // Classic levels keep tiers for every tower.
-    const classic = newGame(LEVELS[90]!);
+    const classic = newGame({ ...LEVELS[90]!, rules: "classic" as const });
     classic.marks = 1e6;
-    const [cc, rr] = plots(LEVELS[90]!)[0]!;
+    const [cc, rr] = plots({ ...LEVELS[90]!, rules: "classic" as const })[0]!;
     place(classic, "scarecrow", cc, rr);
     expect(classic.towers[0]!.path).toBeUndefined();
   });

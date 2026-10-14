@@ -2,16 +2,6 @@
 // its target Goodwill (docs/design/hedgerow-v2.md section 2). Don't edit by hand; re-run the tuner.
 
 export const HP_SCALE: Record<number, number> = {
-  91: 4.42,
-  92: 5.72,
-  93: 3.58,
-  94: 2.07,
-  95: 6.58,
-  96: 13.2,
-  97: 3.92,
-  98: 2.35,
-  99: 6.29,
-  100: 1.19,
 };
 
 // Fleet levels (Hedgerow 2): start Marks = k * (500 + the Round Book's income before the level's first round).
@@ -107,4 +97,14 @@ export const START_K: Record<number, number> = {
   88: 0.7,
   89: 0.7,
   90: 0.7,
+  91: 0.7,
+  92: 0.7,
+  93: 0.7,
+  94: 0.7,
+  95: 0.7,
+  96: 0.7,
+  97: 0.7,
+  98: 0.7,
+  99: 0.7,
+  100: 0.7,
 };
