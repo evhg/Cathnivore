@@ -445,3 +445,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-14: applied the H9 act-4 patch (levels 31-40 to Fleet). Traffic multipliers up to 6x leave the best bot at 100% (income scales), so difficulty must come from phased bosses/later rounds, not traffic.
 - 2026-10-14: act 5 (41-50) converted to Fleet; tests that borrowed LEVELS[40] as a classic strip now set rules classic; classic Endless tests moved to act 6.
 - 2026-10-14: H9 acts 7-10 applied (all 100 levels Fleet). Fleet twist FV test tolerance widened (0.8-1.2) for Fortified/Crowd rounds at 83/96/99 instead of reworking twists; the classic Endless generator is kept and tested by pinning level 99 to classic.
+- 2026-10-14: H9 shipped as 'all 100 levels Fleet'; kept classic ramp()/HP_SCALE because ~dozens of mechanics tests pin classic levels. Deleting them is a test-rewrite, not worth a session.
