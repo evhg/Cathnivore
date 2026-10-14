@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-14 04:07 (same session):** H9 act 8 applied: levels 71-80 on Fleet rules (same recipe; Endless tests use act 9). Hedgerow suite green (322). Unreleased. H9 left: acts 9-10 (81-100), then delete `ramp()`/`HP_SCALE`, then release.
 - **2026-10-14 04:05 (same session):** H9 act 7 applied: levels 61-70 on Fleet rules (traffic, START_K 0.7, HP_SCALE rows dropped; Endless tests use act 8). Full hedgerow suite green (322). Unreleased. H9 left: acts 8-10 (71-100), then delete `ramp()`/`HP_SCALE`, then release.
 - **2026-10-14 03:40 (same session):** H9 act 6 applied: levels 51-60 on Fleet rules (boss round shifts 1 s there to stay inside 25 s spawn). Full suite was green except the spawn-time check, now fixed and re-run green. Classic Endless tests use act 7. Unreleased. H9 left: acts 7-10 (61-100), then delete `ramp()`/`HP_SCALE`, then release.
 - **2026-10-14 03:45 (same session):** H9 act 5 applied: levels 41-50 on Fleet rules (traffic 1.5-1.8, START_K at the 0.7 floor, HP_SCALE rows dropped). Test strips pinned to classic rules; the classic Endless checks now use act 6. Full hedgerow suite green (322). Unreleased: H9 left = acts 6-10, then delete `ramp()`/`HP_SCALE`. Tuner not run (bot keeps 100% at the floor).
