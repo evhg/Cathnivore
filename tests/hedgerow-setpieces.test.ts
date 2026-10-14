@@ -19,6 +19,8 @@ const MANUAL = {};
 function strip(setPieces: SetPiece[], waves = 3): Level {
   return {
     ...LEVELS[40]!,
+    rules: "classic",
+    book: undefined,
     twists: undefined,
     hpScale: undefined,
     path2: undefined,

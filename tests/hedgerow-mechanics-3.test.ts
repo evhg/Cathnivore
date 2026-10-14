@@ -39,6 +39,8 @@ const ALL: TowerKind[] = Object.keys(TOWERS) as TowerKind[];
 function strip(overrides: Partial<Level> = {}): Level {
   return {
     ...LEVELS[40]!,
+    rules: "classic",
+    book: undefined,
     twists: undefined,
     hpScale: undefined,
     path2: undefined,
