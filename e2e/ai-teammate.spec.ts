@@ -24,7 +24,9 @@ test('the real Solo AI teammate (MCTSBot in a Worker) takes its turn after the h
   expect(firstName).toContain('Mara')
 
   async function graft() {
-    await page.getByRole('button', { name: /^Graft:/ }).click()
+    // `force` skips only Playwright's "stable" wait, which never settles under 4x throttling while the
+    // other project runs in parallel; the button is still resolved by role and name.
+    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
   }
 
   // Mara's 3 actions (Graft is always legal, SPEC 4.6.7) hand the turn to Tomas, the AI teammate.
@@ -76,7 +78,9 @@ test('AI teammate decision stays under 1 second with 4x CPU throttling (SPEC 11.
   const firstName = (await page.locator('.active-producer strong').innerText()).trim()
 
   async function graft() {
-    await page.getByRole('button', { name: /^Graft:/ }).click()
+    // `force` skips only Playwright's "stable" wait, which never settles under 4x throttling while the
+    // other project runs in parallel; the button is still resolved by role and name.
+    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
   }
   await graft()
   await graft()
@@ -106,7 +110,9 @@ test('a thrown AI worker error falls back to HeuristicBot instead of hanging the
   const firstName = (await page.locator('.active-producer strong').innerText()).trim()
 
   async function graft() {
-    await page.getByRole('button', { name: /^Graft:/ }).click()
+    // `force` skips only Playwright's "stable" wait, which never settles under 4x throttling while the
+    // other project runs in parallel; the button is still resolved by role and name.
+    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
   }
   await graft()
   await graft()
