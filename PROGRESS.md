@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-14 03:40 (same session):** H9 act 6 applied: levels 51-60 on Fleet rules (boss round shifts 1 s there to stay inside 25 s spawn). Full suite was green except the spawn-time check, now fixed and re-run green. Classic Endless tests use act 7. Unreleased. H9 left: acts 7-10 (61-100), then delete `ramp()`/`HP_SCALE`, then release.
 - **2026-10-14 03:45 (same session):** H9 act 5 applied: levels 41-50 on Fleet rules (traffic 1.5-1.8, START_K at the 0.7 floor, HP_SCALE rows dropped). Test strips pinned to classic rules; the classic Endless checks now use act 6. Full hedgerow suite green (322). Unreleased: H9 left = acts 6-10, then delete `ramp()`/`HP_SCALE`. Tuner not run (bot keeps 100% at the floor).
 - **2026-10-14 03:25 (same session):** full hedgerow suite green after act 4 (endless tests now use act 5 as the classic Endless; act 4's is Freeplay). Tried act 5 (41-50) the same way: 17 tests fail because mechanics-3/paths/endless tests rely on classic act-5 levels, so it needs those tests re-pointed first (reverted, not applied). Unreleased.
 - **2026-10-14 03:10 (same session):** H9 phased bosses: on Fleet levels past 30 a boss calls an escort at 66% and 33% of its bar (`Enemy.escorts`, `bossMoves`), test in hedgerow-fleet. Hedgerow levels-4, base and fleet tests pass. Unreleased. Next: act 5 (41-50) conversion + tune, U5-U7.
