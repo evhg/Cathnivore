@@ -93,6 +93,14 @@ export function travelOptions(jobsDone: readonly string[]): { id: string; name: 
   return out;
 }
 
+/** Where Continue lands: the district the player last played, if it is still open to them (else the Market). */
+export function resumeDistrict(last: string | null | undefined, jobsDone: readonly string[]): string | undefined {
+  if (!last || last === "market") return undefined;
+  return travelOptions(jobsDone).some((d) => d.id === last) ? last : undefined;
+}
+
+export const LAST_DISTRICT_KEY = "cathode.district";
+
 /** The address that loads a district (travel reloads the page into it; the save is already in storage). */
 export function travelUrl(id: string, search: string): string {
   const p = new URLSearchParams(search);

@@ -63,3 +63,13 @@ d2("later wings", () => {
     e2(wingAt(["boardBoss"], 20, -60)?.id).toBe("vaultGate");
   });
 });
+
+d2("resumeDistrict", () => {
+  i2("returns the last open district, else the Market", async () => {
+    const { resumeDistrict } = await import("../games/cathode/src/game/zones");
+    e2(resumeDistrict("market", [])).toBeUndefined();
+    e2(resumeDistrict(null, [])).toBeUndefined();
+    e2(resumeDistrict("tower", [])).toBeUndefined();
+    e2(resumeDistrict("clinic", ["crispBoss"])).toBe("clinic");
+  });
+});

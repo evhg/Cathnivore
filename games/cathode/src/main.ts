@@ -105,14 +105,23 @@ async function begin(): Promise<void> {
     p.set(newCharacter(cls));
   }
   show("screen-game");
+  // Per-district save: Continue returns to the district last played (an explicit ?district= or ?shot wins).
+  let district = params.get("district") ?? undefined;
+  const { resumeDistrict, LAST_DISTRICT_KEY } = await import("./game/zones");
+  try {
+    if (!district && !params.has("shot")) district = resumeDistrict(localStorage.getItem(LAST_DISTRICT_KEY), new Progress().jobsDone);
+    localStorage.setItem(LAST_DISTRICT_KEY, district ?? "market");
+  } catch {
+    // Private mode: no resume.
+  }
   const loading = $("loading");
   const fill = $("loading-fill");
   const line = $("loading-line");
   loading.hidden = false;
   const { loadingTitle, loadingFlavour } = await import("./game/zones");
-  loading.dataset.district = params.get("district") ?? "market";
-  line.textContent = loadingFlavour(params.get("district") ?? undefined);
-  $("loading-eyebrow").textContent = loadingTitle(params.get("district") ?? undefined);
+  loading.dataset.district = district ?? "market";
+  line.textContent = loadingFlavour(district);
+  $("loading-eyebrow").textContent = loadingTitle(district);
   const progress = (share: number, label: string) => {
     fill.style.setProperty("--p", `${Math.round(share * 100)}%`);
     line.textContent = label;
@@ -125,7 +134,7 @@ async function begin(): Promise<void> {
     quality: resolveQuality(prefs.quality),
     intensity: prefs.intensity,
     shot: params.has("shot"),
-    district: params.get("district") ?? undefined,
+    district,
     onProgress: progress,
     onExit: () => openTitle(),
   });
