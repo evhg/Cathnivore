@@ -25,8 +25,8 @@ export function openDistrictMap(
   el("h2", "", card, districtInfo(new URLSearchParams(location.search).get("district") ?? undefined).name);
   const W = 210;
   const H = 440;
-  const map = svg("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", style: "max-height:56vh;display:block;margin:0 auto" }, card);
-  svg("rect", { x: 0, y: 0, width: W, height: H, fill: "#0b0f16", stroke: "#2c3a4d" }, map);
+  const map = svg("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", class: "dmap-svg" }, card);
+  svg("rect", { x: 0, y: 0, width: W, height: H, class: "dmap-bg" }, map);
   const here = new URLSearchParams(location.search).get("district") ?? "market";
   const local = districtBounds(here);
   // A district of its own: draw its floor plan to scale, with the way out at the south edge.
@@ -36,46 +36,50 @@ export function openDistrictMap(
   const lx = (x: number): number => (local ? ox + (x - local.xMin) * sc : 0);
   const lz = (z: number): number => (local ? oz + (z - local.zMin) * sc : 0);
   if (local) {
-    svg("rect", { x: lx(local.xMin), y: lz(local.zMin), width: lx(local.xMax) - lx(local.xMin), height: lz(local.zMax) - lz(local.zMin), fill: "#121a26", stroke: "#4a6a8d" }, map);
-    const t = svg("text", { x: W / 2, y: lz(local.zMax) + 10, fill: "#8fb3d9", "font-size": 9, "text-anchor": "middle" }, map);
+    svg("rect", { x: lx(local.xMin), y: lz(local.zMin), width: lx(local.xMax) - lx(local.xMin), height: lz(local.zMax) - lz(local.zMin), class: "dmap-floor" }, map);
+    const t = svg("text", { x: W / 2, y: lz(local.zMax) + 10, class: "dmap-exit", "text-anchor": "middle" }, map);
     t.textContent = "Way out (south)";
     for (const [name, x, z] of districtLabels(here)) {
-      const l = svg("text", { x: lx(x), y: lz(z), fill: "#9bbbdc", "font-size": 9, "text-anchor": "middle" }, map);
+      const l = svg("text", { x: lx(x), y: lz(z), class: "dmap-label", "text-anchor": "middle" }, map);
       l.textContent = name;
     }
   }
   (local ? [] : zoneBands()).forEach(({ zone, y0, y1 }, i) => {
-    svg("rect", { x: 0, y: y0 * H, width: W, height: (y1 - y0) * H, fill: i % 2 ? "#121a26" : "#0f1520" }, map);
-    const t = svg("text", { x: 8, y: y0 * H + 16, fill: "#8fb3d9", "font-size": 12 }, map);
+    svg("rect", { x: 0, y: y0 * H, width: W, height: (y1 - y0) * H, class: i % 2 ? "dmap-band dmap-band-b" : "dmap-band" }, map);
+    const t = svg("text", { x: 8, y: y0 * H + 16, class: "dmap-zone" }, map);
     t.textContent = zone.name;
-    const s = svg("text", { x: 8, y: y0 * H + 29, fill: "#5d7a99", "font-size": 9 }, map);
+    const s = svg("text", { x: 8, y: y0 * H + 29, class: "dmap-sub" }, map);
     s.textContent = zone.sub;
   });
   for (const w of local ? [] : WINGS) {
     if (!jobsDone.includes(w.needs)) continue;
     const a = mapPoint(w.xMin, w.zMin);
     const b = mapPoint(w.xMin, w.zMax);
-    svg("rect", { x: a.x * W - 36, y: a.y * H, width: W - a.x * W + 36, height: (b.y - a.y) * H, fill: "#3a2a1a", "fill-opacity": 0.7, stroke: "#c98a4a" }, map);
-    const t = svg("text", { x: a.x * W - 32, y: a.y * H + 14, fill: "#e0a96b", "font-size": 10 }, map);
+    svg("rect", { x: a.x * W - 36, y: a.y * H, width: W - a.x * W + 36, height: (b.y - a.y) * H, class: "dmap-wing" }, map);
+    const t = svg("text", { x: a.x * W - 32, y: a.y * H + 14, class: "dmap-wing-name" }, map);
     t.textContent = w.name;
   }
   if (objective) {
     const o = local ? { x: lx(objective.x) / W, y: lz(objective.z) / H } : mapPoint(objective.x, objective.z);
-    svg("circle", { cx: o.x * W, cy: o.y * H, r: 7, fill: "none", stroke: "#ffcf4a", "stroke-width": 2 }, map);
+    svg("circle", { cx: o.x * W, cy: o.y * H, r: 7, class: "dmap-goal" }, map);
   }
   for (const sec of local ? [] : SECRETS) {
     if (!jobsDone.includes(secretKey(sec.id))) continue;
     const q = mapPoint(sec.x, sec.z);
-    svg("rect", { x: q.x * W - 3, y: q.y * H - 3, width: 6, height: 6, fill: "#6fe3c1", transform: `rotate(45 ${q.x * W} ${q.y * H})` }, map);
+    svg("rect", { x: q.x * W - 3, y: q.y * H - 3, width: 6, height: 6, class: "dmap-secret", transform: `rotate(45 ${q.x * W} ${q.y * H})` }, map);
   }
   const p = local ? { x: lx(at.x) / W, y: lz(at.z) / H } : mapPoint(at.x, at.z);
-  svg("circle", { cx: p.x * W, cy: p.y * H, r: 5, fill: "#ff3d8b" }, map);
-  el("p", "", card, `Pink: Cath. Gold ring: the objective. Teal diamonds: secrets found (${found(jobsDone)}/${SECRETS.length}).`);
-  const leads = el("ul", "", card);
+  svg("circle", { cx: p.x * W, cy: p.y * H, r: 5, class: "dmap-halo" }, map);
+  svg("circle", { cx: p.x * W, cy: p.y * H, r: 5, class: "dmap-cath" }, map);
+  const key = el("ul", "dmap-key", card);
+  el("li", "dmap-k-cath", key, "Cath");
+  el("li", "dmap-k-goal", key, "Objective");
+  el("li", "dmap-k-secret", key, `Secrets ${found(jobsDone)}/${SECRETS.length}`);
+  const leads = el("ul", "dmap-leads", card);
   for (const d of districtLeads(jobsDone)) el("li", "", leads, `Act ${d.act}: ${d.name} ${d.open ? "(on the board)" : "(locked)"}`);
   const trips = travelOptions(jobsDone).filter((d) => d.id !== here);
   if (trips.length) {
-    el("p", "", card, "Water taxi:");
+    el("p", "dmap-taxi", card, "Water taxi");
     for (const d of trips) {
       button("btn", card, `Travel to ${d.name}`).addEventListener("click", () => {
         location.search = travelUrl(d.id, location.search);

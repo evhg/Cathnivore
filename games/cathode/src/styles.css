@@ -1952,3 +1952,38 @@ input[type="radio"] {
 @keyframes credits-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .credits, .credits-row, .credits-go { animation-duration: .01s; animation-delay: 0s; } }
 @media (max-height: 460px) { .credits { gap: .6rem; } .credits-roll { gap: .45rem; max-height: 80vh; } .credits-title { font-size: .85rem; } .credits-line { font-size: .85rem; margin: 0; } .credits-go { min-height: 44px; } }
+
+/* District map (AAA UI M12): the plan is drawn from tokens so it reads as one piece with the case board. */
+.dmap-svg { display: block; width: 100%; max-height: 56vh; margin: 0 auto 12px; }
+.dmap-bg { fill: var(--night-2); stroke: var(--rule); }
+.dmap-floor { fill: var(--panel); stroke: var(--cyan); stroke-opacity: .55; }
+.dmap-band { fill: var(--night-2); }
+.dmap-band-b { fill: var(--panel); }
+.dmap-zone { fill: var(--ink-2); font: 600 12px var(--font-ui); letter-spacing: .06em; text-transform: uppercase; }
+.dmap-sub, .dmap-exit, .dmap-label { fill: var(--ink-3); font: 500 9px var(--font-ui); letter-spacing: .04em; }
+.dmap-label { fill: var(--ink-2); }
+.dmap-exit { fill: var(--cyan-ink); }
+.dmap-wing { fill: rgb(var(--amber-rgb) / .14); stroke: var(--amber); }
+.dmap-wing-name { fill: var(--amber); font: 600 10px var(--font-ui); }
+.dmap-goal { fill: none; stroke: var(--amber); stroke-width: 2; }
+.dmap-secret { fill: var(--cyan); }
+.dmap-cath { fill: var(--neon-pink); stroke: var(--on-blood); stroke-width: 1.5; }
+.dmap-halo { fill: none; stroke: var(--neon-pink); stroke-width: 1.5; transform-box: fill-box; transform-origin: center; animation: dmap-ping 2s ease-out infinite; }
+@keyframes dmap-ping { from { transform: scale(1); opacity: .9; } to { transform: scale(3.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .dmap-halo { animation: none; opacity: .5; } }
+.dmap-key { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px; padding: 0; list-style: none; font: 500 13px var(--font-ui); color: var(--ink-2); }
+.dmap-key li::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 7px; border-radius: 50%; background: var(--neon-pink); }
+.dmap-key .dmap-k-goal::before { background: none; border: 2px solid var(--amber); box-sizing: border-box; }
+.dmap-key .dmap-k-secret::before { background: var(--cyan); border-radius: 0; transform: rotate(45deg) scale(.85); }
+.dmap-leads { margin: 0 0 12px; padding: 0; list-style: none; font: 500 14px var(--font-ui); color: var(--ink-2); }
+.dmap-taxi { margin: 0 0 6px; font: 600 12px var(--font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--cyan-ink); }
+
+/* Loading card: a vignette and a slow scan so the wait has some life. */
+.loading { overflow: hidden; }
+.loading::before { content: ""; position: absolute; inset: 0; background: radial-gradient(90% 70% at 50% 45%, transparent 40%, rgb(0 0 0 / .65) 100%); pointer-events: none; }
+.loading::after { content: ""; position: absolute; left: 0; right: 0; height: 30%; top: -30%; background: linear-gradient(180deg, transparent, rgb(var(--cyan-rgb) / .06), transparent); animation: load-scan 3.4s linear infinite; pointer-events: none; }
+@keyframes load-scan { to { top: 100%; } }
+.loading > * { position: relative; z-index: var(--z-base, 1); }
+.loading .eyebrow { margin: 0 0 10px; letter-spacing: .24em; color: var(--cyan-ink); }
+.loading-bar span { box-shadow: 0 0 12px rgb(var(--blood-rgb) / .7); }
+@media (prefers-reduced-motion: reduce) { .loading::after { animation: none; display: none; } }
