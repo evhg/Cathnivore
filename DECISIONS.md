@@ -457,3 +457,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 
 ## 2026-10-14 10:52
 - U5 done as hero CTAs first (a visible Today button beats key-art plumbing); landing e2e card selectors now `a.card[href]` because the hero adds second links.
+
+## 2026-10-14 11:53
+- Fixed red CI by tokenising the landing CTA colours rather than raising the ratchet baseline.
