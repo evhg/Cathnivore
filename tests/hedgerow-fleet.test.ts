@@ -730,11 +730,11 @@ describe("hedgerow fleet: phased bosses", () => {
     sendWave(game);
     game.spawnQueue = [];
     game.enemies = [];
-    const boss = makeEnemy(game, "megadozer", 4, 0, 0);
+    const boss = makeEnemy(game, "megadozer", 4, undefined, 0);
     game.enemies.push(boss);
     const counts: number[] = [];
     for (const f of [1, 0.6, 0.3]) {
-      boss.hp = boss.maxHp * f;
+      boss.hp = boss.maxHp! * f;
       boss.dist = 4;
       boss.stun = 99;
       stepGame(game);
