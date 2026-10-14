@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-14 04:25 (same session):** H9 act 10 tried and NOT applied (saved `docs/design/h9-act10-wip.patch`): with 91-100 fleet no classic Endless act is left, so 3 files fail: `hedgerow-endless` (classic Endless tests need a pinned classic level, or `endlessLevel` for act 10 must stay classic via CLASSIC_POOL), level 96 wave 23 twist FV 0.82 (<0.85), paths test patched with `rules: classic`. Next: fix those, apply, then delete `ramp()`/`HP_SCALE`, then release.
 - **2026-10-14 04:16 (same session):** H9 act 9 applied: levels 81-90 on Fleet rules (Endless tests use act 10; fleet twist FV tolerance 1.15 to 1.16 after level 83's Fortified hit 1.1503). Hedgerow suite green. Unreleased. H9 left: act 10 (91-100, level 100 finale), then delete `ramp()`/`HP_SCALE`, then release.
 - **2026-10-14 04:07 (same session):** H9 act 8 applied: levels 71-80 on Fleet rules (same recipe; Endless tests use act 9). Hedgerow suite green (322). Unreleased. H9 left: acts 9-10 (81-100), then delete `ramp()`/`HP_SCALE`, then release.
 - **2026-10-14 04:05 (same session):** H9 act 7 applied: levels 61-70 on Fleet rules (traffic, START_K 0.7, HP_SCALE rows dropped; Endless tests use act 8). Full hedgerow suite green (322). Unreleased. H9 left: acts 8-10 (71-100), then delete `ramp()`/`HP_SCALE`, then release.
