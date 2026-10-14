@@ -640,8 +640,8 @@ test.describe('Hedgerow', () => {
         })
         expect(pos).not.toBeNull()
         await selectCell(page, pos![0], pos![1])
-        const sel = level <= 30 ? 'button.path-buy' : 'button.spec'
-        await expect(page.locator(sel)).toHaveCount(level <= 30 ? 3 : 2)
+        const sel = 'button.path-buy'
+        await expect(page.locator(sel)).toHaveCount(3)
         await expectSpecChoiceVisible(page, sel)
         await page.keyboard.press('Escape')
         await page.locator('#btn-send').click()
