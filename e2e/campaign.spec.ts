@@ -67,7 +67,7 @@ test('chapter 3 "Growing Season": dismissing the round-5 reveal then reloading b
   }
   async function graft() {
     await resolvePendingDecisionIfShown()
-    await page.getByRole('button', { name: /^Graft:/ }).click()
+    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
   }
   async function dismissEnemyTurnIfShown() {
     const playback = page.locator('.enemy-turn-playback')

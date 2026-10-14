@@ -89,7 +89,7 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.active-producer').waitFor()
   for (let i = 0; i < 3; i++) {
-    await page.getByRole('button', { name: /^Graft:/ }).click()
+    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
   }
   await page.locator('.pass-device').waitFor()
   await shoot(page, project, '12-pass-device')

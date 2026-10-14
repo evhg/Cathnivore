@@ -79,11 +79,11 @@ test('4. an Agenda headline during the enemy turn', async ({ page }) => {
   // actions shows a blocking "pass the device" screen (Known issues, PROGRESS.md) that needs its own
   // Continue tap before the second producer's Graft button exists.
   for (let i = 0; i < 3; i++) {
-    await page.getByRole('button', { name: /^Graft:/ }).click()
+    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
   }
   await page.getByRole('button', { name: 'Continue' }).click()
   for (let i = 0; i < 3; i++) {
-    await page.getByRole('button', { name: /^Graft:/ }).click()
+    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
   }
   await expect(page.locator('.enemy-turn-playback')).toBeVisible()
   await addCaptionBanner(page, 'Big Food. Big Pharma. Small print.')

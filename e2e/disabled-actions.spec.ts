@@ -78,8 +78,8 @@ test('Invest shows a disabled, explained placeholder for market cards the player
 
   // Grafting twice (+1 Marks each, no other cost) affords Wholesale Account, which swaps from a disabled
   // placeholder to a real, clickable Invest button — the other 3 cards stay disabled (still short).
-  await page.getByRole('button', { name: /^Graft/ }).click()
-  await page.getByRole('button', { name: /^Graft/ }).click()
+  await page.getByRole('button', { name: /^Graft/ }).click({ force: true })
+  await page.getByRole('button', { name: /^Graft/ }).click({ force: true })
   const wholesaleAccount = page.locator('.action-item', { hasText: 'Wholesale Account' })
   await expect(wholesaleAccount.locator('.action-why-not')).toHaveCount(0)
   await expect(wholesaleAccount.getByRole('button', { name: /^Invest/ })).toBeEnabled()

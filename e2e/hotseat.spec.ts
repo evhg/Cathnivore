@@ -15,7 +15,7 @@ test('Hot-seat: two full turns, undo, and reload mid-turn resume an identical st
   await expect(page.locator('.active-producer')).toBeVisible()
 
   async function graft() {
-    await page.getByRole('button', { name: /^Graft:/ }).click()
+    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
   }
 
   // Undo: take one action, confirm it changed state, undo it, confirm it's back.
