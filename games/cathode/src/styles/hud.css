@@ -444,7 +444,30 @@
 }
 .hud-feed-line.strong .noun { font: 700 var(--t-head)/1.1 var(--font-ui); letter-spacing: .04em; }
 .hud-feed-line.item { box-shadow: inset -3px 0 0 var(--rc, var(--ink)); }
+
 .hud-feed-line.item .noun { color: var(--rc, var(--ink)); font-weight: 700; }
+/* Loot sheen: anything above standard gets one bright sweep through its line as it lands. */
+.hud-feed-line.item:not(.r-standard) { position: relative; overflow: hidden; }
+.hud-feed-line.item:not(.r-standard)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--rc, var(--ink)) 55%, white) 50%, transparent 65%);
+  mix-blend-mode: screen;
+  opacity: 0.7;
+  transform: translateX(-120%);
+  animation: loot-sheen 900ms 150ms ease-out both;
+  pointer-events: none;
+}
+.hud-feed-line.item.r-unique,
+.hud-feed-line.item.r-set { box-shadow: inset -3px 0 0 var(--rc), 0 0 14px color-mix(in srgb, var(--rc) 40%, transparent); }
+@keyframes loot-sheen { to { transform: translateX(120%); } }
+@media (prefers-reduced-motion: reduce) {
+  .hud-feed-line.item::after { display: none; }
+}
+:root.reduce-motion .hud-feed-line.item::after {
+  display: none;
+}
 .hud-feed-tag {
   font: 700 var(--t-micro)/1 var(--font-ui);
   letter-spacing: .14em;

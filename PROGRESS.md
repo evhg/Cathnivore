@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-14 08:20 (same session):** U12 slice 3: loot sheen (one light sweep on non-standard pickup lines, glow for unique/set; off under reduced motion). Lint, ratchet pass; not seen live. Unreleased. Left for U12: loading and district map polish, then release.
 - **2026-10-14 08:05 (same session):** U12 slice 2: kill-cam lower-third caption ("Long shot" + range in metres, `hud.killcamCaption`, reduced motion shows it static). tsc, lint, CSS ratchet and 53 cathode test files pass; not seen in a live kill-cam (needs WebGL play). Unreleased.
 - **2026-10-14 07:51 session:** U12 slice 1: CATHODE level-up is four beats over 1.8 s (rule slam with flash and shake, ten shards, Cath and number, points tally; audio hit plus shard sweep before the bell); phone toast no longer clips Cath (shots P/L/D checked via a temporary lab page; CSS ratchet, lint, tsc, cathode-ui tests pass). Unreleased. Left for U12: loot sheen, boss intro, kill-cam caption, loading, district map.
 - **2026-10-14 06:52 session:** H7 ticked (already built). U11 slice: campaign has wax-seal nodes, a stitched trail, a larger current chapter and darker locked titles; title's three minor buttons got icons (shots P checked; campaign, chapter-resume, accessibility, title e2e pass; lint clean). Unreleased. Left for U11: View Transitions, Cath cameo travel, setup polish.

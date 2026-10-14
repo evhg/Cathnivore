@@ -450,3 +450,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 ## 2026-10-14 06:52
 - H7 ticked after verifying hero.ts, kit chips, Last Orders and duel rewards already exist; the bot ignores kits so the 5% share floor stays at 2%.
 - U11 campaign/title done as CSS-only slices (no layout change).
+
+## 2026-10-14 07:51
+- U12 done as CSS/DOM-only slices (level-up beats, kill-cam caption, loot sheen); no gate/release run this session (nothing finished a whole milestone).
+- Temporary lab page `ui-lab.html` is not in the repo; recreate it in `games/cathode` (a div#lab and a module script of `src/ui/lab.ts`) to shoot the level-up, then delete it.
