@@ -20,7 +20,7 @@ These two phases come before every older unfinished item below. About 70% of ses
 - U4. [x] **M4 Cathnivore table** *(2026-10-11: shipped to `build`, unreleased; 6 frames and none nested, 0 dotted underlines, map at 1440x900 670x639 -> 706x664, no scroll at 1280x800, axe clean, lint z-literals 0)*
 - U5. [x] **M5 Landing hero, poster cards and key art** *(2026-10-14: hero CTAs, wordmark sheen, CATHODE banner, Runnel card shows a spring, hex junction and two fields; keyart WebP dropped by decision)*
 - U6. [~] **M6 Runnel puzzle and win sheet** *(2026-10-12: landscape two columns and landscape win sheet on `build`; ledger, voice and motion left)*
-- U7. [~] **M7 Cathnivore story scene and end screen** *(2026-10-14: full-bleed scene, unclipped sunburst on `build`; choreography and L shots left)*
+- U7. [~] **M7 Cathnivore story scene and end screen** *(2026-10-14: full-bleed scene, unclipped sunburst on `build`; liberation+squeeze choreography added 2026-10-14; per-line poses and L shots left)*
 - U8. [~] **M8 CATHODE front door: gate, title and class pick** *(2026-10-13: gate shows Cath rim-lit beside the card, title window fades, phone class name no longer clipped; on `build`, unreleased; shots checked at P/L/D; reduced-motion shot and e2e flow not re-run)*
 - U9. [x] **M9 CATHODE dossier and pause** *(2026-10-13: sigils, pause card, keycap table, K sheet shots at P/L/D checked; no cathode e2e project, so the K check lives in cathode-shots.mjs)*
 - U10. [x] **M10 Hedgerow map, story and end screen** *(2026-10-13: Start here tag in flow, story card fits at L, stars stamp (static under reduced motion), win/loss shots at P/L/D via `scripts/hedgerow-end-shots.mjs`; on `build`, unreleased)*

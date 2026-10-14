@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { REGIONS, regionMatchesPressureSlot } from '../content/map'
 import { loadSettings } from '../platform/settings'
 import type { GameState, ProducerId, RegionId, RegionType } from '../engine/types'
@@ -311,6 +311,32 @@ export default function Map({ state, highlight, onSelect }: Props) {
   const targeting = highlighted.size > 0
   const colourBlindPatterns = loadSettings().colourBlindPatterns
 
+  // Reward choreography (aaa-ui M7): a freshly liberated region gets an anticipation squeeze, a ring and a
+  // seed burst; a region that just gained Lost Land flashes and shakes. Tracked by diffing the previous
+  // state, so loading a save or the first render plays nothing.
+  const seen = useRef<{ lib: Set<RegionId>; lost: Record<string, number> } | null>(null)
+  const [fx, setFx] = useState<Partial<Record<RegionId, 'lib' | 'sq'>>>({})
+  useEffect(() => {
+    const lib = new Set<RegionId>()
+    const lost: Record<string, number> = {}
+    for (const id of active) {
+      if (state.regions[id].liberated) lib.add(id)
+      lost[id] = state.regions[id].lostLand
+    }
+    const prev = seen.current
+    seen.current = { lib, lost }
+    if (!prev) return
+    const next: Partial<Record<RegionId, 'lib' | 'sq'>> = {}
+    for (const id of active) {
+      if (lib.has(id) && !prev.lib.has(id)) next[id] = 'lib'
+      else if ((lost[id] ?? 0) > (prev.lost[id] ?? 0)) next[id] = 'sq'
+    }
+    if (Object.keys(next).length === 0) return
+    setFx(next)
+    const t = window.setTimeout(() => setFx({}), 1400)
+    return () => window.clearTimeout(t)
+  }, [state, active])
+
   const svgRef = useRef<SVGSVGElement>(null)
   useEffect(() => {
     const svg = svgRef.current
@@ -336,7 +362,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
         return (
           <g
             key={id}
-            className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}`}
+            className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}${fx[id] === 'lib' ? ' fx-liberate' : fx[id] === 'sq' ? ' fx-squeeze' : ''}`}
             onClick={onSelect ? () => onSelect(id) : undefined}
             aria-label={def.name}
           >
@@ -453,6 +479,28 @@ export default function Map({ state, highlight, onSelect }: Props) {
               })()}
             </g>
 
+            {fx[id] === 'lib' && (
+              <g className="lib-burst" pointerEvents="none">
+                <circle className="lib-ring" cx={x} cy={y} r={HEX_R * 0.5} fill="none" stroke="var(--wheat-hi, #e8c35a)" strokeWidth={4} />
+                {Array.from({ length: 12 }, (_, i) => {
+                  const a = (i / 12) * Math.PI * 2
+                  return (
+                    <circle
+                      key={i}
+                      className="lib-seed"
+                      cx={x}
+                      cy={y}
+                      r={3.5}
+                      fill={i % 2 ? 'var(--pasture)' : 'var(--wheat-hi, #e8c35a)'}
+                      style={{ ['--dx' as string]: `${Math.cos(a) * HEX_R * 0.95}px`, ['--dy' as string]: `${Math.sin(a) * HEX_R * 0.95}px` }}
+                    />
+                  )
+                })}
+              </g>
+            )}
+            {fx[id] === 'sq' && (
+              <polygon className="sq-flash" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="var(--clay)" pointerEvents="none" />
+            )}
             {r.liberated && (
               <g className="coop-stamp">
                 <CoopMarker x={x + HEX_R * 0.55} y={y + HEX_R * 0.55} />

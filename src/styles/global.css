@@ -1686,3 +1686,21 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
 /* ROADMAP 190: tag list sits on its own muted line under the card name. */
 .card-row summary .card-tags { display: block; font-size: 0.8em; opacity: 0.75; font-weight: 400; }
 
+
+/* aaa-ui M7: Liberation (anticipation, ring, 12-seed burst) and Squeeze (flash, +-2px shake). */
+@keyframes lib-anticipate { 0% { transform: scale(1); } 9% { transform: scale(0.97); } 30%, 100% { transform: scale(1); } }
+@keyframes lib-ring { from { transform: scale(0.3); opacity: 0.9; } to { transform: scale(1.8); opacity: 0; } }
+@keyframes lib-seed { from { transform: translate(0, 0); opacity: 1; } to { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+@keyframes sq-flash { 0%, 8% { opacity: 0.55; } 100% { opacity: 0; } }
+@keyframes sq-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+.fx-liberate { transform-box: fill-box; transform-origin: center; animation: lib-anticipate 1300ms var(--ease-settle); }
+.fx-squeeze { animation: sq-shake 160ms linear 2; }
+.lib-ring { transform-box: fill-box; transform-origin: center; animation: lib-ring 900ms 240ms var(--ease-settle) both; }
+.lib-seed { animation: lib-seed 800ms 240ms var(--ease-settle) both; }
+.sq-flash { animation: sq-flash 400ms linear both; }
+@media (prefers-reduced-motion: reduce) {
+  .fx-liberate, .fx-squeeze, .lib-ring, .lib-seed { animation: none; }
+  .lib-burst { display: none; }
+  .sq-flash { animation: sq-flash 400ms linear both; }
+}
+html.no-animations .fx-liberate, html.no-animations .fx-squeeze, html.no-animations .lib-burst, html.no-animations .sq-flash { animation: none !important; display: none; }
