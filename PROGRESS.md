@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-14 09:51 session:** U12 finished (boss name slam with a red rule drawn under it; static under reduced motion) and ticked. `npm run release` passed all gates: `main` and live are `34a8677` (H9 earlier work, U7/U11/U12 slices); tag push 403 (harmless). Boss intro not seen in live play.
 - **2026-10-14 08:55 session:** U12 slice 4: district map drawn from tokens (CSS classes, no raw hexes), legend row, pulsing Cath ring (static under reduced motion), readable lead list; loading card gets vignette, slow scan and glow bar. tsc, lint and cathode tests pass; not seen live. Unreleased. Left for U12: boss intro, then release.
 - **2026-10-14 08:20 (same session):** U12 slice 3: loot sheen (one light sweep on non-standard pickup lines, glow for unique/set; off under reduced motion). Lint, ratchet pass; not seen live. Unreleased. Left for U12: loading and district map polish, then release.
 - **2026-10-14 08:05 (same session):** U12 slice 2: kill-cam lower-third caption ("Long shot" + range in metres, `hud.killcamCaption`, reduced motion shows it static). tsc, lint, CSS ratchet and 53 cathode test files pass; not seen in a live kill-cam (needs WebGL play). Unreleased.
