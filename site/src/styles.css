@@ -816,6 +816,19 @@ body {
   }
 }
 
+/* Desktop: the CATHODE card is a wide banner with a cropped cinematic still, not a thumbnail. */
+@media (min-width: 900px) {
+  .card-cathode .card-art {
+    width: 252px;
+    height: 150px;
+    border-radius: 14px;
+    box-shadow: 0 0 0 1px rgba(255, 60, 140, 0.4), 0 0 28px rgba(255, 40, 130, 0.32);
+  }
+  .card-cathode .card-title {
+    text-shadow: 0 0 18px rgba(255, 60, 140, 0.55);
+  }
+}
+
 /* ROADMAP 128: CATHODE sits in its own "for grown-ups" row, darker than the family games. */
 .mature-label {
   grid-column: 1 / -1;
