@@ -18,7 +18,7 @@ These two phases come before every older unfinished item below. About 70% of ses
 - U2. [x] **M2 CATHODE component layer and HUD** *(2026-10-11: shipped to `build`, unreleased; Wet Ink tokens/components/HUD, 0 raw z-index, 0 HUD overlaps at P/L/D, 0 layouts per steady frame)*
 - U3. [x] **M3 Hedgerow field: kit, HUD and upgrade sheet** *(2026-10-11: shipped to `build`, unreleased; px font-sizes 135 to 0, z-literals 10 to 0, phone sheet 48svh (field 52%), no panel ellipsis, no text under 12px, Next 5.6:1, pill test green at L)*
 - U4. [x] **M4 Cathnivore table** *(2026-10-11: shipped to `build`, unreleased; 6 frames and none nested, 0 dotted underlines, map at 1440x900 670x639 -> 706x664, no scroll at 1280x800, axe clean, lint z-literals 0)*
-- U5. [~] **M5 Landing hero, poster cards and key art**
+- U5. [x] **M5 Landing hero, poster cards and key art** *(2026-10-14: hero CTAs, wordmark sheen, CATHODE banner, Runnel card shows a spring, hex junction and two fields; keyart WebP dropped by decision)*
 - U6. [~] **M6 Runnel puzzle and win sheet** *(2026-10-12: landscape two columns and landscape win sheet on `build`; ledger, voice and motion left)*
 - U7. [~] **M7 Cathnivore story scene and end screen** *(2026-10-14: full-bleed scene, unclipped sunburst on `build`; choreography and L shots left)*
 - U8. [~] **M8 CATHODE front door: gate, title and class pick** *(2026-10-13: gate shows Cath rim-lit beside the card, title window fades, phone class name no longer clipped; on `build`, unreleased; shots checked at P/L/D; reduced-motion shot and e2e flow not re-run)*

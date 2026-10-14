@@ -460,3 +460,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 
 ## 2026-10-14 11:53
 - Fixed red CI by tokenising the landing CTA colours rather than raising the ratchet baseline.
+- 2026-10-14: U5 closed without a keyart WebP (the SVG/CSS art is lighter and already sharp).

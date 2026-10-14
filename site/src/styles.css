@@ -368,24 +368,48 @@ body {
 }
 
 .art-runnel svg {
-  width: 88%;
-  height: 88%;
+  width: 96%;
+  height: 96%;
 }
 
 .rn-tile {
   fill: #b5d184;
   stroke: #8fae62;
+  stroke-width: 2;
+}
+
+.rn-spring {
+  fill: #9fcbd6;
+  stroke: #6fa6b8;
+}
+
+.rn-field {
+  fill: #d9c36a;
+  stroke: #b49c44;
+}
+
+.rn-crop {
+  stroke: #9b8232;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.rn-source {
+  fill: #3b8db0;
+  stroke: #e9f6fa;
   stroke-width: 3;
 }
 
 .rn-groove {
   stroke: #7f5c35;
-  stroke-width: 19;
+  stroke-width: 12;
+  stroke-linecap: round;
 }
 
 .rn-water {
   stroke: #3b8db0;
-  stroke-width: 10;
+  stroke-width: 6;
+  stroke-linecap: round;
 }
 
 .rn-hub {
