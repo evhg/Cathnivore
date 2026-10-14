@@ -17,18 +17,18 @@ describe("endless fields", () => {
   it("unlock with the act's boss and make enemies tougher each wave", () => {
     expect(endlessUnlocked({ "10": 1 }, 1)).toBe(true);
     expect(endlessUnlocked({ "9": 3 }, 1)).toBe(false);
-    const g = newGame(endlessLevel(4, 0));
+    const g = newGame(endlessLevel(5, 0));
     const a = spawnHp(g, "van");
     g.wave = 20;
     expect(spawnHp(g, "van")).toBeGreaterThan(a * 2);
     expect(weekOf(Date.UTC(2026, 0, 12))).toBe(1);
   });
   it("compound health every wave and bring the act's boss back every tenth wave from 20", () => {
-    const g = newGame(endlessLevel(4, 0));
+    const g = newGame(endlessLevel(5, 0));
     const a = spawnHp(g, "van");
     g.wave = 40;
     expect(spawnHp(g, "van") / a / Math.pow(ENDLESS_HP_GROWTH, 40)).toBeCloseTo(1, 1);
-    const lv = endlessLevel(4, 0);
+    const lv = endlessLevel(5, 0);
     const bossWaves = lv.waves.map((w, i) => (w.some((gr) => isBig(gr.enemy)) ? i + 1 : 0)).filter(Boolean);
     expect(bossWaves.slice(0, 3)).toEqual([20, 30, 40]);
   });
