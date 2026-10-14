@@ -7,6 +7,15 @@
   --cream-muted: rgba(251, 241, 223, 0.74);
   --gold: #f4c774;
   --gold-ink: #2b1d10;
+  --gold-hi: #ffe3a0;
+  --gold-mid: #e9b457;
+  --gold-lo: #d39a3c;
+  --gold-edge: rgba(120, 70, 20, 0.35);
+  --gold-glow: rgba(233, 180, 87, 0.28);
+  --glass-fill: rgba(255, 244, 224, 0.1);
+  --glass-edge: rgba(255, 244, 224, 0.28);
+  --shine: rgba(255, 255, 255, 0.55);
+  --scrim: rgba(0, 0, 0, 0.6);
   --card: rgba(28, 18, 22, 0.46);
   --card-hover: rgba(36, 24, 28, 0.6);
   --card-edge: rgba(255, 226, 180, 0.18);

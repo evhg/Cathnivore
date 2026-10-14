@@ -938,21 +938,21 @@ body {
 .btn-cta:hover { transform: translateY(-2px); }
 .btn-cta:active { transform: translateY(0); }
 .btn-cta-gold {
-  color: #2a1608;
-  background: linear-gradient(180deg, #ffe3a0, #e9b457 55%, #d39a3c);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset, 0 -3px 0 rgba(120, 70, 20, 0.35) inset, 0 10px 30px rgba(233, 180, 87, 0.28);
+  color: var(--gold-ink);
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold-mid) 55%, var(--gold-lo));
+  box-shadow: 0 1px 0 var(--shine) inset, 0 -3px 0 var(--gold-edge) inset, 0 10px 30px var(--gold-glow);
 }
 .btn-cta-glass {
   color: var(--cream);
-  background: rgba(255, 244, 224, 0.1);
-  box-shadow: 0 0 0 1px rgba(255, 244, 224, 0.28) inset;
+  background: var(--glass-fill);
+  box-shadow: 0 0 0 1px var(--glass-edge) inset;
 }
 .hero-meta {
   margin: 12px 0 0;
   font-size: 0.875rem;
   letter-spacing: 0.04em;
   color: var(--cream-muted);
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 12px var(--scrim);
 }
 @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
   .cta-row { justify-content: flex-start; }
