@@ -79,3 +79,5 @@ Fleet levels grow those five along paths (`paths.ts`; tier 3 from level 6); the 
 - 2026-10-11: bots buy Crowns; `hedgerow-tune` + `--verify` rerun, all 100 levels beatable (level tests 100/100).
 
 - 2026-10-13: Hollow +5 rounds probe (best bot, normal Goodwill, no Hollow rules): levels 3, 10, 25 still win at full Goodwill; level 16 wins at 60 Goodwill normally and loses shifted. Untuned; Hollow's 1 Goodwill is the real wall.
+
+- 2026-10-14 H9: tuner --verify on all 100 Fleet levels changed nothing (START_K at the 0.7 floor from level 2; level 1 is 1.2).
