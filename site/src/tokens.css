@@ -2,6 +2,16 @@
    and motion come from shared/ui/base.css. */
 :root {
   color-scheme: dark;
+  --rn-spring: #9fcbd6;
+  --rn-spring-edge: #6fa6b8;
+  --rn-field: #d9c36a;
+  --rn-field-edge: #b49c44;
+  --rn-crop: #9b8232;
+  --rn-foam: #e9f6fa;
+  --cx-pink-40: rgba(255, 60, 140, 0.4);
+  --cx-pink-32: rgba(255, 40, 130, 0.32);
+  --cx-pink-55: rgba(255, 60, 140, 0.55);
+  --rn-water: #3b8db0;
   --night: #1a1119;
   --cream: #fbf1df;
   --cream-muted: rgba(251, 241, 223, 0.74);
