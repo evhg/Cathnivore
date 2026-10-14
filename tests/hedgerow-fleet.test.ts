@@ -723,3 +723,30 @@ describe("hedgerow fleet: Plants (M5)", () => {
     expect(BOOK[76]!.breather).toBe(true);
   });
 });
+
+describe("hedgerow fleet: phased bosses", () => {
+  const phases = (id: number) => {
+    const game = newGame(LEVELS[id - 1]!);
+    sendWave(game);
+    game.spawnQueue = [];
+    game.enemies = [];
+    const boss = makeEnemy(game, "megadozer", 4, 0, 0);
+    game.enemies.push(boss);
+    const counts: number[] = [];
+    for (const f of [1, 0.6, 0.3]) {
+      boss.hp = boss.maxHp * f;
+      boss.dist = 4;
+      boss.stun = 99;
+      stepGame(game);
+      counts.push(game.enemies.length);
+    }
+    return counts;
+  };
+  it("drops an escort at 66% and 33% of the bar past level 30, and not before", () => {
+    const [a, b, c] = phases(40);
+    expect(b!).toBeGreaterThan(a!);
+    expect(c!).toBeGreaterThan(b!);
+    const [x, y, z] = phases(20);
+    expect([x, y, z]).toEqual([1, 1, 1]);
+  });
+});

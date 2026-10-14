@@ -1304,6 +1304,18 @@ function bossMoves(game: Game): void {
     const plan = BOSS_MOVES[e.kind];
     if (!plan || e.hp <= 0) continue;
     if (e.charge && e.charge > 0) e.charge -= STEP;
+    // Phased Plants (Hedgerow 2 M8): past level 30 a boss drops an escort at 66% and again at 33% of its bar.
+    if (game.level.rules === "fleet" && game.level.id > 30) {
+      const due = e.hp <= maxHpOf(e) * 0.33 ? 2 : e.hp <= maxHpOf(e) * 0.66 ? 1 : 0;
+      if ((e.escorts ?? 0) < due) {
+        e.escorts = (e.escorts ?? 0) + 1;
+        const kind = plan.moves.find((m) => m.kind === "spawn")?.spawn?.kind ?? "van";
+        const count = 2 + e.escorts * 2;
+        for (let i = 0; i < count; i++) born.push(makeEnemy(game, kind, Math.max(0, e.dist - 0.6 - i * 0.4), e.lane, e.wave));
+        const p0 = enemyPoint(game.level, e);
+        game.events.push({ type: "bossMove", kind: e.kind, move: "spawn", x: p0.x, y: p0.y, text: `${ENEMIES[e.kind].name} calls its escort: ${count} more.`, towers: [] });
+      }
+    }
     if (e.moveCd === undefined) e.moveCd = plan.every * 0.6;
     if (e.stun > 0) continue;
     e.moveCd -= STEP;
@@ -1626,6 +1638,8 @@ export interface Enemy {
   /** Bosses: seconds until the next signature move, and which move is next. */
   moveCd?: number;
   moveIdx?: number;
+  /** Escort phases a Fleet boss has already triggered (66% and 33% of its bar; acts 4 and later). */
+  escorts?: number;
   /** Seconds until a carrier launches its next drones. */
   launchCd?: number;
   /** Seconds left charging at double speed. */
