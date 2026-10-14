@@ -28,7 +28,12 @@ describe("County Show", () => {
 import { playLevel } from "../games/hedgerow/src/bot";
 
 describe("County Show bot", () => {
-  it("clears every field of a few weeks' Shows on the Show kit", () => {
-    for (const w of [120, 121, 122]) for (const l of showFields(w)) expect(playLevel(l, "best").phase, `week ${w} ${l.id}`).toBe("won");
-  }, 120000);
+  // One test per field: the fields now include Fleet levels up to 99, each a long bot run.
+  for (const w of [120, 121, 122]) {
+    for (const [n, l] of showFields(w).entries()) {
+      it(`clears week ${w} field ${n + 1} (level ${l.id}) on the Show kit`, () => {
+        expect(playLevel(l, "best").phase, `week ${w} ${l.id}`).toBe("won");
+      }, 120000);
+    }
+  }
 });
