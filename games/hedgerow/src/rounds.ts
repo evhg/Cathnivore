@@ -259,7 +259,7 @@ export const SCOUTS = 8;
  * key. Returns the lock and the round it warns of, or null.
  */
 export function scoutsFor(levelId: number | undefined, round: number): { prop: Property; lockRound: number } | null {
-  if (levelId === undefined || levelId < 11 || levelId > 60) return null;
+  if (levelId === undefined || levelId < 11 || levelId > 70) return null;
   const w = windowFor(levelId);
   const base = (r: number) => SWAPS[levelId]?.[r] ?? BOOK[r - 1];
   const isLock = (r: number) => LOCK_ROUNDS.some(([l]) => l === r);
@@ -297,6 +297,7 @@ const TRAFFIC: Record<number, number> = {
   31: 1.8, 32: 1.8, 33: 1.8, 34: 1.8, 35: 1.7, 36: 1.8, 37: 1.8, 38: 1.8, 39: 1.8, 40: 1.5,
   41: 1.8, 42: 1.8, 43: 1.8, 44: 1.8, 45: 1.7, 46: 1.8, 47: 1.8, 48: 1.8, 49: 1.8, 50: 1.5,
   51: 1.8, 52: 1.8, 53: 1.8, 54: 1.8, 55: 1.7, 56: 1.8, 57: 1.8, 58: 1.8, 59: 1.8, 60: 1.5,
+  61: 1.8, 62: 1.8, 63: 1.8, 64: 1.8, 65: 1.7, 66: 1.8, 67: 1.8, 68: 1.8, 69: 1.8, 70: 1.5,
 };
 
 const VEHICLE_WORDS = "lorries|vans|quadcopters|transporters|influencers|drones|pickups|hatchbacks|artics|couriers";

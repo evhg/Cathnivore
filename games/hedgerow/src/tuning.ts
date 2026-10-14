@@ -2,16 +2,6 @@
 // its target Goodwill (docs/design/hedgerow-v2.md section 2). Don't edit by hand; re-run the tuner.
 
 export const HP_SCALE: Record<number, number> = {
-  61: 3.44,
-  62: 6.12,
-  63: 1.81,
-  64: 2.76,
-  65: 2.79,
-  66: 2.39,
-  67: 2.26,
-  68: 4.71,
-  69: 3.96,
-  70: 3.74,
   71: 4.01,
   72: 3.3,
   73: 3.38,
@@ -107,4 +97,14 @@ export const START_K: Record<number, number> = {
   58: 0.7,
   59: 0.7,
   60: 0.7,
+  61: 0.7,
+  62: 0.7,
+  63: 0.7,
+  64: 0.7,
+  65: 0.7,
+  66: 0.7,
+  67: 0.7,
+  68: 0.7,
+  69: 0.7,
+  70: 0.7,
 };

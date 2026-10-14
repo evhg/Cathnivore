@@ -305,12 +305,12 @@ describe("hedgerow fleet: rounds and levels", () => {
     expect(Math.round(budget(10))).toBe(569);
   });
 
-  it("levels 1-60 play windows of the Book on fleet rules; level 61 stays classic", () => {
+  it("levels 1-70 play windows of the Book on fleet rules; level 71 stays classic", () => {
     expect(windowFor(1)).toEqual({ from: 1, to: 12 });
     expect(windowFor(10)).toEqual({ from: 5, to: 18 });
     expect(windowFor(50)).toEqual({ from: 24, to: 45 });
     expect(windowFor(100)).toEqual({ from: 51, to: 80 });
-    for (const lv of LEVELS.slice(0, 60)) {
+    for (const lv of LEVELS.slice(0, 70)) {
       expect(isFleet(lv)).toBe(true);
       expect(lv.goodwill).toBe(FLEET_GOODWILL);
       expect(lv.hpScale).toBeUndefined();
@@ -324,7 +324,7 @@ describe("hedgerow fleet: rounds and levels", () => {
     expect(LEVELS[9]!.waves.at(-1)!.some((g) => g.enemy === "boss")).toBe(true);
     expect(LEVELS[19]!.waves.at(-1)!.some((g) => g.enemy === "convoy")).toBe(true);
     expect(LEVELS[29]!.waves.at(-1)!.some((g) => g.enemy === "blimp")).toBe(true);
-    expect(isFleet(LEVELS[60]!)).toBe(false);
+    expect(isFleet(LEVELS[70]!)).toBe(false);
   });
 
   it("neighbouring levels never play the same rounds: a shared window gets act-themed swaps of the same weight", () => {
