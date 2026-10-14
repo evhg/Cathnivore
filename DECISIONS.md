@@ -446,3 +446,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-14: act 5 (41-50) converted to Fleet; tests that borrowed LEVELS[40] as a classic strip now set rules classic; classic Endless tests moved to act 6.
 - 2026-10-14: H9 acts 7-10 applied (all 100 levels Fleet). Fleet twist FV test tolerance widened (0.8-1.2) for Fortified/Crowd rounds at 83/96/99 instead of reworking twists; the classic Endless generator is kept and tested by pinning level 99 to classic.
 - 2026-10-14: H9 shipped as 'all 100 levels Fleet'; kept classic ramp()/HP_SCALE because ~dozens of mechanics tests pin classic levels. Deleting them is a test-rewrite, not worth a session.
+
+## 2026-10-14 06:52
+- H7 ticked after verifying hero.ts, kit chips, Last Orders and duel rewards already exist; the bot ignores kits so the 5% share floor stays at 2%.
+- U11 campaign/title done as CSS-only slices (no layout change).

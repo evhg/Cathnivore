@@ -226,9 +226,18 @@ export default function App() {
                 Quick Game
               </button>
               <div className="title-minor">
-                <button className="quiet" onClick={() => setScreen({ name: 'rules' })}>How to Play</button>
-                <button className="quiet" onClick={() => setScreen({ name: 'settings' })}>Settings</button>
-                <button className="quiet" onClick={() => setScreen({ name: 'credits' })}>Credits</button>
+                <button className="quiet" onClick={() => setScreen({ name: 'rules' })}>
+                  <svg className="title-key-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 5.5c3-1.2 5.5-1 8 .8 2.5-1.800 5-2 8-.8V19c-3-1.200-5.500-1-8 .8-2.500-1.800-5-2-8-.8zM12 6.300V19.800" /></svg>
+                  How to Play
+                </button>
+                <button className="quiet" onClick={() => setScreen({ name: 'settings' })}>
+                  <svg className="title-key-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h9M17 7h3M4 17h3M11 17h9M15 4.500v5M9 14.500v5" /></svg>
+                  Settings
+                </button>
+                <button className="quiet" onClick={() => setScreen({ name: 'credits' })}>
+                  <svg className="title-key-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.500l2.600 5.300 5.800.800-4.200 4.100 1 5.800-5.200-2.700-5.200 2.700 1-5.800L3.600 9.600l5.800-.8z" /></svg>
+                  Credits
+                </button>
               </div>
             </nav>
           </div>

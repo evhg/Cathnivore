@@ -456,3 +456,15 @@ html.no-animations .title-screen * {
 :root[data-theme='dark'] .title-kicker {
   color: var(--pasture);
 }
+
+.title-key-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  vertical-align: -3px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

@@ -150,7 +150,11 @@
   left: 27px;
   top: 28px;
   bottom: 28px;
-  border-left: 3px dashed var(--rule);
+  width: 3px;
+  border-radius: 2px;
+  /* Stitches: short thread dashes, like the route is sewn onto the page. */
+  background: repeating-linear-gradient(to bottom, var(--soil) 0 7px, transparent 7px 13px);
+  opacity: 0.55;
 }
 
 .cmp-stop {
@@ -229,10 +233,12 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 22px;
-  background: var(--wheat);
-  color: var(--ink-on-fixed-fill);
-  border: 2px solid var(--ink);
-  box-shadow: 0 0 0 0 var(--wheat);
+  /* A wax seal: uneven edge, pressed-in ring. */
+  border-radius: 52% 48% 55% 45% / 47% 54% 46% 53%;
+  background: radial-gradient(circle at 35% 30%, var(--clay) 0%, var(--clay-deep) 75%);
+  color: var(--paper-on-fixed-fill);
+  border: 2px solid var(--clay-deep);
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--clay-deep) 70%, var(--ink) 30%), 0 0 0 0 var(--wheat);
 }
 
 .cmp-stop-next .cmp-number {
@@ -281,6 +287,11 @@
 
 .cmp-stop-next .cmp-card {
   border: 2px solid var(--wheat);
+  padding-block: 20px;
+}
+
+.cmp-stop-next .cmp-title {
+  font-size: 1.625rem;
 }
 
 .cmp-path button.cmp-card.chapter-locked {
@@ -328,7 +339,7 @@
 }
 
 .chapter-locked .cmp-title {
-  color: var(--ink-muted);
+  color: color-mix(in srgb, var(--ink) 80%, var(--paper));
 }
 
 .cmp-path .chapter-goal {
