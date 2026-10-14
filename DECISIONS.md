@@ -441,3 +441,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-13 20:52: U10 stars stamp is CSS only (keyframes star-stamp); reduced motion already disables the animation so stars show static.
 - 2026-10-13 21:51: Start bar full width at all sizes rather than reflowing the producer grid.
 - 2026-10-14 00:30: release retry failed gate 5 on flaky hotseat click only; no test changes; H1 ticked.
+- 2026-10-14: Released 2d4d808. Forced the Graft click in the throttled AI-teammate e2e (stable-wait flake under parallel load; the test measures AI timing, not button stability). Never pkill a release: leaked vitest workers starve later runs.

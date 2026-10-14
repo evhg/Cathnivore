@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-14 00:52 session (release only):** `npm run release` moved `main` and live to `2d4d808` (H1 weather/props, H12-H13, U10, U11 slice 1). 1st try failed gate 5 on the throttled AI-teammate Graft click ("not stable", parallel load); test now clicks with `force`. 2nd try died on timing tests because stray vitest workers from my killed run hogged CPU (don't `pkill` a release; it leaves workers). 3rd try passed all gates; tag push 403 (harmless). Next: H9 (needs a long tune), U5-U7, U11+, D1 per-district saves.
 - **2026-10-13 23:51 session (release attempt):** ticked H1 and ran `npm run release`: gates 1-4 pass, gate 5 failed on the known hot-seat e2e click timeout under load (30 s, flaky); `main` untouched (`18cae57`). Next session: run hotseat alone, then retry release (H1, H12-H13, U10, U11 slice waiting).
 - **2026-10-13 22:51 session (short):** H1: acts 1 and 10 get weather (dandelion seed on the home hills, shredded paper falling over Kingsmarket; `ACT_WEATHER`), shots of levels 1 and 91 checked. Lanes already differ per level via `rewind`, so H1's lane-shape clause is met in practice. tsc, lint clean. Unreleased. Left: H9 (needs a long tune), H7 RPG re-point (mostly already so), U5-U7, U11+.
 - **2026-10-13 21:51 session (short):** U11 slice 1: Cathnivore setup Start is a full-width sticky bar at every size (it floated over producer cards at phone width); shots at P/D checked, quick-game/ai-teammate pass, hotseat flaked under load and passes alone, lint clean. Unreleased. Left for U11: View Transitions, Cath cameo between screens, title/settings shots review. Note: shots need `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
@@ -71,6 +72,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-14 01:22 `2d4d808`: Hedgerow H1 weather/props, H12 fords/oaks/barns/County Show, H13 liveries, U10, U11 slice 1. All gates passed; live version.json matches. 1st release today.
 - 2026-10-13 13:43 `bb1ba19`: Hedgerow H9-adjacent meta: H10 modes/medals/remixes, H11 XP/Acorns/Compost/Seed Packets, H12 Daily rule. All gates passed; live version.json matches. 2nd release today.
 - 2026-10-13 `f5a28b7`: Hedgerow H8 (all path towers, Heirlooms, sell refunds, unlocks by level 24). All gates passed; live version.json matches. 1st release today.
 - 2026-10-12 22:20 `9aee11e`: CATHODE D1-D3 (clinic, plaza), Hedgerow H6 Freeplay and H7 kits. All gates passed; live version.json matches. 2nd release today.
