@@ -73,7 +73,7 @@ export async function liveSmokeTest(base: string): Promise<SmokeResult> {
       return 'failed'
     }
     await page.locator('a[href="/cathnivore/"]').waitFor({ timeout: 15_000 })
-    await page.locator('a[href="/runnel/"]').waitFor({ timeout: 15_000 })
+    await page.locator('a.card[href="/runnel/"]').waitFor({ timeout: 15_000 })
 
     const runnel = await page.goto(`${base}/runnel/?nohelp`, { waitUntil: 'load' })
     if (!runnel || !runnel.ok()) {
