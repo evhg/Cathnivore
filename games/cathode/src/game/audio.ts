@@ -327,11 +327,14 @@ export class Audio {
   }
 
   levelUp(): void {
+    // Beat 1 is a low hit under the rule's slam; beat 2 a glassy shard sweep; then the bell below.
+    this.thump(90, 40, 0.5, 0.4, 0, "sine");
+    this.burst({ type: "highpass", freq: 3000, sweepTo: 7000, q: 0.8, decay: 0.5, attack: 0.02, gain: 0.12, noise: "white", verb: 0.4 });
     // A minor seventh on a soft bell: noir, not arcade.
     const notes = [220, 261.63, 329.63, 392];
     notes.forEach((f, i) => {
       const c = this.ctx;
-      const t = c.currentTime + i * 0.09;
+      const t = c.currentTime + 0.45 + i * 0.09;
       const o = c.createOscillator();
       o.type = "sine";
       o.frequency.value = f * 2;
