@@ -31,7 +31,7 @@ test.describe('landing page', () => {
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore' })).toBeVisible()
     await expect(page.locator('a[href="/cathnivore/"]')).toBeVisible()
-    await expect(page.locator('a.card[href="/runnel/"]')).toBeVisible()
+    await expect(page.locator('a[href="/runnel/"]')).toBeVisible()
     await noSideways(page)
     expect(errors).toEqual([])
   })
@@ -41,7 +41,7 @@ test.describe('landing page', () => {
     const page = await ctx.newPage()
     const errors = trackErrors(page)
     await page.goto('http://localhost:4175/')
-    await expect(page.locator('a.card[href="/runnel/"]')).toBeVisible()
+    await expect(page.locator('a[href="/runnel/"]')).toBeVisible()
     expect(errors).toEqual([])
     await ctx.close()
   })
@@ -55,7 +55,7 @@ test.describe('landing page', () => {
 
   test('the Runnel card opens the puzzle', async ({ page }) => {
     await page.goto('/')
-    await page.locator('a.card[href="/runnel/"]').click()
+    await page.locator('a[href="/runnel/"]').click()
     await expect(page).toHaveURL(/\/runnel\/$/)
     await expect(page.getByRole('heading', { name: 'Runnel' })).toBeVisible()
   })

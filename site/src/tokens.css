@@ -2,30 +2,11 @@
    and motion come from shared/ui/base.css. */
 :root {
   color-scheme: dark;
-  --rn-spring: #9fcbd6;
-  --rn-spring-edge: #6fa6b8;
-  --rn-field: #d9c36a;
-  --rn-field-edge: #b49c44;
-  --rn-crop: #9b8232;
-  --rn-foam: #e9f6fa;
-  --cx-pink-40: rgba(255, 60, 140, 0.4);
-  --cx-pink-32: rgba(255, 40, 130, 0.32);
-  --cx-pink-55: rgba(255, 60, 140, 0.55);
-  --rn-water: #3b8db0;
   --night: #1a1119;
   --cream: #fbf1df;
   --cream-muted: rgba(251, 241, 223, 0.74);
   --gold: #f4c774;
   --gold-ink: #2b1d10;
-  --gold-hi: #ffe3a0;
-  --gold-mid: #e9b457;
-  --gold-lo: #d39a3c;
-  --gold-edge: rgba(120, 70, 20, 0.35);
-  --gold-glow: rgba(233, 180, 87, 0.28);
-  --glass-fill: rgba(255, 244, 224, 0.1);
-  --glass-edge: rgba(255, 244, 224, 0.28);
-  --shine: rgba(255, 255, 255, 0.55);
-  --scrim: rgba(0, 0, 0, 0.6);
   --card: rgba(28, 18, 22, 0.46);
   --card-hover: rgba(36, 24, 28, 0.6);
   --card-edge: rgba(255, 226, 180, 0.18);

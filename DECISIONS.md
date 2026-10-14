@@ -454,10 +454,3 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 ## 2026-10-14 07:51
 - U12 done as CSS/DOM-only slices (level-up beats, kill-cam caption, loot sheen); no gate/release run this session (nothing finished a whole milestone).
 - Temporary lab page `ui-lab.html` is not in the repo; recreate it in `games/cathode` (a div#lab and a module script of `src/ui/lab.ts`) to shoot the level-up, then delete it.
-
-## 2026-10-14 10:52
-- U5 done as hero CTAs first (a visible Today button beats key-art plumbing); landing e2e card selectors now `a.card[href]` because the hero adds second links.
-
-## 2026-10-14 11:53
-- Fixed red CI by tokenising the landing CTA colours rather than raising the ratchet baseline.
-- 2026-10-14: U5 closed without a keyart WebP (the SVG/CSS art is lighter and already sharp).

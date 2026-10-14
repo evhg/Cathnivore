@@ -103,25 +103,3 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && !matchMedia('(pr
     })
   })
 }
-
-// U5: the Today button reads the Runnel save defensively and says Play, Finish or Solved (with the streak).
-try {
-  const label = document.getElementById('cta-today-label')
-  const now = new Date()
-  const today = now.toISOString().slice(0, 10)
-  const save = JSON.parse(localStorage.getItem('runnel:v1') ?? 'null') as { results?: Record<string, unknown>; daily?: Record<string, unknown> } | null
-  const results = save?.results ?? {}
-  if (label && save && typeof save === 'object') {
-    let streak = 0
-    let cursor = results[today] ? today : new Date(Date.parse(`${today}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10)
-    while (results[cursor] && streak < 3650) {
-      streak++
-      cursor = new Date(Date.parse(`${cursor}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10)
-    }
-    if (results[today]) label.textContent = streak > 1 ? `Solved today · ${streak}-day streak` : 'Solved today'
-    else if (save.daily?.[today]) label.textContent = "Finish today's Runnel"
-    else if (streak > 0) label.textContent = `Keep your ${streak}-day streak`
-  }
-} catch {
-  // Unreadable storage: keep the default label.
-}
