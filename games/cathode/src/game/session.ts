@@ -931,6 +931,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
       if (r.killcam) {
         killcam.start(r.killcam);
+        hud.killcamCaption(killcam.distance);
         audio?.killcamWhoosh();
       }
     }

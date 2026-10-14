@@ -534,6 +534,43 @@
 .hud-root.boss-intro .hud-banner-sub { color: var(--blood-hot); }
 .hud-root.boss-intro .hud-banner-title { font-size: calc(var(--t-display-l) * 1.2); }
 
+/* ---- kill-cam caption: the range of the shot, a lower third under a red rule ---- */
+.hud-killcap {
+  position: absolute;
+  left: 50%;
+  bottom: calc(11vh + var(--sp-5));
+  z-index: var(--z-hud-top);
+  display: grid;
+  justify-items: center;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-6);
+  border-top: 2px solid var(--blood-hot);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--night) 80%, transparent), transparent);
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+}
+.hud-killcap.on { animation: killcap-in 3s ease-out both; }
+.hud-killcap-tag {
+  font: 700 var(--t-label, 12px)/1 var(--font-ui);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--blood-hot);
+}
+.hud-killcap-m {
+  font: 700 var(--t-display-l) / 1 var(--font-num);
+  color: var(--ink);
+}
+@keyframes killcap-in {
+  0% { opacity: 0; transform: translate(-50%, 8px); }
+  12% { opacity: 1; transform: translateX(-50%); }
+  85% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-killcap.on { animation: none; opacity: 1; }
+}
+
 /* ---- subtitles: per-line plates between the clusters, the speaker in their colour ---- */
 .hud-sub {
   position: absolute;

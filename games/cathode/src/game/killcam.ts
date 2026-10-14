@@ -95,6 +95,8 @@ export class KillCam {
   private bullet: THREE.Mesh;
   private skel: Skeleton | null = null;
   private saved = new Map<THREE.Mesh, THREE.Material | THREE.Material[]>();
+  /** Metres from the muzzle to the target when the shot started (for the caption). */
+  distance = 0;
   private orbit = 0;
   private lookAt = new THREE.Vector3();
 
@@ -114,6 +116,7 @@ export class KillCam {
     this.phase = "flight";
     this.t = 0;
     const dist = p.pos.distanceTo(this.target.body.joints.chest);
+    this.distance = dist;
     // Stretch the flight to about 1.6 s of real time, however far it is.
     this.scale = Math.min(0.2, dist / (p.vel.length() * 1.6));
     this.bullet.visible = true;

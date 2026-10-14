@@ -401,6 +401,24 @@ export class Hud {
     this.teachEl.classList.toggle("on", !!text);
   }
 
+  private cap?: HTMLElement;
+  private capTimer = 0;
+
+  /** The kill-cam's lower-third: the range of the shot, in a red-ruled plate. Fades by itself. */
+  killcamCaption(metres: number): void {
+    if (!this.cap) {
+      this.cap = el("p", "hud-killcap", this.root);
+      this.cap.setAttribute("aria-hidden", "true");
+    }
+    this.cap.replaceChildren();
+    el("span", "hud-killcap-tag", this.cap).textContent = "Long shot";
+    el("span", "hud-killcap-m", this.cap).textContent = `${Math.round(metres)} m`;
+    this.cap.classList.remove("on");
+    requestAnimationFrame(() => this.cap?.classList.add("on"));
+    clearTimeout(this.capTimer);
+    this.capTimer = window.setTimeout(() => this.cap?.classList.remove("on"), 3000);
+  }
+
   private sub?: HTMLElement;
   private subTimer = 0;
 
