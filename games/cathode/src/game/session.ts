@@ -923,7 +923,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     // Touch: aim assist, and auto-fire on anyone already shooting at her (stealth kills stay a deliberate tap).
     input.autoFire = false;
-    if ((input.isTouch || input.padActive) && !dead && progress.character.difficulty !== "hellWeek") {
+    // (Not in a screenshot stage: no assist pulling the view, no auto-fire at the guard the stage alerted.)
+    if ((input.isTouch || input.padActive) && !dead && !staged && progress.character.difficulty !== "hellWeek") {
       const t = aimAssist(intent.aim || intent.fire, realDt);
       const w = arsenal.weapon;
       input.autoFire =
