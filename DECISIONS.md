@@ -470,3 +470,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-15 12:52: grid variety verified and released; no k changes needed.
 - 2026-10-15: the owner played CATHODE and asked for a week or more of non-stop work on combat, weapons, enemies and hit, wound and death visuals. Phase C overrides the D/H/U split until done. Bullets already stop at cover (rays against colliders); the gap is feedback.
 - 2026-10-15 13:52: Phase C started with C1 (hit/cover feedback) since the hit marker existed but was tiny; HUD scales via root font-size above 900px tall.
+- 2026-10-15 15:06 (C1): the spec's marker table (body 10u x 2.25u) is a floor; drawn 1.6x (16u x 3.6u, 43x10 physical px at 5K) because the owner found the earlier marker too small and the table would have shrunk it.
+- 2026-10-15 (C1): new shot cover is "thin" (bullets only), so movement and enemy sight are unchanged; LOS ignores thin cover (eyes see through glass). Enemy rounds still stop at any thin cover.
+- 2026-10-15 (C1): collider audit counts props inside the walkable bounds (+2 m) and treats a prop within 15 cm of a collider as covered (flush wall dressing); rooftop clutter is tagged "none".
+- 2026-10-15 (C1): confirm sounds live in `game/audio.ts` (dry bus) rather than a separate `combataudio.ts`; armour markers use the torso of enemies with armour >= 0.3 until C15's plates.
