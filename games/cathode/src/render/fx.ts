@@ -385,6 +385,22 @@ export function createFx(o: {
     get alive() {
       return live.length;
     },
+    clear() {
+      // A screenshot stage starts clean: no particles, decals, casings or flash lights from the stage before.
+      for (const p of live) pool.push(p);
+      live.length = 0;
+      lightLayer.write([]);
+      matterLayer.write([]);
+      decals.count = 0;
+      decalNext = 0;
+      casings.length = 0;
+      casingNext = 0;
+      casingMesh.count = 0;
+      for (let i = 0; i < lights.length; i++) {
+        lightLife[i] = 0;
+        lights[i]!.intensity = 0;
+      }
+    },
     muzzle(pos, dir, size = 1) {
       const d = dir.clone().normalize();
       spawn({ pos: pos.clone().addScaledVector(d, 0.05 * size), kind: K.flash, additive: true, life: 0.055, size0: 0.28 * size, size1: 0.36 * size, color: WHITE_HOT });
@@ -394,33 +410,35 @@ export function createFx(o: {
       spawn({ pos: pos.clone().addScaledVector(d, 0.2), vel: d.clone().multiplyScalar(0.8).add(tmpV.set(0, 0.25, 0)), kind: K.smoke, life: 0.9, size0: 0.12 * size, size1: 0.6 * size, color: ambient(pos, new THREE.Color(0.7, 0.7, 0.72), 0.3), alpha: 0.35, drag: 1.5 });
       flashLight(pos.clone().addScaledVector(d, 0.3), "#ffb066", 60 * size, 0.06, 9);
     },
-    impact(pos, normal, surface) {
+    impact(pos, normal, surface, scale = 1) {
+      const k = Math.max(0.25, scale);
+      const many = (n: number) => Math.round(n * k);
       const n = normal.clone().normalize();
       if (surface === "flesh") {
-        fx.blood(pos, n, 0.5);
+        fx.blood(pos, n, Math.min(1, 0.5 * k));
         return;
       }
       if (surface === "water") {
-        for (let i = 0; i < 14; i++)
+        for (let i = 0; i < many(14); i++)
           spawn({ pos: pos.clone(), vel: cone(new THREE.Vector3(0, 1, 0), 0.35, new THREE.Vector3()).multiplyScalar(2 + rand() * 3.5), kind: K.drop, life: 0.6, size0: 0.025, color: ambient(pos, new THREE.Color(0.8, 0.85, 0.9), 0.5), grav: 1, alpha: 0.8, ground: 1 });
-        spawn({ pos: pos.clone().add(tmpV.set(0, 0.2, 0)), vel: new THREE.Vector3(0, 1.4, 0), kind: K.smoke, life: 0.5, size0: 0.1, size1: 0.45, color: ambient(pos, new THREE.Color(0.8, 0.85, 0.9), 0.5), alpha: 0.4 });
+        spawn({ pos: pos.clone().add(tmpV.set(0, 0.2, 0)), vel: new THREE.Vector3(0, 1.4, 0), kind: K.smoke, life: 0.5, size0: 0.1 * k, size1: 0.45 * k, color: ambient(pos, new THREE.Color(0.8, 0.85, 0.9), 0.5), alpha: 0.4 });
         return;
       }
       const metal = surface === "metal" || surface === "chrome";
       const glass = surface === "glass";
       // Sparks (metal) or a few hot chips (concrete).
-      const sparks = metal ? 14 : glass ? 4 : 3;
+      const sparks = many(metal ? 14 : glass ? 4 : 3);
       for (let i = 0; i < sparks; i++)
         spawn({ pos: pos.clone(), vel: cone(n, 0.8, new THREE.Vector3()).multiplyScalar(3 + rand() * 6), kind: K.streak, additive: true, life: 0.15 + rand() * 0.35, size0: 0.01, len: 0.08, color: metal ? WHITE_HOT : ORANGE, grav: 1, drag: 1, ground: 2 });
-      if (metal) spawn({ pos: pos.clone().addScaledVector(n, 0.02), kind: K.flash, additive: true, life: 0.05, size0: 0.12, color: WHITE_HOT });
+      if (metal) spawn({ pos: pos.clone().addScaledVector(n, 0.02), kind: K.flash, additive: true, life: 0.05, size0: 0.12 * k, color: WHITE_HOT });
       if (glass)
-        for (let i = 0; i < 12; i++)
+        for (let i = 0; i < many(12); i++)
           spawn({ pos: pos.clone(), vel: cone(n, 0.9, new THREE.Vector3()).multiplyScalar(1 + rand() * 3), kind: K.drop, additive: true, life: 0.8, size0: 0.012, color: new THREE.Color(1.5, 1.8, 2.2), grav: 1, ground: 1 });
       if (!metal && !glass) {
         // Dust and chips.
         const tint = surface === "wood" ? new THREE.Color(0.55, 0.42, 0.3) : new THREE.Color(0.62, 0.6, 0.57);
-        spawn({ pos: pos.clone().addScaledVector(n, 0.05), vel: n.clone().multiplyScalar(0.9), kind: K.smoke, life: 1.1, size0: 0.08, size1: 0.55, color: ambient(pos, tint, 0.35), alpha: 0.55, drag: 2.5 });
-        for (let i = 0; i < 8; i++)
+        spawn({ pos: pos.clone().addScaledVector(n, 0.05), vel: n.clone().multiplyScalar(0.9), kind: K.smoke, life: 1.1, size0: 0.08 * k, size1: 0.55 * k, color: ambient(pos, tint, 0.35), alpha: 0.55, drag: 2.5 });
+        for (let i = 0; i < many(8); i++)
           spawn({ pos: pos.clone(), vel: cone(n, 0.7, new THREE.Vector3()).multiplyScalar(2 + rand() * 4), kind: K.drop, life: 0.7, size0: 0.012 + rand() * 0.012, color: ambient(pos, tint.clone().multiplyScalar(0.5), 0.2), grav: 1, ground: 2 });
       }
       addDecal(pos, n, metal ? 0.07 : 0.11, glass ? DECAL.crack[0] : metal ? DECAL.holeMetal[0] : DECAL.hole[Math.floor(rand() * 2)]!, new THREE.Color(1, 1, 1));

@@ -177,6 +177,14 @@ export class Arsenal {
     this.boltLeft = 0;
   }
 
+  /** Screenshot stages: every gun back to a full magazine and its starting reserve. */
+  restock(): void {
+    for (const h of this.held) {
+      h.ammo = h.def.mag;
+      h.reserve = h.def.reserve;
+    }
+  }
+
   private returnTo = -1;
 
   /** A takedown: the Pin comes out for one blow, then the gun she was holding comes back. */

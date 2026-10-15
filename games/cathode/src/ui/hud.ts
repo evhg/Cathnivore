@@ -473,6 +473,22 @@ export class Hud {
     for (const k of HIT_CLASSES) this.hit.classList.remove(`c-${k}`);
     this.prop(this.hit, "--a", "0");
     this.prop(this.blockedEl, "--a", "0");
+    // Kill-feed lines from the stage before would read as this stage's.
+    this.feed.replaceChildren();
+    // One-shot animations (the kill rings, the armour shatter, the pops) are held while frozen: drop them.
+    const oneShots: Array<[HTMLElement | null, string[]]> = [
+      [this.hit, ["pop"]],
+      [this.hitRing, ["go"]],
+      [this.hit.querySelector<HTMLElement>(".hud-hit-ring-2"), ["go"]],
+      [this.hit.querySelector<HTMLElement>(".hud-hit-shatter"), ["go"]],
+      [this.blockedEl, ["pop"]],
+    ];
+    for (const [e, classes] of oneShots) {
+      if (!e) continue;
+      clearTimeout(this.punchTimers.get(e));
+      this.punchTimers.delete(e);
+      e.classList.remove(...classes);
+    }
   }
 
   /** The class the marker last showed (for tests and the screenshot sidecars). */

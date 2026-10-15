@@ -24,10 +24,12 @@ export type Surface = "concrete" | "metal" | "glass" | "water" | "wood" | "flesh
 export interface Effects {
   /** Particles alive right now (the S0 budget check). */
   readonly alive?: number;
+  /** Drops every particle, decal, casing and flash light (screenshot stages start clean). */
+  clear?(): void;
   /** A muzzle flash with a brief real light at `pos`, pointing along `dir`. */
   muzzle(pos: THREE.Vector3, dir: THREE.Vector3, size?: number): void;
   /** A bullet impact on the world: dust or sparks or a splash by surface, plus a hole decal. */
-  impact(pos: THREE.Vector3, normal: THREE.Vector3, surface: Surface): void;
+  impact(pos: THREE.Vector3, normal: THREE.Vector3, surface: Surface, scale?: number): void;
   /** Blood from a wound, sprayed along `dir`; `amount` 0..1 scales droplets and the splatter decals. */
   blood(pos: THREE.Vector3, dir: THREE.Vector3, amount: number): void;
   /** Sparks and coolant from a cyborg or machine hit. */

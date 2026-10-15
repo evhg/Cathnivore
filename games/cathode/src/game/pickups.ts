@@ -79,6 +79,12 @@ export class Pickups {
     return got;
   }
 
+  /** Removes every bundle on the ground (screenshot stages start clean). */
+  clear(): void {
+    for (const p of this.list) this.remove(p);
+    this.list.length = 0;
+  }
+
   private remove(p: Pickup): void {
     if (!p.mesh) return;
     this.scene?.remove(p.mesh);
