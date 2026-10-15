@@ -3,6 +3,7 @@
 // transform-driving custom properties (--v, --trail, --px, --gap), opacity and classes, and writes text only
 // when it changed, so a steady frame does no layout. Blood red is danger, cyan is system, amber is reward.
 
+import { tuning, type HitClass } from "../game/feel/tuning";
 import { BINDABLE, codesFor, keyLabel, rebind } from "../controls";
 import { applyMotionPref, loadPrefs, savePrefs, type Intensity, type QualityChoice } from "../prefs";
 import { showCredits } from "./credits";
@@ -66,6 +67,8 @@ const LOW_HP = 0.3;
 /** Armour shown against this cap (the bar is full at 100). */
 const ARMOUR_CAP = 100;
 
+const HIT_CLASSES: readonly HitClass[] = ["body", "head", "armour", "armourBreak", "pen", "kill", "headKill"];
+
 export class Hud {
   private root: HTMLElement;
   private hpBar: ReturnType<typeof bar>;
@@ -104,10 +107,14 @@ export class Hud {
   private target: HTMLElement;
   private targetFill: HTMLElement;
   private targetT = 0;
-  private hitT = 0;
+  private hitAge = 1e9;
+  private hitHold = 0;
+  private hitFade = 1;
+  private targetDead = 0;
   private hitRing: HTMLElement;
   private blockedEl: HTMLElement;
-  private blockedT = 0;
+  private blockedAge = 1e9;
+  private blockedUses = 0;
   /** Last value written per element and property, so a steady frame writes nothing. */
   private written = new WeakMap<Element, Map<string, string>>();
 
@@ -152,11 +159,22 @@ export class Hud {
     this.cross = el("div", "hud-cross", this.root);
     for (const k of ["t", "b", "l", "r"]) el("span", `hud-cross-${k}`, this.cross);
     el("span", "hud-cross-dot", this.cross);
+    // The hit marker (S1.2): four ticks whose size and colour come from the class of hit, a centre dot for
+    // crits, a shield pip and shatter ring for armour, and a ring (two on a head kill) that bursts on a kill.
     this.hit = el("div", "hud-hit", this.root);
+    this.hit.setAttribute("aria-hidden", "true");
     for (const k of ["a", "b", "c", "d"]) el("i", `hud-hit-${k}`, this.hit);
+    el("b", "hud-hit-dot", this.hit);
+    el("b", "hud-hit-pip", this.hit);
+    el("span", "hud-hit-shatter", this.hit);
     this.hitRing = el("span", "hud-hit-ring", this.hit);
-    this.blockedEl = el("p", "hud-blocked", this.root);
-    this.blockedEl.textContent = "Blocked by cover";
+    el("span", "hud-hit-ring hud-hit-ring-2", this.hit);
+    // Cover ate the round: hollow brackets either side of the crosshair, and "COVER" the first few times.
+    this.blockedEl = el("div", "hud-blocked", this.root);
+    this.blockedEl.setAttribute("aria-hidden", "true");
+    el("i", "hud-blocked-l", this.blockedEl);
+    el("i", "hud-blocked-r", this.blockedEl);
+    el("span", "hud-blocked-word", this.blockedEl).textContent = "Cover";
     this.threats = el("div", "hud-threats", this.root);
     this.prompt = el("p", "hud-prompt", this.root);
     el("span", "c-key", this.prompt).textContent = "F";
@@ -306,10 +324,21 @@ export class Hud {
     });
     this.show(this.prompt, s.takedown);
     set(this.focus, "--a", s.bulletTime.toFixed(2));
-    this.hitT = Math.max(0, this.hitT - dt);
-    set(this.hit, "--a", Math.min(1, this.hitT * 4).toFixed(2));
-    this.blockedT = Math.max(0, this.blockedT - dt);
-    set(this.blockedEl, "--a", Math.min(1, this.blockedT * 3).toFixed(2));
+    // The marker holds at full strength, then fades (per-class hold and fade, S1.2), on real time.
+    this.hitAge += dt * 1000;
+    const hitA = this.hitAge < this.hitHold ? 1 : Math.max(0, 1 - (this.hitAge - this.hitHold) / this.hitFade);
+    set(this.hit, "--a", hitA.toFixed(2));
+    this.blockedAge += dt * 1000;
+    const glyph = tuning.blocked.glyphMs;
+    set(this.blockedEl, "--a", (this.blockedAge < glyph * 0.6 ? 1 : Math.max(0, 1 - (this.blockedAge - glyph * 0.6) / (glyph * 0.4))).toFixed(2));
+    // A killed target's bar: flash, collapse, then hide.
+    if (this.targetDead > 0) {
+      this.targetDead -= dt;
+      if (this.targetDead <= 0) {
+        this.targetT = 0;
+        this.target.classList.remove("is-dead");
+      }
+    }
 
     // Threat arcs: one per enemy that has noticed her, pointing their way.
     const arcs = this.threats.children;
@@ -344,27 +373,65 @@ export class Hud {
     this.hurtArc.style.setProperty("--rot", `${bearing}rad`);
   }
 
-  /** A short health bar for whoever she just hit. */
-  targetHit(name: string, frac: number): void {
-    this.targetT = 2.5;
+  /**
+   * A short health bar for whoever she just hit. On a kill (`lethal`) the bar flashes, collapses to nothing
+   * over 180 ms and hides 400 ms later, so a dead man's bar never hangs about (S1.2's target-bar fix).
+   */
+  targetHit(name: string, frac: number, lethal = false): void {
     this.text(this.target.firstElementChild as HTMLElement, name);
-    this.targetFill.style.setProperty("--v", String(Math.max(0, Math.min(1, frac))));
+    this.targetFill.style.setProperty("--v", String(lethal ? 0 : Math.max(0, Math.min(1, frac))));
+    if (lethal) {
+      this.targetT = Math.max(this.targetT, 1);
+      this.targetDead = (tuning.targetBar.collapseMs + tuning.targetBar.hideAfterMs) / 1000;
+      this.punch(this.target, "is-dead", tuning.targetBar.collapseMs + tuning.targetBar.hideAfterMs + 40);
+    } else {
+      this.targetT = tuning.targetBar.holdS;
+      this.targetDead = 0;
+      this.target.classList.remove("is-dead");
+    }
   }
 
-  /** The hit marker: white on the body, red on the head, big and red with a ring on a kill, steel when armour ate it. */
-  hitMarker(kill: boolean, head = false, soft = false): void {
-    this.hitT = kill ? 0.6 : 0.4;
-    this.hit.classList.toggle("kill", kill);
-    this.hit.classList.toggle("head", head && !kill);
-    this.hit.classList.toggle("soft", soft && !kill && !head);
-    this.punch(this.hit, "pop", 220);
-    if (kill) this.punch(this.hitRing, "go", 420);
+  /** True while a killed target's bar is collapsing (for tests and the screenshot checks). */
+  get targetVisible(): boolean {
+    return this.targetT > 0 && this.targetDead <= 0;
   }
 
-  /** Cover (or a shield) stopped a round aimed at someone she can see. */
+  /**
+   * The hit marker (S1.2). The class (body, head, armour, armour break, pen, kill, head kill) sets the size,
+   * colour, pop, hold and fade; it never depends on the damage. A new hit restarts the animation.
+   * The old boolean form (kill, head, soft) still works.
+   */
+  hitMarker(cls: HitClass | boolean, head = false, soft = false): void {
+    const c: HitClass = typeof cls === "string" ? cls : cls ? (head ? "headKill" : "kill") : head ? "head" : soft ? "armour" : "body";
+    const m = tuning.marker[c];
+    for (const k of HIT_CLASSES) this.hit.classList.toggle(`c-${k}`, k === c);
+    this.hit.classList.add("on");
+    this.prop(this.hit, "--pop", String(m.pop));
+    this.prop(this.hit, "--pop-ms", `${m.popMs}ms`);
+    this.hitAge = 0;
+    this.hitHold = m.holdMs;
+    this.hitFade = m.fadeMs;
+    if (c === "kill" || c === "headKill") {
+      // The ring outlives the ticks: give the marker long enough to finish it.
+      this.hitFade = Math.max(m.fadeMs, tuning.killRing.ms);
+    }
+    this.punch(this.hit, "pop", Math.max(120, m.popMs + 40));
+    if (c === "kill" || c === "headKill") this.punch(this.hitRing, "go", tuning.killRing.ms + 40);
+    if (c === "headKill") this.punch(this.hit.querySelector(".hud-hit-ring-2") as HTMLElement, "go", tuning.killRing.ms + 160);
+    if (c === "armourBreak") this.punch(this.hit.querySelector(".hud-hit-shatter") as HTMLElement, "go", 260);
+  }
+
+  /** The class the marker last showed (for tests and the screenshot sidecars). */
+  get hitClass(): HitClass | null {
+    return HIT_CLASSES.find((k) => this.hit.classList.contains(`c-${k}`)) ?? null;
+  }
+
+  /** Cover stopped a round aimed at someone she can see: brackets, never a hit marker (S1.1). */
   blocked(): void {
-    this.blockedT = 0.7;
-    this.punch(this.blockedEl, "pop", 160);
+    this.blockedAge = 0;
+    this.blockedUses++;
+    this.blockedEl.classList.toggle("worded", this.blockedUses <= tuning.blocked.wordUses);
+    this.punch(this.blockedEl, "pop", 200);
   }
 
   /** Lays a feed line out as data: "+90 XP" in amber mono, short modifiers in cyan caps, the rest in ink. */

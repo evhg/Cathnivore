@@ -233,8 +233,13 @@
 .hud-cross-l { transform: translateX(calc(-.5rem - var(--gap))); }
 .hud-cross-r { transform: translateX(var(--gap)); }
 .hud-cross-dot { width: .1875rem; height: .1875rem; margin: -.09375rem 0 0 -.09375rem; border-radius: 50%; }
+/* ---- the hit marker (S1.2): sized in --u, coloured by class, never by damage ---- */
 .hud-hit {
-  --tc: var(--ink);
+  --tc: var(--hit-body);
+  --len: calc(var(--u) * 10);
+  --th: max(2px, calc(var(--u) * 2.25));
+  --gap: calc(var(--u) * 7);
+  --ring: calc(var(--u) * 40);
   position: absolute;
   left: 50%;
   top: 50%;
@@ -243,34 +248,95 @@
   opacity: var(--a, 0);
   transform: scale(var(--xs, 1));
 }
-.hud-hit.head { --tc: var(--blood-hot); }
-.hud-hit.kill { --tc: var(--blood-hot); }
-.hud-hit.soft { --tc: var(--steel); }
+.hud-hit.c-head { --tc: var(--hit-crit); --len: calc(var(--u) * 13); --th: max(2px, calc(var(--u) * 2.5)); }
+.hud-hit.c-armour,
+.hud-hit.c-armourBreak { --tc: var(--hit-armour); }
+.hud-hit.c-kill,
+.hud-hit.c-headKill { --tc: var(--hit-crit); --len: calc(var(--u) * 15); --th: max(2px, calc(var(--u) * 3)); --gap: calc(var(--u) * 9); }
 .hud-hit i {
   position: absolute;
-  left: -.1rem;
-  top: -1.45rem;
-  width: .2rem;
-  height: .85rem;
+  left: calc(var(--th) / -2);
+  top: calc(-1 * (var(--gap) + var(--len)));
+  width: var(--th);
+  height: var(--len);
   background: var(--tc);
-  box-shadow: 0 0 0 .0625rem rgb(var(--black-rgb) / .65), 0 0 .6rem var(--tc);
-  transform-origin: .1rem 1.45rem;
+  border-radius: calc(var(--th) / 2);
+  box-shadow: 0 0 0 max(1px, var(--u)) var(--hit-outline), 0 0 calc(var(--u) * 8) rgb(var(--black-rgb) / .35);
+  transform-origin: 50% calc(var(--gap) + var(--len));
 }
-/* A kill: longer arms and a ring that bursts outward. */
-.hud-hit.kill i { top: -1.9rem; height: 1.2rem; width: .24rem; left: -.12rem; transform-origin: .12rem 1.9rem; background: var(--amber); box-shadow: 0 0 0 .0625rem rgb(var(--black-rgb) / .7), 0 0 .9rem var(--blood-hot); }
-.hud-hit-ring { position: absolute; left: -1.2rem; top: -1.2rem; width: 2.4rem; height: 2.4rem; border: .125rem solid var(--tc); border-radius: 50%; opacity: 0; box-shadow: 0 0 .8rem var(--tc); }
-.hud-hit-ring.go { animation: hit-ring 420ms var(--ease-out); }
-@keyframes hit-ring { from { opacity: .9; transform: scale(.4); } to { opacity: 0; transform: scale(1.9); } }
+/* A round that went through cover first: hollow ticks. */
+.hud-hit.c-pen i { background: transparent; box-shadow: inset 0 0 0 max(1px, var(--u)) var(--tc), 0 0 0 max(1px, var(--u)) var(--hit-outline); }
+/* Crits and kills burn a little: a coloured bloom under the outline. */
+.hud-hit.c-head i,
+.hud-hit.c-kill i,
+.hud-hit.c-headKill i { box-shadow: 0 0 0 max(1px, var(--u)) var(--hit-outline), 0 0 calc(var(--u) * 10) var(--tc); }
+.hud-hit.c-headKill i { outline: max(1px, var(--u)) solid var(--hit-gold); outline-offset: 0; }
 .hud-hit-a { transform: rotate(45deg); }
 .hud-hit-b { transform: rotate(135deg); }
 .hud-hit-c { transform: rotate(225deg); }
 .hud-hit-d { transform: rotate(315deg); }
-/* Cover stopped the round: two flat bars and a tag, so "I can see it but I can't hit it" is never a mystery. */
-.hud-blocked { position: absolute; left: 50%; top: 50%; opacity: var(--a, 0); transform: translate(-50%, 1.4rem) scale(var(--xs, 1)); transform-origin: 50% 0; font: 700 var(--t-label)/1 var(--font-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--steel); white-space: nowrap; padding: .25rem .6rem; background: rgb(var(--black-rgb) / .55); border: .0625rem solid var(--steel-deep); }
-.hud-blocked.pop { animation: blocked-pop 160ms var(--ease-out); }
-@keyframes blocked-pop { from { transform: translate(-50%, 1.1rem) scale(var(--xs, 1)); } }
-.hud-hit.pop { animation: hit-pop var(--d-2) var(--ease-back); }
-@keyframes hit-pop { from { transform: scale(calc(var(--xs, 1) * 1.6)); } to { transform: scale(var(--xs, 1)); } }
+/* Crit: a centre dot that flashes with the ticks. */
+.hud-hit-dot { position: absolute; left: calc(var(--u) * -1.25); top: calc(var(--u) * -1.25); width: calc(var(--u) * 2.5); height: calc(var(--u) * 2.5); border-radius: 50%; background: var(--tc); box-shadow: 0 0 0 max(1px, var(--u)) var(--hit-outline); opacity: 0; }
+.hud-hit.c-head .hud-hit-dot,
+.hud-hit.c-headKill .hud-hit-dot { opacity: 1; }
+/* Armour: a small shield pip under the centre. */
+.hud-hit-pip { position: absolute; left: calc(var(--u) * -3); top: calc(var(--gap) + var(--len) + var(--u) * 4); width: calc(var(--u) * 6); height: calc(var(--u) * 7); background: var(--tc); clip-path: polygon(50% 0, 100% 18%, 100% 55%, 50% 100%, 0 55%, 0 18%); opacity: 0; }
+.hud-hit.c-armour .hud-hit-pip,
+.hud-hit.c-armourBreak .hud-hit-pip { opacity: 1; }
+/* Armour break: a shatter ring from 10u to 26u. */
+.hud-hit-shatter { position: absolute; left: calc(var(--u) * -13); top: calc(var(--u) * -13); width: calc(var(--u) * 26); height: calc(var(--u) * 26); border: max(1px, var(--u)) dashed var(--hit-armour); border-radius: 50%; opacity: 0; }
+.hud-hit-shatter.go { animation: hit-shatter 200ms var(--ease-out); }
+@keyframes hit-shatter { from { opacity: 1; transform: scale(.38); } to { opacity: 0; transform: scale(1); } }
+/* Kill: a ring bursting from 12u to 40u over 420 ms; a head kill fires a second, gold one. */
+.hud-hit-ring { position: absolute; left: calc(var(--ring) / -2); top: calc(var(--ring) / -2); width: var(--ring); height: var(--ring); border: max(2px, calc(var(--u) * 2)) solid var(--tc); border-radius: 50%; opacity: 0; box-shadow: 0 0 calc(var(--u) * 12) var(--tc), inset 0 0 calc(var(--u) * 6) var(--tc); }
+.hud-hit-ring.go { animation: hit-ring 420ms var(--ease-out); }
+.hud-hit-ring-2 { border-color: var(--hit-gold); box-shadow: 0 0 calc(var(--u) * 14) var(--hit-gold); }
+.hud-hit-ring-2.go { animation: hit-ring 420ms var(--ease-out) 90ms backwards; }
+@keyframes hit-ring { from { opacity: 1; transform: scale(.3); } 35% { opacity: .95; } to { opacity: 0; transform: scale(1); } }
+.hud-hit.pop { animation: hit-pop var(--pop-ms, 60ms) var(--ease-out); }
+@keyframes hit-pop { from { transform: scale(calc(var(--xs, 1) * var(--pop, 1.25))); } to { transform: scale(var(--xs, 1)); } }
+
+/* ---- blocked (S1.1): hollow brackets either side of the crosshair; "COVER" for the first three ---- */
+.hud-blocked {
+  --bw: calc(var(--u) * 7);
+  --bh: calc(var(--u) * 20);
+  --bs: max(2px, calc(var(--u) * 2.25));
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  opacity: var(--a, 0);
+  transform: scale(var(--xs, 1));
+}
+.hud-blocked i {
+  position: absolute;
+  top: calc(var(--bh) / -2);
+  width: var(--bw);
+  height: var(--bh);
+  border: var(--bs) solid var(--hit-armour);
+  box-shadow: 0 0 0 max(1px, var(--u)) var(--hit-outline), inset 0 0 0 max(1px, var(--u)) var(--hit-outline);
+}
+.hud-blocked .hud-blocked-l { left: calc(var(--u) * -24); border-right: 0; }
+.hud-blocked .hud-blocked-r { left: calc(var(--u) * 17); border-left: 0; }
+.hud-blocked-word {
+  position: absolute;
+  left: 0;
+  top: calc(var(--bh) / 2 + var(--u) * 8);
+  transform: translateX(-50%);
+  display: none;
+  font: 700 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--hit-armour);
+  text-shadow: var(--hud-shadow);
+  white-space: nowrap;
+}
+.hud-blocked.worded .hud-blocked-word { display: block; }
+.hud-blocked.pop .hud-blocked-l { animation: blocked-in-l 200ms var(--ease-out); }
+.hud-blocked.pop .hud-blocked-r { animation: blocked-in-r 200ms var(--ease-out); }
+@keyframes blocked-in-l { from { transform: translateX(calc(var(--u) * -8)); } }
+@keyframes blocked-in-r { from { transform: translateX(calc(var(--u) * 8)); } }
 
 .hud-hurt-arc {
   position: absolute;
@@ -296,7 +362,7 @@
   position: absolute;
   left: 50%;
   top: 12%;
-  width: min(240px, 50vw);
+  width: min(calc(var(--u) * 320), 50vw);
   transform: translateX(-50%);
   text-align: center;
 }
@@ -310,7 +376,7 @@
 .hud-target-bar {
   position: relative;
   display: block;
-  height: 5px;
+  height: max(4px, calc(var(--u) * 7));
   margin-top: var(--sp-1);
   overflow: hidden;
   background: rgb(var(--black-rgb) / .6);
@@ -324,6 +390,11 @@
   transform: scaleX(var(--v, 1));
   transition: transform var(--d-2) var(--ease-out);
 }
+/* A kill: the bar flashes white, collapses over 180 ms, and the whole thing fades out after (S1.2). */
+.hud-target.is-dead .hud-target-fill { background: var(--hit-body); transition: transform 180ms var(--ease-in, ease-in); }
+.hud-target.is-dead { animation: target-gone 580ms linear forwards; }
+.hud-target.is-dead .hud-target-name { color: var(--hit-crit); text-decoration: line-through; text-decoration-thickness: max(1px, calc(var(--u) * 2)); }
+@keyframes target-gone { 0%, 30% { opacity: 1; } 100% { opacity: 0; } }
 .hud-threats {
   position: absolute;
   left: 50%;
@@ -938,7 +1009,8 @@
   .hud-root.is-booting *,
   .hud-objective.is-new,
   .hud-hp-text.hit,
-  .hud-hit.pop { animation: none; }
+  .hud-hit.pop,
+  .hud-blocked.pop i { animation: none; }
   .hud-feed-line { animation: feed-fade 4.4s linear both; }
   .hud-banner.on { animation: feed-fade 3.2s linear forwards; }
 }
@@ -947,7 +1019,9 @@
 :root.reduce-motion .hud-hp-text.hit,
 :root.reduce-motion .hud-hit.pop,
 :root.reduce-motion .hud-hit-ring.go,
-:root.reduce-motion .hud-blocked.pop,
+:root.reduce-motion .hud-blocked.pop i,
+:root.reduce-motion .hud-hit-ring-2.go,
+:root.reduce-motion .hud-hit-shatter.go,
 :root.reduce-motion .c-bar.is-low > .fill { animation: none; }
 :root.reduce-motion .hud-feed-line { animation: feed-fade 4.4s linear both; }
 :root.reduce-motion .hud-banner.on { animation: feed-fade 3.2s linear forwards; }

@@ -13,6 +13,12 @@ import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RA
 import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
+import { Timescale } from "./feel/timescale";
+import { Trauma } from "./feel/trauma";
+import { Spring1 } from "./feel/spring";
+import { tuning } from "./feel/tuning";
+import { AUTOMATIC, confirmSound, hitClass, hitStopMs } from "../sim/hitevent";
+import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
 import { Hud } from "../ui/hud";
 import { Audio } from "./audio";
@@ -656,7 +662,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     pickups.drop(at, found);
     const ammo = arsenal.scavenge();
     if (ammo) hud.feedLine(`+${ammo} rounds`);
-    hud.hitMarker(true);
+    // Kills by a round confirm through the hit (drainEvents); takedowns and blasts confirm here.
+    if (k.takedown || k.weapon.id === "frag" || k.weapon.blast) {
+      hud.hitMarker(k.headshot ? "headKill" : "kill");
+      audio?.confirm(k.headshot ? "headKill" : "kill");
+      killConfirm(k.headshot ? tuning.hitStop.headKill : k.takedown ? tuning.hitStop.takedown : tuning.hitStop.kill, false);
+    }
     // Volatile elites blow up where they fall (applied next frame, outside the kill loop).
     if (k.enemy.kit.mods?.includes("explosiveOnDeath")) {
       deathBlasts.push({ pos: k.enemy.body.joints.chest.clone(), radius: 4, damage: Math.round(k.enemy.kit.maxHp * 0.4) });
@@ -754,7 +765,29 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.scene.add(g);
     return g;
   });
-  let hitStop = 0;
+  // Feel (S0): the one timescale (hit-stops), camera trauma and the kill's FOV punch.
+  const timescale = new Timescale();
+  const trauma = new Trauma();
+  trauma.reducedMotion = reduceMotionOn();
+  trauma.phone = input.isTouch;
+  const fovPunch = new Spring1(tuning.kill.fovSpring);
+  /** A kill lands: hit-stop, FOV punch, a little camera trauma, and a rumble on a pad (S1.4). */
+  function killConfirm(stopMs: number, auto: boolean): void {
+    timescale.hitStop(stopMs, auto);
+    fovPunch.x = tuning.kill.fovPunchDeg;
+    fovPunch.v = 0;
+    trauma.add(tuning.kill.trauma);
+    rumble("kill");
+  }
+  function rumble(kind: keyof typeof tuning.rumble): void {
+    const r = tuning.rumble[kind];
+    const pad = input.padActive ? navigator.getGamepads?.().find((g) => g && g.connected) : null;
+    const act = (pad as (Gamepad & { vibrationActuator?: { playEffect?(t: string, p: object): Promise<unknown> } }) | null | undefined)?.vibrationActuator;
+    if (!act?.playEffect) return;
+    void act
+      .playEffect("dual-rumble", { duration: r.ms, weakMagnitude: r.motor === "weak" ? r.mag : 0, strongMagnitude: r.motor === "strong" ? r.mag : 0 })
+      .catch(() => undefined);
+  }
   let jolt = 0;
   const calm = calmCameraOn();
   // The pause menu, opened by the phone's menu button (desktop pauses whenever the mouse is free).
@@ -829,12 +862,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       s.focus = Math.max(0, s.focus - realDt);
       scale = 0.35;
     } else s.focus = Math.min(progress.stats.bulletTimeSeconds, s.focus + realDt * 0.15);
-    // Hit-stop: a landed blow holds the world for a few frames, so it lands with weight.
-    if (hitStop > 0) {
-      hitStop -= realDt;
-      scale *= 0.06;
-    }
+    // Hit-stop: a landed blow holds the world for a few frames, so it lands with weight. The lowest scale
+    // wins (a stop inside slow motion returns to the slow motion); particles drift at a quarter speed.
+    timescale.update(realDt);
+    const fxScale = Math.min(scale, timescale.fxScale);
+    scale = Math.min(scale, timescale.simScale);
     const dt = o.shot ? 0 : realDt * scale;
+    const fxDt = o.shot ? 0 : realDt * fxScale;
+    combat.clock += dt;
     thunderCover = Math.max(0, thunderCover - realDt);
     grace = Math.max(0, grace - dt);
     // Out of the fight for a few seconds, she gets her breath back.
@@ -888,6 +923,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.camera.rotation.x += Math.sin(swayT * 0.9) * amp;
       world.camera.rotation.y += Math.sin(swayT * 0.45) * amp * 1.4;
     }
+    // Trauma: one shake for every jolt the fight gives the camera (S0).
+    trauma.update(realDt);
+    const shake = trauma.sample();
+    world.camera.rotation.x += shake.pitch;
+    world.camera.rotation.y += shake.yaw;
+    world.camera.rotation.z += shake.roll;
     // The camera jolts with a landed blow, in the swing's direction.
     if (jolt > 0.01) {
       jolt *= Math.exp(-realDt * 14);
@@ -939,7 +980,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const struck = combat.melee(eye, fwd, arsenal.weapon, build());
       audio?.pin(struck, arsenal.weapon.model);
       if (struck) {
-        hitStop = 0.07;
+        timescale.hitStop(tuning.hitStop.melee);
         jolt = 1;
       }
       if (struck && run.lifeSteal > 0) s.hp = Math.min(s.maxHp, s.hp + arsenal.weapon.damage * run.lifeSteal);
@@ -1021,7 +1062,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         sinceHurt = 0;
         laserCool = LASER_COOLDOWN;
         hud.hurtFrom(0);
-        audio?.hitFlesh(false);
+        audio?.hurt(false);
       }
     }
     laserCool -= dt;
@@ -1066,7 +1107,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           hud.hurtFrom(bearingTo(sh.from));
           if (e.kit.drain) s.focus = Math.max(0, s.focus - e.kit.drain);
           if (!sh.melee) world.fx.tracer(sh.from, sight.chest);
-          audio?.hitFlesh(!!sh.melee);
+          audio?.hurt(!!sh.melee);
         } else if (hitWorld) {
           world.fx.impact(hitWorld.point, hitWorld.normal, world.surfaceAt(hitWorld.point));
           world.fx.tracer(sh.from, hitWorld.point);
@@ -1209,10 +1250,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
 
     // Camera zoom while aiming, and the weapon rig.
-    world.camera.fov = arsenal.worldFov;
+    world.camera.fov = arsenal.worldFov + (calm ? 0.4 : 1) * fovPunch.update(realDt);
     world.camera.updateProjectionMatrix();
     arsenal.pose(realDt, intent.look, player.stride, player.speed, intent.sprint, player.landed, world.viewCamera, BASE_FOV);
-    world.update(dt, o.shot ? 1 : time);
+    world.update(dt, o.shot ? 1 : time, fxDt);
 
     // HUD.
     const ahead = rays.cast(eye, fwd, 800);
@@ -1415,20 +1456,37 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       onKill(k);
       if (k.severed.length) audio?.sever();
     }
+    // Every hit: a marker by class, a dry confirm, a hit-stop from the table, and on a kill the FOV punch,
+    // trauma and the target bar's collapse (S1.2 to S1.5). Several pellets in one frame confirm once, as
+    // the best class among them.
+    const rank = ["pen", "body", "armour", "armourBreak", "head", "kill", "headKill"] as const;
+    let best: { cls: (typeof rank)[number]; h: (typeof combat.hits)[number] } | null = null;
     for (const h of combat.hits) {
-      if (!h.killed) {
-        const soft = h.damage < h.enemy.kit.maxHp * 0.03;
-        hud.hitMarker(false, h.zone === "head", soft);
-        hud.targetHit(h.enemy.kit.name, h.enemy.hp / h.enemy.kit.maxHp);
-        audio?.hitTick(soft ? "soft" : h.zone === "head" ? "head" : "body");
-      } else audio?.hitTick("kill");
+      if (!h.data) continue;
+      const cls = hitClass(h.data);
+      if (!best || rank.indexOf(cls) > rank.indexOf(best.cls)) best = { cls, h };
+      hud.targetHit(h.enemy.kit.name, h.enemy.hp / h.enemy.kit.maxHp, h.killed);
       audio?.hitFlesh(h.damage > 40);
+    }
+    if (best) {
+      const d = best.h.data!;
+      hud.hitMarker(best.cls);
+      audio?.confirm(confirmSound(best.cls));
+      const auto = AUTOMATIC.has(d.weaponCls);
+      const stop = hitStopMs(d);
+      if (d.lethal) killConfirm(stop, auto);
+      else {
+        timescale.hitStop(stop, auto);
+        rumble("hit");
+      }
     }
     if (combat.blocks > 0) {
       hud.blocked();
       audio?.blocked();
       combat.blocks = 0;
     }
+    combat.blockEvents.length = 0;
+    combat.barks.length = 0;
     combat.kills.length = 0;
     combat.hits.length = 0;
   }

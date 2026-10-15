@@ -288,7 +288,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       if (outdoor && theme?.water !== false && (g < FLOOD.water + 0.01 || (p.x > L.quayEdge && p.x < L.canalE))) return "water";
       return "concrete";
     },
-    update(dt, time) {
+    update(dt, time, fxDt = dt) {
       clock = time;
       shared.uTime.value = time;
       signs.uniforms.uTime.value = time;
@@ -296,7 +296,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       traffic?.update(time);
       if (!shot && dt > 0) crowd?.update(time);
       pool.update(camera, dt, time, shot || dt === 0);
-      fxs.update(dt, camera);
+      fxs.update(fxDt, camera);
       // Lightning: two or three quick pulses, then thunder a few seconds later.
       lightningT -= dt;
       if (lightningT <= 0) {

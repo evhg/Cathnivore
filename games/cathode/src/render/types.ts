@@ -72,7 +72,8 @@ export interface World {
   /** The surface a world ray hit (for impacts), from the collider it struck. */
   surfaceAt(p: THREE.Vector3): Surface;
   /** Per-frame animation: rain, signs flickering, steam, effects. */
-  update(dt: number, time: number): void;
+  /** `fxDt` runs the particles (a hit-stop freezes the sim but lets blood drift at a quarter speed). */
+  update(dt: number, time: number, fxDt?: number): void;
   render(): void;
   /** Sheds work when the device is running hot (shadow refresh rate); optional so test worlds can skip it. */
   cool?(): void;

@@ -4,6 +4,10 @@
 // notices Cath. Everything goes through a lowpass the slow-motion closes, so time itself sounds heavy.
 
 import { Score, type ScoreVariant } from "./score";
+import { db, tuning } from "./feel/tuning";
+
+/** The hit-confirm sounds (S1.3). */
+export type ConfirmKind = "body" | "head" | "armour" | "plateBreak" | "visor" | "kill" | "headKill" | "pen" | "soft";
 
 type Noise = "white" | "pink" | "brown";
 
@@ -12,6 +16,8 @@ export class Audio {
   private master: GainNode;
   private slowFilter: BiquadFilterNode;
   private sfx: GainNode;
+  /** Hit confirms and Cath's own body: no reverb, never muffled by slow motion, +3 dB over the guns (S0). */
+  private dry: GainNode;
   private verb: ConvolverNode;
   private verbSend: GainNode;
   private noise: Record<Noise, AudioBuffer>;
@@ -36,38 +42,54 @@ export class Audio {
     const c = this.ctx;
     this.master = c.createGain();
     this.master.gain.value = 0.8;
+    const A = tuning.audio;
     const comp = c.createDynamicsCompressor();
-    comp.threshold.value = -14;
-    comp.ratio.value = 4;
+    comp.threshold.value = A.compThreshold;
+    comp.ratio.value = A.compRatio;
+    comp.knee.value = A.compKnee;
+    comp.attack.value = A.compAttack;
+    comp.release.value = A.compRelease;
     this.slowFilter = c.createBiquadFilter();
     this.slowFilter.type = "lowpass";
     this.slowFilter.frequency.value = 20000;
     this.master.connect(this.slowFilter).connect(comp).connect(c.destination);
     this.sfx = c.createGain();
-    this.sfx.connect(this.master);
+    // The world and the score pass through one duck stage, so a kill can push them back 3 dB.
+    this.duckBus = c.createGain();
+    this.duckBus.connect(this.master);
+    this.sfx.connect(this.duckBus);
+    // The dry bus joins after the slow-motion lowpass: a confirm is never muffled or reverberant.
+    this.dry = c.createGain();
+    this.dry.gain.value = db(A.dryGainDb);
+    this.dryOut = c.createGain();
+    this.dry.connect(this.dryOut).connect(comp);
     this.noise = { white: this.makeNoise("white"), pink: this.makeNoise("pink"), brown: this.makeNoise("brown") };
     // The street: a long, dark stereo tail.
     this.verb = c.createConvolver();
     this.verb.buffer = this.impulse(2.6, 2.4);
     this.verbSend = c.createGain();
     this.verbSend.gain.value = 0.35;
-    this.verbSend.connect(this.verb).connect(this.master);
+    this.verbSend.connect(this.verb).connect(this.duckBus);
     this.music = c.createGain();
     this.music.gain.value = 0.22;
     this.musicFilter = c.createBiquadFilter();
     this.musicFilter.type = "lowpass";
     this.musicFilter.frequency.value = 2400;
     this.musicFilter.Q.value = 0.5;
-    this.music.connect(this.musicFilter).connect(this.master);
+    this.music.connect(this.musicFilter).connect(this.duckBus);
     this.ambience();
     if (variant === "plaza") this.crowdBed();
     this.score = new Score(c, this.music, this.verbSend, variant);
   }
 
+  private dryOut: GainNode;
+  private duckBus: GainNode;
   private unlocked = false;
   /** Master volume, 0..1 (the pause menu's slider). */
   set volume(v: number) {
-    this.master.gain.setTargetAtTime(0.8 * Math.max(0, Math.min(1, v)), this.ctx.currentTime, 0.05);
+    const g = 0.8 * Math.max(0, Math.min(1, v));
+    this.master.gain.setTargetAtTime(g, this.ctx.currentTime, 0.05);
+    this.dryOut.gain.setTargetAtTime(g / 0.8, this.ctx.currentTime, 0.05);
   }
 
   /**
@@ -275,27 +297,163 @@ export class Audio {
     if (heavy) this.burst({ freq: 2600, q: 3, decay: 0.05, gain: 0.25, when: 0.01 }); // the crunch
   }
 
-  /** The hit-confirm tick: a bright click on every hit, deeper and sharper on the head, a two-note stamp on a kill. */
+  /** Old name for the confirm (kept for callers that pass the four old kinds). */
   hitTick(kind: "body" | "head" | "kill" | "soft"): void {
+    this.confirm(kind === "soft" ? "armour" : kind);
+  }
+
+  // ---- the dry bus: hit confirms (S1.3) ----
+  /** A pitched voice on the dry bus: an oscillator sweeping from `f0` to `f1`, with a fast attack. */
+  private tone(type: OscillatorType, f0: number, f1: number, dur: number, peak: number, when = 0, decay = dur): void {
+    const c = this.ctx;
+    const t = c.currentTime + when;
+    const o = c.createOscillator();
+    o.type = type;
+    o.frequency.setValueAtTime(f0, t);
+    if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.002 + decay);
+    o.connect(g).connect(this.dry);
+    o.start(t);
+    o.stop(t + decay + 0.05);
+  }
+
+  /** Filtered noise on the dry bus. */
+  private hiss(type: BiquadFilterType, freq: number, dur: number, peak: number, when = 0, noise: Noise = "white"): void {
+    const c = this.ctx;
+    const t = c.currentTime + when;
+    const src = c.createBufferSource();
+    src.buffer = this.noise[noise];
+    const f = c.createBiquadFilter();
+    f.type = type;
+    f.frequency.value = freq;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.002 + dur);
+    src.connect(f).connect(g).connect(this.dry);
+    src.start(t, Math.random() * 1.5);
+    src.stop(t + dur + 0.05);
+  }
+
+  /**
+   * The hit confirm (S1.3), on the dry bus so it cuts through gunfire and slow motion: a bright tick and a
+   * low "thock" on the body, a ringing ding on the head, a glassy inharmonic ping on armour, a two-stage
+   * stamp with a sub drop on a kill. Every play varies pitch ±4% and gain ±1.5 dB, so a burst never machine-guns.
+   */
+  confirm(kind: ConfirmKind): void {
     if (!this.enabled) return;
-    if (kind === "soft") {
-      this.thump(900, 700, 0.05, 0.14, 0, "triangle");
-      return;
-    }
-    const f = kind === "head" ? 3600 : 2600;
-    this.thump(f, f * 0.85, 0.045, 0.2, 0, "square");
-    this.burst({ type: "highpass", freq: 5000, decay: 0.03, gain: kind === "body" ? 0.12 : 0.22 });
-    if (kind === "kill") {
-      this.thump(1500, 1100, 0.09, 0.22, 0.05, "square");
-      this.thump(70, 40, 0.18, 0.5, 0.02);
+    const P = 1 + (Math.random() * 2 - 1) * 0.04;
+    const G = db((Math.random() * 2 - 1) * 1.5);
+    const D = tuning.confirmDb;
+    const body = (peak: number) => {
+      this.tone("square", 2600 * P, 2200 * P, 0.045, peak * 0.55);
+      this.hiss("highpass", 5000, 0.03, peak * 0.4);
+      this.tone("sine", 140 * P, 90 * P, 0.06, peak * 0.9);
+    };
+    const head = (peak: number, ring = 0.25) => {
+      this.tone("square", 3600 * P, 3500 * P, 0.03, peak * 0.45);
+      this.tone("sine", 1800 * P, 1800 * P, ring, peak * 0.6, 0, ring);
+      this.tone("sine", 2700 * P, 2700 * P, ring, peak * 0.4, 0.004, ring * 0.8);
+      this.tone("sine", 160 * P, 100 * P, 0.05, peak * 0.6);
+    };
+    const armour = (peak: number) => {
+      for (const [f, k] of [[1100, 1], [2900, 0.6], [4300, 0.4]] as const) this.tone("sine", f * P, f * P * 0.98, 0.18, peak * 0.5 * k, 0, 0.18);
+      this.hiss("bandpass", 3200, 0.01, peak * 0.7);
+    };
+    switch (kind) {
+      case "body":
+        body(db(D.body) * G);
+        break;
+      case "pen":
+        body(db(D.pen) * G);
+        break;
+      case "head":
+        head(db(D.head) * G);
+        break;
+      case "armour":
+      case "soft":
+        armour(db(D.armour) * G);
+        break;
+      case "plateBreak": {
+        const pk = db(D.plateBreak) * G;
+        armour(pk);
+        this.hiss("highpass", 3000, 0.08, pk * 0.8);
+        for (let i = 0, n = 3 + Math.floor(Math.random() * 3); i < n; i++) this.tone("triangle", (2400 + Math.random() * 2000) * P, 1800, 0.02, pk * 0.3, 0.06 + Math.random() * 0.08, 0.02);
+        break;
+      }
+      case "visor": {
+        const pk = db(D.visor) * G;
+        for (let i = 0; i < 6; i++) {
+          const f = 3000 + Math.random() * 5000;
+          this.tone("sine", f, f * 0.97, 0.04 + Math.random() * 0.08, pk * 0.3, Math.random() * 0.15, 0.04 + Math.random() * 0.08);
+        }
+        this.hiss("highpass", 6000, 0.15, pk * 0.4);
+        break;
+      }
+      case "kill":
+      case "headKill": {
+        const pk = db(D.kill) * G;
+        if (kind === "headKill") head(pk * 0.8);
+        else body(pk * 0.8);
+        // The stamp, 50 ms later: a falling square, a sub drop and a low whump.
+        this.tone("square", 1500 * P, 1100 * P, 0.09, pk * 0.4, 0.05);
+        this.tone("sine", 70, 40, 0.18, pk * 1.0, 0.05);
+        this.hiss("lowpass", 400, 0.3, pk * 0.8, 0.05, "brown");
+        if (kind === "headKill") this.tone("sine", 2200 * P, 2200 * P, 0.4, pk * 0.45, 0.05, 0.4);
+        // Music and ambience step back 3 dB for 400 ms, so the kill owns the moment.
+        this.duck(tuning.kill.duckDb, tuning.kill.duckMs);
+        break;
+      }
     }
   }
 
-  /** Cover swallowed a round: a dull, flat knock with a ricochet whine. */
+  /** Ducks the world and the music by `dB` for `ms`, then lets them back (S1.3). */
+  duck(dB: number, ms: number): void {
+    const t = this.ctx.currentTime;
+    const g = this.duckBus.gain;
+    g.cancelScheduledValues(t);
+    g.setTargetAtTime(db(dB), t, tuning.audio.attackTau / 4);
+    g.setTargetAtTime(1, t + ms / 1000, tuning.audio.releaseTau / 4);
+  }
+
+  /**
+   * Cover swallowed a round (S1.1): a dull, flat crack and, three times in ten, a ricochet whine. On the dry
+   * bus at the confirm's level so it reads as feedback, but nothing like a hit.
+   */
   blocked(): void {
     if (!this.enabled) return;
-    this.thump(220, 120, 0.07, 0.22, 0, "triangle");
-    this.burst({ type: "bandpass", freq: 2200, sweepTo: 5200, q: 6, decay: 0.12, gain: 0.12, when: 0.01 });
+    const P = 1 + (Math.random() * 2 - 1) * 0.04;
+    this.tone("triangle", 260 * P, 120 * P, 0.07, 0.2);
+    this.hiss("bandpass", 1400, 0.05, 0.18, 0, "pink");
+    if (Math.random() < tuning.blocked.ricochetChance) {
+      const c = this.ctx;
+      const t = c.currentTime + 0.02;
+      const o = c.createOscillator();
+      o.type = "sine";
+      const f = 2600 + Math.random() * 1600;
+      o.frequency.setValueAtTime(f, t);
+      o.frequency.exponentialRampToValueAtTime(f * 0.55, t + 0.35);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.07, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
+      const p = c.createStereoPanner();
+      p.pan.value = Math.random() * 1.2 - 0.6;
+      o.connect(g).connect(p).connect(this.sfx);
+      o.start(t);
+      o.stop(t + 0.42);
+    }
+  }
+
+  /** Cath is hit (S1.3: she never plays the enemies' meat impact): a dull body blow and a sharp breath. */
+  hurt(heavy = false): void {
+    if (!this.enabled) return;
+    this.tone("sine", heavy ? 95 : 120, 45, 0.16, heavy ? 0.7 : 0.45);
+    this.hiss("lowpass", 900, 0.12, heavy ? 0.5 : 0.3, 0, "brown");
+    this.hiss("bandpass", 1600, 0.09, 0.08, 0.04, "pink");
   }
 
   hitMetal(): void {
@@ -406,7 +564,7 @@ export class Audio {
     lp.frequency.value = 6000;
     const g = c.createGain();
     g.gain.value = 0.055;
-    rain.connect(hp).connect(lp).connect(g).connect(this.master);
+    rain.connect(hp).connect(lp).connect(g).connect(this.duckBus);
     rain.start();
     // Gusts: a slow swell on a second, lower sheet of rain, and a tin-roof patter that drifts in and out.
     const sheet = c.createBufferSource();
@@ -424,7 +582,7 @@ export class Audio {
     const lfoGain = c.createGain();
     lfoGain.gain.value = 0.025;
     lfo.connect(lfoGain).connect(sg.gain);
-    sheet.connect(sbp).connect(sg).connect(this.master);
+    sheet.connect(sbp).connect(sg).connect(this.duckBus);
     sheet.start();
     lfo.start();
     const city = c.createBufferSource();
@@ -435,7 +593,7 @@ export class Audio {
     cl.frequency.value = 140;
     const cg = c.createGain();
     cg.gain.value = 0.05;
-    city.connect(cl).connect(cg).connect(this.master);
+    city.connect(cl).connect(cg).connect(this.duckBus);
     city.start();
   }
 
