@@ -84,13 +84,13 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   b.cylinder("concreteB", V(0, 0, 8), V(0, 0.8, 8), 4.6, 20, "concrete");
   b.cylinder("darkMetal", V(0, 0.2, 8), V(0, 0.82, 8), 4.0, 20);
   b.cylinder("concreteA", V(0, 0, 8), V(0, 3.2, 8), 0.7, 10, "concrete");
-  b.box("darkMetal", 0, 4.0, 8, 0.7, 1.6, 0.7);
+  b.box("darkMetal", 0, 4.0, 8, 0.7, 1.6, 0.7, { cover: "thin", mat: "metal" });
   b.box("darkMetal", 0, 5.0, 8, 0.45, 0.45, 0.45);
 
   // Statues of founders either side of the approach, pigeon-streaked.
   for (const x of [-14, 14]) {
     b.box("concreteA", x, 0.8, -12, 2.2, 1.6, 2.2, { collide: "concrete" });
-    b.box("darkMetal", x, 2.6, -12, 0.9, 2.2, 0.7);
+    b.box("darkMetal", x, 2.6, -12, 0.9, 2.2, 0.7, { cover: "thin", mat: "metal" });
     b.box("darkMetal", x, 3.9, -12, 0.5, 0.5, 0.5);
     b.box("darkMetal", x + (x < 0 ? 0.9 : -0.9), 3.0, -12, 0.2, 0.2, 1.4);
   }
@@ -100,7 +100,11 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   for (let i = 0; i < 4; i++) {
     const z = 22 + i * 7;
     b.box("tarp", -22, 2.7, z, 5.2, 0.12, 4, { uv: 1 });
-    for (const dz of [-1.8, 1.8]) for (const dx of [-2.4, 2.4]) b.cylinder("pipe", V(-22 + dx, 0, z + dz), V(-22 + dx, 2.65, z + dz), 0.05);
+    for (const dz of [-1.8, 1.8])
+      for (const dx of [-2.4, 2.4]) {
+        b.cylinder("pipe", V(-22 + dx, 0, z + dz), V(-22 + dx, 2.65, z + dz), 0.05);
+        b.tagLast("thin", "metal");
+      }
     b.box("wood", -22, 0.5, z, 3.6, 1, 0.8, { collide: "metal" });
     b.box("styro", -23.2, 0.2, z + 1.4, 0.8, 0.4, 0.5, { collide: "metal" });
     b.box("glowWarm", -22, 2.5, z, 0.3, 0.08, 0.3);
@@ -117,8 +121,8 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     b.cylinder("pipe", V(26.2, 6.2, z), V(22, 6.2, z), 0.05);
     if (z > -36) b.cable("cable", V(22, 6.2, z), V(22, 6.2, z - 14), 0.35);
   }
-  b.box("paintTeal", 24.6, 1.2, 46, 0.1, 2.4, 3, { uv: 1 }); // tram shelter panel
-  b.box("glowCool", 24.55, 1.6, 46, 0.04, 1.4, 2.6);
+  b.box("paintTeal", 24.6, 1.2, 46, 0.1, 2.4, 3, { uv: 1, cover: "thin", mat: "metalSheet" }); // tram shelter panel
+  b.box("glowCool", 24.55, 1.6, 46, 0.04, 1.4, 2.6, { cover: "none" }); // the ad lightbox face on that panel
   signs.push({ text: "LINE 9", sub: "SUSPENDED · COUNCIL DIRECTIVE", style: "box", color: "#2ee6ff", w: 2.4, h: 0.5, center: V(24.5, 2.8, 46), normal: V(-1, 0, 0), flicker: 1, intensity: 3 });
   light(V(24, 2, 46), "#7fe9ff", 10, 8, 1);
 
@@ -162,17 +166,17 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   for (let i = 0; i < stepCount; i++) b.boxMinMax("paintRed", -2, (i + 1) * stepRise, stepZ0 - i * stepRun - stepRun, 2, (i + 1) * stepRise + 0.02, stepZ0 - i * stepRun);
   b.boxMinMax("paintRed", -2, 0.01, stepZ0, 2, 0.03, stepZ0 + 12);
   for (const x of [-10, -5, 0, 5, 10]) {
-    b.box("paintRed", x + 1.6, top + 3.4, -46.4, 1.2, 3.6, 0.06, { uv: 1 });
+    b.box("paintRed", x + 1.6, top + 3.4, -46.4, 1.2, 3.6, 0.06, { uv: 1, cover: "thin", mat: "cloth" });
     b.box("glowAmber", x + 1.6, top + 1.5, -46.36, 0.7, 0.12, 0.04);
   }
   // Flagpoles on the hall roof with limp wet flags.
   for (const x of [-16, -8, 8, 16]) {
     b.cylinder("pipe", V(x, 20, zN + 3), V(x, 27, zN + 3), 0.08, 8, "metal");
-    b.box("paintTeal", x + 0.9, 26, zN + 3, 1.6, 1.0, 0.04, { uv: 1 });
+    b.box("paintTeal", x + 0.9, 26, zN + 3, 1.6, 1.0, 0.04, { uv: 1, cover: "none" }); // flags on the roof, above the fight
   }
   // Rally stage lights either side of the lectern.
   for (const x of [-7, 7]) {
-    b.box("darkMetal", x, top + 0.6, -49, 0.6, 1.2, 0.6);
+    b.box("darkMetal", x, top + 0.6, -49, 0.6, 1.2, 0.6, { cover: "thin", mat: "metal" });
     light(V(x, top + 1.4, -48), "#ffd9a0", 14, 10, 0);
   }
 

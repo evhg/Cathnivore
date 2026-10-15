@@ -5,6 +5,7 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { Surface } from "./types";
+import type { CoverKind, CoverMat } from "../sim/penetration";
 
 export interface BoxOpts {
   /** Rotation about Y, radians. */
@@ -15,6 +16,56 @@ export interface BoxOpts {
   uv?: number;
   /** Skip faces: "top" "bottom" "px" "nx" "pz" "nz". */
   skip?: string[];
+  /**
+   * How it takes bullets (S1.1). "solid" (the default with `collide`) blocks movement and rounds; "thin"
+   * blocks rounds only (glass, shutters, rails, awnings, sign boxes); "none" marks set dressing that blocks
+   * nothing (the collider audit skips it).
+   */
+  cover?: CoverKind;
+  /** What it is made of, for penetration (defaults from the collide surface). */
+  mat?: CoverMat;
+}
+
+/** An oriented box for ray tests: centre, half extents and a yaw (a rotated crate isn't its bounding box). */
+export interface Obb {
+  center: THREE.Vector3;
+  half: THREE.Vector3;
+  yaw: number;
+}
+
+/** A collider that stops rounds but not bodies (glass, shutters, railings, awnings, sign boxes). */
+export interface ShotCollider {
+  box: THREE.Box3;
+  mat: CoverMat;
+  obb?: Obb;
+}
+
+/** One prop as built, for the collider audit (S1.1: every prop 0.9 m tall and 4 cm thick blocks rounds). */
+export interface PropRecord {
+  key: string;
+  bounds: THREE.Box3;
+  /** Smallest horizontal thickness, metres. */
+  thick: number;
+  cover?: CoverKind;
+}
+
+/** The surface an impact effect uses for a cover material. */
+export function surfaceOf(m: CoverMat): Surface {
+  switch (m) {
+    case "metalSheet":
+      return "metal";
+    case "drywall":
+      return "concrete";
+    case "cloth":
+      return "wood";
+    default:
+      return m;
+  }
+}
+
+/** The cover material a collide surface implies. */
+export function matOf(s: Surface): CoverMat {
+  return s;
 }
 
 const FACE_NAMES = ["px", "nx", "top", "bottom", "pz", "nz"];
@@ -53,6 +104,13 @@ export class Builder {
   readonly parts = new Map<string, THREE.BufferGeometry[]>();
   readonly colliders: THREE.Box3[] = [];
   readonly surfaces: Surface[] = [];
+  /** Parallel to `colliders`: the material rounds meet, and the oriented box when the prop is rotated. */
+  readonly mats: CoverMat[] = [];
+  readonly obbs: (Obb | null)[] = [];
+  /** Colliders that stop rounds but not movement. */
+  readonly shotOnly: ShotCollider[] = [];
+  /** Every prop built, for the collider audit. */
+  readonly props: PropRecord[] = [];
   private m = new THREE.Matrix4();
   private q = new THREE.Quaternion();
   private e = new THREE.Euler();
@@ -87,11 +145,22 @@ export class Builder {
     this.q.setFromEuler(this.e);
     this.m.compose(new THREE.Vector3(cx, cy, cz), this.q, new THREE.Vector3(1, 1, 1));
     g.applyMatrix4(this.m);
-    if (o.collide) {
-      g.computeBoundingBox();
-      this.collide(g.boundingBox!.clone(), o.collide);
+    g.computeBoundingBox();
+    const yaw = o.rotY ?? 0;
+    const turned = Math.abs(Math.sin(yaw * 2)) > 1e-3;
+    const obb = turned ? { center: new THREE.Vector3(cx, cy, cz), half: new THREE.Vector3(sx / 2, sy / 2, sz / 2), yaw } : null;
+    this.props.push({ key, bounds: g.boundingBox!.clone(), thick: Math.min(sx, sz), cover: o.cover ?? (o.collide ? "solid" : undefined) });
+    if (o.cover !== "none" && (o.collide || o.cover === "thin" || o.mat)) {
+      const mat = o.mat ?? matOf(o.collide ?? "concrete");
+      if (o.cover === "thin" || !o.collide) this.shotCollide(g.boundingBox!.clone(), mat, obb ?? undefined);
+      else this.collide(g.boundingBox!.clone(), o.collide, mat, obb);
     }
     this.add(key, g, o.uv ?? 2);
+  }
+
+  /** A collider that stops rounds, not bodies. */
+  shotCollide(b: THREE.Box3, mat: CoverMat, obb?: Obb): void {
+    this.shotOnly.push({ box: b, mat, obb });
   }
 
   /** A box from min/max corners (axis-aligned). */
@@ -99,9 +168,11 @@ export class Builder {
     this.box(key, (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2, Math.abs(x1 - x0), Math.abs(y1 - y0), Math.abs(z1 - z0), o);
   }
 
-  collide(b: THREE.Box3, s: Surface): void {
+  collide(b: THREE.Box3, s: Surface, mat?: CoverMat, obb: Obb | null = null): void {
     this.colliders.push(b);
     this.surfaces.push(s);
+    this.mats.push(mat ?? matOf(s));
+    this.obbs.push(obb);
   }
 
   /** A cylinder between two points (pipes, poles, rails). */
@@ -112,11 +183,19 @@ export class Builder {
     this.q.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
     this.m.compose(new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5), this.q, new THREE.Vector3(1, 1, 1));
     g.applyMatrix4(this.m);
-    if (collide) {
-      g.computeBoundingBox();
-      this.collide(g.boundingBox!.clone().expandByScalar(0.02), collide);
-    }
+    g.computeBoundingBox();
+    this.props.push({ key, bounds: g.boundingBox!.clone(), thick: 2 * r, cover: collide ? "solid" : undefined });
+    if (collide) this.collide(g.boundingBox!.clone().expandByScalar(0.02), collide);
     this.add(key, g, 1);
+  }
+
+  /** Marks the most recent prop(s) as set dressing ("none") or shot-only cover after the fact. */
+  tagLast(cover: CoverKind, mat?: CoverMat, n = 1): void {
+    for (let i = Math.max(0, this.props.length - n); i < this.props.length; i++) {
+      const p = this.props[i]!;
+      p.cover = cover;
+      if (cover === "thin" && mat) this.shotCollide(p.bounds.clone(), mat);
+    }
   }
 
   /** A sagging cable between two points (catenary-ish parabola), as a thin tube. */
@@ -139,6 +218,9 @@ export class Builder {
     this.q.setFromEuler(this.e);
     this.m.compose(pos, this.q, scale ?? new THREE.Vector3(1, 1, 1));
     g.applyMatrix4(this.m);
+    g.computeBoundingBox();
+    const bb = g.boundingBox!;
+    this.props.push({ key, bounds: bb.clone(), thick: Math.min(bb.max.x - bb.min.x, bb.max.z - bb.min.z) });
     this.add(key, g, uv);
   }
 

@@ -123,11 +123,11 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   signs.push({ text: "MORGUE", sub: "LEVEL B", style: "box", color: "#2ee6ff", w: 1.6, h: 0.4, center: V(xE - 0.08, 2.7, -16), normal: V(-1, 0, 0), flicker: 1, intensity: 3 });
 
   // Main theatre: glass gallery wall, instrument trolleys, IV stands, vital-sign monitors.
-  b.boxMinMax("glass", -3.1, 0.9, -52, -3.0, 3.0, -38);
-  b.boxMinMax("glass", 3.0, 0.9, -52, 3.1, 3.0, -38);
+  b.boxMinMax("glass", -3.1, 0.9, -52, -3.0, 3.0, -38, { cover: "thin", mat: "glass" });
+  b.boxMinMax("glass", 3.0, 0.9, -52, 3.1, 3.0, -38, { cover: "thin", mat: "glass" });
   for (const x of [-1.6, 1.6]) {
     b.box("chrome", x, 0.45, -44, 0.5, 0.9, 0.8, { collide: "metal" });
-    b.box("chrome", x * 1.5, 0.9, -46, 0.05, 1.8, 0.05);
+    b.box("chrome", x * 1.5, 0.9, -46, 0.05, 1.8, 0.05, { cover: "thin", mat: "metal" });
   }
   b.box("glowCoolDim", 0, 1.6, zN + 0.05, 1.4, 0.7, 0.05);
   signs.push({ text: "VITALS 61 BPM", sub: "SEDATED", style: "screen", color: "#7dffc0", w: 1.4, h: 0.7, center: V(0, 1.6, zN + 0.09), normal: V(0, 0, 1), flicker: 1, intensity: 2.5 });
@@ -137,7 +137,7 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   // a hanging bag of fluid at every bed, and a hazard stripe down the theatre approach.
   for (let i = 0; i < 4; i++) {
     const z = 18 - i * 14 + (i > 1 ? 4 : 0);
-    b.box("plasticWhite", 5.1, 1.5, z, 0.04, 2.0, 2.6);
+    b.box("plasticWhite", 5.1, 1.5, z, 0.04, 2.0, 2.6, { cover: "thin", mat: "cloth" });
     b.box("glowCoolDim", 6.2, 1.7, z + 0.6, 0.08, 0.3, 0.08);
   }
   for (const z of [10, 12.5]) {

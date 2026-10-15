@@ -2,6 +2,7 @@
 // through a vision cone (distance, light, her stance and movement), investigate noises, search where she
 // was last seen, and fight in bursts. Rules numbers (health, damage, detection) come from sim/ once wired.
 
+import { tuning } from "./feel/tuning";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { Body, enforcerLook, place, type BodyLook } from "./body";
@@ -342,6 +343,10 @@ export class Enemy {
     // Bystanders never fight: once they stop running they calm down and wander again.
     if (this.kit.role === "civilian" && this.state === "combat" && this.fleeT <= 0) this.state = "unaware";
     this.motion.flinch.multiplyScalar(Math.max(0, 1 - dt * 4.5));
+    // A round that just missed: a duck that eases back up, and shakier aim for a second (S1.1).
+    this.suppressT = Math.max(0, this.suppressT - dt);
+    this.duckT = Math.max(0, this.duckT - dt);
+    this.motion.crouch += ((this.duckT > 0 && this.alive ? 0.55 : 0) - this.motion.crouch) * Math.min(1, dt * 14);
     this.motion.kick = Math.max(0, this.motion.kick - dt * 8);
     if (!this.alive) {
       this.deadFor += dt;
@@ -487,7 +492,7 @@ export class Enemy {
             const dir = new THREE.Vector3();
             muzzleOf(this.body, from, dir);
             const aimDir = new THREE.Vector3().subVectors(sight.chest, from).normalize();
-            const spread = this.kit.spread * (1 + Math.min(3, sight.speed / 2));
+            const spread = (this.kit.spread * (1 + Math.min(3, sight.speed / 2))) / this.aimMul();
             aimDir.x += (Math.random() - 0.5) * spread;
             aimDir.y += (Math.random() - 0.5) * spread;
             this.shots.push({ from, dir: aimDir.normalize() });
@@ -505,7 +510,7 @@ export class Enemy {
           const dir = new THREE.Vector3();
           muzzleOf(this.body, from, dir);
           const aimDir = new THREE.Vector3().subVectors(sight.chest, from).normalize();
-          const spread = this.kit.spread * (1 + Math.min(2, sight.speed / 3)) * (0.6 + 0.4 * (dist / 10));
+          const spread = (this.kit.spread * (1 + Math.min(2, sight.speed / 3)) * (0.6 + 0.4 * (dist / 10))) / this.aimMul();
           aimDir.x += (Math.random() - 0.5) * spread;
           aimDir.y += (Math.random() - 0.5) * spread;
           aimDir.z += (Math.random() - 0.5) * spread;
@@ -671,6 +676,38 @@ export class Enemy {
   marked = false;
   /** Tutorial guards: they don't notice her until something happens to them. */
   passive = false;
+
+  /** Seconds of shaken aim left after a near miss, and of the duck. */
+  suppressT = 0;
+  duckT = 0;
+
+  /** Accuracy multiplier: a near miss leaves them at 0.6 for a second. */
+  aimMul(): number {
+    return this.suppressT > 0 ? tuning.nearMiss.accuracyMul : 1;
+  }
+
+  /**
+   * A round passed within half a metre of their head (S1.1): the head snaps aside about 8 degrees, they duck
+   * for 400 ms and their aim is shaken for a second. Returns true when they should bark "Taking fire!".
+   */
+  nearMiss(dir: THREE.Vector3): boolean {
+    if (!this.alive) return false;
+    const N = tuning.nearMiss;
+    const inv = -this.motion.yaw;
+    // A sideways flinch away from the round's path, in body space (about 8 degrees of head turn).
+    const k = Math.sin((N.flinchDeg * Math.PI) / 180) * 0.6;
+    this.motion.flinch.x += (dir.x * Math.cos(inv) - dir.z * Math.sin(inv)) * k;
+    this.motion.flinch.z += (dir.x * Math.sin(inv) + dir.z * Math.cos(inv)) * k;
+    this.motion.flinch.clampLength(0, 0.4);
+    this.duckT = N.duckMs / 1000;
+    const fresh = this.suppressT <= 0;
+    this.suppressT = N.accuracyMs / 1000;
+    if (this.state !== "combat" && this.kit.role !== "civilian") {
+      this.state = "combat";
+      this.detect = 1;
+    }
+    return fresh && Math.random() < N.barkChance;
+  }
 
   /** A hit: knocks the body (flinch), and returns true if it died. */
   damage(amount: number, push: THREE.Vector3): boolean {

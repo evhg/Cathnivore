@@ -9,6 +9,11 @@ import type { RayWorld } from "./ray";
 import type { Shot, WeaponDef } from "./weapons";
 import type { Zone } from "./body";
 import type { WeaponClass } from "../sim/types";
+import { CombatBus } from "./feel/bus";
+import { tuning } from "./feel/tuning";
+import type { HitEvent as HitData, HitLayer } from "../sim/hitevent";
+import { PASS_THROUGH, passes, penetrationOf, type CoverMat } from "../sim/penetration";
+import { surfaceOf } from "../render/builder";
 
 export interface KillEvent {
   enemy: Enemy;
@@ -28,6 +33,26 @@ export interface HitEvent {
   damage: number;
   point: THREE.Vector3;
   killed: boolean;
+  /** The full event the bus carried (S0). */
+  data?: HitData;
+}
+
+/** A round cover ate with an enemy in line behind it (S1.1). */
+export interface BlockEvent {
+  point: THREE.Vector3;
+  normal: THREE.Vector3;
+  mat: CoverMat;
+  enemy: Enemy;
+}
+
+/** What `traceShot` reports: what a round from `from` towards `to` would do, without firing it. */
+export interface ShotTrace {
+  blockedBy: string | null;
+  mat: CoverMat | null;
+  enemy: string | null;
+  zone: Zone | null;
+  damage: number;
+  pen: boolean;
 }
 
 interface Projectile {
@@ -62,6 +87,17 @@ export class Combat {
   readonly hits: HitEvent[] = [];
   /** Rounds that cover or a shield stopped with a living enemy in line behind (for the "blocked" cue). */
   blocks = 0;
+  /** This frame's blocked rounds, with where and what stopped them. */
+  readonly blockEvents: BlockEvent[] = [];
+  /** Combat only emits; HUD, audio, FX and camera listen (S0). */
+  readonly bus = new CombatBus();
+  /** Seconds since the session began, for event stamps. */
+  clock = 0;
+  /** The last round's penetration share and whether it went through cover. */
+  private penMul = 1;
+  private penThrough = false;
+  /** Penetration bonus from the build (skills, legendaries). */
+  penBonus = 0;
   /** The last round a riot shield stopped (for sparks). */
   blocked: { point: THREE.Vector3; normal: THREE.Vector3 } | null = null;
   /** Damage dealt to each segment by the current shot (pellets add up). */
@@ -161,18 +197,32 @@ export class Combat {
   }
 
   private hitscan(origin: THREE.Vector3, dir: THREE.Vector3, w: WeaponDef, build: Build, unseen: boolean): void {
-    const hitW = this.rays.cast(origin, dir, w.range);
-    const maxD = hitW ? hitW.dist : w.range;
     this.blocked = null;
+    const path = this.resolvePath(origin, dir, w.range, w.weaponClass);
+    const stop = path.stop;
+    const maxD = stop ? stop.dist : w.range;
     const hitE = this.nearestEnemy(origin, dir, maxD);
     if (w.blast) {
       // Launchers: the round bursts where it lands (instant flight for now), enemy or wall.
-      const at = hitE ? hitE.point : hitW ? hitW.point.clone().addScaledVector(dir, -0.3) : origin.clone().addScaledVector(dir, w.range);
+      const at = hitE ? hitE.point : stop ? stop.point.clone().addScaledVector(dir, -0.3) : origin.clone().addScaledVector(dir, w.range);
       this.world.fx.explosion(at.clone(), w.blast);
       this.explode(at, w.blast, w.damage, build);
       return;
     }
+    // Cover the round went through before it reached its end: an impact on both faces.
+    const end = hitE ? hitE.dist : maxD;
+    let mul = 1;
+    let through = false;
+    for (const l of path.passed) {
+      if (l.dist >= end) break;
+      mul *= PASS_THROUGH[l.mat] ?? 1;
+      through = true;
+      const s = surfaceOf(l.mat);
+      this.world.fx.impact(l.point, l.normal, s);
+      if (l.exit > l.dist + 0.005 && l.exit < end) this.world.fx.impact(origin.clone().addScaledVector(dir, l.exit), dir.clone(), s);
+    }
     if (!hitE && this.blocked) {
+      // A riot shield took it.
       const b = this.blocked as { point: THREE.Vector3; normal: THREE.Vector3 };
       this.world.fx.impact(b.point, b.normal, "metal");
       this.blocks++;
@@ -181,14 +231,128 @@ export class Combat {
     }
     if (hitE) {
       this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), hitE.point);
+      this.penMul = mul;
+      this.penThrough = through;
       this.strike(hitE.enemy, hitE.seg, hitE.point, dir, w, build, origin.distanceTo(hitE.point), unseen, false);
-    } else if (hitW) {
-      this.world.fx.impact(hitW.point, hitW.normal, this.world.surfaceAt(hitW.point));
+      this.penMul = 1;
+      this.penThrough = false;
+      this.nearMisses(origin, dir, hitE.dist, hitE.enemy);
+    } else if (stop) {
+      const surf = surfaceOf(stop.mat);
       // Cover only counts as "blocked" if someone alive stood behind it, close to the line of fire.
-      const behind = this.nearestEnemy(origin, dir, w.range);
-      if (behind && behind.enemy.alive && behind.dist > hitW.dist) this.blocks++;
-      if (w.weaponClass !== "shotgun" || Math.random() < 0.35) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), hitW.point);
+      const behind = this.blockedTarget(origin, dir, stop.dist, w.range);
+      if (behind) {
+        this.blocks++;
+        this.blockEvents.push({ point: stop.point.clone(), normal: stop.normal.clone(), mat: stop.mat, enemy: behind });
+        this.bus.emit("blocked", { t: this.clock, point: stop.point, normal: stop.normal, mat: stop.mat, targetUid: String(behind.id) });
+        // Overstated (pillar 4): a bigger impact and, on hard surfaces, a fan of sparks.
+        this.world.fx.impact(stop.point, stop.normal, surf);
+        if (stop.mat === "metal" || stop.mat === "metalSheet" || stop.mat === "concrete" || stop.mat === "chrome") {
+          const [lo, hi] = tuning.blocked.sparks;
+          this.world.fx.sparks(stop.point, stop.normal, (lo + Math.random() * (hi - lo)) / 20);
+        }
+      }
+      this.world.fx.impact(stop.point, stop.normal, stop.thin ? surf : this.world.surfaceAt(stop.point));
+      if (w.weaponClass !== "shotgun" || Math.random() < 0.35) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), stop.point);
+      this.nearMisses(origin, dir, stop.dist, null);
+    } else this.nearMisses(origin, dir, w.range, null);
+  }
+
+  /**
+   * The layers a round meets, nearest first: the ones it passes (glass, cloth, drywall, wood; sheet metal
+   * with real penetration) and the one that stops it. Penetration spends one layer per pass (S1.1).
+   */
+  private resolvePath(origin: THREE.Vector3, dir: THREE.Vector3, range: number, cls: WeaponClass) {
+    const layers = this.rays.castAll(origin, dir, range, 4);
+    let budget = penetrationOf(cls, this.penBonus);
+    const passed: typeof layers = [];
+    for (const l of layers) {
+      if (budget > 0 && passes(l.mat, cls, this.penBonus)) {
+        passed.push(l);
+        budget--;
+        continue;
+      }
+      return { passed, stop: l };
     }
+    // Ran out of layers within the four nearest: if the budget is spent, a farther wall might still stop it.
+    if (layers.length === 4) {
+      const last = layers[3]!;
+      const more = this.rays.cast(origin.clone().addScaledVector(dir, last.exit + 0.01), dir, range - last.exit - 0.01);
+      if (more) return { passed, stop: { ...more, dist: more.dist + last.exit + 0.01, exit: more.exit + last.exit + 0.01 } };
+    }
+    return { passed, stop: null };
+  }
+
+  /**
+   * The enemy cover cheated her of: alive, a joint within 1 m of the ray beyond the cover, and visible from
+   * where she fired (rounds stop at thin cover; eyes see through glass). That's "you were aiming at him".
+   */
+  private blockedTarget(origin: THREE.Vector3, dir: THREE.Vector3, coverD: number, range: number): Enemy | null {
+    let best: Enemy | null = null;
+    let bestMiss: number = tuning.blocked.nearRayM;
+    const to = new THREE.Vector3();
+    for (const e of this.enemies) {
+      if (!e.alive || e.kit.role === "civilian") continue;
+      for (const j of [e.body.joints.head, e.body.joints.chest, e.body.joints.pelvis]) {
+        to.subVectors(j, origin);
+        const along = to.dot(dir);
+        if (along <= coverD || along > range) continue;
+        const miss = to.addScaledVector(dir, -along).length();
+        if (miss >= bestMiss) continue;
+        const seen = [e.body.joints.head, e.body.joints.chest, e.body.joints.pelvis].some((p) => this.rays.clear(origin, p));
+        if (!seen) continue;
+        best = e;
+        bestMiss = miss;
+      }
+    }
+    return best;
+  }
+
+  /** Rounds that pass within half a metre of a head make that enemy flinch, duck and shoot worse (S1.1). */
+  private nearMisses(origin: THREE.Vector3, dir: THREE.Vector3, upTo: number, struck: Enemy | null): void {
+    const to = new THREE.Vector3();
+    for (const e of this.enemies) {
+      if (!e.alive || e === struck) continue;
+      to.subVectors(e.body.joints.head, origin);
+      const along = to.dot(dir);
+      if (along <= 0 || along > upTo + 0.5) continue;
+      const miss = to.addScaledVector(dir, -along).length();
+      if (miss > tuning.nearMiss.radiusM) continue;
+      const bark = e.nearMiss(dir);
+      this.bus.emit("nearMiss", { t: this.clock, targetUid: String(e.id), miss });
+      if (bark) this.barks.push(e);
+    }
+  }
+
+  /** Enemies who shouted "Taking fire!" this frame (the session voices them). */
+  readonly barks: Enemy[] = [];
+
+  /** What a round from `from` towards `to` would do (the `traceShot` debug hook): no damage, no effects. */
+  traceShot(from: THREE.Vector3, to: THREE.Vector3, w: WeaponDef, build: Build): ShotTrace {
+    const dir = to.clone().sub(from).normalize();
+    const path = this.resolvePath(from, dir, w.range, w.weaponClass);
+    const maxD = path.stop ? path.stop.dist : w.range;
+    const hitE = this.nearestEnemy(from, dir, maxD);
+    const out: ShotTrace = { blockedBy: null, mat: null, enemy: null, zone: null, damage: 0, pen: false };
+    if (!hitE) {
+      if (path.stop) {
+        out.blockedBy = path.stop.thin ? "thin" : "solid";
+        out.mat = path.stop.mat;
+      }
+      return out;
+    }
+    let mul = 1;
+    for (const l of path.passed) if (l.dist < hitE.dist) {
+      mul *= PASS_THROUGH[l.mat] ?? 1;
+      out.pen = true;
+      out.mat = l.mat;
+    }
+    let zm = ZONE_MUL[hitE.zone];
+    if (hitE.zone === "head") zm *= build.headshot;
+    out.enemy = String(hitE.enemy.id);
+    out.zone = hitE.zone;
+    out.damage = w.damage * build.damage(w.weaponClass) * zm * mul * (1 - hitE.enemy.kit.armour);
+    return out;
   }
 
   private nearestEnemy(origin: THREE.Vector3, dir: THREE.Vector3, maxD: number) {
@@ -227,7 +391,7 @@ export class Combat {
     if (zone === "head") mul *= build.headshot * (w.weaponClass === "sniper" ? 1.6 : 1);
     const crit = Math.random() < build.crit;
     const armour = w.weaponClass === "sniper" ? e.kit.armour * 0.3 : e.kit.armour;
-    let dmg = w.damage * build.damage(w.weaponClass) * mul * falloff * (crit ? build.critMul : 1) * (1 - armour);
+    let dmg = w.damage * build.damage(w.weaponClass) * mul * falloff * (crit ? build.critMul : 1) * (1 - armour) * this.penMul;
     if (!e.alive) dmg *= 0.5;
     if (e.marked) dmg *= 1.25;
     const wasAlive = e.alive;
@@ -238,7 +402,27 @@ export class Combat {
 
     const push = dir.clone().multiplyScalar(w.weaponClass === "shotgun" ? 3 : w.weaponClass === "sniper" ? 6 : 1.5);
     const killed = wasAlive && e.damage(dmg, push);
-    this.hits.push({ enemy: e, zone, damage: dmg, point, killed });
+    // Torso hits on a vested enemy land on the plate (S1.2's armour marker); the head is always flesh for now.
+    const layer: HitLayer = e.kit.armour >= 0.3 && zone === "torso" && w.weaponClass !== "sniper" ? "plate" : "flesh";
+    const data: HitData = {
+      t: this.clock,
+      targetUid: String(e.id),
+      seg: segName,
+      zone,
+      point: point.clone(),
+      normal: dir.clone().negate(),
+      dir: dir.clone(),
+      distance: dist,
+      weaponCls: w.weaponClass,
+      damage: dmg,
+      crit,
+      layer,
+      penetrated: this.penThrough,
+      lethal: killed,
+      reaction: wasAlive ? "flinch" : "none",
+    };
+    this.hits.push({ enemy: e, zone, damage: dmg, point, killed, data });
+    if (wasAlive) this.bus.emit("hit", data);
 
     // Severing: a big hit to a limb or the head takes it off (full intensity only).
     const severed: string[] = [];

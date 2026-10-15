@@ -132,7 +132,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
   syncInput();
   window.addEventListener("cathode:prefs", syncInput);
-  const rays = new RayWorld(world.colliders);
+  const rays = new RayWorld(world.colliders, world.cover);
   const progress = new Progress();
   const areaLevel = Math.max(1, progress.character.level);
   const enemies: Enemy[] = [];

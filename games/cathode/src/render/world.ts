@@ -232,6 +232,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     scene,
     camera,
     colliders,
+    cover: { mats: level.builder.mats, obbs: level.builder.obbs, thin: level.builder.shotOnly },
     markers: level.markers,
     bounds: theme?.bounds,
     viewScene,

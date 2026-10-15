@@ -206,7 +206,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       signs.push({ text, style, color, w, h, center: center.clone().add(V(0, 0, 0.09 * n)), normal: V(0, 0, n), flicker, intensity: style === "bladeTube" ? 5 : 3, cjk: true, key, broken });
     }
     // Housing.
-    b.box("blackPaint", center.x, center.y, center.z, w + 0.12, h + 0.12, 0.16);
+    b.box("blackPaint", center.x, center.y, center.z, w + 0.12, h + 0.12, 0.16, { cover: "thin", mat: "metalSheet" });
     light(center.clone(), color, 3.5 + h * w, 6 + h * 1.5, null, flicker);
   };
 
@@ -241,7 +241,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     kerb.computeVertexNormals();
     b.add("concreteB", kerb, 1);
     // Canal: quay wall face, a dark bed, the far wall is the east buildings.
-    b.boxMinMax("concreteA", L.quayEdge, -3.2, zS, L.quayEdge + 0.4, -0.25, zN, { uv: 3, skip: ["top"] });
+    b.boxMinMax("concreteA", L.quayEdge, -3.2, zS, L.quayEdge + 0.4, -0.25, zN, { uv: 3, skip: ["top"], cover: "thin", mat: "concrete" });
     b.boxMinMax("blackPaint", L.quayEdge, -3.3, zS, L.canalE, -3.2, zN);
     // A coping stone along the quay edge.
     for (let z = zS; z < zN; z += 4) {
@@ -330,7 +330,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     if (bd.shop === "shutter" || bd.shop === "halfShutter") {
       const top = bd.shop === "shutter" ? gf - 0.85 : gf - 0.85;
       const bottom = bd.shop === "shutter" ? 0 : 1.15;
-      b.boxMinMax("shutter", sx, bottom, shopZ0, sx + 0.05, top, shopZ1, { uv: 2.5 });
+      b.boxMinMax("shutter", sx, bottom, shopZ0, sx + 0.05, top, shopZ1, { uv: 2.5, cover: "thin", mat: "metalSheet" });
       b.boxMinMax("darkMetal", sx - 0.05, top - 0.35, shopZ0, sx + 0.12, top, shopZ1);
       if (bd.shop === "halfShutter") {
         interiors.push({ pos: V(sx - 0.4, bottom / 2 + 0.05, (shopZ0 + shopZ1) / 2), normal: V(1, 0, 0), w: shopZ1 - shopZ0, h: bottom, tint: "#7a4a22", seed: seed++ });
@@ -338,12 +338,12 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       }
     } else if (bd.shop === "glass") {
       interiors.push({ pos: V(sx - 0.25, (gf - 0.85) / 2, (shopZ0 + shopZ1) / 2), normal: V(1, 0, 0), w: shopZ1 - shopZ0, h: gf - 0.85, tint: bd.interior ?? "#ffd090", seed: seed++ });
-      b.boxMinMax("glass", sx, 0.3, shopZ0, sx + 0.03, gf - 0.9, shopZ1);
+      b.boxMinMax("glass", sx, 0.3, shopZ0, sx + 0.03, gf - 0.9, shopZ1, { cover: "thin", mat: "glass" });
       b.boxMinMax("darkMetal", sx - 0.02, 0, shopZ0, sx + 0.08, 0.3, shopZ1);
       for (let z = shopZ0; z <= shopZ1 + 0.01; z += (shopZ1 - shopZ0) / 3) b.boxMinMax("darkMetal", sx - 0.02, 0, z - 0.04, sx + 0.08, gf - 0.85, z + 0.04);
       light(V(W + 0.9, 1.6, (shopZ0 + shopZ1) / 2), bd.interior ?? "#ffd090", 4.5, 8, V(1, 0, 0));
     } else {
-      b.boxMinMax("rust", sx, 0, shopZ0, sx + 0.05, gf - 0.85, shopZ1, { uv: 2 });
+      b.boxMinMax("rust", sx, 0, shopZ0, sx + 0.05, gf - 0.85, shopZ1, { uv: 2, cover: "thin", mat: "metalSheet" });
     }
     // The fascia sign.
     if (bd.fascia) {
@@ -405,7 +405,9 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     // Rooftop clutter: a water tank, vents, an aerial.
     if (rand() < 0.7) {
       const tz = bd.z0 + r(2, len - 2);
+      // Rooftop dressing sits above the fight: it stops nothing ("none").
       b.cylinder("wood", V(W - 6, H + 1.6, tz), V(W - 6, H + 4.2, tz), 1.3, 12);
+      b.tagLast("none");
       b.box("darkMetal", W - 6, H + 1.0, tz, 2.4, 0.15, 2.4);
       for (const [dx, dz] of [
         [-1, -1],
@@ -415,7 +417,10 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       ] as const)
         b.cylinder("darkMetal", V(W - 6 + dx, H + 0.4, tz + dz), V(W - 6 + dx, H + 1.0, tz + dz), 0.06, 5);
     }
-    if (rand() < 0.6) b.cylinder("darkMetal", V(W - 2, H + 0.4, zc), V(W - 2, H + r(4, 8), zc), 0.04, 4);
+    if (rand() < 0.6) {
+      b.cylinder("darkMetal", V(W - 2, H + 0.4, zc), V(W - 2, H + r(4, 8), zc), 0.04, 4);
+      b.tagLast("none");
+    }
     // Fire escape: a platform per floor, rails and zig-zag stairs.
     if (bd.fire) fireEscape(b, W, bd.z0 + 1.5, bd.z0 + 5.2, bd.storeys, drips);
   }
@@ -495,7 +500,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     const f = L.fly;
     b.boxMinMax("concreteB", -90, f.under, f.z0, 100, f.top, f.z1, { uv: 4, collide: "concrete" });
     for (const z of [f.z0, f.z1]) {
-      b.boxMinMax("concreteA", -90, f.top, z - (z === f.z0 ? 0 : 0.35), 100, f.top + 1.0, z + (z === f.z0 ? 0.35 : 0), { uv: 3 });
+      b.boxMinMax("concreteA", -90, f.top, z - (z === f.z0 ? 0 : 0.35), 100, f.top + 1.0, z + (z === f.z0 ? 0.35 : 0), { uv: 3, cover: "thin", mat: "concrete" });
       // Drips all along both edges.
       for (let x = -20; x < 30; x += r(0.7, 1.6)) drips.push(V(x, f.under, z));
     }
@@ -568,7 +573,10 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       [x0, front],
       [x1, back],
     ] as const)
-      for (const dz of [-w / 2, w / 2]) b.cylinder("darkMetal", V(x, y0, z + dz), V(x, y0 + h, z + dz), 0.04, 5, dz < 0 && x === x0 ? "metal" : undefined);
+      for (const dz of [-w / 2, w / 2]) {
+        b.cylinder("darkMetal", V(x, y0, z + dz), V(x, y0 + h, z + dz), 0.04, 5, dz < 0 && x === x0 ? "metal" : undefined);
+        if (!(dz < 0 && x === x0)) b.tagLast("thin", "metal");
+      }
     // Tarp roof: a sagging plane from front to back.
     const tarp = new THREE.PlaneGeometry(x1 - x0 + 0.6, w + 0.4, 6, 4);
     tarp.rotateX(-Math.PI / 2);
@@ -655,7 +663,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     b.boxMinMax("concreteB", x0 - 0.1, roof, z1 - 0.15, x1 - 1.3, roof + 0.55, z1 + 0.1, { collide: "concrete" });
     // Windows and door facing the road, a lit office inside.
     interiors.push({ pos: V(x0 - 0.02, 1.6, -48), normal: V(-1, 0, 0), w: 3.2, h: 1.4, tint: "#a8ffd0", seed: seed++ });
-    b.boxMinMax("glass", x0 - 0.04, 0.9, -49.6, x0 - 0.01, 2.3, -46.4);
+    b.boxMinMax("glass", x0 - 0.04, 0.9, -49.6, x0 - 0.01, 2.3, -46.4, { cover: "thin", mat: "glass" });
     light(V(x0 - 0.8, 1.8, -48), "#a8ffd0", 3.2, 7, V(-1, 0, 0), 2);
     sign({ text: "MARKET OFFICE 管理", style: "box", color: NEON.ice, w: 3.2, h: 0.5, center: V(x0 - 0.03, 3.3, -48), normal: V(-1, 0, 0), flicker: 0, intensity: 2, cjk: true }, 0.5);
     // Stairs up the north side, rising toward -z from z = -36.6.
@@ -676,11 +684,12 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     // Rooftop: an AC unit and a satellite dish for cover.
     b.box("acUnit", 5.2, roof + 0.45, -50.5, 1.2, 0.9, 1.0, { uv: 1, collide: "metal" });
     b.cylinder("darkMetal", V(4.6, roof, -45.6), V(4.6, roof + 1.2, -45.6), 0.05, 5);
+    b.tagLast("thin", "metal");
     const dish = new THREE.SphereGeometry(0.6, 12, 6, 0, Math.PI * 2, 0, 0.9);
     b.shape("paintMetal", dish, V(4.6, roof + 1.3, -45.6), 0, undefined, 1, 1.1);
     // A rooftop sign facing up the street.
     sign({ text: "生鮮", style: "tube", color: NEON.pink, w: 2.6, h: 1.3, center: V(6.2, roof + 1.6, z0 + 0.1), normal: V(0, 0, 1), flicker: 1, intensity: 5, cjk: true });
-    b.boxMinMax("darkMetal", 5.0, roof, z0 + 0.0, 7.4, roof + 2.3, z0 + 0.08);
+    b.boxMinMax("darkMetal", 5.0, roof, z0 + 0.0, 7.4, roof + 2.3, z0 + 0.08, { cover: "thin", mat: "metalSheet" });
   }
 
   // ------------------------------------------------------------------ east buildings, out of the canal
@@ -754,7 +763,10 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       }
     }
     // Rooftop: aerials, a billboard frame now and then.
-    if (rand() < 0.5) b.cylinder("darkMetal", V(E + 4, H + 0.5, zc), V(E + 4, H + r(5, 11), zc), 0.05, 4);
+    if (rand() < 0.5) {
+      b.cylinder("darkMetal", V(E + 4, H + 0.5, zc), V(E + 4, H + r(5, 11), zc), 0.05, 4);
+      b.tagLast("none");
+    }
   }
   // A small water taxi moored at the south steps (the extract), with a lantern.
   {
@@ -962,6 +974,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
   const key = { pos: V(-2, 15, -63), target: V(0, 0, 18), color: C("#cfe3ff") };
   // The floodlight itself on a mast against the south block.
   b.cylinder("darkMetal", V(-3.5, 6, zS + 0.3), V(-2, 15.2, -63.4), 0.12, 6);
+  b.tagLast("none"); // a lamp mast above the underpass roof: out of the fight
   b.box("darkMetal", key.pos.x, key.pos.y + 0.2, key.pos.z - 0.3, 1.2, 0.8, 0.6);
   b.box("glowWhite", key.pos.x, key.pos.y + 0.2, key.pos.z + 0.02, 1.0, 0.6, 0.05);
   cones.push({ top: key.pos.clone().add(V(0, 0.2, 0.1)), dir: key.target.clone().sub(key.pos).normalize(), length: 60, radius: 14, color: C("#cfe3ff"), strength: 0.12 });
@@ -1022,6 +1035,7 @@ function fireEscape(b: Builder, wx: number, z0: number, z1: number, storeys: num
     b.cylinder("darkMetal", V(wx + depth, y + 1.0, z0), V(wx + depth, y + 1.0, z1), 0.022, 4);
     for (const z of [z0, z1]) b.cylinder("darkMetal", V(wx + depth, y, z), V(wx + depth, y + 1.0, z), 0.022, 4);
     for (let z = z0 + 0.4; z < z1; z += 0.4) b.cylinder("darkMetal", V(wx + depth, y, z), V(wx + depth, y + 1.0, z), 0.01, 3);
+    b.shotCollide(new THREE.Box3(V(wx + depth - 0.03, y, z0), V(wx + depth + 0.03, y + 1.0, z1)), "metal");
     drips.push(V(wx + depth, y - 0.06, (z0 + z1) / 2), V(wx + depth * 0.5, y - 0.06, z1 - 0.3));
     // Stairs to the landing above: a slanted stringer pair with treads.
     if (k < storeys - 1) {
@@ -1029,7 +1043,10 @@ function fireEscape(b: Builder, wx: number, z0: number, z1: number, storeys: num
       const yb = y + L.storey;
       const za = z0 + 0.3;
       const zb = z1 - 0.3;
-      for (const x of [wx + 0.15, wx + 0.75]) b.cylinder("darkMetal", V(x, ya, zb), V(x, yb, za), 0.03, 4);
+      for (const x of [wx + 0.15, wx + 0.75]) {
+        b.cylinder("darkMetal", V(x, ya, zb), V(x, yb, za), 0.03, 4);
+        b.tagLast("none");
+      }
       for (let i = 1; i < 10; i++) {
         const t = i / 10;
         b.box("grate", wx + 0.45, ya + (yb - ya) * t, zb + (za - zb) * t, 0.6, 0.03, 0.25, { uv: 1 });

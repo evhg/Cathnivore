@@ -65,7 +65,7 @@ export function buildVault(quality: "phone" | "high" | "ultra"): Level {
   for (let z = chasmS - 3; z > chasmN + 2; z -= 3.2) {
     for (const s of [-1, 1]) {
       const x = s * (xE - 0.7);
-      b.box("darkMetal", x, (ceil + drop) / 2, z, 1.0, ceil - drop, 2.6);
+      b.box("darkMetal", x, (ceil + drop) / 2, z, 1.0, ceil - drop, 2.6, { cover: "thin", mat: "metal" });
       for (let y = drop + 2; y < ceil - 2; y += 4.2) b.box("glowCyan", x - s * 0.52, y, z, 0.04, 0.5, 2.0);
     }
   }
@@ -80,15 +80,16 @@ export function buildVault(quality: "phone" | "high" | "ultra"): Level {
   b.box("paintMetal", -9, 0.5, 40, 3, 1.0, 1.0, { collide: "metal" });
   b.box("glowAmber", -9, 1.1, 40, 0.6, 0.1, 0.4);
   for (const x of [-8, 8]) for (const z of [48, 36]) b.box("concreteA", x, ceil / 2, z, 1.4, ceil, 1.4, { collide: "concrete" });
-  b.boxMinMax("blackPaint", -3, 0, zS - 0.2, 3, 4.5, zS, { uv: 1 });
-  b.box("glowCool", 0, 2.2, zS - 0.25, 4.6, 3.4, 0.04);
+  b.boxMinMax("blackPaint", -3, 0, zS - 0.2, 3, 4.5, zS, { uv: 1, cover: "thin", mat: "metal" });
+  b.box("glowCool", 0, 2.2, zS - 0.25, 4.6, 3.4, 0.04, { cover: "none" }); // the lift doors' glow, flush on the doors
   signs.push({ text: "VAULT LIFT", sub: "AUTHORISED DEBTORS ONLY", style: "box", color: "#2ee6ff", w: 3, h: 0.5, center: V(0, 4.9, zS - 0.3), normal: V(0, 0, -1), flicker: 1, intensity: 3 });
   b.box("glowRed", 0, 5.8, zS - 0.1, 1.4, 0.3, 0.05);
   signs.push({ text: "HOLLOW VAULT", sub: "WHERE CANDOR KEEPS ITS DEBTS", style: "screen", color: "#ff5a4a", w: 9, h: 2, center: V(0, 9, chasmS + 0.5), normal: V(0, 0, 1), flicker: 2, intensity: 2.4 });
 
   // Vault core (north): the great door behind the machine, pylons, the glowing core and red alarm lamps.
-  b.box("darkMetal", 0, 6, zN + 1, 14, 12, 1.2);
+  b.box("darkMetal", 0, 6, zN + 1, 14, 12, 1.2, { cover: "thin", mat: "metal" });
   b.cylinder("rust", V(0, 6, zN + 1.7), V(0, 6, zN + 2.0), 5.5, 24);
+  b.tagLast("thin", "metal");
   for (const [x, z] of [[-7, -44], [7, -44], [-7, -58], [7, -58]] as const) {
     b.box("concreteA", x, 3, z, 1.2, 6, 1.2, { collide: "concrete" });
     b.box("glowRed", x, 5, z + 0.62, 0.3, 2.4, 0.04);

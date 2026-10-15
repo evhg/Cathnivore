@@ -75,7 +75,7 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
   }
   // The stairs' side masses fill the gap to the walls; glass rails along the stair edges.
   for (const [z0, base] of [[stair1, 0], [stair2, H1]] as const) {
-    for (const s of [-1, 1]) b.boxMinMax("glass", s * 5 - 0.03, base + 0.4, z0 - count * run, s * 5 + 0.03, base + count * rise + 1.1, z0);
+    for (const s of [-1, 1]) b.boxMinMax("glass", s * 5 - 0.03, base + 0.4, z0 - count * run, s * 5 + 0.03, base + count * rise + 1.1, z0, { cover: "thin", mat: "glass" });
   }
 
   // Lobby: marble columns with glow strips, a reception desk, the courier's safe, a revolving door at the south.
@@ -88,7 +88,7 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
   b.box("darkMetal", 9.5, 0.6, 33, 1.2, 1.2, 1.2, { collide: "metal" }); // the courier's lobby safe
   b.box("glowAmber", 9.5, 1.15, 32.38, 0.5, 0.12, 0.04);
   signs.push({ text: "VANTAGE GROUP", sub: "VISITORS REGISTER AT DESK", style: "screen", color: "#bfe9ff", w: 7, h: 1.8, center: V(0, 5.2, 21.3), normal: V(0, 0, 1), flicker: 0, intensity: 2.2 });
-  b.box("glass", 0, 1.6, zS - 0.1, 6, 3.2, 0.08);
+  b.box("glass", 0, 1.6, zS - 0.1, 6, 3.2, 0.08, { cover: "thin", mat: "glass" });
   b.box("glowRed", 0, 3.6, zS - 0.05, 1.4, 0.3, 0.05);
 
   // Lobby dressing: a red runner from the doors to the grand stair, brass trim and uplit columns, potted palms,
@@ -103,6 +103,7 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
   for (const [x, z] of [[-12.4, 48], [12.4, 48], [-12.4, 20], [12.4, 20]] as const) {
     b.cylinder("brass", V(x, 0, z), V(x, 0.7, z), 0.55, 12);
     b.shape("leaf", new THREE.SphereGeometry(0.85, 10, 8), V(x, 1.5, z), 0, V(1, 1.3, 1));
+    b.tagLast("thin", "cloth"); // foliage hides her, and rounds lose a little going through
   }
   for (const z of [40, 34]) for (const s of [-1, 1]) {
     b.box("brass", s * 6.6, 0.42, z, 1.8, 0.1, 0.7, { collide: "metal" });
@@ -121,7 +122,7 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
       b.box("paintMetal", x, H1 + 0.7, z + 0.55, 2.0, 1.4, 0.06, { collide: "metal" });
     }
   }
-  b.boxMinMax("glass", 9, H1, -10, 9.06, H1 + 3.6, -26);
+  b.boxMinMax("glass", 9, H1, -10, 9.06, H1 + 3.6, -26, { cover: "thin", mat: "glass" });
   for (let i = 0; i < 6; i++) {
     const z = -12 - i * 2.2;
     b.box("darkMetal", 12.8, H1 + 1.2, z, 0.9, 2.4, 1.2, { collide: "metal" });
@@ -149,6 +150,7 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
     for (const x of [-12.3, 12.3]) {
       b.cylinder("brass", V(x, H1, z), V(x, H1 + 0.6, z), 0.45, 12);
       b.shape("leaf", new THREE.SphereGeometry(0.7, 10, 8), V(x, H1 + 1.3, z), 0, V(1, 1.2, 1));
+      b.tagLast("thin", "cloth");
     }
   }
   b.boxMinMax("carpetRed", -9, H2 + 0.004, -44, 9, H2 + 0.03, -62, { uv: 3 });

@@ -2,6 +2,8 @@
 // scene, lighting, post-processing and effects; the game layer owns the camera's transform, the player,
 // enemies and rules. Keep this file small and stable: both sides build against it.
 
+import type { CoverMat } from "../sim/penetration";
+import type { Obb, ShotCollider } from "./builder";
 import type * as THREE from "three";
 
 export type Quality = "phone" | "high" | "ultra";
@@ -51,6 +53,8 @@ export interface World {
   readonly camera: THREE.PerspectiveCamera;
   /** Static collision boxes in world space, for the player, AI line of sight and bullets. */
   readonly colliders: THREE.Box3[];
+  /** What each collider is made of, rotated props' oriented boxes, and shot-only cover (S1.1). */
+  readonly cover?: { mats: CoverMat[]; obbs: (Obb | null)[]; thin: ShotCollider[] };
   /** Named points authored with the level: "player" (one), "patrol:<name>" (routes), "perch" (sniper spots), "extract". */
   readonly markers: Record<string, THREE.Vector3[]>;
   /**
