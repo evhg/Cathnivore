@@ -8,7 +8,7 @@ for (const [name, w, h] of [['P', 390, 844], ['L', 844, 390], ['D', 1440, 900]])
   for (const outcome of ['won', 'lost']) {
     for (const rm of ['no-preference', 'reduce']) {
       if (rm === 'reduce' && outcome === 'lost') continue
-      const page = await browser.newPage({ viewport: { width: w, height: h }, reducedMotion: rm })
+      const page = await browser.newPage({ viewport: { width: w, height: h }, reducedMotion: rm, colorScheme: process.env.SCHEME ?? 'light' })
       await page.goto(`${base}?sandbox=1&2d&level=3`)
       await page.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 30000 })
       for (let i = 0; i < 8 && !(await page.locator('#screen-play:visible').count()); i++) {
@@ -18,7 +18,7 @@ for (const [name, w, h] of [['P', 390, 844], ['L', 844, 390], ['D', 1440, 900]])
       await page.evaluate((o) => { window.hedgerow.game().phase = o }, outcome)
       await page.waitForSelector('#dlg-result[open]', { timeout: 15000 })
       await page.waitForTimeout(1800)
-      await page.screenshot({ path: `e2e/screenshots/hedgerow-end-${outcome}-${rm === 'reduce' ? 'rm-' : ''}${name}.png` })
+      await page.screenshot({ path: `e2e/screenshots/hedgerow-end-${process.env.SCHEME === 'dark' ? 'dark-' : ''}${outcome}-${rm === 'reduce' ? 'rm-' : ''}${name}.png` })
       await page.close()
     }
   }
