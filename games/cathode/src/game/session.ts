@@ -1588,7 +1588,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const origin = eye.clone().addScaledVector(fwd, 0.3);
     const dir = aim.clone().sub(origin).normalize();
     combat.quiet = true;
-    combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], build());
+    // No random crit: a stage shows the same class every time.
+    combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], { ...build(), crit: 0 });
     combat.quiet = false;
     drainEvents();
     // Classes the street can't produce on cue yet (no plates until C15): show them over the real hit.
