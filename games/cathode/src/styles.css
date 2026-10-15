@@ -1860,7 +1860,7 @@ input[type="radio"] {
   background:
     radial-gradient(120% 60% at 50% 108%, rgb(var(--blood-rgb) / .28), transparent 60%),
     radial-gradient(90% 50% at 85% 0%, rgb(var(--cyan-rgb) / .16), transparent 62%),
-    linear-gradient(to bottom, #050609, var(--night) 55%, #0b0710);
+    linear-gradient(to bottom, var(--night), var(--night) 55%, var(--night-2));
 }
 /* A rain-wet skyline plate: tower silhouettes with a few lit windows, and their neon in the puddles below. */
 .rotate-city {
@@ -1869,11 +1869,11 @@ input[type="radio"] {
   height: 46%;
   background:
     repeating-linear-gradient(100deg, transparent 0 11px, rgb(var(--cyan-rgb) / .05) 11px 12px),
-    linear-gradient(to bottom, transparent, rgb(7 8 11 / .9) 92%),
+    linear-gradient(to bottom, transparent, color-mix(in srgb, var(--night) 90%, transparent) 92%),
     linear-gradient(to right,
-      #0d1017 0 9%, transparent 9% 11%, #10131b 11% 24%, transparent 24% 26%, #0c0e14 26% 34%,
-      transparent 34% 37%, #12151e 37% 52%, transparent 52% 54%, #0e1118 54% 66%, transparent 66% 69%,
-      #11141c 69% 83%, transparent 83% 85%, #0d1016 85% 100%);
+      var(--night-2) 0 9%, transparent 9% 11%, var(--panel) 11% 24%, transparent 24% 26%, var(--night-2) 26% 34%,
+      transparent 34% 37%, var(--panel) 37% 52%, transparent 52% 54%, var(--night-2) 54% 66%, transparent 66% 69%,
+      var(--panel) 69% 83%, transparent 83% 85%, var(--night-2) 85% 100%);
   clip-path: polygon(0 34%, 9% 34%, 9% 52%, 11% 52%, 11% 12%, 24% 12%, 24% 40%, 26% 40%, 26% 26%, 34% 26%, 34% 58%, 37% 58%, 37% 0, 52% 0, 52% 30%, 54% 30%, 54% 20%, 66% 20%, 66% 46%, 69% 46%, 69% 8%, 83% 8%, 83% 38%, 85% 38%, 85% 24%, 100% 24%, 100% 100%, 0 100%);
   opacity: .95;
 }
@@ -1900,7 +1900,7 @@ input[type="radio"] {
   gap: 12px;
   max-width: 300px;
   padding: 28px 22px 24px;
-  background: linear-gradient(to bottom, rgb(14 16 22 / .82), rgb(8 9 13 / .9));
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--night-2) 82%, transparent), color-mix(in srgb, var(--night) 90%, transparent));
   border: 1px solid rgb(var(--ink-rgb) / .1);
   border-top: 2px solid var(--neon-pink);
   box-shadow: var(--sh-2), 0 -12px 36px -18px rgb(var(--blood-rgb) / .7);

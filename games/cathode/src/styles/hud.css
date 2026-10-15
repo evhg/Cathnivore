@@ -434,9 +434,9 @@
   vertical-align: .08em;
   font: 800 .82em/1.1 var(--font-ui);
   letter-spacing: .18em;
-  color: #120708;
+  color: var(--night);
   background: var(--hit-crit);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / .55), 0 0 calc(var(--u) * 10) rgb(var(--blood-rgb) / .55);
+  box-shadow: 0 0 0 1px var(--hit-outline), 0 0 calc(var(--u) * 10) rgb(var(--blood-rgb) / .55);
   transform: skewX(-8deg);
 }
 @keyframes target-gone { 0%, 30% { opacity: 1; } 100% { opacity: 0; } }
