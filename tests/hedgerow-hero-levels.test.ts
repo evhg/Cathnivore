@@ -19,7 +19,7 @@ describe("Cath's in-run levels", () => {
     expect(fleet.hero.level).toBeGreaterThan(1);
     expect(fleet.hero.maxHp).toBeGreaterThan(newGame(LEVELS[9]!).hero.maxHp);
     expect(newGame(LEVELS[50]!).hero.level).toBe(1);
-  });
+  }, 60_000); // bot-driven: about 5 s alone, slower under full-suite load
 });
 
 describe("Last Orders", () => {
