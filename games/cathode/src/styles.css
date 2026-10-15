@@ -1858,6 +1858,7 @@ input[type="radio"] {
   overflow: hidden;
   text-align: center;
   background:
+    radial-gradient(130% 30% at 50% 56%, rgb(var(--blood-rgb) / .3), transparent 70%),
     radial-gradient(120% 60% at 50% 108%, rgb(var(--blood-rgb) / .28), transparent 60%),
     radial-gradient(90% 50% at 85% 0%, rgb(var(--cyan-rgb) / .16), transparent 62%),
     linear-gradient(to bottom, var(--night), var(--night) 55%, var(--night-2));
@@ -1871,9 +1872,9 @@ input[type="radio"] {
     repeating-linear-gradient(100deg, transparent 0 11px, rgb(var(--cyan-rgb) / .05) 11px 12px),
     linear-gradient(to bottom, transparent, color-mix(in srgb, var(--night) 90%, transparent) 92%),
     linear-gradient(to right,
-      var(--night-2) 0 9%, transparent 9% 11%, var(--panel) 11% 24%, transparent 24% 26%, var(--night-2) 26% 34%,
-      transparent 34% 37%, var(--panel) 37% 52%, transparent 52% 54%, var(--night-2) 54% 66%, transparent 66% 69%,
-      var(--panel) 69% 83%, transparent 83% 85%, var(--night-2) 85% 100%);
+      var(--plate) 0 9%, transparent 9% 11%, var(--night-3) 11% 24%, transparent 24% 26%, var(--plate) 26% 34%,
+      transparent 34% 37%, var(--night-3) 37% 52%, transparent 52% 54%, var(--plate) 54% 66%, transparent 66% 69%,
+      var(--night-3) 69% 83%, transparent 83% 85%, var(--plate) 85% 100%);
   clip-path: polygon(0 34%, 9% 34%, 9% 52%, 11% 52%, 11% 12%, 24% 12%, 24% 40%, 26% 40%, 26% 26%, 34% 26%, 34% 58%, 37% 58%, 37% 0, 52% 0, 52% 30%, 54% 30%, 54% 20%, 66% 20%, 66% 46%, 69% 46%, 69% 8%, 83% 8%, 83% 38%, 85% 38%, 85% 24%, 100% 24%, 100% 100%, 0 100%);
   opacity: .95;
 }
@@ -1882,14 +1883,14 @@ input[type="radio"] {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(2px 3px at 16% 30%, var(--amber) 60%, transparent 70%),
-    radial-gradient(2px 3px at 19% 44%, var(--amber) 60%, transparent 70%),
-    radial-gradient(2px 3px at 42% 18%, var(--cyan) 60%, transparent 70%),
-    radial-gradient(2px 3px at 46% 36%, var(--amber) 60%, transparent 70%),
-    radial-gradient(2px 3px at 60% 32%, var(--neon-pink) 60%, transparent 70%),
-    radial-gradient(2px 3px at 74% 22%, var(--amber) 60%, transparent 70%),
-    radial-gradient(2px 3px at 78% 40%, var(--cyan) 60%, transparent 70%),
-    radial-gradient(2px 3px at 90% 36%, var(--amber) 60%, transparent 70%),
+    radial-gradient(3px 4px at 16% 30%, var(--amber) 60%, transparent 70%),
+    radial-gradient(3px 4px at 19% 44%, var(--amber) 60%, transparent 70%),
+    radial-gradient(3px 4px at 42% 18%, var(--cyan) 60%, transparent 70%),
+    radial-gradient(3px 4px at 46% 36%, var(--amber) 60%, transparent 70%),
+    radial-gradient(3px 4px at 60% 32%, var(--neon-pink) 60%, transparent 70%),
+    radial-gradient(3px 4px at 74% 22%, var(--amber) 60%, transparent 70%),
+    radial-gradient(3px 4px at 78% 40%, var(--cyan) 60%, transparent 70%),
+    radial-gradient(3px 4px at 90% 36%, var(--amber) 60%, transparent 70%),
     linear-gradient(to right, transparent 37%, rgb(var(--blood-rgb) / .7) 37% 52%, transparent 52%) 0 4% / 100% 3px no-repeat;
   opacity: .8;
 }
