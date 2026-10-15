@@ -11,15 +11,27 @@ Every visual item is done only when:
 
 ## Owner direction, 2026-10-15: Phase C comes first, non-stop, for at least a week (FEEDBACK.md)
 
-**Phase C: CATHODE combat, look and feel.** Every session works on Phase C until it is done, ahead of D, H and U. Take the first open item. The full spec, from AAA research, is `docs/design/cathode-combat.md`; where it exists it replaces these placeholders. Test at 1440x900, 2560x1440 at 2x (a 5K desktop) and phone landscape. Release each item when it passes the gates.
-- C1. [~] *(2026-10-15: hit marker 2x bigger with kill ring, red head/steel soft variants, hit tick and kill stamp sounds, "Blocked by cover" tag and sound, bigger enemy flinch, rem-based crosshair and HUD scale with screen height above 900px; shot checked at D, 5K not shot; unreleased)* **Hit feedback:** a hit marker on the crosshair (white body, red head, kill X), a hit tick sound, a kill confirm, and enemy flinch on every hit. Show "blocked" sparks when cover stops a round. Scale all HUD and indicators with the screen (4K/5K included).
-- C2. [~] *(2026-10-15: pistol model gained sights, ejection port, slide stop, rail, guard, floorplate, cyan trim; 2026-10-15 later: reload choreography, slide lock, first-person flash; not shot; sound layers and ADS left)* **Weapons, AAA grade:** detailed viewmodels for every gun, the pistol first. Full firing animation (slide, recoil spring, muzzle flash and smoke, ejected brass, sway, ADS), reload choreography, and layered firing sound.
-- C3. [~] *(2026-10-15: tabard, crest fin, ear cups, shoulder lips; animation/behaviour left)* **Enemy design:** new Enforcer models with readable silhouettes, armour and faction details. Animation (idle, alert, cover, aim, flinch, stagger), telegraphed attacks, and smarter combat behaviour (flank, suppress, take cover).
-- C4. [ ] **Enemy hits, wounds and deaths:** location-based reactions, blood and impact decals, armour sparks, limping, falls, ragdolls, and death animations worthy of an R rating.
-- C5. [ ] **Player hit, wounded and dying:** directional damage, a screen blood vignette, wound states (blur, desaturation, heartbeat, muffled sound), a dramatic down and death sequence, and a stylish retry.
-- C6. [ ] **Takedowns that satisfy:** an animated close-up takedown with camera, sound, slow motion and a reaction.
-- C7. [~] *(2026-10-15: first-weapon beam 24 m and brighter, "New weapon: Kestrel 9" banner; outlines on loot and 5K waypoints left)* **Findable pickups and objectives:** a world beacon and outline on weapons and loot, a clear first-weapon moment, and readable waypoints at any resolution.
-- C8. [ ] **AAA front door:** a new title screen, menus and loading screen modelled on real AAA games, built with the AAA UI kit. Includes the game's new name once the owner picks it.
+**Phase C: CATHODE combat, look and feel.** Every session works on Phase C until it is done, ahead of D, H and U. Take the first open item. The spec, from AAA research, is `docs/design/cathode-combat.md`, which gives each milestone's goal, files, tests and acceptance; the research is in `cathode-combat-research.md`. Phase C stays exclusive until C20 is done, because the owner asked for at least a week, non-stop. Test at 1440x900, 2560x1440 at 2x (a 5K desktop) and phone landscape. Release each item when it passes the gates.
+- C1. [~] *(2026-10-15: hit marker 2x bigger with kill ring, red head/steel soft variants, hit tick and kill stamp sounds, "Blocked by cover" tag and sound, bigger enemy flinch, rem-based crosshair and HUD scale with screen height above 900px; shot checked at D, 5K not shot; unreleased)* **"Every shot tells you what it hit" (3 sessions)**
+- C2. [ ] **"Hits land on the body" (2 sessions)**
+- C3. [~] *(2026-10-15: first-weapon beam 24 m and brighter, "New weapon: Kestrel 9" banner; outlines on loot and 5K waypoints left)* **"You can't miss the first gun", and a HUD sized for 5K (2 sessions)**
+- C4. [~] *(2026-10-15: pistol model gained sights, ejection port, slide stop, rail, guard, floorplate, cyan trim; 2026-10-15 later: reload choreography, slide lock, first-person flash; not shot; sound layers and ADS left)* **"Kestrel 9, built like a real gun" (3 sessions)**
+- C5. [ ] **"Kestrel 9 in motion" (3 sessions)**
+- C6. [ ] **"I know I'm hit" (2 sessions)**
+- C7. [ ] **"Wounded" (2 sessions)**
+- C8. [ ] **"Dying, done properly" (2 sessions)**
+- C9. [ ] **"Deaths that land" (3 sessions)**
+- C10. [~] *(2026-10-15: tabard, crest fin, ear cups, shoulder lips; animation/behaviour left)* **"Enforcer v2" (4 sessions)**
+- C11. [ ] **"Takedowns" (3 sessions)**
+- C12. [ ] **"The new name" (1 session)** (waits for the owner to pick the name in FEEDBACK.md; skip it until then)
+- C13. [ ] **"A front door that looks AAA" (4 sessions)**
+- C14. [ ] **"Class pick, loading and pause" (2 sessions)**
+- C15. [ ] **"Armour that breaks, enemies that stagger" (3 sessions)**
+- C16. [ ] **"Firefights with intent" (4 sessions)**
+- C17. [ ] **"Second Wind and the kill cams" (3 sessions)**
+- C18. [ ] **"Every gun is a hero" (6 sessions, one class per slice, released at the end)**
+- C19. [ ] **"Gore and dismemberment" (2 sessions)**
+- C20. [ ] **"District roster and the 5K polish pass" (4 sessions)**
 
 ## Owner direction, 2026-10-09: work these phases first (FEEDBACK.md)
 
