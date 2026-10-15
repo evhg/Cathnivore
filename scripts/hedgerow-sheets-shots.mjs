@@ -6,13 +6,14 @@ mkdirSync('e2e/screenshots', { recursive: true })
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH })
 for (const [name, w, h] of [['P', 390, 844], ['L', 844, 390], ['D', 1440, 900]]) {
   for (const [id, dlg] of [['btn-cath', 'dlg-cath'], ['btn-bank', 'dlg-bank']]) {
-    const page = await browser.newPage({ viewport: { width: w, height: h } })
+    const scheme = process.env.SCHEME ?? 'light'
+    const page = await browser.newPage({ viewport: { width: w, height: h }, colorScheme: scheme })
     await page.goto(`${base}?sandbox=1&2d`)
     await page.waitForSelector(`#${id}`, { timeout: 30000 })
     await page.locator(`#${id}`).click()
     await page.waitForSelector(`#${dlg}[open]`)
     await page.waitForTimeout(500)
-    await page.screenshot({ path: `e2e/screenshots/hedgerow-${dlg}-${name}.png` })
+    await page.screenshot({ path: `e2e/screenshots/hedgerow-${dlg}-${name}${scheme === 'dark' ? '-dark' : ''}.png` })
     await page.close()
   }
 }
