@@ -240,7 +240,7 @@
   --len: calc(var(--u) * 16);
   --th: max(2px, calc(var(--u) * 3.6));
   --gap: calc(var(--u) * 10);
-  --ring: calc(var(--u) * 60);
+  --ring: calc(var(--u) * 90);
   position: absolute;
   left: 50%;
   top: 50%;
@@ -994,6 +994,8 @@
   }
 }
 @media (max-height: 430px) and (orientation: landscape) {
+  /* The arms cluster sits top right on a phone: the target bar drops below it, still above the crosshair. */
+  .hud-target { top: 27%; width: min(calc(var(--u) * 420), 36vw); }
   .hud-objective { max-width: 36ch; }
   .hud-hp { height: 6px; }
   /* A short landscape phone has no free full-width row: the banner sits low in the gap between the stick

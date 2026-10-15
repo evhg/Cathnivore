@@ -46,8 +46,8 @@ export const tuning = {
     kill: { len: 24, thick: 4.8, gap: 13, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
     headKill: { len: 24, thick: 4.8, gap: 13, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
   } satisfies Record<HitClass, { len: number; thick: number; gap: number; pop: number; popMs: number; holdMs: number; fadeMs: number }>,
-  /** The kill ring grows from 18u to 60u over 420 ms (1.5x the spec's 12u to 40u; two rings on a head kill). */
-  killRing: { fromU: 18, toU: 60, ms: 420 },
+  /** The kill ring bursts from 27u to 90u over 420 ms, clear of the 1.6x kill ticks (the spec says 12u to 40u, sized for its smaller ticks); two rings on a head kill. */
+  killRing: { fromU: 27, toU: 90, ms: 420 },
   /** S1.1 blocked: the hollow bracket beside the crosshair. "COVER" is spelled out for the first few. */
   blocked: { glyphMs: 320, wordUses: 3, impactMul: 1.5, sparks: [12, 20] as const, ricochetChance: 0.3, nearRayM: 1.0 },
   /** S1.1 near miss: a round within this of an enemy's head makes them flinch and duck. */
