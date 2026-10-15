@@ -364,6 +364,14 @@ function showStats(): void {
     cal.push(cell)
   }
   ui.streakCal.replaceChildren(...cal)
+  const hot = s.streak > 1
+  $<HTMLDivElement>('stats-cath').innerHTML = cathMarkup(hot ? 'delighted' : 'wink', 'face')
+  $<HTMLParagraphElement>('stats-line').textContent =
+    s.played === 0
+      ? "Nothing yet. Today's puzzle is waiting, and the fields are thirsty."
+      : hot
+        ? `${s.streak} days running. The fields have never been so well kept.`
+        : 'Come back tomorrow and the streak starts to grow.'
   ui.dlgStats.showModal()
 }
 
