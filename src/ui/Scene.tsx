@@ -34,7 +34,7 @@ export default function Scene({ scene, onContinue, chapterId }: { scene: SceneDa
   // The most recent other speaker stays on stage, dimmed, on the opposite side (graphic-novel staging).
   let partner: ReturnType<typeof portraitKeyFor> | null = null
   for (let i = shown - 2; i >= 0 && !partner; i--) {
-    const k = portraitKeyFor(scene.lines[i].speaker)
+    const k = portraitKeyFor(scene.lines[i]?.speaker ?? "")
     if (k && k !== key) partner = k
   }
 
