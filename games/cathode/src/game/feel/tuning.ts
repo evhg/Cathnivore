@@ -1,0 +1,68 @@
+// Every feel number in Phase C lives here (docs/design/cathode-combat.md S0): timings, sizes and gains. It's
+// a plain object with no three.js import, so the tests read exactly what the game uses.
+
+export type HitClass = "body" | "head" | "armour" | "armourBreak" | "pen" | "kill" | "headKill";
+
+export const tuning = {
+  /** S1.5: how long a hit holds the world (ms). Automatic weapons hold less, so a burst never stutters. */
+  hitStop: {
+    body: 12,
+    bodyAuto: 0,
+    crit: 20,
+    critAuto: 0,
+    plateBreak: 40,
+    melee: 40,
+    kill: 60,
+    killAuto: 40,
+    headKill: 110,
+    takedown: 80,
+    lastEnemy: 120,
+    cathDeath: 120,
+    /** A single stop never runs longer than this. */
+    cap: 150,
+    /** While firing automatic weapons: the sum of stops in any 100 ms window stays at or below this. */
+    autoWindowMs: 100,
+    autoWindowCap: 30,
+    /** During a hit-stop particles run at this rate, so blood hangs in the air. */
+    fxScale: 0.25,
+  },
+  /** S1.5 last row: the final enemy of an encounter. */
+  lastEnemySlowmo: { scale: 0.35, holdMs: 700, rampOutMs: 250 },
+  /** S1.4: kill confirm. */
+  kill: { fovPunchDeg: -1.5, fovSpring: { freqHz: 4.2, zeta: 0.9 }, trauma: 0.2, duckDb: -3, duckMs: 400 },
+  /** S0 trauma: shake = trauma² × max. */
+  trauma: { maxRotDeg: 1.8, maxOffsetM: 0.008, noiseHz: 20, decayPerS: 1.6, reducedMotionCap: 0.3, phoneMul: 1.2 },
+  /** S1.2: the marker per hit class, in --u units (1u = 1/1080 of the screen height, S8). */
+  marker: {
+    body: { len: 10, thick: 2.25, gap: 7, pop: 1.25, popMs: 60, holdMs: 80, fadeMs: 140 },
+    head: { len: 13, thick: 2.5, gap: 7, pop: 1.35, popMs: 60, holdMs: 90, fadeMs: 160 },
+    armour: { len: 10, thick: 2.25, gap: 7, pop: 1.15, popMs: 60, holdMs: 80, fadeMs: 120 },
+    armourBreak: { len: 10, thick: 2.25, gap: 7, pop: 1.3, popMs: 60, holdMs: 90, fadeMs: 200 },
+    pen: { len: 10, thick: 1, gap: 7, pop: 1.2, popMs: 60, holdMs: 60, fadeMs: 120 },
+    kill: { len: 15, thick: 3, gap: 9, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
+    headKill: { len: 15, thick: 3, gap: 9, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
+  } satisfies Record<HitClass, { len: number; thick: number; gap: number; pop: number; popMs: number; holdMs: number; fadeMs: number }>,
+  /** The kill ring grows from 12u to 40u over 420 ms (doubled on a head kill). */
+  killRing: { fromU: 12, toU: 40, ms: 420 },
+  /** S1.1 blocked: the hollow bracket beside the crosshair. "COVER" is spelled out for the first few. */
+  blocked: { glyphMs: 320, wordUses: 3, impactMul: 1.5, sparks: [12, 20] as const, ricochetChance: 0.3, nearRayM: 1.0 },
+  /** S1.1 near miss: a round within this of an enemy's head makes them flinch and duck. */
+  nearMiss: { radiusM: 0.5, flinchDeg: 8, duckMs: 400, accuracyMul: 0.6, accuracyMs: 1000, barkChance: 0.4 },
+  /** S1.2 target bar on a kill: flash, collapse, hide. */
+  targetBar: { collapseMs: 180, hideAfterMs: 400, holdS: 2.5 },
+  /** S1.2 rumble (gamepads with vibrationActuator). */
+  rumble: {
+    fire: { motor: "weak", mag: 0.3, ms: 40 },
+    hit: { motor: "weak", mag: 0.2, ms: 30 },
+    kill: { motor: "strong", mag: 0.6, ms: 120 },
+  },
+  /** S1.3 confirm sounds: peak level in dBFS per class. */
+  confirmDb: { body: -12, head: -10, armour: -14, plateBreak: -10, visor: -10, kill: -8, headKill: -8, pen: -15 },
+  /** S0 audio buses. */
+  audio: { compThreshold: -18, compRatio: 4, compKnee: 6, compAttack: 0.003, compRelease: 0.15, attackTau: 0.04, releaseTau: 0.4, dryGainDb: 3, voicesDesktop: 32, voicesPhone: 20 },
+  /** S0 timescale: nothing but death holds longer than this (ms). */
+  timescale: { maxHoldMs: 3000 },
+} as const;
+
+/** dBFS to linear gain. */
+export const db = (d: number): number => Math.pow(10, d / 20);
