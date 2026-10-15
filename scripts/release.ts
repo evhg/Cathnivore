@@ -72,7 +72,7 @@ export async function liveSmokeTest(base: string): Promise<SmokeResult> {
       console.log(`Smoke test failed: ${base}/ returned ${landing?.status()}`)
       return 'failed'
     }
-    await page.locator('a[href="/cathnivore/"]').waitFor({ timeout: 15_000 })
+    await page.locator('a.card[href="/cathnivore/"]').waitFor({ timeout: 15_000 })
     await page.locator('a.card[href="/runnel/"]').waitFor({ timeout: 15_000 })
 
     const runnel = await page.goto(`${base}/runnel/?nohelp`, { waitUntil: 'load' })
