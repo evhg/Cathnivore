@@ -59,10 +59,10 @@ export class Case {
     this.group.add(box, band, latch);
     // A thin shaft of light up into the rain, so it can be found from down the street.
     const beam = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.05, 0.25, 9, 12, 1, true),
-      new THREE.MeshBasicMaterial({ color: 0xffb347, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false }),
+      new THREE.CylinderGeometry(0.06, 0.35, 24, 12, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0xffb347, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false }),
     );
-    beam.position.y = 4.5;
+    beam.position.y = 12;
     this.group.add(beam);
     this.unlight = light?.(pos.clone().add(new THREE.Vector3(0, 1.2, 0)), AMBER, 4, 6) ?? null;
     this.group.position.copy(pos);
@@ -188,7 +188,7 @@ export class FirstJob {
         this.objective = "Two Enforcers under the flyover. Deal with them.";
         this.teachFeatures("aim", "reload");
         if (!resumed) h.arm("kestrel");
-        h.banner(resumed ? "Checkpoint" : "Checkpoint saved", resumed ? "Back at the flyover" : "Dying now restarts you here");
+        h.banner(resumed ? "Checkpoint" : "New weapon: Kestrel 9", resumed ? "Back at the flyover" : "Equipped. Checkpoint saved: dying now restarts you here");
         this.wave = [h.spawn("rifle", [this.P(-4, 15), this.P(1.5, 15)]), h.spawn("rifle", [this.P(5, 6), this.P(5, 18)])];
         this.target = this.P(-1, 12);
         h.teach(this.key("fire"));

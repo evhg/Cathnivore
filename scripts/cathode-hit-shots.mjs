@@ -9,7 +9,8 @@ const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_C
 for (const [name, vp, dsf] of [['D', { width: 1440, height: 900 }, 1], ['5K', { width: 2560, height: 1440 }, 2]]) {
   const page = await browser.newPage({ viewport: vp, deviceScaleFactor: dsf })
   await page.goto(base + '?play&shot')
-  await page.waitForTimeout(4000)
+  await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) > 2, null, { timeout: 120_000 })
+  await page.waitForTimeout(5000)
   for (const kind of ['body', 'head', 'kill', 'soft', 'blocked']) {
     await page.evaluate((k) => {
       const hit = document.querySelector('.hud-hit'), bl = document.querySelector('.hud-blocked')
@@ -18,9 +19,9 @@ for (const [name, vp, dsf] of [['D', { width: 1440, height: 900 }, 1], ['5K', { 
       if (k === 'blocked') bl.style.setProperty('--a', '1'); else hit.style.setProperty('--a', '1')
     }, kind)
     await page.waitForTimeout(300)
-    await page.screenshot({ path: `${out}/c1-hit-${kind}-${name}.png`, clip: { x: vp.width / 2 - 160, y: vp.height / 2 - 120, width: 320, height: 240 } })
+    await page.screenshot({ path: `${out}/c1-hit-${kind}-${name}.png`, clip: { x: vp.width / 2 - 160, y: vp.height / 2 - 120, width: 320, height: 240 }, timeout: 240_000 })
   }
-  await page.screenshot({ path: `${out}/c1-full-${name}.png` })
+  await page.screenshot({ path: `${out}/c1-full-${name}.png`, timeout: 240_000 })
   await page.close()
 }
 await browser.close()

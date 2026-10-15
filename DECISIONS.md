@@ -469,3 +469,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-15: grid variety (ROADMAP 120) via fieldSize swap, not per-level paths; level 23 exempt (bot lost on its narrow field). Ticked 101 (already built).
 - 2026-10-15 12:52: grid variety verified and released; no k changes needed.
 - 2026-10-15: the owner played CATHODE and asked for a week or more of non-stop work on combat, weapons, enemies and hit, wound and death visuals. Phase C overrides the D/H/U split until done. Bullets already stop at cover (rays against colliders); the gap is feedback.
+- 2026-10-15 13:52: Phase C started with C1 (hit/cover feedback) since the hit marker existed but was tiny; HUD scales via root font-size above 900px tall.

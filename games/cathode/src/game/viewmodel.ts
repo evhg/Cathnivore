@@ -186,6 +186,17 @@ function buildPistol(): GunRig {
   grip.rotation.x = 0.22;
   g.add(grip);
   g.add(at(box(0.004, 0.02, 0.025, M.polymer, 0.002), 0, -0.012, -0.025)); // trigger guard
+  // Detail that reads at hip and over the sights: a full trigger guard loop, the trigger, a magazine floorplate,
+  // the slide stop, a rail under the frame, front and rear iron sights either side of the dot, an ejection port.
+  g.add(at(box(0.026, 0.004, 0.04, M.polymer, 0.001), 0, -0.024, -0.036)); // guard floor
+  g.add(at(box(0.006, 0.014, 0.004, M.steel, 0.001), 0, -0.012, -0.02)); // trigger
+  g.add(at(box(0.032, 0.012, 0.052, M.steel, 0.003), 0, -0.098, 0.04)).rotation.x = 0.22; // magazine floorplate
+  g.add(at(box(0.004, 0.006, 0.02, M.steel, 0.001), 0.016, 0.013, -0.04)); // slide stop
+  g.add(at(box(0.022, 0.006, 0.05, M.steel, 0.001), 0, -0.01, -0.12)); // accessory rail
+  slide.add(at(box(0.01, 0.008, 0.006, M.blued, 0.001), 0, 0.052, 0.025)); // rear sight
+  slide.add(at(box(0.006, 0.01, 0.006, M.blued, 0.001), 0, 0.05, -0.145)); // front sight
+  slide.add(at(box(0.002, 0.014, 0.038, M.glass, 0.0005), 0.0155, 0.032, -0.03)); // ejection port, dark and open
+  slide.add(at(box(0.0015, 0.003, 0.15, M.rim, 0.0005), 0.0158, 0.044, -0.06)); // a cyan trim line, a Cath touch
   // The suppressor, long and matte.
   g.add(at(cyl(0.017, 0.16, M.polymer, 18), 0, 0.028, -0.23));
   g.add(at(cyl(0.0175, 0.01, M.steel, 18), 0, 0.028, -0.155));
