@@ -1032,8 +1032,9 @@
   }
 }
 @media (max-height: 430px) and (orientation: landscape) {
-  /* The arms cluster sits top right on a phone: the target bar drops below it, still above the crosshair. */
-  .hud-target { top: 27%; width: min(calc(var(--u) * 420), 36vw); }
+  /* The arms cluster and the feed under it sit top right on a phone: the target bar drops below both (a kill's
+     DOWN stamp and its +XP line arrive together), sitting just over the crosshair like a name over his head. */
+  .hud-target { top: 36%; width: min(calc(var(--u) * 420), 36vw); }
   .hud-objective { max-width: 36ch; }
   .hud-hp { height: 6px; }
   /* A short landscape phone has no free full-width row: the banner sits low in the gap between the stick
