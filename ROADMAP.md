@@ -412,7 +412,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 117. [x] **Runnel stage background:** the page is flat cream; add a faint field-furrow pattern or vignette so the board sits in a landscape (bar 1).
 118. [x] **Runnel solved moment:** when solved, wave-sprout animation across fields plus a share card with the puzzle number (`games/runnel/`).
 119. [x] *(2026-10-07: bridges at 13, 53, 72, 93; level tests pass)* **Hedgerow set pieces for the acts without one:** acts 1, 2, 5, 7, 9 and 10 have no set piece (flood/bridge/blackout); add one mid-act per act, then run `hedgerow-tune.ts` and `--verify` (`games/hedgerow/src/levels.ts`).
-120. [x] *(2026-10-15: odd levels 11+ swap a column for a row, level 23 exempt; tuner verify and shots pending)* **Hedgerow per-level grid variety:** every level of an act shares one grid size; vary rows/cols by one on alternating levels so the field shape changes (tuner required).
+120. [x] *(2026-10-15: odd levels 11+ swap a column for a row, level 23 exempt; tuner verify and shots done)* **Hedgerow per-level grid variety:** every level of an act shares one grid size; vary rows/cols by one on alternating levels so the field shape changes (tuner required).
 
 121. [x] **Runnel daily streak flair:** show a small streak flame and best streak on the stats dialog and on the header after a win (`games/runnel/src/main.ts`, `store.ts`).
 122. [x] **Runnel hint button:** a once-per-puzzle "Cath's tip" that pulses one wrongly turned tile, with a Practice-only default (bar 5).
