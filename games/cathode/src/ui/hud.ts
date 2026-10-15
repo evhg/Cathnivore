@@ -332,7 +332,10 @@ export class Hud {
     set(this.hit, "--a", hitA.toFixed(2));
     this.blockedAge += dt * 1000;
     const glyph = tuning.blocked.glyphMs;
-    set(this.blockedEl, "--a", (this.blockedAge < glyph * 0.6 ? 1 : Math.max(0, 1 - (this.blockedAge - glyph * 0.6) / (glyph * 0.4))).toFixed(2));
+    const blockedA = this.blockedAge < glyph * 0.6 ? 1 : Math.max(0, 1 - (this.blockedAge - glyph * 0.6) / (glyph * 0.4));
+    set(this.blockedEl, "--a", blockedA.toFixed(2));
+    // While a marker or the brackets show, the crosshair's arms step back so the confirm reads alone.
+    set(this.cross, "--arm", (1 - 0.85 * Math.max(hitA, blockedA)).toFixed(2));
     // A killed target's bar: flash, collapse, then hide.
     if (this.targetDead > 0) {
       this.targetDead -= dt;
@@ -442,12 +445,26 @@ export class Hud {
     // Only what actually fired is held at tMs; the rest stays hidden.
     if (this.hitAge < 1e8) this.hitAge = tMs;
     if (this.blockedAge < 1e8) this.blockedAge = tMs;
+    // A killed target's bar runs its real collapse up to tMs (flash and fade, then hidden after 580 ms).
+    if (this.targetDead > 0) {
+      this.targetDead -= tMs / 1000;
+      if (this.targetDead <= 0) {
+        this.targetDead = 0;
+        this.targetT = 0;
+        this.target.classList.remove("is-dead");
+      }
+    }
     this.root.style.setProperty("--freeze-t", `${-tMs}ms`);
   }
 
   /** Clears the marker and the brackets (a new screenshot stage starts clean). */
   clearFeedback(): void {
     this.hurtArcT = 0;
+    this.hurt = 0;
+    this.trailT = 0;
+    this.trailHp = -1;
+    this.lastHp = -1;
+    this.prop(this.hurtArc, "--a", "0");
     this.targetT = 0;
     this.targetDead = 0;
     this.target.classList.remove("is-dead");
@@ -456,15 +473,6 @@ export class Hud {
     for (const k of HIT_CLASSES) this.hit.classList.remove(`c-${k}`);
     this.prop(this.hit, "--a", "0");
     this.prop(this.blockedEl, "--a", "0");
-  }
-
-  /** Runs a killed target's bar to its end (the stage shows the frame after the collapse). */
-  settleTarget(): void {
-    if (this.targetDead > 0) {
-      this.targetDead = 0;
-      this.targetT = 0;
-      this.target.classList.remove("is-dead");
-    }
   }
 
   /** The class the marker last showed (for tests and the screenshot sidecars). */

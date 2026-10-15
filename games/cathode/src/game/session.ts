@@ -94,7 +94,7 @@ export interface Session {
   /** The first job's script, while it runs (tests read its stage). */
   job?: FirstJob | null;
   /** Frames rendered and a rolling frame time, for ?perf and tests. */
-  stats: { frames: number; ms: number };
+  stats: { frames: number; ms: number; combatMs?: number; particles?: number };
   /** Test hook: freeze the AI and the clock. */
   paused: boolean;
   /** Test and screenshot hook: the HUD (subtitles, feed lines, banners). */
@@ -710,6 +710,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const safe = player.pos.clone();
   let safeT = 0;
   let grace = o.shot ? 0 : GRACE;
+  /** A screenshot stage has run (S0): the moment is held, so nobody shoots into it. */
+  let staged = false;
   // First time on a touch screen: how the controls work, before anything can shoot at her.
   let coaching = false;
   let boardShown = false;
@@ -1023,6 +1025,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         audio?.pin(true);
       }
     }
+    const combatT0 = performance.now();
     combat.update(dt, build());
 
     // Active skills: quick-slots, thrown things, explosions, the lunge's strike.
@@ -1104,6 +1107,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     for (const e of enemies) {
       e.update(dt, sight, rays, world.colliders, ground);
+      // A screenshot stage is one held moment: a guard the stage round alerted doesn't shoot back into it.
+      if (staged) e.shots.length = 0;
       for (const sh of e.shots) {
         if (!sh.melee) world.fx.muzzle(sh.from, sh.dir, 0.6);
         const hitWorld = rays.cast(sh.from, sh.dir, sh.melee ? 3 : 120);
@@ -1268,6 +1273,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     arsenal.pose(realDt, intent.look, player.stride, player.speed, intent.sprint, player.landed, world.viewCamera, BASE_FOV);
     world.update(dt, o.shot ? 1 : time, fxDt);
 
+    // Combat CPU (rounds, skills, enemies, ragdolls, FX) for the S0 budget check.
+    s.stats.combatMs = (s.stats.combatMs ?? 0) * 0.9 + (performance.now() - combatT0) * 0.1;
+    s.stats.particles = world.fx.alive ?? 0;
     // HUD.
     const ahead = rays.cast(eye, fwd, 800);
     const groundT = rayGround(eye, fwd, world.groundHeight(eye.x, eye.z), 800);
@@ -1452,6 +1460,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   function threats() {
     const out: Array<{ bearing: number; amount: number; hunting: boolean }> = [];
+    // A screenshot stage shows only its hit: the guard the round just alerted draws no threat arc.
+    if (staged) return out;
     const yaw = Math.atan2(-fwd.x, -fwd.z);
     for (const e of enemies) {
       if (!e.alive || e.detect < 0.04) continue;
@@ -1531,6 +1541,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const STAGES = ["hit-body", "hit-head", "hit-kill", "hit-headkill", "hit-soft", "hit-pen", "hit-armourbreak", "blocked", "peek-head", "cover-debug-market"];
   s.stage = (name: string, tMs = 60): string => {
     if (!STAGES.includes(name)) return `unknown stage ${name}`;
+    staged = true;
     hud.freeze(null);
     hud.clearFeedback();
     showCover(name === "cover-debug-market");
@@ -1545,7 +1556,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
     // A plain rifleman (a riot shield would eat the round), the nearest one.
     const rifle = enemies.filter((e) => e.alive && (e.kit.role ?? "rifle") === "rifle").sort((a, b) => a.position.distanceTo(eye) - b.position.distanceTo(eye));
-    const g = rifle[0] ?? enemies.find((e) => e.alive && !e.shield);
+    // Failing that, anyone armed (a civilian never counts as a target, so cover can't be "blocked" on one).
+    const g = rifle[0] ?? enemies.find((e) => e.alive && !e.shield && e.kit.role !== "civilian" && e.kit.role !== "nurse" && e.kit.role !== "turret");
     if (!g) return "no enemy";
     // A guard 10 m down the crosshair, facing her, unaware.
     const at = eye.clone().addScaledVector(flat, 10);
@@ -1566,18 +1578,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (crated && !stageCrate) {
       const c = eye.clone().addScaledVector(flat, 6);
       c.y = ground(c.x, c.z);
-      stageCrate = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.25, 0.9), new THREE.MeshStandardMaterial({ color: 0x2b3038, metalness: 0.7, roughness: 0.45 }));
+      // A rusted market cargo crate in the street's own material, its collider the oriented box it is.
+      const mat = world.material?.("rust") ?? new THREE.MeshStandardMaterial({ color: 0x5a4a40, metalness: 0.6, roughness: 0.6 });
+      stageCrate = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.25, 0.9), mat);
+      stageCrate.castShadow = stageCrate.receiveShadow = true;
       stageCrate.position.set(c.x, c.y + 0.625, c.z);
-      stageCrate.rotation.y = Math.atan2(flat.x, flat.z);
+      const yaw = Math.atan2(flat.x, flat.z);
+      stageCrate.rotation.y = yaw;
       world.scene.add(stageCrate);
-      const half = new THREE.Vector3(0.7 + 0.45, 0.625, 0.7 + 0.45);
-      crateCollider = rays.add(new THREE.Box3(stageCrate.position.clone().sub(half), stageCrate.position.clone().add(half)), "metal");
+      stageCrate.updateMatrixWorld();
+      const half = new THREE.Vector3(0.7, 0.625, 0.45);
+      const bounds = new THREE.Box3().setFromObject(stageCrate);
+      crateCollider = rays.add(bounds, "metal", false, { center: stageCrate.position.clone(), half, yaw });
     }
     if (stageCrate) stageCrate.visible = crated;
     if (crateCollider) crateCollider.off = !crated;
     const joint = name === "hit-head" || name === "hit-headkill" || name === "peek-head" ? g.body.joints.head : g.body.joints.chest;
     const aim = joint.clone();
-    if (name === "blocked") aim.y = Math.min(aim.y, (stageCrate?.position.y ?? 0) + 0.3);
+    // Blocked: the round goes into the crate's upper face, square on, with the guard's head showing behind it.
+    if (name === "blocked" && stageCrate) aim.copy(stageCrate.position).y += 0.35;
     if (name === "hit-kill" || name === "hit-headkill") g.hp = 1;
     const w = SLICE_WEAPONS.find((x) => x.id === "kestrel")!;
     // The shot is a Kestrel round, so she holds the Kestrel.
@@ -1585,6 +1604,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       arsenal.owned.add("kestrel");
       arsenal.equipId("kestrel");
     }
+    arsenal.settle();
+    // The crosshair sits on the round's point of aim, so the frame shows what she'd see down the sights.
+    const look = aim.clone().sub(eye).normalize();
+    player.pitch = Math.asin(THREE.MathUtils.clamp(look.y, -1, 1));
+    player.yaw = Math.atan2(-look.x, -look.z);
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
     const origin = eye.clone().addScaledVector(fwd, 0.3);
     const dir = aim.clone().sub(origin).normalize();
     combat.quiet = true;
@@ -1596,7 +1624,6 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (name === "hit-soft") hud.hitMarker("armour");
     if (name === "hit-pen") hud.hitMarker("pen");
     if (name === "hit-armourbreak") hud.hitMarker("armourBreak");
-    if (name === "hit-kill" || name === "hit-headkill") hud.settleTarget();
     hud.freeze(tMs);
     return hud.hitClass ?? (name === "blocked" ? "blocked" : "none");
   };

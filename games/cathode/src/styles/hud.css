@@ -146,7 +146,9 @@
   display: grid;
   justify-items: end;
   gap: var(--sp-1);
-  max-width: var(--cluster-w);
+  /* At least the cluster width; a long weapon name grows it leftwards, never off the right edge. */
+  min-width: var(--cluster-w);
+  max-width: calc(50vw - var(--hud-edge));
   isolation: isolate;
   text-align: right;
 }
@@ -232,6 +234,7 @@
 .hud-cross-b { transform: translateY(var(--gap)); }
 .hud-cross-l { transform: translateX(calc(-.5rem - var(--gap))); }
 .hud-cross-r { transform: translateX(var(--gap)); }
+.hud-cross span:not(.hud-cross-dot) { opacity: var(--arm, 1); }
 .hud-cross-dot { width: .1875rem; height: .1875rem; margin: -.09375rem 0 0 -.09375rem; border-radius: 50%; }
 /* ---- the hit marker (S1.2): sized in --u, coloured by class, never by damage ---- */
 .hud-hit {
@@ -300,6 +303,7 @@
 .hud-root.is-frozen .hud-hit.pop,
 .hud-root.is-frozen .hud-hit-ring.go,
 .hud-root.is-frozen .hud-hit-shatter.go,
+.hud-root.is-frozen .hud-target.is-dead,
 .hud-root.is-frozen .hud-blocked.pop i { animation-play-state: paused; animation-delay: var(--freeze-t, 0ms); }
 @keyframes hit-pop { from { transform: scale(calc(var(--xs, 1) * var(--pop, 1.25))); } to { transform: scale(var(--xs, 1)); } }
 
@@ -321,21 +325,24 @@
   top: calc(var(--bh) / -2);
   width: var(--bw);
   height: var(--bh);
-  border: var(--bs) solid var(--hit-armour);
-  box-shadow: 0 0 0 max(1px, var(--u)) var(--hit-outline), inset 0 0 0 max(1px, var(--u)) var(--hit-outline);
+  border: var(--bs) solid var(--hit-blocked);
+  box-shadow: 0 0 0 max(1px, var(--u)) var(--hit-outline), inset 0 0 0 max(1px, var(--u)) var(--hit-outline), 0 0 calc(var(--u) * 10) rgb(var(--black-rgb) / .55);
 }
 .hud-blocked .hud-blocked-l { left: calc(var(--u) * -34); border-right: 0; }
 .hud-blocked .hud-blocked-r { left: calc(var(--u) * 25); border-left: 0; }
 .hud-blocked-word {
   position: absolute;
   left: 0;
-  top: calc(var(--bh) / 2 + var(--u) * 8);
+  /* Clear of the brackets and of the crosshair's bottom arm (rem and px sized), whichever reaches lower. */
+  top: max(calc(var(--bh) / 2 + var(--u) * 8), 1.6rem);
   transform: translateX(-50%);
   display: none;
+  padding: calc(var(--u) * 4) calc(var(--u) * 6) calc(var(--u) * 4) calc(var(--u) * 6 + .3em);
   font: 700 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
   letter-spacing: .3em;
   text-transform: uppercase;
-  color: var(--hit-armour);
+  color: var(--hit-blocked);
+  background: rgb(var(--black-rgb) / .55);
   text-shadow: var(--hud-shadow);
   white-space: nowrap;
 }
@@ -1020,6 +1027,9 @@
   .hud-hp-text.hit,
   .hud-hit.pop,
   .hud-blocked.pop i { animation: none; }
+  .hud-hit-ring.go,
+  .hud-hit-ring-2.go,
+  .hud-hit-shatter.go { animation-name: hit-fade; }
   .hud-feed-line { animation: feed-fade 4.4s linear both; }
   .hud-banner.on { animation: feed-fade 3.2s linear forwards; }
 }
@@ -1027,11 +1037,13 @@
 :root.reduce-motion .hud-objective.is-new,
 :root.reduce-motion .hud-hp-text.hit,
 :root.reduce-motion .hud-hit.pop,
-:root.reduce-motion .hud-hit-ring.go,
 :root.reduce-motion .hud-blocked.pop i,
-:root.reduce-motion .hud-hit-ring-2.go,
-:root.reduce-motion .hud-hit-shatter.go,
 :root.reduce-motion .c-bar.is-low > .fill { animation: none; }
+/* The kill rings and the armour shatter still show under reduced motion: a still ring at full size that fades. */
+:root.reduce-motion .hud-hit-ring.go,
+:root.reduce-motion .hud-hit-ring-2.go,
+:root.reduce-motion .hud-hit-shatter.go { animation-name: hit-fade; }
+@keyframes hit-fade { 0%, 55% { opacity: .9; } 100% { opacity: 0; } }
 :root.reduce-motion .hud-feed-line { animation: feed-fade 4.4s linear both; }
 :root.reduce-motion .hud-banner.on { animation: feed-fade 3.2s linear forwards; }
 @keyframes feed-fade {

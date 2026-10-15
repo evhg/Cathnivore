@@ -69,8 +69,8 @@ export class RayWorld {
   }
 
   /** Adds a collider after the fact (screenshot stages drop a crate into the street). */
-  add(box: THREE.Box3, mat: CoverMat, thin = false): { off?: boolean } {
-    const e: Entry = { box, mat, thin, obb: null };
+  add(box: THREE.Box3, mat: CoverMat, thin = false, obb: Obb | null = null): { off?: boolean } {
+    const e: Entry = { box, mat, thin, obb };
     this.entries.push(e);
     for (let x = Math.floor(box.min.x / CELL); x <= Math.floor(box.max.x / CELL); x++)
       for (let z = Math.floor(box.min.z / CELL); z <= Math.floor(box.max.z / CELL); z++) {

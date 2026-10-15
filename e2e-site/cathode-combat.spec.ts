@@ -6,7 +6,9 @@ import { expect, test, type Page } from '@playwright/test'
 
 type Win = { cathode?: { stats: { frames: number }; stage?: (n: string, t?: number) => string; hud?: { hitClass: string | null } } }
 
-async function boot(page: Page): Promise<void> {
+async function boot(page: Page, touch = false): Promise<void> {
+  // The phone project is upright; CATHODE plays held sideways (844x390), so turn it.
+  if (touch) await page.setViewportSize({ width: 844, height: 390 })
   await page.goto('/cathode/')
   await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
   await page.goto('/cathode/?play&shot&rs=0.5')
@@ -16,11 +18,9 @@ async function boot(page: Page): Promise<void> {
 const opacity = (page: Page, sel: string) => page.evaluate((q) => Number(getComputedStyle(document.querySelector(q)!).opacity), sel)
 
 test.describe('CATHODE combat feedback', () => {
-  test.skip(({ hasTouch }) => !!hasTouch, 'desktop only: a portrait phone waits behind "turn your phone sideways"')
-
-  test('a guard behind a crate gives `blocked` and no hit marker; his head over it is a hit', async ({ page }) => {
+  test('a guard behind a crate gives `blocked` and no hit marker; his head over it is a hit', async ({ page, hasTouch }) => {
     test.setTimeout(300_000)
-    await boot(page)
+    await boot(page, hasTouch)
     const blocked = await page.evaluate(() => (window as unknown as Win).cathode!.stage!('blocked', 40))
     expect(blocked).toBe('blocked')
     await page.waitForTimeout(400)
@@ -35,10 +35,13 @@ test.describe('CATHODE combat feedback', () => {
     await expect(page.locator('.hud-hit.c-head')).toHaveCount(1)
   })
 
-  test('a kill rings the marker and clears the target bar', async ({ page }) => {
+  test('a kill rings the marker and clears the target bar', async ({ page, hasTouch }) => {
+    // One phone run (the cover test) is enough: under SwiftShader each costs about a minute.
+    test.skip(hasTouch, 'the phone layout is covered by the cover test above')
     test.setTimeout(300_000)
     await boot(page)
-    const cls = await page.evaluate(() => (window as unknown as Win).cathode!.stage!('hit-kill', 230))
+    // 650 ms on: past the bar's real collapse (180 ms flash and 400 ms fade).
+    const cls = await page.evaluate(() => (window as unknown as Win).cathode!.stage!('hit-kill', 650))
     expect(cls).toBe('kill')
     await page.waitForTimeout(400)
     await expect(page.locator('.hud-hit.c-kill')).toHaveCount(1)

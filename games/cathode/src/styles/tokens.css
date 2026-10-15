@@ -100,11 +100,14 @@
   --hit-crit: #ff3b3b;
   --hit-armour: #9fb4c8;
   --hit-gold: #e8b04a;
+  /* blocked by cover: its own pale warm grey, not the armour steel, so it holds over lamp-lit fog */
+  --hit-blocked: #e9e2d2;
   --hit-outline: rgb(0 0 0 / .67);
 
   /* --- HUD layout --- */
   --hud-edge: clamp(12px, 2.2vw, 32px);
-  --cluster-w: 280px;
+  /* rem, so the clusters grow with the type on big screens (html font-size scales with the window) */
+  --cluster-w: 17.5rem;
 
   /* --- z-layers: every z-index in the game is one of these --- */
   --z-under: -1; --z-under-2: -2;   /* inside a component: behind its own content */
@@ -141,7 +144,7 @@
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
     --t-num-hero: 1.625rem; --t-num-ammo: 2.125rem; --t-body-l: .9375rem;
-    --hud-edge: 10px; --cluster-w: 200px;
+    --hud-edge: 10px; --cluster-w: 12.5rem;
   }
 }
 /* Phones held upright: the clusters stack, so the subtitle gets the full width above them. */

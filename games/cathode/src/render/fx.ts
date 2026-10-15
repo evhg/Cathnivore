@@ -382,6 +382,9 @@ export function createFx(o: {
   const WHITE_HOT = new THREE.Color(9, 6.5, 3.2);
   const ORANGE = new THREE.Color(6, 2.2, 0.5);
   const fx: Effects = {
+    get alive() {
+      return live.length;
+    },
     muzzle(pos, dir, size = 1) {
       const d = dir.clone().normalize();
       spawn({ pos: pos.clone().addScaledVector(d, 0.05 * size), kind: K.flash, additive: true, life: 0.055, size0: 0.28 * size, size1: 0.36 * size, color: WHITE_HOT });

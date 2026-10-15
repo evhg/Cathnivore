@@ -221,7 +221,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const flashes: Array<{ at: number; k: number }> = [];
   let clock = 0;
   let frameNo = 0;
-  const perf = { renderMs: 0, drawCalls: 0, triangles: 0 };
+  /** Last frame's cost; reflCalls is the wet-street mirror's share of the draw calls (S0 budget sidecars). */
+  const perf = { renderMs: 0, drawCalls: 0, triangles: 0, reflCalls: 0, shadowed: false };
   const tmp = new THREE.Vector3();
   const lum = new THREE.Color();
   const ray = new THREE.Ray();
@@ -241,6 +242,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     wind,
     perf,
     groundHeight: (x, z) => level.groundHeight(x, z),
+    material: (k) => materials[k],
     floorAt(x, y, z) {
       let best = level.groundHeight(x, z);
       for (const c of colliders) {
@@ -328,9 +330,13 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       const t0 = performance.now();
       renderer.info.reset();
       frameNo++;
-      if (frameNo % shadowEvery === 0) renderer.shadowMap.needsUpdate = true;
+      const shadowing = frameNo % shadowEvery === 0;
+      if (shadowing) renderer.shadowMap.needsUpdate = true;
       camera.updateMatrixWorld();
       reflection.render(renderer, scene, camera);
+      // The mirror renders first and owns every call so far (plus the shadow maps on a frame that redraws them).
+      perf.reflCalls = renderer.info.render.calls;
+      perf.shadowed = shadowing;
       post.grade.uniforms.uDrama!.value = drama;
       post.grade.uniforms.uFlash!.value = flash * 0.25;
       post.render(clock);

@@ -22,6 +22,8 @@ export interface WorldOptions {
 export type Surface = "concrete" | "metal" | "glass" | "water" | "wood" | "flesh" | "chrome";
 
 export interface Effects {
+  /** Particles alive right now (the S0 budget check). */
+  readonly alive?: number;
   /** A muzzle flash with a brief real light at `pos`, pointing along `dir`. */
   muzzle(pos: THREE.Vector3, dir: THREE.Vector3, size?: number): void;
   /** A bullet impact on the world: dust or sparks or a splash by surface, plus a hole decal. */
@@ -67,6 +69,8 @@ export interface World {
   readonly fx: Effects;
   /** Walkable floor height under (x, z), including stairs and ramps. */
   groundHeight(x: number, z: number): number;
+  /** One of the street's shared materials by key ("rust", "wood"...), for props added after the build. */
+  material?(key: string): THREE.Material | undefined;
   /** How lit a point is, 0 (black) to 1 (under a lamp): stealth reads it. */
   lightAt(p: THREE.Vector3): number;
   /** The surface a world ray hit (for impacts), from the collider it struck. */

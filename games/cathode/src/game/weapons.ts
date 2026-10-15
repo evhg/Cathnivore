@@ -170,6 +170,13 @@ export class Arsenal {
     this.altQueue = 0;
   }
 
+  /** Screenshot stages (time frozen): the gun is up and ready, not caught mid-draw or mid-reload. */
+  settle(): void {
+    this.raising = 0;
+    this.reloading = 0;
+    this.boltLeft = 0;
+  }
+
   private returnTo = -1;
 
   /** A takedown: the Pin comes out for one blow, then the gun she was holding comes back. */
