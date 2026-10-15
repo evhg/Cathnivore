@@ -465,3 +465,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-15: Release unblocked; the earlier gate-5 hotseat flake did not recur. Cause of the stalled gates was a Scene.tsx type error.
 - 2026-10-15 05:52: Phases D and H are complete; continued Phase U (U13) with Cath sheet fixes.
 - 2026-10-15 08:51: U13 closed and released (c18b5f4). Phases D, H and U1-U13 done; U14 audit is next and should yield big features, not tweaks.
+- 2026-10-15 09:52: U14 closed as an audit; planned U15 (Hedgerow desktop intel panel). No code this session.
