@@ -1417,10 +1417,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     for (const h of combat.hits) {
       if (!h.killed) {
-        hud.hitMarker(false, h.zone === "head");
+        const soft = h.damage < h.enemy.kit.maxHp * 0.03;
+        hud.hitMarker(false, h.zone === "head", soft);
         hud.targetHit(h.enemy.kit.name, h.enemy.hp / h.enemy.kit.maxHp);
-      }
+        audio?.hitTick(soft ? "soft" : h.zone === "head" ? "head" : "body");
+      } else audio?.hitTick("kill");
       audio?.hitFlesh(h.damage > 40);
+    }
+    if (combat.blocks > 0) {
+      hud.blocked();
+      audio?.blocked();
+      combat.blocks = 0;
     }
     combat.kills.length = 0;
     combat.hits.length = 0;

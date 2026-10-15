@@ -105,6 +105,9 @@ export class Hud {
   private targetFill: HTMLElement;
   private targetT = 0;
   private hitT = 0;
+  private hitRing: HTMLElement;
+  private blockedEl: HTMLElement;
+  private blockedT = 0;
   /** Last value written per element and property, so a steady frame writes nothing. */
   private written = new WeakMap<Element, Map<string, string>>();
 
@@ -151,6 +154,9 @@ export class Hud {
     el("span", "hud-cross-dot", this.cross);
     this.hit = el("div", "hud-hit", this.root);
     for (const k of ["a", "b", "c", "d"]) el("i", `hud-hit-${k}`, this.hit);
+    this.hitRing = el("span", "hud-hit-ring", this.hit);
+    this.blockedEl = el("p", "hud-blocked", this.root);
+    this.blockedEl.textContent = "Blocked by cover";
     this.threats = el("div", "hud-threats", this.root);
     this.prompt = el("p", "hud-prompt", this.root);
     el("span", "c-key", this.prompt).textContent = "F";
@@ -302,6 +308,8 @@ export class Hud {
     set(this.focus, "--a", s.bulletTime.toFixed(2));
     this.hitT = Math.max(0, this.hitT - dt);
     set(this.hit, "--a", Math.min(1, this.hitT * 4).toFixed(2));
+    this.blockedT = Math.max(0, this.blockedT - dt);
+    set(this.blockedEl, "--a", Math.min(1, this.blockedT * 3).toFixed(2));
 
     // Threat arcs: one per enemy that has noticed her, pointing their way.
     const arcs = this.threats.children;
@@ -343,11 +351,20 @@ export class Hud {
     this.targetFill.style.setProperty("--v", String(Math.max(0, Math.min(1, frac))));
   }
 
-  hitMarker(kill: boolean, head = false): void {
-    this.hitT = 0.25;
+  /** The hit marker: white on the body, red on the head, big and red with a ring on a kill, steel when armour ate it. */
+  hitMarker(kill: boolean, head = false, soft = false): void {
+    this.hitT = kill ? 0.6 : 0.4;
     this.hit.classList.toggle("kill", kill);
     this.hit.classList.toggle("head", head && !kill);
+    this.hit.classList.toggle("soft", soft && !kill && !head);
     this.punch(this.hit, "pop", 220);
+    if (kill) this.punch(this.hitRing, "go", 420);
+  }
+
+  /** Cover (or a shield) stopped a round aimed at someone she can see. */
+  blocked(): void {
+    this.blockedT = 0.7;
+    this.punch(this.blockedEl, "pop", 160);
   }
 
   /** Lays a feed line out as data: "+90 XP" in amber mono, short modifiers in cyan caps, the rest in ink. */

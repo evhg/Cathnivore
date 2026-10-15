@@ -341,7 +341,7 @@ export class Enemy {
     this.shots.length = 0;
     // Bystanders never fight: once they stop running they calm down and wander again.
     if (this.kit.role === "civilian" && this.state === "combat" && this.fleeT <= 0) this.state = "unaware";
-    this.motion.flinch.multiplyScalar(Math.max(0, 1 - dt * 6));
+    this.motion.flinch.multiplyScalar(Math.max(0, 1 - dt * 4.5));
     this.motion.kick = Math.max(0, this.motion.kick - dt * 8);
     if (!this.alive) {
       this.deadFor += dt;
@@ -678,8 +678,9 @@ export class Enemy {
     this.hp -= amount;
     // Into body space for the flinch.
     const inv = -this.motion.yaw;
-    this.motion.flinch.x += (push.x * Math.cos(inv) - push.z * Math.sin(inv)) * 0.06;
-    this.motion.flinch.z += (push.x * Math.sin(inv) + push.z * Math.cos(inv)) * 0.06;
+    this.motion.flinch.x += (push.x * Math.cos(inv) - push.z * Math.sin(inv)) * 0.14;
+    this.motion.flinch.z += (push.x * Math.sin(inv) + push.z * Math.cos(inv)) * 0.14;
+    this.motion.flinch.clampLength(0, 0.4);
     if (this.state !== "combat") {
       this.state = "combat";
       this.detect = 1;

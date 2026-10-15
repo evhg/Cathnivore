@@ -60,6 +60,8 @@ export class Combat {
   readonly projectiles: Projectile[] = [];
   readonly kills: KillEvent[] = [];
   readonly hits: HitEvent[] = [];
+  /** Rounds that cover or a shield stopped with a living enemy in line behind (for the "blocked" cue). */
+  blocks = 0;
   /** The last round a riot shield stopped (for sparks). */
   blocked: { point: THREE.Vector3; normal: THREE.Vector3 } | null = null;
   /** Damage dealt to each segment by the current shot (pellets add up). */
@@ -173,6 +175,7 @@ export class Combat {
     if (!hitE && this.blocked) {
       const b = this.blocked as { point: THREE.Vector3; normal: THREE.Vector3 };
       this.world.fx.impact(b.point, b.normal, "metal");
+      this.blocks++;
       this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), b.point);
       return;
     }
@@ -181,6 +184,9 @@ export class Combat {
       this.strike(hitE.enemy, hitE.seg, hitE.point, dir, w, build, origin.distanceTo(hitE.point), unseen, false);
     } else if (hitW) {
       this.world.fx.impact(hitW.point, hitW.normal, this.world.surfaceAt(hitW.point));
+      // Cover only counts as "blocked" if someone alive stood behind it, close to the line of fire.
+      const behind = this.nearestEnemy(origin, dir, w.range);
+      if (behind && behind.enemy.alive && behind.dist > hitW.dist) this.blocks++;
       if (w.weaponClass !== "shotgun" || Math.random() < 0.35) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), hitW.point);
     }
   }

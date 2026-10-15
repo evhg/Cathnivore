@@ -1,6 +1,8 @@
 * {
   box-sizing: border-box;
 }
+/* Big screens (a 5K desktop at 2x is 2560x1440 CSS px) scale every rem-sized thing with the window height. */
+html { font-size: max(16px, min(1.78vh, 1.11vw)); }
 html,
 body {
   margin: 0;

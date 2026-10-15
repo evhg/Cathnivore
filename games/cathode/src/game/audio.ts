@@ -275,6 +275,29 @@ export class Audio {
     if (heavy) this.burst({ freq: 2600, q: 3, decay: 0.05, gain: 0.25, when: 0.01 }); // the crunch
   }
 
+  /** The hit-confirm tick: a bright click on every hit, deeper and sharper on the head, a two-note stamp on a kill. */
+  hitTick(kind: "body" | "head" | "kill" | "soft"): void {
+    if (!this.enabled) return;
+    if (kind === "soft") {
+      this.thump(900, 700, 0.05, 0.14, 0, "triangle");
+      return;
+    }
+    const f = kind === "head" ? 3600 : 2600;
+    this.thump(f, f * 0.85, 0.045, 0.2, 0, "square");
+    this.burst({ type: "highpass", freq: 5000, decay: 0.03, gain: kind === "body" ? 0.12 : 0.22 });
+    if (kind === "kill") {
+      this.thump(1500, 1100, 0.09, 0.22, 0.05, "square");
+      this.thump(70, 40, 0.18, 0.5, 0.02);
+    }
+  }
+
+  /** Cover swallowed a round: a dull, flat knock with a ricochet whine. */
+  blocked(): void {
+    if (!this.enabled) return;
+    this.thump(220, 120, 0.07, 0.22, 0, "triangle");
+    this.burst({ type: "bandpass", freq: 2200, sweepTo: 5200, q: 6, decay: 0.12, gain: 0.12, when: 0.01 });
+  }
+
   hitMetal(): void {
     this.thump(2400 + Math.random() * 800, 1800, 0.12, 0.12, 0, "triangle");
     this.burst({ type: "highpass", freq: 4000, decay: 0.04, gain: 0.2 });
