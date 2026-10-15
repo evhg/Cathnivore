@@ -66,6 +66,10 @@ interface Projectile {
   /** For the kill-cam: the target it's predicted to hit (the round homes on it, a cinematic cheat). */
   target?: { enemy: Enemy; joint: "head" | "chest" };
   alive: boolean;
+  /** Layers of cover it can still punch through (S1.1: two for the sniper). */
+  pen?: number;
+  /** Share of damage left after the cover it went through. */
+  mul?: number;
 }
 
 export interface Build {
@@ -174,6 +178,8 @@ export class Combat {
         travelled: 0,
         cam: false,
         alive: true,
+        pen: penetrationOf(w.weaponClass, this.penBonus),
+        mul: 1,
       };
       // Predict where it lands: if it's a long kill, the session rides it with the kill-cam.
       const pred = this.predict(p, build);
@@ -520,6 +526,8 @@ export class Combat {
     const vel = p.vel.clone();
     const step = 1 / 240;
     let travelled = 0;
+    let pen = p.pen ?? 0;
+    let penMul = p.mul ?? 1;
     for (let i = 0; i < 240 * 3 && travelled < p.weapon.range; i++) {
       const next = pos.clone().addScaledVector(vel, step);
       vel.y -= GRAVITY * step;
@@ -534,10 +542,19 @@ export class Combat {
         const zone = eHit.zone;
         let mul = ZONE_MUL[zone];
         if (zone === "head") mul *= build.headshot * 1.6;
-        const dmg = p.weapon.damage * build.damage("sniper") * mul * (1 - eHit.enemy.kit.armour * 0.3);
+        const dmg = p.weapon.damage * build.damage("sniper") * mul * penMul * (1 - eHit.enemy.kit.armour * 0.3);
         return { enemy: eHit.enemy, zone, dist: travelled + eHit.dist, kill: eHit.enemy.alive && dmg >= eHit.enemy.hp };
       }
-      if (wHit) return null;
+      if (wHit) {
+        if (pen <= 0 || !passes(wHit.mat, p.weapon.weaponClass, this.penBonus)) return null;
+        // Through it: carry on from just past the far face, weaker.
+        pen--;
+        penMul *= PASS_THROUGH[wHit.mat] ?? 1;
+        const out = Math.min(wHit.exit + 0.01, len);
+        travelled += out;
+        pos.addScaledVector(dir, out);
+        continue;
+      }
       travelled += len;
       pos.copy(next);
     }
@@ -570,11 +587,32 @@ export class Combat {
         const eHit = this.nearestEnemy(p.pos, dir, wHit ? wHit.dist : len);
         if (eHit) {
           this.shotDamage.clear();
+          this.penMul = p.mul ?? 1;
+          this.penThrough = (p.mul ?? 1) < 1;
           this.strike(eHit.enemy, eHit.seg, eHit.point, dir, p.weapon, build, p.travelled + eHit.dist, !this.anyHunting() || p.cam, false);
+          this.penMul = 1;
+          this.penThrough = false;
           this.world.fx.tracer(p.from, eHit.point);
           p.alive = false;
+        } else if (wHit && (p.pen ?? 0) > 0 && passes(wHit.mat, p.weapon.weaponClass, this.penBonus)) {
+          // Through the cover (S1.1): an impact on both faces, a share of the damage kept, one layer spent.
+          const s = surfaceOf(wHit.mat);
+          this.world.fx.impact(wHit.point, wHit.normal, s);
+          const out = Math.min(wHit.exit + 0.01, len);
+          if (wHit.exit > wHit.dist + 0.005) this.world.fx.impact(p.pos.clone().addScaledVector(dir, wHit.exit), dir.clone(), s);
+          p.pen = (p.pen ?? 0) - 1;
+          p.mul = (p.mul ?? 1) * (PASS_THROUGH[wHit.mat] ?? 1);
+          p.pos.addScaledVector(dir, out);
+          p.travelled += out;
         } else if (wHit) {
-          this.world.fx.impact(wHit.point, wHit.normal, this.world.surfaceAt(wHit.point));
+          // Cover ate a long shot meant for someone: the same "blocked" cue as hitscan rounds.
+          const behind = this.blockedTarget(p.pos, dir, wHit.dist, p.weapon.range - p.travelled);
+          if (behind) {
+            this.blocks++;
+            this.blockEvents.push({ point: wHit.point.clone(), normal: wHit.normal.clone(), mat: wHit.mat, enemy: behind });
+            this.bus.emit("blocked", { t: this.clock, point: wHit.point, normal: wHit.normal, mat: wHit.mat, targetUid: String(behind.id) });
+          }
+          this.world.fx.impact(wHit.point, wHit.normal, wHit.thin ? surfaceOf(wHit.mat) : this.world.surfaceAt(wHit.point), behind ? tuning.blocked.impactMul : 1);
           this.world.fx.tracer(p.from, wHit.point);
           this.noise(wHit.point, 6);
           p.alive = false;

@@ -143,4 +143,36 @@ describe("CATHODE cover (S1.1)", () => {
     expect(passes("concrete", "sniper")).toBe(false);
     expect(passes("glass", "melee")).toBe(false);
   });
+
+  it("ballistic sniper rounds punch through two thin layers, keep the share, and stop at concrete", () => {
+    const sniper = SLICE_WEAPONS.find((w) => w.id === "widowmaker")!;
+    const fly = (rays: RayWorld, low = false) => {
+      const { e, combat } = scene(rays);
+      e.hp = 1e6;
+      const from = V(0, low ? 0.9 : 1.2, 0);
+      // The round drops under a millimetre over 10 m: aim straight at the chest (or level, low behind the crate).
+      const dir = (low ? e.body.joints.chest.clone().setY(0.9) : e.body.joints.chest.clone()).sub(from).normalize();
+      const blocked: unknown[] = [];
+      combat.bus.on("blocked", (b) => blocked.push(b));
+      combat.fire({ weapon: sniper, origin: from, muzzle: from.clone(), dirs: [dir] } as unknown as Shot, build);
+      for (let i = 0; i < 60; i++) combat.update(1 / 60, build);
+      return { combat, blocked };
+    };
+    const pane = (z: number, mat: "glass" | "wood" | "metalSheet") => ({ box: box([-2, 0, z - 0.02], [2, 3, z + 0.02]), mat });
+    const open = fly(new RayWorld([]));
+    const two = fly(new RayWorld([], { thin: [pane(-3, "glass"), pane(-6, "wood")] }));
+    const three = fly(new RayWorld([], { thin: [pane(-2, "glass"), pane(-4, "metalSheet"), pane(-6, "wood")] }));
+    // A waist-high concrete crate with his head showing over it: the round stops, and it reads as blocked.
+    const wall = fly(new RayWorld([box([-0.6, 0, -6.6], [0.6, 1.1, -5.4])], { mats: ["concrete"] }), true);
+    expect(open.combat.hits.length).toBe(1);
+    expect(open.combat.hits[0]!.data!.penetrated).toBe(false);
+    expect(two.combat.hits.length).toBe(1);
+    expect(two.combat.hits[0]!.data!.penetrated).toBe(true);
+    expect(two.combat.hits[0]!.damage / open.combat.hits[0]!.damage).toBeCloseTo(0.7 * 0.45, 5);
+    // Two layers is the budget: the third stops it.
+    expect(three.combat.hits.length).toBe(0);
+    expect(three.blocked.length).toBe(1);
+    expect(wall.combat.hits.length).toBe(0);
+    expect(wall.blocked.length).toBe(1);
+  });
 });
