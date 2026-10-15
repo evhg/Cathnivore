@@ -1837,18 +1837,20 @@ button {
 }
 
 /* ---- the Almanac ---- */
-.almanac { max-width: 560px; }
-.almanac-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-.alm-tab { min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid #0003; background: #fff8; font: inherit; cursor: pointer; }
-.alm-tab.on { background: #7a3b52; color: #fff; }
-.almanac-list { display: grid; gap: 8px; max-height: 52vh; overflow-y: auto; padding-right: 4px; }
-.alm-card { display: flex; gap: 10px; padding: 8px; border-radius: 12px; background: #fff7; border: 1px solid #0002; }
+.almanac { max-width: 600px; text-align: left; }
+.almanac .eyebrow, .almanac h2 { text-align: center; }
+.almanac-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0; }
+.alm-tab { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--ink-a16); background: var(--paper-hi); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; transition: background var(--dur-press), transform var(--dur-press); }
+.alm-tab:active { transform: scale(0.96); }
+.alm-tab.on { background: var(--oak); color: var(--on-fill); border-color: var(--oak-lo); box-shadow: var(--sh-1); }
+.almanac-list { display: grid; gap: 8px; max-height: 52vh; overflow-y: auto; padding: 2px 4px 2px 2px; scrollbar-width: thin; }
+.alm-card { display: flex; gap: 12px; padding: 10px; border-radius: var(--r-m); background: var(--paper-hi); border: 1px solid var(--ink-a14); box-shadow: var(--sh-0); }
 .alm-card.locked { opacity: 0.55; filter: grayscale(1); }
-.alm-card h3 { margin: 0; font-size: 1rem; }
+.alm-card h3 { margin: 0; font-family: var(--font-display); font-variation-settings: var(--display-axes); font-size: 1.05rem; }
 .alm-card p { margin: 2px 0 4px; font-size: 0.9rem; }
-.alm-icon { width: 56px; height: 56px; flex: none; }
-.alm-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.8rem; }
-.alm-lore { display: block; margin-top: 4px; font-family: var(--font-voice); font-variation-settings: var(--voice-axes); font-weight: 430; opacity: 0.8; }
+.alm-icon { width: 56px; height: 56px; flex: none; border-radius: var(--r-s); background: var(--paper-2); }
+.alm-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-family: var(--font-num); font-size: var(--fs-small); color: var(--ink-2); }
+.alm-lore { display: block; margin-top: 4px; font-family: var(--font-voice); font-variation-settings: var(--voice-axes); font-weight: 430; color: var(--ink-2); border-left: 2px solid var(--brass); padding-left: 8px; }
 @media (max-width: 520px) { .almanac-btn .bank-word { display: none; } }
 
 /* Cath's wardrobe (ROADMAP 51) */
@@ -1924,7 +1926,7 @@ button {
 .almanac-view {
   margin: 0 0 10px;
   border-radius: 16px;
-  background: radial-gradient(circle at 50% 35%, #fff8ea, #e8dcc4);
+  background: radial-gradient(circle at 50% 35%, var(--paper-hi), var(--paper-shade));
   overflow: hidden;
 }
 .almanac-view[hidden] {
@@ -2632,4 +2634,19 @@ img.act-scene {
   .speech .story-text { min-height: 4.05em; font-size: var(--fs-d3); line-height: 1.35; }
   .speech h2 { font-size: var(--fs-d3); margin-bottom: 2px; }
   .story-actions { padding: 8px 12px 10px; }
+}
+
+/* Almanac at short heights: the list takes the room, the chrome shrinks */
+@media (max-height: 520px) {
+  .almanac[open] { display: flex; flex-direction: column; max-height: 94svh; padding-block: 12px; }
+  .sheet.almanac .eyebrow, .sheet.almanac .type-credit { display: none; }
+  .almanac h2 { margin: 0; font-size: var(--fs-d3); }
+  .almanac-tabs { flex: none; flex-wrap: nowrap; overflow-x: auto; margin: 6px 0; justify-content: flex-start; }
+  .alm-tab { flex: none; min-height: 36px; }
+  .almanac .win-actions { flex: none; }
+  .almanac-list { max-height: none; flex: 1 1 auto; min-height: 0; }
+  .almanac[open] { width: min(94vw, 720px); }
+  .almanac-list { grid-template-columns: 1fr 1fr; }
+  .almanac .win-actions { margin: 6px 0 0; padding: 0; background: none; }
+  .almanac .win-actions .btn { min-height: 40px; padding-block: 4px; }
 }
