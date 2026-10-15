@@ -2650,3 +2650,14 @@ img.act-scene {
   .almanac .win-actions { margin: 6px 0 0; padding: 0; background: none; }
   .almanac .win-actions .btn { min-height: 40px; padding-block: 4px; }
 }
+
+/* U13: the Cath sheet's portrait ring is not clipped, and its pinned buttons sit on a paper fade, not a hard bar */
+.cath-sheet .story-cath {
+  margin-top: 8px;
+}
+.cath-sheet .win-actions {
+  background: linear-gradient(transparent, var(--surface) 35%);
+}
+.cath-sheet .xp-bar {
+  background: var(--paper-2);
+}

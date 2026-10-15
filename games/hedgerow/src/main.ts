@@ -3997,6 +3997,7 @@ $<HTMLButtonElement>("almanac-close").addEventListener("click", () => $<HTMLDial
 ui.btnCath.addEventListener("click", () => {
   renderCath();
   ui.dlgCath.showModal();
+  ui.dlgCath.scrollTop = 0;
 });
 ui.cathClose.addEventListener("click", () => ui.dlgCath.close());
 ui.cathRespec.addEventListener("click", () => {
