@@ -492,13 +492,13 @@ describe("hedgerow fleet: the live cap", () => {
   });
 
   /**
-   * Level 41's big field on fleet rules (so 40 towers fit beside the lane), every tower grown toward `goal`,
+   * Level 42's big field on fleet rules (so 40 towers fit beside the lane), every tower grown toward `goal`,
    * and the live cap kept full of real Box Lorries: every hit pops a layer, children burst out and the
    * emission queue fills, so the step pays for pierce, pops and the live cap, not just for aiming.
    * Returns ten 100-step batches (ms a step), sorted, so one GC pause or a busy runner doesn't decide it.
    */
   function perfRun(kinds: readonly TowerKind[], goal: (kind: TowerKind, i: number) => Path, check?: (g: Game) => void): number[] {
-    const base = LEVELS[40]!;
+    const base = LEVELS[41]!;
     const towers = [...new Set([...base.towers, ...kinds])];
     const lv: Level = { ...base, towers, rules: "fleet", book: { from: 1, to: 12 }, twists: undefined, setPieces: undefined, hpScale: undefined };
     const g = newGame(lv);

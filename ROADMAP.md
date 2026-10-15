@@ -373,7 +373,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 **Phase 6e: from the 2026-10-06 session-3 critique (screenshots at 844x390 and 1440x900).**
 99. [x] **Age gate fits phone landscape:** at 844x390 the "I'm 18 or over" buttons fall below the fold; make the card scroll-free (two-column choices or compact type, `max-height:480px`) (`games/cathode/src/ui/`, `styles.css`).
 100. [x] **Age gate title overflow:** at 1440x900 the letter-spaced CATHODE wordmark overflows the 560px card edges; use `clamp()` font size and less tracking so it sits inside the card.
-101. [ ] **Gate bypass for shots:** let `?play&shot` skip the age gate (default Full) so `npm run shots` and a new `e2e/screenshots.spec.ts` case capture in-game CATHODE HUD at phone and desktop sizes (`games/cathode/src/main.ts`, `e2e/screenshots.spec.ts`).
+101. [x] **Gate bypass for shots:** let `?play&shot` skip the age gate (default Full) so `npm run shots` and a new `e2e/screenshots.spec.ts` case capture in-game CATHODE HUD at phone and desktop sizes (`games/cathode/src/main.ts`, `e2e/screenshots.spec.ts`).
 102. [x] **Hedgerow header collision:** the "Hedgerow" title touches the Cath pill at 844 and 1440 widths; add a gap, shrink pills or wrap them below the title on phones (`games/hedgerow/src/` level-select styles).
 103. [x] **Hedgerow level-select polish:** node labels are about 11px and pale; raise to 13px and darker, show a star count under each node, and add a locked-node padlock style so progress reads at a glance.
 104. [x] **Hedgerow in-field shots:** add `?sandbox=1` screenshots of a mid-wave field (3D and `?2d`) to `npm run shots` so tower, enemy and Cath readability can be critiqued next session (`e2e/screenshots.spec.ts`).
@@ -400,7 +400,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 117. [x] **Runnel stage background:** the page is flat cream; add a faint field-furrow pattern or vignette so the board sits in a landscape (bar 1).
 118. [x] **Runnel solved moment:** when solved, wave-sprout animation across fields plus a share card with the puzzle number (`games/runnel/`).
 119. [x] *(2026-10-07: bridges at 13, 53, 72, 93; level tests pass)* **Hedgerow set pieces for the acts without one:** acts 1, 2, 5, 7, 9 and 10 have no set piece (flood/bridge/blackout); add one mid-act per act, then run `hedgerow-tune.ts` and `--verify` (`games/hedgerow/src/levels.ts`).
-120. [ ] **Hedgerow per-level grid variety:** every level of an act shares one grid size; vary rows/cols by one on alternating levels so the field shape changes (tuner required).
+120. [x] *(2026-10-15: odd levels 11+ swap a column for a row, level 23 exempt; tuner verify and shots pending)* **Hedgerow per-level grid variety:** every level of an act shares one grid size; vary rows/cols by one on alternating levels so the field shape changes (tuner required).
 
 121. [x] **Runnel daily streak flair:** show a small streak flame and best streak on the stats dialog and on the header after a win (`games/runnel/src/main.ts`, `store.ts`).
 122. [x] **Runnel hint button:** a once-per-puzzle "Cath's tip" that pulses one wrongly turned tile, with a Practice-only default (bar 5).

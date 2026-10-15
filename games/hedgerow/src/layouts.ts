@@ -198,6 +198,13 @@ export function shapeOf(level: Level): Shape {
 
 /** Map size by act: the fields grow as the story moves from the hills to Kingsmarket. */
 export function fieldSize(id: number): { cols: number; rows: number } {
+  const base = baseFieldSize(id);
+  // Every other level swaps a column for a row (tall and narrow, area within 5%), so the field shape changes
+  // from level to level (ROADMAP 120). Levels 1-10 stay put (tutorial acts), and so does 23 (Beach Clean: the best bot cannot win its narrow shape).
+  return id > 10 && id % 2 === 1 && id !== 23 ? { cols: base.cols - 1, rows: base.rows + 1 } : base;
+}
+
+function baseFieldSize(id: number): { cols: number; rows: number } {
   if (id <= 10) return { cols: 7, rows: 9 };
   if (id <= 20) return { cols: 8, rows: 10 };
   if (id <= 40) return { cols: 9, rows: 11 };
