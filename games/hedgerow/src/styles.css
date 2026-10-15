@@ -1900,9 +1900,10 @@ button {
   align-items: center;
   gap: 10px;
   padding: 6px 8px 6px 14px;
-  border-radius: 999px;
-  background: rgba(30, 22, 18, 0.82);
-  color: #fff6e6;
+  border-radius: var(--r-pill);
+  background: var(--oak-ink);
+  color: var(--paper-hi);
+  box-shadow: 0 0 0 2px var(--line), 0 6px 14px rgba(0, 0, 0, 0.3);
   z-index: var(--z-field-ui);
   width: min(90%, 420px);
 }
@@ -1914,24 +1915,22 @@ button {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: var(--fs-label);
-  color: #f2c94c;
+  color: var(--gold, #f2c94c);
 }
-.replay-track {
+.replay-bar .replay-track {
   flex: 1;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  overflow: hidden;
+  height: 8px;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.18);
 }
-.replay-track span {
-  display: block;
-  height: 100%;
-  width: calc(var(--p, 0) * 100%);
-  background: #f2c94c;
+.replay-bar .replay-track > span {
+  background: var(--gold, #f2c94c);
 }
 .replay-bar .btn {
   min-height: 36px;
   padding: 0 12px;
+  color: var(--paper-hi);
+  border-color: var(--paper-hi);
 }
 .watching .controls,
 .watching .panel {
