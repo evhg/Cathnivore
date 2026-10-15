@@ -533,6 +533,18 @@ body {
   stroke: #2b1d10;
 }
 
+.card-progress {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+  color: var(--gold);
+}
+
+.card-progress[hidden] {
+  display: none;
+}
+
 /* ---- footer ---- */
 
 .foot {
