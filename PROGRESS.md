@@ -110,6 +110,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-15 23:51 `3dd799d`: CATHODE C1 "Every shot tells you what it hit" (hit markers, blocked/near-miss cues, penetration, hit-stop, feel-shots). All gates passed; live version.json matches; browser smoke inconclusive (sandbox proxy), HTTP check passed; tag push 403 (harmless). 1st release today.
 - 2026-10-14 01:22 `2d4d808`: Hedgerow H1 weather/props, H12 fords/oaks/barns/County Show, H13 liveries, U10, U11 slice 1. All gates passed; live version.json matches. 1st release today.
 - 2026-10-13 13:43 `bb1ba19`: Hedgerow H9-adjacent meta: H10 modes/medals/remixes, H11 XP/Acorns/Compost/Seed Packets, H12 Daily rule. All gates passed; live version.json matches. 2nd release today.
 - 2026-10-13 `f5a28b7`: Hedgerow H8 (all path towers, Heirlooms, sell refunds, unlocks by level 24). All gates passed; live version.json matches. 1st release today.
