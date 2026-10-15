@@ -61,8 +61,8 @@ const want = (name) => !only || only.split(',').includes(name)
 // ---- Landing ----
 if (want('landing')) {
   const s = await fresh('/')
-  await shoot(s.page, 'landing-hero', PLD, { dir, variants: ['light', 'reduced'], settle: (p) => p.waitForTimeout(1600) })
-  await shoot(s.page, 'landing-full', ['P', 'D'], { dir, fullPage: true, settle: (p) => p.waitForTimeout(800) })
+  await shoot(s.page, 'landing-hero', PLD, { dir, variants: ['light', 'dark', 'reduced'], settle: (p) => p.waitForTimeout(1600) })
+  await shoot(s.page, 'landing-full', ['P', 'D'], { dir, fullPage: true, variants: ['light', 'dark'], settle: (p) => p.waitForTimeout(800) })
   report.contrast.landing = await contrastWalk(s.page)
   report.fonts.landing = await fontOf(s.page, 'h1')
   await done(s, 'landing')
