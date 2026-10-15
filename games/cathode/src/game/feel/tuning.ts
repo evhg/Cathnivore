@@ -32,18 +32,22 @@ export const tuning = {
   kill: { fovPunchDeg: -1.5, fovSpring: { freqHz: 4.2, zeta: 0.9 }, trauma: 0.2, duckDb: -3, duckMs: 400 },
   /** S0 trauma: shake = trauma² × max. */
   trauma: { maxRotDeg: 1.8, maxOffsetM: 0.008, noiseHz: 20, decayPerS: 1.6, reducedMotionCap: 0.3, phoneMul: 1.2 },
-  /** S1.2: the marker per hit class, in --u units (1u = 1/1080 of the screen height, S8). */
+  /**
+   * S1.2: the marker per hit class, in --u units (1u = 1/1080 of the screen height, S8). The spec's table
+   * (body 10u x 2.25u) is the floor; the owner found the marker too small on a 5K screen, so every class is
+   * drawn 1.6x the table's size (body 16u x 3.6u: 43 x 9.6 physical px at 2560x1440 @2).
+   */
   marker: {
-    body: { len: 10, thick: 2.25, gap: 7, pop: 1.25, popMs: 60, holdMs: 80, fadeMs: 140 },
-    head: { len: 13, thick: 2.5, gap: 7, pop: 1.35, popMs: 60, holdMs: 90, fadeMs: 160 },
-    armour: { len: 10, thick: 2.25, gap: 7, pop: 1.15, popMs: 60, holdMs: 80, fadeMs: 120 },
-    armourBreak: { len: 10, thick: 2.25, gap: 7, pop: 1.3, popMs: 60, holdMs: 90, fadeMs: 200 },
-    pen: { len: 10, thick: 1, gap: 7, pop: 1.2, popMs: 60, holdMs: 60, fadeMs: 120 },
-    kill: { len: 15, thick: 3, gap: 9, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
-    headKill: { len: 15, thick: 3, gap: 9, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
+    body: { len: 16, thick: 3.6, gap: 10, pop: 1.25, popMs: 60, holdMs: 80, fadeMs: 140 },
+    head: { len: 20.8, thick: 4, gap: 10, pop: 1.35, popMs: 60, holdMs: 90, fadeMs: 160 },
+    armour: { len: 16, thick: 3.6, gap: 10, pop: 1.15, popMs: 60, holdMs: 80, fadeMs: 120 },
+    armourBreak: { len: 16, thick: 3.6, gap: 10, pop: 1.3, popMs: 60, holdMs: 90, fadeMs: 200 },
+    pen: { len: 16, thick: 3.6, gap: 10, pop: 1.2, popMs: 60, holdMs: 60, fadeMs: 120 },
+    kill: { len: 24, thick: 4.8, gap: 13, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
+    headKill: { len: 24, thick: 4.8, gap: 13, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
   } satisfies Record<HitClass, { len: number; thick: number; gap: number; pop: number; popMs: number; holdMs: number; fadeMs: number }>,
-  /** The kill ring grows from 12u to 40u over 420 ms (doubled on a head kill). */
-  killRing: { fromU: 12, toU: 40, ms: 420 },
+  /** The kill ring grows from 18u to 60u over 420 ms (1.5x the spec's 12u to 40u; two rings on a head kill). */
+  killRing: { fromU: 18, toU: 60, ms: 420 },
   /** S1.1 blocked: the hollow bracket beside the crosshair. "COVER" is spelled out for the first few. */
   blocked: { glyphMs: 320, wordUses: 3, impactMul: 1.5, sparks: [12, 20] as const, ricochetChance: 0.3, nearRayM: 1.0 },
   /** S1.1 near miss: a round within this of an enemy's head makes them flinch and duck. */

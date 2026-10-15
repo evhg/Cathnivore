@@ -98,6 +98,8 @@ export class Combat {
   private penThrough = false;
   /** Penetration bonus from the build (skills, legendaries). */
   penBonus = 0;
+  /** Screenshot stages: no tracer or muzzle flash (seen end-on from the eye, a frozen tracer fills the frame). */
+  quiet = false;
   /** The last round a riot shield stopped (for sparks). */
   blocked: { point: THREE.Vector3; normal: THREE.Vector3 } | null = null;
   /** Damage dealt to each segment by the current shot (pellets add up). */
@@ -148,7 +150,7 @@ export class Combat {
 
   fire(shot: Shot, build: Build): { killcam: Projectile | null } {
     const w = shot.weapon;
-    this.world.fx.muzzle(shot.muzzle, shot.dirs[0]!, w.weaponClass === "shotgun" ? 1.4 : w.weaponClass === "sniper" ? 1.2 : 0.7);
+    if (!this.quiet) this.world.fx.muzzle(shot.muzzle, shot.dirs[0]!, w.weaponClass === "shotgun" ? 1.4 : w.weaponClass === "sniper" ? 1.2 : 0.7);
     this.noise(shot.origin, w.noise);
     if (w.kind === "ballistic") {
       const dir = shot.dirs[0]!;
@@ -230,7 +232,7 @@ export class Combat {
       return;
     }
     if (hitE) {
-      this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), hitE.point);
+      if (!this.quiet) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), hitE.point);
       this.penMul = mul;
       this.penThrough = through;
       this.strike(hitE.enemy, hitE.seg, hitE.point, dir, w, build, origin.distanceTo(hitE.point), unseen, false);
@@ -253,7 +255,7 @@ export class Combat {
         }
       }
       this.world.fx.impact(stop.point, stop.normal, stop.thin ? surf : this.world.surfaceAt(stop.point));
-      if (w.weaponClass !== "shotgun" || Math.random() < 0.35) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), stop.point);
+      if (!this.quiet && (w.weaponClass !== "shotgun" || Math.random() < 0.35)) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), stop.point);
       this.nearMisses(origin, dir, stop.dist, null);
     } else this.nearMisses(origin, dir, w.range, null);
   }

@@ -22,6 +22,7 @@
     "e2e:site": "playwright test -c playwright.site.config.ts",
     "shots:hedgerow": "node scripts/hedgerow-shots.mjs",
     "shots:cathode": "node scripts/cathode-shots.mjs",
+    "shots:feel": "node scripts/cathode-feel-shots.mjs",
     "shots": "playwright test --project=phone --project=phone-landscape --project=desktop-chromium e2e/screenshots.spec.ts",
     "font-budget": "tsx scripts/font-budget.ts",
     "shots:portfolio": "tsx scripts/portfolio-shots.mjs"

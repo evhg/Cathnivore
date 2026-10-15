@@ -14,6 +14,7 @@ import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
 import { Timescale } from "./feel/timescale";
+import { coverWireframe } from "./coverdebug";
 import { Trauma } from "./feel/trauma";
 import { Spring1 } from "./feel/spring";
 import { tuning } from "./feel/tuning";
@@ -98,6 +99,14 @@ export interface Session {
   paused: boolean;
   /** Test and screenshot hook: the HUD (subtitles, feed lines, banners). */
   hud?: Hud;
+  /**
+   * Screenshot hook (S0): builds a combat moment and freezes it `tMs` after the event. Stages: hit-body,
+   * hit-head, hit-kill, hit-headkill, hit-soft, hit-pen, hit-armourbreak, blocked (a guard behind a steel
+   * crate), peek-head (his head over it), cover-debug-market.
+   */
+  stage?: (name: string, tMs?: number) => string;
+  /** Debug: what a round from `from` to `to` would do with the gun in hand. */
+  traceShot?: (from: { x: number; y: number; z: number }, to: { x: number; y: number; z: number }) => ReturnType<Combat["traceShot"]>;
 }
 
 declare global {
@@ -576,9 +585,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
   const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, rescueMin: 0.4 });
   const autoOn = !o.shot && !navigator.webdriver;
+  const renderScaleParam = Math.max(0.25, Math.min(1, Number(new URLSearchParams(location.search).get("rs") ?? 1) || 1));
   const resize = () => {
-    const dpr = Math.min(devicePixelRatio, input.isTouch ? 1.5 : o.quality === "ultra" ? 3 : 2); // phones: 1.5x keeps them cool
-    const scale = (o.quality === "phone" ? 0.8 : 1) * auto.scale;
+    // Phones: 1.5x keeps them cool. 5K desktops cap the 3D at 1.5x (the DOM HUD stays at native DPR, S8).
+    const cap = input.isTouch ? 1.5 : innerHeight * devicePixelRatio > 2000 ? 1.5 : o.quality === "ultra" ? 3 : 2;
+    const dpr = Math.min(devicePixelRatio, cap);
+    // ?rs=0.5 forces the 3D render scale (5K screenshot runs under SwiftShader).
+    const scale = (o.quality === "phone" ? 0.8 : 1) * auto.scale * renderScaleParam;
     world.resize(o.canvas.clientWidth, o.canvas.clientHeight, dpr * scale);
   };
   addEventListener("resize", resize);
@@ -1451,6 +1464,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return out;
   }
 
+  let lastBark = -99;
   function drainEvents(): void {
     for (const k of combat.kills) {
       onKill(k);
@@ -1486,6 +1500,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       combat.blocks = 0;
     }
     combat.blockEvents.length = 0;
+    // A near miss can make them shout (S1.1); subtitled, at most every six seconds.
+    if (combat.barks.length && combat.clock - lastBark > 6) {
+      lastBark = combat.clock;
+      const who = combat.barks[0]!.kit.name;
+      hud.subtitle(`${who}: ${BARKS[Math.floor(Math.random() * BARKS.length)]}`);
+    }
     combat.barks.length = 0;
     combat.kills.length = 0;
     combat.hits.length = 0;
@@ -1499,9 +1519,101 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     s.stats.frames++;
   }
 
+  // ---- screenshot stages and debug hooks (S0) ----
+  let coverLines: THREE.LineSegments | null = null;
+  const showCover = (on: boolean) => {
+    if (on && !coverLines) world.scene.add((coverLines = coverWireframe(rays)));
+    if (coverLines) coverLines.visible = on;
+  };
+  if (new URLSearchParams(location.search).get("debug") === "cover") showCover(true);
+  let stageCrate: THREE.Mesh | null = null;
+  let crateCollider: { off?: boolean } | null = null;
+  const STAGES = ["hit-body", "hit-head", "hit-kill", "hit-headkill", "hit-soft", "hit-pen", "hit-armourbreak", "blocked", "peek-head", "cover-debug-market"];
+  s.stage = (name: string, tMs = 60): string => {
+    if (!STAGES.includes(name)) return `unknown stage ${name}`;
+    hud.freeze(null);
+    hud.clearFeedback();
+    showCover(name === "cover-debug-market");
+    if (name === "cover-debug-market") {
+      if (stageCrate) stageCrate.visible = false;
+      if (crateCollider) crateCollider.off = true;
+      hud.freeze(tMs);
+      return "ok";
+    }
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
+    const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
+    // A plain rifleman (a riot shield would eat the round), the nearest one.
+    const rifle = enemies.filter((e) => e.alive && (e.kit.role ?? "rifle") === "rifle").sort((a, b) => a.position.distanceTo(eye) - b.position.distanceTo(eye));
+    const g = rifle[0] ?? enemies.find((e) => e.alive && !e.shield);
+    if (!g) return "no enemy";
+    // A guard 10 m down the crosshair, facing her, unaware.
+    const at = eye.clone().addScaledVector(flat, 10);
+    at.y = ground(at.x, at.z);
+    g.motion.pos.copy(at);
+    g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z);
+    // A calm street: nobody hunting her, no hurt arcs, full health, so the frame shows only this hit.
+    for (const e of enemies) {
+      if (e.alive && e.state !== "dead") e.state = "unaware";
+      e.detect = 0;
+    }
+    s.hp = s.maxHp;
+    g.hp = g.kit.maxHp;
+    const sightFar: Sight = { eye: new THREE.Vector3(0, -500, 0), chest: new THREE.Vector3(0, -500, 0), light: 0, low: 1, speed: 0, stealth: 0 };
+    g.update(0.0001, sightFar, rays, world.colliders, ground);
+    // Blocked: a steel crate 6 m out, chest high on him, so his head shows over it.
+    const crated = name === "blocked" || name === "peek-head";
+    if (crated && !stageCrate) {
+      const c = eye.clone().addScaledVector(flat, 6);
+      c.y = ground(c.x, c.z);
+      stageCrate = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.25, 0.9), new THREE.MeshStandardMaterial({ color: 0x2b3038, metalness: 0.7, roughness: 0.45 }));
+      stageCrate.position.set(c.x, c.y + 0.625, c.z);
+      stageCrate.rotation.y = Math.atan2(flat.x, flat.z);
+      world.scene.add(stageCrate);
+      const half = new THREE.Vector3(0.7 + 0.45, 0.625, 0.7 + 0.45);
+      crateCollider = rays.add(new THREE.Box3(stageCrate.position.clone().sub(half), stageCrate.position.clone().add(half)), "metal");
+    }
+    if (stageCrate) stageCrate.visible = crated;
+    if (crateCollider) crateCollider.off = !crated;
+    const joint = name === "hit-head" || name === "hit-headkill" || name === "peek-head" ? g.body.joints.head : g.body.joints.chest;
+    const aim = joint.clone();
+    if (name === "blocked") aim.y = Math.min(aim.y, (stageCrate?.position.y ?? 0) + 0.3);
+    if (name === "hit-kill" || name === "hit-headkill") g.hp = 1;
+    const w = SLICE_WEAPONS.find((x) => x.id === "kestrel")!;
+    // The shot is a Kestrel round, so she holds the Kestrel.
+    if (arsenal.weapon.id !== "kestrel") {
+      arsenal.owned.add("kestrel");
+      arsenal.equipId("kestrel");
+    }
+    const origin = eye.clone().addScaledVector(fwd, 0.3);
+    const dir = aim.clone().sub(origin).normalize();
+    combat.quiet = true;
+    combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], build());
+    combat.quiet = false;
+    drainEvents();
+    // Classes the street can't produce on cue yet (no plates until C15): show them over the real hit.
+    if (name === "hit-soft") hud.hitMarker("armour");
+    if (name === "hit-pen") hud.hitMarker("pen");
+    if (name === "hit-armourbreak") hud.hitMarker("armourBreak");
+    if (name === "hit-kill" || name === "hit-headkill") hud.settleTarget();
+    hud.freeze(tMs);
+    return hud.hitClass ?? (name === "blocked" ? "blocked" : "none");
+  };
+  s.traceShot = (from, to) => combat.traceShot(new THREE.Vector3(from.x, from.y, from.z), new THREE.Vector3(to.x, to.y, to.z), arsenal.weapon, build());
+  const stageParam = new URLSearchParams(location.search).get("stage");
+  if (stageParam) {
+    const tParam = Number(new URLSearchParams(location.search).get("t") ?? 60);
+    const wait = () => (s.stats.frames >= 3 ? s.stage!(stageParam, tParam) : setTimeout(wait, 100));
+    setTimeout(wait, 100);
+  }
+  (window as unknown as { ruin?: Session }).ruin = s;
+
   requestAnimationFrame(frame);
   return s;
 }
+
+/** What a guard shouts when a round cracks past his head. */
+const BARKS = ["Taking fire!", "Contact, she's shooting!", "Shots, get down!", "Where's that coming from?"];
 
 const RESIST_TAG: Record<string, string> = { kinetic: "KIN", shock: "SHK", toxic: "TOX", incendiary: "FIRE", monowire: "WIRE" };
 

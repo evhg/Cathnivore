@@ -31,6 +31,10 @@ describe("CATHODE hit classes (S1.2)", () => {
     expect(M.body.len * u).toBeGreaterThanOrEqual(26);
     expect(M.body.thick * u).toBeGreaterThanOrEqual(6);
     expect(tuning.killRing.toU * u).toBeGreaterThanOrEqual(100);
+    // Never smaller than the spec table (10u x 2.25u body, 15u x 3u kill).
+    expect(M.body.len).toBeGreaterThanOrEqual(10);
+    expect(M.body.thick).toBeGreaterThanOrEqual(2.25);
+    expect(M.kill.len).toBeGreaterThanOrEqual(15);
   });
 
   it("follows the hit-stop table, with no stop for automatic body hits", () => {

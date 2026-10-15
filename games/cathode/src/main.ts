@@ -131,7 +131,8 @@ async function begin(): Promise<void> {
     canvas: $<HTMLCanvasElement>("view"),
     hud: $("hud"),
     touch: $("touch"),
-    quality: resolveQuality(prefs.quality),
+    // ?quality=phone|high|ultra overrides the setting (screenshot runs pick the phone profile).
+    quality: resolveQuality((["phone", "high", "ultra"].includes(params.get("quality") ?? "") ? params.get("quality") : prefs.quality) as typeof prefs.quality),
     intensity: prefs.intensity,
     shot: params.has("shot"),
     district,

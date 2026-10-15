@@ -30,6 +30,8 @@ interface Entry {
   mat: CoverMat;
   thin: boolean;
   obb: Obb | null;
+  /** Switched off (a stage prop that's been put away). */
+  off?: boolean;
 }
 
 export interface RayWorldOpts {
@@ -66,6 +68,20 @@ export class RayWorld {
     }
   }
 
+  /** Adds a collider after the fact (screenshot stages drop a crate into the street). */
+  add(box: THREE.Box3, mat: CoverMat, thin = false): { off?: boolean } {
+    const e: Entry = { box, mat, thin, obb: null };
+    this.entries.push(e);
+    for (let x = Math.floor(box.min.x / CELL); x <= Math.floor(box.max.x / CELL); x++)
+      for (let z = Math.floor(box.min.z / CELL); z <= Math.floor(box.max.z / CELL); z++) {
+        const k = `${x},${z}`;
+        let list = this.grid.get(k);
+        if (!list) this.grid.set(k, (list = []));
+        list.push(e);
+      }
+    return e;
+  }
+
   /**
    * The nearest collider a ray hits within maxDist, or null. With `thin: false` shot-only cover is ignored
    * (line of sight through glass, movement probes).
@@ -99,7 +115,7 @@ export class RayWorld {
         for (const e of list) {
           if (this.stamp.get(e) === this.pass) continue;
           this.stamp.set(e, this.pass);
-          if (!thin && e.thin) continue;
+          if ((!thin && e.thin) || e.off) continue;
           const h = this.hitEntry(e, origin, dir);
           if (h && h.dist <= maxDist) found.push(h);
         }

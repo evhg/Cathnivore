@@ -236,10 +236,11 @@
 /* ---- the hit marker (S1.2): sized in --u, coloured by class, never by damage ---- */
 .hud-hit {
   --tc: var(--hit-body);
-  --len: calc(var(--u) * 10);
-  --th: max(2px, calc(var(--u) * 2.25));
-  --gap: calc(var(--u) * 7);
-  --ring: calc(var(--u) * 40);
+  /* Sizes are set from game/feel/tuning.ts per class (hud.ts); these are the body defaults. */
+  --len: calc(var(--u) * 16);
+  --th: max(2px, calc(var(--u) * 3.6));
+  --gap: calc(var(--u) * 10);
+  --ring: calc(var(--u) * 60);
   position: absolute;
   left: 50%;
   top: 50%;
@@ -248,11 +249,11 @@
   opacity: var(--a, 0);
   transform: scale(var(--xs, 1));
 }
-.hud-hit.c-head { --tc: var(--hit-crit); --len: calc(var(--u) * 13); --th: max(2px, calc(var(--u) * 2.5)); }
+.hud-hit.c-head { --tc: var(--hit-crit); }
 .hud-hit.c-armour,
 .hud-hit.c-armourBreak { --tc: var(--hit-armour); }
 .hud-hit.c-kill,
-.hud-hit.c-headKill { --tc: var(--hit-crit); --len: calc(var(--u) * 15); --th: max(2px, calc(var(--u) * 3)); --gap: calc(var(--u) * 9); }
+.hud-hit.c-headKill { --tc: var(--hit-crit); }
 .hud-hit i {
   position: absolute;
   left: calc(var(--th) / -2);
@@ -289,18 +290,24 @@
 @keyframes hit-shatter { from { opacity: 1; transform: scale(.38); } to { opacity: 0; transform: scale(1); } }
 /* Kill: a ring bursting from 12u to 40u over 420 ms; a head kill fires a second, gold one. */
 .hud-hit-ring { position: absolute; left: calc(var(--ring) / -2); top: calc(var(--ring) / -2); width: var(--ring); height: var(--ring); border: max(2px, calc(var(--u) * 2)) solid var(--tc); border-radius: 50%; opacity: 0; box-shadow: 0 0 calc(var(--u) * 12) var(--tc), inset 0 0 calc(var(--u) * 6) var(--tc); }
-.hud-hit-ring.go { animation: hit-ring 420ms var(--ease-out); }
+.hud-hit-ring.go { animation: hit-ring 420ms linear; }
 .hud-hit-ring-2 { border-color: var(--hit-gold); box-shadow: 0 0 calc(var(--u) * 14) var(--hit-gold); }
-.hud-hit-ring-2.go { animation: hit-ring 420ms var(--ease-out) 90ms backwards; }
-@keyframes hit-ring { from { opacity: 1; transform: scale(.3); } 35% { opacity: .95; } to { opacity: 0; transform: scale(1); } }
+.hud-hit-ring-2.go { animation: hit-ring 420ms linear 90ms backwards; }
+/* Eased by hand (12u to 40u): fast out, then a long bright hang before it thins away. */
+@keyframes hit-ring { 0% { opacity: 1; transform: scale(.3); } 25% { opacity: 1; transform: scale(.72); } 55% { opacity: .85; transform: scale(.9); } 100% { opacity: 0; transform: scale(1); } }
 .hud-hit.pop { animation: hit-pop var(--pop-ms, 60ms) var(--ease-out); }
+/* The screenshot stages freeze every one-shot animation at the stage's moment (window.cathode.stage). */
+.hud-root.is-frozen .hud-hit.pop,
+.hud-root.is-frozen .hud-hit-ring.go,
+.hud-root.is-frozen .hud-hit-shatter.go,
+.hud-root.is-frozen .hud-blocked.pop i { animation-play-state: paused; animation-delay: var(--freeze-t, 0ms); }
 @keyframes hit-pop { from { transform: scale(calc(var(--xs, 1) * var(--pop, 1.25))); } to { transform: scale(var(--xs, 1)); } }
 
 /* ---- blocked (S1.1): hollow brackets either side of the crosshair; "COVER" for the first three ---- */
 .hud-blocked {
-  --bw: calc(var(--u) * 7);
-  --bh: calc(var(--u) * 20);
-  --bs: max(2px, calc(var(--u) * 2.25));
+  --bw: calc(var(--u) * 9);
+  --bh: calc(var(--u) * 30);
+  --bs: max(2px, calc(var(--u) * 3.4));
   position: absolute;
   left: 50%;
   top: 50%;
@@ -317,8 +324,8 @@
   border: var(--bs) solid var(--hit-armour);
   box-shadow: 0 0 0 max(1px, var(--u)) var(--hit-outline), inset 0 0 0 max(1px, var(--u)) var(--hit-outline);
 }
-.hud-blocked .hud-blocked-l { left: calc(var(--u) * -24); border-right: 0; }
-.hud-blocked .hud-blocked-r { left: calc(var(--u) * 17); border-left: 0; }
+.hud-blocked .hud-blocked-l { left: calc(var(--u) * -34); border-right: 0; }
+.hud-blocked .hud-blocked-r { left: calc(var(--u) * 25); border-left: 0; }
 .hud-blocked-word {
   position: absolute;
   left: 0;

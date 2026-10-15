@@ -218,6 +218,8 @@ export class Hud {
   }
 
   update(dt: number, s: HudState): void {
+    // A frozen screenshot stage holds every timer (markers, brackets, the target bar).
+    if (this.frozen) dt = 0;
     const set = (e: HTMLElement, k: string, v: string) => this.prop(e, k, v);
     // Health: the hero numeral, the fill, and a pale trail that holds where she was, then drains.
     const frac = Math.max(0, Math.min(1, s.hp / Math.max(1, s.maxHp)));
@@ -364,7 +366,12 @@ export class Hud {
       e.classList.remove(cls);
       requestAnimationFrame(() => e.classList.add(cls));
     } else e.classList.add(cls);
-    this.punchTimers.set(e, window.setTimeout(() => e.classList.remove(cls), ms));
+    this.punchTimers.set(
+      e,
+      window.setTimeout(() => {
+        if (!this.frozen) e.classList.remove(cls);
+      }, ms),
+    );
   }
 
   /** A red arc at the screen edge pointing to where the shot came from. */
@@ -406,6 +413,11 @@ export class Hud {
     const m = tuning.marker[c];
     for (const k of HIT_CLASSES) this.hit.classList.toggle(`c-${k}`, k === c);
     this.hit.classList.add("on");
+    // Sizes come straight from the tuning table, in --u (S8), so tests and the HUD read the same numbers.
+    this.prop(this.hit, "--len", `calc(var(--u) * ${m.len})`);
+    this.prop(this.hit, "--th", `max(2px, calc(var(--u) * ${m.thick}))`);
+    this.prop(this.hit, "--gap", `calc(var(--u) * ${m.gap})`);
+    this.prop(this.hit, "--ring", `calc(var(--u) * ${tuning.killRing.toU})`);
     this.prop(this.hit, "--pop", String(m.pop));
     this.prop(this.hit, "--pop-ms", `${m.popMs}ms`);
     this.hitAge = 0;
@@ -419,6 +431,40 @@ export class Hud {
     if (c === "kill" || c === "headKill") this.punch(this.hitRing, "go", tuning.killRing.ms + 40);
     if (c === "headKill") this.punch(this.hit.querySelector(".hud-hit-ring-2") as HTMLElement, "go", tuning.killRing.ms + 160);
     if (c === "armourBreak") this.punch(this.hit.querySelector(".hud-hit-shatter") as HTMLElement, "go", 260);
+  }
+
+  /** Screenshot stages: hold the marker, brackets and their animations at `tMs` after the event. */
+  private frozen = false;
+  freeze(tMs: number | null): void {
+    this.frozen = tMs !== null;
+    this.root.classList.toggle("is-frozen", this.frozen);
+    if (tMs === null) return;
+    // Only what actually fired is held at tMs; the rest stays hidden.
+    if (this.hitAge < 1e8) this.hitAge = tMs;
+    if (this.blockedAge < 1e8) this.blockedAge = tMs;
+    this.root.style.setProperty("--freeze-t", `${-tMs}ms`);
+  }
+
+  /** Clears the marker and the brackets (a new screenshot stage starts clean). */
+  clearFeedback(): void {
+    this.hurtArcT = 0;
+    this.targetT = 0;
+    this.targetDead = 0;
+    this.target.classList.remove("is-dead");
+    this.hitAge = 1e9;
+    this.blockedAge = 1e9;
+    for (const k of HIT_CLASSES) this.hit.classList.remove(`c-${k}`);
+    this.prop(this.hit, "--a", "0");
+    this.prop(this.blockedEl, "--a", "0");
+  }
+
+  /** Runs a killed target's bar to its end (the stage shows the frame after the collapse). */
+  settleTarget(): void {
+    if (this.targetDead > 0) {
+      this.targetDead = 0;
+      this.targetT = 0;
+      this.target.classList.remove("is-dead");
+    }
   }
 
   /** The class the marker last showed (for tests and the screenshot sidecars). */
