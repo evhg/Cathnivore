@@ -20,13 +20,15 @@ const stages = process.argv.slice(2).length ? process.argv.slice(2) : C1
 const VIEWPORTS = {
   '5k': { viewport: { width: 2560, height: 1440 }, dsf: 2, q: '&rs=0.5' },
   d: { viewport: { width: 1440, height: 900 }, dsf: 1, q: '' },
-  phone: { viewport: { width: 844, height: 390 }, dsf: 3, q: '&rs=0.5&quality=phone', touch: true },
+  // The phone's blocked frame renders at full resolution: at rs=0.5 the crate and the guard's head over it blur
+  // into one grey block and the brackets have no visible reason.
+  phone: { viewport: { width: 844, height: 390 }, dsf: 3, q: '&rs=0.5&quality=phone', touch: true, stageQ: { blocked: '&rs=1&quality=phone' } },
   rm: { viewport: { width: 1440, height: 900 }, dsf: 1, q: '', reduced: true },
   portrait: { viewport: { width: 390, height: 844 }, dsf: 3, q: '&rs=0.5&quality=phone', touch: true },
 }
 // S0 budgets (docs/design/cathode-combat.md, performance table): draw calls and combat CPU per profile.
 // Measured here in a calm street under SwiftShader, so they warn rather than fail until C-perf lands.
-const BUDGET = { phone: { calls: 260, particles: 1500 }, desktop: { calls: 600, particles: 4000 } }
+const BUDGET = { phone: { calls: 260, reflCalls: 120, particles: 1500 }, desktop: { calls: 600, particles: 4000 } }
 const warnings = []
 const warn = (msg) => {
   warnings.push(msg)
@@ -48,9 +50,15 @@ for (const vp of vps) {
   const ctx = await browser.newContext({ viewport: V.viewport, deviceScaleFactor: V.dsf, hasTouch: !!V.touch, isMobile: !!V.touch, reducedMotion: V.reduced ? 'reduce' : 'no-preference' })
   const page = await ctx.newPage()
   await page.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
-  await page.goto(`${base}?play&shot${V.q}`)
-  await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) > 2 && typeof window.cathode?.stage === 'function', null, { timeout: 240_000 })
-  await page.waitForTimeout(3000)
+  let loadedQ = null
+  const load = async (q) => {
+    if (q === loadedQ) return
+    loadedQ = q
+    await page.goto(`${base}?play&shot${q}`)
+    await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) > 2 && typeof window.cathode?.stage === 'function', null, { timeout: 240_000 })
+    await page.waitForTimeout(3000)
+  }
+  await load(V.q)
   if (vp === 'portrait') {
     // Upright, the game asks for the phone to be turned: the HUD isn't measured.
     const card = await page.evaluate(() => {
@@ -67,6 +75,7 @@ for (const vp of vps) {
   for (const spec of stages) {
     const [stage, at] = spec.split('@')
     const t = at ? Number(at) : stage === 'hit-kill' ? 230 : 40
+    await load(V.stageQ?.[stage] ?? V.q)
     const f0 = await page.evaluate(() => window.cathode.stats.frames)
     const cls = await page.evaluate(([s, tt]) => window.cathode.stage(s, tt), [stage, t])
     // SwiftShader draws about one frame a second: let two frames land so the HUD shows the stage.
@@ -130,6 +139,7 @@ for (const vp of vps) {
         arms,
         glyphs,
         hp: document.querySelector('.hud-hp-text')?.textContent,
+        ammo: document.querySelector('.hud-arms')?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 60),
         quality: new URLSearchParams(location.search).get('quality') === 'phone' ? 'phone' : 'desktop',
         stats: {
           frames: window.cathode.stats.frames,
@@ -161,6 +171,9 @@ for (const vp of vps) {
       // Reduced motion keeps the ring as a fade: it must still show.
       if (!(side.ring && side.ring.opacity > 0.3)) fail(`${vp} hit-kill: no kill ring (opacity ${side.ring?.opacity})`)
     }
+    // Stages never leak into each other: the kill ring shows only on a kill (S0 stage hygiene).
+    if (stage.startsWith('hit-') && !/kill/.test(stage) && side.ring && side.ring.opacity > 0.01) fail(`${vp} ${spec}: a kill ring shows on a non-kill stage (opacity ${side.ring.opacity})`)
+    if (stage === 'blocked' && side.ring && side.ring.opacity > 0.01) fail(`${vp} blocked: a kill ring shows`)
     // The bar collapses for real (180 ms flash + 400 ms fade): gone by 600 ms.
     if (stage === 'hit-kill' && t >= 600 && !side.targetHidden) fail(`${vp} ${spec}: target bar still showing`)
     // Every stage starts clean: full health, no hurt arc from before.
@@ -173,6 +186,8 @@ for (const vp of vps) {
       }
     const B = BUDGET[side.quality]
     if (side.stats.drawCalls > B.calls) warn(`${vp} ${spec}: ${side.stats.drawCalls} draw calls > ${B.calls} (${side.quality})`)
+    // The mirror pass culls small meshes on phone (render/reflection.ts): that share of the budget fails hard.
+    if (side.quality === 'phone' && (side.stats.reflCalls ?? 0) > B.reflCalls) fail(`${vp} ${spec}: the reflection pass took ${side.stats.reflCalls} draw calls > ${B.reflCalls}`)
     if ((side.stats.particles ?? 0) > B.particles) warn(`${vp} ${spec}: ${side.stats.particles} particles > ${B.particles}`)
     if (stage === 'blocked') {
       if (side.hit.opacity > 0.01) fail(`${vp} blocked: a hit marker showed`)
