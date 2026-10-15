@@ -3633,6 +3633,7 @@ function drawDuel(g: Game): void {
   if (duelShownFor !== d.enemy) {
     duelShownFor = d.enemy;
     ui.duelTitle.textContent = `Cath vs ${ENEMIES[d.kind].name}`;
+    $<HTMLElement>("duel-cath").innerHTML = cath("determined");
     ui.duelStrike.focus({ preventScroll: true });
   }
   ui.duelRounds.textContent = [0, 1, 2]

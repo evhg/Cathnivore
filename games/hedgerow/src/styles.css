@@ -1644,21 +1644,27 @@ button {
   transform: translateX(-50%);
   width: min(92%, 380px);
   display: grid;
-  gap: 8px;
+  gap: 6px;
   justify-items: center;
-  padding: 14px 16px;
+  padding: 12px 16px 14px;
   border-radius: 20px;
-  background: rgba(30, 22, 18, 0.88);
-  color: #fff6e6;
+  background: linear-gradient(180deg, var(--paper-hi), var(--paper));
+  color: var(--ink);
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), inset 0 0 0 2px #d4ae58;
+  box-shadow: 0 10px 40px var(--ink-a45), inset 0 0 0 2px var(--brass-mid), inset 0 0 0 5px var(--paper-hi);
   z-index: var(--z-field-ui);
 }
 .duel[hidden] {
   display: none;
 }
+.duel-cath {
+  width: 64px;
+  height: 64px;
+  margin: -34px auto 0;
+}
 .duel .eyebrow {
-  color: #f2c94c;
+  color: var(--brass-lo);
+  margin: 0;
 }
 .duel-title {
   font-family: var(--font-display);
@@ -1668,14 +1674,15 @@ button {
 .duel-rounds {
   font-size: var(--fs-d3);
   letter-spacing: 6px;
-  color: #f2c94c;
+  color: var(--brass-lo);
 }
 .duel-bar {
   position: relative;
   width: 100%;
   height: 18px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #8a2c22, #c9663a 30%, #6a4a2a 50%, #c9663a 70%, #8a2c22);
+  background: linear-gradient(90deg, var(--clay), var(--paper-shade) 35%, var(--paper-shade) 65%, var(--clay));
+  box-shadow: inset 0 0 0 2px var(--ink-a45);
   overflow: hidden;
 }
 .duel-sweet {
@@ -1684,8 +1691,8 @@ button {
   width: 16%;
   top: 0;
   bottom: 0;
-  background: #f2c94c;
-  box-shadow: 0 0 12px #f2c94c;
+  background: var(--brass);
+  box-shadow: 0 0 12px var(--brass-hi);
 }
 .duel-mark {
   position: absolute;
@@ -1695,8 +1702,18 @@ button {
   margin-left: -4px;
   left: calc(var(--x, 0.5) * 100%);
   border-radius: 4px;
-  background: #fff;
-  box-shadow: 0 0 6px #000;
+  background: var(--ink);
+  box-shadow: 0 0 0 2px var(--paper-hi);
+}
+@media (max-height: 520px) {
+  .duel-cath {
+    width: 40px;
+    height: 40px;
+    margin-top: -26px;
+  }
+  .duel .eyebrow {
+    display: none;
+  }
 }
 .duel-strike {
   min-width: 160px;
