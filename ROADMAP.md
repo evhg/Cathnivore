@@ -9,6 +9,18 @@ Every visual item is done only when:
 - the gates pass;
 - motion respects reduced motion.
 
+## Owner direction, 2026-10-15: Phase C comes first, non-stop, for at least a week (FEEDBACK.md)
+
+**Phase C: CATHODE combat, look and feel.** Every session works on Phase C until it is done, ahead of D, H and U. Take the first open item. The full spec, from AAA research, is `docs/design/cathode-combat.md`; where it exists it replaces these placeholders. Test at 1440x900, 2560x1440 at 2x (a 5K desktop) and phone landscape. Release each item when it passes the gates.
+- C1. [ ] **Hit feedback:** a hit marker on the crosshair (white body, red head, kill X), a hit tick sound, a kill confirm, and enemy flinch on every hit. Show "blocked" sparks when cover stops a round. Scale all HUD and indicators with the screen (4K/5K included).
+- C2. [ ] **Weapons, AAA grade:** detailed viewmodels for every gun, the pistol first. Full firing animation (slide, recoil spring, muzzle flash and smoke, ejected brass, sway, ADS), reload choreography, and layered firing sound.
+- C3. [ ] **Enemy design:** new Enforcer models with readable silhouettes, armour and faction details. Animation (idle, alert, cover, aim, flinch, stagger), telegraphed attacks, and smarter combat behaviour (flank, suppress, take cover).
+- C4. [ ] **Enemy hits, wounds and deaths:** location-based reactions, blood and impact decals, armour sparks, limping, falls, ragdolls, and death animations worthy of an R rating.
+- C5. [ ] **Player hit, wounded and dying:** directional damage, a screen blood vignette, wound states (blur, desaturation, heartbeat, muffled sound), a dramatic down and death sequence, and a stylish retry.
+- C6. [ ] **Takedowns that satisfy:** an animated close-up takedown with camera, sound, slow motion and a reaction.
+- C7. [ ] **Findable pickups and objectives:** a world beacon and outline on weapons and loot, a clear first-weapon moment, and readable waypoints at any resolution.
+- C8. [ ] **AAA front door:** a new title screen, menus and loading screen modelled on real AAA games, built with the AAA UI kit. Includes the game's new name once the owner picks it.
+
 ## Owner direction, 2026-10-09: work these phases first (FEEDBACK.md)
 
 These two phases come before every older unfinished item below. About 70% of sessions take the first open **D** item, and about 30% take the first open **H** item; when in doubt, do D. Small polish is batched into at most one session a day, not planned as separate items. Release only when a milestone (one whole item below) is finished.
