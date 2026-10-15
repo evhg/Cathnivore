@@ -462,4 +462,3 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - Fixed red CI by tokenising the landing CTA colours rather than raising the ratchet baseline.
 - 2026-10-14: U5 closed without a keyart WebP (the SVG/CSS art is lighter and already sharp).
 - 2026-10-14 16:51: release denied by classifier; not retried, no other work done (needs the owner's go-ahead to deploy).
-- 2026-10-15: Release unblocked; the earlier gate-5 hotseat flake did not recur. Cause of the stalled gates was a Scene.tsx type error.

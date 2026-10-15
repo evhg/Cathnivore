@@ -125,24 +125,3 @@ try {
 } catch {
   // Unreadable storage: keep the default label.
 }
-
-// U13: "your progress" line on the cards, read defensively from each game's own save. Nothing is shown to a first-time visitor.
-function showProgress(id: string, text: string): void {
-  const el = document.getElementById(id)
-  if (!el || !text) return
-  el.textContent = text
-  el.hidden = false
-}
-try {
-  const hg = JSON.parse(localStorage.getItem('hedgerow:v1') ?? 'null') as { stars?: Record<string, number> } | null
-  const levels = Object.values(hg?.stars ?? {}).filter((n) => typeof n === 'number' && n >= 1)
-  if (levels.length > 0) {
-    const stars = levels.reduce((a, n) => a + Math.min(3, n), 0)
-    showProgress('prog-hedgerow', `${levels.length} of 100 levels cleared · ${stars} stars`)
-  }
-  const rn = JSON.parse(localStorage.getItem('runnel:v1') ?? 'null') as { results?: Record<string, unknown> } | null
-  const solved = Object.keys(rn?.results ?? {}).length
-  if (solved > 0) showProgress('prog-runnel', `${solved} ${solved === 1 ? 'day' : 'days'} solved`)
-} catch {
-  // Unreadable storage: show nothing.
-}

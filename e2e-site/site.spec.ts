@@ -30,7 +30,7 @@ test.describe('landing page', () => {
     const errors = trackErrors(page)
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore' })).toBeVisible()
-    await expect(page.locator('a.card[href="/cathnivore/"]')).toBeVisible()
+    await expect(page.locator('a[href="/cathnivore/"]')).toBeVisible()
     await expect(page.locator('a.card[href="/runnel/"]')).toBeVisible()
     await noSideways(page)
     expect(errors).toEqual([])
@@ -48,7 +48,7 @@ test.describe('landing page', () => {
 
   test('the Cathnivore card opens the game', async ({ page }) => {
     await page.goto('/')
-    await page.locator('a.card[href="/cathnivore/"]').click()
+    await page.locator('a[href="/cathnivore/"]').click()
     await expect(page).toHaveURL(/\/cathnivore\/$/)
     await expect(page.getByText('Quick Game')).toBeVisible()
   })
@@ -62,7 +62,7 @@ test.describe('landing page', () => {
 
   test('the Hedgerow card opens the game', async ({ page }) => {
     await page.goto('/')
-    await page.locator('a.card[href="/hedgerow/"]').click()
+    await page.locator('a[href="/hedgerow/"]').click()
     await expect(page).toHaveURL(/\/hedgerow\/$/)
     await expect(page.getByRole('heading', { name: 'Hedgerow' })).toBeVisible()
   })

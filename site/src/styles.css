@@ -533,55 +533,16 @@ body {
   stroke: #2b1d10;
 }
 
-.card-progress {
-  display: block;
-  margin-top: 2px;
-  font-size: var(--fs-meta);
-  font-variant-numeric: tabular-nums;
-  color: var(--gold);
-}
-
-.card-progress[hidden] {
-  display: none;
-}
-
 /* ---- footer ---- */
 
 .foot {
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255, 244, 224, 0.14);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 18px;
   font-size: var(--fs-meta);
   color: var(--cream-muted);
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
-}
-
-.foot-sign {
-  margin: 0;
-  font-style: italic;
-  color: var(--cream);
-}
-
-.foot-cols {
-  display: flex;
-  gap: 40px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.foot-col {
-  display: grid;
-  gap: 6px;
-  justify-items: center;
-}
-
-.foot-col b {
-  font-size: var(--fs-label);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--cream-muted);
 }
 
 .foot a {
