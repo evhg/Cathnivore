@@ -297,7 +297,12 @@ export class Arsenal {
     if (h.def.mag === 0 || h.ammo >= h.def.mag || h.reserve <= 0 || this.reloading > 0) return;
     this.shellReload = h.def.weaponClass === "shotgun";
     this.reloading = h.def.reload;
+    this.reloadTotal = h.def.reload;
+    this.reloadEmpty = h.ammo <= 0;
   }
+  private reloadTotal = 1;
+  /** The slide locks back on an empty magazine and drops on a fresh one. */
+  private reloadEmpty = false;
 
   /**
    * Advances timers; returns a Shot if the trigger fired this frame. `eye` and `dir` are the camera's.
@@ -429,8 +434,25 @@ export class Arsenal {
       r.root.localToWorld(mid);
       this.trail.update(dt, tip, mid);
     } else this.trail.update(dt, null, null);
+    if (r.flashMesh) {
+      const on = this.flashT > 0.03;
+      r.flashMesh.visible = on;
+      if (on) r.flashMesh.rotation.z = Math.random() * Math.PI;
+    }
+    // Pistol reload: the magazine drops, a fresh one seats, and an empty gun has its slide dropped on it.
+    let reloadP = -1;
+    if (def.weaponClass === "pistol" && this.reloading > 0) reloadP = 1 - this.reloading / this.reloadTotal;
+    if (r.mag) {
+      let out = 0;
+      if (reloadP >= 0) out = reloadP < 0.2 ? 0 : reloadP < 0.4 ? (reloadP - 0.2) / 0.2 : reloadP < 0.65 ? 1 : Math.max(0, 1 - (reloadP - 0.65) / 0.15);
+      r.mag.position.y = -out * 0.09;
+      r.mag.position.z = out * 0.015;
+    }
+    // An empty pistol holds its slide back; the reload drops it on the fresh magazine.
+    const held = this.held[this.current]!;
+    const lock = def.weaponClass === "pistol" && (held.ammo <= 0 || (reloadP >= 0 && this.reloadEmpty && reloadP < 0.85)) ? 1 : 0;
     if (r.action) {
-      if (def.weaponClass === "pistol") r.action.position.z = a.action * 0.03;
+      if (def.weaponClass === "pistol") r.action.position.z = Math.max(a.action, lock) * 0.03;
       else if (def.weaponClass === "shotgun") r.action.position.z = a.action * 0.08;
       else if (def.weaponClass === "sniper") {
         r.action.rotation.z = a.action * 1.3;

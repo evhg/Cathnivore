@@ -102,6 +102,8 @@ export interface GunRig {
   /** Parts that move: the slide, the pump, the bolt. */
   action?: THREE.Object3D;
   mag?: THREE.Object3D;
+  /** A first-person muzzle flash the weapon shows briefly on each shot. */
+  flashMesh?: THREE.Object3D;
   /** Position of the rig when hip-firing and when aiming down the sights (camera space). */
   hip: THREE.Vector3;
   ads: THREE.Vector3;
@@ -190,7 +192,13 @@ function buildPistol(): GunRig {
   // the slide stop, a rail under the frame, front and rear iron sights either side of the dot, an ejection port.
   g.add(at(box(0.026, 0.004, 0.04, M.polymer, 0.001), 0, -0.024, -0.036)); // guard floor
   g.add(at(box(0.006, 0.014, 0.004, M.steel, 0.001), 0, -0.012, -0.02)); // trigger
-  g.add(at(box(0.032, 0.012, 0.052, M.steel, 0.003), 0, -0.098, 0.04)).rotation.x = 0.22; // magazine floorplate
+  // The magazine is its own part so a reload can drop it out of the grip and seat a fresh one.
+  const mag = new THREE.Group();
+  mag.add(at(box(0.024, 0.07, 0.04, M.steel, 0.002), 0, -0.07, 0.035));
+  mag.add(at(box(0.032, 0.012, 0.052, M.steel, 0.003), 0, -0.098, 0.04)); // magazine floorplate
+  mag.rotation.x = 0.22;
+  g.add(mag);
+  r.mag = mag;
   g.add(at(box(0.004, 0.006, 0.02, M.steel, 0.001), 0.016, 0.013, -0.04)); // slide stop
   g.add(at(box(0.022, 0.006, 0.05, M.steel, 0.001), 0, -0.01, -0.12)); // accessory rail
   slide.add(at(box(0.01, 0.008, 0.006, M.blued, 0.001), 0, 0.052, 0.025)); // rear sight
@@ -202,6 +210,19 @@ function buildPistol(): GunRig {
   g.add(at(cyl(0.0175, 0.01, M.steel, 18), 0, 0.028, -0.155));
   r.root.add(g);
   r.action = slide;
+  // A first-person muzzle flash: a hot core and a cross of petals at the suppressor's mouth, shown for a frame or two.
+  const flash = new THREE.Group();
+  const fm = new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  for (let i = 0; i < 3; i++) {
+    const petal = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.012), fm);
+    petal.rotation.z = (i * Math.PI) / 3;
+    flash.add(petal);
+  }
+  flash.add(new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), fm));
+  flash.position.set(0, 0.028, -0.325);
+  flash.visible = false;
+  r.root.add(flash);
+  r.flashMesh = flash;
   r.muzzle.position.set(0, 0.028, -0.32);
   r.port.position.set(0.015, 0.035, -0.05);
   attachHands(r, [0, -0.045, 0.035], [-0.012, -0.05, 0.02], -0.5);

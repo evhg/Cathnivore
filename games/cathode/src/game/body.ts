@@ -141,6 +141,8 @@ function buildSegment(name: string, len: number, look: BodyLook): THREE.Group {
     case "abdomen":
       g.add(mesh(cyl(0.15, 0.16, len, 12), s, 0, mid, 0));
       g.add(mesh(rbox(0.3, 0.12, 0.2, 0.03), a, 0, len * 0.15, 0.02)); // belt
+      g.add(mesh(rbox(0.14, len * 0.95, 0.025, 0.01), s, 0, len * 0.45, 0.165)); // tabard hanging off the belt
+      g.add(mesh(rbox(0.04, len * 0.55, 0.012, 0.005), v, 0, len * 0.42, 0.18)); // a lit stripe down it
       g.add(mesh(rbox(0.07, 0.08, 0.05, 0.015), a, 0.11, len * 0.15, 0.12)); // pouches
       g.add(mesh(rbox(0.07, 0.08, 0.05, 0.015), a, -0.11, len * 0.15, 0.12));
       break;
@@ -165,12 +167,17 @@ function buildSegment(name: string, len: number, look: BodyLook): THREE.Group {
       g.add(mesh(rbox(0.22, 0.05, 0.08, 0.02), v, 0, 0.15, 0.12)); // the visor strip
       g.add(mesh(rbox(0.22, 0.09, 0.06, 0.02), a, 0, 0.08, 0.1)); // jaw guard
       g.add(mesh(cyl(0.012, 0.012, 0.12, 6), a, 0.1, 0.27, -0.04)); // antenna
+      g.add(mesh(rbox(0.035, 0.1, 0.24, 0.012), a, 0, 0.3, -0.02)); // a crest fin: the helmet reads from behind
+      g.add(mesh(rbox(0.06, 0.07, 0.05, 0.015), a, -0.15, 0.13, 0.04)); // ear comms cup
+      g.add(mesh(rbox(0.06, 0.07, 0.05, 0.015), a, 0.15, 0.13, 0.04));
       break;
     }
     case "upperArmL":
     case "upperArmR":
       g.add(mesh(cyl(0.075, 0.065, len, 12), s, 0, mid, 0));
       g.add(mesh(rbox(0.19, 0.13, 0.19, 0.05), a, 0, 0.03, 0)); // pauldron
+      g.add(mesh(rbox(0.2, 0.03, 0.2, 0.01), a, 0, 0.11, 0)); // a stacked shoulder lip, a wider silhouette
+      g.add(mesh(rbox(0.05, 0.05, 0.012, 0.004), v, 0, 0.03, 0.1)); // faction mark
       g.add(mesh(rbox(0.12, len * 0.4, 0.13, 0.03), a, 0, len * 0.5, 0)); // bicep guard
       break;
     case "forearmL":
