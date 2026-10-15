@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-15 12:52 session (release):** ROADMAP 120 verified (tuner `--verify` changed no k; shots of levels 11/12 show distinct fields) and released: `main` and live are `2134bcc` (U15, grid variety); tag push 403 (harmless). Next: more big Phase D/H/U items (plan via subagent critique), CATHODE depth.
 - **2026-10-15 11:53 session:** ROADMAP 120 (Hedgerow grid variety): odd levels 11+ swap a column for a row (`fieldSize` in layouts.ts, area within 5%; level 23 exempt: its best-bot win broke); fleet perf test now uses level 42. Hedgerow vitest suite green (levels 1, lessons, fleet re-run alone); tuner not run, no shot or e2e checked. Unreleased. Next: shot a few odd levels, `hedgerow-tune.ts --verify`, then release.
 - **2026-10-15 10:52 session (short):** U15 done: Hedgerow side panel gets a "Your field" card (towers by kind/tier, unanswered locks; Fleet levels, hidden on phones), shot at 1440x900 checked. tsc, lint, hedgerow tests pass; e2e not run. Unreleased. Next: U6/U7/U8/U11 leftovers or Phase H leftovers (H6 ability tray, H12/H13 bits).
 - **2026-10-15 09:52 session (audit only):** U14 audit (`shots:portfolio --all` takes over 20 min): landing, Runnel, Hedgerow field and CATHODE title look finished; one finding, U15 (Hedgerow desktop side panel half empty). No code changed; unreleased. Next: U15.

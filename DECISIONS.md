@@ -467,3 +467,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-15 08:51: U13 closed and released (c18b5f4). Phases D, H and U1-U13 done; U14 audit is next and should yield big features, not tweaks.
 - 2026-10-15 09:52: U14 closed as an audit; planned U15 (Hedgerow desktop intel panel). No code this session.
 - 2026-10-15: grid variety (ROADMAP 120) via fieldSize swap, not per-level paths; level 23 exempt (bot lost on its narrow field). Ticked 101 (already built).
+- 2026-10-15 12:52: grid variety verified and released; no k changes needed.
