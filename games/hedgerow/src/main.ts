@@ -1357,6 +1357,56 @@ function wavePreview(p: HTMLElement, g: Game): void {
   const advice = cathAdvice(g, next);
   if (advice) p.append(line(`Cath: ${advice}`, "cath-tip"));
   if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
+  if (fleet) p.append(fieldIntel(g));
+}
+
+/** Desktop side panel: what stands on the field and which locks it answers (styles hide it on a phone). */
+function fieldIntel(g: Game): HTMLElement {
+  const box = document.createElement("section");
+  box.className = "field-intel";
+  const h = document.createElement("h3");
+  h.textContent = "Your field";
+  box.append(h);
+  const by = new Map<TowerKind, { n: number; tier: number }>();
+  for (const t of g.towers) {
+    const e = by.get(t.kind) ?? { n: 0, tier: 0 };
+    e.n++;
+    e.tier = Math.max(e.tier, t.tier);
+    by.set(t.kind, e);
+  }
+  if (!by.size) {
+    box.append(line("Nothing planted yet. Pick a packet from the tray and tap a plot.", "intel-empty"));
+  } else {
+    const ul = document.createElement("ul");
+    ul.className = "intel-towers";
+    for (const [kind, e] of by) {
+      const li = document.createElement("li");
+      li.title = `${e.n} × ${TOWERS[kind].name}, best at tier ${e.tier}`;
+      li.append(img(towerIcon(kind), "chip-icon"));
+      const nm = document.createElement("span");
+      nm.textContent = `${TOWERS[kind].name} ×${e.n}`;
+      const tr = document.createElement("span");
+      tr.className = "intel-tier";
+      tr.textContent = `T${e.tier}`;
+      li.append(nm, tr);
+      ul.append(li);
+    }
+    box.append(ul);
+  }
+  const locks = levelLocks(g.level);
+  const gaps = unanswered(g, locks);
+  if (locks) {
+    const row = document.createElement("div");
+    row.className = "intel-locks";
+    const lab = document.createElement("span");
+    lab.className = "intel-label";
+    lab.textContent = gaps.length ? "Still unanswered" : "Every lock answered";
+    row.append(lab);
+    if (gaps.length) row.append(propRow(gaps.reduce((a, m) => a | P[m], 0), "chip-props"));
+    else row.append(propRow(locks, "chip-props"));
+    box.append(row);
+  }
+  return box;
 }
 
 /** A luggage tag (spec 4.7): an eyelet, then a short caps word; `title` carries the full sentence. */
