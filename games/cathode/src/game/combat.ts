@@ -11,7 +11,7 @@ import type { Zone } from "./body";
 import type { WeaponClass } from "../sim/types";
 import { CombatBus } from "./feel/bus";
 import { tuning } from "./feel/tuning";
-import type { HitEvent as HitData, HitLayer } from "../sim/hitevent";
+import { AUTOMATIC, type HitEvent as HitData, type HitLayer, type Vec3Like } from "../sim/hitevent";
 import { PASS_THROUGH, passes, penetrationOf, type CoverMat } from "../sim/penetration";
 import { surfaceOf } from "../render/builder";
 
@@ -91,6 +91,10 @@ export class Combat {
   readonly blockEvents: BlockEvent[] = [];
   /** Combat only emits; HUD, audio, FX and camera listen (S0). */
   readonly bus = new CombatBus();
+  /** Session wiring: the gun in hand and the build, the defaults for traceShot (window.cathode.combat.traceShot). */
+  held?: () => { w: WeaponDef; build: Build };
+  /** Set by the session (S0 debug, window.cathode.combat.replay): emits HitEvents on the bus and confirms them. */
+  replay?: (events: HitData[]) => string | null;
   /** Seconds since the session began, for event stamps. */
   clock = 0;
   /** The last round's penetration share and whether it went through cover. */
@@ -134,7 +138,7 @@ export class Combat {
       }
       if (killed) {
         e.die(dir.clone().multiplyScalar(8 + 10 * k).add(new THREE.Vector3(0, 5 * k, 0)), at);
-        this.kills.push({ enemy: e, weapon: EXPLOSIVE, zone: "torso", headshot: false, distance: d, unseen, severed: [], takedown: false });
+        this.killed({ enemy: e, weapon: EXPLOSIVE, zone: "torso", headshot: false, distance: d, unseen, severed: [], takedown: false });
       } else if (wasAlive) this.hits.push({ enemy: e, zone: "torso", damage: dmg, point: e.body.joints.chest.clone(), killed: false });
     }
   }
@@ -144,12 +148,20 @@ export class Combat {
     for (const e of this.enemies) e.hear(at, radius);
   }
 
+  /** Records a kill and tells the bus (S0): the HUD, audio and camera listen for "kill". */
+  private killed(k: KillEvent): void {
+    this.kills.push(k);
+    const last = !this.enemies.some((x) => x !== k.enemy && x.alive && x.kit.role !== "civilian");
+    this.bus.emit("kill", { t: this.clock, targetUid: String(k.enemy.id), headshot: k.headshot, weaponCls: k.weapon.weaponClass, last });
+  }
+
   private anyHunting(): boolean {
     return this.enemies.some((e) => e.alive && e.state === "combat");
   }
 
   fire(shot: Shot, build: Build): { killcam: Projectile | null } {
     const w = shot.weapon;
+    if (!this.quiet) this.bus.emit("fire", { t: this.clock, weaponCls: w.weaponClass, auto: AUTOMATIC.has(w.weaponClass) });
     if (!this.quiet) this.world.fx.muzzle(shot.muzzle, shot.dirs[0]!, w.weaponClass === "shotgun" ? 1.4 : w.weaponClass === "sniper" ? 1.2 : 0.7);
     this.noise(shot.origin, w.noise);
     if (w.kind === "ballistic") {
@@ -247,14 +259,14 @@ export class Combat {
         this.blocks++;
         this.blockEvents.push({ point: stop.point.clone(), normal: stop.normal.clone(), mat: stop.mat, enemy: behind });
         this.bus.emit("blocked", { t: this.clock, point: stop.point, normal: stop.normal, mat: stop.mat, targetUid: String(behind.id) });
-        // Overstated (pillar 4): a bigger impact and, on hard surfaces, a fan of sparks.
-        this.world.fx.impact(stop.point, stop.normal, surf);
+        // Overstated (pillar 4): a hard surface also throws a fan of sparks.
         if (stop.mat === "metal" || stop.mat === "metalSheet" || stop.mat === "concrete" || stop.mat === "chrome") {
           const [lo, hi] = tuning.blocked.sparks;
           this.world.fx.sparks(stop.point, stop.normal, (lo + Math.random() * (hi - lo)) / 20);
         }
       }
-      this.world.fx.impact(stop.point, stop.normal, stop.thin ? surf : this.world.surfaceAt(stop.point));
+      // One impact, overstated by tuning.blocked.impactMul when cover stopped a round meant for someone.
+      this.world.fx.impact(stop.point, stop.normal, stop.thin ? surf : this.world.surfaceAt(stop.point), behind ? tuning.blocked.impactMul : 1);
       if (!this.quiet && (w.weaponClass !== "shotgun" || Math.random() < 0.35)) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), stop.point);
       this.nearMisses(origin, dir, stop.dist, null);
     } else this.nearMisses(origin, dir, w.range, null);
@@ -330,7 +342,13 @@ export class Combat {
   readonly barks: Enemy[] = [];
 
   /** What a round from `from` towards `to` would do (the `traceShot` debug hook): no damage, no effects. */
-  traceShot(from: THREE.Vector3, to: THREE.Vector3, w: WeaponDef, build: Build): ShotTrace {
+  traceShot(fromV: Vec3Like, toV: Vec3Like, weapon?: WeaponDef, withBuild?: Build): ShotTrace {
+    const held = this.held?.();
+    const w = weapon ?? held?.w;
+    const build = withBuild ?? held?.build;
+    if (!w || !build) throw new Error("traceShot: no weapon or build");
+    const from = new THREE.Vector3(fromV.x, fromV.y, fromV.z);
+    const to = new THREE.Vector3(toV.x, toV.y, toV.z);
     const dir = to.clone().sub(from).normalize();
     const path = this.resolvePath(from, dir, w.range, w.weaponClass);
     const maxD = path.stop ? path.stop.dist : w.range;
@@ -444,12 +462,12 @@ export class Combat {
 
     if (killed) {
       e.die(dir.clone().multiplyScalar(w.weaponClass === "sniper" ? 9 : w.weaponClass === "shotgun" ? 7 : 3.5).add(new THREE.Vector3(0, 1, 0)), point);
-      this.kills.push({ enemy: e, weapon: w, zone, headshot: zone === "head", distance: dist, unseen, severed, takedown });
+      this.killed({ enemy: e, weapon: w, zone, headshot: zone === "head", distance: dist, unseen, severed, takedown });
     } else if (severed.length && e.alive) {
       // Losing a leg or an arm puts them down for good.
       e.damage(e.hp + 1, push);
       e.die(push.multiplyScalar(2), point);
-      this.kills.push({ enemy: e, weapon: w, zone, headshot: false, distance: dist, unseen, severed, takedown });
+      this.killed({ enemy: e, weapon: w, zone, headshot: false, distance: dist, unseen, severed, takedown });
     }
   }
 
@@ -490,7 +508,7 @@ export class Combat {
       e.damage(e.hp + 1, dir.clone());
       e.die(dir.clone().multiplyScalar(2.5).add(new THREE.Vector3(0, 0.5, 0)), e.body.joints.neck);
       if (this.gore) this.world.fx.blood(e.body.joints.neck, dir, 0.7);
-      this.kills.push({ enemy: e, weapon: pin, zone: "head", headshot: false, distance: d, unseen, severed: [], takedown: true });
+      this.killed({ enemy: e, weapon: pin, zone: "head", headshot: false, distance: d, unseen, severed: [], takedown: true });
       return e;
     }
     return null;

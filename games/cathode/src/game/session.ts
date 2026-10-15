@@ -18,7 +18,7 @@ import { coverWireframe } from "./coverdebug";
 import { Trauma } from "./feel/trauma";
 import { Spring1 } from "./feel/spring";
 import { tuning } from "./feel/tuning";
-import { AUTOMATIC, confirmSound, hitClass, hitStopMs } from "../sim/hitevent";
+import { AUTOMATIC, confirmSound, hitClass, hitStopMs, type HitEvent } from "../sim/hitevent";
 import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
 import { Hud } from "../ui/hud";
@@ -1476,6 +1476,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
 
   let lastBark = -99;
+  // The HUD and audio hear combat only through the bus (S0): hits, blocked rounds and shots are queued as
+  // they're emitted and confirmed once per frame in drainEvents, so several pellets confirm as one.
+  const frameHits: HitEvent[] = [];
+  let frameBlocks = 0;
+  combat.bus.on("hit", (h) => frameHits.push(h));
+  combat.bus.on("blocked", () => frameBlocks++);
+  combat.bus.on("fire", () => rumble("fire"));
+  const byUid = (uid: string) => enemies.find((e) => String(e.id) === uid);
+  const camRight = new THREE.Vector3();
+  const camPos = new THREE.Vector3();
+  const toHit = new THREE.Vector3();
   function drainEvents(): void {
     for (const k of combat.kills) {
       onKill(k);
@@ -1485,16 +1496,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // trauma and the target bar's collapse (S1.2 to S1.5). Several pellets in one frame confirm once, as
     // the best class among them.
     const rank = ["pen", "body", "armour", "armourBreak", "head", "kill", "headKill"] as const;
-    let best: { cls: (typeof rank)[number]; h: (typeof combat.hits)[number] } | null = null;
-    for (const h of combat.hits) {
-      if (!h.data) continue;
-      const cls = hitClass(h.data);
-      if (!best || rank.indexOf(cls) > rank.indexOf(best.cls)) best = { cls, h };
-      hud.targetHit(h.enemy.kit.name, h.enemy.hp / h.enemy.kit.maxHp, h.killed);
-      audio?.hitFlesh(h.damage > 40);
+    let best: { cls: (typeof rank)[number]; d: HitEvent } | null = null;
+    if (frameHits.length) {
+      world.camera.getWorldPosition(camPos);
+      camRight.setFromMatrixColumn(world.camera.matrixWorld, 0).normalize();
     }
+    for (const d of frameHits) {
+      const cls = hitClass(d);
+      if (!best || rank.indexOf(cls) > rank.indexOf(best.cls)) best = { cls, d };
+      const e = byUid(d.targetUid);
+      if (e) hud.targetHit(e.kit.name, e.hp / e.kit.maxHp, d.lethal);
+      // The wet thud sits in the world where the round landed, panned to its side.
+      toHit.set(d.point.x, d.point.y, d.point.z).sub(camPos);
+      const dist = toHit.length();
+      audio?.hitFlesh(d.damage > 40, dist > 0.01 ? toHit.dot(camRight) / dist : 0, dist);
+    }
+    frameHits.length = 0;
     if (best) {
-      const d = best.h.data!;
+      const d = best.d;
       hud.hitMarker(best.cls);
       audio?.confirm(confirmSound(best.cls));
       const auto = AUTOMATIC.has(d.weaponCls);
@@ -1505,11 +1524,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         rumble("hit");
       }
     }
-    if (combat.blocks > 0) {
+    if (frameBlocks > 0) {
       hud.blocked();
       audio?.blocked();
-      combat.blocks = 0;
     }
+    frameBlocks = 0;
+    combat.blocks = 0;
     combat.blockEvents.length = 0;
     // A near miss can make them shout (S1.1); subtitled, at most every six seconds.
     if (combat.barks.length && combat.clock - lastBark > 6) {
@@ -1545,6 +1565,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     staged = true;
     hud.freeze(null);
     hud.clearFeedback();
+    // Nothing carries over from the stage before: ammo, loot on the ground, particles and decals.
+    arsenal.restock();
+    pickups.clear();
+    world.fx.clear?.();
     showCover(name === "cover-debug-market");
     if (name === "cover-debug-market") {
       if (stageCrate) stageCrate.visible = false;
@@ -1629,6 +1653,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return hud.hitClass ?? (name === "blocked" ? "blocked" : "none");
   };
   s.traceShot = (from, to) => combat.traceShot(new THREE.Vector3(from.x, from.y, from.z), new THREE.Vector3(to.x, to.y, to.z), arsenal.weapon, build());
+  // window.cathode.combat (S0): replay HitEvents through the bus exactly as combat emits them, and trace a shot.
+  combat.held = () => ({ w: arsenal.weapon, build: build() });
+  combat.replay = (events) => {
+    for (const h of events) combat.bus.emit("hit", h);
+    drainEvents();
+    return hud.hitClass;
+  };
+
   const stageParam = new URLSearchParams(location.search).get("stage");
   if (stageParam) {
     const tParam = Number(new URLSearchParams(location.search).get("t") ?? 60);

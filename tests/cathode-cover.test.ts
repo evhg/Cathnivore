@@ -32,6 +32,29 @@ const shoot = (combat: Combat, from: THREE.Vector3, to: THREE.Vector3) => {
   combat.fire(shot, build);
 };
 
+describe("CATHODE combat bus (S0)", () => {
+  it("a lethal round emits fire, then hit, then kill, in that order", () => {
+    const rays = new RayWorld([], { mats: [] });
+    const { e, combat } = scene(rays);
+    e.hp = 1;
+    const seen: string[] = [];
+    for (const k of ["fire", "hit", "kill"] as const) combat.bus.on(k, () => seen.push(k));
+    let kill: { headshot: boolean; last: boolean } | null = null;
+    combat.bus.on("kill", (k) => (kill = k));
+    shoot(combat, V(0, 1.6, 0), e.body.joints.head.clone());
+    expect(seen).toEqual(["fire", "hit", "kill"]);
+    expect(kill).toMatchObject({ headshot: true, last: true });
+  });
+
+  it("traceShot takes plain points and defaults to the held gun", () => {
+    const { e, combat } = scene(new RayWorld([], { mats: [] }));
+    combat.held = () => ({ w: pistol, build });
+    const h = e.body.joints.head;
+    const t = combat.traceShot({ x: 0, y: 1.6, z: 0 }, { x: h.x, y: h.y, z: h.z });
+    expect(t.zone).toBe("head");
+  });
+});
+
 describe("CATHODE cover (S1.1)", () => {
   it("a solid crate in the way gives `blocked` and no hit", () => {
     const rays = new RayWorld([box([-0.6, 0, -6.6], [0.6, 1.1, -5.4])], { mats: ["wood"] });

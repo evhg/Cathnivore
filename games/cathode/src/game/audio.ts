@@ -214,7 +214,7 @@ export class Audio {
   }
 
   /** A pitched thump (a sine sweeping down). */
-  private thump(from: number, to: number, decay: number, gain: number, when = 0, type: OscillatorType = "sine", verb = 0): void {
+  private thump(from: number, to: number, decay: number, gain: number, when = 0, type: OscillatorType = "sine", verb = 0, pan = 0): void {
     const c = this.ctx;
     const t = c.currentTime + when;
     const o = c.createOscillator();
@@ -224,7 +224,11 @@ export class Audio {
     const g = c.createGain();
     g.gain.setValueAtTime(gain, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
-    o.connect(g).connect(this.sfx);
+    if (pan) {
+      const p = c.createStereoPanner();
+      p.pan.value = pan;
+      o.connect(g).connect(p).connect(this.sfx);
+    } else o.connect(g).connect(this.sfx);
     if (verb) {
       const v = c.createGain();
       v.gain.value = verb;
@@ -291,10 +295,13 @@ export class Audio {
     this.thump(160, 60, 0.1, g * 0.6);
   }
 
-  hitFlesh(heavy: boolean): void {
-    this.burst({ type: "lowpass", freq: 700, decay: 0.09, gain: heavy ? 0.6 : 0.35, noise: "brown" });
-    this.thump(110, 50, 0.08, heavy ? 0.5 : 0.25);
-    if (heavy) this.burst({ freq: 2600, q: 3, decay: 0.05, gain: 0.25, when: 0.01 }); // the crunch
+  hitFlesh(heavy: boolean, pan = 0, dist = 0): void {
+    // On the world bus, placed where the round landed: panned to its side and quieter with distance.
+    const near = 1 / (1 + Math.max(0, dist) / 18);
+    const pp = Math.max(-1, Math.min(1, pan));
+    this.burst({ type: "lowpass", freq: 700, decay: 0.09, gain: (heavy ? 0.6 : 0.35) * near, noise: "brown", pan: pp });
+    this.thump(110, 50, 0.08, (heavy ? 0.5 : 0.25) * near, 0, "sine", 0, pp);
+    if (heavy) this.burst({ freq: 2600, q: 3, decay: 0.05, gain: 0.25 * near, when: 0.01, pan: pp }); // the crunch
   }
 
   /** Old name for the confirm (kept for callers that pass the four old kinds). */
