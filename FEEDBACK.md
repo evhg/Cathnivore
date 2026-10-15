@@ -6,6 +6,18 @@ Sessions: handle every note under "Open". When a note is done (or turned into a 
 
 ## Open
 
+- 2026-10-15 (owner chat, after playing CATHODE on a 5K desktop): **"Focus on combat mechanics, look and feel, the weapons and enemy design, and make the visuals when getting hit, being wounded and dying very high quality. Spend at least a week on this. Work on it non-stop."** The owner's points:
+  - **Name:** doesn't like the name "CATHODE"; a new name is coming.
+  - **Front door:** still feels budget, especially the loading screen, the menus and the start screen. Take inspiration from real AAA game designs.
+  - **Takedown:** the first enemy is easy to take down but very unsatisfying.
+  - **First weapon:** easily missed; the owner didn't know there was an indicator. On a 5K screen the UI and indicators are too small.
+  - **Hits:** no feedback when shooting.
+  - **Cover:** "Can the enemy be hit if I can see it behind something?" Bullets do stop at cover (`rays.cast` against colliders), but nothing tells the player.
+  - **Enemies:** look very basic.
+  - **Pistol:** the design and the shooting animation are far from AAA.
+
+  This became ROADMAP Phase C, top priority for every session until it is done (at least a week). Spec: `docs/design/cathode-combat.md`. Keep this note open until Phase C is done.
+
 - 2026-10-11 (owner chat): **"I noticed fonts and css is especially rudimentary in your designs. Take it to the next level of AAA games."** This became ROADMAP Phase U (`docs/design/aaa-ui.md`): its own type and material identity per game, a shared foundation and 14 milestones. (Keep open until Phase U is done.)
 
 - 2026-10-09 (owner chat, answers to five questions): **New direction. It overrides older priorities and the screenshot-critique planning loop.**
