@@ -1663,7 +1663,7 @@ button {
   margin: -34px auto 0;
 }
 .duel .eyebrow {
-  color: var(--brass-lo);
+  color: var(--marks-ink);
   margin: 0;
 }
 .duel-title {
@@ -1674,7 +1674,7 @@ button {
 .duel-rounds {
   font-size: var(--fs-d3);
   letter-spacing: 6px;
-  color: var(--brass-lo);
+  color: var(--marks-ink);
 }
 .duel-bar {
   position: relative;
@@ -2194,7 +2194,7 @@ img.act-scene {
 }
 
 /* ROADMAP 139: locked stops read as locked (stronger label contrast, larger padlock); a locked act is dimmer but legible. */
-.node:disabled .level-name { color: #4a3f2e; opacity: 1; }
+.node:disabled .level-name { color: var(--ink-2); opacity: 1; }
 .node .level-stars.level-lock { font-size: var(--fs-body); opacity: 0.85; }
 .act-locked { filter: saturate(0.55); opacity: 0.88; }
 
