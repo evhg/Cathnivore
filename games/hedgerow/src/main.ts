@@ -3592,6 +3592,7 @@ ui.btnMenu.addEventListener("click", () => {
   pausedByMenu = !paused;
   paused = true;
   syncControls();
+  $<HTMLElement>("pause-cath").innerHTML = cath("smirk");
   ui.dlgPause.showModal();
 });
 ui.dlgPause.addEventListener("close", () => {

@@ -2661,3 +2661,27 @@ img.act-scene {
 .cath-sheet .xp-bar {
   background: var(--paper-2);
 }
+
+/* U13: pause card has Cath; she shrinks on short screens so Resume stays in view. */
+.pause-cath {
+  width: 88px;
+  height: 88px;
+}
+@media (max-height: 520px) {
+  .pause-cath {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 2px;
+  }
+  .pause-card .eyebrow {
+    display: none;
+  }
+  .pause-card h2 {
+    font-size: var(--fs-d2);
+    margin: 0 0 6px;
+  }
+  .pause-card .btn {
+    min-height: 40px;
+    padding-block: 6px;
+  }
+}
