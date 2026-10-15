@@ -283,8 +283,25 @@
 .hud-hit-dot { position: absolute; left: calc(var(--u) * -1.25); top: calc(var(--u) * -1.25); width: calc(var(--u) * 2.5); height: calc(var(--u) * 2.5); border-radius: 50%; background: var(--tc); box-shadow: 0 0 0 max(1px, var(--u)) var(--hit-outline); opacity: 0; }
 .hud-hit.c-head .hud-hit-dot,
 .hud-hit.c-headKill .hud-hit-dot { opacity: 1; }
-/* Armour: a small shield pip under the centre. */
-.hud-hit-pip { position: absolute; left: calc(var(--u) * -3); top: calc(var(--gap) + var(--len) + var(--u) * 4); width: calc(var(--u) * 6); height: calc(var(--u) * 7); background: var(--tc); clip-path: polygon(50% 0, 100% 18%, 100% 55%, 50% 100%, 0 55%, 0 18%); opacity: 0; }
+/* Armour: the ticks are split plates (square caps, a dark notch through the middle), so the class reads by
+   shape as well as by the steel colour; a shield pip sits under the centre (10u, never under 8 px). */
+.hud-hit.c-armour i,
+.hud-hit.c-armourBreak i {
+  border-radius: 0;
+  background: linear-gradient(to bottom, var(--tc) 0 40%, var(--hit-outline) 40% 60%, var(--tc) 60% 100%);
+}
+.hud-hit-pip {
+  --pw: max(8px, calc(var(--u) * 10));
+  position: absolute;
+  left: calc(var(--pw) / -2);
+  top: calc(var(--gap) + var(--len) + var(--u) * 5);
+  width: var(--pw);
+  height: calc(var(--pw) * 1.18);
+  background: var(--tc);
+  clip-path: polygon(50% 0, 100% 16%, 100% 55%, 50% 100%, 0 55%, 0 16%);
+  filter: drop-shadow(0 0 1px var(--hit-outline)) drop-shadow(0 0 3px var(--hit-outline));
+  opacity: 0;
+}
 .hud-hit.c-armour .hud-hit-pip,
 .hud-hit.c-armourBreak .hud-hit-pip { opacity: 1; }
 /* Armour break: a shatter ring from 10u to 26u. */
@@ -407,7 +424,21 @@
 /* A kill: the bar flashes white, collapses over 180 ms, and the whole thing fades out after (S1.2). */
 .hud-target.is-dead .hud-target-fill { background: var(--hit-body); transition: transform 180ms var(--ease-in, ease-in); }
 .hud-target.is-dead { animation: target-gone 580ms linear forwards; }
-.hud-target.is-dead .hud-target-name { color: var(--hit-crit); text-decoration: line-through; text-decoration-thickness: max(1px, calc(var(--u) * 2)); }
+/* The name fades back to muted ink and a red DOWN tag is stamped beside it: a kill state, not a strikethrough. */
+.hud-target.is-dead .hud-target-name { color: var(--ink-muted); text-shadow: var(--hud-shadow); }
+.hud-target.is-dead .hud-target-name::after {
+  content: "Down";
+  display: inline-block;
+  margin-left: .6em;
+  padding: .1em .45em .05em;
+  vertical-align: .08em;
+  font: 800 .82em/1.1 var(--font-ui);
+  letter-spacing: .18em;
+  color: #120708;
+  background: var(--hit-crit);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / .55), 0 0 calc(var(--u) * 10) rgb(var(--blood-rgb) / .55);
+  transform: skewX(-8deg);
+}
 @keyframes target-gone { 0%, 30% { opacity: 1; } 100% { opacity: 0; } }
 .hud-threats {
   position: absolute;
