@@ -1585,7 +1585,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const g = rifle[0] ?? enemies.find((e) => e.alive && !e.shield && e.kit.role !== "civilian" && e.kit.role !== "nurse" && e.kit.role !== "turret");
     if (!g) return "no enemy";
     // A guard 10 m down the crosshair, facing her, unaware.
-    const at = eye.clone().addScaledVector(flat, 10);
+    // A phone screen is small: the cover stages bring the crate and the guard in so his head over it reads.
+    const near = o.quality === "phone" && (name === "blocked" || name === "peek-head") ? 0.6 : 1;
+    const at = eye.clone().addScaledVector(flat, 10 * near);
     at.y = ground(at.x, at.z);
     g.motion.pos.copy(at);
     g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z);
@@ -1601,7 +1603,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Blocked: a steel crate 6 m out, chest high on him, so his head shows over it.
     const crated = name === "blocked" || name === "peek-head";
     if (crated && !stageCrate) {
-      const c = eye.clone().addScaledVector(flat, 6);
+      const c = eye.clone().addScaledVector(flat, 6 * near);
       c.y = ground(c.x, c.z);
       // A rusted market cargo crate in the street's own material, its collider the oriented box it is.
       const mat = world.material?.("rust") ?? new THREE.MeshStandardMaterial({ color: 0x5a4a40, metalness: 0.6, roughness: 0.6 });
