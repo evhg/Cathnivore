@@ -2702,3 +2702,11 @@ img.act-scene {
     padding-block: 6px;
   }
 }
+
+/* U13 evening theme: --soil turns light tan in the dark, so the map's tool buttons use oak to keep cream text readable. */
+@media (prefers-color-scheme: dark) {
+  .bank-btn:not(.cath-btn) {
+    background: var(--oak);
+    box-shadow: 0 3px 0 var(--oak-ink);
+  }
+}
