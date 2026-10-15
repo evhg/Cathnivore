@@ -151,7 +151,8 @@ for (const vp of vps) {
     writeFileSync(`${file}.json`, JSON.stringify(side, null, 1))
     console.log(vp, spec, cls, 'hp', side.hp, 'tick', side.tick && `${Math.round(side.tick.ow)}x${Math.round(side.tick.oh)}`, 'ring', side.ring && Math.round(side.ring.ow), 'calls', side.stats.drawCalls, 'refl', side.stats.reflCalls, 'combatMs', side.stats.combatMs?.toFixed(2), 'particles', side.stats.particles)
     // ---- C1 acceptance ----
-    if (stage.startsWith('hit-') && vp === '5k') {
+    // Sizes and presence while the marker holds (a later frame, like hit-kill@650, has rightly faded it).
+    if (stage.startsWith('hit-') && vp === '5k' && t < 400) {
       if (!(side.tick && side.tick.ow >= 6 && side.tick.oh >= 26)) fail(`${vp} ${stage}: tick ${side.tick?.ow}x${side.tick?.oh} < 6x26 physical`)
       if (side.hit.opacity < 0.5) fail(`${vp} ${stage}: marker not showing`)
     }
