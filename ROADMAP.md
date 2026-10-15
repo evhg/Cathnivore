@@ -26,7 +26,7 @@ These two phases come before every older unfinished item below. About 70% of ses
 - U10. [x] **M10 Hedgerow map, story and end screen** *(2026-10-13: Start here tag in flow, story card fits at L, stars stamp (static under reduced motion), win/loss shots at P/L/D via `scripts/hedgerow-end-shots.mjs`; on `build`, unreleased)*
 - U11. [~] **M11 Cathnivore setup, title, campaign, settings and motion** *(2026-10-14: wax-seal chapter nodes, stitched trail, larger current chapter, legible locked titles, icon keys on title; on `build`; View Transitions and Cath cameo travel left)*
 - U12. [x] **M12 CATHODE rewards and world screens** *(2026-10-14: four-beat level-up (slam + flash + shake, 10 shards, number, points tally) with a low hit and shard sweep, phone no longer clips Cath, reduced motion keeps band and number; on `build`; kill-cam range caption added (not shot-checked in game); loot sheen on pickup lines; district map and loading restyled 2026-10-14; boss intro name slam added)*
-- U13. [ ] **M13 Remaining screens across the portfolio**
+- U13. [x] **M13 Remaining screens across the portfolio** *(2026-10-15: landing cards/footer/after-dark, Runnel sheets, Hedgerow Almanac/Cath sheet/Seed Bank/duel/pause/replay bar/end screens, all checked at P/L/D and in the evening theme)*
 - U14. [ ] **M14 Portfolio polish audit**
 
 **Phase D: CATHODE districts.** Each district is a separate place, loaded on its own and reached by water taxi or the map. It gets its own geometry, materials, lighting, fog colour, music variant, one new enemy type and a boss arena, and the act's story jobs and boss move into it. Build each item in slices and release once at the end.

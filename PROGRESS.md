@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-15 08:51 session:** U13 finished and ticked: landing after-dark shot checked, Hedgerow replay bar and Kit cards moved onto tokens (kit cards were white in the evening theme), end screens and sheets checked dark (`SCHEME=dark` on the sheets/end shot scripts). Next: U14 audit, then release. Don't `pkill -f` in this shell (it kills the shell).
 - **2026-10-15 07:52 session (short):** U13: Hedgerow duel card on tokens with Cath (`hedgerow-duel-shots.mjs`); evening (dark) theme fixes: locked level names and map tool buttons now readable (`hedgerow-dark-shots.mjs`, P/D checked). tsc, lint pass. Unreleased. Left for U13: replay bar, Hedgerow dark check of other sheets, landing after-dark; then U14.
 - **2026-10-15 06:52 session (short):** U13: Hedgerow pause card has Cath (smirk) and fits at landscape (shots P/L checked via `scripts/hedgerow-pause-shots.mjs`). tsc, lint pass. Unreleased. Left for U13: after-dark, duel, evening theme.
 - **2026-10-15 05:52 session (short):** U13: Hedgerow Cath sheet no longer clips Cath's portrait (scroll reset on open, ring margin), XP track is paper not black, pinned buttons on a fade; Seed Bank shot checked at P (fine). `scripts/hedgerow-sheets-shots.mjs` added. tsc, lint, CSS ratchet pass. Unreleased. Left for U13: after-dark, duel, pause, evening theme.
