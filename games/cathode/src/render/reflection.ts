@@ -20,10 +20,13 @@ export class PlanarReflection {
   private readonly look = new THREE.Vector3();
   private readonly rot = new THREE.Matrix4();
   private readonly normal = new THREE.Vector3(0, 1, 0);
+  private readonly hidden: THREE.Object3D[] = [];
 
   constructor(
     private readonly height: number,
     private scale: number,
+    /** Phone budget (S0): meshes whose bounding sphere covers less than this (radius / distance) are left out. */
+    private readonly cull = 0,
   ) {
     this.target = new THREE.WebGLRenderTarget(4, 4, {
       type: THREE.HalfFloatType,
@@ -74,16 +77,52 @@ export class PlanarReflection {
     cam.projectionMatrixInverse.copy(cam.projectionMatrix).invert();
 
     const prevTarget = renderer.getRenderTarget();
+    // Shadow maps refresh in the main pass, never here: the mirror leaves small meshes out (below), and a
+    // shadow map drawn without them would lose their shadows for the frame.
     const prevShadow = renderer.shadowMap.autoUpdate;
+    const prevNeeds = renderer.shadowMap.needsUpdate;
     renderer.shadowMap.autoUpdate = false;
+    renderer.shadowMap.needsUpdate = false;
     renderer.setRenderTarget(this.target);
     renderer.clear();
+    // The mirror is rippled and blurred: small things far off (limbs, bolts, bottles) are invisible in it but
+    // cost a draw call each. Hide them for this pass only.
+    const hidden = this.hidden;
+    if (this.cull > 0) hideSmall(scene, this.t.setFromMatrixPosition(camera.matrixWorld), this.cull, hidden);
     renderer.render(scene, cam);
+    showAll(hidden);
     renderer.setRenderTarget(prevTarget);
     renderer.shadowMap.autoUpdate = prevShadow;
+    renderer.shadowMap.needsUpdate = prevNeeds;
   }
 
   dispose(): void {
     this.target.dispose();
   }
+}
+
+const cullCentre = new THREE.Vector3();
+/**
+ * Hides (and lists in `out`) every visible layer-0 mesh whose bounding sphere spans less than `k` radians from
+ * `eye` (radius over distance). Instanced meshes are aggregates and always stay. Undo with showAll(out).
+ */
+export function hideSmall(scene: THREE.Object3D, eye: THREE.Vector3, k: number, out: THREE.Object3D[]): void {
+  const k2 = k * k;
+  scene.traverseVisible((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || (m as THREE.InstancedMesh).isInstancedMesh || !m.layers.isEnabled(0)) return;
+    const g = m.geometry;
+    if (!g.boundingSphere) g.computeBoundingSphere();
+    const bs = g.boundingSphere!;
+    const r = bs.radius * m.matrixWorld.getMaxScaleOnAxis();
+    if (r * r < k2 * cullCentre.copy(bs.center).applyMatrix4(m.matrixWorld).distanceToSquared(eye)) {
+      m.visible = false;
+      out.push(m);
+    }
+  });
+}
+
+export function showAll(list: THREE.Object3D[]): void {
+  for (const m of list) m.visible = true;
+  list.length = 0;
 }

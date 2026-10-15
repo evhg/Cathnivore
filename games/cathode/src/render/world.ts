@@ -18,7 +18,7 @@ import { addCrowd } from "./crowd";
 import { bakeVolume, LightPool, hash1 } from "./lighting";
 import { buildSigns } from "./signs";
 import { buildAtmosphere, type AtmoUniforms } from "./atmosphere";
-import { PlanarReflection, LAYER_NO_REFLECT } from "./reflection";
+import { PlanarReflection, LAYER_NO_REFLECT, hideSmall, showAll } from "./reflection";
 import { createFx } from "./fx";
 import { createPost } from "./post";
 
@@ -27,6 +27,10 @@ interface Preset {
   shadow: number;
   softShadow: boolean;
   reflScale: number;
+  /** The mirror skips meshes smaller than this on screen (bounding radius over distance): 0 keeps all. */
+  reflCull: number;
+  /** The main pass skips meshes under this on screen (about two pixels on a phone): 0 keeps all. */
+  mainCull: number;
   rain: number;
   splashes: number;
   drips: number;
@@ -36,9 +40,9 @@ interface Preset {
 }
 
 const PRESETS: Record<Quality, Preset> = {
-  phone: { pool: 12, shadow: 1024, softShadow: false, reflScale: 0.5, rain: 5000, splashes: 450, drips: 160, steam: 10, skyline: 90, shadowEvery: 2 },
-  high: { pool: 32, shadow: 2048, softShadow: true, reflScale: 1, rain: 14000, splashes: 1300, drips: 420, steam: 18, skyline: 150, shadowEvery: 1 },
-  ultra: { pool: 44, shadow: 4096, softShadow: true, reflScale: 1, rain: 22000, splashes: 2200, drips: 700, steam: 24, skyline: 200, shadowEvery: 1 },
+  phone: { pool: 12, shadow: 1024, softShadow: false, reflScale: 0.5, reflCull: 0.045, mainCull: 0.006, rain: 5000, splashes: 450, drips: 160, steam: 10, skyline: 90, shadowEvery: 2 },
+  high: { pool: 32, shadow: 2048, softShadow: true, reflScale: 1, reflCull: 0.012, mainCull: 0, rain: 14000, splashes: 1300, drips: 420, steam: 18, skyline: 150, shadowEvery: 1 },
+  ultra: { pool: 44, shadow: 4096, softShadow: true, reflScale: 1, reflCull: 0, mainCull: 0, rain: 22000, splashes: 2200, drips: 700, steam: 24, skyline: 200, shadowEvery: 1 },
 };
 
 /** Fog: a cold blue-grey haze, linear RGB. */
@@ -177,7 +181,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const fxs = createFx({ scene, shared, intensity: options.intensity, quality, colliders, surfaces, groundHeight: level.groundHeight, volume, emit });
 
   // ------------------------------------------------------------ reflection and post
-  const reflection = new PlanarReflection(0, P.reflScale);
+  const mainHidden: THREE.Object3D[] = [];
+  const camEye = new THREE.Vector3();
+  const reflection = new PlanarReflection(0, P.reflScale, P.reflCull);
   shared.uRefl.value = reflection.target.texture;
   shared.uReflMatrix.value = reflection.matrix;
   const post = createPost(renderer, scene, camera, viewScene, viewCamera, quality);
@@ -334,12 +340,14 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       if (shadowing) renderer.shadowMap.needsUpdate = true;
       camera.updateMatrixWorld();
       reflection.render(renderer, scene, camera);
-      // The mirror renders first and owns every call so far (plus the shadow maps on a frame that redraws them).
+      // The mirror renders first and owns every call so far (the shadow maps redraw in the main pass).
       perf.reflCalls = renderer.info.render.calls;
       perf.shadowed = shadowing;
       post.grade.uniforms.uDrama!.value = drama;
       post.grade.uniforms.uFlash!.value = flash * 0.25;
+      if (P.mainCull > 0) hideSmall(scene, camEye.setFromMatrixPosition(camera.matrixWorld), P.mainCull, mainHidden);
       post.render(clock);
+      showAll(mainHidden);
       perf.renderMs = performance.now() - t0;
       perf.drawCalls = renderer.info.render.calls;
       perf.triangles = renderer.info.render.triangles;
