@@ -100,8 +100,9 @@ export const tuning = {
    * S4.1 the flash: white for one frame, then red fading out. Emissive radiance on the hit segment.
    * `death` (C2): the whole body's rim on a kill. Kept dim and nearly pure red: the AgX tone map turns any
    * bright red to salmon (1.1 radiance maps to about rgb 216,118,103; 0.45 keeps a red 176,85,78 rim over a deep 105,38,35 face).
+   * 0.32 since the glow takes its fog back off (C2 fix): unfogged, 0.45 lit the whole corpse salmon at 5K.
    */
-  hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6, death: { level: 0.45, holdMs: 500, fadeMs: 1400, red: [1, 0.02, 0.01] as const } },
+  hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6, death: { level: 0.32, holdMs: 500, fadeMs: 1400, red: [1, 0.02, 0.01] as const } },
   /** S0 timescale: nothing but death holds longer than this (ms). */
   timescale: { maxHoldMs: 3000 },
 } as const;

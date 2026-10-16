@@ -52,7 +52,12 @@ export const GORE = {
   // Overstated past S4.5's 4 to 8 at 1 to 2.5 m/s: at that speed the spurt is still inside the hit marker 40 ms
   // on, so the frame that confirms the hit showed no droplets at all (C2 review). These fly clear of the X as
   // stretched streaks, then fall.
-  spurt: { count: [7, 11] as const, speed: [3, 5.5] as const, coneDeg: 70, lift: 1.4 },
+  // Fanned across the view (a spurt straight at the camera barely moves on screen), with a pull back toward her.
+  spurt: { count: [7, 11] as const, speed: [5, 9] as const, coneDeg: 70, lift: 1.9, back: 0.6 },
+  /** The wound keeps bleeding where it was hit: slow, heavy drops that hang at the hole and fall (the fast spurt has gone by 160 ms). */
+  ooze: { count: [5, 7] as const, speed: [0.3, 1] as const, size: [0.03, 0.05] as const },
+  /** Air drag on droplets (1/s): a fast spurt bursts out, then slows and falls, instead of flying on as long laser-straight streaks. */
+  dropDrag: 5,
   exit: { pistol: 15, rifle: 22, smg: 18, shotgun: 6, sniper: 40, melee: 8, launcher: 30, coneDeg: 35, wallRays: 24, speed: [2, 6] as const, size: [0.015, 0.04] as const, color: "#5C0707" },
   /** A plume of mist thrown out across the view: the cloud blooms past the hit marker's gap (pillar 4). */
   plume: { count: [4, 6] as const, speed: [1.6, 3.2] as const, size: [0.16, 0.3] as const, grow: 1.9, lifeMs: 520, alpha: 0.7 },
@@ -64,7 +69,7 @@ export const GORE = {
   /** How hard the emissive lift pushes (see tinted()). 7 lifted the core to bloom-pink (C2 review): 4 keeps it crimson. */
   liftGain: 4,
   /** A head hit's main mist sits this far behind the hit, along the round, so the head's silhouette stays in front. */
-  headBackM: 0.14,
+  headBackM: 0.1,
   splat: { rayM: 3, size: [0.3, 0.8] as const, wetInMs: 120, farFromM: 7, farMulMax: 1.6, phoneMul: 1.4 },
   wound: { size: 0.11, runLen: 0.16, runMs: 2000, perBody: 8 },
   caps: { phone: { mist: 48, drops: 260, wounds: 48 }, desktop: { mist: 128, drops: 900, wounds: 160 } },
@@ -321,7 +326,7 @@ void main() {
   // Blood is the readout that matters most (pillar 4): push its red past the grade's midtone drain, and let the
   // street fog take only part of it, so a hit at 10 m in rain still reads crimson rather than haze.
   float l = dot( col, vec3( 0.299, 0.587, 0.114 ) );
-  col = max( vec3( 0.0 ), mix( vec3( l ), col, 1.35 ) );
+  col = max( vec3( 0.0 ), mix( vec3( l ), col, 1.6 ) );
   gl_FragColor = vec4( col, a * vCol.a );
   #ifdef USE_FOG
     #ifdef FOG_EXP2
@@ -375,6 +380,8 @@ export function createGore(o: GoreDeps): Gore {
   };
   const tmp = new THREE.Vector3();
   const tmp2 = new THREE.Vector3();
+  const tmp3 = new THREE.Vector3();
+  const backV = new THREE.Vector3();
   const UP = new THREE.Vector3(0, 1, 0);
   const lit = new THREE.Color();
   const PUFF = new THREE.Color(GORE.puff.color);
@@ -542,7 +549,8 @@ export function createGore(o: GoreDeps): Gore {
 
   const hit = (h: FleshHit) => {
     const d = h.dir;
-    const back = tmp.copy(d).negate();
+    // Its own scratch: tmp is reused for jitter below (sharing it bent every puff after the first off at random).
+    const back = backV.copy(d).negate();
     const ix = anchorOf(h.anchor);
     // A phone shows a guard at 10 m about 20 points tall: the puff is overstated there so it still reads (pillar 4).
     const sz = puffSize(h.damage, h.maxHp, h.distance, rand()) * (o.quality === "phone" ? GORE.puff.phoneMul : 1) * (h.head ? GORE.puff.headMul : 1) * (h.lethal ? (h.head ? GORE.puff.headKillMul : GORE.puff.killMul) : 1);
@@ -564,7 +572,8 @@ export function createGore(o: GoreDeps): Gore {
         .add(tmp.set(rand() - 0.5, rand() - 0.5, rand() - 0.5).multiplyScalar(0.08));
       const c = tinted(at, PUFF, P.lift, new THREE.Color());
       const size = sz * (k === 0 ? 1 : 0.6 + rand() * 0.3) * (h.head && !behind ? 0.6 : 1);
-      puff(at, size, c, h.head && !behind ? P.alpha * 0.6 : P.alpha, (P.growMs + P.fadeMs) / 1000, ix);
+      // The cloud behind a head hangs on longer (x1.6): it is the headshot's read once the flinch has passed.
+      puff(at, size, c, h.head && !behind ? P.alpha * 0.6 : P.alpha, ((P.growMs + P.fadeMs) / 1000) * (behind ? 1.6 : 1), ix);
     }
     // 1b. The plume: mist thrown out across the view (up and to the sides, a little along the round), so the
     // cloud blooms well past the marker's gap and reads as a burst, not a smudge behind the crosshair.
@@ -601,9 +610,21 @@ export function createGore(o: GoreDeps): Gore {
     const v = new THREE.Vector3();
     const backDir = d.clone().negate();
     for (let k = 0; k < nSp; k++) {
-      cone(backDir, S.coneDeg, v).multiplyScalar(S.speed[0] + rand() * (S.speed[1] - S.speed[0]));
-      v.y += 0.6;
+      const ang = ((k + rand() * 0.7) / nSp) * Math.PI * 2;
+      v.set(0, 0, 0)
+        .addScaledVector(side, Math.cos(ang))
+        .addScaledVector(UP, Math.sin(ang) * 0.8 + 0.3)
+        .add(cone(backDir, S.coneDeg, tmp3).multiplyScalar(S.back))
+        .normalize()
+        .multiplyScalar(S.speed[0] + rand() * (S.speed[1] - S.speed[0]));
       drop(h.point, v, (0.012 + rand() * 0.014) * dScale, spurtRed, ix, 1);
+    }
+    // 2b. The ooze: heavy drops that leave the hole slowly, so the wound still reads red after the spurt has gone.
+    const O = GORE.ooze;
+    const nOo = O.count[0] + Math.floor(rand() * (O.count[1] - O.count[0] + 1));
+    for (let k = 0; k < nOo; k++) {
+      cone(backDir, 80, v).multiplyScalar(O.speed[0] + rand() * (O.speed[1] - O.speed[0]));
+      drop(h.point, v, (O.size[0] + rand() * (O.size[1] - O.size[0])) * dScale, spurtRed, ix, 2);
     }
     // 3. The exit spray along the round, with gravity; a decal where each lands.
     const E = GORE.exit;
@@ -688,7 +709,10 @@ export function createGore(o: GoreDeps): Gore {
           continue;
         }
         if (pool.grav[i]) {
-          pool.vel[i * 3 + 1]! -= 9.8 * dt;
+          const dk = Math.max(0, 1 - GORE.dropDrag * dt);
+          pool.vel[i * 3]! *= dk;
+          pool.vel[i * 3 + 1]! = pool.vel[i * 3 + 1]! * dk - 9.8 * dt;
+          pool.vel[i * 3 + 2]! *= dk;
           const x = (pool.pos[i * 3]! += pool.vel[i * 3]! * dt);
           const y = (pool.pos[i * 3 + 1]! += pool.vel[i * 3 + 1]! * dt);
           const z = (pool.pos[i * 3 + 2]! += pool.vel[i * 3 + 2]! * dt);

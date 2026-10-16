@@ -751,9 +751,10 @@ export class Enemy {
     const d = toBody(dir, inv);
     const rel = toBody(new THREE.Vector3().subVectors(point, this.motion.pos), inv);
     const scale = flinchScale(damage, this.kit.maxHp, this.poise);
-    // Which side of the body it struck: off the segment's line (a dead-centre hit goes to the hit's side of
-    // the body's centre line, seeded by the point so a frozen stage is stable).
-    const side = Math.abs(rel.x) > 0.01 ? rel.x : Math.sin(point.x * 91.7 + point.z * 37.1) >= 0 ? 1 : -1;
+    // Which side of the body it struck: off the centre line by more than 4 cm, that side; a dead-centre hit goes
+    // with the round's own sideways travel (from her right, it pushes left). Idle sway and a hash of the point
+    // flipped it from run to run, so the same staged chest shot moved the head 2.6 or 9.2 px (C2 review).
+    const side = Math.abs(rel.x) > 0.04 ? rel.x : d.x <= 0 ? 1 : -1;
     this.flinch.hit(zone, flinchImpulse(zone, d, side, scale, weaponCls, distance), d, side);
   }
 
