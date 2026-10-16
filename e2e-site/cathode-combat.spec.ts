@@ -35,6 +35,40 @@ test.describe('CATHODE combat feedback', () => {
     await expect(page.locator('.hud-hit.c-head')).toHaveCount(1)
   })
 
+  test('hitFlesh plays only for her rounds landing on an enemy, never when Cath is hit (S1.3 spy)', async ({ page, hasTouch }) => {
+    test.skip(hasTouch, 'one layout is enough: the sound routing is the same')
+    test.setTimeout(300_000)
+    await boot(page)
+    // Wrap the live session's audio: count every hitFlesh and hurt, then call through.
+    const spied = await page.evaluate(() => {
+      const c = (window as unknown as { cathode: { audio?: Record<string, (...a: unknown[]) => unknown> | null } }).cathode
+      const a = c.audio
+      if (!a) return false
+      const w = window as unknown as { spy: { hitFlesh: number; hurt: number } }
+      w.spy = { hitFlesh: 0, hurt: 0 }
+      for (const k of ['hitFlesh', 'hurt'] as const) {
+        const f = a[k]!.bind(a)
+        a[k] = (...args: unknown[]) => {
+          w.spy[k]++
+          return f(...args)
+        }
+      }
+      return true
+    })
+    expect(spied).toBe(true)
+    const spy = () => page.evaluate(() => (window as unknown as { spy: { hitFlesh: number; hurt: number } }).spy)
+    // Her round lands on a guard: one wet thud (the spy works).
+    expect(await page.evaluate(() => (window as unknown as Win).cathode!.stage!('hit-body', 40))).toBe('body')
+    expect((await spy()).hitFlesh).toBe(1)
+    // Cath is shot, then struck in melee: her hurt sound each time, and no hitFlesh.
+    await page.evaluate(() => {
+      const c = (window as unknown as { cathode: { cathHurt: (b: number, m: boolean) => void } }).cathode
+      c.cathHurt(0.5, false)
+      c.cathHurt(-1, true)
+    })
+    expect(await spy()).toEqual({ hitFlesh: 1, hurt: 2 })
+  })
+
   test('a kill rings the marker and clears the target bar', async ({ page, hasTouch }) => {
     // One phone run (the cover test) is enough: under SwiftShader each costs about a minute.
     test.skip(hasTouch, 'the phone layout is covered by the cover test above')

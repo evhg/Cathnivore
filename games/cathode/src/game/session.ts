@@ -120,6 +120,9 @@ export interface Session {
   } | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
   probeRed?: (x: number, y: number, r: number) => { red: number; total: number; mean: number[] };
+  /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
+  audio?: Audio | null;
+  cathHurt?: (bearing: number, melee: boolean) => void;
   /** Debug: what a round from `from` to `to` would do with the gun in hand. */
   traceShot?: (from: { x: number; y: number; z: number }, to: { x: number; y: number; z: number }) => ReturnType<Combat["traceShot"]>;
 }
@@ -809,6 +812,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     trauma.add(tuning.kill.trauma);
     rumble("kill");
   }
+  /**
+   * Cath takes a hit (S1.3): the hurt arc from where it came and her own hurt sound. Never hitFlesh, which is
+   * the sound of her rounds landing on an enemy; the e2e spy (cathode-combat.spec.ts) holds this.
+   */
+  function cathHurt(bearing: number, melee: boolean): void {
+    hud.hurtFrom(bearing);
+    audio?.hurt(melee);
+  }
+  s.cathHurt = cathHurt;
+  s.audio = audio;
   function rumble(kind: keyof typeof tuning.rumble): void {
     const r = tuning.rumble[kind];
     const pad = input.padActive ? navigator.getGamepads?.().find((g) => g && g.connected) : null;
@@ -1096,8 +1109,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         s.hp = Math.max(0, s.hp - actives.absorb(LASER_DAMAGE * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)));
         sinceHurt = 0;
         laserCool = LASER_COOLDOWN;
-        hud.hurtFrom(0);
-        audio?.hurt(false);
+        cathHurt(0, false);
       }
     }
     laserCool -= dt;
@@ -1144,10 +1156,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         } else if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
           s.hp = Math.max(0, s.hp - actives.absorb(e.kit.damage * run.guard * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)));
           sinceHurt = 0;
-          hud.hurtFrom(bearingTo(sh.from));
+          cathHurt(bearingTo(sh.from), !!sh.melee);
           if (e.kit.drain) s.focus = Math.max(0, s.focus - e.kit.drain);
           if (!sh.melee) world.fx.tracer(sh.from, sight.chest);
-          audio?.hurt(!!sh.melee);
         } else if (hitWorld) {
           world.fx.impact(hitWorld.point, hitWorld.normal, world.surfaceAt(hitWorld.point));
           world.fx.tracer(sh.from, hitWorld.point);

@@ -80,6 +80,8 @@ test.describe('landing page', () => {
   })
 
   test('has no serious or critical accessibility issues', async ({ browser }) => {
+    // An axe scan of the full landing page can pass 30 s when gate 5 runs alongside the other suites.
+    test.setTimeout(90_000)
     // The title/cards fade in via a CSS entrance animation (`.reveal`, styles.css) that starts several
     // hundred ms after load and runs for ~1.1s per card. Scanning mid-animation catches a transient,
     // partial-opacity frame whose blended colours can read as low contrast even though the steady state

@@ -135,6 +135,8 @@ describe("CATHODE gore (S4.5)", () => {
   });
 });
 
+// The live spy (the real session's audio wrapped, her round on a guard and Cath's hurt path driven) is in
+// e2e-site/cathode-combat.spec.ts; this checks the routing at the source.
 describe("CATHODE: Cath never plays hitFlesh (S1.3)", () => {
   it("hitFlesh is called only for enemy hits off the combat bus; Cath's damage plays Audio.hurt", () => {
     const src = readFileSync("games/cathode/src/game/session.ts", "utf8");
