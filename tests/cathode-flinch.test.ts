@@ -24,7 +24,8 @@ describe("CATHODE hit flinch (S4.1)", () => {
 
   it("asks each zone for the table's impulse", () => {
     const head = flinchImpulse("head", front, 1, 1);
-    expect(head.headTip).toBeCloseTo(22 * DEG);
+    expect(head.headTip).toBeCloseTo(tuning.flinch.zones.head.pitchDeg * DEG);
+    expect(tuning.flinch.zones.head.pitchDeg).toBeGreaterThanOrEqual(22);
     expect(Math.abs(head.headYaw)).toBeCloseTo(10 * DEG);
     expect(Math.hypot(head.rootX, head.rootZ)).toBeCloseTo(0.1);
     const torso = flinchImpulse("torso", front, 1, 1);
@@ -133,6 +134,17 @@ describe("CATHODE hit flash (S4.1)", () => {
     expect(flashLevel(26)).toBeGreaterThan(0.5);
     expect(flashLevel(100)).toBeLessThan(flashLevel(50));
     expect(flashLevel(tuning.hitFlash.whiteMs + tuning.hitFlash.fadeMs + 1)).toBe(0);
+  });
+
+  it("a kill makes the whole body glow red past the flash, then die away (C2: the kill shows on the body)", () => {
+    const b = new Body(enforcerLook());
+    b.flash("chest");
+    b.deathGlow();
+    b.updateFlash(650);
+    const D = tuning.hitFlash.death;
+    for (const seg of ["head", "chest", "thighL"]) expect(b.flashOf(seg)).toBeGreaterThan(D.level * 0.3);
+    b.updateFlash(D.holdMs + D.fadeMs);
+    expect(b.flashOf("head")).toBe(0);
   });
 
   it("lights only the hit segment, through one shared uniform with no material clones", () => {

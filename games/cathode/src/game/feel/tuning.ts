@@ -39,7 +39,9 @@ export const tuning = {
    */
   marker: {
     body: { len: 16, thick: 3.6, gap: 10, pop: 1.25, popMs: 60, holdMs: 80, fadeMs: 140 },
-    head: { len: 20.8, thick: 4, gap: 10, pop: 1.35, popMs: 60, holdMs: 90, fadeMs: 160 },
+    // The head gap is opened to 16u (about 0.22 m at 10 m, since --u and the projection both scale with the
+    // screen height) so the X frames the head instead of covering the flinch, flash and puff it confirms.
+    head: { len: 20.8, thick: 4, gap: 16, pop: 1.35, popMs: 60, holdMs: 90, fadeMs: 160 },
     armour: { len: 16, thick: 3.6, gap: 10, pop: 1.15, popMs: 60, holdMs: 80, fadeMs: 120 },
     armourBreak: { len: 16, thick: 3.6, gap: 10, pop: 1.3, popMs: 60, holdMs: 90, fadeMs: 200 },
     pen: { len: 16, thick: 3.6, gap: 10, pop: 1.2, popMs: 60, holdMs: 60, fadeMs: 120 },
@@ -77,7 +79,8 @@ export const tuning = {
     maxDeg: 45,
     maxRootM: 0.6,
     zones: {
-      head: { pitchDeg: 22, yawDeg: 10, pushM: 0.1 },
+      // 28 deg, past the spec's 22: at 1440x900 the 22 deg tip moved the head 6.6 px at 60 ms, under the 8 px bar (pillar 4: overstate).
+      head: { pitchDeg: 28, yawDeg: 10, pushM: 0.1 },
       torso: { pitchDeg: 6, twistDeg: 12, shrugDeg: 8, pushM: 0.15 },
       arm: { swingDeg: 28, muzzleDropDeg: 15, muzzleDropMs: 300, twistDeg: 5, pushM: 0.05 },
       leg: { kneeDeg: 18, pelvisDropM: 0.06, tipDeg: 4, pushM: 0.1 },
@@ -92,7 +95,7 @@ export const tuning = {
     lateral: { head: 0.95, chain: 0.45, root: 0.5, headTorso: 0.35 },
   },
   /** S4.1 the flash: white for one frame, then red fading out. Emissive radiance on the hit segment. */
-  hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6 },
+  hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6, death: { level: 1.1, holdMs: 500, fadeMs: 1400, red: [1, 0.05, 0.03] as const } },
   /** S0 timescale: nothing but death holds longer than this (ms). */
   timescale: { maxHoldMs: 3000 },
 } as const;

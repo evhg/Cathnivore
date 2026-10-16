@@ -389,7 +389,9 @@ export class Hud {
    */
   targetHit(name: string, frac: number, lethal = false): void {
     this.text(this.target.firstElementChild as HTMLElement, name);
-    this.targetFill.style.setProperty("--v", String(lethal ? 0 : Math.max(0, Math.min(1, frac))));
+    // A living target never reads empty: a hair of health left shows as a visible sliver (6%), so an empty bar
+    // always means a kill.
+    this.targetFill.style.setProperty("--v", String(lethal ? 0 : Math.max(frac > 0 ? 0.06 : 0, Math.min(1, frac))));
     if (lethal) {
       this.targetT = Math.max(this.targetT, 1);
       this.targetDead = (tuning.targetBar.collapseMs + tuning.targetBar.hideAfterMs) / 1000;
