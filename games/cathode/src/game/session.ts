@@ -109,7 +109,15 @@ export interface Session {
    * What the last stage did, in CSS px (C2 acceptance): where the round landed on screen, how many px 0.2 m
    * spans there, and the guard's head on screen at the shot and at the stage's moment.
    */
-  stageInfo?: { hit: { x: number; y: number }; r02: number; head0: { x: number; y: number }; head1: { x: number; y: number }; puffM: number } | null;
+  stageInfo?: {
+    hit: { x: number; y: number };
+    r02: number;
+    head0: { x: number; y: number };
+    head1: { x: number; y: number };
+    puffM: number;
+    splats: { x: number; y: number; r: number }[];
+    corpse: { pelvis: { x: number; y: number }; head: { x: number; y: number }; chest: { x: number; y: number } };
+  } | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
   probeRed?: (x: number, y: number, r: number) => { red: number; total: number; mean: number[] };
   /** Debug: what a round from `from` to `to` would do with the gun in hand. */
@@ -1503,20 +1511,29 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   combat.bus.on("fire", () => rumble("fire"));
   // The last enemy of the encounter (S1.4, S1.5): the world holds 120 ms, then runs at 0.35x for 700 ms and
   // ramps back over 250 ms, with the grade deepening while it lasts. Not during the kill-cam (it has its own).
+  // The bus fires "kill" inside combat.fire(), before the shot's kill-cam starts, so the slow motion waits for
+  // drainEvents (same frame, after killcam.start) to see whether a kill-cam took the moment. The kill's trauma
+  // and rumble come from killConfirm on the lethal hit; this adds only the slow motion.
+  let lastKillPending = false;
   combat.bus.on("kill", (k) => {
-    if (!k.last || killcam.active) return;
-    const L = tuning.lastEnemySlowmo;
-    timescale.hitStop(tuning.hitStop.lastEnemy);
-    timescale.push("lastEnemy", L.scale, tuning.hitStop.lastEnemy + L.holdMs, 0, L.rampOutMs, "focus");
-    trauma.add(tuning.kill.trauma);
-    rumble("kill");
-    combat.bus.emit("encounterCleared", { t: combat.clock });
+    if (k.last) lastKillPending = true;
   });
+  const lastEnemySlowmo = () => {
+    if (!lastKillPending) return;
+    lastKillPending = false;
+    if (!killcam.active) {
+      const L = tuning.lastEnemySlowmo;
+      timescale.hitStop(tuning.hitStop.lastEnemy);
+      timescale.push("lastEnemy", L.scale, tuning.hitStop.lastEnemy + L.holdMs, 0, L.rampOutMs, "focus");
+    }
+    combat.bus.emit("encounterCleared", { t: combat.clock });
+  };
   const byUid = (uid: string) => enemies.find((e) => String(e.id) === uid);
   const camRight = new THREE.Vector3();
   const camPos = new THREE.Vector3();
   const toHit = new THREE.Vector3();
   function drainEvents(): void {
+    lastEnemySlowmo();
     for (const k of combat.kills) {
       onKill(k);
       if (k.severed.length) audio?.sever();
@@ -1716,7 +1733,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     // Classes the street can't produce on cue yet (no plates until C15): show them over the real hit.
     const r02 = Math.abs(toScreen(hitAt.clone().addScaledVector(new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0), 0.2)).x - toScreen(hitAt).x);
-    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0 };
+    // The wall splats, on screen: centre and radius (CSS px), for the wall-splat probe.
+    const camX = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0);
+    const splats = (world.fx.gore?.splats ?? []).map((sp) => {
+      const c = toScreen(sp.point);
+      return { x: c.x, y: c.y, r: Math.abs(toScreen(sp.point.clone().addScaledVector(camX, sp.size / 2)).x - c.x) };
+    });
+    // Where the body is now (the kill stage looks for the corpse): pelvis and head on screen.
+    const corpse = { pelvis: toScreen(g.body.joints.pelvis), head: toScreen(g.body.joints.head), chest: toScreen(g.body.joints.chest) };
+    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse };
     if (name === "hit-soft") hud.hitMarker("armour");
     if (name === "hit-pen") hud.hitMarker("pen");
     if (name === "hit-armourbreak") hud.hitMarker("armourBreak");
