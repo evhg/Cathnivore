@@ -1287,6 +1287,14 @@
   .hud-target { top: 36%; width: min(calc(var(--u) * 420), 36vw); }
   .hud-objective { max-width: 36ch; }
   .hud-hp { height: 6px; }
+  /* The tutorial card sits under the vitals, clear of the arms and the feed stacked top right. */
+  .hud-teach {
+    left: max(10px, var(--safe-l));
+    top: 43%;
+    transform: none;
+    max-width: min(36vw, 300px);
+    text-align: left;
+  }
   /* A short landscape phone has no free full-width row: the banner sits low in the gap between the stick
      and the action buttons, under the corner clusters and over the subtitle line. */
   .hud-banner,
