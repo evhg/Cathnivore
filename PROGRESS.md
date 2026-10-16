@@ -111,6 +111,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-16 16:13 `866000b`: CATHODE C2 "Hits land on the body" (zone flinch springs, per-segment hit flash, layered gore and blood plumes, exit-spatter wall splats, last-enemy slow motion). All gates passed (Lighthouse 89); live version.json matches; browser smoke inconclusive (sandbox proxy), HTTP check passed; tag push 403 (harmless). 1st release today.
 - 2026-10-15 23:51 `3dd799d`: CATHODE C1 "Every shot tells you what it hit" (hit markers, blocked/near-miss cues, penetration, hit-stop, feel-shots). All gates passed; live version.json matches; browser smoke inconclusive (sandbox proxy), HTTP check passed; tag push 403 (harmless). 1st release today.
 - 2026-10-14 01:22 `2d4d808`: Hedgerow H1 weather/props, H12 fords/oaks/barns/County Show, H13 liveries, U10, U11 slice 1. All gates passed; live version.json matches. 1st release today.
 - 2026-10-13 13:43 `bb1ba19`: Hedgerow H9-adjacent meta: H10 modes/medals/remixes, H11 XP/Acorns/Compost/Seed Packets, H12 Daily rule. All gates passed; live version.json matches. 2nd release today.
@@ -120,8 +121,6 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-11 ~03:30 `f159236`: Hedgerow 2 M3 (hard-lock properties, round preview, leak report, Retry from round N, acts 2-3 on the Fleet) and M4 (three upgrade paths for 5 towers). All gates passed; the live version.json matches. 1st release today.
 - 2026-10-10 17:44 `68a1f7c`: Hedgerow 2 M1 (hands-on pacing) and M2 (the layered Fleet in act 1). All gates passed; the live version.json matches; the tag push 403 is harmless. 1st release today.
 - 2026-10-04 11:04 `7427b78`: CATHODE step-by-step first job, world bounds, noir score, HDR NaN guard.
-- 2026-10-04 ~06:20 UTC: `f945e3a`, CATHODE through monowire lash. Gates passed; live version matches; tag push 403 (harmless). 2nd release today.
-- 2026-10-04 ~04:10 UTC: `ca00b4a`, CATHODE through alt-fires. Gates passed; live version matches; tag push 403 (harmless). 1st release today.
 
 ## Session log (newest first, last 15)
 - 2026-10-13 12:53-13:50 UTC: H11 Compost Heap + Seed Packets, H10 remix medals, released `bb1ba19`.
