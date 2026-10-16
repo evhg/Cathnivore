@@ -1740,9 +1740,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         total++;
         const o4 = (j * R * 2 + i) * 4;
         const rr = px[o4]!;
-        mean[0] += rr;
-        mean[1] += px[o4 + 1]!;
-        mean[2] += px[o4 + 2]!;
+        mean[0] = mean[0]! + rr;
+        mean[1] = mean[1]! + px[o4 + 1]!;
+        mean[2] = mean[2]! + px[o4 + 2]!;
         if (rr > 45 && rr > px[o4 + 1]! * 1.8 && rr > px[o4 + 2]! * 1.8) red++;
       }
     return { red, total, mean: mean.map((v) => Math.round(v / Math.max(1, total))) };

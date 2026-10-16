@@ -390,7 +390,7 @@ export class Body {
     const F = flashTuning;
     let any = false;
     for (let i = 1; i < FLASH_SLOTS; i++) {
-      const age = (this.flashAge[i] += dtMs);
+      const age = (this.flashAge[i] = this.flashAge[i]! + dtMs);
       const v = this.flashUniform.value[i]!;
       const k = flashLevel(age);
       if (age < F.whiteMs) v.setScalar(k);
