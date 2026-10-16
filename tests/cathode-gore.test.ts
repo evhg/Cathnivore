@@ -67,7 +67,8 @@ describe("CATHODE gore (S4.5)", () => {
     const plain = hitAt(false, false);
     const kill = hitAt(true, false);
     expect(plain.mist).toBeGreaterThanOrEqual(GORE.puff.count[0] + GORE.plume.count[0]);
-    expect(kill.mist).toBeGreaterThanOrEqual(plain.mist - (GORE.puff.count[1] - GORE.puff.count[0]) + 3);
+    // Deterministic floor: both counts are rolled at random, so compare the kill with the smallest possible roll.
+    expect(kill.mist).toBeGreaterThanOrEqual(GORE.puff.count[0] + GORE.plume.count[0] + 3);
     expect(kill.drops).toBeGreaterThan(plain.drops);
   });
 
