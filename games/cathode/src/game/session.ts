@@ -1751,6 +1751,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     showCover(false);
     pickups.clear();
     world.fx.clear?.();
+    // Stage hygiene: enemies a stage reset kills (skipTo clears the wave) are props of the previous shot, not
+    // bodies she dropped: they leave the frame instead of piling up corpses (and draw calls) between stages.
+    // (The first guard, downed by a reset from stage 1, is the takedown's body and stays.)
+    const wasAlive = job.stage >= 3 ? enemies.filter((e) => e.alive) : [];
     if (name === "pickup-taken") {
       // The moment after the press: the lid shut, the toast in, the Kestrel drawn.
       if (job.stage !== 2) job.skipTo(2);
@@ -1761,6 +1765,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     } else if (name === "hud-combat") {
       if (job.stage !== 3) job.skipTo(3);
     } else if (job.stage !== 2) job.skipTo(2);
+    for (const e of wasAlive)
+      if (!e.alive) {
+        e.body.root.visible = false;
+        e.rifle.visible = false;
+      }
     for (const e of enemies) {
       if (e.alive && e.state !== "dead") e.state = "unaware";
       e.detect = 0;
