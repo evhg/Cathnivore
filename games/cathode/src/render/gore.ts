@@ -40,7 +40,7 @@ export interface GoreDeps {
   raycast(from: THREE.Vector3, dir: THREE.Vector3, max: number): { point: THREE.Vector3; normal: THREE.Vector3 } | null;
   ground(x: number, z: number): number;
   /** A decal on the world; `wetInMs` grows it from 0.7 to 1.0. */
-  decal(pos: THREE.Vector3, normal: THREE.Vector3, size: number, cell: number, tint: THREE.Color, wetInMs?: number): void;
+  decal(pos: THREE.Vector3, normal: THREE.Vector3, size: number, cell: number, tint: THREE.Color, wetInMs?: number, along?: THREE.Vector3): void;
   /** The baked light at a point, for tinting matter (0..1 per channel, roughly). */
   light(pos: THREE.Vector3, out: THREE.Color): THREE.Color;
 }
@@ -59,7 +59,7 @@ export const GORE = {
   anchorMs: 80,
   /** How hard the emissive lift pushes (see tinted()). */
   liftGain: 7,
-  splat: { rayM: 3, size: [0.3, 0.8] as const, wetInMs: 120 },
+  splat: { rayM: 3, size: [0.3, 0.8] as const, wetInMs: 120, farFromM: 7, farMulMax: 1.6 },
   wound: { size: 0.11, runLen: 0.16, runMs: 2000, perBody: 8 },
   caps: { phone: { mist: 48, drops: 260, wounds: 48 }, desktop: { mist: 128, drops: 900, wounds: 160 } },
 };
@@ -85,6 +85,8 @@ export interface Gore {
   /** Live counts, for the soak test and the budget sidecar. */
   readonly counts: { mist: number; drops: number; wounds: number; puffM: number };
   readonly caps: { mist: number; drops: number; wounds: number };
+  /** The last hit's wall splats: where each landed and its size (m). */
+  readonly splats: readonly { point: THREE.Vector3; size: number }[];
   dispose(): void;
 }
 
@@ -345,8 +347,11 @@ export function createGore(o: GoreDeps): Gore {
   const PUFF = new THREE.Color(GORE.puff.color);
   const EXIT = new THREE.Color(GORE.exit.color);
   const INK = new THREE.Color(0.012, 0.012, 0.016);
-  // Fresh blood is brighter than the dried atlas red: it has to read wet on a night wall.
-  const SPLAT_TINT = new THREE.Color(2.3, 1.05, 1.05);
+  // Fresh blood on a night wall: a deep #5C0707-ish red with a small emissive lift (the decal shader glows by
+  // tint.r - 1), so it reads wet and red in the grade. The old 2.3 lift blew out to salmon pink past the tone map.
+  const SPLAT_TINT = new THREE.Color(1.55, 0.55, 0.5);
+  /** The last hit's wall splats (world point, size in m), for the C2 probe. */
+  const splats: { point: THREE.Vector3; size: number }[] = [];
 
   /** A colour lit by the street, plus a lift that ignores local light so it reads in the noir grade. */
   // The grade drains saturation from dark midtones (render/post.ts), so blood has to be bright enough (luma
@@ -577,6 +582,7 @@ export function createGore(o: GoreDeps): Gore {
     // The main splat lands square behind him, where his body hides most of it, so two smaller ones go out
     // along the spray's cone and show past his silhouette.
     const k = Math.min(1, (h.damage / Math.max(1, h.maxHp)) * 2.5);
+    splats.length = 0;
     for (let j = 0; j < 4; j++) {
       // The satellites go out 22 to 38 degrees off the round, either side (the fourth on a random side, higher),
       // clear of his silhouette.
@@ -586,8 +592,12 @@ export function createGore(o: GoreDeps): Gore {
       ray.normalize();
       const wall = o.raycast(exitAt, ray, W.rayM);
       if (!wall) continue;
-      const size = (W.size[0] + (W.size[1] - W.size[0]) * k) * (j === 0 ? 1 : 0.7 + rand() * 0.25);
-      o.decal(wall.point, wall.normal, size, DECAL.blood[3 + Math.floor(rand() * 3)]!, SPLAT_TINT, W.wetInMs);
+      // Sized by damage, then held to a floor in view: past about 7 m a splat grows with the distance so its
+      // streaks stay a readable size on screen (pillar 4), up to 1.6x.
+      const view = Math.min(W.farMulMax, Math.max(1, (h.distance + W.rayM * 0.5) / W.farFromM));
+      const size = (W.size[0] + (W.size[1] - W.size[0]) * k) * (j === 0 ? 1 : 0.8 + rand() * 0.25) * view;
+      o.decal(wall.point, wall.normal, size, DECAL.blood[3 + Math.floor(rand() * 3)]!, SPLAT_TINT, W.wetInMs, ray);
+      splats.push({ point: wall.point.clone(), size });
     }
     // 5. The wound, on the body.
     addWound(h);
@@ -687,6 +697,7 @@ export function createGore(o: GoreDeps): Gore {
       update(dt);
     },
     clear() {
+      splats.length = 0;
       mist.n = drops.n = 0;
       mist.write(true);
       drops.write(false);
@@ -696,6 +707,9 @@ export function createGore(o: GoreDeps): Gore {
     },
     get counts() {
       return { mist: mist.n, drops: drops.n, wounds: wounds.length, puffM: mist.largest };
+    },
+    get splats() {
+      return splats;
     },
     caps: { mist: C.mist, drops: C.drops, wounds: C.wounds },
     dispose() {

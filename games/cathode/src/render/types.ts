@@ -36,7 +36,7 @@ export interface Effects {
   /** A round in flesh (S4.5): entry puff, spurt, exit spray, wall splat and a wound on the segment. */
   flesh?(hit: FleshHit): void;
   /** Live gore counts against their caps (the soak test, the budget sidecar). */
-  readonly gore?: { counts: { mist: number; drops: number; wounds: number; puffM: number }; caps: { mist: number; drops: number; wounds: number } };
+  readonly gore?: { counts: { mist: number; drops: number; wounds: number; puffM: number }; caps: { mist: number; drops: number; wounds: number }; splats: readonly { point: THREE.Vector3; size: number }[] };
   /** Sparks and coolant from a cyborg or machine hit. */
   sparks(pos: THREE.Vector3, dir: THREE.Vector3, amount: number): void;
   /** A brass casing ejected from `pos` with `vel`; it bounces and rings on the ground. */

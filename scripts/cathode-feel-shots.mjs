@@ -79,7 +79,7 @@ for (const vp of vps) {
   }
   for (const spec of stages) {
     const [stage, at] = spec.split('@')
-    const t = at ? Number(at) : stage === 'hit-kill' ? 230 : 40
+    const t = at ? Number(at) : stage === 'hit-kill' ? 230 : stage === 'enemy-flinch-head-60' ? 60 : 40
     await load(V.stageQ?.[stage] ?? V.q)
     const f0 = await page.evaluate(() => window.cathode.stats.frames)
     const cls = await page.evaluate(([s, tt]) => window.cathode.stage(s, tt), [stage, t])
@@ -188,8 +188,81 @@ for (const vp of vps) {
       const puffPx = info.puffM * (info.r02 / 0.2) * k
       console.log(`  C2 ${vp} ${spec}: puff ${puffPx.toFixed(0)} physical px`)
       if (vp === '5k' && /^(hit-body|hit-head)/.test(stage) && t <= 100 && puffPx < 40) fail(`${vp} ${spec}: the puff is ${puffPx.toFixed(0)} physical px (< 40)`)
-      // 8 px is judged at the high-density screens (5K @2, phone @3); at 1440x900 @1 the same 0.13 m is 7 to 9 px.
-      if (stage === 'enemy-flinch-head-60' && vp !== 'd' && headPx < 8) fail(`${vp} ${spec}: the head moved ${headPx.toFixed(1)} px (< 8)`)
+      // 8 physical px at every size (1440x900 @1 is the tightest: there 8 px is about 0.13 m at 10 m).
+      if (stage === 'enemy-flinch-head-60' && headPx < 8) fail(`${vp} ${spec}: the head moved ${headPx.toFixed(1)} px (< 8)`)
+      // A head hit's marker frames the head instead of hiding it: its opaque ticks cover under 30% of the
+      // projected head (a disc of the head's 0.13 m radius around where the head is now).
+      if (/^(hit-head|enemy-flinch-head)/.test(stage) && t <= 100) {
+        const cover = await page.evaluate(([hx, hy, hr]) => {
+          const hit = document.querySelector('.hud-hit')
+          const tick = hit?.querySelector('i')
+          if (!hit || !tick || Number(getComputedStyle(hit).opacity) < 0.05) return 0
+          const cs = getComputedStyle(tick)
+          const len = parseFloat(cs.height)
+          const th = parseFloat(cs.width) + 2
+          const gap = -parseFloat(cs.top) - len
+          const m = new DOMMatrix(getComputedStyle(hit).transform)
+          const sc = Math.hypot(m.a, m.b) || 1
+          const cx = innerWidth / 2
+          const cy = innerHeight / 2
+          let inside = 0
+          let n = 0
+          for (let y = -hr; y <= hr; y += 0.5)
+            for (let x = -hr; x <= hr; x += 0.5) {
+              if (x * x + y * y > hr * hr) continue
+              n++
+              const dx = (hx + x - cx) / sc
+              const dy = (hy + y - cy) / sc
+              // Four ticks on the diagonals, each from gap to gap+len out from the centre.
+              for (const a of [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4]) {
+                const ux = Math.sin(a)
+                const uy = -Math.cos(a)
+                const rad = dx * ux + dy * uy
+                const perp = Math.abs(-dx * uy + dy * ux)
+                if (rad >= gap && rad <= gap + len && perp <= th / 2) {
+                  inside++
+                  break
+                }
+              }
+            }
+          return n ? inside / n : 0
+        }, [info.head1.x, info.head1.y, info.r02 * 0.65])
+        console.log(`  C2 ${vp} ${spec}: the head marker covers ${(cover * 100).toFixed(0)}% of the head`)
+        if (cover > 0.3) fail(`${vp} ${spec}: the head marker covers ${(cover * 100).toFixed(0)}% of the head (> 30%)`)
+      }
+      // The wall splat: the best of its splats on screen must be big enough and read red, not pink.
+      if (stage === 'wall-splat') {
+        let best = null
+        for (const sp of info.splats ?? []) {
+          if (sp.x < 0 || sp.y < 0 || sp.x > V.viewport.width || sp.y > V.viewport.height) continue
+          const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r), [sp.x, sp.y, Math.max(2, sp.r * 0.45)])
+          const share = pr.red / Math.max(1, pr.total)
+          if (!best || share > best.share) best = { share, px: sp.r * 2 * k, pr }
+        }
+        const minPx = V.viewport.height * k * 0.03
+        console.log(`  C2 ${vp} ${spec}: ${info.splats?.length ?? 0} splats; best ${best ? `${(best.share * 100).toFixed(0)}% red (mean ${best.pr.mean}), ${best.px.toFixed(0)} physical px across` : 'none on screen'}`)
+        if (!best) fail(`${vp} ${spec}: no wall splat on screen`)
+        else {
+          if (best.share < 0.2) fail(`${vp} ${spec}: the splat is only ${(best.share * 100).toFixed(0)}% red (< 20%)`)
+          if (best.px < minPx) fail(`${vp} ${spec}: the splat is ${best.px.toFixed(0)} physical px (< ${minPx.toFixed(0)}, 3% of the screen height)`)
+          const [r, g, b] = best.pr.mean
+          if (g > r * 0.6 && b > r * 0.6 && best.share < 0.3) warn(`${vp} ${spec}: the splat reads pink (mean ${best.pr.mean})`)
+        }
+      }
+    }
+    // The kill, 650 ms on: the body is down and must still catch the eye (the death glow on its rim).
+    if (stage === 'hit-kill' && t >= 400 && info?.corpse) {
+      const c = info.corpse.chest
+      const p = info.corpse.pelvis
+      const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r), [(c.x + p.x) / 2, (c.y + p.y) / 2, Math.max(4, info.r02 * 1.2)])
+      const share = pr.red / Math.max(1, pr.total)
+      console.log(`  C2 ${vp} ${spec}: the body reads ${(share * 100).toFixed(0)}% red (mean ${pr.mean}) around its torso`)
+      if (share < 0.08) fail(`${vp} ${spec}: the dead body doesn't show (${(share * 100).toFixed(0)}% red around it, < 8%)`)
+      const cw3 = Math.round(Math.max(240, info.r02 * 18))
+      const ch3 = Math.round(cw3 * 0.66)
+      const x3 = Math.max(0, Math.min(V.viewport.width - cw3, (c.x + p.x) / 2 - cw3 / 2))
+      const y3 = Math.max(0, Math.min(V.viewport.height - ch3, (c.y + p.y) / 2 - ch3 / 2))
+      await page.screenshot({ path: `${file}-body.png`, clip: { x: x3, y: y3, width: cw3, height: ch3 }, timeout: 300_000 })
     }
     // ---- C1 acceptance ----
     // Sizes and presence while the marker holds (a later frame, like hit-kill@650, has rightly faded it).

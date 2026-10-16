@@ -772,6 +772,7 @@ export class Enemy {
     this.state = "dead";
     this.hp = 0;
     this.body.goLimp(impulse, at);
+    this.body.deathGlow();
   }
 }
 

@@ -325,7 +325,8 @@ export function decalAtlas(): THREE.CanvasTexture {
       g.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
     }
     g.fill();
-    const dir = rand() * Math.PI * 2;
+    // Wall splats (cells 3..5) throw their streaks toward +u, so a decal can be rolled to lie along the round.
+    const dir = i > 2 ? 0 : rand() * Math.PI * 2;
     if (i > 2) {
       // Exit spatter on a wall (S4.5 "splat1..6"): a torn core, a fan of tapered streaks thrown out from it with a
       // bead at each tip, and a fine mist of dots thinning with distance, so a 0.5 m splat reads as an exit wound
@@ -342,14 +343,16 @@ export function decalAtlas(): THREE.CanvasTexture {
         }
         g.fill();
       }
-      const fan = 2.2 + rand() * 0.8;
-      const nStreak = 16 + Math.floor(rand() * 8);
+      // Elongated along +u: the core is pushed back off-centre and the streaks fan out ahead of it, thick
+      // enough to survive a 0.4 m splat seen from 10 m (about 25 px).
+      const fan = 1.3 + rand() * 0.5;
+      const nStreak = 18 + Math.floor(rand() * 8);
       g.lineCap = "round";
       for (let k = 0; k < nStreak; k++) {
         const a = dir + (rand() - 0.5) * fan;
         const r0 = core * (0.4 + rand() * 0.4);
         const r1 = core + rand() * (S * 0.47 - core);
-        const w = 1.2 + rand() * 3.2;
+        const w = 2.6 + rand() * 4.4;
         // A tapered streak: a few strokes, thinner toward the tip.
         for (let m = 0; m < 3; m++) {
           const f0 = m / 3;

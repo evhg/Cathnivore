@@ -324,11 +324,23 @@ export function createFx(o: {
   const zAxis = new THREE.Vector3(0, 0, 1);
   /** Decals still spreading "wet in" (S4.5): their slot, placement and age. */
   const growing: { i: number; pos: THREE.Vector3; q: THREE.Quaternion; size: number; age: number; ms: number }[] = [];
-  const addDecal = (pos: THREE.Vector3, normal: THREE.Vector3, size: number, cell: number, tint: THREE.Color, wetInMs = 0) => {
+  const ax = new THREE.Vector3();
+  const along2 = new THREE.Vector3();
+  /** `along`: the cell's +u (a wall splat's streaks) is rolled to lie along it on the surface, when it isn't square on. */
+  const addDecal = (pos: THREE.Vector3, normal: THREE.Vector3, size: number, cell: number, tint: THREE.Color, wetInMs = 0, along?: THREE.Vector3) => {
     if (reduced) return;
     const i = decalNext++ % decalCap;
     dq.setFromUnitVectors(zAxis, normal);
-    dq.multiply(new THREE.Quaternion().setFromAxisAngle(zAxis, rand() * Math.PI * 2));
+    let roll = rand() * Math.PI * 2;
+    if (along) {
+      along2.copy(along).addScaledVector(normal, -along.dot(normal));
+      if (along2.lengthSq() > 0.04) {
+        ax.set(1, 0, 0).applyQuaternion(dq);
+        // A little scatter keeps neighbouring splats from lining up.
+        roll = Math.atan2(ax.clone().cross(along2).dot(normal), ax.dot(along2)) + (rand() - 0.5) * 0.4;
+      }
+    }
+    dq.multiply(new THREE.Quaternion().setFromAxisAngle(zAxis, roll));
     const at = pos.clone().addScaledVector(normal, 0.012);
     for (let g = growing.length - 1; g >= 0; g--) if (growing[g]!.i === i) growing.splice(g, 1);
     if (wetInMs > 0) growing.push({ i, pos: at, q: dq.clone(), size, age: 0, ms: wetInMs });

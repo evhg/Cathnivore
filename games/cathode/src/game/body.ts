@@ -355,6 +355,8 @@ export class Body {
   readonly flashUniform = { value: Array.from({ length: FLASH_SLOTS }, () => new THREE.Vector3()) };
   private flashAge = new Float32Array(FLASH_SLOTS).fill(1e9);
   private flashing = false;
+  /** Ms since this body died (the death glow, C2), or 1e9 while it lives. */
+  private deathAge = 1e9;
 
   constructor(
     readonly look: BodyLook,
@@ -384,16 +386,35 @@ export class Body {
     this.updateFlash(0);
   }
 
+  /**
+   * The kill confirmed on the body (C2): every segment's rim glows a deep red as he goes down, holds, then
+   * dies away, so a dark body falling on a dark street still catches the eye where the kill landed.
+   */
+  deathGlow(): void {
+    this.deathAge = 0;
+    this.flashing = true;
+    this.updateFlash(0);
+  }
+
   /** Advances the flash on real time (it shows through a hit-stop). */
   updateFlash(dtMs: number): void {
     if (!this.flashing) return;
     const F = flashTuning;
+    const D = F.death;
     let any = false;
+    let dk = 0;
+    if (this.deathAge < 1e8) {
+      const a = (this.deathAge += dtMs);
+      dk = a < D.holdMs ? D.level : a < D.holdMs + D.fadeMs ? D.level * (1 - (a - D.holdMs) / D.fadeMs) ** 2 : 0;
+      if (dk > 0) any = true;
+      else this.deathAge = 1e9;
+    }
     for (let i = 1; i < FLASH_SLOTS; i++) {
       const age = (this.flashAge[i] = this.flashAge[i]! + dtMs);
       const v = this.flashUniform.value[i]!;
       const k = flashLevel(age);
       if (age < F.whiteMs) v.setScalar(k);
+      else if (dk > k) v.set(D.red[0] * dk, D.red[1] * dk, D.red[2] * dk);
       else v.set(F.red[0] * k, F.red[1] * k, F.red[2] * k);
       if (k > 0) any = true;
     }
