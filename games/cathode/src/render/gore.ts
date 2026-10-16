@@ -55,7 +55,7 @@ export const GORE = {
   // Fanned across the view (a spurt straight at the camera barely moves on screen), with a pull back toward her.
   spurt: { count: [7, 11] as const, speed: [5, 9] as const, coneDeg: 70, lift: 1.9, back: 0.6 },
   /** The wound keeps bleeding where it was hit: slow, heavy drops that hang at the hole and fall (the fast spurt has gone by 160 ms). */
-  ooze: { count: [5, 7] as const, speed: [0.3, 1] as const, size: [0.03, 0.05] as const },
+  ooze: { count: [5, 7] as const, speed: [0.3, 1] as const, size: [0.03, 0.05] as const, headMul: 1.6 },
   /** Air drag on droplets (1/s): a fast spurt bursts out, then slows and falls, instead of flying on as long laser-straight streaks. */
   dropDrag: 5,
   exit: { pistol: 15, rifle: 22, smg: 18, shotgun: 6, sniper: 40, melee: 8, launcher: 30, coneDeg: 35, wallRays: 24, speed: [2, 6] as const, size: [0.015, 0.04] as const, color: "#5C0707" },
@@ -390,7 +390,8 @@ export function createGore(o: GoreDeps): Gore {
   // Fresh blood on a night wall: a deep #5C0707-ish red with a small emissive lift (the decal shader glows by
   // tint.r - 1), so it reads wet and red in the grade. The old 2.3 lift blew out to salmon pink past the tone map.
   const SPLAT_TINT = new THREE.Color(1.55, 0.55, 0.5);
-  const SPLAT_TINT_PHONE = new THREE.Color(2.4, 0.5, 0.45);
+  // Phone: G and B held low so the heavy phone fog lifts it toward crimson, not coral (C2 review).
+  const SPLAT_TINT_PHONE = new THREE.Color(2.3, 0.34, 0.3);
   /** The last hit's wall splats (world point, size in m), for the C2 probe. */
   const splats: { point: THREE.Vector3; size: number }[] = [];
 
@@ -621,10 +622,13 @@ export function createGore(o: GoreDeps): Gore {
     }
     // 2b. The ooze: heavy drops that leave the hole slowly, so the wound still reads red after the spurt has gone.
     const O = GORE.ooze;
-    const nOo = O.count[0] + Math.floor(rand() * (O.count[1] - O.count[0] + 1));
+    // A head hit's cloud sits behind the head (its outline cuts it), so at 160 ms the read is the wound itself:
+    // more, heavier drops (x1.6) keep the hole red after the spurt has gone (1440x900 measured 9.8% red at x1).
+    const oMul = h.head ? O.headMul : 1;
+    const nOo = Math.round((O.count[0] + Math.floor(rand() * (O.count[1] - O.count[0] + 1))) * oMul);
     for (let k = 0; k < nOo; k++) {
       cone(backDir, 80, v).multiplyScalar(O.speed[0] + rand() * (O.speed[1] - O.speed[0]));
-      drop(h.point, v, (O.size[0] + rand() * (O.size[1] - O.size[0])) * dScale, spurtRed, ix, 2);
+      drop(h.point, v, (O.size[0] + rand() * (O.size[1] - O.size[0])) * dScale * (h.head ? 1.2 : 1), spurtRed, ix, 2);
     }
     // 3. The exit spray along the round, with gravity; a decal where each lands.
     const E = GORE.exit;
