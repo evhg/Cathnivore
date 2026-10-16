@@ -751,7 +751,10 @@ export class Enemy {
     const d = toBody(dir, inv);
     const rel = toBody(new THREE.Vector3().subVectors(point, this.motion.pos), inv);
     const scale = flinchScale(damage, this.kit.maxHp, this.poise);
-    this.flinch.hit(zone, flinchImpulse(zone, d, rel.x, scale, weaponCls, distance), d);
+    // Which side of the body it struck: off the segment's line (a dead-centre hit goes to the hit's side of
+    // the body's centre line, seeded by the point so a frozen stage is stable).
+    const side = Math.abs(rel.x) > 0.01 ? rel.x : Math.sin(point.x * 91.7 + point.z * 37.1) >= 0 ? 1 : -1;
+    this.flinch.hit(zone, flinchImpulse(zone, d, side, scale, weaponCls, distance), d, side);
   }
 
   /** A hit: takes the damage (the flinch is react's job), and returns true if it died. */

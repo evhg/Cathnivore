@@ -294,6 +294,10 @@ export const DECAL = {
   scorch: [11],
   puff: [12],
   crack: [13],
+  /** A wet run of blood from the top of the cell down (wounds on the body, S4.5). */
+  run: [14],
+  /** An entry wound: a black hole in a wet red ring with fine spatter. */
+  wound: [15],
 } as const;
 
 export function decalAtlas(): THREE.CanvasTexture {
@@ -412,6 +416,70 @@ export function decalAtlas(): THREE.CanvasTexture {
       }
       g.stroke();
     }
+  }
+  {
+    // The run: a bead at the top that thins into a wandering trickle, darker and glossier at the edges.
+    const [x0, y0] = cell(DECAL.run[0]);
+    g.save();
+    g.beginPath();
+    g.rect(x0, y0, S, S);
+    g.clip();
+    for (let strand = 0; strand < 3; strand++) {
+      let x = x0 + S / 2 + (strand - 1) * 9 + (rand() - 0.5) * 4;
+      const w0 = strand === 1 ? 9 : 4 + rand() * 2;
+      const end = y0 + S * (strand === 1 ? 0.96 : 0.45 + rand() * 0.35);
+      for (let y = y0 + 6; y < end; y += 1.5) {
+        const k = (y - y0) / S;
+        x += (rand() - 0.5) * 0.9;
+        const w = Math.max(1.2, w0 * (1 - k * 0.75));
+        g.fillStyle = `rgba(${78 + k * 30},${4},${6},${0.95})`;
+        g.fillRect(x - w / 2, y, w, 2);
+      }
+      // A drop gathering at the end.
+      g.fillStyle = "rgba(96,5,8,0.97)";
+      g.beginPath();
+      g.ellipse(x, end, w0 * 0.42 + 1.2, w0 * 0.55 + 1.5, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.fillStyle = "rgba(70,3,5,0.95)";
+    g.beginPath();
+    g.ellipse(x0 + S / 2, y0 + 10, 14, 9, 0, 0, Math.PI * 2);
+    g.fill();
+    g.restore();
+  }
+  {
+    // The wound: torn dark core, a wet red ring that catches light, and spatter flung outward.
+    const [x0, y0] = cell(DECAL.wound[0]);
+    const cx = x0 + S / 2;
+    const cy = y0 + S / 2;
+    g.save();
+    g.beginPath();
+    g.rect(x0, y0, S, S);
+    g.clip();
+    for (let k = 0; k < 26; k++) {
+      const a = rand() * Math.PI * 2;
+      const r = 22 + rand() * 34;
+      const s = 1.2 + rand() * 3.2 * (1 - r / 60);
+      g.fillStyle = `rgba(${90 + rand() * 40},4,8,${0.75 + rand() * 0.2})`;
+      g.beginPath();
+      g.ellipse(cx + Math.cos(a) * r, cy + Math.sin(a) * r, s * 1.8, s, a, 0, Math.PI * 2);
+      g.fill();
+    }
+    const ring = g.createRadialGradient(cx, cy, 4, cx, cy, 30);
+    ring.addColorStop(0, "rgba(10,0,1,1)");
+    ring.addColorStop(0.32, "rgba(30,1,3,1)");
+    ring.addColorStop(0.45, "rgba(150,10,14,0.98)");
+    ring.addColorStop(0.7, "rgba(105,6,9,0.9)");
+    ring.addColorStop(1, "rgba(80,4,6,0)");
+    g.fillStyle = ring;
+    g.beginPath();
+    for (let k = 0; k <= 20; k++) {
+      const a = (k / 20) * Math.PI * 2;
+      const r = 26 * (0.8 + rand() * 0.35);
+      g.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    }
+    g.fill();
+    g.restore();
   }
   const t = canvasTexture(c);
   t.generateMipmaps = true;

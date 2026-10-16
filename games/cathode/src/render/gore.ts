@@ -1,0 +1,649 @@
+// Blood and wounds (docs/design/cathode-combat.md S4.5). Every flesh hit gets five things on the same frame:
+// an entry puff that faces the player and lifts itself out of the dark grade, a spurt flung back toward the
+// camera, an exit spray of stretched, glinting droplets along the round, a splat on the wall behind (with a
+// short "wet in"), and a wound that stays on the body and runs. The first 80 ms ride the hit segment so the
+// spray moves with the flinch. Its own instanced pools, capped; decals go through the fx atlas.
+
+import * as THREE from "three";
+import { DECAL, decalCell } from "./textures";
+
+/** One flesh hit, as combat reports it. */
+export interface FleshHit {
+  point: THREE.Vector3;
+  /** The round's travel (unit). */
+  dir: THREE.Vector3;
+  damage: number;
+  maxHp: number;
+  weaponCls: string;
+  /** Metres from the shooter. */
+  distance: number;
+  /** The hit segment: effects ride it for their first 80 ms, and the wound stays on it. */
+  anchor?: THREE.Object3D;
+  /** Whose body (the per-enemy wound cap). */
+  owner?: object;
+  /** The body's root: when it leaves the scene its wounds go too. */
+  root?: THREE.Object3D;
+}
+
+export interface GoreDeps {
+  scene: THREE.Scene;
+  quality: "phone" | "high" | "ultra";
+  /** Reduced violence: an ink puff and nothing else (S4.5). */
+  reduced: boolean;
+  noise: { value: THREE.Texture | null };
+  /** The fx decal atlas (shared, not drawn twice). */
+  atlas: THREE.Texture;
+  raycast(from: THREE.Vector3, dir: THREE.Vector3, max: number): { point: THREE.Vector3; normal: THREE.Vector3 } | null;
+  ground(x: number, z: number): number;
+  /** A decal on the world; `wetInMs` grows it from 0.7 to 1.0. */
+  decal(pos: THREE.Vector3, normal: THREE.Vector3, size: number, cell: number, tint: THREE.Color, wetInMs?: number): void;
+  /** The baked light at a point, for tinting matter (0..1 per channel, roughly). */
+  light(pos: THREE.Vector3, out: THREE.Color): THREE.Color;
+}
+
+/** S4.5 numbers. */
+export const GORE = {
+  puff: { count: [1, 3] as const, size: [0.25, 0.45] as const, farMul: 1.4, farM: 15, color: "#8A0E0E", alpha: 0.85, growMs: 200, fadeMs: 350, lift: 0.18 },
+  spurt: { count: [4, 8] as const, speed: [1, 2.5] as const, coneDeg: 50 },
+  exit: { pistol: 15, rifle: 22, smg: 18, shotgun: 6, sniper: 40, melee: 8, launcher: 30, coneDeg: 35, wallRays: 24, speed: [2, 6] as const, size: [0.015, 0.04] as const, color: "#5C0707" },
+  anchorMs: 80,
+  /** How hard the emissive lift pushes (see tinted()). */
+  liftGain: 7,
+  splat: { rayM: 3, size: [0.3, 0.8] as const, wetInMs: 120 },
+  wound: { size: 0.11, runLen: 0.16, runMs: 2000, perBody: 8 },
+  caps: { phone: { mist: 48, drops: 260, wounds: 48 }, desktop: { mist: 128, drops: 900, wounds: 160 } },
+};
+
+/** Exit droplets for one round (or pellet) of a weapon class. */
+export function exitCount(weaponCls: string): number {
+  const E = GORE.exit as unknown as Record<string, number>;
+  return E[weaponCls] ?? (weaponCls === "revolver" ? GORE.exit.pistol : GORE.exit.rifle);
+}
+
+/** The puff's final size: by damage within the spec range, x1.4 beyond 15 m so it still reads far off. */
+export function puffSize(damage: number, maxHp: number, distance: number, r = 0.5): number {
+  const P = GORE.puff;
+  const k = Math.min(1, Math.max(0, (damage / Math.max(1, maxHp)) * 3 * 0.6 + r * 0.4));
+  const s = P.size[0] + (P.size[1] - P.size[0]) * k;
+  return distance > P.farM ? s * P.farMul : s;
+}
+
+export interface Gore {
+  hit(h: FleshHit): void;
+  update(dt: number, camera: THREE.Camera): void;
+  clear(): void;
+  /** Live counts, for the soak test and the budget sidecar. */
+  readonly counts: { mist: number; drops: number; wounds: number; puffM: number };
+  readonly caps: { mist: number; drops: number; wounds: number };
+  dispose(): void;
+}
+
+// ------------------------------------------------------------------ particle pools (struct of arrays)
+
+class Pool {
+  readonly mesh: THREE.Mesh;
+  n = 0;
+  /** The largest quad drawn last frame (m): the puff's on-screen size for the C2 check. */
+  largest = 0;
+  readonly pos: Float32Array;
+  readonly vel: Float32Array;
+  readonly col: Float32Array; // r g b a0
+  readonly size: Float32Array; // size0 size1 seed
+  readonly age: Float32Array;
+  readonly life: Float32Array;
+  readonly grav: Float32Array;
+  /** Anchor offset: the segment's position at spawn (x y z), and the anchor index (-1 none). */
+  readonly anchorAt: Float32Array;
+  readonly anchorIx: Int32Array;
+  readonly land: Uint8Array;
+  /** Exit droplets: seconds until they strike the wall behind (0 = none), and where (point, normal). */
+  readonly wallT: Float32Array;
+  readonly wallHit: Float32Array;
+  private geo: THREE.InstancedBufferGeometry;
+  private aPos: THREE.InstancedBufferAttribute;
+  private aVel: THREE.InstancedBufferAttribute;
+  private aCol: THREE.InstancedBufferAttribute;
+  private aSize: THREE.InstancedBufferAttribute;
+
+  constructor(
+    readonly cap: number,
+    drop: boolean,
+    noise: { value: THREE.Texture | null },
+  ) {
+    this.pos = new Float32Array(cap * 3);
+    this.vel = new Float32Array(cap * 3);
+    this.col = new Float32Array(cap * 4);
+    this.size = new Float32Array(cap * 3);
+    this.age = new Float32Array(cap);
+    this.life = new Float32Array(cap);
+    this.grav = new Float32Array(cap);
+    this.anchorAt = new Float32Array(cap * 3);
+    this.anchorIx = new Int32Array(cap).fill(-1);
+    this.land = new Uint8Array(cap);
+    this.wallT = new Float32Array(cap);
+    this.wallHit = new Float32Array(cap * 6);
+    const base = new THREE.PlaneGeometry(1, 1);
+    if (drop) base.translate(0, -0.5, 0); // a streak trails behind its head
+    const geo = new THREE.InstancedBufferGeometry();
+    geo.index = base.index;
+    geo.setAttribute("position", base.getAttribute("position"));
+    geo.setAttribute("uv", base.getAttribute("uv"));
+    const mk = (k: number) => {
+      const a = new THREE.InstancedBufferAttribute(new Float32Array(cap * k), k);
+      a.setUsage(THREE.DynamicDrawUsage);
+      return a;
+    };
+    this.aPos = mk(3);
+    this.aVel = mk(3);
+    this.aCol = mk(4);
+    this.aSize = mk(3);
+    geo.setAttribute("aPos", this.aPos);
+    geo.setAttribute("aVel", this.aVel);
+    geo.setAttribute("aCol", this.aCol);
+    geo.setAttribute("aSize", this.aSize);
+    geo.instanceCount = 0;
+    this.geo = geo;
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog), uNoise: noise },
+      vertexShader: GVERT,
+      fragmentShader: GFRAG,
+      defines: drop ? { DROP: "" } : {},
+      fog: true,
+      transparent: true,
+      depthWrite: false,
+    });
+    this.mesh = new THREE.Mesh(geo, mat);
+    this.mesh.frustumCulled = false;
+    this.mesh.renderOrder = 7;
+    this.mesh.name = drop ? "gore:drops" : "gore:mist";
+  }
+
+  /** Takes a slot (the oldest goes when full: a new hit always shows). */
+  take(): number {
+    if (this.n < this.cap) return this.n++;
+    let oldest = 0;
+    let best = -1;
+    for (let i = 0; i < this.n; i++) {
+      const k = this.age[i]! / this.life[i]!;
+      if (k > best) {
+        best = k;
+        oldest = i;
+      }
+    }
+    return oldest;
+  }
+
+  kill(i: number): void {
+    const j = --this.n;
+    if (i === j) return;
+    const mv = (a: Float32Array | Int32Array | Uint8Array, k: number) => {
+      for (let c = 0; c < k; c++) a[i * k + c] = a[j * k + c]!;
+    };
+    mv(this.pos, 3);
+    mv(this.vel, 3);
+    mv(this.col, 4);
+    mv(this.size, 3);
+    mv(this.age, 1);
+    mv(this.life, 1);
+    mv(this.grav, 1);
+    mv(this.anchorAt, 3);
+    mv(this.anchorIx, 1);
+    mv(this.land, 1);
+    mv(this.wallT, 1);
+    mv(this.wallHit, 6);
+  }
+
+  write(mist: boolean): void {
+    this.largest = 0;
+    const P = this.aPos.array as Float32Array;
+    const V = this.aVel.array as Float32Array;
+    const C = this.aCol.array as Float32Array;
+    const S = this.aSize.array as Float32Array;
+    for (let i = 0; i < this.n; i++) {
+      const t = Math.min(1, this.age[i]! / this.life[i]!);
+      for (let c = 0; c < 3; c++) {
+        P[i * 3 + c] = this.pos[i * 3 + c]!;
+        V[i * 3 + c] = this.vel[i * 3 + c]!;
+        C[i * 4 + c] = this.col[i * 4 + c]!;
+      }
+      let a = this.col[i * 4 + 3]!;
+      let s = this.size[i * 3]!;
+      if (mist) {
+        // Expands over 200 ms (ease out), fades over the rest.
+        const age = this.age[i]!;
+        const g = Math.min(1, age / (GORE.puff.growMs / 1000));
+        s = this.size[i * 3]! + (this.size[i * 3 + 1]! - this.size[i * 3]!) * (1 - (1 - g) * (1 - g));
+        a *= 1 - t * t;
+      } else a *= t > 0.8 ? (1 - t) / 0.2 : 1;
+      C[i * 4 + 3] = a;
+      S[i * 3] = s;
+      if (a > 0.3) this.largest = Math.max(this.largest, s);
+      S[i * 3 + 1] = mist ? 0 : 0.035;
+      S[i * 3 + 2] = this.size[i * 3 + 2]!;
+    }
+    this.geo.instanceCount = this.n;
+    for (const at of [this.aPos, this.aVel, this.aCol, this.aSize]) {
+      at.clearUpdateRanges();
+      at.addUpdateRange(0, this.n * at.itemSize);
+      at.needsUpdate = true;
+    }
+  }
+}
+
+const GVERT = /* glsl */ `
+attribute vec3 aPos;
+attribute vec3 aVel;
+attribute vec4 aCol;
+attribute vec3 aSize;
+varying vec2 vUv;
+varying vec4 vCol;
+varying float vSeed;
+#include <fog_pars_vertex>
+void main() {
+  vUv = uv;
+  vCol = aCol;
+  vSeed = aSize.z;
+  vec3 toCam = normalize( cameraPosition - aPos );
+  vec3 wp;
+  #ifdef DROP
+    // A droplet is a streak along its velocity, longer the faster it flies.
+    float sp = length( aVel );
+    vec3 axis = sp > 0.05 ? aVel / sp : vec3( 0.0, -1.0, 0.0 );
+    vec3 side = cross( axis, toCam );
+    if ( dot( side, side ) < 1e-4 ) side = cross( vec3( 0.0, 1.0, 0.0 ), toCam );
+    side = normalize( side );
+    float len = aSize.x * ( 1.0 + sp * aSize.y * 40.0 );
+    wp = aPos + side * position.x * aSize.x + axis * position.y * len;
+  #else
+    vec3 right = normalize( cross( vec3( 0.0, 1.0, 0.0 ), toCam ) );
+    vec3 up = cross( toCam, right );
+    float a = aSize.z * 6.2832;
+    vec2 q = vec2( cos( a ) * position.x - sin( a ) * position.y, sin( a ) * position.x + cos( a ) * position.y );
+    wp = aPos + ( right * q.x + up * q.y ) * aSize.x;
+  #endif
+  vec4 mvPosition = viewMatrix * vec4( wp, 1.0 );
+  gl_Position = projectionMatrix * mvPosition;
+  #include <fog_vertex>
+}
+`;
+
+const GFRAG = /* glsl */ `
+uniform sampler2D uNoise;
+varying vec2 vUv;
+varying vec4 vCol;
+varying float vSeed;
+#include <fog_pars_fragment>
+void main() {
+  vec2 p = vUv - 0.5;
+  vec3 col = vCol.rgb;
+  float a;
+  #ifdef DROP
+    // A capsule with a hard, wet edge and a glint near its head (a fake pow(N.H, 40) highlight).
+    float r = length( vec2( p.x * 2.0, max( 0.0, abs( p.y ) - 0.25 ) * 2.0 ) );
+    a = smoothstep( 0.55, 0.35, r );
+    vec2 hp = vec2( p.x + 0.12, p.y - 0.28 );
+    float glint = pow( max( 0.0, 1.0 - length( hp * vec2( 3.0, 5.0 ) ) ), 4.0 );
+    col += vec3( 0.9, 0.55, 0.5 ) * glint * 0.8;
+  #else
+    // Mist: a soft blob torn by noise, denser at the core.
+    float r = length( p );
+    float n = texture2D( uNoise, p * 0.6 + vSeed * 3.1 ).g;
+    float n2 = texture2D( uNoise, p * 1.7 - vSeed * 1.3 ).b;
+    float body = smoothstep( 0.5, 0.08, r );
+    a = body * clamp( 0.45 + ( n - 0.45 ) * 1.1 + ( n2 - 0.5 ) * 0.5 + ( 0.5 - r ) * 0.8, 0.0, 1.0 );
+    col *= 0.75 + 0.5 * smoothstep( 0.45, 0.0, r );
+  #endif
+  gl_FragColor = vec4( col, a * vCol.a );
+  #include <fog_fragment>
+}
+`;
+
+// ------------------------------------------------------------------ the system
+
+export function createGore(o: GoreDeps): Gore {
+  const C = o.quality === "phone" ? GORE.caps.phone : GORE.caps.desktop;
+  const mist = new Pool(C.mist, false, o.noise);
+  const drops = new Pool(C.drops, true, o.noise);
+  o.scene.add(mist.mesh, drops.mesh);
+  const rand = Math.random;
+  const anchors: (THREE.Object3D | null)[] = [];
+  const anchorOf = (a?: THREE.Object3D): number => {
+    if (!a) return -1;
+    let i = anchors.indexOf(a);
+    if (i < 0) {
+      i = anchors.indexOf(null);
+      if (i < 0) i = anchors.push(a) - 1;
+      else anchors[i] = a;
+    }
+    return i;
+  };
+  const tmp = new THREE.Vector3();
+  const lit = new THREE.Color();
+  const PUFF = new THREE.Color(GORE.puff.color);
+  const EXIT = new THREE.Color(GORE.exit.color);
+  const INK = new THREE.Color(0.012, 0.012, 0.016);
+  // Fresh blood is brighter than the dried atlas red: it has to read wet on a night wall.
+  const SPLAT_TINT = new THREE.Color(2, 1.6, 1.6);
+
+  /** A colour lit by the street, plus a lift that ignores local light so it reads in the noir grade. */
+  // The grade drains saturation from dark midtones (render/post.ts), so blood has to be bright enough (luma
+  // above about 0.15) to keep its red: the lift is applied as emissive, x GORE.liftGain over the base.
+  const tinted = (p: THREE.Vector3, base: THREE.Color, lift: number, out: THREE.Color) => {
+    o.light(p, lit);
+    const k = GORE.liftGain * lift;
+    return out.setRGB(base.r * (0.3 + lit.r * 0.6 + k), base.g * (0.3 + lit.g * 0.6 + k), base.b * (0.3 + lit.b * 0.6 + k));
+  };
+
+  const cone = (dir: THREE.Vector3, deg: number, out: THREE.Vector3) => {
+    const s = Math.tan((deg * Math.PI) / 360);
+    out.set(rand() * 2 - 1, rand() * 2 - 1, rand() * 2 - 1);
+    out.addScaledVector(dir, -out.dot(dir)).multiplyScalar(s * Math.sqrt(rand()));
+    return out.add(dir).normalize();
+  };
+
+  /** `dir` turned `deg` about the vertical (sideways off the round), with a little lift. */
+  const offAxis = (dir: THREE.Vector3, deg: number, out: THREE.Vector3) => {
+    const a = (deg * Math.PI) / 180;
+    out.set(dir.x * Math.cos(a) + dir.z * Math.sin(a), dir.y + (rand() - 0.3) * 0.25, -dir.x * Math.sin(a) + dir.z * Math.cos(a));
+    return out.normalize();
+  };
+
+  const puff = (at: THREE.Vector3, size: number, color: THREE.Color, alpha: number, life: number, ix: number) => {
+    const i = mist.take();
+    mist.pos.set([at.x, at.y, at.z], i * 3);
+    mist.vel.fill(0, i * 3, i * 3 + 3);
+    mist.col.set([color.r, color.g, color.b, alpha], i * 4);
+    mist.size.set([size * 0.45, size, rand()], i * 3);
+    mist.age[i] = 0;
+    mist.life[i] = life;
+    mist.grav[i] = 0;
+    mist.land[i] = 0;
+    mist.anchorIx[i] = ix;
+    if (ix >= 0) {
+      const a = anchors[ix]!.position;
+      mist.anchorAt.set([a.x, a.y, a.z], i * 3);
+    }
+  };
+
+  const drop = (at: THREE.Vector3, vel: THREE.Vector3, size: number, color: THREE.Color, ix: number, land: number): number => {
+    const i = drops.take();
+    drops.pos.set([at.x, at.y, at.z], i * 3);
+    drops.vel.set([vel.x, vel.y, vel.z], i * 3);
+    drops.col.set([color.r, color.g, color.b, 0.95], i * 4);
+    drops.size.set([size, size, rand()], i * 3);
+    drops.age[i] = 0;
+    drops.life[i] = 1.4 + rand() * 0.6;
+    drops.grav[i] = 1;
+    drops.land[i] = land;
+    drops.wallT[i] = 0;
+    return i;
+    drops.anchorIx[i] = ix;
+    if (ix >= 0) {
+      const a = anchors[ix]!.position;
+      drops.anchorAt.set([a.x, a.y, a.z], i * 3);
+    }
+  };
+
+  // ---- wounds: quads that live on a segment, in its local frame
+  const woundMat = new THREE.MeshStandardMaterial({
+    map: o.atlas,
+    transparent: true,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -4,
+    polygonOffsetUnits: -4,
+    roughness: 0.15,
+    metalness: 0,
+    emissive: new THREE.Color(0.09, 0.004, 0.004),
+  });
+  woundMat.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nattribute vec2 aCell;")
+      .replace("#include <uv_vertex>", "#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = uv * 0.25 + aCell;\n#endif");
+  };
+  woundMat.customProgramCacheKey = () => "cathode-wound";
+  const woundGeo = new THREE.PlaneGeometry(1, 1);
+  const woundCell = new THREE.InstancedBufferAttribute(new Float32Array(C.wounds * 2), 2);
+  woundGeo.setAttribute("aCell", woundCell);
+  const woundMesh = new THREE.InstancedMesh(woundGeo, woundMat, C.wounds);
+  woundMesh.count = 0;
+  woundMesh.frustumCulled = false;
+  woundMesh.renderOrder = 2;
+  woundMesh.name = "gore:wounds";
+  o.scene.add(woundMesh);
+  interface Wound {
+    seg: THREE.Object3D;
+    root: THREE.Object3D | undefined;
+    owner: object | undefined;
+    /** In the segment's frame: where, which way out, which way is down the surface. */
+    local: THREE.Matrix4;
+    run: boolean;
+    age: number;
+    born: number;
+  }
+  const wounds: Wound[] = [];
+  let born = 0;
+  const raycaster = new THREE.Raycaster();
+  const hits: THREE.Intersection[] = [];
+  const m4 = new THREE.Matrix4();
+  const inv = new THREE.Matrix4();
+  const q = new THREE.Quaternion();
+  const Z = new THREE.Vector3(0, 0, 1);
+  const nrm = new THREE.Vector3();
+  const downL = new THREE.Vector3();
+  const xAx = new THREE.Vector3();
+  const yAx = new THREE.Vector3();
+
+  const addWound = (h: FleshHit) => {
+    const seg = h.anchor;
+    if (!seg) return;
+    seg.updateMatrixWorld(true);
+    // The round's line through the segment's real surface (its hit capsule is a little fatter than the armour).
+    raycaster.set(tmp.copy(h.point).addScaledVector(h.dir, -0.35), h.dir);
+    raycaster.far = 0.8;
+    hits.length = 0;
+    const meshes = seg.children.filter((c) => (c as THREE.Mesh).isMesh && c.visible && !c.name.startsWith("cap"));
+    raycaster.intersectObjects(meshes, false, hits);
+    const hit = hits[0];
+    if (!hit || !hit.face) return;
+    inv.copy(seg.matrixWorld).invert();
+    const pL = hit.point.clone().applyMatrix4(inv);
+    nrm.copy(hit.face.normal); // already in the mesh's frame, which is the segment's (merged at identity)
+    // Two quads: the hole, square to the surface, and the run, hanging below it along the surface.
+    for (const run of [false, true]) {
+      if (run && rand() < 0.25) continue;
+      // Per-body cap: the oldest wound on this body goes.
+      const mine = wounds.filter((w) => w.owner === h.owner && h.owner);
+      if (mine.length >= GORE.wound.perBody) wounds.splice(wounds.indexOf(mine[0]!), 1);
+      if (wounds.length >= C.wounds) wounds.shift();
+      // "Down" on the surface: world down into the segment frame, flattened onto the face.
+      downL.set(0, -1, 0).transformDirection(inv);
+      downL.addScaledVector(nrm, -downL.dot(nrm));
+      if (downL.lengthSq() < 1e-4) downL.set(0, -1, 0).addScaledVector(nrm, -nrm.y);
+      downL.normalize();
+      yAx.copy(downL).negate(); // the quad's +Y points up the surface (canvas top)
+      xAx.crossVectors(yAx, nrm).normalize();
+      m4.makeBasis(xAx, yAx, nrm);
+      q.setFromRotationMatrix(m4);
+      if (!run) q.multiply(new THREE.Quaternion().setFromAxisAngle(Z, rand() * Math.PI * 2));
+      const W = GORE.wound;
+      const size = run ? W.runLen : W.size * (0.8 + rand() * 0.4);
+      const at = pL.clone().addScaledVector(nrm, 0.002);
+      if (run) at.addScaledVector(downL, W.runLen * 0.5 - 0.01);
+      const local = new THREE.Matrix4().compose(at, q, new THREE.Vector3(run ? size * 0.6 : size, size, 1));
+      wounds.push({ seg, root: h.root, owner: h.owner, local, run, age: 0, born: born++ });
+    }
+  };
+
+  const hit = (h: FleshHit) => {
+    const d = h.dir;
+    const back = tmp.copy(d).negate();
+    const ix = anchorOf(h.anchor);
+    const sz = puffSize(h.damage, h.maxHp, h.distance, rand());
+    if (o.reduced) {
+      // Reduced violence: the puff is dark ink; no spray, splats or wounds.
+      puff(h.point.clone().addScaledVector(back, 0.05), sz * 0.8, INK, 0.8, 0.45, ix);
+      return;
+    }
+    const P = GORE.puff;
+    // 1. The entry puff, facing the player, lifted out of the dark.
+    const nPuff = P.count[0] + Math.floor(rand() * (P.count[1] - P.count[0] + 1));
+    for (let k = 0; k < nPuff; k++) {
+      const at = h.point.clone().addScaledVector(back, 0.06 + k * 0.04).add(tmp.set(rand() - 0.5, rand() - 0.5, rand() - 0.5).multiplyScalar(0.08));
+      const c = tinted(at, PUFF, P.lift, new THREE.Color());
+      puff(at, sz * (k === 0 ? 1 : 0.6 + rand() * 0.3), c, P.alpha, (P.growMs + P.fadeMs) / 1000, ix);
+    }
+    // 2. The entry spurt, back toward the camera: what she sees from the front.
+    const S = GORE.spurt;
+    const nSp = S.count[0] + Math.floor(rand() * (S.count[1] - S.count[0] + 1));
+    const red = tinted(h.point, EXIT, P.lift, new THREE.Color());
+    const v = new THREE.Vector3();
+    const backDir = d.clone().negate();
+    for (let k = 0; k < nSp; k++) {
+      cone(backDir, S.coneDeg, v).multiplyScalar(S.speed[0] + rand() * (S.speed[1] - S.speed[0]));
+      v.y += 0.6;
+      drop(h.point, v, 0.012 + rand() * 0.014, red, ix, 1);
+    }
+    // 3. The exit spray along the round, with gravity; a decal where each lands.
+    const E = GORE.exit;
+    const exitAt = h.point.clone().addScaledVector(d, 0.22);
+    const nEx = exitCount(h.weaponCls);
+    let k2 = 0;
+    for (let k = 0; k < nEx; k++) {
+      const speed = E.speed[0] + rand() * (E.speed[1] - E.speed[0]);
+      cone(d, E.coneDeg, v);
+      // Where it will strike the wall behind, if there is one close: it leaves a fleck there (most of the
+      // spray's pattern on the wall comes from these).
+      const wall = k2 < E.wallRays ? o.raycast(exitAt, v, GORE.splat.rayM) : null;
+      const i = drop(exitAt, v.multiplyScalar(speed), E.size[0] + rand() * (E.size[1] - E.size[0]), red, ix, rand() < 0.4 ? 2 : 1);
+      k2++;
+      if (wall) {
+        drops.wallT[i] = wall.point.distanceTo(exitAt) / speed;
+        drops.wallHit.set([wall.point.x, wall.point.y, wall.point.z, wall.normal.x, wall.normal.y, wall.normal.z], i * 6);
+      }
+    }
+    // 4. The wall behind: a splat, sized by damage, that spreads wet over 120 ms.
+    const W = GORE.splat;
+    // The main splat lands square behind him, where his body hides most of it, so two smaller ones go out
+    // along the spray's cone and show past his silhouette.
+    const k = Math.min(1, (h.damage / Math.max(1, h.maxHp)) * 2.5);
+    for (let j = 0; j < 3; j++) {
+      // The satellites go out 25 to 35 degrees off the round, either side, clear of his silhouette.
+      const ray = j === 0 ? d : offAxis(d, (25 + rand() * 10) * (j === 1 ? 1 : -1), new THREE.Vector3());
+      const wall = o.raycast(exitAt, ray, W.rayM);
+      if (!wall) continue;
+      const size = (W.size[0] + (W.size[1] - W.size[0]) * k) * (j === 0 ? 1 : 0.55 + rand() * 0.25);
+      o.decal(wall.point, wall.normal, size, DECAL.blood[3 + Math.floor(rand() * 3)]!, SPLAT_TINT, W.wetInMs);
+    }
+    // 5. The wound, on the body.
+    addWound(h);
+  };
+
+  const tq = new THREE.Quaternion();
+  const tp = new THREE.Vector3();
+  const ts = new THREE.Vector3();
+  const update = (dt: number) => {
+    // Anchored effects ride their segment for the first 80 ms.
+    const anchorS = GORE.anchorMs / 1000;
+    for (const pool of [mist, drops]) {
+      for (let i = pool.n - 1; i >= 0; i--) {
+        const age = (pool.age[i]! += dt);
+        if (age >= pool.life[i]!) {
+          pool.kill(i);
+          continue;
+        }
+        const ax = pool.anchorIx[i]!;
+        if (ax >= 0) {
+          const a = anchors[ax];
+          if (a && age < anchorS) {
+            pool.pos[i * 3]! += a.position.x - pool.anchorAt[i * 3]!;
+            pool.pos[i * 3 + 1]! += a.position.y - pool.anchorAt[i * 3 + 1]!;
+            pool.pos[i * 3 + 2]! += a.position.z - pool.anchorAt[i * 3 + 2]!;
+            pool.anchorAt.set([a.position.x, a.position.y, a.position.z], i * 3);
+          } else pool.anchorIx[i] = -1;
+        }
+        if (pool === drops && pool.wallT[i]! > 0 && age >= pool.wallT[i]!) {
+          // Struck the wall: a fleck, sized by the drop, then gone.
+          const w = pool.wallHit;
+          o.decal(tp.set(w[i * 6]!, w[i * 6 + 1]!, w[i * 6 + 2]!), ts.set(w[i * 6 + 3]!, w[i * 6 + 4]!, w[i * 6 + 5]!), 0.05 + pool.size[i * 3]! * 3 + rand() * 0.06, DECAL.blood[3 + Math.floor(rand() * 3)]!, SPLAT_TINT);
+          pool.kill(i);
+          continue;
+        }
+        if (pool.grav[i]) {
+          pool.vel[i * 3 + 1]! -= 9.8 * dt;
+          const x = (pool.pos[i * 3]! += pool.vel[i * 3]! * dt);
+          const y = (pool.pos[i * 3 + 1]! += pool.vel[i * 3 + 1]! * dt);
+          const z = (pool.pos[i * 3 + 2]! += pool.vel[i * 3 + 2]! * dt);
+          const gy = Math.max(o.ground(x, z), -0.2);
+          if (y < gy) {
+            // Landed: a drop decal (the bigger ones), then it's gone.
+            if (pool.land[i] === 2) o.decal(tp.set(x, gy, z), ts.set(0, 1, 0), 0.06 + rand() * 0.1, DECAL.blood[Math.floor(rand() * 3)]!, new THREE.Color(1, 1, 1));
+            pool.kill(i);
+            continue;
+          }
+        } else {
+          // Mist drifts a little and slows.
+          const k = Math.max(0, 1 - dt * 3);
+          for (let c = 0; c < 3; c++) pool.pos[i * 3 + c]! += pool.vel[i * 3 + c]! * dt * k;
+        }
+      }
+    }
+    mist.write(true);
+    drops.write(false);
+    // Free anchors no particle uses.
+    for (let a = 0; a < anchors.length; a++) {
+      if (!anchors[a]) continue;
+      let used = false;
+      for (const pool of [mist, drops]) for (let i = 0; i < pool.n && !used; i++) if (pool.anchorIx[i] === a) used = true;
+      if (!used) anchors[a] = null;
+    }
+    // Wounds follow their segment; a body that left the scene takes its wounds with it.
+    for (let i = wounds.length - 1; i >= 0; i--) if (wounds[i]!.root && !wounds[i]!.root!.parent) wounds.splice(i, 1);
+    let n = 0;
+    for (const w of wounds) {
+      w.age += dt;
+      w.seg.updateMatrixWorld();
+      m4.multiplyMatrices(w.seg.matrixWorld, w.local);
+      if (w.run) {
+        // The run grows down from the wound over 2 s.
+        const g = Math.min(1, 0.25 + (0.75 * w.age * 1000) / GORE.wound.runMs);
+        m4.decompose(tp, tq, ts);
+        const full = ts.y;
+        ts.y = full * g;
+        // Keep its top pinned at the wound.
+        tp.addScaledVector(new THREE.Vector3(0, 1, 0).applyQuaternion(tq), (full - ts.y) * 0.5);
+        m4.compose(tp, tq, ts);
+      }
+      woundMesh.setMatrixAt(n, m4);
+      const [u, vv] = decalCell(w.run ? DECAL.run[0] : DECAL.wound[0]);
+      woundCell.setXY(n, u, vv);
+      n++;
+    }
+    woundMesh.count = n;
+    woundMesh.instanceMatrix.needsUpdate = true;
+    woundCell.needsUpdate = true;
+  };
+
+  return {
+    hit,
+    update(dt) {
+      update(dt);
+    },
+    clear() {
+      mist.n = drops.n = 0;
+      mist.write(true);
+      drops.write(false);
+      wounds.length = 0;
+      woundMesh.count = 0;
+      anchors.length = 0;
+    },
+    get counts() {
+      return { mist: mist.n, drops: drops.n, wounds: wounds.length, puffM: mist.largest };
+    },
+    caps: { mist: C.mist, drops: C.drops, wounds: C.wounds },
+    dispose() {
+      woundMat.dispose();
+      for (const p of [mist, drops]) (p.mesh.material as THREE.Material).dispose();
+    },
+  };
+}

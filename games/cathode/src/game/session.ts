@@ -105,6 +105,13 @@ export interface Session {
    * crate), peek-head (his head over it), cover-debug-market.
    */
   stage?: (name: string, tMs?: number) => string;
+  /**
+   * What the last stage did, in CSS px (C2 acceptance): where the round landed on screen, how many px 0.2 m
+   * spans there, and the guard's head on screen at the shot and at the stage's moment.
+   */
+  stageInfo?: { hit: { x: number; y: number }; r02: number; head0: { x: number; y: number }; head1: { x: number; y: number }; puffM: number } | null;
+  /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
+  probeRed?: (x: number, y: number, r: number) => { red: number; total: number };
   /** Debug: what a round from `from` to `to` would do with the gun in hand. */
   traceShot?: (from: { x: number; y: number; z: number }, to: { x: number; y: number; z: number }) => ReturnType<Combat["traceShot"]>;
 }
@@ -1486,7 +1493,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // they're emitted and confirmed once per frame in drainEvents, so several pellets confirm as one.
   const frameHits: HitEvent[] = [];
   let frameBlocks = 0;
-  combat.bus.on("hit", (h) => frameHits.push(h));
+  /** Where the last round landed (the stage hooks project it for the C2 blood probe). */
+  let lastHitPoint: THREE.Vector3 | null = null;
+  combat.bus.on("hit", (h) => {
+    frameHits.push(h);
+    lastHitPoint = new THREE.Vector3(h.point.x, h.point.y, h.point.z);
+  });
   combat.bus.on("blocked", () => frameBlocks++);
   combat.bus.on("fire", () => rumble("fire"));
   const byUid = (uid: string) => enemies.find((e) => String(e.id) === uid);
@@ -1565,10 +1577,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   if (new URLSearchParams(location.search).get("debug") === "cover") showCover(true);
   let stageCrate: THREE.Mesh | null = null;
   let crateCollider: { off?: boolean } | null = null;
-  const STAGES = ["hit-body", "hit-head", "hit-kill", "hit-headkill", "hit-soft", "hit-pen", "hit-armourbreak", "blocked", "peek-head", "cover-debug-market"];
+  const STAGES = ["hit-body", "hit-head", "hit-kill", "hit-headkill", "hit-soft", "hit-pen", "hit-armourbreak", "blocked", "peek-head", "cover-debug-market", "enemy-flinch-head-60", "wall-splat"];
+  /** A world point on screen, in CSS px. */
+  const toScreen = (p: THREE.Vector3) => {
+    const v = p.clone().project(world.camera);
+    const c = world.renderer.domElement;
+    return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight };
+  };
   s.stage = (name: string, tMs = 60): string => {
     if (!STAGES.includes(name)) return `unknown stage ${name}`;
     staged = true;
+    s.stageInfo = null;
+    // The flinch stage is a head hit, held 60 ms after the round (C2).
+    if (name === "enemy-flinch-head-60") tMs = 60;
     hud.freeze(null);
     hud.clearFeedback();
     // Nothing carries over from the stage before: ammo, loot on the ground, particles and decals.
@@ -1593,7 +1614,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // A guard 10 m down the crosshair, facing her, unaware.
     // A phone screen is small: the cover stages bring the crate and the guard in so his head over it reads.
     const near = o.quality === "phone" && (name === "blocked" || name === "peek-head") ? 0.6 : 1;
-    const at = eye.clone().addScaledVector(flat, 10 * near);
+    let at = eye.clone().addScaledVector(flat, 10 * near);
+    if (name === "wall-splat") {
+      // A wall within reach behind him: look around for a solid face 8 to 30 m off, and stand him 1.4 m in front.
+      // The nearest wall 9 to 16 m off (so he stands about 10 m out), searched around the view.
+      const yaw0 = Math.atan2(flat.x, flat.z);
+      let best = Infinity;
+      for (let k = 0; k < 48; k++) {
+        const a = yaw0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.13;
+        const d = new THREE.Vector3(Math.sin(a), 0, Math.cos(a));
+        const from = eye.clone().setY(ground(eye.x, eye.z) + 1.3);
+        const h = rays.cast(from, d, 16);
+        if (h && h.dist > 9 && Math.abs(h.normal.y) < 0.3 && Math.abs(h.dist - 11.4) < best) {
+          best = Math.abs(h.dist - 11.4);
+          at = from.clone().addScaledVector(d, h.dist - 1.4);
+          flat.copy(d);
+        }
+      }
+    }
     at.y = ground(at.x, at.z);
     g.motion.pos.copy(at);
     g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z);
@@ -1626,7 +1664,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (stageCrate) stageCrate.visible = crated;
     if (crateCollider) crateCollider.off = !crated;
-    const joint = name === "hit-head" || name === "hit-headkill" || name === "peek-head" ? g.body.joints.head : g.body.joints.chest;
+    const joint = name === "hit-head" || name === "hit-headkill" || name === "peek-head" || name === "enemy-flinch-head-60" ? g.body.joints.head : g.body.joints.chest;
     const aim = joint.clone();
     // Blocked: the round goes into the crate's upper face, square on, with the guard's head showing behind it.
     if (name === "blocked" && stageCrate) aim.copy(stageCrate.position).y += 0.35;
@@ -1649,10 +1687,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const origin = eye.clone().addScaledVector(fwd, 0.3);
     const dir = aim.clone().sub(origin).normalize();
     combat.quiet = true;
+    lastHitPoint = null;
     // No random crit: a stage shows the same class every time.
     combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], { ...build(), crit: 0 });
     combat.quiet = false;
     drainEvents();
+    const hitAt = (lastHitPoint as THREE.Vector3 | null)?.clone() ?? aim.clone();
+    const head0 = toScreen(g.body.joints.head);
     // The world moves on to the stage's moment: the body flinches or falls, blood flies and lands (S0, C2).
     const stepS = 1 / 60;
     for (let t = 0; t + 1e-6 < tMs / 1000; t += stepS) {
@@ -1661,11 +1702,35 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.update(0, 1, h);
     }
     // Classes the street can't produce on cue yet (no plates until C15): show them over the real hit.
+    const r02 = Math.abs(toScreen(hitAt.clone().addScaledVector(new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0), 0.2)).x - toScreen(hitAt).x);
+    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0 };
     if (name === "hit-soft") hud.hitMarker("armour");
     if (name === "hit-pen") hud.hitMarker("pen");
     if (name === "hit-armourbreak") hud.hitMarker("armourBreak");
     hud.freeze(tMs);
     return hud.hitClass ?? (name === "blocked" ? "blocked" : "none");
+  };
+  s.probeRed = (x, y, r) => {
+    render();
+    const c = world.renderer.domElement;
+    const k = c.width / Math.max(1, c.clientWidth);
+    const R = Math.max(1, Math.round(r * k));
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = R * 2;
+    const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+    g2.drawImage(c, Math.round(x * k) - R, Math.round(y * k) - R, R * 2, R * 2, 0, 0, R * 2, R * 2);
+    const px = g2.getImageData(0, 0, R * 2, R * 2).data;
+    let red = 0;
+    let total = 0;
+    for (let j = 0; j < R * 2; j++)
+      for (let i = 0; i < R * 2; i++) {
+        if ((i - R) ** 2 + (j - R) ** 2 > R * R) continue;
+        total++;
+        const o4 = (j * R * 2 + i) * 4;
+        const rr = px[o4]!;
+        if (rr > 45 && rr > px[o4 + 1]! * 1.8 && rr > px[o4 + 2]! * 1.8) red++;
+      }
+    return { red, total };
   };
   s.traceShot = (from, to) => combat.traceShot(new THREE.Vector3(from.x, from.y, from.z), new THREE.Vector3(to.x, to.y, to.z), arsenal.weapon, build());
   // window.cathode.combat (S0): replay HitEvents through the bus exactly as combat emits them, and trace a shot.

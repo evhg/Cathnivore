@@ -85,6 +85,11 @@ export const tuning = {
     weaponPush: { pistol: 0.15, rifle: 0.25, shotgunClose: 0.45, sniperMul: 2.5 },
     /** Archetype poise: heavier kits react less, but every hit still shows (pillar 3). */
     poise: { shield: 0.7, elite: 0.8, turret: 0.25, default: 1 },
+    /**
+     * How far each push bends off the round's line toward the side away from the hit (0 = straight along it).
+     * Straight from the camera, a pure "back" moves nothing on screen; the bend makes it read (pillar 4).
+     */
+    lateral: { head: 0.75, chain: 0.45, root: 0.5, headTorso: 0.35 },
   },
   /** S4.1 the flash: white for one frame, then red fading out. Emissive radiance on the hit segment. */
   hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6 },

@@ -103,10 +103,30 @@ export function flinchImpulse(zone: FlinchZone, dir: Dir, side: number, scale: n
       root = push(Z.leg.pushM);
       break;
   }
-  const h = Math.hypot(dir.x, dir.z) || 1;
-  out.rootX = (dir.x / h) * root;
-  out.rootZ = (dir.z / h) * root;
+  // The shove goes with the round and off to the side it struck: a hit square on from the front would
+  // otherwise move the body only away from the camera, which the eye can't see (pillar 4: overstate).
+  const L = tuning.flinch.lateral;
+  const d = lateral(dir, s, L.root);
+  out.rootX = d.x * root;
+  out.rootZ = d.z * root;
+  if (zone === "head") {
+    // The body rides a headshot a little: a sympathetic tip of the torso.
+    out.torsoTip = Z.torso.pitchDeg * L.headTorso * DEG * scale;
+  }
   return out;
+}
+
+/** `dir` (horizontal) bent toward the struck side by `k` (0 = straight along the round), unit length. */
+export function lateral(dir: Dir, side: number, k: number): Dir {
+  const h = Math.hypot(dir.x, dir.z) || 1;
+  const fx = dir.x / h;
+  const fz = dir.z / h;
+  // The perpendicular pointing to the struck side's opposite: a hit on the body's left pushes it right.
+  const s = side >= 0 ? 1 : -1;
+  const x = fx - fz * s * k * -1;
+  const z = fz + fx * s * k * -1;
+  const n = Math.hypot(x, z) || 1;
+  return { x: x / n, y: 0, z: z / n };
 }
 
 /** The peak a spring reaches after a unit velocity kick from rest (so a kick of v peaks at v x this). */
@@ -153,13 +173,19 @@ export class Flinch {
     }
   }
 
-  /** Adds a hit: each channel gets a velocity kick sized so it peaks at the impulse (S4.1). */
-  hit(zone: FlinchZone, imp: FlinchImpulse, dir: Dir): void {
+  /**
+   * Adds a hit: each channel gets a velocity kick sized so it peaks at the impulse (S4.1). Chains tip along
+   * the round, bent toward the far side from where it struck (`side`, +1 the body's left), so the motion
+   * reads on screen even when the round comes straight from the camera.
+   */
+  hit(zone: FlinchZone, imp: FlinchImpulse, dir: Dir, side = 0): void {
     this.hits++;
+    const L = tuning.flinch.lateral;
     const set = (d: Dir) => {
-      d.x = dir.x;
-      d.y = dir.y;
-      d.z = dir.z;
+      const b = lateral(dir, side, zone === "head" ? L.head : L.chain);
+      d.x = b.x;
+      d.y = 0;
+      d.z = b.z;
     };
     if (zone === "head" || zone === "torso") set(this.headDir);
     if (zone === "torso" || zone === "legL" || zone === "legR") set(this.torsoDir);

@@ -178,7 +178,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   // ------------------------------------------------------------ effects
   const listeners = new Set<(e: WorldEvent) => void>();
   const emit = (e: WorldEvent) => listeners.forEach((l) => l(e));
-  const fxs = createFx({ scene, shared, intensity: options.intensity, quality, colliders, surfaces, groundHeight: level.groundHeight, volume, emit });
+  // Blood and holes also land on shot-only cover (shutters, glass, awnings): it sits in front of the wall behind.
+  const thinFaces = level.builder.shotOnly.filter((c) => !c.obb).map((c) => c.box);
+  const fxs = createFx({ scene, shared, intensity: options.intensity, quality, colliders, thin: thinFaces, surfaces, groundHeight: level.groundHeight, volume, emit });
 
   // ------------------------------------------------------------ reflection and post
   const mainHidden: THREE.Object3D[] = [];

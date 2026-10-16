@@ -9,6 +9,7 @@ import type { Effects, Surface, WorldEvent } from "./types";
 import { DECAL, decalAtlas, decalCell } from "./textures";
 import { patchMaterial, type SharedUniforms } from "./shading";
 import type { Volume } from "./lighting";
+import { createGore } from "./gore";
 
 /** Particle kinds (the shader draws each differently). */
 const K = { soft: 0, streak: 1, smoke: 2, drop: 3, flash: 4 } as const;
@@ -205,6 +206,8 @@ export function createFx(o: {
   intensity: "full" | "reduced";
   quality: "phone" | "high" | "ultra";
   colliders: THREE.Box3[];
+  /** Shot-only cover (shutters, glass, awnings) that decals land on too. */
+  thin?: THREE.Box3[];
   surfaces: Surface[];
   groundHeight: (x: number, z: number) => number;
   volume: Volume;
@@ -299,6 +302,11 @@ export function createFx(o: {
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", "#include <common>\nattribute vec2 aCell;")
       .replace("#include <uv_vertex>", "#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = uv * 0.25 + aCell;\n#endif");
+    // A tint above 1 asks for a little glow (fresh blood on a night wall, S4.5): it reads wet, not black.
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <emissivemap_fragment>",
+      "#include <emissivemap_fragment>\n#ifdef USE_COLOR\ntotalEmissiveRadiance += diffuseColor.rgb * clamp( vColor.r - 1.0, 0.0, 2.0 ) * 0.8;\n#endif",
+    );
   };
   decalMat.customProgramCacheKey = () => "cathode-decal";
   const decalGeo = new THREE.PlaneGeometry(1, 1);
@@ -314,12 +322,18 @@ export function createFx(o: {
   const dm = new THREE.Matrix4();
   const dq = new THREE.Quaternion();
   const zAxis = new THREE.Vector3(0, 0, 1);
-  const addDecal = (pos: THREE.Vector3, normal: THREE.Vector3, size: number, cell: number, tint: THREE.Color) => {
+  /** Decals still spreading "wet in" (S4.5): their slot, placement and age. */
+  const growing: { i: number; pos: THREE.Vector3; q: THREE.Quaternion; size: number; age: number; ms: number }[] = [];
+  const addDecal = (pos: THREE.Vector3, normal: THREE.Vector3, size: number, cell: number, tint: THREE.Color, wetInMs = 0) => {
     if (reduced) return;
     const i = decalNext++ % decalCap;
     dq.setFromUnitVectors(zAxis, normal);
     dq.multiply(new THREE.Quaternion().setFromAxisAngle(zAxis, rand() * Math.PI * 2));
-    dm.compose(tmpV.copy(pos).addScaledVector(normal, 0.012), dq, new THREE.Vector3(size, size, size));
+    const at = pos.clone().addScaledVector(normal, 0.012);
+    for (let g = growing.length - 1; g >= 0; g--) if (growing[g]!.i === i) growing.splice(g, 1);
+    if (wetInMs > 0) growing.push({ i, pos: at, q: dq.clone(), size, age: 0, ms: wetInMs });
+    const s0 = wetInMs > 0 ? size * 0.7 : size;
+    dm.compose(at, dq, new THREE.Vector3(s0, s0, s0));
     decals.setMatrixAt(i, dm);
     decals.setColorAt(i, tint);
     const [u, v] = decalCell(cell);
@@ -333,11 +347,12 @@ export function createFx(o: {
   /** Ray against the static colliders: the nearest hit within `max` metres, with its face normal. */
   const ray = new THREE.Ray();
   const hitP = new THREE.Vector3();
+  const decalBoxes = o.thin?.length ? [...o.colliders, ...o.thin] : o.colliders;
   const raycast = (from: THREE.Vector3, dir: THREE.Vector3, max: number): { point: THREE.Vector3; normal: THREE.Vector3 } | null => {
     ray.set(from, dir);
     let best = max;
     let bestBox: THREE.Box3 | null = null;
-    for (const b of o.colliders) {
+    for (const b of decalBoxes) {
       if (b.containsPoint(from)) continue;
       const h = ray.intersectBox(b, hitP);
       if (!h) continue;
@@ -357,6 +372,19 @@ export function createFx(o: {
     const point = from.clone().addScaledVector(dir, best);
     return { point, normal: boxNormal(bestBox, point) };
   };
+
+  // ---------------------------------------------------------------- gore (S4.5)
+  const gore = createGore({
+    scene: o.scene,
+    quality: o.quality,
+    reduced,
+    noise: o.shared.uNoise,
+    atlas: decalMat.map!,
+    raycast,
+    ground: o.groundHeight,
+    decal: addDecal,
+    light: (p, out) => o.volume.sample(p, out),
+  });
 
   // ---------------------------------------------------------------- casings
   const casingCap = o.quality === "phone" ? 40 : 96;
@@ -383,7 +411,11 @@ export function createFx(o: {
   const ORANGE = new THREE.Color(6, 2.2, 0.5);
   const fx: Effects = {
     get alive() {
-      return live.length;
+      return live.length + gore.counts.mist + gore.counts.drops;
+    },
+    gore,
+    flesh(h) {
+      gore.hit(h);
     },
     clear() {
       // A screenshot stage starts clean: no particles, decals, casings or flash lights from the stage before.
@@ -393,6 +425,8 @@ export function createFx(o: {
       matterLayer.write([]);
       decals.count = 0;
       decalNext = 0;
+      growing.length = 0;
+      gore.clear();
       casings.length = 0;
       casingNext = 0;
       casingMesh.count = 0;
@@ -519,7 +553,7 @@ export function createFx(o: {
   return {
     fx,
     lights,
-    update(dt) {
+    update(dt, camera) {
       // Lights fade fast.
       for (let i = 0; i < lights.length; i++) {
         if (lightLife[i]! <= 0) {
@@ -530,6 +564,18 @@ export function createFx(o: {
         const t = Math.max(0, lightLife[i]! / lightMax[i]!);
         lights[i]!.intensity = (lights[i]!.userData.peak as number) * t * t;
       }
+      // Decals spreading wet: 0.7 to 1.0 of their size, eased out.
+      for (let g = growing.length - 1; g >= 0; g--) {
+        const w = growing[g]!;
+        w.age += dt * 1000;
+        const k = Math.min(1, w.age / w.ms);
+        const sz = w.size * (0.7 + 0.3 * (1 - (1 - k) * (1 - k)));
+        dm.compose(w.pos, w.q, tmpV.set(sz, sz, sz));
+        decals.setMatrixAt(w.i, dm);
+        decals.instanceMatrix.needsUpdate = true;
+        if (k >= 1) growing.splice(g, 1);
+      }
+      gore.update(dt, camera);
       // Particles.
       lightList.length = 0;
       matterList.length = 0;
@@ -599,6 +645,7 @@ export function createFx(o: {
       casingMesh.instanceMatrix.needsUpdate = true;
     },
     dispose() {
+      gore.dispose();
       decalMat.map?.dispose();
       decalMat.dispose();
       brass.dispose();

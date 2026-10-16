@@ -286,7 +286,12 @@ function patchFlash(mat: THREE.Material, uniform: { value: THREE.Vector3[] }): v
       .replace("#include <begin_vertex>", "#include <begin_vertex>\nvHitFlash = uHitFlash[ int( aSeg + 0.5 ) ];");
     shader.fragmentShader = shader.fragmentShader
       .replace("#include <common>", "#include <common>\nvarying vec3 vHitFlash;")
-      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\ntotalEmissiveRadiance += vHitFlash;");
+      // Hottest at the silhouette (a rim), so the hit segment glows at its edges instead of turning into a
+      // flat painted box; the face toward the camera keeps a third of it.
+      .replace(
+        "#include <emissivemap_fragment>",
+        "#include <emissivemap_fragment>\nfloat hfRim = 1.0 - clamp( dot( normalize( normal ), normalize( vViewPosition ) ), 0.0, 1.0 );\ntotalEmissiveRadiance += vHitFlash * ( 0.3 + 0.7 * hfRim * hfRim );",
+      );
   };
   const key = m.customProgramCacheKey?.bind(m);
   m.customProgramCacheKey = () => `${key ? key() : ""}|cathode-hitflash`;

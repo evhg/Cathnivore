@@ -1,3 +1,4 @@
+import type { FleshHit } from "./gore";
 // The contract between the renderer (src/render/) and the game layer (src/game/). The renderer owns the
 // scene, lighting, post-processing and effects; the game layer owns the camera's transform, the player,
 // enemies and rules. Keep this file small and stable: both sides build against it.
@@ -32,6 +33,10 @@ export interface Effects {
   impact(pos: THREE.Vector3, normal: THREE.Vector3, surface: Surface, scale?: number): void;
   /** Blood from a wound, sprayed along `dir`; `amount` 0..1 scales droplets and the splatter decals. */
   blood(pos: THREE.Vector3, dir: THREE.Vector3, amount: number): void;
+  /** A round in flesh (S4.5): entry puff, spurt, exit spray, wall splat and a wound on the segment. */
+  flesh?(hit: FleshHit): void;
+  /** Live gore counts against their caps (the soak test, the budget sidecar). */
+  readonly gore?: { counts: { mist: number; drops: number; wounds: number; puffM: number }; caps: { mist: number; drops: number; wounds: number } };
   /** Sparks and coolant from a cyborg or machine hit. */
   sparks(pos: THREE.Vector3, dir: THREE.Vector3, amount: number): void;
   /** A brass casing ejected from `pos` with `vel`; it bounces and rings on the ground. */
