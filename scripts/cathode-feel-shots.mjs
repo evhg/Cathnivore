@@ -17,7 +17,7 @@ const out = process.env.OUT ?? 'e2e/screenshots'
 mkdirSync(out, { recursive: true })
 const C1 = ['hit-body', 'hit-head', 'hit-kill', 'hit-kill@650', 'hit-soft', 'blocked', 'cover-debug-market']
 // C2 "Hits land on the body": the hit at 10 m, the head flinch 60 ms on, blood on the wall behind.
-const C2 = ['hit-body', 'hit-head', 'enemy-flinch-head-60', 'wall-splat@600', 'hit-kill@650']
+const C2 = ['hit-body', 'hit-head', 'hit-head@160', 'enemy-flinch-head-60', 'wall-splat@600', 'hit-kill@650']
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : process.env.MILESTONE === 'C2' ? C2 : C1
 // C2's red-pixel probe: the share of rendered pixels within 0.2 m of the projected hit point that are
 // red-dominant (the spec's "N", as a share so it holds at every render scale).

@@ -326,6 +326,60 @@ export function decalAtlas(): THREE.CanvasTexture {
     }
     g.fill();
     const dir = rand() * Math.PI * 2;
+    if (i > 2) {
+      // Exit spatter on a wall (S4.5 "splat1..6"): a torn core, a fan of tapered streaks thrown out from it with a
+      // bead at each tip, and a fine mist of dots thinning with distance, so a 0.5 m splat reads as an exit wound
+      // sprayed onto the wall, not a coin.
+      for (let k = 0; k < 4; k++) {
+        const ox = (rand() - 0.5) * core * 0.6;
+        const oy = (rand() - 0.5) * core * 0.6;
+        g.fillStyle = red(0.9);
+        g.beginPath();
+        for (let m = 0; m <= 20; m++) {
+          const a = (m / 20) * Math.PI * 2;
+          const r = core * (0.45 + rand() * 0.35);
+          g.lineTo(cx + ox + Math.cos(a) * r, cy + oy + Math.sin(a) * r);
+        }
+        g.fill();
+      }
+      const fan = 2.2 + rand() * 0.8;
+      const nStreak = 16 + Math.floor(rand() * 8);
+      g.lineCap = "round";
+      for (let k = 0; k < nStreak; k++) {
+        const a = dir + (rand() - 0.5) * fan;
+        const r0 = core * (0.4 + rand() * 0.4);
+        const r1 = core + rand() * (S * 0.47 - core);
+        const w = 1.2 + rand() * 3.2;
+        // A tapered streak: a few strokes, thinner toward the tip.
+        for (let m = 0; m < 3; m++) {
+          const f0 = m / 3;
+          const f1 = (m + 1) / 3;
+          g.strokeStyle = red(0.9 - m * 0.12);
+          g.lineWidth = w * (1 - f0 * 0.7);
+          g.beginPath();
+          g.moveTo(cx + Math.cos(a) * (r0 + (r1 - r0) * f0), cy + Math.sin(a) * (r0 + (r1 - r0) * f0));
+          g.lineTo(cx + Math.cos(a) * (r0 + (r1 - r0) * f1), cy + Math.sin(a) * (r0 + (r1 - r0) * f1));
+          g.stroke();
+        }
+        if (rand() < 0.7) {
+          g.fillStyle = red(0.95);
+          g.beginPath();
+          g.ellipse(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1, w * 0.9 + 0.8, w * 0.6 + 0.6, a, 0, Math.PI * 2);
+          g.fill();
+        }
+      }
+      for (let k = 0; k < 160; k++) {
+        const a = dir + (rand() - 0.5) * (rand() < 0.75 ? fan * 1.2 : 6.2);
+        const r = core * 0.8 + Math.pow(rand(), 1.6) * (S * 0.48 - core * 0.8);
+        const sz = 0.5 + rand() * 1.6 * (1 - r / (S * 0.5)) + 0.3;
+        g.fillStyle = red(0.75 + rand() * 0.2);
+        g.beginPath();
+        g.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, sz, 0, Math.PI * 2);
+        g.fill();
+      }
+      g.restore();
+      continue;
+    }
     for (let k = 0; k < 40; k++) {
       const a = dir + (rand() - 0.5) * (i > 2 ? 1.2 : 6.2);
       const r = core + rand() * (S * 0.42 - core);

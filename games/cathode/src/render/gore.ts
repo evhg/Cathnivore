@@ -21,6 +21,8 @@ export interface FleshHit {
   anchor?: THREE.Object3D;
   /** A head hit: the mist is bigger (a headshot is the hit that has to read most, S4.4's "mist x2"). */
   head?: boolean;
+  /** The killing round: the mist is bigger and the plume thicker (S4.4: a headshot kill is "blood mist x2"). */
+  lethal?: boolean;
   /** Whose body (the per-enemy wound cap). */
   owner?: object;
   /** The body's root: when it leaves the scene its wounds go too. */
@@ -45,9 +47,15 @@ export interface GoreDeps {
 
 /** S4.5 numbers. */
 export const GORE = {
-  puff: { count: [1, 3] as const, size: [0.25, 0.45] as const, farMul: 1.4, farM: 15, phoneMul: 1.5, headMul: 1.35, color: "#8A0E0E", alpha: 0.95, growMs: 200, fadeMs: 350, lift: 0.18 },
+  puff: { count: [1, 3] as const, size: [0.25, 0.45] as const, farMul: 1.4, farM: 15, phoneMul: 1.5, headMul: 1.35, killMul: 1.4, headKillMul: 2, color: "#8A0E0E", alpha: 0.95, growMs: 200, fadeMs: 350, lift: 0.18 },
   spurt: { count: [4, 8] as const, speed: [1, 2.5] as const, coneDeg: 50 },
   exit: { pistol: 15, rifle: 22, smg: 18, shotgun: 6, sniper: 40, melee: 8, launcher: 30, coneDeg: 35, wallRays: 24, speed: [2, 6] as const, size: [0.015, 0.04] as const, color: "#5C0707" },
+  /** A plume of mist thrown out across the view: the cloud blooms past the hit marker's gap (pillar 4). */
+  plume: { count: [4, 6] as const, speed: [1.6, 3.2] as const, size: [0.16, 0.3] as const, grow: 1.9, lifeMs: 520, alpha: 0.9 },
+  /** Droplets are overstated with range so a spray still reads as droplets at 10 m and beyond (x, capped). */
+  dropRange: { perM: 1 / 7, max: 2.4 },
+  /** The share of the street fog blood takes (1 = like everything else). */
+  fog: 0.45,
   anchorMs: 80,
   /** How hard the emissive lift pushes (see tinted()). */
   liftGain: 7,
@@ -149,7 +157,7 @@ class Pool {
       uniforms: { ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog), uNoise: noise },
       vertexShader: GVERT,
       fragmentShader: GFRAG,
-      defines: drop ? { DROP: "" } : {},
+      defines: drop ? { DROP: "", GORE_FOG: GORE.fog.toFixed(2) } : { GORE_FOG: GORE.fog.toFixed(2) },
       fog: true,
       transparent: true,
       depthWrite: false,
@@ -295,8 +303,19 @@ void main() {
     a = body * clamp( 0.45 + ( n - 0.45 ) * 1.1 + ( n2 - 0.5 ) * 0.5 + ( 0.5 - r ) * 0.8, 0.0, 1.0 );
     col *= 0.75 + 0.5 * smoothstep( 0.45, 0.0, r );
   #endif
+  // Blood is the readout that matters most (pillar 4): push its red past the grade's midtone drain, and let the
+  // street fog take only part of it, so a hit at 10 m in rain still reads crimson rather than haze.
+  float l = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+  col = max( vec3( 0.0 ), mix( vec3( l ), col, 1.35 ) );
   gl_FragColor = vec4( col, a * vCol.a );
-  #include <fog_fragment>
+  #ifdef USE_FOG
+    #ifdef FOG_EXP2
+      float fogFactor = 1.0 - exp( - fogDensity * fogDensity * vFogDepth * vFogDepth );
+    #else
+      float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
+    #endif
+    gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, fogFactor * GORE_FOG );
+  #endif
 }
 `;
 
@@ -320,12 +339,14 @@ export function createGore(o: GoreDeps): Gore {
     return i;
   };
   const tmp = new THREE.Vector3();
+  const tmp2 = new THREE.Vector3();
+  const UP = new THREE.Vector3(0, 1, 0);
   const lit = new THREE.Color();
   const PUFF = new THREE.Color(GORE.puff.color);
   const EXIT = new THREE.Color(GORE.exit.color);
   const INK = new THREE.Color(0.012, 0.012, 0.016);
   // Fresh blood is brighter than the dried atlas red: it has to read wet on a night wall.
-  const SPLAT_TINT = new THREE.Color(2, 1.6, 1.6);
+  const SPLAT_TINT = new THREE.Color(2.3, 1.05, 1.05);
 
   /** A colour lit by the street, plus a lift that ignores local light so it reads in the noir grade. */
   // The grade drains saturation from dark midtones (render/post.ts), so blood has to be bright enough (luma
@@ -350,12 +371,13 @@ export function createGore(o: GoreDeps): Gore {
     return out.normalize();
   };
 
-  const puff = (at: THREE.Vector3, size: number, color: THREE.Color, alpha: number, life: number, ix: number) => {
+  const puff = (at: THREE.Vector3, size: number, color: THREE.Color, alpha: number, life: number, ix: number, vel?: THREE.Vector3, grow = 1 / 0.7) => {
     const i = mist.take();
     mist.pos.set([at.x, at.y, at.z], i * 3);
-    mist.vel.fill(0, i * 3, i * 3 + 3);
+    if (vel) mist.vel.set([vel.x, vel.y, vel.z], i * 3);
+    else mist.vel.fill(0, i * 3, i * 3 + 3);
     mist.col.set([color.r, color.g, color.b, alpha], i * 4);
-    mist.size.set([size * 0.7, size, rand()], i * 3);
+    mist.size.set([size / grow, size, rand()], i * 3);
     mist.age[i] = 0;
     mist.life[i] = life;
     mist.grav[i] = 0;
@@ -378,12 +400,12 @@ export function createGore(o: GoreDeps): Gore {
     drops.grav[i] = 1;
     drops.land[i] = land;
     drops.wallT[i] = 0;
-    return i;
     drops.anchorIx[i] = ix;
     if (ix >= 0) {
       const a = anchors[ix]!.position;
       drops.anchorAt.set([a.x, a.y, a.z], i * 3);
     }
+    return i;
   };
 
   // ---- wounds: quads that live on a segment, in its local frame
@@ -482,7 +504,7 @@ export function createGore(o: GoreDeps): Gore {
     const back = tmp.copy(d).negate();
     const ix = anchorOf(h.anchor);
     // A phone shows a guard at 10 m about 20 points tall: the puff is overstated there so it still reads (pillar 4).
-    const sz = puffSize(h.damage, h.maxHp, h.distance, rand()) * (o.quality === "phone" ? GORE.puff.phoneMul : 1) * (h.head ? GORE.puff.headMul : 1);
+    const sz = puffSize(h.damage, h.maxHp, h.distance, rand()) * (o.quality === "phone" ? GORE.puff.phoneMul : 1) * (h.head ? GORE.puff.headMul : 1) * (h.lethal ? (h.head ? GORE.puff.headKillMul : GORE.puff.killMul) : 1);
     if (o.reduced) {
       // Reduced violence: the puff is dark ink; no spray, splats or wounds.
       puff(h.point.clone().addScaledVector(back, 0.05), sz * 0.8, INK, 0.8, 0.45, ix);
@@ -496,6 +518,31 @@ export function createGore(o: GoreDeps): Gore {
       const c = tinted(at, PUFF, P.lift, new THREE.Color());
       puff(at, sz * (k === 0 ? 1 : 0.6 + rand() * 0.3), c, P.alpha, (P.growMs + P.fadeMs) / 1000, ix);
     }
+    // 1b. The plume: mist thrown out across the view (up and to the sides, a little along the round), so the
+    // cloud blooms well past the marker's gap and reads as a burst, not a smudge behind the crosshair.
+    const PL = GORE.plume;
+    const nPl = PL.count[0] + Math.floor(rand() * (PL.count[1] - PL.count[0] + 1)) + (h.lethal ? 3 : 0);
+    const side = tmp2.crossVectors(d, UP);
+    if (side.lengthSq() < 1e-4) side.set(1, 0, 0);
+    side.normalize();
+    const range = sz / puffSize(h.damage, h.maxHp, h.distance, 0.5);
+    for (let k = 0; k < nPl; k++) {
+      const ang = ((k + rand() * 0.6) / nPl) * Math.PI * 2;
+      // Screen-plane directions, biased upward (a hit throws matter up and out), plus a push along the round.
+      const pv = new THREE.Vector3()
+        .addScaledVector(side, Math.cos(ang))
+        .addScaledVector(UP, Math.sin(ang) * 0.8 + 0.35)
+        .addScaledVector(d, 0.5)
+        .normalize()
+        .multiplyScalar(PL.speed[0] + rand() * (PL.speed[1] - PL.speed[0]));
+      const at = h.point.clone().addScaledVector(back, 0.03);
+      // Darker than the puff's lifted core: a crimson mass around a bright centre, not a pink glow.
+      const c = tinted(at, PUFF, P.lift, new THREE.Color()).multiplyScalar(0.5 + rand() * 0.25);
+      const s0 = (PL.size[0] + rand() * (PL.size[1] - PL.size[0])) * range * (h.distance > P.farM ? P.farMul : 1);
+      puff(at, s0 * PL.grow, c, PL.alpha, (PL.lifeMs * (0.8 + rand() * 0.4)) / 1000, ix, pv, PL.grow);
+    }
+    // Droplets are overstated with range, so a spray still reads as droplets rather than noise at 10 m.
+    const dScale = Math.min(GORE.dropRange.max, 1 + h.distance * GORE.dropRange.perM);
     // 2. The entry spurt, back toward the camera: what she sees from the front.
     const S = GORE.spurt;
     const nSp = S.count[0] + Math.floor(rand() * (S.count[1] - S.count[0] + 1));
@@ -505,12 +552,12 @@ export function createGore(o: GoreDeps): Gore {
     for (let k = 0; k < nSp; k++) {
       cone(backDir, S.coneDeg, v).multiplyScalar(S.speed[0] + rand() * (S.speed[1] - S.speed[0]));
       v.y += 0.6;
-      drop(h.point, v, 0.012 + rand() * 0.014, red, ix, 1);
+      drop(h.point, v, (0.012 + rand() * 0.014) * dScale, red, ix, 1);
     }
     // 3. The exit spray along the round, with gravity; a decal where each lands.
     const E = GORE.exit;
     const exitAt = h.point.clone().addScaledVector(d, 0.22);
-    const nEx = exitCount(h.weaponCls);
+    const nEx = Math.round(exitCount(h.weaponCls) * (h.lethal ? 1.5 : 1));
     let k2 = 0;
     for (let k = 0; k < nEx; k++) {
       const speed = E.speed[0] + rand() * (E.speed[1] - E.speed[0]);
@@ -518,7 +565,7 @@ export function createGore(o: GoreDeps): Gore {
       // Where it will strike the wall behind, if there is one close: it leaves a fleck there (most of the
       // spray's pattern on the wall comes from these).
       const wall = k2 < E.wallRays ? o.raycast(exitAt, v, GORE.splat.rayM) : null;
-      const i = drop(exitAt, v.multiplyScalar(speed), E.size[0] + rand() * (E.size[1] - E.size[0]), red, ix, rand() < 0.4 ? 2 : 1);
+      const i = drop(exitAt, v.multiplyScalar(speed), (E.size[0] + rand() * (E.size[1] - E.size[0])) * dScale, red, ix, rand() < 0.4 ? 2 : 1);
       k2++;
       if (wall) {
         drops.wallT[i] = wall.point.distanceTo(exitAt) / speed;
@@ -530,12 +577,16 @@ export function createGore(o: GoreDeps): Gore {
     // The main splat lands square behind him, where his body hides most of it, so two smaller ones go out
     // along the spray's cone and show past his silhouette.
     const k = Math.min(1, (h.damage / Math.max(1, h.maxHp)) * 2.5);
-    for (let j = 0; j < 3; j++) {
-      // The satellites go out 25 to 35 degrees off the round, either side, clear of his silhouette.
-      const ray = j === 0 ? d : offAxis(d, (25 + rand() * 10) * (j === 1 ? 1 : -1), new THREE.Vector3());
+    for (let j = 0; j < 4; j++) {
+      // The satellites go out 22 to 38 degrees off the round, either side (the fourth on a random side, higher),
+      // clear of his silhouette.
+      const sideSign = j === 1 ? 1 : j === 2 ? -1 : rand() < 0.5 ? 1 : -1;
+      const ray = j === 0 ? d : offAxis(d, (22 + rand() * 16) * sideSign, new THREE.Vector3());
+      if (j === 3) ray.y += 0.25;
+      ray.normalize();
       const wall = o.raycast(exitAt, ray, W.rayM);
       if (!wall) continue;
-      const size = (W.size[0] + (W.size[1] - W.size[0]) * k) * (j === 0 ? 1 : 0.55 + rand() * 0.25);
+      const size = (W.size[0] + (W.size[1] - W.size[0]) * k) * (j === 0 ? 1 : 0.7 + rand() * 0.25);
       o.decal(wall.point, wall.normal, size, DECAL.blood[3 + Math.floor(rand() * 3)]!, SPLAT_TINT, W.wetInMs);
     }
     // 5. The wound, on the body.
@@ -585,9 +636,12 @@ export function createGore(o: GoreDeps): Gore {
             continue;
           }
         } else {
-          // Mist drifts a little and slows.
-          const k = Math.max(0, 1 - dt * 3);
-          for (let c = 0; c < 3; c++) pool.pos[i * 3 + c]! += pool.vel[i * 3 + c]! * dt * k;
+          // Mist drifts and slows (a plume is thrown hard, then hangs).
+          const k = Math.max(0, 1 - dt * 5);
+          for (let c = 0; c < 3; c++) {
+            pool.pos[i * 3 + c]! += pool.vel[i * 3 + c]! * dt;
+            pool.vel[i * 3 + c]! *= k;
+          }
         }
       }
     }

@@ -56,6 +56,21 @@ describe("CATHODE gore (S4.5)", () => {
     expect(c.wounds).toBeGreaterThanOrEqual(1);
   });
 
+  it("throws a plume past the puff, and a kill throws more (a headshot kill: mist x2)", () => {
+    const hitAt = (lethal: boolean, head: boolean) => {
+      const { gore } = rig();
+      const b = body();
+      const seg = b.segs.get(head ? "head" : "chest")!.group;
+      gore.hit({ point: (head ? b.joints.head : b.joints.chest).clone(), dir: new THREE.Vector3(0, 0, 1), damage: 25, maxHp: 130, weaponCls: "pistol", distance: 10, anchor: seg, head, lethal });
+      return { mist: gore.counts.mist, drops: gore.counts.drops };
+    };
+    const plain = hitAt(false, false);
+    const kill = hitAt(true, false);
+    expect(plain.mist).toBeGreaterThanOrEqual(GORE.puff.count[0] + GORE.plume.count[0]);
+    expect(kill.mist).toBeGreaterThanOrEqual(plain.mist - (GORE.puff.count[1] - GORE.puff.count[0]) + 3);
+    expect(kill.drops).toBeGreaterThan(plain.drops);
+  });
+
   it("anchors to the hit segment for 80 ms: the spray moves with the flinch", () => {
     const { gore } = rig();
     const b = body();
