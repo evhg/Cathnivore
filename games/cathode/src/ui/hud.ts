@@ -498,6 +498,7 @@ export class Hud {
     this.prop(this.blockedEl, "--a", "0");
     // Kill-feed lines from the stage before would read as this stage's.
     this.feed.replaceChildren();
+    this.toastEl?.classList.remove("on");
     // One-shot animations (the kill rings, the armour shatter, the pops) are held while frozen: drop them.
     const oneShots: Array<[HTMLElement | null, string[]]> = [
       [this.hit, ["pop"]],
@@ -600,8 +601,11 @@ export class Hud {
     this.prop(w.root, "--py", `${Math.round(p.y)}px`);
     // Too near the right edge: the chip opens to the left of the gun instead.
     w.root.classList.toggle("flip", p.x > innerWidth * 0.62);
-    this.text(w.key, p.key);
-    w.key.classList.toggle("wide", p.key.length > 1);
+    const tap = p.key === "Tap";
+    this.text(w.key, tap ? "" : p.key);
+    w.key.classList.toggle("tap", tap);
+    w.key.classList.toggle("wide", !tap && p.key.length > 1);
+    w.key.setAttribute("aria-label", p.key);
     this.text(w.verb, p.verb);
     this.text(w.name, p.name);
     const sig = p.stats.map((x) => x.join(":")).join("|");
@@ -619,7 +623,7 @@ export class Hud {
   private toastEl?: HTMLElement;
   private toastTimer = 0;
   /** An amber toast for a new weapon (S7.1): "NEW WEAPON" over the name, sliding in, gone after 3.2 s. */
-  toast(kind: string, name: string): void {
+  toast(kind: string, name: string, sub?: string): void {
     if (!this.toastEl) {
       this.toastEl = el("div", "hud-toast", this.root);
       this.toastEl.setAttribute("role", "status");
@@ -629,6 +633,7 @@ export class Hud {
     el("p", "hud-toast-kind", t).textContent = kind;
     el("p", "hud-toast-name", t).textContent = name;
     el("i", "hud-toast-rule", t);
+    if (sub) el("p", "hud-toast-sub", t).textContent = sub;
     t.classList.remove("on");
     void t.offsetWidth;
     t.classList.add("on");

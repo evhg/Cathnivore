@@ -39,6 +39,8 @@ export interface JobHost {
   light?(pos: THREE.Vector3, color: THREE.Color, intensity: number, range: number): () => void;
   /** The view, so the glint keeps its on-screen size floor (S7.1); absent in tests. */
   view?(): { cam: THREE.Camera; w: number; h: number; scale: number };
+  /** Makes a box solid for her and for rounds; returns the undo. Absent in tests. */
+  block?(box: THREE.Box3): () => void;
   /** The new-weapon toast and sting (S7.1); absent in tests, where the banner stands in. */
   toast?(kind: string, name: string): void;
 }
@@ -60,6 +62,7 @@ export class Case {
   private t = 0;
   private closing = -1;
   private unlight: (() => void) | null = null;
+  private unblock: (() => void) | null = null;
   constructor(
     readonly pos: THREE.Vector3,
     scene: THREE.Scene,
@@ -68,6 +71,7 @@ export class Case {
     readonly weapon: string | null = "kestrel",
     /** Which way the stall faces (radians about y): towards where she comes from. */
     face = 0,
+    block?: JobHost["block"],
   ) {
     const def = weapon ? SLICE_WEAPONS.find((w) => w.id === weapon) : undefined;
     const leather = new THREE.MeshStandardMaterial({ color: 0x1e1410, roughness: 0.42, metalness: 0.08 });
@@ -76,7 +80,7 @@ export class Case {
     const foam = new THREE.MeshStandardMaterial({ color: 0x5a0f1c, roughness: 0.92, emissive: 0x1a0306 });
     const lining = new THREE.MeshStandardMaterial({ color: 0x2a0d12, roughness: 0.8, emissive: 0x3a1a08, emissiveIntensity: 0.6 });
     const wood = new THREE.MeshStandardMaterial({ color: 0x3a2a1e, roughness: 0.75 });
-    const tarp = new THREE.MeshStandardMaterial({ color: 0x2b3a3c, roughness: 0.6, metalness: 0.05 });
+    const tarp = new THREE.MeshStandardMaterial({ color: 0x3f5a57, roughness: 0.45, metalness: 0.05, side: THREE.DoubleSide });
     const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb347).multiplyScalar(2.2) });
     // The gun, laid on its side along the stall, and the case sized to it.
     if (def) {
@@ -114,8 +118,8 @@ export class Case {
         stall.add(leg);
       }
     // A wet tarp hangs off the front edge, and a work lamp on a pole leans over the case.
-    const drape = new THREE.Mesh(new THREE.PlaneGeometry(W + 0.54, 0.34), tarp);
-    drape.position.set(0, top - 0.17, D / 2 + 0.2);
+    const drape = new THREE.Mesh(new THREE.PlaneGeometry(W + 0.54, 0.16), tarp);
+    drape.position.set(0, top - 0.08, D / 2 + 0.2);
     stall.add(drape);
     const metal = new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.5, metalness: 0.8 });
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.9, 8), metal);
@@ -179,6 +183,9 @@ export class Case {
     scene.add(this.group);
     this.group.updateMatrixWorld(true);
     this.gunAt = new THREE.Vector3(0, top + H + 0.04, 0).applyMatrix4(this.group.matrixWorld);
+    // The trestle is solid (she walks round it, rounds stop in it); only up to its top, so the gun stays in sight.
+    const table = new THREE.Box3(new THREE.Vector3(-(W / 2 + 0.27), 0, -(D / 2 + 0.2)), new THREE.Vector3(W / 2 + 0.27, top, D / 2 + 0.2)).applyMatrix4(this.group.matrixWorld);
+    this.unblock = block?.(table) ?? null;
     // The work lamp's light, over the case.
     this.unlight = light?.(new THREE.Vector3(0.02, 1.7, -(D / 2 + 0.05)).applyMatrix4(this.group.matrixWorld), AMBER, 7, 5) ?? null;
   }
@@ -212,6 +219,7 @@ export class Case {
     this.group.removeFromParent();
     this.beacon.dispose();
     this.unlight?.();
+    this.unblock?.();
   }
 }
 
@@ -279,6 +287,7 @@ export class FirstJob {
   target: THREE.Vector3 | null = null;
   private wave: Enemy[] = [];
   private pickup: Case | null = null;
+  private spent: Case[] = [];
   private lamp: Lamp | null = null;
   private wait = 0;
 
@@ -337,7 +346,9 @@ export class FirstJob {
 
   private goto(stage: number, resumed = false): void {
     this.stage = stage;
-    this.pickup?.remove();
+    // A case she has emptied stays where it stood, shut (the stall doesn't vanish); one she never took goes.
+    if (this.pickup?.taken) this.spent.push(this.pickup);
+    else this.pickup?.remove();
     this.pickup = null;
     const h = this.h;
     switch (stage) {
@@ -360,7 +371,7 @@ export class FirstJob {
       }
       case 2:
         this.objective = "Tomas kept a pistol by his stall. Get it.";
-        this.pickup = new Case(this.P(FIRST_CASE.x, FIRST_CASE.z), h.scene, h.light, "kestrel", Math.atan2(TAKEDOWN_POSE.x - FIRST_CASE.x, TAKEDOWN_POSE.z - FIRST_CASE.z));
+        this.pickup = new Case(this.P(FIRST_CASE.x, FIRST_CASE.z), h.scene, h.light, "kestrel", Math.atan2(TAKEDOWN_POSE.x - FIRST_CASE.x, TAKEDOWN_POSE.z - FIRST_CASE.z), h.block);
         this.target = this.pickup.gunAt;
         h.teach(null);
         h.say("Tomas kept a pistol by the stall. Said it was for rats.");
@@ -383,6 +394,7 @@ export class FirstJob {
         if (!h.progress.unlocks.weapons.includes(w)) {
           this.objective = "Your old case is up on the walkway. Take the stairs.";
           const at = (h.markers.perch?.[0] ?? this.P(-9.2, 30)).clone().add(new THREE.Vector3(0.6, 0, 3));
+          // No collider on the walkway: the trestle would close it off.
           this.pickup = new Case(at, h.scene, h.light, w, Math.atan2(-1 - at.x, 20 - at.z));
           this.target = this.pickup.gunAt;
           h.teach(null);
@@ -396,7 +408,8 @@ export class FirstJob {
         const cls = h.progress.character.classes[0]!;
         const w = CLASS_WEAPON[cls] ?? "kestrel";
         if (!resumed) h.arm(w);
-        h.banner(resumed ? "Checkpoint" : "Checkpoint saved", resumed ? "Back on the walkway" : "Dying now restarts you here");
+        if (!resumed && h.toast) h.toast("New weapon", (SLICE_WEAPONS.find((x) => x.id === w)?.name ?? w).replace(/ \(.*\)$/, ""));
+        else h.banner(resumed ? "Checkpoint" : "Checkpoint saved", resumed ? "Back on the walkway" : "Dying now restarts you here");
         const far = h.markers.perch?.[1];
         this.wave = [
           ...(far ? [h.spawn("sniper", [far.clone()])] : []),
@@ -426,6 +439,7 @@ export class FirstJob {
     const h = this.h;
     const v = h.view?.();
     this.pickup?.update(dt, h.player.pos, v?.cam, v?.w, v?.h, v?.scale);
+    for (const c of this.spent) c.update(dt);
     if (this.wait > 0) {
       this.wait -= dt;
       return;

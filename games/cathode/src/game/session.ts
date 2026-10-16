@@ -328,7 +328,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     arsenal.owned.add(id);
     arsenal.equipId(id);
     const def = SLICE_WEAPONS.find((w) => w.id === id);
-    if (isNew && def) hud.feedLine(`New weapon: ${def.name}`, true);
+    // In the first job the toast announces it (S7.1); a feed line on top would say it twice.
+    if (isNew && def && !tutorial) hud.feedLine(`New weapon: ${def.name}`, true);
   };
   const job = tutorial
     ? new FirstJob({
@@ -345,10 +346,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         banner: (a, b, k) => hud.showBanner(a, b, k),
         light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
         view: () => ({ cam: world.camera, w: innerWidth, h: innerHeight, scale: hudScale }),
+        block: (box) => {
+          world.colliders.push(box);
+          const shot = rays.add(box, "wood");
+          return () => {
+            const i = world.colliders.indexOf(box);
+            if (i >= 0) world.colliders.splice(i, 1);
+            shot.off = true;
+          };
+        },
         toast: (kind, name) => {
-          hud.toast(kind, name);
+          hud.toast(kind, name, "Checkpoint saved");
           audio?.newWeapon();
-          hud.feedLine("Checkpoint saved", false);
         },
       })
     : null;
@@ -1739,7 +1748,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.fx.clear?.();
     if (name === "pickup-taken") {
       // The moment after the press: the lid shut, the toast in, the Kestrel drawn.
-      if (job.stage === 3) job.skipTo(2);
+      if (job.stage !== 2) job.skipTo(2);
+      const taken = job.case;
+      taken?.take();
+      taken?.update(0.25);
       job.skipTo(3);
     } else if (name === "hud-combat") {
       if (job.stage !== 3) job.skipTo(3);
@@ -1787,7 +1799,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // The beacon at its moment: the glint mid-flash, the beam for where she stands (time is frozen in a shot).
     box?.update(0.175, player.pos, world.camera, innerWidth, innerHeight, hudScale);
     const at = box ? box.gunAt.clone() : null;
-    if (name === "pickup-taken") hud.toast("New weapon", "Kestrel 9");
+    if (name === "pickup-taken") hud.toast("New weapon", "Kestrel 9", "Checkpoint saved");
+    // The combat HUD on its own: no toast or feed lines left from arming her.
+    if (name === "hud-combat") hud.clearFeedback();
     const v = at?.clone().project(world.camera);
     const z0 = { x: 0, y: 0 };
     s.stageInfo = { hit: z0, r02: 0, head0: z0, head1: z0, puffM: 0, splats: [], corpse: { pelvis: z0, head: z0, chest: z0 }, caseAt: at && v ? { ...toScreen(at), front: v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1 } : undefined };

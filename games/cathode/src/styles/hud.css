@@ -827,7 +827,7 @@
 /* ---- objective marker (S7.2): an 18u diamond, a 2u cyan stroke, the distance in mono at 14u under it; off screen a
    22u chevron on an ellipse points the way (S7.1 layer 6), with the distance at 13u ---- */
 .hud-wp {
-  --d: calc(var(--u) * 18);
+  --d: max(13px, calc(var(--u) * 18));
   --sw: max(1.5px, calc(var(--u) * 2));
   position: absolute;
   left: 0;
@@ -880,7 +880,7 @@
 .hud-wp-arrow { display: none; }
 .hud-wp.off .hud-wp-mark { display: none; }
 .hud-wp.off .hud-wp-arrow {
-  --a: calc(var(--u) * 22);
+  --a: max(16px, calc(var(--u) * 22));
   display: block;
   position: absolute;
   left: calc(var(--a) / -2);
@@ -951,9 +951,9 @@
   display: grid;
   grid-template-columns: auto auto;
   align-items: center;
-  column-gap: calc(var(--u) * 12);
-  row-gap: calc(var(--u) * 6);
-  padding: calc(var(--u) * 10) calc(var(--u) * 16) calc(var(--u) * 10) calc(var(--u) * 10);
+  column-gap: calc(var(--u) * 16);
+  row-gap: calc(var(--u) * 8);
+  padding: calc(var(--u) * 14) calc(var(--u) * 22) calc(var(--u) * 14) calc(var(--u) * 14);
   background: linear-gradient(90deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .72));
   box-shadow: inset calc(var(--u) * 3) 0 0 var(--amber), inset 0 0 0 1px rgb(var(--amber-rgb) / .35), 0 calc(var(--u) * 8) calc(var(--u) * 24) rgb(var(--black-rgb) / .5);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%);
@@ -964,15 +964,24 @@
 .hud-wprompt.flip .hud-wprompt-chip { left: auto; right: calc(var(--u) * 64); }
 .hud-wprompt-key {
   grid-row: span 2;
-  min-width: calc(var(--u) * 22);
-  height: calc(var(--u) * 22);
-  padding: 0 calc(var(--u) * 6);
-  font: 700 max(12px, calc(var(--u) * 14))/1 var(--font-num);
+  min-width: max(22px, calc(var(--u) * 30));
+  height: max(22px, calc(var(--u) * 30));
+  padding: 0 calc(var(--u) * 8);
+  font: 700 max(13px, calc(var(--u) * 19))/1 var(--font-num);
   color: var(--night);
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
   box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
 }
 .hud-wprompt-key.wide { font-family: var(--font-ui); letter-spacing: .08em; text-transform: uppercase; }
+/* Touch: the chip is the button; the cap shows a tap ring instead of a key. */
+.hud-wprompt-key.tap::before {
+  content: "";
+  width: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: max(2px, calc(var(--u) * 3)) solid var(--night);
+  box-shadow: 0 0 0 max(1px, calc(var(--u) * 2)) rgb(var(--black-rgb) / .25);
+}
 .hud-wprompt-main {
   display: flex;
   align-items: baseline;
@@ -980,31 +989,31 @@
   margin: 0;
 }
 .hud-wprompt-verb {
-  font: 700 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
+  font: 700 max(12px, calc(var(--u) * 18))/1 var(--font-ui);
   letter-spacing: .2em;
   text-transform: uppercase;
   color: var(--amber);
 }
 .hud-wprompt-sep { color: var(--ink-3); }
 .hud-wprompt-name {
-  font: 600 max(14px, calc(var(--u) * 24))/1 var(--font-display);
+  font: 600 max(16px, calc(var(--u) * 32))/1 var(--font-display);
   letter-spacing: .01em;
   color: var(--ink);
 }
 .hud-wprompt-stats {
   display: flex;
-  gap: calc(var(--u) * 14);
+  gap: calc(var(--u) * 20);
   margin: 0;
 }
 .hud-wprompt-stat { display: grid; gap: calc(var(--u) * 2); }
 .hud-wprompt-stat i {
-  font: 700 max(12px, calc(var(--u) * 11))/1 var(--font-ui);
+  font: 700 max(12px, calc(var(--u) * 13))/1 var(--font-ui);
   font-style: normal;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
-.hud-wprompt-stat b { font: 700 max(12px, calc(var(--u) * 16))/1 var(--font-num); color: var(--ink); }
+.hud-wprompt-stat b { font: 700 max(12px, calc(var(--u) * 21))/1 var(--font-num); color: var(--ink); }
 .hud-wprompt.is-in .hud-wprompt-chip { animation: wprompt-in 280ms var(--ease-out); }
 .hud-wprompt.is-in .hud-wprompt-lead { animation: wprompt-lead 200ms var(--ease-out); }
 @keyframes wprompt-in { from { opacity: 0; translate: calc(var(--u) * -12) 0; } }
@@ -1013,46 +1022,52 @@
   .hud-wprompt-chip { pointer-events: auto; cursor: pointer; }
 }
 
-/* ---- new-weapon toast (S7.1): amber, sliding in under the objective's line of sight, 3.2 s ---- */
+/* ---- new-weapon toast (S7.1): amber, sliding in from the right over the arms cluster it now belongs to, 3.2 s ---- */
 .hud-toast {
   position: absolute;
-  left: 50%;
-  top: 21%;
+  right: var(--edge-r);
+  bottom: calc(var(--edge-b) + var(--u) * 150);
   display: grid;
-  justify-items: center;
+  justify-items: end;
   gap: calc(var(--u) * 6);
-  padding: calc(var(--u) * 14) calc(var(--u) * 48) calc(var(--u) * 16);
-  background: radial-gradient(70% 100% at 50% 50%, rgb(var(--shade-rgb) / .78), rgb(var(--shade-rgb) / .4) 70%, transparent);
-  transform: translateX(-50%);
-  text-align: center;
+  padding: calc(var(--u) * 14) 0 calc(var(--u) * 16) calc(var(--u) * 90);
+  background: linear-gradient(270deg, rgb(var(--shade-rgb) / .82), rgb(var(--shade-rgb) / .55) 60%, transparent);
+  text-align: right;
   opacity: 0;
   pointer-events: none;
   z-index: var(--z-hud);
 }
 .hud-toast-kind {
-  font: 700 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
+  padding-right: calc(var(--u) * 4);
+  font: 700 max(12px, calc(var(--u) * 16))/1 var(--font-ui);
   letter-spacing: .34em;
   text-transform: uppercase;
   color: var(--amber);
 }
 .hud-toast-name {
-  font: 600 max(22px, calc(var(--u) * 52))/1 var(--font-display);
+  font: 600 max(22px, calc(var(--u) * 56))/1 var(--font-display);
   font-variation-settings: "opsz" 72;
   color: var(--ink);
   text-shadow: 0 0 calc(var(--u) * 24) rgb(var(--amber-rgb) / .35), var(--hud-shadow);
 }
 .hud-toast-rule {
-  width: calc(var(--u) * 220);
+  width: calc(var(--u) * 260);
   height: max(1px, calc(var(--u) * 2));
-  background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  background: linear-gradient(270deg, var(--amber), transparent);
+  transform-origin: right;
+}
+.hud-toast-sub {
+  font: 600 max(12px, calc(var(--u) * 15))/1 var(--font-num);
+  letter-spacing: .06em;
+  color: var(--ink-2);
 }
 .hud-toast.on { animation: toast-life 3.2s var(--ease-out) forwards; }
 .hud-toast.on .hud-toast-rule { animation: toast-rule 600ms 120ms var(--ease-out) backwards; }
 @keyframes toast-life {
-  0% { opacity: 0; transform: translate(calc(-50% + var(--u) * 60), 0); }
-  9% { opacity: 1; transform: translateX(-50%); }
-  85% { opacity: 1; transform: translateX(-50%); }
-  100% { opacity: 0; transform: translate(-50%, calc(var(--u) * -10)); }
+  0% { opacity: 0; transform: translateX(calc(var(--u) * 80)); }
+  9% { opacity: 1; transform: none; }
+  85% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(calc(var(--u) * -10)); }
 }
 @keyframes toast-rule { from { transform: scaleX(0); } }
 
@@ -1234,6 +1249,19 @@
   .hud-tr { right: calc(196px + var(--safe-r)); align-items: flex-end; gap: var(--sp-3); }
   .hud-tl > *,
   .hud-tr > * { position: relative; inset: auto; }
+  /* The arms sit top right and the buttons bottom right on a phone: the toast takes the middle band instead. */
+  .hud-toast {
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    top: 56%;
+    translate: -50% 0;
+    justify-items: center;
+    text-align: center;
+    padding: 8px 48px 10px;
+    background: radial-gradient(70% 100% at 50% 50%, rgb(var(--shade-rgb) / .8), transparent);
+  }
+  .hud-toast-rule { background: linear-gradient(90deg, transparent, var(--amber), transparent); transform-origin: center; }
   .hud-objective { max-width: min(40ch, 46vw); font-size: var(--t-body); }
   .hud-vitals { width: min(220px, 30vw); }
   .hud-feed { max-width: 44vw; }
