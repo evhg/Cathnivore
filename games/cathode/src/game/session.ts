@@ -1653,6 +1653,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     s.hp = s.maxHp;
     g.hp = g.kit.maxHp;
+    // A stage starts from a body at rest: a previous stage's flinch still ringing would add to (or cancel) this one.
+    g.flinch.reset();
     const sightFar: Sight = { eye: new THREE.Vector3(0, -500, 0), chest: new THREE.Vector3(0, -500, 0), light: 0, low: 1, speed: 0, stealth: 0 };
     g.update(0.0001, sightFar, rays, world.colliders, ground);
     // Blocked: a steel crate 6 m out, chest high on him, so his head shows over it.
