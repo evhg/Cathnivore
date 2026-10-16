@@ -49,6 +49,8 @@
   --cyan: #2ee6ff;
   --cyan-ink: #7ff0ff;
   --amber: #ffb347;
+  --amber-hi: #ffd27d;
+  --amber-deep: #7a4d12;
   --green: #5fe08f;
   --steel: #8fa3b8;
   --steel-deep: #5d6f82;
@@ -69,31 +71,37 @@
 
   /* --- materials --- */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --scan: repeating-linear-gradient(0deg, rgb(235 230 220 / .028) 0 1px, transparent 1px 3px);
+  --scan: repeating-linear-gradient(0deg, rgb(235 230 220 / .028) 0 1px, transparent 1px 3px); /* px-ok */
   --mat-ink: linear-gradient(180deg, rgb(18 21 29 / .97), rgb(9 10 14 / .98));
   --mat-scrim: radial-gradient(120% 90% at 50% 40%, rgb(4 5 8 / .62), rgb(4 5 8 / .92));
   --mat-scrim-b: linear-gradient(to top, rgb(4 5 8 / .78), rgb(4 5 8 / .4) 45%, transparent);
   --mat-plate: radial-gradient(closest-side, rgb(4 5 8 / .62), rgb(4 5 8 / .38) 70%, transparent);
-  --hatch: repeating-linear-gradient(135deg, rgb(235 230 220 / .05) 0 2px, transparent 2px 7px);
+  --hatch: repeating-linear-gradient(135deg, rgb(235 230 220 / .05) 0 2px, transparent 2px 7px); /* px-ok */
 
   /* --- shape --- */
-  --r-0: 0; --r-1: 2px; --r-2: 4px;
-  --cut-s: 6px; --cut-m: 12px; --cut-l: 20px;
-  --tick: 10px;
+  --r-0: 0; --r-1: calc(var(--u) * 2.7); --r-2: calc(var(--u) * 5.3);
+  --cut-s: calc(var(--u) * 8); --cut-m: calc(var(--u) * 16); --cut-l: calc(var(--u) * 26.7);
+  --tick: calc(var(--u) * 13.3);
 
   /* --- elevation (box-shadow only on unclipped elements; clipped ones use filter, static screens only) --- */
-  --sh-1: 0 1px 0 rgb(0 0 0 / .6), 0 6px 14px -6px rgb(0 0 0 / .7);
-  --sh-2: 0 18px 40px -16px rgb(0 0 0 / .85);
+  --sh-1: 0 1px 0 rgb(0 0 0 / .6), 0 calc(var(--u) * 8) calc(var(--u) * 18.7) calc(var(--u) * -8) rgb(0 0 0 / .7);
+  --sh-2: 0 calc(var(--u) * 24) calc(var(--u) * 53.3) calc(var(--u) * -21.3) rgb(0 0 0 / .85);
   --sh-in: inset 0 1px 0 rgb(235 230 220 / .07), inset 0 -1px 0 rgb(0 0 0 / .5);
-  --glow-cyan: 0 0 0 1px rgb(var(--cyan-rgb) / .55), 0 0 18px rgb(var(--cyan-rgb) / .35);
-  --glow-blood: 0 0 0 1px rgb(var(--blood-rgb) / .6), 0 0 20px rgb(var(--blood-rgb) / .35);
-  --glow-amber: 0 0 0 1px rgb(var(--amber-rgb) / .6), 0 0 22px rgb(var(--amber-rgb) / .4);
-  --hud-shadow: 0 1px 0 rgb(0 0 0 / .9), 0 0 8px rgb(0 0 0 / .75);
+  --glow-cyan: 0 0 0 1px rgb(var(--cyan-rgb) / .55), 0 0 calc(var(--u) * 24) rgb(var(--cyan-rgb) / .35);
+  --glow-blood: 0 0 0 1px rgb(var(--blood-rgb) / .6), 0 0 calc(var(--u) * 26.7) rgb(var(--blood-rgb) / .35);
+  --glow-amber: 0 0 0 1px rgb(var(--amber-rgb) / .6), 0 0 calc(var(--u) * 29.3) rgb(var(--amber-rgb) / .4);
+  --hud-shadow: 0 1px 0 rgb(0 0 0 / .9), 0 0 calc(var(--u) * 10.7) rgb(0 0 0 / .75);
 
   /* --- HUD unit (docs/design/cathode-combat.md S8): 1u = 1/1080 of the screen height (or 1/1920 of the width,
      whichever is smaller), floored for phones and capped for 8K. 1u = 1.333 CSS px at 2560x1440, 0.83 at
-     1440x900, 0.62 on a phone held sideways. --hud-scale is the HUD-scale setting (0.8 to 1.3). --- */
-  --u: calc(clamp(.62px, min(100svh / 1080, 100vw / 1920), 2.4px) * var(--hud-scale, 1));
+     1440x900 (the width decides on 16:10), 0.62 on a phone held sideways. --hud-scale is the HUD-size setting
+     (0.8 to 1.3). Every size in games/cathode/src/styles is written in it (scripts/font-budget.ts lints raw px). --- */
+  --u: calc(clamp(.62px, min(100svh / 1080, 100vw / 1920), 2.4px) * var(--hud-scale, 1)); /* px-ok */
+  /* The title-safe frame (S8): the HUD keeps 4% of the width and 4.5% of the height clear of the edges, and on
+     an ultrawide the critical clusters stay inside the centred 16:9 (--frame-x is the side bars' width). */
+  --safe-x: max(env(safe-area-inset-left, 0px), 4vw);
+  --safe-y: max(env(safe-area-inset-top, 0px), 4.5svh);
+  --frame-x: max(0px, (100vw - 100svh * 16 / 9) / 2);
 
   /* --- hit confirm (S1.2): the marker's colours by class --- */
   --hit-body: #f4f1ea;
@@ -105,7 +113,9 @@
   --hit-outline: rgb(0 0 0 / .67);
 
   /* --- HUD layout --- */
-  --hud-edge: clamp(12px, 2.2vw, 32px);
+  --hud-edge-x: var(--safe-x);
+  --hud-edge-y: var(--safe-y);
+  --hud-edge: var(--hud-edge-x);
   /* rem, so the clusters grow with the type on big screens (html font-size scales with the window) */
   --cluster-w: 17.5rem;
 
@@ -144,7 +154,7 @@
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
     --t-num-hero: 1.625rem; --t-num-ammo: 2.125rem; --t-body-l: .9375rem;
-    --hud-edge: 10px; --cluster-w: 12.5rem;
+    --hud-edge-x: 10px; --hud-edge-y: 10px; --frame-x: 0px; --cluster-w: 12.5rem; /* px-ok: a phone keeps its corners for the thumbs */
   }
 }
 /* Phones held upright: the clusters stack, so the subtitle gets the full width above them. */

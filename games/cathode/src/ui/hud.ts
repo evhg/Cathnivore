@@ -42,6 +42,10 @@ export interface HudState {
   defence?: string;
   /** Where the objective is on screen (0..1 each way), metres away, and whether it's behind her. */
   waypoint?: { x: number; y: number; dist: number; behind: boolean } | null;
+  /** Aiming down the sights (the objective marker steps back, S7.2). */
+  ads?: boolean;
+  /** A weapon in reach and in sight (S7.1 layer 5): where on screen (CSS px), the key, and its name and stats. */
+  pickup?: { x: number; y: number; key: string; verb: string; name: string; stats: Array<[string, string]> } | null;
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, parent?: HTMLElement): HTMLElementTagNameMap[K] {
@@ -125,6 +129,8 @@ export class Hud {
     if (loadPrefs().bigSubs) this.root.classList.add("big-subs");
     document.documentElement.classList.toggle("colour-safe", loadPrefs().colourSafe);
     this.root.style.setProperty("--xs", String(loadPrefs().crossScale));
+    // The HUD-size setting (S8): on the root, so --u (and every size written in it) follows.
+    document.documentElement.style.setProperty("--hud-scale", String(loadPrefs().hudScale));
     // Objective, top left: a case note with the case as its eyebrow.
     // On touch the objective and vitals stack in the top-left corner, the arms and feed in the top right; on
     // desktop these wrappers are `display: contents` and each cluster takes its own corner.
@@ -267,7 +273,8 @@ export class Hud {
       this.ammo.classList.toggle("low", s.mag > 0 && s.mag <= quarter);
       this.ammo.classList.toggle("empty", s.mag <= 0);
     }
-    set(this.cross, "--gap", `${Math.round(6 + s.spread)}px`);
+    // The gap opens with spread, in HUD units so it reads the same at every screen size (S8).
+    set(this.cross, "--gap", `calc(var(--u) * ${Math.round((6 + s.spread) * 4 / 3)})`);
     this.show(this.cross, !s.scoped);
     this.show(this.scope, s.scoped);
     if (s.scoped) {
@@ -280,35 +287,49 @@ export class Hud {
       const first = this.objText.textContent === "";
       this.objText.textContent = s.objective;
       if (!first) this.punch(this.objective, "is-new", 1000);
+      this.wpPulse = 6;
     }
     this.show(this.objective, !!s.objective);
-    // The waypoint: a diamond over the objective, pinned to the screen edge with a chevron when it's off screen.
+    // The objective marker (S7.2): an 18u diamond over the objective with its distance under it; off screen, a 22u
+    // chevron on an ellipse at 42% x 40% of the viewport points the way (S7.1 layer 6). Within 5 m or aiming, it
+    // shrinks to 60% and fades to 40%; for 6 s after the objective changes it pulses at 1 Hz.
     if (!this.wp) {
       this.wp = el("div", "hud-wp", this.root);
+      this.wp.setAttribute("aria-hidden", "true");
       el("span", "hud-wp-mark", this.wp);
+      el("span", "hud-wp-arrow", this.wp);
       this.wpDist = el("span", "hud-wp-dist num", this.wp);
     }
     this.show(this.wp, !!s.waypoint);
+    this.wpPulse = Math.max(0, this.wpPulse - dt);
     if (s.waypoint) {
       const w = s.waypoint;
-      let x = w.x;
-      let y = w.y;
+      const W = innerWidth;
+      const H = innerHeight;
+      let dx = (w.x - 0.5) * W;
+      let dy = (w.y - 0.5) * H;
       if (w.behind) {
-        x = x < 0.5 ? 0 : 1;
-        y = 0.5;
+        // Behind her: point to whichever side is nearer, level with the centre.
+        dx = (dx < 0 ? -1 : 1) * Math.max(Math.abs(dx), W);
+        dy *= 0.3;
       }
-      const off = w.behind || x < 0.04 || x > 0.96 || y < 0.1 || y > 0.9;
-      const cx = Math.min(0.96, Math.max(0.04, x));
-      const cy = Math.min(0.9, Math.max(0.1, y));
-      // Chevron angle: from the screen centre towards where the objective really is.
-      const ang = Math.atan2(y - 0.5, x - 0.5);
-      set(this.wp, "--px", `${Math.round(cx * innerWidth)}px`);
-      set(this.wp, "--py", `${Math.round(cy * innerHeight)}px`);
-      set(this.wp, "--ang", `${ang.toFixed(2)}rad`);
+      const a = 0.42 * W;
+      const b = 0.4 * H;
+      const k = Math.hypot(dx / a, dy / b);
+      const off = w.behind || w.x < 0.03 || w.x > 0.97 || w.y < 0.05 || w.y > 0.95;
+      // On screen the diamond rides the objective; off it, the chevron sits on the ellipse in its direction.
+      const px = off ? W / 2 + dx / Math.max(k, 1e-6) : w.x * W;
+      const py = off ? H / 2 + dy / Math.max(k, 1e-6) : w.y * H;
+      set(this.wp, "--px", `${Math.round(px)}px`);
+      set(this.wp, "--py", `${Math.round(py)}px`);
+      set(this.wp, "--ang", `${Math.atan2(dy, dx).toFixed(3)}rad`);
       this.wp.classList.toggle("off", off);
-      this.wp.classList.toggle("near", w.dist < 8);
+      this.wp.classList.toggle("near", !off && (w.dist < 5 || !!s.ads));
+      this.wp.classList.toggle("pulse", this.wpPulse > 0);
       this.text(this.wpDist!, `${Math.round(w.dist)} m`);
     }
+    // The world prompt on a weapon in reach (S7.1 layer 5).
+    this.updatePickup(s.pickup ?? null);
     set(this.batBar.root, "--v", Math.max(0, Math.min(1, s.battery)).toFixed(3));
     while (this.slots.children.length < 2) {
       const c = el("div", "hud-slot", this.slots);
@@ -542,6 +563,80 @@ export class Hud {
   private teachText: string | null = null;
   private wp?: HTMLElement;
   private wpDist?: HTMLElement;
+  private wpPulse = 6;
+  private wprompt?: { root: HTMLElement; key: HTMLElement; verb: HTMLElement; name: HTMLElement; stats: HTMLElement };
+  private wpromptKey = "";
+  /** A tap on the world prompt (touch): the session takes the weapon. */
+  onTake: (() => void) | null = null;
+
+  private updatePickup(p: HudState["pickup"]): void {
+    if (!p) {
+      if (this.wprompt && !this.wprompt.root.hidden) this.wprompt.root.hidden = true;
+      return;
+    }
+    if (!this.wprompt) {
+      const root = el("div", "hud-wprompt", this.root);
+      el("i", "hud-wprompt-pin", root);
+      el("i", "hud-wprompt-lead", root);
+      const chip = el("div", "hud-wprompt-chip", root);
+      const key = el("span", "c-key hud-wprompt-key", chip);
+      const main = el("p", "hud-wprompt-main", chip);
+      const verb = el("span", "hud-wprompt-verb", main);
+      el("span", "hud-wprompt-sep", main).textContent = "·";
+      const name = el("span", "hud-wprompt-name", main);
+      const stats = el("p", "hud-wprompt-stats", chip);
+      chip.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        this.onTake?.();
+      });
+      this.wprompt = { root, key, verb, name, stats };
+      root.hidden = true;
+    }
+    const w = this.wprompt;
+    const was = w.root.hidden;
+    w.root.hidden = false;
+    if (was) this.punch(w.root, "is-in", 320);
+    this.prop(w.root, "--px", `${Math.round(p.x)}px`);
+    this.prop(w.root, "--py", `${Math.round(p.y)}px`);
+    // Too near the right edge: the chip opens to the left of the gun instead.
+    w.root.classList.toggle("flip", p.x > innerWidth * 0.62);
+    this.text(w.key, p.key);
+    w.key.classList.toggle("wide", p.key.length > 1);
+    this.text(w.verb, p.verb);
+    this.text(w.name, p.name);
+    const sig = p.stats.map((x) => x.join(":")).join("|");
+    if (sig !== this.wpromptKey) {
+      this.wpromptKey = sig;
+      w.stats.replaceChildren();
+      for (const [label, value] of p.stats) {
+        const c = el("span", "hud-wprompt-stat", w.stats);
+        el("i", "", c).textContent = label;
+        el("b", "num", c).textContent = value;
+      }
+    }
+  }
+
+  private toastEl?: HTMLElement;
+  private toastTimer = 0;
+  /** An amber toast for a new weapon (S7.1): "NEW WEAPON" over the name, sliding in, gone after 3.2 s. */
+  toast(kind: string, name: string): void {
+    if (!this.toastEl) {
+      this.toastEl = el("div", "hud-toast", this.root);
+      this.toastEl.setAttribute("role", "status");
+    }
+    const t = this.toastEl;
+    t.replaceChildren();
+    el("p", "hud-toast-kind", t).textContent = kind;
+    el("p", "hud-toast-name", t).textContent = name;
+    el("i", "hud-toast-rule", t);
+    t.classList.remove("on");
+    void t.offsetWidth;
+    t.classList.add("on");
+    clearTimeout(this.toastTimer);
+    this.toastTimer = window.setTimeout(() => {
+      if (!this.frozen) t.classList.remove("on");
+    }, 3200);
+  }
 
   /** The how-to line for what the game is teaching right now (null hides it). Key names become keycaps. */
   teach(text: string | null): void {
@@ -752,6 +847,19 @@ export class Hud {
       xi.addEventListener("input", () => {
         savePrefs({ ...loadPrefs(), crossScale: Number(xi.value) / 100 });
         this.root.style.setProperty("--xs", String(Number(xi.value) / 100));
+      });
+      const hs = el("label", "hud-set", set);
+      el("span", "hud-set-name", hs).textContent = "HUD size";
+      const hi = el("input", "hud-slider", hs) as HTMLInputElement;
+      hi.type = "range";
+      hi.min = "80";
+      hi.max = "130";
+      hi.step = "5";
+      hi.value = String(Math.round(prefs.hudScale * 100));
+      hi.addEventListener("input", () => {
+        savePrefs({ ...loadPrefs(), hudScale: Number(hi.value) / 100 });
+        document.documentElement.style.setProperty("--hud-scale", String(Number(hi.value) / 100));
+        window.dispatchEvent(new Event("cathode:prefs"));
       });
       toggle("Calm camera", "calmCamera");
       {

@@ -22,12 +22,13 @@ import { tuning } from "./feel/tuning";
 import { AUTOMATIC, confirmSound, hitClass, hitStopMs, type HitEvent } from "../sim/hitevent";
 import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
-import { Hud } from "../ui/hud";
+import { Hud, type HudState } from "../ui/hud";
 import { Audio } from "./audio";
 import { CLASS_WEAPON, Progress } from "./progress";
 import { Pickups, gunDrop } from "./pickups";
 import type { Item } from "../sim/loot";
-import { FirstJob } from "./firstjob";
+import { FirstJob, TAKEDOWN_POSE, TAKE_RANGE } from "./firstjob";
+import { codesFor, keyLabel } from "../controls";
 import { CrispJob } from "./crispjob";
 import { QuayJob } from "./quayjob";
 import { ManifestJob } from "./manifestjob";
@@ -118,6 +119,8 @@ export interface Session {
     puffM: number;
     splats: { x: number; y: number; r: number }[];
     corpse: { pelvis: { x: number; y: number }; head: { x: number; y: number }; chest: { x: number; y: number } };
+    /** C3: the first gun's case on screen (CSS px), and whether it is in front of the camera. */
+    caseAt?: { x: number; y: number; front: boolean };
   } | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
   probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[] };
@@ -341,6 +344,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         teach: (t) => hud.teach(t),
         banner: (a, b, k) => hud.showBanner(a, b, k),
         light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+        view: () => ({ cam: world.camera, w: innerWidth, h: innerHeight, scale: hudScale }),
+        toast: (kind, name) => {
+          hud.toast(kind, name);
+          audio?.newWeapon();
+          hud.feedLine("Checkpoint saved", false);
+        },
       })
     : null;
   // The second job, Crisp's ledger, picks up once the Fish Market is closed.
@@ -600,6 +609,23 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   s.job = job;
+  // The HUD-size setting (S8), for the glint's on-screen size floor.
+  let hudScale = loadPrefs().hudScale;
+  // The take key is the takedown key (F unless rebound): one interact button, never Q/E (lean).
+  const takeKeyNow = () => keyLabel(codesFor(loadPrefs().binds, "takedown")[0] ?? "KeyF");
+  let takeKey = takeKeyNow();
+  window.addEventListener("cathode:prefs", () => {
+    hudScale = loadPrefs().hudScale;
+    takeKey = takeKeyNow();
+  });
+  // S7.1 layer 7: Cath's nudge the first time the first gun is on screen within 12 m, and a one-time look assist
+  // (up to 10 degrees of yaw over 600 ms) if the mouse is idle. Never forced: any look input cancels it.
+  let nudged = false;
+  let lookIdle = 0;
+  let assist: { left: number; rate: number } | null = null;
+  let promptShown = false;
+  // A tap on the prompt (touch) is the same press.
+  hud.onTake = () => (input.forced.takedown = true);
   const actives = new Actives();
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;
@@ -1062,6 +1088,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         audio?.pin(true);
       }
     }
+    // Weapons need a press (S7.1): the same key as a takedown, when there's no one to take down.
+    if (intent.takedown && !canTakedown && !dead && job?.take()) audio?.promptUp();
     const combatT0 = performance.now();
     combat.update(dt, build());
 
@@ -1070,7 +1098,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!dead && intent.skill1) actives.use(0, progress.character, progress.stats, ctx);
     if (!dead && intent.skill2) actives.use(1, progress.character, progress.stats, ctx);
     actives.update(dt, progress.stats, world, world.colliders, ground, enemies);
-    if (!dead) for (const d of pickups.update(dt, player.pos)) collect(d);
+    // Ammo and cash are walk-in; a gun she hasn't carried is taken with a press (S7.1), like the first one.
+    const needsPress = (d: { gun?: string }) => !!d.gun && !arsenal.owned.has(d.gun) && (!job || job.done);
+    if (!dead) for (const d of pickups.update(dt, player.pos, { needsPress, take: intent.takedown && !canTakedown })) collect(d);
     if (!dead && s.hp > 0) {
       const zone = inMarket ? zones.update(player.pos.z) : undefined;
       if (zone) hud.showBanner(zone.name, zone.sub);
@@ -1335,7 +1365,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       wind: world.wind.x,
       objective,
       caseName,
-      waypoint: waypoint(),
+      ...(() => {
+        // The world prompt takes over from the objective marker once she's at the weapon.
+        const pickup = pickupPrompt(realDt, intent.look);
+        return { pickup, waypoint: pickup ? null : waypoint() };
+      })(),
+      ads: arsenal.aiming,
       takedown: canTakedown,
       bulletTime: focusing ? 1 : 0,
       skills: [0, 1].map((i) => {
@@ -1424,6 +1459,76 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         exportCode: () => exportCode(makeSave(progress.character, new Date().toISOString(), { jobsDone: progress.jobsDone })),
       },
     );
+  }
+
+  /**
+   * The world prompt over a weapon on offer (S7.1 layer 5), Cath's nudge and the look assist (layer 7). The prompt
+   * shows within reach and only while the gun is in sight (a wall between them hides it).
+   */
+  function pickupPrompt(dt: number, look: { yaw: number; pitch: number }): HudState["pickup"] {
+    const c = job?.case;
+    if (!c?.weapon || c.taken || dead) return lootPrompt();
+    const cam = world.camera;
+    const camPos = cam.getWorldPosition(new THREE.Vector3());
+    const v = c.gunAt.clone().project(cam);
+    const onScreen = v.z < 1 && Math.abs(v.x) < 0.92 && Math.abs(v.y) < 0.92;
+    const dist = camPos.distanceTo(c.gunAt);
+    const seen = onScreen && rays.clear(camPos, c.gunAt);
+    // The nudge and the assist (never in a screenshot stage, never on the walkway's class case).
+    if (Math.abs(look.yaw) > 1e-5 || Math.abs(look.pitch) > 1e-5) {
+      lookIdle = 0;
+      assist = null;
+    } else lookIdle += dt;
+    if (!nudged && !staged && job?.stage === 2 && dist < 12 && v.z < 1 && Math.abs(v.x) < 1 && Math.abs(v.y) < 1 && rays.clear(camPos, c.gunAt)) {
+      nudged = true;
+      hud.subtitle("Cath: There. On the stall.");
+      const to = c.gunAt.clone().sub(camPos);
+      const want = Math.atan2(-to.x, -to.z);
+      let d = want - player.yaw;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      const left = Math.sign(d) * Math.min(Math.abs(d), THREE.MathUtils.degToRad(10));
+      if (lookIdle > 0.4 && Math.abs(d) > THREE.MathUtils.degToRad(2)) assist = { left, rate: left / 0.6 };
+    }
+    if (assist) {
+      const step = Math.sign(assist.rate) * Math.min(Math.abs(assist.rate * dt), Math.abs(assist.left));
+      player.yaw += step;
+      assist.left -= step;
+      if (Math.abs(assist.left) < 1e-4) assist = null;
+    }
+    const near = Math.hypot(c.gunAt.x - player.pos.x, c.gunAt.z - player.pos.z) <= TAKE_RANGE;
+    const show = near && seen;
+    if (show && !promptShown) audio?.promptUp();
+    promptShown = show;
+    if (!show) return null;
+    const def = SLICE_WEAPONS.find((w) => w.id === c.weapon);
+    const el = o.canvas;
+    return {
+      x: ((v.x + 1) / 2) * el.clientWidth,
+      y: ((1 - v.y) / 2) * el.clientHeight,
+      key: input.isTouch ? "Tap" : takeKey,
+      verb: "Take",
+      name: (def?.name ?? c.weapon ?? "").replace(/ \(.*\)$/, ""),
+      stats: def ? ([["Dmg", String(def.damage * def.pellets)], ["Rpm", `${Math.round(60 / def.cycle)}`], ["Mag", String(def.mag || "-")]] as Array<[string, string]>) : [],
+    };
+  }
+
+  /** The world prompt over a gun on the ground she'd have to press to take (a new weapon). */
+  function lootPrompt(): HudState["pickup"] {
+    const p = pickups.offer;
+    if (!p?.drop.gun || dead) return null;
+    const at = p.pos.clone().setY(p.pos.y + 0.4);
+    const v = at.clone().project(world.camera);
+    if (!(v.z < 1 && Math.abs(v.x) < 0.92 && Math.abs(v.y) < 0.92)) return null;
+    const def = SLICE_WEAPONS.find((w) => w.id === p.drop.gun);
+    const el = o.canvas;
+    return {
+      x: ((v.x + 1) / 2) * el.clientWidth,
+      y: ((1 - v.y) / 2) * el.clientHeight,
+      key: input.isTouch ? "Tap" : takeKey,
+      verb: "Take",
+      name: (def?.name ?? p.drop.gun).replace(/ \(.*\)$/, ""),
+      stats: def ? ([["Dmg", String(def.damage * def.pellets)], ["Rpm", `${Math.round(60 / def.cycle)}`], ["Mag", String(def.mag || "-")]] as Array<[string, string]>) : [],
+    };
   }
 
   /** The objective on screen, for the waypoint diamond. */
@@ -1623,6 +1728,72 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let stageHome: { pos: THREE.Vector3; yaw: number; pitch: number } | null = null;
   let stageGuard: Enemy | null = null;
   let crateCollider: { off?: boolean } | null = null;
+  // C3 "You can't miss the first gun": the first job's case and the HUD around it (needs ?job).
+  const C3_STAGES = ["pickup-first-from-takedown", "pickup-prompt", "objective-offscreen", "hud-combat", "pickup-taken"];
+  const c3Stage = (name: string, tMs: number): string => {
+    if (!job) return "no job (load with &job)";
+    hud.freeze(null);
+    hud.clearFeedback();
+    showCover(false);
+    pickups.clear();
+    world.fx.clear?.();
+    if (name === "pickup-taken") {
+      // The moment after the press: the lid shut, the toast in, the Kestrel drawn.
+      if (job.stage === 3) job.skipTo(2);
+      job.skipTo(3);
+    } else if (name === "hud-combat") {
+      if (job.stage !== 3) job.skipTo(3);
+    } else if (job.stage !== 2) job.skipTo(2);
+    for (const e of enemies) {
+      if (e.alive && e.state !== "dead") e.state = "unaware";
+      e.detect = 0;
+    }
+    s.hp = s.maxHp;
+    // She stands where the takedown left her, looking the way she was looking: down the street.
+    const ground0 = ground(TAKEDOWN_POSE.x, TAKEDOWN_POSE.z);
+    player.pos.set(TAKEDOWN_POSE.x, ground0, TAKEDOWN_POSE.z);
+    player.yaw = TAKEDOWN_POSE.yaw;
+    player.pitch = -0.04;
+    const box = job.case;
+    if (name === "pickup-prompt" && box) {
+      // Two metres short of the case, looking at it.
+      const to = new THREE.Vector3(box.pos.x - player.pos.x, 0, box.pos.z - player.pos.z);
+      const d = to.length();
+      to.normalize();
+      player.pos.addScaledVector(to, Math.max(0, d - 2.1));
+      player.pos.y = ground(player.pos.x, player.pos.z);
+      player.yaw = Math.atan2(-to.x, -to.z);
+      player.pitch = -0.32;
+    }
+    // Turned away from it: the arrow on the screen's edge has to bring her round.
+    if (name === "objective-offscreen") player.yaw = TAKEDOWN_POSE.yaw - 2.1;
+    if (name === "hud-combat" || name === "pickup-taken") {
+      arsenal.restock();
+      if (arsenal.weapon.id !== "kestrel") {
+        arsenal.owned.add("kestrel");
+        arsenal.equipId("kestrel");
+      }
+      arsenal.settle();
+    }
+    player.vel.set(0, 0, 0);
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    // The guard she put down settles where he fell.
+    for (let t = 0; t < 1.2; t += 1 / 60) {
+      for (const e of enemies) e.feel(1 / 60, world.colliders, ground);
+      world.update(0, 1, 1 / 60);
+    }
+    staged = true;
+    // The beacon at its moment: the glint mid-flash, the beam for where she stands (time is frozen in a shot).
+    box?.update(0.175, player.pos, world.camera, innerWidth, innerHeight, hudScale);
+    const at = box ? box.gunAt.clone() : null;
+    if (name === "pickup-taken") hud.toast("New weapon", "Kestrel 9");
+    const v = at?.clone().project(world.camera);
+    const z0 = { x: 0, y: 0 };
+    s.stageInfo = { hit: z0, r02: 0, head0: z0, head1: z0, puffM: 0, splats: [], corpse: { pelvis: z0, head: z0, chest: z0 }, caseAt: at && v ? { ...toScreen(at), front: v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1 } : undefined };
+    hud.freeze(tMs);
+    return "ok";
+  };
   const STAGES = ["hit-body", "hit-head", "hit-kill", "hit-headkill", "hit-soft", "hit-pen", "hit-armourbreak", "blocked", "peek-head", "cover-debug-market", "enemy-flinch-head-60", "wall-splat"];
   /** A world point on screen, in CSS px. */
   const toScreen = (p: THREE.Vector3) => {
@@ -1631,6 +1802,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight };
   };
   s.stage = (name: string, tMs = 60): string => {
+    if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
     if (!STAGES.includes(name)) return `unknown stage ${name}`;
     staged = true;
     s.stageInfo = null;

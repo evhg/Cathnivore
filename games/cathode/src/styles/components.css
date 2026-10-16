@@ -47,7 +47,7 @@
     linear-gradient(var(--tk) 0 0) right 0 top 0 / 1px var(--tick) no-repeat,
     linear-gradient(var(--tk) 0 0) left 0 bottom 0 / var(--tick) 1px no-repeat,
     linear-gradient(var(--tk) 0 0) left 0 bottom 0 / 1px var(--tick) no-repeat,
-    linear-gradient(180deg, rgb(var(--ink-rgb) / .06), transparent 2px),
+    linear-gradient(180deg, rgb(var(--ink-rgb) / .06), transparent calc(var(--u) * 2.7)),
     var(--scan),
     var(--grain),
     var(--mat-ink);
@@ -57,7 +57,7 @@
 .c-frame.is-lifted,
 .gate-card,
 .dialog {
-  filter: drop-shadow(0 18px 30px rgb(var(--black-rgb) / .7));
+  filter: drop-shadow(0 calc(var(--u) * 24) calc(var(--u) * 40) rgb(var(--black-rgb) / .7));
 }
 .c-frame.is-accent { --rim: rgb(var(--accent-sp, var(--cyan-rgb)) / .55); --tk: var(--accent, var(--cyan)); }
 .c-frame.is-danger,
@@ -102,7 +102,7 @@
   margin: 0 0 var(--sp-4);
   padding-bottom: var(--sp-3);
   background:
-    linear-gradient(var(--accent, var(--cyan)) 0 0) left bottom / 24px 1px no-repeat,
+    linear-gradient(var(--accent, var(--cyan)) 0 0) left bottom / calc(var(--u) * 32) 1px no-repeat,
     linear-gradient(var(--line-1) 0 0) left bottom / 100% 1px no-repeat;
 }
 .c-eyebrow {
@@ -121,7 +121,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
-  min-height: 48px;
+  min-height: max(48px, calc(var(--u) * 64));
   padding: 0 var(--sp-5);
   overflow: hidden;
   font: 700 var(--t-head)/1 var(--font-ui);
@@ -157,7 +157,7 @@
 .btn-primary {
   color: var(--on-blood);
   background: linear-gradient(180deg, rgb(var(--white-rgb) / .14), transparent 45%), var(--blood);
-  box-shadow: inset 0 -2px 0 rgb(var(--black-rgb) / .35);
+  box-shadow: inset 0 calc(var(--u) * -2.7) 0 rgb(var(--black-rgb) / .35);
 }
 .btn-ghost {
   background: linear-gradient(var(--line-2) 0 0) bottom / 100% 1px no-repeat, rgb(var(--ink-rgb) / .03);
@@ -168,7 +168,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 2px;
+  width: calc(var(--u) * 2.7);
   background: var(--line-3);
   transition: background var(--d-2) var(--ease-out);
 }
@@ -177,19 +177,19 @@
   .btn-ghost:hover::before { background: var(--cyan); }
 }
 .btn-icon {
-  --cut: 5px;
-  min-width: 44px;
-  min-height: 44px;
+  --cut: calc(var(--u) * 6.7);
+  min-width: max(44px, calc(var(--u) * 58.7));
+  min-height: max(44px, calc(var(--u) * 58.7));
   padding: 0;
   background: rgb(var(--ink-rgb) / .05);
 }
-.btn-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+.btn-icon svg { width: calc(var(--u) * 26.7); height: calc(var(--u) * 26.7); stroke: currentColor; fill: none; stroke-width: 1.6; }
 /* Focus: the button is clip-pathed, and clip-path cuts anything drawn outside the shape (an outline, a
    drop-shadow halo), so the ring is drawn inside it: ::after becomes a 2px cyan band clipped to a ring that
    follows the ticket cut (an even-odd polygon: the outline, then the same shape inset by --ring). */
 .btn:focus-visible { outline: none; }
 .btn:focus-visible::after {
-  --ring: 2px;
+  --ring: calc(var(--u) * 2.7);
   --ring-d: calc(var(--ring) * .414); /* where the inset diagonal meets the inset edges */
   transform: none;
   transition: none;
@@ -226,7 +226,7 @@
   text-shadow: none;
   background: linear-gradient(180deg, var(--plate-hi), var(--plate));
   border-radius: var(--r-1);
-  box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .1), 0 2px 0 var(--night), 0 0 0 1px var(--line-2);
+  box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .1), 0 calc(var(--u) * 2.7) 0 var(--night), 0 0 0 1px var(--line-2);
 }
 
 /* ---- tabs: a Persona selection slab and a cyan underline ---- */
@@ -237,7 +237,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  min-height: 44px;
+  min-height: max(44px, calc(var(--u) * 58.7));
   padding: 0 var(--sp-4);
   border: 0;
   background: none;
@@ -251,7 +251,7 @@
 .cx-tab::before {
   content: "";
   position: absolute;
-  inset: 6px 4px;
+  inset: calc(var(--u) * 8) calc(var(--u) * 5.3);
   z-index: var(--z-under);
   background: rgb(var(--cyan-rgb) / .1);
   transform: skewX(-14deg) scaleX(0);
@@ -261,12 +261,12 @@
 .cx-tab::after {
   content: "";
   position: absolute;
-  left: 12px;
-  right: 12px;
+  left: calc(var(--u) * 16);
+  right: calc(var(--u) * 16);
   bottom: -1px;
-  height: 2px;
+  height: calc(var(--u) * 2.7);
   background: var(--cyan);
-  box-shadow: 0 0 10px rgb(var(--cyan-rgb) / .7);
+  box-shadow: 0 0 calc(var(--u) * 13.3) rgb(var(--cyan-rgb) / .7);
   transform: scaleX(0);
   transition: transform var(--d-3) var(--ease-out);
 }
@@ -274,9 +274,9 @@
 .cx-tab[aria-selected="true"] { color: var(--ink); }
 .cx-tab[aria-selected="true"]::before { transform: skewX(-14deg) scaleX(1); }
 .cx-tab[aria-selected="true"]::after { transform: scaleX(1); }
-.cx-tab:focus-visible { outline-offset: -2px; }
-.cx-tab-dot { width: 6px; height: 6px; border-radius: 0; transform: rotate(45deg); background: var(--amber); opacity: 0; transition: opacity var(--d-2); }
-.cx-tab.has-points .cx-tab-dot { opacity: 1; box-shadow: 0 0 8px var(--amber); }
+.cx-tab:focus-visible { outline-offset: calc(var(--u) * -2.7); }
+.cx-tab-dot { width: calc(var(--u) * 8); height: calc(var(--u) * 8); border-radius: 0; transform: rotate(45deg); background: var(--amber); opacity: 0; transition: opacity var(--d-2); }
+.cx-tab.has-points .cx-tab-dot { opacity: 1; box-shadow: 0 0 calc(var(--u) * 10.7) var(--amber); }
 
 /* ---- cards with an accent bar ---- */
 .c-card {
@@ -292,7 +292,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 3px;
+  width: calc(var(--u) * 4);
   background: var(--accent, var(--cyan));
   transform: scaleY(.2);
   opacity: .4;
@@ -303,17 +303,17 @@
 .c-card[aria-pressed="true"] {
   background: linear-gradient(90deg, rgb(var(--accent-sp, var(--cyan-rgb)) / .16), transparent 75%);
   box-shadow: inset 0 0 0 1px rgb(var(--accent-sp, var(--cyan-rgb)) / .5);
-  transform: translateX(6px);
+  transform: translateX(calc(var(--u) * 8));
 }
 .c-card[aria-selected="true"]::before,
-.c-card[aria-pressed="true"]::before { transform: none; opacity: 1; box-shadow: 0 0 12px var(--accent, var(--cyan)); }
+.c-card[aria-pressed="true"]::before { transform: none; opacity: 1; box-shadow: 0 0 calc(var(--u) * 16) var(--accent, var(--cyan)); }
 
 /* ---- bars: --v (0..1), --trail (the damage ghost), --max and --seg for notches. Transform only. ---- */
 .c-bar {
   --v: 1;
   --seg: 25;
   position: relative;
-  height: 6px;
+  height: calc(var(--u) * 8);
   background: rgb(var(--ink-rgb) / .1);
   box-shadow: inset 0 0 0 1px rgb(var(--black-rgb) / .6);
   overflow: hidden;
@@ -335,8 +335,8 @@
   transition: transform var(--d-4) var(--ease-io) 280ms;
 }
 .c-bar.is-seg {
-  -webkit-mask: repeating-linear-gradient(90deg, black 0 calc(100% * var(--seg) / var(--max, 100) - 2px), transparent 0 calc(100% * var(--seg) / var(--max, 100)));
-  mask: repeating-linear-gradient(90deg, black 0 calc(100% * var(--seg) / var(--max, 100) - 2px), transparent 0 calc(100% * var(--seg) / var(--max, 100)));
+  -webkit-mask: repeating-linear-gradient(90deg, black 0 calc(100% * var(--seg) / var(--max, 100) - calc(var(--u) * 2.7)), transparent 0 calc(100% * var(--seg) / var(--max, 100)));
+  mask: repeating-linear-gradient(90deg, black 0 calc(100% * var(--seg) / var(--max, 100) - calc(var(--u) * 2.7)), transparent 0 calc(100% * var(--seg) / var(--max, 100)));
 }
 .c-bar.is-low > .fill { animation: low-pulse 1.1s var(--ease-io) infinite; }
 @keyframes low-pulse { 50% { opacity: .55; } }
@@ -344,19 +344,19 @@
 .c-bar.sys > .fill { background: var(--cyan); }
 /* XP: a thin but legible strip, a lit track with a dark keyline so it reads over any part of the street. */
 .c-bar.xp {
-  height: 3px;
+  height: calc(var(--u) * 4);
   background: rgb(var(--ink-rgb) / .2);
   box-shadow: 0 0 0 1px rgb(var(--black-rgb) / .55), inset 0 1px 0 rgb(var(--white-rgb) / .08);
 }
 .c-bar.xp > .fill { background: var(--amber); }
-@media (min-width: 1024px) and (hover: hover) { .c-bar.xp { height: 4px; } }
+@media (min-width: 1024px) and (hover: hover) { .c-bar.xp { height: calc(var(--u) * 5.3); } }
 
 /* ---- chips and point counters ---- */
 .c-chip {
   display: inline-flex;
   align-items: center;
   gap: .4em;
-  height: 22px;
+  height: calc(var(--u) * 29.3);
   padding: 0 .6em;
   font: 700 var(--t-micro)/1 var(--font-ui);
   letter-spacing: .16em;
@@ -365,19 +365,19 @@
   color: var(--chip, var(--ink-2));
   background: color-mix(in oklab, var(--chip, var(--ink)) 12%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--chip, var(--ink)) 40%, transparent);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - calc(var(--u) * 6.7)), calc(100% - calc(var(--u) * 6.7)) 100%, 0 100%);
 }
 .c-chip .n { font-family: var(--font-num); letter-spacing: 0; font-variant-numeric: tabular-nums; }
 .c-chip.lvl { --chip: var(--amber); }
 .c-chip.danger { --chip: var(--blood-hot); }
 .c-chip.sys { --chip: var(--cyan); }
 .c-chip.rarity { --chip: var(--rc, var(--ink-2)); }
-.c-points { display: grid; justify-items: center; gap: 2px; }
+.c-points { display: grid; justify-items: center; gap: calc(var(--u) * 2.7); }
 .c-points .n {
   font: 700 var(--t-num-l)/1 var(--font-num);
   font-variant-numeric: tabular-nums;
   color: var(--amber);
-  text-shadow: 0 0 14px rgb(var(--amber-rgb) / .45);
+  text-shadow: 0 0 calc(var(--u) * 18.7) rgb(var(--amber-rgb) / .45);
 }
 .c-points .n[data-zero] { color: var(--ink-3); text-shadow: none; }
 .c-points .l {
@@ -393,16 +393,16 @@
   padding: var(--sp-3) var(--sp-4);
   border: 0;
   background: var(--mat-ink);
-  box-shadow: 0 0 0 1px rgb(var(--ink-rgb) / .16), inset 0 2px 0 var(--rc), var(--sh-2);
+  box-shadow: 0 0 0 1px rgb(var(--ink-rgb) / .16), inset 0 calc(var(--u) * 2.7) 0 var(--rc), var(--sh-2);
 }
-.item-tip { box-shadow: 0 0 0 1px color-mix(in oklab, var(--rc) 45%, transparent), inset 0 2px 0 var(--rc), var(--sh-2); }
+.item-tip { box-shadow: 0 0 0 1px color-mix(in oklab, var(--rc) 45%, transparent), inset 0 calc(var(--u) * 2.7) 0 var(--rc), var(--sh-2); }
 .tip-sub { color: var(--ink-3); }
 .tip-rank,
 .tip-syn-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 
 /* ---- modals and sheets: an opaque radial scrim, never a backdrop blur (the world keeps rendering) ---- */
 .dialog {
-  width: min(460px, calc(100% - 32px));
+  width: min(calc(var(--u) * 613.3), calc(100% - calc(var(--u) * 42.7)));
   padding: var(--sp-5);
   color: var(--ink);
   overflow: visible;
@@ -421,7 +421,7 @@
       overlay var(--d-2) allow-discrete,
       display var(--d-2) allow-discrete;
     opacity: 0;
-    transform: translateY(12px) scale(.98);
+    transform: translateY(calc(var(--u) * 16)) scale(.98);
   }
   .dialog[open] {
     opacity: 1;
@@ -430,7 +430,7 @@
     transition-timing-function: var(--ease-out);
   }
   @starting-style {
-    .dialog[open] { opacity: 0; transform: translateY(12px) scale(.98); }
+    .dialog[open] { opacity: 0; transform: translateY(calc(var(--u) * 16)) scale(.98); }
   }
 }
 

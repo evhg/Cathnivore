@@ -537,6 +537,37 @@ export class Audio {
     });
   }
 
+  /** A new weapon (S7.1): the case snaps shut, then a 1.2 s minor-seventh sting on a low string pad and a bell. */
+  newWeapon(): void {
+    this.clack(0, 0.3, 1800);
+    this.clack(0.05, 0.22, 3200);
+    this.thump(70, 45, 0.6, 0.35, 0.12, "sine", 0.3);
+    const c = this.ctx;
+    // C minor seventh, spread: the root and fifth on a filtered saw, the third and seventh on a bell above.
+    [[130.81, "sawtooth", 0.05], [196, "sawtooth", 0.04], [311.13, "sine", 0.12], [466.16, "sine", 0.1]].forEach(([f, type, peak], i) => {
+      const t = c.currentTime + 0.14 + i * 0.07;
+      const o = c.createOscillator();
+      o.type = type as OscillatorType;
+      o.frequency.value = f as number;
+      const lp = c.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 1800;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak as number, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+      o.connect(lp).connect(g).connect(this.sfx);
+      g.connect(this.verbSend);
+      o.start(t);
+      o.stop(t + 1.25);
+    });
+  }
+
+  /** A soft UI tick when a world prompt comes up. */
+  promptUp(): void {
+    this.tone("sine", 1400, 1700, 0.05, 0.05);
+  }
+
   killcamWhoosh(): void {
     this.burst({ type: "bandpass", freq: 300, sweepTo: 3200, q: 1.2, decay: 1.4, attack: 0.3, gain: 0.35, noise: "pink", verb: 0.5 });
   }

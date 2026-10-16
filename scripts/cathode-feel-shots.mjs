@@ -18,7 +18,12 @@ mkdirSync(out, { recursive: true })
 const C1 = ['hit-body', 'hit-head', 'hit-kill', 'hit-kill@650', 'hit-soft', 'blocked', 'cover-debug-market']
 // C2 "Hits land on the body": the hit at 10 m, the head flinch 60 ms on, blood on the wall behind.
 const C2 = ['hit-body', 'hit-head', 'hit-head@160', 'enemy-flinch-head-60', 'wall-splat@600', 'hit-kill@650']
-const stages = process.argv.slice(2).length ? process.argv.slice(2) : process.env.MILESTONE === 'C2' ? C2 : C1
+// C3 "You can't miss the first gun", and a HUD sized for 5K: the first job's case and the HUD around it.
+const C3 = ['pickup-first-from-takedown', 'pickup-prompt', 'objective-offscreen', 'hud-combat', 'pickup-taken@700']
+const MS = { C1, C2, C3 }
+const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
+// Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
+const JOB_STAGES = new Set(C3.map((s) => s.split('@')[0]))
 // C2's red-pixel probe: the share of rendered pixels within 0.2 m of the projected hit point that are
 // red-dominant (the spec's "N", as a share so it holds at every render scale).
 const RED_MIN = 0.1
@@ -53,14 +58,20 @@ const browser = await chromium.launch({
 for (const vp of vps) {
   const V = VIEWPORTS[vp]
   const ctx = await browser.newContext({ viewport: V.viewport, deviceScaleFactor: V.dsf, hasTouch: !!V.touch, isMobile: !!V.touch, reducedMotion: V.reduced ? 'reduce' : 'no-preference' })
-  const page = await ctx.newPage()
-  await page.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
+  await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
+  let page = await ctx.newPage()
   let loadedQ = null
   const load = async (q) => {
     if (q === loadedQ) return
+    // A fresh page per query: navigating away from a page mid-way through a multi-second SwiftShader frame can
+    // stall the navigation for minutes.
+    if (loadedQ !== null) {
+      await page.close({ runBeforeUnload: false })
+      page = await ctx.newPage()
+    }
     loadedQ = q
-    await page.goto(`${base}?play&shot${q}`)
-    await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) > 2 && typeof window.cathode?.stage === 'function', null, { timeout: 240_000 })
+    await page.goto(`${base}?play&shot${q}`, { waitUntil: 'domcontentloaded', timeout: 180_000 })
+    await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) > 2 && typeof window.cathode?.stage === 'function', null, { timeout: 400_000 })
     await page.waitForTimeout(3000)
   }
   await load(V.q)
@@ -80,7 +91,7 @@ for (const vp of vps) {
   for (const spec of stages) {
     const [stage, at] = spec.split('@')
     const t = at ? Number(at) : stage === 'hit-kill' ? 230 : stage === 'enemy-flinch-head-60' ? 60 : 40
-    await load(V.stageQ?.[stage] ?? V.q)
+    await load((V.stageQ?.[stage] ?? V.q) + (JOB_STAGES.has(stage) ? '&job' : ''))
     const f0 = await page.evaluate(() => window.cathode.stats.frames)
     const cls = await page.evaluate(([s, tt]) => window.cathode.stage(s, tt), [stage, t])
     // SwiftShader draws about one frame a second: let two frames land so the HUD shows the stage.
@@ -116,7 +127,7 @@ for (const vp of vps) {
       const shown = (b) => b && b.w > 0 && b.h > 0 && b.opacity > 0.05 && b.display !== 'none' && b.visibility !== 'hidden'
       // The hurt arc is a full ring around the centre: only its lit part counts (its --a, not its box).
       const arcA = Number(getComputedStyle(document.querySelector('.hud-hurt-arc') ?? document.body).getPropertyValue('--a') || 0)
-      const clusters = ['.hud-objective', '.hud-vitals', '.hud-arms', '.hud-feed-line', '.hud-sub', '.hud-target', '.hud-prompt', '.hud-threats > *']
+      const clusters = ['.hud-objective', '.hud-vitals', '.hud-arms', '.hud-feed-line', '.hud-sub', '.hud-target', '.hud-prompt', '.hud-threats > *', '.hud-wprompt', '.hud-toast']
         .flatMap((q) => [...document.querySelectorAll(q)].map((e) => [q, r(e)]))
         .filter(([, b]) => shown(b))
       // Anything in the HUD past the window's edges (a nowrap label spilling out of its cluster).
@@ -139,7 +150,28 @@ for (const vp of vps) {
       const glyphs = ['.hud-blocked-l', '.hud-blocked-r', '.hud-blocked-word']
         .map((q) => [q, r(document.querySelector(q))])
         .filter(([, b]) => shown(b) && Number(getComputedStyle(document.querySelector('.hud-blocked')).opacity) > 0.05)
+      // C3: every visible text in the HUD, its computed font size in CSS px.
+      const texts = []
+      for (const e of document.querySelectorAll('.hud-root *')) {
+        if (e.closest('[hidden]') || ![...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue
+        const b = e.getBoundingClientRect()
+        const cs = getComputedStyle(e)
+        if (b.width === 0 || cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) < 0.05) continue
+        texts.push([e.className || e.tagName, parseFloat(cs.fontSize)])
+      }
+      const fontPx = (q) => {
+        const e = document.querySelector(q)
+        return e && !e.closest('[hidden]') ? parseFloat(getComputedStyle(e).fontSize) * d : null
+      }
       return {
+        texts,
+        wpMark: r(document.querySelector('.hud-wp:not([hidden]) .hud-wp-mark')),
+        wpOff: document.querySelector('.hud-wp:not([hidden])')?.classList.contains('off') ?? false,
+        wpArrow: r(document.querySelector('.hud-wp:not([hidden]).off .hud-wp-arrow')),
+        wprompt: r(document.querySelector('.hud-wprompt:not([hidden])')),
+        wpromptKey: r(document.querySelector('.hud-wprompt:not([hidden]) .c-key')),
+        magFont: fontPx('.hud-mag'),
+        mag: r(document.querySelector('.hud-mag')),
         dpr: d,
         hitClass: window.cathode.hud?.hitClass ?? null,
         hit: r(hit),
@@ -299,6 +331,27 @@ for (const vp of vps) {
         const ov = Math.max(0, Math.min(a.x + a.w, g.x + g.w) - Math.max(a.x, g.x)) * Math.max(0, Math.min(a.y + a.h, g.y + g.h) - Math.max(a.y, g.y))
         if (ov > 1) fail(`${vp} ${spec}: a crosshair arm crosses ${q}`)
       }
+    // ---- C3 acceptance ----
+    if (stage === 'pickup-first-from-takedown') {
+      const c = info?.caseAt
+      const off = c ? Math.abs(c.x - V.viewport.width / 2) / (V.viewport.width / 2) : 1
+      console.log(`  case on screen at ${c ? `${Math.round(c.x)},${Math.round(c.y)}` : 'none'} (${(off * 100).toFixed(0)}% of the half-width off centre)`)
+      if (!c?.front || off > 0.3) fail(`${vp} ${spec}: the first gun's case is ${(off * 100).toFixed(0)}% off centre (> 30%) or not in view`)
+      if (vp === '5k' && !(side.wpMark && side.wpMark.oh >= 48)) fail(`${vp} ${spec}: waypoint diamond ${side.wpMark?.oh?.toFixed(0)} < 48 physical px`)
+    }
+    if (stage === 'pickup-prompt') {
+      if (!side.wprompt) fail(`${vp} ${spec}: no world prompt on the case`)
+      else if (vp === '5k' && !(side.wpromptKey && side.wpromptKey.oh >= 58)) fail(`${vp} ${spec}: prompt keycap ${side.wpromptKey?.oh?.toFixed(0)} < 58 physical px`)
+    }
+    if (stage === 'objective-offscreen' && !(side.wpOff && side.wpArrow && side.wpArrow.w > 0)) fail(`${vp} ${spec}: no off-screen arrow for the case`)
+    if (stage === 'hud-combat') {
+      if (vp === '5k' && !(side.mag && side.mag.h >= 150)) fail(`${vp} ${spec}: ammo numerals ${side.mag?.h?.toFixed(0)} < 150 physical px`)
+      if (vp === '5k' && !(side.wpMark && side.wpMark.oh >= 48)) fail(`${vp} ${spec}: waypoint diamond ${side.wpMark?.oh?.toFixed(0)} < 48 physical px`)
+    }
+    if (JOB_STAGES.has(stage)) {
+      console.log(`  diamond ${side.wpMark?.oh?.toFixed(0) ?? '-'} keycap ${side.wpromptKey?.oh?.toFixed(0) ?? '-'} ammo ${side.mag?.h?.toFixed(0) ?? '-'} (physical px); smallest text ${Math.min(...side.texts.map((t) => t[1])).toFixed(1)} CSS px`)
+      if (vp === 'phone') for (const [q, px] of side.texts) if (px < 11.95) fail(`${vp} ${spec}: ${q} text is ${px.toFixed(1)} CSS px (< 12)`)
+    }
     const B = BUDGET[side.quality]
     if (side.stats.drawCalls > B.calls) warn(`${vp} ${spec}: ${side.stats.drawCalls} draw calls > ${B.calls} (${side.quality})`)
     // The mirror pass culls small meshes on phone (render/reflection.ts): that share of the budget fails hard.

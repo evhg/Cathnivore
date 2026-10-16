@@ -3,8 +3,13 @@
 //
 //   npx tsx scripts/font-budget.ts          every page in dist-site/ (after `npm run build:site`; gate 1)
 //   npx tsx scripts/font-budget.ts --dist   Cathnivore alone in dist/ (after `npm run build`; npm run check)
+//
+// It also lints CATHODE's stylesheets (docs/design/cathode-combat.md S8): every size in games/cathode/src/styles
+// is written in the HUD unit --u, so the HUD scales from a phone to 5K. A raw px value fails unless it is 0 or
+// a 1 px hairline, the first argument of max() (a floor, like max(12px, calc(var(--u) * 15))), on an @media
+// line, on a line marked /* px-ok */ (a reason may follow), or between /* px-ok:begin */ and /* px-ok:end */ (touch tap targets).
 
-import { existsSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 
 export const BUDGET_BYTES = 180 * 1024
@@ -28,6 +33,52 @@ export function isLatinOnly(file: string): boolean {
   const base = file.split('/').pop()!.toLowerCase()
   if (/latin-ext|cyrillic|greek|vietnamese|hebrew|arabic|devanagari|math|symbols/.test(base)) return false
   return base.includes('-latin-') || file.includes('/marks/')
+}
+
+/** Raw px in a CATHODE stylesheet (S8): one message per offending value, with its line number. */
+export function cssPxProblems(css: string, file = 'css'): string[] {
+  const out: string[] = []
+  let ok = false
+  let inComment = false
+  css.split('\n').forEach((raw, i) => {
+    if (raw.includes('px-ok:begin')) ok = true
+    if (raw.includes('px-ok:end')) ok = false
+    if (ok || /\/\* px-ok\b/.test(raw)) return
+    // Comments are prose ("a 2px band"), not sizes: drop them, across lines too.
+    let line = ''
+    for (let j = 0; j < raw.length; j++) {
+      if (inComment) {
+        if (raw.startsWith('*/', j)) {
+          inComment = false
+          j++
+        }
+      } else if (raw.startsWith('/*', j)) {
+        inComment = true
+        j++
+      } else line += raw[j]
+    }
+    if (/^\s*@media\b/.test(line)) return
+    for (const m of line.matchAll(/(?<![\w.#-])(-?\d*\.?\d+)px\b/g)) {
+      const v = Math.abs(Number(m[1]))
+      if (v === 0 || v === 1) continue
+      if (/max\(\s*$/.test(line.slice(0, m.index))) continue
+      out.push(`${file}:${i + 1}: raw ${m[0]} (write it in var(--u), or floor it with max(${m[0]}, ...))`)
+    }
+  })
+  return out
+}
+
+function cssUnder(dir: string): string[] {
+  if (!existsSync(dir)) return []
+  return readdirSync(dir).flatMap((name) => {
+    const p = join(dir, name)
+    return statSync(p).isDirectory() ? cssUnder(p) : name.endsWith('.css') ? [p] : []
+  })
+}
+
+/** Lints every stylesheet under games/cathode/src/styles; returns the problems. */
+export function lintCathodeCss(): string[] {
+  return cssUnder(resolve(root, 'games/cathode/src/styles')).flatMap((f) => cssPxProblems(readFileSync(f, 'utf8'), relative(root, f)))
 }
 
 interface PageRow {
@@ -72,6 +123,9 @@ function main(): void {
     const ok = !over && bad.length === 0
     console.log(`| ${r.page} | ${r.files.length} | ${r.bytes} | ${(r.bytes / 1000).toFixed(1)} | ${(r.bytes / 1024).toFixed(1)} | ${ok ? 'ok' : 'FAIL'} |`)
   }
+  const px = lintCathodeCss()
+  problems.push(...px)
+  console.log(`\nCATHODE stylesheets (S8 px lint): ${px.length ? `${px.length} raw px value(s)` : 'every size in --u'}`)
   if (process.argv.includes('--verbose')) {
     for (const r of rows) for (const f of r.files) console.log(`  ${r.page}  ${relative(root, f)}  ${statSync(f).size}`)
   }

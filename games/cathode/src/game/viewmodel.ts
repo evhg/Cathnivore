@@ -130,6 +130,7 @@ const ELBOW_L = new THREE.Vector3(-0.22, -0.36, 0.1);
 function attachHands(r: GunRig, right: [number, number, number], left: [number, number, number] | null, leftRot = 0): void {
   const arm = (handPos: THREE.Vector3, elbow: THREE.Vector3, isLeft: boolean) => {
     const f = forearm(isLeft);
+    f.userData.arm = true;
     f.position.copy(handPos);
     f.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), elbow.clone().sub(handPos).normalize());
     return f;
@@ -462,6 +463,20 @@ export function buildGun(model: GunModel): GunRig {
     }
   });
   return r;
+}
+
+/**
+ * The gun on its own, for display in the world (the first gun's case, S7.1): no hands, no forearms, no flash.
+ * Its materials are the kit's own, so callers that tint them clone first.
+ */
+export function buildGunDisplay(model: GunModel): THREE.Group {
+  const r = buildGun(model);
+  const drop: THREE.Object3D[] = [];
+  r.root.traverse((o) => {
+    if (o === r.leftHand || o === r.rightHand || o.userData.arm || o === r.flashMesh) drop.push(o);
+  });
+  for (const o of drop) o.removeFromParent();
+  return r.root;
 }
 
 /**

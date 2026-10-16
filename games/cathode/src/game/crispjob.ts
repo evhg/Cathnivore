@@ -4,7 +4,7 @@
 
 import * as THREE from "three";
 import type { Enemy } from "./enemy";
-import { Case, type JobHost } from "./firstjob";
+import { Case, reach, type JobHost } from "./firstjob";
 
 export class CrispJob {
   stage = 0;
@@ -29,8 +29,8 @@ export class CrispJob {
       case 0: {
         this.objective = "Crisp's ledger is in a case on the walkway. Take the stairs.";
         const at = (h.markers.perch?.[0] ?? this.P(-9.2, 30)).clone().add(new THREE.Vector3(0.6, 0, 1.5));
-        this.pickup = new Case(at, h.scene, h.light);
-        this.target = this.pickup.pos;
+        this.pickup = new Case(at, h.scene, h.light, null, Math.atan2(-1 - at.x, 20 - at.z));
+        this.target = this.pickup.gunAt;
         h.say("Bea: Crisp's berth is on the quay. His ledger sits in a case on that walkway.");
         break;
       }
@@ -63,9 +63,11 @@ export class CrispJob {
   }
 
   update(dt: number): void {
-    this.pickup?.update(dt);
+    const v = this.h.view?.();
+    this.pickup?.update(dt, this.h.player.pos, v?.cam, v?.w, v?.h, v?.scale);
     const p = this.h.player.pos;
-    if (this.stage === 0 && this.pickup && p.distanceTo(this.pickup.pos) < 1.4) this.goto(1);
+    // A document is walk-in (only weapons need a press, S7.1).
+    if (this.stage === 0 && this.pickup && reach(p, this.pickup.gunAt) < 1.4) this.goto(1);
     else if (this.stage === 1 && this.target && p.distanceTo(this.target) < 3) this.goto(2);
   }
 }

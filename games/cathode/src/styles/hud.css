@@ -11,10 +11,29 @@
   text-shadow: var(--hud-shadow);
   pointer-events: none;
   isolation: isolate;
-  --edge-l: max(var(--hud-edge), var(--safe-l));
-  --edge-r: max(var(--hud-edge), var(--safe-r));
-  --edge-t: max(var(--hud-edge), var(--safe-t));
-  --edge-b: max(var(--hud-edge), var(--safe-b));
+  /* The safe frame (S8, tokens.css): corners sit 4vw/4.5svh in, inside a centred 16:9 on an ultrawide. */
+  --edge-l: calc(max(var(--hud-edge-x), var(--safe-l)) + var(--frame-x));
+  --edge-r: calc(max(var(--hud-edge-x), var(--safe-r)) + var(--frame-x));
+  --edge-t: max(var(--hud-edge-y), var(--safe-t));
+  --edge-b: max(var(--hud-edge-y), var(--safe-b));
+  /* Type and spacing in u (S8), floored at 12 CSS px so a phone never reads smaller. Sized so 1440x900 keeps
+     its look (1u = .75 px there); a 5K screen gets 1.78x that, and the HUD-size setting scales them all. */
+  --t-display-l: max(12px, calc(var(--u) * 96));
+  --t-display-m: max(12px, calc(var(--u) * 64));
+  --t-display-s: max(12px, calc(var(--u) * 37.3));
+  --t-voice: max(12px, calc(var(--u) * 32));
+  --t-head: max(12px, calc(var(--u) * 22.7));
+  --t-body-l: max(13px, calc(var(--u) * 26.7));
+  --t-body: max(12px, calc(var(--u) * 22.7));
+  --t-label: max(12px, calc(var(--u) * 18.7));
+  --t-micro: max(12px, calc(var(--u) * 16));
+  --t-data: max(12px, calc(var(--u) * 18.7));
+  --t-num-hero: max(26px, calc(var(--u) * 53.3));
+  --t-num-ammo: max(34px, calc(var(--u) * 74.7));
+  --t-num-l: max(16px, calc(var(--u) * 32));
+  --sp-0: calc(var(--u) * 2.7); --sp-1: calc(var(--u) * 5.3); --sp-2: calc(var(--u) * 10.7); --sp-3: calc(var(--u) * 16);
+  --sp-4: calc(var(--u) * 21.3); --sp-5: calc(var(--u) * 32); --sp-6: calc(var(--u) * 42.7); --sp-7: calc(var(--u) * 64);
+  --cluster-w: calc(var(--u) * 373.3);
 }
 .hud-root p { margin: 0; }
 /* Layers inside the HUD: screen effects (hurt, focus, scope) sit under the readouts, so text never dims. */
@@ -31,6 +50,7 @@
 .hud-prompt,
 .hud-target,
 .hud-wp,
+.hud-wprompt,
 .hud-banner,
 .hud-tl,
 .hud-tr { z-index: var(--z-hud); }
@@ -45,7 +65,7 @@
   max-width: min(42ch, 46vw);
   padding: var(--sp-2) var(--sp-5) var(--sp-2) var(--sp-4);
   background: linear-gradient(90deg, rgb(var(--shade-rgb) / .72), rgb(var(--shade-rgb) / .38) 70%, transparent);
-  border-left: 2px solid var(--cyan);
+  border-left: calc(var(--u) * 2.7) solid var(--cyan);
   font: 500 var(--t-body-l)/1.3 var(--font-ui);
   letter-spacing: .01em;
   color: var(--ink);
@@ -54,7 +74,7 @@
 .hud-objective::before {
   content: attr(data-case);
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: calc(var(--u) * 4);
   font: 700 var(--t-micro)/1 var(--font-ui);
   letter-spacing: .18em;
   text-transform: uppercase;
@@ -79,7 +99,7 @@
   /* a soft dark plate so the numerals hold over neon */
   content: "";
   position: absolute;
-  inset: -28px -48px -24px -40px;
+  inset: calc(var(--u) * -37.3) calc(var(--u) * -64) calc(var(--u) * -32) calc(var(--u) * -53.3);
   z-index: var(--z-under);
   background: var(--mat-plate);
   pointer-events: none;
@@ -112,11 +132,11 @@
 .hud-hp-text.low { color: var(--blood-hot); }
 .hud-hp-text.hit { animation: hp-hit 180ms var(--ease-out); }
 @keyframes hp-hit {
-  0% { transform: translateX(-3px) scale(1.12); }
-  40% { transform: translateX(2px); }
+  0% { transform: translateX(calc(var(--u) * -4)) scale(1.12); }
+  40% { transform: translateX(calc(var(--u) * 2.7)); }
   100% { transform: none; }
 }
-.hud-hp { flex: 1; height: 8px; --seg: 25; }
+.hud-hp { flex: 1; height: calc(var(--u) * 10.7); --seg: 25; }
 .hud-arm-row {
   display: flex;
   align-items: center;
@@ -129,7 +149,7 @@
   text-transform: uppercase;
   color: var(--steel);
 }
-.hud-armour { flex: 1; height: 3px; }
+.hud-armour { flex: 1; height: calc(var(--u) * 4); }
 .hud-arm-text { font: 600 var(--t-data)/1 var(--font-num); color: var(--ink-2); }
 .hud-defence {
   margin-top: var(--sp-1);
@@ -187,7 +207,7 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  padding-bottom: 5px;
+  padding-bottom: calc(var(--u) * 6.7);
   font: 700 var(--t-label)/1 var(--font-ui);
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -200,19 +220,19 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 2px;
+  height: calc(var(--u) * 2.7);
   background: var(--cyan);
   transform-origin: left;
   transform: scaleX(var(--ready, 0));
   opacity: .5;
 }
 .hud-slot.ready { color: var(--ink); }
-.hud-slot.ready::after { opacity: 1; box-shadow: 0 0 8px rgb(var(--cyan-rgb) / .7); }
-.hud-battery { width: min(160px, 100%); height: 3px; margin-top: var(--sp-1); }
+.hud-slot.ready::after { opacity: 1; box-shadow: 0 0 calc(var(--u) * 10.7) rgb(var(--cyan-rgb) / .7); }
+.hud-battery { width: min(calc(var(--u) * 213.3), 100%); height: calc(var(--u) * 4); margin-top: var(--sp-1); }
 
 /* ---- crosshair and hit marker: transform only ---- */
 .hud-cross {
-  --gap: .4rem;
+  --gap: calc(var(--u) * 8.5);
   position: absolute;
   left: 50%;
   top: 50%;
@@ -227,15 +247,15 @@
   transition: transform 60ms linear;
 }
 .hud-cross-t,
-.hud-cross-b { width: .125rem; height: .5rem; margin-left: -.0625rem; }
+.hud-cross-b { --aw: max(2px, calc(var(--u) * 2.7)); width: var(--aw); height: calc(var(--u) * 10.7); margin-left: calc(var(--aw) / -2); }
 .hud-cross-l,
-.hud-cross-r { width: .5rem; height: .125rem; margin-top: -.0625rem; }
-.hud-cross-t { transform: translateY(calc(-.5rem - var(--gap))); }
+.hud-cross-r { --aw: max(2px, calc(var(--u) * 2.7)); width: calc(var(--u) * 10.7); height: var(--aw); margin-top: calc(var(--aw) / -2); }
+.hud-cross-t { transform: translateY(calc(calc(var(--u) * -10.7) - var(--gap))); }
 .hud-cross-b { transform: translateY(var(--gap)); }
-.hud-cross-l { transform: translateX(calc(-.5rem - var(--gap))); }
+.hud-cross-l { transform: translateX(calc(calc(var(--u) * -10.7) - var(--gap))); }
 .hud-cross-r { transform: translateX(var(--gap)); }
 .hud-cross span:not(.hud-cross-dot) { opacity: var(--arm, 1); }
-.hud-cross-dot { width: .1875rem; height: .1875rem; margin: -.09375rem 0 0 -.09375rem; border-radius: 50%; }
+.hud-cross-dot { --dw: max(3px, calc(var(--u) * 4)); width: var(--dw); height: var(--dw); margin: calc(var(--dw) / -2) 0 0 calc(var(--dw) / -2); border-radius: 50%; }
 /* ---- the hit marker (S1.2): sized in --u, coloured by class, never by damage ---- */
 .hud-hit {
   --tc: var(--hit-body);
@@ -299,7 +319,7 @@
   height: calc(var(--pw) * 1.18);
   background: var(--tc);
   clip-path: polygon(50% 0, 100% 16%, 100% 55%, 50% 100%, 0 55%, 0 16%);
-  filter: drop-shadow(0 0 1px var(--hit-outline)) drop-shadow(0 0 3px var(--hit-outline));
+  filter: drop-shadow(0 0 1px var(--hit-outline)) drop-shadow(0 0 calc(var(--u) * 4) var(--hit-outline));
   opacity: 0;
 }
 .hud-hit.c-armour .hud-hit-pip,
@@ -321,7 +341,9 @@
 .hud-root.is-frozen .hud-hit-ring.go,
 .hud-root.is-frozen .hud-hit-shatter.go,
 .hud-root.is-frozen .hud-target.is-dead,
-.hud-root.is-frozen .hud-blocked.pop i { animation-play-state: paused; animation-delay: var(--freeze-t, 0ms); }
+.hud-root.is-frozen .hud-blocked.pop i,
+.hud-root.is-frozen .hud-toast.on,
+.hud-root.is-frozen .hud-toast.on .hud-toast-rule { animation-play-state: paused; animation-delay: var(--freeze-t, 0ms); }
 @keyframes hit-pop { from { transform: scale(calc(var(--xs, 1) * var(--pop, 1.25))); } to { transform: scale(var(--xs, 1)); } }
 
 /* ---- blocked (S1.1): hollow brackets either side of the crosshair; "COVER" for the first three ---- */
@@ -351,7 +373,7 @@
   position: absolute;
   left: 0;
   /* Clear of the brackets and of the crosshair's bottom arm (rem and px sized), whichever reaches lower. */
-  top: max(calc(var(--bh) / 2 + var(--u) * 8), 1.6rem);
+  top: max(calc(var(--bh) / 2 + var(--u) * 8), calc(var(--u) * 34.1));
   transform: translateX(-50%);
   display: none;
   padding: calc(var(--u) * 4) calc(var(--u) * 6) calc(var(--u) * 4) calc(var(--u) * 6 + .3em);
@@ -381,11 +403,11 @@
 .hud-hurt-arc::before {
   content: "";
   position: absolute;
-  left: -70px;
-  top: -190px;
-  width: 140px;
-  height: 36px;
-  border-top: 5px solid var(--blood-hot);
+  left: calc(var(--u) * -93.3);
+  top: calc(var(--u) * -253.3);
+  width: calc(var(--u) * 186.7);
+  height: calc(var(--u) * 48);
+  border-top: calc(var(--u) * 6.7) solid var(--blood-hot);
   border-radius: 50% 50% 0 0;
   background: radial-gradient(ellipse at 50% 0, rgb(var(--blood-rgb) / .55), transparent 70%);
 }
@@ -447,14 +469,14 @@
 }
 .hud-threat {
   position: absolute;
-  left: -40px;
-  top: -110px;
-  width: 80px;
-  height: 18px;
-  transform-origin: 40px 110px;
+  left: calc(var(--u) * -53.3);
+  top: calc(var(--u) * -146.7);
+  width: calc(var(--u) * 106.7);
+  height: calc(var(--u) * 24);
+  transform-origin: calc(var(--u) * 53.3) calc(var(--u) * 146.7);
   transform: rotate(var(--rot, 0rad));
   background: radial-gradient(ellipse at 50% 100%, rgb(var(--amber-rgb) / calc(var(--fill, 0) * .95)) 0 40%, transparent 70%);
-  border-top: 2px solid rgb(var(--amber-rgb) / var(--fill, 0));
+  border-top: calc(var(--u) * 2.7) solid rgb(var(--amber-rgb) / var(--fill, 0));
   border-radius: 50% 50% 0 0;
 }
 .hud-threat.hunting {
@@ -483,7 +505,7 @@
   position: absolute;
   inset: 0;
   opacity: var(--a, 0);
-  box-shadow: inset 0 0 160px rgb(var(--cyan-rgb) / .35);
+  box-shadow: inset 0 0 calc(var(--u) * 213.3) rgb(var(--cyan-rgb) / .35);
 }
 .hud-hurt {
   position: absolute;
@@ -496,7 +518,7 @@
 .hud-scope {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 50%, transparent 0 min(40vh, 40vw), rgb(var(--black-rgb) / .96) calc(min(40vh, 40vw) + 2px));
+  background: radial-gradient(circle at 50% 50%, transparent 0 min(40vh, 40vw), rgb(var(--black-rgb) / .96) calc(min(40vh, 40vw) + calc(var(--u) * 2.7)));
 }
 .hud-reticle {
   position: absolute;
@@ -509,21 +531,21 @@
   background:
     linear-gradient(var(--shade) 0 0) center / 1px 100% no-repeat,
     linear-gradient(var(--shade) 0 0) center / 100% 1px no-repeat;
-  box-shadow: inset 0 0 0 1px rgb(var(--cyan-rgb) / .5), inset 0 0 60px rgb(var(--black-rgb) / .7);
+  box-shadow: inset 0 0 0 1px rgb(var(--cyan-rgb) / .5), inset 0 0 calc(var(--u) * 80) rgb(var(--black-rgb) / .7);
 }
 .hud-mil {
   position: absolute;
   left: 50%;
-  width: 14px;
+  width: calc(var(--u) * 18.7);
   height: 1px;
-  margin-left: -7px;
+  margin-left: calc(var(--u) * -9.3);
   background: var(--shade);
 }
-.hud-mil[data-mil="1"] { top: 54%; width: 12px; margin-left: -6px; }
-.hud-mil[data-mil="2"] { top: 58%; width: 18px; margin-left: -9px; }
-.hud-mil[data-mil="3"] { top: 62%; width: 12px; margin-left: -6px; }
-.hud-mil[data-mil="4"] { top: 66%; width: 18px; margin-left: -9px; }
-.hud-mil[data-mil="5"] { top: 70%; width: 12px; margin-left: -6px; }
+.hud-mil[data-mil="1"] { top: 54%; width: calc(var(--u) * 16); margin-left: calc(var(--u) * -8); }
+.hud-mil[data-mil="2"] { top: 58%; width: calc(var(--u) * 24); margin-left: calc(var(--u) * -12); }
+.hud-mil[data-mil="3"] { top: 62%; width: calc(var(--u) * 16); margin-left: calc(var(--u) * -8); }
+.hud-mil[data-mil="4"] { top: 66%; width: calc(var(--u) * 24); margin-left: calc(var(--u) * -12); }
+.hud-mil[data-mil="5"] { top: 70%; width: calc(var(--u) * 16); margin-left: calc(var(--u) * -8); }
 .hud-scope-range,
 .hud-scope-wind {
   position: absolute;
@@ -551,7 +573,7 @@
   display: flex;
   align-items: baseline;
   gap: .55em;
-  padding: 3px var(--sp-2) 3px var(--sp-4);
+  padding: calc(var(--u) * 4) var(--sp-2) calc(var(--u) * 4) var(--sp-4);
   background: linear-gradient(270deg, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .3) 70%, transparent);
   font: 500 var(--t-data)/1.25 var(--font-num);
   color: var(--ink);
@@ -567,10 +589,10 @@
 .hud-feed-line .xp { font-weight: 700; color: var(--amber); }
 .hud-feed-line .sep { color: var(--ink-3); }
 .hud-feed-line.strong {
-  box-shadow: inset -2px 0 0 var(--blood-hot);
+  box-shadow: inset calc(var(--u) * -2.7) 0 0 var(--blood-hot);
 }
 .hud-feed-line.strong .noun { font: 700 var(--t-head)/1.1 var(--font-ui); letter-spacing: .04em; }
-.hud-feed-line.item { box-shadow: inset -3px 0 0 var(--rc, var(--ink)); }
+.hud-feed-line.item { box-shadow: inset calc(var(--u) * -4) 0 0 var(--rc, var(--ink)); }
 
 .hud-feed-line.item .noun { color: var(--rc, var(--ink)); font-weight: 700; }
 /* Loot sheen: anything above standard gets one bright sweep through its line as it lands. */
@@ -587,7 +609,7 @@
   pointer-events: none;
 }
 .hud-feed-line.item.r-unique,
-.hud-feed-line.item.r-set { box-shadow: inset -3px 0 0 var(--rc), 0 0 14px color-mix(in srgb, var(--rc) 40%, transparent); }
+.hud-feed-line.item.r-set { box-shadow: inset calc(var(--u) * -4) 0 0 var(--rc), 0 0 calc(var(--u) * 18.7) color-mix(in srgb, var(--rc) 40%, transparent); }
 @keyframes loot-sheen { to { transform: translateX(120%); } }
 @media (prefers-reduced-motion: reduce) {
   .hud-feed-line.item::after { display: none; }
@@ -602,7 +624,7 @@
   color: var(--ink-2);
 }
 @keyframes feed-life {
-  0% { opacity: 0; transform: translateX(12px); }
+  0% { opacity: 0; transform: translateX(calc(var(--u) * 16)); }
   5% { opacity: 1; transform: none; }
   92% { opacity: 1; }
   100% { opacity: 0; }
@@ -688,15 +710,15 @@
 .hud-root.boss-intro .hud-banner-title::after {
   content: "";
   display: block;
-  height: 2px;
+  height: calc(var(--u) * 2.7);
   margin: var(--sp-3) auto 0;
   background: var(--blood-hot);
-  box-shadow: 0 0 12px var(--blood-hot);
+  box-shadow: 0 0 calc(var(--u) * 16) var(--blood-hot);
   transform-origin: left;
 }
 .hud-root.boss-intro .hud-banner.on .hud-banner-title::after { animation: boss-rule .9s .25s var(--ease-out) both; }
 @keyframes boss-name {
-  0% { letter-spacing: .22em; opacity: 0; filter: blur(6px); }
+  0% { letter-spacing: .22em; opacity: 0; filter: blur(calc(var(--u) * 8)); }
   60% { opacity: 1; filter: none; }
   100% { letter-spacing: .01em; }
 }
@@ -716,7 +738,7 @@
   justify-items: center;
   margin: 0;
   padding: var(--sp-2) var(--sp-6);
-  border-top: 2px solid var(--blood-hot);
+  border-top: calc(var(--u) * 2.7) solid var(--blood-hot);
   background: linear-gradient(180deg, color-mix(in srgb, var(--night) 80%, transparent), transparent);
   transform: translateX(-50%);
   opacity: 0;
@@ -724,7 +746,7 @@
 }
 .hud-killcap.on { animation: killcap-in 3s ease-out both; }
 .hud-killcap-tag {
-  font: 700 var(--t-label, 12px)/1 var(--font-ui);
+  font: 700 var(--t-label)/1 var(--font-ui);
   letter-spacing: 0.4em;
   text-transform: uppercase;
   color: var(--blood-hot);
@@ -734,7 +756,7 @@
   color: var(--ink);
 }
 @keyframes killcap-in {
-  0% { opacity: 0; transform: translate(-50%, 8px); }
+  0% { opacity: 0; transform: translate(-50%, calc(var(--u) * 10.7)); }
   12% { opacity: 1; transform: translateX(-50%); }
   85% { opacity: 1; }
   100% { opacity: 0; }
@@ -747,8 +769,8 @@
 .hud-sub {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--edge-b) + 92px);
-  width: min(46ch, calc(100vw - 2 * (var(--cluster-w) + var(--hud-edge) + 16px)));
+  bottom: calc(var(--edge-b) + calc(var(--u) * 122.7));
+  width: min(46ch, calc(100vw - 2 * (var(--cluster-w) + var(--hud-edge) + calc(var(--u) * 21.3))));
   transform: translateX(-50%);
   text-align: center;
   font: 500 calc(var(--t-body-l) * var(--sub-scale))/1.36 var(--font-ui);
@@ -769,7 +791,7 @@
 }
 .hud-sub-name {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: calc(var(--u) * 6.7);
   font: 700 var(--t-micro)/1 var(--font-ui);
   letter-spacing: .18em;
   text-transform: uppercase;
@@ -783,12 +805,12 @@
   position: absolute;
   left: 50%;
   top: 18%;
-  max-width: min(560px, calc(100% - 40px));
+  max-width: min(calc(var(--u) * 746.7), calc(100% - calc(var(--u) * 53.3)));
   padding: var(--sp-2) var(--sp-4);
   transform: translateX(-50%);
   clip-path: polygon(var(--cut-s) 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%, 0 var(--cut-s));
   background:
-    linear-gradient(var(--amber) 0 0) left / 2px 100% no-repeat,
+    linear-gradient(var(--amber) 0 0) left / calc(var(--u) * 2.7) 100% no-repeat,
     rgb(var(--shade-rgb) / .84);
   box-shadow: inset 0 0 0 1px rgb(var(--amber-rgb) / .4);
   font: 500 var(--t-body)/1.5 var(--font-ui);
@@ -802,8 +824,11 @@
 .hud-teach.on { opacity: 1; }
 .hud-teach .c-key { margin: 0 .2em; vertical-align: .05em; }
 
-/* ---- waypoint: a diamond with the distance under it; a chevron at the edge when it's off screen ---- */
+/* ---- objective marker (S7.2): an 18u diamond, a 2u cyan stroke, the distance in mono at 14u under it; off screen a
+   22u chevron on an ellipse points the way (S7.1 layer 6), with the distance at 13u ---- */
 .hud-wp {
+  --d: calc(var(--u) * 18);
+  --sw: max(1.5px, calc(var(--u) * 2));
   position: absolute;
   left: 0;
   top: 0;
@@ -812,43 +837,235 @@
   transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0);
   transition: opacity var(--d-3);
 }
-.hud-wp.near { opacity: .4; }
 .hud-wp-mark {
   position: absolute;
-  left: -7px;
-  top: -7px;
-  width: 14px;
-  height: 14px;
+  left: calc(var(--d) / -2);
+  top: calc(var(--d) / -2);
+  width: var(--d);
+  height: var(--d);
+  box-sizing: border-box;
   transform: rotate(45deg);
-  border: 1.5px solid var(--cyan);
-  background: radial-gradient(circle, var(--cyan) 0 2px, transparent 2.5px);
-  box-shadow: 0 0 0 1px rgb(var(--black-rgb) / .6), 0 0 10px rgb(var(--cyan-rgb) / .55);
-}
-.hud-wp.off .hud-wp-mark {
-  /* a chevron pointing at the objective */
-  background: none;
-  border-width: 2px 2px 0 0;
-  transform: rotate(calc(var(--ang, 0rad) + 45deg));
+  border: var(--sw) solid var(--cyan);
+  background:
+    radial-gradient(circle, var(--cyan) 0 calc(var(--u) * 2.6), transparent calc(var(--u) * 3.2)),
+    rgb(var(--shade-rgb) / .35);
+  box-shadow: 0 0 0 1px rgb(var(--black-rgb) / .7), 0 0 calc(var(--u) * 14) rgb(var(--cyan-rgb) / .6), inset 0 0 calc(var(--u) * 6) rgb(var(--cyan-rgb) / .45);
+  transition: transform var(--d-3) var(--ease-out), opacity var(--d-3);
 }
 .hud-wp-dist {
   position: absolute;
   left: 0;
-  top: 14px;
+  top: calc(var(--d) * .78 + var(--u) * 6);
   transform: translateX(-50%);
-  font: 600 var(--t-data)/1 var(--font-num);
+  padding: calc(var(--u) * 2) calc(var(--u) * 6);
+  font: 600 max(12px, calc(var(--u) * 14))/1 var(--font-num);
+  letter-spacing: .04em;
   color: var(--cyan-ink);
+  background: rgb(var(--shade-rgb) / .5);
   white-space: nowrap;
 }
+.hud-wp.near .hud-wp-mark { transform: rotate(45deg) scale(.6); }
+.hud-wp.near { opacity: .4; }
+.hud-wp.near .hud-wp-dist { transform: translate(-50%, calc(var(--d) * -.3)); }
+/* After an objective update: a 1 Hz ring off the diamond for 6 s. */
+.hud-wp.pulse:not(.off) .hud-wp-mark::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--sw) * -1);
+  border: var(--sw) solid var(--cyan);
+  animation: wp-pulse 1s var(--ease-out) infinite;
+}
+@keyframes wp-pulse { from { transform: scale(1); opacity: .9; } to { transform: scale(2.1); opacity: 0; } }
+/* Off screen: the diamond gives way to a chevron pointing at the objective. */
+.hud-wp-arrow { display: none; }
+.hud-wp.off .hud-wp-mark { display: none; }
+.hud-wp.off .hud-wp-arrow {
+  --a: calc(var(--u) * 22);
+  display: block;
+  position: absolute;
+  left: calc(var(--a) / -2);
+  top: calc(var(--a) / -2);
+  width: var(--a);
+  height: var(--a);
+  transform: rotate(var(--ang, 0rad));
+  background: var(--cyan);
+  /* a chevron, pointing along +x before the rotation */
+  clip-path: polygon(10% 8%, 100% 50%, 10% 92%, 32% 50%);
+  filter: drop-shadow(0 0 calc(var(--u) * 6) rgb(var(--cyan-rgb) / .8));
+}
+/* A dark halo behind the chevron so it holds over neon and rain, with a faint cyan ring. */
+.hud-wp.off::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--u) * -26);
+  top: calc(var(--u) * -26);
+  width: calc(var(--u) * 52);
+  height: calc(var(--u) * 52);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .3) 70%, transparent);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 1.5)) rgb(var(--cyan-rgb) / .35);
+}
+.hud-wp.off.pulse .hud-wp-arrow { animation: wp-nudge 1s ease-in-out infinite; }
+@keyframes wp-nudge { 50% { opacity: .55; } }
+.hud-wp.off .hud-wp-dist {
+  top: calc(var(--u) * 30);
+  font-size: max(12px, calc(var(--u) * 13));
+}
+
+/* ---- world prompt (S7.1 layer 5): a pin on the gun, an amber leader, and a chip with the keycap, the verb, the
+   name and a stat strip. Within 3 m, only while the gun is in sight; on a phone the chip is the tap target. ---- */
+.hud-wprompt {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0);
+}
+.hud-wprompt-pin {
+  position: absolute;
+  left: calc(var(--u) * -5);
+  top: calc(var(--u) * -5);
+  width: calc(var(--u) * 10);
+  height: calc(var(--u) * 10);
+  transform: rotate(45deg);
+  background: var(--amber);
+  box-shadow: 0 0 0 1px rgb(var(--black-rgb) / .7), 0 0 calc(var(--u) * 12) rgb(var(--amber-rgb) / .8);
+}
+.hud-wprompt-lead {
+  /* rises up and to the right off the gun, so the chip never covers what it names */
+  position: absolute;
+  left: calc(var(--u) * 6);
+  top: calc(var(--u) * -6);
+  width: calc(var(--u) * 78);
+  height: max(1px, calc(var(--u) * 2));
+  background: linear-gradient(90deg, var(--amber), rgb(var(--amber-rgb) / .45));
+  transform: rotate(-40deg);
+  transform-origin: left center;
+}
+.hud-wprompt-chip {
+  position: absolute;
+  left: calc(var(--u) * 64);
+  top: calc(var(--u) * -50);
+  transform: translateY(-100%) translateY(calc(var(--u) * 28));
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: calc(var(--u) * 12);
+  row-gap: calc(var(--u) * 6);
+  padding: calc(var(--u) * 10) calc(var(--u) * 16) calc(var(--u) * 10) calc(var(--u) * 10);
+  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .72));
+  box-shadow: inset calc(var(--u) * 3) 0 0 var(--amber), inset 0 0 0 1px rgb(var(--amber-rgb) / .35), 0 calc(var(--u) * 8) calc(var(--u) * 24) rgb(var(--black-rgb) / .5);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%);
+  white-space: nowrap;
+  text-shadow: none;
+}
+.hud-wprompt.flip .hud-wprompt-lead { left: auto; right: calc(var(--u) * 6); transform: rotate(40deg); transform-origin: right center; }
+.hud-wprompt.flip .hud-wprompt-chip { left: auto; right: calc(var(--u) * 64); }
+.hud-wprompt-key {
+  grid-row: span 2;
+  min-width: calc(var(--u) * 22);
+  height: calc(var(--u) * 22);
+  padding: 0 calc(var(--u) * 6);
+  font: 700 max(12px, calc(var(--u) * 14))/1 var(--font-num);
+  color: var(--night);
+  background: linear-gradient(180deg, var(--amber-hi), var(--amber));
+  box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
+}
+.hud-wprompt-key.wide { font-family: var(--font-ui); letter-spacing: .08em; text-transform: uppercase; }
+.hud-wprompt-main {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--u) * 8);
+  margin: 0;
+}
+.hud-wprompt-verb {
+  font: 700 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.hud-wprompt-sep { color: var(--ink-3); }
+.hud-wprompt-name {
+  font: 600 max(14px, calc(var(--u) * 24))/1 var(--font-display);
+  letter-spacing: .01em;
+  color: var(--ink);
+}
+.hud-wprompt-stats {
+  display: flex;
+  gap: calc(var(--u) * 14);
+  margin: 0;
+}
+.hud-wprompt-stat { display: grid; gap: calc(var(--u) * 2); }
+.hud-wprompt-stat i {
+  font: 700 max(12px, calc(var(--u) * 11))/1 var(--font-ui);
+  font-style: normal;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.hud-wprompt-stat b { font: 700 max(12px, calc(var(--u) * 16))/1 var(--font-num); color: var(--ink); }
+.hud-wprompt.is-in .hud-wprompt-chip { animation: wprompt-in 280ms var(--ease-out); }
+.hud-wprompt.is-in .hud-wprompt-lead { animation: wprompt-lead 200ms var(--ease-out); }
+@keyframes wprompt-in { from { opacity: 0; translate: calc(var(--u) * -12) 0; } }
+@keyframes wprompt-lead { from { scale: 0 1; } }
+@media (pointer: coarse) {
+  .hud-wprompt-chip { pointer-events: auto; cursor: pointer; }
+}
+
+/* ---- new-weapon toast (S7.1): amber, sliding in under the objective's line of sight, 3.2 s ---- */
+.hud-toast {
+  position: absolute;
+  left: 50%;
+  top: 21%;
+  display: grid;
+  justify-items: center;
+  gap: calc(var(--u) * 6);
+  padding: calc(var(--u) * 14) calc(var(--u) * 48) calc(var(--u) * 16);
+  background: radial-gradient(70% 100% at 50% 50%, rgb(var(--shade-rgb) / .78), rgb(var(--shade-rgb) / .4) 70%, transparent);
+  transform: translateX(-50%);
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: var(--z-hud);
+}
+.hud-toast-kind {
+  font: 700 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
+  letter-spacing: .34em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.hud-toast-name {
+  font: 600 max(22px, calc(var(--u) * 52))/1 var(--font-display);
+  font-variation-settings: "opsz" 72;
+  color: var(--ink);
+  text-shadow: 0 0 calc(var(--u) * 24) rgb(var(--amber-rgb) / .35), var(--hud-shadow);
+}
+.hud-toast-rule {
+  width: calc(var(--u) * 220);
+  height: max(1px, calc(var(--u) * 2));
+  background: linear-gradient(90deg, transparent, var(--amber), transparent);
+}
+.hud-toast.on { animation: toast-life 3.2s var(--ease-out) forwards; }
+.hud-toast.on .hud-toast-rule { animation: toast-rule 600ms 120ms var(--ease-out) backwards; }
+@keyframes toast-life {
+  0% { opacity: 0; transform: translate(calc(-50% + var(--u) * 60), 0); }
+  9% { opacity: 1; transform: translateX(-50%); }
+  85% { opacity: 1; transform: translateX(-50%); }
+  100% { opacity: 0; transform: translate(-50%, calc(var(--u) * -10)); }
+}
+@keyframes toast-rule { from { transform: scaleX(0); } }
 
 /* ---- boot: the clusters draw in, the objective wipes in, the crosshair settles (about 700 ms) ---- */
 .hud-root.is-booting .hud-vitals { animation: hud-draw-l var(--d-4) var(--ease-out) 120ms backwards; }
 .hud-root.is-booting .hud-arms { animation: hud-draw-r var(--d-4) var(--ease-out) 200ms backwards; }
 .hud-root.is-booting .hud-objective { animation: obj-in var(--d-4) var(--ease-out) 320ms backwards; }
 .hud-root.is-booting .hud-cross { animation: cross-in var(--d-3) var(--ease-back) 420ms backwards; }
-@keyframes hud-draw-l { from { clip-path: inset(0 100% 0 0); opacity: .3; } to { clip-path: inset(-40px -60px -40px -60px); opacity: 1; } }
-@keyframes hud-draw-r { from { clip-path: inset(0 0 0 100%); opacity: .3; } to { clip-path: inset(-40px -60px -40px -60px); opacity: 1; } }
+@keyframes hud-draw-l { from { clip-path: inset(0 100% 0 0); opacity: .3; } to { clip-path: inset(calc(var(--u) * -53.3) calc(var(--u) * -80) calc(var(--u) * -53.3) calc(var(--u) * -80)); opacity: 1; } }
+@keyframes hud-draw-r { from { clip-path: inset(0 0 0 100%); opacity: .3; } to { clip-path: inset(calc(var(--u) * -53.3) calc(var(--u) * -80) calc(var(--u) * -53.3) calc(var(--u) * -80)); opacity: 1; } }
 @keyframes cross-in { from { transform: scale(calc(var(--xs, 1) * 1.4)); opacity: 0; } }
 
+/* px-ok:begin: touch controls are physical tap targets (44 to 88 CSS px, Apple HIG), not HUD readouts */
 /* ---- touch controls (a phone held sideways): dark discs, a thin rim, no blur over the world ---- */
 .touch { pointer-events: auto; }
 .stick {
@@ -989,18 +1206,21 @@
 }
 .tbtn-menu-bar { display: block; width: 4px; height: 14px; background: var(--ink); }
 
+/* px-ok:end */
 /* ---- phones held upright (a desktop browser this narrow): clusters stack under a full-width subtitle ---- */
 @media (max-width: 600px) and (orientation: portrait) {
+  .hud-root { --cluster-w: 0px; }
   .hud-objective { max-width: calc(100% - 2 * var(--hud-edge)); }
-  .hud-vitals { width: min(220px, 46vw); }
+  .hud-vitals { width: min(calc(var(--u) * 293.3), 46vw); }
   .hud-arms { max-width: 46vw; }
   .hud-weapon { white-space: normal; font-size: var(--t-label); }
-  .hud-sub { width: calc(100vw - 2 * var(--gutter)); bottom: calc(var(--edge-b) + 128px); }
+  .hud-sub { width: calc(100vw - 2 * var(--gutter)); bottom: calc(var(--edge-b) + calc(var(--u) * 170.7)); }
   .hud-feed { top: 22%; }
 }
 
 /* ---- touch (a phone held sideways): objective and vitals stack top left, arms and feed top right,
    the subtitle sits between the move stick and the button cluster ---- */
+/* px-ok:begin: the touch layouts place clusters around the physical buttons above */
 @media (pointer: coarse) {
   .hud-tl,
   .hud-tr {
@@ -1032,6 +1252,8 @@
   }
 }
 @media (max-height: 430px) and (orientation: landscape) {
+  /* A phone sits at the u floor: its hero numerals and clusters keep the sizes its layout was fitted to. */
+  .hud-root { --t-num-hero: 26px; --t-num-ammo: 34px; --t-body-l: 15px; --cluster-w: 12.5rem; }
   /* The arms cluster and the feed under it sit top right on a phone: the target bar drops below both (a kill's
      DOWN stamp and its +XP line arrive together), sitting just over the crosshair like a name over his head. */
   .hud-target { top: 36%; width: min(calc(var(--u) * 420), 36vw); }
@@ -1052,6 +1274,7 @@
   .hud-root.boss-intro .hud-banner-title { font-size: var(--t-display-l); }
 }
 
+/* px-ok:end */
 /* ---- reduced motion: no boot, no slides, no punches; fades stay ---- */
 @media (prefers-reduced-motion: reduce) {
   .hud-root.is-booting *,
@@ -1064,6 +1287,10 @@
   .hud-hit-shatter.go { animation-name: hit-fade; }
   .hud-feed-line { animation: feed-fade 4.4s linear both; }
   .hud-banner.on { animation: feed-fade 3.2s linear forwards; }
+  .hud-toast.on { animation: feed-fade 3.2s linear forwards; }
+  .hud-wprompt.is-in .hud-wprompt-chip,
+  .hud-wprompt.is-in .hud-wprompt-lead,
+  .hud-wp.pulse .hud-wp-mark::after { animation: none; }
 }
 :root.reduce-motion .hud-root.is-booting *,
 :root.reduce-motion .hud-objective.is-new,
@@ -1077,7 +1304,11 @@
 :root.reduce-motion .hud-hit-shatter.go { animation-name: hit-fade; }
 @keyframes hit-fade { 0%, 55% { opacity: .9; } 100% { opacity: 0; } }
 :root.reduce-motion .hud-feed-line { animation: feed-fade 4.4s linear both; }
-:root.reduce-motion .hud-banner.on { animation: feed-fade 3.2s linear forwards; }
+:root.reduce-motion .hud-banner.on,
+:root.reduce-motion .hud-toast.on { animation: feed-fade 3.2s linear forwards; }
+:root.reduce-motion .hud-wprompt.is-in .hud-wprompt-chip,
+:root.reduce-motion .hud-wprompt.is-in .hud-wprompt-lead,
+:root.reduce-motion .hud-wp.pulse .hud-wp-mark::after { animation: none; }
 @keyframes feed-fade {
   0% { opacity: 0; }
   4% { opacity: 1; }
