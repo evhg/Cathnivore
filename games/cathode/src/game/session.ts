@@ -111,7 +111,7 @@ export interface Session {
    */
   stageInfo?: { hit: { x: number; y: number }; r02: number; head0: { x: number; y: number }; head1: { x: number; y: number }; puffM: number } | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
-  probeRed?: (x: number, y: number, r: number) => { red: number; total: number };
+  probeRed?: (x: number, y: number, r: number) => { red: number; total: number; mean: number[] };
   /** Debug: what a round from `from` to `to` would do with the gun in hand. */
   traceShot?: (from: { x: number; y: number; z: number }, to: { x: number; y: number; z: number }) => ReturnType<Combat["traceShot"]>;
 }
@@ -1733,15 +1733,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const px = g2.getImageData(0, 0, R * 2, R * 2).data;
     let red = 0;
     let total = 0;
+    const mean = [0, 0, 0];
     for (let j = 0; j < R * 2; j++)
       for (let i = 0; i < R * 2; i++) {
         if ((i - R) ** 2 + (j - R) ** 2 > R * R) continue;
         total++;
         const o4 = (j * R * 2 + i) * 4;
         const rr = px[o4]!;
+        mean[0] += rr;
+        mean[1] += px[o4 + 1]!;
+        mean[2] += px[o4 + 2]!;
         if (rr > 45 && rr > px[o4 + 1]! * 1.8 && rr > px[o4 + 2]! * 1.8) red++;
       }
-    return { red, total };
+    return { red, total, mean: mean.map((v) => Math.round(v / Math.max(1, total))) };
   };
   s.traceShot = (from, to) => combat.traceShot(new THREE.Vector3(from.x, from.y, from.z), new THREE.Vector3(to.x, to.y, to.z), arsenal.weapon, build());
   // window.cathode.combat (S0): replay HitEvents through the bus exactly as combat emits them, and trace a shot.

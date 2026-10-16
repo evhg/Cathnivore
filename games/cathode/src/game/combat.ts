@@ -443,10 +443,11 @@ export class Combat {
     const wasAlive = e.alive;
 
     this.shotDamage.set(segName, (this.shotDamage.get(segName) ?? 0) + dmg);
-    // The helmet takes a little of a head hit: a few sparks over the blood.
-    if (seg.def.zone === "head" || !this.gore) this.world.fx.sparks(point, dir.clone().negate(), seg.def.zone === "head" ? 0.15 : 0.4);
+    // Reduced violence swaps blood for sparks; at full intensity a flesh hit is blood only (blue coolant sparks on
+    // a headshot read as "machine", not "hit", until visors break in C15).
+    if (!this.gore) this.world.fx.sparks(point, dir.clone().negate(), 0.4);
     // Flesh (S4.5): puff, spurt, exit spray, wall splat and a wound on the segment. Reduced violence draws ink.
-    if (this.world.fx.flesh) this.world.fx.flesh({ point, dir, damage: dmg, maxHp: e.kit.maxHp, weaponCls: w.weaponClass, distance: dist, anchor: seg.group, owner: e, root: e.body.root });
+    if (this.world.fx.flesh) this.world.fx.flesh({ point, dir, damage: dmg, maxHp: e.kit.maxHp, weaponCls: w.weaponClass, distance: dist, anchor: seg.group, owner: e, root: e.body.root, head: zone === "head" });
     else if (this.gore) this.world.fx.blood(point, dir, Math.min(1, dmg / 60));
 
     const push = dir.clone().multiplyScalar(w.weaponClass === "shotgun" ? 3 : w.weaponClass === "sniper" ? 6 : 1.5);

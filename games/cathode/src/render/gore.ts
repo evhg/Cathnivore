@@ -19,6 +19,8 @@ export interface FleshHit {
   distance: number;
   /** The hit segment: effects ride it for their first 80 ms, and the wound stays on it. */
   anchor?: THREE.Object3D;
+  /** A head hit: the mist is bigger (a headshot is the hit that has to read most, S4.4's "mist x2"). */
+  head?: boolean;
   /** Whose body (the per-enemy wound cap). */
   owner?: object;
   /** The body's root: when it leaves the scene its wounds go too. */
@@ -43,7 +45,7 @@ export interface GoreDeps {
 
 /** S4.5 numbers. */
 export const GORE = {
-  puff: { count: [1, 3] as const, size: [0.25, 0.45] as const, farMul: 1.4, farM: 15, color: "#8A0E0E", alpha: 0.85, growMs: 200, fadeMs: 350, lift: 0.18 },
+  puff: { count: [1, 3] as const, size: [0.25, 0.45] as const, farMul: 1.4, farM: 15, phoneMul: 1.5, headMul: 1.35, color: "#8A0E0E", alpha: 0.95, growMs: 200, fadeMs: 350, lift: 0.18 },
   spurt: { count: [4, 8] as const, speed: [1, 2.5] as const, coneDeg: 50 },
   exit: { pistol: 15, rifle: 22, smg: 18, shotgun: 6, sniper: 40, melee: 8, launcher: 30, coneDeg: 35, wallRays: 24, speed: [2, 6] as const, size: [0.015, 0.04] as const, color: "#5C0707" },
   anchorMs: 80,
@@ -353,7 +355,7 @@ export function createGore(o: GoreDeps): Gore {
     mist.pos.set([at.x, at.y, at.z], i * 3);
     mist.vel.fill(0, i * 3, i * 3 + 3);
     mist.col.set([color.r, color.g, color.b, alpha], i * 4);
-    mist.size.set([size * 0.45, size, rand()], i * 3);
+    mist.size.set([size * 0.7, size, rand()], i * 3);
     mist.age[i] = 0;
     mist.life[i] = life;
     mist.grav[i] = 0;
@@ -479,7 +481,8 @@ export function createGore(o: GoreDeps): Gore {
     const d = h.dir;
     const back = tmp.copy(d).negate();
     const ix = anchorOf(h.anchor);
-    const sz = puffSize(h.damage, h.maxHp, h.distance, rand());
+    // A phone shows a guard at 10 m about 20 points tall: the puff is overstated there so it still reads (pillar 4).
+    const sz = puffSize(h.damage, h.maxHp, h.distance, rand()) * (o.quality === "phone" ? GORE.puff.phoneMul : 1) * (h.head ? GORE.puff.headMul : 1);
     if (o.reduced) {
       // Reduced violence: the puff is dark ink; no spray, splats or wounds.
       puff(h.point.clone().addScaledVector(back, 0.05), sz * 0.8, INK, 0.8, 0.45, ix);
