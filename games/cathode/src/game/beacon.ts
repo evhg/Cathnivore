@@ -11,14 +11,14 @@ import * as THREE from "three";
 export const BEACON_AMBER = 0xe8b04a;
 
 /**
- * How strong the beam is at `dist` metres from Cath (0..1): full from 20 m out to 60 m, so it finds her from down
- * the street; it eases to 55% by 5 m so it doesn't blow out the case up close; gone within 1.5 m (she is on it)
+ * How strong the beam is at `dist` metres from Cath (0..1): full from 12 m out to 60 m, so it finds her from down
+ * the street (and from the first takedown, 8.5 m off, at 78%); it eases to 55% by 5 m so it doesn't blow out the case up close; gone within 1.5 m (she is on it)
  * and past 80 m (another district's business).
  */
 export function beamFade(dist: number): number {
   if (dist <= 1.5) return 0;
   if (dist < 5) return 0.55 * ((dist - 1.5) / 3.5);
-  if (dist < 20) return 0.55 + 0.45 * ((dist - 5) / 15);
+  if (dist < 12) return 0.55 + 0.45 * ((dist - 5) / 7);
   if (dist <= 60) return 1;
   if (dist < 80) return 1 - (dist - 60) / 20;
   return 0;
@@ -58,7 +58,9 @@ const BEAM_VERT = /* glsl */ `
 varying vec3 vN;
 varying vec3 vV;
 varying float vH;
+varying float vU;
 void main() {
+  vU = uv.x;
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
   vN = normalize(normalMatrix * normal);
   vV = normalize(-mv.xyz);
@@ -91,17 +93,30 @@ uniform vec3 uColor;
 uniform float uAlpha;
 uniform float uTime;
 uniform float uCore;
+uniform vec3 uRimColor;
+uniform float uHeight;
 varying vec3 vN;
 varying vec3 vV;
 varying float vH;
+varying float vU;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 void main() {
-  // Soft at the silhouette (S7.1's pow(1-|2u-1|, 2) edge): a hot thin core inside a wide faint halo.
+  // Soft at the silhouette: a white-hot core (no lamp in the street burns this white) inside a saturated amber rim.
   float f = abs(dot(vN, vV));
-  float face = pow(f, 7.0) + 0.22 * pow(f, 1.5) + uCore * smoothstep(0.55, 0.95, f);
-  // Fades in over the first 15 cm (no hard foot), then thins up the height; a slow shimmer rises through the rain.
-  float up = smoothstep(0.0, 0.04, vH) * pow(1.0 - vH, 2.2 - uCore * 1.2);
-  float shimmer = 0.8 + 0.2 * sin(vH * 26.0 - uTime * 3.0);
-  gl_FragColor = vec4(uColor * face * up * shimmer * uAlpha, 1.0);
+  float core = pow(f, 7.0) + uCore * smoothstep(0.55, 0.95, f);
+  float rim = 0.3 * pow(f, 1.2) * (1.0 - pow(f, 6.0));
+  // Fades in over the first few cm (no hard foot), holds full strength to 70% of its height, then tapers out.
+  float up = smoothstep(0.0, 0.03, vH) * (1.0 - smoothstep(0.7, 1.0, vH));
+  // A marker, not a light fixture: a bright band climbs the shaft every 1.6 s, and motes rise through it.
+  float m = vH * uHeight;
+  float climb = fract(uTime * 0.62);
+  float band = exp(-pow((vH - climb * 1.15 + 0.05) / 0.06, 2.0));
+  vec2 cell = vec2(floor(vU * 10.0), floor(m * 3.0 - uTime * 1.4));
+  float seed = hash(cell);
+  vec2 local = vec2(fract(vU * 10.0), fract(m * 3.0 - uTime * 1.4));
+  float mote = step(0.72, seed) * exp(-(pow((local.x - 0.5) / 0.12, 2.0) + pow((local.y - seed) / 0.06, 2.0)));
+  vec3 col = uColor * core * (1.0 + 1.4 * band) + uRimColor * (rim * (1.0 + 0.8 * band) + mote * 1.6);
+  gl_FragColor = vec4(col * up * uAlpha, 1.0);
 }`;
 
 let starTex: THREE.Texture | null = null;
@@ -166,6 +181,9 @@ export interface BeaconOpts {
   glintAt?: THREE.Vector3;
 }
 
+const SCRATCH_A = new THREE.Vector3();
+const SCRATCH_B = new THREE.Vector3();
+
 export class Beacon {
   readonly group = new THREE.Group();
   readonly beam: THREE.Mesh;
@@ -173,7 +191,7 @@ export class Beacon {
   readonly glint: THREE.Sprite | null = null;
   private t = 0;
   private readonly rim = { value: 0 };
-  private readonly uni: { uColor: { value: THREE.Color }; uAlpha: { value: number }; uTime: { value: number }; uCore: { value: number } };
+  private readonly uni: { uColor: { value: THREE.Color }; uRimColor: { value: THREE.Color }; uAlpha: { value: number }; uTime: { value: number }; uCore: { value: number }; uHeight: { value: number } };
   private readonly glintAt: THREE.Vector3;
   private readonly ringUni = { uColor: { value: new THREE.Color() }, uAlpha: { value: 1 }, uPulse: { value: 0 } };
   /** The beam's current strength (tests read it). */
@@ -183,11 +201,21 @@ export class Beacon {
     const colour = new THREE.Color(opts.colour ?? BEACON_AMBER).convertSRGBToLinear();
     // The light itself is a richer amber than the swatch: a beam through rain reads warm, not peach.
     const hot = colour.clone().multiply(new THREE.Color(1, 0.8, 0.5));
+    // The shaft's core burns near white (the street's sodium cones are orange all through), its rim a saturated gold.
+    const white = colour.clone().lerp(new THREE.Color(1, 0.93, 0.76), 0.55);
+    const rimC = colour.clone().multiply(new THREE.Color(1, 0.62, 0.16));
     const h = opts.beam ?? 3.5;
     const floor = opts.floorY ?? 0;
     // HDR 2.5: past the bloom threshold, so the shaft glows through the rain (hotter and wider on a phone).
     const look = beamLook(profile);
-    this.uni = { uColor: { value: hot.clone().multiplyScalar(look.hdr) }, uAlpha: { value: 1 }, uTime: { value: 0 }, uCore: { value: look.core } };
+    this.uni = {
+      uColor: { value: white.multiplyScalar(look.hdr) },
+      uRimColor: { value: rimC.multiplyScalar(look.hdr * 1.4) },
+      uAlpha: { value: 1 },
+      uTime: { value: 0 },
+      uCore: { value: look.core },
+      uHeight: { value: h },
+    };
     const g = new THREE.CylinderGeometry(look.radius, look.radius, h, 20, 1, true);
     g.translate(0, h / 2, 0);
     this.beam = new THREE.Mesh(
@@ -236,14 +264,16 @@ export class Beacon {
       const f = glintFlash(this.t);
       // The glint travels along the gun as it flashes.
       const sweep = ((this.t % 2.5) / 0.35) * 0.3 - 0.15;
-      this.glint.position.copy(this.glintAt).add(new THREE.Vector3(sweep, 0.02, 0));
+      this.glint.position.copy(this.glintAt);
+      this.glint.position.x += sweep;
+      this.glint.position.y += 0.02;
       (this.glint.material as THREE.SpriteMaterial).opacity = f;
       this.glint.visible = f > 0.01;
       let size = 0.18;
       if (cam instanceof THREE.PerspectiveCamera) {
         // Metres that 14u covers at this distance: the star never shrinks below that on screen.
-        const wp = this.glint.getWorldPosition(new THREE.Vector3());
-        const d = Math.max(0.1, wp.distanceTo(cam.getWorldPosition(new THREE.Vector3())));
+        const wp = this.glint.getWorldPosition(SCRATCH_A);
+        const d = Math.max(0.1, wp.distanceTo(cam.getWorldPosition(SCRATCH_B)));
         const mPerPx = (2 * d * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2))) / viewH;
         size = Math.max(size, 14 * hudUnit(viewW, viewH, hudScale) * mPerPx);
       }

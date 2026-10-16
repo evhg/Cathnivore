@@ -1477,24 +1477,40 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * The world prompt over a weapon on offer (S7.1 layer 5), Cath's nudge and the look assist (layer 7). The prompt
    * shows within reach and only while the gun is in sight (a wall between them hides it).
    */
+  // Scratch for the per-frame prompt (no allocations), and the sightline ray's last answer: cast at most every
+  // 100 ms and shared by the prompt and the nudge.
+  const promptCam = new THREE.Vector3();
+  const promptV = new THREE.Vector3();
+  let sightAt = -1;
+  let sightClear = false;
+  const sightline = (from: THREE.Vector3, to: THREE.Vector3): boolean => {
+    const now = performance.now();
+    if (staged || now - sightAt > 100) {
+      sightAt = now;
+      sightClear = rays.clear(from, to);
+    }
+    return sightClear;
+  };
   function pickupPrompt(dt: number, look: { yaw: number; pitch: number }): HudState["pickup"] {
     const c = job?.case;
     if (!c?.weapon || c.taken || dead) return lootPrompt();
     const cam = world.camera;
-    const camPos = cam.getWorldPosition(new THREE.Vector3());
-    const v = c.gunAt.clone().project(cam);
+    const camPos = cam.getWorldPosition(promptCam);
+    const v = promptV.copy(c.gunAt).project(cam);
     const onScreen = v.z < 1 && Math.abs(v.x) < 0.92 && Math.abs(v.y) < 0.92;
     const dist = camPos.distanceTo(c.gunAt);
-    const seen = onScreen && rays.clear(camPos, c.gunAt);
+    const wantNudge = !nudged && !staged && job?.stage === 2 && dist < 12 && v.z < 1 && Math.abs(v.x) < 1 && Math.abs(v.y) < 1;
+    const clear = (onScreen || wantNudge) && sightline(camPos, c.gunAt);
+    const seen = onScreen && clear;
     // The nudge and the assist (never in a screenshot stage, never on the walkway's class case).
     if (Math.abs(look.yaw) > 1e-5 || Math.abs(look.pitch) > 1e-5) {
       lookIdle = 0;
       assist = null;
     } else lookIdle += dt;
-    if (!nudged && !staged && job?.stage === 2 && dist < 12 && v.z < 1 && Math.abs(v.x) < 1 && Math.abs(v.y) < 1 && rays.clear(camPos, c.gunAt)) {
+    if (wantNudge && clear) {
       nudged = true;
       hud.subtitle("Cath: There. On the stall.");
-      const to = c.gunAt.clone().sub(camPos);
+      const to = promptV.copy(c.gunAt).sub(camPos);
       const want = Math.atan2(-to.x, -to.z);
       let d = want - player.yaw;
       d = Math.atan2(Math.sin(d), Math.cos(d));
@@ -1524,15 +1540,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     };
   }
 
+  const lootAt = new THREE.Vector3();
   /** The world prompt over a gun on the ground she'd have to press to take (a new weapon). */
   function lootPrompt(): HudState["pickup"] {
     const p = pickups.offer;
     if (!p?.drop.gun || dead) return null;
-    const at = p.pos.clone().setY(p.pos.y + 0.4);
-    const v = at.clone().project(world.camera);
+    const at = lootAt.copy(p.pos).setY(p.pos.y + 0.4);
+    const v = promptV.copy(at).project(world.camera);
     if (!(v.z < 1 && Math.abs(v.x) < 0.92 && Math.abs(v.y) < 0.92)) return null;
     // Only while it's in sight, like the first job's prompt: a gun behind a wall or a car gets no chip.
-    if (!rays.clear(world.camera.getWorldPosition(new THREE.Vector3()), at)) return null;
+    if (!sightline(world.camera.getWorldPosition(promptCam), at)) return null;
     const def = SLICE_WEAPONS.find((w) => w.id === p.drop.gun);
     const el = o.canvas;
     return {
@@ -1545,11 +1562,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     };
   }
 
+  const wpScratch = new THREE.Vector3();
   /** The objective on screen, for the waypoint diamond. */
   function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
     const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
     if (!t || dead) return null;
-    const p = t.clone().add(new THREE.Vector3(0, 1.2, 0)).project(world.camera);
+    // The diamond floats 1.2 m over the objective; over the first gun's case it rides above the beacon's shaft, so
+    // the beam reads whole under it instead of being capped by the marker.
+    const lift = job?.case && t === job.case.gunAt ? job.case.markLift : 1.2;
+    const p = wpScratch.copy(t).setY(t.y + lift).project(world.camera);
     const behind = p.z > 1;
     return { x: (behind ? -p.x : p.x) * 0.5 + 0.5, y: -p.y * 0.5 + 0.5, dist: player.pos.distanceTo(t), behind };
   }

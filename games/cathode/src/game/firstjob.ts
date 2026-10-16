@@ -14,6 +14,7 @@ import type { Player } from "./player";
 import type { Progress, Feature } from "./progress";
 import { CLASS_WEAPON } from "./progress";
 import { Beacon } from "./beacon";
+import { buildDisplay } from "./stall";
 import { buildGunDisplay } from "./viewmodel";
 import { SLICE_WEAPONS } from "./weapons";
 
@@ -46,6 +47,8 @@ export interface JobHost {
   toast?(kind: string, name: string): void;
 }
 
+/** The first gun's shaft (m): tall enough to clear the stall's work lamp and read from down the street. */
+const BEAM_H = 3.6;
 const AMBER = new THREE.Color(0xffb347).convertSRGBToLinear();
 const SODIUM = new THREE.Color(0xffa860).convertSRGBToLinear();
 
@@ -90,9 +93,11 @@ export class Case {
   /** Where the gun lies (world space): the prompt, the arrow and the sightline aim here. */
   readonly gunAt: THREE.Vector3;
   readonly beacon: Beacon;
+  /** How high over the gun the objective diamond floats: just above the beam's top. */
+  readonly markLift = BEAM_H + 0.45;
   private lid: THREE.Group;
   private caseG: THREE.Group;
-  private leather: THREE.Material;
+  private strip: THREE.Object3D;
   private gun: THREE.Object3D;
   private t = 0;
   private closing = -1;
@@ -109,16 +114,6 @@ export class Case {
     block?: JobHost["block"],
   ) {
     const def = weapon ? SLICE_WEAPONS.find((w) => w.id === weapon) : undefined;
-    const leather = new THREE.MeshStandardMaterial({ color: 0x1e1410, roughness: 0.42, metalness: 0.08 });
-    this.leather = leather;
-    const brass = new THREE.MeshStandardMaterial({ color: 0xc9a25a, roughness: 0.3, metalness: 1 });
-    // Pale champagne foam, lit from the lid: the black gun sits on it as a hard silhouette, from down the street
-    // and up close (the crimson velvet it replaced swallowed the gun's outline).
-    const foam = new THREE.MeshStandardMaterial({ color: 0xc8b089, roughness: 0.95, emissive: 0x5a4224, emissiveIntensity: 0.9 });
-    const lining = new THREE.MeshStandardMaterial({ color: 0x2a0d12, roughness: 0.8, emissive: 0x3a1a08, emissiveIntensity: 0.6 });
-    const wood = new THREE.MeshStandardMaterial({ color: 0x3a2a1e, roughness: 0.75 });
-    const tarp = new THREE.MeshStandardMaterial({ color: 0x3f5a57, roughness: 0.45, metalness: 0.05, side: THREE.DoubleSide });
-    const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb347).multiplyScalar(2.2) });
     // The gun, laid on its side along the stall, and the case sized to it.
     if (def) {
       this.gun = buildGunDisplay(def.model);
@@ -126,6 +121,7 @@ export class Case {
     } else {
       // A ledger: oxblood boards, cream page edges, a brass clasp.
       const book = new THREE.Group();
+      const brass = new THREE.MeshStandardMaterial({ color: 0xc9a25a, roughness: 0.3, metalness: 1 });
       const boards = new THREE.Mesh(new RoundedBoxGeometry(0.3, 0.05, 0.22, 2, 0.008), new THREE.MeshStandardMaterial({ color: 0x4a1218, roughness: 0.55 }));
       const pages = new THREE.Mesh(new THREE.BoxGeometry(0.29, 0.038, 0.205), new THREE.MeshStandardMaterial({ color: 0xd9ccb0, roughness: 0.9 }));
       pages.position.x = 0.006;
@@ -135,86 +131,25 @@ export class Case {
       this.gun = book;
     }
     this.gun.updateMatrixWorld(true);
-    const gb = new THREE.Box3().setFromObject(this.gun);
-    const gs = gb.getSize(new THREE.Vector3());
-    const W = Math.max(0.5, gs.x + 0.14);
-    const D = Math.max(0.3, gs.z + 0.14);
-    const top = 0.92;
-    // The stall: a trestle under a wet tarp, crates beneath.
-    const stall = new THREE.Group();
-    const board = new THREE.Mesh(new RoundedBoxGeometry(W + 0.5, 0.05, D + 0.36, 2, 0.01), wood);
-    board.position.y = top - 0.025;
-    const cloth = new THREE.Mesh(new RoundedBoxGeometry(W + 0.54, 0.012, D + 0.4, 1, 0.004), tarp);
-    cloth.position.y = top + 0.006;
-    stall.add(board, cloth);
-    for (const sx of [-1, 1])
-      for (const sz of [-1, 1]) {
-        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.05, top - 0.05, 0.05), wood);
-        leg.position.set(sx * (W / 2 + 0.17), (top - 0.05) / 2, sz * (D / 2 + 0.12));
-        leg.rotation.z = sx * 0.06;
-        stall.add(leg);
-      }
-    // A wet tarp hangs off the front edge, and a work lamp on a pole leans over the case.
-    const drape = new THREE.Mesh(new THREE.PlaneGeometry(W + 0.54, 0.16), tarp);
-    drape.position.set(0, top - 0.08, D / 2 + 0.2);
-    stall.add(drape);
-    const metal = new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.5, metalness: 0.8 });
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.9, 8), metal);
-    pole.position.set(-(W / 2 + 0.17), 0.95, -(D / 2 + 0.12));
-    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, W / 2 + 0.2, 8), metal);
-    arm.rotation.z = Math.PI / 2;
-    arm.position.set(-(W / 4 + 0.07), 1.88, -(D / 2 + 0.12));
-    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.1, 16, 1, true), metal);
-    shade.position.set(0.02, 1.83, -(D / 2 + 0.12));
-    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 3.4, 1.4) }));
-    bulb.position.set(0.02, 1.79, -(D / 2 + 0.12));
-    stall.add(pole, arm, shade, bulb);
-    const crate = new THREE.Mesh(new RoundedBoxGeometry(0.5, 0.38, 0.4, 2, 0.02), wood);
-    crate.position.set(-W / 4, 0.19, 0);
-    crate.rotation.y = 0.2;
-    stall.add(crate);
-    mergeStatic(stall);
-    this.group.add(stall);
-    // The case: a leather shell with brass corners, foam inside, the lid open past upright (100 degrees).
-    const caseG = new THREE.Group();
+    const gs = new THREE.Box3().setFromObject(this.gun).getSize(new THREE.Vector3());
+    const W = Math.max(0.5, gs.x + 0.16);
+    const D = Math.max(0.3, gs.z + 0.16);
+    const name = (def?.name ?? "Ledger").replace(/ \(.*\)$/, "").toUpperCase();
+    const d = buildDisplay(this.gun, W, D, [name, def ? "NOT FOR SALE" : "PRIVATE"]);
+    const { top, H } = d;
+    this.strip = d.strip;
+    mergeStatic(d.stall);
+    this.group.add(d.stall);
+    const caseG = d.caseG;
     this.caseG = caseG;
-    caseG.position.y = top + 0.012;
-    const H = 0.09;
-    const shell = new THREE.Mesh(new RoundedBoxGeometry(W, H, D, 2, 0.015), leather);
-    shell.position.y = H / 2;
-    const insert = new THREE.Mesh(new THREE.BoxGeometry(W - 0.04, 0.012, D - 0.04), foam);
-    insert.position.y = H + 0.001;
-    caseG.add(shell, insert);
-    for (const sx of [-1, 1])
-      for (const sz of [-1, 1]) {
-        const c = new THREE.Mesh(new RoundedBoxGeometry(0.04, H + 0.01, 0.04, 1, 0.008), brass);
-        c.position.set(sx * (W / 2 - 0.015), H / 2, sz * (D / 2 - 0.015));
-        caseG.add(c);
-      }
-    for (const sx of [-1, 1]) {
-      const latch = new THREE.Mesh(new RoundedBoxGeometry(0.05, 0.035, 0.015, 1, 0.005), brass);
-      latch.position.set(sx * W * 0.28, H * 0.7, D / 2 + 0.006);
-      caseG.add(latch);
-    }
-    // The gun sits in the foam, a little proud of it, centred.
-    const gc = gb.getCenter(new THREE.Vector3());
-    this.gun.position.set(-gc.x, H + 0.012 - gb.min.y, -gc.z);
     mergeStatic(caseG);
     caseG.add(this.gun);
-    // The lid hinges on the back edge; its lining glows warm, a lamp strip along the top lights the gun.
-    this.lid = new THREE.Group();
-    this.lid.position.set(0, H, -D / 2);
-    const lidShell = new THREE.Mesh(new RoundedBoxGeometry(W, 0.04, D, 2, 0.012), leather);
-    lidShell.position.set(0, 0.02, D / 2);
-    const lidLining = new THREE.Mesh(new THREE.BoxGeometry(W - 0.05, 0.004, D - 0.05), lining);
-    lidLining.position.set(0, -0.002, D / 2);
-    const strip = new THREE.Mesh(new THREE.BoxGeometry(W - 0.08, 0.006, 0.012), glow);
-    strip.position.set(0, -0.004, D - 0.03);
-    this.lid.add(lidShell, lidLining, strip);
+    this.lid = d.lid;
     this.lid.rotation.x = -THREE.MathUtils.degToRad(100);
+    mergeStatic(this.lid, this.lid.children.filter((c) => c !== d.strip) as THREE.Mesh[]);
     caseG.add(this.lid);
     this.group.add(caseG);
-    this.beacon = new Beacon({ beam: 3.5, glint: true, gun: this.gun, floorY: 0, glintAt: new THREE.Vector3(0, top + H + 0.05, 0) });
+    this.beacon = new Beacon({ beam: BEAM_H, glint: true, gun: this.gun, floorY: 0, glintAt: new THREE.Vector3(0, top + H + 0.05, 0) });
     // The shaft rises from just behind the gun, in front of the open lid, so the gun itself stays clear.
     this.beacon.beam.position.set(0, top + H, -D / 2 + 0.05);
     this.group.add(this.beacon.group);
@@ -224,10 +159,10 @@ export class Case {
     this.group.updateMatrixWorld(true);
     this.gunAt = new THREE.Vector3(0, top + H + 0.04, 0).applyMatrix4(this.group.matrixWorld);
     // The trestle is solid (she walks round it, rounds stop in it); only up to its top, so the gun stays in sight.
-    const table = new THREE.Box3(new THREE.Vector3(-(W / 2 + 0.27), 0, -(D / 2 + 0.2)), new THREE.Vector3(W / 2 + 0.27, top, D / 2 + 0.2)).applyMatrix4(this.group.matrixWorld);
+    const table = new THREE.Box3(new THREE.Vector3(-(W / 2 + 0.32), 0, -(D / 2 + 0.22)), new THREE.Vector3(W / 2 + 0.32, top, D / 2 + 0.22)).applyMatrix4(this.group.matrixWorld);
     this.unblock = block?.(table) ?? null;
     // The work lamp's light, over the case.
-    this.unlight = light?.(new THREE.Vector3(0.02, 1.7, -(D / 2 + 0.05)).applyMatrix4(this.group.matrixWorld), AMBER, 7, 5) ?? null;
+    this.unlight = light?.(new THREE.Vector3(0.02, 1.7, -(D / 2 + 0.12)).applyMatrix4(this.group.matrixWorld), AMBER, 7, 5) ?? null;
   }
 
   /** Per frame: `from` is where Cath stands (the beam fades as she closes in). */
@@ -245,7 +180,7 @@ export class Case {
         this.gun.removeFromParent();
         this.beacon.dispose();
         // The lid's lining and lamp strip are inside the shut case now; its shell joins the case's.
-        for (const c of [...this.lid.children]) if ((c as THREE.Mesh).material !== this.leather) c.removeFromParent();
+        this.strip.removeFromParent();
         const meshes = [...this.caseG.children, ...this.lid.children].filter((c) => (c as THREE.Mesh).isMesh) as THREE.Mesh[];
         mergeStatic(this.caseG, meshes);
       }

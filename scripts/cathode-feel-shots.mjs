@@ -336,7 +336,9 @@ for (const vp of vps) {
     for (const g of side.wpParts ?? [])
       for (const a of side.arms) {
         const ov = Math.max(0, Math.min(a.x + a.w, g.x + g.w) - Math.max(a.x, g.x)) * Math.max(0, Math.min(a.y + a.h, g.y + g.h) - Math.max(a.y, g.y))
-        if (ov > 1 && g.wpOpacity > 0.5) fail(`${vp} ${spec}: the objective marker covers a crosshair arm at opacity ${g.wpOpacity}`)
+        // Drawn strength: the wrapper's opacity times the part's own (the plate hides over the reticle).
+        const op = g.visibility === 'hidden' ? 0 : g.wpOpacity * g.opacity
+        if (ov > 1 && op > 0.5) fail(`${vp} ${spec}: the objective marker covers a crosshair arm at opacity ${op.toFixed(2)}`)
       }
     for (const [q, g] of side.glyphs)
       for (const a of side.arms) {
