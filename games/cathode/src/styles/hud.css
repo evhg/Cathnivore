@@ -1269,7 +1269,7 @@
   /* On a phone the toast hangs under the arms cluster (top right, over the action buttons), clear of the
      reticle and the gun in her hands. */
   .hud-tr > .hud-toast { padding: 2px 0 4px 56px; gap: 2px; }
-  .hud-tr > .hud-toast .hud-toast-name { font-size: 24px; }
+  .hud-tr > .hud-toast .hud-toast-name { font-size: var(--t-display-s); }
   .hud-objective { max-width: min(40ch, 46vw); font-size: var(--t-body); }
   .hud-vitals { width: min(220px, 30vw); }
   .hud-feed { max-width: 44vw; }
