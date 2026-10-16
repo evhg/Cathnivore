@@ -875,8 +875,10 @@
   background: rgb(var(--shade-rgb) / .5);
   white-space: nowrap;
 }
-.hud-wp.near .hud-wp-mark { transform: rotate(45deg) scale(.6); }
-.hud-wp.near { opacity: .35; }
+.hud-wp.near .hud-wp-mark { transform: rotate(45deg) scale(.6); opacity: .4; }
+/* The plate keeps its backing at full strength (a ghost of cyan over lamp light can't be read); over the reticle
+   itself the distance goes entirely, so the crosshair stands alone. */
+.hud-wp.on-cross .hud-wp-dist { visibility: hidden; }
 .hud-wp.near .hud-wp-dist { transform: translate(-50%, calc(var(--d) * -.3)); }
 /* Over the reticle's line, the plate goes above the diamond, away from the crosshair. */
 .hud-wp.lbl-up .hud-wp-dist { top: auto; bottom: max(30px, calc(var(--d) * .78 + var(--u) * 16)); }
@@ -905,7 +907,6 @@
   background: var(--cyan);
   /* a chevron, pointing along +x before the rotation */
   clip-path: polygon(10% 8%, 100% 50%, 10% 92%, 32% 50%);
-  filter: drop-shadow(0 0 calc(var(--u) * 6) rgb(var(--cyan-rgb) / .8));
 }
 /* A dark halo behind the chevron so it holds over neon and rain, with a faint cyan ring. */
 .hud-wp.off::before {
@@ -916,7 +917,10 @@
   width: calc(var(--u) * 52);
   height: calc(var(--u) * 52);
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .3) 70%, transparent);
+  /* the chevron's glow lives in the halo (no filter on the HUD): a cyan bloom at the core over the dark disc */
+  background:
+    radial-gradient(closest-side, rgb(var(--cyan-rgb) / .34), rgb(var(--cyan-rgb) / 0) 46%),
+    radial-gradient(closest-side, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .3) 70%, transparent);
   box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 1.5)) rgb(var(--cyan-rgb) / .35);
 }
 .hud-wp.off.pulse .hud-wp-arrow { animation: wp-nudge 1s ease-in-out infinite; }
@@ -989,14 +993,15 @@
   box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
 }
 .hud-wprompt-key.wide { font-family: var(--font-ui); letter-spacing: .08em; text-transform: uppercase; }
-/* Touch: the chip is the button; the cap shows a tap ring instead of a key. */
+/* Touch: the chip is the button; the cap shows a tap glyph (a fingertip dot inside two ripple rings), not a key. */
+.hud-wprompt-key.tap { position: relative; min-width: max(34px, calc(var(--u) * 34)); height: max(34px, calc(var(--u) * 34)); }
 .hud-wprompt-key.tap::before {
   content: "";
-  width: 46%;
+  width: 62%;
   aspect-ratio: 1;
   border-radius: 50%;
-  border: max(2px, calc(var(--u) * 3)) solid var(--night);
-  box-shadow: 0 0 0 max(1px, calc(var(--u) * 2)) rgb(var(--black-rgb) / .25);
+  background:
+    radial-gradient(circle, var(--night) 0 26%, transparent 28% 44%, var(--night) 46% 54%, transparent 56% 70%, rgb(var(--black-rgb) / .45) 72% 78%, transparent 80%);
 }
 .hud-wprompt-main {
   display: flex;
@@ -1012,7 +1017,7 @@
 }
 .hud-wprompt-sep { color: var(--ink-3); }
 .hud-wprompt-name {
-  font: 600 max(16px, calc(var(--u) * 32))/1 var(--font-display);
+  font: 600 max(28px, calc(var(--u) * 32))/1 var(--font-display);
   letter-spacing: .01em;
   color: var(--ink);
 }
@@ -1023,17 +1028,29 @@
 }
 .hud-wprompt-stat { display: grid; gap: calc(var(--u) * 2); }
 .hud-wprompt-stat i {
-  font: 700 max(12px, calc(var(--u) * 13))/1 var(--font-ui);
+  font: 700 max(14px, calc(var(--u) * 14))/1 var(--font-ui);
   font-style: normal;
-  letter-spacing: .18em;
+  letter-spacing: .16em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--ink-2);
 }
 .hud-wprompt-stat b { font: 700 max(12px, calc(var(--u) * 21))/1 var(--font-num); color: var(--ink); }
 .hud-wprompt.is-in .hud-wprompt-chip { animation: wprompt-in 280ms var(--ease-out); }
 .hud-wprompt.is-in .hud-wprompt-lead { animation: wprompt-lead 200ms var(--ease-out); }
 @keyframes wprompt-in { from { opacity: 0; translate: calc(var(--u) * -12) 0; } }
 @keyframes wprompt-lead { from { scale: 0 1; } }
+.hud-wprompt-chip {
+  border: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--d-tap) var(--ease-out);
+}
+.hud-wprompt-chip:active { transform: translateY(-100%) translateY(calc(var(--u) * 28)) scale(.95); }
+.hud-wprompt-chip:focus-visible { outline: max(2px, calc(var(--u) * 2)) solid var(--amber); outline-offset: max(3px, calc(var(--u) * 3)); }
 @media (pointer: coarse) {
   .hud-wprompt-chip { pointer-events: auto; cursor: pointer; }
 }
@@ -1269,7 +1286,13 @@
   /* On a phone the toast hangs under the arms cluster (top right, over the action buttons), clear of the
      reticle and the gun in her hands. */
   .hud-tr > .hud-toast { padding: 2px 0 4px 56px; gap: 2px; }
-  .hud-tr > .hud-toast .hud-toast-name { font-size: var(--t-display-s); }
+  /* Under 28 px the display face doesn't sit over the 3D view (aaa-ui.md): the phone's name is the head style. */
+  .hud-tr > .hud-toast .hud-toast-name {
+    font: 700 var(--t-display-s)/1 var(--font-ui);
+    font-variation-settings: normal;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
   .hud-objective { max-width: min(40ch, 46vw); font-size: var(--t-body); }
   .hud-vitals { width: min(220px, 30vw); }
   .hud-feed { max-width: 44vw; }
@@ -1334,7 +1357,8 @@
   .hud-toast.on { animation: feed-fade 3.2s linear forwards; }
   .hud-wprompt.is-in .hud-wprompt-chip,
   .hud-wprompt.is-in .hud-wprompt-lead,
-  .hud-wp.pulse .hud-wp-mark::after { animation: none; }
+  .hud-wp.pulse .hud-wp-mark::after,
+  .hud-wp.off.pulse .hud-wp-arrow { animation: none; }
 }
 :root.reduce-motion .hud-root.is-booting *,
 :root.reduce-motion .hud-objective.is-new,
@@ -1352,10 +1376,15 @@
 :root.reduce-motion .hud-toast.on { animation: feed-fade 3.2s linear forwards; }
 :root.reduce-motion .hud-wprompt.is-in .hud-wprompt-chip,
 :root.reduce-motion .hud-wprompt.is-in .hud-wprompt-lead,
-:root.reduce-motion .hud-wp.pulse .hud-wp-mark::after { animation: none; }
+:root.reduce-motion .hud-wp.pulse .hud-wp-mark::after,
+:root.reduce-motion .hud-wp.off.pulse .hud-wp-arrow { animation: none; }
 @keyframes feed-fade {
   0% { opacity: 0; }
   4% { opacity: 1; }
   92% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* A frozen stage holds the toast at its time even under reduced motion (that rule above resets the animation). */
+:root .hud-root.is-frozen .hud-toast.on,
+:root .hud-root.is-frozen .hud-toast.on .hud-toast-rule { animation-play-state: paused; animation-delay: var(--freeze-t, 0ms); }

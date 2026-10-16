@@ -325,8 +325,11 @@ export class Hud {
       const k = Math.hypot(dx / a, dy / b);
       const off = w.behind || w.x < 0.03 || w.x > 0.97 || w.y < 0.05 || w.y > 0.95;
       // On screen the diamond rides the objective; off it, the chevron sits on the ellipse in its direction.
-      const px = off ? W / 2 + dx / Math.max(k, 1e-6) : w.x * W;
-      const py = off ? H / 2 + dy / Math.max(k, 1e-6) : w.y * H;
+      let px = off ? W / 2 + dx / Math.max(k, 1e-6) : w.x * W;
+      let py = off ? H / 2 + dy / Math.max(k, 1e-6) : w.y * H;
+      // On touch the chevron, its halo and its plate stay clear of the stick and the button arc: it walks in
+      // along the same ray until the box is clear (the ellipse alone puts it on FIRE for an objective to the right).
+      if (off) [px, py] = this.clearOfControls(px, py, W, H);
       set(this.wp, "--px", `${Math.round(px)}px`);
       set(this.wp, "--py", `${Math.round(py)}px`);
       set(this.wp, "--ang", `${Math.atan2(dy, dx).toFixed(3)}rad`);
@@ -337,6 +340,7 @@ export class Hud {
       const rc = Math.hypot(px - W / 2, py - H / 2);
       const onCross = !off && rc < Math.max(56, 64 * u);
       this.wp.classList.toggle("near", !off && (w.dist < 5 || !!s.ads || onCross));
+      this.wp.classList.toggle("on-cross", onCross);
       // The distance plate goes on the side away from the centre: below when the marker is under the reticle's
       // line, above when it's over it.
       this.wp.classList.toggle("lbl-up", !off && py < H / 2 && rc < Math.max(160, 180 * u));
@@ -575,12 +579,48 @@ export class Hud {
     this.feedPush(p, 4400, 4);
   }
 
+  /** The touch controls' boxes (CSS px), re-measured on a resize or every 2 s (the stick's home moves with it). */
+  private ctrlZones: { x0: number; y0: number; x1: number; y1: number }[] | null = null;
+  private ctrlKey = "";
+  private ctrlAt = 0;
+  private clearOfControls(px: number, py: number, W: number, H: number): [number, number] {
+    const now = performance.now();
+    const key = `${W}x${H}`;
+    if (key !== this.ctrlKey || now - this.ctrlAt > 2000) {
+      this.ctrlKey = key;
+      this.ctrlAt = now;
+      const zones: { x0: number; y0: number; x1: number; y1: number }[] = [];
+      for (const e of document.querySelectorAll<HTMLElement>(".tbtn, .tbtn-menu, .stick:not(.on)")) {
+        if (e.closest("[hidden]")) continue;
+        const b = e.getBoundingClientRect();
+        if (b.width > 0) zones.push({ x0: b.left - 6, y0: b.top - 6, x1: b.right + 6, y1: b.bottom + 6 });
+      }
+      this.ctrlZones = zones.length ? zones : null;
+    }
+    const zones = this.ctrlZones;
+    if (!zones) return [px, py];
+    // The marker's box around its anchor: the 52u halo, and the distance plate under it.
+    const u = Math.min(2.4, Math.max(0.62, Math.min(H / 1080, W / 1920))) * this.hudScaleV;
+    const hx = Math.max(30, 28 * u);
+    const top = Math.max(30, 28 * u);
+    const bot = Math.max(30, 30 * u) + Math.max(20, 22 * u);
+    const hit = (x: number, y: number) => zones.some((z) => x + hx > z.x0 && x - hx < z.x1 && y + bot > z.y0 && y - top < z.y1);
+    const cx = W / 2;
+    const cy = H / 2;
+    for (let t = 1; t > 0.15; t -= 0.03) {
+      const x = cx + (px - cx) * t;
+      const y = cy + (py - cy) * t;
+      if (!hit(x, y)) return [x, y];
+    }
+    return [px, py];
+  }
+
   private teachEl?: HTMLElement;
   private teachText: string | null = null;
   private wp?: HTMLElement;
   private wpDist?: HTMLElement;
   private wpPulse = 6;
-  private wprompt?: { root: HTMLElement; key: HTMLElement; verb: HTMLElement; name: HTMLElement; stats: HTMLElement };
+  private wprompt?: { root: HTMLElement; chip: HTMLElement; key: HTMLElement; verb: HTMLElement; name: HTMLElement; stats: HTMLElement };
   private wpromptKey = "";
   /** A tap on the world prompt (touch): the session takes the weapon. */
   onTake: (() => void) | null = null;
@@ -594,7 +634,9 @@ export class Hud {
       const root = el("div", "hud-wprompt", this.root);
       el("i", "hud-wprompt-pin", root);
       el("i", "hud-wprompt-lead", root);
-      const chip = el("div", "hud-wprompt-chip", root);
+      // A real button (touch): its name says what a tap does, and it presses in like the action buttons.
+      const chip = el("button", "hud-wprompt-chip", root);
+      chip.setAttribute("type", "button");
       const key = el("span", "c-key hud-wprompt-key", chip);
       const main = el("p", "hud-wprompt-main", chip);
       const verb = el("span", "hud-wprompt-verb", main);
@@ -605,7 +647,7 @@ export class Hud {
         e.preventDefault();
         this.onTake?.();
       });
-      this.wprompt = { root, key, verb, name, stats };
+      this.wprompt = { root, chip, key, verb, name, stats };
       root.hidden = true;
     }
     const w = this.wprompt;
@@ -623,6 +665,8 @@ export class Hud {
     w.key.setAttribute("aria-label", p.key);
     this.text(w.verb, p.verb);
     this.text(w.name, p.name);
+    const label = `${p.verb} ${p.name}`;
+    if (w.chip.getAttribute("aria-label") !== label) w.chip.setAttribute("aria-label", label);
     const sig = p.stats.map((x) => x.join(":")).join("|");
     if (sig !== this.wpromptKey) {
       this.wpromptKey = sig;
