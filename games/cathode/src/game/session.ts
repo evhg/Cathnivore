@@ -899,7 +899,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!dead && sinceHurt > 5 && s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.06 * dt);
     // Slow motion looks it: the noir grade deepens while time is held.
     if (!killcam.active) {
-      const want = focusing || run.timeScale < 1 ? 0.4 : 0;
+      const want = focusing || run.timeScale < 1 || timescale.active("lastEnemy") ? 0.4 : 0;
       if (want !== drama) world.setDrama((drama = want));
     }
     time += dt;
@@ -1501,6 +1501,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   });
   combat.bus.on("blocked", () => frameBlocks++);
   combat.bus.on("fire", () => rumble("fire"));
+  // The last enemy of the encounter (S1.4, S1.5): the world holds 120 ms, then runs at 0.35x for 700 ms and
+  // ramps back over 250 ms, with the grade deepening while it lasts. Not during the kill-cam (it has its own).
+  combat.bus.on("kill", (k) => {
+    if (!k.last || killcam.active) return;
+    const L = tuning.lastEnemySlowmo;
+    timescale.hitStop(tuning.hitStop.lastEnemy);
+    timescale.push("lastEnemy", L.scale, tuning.hitStop.lastEnemy + L.holdMs, 0, L.rampOutMs, "focus");
+    trauma.add(tuning.kill.trauma);
+    rumble("kill");
+    combat.bus.emit("encounterCleared", { t: combat.clock });
+  });
   const byUid = (uid: string) => enemies.find((e) => String(e.id) === uid);
   const camRight = new THREE.Vector3();
   const camPos = new THREE.Vector3();

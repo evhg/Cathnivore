@@ -82,6 +82,23 @@ export interface Build {
 
 const EXPLOSIVE: WeaponDef = { id: "frag", name: "Frag grenade", model: "pin", weaponClass: "melee", kind: "melee", damage: 0, pellets: 1, cycle: 0, mag: 0, reserve: 0, reload: 0, spread: [0, 0], noise: 60, kick: 0, range: 0 };
 
+/** Hostiles that count toward an encounter (bystanders and nurses don't fight). */
+const NON_COMBATANT = new Set(["civilian", "nurse"]);
+
+/**
+ * True when a kill ends the fight (S1.4's last enemy): no other armed enemy is in combat or searching, and
+ * none stands within `nearM` of the one that fell.
+ */
+export function encounterCleared(
+  fallen: { position: THREE.Vector3 },
+  enemies: { alive: boolean; state: string; position: THREE.Vector3; kit: { role?: string } }[],
+  nearM = 20,
+): boolean {
+  return !enemies.some(
+    (x) => x !== fallen && x.alive && !NON_COMBATANT.has(x.kit.role ?? "rifle") && (x.state === "combat" || x.state === "searching" || x.position.distanceTo(fallen.position) < nearM),
+  );
+}
+
 const ZONE_MUL: Record<Zone, number> = { head: 2.5, torso: 1, armL: 0.7, armR: 0.7, legL: 0.75, legR: 0.75 };
 const GRAVITY = 9.81;
 
@@ -156,7 +173,9 @@ export class Combat {
   /** Records a kill and tells the bus (S0): the HUD, audio and camera listen for "kill". */
   private killed(k: KillEvent): void {
     this.kills.push(k);
-    const last = !this.enemies.some((x) => x !== k.enemy && x.alive && x.kit.role !== "civilian");
+    // The last of the encounter (S1.4): nobody else armed is fighting or hunting, and nobody armed stands close
+    // by. A takedown has its own moment (C11), so it never counts.
+    const last = !k.takedown && encounterCleared(k.enemy, this.enemies);
     this.bus.emit("kill", { t: this.clock, targetUid: String(k.enemy.id), headshot: k.headshot, weaponCls: k.weapon.weaponClass, last });
   }
 
