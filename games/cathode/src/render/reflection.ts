@@ -122,6 +122,23 @@ export function hideSmall(scene: THREE.Object3D, eye: THREE.Vector3, k: number, 
   });
 }
 
+/** Like hideSmall, for the shadow pass: small visible casters stop casting (listed in `out`; set them back). */
+export function unshadowSmall(scene: THREE.Object3D, eye: THREE.Vector3, k: number, out: THREE.Object3D[]): void {
+  const k2 = k * k;
+  scene.traverseVisible((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || !m.castShadow || (m as THREE.InstancedMesh).isInstancedMesh) return;
+    const g = m.geometry;
+    if (!g.boundingSphere) g.computeBoundingSphere();
+    const bs = g.boundingSphere!;
+    const r = bs.radius * m.matrixWorld.getMaxScaleOnAxis();
+    if (r * r < k2 * cullCentre.copy(bs.center).applyMatrix4(m.matrixWorld).distanceToSquared(eye)) {
+      m.castShadow = false;
+      out.push(m);
+    }
+  });
+}
+
 export function showAll(list: THREE.Object3D[]): void {
   for (const m of list) m.visible = true;
   list.length = 0;

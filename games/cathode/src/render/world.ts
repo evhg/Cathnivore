@@ -18,7 +18,7 @@ import { addCrowd } from "./crowd";
 import { bakeVolume, LightPool, hash1 } from "./lighting";
 import { buildSigns } from "./signs";
 import { buildAtmosphere, type AtmoUniforms } from "./atmosphere";
-import { PlanarReflection, LAYER_NO_REFLECT, hideSmall, showAll } from "./reflection";
+import { PlanarReflection, LAYER_NO_REFLECT, hideSmall, unshadowSmall, showAll } from "./reflection";
 import { createFx } from "./fx";
 import { createPost } from "./post";
 
@@ -31,6 +31,8 @@ interface Preset {
   reflCull: number;
   /** The main pass skips meshes under this on screen (about two pixels on a phone): 0 keeps all. */
   mainCull: number;
+  /** On a shadow-refresh frame, meshes spanning under this many radians from the eye cast no shadow (0 = all do). */
+  shadowCull: number;
   rain: number;
   splashes: number;
   drips: number;
@@ -40,9 +42,9 @@ interface Preset {
 }
 
 const PRESETS: Record<Quality, Preset> = {
-  phone: { pool: 12, shadow: 1024, softShadow: false, reflScale: 0.5, reflCull: 0.045, mainCull: 0.006, rain: 5000, splashes: 450, drips: 160, steam: 10, skyline: 90, shadowEvery: 2 },
-  high: { pool: 32, shadow: 2048, softShadow: true, reflScale: 1, reflCull: 0.012, mainCull: 0, rain: 14000, splashes: 1300, drips: 420, steam: 18, skyline: 150, shadowEvery: 1 },
-  ultra: { pool: 44, shadow: 4096, softShadow: true, reflScale: 1, reflCull: 0, mainCull: 0, rain: 22000, splashes: 2200, drips: 700, steam: 24, skyline: 200, shadowEvery: 1 },
+  phone: { pool: 12, shadow: 1024, softShadow: false, reflScale: 0.5, reflCull: 0.045, mainCull: 0.006, shadowCull: 0.022, rain: 5000, splashes: 450, drips: 160, steam: 10, skyline: 90, shadowEvery: 2 },
+  high: { pool: 32, shadow: 2048, softShadow: true, reflScale: 1, reflCull: 0.012, mainCull: 0, shadowCull: 0, rain: 14000, splashes: 1300, drips: 420, steam: 18, skyline: 150, shadowEvery: 1 },
+  ultra: { pool: 44, shadow: 4096, softShadow: true, reflScale: 1, reflCull: 0, mainCull: 0, shadowCull: 0, rain: 22000, splashes: 2200, drips: 700, steam: 24, skyline: 200, shadowEvery: 1 },
 };
 
 /** Fog: a cold blue-grey haze, linear RGB. */
@@ -231,6 +233,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   let frameNo = 0;
   /** Last frame's cost; reflCalls is the wet-street mirror's share of the draw calls (S0 budget sidecars). */
   const perf = { renderMs: 0, drawCalls: 0, triangles: 0, reflCalls: 0, shadowed: false };
+  const unshadowed: THREE.Object3D[] = [];
   const tmp = new THREE.Vector3();
   const lum = new THREE.Color();
   const ray = new THREE.Ray();
@@ -348,8 +351,13 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       post.grade.uniforms.uDrama!.value = drama;
       post.grade.uniforms.uFlash!.value = flash * 0.25;
       if (P.mainCull > 0) hideSmall(scene, camEye.setFromMatrixPosition(camera.matrixWorld), P.mainCull, mainHidden);
+      // Phone: a shadow refresh skips the casters too small to leave a readable shadow in a 1024 map (an enemy's
+      // fingers, a stall's latches), which halves the refresh frame's extra draw calls.
+      if (shadowing && P.shadowCull > 0) unshadowSmall(scene, camEye.setFromMatrixPosition(camera.matrixWorld), P.shadowCull, unshadowed);
       post.render(clock);
       showAll(mainHidden);
+      for (const m of unshadowed) m.castShadow = true;
+      unshadowed.length = 0;
       perf.renderMs = performance.now() - t0;
       perf.drawCalls = renderer.info.render.calls;
       perf.triangles = renderer.info.render.triangles;
