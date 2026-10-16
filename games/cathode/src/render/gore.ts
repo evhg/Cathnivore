@@ -59,7 +59,7 @@ export const GORE = {
   anchorMs: 80,
   /** How hard the emissive lift pushes (see tinted()). */
   liftGain: 7,
-  splat: { rayM: 3, size: [0.3, 0.8] as const, wetInMs: 120, farFromM: 7, farMulMax: 1.6 },
+  splat: { rayM: 3, size: [0.3, 0.8] as const, wetInMs: 120, farFromM: 7, farMulMax: 1.6, phoneMul: 1.4 },
   wound: { size: 0.11, runLen: 0.16, runMs: 2000, perBody: 8 },
   caps: { phone: { mist: 48, drops: 260, wounds: 48 }, desktop: { mist: 128, drops: 900, wounds: 160 } },
 };
@@ -350,6 +350,7 @@ export function createGore(o: GoreDeps): Gore {
   // Fresh blood on a night wall: a deep #5C0707-ish red with a small emissive lift (the decal shader glows by
   // tint.r - 1), so it reads wet and red in the grade. The old 2.3 lift blew out to salmon pink past the tone map.
   const SPLAT_TINT = new THREE.Color(1.55, 0.55, 0.5);
+  const SPLAT_TINT_PHONE = new THREE.Color(2.4, 0.5, 0.45);
   /** The last hit's wall splats (world point, size in m), for the C2 probe. */
   const splats: { point: THREE.Vector3; size: number }[] = [];
 
@@ -596,8 +597,10 @@ export function createGore(o: GoreDeps): Gore {
       // streaks stay a readable size on screen (pillar 4), up to 1.6x.
       const view = Math.min(W.farMulMax, Math.max(1, (h.distance + W.rayM * 0.5) / W.farFromM));
       const size = (W.size[0] + (W.size[1] - W.size[0]) * k) * (j === 0 ? 1 : 0.8 + rand() * 0.25) * view;
-      o.decal(wall.point, wall.normal, size, DECAL.blood[3 + Math.floor(rand() * 3)]!, SPLAT_TINT, W.wetInMs, ray);
-      splats.push({ point: wall.point.clone(), size });
+      // A phone's fog and smaller screen wash a dark splat out: bigger and brighter there.
+      const sz = o.quality === "phone" ? size * W.phoneMul : size;
+      o.decal(wall.point, wall.normal, sz, DECAL.blood[3 + Math.floor(rand() * 3)]!, o.quality === "phone" ? SPLAT_TINT_PHONE : SPLAT_TINT, W.wetInMs, ray);
+      splats.push({ point: wall.point.clone(), size: sz });
     }
     // 5. The wound, on the body.
     addWound(h);

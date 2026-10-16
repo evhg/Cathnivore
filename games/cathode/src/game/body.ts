@@ -11,6 +11,9 @@ import { tuning } from "./feel/tuning";
 const flashTuning = tuning.hitFlash;
 
 /** S4.1: the flash's level at `ageMs` after a hit: white for a frame, then red at 0.6 fading to 0 over 150 ms. */
+/** The death glow's strength for this session: the phone's fog and lighter grade need it brighter (set by session.ts). */
+export const deathGlowScale = { value: 1 };
+
 export function flashLevel(ageMs: number): number {
   const F = flashTuning;
   if (ageMs < F.whiteMs) return F.white;
@@ -357,6 +360,7 @@ export class Body {
   private flashing = false;
   /** Ms since this body died (the death glow, C2), or 1e9 while it lives. */
   private deathAge = 1e9;
+  private deathMul = 1;
 
   constructor(
     readonly look: BodyLook,
@@ -392,6 +396,7 @@ export class Body {
    */
   deathGlow(): void {
     this.deathAge = 0;
+    this.deathMul = deathGlowScale.value;
     this.flashing = true;
     this.updateFlash(0);
   }
@@ -405,7 +410,8 @@ export class Body {
     let dk = 0;
     if (this.deathAge < 1e8) {
       const a = (this.deathAge += dtMs);
-      dk = a < D.holdMs ? D.level : a < D.holdMs + D.fadeMs ? D.level * (1 - (a - D.holdMs) / D.fadeMs) ** 2 : 0;
+      const L = D.level * this.deathMul;
+      dk = a < D.holdMs ? L : a < D.holdMs + D.fadeMs ? L * (1 - (a - D.holdMs) / D.fadeMs) ** 2 : 0;
       if (dk > 0) any = true;
       else this.deathAge = 1e9;
     }

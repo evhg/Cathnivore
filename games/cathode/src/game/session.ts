@@ -10,6 +10,7 @@ import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
 import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
+import { deathGlowScale } from "./body";
 import { RayWorld, rayGround } from "./ray";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
@@ -152,6 +153,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const inVault = o.district === "vault";
   const inMarket = !inClinic && !inPlaza && !inTower && !inVault;
   const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress);
+  // A phone's heavier fog and lifted grade wash a dim red out: the kill's glow on the body runs brighter there.
+  deathGlowScale.value = o.quality === "phone" ? 1.8 : 1;
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
   const player = new Player(start, world.colliders, ground);
