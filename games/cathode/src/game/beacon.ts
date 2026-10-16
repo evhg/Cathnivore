@@ -35,6 +35,20 @@ export function pulse(t: number): number {
   return 0.5 - 0.5 * Math.cos(t * Math.PI * 2);
 }
 
+/**
+ * The render profile beacons are built for. A phone renders at a low scale with a half-size bloom, so a thin HDR
+ * shaft that blooms into a column on desktop comes out as a dim line: there the beam is wider, hotter and has an
+ * unlit core that reads without bloom (C3 review: the first gun's beam did not show at 844x390).
+ */
+let profile: "phone" | "desktop" = "desktop";
+export function setBeaconProfile(p: "phone" | "desktop"): void {
+  profile = p;
+}
+/** Beam radius (m), HDR gain and core floor for a profile. */
+export function beamLook(p: "phone" | "desktop"): { radius: number; hdr: number; core: number } {
+  return p === "phone" ? { radius: 0.2, hdr: 4.5, core: 0.55 } : { radius: 0.12, hdr: 2.5, core: 0 };
+}
+
 /** 1u in CSS px for a viewport (S8's --u, without the HUD-size setting). */
 export function hudUnit(w: number, h: number, scale = 1): number {
   return Math.min(2.4, Math.max(0.62, Math.min(h / 1080, w / 1920))) * scale;
@@ -64,11 +78,11 @@ uniform float uPulse;
 varying vec2 vUv;
 void main() {
   float r = length(vUv - 0.5) * 2.0;
-  // A thin bright band at 0.9 m that breathes outward with the pulse, a fainter echo inside, and a warm pool.
+  // A thin bright band (0.9 m across on its 1.1 m quad) that breathes outward with the pulse, a fainter echo inside, and a warm pool.
   float R = 0.82 + 0.08 * uPulse;
   float band = exp(-pow((r - R) / 0.025, 2.0));
   float echo = 0.35 * exp(-pow((r - R * 0.72) / 0.02, 2.0)) * (1.0 - uPulse);
-  float pool = 0.18 * exp(-pow(r / 0.55, 2.0));
+  float pool = 0.1 * exp(-pow(r / 0.55, 2.0));
   gl_FragColor = vec4(uColor * (band * (0.55 + 0.45 * uPulse) + echo + pool) * uAlpha, 1.0);
 }`;
 
@@ -76,15 +90,16 @@ const BEAM_FRAG = /* glsl */ `
 uniform vec3 uColor;
 uniform float uAlpha;
 uniform float uTime;
+uniform float uCore;
 varying vec3 vN;
 varying vec3 vV;
 varying float vH;
 void main() {
   // Soft at the silhouette (S7.1's pow(1-|2u-1|, 2) edge): a hot thin core inside a wide faint halo.
   float f = abs(dot(vN, vV));
-  float face = pow(f, 7.0) + 0.22 * pow(f, 1.5);
+  float face = pow(f, 7.0) + 0.22 * pow(f, 1.5) + uCore * smoothstep(0.55, 0.95, f);
   // Fades in over the first 15 cm (no hard foot), then thins up the height; a slow shimmer rises through the rain.
-  float up = smoothstep(0.0, 0.04, vH) * pow(1.0 - vH, 2.2);
+  float up = smoothstep(0.0, 0.04, vH) * pow(1.0 - vH, 2.2 - uCore * 1.2);
   float shimmer = 0.8 + 0.2 * sin(vH * 26.0 - uTime * 3.0);
   gl_FragColor = vec4(uColor * face * up * shimmer * uAlpha, 1.0);
 }`;
@@ -158,7 +173,7 @@ export class Beacon {
   readonly glint: THREE.Sprite | null = null;
   private t = 0;
   private readonly rim = { value: 0 };
-  private readonly uni: { uColor: { value: THREE.Color }; uAlpha: { value: number }; uTime: { value: number } };
+  private readonly uni: { uColor: { value: THREE.Color }; uAlpha: { value: number }; uTime: { value: number }; uCore: { value: number } };
   private readonly glintAt: THREE.Vector3;
   private readonly ringUni = { uColor: { value: new THREE.Color() }, uAlpha: { value: 1 }, uPulse: { value: 0 } };
   /** The beam's current strength (tests read it). */
@@ -170,9 +185,10 @@ export class Beacon {
     const hot = colour.clone().multiply(new THREE.Color(1, 0.8, 0.5));
     const h = opts.beam ?? 3.5;
     const floor = opts.floorY ?? 0;
-    // HDR 2.5: past the bloom threshold, so the shaft glows through the rain.
-    this.uni = { uColor: { value: hot.clone().multiplyScalar(2.5) }, uAlpha: { value: 1 }, uTime: { value: 0 } };
-    const g = new THREE.CylinderGeometry(0.12, 0.12, h, 20, 1, true);
+    // HDR 2.5: past the bloom threshold, so the shaft glows through the rain (hotter and wider on a phone).
+    const look = beamLook(profile);
+    this.uni = { uColor: { value: hot.clone().multiplyScalar(look.hdr) }, uAlpha: { value: 1 }, uTime: { value: 0 }, uCore: { value: look.core } };
+    const g = new THREE.CylinderGeometry(look.radius, look.radius, h, 20, 1, true);
     g.translate(0, h / 2, 0);
     this.beam = new THREE.Mesh(
       g,
@@ -181,9 +197,9 @@ export class Beacon {
     this.beam.position.y = floor;
     this.beam.renderOrder = 2;
     this.group.add(this.beam);
-    // The ring on the wet ground: it catches the street's reflections.
+    // The ring on the wet ground under the case: 0.9 m across, so it marks the spot without reading as a spawn pad.
     this.ring = new THREE.Mesh(
-      new THREE.PlaneGeometry(2, 2),
+      new THREE.PlaneGeometry(1.1, 1.1),
       new THREE.ShaderMaterial({ uniforms: this.ringUni, vertexShader: RING_VERT, fragmentShader: RING_FRAG, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false }),
     );
     this.ringUni.uColor.value.copy(hot).multiplyScalar(1.8);
@@ -193,7 +209,7 @@ export class Beacon {
     this.group.add(this.ring);
     this.glintAt = opts.glintAt?.clone() ?? new THREE.Vector3(0, floor + 0.9, 0);
     if (opts.glint) {
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: star(), color: colour.clone().lerp(new THREE.Color(1, 1, 1), 0.5).multiplyScalar(4), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, toneMapped: false, fog: false }));
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: star(), color: colour.clone().lerp(new THREE.Color(1, 1, 1), 0.5).multiplyScalar(4), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
       sp.scale.setScalar(0.18);
       sp.position.copy(this.glintAt);
       sp.renderOrder = 3;
@@ -235,7 +251,10 @@ export class Beacon {
     }
   }
 
+  private disposed = false;
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     this.group.removeFromParent();
     this.beam.geometry.dispose();
     (this.beam.material as THREE.Material).dispose();

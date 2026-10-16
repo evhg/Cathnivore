@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { Beacon, beamFade, glintFlash, hudUnit, pulse } from "../games/cathode/src/game/beacon";
-import { FIRST_CASE, FirstJob, TAKEDOWN_POSE, TAKE_RANGE, reach, type JobHost } from "../games/cathode/src/game/firstjob";
+import { Beacon, beamFade, beamLook, glintFlash, hudUnit, pulse, setBeaconProfile } from "../games/cathode/src/game/beacon";
+import { Case, FIRST_CASE, FirstJob, TAKEDOWN_POSE, TAKE_RANGE, reach, type JobHost } from "../games/cathode/src/game/firstjob";
 import { buildDistrict } from "../games/cathode/src/render/levels/index";
 import { RayWorld } from "../games/cathode/src/game/ray";
 import { PRESS_RADIUS, Pickups } from "../games/cathode/src/game/pickups";
@@ -92,6 +92,49 @@ function host(): JobHost & { armed: string[]; pos: THREE.Vector3 } {
     banner() {},
   };
 }
+
+describe("CATHODE beacon on a phone and after the take (C3 review)", () => {
+  it("a phone's beam is wider and hotter, with a core that reads without bloom", () => {
+    const d = beamLook("desktop");
+    const p = beamLook("phone");
+    expect(p.radius).toBeGreaterThan(d.radius);
+    expect(p.hdr).toBeGreaterThan(d.hdr);
+    expect(p.core).toBeGreaterThan(0);
+    setBeaconProfile("phone");
+    const b = new Beacon({ beam: 3.5 });
+    const g = b.beam.geometry as THREE.CylinderGeometry;
+    expect(g.parameters.radiusTop).toBeCloseTo(p.radius);
+    setBeaconProfile("desktop");
+  });
+  it("the floor ring is under a metre across, not a spawn pad", () => {
+    const b = new Beacon();
+    const g = b.ring.geometry as THREE.PlaneGeometry;
+    expect(g.parameters.width).toBeLessThanOrEqual(1.2);
+  });
+  it("the glint is depth-tested, so it never shows through a wall", () => {
+    const b = new Beacon({ glint: true });
+    expect((b.glint!.material as THREE.SpriteMaterial).depthTest).toBe(true);
+  });
+  it("taking the gun leaves fewer meshes behind than the open display (beacon and gun gone)", () => {
+    const scene = new THREE.Scene();
+    const c = new Case(new THREE.Vector3(), scene);
+    const count = () => {
+      let n = 0;
+      scene.traverseVisible((o) => {
+        if ((o as THREE.Mesh).isMesh || (o as THREE.Sprite).isSprite) n++;
+      });
+      return n;
+    };
+    const open = count();
+    c.take();
+    c.update(0.25);
+    const shut = count();
+    expect(shut).toBeLessThan(open);
+    expect(scene.getObjectByProperty("type", "Sprite")).toBeUndefined();
+    // The stall and the shut case are baked: a handful of meshes, not dozens.
+    expect(shut).toBeLessThanOrEqual(10);
+  });
+});
 
 describe("CATHODE weapons need a press (S7.1)", () => {
   it("walking onto the first gun doesn't take it; a press within reach does, and the lid shuts first", () => {

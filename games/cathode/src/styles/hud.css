@@ -179,6 +179,17 @@
   text-transform: uppercase;
   color: var(--ink);
 }
+/* The variant (suppressed, scoped): a small outlined chip after the name. */
+.hud-weapon-tag {
+  display: inline-block;
+  margin-left: calc(var(--u) * 10);
+  padding: calc(var(--u) * 3) calc(var(--u) * 7) calc(var(--u) * 2);
+  vertical-align: .18em;
+  font: 700 max(12px, calc(var(--u) * 12))/1 var(--font-ui);
+  letter-spacing: .16em;
+  color: var(--ink-2);
+  border: max(1px, calc(var(--u) * 1.5)) solid rgb(var(--ink-rgb) / .35);
+}
 .hud-ammo {
   display: flex;
   align-items: baseline;
@@ -827,7 +838,7 @@
 /* ---- objective marker (S7.2): an 18u diamond, a 2u cyan stroke, the distance in mono at 14u under it; off screen a
    22u chevron on an ellipse points the way (S7.1 layer 6), with the distance at 13u ---- */
 .hud-wp {
-  --d: max(13px, calc(var(--u) * 18));
+  --d: max(18px, calc(var(--u) * 18));
   --sw: max(1.5px, calc(var(--u) * 2));
   position: absolute;
   left: 0;
@@ -865,8 +876,11 @@
   white-space: nowrap;
 }
 .hud-wp.near .hud-wp-mark { transform: rotate(45deg) scale(.6); }
-.hud-wp.near { opacity: .4; }
+.hud-wp.near { opacity: .35; }
 .hud-wp.near .hud-wp-dist { transform: translate(-50%, calc(var(--d) * -.3)); }
+/* Over the reticle's line, the plate goes above the diamond, away from the crosshair. */
+.hud-wp.lbl-up .hud-wp-dist { top: auto; bottom: max(30px, calc(var(--d) * .78 + var(--u) * 16)); }
+.hud-wp.lbl-up.near .hud-wp-dist { transform: translateX(-50%); }
 /* After an objective update: a 1 Hz ring off the diamond for 6 s. */
 .hud-wp.pulse:not(.off) .hud-wp-mark::after {
   content: "";
@@ -909,7 +923,9 @@
 @keyframes wp-nudge { 50% { opacity: .55; } }
 .hud-wp.off .hud-wp-dist {
   top: calc(var(--u) * 30);
-  font-size: max(12px, calc(var(--u) * 13));
+  color: var(--cyan-ink);
+  background: rgb(var(--shade-rgb) / .78);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 1.5)) rgb(var(--cyan-rgb) / .35), 0 0 0 1px rgb(var(--black-rgb) / .5);
 }
 
 /* ---- world prompt (S7.1 layer 5): a pin on the gun, an amber leader, and a chip with the keycap, the verb, the
@@ -964,8 +980,8 @@
 .hud-wprompt.flip .hud-wprompt-chip { left: auto; right: calc(var(--u) * 64); }
 .hud-wprompt-key {
   grid-row: span 2;
-  min-width: max(22px, calc(var(--u) * 30));
-  height: max(22px, calc(var(--u) * 30));
+  min-width: max(28px, calc(var(--u) * 30));
+  height: max(28px, calc(var(--u) * 30));
   padding: 0 calc(var(--u) * 8);
   font: 700 max(13px, calc(var(--u) * 19))/1 var(--font-num);
   color: var(--night);
@@ -1057,8 +1073,9 @@
   transform-origin: right;
 }
 .hud-toast-sub {
-  font: 600 max(12px, calc(var(--u) * 15))/1 var(--font-num);
-  letter-spacing: .06em;
+  font: 600 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
+  letter-spacing: .14em;
+  text-transform: uppercase;
   color: var(--ink-2);
 }
 .hud-toast.on { animation: toast-life 3.2s var(--ease-out) forwards; }
@@ -1249,19 +1266,10 @@
   .hud-tr { right: calc(196px + var(--safe-r)); align-items: flex-end; gap: var(--sp-3); }
   .hud-tl > *,
   .hud-tr > * { position: relative; inset: auto; }
-  /* The arms sit top right and the buttons bottom right on a phone: the toast takes the middle band instead. */
-  .hud-toast {
-    right: auto;
-    bottom: auto;
-    left: 50%;
-    top: 56%;
-    translate: -50% 0;
-    justify-items: center;
-    text-align: center;
-    padding: 8px 48px 10px;
-    background: radial-gradient(70% 100% at 50% 50%, rgb(var(--shade-rgb) / .8), transparent);
-  }
-  .hud-toast-rule { background: linear-gradient(90deg, transparent, var(--amber), transparent); transform-origin: center; }
+  /* On a phone the toast hangs under the arms cluster (top right, over the action buttons), clear of the
+     reticle and the gun in her hands. */
+  .hud-tr > .hud-toast { padding: 4px 0 6px 56px; gap: 3px; }
+  .hud-tr > .hud-toast .hud-toast-name { font-size: 26px; }
   .hud-objective { max-width: min(40ch, 46vw); font-size: var(--t-body); }
   .hud-vitals { width: min(220px, 30vw); }
   .hud-feed { max-width: 44vw; }

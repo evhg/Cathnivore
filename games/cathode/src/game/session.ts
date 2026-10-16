@@ -4,6 +4,7 @@
 import { openPhotoMode } from "../ui/photomode";
 import { calmCameraOn, loadPrefs } from "../prefs";
 import * as THREE from "three";
+import { beamLook, setBeaconProfile } from "./beacon";
 import { LASER_COOLDOWN, LASER_DAMAGE, laserState, laserTouches, lasersFrom } from "./lasers";
 import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
@@ -121,6 +122,7 @@ export interface Session {
     corpse: { pelvis: { x: number; y: number }; head: { x: number; y: number }; chest: { x: number; y: number } };
     /** C3: the first gun's case on screen (CSS px), and whether it is in front of the camera. */
     caseAt?: { x: number; y: number; front: boolean };
+    beam?: { x0: number; y0: number; x1: number; y1: number; r: number };
   } | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
   probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[] };
@@ -160,6 +162,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // It no longer has to fight the fog (the glow takes its fog back off, body.ts), and at 2.6x the tone map turned
   // it salmon: 1.5x stays a saturated dark red.
   deathGlowScale.value = o.quality === "phone" ? 1.5 : 1;
+  setBeaconProfile(o.quality === "phone" ? "phone" : "desktop");
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
   const player = new Player(start, world.colliders, ground);
@@ -1528,6 +1531,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const at = p.pos.clone().setY(p.pos.y + 0.4);
     const v = at.clone().project(world.camera);
     if (!(v.z < 1 && Math.abs(v.x) < 0.92 && Math.abs(v.y) < 0.92)) return null;
+    // Only while it's in sight, like the first job's prompt: a gun behind a wall or a car gets no chip.
+    if (!rays.clear(world.camera.getWorldPosition(new THREE.Vector3()), at)) return null;
     const def = SLICE_WEAPONS.find((w) => w.id === p.drop.gun);
     const el = o.canvas;
     return {
@@ -1804,7 +1809,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (name === "hud-combat") hud.clearFeedback();
     const v = at?.clone().project(world.camera);
     const z0 = { x: 0, y: 0 };
-    s.stageInfo = { hit: z0, r02: 0, head0: z0, head1: z0, puffM: 0, splats: [], corpse: { pelvis: z0, head: z0, chest: z0 }, caseAt: at && v ? { ...toScreen(at), front: v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1 } : undefined };
+    // The beam's projected column (from 0.3 m over the case to 1.8 m up) and its half-width on screen, so the
+    // shots can check it actually reads (a luminance probe), not just that it's in frame.
+    let beam: { x0: number; y0: number; x1: number; y1: number; r: number } | undefined;
+    if (box && box.beacon.beam.parent && box.beacon.beam.visible) {
+      const b0 = box.beacon.beam.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.3, 0));
+      const b1 = b0.clone().add(new THREE.Vector3(0, 1.5, 0));
+      const p0 = toScreen(b0);
+      const p1 = toScreen(b1);
+      const side = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0).multiplyScalar(beamLook(o.quality === "phone" ? "phone" : "desktop").radius);
+      const pr = toScreen(b0.clone().add(side));
+      beam = { x0: p0.x, y0: p0.y, x1: p1.x, y1: p1.y, r: Math.max(1, Math.hypot(pr.x - p0.x, pr.y - p0.y)) };
+    }
+    s.stageInfo = { hit: z0, r02: 0, head0: z0, head1: z0, puffM: 0, splats: [], corpse: { pelvis: z0, head: z0, chest: z0 }, caseAt: at && v ? { ...toScreen(at), front: v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1 } : undefined, beam };
     hud.freeze(tMs);
     return "ok";
   };

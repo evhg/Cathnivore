@@ -8,6 +8,7 @@
 
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import type { Enemy } from "./enemy";
 import type { Player } from "./player";
 import type { Progress, Feature } from "./progress";
@@ -49,6 +50,38 @@ const AMBER = new THREE.Color(0xffb347).convertSRGBToLinear();
 const SODIUM = new THREE.Color(0xffa860).convertSRGBToLinear();
 
 /**
+ * Bakes the static meshes directly under `root` (or `only`, if given) into one mesh per material, so a stall of a
+ * dozen boxes costs a handful of draw calls (and the same again in the shadow and mirror passes).
+ */
+export function mergeStatic(root: THREE.Object3D, only?: THREE.Mesh[]): void {
+  root.updateMatrixWorld(true);
+  const inv = root.matrixWorld.clone().invert();
+  const meshes = only ?? (root.children.filter((c) => (c as THREE.Mesh).isMesh) as THREE.Mesh[]);
+  const byMat = new Map<THREE.Material, THREE.BufferGeometry[]>();
+  for (const m of meshes) {
+    const mat = m.material as THREE.Material;
+    const g = m.geometry.clone();
+    for (const k of Object.keys(g.attributes)) if (k !== "position" && k !== "normal" && k !== "uv") g.deleteAttribute(k);
+    g.applyMatrix4(inv.clone().multiply(m.matrixWorld));
+    const list = byMat.get(mat) ?? [];
+    list.push(g);
+    byMat.set(mat, list);
+  }
+  for (const [mat, list] of byMat) {
+    if (list.length < 2) continue;
+    const indexed = list.every((g) => g.index);
+    const merged = mergeGeometries(indexed ? list : list.map((g) => (g.index ? g.toNonIndexed() : g)), false);
+    if (!merged) continue;
+    for (const m of meshes)
+      if (m.material === mat) {
+        m.removeFromParent();
+        m.geometry.dispose();
+      }
+    root.add(new THREE.Mesh(merged, mat));
+  }
+}
+
+/**
  * The next weapon she's handed, on show (S7.1): an open case on a market-stall trestle, the gun lying in a cut-foam
  * insert, lit from inside the lid, with the beacon over it. She takes it with a press, and the lid snaps shut.
  */
@@ -58,6 +91,8 @@ export class Case {
   readonly gunAt: THREE.Vector3;
   readonly beacon: Beacon;
   private lid: THREE.Group;
+  private caseG: THREE.Group;
+  private leather: THREE.Material;
   private gun: THREE.Object3D;
   private t = 0;
   private closing = -1;
@@ -75,9 +110,11 @@ export class Case {
   ) {
     const def = weapon ? SLICE_WEAPONS.find((w) => w.id === weapon) : undefined;
     const leather = new THREE.MeshStandardMaterial({ color: 0x1e1410, roughness: 0.42, metalness: 0.08 });
+    this.leather = leather;
     const brass = new THREE.MeshStandardMaterial({ color: 0xc9a25a, roughness: 0.3, metalness: 1 });
-    // Crimson velvet: a black gun reads against it from down the street.
-    const foam = new THREE.MeshStandardMaterial({ color: 0x5a0f1c, roughness: 0.92, emissive: 0x1a0306 });
+    // Pale champagne foam, lit from the lid: the black gun sits on it as a hard silhouette, from down the street
+    // and up close (the crimson velvet it replaced swallowed the gun's outline).
+    const foam = new THREE.MeshStandardMaterial({ color: 0xc8b089, roughness: 0.95, emissive: 0x5a4224, emissiveIntensity: 0.9 });
     const lining = new THREE.MeshStandardMaterial({ color: 0x2a0d12, roughness: 0.8, emissive: 0x3a1a08, emissiveIntensity: 0.6 });
     const wood = new THREE.MeshStandardMaterial({ color: 0x3a2a1e, roughness: 0.75 });
     const tarp = new THREE.MeshStandardMaterial({ color: 0x3f5a57, roughness: 0.45, metalness: 0.05, side: THREE.DoubleSide });
@@ -136,9 +173,11 @@ export class Case {
     crate.position.set(-W / 4, 0.19, 0);
     crate.rotation.y = 0.2;
     stall.add(crate);
+    mergeStatic(stall);
     this.group.add(stall);
     // The case: a leather shell with brass corners, foam inside, the lid open past upright (100 degrees).
     const caseG = new THREE.Group();
+    this.caseG = caseG;
     caseG.position.y = top + 0.012;
     const H = 0.09;
     const shell = new THREE.Mesh(new RoundedBoxGeometry(W, H, D, 2, 0.015), leather);
@@ -160,6 +199,7 @@ export class Case {
     // The gun sits in the foam, a little proud of it, centred.
     const gc = gb.getCenter(new THREE.Vector3());
     this.gun.position.set(-gc.x, H + 0.012 - gb.min.y, -gc.z);
+    mergeStatic(caseG);
     caseG.add(this.gun);
     // The lid hinges on the back edge; its lining glows warm, a lamp strip along the top lights the gun.
     this.lid = new THREE.Group();
@@ -200,7 +240,15 @@ export class Case {
       this.closing += dt;
       const k = Math.min(1, this.closing / 0.2);
       this.lid.rotation.x = -THREE.MathUtils.degToRad(100) * (1 - k * k);
-      if (k >= 1) this.gun.visible = false;
+      if (k >= 1 && this.gun.parent) {
+        // Shut: the gun is in her hands and the beacon is out for good, so neither costs a draw call any more.
+        this.gun.removeFromParent();
+        this.beacon.dispose();
+        // The lid's lining and lamp strip are inside the shut case now; its shell joins the case's.
+        for (const c of [...this.lid.children]) if ((c as THREE.Mesh).material !== this.leather) c.removeFromParent();
+        const meshes = [...this.caseG.children, ...this.lid.children].filter((c) => (c as THREE.Mesh).isMesh) as THREE.Mesh[];
+        mergeStatic(this.caseG, meshes);
+      }
     }
   }
 

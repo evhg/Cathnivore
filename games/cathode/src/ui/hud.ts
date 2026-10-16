@@ -130,7 +130,8 @@ export class Hud {
     document.documentElement.classList.toggle("colour-safe", loadPrefs().colourSafe);
     this.root.style.setProperty("--xs", String(loadPrefs().crossScale));
     // The HUD-size setting (S8): on the root, so --u (and every size written in it) follows.
-    document.documentElement.style.setProperty("--hud-scale", String(loadPrefs().hudScale));
+    this.hudScaleV = loadPrefs().hudScale || 1;
+    document.documentElement.style.setProperty("--hud-scale", String(this.hudScaleV));
     // Objective, top left: a case note with the case as its eyebrow.
     // On touch the objective and vitals stack in the top-left corner, the arms and feed in the top right; on
     // desktop these wrappers are `display: contents` and each cluster takes its own corner.
@@ -264,7 +265,13 @@ export class Hud {
     this.text(this.lvl, `Lv ${String(s.level).padStart(2, "0")}`);
     set(this.xpBar.root, "--v", Math.min(1, s.xp / Math.max(1, s.xpNext)).toFixed(3));
     // Arms: mag goes amber at a quarter, blood at empty (with a reload prompt).
-    this.text(this.weapon, s.weapon);
+    // A variant in brackets ("Kestrel 9 (suppressed)") becomes a small tag chip after the name, not header text.
+    if (this.weapon.dataset.full !== s.weapon) {
+      this.weapon.dataset.full = s.weapon;
+      const m = /^(.*?)\s*\(([^)]+)\)$/.exec(s.weapon);
+      this.weapon.replaceChildren(m ? m[1]! : s.weapon);
+      if (m) el("span", "hud-weapon-tag", this.weapon).textContent = m[2]!;
+    }
     this.show(this.ammo, !s.melee);
     if (!s.melee) {
       this.text(this.mag, String(s.mag));
@@ -324,7 +331,15 @@ export class Hud {
       set(this.wp, "--py", `${Math.round(py)}px`);
       set(this.wp, "--ang", `${Math.atan2(dy, dx).toFixed(3)}rad`);
       this.wp.classList.toggle("off", off);
-      this.wp.classList.toggle("near", !off && (w.dist < 5 || !!s.ads));
+      // Over the reticle it steps back (CoD, DOOM Eternal): within a reticle's reach of the centre it shrinks and
+      // fades, so the player aiming past it at the Enforcers sees the crosshair, not the marker.
+      const u = Math.min(2.4, Math.max(0.62, Math.min(H / 1080, W / 1920))) * this.hudScaleV;
+      const rc = Math.hypot(px - W / 2, py - H / 2);
+      const onCross = !off && rc < Math.max(56, 64 * u);
+      this.wp.classList.toggle("near", !off && (w.dist < 5 || !!s.ads || onCross));
+      // The distance plate goes on the side away from the centre: below when the marker is under the reticle's
+      // line, above when it's over it.
+      this.wp.classList.toggle("lbl-up", !off && py < H / 2 && rc < Math.max(160, 180 * u));
       this.wp.classList.toggle("pulse", this.wpPulse > 0);
       this.text(this.wpDist!, `${Math.round(w.dist)} m`);
     }
@@ -620,12 +635,16 @@ export class Hud {
     }
   }
 
+  /** The HUD-size setting (S8), for sizes the script needs in px. */
+  private hudScaleV = 1;
   private toastEl?: HTMLElement;
   private toastTimer = 0;
   /** An amber toast for a new weapon (S7.1): "NEW WEAPON" over the name, sliding in, gone after 3.2 s. */
   toast(kind: string, name: string, sub?: string): void {
     if (!this.toastEl) {
-      this.toastEl = el("div", "hud-toast", this.root);
+      // On a phone it joins the top-right stack under the arms and the feed, so it never lands on either.
+      const tr = matchMedia("(pointer: coarse)").matches ? this.root.querySelector<HTMLElement>(".hud-tr") : null;
+      this.toastEl = el("div", "hud-toast", tr ?? this.root);
       this.toastEl.setAttribute("role", "status");
     }
     const t = this.toastEl;
@@ -863,7 +882,8 @@ export class Hud {
       hi.value = String(Math.round(prefs.hudScale * 100));
       hi.addEventListener("input", () => {
         savePrefs({ ...loadPrefs(), hudScale: Number(hi.value) / 100 });
-        document.documentElement.style.setProperty("--hud-scale", String(Number(hi.value) / 100));
+        this.hudScaleV = Number(hi.value) / 100;
+        document.documentElement.style.setProperty("--hud-scale", String(this.hudScaleV));
         window.dispatchEvent(new Event("cathode:prefs"));
       });
       toggle("Calm camera", "calmCamera");

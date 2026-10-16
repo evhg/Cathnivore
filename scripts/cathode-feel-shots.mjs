@@ -166,6 +166,10 @@ for (const vp of vps) {
       return {
         texts,
         wpMark: r(document.querySelector('.hud-wp:not([hidden]) .hud-wp-mark')),
+        // The marker's parts as drawn (opacity is the wrapper's: a faded, shrunk marker over the reticle is fine).
+        wpParts: [...document.querySelectorAll('.hud-wp:not([hidden]) .hud-wp-mark, .hud-wp:not([hidden]) .hud-wp-dist')]
+          .map((e) => ({ ...r(e), wpOpacity: Number(getComputedStyle(e.closest('.hud-wp')).opacity) }))
+          .filter((b) => b.w > 0 && b.display !== 'none'),
         wpOff: document.querySelector('.hud-wp:not([hidden])')?.classList.contains('off') ?? false,
         wpArrow: r(document.querySelector('.hud-wp:not([hidden]).off .hud-wp-arrow')),
         wprompt: r(document.querySelector('.hud-wprompt:not([hidden])')),
@@ -326,6 +330,12 @@ for (const vp of vps) {
     // Every stage starts clean: full health, no hurt arc from before.
     if (side.arcA > 0.05) fail(`${vp} ${spec}: a stale hurt arc shows (--a ${side.arcA})`)
     if (side.spill.length) fail(`${vp} ${spec}: HUD past the screen edge: ${side.spill.slice(0, 4).join('; ')}`)
+    // The objective marker never sits on the reticle at full strength (S7.2): over it, it must have stepped back.
+    for (const g of side.wpParts ?? [])
+      for (const a of side.arms) {
+        const ov = Math.max(0, Math.min(a.x + a.w, g.x + g.w) - Math.max(a.x, g.x)) * Math.max(0, Math.min(a.y + a.h, g.y + g.h) - Math.max(a.y, g.y))
+        if (ov > 1 && g.wpOpacity > 0.5) fail(`${vp} ${spec}: the objective marker covers a crosshair arm at opacity ${g.wpOpacity}`)
+      }
     for (const [q, g] of side.glyphs)
       for (const a of side.arms) {
         const ov = Math.max(0, Math.min(a.x + a.w, g.x + g.w) - Math.max(a.x, g.x)) * Math.max(0, Math.min(a.y + a.h, g.y + g.h) - Math.max(a.y, g.y))
@@ -338,6 +348,32 @@ for (const vp of vps) {
       console.log(`  case on screen at ${c ? `${Math.round(c.x)},${Math.round(c.y)}` : 'none'} (${(off * 100).toFixed(0)}% of the half-width off centre)`)
       if (!c?.front || off > 0.3) fail(`${vp} ${spec}: the first gun's case is ${(off * 100).toFixed(0)}% off centre (> 30%) or not in view`)
       if (vp === '5k' && !(side.wpMark && side.wpMark.oh >= 48)) fail(`${vp} ${spec}: waypoint diamond ${side.wpMark?.oh?.toFixed(0)} < 48 physical px`)
+      // The beam has to read, not just be in frame: probe its projected column against the street either side.
+      const bm = info?.beam
+      if (!bm) fail(`${vp} ${spec}: no beam to probe`)
+      else {
+        const lum = (m) => 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]
+        const r = Math.max(1.5, bm.r * 0.7)
+        let on = 0
+        let offs = 0
+        let n = 0
+        for (const t of [0.1, 0.25, 0.4, 0.55]) {
+          const x = bm.x0 + (bm.x1 - bm.x0) * t
+          const y = bm.y0 + (bm.y1 - bm.y0) * t
+          const c = await page.evaluate(([a, b, rr]) => window.cathode.probeRed(a, b, rr).mean, [x, y, r])
+          const sd = Math.max(8, bm.r * 5)
+          const l = await page.evaluate(([a, b, rr]) => window.cathode.probeRed(a, b, rr).mean, [x - sd, y, r])
+          const rt = await page.evaluate(([a, b, rr]) => window.cathode.probeRed(a, b, rr).mean, [x + sd, y, r])
+          on += lum(c)
+          offs += Math.max(lum(l), lum(rt))
+          n++
+        }
+        on /= n
+        offs /= n
+        // Mean luminance on the beam against the brighter side, 0-255: it must stand out by a clear step.
+        console.log(`  beam luminance ${on.toFixed(0)} against ${offs.toFixed(0)} beside it (half-width ${bm.r.toFixed(1)} CSS px)`)
+        if (on < offs * 1.3 + 12) fail(`${vp} ${spec}: the beam doesn't read (luminance ${on.toFixed(0)} on it, ${offs.toFixed(0)} beside it)`)
+      }
     }
     if (stage === 'pickup-prompt') {
       if (!side.wprompt) fail(`${vp} ${spec}: no world prompt on the case`)
