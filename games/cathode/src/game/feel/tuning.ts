@@ -64,6 +64,30 @@ export const tuning = {
   confirmDb: { body: -12, head: -10, armour: -14, plateBreak: -10, visor: -10, kill: -8, headKill: -8, pen: -15 },
   /** S0 audio buses. */
   audio: { compThreshold: -18, compRatio: 4, compKnee: 6, compAttack: 0.003, compRelease: 0.15, attackTau: 0.04, releaseTau: 0.4, dryGainDb: 3, voicesDesktop: 32, voicesPhone: 20 },
+  /**
+   * S4.1 flinch. The spec asks for 12 Hz, zeta 0.5 "settling in about 250 ms", but a 12 Hz spring peaks in
+   * 16 ms and is gone in 100 ms (two frames at 60 Hz). 5 Hz at zeta 0.5 is the spring that settles in 250 ms
+   * and peaks at about 38 ms, where the eye catches it; the kick is sized so each channel peaks at the table.
+   */
+  flinch: {
+    spring: { freqHz: 5, zeta: 0.5 },
+    rootSpring: { freqHz: 3, zeta: 0.85 },
+    scaleMin: 0.4,
+    scaleMax: 1.4,
+    maxDeg: 45,
+    maxRootM: 0.6,
+    zones: {
+      head: { pitchDeg: 22, yawDeg: 10, pushM: 0.1 },
+      torso: { pitchDeg: 6, twistDeg: 12, shrugDeg: 8, pushM: 0.15 },
+      arm: { swingDeg: 28, muzzleDropDeg: 15, muzzleDropMs: 300, twistDeg: 5, pushM: 0.05 },
+      leg: { kneeDeg: 18, pelvisDropM: 0.06, tipDeg: 4, pushM: 0.1 },
+    },
+    weaponPush: { pistol: 0.15, rifle: 0.25, shotgunClose: 0.45, sniperMul: 2.5 },
+    /** Archetype poise: heavier kits react less, but every hit still shows (pillar 3). */
+    poise: { shield: 0.7, elite: 0.8, turret: 0.25, default: 1 },
+  },
+  /** S4.1 the flash: white for one frame, then red fading out. Emissive radiance on the hit segment. */
+  hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6 },
   /** S0 timescale: nothing but death holds longer than this (ms). */
   timescale: { maxHoldMs: 3000 },
 } as const;

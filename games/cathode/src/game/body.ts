@@ -6,6 +6,17 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { tuning } from "./feel/tuning";
+
+const flashTuning = tuning.hitFlash;
+
+/** S4.1: the flash's level at `ageMs` after a hit: white for a frame, then red at 0.6 fading to 0 over 150 ms. */
+export function flashLevel(ageMs: number): number {
+  const F = flashTuning;
+  if (ageMs < F.whiteMs) return F.white;
+  const k = 1 - (ageMs - F.whiteMs) / F.fadeMs;
+  return k > 0 ? F.redGain * k * k : 0;
+}
 
 export const JOINTS = [
   "pelvis",
@@ -133,7 +144,7 @@ function mesh(g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0): 
  * Builds a segment's meshes in its local frame: +Y runs from `from` to `to` (length `len`), +Z faces the
  * way the body faces. Each segment also gets a gore cap at both ends, hidden until it's severed.
  */
-function buildSegment(name: string, len: number, look: BodyLook): THREE.Group {
+function buildSegment(name: string, len: number, look: BodyLook, seg = 0): THREE.Group {
   const g = new THREE.Group();
   const { armour: a, suit: s, visor: v, boot: b } = look;
   const mid = len / 2;
@@ -202,7 +213,7 @@ function buildSegment(name: string, len: number, look: BodyLook): THREE.Group {
       g.add(mesh(rbox(0.135, 0.03, 0.28, 0.01), s, 0, len + 0.06, 0.05)); // sole
       break;
   }
-  mergeByMaterial(g);
+  mergeByMaterial(g, seg);
   const capA = mesh(cyl(0.05, 0.05, 0.02, 10), look.gore, 0, 0, 0);
   const capB = mesh(cyl(0.05, 0.05, 0.02, 10), look.gore, 0, len, 0);
   capA.name = "capFrom";
@@ -216,7 +227,7 @@ function buildSegment(name: string, len: number, look: BodyLook): THREE.Group {
  * Merges a segment's meshes that share a material into one mesh each, so an Enforcer costs a handful of
  * draw calls per segment instead of dozens (it's drawn again for reflections and shadows).
  */
-function mergeByMaterial(g: THREE.Group): void {
+function mergeByMaterial(g: THREE.Group, seg = 0): void {
   const groups = new Map<THREE.Material, THREE.BufferGeometry[]>();
   for (const c of [...g.children]) {
     const m = c as THREE.Mesh;
@@ -233,10 +244,53 @@ function mergeByMaterial(g: THREE.Group): void {
   for (const [mat, geos] of groups) {
     const merged = mergeGeometries(geos, false);
     if (!merged) continue;
+    tagSegment(merged, seg);
     const m = new THREE.Mesh(merged, mat);
     m.castShadow = true;
     g.add(m);
   }
+}
+
+/** Segment slots in the flash uniform: 0 is "not a segment" (the rifle, the shield), then SEGMENTS in order. */
+const FLASH_SLOTS = SEGMENTS.length + 1;
+
+/** Gives a geometry the per-vertex segment slot the hit flash reads (S4.1). */
+export function tagSegment(geo: THREE.BufferGeometry, seg: number): void {
+  const n = geo.getAttribute("position").count;
+  geo.setAttribute("aSeg", new THREE.BufferAttribute(new Float32Array(n).fill(seg), 1));
+}
+
+/** Tags every mesh under `o` that wears a flashing material but isn't a body segment (slot 0: never flashes). */
+export function tagUnflashed(o: THREE.Object3D): void {
+  o.traverse((c) => {
+    const m = c as THREE.Mesh;
+    if (m.isMesh && !m.geometry.getAttribute("aSeg")) tagSegment(m.geometry, 0);
+  });
+}
+
+/**
+ * The hit flash (S4.1): one uniform array per body, indexed by a per-vertex segment slot on the merged meshes,
+ * so a hit lights only its segment with no per-hit material clones. Added to the emissive radiance, so it
+ * reads in the dark grade.
+ */
+function patchFlash(mat: THREE.Material, uniform: { value: THREE.Vector3[] }): void {
+  const m = mat as THREE.MeshStandardMaterial;
+  if (m.userData.flashPatched) return;
+  m.userData.flashPatched = true;
+  const prev = m.onBeforeCompile;
+  m.onBeforeCompile = (shader, r) => {
+    prev?.call(m, shader, r);
+    shader.uniforms.uHitFlash = uniform;
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", `#include <common>\nattribute float aSeg;\nuniform vec3 uHitFlash[${FLASH_SLOTS}];\nvarying vec3 vHitFlash;`)
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvHitFlash = uHitFlash[ int( aSeg + 0.5 ) ];");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vHitFlash;")
+      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\ntotalEmissiveRadiance += vHitFlash;");
+  };
+  const key = m.customProgramCacheKey?.bind(m);
+  m.customProgramCacheKey = () => `${key ? key() : ""}|cathode-hitflash`;
+  m.needsUpdate = true;
 }
 
 /** Joint positions in body space (feet on y=0, facing +Z), for the rest pose and as animation anchors. */
@@ -292,6 +346,10 @@ export class Body {
   /** Which way the body faces (for segment roll), updated by animation. */
   readonly facing = new THREE.Vector3(0, 0, 1);
   restTime = 0;
+  /** The hit flash per segment slot (radiance), and ms since each slot was hit. */
+  readonly flashUniform = { value: Array.from({ length: FLASH_SLOTS }, () => new THREE.Vector3()) };
+  private flashAge = new Float32Array(FLASH_SLOTS).fill(1e9);
+  private flashing = false;
 
   constructor(
     readonly look: BodyLook,
@@ -301,14 +359,46 @@ export class Body {
       this.joints[j] = REST[j].clone().multiplyScalar(scale);
       this.prev[j] = this.joints[j].clone();
     }
-    for (const def of SEGMENTS) {
+    for (const m of [look.armour, look.suit, look.visor, look.boot]) patchFlash(m, this.flashUniform);
+    for (const [i, def] of SEGMENTS.entries()) {
       const len = REST[def.from].distanceTo(REST[def.to]) * scale;
-      const group = buildSegment(def.name, len, look);
+      const group = buildSegment(def.name, len, look, i + 1);
       group.userData.segment = def.name;
       this.root.add(group);
       this.segs.set(def.name, { def, group, len, loose: null });
     }
     for (const [a, b] of LINKS) this.rest.set(`${a}|${b}`, REST[a].distanceTo(REST[b]) * scale);
+  }
+
+  /** A round lands on a segment: it flashes white for a frame, then red, fading out (S4.1). */
+  flash(segment: string): void {
+    const i = SEGMENTS.findIndex((d) => d.name === segment);
+    if (i < 0) return;
+    this.flashAge[i + 1] = 0;
+    this.flashing = true;
+    this.updateFlash(0);
+  }
+
+  /** Advances the flash on real time (it shows through a hit-stop). */
+  updateFlash(dtMs: number): void {
+    if (!this.flashing) return;
+    const F = flashTuning;
+    let any = false;
+    for (let i = 1; i < FLASH_SLOTS; i++) {
+      const age = (this.flashAge[i] += dtMs);
+      const v = this.flashUniform.value[i]!;
+      const k = flashLevel(age);
+      if (age < F.whiteMs) v.setScalar(k);
+      else v.set(F.red[0] * k, F.red[1] * k, F.red[2] * k);
+      if (k > 0) any = true;
+    }
+    this.flashing = any;
+  }
+
+  /** The flash on a segment right now (for tests and the stage hooks): 0 when dark. */
+  flashOf(segment: string): number {
+    const i = SEGMENTS.findIndex((d) => d.name === segment);
+    return i < 0 ? 0 : this.flashUniform.value[i + 1]!.x;
   }
 
   /** Places every attached segment between its joints. */

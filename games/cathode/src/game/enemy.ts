@@ -5,7 +5,8 @@
 import { tuning } from "./feel/tuning";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-import { Body, enforcerLook, place, type BodyLook } from "./body";
+import { Body, enforcerLook, place, tagUnflashed, type BodyLook, type Zone } from "./body";
+import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
 import { animate, muzzleOf, type Motion } from "./animate";
 import type { RayWorld } from "./ray";
 
@@ -230,6 +231,8 @@ export class Enemy {
   /** 0..1 detection meter: fills while she's seen, drains when she's not. */
   detect = 0;
   readonly motion: Motion;
+  /** Hit flinch springs (S4.1), read by animate(). */
+  readonly flinch = new Flinch();
   private route: THREE.Vector3[];
   private routeIdx = 0;
   private wait = 0;
@@ -271,13 +274,14 @@ export class Enemy {
       pitch: 0,
       crouch: 0,
       aim: 0,
-      flinch: new THREE.Vector3(),
+      flinch: this.flinch,
       kick: 0,
     };
     // Face along the route from the start, not at whatever happens to lie north.
     const next = this.route[1];
     if (next) this.motion.yaw = Math.atan2(next.x - start.x, next.z - start.z);
     this.rifle = buildRifle(look);
+    tagUnflashed(this.rifle);
     this.body.root.add(this.rifle);
     if (kit.role === "shield") {
       const g = new RoundedBoxGeometry(0.62, 1.05, 0.05, 2, 0.02);
@@ -288,6 +292,7 @@ export class Enemy {
       const slot = new THREE.Mesh(new RoundedBoxGeometry(0.34, 0.06, 0.055, 1, 0.01), look.visor);
       slot.position.set(0, 0.32, 0);
       this.shield.add(slot);
+      tagUnflashed(this.shield);
       this.body.root.add(this.shield);
     }
     if (kit.role === "sniper") {
@@ -342,7 +347,7 @@ export class Enemy {
     this.shots.length = 0;
     // Bystanders never fight: once they stop running they calm down and wander again.
     if (this.kit.role === "civilian" && this.state === "combat" && this.fleeT <= 0) this.state = "unaware";
-    this.motion.flinch.multiplyScalar(Math.max(0, 1 - dt * 4.5));
+    this.flinch.update(dt);
     // A round that just missed: a duck that eases back up, and shakier aim for a second (S1.1).
     this.suppressT = Math.max(0, this.suppressT - dt);
     this.duckT = Math.max(0, this.duckT - dt);
@@ -694,11 +699,11 @@ export class Enemy {
     if (!this.alive) return false;
     const N = tuning.nearMiss;
     const inv = -this.motion.yaw;
-    // A sideways flinch away from the round's path, in body space (about 8 degrees of head turn).
-    const k = Math.sin((N.flinchDeg * Math.PI) / 180) * 0.6;
-    this.motion.flinch.x += (dir.x * Math.cos(inv) - dir.z * Math.sin(inv)) * k;
-    this.motion.flinch.z += (dir.x * Math.sin(inv) + dir.z * Math.cos(inv)) * k;
-    this.motion.flinch.clampLength(0, 0.4);
+    // The head snaps aside, away from the round's path (about 8 degrees), in body space.
+    const d = toBody(dir, inv);
+    const imp = flinchImpulse("head", d, 1, 1);
+    const k = N.flinchDeg / tuning.flinch.zones.head.pitchDeg;
+    this.flinch.hit("head", { ...imp, headTip: imp.headTip * k, headYaw: 0, rootX: 0, rootZ: 0 }, d);
     this.duckT = N.duckMs / 1000;
     const fresh = this.suppressT <= 0;
     this.suppressT = N.accuracyMs / 1000;
@@ -709,15 +714,50 @@ export class Enemy {
     return fresh && Math.random() < N.barkChance;
   }
 
-  /** A hit: knocks the body (flinch), and returns true if it died. */
-  damage(amount: number, push: THREE.Vector3): boolean {
+  /**
+   * Screenshot stages (S0): advances only the body (flinch springs, hit flash, ragdoll), with no AI or
+   * movement, so a frozen frame can show the moment `t` ms after a round.
+   */
+  feel(dt: number, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
+    this.flinch.update(dt);
+    this.body.updateFlash(dt * 1000);
+    if (!this.alive) {
+      this.deadFor += dt;
+      this.body.physics(dt, { colliders, ground });
+    } else {
+      animate(this.body, this.motion);
+      this.body.carry();
+    }
+    this.body.pose();
+    this.placeRifle();
+  }
+
+  /** How much this archetype shrugs a hit off (S4.1): heavier kits flinch less, but always flinch. */
+  get poise(): number {
+    const P = tuning.flinch.poise;
+    if (this.kit.role === "turret") return P.turret;
+    if (this.kit.role === "shield") return P.shield;
+    return this.kit.elite ? P.elite : P.default;
+  }
+
+  /**
+   * A hit's flinch (S4.1): the zone's springs, kicked along the round's travel, scaled by the share of
+   * health it took. `point` says which side of the body it struck.
+   */
+  react(zone: Zone, dir: THREE.Vector3, point: THREE.Vector3, damage: number, weaponCls = "pistol", distance = 10, segment?: string): void {
+    if (!this.alive) return;
+    if (segment) this.body.flash(segment);
+    const inv = -this.motion.yaw;
+    const d = toBody(dir, inv);
+    const rel = toBody(new THREE.Vector3().subVectors(point, this.motion.pos), inv);
+    const scale = flinchScale(damage, this.kit.maxHp, this.poise);
+    this.flinch.hit(zone, flinchImpulse(zone, d, rel.x, scale, weaponCls, distance), d);
+  }
+
+  /** A hit: takes the damage (the flinch is react's job), and returns true if it died. */
+  damage(amount: number, _push?: THREE.Vector3): boolean {
     if (!this.alive) return false;
     this.hp -= amount;
-    // Into body space for the flinch.
-    const inv = -this.motion.yaw;
-    this.motion.flinch.x += (push.x * Math.cos(inv) - push.z * Math.sin(inv)) * 0.14;
-    this.motion.flinch.z += (push.x * Math.sin(inv) + push.z * Math.cos(inv)) * 0.14;
-    this.motion.flinch.clampLength(0, 0.4);
     if (this.state !== "combat") {
       this.state = "combat";
       this.detect = 1;
@@ -730,6 +770,11 @@ export class Enemy {
     this.hp = 0;
     this.body.goLimp(impulse, at);
   }
+}
+
+/** A world direction into body space (yaw undone): x to the body's left, z forward. */
+function toBody(v: THREE.Vector3, inv: number): { x: number; y: number; z: number } {
+  return { x: v.x * Math.cos(inv) + v.z * Math.sin(inv), y: v.y, z: -v.x * Math.sin(inv) + v.z * Math.cos(inv) };
 }
 
 function flatDist(a: THREE.Vector3, b: THREE.Vector3): number {

@@ -3,6 +3,7 @@
 
 import * as THREE from "three";
 import { REST, type Body, type Joint } from "./body";
+import type { Dir, Flinch } from "./anim/springs";
 
 export interface Motion {
   pos: THREE.Vector3;
@@ -17,8 +18,8 @@ export interface Motion {
   crouch: number;
   /** 0 low ready .. 1 shouldered and aiming. */
   aim: number;
-  /** Recent hit: a decaying shove, body space (x right, z forward), metres. */
-  flinch: THREE.Vector3;
+  /** Hit flinches (S4.1): springs kicked by each hit, applied on top of the gait and the aim. */
+  flinch?: Flinch;
   /** Recoil kick 0..1. */
   kick: number;
 }
@@ -62,13 +63,19 @@ export function animate(body: Body, m: Motion): void {
   const pelvisY = REST.pelvis.y - crouchDrop - 0.03 * run + bob;
   const lean = 0.08 * run + m.crouch * 0.15;
 
-  // Spine: pelvis up through chest and neck, leaning forward when running, flinching on hits.
-  local.pelvis.set(m.flinch.x * 0.3, pelvisY, m.flinch.z * 0.3);
-  const spineTilt = lean - m.flinch.z * 0.8;
+  const f = m.flinch;
+  // A hit shoves the hips along the round (the feet stay planted, so the body leans off them) and a leg hit
+  // drops the pelvis onto the buckling knee.
+  const rootX = f ? f.get("rootX") : 0;
+  const rootZ = f ? f.get("rootZ") : 0;
+  const pelvisDrop = f ? f.get("pelvisDrop") : 0;
+  // Spine: pelvis up through chest and neck, leaning forward when running.
+  local.pelvis.set(rootX, pelvisY - pelvisDrop, rootZ);
+  const spineTilt = lean;
   const chestUp = REST.chest.y - REST.pelvis.y;
   const neckUp = REST.neck.y - REST.chest.y;
-  local.chest.set(local.pelvis.x + m.flinch.x * 0.3, pelvisY + chestUp, local.pelvis.z + Math.sin(spineTilt) * chestUp);
-  local.neck.set(local.chest.x + m.flinch.x * 0.5, local.chest.y + neckUp * Math.cos(spineTilt), local.chest.z + Math.sin(spineTilt) * neckUp);
+  local.chest.set(local.pelvis.x, local.pelvis.y + chestUp, local.pelvis.z + Math.sin(spineTilt) * chestUp);
+  local.neck.set(local.chest.x, local.chest.y + neckUp * Math.cos(spineTilt), local.chest.z + Math.sin(spineTilt) * neckUp);
   const headPitch = -m.pitch * 0.6;
   local.head.set(local.neck.x, local.neck.y + 0.28 * Math.cos(headPitch), local.neck.z + 0.28 * Math.sin(headPitch) * 0.4 + 0.02);
 
@@ -109,11 +116,67 @@ export function animate(body: Body, m: Motion): void {
   ik(local.shoulderR, local.handR, UPPER, FORE, tmp.set(sh.x - 0.4, sh.y - 0.6, sh.z - 0.2), local.elbowR);
   ik(local.shoulderL, local.handL, UPPER, FORE, tmp.set(local.shoulderL.x + 0.5, local.shoulderL.y - 0.6, local.shoulderL.z), local.elbowL);
 
+  if (f) applyFlinch(f);
+
   // Body space to world: yaw about Y, then translate. The body faces +Z locally.
   q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), m.yaw);
   m4.compose(m.pos, q, new THREE.Vector3(1, 1, 1));
   for (const j of Object.keys(local) as Joint[]) body.joints[j].copy(local[j]).applyMatrix4(m4);
   body.facing.set(0, 0, 1).applyQuaternion(q);
+}
+
+const rq = new THREE.Quaternion();
+const axis = new THREE.Vector3();
+const arm = new THREE.Vector3();
+const dv = new THREE.Vector3();
+const Y = new THREE.Vector3(0, 1, 0);
+const UPPER_BODY: Joint[] = ["chest", "neck", "head", "shoulderL", "elbowL", "handL", "shoulderR", "elbowR", "handR"];
+
+/** Rotates joints about a pivot by `rq`. */
+function turn(joints: Joint[], pivot: THREE.Vector3, quat: THREE.Quaternion): void {
+  for (const j of joints) local[j].sub(pivot).applyQuaternion(quat).add(pivot);
+}
+
+/** Tips a chain about its pivot by `angle`, so its end moves along `dir` (the round's travel). */
+function tip(joints: Joint[], pivot: THREE.Vector3, end: THREE.Vector3, dir: Dir, angle: number): void {
+  if (Math.abs(angle) < 1e-5) return;
+  arm.subVectors(end, pivot);
+  axis.crossVectors(arm, dv.set(dir.x, 0, dir.z));
+  if (axis.lengthSq() < 1e-8) return;
+  rq.setFromAxisAngle(axis.normalize(), angle);
+  turn(joints, pivot, rq);
+}
+
+/**
+ * The flinch on top of the pose (S4.1), in body space, innermost chain first so each rides its parent: the
+ * arm swings about its shoulder and the muzzle drops, the shoulders shrug, the head tips and turns on the neck,
+ * a knee buckles, then the whole upper body tips and twists about the pelvis.
+ */
+function applyFlinch(f: Flinch): void {
+  const drop = f.get("muzzleDrop");
+  if (Math.abs(drop) > 1e-5) {
+    // The rifle hands rotate down about the firing shoulder: the muzzle dips.
+    rq.setFromAxisAngle(axis.set(1, 0, 0), drop);
+    turn(["elbowR", "handR", "elbowL", "handL"], local.shoulderR.clone(), rq);
+  }
+  tip(["elbowL", "handL"], local.shoulderL, local.handL, f.armDirL, f.get("armL"));
+  tip(["elbowR", "handR"], local.shoulderR, local.handR, f.armDirR, f.get("armR"));
+  const shrug = f.get("shrug");
+  if (shrug) for (const j of ["shoulderL", "elbowL", "handL", "shoulderR", "elbowR", "handR"] as Joint[]) local[j].y += shrug;
+  tip(["head"], local.neck, local.head, f.headDir, f.get("headTip"));
+  const yaw = f.get("headYaw");
+  if (Math.abs(yaw) > 1e-5) turn(["head"], local.neck, rq.setFromAxisAngle(Y, yaw));
+  for (const [knee, hip, angle] of [
+    [local.kneeL, local.hipL, f.get("kneeL")],
+    [local.kneeR, local.hipR, f.get("kneeR")],
+  ] as const) {
+    // The knee pitches forward about the hip (the foot stays where it stands).
+    if (Math.abs(angle) > 1e-5) knee.sub(hip).applyQuaternion(rq.setFromAxisAngle(axis.set(1, 0, 0), -angle)).add(hip);
+  }
+  const pelvis = local.pelvis.clone();
+  tip(UPPER_BODY, pelvis, local.neck, f.torsoDir, f.get("torsoTip"));
+  const twist = f.get("twist");
+  if (Math.abs(twist) > 1e-5) turn(UPPER_BODY, pelvis, rq.setFromAxisAngle(Y, twist));
 }
 
 /** The muzzle and its direction for a body holding a rifle (from the hands), world space. */

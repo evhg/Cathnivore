@@ -904,7 +904,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (intent.fire && !wasFire) killcam.skip();
       wasFire = intent.fire;
       combat.update(dt, build());
-      for (const e of enemies) e.update(dt, sightOf(), rays, world.colliders, ground);
+      for (const e of enemies) {
+        e.update(dt, sightOf(), rays, world.colliders, ground);
+        e.body.updateFlash(o.shot ? 0 : realDt * 1000);
+      }
       killcam.update(realDt);
       audio?.update(realDt, 0.2, 1);
       drainEvents();
@@ -1106,8 +1109,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         }
       }
     }
+    // The hit flash runs on real time, so it shows through the hit-stop that freezes the body (S4.1).
+    const flashMs = o.shot ? 0 : realDt * 1000;
     for (const e of enemies) {
       e.update(dt, sight, rays, world.colliders, ground);
+      e.body.updateFlash(flashMs);
       // A screenshot stage is one held moment: a guard the stage round alerted doesn't shoot back into it.
       if (staged) e.shots.length = 0;
       for (const sh of e.shots) {
@@ -1647,6 +1653,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], { ...build(), crit: 0 });
     combat.quiet = false;
     drainEvents();
+    // The world moves on to the stage's moment: the body flinches or falls, blood flies and lands (S0, C2).
+    const stepS = 1 / 60;
+    for (let t = 0; t + 1e-6 < tMs / 1000; t += stepS) {
+      const h = Math.min(stepS, tMs / 1000 - t);
+      for (const e of enemies) e.feel(h, world.colliders, ground);
+      world.update(0, 1, h);
+    }
     // Classes the street can't produce on cue yet (no plates until C15): show them over the real hit.
     if (name === "hit-soft") hud.hitMarker("armour");
     if (name === "hit-pen") hud.hitMarker("pen");

@@ -132,6 +132,7 @@ export class Combat {
       const dir = e.body.joints.chest.clone().sub(at).normalize();
       const unseen = !this.anyHunting();
       const wasAlive = e.alive;
+      if (wasAlive) e.react("torso", dir, e.body.joints.chest, dmg, "launcher", d, "chest");
       const killed = wasAlive && e.damage(dmg, dir.clone().multiplyScalar(6));
       if (this.gore) {
         this.world.fx.blood(e.body.joints.chest, dir, Math.min(1, dmg / 50));
@@ -427,6 +428,8 @@ export class Combat {
     if (this.gore) this.world.fx.blood(point, dir, Math.min(1, dmg / 60));
 
     const push = dir.clone().multiplyScalar(w.weaponClass === "shotgun" ? 3 : w.weaponClass === "sniper" ? 6 : 1.5);
+    // The body takes it (S4.1): the hit segment's chain flinches along the round, before the damage lands.
+    if (wasAlive) e.react(zone, dir, point, dmg, w.weaponClass, dist, segName);
     const killed = wasAlive && e.damage(dmg, push);
     // Torso hits on a vested enemy land on the plate (S1.2's armour marker); the head is always flesh for now.
     const layer: HitLayer = e.kit.armour >= 0.3 && zone === "torso" && w.weaponClass !== "sniper" ? "plate" : "flesh";
