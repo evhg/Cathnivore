@@ -154,7 +154,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const inMarket = !inClinic && !inPlaza && !inTower && !inVault;
   const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress);
   // A phone's heavier fog and lifted grade wash a dim red out: the kill's glow on the body runs brighter there.
-  deathGlowScale.value = o.quality === "phone" ? 1.8 : 1;
+  deathGlowScale.value = o.quality === "phone" ? 2.6 : 1;
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
   const player = new Player(start, world.colliders, ground);
