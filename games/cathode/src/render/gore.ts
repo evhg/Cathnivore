@@ -6,6 +6,7 @@
 
 import * as THREE from "three";
 import { DECAL, decalCell } from "./textures";
+import { LAYER_NO_REFLECT } from "./reflection";
 
 /** One flesh hit, as combat reports it. */
 export interface FleshHit {
@@ -47,18 +48,23 @@ export interface GoreDeps {
 
 /** S4.5 numbers. */
 export const GORE = {
-  puff: { count: [1, 3] as const, size: [0.25, 0.45] as const, farMul: 1.4, farM: 15, phoneMul: 1.5, headMul: 1.35, killMul: 1.4, headKillMul: 2, color: "#8A0E0E", alpha: 0.95, growMs: 200, fadeMs: 350, lift: 0.18 },
-  spurt: { count: [4, 8] as const, speed: [1, 2.5] as const, coneDeg: 50 },
+  puff: { count: [1, 3] as const, size: [0.25, 0.45] as const, farMul: 1.4, farM: 15, phoneMul: 1.5, headMul: 1.35, killMul: 1.4, headKillMul: 2, color: "#8A0E0E", alpha: 0.85, growMs: 200, fadeMs: 350, lift: 0.18 },
+  // Overstated past S4.5's 4 to 8 at 1 to 2.5 m/s: at that speed the spurt is still inside the hit marker 40 ms
+  // on, so the frame that confirms the hit showed no droplets at all (C2 review). These fly clear of the X as
+  // stretched streaks, then fall.
+  spurt: { count: [7, 11] as const, speed: [3, 5.5] as const, coneDeg: 70, lift: 1.4 },
   exit: { pistol: 15, rifle: 22, smg: 18, shotgun: 6, sniper: 40, melee: 8, launcher: 30, coneDeg: 35, wallRays: 24, speed: [2, 6] as const, size: [0.015, 0.04] as const, color: "#5C0707" },
   /** A plume of mist thrown out across the view: the cloud blooms past the hit marker's gap (pillar 4). */
-  plume: { count: [4, 6] as const, speed: [1.6, 3.2] as const, size: [0.16, 0.3] as const, grow: 1.9, lifeMs: 520, alpha: 0.9 },
+  plume: { count: [4, 6] as const, speed: [1.6, 3.2] as const, size: [0.16, 0.3] as const, grow: 1.9, lifeMs: 520, alpha: 0.7 },
   /** Droplets are overstated with range so a spray still reads as droplets at 10 m and beyond (x, capped). */
   dropRange: { perM: 1 / 7, max: 2.4 },
   /** The share of the street fog blood takes (1 = like everything else). */
   fog: 0.45,
   anchorMs: 80,
-  /** How hard the emissive lift pushes (see tinted()). */
-  liftGain: 7,
+  /** How hard the emissive lift pushes (see tinted()). 7 lifted the core to bloom-pink (C2 review): 4 keeps it crimson. */
+  liftGain: 4,
+  /** A head hit's main mist sits this far behind the hit, along the round, so the head's silhouette stays in front. */
+  headBackM: 0.14,
   splat: { rayM: 3, size: [0.3, 0.8] as const, wetInMs: 120, farFromM: 7, farMulMax: 1.6, phoneMul: 1.4 },
   wound: { size: 0.11, runLen: 0.16, runMs: 2000, perBody: 8 },
   caps: { phone: { mist: 48, drops: 260, wounds: 48 }, desktop: { mist: 128, drops: 900, wounds: 160 } },
@@ -83,7 +89,7 @@ export interface Gore {
   update(dt: number, camera: THREE.Camera): void;
   clear(): void;
   /** Live counts, for the soak test and the budget sidecar. */
-  readonly counts: { mist: number; drops: number; wounds: number; puffM: number };
+  readonly counts: { mist: number; drops: number; wounds: number; puffM: number; anchors: number };
   readonly caps: { mist: number; drops: number; wounds: number };
   /** The last hit's wall splats: where each landed and its size (m). */
   readonly splats: readonly { point: THREE.Vector3; size: number }[];
@@ -168,6 +174,10 @@ class Pool {
     this.mesh.frustumCulled = false;
     this.mesh.renderOrder = 7;
     this.mesh.name = drop ? "gore:drops" : "gore:mist";
+    // Out of the wet street's mirror (a blurred reflection can't show a droplet; it would cost a draw call), and
+    // not drawn at all while empty.
+    this.mesh.layers.set(LAYER_NO_REFLECT);
+    this.mesh.visible = false;
   }
 
   /** Takes a slot (the oldest goes when full: a new hit always shows). */
@@ -203,6 +213,7 @@ class Pool {
     mv(this.land, 1);
     mv(this.wallT, 1);
     mv(this.wallHit, 6);
+    this.anchorIx[j] = -1;
   }
 
   write(mist: boolean): void {
@@ -234,6 +245,7 @@ class Pool {
       S[i * 3 + 2] = this.size[i * 3 + 2]!;
     }
     this.geo.instanceCount = this.n;
+    this.mesh.visible = this.n > 0;
     for (const at of [this.aPos, this.aVel, this.aCol, this.aSize]) {
       at.clearUpdateRanges();
       at.addUpdateRange(0, this.n * at.itemSize);
@@ -295,7 +307,8 @@ void main() {
     a = smoothstep( 0.55, 0.35, r );
     vec2 hp = vec2( p.x + 0.12, p.y - 0.28 );
     float glint = pow( max( 0.0, 1.0 - length( hp * vec2( 3.0, 5.0 ) ) ), 4.0 );
-    col += vec3( 0.9, 0.55, 0.5 ) * glint * 0.8;
+    // A wet crimson highlight, not a peach one: a pale glint read as beige specks at 10 m (C2 review).
+    col = col * ( 1.0 - 0.35 * smoothstep( 0.2, 0.5, r ) ) + vec3( 0.75, 0.1, 0.08 ) * glint * 0.7;
   #else
     // Mist: a soft blob torn by noise, denser at the core.
     float r = length( p );
@@ -303,7 +316,7 @@ void main() {
     float n2 = texture2D( uNoise, p * 1.7 - vSeed * 1.3 ).b;
     float body = smoothstep( 0.5, 0.08, r );
     a = body * clamp( 0.45 + ( n - 0.45 ) * 1.1 + ( n2 - 0.5 ) * 0.5 + ( 0.5 - r ) * 0.8, 0.0, 1.0 );
-    col *= 0.75 + 0.5 * smoothstep( 0.45, 0.0, r );
+    col *= 0.7 + 0.35 * smoothstep( 0.45, 0.0, r );
   #endif
   // Blood is the readout that matters most (pillar 4): push its red past the grade's midtone drain, and let the
   // street fog take only part of it, so a hit at 10 m in rain still reads crimson rather than haze.
@@ -329,7 +342,9 @@ export function createGore(o: GoreDeps): Gore {
   const drops = new Pool(C.drops, true, o.noise);
   o.scene.add(mist.mesh, drops.mesh);
   const rand = Math.random;
+  // Segments effects ride for their first 80 ms, refcounted by the particles on them (no per-frame pool scan).
   const anchors: (THREE.Object3D | null)[] = [];
+  const refs: number[] = [];
   const anchorOf = (a?: THREE.Object3D): number => {
     if (!a) return -1;
     let i = anchors.indexOf(a);
@@ -337,8 +352,26 @@ export function createGore(o: GoreDeps): Gore {
       i = anchors.indexOf(null);
       if (i < 0) i = anchors.push(a) - 1;
       else anchors[i] = a;
+      refs[i] = 0;
     }
     return i;
+  };
+  /** Ties slot `i` of `pool` to anchor `ix` (or none), releasing whatever it rode before. */
+  const ride = (pool: Pool, i: number, ix: number) => {
+    const was = pool.anchorIx[i]!;
+    if (was >= 0 && --refs[was]! <= 0) anchors[was] = null;
+    pool.anchorIx[i] = ix;
+    if (ix < 0) return;
+    refs[ix]!++;
+    const a = anchors[ix]!.position;
+    pool.anchorAt[i * 3] = a.x;
+    pool.anchorAt[i * 3 + 1] = a.y;
+    pool.anchorAt[i * 3 + 2] = a.z;
+  };
+  /** Kills a slot, letting go of its anchor first. */
+  const kill = (pool: Pool, i: number) => {
+    ride(pool, i, -1);
+    pool.kill(i);
   };
   const tmp = new THREE.Vector3();
   const tmp2 = new THREE.Vector3();
@@ -388,11 +421,7 @@ export function createGore(o: GoreDeps): Gore {
     mist.life[i] = life;
     mist.grav[i] = 0;
     mist.land[i] = 0;
-    mist.anchorIx[i] = ix;
-    if (ix >= 0) {
-      const a = anchors[ix]!.position;
-      mist.anchorAt.set([a.x, a.y, a.z], i * 3);
-    }
+    ride(mist, i, ix);
   };
 
   const drop = (at: THREE.Vector3, vel: THREE.Vector3, size: number, color: THREE.Color, ix: number, land: number): number => {
@@ -406,11 +435,7 @@ export function createGore(o: GoreDeps): Gore {
     drops.grav[i] = 1;
     drops.land[i] = land;
     drops.wallT[i] = 0;
-    drops.anchorIx[i] = ix;
-    if (ix >= 0) {
-      const a = anchors[ix]!.position;
-      drops.anchorAt.set([a.x, a.y, a.z], i * 3);
-    }
+    ride(drops, i, ix);
     return i;
   };
 
@@ -440,6 +465,8 @@ export function createGore(o: GoreDeps): Gore {
   woundMesh.frustumCulled = false;
   woundMesh.renderOrder = 2;
   woundMesh.name = "gore:wounds";
+  woundMesh.layers.set(LAYER_NO_REFLECT);
+  woundMesh.visible = false;
   o.scene.add(woundMesh);
   interface Wound {
     seg: THREE.Object3D;
@@ -483,8 +510,16 @@ export function createGore(o: GoreDeps): Gore {
     for (const run of [false, true]) {
       if (run && rand() < 0.25) continue;
       // Per-body cap: the oldest wound on this body goes.
-      const mine = wounds.filter((w) => w.owner === h.owner && h.owner);
-      if (mine.length >= GORE.wound.perBody) wounds.splice(wounds.indexOf(mine[0]!), 1);
+      if (h.owner) {
+        let mine = 0;
+        let first = -1;
+        for (let w = 0; w < wounds.length; w++)
+          if (wounds[w]!.owner === h.owner) {
+            if (first < 0) first = w;
+            mine++;
+          }
+        if (mine >= GORE.wound.perBody) wounds.splice(first, 1);
+      }
       if (wounds.length >= C.wounds) wounds.shift();
       // "Down" on the surface: world down into the segment frame, flattened onto the face.
       downL.set(0, -1, 0).transformDirection(inv);
@@ -520,9 +555,16 @@ export function createGore(o: GoreDeps): Gore {
     // 1. The entry puff, facing the player, lifted out of the dark.
     const nPuff = P.count[0] + Math.floor(rand() * (P.count[1] - P.count[0] + 1));
     for (let k = 0; k < nPuff; k++) {
-      const at = h.point.clone().addScaledVector(back, 0.06 + k * 0.04).add(tmp.set(rand() - 0.5, rand() - 0.5, rand() - 0.5).multiplyScalar(0.08));
+      // On a head hit the big cloud blows out behind the head (the depth test lets the head's outline cut it),
+      // and only a small, thin entry puff sits in front: the flinch stays visible inside the burst (C2 review).
+      const behind = h.head && k === 0;
+      const at = h.point
+        .clone()
+        .addScaledVector(back, behind ? -GORE.headBackM : 0.06 + k * 0.04)
+        .add(tmp.set(rand() - 0.5, rand() - 0.5, rand() - 0.5).multiplyScalar(0.08));
       const c = tinted(at, PUFF, P.lift, new THREE.Color());
-      puff(at, sz * (k === 0 ? 1 : 0.6 + rand() * 0.3), c, P.alpha, (P.growMs + P.fadeMs) / 1000, ix);
+      const size = sz * (k === 0 ? 1 : 0.6 + rand() * 0.3) * (h.head && !behind ? 0.6 : 1);
+      puff(at, size, c, h.head && !behind ? P.alpha * 0.6 : P.alpha, (P.growMs + P.fadeMs) / 1000, ix);
     }
     // 1b. The plume: mist thrown out across the view (up and to the sides, a little along the round), so the
     // cloud blooms well past the marker's gap and reads as a burst, not a smudge behind the crosshair.
@@ -543,7 +585,7 @@ export function createGore(o: GoreDeps): Gore {
         .multiplyScalar(PL.speed[0] + rand() * (PL.speed[1] - PL.speed[0]));
       const at = h.point.clone().addScaledVector(back, 0.03);
       // Darker than the puff's lifted core: a crimson mass around a bright centre, not a pink glow.
-      const c = tinted(at, PUFF, P.lift, new THREE.Color()).multiplyScalar(0.5 + rand() * 0.25);
+      const c = tinted(at, PUFF, P.lift, new THREE.Color()).multiplyScalar(0.45 + rand() * 0.2);
       const s0 = (PL.size[0] + rand() * (PL.size[1] - PL.size[0])) * range * (h.distance > P.farM ? P.farMul : 1);
       puff(at, s0 * PL.grow, c, PL.alpha, (PL.lifeMs * (0.8 + rand() * 0.4)) / 1000, ix, pv, PL.grow);
     }
@@ -553,12 +595,15 @@ export function createGore(o: GoreDeps): Gore {
     const S = GORE.spurt;
     const nSp = S.count[0] + Math.floor(rand() * (S.count[1] - S.count[0] + 1));
     const red = tinted(h.point, EXIT, P.lift, new THREE.Color());
+    // The spurt flies at the camera through the dark: arterial red at the puff's lifted level (the exit spray's
+    // #5C0707 vanished against the dark suit and street at 40 ms), so the streaks read past the marker.
+    const spurtRed = tinted(h.point, PUFF, P.lift, new THREE.Color()).multiplyScalar(S.lift);
     const v = new THREE.Vector3();
     const backDir = d.clone().negate();
     for (let k = 0; k < nSp; k++) {
       cone(backDir, S.coneDeg, v).multiplyScalar(S.speed[0] + rand() * (S.speed[1] - S.speed[0]));
       v.y += 0.6;
-      drop(h.point, v, (0.012 + rand() * 0.014) * dScale, red, ix, 1);
+      drop(h.point, v, (0.012 + rand() * 0.014) * dScale, spurtRed, ix, 1);
     }
     // 3. The exit spray along the round, with gravity; a decal where each lands.
     const E = GORE.exit;
@@ -607,33 +652,39 @@ export function createGore(o: GoreDeps): Gore {
   };
 
   const tq = new THREE.Quaternion();
+  const upW = new THREE.Vector3();
+  const WHITE = new THREE.Color(1, 1, 1);
+  const POOLS = [mist, drops];
   const tp = new THREE.Vector3();
   const ts = new THREE.Vector3();
   const update = (dt: number) => {
     // Anchored effects ride their segment for the first 80 ms.
     const anchorS = GORE.anchorMs / 1000;
-    for (const pool of [mist, drops]) {
+    for (const pool of POOLS) {
       for (let i = pool.n - 1; i >= 0; i--) {
         const age = (pool.age[i]! += dt);
         if (age >= pool.life[i]!) {
-          pool.kill(i);
+          kill(pool, i);
           continue;
         }
         const ax = pool.anchorIx[i]!;
         if (ax >= 0) {
           const a = anchors[ax];
           if (a && age < anchorS) {
-            pool.pos[i * 3]! += a.position.x - pool.anchorAt[i * 3]!;
-            pool.pos[i * 3 + 1]! += a.position.y - pool.anchorAt[i * 3 + 1]!;
-            pool.pos[i * 3 + 2]! += a.position.z - pool.anchorAt[i * 3 + 2]!;
-            pool.anchorAt.set([a.position.x, a.position.y, a.position.z], i * 3);
-          } else pool.anchorIx[i] = -1;
+            const p = a.position;
+            pool.pos[i * 3]! += p.x - pool.anchorAt[i * 3]!;
+            pool.pos[i * 3 + 1]! += p.y - pool.anchorAt[i * 3 + 1]!;
+            pool.pos[i * 3 + 2]! += p.z - pool.anchorAt[i * 3 + 2]!;
+            pool.anchorAt[i * 3] = p.x;
+            pool.anchorAt[i * 3 + 1] = p.y;
+            pool.anchorAt[i * 3 + 2] = p.z;
+          } else ride(pool, i, -1);
         }
         if (pool === drops && pool.wallT[i]! > 0 && age >= pool.wallT[i]!) {
           // Struck the wall: a fleck, sized by the drop, then gone.
           const w = pool.wallHit;
           o.decal(tp.set(w[i * 6]!, w[i * 6 + 1]!, w[i * 6 + 2]!), ts.set(w[i * 6 + 3]!, w[i * 6 + 4]!, w[i * 6 + 5]!), 0.05 + pool.size[i * 3]! * 3 + rand() * 0.06, DECAL.blood[3 + Math.floor(rand() * 3)]!, SPLAT_TINT);
-          pool.kill(i);
+          kill(pool, i);
           continue;
         }
         if (pool.grav[i]) {
@@ -644,8 +695,8 @@ export function createGore(o: GoreDeps): Gore {
           const gy = Math.max(o.ground(x, z), -0.2);
           if (y < gy) {
             // Landed: a drop decal (the bigger ones), then it's gone.
-            if (pool.land[i] === 2) o.decal(tp.set(x, gy, z), ts.set(0, 1, 0), 0.06 + rand() * 0.1, DECAL.blood[Math.floor(rand() * 3)]!, new THREE.Color(1, 1, 1));
-            pool.kill(i);
+            if (pool.land[i] === 2) o.decal(tp.set(x, gy, z), ts.set(0, 1, 0), 0.06 + rand() * 0.1, DECAL.blood[Math.floor(rand() * 3)]!, WHITE);
+            kill(pool, i);
             continue;
           }
         } else {
@@ -660,13 +711,6 @@ export function createGore(o: GoreDeps): Gore {
     }
     mist.write(true);
     drops.write(false);
-    // Free anchors no particle uses.
-    for (let a = 0; a < anchors.length; a++) {
-      if (!anchors[a]) continue;
-      let used = false;
-      for (const pool of [mist, drops]) for (let i = 0; i < pool.n && !used; i++) if (pool.anchorIx[i] === a) used = true;
-      if (!used) anchors[a] = null;
-    }
     // Wounds follow their segment; a body that left the scene takes its wounds with it.
     for (let i = wounds.length - 1; i >= 0; i--) if (wounds[i]!.root && !wounds[i]!.root!.parent) wounds.splice(i, 1);
     let n = 0;
@@ -681,7 +725,7 @@ export function createGore(o: GoreDeps): Gore {
         const full = ts.y;
         ts.y = full * g;
         // Keep its top pinned at the wound.
-        tp.addScaledVector(new THREE.Vector3(0, 1, 0).applyQuaternion(tq), (full - ts.y) * 0.5);
+        tp.addScaledVector(upW.set(0, 1, 0).applyQuaternion(tq), (full - ts.y) * 0.5);
         m4.compose(tp, tq, ts);
       }
       woundMesh.setMatrixAt(n, m4);
@@ -690,6 +734,7 @@ export function createGore(o: GoreDeps): Gore {
       n++;
     }
     woundMesh.count = n;
+    woundMesh.visible = n > 0;
     woundMesh.instanceMatrix.needsUpdate = true;
     woundCell.needsUpdate = true;
   };
@@ -702,14 +747,18 @@ export function createGore(o: GoreDeps): Gore {
     clear() {
       splats.length = 0;
       mist.n = drops.n = 0;
+      mist.anchorIx.fill(-1);
+      drops.anchorIx.fill(-1);
+      refs.length = 0;
       mist.write(true);
       drops.write(false);
       wounds.length = 0;
       woundMesh.count = 0;
+      woundMesh.visible = false;
       anchors.length = 0;
     },
     get counts() {
-      return { mist: mist.n, drops: drops.n, wounds: wounds.length, puffM: mist.largest };
+      return { mist: mist.n, drops: drops.n, wounds: wounds.length, puffM: mist.largest, anchors: anchors.filter(Boolean).length };
     },
     get splats() {
       return splats;

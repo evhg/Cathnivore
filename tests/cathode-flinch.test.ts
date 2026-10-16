@@ -27,7 +27,7 @@ describe("CATHODE hit flinch (S4.1)", () => {
     expect(head.headTip).toBeCloseTo(tuning.flinch.zones.head.pitchDeg * DEG);
     expect(tuning.flinch.zones.head.pitchDeg).toBeGreaterThanOrEqual(22);
     expect(Math.abs(head.headYaw)).toBeCloseTo(10 * DEG);
-    expect(Math.hypot(head.rootX, head.rootZ)).toBeCloseTo(0.1);
+    expect(Math.hypot(head.rootX, head.rootZ)).toBeCloseTo(tuning.flinch.zones.head.pushM);
     const torso = flinchImpulse("torso", front, 1, 1);
     expect(torso.torsoTip).toBeCloseTo(6 * DEG);
     expect(Math.abs(torso.twist)).toBeCloseTo(12 * DEG);

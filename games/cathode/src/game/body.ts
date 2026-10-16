@@ -294,6 +294,12 @@ function patchFlash(mat: THREE.Material, uniform: { value: THREE.Vector3[] }): v
       .replace(
         "#include <emissivemap_fragment>",
         "#include <emissivemap_fragment>\nfloat hfRim = 1.0 - clamp( dot( normalize( normal ), normalize( vViewPosition ) ), 0.0, 1.0 );\ntotalEmissiveRadiance += vHitFlash * ( 0.3 + 0.7 * hfRim * hfRim );",
+      )
+      // A glowing body cuts through the street's fog: where the flash or the death glow is lit, most of the fog
+      // that would wash it to salmon (the phone's thick haze, C2 review) is taken back off.
+      .replace(
+        "#include <fog_fragment>",
+        "vec3 hfPre = gl_FragColor.rgb;\n#include <fog_fragment>\n#ifdef USE_FOG\ngl_FragColor.rgb = mix( gl_FragColor.rgb, hfPre, fogFactor * clamp( vHitFlash.r * 3.0, 0.0, 0.9 ) );\n#endif",
       );
   };
   const key = m.customProgramCacheKey?.bind(m);
@@ -399,6 +405,19 @@ export class Body {
     this.deathMul = deathGlowScale.value;
     this.flashing = true;
     this.updateFlash(0);
+  }
+
+  /**
+   * Screenshot stages (S0): back on his feet, unlit, as if never hit. Only for a body that still has every
+   * segment (a severed one can't be put back).
+   */
+  revive(): void {
+    this.ragdoll = false;
+    this.restTime = 0;
+    this.deathAge = 1e9;
+    this.flashAge.fill(1e9);
+    for (const v of this.flashUniform.value) v.set(0, 0, 0);
+    this.flashing = false;
   }
 
   /** Advances the flash on real time (it shows through a hit-stop). */

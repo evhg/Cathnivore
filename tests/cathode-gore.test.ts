@@ -72,19 +72,37 @@ describe("CATHODE gore (S4.5)", () => {
     expect(kill.drops).toBeGreaterThan(plain.drops);
   });
 
-  it("anchors to the hit segment for 80 ms: the spray moves with the flinch", () => {
-    const { gore } = rig();
+  it("anchors to the hit segment for 80 ms: the spray moves with the flinch, then lets go", () => {
+    const { gore, scene } = rig();
     const b = body();
     const head = b.segs.get("head")!.group;
     gore.hit({ point: b.joints.head.clone(), dir: new THREE.Vector3(0, 0, 1), damage: 25, maxHp: 130, weaponCls: "pistol", distance: 10, anchor: head });
-    // The mist hangs still on its own; move the head 10 cm and the puff goes with it.
-    const before = (gore as unknown as { counts: { mist: number } }).counts.mist;
-    expect(before).toBeGreaterThan(0);
+    const cam = new THREE.Camera();
+    const mist = scene.getObjectByName("gore:mist") as THREE.Mesh;
+    const attr = (n: string) => mist.geometry.getAttribute(n).array as Float32Array;
+    // The entry puffs hang still on their own (no velocity): only the anchor moves them.
+    const still = () => {
+      const v = attr("aVel");
+      const out: number[] = [];
+      for (let i = 0; i < gore.counts.mist; i++) if (v[i * 3] === 0 && v[i * 3 + 1] === 0 && v[i * 3 + 2] === 0) out.push(i);
+      return out;
+    };
+    const xs = () => still().map((i) => attr("aPos")[i * 3]!);
+    gore.update(0.001, cam);
+    const x0 = xs();
+    expect(x0.length).toBeGreaterThan(0);
+    expect(gore.counts.anchors).toBe(1);
+    // Inside the 80 ms window: the head moves 10 cm and every puff goes with it.
     head.position.x += 0.1;
-    gore.update(0.016, new THREE.Camera());
+    gore.update(0.016, cam);
+    const x1 = xs();
+    x1.forEach((x, k) => expect(x - x0[k]!).toBeCloseTo(0.1, 5));
+    // Past it: the anchor is released (nothing rides it any more), and the puffs stay where they were.
+    gore.update(0.08, cam);
+    expect(gore.counts.anchors).toBe(0);
     head.position.x += 0.1;
-    gore.update(0.1, new THREE.Camera());
-    expect(gore.counts.mist).toBeGreaterThan(0);
+    gore.update(0.016, cam);
+    xs().forEach((x, k) => expect(x).toBeCloseTo(x1[k]!, 5));
   });
 
   it("holds every cap through a 200-shot soak, at most 8 wounds a body", () => {

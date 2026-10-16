@@ -768,6 +768,22 @@ export class Enemy {
     return this.hp <= 0;
   }
 
+  /** Screenshot stages (S0): alive, calm, unhurt and standing still, so every stage starts from the same body. */
+  revive(): void {
+    this.state = "unaware";
+    this.hp = this.kit.maxHp;
+    this.detect = 0;
+    this.deadFor = 0;
+    this.found = false;
+    this.charge = 0;
+    this.duckT = this.suppressT = 0;
+    this.shots.length = 0;
+    this.vel.set(0, 0, 0);
+    Object.assign(this.motion, { speed: 0, phase: 0, pitch: 0, crouch: 0, aim: 0, kick: 0 });
+    this.flinch.reset();
+    this.body.revive();
+  }
+
   die(impulse: THREE.Vector3, at: THREE.Vector3): void {
     this.state = "dead";
     this.hp = 0;

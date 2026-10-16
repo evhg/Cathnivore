@@ -183,6 +183,12 @@ for (const vp of vps) {
       const k = side.dpr
       const headPx = Math.hypot(info.head1.x - info.head0.x, info.head1.y - info.head0.y) * k
       console.log(`  C2 ${vp} ${spec}: mean rgb ${probe.mean}; red ${probe.red}/${probe.total} within ${Math.round(info.r02 * k)} physical px of the hit; head moved ${headPx.toFixed(1)} physical px`)
+      // The burst past the marker (pillar 4): a ring from 0.2 m to 0.45 m around the hit, outside the X's ticks.
+      if (/^(hit-body|hit-head)/.test(stage) && t <= 100) {
+        const ring = await page.evaluate(([x, y, r, r0]) => window.cathode.probeRed(x, y, r, r0), [info.hit.x, info.hit.y, info.r02 * 2.25, info.r02])
+        console.log(`  C2 ${vp} ${spec}: past the marker, red ${ring.red}/${ring.total} in the 0.2-0.45 m ring`)
+        if (ring.red < 0.03 * ring.total) fail(`${vp} ${spec}: blood doesn't burst past the marker (${ring.red}/${ring.total} red in the 0.2-0.45 m ring, < 3%)`)
+      }
       if (/^(hit-body|hit-head|enemy-flinch)/.test(stage) && probe.red < RED_MIN * probe.total) fail(`${vp} ${spec}: only ${probe.red}/${probe.total} red pixels near the hit (< ${RED_MIN * 100}%)`)
       // The puff's drawn size at this moment (it has a mist alpha floor of 0.3), in physical px.
       const puffPx = info.puffM * (info.r02 / 0.2) * k
@@ -258,10 +264,9 @@ for (const vp of vps) {
       const share = pr.red / Math.max(1, pr.total)
       console.log(`  C2 ${vp} ${spec}: the body reads ${(share * 100).toFixed(0)}% red (mean ${pr.mean}) around its torso`)
       // Measured on an open street the falling body's red rim fills 6 to 10% of the disc (the loot glint and grey
-      // street fill the rest); a black body on black asphalt read 0%.
-      // On phone (rs=0.5, the heavier fog) the glowing body reads as a pink smudge the red-dominance test can't
-      // count, so it only warns there until the phone grade is reworked.
-      if (share < 0.05) (vp === 'phone' ? warn : fail)(`${vp} ${spec}: the dead body doesn't show (${(share * 100).toFixed(0)}% red around it, < 5%)`)
+      // street fill the rest); a black body on black asphalt read 0%. The glow cuts through the fog, so this
+      // fails at every size, the phone's thick haze included.
+      if (share < 0.05) fail(`${vp} ${spec}: the dead body doesn't show (${(share * 100).toFixed(0)}% red around it, < 5%)`)
       const cw3 = Math.round(Math.max(240, info.r02 * 18))
       const ch3 = Math.round(cw3 * 0.66)
       const x3 = Math.max(0, Math.min(V.viewport.width - cw3, (c.x + p.x) / 2 - cw3 / 2))

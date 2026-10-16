@@ -1283,8 +1283,9 @@ Unless a milestone says otherwise, "3 sizes" means its stages are shot at all th
 - **Tests:**
   - `cathode-models`: triangles and draw calls per LOD within budget; shared materials (no per-enemy clones).
   - `cathode-body`: rest lengths hold within 2% after 600 settle steps.
+  - `cathode-flinch`: an arm hit opens the hand 30° (S4.1, deferred here from C2 because the v1 body has no fingers).
 - **Screenshot acceptance (3 sizes):**
-  - Stages `enemy-front-10m`, `enemy-back-10m`, `turntable-enforcer`, `silhouette-lineup`.
+  - Stages `enemy-front-10m`, `enemy-back-10m`, `turntable-enforcer`, `silhouette-lineup`, and `hit-arm@60`, where the struck hand is open.
   - The silhouette lineup is classified correctly.
   - On `back-10m`, the enemy's mean mask luminance is at least 1.3× the surrounding street.
   - The re-shot audit frame `12-guard-from-10m` is distinguishable without the diamond.

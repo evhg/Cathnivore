@@ -120,7 +120,7 @@ export interface Session {
     corpse: { pelvis: { x: number; y: number }; head: { x: number; y: number }; chest: { x: number; y: number } };
   } | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
-  probeRed?: (x: number, y: number, r: number) => { red: number; total: number; mean: number[] };
+  probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[] };
   /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
   audio?: Audio | null;
   cathHurt?: (bearing: number, melee: boolean) => void;
@@ -153,8 +153,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const inVault = o.district === "vault";
   const inMarket = !inClinic && !inPlaza && !inTower && !inVault;
   const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress);
-  // A phone's heavier fog and lifted grade wash a dim red out: the kill's glow on the body runs brighter there.
-  deathGlowScale.value = o.quality === "phone" ? 2.6 : 1;
+  // The phone's lifted grade (exposure 1.7) washes a dim red out, so the kill's glow runs a little brighter there.
+  // It no longer has to fight the fog (the glow takes its fog back off, body.ts), and at 2.6x the tone map turned
+  // it salmon: 1.5x stays a saturated dark red.
+  deathGlowScale.value = o.quality === "phone" ? 1.5 : 1;
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
   const player = new Player(start, world.colliders, ground);
@@ -1618,6 +1620,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
   if (new URLSearchParams(location.search).get("debug") === "cover") showCover(true);
   let stageCrate: THREE.Mesh | null = null;
+  let stageHome: { pos: THREE.Vector3; yaw: number; pitch: number } | null = null;
+  let stageGuard: Enemy | null = null;
   let crateCollider: { off?: boolean } | null = null;
   const STAGES = ["hit-body", "hit-head", "hit-kill", "hit-headkill", "hit-soft", "hit-pen", "hit-armourbreak", "blocked", "peek-head", "cover-debug-market", "enemy-flinch-head-60", "wall-splat"];
   /** A world point on screen, in CSS px. */
@@ -1645,14 +1649,28 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       hud.freeze(tMs);
       return "ok";
     }
+    // Every stage starts from the same place: Cath where the first stage found her, looking the same way, and the
+    // same guard, put back on his feet if an earlier stage killed him. A stage that inherits the last one's aim
+    // frames a different street and measures a different flinch (C2 review).
+    if (!stageHome) stageHome = { pos: player.pos.clone(), yaw: player.yaw, pitch: player.pitch };
+    player.pos.copy(stageHome.pos);
+    player.yaw = stageHome.yaw;
+    player.pitch = stageHome.pitch;
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
     world.camera.getWorldPosition(eye);
     world.camera.getWorldDirection(fwd);
     const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
+    if (stageGuard && stageGuard.body.lost.size === 0 && enemies.includes(stageGuard)) {
+      if (!stageGuard.alive) stageGuard.revive();
+    } else stageGuard = null;
     // A plain rifleman (a riot shield would eat the round), the nearest one.
     const rifle = enemies.filter((e) => e.alive && (e.kit.role ?? "rifle") === "rifle").sort((a, b) => a.position.distanceTo(eye) - b.position.distanceTo(eye));
     // Failing that, anyone armed (a civilian never counts as a target, so cover can't be "blocked" on one).
-    const g = rifle[0] ?? enemies.find((e) => e.alive && !e.shield && e.kit.role !== "civilian" && e.kit.role !== "nurse" && e.kit.role !== "turret");
+    const g = stageGuard ?? rifle[0] ?? enemies.find((e) => e.alive && !e.shield && e.kit.role !== "civilian" && e.kit.role !== "nurse" && e.kit.role !== "turret");
     if (!g) return "no enemy";
+    stageGuard = g;
+    g.revive();
     // A guard 10 m down the crosshair, facing her, unaware.
     // A phone screen is small: the cover stages bring the crate and the guard in so his head over it reads.
     const near = o.quality === "phone" && (name === "blocked" || name === "peek-head") ? 0.6 : 1;
@@ -1762,7 +1780,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.freeze(tMs);
     return hud.hitClass ?? (name === "blocked" ? "blocked" : "none");
   };
-  s.probeRed = (x, y, r) => {
+  s.probeRed = (x, y, r, inner = 0) => {
     render();
     const c = world.renderer.domElement;
     const k = c.width / Math.max(1, c.clientWidth);
@@ -1777,7 +1795,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const mean = [0, 0, 0];
     for (let j = 0; j < R * 2; j++)
       for (let i = 0; i < R * 2; i++) {
-        if ((i - R) ** 2 + (j - R) ** 2 > R * R) continue;
+        const d2 = (i - R) ** 2 + (j - R) ** 2;
+        if (d2 > R * R || d2 < (inner * k) ** 2) continue;
         total++;
         const o4 = (j * R * 2 + i) * 4;
         const rr = px[o4]!;

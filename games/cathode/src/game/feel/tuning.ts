@@ -79,8 +79,10 @@ export const tuning = {
     maxDeg: 45,
     maxRootM: 0.6,
     zones: {
-      // 32 deg, past the spec's 22: at 1440x900 the 22 deg tip moved the head 6.6 px at 60 ms (28 deg: 7.6 to 8.5), under the 8 px bar (pillar 4: overstate).
-      head: { pitchDeg: 32, yawDeg: 10, pushM: 0.1 },
+      // 32 deg, past the spec's 22: at 1440x900 the 22 deg tip moved the head 6.6 px at 60 ms (pillar 4: overstate).
+      // A Kestrel headshot scales that past maxDeg, so a bigger tip changes nothing; the margin over the 8 px bar
+      // (8.3 px, too thin) comes from the shove instead: 0.2 m, not 0.1, moves the head about 25% further.
+      head: { pitchDeg: 32, yawDeg: 10, pushM: 0.2 },
       torso: { pitchDeg: 6, twistDeg: 12, shrugDeg: 8, pushM: 0.15 },
       arm: { swingDeg: 28, muzzleDropDeg: 15, muzzleDropMs: 300, twistDeg: 5, pushM: 0.05 },
       leg: { kneeDeg: 18, pelvisDropM: 0.06, tipDeg: 4, pushM: 0.1 },
