@@ -142,6 +142,11 @@ export class Actives {
   }
 
   /** Damage aimed at Cath: the shield drone's pool soaks it up first. Returns what gets through. */
+  /** Live grenades' positions (C6: the damage ring shows any within 6 m of her). */
+  liveGrenades(): THREE.Vector3[] {
+    return this.thrown.filter((t) => t.kind === "grenade" && t.fuse > 0).map((t) => t.pos);
+  }
+
   absorb(amount: number): number {
     const soak = Math.min(this.shield, amount);
     this.shield -= soak;

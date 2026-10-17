@@ -82,3 +82,8 @@ Fleet levels grow those five along paths (`paths.ts`; tier 3 from level 6); the 
 
 - 2026-10-14 H9: tuner --verify on all 100 Fleet levels changed nothing (START_K at the 0.7 floor from level 2; level 1 is 1.2).
 - 2026-10-15 12:52 verify after grid swap (ROADMAP 120): no k changed, all levels still win; shots of 11, 12 checked.
+
+## 2026-10-17 CATHODE C6: Guard and Flesh keep time-to-death (sim/fightsim.ts)
+- The single pool (regen 6%/s after 5 s) becomes Guard 40% (back in 2 s, 4 s after any hit) + Flesh 60% (bleed floor 25% only). Guard refills in nearly every cover lull, so the same rounds now hit harder: damage taken noir 0.55 -> 0.69, hardboiled 0.85 -> 0.98, Hell Week 1.0 -> 1.10 (`VITALS_TAKEN`, fitted by bisection).
+- Seeded 10-minute fight (12-20 seeds, level 5, two Enforcers' 1.4 hits/s while exposed 2-7 s, cover 1.5-10 s): mean seconds per life, pool vs vitals: noir 40.3/41, hardboiled 22.2/22, Hell Week 18.2/18 (all within 2%). `tests/cathode-vitals.test.ts` holds it within 10%.
+- Sensitivity: levels 1-10 at 1.4 hits/s stay within 8%; at 1.0 hits/s (long lulls) hardboiled lasts up to 22% longer at level 1, and at 2.0 hits/s noir dies up to 16% sooner at level 10. Takedowns' +15% Flesh is not in the sim (a small extra cushion in play).

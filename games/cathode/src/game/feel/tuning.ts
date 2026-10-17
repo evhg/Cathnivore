@@ -61,6 +61,7 @@ export const tuning = {
     fire: { motor: "weak", mag: 0.3, ms: 40 },
     hit: { motor: "weak", mag: 0.2, ms: 30 },
     kill: { motor: "strong", mag: 0.6, ms: 120 },
+    hurt: { motor: "strong", mag: 0.45, ms: 110 },
   },
   /** S1.3 confirm sounds: peak level in dBFS per class. */
   confirmDb: { body: -12, head: -10, armour: -14, plateBreak: -10, visor: -10, kill: -8, headKill: -8, pen: -15 },

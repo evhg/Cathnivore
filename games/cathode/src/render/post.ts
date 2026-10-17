@@ -118,6 +118,11 @@ const GradeShader = {
     uExposure: { value: 1 },
     uTime: { value: 0 },
     uFlash: { value: 0 },
+    // C6/C7 (S6.4): the Vitals uniforms. uHurt 0..1 on a hit, uHurtDir the hit side on screen (unit, +x right,
+    // +y up), uWound the wound tier's w.
+    uHurt: { value: 0 },
+    uHurtDir: { value: new THREE.Vector2(0, 0) },
+    uWound: { value: 0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -128,6 +133,9 @@ const GradeShader = {
     uniform float uDrama;
     uniform float uExposure;
     uniform float uFlash;
+    uniform float uHurt;
+    uniform vec2 uHurtDir;
+    uniform float uWound;
     varying vec2 vUv;
     ${SANITIZE}
     // AgX (Troy Sobotka's, as fitted in three.js): filmic, graceful with saturated neon.
@@ -164,7 +172,7 @@ const GradeShader = {
       vec2 c = uv - 0.5;
       float r2 = dot( c, c );
       // Chromatic aberration: only toward the edges.
-      float ca = 0.005 * smoothstep( 0.06, 0.5, r2 ) + uDrama * 0.006;
+      float ca = ( 0.005 * smoothstep( 0.06, 0.5, r2 ) + uDrama * 0.006 ) * ( 1.0 + 2.0 * uWound + 3.0 * uHurt );
       vec3 col = sampleCA( uv, ca );
       // Kill-cam depth of field: a radial blur that grows away from the centre.
       if ( uDrama > 0.01 ) {
@@ -199,6 +207,19 @@ const GradeShader = {
       // Lifted, cool blacks and a gentle S.
       mapped = mapped * 0.99 + vec3( 0.0012, 0.0022, 0.0042 );
       mapped = mix( mapped, mapped * mapped * ( 3.0 - 2.0 * mapped ), 0.25 );
+      // The Vitals pass (S6.4), after the tone map: a blood vignette that closes in with the wound and flares on
+      // a hit, a red lobe on the side the hit came from, and the colour draining from the edges as she weakens.
+      if ( uHurt + uWound > 0.001 ) {
+        float r = length( c * vec2( uRes.x / uRes.y, 1.0 ) );
+        float inner = mix( 0.75, 0.42, uWound );
+        float vg = smoothstep( inner, inner + 0.45, r );
+        float keepCentre = 1.0 - smoothstep( 0.15, 0.55, r );
+        float ml = dot( mapped, vec3( 0.2126, 0.7152, 0.0722 ) );
+        mapped = mix( mapped, vec3( ml ), uWound * 0.7 * ( 1.0 - keepCentre * 0.5 ) );
+        mapped = mix( mapped, vec3( 0.42, 0.02, 0.04 ), vg * ( 0.55 * uWound + 0.35 * uHurt ) );
+        float lobe = max( 0.0, dot( normalize( c + 1e-5 ), uHurtDir ) ) * uHurt;
+        mapped += vec3( 0.8, 0.05, 0.05 ) * lobe * lobe * smoothstep( 0.25, 0.7, r ) * 0.6;
+      }
       // Encode to sRGB here so FXAA (phone) works on perceptual values.
       mapped = mix( mapped * 12.92, 1.055 * pow( max( mapped, 0.0 ), vec3( 1.0 / 2.4 ) ) - 0.055, step( 0.0031308, mapped ) );
       gl_FragColor = vec4( mapped, 1.0 );

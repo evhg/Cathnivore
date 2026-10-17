@@ -57,7 +57,11 @@ export class Audio {
     this.sfx = c.createGain();
     // The world and the score pass through one duck stage, so a kill can push them back 3 dB.
     this.duckBus = c.createGain();
-    this.duckBus.connect(this.master);
+    // C6 (S6.2): a blast nearby muffles the world (never the dry bus: her own body and the confirms stay clear).
+    this.muffle = c.createBiquadFilter();
+    this.muffle.type = "lowpass";
+    this.muffle.frequency.value = 22000;
+    this.duckBus.connect(this.muffle).connect(this.master);
     this.sfx.connect(this.duckBus);
     // The dry bus joins after the slow-motion lowpass: a confirm is never muffled or reverberant.
     this.dry = c.createGain();
@@ -92,6 +96,9 @@ export class Audio {
   }
 
   private dryOut: GainNode;
+  private muffle: BiquadFilterNode;
+  private lastGrunt = -1;
+  private gruntN = 0;
   private duckBus: GainNode;
   private beds: GainNode;
   /** Layered gunshots, the reload's foley, dry fire and whiz-bys (S2.5). */
@@ -469,12 +476,182 @@ export class Audio {
     }
   }
 
-  /** Cath is hit (S1.3: she never plays the enemies' meat impact): a dull body blow and a sharp breath. */
-  hurt(heavy = false): void {
+  /**
+   * Cath is hit (S6.2; never the enemies' meat impact, S1.3). On her own dry bus: a body blow (pink noise at
+   * 900 Hz and a sub falling 90 to 55 Hz), a clap on a melee hit, a glass tick when Guard took it, and her voice
+   * (a formant grunt, three variants, at most one per 700 ms). A Flesh hit ducks the music 4 dB for 300 ms.
+   */
+  hurt(melee = false, o: { guard?: boolean; flesh?: boolean; k?: number } = { flesh: true }): void {
     if (!this.enabled) return;
-    this.tone("sine", heavy ? 95 : 120, 45, 0.16, heavy ? 0.7 : 0.45);
-    this.hiss("lowpass", 900, 0.12, heavy ? 0.5 : 0.3, 0, "brown");
-    this.hiss("bandpass", 1600, 0.09, 0.08, 0.04, "pink");
+    const k = Math.max(0.4, Math.min(1.6, o.k ?? 1));
+    const pk = 0.32 + 0.18 * k;
+    const flesh = o.flesh !== false;
+    // The body blow lands on every hit; through Guard it's a step quieter.
+    const bp = flesh ? pk : pk * 0.6;
+    this.hiss("bandpass", 900, 0.07, bp * 1.1, 0, "pink");
+    this.tone("sine", 90, 55, 0.11, bp * 1.6);
+    if (melee) this.hiss("lowpass", 400, 0.04, bp * 1.4, 0.004, "brown");
+    if (flesh || melee) this.grunt(melee ? "strain" : k > 1.2 ? "gasp" : "hurt", pk);
+    if (flesh) this.duckBeds(-4, 300);
+    if (o.guard) {
+      this.tone("sine", 2600, 2580, 0.05, 0.16, 0, 0.05);
+      this.tone("sine", 3900, 3860, 0.05, 0.11, 0.003, 0.05);
+      this.hiss("highpass", 6000, 0.04, 0.12);
+    }
+  }
+
+  /** Her voice: a glottal saw and breath noise through three formants (F1 650, F2 1100, F3 2800 Hz). */
+  private grunt(kind: "hurt" | "strain" | "gasp", peak: number): void {
+    const c = this.ctx;
+    if (c.currentTime - this.lastGrunt < 0.7) return;
+    this.lastGrunt = c.currentTime;
+    this.gruntN++;
+    const t = c.currentTime + 0.012;
+    const P = 1 + (Math.random() * 2 - 1) * 0.06;
+    const F = kind === "strain" ? 0.9 : kind === "gasp" ? 1.15 : 1;
+    const dur = kind === "strain" ? 0.22 : 0.14;
+    const sum = c.createGain();
+    for (const [f, q, g] of [[650, 6, 1], [1100, 8, 0.6], [2800, 10, 0.3]] as const) {
+      const bp = c.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = f * F * P;
+      bp.Q.value = q;
+      const gg = c.createGain();
+      gg.gain.value = g;
+      sum.connect(bp);
+      bp.connect(gg).connect(this.dry);
+    }
+    const env = c.createGain();
+    env.gain.setValueAtTime(0.0001, t);
+    if (kind === "gasp") {
+      // An in-breath: it swells, then cuts.
+      env.gain.exponentialRampToValueAtTime(peak * 1.6, t + dur * 0.8);
+      env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    } else {
+      env.gain.exponentialRampToValueAtTime(peak * 2.2, t + 0.012);
+      env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    }
+    env.connect(sum);
+    if (kind !== "gasp") {
+      const o = c.createOscillator();
+      o.type = "sawtooth";
+      o.frequency.setValueAtTime(230 * P, t);
+      o.frequency.exponentialRampToValueAtTime(170 * P, t + dur);
+      const og = c.createGain();
+      og.gain.value = 0.5;
+      o.connect(og).connect(env);
+      o.start(t);
+      o.stop(t + dur + 0.05);
+    }
+    const n = c.createBufferSource();
+    n.buffer = this.noise.pink;
+    const ng = c.createGain();
+    ng.gain.value = kind === "gasp" ? 1.4 : 0.6;
+    n.connect(ng).connect(env);
+    n.start(t, Math.random() * 1.5);
+    n.stop(t + dur + 0.05);
+  }
+
+  /** The music and ambience step back `dB` for `ms` (a Flesh hit owns the moment). */
+  private duckBeds(dB: number, ms: number): void {
+    const t = this.ctx.currentTime;
+    const g = this.beds.gain;
+    g.cancelScheduledValues(t);
+    g.setTargetAtTime(db(dB), t, 0.01);
+    g.setTargetAtTime(1, t + ms / 1000, 0.12);
+  }
+
+  /** Guard breaks (S6.2): a descending FM sweep (1.8 kHz to 300 Hz over 260 ms) and six granular glass ticks. */
+  guardBreak(): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const t = c.currentTime;
+    const car = c.createOscillator();
+    car.type = "sine";
+    car.frequency.setValueAtTime(1800, t);
+    car.frequency.exponentialRampToValueAtTime(300, t + 0.26);
+    const mod = c.createOscillator();
+    mod.frequency.setValueAtTime(1800 * 1.41, t);
+    mod.frequency.exponentialRampToValueAtTime(300 * 1.41, t + 0.26);
+    const md = c.createGain();
+    md.gain.setValueAtTime(900, t);
+    md.gain.exponentialRampToValueAtTime(60, t + 0.26);
+    mod.connect(md).connect(car.frequency);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.22, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    car.connect(g).connect(this.dry);
+    car.start(t);
+    mod.start(t);
+    car.stop(t + 0.35);
+    mod.stop(t + 0.35);
+    for (let i = 0; i < 6; i++) {
+      const f = 2600 + Math.random() * 3400;
+      this.tone("triangle", f, f * 0.96, 0.02, 0.07, 0.02 + i * 0.03 + Math.random() * 0.02, 0.03);
+    }
+    this.hiss("highpass", 4500, 0.09, 0.1);
+  }
+
+  /** Guard starts to come back (S6.3): a sharp in-breath and a sine rising 220 to 880 Hz over 1.8 s at -14 dB. */
+  regenStart(): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const t = c.currentTime;
+    const n = c.createBufferSource();
+    n.buffer = this.noise.white;
+    const f = c.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.value = 1600;
+    f.Q.value = 1.5;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.12, t + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+    n.connect(f).connect(g).connect(this.dry);
+    n.start(t, Math.random());
+    n.stop(t + 0.25);
+    const o = c.createOscillator();
+    o.frequency.setValueAtTime(220, t);
+    o.frequency.exponentialRampToValueAtTime(880, t + 1.8);
+    const og = c.createGain();
+    og.gain.setValueAtTime(0.0001, t);
+    og.gain.exponentialRampToValueAtTime(db(-14) * 0.5, t + 0.3);
+    og.gain.setValueAtTime(db(-14) * 0.5, t + 1.6);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + 1.85);
+    o.connect(og).connect(this.dry);
+    o.start(t);
+    o.stop(t + 1.9);
+  }
+
+  /** Guard is whole again (S6.3): 660 Hz then 990 Hz, 90 ms each. */
+  guardFull(): void {
+    if (!this.enabled) return;
+    this.tone("sine", 660, 660, 0.09, 0.09, 0, 0.09);
+    this.tone("sine", 990, 990, 0.09, 0.09, 0.09, 0.12);
+  }
+
+  /**
+   * A blast `d` metres away, within 6 m (S6.2): tinnitus (4.8 kHz at -20 dBFS, decaying over 2 + 3(1 - d/6) s)
+   * and the world muffled to 500 Hz, recovering with tau 0.9 s.
+   */
+  blastNear(d: number): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const t = c.currentTime;
+    const decay = 2 + 3 * (1 - Math.max(0, Math.min(6, d)) / 6);
+    const o = c.createOscillator();
+    o.frequency.value = 4800;
+    const g = c.createGain();
+    g.gain.setValueAtTime(db(-20), t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+    o.connect(g).connect(this.dryOut);
+    o.start(t);
+    o.stop(t + decay + 0.05);
+    const m = this.muffle.frequency;
+    m.cancelScheduledValues(t);
+    m.setValueAtTime(500, t);
+    m.setTargetAtTime(22000, t + 0.05, 0.9);
   }
 
   hitMetal(): void {

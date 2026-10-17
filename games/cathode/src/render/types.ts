@@ -96,6 +96,8 @@ export interface World {
   resize(width: number, height: number, pixelRatio: number, worldScale?: number): void;
   /** Slow-motion/kill-cam grading: 0 normal, 1 full (desaturated, vignetted, depth of field). */
   setDrama(amount: number): void;
+  /** C6/C7 Vitals grade (S6.4): `hurt` 0..1, the hit's side on screen (unit, +x right, +y up), `wound` w 0..1. */
+  setVitals?(hurt: number, dirX: number, dirY: number, wound: number): void;
   /** Wind for ballistics and rain, metres per second along x and z. */
   /** The district's walkable bounds, when it defines them (interiors). */
   readonly bounds?: { xMin: number; xMax: number; zMin: number; zMax: number };

@@ -37,10 +37,10 @@
 }
 .hud-root p { margin: 0; }
 /* Layers inside the HUD: screen effects (hurt, focus, scope) sit under the readouts, so text never dims. */
-.hud-hurt,
+.hud-rim,
 .hud-focus,
 .hud-scope,
-.hud-hurt-arc { z-index: var(--z-fx); }
+.hud-dmg { z-index: var(--z-fx); }
 .hud-objective,
 .hud-vitals,
 .hud-arms,
@@ -136,7 +136,59 @@
   40% { transform: translateX(calc(var(--u) * 2.7)); }
   100% { transform: none; }
 }
-.hud-hp { flex: 1; height: calc(var(--u) * 10.7); --seg: 25; }
+/* C6 (S6.1): Flesh then Guard on one line, 3:2, a hairline gap between, each with its white damage ghost. */
+.hud-vbar {
+  flex: 1;
+  display: flex;
+  gap: calc(var(--u) * 4);
+  align-items: stretch;
+  position: relative;
+}
+.hud-hp { flex: 3; height: calc(var(--u) * 10.7); --seg: 25; }
+.hud-guard {
+  flex: 2;
+  height: calc(var(--u) * 10.7);
+  overflow: visible;
+  background: rgb(var(--cyan-rgb) / .1);
+  box-shadow: inset 0 0 0 1px rgb(var(--cyan-rgb) / .28);
+}
+.hud-vbar .c-bar > .trail { background: rgb(255 255 255 / .82); transition: none; }
+.hud-guard > .fill { background: linear-gradient(90deg, #0d9fb8, var(--cyan)); transition: transform 60ms linear; }
+/* Guard coming back: a highlight sweeping along the fill. */
+.hud-vbar.is-regen .hud-guard > .fill {
+  background: linear-gradient(90deg, #0d9fb8 0%, var(--cyan) 40%, #e9fdff 50%, var(--cyan) 60%, #0d9fb8 100%);
+  background-size: 250% 100%;
+  animation: guard-sheen 700ms linear infinite;
+}
+@keyframes guard-sheen { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+.hud-guard-crack {
+  position: absolute;
+  inset: calc(var(--u) * -3) 0;
+  width: 100%;
+  height: calc(100% + var(--u) * 6);
+  opacity: 0;
+  overflow: visible;
+}
+.hud-guard-crack path { fill: none; stroke: var(--cyan-ink); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.hud-vbar.is-broken .hud-guard-crack { opacity: .9; }
+.hud-vbar.is-broken .hud-guard { box-shadow: inset 0 0 0 1px rgb(var(--cyan-rgb) / .55); }
+.hud-shards { position: absolute; inset: 0; pointer-events: none; }
+.hud-shards i {
+  position: absolute;
+  left: var(--x0);
+  top: 0;
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 20);
+  background: linear-gradient(135deg, #f2feff, var(--cyan));
+  clip-path: polygon(0 20%, 100% 0, 70% 100%);
+  opacity: 0;
+}
+.hud-shards.go i { animation: shard-fly 380ms var(--ease-out) both; }
+@keyframes shard-fly {
+  0% { opacity: 1; transform: none; }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(.5); }
+}
 .hud-arm-row {
   display: flex;
   align-items: center;
@@ -349,6 +401,8 @@
 @keyframes hit-ring { 0% { opacity: 1; transform: scale(.3); } 25% { opacity: 1; transform: scale(.72); } 55% { opacity: .85; transform: scale(.9); } 100% { opacity: 0; transform: scale(1); } }
 .hud-hit.pop { animation: hit-pop var(--pop-ms, 60ms) var(--ease-out); }
 /* The screenshot stages freeze every one-shot animation at the stage's moment (window.cathode.stage). */
+.hud-root.is-frozen .hud-shards.go i,
+.hud-root.is-frozen .hud-rim.flash,
 .hud-root.is-frozen .hud-hit.pop,
 .hud-root.is-frozen .hud-hit-ring.go,
 .hud-root.is-frozen .hud-hit-shatter.go,
@@ -403,26 +457,85 @@
 @keyframes blocked-in-l { from { transform: translateX(calc(var(--u) * -8)); } }
 @keyframes blocked-in-r { from { transform: translateX(calc(var(--u) * 8)); } }
 
-.hud-hurt-arc {
+/* ---- the damage ring (C6, S6.2): 1 viewBox unit = 1u, the ring at 190u around the crosshair ---- */
+.hud-dmg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.hud-dmg-ring {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 0;
-  height: 0;
+  width: calc(var(--u) * 520);
+  height: calc(var(--u) * 520);
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+.hud-dmg-arc {
+  color: var(--blood-hot);
   opacity: var(--a, 0);
-  transform: rotate(var(--rot, 0rad));
+  transform-origin: 0 0;
+  transform: rotate(var(--rot, 0deg)) scale(var(--s, 1));
 }
-.hud-hurt-arc::before {
-  content: "";
+.hud-dmg-arc .glow { fill: rgb(var(--blood-deep-rgb)); opacity: .55; }
+.hud-dmg-arc .body { fill: currentColor; stroke: rgb(var(--black-rgb) / .45); stroke-width: .8; }
+.hud-dmg-arc .core { fill: none; stroke: #fff1ee; stroke-width: 2; stroke-linecap: round; opacity: 0; }
+.hud-dmg-arc.is-core .core { opacity: .95; }
+.hud-dmg-arc.k-blast { color: var(--amber); }
+.hud-dmg-arc.k-blast .glow { fill: var(--amber-deep); }
+.hud-dmg-arc.k-laser { color: var(--cyan); }
+.hud-dmg-arc.k-laser .glow { fill: #04414c; }
+/* The colour-blind palette: a 2u white outline on every arc. */
+:root.colour-safe .hud-dmg-arc .body { stroke: #fff; stroke-width: 2; }
+/* A source behind her, or far above or below: a chevron on the safe frame's edge, pointing out. */
+.hud-dmg-chev {
   position: absolute;
-  left: calc(var(--u) * -93.3);
-  top: calc(var(--u) * -253.3);
-  width: calc(var(--u) * 186.7);
-  height: calc(var(--u) * 48);
-  border-top: calc(var(--u) * 6.7) solid var(--blood-hot);
-  border-radius: 50% 50% 0 0;
-  background: radial-gradient(ellipse at 50% 0, rgb(var(--blood-rgb) / .55), transparent 70%);
+  left: calc(var(--cx, 50) * 1%);
+  width: calc(var(--u) * 64);
+  height: calc(var(--u) * 42);
+  opacity: var(--a, 0);
+  color: var(--blood-hot);
+  transform: translateX(-50%);
 }
+.hud-dmg-chev.at-bottom { bottom: var(--edge-b); }
+.hud-dmg-chev.at-top { top: var(--edge-t); transform: translateX(-50%) scaleY(-1); }
+.hud-dmg-chev.k-blast { color: var(--amber); }
+.hud-dmg-chev.k-laser { color: var(--cyan); }
+.hud-dmg-chev svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hud-dmg-chev path { fill: currentColor; stroke: rgb(var(--black-rgb) / .5); stroke-width: 1.5; paint-order: stroke; }
+:root.colour-safe .hud-dmg-chev path { stroke: #fff; }
+/* Melee: a 40u flash down the edge it came from. */
+.hud-dmg-edge {
+  position: absolute;
+  opacity: var(--a, 0);
+  --edge-c: rgb(var(--blood-rgb) / .75);
+}
+.hud-dmg-edge.at-l { left: 0; top: 0; bottom: 0; width: calc(var(--u) * 40); background: linear-gradient(90deg, var(--edge-c), transparent); }
+.hud-dmg-edge.at-r { right: 0; top: 0; bottom: 0; width: calc(var(--u) * 40); background: linear-gradient(270deg, var(--edge-c), transparent); }
+.hud-dmg-edge.at-t { left: 0; right: 0; top: 0; height: calc(var(--u) * 40); background: linear-gradient(180deg, var(--edge-c), transparent); }
+.hud-dmg-edge.at-b { left: 0; right: 0; bottom: 0; height: calc(var(--u) * 40); background: linear-gradient(0deg, var(--edge-c), transparent); }
+/* A live grenade within 6 m: a 44u glyph on the ring, pulsing at 4 Hz. */
+.hud-dmg-nade {
+  opacity: var(--a, 0);
+  transform-origin: 0 0;
+  transform: rotate(var(--rot, 0deg));
+}
+.hud-dmg-nade .in { transform: translateY(calc(-1px * 190)) rotate(calc(var(--rot, 0deg) * -1)); }
+.hud-dmg-nade .plate { fill: rgb(var(--black-rgb) / .62); stroke: var(--amber); stroke-width: 2.5; }
+.hud-dmg-nade .pulse { fill: none; stroke: var(--amber); stroke-width: 2; transform-origin: 0 0; animation: nade-pulse 250ms linear infinite; }
+.hud-dmg-nade .icon { fill: var(--amber-hi); }
+.hud-dmg-nade .pin { fill: none; stroke: var(--amber-hi); stroke-width: 1.6; }
+@keyframes nade-pulse { from { transform: scale(1); opacity: .9; } to { transform: scale(1.45); opacity: 0; } }
+/* Guard breaking: a one-frame cyan rim. */
+.hud-rim {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  box-shadow: inset 0 0 calc(var(--u) * 120) rgb(var(--cyan-rgb) / .9);
+}
+.hud-rim.flash { animation: rim-flash 120ms steps(1, end); }
+@keyframes rim-flash { from { opacity: .25; } to { opacity: 0; } }
 .hud-target {
   position: absolute;
   left: 50%;
@@ -518,12 +631,6 @@
   inset: 0;
   opacity: var(--a, 0);
   box-shadow: inset 0 0 calc(var(--u) * 213.3) rgb(var(--cyan-rgb) / .35);
-}
-.hud-hurt {
-  position: absolute;
-  inset: 0;
-  opacity: var(--a, 0);
-  background: radial-gradient(ellipse at center, transparent 45%, rgb(var(--blood-deep-rgb) / .85) 100%);
 }
 
 /* ---- scope: a radial mask, ink mil ticks, cyan readouts ---- */
@@ -1324,7 +1431,8 @@
      DOWN stamp and its +XP line arrive together), sitting just over the crosshair like a name over his head. */
   .hud-target { top: 36%; width: min(calc(var(--u) * 420), 36vw); }
   .hud-objective { max-width: 36ch; }
-  .hud-hp { height: 6px; }
+  .hud-hp,
+  .hud-guard { height: 6px; }
   /* The tutorial card sits under the vitals, clear of the arms and the feed stacked top right. */
   .hud-teach {
     left: max(10px, var(--safe-l));
@@ -1366,7 +1474,14 @@
   .hud-wprompt.is-in .hud-wprompt-lead,
   .hud-wp.pulse .hud-wp-mark::after,
   .hud-wp.off.pulse .hud-wp-arrow { animation: none; }
+  .hud-vbar.is-regen .hud-guard > .fill,
+  .hud-dmg-nade .pulse { animation: none; }
+  .hud-shards.go i { animation-name: shard-fade; }
 }
+:root.reduce-motion .hud-vbar.is-regen .hud-guard > .fill,
+:root.reduce-motion .hud-dmg-nade .pulse { animation: none; }
+:root.reduce-motion .hud-shards.go i { animation-name: shard-fade; }
+@keyframes shard-fade { 0% { opacity: 1; } 100% { opacity: 0; } }
 :root.reduce-motion .hud-root.is-booting *,
 :root.reduce-motion .hud-objective.is-new,
 :root.reduce-motion .hud-hp-text.hit,

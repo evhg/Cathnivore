@@ -27,7 +27,11 @@ const C4 = ['pistol-idle', 'pistol-ads', 'pistol-inspect@900', 'pistol-alley']
 // its seat, the hero draw's rack, the press-check, an aimed shot).
 const C5 = ['pistol-idle', 'pistol-fire@0', 'pistol-fire@20', 'pistol-fire@45', 'pistol-lock', 'pistol-reload@400', 'pistol-reload@930', 'pistol-draw@140', 'pistol-draw@300']
 const C5X = ['pistol-reload-cancel@0', 'pistol-reload-cancel@60', 'pistol-reload-cancel@150', 'pistol-presscheck-cancel@60', 'pistol-reload-empty@1300', 'pistol-reload-empty@1470', 'pistol-hero@340', 'pistol-presscheck@700', 'pistol-fire-ads@0', 'pistol-reload@200', 'pistol-reload@700']
-const MS = { C1, C2, C3, C4, C5, C5X }
+// C6 "I know I'm hit": a hit from 90 degrees (100 ms on), one from behind, the Guard break, a live grenade
+// near; C6X are the review extras (a melee hit, a hit in critical with the clutch).
+const C6 = ['player-hurt-100@100', 'player-hurt-behind@100', 'vitals-guardbreak@100', 'grenade-near@0']
+const C6X = ['player-hurt-melee@60', 'player-hurt-critical@200', 'player-hurt-100@700']
+const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set(C3.map((s) => s.split('@')[0]))
@@ -135,7 +139,42 @@ for (const vp of vps) {
       const info = window.cathode.world.renderer.info
       const shown = (b) => b && b.w > 0 && b.h > 0 && b.opacity > 0.05 && b.display !== 'none' && b.visibility !== 'hidden'
       // The hurt arc is a full ring around the centre: only its lit part counts (its --a, not its box).
-      const arcA = Number(getComputedStyle(document.querySelector('.hud-hurt-arc') ?? document.body).getPropertyValue('--a') || 0)
+      const arcA = Number(getComputedStyle(document.querySelector('.hud-dmg') ?? document.body).getPropertyValue('--a') || 0)
+      // C6: the strongest damage arc, measured in the ring's own units: its thickness down its centre line
+      // (scanning the fill), its radius, and its rotation; the chevrons, the grenade glyph, the Guard bar.
+      const ringSvg = document.querySelector('.hud-dmg-ring')
+      let dmg = null
+      if (ringSvg) {
+        const k = ringSvg.getBoundingClientRect().width / ringSvg.viewBox.baseVal.width
+        const arcs = [...document.querySelectorAll('.hud-dmg-arc')].map((g) => [g, Number(getComputedStyle(g).opacity)]).sort((a, b) => b[1] - a[1])
+        const [g, a] = arcs[0] ?? [null, 0]
+        if (g && a > 0.05) {
+          const body = g.querySelector('.body')
+          let lo = null
+          let hi = null
+          const pt = ringSvg.createSVGPoint()
+          for (let y = -260; y <= -120; y += 0.1) {
+            pt.x = 0
+            pt.y = y
+            if (body.isPointInFill(pt)) {
+              if (lo === null) lo = y
+              hi = y
+            }
+          }
+          const sc = Number(getComputedStyle(g).getPropertyValue('--s') || 1)
+          dmg = {
+            a,
+            rotDeg: parseFloat(getComputedStyle(g).getPropertyValue('--rot')),
+            thickPx: lo === null ? 0 : (hi - lo) * k * sc * d,
+            radiusFrac: lo === null ? 0 : (((-lo - hi) / 2) * k * sc) / innerHeight,
+            core: g.classList.contains('is-core'),
+          }
+        }
+      }
+      const chevs = [...document.querySelectorAll('.hud-dmg-chev')].filter((e) => Number(getComputedStyle(e).opacity) > 0.3).map((e) => ({ bottom: e.classList.contains('at-bottom'), top: e.classList.contains('at-top'), ...r(e) }))
+      const nade = [...document.querySelectorAll('.hud-dmg-nade')].map((e) => Number(getComputedStyle(e).opacity)).reduce((m, v) => Math.max(m, v), 0)
+      const vbar = document.querySelector('.hud-vbar')
+      const vitals = vbar ? { broken: vbar.classList.contains('is-broken'), shards: !!document.querySelector('.hud-shards.go'), guard: r(document.querySelector('.hud-guard')), flesh: r(document.querySelector('.hud-hp')) } : null
       const clusters = ['.hud-objective', '.hud-vitals', '.hud-arms', '.hud-feed-line', '.hud-sub', '.hud-target', '.hud-prompt', '.hud-threats > *', '.hud-wprompt', '.hud-toast', '.hud-teach.on',
         // C3: the off-screen chevron and its plate against everything, the touch controls included (a plate on FIRE).
         '.hud-wp:not([hidden]).off .hud-wp-arrow', '.hud-wp:not([hidden]).off .hud-wp-dist', '.tbtn', '.tbtn-menu', '.stick', '.look-hint:not(.gone)']
@@ -150,7 +189,7 @@ for (const vp of vps) {
         if (b.width === 0 || b.height === 0 || e.closest('[hidden]')) continue
         const cs = getComputedStyle(e)
         if (cs.visibility === 'hidden' || Number(cs.opacity) < 0.05 || cs.position === 'fixed') continue
-        if (e.closest('.hud-hurt-arc, .hud-vignette, .hud-threats, .hud-focus, .hud-scope')) continue
+        if (e.closest('.hud-dmg, .hud-shards, .hud-vignette, .hud-threats, .hud-focus, .hud-scope')) continue
         if (b.right > W + 0.5 || b.left < -0.5 || b.bottom > H + 0.5 || b.top < -0.5) spill.push(`${e.className || e.tagName} [${Math.round(b.left)},${Math.round(b.right)}]`)
         if (e.scrollWidth > e.clientWidth + 1 && cs.overflow !== 'visible' && e.clientWidth > 0) spill.push(`${e.className} scroll ${e.scrollWidth}>${e.clientWidth}`)
       }
@@ -198,6 +237,10 @@ for (const vp of vps) {
         targetHidden: document.querySelector('.hud-target')?.hidden ?? true,
         clusters,
         arcA,
+        dmg,
+        chevs,
+        nade,
+        vitals,
         spill,
         arms,
         glyphs,
@@ -412,7 +455,23 @@ for (const vp of vps) {
     // The bar collapses for real (180 ms flash + 400 ms fade): gone by 600 ms.
     if (stage === 'hit-kill' && t >= 600 && !side.targetHidden) fail(`${vp} ${spec}: target bar still showing`)
     // Every stage starts clean: full health, no hurt arc from before.
-    if (side.arcA > 0.05) fail(`${vp} ${spec}: a stale hurt arc shows (--a ${side.arcA})`)
+    const c6 = /^(player-hurt|vitals-|grenade-near)/.test(stage)
+    if (!c6 && side.arcA > 0.05) fail(`${vp} ${spec}: a stale hurt arc shows (--a ${side.arcA})`)
+    // ---- C6 acceptance ----
+    if (c6) {
+      const dm = side.dmg
+      console.log(`  arc ${dm ? `a ${dm.a.toFixed(2)} rot ${dm.rotDeg.toFixed(0)} thick ${dm.thickPx.toFixed(1)} phys px radius ${(dm.radiusFrac * 100).toFixed(1)}% of height` : 'none'}; chevrons ${side.chevs.map((c) => (c.bottom ? 'bottom' : 'top')).join(',') || '-'}; nade ${side.nade.toFixed(2)}; guard ${side.vitals?.broken ? 'broken' : 'whole'}`)
+      if (stage !== 'grenade-near' && !(dm && dm.a > 0.4)) fail(`${vp} ${spec}: no damage arc showing`)
+      if (stage === 'player-hurt-100' && dm && Math.abs(dm.rotDeg - 90) > 10) fail(`${vp} ${spec}: the arc points at ${dm.rotDeg} deg, not 90`)
+      if (vp === '5k' && stage === 'player-hurt-100' && t <= 200 && dm) {
+        if (dm.thickPx < 36) fail(`${vp} ${spec}: the arc is ${dm.thickPx.toFixed(1)} physical px thick (< 36)`)
+        if (Math.abs(dm.radiusFrac - 0.18) > 0.02) fail(`${vp} ${spec}: the arc's radius is ${(dm.radiusFrac * 100).toFixed(1)}% of the height (not 18 +- 2%)`)
+      }
+      if (stage === 'player-hurt-behind' && !side.chevs.some((c) => c.bottom)) fail(`${vp} ${spec}: no bottom chevron for a hit from behind`)
+      if (stage === 'player-hurt-100' && side.chevs.length) fail(`${vp} ${spec}: a chevron shows for a hit in front of her`)
+      if (stage === 'vitals-guardbreak' && !(side.vitals?.broken && side.vitals?.shards)) fail(`${vp} ${spec}: Guard isn't shown breaking`)
+      if (stage === 'grenade-near' && side.nade < 0.5) fail(`${vp} ${spec}: no grenade glyph on the ring`)
+    }
     if (side.spill.length) fail(`${vp} ${spec}: HUD past the screen edge: ${side.spill.slice(0, 4).join('; ')}`)
     // The objective marker never sits on the reticle at full strength (S7.2): over it, it must have stepped back.
     for (const g of side.wpParts ?? [])

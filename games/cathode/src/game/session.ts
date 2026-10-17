@@ -20,6 +20,10 @@ import { Timescale } from "./feel/timescale";
 import { coverWireframe } from "./coverdebug";
 import { Trauma } from "./feel/trauma";
 import { Spring1 } from "./feel/spring";
+import { impulseForPeak } from "./feel/pistol";
+import { Vitals } from "../sim/vitals";
+import { VITALS_TAKEN } from "../sim/fightsim";
+import type { HurtKind } from "../ui/dmgring";
 import { tuning } from "./feel/tuning";
 import { DroppedMags } from "./dropmag";
 import { REFL_DIRS } from "./gunsound";
@@ -137,7 +141,11 @@ export interface Session {
   probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[] };
   /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
   audio?: Audio | null;
-  cathHurt?: (bearing: number, melee: boolean) => void;
+  cathHurt?: (bearing: number, melee: boolean, amount?: number) => void;
+  /** C6 (S6.1): Guard and Flesh. `hp` mirrors their total; writing `hp` from outside still works. */
+  vitals?: Vitals;
+  /** C6: a hit on Cath of `amount` from a world point (null: straight ahead), with every readout. */
+  hurtCath?: (amount: number, from: { x: number; y: number; z: number } | null, kind?: HurtKind) => void;
   /** Debug: what a round from `from` to `to` would do with the gun in hand. */
   traceShot?: (from: { x: number; y: number; z: number }, to: { x: number; y: number; z: number }) => ReturnType<Combat["traceShot"]>;
 }
@@ -152,7 +160,8 @@ declare global {
 const BASE_FOV = 75;
 
 /** How hard enemy rounds hit Cath by difficulty (Noir is the story setting). */
-const DAMAGE_TAKEN: Record<string, number> = { noir: 0.55, hardboiled: 0.85, hellWeek: 1 };
+/** Damage she takes per difficulty, fitted to the Guard/Flesh model so time-to-death holds (sim/fightsim.ts). */
+const DAMAGE_TAKEN: Record<string, number> = VITALS_TAKEN;
 /** Seconds at the start of a job before anyone can spot her. */
 const GRACE = 12;
 
@@ -848,7 +857,6 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       (o.hud.parentElement ?? o.hud).append(c);
     }
   }
-  let sinceHurt = 99;
   // Laser grids from `laser:*` level markers: a red curtain per pair, drawn here and checked each frame.
   const lasers = lasersFrom(world.markers);
   let laserCool = 0;
@@ -887,13 +895,88 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     trauma.add(tuning.kill.trauma);
     rumble("kill");
   }
+  // C6 "I know I'm hit" (S6.1, S6.2): Guard and Flesh, and every readout of a hit on the hit's frame.
+  const vitals = new Vitals(s.maxHp);
+  s.vitals = vitals;
+  /** The camera flinch: a 9 Hz spring per axis (zeta 0.55), added after aim, so it never moves the aim. */
+  const FLINCH = { freqHz: 9, zeta: 0.55 };
+  const flinch = { yaw: new Spring1(FLINCH), pitch: new Spring1(FLINCH), roll: new Spring1(FLINCH), shove: new Spring1(FLINCH) };
+  const shoveDir = new THREE.Vector3();
+  /** The Vitals grade's hit flare (tau 160 ms) and the hit's side on screen. */
+  let hurtV = 0;
+  const hurtDir = new THREE.Vector2(0, 1);
+  /** A blast within 6 m adds to the wound grade for 1.5 s. */
+  let blastWound = 0;
+  let hitsTaken = 0;
+  /** Screenshot stages: grenade bearings to show instead of the live ones. */
+  let stageNades: number[] | null = null;
+  /** Keeps `vitals` and the `hp` mirror in step: anything that wrote `hp` (heals, level-ups, test hooks) lands. */
+  function syncVitals(): void {
+    if (Math.abs(s.maxHp - vitals.maxTotal) > 1e-6) {
+      if (s.hp >= s.maxHp - 1e-6) vitals.reset(s.maxHp);
+      else vitals.setMax(s.maxHp);
+    }
+    if (Math.abs(s.hp - vitals.total) > 1e-4) {
+      if (s.hp >= s.maxHp - 1e-6) vitals.reset(s.maxHp);
+      else if (s.hp > vitals.total) vitals.heal(s.hp - vitals.total);
+      else {
+        vitals.damage(vitals.total - s.hp);
+        vitals.drain();
+      }
+    }
+    s.hp = vitals.total;
+  }
+  const elevTo = (p: { x: number; y: number; z: number }) => (Math.atan2(p.y - eye.y, Math.hypot(p.x - eye.x, p.z - eye.z)) * 180) / Math.PI;
+  const resolveHurt = (p: { x: number; y: number; z: number }) => ({ bearing: bearingTo(p as THREE.Vector3), elevDeg: elevTo(p) });
   /**
-   * Cath takes a hit (S1.3): the hurt arc from where it came and her own hurt sound. Never hitFlesh, which is
-   * the sound of her rounds landing on an enemy; the e2e spy (cathode-combat.spec.ts) holds this.
+   * Cath takes a hit (S6.2): Guard then Flesh, the damage arc that tracks the attacker, the camera flinch and
+   * trauma, the gun's jolt (and, wounded, her hand to the wound), the red flare on the hit side, and her own
+   * sounds. Never hitFlesh, which is the sound of her rounds landing on an enemy (the e2e spy holds this).
    */
-  function cathHurt(bearing: number, melee: boolean): void {
-    hud.hurtFrom(bearing);
-    audio?.hurt(melee);
+  function hurtCath(amount: number, from: { x: number; y: number; z: number } | null, kind: HurtKind = "bullet", key?: unknown): void {
+    syncVitals();
+    const r = vitals.damage(amount);
+    if (r.broke) vitals.drain();
+    s.hp = vitals.total;
+    hitsTaken++;
+    const maxT = vitals.maxTotal;
+    const at = from ? new THREE.Vector3(from.x, from.y, from.z) : null;
+    const b = at ? bearingTo(at) : 0;
+    let k = THREE.MathUtils.clamp(amount / (0.1 * maxT), 0.4, 1.6);
+    if (kind === "melee") k *= 2;
+    hud.hurtFrom({ key: key ?? at ?? null, at, bearing: b, elevDeg: at ? elevTo(at) : 0, kind, share: amount / maxT });
+    audio?.hurt(kind === "melee", { guard: r.guard > 0, flesh: r.flesh > 0, k });
+    const rm = trauma.reducedMotion;
+    const m = calm ? 0.4 : 1;
+    const deg = Math.PI / 180;
+    // Away from the source: a hit from the right turns her head left (+yaw), from ahead snaps it back (+pitch);
+    // the roll leans into the hit side. A dead-ahead hit still turns a little, to a side picked by the hit count.
+    const side = Math.abs(Math.sin(b)) < 0.35 ? (hitsTaken % 2 ? 0.35 : -0.35) : Math.sin(b);
+    flinch.yaw.v += impulseForPeak(FLINCH, 3.0 * deg * k * m * side);
+    flinch.pitch.v += impulseForPeak(FLINCH, 1.5 * deg * k * m * Math.cos(b));
+    if (!rm) flinch.roll.v += impulseForPeak(FLINCH, -1.2 * deg * k * m * Math.sin(b));
+    if (kind === "blast" && at) {
+      shoveDir.copy(eye).sub(at).setY(0).normalize();
+      flinch.shove.v += impulseForPeak(FLINCH, 0.06 * m);
+    }
+    trauma.add(0.18 * k);
+    if (r.broke) trauma.add(0.2);
+    // The gun dips and rolls away; critical or worse, every third hit she clutches the wound.
+    const tier = vitals.tier;
+    arsenal.hurtJolt(Math.sin(b) >= 0 ? 1 : -1, Math.min(1.6, k), (tier === "critical" || tier === "bleeding") && hitsTaken % 3 === 0);
+    // The Vitals grade: a flare and a red lobe on the hit side.
+    hurtV = Math.max(hurtV, 0.35 + 0.25 * Math.min(1.6, k));
+    hurtDir.set(Math.sin(b), Math.cos(b));
+    if (r.broke) audio?.guardBreak();
+    rumble("hurt");
+  }
+  s.hurtCath = (amount, from, kind) => hurtCath(amount, from, kind);
+  /** The old test hook: a hit from `bearing` (radians, + right) 10 m off, of `amount` (default 12% of max). */
+  function cathHurt(bearing: number, melee: boolean, amount?: number): void {
+    const th = Math.atan2(-fwd.x, -fwd.z) - bearing;
+    const at = player.pos.clone().add(new THREE.Vector3(-Math.sin(th) * 10, 0, -Math.cos(th) * 10));
+    at.y = eye.y;
+    hurtCath(amount ?? vitals.maxTotal * 0.12, at, melee ? "melee" : "bullet", "hook");
   }
   s.cathHurt = cathHurt;
   s.audio = audio;
@@ -1040,8 +1123,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     thunderCover = Math.max(0, thunderCover - realDt);
     grace = Math.max(0, grace - dt);
     // Out of the fight for a few seconds, she gets her breath back.
-    sinceHurt += dt;
-    if (!dead && sinceHurt > 5 && s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.06 * dt);
+    // C6: Guard comes back 4 s after a hit, Flesh only to the bleed floor (S6.1); their sounds play here.
+    syncVitals();
+    if (!dead) {
+      for (const ev of vitals.update(dt)) {
+        if (ev === "regenStart") audio?.regenStart();
+        else if (ev === "guardFull") audio?.guardFull();
+      }
+      vitals.drain();
+      s.hp = vitals.total;
+    }
     // Slow motion looks it: the noir grade deepens while time is held.
     if (!killcam.active) {
       const want = focusing || run.timeScale < 1 || timescale.active("lastEnemy") ? 0.4 : 0;
@@ -1112,6 +1203,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     world.camera.getWorldPosition(eye);
     world.camera.getWorldDirection(fwd);
+    // C6: the hit flinch, after aim (eye and fwd are already read), so it moves the view and never the shot.
+    {
+      const fdt = o.shot ? 0 : realDt;
+      world.camera.rotation.y += flinch.yaw.update(fdt);
+      world.camera.rotation.x += flinch.pitch.update(fdt);
+      world.camera.rotation.z += flinch.roll.update(fdt);
+      world.camera.position.addScaledVector(shoveDir, flinch.shove.update(fdt));
+      hurtV *= Math.exp(-fdt / 0.16);
+      blastWound = Math.max(0, blastWound - fdt / 1.5);
+      world.setVitals?.(hurtV, hurtDir.x, hurtDir.y, Math.min(1, vitals.w + blastWound * 0.25));
+    }
 
     // Weapons.
     if (intent.slot >= 0) arsenal.equipSlot(intent.slot);
@@ -1195,6 +1297,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const pin = garrotte ? arsenal.weapon : arsenal.held[0]!.def;
       if (combat.takedown(eye, fwd, pin, garrotte ? 3 : 1.9)) {
         arsenal.strike();
+        // S6.1: a takedown gives back 15% of Flesh.
+        syncVitals();
+        vitals.healShare(0.15);
+        s.hp = vitals.total;
         audio?.pin(true);
       }
     }
@@ -1235,15 +1341,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       arsenal.topUp();
       actives.refill = false;
     }
-    for (const b of actives.blasts) combat.explode(b.pos, b.radius, b.damage, build(), b.silent);
+    for (const b of actives.blasts) {
+      combat.explode(b.pos, b.radius, b.damage, build(), b.silent);
+      if (!b.silent) blastNear(b.pos);
+    }
     actives.blasts.length = 0;
     for (const b of deathBlasts.splice(0)) {
       world.fx.explosion(b.pos.clone(), b.radius);
+      blastNear(b.pos);
       combat.explode(b.pos, b.radius, b.damage, build(), false);
       const d = b.pos.distanceTo(eye);
       if (!dead && d < b.radius) {
-        s.hp = Math.max(0, s.hp - actives.absorb(b.damage * (1 - d / b.radius) * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)));
-        sinceHurt = 0;
+        hurtCath(actives.absorb(b.damage * (1 - d / b.radius) * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)), b.pos, "blast", b);
       }
     }
     for (let i = 0; i < lasers.length; i++) {
@@ -1251,10 +1360,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const beam = laserMeshes[i]!;
       beam.visible = st.live || (st.warn && Math.floor(time * 12) % 2 === 0);
       if (st.live && !dead && laserCool <= 0 && laserTouches(lasers[i]!, player.pos)) {
-        s.hp = Math.max(0, s.hp - actives.absorb(LASER_DAMAGE * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)));
-        sinceHurt = 0;
         laserCool = LASER_COOLDOWN;
-        cathHurt(0, false);
+        hurtCath(actives.absorb(LASER_DAMAGE * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)), beam.position.clone().setY(eye.y), "laser", beam);
       }
     }
     laserCool -= dt;
@@ -1299,9 +1406,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           world.fx.impact(sight.chest, sh.dir.clone().negate(), world.surfaceAt(sight.chest));
           world.fx.tracer(sh.from, sight.chest);
         } else if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
-          s.hp = Math.max(0, s.hp - actives.absorb(e.kit.damage * run.guard * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)));
-          sinceHurt = 0;
-          cathHurt(bearingTo(sh.from), !!sh.melee);
+          hurtCath(actives.absorb(e.kit.damage * run.guard * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)), sh.from, sh.melee ? "melee" : "bullet", e);
           if (e.kit.drain) s.focus = Math.max(0, s.focus - e.kit.drain);
           if (!sh.melee) world.fx.tracer(sh.from, sight.chest);
         } else if (hitWorld) {
@@ -1474,6 +1579,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.update(realDt, {
       hp: s.hp,
       maxHp: s.maxHp,
+      guard: vitals.guard,
+      maxGuard: vitals.maxGuard,
+      flesh: vitals.flesh,
+      maxFlesh: vitals.maxFlesh,
+      regen: vitals.regenerating,
+      nades: stageNades ?? actives.liveGrenades().filter((p) => p.distanceTo(player.pos) < 6).map((p) => bearingTo(p)),
+      hurtResolve: resolveHurt,
       level: s.level,
       xp: progress.character.xp - xpForLevel(progress.character.level),
       xpNext: simXpToNext(progress.character.level),
@@ -1741,6 +1853,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         break;
       }
     }
+  }
+
+  /** A blast within 6 m (S6.2): tinnitus, the world muffled, the wound grade up for 1.5 s. */
+  function blastNear(at: THREE.Vector3): void {
+    const d = at.distanceTo(eye);
+    if (d > 6 || dead) return;
+    audio?.blastNear(d);
+    blastWound = 1;
+    trauma.add(0.25 * (1 - d / 6));
   }
 
   function bearingTo(at: THREE.Vector3): number {
@@ -2205,7 +2326,66 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const c = world.renderer.domElement;
     return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight };
   };
+  /** A stage starts with her whole and still: no flinch ringing, no flare, no grenade, full Guard and Flesh. */
+  const calmVitals = () => {
+    for (const sp of Object.values(flinch)) {
+      sp.x = 0;
+      sp.v = 0;
+    }
+    hurtV = 0;
+    blastWound = 0;
+    stageNades = null;
+    trauma.value = 0;
+    vitals.reset(s.maxHp);
+    s.hp = vitals.total;
+    world.setVitals?.(0, 0, 1, 0);
+  };
+  // C6 "I know I'm hit": a hit from 90 degrees right, one from behind, the hit that breaks Guard, and a live
+  // grenade 3 m off to the front left, each held `tMs` after the moment, in the street the pistol stages use.
+  const C6_STAGES = ["player-hurt-100", "player-hurt-behind", "vitals-guardbreak", "grenade-near", "player-hurt-melee", "player-hurt-critical"];
+  const c6Stage = (name: string, tMs: number): string => {
+    c4Stage("pistol-idle", 0);
+    hud.freeze(null);
+    hud.clearFeedback();
+    calmVitals();
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
+    const maxT = vitals.maxTotal;
+    hitsTaken = 0;
+    hud.primeVitals(1, 1);
+    if (name === "grenade-near") stageNades = [-0.55];
+    else if (name === "vitals-guardbreak") {
+      // Guard already chipped, then the hit that breaks it and carries into Flesh.
+      vitals.damage(maxT * 0.3);
+      vitals.drain();
+      s.hp = vitals.total;
+      hud.primeVitals(vitals.guardFrac, vitals.fleshFrac);
+      cathHurt(-0.7, false, maxT * 0.2);
+    } else if (name === "player-hurt-critical") {
+      // Down to critical (Flesh at 20%): the third hit there is the one she clutches.
+      vitals.damage(maxT * (0.4 + 0.6 * 0.8));
+      vitals.drain();
+      s.hp = vitals.total;
+      hitsTaken = 2;
+      hud.primeVitals(vitals.guardFrac, vitals.fleshFrac);
+      cathHurt(0.6, false, maxT * 0.04);
+    } else if (name === "player-hurt-melee") cathHurt(-1.2, true, maxT * 0.1);
+    else cathHurt(name === "player-hurt-behind" ? Math.PI * 0.94 : Math.PI / 2, false, maxT * 0.1);
+    // The moment, `tMs` on: the flinch, the flare, the gun's jolt; the HUD is held there by freeze().
+    const sec = tMs / 1000;
+    const n = Math.max(1, Math.ceil(sec * 240));
+    for (let i = 0; i < n && sec > 0; i++) for (const sp of Object.values(flinch)) sp.update(sec / n);
+    hurtV *= Math.exp(-sec / 0.16);
+    arsenal.stepHurt(sec);
+    trauma.value = 0;
+    hud.freeze(tMs);
+    return "ok";
+  };
   s.stage = (name: string, tMs = 60): string => {
+    if (C6_STAGES.includes(name)) return c6Stage(name, tMs);
+    calmVitals();
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
     if (C4_STAGES.includes(name)) return c4Stage(name, tMs);
     arsenal.holdAim = false;

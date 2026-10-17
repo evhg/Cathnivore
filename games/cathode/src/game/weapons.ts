@@ -7,7 +7,7 @@ import type { WeaponClass } from "../sim/types";
 import { buildGun, SwingTrail, ViewAnim, type GunModel, type GunRig } from "./viewmodel";
 import { Arms, POSES, SHOULDER_L, SHOULDER_L_ADS, SHOULDER_R, SHOULDER_R_ADS, lerpPose, type HandPose } from "./hands";
 import { eventsBetween, sampleClip, type Clip, type Sample } from "./feel/clip";
-import { Spring3 } from "./feel/spring";
+import { Spring1, Spring3 } from "./feel/spring";
 import { tuning } from "./feel/tuning";
 import { CamRecoil, DRAW, EMPTY as EMPTY_CLIP, TAC as TAC_CLIP, FIRE, HERO, Heat, PRESS_CHECK, ReloadMachine, channel, impulseForPeak, pullTrigger, startReload, stepReload, track } from "./feel/pistol";
 import { GunSmoke } from "./gunsmoke";
@@ -113,6 +113,10 @@ interface Held {
   locked: boolean;
 }
 
+/** Where the support hand goes to clutch the wound (view space), and how it turns there (C6). */
+const CLUTCH_AT = new THREE.Vector3(-0.07, -0.3, -0.12);
+const CLUTCH_TURN = new THREE.Euler(0.5, 0.6, 0.9);
+
 export class Arsenal {
   readonly held: Held[];
   current = 0;
@@ -213,6 +217,32 @@ export class Arsenal {
   heroNext = false;
   /** A swap asked for after the reload committed: it happens when the reload ends. */
   private pendingEquip = -1;
+  /** C6 (S6.2): the gun dips and rolls away from a hit on Cath, on two springs. */
+  private readonly hurtDip = new Spring1({ freqHz: 7, zeta: 0.5 });
+  private readonly hurtRoll = new Spring1({ freqHz: 7, zeta: 0.5 });
+  /** C6: ms into "clutching the wound" (the support hand off the gun to the sternum); -1 when not. */
+  private clutchMs = -1;
+  /** The clutch's weight this frame (0..1; tests and screenshots read it). */
+  clutchW = 0;
+  /**
+   * Cath is hit (S6.2): the gun dips 2.5 cm and rolls 4 degrees away from `side` (-1 left .. 1 right), scaled by
+   * `k`. `clutch` pulls the support hand to her sternum for 350 ms, then back over 250 ms.
+   */
+  hurtJolt(side: number, k: number, clutch: boolean): void {
+    const m = this.reducedMotion ? 0.5 : 1;
+    this.hurtDip.v += impulseForPeak({ freqHz: 7, zeta: 0.5 }, 0.025 * k * m);
+    this.hurtRoll.v += impulseForPeak({ freqHz: 7, zeta: 0.5 }, ((4 * Math.PI) / 180) * k * m * (side >= 0 ? 1 : -1));
+    if (clutch && this.kestrel) this.clutchMs = 0;
+  }
+  /** Screenshot stages: the jolt and the clutch `sec` seconds on (the frame itself may run at dt 0). */
+  stepHurt(sec: number): void {
+    const n = Math.max(1, Math.ceil(sec * 240));
+    for (let i = 0; i < n && sec > 0; i++) {
+      this.hurtDip.update(sec / n);
+      this.hurtRoll.update(sec / n);
+    }
+    if (this.clutchMs >= 0) this.clutchMs += sec * 1000;
+  }
   /** The support hand's frame while a clip moves it off the grip (to the mag, or over the slide). */
   private readonly gripLDyn = new THREE.Object3D();
   private readonly poseLDyn: HandPose = { curl: [0, 0, 0, 0], wrap: 0, thumb: [0, 0, 0], thumbCurl: [0, 0], indexLift: 0 };
@@ -841,6 +871,12 @@ export class Arsenal {
       r.root.rotation.z += r.hipRot[2] * k;
     }
     if (pistol) this.posePistol(this.freeze ? 0 : dt, r);
+    // C6: the hit's jolt, on top of everything the gun is doing.
+    const hd = this.hurtDip.update(this.freeze ? 0 : dt);
+    const hr = this.hurtRoll.update(this.freeze ? 0 : dt);
+    r.root.position.y -= hd;
+    r.root.position.x += hr * 0.1;
+    r.root.rotation.z += hr;
     // The inspect clip, layered on top (S2.2 layer 3); any action cancels it.
     this.inspectW = 0;
     if (this.inspectHold >= 0) this.inspectT = this.inspectHold / 1000 - dt;
@@ -930,8 +966,9 @@ export class Arsenal {
     if (pistol && this.lockW > 0.001) this.shR.lerp(SHOULDER_R_LOCK, this.lockW * 0.7);
     // The Kestrel's trigger finger curls while the shot breaks and while the button is held (the preload).
     const curl = pistol ? Math.min(1, this.trigMm / KF.fire.triggerMm) : firing ? 1 : 0;
-    const gl = pistol && this.handW > 0.001 ? this.gripLDyn : r.gripL;
-    const pl = pistol && this.handW > 0.001 ? this.poseLDyn : r.poseL;
+    const dyn = pistol && (this.handW > 0.001 || this.clutchW > 0.001);
+    const gl = dyn ? this.gripLDyn : r.gripL;
+    const pl = dyn ? this.poseLDyn : r.poseL;
     this.arms.pose(r.root, r.gripR, gl, r.poseR, pl, curl, this.shR, this.shL);
     // The scope: past 85% aim the rig hides and the overlay takes over.
     r.root.visible = !(r.scoped && a.aim > 0.85);
@@ -1126,6 +1163,28 @@ export class Arsenal {
         this.gripLDyn.userData.thumb = w < 0.4 ? r.gripL.userData.thumb : undefined;
         lerpPose(r.poseL ?? POSES.pistolL!, reloadClip ? POSES.magL! : POSES.rackL!, w, this.poseLDyn);
       }
+    }
+    // C6 (S6.2): clutching the wound. In with the hit (120 ms), held to 350 ms, back on the grip over 250 ms.
+    this.clutchW = 0;
+    if (this.clutchMs >= 0) {
+      this.clutchMs += dt * 1000;
+      const t = this.clutchMs;
+      this.clutchW = t < 120 ? t / 120 : t < 350 ? 1 : Math.max(0, 1 - (t - 350) / 250);
+      if (t >= 600) this.clutchMs = -1;
+    }
+    if (this.clutchW > 0.001 && this.handW <= 0.001 && r.gripL) {
+      if (this.gripLDyn.parent !== r.root) r.root.add(this.gripLDyn);
+      r.root.updateMatrixWorld(true);
+      // Her sternum, in the view's space: low, centre-left and close, then into the gun's frame.
+      this.pB.copy(CLUTCH_AT);
+      if (r.root.parent) r.root.parent.localToWorld(this.pB);
+      r.root.worldToLocal(this.pB);
+      const w = this.clutchW * this.clutchW * (3 - 2 * this.clutchW);
+      this.gripLDyn.position.lerpVectors(r.gripL.position, this.pB, w);
+      this.qB.setFromEuler(CLUTCH_TURN).premultiply(r.gripL.quaternion);
+      this.gripLDyn.quaternion.slerpQuaternions(r.gripL.quaternion, this.qB, w);
+      this.gripLDyn.userData.thumb = w < 0.4 ? r.gripL.userData.thumb : undefined;
+      lerpPose(r.poseL ?? POSES.pistolL!, POSES.magL!, w, this.poseLDyn);
     }
 
     // Smoke in the world and the crown's heat glow (S2.3).

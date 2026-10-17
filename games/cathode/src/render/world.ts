@@ -381,6 +381,12 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     setDrama(amount) {
       drama = THREE.MathUtils.clamp(amount, 0, 1);
     },
+    setVitals(hurt, dirX, dirY, wound) {
+      const u = post.grade.uniforms;
+      u.uHurt!.value = THREE.MathUtils.clamp(hurt, 0, 1);
+      (u.uHurtDir!.value as THREE.Vector2).set(dirX, dirY);
+      u.uWound!.value = THREE.MathUtils.clamp(wound, 0, 1);
+    },
     light(pos, color, intensity, range) {
       return pool.add({ pos: pos.clone(), color: color.clone(), intensity, range, normal: null, flicker: 0, seed: 0, real: true });
     },

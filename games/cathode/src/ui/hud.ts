@@ -7,10 +7,22 @@ import { tuning, type HitClass } from "../game/feel/tuning";
 import { BINDABLE, codesFor, keyLabel, rebind } from "../controls";
 import { applyMotionPref, loadPrefs, savePrefs, type Intensity, type QualityChoice } from "../prefs";
 import { showCredits } from "./credits";
+import { DamageRing, type HurtSource } from "./dmgring";
 
 export interface HudState {
   hp: number;
   maxHp: number;
+  /** C6 (S6.1): the two layers. Without them the whole pool shows as Flesh. */
+  guard?: number;
+  maxGuard?: number;
+  flesh?: number;
+  maxFlesh?: number;
+  /** Guard is coming back (the bar's moving highlight). */
+  regen?: boolean;
+  /** Bearings (radians) of live grenades within 6 m: a glyph on the damage ring for each. */
+  nades?: number[];
+  /** Turns a world position into her current bearing and elevation, so a damage arc tracks its attacker. */
+  hurtResolve?: (p: { x: number; y: number; z: number }) => { bearing: number; elevDeg: number };
   level: number;
   xp: number;
   xpNext: number;
@@ -81,6 +93,14 @@ export class Hud {
   private aimBusy = false;
   private root: HTMLElement;
   private hpBar: ReturnType<typeof bar>;
+  private guardBar: ReturnType<typeof bar>;
+  private vbar: HTMLElement;
+  private shards: HTMLElement;
+  private rim: HTMLElement;
+  private dmg: DamageRing;
+  /** The damage ghost per layer (S6.2): where the trail is, and how long it still holds before it shrinks. */
+  private ghost = { flesh: -1, guard: -1, fleshHold: 0, guardHold: 0, fleshFrom: 0, guardFrom: 0, fleshT: 0, guardT: 0 };
+  private lastGuard = -1;
   private hpText: HTMLElement;
   private lvl: HTMLElement;
   private xpBar: ReturnType<typeof bar>;
@@ -93,7 +113,6 @@ export class Hud {
   private reserve: HTMLElement;
   private cross: HTMLElement;
   private hit: HTMLElement;
-  private vignette: HTMLElement;
   private scope: HTMLElement;
   private scopeRange: HTMLElement;
   private scopeWind: HTMLElement;
@@ -108,11 +127,6 @@ export class Hud {
   private batBar: ReturnType<typeof bar>;
   private defence: HTMLElement;
   private lastHp = -1;
-  private trailHp = -1;
-  private trailT = 0;
-  private hurt = 0;
-  private hurtArc: HTMLElement;
-  private hurtArcT = 0;
   private target: HTMLElement;
   private targetFill: HTMLElement;
   private targetT = 0;
@@ -152,7 +166,32 @@ export class Hud {
     this.lvl = el("span", "c-chip lvl hud-level", name);
     const hpRow = el("div", "hud-hp-row", vit);
     this.hpText = el("span", "hud-hp-text num", hpRow);
-    this.hpBar = bar("is-seg hud-hp", hpRow);
+    // C6 (S6.1): Flesh (red, 60%) then Guard (cyan, 40%) on one line: damage eats Guard from the right first.
+    this.vbar = el("div", "hud-vbar", hpRow);
+    this.hpBar = bar("is-seg hud-hp", this.vbar);
+    this.guardBar = bar("sys hud-guard", this.vbar);
+    this.guardBar.trail = el("span", "trail", this.guardBar.root);
+    this.guardBar.root.prepend(this.guardBar.trail);
+    // The crack across an empty Guard, and the 12 shards it breaks into (each with its own flight).
+    const crack = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    crack.setAttribute("class", "hud-guard-crack");
+    crack.setAttribute("viewBox", "0 0 100 10");
+    crack.setAttribute("preserveAspectRatio", "none");
+    const cp = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    cp.setAttribute("d", "M2 6L14 3L22 7L35 2L44 8L58 3L66 6L78 2L86 7L98 4");
+    crack.append(cp);
+    this.guardBar.root.append(crack);
+    this.shards = el("div", "hud-shards", this.guardBar.root);
+    for (let i = 0; i < 12; i++) {
+      const sh = el("i", "", this.shards);
+      // A fixed spread: up and out of the bar, 30 to 80u, each spinning up to 180 degrees.
+      const a = -Math.PI * (0.08 + 0.84 * ((i * 7) % 12) / 11);
+      const d = 30 + 50 * (((i * 5) % 12) / 11);
+      sh.style.setProperty("--x0", `${(i / 11) * 100}%`);
+      sh.style.setProperty("--dx", `calc(var(--u) * ${(Math.cos(a) * d).toFixed(1)})`);
+      sh.style.setProperty("--dy", `calc(var(--u) * ${(Math.sin(a) * d).toFixed(1)})`);
+      sh.style.setProperty("--r", `${(i % 2 ? 1 : -1) * (90 + ((i * 37) % 90))}deg`);
+    }
     this.armRow = el("div", "hud-arm-row", vit);
     el("span", "hud-arm-label", this.armRow).textContent = "Arm";
     this.armBar = bar("armour hud-armour", this.armRow);
@@ -193,11 +232,12 @@ export class Hud {
     el("span", "hud-prompt-text", this.prompt).textContent = "Takedown";
     this.focus = el("div", "hud-focus", this.root);
     // Overlays.
-    this.vignette = el("div", "hud-hurt", this.root);
+    // The cyan rim that flashes for a frame when Guard breaks.
+    this.rim = el("div", "hud-rim", this.root);
     this.target = el("div", "hud-target", this.root);
     el("span", "hud-target-name", this.target);
     this.targetFill = el("i", "hud-target-fill", el("b", "hud-target-bar", this.target));
-    this.hurtArc = el("div", "hud-hurt-arc", this.root);
+    this.dmg = new DamageRing(this.root, (e, k, v) => this.prop(e as HTMLElement, k, v));
     this.scope = el("div", "hud-scope", this.root);
     const ret = el("div", "hud-reticle", this.scope);
     for (const m of [1, 2, 3, 4, 5]) {
@@ -233,30 +273,63 @@ export class Hud {
     // A frozen screenshot stage holds every timer (markers, brackets, the target bar).
     if (this.frozen) dt = 0;
     const set = (e: HTMLElement, k: string, v: string) => this.prop(e, k, v);
-    // Health: the hero numeral, the fill, and a pale trail that holds where she was, then drains.
+    // Health (S6.1, S6.2): the hero numeral is the total; the bar is Flesh then Guard, each with a white damage
+    // ghost that holds 350 ms where she was, then shrinks to the new value over 400 ms.
+    const maxG = s.maxGuard ?? 0;
+    const maxF = s.maxFlesh ?? s.maxHp;
+    const g = Math.max(0, Math.min(1, (s.guard ?? 0) / Math.max(1e-6, maxG || 1)));
+    const f = Math.max(0, Math.min(1, (s.flesh ?? s.hp) / Math.max(1, maxF)));
     const frac = Math.max(0, Math.min(1, s.hp / Math.max(1, s.maxHp)));
-    if (this.trailHp < 0 || frac > this.trailHp) this.trailHp = frac;
-    if (this.lastHp >= 0 && s.hp < this.lastHp) {
-      this.hurt = Math.min(1, this.hurt + (this.lastHp - s.hp) / 30);
-      this.trailT = 0.55;
-      if (this.lastHp - s.hp >= 4) this.punch(this.hpText, "hit");
-    }
-    this.trailT = Math.max(0, this.trailT - dt);
-    if (this.trailT <= 0) this.trailHp = frac;
-    set(this.hpBar.root, "--v", frac.toFixed(3));
-    if (this.hpBar.trail) set(this.hpBar.root, "--trail", this.trailHp.toFixed(3));
-    set(this.hpBar.root, "--max", String(Math.max(1, Math.round(s.maxHp))));
+    if (this.lastHp >= 0 && s.hp < this.lastHp - 1e-6 && this.lastHp - s.hp >= 4) this.punch(this.hpText, "hit");
+    const gh = this.ghost;
+    const ghostStep = (v: number, k: "flesh" | "guard") => {
+      const hold = `${k}Hold` as const;
+      const from = `${k}From` as const;
+      const tt = `${k}T` as const;
+      if (gh[k] < 0 || v >= gh[k]) {
+        gh[k] = v;
+        gh[hold] = 0;
+        gh[tt] = 0;
+        return v;
+      }
+      // A fresh drop restarts the hold from where the ghost is now.
+      if (this.ghostPrev[k] >= 0 && v < this.ghostPrev[k] - 1e-6) {
+        gh[hold] = 0.35;
+        gh[from] = gh[k];
+        gh[tt] = 0;
+      }
+      if (gh[hold] > 0) gh[hold] = Math.max(0, gh[hold] - dt);
+      else {
+        gh[tt] = Math.min(1, gh[tt] + dt / 0.4);
+        const u = gh[tt];
+        gh[k] = gh[from] + (v - gh[from]) * (u * u * (3 - 2 * u));
+        if (u >= 1) gh[k] = v;
+      }
+      return gh[k];
+    };
+    const fg = ghostStep(f, "flesh");
+    const gg = ghostStep(g, "guard");
+    this.ghostPrev.flesh = f;
+    this.ghostPrev.guard = g;
+    set(this.hpBar.root, "--v", f.toFixed(3));
+    set(this.hpBar.root, "--trail", fg.toFixed(3));
+    set(this.hpBar.root, "--max", String(Math.max(1, Math.round(maxF))));
+    set(this.guardBar.root, "--v", g.toFixed(3));
+    set(this.guardBar.root, "--trail", gg.toFixed(3));
+    this.show(this.guardBar.root, maxG > 0);
+    // Guard breaks: the shards fly, the rim flashes cyan for a frame, the crack shows while it's empty.
+    if (maxG > 0 && this.lastGuard > 1e-3 && g <= 1e-3) this.guardBreak();
+    this.lastGuard = maxG > 0 ? g : -1;
+    this.vbar.classList.toggle("is-broken", maxG > 0 && g <= 1e-3);
+    this.vbar.classList.toggle("is-regen", !!s.regen);
     this.text(this.hpText, `${Math.ceil(s.hp)}`);
-    const low = frac < LOW_HP;
+    const low = maxG > 0 ? f < LOW_HP : frac < LOW_HP;
     this.hpBar.root.classList.toggle("is-low", low);
     this.hpText.classList.toggle("low", low);
     this.lastHp = s.hp;
-    this.hurt = Math.max(0, this.hurt - dt * 1.2);
-    this.hurtArcT = Math.max(0, this.hurtArcT - dt);
     this.targetT = Math.max(0, this.targetT - dt);
     this.show(this.target, this.targetT > 0);
-    set(this.hurtArc, "--a", Math.min(1, this.hurtArcT * 1.6).toFixed(2));
-    set(this.vignette, "--a", (this.hurt * 0.9 + (low ? 0.35 : 0)).toFixed(3));
+    this.dmg.update(dt, s.hurtResolve ?? null, s.nades ?? []);
     // Armour as its own bar; the resistances line only when she has some.
     const arm = Math.max(0, Math.round(s.armour ?? 0));
     this.show(this.armRow, arm > 0);
@@ -432,10 +505,29 @@ export class Hud {
     );
   }
 
-  /** A red arc at the screen edge pointing to where the shot came from. */
-  hurtFrom(bearing: number): void {
-    this.hurtArcT = 0.9;
-    this.hurtArc.style.setProperty("--rot", `${bearing}rad`);
+  private ghostPrev = { flesh: -1, guard: -1 };
+
+  /** A damage arc on the ring pointing where the hit came from (S6.2). A bare bearing is a one-off source. */
+  hurtFrom(bearing: number | HurtSource): void {
+    this.dmg.hit(typeof bearing === "number" ? { key: null, bearing, elevDeg: 0, kind: "bullet", share: 0.12 } : bearing);
+  }
+
+  /** Screenshot stages: the bars were last drawn at these shares, so the next drop shows its damage ghost. */
+  primeVitals(guard: number, flesh: number): void {
+    this.ghost.guard = this.ghostPrev.guard = guard;
+    this.ghost.flesh = this.ghostPrev.flesh = flesh;
+    this.lastGuard = guard;
+  }
+
+  /** The strongest damage arc's opacity (tests and the screenshot runner). */
+  get hurtAlpha(): number {
+    return this.dmg.alpha;
+  }
+
+  /** Guard broke: 12 cyan shards fly 30 to 80u spinning over 380 ms, and the edges flash cyan for a frame. */
+  private guardBreak(): void {
+    this.punch(this.shards, "go", 400);
+    this.punch(this.rim, "flash", 120);
   }
 
   /**
@@ -502,6 +594,7 @@ export class Hud {
     // Only what actually fired is held at tMs; the rest stays hidden.
     if (this.hitAge < 1e8) this.hitAge = tMs;
     if (this.blockedAge < 1e8) this.blockedAge = tMs;
+    this.dmg.advance(tMs / 1000);
     // A killed target's bar runs its real collapse up to tMs (flash and fade, then hidden after 580 ms).
     if (this.targetDead > 0) {
       this.targetDead -= tMs / 1000;
@@ -516,12 +609,11 @@ export class Hud {
 
   /** Clears the marker and the brackets (a new screenshot stage starts clean). */
   clearFeedback(): void {
-    this.hurtArcT = 0;
-    this.hurt = 0;
-    this.trailT = 0;
-    this.trailHp = -1;
+    this.dmg.clear();
     this.lastHp = -1;
-    this.prop(this.hurtArc, "--a", "0");
+    this.lastGuard = -1;
+    this.ghost.flesh = this.ghost.guard = -1;
+    this.ghostPrev.flesh = this.ghostPrev.guard = -1;
     this.targetT = 0;
     this.targetDead = 0;
     this.target.classList.remove("is-dead");
@@ -540,6 +632,8 @@ export class Hud {
       [this.hit.querySelector<HTMLElement>(".hud-hit-ring-2"), ["go"]],
       [this.hit.querySelector<HTMLElement>(".hud-hit-shatter"), ["go"]],
       [this.blockedEl, ["pop"]],
+      [this.shards, ["go"]],
+      [this.rim, ["flash"]],
     ];
     for (const [e, classes] of oneShots) {
       if (!e) continue;

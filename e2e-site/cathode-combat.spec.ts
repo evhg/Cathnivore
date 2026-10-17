@@ -69,6 +69,37 @@ test.describe('CATHODE combat feedback', () => {
     expect(await spy()).toEqual({ hitFlesh: 1, hurt: 2 })
   })
 
+  test('a hit on Cath points a damage arc at the attacker and splits Guard from Flesh (C6)', async ({ page, hasTouch }) => {
+    test.skip(hasTouch, 'one layout is enough: the ring is the same unit-sized SVG at every size')
+    test.setTimeout(300_000)
+    await boot(page)
+    type C6 = { cathode: { cathHurt: (b: number, m: boolean, a?: number) => void; stage: (n: string, t?: number) => string; vitals: { guard: number; flesh: number; maxGuard: number; maxFlesh: number }; hp: number; maxHp: number } }
+    // A calm start, then the damage hook: a hit for 30% of her health from 60 degrees to her right.
+    await page.evaluate(() => (window as unknown as C6).cathode.stage('pistol-idle', 0))
+    const v = await page.evaluate(() => {
+      const c = (window as unknown as C6).cathode
+      c.cathHurt((60 * Math.PI) / 180, false, c.maxHp * 0.3)
+      return { ...c.vitals, guard: c.vitals.guard, flesh: c.vitals.flesh, maxGuard: c.vitals.maxGuard, maxFlesh: c.vitals.maxFlesh, hp: c.hp, maxHp: c.maxHp }
+    })
+    // Guard (40%) takes the first 30%; Flesh is untouched, and the mirror reads the total.
+    expect(v.guard).toBeCloseTo(v.maxGuard - v.maxHp * 0.3, 3)
+    expect(v.flesh).toBeCloseTo(v.maxFlesh, 3)
+    expect(v.hp).toBeCloseTo(v.maxHp * 0.7, 3)
+    await page.waitForTimeout(300)
+    // The lit arc's rotation, from its computed transform: within 10 degrees of 60.
+    const rot = await page.evaluate(() => {
+      const arcs = [...document.querySelectorAll('.hud-dmg-arc')].filter((g) => Number(getComputedStyle(g).opacity) > 0.3)
+      if (!arcs.length) return null
+      const m = new DOMMatrix(getComputedStyle(arcs[0]!).transform)
+      return (Math.atan2(m.b, m.a) * 180) / Math.PI
+    })
+    expect(rot).not.toBeNull()
+    expect(Math.abs(rot! - 60)).toBeLessThan(10)
+    // Both layers show: Guard short, Flesh whole.
+    await expect(page.locator('.hud-guard')).toBeVisible()
+    await expect(page.locator('.hud-vbar.is-broken')).toHaveCount(0)
+  })
+
   test('a kill rings the marker and clears the target bar', async ({ page, hasTouch }) => {
     // One phone run (the cover test) is enough: under SwiftShader each costs about a minute.
     test.skip(hasTouch, 'the phone layout is covered by the cover test above')
