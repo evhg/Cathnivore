@@ -47,6 +47,8 @@ export const FIN = {
   faction: { color: 0x1b1c1f, metal: 0, rough: 0.6, band: "faction", wear: 0 },
   bronze: { color: 0x8a6a3c, metal: 1, rough: 0.28, band: "brushed" },
   pins: { color: 0x9aa0a6, metal: 1, rough: 0.4, band: "brushed" },
+  /** Small machined controls (hammer, trigger, slide stop): blued steel, a step brighter than the slide. */
+  control: { color: 0x34373d, metal: 1, rough: 0.36, coat: 0.4, band: "brushed" },
   can: { color: 0x202226, metal: 0.85, rough: 0.46, coat: 0.5, band: "peel" },
   knurl: { color: 0x202226, metal: 0.85, rough: 0.5, band: "knurl" },
   bore: { color: 0x050506, metal: 0.6, rough: 0.6, wear: 0 },
@@ -425,6 +427,7 @@ export function patchKitMaterial(mat: THREE.MeshStandardMaterial, phone: boolean
   mat.customProgramCacheKey = () => `gunkit-${phone ? "p" : "d"}`;
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uTrim = uniforms.uTrim;
+    sh.uniforms.gkSize = { value: phone ? 512 : 1024 };
     sh.vertexShader = sh.vertexShader
       .replace(
         "#include <common>",
@@ -442,6 +445,7 @@ vMR = aMR; vEdge = aEdge; vBand = aBand; vUvT = aUvT; vLocal = position;`,
         "#include <common>",
         `#include <common>
 uniform sampler2D uTrim;
+uniform float gkSize;
 varying vec4 vMR; varying float vEdge; varying vec2 vBand; varying vec2 vUvT; varying vec3 vLocal;
 float gkHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float gkNoise(vec3 x) {
@@ -462,7 +466,11 @@ float gkWear = smoothstep(0.5, 0.6, vEdge * (0.55 + gkN * 0.75));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.25 + vec3(0.035), gkWear * step(0.5, vMR.x));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.25, gkWear * (1.0 - step(0.5, vMR.x)));`,
       )
-      .replace("#include <roughnessmap_fragment>", "float roughnessFactor = clamp(vMR.y + (gkT.a - 0.5) - gkWear * 0.2, 0.04, 1.0);")
+      .replace(
+        "#include <roughnessmap_fragment>",
+        `float gkF2 = max(length(dFdx(vUvT)), length(dFdy(vUvT))) * 1024.0;
+float roughnessFactor = clamp(vMR.y + (gkT.a - 0.5) - gkWear * 0.2 + clamp((gkF2 - 2.0) * 0.02, 0.0, 0.15), 0.04, 1.0);`,
+      )
       .replace("#include <metalnessmap_fragment>", "float metalnessFactor = vMR.x;")
       .replace(
         "#include <normal_fragment_maps>",
@@ -477,7 +485,11 @@ diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.25, gkWear * (1.0 
   vec3 B = q1perp * st0.y + q0perp * st1.y;
   float det = max(dot(T, T), dot(B, B));
   float sc = det == 0.0 ? 0.0 : inversesqrt(det);
-  vec3 mapN = vec3(gkT.rg * 2.0 - 1.0, 0.0);
+  // Specular anti-aliasing: when a pixel covers several atlas texels the detail flattens out instead of
+  // sparkling (small phone render targets, a gun seen from afar).
+  float gkFoot = max(length(st0), length(st1)) * gkSize;
+  float gkFade = clamp(1.6 / max(gkFoot, 1.0), 0.0, 1.0);
+  vec3 mapN = vec3((gkT.rg * 2.0 - 1.0) * gkFade, 0.0);
   mapN.z = sqrt(max(0.0, 1.0 - dot(mapN.xy, mapN.xy)));
   normal = normalize(T * (mapN.x * sc) + B * (mapN.y * sc) + N * mapN.z);
 }`,

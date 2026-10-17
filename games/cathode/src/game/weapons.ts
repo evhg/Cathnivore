@@ -161,8 +161,8 @@ export class Arsenal {
     strip(0xffb35a, 2.6, [0, 1.95, 0.5], [3.2, 0.05, 0.25]);
     strip(0xffffff, 4, [-1.2, 1.95, -1.6], [1.6, 0.05, 0.4]);
     // A broad soft panel ahead and above: what the slide's top and flanks mostly see from the eye.
-    strip(0xc8d4ff, 1.1, [0, 1.2, -2.95], [4.5, 1.6, 0.05]);
-    strip(0xffd2a8, 0.8, [-2.95, 0.2, 1.2], [0.05, 1.4, 2.5]);
+    strip(0xc8d4ff, 0.55, [0, 1.2, -2.95], [4.5, 1.6, 0.05]);
+    strip(0xffd2a8, 0.35, [-2.95, 0.2, 1.2], [0.05, 1.4, 2.5]);
     // A floor glow, the wet street's bounce.
     strip(0x2a3a5a, 1.2, [0, -1.95, -1], [5, 0.05, 3]);
     const gen = new THREE.PMREMGenerator(renderer);

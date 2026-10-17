@@ -88,7 +88,7 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
     kit.add(lathe([[0.0018, 0.0128], [0.0018, -0.0128]], { seg: o.phone ? 8 : 12 }), FIN.pins, { p: [0, y, z], r: [0, Math.PI / 2, 0] }, frame);
   }
   // The takedown lever: a small steel tab on the left above the guard.
-  kit.add(rounded(0.0016, 0.004, 0.009, 0.0007, o.phone), FIN.pins, { p: [-0.0133, 0.0075, -0.058] }, frame);
+  kit.add(rounded(0.0016, 0.004, 0.009, 0.0007, o.phone), FIN.control, { p: [-0.0133, 0.0075, -0.058] }, frame);
   kit.empty("rail", [0, -0.004, -0.108], frame);
   kit.empty("guard", [0, -0.034, -0.035], frame);
 
@@ -197,19 +197,19 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   // ---- Hammer: a skeletonised spur behind the slide, cocked back (0 = down on the pin, 55° = cocked).
   const hammer = kit.part("hammer", [0, 0.012, 0.04]);
   const spur: P2[] = [[0.003, 0], [-0.003, 0], [-0.002, 0.011], [0.0, 0.016], [0.006, 0.0185], [0.0075, 0.015], [0.004, 0.011]];
-  kit.add(profile(spur, 0.0062, { bevel: 0.0006, holes: [[[0.0, 0.0045], [0.0015, 0.0085], [0.0002, 0.0095], [-0.001, 0.006]]], ...o }), FIN.pins, undefined, hammer);
+  kit.add(profile(spur, 0.0062, { bevel: 0.0006, holes: [[[0.0, 0.0045], [0.0015, 0.0085], [0.0002, 0.0095], [-0.001, 0.006]]], ...o }), FIN.control, undefined, hammer);
   hammer.rotation.x = 0.96;
 
   // ---- Trigger: a flat-faced blade with a safety tab, pivoting in the guard (5 mm travel at the shoe).
   const trigger = kit.part("trigger", [0, -0.002, -0.034]);
   const blade: P2[] = [[0.002, 0], [-0.003, 0], [-0.0085, -0.012], [-0.0095, -0.022], [-0.006, -0.0235], [-0.004, -0.013], [0.0025, -0.004]];
-  kit.add(profile(blade, 0.0058, { bevel: 0.0006, ...o }), FIN.pins, undefined, trigger);
+  kit.add(profile(blade, 0.0058, { bevel: 0.0006, ...o }), FIN.control, undefined, trigger);
   kit.add(rounded(0.0016, 0.007, 0.0016, 0.0006, o.phone), FIN.frame, { p: [0, -0.012, -0.0072] }, trigger);
 
   // ---- Slide stop: a lever on the left, pivoting at its back end.
   const stop = kit.part("slideStop", [-0.0135, 0.009, 0.006]);
-  kit.add(profile([[0, -0.002], [-0.032, -0.002], [-0.036, 0.001], [-0.034, 0.0045], [-0.022, 0.0045], [0.0, 0.002]], 0.0022, { bevel: 0.0004, ...o }), FIN.pins, undefined, stop);
-  kit.add(rounded(0.0024, 0.006, 0.008, 0.001, o.phone), FIN.pins, { p: [-0.0005, 0.002, -0.03] }, stop);
+  kit.add(profile([[0, -0.002], [-0.032, -0.002], [-0.036, 0.001], [-0.034, 0.0045], [-0.022, 0.0045], [0.0, 0.002]], 0.0022, { bevel: 0.0004, ...o }), FIN.control, undefined, stop);
+  kit.add(rounded(0.0024, 0.006, 0.008, 0.001, o.phone), FIN.control, { p: [-0.0005, 0.002, -0.03] }, stop);
 
   // ---- Magazine: the body inside the grip, a polymer floorplate below it, and the top round in its lips.
   const mag = kit.part("mag");

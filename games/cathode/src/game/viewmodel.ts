@@ -153,7 +153,7 @@ function buildPin(): GunRig {
 
 /** The Kestrel 9 (game/kestrel.ts): built on the kit, every part its own node. */
 function buildPistol(phone: boolean): GunRig {
-  const r = rig(new THREE.Vector3(0.094, -0.098, -0.26), new THREE.Vector3(0, -0.0573, -0.4), 52);
+  const r = rig(new THREE.Vector3(0.088, -0.086, -0.27), new THREE.Vector3(0, -0.0573, -0.4), 52);
   // Aimed, the viewmodel camera narrows so the gun sits further out (the hands drop away under the dot) at the same size.
   r.adsVmFov = 36;
   const { root, kit } = buildKestrel(phone);
