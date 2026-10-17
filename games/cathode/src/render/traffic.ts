@@ -2,6 +2,7 @@
 // and a white nose light. Cheap CPU-driven meshes (no shadows, no lights), outdoor districts only.
 
 import * as THREE from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { LAYER_NO_REFLECT } from "./reflection";
 
 export interface Spinner {
@@ -31,27 +32,35 @@ export function spinnerX(s: Spinner, t: number, span: number): number {
 
 export function addTraffic(scene: THREE.Scene, count: number, span = 220, zNear = -90, zFar = 60) {
   const lanes = spinnerLanes(count, span, zNear, zFar);
-  const body = new THREE.MeshBasicMaterial({ color: 0x07090c });
-  const red = new THREE.MeshBasicMaterial({ color: 0xff2a1a });
-  const white = new THREE.MeshBasicMaterial({ color: 0xdff4ff });
-  const group = new THREE.Group();
-  const cars = lanes.map((s) => {
-    const car = new THREE.Group();
-    const hull = new THREE.Mesh(new THREE.BoxGeometry(5, 0.9, 1.9), body);
-    const tail = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.35, 1.5), red);
-    const nose = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.6), white);
-    const dir = Math.sign(s.speed);
-    tail.position.x = -2.6 * dir;
-    nose.position.x = 2.6 * dir;
-    car.add(hull, tail, nose);
-    car.traverse((o) => o.layers.set(LAYER_NO_REFLECT));
-    group.add(car);
-    return car;
-  });
-  scene.add(group);
-  return {
+  // One car (hull, red tail, white nose) as a single vertex-coloured geometry, drawn for every lane as instances:
+  // one draw call for the whole sky instead of three per car (S0 budget).
+  const part = (geo: THREE.BufferGeometry, x: number, hex: number) => {
+    const g = geo.translate(x, 0, 0).toNonIndexed();
+    const c = new THREE.Color(hex);
+    const n = g.getAttribute("position").count;
+    const col = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b], i * 3);
+    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    return g;
+  };
+  // Built heading +x; a car heading -x is the same car turned half round (the boxes are symmetric in z).
+  const geo = mergeGeometries([part(new THREE.BoxGeometry(5, 0.9, 1.9), 0, 0x07090c), part(new THREE.BoxGeometry(0.3, 0.35, 1.5), -2.6, 0xff2a1a), part(new THREE.BoxGeometry(0.3, 0.3, 0.6), 2.6, 0xdff4ff)], false)!;
+  const cars = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true }), lanes.length);
+  // The cars cross the whole skyline: the instances' bounds change every frame.
+  cars.frustumCulled = false;
+  cars.layers.set(LAYER_NO_REFLECT);
+  scene.add(cars);
+  const m = new THREE.Matrix4();
+  const turn = new THREE.Matrix4();
+  const api = {
     update(t: number) {
-      cars.forEach((car, i) => car.position.set(spinnerX(lanes[i]!, t, span), lanes[i]!.y, lanes[i]!.z));
+      lanes.forEach((s, i) => {
+        m.makeRotationY(s.speed < 0 ? Math.PI : 0).premultiply(turn.makeTranslation(spinnerX(s, t, span), s.y, s.z));
+        cars.setMatrixAt(i, m);
+      });
+      cars.instanceMatrix.needsUpdate = true;
     },
   };
+  api.update(0);
+  return api;
 }

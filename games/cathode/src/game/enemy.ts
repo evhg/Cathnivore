@@ -5,6 +5,7 @@
 import { tuning } from "./feel/tuning";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { Body, enforcerLook, place, tagUnflashed, type BodyLook, type Zone } from "./body";
 import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
 import { animate, muzzleOf, type Motion } from "./animate";
@@ -813,11 +814,15 @@ function buildRifle(look: BodyLook): THREE.Group {
     g.add(o);
     return o;
   };
-  add(new RoundedBoxGeometry(0.06, 0.62, 0.1, 2, 0.015), dark, 0, 0.12, 0.03); // receiver
-  add(new THREE.CylinderGeometry(0.013, 0.013, 0.32, 8), dark, 0, 0.58, 0.05); // barrel
+  // The dark steel parts share one geometry: one draw call instead of four per rifle (S0 budget).
+  const steel = [
+    new RoundedBoxGeometry(0.06, 0.62, 0.1, 2, 0.015).translate(0, 0.12, 0.03), // receiver
+    new THREE.CylinderGeometry(0.013, 0.013, 0.32, 8).translate(0, 0.58, 0.05), // barrel
+    new RoundedBoxGeometry(0.045, 0.06, 0.14, 2, 0.01).translate(0, 0.0, -0.06), // grip
+    new RoundedBoxGeometry(0.05, 0.08, 0.16, 2, 0.012).translate(0, -0.18, -0.04), // magazine (behind the grip)
+  ].map((geo) => (geo.index ? geo.toNonIndexed() : geo));
+  add(mergeGeometries(steel, false)!, dark, 0, 0, 0);
   add(new RoundedBoxGeometry(0.04, 0.1, 0.09, 2, 0.01), look.armour, 0, 0.3, 0.1); // optic
   add(new RoundedBoxGeometry(0.03, 0.08, 0.016, 1, 0.005), look.visor, 0, 0.3, 0.155); // optic glow
-  add(new RoundedBoxGeometry(0.045, 0.06, 0.14, 2, 0.01), dark, 0, 0.0, -0.06); // grip
-  add(new RoundedBoxGeometry(0.05, 0.08, 0.16, 2, 0.012), dark, 0, -0.18, -0.04); // magazine (behind the grip)
   return g;
 }
