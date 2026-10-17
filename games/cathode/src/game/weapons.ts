@@ -9,7 +9,7 @@ import { Arms, POSES, SHOULDER_L, SHOULDER_L_ADS, SHOULDER_R, SHOULDER_R_ADS, le
 import { eventsBetween, sampleClip, type Clip, type Sample } from "./feel/clip";
 import { Spring3 } from "./feel/spring";
 import { tuning } from "./feel/tuning";
-import { CamRecoil, DRAW, EMPTY as EMPTY_CLIP, FIRE, HERO, Heat, PRESS_CHECK, ReloadMachine, channel, impulseForPeak, pullTrigger, startReload, stepReload, track } from "./feel/pistol";
+import { CamRecoil, DRAW, EMPTY as EMPTY_CLIP, TAC as TAC_CLIP, FIRE, HERO, Heat, PRESS_CHECK, ReloadMachine, channel, impulseForPeak, pullTrigger, startReload, stepReload, track } from "./feel/pistol";
 import { GunSmoke } from "./gunsmoke";
 
 const KF = tuning.kestrel;
@@ -236,7 +236,7 @@ export class Arsenal {
    * the turned gun and the can never sit on a live reticle (C5 review).
    */
   get reloadW(): number {
-    return this.rm.active ? THREE.MathUtils.clamp(channel(this.rm.clip, "arm", this.rm.t, 0), 0, 1) : 0;
+    return THREE.MathUtils.clamp(this.armW, 0, 1);
   }
 
   get pistolState(): { fireMs: number; drawMs: number; pressMs: number; reload: string | null; reloadMs: number; committed: boolean; locked: boolean; heat: number } {
@@ -277,6 +277,7 @@ export class Arsenal {
     const h = this.held[this.current]!;
     if (h.ammo <= 0) h.ammo = 1;
     this.cd = 0;
+    this.lastClip = this.ghost = null;
     this.rm.cancel();
     this.firePistolFx();
     // The shot spends its round, so the HUD and the gun agree in the held frame (12/60 becomes 11/60).
@@ -286,6 +287,7 @@ export class Arsenal {
   /** Screenshot stages: a reload (tac or empty) held at `ms`. */
   stageReload(kind: "tac" | "empty", ms: number): void {
     const h = this.held[this.current]!;
+    this.lastClip = this.ghost = null;
     this.rm.kind = null;
     h.ammo = kind === "empty" ? 0 : 5;
     h.locked = kind === "empty";
@@ -297,6 +299,7 @@ export class Arsenal {
   /** Screenshot stages: the last round gone, the slide locked. */
   stageLock(): void {
     const h = this.held[this.current]!;
+    this.lastClip = this.ghost = null;
     this.rm.kind = null;
     h.ammo = 0;
     h.locked = true;
@@ -306,6 +309,11 @@ export class Arsenal {
   /** Screenshot stages: the stage's milliseconds have passed for the flash too (the puff shows one frame). */
   stageTime(ms: number): void {
     this.flashT = Math.max(0, this.flashT - ms / 1000);
+  }
+
+  /** Screenshot stages: a fire-to-cancel of the reload (or any input ending the press-check) right now. */
+  stageCancel(): void {
+    if (!this.rm.cancel()) this.pressMs = -1;
   }
 
   /** Screenshot stages: the idle press-check held at `ms`. */
@@ -501,6 +509,7 @@ export class Arsenal {
     this.fireMs = -1;
     this.drawMs = -1;
     this.pressMs = -1;
+    this.lastClip = this.ghost = null;
     this.flashT = 0;
     this.heat.v = 0;
     this.smoke.clear();
@@ -903,12 +912,9 @@ export class Arsenal {
       this.shL.lerp(SHOULDER_L_INSPECT, this.inspectW);
     }
     // C5: racking, the support shoulder drops out and left, so that forearm comes up from the corner, not across.
-    if (pistol && this.handW > 0 && !this.rm.active) this.shL.lerp(SHOULDER_L_RACK, this.handW);
+    if (pistol && this.handW > 0 && !this.handOnMag) this.shL.lerp(SHOULDER_L_RACK, this.handW);
     // C5: through a reload the firing shoulder drops out and right, so the forearm falls away under the gun.
-    if (pistol && this.rm.active) {
-      const w = channel(this.rm.clip, "arm", this.rm.t, 0);
-      if (w > 0) this.shR.lerp(SHOULDER_R_RELOAD, w);
-    }
+    if (pistol && this.armW > 0) this.shR.lerp(SHOULDER_R_RELOAD, this.armW);
     // The lock's turn swings the firing forearm level across the bottom of the frame (over the ammo block):
     // drop that shoulder part-way too, so the arm falls away under the turned gun.
     if (pistol && this.lockW > 0.001) this.shR.lerp(SHOULDER_R_LOCK, this.lockW * 0.7);
@@ -930,12 +936,47 @@ export class Arsenal {
   private trigMm = 0;
   private handW = 0;
 
-  /** The clip playing on the Kestrel this frame (reload, draw, press-check), if any. */
-  private pistolClip(): { clip: Clip; t: number } | null {
+  /** The firing shoulder's reload drop this frame (0..1), and whether the support hand's target is the mag. */
+  private armW = 0;
+  private handOnMag = false;
+
+  /** The clip playing on the Kestrel this frame (reload, draw, press-check), if any, at full weight. */
+  private liveClip(): { clip: Clip; t: number } | null {
     if (this.rm.active) return { clip: this.rm.clip, t: this.rm.t };
     if (this.drawMs >= 0) return { clip: this.drawClip, t: this.drawMs };
     if (this.pressMs >= 0) return { clip: PRESS_CHECK, t: this.pressMs };
     return null;
+  }
+
+  /** The clip sampled last frame (to catch one that stopped early) and a cancelled clip fading out. */
+  private lastClip: { clip: Clip; t: number } | null = null;
+  private ghost: { clip: Clip; t: number; ms: number } | null = null;
+
+  /**
+   * The clip posing the Kestrel this frame with its weight. A clip cut short (fire, sprint or a swap cancelling a
+   * reload; any input cancelling the press-check) doesn't snap to the hip: its last pose (gun, mag, hand, arm,
+   * slide) eases out to nothing over KF.cancelBlendMs (C5 review: every fire-to-cancel popped in one frame).
+   */
+  private pistolClip(ms: number): { clip: Clip; t: number; w: number } | null {
+    const live = this.liveClip();
+    const last = this.lastClip;
+    this.lastClip = live;
+    if (live) {
+      this.ghost = null;
+      return { ...live, w: 1 };
+    }
+    // Stopped early: it had more than this frame's step to run (a natural end crosses its duration this frame).
+    if (last && last.t + ms < last.clip.dur - 1) this.ghost = { clip: last.clip, t: last.t, ms: 0 };
+    const g = this.ghost;
+    if (!g) return null;
+    g.ms += ms;
+    const p = g.ms / KF.cancelBlendMs;
+    if (p >= 1) {
+      this.ghost = null;
+      return null;
+    }
+    // Ease-out: most of the way home early, settling gently.
+    return { clip: g.clip, t: g.t, w: (1 - p) * (1 - p) * (1 - p) };
   }
 
   /** The lock pose's weight (0..1), eased toward a locked slide. */
@@ -986,13 +1027,16 @@ export class Arsenal {
     if (this.pressMs >= 0 && (this.busy || this.aiming || this.cd > 0)) this.pressMs = -1;
 
     // The clip on the gun root: about a pivot most of the way back to the firing wrist.
-    const cl = this.pistolClip();
+    const cl = this.pistolClip(ms);
+    const cw = cl ? cl.w : 0;
+    const reloadClip = !!cl && (cl.clip === TAC_CLIP || cl.clip === EMPTY_CLIP);
     const k = cl ? track(cl.clip, "gun", cl.t, this.smp) : null;
     if (k) {
       // S2.4: clip rotations at half strength while aiming through a reload, and under reduced motion.
-      const s = (this.rm.active && this.aiming ? 0.5 : 1) * (this.reducedMotion ? 0.5 : 1);
-      this.turnGun(r, k.rot[0] * s, k.rot[1] * s, k.rot[2] * s, k.pos);
+      const s = (this.rm.active && this.aiming ? 0.5 : 1) * (this.reducedMotion ? 0.5 : 1) * cw;
+      this.turnGun(r, k.rot[0] * s, k.rot[1] * s, k.rot[2] * s, [k.pos[0] * cw, k.pos[1] * cw, k.pos[2] * cw]);
     }
+    this.armW = reloadClip ? channel(cl!.clip, "arm", cl!.t, 0) * cw : 0;
     // The lock (C5 review: at hip the 24 mm of slide travel runs straight away from the eye and doesn't read):
     // on an empty, locked slide the gun turns its left flank and the top to her, so the bare bronze barrel
     // ahead of the slide, the empty port and the raised stop face the camera. Eased in over about 120 ms.
@@ -1020,7 +1064,7 @@ export class Arsenal {
     const clipSlide = cl ? track(cl.clip, "slide", cl.t, this.smp) : null;
     if (this.rm.kind === "empty" && clipSlide) slide = clipSlide.pos[2];
     else {
-      if (clipSlide) slide = Math.max(slide, clipSlide.pos[2]);
+      if (clipSlide) slide = Math.max(slide, clipSlide.pos[2] * cw);
       if (h.locked) slide = F.slideM;
     }
     if (P.slide) P.slide.position.z = slide;
@@ -1038,16 +1082,16 @@ export class Arsenal {
     if (P.trigger) P.trigger.rotation.x = -this.trigMm * 0.048;
 
     // The magazine: the reload's track (out, to the pouch, back in), hidden while the old one falls free.
-    const magT = this.rm.active ? track(this.rm.clip, "mag", this.rm.t, this.smp) : null;
+    const magT = reloadClip ? track(cl!.clip, "mag", cl!.t, this.smp) : null;
     if (r.mag) {
       if (magT) {
-        r.mag.position.set(magT.pos[0], magT.pos[1], magT.pos[2]);
-        r.mag.rotation.set(magT.rot[0], magT.rot[1], magT.rot[2]);
+        r.mag.position.set(magT.pos[0] * cw, magT.pos[1] * cw, magT.pos[2] * cw);
+        r.mag.rotation.set(magT.rot[0] * cw, magT.rot[1] * cw, magT.rot[2] * cw);
       } else {
         r.mag.position.set(0, 0, 0);
         r.mag.rotation.set(0, 0, 0);
       }
-      r.mag.visible = this.rm.active ? channel(this.rm.clip, "magVis", this.rm.t, 1) > 0.5 : true;
+      r.mag.visible = reloadClip ? channel(cl!.clip, "magVis", cl!.t, 1) > 0.5 : true;
     }
     // The rounds: a fresh mag shows brass; the gun's own mag shows its top round while it has one under the
     // chambered round; the chamber is empty on a locked slide (and through an empty reload until the slam).
@@ -1055,9 +1099,10 @@ export class Arsenal {
     if (P.chamberRound) P.chamberRound.visible = h.ammo >= 1 && !h.locked && !(this.rm.kind === "empty" && this.rm.t < KF.reload.slideStopMs + KF.reload.slamMs);
 
     // The support hand: off the grip to the mag (reloads) or over the slide (the rack, the press-check).
-    this.handW = cl ? THREE.MathUtils.clamp(channel(cl.clip, "hand", cl.t, 0), 0, 1) : 0;
+    this.handW = cl ? THREE.MathUtils.clamp(channel(cl.clip, "hand", cl.t, 0) * cw, 0, 1) : 0;
+    this.handOnMag = reloadClip;
     if (this.handW > 0.001 && r.gripL) {
-      const target = this.rm.active ? P.magHand : P.rackHand;
+      const target = reloadClip ? P.magHand : P.rackHand;
       if (target) {
         if (this.gripLDyn.parent !== r.root) r.root.add(this.gripLDyn);
         r.root.updateMatrixWorld(true);
@@ -1069,7 +1114,7 @@ export class Arsenal {
         this.gripLDyn.position.lerpVectors(this.pA, this.pB, w);
         this.gripLDyn.quaternion.slerpQuaternions(this.qA, this.qB, w);
         this.gripLDyn.userData.thumb = w < 0.4 ? r.gripL.userData.thumb : undefined;
-        lerpPose(r.poseL ?? POSES.pistolL!, this.rm.active ? POSES.magL! : POSES.rackL!, w, this.poseLDyn);
+        lerpPose(r.poseL ?? POSES.pistolL!, reloadClip ? POSES.magL! : POSES.rackL!, w, this.poseLDyn);
       }
     }
 

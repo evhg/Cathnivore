@@ -966,6 +966,8 @@ export class Hud {
             const p = { ...loadPrefs(), reduceMotion: v };
             savePrefs(p);
             applyMotionPref(p);
+            // The Kestrel's clip turns and the camera trauma read this live (not only at session start).
+            window.dispatchEvent(new Event("cathode:prefs"));
             btns.forEach((x, i) => x.setAttribute("aria-pressed", String(opts[i]![0] === v)));
           });
           return b;

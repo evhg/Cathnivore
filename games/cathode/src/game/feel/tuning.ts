@@ -138,6 +138,8 @@ export const tuning = {
     /** S2.3 the last round: the slide stop rises 12°, the next pull dry-fires (two clicks 4 kHz). */
     // `pose`: how the gun turns on a locked slide (degrees about x, y, z; metres), so the lock reads at hip.
     lock: { stopDeg: 12, dryClickHz: 4000, dryGapMs: 55, pose: { rot: [-3, 26, -4], pos: [-0.035, 0.012, -0.01] } },
+    /** A reload or press-check cut short eases its last pose out over this long (no one-frame pop to the hip). */
+    cancelBlendMs: 140,
     /** S2.4 reloads: the mag counts as in at `commit` of the duration. */
     reload: { tacMs: 1550, emptyMs: 2050, commit: 0.6, seatJoltM: 0.004, seatTrauma: 0.05, slamTrauma: 0.08, slideStopMs: 1450, slamMs: 35, dropMagLifeS: 10, dropMagMax: 6, dropMagRestitution: 0.2 },
     /** S2.4 draw, hero draw and the idle press-check. */

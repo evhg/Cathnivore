@@ -870,8 +870,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // Feel (S0): the one timescale (hit-stops), camera trauma and the kill's FOV punch.
   const timescale = new Timescale();
   const trauma = new Trauma();
-  trauma.reducedMotion = reduceMotionOn();
-  arsenal.reducedMotion = trauma.reducedMotion;
+  const syncMotion = () => {
+    trauma.reducedMotion = reduceMotionOn();
+    arsenal.reducedMotion = trauma.reducedMotion;
+  };
+  syncMotion();
+  // A change in the pause settings reaches the gun and the camera at once.
+  window.addEventListener("cathode:prefs", syncMotion);
   trauma.phone = input.isTouch;
   const fovPunch = new Spring1(tuning.kill.fovSpring);
   /** A kill lands: hit-stop, FOV punch, a little camera trauma, and a rumble on a pad (S1.4). */
@@ -1878,7 +1883,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // pistol-alley is the acceptance's "dark alley": the first alley off the market (z 21-25), at its mouth,
   // facing the dumpster corner away from the door's caged bulb, the only light back there.
   // C5 "Kestrel 9 in motion": the shot at 0, 20 and 45 ms, the lock, the reloads, the draws, the press-check.
-  const C4_STAGES = ["pistol-idle", "pistol-ads", "pistol-inspect", "pistol-alley", "pistol-fire", "pistol-fire-ads", "pistol-lock", "pistol-reload", "pistol-reload-empty", "pistol-draw", "pistol-hero", "pistol-presscheck"];
+  const C4_STAGES = ["pistol-idle", "pistol-ads", "pistol-inspect", "pistol-alley", "pistol-fire", "pistol-fire-ads", "pistol-lock", "pistol-reload", "pistol-reload-empty", "pistol-draw", "pistol-hero", "pistol-presscheck", "pistol-reload-cancel", "pistol-presscheck-cancel"];
   const c4Stage = (name: string, tMs: number): string => {
     staged = true;
     hud.freeze(null);
@@ -1936,6 +1941,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       else if (name === "pistol-reload-empty") arsenal.stageReload("empty", t);
       else if (name === "pistol-draw" || name === "pistol-hero") arsenal.stageDraw(t, name === "pistol-hero");
       else if (name === "pistol-presscheck") arsenal.stagePress(t);
+      else if (name === "pistol-reload-cancel" || name === "pistol-presscheck-cancel") {
+        // The fire-to-cancel blend (S2.4): the reload at 400 ms (the press-check at 700), cut, then `t` ms on.
+        if (name === "pistol-reload-cancel") arsenal.stageReload("tac", 400);
+        else arsenal.stagePress(700);
+        poseOnce(1 / 60);
+        arsenal.stageCancel();
+        const n = Math.max(1, Math.ceil(t / 4));
+        for (let i = 0; i < n && t > 0; i++) poseOnce(t / n / 1000);
+      }
       arsenal.freeze = true;
       poseOnce(1 / 60);
       arsenal.freeze = !!o.shot;
