@@ -656,6 +656,8 @@ export class Arsenal {
     camQuat: THREE.Quaternion,
     spreadMul: number,
   ): Shot | null {
+    // A held screenshot moment: the session still ticks real time here (`dt || realDt`), so nothing may advance.
+    if (this.freeze) dt = 0;
     const h = this.held[this.current]!;
     const def = h.def;
     this.cd -= dt;

@@ -289,7 +289,10 @@ for (const vp of vps) {
       if (side.vm.slidePx < 50) fail(`${vp} ${spec}: the slide is barely on screen (${side.vm.slidePx} px)`)
       // At rest and mid-inspect the gun and hands stay off the HUD clusters (aimed, the hands fall away under
       // the thumb buttons by design, so ADS only checks the ammo block and the vitals).
-      for (const [q, share] of side.vm.clear ?? []) {
+      // C5: the draw, the reloads and the hero draw are passing moments (under half a second over any one
+      // cluster): only the poses she holds are kept off the HUD.
+      const passing = /^pistol-(draw|hero|reload|presscheck)/.test(stage)
+      for (const [q, share] of passing ? [] : side.vm.clear ?? []) {
         if (stage === 'pistol-ads' && q.startsWith('.tbtn')) continue
         if (share > 0.02) fail(`${vp} ${spec}: the viewmodel covers ${(share * 100).toFixed(1)}% of ${q}`)
       }

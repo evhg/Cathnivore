@@ -20,7 +20,7 @@ const F = K.fire;
 export const MAG_AXIS: [number, number, number] = [0, -0.951, 0.309];
 const out = (m: number): [number, number, number] => [MAG_AXIS[0] * m, MAG_AXIS[1] * m, MAG_AXIS[2] * m];
 /** Off the bottom-left of the frame: where the old mag goes and the new one comes from. */
-const POUCH: [number, number, number] = [-0.11, -0.3, 0.13];
+const POUCH: [number, number, number] = [-0.14, -0.5, 0.05];
 const POUCH_ROT: [number, number, number] = [0.5, 0.2, 0.7];
 
 export const FIRE: Clip = {
@@ -70,7 +70,7 @@ const seatEmpty = R.emptyMs * R.commit;
 // forearm toward the support hand, the left flank to the eye), muzzle up 12° so the magwell opens toward her,
 // and lifted so the bottom of the grip comes into frame (at the hip it sits below the screen's edge).
 const TILT: [number, number, number] = [-12 * D, 14 * D, -28 * D];
-const TILT_P: [number, number, number] = [-0.05, 0.07, -0.125];
+const TILT_P: [number, number, number] = [-0.01, 0.06, -0.12];
 
 /** Tactical reload, 1.55 s: a round stays chambered; the mag is in at 930 ms. */
 export const TAC: Clip = {

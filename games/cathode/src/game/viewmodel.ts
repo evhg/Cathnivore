@@ -212,8 +212,8 @@ function buildPistol(phone: boolean): GunRig {
   // one draw while it shows.
   // The core sits 2.5 cm past the crown: from the eye the can hides anything closer (S2.3 acceptance: the muzzle
   // region must read brighter on the shot, without a white cross over 0.1 m).
-  const quads = [0, 1].map((i) => new THREE.PlaneGeometry(0.075, 0.05).rotateY(Math.PI / 2).rotateX((i * Math.PI) / 2 + Math.PI / 4).translate(0, 0, -0.03));
-  quads.push(new THREE.PlaneGeometry(0.075, 0.075).translate(0, 0, -0.025));
+  const quads = [0, 1].map((i) => new THREE.PlaneGeometry(0.065, 0.045).rotateY(Math.PI / 2).rotateX((i * Math.PI) / 2 + Math.PI / 4).translate(0, 0, -0.03));
+  quads.push(new THREE.PlaneGeometry(0.065, 0.065).translate(0, 0, -0.025));
   const flash = new THREE.Mesh(mergeGeometries(quads)!, fm);
   flash.position.copy(r.muzzle.position).z -= 0.012;
   flash.visible = false;

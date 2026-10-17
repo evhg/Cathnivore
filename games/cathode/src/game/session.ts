@@ -1965,9 +1965,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const fm = r.flashMesh;
     let puffM = 0;
     if (fm && fm.visible) {
-      const b = new THREE.Box3().setFromObject(fm);
-      const sz = b.getSize(new THREE.Vector3());
-      puffM = Math.max(sz.x, sz.y, sz.z);
+      // Its own width across the bore (x and y in its frame, times its scale): a world box of the tilted mesh
+      // measures the gun's cant, not the puff.
+      const m = fm as THREE.Mesh;
+      m.geometry.computeBoundingBox();
+      const sz = m.geometry.boundingBox!.getSize(new THREE.Vector3());
+      const sc = m.getWorldScale(new THREE.Vector3());
+      puffM = Math.max(sz.x * sc.x, sz.y * sc.y);
     }
     const st = arsenal.pistolState;
     return {
