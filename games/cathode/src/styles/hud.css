@@ -152,11 +152,11 @@
   background: rgb(var(--cyan-rgb) / .1);
   box-shadow: inset 0 0 0 1px rgb(var(--cyan-rgb) / .28);
 }
-.hud-vbar .c-bar > .trail { background: rgb(255 255 255 / .82); transition: none; }
-.hud-guard > .fill { background: linear-gradient(90deg, #0d9fb8, var(--cyan)); transition: transform 60ms linear; }
+.hud-vbar .c-bar > .trail { background: rgb(var(--white-rgb) / .82); transition: none; }
+.hud-guard > .fill { background: linear-gradient(90deg, var(--cyan-deep), var(--cyan)); transition: transform 60ms linear; }
 /* Guard coming back: a highlight sweeping along the fill. */
 .hud-vbar.is-regen .hud-guard > .fill {
-  background: linear-gradient(90deg, #0d9fb8 0%, var(--cyan) 40%, #e9fdff 50%, var(--cyan) 60%, #0d9fb8 100%);
+  background: linear-gradient(90deg, var(--cyan-deep) 0%, var(--cyan) 40%, var(--cyan-hot) 50%, var(--cyan) 60%, var(--cyan-deep) 100%);
   background-size: 250% 100%;
   animation: guard-sheen 700ms linear infinite;
 }
@@ -179,7 +179,7 @@
   top: 0;
   width: calc(var(--u) * 16);
   height: calc(var(--u) * 20);
-  background: linear-gradient(135deg, #f2feff, var(--cyan));
+  background: linear-gradient(135deg, var(--cyan-hot), var(--cyan));
   clip-path: polygon(0 20%, 100% 0, 70% 100%);
   opacity: 0;
 }
@@ -480,14 +480,14 @@
 }
 .hud-dmg-arc .glow { fill: rgb(var(--blood-deep-rgb)); opacity: .42; }
 .hud-dmg-arc .body { fill: currentColor; stroke: rgb(var(--black-rgb) / .45); stroke-width: .8; }
-.hud-dmg-arc .core { fill: none; stroke: #fff1ee; stroke-width: 2; stroke-linecap: round; opacity: 0; }
+.hud-dmg-arc .core { fill: none; stroke: var(--on-blood); stroke-width: 2; stroke-linecap: round; opacity: 0; }
 .hud-dmg-arc.is-core .core { opacity: .95; }
 .hud-dmg-arc.k-blast { color: var(--amber); }
 .hud-dmg-arc.k-blast .glow { fill: var(--amber-deep); }
 .hud-dmg-arc.k-laser { color: var(--cyan); }
-.hud-dmg-arc.k-laser .glow { fill: #04414c; }
+.hud-dmg-arc.k-laser .glow { fill: var(--cyan-night); }
 /* The colour-blind palette: a 2u white outline on every arc. */
-:root.colour-safe .hud-dmg-arc .body { stroke: #fff; stroke-width: 2; }
+:root.colour-safe .hud-dmg-arc .body { stroke: rgb(var(--white-rgb)); stroke-width: 2; }
 /* A source behind her, or far above or below: a chevron on the safe frame's edge, pointing out. */
 .hud-dmg-chev {
   position: absolute;
@@ -504,7 +504,7 @@
 .hud-dmg-chev.k-laser { color: var(--cyan); }
 .hud-dmg-chev svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .hud-dmg-chev path { fill: currentColor; stroke: rgb(var(--black-rgb) / .5); stroke-width: 1.5; paint-order: stroke; }
-:root.colour-safe .hud-dmg-chev path { stroke: #fff; }
+:root.colour-safe .hud-dmg-chev path { stroke: rgb(var(--white-rgb)); }
 /* Melee: a 40u flash down the edge it came from. */
 .hud-dmg-edge {
   position: absolute;

@@ -48,6 +48,10 @@
   --on-blood: #fff4f0;
   --cyan: #2ee6ff;
   --cyan-ink: #7ff0ff;
+  /* C6 Guard: the fill's deep end, its hot highlight, and the laser arc's glow. */
+  --cyan-deep: #0d9fb8;
+  --cyan-hot: #e9fdff;
+  --cyan-night: #04414c;
   --amber: #ffb347;
   --amber-hi: #ffd27d;
   --amber-deep: #7a4d12;
