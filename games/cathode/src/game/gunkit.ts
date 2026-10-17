@@ -238,14 +238,15 @@ export function tube(len: number, r0: number, r1: number, opts: { seg?: number; 
   const seg = opts.seg ?? (opts.phone ? 8 : 14);
   const pts: THREE.Vector2[] = [];
   const caps = opts.caps ?? true;
-  if (caps) for (let i = 0; i <= 4; i++) {
-    const a = -Math.PI / 2 + (i / 4) * (Math.PI / 2);
+  const cs = opts.phone ? 2 : 4;
+  if (caps) for (let i = 0; i <= cs; i++) {
+    const a = -Math.PI / 2 + (i / cs) * (Math.PI / 2);
     pts.push(new THREE.Vector2(Math.cos(a) * r0, Math.sin(a) * r0 + r0 * 0.6));
   }
   else pts.push(new THREE.Vector2(r0, 0));
   pts.push(new THREE.Vector2(r1, len - (caps ? r1 * 0.6 : 0)));
-  if (caps) for (let i = 1; i <= 4; i++) {
-    const a = (i / 4) * (Math.PI / 2);
+  if (caps) for (let i = 1; i <= cs; i++) {
+    const a = (i / cs) * (Math.PI / 2);
     pts.push(new THREE.Vector2(Math.cos(a) * r1, len - r1 * 0.6 + Math.sin(a) * r1));
   }
   let g: THREE.BufferGeometry = new THREE.LatheGeometry(pts, seg);
