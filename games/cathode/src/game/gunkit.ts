@@ -497,6 +497,10 @@ float roughnessFactor = clamp(vMR.y + (gkT.a - 0.5) - gkWear * 0.2 + clamp((gkF2
       .replace(
         "#include <lights_physical_fragment>",
         `#include <lights_physical_fragment>
+${phone ? `// Phone: the frame is graded 1.26x brighter and has no sheen or clearcoat lobes, so a dielectric's broad
+// specular (leather, gabardine, polymer) would wash grey; damp it so black gloves stay black (C4).
+material.specularColor *= mix(0.55, 1.0, step(0.5, vMR.x));
+material.specularF90 *= mix(0.55, 1.0, step(0.5, vMR.x));` : ""}
 #ifdef USE_CLEARCOAT
 material.clearcoat *= vMR.z;
 #endif
