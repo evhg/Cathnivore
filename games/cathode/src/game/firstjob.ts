@@ -15,7 +15,7 @@ import type { Progress, Feature } from "./progress";
 import { CLASS_WEAPON } from "./progress";
 import { Beacon } from "./beacon";
 import { buildDisplay } from "./stall";
-import { buildGunDisplay } from "./viewmodel";
+import { buildGunLOD } from "./viewmodel";
 import { SLICE_WEAPONS } from "./weapons";
 
 export type Role = "rifle" | "shield" | "sniper";
@@ -116,7 +116,8 @@ export class Case {
     const def = weapon ? SLICE_WEAPONS.find((w) => w.id === weapon) : undefined;
     // The gun, laid on its side along the stall, and the case sized to it.
     if (def) {
-      this.gun = buildGunDisplay(def.model);
+      // The real Kestrel from the kit, as a world LOD (full model up close, one mesh past 8 m, a box past 30 m).
+      this.gun = buildGunLOD(def.model);
       this.gun.rotation.set(0, Math.PI / 2, Math.PI / 2);
     } else {
       // A ledger: oxblood boards, cream page edges, a brass clasp.

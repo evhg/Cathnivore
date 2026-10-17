@@ -105,10 +105,11 @@ export interface KitGeo {
  * A side silhouette (points are [z, y] in gun space: -z is the muzzle), extruded `width` across X and centred,
  * with a `bevel` (m) on every edge. `holes` are cut-outs (the trigger guard's loop, lightening cuts).
  */
-export function profile(pts: P2[], width: number, opts: { bevel?: number; holes?: P2[][]; phone?: boolean; curve?: number } = {}): THREE.BufferGeometry {
-  const b = Math.min(opts.bevel ?? 0.0008, width * 0.3);
+export function profile(pts: P2[], width: number, opts: { bevel?: number; holes?: P2[][]; phone?: boolean; curve?: number; lod?: boolean } = {}): THREE.BufferGeometry {
+  // A distant (LOD1) world gun: no bevels, no cut-outs.
+  const b = opts.lod ? 0 : Math.min(opts.bevel ?? 0.0008, width * 0.3);
   const shape = new THREE.Shape(pts.map(([z, y]) => new THREE.Vector2(z, y)));
-  for (const h of opts.holes ?? []) shape.holes.push(new THREE.Path(h.map(([z, y]) => new THREE.Vector2(z, y))));
+  if (!opts.lod) for (const h of opts.holes ?? []) shape.holes.push(new THREE.Path(h.map(([z, y]) => new THREE.Vector2(z, y))));
   const depth = Math.max(1e-4, width - 2 * b);
   let g: THREE.BufferGeometry = new THREE.ExtrudeGeometry(shape, {
     depth,
@@ -131,8 +132,8 @@ export function profile(pts: P2[], width: number, opts: { bevel?: number; holes?
  * A plan silhouette (points are [x, z] seen from above), extruded `height` up Y and centred on y = 0. Used for
  * slide serrations (teeth on the outline) and anything whose detail reads from above.
  */
-export function plan(pts: P2[], height: number, opts: { bevel?: number; phone?: boolean } = {}): THREE.BufferGeometry {
-  const b = Math.min(opts.bevel ?? 0.0005, height * 0.3);
+export function plan(pts: P2[], height: number, opts: { bevel?: number; phone?: boolean; lod?: boolean } = {}): THREE.BufferGeometry {
+  const b = opts.lod ? 0 : Math.min(opts.bevel ?? 0.0005, height * 0.3);
   const shape = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, z)));
   const depth = Math.max(1e-4, height - 2 * b);
   let g: THREE.BufferGeometry = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: b > 0, bevelThickness: b, bevelSize: b, bevelOffset: -b, bevelSegments: opts.phone ? 1 : 2, curveSegments: 3 });
@@ -175,10 +176,10 @@ function flipWinding(g: THREE.BufferGeometry): void {
 }
 
 /** A front silhouette (points are [x, y] seen from behind the gun), extruded `depth` along Z and centred. */
-export function facade(pts: P2[], depth: number, opts: { bevel?: number; holes?: P2[][]; phone?: boolean; curve?: number } = {}): THREE.BufferGeometry {
-  const b = Math.min(opts.bevel ?? 0.0006, depth * 0.3);
+export function facade(pts: P2[], depth: number, opts: { bevel?: number; holes?: P2[][]; phone?: boolean; curve?: number; lod?: boolean } = {}): THREE.BufferGeometry {
+  const b = opts.lod ? 0 : Math.min(opts.bevel ?? 0.0006, depth * 0.3);
   const shape = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
-  for (const h of opts.holes ?? []) shape.holes.push(new THREE.Path(h.map(([x, y]) => new THREE.Vector2(x, y))));
+  if (!opts.lod) for (const h of opts.holes ?? []) shape.holes.push(new THREE.Path(h.map(([x, y]) => new THREE.Vector2(x, y))));
   const d = Math.max(1e-4, depth - 2 * b);
   let g: THREE.BufferGeometry = new THREE.ExtrudeGeometry(shape, { depth: d, bevelEnabled: b > 0, bevelThickness: b, bevelSize: b, bevelOffset: -b, bevelSegments: opts.phone ? 1 : 2, curveSegments: opts.curve ?? 5 });
   g.translate(0, 0, -d / 2);
@@ -613,6 +614,30 @@ export function adoptMeshes(root: THREE.Object3D, movers: THREE.Object3D[], phon
     mesh.removeFromParent();
   }
   kit.finish();
+}
+
+/**
+ * Collapses a built gun into ONE opaque mesh (LOD1 of a world gun, S2.1): every kit opaque mesh, carried by its
+ * transform relative to `root`; self-lit and glass pieces are dropped.
+ */
+export function collapse(root: THREE.Object3D): THREE.Mesh | null {
+  root.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const list: THREE.BufferGeometry[] = [];
+  let mat: THREE.Material | null = null;
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || m.userData.kit !== "opaque") return;
+    mat = m.material as THREE.Material;
+    list.push(m.geometry.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld)));
+  });
+  if (!list.length || !mat) return null;
+  const g = mergeGeometries(list, false);
+  if (!g) return null;
+  g.computeBoundingSphere();
+  const out = new THREE.Mesh(g, mat);
+  out.userData.kit = "opaque";
+  return out;
 }
 
 /** Draw calls and triangles under a node at rest (what the viewmodel budget counts): hidden meshes (the one-frame flash) don't draw. */

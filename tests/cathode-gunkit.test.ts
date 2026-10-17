@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { buildGun, type GunModel } from "../games/cathode/src/game/viewmodel";
+import { buildGun, buildGunLOD, type GunModel } from "../games/cathode/src/game/viewmodel";
 import { Arms } from "../games/cathode/src/game/hands";
 import { meshStats } from "../games/cathode/src/game/gunkit";
 import { KESTREL_PARTS } from "../games/cathode/src/game/kestrel";
@@ -62,6 +62,22 @@ describe("CATHODE gun kit (S2.1, C4)", () => {
     // The elbow sits below and to the right of the wrist, off toward the shoulder.
     expect(elbow.y).toBeLessThan(wristR.y);
     expect(elbow.z).toBeGreaterThan(wristR.z);
+  });
+
+  it("a world gun has three LODs: the full model, one mesh past 8 m, one box past 30 m", () => {
+    for (const model of ["pistol", "shotgun"] as GunModel[]) {
+      const lod = buildGunLOD(model);
+      expect(lod.levels.map((l) => l.distance)).toEqual([0, 8, 30]);
+      const full = meshStats(lod.levels[0]!.object);
+      const mid = meshStats(lod.levels[1]!.object);
+      const far = meshStats(lod.levels[2]!.object);
+      expect(mid.calls).toBe(1);
+      expect(far.calls).toBe(1);
+      // The Kestrel drops its bevels and cut-outs; older guns only merge to one draw.
+      if (model === "pistol") expect(mid.tris).toBeLessThan(full.tris * 0.6);
+      else expect(mid.tris).toBeLessThanOrEqual(full.tris);
+      expect(far.tris).toBeLessThanOrEqual(12 * 4);
+    }
   });
 
   it("the trim atlas has every band, packed top to bottom without overlap", () => {

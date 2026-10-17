@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { adoptMeshes, fistGrip } from "./gunkit";
+import { adoptMeshes, collapse, FIN, fistGrip, GunKit } from "./gunkit";
 import { buildKestrel } from "./kestrel";
 import { POSES, type HandPose } from "./hands";
 
@@ -434,6 +434,30 @@ export function buildGunDisplay(model: GunModel, phone = false): THREE.Group {
   const r = buildGun(model, phone);
   r.flashMesh?.removeFromParent();
   return r.root;
+}
+
+/**
+ * A world gun (S2.1): THREE.LOD over the same kit. LOD0 is the full display model; LOD1 past 8 m is one mesh
+ * with no bevels or cut-outs; LOD2 past 30 m is one box in the frame's finish. The first job's stall and dropped
+ * guns use it.
+ */
+export function buildGunLOD(model: GunModel, phone = false): THREE.LOD {
+  const lod = new THREE.LOD();
+  lod.name = `${model}:lod`;
+  const near = buildGunDisplay(model, phone);
+  lod.addLevel(near, 0);
+  const mid = model === "pistol" ? buildKestrel(true, true).root : buildGunDisplay(model, true);
+  const one = collapse(mid);
+  if (one) lod.addLevel(one, 8);
+  const box = new THREE.Box3().setFromObject(near);
+  const size = box.getSize(new THREE.Vector3());
+  const centre = box.getCenter(new THREE.Vector3());
+  const far = new THREE.Group();
+  const kit = new GunKit(far, true);
+  kit.add(new THREE.BoxGeometry(Math.max(0.01, size.x), Math.max(0.01, size.y * 0.6), Math.max(0.01, size.z)), FIN.frame, { p: [centre.x, centre.y, centre.z] });
+  kit.finish();
+  lod.addLevel(far, 30);
+  return lod;
 }
 
 /**

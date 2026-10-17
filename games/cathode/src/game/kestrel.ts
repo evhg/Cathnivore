@@ -20,11 +20,12 @@ export const KESTREL_PARTS = [
 const BORE = 0.03;
 const RAKE = 0.31;
 
-export function buildKestrel(phone = false): { root: THREE.Group; kit: GunKit } {
+export function buildKestrel(phone = false, lod = false): { root: THREE.Group; kit: GunKit } {
   const root = new THREE.Group();
   root.name = "kestrel9";
-  const kit = new GunKit(root, phone);
-  const o = { phone };
+  const kit = new GunKit(root, phone || lod);
+  // LOD1 (a world gun past 8 m): no bevels, no cut-outs, phone tessellation.
+  const o = { phone: phone || lod, lod };
 
   // ---- Frame (polymer): dust cover with a 3-slot rail, the trigger guard's loop, the raked grip, beavertail.
   const frame = kit.part("frame");
@@ -84,10 +85,10 @@ export function buildKestrel(phone = false): { root: THREE.Group; kit: GunKit } 
   // The faction mark on the left of the dust cover, and the pins through the frame.
   kit.add(decal(0.058, 0.0062), FIN.faction, { p: [-0.01261, 0.0055, -0.098], r: [0, Math.PI, 0] }, frame);
   for (const [z, y] of [[-0.03, -0.001], [-0.045, 0.007], [0.022, 0.004]] as P2[]) {
-    kit.add(lathe([[0.0018, 0.0128], [0.0018, -0.0128]], { seg: phone ? 8 : 12 }), FIN.pins, { p: [0, y, z], r: [0, Math.PI / 2, 0] }, frame);
+    kit.add(lathe([[0.0018, 0.0128], [0.0018, -0.0128]], { seg: o.phone ? 8 : 12 }), FIN.pins, { p: [0, y, z], r: [0, Math.PI / 2, 0] }, frame);
   }
   // The takedown lever: a small steel tab on the left above the guard.
-  kit.add(rounded(0.0016, 0.004, 0.009, 0.0007, phone), FIN.pins, { p: [-0.0133, 0.0075, -0.058] }, frame);
+  kit.add(rounded(0.0016, 0.004, 0.009, 0.0007, o.phone), FIN.pins, { p: [-0.0133, 0.0075, -0.058] }, frame);
   kit.empty("rail", [0, -0.004, -0.108], frame);
   kit.empty("guard", [0, -0.034, -0.035], frame);
 
@@ -135,17 +136,17 @@ export function buildKestrel(phone = false): { root: THREE.Group; kit: GunKit } 
   // The engraving on the left flank, readable at inspect.
   kit.add(decal(0.06, 0.0064), FIN.engraving, { p: [-0.01182, 0.023, -0.068], r: [0, Math.PI, 0] }, slide);
   // The one accent line: Hollowell cyan along the lower left edge.
-  kit.add(rounded(0.0008, 0.0011, 0.118, 0.0003, phone), GLOW.trim, { p: [-0.0118, 0.0158, -0.07] }, slide);
+  kit.add(rounded(0.0008, 0.0011, 0.118, 0.0003, o.phone), GLOW.trim, { p: [-0.0118, 0.0158, -0.07] }, slide);
   // The extractor on the right of the port.
-  kit.add(rounded(0.0016, 0.004, 0.018, 0.0006, phone), FIN.pins, { p: [0.0118, 0.035, -0.008] }, slide);
+  kit.add(rounded(0.0016, 0.004, 0.018, 0.0006, o.phone), FIN.pins, { p: [0.0118, 0.035, -0.008] }, slide);
 
   // Sights: a tall rear sight with two tritium dots, the front post with one, co-witnessing through the dot.
   const sightR = kit.empty("sightR", [0, 0.0455, 0.028], slide);
   const rearSight: P2[] = [[-0.0085, 0], [0.0085, 0], [0.0085, 0.0125], [0.0021, 0.0125], [0.0021, 0.0075], [-0.0021, 0.0075], [-0.0021, 0.0125], [-0.0085, 0.0125]];
   kit.add(facade(rearSight, 0.0065, { ...o }), FIN.slide, { p: [0, 0.0455, 0.028] }, slide);
-  for (const x of [-0.0053, 0.0053]) kit.add(sphere(0.0011, phone), GLOW.tritium, { p: [x, 0.0455 + 0.0093, 0.0313], s: [1, 1, 0.4] }, slide);
-  kit.add(rounded(0.0034, 0.0122, 0.006, 0.0008, phone), FIN.slide, { p: [0, 0.0455 + 0.006, -0.136] }, slide);
-  kit.add(sphere(0.00115, phone), GLOW.tritium, { p: [0, 0.0455 + 0.0093, -0.1328], s: [1, 1, 0.4] }, slide);
+  for (const x of [-0.0053, 0.0053]) kit.add(sphere(0.0011, o.phone), GLOW.tritium, { p: [x, 0.0455 + 0.0093, 0.0313], s: [1, 1, 0.4] }, slide);
+  kit.add(rounded(0.0034, 0.0122, 0.006, 0.0008, o.phone), FIN.slide, { p: [0, 0.0455 + 0.006, -0.136] }, slide);
+  kit.add(sphere(0.00115, o.phone), GLOW.tritium, { p: [0, 0.0455 + 0.0093, -0.1328], s: [1, 1, 0.4] }, slide);
   const sightF = kit.empty("sightF", [0, 0.0455, -0.136], slide);
   void sightR;
   void sightF;
@@ -158,24 +159,24 @@ export function buildKestrel(phone = false): { root: THREE.Group; kit: GunKit } 
     [0.0125, 0],
     [0.0125, 0.006],
     [0.0118, 0.0105],
-    ...arc(0, 0.0105, 0.0118, 0, Math.PI, phone ? 6 : 10),
+    ...arc(0, 0.0105, 0.0118, 0, Math.PI, o.phone ? 6 : 10),
     [-0.0118, 0.0105],
     [-0.0125, 0.006],
   ];
-  const hoodWin: P2[] = [[-0.0098, 0.0058], [0.0098, 0.0058], [0.0098, 0.0105], ...arc(0, 0.0105, 0.0098, 0, Math.PI, phone ? 6 : 10).slice(1, -1), [-0.0098, 0.0105]];
+  const hoodWin: P2[] = [[-0.0098, 0.0058], [0.0098, 0.0058], [0.0098, 0.0105], ...arc(0, 0.0105, 0.0098, 0, Math.PI, o.phone ? 6 : 10).slice(1, -1), [-0.0098, 0.0105]];
   kit.add(facade(hoodOut, 0.028, { holes: [hoodWin], bevel: 0.0008, ...o }), FIN.housing, { p: [0, 0.0455, dotZ] }, slide);
   // The base under the window, with the emitter bump at the back.
-  kit.add(rounded(0.0222, 0.006, 0.026, 0.0012, phone), FIN.housing, { p: [0, 0.0455 + 0.003, dotZ] }, slide);
-  kit.add(rounded(0.006, 0.004, 0.005, 0.0015, phone), FIN.housing, { p: [0, 0.0455 + 0.007, dotZ + 0.009] }, slide);
+  kit.add(rounded(0.0222, 0.006, 0.026, 0.0012, o.phone), FIN.housing, { p: [0, 0.0455 + 0.003, dotZ] }, slide);
+  kit.add(rounded(0.006, 0.004, 0.005, 0.0015, o.phone), FIN.housing, { p: [0, 0.0455 + 0.007, dotZ + 0.009] }, slide);
   kit.add(new THREE.CircleGeometry(0.0118, phone ? 12 : 24).translate(0, 0.0105 - 0.0118, 0), "glass", { p: [0, 0.0455 + 0.0118, dotZ - 0.008], r: [-0.12, 0, 0] }, slide);
-  kit.add(sphere(0.00075, phone), GLOW.dot, { p: [0, 0.0455 + 0.0118, dotZ - 0.0079] }, slide);
+  kit.add(sphere(0.00075, o.phone), GLOW.dot, { p: [0, 0.0455 + 0.0118, dotZ - 0.0079] }, slide);
 
   // ---- Barrel (TiN bronze) with the hood showing through the port, and the suppressor threaded on the crown.
   const barrel = kit.part("barrel", [0, BORE, -0.143]);
   // The barrel pivots at the muzzle bushing (the breech drops as it unlocks): pieces sit `bz` behind the pivot.
   const bz = 0.163;
   kit.add(lathe([[0.0064, 0.0], [0.0064, -0.162], [0.0058, -0.1655], [0.0045, -0.1655]], { ...o }), FIN.bronze, { p: [0, 0, bz] }, barrel);
-  kit.add(rounded(0.0175, 0.0146, 0.042, 0.0016, phone), FIN.bronze, { p: [0, 0.0018, -0.0425 + bz] }, barrel);
+  kit.add(rounded(0.0175, 0.0146, 0.042, 0.0016, o.phone), FIN.bronze, { p: [0, 0.0018, -0.0425 + bz] }, barrel);
   const can = kit.empty("suppressor", [0, 0, -0.165 + bz], barrel);
   const grooves: [number, number][] = [];
   const c0 = -0.168;
@@ -190,7 +191,7 @@ export function buildKestrel(phone = false): { root: THREE.Group; kit: GunKit } 
   kit.add(lathe(grooves, { ...o }), FIN.can, { p: [0, 0, bz] }, barrel);
   // A thread collar, knurled, where the can meets the barrel.
   kit.add(lathe([[0.0105, -0.164], [0.012, -0.166], [0.012, -0.184], [0.0105, -0.186]], { ...o }), FIN.knurl, { p: [0, 0, -0.003 + bz] }, barrel);
-  kit.add(new THREE.CircleGeometry(0.006, phone ? 10 : 16), FIN.bore, { p: [0, 0, c1 + 0.0035 + bz] }, barrel);
+  kit.add(new THREE.CircleGeometry(0.006, o.phone ? 10 : 16), FIN.bore, { p: [0, 0, c1 + 0.0035 + bz] }, barrel);
   void can;
 
   // ---- Hammer: a skeletonised spur behind the slide, cocked back (0 = down on the pin, 55° = cocked).
@@ -203,12 +204,12 @@ export function buildKestrel(phone = false): { root: THREE.Group; kit: GunKit } 
   const trigger = kit.part("trigger", [0, -0.002, -0.034]);
   const blade: P2[] = [[0.002, 0], [-0.003, 0], [-0.0085, -0.012], [-0.0095, -0.022], [-0.006, -0.0235], [-0.004, -0.013], [0.0025, -0.004]];
   kit.add(profile(blade, 0.0058, { bevel: 0.0006, ...o }), FIN.pins, undefined, trigger);
-  kit.add(rounded(0.0016, 0.007, 0.0016, 0.0006, phone), FIN.frame, { p: [0, -0.012, -0.0072] }, trigger);
+  kit.add(rounded(0.0016, 0.007, 0.0016, 0.0006, o.phone), FIN.frame, { p: [0, -0.012, -0.0072] }, trigger);
 
   // ---- Slide stop: a lever on the left, pivoting at its back end.
   const stop = kit.part("slideStop", [-0.0135, 0.009, 0.006]);
   kit.add(profile([[0, -0.002], [-0.032, -0.002], [-0.036, 0.001], [-0.034, 0.0045], [-0.022, 0.0045], [0.0, 0.002]], 0.0022, { bevel: 0.0004, ...o }), FIN.pins, undefined, stop);
-  kit.add(rounded(0.0024, 0.006, 0.008, 0.001, phone), FIN.pins, { p: [-0.0005, 0.002, -0.03] }, stop);
+  kit.add(rounded(0.0024, 0.006, 0.008, 0.001, o.phone), FIN.pins, { p: [-0.0005, 0.002, -0.03] }, stop);
 
   // ---- Magazine: the body inside the grip, a polymer floorplate below it, and the top round in its lips.
   const mag = kit.part("mag");
@@ -221,8 +222,8 @@ export function buildKestrel(phone = false): { root: THREE.Group; kit: GunKit } 
   const floor: P2[] = [fpA, [fpA[0] + 0.002, fpA[1] - 0.009], [fpB[0] - 0.002, fpB[1] - 0.009], fpB];
   kit.add(profile(floor, 0.0285, { bevel: 0.0012, ...o }), FIN.grip, undefined, mag);
   kit.empty("floorplate", [0, (fpA[1] + fpB[1]) / 2 - 0.005, (fpA[0] + fpB[0]) / 2], mag);
-  kit.add(lathe([[0.0048, 0.0], [0.0048, -0.019], [0.0045, -0.021]], { seg: phone ? 8 : 14 }), FIN.brass, { p: [0, 0.0105, mT[0] + 0.004] }, mag);
-  kit.add(lathe([[0.0045, -0.021], [0.0042, -0.025], [0.0024, -0.0295], [0, -0.03]], { seg: phone ? 8 : 14 }), { color: 0xa8673a, metal: 1, rough: 0.35 }, { p: [0, 0.0105, mT[0] + 0.004] }, mag);
+  kit.add(lathe([[0.0048, 0.0], [0.0048, -0.019], [0.0045, -0.021]], { seg: o.phone ? 8 : 14 }), FIN.brass, { p: [0, 0.0105, mT[0] + 0.004] }, mag);
+  kit.add(lathe([[0.0045, -0.021], [0.0042, -0.025], [0.0024, -0.0295], [0, -0.03]], { seg: o.phone ? 8 : 14 }), { color: 0xa8673a, metal: 1, rough: 0.35 }, { p: [0, 0.0105, mT[0] + 0.004] }, mag);
 
   // ---- Empties.
   kit.empty("muzzle", [0, BORE, -0.311]);
