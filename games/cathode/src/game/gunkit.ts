@@ -32,6 +32,11 @@ export interface Finish {
 export interface Emit {
   emit: number;
   intensity: number;
+  /**
+   * Seen only from behind, within the optic's eyebox (a red dot's reticle): it fades out as the part turns away
+   * from the eye (C5 review: turned for the reload, the dot showed edge-on as a hot point and bloomed a streak).
+   */
+  eyebox?: boolean;
 }
 
 export type Surface = Finish | Emit | "glass";
@@ -48,6 +53,8 @@ export const FIN = {
   faction: { color: 0x1b1c1f, metal: 0, rough: 0.6, band: "faction", wear: 0 },
   bronze: { color: 0x8a6a3c, metal: 1, rough: 0.28, band: "brushed" },
   pins: { color: 0x9aa0a6, metal: 1, rough: 0.4, band: "brushed" },
+  /** The magazine body: blued steel, its edges worn to bright metal. */
+  magBody: { color: 0x2e3136, metal: 1, rough: 0.4, coat: 0.3, band: "brushed", wear: 0.9 },
   /** Small machined controls (hammer, trigger, slide stop): blued steel, a step brighter than the slide. */
   control: { color: 0x34373d, metal: 1, rough: 0.36, coat: 0.4, band: "brushed" },
   can: { color: 0x202226, metal: 0.85, rough: 0.46, coat: 0.5, band: "peel" },
@@ -67,7 +74,7 @@ export const FIN = {
 export const GLOW = {
   tritium: { emit: 0x7dffb2, intensity: 3 },
   trim: { emit: 0x3fe0ff, intensity: 1.2 },
-  dot: { emit: 0xff2a47, intensity: 9 },
+  dot: { emit: 0xff2a47, intensity: 9, eyebox: true },
 } satisfies Record<string, Emit>;
 
 const isEmit = (s: Surface): s is Emit => typeof s === "object" && "emit" in s;
@@ -335,6 +342,8 @@ export function bake(src: THREE.BufferGeometry, surf: Surface, m: THREE.Matrix4)
   const uvt = new Float32Array(n * 2);
   const layer = layerOf(surf);
   const fin = layer === "opaque" ? (surf as Finish) : null;
+  // Self-lit parts carry their eyebox flag in aMR.x (the emissive material reads it; nothing else does there).
+  const eyebox = layer === "emissive" && !!(surf as Emit).eyebox;
   if (layer === "emissive") {
     const em = surf as Emit;
     _c.set(em.emit).multiplyScalar(em.intensity);
@@ -348,6 +357,7 @@ export function bake(src: THREE.BufferGeometry, surf: Surface, m: THREE.Matrix4)
     col[i * 3] = _c.r;
     col[i * 3 + 1] = _c.g;
     col[i * 3 + 2] = _c.b;
+    if (eyebox) mr[i * 4] = 1;
     if (fin) {
       mr[i * 4] = fin.metal;
       mr[i * 4 + 1] = fin.rough;
@@ -415,10 +425,32 @@ export function kitMaterials(phone = false): KitMaterials {
   // Phone grades 1.26x brighter and blooms at half resolution: its self-lit parts (tritium, trim, the dot) run
   // at 60% so the rear sight reads as two dots, not a glowing green block.
   const emissive = new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: true, color: new THREE.Color().setScalar(phone ? 0.6 : 1) });
+  patchEyebox(emissive);
   const glass = phone ? null : new THREE.MeshPhysicalMaterial({ color: 0x9fd8ff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.25, depthWrite: false, clearcoat: 1, clearcoatRoughness: 0.03 });
   const m: KitMaterials = { opaque, emissive, glass };
   MATS[key] = m;
   return m;
+}
+
+/** The emissive layer's eyebox fade (Emit.eyebox): full facing the eye, gone about 25° off it. */
+function patchEyebox(mat: THREE.MeshBasicMaterial): void {
+  mat.customProgramCacheKey = () => "gunkit-emissive";
+  mat.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace("#include <common>", "#include <common>\nattribute vec4 aMR;\nvarying float vGkEye;")
+      .replace(
+        "#include <project_vertex>",
+        `#include <project_vertex>
+        {
+          vec3 gkN = normalize(normalMatrix * normal);
+          vec3 gkV = normalize(-mvPosition.xyz);
+          vGkEye = aMR.x > 0.5 ? smoothstep(0.84, 0.94, dot(gkN, gkV)) : 1.0;
+        }`,
+      );
+    sh.fragmentShader = sh.fragmentShader
+      .replace("#include <common>", "#include <common>\nvarying float vGkEye;")
+      .replace("#include <color_fragment>", "#include <color_fragment>\ndiffuseColor.rgb *= vGkEye;");
+  };
 }
 
 /**

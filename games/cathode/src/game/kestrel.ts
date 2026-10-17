@@ -262,7 +262,17 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   const mT: P2 = [fs[0] + 0.004, 0.006];
   const mB: P2 = [fb[0] + 0.003, fb[1] - 0.001];
   const magOutline: P2[] = [mT, mB, [mB[0] + gripN[0] * 0.034, mB[1] + gripN[1] * 0.034], [mT[0] + 0.034, mT[1]]];
-  kit.add(profile(magOutline, 0.021, { bevel: 0.0008, ...o }), FIN.pins, undefined, mag);
+  // Blued steel with worn edges and a column of witness holes up the back (C5 review: out of the gun the mag
+  // was "a flat grey slab"); the holes read as the mag's count from the side.
+  const magBT: P2 = [mT[0] + 0.034, mT[1]];
+  const magBB: P2 = [mB[0] + gripN[0] * 0.034, mB[1] + gripN[1] * 0.034];
+  const witness: P2[][] = o.phone
+    ? []
+    : [0.18, 0.36, 0.54, 0.72].map((t) => {
+        const c: P2 = [magBT[0] + (magBB[0] - magBT[0]) * t - gripN[0] * 0.0075, magBT[1] + (magBB[1] - magBT[1]) * t - gripN[1] * 0.0075];
+        return arc(c[0], c[1], 0.0021, 0, Math.PI * 2, 6).slice(0, -1);
+      });
+  kit.add(profile(magOutline, 0.021, { bevel: 0.0008, holes: witness, ...o }), FIN.magBody, undefined, mag);
   const fpA: P2 = [fb[0] - 0.002, fb[1] - 0.0005];
   const fpB: P2 = [bb[0] + 0.0025, bb[1] + 0.0005];
   const floor: P2[] = [fpA, [fpA[0] + 0.002, fpA[1] - 0.009], [fpB[0] - 0.002, fpB[1] - 0.009], fpB];
@@ -272,7 +282,9 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   // left of the floorplate, knuckles up the mag's front, the back of the hand out to the left.
   const fpz = (fpA[0] + fpB[0]) / 2;
   const fpy = (fpA[1] + fpB[1]) / 2;
-  const gM = gripFrame(new THREE.Vector3(-0.03, fpy - 0.05, fpz + 0.02), new THREE.Vector3(0.05, 0.8, -0.6), new THREE.Vector3(-1, -0.15, 0.25));
+  // C5 review: under the floorplate the hand hung off the bottom of the frame while the mag was still in view;
+  // now the palm takes the mag's lower half from the left, fingers round its front, so the glove stays with it.
+  const gM = gripFrame(new THREE.Vector3(-0.032, fpy - 0.022, fpz + 0.034), new THREE.Vector3(0.08, 0.55, -0.83), new THREE.Vector3(-1, -0.1, 0.1));
   kit.empty("magHand", gM.pos.toArray() as [number, number, number], mag, gM.quat);
   // The top round is its own node (C5): an empty mag shows its follower, not brass.
   const top = kit.part("magRound", [0, 0, 0], mag);

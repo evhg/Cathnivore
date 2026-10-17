@@ -158,9 +158,13 @@ export class Arm {
     };
     const seg = phone ? 20 : 36;
     // Upper arm and forearm: the trench sleeve, tapering to the wrist, with a turned-back cuff and a button.
-    add(upper, tube(ARM.upper + 0.03, 0.046, 0.043, { seg, caps: false, phone }), FIN.sleeve, { p: [0, -0.01, 0] });
+    // C5 review: the forearm read as "a featureless matte cylinder" once the reload turned it to the eye. Now
+    // the gabardine tapers hard to the wrist, bunches in soft rings above the turned-back cuff, twists in long
+    // diagonal folds down the forearm and creases at the elbow, with a sunk seam along the underside.
+    // The upper arm is rarely on screen: a plain tube keeps the triangles for the forearm.
+    add(upper, tube(ARM.upper + 0.03, 0.046, 0.043, { seg: phone ? 12 : 20, caps: false, phone }), FIN.sleeve, { p: [0, -0.01, 0] });
     add(fore, sphere(0.044, phone), FIN.sleeve);
-    add(fore, tube(ARM.fore - 0.055, 0.043, 0.035, { seg, caps: false, phone }), FIN.sleeve);
+    add(fore, sleeve(ARM.fore - 0.055, 0.045, 0.033, { seg: phone ? 16 : 28, phone, side, elbowAt: 0 }), FIN.sleeve);
     // The turned-back trench cuff: a wider band with a rolled lip, and its button on the outside.
     add(fore, tube(0.05, 0.0375, 0.04, { seg, caps: false, phone }), FIN.sleeve, { p: [0, ARM.fore - 0.09, 0] });
     add(fore, tube(0.006, 0.0405, 0.0405, { seg, caps: true, phone }), FIN.sleeve, { p: [0, ARM.fore - 0.044, 0] });
@@ -307,6 +311,57 @@ export class Arm {
     hand.getWorldQuaternion(this._hq);
     t0.quaternion.copy(this._hq.invert().multiply(qW));
   }
+}
+
+/**
+ * A trench sleeve along +Y from 0 to `len`, r0 at the base and r1 at the far end: a lathe with enough rings to
+ * carry folds. `elbowAt` (0 or 1) says which end is the elbow, where the cloth creases across the bend; the
+ * wrist end bunches above the cuff. The seam runs along the underside (-Z in the bone's frame, mirrored per side).
+ */
+export function sleeve(len: number, r0: number, r1: number, opts: { seg: number; phone: boolean; side: 1 | -1; elbowAt: 0 | 1 }): THREE.BufferGeometry {
+  const rows = opts.phone ? 6 : 10;
+  const pts: THREE.Vector2[] = [];
+  for (let i = 0; i <= rows; i++) {
+    const t = i / rows;
+    // A soft taper (fuller over the forearm's muscle, then in to the wrist), not a straight cone.
+    const r = THREE.MathUtils.lerp(r0, r1, t * t * 0.55 + t * 0.45);
+    pts.push(new THREE.Vector2(r, t * len));
+  }
+  const g = new THREE.LatheGeometry(pts, opts.seg);
+  const pos = g.getAttribute("position") as THREE.BufferAttribute;
+  const seamA = -Math.PI / 2 + opts.side * 0.5;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    const r = Math.hypot(x, z);
+    if (r < 1e-6) continue;
+    const a = Math.atan2(z, x);
+    const t = y / len;
+    // From the elbow end (0) to the other (1).
+    const e = opts.elbowAt === 1 ? 1 - t : t;
+    let d = 0;
+    // Long diagonal folds twisting down the forearm, fading out at both ends.
+    d += 0.075 * Math.sin(3 * a + t * 9 + opts.side) * Math.sin(Math.PI * t);
+    // Bunching rings above the cuff (the far end of the forearm), wobbling round the arm.
+    const bunch = THREE.MathUtils.smoothstep(e, 0.55, 0.95);
+    d += 0.13 * bunch * Math.max(0, Math.sin(t * len * 210 + 1.4 * Math.sin(2 * a + 0.7)));
+    // The elbow's crease: two or three tight folds across the inside of the bend.
+    const crease = 1 - THREE.MathUtils.smoothstep(e, 0.0, 0.22);
+    d += 0.1 * crease * Math.max(0, Math.sin(t * len * 260 + Math.sin(a))) * (0.5 + 0.5 * Math.cos(a - seamA - Math.PI));
+    // The seam: a narrow groove along the underside.
+    let da = a - seamA;
+    da = Math.atan2(Math.sin(da), Math.cos(da));
+    d -= 0.07 * Math.exp(-((da / 0.16) ** 2));
+    const k = 1 + d;
+    pos.setX(i, x * k);
+    pos.setZ(i, z * k);
+  }
+  g.computeVertexNormals();
+  g.deleteAttribute("uv");
+  const out = g.toNonIndexed();
+  out.userData.edge = new Float32Array(out.getAttribute("position").count);
+  return out;
 }
 
 /** Merges skinned pieces (all with the kit attributes plus skinIndex/skinWeight). */
