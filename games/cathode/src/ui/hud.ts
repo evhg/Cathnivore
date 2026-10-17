@@ -46,6 +46,8 @@ export interface HudState {
   ads?: boolean;
   /** The aim-down-sights blend, 0 hip .. 1 aimed: the crosshair fades out as the sights (or the dot) take over (S2.2 layer 1). */
   adsBlend?: number;
+  /** How far into the inspect's turn the gun is (0..1): the crosshair steps aside so it never sits on the model. */
+  inspect?: number;
   /** A weapon in reach and in sight (S7.1 layer 5): where on screen (CSS px), the key, and its name and stats. */
   pickup?: { x: number; y: number; key: string; verb: string; name: string; stats: Array<[string, string]> } | null;
 }
@@ -76,6 +78,7 @@ const ARMOUR_CAP = 100;
 const HIT_CLASSES: readonly HitClass[] = ["body", "head", "armour", "armourBreak", "pen", "kill", "headKill"];
 
 export class Hud {
+  private aimBusy = false;
   private root: HTMLElement;
   private hpBar: ReturnType<typeof bar>;
   private hpText: HTMLElement;
@@ -286,7 +289,15 @@ export class Hud {
     set(this.cross, "--gap", `calc(var(--u) * ${Math.round((6 + s.spread) * 4 / 3)})`);
     this.show(this.cross, !s.scoped);
     // Aimed, the sights are the reticle: the crosshair is gone by 60% of the blend so it never sits over the dot.
-    set(this.cross, "--ads", Math.max(0, 1 - (s.adsBlend ?? 0) / 0.6).toFixed(2));
+    // Inspecting, the gun is the subject: the crosshair fades with the turn (C4 review: it sat on the optic).
+    const away = Math.max((s.adsBlend ?? 0) / 0.6, (s.inspect ?? 0) * 1.6);
+    set(this.cross, "--ads", Math.max(0, 1 - away).toFixed(2));
+    // Aimed or inspecting, the touch "Drag to aim" hint gets out of the way of the sights and the gun.
+    const busy = (s.adsBlend ?? 0) > 0.15 || (s.inspect ?? 0) > 0.15;
+    if (busy !== this.aimBusy) {
+      this.aimBusy = busy;
+      document.documentElement.classList.toggle("hud-aiming", busy);
+    }
     this.show(this.scope, s.scoped);
     if (s.scoped) {
       this.text(this.scopeRange, `Rng ${Math.round(s.scopeRange)} m`);

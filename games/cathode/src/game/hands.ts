@@ -207,7 +207,7 @@ export class Arm {
       add(chain[0]!, d.geo, FIN.glove, undefined, chainSkin(hand, chain, [lens[0], lens[0] + lens[1]], d.along, r * 0.75));
     });
     {
-      const d = digit([...THUMB], [0.0108, 0.0095, 0.0088, 0.0079], { seg: dSeg, step: dStep, root: 0.024, flat: 0.84, detail: !phone });
+      const d = digit([...THUMB], [0.0108, 0.0095, 0.0088, 0.0079], { seg: dSeg, step: dStep, root: 0.012, flat: 0.84, detail: !phone });
       add(thumb[0]!, d.geo, FIN.glove, undefined, chainSkin(hand, thumb, [THUMB[0], THUMB[0] + THUMB[1]], d.along, 0.009));
     }
 
@@ -500,7 +500,7 @@ function palm(phone: boolean, side: 1 | -1): THREE.BufferGeometry {
       const sn = Math.sin(a);
       // A superellipse: flatter flanks than an ellipse, so it reads as a hand, not a sausage.
       const e = 2 / 2.6;
-      let x = Math.sign(c) * Math.abs(c) ** e * hw;
+      const x = Math.sign(c) * Math.abs(c) ** e * hw;
       let z = Math.sign(sn) * Math.abs(sn) ** e * (sn > 0 ? hb : hp);
       const u = x / (PALM.w * 0.5);
       if (z > 0) {

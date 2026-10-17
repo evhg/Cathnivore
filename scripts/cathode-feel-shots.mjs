@@ -211,7 +211,21 @@ for (const vp of vps) {
       }
     })
     // C4: the viewmodel mask (hands' share of its pixels) and the slide's exposure.
-    if (stage.startsWith('pistol-')) side.vm = await page.evaluate(() => window.cathode.vmProbe?.() ?? null)
+    // C4 review: the viewmodel never sits on a HUD cluster (the ammo block, the vitals, the thumb buttons): the
+    // share of each cluster's box the gun or the hands cover, from the same mask.
+    const VM_CLEAR = ['.hud-weapon', '.hud-ammo', '.hud-vitals', '.tbtn']
+    if (stage.startsWith('pistol-')) {
+      const boxes = await page.evaluate((qs) => qs.flatMap((q) => [...document.querySelectorAll(q)].filter((e) => {
+        const cs = getComputedStyle(e)
+        const b = e.getBoundingClientRect()
+        return b.width > 0 && b.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity) > 0.05 && !e.closest('[hidden]')
+      }).map((e) => {
+        const b = e.getBoundingClientRect()
+        return { q: q + (e.className && q === '.tbtn' ? `.${String(e.className).split(' ').slice(1).join('.')}` : ''), x: b.x, y: b.y, w: b.width, h: b.height }
+      })), VM_CLEAR)
+      side.vm = await page.evaluate((bs) => window.cathode.vmProbe?.(bs) ?? null, boxes)
+      if (side.vm) side.vm.clear = boxes.map((b, i) => [b.q, side.vm.inRects?.[i] ?? 0])
+    }
     // C4: aimed, the red dot sits on the point of aim (within 2 physical px of the screen centre).
     if (stage === 'pistol-ads') {
       side.dot = await page.evaluate(() => window.cathode.dotProbe?.() ?? null)
@@ -236,6 +250,12 @@ for (const vp of vps) {
       if (stage === 'pistol-idle' && side.vm.handShare < 0.25) fail(`${vp} ${spec}: hands are ${(side.vm.handShare * 100).toFixed(1)}% of the viewmodel (< 25%)`)
       if ((stage === 'pistol-idle' || stage === 'pistol-ads' || stage === 'pistol-alley') && side.vm.slideLum < 0.08) fail(`${vp} ${spec}: slide luminance ${side.vm.slideLum.toFixed(3)} (< 0.08)`)
       if (side.vm.slidePx < 50) fail(`${vp} ${spec}: the slide is barely on screen (${side.vm.slidePx} px)`)
+      // At rest and mid-inspect the gun and hands stay off the HUD clusters (aimed, the hands fall away under
+      // the thumb buttons by design, so ADS only checks the ammo block and the vitals).
+      for (const [q, share] of side.vm.clear ?? []) {
+        if (stage === 'pistol-ads' && q.startsWith('.tbtn')) continue
+        if (share > 0.02) fail(`${vp} ${spec}: the viewmodel covers ${(share * 100).toFixed(1)}% of ${q}`)
+      }
     }
     // ---- C2 acceptance ----
     if (probe && info) {

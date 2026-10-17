@@ -80,6 +80,8 @@ export interface World {
   material?(key: string): THREE.Material | undefined;
   /** How lit a point is, 0 (black) to 1 (under a lamp): stealth reads it. */
   lightAt(p: THREE.Vector3): number;
+  /** The baked light's colour around a point (linear RGB): the viewmodel takes a share of it (C4). */
+  ambientAt?(p: THREE.Vector3, out: THREE.Color): THREE.Color;
   /** The surface a world ray hit (for impacts), from the collider it struck. */
   surfaceAt(p: THREE.Vector3): Surface;
   /** Per-frame animation: rain, signs flickering, steam, effects. */

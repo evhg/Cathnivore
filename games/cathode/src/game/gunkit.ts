@@ -510,8 +510,8 @@ material.clearcoat *= vMR.z;
 #endif
 #ifdef USE_SHEEN
 // Sheen is a fuzz lobe tinted by the cloth: on black leather a full-strength pale sheen washes the glove grey
-// (C4 review), so dark finishes keep about a third of it.
-material.sheenColor *= vMR.w * mix(0.3, 1.0, clamp(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114)) * 8.0, 0.0, 1.0));
+// (C4 review), so dark finishes keep a tenth of it.
+material.sheenColor *= vMR.w * mix(0.1, 1.0, clamp(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114)) * 8.0, 0.0, 1.0));
 #endif`,
       );
   };

@@ -17,8 +17,8 @@ export const INSPECT: Clip = {
   tracks: {
     root: [
       [0, [0, 0, 0], [0, 0, 0]],
-      [420, [-0.05, 0.05, -0.03], [0.12, 0.74, 0.36], "inOut"],
-      [1350, [-0.046, 0.054, -0.03], [0.17, 0.8, 0.33]],
+      [420, [-0.045, 0.05, -0.06], [0.12, 0.74, 0.36], "inOut"],
+      [1350, [-0.041, 0.054, -0.06], [0.17, 0.8, 0.33]],
       [1800, [-0.03, 0.03, 0.01], [-0.32, 0.25, -0.15], "inOut"],
       [2150, [-0.03, 0.03, 0.01], [-0.3, 0.22, -0.12]],
       [2600, [0, 0, 0], [0, 0, 0], "inOut"],
@@ -28,7 +28,7 @@ export const INSPECT: Clip = {
 };
 
 /** Inspecting, the shoulders the arms reach from (camera space): out and down, so the forearms fall away. */
-const SHOULDER_R_INSPECT = new THREE.Vector3(0.3, -0.5, 0.2);
+const SHOULDER_R_INSPECT = new THREE.Vector3(0.06, -0.66, 0.12);
 const SHOULDER_L_INSPECT = new THREE.Vector3(-0.12, -0.55, 0.2);
 
 /** How far from the gun's origin toward the firing wrist the inspect turns about (0 the origin, 1 the wrist). */
@@ -136,10 +136,14 @@ export class Arsenal {
     // On a phone the gun is small and the street behind it bright and busy: a stronger key and rim, and a second,
     // cooler rim from the left, so the silhouette separates (C4 review: "a dark smear" at 844x390).
     const key = new THREE.DirectionalLight(0xf4f1ee, phone ? 1.5 : 1.2);
+    this.key = key;
+    this.keyBase = { color: key.color.clone(), intensity: key.intensity };
     key.position.set(-0.6, 1, 0.45);
     const rim = new THREE.DirectionalLight(0x5fd8ff, phone ? 1.5 : 0.8);
     rim.position.set(1, 0.35, -1);
     const fill = new THREE.DirectionalLight(0xff3f8f, 0.35);
+    this.fill = fill;
+    this.fillBase = fill.color.clone();
     fill.position.set(-0.4, -0.6, -0.4);
     scene.add(key, rim, fill, this.flash);
     if (phone) {
@@ -184,6 +188,29 @@ export class Arsenal {
     gen.dispose();
     this.scene.environment = env;
     this.scene.environmentIntensity = 1;
+  }
+
+  private readonly key: THREE.DirectionalLight;
+  private readonly keyBase: { color: THREE.Color; intensity: number };
+  private readonly fill: THREE.DirectionalLight;
+  private readonly fillBase: THREE.Color;
+  private readonly ambTint = new THREE.Color(1, 1, 1);
+  private ambLevel = 0.5;
+
+  /**
+   * The viewmodel picks up the place it's in (C4 review: the gun looked pasted on, identical in the neon street
+   * and the dark alley): `color` is the baked light around the camera (linear RGB), `level` 0..1 how lit it is.
+   * A quarter of the key and fill take the light's hue (normalised, so it tints without darkening), and the key
+   * eases down at most 12% in the dark: the gun still never goes black (the 0.08 slide-luminance floor).
+   */
+  ambient(color: THREE.Color, level: number, dt: number): void {
+    const m = Math.max(color.r, color.g, color.b);
+    const k = 1 - Math.exp(-dt * 3);
+    if (m > 1e-4) this.ambTint.lerp(new THREE.Color(color.r / m, color.g / m, color.b / m), k);
+    this.ambLevel += (THREE.MathUtils.clamp(level, 0, 1) - this.ambLevel) * k;
+    this.key.color.copy(this.keyBase.color).lerp(this.keyBase.color.clone().multiply(this.ambTint), 0.25);
+    this.key.intensity = this.keyBase.intensity * THREE.MathUtils.lerp(0.88, 1.04, this.ambLevel);
+    this.fill.color.copy(this.fillBase).lerp(this.ambTint, 0.3);
   }
 
   private inspectT = -1;
@@ -609,7 +636,7 @@ export class Arsenal {
     if (P.trigger) P.trigger.rotation.x = firing ? -0.24 : 0;
     if (P.barrel) P.barrel.rotation.x = def.weaponClass === "pistol" ? Math.min(1, Math.max(a.action, lock) * 1.6) * 0.052 : 0;
     // Her hands on the grip, the index onto the trigger while the shot breaks.
-    this.shR.lerpVectors(SHOULDER_R, SHOULDER_R_ADS, a.aim);
+    this.shR.lerpVectors(r.shoulderR ?? SHOULDER_R, SHOULDER_R_ADS, a.aim);
     this.shL.lerpVectors(SHOULDER_L, SHOULDER_L_ADS, a.aim);
     // Inspecting, the elbows drop out and down so the forearms fall away under the turned gun instead of
     // pointing at the lens (C4 review: the sleeve filled a quarter of the frame).

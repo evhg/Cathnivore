@@ -262,6 +262,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       }
       return best;
     },
+    ambientAt(p, out) {
+      return volume.sample(tmp.set(p.x, p.y, p.z), out);
+    },
     lightAt(p) {
       // The baked neon around the point, the key floodlight if it can see the point, and live flashes.
       volume.sample(tmp.set(p.x, p.y + 0.8, p.z), lum);

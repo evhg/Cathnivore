@@ -1160,15 +1160,16 @@
   transform: translateX(-50%);
 }
 .stick.on .stick-label { opacity: 0; }
+/* Up in the open sky right of centre, clear of the gun's slide at rest (C4 review). */
 .look-hint {
   position: absolute;
-  right: 24%;
-  top: 52%;
+  right: 22%;
+  top: 34%;
   color: rgb(var(--ink-rgb) / .45);
   transition: opacity 600ms var(--ease-out);
   pointer-events: none;
 }
-.look-hint.gone { opacity: 0; }
+.look-hint.gone, :root.hud-aiming .look-hint { opacity: 0; }
 .tbtn {
   position: absolute;
   width: 64px;

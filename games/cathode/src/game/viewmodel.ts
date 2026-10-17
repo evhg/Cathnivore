@@ -67,6 +67,8 @@ export interface GunRig {
   /** A rest rotation at the hip (radians, XYZ), blended out as she aims: the muzzle turned a touch out and the
    * slide canted in, so the left flank and the top read instead of the slide's back plate. */
   hipRot?: [number, number, number];
+  /** The firing arm's shoulder at the hip (camera space), when this gun wants its own (default hands.ts's). */
+  shoulderR?: THREE.Vector3;
   /** Wrist frames for Cath's hands (hands.ts): Y toward the knuckles, Z the back of the hand. No gripL = one-handed. */
   gripR: THREE.Object3D;
   gripL: THREE.Object3D | null;
@@ -160,9 +162,12 @@ function buildPistol(phone: boolean): GunRig {
   // go), 0.42 m out: derived from the dot itself, so moving the optic can never leave the dot off the aim point.
   // At the hip: a touch in and up from the corner so the ammo cluster has its own space; on a phone further in
   // and up again, clear of the RELOAD/AIM thumb buttons.
-  const hip = phone ? new THREE.Vector3(0.072, -0.074, -0.28) : new THREE.Vector3(0.084, -0.086, -0.28);
+  const hip = phone ? new THREE.Vector3(0.072, -0.074, -0.28) : new THREE.Vector3(0.062, -0.074, -0.28);
   const r = rig(hip, new THREE.Vector3(-KESTREL_DOT[0], -KESTREL_DOT[1], -0.42 - KESTREL_DOT[2]), 52);
   r.hipRot = [0.03, 0.1, 0.06];
+  // The firing elbow tucked low and in, so the forearm falls steeply out of the frame's bottom edge instead of
+  // running out to the right under the ammo cluster (C4 review: the glove sat under "12 / 60").
+  r.shoulderR = new THREE.Vector3(0.0, -0.56, 0.2);
   // Aimed, the viewmodel camera narrows so the gun sits further out (the hands drop away under the dot) at the same size.
   r.adsVmFov = 36;
   const { root, kit } = buildKestrel(phone);

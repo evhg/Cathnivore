@@ -126,7 +126,7 @@ export interface Session {
     beam?: { x0: number; y0: number; x1: number; y1: number; r: number };
   } | null;
   /** C4: the hands' share of viewmodel pixels and the slide's mean luminance (0..1) in the shown frame. */
-  vmProbe?: () => { handShare: number; slideLum: number; vmPx: number; slidePx: number };
+  vmProbe?: (rects?: { x: number; y: number; w: number; h: number }[]) => { handShare: number; slideLum: number; vmPx: number; slidePx: number; inRects: number[] };
   /** C4: the red dot's projection and the screen centre (CSS px), and the aim blend, as the frame shows them. */
   dotProbe?: () => { x: number; y: number; cx: number; cy: number; aim: number } | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
@@ -652,14 +652,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, rescueMin: 0.4 });
   const autoOn = !o.shot && !navigator.webdriver;
   const renderScaleParam = Math.max(0.25, Math.min(1, Number(new URLSearchParams(location.search).get("rs") ?? 1) || 1));
+  const ambColor = new THREE.Color();
   const resize = () => {
     // Phones: 1.5x keeps them cool. 5K desktops cap the 3D at 1.5x (the DOM HUD stays at native DPR, S8).
     const cap = input.isTouch ? 1.5 : innerHeight * devicePixelRatio > 2000 ? 1.5 : o.quality === "ultra" ? 3 : 2;
     const dpr = Math.min(devicePixelRatio, cap);
-    // ?rs=0.5 forces the 3D render scale (5K screenshot runs under SwiftShader). The scale applies to the world
-    // only: Cath's hands and gun, and the post chain, render at the canvas's own resolution (C4).
+    // ?rs=0.5 forces the 3D render scale (5K screenshot runs under SwiftShader); it scales the world only.
+    // Cath's hands and gun, and the post chain (HDR target, bloom, grade), render at `post` x the DPR, the world
+    // at `scale` x the DPR (C4). Dynamic resolution and thermal rescue (auto.scale) scale BOTH: at rest a phone's
+    // post runs at 0.9 (1.35x, the viewmodel crisp), and under rescue it falls with the world, so the fill-rate
+    // lever still works (C4 review: post had been pinned at the full 1.5x, ~10x the pixels under rescue).
+    const post = (o.quality === "phone" ? 0.9 : 1) * auto.scale;
     const scale = (o.quality === "phone" ? 0.8 : 1) * auto.scale * renderScaleParam;
-    world.resize(o.canvas.clientWidth, o.canvas.clientHeight, dpr, scale);
+    world.resize(o.canvas.clientWidth, o.canvas.clientHeight, dpr * post, Math.min(1, scale / post));
   };
   addEventListener("resize", resize);
   resize();
@@ -1356,6 +1361,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Camera zoom while aiming, and the weapon rig.
     world.camera.fov = arsenal.worldFov + (calm ? 0.4 : 1) * fovPunch.update(realDt);
     world.camera.updateProjectionMatrix();
+    if (world.ambientAt) {
+      const ambC = ambColor;
+      world.ambientAt(world.camera.position, ambC);
+      arsenal.ambient(ambC, world.lightAt(world.camera.position), Math.max(realDt, 1 / 30));
+    }
     arsenal.pose(realDt, intent.look, player.stride, player.speed, intent.sprint, player.landed, world.viewCamera, BASE_FOV);
     world.update(dt, o.shot ? 1 : time, fxDt);
 
@@ -1390,6 +1400,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       })(),
       ads: arsenal.aiming,
       adsBlend: arsenal.weapon.kind === "melee" ? 0 : arsenal.anim.aim,
+      inspect: arsenal.inspectW,
       takedown: canTakedown,
       bulletTime: focusing ? 1 : 0,
       skills: [0, 1].map((i) => {
@@ -1826,7 +1837,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const c = world.renderer.domElement;
     return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight, cx: c.clientWidth / 2, cy: c.clientHeight / 2, aim: arsenal.anim.aim };
   };
-  s.vmProbe = () => {
+  s.vmProbe = (rects = []) => {
     render();
     const r = world.renderer;
     const c = r.domElement;
@@ -1888,7 +1899,21 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           lum += (0.2126 * frame[f]! + 0.7152 * frame[f + 1]! + 0.0722 * frame[f + 2]!) / 255;
         }
       }
-    return { handShare: all ? arm / all : 0, slideLum: slideN ? lum / slideN : 0, vmPx: all, slidePx: slideN };
+    // C4 review: how much of the viewmodel lands inside each HUD box (CSS px in, the share of the box out).
+    const sx = w / c.clientWidth;
+    const sy = h / c.clientHeight;
+    const inRects = rects.map((b) => {
+      const x0 = Math.max(0, Math.floor(b.x * sx));
+      const x1 = Math.min(w, Math.ceil((b.x + b.w) * sx));
+      const y0 = Math.max(0, Math.floor(b.y * sy));
+      const y1 = Math.min(h, Math.ceil((b.y + b.h) * sy));
+      let n = 0;
+      for (let y = y0; y < y1; y++)
+        for (let x = x0; x < x1; x++) if (px[((h - 1 - y) * w + x) * 4 + 3]! >= 128) n++;
+      const area = Math.max(1, (x1 - x0) * (y1 - y0));
+      return n / area;
+    });
+    return { handShare: all ? arm / all : 0, slideLum: slideN ? lum / slideN : 0, vmPx: all, slidePx: slideN, inRects };
   };
   // C3 "You can't miss the first gun": the first job's case and the HUD around it (needs ?job).
   const C3_STAGES = ["pickup-first-from-takedown", "pickup-prompt", "objective-offscreen", "hud-combat", "pickup-taken"];
