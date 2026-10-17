@@ -48,9 +48,11 @@ export interface HandPose {
 
 export const POSES: Record<string, HandPose> = {
   /** The firing hand on a pistol grip: three fingers wrapped round the front strap, index straight along the frame, thumb forward. */
-  pistolR: { curl: [0.12, 1.3, 1.35, 1.4], wrap: 0.4, thumb: [-0.55, 0.15, 0.55], thumbCurl: [0.1, 0.05], indexLift: 1.0 },
+  pistolR: { curl: [0.12, 1.3, 1.35, 1.4], wrap: 0.4, thumb: [-0.55, 0.15, 0.55], thumbCurl: [0.22, 0.18], indexLift: 0.85 },
   /** The support hand wrapped over the firing hand's fingers, thumb forward under the slide. */
-  pistolL: { curl: [1.0, 1.05, 1.1, 1.15], wrap: 0.3, thumb: [-0.35, 0.1, 0.35], thumbCurl: [0.05, 0.0] },
+  /** The support hand (thumbs-forward): heel on the left panel, index tight under the trigger guard's front, the
+   * other three wrapped round the front of the firing hand's fingers, thumb laid forward along the frame. */
+  pistolL: { curl: [1.05, 0.85, 0.9, 0.95], wrap: 0.35, thumb: [-0.25, 0.1, 0.25], thumbCurl: [0.2, 0.16] },
   /** A rifle's pistol grip. */
   rifleR: { curl: [0.15, 1.3, 1.35, 1.4], wrap: 0.35, thumb: [-0.9, 0.2, 0.7], thumbCurl: [0.4, 0.3] },
   /** Under a handguard: fingers up the far side, thumb along the near side. */
@@ -196,15 +198,15 @@ export class Arm {
     add(hand, sphere(0.016, phone), FIN.glove, { p: [s * -0.022, 0.026, -0.004], s: [1, 1.6, 0.9] });
     // Each digit is one smooth glove finger from inside the palm to a domed tip, bending over its knuckles.
     const dSeg = phone ? 8 : 14;
-    const dStep = phone ? 0.008 : 0.0035;
+    const dStep = phone ? 0.008 : 0.0055;
     fingers.forEach((chain, f) => {
       const r = FINGER_R[f]!;
       const lens = FINGERS[f]!;
-      const d = digit([...lens], [r, r * 0.93, r * 0.86, r * 0.8], { seg: dSeg, step: dStep });
+      const d = digit([...lens], [r, r * 0.93, r * 0.86, r * 0.8], { seg: dSeg, step: dStep, detail: !phone });
       add(chain[0]!, d.geo, FIN.glove, undefined, chainSkin(hand, chain, [lens[0], lens[0] + lens[1]], d.along, r * 0.75));
     });
     {
-      const d = digit([...THUMB], [0.0118, 0.0101, 0.0093, 0.0085], { seg: dSeg, step: dStep, root: 0.012, flat: 0.86 });
+      const d = digit([...THUMB], [0.0118, 0.0101, 0.0093, 0.0085], { seg: dSeg, step: dStep, root: 0.012, flat: 0.86, detail: !phone });
       add(thumb[0]!, d.geo, FIN.glove, undefined, chainSkin(hand, thumb, [THUMB[0], THUMB[0] + THUMB[1]], d.along, 0.009));
     }
 
@@ -326,29 +328,60 @@ export class Arms {
  * swells at the joints. Returns the geometry (non-indexed, smooth normals with no seam) and, per vertex, the
  * distance along the digit, so the caller can blend the skin weights across each joint.
  */
-export function digit(lens: number[], radii: number[], opts: { seg: number; step: number; root?: number; flat?: number }): { geo: THREE.BufferGeometry; along: Float32Array } {
+export function digit(lens: number[], radii: number[], opts: { seg: number; step: number; root?: number; flat?: number; detail?: boolean }): { geo: THREE.BufferGeometry; along: Float32Array } {
   const seg = opts.seg;
   const total = lens.reduce((a, b) => a + b, 0);
   const rTip = radii[radii.length - 1]!;
   const y0 = -(opts.root ?? radii[0]! * 0.6);
   const yEnd = total - rTip * 0.35;
   const flat = opts.flat ?? 0.8;
-  // Radius at y: linear between the joints, a 5% swell over each knuckle.
+  const detail = opts.detail ?? true;
   const joints = [0];
   for (const l of lens) joints.push(joints[joints.length - 1]! + l);
+  /** The phalanx's own radius at y: it waists a little mid-bone and tapers into the next joint. */
   const rAt = (y: number): number => {
     let k = 0;
     while (k < lens.length - 1 && y > joints[k + 1]!) k++;
     const t = THREE.MathUtils.clamp((y - joints[k]!) / lens[k]!, 0, 1);
     const r = THREE.MathUtils.lerp(radii[k]!, radii[k + 1]!, t);
-    let swell = 0;
-    for (let j = 1; j < joints.length - 1; j++) swell = Math.max(swell, 1 - Math.abs(y - joints[j]!) / (radii[j]! * 1.4));
-    return r * (1 + 0.05 * Math.max(0, swell));
+    return r * (1 - 0.06 * Math.sin(Math.PI * t));
   };
-  const ys: number[] = [];
+  /**
+   * The section's shape at y and angle (z = sin of the angle: +1 the back of the finger, -1 the pad). Over each
+   * joint the back bulges into a knuckle; just past it the pad pinches into the flexion crease; leather wrinkles
+   * ring the back of each phalanx short of its next knuckle; the pads are flattened and a touch fuller.
+   */
+  const shape = (y: number, z: number): number => {
+    let m = 1;
+    for (let j = 1; j < joints.length - 1; j++) {
+      const rj = radii[j]!;
+      const d = (y - joints[j]!) / rj;
+      // The knuckle: a bump on the back, strongest at the first knuckle.
+      const kn = Math.exp(-d * d * 1.6) * (j === 1 ? 0.16 : 0.11);
+      m += kn * Math.max(0, z) ** 1.5;
+      if (!detail) continue;
+      // The flexion crease on the pad, a hair distal of the joint.
+      const dc = d - 0.15;
+      m -= Math.exp(-dc * dc * 22) * 0.12 * Math.max(0, -z) ** 2;
+      // Two fine leather wrinkles across the back, just short of the knuckle.
+      for (const off of [-0.75, -1.15]) {
+        const dw = d - off;
+        m -= Math.exp(-dw * dw * 60) * 0.045 * Math.max(0, z) ** 2;
+      }
+    }
+    return m;
+  };
+  // Rings: an even spacing, plus tight ones over each joint and its wrinkles so the creases have edges to live on.
+  const ysSet: number[] = [];
   const n = Math.max(3, Math.ceil((yEnd - y0) / opts.step));
-  for (let i = 0; i <= n; i++) ys.push(y0 + ((yEnd - y0) * i) / n);
-  // The domed tip: a quarter ellipse closing over the last radius.
+  for (let i = 0; i <= n; i++) ysSet.push(y0 + ((yEnd - y0) * i) / n);
+  if (detail)
+    for (let j = 1; j < joints.length - 1; j++) {
+      const rj = radii[j]!;
+      for (const o of [-1.4, -1.15, -0.95, -0.75, -0.5, -0.2, 0.15, 0.35, 0.7]) ysSet.push(joints[j]! + o * rj);
+    }
+  const ys = ysSet.filter((y) => y >= y0 && y <= yEnd).sort((a, b) => a - b).filter((y, i, a) => i === 0 || y - a[i - 1]! > 0.0006);
+  // The domed tip: a quarter ellipse closing over the last radius, the nail side a little flatter.
   const capN = Math.max(3, Math.round(seg / 3));
   const capR = rAt(yEnd);
   const rings: { y: number; r: number }[] = ys.map((y) => ({ y, r: rAt(y) }));
@@ -361,9 +394,11 @@ export function digit(lens: number[], radii: number[], opts: { seg: number; step
     for (let s = 0; s < seg; s++) {
       const a = (s / seg) * Math.PI * 2;
       const z = Math.sin(a);
-      // The pad (-Z, the palm side) is a little fuller than the back of the finger.
-      const zr = z < 0 ? flat * 1.06 : flat;
-      pos.push(Math.cos(a) * ring.r, ring.y, z * ring.r * zr);
+      // The pad (-Z, the palm side) is flatter across and a little fuller than the back of the finger.
+      const zr = z < 0 ? flat * 1.08 : flat;
+      const m = shape(ring.y, z);
+      const xw = z < 0 ? 1.03 : 1;
+      pos.push(Math.cos(a) * ring.r * m * xw, ring.y, z * ring.r * zr * m);
     }
   const tip = rings.length * seg;
   pos.push(0, yEnd + capR * 0.95, 0);
