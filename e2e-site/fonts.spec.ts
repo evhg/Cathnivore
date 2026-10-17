@@ -77,13 +77,13 @@ test.describe('AAA UI fonts', () => {
     expectHouseRules(p, 'Hedgerow UI')
   })
 
-  test('CATHODE: the HP readout is Cathode Mono, and no house font is declared', async ({ page }, info) => {
+  test('CATHODE: the HP readout is Cathode Figures (Cathode Mono digits, plain zero), and no house font is declared', async ({ page }, info) => {
     // One size is enough, and the 3D street boots slowly under swiftshader at 1440x900.
     test.skip(info.project.name !== 'site-phone', 'one WebGL boot per run')
     test.setTimeout(180_000)
     await page.goto('/cathode/?play&shot')
     const p = await probe(page, '.hud-hp-text')
-    expectHouseRules(p, 'Cathode Mono')
+    expectHouseRules(p, 'Cathode Figures')
     expect(p.faces.filter((f) => /Fraunces|Atkinson/.test(f))).toEqual([])
   })
 })
