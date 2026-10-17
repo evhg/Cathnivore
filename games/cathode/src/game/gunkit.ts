@@ -66,7 +66,7 @@ export const FIN = {
 export const GLOW = {
   tritium: { emit: 0x7dffb2, intensity: 3 },
   trim: { emit: 0x3fe0ff, intensity: 1.2 },
-  dot: { emit: 0xff2a47, intensity: 6 },
+  dot: { emit: 0xff2a47, intensity: 9 },
 } satisfies Record<string, Emit>;
 
 const isEmit = (s: Surface): s is Emit => typeof s === "object" && "emit" in s;

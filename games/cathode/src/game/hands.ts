@@ -443,7 +443,18 @@ function palm(phone: boolean): THREE.BufferGeometry {
     let z = p.getZ(i);
     // The back of the hand domes across the metacarpals; the palm's heel and the knuckle line are fuller.
     const across = 1 - Math.min(1, (x / (PALM.w * 0.47)) ** 2);
-    if (z > 0) z *= 1 + 0.3 * across * (0.45 + 0.55 * Math.sin(Math.PI * Math.min(1, t * 1.15)));
+    if (z > 0) {
+      z *= 1 + 0.3 * across * (0.45 + 0.55 * Math.sin(Math.PI * Math.min(1, t * 1.15)));
+      // The four knuckles (metacarpal heads) stand up through the leather at the end of the back of the hand,
+      // with the tendons' shallow valleys between them.
+      let kn = 0;
+      for (const fx of FINGER_X) {
+        const dx = (x - fx * 0.94) / 0.0075;
+        const dy = (t - 0.93) / 0.07;
+        kn += Math.exp(-dx * dx - dy * dy);
+      }
+      z += 0.0026 * kn * Math.min(1, z / (PALM.t * 0.3));
+    }
     else z *= 1 + 0.12 * Math.max(0, 1 - Math.abs(t - 0.25) * 3);
     // The little-finger edge runs a touch shorter than the index edge.
     p.setXYZ(i, x, y + 0.002, z);

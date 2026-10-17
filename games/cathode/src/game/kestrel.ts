@@ -191,7 +191,9 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   kit.add(rounded(0.0222, 0.006, 0.026, 0.0012, o.phone), FIN.housing, { p: [0, 0.0455 + 0.003, dotZ] }, slide);
   kit.add(rounded(0.006, 0.004, 0.005, 0.0015, o.phone), FIN.housing, { p: [0, 0.0455 + 0.007, dotZ + 0.009] }, slide);
   kit.add(new THREE.CircleGeometry(0.0118, phone ? 12 : 24).translate(0, 0.0105 - 0.0118, 0), "glass", { p: [0, 0.0455 + 0.0118, dotZ - 0.008], r: [-0.12, 0, 0] }, slide);
-  kit.add(sphere(0.00075, o.phone), GLOW.dot, { p: [...KESTREL_DOT] }, slide);
+  // The dot reads at a glance: about 7 arc-minutes at the eye (bigger on a phone's small screen), flattened to
+  // a disc facing her.
+  kit.add(sphere(phone ? 0.0016 : 0.0011, o.phone), GLOW.dot, { p: [...KESTREL_DOT], s: [1, 1, 0.3] }, slide);
 
   // ---- Barrel (TiN bronze) with the hood showing through the port, and the suppressor threaded on the crown.
   const barrel = kit.part("barrel", [0, BORE, -0.143]);

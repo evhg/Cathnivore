@@ -1772,7 +1772,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let crateCollider: { off?: boolean } | null = null;
   // C4 "Kestrel 9, built like a real gun": the pistol at rest, aimed, and mid-inspect, in the street where the
   // stages start (the viewmodel has its own light, so where she looks doesn't change the gun's exposure).
-  const C4_STAGES = ["pistol-idle", "pistol-ads", "pistol-inspect"];
+  // pistol-alley is the acceptance's "dark alley": the first alley off the market (z 21-25), at its mouth,
+  // facing the dumpster corner away from the door's caged bulb, the only light back there.
+  const C4_STAGES = ["pistol-idle", "pistol-ads", "pistol-inspect", "pistol-alley"];
   const c4Stage = (name: string, tMs: number): string => {
     staged = true;
     hud.freeze(null);
@@ -1788,6 +1790,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       player.pos.copy(stageHome.pos);
       player.yaw = stageHome.yaw;
       player.pitch = stageHome.pitch;
+    }
+    if (name === "pistol-alley") {
+      player.pos.set(-16.5, ground(-16.5, 21.9), 21.9);
+      player.yaw = Math.PI / 2 - 0.3;
+      player.pitch = -0.05;
     }
     player.vel.set(0, 0, 0);
     for (const e of enemies) {

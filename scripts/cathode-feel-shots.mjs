@@ -21,7 +21,7 @@ const C2 = ['hit-body', 'hit-head', 'hit-head@160', 'enemy-flinch-head-60', 'wal
 // C3 "You can't miss the first gun", and a HUD sized for 5K: the first job's case and the HUD around it.
 const C3 = ['pickup-first-from-takedown', 'pickup-prompt', 'objective-offscreen', 'hud-combat', 'pickup-taken@700']
 // C4 "Kestrel 9, built like a real gun": the pistol at rest, aimed down the dot, and mid-inspect.
-const C4 = ['pistol-idle', 'pistol-ads', 'pistol-inspect@900']
+const C4 = ['pistol-idle', 'pistol-ads', 'pistol-inspect@900', 'pistol-alley']
 const MS = { C1, C2, C3, C4 }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
@@ -234,7 +234,7 @@ for (const vp of vps) {
     if (side.vm) {
       console.log(`  C4 ${vp} ${spec}: hands ${(side.vm.handShare * 100).toFixed(1)}% of ${side.vm.vmPx} viewmodel px; slide luminance ${side.vm.slideLum.toFixed(3)} over ${side.vm.slidePx} px`)
       if (stage === 'pistol-idle' && side.vm.handShare < 0.25) fail(`${vp} ${spec}: hands are ${(side.vm.handShare * 100).toFixed(1)}% of the viewmodel (< 25%)`)
-      if ((stage === 'pistol-idle' || stage === 'pistol-ads') && side.vm.slideLum < 0.08) fail(`${vp} ${spec}: slide luminance ${side.vm.slideLum.toFixed(3)} (< 0.08)`)
+      if ((stage === 'pistol-idle' || stage === 'pistol-ads' || stage === 'pistol-alley') && side.vm.slideLum < 0.08) fail(`${vp} ${spec}: slide luminance ${side.vm.slideLum.toFixed(3)} (< 0.08)`)
       if (side.vm.slidePx < 50) fail(`${vp} ${spec}: the slide is barely on screen (${side.vm.slidePx} px)`)
     }
     // ---- C2 acceptance ----
