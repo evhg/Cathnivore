@@ -259,6 +259,11 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   kit.empty("gripR", gR.pos.toArray() as [number, number, number], root, gR.quat);
   const gL = gripFrame(new THREE.Vector3(-0.042, -0.041, 0.071), new THREE.Vector3(0.15, -0.35, -0.92), new THREE.Vector3(-1, -0.2, 0));
   kit.empty("gripL", gL.pos.toArray() as [number, number, number], root, gL.quat);
+  // Thumbs forward, both on the left flank parallel to the bore: the firing thumb rides the frame just under the
+  // slide, the support thumb lies under it along the dust cover. Each empty's +Z is where the nail faces (out).
+  const nail = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(-1, 0.35, 0).normalize());
+  root.getObjectByName("gripR")!.userData.thumb = kit.empty("thumbR", [-0.0225, 0.0045, -0.05], root, nail);
+  root.getObjectByName("gripL")!.userData.thumb = kit.empty("thumbL", [-0.0235, -0.0115, -0.066], root, nail);
 
   kit.finish();
   return { root, kit };

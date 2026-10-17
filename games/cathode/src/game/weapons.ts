@@ -17,8 +17,8 @@ export const INSPECT: Clip = {
   tracks: {
     root: [
       [0, [0, 0, 0], [0, 0, 0]],
-      [420, [-0.075, 0.045, 0.03], [0.12, 0.95, 0.42], "inOut"],
-      [1350, [-0.07, 0.05, 0.03], [0.18, 1.02, 0.38]],
+      [420, [-0.05, 0.05, -0.03], [0.12, 0.74, 0.36], "inOut"],
+      [1350, [-0.046, 0.054, -0.03], [0.17, 0.8, 0.33]],
       [1800, [-0.03, 0.03, 0.01], [-0.32, 0.25, -0.15], "inOut"],
       [2150, [-0.03, 0.03, 0.01], [-0.3, 0.22, -0.12]],
       [2600, [0, 0, 0], [0, 0, 0], "inOut"],
@@ -26,6 +26,13 @@ export const INSPECT: Clip = {
   },
   events: [[80, "cloth"], [1750, "cloth"], [2550, "settle"]],
 };
+
+/** Inspecting, the shoulders the arms reach from (camera space): out and down, so the forearms fall away. */
+const SHOULDER_R_INSPECT = new THREE.Vector3(0.3, -0.5, 0.2);
+const SHOULDER_L_INSPECT = new THREE.Vector3(-0.12, -0.55, 0.2);
+
+/** How far from the gun's origin toward the firing wrist the inspect turns about (0 the origin, 1 the wrist). */
+export const INSPECT_PIVOT = 0.6;
 
 export type FireKind = "hitscan" | "ballistic" | "melee";
 
@@ -180,6 +187,10 @@ export class Arsenal {
   }
 
   private inspectT = -1;
+  /** How far into the inspect's turn the gun is (0..1): the shoulders drop away and the HUD fades the crosshair. */
+  inspectW = 0;
+  private readonly pivV = new THREE.Vector3();
+  private readonly pivW = new THREE.Vector3();
   /** Screenshot stages: hold the aim regardless of input, and hold the inspect at this moment (ms; -1 = play it). */
   holdAim = false;
   inspectHold = -1;
@@ -529,6 +540,7 @@ export class Arsenal {
       r.root.rotation.z += r.hipRot[2] * k;
     }
     // The inspect clip, layered on top (S2.2 layer 3); any action cancels it.
+    this.inspectW = 0;
     if (this.inspectHold >= 0) this.inspectT = this.inspectHold / 1000 - dt;
     if (this.inspectT >= 0) {
       if (this.busy || this.aiming || this.cd > 0 || swinging) this.inspectT = -1;
@@ -537,12 +549,20 @@ export class Arsenal {
         if (this.inspectT * 1000 >= INSPECT.dur) this.inspectT = -1;
         else {
           const k = sampleClip(INSPECT, this.inspectT * 1000).root!;
-          r.root.position.x += k.pos[0];
-          r.root.position.y += k.pos[1];
-          r.root.position.z += k.pos[2];
+          // The turn pivots part-way back toward the wrist (C4 review: turning about the slide swung the grip,
+          // and with it the whole forearm, into the camera): the hand stays low and right, the gun turns in it.
+          const pv = this.pivV.copy(r.gripR.position).multiplyScalar(INSPECT_PIVOT);
+          r.root.updateMatrix();
+          const before = this.pivW.copy(pv).applyMatrix4(r.root.matrix);
           r.root.rotation.x += k.rot[0];
           r.root.rotation.y += k.rot[1];
           r.root.rotation.z += k.rot[2];
+          r.root.updateMatrix();
+          r.root.position.add(before.sub(pv.applyMatrix4(r.root.matrix)));
+          r.root.position.x += k.pos[0];
+          r.root.position.y += k.pos[1];
+          r.root.position.z += k.pos[2];
+          this.inspectW = Math.min(1, Math.abs(k.rot[1]) / 0.7);
         }
       }
     }
@@ -591,6 +611,12 @@ export class Arsenal {
     // Her hands on the grip, the index onto the trigger while the shot breaks.
     this.shR.lerpVectors(SHOULDER_R, SHOULDER_R_ADS, a.aim);
     this.shL.lerpVectors(SHOULDER_L, SHOULDER_L_ADS, a.aim);
+    // Inspecting, the elbows drop out and down so the forearms fall away under the turned gun instead of
+    // pointing at the lens (C4 review: the sleeve filled a quarter of the frame).
+    if (this.inspectW > 0) {
+      this.shR.lerp(SHOULDER_R_INSPECT, this.inspectW);
+      this.shL.lerp(SHOULDER_L_INSPECT, this.inspectW);
+    }
     this.arms.pose(r.root, r.gripR, r.gripL, r.poseR, r.poseL, firing ? 1 : 0, this.shR, this.shL);
     // The scope: past 85% aim the rig hides and the overlay takes over.
     r.root.visible = !(r.scoped && a.aim > 0.85);

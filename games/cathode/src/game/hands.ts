@@ -7,8 +7,6 @@
 
 import * as THREE from "three";
 import { FIN, bake, kitMaterials, placeMatrix, sphere, tube, type Finish, type Place } from "./gunkit";
-import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
-import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { solveTwoBone, boneQuat, type TwoBoneResult } from "./feel/ik";
 
 /** Bone lengths (m): a slim woman's arm, a touch long so the viewmodel reaches comfortably. */
@@ -33,7 +31,7 @@ const FINGERS: [number, number, number][] = [
 ];
 const FINGER_R: number[] = [0.0088, 0.0092, 0.0087, 0.0078];
 const FINGER_X = [-0.026, -0.0088, 0.0088, 0.0255];
-const THUMB: [number, number, number] = [0.036, 0.032, 0.026];
+const THUMB: [number, number, number] = [0.032, 0.027, 0.023];
 
 /** A hand pose: per-finger curl (radians at the first joint; the next two follow), splay, and the thumb. */
 export interface HandPose {
@@ -154,7 +152,7 @@ export class Arm {
         [chain[2]!, t0 * t1 * t2],
       ];
     };
-    const seg = phone ? 12 : 36;
+    const seg = phone ? 20 : 36;
     // Upper arm and forearm: the trench sleeve, tapering to the wrist, with a turned-back cuff and a button.
     add(upper, tube(ARM.upper + 0.03, 0.046, 0.043, { seg, caps: false, phone }), FIN.sleeve, { p: [0, -0.01, 0] });
     add(fore, sphere(0.044, phone), FIN.sleeve);
@@ -166,13 +164,14 @@ export class Arm {
     // The cream silk blouse cuff, a centimetre of it showing past the trench.
     add(fore, tube(0.022, 0.0315, 0.0305, { seg, caps: false, phone }), FIN.silk, { p: [0, ARM.fore - 0.042, 0] });
     if (side < 0) {
-      // The pearl bracelet, with a small gold clasp, at the left wrist, over the glove's gauntlet.
-      const n = phone ? 10 : 14;
+      // The pearl bracelet (C4 review: big pearls read as teeth): a strand of small pearls sitting snug on the
+      // gauntlet, tucked half under the silk cuff, with a small gold clasp underneath.
+      const n = phone ? 14 : 22;
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2;
-        add(fore, sphere(0.0056, phone), FIN.pearl, { p: [Math.cos(a) * 0.0292, ARM.fore - 0.018, Math.sin(a) * 0.0292] });
+        add(fore, sphere(0.0031, true), FIN.pearl, { p: [Math.cos(a) * 0.0281, ARM.fore - 0.0215 + Math.sin(a * 2) * 0.0007, Math.sin(a) * 0.0281] });
       }
-      add(fore, sphere(0.0042, phone), FIN.gold, { p: [0, ARM.fore - 0.018, -0.0318] });
+      add(fore, sphere(0.0028, phone), FIN.gold, { p: [0, ARM.fore - 0.0215, -0.0298], s: [1.4, 0.9, 0.8] });
     }
     // The glove: gauntlet over the wrist, the palm, knuckles, the three-point stitching on the back.
     // The gauntlet rides the forearm (so it follows the arm, not the hand's angle); a short cuff joins it to the palm.
@@ -181,7 +180,7 @@ export class Arm {
     add(hand, sphere(0.0255, phone), FIN.glove, { p: [0, 0.002, 0], s: [1.05, 1, 0.82] });
     {
       // The palm: a soft, tapered slab (narrower at the wrist, the back domed), its heel bending with the wrist.
-      const pg = palm(phone);
+      const pg = palm(phone, side);
       const pp = pg.getAttribute("position");
       add(hand, pg, FIN.glove, undefined, (i) => {
         const y = pp.getY(i);
@@ -194,7 +193,7 @@ export class Arm {
     }
     for (let f = 0; f < 3; f++) {
       // The stitching points run from the wrist toward the index, middle and ring knuckles.
-      add(hand, tube(0.038, 0.0011, 0.0011, { seg: 4, caps: true, phone }), FIN.gloveSeam, { p: [s * FINGER_X[f]! * 0.75, 0.024, PALM.t / 2 + 0.0034 - Math.abs(FINGER_X[f]!) * 0.06], r: [0, 0, s * -FINGER_X[f]! * 2] });
+      add(hand, tube(0.034, 0.0007, 0.0007, { seg: 4, caps: true, phone }), FIN.gloveSeam, { p: [s * FINGER_X[f]! * 0.72, 0.022, 0.0134 - Math.abs(FINGER_X[f]!) * 0.09], r: [0, 0, s * -FINGER_X[f]! * 2] });
     }
     // The thumb's pad, filling the web between the thumb and the palm.
     add(hand, sphere(0.016, phone), FIN.glove, { p: [s * -0.022, 0.026, -0.004], s: [1, 1.6, 0.9] });
@@ -208,7 +207,7 @@ export class Arm {
       add(chain[0]!, d.geo, FIN.glove, undefined, chainSkin(hand, chain, [lens[0], lens[0] + lens[1]], d.along, r * 0.75));
     });
     {
-      const d = digit([...THUMB], [0.0118, 0.0101, 0.0093, 0.0085], { seg: dSeg, step: dStep, root: 0.012, flat: 0.86, detail: !phone });
+      const d = digit([...THUMB], [0.0108, 0.0095, 0.0088, 0.0079], { seg: dSeg, step: dStep, root: 0.024, flat: 0.84, detail: !phone });
       add(thumb[0]!, d.geo, FIN.glove, undefined, chainSkin(hand, thumb, [THUMB[0], THUMB[0] + THUMB[1]], d.along, 0.009));
     }
 
@@ -260,11 +259,49 @@ export class Arm {
       chain[1]!.rotation.set(-(c * 1.15 + w) * (f === 0 ? 1 + trigger * 0.4 : 1), 0, 0);
       chain[2]!.rotation.set(-(c * 0.8 + w * 0.6), 0, 0);
     });
-    const [tx, ty, tz] = hp.thumb;
-    this._e.set(tx, s * ty, s * tz);
-    b.thumb[0]!.quaternion.setFromEuler(this._e);
+    const aim = grip.userData.thumb as THREE.Object3D | undefined;
+    if (aim) this.aimThumb(aim, hp);
+    else {
+      const [tx, ty, tz] = hp.thumb;
+      this._e.set(tx, s * ty, s * tz);
+      b.thumb[0]!.quaternion.setFromEuler(this._e);
+    }
     b.thumb[1]!.rotation.set(-hp.thumbCurl[0], 0, 0);
     b.thumb[2]!.rotation.set(-hp.thumbCurl[1], 0, 0);
+  }
+
+  private readonly _m = new THREE.Matrix4();
+  private readonly _a = new THREE.Vector3();
+  private readonly _b = new THREE.Vector3();
+  private readonly _c = new THREE.Vector3();
+  private readonly _hq = new THREE.Quaternion();
+
+  /**
+   * Thumbs-forward (C4 review): the thumb's base swings so the digit runs from its root toward `aim` (an empty
+   * on the gun's left flank, set where the thumb lies along the frame), the nail turned out, away from the gun.
+   * The empty's own +Z (in gun space) says where the nail faces.
+   */
+  private aimThumb(aim: THREE.Object3D, hp: HandPose): void {
+    const t0 = this.bones.thumb[0]!;
+    const hand = this.bones.hand;
+    this.mesh.updateMatrixWorld(true);
+    t0.quaternion.identity();
+    t0.updateMatrixWorld(true);
+    const root = this._a.setFromMatrixPosition(t0.matrixWorld);
+    aim.updateWorldMatrix(true, false);
+    const tgt = this._b.setFromMatrixPosition(aim.matrixWorld);
+    const y = tgt.sub(root).normalize();
+    // The curls bend the tip toward the pad (-Z): lift the base by about half the curl to keep the line.
+    const nail = this._c.set(0, 0, 1).transformDirection(aim.matrixWorld);
+    nail.addScaledVector(y, -nail.dot(y)).normalize();
+    const lift = (hp.thumbCurl[0] + hp.thumbCurl[1]) * 0.45;
+    y.applyAxisAngle(new THREE.Vector3().crossVectors(y, nail).normalize(), lift).normalize();
+    nail.addScaledVector(y, -nail.dot(y)).normalize();
+    const x = new THREE.Vector3().crossVectors(y, nail).normalize();
+    this._m.makeBasis(x, y, nail);
+    const qW = new THREE.Quaternion().setFromRotationMatrix(this._m);
+    hand.getWorldQuaternion(this._hq);
+    t0.quaternion.copy(this._hq.invert().multiply(qW));
   }
 }
 
@@ -428,37 +465,93 @@ export function digit(lens: number[], radii: number[], opts: { seg: number; step
   return { geo: flatG, along };
 }
 
-/** The palm's slab in the hand bone's frame: wrist at y = 0, knuckles at PALM.len, the back of the hand +Z. */
-function palm(phone: boolean): THREE.BufferGeometry {
-  const len = PALM.len - 0.002;
-  let g: THREE.BufferGeometry = new RoundedBoxGeometry(PALM.w * 0.94, len, PALM.t, phone ? 2 : 5, 0.0128);
-  g.deleteAttribute("uv");
-  g.deleteAttribute("normal");
-  g = mergeVertices(g, 1e-6);
-  const p = g.getAttribute("position") as THREE.BufferAttribute;
-  for (let i = 0; i < p.count; i++) {
-    const y = p.getY(i) + len / 2;
-    const t = y / len;
-    const x = p.getX(i) * THREE.MathUtils.lerp(0.72, 1, THREE.MathUtils.smoothstep(t, 0, 0.7));
-    let z = p.getZ(i);
-    // The back of the hand domes across the metacarpals; the palm's heel and the knuckle line are fuller.
-    const across = 1 - Math.min(1, (x / (PALM.w * 0.47)) ** 2);
-    if (z > 0) {
-      z *= 1 + 0.3 * across * (0.45 + 0.55 * Math.sin(Math.PI * Math.min(1, t * 1.15)));
-      // The four knuckles (metacarpal heads) stand up through the leather at the end of the back of the hand,
-      // with the tendons' shallow valleys between them.
-      let kn = 0;
-      for (const fx of FINGER_X) {
-        const dx = (x - fx * 0.94) / 0.0075;
-        const dy = (t - 0.93) / 0.07;
-        kn += Math.exp(-dx * dx - dy * dy);
+/**
+ * The palm in the hand bone's frame (wrist at y = 0, knuckles at PALM.len, the back of the hand +Z), lofted from
+ * superellipse sections (C4 review: a rounded box read as a blockout): narrow and round at the wrist, widening
+ * to the knuckle line; the back domes over the metacarpals, the four knuckles stand up through the leather with
+ * tendon valleys between them, the palm side has the heel and the thumb's fleshy mound (the thenar) on the
+ * thumb side, and the far end rolls over under the finger roots. `side` 1 right, -1 left (the thumb is at -X*side).
+ */
+function palm(phone: boolean, side: 1 | -1): THREE.BufferGeometry {
+  const len = PALM.len;
+  const seg = phone ? 14 : 28;
+  const nr = phone ? 9 : 20;
+  const pos: number[] = [];
+  const ts: number[] = [];
+  for (let i = 0; i <= nr; i++) ts.push(i / nr);
+  const rows: number[][] = [];
+  const ss = (t: number) => t * t * (3 - 2 * t);
+  for (const t of ts) {
+    const y = -0.006 + t * (len + 0.002);
+    // Half width: the wrist's 2.6 cm swells to 3.5 cm across the knuckles; the far end rounds off.
+    let hw = THREE.MathUtils.lerp(0.025, PALM.w * 0.5, ss(Math.min(1, t * 1.35)));
+    // Half thickness, back and palm sides: thick at the heel, thinning toward the knuckles, the far end rolled.
+    let hb = THREE.MathUtils.lerp(0.0125, 0.0105, t);
+    let hp = THREE.MathUtils.lerp(0.0135, 0.0095, ss(t));
+    const roll = Math.max(0, (t - 0.86) / 0.14);
+    const rk = Math.sqrt(Math.max(0, 1 - roll * roll));
+    hw *= THREE.MathUtils.lerp(1, 0.86, roll * roll);
+    hb *= THREE.MathUtils.lerp(1, 0.78, roll);
+    hp *= THREE.MathUtils.lerp(1, 0.55, roll);
+    const row: number[] = [];
+    for (let k = 0; k < seg; k++) {
+      const a = (k / seg) * Math.PI * 2;
+      const c = Math.cos(a);
+      const sn = Math.sin(a);
+      // A superellipse: flatter flanks than an ellipse, so it reads as a hand, not a sausage.
+      const e = 2 / 2.6;
+      let x = Math.sign(c) * Math.abs(c) ** e * hw;
+      let z = Math.sign(sn) * Math.abs(sn) ** e * (sn > 0 ? hb : hp);
+      const u = x / (PALM.w * 0.5);
+      if (z > 0) {
+        // The back domes across the metacarpals.
+        z *= 1 + 0.18 * (1 - u * u);
+        // Knuckles and tendon valleys at the knuckle line.
+        let kn = 0;
+        for (const fx of FINGER_X) {
+          const dx = (x - fx * 0.96) / 0.0072;
+          const dy = (t - 0.84) / 0.085;
+          kn += Math.exp(-dx * dx - dy * dy);
+        }
+        const tendon = Math.max(0, Math.cos(u * Math.PI * 1.9)) * Math.exp(-(((t - 0.55) / 0.25) ** 2));
+        z += (0.0034 * kn + 0.0006 * tendon) * Math.min(1, z / 0.004);
+      } else {
+        // The heel of the hand and the thenar mound on the thumb side, the hollow of the palm between.
+        const th = Math.exp(-((((x * side) + 0.012) / 0.012) ** 2) - ((t - 0.3) / 0.24) ** 2);
+        const heel = Math.exp(-(((t - 0.12) / 0.14) ** 2)) * 0.12;
+        const hollow = Math.exp(-((x / 0.012) ** 2) - ((t - 0.58) / 0.18) ** 2) * 0.16;
+        z *= 1 + 0.42 * th + heel - hollow;
       }
-      z += 0.0026 * kn * Math.min(1, z / (PALM.t * 0.3));
+      // The far end rolls over under the finger roots.
+      z *= THREE.MathUtils.lerp(1, rk, 0.5);
+      row.push(pos.length / 3);
+      pos.push(x, y + roll * 0.004, z);
     }
-    else z *= 1 + 0.12 * Math.max(0, 1 - Math.abs(t - 0.25) * 3);
-    // The little-finger edge runs a touch shorter than the index edge.
-    p.setXYZ(i, x, y + 0.002, z);
+    rows.push(row);
   }
+  const idx: number[] = [];
+  for (let i = 0; i < rows.length - 1; i++)
+    for (let k = 0; k < seg; k++) {
+      const a = rows[i]![k]!;
+      const b = rows[i]![(k + 1) % seg]!;
+      const c = rows[i + 1]![k]!;
+      const d = rows[i + 1]![(k + 1) % seg]!;
+      idx.push(a, c, b, b, c, d);
+    }
+  // Close the far end with a fan to its centre (the wrist end sits inside the gauntlet).
+  const last = rows[rows.length - 1]!;
+  let cx = 0, cy = 0, cz = 0;
+  for (const v of last) {
+    cx += pos[v * 3]!;
+    cy += pos[v * 3 + 1]!;
+    cz += pos[v * 3 + 2]!;
+  }
+  const ci = pos.length / 3;
+  pos.push(cx / seg, cy / seg + 0.002, cz / seg);
+  for (let k = 0; k < seg; k++) idx.push(last[k]!, ci, last[(k + 1) % seg]!);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
   g.computeVertexNormals();
   const flat = g.toNonIndexed();
   flat.userData.edge = new Float32Array(flat.getAttribute("position").count);
