@@ -64,6 +64,9 @@ export interface GunRig {
   scoped?: boolean;
   /** The viewmodel camera's FOV at full aim (default 54, the hip FOV). */
   adsVmFov?: number;
+  /** A rest rotation at the hip (radians, XYZ), blended out as she aims: the muzzle turned a touch out and the
+   * slide canted in, so the left flank and the top read instead of the slide's back plate. */
+  hipRot?: [number, number, number];
   /** Wrist frames for Cath's hands (hands.ts): Y toward the knuckles, Z the back of the hand. No gripL = one-handed. */
   gripR: THREE.Object3D;
   gripL: THREE.Object3D | null;
@@ -153,7 +156,8 @@ function buildPin(): GunRig {
 
 /** The Kestrel 9 (game/kestrel.ts): built on the kit, every part its own node. */
 function buildPistol(phone: boolean): GunRig {
-  const r = rig(new THREE.Vector3(0.088, -0.086, -0.27), new THREE.Vector3(0, -0.0573, -0.4), 52);
+  const r = rig(new THREE.Vector3(0.092, -0.09, -0.28), new THREE.Vector3(0, -0.0573, -0.4), 52);
+  r.hipRot = [0.03, 0.1, 0.06];
   // Aimed, the viewmodel camera narrows so the gun sits further out (the hands drop away under the dot) at the same size.
   r.adsVmFov = 36;
   const { root, kit } = buildKestrel(phone);

@@ -137,6 +137,11 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   kit.add(decal(0.06, 0.0064), FIN.engraving, { p: [-0.01182, 0.023, -0.068], r: [0, Math.PI, 0] }, slide);
   // The one accent line: Hollowell cyan along the lower left edge.
   kit.add(rounded(0.0008, 0.0011, 0.118, 0.0003, o.phone), GLOW.trim, { p: [-0.0118, 0.0158, -0.07] }, slide);
+  // The slide's back face: a brushed striker cover plate with its retaining pin and a shallow relief groove,
+  // so the face she looks at most at the hip reads as machined, not a flat block.
+  kit.add(rounded(0.0158, 0.0196, 0.0016, 0.0012, o.phone), FIN.control, { p: [0, 0.0262, 0.0362] }, slide);
+  kit.add(rounded(0.0042, 0.0042, 0.0012, 0.0006, o.phone), FIN.pins, { p: [0, 0.0222, 0.0372] }, slide);
+  kit.add(rounded(0.012, 0.0008, 0.0008, 0.0003, o.phone), FIN.bore, { p: [0, 0.0318, 0.0371] }, slide);
   // The extractor on the right of the port.
   kit.add(rounded(0.0016, 0.004, 0.018, 0.0006, o.phone), FIN.pins, { p: [0.0118, 0.035, -0.008] }, slide);
 

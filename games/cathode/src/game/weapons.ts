@@ -126,7 +126,7 @@ export class Arsenal {
     this.arms = new Arms(phone);
     // S2.1 viewmodel lighting: a warm key from the upper left, a cyan rim from behind right, and a faint magenta
     // fill from below so the underside of the gun never goes black. The environment (lightRoom) adds the strips.
-    const key = new THREE.DirectionalLight(0xfff0e0, 1.2);
+    const key = new THREE.DirectionalLight(0xf4f1ee, 1.2);
     key.position.set(-0.6, 1, 0.45);
     const rim = new THREE.DirectionalLight(0x5fd8ff, 0.8);
     rim.position.set(1, 0.35, -1);
@@ -158,7 +158,7 @@ export class Arsenal {
     };
     strip(0xff2a47, 3, [-2.9, 0.6, -1], [0.05, 0.12, 3]);
     strip(0x3fe0ff, 3.4, [2.9, 0.9, -0.5], [0.05, 0.14, 3.4]);
-    strip(0xffb35a, 2.6, [0, 1.95, 0.5], [3.2, 0.05, 0.25]);
+    strip(0xffb35a, 1.1, [0, 1.95, 0.9], [3.2, 0.05, 0.25]);
     strip(0xffffff, 4, [-1.2, 1.95, -1.6], [1.6, 0.05, 0.4]);
     // A broad soft panel ahead and above: what the slide's top and flanks mostly see from the eye.
     strip(0xc8d4ff, 0.55, [0, 1.2, -2.95], [4.5, 1.6, 0.05]);
@@ -515,6 +515,12 @@ export class Arsenal {
     const base = r.hip.clone().lerp(r.ads, a.aim);
     r.root.position.copy(base).add(a.pos);
     r.root.rotation.copy(a.rot);
+    if (r.hipRot) {
+      const k = 1 - a.aim;
+      r.root.rotation.x += r.hipRot[0] * k;
+      r.root.rotation.y += r.hipRot[1] * k;
+      r.root.rotation.z += r.hipRot[2] * k;
+    }
     // The inspect clip, layered on top (S2.2 layer 3); any action cancels it.
     if (this.inspectHold >= 0) this.inspectT = this.inspectHold / 1000 - dt;
     if (this.inspectT >= 0) {
