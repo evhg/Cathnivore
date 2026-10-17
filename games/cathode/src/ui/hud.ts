@@ -590,7 +590,7 @@ export class Hud {
       this.ctrlKey = key;
       this.ctrlAt = now;
       const zones: { x0: number; y0: number; x1: number; y1: number }[] = [];
-      for (const e of document.querySelectorAll<HTMLElement>(".tbtn, .tbtn-menu, .stick:not(.on)")) {
+      for (const e of document.querySelectorAll<HTMLElement>(".tbtn, .tbtn-menu, .stick:not(.on), .look-hint:not(.gone)")) {
         if (e.closest("[hidden]")) continue;
         const b = e.getBoundingClientRect();
         if (b.width > 0) zones.push({ x0: b.left - 6, y0: b.top - 6, x1: b.right + 6, y1: b.bottom + 6 });

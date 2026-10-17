@@ -42,7 +42,7 @@ interface Preset {
 }
 
 const PRESETS: Record<Quality, Preset> = {
-  phone: { pool: 12, shadow: 1024, softShadow: false, reflScale: 0.5, reflCull: 0.045, mainCull: 0.006, shadowCull: 0.022, rain: 5000, splashes: 450, drips: 160, steam: 10, skyline: 90, shadowEvery: 2 },
+  phone: { pool: 12, shadow: 1024, softShadow: false, reflScale: 0.5, reflCull: 0.045, mainCull: 0.006, shadowCull: 0.03, rain: 5000, splashes: 450, drips: 160, steam: 10, skyline: 90, shadowEvery: 2 },
   high: { pool: 32, shadow: 2048, softShadow: true, reflScale: 1, reflCull: 0.012, mainCull: 0, shadowCull: 0, rain: 14000, splashes: 1300, drips: 420, steam: 18, skyline: 150, shadowEvery: 1 },
   ultra: { pool: 44, shadow: 4096, softShadow: true, reflScale: 1, reflCull: 0, mainCull: 0, shadowCull: 0, rain: 22000, splashes: 2200, drips: 700, steam: 24, skyline: 200, shadowEvery: 1 },
 };

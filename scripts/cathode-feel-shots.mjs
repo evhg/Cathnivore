@@ -129,7 +129,7 @@ for (const vp of vps) {
       const arcA = Number(getComputedStyle(document.querySelector('.hud-hurt-arc') ?? document.body).getPropertyValue('--a') || 0)
       const clusters = ['.hud-objective', '.hud-vitals', '.hud-arms', '.hud-feed-line', '.hud-sub', '.hud-target', '.hud-prompt', '.hud-threats > *', '.hud-wprompt', '.hud-toast', '.hud-teach.on',
         // C3: the off-screen chevron and its plate against everything, the touch controls included (a plate on FIRE).
-        '.hud-wp:not([hidden]).off .hud-wp-arrow', '.hud-wp:not([hidden]).off .hud-wp-dist', '.tbtn', '.tbtn-menu', '.stick']
+        '.hud-wp:not([hidden]).off .hud-wp-arrow', '.hud-wp:not([hidden]).off .hud-wp-dist', '.tbtn', '.tbtn-menu', '.stick', '.look-hint:not(.gone)']
         .flatMap((q) => [...document.querySelectorAll(q)].map((e) => [q, r(e)]))
         .filter(([, b]) => shown(b))
       // Anything in the HUD past the window's edges (a nowrap label spilling out of its cluster).
