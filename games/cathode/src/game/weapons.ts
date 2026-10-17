@@ -323,6 +323,8 @@ export class Arsenal {
     const pt = r.port.getWorldPosition(new THREE.Vector3());
     const fwd = new THREE.Vector3(0, 0, -1).transformDirection(r.root.matrixWorld);
     this.smoke.puff(mz, pt, fwd, this.heat.smokeMul);
+    // The puff's warm light sits just past the crown, so it catches the can, the slide and her glove.
+    this.flash.position.copy(mz).addScaledVector(fwd, 0.03);
   }
 
   /**
@@ -662,7 +664,7 @@ export class Arsenal {
     if (this.raising > 0) this.raising = Math.max(0, this.raising - dt);
     this.flashT = Math.max(0, this.flashT - dt);
     // The Kestrel's can: a small warm light for 40 ms (S2.3), not the open guns' blaze.
-    this.flash.intensity = this.flashT > 0 && def.id !== "kestrel" ? 6 : this.flashT > 0 ? 1.4 : 0;
+    this.flash.intensity = this.flashT > 0 && def.id !== "kestrel" ? 6 : this.flashT > 0 ? 3 : 0;
     this.flash.distance = def.id === "kestrel" ? KF.puff.lightRangeM : 1.2;
     const pistol = this.kestrel;
     if (pistol && this.rm.active) {

@@ -207,11 +207,13 @@ function buildPistol(phone: boolean): GunRig {
   r.poseL = POSES.pistolL!;
   // A suppressed first-person flash (S2.3): two small crossed quads of hot gas and a core, one frame.
   // C5: every quad carries a soft radial falloff (a flat quad edge-on read as a white needle from the eye).
-  const fm = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb070).multiplyScalar(2), map: puffTexture(), transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const fm = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb070).multiplyScalar(3), map: puffTexture(), transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
   // Two crossed quads along the bore (gas venting from the crown, 6.5 cm) and a 4 cm core facing her, merged:
   // one draw while it shows.
-  const quads = [0, 1].map((i) => new THREE.PlaneGeometry(0.065, 0.045).rotateY(Math.PI / 2).rotateX((i * Math.PI) / 2 + Math.PI / 4).translate(0, 0, -0.012));
-  quads.push(new THREE.PlaneGeometry(0.04, 0.04));
+  // The core sits 2.5 cm past the crown: from the eye the can hides anything closer (S2.3 acceptance: the muzzle
+  // region must read brighter on the shot, without a white cross over 0.1 m).
+  const quads = [0, 1].map((i) => new THREE.PlaneGeometry(0.075, 0.05).rotateY(Math.PI / 2).rotateX((i * Math.PI) / 2 + Math.PI / 4).translate(0, 0, -0.03));
+  quads.push(new THREE.PlaneGeometry(0.075, 0.075).translate(0, 0, -0.025));
   const flash = new THREE.Mesh(mergeGeometries(quads)!, fm);
   flash.position.copy(r.muzzle.position).z -= 0.012;
   flash.visible = false;
