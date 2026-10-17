@@ -410,7 +410,9 @@ export function kitMaterials(phone = false): KitMaterials {
     ? new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 1 })
     : new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 1, metalness: 1, clearcoat: 0.3, clearcoatRoughness: 0.22, sheen: 0.25, sheenRoughness: 0.5, sheenColor: new THREE.Color(0xd8d0cc) });
   patchKitMaterial(opaque, phone);
-  const emissive = new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: true });
+  // Phone grades 1.26x brighter and blooms at half resolution: its self-lit parts (tritium, trim, the dot) run
+  // at 60% so the rear sight reads as two dots, not a glowing green block.
+  const emissive = new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: true, color: new THREE.Color().setScalar(phone ? 0.6 : 1) });
   const glass = phone ? null : new THREE.MeshPhysicalMaterial({ color: 0x9fd8ff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.25, depthWrite: false, clearcoat: 1, clearcoatRoughness: 0.03 });
   const m: KitMaterials = { opaque, emissive, glass };
   MATS[key] = m;
@@ -499,8 +501,8 @@ float roughnessFactor = clamp(vMR.y + (gkT.a - 0.5) - gkWear * 0.2 + clamp((gkF2
         `#include <lights_physical_fragment>
 ${phone ? `// Phone: the frame is graded 1.26x brighter and has no sheen or clearcoat lobes, so a dielectric's broad
 // specular (leather, gabardine, polymer) would wash grey; damp it so black gloves stay black (C4).
-material.specularColor *= mix(0.55, 1.0, step(0.5, vMR.x));
-material.specularF90 *= mix(0.55, 1.0, step(0.5, vMR.x));` : ""}
+material.specularColor *= mix(0.45, 1.0, step(0.5, vMR.x));
+material.specularF90 *= mix(0.45, 1.0, step(0.5, vMR.x));` : ""}
 #ifdef USE_CLEARCOAT
 material.clearcoat *= vMR.z;
 #endif

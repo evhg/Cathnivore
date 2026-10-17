@@ -150,7 +150,7 @@ export class Arm {
         [chain[2]!, t0 * t1 * t2],
       ];
     };
-    const seg = phone ? 12 : 24;
+    const seg = phone ? 12 : 36;
     // Upper arm and forearm: the trench sleeve, tapering to the wrist, with a turned-back cuff and a button.
     add(upper, tube(ARM.upper + 0.03, 0.046, 0.043, { seg, caps: false, phone }), FIN.sleeve, { p: [0, -0.01, 0] });
     add(fore, sphere(0.044, phone), FIN.sleeve);
