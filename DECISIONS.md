@@ -495,3 +495,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-17 (C4): the viewmodel cuff follows the character bible (charcoal gabardine trench, cream silk cuff, pearl bracelet, black gloves), not S2.1's burgundy cuff: Cath is the face of every game.
 - 2026-10-17 (C4): each arm is one skinned mesh (rigid weights), so the Kestrel with hands is 11 draws desktop / 10 phone; ADS narrows the viewmodel camera to 36° with the gun 0.4 m out so the wrists drop under the dot.
 - 2026-10-17 (C4): older guns keep their shapes but fold into the kit material (2-4 draws each); their own rebuild is C18. Gun budgets count visible meshes at rest (the one-frame flash is excluded).
+- 2026-10-17 (C4): glove fingers are single lathed tubes skinned across three phalanx bones (smoothstep blends ±0.75r at each joint) rather than per-phalanx capsules; the palm heel takes 55% of the forearm so the wrist bends without a seam.
+- 2026-10-17 (C4): the phone profile damps dielectric specular to 45% and kit emissives to 60% in the kit shader, compensating its 1.26x brighter grade, half-res bloom and missing sheen/clearcoat lobes; desktop is unchanged.
+- 2026-10-17 (C4): `vm-lab.html` (dev only, like ui-lab) is the fast loop for viewmodel shape work: seconds per angle instead of minutes per full-game SwiftShader frame.
