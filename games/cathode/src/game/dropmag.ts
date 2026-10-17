@@ -1,9 +1,11 @@
 // The empty reload's spent magazine (S2.4): the viewmodel's mag, copied into the street at the moment it
 // leaves the gun, falls and tumbles, bounces once or twice (restitution 0.2) and lies there for 10 s. At most six
-// at once, the oldest going first.
+// at once, the oldest going first. Every drop is one instance of a single InstancedMesh: one draw call for all
+// six, not one each (C5 review: draw calls over the S0 budget).
 
 import * as THREE from "three";
 import { tuning } from "./feel/tuning";
+import { collapse } from "./gunkit";
 
 const R = tuning.kestrel.reload;
 
@@ -18,6 +20,8 @@ interface Drop {
 
 export class DroppedMags {
   private readonly drops: Drop[] = [];
+  /** All the drops in one draw, built from the first mag dropped (its opaque kit pieces, no top round). */
+  private mesh: THREE.InstancedMesh | null = null;
 
   constructor(
     private readonly scene: THREE.Scene,
@@ -35,26 +39,50 @@ export class DroppedMags {
     const mq = new THREE.Quaternion();
     const sc = new THREE.Vector3();
     mag.matrixWorld.decompose(p, mq, sc);
-    const obj = mag.clone(true);
-    obj.visible = true;
-    // An empty mag: its top round stays in the gun's story, not on the street.
-    obj.getObjectByName("magRound")?.removeFromParent();
+    if (!this.mesh) {
+      const src = mag.clone(true);
+      src.visible = true;
+      // An empty mag: its top round stays in the gun's story, not on the street.
+      src.getObjectByName("magRound")?.removeFromParent();
+      src.position.set(0, 0, 0);
+      src.quaternion.identity();
+      src.scale.set(1, 1, 1);
+      const one = collapse(src);
+      if (!one) return;
+      this.mesh = new THREE.InstancedMesh(one.geometry, one.material, R.dropMagMax);
+      this.mesh.name = "droppedMags";
+      this.mesh.count = 0;
+      this.mesh.castShadow = false;
+      // The instances spread over the street: no single bounding sphere fits, so don't cull.
+      this.mesh.frustumCulled = false;
+      this.scene.add(this.mesh);
+    }
+    const obj = new THREE.Object3D();
     obj.position.copy(p.applyQuaternion(q).add(eye));
     obj.quaternion.copy(q).multiply(mq);
-    obj.traverse((o) => {
-      o.frustumCulled = true;
-      (o as THREE.Mesh).castShadow = false;
-    });
-    this.scene.add(obj);
     if (this.drops.length >= R.dropMagMax) this.remove(0);
     this.drops.push({ obj, vel: vel.clone(), spin: new THREE.Vector3((Math.random() - 0.5) * 9, (Math.random() - 0.5) * 6, (Math.random() - 0.5) * 9), age: 0, resting: false, bounces: 0 });
+    this.sync();
+  }
+
+  /** Writes every drop's transform into the instanced mesh. */
+  private sync(): void {
+    const m = this.mesh;
+    if (!m) return;
+    this.drops.forEach((d, i) => {
+      d.obj.updateMatrix();
+      m.setMatrixAt(i, d.obj.matrix);
+    });
+    m.count = this.drops.length;
+    m.visible = m.count > 0;
+    m.instanceMatrix.needsUpdate = true;
   }
 
   private remove(i: number): void {
     const d = this.drops[i];
     if (!d) return;
-    d.obj.removeFromParent();
     this.drops.splice(i, 1);
+    this.sync();
   }
 
   get count(): number {
@@ -94,6 +122,7 @@ export class DroppedMags {
         }
       }
     }
+    this.sync();
   }
 
   clear(): void {

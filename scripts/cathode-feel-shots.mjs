@@ -23,9 +23,9 @@ const C3 = ['pickup-first-from-takedown', 'pickup-prompt', 'objective-offscreen'
 // C4 "Kestrel 9, built like a real gun": the pistol at rest, aimed down the dot, and mid-inspect.
 const C4 = ['pistol-idle', 'pistol-ads', 'pistol-inspect@900', 'pistol-alley']
 // C5 "Kestrel 9 in motion": the shot at 0, 20 and 45 ms, the lock, the reload at 400 and 930 ms, the draw at
-// 300 ms (idle first: fire-0's muzzle is judged against it). C5X are the review extras (the empty reload past
+// 140 ms (mid-rise) and 300 ms (idle first: fire-0's muzzle is judged against it). C5X are the review extras (the empty reload past
 // its seat, the hero draw's rack, the press-check, an aimed shot).
-const C5 = ['pistol-idle', 'pistol-fire@0', 'pistol-fire@20', 'pistol-fire@45', 'pistol-lock', 'pistol-reload@400', 'pistol-reload@930', 'pistol-draw@300']
+const C5 = ['pistol-idle', 'pistol-fire@0', 'pistol-fire@20', 'pistol-fire@45', 'pistol-lock', 'pistol-reload@400', 'pistol-reload@930', 'pistol-draw@140', 'pistol-draw@300']
 const C5X = ['pistol-reload-empty@1300', 'pistol-reload-empty@1470', 'pistol-hero@340', 'pistol-presscheck@700', 'pistol-fire-ads@0', 'pistol-reload@200', 'pistol-reload@700']
 const MS = { C1, C2, C3, C4, C5, C5X }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
