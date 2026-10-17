@@ -111,7 +111,9 @@ export class DamageRing {
       const chev = document.createElement("div");
       chev.className = "hud-dmg-chev";
       const cs = svg("svg", { viewBox: "-24 -16 48 32" }, chev);
-      svg("path", { d: "M-20 -12L0 2L20 -12L20 -4L0 12L-20 -4Z" }, cs);
+      // Two stacked chevrons, the outer one fainter: it reads as "behind you, down there" at a glance.
+      svg("path", { d: "M-20 -14L0 -2L20 -14L20 -7L0 5L-20 -7Z", class: "far" }, cs);
+      svg("path", { d: "M-20 -1L0 11L20 -1L20 6L0 18L-20 6Z" }, cs);
       this.root.append(chev);
       this.slots.push({ g, chev, key: null, at: null, bearing: 0, elev: 0, kind: "bullet", base: 0, t: 1e9 });
     }
