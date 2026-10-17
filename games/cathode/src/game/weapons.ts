@@ -904,6 +904,9 @@ export class Arsenal {
       const w = channel(this.rm.clip, "arm", this.rm.t, 0);
       if (w > 0) this.shR.lerp(SHOULDER_R_RELOAD, w);
     }
+    // The lock's turn swings the firing forearm level across the bottom of the frame (over the ammo block):
+    // drop that shoulder part-way too, so the arm falls away under the turned gun.
+    if (pistol && this.lockW > 0.001) this.shR.lerp(SHOULDER_R_RELOAD, this.lockW * 0.7);
     // The Kestrel's trigger finger curls while the shot breaks and while the button is held (the preload).
     const curl = pistol ? Math.min(1, this.trigMm / KF.fire.triggerMm) : firing ? 1 : 0;
     const gl = pistol && this.handW > 0.001 ? this.gripLDyn : r.gripL;
