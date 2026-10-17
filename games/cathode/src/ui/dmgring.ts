@@ -101,7 +101,7 @@ export class DamageRing {
     const mask = svg("mask", { id: "hud-dmg-mask", maskContentUnits: "objectBoundingBox" }, defs);
     svg("rect", { x: "0", y: "0", width: "1", height: "1", fill: "url(#hud-dmg-feather)" }, mask);
     const body = crescent(RING.r, RING.spanDeg, RING.thick, RING.tip);
-    const glow = crescent(RING.r, RING.spanDeg + 8, RING.thick * 2.8 + 6, RING.tip + 4);
+    const glow = crescent(RING.r, RING.spanDeg + 6, RING.thick * 1.9 + 4, RING.tip + 3);
     const core = coreLine(RING.r, RING.spanDeg * 0.78);
     for (let i = 0; i < SLOTS; i++) {
       const g = svg("g", { class: "hud-dmg-arc" }, this.ringSvg);

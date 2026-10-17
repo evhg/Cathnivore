@@ -216,9 +216,15 @@ const GradeShader = {
         float keepCentre = 1.0 - smoothstep( 0.15, 0.55, r );
         float ml = dot( mapped, vec3( 0.2126, 0.7152, 0.0722 ) );
         mapped = mix( mapped, vec3( ml ), uWound * 0.7 * ( 1.0 - keepCentre * 0.5 ) );
-        mapped = mix( mapped, vec3( 0.42, 0.02, 0.04 ), vg * ( 0.55 * uWound + 0.35 * uHurt ) );
+        // Blood, not paint: the edge darkens and goes deep red through the scene's own light (multiplied), so the
+        // street still shows through it.
+        float bl = vg * ( 0.55 * uWound + 0.35 * uHurt );
+        vec3 blood = mapped * vec3( 0.95, 0.1, 0.12 ) + vec3( 0.06, 0.0, 0.004 );
+        mapped = mix( mapped, blood, min( 1.0, bl * 1.6 ) );
+        mapped *= 1.0 - bl * 0.45;
         float lobe = max( 0.0, dot( normalize( c + 1e-5 ), uHurtDir ) ) * uHurt;
-        mapped += vec3( 0.8, 0.05, 0.05 ) * lobe * lobe * smoothstep( 0.25, 0.7, r ) * 0.6;
+        float lb = lobe * lobe * smoothstep( 0.25, 0.7, r );
+        mapped = mix( mapped, mapped * vec3( 1.1, 0.14, 0.14 ) + vec3( 0.16, 0.004, 0.012 ), min( 1.0, lb * 0.9 ) );
       }
       // Encode to sRGB here so FXAA (phone) works on perceptual values.
       mapped = mix( mapped * 12.92, 1.055 * pow( max( mapped, 0.0 ), vec3( 1.0 / 2.4 ) ) - 0.055, step( 0.0031308, mapped ) );

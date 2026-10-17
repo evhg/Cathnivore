@@ -478,7 +478,7 @@
   transform-origin: 0 0;
   transform: rotate(var(--rot, 0deg)) scale(var(--s, 1));
 }
-.hud-dmg-arc .glow { fill: rgb(var(--blood-deep-rgb)); opacity: .55; }
+.hud-dmg-arc .glow { fill: rgb(var(--blood-deep-rgb)); opacity: .42; }
 .hud-dmg-arc .body { fill: currentColor; stroke: rgb(var(--black-rgb) / .45); stroke-width: .8; }
 .hud-dmg-arc .core { fill: none; stroke: #fff1ee; stroke-width: 2; stroke-linecap: round; opacity: 0; }
 .hud-dmg-arc.is-core .core { opacity: .95; }
