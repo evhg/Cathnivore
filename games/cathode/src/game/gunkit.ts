@@ -43,7 +43,8 @@ export const FIN = {
   grip: { color: 0x1b1c1f, metal: 0, rough: 0.7, band: "stipple", wear: 0.3 },
   slide: { color: 0x2a2c30, metal: 1, rough: 0.34, coat: 1, band: "peel" },
   serration: { color: 0x2a2c30, metal: 1, rough: 0.34, coat: 1, band: "serration" },
-  engraving: { color: 0x2a2c30, metal: 1, rough: 0.34, coat: 1, band: "engraving", wear: 0.2 },
+  /** Twice the slide's colour, halved by the band off the letters: the cuts show bare steel at up to 2x. */
+  engraving: { color: 0x54585f, metal: 1, rough: 0.34, coat: 1, band: "engraving", wear: 0.2 },
   faction: { color: 0x1b1c1f, metal: 0, rough: 0.6, band: "faction", wear: 0 },
   bronze: { color: 0x8a6a3c, metal: 1, rough: 0.28, band: "brushed" },
   pins: { color: 0x9aa0a6, metal: 1, rough: 0.4, band: "brushed" },

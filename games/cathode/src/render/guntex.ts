@@ -203,8 +203,9 @@ function bandField(name: BandName, w: number, h: number, k: number, text: ((name
       for (let i = 0; i < n; i++) {
         const c = t[i]!;
         f.h[i] = 1 - c;
-        f.alb[i] = 1 - c * 0.45 + 0;
-        f.rough[i] = c * 0.18;
+        // Cut through the Cerakote to bright bare steel, so the lettering reads on a black slide at inspect.
+        f.alb[i] = name === "engraving" ? 0.5 + c * 1.45 : 1 - c * 0.45;
+        f.rough[i] = name === "engraving" ? -c * 0.1 : c * 0.18;
       }
       f.strength = 3;
     }

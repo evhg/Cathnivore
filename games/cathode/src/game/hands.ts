@@ -17,8 +17,10 @@ export const ARM = { upper: 0.31, fore: 0.27 };
 export const SHOULDER_R = new THREE.Vector3(0.18, -0.28, 0.35);
 export const SHOULDER_L = new THREE.Vector3(-0.18, -0.28, 0.35);
 /** Aimed, the shoulders sit lower and closer so the forearms fall away under the sights. */
-export const SHOULDER_R_ADS = new THREE.Vector3(0.16, -0.46, 0.26);
-export const SHOULDER_L_ADS = new THREE.Vector3(-0.19, -0.48, 0.26);
+// Out and well down (C4 review: at 0.46 m the sleeves were 80% of the aimed viewmodel, a wall of cloth): now
+// the wrists and cuffs show under the gun and the forearms fall out of frame.
+export const SHOULDER_R_ADS = new THREE.Vector3(0.21, -0.58, 0.22);
+export const SHOULDER_L_ADS = new THREE.Vector3(-0.24, -0.6, 0.22);
 
 /** Palm: wrist at the origin, knuckles at +Y; Z is the back of the hand. */
 const PALM = { w: 0.072, len: 0.082, t: 0.026 };

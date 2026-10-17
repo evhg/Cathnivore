@@ -158,7 +158,10 @@ function buildPin(): GunRig {
 function buildPistol(phone: boolean): GunRig {
   // Aimed, the gun sits so the red dot's point lands exactly on the camera axis (the screen centre, where rounds
   // go), 0.42 m out: derived from the dot itself, so moving the optic can never leave the dot off the aim point.
-  const r = rig(new THREE.Vector3(0.092, -0.09, -0.28), new THREE.Vector3(-KESTREL_DOT[0], -KESTREL_DOT[1], -0.42 - KESTREL_DOT[2]), 52);
+  // At the hip: a touch in and up from the corner so the ammo cluster has its own space; on a phone further in
+  // and up again, clear of the RELOAD/AIM thumb buttons.
+  const hip = phone ? new THREE.Vector3(0.072, -0.074, -0.28) : new THREE.Vector3(0.084, -0.086, -0.28);
+  const r = rig(hip, new THREE.Vector3(-KESTREL_DOT[0], -KESTREL_DOT[1], -0.42 - KESTREL_DOT[2]), 52);
   r.hipRot = [0.03, 0.1, 0.06];
   // Aimed, the viewmodel camera narrows so the gun sits further out (the hands drop away under the dot) at the same size.
   r.adsVmFov = 36;

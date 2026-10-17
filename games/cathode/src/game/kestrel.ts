@@ -23,6 +23,24 @@ export const KESTREL_DOT: readonly [number, number, number] = [0, 0.0455 + 0.011
 const BORE = 0.03;
 const RAKE = 0.31;
 
+/** Cocking serrations seen from above (a plan outline), teeth on both flanks from z0 back to z1. */
+function serrations(z0: number, z1: number, n: number): P2[] {
+  const half = 0.0125;
+  const d = 0.0006;
+  const out: P2[] = [[-half + 0.0004, z0]];
+  for (let i = 0; i <= n; i++) {
+    const z = z0 + ((z1 - z0) * i) / n;
+    out.push([-half, z - 0.0011 * Math.sign(z0 - z1)], [-half - d, z]);
+  }
+  out.push([-half + 0.0004, z1], [half - 0.0004, z1]);
+  for (let i = n; i >= 0; i--) {
+    const z = z0 + ((z1 - z0) * i) / n;
+    out.push([half + d, z], [half, z + 0.0011 * Math.sign(z0 - z1)]);
+  }
+  out.push([half - 0.0004, z0]);
+  return out;
+}
+
 export function buildKestrel(phone = false, lod = false): { root: THREE.Group; kit: GunKit } {
   const root = new THREE.Group();
   root.name = "kestrel9";
@@ -97,47 +115,40 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
 
   // ---- Slide (Cerakote over steel): rear serrations, a top port notch, a lightening window, engraving, trim.
   const slide = kit.part("slide");
+  // The flanks stop 3 mm short of the top: a chamfered top strap (below) rides on them.
   const slideOutline: P2[] = [
     [0.036, 0.0135],
-    [0.036, 0.041],
-    [0.032, 0.0455],
-    [0.0, 0.0455],
+    [0.036, 0.04],
+    [0.0345, 0.0425],
+    [0.0, 0.0425],
     // The ejection port: an open notch in the top, the barrel's hood shows through it.
     [-0.0015, 0.0375],
     [-0.042, 0.0375],
-    [-0.0435, 0.0455],
-    [-0.139, 0.0455],
-    [-0.1445, 0.042],
+    [-0.0435, 0.0425],
+    [-0.139, 0.0425],
+    [-0.1445, 0.04],
     [-0.1455, 0.03],
     [-0.1445, 0.016],
     [-0.141, 0.0135],
   ];
+  // The lightening cut: a long slot through the flanks ahead of the port, the barrel's bronze showing through.
   const windowHole: P2[] = [
-    [-0.098, 0.031],
-    [-0.13, 0.031],
-    [-0.132, 0.038],
-    [-0.1, 0.038],
+    [-0.06, 0.0315],
+    [-0.1, 0.0315],
+    [-0.1025, 0.0375],
+    [-0.0625, 0.0375],
   ];
   kit.add(profile(slideOutline, 0.0235, { bevel: 0.0011, holes: [windowHole], ...o }), FIN.slide, undefined, slide);
-  // Rear cocking serrations: seen from above, teeth on both flanks.
-  const teeth: P2[] = [];
-  const half = 0.0125;
-  const zs: [number, number] = [0.031, 0.006];
-  const nT = 7;
-  teeth.push([-half + 0.0004, zs[0]]);
-  for (let i = 0; i <= nT; i++) {
-    const z = zs[0] + ((zs[1] - zs[0]) * i) / nT;
-    teeth.push([-half, z - 0.0012], [-half - 0.0003, z]);
-  }
-  teeth.push([-half + 0.0004, zs[1]], [half - 0.0004, zs[1]]);
-  for (let i = nT; i >= 0; i--) {
-    const z = zs[0] + ((zs[1] - zs[0]) * i) / nT;
-    teeth.push([half + 0.0003, z], [half, z + 0.0012]);
-  }
-  teeth.push([half - 0.0004, zs[0]]);
-  kit.add(plan(teeth, 0.022, { ...o }), FIN.serration, { p: [0, 0.029, 0] }, slide);
+  // The top strap: 45° chamfers down both edges, so the slide's top reads machined, not a box (C4 review).
+  const strap: P2[] = [[-0.0117, 0], [0.0117, 0], [0.0117, 0.0006], [0.0086, 0.003], [-0.0086, 0.003], [-0.0117, 0.0006]];
+  kit.add(facade(strap, 0.0345, { bevel: 0.0004, ...o }), FIN.slide, { p: [0, 0.0425, 0.01725] }, slide);
+  kit.add(facade(strap, 0.0955, { bevel: 0.0004, ...o }), FIN.slide, { p: [0, 0.0425, -0.09125] }, slide);
+  // Front cocking serrations, a shorter set than the rear's, on both flanks ahead of the lightening cut.
+  kit.add(plan(serrations(-0.112, -0.136, 6), 0.019, { ...o }), FIN.serration, { p: [0, 0.0265, 0] }, slide);
+  // Rear cocking serrations: seen from above, deep teeth on both flanks.
+  kit.add(plan(serrations(0.031, 0.006, 9), 0.022, { ...o }), FIN.serration, { p: [0, 0.029, 0] }, slide);
   // The engraving on the left flank, readable at inspect.
-  kit.add(decal(0.06, 0.0064), FIN.engraving, { p: [-0.01182, 0.023, -0.068], r: [0, Math.PI, 0] }, slide);
+  kit.add(decal(0.074, 0.0084), FIN.engraving, { p: [-0.01186, 0.0225, -0.072], r: [0, Math.PI, 0] }, slide);
   // The one accent line: Hollowell cyan along the lower left edge.
   kit.add(rounded(0.0008, 0.0011, 0.118, 0.0003, o.phone), GLOW.trim, { p: [-0.0118, 0.0158, -0.07] }, slide);
   // The slide's back face: a brushed striker cover plate with its retaining pin and a shallow relief groove,
@@ -173,8 +184,9 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
     [-0.0118, 0.0105],
     [-0.0125, 0.006],
   ];
-  const hoodWin: P2[] = [[-0.0098, 0.0058], [0.0098, 0.0058], [0.0098, 0.0105], ...arc(0, 0.0105, 0.0098, 0, Math.PI, o.phone ? 6 : 10).slice(1, -1), [-0.0098, 0.0105]];
-  kit.add(facade(hoodOut, 0.028, { holes: [hoodWin], bevel: 0.0008, ...o }), FIN.housing, { p: [0, 0.0455, dotZ] }, slide);
+  // Thin walls (1.6 mm) round a big window, the hood shallower than the base: a modern slide optic, not a slab.
+  const hoodWin: P2[] = [[-0.0109, 0.0056], [0.0109, 0.0056], [0.0109, 0.0105], ...arc(0, 0.0105, 0.0109, 0, Math.PI, o.phone ? 6 : 10).slice(1, -1), [-0.0109, 0.0105]];
+  kit.add(facade(hoodOut, 0.02, { holes: [hoodWin], bevel: 0.0006, ...o }), FIN.housing, { p: [0, 0.0455, dotZ - 0.002] }, slide);
   // The base under the window, with the emitter bump at the back.
   kit.add(rounded(0.0222, 0.006, 0.026, 0.0012, o.phone), FIN.housing, { p: [0, 0.0455 + 0.003, dotZ] }, slide);
   kit.add(rounded(0.006, 0.004, 0.005, 0.0015, o.phone), FIN.housing, { p: [0, 0.0455 + 0.007, dotZ + 0.009] }, slide);
