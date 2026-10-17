@@ -5,6 +5,27 @@
 import * as THREE from "three";
 import type { WeaponClass } from "../sim/types";
 import { buildGun, SwingTrail, ViewAnim, type GunModel, type GunRig } from "./viewmodel";
+import { Arms, SHOULDER_L, SHOULDER_L_ADS, SHOULDER_R, SHOULDER_R_ADS } from "./hands";
+import { sampleClip, type Clip } from "./feel/clip";
+
+/**
+ * The inspect (S2.2 layer 3): she turns the gun to read its left flank, tips it to look down the dot, and
+ * brings it back. Offsets on the rig root, in its own space (m, rad).
+ */
+export const INSPECT: Clip = {
+  dur: 2600,
+  tracks: {
+    root: [
+      [0, [0, 0, 0], [0, 0, 0]],
+      [420, [-0.075, 0.045, 0.03], [0.12, 0.95, 0.42], "inOut"],
+      [1350, [-0.07, 0.05, 0.03], [0.18, 1.02, 0.38]],
+      [1800, [-0.03, 0.03, 0.01], [-0.32, 0.25, -0.15], "inOut"],
+      [2150, [-0.03, 0.03, 0.01], [-0.3, 0.22, -0.12]],
+      [2600, [0, 0, 0], [0, 0, 0], "inOut"],
+    ],
+  },
+  events: [[80, "cloth"], [1750, "cloth"], [2550, "settle"]],
+};
 
 export type FireKind = "hitscan" | "ballistic" | "melee";
 
@@ -95,22 +116,70 @@ export class Arsenal {
   private readonly tipV = new THREE.Vector3();
   private readonly midV = new THREE.Vector3();
 
-  constructor(scene: THREE.Scene) {
+  /** Cath's arms (hands.ts): one skinned mesh each, riding the gun in hand. */
+  readonly arms: Arms;
+  private readonly scene: THREE.Scene;
+
+  constructor(scene: THREE.Scene, phone = false) {
+    this.scene = scene;
     this.trail = new SwingTrail(scene);
-    const key = new THREE.DirectionalLight(0xfff0e0, 1.1);
-    key.position.set(-0.5, 1, 0.6);
-    const rim = new THREE.DirectionalLight(0x6fd8ff, 1.6);
-    rim.position.set(1, 0.4, -1);
-    const pink = new THREE.DirectionalLight(0xff2e88, 0.8);
-    pink.position.set(-1, -0.2, -0.6);
-    scene.add(key, rim, pink, this.flash);
+    this.arms = new Arms(phone);
+    // S2.1 viewmodel lighting: a warm key from the upper left, a cyan rim from behind right, and a faint magenta
+    // fill from below so the underside of the gun never goes black. The environment (lightRoom) adds the strips.
+    const key = new THREE.DirectionalLight(0xfff0e0, 1.2);
+    key.position.set(-0.6, 1, 0.45);
+    const rim = new THREE.DirectionalLight(0x5fd8ff, 0.8);
+    rim.position.set(1, 0.35, -1);
+    const fill = new THREE.DirectionalLight(0xff3f8f, 0.35);
+    fill.position.set(-0.4, -0.6, -0.4);
+    scene.add(key, rim, fill, this.flash);
     this.held = SLICE_WEAPONS.map((def) => {
-      const rig = buildGun(def.model);
+      const rig = buildGun(def.model, phone);
       rig.root.visible = false;
       scene.add(rig.root);
       return { def, rig, ammo: def.mag, reserve: def.reserve };
     });
     this.equip(1);
+  }
+
+  /**
+   * The viewmodel's own reflections (S2.1): a PMREM of a tiny dark room with four neon strips (red, cyan, amber,
+   * white), so metal always has something to reflect and the gun never renders black in a dark alley.
+   */
+  lightRoom(renderer: THREE.WebGLRenderer): void {
+    const room = new THREE.Scene();
+    room.background = new THREE.Color(0x07080b);
+    const box = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 6), new THREE.MeshBasicMaterial({ color: 0x161a22, side: THREE.BackSide }));
+    room.add(box);
+    const strip = (c: number, k: number, p: [number, number, number], s: [number, number, number]) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(...s), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(k) }));
+      m.position.set(...p);
+      room.add(m);
+    };
+    strip(0xff2a47, 3, [-2.9, 0.6, -1], [0.05, 0.12, 3]);
+    strip(0x3fe0ff, 3.4, [2.9, 0.9, -0.5], [0.05, 0.14, 3.4]);
+    strip(0xffb35a, 2.6, [0, 1.95, 0.5], [3.2, 0.05, 0.25]);
+    strip(0xffffff, 4, [-1.2, 1.95, -1.6], [1.6, 0.05, 0.4]);
+    // A broad soft panel ahead and above: what the slide's top and flanks mostly see from the eye.
+    strip(0xc8d4ff, 1.1, [0, 1.2, -2.95], [4.5, 1.6, 0.05]);
+    strip(0xffd2a8, 0.8, [-2.95, 0.2, 1.2], [0.05, 1.4, 2.5]);
+    // A floor glow, the wet street's bounce.
+    strip(0x2a3a5a, 1.2, [0, -1.95, -1], [5, 0.05, 3]);
+    const gen = new THREE.PMREMGenerator(renderer);
+    const env = gen.fromScene(room, 0.02).texture;
+    gen.dispose();
+    this.scene.environment = env;
+    this.scene.environmentIntensity = 1;
+  }
+
+  private inspectT = -1;
+  private readonly shR = new THREE.Vector3();
+  private readonly shL = new THREE.Vector3();
+
+  /** Starts the inspect (C5 binds it to a key; the pistol-inspect stage holds a moment of it). */
+  inspect(atMs = 0): void {
+    if (this.busy) return;
+    this.inspectT = atMs / 1000;
   }
 
   get weapon(): WeaponDef {
@@ -163,6 +232,8 @@ export class Arsenal {
     this.rig.root.visible = false;
     this.current = i;
     this.rig.root.visible = true;
+    this.arms.attach(this.rig.root);
+    this.inspectT = -1;
     this.raising = 0.35;
     this.reloading = 0;
     this.boltLeft = 0;
@@ -441,6 +512,23 @@ export class Arsenal {
     const base = r.hip.clone().lerp(r.ads, a.aim);
     r.root.position.copy(base).add(a.pos);
     r.root.rotation.copy(a.rot);
+    // The inspect clip, layered on top (S2.2 layer 3); any action cancels it.
+    if (this.inspectT >= 0) {
+      if (this.busy || this.aiming || this.cd > 0 || swinging) this.inspectT = -1;
+      else {
+        this.inspectT += dt;
+        if (this.inspectT * 1000 >= INSPECT.dur) this.inspectT = -1;
+        else {
+          const k = sampleClip(INSPECT, this.inspectT * 1000).root!;
+          r.root.position.x += k.pos[0];
+          r.root.position.y += k.pos[1];
+          r.root.position.z += k.pos[2];
+          r.root.rotation.x += k.rot[0];
+          r.root.rotation.y += k.rot[1];
+          r.root.rotation.z += k.rot[2];
+        }
+      }
+    }
     // The smear behind a melee swing, through the strike only.
     if (melee && swinging && this.swingT > 0.07 && this.swingT < 0.24) {
       r.root.updateMatrixWorld(true);
@@ -465,19 +553,34 @@ export class Arsenal {
     }
     // An empty pistol holds its slide back; the reload drops it on the fresh magazine.
     const held = this.held[this.current]!;
+    const h0 = held;
     const lock = def.weaponClass === "pistol" && (held.ammo <= 0 || (reloadP >= 0 && this.reloadEmpty && reloadP < 0.85)) ? 1 : 0;
     if (r.action) {
-      if (def.weaponClass === "pistol") r.action.position.z = Math.max(a.action, lock) * 0.03;
+      if (def.weaponClass === "pistol") r.action.position.z = Math.max(a.action, lock) * 0.024;
       else if (def.weaponClass === "shotgun") r.action.position.z = a.action * 0.08;
       else if (def.weaponClass === "sniper") {
         r.action.rotation.z = a.action * 1.3;
         r.action.position.z = 0.06 + Math.max(0, a.action - 0.5) * 0.12;
       }
     }
+    // The Kestrel's small parts: the slide stop rises 12° on a locked slide, the hammer falls on the shot and
+    // re-cocks as the slide returns, the trigger travels 5 mm while the shot breaks.
+    const firing = def.kind !== "melee" && since < 0.07 && h0.ammo >= 0 && this.cd > 0;
+    const P = r.parts;
+    if (P.slideStop) P.slideStop.rotation.x = lock * 0.21;
+    if (P.hammer) P.hammer.rotation.x = since < 0.03 && this.cd > 0 ? 0.96 * Math.min(1, Math.max(0, (since - 0.012) / 0.018)) : 0.96;
+    if (P.trigger) P.trigger.rotation.x = firing ? -0.24 : 0;
+    if (P.barrel) P.barrel.rotation.x = def.weaponClass === "pistol" ? Math.min(1, Math.max(a.action, lock) * 1.6) * 0.052 : 0;
+    // Her hands on the grip, the index onto the trigger while the shot breaks.
+    this.shR.lerpVectors(SHOULDER_R, SHOULDER_R_ADS, a.aim);
+    this.shL.lerpVectors(SHOULDER_L, SHOULDER_L_ADS, a.aim);
+    this.arms.pose(r.root, r.gripR, r.gripL, r.poseR, r.poseL, firing ? 1 : 0, this.shR, this.shL);
     // The scope: past 85% aim the rig hides and the overlay takes over.
     r.root.visible = !(r.scoped && a.aim > 0.85);
     const fov = THREE.MathUtils.lerp(baseFov, def.weaponClass === "sniper" ? r.adsFov * Arsenal.ZOOMS[this.zoom]! : baseFov * 0.82, a.aim);
-    if (Math.abs(viewCamera.fov - 55) > 0.01) viewCamera.fov = 55;
+    // S2.1: the viewmodel draws at 54° whatever the world's FOV (a gun that sits further out when aimed narrows it).
+    const vmFov = THREE.MathUtils.lerp(54, r.adsVmFov ?? 54, a.aim);
+    if (Math.abs(viewCamera.fov - vmFov) > 0.01) viewCamera.fov = vmFov;
     viewCamera.updateProjectionMatrix();
     this.worldFov = fov;
   }

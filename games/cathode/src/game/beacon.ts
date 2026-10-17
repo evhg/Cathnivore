@@ -151,10 +151,14 @@ function rimOn(root: THREE.Object3D, colour: THREE.Color, strength: { value: num
   root.traverse((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh || !(m.material instanceof THREE.MeshStandardMaterial)) return;
+    // A kit material (gunkit.ts) keeps its own patch underneath the rim.
+    const base = m.material.onBeforeCompile;
+    const kit = !!m.material.userData.kit;
     const mat = m.material.clone();
     mat.emissive = colour.clone();
     mat.emissiveIntensity = 1;
-    mat.onBeforeCompile = (sh) => {
+    mat.onBeforeCompile = (sh, r) => {
+      if (kit) base.call(mat, sh, r);
       sh.uniforms.uRim = strength;
       sh.fragmentShader = sh.fragmentShader
         .replace("#include <common>", "#include <common>\nuniform float uRim;")
@@ -163,7 +167,7 @@ function rimOn(root: THREE.Object3D, colour: THREE.Color, strength: { value: num
           "#include <emissivemap_fragment>\n  totalEmissiveRadiance *= uRim * pow(1.0 - abs(dot(normalize(vViewPosition), normal)), 2.0) * 3.0;",
         );
     };
-    mat.customProgramCacheKey = () => "beacon-rim";
+    mat.customProgramCacheKey = () => (kit ? "beacon-rim-kit" : "beacon-rim");
     m.material = mat;
   });
 }

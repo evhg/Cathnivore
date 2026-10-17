@@ -4,6 +4,10 @@
 
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { adoptMeshes, fistGrip } from "./gunkit";
+import { buildKestrel } from "./kestrel";
+import { POSES, type HandPose } from "./hands";
 
 export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle" | "launcher" | "sledge" | "blade" | "wire";
 
@@ -40,59 +44,6 @@ function at<T extends THREE.Object3D>(o: T, x: number, y: number, z: number): T 
   return o;
 }
 
-/** A gloved hand gripping: palm block, four curled fingers, a thumb. Right hand by default. */
-function hand(left = false): THREE.Group {
-  const g = new THREE.Group();
-  const s = left ? -1 : 1;
-  g.add(at(box(0.046, 0.034, 0.075, M.glove, 0.012), 0, 0, 0));
-  for (let i = 0; i < 4; i++) {
-    const f = box(0.017, 0.019, 0.05, M.glove, 0.008);
-    f.position.set(s * (-0.018 + i * 0.0125), -0.02, -0.03);
-    f.rotation.x = 1.2;
-    g.add(f);
-    // A knuckle bump on the back of the hand, and a polished nail at the tip.
-    g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.0085, 10, 8), M.glove), f.position.x, 0.014, -0.034));
-    g.add(at(box(0.011, 0.004, 0.012, M.polish, 0.002), f.position.x, -0.046, -0.058));
-  }
-  const thumb = box(0.016, 0.017, 0.045, M.glove, 0.008);
-  thumb.position.set(s * 0.028, 0.01, -0.025);
-  thumb.rotation.set(0.2, s * 0.6, 0);
-  g.add(thumb);
-  // The thumb's polished nail.
-  g.add(at(box(0.01, 0.004, 0.011, M.polish, 0.002), s * 0.039, 0.0, -0.05));
-  // Stitching seam on the back of the glove, a little sheen.
-  g.add(at(box(0.004, 0.002, 0.05, M.steel, 0.001), 0, 0.018, 0));
-  return g;
-}
-
-/** Forearm from wrist back towards the elbow: glove cuff, silk blouse cuff, then the trench sleeve. */
-function forearm(left = false): THREE.Group {
-  const g = new THREE.Group();
-  g.add(at(cyl(0.028, 0.03, M.glove, 14), 0, 0, 0.035));
-  g.add(at(cyl(0.034, 0.02, M.silk, 14), 0, 0, 0.06));
-  // A fine gold seam at the glove cuff.
-  g.add(at(cyl(0.0295, 0.004, M.gold, 14), 0, 0, 0.02));
-  const sleeve = cyl(0.05, 0.34, M.coat, 16, 0.042);
-  sleeve.position.set(0, 0, 0.24);
-  g.add(sleeve);
-  // The trench's turned-back cuff and its button.
-  g.add(at(cyl(0.053, 0.05, M.coat, 16), 0, 0, 0.09));
-  g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.007, 10, 8), M.polymer), 0, 0.05, 0.1));
-  if (left) {
-    // The pearl bracelet, with a small gold clasp.
-    const ring = new THREE.Group();
-    const n = 14;
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2;
-      ring.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.0065, 10, 8), M.pearl), Math.cos(a) * 0.031, Math.sin(a) * 0.031, 0));
-    }
-    ring.add(at(box(0.008, 0.006, 0.008, M.gold, 0.002), 0, -0.033, 0));
-    ring.position.z = 0.045;
-    g.add(ring);
-  }
-  return g;
-}
-
 export interface GunRig {
   root: THREE.Group;
   /** Where rounds leave, in rig space. */
@@ -111,8 +62,15 @@ export interface GunRig {
   adsFov: number;
   /** A scoped weapon hides the rig and shows the scope overlay at full aim. */
   scoped?: boolean;
-  leftHand: THREE.Group;
-  rightHand: THREE.Group;
+  /** The viewmodel camera's FOV at full aim (default 54, the hip FOV). */
+  adsVmFov?: number;
+  /** Wrist frames for Cath's hands (hands.ts): Y toward the knuckles, Z the back of the hand. No gripL = one-handed. */
+  gripR: THREE.Object3D;
+  gripL: THREE.Object3D | null;
+  poseR: HandPose;
+  poseL: HandPose | null;
+  /** Named part nodes and empties (the Kestrel's full list; older guns name what they have). */
+  parts: Record<string, THREE.Object3D>;
 }
 
 function rig(hip: THREE.Vector3, ads: THREE.Vector3, adsFov: number): GunRig {
@@ -120,34 +78,55 @@ function rig(hip: THREE.Vector3, ads: THREE.Vector3, adsFov: number): GunRig {
   const muzzle = new THREE.Object3D();
   const port = new THREE.Object3D();
   root.add(muzzle, port);
-  return { root, muzzle, port, hip, ads, adsFov, leftHand: new THREE.Group(), rightHand: new THREE.Group() };
+  const gripR = new THREE.Object3D();
+  root.add(gripR);
+  return { root, muzzle, port, hip, ads, adsFov, gripR, gripL: null, poseR: POSES.fist!, poseL: null, parts: {} };
 }
 
-/** Right and left elbows in rig space: the forearms run from each hand back to these, off the screen's edges. */
-const ELBOW_R = new THREE.Vector3(0.2, -0.32, 0.3);
-const ELBOW_L = new THREE.Vector3(-0.22, -0.36, 0.1);
-
-function attachHands(r: GunRig, right: [number, number, number], left: [number, number, number] | null, leftRot = 0): void {
-  const arm = (handPos: THREE.Vector3, elbow: THREE.Vector3, isLeft: boolean) => {
-    const f = forearm(isLeft);
-    f.userData.arm = true;
-    f.position.copy(handPos);
-    f.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), elbow.clone().sub(handPos).normalize());
-    return f;
-  };
-  const rh = hand(false);
-  rh.position.set(...right);
-  rh.rotation.x = -0.08;
-  r.rightHand = rh;
-  r.root.add(rh, arm(rh.position, ELBOW_R, false));
+/**
+ * Places the hands' grip frames on an older gun: `right` and `left` are where the old builders put each palm.
+ * Long guns get a rifle grip and a support hand under the handguard; one-handed weapons a fist round the handle
+ * (inside `handle`, the swinging group, so the hand rides the swing).
+ */
+function attachHands(r: GunRig, right: [number, number, number], left: [number, number, number] | null, _leftRot = 0, handle?: THREE.Object3D): void {
+  if (handle) {
+    // A fist round the handle (the handle runs along the group's Z; the butt is +Z).
+    const g = fistGrip(new THREE.Vector3(...right), new THREE.Vector3(0, 0, 1), new THREE.Vector3(1, 0, 0), 0.017, 1, 0.068);
+    r.gripR.position.copy(g.pos);
+    r.gripR.quaternion.copy(g.quat);
+    handle.add(r.gripR);
+    r.poseR = POSES.fist!;
+    if (left) {
+      const gl = fistGrip(new THREE.Vector3(...left), new THREE.Vector3(0, 0, 1), new THREE.Vector3(-1, 0, 0), 0.017, -1, 0.068);
+      r.gripL = new THREE.Object3D();
+      r.gripL.position.copy(gl.pos);
+      r.gripL.quaternion.copy(gl.quat);
+      handle.add(r.gripL);
+      r.poseL = POSES.fist!;
+    }
+    return;
+  }
+  // A pistol grip raked about 18°, the back of the hand to the right.
+  const rake = new THREE.Vector3(0, -0.95, 0.31);
+  const g = fistGrip(new THREE.Vector3(right[0], right[1] + 0.01, right[2] - 0.01), rake, new THREE.Vector3(1, 0.25, 0.15), 0.022, 1, 0.062);
+  r.gripR.position.copy(g.pos);
+  r.gripR.quaternion.copy(g.quat);
+  r.poseR = left && left[2] < right[2] - 0.1 ? POSES.rifleR! : POSES.pistolR!;
   if (left) {
-    const lh = hand(true);
-    lh.position.set(...left);
-    lh.rotation.set(-0.1, 0, leftRot);
-    r.leftHand = lh;
-    r.root.add(lh);
-    lh.userData.forearm = arm(lh.position, ELBOW_L, true);
-    r.root.add(lh.userData.forearm as THREE.Object3D);
+    r.gripL = new THREE.Object3D();
+    if (left[2] < right[2] - 0.1) {
+      // Under the handguard: the rod runs along the barrel (butt toward +Z), the back of the hand down and out.
+      const gl = fistGrip(new THREE.Vector3(left[0], left[1] + 0.01, left[2]), new THREE.Vector3(0, 0, 1), new THREE.Vector3(-0.45, -1, 0), 0.02, -1, 0.066);
+      r.gripL.position.copy(gl.pos);
+      r.gripL.quaternion.copy(gl.quat);
+      r.poseL = POSES.foreL!;
+    } else {
+      const gl = fistGrip(new THREE.Vector3(left[0], left[1], left[2] - 0.012), rake, new THREE.Vector3(-1, -0.55, 0.1), 0.034, -1, 0.06);
+      r.gripL.position.copy(gl.pos);
+      r.gripL.quaternion.copy(gl.quat);
+      r.poseL = POSES.pistolL!;
+    }
+    r.root.add(r.gripL);
   }
 }
 
@@ -168,65 +147,36 @@ function buildPin(): GunRig {
   r.root.add(b);
   r.action = b;
   r.muzzle.position.set(0, 0.42, -0.26); // the ball end: the swing trail follows it
-  attachHands(r, [0, 0, 0.02], null);
+  attachHands(r, [0, 0, 0.02], null, 0, b);
   return r;
 }
 
-/** The Kestrel 9: a compact suppressed pistol, blued slide, a red dot. Quiet enough for the market. */
-function buildPistol(): GunRig {
-  const r = rig(new THREE.Vector3(0.14, -0.15, -0.36), new THREE.Vector3(0, -0.062, -0.3), 52);
-  const g = new THREE.Group();
-  const slide = new THREE.Group();
-  slide.add(at(box(0.03, 0.032, 0.18, M.blued, 0.005), 0, 0.03, -0.06));
-  for (let i = 0; i < 6; i++) slide.add(at(box(0.031, 0.022, 0.003, M.polymer, 0.001), 0, 0.03, 0.0 + i * 0.006)); // serrations
-  slide.add(at(box(0.016, 0.02, 0.026, M.polymer, 0.003), 0, 0.055, -0.02)); // red dot body
-  slide.add(at(box(0.012, 0.012, 0.002, M.glass, 0.001), 0, 0.058, -0.033));
-  slide.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.0012, 6, 6), M.red), 0, 0.057, -0.034));
-  g.add(slide);
-  g.add(at(box(0.028, 0.025, 0.15, M.polymer, 0.004), 0, 0.006, -0.05)); // frame
-  const grip = box(0.028, 0.1, 0.045, M.polymer, 0.006);
-  grip.position.set(0, -0.04, 0.02);
-  grip.rotation.x = 0.22;
-  g.add(grip);
-  g.add(at(box(0.004, 0.02, 0.025, M.polymer, 0.002), 0, -0.012, -0.025)); // trigger guard
-  // Detail that reads at hip and over the sights: a full trigger guard loop, the trigger, a magazine floorplate,
-  // the slide stop, a rail under the frame, front and rear iron sights either side of the dot, an ejection port.
-  g.add(at(box(0.026, 0.004, 0.04, M.polymer, 0.001), 0, -0.024, -0.036)); // guard floor
-  g.add(at(box(0.006, 0.014, 0.004, M.steel, 0.001), 0, -0.012, -0.02)); // trigger
-  // The magazine is its own part so a reload can drop it out of the grip and seat a fresh one.
-  const mag = new THREE.Group();
-  mag.add(at(box(0.024, 0.07, 0.04, M.steel, 0.002), 0, -0.07, 0.035));
-  mag.add(at(box(0.032, 0.012, 0.052, M.steel, 0.003), 0, -0.098, 0.04)); // magazine floorplate
-  mag.rotation.x = 0.22;
-  g.add(mag);
-  r.mag = mag;
-  g.add(at(box(0.004, 0.006, 0.02, M.steel, 0.001), 0.016, 0.013, -0.04)); // slide stop
-  g.add(at(box(0.022, 0.006, 0.05, M.steel, 0.001), 0, -0.01, -0.12)); // accessory rail
-  slide.add(at(box(0.01, 0.008, 0.006, M.blued, 0.001), 0, 0.052, 0.025)); // rear sight
-  slide.add(at(box(0.006, 0.01, 0.006, M.blued, 0.001), 0, 0.05, -0.145)); // front sight
-  slide.add(at(box(0.002, 0.014, 0.038, M.glass, 0.0005), 0.0155, 0.032, -0.03)); // ejection port, dark and open
-  slide.add(at(box(0.0015, 0.003, 0.15, M.rim, 0.0005), 0.0158, 0.044, -0.06)); // a cyan trim line, a Cath touch
-  // The suppressor, long and matte.
-  g.add(at(cyl(0.017, 0.16, M.polymer, 18), 0, 0.028, -0.23));
-  g.add(at(cyl(0.0175, 0.01, M.steel, 18), 0, 0.028, -0.155));
-  r.root.add(g);
-  r.action = slide;
-  // A first-person muzzle flash: a hot core and a cross of petals at the suppressor's mouth, shown for a frame or two.
-  const flash = new THREE.Group();
-  const fm = new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-  for (let i = 0; i < 3; i++) {
-    const petal = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.012), fm);
-    petal.rotation.z = (i * Math.PI) / 3;
-    flash.add(petal);
-  }
-  flash.add(new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), fm));
-  flash.position.set(0, 0.028, -0.325);
+/** The Kestrel 9 (game/kestrel.ts): built on the kit, every part its own node. */
+function buildPistol(phone: boolean): GunRig {
+  const r = rig(new THREE.Vector3(0.094, -0.098, -0.26), new THREE.Vector3(0, -0.0573, -0.4), 52);
+  // Aimed, the viewmodel camera narrows so the gun sits further out (the hands drop away under the dot) at the same size.
+  r.adsVmFov = 36;
+  const { root, kit } = buildKestrel(phone);
+  r.root = root;
+  r.parts = kit.parts;
+  r.action = kit.parts.slide;
+  r.mag = kit.parts.mag;
+  r.muzzle = kit.parts.muzzle!;
+  r.port = kit.parts.port!;
+  r.gripR = kit.parts.gripR!;
+  r.gripL = kit.parts.gripL!;
+  r.poseR = POSES.pistolR!;
+  r.poseL = POSES.pistolL!;
+  // A suppressed first-person flash (S2.3): two small crossed quads of hot gas and a core, one frame.
+  const fm = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb070).multiplyScalar(2), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  // Two crossed quads along the bore and a small core facing her, merged: one draw while it shows.
+  const quads = [0, 1].map((i) => new THREE.PlaneGeometry(0.065, 0.065).rotateY(Math.PI / 2).rotateX((i * Math.PI) / 2 + Math.PI / 4));
+  quads.push(new THREE.PlaneGeometry(0.02, 0.02));
+  const flash = new THREE.Mesh(mergeGeometries(quads)!, fm);
+  flash.position.copy(r.muzzle.position).z -= 0.012;
   flash.visible = false;
   r.root.add(flash);
   r.flashMesh = flash;
-  r.muzzle.position.set(0, 0.028, -0.32);
-  r.port.position.set(0.015, 0.035, -0.05);
-  attachHands(r, [0, -0.045, 0.035], [-0.012, -0.05, 0.02], -0.5);
   return r;
 }
 
@@ -260,8 +210,9 @@ function buildShotgun(): GunRig {
   r.muzzle.position.set(0, 0.012, -0.67);
   r.port.position.set(0.022, 0.01, -0.02);
   attachHands(r, [0, -0.07, 0.08], [-0.005, -0.045, -0.3], -1.2);
-  // The left hand (and its forearm) ride the pump.
-  pump.add(r.leftHand, r.leftHand.userData.forearm as THREE.Object3D);
+  // The left hand rides the pump.
+  r.root.updateMatrixWorld(true);
+  if (r.gripL) pump.attach(r.gripL);
   return r;
 }
 
@@ -405,7 +356,7 @@ function buildSledge(): GunRig {
   r.root.add(b);
   r.action = b;
   r.muzzle.position.set(0, 0.3, -0.3);
-  attachHands(r, [0, 0, 0.1], [0, 0, -0.05], 0);
+  attachHands(r, [0, 0, 0.1], [0, 0, -0.05], 0, b);
   return r;
 }
 
@@ -423,7 +374,7 @@ function buildBlade(): GunRig {
   r.root.add(b);
   r.action = b;
   r.muzzle.position.set(0, 0.3, -0.25);
-  attachHands(r, [0, 0, 0.03], null);
+  attachHands(r, [0, 0, 0.03], null, 0, b);
   return r;
 }
 
@@ -439,14 +390,14 @@ function buildWire(): GunRig {
   r.root.add(b);
   r.action = b;
   r.muzzle.position.set(0, 0.2, -0.6);
-  attachHands(r, [0, 0, 0.03], null);
+  attachHands(r, [0, 0, 0.03], null, 0, b);
   return r;
 }
 
-export function buildGun(model: GunModel): GunRig {
+export function buildGun(model: GunModel, phone = false): GunRig {
   const r =
     model === "pin" ? buildPin()
-    : model === "pistol" ? buildPistol()
+    : model === "pistol" ? buildPistol(phone)
     : model === "shotgun" ? buildShotgun()
     : model === "revolver" ? buildRevolver()
     : model === "smg" ? buildAuto(false)
@@ -456,6 +407,16 @@ export function buildGun(model: GunModel): GunRig {
     : model === "blade" ? buildBlade()
     : model === "wire" ? buildWire()
     : buildSniper();
+  // Older builds fold into the kit: a few merged meshes per moving part, the kit's shading and wear.
+  if (model !== "pistol") {
+    adoptMeshes(r.root, [r.action, r.mag].filter((x): x is THREE.Object3D => !!x), phone);
+    if (r.action) r.parts.action = r.action;
+    if (r.mag) r.parts.mag = r.mag;
+    r.parts.muzzle = r.muzzle;
+    r.parts.port = r.port;
+    r.parts.gripR = r.gripR;
+    if (r.gripL) r.parts.gripL = r.gripL;
+  }
   r.root.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) {
       o.castShadow = false;
@@ -466,16 +427,12 @@ export function buildGun(model: GunModel): GunRig {
 }
 
 /**
- * The gun on its own, for display in the world (the first gun's case, S7.1): no hands, no forearms, no flash.
- * Its materials are the kit's own, so callers that tint them clone first.
+ * The gun on its own, for display in the world (the first gun's case, S7.1, and dropped guns): no flash. Hands
+ * live outside the rig (hands.ts), so nothing else to strip. Materials are the kit's own and shared.
  */
-export function buildGunDisplay(model: GunModel): THREE.Group {
-  const r = buildGun(model);
-  const drop: THREE.Object3D[] = [];
-  r.root.traverse((o) => {
-    if (o === r.leftHand || o === r.rightHand || o.userData.arm || o === r.flashMesh) drop.push(o);
-  });
-  for (const o of drop) o.removeFromParent();
+export function buildGunDisplay(model: GunModel, phone = false): THREE.Group {
+  const r = buildGun(model, phone);
+  r.flashMesh?.removeFromParent();
   return r.root;
 }
 

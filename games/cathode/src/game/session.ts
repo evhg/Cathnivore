@@ -243,7 +243,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       enemies.push(e);
     }
   }
-  const arsenal = new Arsenal(world.viewScene);
+  const arsenal = new Arsenal(world.viewScene, o.quality === "phone");
   // Each class walks in holding its own weapon: the Ghost the rifle, the Butcher the shotgun.
   const cls = progress.character.classes[0];
   arsenal.owned.clear();
@@ -251,8 +251,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // In hand: her class weapon if she has it, else the Kestrel, else the Pin.
   const classGun = CLASS_WEAPON[cls!] ?? "kestrel";
   arsenal.equipId(arsenal.owned.has(classGun) ? classGun : arsenal.owned.has("kestrel") ? "kestrel" : "pin");
-  // The gun reflects the same neon city as the street.
-  if (world.scene.environment && !world.viewScene.environment) world.viewScene.environment = world.scene.environment;
+  // The gun reflects its own small neon room (S2.1), so it never goes black in a dark alley.
+  arsenal.lightRoom(world.renderer);
   const combat = new Combat(world, rays, enemies, o.intensity === "full");
   const killcam = new KillCam(world);
   const hud = new Hud(o.hud);
