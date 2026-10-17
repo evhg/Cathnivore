@@ -103,6 +103,52 @@ export const tuning = {
    * 0.32 since the glow takes its fog back off (C2 fix): unfogged, 0.45 lit the whole corpse salmon at 5K.
    */
   hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6, death: { level: 0.32, holdMs: 500, fadeMs: 1400, red: [1, 0.02, 0.01] as const } },
+  /**
+   * C5 "Kestrel 9 in motion" (S2.2 to S2.4): the pistol's choreography. Times in ms from the trigger breaking,
+   * distances in metres, angles in degrees (converted where used).
+   */
+  kestrel: {
+    fire: {
+      preloadMs: 30,
+      preloadMm: 3,
+      triggerMm: 5,
+      slideM: 0.024,
+      slideBackMs: 30,
+      slideHomeMs: 62,
+      overshootM: 0.0006,
+      settleMs: 78,
+      barrelTiltDeg: 3,
+      barrelFromMs: 14,
+      shellMs: 18,
+      hammerDeg: 55,
+      trauma: 0.12,
+    },
+    /** S2.3 viewmodel recoil springs and the shove per shot (hip; ADS scales by `adsMul`). */
+    recoil: {
+      rot: { freqHz: 14, zeta: 0.45 },
+      pos: { freqHz: 16, zeta: 0.55 },
+      shoveZ: 0.03,
+      shoveY: 0.005,
+      pitchDeg: 6,
+      rollDeg: 2,
+      adsMul: 0.55,
+    },
+    /** S2.3 camera recoil through `recoilAt()`: 70% recovers on a 5 Hz critically damped spring, 30% stays. */
+    camera: { pitchDeg: 1.1, yawDeg: 0.3, recover: 0.7, spring: { freqHz: 5, zeta: 1 } },
+    /** S2.3 the last round: the slide stop rises 12°, the next pull dry-fires (two clicks 4 kHz). */
+    lock: { stopDeg: 12, dryClickHz: 4000, dryGapMs: 55 },
+    /** S2.4 reloads: the mag counts as in at `commit` of the duration. */
+    reload: { tacMs: 1550, emptyMs: 2050, commit: 0.6, seatJoltM: 0.004, seatTrauma: 0.05, slamTrauma: 0.08, slideStopMs: 1450, slamMs: 35, dropMagLifeS: 10, dropMagMax: 6, dropMagRestitution: 0.2 },
+    /** S2.4 draw, hero draw and the idle press-check. */
+    draw: { ms: 450, dropM: 0.25, pitchDeg: 40, heroMs: 900, heroRackMs: 300 },
+    inspect: { idleS: 12, pressCheckMs: 1600, pressCheckM: 0.008 },
+    /** S2.3 smoke and heat. */
+    smoke: { lifeMs: 900, riseMps: 0.3, size0: 0.02, size1: 0.09, alpha: 0.18, heatPerShot: 0.12, heatDecay: 0.25, heatSmokeMax: 3, glowFrom: 0.6 },
+    /** S2.3 the suppressed puff: crossed quads no wider than this (the acceptance's "no white cross over 0.1 m"). */
+    puff: { maxM: 0.08, light: 0.6, lightRangeM: 2.5, lightMs: 40 },
+  },
+  /** S2.5 layered gunshot audio. */
+  gunsound: { variants: 8, noRepeat: 2, duckDb: -4, duckAttackMs: 20, duckReleaseMs: 400, reflRays: 5, reflMaxM: 40, reflDb: -14, reflDbPerM: 0.3, whizM: 2 },
   /** S0 timescale: nothing but death holds longer than this (ms). */
   timescale: { maxHoldMs: 3000 },
 } as const;
