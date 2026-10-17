@@ -20,7 +20,9 @@ const F = K.fire;
 export const MAG_AXIS: [number, number, number] = [0, -0.951, 0.309];
 const out = (m: number): [number, number, number] => [MAG_AXIS[0] * m, MAG_AXIS[1] * m, MAG_AXIS[2] * m];
 /** Off the bottom-left of the frame: where the old mag goes and the new one comes from. */
-const POUCH: [number, number, number] = [-0.14, -0.5, 0.05];
+// Out low and to the left (C5 review: straight down, the mag crossed the middle of the frame with the glove
+// already off the bottom edge).
+const POUCH: [number, number, number] = [-0.34, -0.3, 0.08];
 const POUCH_ROT: [number, number, number] = [0.5, 0.2, 0.7];
 
 export const FIRE: Clip = {
@@ -69,8 +71,8 @@ const seatEmpty = R.emptyMs * R.commit;
 // The gun's reload pose: rolled 26° clockwise (top to the right, the butt swung left out from behind her
 // forearm toward the support hand, the left flank to the eye), muzzle up 12° so the magwell opens toward her,
 // and lifted so the bottom of the grip comes into frame (at the hip it sits below the screen's edge).
-const TILT: [number, number, number] = [-12 * D, 14 * D, -28 * D];
-const TILT_P: [number, number, number] = [-0.01, 0.06, -0.12];
+const TILT: [number, number, number] = [8 * D, 18 * D, -30 * D];
+const TILT_P: [number, number, number] = [0.035, 0.06, -0.07];
 
 /** Tactical reload, 1.55 s: a round stays chambered; the mag is in at 930 ms. */
 export const TAC: Clip = {
@@ -89,6 +91,8 @@ export const TAC: Clip = {
       [0, [0, 0, 0], [0, 0, 0]],
       [200, [0, 0, 0], [0, 0, 0]],
       [235, out(0.03), [0, 0, 0], "out"],
+      // The glove strips it clear of the grip, then carries it away to the bottom left.
+      [330, [-0.012, MAG_AXIS[1] * 0.075, MAG_AXIS[2] * 0.075], [0.08, 0.04, 0.14], "inOut"],
       [520, POUCH, POUCH_ROT, "in"],
       [560, POUCH, POUCH_ROT],
       [880, out(0.045), [0, 0, 0], "out"],
@@ -201,13 +205,16 @@ export const DRAW: Clip = {
   tracks: {
     gun: [
       [0, [0.02, -DR.dropM, 0.05], [-DR.pitchDeg * D, 0.15, -0.35]],
-      [DR.ms * 0.8, [0, 0.003, 0], [0.6 * D, 0, 0.01], "out"],
+      // Two beats (C5 review: one cubic ease-out had 96% of the rise done by 300 ms, so the draw never showed):
+      // the gun lifts out of the holster still pointing down, then rolls up onto the line and settles.
+      [DR.ms * 0.42, [0.012, -DR.dropM * 0.42, 0.03], [-DR.pitchDeg * 0.5 * D, 0.08, -0.2], "inOut"],
+      [DR.ms * 0.88, [0, 0.003, 0], [0.6 * D, 0, 0.01], "inOut"],
       [DR.ms, [0, 0, 0], [0, 0, 0], "inOut"],
     ],
   },
   events: [
     [0, "draw"],
-    [DR.ms * 0.8, "settle"],
+    [DR.ms * 0.88, "settle"],
   ],
 };
 

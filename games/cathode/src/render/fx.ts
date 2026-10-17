@@ -11,6 +11,9 @@ import { patchMaterial, type SharedUniforms } from "./shading";
 import type { Volume } from "./lighting";
 import { createGore } from "./gore";
 
+/** The spec's light intensities (S2.3: "0.6", "4 to 8") are in these units of the world's physical lights. */
+export const WORLD_LIGHT_SCALE = 10;
+
 /** Particle kinds (the shader draws each differently). */
 const K = { soft: 0, streak: 1, smoke: 2, drop: 3, flash: 4 } as const;
 
@@ -452,8 +455,9 @@ export function createFx(o: {
       const d = dir.clone().normalize();
       if (suppressed) {
         // S2.3: the can eats the flash. Only a faint warm light on the wet street for 40 ms (the viewmodel draws
-        // the puff and the smoke at the crown); the old 0.2 to 0.36 m white cross is gone.
-        flashLight(pos.clone().addScaledVector(d, 0.1), "#ffb070", 6, 0.04, 2.5);
+        // the puff and the smoke at the crown); the old 0.2 to 0.36 m white cross is gone. The spec's 0.6, in the
+        // world's light units (WORLD_LIGHT_SCALE): this light never reaches the viewmodel, which has its own.
+        flashLight(pos.clone().addScaledVector(d, 0.1), "#ffb070", 0.6 * WORLD_LIGHT_SCALE, 0.04, 2.5);
         return;
       }
       spawn({ pos: pos.clone().addScaledVector(d, 0.05 * size), kind: K.flash, additive: true, life: 0.055, size0: 0.28 * size, size1: 0.36 * size, color: WHITE_HOT });

@@ -136,7 +136,8 @@ export const tuning = {
     /** S2.3 camera recoil through `recoilAt()`: 70% recovers on a 5 Hz critically damped spring, 30% stays. */
     camera: { pitchDeg: 1.1, yawDeg: 0.3, recover: 0.7, spring: { freqHz: 5, zeta: 1 } },
     /** S2.3 the last round: the slide stop rises 12°, the next pull dry-fires (two clicks 4 kHz). */
-    lock: { stopDeg: 12, dryClickHz: 4000, dryGapMs: 55 },
+    // `pose`: how the gun turns on a locked slide (degrees about x, y, z; metres), so the lock reads at hip.
+    lock: { stopDeg: 12, dryClickHz: 4000, dryGapMs: 55, pose: { rot: [-3, 26, -4], pos: [0.006, 0.004, 0] } },
     /** S2.4 reloads: the mag counts as in at `commit` of the duration. */
     reload: { tacMs: 1550, emptyMs: 2050, commit: 0.6, seatJoltM: 0.004, seatTrauma: 0.05, slamTrauma: 0.08, slideStopMs: 1450, slamMs: 35, dropMagLifeS: 10, dropMagMax: 6, dropMagRestitution: 0.2 },
     /** S2.4 draw, hero draw and the idle press-check. */
@@ -145,7 +146,11 @@ export const tuning = {
     /** S2.3 smoke and heat. */
     smoke: { lifeMs: 900, riseMps: 0.3, size0: 0.02, size1: 0.09, alpha: 0.18, heatPerShot: 0.12, heatDecay: 0.25, heatSmokeMax: 3, glowFrom: 0.6 },
     /** S2.3 the suppressed puff: crossed quads no wider than this (the acceptance's "no white cross over 0.1 m"). */
-    puff: { maxM: 0.08, light: 0.6, lightRangeM: 2.5, lightMs: 40 },
+    // `light` is the spec's 0.6 on the street; the world's lights run in physical units 10x the spec's numbers
+    // (the open guns' "4 to 8" is 60 there), so fx.ts multiplies by WORLD_LIGHT_SCALE. The viewmodel's own
+    // puff light is far closer to the hands: it reaches only the can and the dust cover (vmRangeM), so the
+    // crown and the can's rim catch warm light and the gloves don't (C5 review: "glossy plastic" gloves).
+    puff: { maxM: 0.08, light: 0.6, lightRangeM: 2.5, lightMs: 40, vmLight: 0.05, vmRangeM: 0.16 },
   },
   /** S2.5 layered gunshot audio. */
   gunsound: { variants: 8, noRepeat: 2, duckDb: -4, duckAttackMs: 20, duckReleaseMs: 400, reflRays: 5, reflMaxM: 40, reflDb: -14, reflDbPerM: 0.3, whizM: 2 },

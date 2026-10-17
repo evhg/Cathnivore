@@ -38,7 +38,7 @@ export const INSPECT: Clip = {
 const SHOULDER_R_INSPECT = new THREE.Vector3(0.06, -0.66, 0.12);
 const SHOULDER_L_INSPECT = new THREE.Vector3(-0.12, -0.55, 0.2);
 /** C5: reloading, the firing shoulder low and out to the right (camera space). */
-const SHOULDER_R_RELOAD = new THREE.Vector3(0.2, -0.66, 0.08);
+const SHOULDER_R_RELOAD = new THREE.Vector3(0.46, -0.84, -0.02);
 /** C5: racking the slide, the support shoulder low and out to the left. */
 const SHOULDER_L_RACK = new THREE.Vector3(-0.42, -0.78, -0.12);
 
@@ -228,6 +228,14 @@ export class Arsenal {
   }
 
   /** Where the pistol is (for the stages and tests). */
+  /**
+   * How far into a reload's turn the gun is (0..1): the HUD fades the crosshair with it, as AAA shooters do, so
+   * the turned gun and the can never sit on a live reticle (C5 review).
+   */
+  get reloadW(): number {
+    return this.rm.active ? THREE.MathUtils.clamp(channel(this.rm.clip, "arm", this.rm.t, 0), 0, 1) : 0;
+  }
+
   get pistolState(): { fireMs: number; drawMs: number; pressMs: number; reload: string | null; reloadMs: number; committed: boolean; locked: boolean; heat: number } {
     const h = this.held[this.current]!;
     return { fireMs: this.fireMs, drawMs: this.drawMs, pressMs: this.pressMs, reload: this.rm.kind, reloadMs: this.rm.t, committed: this.rm.committed, locked: h.locked, heat: this.heat.v };
@@ -268,6 +276,8 @@ export class Arsenal {
     this.cd = 0;
     this.rm.cancel();
     this.firePistolFx();
+    // The shot spends its round, so the HUD and the gun agree in the held frame (12/60 becomes 11/60).
+    h.ammo -= 1;
   }
 
   /** Screenshot stages: a reload (tac or empty) held at `ms`. */
@@ -287,6 +297,7 @@ export class Arsenal {
     this.rm.kind = null;
     h.ammo = 0;
     h.locked = true;
+    this.lockW = 1;
   }
 
   /** Screenshot stages: the stage's milliseconds have passed for the flash too (the puff shows one frame). */
@@ -666,8 +677,9 @@ export class Arsenal {
     if (this.raising > 0) this.raising = Math.max(0, this.raising - dt);
     this.flashT = Math.max(0, this.flashT - dt);
     // The Kestrel's can: a small warm light for 40 ms (S2.3), not the open guns' blaze.
-    this.flash.intensity = this.flashT > 0 && def.id !== "kestrel" ? 6 : this.flashT > 0 ? 3 : 0;
-    this.flash.distance = def.id === "kestrel" ? KF.puff.lightRangeM : 1.2;
+    const can = def.id === "kestrel";
+    this.flash.intensity = this.flashT > 0 ? (can ? KF.puff.vmLight : 6) : 0;
+    this.flash.distance = can ? KF.puff.vmRangeM : 1.2;
     const pistol = this.kestrel;
     if (pistol && this.rm.active) {
       // S2.4: sprinting cancels a reload that hasn't committed; after the commit it plays out.
@@ -918,6 +930,24 @@ export class Arsenal {
     return null;
   }
 
+  /** The lock pose's weight (0..1), eased toward a locked slide. */
+  private lockW = 0;
+
+  /** Turns the gun root by (x, y, z) radians about a point most of the way back to the firing wrist, then moves it. */
+  private turnGun(r: GunRig, x: number, y: number, z: number, pos: readonly number[]): void {
+    const pv = this.pivV.copy(r.gripR.position).multiplyScalar(INSPECT_PIVOT);
+    r.root.updateMatrix();
+    const before = this.pivW.copy(pv).applyMatrix4(r.root.matrix);
+    r.root.rotation.x += x;
+    r.root.rotation.y += y;
+    r.root.rotation.z += z;
+    r.root.updateMatrix();
+    r.root.position.add(before.sub(pv.applyMatrix4(r.root.matrix)));
+    r.root.position.x += pos[0]!;
+    r.root.position.y += pos[1]!;
+    r.root.position.z += pos[2]!;
+  }
+
   /**
    * The Kestrel in motion (C5, S2.2 layers 3 and 4, S2.3, S2.4): the clip on the gun root (turned about a point
    * near the wrist, so the hand stays planted), the recoil springs, then every moving part from the fire clip,
@@ -953,17 +983,17 @@ export class Arsenal {
     if (k) {
       // S2.4: clip rotations at half strength while aiming through a reload, and under reduced motion.
       const s = (this.rm.active && this.aiming ? 0.5 : 1) * (this.reducedMotion ? 0.5 : 1);
-      const pv = this.pivV.copy(r.gripR.position).multiplyScalar(INSPECT_PIVOT);
-      r.root.updateMatrix();
-      const before = this.pivW.copy(pv).applyMatrix4(r.root.matrix);
-      r.root.rotation.x += k.rot[0] * s;
-      r.root.rotation.y += k.rot[1] * s;
-      r.root.rotation.z += k.rot[2] * s;
-      r.root.updateMatrix();
-      r.root.position.add(before.sub(pv.applyMatrix4(r.root.matrix)));
-      r.root.position.x += k.pos[0];
-      r.root.position.y += k.pos[1];
-      r.root.position.z += k.pos[2];
+      this.turnGun(r, k.rot[0] * s, k.rot[1] * s, k.rot[2] * s, k.pos);
+    }
+    // The lock (C5 review: at hip the 24 mm of slide travel runs straight away from the eye and doesn't read):
+    // on an empty, locked slide the gun turns its left flank and the top to her, so the bare bronze barrel
+    // ahead of the slide, the empty port and the raised stop face the camera. Eased in over about 120 ms.
+    const lockTo = h.locked && !this.rm.active && this.anim.aim < 0.5 ? 1 : 0;
+    this.lockW += (lockTo - this.lockW) * (1 - Math.exp(-ms / 45));
+    if (this.lockW > 0.001) {
+      const L = KF.lock.pose;
+      const w = this.lockW * this.lockW * (3 - 2 * this.lockW) * (this.reducedMotion ? 0.5 : 1);
+      this.turnGun(r, L.rot[0] * DEG * w, L.rot[1] * DEG * w, L.rot[2] * DEG * w, [L.pos[0] * w, L.pos[1] * w, L.pos[2] * w]);
     }
     // Recoil springs (S2.3): 14 Hz rotation, 16 Hz position.
     const [rp, ry, rr] = this.recRot.update(dt);

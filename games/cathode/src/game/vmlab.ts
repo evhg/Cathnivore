@@ -3,6 +3,9 @@
 import * as THREE from "three";
 import { Arsenal } from "./weapons";
 import { POSES } from "./hands";
+import { tuning } from "./feel/tuning";
+
+const KF = tuning.kestrel;
 
 const q = new URLSearchParams(location.search);
 const phone = q.get("phone") === "1";
@@ -19,6 +22,9 @@ for (const [side, name] of [["R", "pistolR"], ["L", "pistolL"]] as const) {
   const w = nums(`w${side}`);
   if (w) p.wrap = w[0];
 }
+// lp=x,y,z (degrees): the lock pose's turn, for tuning.
+const lp = nums("lp");
+if (lp) (KF.lock.pose as unknown as { rot: number[] }).rot = lp;
 const canvas = document.getElementById("vm") as HTMLCanvasElement;
 document.body.style.setProperty("margin", "0");
 document.body.style.setProperty("overflow", "hidden");
@@ -56,6 +62,11 @@ if (stage) {
     const n = Math.max(1, Math.ceil(t / 4));
     for (let i = 0; i < n && t > 0; i++) step(t / n / 1000);
     arsenal.stageTime(t);
+    // The puff's own light (update() sets it in play; the lab never calls update()).
+    if (t < KF.puff.lightMs) {
+      arsenal.flash.intensity = KF.puff.vmLight;
+      arsenal.flash.distance = KF.puff.vmRangeM;
+    }
   } else if (stage === "lock") arsenal.stageLock();
   else if (stage === "reload") arsenal.stageReload("tac", t);
   else if (stage === "empty") arsenal.stageReload("empty", t);

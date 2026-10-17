@@ -1491,7 +1491,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       })(),
       ads: arsenal.aiming,
       adsBlend: arsenal.weapon.kind === "melee" ? 0 : arsenal.anim.aim,
-      inspect: arsenal.inspectW,
+      // Inspecting or reloading, the gun is the subject and the crosshair steps aside.
+      inspect: Math.max(arsenal.inspectW, arsenal.reloadW),
       takedown: canTakedown,
       bulletTime: focusing ? 1 : 0,
       skills: [0, 1].map((i) => {

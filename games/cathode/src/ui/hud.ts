@@ -47,7 +47,7 @@ export interface HudState {
   /** The aim-down-sights blend, 0 hip .. 1 aimed: the crosshair fades out as the sights (or the dot) take over (S2.2 layer 1). */
   adsBlend?: number;
   /** How far into the inspect's turn the gun is (0..1): the crosshair steps aside so it never sits on the model. */
-  inspect?: number;
+  inspect?: number; // also the reload turn (Arsenal.reloadW)
   /** A weapon in reach and in sight (S7.1 layer 5): where on screen (CSS px), the key, and its name and stats. */
   pickup?: { x: number; y: number; key: string; verb: string; name: string; stats: Array<[string, string]> } | null;
 }
