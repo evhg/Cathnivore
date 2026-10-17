@@ -38,7 +38,10 @@ export const INSPECT: Clip = {
 const SHOULDER_R_INSPECT = new THREE.Vector3(0.06, -0.66, 0.12);
 const SHOULDER_L_INSPECT = new THREE.Vector3(-0.12, -0.55, 0.2);
 /** C5: reloading, the firing shoulder low and out to the right (camera space). */
-const SHOULDER_R_RELOAD = new THREE.Vector3(0.46, -0.84, -0.02);
+// Low, out and level with the eye, so the forearm runs steeply down and out of the frame (C5 review).
+const SHOULDER_R_RELOAD = new THREE.Vector3(0.5, -1.0, 0);
+/** C5: on a locked slide the firing shoulder drops part-way (clear of the weapon HUD at bottom right). */
+const SHOULDER_R_LOCK = new THREE.Vector3(0.46, -0.84, -0.02);
 /** C5: racking the slide, the support shoulder low and out to the left. */
 const SHOULDER_L_RACK = new THREE.Vector3(-0.42, -0.78, -0.12);
 
@@ -908,7 +911,7 @@ export class Arsenal {
     }
     // The lock's turn swings the firing forearm level across the bottom of the frame (over the ammo block):
     // drop that shoulder part-way too, so the arm falls away under the turned gun.
-    if (pistol && this.lockW > 0.001) this.shR.lerp(SHOULDER_R_RELOAD, this.lockW * 0.7);
+    if (pistol && this.lockW > 0.001) this.shR.lerp(SHOULDER_R_LOCK, this.lockW * 0.7);
     // The Kestrel's trigger finger curls while the shot breaks and while the button is held (the preload).
     const curl = pistol ? Math.min(1, this.trigMm / KF.fire.triggerMm) : firing ? 1 : 0;
     const gl = pistol && this.handW > 0.001 ? this.gripLDyn : r.gripL;
