@@ -1160,12 +1160,17 @@
   transform: translateX(-50%);
 }
 .stick.on .stick-label { opacity: 0; }
-/* Up in the open sky right of centre, clear of the gun's slide at rest (C4 review). */
+/* Up right of centre, clear of the gun's slide at rest (C4 review), on a plate like the other HUD clusters with a
+   cyan tick (C5 review: bare text over a lamp cone and lit windows lost its last letters and read as web text). */
 .look-hint {
   position: absolute;
   right: 22%;
   top: 34%;
-  color: rgb(var(--ink-rgb) / .45);
+  padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-2);
+  color: rgb(var(--ink-rgb) / .86);
+  background: rgb(var(--shade-rgb) / .72);
+  box-shadow: inset 0 0 0 1px var(--line-2), inset calc(var(--u) * 2.7) 0 0 rgb(var(--cyan-rgb) / .8);
+  text-shadow: none;
   transition: opacity 600ms var(--ease-out);
   pointer-events: none;
 }

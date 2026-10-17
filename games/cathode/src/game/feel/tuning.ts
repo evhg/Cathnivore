@@ -155,7 +155,8 @@ export const tuning = {
     // crown and the can's rim catch warm light and the gloves don't (C5 review: "glossy plastic" gloves). It sits
     // `vmEyeM` from the crown toward the eye and `vmUpM` above it: on the bore past the crown it lit only faces
     // turned away from her (the crown) or the can's rear collar, so the shot read as nothing at the muzzle.
-    puff: { maxM: 0.08, light: 0.6, lightRangeM: 2.5, lightMs: 40, vmLight: 0.25, vmRangeM: 0.12, vmEyeM: 0.05, vmUpM: 0.015 },
+    // `phoneHoldMs`: the extra frame the puff and light hold on a phone; `phoneLightMul` lifts the crown light there.
+    puff: { maxM: 0.08, light: 0.6, lightRangeM: 2.5, lightMs: 40, vmLight: 0.25, vmRangeM: 0.12, vmEyeM: 0.05, vmUpM: 0.015, phoneHoldMs: 34, phoneLightMul: 1.6 },
   },
   /** S2.5 layered gunshot audio. */
   gunsound: { variants: 8, noRepeat: 2, duckDb: -4, duckAttackMs: 20, duckReleaseMs: 400, reflRays: 5, reflMaxM: 40, reflDb: -14, reflDbPerM: 0.3, whizM: 2 },

@@ -269,7 +269,8 @@ for (const vp of vps) {
       if (stage === 'pistol-fire' && t === 20) {
         if (pi.slideMm < 18) fail(`${vp} ${spec}: the slide is only ${pi.slideMm.toFixed(1)} mm back at 20 ms (< 18)`)
         if (pi.slidePx * side.dpr < 4) fail(`${vp} ${spec}: the slide's travel is ${(pi.slidePx * side.dpr).toFixed(1)} physical px on screen (< 4)`)
-        if (pi.flashOn) fail(`${vp} ${spec}: the puff still shows at 20 ms`)
+        // The phone holds the puff a second frame (S2.3: 2 frames below 50 fps; 30 fps there).
+        if (pi.flashOn && vp !== 'phone') fail(`${vp} ${spec}: the puff still shows at 20 ms`)
       }
       if (stage === 'pistol-fire' && t === 45 && !(pi.slideMm > 0.5 && pi.slideMm < 24)) fail(`${vp} ${spec}: the slide should be on its way home at 45 ms (${pi.slideMm.toFixed(1)} mm)`)
       if (stage === 'pistol-lock') {

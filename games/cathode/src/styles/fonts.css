@@ -32,6 +32,15 @@
   font-style: normal;
   font-display: swap;
 }
+/* The digits of JetBrains Mono with a plain zero (no centre dot) for the HUD's counts: see src/fonts/README.md. */
+@font-face {
+  font-family: "Cathode Figures";
+  src: url("../fonts/cathode-figures-latin-wght.woff2") format("woff2");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
 @font-face {
   font-family: "Cathode Mono";
   src: url("../../../../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2") format("woff2");

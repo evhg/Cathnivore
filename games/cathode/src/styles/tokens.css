@@ -14,7 +14,7 @@
   --font-display: "Cathode Display", "Cathode Display Fallback", "Didot", serif;
   --font-voice: "Cathode Voice", "Cathode Voice Fallback", "Didot", serif;
   --font-ui: "Cathode UI", "Cathode UI Fallback", system-ui, sans-serif;
-  --font-num: "Cathode Mono", "Cathode Mono Fallback", ui-monospace, monospace;
+  --font-num: "Cathode Figures", "Cathode Mono", "Cathode Mono Fallback", ui-monospace, monospace;
   --display: var(--font-display);
   --ui: var(--font-ui);
   --mono: var(--font-num);

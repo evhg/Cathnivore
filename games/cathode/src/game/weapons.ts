@@ -145,8 +145,12 @@ export class Arsenal {
   readonly arms: Arms;
   private readonly scene: THREE.Scene;
 
+  /** The phone profile (the suppressed shot holds an extra frame there, S2.3). */
+  private readonly phone: boolean;
+
   constructor(scene: THREE.Scene, phone = false) {
     this.scene = scene;
+    this.phone = phone;
     this.trail = new SwingTrail(scene);
     this.arms = new Arms(phone);
     // S2.1 viewmodel lighting: a warm key from the upper left, a cyan rim from behind right, and a faint magenta
@@ -342,7 +346,9 @@ export class Arsenal {
     this.recPos.shove(0, impulseForPeak(R.pos, R.shoveY * m), impulseForPeak(R.pos, R.shoveZ * m));
     this.recRot.shove(impulseForPeak(R.rot, R.pitchDeg * DEG * m), impulseForPeak(R.rot, 0.6 * DEG * side * m), impulseForPeak(R.rot, R.rollDeg * DEG * side * m));
     this.heat.shot();
-    this.flashT = KF.puff.lightMs / 1000;
+    // S2.3 allows the crown light and puff to hold a second frame below 50 fps: on a phone a one-frame puff at
+    // 30 fps barely lifted the muzzle (C5 review 2: luminance 43 to 50), so it holds two there.
+    this.flashT = (KF.puff.lightMs + (this.phone ? KF.puff.phoneHoldMs : 0)) / 1000;
     const r = this.rig;
     r.root.updateMatrixWorld(true);
     const mz = r.muzzle.getWorldPosition(new THREE.Vector3());
@@ -696,7 +702,7 @@ export class Arsenal {
     this.flashT = Math.max(0, this.flashT - dt);
     // The Kestrel's can: a small warm light for 40 ms (S2.3), not the open guns' blaze.
     const can = def.id === "kestrel";
-    this.flash.intensity = this.flashT > 0 ? (can ? KF.puff.vmLight : 6) : 0;
+    this.flash.intensity = this.flashT > 0 ? (can ? KF.puff.vmLight * (this.phone ? KF.puff.phoneLightMul : 1) : 6) : 0;
     this.flash.distance = can ? KF.puff.vmRangeM : 1.2;
     const pistol = this.kestrel;
     if (pistol && this.rm.active) {
