@@ -115,6 +115,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-17 09:33 `a6ecaa4`: CATHODE C4 "Kestrel 9, built like a real gun" (gunkit + trim atlas Kestrel, skinned gloved hands on IK, viewmodel PMREM/key/rim, LOD world gun, pistol idle/ADS/inspect stages). All gates passed first try (Lighthouse 89); live version.json matches; browser smoke inconclusive (sandbox proxy), HTTP check passed; tag push 403 (harmless). 2nd release today.
 - 2026-10-17 01:10 `0f2bf88`: CATHODE C3 "You can't miss the first gun, and a HUD sized for 5K" (HUD in `--u` units with a safe frame and HUD-size setting, first gun on a lit stall with beacon beam/glint/ring, press-to-take prompt and toast, off-screen chevron, look assist). All gates passed (Lighthouse 91); live version.json matches; browser smoke inconclusive (sandbox proxy), HTTP check passed; tag push 403 (harmless). 1st release today.
 - 2026-10-16 16:13 `866000b`: CATHODE C2 "Hits land on the body" (zone flinch springs, per-segment hit flash, layered gore and blood plumes, exit-spatter wall splats, last-enemy slow motion). All gates passed (Lighthouse 89); live version.json matches; browser smoke inconclusive (sandbox proxy), HTTP check passed; tag push 403 (harmless). 1st release today.
 - 2026-10-15 23:51 `3dd799d`: CATHODE C1 "Every shot tells you what it hit" (hit markers, blocked/near-miss cues, penetration, hit-stop, feel-shots). All gates passed; live version.json matches; browser smoke inconclusive (sandbox proxy), HTTP check passed; tag push 403 (harmless). 1st release today.
@@ -124,7 +125,6 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-12 22:20 `9aee11e`: CATHODE D1-D3 (clinic, plaza), Hedgerow H6 Freeplay and H7 kits. All gates passed; live version.json matches. 2nd release today.
 - 2026-10-12 ~01:00 `61810ee`: AAA UI U1–U4 (each game's own fonts, the shared foundation, the CATHODE HUD, the Hedgerow field HUD and upgrade sheet, the Cathnivore table). All gates passed; the live version.json matches. 1st release today.
 - 2026-10-11 ~03:30 `f159236`: Hedgerow 2 M3 (hard-lock properties, round preview, leak report, Retry from round N, acts 2-3 on the Fleet) and M4 (three upgrade paths for 5 towers). All gates passed; the live version.json matches. 1st release today.
-- 2026-10-10 17:44 `68a1f7c`: Hedgerow 2 M1 (hands-on pacing) and M2 (the layered Fleet in act 1). All gates passed; the live version.json matches; the tag push 403 is harmless. 1st release today.
 
 ## Session log (newest first, last 15)
 - 2026-10-13 12:53-13:50 UTC: H11 Compost Heap + Seed Packets, H10 remix medals, released `bb1ba19`.
