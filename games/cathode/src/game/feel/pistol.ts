@@ -73,7 +73,8 @@ const seatEmpty = R.emptyMs * R.commit;
 // and lifted so the bottom of the grip comes into frame (at the hip it sits below the screen's edge).
 const TILT: [number, number, number] = [8 * D, 18 * D, -30 * D];
 // Held 13 cm further out than the hip (C5 review: closer in, the firing forearm filled the lower right quarter).
-const TILT_P: [number, number, number] = [0.035, 0.05, -0.13];
+// Lifted 2 cm more (C5 review 2) so the strip, the hand on the mag's lower third, plays inside the frame.
+const TILT_P: [number, number, number] = [0.035, 0.07, -0.13];
 
 /** Tactical reload, 1.55 s: a round stays chambered; the mag is in at 930 ms. */
 export const TAC: Clip = {

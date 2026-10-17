@@ -284,7 +284,10 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   const fpy = (fpA[1] + fpB[1]) / 2;
   // C5 review: under the floorplate the hand hung off the bottom of the frame while the mag was still in view;
   // now the palm takes the mag's lower half from the left, fingers round its front, so the glove stays with it.
-  const gM = gripFrame(new THREE.Vector3(-0.032, fpy - 0.022, fpz + 0.034), new THREE.Vector3(0.08, 0.55, -0.83), new THREE.Vector3(-1, -0.1, 0.1));
+  // C5 review 2: with the wrist under the floorplate the strip at 400 ms happened below the frame's edge (a
+  // floating mag, fingertips at the border): the wrist now sits level with the mag's base, the palm round its lower
+  // third.
+  const gM = gripFrame(new THREE.Vector3(-0.03, fpy + 0.004, fpz + 0.03), new THREE.Vector3(0.08, 0.55, -0.83), new THREE.Vector3(-1, -0.1, 0.1));
   kit.empty("magHand", gM.pos.toArray() as [number, number, number], mag, gM.quat);
   // The top round is its own node (C5): an empty mag shows its follower, not brass.
   const top = kit.part("magRound", [0, 0, 0], mag);

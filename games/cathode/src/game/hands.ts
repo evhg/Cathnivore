@@ -6,6 +6,7 @@
 // feel/ik.ts from shoulder anchors behind the camera, and each finger curls with one scalar per joint chain.
 
 import * as THREE from "three";
+import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 import { FIN, bake, kitMaterials, placeMatrix, sphere, tube, type Finish, type Place } from "./gunkit";
 import { solveTwoBone, boneQuat, type TwoBoneResult } from "./feel/ik";
 
@@ -169,8 +170,9 @@ export class Arm {
     add(fore, tube(0.05, 0.0375, 0.04, { seg, caps: false, phone }), FIN.sleeve, { p: [0, ARM.fore - 0.09, 0] });
     add(fore, tube(0.006, 0.0405, 0.0405, { seg, caps: true, phone }), FIN.sleeve, { p: [0, ARM.fore - 0.044, 0] });
     add(fore, sphere(0.0062, phone), { color: 0x16171a, metal: 0.2, rough: 0.35, coat: 1 }, { p: [s * 0.026, ARM.fore - 0.065, 0.029] });
-    // The cream silk blouse cuff, a centimetre of it showing past the trench.
-    add(fore, tube(0.022, 0.0315, 0.0305, { seg, caps: false, phone }), FIN.silk, { p: [0, ARM.fore - 0.042, 0] });
+    // The cream silk blouse cuff: a soft roll out from under the trench's lip, draping down onto the gauntlet
+    // (C5 review: a 2 cm straight cylinder of cream read as a flat white stripe round the wrist).
+    add(fore, silkCuff(phone), FIN.silk, { p: [0, ARM.fore - 0.046, 0], s: [1.1, 1, 0.86] });
     if (side < 0) {
       // The pearl bracelet (C4 review: big pearls read as teeth): a strand of small pearls sitting snug on the
       // gauntlet, tucked half under the silk cuff, with a small gold clasp underneath.
@@ -183,9 +185,12 @@ export class Arm {
     }
     // The glove: gauntlet over the wrist, the palm, knuckles, the three-point stitching on the back.
     // The gauntlet rides the forearm (so it follows the arm, not the hand's angle); a short cuff joins it to the palm.
-    add(fore, tube(0.045, 0.0262, 0.0252, { seg, caps: false, phone }), FIN.glove, { p: [0, ARM.fore - 0.038, 0] });
-    add(fore, tube(0.004, 0.0275, 0.0275, { seg, caps: true, phone }), FIN.gloveSeam, { p: [0, ARM.fore - 0.04, 0] });
-    add(hand, sphere(0.0255, phone), FIN.glove, { p: [0, 0.002, 0], s: [1.05, 1, 0.82] });
+    // C5 review: a hard cylinder with a ring seam read as blockout. Now it flares from the wrist to a rolled hem,
+    // oval like the wrist (wider than thick), with a stitched welt above the hem and a short vent on the inside.
+    add(fore, gauntlet(phone), FIN.glove, { p: [0, ARM.fore - 0.039, 0], s: [1.1, 1, 0.86] });
+    // The wrist joint fills the gap between the gauntlet and the heel of the hand, flush with the back of the
+    // hand (C5 review: a full sphere here stood proud of the palm as a smooth dome).
+    add(hand, sphere(0.0245, phone), FIN.glove, { p: [0, -0.002, -0.001], s: [1.04, 1.05, 0.62] });
     {
       // The palm: a soft, tapered slab (narrower at the wrist, the back domed), its heel bending with the wrist.
       const pg = palm(phone, side);
@@ -201,7 +206,7 @@ export class Arm {
     }
     for (let f = 0; f < 3; f++) {
       // The stitching points run from the wrist toward the index, middle and ring knuckles.
-      add(hand, tube(0.034, 0.0007, 0.0007, { seg: 4, caps: true, phone }), FIN.gloveSeam, { p: [s * FINGER_X[f]! * 0.72, 0.022, 0.0134 - Math.abs(FINGER_X[f]!) * 0.09], r: [0, 0, s * -FINGER_X[f]! * 2] });
+      add(hand, tube(0.034, 0.00115, 0.00095, { seg: 4, caps: true, phone }), FIN.gloveSeam, { p: [s * FINGER_X[f]! * 0.72, 0.022, 0.0134 - Math.abs(FINGER_X[f]!) * 0.09], r: [0, 0, s * -FINGER_X[f]! * 2] });
     }
     // The thumb's pad, filling the web between the thumb and the palm.
     add(hand, sphere(0.016, phone), FIN.glove, { p: [s * -0.022, 0.026, -0.004], s: [1, 1.6, 0.9] });
@@ -442,7 +447,7 @@ export function digit(lens: number[], radii: number[], opts: { seg: number; step
     while (k < lens.length - 1 && y > joints[k + 1]!) k++;
     const t = THREE.MathUtils.clamp((y - joints[k]!) / lens[k]!, 0, 1);
     const r = THREE.MathUtils.lerp(radii[k]!, radii[k + 1]!, t);
-    return r * (1 - 0.06 * Math.sin(Math.PI * t));
+    return r * (1 - 0.09 * Math.sin(Math.PI * t));
   };
   /**
    * The section's shape at y and angle (z = sin of the angle: +1 the back of the finger, -1 the pad). Over each
@@ -455,8 +460,10 @@ export function digit(lens: number[], radii: number[], opts: { seg: number; step
       const rj = radii[j]!;
       const d = (y - joints[j]!) / rj;
       // The knuckle: a bump on the back, strongest at the first knuckle.
-      const kn = Math.exp(-d * d * 1.6) * (j === 1 ? 0.16 : 0.11);
+      const kn = Math.exp(-d * d * 1.6) * (j === 1 ? 0.18 : 0.13);
       m += kn * Math.max(0, z) ** 1.5;
+      // The joint's sides swell a touch too, so each phalanx reads as its own bone, not a sausage.
+      m += Math.exp(-d * d * 2.2) * 0.045 * (1 - z * z);
       if (!detail) continue;
       // The flexion crease on the pad, a hair distal of the joint.
       const dc = d - 0.15;
@@ -467,6 +474,8 @@ export function digit(lens: number[], radii: number[], opts: { seg: number; step
         m -= Math.exp(-dw * dw * 60) * 0.045 * Math.max(0, z) ** 2;
       }
     }
+    // The sewn side seams (the fourchettes) run along both flanks of the finger: a fine welt each side.
+    if (detail && y > 0.004) m += 0.05 * Math.exp(-((z / 0.1) ** 2));
     return m;
   };
   // Rings: an even spacing, plus tight ones over each joint and its wrinkles so the creases have edges to live on.
@@ -522,6 +531,57 @@ export function digit(lens: number[], radii: number[], opts: { seg: number; step
   for (let i = 0; i < p.count; i++) along[i] = p.getY(i);
   flatG.userData.edge = new Float32Array(p.count);
   return { geo: flatG, along };
+}
+
+/**
+ * The glove's gauntlet along +Y in the forearm's frame, from the hem (y = 0, toward the elbow) to the wrist
+ * (y = 0.047): a flared cuff with a rolled hem, a raised stitched welt 6 mm above it, tapering into the wrist.
+ */
+function gauntlet(phone: boolean): THREE.BufferGeometry {
+  const prof: [number, number][] = [
+    [0.0262, -0.0008],
+    [0.0288, 0.0004],
+    [0.0289, 0.003],
+    // The welt: the hem's turned edge stitched down.
+    [0.0284, 0.0052],
+    [0.0287, 0.0066],
+    [0.0279, 0.009],
+    [0.0262, 0.026],
+    [0.025, 0.047],
+  ];
+  const pts = prof.map(([r, y]) => new THREE.Vector2(r, y));
+  let g: THREE.BufferGeometry = new THREE.LatheGeometry(pts, phone ? 16 : 24);
+  g.deleteAttribute("uv");
+  // Smooth normals on the indexed lathe (its seam column welded), then expanded.
+  g.deleteAttribute("normal");
+  g = mergeVertices(g, 1e-6);
+  g.computeVertexNormals();
+  g = g.toNonIndexed();
+  g.userData.edge = new Float32Array(g.getAttribute("position").count);
+  return g;
+}
+
+/**
+ * The blouse cuff along +Y in the forearm's frame: it comes out from under the trench lip (y = 0), rolls over
+ * and lies down onto the gauntlet by y = 0.013, about 8 mm of cream showing.
+ */
+function silkCuff(phone: boolean): THREE.BufferGeometry {
+  const prof: [number, number][] = [
+    [0.0318, -0.004],
+    [0.0328, 0.004],
+    [0.0314, 0.0105],
+    [0.0294, 0.014],
+  ];
+  const pts = prof.map(([r, y]) => new THREE.Vector2(r, y));
+  let g: THREE.BufferGeometry = new THREE.LatheGeometry(pts, phone ? 16 : 24);
+  g.deleteAttribute("uv");
+  // Smooth normals on the indexed lathe (its seam column welded), then expanded.
+  g.deleteAttribute("normal");
+  g = mergeVertices(g, 1e-6);
+  g.computeVertexNormals();
+  g = g.toNonIndexed();
+  g.userData.edge = new Float32Array(g.getAttribute("position").count);
+  return g;
 }
 
 /**

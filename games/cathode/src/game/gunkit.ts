@@ -64,9 +64,11 @@ export const FIN = {
   housing: { color: 0x1f2125, metal: 0.9, rough: 0.38, coat: 0.6, band: "peel" },
   /** S2.1: black leather, #141214, roughness 0.45, sheen 0.4 (a thin clearcoat for the grain's sheen on desktop). */
   glove: { color: 0x141214, metal: 0, rough: 0.45, sheen: 0.4, coat: 0.12, band: "leather", scale: 3, wear: 0.2 },
-  gloveSeam: { color: 0x070606, metal: 0, rough: 0.55, sheen: 0.2, band: "leather", wear: 0 },
+  // The raised points and welts: the same leather, its stitched ridge polished a step brighter by wear.
+  gloveSeam: { color: 0x1d1a18, metal: 0, rough: 0.48, sheen: 0.25, band: "leather", wear: 0 },
   sleeve: { color: 0x1d1e22, metal: 0, rough: 0.86, sheen: 0.06, band: "nylon", wear: 0 },
-  silk: { color: 0xe9e1d2, metal: 0, rough: 0.48, sheen: 0.4, band: "grain", wear: 0 },
+  // A warm ivory a step down from paper white, so under the rim light it reads as silk, not a white stripe.
+  silk: { color: 0xbfb4a0, metal: 0, rough: 0.6, sheen: 0.3, band: "grain", wear: 0 },
   pearl: { color: 0xf4efe6, metal: 0.05, rough: 0.18, coat: 1, wear: 0 },
   gold: { color: 0xc9a25a, metal: 1, rough: 0.25, wear: 0 },
 } satisfies Record<string, Finish>;

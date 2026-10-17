@@ -236,7 +236,11 @@ export class Arsenal {
    * the turned gun and the can never sit on a live reticle (C5 review).
    */
   get reloadW(): number {
-    return THREE.MathUtils.clamp(this.armW, 0, 1);
+    // The draw and the hero draw too (C5 review: mid-rack the slide crossed the centre under a live crosshair):
+    // the reticle is away through the clip and back over its last 120 ms.
+    let draw = 0;
+    if (this.drawMs >= 0) draw = THREE.MathUtils.clamp((this.drawClip.dur - this.drawMs) / 120, 0, 1);
+    return Math.max(THREE.MathUtils.clamp(this.armW, 0, 1), draw);
   }
 
   get pistolState(): { fireMs: number; drawMs: number; pressMs: number; reload: string | null; reloadMs: number; committed: boolean; locked: boolean; heat: number } {
