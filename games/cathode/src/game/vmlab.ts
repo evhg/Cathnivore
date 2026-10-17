@@ -44,6 +44,26 @@ arsenal.anim.aim = aim;
 const insp = Number(q.get("inspect") ?? -1);
 arsenal.inspectHold = insp;
 for (let i = 0; i < 90; i++) arsenal.pose(1 / 60, { yaw: 0, pitch: 0 }, 0, 0, false, 0, cam, 75);
+// C5 moments: stage=fire|fireads|lock|reload|empty|draw|hero|press at t=ms (e.g. ?stage=reload&t=400).
+const stage = q.get("stage");
+if (stage) {
+  const t = Number(q.get("t") ?? 0);
+  const step = (dt: number) => arsenal.pose(dt, { yaw: 0, pitch: 0 }, 0, 0, false, 0, cam, 75);
+  arsenal.setView(new THREE.Vector3(), new THREE.Quaternion());
+  if (stage === "fire") {
+    arsenal.stageFire();
+    step(0);
+    const n = Math.max(1, Math.ceil(t / 4));
+    for (let i = 0; i < n && t > 0; i++) step(t / n / 1000);
+    arsenal.stageTime(t);
+  } else if (stage === "lock") arsenal.stageLock();
+  else if (stage === "reload") arsenal.stageReload("tac", t);
+  else if (stage === "empty") arsenal.stageReload("empty", t);
+  else if (stage === "draw" || stage === "hero") arsenal.stageDraw(t, stage === "hero");
+  else if (stage === "press") arsenal.stagePress(t);
+  arsenal.freeze = true;
+  step(1 / 60);
+}
 // dbg=1 paints the right arm red and the left arm green, to tell the hands apart from odd angles.
 if (q.has("dbg")) {
   arsenal.arms.right.mesh.material = new THREE.MeshStandardMaterial({ color: 0xc03030, roughness: 0.6 });

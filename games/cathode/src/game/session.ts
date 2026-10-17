@@ -21,6 +21,8 @@ import { coverWireframe } from "./coverdebug";
 import { Trauma } from "./feel/trauma";
 import { Spring1 } from "./feel/spring";
 import { tuning } from "./feel/tuning";
+import { DroppedMags } from "./dropmag";
+import { REFL_DIRS } from "./gunsound";
 import { AUTOMATIC, confirmSound, hitClass, hitStopMs, type HitEvent } from "../sim/hitevent";
 import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
@@ -125,6 +127,8 @@ export interface Session {
     caseAt?: { x: number; y: number; front: boolean };
     beam?: { x0: number; y0: number; x1: number; y1: number; r: number };
   } | null;
+  /** C5: the Kestrel at the stage's moment (part travel, rounds shown, the muzzle and slide on screen). */
+  pistolInfo?: Record<string, unknown> | null;
   /** C4: the hands' share of viewmodel pixels and the slide's mean luminance (0..1) in the shown frame. */
   vmProbe?: (rects?: { x: number; y: number; w: number; h: number }[]) => { handShare: number; slideLum: number; vmPx: number; slidePx: number; inRects: number[] };
   /** C4: the red dot's projection and the screen centre (CSS px), and the aim blend, as the frame shows them. */
@@ -281,6 +285,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     });
   }
   if (audio) audio.volume = loadPrefs().volume;
+  // S2.5: the shorter, brighter tail inside (the clinic, the tower, the vault).
+  if (audio) audio.gun.indoor = inClinic || inTower || inVault;
   const wake = () => audio?.resume();
   // iOS counts touchend and click as gestures that may start audio, not pointerdown.
   for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, wake, { capture: true });
@@ -334,6 +340,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const arm = (id: string) => {
     const isNew = progress.grantWeapon(id);
     arsenal.owned.add(id);
+    // S2.4: the first time she takes the Kestrel, the 900 ms hero draw with its rack.
+    if (isNew && id === "kestrel") arsenal.heroNext = true;
     arsenal.equipId(id);
     const def = SLICE_WEAPONS.find((w) => w.id === id);
     // In the first job the toast announces it (S7.1); a feed line on top would say it twice.
@@ -913,6 +921,55 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let jobDone = false;
   const eye = new THREE.Vector3();
   const fwd = new THREE.Vector3();
+  const camPosV = new THREE.Vector3();
+  const camQuatV = new THREE.Quaternion();
+  /** S2.6 camera pitch per shot, by class (degrees). */
+  const CAM_KICK: Record<string, number> = { pistol: 1.1, revolver: 2.6, smg: 0.45, smart: 0.45, rifle: 0.7, shotgun: 4.5, sniper: 6, launcher: 5 };
+  // The empty reload's spent mags lie in the street (S2.4) and clack when they land.
+  const droppedMags = new DroppedMags(world.scene, ground, (p, k) => {
+    if (p.distanceTo(eye) < 12) audio?.gun.magLand(k);
+  });
+  /**
+   * S2.5 live reflections: five rays from the eye (left, right, ahead, behind, up) up to 40 m; each wall they
+   * find answers the shot with a delayed, darker copy panned its way.
+   */
+  const reflections = (): { d: number; pan: number }[] => {
+    const out: { d: number; pan: number }[] = [];
+    const yaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), player.yaw);
+    for (const [x, y, z, pan] of REFL_DIRS) {
+      const d = new THREE.Vector3(x, y, z).applyQuaternion(yaw);
+      const hit = rays.cast(eye, d, tuning.gunsound.reflMaxM);
+      if (hit) out.push({ d: hit.dist, pan });
+    }
+    return out;
+  };
+  /** The viewmodel's cues: the shell at 18 ms, the reload's foley, the dropped mag, the seat and the slam. */
+  const drainGunCues = () => {
+    for (const c of arsenal.cues.splice(0)) {
+      if (c === "shell") {
+        // S2.3: right 1.8-2.4, up 1.0-1.4, back 0.3 m/s (camera-relative), ±20%.
+        const r = arsenal.rig;
+        r.root.updateMatrixWorld(true);
+        const q = world.camera.getWorldQuaternion(camQuatV);
+        const port = r.port.getWorldPosition(new THREE.Vector3()).applyQuaternion(q).add(world.camera.getWorldPosition(camPosV));
+        const j = () => 0.8 + Math.random() * 0.4;
+        const v = new THREE.Vector3((1.8 + Math.random() * 0.6) * j(), (1.0 + Math.random() * 0.4) * j(), 0.3 * j()).applyQuaternion(q);
+        world.fx.casing(port, v.add(player.vel.clone().multiplyScalar(0.9)));
+      } else if (c === "dry") audio?.gun.dryFire();
+      else if (c === "magDrop") {
+        const mag = arsenal.rig.mag;
+        if (mag) {
+          const q = world.camera.getWorldQuaternion(camQuatV);
+          const v = new THREE.Vector3(-0.2, -0.6, 0.1).applyQuaternion(q).add(player.vel.clone().multiplyScalar(0.8));
+          droppedMags.drop(mag, world.camera.getWorldPosition(camPosV), q, v);
+        }
+      } else {
+        if (c === "seat") trauma.add(tuning.kestrel.reload.seatTrauma);
+        if (c === "slam" || c === "rackHome") trauma.add(tuning.kestrel.reload.slamTrauma);
+        audio?.gun.cue(c);
+      }
+    }
+  };
 
   const frame = (now: number) => {
     // rAF timestamps can trail performance.now() (set when resuming), so never let time run backwards.
@@ -1024,6 +1081,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.camera.rotation.x += Math.sin(swayT * 0.9) * amp;
       world.camera.rotation.y += Math.sin(swayT * 0.45) * amp * 1.4;
     }
+    // Recoil's camera share (S2.3 `recoilAt`): the springing 70% of each kick, on top of her own aim.
+    const [recP, recY] = arsenal.camRecoil.update(o.shot ? 0 : realDt);
+    world.camera.rotation.x += recP;
+    world.camera.rotation.y += recY;
     // Trauma: one shake for every jolt the fight gives the camera (S0).
     trauma.update(realDt);
     const shake = trauma.sample();
@@ -1045,6 +1106,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     else if (intent.cycle) arsenal.cycleOwned(intent.cycle);
     if (intent.reload) arsenal.reload();
     arsenal.aiming = (intent.aim || arsenal.holdAim) && !dead;
+    arsenal.triggerHeld = intent.fire && !dead;
+    arsenal.sprinting = intent.sprint && player.speed > 3;
+    arsenal.noteInput(!!(intent.fire || intent.aim || intent.reload || intent.sprint || intent.alt || intent.slot >= 0 || intent.cycle || Math.abs(intent.look.yaw) + Math.abs(intent.look.pitch) > 1e-4 || player.speed > 0.3), o.shot ? 0 : realDt);
     const press = intent.fire && !wasFire;
     wasFire = intent.fire;
     const trigger = arsenal.weapon.kind === "melee" ? intent.fire : press;
@@ -1064,8 +1128,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       grace = 0;
       const r = combat.fire(shot, build());
       if (thunderCover > 0) hud.feedLine("Covered by the thunder");
-      audio?.shot(shot.weapon.weaponClass);
-      if (shot.weapon.weaponClass !== "melee") {
+      audio?.shot(shot.weapon.weaponClass, reflections());
+      // Camera recoil (S2.3, S2.6): the class's kick, 70% springing back, 30% left for her to pull down.
+      const camKick = CAM_KICK[shot.weapon.weaponClass] ?? 0;
+      if (camKick > 0) {
+        const keep = arsenal.camRecoil.kick(Math.random() * 2 - 1, (camKick / tuning.kestrel.camera.pitchDeg) * (arsenal.aiming ? 0.8 : 1) * (calm ? 0.5 : 1));
+        player.pitch = THREE.MathUtils.clamp(player.pitch + keep.pitch, -1.5, 1.5);
+        player.yaw += keep.yaw;
+      }
+      if (shot.weapon.id === "kestrel") trauma.add(tuning.kestrel.fire.trauma);
+      // The Kestrel's shell leaves the port on its clip's cue (18 ms); the older guns throw theirs at once.
+      if (shot.weapon.weaponClass !== "melee" && shot.weapon.id !== "kestrel") {
         // Brass out of the port, to the right and up; the world rings it on landing.
         const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
         const port = shot.muzzle.clone().addScaledVector(fwd, shot.weapon.weaponClass === "pistol" ? -0.25 : -0.45);
@@ -1100,7 +1173,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       at.y = Math.max(0, eye.y - 1.2);
       combat.explode(at, 2.6, 38, build(), false);
     }
-    if (intent.reload && arsenal.weapon.kind !== "melee") audio?.reload();
+    if (intent.reload && arsenal.weapon.kind !== "melee" && !arsenal.kestrel) audio?.reload();
+    drainGunCues();
     const canTakedown = !dead && takedownTarget() !== null;
     if (intent.takedown && canTakedown) {
       // With Cat's Cradle in hand the takedown is a garrotte: the wire reaches further (3 m) than the Pin.
@@ -1223,6 +1297,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         }
         combat.noise(sh.from, sh.melee ? 8 : 40);
         if (sh.melee) continue;
+        // S2.5: a round that passes within 2 m of her head whizzes by, on its side.
+        if (!dead && along > 0 && miss >= 0.3 && miss < tuning.gunsound.whizM && (!hitWorld || hitWorld.dist > along)) {
+          const off = toChest.clone().addScaledVector(sh.dir, -along).negate();
+          const rgt = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+          audio?.gun.whiz(THREE.MathUtils.clamp(off.normalize().dot(rgt) * 1.4, -1, 1), 1 - miss / tuning.gunsound.whizM);
+        }
         const rel = sh.from.clone().sub(eye);
         const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
         audio?.enemyShot(rel.length(), THREE.MathUtils.clamp(rel.normalize().dot(right), -1, 1));
@@ -1366,7 +1446,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.ambientAt(world.camera.position, ambC);
       arsenal.ambient(ambC, world.lightAt(world.camera.position), Math.max(realDt, 1 / 30));
     }
+    arsenal.setView(world.camera.getWorldPosition(camPosV), world.camera.getWorldQuaternion(camQuatV));
     arsenal.pose(realDt, intent.look, player.stride, player.speed, intent.sprint, player.landed, world.viewCamera, BASE_FOV);
+    drainGunCues();
+    droppedMags.update(fxDt);
     world.update(dt, o.shot ? 1 : time, fxDt);
 
     // Combat CPU (rounds, skills, enemies, ragdolls, FX) for the S0 budget check.
@@ -1785,7 +1868,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // stages start (the viewmodel has its own light, so where she looks doesn't change the gun's exposure).
   // pistol-alley is the acceptance's "dark alley": the first alley off the market (z 21-25), at its mouth,
   // facing the dumpster corner away from the door's caged bulb, the only light back there.
-  const C4_STAGES = ["pistol-idle", "pistol-ads", "pistol-inspect", "pistol-alley"];
+  // C5 "Kestrel 9 in motion": the shot at 0, 20 and 45 ms, the lock, the reloads, the draws, the press-check.
+  const C4_STAGES = ["pistol-idle", "pistol-ads", "pistol-inspect", "pistol-alley", "pistol-fire", "pistol-fire-ads", "pistol-lock", "pistol-reload", "pistol-reload-empty", "pistol-draw", "pistol-hero", "pistol-presscheck"];
   const c4Stage = (name: string, tMs: number): string => {
     staged = true;
     hud.freeze(null);
@@ -1793,10 +1877,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     showCover(false);
     pickups.clear();
     world.fx.clear?.();
+    arsenal.freeze = false;
     arsenal.restock();
     arsenal.owned.add("kestrel");
     arsenal.equipId("kestrel");
     arsenal.settle();
+    droppedMags.clear();
     if (stageHome) {
       player.pos.copy(stageHome.pos);
       player.yaw = stageHome.yaw;
@@ -1813,17 +1899,87 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       e.detect = 0;
     }
     s.hp = s.maxHp;
-    arsenal.holdAim = name === "pistol-ads";
+    const aimed = name === "pistol-ads" || name === "pistol-fire-ads";
+    arsenal.holdAim = aimed;
     arsenal.inspectHold = name === "pistol-inspect" ? (tMs > 60 ? tMs : 900) : -1;
-    arsenal.anim.aim = name === "pistol-ads" ? 1 : 0;
+    arsenal.anim.aim = aimed ? 1 : 0;
     // The loop sets this from input each frame; the settle below must aim too, or it blends the gun back to the hip.
     arsenal.aiming = arsenal.holdAim;
     player.applyCamera(world.camera, 0);
     world.camera.updateMatrixWorld();
     // The gun settles into its pose (springs, the aim blend, the inspect's moment) before the frame is held.
-    for (let i = 0; i < 90; i++) arsenal.pose(1 / 60, { yaw: 0, pitch: 0 }, 0, 0, false, 0, world.viewCamera, BASE_FOV);
+    const poseOnce = (dt: number) => arsenal.pose(dt, { yaw: 0, pitch: 0 }, 0, 0, false, 0, world.viewCamera, BASE_FOV);
+    arsenal.setView(world.camera.getWorldPosition(camPosV), world.camera.getWorldQuaternion(camQuatV));
+    for (let i = 0; i < 90; i++) poseOnce(1 / 60);
+    // C5: the moment itself, set after the gun has settled, then held (time is frozen in a shot).
+    const C5 = name.startsWith("pistol-") && !["pistol-idle", "pistol-ads", "pistol-inspect", "pistol-alley"].includes(name);
+    if (C5) {
+      const t = Math.max(0, tMs);
+      if (name === "pistol-fire" || name === "pistol-fire-ads") {
+        arsenal.stageFire();
+        // Step the clip and the springs through the stage's milliseconds in small steps.
+        const n = Math.max(1, Math.ceil(t / 4));
+        poseOnce(0);
+        for (let i = 0; i < n && t > 0; i++) poseOnce(t / n / 1000);
+        arsenal.stageTime(t);
+      } else if (name === "pistol-lock") arsenal.stageLock();
+      else if (name === "pistol-reload") arsenal.stageReload("tac", t);
+      else if (name === "pistol-reload-empty") arsenal.stageReload("empty", t);
+      else if (name === "pistol-draw" || name === "pistol-hero") arsenal.stageDraw(t, name === "pistol-hero");
+      else if (name === "pistol-presscheck") arsenal.stagePress(t);
+      arsenal.freeze = true;
+      poseOnce(1 / 60);
+      arsenal.freeze = !!o.shot;
+      arsenal.cues.length = 0;
+      s.pistolInfo = pistolInfo();
+    } else s.pistolInfo = pistolInfo();
     hud.freeze(tMs);
     return "ok";
+  };
+  /** C5 acceptance: the Kestrel's parts and where its muzzle and slide land on screen (CSS px). */
+  const pistolInfo = (): Record<string, unknown> => {
+    const r = arsenal.rig;
+    const P = r.parts;
+    r.root.updateMatrixWorld(true);
+    const c = world.renderer.domElement;
+    const scr = (v: THREE.Vector3) => {
+      const p = v.clone().project(world.viewCamera);
+      return { x: ((p.x + 1) / 2) * c.clientWidth, y: ((1 - p.y) / 2) * c.clientHeight };
+    };
+    const mz = r.muzzle.getWorldPosition(new THREE.Vector3());
+    const side = mz.clone().add(new THREE.Vector3(0.05, 0, 0));
+    const m = scr(mz);
+    const ms = scr(side);
+    // The slide's rear face now and where it sits at rest (its parent's frame): the visible travel on screen.
+    const slide = P.slide!;
+    const rear = slide.localToWorld(new THREE.Vector3(0, 0.03, 0.036));
+    const home = slide.parent!.localToWorld(new THREE.Vector3(slide.position.x, slide.position.y + 0.03, 0.036));
+    const fm = r.flashMesh;
+    let puffM = 0;
+    if (fm && fm.visible) {
+      const b = new THREE.Box3().setFromObject(fm);
+      const sz = b.getSize(new THREE.Vector3());
+      puffM = Math.max(sz.x, sz.y, sz.z);
+    }
+    const st = arsenal.pistolState;
+    return {
+      ...st,
+      slideMm: slide.position.z * 1000,
+      slidePx: Math.hypot(scr(rear).x - scr(home).x, scr(rear).y - scr(home).y),
+      stopDeg: ((P.slideStop?.rotation.x ?? 0) * 180) / Math.PI,
+      hammerDeg: ((P.hammer?.rotation.x ?? 0) * 180) / Math.PI,
+      barrelDeg: ((P.barrel?.rotation.x ?? 0) * 180) / Math.PI,
+      magOffMm: (r.mag?.position.length() ?? 0) * 1000,
+      magVisible: r.mag?.visible ?? false,
+      magRound: P.magRound?.visible ?? false,
+      chamberRound: P.chamberRound?.visible ?? false,
+      flashOn: !!fm?.visible,
+      puffM,
+      smoke: arsenal.smoke.count,
+      muzzle: m,
+      muzzleR05: Math.hypot(ms.x - m.x, ms.y - m.y),
+      ammo: arsenal.ammo,
+    };
   };
   /**
    * C4 acceptance probe: renders the viewmodel alone as flat masks (hands and arms, the slide, the rest of the
@@ -1859,9 +2015,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       for (let q: THREE.Object3D | null = o; q; q = q.parent) if (q === p) return true;
       return false;
     };
+    const hidden: THREE.Object3D[] = [];
     world.viewScene.traverse((o) => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
+      // Smoke and the crown's glow aren't the gun (C5): out of the mask.
+      if (m.name.startsWith("vm:") && m.visible) {
+        m.visible = false;
+        hidden.push(m);
+        return;
+      }
       saved.push([m, m.material]);
       m.material = (m as THREE.SkinnedMesh).isSkinnedMesh ? mats.arm : slide && isUnder(m, slide) && m.userData.kit === "opaque" ? mats.slide : mats.gun;
     });
@@ -1880,6 +2043,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     r.setClearColor(prevClear, prevAlpha);
     world.viewScene.background = bg;
     for (const [m, mat] of saved) m.material = mat;
+    for (const m of hidden) m.visible = true;
     for (const m of Object.values(mats)) m.dispose();
     rt.dispose();
     let arm = 0;

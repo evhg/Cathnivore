@@ -57,6 +57,10 @@ export const POSES: Record<string, HandPose> = {
   rifleR: { curl: [0.15, 1.3, 1.35, 1.4], wrap: 0.35, thumb: [-0.9, 0.2, 0.7], thumbCurl: [0.4, 0.3] },
   /** Under a handguard: fingers up the far side, thumb along the near side. */
   foreL: { curl: [1.05, 1.1, 1.15, 1.2], wrap: 0.2, thumb: [-0.3, 0.1, 0.3], thumbCurl: [0.1, 0.1] },
+  /** C5: the support hand round a magazine (palm under the floorplate, fingers up its front, thumb behind). */
+  magL: { curl: [0.95, 1.05, 1.1, 1.2], wrap: 0.3, thumb: [-0.6, 0.15, 0.5], thumbCurl: [0.35, 0.3] },
+  /** C5: the support hand over the slide's rear for a rack or a press-check (fingers curled over the top). */
+  rackL: { curl: [1.1, 1.15, 1.2, 1.25], wrap: 0.25, thumb: [-0.5, 0.1, 0.45], thumbCurl: [0.3, 0.25] },
   /** A fist round a handle (batons, the sledge, the blade). */
   fist: { curl: [1.35, 1.4, 1.45, 1.5], wrap: 0.45, thumb: [-1.1, 0.3, 0.6], thumbCurl: [0.6, 0.5] },
 };
@@ -556,4 +560,16 @@ function palm(phone: boolean, side: 1 | -1): THREE.BufferGeometry {
   const flat = g.toNonIndexed();
   flat.userData.edge = new Float32Array(flat.getAttribute("position").count);
   return flat;
+}
+
+/** Blends two hand poses (C5: the support hand moving from the grip to the mag or the slide). */
+export function lerpPose(a: HandPose, b: HandPose, t: number, out: HandPose): HandPose {
+  const l = (x: number, y: number) => x + (y - x) * t;
+  for (let i = 0; i < 4; i++) out.curl[i] = l(a.curl[i]!, b.curl[i]!);
+  out.wrap = l(a.wrap ?? 0, b.wrap ?? 0);
+  for (let i = 0; i < 3; i++) out.thumb[i] = l(a.thumb[i]!, b.thumb[i]!);
+  out.thumbCurl[0] = l(a.thumbCurl[0], b.thumbCurl[0]);
+  out.thumbCurl[1] = l(a.thumbCurl[1], b.thumbCurl[1]);
+  out.indexLift = l(a.indexLift ?? 0, b.indexLift ?? 0);
+  return out;
 }

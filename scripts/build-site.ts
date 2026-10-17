@@ -17,7 +17,8 @@ import { build } from 'vite'
 import { siteServiceWorkerSource } from './siteServiceWorker'
 
 const root = resolve(import.meta.dirname, '..')
-const out = resolve(root, 'dist-site')
+// SITE_OUT builds into another folder (a second preview beside a running one, for before/after shots).
+const out = resolve(root, process.env.SITE_OUT ?? 'dist-site')
 
 function commit(): string {
   try {

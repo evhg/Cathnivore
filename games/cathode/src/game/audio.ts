@@ -5,6 +5,7 @@
 
 import { Score, type ScoreVariant } from "./score";
 import { db, tuning } from "./feel/tuning";
+import { GunSound } from "./gunsound";
 
 /** The hit-confirm sounds (S1.3). */
 export type ConfirmKind = "body" | "head" | "armour" | "plateBreak" | "visor" | "kill" | "headKill" | "pen" | "soft";
@@ -76,7 +77,15 @@ export class Audio {
     this.musicFilter.type = "lowpass";
     this.musicFilter.frequency.value = 2400;
     this.musicFilter.Q.value = 0.5;
-    this.music.connect(this.musicFilter).connect(this.duckBus);
+    // The beds (music and ambience) duck 4 dB while she fires (S2.5); the gunshot itself stays on the world bus.
+    this.beds = c.createGain();
+    this.beds.connect(this.duckBus);
+    this.music.connect(this.musicFilter).connect(this.beds);
+    this.gun = new GunSound(c, { world: this.sfx, dry: this.dry, beds: this.beds });
+    // Pre-render every class's 8 variants in the background, the pistol first.
+    setTimeout(() => {
+      for (const cls of ["pistol", "smg", "rifle", "shotgun", "revolver", "sniper", "launcher"]) this.gun.prepare(cls);
+    }, 0);
     this.ambience();
     if (variant === "plaza") this.crowdBed();
     this.score = new Score(c, this.music, this.verbSend, variant);
@@ -84,6 +93,9 @@ export class Audio {
 
   private dryOut: GainNode;
   private duckBus: GainNode;
+  private beds: GainNode;
+  /** Layered gunshots, the reload's foley, dry fire and whiz-bys (S2.5). */
+  readonly gun: GunSound;
   private unlocked = false;
   /** Master volume, 0..1 (the pause menu's slider). */
   set volume(v: number) {
@@ -244,8 +256,10 @@ export class Audio {
   }
 
   // ---- weapons ----
-  shot(weapon: string): void {
+  /** A shot. `walls` are the reflection rays' hits (S2.5); the pre-rendered set plays once it's ready. */
+  shot(weapon: string, walls: { d: number; pan: number }[] = []): void {
     if (!this.enabled) return;
+    if (weapon !== "melee" && this.gun.fire(weapon, walls)) return;
     if (weapon === "pistol") {
       // Suppressed: a hard "pfft", the slide's clack, a whisper of room.
       this.burst({ freq: 1800, q: 0.8, decay: 0.07, gain: 0.5, verb: 0.15 });
@@ -602,7 +616,7 @@ export class Audio {
     lp.frequency.value = 6000;
     const g = c.createGain();
     g.gain.value = 0.055;
-    rain.connect(hp).connect(lp).connect(g).connect(this.duckBus);
+    rain.connect(hp).connect(lp).connect(g).connect(this.beds);
     rain.start();
     // Gusts: a slow swell on a second, lower sheet of rain, and a tin-roof patter that drifts in and out.
     const sheet = c.createBufferSource();
@@ -620,7 +634,7 @@ export class Audio {
     const lfoGain = c.createGain();
     lfoGain.gain.value = 0.025;
     lfo.connect(lfoGain).connect(sg.gain);
-    sheet.connect(sbp).connect(sg).connect(this.duckBus);
+    sheet.connect(sbp).connect(sg).connect(this.beds);
     sheet.start();
     lfo.start();
     const city = c.createBufferSource();
@@ -631,7 +645,7 @@ export class Audio {
     cl.frequency.value = 140;
     const cg = c.createGain();
     cg.gain.value = 0.05;
-    city.connect(cl).connect(cg).connect(this.duckBus);
+    city.connect(cl).connect(cg).connect(this.beds);
     city.start();
   }
 

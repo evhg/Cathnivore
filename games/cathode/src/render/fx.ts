@@ -399,7 +399,8 @@ export function createFx(o: {
   });
 
   // ---------------------------------------------------------------- casings
-  const casingCap = o.quality === "phone" ? 40 : 96;
+  // S2.3: shells are capped at 40, oldest first.
+  const casingCap = 40;
   const brass = new THREE.MeshStandardMaterial({ color: "#c49a48", metalness: 1, roughness: 0.28 });
   const casingGeo = new THREE.CylinderGeometry(0.0055, 0.0055, 0.022, 8);
   const casingMesh = new THREE.InstancedMesh(casingGeo, brass, casingCap);
@@ -447,8 +448,14 @@ export function createFx(o: {
         lights[i]!.intensity = 0;
       }
     },
-    muzzle(pos, dir, size = 1) {
+    muzzle(pos, dir, size = 1, suppressed = false) {
       const d = dir.clone().normalize();
+      if (suppressed) {
+        // S2.3: the can eats the flash. Only a faint warm light on the wet street for 40 ms (the viewmodel draws
+        // the puff and the smoke at the crown); the old 0.2 to 0.36 m white cross is gone.
+        flashLight(pos.clone().addScaledVector(d, 0.1), "#ffb070", 6, 0.04, 2.5);
+        return;
+      }
       spawn({ pos: pos.clone().addScaledVector(d, 0.05 * size), kind: K.flash, additive: true, life: 0.055, size0: 0.28 * size, size1: 0.36 * size, color: WHITE_HOT });
       spawn({ pos: pos.clone().addScaledVector(d, 0.18 * size), vel: d.clone().multiplyScalar(2), kind: K.streak, additive: true, life: 0.05, size0: 0.09 * size, len: 0.5 * size, color: ORANGE });
       for (let i = 0; i < 5; i++)
@@ -524,7 +531,8 @@ export function createFx(o: {
       c.pos.copy(pos);
       c.vel.copy(vel);
       c.rot.set(rand() * 6, rand() * 6, rand() * 6);
-      c.spin.set(rand() * 30 - 15, rand() * 30 - 15, rand() * 30 - 15);
+      // S2.3: a 25-40 rad/s tumble, mostly end over end.
+      c.spin.set((25 + rand() * 15) * (rand() < 0.5 ? -1 : 1), rand() * 8 - 4, rand() * 8 - 4);
       c.rest = 0;
       c.bounces = 0;
       casings[i] = c;
@@ -637,7 +645,7 @@ export function createFx(o: {
           const gy = Math.max(o.groundHeight(c.pos.x, c.pos.z), -0.2) + 0.006;
           if (c.pos.y < gy) {
             c.pos.y = gy;
-            if (Math.abs(c.vel.y) > 0.6 && c.bounces < 4) {
+            if (Math.abs(c.vel.y) > 0.6 && c.bounces < 2) {
               c.bounces++;
               o.emit({ type: "casing", pos: c.pos.clone(), surface: gy < -0.1 ? "water" : "concrete" });
               c.vel.set(c.vel.x * 0.5, -c.vel.y * 0.35, c.vel.z * 0.5);

@@ -22,7 +22,12 @@ const C2 = ['hit-body', 'hit-head', 'hit-head@160', 'enemy-flinch-head-60', 'wal
 const C3 = ['pickup-first-from-takedown', 'pickup-prompt', 'objective-offscreen', 'hud-combat', 'pickup-taken@700']
 // C4 "Kestrel 9, built like a real gun": the pistol at rest, aimed down the dot, and mid-inspect.
 const C4 = ['pistol-idle', 'pistol-ads', 'pistol-inspect@900', 'pistol-alley']
-const MS = { C1, C2, C3, C4 }
+// C5 "Kestrel 9 in motion": the shot at 0, 20 and 45 ms, the lock, the reload at 400 and 930 ms, the draw at
+// 300 ms (idle first: fire-0's muzzle is judged against it). C5X are the review extras (the empty reload past
+// its seat, the hero draw's rack, the press-check, an aimed shot).
+const C5 = ['pistol-idle', 'pistol-fire@0', 'pistol-fire@20', 'pistol-fire@45', 'pistol-lock', 'pistol-reload@400', 'pistol-reload@930', 'pistol-draw@300']
+const C5X = ['pistol-reload-empty@1300', 'pistol-reload-empty@1470', 'pistol-hero@340', 'pistol-presscheck@700', 'pistol-fire-ads@0', 'pistol-reload@200', 'pistol-reload@700']
+const MS = { C1, C2, C3, C4, C5, C5X }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set(C3.map((s) => s.split('@')[0]))
@@ -48,6 +53,8 @@ const warn = (msg) => {
 }
 const vps = (process.env.VPS ?? '5k,d,phone').split(',')
 const failures = []
+// C5: each size's idle muzzle luminance, for the fire-0 comparison.
+const idleMuzzle = {}
 const fail = (msg) => {
   failures.push(msg)
   console.log('  FAIL', msg)
@@ -92,7 +99,7 @@ for (const vp of vps) {
   }
   for (const spec of stages) {
     const [stage, at] = spec.split('@')
-    const t = at ? Number(at) : stage === 'hit-kill' ? 230 : stage === 'enemy-flinch-head-60' ? 60 : 40
+    const t = at ? Number(at) : stage === 'hit-kill' ? 230 : stage === 'enemy-flinch-head-60' ? 60 : stage.startsWith('pistol-') ? 0 : 40
     await load((V.stageQ?.[stage] ?? V.q) + (JOB_STAGES.has(stage) ? '&job' : ''))
     const f0 = await page.evaluate(() => window.cathode.stats.frames)
     const cls = await page.evaluate(([s, tt]) => window.cathode.stage(s, tt), [stage, t])
@@ -244,6 +251,36 @@ for (const vp of vps) {
     side.classShown = cls
     writeFileSync(`${file}.json`, JSON.stringify(side, null, 1))
     console.log(vp, spec, cls, 'hp', side.hp, 'tick', side.tick && `${Math.round(side.tick.ow)}x${Math.round(side.tick.oh)}`, 'ring', side.ring && Math.round(side.ring.ow), 'calls', side.stats.drawCalls, 'refl', side.stats.reflCalls, 'combatMs', side.stats.combatMs?.toFixed(2), 'particles', side.stats.particles)
+    // ---- C5 acceptance ----
+    side.pistol = await page.evaluate(() => window.cathode.pistolInfo ?? null)
+    const pi = side.pistol
+    if (pi && stage.startsWith('pistol-')) {
+      // The muzzle region's mean luminance (0-255) in a 0.05 m disc round the muzzle on screen.
+      const lum = (m) => 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]
+      const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r).mean, [pi.muzzle.x, pi.muzzle.y, Math.max(3, pi.muzzleR05)])
+      side.muzzleLum = lum(pr)
+      if (stage === 'pistol-idle') idleMuzzle[vp] = side.muzzleLum
+      console.log(`  C5 ${vp} ${spec}: slide ${pi.slideMm.toFixed(1)} mm (${(pi.slidePx * side.dpr).toFixed(1)} physical px), stop ${pi.stopDeg.toFixed(1)}°, hammer ${pi.hammerDeg.toFixed(0)}°, mag off ${pi.magOffMm.toFixed(1)} mm${pi.magVisible ? '' : ' (hidden)'}, top round ${pi.magRound}, chamber ${pi.chamberRound}, puff ${pi.flashOn ? `${(pi.puffM * 100).toFixed(1)} cm` : 'off'}, smoke ${pi.smoke}, muzzle lum ${side.muzzleLum.toFixed(0)}, ammo ${pi.ammo.mag}/${pi.ammo.reserve}${pi.reload ? `, ${pi.reload} reload ${pi.reloadMs.toFixed(0)} ms${pi.committed ? ' committed' : ''}` : ''}`)
+      if (stage === 'pistol-fire' && t === 0) {
+        if (!pi.flashOn) fail(`${vp} ${spec}: no muzzle puff on the shot`)
+        if (pi.puffM > 0.1) fail(`${vp} ${spec}: the muzzle flash is ${(pi.puffM * 100).toFixed(1)} cm across (> 10 cm)`)
+        if (idleMuzzle[vp] != null && !(side.muzzleLum > idleMuzzle[vp] + 4)) fail(`${vp} ${spec}: the muzzle region (lum ${side.muzzleLum.toFixed(0)}) doesn't beat idle (${idleMuzzle[vp].toFixed(0)})`)
+      }
+      if (stage === 'pistol-fire' && t === 20) {
+        if (pi.slideMm < 18) fail(`${vp} ${spec}: the slide is only ${pi.slideMm.toFixed(1)} mm back at 20 ms (< 18)`)
+        if (pi.slidePx * side.dpr < 4) fail(`${vp} ${spec}: the slide's travel is ${(pi.slidePx * side.dpr).toFixed(1)} physical px on screen (< 4)`)
+        if (pi.flashOn) fail(`${vp} ${spec}: the puff still shows at 20 ms`)
+      }
+      if (stage === 'pistol-fire' && t === 45 && !(pi.slideMm > 0.5 && pi.slideMm < 24)) fail(`${vp} ${spec}: the slide should be on its way home at 45 ms (${pi.slideMm.toFixed(1)} mm)`)
+      if (stage === 'pistol-lock') {
+        if (pi.stopDeg < 11) fail(`${vp} ${spec}: the slide stop is down (${pi.stopDeg.toFixed(1)}°)`)
+        if (pi.slideMm < 23.5) fail(`${vp} ${spec}: the slide isn't locked back (${pi.slideMm.toFixed(1)} mm)`)
+        if (pi.chamberRound || pi.magRound) fail(`${vp} ${spec}: a round shows on an empty gun (chamber ${pi.chamberRound}, mag ${pi.magRound})`)
+      }
+      if (stage === 'pistol-reload' && t === 930 && !(pi.magOffMm < 1 && pi.magVisible && pi.committed)) fail(`${vp} ${spec}: the mag isn't seated at 930 ms (${pi.magOffMm.toFixed(1)} mm off, committed ${pi.committed})`)
+      if (stage === 'pistol-reload' && t === 400 && !(pi.magOffMm > 20 && !pi.committed)) fail(`${vp} ${spec}: the old mag should be well out at 400 ms (${pi.magOffMm.toFixed(1)} mm)`)
+      if (stage === 'pistol-draw' && !(pi.drawMs > 0)) fail(`${vp} ${spec}: no draw playing`)
+    }
     // ---- C4 acceptance ----
     if (side.vm) {
       console.log(`  C4 ${vp} ${spec}: hands ${(side.vm.handShare * 100).toFixed(1)}% of ${side.vm.vmPx} viewmodel px; slide luminance ${side.vm.slideLum.toFixed(3)} over ${side.vm.slidePx} px`)

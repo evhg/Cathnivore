@@ -5,8 +5,15 @@
 import * as THREE from "three";
 import type { WeaponClass } from "../sim/types";
 import { buildGun, SwingTrail, ViewAnim, type GunModel, type GunRig } from "./viewmodel";
-import { Arms, SHOULDER_L, SHOULDER_L_ADS, SHOULDER_R, SHOULDER_R_ADS } from "./hands";
-import { sampleClip, type Clip } from "./feel/clip";
+import { Arms, POSES, SHOULDER_L, SHOULDER_L_ADS, SHOULDER_R, SHOULDER_R_ADS, lerpPose, type HandPose } from "./hands";
+import { eventsBetween, sampleClip, type Clip, type Sample } from "./feel/clip";
+import { Spring3 } from "./feel/spring";
+import { tuning } from "./feel/tuning";
+import { CamRecoil, DRAW, EMPTY as EMPTY_CLIP, FIRE, HERO, Heat, PRESS_CHECK, ReloadMachine, channel, impulseForPeak, pullTrigger, startReload, stepReload, track } from "./feel/pistol";
+import { GunSmoke } from "./gunsmoke";
+
+const KF = tuning.kestrel;
+const DEG = Math.PI / 180;
 
 /**
  * The inspect (S2.2 layer 3): she turns the gun to read its left flank, tips it to look down the dot, and
@@ -30,6 +37,10 @@ export const INSPECT: Clip = {
 /** Inspecting, the shoulders the arms reach from (camera space): out and down, so the forearms fall away. */
 const SHOULDER_R_INSPECT = new THREE.Vector3(0.06, -0.66, 0.12);
 const SHOULDER_L_INSPECT = new THREE.Vector3(-0.12, -0.55, 0.2);
+/** C5: reloading, the firing shoulder low and out to the right (camera space). */
+const SHOULDER_R_RELOAD = new THREE.Vector3(0.2, -0.66, 0.08);
+/** C5: racking the slide, the support shoulder low and out to the left. */
+const SHOULDER_L_RACK = new THREE.Vector3(-0.42, -0.78, -0.12);
 
 /** How far from the gun's origin toward the firing wrist the inspect turns about (0 the origin, 1 the wrist). */
 export const INSPECT_PIVOT = 0.6;
@@ -93,6 +104,10 @@ interface Held {
   rig: GunRig;
   ammo: number;
   reserve: number;
+  /** Capacity (the pistol rules read it). */
+  mag: number;
+  /** The slide is locked back on an empty magazine (pistols). */
+  locked: boolean;
 }
 
 export class Arsenal {
@@ -155,9 +170,157 @@ export class Arsenal {
       const rig = buildGun(def.model, phone);
       rig.root.visible = false;
       scene.add(rig.root);
-      return { def, rig, ammo: def.mag, reserve: def.reserve };
+      return { def, rig, ammo: def.mag, reserve: def.reserve, mag: def.mag, locked: false };
     });
+    this.smoke = new GunSmoke(scene, phone);
+    this.gripLDyn.name = "gripL:dyn";
     this.equip(1);
+  }
+
+  // ---- C5 "Kestrel 9 in motion" ----
+  /** The pistol's reload rules and clip (S2.4). */
+  readonly rm = new ReloadMachine();
+  /** Ms since the pistol's last shot (the FIRE clip), -1 when it has played out. */
+  private fireMs = -1;
+  /** The draw (or the hero draw) playing, ms in; -1 when none. */
+  private drawMs = -1;
+  private drawClip: Clip = DRAW;
+  /** The idle press-check, ms in; -1 when none. */
+  private pressMs = -1;
+  private idleS = 0;
+  private pressedThisIdle = false;
+  /** Viewmodel recoil springs (S2.3): rotation (pitch, yaw, roll) and position. */
+  private readonly recRot = new Spring3(KF.recoil.rot);
+  private readonly recPos = new Spring3(KF.recoil.pos);
+  /** The camera's share of recoil (S2.3 `recoilAt`): the session adds its offset to the view. */
+  readonly camRecoil = new CamRecoil();
+  readonly heat = new Heat();
+  readonly smoke: GunSmoke;
+  /** Clip cues since the session last drained them (sound, the shell, the dropped mag, trauma). */
+  readonly cues: string[] = [];
+  /** The fire button is down (the trigger preloads 3 mm). */
+  triggerHeld = false;
+  /** She's sprinting (cancels a reload that hasn't committed). */
+  sprinting = false;
+  /** The next equip of the pistol plays the 900 ms hero draw (the first pickup). */
+  heroNext = false;
+  /** A swap asked for after the reload committed: it happens when the reload ends. */
+  private pendingEquip = -1;
+  /** The support hand's frame while a clip moves it off the grip (to the mag, or over the slide). */
+  private readonly gripLDyn = new THREE.Object3D();
+  private readonly poseLDyn: HandPose = { curl: [0, 0, 0, 0], wrap: 0, thumb: [0, 0, 0], thumbCurl: [0, 0], indexLift: 0 };
+  private readonly mA = new THREE.Matrix4();
+  private readonly mB = new THREE.Matrix4();
+  private readonly pA = new THREE.Vector3();
+  private readonly pB = new THREE.Vector3();
+  private readonly qA = new THREE.Quaternion();
+  private readonly qB = new THREE.Quaternion();
+  private readonly sV = new THREE.Vector3();
+  private readonly smp: Sample = { pos: [0, 0, 0], rot: [0, 0, 0] };
+  /** Screenshot stages hold the pistol's clips and springs where they were left (time frozen). */
+  freeze = false;
+
+  /** The Kestrel (the only gun with the full C5 part list); other pistols keep the older motion. */
+  get kestrel(): boolean {
+    return this.weapon.weaponClass === "pistol" && !!this.rig.parts.magRound;
+  }
+
+  /** Where the pistol is (for the stages and tests). */
+  get pistolState(): { fireMs: number; drawMs: number; pressMs: number; reload: string | null; reloadMs: number; committed: boolean; locked: boolean; heat: number } {
+    const h = this.held[this.current]!;
+    return { fireMs: this.fireMs, drawMs: this.drawMs, pressMs: this.pressMs, reload: this.rm.kind, reloadMs: this.rm.t, committed: this.rm.committed, locked: h.locked, heat: this.heat.v };
+  }
+
+  /** Any input this frame cancels the press-check and restarts the idle clock (S2.4 inspect). */
+  noteInput(any: boolean, dt: number): void {
+    if (any) {
+      this.idleS = 0;
+      this.pressedThisIdle = false;
+      if (this.pressMs >= 0) this.pressMs = -1;
+      return;
+    }
+    this.idleS += dt;
+    if (this.idleS >= KF.inspect.idleS && !this.pressedThisIdle && this.kestrel && !this.busy && this.inspectT < 0 && this.fireMs < 0) {
+      this.pressedThisIdle = true;
+      this.pressMs = 0;
+    }
+  }
+
+  /** The camera's view this frame (smoke stays in the world). */
+  setView(eye: THREE.Vector3, q: THREE.Quaternion): void {
+    this.smoke.setView(eye, q);
+  }
+
+  /** The dry fire on an empty pistol: two clicks, no flash, no recoil; then the empty reload plays. */
+  private dryFire(): void {
+    const h = this.held[this.current]!;
+    this.cues.push("dry");
+    this.cd = 0.22;
+    startReload(h, this.rm);
+  }
+
+  /** Screenshot stages: the pistol fires now (the clip, the springs, the puff), wherever its rounds are. */
+  stageFire(): void {
+    const h = this.held[this.current]!;
+    if (h.ammo <= 0) h.ammo = 1;
+    this.cd = 0;
+    this.rm.cancel();
+    this.firePistolFx();
+  }
+
+  /** Screenshot stages: a reload (tac or empty) held at `ms`. */
+  stageReload(kind: "tac" | "empty", ms: number): void {
+    const h = this.held[this.current]!;
+    this.rm.kind = null;
+    h.ammo = kind === "empty" ? 0 : 5;
+    h.locked = kind === "empty";
+    startReload(h, this.rm);
+    stepReload(h, this.rm, ms);
+    this.cues.length = 0;
+  }
+
+  /** Screenshot stages: the last round gone, the slide locked. */
+  stageLock(): void {
+    const h = this.held[this.current]!;
+    this.rm.kind = null;
+    h.ammo = 0;
+    h.locked = true;
+  }
+
+  /** Screenshot stages: the stage's milliseconds have passed for the flash too (the puff shows one frame). */
+  stageTime(ms: number): void {
+    this.flashT = Math.max(0, this.flashT - ms / 1000);
+  }
+
+  /** Screenshot stages: the idle press-check held at `ms`. */
+  stagePress(ms: number): void {
+    this.pressMs = ms;
+  }
+
+  /** Screenshot stages: the draw (or the hero draw) held at `ms`. */
+  stageDraw(ms: number, hero = false): void {
+    this.drawClip = hero ? HERO : DRAW;
+    this.drawMs = ms;
+    this.raising = Math.max(0.001, (this.drawClip.dur - ms) / 1000);
+  }
+
+  /** The pistol's shot choreography: the clip, the recoil springs, heat, smoke, the camera kick. */
+  private firePistolFx(): void {
+    this.fireMs = 0;
+    const R = KF.recoil;
+    const m = this.aiming ? R.adsMul : 1;
+    const side = Math.random() < 0.5 ? -1 : 1;
+    // Position: back 3 cm and up 0.5 cm; rotation: muzzle up 6°, a ±2° roll (S2.3).
+    this.recPos.shove(0, impulseForPeak(R.pos, R.shoveY * m), impulseForPeak(R.pos, R.shoveZ * m));
+    this.recRot.shove(impulseForPeak(R.rot, R.pitchDeg * DEG * m), impulseForPeak(R.rot, 0.6 * DEG * side * m), impulseForPeak(R.rot, R.rollDeg * DEG * side * m));
+    this.heat.shot();
+    this.flashT = KF.puff.lightMs / 1000;
+    const r = this.rig;
+    r.root.updateMatrixWorld(true);
+    const mz = r.muzzle.getWorldPosition(new THREE.Vector3());
+    const pt = r.port.getWorldPosition(new THREE.Vector3());
+    const fwd = new THREE.Vector3(0, 0, -1).transformDirection(r.root.matrixWorld);
+    this.smoke.puff(mz, pt, fwd, this.heat.smokeMul);
   }
 
   /**
@@ -244,7 +407,7 @@ export class Arsenal {
   }
 
   get busy(): boolean {
-    return this.reloading > 0 || this.raising > 0 || this.boltLeft > 0;
+    return this.reloading > 0 || this.raising > 0 || this.boltLeft > 0 || this.rm.active;
   }
 
   /** Weapons Cath actually has: everything else stays in the case until she finds or earns it. */
@@ -277,6 +440,15 @@ export class Arsenal {
   equip(i: number): void {
     if (i < 0 || i >= this.held.length || (i === this.current && this.rig.root.visible)) return;
     if (!this.owned.has(this.held[i]!.def.id)) return;
+    // S2.4: a swap cancels a reload that hasn't committed; after the commit it waits for the reload to end.
+    if (this.rm.active) {
+      if (this.rm.committed) {
+        this.pendingEquip = i;
+        return;
+      }
+      this.rm.cancel();
+    }
+    this.pendingEquip = -1;
     this.rig.root.visible = false;
     this.current = i;
     this.rig.root.visible = true;
@@ -287,6 +459,17 @@ export class Arsenal {
     this.boltLeft = 0;
     this.swingT = -1;
     this.altQueue = 0;
+    this.fireMs = -1;
+    this.pressMs = -1;
+    this.drawMs = -1;
+    if (this.kestrel) {
+      // S2.4: the 450 ms draw, or on the first pickup the 900 ms hero draw with its rack.
+      this.drawClip = this.heroNext ? HERO : DRAW;
+      this.heroNext = false;
+      this.drawMs = 0;
+      this.raising = this.drawClip.dur / 1000;
+      this.cues.push("draw");
+    }
   }
 
   /** Screenshot stages (time frozen): the gun is up and ready, not caught mid-draw or mid-reload. */
@@ -294,6 +477,18 @@ export class Arsenal {
     this.raising = 0;
     this.reloading = 0;
     this.boltLeft = 0;
+    this.rm.kind = null;
+    this.fireMs = -1;
+    this.drawMs = -1;
+    this.pressMs = -1;
+    this.flashT = 0;
+    this.heat.v = 0;
+    this.smoke.clear();
+    this.camRecoil.reset();
+    for (const s of [this.recRot, this.recPos])
+      for (const c of [s.x, s.y, s.z]) c.x = c.v = 0;
+    for (const h of this.held) h.locked = h.def.weaponClass === "pistol" && h.ammo <= 0;
+    this.cues.length = 0;
   }
 
   /** Screenshot stages: every gun back to a full magazine and its starting reserve. */
@@ -301,6 +496,7 @@ export class Arsenal {
     for (const h of this.held) {
       h.ammo = h.def.mag;
       h.reserve = h.def.reserve;
+      h.locked = false;
     }
   }
 
@@ -345,7 +541,9 @@ export class Arsenal {
     const h = this.held[this.current]!;
     if (h.def.mag === 0) return;
     h.ammo = h.def.mag;
+    h.locked = false;
     this.reloading = 0;
+    this.rm.kind = null;
   }
 
   /** What the alt-fire button does with the weapon in hand, for the HUD and tests. */
@@ -428,6 +626,10 @@ export class Arsenal {
 
   reload(): void {
     const h = this.held[this.current]!;
+    if (this.kestrel) {
+      if (this.raising <= 0 && this.inspectT < 0) startReload(h, this.rm);
+      return;
+    }
     if (h.def.mag === 0 || h.ammo >= h.def.mag || h.reserve <= 0 || this.reloading > 0) return;
     this.shellReload = h.def.weaponClass === "shotgun";
     this.reloading = h.def.reload;
@@ -457,7 +659,24 @@ export class Arsenal {
     this.meleeNow = false;
     if (this.raising > 0) this.raising = Math.max(0, this.raising - dt);
     this.flashT = Math.max(0, this.flashT - dt);
-    this.flash.intensity = this.flashT > 0 && def.id !== "kestrel" ? 6 : this.flashT > 0 ? 1.5 : 0;
+    // The Kestrel's can: a small warm light for 40 ms (S2.3), not the open guns' blaze.
+    this.flash.intensity = this.flashT > 0 && def.id !== "kestrel" ? 6 : this.flashT > 0 ? 1.4 : 0;
+    this.flash.distance = def.id === "kestrel" ? KF.puff.lightRangeM : 1.2;
+    const pistol = this.kestrel;
+    if (pistol && this.rm.active) {
+      // S2.4: sprinting cancels a reload that hasn't committed; after the commit it plays out.
+      if (this.sprinting && this.rm.cancel()) this.cues.push("reloadCancel");
+      else {
+        const r = stepReload(h, this.rm, dt * 1000);
+        this.cues.push(...r.events);
+        if (r.done && this.pendingEquip >= 0) {
+          const i = this.pendingEquip;
+          this.pendingEquip = -1;
+          this.equip(i);
+          return null;
+        }
+      }
+    }
     if (this.boltLeft > 0) this.boltLeft = Math.max(0, this.boltLeft - dt);
 
     // Reloads: magazines in one go; the shotgun one shell at a time (and a trigger pull cancels it).
@@ -495,15 +714,22 @@ export class Arsenal {
         this.swingT = 0;
         this.cd = def.cycle;
       }
-    } else if ((trigger || this.altQueue > 0) && this.cd <= 0 && !this.busy) {
-      if (h.ammo <= 0) {
+    } else if ((trigger || this.altQueue > 0) && this.cd <= 0 && (pistol ? this.raising <= 0 : !this.busy)) {
+      // The Kestrel's pull (S2.3/S2.4): it cancels a reload that hasn't committed, dry-fires on a locked slide.
+      const pull = pistol ? pullTrigger(h, this.rm) : h.ammo > 0 ? "fire" : "empty";
+      if (pull === "dry") {
+        this.altQueue = 0;
+        if (trigger) this.dryFire();
+      } else if (pull === "none") {
+        this.altQueue = 0;
+      } else if (pull === "empty") {
         this.altQueue = 0;
         this.reload();
       } else {
         const barrels = this.altQueue > 0 ? this.altBarrels : 1;
         const dmgMul = this.altQueue > 0 ? this.altDmg : 1;
         const widen = this.altQueue > 0 ? this.altSpread : 1;
-        h.ammo -= barrels;
+        if (!pistol) h.ammo -= barrels;
         this.cd = this.altQueue > 0 ? this.altCycle : def.cycle;
         if (barrels > 1) this.cd = def.cycle * 1.2;
         if (this.altQueue > 0) this.altQueue--;
@@ -526,10 +752,13 @@ export class Arsenal {
         this.rig.muzzle.getWorldPosition(local);
         const worldMuzzle = eye.clone().add(local.applyQuaternion(camQuat));
         shot = { weapon: dmgMul !== 1 ? { ...def, damage: def.damage * dmgMul } : def, origin: eye.clone(), dirs, muzzle: worldMuzzle };
-        this.anim.fire(def.kick * (this.aiming ? 0.55 : 1));
-        this.flashT = 0.06;
         this.flash.position.copy(this.rig.muzzle.getWorldPosition(new THREE.Vector3()));
-        if (h.ammo === 0 && h.reserve > 0) this.reload();
+        if (pistol) this.firePistolFx();
+        else {
+          this.anim.fire(def.kick * (this.aiming ? 0.55 : 1));
+          this.flashT = 0.06;
+          if (h.ammo === 0 && h.reserve > 0) this.reload();
+        }
       }
     }
     return shot;
@@ -540,9 +769,11 @@ export class Arsenal {
     const def = this.weapon;
     const r = this.rig;
     const a = this.anim;
-    a.aim = THREE.MathUtils.damp(a.aim, this.aiming && !this.busy ? 1 : 0, 14, dt);
-    // Dip for reloads and raising; the pump, slide and bolt travel.
-    let dip = this.raising / 0.35;
+    const pistol = this.kestrel;
+    // S2.4: she can aim during a pistol reload (the clip turns at half strength), not during the draw.
+    a.aim = THREE.MathUtils.damp(a.aim, this.aiming && (pistol ? this.raising <= 0 : !this.busy) ? 1 : 0, 14, dt);
+    // Dip for reloads and raising; the pump, slide and bolt travel. The Kestrel's draw and reloads are clips.
+    let dip = pistol ? 0 : this.raising / 0.35;
     if (this.reloading > 0) dip = Math.max(dip, this.shellReload ? 0.35 : 0.6);
     if (this.boltLeft > 0) dip = Math.max(dip, 0.15);
     a.dip = THREE.MathUtils.damp(a.dip, dip, 12, dt);
@@ -556,6 +787,7 @@ export class Arsenal {
     a.meleeT = melee && swinging ? this.swingT : -1;
     a.swing = !melee && swinging ? Math.sin(Math.min(1, this.swingT / 0.25) * Math.PI) * (this.swingT < 0.25 ? 1 : 0) : 0;
     a.roll = this.reloading > 0 && !this.shellReload ? 0.5 : 0;
+    if (pistol) a.action = 0;
     a.update(dt, look, stride, speed, sprint && !this.aiming, landed);
     const base = r.hip.clone().lerp(r.ads, a.aim);
     r.root.position.copy(base).add(a.pos);
@@ -566,6 +798,7 @@ export class Arsenal {
       r.root.rotation.y += r.hipRot[1] * k;
       r.root.rotation.z += r.hipRot[2] * k;
     }
+    if (pistol) this.posePistol(this.freeze ? 0 : dt, r);
     // The inspect clip, layered on top (S2.2 layer 3); any action cancels it.
     this.inspectW = 0;
     if (this.inspectHold >= 0) this.inspectT = this.inspectHold / 1000 - dt;
@@ -609,7 +842,7 @@ export class Arsenal {
     // Pistol reload: the magazine drops, a fresh one seats, and an empty gun has its slide dropped on it.
     let reloadP = -1;
     if (def.weaponClass === "pistol" && this.reloading > 0) reloadP = 1 - this.reloading / this.reloadTotal;
-    if (r.mag) {
+    if (r.mag && !pistol) {
       let out = 0;
       if (reloadP >= 0) out = reloadP < 0.2 ? 0 : reloadP < 0.4 ? (reloadP - 0.2) / 0.2 : reloadP < 0.65 ? 1 : Math.max(0, 1 - (reloadP - 0.65) / 0.15);
       r.mag.position.y = -out * 0.09;
@@ -619,7 +852,7 @@ export class Arsenal {
     const held = this.held[this.current]!;
     const h0 = held;
     const lock = def.weaponClass === "pistol" && (held.ammo <= 0 || (reloadP >= 0 && this.reloadEmpty && reloadP < 0.85)) ? 1 : 0;
-    if (r.action) {
+    if (r.action && !pistol) {
       if (def.weaponClass === "pistol") r.action.position.z = Math.max(a.action, lock) * 0.024;
       else if (def.weaponClass === "shotgun") r.action.position.z = a.action * 0.08;
       else if (def.weaponClass === "sniper") {
@@ -631,10 +864,12 @@ export class Arsenal {
     // re-cocks as the slide returns, the trigger travels 5 mm while the shot breaks.
     const firing = def.kind !== "melee" && since < 0.07 && h0.ammo >= 0 && this.cd > 0;
     const P = r.parts;
-    if (P.slideStop) P.slideStop.rotation.x = lock * 0.21;
-    if (P.hammer) P.hammer.rotation.x = since < 0.03 && this.cd > 0 ? 0.96 * Math.min(1, Math.max(0, (since - 0.012) / 0.018)) : 0.96;
-    if (P.trigger) P.trigger.rotation.x = firing ? -0.24 : 0;
-    if (P.barrel) P.barrel.rotation.x = def.weaponClass === "pistol" ? Math.min(1, Math.max(a.action, lock) * 1.6) * 0.052 : 0;
+    if (!pistol) {
+      if (P.slideStop) P.slideStop.rotation.x = lock * 0.21;
+      if (P.hammer) P.hammer.rotation.x = since < 0.03 && this.cd > 0 ? 0.96 * Math.min(1, Math.max(0, (since - 0.012) / 0.018)) : 0.96;
+      if (P.trigger) P.trigger.rotation.x = firing ? -0.24 : 0;
+      if (P.barrel) P.barrel.rotation.x = def.weaponClass === "pistol" ? Math.min(1, Math.max(a.action, lock) * 1.6) * 0.052 : 0;
+    }
     // Her hands on the grip, the index onto the trigger while the shot breaks.
     this.shR.lerpVectors(r.shoulderR ?? SHOULDER_R, SHOULDER_R_ADS, a.aim);
     this.shL.lerpVectors(SHOULDER_L, SHOULDER_L_ADS, a.aim);
@@ -644,7 +879,18 @@ export class Arsenal {
       this.shR.lerp(SHOULDER_R_INSPECT, this.inspectW);
       this.shL.lerp(SHOULDER_L_INSPECT, this.inspectW);
     }
-    this.arms.pose(r.root, r.gripR, r.gripL, r.poseR, r.poseL, firing ? 1 : 0, this.shR, this.shL);
+    // C5: racking, the support shoulder drops out and left, so that forearm comes up from the corner, not across.
+    if (pistol && this.handW > 0 && !this.rm.active) this.shL.lerp(SHOULDER_L_RACK, this.handW);
+    // C5: through a reload the firing shoulder drops out and right, so the forearm falls away under the gun.
+    if (pistol && this.rm.active) {
+      const w = channel(this.rm.clip, "arm", this.rm.t, 0);
+      if (w > 0) this.shR.lerp(SHOULDER_R_RELOAD, w);
+    }
+    // The Kestrel's trigger finger curls while the shot breaks and while the button is held (the preload).
+    const curl = pistol ? Math.min(1, this.trigMm / KF.fire.triggerMm) : firing ? 1 : 0;
+    const gl = pistol && this.handW > 0.001 ? this.gripLDyn : r.gripL;
+    const pl = pistol && this.handW > 0.001 ? this.poseLDyn : r.poseL;
+    this.arms.pose(r.root, r.gripR, gl, r.poseR, pl, curl, this.shR, this.shL);
     // The scope: past 85% aim the rig hides and the overlay takes over.
     r.root.visible = !(r.scoped && a.aim > 0.85);
     const fov = THREE.MathUtils.lerp(baseFov, def.weaponClass === "sniper" ? r.adsFov * Arsenal.ZOOMS[this.zoom]! : baseFov * 0.82, a.aim);
@@ -654,6 +900,143 @@ export class Arsenal {
     viewCamera.updateProjectionMatrix();
     this.worldFov = fov;
   }
+  /** The trigger's travel this frame (mm) and the support hand's weight off the grip (0..1). */
+  private trigMm = 0;
+  private handW = 0;
+
+  /** The clip playing on the Kestrel this frame (reload, draw, press-check), if any. */
+  private pistolClip(): { clip: Clip; t: number } | null {
+    if (this.rm.active) return { clip: this.rm.clip, t: this.rm.t };
+    if (this.drawMs >= 0) return { clip: this.drawClip, t: this.drawMs };
+    if (this.pressMs >= 0) return { clip: PRESS_CHECK, t: this.pressMs };
+    return null;
+  }
+
+  /**
+   * The Kestrel in motion (C5, S2.2 layers 3 and 4, S2.3, S2.4): the clip on the gun root (turned about a point
+   * near the wrist, so the hand stays planted), the recoil springs, then every moving part from the fire clip,
+   * the reload clip or the lock, the support hand off to the mag or the slide, the smoke and the crown's heat.
+   */
+  private posePistol(dt: number, r: GunRig): void {
+    const ms = dt * 1000;
+    const h = this.held[this.current]!;
+    const P = r.parts;
+    // Clocks: the shot's clip, the draw, the press-check (the reload's own clock runs in update()).
+    if (this.fireMs >= 0) {
+      const t0 = this.fireMs;
+      this.fireMs += ms;
+      for (const e of eventsBetween(FIRE, t0 === 0 ? -1 : t0, this.fireMs)) if (e !== "fire") this.cues.push(e);
+      if (this.fireMs > FIRE.dur) this.fireMs = -1;
+    }
+    for (const which of ["draw", "press"] as const) {
+      const cur = which === "draw" ? this.drawMs : this.pressMs;
+      if (cur < 0) continue;
+      const clip = which === "draw" ? this.drawClip : PRESS_CHECK;
+      const nt = cur + ms;
+      // The draw's first cue ("draw") is pushed by equip().
+      for (const e of eventsBetween(clip, cur, nt)) this.cues.push(e);
+      const done = nt >= clip.dur;
+      if (which === "draw") this.drawMs = done ? -1 : nt;
+      else this.pressMs = done ? -1 : nt;
+    }
+    if (this.pressMs >= 0 && (this.busy || this.aiming || this.cd > 0)) this.pressMs = -1;
+
+    // The clip on the gun root: about a pivot most of the way back to the firing wrist.
+    const cl = this.pistolClip();
+    const k = cl ? track(cl.clip, "gun", cl.t, this.smp) : null;
+    if (k) {
+      const s = this.rm.active && this.aiming ? 0.5 : 1;
+      const pv = this.pivV.copy(r.gripR.position).multiplyScalar(INSPECT_PIVOT);
+      r.root.updateMatrix();
+      const before = this.pivW.copy(pv).applyMatrix4(r.root.matrix);
+      r.root.rotation.x += k.rot[0] * s;
+      r.root.rotation.y += k.rot[1] * s;
+      r.root.rotation.z += k.rot[2] * s;
+      r.root.updateMatrix();
+      r.root.position.add(before.sub(pv.applyMatrix4(r.root.matrix)));
+      r.root.position.x += k.pos[0];
+      r.root.position.y += k.pos[1];
+      r.root.position.z += k.pos[2];
+    }
+    // Recoil springs (S2.3): 14 Hz rotation, 16 Hz position.
+    const [rp, ry, rr] = this.recRot.update(dt);
+    const [px, py, pz] = this.recPos.update(dt);
+    r.root.rotation.x += rp;
+    r.root.rotation.y += ry;
+    r.root.rotation.z += rr;
+    r.root.position.x += px;
+    r.root.position.y += py;
+    r.root.position.z += pz;
+
+    // The slide: the shot's clip, a rack or press-check, the empty reload's lock and slam, or the lock itself.
+    const F = KF.fire;
+    const ft = this.fireMs >= 0 ? this.fireMs : -1;
+    let slide = ft >= 0 ? track(FIRE, "slide", ft, this.smp)!.pos[2] : 0;
+    const clipSlide = cl ? track(cl.clip, "slide", cl.t, this.smp) : null;
+    if (this.rm.kind === "empty" && clipSlide) slide = clipSlide.pos[2];
+    else {
+      if (clipSlide) slide = Math.max(slide, clipSlide.pos[2]);
+      if (h.locked) slide = F.slideM;
+    }
+    if (P.slide) P.slide.position.z = slide;
+    // The barrel tilts on the shot's clip, or with the slide's travel past 3 mm (locked, racked, checked).
+    let tilt = ft >= 0 ? track(FIRE, "barrel", ft, this.smp)!.rot[0] : 0;
+    if (ft < 0) tilt = THREE.MathUtils.clamp((slide - 0.003) / 0.008, 0, 1) * F.barrelTiltDeg * DEG;
+    if (P.barrel) P.barrel.rotation.x = tilt;
+    // The hammer falls on the break and re-cocks; the slide stop is up on a locked slide until the thumb drops it.
+    if (P.hammer) P.hammer.rotation.x = ft >= 0 ? track(FIRE, "hammer", ft, this.smp)!.rot[0] : F.hammerDeg * DEG;
+    const stopUp = this.rm.kind === "empty" ? channel(EMPTY_CLIP, "stop", this.rm.t, 1) : h.locked ? 1 : 0;
+    if (P.slideStop) P.slideStop.rotation.x = stopUp * KF.lock.stopDeg * DEG;
+    // The trigger: full travel while the shot breaks, 3 mm of preload while the button is held.
+    this.trigMm = ft >= 0 ? track(FIRE, "trigger", ft, this.smp)!.pos[0] : 0;
+    if (this.triggerHeld && this.cd <= 0.02 && !h.locked) this.trigMm = Math.max(this.trigMm, F.preloadMm);
+    if (P.trigger) P.trigger.rotation.x = -this.trigMm * 0.048;
+
+    // The magazine: the reload's track (out, to the pouch, back in), hidden while the old one falls free.
+    const magT = this.rm.active ? track(this.rm.clip, "mag", this.rm.t, this.smp) : null;
+    if (r.mag) {
+      if (magT) {
+        r.mag.position.set(magT.pos[0], magT.pos[1], magT.pos[2]);
+        r.mag.rotation.set(magT.rot[0], magT.rot[1], magT.rot[2]);
+      } else {
+        r.mag.position.set(0, 0, 0);
+        r.mag.rotation.set(0, 0, 0);
+      }
+      r.mag.visible = this.rm.active ? channel(this.rm.clip, "magVis", this.rm.t, 1) > 0.5 : true;
+    }
+    // The rounds: a fresh mag shows brass; the gun's own mag shows its top round while it has one under the
+    // chambered round; the chamber is empty on a locked slide (and through an empty reload until the slam).
+    if (P.magRound) P.magRound.visible = this.rm.active ? this.rm.kind === "empty" || this.rm.t > 520 || h.ammo >= 2 : h.ammo >= 2;
+    if (P.chamberRound) P.chamberRound.visible = h.ammo >= 1 && !h.locked && !(this.rm.kind === "empty" && this.rm.t < KF.reload.slideStopMs + KF.reload.slamMs);
+
+    // The support hand: off the grip to the mag (reloads) or over the slide (the rack, the press-check).
+    this.handW = cl ? THREE.MathUtils.clamp(channel(cl.clip, "hand", cl.t, 0), 0, 1) : 0;
+    if (this.handW > 0.001 && r.gripL) {
+      const target = this.rm.active ? P.magHand : P.rackHand;
+      if (target) {
+        if (this.gripLDyn.parent !== r.root) r.root.add(this.gripLDyn);
+        r.root.updateMatrixWorld(true);
+        const inv = this.mA.copy(r.root.matrixWorld).invert();
+        this.mB.multiplyMatrices(inv, target.matrixWorld).decompose(this.pB, this.qB, this.sV);
+        this.pA.copy(r.gripL.position);
+        this.qA.copy(r.gripL.quaternion);
+        const w = this.handW * this.handW * (3 - 2 * this.handW);
+        this.gripLDyn.position.lerpVectors(this.pA, this.pB, w);
+        this.gripLDyn.quaternion.slerpQuaternions(this.qA, this.qB, w);
+        this.gripLDyn.userData.thumb = w < 0.4 ? r.gripL.userData.thumb : undefined;
+        lerpPose(r.poseL ?? POSES.pistolL!, this.rm.active ? POSES.magL! : POSES.rackL!, w, this.poseLDyn);
+      }
+    }
+
+    // Smoke in the world and the crown's heat glow (S2.3).
+    this.heat.update(dt);
+    if (this.smoke.glow.parent !== r.root) r.root.add(this.smoke.glow);
+    this.smoke.glow.position.copy(r.muzzle.position);
+    this.smoke.glow.position.z += 0.007;
+    this.smoke.tint(this.ambTint, this.ambLevel);
+    this.smoke.update(dt, this.heat.glow);
+  }
+
   /** The world camera's FOV this frame (zoom when aiming). */
   worldFov = 75;
 

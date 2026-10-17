@@ -14,6 +14,8 @@ export const KESTREL_PARTS = [
   "frame", "slide", "barrel", "hammer", "trigger", "mag", "slideStop",
   "sightF", "sightR", "suppressor", "rail", "guard", "floorplate", "reddot",
   "muzzle", "port", "magwell", "gripR", "gripL",
+  // C5: the round nodes the lock shows empty, and where the support hand goes for the mag and the slide.
+  "magRound", "chamberRound", "magHand", "rackHand",
 ] as const;
 
 /** Where the red dot's emitter projects its dot, in gun space: aimed, this point sits on the camera axis. */
@@ -175,6 +177,10 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   // The red dot: a machined hood with a window, physical glass, the dot itself.
   const dotZ = -0.012;
   kit.empty("reddot", [0, 0.0455, dotZ], slide);
+  // C5: the support hand pinching the rear serrations from the left for the rack and the press-check (it rides
+  // the slide): the wrist out to the left, knuckles across toward the right, the fingers curled over the top.
+  const gS = gripFrame(new THREE.Vector3(-0.075, 0.032, 0.035), new THREE.Vector3(1, 0.12, -0.12), new THREE.Vector3(-0.3, 1, 0.35));
+  kit.empty("rackHand", gS.pos.toArray() as [number, number, number], slide, gS.quat);
   const hoodOut: P2[] = [
     [-0.0125, 0],
     [0.0125, 0],
@@ -216,6 +222,17 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   // A thread collar, knurled, where the can meets the barrel.
   kit.add(lathe([[0.0105, -0.164], [0.012, -0.166], [0.012, -0.184], [0.0105, -0.186]], { ...o }), FIN.knurl, { p: [0, 0, -0.003 + bz] }, barrel);
   kit.add(new THREE.CircleGeometry(0.006, o.phone ? 10 : 16), FIN.bore, { p: [0, 0, c1 + 0.0035 + bz] }, barrel);
+  // The chamber (C5): the barrel's breech face, a dark bore, and the chambered round's case head over it. With
+  // the slide locked back on an empty gun the port shows the empty bore; a press-check shows the brass.
+  kit.add(new THREE.RingGeometry(0.0047, 0.0064, o.phone ? 10 : 18), FIN.bronze, { p: [0, 0, bz - 0.0004] }, barrel);
+  kit.add(new THREE.CircleGeometry(0.0048, o.phone ? 10 : 16), FIN.bore, { p: [0, 0, bz - 0.0016] }, barrel);
+  // (On a phone the case head, a 1 mm disc at that size, is not drawn: the chamber always shows the dark bore.)
+  const chamber = o.phone ? kit.empty("chamberRound", [0, 0, 0], barrel) : kit.part("chamberRound", [0, 0, 0], barrel);
+  if (!o.phone) {
+    kit.add(new THREE.CircleGeometry(0.0046, 16), FIN.brass, { p: [0, 0, bz - 0.0006] }, chamber);
+    // The primer, a touch proud of the head (same brass: one draw for the round).
+    kit.add(new THREE.CircleGeometry(0.0014, 8), FIN.brass, { p: [0, 0, bz - 0.0003] }, chamber);
+  }
   void can;
 
   // ---- Hammer: a skeletonised spur behind the slide, cocked back (0 = down on the pin, 55° = cocked).
@@ -225,10 +242,15 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   hammer.rotation.x = 0.96;
 
   // ---- Trigger: a flat-faced blade with a safety tab, pivoting in the guard (5 mm travel at the shoe).
-  const trigger = kit.part("trigger", [0, -0.002, -0.034]);
+  // On a phone the trigger is merged into the frame (the trigger finger covers it at that size): one draw call
+  // back for the C5 round nodes, inside the phone's 10-call viewmodel budget.
+  const TP: [number, number, number] = [0, -0.002, -0.034];
+  const trigger = o.phone ? kit.empty("trigger", TP, frame) : kit.part("trigger", TP);
+  const tParent = o.phone ? frame : trigger;
+  const tOff = (p: [number, number, number]): [number, number, number] => (o.phone ? [p[0] + TP[0], p[1] + TP[1], p[2] + TP[2]] : p);
   const blade: P2[] = [[0.002, 0], [-0.003, 0], [-0.0085, -0.012], [-0.0095, -0.022], [-0.006, -0.0235], [-0.004, -0.013], [0.0025, -0.004]];
-  kit.add(profile(blade, 0.0058, { bevel: 0.0006, ...o }), FIN.control, undefined, trigger);
-  kit.add(rounded(0.0016, 0.007, 0.0016, 0.0006, o.phone), FIN.frame, { p: [0, -0.012, -0.0072] }, trigger);
+  kit.add(profile(blade, 0.0058, { bevel: 0.0006, ...o }), FIN.control, { p: tOff([0, 0, 0]) }, tParent);
+  kit.add(rounded(0.0016, 0.007, 0.0016, 0.0006, o.phone), FIN.frame, { p: tOff([0, -0.012, -0.0072]) }, tParent);
 
   // ---- Slide stop: a lever on the left, pivoting at its back end.
   const stop = kit.part("slideStop", [-0.0135, 0.009, 0.006]);
@@ -246,8 +268,18 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   const floor: P2[] = [fpA, [fpA[0] + 0.002, fpA[1] - 0.009], [fpB[0] - 0.002, fpB[1] - 0.009], fpB];
   kit.add(profile(floor, 0.0285, { bevel: 0.0012, ...o }), FIN.grip, undefined, mag);
   kit.empty("floorplate", [0, (fpA[1] + fpB[1]) / 2 - 0.005, (fpA[0] + fpB[0]) / 2], mag);
-  kit.add(lathe([[0.0048, 0.0], [0.0048, -0.019], [0.0045, -0.021]], { seg: o.phone ? 8 : 14 }), FIN.brass, { p: [0, 0.0105, mT[0] + 0.004] }, mag);
-  kit.add(lathe([[0.0045, -0.021], [0.0042, -0.025], [0.0024, -0.0295], [0, -0.03]], { seg: o.phone ? 8 : 14 }), { color: 0xa8673a, metal: 1, rough: 0.35 }, { p: [0, 0.0105, mT[0] + 0.004] }, mag);
+  // C5: the support hand's frame round the mag (it rides the mag through the reload): the wrist low and to the
+  // left of the floorplate, knuckles up the mag's front, the back of the hand out to the left.
+  const fpz = (fpA[0] + fpB[0]) / 2;
+  const fpy = (fpA[1] + fpB[1]) / 2;
+  const gM = gripFrame(new THREE.Vector3(-0.03, fpy - 0.05, fpz + 0.02), new THREE.Vector3(0.05, 0.8, -0.6), new THREE.Vector3(-1, -0.15, 0.25));
+  kit.empty("magHand", gM.pos.toArray() as [number, number, number], mag, gM.quat);
+  // The top round is its own node (C5): an empty mag shows its follower, not brass.
+  const top = kit.part("magRound", [0, 0, 0], mag);
+  kit.add(lathe([[0.0048, 0.0], [0.0048, -0.019], [0.0045, -0.021]], { seg: o.phone ? 8 : 14 }), FIN.brass, { p: [0, 0.0105, mT[0] + 0.004] }, top);
+  kit.add(lathe([[0.0045, -0.021], [0.0042, -0.025], [0.0024, -0.0295], [0, -0.03]], { seg: o.phone ? 8 : 14 }), o.phone ? FIN.brass : { color: 0xa8673a, metal: 1, rough: 0.35 }, { p: [0, 0.0105, mT[0] + 0.004] }, top);
+  // The follower, under the round: what an empty mag shows at its lips.
+  kit.add(rounded(0.0094, 0.002, 0.026, 0.0008, o.phone), FIN.grip, { p: [0, 0.0048, mT[0] + 0.004 - 0.014] }, mag);
 
   // ---- Empties.
   kit.empty("muzzle", [0, BORE, -0.311]);

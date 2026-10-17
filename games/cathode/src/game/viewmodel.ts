@@ -156,6 +156,30 @@ function buildPin(): GunRig {
   return r;
 }
 
+/** A soft radial puff (64², generated: no canvas, so it builds in tests too), hot at the centre, gone by the rim. */
+let puffTex: THREE.DataTexture | null = null;
+function puffTexture(): THREE.DataTexture {
+  if (puffTex) return puffTex;
+  const N = 64;
+  const d = new Uint8Array(N * N * 4);
+  for (let y = 0; y < N; y++)
+    for (let x = 0; x < N; x++) {
+      const u = (x + 0.5) / N - 0.5;
+      const v = (y + 0.5) / N - 0.5;
+      const r = Math.min(1, Math.hypot(u, v) * 2);
+      // A bright core falling off fast, then a long soft skirt; a little angular break-up so it isn't a disc.
+      const a = Math.atan2(v, u);
+      const k = Math.pow(1 - r, 2.2) * (0.85 + 0.15 * Math.sin(a * 5 + r * 9));
+      const o = (y * N + x) * 4;
+      const c = Math.round(255 * Math.min(1, Math.max(0, k)));
+      d[o] = d[o + 1] = d[o + 2] = c;
+      d[o + 3] = c;
+    }
+  puffTex = new THREE.DataTexture(d, N, N);
+  puffTex.needsUpdate = true;
+  return puffTex;
+}
+
 /** The Kestrel 9 (game/kestrel.ts): built on the kit, every part its own node. */
 function buildPistol(phone: boolean): GunRig {
   // Aimed, the gun sits so the red dot's point lands exactly on the camera axis (the screen centre, where rounds
@@ -182,10 +206,12 @@ function buildPistol(phone: boolean): GunRig {
   r.poseR = POSES.pistolR!;
   r.poseL = POSES.pistolL!;
   // A suppressed first-person flash (S2.3): two small crossed quads of hot gas and a core, one frame.
-  const fm = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb070).multiplyScalar(2), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-  // Two crossed quads along the bore and a small core facing her, merged: one draw while it shows.
-  const quads = [0, 1].map((i) => new THREE.PlaneGeometry(0.065, 0.065).rotateY(Math.PI / 2).rotateX((i * Math.PI) / 2 + Math.PI / 4));
-  quads.push(new THREE.PlaneGeometry(0.02, 0.02));
+  // C5: every quad carries a soft radial falloff (a flat quad edge-on read as a white needle from the eye).
+  const fm = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb070).multiplyScalar(2), map: puffTexture(), transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  // Two crossed quads along the bore (gas venting from the crown, 6.5 cm) and a 4 cm core facing her, merged:
+  // one draw while it shows.
+  const quads = [0, 1].map((i) => new THREE.PlaneGeometry(0.065, 0.045).rotateY(Math.PI / 2).rotateX((i * Math.PI) / 2 + Math.PI / 4).translate(0, 0, -0.012));
+  quads.push(new THREE.PlaneGeometry(0.04, 0.04));
   const flash = new THREE.Mesh(mergeGeometries(quads)!, fm);
   flash.position.copy(r.muzzle.position).z -= 0.012;
   flash.visible = false;

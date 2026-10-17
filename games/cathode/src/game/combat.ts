@@ -186,7 +186,7 @@ export class Combat {
   fire(shot: Shot, build: Build): { killcam: Projectile | null } {
     const w = shot.weapon;
     if (!this.quiet) this.bus.emit("fire", { t: this.clock, weaponCls: w.weaponClass, auto: AUTOMATIC.has(w.weaponClass) });
-    if (!this.quiet) this.world.fx.muzzle(shot.muzzle, shot.dirs[0]!, w.weaponClass === "shotgun" ? 1.4 : w.weaponClass === "sniper" ? 1.2 : 0.7);
+    if (!this.quiet) this.world.fx.muzzle(shot.muzzle, shot.dirs[0]!, w.weaponClass === "shotgun" ? 1.4 : w.weaponClass === "sniper" ? 1.2 : 0.7, w.id === "kestrel");
     this.noise(shot.origin, w.noise);
     if (w.kind === "ballistic") {
       const dir = shot.dirs[0]!;

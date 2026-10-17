@@ -66,9 +66,11 @@ export const FIRE: Clip = {
 const R = K.reload;
 const seatTac = R.tacMs * R.commit;
 const seatEmpty = R.emptyMs * R.commit;
-// The gun's reload pose: rolled 20° (top right, the magwell toward the left hand), muzzle up 8°, drawn in.
-const TILT: [number, number, number] = [8 * D, 6 * D, -20 * D];
-const TILT_P: [number, number, number] = [-0.012, 0.012, 0.03];
+// The gun's reload pose: rolled 26° clockwise (top to the right, the butt swung left out from behind her
+// forearm toward the support hand, the left flank to the eye), muzzle up 12° so the magwell opens toward her,
+// and lifted so the bottom of the grip comes into frame (at the hip it sits below the screen's edge).
+const TILT: [number, number, number] = [-12 * D, 14 * D, -28 * D];
+const TILT_P: [number, number, number] = [-0.05, 0.07, -0.125];
 
 /** Tactical reload, 1.55 s: a round stays chambered; the mag is in at 930 ms. */
 export const TAC: Clip = {
@@ -98,6 +100,13 @@ export const TAC: Clip = {
       [190, [1, 0, 0], [0, 0, 0], "inOut"],
       [seatTac + 40, [1, 0, 0], [0, 0, 0]],
       [seatTac + 300, [0, 0, 0], [0, 0, 0], "inOut"],
+    ],
+    // pos[0]: how far the firing shoulder drops out and right (so the forearm falls away under the turned gun).
+    arm: [
+      [0, [0, 0, 0], [0, 0, 0]],
+      [200, [1, 0, 0], [0, 0, 0], "inOut"],
+      [seatTac + 90, [1, 0, 0], [0, 0, 0]],
+      [R.tacMs, [0, 0, 0], [0, 0, 0], "inOut"],
     ],
     // pos[0]: the mag shown (1) or gone (0). A tactical reload never hides it: it's off screen at the swap.
     magVis: [[0, [1, 0, 0], [0, 0, 0]]],
@@ -144,6 +153,12 @@ export const EMPTY: Clip = {
       [190, [1, 0, 0], [0, 0, 0], "inOut"],
       [seatEmpty + 40, [1, 0, 0], [0, 0, 0]],
       [R.slideStopMs - 40, [0, 0, 0], [0, 0, 0], "inOut"],
+    ],
+    arm: [
+      [0, [0, 0, 0], [0, 0, 0]],
+      [200, [1, 0, 0], [0, 0, 0], "inOut"],
+      [R.slideStopMs + 110, [1, 0, 0], [0, 0, 0]],
+      [R.emptyMs, [0, 0, 0], [0, 0, 0], "inOut"],
     ],
     // The old mag leaves the gun at 200 ms (a physical drop in the world); the new one shows from the pouch.
     magVis: [
@@ -196,16 +211,20 @@ export const DRAW: Clip = {
   ],
 };
 
-/** The first pickup's hero draw, 900 ms: up and canted to show the flank, a full rack at 300 ms, then aimed in. */
+/**
+ * The first pickup's hero draw, 900 ms: up and turned to show the flank, a full rack at 300 ms (the support hand
+ * stays wrapped: carried over to the rear serrations, her sleeve filled the frame), then aimed in.
+ */
 export const HERO: Clip = {
   dur: DR.heroMs,
   tracks: {
     gun: [
       [0, [0.02, -DR.dropM, 0.05], [-DR.pitchDeg * D, 0.15, -0.35]],
-      [DR.heroRackMs - 40, [-0.02, 0.02, 0.02], [10 * D, 18 * D, 28 * D], "out"],
+      // Up and turned to show her the left flank and the top, out a little from her chest.
+      [DR.heroRackMs - 40, [-0.03, 0.035, -0.1], [8 * D, 35 * D, -12 * D], "out"],
       // The rack: the support hand pulls the slide, the gun pushes forward against it.
-      [DR.heroRackMs + 40, [-0.02, 0.016, 0.004], [7 * D, 18 * D, 28 * D], "out"],
-      [DR.heroRackMs + 110, [-0.02, 0.022, 0.024], [12 * D, 18 * D, 26 * D], "out"],
+      [DR.heroRackMs + 40, [-0.03, 0.031, -0.116], [6 * D, 35 * D, -12 * D], "out"],
+      [DR.heroRackMs + 110, [-0.03, 0.039, -0.094], [11 * D, 35 * D, -11 * D], "out"],
       [DR.heroMs - 150, [0, 0.004, 0], [1 * D, 0, 0], "inOut"],
       [DR.heroMs, [0, 0, 0], [0, 0, 0], "inOut"],
     ],
@@ -217,13 +236,6 @@ export const HERO: Clip = {
       // Released: it slams home on its spring.
       [DR.heroRackMs + 120, [0, 0, -F.overshootM], [0, 0, 0], "in"],
       [DR.heroRackMs + 136, [0, 0, 0], [0, 0, 0], "out"],
-    ],
-    // The support hand leaves the grip for the slide's rear serrations during the rack.
-    hand: [
-      [0, [0, 0, 0], [0, 0, 0]],
-      [DR.heroRackMs - 60, [1, 0, 0], [0, 0, 0], "inOut"],
-      [DR.heroRackMs + 120, [1, 0, 0], [0, 0, 0]],
-      [DR.heroRackMs + 300, [0, 0, 0], [0, 0, 0], "inOut"],
     ],
   },
   events: [
@@ -241,8 +253,8 @@ export const PRESS_CHECK: Clip = {
   tracks: {
     gun: [
       [0, [0, 0, 0], [0, 0, 0]],
-      [380, [-0.018, 0.018, 0.02], [6 * D, 22 * D, 24 * D], "inOut"],
-      [1100, [-0.019, 0.019, 0.022], [7 * D, 24 * D, 25 * D]],
+      [380, [-0.03, 0.025, -0.04], [6 * D, 22 * D, -16 * D], "inOut"],
+      [1100, [-0.031, 0.026, -0.042], [7 * D, 24 * D, -17 * D]],
       [I.pressCheckMs, [0, 0, 0], [0, 0, 0], "inOut"],
     ],
     slide: [
@@ -251,12 +263,6 @@ export const PRESS_CHECK: Clip = {
       [650, [0, 0, I.pressCheckM], [0, 0, 0], "inOut"],
       [950, [0, 0, I.pressCheckM], [0, 0, 0]],
       [1050, [0, 0, 0], [0, 0, 0], "in"],
-    ],
-    hand: [
-      [0, [0, 0, 0], [0, 0, 0]],
-      [400, [1, 0, 0], [0, 0, 0], "inOut"],
-      [1050, [1, 0, 0], [0, 0, 0]],
-      [1300, [0, 0, 0], [0, 0, 0], "inOut"],
     ],
   },
   events: [
