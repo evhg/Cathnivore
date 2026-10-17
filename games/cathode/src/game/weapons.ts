@@ -217,6 +217,8 @@ export class Arsenal {
   private readonly qB = new THREE.Quaternion();
   private readonly sV = new THREE.Vector3();
   private readonly smp: Sample = { pos: [0, 0, 0], rot: [0, 0, 0] };
+  /** Reduced motion: the clips turn the gun half as far (S2.4). */
+  reducedMotion = false;
   /** Screenshot stages hold the pistol's clips and springs where they were left (time frozen). */
   freeze = false;
 
@@ -945,7 +947,8 @@ export class Arsenal {
     const cl = this.pistolClip();
     const k = cl ? track(cl.clip, "gun", cl.t, this.smp) : null;
     if (k) {
-      const s = this.rm.active && this.aiming ? 0.5 : 1;
+      // S2.4: clip rotations at half strength while aiming through a reload, and under reduced motion.
+      const s = (this.rm.active && this.aiming ? 0.5 : 1) * (this.reducedMotion ? 0.5 : 1);
       const pv = this.pivV.copy(r.gripR.position).multiplyScalar(INSPECT_PIVOT);
       r.root.updateMatrix();
       const before = this.pivW.copy(pv).applyMatrix4(r.root.matrix);

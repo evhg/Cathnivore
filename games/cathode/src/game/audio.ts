@@ -518,9 +518,11 @@ export class Audio {
     }
   }
 
-  casing(): void {
-    this.thump(3200 + Math.random() * 900, 2600, 0.06, 0.05, 0, "triangle");
-    this.thump(2800 + Math.random() * 600, 2200, 0.05, 0.035, 0.09, "triangle");
+  /** A shell rings on the street (S2.3): a brass tink panned to where it landed, quieter with distance. */
+  casing(pan = 0, dist = 1): void {
+    const k = 1 / (1 + Math.max(0, dist - 1) / 4);
+    this.thump(3200 + Math.random() * 900, 2600, 0.06, 0.05 * k, 0, "triangle", 0, pan);
+    this.thump(2800 + Math.random() * 600, 2200, 0.05, 0.035 * k, 0.09, "triangle", 0, pan);
   }
 
   reload(): void {

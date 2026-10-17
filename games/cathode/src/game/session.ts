@@ -281,7 +281,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (ev.type === "thunder") {
         setTimeout(() => audio?.thunder(), Math.max(0, ev.delay) * 1000);
         thunderCover = 2 + Math.max(0, ev.delay);
-      } else if (ev.type === "casing") audio?.casing();
+      } else if (ev.type === "casing") {
+        // Panned to where it landed (the camera's right), quieter the further it is.
+        const cam = world.camera;
+        const rel = ev.pos.clone().sub(cam.getWorldPosition(new THREE.Vector3()));
+        const right = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 0);
+        const d = rel.length();
+        audio?.casing(THREE.MathUtils.clamp(rel.normalize().dot(right), -1, 1), d);
+      }
     });
   }
   if (audio) audio.volume = loadPrefs().volume;
@@ -864,6 +871,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const timescale = new Timescale();
   const trauma = new Trauma();
   trauma.reducedMotion = reduceMotionOn();
+  arsenal.reducedMotion = trauma.reducedMotion;
   trauma.phone = input.isTouch;
   const fovPunch = new Spring1(tuning.kill.fovSpring);
   /** A kill lands: hit-stop, FOV punch, a little camera trauma, and a rumble on a pad (S1.4). */
