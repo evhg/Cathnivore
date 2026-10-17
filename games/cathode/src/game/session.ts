@@ -13,6 +13,7 @@ import { Player } from "./player";
 import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
 import { deathGlowScale } from "./body";
 import { RayWorld, rayGround } from "./ray";
+import { KESTREL_DOT } from "./kestrel";
 import { Arsenal } from "./weapons";
 import { Combat, type Build, type KillEvent } from "./combat";
 import { Timescale } from "./feel/timescale";
@@ -126,6 +127,8 @@ export interface Session {
   } | null;
   /** C4: the hands' share of viewmodel pixels and the slide's mean luminance (0..1) in the shown frame. */
   vmProbe?: () => { handShare: number; slideLum: number; vmPx: number; slidePx: number };
+  /** C4: the red dot's projection and the screen centre (CSS px), and the aim blend, as the frame shows them. */
+  dotProbe?: () => { x: number; y: number; cx: number; cy: number; aim: number } | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
   probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[] };
   /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
@@ -653,9 +656,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Phones: 1.5x keeps them cool. 5K desktops cap the 3D at 1.5x (the DOM HUD stays at native DPR, S8).
     const cap = input.isTouch ? 1.5 : innerHeight * devicePixelRatio > 2000 ? 1.5 : o.quality === "ultra" ? 3 : 2;
     const dpr = Math.min(devicePixelRatio, cap);
-    // ?rs=0.5 forces the 3D render scale (5K screenshot runs under SwiftShader).
+    // ?rs=0.5 forces the 3D render scale (5K screenshot runs under SwiftShader). The scale applies to the world
+    // only: Cath's hands and gun, and the post chain, render at the canvas's own resolution (C4).
     const scale = (o.quality === "phone" ? 0.8 : 1) * auto.scale * renderScaleParam;
-    world.resize(o.canvas.clientWidth, o.canvas.clientHeight, dpr * scale);
+    world.resize(o.canvas.clientWidth, o.canvas.clientHeight, dpr, scale);
   };
   addEventListener("resize", resize);
   resize();
@@ -1385,6 +1389,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         return { pickup, waypoint: pickup ? null : waypoint() };
       })(),
       ads: arsenal.aiming,
+      adsBlend: arsenal.weapon.kind === "melee" ? 0 : arsenal.anim.aim,
       takedown: canTakedown,
       bulletTime: focusing ? 1 : 0,
       skills: [0, 1].map((i) => {
@@ -1793,6 +1798,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     arsenal.holdAim = name === "pistol-ads";
     arsenal.inspectHold = name === "pistol-inspect" ? (tMs > 60 ? tMs : 900) : -1;
     arsenal.anim.aim = name === "pistol-ads" ? 1 : 0;
+    // The loop sets this from input each frame; the settle below must aim too, or it blends the gun back to the hip.
+    arsenal.aiming = arsenal.holdAim;
     player.applyCamera(world.camera, 0);
     world.camera.updateMatrixWorld();
     // The gun settles into its pose (springs, the aim blend, the inspect's moment) before the frame is held.
@@ -1804,6 +1811,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * C4 acceptance probe: renders the viewmodel alone as flat masks (hands and arms, the slide, the rest of the
    * gun) and returns the hands' share of viewmodel pixels, and the slide's mean luminance in the real frame.
    */
+  s.dotProbe = () => {
+    const dot = arsenal.rig.parts.reddot;
+    if (!dot) return null;
+    arsenal.rig.root.updateMatrixWorld(true);
+    const v = dot.localToWorld(new THREE.Vector3(KESTREL_DOT[0] - dot.position.x, KESTREL_DOT[1] - dot.position.y, KESTREL_DOT[2] - dot.position.z)).project(world.viewCamera);
+    const c = world.renderer.domElement;
+    return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight, cx: c.clientWidth / 2, cy: c.clientHeight / 2, aim: arsenal.anim.aim };
+  };
   s.vmProbe = () => {
     render();
     const r = world.renderer;

@@ -16,6 +16,9 @@ export const KESTREL_PARTS = [
   "muzzle", "port", "magwell", "gripR", "gripL",
 ] as const;
 
+/** Where the red dot's emitter projects its dot, in gun space: aimed, this point sits on the camera axis. */
+export const KESTREL_DOT: readonly [number, number, number] = [0, 0.0455 + 0.0118, -0.012 - 0.0079];
+
 /** The bore line and the grip's rake (radians off vertical). */
 const BORE = 0.03;
 const RAKE = 0.31;
@@ -147,11 +150,13 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
 
   // Sights: a tall rear sight with two tritium dots, the front post with one, co-witnessing through the dot.
   const sightR = kit.empty("sightR", [0, 0.0455, 0.028], slide);
-  const rearSight: P2[] = [[-0.0085, 0], [0.0085, 0], [0.0085, 0.0125], [0.0021, 0.0125], [0.0021, 0.0075], [-0.0021, 0.0075], [-0.0021, 0.0125], [-0.0085, 0.0125]];
+  // Both irons are cut low (10.5 mm rear, 10.2 mm front) so through the optic they co-witness in the lower third
+  // of the window, under the dot, instead of filling it.
+  const rearSight: P2[] = [[-0.0085, 0], [0.0085, 0], [0.0085, 0.0105], [0.0021, 0.0105], [0.0021, 0.0058], [-0.0021, 0.0058], [-0.0021, 0.0105], [-0.0085, 0.0105]];
   kit.add(facade(rearSight, 0.0065, { ...o }), FIN.slide, { p: [0, 0.0455, 0.028] }, slide);
-  for (const x of [-0.0053, 0.0053]) kit.add(sphere(0.0011, o.phone), GLOW.tritium, { p: [x, 0.0455 + 0.0093, 0.0313], s: [1, 1, 0.4] }, slide);
-  kit.add(rounded(0.0034, 0.0122, 0.006, 0.0008, o.phone), FIN.slide, { p: [0, 0.0455 + 0.006, -0.136] }, slide);
-  kit.add(sphere(0.00115, o.phone), GLOW.tritium, { p: [0, 0.0455 + 0.0093, -0.1328], s: [1, 1, 0.4] }, slide);
+  for (const x of [-0.0053, 0.0053]) kit.add(sphere(0.0011, o.phone), GLOW.tritium, { p: [x, 0.0455 + 0.0077, 0.0313], s: [1, 1, 0.4] }, slide);
+  kit.add(rounded(0.0034, 0.0102, 0.006, 0.0008, o.phone), FIN.slide, { p: [0, 0.0455 + 0.0051, -0.136] }, slide);
+  kit.add(sphere(0.00115, o.phone), GLOW.tritium, { p: [0, 0.0455 + 0.0078, -0.1328], s: [1, 1, 0.4] }, slide);
   const sightF = kit.empty("sightF", [0, 0.0455, -0.136], slide);
   void sightR;
   void sightF;
@@ -174,7 +179,7 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   kit.add(rounded(0.0222, 0.006, 0.026, 0.0012, o.phone), FIN.housing, { p: [0, 0.0455 + 0.003, dotZ] }, slide);
   kit.add(rounded(0.006, 0.004, 0.005, 0.0015, o.phone), FIN.housing, { p: [0, 0.0455 + 0.007, dotZ + 0.009] }, slide);
   kit.add(new THREE.CircleGeometry(0.0118, phone ? 12 : 24).translate(0, 0.0105 - 0.0118, 0), "glass", { p: [0, 0.0455 + 0.0118, dotZ - 0.008], r: [-0.12, 0, 0] }, slide);
-  kit.add(sphere(0.00075, o.phone), GLOW.dot, { p: [0, 0.0455 + 0.0118, dotZ - 0.0079] }, slide);
+  kit.add(sphere(0.00075, o.phone), GLOW.dot, { p: [...KESTREL_DOT] }, slide);
 
   // ---- Barrel (TiN bronze) with the hood showing through the port, and the suppressor threaded on the crown.
   const barrel = kit.part("barrel", [0, BORE, -0.143]);
@@ -238,7 +243,7 @@ export function buildKestrel(phone = false, lod = false): { root: THREE.Group; k
   // right and a little up. The support hand: palm on the left panel, fingers round the front of the firing hand.
   const gR = gripFrame(new THREE.Vector3(0.02, -0.016, 0.07), new THREE.Vector3(0.05, -0.45, -0.89), new THREE.Vector3(1, 0.2, 0));
   kit.empty("gripR", gR.pos.toArray() as [number, number, number], root, gR.quat);
-  const gL = gripFrame(new THREE.Vector3(-0.036, -0.062, 0.05), new THREE.Vector3(0.38, 0.12, -0.92), new THREE.Vector3(-1, -0.45, 0));
+  const gL = gripFrame(new THREE.Vector3(-0.042, -0.041, 0.071), new THREE.Vector3(0.15, -0.35, -0.92), new THREE.Vector3(-1, -0.2, 0));
   kit.empty("gripL", gL.pos.toArray() as [number, number, number], root, gL.quat);
 
   kit.finish();

@@ -11,7 +11,7 @@
 
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
+import { FullScreenQuad, Pass } from "three/examples/jsm/postprocessing/Pass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
@@ -29,24 +29,79 @@ const SANITIZE = /* glsl */ `
     vec3 hdrSafe( vec3 c ) { return vec3( hdrSafe( c.r ), hdrSafe( c.g ), hdrSafe( c.b ) ); }
 `;
 
-/** Renders the world, then the first-person layer on top after clearing depth, into one HDR buffer. */
+/**
+ * Renders the world, then the first-person layer on top after clearing depth, into one HDR buffer.
+ *
+ * Dynamic resolution scales the WORLD only: below a scale of 1 it renders into its own smaller buffer, which is
+ * upscaled (with a light sharpen) into the full-size one, and Cath's hands and gun then draw on top at the
+ * screen's own resolution. The viewmodel is the most-looked-at thing on screen and covers a small share of it,
+ * so on a phone at half scale it stays crisp instead of a half-resolution smear (C4 review).
+ */
 class ScenePass extends Pass {
+  worldScale = 1;
+  private readonly low: THREE.WebGLRenderTarget;
+  private readonly quad: FullScreenQuad;
+  private readonly blit: THREE.ShaderMaterial;
+
   constructor(
     private readonly scene: THREE.Scene,
     private readonly camera: THREE.Camera,
     private readonly viewScene: THREE.Scene,
     private readonly viewCamera: THREE.Camera,
+    samples: number,
   ) {
     super();
     this.needsSwap = false;
+    this.low = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples });
+    this.blit = new THREE.ShaderMaterial({
+      uniforms: { tLow: { value: this.low.texture }, uTexel: { value: new THREE.Vector2(0.25, 0.25) }, uSharp: { value: 0.0 } },
+      vertexShader: /* glsl */ `
+        varying vec2 vUv;
+        void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`,
+      fragmentShader: /* glsl */ `
+        uniform sampler2D tLow;
+        uniform vec2 uTexel;
+        uniform float uSharp;
+        varying vec2 vUv;
+        ${SANITIZE}
+        void main() {
+          vec3 c = hdrSafe( texture2D( tLow, vUv ).rgb );
+          vec3 n = hdrSafe( texture2D( tLow, vUv + vec2( 0.0, uTexel.y ) ).rgb ) + hdrSafe( texture2D( tLow, vUv - vec2( 0.0, uTexel.y ) ).rgb )
+                 + hdrSafe( texture2D( tLow, vUv + vec2( uTexel.x, 0.0 ) ).rgb ) + hdrSafe( texture2D( tLow, vUv - vec2( uTexel.x, 0.0 ) ).rgb );
+          // An unsharp mask scaled by luminance so a lamp's halo can't ring dark around it.
+          vec3 s = c + uSharp * ( c * 4.0 - n ) / ( 1.0 + dot( c, vec3( 0.2126, 0.7152, 0.0722 ) ) );
+          gl_FragColor = vec4( max( s, 0.0 ), 1.0 );
+        }`,
+      depthTest: false,
+      depthWrite: false,
+    });
+    this.quad = new FullScreenQuad(this.blit);
+  }
+
+  setSize(width: number, height: number): void {
+    const w = Math.max(1, Math.round(width * this.worldScale));
+    const h = Math.max(1, Math.round(height * this.worldScale));
+    this.low.setSize(w, h);
+    this.blit.uniforms.uTexel!.value.set(1 / w, 1 / h);
+    // The less the world is scaled, the more the upscale needs crispening (none at full scale).
+    this.blit.uniforms.uSharp!.value = THREE.MathUtils.clamp((1 - this.worldScale) * 0.35, 0, 0.18);
   }
 
   render(renderer: THREE.WebGLRenderer, _write: THREE.WebGLRenderTarget, read: THREE.WebGLRenderTarget): void {
     const auto = renderer.autoClear;
     renderer.autoClear = false;
-    renderer.setRenderTarget(read);
-    renderer.clear(true, true, true);
-    renderer.render(this.scene, this.camera);
+    if (this.worldScale < 0.999) {
+      renderer.setRenderTarget(this.low);
+      renderer.clear(true, true, true);
+      renderer.render(this.scene, this.camera);
+      renderer.setRenderTarget(read);
+      renderer.clear(true, true, true);
+      this.quad.render(renderer);
+    } else {
+      renderer.setRenderTarget(read);
+      renderer.clear(true, true, true);
+      renderer.render(this.scene, this.camera);
+    }
     if (this.viewScene.children.length) {
       renderer.clearDepth();
       renderer.render(this.viewScene, this.viewCamera);
@@ -188,7 +243,8 @@ export interface Post {
   grade: ShaderPass;
   final: ShaderPass;
   gtao: GTAOPass | null;
-  setSize(w: number, h: number, dpr: number): void;
+  /** `dpr` is the screen's (the viewmodel and post render at it); `worldScale` scales the world's render only. */
+  setSize(w: number, h: number, dpr: number, worldScale?: number): void;
   render(time: number): void;
 }
 
@@ -205,7 +261,8 @@ export function createPost(
     samples: quality === "phone" ? 0 : 4,
   });
   const composer = new EffectComposer(renderer, target);
-  composer.addPass(new ScenePass(scene, camera, viewScene, viewCamera));
+  const scenePass = new ScenePass(scene, camera, viewScene, viewCamera, quality === "phone" ? 0 : 4);
+  composer.addPass(scenePass);
   let gtao: GTAOPass | null = null;
   if (quality === "ultra") {
     gtao = new GTAOPass(scene, camera, 4, 4);
@@ -235,7 +292,8 @@ export function createPost(
     grade,
     final,
     gtao,
-    setSize(w, h, dpr) {
+    setSize(w, h, dpr, worldScale = 1) {
+      scenePass.worldScale = THREE.MathUtils.clamp(worldScale, 0.25, 1);
       composer.setPixelRatio(dpr);
       composer.setSize(w, h);
       const pw = Math.round(w * dpr);

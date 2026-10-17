@@ -366,14 +366,14 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       // Thermal rescue: the phone is struggling even at low resolution, so shadows refresh a quarter as often.
       shadowEvery = Math.max(shadowEvery, 4);
     },
-    resize(width, height, pixelRatio) {
+    resize(width, height, pixelRatio, worldScale = 1) {
       renderer.setPixelRatio(pixelRatio);
       renderer.setSize(width, height, false);
       camera.aspect = viewCamera.aspect = width / Math.max(1, height);
       camera.updateProjectionMatrix();
       viewCamera.updateProjectionMatrix();
-      post.setSize(width, height, pixelRatio);
-      reflection.setSize(width * pixelRatio, height * pixelRatio);
+      post.setSize(width, height, pixelRatio, worldScale);
+      reflection.setSize(width * pixelRatio * worldScale, height * pixelRatio * worldScale);
     },
     setDrama(amount) {
       drama = THREE.MathUtils.clamp(amount, 0, 1);

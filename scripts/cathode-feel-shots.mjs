@@ -212,6 +212,16 @@ for (const vp of vps) {
     })
     // C4: the viewmodel mask (hands' share of its pixels) and the slide's exposure.
     if (stage.startsWith('pistol-')) side.vm = await page.evaluate(() => window.cathode.vmProbe?.() ?? null)
+    // C4: aimed, the red dot sits on the point of aim (within 2 physical px of the screen centre).
+    if (stage === 'pistol-ads') {
+      side.dot = await page.evaluate(() => window.cathode.dotProbe?.() ?? null)
+      if (!side.dot) fail(`${vp} ${spec}: no red dot to probe`)
+      else {
+        const off = Math.hypot(side.dot.x - side.dot.cx, side.dot.y - side.dot.cy) * side.dpr
+        console.log(`  C4 ${vp} ${spec}: the dot is ${off.toFixed(1)} physical px from the centre (aim ${side.dot.aim.toFixed(3)})`)
+        if (off > 2) fail(`${vp} ${spec}: the red dot is ${off.toFixed(1)} physical px off the point of aim (> 2)`)
+      }
+    }
     side.stage = stage
     side.t = t
     side.stageInfo = info

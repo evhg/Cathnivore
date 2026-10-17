@@ -88,7 +88,9 @@ export interface World {
   render(): void;
   /** Sheds work when the device is running hot (shadow refresh rate); optional so test worlds can skip it. */
   cool?(): void;
-  resize(width: number, height: number, pixelRatio: number): void;
+  /** `pixelRatio` is the canvas's (Cath's viewmodel and the post chain render at it); the world renders at
+   * `pixelRatio * worldScale` (dynamic resolution). */
+  resize(width: number, height: number, pixelRatio: number, worldScale?: number): void;
   /** Slow-motion/kill-cam grading: 0 normal, 1 full (desaturated, vignetted, depth of field). */
   setDrama(amount: number): void;
   /** Wind for ballistics and rain, metres per second along x and z. */

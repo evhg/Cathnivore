@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { adoptMeshes, collapse, FIN, fistGrip, GunKit } from "./gunkit";
-import { buildKestrel } from "./kestrel";
+import { KESTREL_DOT, buildKestrel } from "./kestrel";
 import { POSES, type HandPose } from "./hands";
 
 export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle" | "launcher" | "sledge" | "blade" | "wire";
@@ -156,7 +156,9 @@ function buildPin(): GunRig {
 
 /** The Kestrel 9 (game/kestrel.ts): built on the kit, every part its own node. */
 function buildPistol(phone: boolean): GunRig {
-  const r = rig(new THREE.Vector3(0.092, -0.09, -0.28), new THREE.Vector3(0, -0.0573, -0.4), 52);
+  // Aimed, the gun sits so the red dot's point lands exactly on the camera axis (the screen centre, where rounds
+  // go), 0.42 m out: derived from the dot itself, so moving the optic can never leave the dot off the aim point.
+  const r = rig(new THREE.Vector3(0.092, -0.09, -0.28), new THREE.Vector3(-KESTREL_DOT[0], -KESTREL_DOT[1], -0.42 - KESTREL_DOT[2]), 52);
   r.hipRot = [0.03, 0.1, 0.06];
   // Aimed, the viewmodel camera narrows so the gun sits further out (the hands drop away under the dot) at the same size.
   r.adsVmFov = 36;

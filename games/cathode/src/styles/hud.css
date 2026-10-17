@@ -248,6 +248,7 @@
   left: 50%;
   top: 50%;
   transform: scale(var(--xs, 1));
+  opacity: var(--ads, 1);
 }
 .hud-cross span {
   position: absolute;

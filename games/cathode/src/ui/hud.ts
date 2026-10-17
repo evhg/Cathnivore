@@ -44,6 +44,8 @@ export interface HudState {
   waypoint?: { x: number; y: number; dist: number; behind: boolean } | null;
   /** Aiming down the sights (the objective marker steps back, S7.2). */
   ads?: boolean;
+  /** The aim-down-sights blend, 0 hip .. 1 aimed: the crosshair fades out as the sights (or the dot) take over (S2.2 layer 1). */
+  adsBlend?: number;
   /** A weapon in reach and in sight (S7.1 layer 5): where on screen (CSS px), the key, and its name and stats. */
   pickup?: { x: number; y: number; key: string; verb: string; name: string; stats: Array<[string, string]> } | null;
 }
@@ -283,6 +285,8 @@ export class Hud {
     // The gap opens with spread, in HUD units so it reads the same at every screen size (S8).
     set(this.cross, "--gap", `calc(var(--u) * ${Math.round((6 + s.spread) * 4 / 3)})`);
     this.show(this.cross, !s.scoped);
+    // Aimed, the sights are the reticle: the crosshair is gone by 60% of the blend so it never sits over the dot.
+    set(this.cross, "--ads", Math.max(0, 1 - (s.adsBlend ?? 0) / 0.6).toFixed(2));
     this.show(this.scope, s.scoped);
     if (s.scoped) {
       this.text(this.scopeRange, `Rng ${Math.round(s.scopeRange)} m`);

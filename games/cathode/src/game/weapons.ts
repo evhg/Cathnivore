@@ -126,13 +126,20 @@ export class Arsenal {
     this.arms = new Arms(phone);
     // S2.1 viewmodel lighting: a warm key from the upper left, a cyan rim from behind right, and a faint magenta
     // fill from below so the underside of the gun never goes black. The environment (lightRoom) adds the strips.
-    const key = new THREE.DirectionalLight(0xf4f1ee, 1.2);
+    // On a phone the gun is small and the street behind it bright and busy: a stronger key and rim, and a second,
+    // cooler rim from the left, so the silhouette separates (C4 review: "a dark smear" at 844x390).
+    const key = new THREE.DirectionalLight(0xf4f1ee, phone ? 1.5 : 1.2);
     key.position.set(-0.6, 1, 0.45);
-    const rim = new THREE.DirectionalLight(0x5fd8ff, 0.8);
+    const rim = new THREE.DirectionalLight(0x5fd8ff, phone ? 1.5 : 0.8);
     rim.position.set(1, 0.35, -1);
     const fill = new THREE.DirectionalLight(0xff3f8f, 0.35);
     fill.position.set(-0.4, -0.6, -0.4);
     scene.add(key, rim, fill, this.flash);
+    if (phone) {
+      const rimL = new THREE.DirectionalLight(0xb8d8ff, 0.9);
+      rimL.position.set(-1, 0.6, -0.8);
+      scene.add(rimL);
+    }
     this.held = SLICE_WEAPONS.map((def) => {
       const rig = buildGun(def.model, phone);
       rig.root.visible = false;
