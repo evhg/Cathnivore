@@ -169,7 +169,7 @@ function bandField(name: BandName, w: number, h: number, k: number, text: ((name
           v = pnoise(X, Y, W, H, 128, 12, 31) * 0.7 + pnoise(X, Y, W, H, 256, 24, 32) * 0.3;
           f.alb[i] = 0.96 + v * 0.06;
           f.rough[i] = (v - 0.5) * 0.06;
-          f.strength = 0.9;
+          f.strength = 0.3;
           break;
         case "nylon": {
           // A tight gabardine twill: diagonal ribs every 1 mm.

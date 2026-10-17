@@ -173,6 +173,9 @@ export class Arsenal {
   }
 
   private inspectT = -1;
+  /** Screenshot stages: hold the aim regardless of input, and hold the inspect at this moment (ms; -1 = play it). */
+  holdAim = false;
+  inspectHold = -1;
   private readonly shR = new THREE.Vector3();
   private readonly shL = new THREE.Vector3();
 
@@ -513,6 +516,7 @@ export class Arsenal {
     r.root.position.copy(base).add(a.pos);
     r.root.rotation.copy(a.rot);
     // The inspect clip, layered on top (S2.2 layer 3); any action cancels it.
+    if (this.inspectHold >= 0) this.inspectT = this.inspectHold / 1000 - dt;
     if (this.inspectT >= 0) {
       if (this.busy || this.aiming || this.cd > 0 || swinging) this.inspectT = -1;
       else {

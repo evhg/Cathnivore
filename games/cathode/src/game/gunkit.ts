@@ -52,10 +52,10 @@ export const FIN = {
   bore: { color: 0x050506, metal: 0.6, rough: 0.6, wear: 0 },
   brass: { color: 0xb08d3c, metal: 1, rough: 0.3, band: "brushed" },
   housing: { color: 0x1f2125, metal: 0.9, rough: 0.38, coat: 0.6, band: "peel" },
-  glove: { color: 0x141214, metal: 0, rough: 0.45, sheen: 1, band: "leather", scale: 1.4, wear: 0.35 },
-  gloveSeam: { color: 0x0a0909, metal: 0, rough: 0.55, sheen: 0.6, band: "leather", wear: 0 },
-  sleeve: { color: 0x2c2d33, metal: 0, rough: 0.86, sheen: 0.6, band: "nylon", wear: 0 },
-  silk: { color: 0xe9e1d2, metal: 0, rough: 0.48, sheen: 1, band: "grain", wear: 0 },
+  glove: { color: 0x121011, metal: 0, rough: 0.4, sheen: 0.12, coat: 0.25, band: "leather", scale: 1.4, wear: 0.35 },
+  gloveSeam: { color: 0x070606, metal: 0, rough: 0.55, sheen: 0.2, band: "leather", wear: 0 },
+  sleeve: { color: 0x26272c, metal: 0, rough: 0.86, sheen: 0.06, band: "nylon", wear: 0 },
+  silk: { color: 0xe9e1d2, metal: 0, rough: 0.48, sheen: 0.4, band: "grain", wear: 0 },
   pearl: { color: 0xf4efe6, metal: 0.05, rough: 0.18, coat: 1, wear: 0 },
   gold: { color: 0xc9a25a, metal: 1, rough: 0.25, wear: 0 },
 } satisfies Record<string, Finish>;
@@ -238,19 +238,19 @@ export function tube(len: number, r0: number, r1: number, opts: { seg?: number; 
   const seg = opts.seg ?? (opts.phone ? 8 : 14);
   const pts: THREE.Vector2[] = [];
   const caps = opts.caps ?? true;
-  if (caps) for (let i = 0; i <= 3; i++) {
-    const a = -Math.PI / 2 + (i / 3) * (Math.PI / 2);
+  if (caps) for (let i = 0; i <= 4; i++) {
+    const a = -Math.PI / 2 + (i / 4) * (Math.PI / 2);
     pts.push(new THREE.Vector2(Math.cos(a) * r0, Math.sin(a) * r0 + r0 * 0.6));
   }
   else pts.push(new THREE.Vector2(r0, 0));
   pts.push(new THREE.Vector2(r1, len - (caps ? r1 * 0.6 : 0)));
-  if (caps) for (let i = 1; i <= 3; i++) {
-    const a = (i / 3) * (Math.PI / 2);
+  if (caps) for (let i = 1; i <= 4; i++) {
+    const a = (i / 4) * (Math.PI / 2);
     pts.push(new THREE.Vector2(Math.cos(a) * r1, len - r1 * 0.6 + Math.sin(a) * r1));
   }
   let g: THREE.BufferGeometry = new THREE.LatheGeometry(pts, seg);
   g.deleteAttribute("uv");
-  g = toCreasedNormals(g, 1.0);
+  g = toCreasedNormals(g, 1.3);
   g.userData.edge = new Float32Array(g.getAttribute("position").count);
   return g;
 }

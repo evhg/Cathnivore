@@ -124,6 +124,8 @@ export interface Session {
     caseAt?: { x: number; y: number; front: boolean };
     beam?: { x0: number; y0: number; x1: number; y1: number; r: number };
   } | null;
+  /** C4: the hands' share of viewmodel pixels and the slide's mean luminance (0..1) in the shown frame. */
+  vmProbe?: () => { handShare: number; slideLum: number; vmPx: number; slidePx: number };
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
   probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[] };
   /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
@@ -1033,7 +1035,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (intent.cycle && arsenal.scopedIn) arsenal.stepZoom(-intent.cycle);
     else if (intent.cycle) arsenal.cycleOwned(intent.cycle);
     if (intent.reload) arsenal.reload();
-    arsenal.aiming = intent.aim && !dead;
+    arsenal.aiming = (intent.aim || arsenal.holdAim) && !dead;
     const press = intent.fire && !wasFire;
     wasFire = intent.fire;
     const trigger = arsenal.weapon.kind === "melee" ? intent.fire : press;
@@ -1763,6 +1765,109 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let stageHome: { pos: THREE.Vector3; yaw: number; pitch: number } | null = null;
   let stageGuard: Enemy | null = null;
   let crateCollider: { off?: boolean } | null = null;
+  // C4 "Kestrel 9, built like a real gun": the pistol at rest, aimed, and mid-inspect, in the street where the
+  // stages start (the viewmodel has its own light, so where she looks doesn't change the gun's exposure).
+  const C4_STAGES = ["pistol-idle", "pistol-ads", "pistol-inspect"];
+  const c4Stage = (name: string, tMs: number): string => {
+    staged = true;
+    hud.freeze(null);
+    hud.clearFeedback();
+    showCover(false);
+    pickups.clear();
+    world.fx.clear?.();
+    arsenal.restock();
+    arsenal.owned.add("kestrel");
+    arsenal.equipId("kestrel");
+    arsenal.settle();
+    if (stageHome) {
+      player.pos.copy(stageHome.pos);
+      player.yaw = stageHome.yaw;
+      player.pitch = stageHome.pitch;
+    }
+    player.vel.set(0, 0, 0);
+    for (const e of enemies) {
+      if (e.alive && e.state !== "dead") e.state = "unaware";
+      e.detect = 0;
+    }
+    s.hp = s.maxHp;
+    arsenal.holdAim = name === "pistol-ads";
+    arsenal.inspectHold = name === "pistol-inspect" ? (tMs > 60 ? tMs : 900) : -1;
+    arsenal.anim.aim = name === "pistol-ads" ? 1 : 0;
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    // The gun settles into its pose (springs, the aim blend, the inspect's moment) before the frame is held.
+    for (let i = 0; i < 90; i++) arsenal.pose(1 / 60, { yaw: 0, pitch: 0 }, 0, 0, false, 0, world.viewCamera, BASE_FOV);
+    hud.freeze(tMs);
+    return "ok";
+  };
+  /**
+   * C4 acceptance probe: renders the viewmodel alone as flat masks (hands and arms, the slide, the rest of the
+   * gun) and returns the hands' share of viewmodel pixels, and the slide's mean luminance in the real frame.
+   */
+  s.vmProbe = () => {
+    render();
+    const r = world.renderer;
+    const c = r.domElement;
+    const w = c.width;
+    const h = c.height;
+    // The real frame's pixels first (the canvas as shown, post and all).
+    const cv = document.createElement("canvas");
+    cv.width = w;
+    cv.height = h;
+    const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+    g2.drawImage(c, 0, 0, w, h);
+    const frame = g2.getImageData(0, 0, w, h).data;
+    const rt = new THREE.WebGLRenderTarget(w, h);
+    const flat = (col: number) => new THREE.MeshBasicMaterial({ color: col });
+    const mats = { arm: flat(0xff0000), slide: flat(0x00ff00), gun: flat(0x0000ff) };
+    const saved: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
+    const slide = arsenal.rig.parts.slide;
+    const isUnder = (o: THREE.Object3D, p?: THREE.Object3D) => {
+      for (let q: THREE.Object3D | null = o; q; q = q.parent) if (q === p) return true;
+      return false;
+    };
+    world.viewScene.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      saved.push([m, m.material]);
+      m.material = (m as THREE.SkinnedMesh).isSkinnedMesh ? mats.arm : slide && isUnder(m, slide) && m.userData.kit === "opaque" ? mats.slide : mats.gun;
+    });
+    const bg = world.viewScene.background;
+    world.viewScene.background = null;
+    const prevTarget = r.getRenderTarget();
+    const prevClear = r.getClearColor(new THREE.Color());
+    const prevAlpha = r.getClearAlpha();
+    r.setRenderTarget(rt);
+    r.setClearColor(0x000000, 0);
+    r.clear();
+    r.render(world.viewScene, world.viewCamera);
+    const px = new Uint8Array(w * h * 4);
+    r.readRenderTargetPixels(rt, 0, 0, w, h, px);
+    r.setRenderTarget(prevTarget);
+    r.setClearColor(prevClear, prevAlpha);
+    world.viewScene.background = bg;
+    for (const [m, mat] of saved) m.material = mat;
+    for (const m of Object.values(mats)) m.dispose();
+    rt.dispose();
+    let arm = 0;
+    let all = 0;
+    let slideN = 0;
+    let lum = 0;
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const o = (y * w + x) * 4;
+        if (px[o + 3]! < 128) continue;
+        all++;
+        if (px[o]! > 128) arm++;
+        else if (px[o + 1]! > 128) {
+          slideN++;
+          // The render target is bottom-up; the canvas copy is top-down.
+          const f = ((h - 1 - y) * w + x) * 4;
+          lum += (0.2126 * frame[f]! + 0.7152 * frame[f + 1]! + 0.0722 * frame[f + 2]!) / 255;
+        }
+      }
+    return { handShare: all ? arm / all : 0, slideLum: slideN ? lum / slideN : 0, vmPx: all, slidePx: slideN };
+  };
   // C3 "You can't miss the first gun": the first job's case and the HUD around it (needs ?job).
   const C3_STAGES = ["pickup-first-from-takedown", "pickup-prompt", "objective-offscreen", "hud-combat", "pickup-taken"];
   const c3Stage = (name: string, tMs: number): string => {
@@ -1864,6 +1969,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
   s.stage = (name: string, tMs = 60): string => {
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
+    if (C4_STAGES.includes(name)) return c4Stage(name, tMs);
+    arsenal.holdAim = false;
+    arsenal.inspectHold = -1;
     if (!STAGES.includes(name)) return `unknown stage ${name}`;
     staged = true;
     s.stageInfo = null;

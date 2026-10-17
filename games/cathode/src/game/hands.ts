@@ -121,7 +121,7 @@ export class Arm {
       baked.setAttribute("skinWeight", new THREE.Float32BufferAttribute(sw, 4));
       pieces.push(baked);
     };
-    const seg = phone ? 10 : 18;
+    const seg = phone ? 12 : 24;
     // Upper arm and forearm: the trench sleeve, tapering to the wrist, with a turned-back cuff and a button.
     add(upper, tube(ARM.upper + 0.03, 0.046, 0.043, { seg, caps: false, phone }), FIN.sleeve, { p: [0, -0.01, 0] });
     add(fore, sphere(0.044, phone), FIN.sleeve);
@@ -158,12 +158,12 @@ export class Arm {
       const r = FINGER_R[f]!;
       chain.forEach((b, k) => {
         const len = FINGERS[f]![k]!;
-        add(b, tube(len + r * 0.6, r * (1 - k * 0.06), r * (0.94 - k * 0.06), { seg: phone ? 7 : 10, phone }), FIN.glove, { p: [0, -r * 0.3, 0] });
+        add(b, tube(len + r * 0.6, r * (1 - k * 0.06), r * (0.94 - k * 0.06), { seg: phone ? 8 : 12, phone }), FIN.glove, { p: [0, -r * 0.3, 0] });
       });
     });
     thumb.forEach((b, k) => {
       const r = 0.0112 - k * 0.0008;
-      add(b, tube(THUMB[k]! + r * 0.6, r, r * 0.93, { seg: phone ? 7 : 10, phone }), FIN.glove, { p: [0, -r * 0.3, 0] });
+      add(b, tube(THUMB[k]! + r * 0.6, r, r * 0.93, { seg: phone ? 8 : 12, phone }), FIN.glove, { p: [0, -r * 0.3, 0] });
     });
 
     const geo = mergeSkinned(pieces);
