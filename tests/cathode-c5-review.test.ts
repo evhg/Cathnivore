@@ -34,9 +34,11 @@ describe("CATHODE Kestrel, C5 review", () => {
 
   it("the suppressed shot's viewmodel light is faint and short-ranged (the crown, not the gloves)", () => {
     expect(K.puff.light).toBe(0.6);
-    expect(K.puff.vmLight).toBeLessThanOrEqual(0.1);
-    // The support glove sits about 0.25 m behind the crown: the light must not reach it.
-    expect(K.puff.vmRangeM).toBeLessThan(0.2);
+    expect(K.puff.vmLight).toBeLessThanOrEqual(0.4);
+    // The support glove sits about 0.25 m behind the crown: the light, set back toward the eye, must not reach it.
+    expect(K.puff.vmRangeM + K.puff.vmEyeM).toBeLessThan(0.2);
+    // Off the bore on her side of the can, or it lights only faces turned away from her.
+    expect(K.puff.vmEyeM).toBeGreaterThan(0.03);
   });
 
   it("on a locked slide the gun turns its left flank to the eye", () => {

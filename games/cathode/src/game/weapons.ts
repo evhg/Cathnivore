@@ -334,8 +334,10 @@ export class Arsenal {
     const pt = r.port.getWorldPosition(new THREE.Vector3());
     const fwd = new THREE.Vector3(0, 0, -1).transformDirection(r.root.matrixWorld);
     this.smoke.puff(mz, pt, fwd, this.heat.smokeMul);
-    // The puff's warm light sits just past the crown, so it catches the can, the slide and her glove.
-    this.flash.position.copy(mz).addScaledVector(fwd, 0.03);
+    // The puff's warm light sits off the crown on her side of the can (the view camera is at the origin), so the
+    // front of the can and the crown's rim catch it and her gloves, a hand's length back, don't.
+    this.flash.position.copy(mz).addScaledVector(mz.clone().normalize(), -KF.puff.vmEyeM);
+    this.flash.position.y += KF.puff.vmUpM;
   }
 
   /**

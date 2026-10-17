@@ -149,8 +149,10 @@ export const tuning = {
     // `light` is the spec's 0.6 on the street; the world's lights run in physical units 10x the spec's numbers
     // (the open guns' "4 to 8" is 60 there), so fx.ts multiplies by WORLD_LIGHT_SCALE. The viewmodel's own
     // puff light is far closer to the hands: it reaches only the can and the dust cover (vmRangeM), so the
-    // crown and the can's rim catch warm light and the gloves don't (C5 review: "glossy plastic" gloves).
-    puff: { maxM: 0.08, light: 0.6, lightRangeM: 2.5, lightMs: 40, vmLight: 0.05, vmRangeM: 0.16 },
+    // crown and the can's rim catch warm light and the gloves don't (C5 review: "glossy plastic" gloves). It sits
+    // `vmEyeM` from the crown toward the eye and `vmUpM` above it: on the bore past the crown it lit only faces
+    // turned away from her (the crown) or the can's rear collar, so the shot read as nothing at the muzzle.
+    puff: { maxM: 0.08, light: 0.6, lightRangeM: 2.5, lightMs: 40, vmLight: 0.25, vmRangeM: 0.12, vmEyeM: 0.05, vmUpM: 0.015 },
   },
   /** S2.5 layered gunshot audio. */
   gunsound: { variants: 8, noRepeat: 2, duckDb: -4, duckAttackMs: 20, duckReleaseMs: 400, reflRays: 5, reflMaxM: 40, reflDb: -14, reflDbPerM: 0.3, whizM: 2 },
