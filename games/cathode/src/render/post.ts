@@ -276,6 +276,11 @@ const GradeShader = {
         lensSlot( uLens[ 1 ], uLensB[ 1 ], uLensRect[ 1 ], film, fg, glint );
         lensSlot( uLens[ 2 ], uLensB[ 2 ], uLensRect[ 2 ], film, fg, glint );
         lensSlot( uLens[ 3 ], uLensB[ 3 ], uLensRect[ 3 ], film, fg, glint );
+        // C8: the splats wash out under the death ink (they read as dirt over the frozen frame, not blood).
+        float lensK = 1.0 - smoothstep( 0.1, 0.5, uInk );
+        film *= lensK;
+        fg *= lensK;
+        glint *= lensK;
         uv += fg * 0.022 * vec2( uRes.y / uRes.x, 1.0 );
         c = uv - 0.5;
       }
@@ -400,7 +405,9 @@ const GradeShader = {
         float ml = dot( mapped, vec3( 0.2126, 0.7152, 0.0722 ) );
         mapped = mix( mapped, vec3( ml ), min( 1.0, uDeath * 0.95 ) );
         mapped = mix( mapped, mapped * vec3( 1.0, 0.25, 0.22 ), uDeath * 0.6 * ( 1.0 - uInkGrey ) );
-        mapped *= 1.0 - uDeath * smoothstep( 0.2, 0.9, ra + uDeath * 0.6 ) * 0.92;
+        // The edges close to black, but the centre keeps (and gains a little) exposure: the eye goes to the killer.
+        float keep = 1.0 - smoothstep( 0.08, 0.34, ra );
+        mapped *= ( 1.0 - uDeath * smoothstep( 0.22, 0.95, ra + uDeath * 0.25 ) * 0.88 ) * ( 1.0 + uDeath * 0.35 * keep );
         if ( uInk > 0.001 ) {
           vec2 q = c * vec2( uRes.x / uRes.y, 1.0 );
           float n = fbm( q * 3.2 + vec2( 0.0, uTime * 0.05 ) );
@@ -408,18 +415,24 @@ const GradeShader = {
           float edge = min( min( vUv.x, 1.0 - vUv.x ) * uRes.x / uRes.y, min( vUv.y, 1.0 - vUv.y ) );
           float front = uInk * 0.62;
           float k = edge + ( n - 0.5 ) * 0.26 + ( fbm( q * 14.0 + 7.0 ) - 0.5 ) * 0.05;
-          float inkA = ( 1.0 - smoothstep( front - 0.018, front + 0.008, k ) ) * smoothstep( 0.0, 0.3, uInk );
+          // A soft, wet front (not a cut-paper edge): the film thins over ~0.09 of the height as it runs.
+          float inkA = ( 1.0 - smoothstep( front - 0.06, front + 0.035, k ) ) * smoothstep( 0.0, 0.3, uInk );
           // The centre stays visible: the ink never reaches inside 18% of the height.
-          inkA *= smoothstep( 0.16, 0.3, ra );
-          // Blood ink (S6.6 --blood at 0.85), dark and uneven: thick where the noise pools, near black at the frame's
-          // edge, a thin brighter film at the front where it is still running. Reduced violence: --night-3.
+          inkA *= smoothstep( 0.16, 0.32, ra );
+          // Blood ink (S6.6 --blood at 0.85): light through blood, multiplied, so it is always darker than the street
+          // under it (never a glowing red haze over a black hole). Thin at the running front, near-opaque where it
+          // pools behind it; the noise makes it uneven. Reduced violence: a cold grey-black (--night-3).
           float n2 = fbm( q * 9.0 - vec2( 3.1, uTime * 0.03 ) );
-          float depth = smoothstep( 0.0, front, front - k );
-          vec3 inkC = mix( vec3( 0.075, 0.0015, 0.006 ), vec3( 0.006, 0.0003, 0.001 ), clamp( depth * 0.8 + ( n2 - 0.5 ) * 1.1, 0.0, 1.0 ) );
-          inkC = mix( inkC, vec3( 0.0085, 0.009, 0.014 ), uInkGrey );
-          float rim = smoothstep( front - 0.05, front, k ) * ( 1.0 - smoothstep( front, front + 0.02, k ) );
-          mapped = mix( mapped, inkC, inkA * 0.85 );
-          mapped += vec3( 0.03, 0.0, 0.002 ) * rim * ( 1.0 - uInkGrey ) * smoothstep( 0.0, 0.3, uInk );
+          float pool = clamp( smoothstep( 0.0, 0.2, front - k ) * 0.85 + ( n2 - 0.5 ) * 0.9, 0.0, 1.0 );
+          vec3 thinM = mix( vec3( 0.46, 0.035, 0.045 ), vec3( 0.24, 0.25, 0.28 ), uInkGrey );
+          vec3 thickM = mix( vec3( 0.07, 0.003, 0.005 ), vec3( 0.045, 0.047, 0.055 ), uInkGrey );
+          vec3 inkC = min( mapped * mix( thinM, thickM, pool ), mix( vec3( 0.03, 0.0015, 0.0025 ), vec3( 0.012, 0.013, 0.016 ), uInkGrey ) );
+          mapped = mix( mapped, inkC, inkA * 0.96 );
+          // The wet rim: a darker meniscus line where the running film piles up, with a few cold-red glints along it
+          // (sparse, from the noise) so the edge reads as liquid catching the light, not paper.
+          float rim = smoothstep( front - 0.07, front - 0.02, k ) * ( 1.0 - smoothstep( front - 0.02, front + 0.025, k ) ) * smoothstep( 0.16, 0.32, ra );
+          mapped *= 1.0 - 0.45 * rim * smoothstep( 0.0, 0.3, uInk );
+          mapped += mix( vec3( 0.022, 0.004, 0.005 ), vec3( 0.01, 0.011, 0.013 ), uInkGrey ) * rim * smoothstep( 0.6, 0.8, n2 ) * smoothstep( 0.0, 0.3, uInk );
         }
         // The glitch's scanlines.
         if ( uGlitch > 0.001 ) mapped *= 1.0 - 0.18 * uGlitch * step( 0.5, fract( gl_FragCoord.y * 0.5 ) );
