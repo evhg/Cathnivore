@@ -12,10 +12,10 @@
   --d-edge-x: calc(max(var(--safe-x), var(--safe-l, 0px)) + var(--frame-x));
   --d-edge-y: var(--safe-y);
   --d-head: max(30px, calc(var(--u) * 88));
-  --d-eyebrow: max(11px, calc(var(--u) * 15));
-  --d-data: max(11px, calc(var(--u) * 15));
+  --d-eyebrow: max(12px, calc(var(--u) * 16));
+  --d-data: max(12px, calc(var(--u) * 16));
   --d-act: max(13px, calc(var(--u) * 19));
-  --d-key: max(10px, calc(var(--u) * 13));
+  --d-key: max(11px, calc(var(--u) * 14));
 }
 
 /* ---- the 2.39:1 letterbox: two night bars that slide in from the frame (scaleY only) ---- */
@@ -129,8 +129,10 @@
 }
 .death-line {
   margin: calc(var(--u) * 14) 0 0;
-  font: italic 500 var(--d-head)/1.02 var(--font-voice);
-  font-variation-settings: "opsz" 96;
+  /* A text optical size (not the wordmark's 96) at 650: Bodoni's hairlines (the t's crossbar, the G's spur) hold at
+     every size from the phone's 30 px to 5K's 240 px; at opsz 96 "eight" read as "eighl". */
+  font: italic 650 var(--d-head)/1.02 var(--font-voice);
+  font-variation-settings: "opsz" 18;
   letter-spacing: -.005em;
   color: var(--ink);
   text-wrap: balance;
@@ -260,3 +262,12 @@
 
 /* While the re-sync line shows, the objective card steps back so the two never stack in the corner. */
 .game:has(.death-resync.on) .hud-objective { opacity: 0; }
+
+/* A desktop cinematic card: the small type (tag, eyebrow, stats, keycaps) keeps a 13 px floor on a big screen. */
+@media (min-width: 1200px) and (min-height: 700px) {
+  .death {
+    --d-eyebrow: max(13px, calc(var(--u) * 16));
+    --d-data: max(13px, calc(var(--u) * 16));
+    --d-key: max(12px, calc(var(--u) * 14));
+  }
+}

@@ -1768,7 +1768,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (resyncT >= 0) {
       resyncT += (o.shot ? 0 : realDt) * 1000;
       const rs = resyncState(resyncT);
-      world.setDeath?.({ death: 0, ink: rs.ink, glitch: rs.glitch, ca: 1, grey: o.intensity === "reduced" });
+      world.setDeath?.({ death: 0, ink: rs.ink, glitch: resyncGlitch(rs.glitch), ca: 1, grey: o.intensity === "reduced" });
       screen.resyncFrame(rs.black, null);
       if (rs.done) {
         resyncT = -1;
@@ -2100,6 +2100,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     flares: number;
     splats: number;
     lastPress: boolean;
+    /** The pad's A and B last frame (edge-detected: a held A from the fall never skips the card). */
+    padA: boolean;
+    padB: boolean;
     /** The killer's visor material and its resting glow (it flares twice as he stands down). */
     visor: THREE.MeshStandardMaterial | null;
     visorBase: number;
@@ -2107,6 +2110,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     rimOff: (() => void) | null;
   }
   let dying: Dying | null = null;
+  /** The re-sync's tear and slice glitch, or none under reduced motion (only the ink-out and the black fade play). */
+  const resyncGlitch = (g: number): number => (trauma.reducedMotion ? 0 : g);
   let droppedGun: THREE.Object3D | null = null;
   /** Screenshot stages: back to the living, from any death stage. */
   function clearDeath(): void {
@@ -2192,7 +2197,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     });
     screen.setKiller(near ? near.kit.name : "");
     const visor = near ? ((near.body.look.visor as THREE.MeshStandardMaterial).isMeshStandardMaterial ? (near.body.look.visor as THREE.MeshStandardMaterial) : null) : null;
-    dying = { t: 0, cam, killer: near, killerName: near?.kit.name ?? "", gun: null, cardShown: false, cardAt: 0, resync: -1, flares: 0, splats: 0, lastPress: true, visor, visorBase: visor?.emissiveIntensity ?? 0, rimOff: null };
+    dying = { t: 0, cam, killer: near, killerName: near?.kit.name ?? "", gun: null, cardShown: false, cardAt: 0, resync: -1, flares: 0, splats: 0, lastPress: true, padA: true, padB: true, visor, visorBase: visor?.emissiveIntensity ?? 0, rimOff: null };
     // The hit frame: the flare at full, a splat on the hit side.
     hurtV = 1;
     if (from) hurtDir.set(Math.sin(bearingTo(from as THREE.Vector3)), Math.cos(bearingTo(from as THREE.Vector3)));
@@ -2241,7 +2246,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       d.resync += fdt * 1000;
       const rs = resyncState(d.resync);
       const st = deathState(d.t);
-      world.setDeath?.({ death: st.death * (rs.ink / DT.ink), ink: rs.ink, glitch: rs.glitch, ca: st.ca, grey: o.intensity === "reduced" });
+      world.setDeath?.({ death: st.death * (rs.ink / DT.ink), ink: rs.ink, glitch: resyncGlitch(rs.glitch), ca: st.ca, grey: o.intensity === "reduced" });
       screen.resyncFrame(rs.black, null);
       if (!restarting && d.resync >= DT.resync.inkOutMs + DT.resync.glitchMs) void restartFromCheckpoint();
       return;
@@ -2268,7 +2273,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     d.cam.update(fdt);
     world.camera.position.copy(d.cam.pos);
     world.camera.rotation.set(d.cam.pitch, d.cam.yaw, d.cam.roll, "YXZ");
-    // As she lands, the lens pushes in on him (700 to 1400 ms) until he stands about 40% of the frame tall: at fighting range he
+    // As she lands, the lens pushes in on him (550 to 1100 ms) until he stands about 40% of the frame tall: at fighting range he
     // is a man, not a dot (a slow telephoto push, the eye finding him).
     const push = d.killer ? Math.min(1, Math.max(0, (d.t - DT.pushFromMs) / DT.pushMs)) : 0;
     let fovK = st.fov;
@@ -2278,6 +2283,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     world.camera.fov = st.fov - (st.fov - Math.min(st.fov, fovK)) * push * push * (3 - 2 * push);
     world.camera.updateProjectionMatrix();
+    // As the card comes due, the lens pans so he stands in the right third: the card is left-aligned, and the
+    // headline must never run across him (a turn about the lens's own vertical, so it holds through the roll).
+    if (d.killer) {
+      const due = Math.min(1, Math.max(0, (d.t - (DT.cardMs - 500)) / 600));
+      if (due > 0) {
+        const halfH = Math.atan(Math.tan(THREE.MathUtils.degToRad(world.camera.fov) / 2) * world.camera.aspect);
+        world.camera.rotateY(Math.atan(DT.cardKillerX * Math.tan(halfH)) * due * due * (3 - 2 * due));
+      }
+    }
     // The gun drops out of her hand at 120 ms and lands at 500 to 800 ms.
     if (!d.gun && d.t >= DT.gunDropMs) dropGun(d);
     d.gun?.update(fdt);
@@ -2294,7 +2308,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // The rim comes up as she lands (500 to 900 ms) and holds.
       const rimK = Math.min(1, Math.max(0, (d.t - 500) / 400));
       // Edge-only (body.ts): the suit stays dark, outlined in a cold line, not lit into a pale mannequin.
-      d.killer.body.setRim(0.16 * rimK, 0.27 * rimK, 0.46 * rimK);
+      // On the phone, at half render scale, a thin dim edge breaks up into dots: wider and brighter there.
+      const rimL = rimK * (o.quality === "phone" ? 1.9 : 1);
+      d.killer.body.setRim(0.16 * rimL, 0.27 * rimL, 0.46 * rimL, o.quality === "phone" ? 1.8 : 3);
       if (!d.rimOff && d.t >= 500 && worldLight) {
         const k = d.killer.position;
         const away = new THREE.Vector3(k.x - player.pos.x, 0, k.z - player.pos.z).normalize();
@@ -2326,9 +2342,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (d.cardShown) {
       const pad = input.padActive ? navigator.getGamepads?.().find((g) => g && g.connected) : null;
-      if (pad?.buttons[0]?.pressed) retry();
-      else if (pad?.buttons[1]?.pressed) quitToTitle();
-      else if (d.t - d.cardAt >= DT.cardRetryAfterMs && intent.fire && !d.lastPress) retry();
+      const a = !!pad?.buttons[0]?.pressed;
+      const b = !!pad?.buttons[1]?.pressed;
+      // Every way off the card waits the same 600 ms and wants a fresh press, not one held from the fall.
+      const ready = d.t - d.cardAt >= DT.cardRetryAfterMs;
+      if (ready && a && !d.padA) retry();
+      else if (ready && b && !d.padB) quitToTitle();
+      else if (ready && intent.fire && !d.lastPress) retry();
+      d.padA = a;
+      d.padB = b;
     }
     d.lastPress = press;
     s.dying = { ms: d.t, card: d.cardShown, killer: d.killerName || null, gun: d.gun ? d.gun.obj.position.toArray() : null };
@@ -3110,7 +3132,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // The new session's first frames: her eyes back at the checkpoint, the fade up from black, the line.
       resyncT = Math.max(DT.resync.inkOutMs + DT.resync.glitchMs, tMs || 700);
       const rs = resyncState(resyncT);
-      world.setDeath?.({ death: 0, ink: rs.ink, glitch: rs.glitch, ca: 1, grey: o.intensity === "reduced" });
+      world.setDeath?.({ death: 0, ink: rs.ink, glitch: resyncGlitch(rs.glitch), ca: 1, grey: o.intensity === "reduced" });
       screen.resyncFrame(rs.black, checkpointLine(), true);
       return "ok";
     }
@@ -3148,7 +3170,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       screen.hide();
       const rs = resyncState(d.resync);
       const st = deathState(d.t);
-      world.setDeath?.({ death: st.death * (rs.ink / DT.ink), ink: rs.ink, glitch: rs.glitch, ca: st.ca, grey: o.intensity === "reduced" });
+      world.setDeath?.({ death: st.death * (rs.ink / DT.ink), ink: rs.ink, glitch: resyncGlitch(rs.glitch), ca: st.ca, grey: o.intensity === "reduced" });
       screen.resyncFrame(rs.black, null);
       restarting = true;
     }

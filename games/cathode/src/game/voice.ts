@@ -24,7 +24,7 @@ export type Cue =
 
 const LINES: Record<Cue, string> = {
   start: "The Drowned Market. Tomas sold eggs here for thirty years. Somebody on this street saw him go in the water.",
-  startClinic: "The Candor Clinic. Clean floors, clean books, and a doctor who wrote half the debts in Marrow. Vane's theatre is at the far end.",
+  startClinic: "The Candor Clinic. Clean floors, clean books, and a doctor who wrote half the debts in Marrow. Vane’s theatre is at the far end.",
   startPlaza: "Hollowell Plaza. Pell wants a crowd tonight, and a crowd is cover. Permits first, then the steps.",
   startTower: "The Board Tower. Forty floors of glass, and not one of them let in the rain. The Chair is two flights up.",
   startVault: "The Hollow Vault. Every debt in Marrow lives down here, and something is keeping count. Index first, then the core.",
@@ -33,15 +33,15 @@ const LINES: Record<Cue, string> = {
   unseenKill: "One less witness.",
   headshot: "He never heard it.",
   laser: "Red dot on my coat. Move.",
-  bodyFound: "They've found him. Now they'll come looking for me.",
+  bodyFound: "They’ve found him. Now they’ll come looking for me.",
   shield: "Riot shield. Go round it, not through it.",
   lowHealth: "Not here. Not tonight.",
   levelUp: "Older. Better at this.",
-  clear: "Quiet again. The fish market's back door is down by the water.",
+  clear: "Quiet again. The fish market’s back door is down by the water.",
   done: "A water taxi, and a name left on the seat: Julian Crisp.",
   beaCall1: "Bea: Mum? Are you still at work? Nana made me do my spellings twice.",
-  beaCall2: "Cath: Spellings are important, darling. I'll be home before the rain stops.",
-  beaCall3: "Bea: It never stops raining. I drew you an umbrella. Don't be late.",
+  beaCall2: "Cath: Spellings are important, darling. I’ll be home before the rain stops.",
+  beaCall3: "Bea: It never stops raining. I drew you an umbrella. Don’t be late.",
 };
 
 export class Voice {
@@ -75,12 +75,12 @@ export type DeathCause = "bullet" | "sniper" | "melee" | "blast" | "laser" | "an
  * Over", never gloating, never cryptic (docs/design/cathode.md 2).
  */
 export const DEATH_LINES: Readonly<Record<DeathCause, readonly string[]>> = {
-  bullet: ["Not tonight, love.", "Up. They don't get to keep me.", "Shot in the street like a dog. Get up.", "Count the rounds next time, Cath."],
+  bullet: ["Not tonight, love.", "Up. They don’t get to keep me.", "Shot in the street like a dog. Get up.", "Count the rounds next time, Cath."],
   sniper: ["Mind the windows. Mind everything.", "Somebody up high. Stay low next time.", "Never saw him. Next time I will.", "One shot, from a long way off. Again."],
   melee: ["Too close. Never that close again.", "He got his hands on me. Once.", "Should have kept my distance. Up.", "Bruises heal. Get up."],
   blast: ["Mind the glass. Mind everything.", "Ears ringing. Up anyway.", "That one was loud. Next time, run.", "Smoke clears. So do I."],
   laser: ["Red light means stop, Cath.", "Wired for it, and I walked in.", "Clever little beam. Clever little me, next time.", "Burnt coat. Burnt pride. Up."],
-  any: ["School run's at eight. Get up.", "Bea's waiting up. Get up.", "Marrow doesn't get me that cheap.", "Not the night to quit, love."],
+  any: ["School run’s at eight. Get up.", "Bea’s waiting up. Get up.", "Marrow doesn’t get me that cheap.", "Not the night to quit, love."],
 };
 
 /** One death line for `cause`, picked by `seed` (0..1), never the same as `last`. */
