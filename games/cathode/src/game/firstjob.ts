@@ -310,6 +310,14 @@ export class FirstJob {
     return reach(this.h.player.pos, c.gunAt) <= TAKE_RANGE ? { at: c.gunAt, weapon: c.weapon } : null;
   }
 
+  /**
+   * C9: the flyover fight on a new save, before either Enforcer is down: the first gun kill she makes here is staged
+   * as the gut clutch (S4.4), the death the owner sees first.
+   */
+  get firstGunKill(): boolean {
+    return this.stage === 3 && this.wave.length > 0 && this.wave.every((e) => e.alive) && !this.h.progress.jobsDone.includes("fishMarket");
+  }
+
   /** She pressed to take it; true when there was something within reach. */
   take(): boolean {
     const c = this.pickup;

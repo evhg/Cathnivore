@@ -37,7 +37,17 @@ export interface Effects {
   /** A round in flesh (S4.5): entry puff, spurt, exit spray, wall splat and a wound on the segment. */
   flesh?(hit: FleshHit): void;
   /** Live gore counts against their caps (the soak test, the budget sidecar). */
-  readonly gore?: { counts: { mist: number; drops: number; wounds: number; puffM: number }; caps: { mist: number; drops: number; wounds: number }; splats: readonly { point: THREE.Vector3; size: number }[] };
+  readonly gore?: {
+    counts: { mist: number; drops: number; wounds: number; puffM: number };
+    caps: { mist: number; drops: number; wounds: number };
+    splats: readonly { point: THREE.Vector3; size: number }[];
+    /** C9: pools under bodies at rest, the wall-slump smear and drips under the badly hurt. */
+    pool(at: THREE.Vector3, R: number, seed: number, owner?: object): void;
+    hasPool(owner: object): boolean;
+    smear(top: THREE.Vector3, normal: THREE.Vector3): void;
+    trail(at: THREE.Vector3): void;
+    readonly pools: { readonly pools: readonly { at: THREE.Vector3; r: number; age: number }[]; age(s: number): void };
+  };
   /** Sparks and coolant from a cyborg or machine hit. */
   sparks(pos: THREE.Vector3, dir: THREE.Vector3, amount: number): void;
   /** C7: Cath bleeding out leaves drops on the floor where she stands (S6.1: one every 1.2 m). */

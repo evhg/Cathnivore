@@ -6,6 +6,9 @@ import { RARITY_COLOURS, type Item, type Rarity } from "../sim/loot";
 import { Beacon } from "./beacon";
 import { buildGunDisplay } from "./viewmodel";
 import { SLICE_WEAPONS } from "./weapons";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { DroppedProp } from "./death";
+import { place } from "./body";
 
 export interface Drop {
   items: Item[];
@@ -27,6 +30,45 @@ export interface Pickup {
   age: number;
   mesh?: THREE.Object3D;
   beacon?: Beacon;
+  /** C9: a gun that fell from his hands as a two-point body; the pickup lies where it comes to rest. */
+  prop?: DroppedProp;
+  /** The dropped gun's length along its holder's +Y (m). */
+  len?: number;
+}
+
+/** Where a dropped gun leaves his hands (C9): the grip, the way the barrel points, and how fast it's going. */
+export interface DropFrom {
+  hand: THREE.Vector3;
+  dir: THREE.Vector3;
+  vel: THREE.Vector3;
+}
+
+/**
+ * C9 (S4.4 loot): gear lies as a glinting tactical pouch on the street, not a floating octahedron: a dark fabric
+ * pouch with a flap, a webbing strap and buckle, and a lit tag in its best rarity's colour.
+ */
+export function buildPouch(colour: THREE.Color, rarity: Rarity, seed = 0): THREE.Group {
+  const g = new THREE.Group();
+  const fabric = new THREE.MeshStandardMaterial({ color: 0x1c1e22, roughness: 0.86, metalness: 0.02 });
+  const web = new THREE.MeshStandardMaterial({ color: 0x2b2e33, roughness: 0.7, metalness: 0.05 });
+  const steel = new THREE.MeshStandardMaterial({ color: 0x8a8f96, roughness: 0.32, metalness: 0.9 });
+  const tag = new THREE.MeshStandardMaterial({ color: colour, emissive: colour, emissiveIntensity: rarity === "standard" ? 1.4 : 3.2, roughness: 0.3 });
+  const add = (geo: THREE.BufferGeometry, m: THREE.Material, x: number, y: number, z: number) => {
+    const o = new THREE.Mesh(geo, m);
+    o.position.set(x, y, z);
+    o.castShadow = true;
+    g.add(o);
+    return o;
+  };
+  add(new RoundedBoxGeometry(0.21, 0.11, 0.13, 2, 0.028), fabric, 0, 0.055, 0);
+  add(new RoundedBoxGeometry(0.215, 0.028, 0.1, 2, 0.012), fabric, 0, 0.118, -0.018).rotation.x = -0.12;
+  add(new THREE.BoxGeometry(0.036, 0.125, 0.138), web, 0, 0.06, 0);
+  add(new THREE.BoxGeometry(0.044, 0.026, 0.008), steel, 0, 0.09, 0.07);
+  add(new THREE.BoxGeometry(0.13, 0.012, 0.004), tag, 0.0, 0.03, 0.067);
+  // A second, smaller pouch strapped beside it on a better drop.
+  if (rarity !== "standard") add(new RoundedBoxGeometry(0.09, 0.08, 0.1, 2, 0.02), fabric, 0.155, 0.04, 0.01).rotation.y = 0.2;
+  g.rotation.y = (seed * 2.399) % (Math.PI * 2);
+  return g;
 }
 
 const RANK: Rarity[] = ["standard", "modded", "rare", "set", "unique"];
@@ -50,35 +92,48 @@ export interface PickupOpts {
 
 export class Pickups {
   readonly list: Pickup[] = [];
+  /** The street under a dropped gun (set by the session); flat by default. */
+  ground: (x: number, z: number) => number = () => 0;
+  /** A dropped gun lands (C9): the session plays the clatter. */
+  onClatter: ((k: number, at: THREE.Vector3) => void) | null = null;
   /** The press-to-take drop in reach after the last update, for the world prompt (S7.1). */
   offer: Pickup | null = null;
   constructor(private readonly scene?: THREE.Scene) {}
 
-  drop(pos: THREE.Vector3, d: Drop): Pickup | null {
+  drop(pos: THREE.Vector3, d: Drop, from?: DropFrom): Pickup | null {
     if (!d.items.length && !d.scrip && !d.gun) return null;
     const p: Pickup = { drop: d, pos: pos.clone(), age: 0 };
     if (this.scene) {
       const rarity = bestRarity(d);
       const gunOnly = !!d.gun && !d.items.length;
       const colour = new THREE.Color(gunOnly ? "#9fb4c7" : RARITY_COLOURS[rarity]);
-      // A gun lies as itself (the real model); gear is a glowing bundle tinted by its best rarity.
+      // A gun lies as itself (the real model, fallen from his hands: C9); gear is a pouch tagged in its rarity.
       const model = d.gun ? SLICE_WEAPONS.find((w) => w.id === d.gun)?.model : undefined;
       let m: THREE.Object3D;
       if (model) {
         m = new THREE.Group();
         const g = buildGunDisplay(model);
-        g.rotation.set(0, 0, Math.PI / 2);
+        // The barrel (-Z) along the holder's +Y, which runs from the grip end to the muzzle end of the prop.
+        g.rotation.set(Math.PI / 2, 0, 0);
         m.add(g);
-      } else
-        m = new THREE.Mesh(
-          new THREE.OctahedronGeometry(d.items.length ? 0.16 : 0.1),
-          new THREE.MeshStandardMaterial({ color: colour, emissive: colour, emissiveIntensity: rarity === "standard" ? 1.2 : 3, roughness: 0.3 }),
-        );
-      m.position.copy(p.pos);
+        g.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(g);
+        const c = box.getCenter(new THREE.Vector3());
+        g.position.set(-c.x, -box.min.y, -c.z);
+        p.len = Math.max(0.15, box.max.y - box.min.y);
+        const a = from ? from.hand.clone() : p.pos.clone().setY(p.pos.y + 0.04);
+        const dir = from ? from.dir.clone().normalize() : new THREE.Vector3(Math.cos(pos.x * 7.1), 0, Math.sin(pos.z * 7.1));
+        const b = a.clone().addScaledVector(dir, p.len);
+        p.prop = new DroppedProp(a, b, from ? from.vel : new THREE.Vector3(), from ? 2.5 : 0, (speed, at) => this.onClatter?.(Math.min(1, speed / 4), at));
+        place(m, p.prop.a, p.prop.b, new THREE.Vector3(0, 1, 0));
+      } else {
+        m = buildPouch(colour, rarity, Math.floor(pos.x * 13 + pos.z * 7));
+        m.position.copy(p.pos);
+      }
       this.scene.add(m);
       p.mesh = m;
       // S7.1 for loot: beam (1.6 m), rim and ring; a glint only above common; no nudge.
-      const b = new Beacon({ colour: colour.getHex(), beam: 1.6, glint: rarity !== "standard", gun: model ? m : undefined, floorY: 0, glintAt: new THREE.Vector3(0, 0.4, 0) });
+      const b = new Beacon({ colour: colour.getHex(), beam: 1.6, glint: rarity !== "standard", gun: model ? m : undefined, floorY: 0, glintAt: new THREE.Vector3(0, model ? 0.12 : 0.16, 0) });
       b.group.position.copy(p.pos);
       this.scene.add(b.group);
       p.beacon = b;
@@ -115,9 +170,13 @@ export class Pickups {
         this.list.splice(i, 1);
         if (this.offer === p) this.offer = null;
       } else {
-        if (p.mesh) {
-          p.mesh.position.y = p.pos.y + 0.35 + Math.sin(p.age * 3) * 0.06;
-          p.mesh.rotation.y = p.age * 1.8;
+        if (p.prop && p.mesh && !p.prop.asleep) {
+          // Falling, bouncing, coming to rest: the pickup (and its beacon) is wherever it lies.
+          p.prop.step(dt, this.ground);
+          place(p.mesh, p.prop.a, p.prop.b, new THREE.Vector3(0, 1, 0));
+          p.pos.copy(p.prop.a).lerp(p.prop.b, 0.5);
+          p.pos.y = this.ground(p.pos.x, p.pos.z);
+          p.beacon?.group.position.copy(p.pos);
         }
         p.beacon?.update(dt, Math.sqrt(d2));
       }

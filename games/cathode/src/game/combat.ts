@@ -8,6 +8,7 @@ import type { Enemy } from "./enemy";
 import type { RayWorld } from "./ray";
 import type { Shot, WeaponDef } from "./weapons";
 import type { Zone } from "./body";
+import { DEATH, type DeathCtx } from "./death";
 import type { WeaponClass } from "../sim/types";
 import { CombatBus } from "./feel/bus";
 import { tuning } from "./feel/tuning";
@@ -159,7 +160,7 @@ export class Combat {
             if (Math.random() < k * 0.7) e.body.sever(seg, dir.clone().multiplyScalar(6 + k * 8).add(new THREE.Vector3(0, 4, 0)));
       }
       if (killed) {
-        e.die(dir.clone().multiplyScalar(8 + 10 * k).add(new THREE.Vector3(0, 5 * k, 0)), at);
+        e.die(dir.clone().multiplyScalar(8 + 10 * k).add(new THREE.Vector3(0, 5 * k, 0)), at, { ...this.deathCtx(e, "torso", dir, "launcher", d, false), explosive: true });
         this.killed({ enemy: e, weapon: EXPLOSIVE, zone: "torso", headshot: false, distance: d, unseen, severed: [], takedown: false });
       } else if (wasAlive) this.hits.push({ enemy: e, zone: "torso", damage: dmg, point: e.body.joints.chest.clone(), killed: false });
     }
@@ -426,6 +427,49 @@ export class Combat {
     return best;
   }
 
+  /**
+   * C9: the next gun kill is the first of a new save (the first job's flyover fight): it plays the gut clutch, the
+   * death the spec stages for the owner's first gunfight. The session sets it; the first gun kill clears it.
+   */
+  firstGunKill = false;
+
+  /**
+   * What the street around a dying body says (S4.4's variant triggers): a wall within 1.2 m behind him along the
+   * round, or a rail-height box edge (0.9 to 1.2 m) within 1 m, and which side the round came from.
+   */
+  deathCtx(e: Enemy, zone: Zone, dir: THREE.Vector3, weaponCls: string, distance: number, firstGunKill: boolean): DeathCtx {
+    const yaw = e.motion.yaw;
+    const left = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+    const fwd = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+    const flat = new THREE.Vector3(dir.x, 0, dir.z);
+    if (flat.lengthSq() < 1e-8) flat.copy(fwd).negate();
+    flat.normalize();
+    const pel = e.body.joints.pelvis;
+    const gy = e.motion.pos.y;
+    let wallBehind: number | null = null;
+    for (const hgt of [1.0, 1.35]) {
+      const h = this.rays.cast(new THREE.Vector3(pel.x, gy + hgt, pel.z), flat, DEATH.wallM, { thin: false });
+      if (h && Math.abs(h.normal.y) < 0.4) wallBehind = Math.min(wallBehind ?? Infinity, h.dist);
+    }
+    // A wall is a wall only if it is tall: a box he could fall over is a rail instead.
+    let rail: { z: number; h: number } | null = null;
+    for (const c of this.world.colliders ?? []) {
+      const top = c.max.y - gy;
+      if (top < DEATH.rail.lo || top > DEATH.rail.hi) continue;
+      const cx = Math.max(c.min.x, Math.min(pel.x, c.max.x));
+      const cz = Math.max(c.min.z, Math.min(pel.z, c.max.z));
+      const dx = cx - pel.x;
+      const dz = cz - pel.z;
+      if (Math.hypot(dx, dz) > DEATH.rail.m) continue;
+      // The rail must lie the way the round pushes him.
+      if (dx * flat.x + dz * flat.z <= 0.05) continue;
+      rail = { z: dx * fwd.x + dz * fwd.z, h: top };
+      break;
+    }
+    if (rail) wallBehind = null;
+    return { zone, weaponCls, distance, side: flat.dot(left), wallBehind, rail, firstGunKill, seed: e.id * 31 + Math.round(distance * 10) };
+  }
+
   /** One round (or pellet, or swing) lands on an enemy. */
   private strike(e: Enemy, segName: string, point: THREE.Vector3, dir: THREE.Vector3, w: WeaponDef, build: Build, dist: number, unseen: boolean, takedown: boolean): void {
     const seg = e.body.segs.get(segName);
@@ -493,12 +537,16 @@ export class Combat {
     }
 
     if (killed) {
-      e.die(dir.clone().multiplyScalar(w.weaponClass === "sniper" ? 9 : w.weaponClass === "shotgun" ? 7 : 3.5).add(new THREE.Vector3(0, 1, 0)), point);
+      const gun = w.kind !== "melee";
+      const ctx = this.deathCtx(e, zone, dir, w.weaponClass, dist, gun && this.firstGunKill);
+      if (gun) this.firstGunKill = false;
+      const imp = DEATH.impulse[w.weaponClass] ?? 3.5;
+      e.die(dir.clone().multiplyScalar(imp).add(new THREE.Vector3(0, 1, 0)), point, ctx);
       this.killed({ enemy: e, weapon: w, zone, headshot: zone === "head", distance: dist, unseen, severed, takedown });
     } else if (severed.length && e.alive) {
       // Losing a leg or an arm puts them down for good.
       e.damage(e.hp + 1, push);
-      e.die(push.multiplyScalar(2), point);
+      e.die(push.multiplyScalar(2), point, this.deathCtx(e, zone, dir, w.weaponClass, dist, false));
       this.killed({ enemy: e, weapon: w, zone, headshot: false, distance: dist, unseen, severed, takedown });
     }
   }
@@ -538,7 +586,7 @@ export class Combat {
       if (!behind && e.state !== "unaware") continue;
       const unseen = !this.anyHunting();
       e.damage(e.hp + 1, dir.clone());
-      e.die(dir.clone().multiplyScalar(2.5).add(new THREE.Vector3(0, 0.5, 0)), e.body.joints.neck);
+      e.die(dir.clone().multiplyScalar(2.5).add(new THREE.Vector3(0, 0.5, 0)), e.body.joints.neck, this.deathCtx(e, "torso", dir, "melee", d, false));
       if (this.gore) this.world.fx.blood(e.body.joints.neck, dir, 0.7);
       this.killed({ enemy: e, weapon: pin, zone: "head", headshot: false, distance: d, unseen, severed: [], takedown: true });
       return e;

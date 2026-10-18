@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { tuning } from "./feel/tuning";
+import { DEATH, limitJoints, type DeathRun } from "./death";
 
 const flashTuning = tuning.hitFlash;
 
@@ -21,27 +22,9 @@ export function flashLevel(ageMs: number): number {
   return k > 0 ? F.redGain * k * k : 0;
 }
 
-export const JOINTS = [
-  "pelvis",
-  "chest",
-  "neck",
-  "head",
-  "shoulderL",
-  "elbowL",
-  "handL",
-  "shoulderR",
-  "elbowR",
-  "handR",
-  "hipL",
-  "kneeL",
-  "footL",
-  "hipR",
-  "kneeR",
-  "footR",
-] as const;
-export type Joint = (typeof JOINTS)[number];
+export { JOINTS, REST, type Joint, type Zone } from "./rig";
+import { JOINTS, REST, type Joint, type Zone } from "./rig";
 
-export type Zone = "head" | "torso" | "armL" | "armR" | "legL" | "legR";
 
 export interface SegmentDef {
   name: string;
@@ -308,25 +291,7 @@ function patchFlash(mat: THREE.Material, uniform: { value: THREE.Vector3[] }, ri
   m.needsUpdate = true;
 }
 
-/** Joint positions in body space (feet on y=0, facing +Z), for the rest pose and as animation anchors. */
-export const REST: Record<Joint, THREE.Vector3> = {
-  pelvis: new THREE.Vector3(0, 0.98, 0),
-  chest: new THREE.Vector3(0, 1.2, 0),
-  neck: new THREE.Vector3(0, 1.52, 0),
-  head: new THREE.Vector3(0, 1.8, 0),
-  shoulderL: new THREE.Vector3(0.22, 1.46, 0),
-  elbowL: new THREE.Vector3(0.26, 1.16, 0),
-  handL: new THREE.Vector3(0.28, 0.9, 0.04),
-  shoulderR: new THREE.Vector3(-0.22, 1.46, 0),
-  elbowR: new THREE.Vector3(-0.26, 1.16, 0),
-  handR: new THREE.Vector3(-0.28, 0.9, 0.04),
-  hipL: new THREE.Vector3(0.11, 0.94, 0),
-  kneeL: new THREE.Vector3(0.12, 0.5, 0.02),
-  footL: new THREE.Vector3(0.12, 0.06, 0),
-  hipR: new THREE.Vector3(-0.11, 0.94, 0),
-  kneeR: new THREE.Vector3(-0.12, 0.5, 0.02),
-  footR: new THREE.Vector3(-0.12, 0.06, 0),
-};
+
 
 interface Seg {
   def: SegmentDef;
@@ -357,6 +322,19 @@ export class Body {
   /** Joints a severed segment took with it no longer exist on the body. */
   readonly lost = new Set<string>();
   ragdoll = false;
+  /** C9 (S4.4): the powered fall this death plays, while its active phase runs (and after, for its clock). */
+  dying: DeathRun | null = null;
+  /** C9: still for 30 frames (or settled by force): the ragdoll stops simulating. */
+  asleep = false;
+  /** Seconds since the body fell asleep (pools start 600 ms after). */
+  asleepFor = 0;
+  private stillFrames = 0;
+  /** Last frame's animated joints: the ragdoll inherits the motion it died in. */
+  private last = {} as Record<Joint, THREE.Vector3>;
+  private lastValid = false;
+  /** A joint hit the floor (or a box top) faster than DEATH.thudSpeed: the body-fall thud (m/s). */
+  onImpact: ((joint: Joint, speed: number, at: THREE.Vector3) => void) | null = null;
+  private impactAt = new Float32Array(JOINTS.length).fill(-1);
   private rest = new Map<string, number>();
   /** Which way the body faces (for segment roll), updated by animation. */
   readonly facing = new THREE.Vector3(0, 0, 1);
@@ -376,6 +354,7 @@ export class Body {
     for (const j of JOINTS) {
       this.joints[j] = REST[j].clone().multiplyScalar(scale);
       this.prev[j] = this.joints[j].clone();
+      this.last[j] = this.joints[j].clone();
     }
     for (const m of [look.armour, look.suit, look.visor, look.boot]) patchFlash(m, this.flashUniform, this.rimUniform);
     for (const [i, def] of SEGMENTS.entries()) {
@@ -414,6 +393,12 @@ export class Body {
    */
   revive(): void {
     this.ragdoll = false;
+    this.dying = null;
+    this.asleep = false;
+    this.asleepFor = 0;
+    this.stillFrames = 0;
+    this.lastValid = false;
+    this.impactAt.fill(-1);
     this.restTime = 0;
     this.deathAge = 1e9;
     this.flashAge.fill(1e9);
@@ -475,20 +460,49 @@ export class Body {
     }
   }
 
-  /** Hands animation over to physics, with an impulse at a point. */
-  goLimp(impulse: THREE.Vector3, at?: THREE.Vector3): void {
+  /**
+   * Hands animation over to physics, with an impulse at a point (S4.4's lethal frame): every joint keeps the
+   * velocity it was animated with (prev was last frame's pose), plus the round's push, strongest at the hit and
+   * falling off as max(0.25, 1 - 0.8 d). With `run`, the powered fall's dying pose takes the body for its active
+   * phase before the plain ragdoll does.
+   */
+  goLimp(impulse: THREE.Vector3, at?: THREE.Vector3, run?: DeathRun): void {
     if (this.ragdoll) return;
     this.ragdoll = true;
+    this.asleep = false;
+    this.asleepFor = 0;
+    this.stillFrames = 0;
+    this.restTime = 0;
+    this.dying = run ?? null;
+    // No death pushes harder than this: a launcher at point blank is a hard shove, not a cannon shot.
+    if (impulse.lengthSq() > DEATH.maxImpulse ** 2) impulse = impulse.clone().setLength(DEATH.maxImpulse);
+    if (run) run.impulse.copy(impulse);
     for (const j of JOINTS) {
-      // Give every joint the body's current motion, plus the hit's push (stronger near the hit).
       const near = at ? Math.max(0.25, 1 - this.joints[j].distanceTo(at) * 0.8) : 0.6;
-      this.prev[j].copy(this.joints[j]).addScaledVector(impulse, -near / 60);
+      if (run) run.near[j] = near;
+      // The animated motion of the last frame, clamped (a stage teleport is not a velocity).
+      tmpA.subVectors(this.joints[j], this.prev[j]);
+      if (tmpA.lengthSq() > 0.04) tmpA.set(0, 0, 0);
+      this.prev[j].copy(this.joints[j]).sub(tmpA).addScaledVector(impulse, -near / 60);
     }
   }
 
-  /** Keeps prev in step with animated joints, so the ragdoll inherits the body's velocity when it starts. */
+  /** An extra kick on one joint after goLimp (the headshot's backward snap, S4.4), m/s. */
+  kick(j: Joint, vel: THREE.Vector3): void {
+    this.prev[j].addScaledVector(vel, -1 / 60);
+  }
+
+  /**
+   * Keeps prev one frame behind the animated joints, so the ragdoll inherits the body's velocity when it starts.
+   * (Called after each animated frame: prev becomes last frame's pose, last becomes this one.)
+   */
   carry(): void {
-    for (const j of JOINTS) this.prev[j].copy(this.joints[j]);
+    for (const j of JOINTS) {
+      if (this.lastValid && this.last[j].distanceToSquared(this.joints[j]) < 0.04) this.prev[j].copy(this.last[j]);
+      else this.prev[j].copy(this.joints[j]);
+      this.last[j].copy(this.joints[j]);
+    }
+    this.lastValid = true;
   }
 
   /** Severs a segment (and what it carries): it flies off with `vel`; stumps show gore caps. */
@@ -533,28 +547,100 @@ export class Body {
     return out;
   }
 
-  /** Verlet step for the ragdoll and every severed piece. */
+  /**
+   * Verlet step for the ragdoll and every severed piece. A dying body (C9) is pulled toward its variant's pose
+   * for the active phase, then falls as a plain ragdoll with joint limits and floor friction, and sleeps when
+   * it has been still for 30 frames.
+   */
   physics(dt: number, w: RagdollWorld): void {
     const g = -19 * dt * dt;
-    if (this.ragdoll) {
+    if (this.ragdoll && this.asleep) this.asleepFor += dt;
+    if (this.ragdoll && !this.asleep && dt > 0) {
       this.restTime += dt;
+      const run = this.dying;
+      if (run) run.t += dt * 1000;
+      const k = run ? run.k : 0;
+      const tgt = k > 0 && run ? run.targets(dt) : null;
+      const blend = Math.min(1, k * dt * 60);
+      const limpS = this.restTime - (run && !run.fellBack ? run.dur / 1000 : 0);
+      // Settling (S4.4: bodies settle within 2 s): extra damping once limp for a while.
+      const settle = limpS > DEATH.settleS ? Math.min(0.6, (limpS - DEATH.settleS) * 0.9) : 0;
+      const keep = 0.985 * (1 - settle);
+      const vmax = DEATH.maxSpeed * dt;
+      let fast = false;
       for (const j of JOINTS) {
         const p = this.joints[j];
         const q = this.prev[j];
-        const vx = (p.x - q.x) * 0.985;
-        const vy = (p.y - q.y) * 0.985;
-        const vz = (p.z - q.z) * 0.985;
+        let vx = (p.x - q.x) * keep;
+        let vy = (p.y - q.y) * keep;
+        let vz = (p.z - q.z) * keep;
+        const sp = Math.hypot(vx, vy, vz);
+        if (sp > vmax) {
+          fast = true;
+          const c = vmax / sp;
+          vx *= c;
+          vy *= c;
+          vz *= c;
+        }
+        if (tgt) {
+          // The powered fall: position and velocity both blend toward the pose's (no spring to ring).
+          const T = tgt.at[j];
+          const Tp = tgt.prev[j];
+          vx += (T.x - Tp.x - vx) * blend;
+          vy += (T.y - Tp.y - vy) * blend;
+          vz += (T.z - Tp.z - vz) * blend;
+          p.x += (T.x - p.x) * blend;
+          p.y += (T.y - p.y) * blend;
+          p.z += (T.z - p.z) * blend;
+        }
         q.copy(p);
         p.x += vx;
-        p.y += vy + g;
+        p.y += vy + g * (1 - blend);
         p.z += vz;
       }
+      if (fast && run) run.fellBack = true;
+      const fr = DEATH.friction;
       for (let it = 0; it < 6; it++) {
         for (const [a, b] of LINKS) {
           const r = this.rest.get(`${a}|${b}`)!;
           solve(this.joints[a], this.joints[b], r, 0.5, 0.5);
         }
-        for (const j of JOINTS) collide(this.joints[j], this.prev[j], w);
+        if (it >= 3) limitJoints(this.joints, this.lost);
+        for (let i = 0; i < JOINTS.length; i++) {
+          const j = JOINTS[i]!;
+          const v = collide(this.joints[j], this.prev[j], w, fr, it === 0 ? dt : 0);
+          if (v > DEATH.thudSpeed && this.onImpact && this.restTime - this.impactAt[i]! > 0.25) {
+            this.impactAt[i] = this.restTime;
+            this.onImpact(j, v, this.joints[j]);
+          }
+        }
+      }
+      // The limits have the last word (the floor pass can bend a knee past them by a few degrees).
+      limitJoints(this.joints, this.lost);
+      // NaN guard: a broken step puts the body back where it was, at rest.
+      let bad = false;
+      let moved = 0;
+      for (const j of JOINTS) {
+        const p = this.joints[j];
+        if (!Number.isFinite(p.x) || !Number.isFinite(p.y) || !Number.isFinite(p.z)) bad = true;
+        else moved = Math.max(moved, p.distanceTo(this.prev[j]));
+      }
+      if (bad) {
+        for (const j of JOINTS) {
+          const q = this.prev[j];
+          if (!Number.isFinite(q.x) || !Number.isFinite(q.y) || !Number.isFinite(q.z)) q.copy(this.last[j]);
+          this.joints[j].copy(q);
+        }
+        if (run) run.fellBack = true;
+      }
+      // Sleep: still under 2 mm a frame for 30 frames, once the pose has let go.
+      const poseDone = !run || !run.active;
+      if (poseDone && moved < DEATH.sleepM * dt * 60) this.stillFrames++;
+      else this.stillFrames = 0;
+      if (poseDone && (this.stillFrames >= DEATH.sleepFrames || limpS > DEATH.forceSleepS)) {
+        this.asleep = true;
+        this.asleepFor = 0;
+        for (const j of JOINTS) this.prev[j].copy(this.joints[j]);
       }
     }
     for (const s of this.segs.values()) {
@@ -627,13 +713,16 @@ function solve(a: THREE.Vector3, b: THREE.Vector3, rest: number, wa: number, wb:
   b.addScaledVector(tmpA, -diff * wb);
 }
 
-function collide(p: THREE.Vector3, q: THREE.Vector3, w: RagdollWorld): void {
+/** Pushes a point out of the floor and the boxes; returns the speed it hit the floor at (m/s, when `dt` > 0). */
+function collide(p: THREE.Vector3, q: THREE.Vector3, w: RagdollWorld, friction = 0.6, dt = 0): number {
   const floor = w.ground(p.x, p.z) + 0.05;
+  let hit = 0;
   if (p.y < floor) {
+    if (dt > 0) hit = Math.max(0, (q.y - p.y) / dt);
     p.y = floor;
     // Ground friction: kill most sliding.
-    q.x = p.x - (p.x - q.x) * 0.4;
-    q.z = p.z - (p.z - q.z) * 0.4;
+    q.x = p.x - (p.x - q.x) * (1 - friction);
+    q.z = p.z - (p.z - q.z) * (1 - friction);
     q.y = p.y + (p.y - q.y) * 0.2;
   }
   for (const c of w.colliders) {
@@ -646,13 +735,21 @@ function collide(p: THREE.Vector3, q: THREE.Vector3, w: RagdollWorld): void {
       dz1 = p.z - c.min.z,
       dz2 = c.max.z - p.z;
     const m = Math.min(dx1, dx2, dy1, dy2, dz1, dz2);
-    if (m === dy2) p.y = c.max.y + 0.01;
-    else if (m === dx1) p.x = c.min.x - 0.01;
+    if (m === dy2) {
+      p.y = c.max.y + 0.01;
+      q.x = p.x - (p.x - q.x) * (1 - friction);
+      q.z = p.z - (p.z - q.z) * (1 - friction);
+      continue;
+    }
+    if (m === dx1) p.x = c.min.x - 0.01;
     else if (m === dx2) p.x = c.max.x + 0.01;
     else if (m === dz1) p.z = c.min.z - 0.01;
     else if (m === dz2) p.z = c.max.z + 0.01;
     else p.y = c.min.y - 0.01;
+    // A wall grips too (a slumped back stays on it instead of sliding off like ice).
+    if (m !== dy1) q.y = p.y - (p.y - q.y) * (1 - friction * 0.7);
   }
+  return hit;
 }
 
 /** Distance along a unit ray to a capsule a-b of radius r, or null. */

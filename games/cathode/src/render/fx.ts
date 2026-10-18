@@ -399,6 +399,7 @@ export function createFx(o: {
     ground: o.groundHeight,
     decal: addDecal,
     light: (p, out) => o.volume.sample(p, out),
+    mirror: o.shared,
   });
 
   // ---------------------------------------------------------------- casings

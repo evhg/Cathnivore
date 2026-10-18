@@ -812,6 +812,42 @@ export class Audio {
     this.burst({ type: "lowpass", freq: 700, decay: 0.07, gain: 0.35 * k, noise: "brown", pan });
   }
 
+  // ---- C9: an enemy's death (S4.4 "every death"), on the world bus, placed where he fell ----
+  /**
+   * The death rattle: a breathy exhale through a falling formant (two bands sweeping down over 600 ms), the radio
+   * on his chest squelching out under it.
+   */
+  deathRattle(pan = 0, dist = 5): void {
+    if (!this.enabled) return;
+    const near = 1 / (1 + Math.max(0, dist) / 14);
+    const p = Math.max(-1, Math.min(1, pan));
+    this.burst({ noise: "pink", type: "bandpass", freq: 820, sweepTo: 260, q: 5, attack: 0.05, decay: 0.6, gain: 0.5 * near, verb: 0.25, pan: p });
+    this.burst({ noise: "pink", type: "bandpass", freq: 2100, sweepTo: 820, q: 7, attack: 0.04, decay: 0.45, gain: 0.22 * near, pan: p });
+    this.thump(120, 70, 0.35, 0.12 * near, 0.02, "sine", 0, p);
+    // The radio: a crackle and a falling squelch, then nothing.
+    this.burst({ type: "bandpass", freq: 1900, q: 1.4, attack: 0.005, decay: 0.16, gain: 0.16 * near, when: 0.08, pan: p });
+    this.thump(1300, 380, 0.14, 0.05 * near, 0.09, "square", 0, p);
+  }
+
+  /** A body part hits the street hard: a 180 Hz, 70 ms thud (a chest landing rattles his kit on top). */
+  bodyThud(k: number, pan = 0, dist = 5, gear = false): void {
+    if (!this.enabled) return;
+    const near = 1 / (1 + Math.max(0, dist) / 14);
+    const g = Math.max(0.15, Math.min(1, k)) * near;
+    const p = Math.max(-1, Math.min(1, pan));
+    this.thump(180, 95, 0.07, 0.55 * g, 0, "sine", 0.15, p);
+    this.burst({ noise: "brown", type: "lowpass", freq: 520, decay: 0.08, gain: 0.5 * g, pan: p });
+    if (gear) {
+      // Plates and pouches: three small knocks inside 60 ms.
+      for (const [w, f] of [
+        [0.004, 3100],
+        [0.026, 2300],
+        [0.05, 2700],
+      ] as const)
+        this.burst({ freq: f, q: 7, decay: 0.03, gain: 0.18 * g, when: w, pan: p });
+    }
+  }
+
   /** The UI tick on a focus change (death card, S6.6): a short dry click. */
   uiTick(): void {
     if (!this.enabled) return;

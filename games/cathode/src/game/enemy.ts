@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { Body, enforcerLook, place, tagUnflashed, type BodyLook, type Zone } from "./body";
+import { DEATH, DeathRun, DroppedProp, pickVariant, visorLevel, type DeathCtx, type DeathVariant } from "./death";
 import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
 import { animate, muzzleOf, type Motion } from "./animate";
 import type { RayWorld } from "./ray";
@@ -259,6 +260,20 @@ export class Enemy {
   laser: THREE.Mesh | null = null;
   /** Sniper: seconds of steady aim built up; fires at SNIPER_CHARGE. */
   charge = 0;
+  /** C9 (S4.4): how he went down, and the long gun once it has left his hands. */
+  deathVariant: DeathVariant | null = null;
+  drop: DroppedProp | null = null;
+  /**
+   * C9: what the body did this frame, for the session's audio and gore: the death rattle, joints thudding on the
+   * floor (gear on a chest landing), the gun clattering, the wall-slump smear. Drained by the session.
+   */
+  readonly deathEvents: Array<{ kind: "rattle" | "thud" | "gear" | "clatter" | "smear" | "trail"; at: THREE.Vector3; k: number }> = [];
+  /** S4.2: below 25% health he leaves a drip on the street every 1.2 m. */
+  private trailFrom = new THREE.Vector3(NaN, 0, 0);
+  /** The killing round's travel, flat (where the wall behind him is, for the slump smear). */
+  readonly deathDir = new THREE.Vector3();
+  private visorBase = 1;
+  private smeared = false;
   /** Shots this frame, for the session to resolve: from, direction. */
   readonly shots: Array<{ from: THREE.Vector3; dir: THREE.Vector3; melee?: boolean }> = [];
 
@@ -286,6 +301,7 @@ export class Enemy {
     // Face along the route from the start, not at whatever happens to lie north.
     const next = this.route[1];
     if (next) this.motion.yaw = Math.atan2(next.x - start.x, next.z - start.z);
+    this.visorBase = (look.visor as THREE.MeshStandardMaterial).emissiveIntensity ?? 1;
     this.rifle = buildRifle(look);
     tagUnflashed(this.rifle);
     this.body.root.add(this.rifle);
@@ -351,6 +367,13 @@ export class Enemy {
 
   update(dt: number, sight: Sight, rays: RayWorld, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
     this.shots.length = 0;
+    if (this.alive && this.hp < this.kit.maxHp * 0.25 && this.kit.role !== "turret") {
+      if (Number.isNaN(this.trailFrom.x)) this.trailFrom.copy(this.motion.pos);
+      else if (flatDist(this.trailFrom, this.motion.pos) >= 1.2) {
+        this.trailFrom.copy(this.motion.pos);
+        this.deathEvents.push({ kind: "trail", at: this.motion.pos.clone(), k: 1 });
+      }
+    }
     // Bystanders never fight: once they stop running they calm down and wander again.
     if (this.kit.role === "civilian" && this.state === "combat" && this.fleeT <= 0) this.state = "unaware";
     this.flinch.update(dt);
@@ -362,6 +385,7 @@ export class Enemy {
     if (!this.alive) {
       this.deadFor += dt;
       this.body.physics(dt, { colliders, ground });
+      this.deathTick(dt, colliders, ground);
       this.body.pose();
       this.placeRifle();
       return;
@@ -649,6 +673,11 @@ export class Enemy {
       this.rifle.visible = false;
       return;
     }
+    if (this.drop) {
+      // On the floor where it fell (C9): placed along its two points, the optic up.
+      place(this.rifle, this.drop.a, this.drop.b, b.facing.clone().set(0, 1, 0));
+      return;
+    }
     place(this.rifle, b.joints.handR, b.joints.handL, b.facing.clone().set(0, 1, 0));
   }
 
@@ -736,6 +765,7 @@ export class Enemy {
     if (!this.alive) {
       this.deadFor += dt;
       this.body.physics(dt, { colliders, ground });
+      this.deathTick(dt, colliders, ground);
     } else {
       animate(this.body, this.motion);
       this.body.carry();
@@ -795,14 +825,78 @@ export class Enemy {
     Object.assign(this.motion, { speed: 0, phase: 0, pitch: 0, crouch: 0, aim: 0, kick: 0 });
     this.flinch.reset();
     this.body.revive();
+    this.deathVariant = null;
+    this.drop = null;
+    this.smeared = false;
+    this.deathEvents.length = 0;
+    this.rifle.visible = this.kit.role !== "orderly";
+    (this.body.look.visor as THREE.MeshStandardMaterial).emissiveIntensity = this.visorBase;
   }
 
-  die(impulse: THREE.Vector3, at: THREE.Vector3): void {
+  /**
+   * The lethal frame (S4.4). `ctx` is what combat knows about the killing blow (zone, weapon, range, which side,
+   * a wall or rail nearby); `forced` picks the variant outright (screenshot stages). Without a context the push
+   * itself says which way it came from.
+   */
+  die(impulse: THREE.Vector3, at: THREE.Vector3, ctx?: Partial<DeathCtx>, forced?: DeathVariant): void {
     this.state = "dead";
     this.hp = 0;
-    this.body.goLimp(impulse, at);
+    const yaw = this.motion.yaw;
+    const left = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+    const flat = new THREE.Vector3(impulse.x, 0, impulse.z);
+    const side = flat.lengthSq() > 1e-8 ? flat.normalize().dot(left) : 0;
+    this.deathDir.copy(flat);
+    const c: DeathCtx = { zone: "torso", weaponCls: "rifle", distance: 10, side, seed: this.id, ...ctx };
+    const v = forced ?? pickVariant(c);
+    this.deathVariant = v;
+    // A body that is already missing parts falls as a plain ragdoll: no pose to pull a stump toward.
+    const run = this.body.lost.size ? null : new DeathRun(v, c, this.motion.pos, yaw);
+    let imp = impulse;
+    if (v === "blownback") imp = impulse.clone().multiplyScalar(DEATH.blownMul).add(new THREE.Vector3(0, DEATH.blownUp, 0));
+    this.body.onImpact = (j, speed, p) => this.deathEvents.push({ kind: j === "chest" || j === "pelvis" ? "gear" : "thud", at: p.clone(), k: Math.min(1, speed / 5) });
+    this.body.goLimp(imp, at, run ?? undefined);
+    if (v === "headshot" && !this.body.lost.has("head")) {
+      // The head snaps back along the round: 6 m/s on the head all told (S4.4), half on the neck.
+      const d = impulse.clone().normalize();
+      const have = impulse.length() * Math.max(0.25, 1 - this.body.joints.head.distanceTo(at) * 0.8);
+      const more = Math.max(0, DEATH.headKick - have);
+      this.body.kick("head", d.clone().multiplyScalar(more));
+      this.body.kick("neck", d.multiplyScalar(more * 0.5));
+    }
     this.body.deathGlow();
+    this.deathEvents.push({ kind: "rattle", at: this.body.joints.head.clone(), k: 1 });
   }
+
+  /**
+   * The seconds after the lethal frame (S4.4 "every death"): the visor light goes out (fading over 900 ms with two
+   * flickers), the long gun leaves the hands 200 ms into the fall (or on the first limp frame) and clatters as a
+   * two-point body, and a slump down a wall leaves a smear.
+   */
+  private deathTick(dt: number, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
+    const ms = this.deadFor * 1000;
+    const visor = this.body.look.visor as THREE.MeshStandardMaterial;
+    visor.emissiveIntensity = this.visorBase * visorLevel(ms);
+    const run = this.body.dying;
+    const b = this.body;
+    if (!this.drop && this.rifle.visible && this.kit.role !== "orderly" && !this.shield && (!run || run.t >= Math.min(run.dur, DEATH.dropMs) || !run.active)) {
+      const vel = new THREE.Vector3().subVectors(b.joints.handR, this.lastHand).divideScalar(Math.max(1e-3, dt));
+      if (!Number.isFinite(vel.x) || vel.lengthSq() > 100) vel.set(0, 0, 0);
+      // Thrown a little out from the body, along his front.
+      vel.add(new THREE.Vector3(Math.sin(this.motion.yaw), 0.6, Math.cos(this.motion.yaw)).multiplyScalar(0.9));
+      const a = b.joints.handR.clone();
+      const dirG = new THREE.Vector3().subVectors(b.joints.handL, b.joints.handR);
+      if (dirG.lengthSq() < 1e-4) dirG.set(0, 0, 1);
+      const bb = a.clone().addScaledVector(dirG.normalize(), 0.62);
+      this.drop = new DroppedProp(a, bb, vel, ((this.id % 5) - 2) * 2.5, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 4) }));
+    }
+    this.lastHand.copy(b.joints.handR);
+    this.drop?.step(dt, ground, colliders);
+    if (this.deathVariant === "wallslump" && !this.smeared && run && run.t > 260) {
+      this.smeared = true;
+      this.deathEvents.push({ kind: "smear", at: b.joints.chest.clone(), k: 1 });
+    }
+  }
+  private lastHand = new THREE.Vector3();
 }
 
 /** A world direction into body space (yaw undone): x to the body's left, z forward. */

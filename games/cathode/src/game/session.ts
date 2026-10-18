@@ -12,6 +12,7 @@ import { Input } from "./input";
 import { Player } from "./player";
 import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
 import { deathGlowScale } from "./body";
+import { POOLS } from "../render/pools";
 import { RayWorld, rayGround } from "./ray";
 import { KESTREL_DOT } from "./kestrel";
 import { Arsenal } from "./weapons";
@@ -790,6 +791,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
 
   const pickups = new Pickups(world.scene);
+  pickups.ground = (x, z) => world.groundHeight(x, z);
+  pickups.onClatter = (k, at) => {
+    world.camera.getWorldPosition(camPos);
+    camRight.setFromMatrixColumn(world.camera.matrixWorld, 0).normalize();
+    toHit.copy(at).sub(camPos);
+    const d = toHit.length();
+    audio?.gunClatter((k * 0.8) / (1 + d / 14), d > 0.01 ? toHit.dot(camRight) / d : 0);
+  };
   const secrets = new Secrets(progress.jobsDone, ground, world.scene);
   const collect = (drop: { items: Item[]; scrip: number; gun?: string }) => {
     progress.take(drop);
@@ -853,7 +862,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!k.takedown) found.gun = gunDrop(k.enemy.kit.role, Math.random());
     const at = k.enemy.position.clone();
     at.y = world.groundHeight(at.x, at.z);
-    pickups.drop(at, found);
+    // C9: a gun in the loot is the one in his hands: it falls from them (his own rifle model goes) and lies where it lands.
+    const eb = k.enemy.body;
+    const dr = k.enemy.drop;
+    const yawE = k.enemy.motion.yaw;
+    const from = !found.gun || !k.enemy.rifle.visible
+      ? undefined
+      : dr
+        ? { hand: dr.a.clone(), dir: dr.b.clone().sub(dr.a), vel: new THREE.Vector3() }
+        : { hand: eb.joints.handR.clone(), dir: eb.joints.handL.clone().sub(eb.joints.handR), vel: new THREE.Vector3(Math.sin(yawE) * 0.9, 1.2, Math.cos(yawE) * 0.9) };
+    if (from) k.enemy.rifle.visible = false;
+    pickups.drop(at, found, from);
     const ammo = arsenal.scavenge();
     if (ammo) hud.feedLine(`+${ammo} rounds`);
     // Kills by a round confirm through the hit (drainEvents); takedowns and blasts confirm here.
@@ -1580,6 +1599,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // The first job: its stages, objective and waypoint.
     if (job) {
       job.update(dt);
+      combat.firstGunKill = job.firstGunKill;
       objective = job.objective;
       if (job.done && !boardShown && !o.shot) {
         boardShown = true;
@@ -2565,7 +2585,42 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const camRight = new THREE.Vector3();
   const camPos = new THREE.Vector3();
   const toHit = new THREE.Vector3();
+  /**
+   * C9 (S4.4, S4.5): what the dead and the dying did this frame. The rattle as he goes, thuds as he lands (gear on a
+   * chest landing), the gun clattering, the smear down the wall behind a slump, drips under the badly hurt, and a
+   * pool under each body once it has been still for 600 ms (or 1.5 s down).
+   */
+  function drainDeaths(): void {
+    world.camera.getWorldPosition(camPos);
+    camRight.setFromMatrixColumn(world.camera.matrixWorld, 0).normalize();
+    const place = (at: THREE.Vector3) => {
+      toHit.copy(at).sub(camPos);
+      const d = toHit.length();
+      return { pan: d > 0.01 ? toHit.dot(camRight) / d : 0, d };
+    };
+    const gore = world.fx.gore;
+    for (const e of enemies) {
+      for (const ev of e.deathEvents) {
+        const { pan, d } = place(ev.at);
+        if (ev.kind === "rattle") audio?.deathRattle(pan, d);
+        else if (ev.kind === "thud" || ev.kind === "gear") audio?.bodyThud(ev.k, pan, d, ev.kind === "gear");
+        else if (ev.kind === "clatter") audio?.gunClatter(ev.k * 0.8, pan);
+        else if (ev.kind === "smear" && gore) {
+          const hit = rays.cast(ev.at, e.deathDir.lengthSq() > 0 ? e.deathDir : new THREE.Vector3(0, 0, -1), 1.8, { thin: false });
+          if (hit && Math.abs(hit.normal.y) < 0.4) gore.smear(hit.point.clone(), hit.normal.clone());
+        } else if (ev.kind === "trail") gore?.trail(ev.at);
+      }
+      e.deathEvents.length = 0;
+      if (!gore || e.alive || !e.body.ragdoll || !e.body.root.visible || gore.hasPool(e)) continue;
+      const b = e.body;
+      if ((b.asleep && b.asleepFor * 1000 >= POOLS.afterSleepMs) || e.deadFor * 1000 >= POOLS.afterRagdollMs) {
+        const at = b.joints.chest.clone().lerp(b.joints.pelvis, 0.45);
+        gore.pool(at, POOLS.radius[e.deathVariant ?? "base"] ?? POOLS.radius.base!, e.id, e);
+      }
+    }
+  }
   function drainEvents(): void {
+    drainDeaths();
     lastEnemySlowmo();
     for (const k of combat.kills) {
       onKill(k);

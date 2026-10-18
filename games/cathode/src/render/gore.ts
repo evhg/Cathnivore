@@ -7,6 +7,7 @@
 import * as THREE from "three";
 import { DECAL, decalCell } from "./textures";
 import { LAYER_NO_REFLECT } from "./reflection";
+import { BloodPools, type PoolMirror } from "./pools";
 
 /** One flesh hit, as combat reports it. */
 export interface FleshHit {
@@ -44,6 +45,8 @@ export interface GoreDeps {
   decal(pos: THREE.Vector3, normal: THREE.Vector3, size: number, cell: number, tint: THREE.Color, wetInMs?: number, along?: THREE.Vector3): void;
   /** The baked light at a point, for tinting matter (0..1 per channel, roughly). */
   light(pos: THREE.Vector3, out: THREE.Color): THREE.Color;
+  /** The wet street's planar mirror (C9 pools reflect the neon in it); absent in tests. */
+  mirror?: PoolMirror;
 }
 
 /** S4.5 numbers. */
@@ -98,6 +101,14 @@ export interface Gore {
   readonly caps: { mist: number; drops: number; wounds: number };
   /** The last hit's wall splats: where each landed and its size (m). */
   readonly splats: readonly { point: THREE.Vector3; size: number }[];
+  /** C9: a pool under a body at rest (none under reduced violence), growing to `R` m. */
+  pool(at: THREE.Vector3, R: number, seed: number, owner?: object): void;
+  hasPool(owner: object): boolean;
+  /** C9: the wall-slump smear: a 0.4 x 1.2 m vertical run down the wall from `top` (the wall point at his back). */
+  smear(top: THREE.Vector3, normal: THREE.Vector3): void;
+  /** C9: a drip on the street under a badly hurt enemy (every 1.2 m he walks). */
+  trail(at: THREE.Vector3): void;
+  readonly pools: BloodPools;
   dispose(): void;
 }
 
@@ -767,12 +778,41 @@ export function createGore(o: GoreDeps): Gore {
     woundCell.needsUpdate = true;
   };
 
+  // ---- C9: pools, smears and trails (none under reduced violence: S4.5 drops pools and splats)
+  const pools = new BloodPools(o.scene, o.quality, o.noise, o.mirror);
+  const down = new THREE.Vector3(0, -1, 0);
   return {
     hit,
     update(dt) {
       update(dt);
+      pools.update(dt);
     },
+    pool(at, R, seed, owner) {
+      if (o.reduced) return;
+      pools.add(tp.set(at.x, o.ground(at.x, at.z) + 0.014, at.z), R, seed, owner ?? null);
+    },
+    hasPool(owner) {
+      return pools.has(owner);
+    },
+    smear(top, normal) {
+      if (o.reduced) return;
+      // Three overlapping runs from his shoulders to the floor, streaked along the wall's down.
+      const gy = o.ground(top.x, top.z);
+      const h = Math.max(0.5, Math.min(1.3, top.y - gy));
+      for (let i = 0; i < 4; i++) {
+        const y = top.y - (h * i) / 3.2;
+        const at = tp.set(top.x, Math.max(gy + 0.18, y), top.z).addScaledVector(normal, 0.005);
+        o.decal(at, normal, 0.36 + rand() * 0.1, DECAL.blood[3 + (i % 3)]!, SPLAT_TINT, GORE.splat.wetInMs + i * 140, down);
+      }
+      o.decal(tp.set(top.x, top.y + 0.04, top.z).addScaledVector(normal, 0.006), normal, 0.5, DECAL.blood[3]!, SPLAT_TINT, GORE.splat.wetInMs, down);
+    },
+    trail(at) {
+      if (o.reduced) return;
+      o.decal(tp.set(at.x + (rand() - 0.5) * 0.2, o.ground(at.x, at.z), at.z + (rand() - 0.5) * 0.2), ts.set(0, 1, 0), 0.08 + rand() * 0.1, DECAL.blood[Math.floor(rand() * 3)]!, WHITE);
+    },
+    pools,
     clear() {
+      pools.clear();
       splats.length = 0;
       mist.n = drops.n = 0;
       mist.anchorIx.fill(-1);
@@ -793,6 +833,7 @@ export function createGore(o: GoreDeps): Gore {
     },
     caps: { mist: C.mist, drops: C.drops, wounds: C.wounds },
     dispose() {
+      pools.dispose();
       woundMat.dispose();
       for (const p of [mist, drops]) (p.mesh.material as THREE.Material).dispose();
     },
