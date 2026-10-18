@@ -696,7 +696,7 @@ The total equals today's `maxHp`, so `BALANCE.md` difficulty stays the same.
 
 ### S6.2 Per hit (every layer on the hit frame)
 - **Directional arc** (SVG ring in `ui/hud.ts`, replacing the 140×36 px arc):
-  - Radius 190u (about 18% of viewport height). Each arc spans 38° and is 14u thick at its centre, tapering to 2u with feathered ends.
+  - Radius 190u (about 18% of viewport height, capped at 23% on a short landscape phone), and 1.8x that across: the ring is an ellipse, so a hit from the side lands clear of the gun's optic (C6 review). Each arc spans 38° and is 14u thick at its centre, tapering to 2u with feathered ends.
   - Colour `--blood-hot`, with opacity `0.45 + 0.55·min(1, amount/(0.25·maxTotal))` and a 2u core line for the first 120 ms.
   - It appears instantly with a 1.15 → 1.0 scale over 90 ms, holds 600 ms while tracking the attacker's bearing every frame, then fades over 600 ms. A repeat hit from the same source restarts it. Up to 4 sources at once.
   - Attackers behind the player, or more than 35° above or below, get a chevron at the edge of the safe frame.
@@ -1217,7 +1217,8 @@ Unless a milestone says otherwise, "3 sizes" means its stages are shot at all th
   - e2e: a damage hook gives `.hud-dmg-arc` rotated within ±10° of the expected bearing.
 - **Screenshot acceptance (3 sizes):**
   - Stages `player-hurt-100` (from 90°), `player-hurt-behind`, `vitals-guardbreak`, `grenade-near`.
-  - At 5K the arc is at least 36 physical px thick, at a radius of 18% ±2% of height.
+  - At 5K the arc is at least 36 physical px thick, on a ring 18% ±2% of the height tall.
+  - At every size the 90° arc's box misses the projected optic box (`opticProbe`).
   - The behind case shows a bottom chevron.
 - **Size:** 2.
 
