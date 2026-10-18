@@ -114,7 +114,7 @@ interface Held {
 }
 
 /** Where the support hand goes to clutch the wound (view space), and how it turns there (C6). */
-const CLUTCH_AT = new THREE.Vector3(-0.07, -0.3, -0.12);
+const CLUTCH_AT = new THREE.Vector3(-0.06, -0.1, -0.2);
 const CLUTCH_TURN = new THREE.Euler(0.5, 0.6, 0.9);
 
 export class Arsenal {

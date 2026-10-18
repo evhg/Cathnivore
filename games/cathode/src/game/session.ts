@@ -909,7 +909,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let blastWound = 0;
   let hitsTaken = 0;
   /** Screenshot stages: grenade bearings to show instead of the live ones. */
-  let stageNades: number[] | null = null;
+  let stageNades: Array<{ bearing: number; left: number }> | null = null;
   /** Keeps `vitals` and the `hp` mirror in step: anything that wrote `hp` (heals, level-ups, test hooks) lands. */
   function syncVitals(): void {
     if (Math.abs(s.maxHp - vitals.maxTotal) > 1e-6) {
@@ -1584,7 +1584,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       flesh: vitals.flesh,
       maxFlesh: vitals.maxFlesh,
       regen: vitals.regenerating,
-      nades: stageNades ?? actives.liveGrenades().filter((p) => p.distanceTo(player.pos) < 6).map((p) => bearingTo(p)),
+      nades: stageNades ?? actives.liveGrenades().filter((n) => n.pos.distanceTo(player.pos) < 6).map((n) => ({ bearing: bearingTo(n.pos), left: n.left })),
       hurtResolve: resolveHurt,
       level: s.level,
       xp: progress.character.xp - xpForLevel(progress.character.level),
@@ -2355,7 +2355,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const maxT = vitals.maxTotal;
     hitsTaken = 0;
     hud.primeVitals(1, 1);
-    if (name === "grenade-near") stageNades = [-0.55];
+    if (name === "grenade-near") stageNades = [{ bearing: -0.55, left: 0.3 }];
     else if (name === "vitals-guardbreak") {
       // Guard already chipped, then the hit that breaks it and carries into Flesh.
       vitals.damage(maxT * 0.3);

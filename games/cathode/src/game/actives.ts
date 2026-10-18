@@ -27,6 +27,9 @@ export interface Running {
   lifeSteal: number;
 }
 
+/** A grenade's fuse, in seconds. */
+const GRENADE_FUSE = 1.8;
+
 interface Thrown {
   pos: THREE.Vector3;
   vel: THREE.Vector3;
@@ -142,9 +145,9 @@ export class Actives {
   }
 
   /** Damage aimed at Cath: the shield drone's pool soaks it up first. Returns what gets through. */
-  /** Live grenades' positions (C6: the damage ring shows any within 6 m of her). */
-  liveGrenades(): THREE.Vector3[] {
-    return this.thrown.filter((t) => t.kind === "grenade" && t.fuse > 0).map((t) => t.pos);
+  /** Live grenades' positions and the share of the fuse left (C6: the damage ring shows any within 6 m of her). */
+  liveGrenades(): Array<{ pos: THREE.Vector3; left: number }> {
+    return this.thrown.filter((t) => t.kind === "grenade" && t.fuse > 0).map((t) => ({ pos: t.pos, left: t.fuse / GRENADE_FUSE }));
   }
 
   absorb(amount: number): number {
@@ -264,7 +267,7 @@ export class Actives {
         this.thrown.push({
           pos,
           vel,
-          fuse: fx.type === "grenade" ? 1.8 : 9,
+          fuse: fx.type === "grenade" ? GRENADE_FUSE : 9,
           kind: fx.type,
           damage: fx.type === "grenade" ? num("damage", 80) : num("dps", 20),
           radius: num("radius", 5),

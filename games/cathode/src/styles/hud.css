@@ -176,19 +176,32 @@
 .hud-shards i {
   position: absolute;
   left: var(--x0);
-  top: 0;
-  width: calc(var(--u) * 16);
-  height: calc(var(--u) * 20);
-  background: linear-gradient(135deg, var(--cyan-hot), var(--cyan));
+  top: calc(var(--u) * -4);
+  width: calc(var(--u) * 15 * var(--k, 1));
+  height: calc(var(--u) * 19 * var(--k, 1));
+  background: linear-gradient(135deg, var(--cyan-hot) 0%, var(--cyan) 55%, var(--cyan-deep) 100%);
   clip-path: polygon(0 20%, 100% 0, 70% 100%);
   opacity: 0;
 }
+.hud-shards i.s1 { clip-path: polygon(10% 0, 100% 35%, 55% 100%, 0 60%); }
+.hud-shards i.s2 { clip-path: polygon(0 0, 100% 45%, 15% 100%); width: calc(var(--u) * 24 * var(--k, 1)); height: calc(var(--u) * 9 * var(--k, 1)); }
 .hud-shards.go i { animation: shard-fly 380ms var(--ease-out) both; }
 @keyframes shard-fly {
   0% { opacity: 1; transform: none; }
   60% { opacity: 1; }
   100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(.5); }
 }
+/* Guard breaking: the bar flashes white-hot for an instant before it empties. */
+.hud-guard-flash {
+  position: absolute;
+  inset: calc(var(--u) * -2);
+  background: linear-gradient(90deg, rgb(var(--white-rgb) / .2), var(--cyan-hot) 60%, rgb(var(--white-rgb)));
+  box-shadow: 0 0 calc(var(--u) * 14) rgb(var(--cyan-rgb) / .9);
+  opacity: 0;
+  pointer-events: none;
+}
+.hud-guard-flash.go { animation: guard-flash 200ms linear both; }
+@keyframes guard-flash { 0% { opacity: 1; } 35% { opacity: .85; } 100% { opacity: 0; } }
 .hud-arm-row {
   display: flex;
   align-items: center;
@@ -402,6 +415,7 @@
 .hud-hit.pop { animation: hit-pop var(--pop-ms, 60ms) var(--ease-out); }
 /* The screenshot stages freeze every one-shot animation at the stage's moment (window.cathode.stage). */
 .hud-root.is-frozen .hud-shards.go i,
+.hud-root.is-frozen .hud-guard-flash.go,
 .hud-root.is-frozen .hud-rim.flash,
 .hud-root.is-frozen .hud-hit.pop,
 .hud-root.is-frozen .hud-hit-ring.go,
@@ -467,8 +481,10 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: calc(var(--u) * 520);
-  height: calc(var(--u) * 520);
+  /* The ring sits at 190u, but never inside 18% of the screen's height: at 1440x900 190u is only 16%, and a
+     hit from the right lands on the gun's optic. 520/190 x 18svh = 49.3svh. */
+  width: max(calc(var(--u) * 520), 49.3svh);
+  height: max(calc(var(--u) * 520), 49.3svh);
   transform: translate(-50%, -50%);
   overflow: visible;
 }
@@ -478,14 +494,16 @@
   transform-origin: 0 0;
   transform: rotate(var(--rot, 0deg)) scale(var(--s, 1));
 }
-.hud-dmg-arc .glow { fill: rgb(var(--blood-deep-rgb)); opacity: .42; }
-.hud-dmg-arc .body { fill: currentColor; stroke: rgb(var(--black-rgb) / .45); stroke-width: .8; }
+/* A feathered blood glow, then a soft dark shade just under the body (it lifts the arc off red neon). */
+.hud-dmg-arc .glow { fill: rgb(var(--blood-rgb)); opacity: .5; }
+.hud-dmg-arc .shade { fill: rgb(var(--black-rgb)); opacity: .62; }
+.hud-dmg-arc .body { fill: currentColor; stroke: rgb(var(--black-rgb) / .55); stroke-width: 1; }
 .hud-dmg-arc .core { fill: none; stroke: var(--on-blood); stroke-width: 2; stroke-linecap: round; opacity: 0; }
 .hud-dmg-arc.is-core .core { opacity: .95; }
 .hud-dmg-arc.k-blast { color: var(--amber); }
-.hud-dmg-arc.k-blast .glow { fill: var(--amber-deep); }
+.hud-dmg-arc.k-blast .glow { fill: var(--amber); }
 .hud-dmg-arc.k-laser { color: var(--cyan); }
-.hud-dmg-arc.k-laser .glow { fill: var(--cyan-night); }
+.hud-dmg-arc.k-laser .glow { fill: var(--cyan); }
 /* The colour-blind palette: a 2u white outline on every arc. */
 :root.colour-safe .hud-dmg-arc .body { stroke: rgb(var(--white-rgb)); stroke-width: 2; }
 /* A source behind her, or far above or below: a chevron on the safe frame's edge, pointing out. */
@@ -516,17 +534,29 @@
 .hud-dmg-edge.at-r { right: 0; top: 0; bottom: 0; width: calc(var(--u) * 40); background: linear-gradient(270deg, var(--edge-c), transparent); }
 .hud-dmg-edge.at-t { left: 0; right: 0; top: 0; height: calc(var(--u) * 40); background: linear-gradient(180deg, var(--edge-c), transparent); }
 .hud-dmg-edge.at-b { left: 0; right: 0; bottom: 0; height: calc(var(--u) * 40); background: linear-gradient(0deg, var(--edge-c), transparent); }
-/* A live grenade within 6 m: a 44u glyph on the ring, pulsing at 4 Hz. */
+/* A live grenade within 6 m: a 44u glyph on the ring (a grenade on a dark plate), its fuse filling the rim and
+   turning blood-red in the last third, pulsing at 4 Hz while it's live. */
 .hud-dmg-nade {
   opacity: var(--a, 0);
   transform-origin: 0 0;
   transform: rotate(var(--rot, 0deg));
 }
 .hud-dmg-nade .in { transform: translateY(calc(-1px * 190)) rotate(calc(var(--rot, 0deg) * -1)); }
-.hud-dmg-nade .plate { fill: rgb(var(--black-rgb) / .62); stroke: var(--amber); stroke-width: 2.5; }
-.hud-dmg-nade .pulse { fill: none; stroke: var(--amber); stroke-width: 2; transform-origin: 0 0; animation: nade-pulse 250ms linear infinite; }
-.hud-dmg-nade .icon { fill: var(--amber-hi); }
-.hud-dmg-nade .pin { fill: none; stroke: var(--amber-hi); stroke-width: 1.6; }
+.hud-dmg-nade .plate { fill: rgb(var(--black-rgb) / .72); stroke: rgb(var(--white-rgb) / .14); stroke-width: 3.5; }
+.hud-dmg-nade .fuse { fill: none; stroke: var(--amber); stroke-width: 3.5; stroke-dasharray: 1 1; stroke-dashoffset: var(--left, 1); }
+.hud-dmg-nade .pulse { fill: none; stroke: var(--amber); stroke-width: 2; transform-origin: 0 0; opacity: 0; }
+.hud-dmg-nade.is-live .pulse { animation: nade-pulse 250ms linear infinite; }
+.hud-dmg-nade .art .body,
+.hud-dmg-nade .art .head { fill: var(--amber-hi); }
+.hud-dmg-nade .art .flute { fill: none; stroke: rgb(var(--black-rgb) / .5); stroke-width: 1; }
+.hud-dmg-nade .art .spoon { fill: var(--amber); stroke: rgb(var(--black-rgb) / .8); stroke-width: 1.2; paint-order: stroke; stroke-linejoin: round; }
+.hud-dmg-nade .art .head { stroke: rgb(var(--black-rgb) / .8); stroke-width: 1.1; paint-order: stroke; }
+.hud-dmg-nade .art .pinbar,
+.hud-dmg-nade .art .pin { fill: none; stroke: var(--amber-hi); stroke-width: 1.7; }
+.hud-dmg-nade.is-hot .fuse,
+.hud-dmg-nade.is-hot .pulse { stroke: var(--blood-hot); }
+.hud-dmg-nade.is-hot .art .body,
+.hud-dmg-nade.is-hot .art .head { fill: var(--on-blood); }
 @keyframes nade-pulse { from { transform: scale(1); opacity: .9; } to { transform: scale(1.45); opacity: 0; } }
 /* Guard breaking: a one-frame cyan rim. */
 .hud-rim {
@@ -1476,11 +1506,11 @@
   .hud-wp.pulse .hud-wp-mark::after,
   .hud-wp.off.pulse .hud-wp-arrow { animation: none; }
   .hud-vbar.is-regen .hud-guard > .fill,
-  .hud-dmg-nade .pulse { animation: none; }
+  .hud-dmg-nade.is-live .pulse { animation: none; }
   .hud-shards.go i { animation-name: shard-fade; }
 }
 :root.reduce-motion .hud-vbar.is-regen .hud-guard > .fill,
-:root.reduce-motion .hud-dmg-nade .pulse { animation: none; }
+:root.reduce-motion .hud-dmg-nade.is-live .pulse { animation: none; }
 :root.reduce-motion .hud-shards.go i { animation-name: shard-fade; }
 @keyframes shard-fade { 0% { opacity: 1; } 100% { opacity: 0; } }
 :root.reduce-motion .hud-root.is-booting *,

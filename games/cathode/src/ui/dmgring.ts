@@ -17,6 +17,12 @@ const MELEE_EDGE_S = 0.25;
 
 export type HurtKind = "bullet" | "melee" | "blast" | "laser";
 
+/** A live grenade near her: its bearing (radians) and the share of its fuse still to burn (1 = just thrown). */
+export interface NadeMark {
+  bearing: number;
+  left: number;
+}
+
 export interface HurtSource {
   /** What it is (an enemy, a blast): a repeat hit from the same key restarts its arc. */
   key: unknown;
@@ -100,12 +106,20 @@ export class DamageRing {
     for (const [o, a] of [["0", "0"], ["0.22", "1"], ["0.78", "1"], ["1", "0"]] as const) svg("stop", { offset: o, "stop-color": "#fff", "stop-opacity": a }, grad);
     const mask = svg("mask", { id: "hud-dmg-mask", maskContentUnits: "objectBoundingBox" }, defs);
     svg("rect", { x: "0", y: "0", width: "1", height: "1", fill: "url(#hud-dmg-feather)" }, mask);
+    // The glow and the shade under the body are soft (a static blur, defined once): the arc reads as light
+    // bleeding off a wound, not a flat vector petal, and the dark shade keeps it apart from red neon.
+    for (const [id, sd] of [["hud-dmg-blur", "5"], ["hud-dmg-soft", "2.2"]] as const) {
+      const f = svg("filter", { id, x: "-0.3", y: "-1.2", width: "1.6", height: "3.4", "color-interpolation-filters": "sRGB" }, defs);
+      svg("feGaussianBlur", { stdDeviation: sd }, f);
+    }
     const body = crescent(RING.r, RING.spanDeg, RING.thick, RING.tip);
-    const glow = crescent(RING.r, RING.spanDeg + 6, RING.thick * 1.9 + 4, RING.tip + 3);
+    const shade = crescent(RING.r, RING.spanDeg + 2, RING.thick * 1.45 + 2, RING.tip + 1.5);
+    const glow = crescent(RING.r, RING.spanDeg + 8, RING.thick * 2.1 + 6, RING.tip + 4);
     const core = coreLine(RING.r, RING.spanDeg * 0.78);
     for (let i = 0; i < SLOTS; i++) {
       const g = svg("g", { class: "hud-dmg-arc" }, this.ringSvg);
-      svg("path", { class: "glow", d: glow, mask: "url(#hud-dmg-mask)" }, g);
+      svg("path", { class: "glow", d: glow, mask: "url(#hud-dmg-mask)" }, svg("g", { filter: "url(#hud-dmg-blur)" }, g));
+      svg("path", { class: "shade", d: shade, mask: "url(#hud-dmg-mask)" }, svg("g", { filter: "url(#hud-dmg-soft)" }, g));
       svg("path", { class: "body", d: body, mask: "url(#hud-dmg-mask)" }, g);
       svg("path", { class: "core", d: core }, g);
       const chev = document.createElement("div");
@@ -122,9 +136,17 @@ export class DamageRing {
       const inner = svg("g", { class: "in" }, g);
       svg("circle", { class: "plate", r: "22" }, inner);
       svg("circle", { class: "pulse", r: "22" }, inner);
-      // A grenade: a body, a lever and a pin ring.
-      svg("path", { class: "icon", d: "M-7 -3a7.5 8.5 0 1 0 14 0a7.5 8.5 0 1 0 -14 0ZM-4 -11h8v4h-8ZM2 -12l8 -3l1 2l-7 4Z" }, inner);
-      svg("circle", { class: "pin", cx: "-6", cy: "-12", r: "3" }, inner);
+      // The fuse: a ring that fills clockwise from the top as it burns down (CoD, Battlefield).
+      svg("circle", { class: "fuse", r: "22", pathLength: "1", transform: "rotate(-90)" }, inner);
+      // A grenade, every part its own shape (no overlapping subpaths in one fill): a fluted body, the fuse
+      // head on top, the spoon down her right side and the pin ring off the left.
+      const art = svg("g", { class: "art", transform: "translate(-1 1)" }, inner);
+      svg("path", { class: "spoon", d: "M1 -10.5L6.6 -10.2Q11.4 -7.6 11 0.5L9.6 9.5L7.7 9.1L8.9 0.6Q9.2 -5.4 5.8 -7.6L1 -7.8Z" }, art);
+      svg("ellipse", { class: "body", cx: "0", cy: "3.2", rx: "8.2", ry: "9.4" }, art);
+      svg("path", { class: "flute", d: "M-7.6 0.2H7.6M-7.6 6.2H7.6M-3 -5.4V11.8M3 -5.4V11.8" }, art);
+      svg("rect", { class: "head", x: "-4.2", y: "-10.6", width: "8.4", height: "5", rx: "1.2" }, art);
+      svg("path", { class: "pinbar", d: "M-4.2 -8.1H-6.6" }, art);
+      svg("circle", { class: "pin", cx: "-9.4", cy: "-8.1", r: "3" }, art);
       this.nades.push(g);
     }
   }
@@ -177,9 +199,9 @@ export class DamageRing {
 
   /**
    * Per frame. `resolve` turns a world position into the current bearing and elevation, so an arc tracks its
-   * attacker as she turns; `nades` are live grenades within 6 m (their bearings).
+   * attacker as she turns; `nades` are live grenades within 6 m (bearing, and the share of the fuse left).
    */
-  update(dt: number, resolve: ((p: { x: number; y: number; z: number }) => { bearing: number; elevDeg: number }) | null, nades: number[]): void {
+  update(dt: number, resolve: ((p: { x: number; y: number; z: number }) => { bearing: number; elevDeg: number }) | null, nades: NadeMark[]): void {
     let top = 0;
     for (const s of this.slots) {
       s.t += dt;
@@ -217,9 +239,15 @@ export class DamageRing {
     this.edgeT = Math.max(0, this.edgeT - dt);
     this.set(this.edge, "--a", (this.edgeT / MELEE_EDGE_S).toFixed(3));
     this.nades.forEach((g, i) => {
-      const b = nades[i];
-      this.set(g, "--a", b === undefined ? "0" : "1");
-      if (b !== undefined) this.set(g, "--rot", `${((b * 180) / Math.PI).toFixed(1)}deg`);
+      const n = nades[i];
+      // The pulse only runs on a live glyph (an idle infinite SVG animation would still cost paint).
+      g.classList.toggle("is-live", n !== undefined);
+      this.set(g, "--a", n === undefined ? "0" : "1");
+      if (n === undefined) return;
+      this.set(g, "--rot", `${((n.bearing * 180) / Math.PI).toFixed(1)}deg`);
+      const left = Math.min(1, Math.max(0, n.left));
+      this.set(g, "--left", left.toFixed(3));
+      g.classList.toggle("is-hot", left < 0.35);
     });
   }
 }

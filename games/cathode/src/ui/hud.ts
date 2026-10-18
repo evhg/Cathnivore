@@ -7,7 +7,7 @@ import { tuning, type HitClass } from "../game/feel/tuning";
 import { BINDABLE, codesFor, keyLabel, rebind } from "../controls";
 import { applyMotionPref, loadPrefs, savePrefs, type Intensity, type QualityChoice } from "../prefs";
 import { showCredits } from "./credits";
-import { DamageRing, type HurtSource } from "./dmgring";
+import { DamageRing, type HurtSource, type NadeMark } from "./dmgring";
 
 export interface HudState {
   hp: number;
@@ -19,8 +19,8 @@ export interface HudState {
   maxFlesh?: number;
   /** Guard is coming back (the bar's moving highlight). */
   regen?: boolean;
-  /** Bearings (radians) of live grenades within 6 m: a glyph on the damage ring for each. */
-  nades?: number[];
+  /** Live grenades within 6 m (bearing in radians, share of the fuse left): a glyph on the damage ring for each. */
+  nades?: NadeMark[];
   /** Turns a world position into her current bearing and elevation, so a damage arc tracks its attacker. */
   hurtResolve?: (p: { x: number; y: number; z: number }) => { bearing: number; elevDeg: number };
   level: number;
@@ -96,6 +96,7 @@ export class Hud {
   private guardBar: ReturnType<typeof bar>;
   private vbar: HTMLElement;
   private shards: HTMLElement;
+  private crackFlash: HTMLElement;
   private rim: HTMLElement;
   private dmg: DamageRing;
   /** The damage ghost per layer (S6.2): where the trail is, and how long it still holds before it shrinks. */
@@ -183,15 +184,21 @@ export class Hud {
     this.guardBar.root.append(crack);
     this.shards = el("div", "hud-shards", this.guardBar.root);
     for (let i = 0; i < 12; i++) {
-      const sh = el("i", "", this.shards);
-      // A fixed spread: up and out of the bar, 30 to 80u, each spinning up to 180 degrees.
-      const a = -Math.PI * (0.08 + 0.84 * ((i * 7) % 12) / 11);
-      const d = 30 + 50 * (((i * 5) % 12) / 11);
-      sh.style.setProperty("--x0", `${(i / 11) * 100}%`);
+      // Three shard shapes, sizes 0.55x to 1.4x.
+      const sh = el("i", `s${i % 3}`, this.shards);
+      // A fixed spread out of the bar's broken end to the right, into open screen (never up over the level chip or
+      // the objective): -58 to +22 degrees, 45 to 125u, each spinning up to 270 degrees.
+      const a = Math.PI * (-0.32 + 0.44 * (((i * 7) % 12) / 11));
+      const d = 45 + 80 * (((i * 5) % 12) / 11);
+      const k = 0.55 + 0.85 * (((i * 11) % 12) / 11);
+      sh.style.setProperty("--x0", `${(35 + (i / 11) * 62).toFixed(1)}%`);
+      sh.style.setProperty("--k", k.toFixed(2));
       sh.style.setProperty("--dx", `calc(var(--u) * ${(Math.cos(a) * d).toFixed(1)})`);
       sh.style.setProperty("--dy", `calc(var(--u) * ${(Math.sin(a) * d).toFixed(1)})`);
-      sh.style.setProperty("--r", `${(i % 2 ? 1 : -1) * (90 + ((i * 37) % 90))}deg`);
+      sh.style.setProperty("--r", `${(i % 2 ? 1 : -1) * (120 + ((i * 37) % 150))}deg`);
     }
+    // The bar itself cracks white-hot for an instant.
+    this.crackFlash = el("span", "hud-guard-flash", this.guardBar.root);
     this.armRow = el("div", "hud-arm-row", vit);
     el("span", "hud-arm-label", this.armRow).textContent = "Arm";
     this.armBar = bar("armour hud-armour", this.armRow);
@@ -524,9 +531,10 @@ export class Hud {
     return this.dmg.alpha;
   }
 
-  /** Guard broke: 12 cyan shards fly 30 to 80u spinning over 380 ms, and the edges flash cyan for a frame. */
+  /** Guard broke: 12 cyan shards fly 45 to 125u out to the right spinning over 380 ms, the bar cracks white-hot, and the edges flash cyan for a frame. */
   private guardBreak(): void {
     this.punch(this.shards, "go", 400);
+    this.punch(this.crackFlash, "go", 200);
     this.punch(this.rim, "flash", 120);
   }
 
@@ -633,6 +641,7 @@ export class Hud {
       [this.hit.querySelector<HTMLElement>(".hud-hit-shatter"), ["go"]],
       [this.blockedEl, ["pop"]],
       [this.shards, ["go"]],
+      [this.crackFlash, ["go"]],
       [this.rim, ["flash"]],
     ];
     for (const [e, classes] of oneShots) {
