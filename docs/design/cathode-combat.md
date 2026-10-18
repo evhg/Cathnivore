@@ -744,7 +744,7 @@ The total equals today's `maxHp`, so `BALANCE.md` difficulty stays the same.
   - Rate is `lerp(80, 120, w)` bpm.
   - `uPulse` comes from the same scheduler, mapping AudioContext time to frame time, so the vignette beats in sync. A unit test checks the phase mapping.
 - **Breath:** looped noise, band-passed at 500 Hz for the exhale and 1.4 kHz for the inhale. Rate 0.3 Hz when fine and 0.9 Hz when bleeding, gain `0.25·breath`. Ducked under gunfire.
-- **World muffle:** `muffleHz = lerp(22000, 1500, w)` on an exponential curve.
+- **World muffle:** `muffleHz` falls from 22 kHz to 1.5 kHz with `w`, exponential within each tier and through the S6.1 table's corners (6 kHz entering critical, 2.5 kHz entering bleeding).
 - **Bleeding tier:** a ±1° roll wobble at 0.3 Hz plus a 0.4% FOV breathe in sync (off under reduced motion). The Flesh bar pulses in scale-Y from 1.0 to 1.15 on the beat, and its numeral turns `--blood-hot`.
 - **Regen start** (as important as the hurt):
   - A sharp inhale (noise at 1.6 kHz with a 120 ms rise).
@@ -1231,7 +1231,7 @@ Unless a milestone says otherwise, "3 sizes" means its stages are shot at all th
 - **Tests:**
   - The heartbeat phase mapping.
   - The regen event fires within 1 frame of 4.0 s.
-  - Reduced violence puts nothing in the lens slots.
+  - Reduced violence puts no blood in the lens slots (they hold grey water, S6.4); Damage effects without the lens puts nothing.
   - Reduced motion turns the wobble off.
 - **Screenshot acceptance (3 sizes):**
   - Stages `vitals-hurt`, `vitals-critical`, `vitals-bleeding`, `vitals-regen`.

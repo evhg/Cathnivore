@@ -22,6 +22,8 @@ export class PlanarReflection {
   private readonly normal = new THREE.Vector3(0, 1, 0);
   private readonly hidden: THREE.Object3D[] = [];
 
+  /** The fx decal pool (found once by name), left out of the phone mirror. */
+  private decals: THREE.Object3D | null | undefined;
   constructor(
     private readonly height: number,
     private scale: number,
@@ -88,7 +90,17 @@ export class PlanarReflection {
     // The mirror is rippled and blurred: small things far off (limbs, bolts, bottles) are invisible in it but
     // cost a draw call each. Hide them for this pass only.
     const hidden = this.hidden;
-    if (this.cull > 0) hideSmall(scene, this.t.setFromMatrixPosition(camera.matrixWorld), this.cull, hidden);
+    if (this.cull > 0) {
+      hideSmall(scene, this.t.setFromMatrixPosition(camera.matrixWorld), this.cull, hidden);
+      // Decals lie flat on the surfaces (floor drips, holes, splats): in a rippled, half-resolution mirror they
+      // are invisible, and a floor decal reflected in the floor it sits on is wrong anyway. On phone they skip the
+      // mirror, which keeps the bleeding trail inside the draw-call budget (C7 review: 261 > 260).
+      const decals = (this.decals ??= scene.getObjectByName("fx:decals") ?? null);
+      if (decals?.visible) {
+        decals.visible = false;
+        hidden.push(decals);
+      }
+    }
     renderer.render(scene, cam);
     showAll(hidden);
     renderer.setRenderTarget(prevTarget);

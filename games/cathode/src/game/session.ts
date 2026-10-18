@@ -151,7 +151,7 @@ export interface Session {
   /** C7: a stim's screen and sound (the wash, the slower heart, the lens wiped), as the Stim skill plays them. */
   stim?: () => void;
   /** C7 acceptance: the grade pass's mean ms with the Vitals pass idle and at its busiest. */
-  benchGrade?: (n: number) => { off: number; on: number; spread: [number, number]; rounds: number };
+  benchGrade?: (n: number, rounds?: number) => { off: number; on: number; spread: [number, number]; rounds: number };
   /** Drops the session's window and document listeners (C8 restarts a session without a page reload). */
   dispose?: () => void;
   /** C6 (S6.1): Guard and Flesh. `hp` mirrors their total; writing `hp` from outside still works. */
@@ -932,14 +932,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let fxPrefs = loadPrefs();
   /** What the Damage effects setting keeps (S9.8), applied live. */
   let fxLv = damageFxLevels(fxPrefs.damageFx);
-  const lens = new LensBlood(o.intensity === "reduced" || !fxLv.lens);
+  const lens = new LensBlood(o.intensity === "reduced");
+  lens.off = !fxLv.lens;
   window.addEventListener(
     "cathode:prefs",
     () => {
       fxPrefs = loadPrefs();
       fxLv = damageFxLevels(fxPrefs.damageFx);
-      lens.reducedViolence = o.intensity === "reduced" || !fxLv.lens;
-      if (lens.reducedViolence) lens.clear();
+      lens.off = !fxLv.lens;
+      if (lens.off) lens.clear();
     },
     lifeOpt,
   );
@@ -950,6 +951,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   /** The regen wash (held 300 ms, then out over 300 ms) and the stim's edge wash (700 ms). */
   let regenWash = 0;
   let stimWash = 0;
+  /** The regen wash as the grade sees it: in over 100 ms (never a snap), held, then out with the wash. */
+  const regenShown = (): number => Math.min(1, regenWash) * Math.min(1, (1.5 - regenWash) * 3);
   /** A stim's heart slowing: 0..1 of its 30 bpm, in over 2 s, held 4 s, out over 3 s. */
   let stimSlowT = -1;
   let gloveBloodV = 0;
@@ -1975,7 +1978,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     world.setVitals?.(hurtV * k, hurtDir.x, hurtDir.y, woundShown * k);
     // Reduced motion: the vignette beats in strength only, the ring never closes on the beat (`still`).
-    world.setWounded?.({ pulse: pulseNow, regen: Math.min(1, regenWash) * k, stim: stimWash * k, lens: lens.slots, wipe: lens.wipe, fx: fxLv.ca, still: trauma.reducedMotion });
+    world.setWounded?.({ pulse: pulseNow, regen: regenShown() * k, stim: stimWash * k, lens: lens.slots, wipe: lens.wipe, water: lens.water, fx: fxLv.ca, still: trauma.reducedMotion });
     hud.setWound(pulseNow, dead ? "fine" : vitals.tier);
   }
   /** A stim goes in (S6.3): a green-white edge wash, the heart slows 30 bpm over 2 s, she wipes the lens clean. */
@@ -1991,11 +1994,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // The verdict is the median of 11 paired rounds (each round's busy time over its own idle time, alternating
   // which runs first so drift can't favour one side), with the spread (the 25th and 75th percentile ratios)
   // reported beside it: one lucky round can't pass it.
-  s.benchGrade = (n) => {
+  s.benchGrade = (n, rounds = 11) => {
     const off: number[] = [];
     const on: number[] = [];
     const ratio: number[] = [];
-    const rounds = 11;
     for (let r = 0; r < rounds; r++) {
       let a: number;
       let b: number;
@@ -2862,14 +2864,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const u = world as unknown as { setWounded?: World["setWounded"] };
     const noLens = lens.slots.map((sl) => ({ ...sl, age: -1 }));
     const pulse = pulseNow;
-    u.setWounded?.({ pulse, regen: Math.min(1, regenWash), stim: stimWash, lens: noLens, wipe: -1 });
+    u.setWounded?.({ pulse, regen: regenShown(), stim: stimWash, lens: noLens, wipe: -1 });
     const now = sat(grab());
     world.setVitals?.(0, 0, 1, 0);
     u.setWounded?.({ pulse: 0, regen: 0, stim: 0, lens: noLens, wipe: -1 });
     const fine = sat(grab());
     // Back as it was.
     world.setVitals?.(hurtV, hurtDir.x, hurtDir.y, woundShown);
-    u.setWounded?.({ pulse, regen: Math.min(1, regenWash), stim: stimWash, lens: lens.slots, wipe: lens.wipe });
+    u.setWounded?.({ pulse, regen: regenShown(), stim: stimWash, lens: lens.slots, wipe: lens.wipe });
     render();
     return { hist: hist.map((v) => v / n), now, fine, lens: lens.active, glove: gloveBloodV, w: woundShown, pulse };
   };

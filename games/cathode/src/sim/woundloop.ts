@@ -3,7 +3,8 @@
 //     dub 110 ms later, kept in AudioContext time; the frame reads the same clock through a phase map, so the
 //     vignette's uPulse beats exactly when the beat is heard;
 //   - breath, world muffle and the bleeding wobble as functions of w;
-//   - the four lens-blood slots (age 1.8 s, one splat per 400 ms, none under reduced violence) and the stim wipe.
+//   - the four lens-blood slots (age 1.8 s, one splat per 400 ms; grey water, never blood, under reduced
+//     violence; nothing when the Damage effects setting drops the lens) and the stim wipe.
 
 export const WOUND = {
   bpmFine: 80,
@@ -37,9 +38,24 @@ export function heartBpm(w: number, stimSlow = 0): number {
   return Math.max(40, lerp(WOUND.bpmFine, WOUND.bpmBleeding, clamp01(w)) - WOUND.stimSlowBpm * clamp01(stimSlow));
 }
 
-/** The world lowpass for `w`, on an exponential curve from 22 kHz (fine) to 1.5 kHz (bleeding out). */
+/**
+ * The world lowpass for `w`: exponential within each tier, through the S6.1 table's corners: 22 kHz fine, 6 kHz
+ * entering critical (w 0.35), 2.5 kHz entering bleeding (w 0.85), 1.5 kHz bleeding out (w 1).
+ */
+const MUFFLE_KNOTS: ReadonlyArray<readonly [number, number]> = [
+  [0, WOUND.muffleTopHz],
+  [0.35, 6000],
+  [0.85, 2500],
+  [1, WOUND.muffleLowHz],
+];
 export function muffleHz(w: number): number {
-  return WOUND.muffleTopHz * Math.pow(WOUND.muffleLowHz / WOUND.muffleTopHz, clamp01(w));
+  const x = clamp01(w);
+  for (let i = 1; i < MUFFLE_KNOTS.length; i++) {
+    const [w0, f0] = MUFFLE_KNOTS[i - 1]!;
+    const [w1, f1] = MUFFLE_KNOTS[i]!;
+    if (x <= w1) return f0 * Math.pow(f1 / f0, (x - w0) / (w1 - w0));
+  }
+  return WOUND.muffleLowHz;
 }
 
 /** Breathing: its rate (Hz) and level (0 fine .. 1), so the loop plays at `0.25 * level`. */
@@ -150,7 +166,9 @@ const ANCHORS: ReadonlyArray<readonly [number, number]> = [
 
 /**
  * The lens: four slots, each splat in the slot nearest the hit side, at most one per 400 ms, each ageing over
- * 1.8 s. Reduced violence never fills a slot (S6.4 / S6.6). A stim wipes them left to right over 500 ms.
+ * 1.8 s. Reduced violence fills them with grey water instead of blood (S6.4: "a grey rain-on-lens mask"), so
+ * the hit still lands on the glass; `off` (the Damage effects setting without the lens) fills nothing. A stim
+ * wipes them left to right over 500 ms.
  */
 export class LensBlood {
   readonly slots: LensSlot[] = ANCHORS.map(([x, y], i) => ({ x, y, cell: i, age: -1, size: 1, rot: 0 }));
@@ -166,13 +184,19 @@ export class LensBlood {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
+  /** No lens at all (Damage effects Reduced or Minimal, S9.8). */
+  off = false;
   constructor(public reducedViolence = false) {}
+  /** The slots hold water, not blood (reduced violence). */
+  get water(): boolean {
+    return this.reducedViolence;
+  }
   /**
    * A splat toward screen direction (dx, dy) (+x right, +y up) at time `now` (s). Returns the slot used, or -1
-   * (reduced violence, or within 400 ms of the last). `force` skips the gap (the death fall's extra splats).
+   * (the lens is off, or within 400 ms of the last). `force` skips the gap (the death fall's extra splats).
    */
   splat(dx: number, dy: number, now: number, force = false): number {
-    if (this.reducedViolence) return -1;
+    if (this.off) return -1;
     if (!force && now - this.last < WOUND.lensGapS) return -1;
     let best = 0;
     let bestD = -Infinity;

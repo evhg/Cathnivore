@@ -104,7 +104,7 @@ export interface World {
    * C7 (S6.3, S6.4): the wounded loop's screen. `pulse` the heartbeat 0..1, `regen` and `stim` the two washes,
    * `lens` the four lens-blood slots (sim/woundloop.ts LensSlot; age < 0 is empty) and the stim wipe's front.
    */
-  setWounded?(o: { pulse: number; regen: number; stim: number; lens: ReadonlyArray<{ x: number; y: number; cell: number; age: number; size: number; rot?: number }>; wipe: number; fx?: number; still?: boolean }): void;
+  setWounded?(o: { pulse: number; regen: number; stim: number; lens: ReadonlyArray<{ x: number; y: number; cell: number; age: number; size: number; rot?: number }>; wipe: number; water?: boolean; fx?: number; still?: boolean }): void;
   /** C7 acceptance: the grade pass's mean ms per draw with the Vitals pass idle or at its busiest. */
   benchGrade?(n: number, on: boolean | { wound: number; hurt: number; pulse: number; lens: number }): number;
   /** Wind for ballistics and rain, metres per second along x and z. */

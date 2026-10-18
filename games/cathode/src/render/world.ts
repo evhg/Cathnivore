@@ -394,6 +394,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       u.uRegen!.value = THREE.MathUtils.clamp(o.regen, 0, 1);
       u.uStim!.value = THREE.MathUtils.clamp(o.stim, 0, 1);
       u.uLensWipe!.value = o.wipe;
+      // Reduced violence: the slots hold grey water, never blood (S6.4).
+      u.uLensWater!.value = o.water ? 1 : 0;
       // S9.8: Minimal damage effects drop the wound's CA and smear.
       u.uFxCa!.value = o.fx ?? 1;
       // Reduced motion: the ring doesn't close on the beat (the beat still shows as strength).

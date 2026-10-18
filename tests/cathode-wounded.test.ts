@@ -79,12 +79,21 @@ describe("CATHODE wounded loop (C7)", () => {
     }
   });
 
-  it("puts nothing in the lens slots under reduced violence", () => {
+  it("puts no blood in the lens slots under reduced violence (grey water instead), and nothing when the lens is off", () => {
     const lens = new LensBlood(true);
-    for (let i = 0; i < 20; i++) expect(lens.splat(1, 0, i)).toBe(-1);
+    // S6.4: reduced violence uses a grey rain-on-lens mask: the slots fill, but as water.
+    expect(lens.water).toBe(true);
+    expect(lens.splat(1, 0, 0)).toBe(0);
+    expect(lens.active).toBe(1);
+    lens.reducedViolence = false;
+    expect(lens.water).toBe(false);
+    // The Damage effects setting without the lens: nothing at all.
+    lens.clear();
+    lens.off = true;
+    for (let i = 0; i < 20; i++) expect(lens.splat(1, 0, 10 + i)).toBe(-1);
     expect(lens.active).toBe(0);
     expect(lens.slots.every((s) => s.age < 0)).toBe(true);
-    lens.reducedViolence = false;
+    lens.off = false;
     expect(lens.splat(1, 0, 100)).toBe(0);
     expect(lens.active).toBe(1);
   });
@@ -161,7 +170,11 @@ describe("CATHODE wounded loop (C7)", () => {
   it("muffles the world from 22 kHz to 1.5 kHz on an exponential curve, and breathes faster as she weakens", () => {
     expect(muffleHz(0)).toBeCloseTo(22000);
     expect(muffleHz(1)).toBeCloseTo(1500);
-    expect(muffleHz(0.5)).toBeCloseTo(Math.sqrt(22000 * 1500), 3);
+    // The S6.1 table's corners: 6 kHz entering critical, 2.5 kHz entering bleeding; exponential between.
+    expect(muffleHz(0.35)).toBeCloseTo(6000, 3);
+    expect(muffleHz(0.85)).toBeCloseTo(2500, 3);
+    expect(muffleHz(0.6)).toBeCloseTo(Math.sqrt(6000 * 2500), 3);
+    for (let w = 0; w < 1; w += 0.05) expect(muffleHz(w + 0.05)).toBeLessThan(muffleHz(w));
     expect(breath(0)).toEqual({ hz: 0.3, level: 0 });
     expect(breath(1).hz).toBeCloseTo(0.9);
     expect(breath(1).level).toBe(1);
