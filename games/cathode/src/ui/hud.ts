@@ -349,6 +349,9 @@ export class Hud {
     this.lastHp = s.hp;
     this.targetT = Math.max(0, this.targetT - dt);
     this.show(this.target, this.targetT > 0);
+    // The phone's look hint sits where the target bar's long names run (C9: "DOWN" over "DRAG TO AIM"): it steps
+    // aside while a target is up.
+    document.documentElement.classList.toggle("hud-target-on", this.targetT > 0);
     this.dmg.setUrgent(low);
     this.dmg.update(dt, s.hurtResolve ?? null, s.nades ?? []);
     // Armour as its own bar; the resistances line only when she has some.

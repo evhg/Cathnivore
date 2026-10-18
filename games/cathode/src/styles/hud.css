@@ -1359,7 +1359,7 @@
   transition: opacity 600ms var(--ease-out);
   pointer-events: none;
 }
-.look-hint.gone, :root.hud-aiming .look-hint { opacity: 0; }
+.look-hint.gone, :root.hud-aiming .look-hint, :root.hud-target-on .look-hint { opacity: 0; }
 .tbtn {
   position: absolute;
   width: 64px;

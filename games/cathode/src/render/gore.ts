@@ -292,9 +292,9 @@ void main() {
     vec3 side = cross( axis, toCam );
     if ( dot( side, side ) < 1e-4 ) side = cross( vec3( 0.0, 1.0, 0.0 ), toCam );
     side = normalize( side );
-    // Stretched, it also thins (the drop's volume is drawn out), and it never stretches past 4x: a falling drop
+    // Stretched, it also thins (the drop's volume is drawn out), and it never stretches past 2.5x: a falling drop
     // a few frames old is a thin wet line, not a red rod (C9: the deaths read past them).
-    float st = min( 1.0 + sp * aSize.y * 40.0, 4.0 );
+    float st = min( 1.0 + sp * aSize.y * 40.0, 2.5 );
     float len = aSize.x * st;
     wp = aPos + side * position.x * aSize.x * inversesqrt( st ) + axis * position.y * len;
   #else
