@@ -269,8 +269,9 @@ const GradeShader = {
         if ( uRegen + uStim > 0.001 ) {
           float r = ra;
           float inner = mix( 0.75, 0.42, uWound ) - uPulse * 0.035 * uWound;
-          float band = smoothstep( inner - 0.1, inner + 0.02, r ) * ( 1.0 - smoothstep( inner + 0.04, inner + 0.26, r ) );
-          mapped = mix( mapped, mapped * vec3( 0.5, 1.1, 1.2 ) + vec3( 0.012, 0.13, 0.16 ), min( 1.0, uRegen * band * 0.75 ) );
+          // A thin line, not a porthole: the band is narrow and peaks well below opaque (5K review).
+          float band = smoothstep( inner - 0.07, inner, r ) * ( 1.0 - smoothstep( inner + 0.02, inner + 0.15, r ) );
+          mapped = mix( mapped, mapped * vec3( 0.55, 1.1, 1.2 ) + vec3( 0.01, 0.1, 0.125 ), min( 1.0, uRegen * band * 0.5 ) );
           mapped = mix( mapped, vec3( 0.78, 1.0, 0.86 ), uStim * smoothstep( 0.3, 0.95, r ) * 0.55 );
         }
         // The lens film itself: thin blood is a translucent red over the street, thick blood is near black, and
