@@ -9,12 +9,18 @@
 const NS = "http://www.w3.org/2000/svg";
 /** Ring radius and the arc's span and thickness, in u (S6.2). */
 export const RING = { r: 190, wide: 1.8, spanDeg: 38, thick: 14, tip: 2 } as const;
-/** Where an arc for `bearing` (radians) sits on the ring, in u from the crosshair, and which way it faces (degrees). */
+/**
+ * Where an arc for `bearing` (radians) sits on the ring, in u from the crosshair, and which way it faces
+ * (degrees): on the ellipse along the bearing itself (polar form), so the arc's place and its facing both point
+ * exactly at the source.
+ */
 export function ringPoint(bearing: number, push = 0): { x: number; y: number; rot: number } {
-  const x = Math.sin(bearing) * RING.r * RING.wide;
-  const y = -Math.cos(bearing) * RING.r;
-  const ang = Math.atan2(x, -y);
-  return { x: x + Math.sin(ang) * push, y: y - Math.cos(ang) * push, rot: (ang * 180) / Math.PI };
+  const ry = RING.r;
+  const rx = RING.r * RING.wide;
+  const sn = Math.sin(bearing);
+  const cs = Math.cos(bearing);
+  const r = (rx * ry) / Math.hypot(ry * sn, rx * cs) + push;
+  return { x: r * sn, y: -r * cs, rot: (bearing * 180) / Math.PI };
 }
 /** Up to four sources at once. */
 const SLOTS = 4;
