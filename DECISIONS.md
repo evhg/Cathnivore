@@ -503,3 +503,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-18 (C7 review): no Vitals pre-pass. The blood vignette is arithmetic in the grade and lens slots read the splat atlas only inside each live slot's CPU-computed box; SwiftShader skips 2x2 quads outside it.
 - 2026-10-18 (C7 review): Damage effects: Reduced = grade x0.7, CA kept, no lens or wobble; Minimal = vignette x0.5, no CA/smear, no lens or wobble; the indicator is never touched (prefs.ts damageFxLevels).
 - 2026-10-18 (C7 review): while critical or bleeding the HUD's tier tag replaces "Cath Hale" so the name row never outgrows the vitals cluster on a phone.
+- 2026-10-18 (C7 review r2): reduced violence fills the lens slots with grey water (S6.4), not nothing; C7's acceptance now reads "no blood in the lens slots". Damage effects without the lens still fills nothing.
+- 2026-10-18 (C7 review r2): muffleHz is exponential per tier through S6.1's corners (22k, 6k at w .35, 2.5k at w .85, 1.5k); S6.3 amended. Clutching the wound drops the support hand below the frame.
+- 2026-10-18 (C7 review r2): the phone mirror skips the fx decal pool (keeps bleeding at or under 260 calls); the Vitals bench runs 21 rounds of 8 frames and warns on a 75th percentile over 15%.
