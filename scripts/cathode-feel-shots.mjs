@@ -37,7 +37,10 @@ const C7 = ['vitals-hurt@0', 'vitals-critical@250', 'vitals-bleeding@400', 'vita
 // at 2000 ms, the death card, the re-sync's glitch (420 ms into it) and its fade up into the checkpoint (700 ms).
 // Run VPS=rv for the reduced-violence death-2000 (no blood red anywhere in the frame).
 const C8 = ['death-400', 'death-1200', 'death-2000', 'death-card', 'resync@420', 'resync-in@700']
-const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8 }
+// C9 "Deaths that land": four of the eight deaths at their telling moment, framed on the body at 4.6 m, and the
+// pool 8 s on (the neon must show in it: a highlight probe). VPS=rv checks reduced violence leaves no pool.
+const C9 = ['death-gutclutch-450', 'death-wallslump-1200', 'death-headshot-300', 'death-spin-400', 'blood-pool-8s']
+const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9 }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set(C3.map((s) => s.split('@')[0]))
@@ -446,6 +449,25 @@ for (const vp of vps) {
           if (best.px < minPx) fail(`${vp} ${spec}: the splat is ${best.px.toFixed(0)} physical px (< ${minPx.toFixed(0)}, 3% of the screen height)`)
           const [r, g, b] = best.pr.mean
           if (g > r * 0.6 && b > r * 0.6 && best.share < 0.3) warn(`${vp} ${spec}: the splat reads pink (mean ${best.pr.mean})`)
+        }
+      }
+    }
+    // ---- C9 acceptance ----
+    if (/^(death-(gutclutch|wallslump|headshot|spin)|blood-pool)/.test(stage) && info) {
+      const want = stage.startsWith('blood-pool') ? 'gutclutch' : stage.split('-')[1]
+      console.log(`  C9 ${vp} ${spec}: variant ${info.variant}, asleep ${info.asleep}, pool ${info.pool ? `${info.pool.rx.toFixed(0)}x${info.pool.ry.toFixed(0)} px, ${info.pool.age.toFixed(1)} s` : 'none'}`)
+      if (info.variant !== want) fail(`${vp} ${spec}: died as ${info.variant}, not ${want}`)
+      const c = info.corpse.chest
+      if (!(c.x > 0 && c.x < V.viewport.width && c.y > 0 && c.y < V.viewport.height)) fail(`${vp} ${spec}: the body is off screen`)
+      if (stage.startsWith('blood-pool')) {
+        if (V.intensity === 'reduced') {
+          if (info.pool) fail(`${vp} ${spec}: a pool under reduced violence`)
+        } else if (!info.pool) fail(`${vp} ${spec}: no pool`)
+        else {
+          const pr = await page.evaluate(([x, y, rx, ry]) => window.cathode.probePool(x, y, rx, ry), [info.pool.x, info.pool.y, info.pool.rx, info.pool.ry])
+          console.log(`  C9 ${vp} ${spec}: pool ${(pr.red * 100).toFixed(0)}% blood red, ${(pr.bright * 100).toFixed(1)}% highlight, max luminance ${pr.maxLum.toFixed(2)}`)
+          if (pr.red < 0.12) fail(`${vp} ${spec}: the pool is only ${(pr.red * 100).toFixed(0)}% red (< 12%)`)
+          if (pr.maxLum < 0.3 || pr.bright < 0.002) fail(`${vp} ${spec}: no neon reflection in the pool (max luminance ${pr.maxLum.toFixed(2)}, ${(pr.bright * 100).toFixed(2)}% bright)`)
         }
       }
     }

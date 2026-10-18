@@ -8,7 +8,7 @@ import type { Enemy } from "./enemy";
 import type { RayWorld } from "./ray";
 import type { Shot, WeaponDef } from "./weapons";
 import type { Zone } from "./body";
-import { DEATH, type DeathCtx } from "./death";
+import { DEATH, type DeathCtx, type DeathVariant } from "./death";
 import type { WeaponClass } from "../sim/types";
 import { CombatBus } from "./feel/bus";
 import { tuning } from "./feel/tuning";
@@ -432,6 +432,8 @@ export class Combat {
    * death the spec stages for the owner's first gunfight. The session sets it; the first gun kill clears it.
    */
   firstGunKill = false;
+  /** Screenshot stages (C9): the next kill dies this way, whatever the hit says. */
+  forceVariant: DeathVariant | null = null;
 
   /**
    * What the street around a dying body says (S4.4's variant triggers): a wall within 1.2 m behind him along the
@@ -541,7 +543,7 @@ export class Combat {
       const ctx = this.deathCtx(e, zone, dir, w.weaponClass, dist, gun && this.firstGunKill);
       if (gun) this.firstGunKill = false;
       const imp = DEATH.impulse[w.weaponClass] ?? 3.5;
-      e.die(dir.clone().multiplyScalar(imp).add(new THREE.Vector3(0, 1, 0)), point, ctx);
+      e.die(dir.clone().multiplyScalar(imp).add(new THREE.Vector3(0, 1, 0)), point, ctx, this.forceVariant ?? undefined);
       this.killed({ enemy: e, weapon: w, zone, headshot: zone === "head", distance: dist, unseen, severed, takedown });
     } else if (severed.length && e.alive) {
       // Losing a leg or an arm puts them down for good.

@@ -13,6 +13,7 @@ import { Player } from "./player";
 import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
 import { deathGlowScale } from "./body";
 import { POOLS } from "../render/pools";
+import type { DeathVariant } from "./death";
 import { RayWorld, rayGround } from "./ray";
 import { KESTREL_DOT } from "./kestrel";
 import { Arsenal } from "./weapons";
@@ -163,7 +164,13 @@ export interface Session {
     /** C3: the first gun's case on screen (CSS px), and whether it is in front of the camera. */
     caseAt?: { x: number; y: number; front: boolean };
     beam?: { x0: number; y0: number; x1: number; y1: number; r: number };
+    /** C9: how he died, and the pool under him on screen (CSS px). */
+    variant?: string | null;
+    pool?: { x: number; y: number; rx: number; ry: number; age: number } | null;
+    asleep?: boolean;
   } | null;
+  /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
+  probePool?: (x: number, y: number, rx: number, ry: number) => { bright: number; red: number; total: number; maxLum: number };
   /** C5: the Kestrel at the stage's moment (part travel, rounds shown, the muzzle and slide on screen). */
   pistolInfo?: Record<string, unknown> | null;
   /** C4: the hands' share of viewmodel pixels and the slide's mean luminance (0..1) in the shown frame. */
@@ -3039,6 +3046,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.freeze(tMs);
     return "ok";
   };
+  /**
+   * C9 "Deaths that land": a kill at close range with the variant forced, framed on the body at the stage's
+   * moment (the base hit stage, a distance, a forced death, a wall behind him, and how he is turned).
+   */
+  const C9_STAGES: Record<string, { base: string; dist: number; variant: DeathVariant; wall?: boolean; turn?: number; pool?: boolean; ms: number }> = {
+    "death-gutclutch": { base: "hit-kill", dist: 4.6, variant: "gutclutch", ms: 450 },
+    "death-wallslump": { base: "hit-kill", dist: 4.6, variant: "wallslump", wall: true, ms: 1200 },
+    "death-headshot": { base: "hit-headkill", dist: 4.6, variant: "headshot", ms: 300 },
+    "death-spin": { base: "hit-kill", dist: 4.6, variant: "spin", turn: 1.25, ms: 400 },
+    "blood-pool": { base: "hit-kill", dist: 4.6, variant: "gutclutch", pool: true, ms: 8000 },
+  };
+  let c9: (typeof C9_STAGES)[string] | null = null;
   const STAGES = ["hit-body", "hit-head", "hit-kill", "hit-headkill", "hit-soft", "hit-pen", "hit-armourbreak", "blocked", "peek-head", "cover-debug-market", "enemy-flinch-head-60", "wall-splat"];
   /** A world point on screen, in CSS px. */
   const toScreen = (p: THREE.Vector3) => {
@@ -3199,7 +3218,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const at = eye.clone().addScaledVector(flat, 9).addScaledVector(right, 1.6);
       at.y = ground(at.x, at.z);
       g.motion.pos.copy(at);
-      g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z);
+      g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z) + (c9?.turn ?? 0);
       g.state = "combat";
       g.flinch.reset();
       const sightHer: Sight = { eye: eye.clone(), chest: player.pos.clone().add(new THREE.Vector3(0, player.eyeHeight * 0.75, 0)), light: 1, low: 0, speed: 0, stealth: 1 };
@@ -3233,6 +3252,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
   s.stage = (name: string, tMs = 60): string => {
     restarting = false;
+    c9 = C9_STAGES[name.replace(/-\d+s?$/, "")] ?? null;
+    if (c9) {
+      const m = /-(\d+)(s?)$/.exec(name);
+      if (m && tMs === 40) tMs = Number(m[1]) * (m[2] ? 1000 : 1);
+      else if (tMs === 40) tMs = c9.ms;
+      name = c9.base;
+    }
     if (C8_STAGES.includes(name)) return c8Stage(name, tMs);
     if (C6_STAGES.includes(name) || C7_STAGES.includes(name)) return c6Stage(name, tMs);
     calmVitals();
@@ -3283,8 +3309,23 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // A guard 10 m down the crosshair, facing her, unaware.
     // A phone screen is small: the cover stages bring the crate and the guard in so his head over it reads.
     const near = o.quality === "phone" && (name === "blocked" || name === "peek-head") ? 0.6 : 1;
-    let at = eye.clone().addScaledVector(flat, 10 * near);
-    if (name === "wall-splat") {
+    let at = eye.clone().addScaledVector(flat, (c9?.dist ?? 10) * near);
+    if (c9?.wall) {
+      // A wall 1 m behind him: find a solid face 5 to 9 m off around the view and stand him 0.9 m in front of it.
+      const yaw0 = Math.atan2(flat.x, flat.z);
+      let best = Infinity;
+      for (let k = 0; k < 60; k++) {
+        const a = yaw0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.1;
+        const d = new THREE.Vector3(Math.sin(a), 0, Math.cos(a));
+        const from = eye.clone().setY(ground(eye.x, eye.z) + 1.2);
+        const h = rays.cast(from, d, 10, { thin: false });
+        if (h && h.dist > 4.8 && Math.abs(h.normal.y) < 0.3 && Math.abs(h.dist - 6.2) < best) {
+          best = Math.abs(h.dist - 6.2);
+          at = from.clone().addScaledVector(d, h.dist - 0.9);
+          flat.copy(d);
+        }
+      }
+    } else if (name === "wall-splat") {
       // A wall within reach behind him: look around for a solid face 8 to 30 m off, and stand him 1.4 m in front.
       // The nearest wall 9 to 16 m off (so he stands about 10 m out), searched around the view.
       const yaw0 = Math.atan2(flat.x, flat.z);
@@ -3358,19 +3399,59 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const origin = eye.clone().addScaledVector(fwd, 0.3);
     const dir = aim.clone().sub(origin).normalize();
     combat.quiet = true;
+    combat.forceVariant = c9?.variant ?? null;
     lastHitPoint = null;
     // No random crit: a stage shows the same class every time.
     combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], { ...build(), crit: 0 });
     combat.quiet = false;
+    combat.forceVariant = null;
     drainEvents();
     const hitAt = (lastHitPoint as THREE.Vector3 | null)?.clone() ?? aim.clone();
     const head0 = toScreen(g.body.joints.head);
     // The world moves on to the stage's moment: the body flinches or falls, blood flies and lands (S0, C2).
     const stepS = 1 / 60;
-    for (let t = 0; t + 1e-6 < tMs / 1000; t += stepS) {
-      const h = Math.min(stepS, tMs / 1000 - t);
+    // A pool stage runs the body until it sleeps and the pool starts, then ages the pool to the stage's moment.
+    const simMs = c9?.pool ? 3200 : tMs;
+    for (let t = 0; t + 1e-6 < simMs / 1000; t += stepS) {
+      const h = Math.min(stepS, simMs / 1000 - t);
       for (const e of enemies) e.feel(h, world.colliders, ground);
+      if (c9) drainDeaths();
       world.update(0, 1, h);
+    }
+    const gp = world.fx.gore?.pools;
+    if (c9?.pool && gp) {
+      const p0 = gp.pools.find(() => true);
+      if (p0) gp.age(Math.max(0, tMs / 1000 - p0.age));
+      world.update(0, 1, 0);
+    }
+    let poolInfo: { x: number; y: number; rx: number; ry: number; age: number } | null = null;
+    if (c9) {
+      // Framed on him where he lies (or on the pool), from a little closer, looking down at the street.
+      const pl = gp?.pools[gp.pools.length - 1];
+      const focus = c9.pool && pl ? pl.at.clone() : g.body.joints.chest.clone().lerp(g.body.joints.pelvis, 0.5).lerp(g.body.joints.head, c9.variant === "wallslump" ? 0.3 : 0);
+      const back = new THREE.Vector3(eye.x - focus.x, 0, eye.z - focus.z);
+      const want = c9.pool ? 3.4 : 3.9;
+      if (back.length() > want) {
+        back.setLength(back.length() - want);
+        player.pos.sub(back);
+        player.pos.y = ground(player.pos.x, player.pos.z);
+      }
+      player.applyCamera(world.camera, 0);
+      world.camera.updateMatrixWorld();
+      world.camera.getWorldPosition(eye);
+      const look2 = focus.clone().add(new THREE.Vector3(0, c9.pool ? 0 : 0.1, 0)).sub(eye).normalize();
+      player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1)) + (c9.pool ? 0.04 : 0);
+      player.yaw = Math.atan2(-look2.x, -look2.z);
+      player.applyCamera(world.camera, 0);
+      world.camera.updateMatrixWorld();
+      if (pl) {
+        const c = toScreen(pl.at);
+        const camX = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0);
+        const rx = Math.abs(toScreen(pl.at.clone().addScaledVector(camX, pl.r * 0.7)).x - c.x);
+        const fwdFlat = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 2).setY(0).normalize();
+        const ry = Math.abs(toScreen(pl.at.clone().addScaledVector(fwdFlat, pl.r * 0.7)).y - c.y);
+        poolInfo = { x: c.x, y: c.y, rx, ry, age: pl.age };
+      }
     }
     // Classes the street can't produce on cue yet (no plates until C15): show them over the real hit.
     const r02 = Math.abs(toScreen(hitAt.clone().addScaledVector(new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0), 0.2)).x - toScreen(hitAt).x);
@@ -3382,7 +3463,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     });
     // Where the body is now (the kill stage looks for the corpse): pelvis and head on screen.
     const corpse = { pelvis: toScreen(g.body.joints.pelvis), head: toScreen(g.body.joints.head), chest: toScreen(g.body.joints.chest) };
-    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse };
+    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse, variant: g.deathVariant, pool: poolInfo, asleep: g.body.asleep };
     if (name === "hit-soft") hud.hitMarker("armour");
     if (name === "hit-pen") hud.hitMarker("pen");
     if (name === "hit-armourbreak") hud.hitMarker("armourBreak");
@@ -3426,6 +3507,39 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * C8 acceptance: pixels of the rendered frame (full resolution) with hue 350..10 degrees, saturation above 0.6 and
    * value above 0.25: blood red. Reduced violence's death-2000 must have none.
    */
+  s.probePool = (x, y, rx, ry) => {
+    render();
+    const c = world.renderer.domElement;
+    const k = c.width / Math.max(1, c.clientWidth);
+    const W = Math.max(2, Math.round(rx * 2 * k));
+    const H = Math.max(2, Math.round(ry * 2 * k));
+    const cv = document.createElement("canvas");
+    cv.width = W;
+    cv.height = H;
+    const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+    g2.drawImage(c, Math.round((x - rx) * k), Math.round((y - ry) * k), W, H, 0, 0, W, H);
+    const px = g2.getImageData(0, 0, W, H).data;
+    let bright = 0;
+    let red = 0;
+    let total = 0;
+    let maxLum = 0;
+    for (let j = 0; j < H; j++)
+      for (let i = 0; i < W; i++) {
+        const u = (i + 0.5) / W - 0.5;
+        const v = (j + 0.5) / H - 0.5;
+        if (u * u + v * v > 0.25) continue;
+        total++;
+        const o4 = (j * W + i) * 4;
+        const r = px[o4]!;
+        const gg = px[o4 + 1]!;
+        const b = px[o4 + 2]!;
+        const lum = (0.2126 * r + 0.7152 * gg + 0.0722 * b) / 255;
+        maxLum = Math.max(maxLum, lum);
+        if (lum > 0.3) bright++;
+        if (r > 25 && r > gg * 1.6 && r > b * 1.6) red++;
+      }
+    return { bright: bright / Math.max(1, total), red: red / Math.max(1, total), total, maxLum };
+  };
   s.probeBloodRed = () => {
     const c = world.renderer.domElement;
     const cv = document.createElement("canvas");
