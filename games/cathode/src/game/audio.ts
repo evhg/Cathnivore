@@ -762,7 +762,8 @@ export class Audio {
       at += gap;
       gap *= 1.3;
     }
-    // One long exhale (noise at 500 Hz, 1.4 s).
+    // Her wounded breathing stops; one long exhale (noise at 500 Hz, 1.4 s) is the last of it.
+    if (this.breathNode) this.breathNode.g.gain.setTargetAtTime(0, t + 0.15, 0.12);
     this.hiss("bandpass", 500, 1.4, 0.16, 0.45, "pink");
     // The held note: A2 with its 2nd and 3rd harmonics, from 900 ms, 2.5 s decay.
     for (const [mul, pk] of [[1, 0.16], [2, 0.07], [3, 0.035]] as const) this.tone("sine", 110 * mul, 110 * mul, 2.5, pk, D.fallEndMs / 1000, 2.5);

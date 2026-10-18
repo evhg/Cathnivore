@@ -402,6 +402,8 @@ export class Arsenal {
    * white), so metal always has something to reflect and the gun never renders black in a dark alley.
    */
   lightRoom(renderer: THREE.WebGLRenderer): void {
+    // C8: a restart rebuilds the Arsenal in the same view scene; its room is already lit (and stays warm).
+    if (this.scene.environment) return;
     const room = new THREE.Scene();
     room.background = new THREE.Color(0x07080b);
     const box = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 6), new THREE.MeshBasicMaterial({ color: 0x161a22, side: THREE.BackSide }));
