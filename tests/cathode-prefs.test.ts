@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { calmCameraOn, loadPrefs, savePrefs } from "../games/cathode/src/prefs"
+import { calmCameraOn, damageFxLevels, loadPrefs, savePrefs } from "../games/cathode/src/prefs"
 
 function stubStorage() {
   const m = new Map<string, string>()
@@ -52,5 +52,24 @@ describe("C7 damage-effects and heartbeat prefs", () => {
     localStorage.setItem("cathode:prefs:v1", JSON.stringify({ damageFx: "loud", heartbeat: "yes" }))
     expect(loadPrefs().damageFx).toBe("full")
     expect(loadPrefs().heartbeat).toBe(true)
+  })
+  it("offers Full, Reduced and Minimal, each doing what S9.8 says", () => {
+    savePrefs({ ...loadPrefs(), damageFx: "minimal" })
+    expect(loadPrefs().damageFx).toBe("minimal")
+    const full = damageFxLevels("full")
+    const red = damageFxLevels("reduced")
+    const min = damageFxLevels("minimal")
+    expect(full).toMatchObject({ grade: 1, ca: 1, lens: true, wobble: true })
+    // Minimal: no CA or radial smear, the vignette halved, the indicator kept.
+    expect(min.ca).toBe(0)
+    expect(min.grade).toBe(0.5)
+    expect(min.indicator).toBe(true)
+    expect(min.lens).toBe(false)
+    expect(min.wobble).toBe(false)
+    // Reduced sits between: softer than Full, stronger than Minimal, the CA kept.
+    expect(red.grade).toBeLessThan(full.grade)
+    expect(red.grade).toBeGreaterThan(min.grade)
+    expect(red.ca).toBe(1)
+    expect(red.lens).toBe(false)
   })
 })

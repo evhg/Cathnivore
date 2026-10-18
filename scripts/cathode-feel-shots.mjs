@@ -515,9 +515,11 @@ for (const vp of vps) {
         // The colour drains from the edges first: the ring keeps clearly less of its saturation than the centre.
         if (!(ke < kc * C7_SAT_EDGE)) fail(`${vp} ${spec}: edge saturation x${ke.toFixed(2)} isn't below ${C7_SAT_EDGE} of the centre's x${kc.toFixed(2)}`)
         if (wp.lens < 1) fail(`${vp} ${spec}: no blood on the lens`)
+        // The median of 11 paired rounds, with the interquartile spread of the per-round ratio (session.ts).
         const b = await page.evaluate(() => window.cathode.benchGrade(3))
         const over = (b.on - b.off) / Math.max(1e-3, b.off)
-        console.log(`  grade pass ${b.off.toFixed(2)} ms idle, ${b.on.toFixed(2)} ms bleeding (+${(over * 100).toFixed(1)}%)`)
+        const sp = b.spread ? ` spread ${(b.spread[0] * 100).toFixed(1)}%..${(b.spread[1] * 100).toFixed(1)}% over ${b.rounds} rounds` : ''
+        console.log(`  grade pass ${b.off.toFixed(2)} ms idle, ${b.on.toFixed(2)} ms bleeding (+${(over * 100).toFixed(1)}%)${sp}`)
         if (over > 0.15) fail(`${vp} ${spec}: the Vitals pass costs +${(over * 100).toFixed(1)}% of the grade pass (> 15%)`)
       }
       if (stage === 'vitals-critical' && wp.lens < 1) fail(`${vp} ${spec}: a heavy hit put no blood on the lens`)

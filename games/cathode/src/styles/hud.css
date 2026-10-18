@@ -152,6 +152,10 @@
   border-left: calc(var(--u) * 2) solid var(--blood);
 }
 .hud-wound.is-bleeding { text-shadow: 0 0 calc(var(--u) * 8) rgb(var(--blood-rgb) / calc(.3 + var(--beat, 0) * .6)); }
+/* Critical or worse the tag stands in for her name, so the row keeps its width at every size (phone review: "Cath
+   Hale | Bleeding out" pushed the LV chip past the cluster). */
+.hud-name.is-wounded .hud-name-text { display: none; }
+.hud-name.is-wounded .hud-wound { margin-left: 0; }
 .hud-hp-text.hit { animation: hp-hit 180ms var(--ease-out); }
 @keyframes hp-hit {
   0% { transform: translateX(calc(var(--u) * -4)) scale(1.12); }
@@ -1551,7 +1555,10 @@
   .hud-vbar.is-regen .hud-guard > .fill,
   .hud-dmg-nade.is-live .pulse { animation: none; }
   .hud-shards.go i { animation-name: shard-fade; }
+  .hud-hp { transform: none; }
 }
+/* Reduced motion: the bleeding Flesh bar beats in brightness only (the fill's filter), never in scale. */
+:root.reduce-motion .hud-hp { transform: none; }
 :root.reduce-motion .hud-vbar.is-regen .hud-guard > .fill,
 :root.reduce-motion .hud-dmg-nade.is-live .pulse { animation: none; }
 :root.reduce-motion .hud-shards.go i { animation-name: shard-fade; }

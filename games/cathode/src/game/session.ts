@@ -2,7 +2,7 @@
 // together: input, movement, weapons, combat, enemies, stealth, the kill-cam, bullet-time, XP and the HUD.
 
 import { openPhotoMode } from "../ui/photomode";
-import { calmCameraOn, loadPrefs } from "../prefs";
+import { calmCameraOn, damageFxLevels, loadPrefs } from "../prefs";
 import * as THREE from "three";
 import { beamLook, setBeaconProfile } from "./beacon";
 import { LASER_COOLDOWN, LASER_DAMAGE, laserState, laserTouches, lasersFrom } from "./lasers";
@@ -151,7 +151,9 @@ export interface Session {
   /** C7: a stim's screen and sound (the wash, the slower heart, the lens wiped), as the Stim skill plays them. */
   stim?: () => void;
   /** C7 acceptance: the grade pass's mean ms with the Vitals pass idle and at its busiest. */
-  benchGrade?: (n: number) => { off: number; on: number };
+  benchGrade?: (n: number) => { off: number; on: number; spread: [number, number]; rounds: number };
+  /** Drops the session's window and document listeners (C8 restarts a session without a page reload). */
+  dispose?: () => void;
   /** C6 (S6.1): Guard and Flesh. `hp` mirrors their total; writing `hp` from outside still works. */
   vitals?: Vitals;
   /** C6: a hit on Cath of `amount` from a world point (null: straight ahead), with every readout. */
@@ -185,6 +187,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const inTower = o.district === "tower";
   const inVault = o.district === "vault";
   const inMarket = !inClinic && !inPlaza && !inTower && !inVault;
+  // Every window and document listener the session adds goes on this signal, so dispose() takes them all back.
+  const life = new AbortController();
+  const lifeOpt = { signal: life.signal };
   const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress);
   // The phone's lifted grade (exposure 1.7) washes a dim red out, so the kill's glow runs a little brighter there.
   // It no longer has to fight the fog (the glow takes its fog back off, body.ts), and at 2.6x the tone map turned
@@ -203,7 +208,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     input.binds = p.binds;
   };
   syncInput();
-  window.addEventListener("cathode:prefs", syncInput);
+  window.addEventListener("cathode:prefs", syncInput, lifeOpt);
   const rays = new RayWorld(world.colliders, world.cover);
   const progress = new Progress();
   const areaLevel = Math.max(1, progress.character.level);
@@ -315,8 +320,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   if (audio) audio.gun.indoor = inClinic || inTower || inVault;
   const wake = () => audio?.resume();
   // iOS counts touchend and click as gestures that may start audio, not pointerdown.
-  for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, wake, { capture: true });
-  document.addEventListener("visibilitychange", () => audio?.suspend(document.hidden));
+  for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, wake, { capture: true, signal: life.signal });
+  document.addEventListener("visibilitychange", () => audio?.suspend(document.hidden), lifeOpt);
   const s: Session = {
     world,
     player,
@@ -665,10 +670,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // The take key is the takedown key (F unless rebound): one interact button, never Q/E (lean).
   const takeKeyNow = () => keyLabel(codesFor(loadPrefs().binds, "takedown")[0] ?? "KeyF");
   let takeKey = takeKeyNow();
-  window.addEventListener("cathode:prefs", () => {
-    hudScale = loadPrefs().hudScale;
-    takeKey = takeKeyNow();
-  });
+  window.addEventListener(
+    "cathode:prefs",
+    () => {
+      hudScale = loadPrefs().hudScale;
+      takeKey = takeKeyNow();
+    },
+    lifeOpt,
+  );
   // S7.1 layer 7: Cath's nudge the first time the first gun is on screen within 12 m, and a one-time look assist
   // (up to 10 degrees of yaw over 600 ms) if the mouse is idle. Never forced: any look input cancels it.
   let nudged = false;
@@ -700,7 +709,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const scale = (o.quality === "phone" ? 0.8 : 1) * auto.scale * renderScaleParam;
     world.resize(o.canvas.clientWidth, o.canvas.clientHeight, dpr * post, Math.min(1, scale / post));
   };
-  addEventListener("resize", resize);
+  addEventListener("resize", resize, lifeOpt);
   resize();
 
   const levelUp = (levels: number[]) => {
@@ -894,7 +903,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
   syncMotion();
   // A change in the pause settings reaches the gun and the camera at once.
-  window.addEventListener("cathode:prefs", syncMotion);
+  window.addEventListener("cathode:prefs", syncMotion, lifeOpt);
   trauma.phone = input.isTouch;
   const fovPunch = new Spring1(tuning.kill.fovSpring);
   /** A kill lands: hit-stop, FOV punch, a little camera trauma, and a rumble on a pad (S1.4). */
@@ -921,12 +930,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const heart = new HeartClock();
   const phase = new PhaseMap();
   let fxPrefs = loadPrefs();
-  const lens = new LensBlood(o.intensity === "reduced" || fxPrefs.damageFx === "reduced");
-  window.addEventListener("cathode:prefs", () => {
-    fxPrefs = loadPrefs();
-    lens.reducedViolence = o.intensity === "reduced" || fxPrefs.damageFx === "reduced";
-    if (lens.reducedViolence) lens.clear();
-  });
+  /** What the Damage effects setting keeps (S9.8), applied live. */
+  let fxLv = damageFxLevels(fxPrefs.damageFx);
+  const lens = new LensBlood(o.intensity === "reduced" || !fxLv.lens);
+  window.addEventListener(
+    "cathode:prefs",
+    () => {
+      fxPrefs = loadPrefs();
+      fxLv = damageFxLevels(fxPrefs.damageFx);
+      lens.reducedViolence = o.intensity === "reduced" || !fxLv.lens;
+      if (lens.reducedViolence) lens.clear();
+    },
+    lifeOpt,
+  );
   /** The frame clock the wounded loop runs on (real seconds; frozen under ?shot). */
   let woundClock = 0;
   /** uWound as shown: eases toward the tier's w (fast in, 1.2 s out), so regen never snaps the screen. */
@@ -1913,7 +1929,6 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    */
   function woundLoop(fdt: number): void {
     woundClock += fdt;
-    const reducedFx = fxPrefs.damageFx === "reduced";
     const wTarget = dead ? woundShown : Math.min(1, vitals.w + blastWound * 0.25);
     // In fast (a hit should land on its frame), out over about 1.2 s (S6.3: never snap on regen).
     const tau = wTarget > woundShown ? 0.12 : 0.4;
@@ -1931,11 +1946,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     pulseNow = bpm > 0 ? heart.pulse(audioT) : pulseNow * Math.exp(-fdt / 0.1);
     if (audioOn) {
       const br = breath(w);
-      audio!.wounded(fdt, { muffleHz: muffleHz(dead ? 0 : w * (reducedFx ? 0.6 : 1)), breathHz: br.hz, breathLevel: dead ? 0 : br.level, firing: woundClock - lastFireAt < 0.6, heart: bpm > 0 });
+      audio!.wounded(fdt, { muffleHz: muffleHz(dead ? 0 : w * fxLv.muffle), breathHz: br.hz, breathLevel: dead ? 0 : br.level, firing: woundClock - lastFireAt < 0.6, heart: bpm > 0 });
     }
     // Bleeding: a slow roll and a FOV breathe (off under reduced motion or reduced damage effects), and drops on
     // the floor every 1.2 m.
-    const wob = wobble(woundClock, w, trauma.reducedMotion || reducedFx || calm);
+    const wob = wobble(woundClock, w, trauma.reducedMotion || !fxLv.wobble || calm);
     world.camera.rotation.z += wob.roll;
     woundFov = wob.fovMul;
     if (vitals.tier === "bleeding" && !dead && player.onGround) {
@@ -1953,13 +1968,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const gloveFloor = vitals.tier === "bleeding" ? 0.55 : 0;
     gloveBloodV = vitals.tier === "fine" ? Math.max(0, gloveBloodV - fdt / 20) : Math.max(gloveBloodV, gloveFloor);
     setGloveBlood(o.intensity === "reduced" ? 0 : gloveBloodV);
-    const k = reducedFx ? 0.5 : 1;
+    const k = fxLv.grade;
     if (stageWound) {
       woundShown = stageWound.shown;
       pulseNow = stageWound.pulse;
     }
     world.setVitals?.(hurtV * k, hurtDir.x, hurtDir.y, woundShown * k);
-    world.setWounded?.({ pulse: pulseNow, regen: Math.min(1, regenWash) * k, stim: stimWash * k, lens: lens.slots, wipe: lens.wipe });
+    // Reduced motion: the vignette beats in strength only, the ring never closes on the beat (`still`).
+    world.setWounded?.({ pulse: pulseNow, regen: Math.min(1, regenWash) * k, stim: stimWash * k, lens: lens.slots, wipe: lens.wipe, fx: fxLv.ca, still: trauma.reducedMotion });
     hud.setWound(pulseNow, dead ? "fine" : vitals.tier);
   }
   /** A stim goes in (S6.3): a green-white edge wash, the heart slows 30 bpm over 2 s, she wipes the lens clean. */
@@ -1970,16 +1986,33 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     audio?.stim();
   }
   s.stim = onStim;
+  s.dispose = () => life.abort();
   // Interleaved rounds and medians: SwiftShader's timing swings 30% between back-to-back runs.
+  // The verdict is the median of 11 paired rounds (each round's busy time over its own idle time, alternating
+  // which runs first so drift can't favour one side), with the spread (the 25th and 75th percentile ratios)
+  // reported beside it: one lucky round can't pass it.
   s.benchGrade = (n) => {
     const off: number[] = [];
     const on: number[] = [];
-    for (let r = 0; r < 6; r++) {
-      off.push(world.benchGrade?.(n, false) ?? 0);
-      on.push(world.benchGrade?.(n, true) ?? 0);
+    const ratio: number[] = [];
+    const rounds = 11;
+    for (let r = 0; r < rounds; r++) {
+      let a: number;
+      let b: number;
+      if (r % 2) {
+        b = world.benchGrade?.(n, true) ?? 0;
+        a = world.benchGrade?.(n, false) ?? 0;
+      } else {
+        a = world.benchGrade?.(n, false) ?? 0;
+        b = world.benchGrade?.(n, true) ?? 0;
+      }
+      off.push(a);
+      on.push(b);
+      ratio.push(b / Math.max(1e-6, a));
     }
-    const med = (a: number[]) => a.sort((x, y) => x - y)[Math.floor(a.length / 2)]!;
-    return { off: med(off), on: med(on) };
+    const q = (arr: number[], f: number) => [...arr].sort((x, y) => x - y)[Math.min(arr.length - 1, Math.floor(arr.length * f))]!;
+    const mOff = q(off, 0.5);
+    return { off: mOff, on: mOff * q(ratio, 0.5), spread: [q(ratio, 0.25) - 1, q(ratio, 0.75) - 1], rounds };
   };
 
   /** A blast within 6 m (S6.2): tinnitus, the world muffled, the wound grade up for 1.5 s. */

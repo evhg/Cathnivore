@@ -5,7 +5,7 @@
 
 import { tuning, type HitClass } from "../game/feel/tuning";
 import { BINDABLE, codesFor, keyLabel, rebind } from "../controls";
-import { applyMotionPref, loadPrefs, savePrefs, type Intensity, type QualityChoice } from "../prefs";
+import { applyMotionPref, loadPrefs, savePrefs, type DamageFx, type Intensity, type QualityChoice } from "../prefs";
 import { showCredits } from "./credits";
 import { DamageRing, type HurtSource, type NadeMark } from "./dmgring";
 
@@ -546,6 +546,8 @@ export class Hud {
     this.woundTag.style.setProperty("--beat", pulse.toFixed(3));
     if (tier !== this.woundTier) {
       this.woundTier = tier;
+      // Critical or worse, the tag takes the name's place: the row never grows past the cluster (phone review).
+      this.woundTag.parentElement?.classList.toggle("is-wounded", tier === "critical" || bleeding);
       this.woundTag.textContent = tier === "critical" ? "Critical" : bleeding ? "Bleeding out" : "";
       this.woundTag.className = `hud-wound${tier === "critical" || bleeding ? ` is-${tier}` : ""}`;
     }
@@ -982,7 +984,8 @@ export class Hud {
         savePrefs({ ...loadPrefs(), volume: v });
       });
       // Graphics and violence take effect on a reload into the same job (the street is built for them).
-      const choice = <T extends string>(name: string, opts: Array<[T, string]>, current: T, apply: (v: T) => void) => {
+      // `live` settings apply on the spot (through the "cathode:prefs" event): no reload mid-mission.
+      const choice = <T extends string>(name: string, opts: Array<[T, string]>, current: T, apply: (v: T) => void, live = false) => {
         const row = el("div", "hud-set", set);
         el("span", "hud-set-name", row).textContent = name;
         const seg = el("div", "hud-seg", row);
@@ -994,7 +997,12 @@ export class Hud {
           b.addEventListener("click", () => {
             if (v === current) return;
             apply(v);
-            location.reload();
+            if (!live) {
+              location.reload();
+              return;
+            }
+            current = v;
+            for (const x of seg.children) x.setAttribute("aria-pressed", String(x === b));
           });
         }
       };
@@ -1022,17 +1030,19 @@ export class Hud {
         (v) => savePrefs({ ...loadPrefs(), intensity: v }),
       );
       // C7: how hard the screen sells a wound, and the heartbeat you hear when she's in trouble.
-      choice<"full" | "reduced">(
+      choice<DamageFx>(
         "Damage effects",
         [
           ["full", "Full"],
           ["reduced", "Reduced"],
+          ["minimal", "Minimal"],
         ],
         prefs.damageFx,
         (v) => {
           savePrefs({ ...loadPrefs(), damageFx: v });
           window.dispatchEvent(new Event("cathode:prefs"));
         },
+        true,
       );
 
       const toggle = (name: string, key: "bigSubs" | "calmCamera" | "colourSafe" | "holdToggle" | "invertY" | "heartbeat", apply?: (on: boolean) => void) => {

@@ -134,8 +134,10 @@ export interface LensSlot {
   y: number;
   cell: number;
   age: number;
-  /** 0.8..1.25: the splat's size. */
+  /** 0.75..1.3: the splat's size. */
   size: number;
+  /** The splat's turn on the glass (radians), so two splats of one cell never match. */
+  rot: number;
 }
 
 /** Where the four slots sit: right, left, top, bottom, each a little off-axis so they never line up. */
@@ -151,11 +153,19 @@ const ANCHORS: ReadonlyArray<readonly [number, number]> = [
  * 1.8 s. Reduced violence never fills a slot (S6.4 / S6.6). A stim wipes them left to right over 500 ms.
  */
 export class LensBlood {
-  readonly slots: LensSlot[] = ANCHORS.map(([x, y], i) => ({ x, y, cell: i, age: -1, size: 1 }));
+  readonly slots: LensSlot[] = ANCHORS.map(([x, y], i) => ({ x, y, cell: i, age: -1, size: 1, rot: 0 }));
   /** The wipe's front, 0..1 across the screen (uv x); < 0 when no wipe runs. */
   wipe = -1;
   private last = -1e9;
   private n = 0;
+  /** A seeded stream (mulberry32): every hit lands differently, every run (and screenshot) the same. */
+  private seed = 0x6c3b1a2d;
+  private rnd(): number {
+    let t = (this.seed = (this.seed + 0x6d2b79f5) | 0);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
   constructor(public reducedViolence = false) {}
   /**
    * A splat toward screen direction (dx, dy) (+x right, +y up) at time `now` (s). Returns the slot used, or -1
@@ -178,13 +188,14 @@ export class LensBlood {
     });
     const s = this.slots[best]!;
     this.n++;
-    // A little jitter by count so two splats in the same slot don't land on the same pixels.
-    const j = ((this.n * 0.618) % 1) - 0.5;
-    s.x = ANCHORS[best]![0] + j * 0.06;
-    s.y = ANCHORS[best]![1] - j * 0.05;
+    // Each hit lands somewhere new around its anchor (up to 0.1 across, 0.09 up or down), turned anywhere in
+    // about 80 degrees, at its own size: two splats never mirror or repeat, so the blood never reads as designed.
+    s.x = ANCHORS[best]![0] + (this.rnd() - 0.5) * 0.2;
+    s.y = ANCHORS[best]![1] + (this.rnd() - 0.5) * 0.18;
     s.cell = (best + this.n) % 4;
     s.age = 0;
-    s.size = 0.85 + ((this.n * 0.381) % 1) * 0.4;
+    s.size = 0.75 + this.rnd() * 0.55;
+    s.rot = (this.rnd() - 0.5) * 1.4;
     this.last = now;
     return best;
   }

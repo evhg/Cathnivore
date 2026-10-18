@@ -89,6 +89,24 @@ describe("CATHODE wounded loop (C7)", () => {
     expect(lens.active).toBe(1);
   });
 
+  it("places every splat afresh (offset, turn and size), so two never mirror or repeat", () => {
+    const lens = new LensBlood();
+    lens.splat(1, 0, 0);
+    lens.splat(-1, 0, 1);
+    const [r, l] = [lens.slots[0]!, lens.slots[1]!];
+    // Not mirror images across the centre line.
+    expect(Math.abs(r.x - (1 - l.x)) + Math.abs(r.y - l.y) + Math.abs(r.rot + l.rot)).toBeGreaterThan(0.08);
+    const seen = new Set<string>();
+    for (let i = 0; i < 12; i++) {
+      lens.splat(1, 0, 2 + i);
+      const sl = lens.slots[0]!;
+      expect(Math.abs(sl.x - 0.84)).toBeLessThanOrEqual(0.1);
+      expect(sl.size).toBeGreaterThanOrEqual(0.75);
+      seen.add(`${sl.x.toFixed(3)},${sl.y.toFixed(3)},${sl.rot.toFixed(2)}`);
+    }
+    expect(seen.size).toBe(12);
+  });
+
   it("splats in the slot nearest the hit side, at most once per 400 ms, and ages each over 1.8 s", () => {
     const lens = new LensBlood();
     expect(lens.splat(1, 0, 0)).toBe(0);

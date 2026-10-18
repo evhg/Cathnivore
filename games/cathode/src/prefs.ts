@@ -32,10 +32,27 @@ export interface Prefs {
   binds: Binds;
   /** Settings → Reduce motion; null follows the system setting. */
   reduceMotion: boolean | null;
-  /** C7: how hard the screen sells a wound (Reduced halves the grade and drops lens blood, blur and wobble). */
-  damageFx: "full" | "reduced";
+  /** C7 (S9.8): how hard the screen sells a wound (see damageFxLevels). */
+  damageFx: DamageFx;
   /** C7: the wounded heartbeat's sound (the vignette still beats). */
   heartbeat: boolean;
+}
+
+export type DamageFx = "full" | "reduced" | "minimal";
+
+/**
+ * What each Damage effects setting keeps (S9.8). `grade` scales the Vitals grade (the blood vignette, the hit's
+ * flare and lobe, the colour drain, the regen and stim washes); `ca` keeps the wound's chromatic aberration and
+ * radial smear; `lens` puts blood on the lens; `wobble` the bleeding roll and FOV breathe; `muffle` scales how far
+ * the world dulls. The damage indicator (the arc, chevrons and grenade glyph) is never touched.
+ *   Full     everything.
+ *   Reduced  the grade at 70%, the CA and smear kept, no lens blood, no wobble, a lighter muffle.
+ *   Minimal  the vignette halved, no CA or smear, no lens blood, no wobble, a lighter muffle.
+ */
+export function damageFxLevels(fx: DamageFx): { grade: number; ca: number; lens: boolean; wobble: boolean; muffle: number; indicator: true } {
+  if (fx === "minimal") return { grade: 0.5, ca: 0, lens: false, wobble: false, muffle: 0.6, indicator: true };
+  if (fx === "reduced") return { grade: 0.7, ca: 1, lens: false, wobble: false, muffle: 0.6, indicator: true };
+  return { grade: 1, ca: 1, lens: true, wobble: true, muffle: 1, indicator: true };
 }
 
 const KEY = "cathode:prefs:v1";
@@ -61,7 +78,7 @@ export function loadPrefs(): Prefs {
       hudScale: typeof p.hudScale === "number" && p.hudScale >= 0.8 && p.hudScale <= 1.3 ? p.hudScale : 1,
       binds: cleanBinds(p.binds),
       reduceMotion: typeof p.reduceMotion === "boolean" ? p.reduceMotion : null,
-      damageFx: p.damageFx === "reduced" ? "reduced" : "full",
+      damageFx: p.damageFx === "reduced" || p.damageFx === "minimal" ? p.damageFx : "full",
       heartbeat: p.heartbeat !== false,
     };
   } catch {

@@ -20,7 +20,7 @@ import { buildSigns } from "./signs";
 import { buildAtmosphere, type AtmoUniforms } from "./atmosphere";
 import { PlanarReflection, LAYER_NO_REFLECT, hideSmall, unshadowSmall, showAll } from "./reflection";
 import { createFx } from "./fx";
-import { createPost } from "./post";
+import { createPost, lensRects } from "./post";
 import { lensFade } from "../sim/woundloop";
 
 interface Preset {
@@ -394,6 +394,10 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       u.uRegen!.value = THREE.MathUtils.clamp(o.regen, 0, 1);
       u.uStim!.value = THREE.MathUtils.clamp(o.stim, 0, 1);
       u.uLensWipe!.value = o.wipe;
+      // S9.8: Minimal damage effects drop the wound's CA and smear.
+      u.uFxCa!.value = o.fx ?? 1;
+      // Reduced motion: the ring doesn't close on the beat (the beat still shows as strength).
+      u.uPulseMove!.value = o.still ? 0 : 1;
       const L = u.uLens!.value as THREE.Vector4[];
       const B = u.uLensB!.value as THREE.Vector4[];
       let any = 0;
@@ -401,10 +405,12 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
         if (i > 3) return;
         const f = lensFade(sl.age);
         L[i]!.set(sl.x, sl.y, f.alpha, sl.size);
-        B[i]!.set(sl.cell % 2, Math.floor(sl.cell / 2) % 2, f.drip, 0);
+        B[i]!.set(sl.cell % 2, Math.floor(sl.cell / 2) % 2, f.drip, sl.rot ?? 0);
         if (f.alpha > 0.002) any = 1;
       });
       u.uLensOn!.value = any;
+      const res = u.uRes!.value as THREE.Vector2;
+      lensRects(L, B, u.uLensRect!.value as THREE.Vector4[], res.x / Math.max(1, res.y));
     },
     benchGrade(n, on) {
       return post.benchGrade(n, on);
