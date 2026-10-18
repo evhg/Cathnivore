@@ -33,7 +33,11 @@ const C6 = ['player-hurt-100@100', 'player-hurt-behind@100', 'vitals-guardbreak@
 const C6X = ['player-hurt-melee@60', 'player-hurt-critical@200', 'player-hurt-100@700']
 // C7 "Wounded": the four states of the wounded loop (hurt, critical on the beat, bleeding out, Guard coming back).
 const C7 = ['vitals-hurt@0', 'vitals-critical@250', 'vitals-bleeding@400', 'vitals-regen@300']
-const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7 }
+// C8 "Dying, done properly": the fall at 400 ms, on the floor at 1200 ms with the killer framed, frozen in the ink
+// at 2000 ms, the death card, the re-sync's glitch (420 ms into it) and its fade up into the checkpoint (700 ms).
+// Run VPS=rv for the reduced-violence death-2000 (no blood red anywhere in the frame).
+const C8 = ['death-400', 'death-1200', 'death-2000', 'death-card', 'resync@420', 'resync-in@700']
+const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8 }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set(C3.map((s) => s.split('@')[0]))
@@ -47,6 +51,8 @@ const VIEWPORTS = {
   // into one grey block and the brackets have no visible reason.
   phone: { viewport: { width: 844, height: 390 }, dsf: 3, q: '&rs=0.5&quality=phone', touch: true, stageQ: { blocked: '&rs=1&quality=phone' } },
   rm: { viewport: { width: 1440, height: 900 }, dsf: 1, q: '', reduced: true },
+  // C8: reduced violence (the 18+ gate's other choice) at the desktop size.
+  rv: { viewport: { width: 1440, height: 900 }, dsf: 1, q: '', intensity: 'reduced' },
   portrait: { viewport: { width: 390, height: 844 }, dsf: 3, q: '&rs=0.5&quality=phone', touch: true },
 }
 // S0 budgets (docs/design/cathode-combat.md, performance table): draw calls and combat CPU per profile.
@@ -77,7 +83,7 @@ const browser = await chromium.launch({
 for (const vp of vps) {
   const V = VIEWPORTS[vp]
   const ctx = await browser.newContext({ viewport: V.viewport, deviceScaleFactor: V.dsf, hasTouch: !!V.touch, isMobile: !!V.touch, reducedMotion: V.reduced ? 'reduce' : 'no-preference' })
-  await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
+  await ctx.addInitScript((intensity) => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity })), V.intensity ?? 'full')
   let page = await ctx.newPage()
   let loadedQ = null
   const load = async (q) => {
@@ -502,6 +508,35 @@ for (const vp of vps) {
       if (stage === 'player-hurt-100' && side.chevs.length) fail(`${vp} ${spec}: a chevron shows for a hit in front of her`)
       if (stage === 'vitals-guardbreak' && !(side.vitals?.broken && side.vitals?.shards)) fail(`${vp} ${spec}: Guard isn't shown breaking`)
       if (stage === 'grenade-near' && side.nade < 0.5) fail(`${vp} ${spec}: no grenade glyph on the ring`)
+    }
+    // ---- C8 acceptance ----
+    if (stage.startsWith('death-') || stage.startsWith('resync')) {
+      const dc = await page.evaluate(() => {
+        const d = devicePixelRatio
+        const box = (q) => {
+          const e = document.querySelector(q)
+          if (!e) return null
+          const b = e.getBoundingClientRect()
+          const cs = getComputedStyle(e)
+          return { x: b.x, y: b.y, w: b.width, h: b.height, ph: b.height * d, opacity: Number(cs.opacity), vis: cs.visibility }
+        }
+        return { dying: window.cathode.dying, line: box('.death-line'), card: box('.death-card'), killer: box('.death-killer'), bar: box('.death-bar-t'), black: box('.death-black'), resync: box('.death-resync'), text: document.querySelector('.death-line')?.textContent ?? '' }
+      })
+      ;(side.c8 ??= {}).dom = dc
+      console.log(`  dying ${dc.dying ? `${Math.round(dc.dying.ms)} ms card ${dc.dying.card} killer ${dc.dying.killer}` : 'no'}; headline ${dc.line ? dc.line.ph.toFixed(0) : '-'} physical px "${dc.text}"`)
+      if (stage.startsWith('death-') && !dc.dying) fail(`${vp} ${spec}: not dying`)
+      if (stage === 'death-card') {
+        if (!(dc.card && dc.card.vis === 'visible' && dc.card.opacity > 0.9)) fail(`${vp} ${spec}: the death card isn't up`)
+        if (vp === '5k' && !(dc.line && dc.line.ph >= 220)) fail(`${vp} ${spec}: the card's headline is ${dc.line?.ph?.toFixed(0)} < 220 physical px tall`)
+        // Left-aligned in the 16:9 safe frame: the headline starts in the left third and stays on screen.
+        if (dc.line && (dc.line.x > V.viewport.width / 3 || dc.line.x + dc.line.w > V.viewport.width || dc.line.y + dc.line.h > V.viewport.height)) fail(`${vp} ${spec}: the headline isn't left-aligned on screen`)
+      }
+      if (stage === 'death-1200' && dc.dying && !dc.dying.killer) fail(`${vp} ${spec}: no killer framed`)
+      if (vp === 'rv' && stage === 'death-2000') {
+        const r = await page.evaluate(() => window.cathode.probeBloodRed())
+        console.log(`  reduced violence: ${r.red} blood-red pixels of ${r.total}`)
+        if (r.red > 0) fail(`${vp} ${spec}: ${r.red} blood-red pixels under reduced violence`)
+      }
     }
     // ---- C7 acceptance ----
     if (c7) {

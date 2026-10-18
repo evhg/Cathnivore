@@ -66,3 +66,27 @@ export class Voice {
     this.busy = 1.2 + text.length * 0.045;
   }
 }
+
+/** What killed her, for the death card's line (S6.6). */
+export type DeathCause = "bullet" | "sniper" | "melee" | "blast" | "laser" | "any";
+
+/**
+ * The death card's headline (S6.6): 24 of Cath's lines, picked by cause. Dry, plain, a mum's voice: never "Game
+ * Over", never gloating, never cryptic (docs/design/cathode.md 2).
+ */
+export const DEATH_LINES: Readonly<Record<DeathCause, readonly string[]>> = {
+  bullet: ["Not tonight, love.", "Up. They don't get to keep me.", "Shot in the street like a dog. Get up.", "Count the rounds next time, Cath."],
+  sniper: ["Mind the windows. Mind everything.", "Somebody up high. Stay low next time.", "Never saw him. Next time I will.", "One shot, from a long way off. Again."],
+  melee: ["Too close. Never that close again.", "He got his hands on me. Once.", "Should have kept my distance. Up.", "Bruises heal. Get up."],
+  blast: ["Mind the glass. Mind everything.", "Ears ringing. Up anyway.", "That one was loud. Next time, run.", "Smoke clears. So do I."],
+  laser: ["Red light means stop, Cath.", "Wired for it, and I walked in.", "Clever little beam. Clever little me, next time.", "Burnt coat. Burnt pride. Up."],
+  any: ["School run's at eight. Get up.", "Bea's waiting up. Get up.", "Marrow doesn't get me that cheap.", "Not the night to quit, love."],
+};
+
+/** One death line for `cause`, picked by `seed` (0..1), never the same as `last`. */
+export function deathLine(cause: DeathCause, seed: number, last?: string): string {
+  const pool = [...DEATH_LINES[cause], ...DEATH_LINES.any];
+  let i = Math.floor(Math.max(0, Math.min(0.9999, seed)) * pool.length);
+  if (pool[i] === last) i = (i + 1) % pool.length;
+  return pool[i]!;
+}

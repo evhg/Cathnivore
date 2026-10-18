@@ -714,6 +714,140 @@ export class Audio {
     this.breathNode.g.gain.setTargetAtTime(0.25 * o.breathLevel * env * duck * (s > 0 ? 0.8 : 1), t, 0.04);
   }
 
+  /** C8: she is dead; the score holds at silence until `revive()` (update() would bring it back). */
+  private dead = false;
+
+  /**
+   * C8 death (S6.6), on the killing blow: the impact and a hard gasp, the score cut over 80 ms, the world muffled to
+   * 900 Hz over 300 ms (from 120 ms), tinnitus at full, a 50 bpm heart that slows 30% each beat and stops after its
+   * third, one long exhale, a held A2 (sine plus 2nd and 3rd harmonics, 2.5 s decay) from 900 ms, the rain bed
+   * back at -18 dB from 1500 ms. The card's cello sting is `deathSting()`.
+   */
+  death(): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const t = c.currentTime;
+    const D = tuning.death;
+    this.dead = true;
+    this.lastGrunt = -1;
+    // Impact and gasp (the hurt layer at its heaviest).
+    this.hiss("bandpass", 900, 0.09, 0.7, 0, "pink");
+    this.tone("sine", 90, 45, 0.18, 0.9);
+    this.grunt("gasp", 0.6);
+    // The score: cut over 80 ms.
+    const mg = this.music.gain;
+    mg.cancelScheduledValues(t);
+    mg.setTargetAtTime(0, t, 0.08 / 3);
+    // The world closes in: 900 Hz over 300 ms, from the end of the hit-stop.
+    const m = this.woundMuffle.frequency;
+    m.cancelScheduledValues(t);
+    m.setValueAtTime(Math.max(300, m.value), t + D.stopMs / 1000);
+    m.exponentialRampToValueAtTime(D.muffleHz, t + (D.stopMs + D.muffleMs) / 1000);
+    // Tinnitus at 1.0: the 4.8 kHz whine, loud and long.
+    const o = c.createOscillator();
+    o.frequency.value = 4800;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(db(-16), t + D.stopMs / 1000 + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 5.5);
+    o.connect(g).connect(this.dryOut);
+    o.start(t);
+    o.stop(t + 5.6);
+    this.deathNodes.push(o);
+    // The heart: 50 bpm from 120 ms, each beat 30% slower than the last, three beats and then nothing.
+    let at = t + D.stopMs / 1000;
+    let gap = 60 / 50;
+    for (const gain of [0.9, 0.7, 0.45]) {
+      this.heartbeat(at, gain);
+      at += gap;
+      gap *= 1.3;
+    }
+    // One long exhale (noise at 500 Hz, 1.4 s).
+    this.hiss("bandpass", 500, 1.4, 0.16, 0.45, "pink");
+    // The held note: A2 with its 2nd and 3rd harmonics, from 900 ms, 2.5 s decay.
+    for (const [mul, pk] of [[1, 0.16], [2, 0.07], [3, 0.035]] as const) this.tone("sine", 110 * mul, 110 * mul, 2.5, pk, D.fallEndMs / 1000, 2.5);
+    // The rain comes back, muffled, at -18 dB.
+    const bg = this.beds.gain;
+    bg.cancelScheduledValues(t);
+    bg.setTargetAtTime(db(-30), t, 0.03);
+    bg.setTargetAtTime(db(-18), t + D.inkFromMs / 1000, 0.4);
+  }
+
+  /** The death card's sting (S6.6): a low FM cello, C2 with a 1:1 modulator whose index falls, through a 900 Hz lowpass. */
+  deathSting(): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const t = c.currentTime;
+    const car = c.createOscillator();
+    car.type = "sawtooth";
+    car.frequency.value = 65.4;
+    const mod = c.createOscillator();
+    mod.frequency.value = 65.4;
+    const idx = c.createGain();
+    idx.gain.setValueAtTime(140, t);
+    idx.gain.exponentialRampToValueAtTime(12, t + 2.2);
+    mod.connect(idx).connect(car.frequency);
+    const lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.setValueAtTime(900, t);
+    lp.frequency.exponentialRampToValueAtTime(260, t + 2.4);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.2, t + 0.09);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
+    car.connect(lp).connect(g).connect(this.dryOut);
+    car.start(t);
+    mod.start(t);
+    car.stop(t + 2.7);
+    mod.stop(t + 2.7);
+  }
+
+  /** The gun hits the floor (S6.6): the casing's ring two octaves down, with a dull body knock. */
+  gunClatter(strength: number, pan = 0): void {
+    if (!this.enabled) return;
+    const k = Math.max(0.2, Math.min(1, strength));
+    this.thump(950, 620, 0.09, 0.32 * k, 0, "triangle", 0.2, pan);
+    this.thump(1420, 980, 0.05, 0.16 * k, 0.006, "triangle", 0.15, pan);
+    this.burst({ type: "lowpass", freq: 700, decay: 0.07, gain: 0.35 * k, noise: "brown", pan });
+  }
+
+  /** The UI tick on a focus change (death card, S6.6): a short dry click. */
+  uiTick(): void {
+    if (!this.enabled) return;
+    this.tone("sine", 2200, 1800, 0.025, 0.06);
+    this.hiss("highpass", 5000, 0.015, 0.05);
+  }
+
+  /** The re-sync (S6.6): a rising digital chirp under the glitch. */
+  resync(): void {
+    if (!this.enabled) return;
+    this.tone("square", 180, 1440, 0.22, 0.035);
+    this.hiss("bandpass", 3200, 0.18, 0.06);
+  }
+
+  /** Retry: the world, the score and the beds come back; the death's held sounds stop. */
+  revive(): void {
+    this.dead = false;
+    const c = this.ctx;
+    const t = c.currentTime;
+    for (const n of this.deathNodes.splice(0)) {
+      try {
+        n.stop();
+      } catch {
+        // Already stopped.
+      }
+    }
+    const m = this.woundMuffle.frequency;
+    m.cancelScheduledValues(t);
+    m.setTargetAtTime(22000, t, 0.15);
+    const bg = this.beds.gain;
+    bg.cancelScheduledValues(t);
+    bg.setTargetAtTime(1, t, 0.2);
+    this.muffle.frequency.cancelScheduledValues(t);
+    this.muffle.frequency.setTargetAtTime(22000, t, 0.1);
+  }
+  private deathNodes: OscillatorNode[] = [];
+
   /** A stim (S6.3): a cold hiss in through the teeth and a bright lift. */
   stim(): void {
     if (!this.enabled) return;
@@ -1012,7 +1146,7 @@ export class Audio {
     const t = c.currentTime;
     this.tension += (tension - this.tension) * Math.min(1, dt * 1.5);
     this.musicFilter.frequency.setTargetAtTime(1600 + this.tension * 5000, t, 0.3);
-    this.music.gain.setTargetAtTime(0.5 + this.tension * 0.2, t, 0.5);
+    if (!this.dead) this.music.gain.setTargetAtTime(0.5 + this.tension * 0.2, t, 0.5);
     this.slowFilter.frequency.setTargetAtTime(slow > 0 ? 700 + (1 - slow) * 6000 : 20000, t, 0.08);
     this.score.update(this.tension);
     if (slow > 0.2 && !this.woundHeart) {

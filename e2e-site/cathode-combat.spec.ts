@@ -113,3 +113,72 @@ test.describe('CATHODE combat feedback', () => {
     await expect(page.locator('.hud-target')).toBeHidden()
   })
 })
+
+// C8 "Dying, done properly" (S6.6): death is a fall and a card, and Retry rebuilds the job in the same page.
+test.describe('CATHODE death and Retry', () => {
+  test('a lethal hit falls to the death card; Retry gives control back with no page load, the same session object', async ({ page, hasTouch }) => {
+    test.setTimeout(400_000)
+    if (hasTouch) await page.setViewportSize({ width: 844, height: 390 })
+    await page.goto('/cathode/')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/cathode/?play&class=ghost&rs=0.5')
+    type C = {
+      stats: { frames: number; lastRestartMs?: number }
+      hp: number
+      deaths?: number
+      dying?: { card: boolean } | null
+      vitals: { maxTotal: number }
+      player: { pos: { x: number; y: number; z: number } }
+      progress: { character: unknown }
+      hurtCath: (n: number, at: { x: number; y: number; z: number }, k: string) => void
+    }
+    await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number } } }).cathode?.stats.frames ?? 0) >= 3, null, { timeout: 200_000 })
+    const navigations: string[] = []
+    page.on('framenavigated', (f) => {
+      if (f === page.mainFrame()) navigations.push(f.url())
+    })
+    await page.evaluate(() => {
+      const w = window as unknown as { cathode: C; firstSession?: C }
+      w.firstSession = w.cathode
+      const c = w.cathode
+      c.hurtCath(c.vitals.maxTotal * 3, { x: c.player.pos.x, y: c.player.pos.y + 1.4, z: c.player.pos.z - 9 }, 'bullet')
+    })
+    await page.waitForFunction(() => !!(window as unknown as { cathode: C }).cathode.dying, null, { timeout: 60_000 })
+    await expect(page.locator('.death-card.on')).toBeVisible({ timeout: 200_000 })
+    await expect(page.locator('.death-line')).not.toHaveText('')
+    await expect(page.locator('.death-card')).not.toContainText(/game over/i)
+    if (hasTouch) await page.locator('.death-btn.is-primary').tap()
+    else await page.keyboard.press('Enter')
+    await page.waitForFunction(
+      () => {
+        const c = (window as unknown as { cathode: C }).cathode
+        return c.dying === null && c.hp > 0 && typeof c.stats.lastRestartMs === 'number' && c.stats.frames >= 2
+      },
+      null,
+      { timeout: 200_000 },
+    )
+    const after = await page.evaluate(() => {
+      const w = window as unknown as { cathode: C; firstSession?: C }
+      const saved = localStorage.getItem('cathode.save')
+      return {
+        same: w.firstSession === w.cathode,
+        ms: w.cathode.stats.lastRestartMs,
+        deaths: w.cathode.deaths,
+        hp: w.cathode.hp,
+        // A fresh resume: the character is what the save holds (nothing from the life she just lost).
+        resumed: saved ? JSON.stringify((JSON.parse(saved) as { character: unknown }).character) === JSON.stringify(w.cathode.progress.character) : true,
+      }
+    })
+    expect(navigations).toEqual([])
+    expect(after.same).toBe(true)
+    expect(after.hp).toBeGreaterThan(0)
+    expect(after.deaths).toBe(1)
+    expect(after.resumed).toBe(true)
+    console.log(`lastRestartMs ${after.ms}`)
+    expect(after.ms).toBeLessThan(1500)
+    // Control: the card is gone and the game frame runs on.
+    await expect(page.locator('.death-card.on')).toHaveCount(0)
+    const f0 = await page.evaluate(() => (window as unknown as { cathode: C }).cathode.stats.frames)
+    await page.waitForFunction((f) => (window as unknown as { cathode: C }).cathode.stats.frames > f + 2, f0, { timeout: 60_000 })
+  })
+})

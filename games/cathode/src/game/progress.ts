@@ -10,6 +10,7 @@ import { itemWeaponStats, makeItem, rollDrop, type Item } from "../sim/loot";
 import type { ClassId } from "../sim/types";
 import type { Build } from "./combat";
 import type { EnemyKit } from "./enemy";
+import { UNLOCKS_KEY } from "../sim/checkpoint";
 
 export class Progress {
   character: Character;
@@ -190,7 +191,6 @@ export interface Unlocks {
   weapons: string[];
   features: string[];
 }
-const UNLOCKS_KEY = "cathode:unlocks:v1";
 
 /** Each class's own weapon, handed over on the walkway in the first job. */
 export const CLASS_WEAPON: Partial<Record<ClassId, string>> = {

@@ -105,6 +105,11 @@ export interface World {
    * `lens` the four lens-blood slots (sim/woundloop.ts LensSlot; age < 0 is empty) and the stim wipe's front.
    */
   setWounded?(o: { pulse: number; regen: number; stim: number; lens: ReadonlyArray<{ x: number; y: number; cell: number; age: number; size: number; rot?: number }>; wipe: number; water?: boolean; fx?: number; still?: boolean }): void;
+  /**
+   * C8 (S6.6): the death grade. `death` 0..1 (colour out, red in, edges closing), `ink` 0..1 (blood ink from the
+   * edges; `grey` under reduced violence), `glitch` 0..1 (the re-sync), `ca` the edge CA multiplier (1..3).
+   */
+  setDeath?(o: { death: number; ink: number; glitch: number; ca: number; grey?: boolean }): void;
   /** C7 acceptance: the grade pass's mean ms per draw with the Vitals pass idle or at its busiest. */
   benchGrade?(n: number, on: boolean | { wound: number; hurt: number; pulse: number; lens: number }): number;
   /** Wind for ballistics and rain, metres per second along x and z. */

@@ -163,6 +163,51 @@ export const tuning = {
   gunsound: { variants: 8, noRepeat: 2, duckDb: -4, duckAttackMs: 20, duckReleaseMs: 400, reflRays: 5, reflMaxM: 40, reflDb: -14, reflDbPerM: 0.3, whizM: 2 },
   /** S0 timescale: nothing but death holds longer than this (ms). */
   timescale: { maxHoldMs: 3000 },
+  /**
+   * C8 "Dying, done properly" (S6.6): the death sequence's clock (real ms from the killing blow). `stopMs` the
+   * hit-stop, then the world runs at `slow` for `slowHoldMs` and ramps back out over `slowOutMs`. The camera rides
+   * a three-particle body (head, chest, hips) that drops knees first (`hipsDropM`) and stops `groundM` off the
+   * floor, rolled `rollDeg` and biased `killerBias` toward whoever killed her. `death*` and `ink*` are the Vitals
+   * grade's uDeath and uInk, `barsMs` the 2.39:1 letterbox, `cardMs` the death card. Any input from `skipMs` on
+   * skips to the card. `resync` is Retry's way back in.
+   */
+  death: {
+    stopMs: 120,
+    slow: 0.25,
+    slowHoldMs: 1400,
+    slowOutMs: 600,
+    fallEndMs: 900,
+    settleEndMs: 1800,
+    freezeMs: 1500,
+    death1: 0.35,
+    death1Ms: 720,
+    death2: 0.8,
+    fovFrom: 75,
+    fovTo: 62,
+    caMul: 3,
+    rollDeg: [60, 80] as const,
+    groundM: 0.12,
+    hipsDropM: 0.5,
+    impulseMps: [0.6, 2] as const,
+    killerRangeM: 25,
+    killerBias: 0.4,
+    killerFrame: 0.92,
+    driftDegS: 0.4,
+    reducedSlideM: 0.8,
+    gunDropMs: 120,
+    barsFromMs: 900,
+    barsMs: 500,
+    inkFromMs: 1500,
+    inkMs: 800,
+    ink: 0.85,
+    cardMs: 2200,
+    cardFadeMs: 300,
+    cardRetryAfterMs: 600,
+    skipMs: 900,
+    muffleHz: 900,
+    muffleMs: 300,
+    resync: { inkOutMs: 300, glitchMs: 250, fadeMs: 350, totalMs: 900, lineMs: 2000 },
+  },
 } as const;
 
 /** dBFS to linear gain. */

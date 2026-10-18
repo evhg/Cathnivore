@@ -388,6 +388,14 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       (u.uHurtDir!.value as THREE.Vector2).set(dirX, dirY);
       u.uWound!.value = THREE.MathUtils.clamp(wound, 0, 1);
     },
+    setDeath(o) {
+      const u = post.grade.uniforms;
+      u.uDeath!.value = THREE.MathUtils.clamp(o.death, 0, 1);
+      u.uInk!.value = THREE.MathUtils.clamp(o.ink, 0, 1);
+      u.uInkGrey!.value = o.grey ? 1 : 0;
+      u.uGlitch!.value = THREE.MathUtils.clamp(o.glitch, 0, 1);
+      u.uDeathCa!.value = Math.max(1, o.ca);
+    },
     setWounded(o) {
       const u = post.grade.uniforms;
       u.uPulse!.value = THREE.MathUtils.clamp(o.pulse, 0, 1);

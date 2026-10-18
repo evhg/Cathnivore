@@ -245,6 +245,11 @@ export class Enemy {
   private strafeT = 0;
   /** Seconds since death, for clean-up and the kill-cam. */
   deadFor = 0;
+  /**
+   * C8 (S6.6): she is down and this is the man who did it. He stops where he is, faces her body and lowers his
+   * weapon (the "stand down" pose); he fires no more.
+   */
+  standDown: THREE.Vector3 | null = null;
   /** Set when the session found this body and raised the alarm. */
   found = false;
   readonly vel = new THREE.Vector3();
@@ -544,6 +549,12 @@ export class Enemy {
       face = null;
       aim = 0;
     }
+    if (this.standDown) {
+      target = null;
+      face = this.standDown;
+      aim = 0.15;
+      this.shots.length = 0;
+    }
     if (this.tag) this.tag.position.copy(this.head).add(new THREE.Vector3(0, 0.45, 0));
     const step = new THREE.Vector3();
     if (target) {
@@ -570,7 +581,7 @@ export class Enemy {
         this.motion.pitch = THREE.MathUtils.damp(this.motion.pitch, Math.atan2(dh, flatDist(this.motion.pos, face)), 6, dt);
       }
     }
-    this.motion.aim = THREE.MathUtils.damp(this.motion.aim, aim, 5, dt);
+    this.motion.aim = THREE.MathUtils.damp(this.motion.aim, aim, this.standDown ? 14 : 5, dt);
     if (this.kit.role === "sniper" && this.state !== "combat") this.charge = 0;
     animate(this.body, this.motion);
     this.body.carry();

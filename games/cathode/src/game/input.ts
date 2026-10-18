@@ -71,7 +71,7 @@ export class Input {
     addEventListener("mouseup", this.onMouse);
     addEventListener("mousemove", this.onMove);
     canvas.addEventListener("wheel", this.onWheel, { passive: true });
-    canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+    canvas.addEventListener("contextmenu", this.onContext);
     if (this.isTouch) this.buildTouch();
   }
 
@@ -358,6 +358,9 @@ export class Input {
     return intent;
   }
 
+  private onContext = (e: Event): void => e.preventDefault();
+
+  /** Takes back every listener and the touch layer's controls (C8: a restart builds a fresh Input). */
   dispose(): void {
     removeEventListener("keydown", this.onKey);
     removeEventListener("keyup", this.onKey);
@@ -365,6 +368,12 @@ export class Input {
     removeEventListener("mousemove", this.onMove);
     this.canvas.removeEventListener("mousedown", this.onMouse);
     this.canvas.removeEventListener("wheel", this.onWheel);
+    this.canvas.removeEventListener("contextmenu", this.onContext);
+    if (this.isTouch) {
+      const area = this.canvas.parentElement;
+      for (const ev of ["touchstart", "touchmove", "touchend", "touchcancel"] as const) area?.removeEventListener(ev, this.onTouch);
+      this.touchLayer.replaceChildren();
+    }
   }
 }
 

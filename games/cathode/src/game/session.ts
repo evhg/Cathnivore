@@ -72,6 +72,9 @@ import { exportCode, makeSave } from "../sim/save";
 import { levelUpToast } from "../ui/levelup";
 import { xpForLevel, xpToNext as simXpToNext } from "../sim/stats";
 import { AutoScale } from "./autoscale";
+import { DeathCam, GunDrop, deathState, resyncState } from "./death-cam";
+import { DeathScreen } from "../ui/deathcard";
+import { deathLine, type DeathCause } from "./voice";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -84,6 +87,33 @@ export interface SessionOptions {
   district?: string;
   onProgress: (share: number, label: string) => void;
   onExit: () => void;
+  /** C8: a restart from the checkpoint inside the same page (the world, audio and window.cathode carried over). */
+  warm?: WarmStart;
+}
+
+/** What a restart carries into the next session (S6.6 "Retry without a page reload"). */
+export interface WarmStart {
+  world: World;
+  audio: Audio | null;
+  /** The session object to rebuild in place (window.cathode keeps its identity). */
+  into: Session;
+  /** The death screen, still black, which the new session fades out of. */
+  screen: DeathScreen;
+  /** The world as built, before any session added to it. */
+  baseline: WorldBaseline;
+  deaths: number;
+  /** The re-sync's clock (ms) when the new session takes over, and the line it shows. */
+  resyncAt: number;
+  resyncLine: string;
+  t0: number;
+}
+
+/** The world as createWorld left it: a restart takes away everything a session added since. */
+interface WorldBaseline {
+  scene: Set<THREE.Object3D>;
+  view: Set<THREE.Object3D>;
+  colliders: THREE.Box3[];
+  cover: { mats: number; obbs: number; thin: number } | null;
 }
 
 export interface Session {
@@ -106,7 +136,7 @@ export interface Session {
   /** The first job's script, while it runs (tests read its stage). */
   job?: FirstJob | null;
   /** Frames rendered and a rolling frame time, for ?perf and tests. */
-  stats: { frames: number; ms: number; combatMs?: number; particles?: number };
+  stats: { frames: number; ms: number; combatMs?: number; particles?: number; lastRestartMs?: number };
   /** Test hook: freeze the AI and the clock. */
   paused: boolean;
   /** Test and screenshot hook: the HUD (subtitles, feed lines, banners). */
@@ -148,12 +178,24 @@ export interface Session {
   cathHurt?: (bearing: number, melee: boolean, amount?: number) => void;
   /** C7 acceptance: the frame's histogram and the edge-to-centre saturation, now and with the wound grade off. */
   probeWound?: () => { hist: number[]; now: { centre: number; edge: number }; fine: { centre: number; edge: number }; lens: number; glove: number; w: number; pulse: number };
+  /** C8 acceptance: blood-red pixels in the rendered frame (hue 350..10, saturation > 0.6, value > 0.25). */
+  probeBloodRed?: () => { red: number; total: number };
   /** C7: a stim's screen and sound (the wash, the slower heart, the lens wiped), as the Stim skill plays them. */
   stim?: () => void;
   /** C7 acceptance: the grade pass's mean ms with the Vitals pass idle and at its busiest. */
   benchGrade?: (n: number, rounds?: number) => { off: number; on: number; spread: [number, number]; rounds: number };
   /** Drops the session's window and document listeners (C8 restarts a session without a page reload). */
   dispose?: () => void;
+  /**
+   * C8 (S6.6): Retry. Takes the session down (bodies, decals, particles, pickups, the job's props and lights) and
+   * rebuilds it from the saved checkpoint in the same world, audio and `window.cathode` object, as a fresh resume
+   * would, with `deaths` one higher. Resolves when control is back.
+   */
+  restartFromCheckpoint?: () => Promise<void>;
+  /** C8: deaths this visit (a restart counts one). */
+  deaths?: number;
+  /** C8: the death sequence while it runs (ms since the blow, and whether the card is up), else null. */
+  dying?: { ms: number; card: boolean; killer: string | null } | null;
   /** C6 (S6.1): Guard and Flesh. `hp` mirrors their total; writing `hp` from outside still works. */
   vitals?: Vitals;
   /** C6: a hit on Cath of `amount` from a world point (null: straight ahead), with every readout. */
@@ -190,7 +232,23 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // Every window and document listener the session adds goes on this signal, so dispose() takes them all back.
   const life = new AbortController();
   const lifeOpt = { signal: life.signal };
-  const world = await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress);
+  const world = o.warm?.world ?? (await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress));
+  // C8: what the world holds before this session adds anything, so a restart can take the session back out.
+  const baseline: WorldBaseline = o.warm?.baseline ?? {
+    scene: new Set(world.scene.children),
+    view: new Set(world.viewScene.children),
+    colliders: world.colliders.slice(),
+    cover: world.cover ? { mats: world.cover.mats.length, obbs: world.cover.obbs.length, thin: world.cover.thin.length } : null,
+  };
+  // Every light a job asks for is handed back on a restart.
+  const leasedLights: Array<() => void> = [];
+  const worldLight = world.light
+    ? (p: THREE.Vector3, c: THREE.Color, i: number, r: number) => {
+        const rm = world.light!(p, c, i, r);
+        leasedLights.push(rm);
+        return rm;
+      }
+    : undefined;
   // The phone's lifted grade (exposure 1.7) washes a dim red out, so the kill's glow runs a little brighter there.
   // It no longer has to fight the fog (the glow takes its fog back off, body.ts), and at 2.6x the tone map turned
   // it salmon: 1.5x stays a saturated dark red.
@@ -291,17 +349,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const hud = new Hud(o.hud);
   // The case note's eyebrow: the district the job is in ("Case · The Drowned Market").
   const caseName = loadingTitle(o.district).split(" · ").pop() ?? "";
-  let audio: Audio | null = null;
-  try {
-    audio = new Audio(inVault ? "vault" : inTower ? "tower" : inPlaza ? "plaza" : inClinic ? "clinic" : "market");
-  } catch {
-    // No WebAudio: play on in silence.
+  let audio: Audio | null = o.warm ? o.warm.audio : null;
+  if (!o.warm) {
+    try {
+      audio = new Audio(inVault ? "vault" : inTower ? "tower" : inPlaza ? "plaza" : inClinic ? "clinic" : "market");
+    } catch {
+      // No WebAudio: play on in silence.
+    }
   }
   // Lightning: its thunder rolls in after the flash, and covers a gunshot for a couple of seconds.
   let thunderCover = 0;
+  let worldOff: (() => void) | null = null;
   if (world.on && audio) {
     audio.externalThunder = true;
-    world.on((ev) => {
+    worldOff = world.on((ev) => {
       if (ev.type === "thunder") {
         setTimeout(() => audio?.thunder(), Math.max(0, ev.delay) * 1000);
         thunderCover = 2 + Math.max(0, ev.delay);
@@ -322,7 +383,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // iOS counts touchend and click as gestures that may start audio, not pointerdown.
   for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, wake, { capture: true, signal: life.signal });
   document.addEventListener("visibilitychange", () => audio?.suspend(document.hidden), lifeOpt);
-  const s: Session = {
+  const fresh: Session = {
     world,
     player,
     input,
@@ -340,6 +401,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     stats: { frames: 0, ms: 16 },
     paused: false,
   };
+  // A restart rebuilds the same object, so window.cathode (and anything holding it) stays the one session.
+  const s: Session = o.warm ? Object.assign(o.warm.into, fresh) : fresh;
+  if (o.warm) for (const k of Object.keys(s) as Array<keyof Session>) if (!(k in fresh)) delete s[k];
+  s.deaths = o.warm?.deaths ?? 0;
+  s.dying = null;
   window.cathode = s;
   s.hud = hud;
   // Face down the street from the start marker, towards the extraction point.
@@ -391,7 +457,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         say: (t) => hud.subtitle(t),
         teach: (t) => hud.teach(t),
         banner: (a, b, k) => hud.showBanner(a, b, k),
-        light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+        light: worldLight,
         view: () => ({ cam: world.camera, w: innerWidth, h: innerHeight, scale: hudScale }),
         block: (box) => {
           world.colliders.push(box);
@@ -423,7 +489,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   const quay =
@@ -440,7 +506,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   const manifest =
@@ -457,7 +523,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   const crispBoss =
@@ -474,7 +540,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   const vaneLead =
@@ -491,7 +557,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   // Vane's boss fight starts once the register is taken (in the clinic, right after the lead job).
@@ -509,7 +575,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   let vaneBoss = makeVaneBoss();
@@ -527,7 +593,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   const makePellBoss = (): PellBossJob | null =>
@@ -544,7 +610,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   let pellBoss = makePellBoss();
@@ -562,7 +628,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   const makeBoardBoss = (): BoardBossJob | null =>
@@ -579,7 +645,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   let boardBoss = makeBoardBoss();
@@ -597,7 +663,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   const makeVaultBoss = (): VaultBossJob | null =>
@@ -615,7 +681,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
           finale: () => hud.showCredits(() => location.assign(location.pathname)),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   let vaultBoss = makeVaultBoss();
@@ -635,7 +701,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
           drop: (p, n) => {
             for (let i = 0; i < n; i++) {
               const at = p.clone().add(new THREE.Vector3((i - (n - 1) / 2) * 0.9, 0, 0.6));
@@ -661,7 +727,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
-          light: world.light ? (p, c, i, r) => world.light!(p, c, i, r) : undefined,
+          light: worldLight,
         })
       : null;
   s.job = job;
@@ -963,6 +1029,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   /** Screenshot stages hold the eased wound and the beat where the stage put them (time is frozen under ?shot). */
   let stageWound: { shown: number; pulse: number } | null = null;
   let hitsTaken = 0;
+  /** C8: damage taken this life, and the last hit (its kind, its source, where from), for the death card. */
+  let damageTaken = 0;
+  let lastHurt: { kind: HurtKind; key: unknown; from: THREE.Vector3 | null; share: number } | null = null;
   /** Screenshot stages: grenade bearings to show instead of the live ones. */
   let stageNades: Array<{ bearing: number; left: number }> | null = null;
   /** Keeps `vitals` and the `hp` mirror in step: anything that wrote `hp` (heals, level-ups, test hooks) lands. */
@@ -994,6 +1063,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (r.broke) vitals.drain();
     s.hp = vitals.total;
     hitsTaken++;
+    damageTaken += amount;
+    lastHurt = { kind, key, from: from ? new THREE.Vector3(from.x, from.y, from.z) : null, share: amount / vitals.maxTotal };
     const maxT = vitals.maxTotal;
     const at = from ? new THREE.Vector3(from.x, from.y, from.z) : null;
     const b = at ? bearingTo(at) : 0;
@@ -1127,6 +1198,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
 
   const frame = (now: number) => {
+    // C8: a restart ended this session; the next one runs its own loop.
+    if (ended) return;
     // rAF timestamps can trail performance.now() (set when resuming), so never let time run backwards.
     const realDt = Math.max(0, Math.min(0.05, (now - last) / 1000));
     if (autoOn && !s.paused && !menuOpen && auto.frame(now - last) !== null) {
@@ -1158,6 +1231,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (s.paused || away) {
       last = now;
+      render();
+      requestAnimationFrame(frame);
+      return;
+    }
+    // C8: dying is its own frame (the body cam, the grade, the card), until Retry or Quit.
+    if (dying) {
+      deathFrame(realDt, intent);
       render();
       requestAnimationFrame(frame);
       return;
@@ -1593,11 +1673,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (s.hp > 0 && s.hp < s.maxHp * 0.3) voice.say("lowHealth");
     voice.update(realDt);
 
-    if (!dead && s.hp <= 0) {
-      dead = true;
-      hud.showBanner("Cath is down", "Click or tap to try again");
-      setTimeout(() => addEventListener("pointerdown", () => location.reload(), { once: true }), 900);
-    }
+    if (!dead && s.hp <= 0) beginDeath();
     if (!job && !jobDone && enemies.length && enemies.every((e) => !e.alive)) {
       jobDone = true;
       objective = "The street's quiet. Walk to the fish market's back door.";
@@ -1688,6 +1764,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       armour: progress.stats.armour,
       defence: defenceLine(progress.stats),
     });
+    // C8: the re-sync's last 350 ms, fading up out of black into her eyes, with the cyan line.
+    if (resyncT >= 0) {
+      resyncT += (o.shot ? 0 : realDt) * 1000;
+      const rs = resyncState(resyncT);
+      world.setDeath?.({ death: 0, ink: rs.ink, glitch: rs.glitch, ca: 1, grey: o.intensity === "reduced" });
+      screen.resyncFrame(rs.black, null);
+      if (rs.done) {
+        resyncT = -1;
+        world.setDeath?.({ death: 0, ink: 0, glitch: 0, ca: 1 });
+        screen.resyncFrame(0, null);
+      }
+    }
     render();
     requestAnimationFrame(frame);
   };
@@ -1990,6 +2078,314 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
   s.stim = onStim;
   s.dispose = () => life.abort();
+
+  // ---- C8 "Dying, done properly" (S6.6): the body-cam fall, the held moment, the card, Retry in place ----
+  const DT = tuning.death;
+  const screen = o.warm?.screen ?? new DeathScreen(o.hud.parentElement ?? o.hud);
+  screen.onTick = () => audio?.uiTick();
+  /** The session has been taken down by a restart: its frame loop stops. */
+  let ended = false;
+  let restarting = false;
+  const sessionT0 = performance.now();
+  interface Dying {
+    t: number;
+    cam: DeathCam;
+    killer: Enemy | null;
+    killerName: string;
+    gun: GunDrop | null;
+    cardShown: boolean;
+    cardAt: number;
+    /** Ms into the re-sync (-1 until Retry). */
+    resync: number;
+    flares: number;
+    splats: number;
+    lastPress: boolean;
+  }
+  let dying: Dying | null = null;
+  let droppedGun: THREE.Object3D | null = null;
+  /** Screenshot stages: back to the living, from any death stage. */
+  function clearDeath(): void {
+    if (dying?.killer) dying.killer.standDown = null;
+    for (const e of enemies) e.standDown = null;
+    dying = null;
+    dead = false;
+    s.dying = null;
+    screen.hide();
+    screen.resyncFrame(0, null);
+    world.setDeath?.({ death: 0, ink: 0, glitch: 0, ca: 1 });
+    if (droppedGun) world.scene.remove(droppedGun);
+    droppedGun = null;
+    arsenal.rig.root.visible = true;
+    hud.visible = true;
+    resyncT = -1;
+    audio?.revive();
+  }
+  /** The new session's fade from black (ms into the re-sync; -1 when done). */
+  let resyncT = o.warm ? o.warm.resyncAt : -1;
+  const DEATH_WEAPON: Record<string, string> = { rifle: "Rifle", shield: "SMG", sniper: "Sniper rifle", turret: "Turret", hunter: "Drone gun", orderly: "Shock baton", nurse: "Needle", police: "Drone gun", boss: "Rifle" };
+  const causeOf = (k: HurtKind | undefined, e: Enemy | null): DeathCause =>
+    k === "blast" ? "blast" : k === "laser" ? "laser" : k === "melee" ? "melee" : e?.kit.role === "sniper" ? "sniper" : k ? "bullet" : "any";
+  const mmss = (ms: number) => {
+    const t = Math.max(0, Math.floor(ms / 1000));
+    return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+  };
+  /** The checkpoint she goes back to, for the re-sync line. */
+  const checkpointLine = (): string => {
+    const cp = hud.checkpoint?.();
+    return cp === "the walkway" ? "RE-SYNCED · CHECKPOINT 2" : cp === "the flyover" ? "RE-SYNCED · CHECKPOINT 1" : `RE-SYNCED · ${caseName.toUpperCase() || "CHECKPOINT"}`;
+  };
+  const namesLeft = () => ["crispBoss", "vaneBoss", "pellBoss", "boardBoss", "vaultBoss"].filter((j) => !progress.jobsDone.includes(j)).length;
+
+  /** The killing blow (S6.6 t = 0): input locks, the body cam takes over, the sound and the grade start. */
+  function beginDeath(seedOverride?: number): void {
+    dead = true;
+    const killer = lastHurt?.key instanceof Enemy ? lastHurt.key : null;
+    const cam = new DeathCam();
+    cam.pitch0 = player.pitch;
+    const seed = seedOverride ?? (o.shot ? 0.62 : Math.random());
+    const from = lastHurt?.from ?? null;
+    cam.start({
+      feet: player.pos.clone(),
+      eyeHeight: player.eyeHeight,
+      yaw: player.yaw,
+      vel: player.vel.clone(),
+      from,
+      share: lastHurt?.share ?? 0.2,
+      ground: (x, z) => world.floorAt?.(x, player.pos.y + 0.4, z) ?? world.groundHeight(x, z),
+      seed,
+      reducedMotion: trauma.reducedMotion || calm,
+    });
+    const near = killer && killer.alive && killer.position.distanceTo(player.pos) <= DT.killerRangeM ? killer : null;
+    if (near) {
+      cam.killer = near.body.joints.chest.clone();
+      near.standDown = player.pos.clone();
+    }
+    const cause = causeOf(lastHurt?.kind, killer);
+    const dist = killer ? Math.round(killer.position.distanceTo(player.pos)) : 0;
+    const by = killer
+      ? `${killer.kit.name.toUpperCase()} · ${dist} M · ${(lastHurt?.kind === "melee" ? "Bare hands" : DEATH_WEAPON[killer.kit.role ?? "rifle"] ?? "Rifle").toUpperCase()}`
+      : cause === "blast"
+        ? "A BLAST"
+        : cause === "laser"
+          ? "A TRIPWIRE LASER"
+          : "UNKNOWN";
+    const where = caseName.toUpperCase() || "MARROW";
+    screen.fill({
+      eyebrow: `Flatlined · File closed · ${mmss(performance.now() - sessionT0)} · ${where}`,
+      line: deathLine(cause, (seed * 7.31) % 1),
+      stats: [
+        ["Killed by", by],
+        ["Damage taken", String(Math.round(damageTaken))],
+        ["Names left", String(namesLeft())],
+      ],
+      touch: input.isTouch,
+    });
+    screen.setKiller(near ? near.kit.name : "");
+    dying = { t: 0, cam, killer: near, killerName: near?.kit.name ?? "", gun: null, cardShown: false, cardAt: 0, resync: -1, flares: 0, splats: 0, lastPress: true };
+    // The hit frame: the flare at full, a splat on the hit side.
+    hurtV = 1;
+    if (from) hurtDir.set(Math.sin(bearingTo(from as THREE.Vector3)), Math.cos(bearingTo(from as THREE.Vector3)));
+    lens.splat(hurtDir.x, hurtDir.y, woundClock, true);
+    arsenal.triggerHeld = false;
+    arsenal.aiming = false;
+    audio?.death();
+    rumble("hurt");
+    s.dying = { ms: 0, card: false, killer: dying.killerName || null };
+  }
+
+  /** The gun leaves her hand (S6.6): the viewmodel's gun, moved into the street, thrown toward where she'll look. */
+  function dropGun(d: Dying): void {
+    const rig = arsenal.rig;
+    rig.root.updateMatrixWorld(true);
+    const gun = rig.root.clone(true);
+    // Only the gun: no gloves, no flash, no sights' glow sprites.
+    gun.traverse((c) => {
+      if ((c as THREE.SkinnedMesh).isSkinnedMesh || (c as THREE.Bone).isBone || (c as THREE.Light).isLight || (c as THREE.Sprite).isSprite) c.visible = false;
+    });
+    world.camera.updateMatrixWorld(true);
+    const m = new THREE.Matrix4().multiplyMatrices(world.camera.matrixWorld, rig.root.matrixWorld);
+    m.decompose(gun.position, gun.quaternion, gun.scale);
+    gun.rotation.setFromQuaternion(gun.quaternion);
+    world.scene.add(gun);
+    droppedGun = gun;
+    rig.root.visible = false;
+    const toward = new THREE.Vector3(-Math.sin(d.cam.yaw), 0, -Math.cos(d.cam.yaw));
+    const side = new THREE.Vector3(-toward.z, 0, toward.x);
+    const drop = new GunDrop(gun, (x, z) => world.floorAt?.(x, player.pos.y + 0.4, z) ?? world.groundHeight(x, z), (k, at) => {
+      const rel = at.clone().sub(world.camera.position);
+      const right = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0);
+      audio?.gunClatter(k, THREE.MathUtils.clamp(rel.normalize().dot(right), -1, 1));
+    });
+    drop.vel.copy(toward).multiplyScalar(1.1).addScaledVector(side, 0.35).add(new THREE.Vector3(0, 0.6, 0)).addScaledVector(player.vel, 0.5);
+    drop.spin.set(5.5, 3.2, -7.5);
+    d.gun = drop;
+  }
+
+  /** One frame of the death sequence (real dt). */
+  function deathFrame(realDt: number, intent: ReturnType<Input["read"]>, stepped = false): void {
+    const d = dying!;
+    const fdt = o.shot && !stepped ? 0 : realDt;
+    if (d.resync >= 0) {
+      d.resync += fdt * 1000;
+      const rs = resyncState(d.resync);
+      const st = deathState(d.t);
+      world.setDeath?.({ death: st.death * (rs.ink / DT.ink), ink: rs.ink, glitch: rs.glitch, ca: st.ca, grey: o.intensity === "reduced" });
+      screen.resyncFrame(rs.black, null);
+      if (!restarting && d.resync >= DT.resync.inkOutMs + DT.resync.glitchMs) void restartFromCheckpoint();
+      return;
+    }
+    // Any press after 900 ms skips to the card.
+    const press = intent.fire || intent.takedown || intent.reload || intent.slot >= 0;
+    if (!d.cardShown && d.t >= DT.skipMs && press && !d.lastPress) d.t = Math.max(d.t, DT.cardMs);
+    d.t += fdt * 1000;
+    const st = deathState(d.t);
+    // The world: frozen, then a quarter speed, then held still as the frame freezes.
+    const wdt = fdt * st.worldScale;
+    combat.update(wdt, build());
+    const sight = sightOf();
+    for (const e of enemies) {
+      e.update(wdt, sight, rays, world.colliders, ground);
+      e.body.updateFlash(fdt * 1000);
+      e.shots.length = 0;
+    }
+    drainEvents();
+    time += wdt;
+    world.update(wdt, o.shot ? 1 : time, st.t >= DT.freezeMs ? 0 : fdt * Math.max(0.25, st.worldScale));
+    // The body cam.
+    if (d.killer?.alive) d.cam.killer = d.killer.body.joints.chest.clone();
+    d.cam.update(fdt);
+    world.camera.position.copy(d.cam.pos);
+    world.camera.rotation.set(d.cam.pitch, d.cam.yaw, d.cam.roll, "YXZ");
+    world.camera.fov = st.fov;
+    world.camera.updateProjectionMatrix();
+    // The gun drops out of her hand at 120 ms and lands at 500 to 800 ms.
+    if (!d.gun && d.t >= DT.gunDropMs) dropGun(d);
+    d.gun?.update(fdt);
+    arsenal.rig.root.visible = false;
+    // The killer: his visor flares twice as he stands down over her (900 ms, 1150 ms).
+    if (d.killer) {
+      const want = d.t >= 1150 ? 2 : d.t >= DT.fallEndMs ? 1 : 0;
+      while (d.flares < want) {
+        d.flares++;
+        d.killer.body.flash("head");
+      }
+    }
+    // Two more splats on the lens during the fall (300 ms, 600 ms).
+    const splatsWant = d.t >= 600 ? 2 : d.t >= 300 ? 1 : 0;
+    while (d.splats < splatsWant) {
+      d.splats++;
+      lens.splat(d.splats === 1 ? -hurtDir.y : hurtDir.x * 0.6, d.splats === 1 ? hurtDir.x : -0.7, woundClock, true);
+    }
+    woundClock += fdt;
+    lens.update(fdt);
+    hurtV *= Math.exp(-fdt / 0.6);
+    const k = fxLv.grade;
+    world.setVitals?.(hurtV * k, hurtDir.x, hurtDir.y, woundShown * k * (1 - st.death));
+    world.setWounded?.({ pulse: 0, regen: 0, stim: 0, lens: lens.slots, wipe: -1, water: lens.water, fx: fxLv.ca, still: true });
+    world.setDeath?.({ death: st.death, ink: st.ink, glitch: 0, ca: 1 + (st.ca - 1) * fxLv.ca, grey: o.intensity === "reduced" });
+    hud.visible = d.t < DT.stopMs;
+    screen.update({ bars: st.bars, killer: d.killerName ? st.killer : 0, card: st.card });
+    if (st.card > 0 && !d.cardShown) {
+      d.cardShown = true;
+      d.cardAt = d.t;
+      audio?.deathSting();
+      document.exitPointerLock?.();
+    }
+    if (d.cardShown) {
+      const pad = input.padActive ? navigator.getGamepads?.().find((g) => g && g.connected) : null;
+      if (pad?.buttons[0]?.pressed) retry();
+      else if (pad?.buttons[1]?.pressed) quitToTitle();
+      else if (d.t - d.cardAt >= DT.cardRetryAfterMs && intent.fire && !d.lastPress) retry();
+    }
+    d.lastPress = press;
+    s.dying = { ms: d.t, card: d.cardShown, killer: d.killerName || null };
+  }
+
+  /** Retry (S6.6): the ink recedes, a glitch, then black while the job is rebuilt; the next session fades in. */
+  function retry(): void {
+    const d = dying;
+    if (!d || d.resync >= 0) return;
+    input.lock();
+    d.resync = 0;
+    screen.hide();
+    audio?.resync();
+  }
+  /** Quit to title: back to the front door (a fresh page there: the world isn't kept). */
+  function quitToTitle(): void {
+    ended = true;
+    location.assign(location.pathname);
+  }
+  screen.onRetry = retry;
+  screen.onQuit = quitToTitle;
+  addEventListener(
+    "keydown",
+    (e) => {
+      if (!dying?.cardShown || dying.resync >= 0) return;
+      if (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") {
+        e.preventDefault();
+        if (screen.focused === 1 && e.code !== "Enter") quitToTitle();
+        else retry();
+      } else if (e.code === "Escape") quitToTitle();
+      else if (e.code === "ArrowDown" || e.code === "ArrowUp" || e.code === "Tab" || e.code === "KeyS" || e.code === "KeyW") {
+        e.preventDefault();
+        screen.focus(e.code === "ArrowUp" || e.code === "KeyW" ? 0 : e.code === "Tab" ? 1 - screen.focused : 1);
+      }
+    },
+    lifeOpt,
+  );
+  // A tap on the left half of the card's screen retries (S6.6), away from the buttons.
+  screen.root.addEventListener(
+    "pointerdown",
+    (e) => {
+      if (!dying?.cardShown || dying.resync >= 0 || !input.isTouch) return;
+      if ((e.target as Element | null)?.closest?.("button")) return;
+      if (e.clientX < innerWidth / 2) retry();
+    },
+    lifeOpt,
+  );
+
+  /** Takes this session out of the world: listeners, input, everything it added to the scenes, its lights and FX. */
+  function teardown(): void {
+    ended = true;
+    life.abort();
+    input.dispose();
+    worldOff?.();
+    for (const rm of leasedLights.splice(0)) rm();
+    for (const [sc, keep] of [
+      [world.scene, baseline.scene],
+      [world.viewScene, baseline.view],
+    ] as const) {
+      for (const c of [...sc.children]) {
+        if (keep.has(c)) continue;
+        sc.remove(c);
+        c.traverse((n) => (n as THREE.Mesh).geometry?.dispose?.());
+      }
+    }
+    world.colliders.length = 0;
+    world.colliders.push(...baseline.colliders);
+    if (world.cover && baseline.cover) {
+      world.cover.mats.length = baseline.cover.mats;
+      world.cover.obbs.length = baseline.cover.obbs;
+      world.cover.thin.length = baseline.cover.thin;
+    }
+    world.fx.clear?.();
+    world.setDrama(0);
+    setGloveBlood(0);
+  }
+
+  /** S6.6 Retry without a page reload: rebuild from the saved checkpoint in this world, as a fresh resume. */
+  async function restartFromCheckpoint(): Promise<void> {
+    if (restarting && ended) return;
+    restarting = true;
+    const t0 = performance.now();
+    const line = checkpointLine();
+    const at = dying ? Math.max(dying.resync, DT.resync.inkOutMs + DT.resync.glitchMs) : DT.resync.inkOutMs + DT.resync.glitchMs;
+    screen.resyncFrame(1, null);
+    teardown();
+    audio?.revive();
+    await startSession({ ...o, warm: { world, audio, into: s, screen, baseline, deaths: (s.deaths ?? 0) + 1, resyncAt: at, resyncLine: line, t0 } });
+  }
+  s.restartFromCheckpoint = restartFromCheckpoint;
   // Interleaved rounds and medians: SwiftShader's timing swings 30% between back-to-back runs.
   // The verdict is the median of 11 paired rounds (each round's busy time over its own idle time, alternating
   // which runs first so drift can't favour one side), with the spread (the 25th and 75th percentile ratios)
@@ -2514,6 +2910,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
   /** A stage starts with her whole and still: no flinch ringing, no flare, no grenade, full Guard and Flesh. */
   const calmVitals = () => {
+    if (dead || dying || resyncT >= 0) clearDeath();
     for (const sp of Object.values(flinch)) {
       sp.x = 0;
       sp.v = 0;
@@ -2634,7 +3031,71 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.freeze(tMs);
     return "ok";
   };
+  // C8 "Dying, done properly": the fall at 400 ms (knees gone, the gun leaving her hand), 1200 ms (on the floor,
+  // the killer framed, the letterbox in), 2000 ms (frozen, the ink in), the card, and the re-sync (`resync` the
+  // ink receding into the glitch, `resync-in` the fade up into the checkpoint with its line). The killer is a
+  // rifleman 9 m out, a little right, who has just shot her.
+  const C8_STAGES = ["death-400", "death-1200", "death-2000", "death-card", "resync", "resync-in"];
+  const c8Stage = (name: string, tMs: number): string => {
+    c4Stage("pistol-idle", 0);
+    hud.freeze(null);
+    hud.clearFeedback();
+    calmVitals();
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
+    if (name === "resync-in") {
+      // The new session's first frames: her eyes back at the checkpoint, the fade up from black, the line.
+      resyncT = Math.max(DT.resync.inkOutMs + DT.resync.glitchMs, tMs || 700);
+      const rs = resyncState(resyncT);
+      world.setDeath?.({ death: 0, ink: rs.ink, glitch: rs.glitch, ca: 1, grey: o.intensity === "reduced" });
+      screen.resyncFrame(rs.black, checkpointLine());
+      return "ok";
+    }
+    const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
+    const right = new THREE.Vector3(-flat.z, 0, flat.x);
+    const g = enemies.filter((e) => e.alive && (e.kit.role ?? "rifle") === "rifle").sort((a, b) => a.position.distanceTo(eye) - b.position.distanceTo(eye))[0];
+    if (g) {
+      g.revive();
+      const at = eye.clone().addScaledVector(flat, 9).addScaledVector(right, 1.6);
+      at.y = ground(at.x, at.z);
+      g.motion.pos.copy(at);
+      g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z);
+      g.state = "combat";
+      g.flinch.reset();
+      const sightHer: Sight = { eye: eye.clone(), chest: player.pos.clone().add(new THREE.Vector3(0, player.eyeHeight * 0.75, 0)), light: 1, low: 0, speed: 0, stealth: 1 };
+      for (let i = 0; i < 30; i++) g.update(1 / 30, sightHer, rays, world.colliders, ground);
+      g.shots.length = 0;
+    }
+    // A fight's worth of damage taken, then the round that kills her.
+    damageTaken = Math.round(vitals.maxTotal * 1.6);
+    vitals.flesh = vitals.maxFlesh * 0.08;
+    vitals.guard = 0;
+    s.hp = vitals.total;
+    const from = g ? g.body.joints.chest.clone() : eye.clone().addScaledVector(flat, 9);
+    hurtCath(vitals.maxTotal * 0.3, from, "bullet", g ?? undefined);
+    beginDeath(0.62);
+    const none = input.read();
+    const target = name === "death-card" ? Math.max(tMs, DT.cardMs + DT.cardFadeMs + 100) : name === "resync" ? DT.cardMs + DT.cardFadeMs + 100 : Number(name.split("-")[1]) || tMs;
+    const step = 1000 / 60;
+    for (let t = 0; t < target; t += step) deathFrame(Math.min(step, target - t) / 1000, none, true);
+    if (name === "resync") {
+      // Retry pressed on the card, `tMs` into the re-sync (held short of the rebuild).
+      const d = dying!;
+      d.resync = Math.min(tMs || 420, DT.resync.inkOutMs + DT.resync.glitchMs - 1);
+      screen.hide();
+      const rs = resyncState(d.resync);
+      const st = deathState(d.t);
+      world.setDeath?.({ death: st.death * (rs.ink / DT.ink), ink: rs.ink, glitch: rs.glitch, ca: st.ca, grey: o.intensity === "reduced" });
+      screen.resyncFrame(rs.black, null);
+      restarting = true;
+    }
+    return "ok";
+  };
   s.stage = (name: string, tMs = 60): string => {
+    restarting = false;
+    if (C8_STAGES.includes(name)) return c8Stage(name, tMs);
     if (C6_STAGES.includes(name) || C7_STAGES.includes(name)) return c6Stage(name, tMs);
     calmVitals();
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
@@ -2823,6 +3284,33 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * for the frame as it stands and for the same frame with the wound grade off (lens off for both, so the probe
    * reads the grade, not a splat).
    */
+  /**
+   * C8 acceptance: pixels of the rendered frame (full resolution) with hue 350..10 degrees, saturation above 0.6 and
+   * value above 0.25: blood red. Reduced violence's death-2000 must have none.
+   */
+  s.probeBloodRed = () => {
+    const c = world.renderer.domElement;
+    const cv = document.createElement("canvas");
+    cv.width = c.width;
+    cv.height = c.height;
+    const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+    render();
+    g2.drawImage(c, 0, 0);
+    const px = g2.getImageData(0, 0, cv.width, cv.height).data;
+    let red = 0;
+    for (let i = 0; i < px.length; i += 4) {
+      const r = px[i]! / 255;
+      const g = px[i + 1]! / 255;
+      const b = px[i + 2]! / 255;
+      const mx = Math.max(r, g, b);
+      const mn = Math.min(r, g, b);
+      if (mx <= 0.25 || mx - mn <= 0.6 * mx || mx !== r) continue;
+      // Red is the max: hue = 60 * (g - b) / (mx - mn), within +-10 degrees of 0.
+      const h = (60 * (g - b)) / (mx - mn);
+      if (h <= 10 && h >= -10) red++;
+    }
+    return { red, total: px.length / 4 };
+  };
   s.probeWound = () => {
     const c = world.renderer.domElement;
     const W = 192;
@@ -2892,6 +3380,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
   (window as unknown as { ruin?: Session }).ruin = s;
 
+  // C8: a restart lands here with the screen still black; the line goes up as the fade starts.
+  world.setDeath?.({ death: 0, ink: 0, glitch: 0, ca: 1 });
+  if (o.warm) {
+    screen.resyncFrame(1, o.warm.resyncLine);
+    s.stats.lastRestartMs = Math.round(performance.now() - o.warm.t0);
+  }
   requestAnimationFrame(frame);
   return s;
 }

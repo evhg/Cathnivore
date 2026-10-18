@@ -7,6 +7,7 @@ import "./styles/fonts.css";
 import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles/hud.css";
+import "./styles/death.css";
 import "./styles.css";
 import { cathSvg } from "../../../shared/cath/cath";
 import { applyMotionPref, loadPrefs, resolveQuality, savePrefs, type Intensity, type QualityChoice } from "./prefs";

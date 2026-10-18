@@ -145,6 +145,14 @@ const GradeShader = {
     uBlur: { value: 0 },
     uFxCa: { value: 1 },
     uPulseMove: { value: 1 },
+    // C8 (S6.6): death. uDeath drains the colour, bleeds it to red and closes the edges; uInk floods blood ink in
+    // from the edges (uInkGrey: reduced violence's grey-black); uGlitch is the re-sync's slices, RGB split and
+    // scanlines; uDeathCa widens the edge CA as she falls (x3).
+    uDeath: { value: 0 },
+    uInk: { value: 0 },
+    uInkGrey: { value: 0 },
+    uGlitch: { value: 0 },
+    uDeathCa: { value: 1 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -171,6 +179,11 @@ const GradeShader = {
     uniform float uBlur;
     uniform float uFxCa;
     uniform float uPulseMove;
+    uniform float uDeath;
+    uniform float uInk;
+    uniform float uInkGrey;
+    uniform float uGlitch;
+    uniform float uDeathCa;
     uniform float uTime;
     varying vec2 vUv;
     ${SANITIZE}
@@ -198,6 +211,29 @@ const GradeShader = {
       return clamp( c, 0.0, 1.0 );
     }
 
+    // C8: value noise and a 4-octave fBm for the ink's edge (only evaluated while the ink is in).
+    float vh( vec2 p ) {
+      vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
+      p3 += dot( p3, p3.yzx + 33.33 );
+      return fract( ( p3.x + p3.y ) * p3.z );
+    }
+    float vnoise( vec2 p ) {
+      vec2 i = floor( p );
+      vec2 f = fract( p );
+      f = f * f * ( 3.0 - 2.0 * f );
+      return mix( mix( vh( i ), vh( i + vec2( 1.0, 0.0 ) ), f.x ), mix( vh( i + vec2( 0.0, 1.0 ) ), vh( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
+    }
+    float fbm( vec2 p ) {
+      float a = 0.5;
+      float v = 0.0;
+      for ( int i = 0; i < 4; i++ ) {
+        v += a * vnoise( p );
+        p = p * 2.03 + vec2( 17.1, 3.7 );
+        a *= 0.5;
+      }
+      return v;
+    }
+
     // One lens slot (see main): nothing at all outside its box.
     void lensSlot( vec4 L, vec4 B, vec4 R, inout float film, inout vec2 fg, inout float glint ) {
       if ( vUv.x < R.x || vUv.y < R.y || vUv.x > R.z || vUv.y > R.w ) return;
@@ -216,6 +252,15 @@ const GradeShader = {
 
     void main() {
       vec2 uv = vUv;
+      // C8 re-sync glitch: 8 horizontal slices, each shoved up to 2% of the width (re-picked every 33 ms).
+      float gsplit = 0.0;
+      if ( uGlitch > 0.001 ) {
+        float slice = floor( vUv.y * 8.0 );
+        float tick = floor( uTime * 30.0 );
+        float sh = vh( vec2( slice * 7.13, tick ) );
+        uv.x += ( sh - 0.5 ) * 0.04 * uGlitch * step( 0.35, vh( vec2( tick, slice ) ) );
+        gsplit = 6.0 * uGlitch / uRes.x;
+      }
       vec2 c = uv - 0.5;
       float r2 = dot( c, c );
       // C7 (S6.4): blood on the glass. Only inside a live slot's box (uLensRect, from the CPU) does a pixel read the
@@ -235,16 +280,16 @@ const GradeShader = {
         c = uv - 0.5;
       }
       // Chromatic aberration: only toward the edges. Three taps along the radius, one per channel.
-      float ca = ( 0.005 * smoothstep( 0.06, 0.5, r2 ) + uDrama * 0.006 ) * ( 1.0 + uFxCa * ( 2.0 * uWound + 3.0 * uHurt ) );
+      float ca = ( 0.005 * smoothstep( 0.06, 0.5, r2 ) + uDrama * 0.006 ) * ( 1.0 + uFxCa * ( 2.0 * uWound + 3.0 * uHurt ) ) * uDeathCa;
       // Under blood on the glass the taps also spread with its thickness and slope: the street behind it goes soft.
       vec2 d = c * ca + ( fg * 0.012 + vec2( 0.004, 0.006 ) * film ) * vec2( uRes.y / uRes.x, 1.0 );
-      vec3 t0 = texture2D( tDiffuse, uv + d ).rgb;
+      vec3 t0 = texture2D( tDiffuse, uv + d + vec2( gsplit, 0.0 ) ).rgb;
       vec3 t1 = texture2D( tDiffuse, uv ).rgb;
-      vec3 t2 = texture2D( tDiffuse, uv - d ).rgb;
+      vec3 t2 = texture2D( tDiffuse, uv - d - vec2( gsplit, 0.0 ) ).rgb;
       vec3 col = hdrSafe( vec3( t0.r, t1.g, t2.b ) );
       // Wounded, the edges smear along the radius (S6.4, desktop high and ultra): the same three taps, spread by
       // the wound, averaged. No extra fetch, so the wound costs the grade almost nothing.
-      float smear = max( uBlur * uFxCa * smoothstep( 0.03, 0.22, r2 ) * min( 1.0, uWound * 0.84 ), min( 1.0, film * 5.0 ) );
+      float smear = max( uBlur * uFxCa * smoothstep( 0.03, 0.22, r2 ) * min( 1.0, uWound * 0.84 + uDeath ), min( 1.0, film * 5.0 ) );
       if ( smear > 0.001 ) col = mix( col, hdrSafe( ( t0 + t1 + t2 ) * 0.3333 ), smear );
       // Kill-cam depth of field: a radial blur that grows away from the centre.
       if ( uDrama > 0.01 ) {
@@ -347,6 +392,37 @@ const GradeShader = {
           mapped += vec3( 0.55, 0.5, 0.48 ) * glint * th * 0.4;
           }
         }
+      }
+      // C8 (S6.6): death. The colour goes (all but 5%), what is left bleeds toward red, and the edges close to black
+      // as uDeath grows; then the ink floods in from the edges on an fBm front, the centre always left visible.
+      if ( uDeath + uInk + uGlitch > 0.001 ) {
+        float ra = length( c * vec2( uRes.x / uRes.y, 1.0 ) );
+        float ml = dot( mapped, vec3( 0.2126, 0.7152, 0.0722 ) );
+        mapped = mix( mapped, vec3( ml ), min( 1.0, uDeath * 0.95 ) );
+        mapped = mix( mapped, mapped * vec3( 1.0, 0.25, 0.22 ), uDeath * 0.6 * ( 1.0 - uInkGrey ) );
+        mapped *= 1.0 - uDeath * smoothstep( 0.2, 0.9, ra + uDeath * 0.6 ) * 0.92;
+        if ( uInk > 0.001 ) {
+          vec2 q = c * vec2( uRes.x / uRes.y, 1.0 );
+          float n = fbm( q * 3.2 + vec2( 0.0, uTime * 0.05 ) );
+          // Distance in from the frame's edge (0 at the edge, 0.5 at the centre), roughened by the noise.
+          float edge = min( min( vUv.x, 1.0 - vUv.x ) * uRes.x / uRes.y, min( vUv.y, 1.0 - vUv.y ) );
+          float front = uInk * 0.62;
+          float k = edge + ( n - 0.5 ) * 0.26 + ( fbm( q * 14.0 + 7.0 ) - 0.5 ) * 0.05;
+          float inkA = ( 1.0 - smoothstep( front - 0.04, front + 0.02, k ) ) * smoothstep( 0.0, 0.3, uInk );
+          // The centre stays visible: the ink never reaches inside 18% of the height.
+          inkA *= smoothstep( 0.16, 0.3, ra );
+          // Blood ink (S6.6 --blood at 0.85), dark and uneven: thick where the noise pools, near black at the frame's
+          // edge, a thin brighter film at the front where it is still running. Reduced violence: --night-3.
+          float n2 = fbm( q * 9.0 - vec2( 3.1, uTime * 0.03 ) );
+          float depth = smoothstep( 0.0, front, front - k );
+          vec3 inkC = mix( vec3( 0.105, 0.002, 0.008 ), vec3( 0.012, 0.0005, 0.002 ), depth * 0.85 + ( n2 - 0.5 ) * 0.5 );
+          inkC = mix( inkC, vec3( 0.0085, 0.009, 0.014 ), uInkGrey );
+          float rim = smoothstep( front - 0.05, front, k ) * ( 1.0 - smoothstep( front, front + 0.02, k ) );
+          mapped = mix( mapped, inkC, inkA * 0.85 );
+          mapped += vec3( 0.03, 0.0, 0.002 ) * rim * ( 1.0 - uInkGrey ) * smoothstep( 0.0, 0.3, uInk );
+        }
+        // The glitch's scanlines.
+        if ( uGlitch > 0.001 ) mapped *= 1.0 - 0.18 * uGlitch * step( 0.5, fract( gl_FragCoord.y * 0.5 ) );
       }
       // Encode to sRGB here so FXAA (phone) works on perceptual values.
       mapped = mix( mapped * 12.92, 1.055 * pow( max( mapped, 0.0 ), vec3( 1.0 / 2.4 ) ) - 0.055, step( 0.0031308, mapped ) );
