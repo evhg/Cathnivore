@@ -67,6 +67,13 @@ export class DeathScreen {
     [...inner.children].forEach((c, i) => (c as HTMLElement).style.setProperty("--i", String(i)));
     this.black = el("div", "death-black", this.root);
     this.resync = el("p", "death-resync", this.root);
+    // The line is done after its 2 s: the objective card (hidden while it shows) comes back.
+    this.resync.addEventListener("animationend", () => this.clearLine());
+  }
+
+  /** Takes the re-sync line down. */
+  clearLine(): void {
+    this.resync.classList.remove("on", "is-held");
   }
 
   private action(parent: HTMLElement, label: string, key: string, primary: boolean): HTMLButtonElement {
@@ -134,11 +141,13 @@ export class DeathScreen {
   }
 
   /** The re-sync's black (0..1) and its line. */
-  resyncFrame(black: number, line: string | null): void {
+  resyncFrame(black: number, line: string | null, hold = false): void {
     this.root.style.setProperty("--black", black.toFixed(3));
     this.black.classList.toggle("on", black > 0.001);
     if (line !== null) {
       this.resync.textContent = line;
+      // A screenshot stage holds the line up (its 2 s animation would be over before a slow frame lands).
+      this.resync.classList.toggle("is-held", hold);
       this.resync.classList.remove("on");
       void this.resync.offsetWidth;
       this.resync.classList.add("on");

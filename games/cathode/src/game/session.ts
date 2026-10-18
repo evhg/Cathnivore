@@ -2120,11 +2120,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     s.dying = null;
     screen.hide();
     screen.resyncFrame(0, null);
+    screen.clearLine();
     world.setDeath?.({ death: 0, ink: 0, glitch: 0, ca: 1 });
     if (droppedGun) world.scene.remove(droppedGun);
     droppedGun = null;
     arsenal.rig.root.visible = true;
     hud.visible = true;
+    if (input.isTouch) o.touch.hidden = false;
     resyncT = -1;
     audio?.revive();
   }
@@ -2311,6 +2313,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.setWounded?.({ pulse: 0, regen: 0, stim: 0, lens: lens.slots, wipe: -1, water: lens.water, fx: fxLv.ca, still: true });
     world.setDeath?.({ death: st.death, ink: st.ink, glitch: 0, ca: 1 + (st.ca - 1) * fxLv.ca, grey: o.intensity === "reduced" });
     hud.visible = d.t < DT.stopMs;
+    // The touch controls go with the HUD: nothing to press but the card's own actions.
+    if (input.isTouch) o.touch.hidden = d.t >= DT.stopMs;
     screen.update({ bars: st.bars, killer: d.killerName ? st.killer : 0, card: st.card });
     if (st.card > 0 && !d.cardShown) {
       d.cardShown = true;
@@ -3077,7 +3081,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       resyncT = Math.max(DT.resync.inkOutMs + DT.resync.glitchMs, tMs || 700);
       const rs = resyncState(resyncT);
       world.setDeath?.({ death: 0, ink: rs.ink, glitch: rs.glitch, ca: 1, grey: o.intensity === "reduced" });
-      screen.resyncFrame(rs.black, checkpointLine());
+      screen.resyncFrame(rs.black, checkpointLine(), true);
       return "ok";
     }
     const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();

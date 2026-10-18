@@ -222,6 +222,7 @@
   opacity: 0;
 }
 .death-resync.on { animation: death-resync 2s linear both; }
+.death-resync.on.is-held { animation: none; opacity: 1; }
 @keyframes death-resync {
   0% { opacity: 0; clip-path: inset(0 100% 0 0); }
   4% { opacity: 1; }
