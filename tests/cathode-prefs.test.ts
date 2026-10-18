@@ -40,3 +40,17 @@ describe("look prefs", () => {
     expect(loadPrefs().lookScale).toBe(1)
   })
 })
+
+describe("C7 damage-effects and heartbeat prefs", () => {
+  beforeEach(stubStorage)
+  it("default to full effects with the heartbeat on, round-trip, and reject junk", () => {
+    expect(loadPrefs().damageFx).toBe("full")
+    expect(loadPrefs().heartbeat).toBe(true)
+    savePrefs({ ...loadPrefs(), damageFx: "reduced", heartbeat: false })
+    expect(loadPrefs().damageFx).toBe("reduced")
+    expect(loadPrefs().heartbeat).toBe(false)
+    localStorage.setItem("cathode:prefs:v1", JSON.stringify({ damageFx: "loud", heartbeat: "yes" }))
+    expect(loadPrefs().damageFx).toBe("full")
+    expect(loadPrefs().heartbeat).toBe(true)
+  })
+})

@@ -135,6 +135,12 @@ const GradeShader = {
     uLensB: { value: [0, 1, 2, 3].map(() => new THREE.Vector4(0, 0, 0, 0)) },
     uLensWipe: { value: -1 },
     uBloodTex: { value: null as THREE.Texture | null },
+    // The quarter-resolution Vitals map (VitalsPrePass): r the lens film, g the blood vignette, ba the film's
+    // slope (biased to 0.5). uVitalsOn says this frame drew it. uBlur: the wound's radial smear is on
+    // (desktop high and ultra).
+    tVitals: { value: null as THREE.Texture | null },
+    uVitalsOn: { value: 0 },
+    uBlur: { value: 0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -152,10 +158,9 @@ const GradeShader = {
     uniform float uRegen;
     uniform float uStim;
     uniform float uLensOn;
-    uniform vec4 uLens[ 4 ];
-    uniform vec4 uLensB[ 4 ];
-    uniform float uLensWipe;
-    uniform sampler2D uBloodTex;
+    uniform sampler2D tVitals;
+    uniform float uVitalsOn;
+    uniform float uBlur;
     varying vec2 vUv;
     ${SANITIZE}
     // AgX (Troy Sobotka's, as fitted in three.js): filmic, graceful with saturated neon.
@@ -182,50 +187,33 @@ const GradeShader = {
       return clamp( c, 0.0, 1.0 );
     }
 
-    vec3 sampleCA( vec2 uv, float amt ) {
-      vec2 d = ( uv - 0.5 ) * amt;
-      return hdrSafe( vec3( texture2D( tDiffuse, uv + d ).r, texture2D( tDiffuse, uv ).g, texture2D( tDiffuse, uv - d ).b ) );
-    }
-
     void main() {
       vec2 uv = vUv;
       vec2 c = uv - 0.5;
       float r2 = dot( c, c );
-      // Lens blood (C7, S6.4): up to four splats on the glass. One fetch per live slot gives the film's thickness
-      // and its slope; the slope bends the view through it (refraction) before anything else samples the frame.
-      float film = 0.0;
+      // C7 (S6.4): one fetch of the quarter-resolution Vitals map gives the lens film, its slope and the blood
+      // vignette. The slope bends the view through the film (refraction) before anything else samples the frame.
+      vec4 V = vec4( 0.0, 0.0, 0.5, 0.5 );
       vec2 fg = vec2( 0.0 );
-      if ( uLensOn > 0.5 ) {
-        float asp = uRes.x / uRes.y;
-        for ( int i = 0; i < 4; i++ ) {
-          vec4 L = uLens[ i ];
-          if ( L.z <= 0.002 ) continue;
-          vec2 lc = ( vUv - L.xy ) * vec2( asp, 1.0 ) / ( 0.34 * L.w ) + 0.5;
-          // It runs: the splat slides down the glass as it ages.
-          lc.y += uLensB[ i ].z / L.w;
-          if ( lc.x < 0.0 || lc.y < 0.0 || lc.x > 1.0 || lc.y > 1.0 ) continue;
-          vec4 t = texture2D( uBloodTex, ( uLensB[ i ].xy + lc ) * 0.5 );
-          float wm = uLensWipe < 0.0 ? 1.0 : smoothstep( uLensWipe * 1.2 - 0.16, uLensWipe * 1.2 - 0.04, vUv.x );
-          float a = L.z * wm;
-          film = max( film, t.r * a );
-          fg += ( t.gb - 0.5 ) * a;
-        }
-        uv += fg * 0.045 * vec2( uRes.y / uRes.x, 1.0 );
+      if ( uVitalsOn > 0.5 ) {
+        V = texture2D( tVitals, vUv );
+        fg = V.ba - 0.5;
+        uv += fg * 0.018 * vec2( uRes.y / uRes.x, 1.0 );
         c = uv - 0.5;
       }
-      // Chromatic aberration: only toward the edges.
+      float film = V.r;
+      // Chromatic aberration: only toward the edges. Three taps along the radius, one per channel.
       float ca = ( 0.005 * smoothstep( 0.06, 0.5, r2 ) + uDrama * 0.006 ) * ( 1.0 + 2.0 * uWound + 3.0 * uHurt );
-      vec3 col = sampleCA( uv, ca );
-#ifdef RADIAL
-      // Wounded, the edges smear toward the centre (S6.4: 6 taps, weight 0.6 w; desktop high and ultra only).
-      float rw = 0.6 * uWound;
-      float edgeR = smoothstep( 0.03, 0.22, r2 );
-      if ( rw * edgeR > 0.01 ) {
-        vec3 acc = col;
-        for ( int i = 1; i <= 6; i++ ) acc += hdrSafe( texture2D( tDiffuse, uv - c * ( float( i ) / 6.0 ) * 0.05 * rw ).rgb );
-        col = mix( col, acc / 7.0, edgeR * min( 1.0, rw * 1.4 ) );
-      }
-#endif
+      // Under blood on the glass the taps also spread with its thickness and slope: the street behind it goes soft.
+      vec2 d = c * ca + ( fg * 0.012 + vec2( 0.004, 0.006 ) * film ) * vec2( uRes.y / uRes.x, 1.0 );
+      vec3 t0 = texture2D( tDiffuse, uv + d ).rgb;
+      vec3 t1 = texture2D( tDiffuse, uv ).rgb;
+      vec3 t2 = texture2D( tDiffuse, uv - d ).rgb;
+      vec3 col = hdrSafe( vec3( t0.r, t1.g, t2.b ) );
+      // Wounded, the edges smear along the radius (S6.4, desktop high and ultra): the same three taps, spread by
+      // the wound, averaged. No extra fetch, so the wound costs the grade almost nothing.
+      float smear = max( uBlur * smoothstep( 0.03, 0.22, r2 ) * min( 1.0, uWound * 0.84 ), min( 1.0, film * 5.0 ) );
+      if ( smear > 0.001 ) col = mix( col, hdrSafe( ( t0 + t1 + t2 ) * 0.3333 ), smear );
       // Kill-cam depth of field: a radial blur that grows away from the centre.
       if ( uDrama > 0.01 ) {
         vec3 acc = col;
@@ -261,42 +249,43 @@ const GradeShader = {
       mapped = mix( mapped, mapped * mapped * ( 3.0 - 2.0 * mapped ), 0.25 );
       // The Vitals pass (S6.4), after the tone map: a blood vignette that closes in with the wound and flares on
       // a hit, a red lobe on the side the hit came from, and the colour draining from the edges as she weakens.
-      if ( uHurt + uWound + uRegen + uStim + film > 0.001 ) {
-        float r = length( c * vec2( uRes.x / uRes.y, 1.0 ) );
-        // The ring closes on each heartbeat (uPulse, from the same clock the ear hears).
-        float inner = mix( 0.75, 0.42, uWound ) - uPulse * 0.035 * uWound;
-        float vg = smoothstep( inner, inner + 0.45, r );
-        float keepCentre = 1.0 - smoothstep( 0.15, 0.55, r );
+      if ( uVitalsOn + uRegen + uStim > 0.001 ) {
+        // The colour drains from the edges in: the centre, where she aims, keeps most of it. The blood vignette
+        // (with the heartbeat) comes from the quarter-resolution pre-pass.
+        float ra = length( c * vec2( uRes.x / uRes.y, 1.0 ) );
         float ml = dot( mapped, vec3( 0.2126, 0.7152, 0.0722 ) );
-        mapped = mix( mapped, vec3( ml ), uWound * 0.7 * ( 1.0 - keepCentre * 0.5 ) );
+        mapped = mix( mapped, vec3( ml ), uWound * ( 0.1 + 0.65 * smoothstep( 0.12, 0.48, ra ) ) );
         // Blood, not paint: the edge darkens and goes deep red through the scene's own light (multiplied), so the
         // street still shows through it.
-        float bl = vg * ( 0.55 * uWound + 0.35 * uHurt + 0.14 * uPulse * uWound );
         vec3 blood = mapped * vec3( 0.95, 0.1, 0.12 ) + vec3( 0.06, 0.0, 0.004 );
-        mapped = mix( mapped, blood, min( 1.0, bl * 1.6 ) );
-        mapped *= 1.0 - bl * 0.45;
-        float lobe = max( 0.0, dot( normalize( c + 1e-5 ), uHurtDir ) ) * uHurt;
-        float lb = lobe * lobe * smoothstep( 0.25, 0.7, r );
-        mapped = mix( mapped, mapped * vec3( 1.1, 0.14, 0.14 ) + vec3( 0.16, 0.004, 0.012 ), min( 1.0, lb * 0.9 ) );
-        // Regen (S6.3): a cold cyan breath along the vignette's inner edge, so recovery is as loud as the hurt.
-        if ( uRegen > 0.001 ) {
-          float band = smoothstep( inner - 0.2, inner + 0.05, r ) * ( 1.0 - smoothstep( inner + 0.1, inner + 0.55, r ) * 0.6 );
-          mapped = mix( mapped, mapped * vec3( 0.55, 1.05, 1.15 ) + vec3( 0.01, 0.11, 0.135 ), min( 1.0, uRegen * band * 0.85 ) );
+        mapped = mix( mapped, blood, min( 1.0, V.g * 1.6 ) ) * ( 1.0 - V.g * 0.45 );
+        // A hit: a red lobe on the side it came from.
+        if ( uHurt > 0.001 ) {
+          float lobe = max( 0.0, dot( c, uHurtDir ) * inversesqrt( r2 + 1e-6 ) ) * uHurt;
+          mapped = mix( mapped, mapped * vec3( 1.1, 0.14, 0.14 ) + vec3( 0.16, 0.004, 0.012 ), min( 1.0, lobe * lobe * smoothstep( 0.25, 0.7, ra ) * 0.9 ) );
         }
-        // A stim: a green-white wash in from the edges.
-        if ( uStim > 0.001 ) mapped = mix( mapped, vec3( 0.78, 1.0, 0.86 ), uStim * smoothstep( 0.3, 0.95, r ) * 0.55 );
+        // Regen (S6.3): a cold cyan band riding the vignette's inner edge (the red pushed back by a cold line), so
+        // recovery is as loud as the hurt. A stim: a green-white wash in from the edges. Both rare: worked here.
+        if ( uRegen + uStim > 0.001 ) {
+          float r = ra;
+          float inner = mix( 0.75, 0.42, uWound ) - uPulse * 0.035 * uWound;
+          float band = smoothstep( inner - 0.1, inner + 0.02, r ) * ( 1.0 - smoothstep( inner + 0.04, inner + 0.26, r ) );
+          mapped = mix( mapped, mapped * vec3( 0.5, 1.1, 1.2 ) + vec3( 0.012, 0.13, 0.16 ), min( 1.0, uRegen * band * 0.75 ) );
+          mapped = mix( mapped, vec3( 0.78, 1.0, 0.86 ), uStim * smoothstep( 0.3, 0.95, r ) * 0.55 );
+        }
         // The lens film itself: thin blood is a translucent red over the street, thick blood is near black, and
         // its wet rim catches the light from above.
         if ( film > 0.003 ) {
           // Thin film: the street shows through, stained red and refracted. Thick: a dark, glossy clot. Never opaque.
-          float th = smoothstep( 0.0, 0.32, film );
-          vec3 tint = mapped * vec3( 0.85, 0.1, 0.1 ) + vec3( 0.045, 0.0, 0.004 );
-          tint *= mix( 1.0, 0.5, smoothstep( 0.3, 0.75, film ) );
-          mapped = mix( mapped, tint, th * 0.86 );
+          // Blood absorbs green and blue almost entirely: a lit window behind it goes deep red, never pink.
+          float th = smoothstep( 0.0, 0.24, film );
+          vec3 tint = mapped * vec3( 0.72, 0.05, 0.05 ) + vec3( 0.04, 0.0, 0.003 );
+          tint *= mix( 1.0, 0.45, smoothstep( 0.3, 0.75, film ) );
+          mapped = mix( mapped, tint, th * 0.93 );
           // The wet surface catches a soft light from above, along the film's upper rim.
           float gl = length( fg );
-          float spec = pow( max( 0.0, dot( fg / max( gl, 1e-4 ), vec2( -0.45, 0.89 ) ) ), 3.0 ) * smoothstep( 0.01, 0.12, gl ) * th;
-          mapped += vec3( 0.32, 0.12, 0.11 ) * spec * 0.22;
+          float sp = max( 0.0, dot( fg / max( gl, 1e-4 ), vec2( -0.45, 0.89 ) ) );
+          mapped += vec3( 0.32, 0.12, 0.11 ) * ( sp * sp * sp * smoothstep( 0.01, 0.12, gl ) * th * 0.22 );
         }
       }
       // Encode to sRGB here so FXAA (phone) works on perceptual values.
@@ -304,6 +293,86 @@ const GradeShader = {
       gl_FragColor = vec4( mapped, 1.0 );
     }`,
 };
+
+/**
+ * C7 (S6.4): the Vitals pre-pass, at a quarter of the screen's resolution and only on frames with a wound, a
+ * hit or blood on the lens. One 8-bit map, everything in it smooth: r the lens film from the four slots over the
+ * splat atlas, g the blood vignette (with the heartbeat), ba the film's slope from the atlas (biased to 0.5), so
+ * the refraction is smooth instead of stepping in quarter-resolution blocks. The grade reads it in one fetch, so at full resolution the wound is a texture read and a handful of mixes (C7: at most 15% of
+ * the grade pass; SwiftShader's cost is the fetches, so the grade takes no other).
+ */
+class VitalsPrePass extends Pass {
+  readonly rt: THREE.WebGLRenderTarget;
+  private readonly quad: FullScreenQuad;
+  private readonly mat: THREE.ShaderMaterial;
+  constructor(
+    private readonly grade: ShaderPass,
+    private readonly blur: boolean,
+  ) {
+    super();
+    this.needsSwap = false;
+    this.rt = new THREE.WebGLRenderTarget(4, 4, { depthBuffer: false });
+    const g = grade.uniforms;
+    this.mat = new THREE.ShaderMaterial({
+      // Shared with the grade: setWounded writes them once.
+      uniforms: { uRes: g.uRes!, uWound: g.uWound!, uHurt: g.uHurt!, uPulse: g.uPulse!, uLensOn: g.uLensOn!, uLens: g.uLens!, uLensB: g.uLensB!, uLensWipe: g.uLensWipe!, uBloodTex: g.uBloodTex! },
+      vertexShader: GradeShader.vertexShader,
+      fragmentShader: /* glsl */ `
+        uniform vec2 uRes;
+        uniform float uWound;
+        uniform float uHurt;
+        uniform float uPulse;
+        uniform float uLensOn;
+        uniform vec4 uLens[ 4 ];
+        uniform vec4 uLensB[ 4 ];
+        uniform float uLensWipe;
+        uniform sampler2D uBloodTex;
+        varying vec2 vUv;
+        void main() {
+          vec2 c = vUv - 0.5;
+          float asp = uRes.x / uRes.y;
+          float film = 0.0;
+          vec2 fg = vec2( 0.0 );
+          if ( uLensOn > 0.5 ) {
+            for ( int i = 0; i < 4; i++ ) {
+              vec4 L = uLens[ i ];
+              if ( L.z <= 0.002 ) continue;
+              vec2 lc = ( vUv - L.xy ) * vec2( asp, 1.0 ) / ( 0.34 * L.w ) + 0.5;
+              // It runs: the splat slides down the glass as it ages.
+              lc.y += uLensB[ i ].z / L.w;
+              if ( lc.x < 0.0 || lc.y < 0.0 || lc.x > 1.0 || lc.y > 1.0 ) continue;
+              vec4 t = texture2D( uBloodTex, ( uLensB[ i ].xy + lc ) * 0.5 );
+              float wm = uLensWipe < 0.0 ? 1.0 : smoothstep( uLensWipe * 1.2 - 0.16, uLensWipe * 1.2 - 0.04, vUv.x );
+              film = max( film, t.r * L.z * wm );
+              fg += ( t.gb - 0.5 ) * L.z * wm;
+            }
+          }
+          // The ring closes on each heartbeat (uPulse, from the same clock the ear hears).
+          float r = length( c * vec2( asp, 1.0 ) );
+          float inner = mix( 0.75, 0.42, uWound ) - uPulse * 0.035 * uWound;
+          float bl = smoothstep( inner, inner + 0.45, r ) * ( 0.55 * uWound + 0.35 * uHurt + 0.22 * uPulse * uWound );
+          gl_FragColor = vec4( film, min( 1.0, bl ), clamp( fg + 0.5, 0.0, 1.0 ) );
+        }`,
+      depthTest: false,
+      depthWrite: false,
+    });
+    this.quad = new FullScreenQuad(this.mat);
+  }
+  setSize(width: number, height: number): void {
+    this.rt.setSize(Math.max(1, Math.round(width / 4)), Math.max(1, Math.round(height / 4)));
+  }
+  render(renderer: THREE.WebGLRenderer): void {
+    const g = this.grade.uniforms;
+    const wound = g.uWound!.value as number;
+    g.uBlur!.value = this.blur && wound > 0.01 ? 1 : 0;
+    const on = (g.uLensOn!.value as number) > 0.5 || wound + (g.uHurt!.value as number) > 0.001;
+    g.uVitalsOn!.value = on ? 1 : 0;
+    if (!on) return;
+    renderer.setRenderTarget(this.rt);
+    this.quad.render(renderer);
+    g.tVitals!.value = this.rt.texture;
+  }
+}
 
 const FinalShader = {
   uniforms: {
@@ -351,7 +420,7 @@ export interface Post {
    * Vitals pass idle (`on` false) or at its busiest (bleeding, a hit, the pulse, two lens splats). Restores the
    * uniforms after.
    */
-  benchGrade(n: number, on: boolean): number;
+  benchGrade(n: number, on: boolean | { wound: number; hurt: number; pulse: number; lens: number }): number;
 }
 
 export function createPost(
@@ -388,7 +457,8 @@ export function createPost(
   const grade = new ShaderPass(GradeShader);
   grade.uniforms.uBloodTex!.value = lensBloodTexture();
   // The wound's radial blur costs 6 taps: desktop high and ultra only (S6.4).
-  if (quality !== "phone") grade.material.defines = { ...grade.material.defines, RADIAL: 1 };
+  const vitalsPre = new VitalsPrePass(grade, quality !== "phone");
+  composer.addPass(vitalsPre);
   composer.addPass(grade);
   // Phone has no MSAA: FXAA on the graded (sRGB) image.
   const fxaa = quality === "phone" ? new ShaderPass(FXAAShader) : null;
@@ -435,14 +505,17 @@ export function createPost(
         L[0]!.set(0.84, 0.56, l ? 0.9 : 0, 1.1);
         L[1]!.set(0.15, 0.47, l ? 0.7 : 0, 0.9);
       };
-      set(on ? 1 : 0, on ? 0.6 : 0, on ? 0.8 : 0, on ? 1 : 0);
+      if (typeof on === "object") set(on.wound, on.hurt, on.pulse, on.lens);
+      else set(on ? 1 : 0, on ? 0.6 : 0, on ? 0.8 : 0, on ? 1 : 0);
       const read = composer.readBuffer;
       const tmp = new THREE.WebGLRenderTarget(read.width, read.height);
       const px = new Uint8Array(4);
+      vitalsPre.render(renderer);
       grade.render(renderer, tmp, read, 0, false);
       renderer.readRenderTargetPixels(tmp, 0, 0, 1, 1, px);
       const t0 = performance.now();
       for (let i = 0; i < n; i++) {
+        vitalsPre.render(renderer);
         grade.render(renderer, tmp, read, 0, false);
         renderer.readRenderTargetPixels(tmp, 0, 0, 1, 1, px);
       }

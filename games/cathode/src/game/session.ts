@@ -1970,7 +1970,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     audio?.stim();
   }
   s.stim = onStim;
-  s.benchGrade = (n) => ({ off: world.benchGrade?.(n, false) ?? 0, on: world.benchGrade?.(n, true) ?? 0 });
+  // Interleaved rounds and medians: SwiftShader's timing swings 30% between back-to-back runs.
+  s.benchGrade = (n) => {
+    const off: number[] = [];
+    const on: number[] = [];
+    for (let r = 0; r < 6; r++) {
+      off.push(world.benchGrade?.(n, false) ?? 0);
+      on.push(world.benchGrade?.(n, true) ?? 0);
+    }
+    const med = (a: number[]) => a.sort((x, y) => x - y)[Math.floor(a.length / 2)]!;
+    return { off: med(off), on: med(on) };
+  };
 
   /** A blast within 6 m (S6.2): tinnitus, the world muffled, the wound grade up for 1.5 s. */
   function blastNear(at: THREE.Vector3): void {
@@ -2773,7 +2783,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return { red, total, mean: mean.map((v) => Math.round(v / Math.max(1, total))) };
   };
   /**
-   * C7 acceptance: the frame as a 4x4x4 RGB histogram (shares), and the edge-to-centre saturation probe: mean HSV
+   * C7 acceptance: the frame as an 8x8x8 RGB histogram (shares), and the edge-to-centre saturation probe: mean HSV
    * saturation in the centre (r < 0.12 of the height) and in a ring (0.26 to 0.38, inside the blood vignette),
    * for the frame as it stands and for the same frame with the wound grade off (lens off for both, so the probe
    * reads the grade, not a splat).
@@ -2813,8 +2823,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       return { centre: acc.centre / Math.max(1, acc.nc), edge: acc.edge / Math.max(1, acc.ne) };
     };
     const px = grab();
-    const hist = new Array(64).fill(0) as number[];
-    for (let o4 = 0; o4 < px.length; o4 += 4) hist[(px[o4]! >> 6) * 16 + (px[o4 + 1]! >> 6) * 4 + (px[o4 + 2]! >> 6)]!++;
+    const hist = new Array(512).fill(0) as number[];
+    for (let o4 = 0; o4 < px.length; o4 += 4) hist[(px[o4]! >> 5) * 64 + (px[o4 + 1]! >> 5) * 8 + (px[o4 + 2]! >> 5)]!++;
     const n = px.length / 4;
     const u = world as unknown as { setWounded?: World["setWounded"] };
     const noLens = lens.slots.map((sl) => ({ ...sl, age: -1 }));

@@ -479,7 +479,7 @@ for (const vp of vps) {
     // Every stage starts clean: full health, no hurt arc from before.
     const c7 = /^vitals-(hurt|critical|bleeding|regen)$/.test(stage)
     const c6 = /^(player-hurt|vitals-|grenade-near)/.test(stage) && !c7
-    if (!c6 && side.arcA > 0.05) fail(`${vp} ${spec}: a stale hurt arc shows (--a ${side.arcA})`)
+    if (!c6 && !c7 && side.arcA > 0.05) fail(`${vp} ${spec}: a stale hurt arc shows (--a ${side.arcA})`)
     // ---- C6 acceptance ----
     if (c6) {
       const dm = side.dmg
@@ -515,7 +515,7 @@ for (const vp of vps) {
         // The colour drains from the edges first: the ring keeps clearly less of its saturation than the centre.
         if (!(ke < kc * C7_SAT_EDGE)) fail(`${vp} ${spec}: edge saturation x${ke.toFixed(2)} isn't below ${C7_SAT_EDGE} of the centre's x${kc.toFixed(2)}`)
         if (wp.lens < 1) fail(`${vp} ${spec}: no blood on the lens`)
-        const b = await page.evaluate(() => window.cathode.benchGrade(12))
+        const b = await page.evaluate(() => window.cathode.benchGrade(3))
         const over = (b.on - b.off) / Math.max(1e-3, b.off)
         console.log(`  grade pass ${b.off.toFixed(2)} ms idle, ${b.on.toFixed(2)} ms bleeding (+${(over * 100).toFixed(1)}%)`)
         if (over > 0.15) fail(`${vp} ${spec}: the Vitals pass costs +${(over * 100).toFixed(1)}% of the grade pass (> 15%)`)

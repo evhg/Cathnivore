@@ -106,7 +106,7 @@ export interface World {
    */
   setWounded?(o: { pulse: number; regen: number; stim: number; lens: ReadonlyArray<{ x: number; y: number; cell: number; age: number; size: number }>; wipe: number }): void;
   /** C7 acceptance: the grade pass's mean ms per draw with the Vitals pass idle or at its busiest. */
-  benchGrade?(n: number, on: boolean): number;
+  benchGrade?(n: number, on: boolean | { wound: number; hurt: number; pulse: number; lens: number }): number;
   /** Wind for ballistics and rain, metres per second along x and z. */
   /** The district's walkable bounds, when it defines them (interiors). */
   readonly bounds?: { xMin: number; xMax: number; zMin: number; zMax: number };
