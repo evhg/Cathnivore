@@ -137,6 +137,8 @@ export interface Session {
   vmProbe?: (rects?: { x: number; y: number; w: number; h: number }[]) => { handShare: number; slideLum: number; vmPx: number; slidePx: number; inRects: number[] };
   /** C4: the red dot's projection and the screen centre (CSS px), and the aim blend, as the frame shows them. */
   dotProbe?: () => { x: number; y: number; cx: number; cy: number; aim: number } | null;
+  /** C6: the red-dot optic's screen box (CSS px; hood, base and emitter, with the rear sight behind it), or null. */
+  opticProbe?: () => { x: number; y: number; w: number; h: number } | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
   probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[] };
   /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
@@ -2140,6 +2142,30 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const v = dot.localToWorld(new THREE.Vector3(KESTREL_DOT[0] - dot.position.x, KESTREL_DOT[1] - dot.position.y, KESTREL_DOT[2] - dot.position.z)).project(world.viewCamera);
     const c = world.renderer.domElement;
     return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight, cx: c.clientWidth / 2, cy: c.clientHeight / 2, aim: arsenal.anim.aim };
+  };
+  s.opticProbe = () => {
+    const dot = arsenal.rig.parts.reddot;
+    if (!dot || !dot.visible) return null;
+    arsenal.rig.root.updateMatrixWorld(true);
+    const c = world.renderer.domElement;
+    let x0 = Infinity;
+    let y0 = Infinity;
+    let x1 = -Infinity;
+    let y1 = -Infinity;
+    // The housing in the dot mount's own frame: 25 mm wide, 24 mm tall, from 18 mm ahead to 30 mm behind (the
+    // emitter bump and the rear sight).
+    for (const px of [-0.0135, 0.0135])
+      for (const py of [-0.002, 0.024])
+        for (const pz of [-0.018, 0.03]) {
+          const v = dot.localToWorld(new THREE.Vector3(px, py, pz)).project(world.viewCamera);
+          const sx = ((v.x + 1) / 2) * c.clientWidth;
+          const sy = ((1 - v.y) / 2) * c.clientHeight;
+          x0 = Math.min(x0, sx);
+          y0 = Math.min(y0, sy);
+          x1 = Math.max(x1, sx);
+          y1 = Math.max(y1, sy);
+        }
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
   };
   s.vmProbe = (rects = []) => {
     render();

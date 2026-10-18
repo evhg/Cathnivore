@@ -481,19 +481,36 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  /* The ring sits at 190u, but never inside 18% of the screen's height: at 1440x900 190u is only 16%, and a
-     hit from the right lands on the gun's optic. 520/190 x 18svh = 49.3svh. */
-  width: max(calc(var(--u) * 520), 49.3svh);
-  height: max(calc(var(--u) * 520), 49.3svh);
+  /* 520u square with the ring 190u tall (1u = --ru): never inside 18% of the screen's height (at 1440x900 190u
+     is only 16%; 520/190 x 18svh = 49.3svh), and never past 23% on a short landscape phone, where 520u would
+     put it at 30% and crowd the thumb HUD. The ring is 1.8x as wide as it is tall (dmgring.ts RING.wide). */
+  --ring: clamp(49.3svh, calc(var(--u) * 520), 63svh);
+  --ru: calc(var(--ring) / 520);
+  width: var(--ring);
+  height: var(--ring);
   transform: translate(-50%, -50%);
-  overflow: visible;
 }
-.hud-dmg-arc {
+.hud-dmg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+/* Each arc: a 200u x 87u wrapper whose origin is the arc's middle, moved onto the ellipse and turned to face
+   out. Only transform and opacity change, on its own layer: the blurred art inside is rasterised once. */
+.hud-dmg-arc,
+.hud-dmg-nade {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   color: var(--blood-hot);
   opacity: var(--a, 0);
-  transform-origin: 0 0;
-  transform: rotate(var(--rot, 0deg)) scale(var(--s, 1));
+  will-change: transform, opacity;
 }
+.hud-dmg-arc {
+  width: calc(var(--ru) * 200);
+  height: calc(var(--ru) * 87);
+  margin: calc(var(--ru) * -42) 0 0 calc(var(--ru) * -100);
+  transform-origin: 50% calc(var(--ru) * 42);
+  transform: translate(calc(var(--tx, 0) * var(--ru)), calc(var(--ty, -190) * var(--ru))) rotate(var(--rot, 0deg)) scale(var(--s, 1));
+}
+.hud-dmg-arc svg,
+.hud-dmg-nade svg { display: block; width: 100%; height: 100%; overflow: visible; }
 /* A feathered blood glow, then a soft dark shade just under the body (it lifts the arc off red neon). */
 .hud-dmg-arc .glow { fill: rgb(var(--blood-rgb)); opacity: .5; }
 .hud-dmg-arc .shade { fill: rgb(var(--black-rgb)); opacity: .62; }
@@ -506,6 +523,10 @@
 .hud-dmg-arc.k-laser .glow { fill: var(--cyan); }
 /* The colour-blind palette: a 2u white outline on every arc. */
 :root.colour-safe .hud-dmg-arc .body { stroke: rgb(var(--white-rgb)); stroke-width: 2; }
+/* Critical or bleeding: the frame is already red, so the arc takes a white-hot rim and a deeper shade. */
+.hud-dmg.is-urgent .hud-dmg-arc .body { stroke: var(--on-blood); stroke-width: 1.8; }
+.hud-dmg.is-urgent .hud-dmg-arc .shade { opacity: .85; }
+.hud-dmg.is-urgent .hud-dmg-arc .glow { opacity: .7; }
 /* A source behind her, or far above or below: a chevron on the safe frame's edge, pointing out. */
 .hud-dmg-chev {
   position: absolute;
@@ -537,11 +558,11 @@
 /* A live grenade within 6 m: a 44u glyph on the ring (a grenade on a dark plate), its fuse filling the rim and
    turning blood-red in the last third, pulsing at 4 Hz while it's live. */
 .hud-dmg-nade {
-  opacity: var(--a, 0);
-  transform-origin: 0 0;
-  transform: rotate(var(--rot, 0deg));
+  width: calc(var(--ru) * 60);
+  height: calc(var(--ru) * 60);
+  margin: calc(var(--ru) * -30) 0 0 calc(var(--ru) * -30);
+  transform: translate(calc(var(--tx, 0) * var(--ru)), calc(var(--ty, -190) * var(--ru)));
 }
-.hud-dmg-nade .in { transform: translateY(calc(-1px * 190)) rotate(calc(var(--rot, 0deg) * -1)); }
 .hud-dmg-nade .plate { fill: rgb(var(--black-rgb) / .72); stroke: rgb(var(--white-rgb) / .14); stroke-width: 3.5; }
 .hud-dmg-nade .fuse { fill: none; stroke: var(--amber); stroke-width: 3.5; stroke-dasharray: 1 1; stroke-dashoffset: var(--left, 1); }
 .hud-dmg-nade .pulse { fill: none; stroke: var(--amber); stroke-width: 2; transform-origin: 0 0; opacity: 0; }
@@ -1512,7 +1533,14 @@
 :root.reduce-motion .hud-vbar.is-regen .hud-guard > .fill,
 :root.reduce-motion .hud-dmg-nade.is-live .pulse { animation: none; }
 :root.reduce-motion .hud-shards.go i { animation-name: shard-fade; }
-@keyframes shard-fade { 0% { opacity: 1; } 100% { opacity: 0; } }
+/* Reduced motion: no flight, but the break still bursts. The shards appear already out past the bar's end (half
+   their flight, part-turned) and fade where they are, so they never sit hidden under the bar's white flash. */
+@keyframes shard-fade {
+  0%, 100% { transform: translate(calc(var(--dx) * .55), calc(var(--dy) * .55)) rotate(calc(var(--r) * .3)) scale(.8); }
+  0% { opacity: 1; }
+  55% { opacity: 1; }
+  100% { opacity: 0; }
+}
 :root.reduce-motion .hud-root.is-booting *,
 :root.reduce-motion .hud-objective.is-new,
 :root.reduce-motion .hud-hp-text.hit,

@@ -142,17 +142,21 @@ for (const vp of vps) {
       const arcA = Number(getComputedStyle(document.querySelector('.hud-dmg') ?? document.body).getPropertyValue('--a') || 0)
       // C6: the strongest damage arc, measured in the ring's own units: its thickness down its centre line
       // (scanning the fill), its radius, and its rotation; the chevrons, the grenade glyph, the Guard bar.
-      const ringSvg = document.querySelector('.hud-dmg-ring')
+      const ringBox = document.querySelector('.hud-dmg-ring')
       let dmg = null
-      if (ringSvg) {
-        const k = ringSvg.getBoundingClientRect().width / ringSvg.viewBox.baseVal.width
+      if (ringBox) {
+        // 1u of the ring in CSS px (the ring box is 520u square), and the ring's own centre on screen.
+        const rb = ringBox.getBoundingClientRect()
+        const k = rb.width / 520
         const arcs = [...document.querySelectorAll('.hud-dmg-arc')].map((g) => [g, Number(getComputedStyle(g).opacity)]).sort((a, b) => b[1] - a[1])
         const [g, a] = arcs[0] ?? [null, 0]
         if (g && a > 0.05) {
           const body = g.querySelector('.body')
+          const svgEl = g.querySelector('svg')
           let lo = null
           let hi = null
-          const pt = ringSvg.createSVGPoint()
+          const pt = svgEl.createSVGPoint()
+          // Down the arc's centre line, in the ring's units (the art sits 190u below the SVG's origin).
           for (let y = -260; y <= -120; y += 0.1) {
             pt.x = 0
             pt.y = y
@@ -162,15 +166,23 @@ for (const vp of vps) {
             }
           }
           const sc = Number(getComputedStyle(g).getPropertyValue('--s') || 1)
+          const bb = body.getBoundingClientRect()
+          const rotDeg = parseFloat(getComputedStyle(g).getPropertyValue('--rot'))
+          const tx = Number(getComputedStyle(g).getPropertyValue('--tx'))
+          const ty = Number(getComputedStyle(g).getPropertyValue('--ty'))
           dmg = {
             a,
-            rotDeg: parseFloat(getComputedStyle(g).getPropertyValue('--rot')),
+            rotDeg,
             thickPx: lo === null ? 0 : (hi - lo) * k * sc * d,
-            radiusFrac: lo === null ? 0 : (((-lo - hi) / 2) * k * sc) / innerHeight,
+            // The ring's height radius (190u), and this arc's distance out from the crosshair.
+            radiusFrac: (190 * k) / innerHeight,
+            outFrac: (Math.hypot(tx, ty) * k) / innerHeight,
             core: g.classList.contains('is-core'),
+            box: { x: bb.x, y: bb.y, w: bb.width, h: bb.height },
           }
         }
       }
+      const optic = window.cathode.opticProbe?.() ?? null
       const chevs = [...document.querySelectorAll('.hud-dmg-chev')].filter((e) => Number(getComputedStyle(e).opacity) > 0.3).map((e) => ({ bottom: e.classList.contains('at-bottom'), top: e.classList.contains('at-top'), ...r(e) }))
       const nade = [...document.querySelectorAll('.hud-dmg-nade')].map((e) => Number(getComputedStyle(e).opacity)).reduce((m, v) => Math.max(m, v), 0)
       const vbar = document.querySelector('.hud-vbar')
@@ -238,6 +250,7 @@ for (const vp of vps) {
         clusters,
         arcA,
         dmg,
+        optic,
         chevs,
         nade,
         vitals,
@@ -460,12 +473,20 @@ for (const vp of vps) {
     // ---- C6 acceptance ----
     if (c6) {
       const dm = side.dmg
-      console.log(`  arc ${dm ? `a ${dm.a.toFixed(2)} rot ${dm.rotDeg.toFixed(0)} thick ${dm.thickPx.toFixed(1)} phys px radius ${(dm.radiusFrac * 100).toFixed(1)}% of height` : 'none'}; chevrons ${side.chevs.map((c) => (c.bottom ? 'bottom' : 'top')).join(',') || '-'}; nade ${side.nade.toFixed(2)}; guard ${side.vitals?.broken ? 'broken' : 'whole'}`)
+      console.log(`  arc ${dm ? `a ${dm.a.toFixed(2)} rot ${dm.rotDeg.toFixed(0)} thick ${dm.thickPx.toFixed(1)} phys px ring ${(dm.radiusFrac * 100).toFixed(1)}% of height, this arc ${(dm.outFrac * 100).toFixed(1)}% out` : 'none'}; chevrons ${side.chevs.map((c) => (c.bottom ? 'bottom' : 'top')).join(',') || '-'}; nade ${side.nade.toFixed(2)}; guard ${side.vitals?.broken ? 'broken' : 'whole'}`)
       if (stage !== 'grenade-near' && !(dm && dm.a > 0.4)) fail(`${vp} ${spec}: no damage arc showing`)
       if (stage === 'player-hurt-100' && dm && Math.abs(dm.rotDeg - 90) > 10) fail(`${vp} ${spec}: the arc points at ${dm.rotDeg} deg, not 90`)
       if (vp === '5k' && stage === 'player-hurt-100' && t <= 200 && dm) {
         if (dm.thickPx < 36) fail(`${vp} ${spec}: the arc is ${dm.thickPx.toFixed(1)} physical px thick (< 36)`)
         if (Math.abs(dm.radiusFrac - 0.18) > 0.02) fail(`${vp} ${spec}: the arc's radius is ${(dm.radiusFrac * 100).toFixed(1)}% of the height (not 18 +- 2%)`)
+      }
+      // The side arc never sits on the gun's optic (C6 review: it read as part of the red-dot sight).
+      if (stage === 'player-hurt-100' && dm?.box && side.optic) {
+        const o = side.optic
+        const m = 4
+        const ov = Math.max(0, Math.min(dm.box.x + dm.box.w, o.x + o.w + m) - Math.max(dm.box.x, o.x - m)) * Math.max(0, Math.min(dm.box.y + dm.box.h, o.y + o.h + m) - Math.max(dm.box.y, o.y - m))
+        console.log(`  optic ${o.x.toFixed(0)},${o.y.toFixed(0)} ${o.w.toFixed(0)}x${o.h.toFixed(0)}; arc box ${dm.box.x.toFixed(0)},${dm.box.y.toFixed(0)} ${dm.box.w.toFixed(0)}x${dm.box.h.toFixed(0)}`)
+        if (ov > 0) fail(`${vp} ${spec}: the 90-degree arc overlaps the gun's optic (${ov.toFixed(0)} px2)`)
       }
       if (stage === 'player-hurt-behind' && !side.chevs.some((c) => c.bottom)) fail(`${vp} ${spec}: no bottom chevron for a hit from behind`)
       if (stage === 'player-hurt-100' && side.chevs.length) fail(`${vp} ${spec}: a chevron shows for a hit in front of her`)

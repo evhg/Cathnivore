@@ -187,8 +187,9 @@ export class Hud {
       // Three shard shapes, sizes 0.55x to 1.4x.
       const sh = el("i", `s${i % 3}`, this.shards);
       // A fixed spread out of the bar's broken end to the right, into open screen (never up over the level chip or
-      // the objective): -40 to +25 degrees, 45 to 125u, each spinning up to 270 degrees.
-      const a = Math.PI * (-0.22 + 0.36 * (((i * 7) % 12) / 11));
+      // the objective): -8 to +32 degrees, 45 to 125u, each spinning up to 270 degrees. The steepest climb
+      // (17u) stays under the LV chip's baseline at every size, the phone's included.
+      const a = Math.PI * (-0.044 + 0.222 * (((i * 7) % 12) / 11));
       const d = 45 + 80 * (((i * 5) % 12) / 11);
       const k = 0.55 + 0.85 * (((i * 11) % 12) / 11);
       sh.style.setProperty("--x0", `${(35 + (i / 11) * 62).toFixed(1)}%`);
@@ -315,7 +316,14 @@ export class Hud {
       return gh[k];
     };
     const fg = ghostStep(f, "flesh");
-    const gg = ghostStep(g, "guard");
+    let gg = ghostStep(g, "guard");
+    // A broken Guard shows no ghost: the shards, the flash and the crack carry the break, and a white ghost
+    // filling the empty slot would read as a fuller bar than an intact one.
+    if (g <= 1e-3) {
+      gh.guard = g;
+      gh.guardHold = 0;
+      gg = g;
+    }
     this.ghostPrev.flesh = f;
     this.ghostPrev.guard = g;
     set(this.hpBar.root, "--v", f.toFixed(3));
@@ -336,6 +344,7 @@ export class Hud {
     this.lastHp = s.hp;
     this.targetT = Math.max(0, this.targetT - dt);
     this.show(this.target, this.targetT > 0);
+    this.dmg.setUrgent(low);
     this.dmg.update(dt, s.hurtResolve ?? null, s.nades ?? []);
     // Armour as its own bar; the resistances line only when she has some.
     const arm = Math.max(0, Math.round(s.armour ?? 0));

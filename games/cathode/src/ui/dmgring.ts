@@ -1,12 +1,21 @@
 // "I know I'm hit" (docs/design/cathode-combat.md S6.2): the damage ring around the crosshair. Each source
-// gets a tapered blood crescent on a 190u ring that points at it and keeps pointing at it as she turns; a
+// gets a tapered blood crescent on the ring that points at it and keeps pointing at it as she turns. The ring is
+// an ellipse, 190u tall and 1.8x as wide, so a hit from the side lands clear of the gun's optic. Each arc is its
+// own small SVG in a composited wrapper that only moves (transform, opacity), so its blurs rasterise once; a
 // source behind her (or far above or below) also gets a chevron at the edge of the safe frame; a melee hit
 // flashes that screen edge; a live grenade within 6 m sits on the ring as a pulsing glyph. All SVG, sized in u
 // (1 viewBox unit = 1u), driven by custom properties only (CSP: no inline style attributes).
 
 const NS = "http://www.w3.org/2000/svg";
 /** Ring radius and the arc's span and thickness, in u (S6.2). */
-export const RING = { r: 190, spanDeg: 38, thick: 14, tip: 2 } as const;
+export const RING = { r: 190, wide: 1.8, spanDeg: 38, thick: 14, tip: 2 } as const;
+/** Where an arc for `bearing` (radians) sits on the ring, in u from the crosshair, and which way it faces (degrees). */
+export function ringPoint(bearing: number, push = 0): { x: number; y: number; rot: number } {
+  const x = Math.sin(bearing) * RING.r * RING.wide;
+  const y = -Math.cos(bearing) * RING.r;
+  const ang = Math.atan2(x, -y);
+  return { x: x + Math.sin(ang) * push, y: y - Math.cos(ang) * push, rot: (ang * 180) / Math.PI };
+}
 /** Up to four sources at once. */
 const SLOTS = 4;
 const HOLD_S = 0.6;
@@ -36,7 +45,7 @@ export interface HurtSource {
 }
 
 interface Slot {
-  g: SVGGElement;
+  g: HTMLElement;
   chev: HTMLElement;
   key: unknown;
   at: { x: number; y: number; z: number } | null;
@@ -81,9 +90,10 @@ function coreLine(r: number, spanDeg: number): string {
 
 export class DamageRing {
   readonly root: HTMLElement;
-  private readonly ringSvg: SVGSVGElement;
+  private readonly ring: HTMLElement;
   private readonly slots: Slot[] = [];
-  private readonly nades: SVGGElement[] = [];
+  private readonly nades: HTMLElement[] = [];
+  private urgent = false;
   private readonly edge: HTMLElement;
   private edgeT = 0;
   private readonly set: (e: Element, k: string, v: string) => void;
@@ -97,9 +107,12 @@ export class DamageRing {
     this.edge = document.createElement("div");
     this.edge.className = "hud-dmg-edge";
     this.root.append(this.edge);
-    const ext = RING.r + 70;
-    this.ringSvg = svg("svg", { class: "hud-dmg-ring", viewBox: `${-ext} ${-ext} ${ext * 2} ${ext * 2}` }, this.root);
-    const defs = svg("defs", {}, this.ringSvg);
+    // The ring: a plain box the size of the ring (520u square, see hud.css), holding one wrapper per arc.
+    this.ring = document.createElement("div");
+    this.ring.className = "hud-dmg-ring";
+    this.root.append(this.ring);
+    const defsSvg = svg("svg", { class: "hud-dmg-defs", width: "0", height: "0" }, this.ring);
+    const defs = svg("defs", {}, defsSvg);
     // Feathered ends: a mask that fades the crescent in over its first and last fifth (a gradient's
     // currentColor would resolve at the gradient, not at the arc, so the colour stays on the path).
     const grad = svg("linearGradient", { id: "hud-dmg-feather", x1: "0", x2: "1", y1: "0", y2: "0" }, defs);
@@ -117,11 +130,17 @@ export class DamageRing {
     const glow = crescent(RING.r, RING.spanDeg + 8, RING.thick * 2.1 + 6, RING.tip + 4);
     const core = coreLine(RING.r, RING.spanDeg * 0.78);
     for (let i = 0; i < SLOTS; i++) {
-      const g = svg("g", { class: "hud-dmg-arc" }, this.ringSvg);
-      svg("path", { class: "glow", d: glow, mask: "url(#hud-dmg-mask)" }, svg("g", { filter: "url(#hud-dmg-blur)" }, g));
-      svg("path", { class: "shade", d: shade, mask: "url(#hud-dmg-mask)" }, svg("g", { filter: "url(#hud-dmg-soft)" }, g));
-      svg("path", { class: "body", d: body, mask: "url(#hud-dmg-mask)" }, g);
-      svg("path", { class: "core", d: core }, g);
+      // The wrapper moves and fades; the art inside never changes, so the blurs are drawn once (S0.4 budget).
+      const g = document.createElement("div");
+      g.className = "hud-dmg-arc";
+      this.ring.append(g);
+      // The arc's middle at the SVG's origin: 200u x 87u covers the glow and its blur.
+      const a = svg("svg", { viewBox: "-100 -42 200 87" }, g);
+      const art = svg("g", { transform: `translate(0 ${RING.r})` }, a);
+      svg("path", { class: "glow", d: glow, mask: "url(#hud-dmg-mask)" }, svg("g", { filter: "url(#hud-dmg-blur)" }, art));
+      svg("path", { class: "shade", d: shade, mask: "url(#hud-dmg-mask)" }, svg("g", { filter: "url(#hud-dmg-soft)" }, art));
+      svg("path", { class: "body", d: body, mask: "url(#hud-dmg-mask)" }, art);
+      svg("path", { class: "core", d: core }, art);
       const chev = document.createElement("div");
       chev.className = "hud-dmg-chev";
       const cs = svg("svg", { viewBox: "-24 -16 48 32" }, chev);
@@ -132,8 +151,10 @@ export class DamageRing {
       this.slots.push({ g, chev, key: null, at: null, bearing: 0, elev: 0, kind: "bullet", base: 0, t: 1e9 });
     }
     for (let i = 0; i < 2; i++) {
-      const g = svg("g", { class: "hud-dmg-nade" }, this.ringSvg);
-      const inner = svg("g", { class: "in" }, g);
+      const g = document.createElement("div");
+      g.className = "hud-dmg-nade";
+      this.ring.append(g);
+      const inner = svg("g", { class: "in" }, svg("svg", { viewBox: "-30 -30 60 60" }, g));
       svg("circle", { class: "plate", r: "22" }, inner);
       svg("circle", { class: "pulse", r: "22" }, inner);
       // The fuse: a ring that fills clockwise from the top as it burns down (CoD, Battlefield).
@@ -149,6 +170,16 @@ export class DamageRing {
       svg("circle", { class: "pin", cx: "-9.4", cy: "-8.1", r: "3" }, art);
       this.nades.push(g);
     }
+  }
+
+  /**
+   * Critical or bleeding (S6.1): the arc must read hardest exactly when the frame is already washed red, so it
+   * holds at near full strength and takes a white-hot rim.
+   */
+  setUrgent(on: boolean): void {
+    if (on === this.urgent) return;
+    this.urgent = on;
+    this.root.classList.toggle("is-urgent", on);
   }
 
   /** A hit from `src`: restarts its arc if it already has one, else takes a free slot (or the oldest). */
@@ -194,7 +225,8 @@ export class DamageRing {
 
   private slotAlpha(s: Slot): number {
     if (s.t >= HOLD_S + FADE_S) return 0;
-    return s.base * (s.t < HOLD_S ? 1 : 1 - (s.t - HOLD_S) / FADE_S);
+    const base = this.urgent ? Math.max(s.base, 0.92) : s.base;
+    return base * (s.t < HOLD_S ? 1 : 1 - (s.t - HOLD_S) / FADE_S);
   }
 
   /**
@@ -218,7 +250,11 @@ export class DamageRing {
         s.elev = r.elevDeg;
       }
       const sc = s.t < POP_S ? 1.15 - 0.15 * (s.t / POP_S) : 1;
-      this.set(s.g, "--rot", `${((s.bearing * 180) / Math.PI).toFixed(1)}deg`);
+      // The pop scales the arc out from the crosshair: it grows and moves out together.
+      const p = ringPoint(s.bearing, RING.r * (sc - 1));
+      this.set(s.g, "--tx", p.x.toFixed(1));
+      this.set(s.g, "--ty", p.y.toFixed(1));
+      this.set(s.g, "--rot", `${p.rot.toFixed(1)}deg`);
       this.set(s.g, "--s", sc.toFixed(3));
       this.set(s.g, "--a", a.toFixed(3));
       s.g.classList.toggle("is-core", s.t < CORE_S);
@@ -244,7 +280,9 @@ export class DamageRing {
       g.classList.toggle("is-live", n !== undefined);
       this.set(g, "--a", n === undefined ? "0" : "1");
       if (n === undefined) return;
-      this.set(g, "--rot", `${((n.bearing * 180) / Math.PI).toFixed(1)}deg`);
+      const p = ringPoint(n.bearing);
+      this.set(g, "--tx", p.x.toFixed(1));
+      this.set(g, "--ty", p.y.toFixed(1));
       const left = Math.min(1, Math.max(0, n.left));
       this.set(g, "--left", left.toFixed(3));
       g.classList.toggle("is-hot", left < 0.35);
