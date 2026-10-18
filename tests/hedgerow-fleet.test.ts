@@ -548,10 +548,11 @@ describe("hedgerow fleet: the live cap", () => {
   // looser guard so a regression that's slow every time still fails on a busy runner. The code runs at
   // about 0.8-1.2 ms a step, so 2 ms leaves room for a busy runner without hiding a real slowdown. The
   // median shares the CPU with the rest of the parallel vitest pool (it measured 3.75 ms once in a full
-  // `npm run check`), so it gets 5 ms: a code regression still moves the fastest batch past 2 ms.
+  // `npm run check`, and 5.8 ms with two SwiftShader browsers running beside it), so it gets 8 ms: a code
+  // regression still moves the fastest batch past 2 ms.
   const budgetOk = (batches: number[]) => {
     expect(batches[0]!).toBeLessThanOrEqual(2);
-    expect(batches[5]!).toBeLessThanOrEqual(5);
+    expect(batches[5]!).toBeLessThanOrEqual(8);
   };
 
   it(
