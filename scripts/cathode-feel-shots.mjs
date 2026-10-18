@@ -42,7 +42,7 @@ const C8 = ['death-400', 'death-1200', 'death-2000', 'death-card', 'resync@420',
 const C9 = ['death-gutclutch-450', 'death-wallslump-1200', 'death-headshot-300', 'death-spin-400', 'blood-pool-8s']
 // C9X: the other deaths that can be staged in the open street (knees then face, blown back), and the head kill a
 // moment later, when the knocked-off helmet has landed.
-const C9X = ['death-knees-500', 'death-blownback-350', 'death-headshot-900']
+const C9X = ['death-knees-650', 'death-blownback-350', 'death-headshot-900']
 const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).

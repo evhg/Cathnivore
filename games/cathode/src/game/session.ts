@@ -3056,7 +3056,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     "death-gutclutch": { base: "hit-kill", dist: 4.6, variant: "gutclutch", ms: 450 },
     "death-wallslump": { base: "hit-kill", dist: 4.6, variant: "wallslump", wall: true, ms: 1200 },
     "death-headshot": { base: "hit-headkill", dist: 4.6, variant: "headshot", helmet: true, ms: 300 },
-    "death-knees": { base: "hit-kill", dist: 4.6, variant: "knees", ms: 500 },
+    "death-knees": { base: "hit-kill", dist: 4.6, variant: "knees", ms: 650 },
     "death-blownback": { base: "hit-kill", dist: 4.6, variant: "blownback", ms: 350 },
     "death-spin": { base: "hit-kill", dist: 4.6, variant: "spin", turn: 1.25, ms: 400 },
     "blood-pool": { base: "hit-kill", dist: 4.6, variant: "gutclutch", pool: true, ms: 8000 },

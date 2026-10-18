@@ -80,7 +80,7 @@ export const DEATH = {
   headKick: 6,
   /** The headshot's helmet pop: the share of headshots, and how it leaves (m/s along the round, up, tumble). */
   helmetChance: 0.4,
-  helmet: { along: 3.2, up: 2.6, spin: 9 },
+  helmet: { along: 2.6, up: 1.5, spin: 8 },
   blownMul: 1.5,
   blownUp: 1.5,
   /** The impulse carries the posed body along the round for about this long (s) before the pose holds it. */
@@ -359,9 +359,11 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
       p.pitch = -0.08 * slam - 0.2 * slide;
       p.head = 0.15 * slam + 0.45 * smooth((t - 900) / 300);
       p.roll = 0.04 * sg * smooth((t - 700) / 500);
-      p.footL.z = p.footR.z = p.fz + 0.62 * slide + 0.12 * (1 - slide) * slam;
-      p.footL.x = STANCE_L.x + 0.1 * slide;
-      p.footR.x = STANCE_R.x - 0.1 * slide;
+      // Legs out long and splayed, knees soft: a sit, not a squat (raised knees crossed into an X from the front).
+      p.footL.z = p.footR.z = p.fz + 0.84 * slide + 0.12 * (1 - slide) * slam;
+      p.footL.x = STANCE_L.x + 0.17 * slide;
+      p.footR.x = STANCE_R.x - 0.13 * slide;
+      p.footR.z += 0.06 * slide;
       // Hands fall to the floor beside him.
       hL.set(0.34, Math.max(0.05, REST.handL.y - 0.8 * slide), p.fz + 0.14);
       hR.set(-0.34, Math.max(0.05, REST.handR.y - 0.8 * slide), p.fz + 0.14);
