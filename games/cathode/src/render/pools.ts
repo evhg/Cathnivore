@@ -128,12 +128,19 @@ ${mirrorOn ? "uniform sampler2D uRefl;\nuniform mat4 uReflMatrix;\nuniform float
   diffuseColor.a = inner * 0.96;`,
         )
         .replace(
+          "#include <emissivemap_fragment>",
+          `#include <emissivemap_fragment>
+  // Lifted out of the noir grade like the rest of the blood (S4.5's "emissive lift, ignoring local light"): a
+  // pool on black asphalt has to read as blood, not as more wet street.
+  totalEmissiveRadiance += diffuseColor.rgb * ( 1.6 + 2.2 * ( 1.0 - vPool.x ) ) * ( 1.0 - 0.5 * rim );`,
+        )
+        .replace(
           "#include <normal_fragment_maps>",
           `#include <normal_fragment_maps>
   // Flat as standing water in the middle; the rim curls a little (a meniscus), which catches a highlight.
   {
     vec3 pUp = normalize( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz );
-    vec3 pOut = normalize( ( viewMatrix * vec4( pc.x, 0.0, -pc.y, 0.0 ) ).xyz );
+    vec3 pOut = ( viewMatrix * vec4( pc.x, 0.0, -pc.y, 0.0 ) ).xyz;
     normal = normalize( pUp + pOut * rim * 0.6 );
   }`,
         );
@@ -146,7 +153,7 @@ ${mirrorOn ? "uniform sampler2D uRefl;\nuniform mat4 uReflMatrix;\nuniform float
     vec2 pUv = pRC.xy / pRC.w;
     vec3 pRefl = textureLod( uRefl, pUv, 0.0 ).rgb * 0.5 + textureLod( uRefl, pUv + vec2( 0.003, 0.0 ), 0.0 ).rgb * 0.25 + textureLod( uRefl, pUv - vec2( 0.003, 0.0 ), 0.0 ).rgb * 0.25;
     // Blood is thicker than rain water: the mirror is a little darker and redder, but it is a mirror.
-    radiance = mix( radiance, pRefl * vec3( 1.0, 0.82, 0.8 ) * 1.25, uReflOn );
+    radiance = mix( radiance, pRefl * vec3( 1.0, 0.42, 0.38 ) * 1.5, uReflOn );
   }`,
         );
     };

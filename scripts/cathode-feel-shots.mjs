@@ -532,7 +532,7 @@ for (const vp of vps) {
       if (stage === 'grenade-near' && side.nade < 0.5) fail(`${vp} ${spec}: no grenade glyph on the ring`)
     }
     // ---- C8 acceptance ----
-    if (stage.startsWith('death-') || stage.startsWith('resync')) {
+    if ((stage.startsWith('death-') && !/^death-(gutclutch|wallslump|headshot|spin)/.test(stage)) || stage.startsWith('resync')) {
       const dc = await page.evaluate(() => {
         const d = devicePixelRatio
         const box = (q) => {

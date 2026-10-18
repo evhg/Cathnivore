@@ -103,7 +103,7 @@ export const tuning = {
    * bright red to salmon (1.1 radiance maps to about rgb 216,118,103; 0.45 keeps a red 176,85,78 rim over a deep 105,38,35 face).
    * 0.32 since the glow takes its fog back off (C2 fix): unfogged, 0.45 lit the whole corpse salmon at 5K.
    */
-  hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6, death: { level: 0.32, holdMs: 500, fadeMs: 1400, red: [1, 0.02, 0.01] as const } },
+  hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6, death: { level: 0.32, holdMs: 500, fadeMs: 1400, red: [1, 0.02, 0.01] as const, rimGain: 2.2, rimPow: 3 } },
   /**
    * C5 "Kestrel 9 in motion" (S2.2 to S2.4): the pistol's choreography. Times in ms from the trigger breaking,
    * distances in metres, angles in degrees (converted where used).

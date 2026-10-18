@@ -136,15 +136,18 @@ describe("CATHODE hit flash (S4.1)", () => {
     expect(flashLevel(tuning.hitFlash.whiteMs + tuning.hitFlash.fadeMs + 1)).toBe(0);
   });
 
-  it("a kill makes the whole body glow red past the flash, then die away (C2: the kill shows on the body)", () => {
+  it("a kill rims the whole body's silhouette red past the flash, then dies away (C2; C9: edge only, the body keeps its shading)", () => {
     const b = new Body(enforcerLook());
     b.flash("chest");
     b.deathGlow();
     b.updateFlash(650);
     const D = tuning.hitFlash.death;
-    for (const seg of ["head", "chest", "thighL"]) expect(b.flashOf(seg)).toBeGreaterThan(D.level * 0.3);
-    b.updateFlash(D.holdMs + D.fadeMs);
+    expect(b.rimUniform.value.x).toBeGreaterThan(D.level * 0.3);
+    expect(b.rimUniform.value.x).toBeGreaterThan(b.rimUniform.value.y * 20);
+    // The faces aren't filled: the segment flash has died away.
     expect(b.flashOf("head")).toBe(0);
+    b.updateFlash(D.holdMs + D.fadeMs);
+    expect(b.rimUniform.value.x).toBe(0);
   });
 
   it("lights only the hit segment, through one shared uniform with no material clones", () => {

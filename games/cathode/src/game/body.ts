@@ -283,7 +283,7 @@ function patchFlash(mat: THREE.Material, uniform: { value: THREE.Vector3[] }, ri
       // that would wash it to salmon (the phone's thick haze, C2 review) is taken back off.
       .replace(
         "#include <fog_fragment>",
-        "vec3 hfPre = gl_FragColor.rgb;\n#include <fog_fragment>\n#ifdef USE_FOG\ngl_FragColor.rgb = mix( gl_FragColor.rgb, hfPre, fogFactor * clamp( vHitFlash.r * 3.0 + uEdgeRim.b * pow( hfRim, uEdgeRim.w ) * 2.0, 0.0, 0.9 ) );\n#endif",
+        "vec3 hfPre = gl_FragColor.rgb;\n#include <fog_fragment>\n#ifdef USE_FOG\ngl_FragColor.rgb = mix( gl_FragColor.rgb, hfPre, fogFactor * clamp( vHitFlash.r * 3.0 + max( uEdgeRim.r, uEdgeRim.b ) * pow( hfRim, uEdgeRim.w ) * 2.0, 0.0, 0.9 ) );\n#endif",
       );
   };
   const key = m.customProgramCacheKey?.bind(m);
@@ -404,6 +404,7 @@ export class Body {
     this.flashAge.fill(1e9);
     for (const v of this.flashUniform.value) v.set(0, 0, 0);
     this.flashing = false;
+    this.rimUniform.value.set(0, 0, 0, 3);
   }
 
   /** Advances the flash on real time (it shows through a hit-stop). */
@@ -429,13 +430,15 @@ export class Body {
       dk = a < D.holdMs ? L : a < D.holdMs + D.fadeMs ? L * (1 - (a - D.holdMs) / D.fadeMs) ** 2 : 0;
       if (dk > 0) any = true;
       else this.deathAge = 1e9;
+      // C9: the kill glow lives on the silhouette only (the edge rim), so the falling body keeps its own shading
+      // and the pose reads; a flat red fill turned every death into a red mannequin.
+      this.rimUniform.value.set(D.red[0] * dk * D.rimGain, D.red[1] * dk * D.rimGain, D.red[2] * dk * D.rimGain, D.rimPow);
     }
     for (let i = 1; i < FLASH_SLOTS; i++) {
       const age = (this.flashAge[i] = this.flashAge[i]! + dtMs);
       const v = this.flashUniform.value[i]!;
       const k = flashLevel(age);
       if (age < F.whiteMs) v.setScalar(k);
-      else if (dk > k) v.set(D.red[0] * dk, D.red[1] * dk, D.red[2] * dk);
       else v.set(F.red[0] * k, F.red[1] * k, F.red[2] * k);
       if (k > 0) any = true;
     }

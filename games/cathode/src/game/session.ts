@@ -868,6 +868,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const found = progress.rollLoot(k.enemy.level, !!k.enemy.kit.elite);
     if (!k.takedown) found.gun = gunDrop(k.enemy.kit.role, Math.random());
     const at = k.enemy.position.clone();
+    // C9: gear falls beside him (on his left), so its beacon doesn't stand through the body.
+    if (!found.gun) at.add(new THREE.Vector3(Math.cos(k.enemy.motion.yaw) * 0.75, 0, -Math.sin(k.enemy.motion.yaw) * 0.75));
     at.y = world.groundHeight(at.x, at.z);
     // C9: a gun in the loot is the one in his hands: it falls from them (his own rifle model goes) and lies where it lands.
     const eb = k.enemy.body;
@@ -3319,8 +3321,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const d = new THREE.Vector3(Math.sin(a), 0, Math.cos(a));
         const from = eye.clone().setY(ground(eye.x, eye.z) + 1.2);
         const h = rays.cast(from, d, 10, { thin: false });
-        if (h && h.dist > 4.8 && Math.abs(h.normal.y) < 0.3 && Math.abs(h.dist - 6.2) < best) {
-          best = Math.abs(h.dist - 6.2);
+        // Prefer a lit wall: a slump in the dark reads as nothing.
+        const score = h ? Math.abs(h.dist - 6.2) - Math.min(1, world.lightAt(h.point.clone().addScaledVector(h.normal, 0.4).setY(ground(h.point.x, h.point.z) + 0.8))) * 4 : Infinity;
+        if (h && h.dist > 4.8 && Math.abs(h.normal.y) < 0.3 && score < best) {
+          best = score;
           at = from.clone().addScaledVector(d, h.dist - 0.9);
           flat.copy(d);
         }
@@ -3406,6 +3410,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     combat.quiet = false;
     combat.forceVariant = null;
     drainEvents();
+    // A death stage shows the death: no loot beam standing through the body.
+    if (c9) pickups.clear();
     const hitAt = (lastHitPoint as THREE.Vector3 | null)?.clone() ?? aim.clone();
     const head0 = toScreen(g.body.joints.head);
     // The world moves on to the stage's moment: the body flinches or falls, blood flies and lands (S0, C2).
@@ -3430,7 +3436,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const pl = gp?.pools[gp.pools.length - 1];
       const focus = c9.pool && pl ? pl.at.clone() : g.body.joints.chest.clone().lerp(g.body.joints.pelvis, 0.5).lerp(g.body.joints.head, c9.variant === "wallslump" ? 0.3 : 0);
       const back = new THREE.Vector3(eye.x - focus.x, 0, eye.z - focus.z);
-      const want = c9.pool ? 3.4 : 3.9;
+      const want = c9.pool ? 3.2 : 3.3;
       if (back.length() > want) {
         back.setLength(back.length() - want);
         player.pos.sub(back);
@@ -3441,7 +3447,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.camera.getWorldPosition(eye);
       const look2 = focus.clone().add(new THREE.Vector3(0, c9.pool ? 0 : 0.1, 0)).sub(eye).normalize();
       player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1)) + (c9.pool ? 0.04 : 0);
-      player.yaw = Math.atan2(-look2.x, -look2.z);
+      // A touch off centre to the left, clear of the gun in her right hand.
+      player.yaw = Math.atan2(-look2.x, -look2.z) - 0.13;
       player.applyCamera(world.camera, 0);
       world.camera.updateMatrixWorld();
       if (pl) {
