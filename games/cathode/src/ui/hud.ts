@@ -187,8 +187,8 @@ export class Hud {
       // Three shard shapes, sizes 0.55x to 1.4x.
       const sh = el("i", `s${i % 3}`, this.shards);
       // A fixed spread out of the bar's broken end to the right, into open screen (never up over the level chip or
-      // the objective): -58 to +22 degrees, 45 to 125u, each spinning up to 270 degrees.
-      const a = Math.PI * (-0.32 + 0.44 * (((i * 7) % 12) / 11));
+      // the objective): -40 to +25 degrees, 45 to 125u, each spinning up to 270 degrees.
+      const a = Math.PI * (-0.22 + 0.36 * (((i * 7) % 12) / 11));
       const d = 45 + 80 * (((i * 5) % 12) / 11);
       const k = 0.55 + 0.85 * (((i * 11) % 12) / 11);
       sh.style.setProperty("--x0", `${(35 + (i / 11) * 62).toFixed(1)}%`);
