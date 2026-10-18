@@ -104,7 +104,9 @@ export class Audio {
   private muffle: BiquadFilterNode;
   private woundMuffle: BiquadFilterNode;
   /** C7: the breath loop (lazy: built the first time she's hurt). */
-  private breathNode: { f: BiquadFilterNode; g: GainNode } | null = null;
+  private breathNode: { n: AudioBufferSourceNode; f: BiquadFilterNode; g: GainNode } | null = null;
+  /** Seconds the breath has sat at level 0: after 3 s its looping source is stopped (rebuilt when needed). */
+  private breathIdle = 0;
   private breathPh = 0;
   /** The wounded heart is beating: the slow-motion heartbeat stands down so there's only ever one heart. */
   private woundHeart = false;
@@ -686,8 +688,23 @@ export class Audio {
       g.gain.value = 0;
       n.connect(f).connect(g).connect(this.dry);
       n.start();
-      this.breathNode = { f, g };
+      this.breathNode = { n, f, g };
+      this.breathIdle = 0;
     }
+    // Fine again: let the gain fall, then stop the looping noise and its band-pass instead of running them
+    // silent for the rest of the session.
+    if (o.breathLevel <= 0.001) {
+      this.breathIdle += dt;
+      if (this.breathIdle > 3) {
+        const b = this.breathNode;
+        b.n.stop();
+        b.n.disconnect();
+        b.f.disconnect();
+        b.g.disconnect();
+        this.breathNode = null;
+        return;
+      }
+    } else this.breathIdle = 0;
     this.breathPh += dt * o.breathHz;
     const s = Math.sin(this.breathPh * Math.PI * 2);
     // In (s > 0) is brighter and shorter-sounding; out is lower and longer. Both swell and fall with the breath.
