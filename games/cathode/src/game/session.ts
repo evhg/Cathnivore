@@ -195,7 +195,7 @@ export interface Session {
   /** C8: deaths this visit (a restart counts one). */
   deaths?: number;
   /** C8: the death sequence while it runs (ms since the blow, and whether the card is up), else null. */
-  dying?: { ms: number; card: boolean; killer: string | null } | null;
+  dying?: { ms: number; card: boolean; killer: string | null; gun?: number[] | null } | null;
   /** C6 (S6.1): Guard and Flesh. `hp` mirrors their total; writing `hp` from outside still works. */
   vitals?: Vitals;
   /** C6: a hit on Cath of `amount` from a world point (null: straight ahead), with every readout. */
@@ -2100,12 +2100,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     flares: number;
     splats: number;
     lastPress: boolean;
+    /** The killer's visor material and its resting glow (it flares twice as he stands down). */
+    visor: THREE.MeshStandardMaterial | null;
+    visorBase: number;
+    /** The cool light that rims him against the street while she lies there (handed back on Retry). */
+    rimOff: (() => void) | null;
   }
   let dying: Dying | null = null;
   let droppedGun: THREE.Object3D | null = null;
   /** Screenshot stages: back to the living, from any death stage. */
   function clearDeath(): void {
     if (dying?.killer) dying.killer.standDown = null;
+    if (dying?.visor) dying.visor.emissiveIntensity = dying.visorBase;
+    dying?.killer?.body.setRim(0, 0, 0);
+    dying?.rimOff?.();
     for (const e of enemies) e.standDown = null;
     dying = null;
     dead = false;
@@ -2181,7 +2189,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       touch: input.isTouch,
     });
     screen.setKiller(near ? near.kit.name : "");
-    dying = { t: 0, cam, killer: near, killerName: near?.kit.name ?? "", gun: null, cardShown: false, cardAt: 0, resync: -1, flares: 0, splats: 0, lastPress: true };
+    const visor = near ? ((near.body.look.visor as THREE.MeshStandardMaterial).isMeshStandardMaterial ? (near.body.look.visor as THREE.MeshStandardMaterial) : null) : null;
+    dying = { t: 0, cam, killer: near, killerName: near?.kit.name ?? "", gun: null, cardShown: false, cardAt: 0, resync: -1, flares: 0, splats: 0, lastPress: true, visor, visorBase: visor?.emissiveIntensity ?? 0, rimOff: null };
     // The hit frame: the flare at full, a splat on the hit side.
     hurtV = 1;
     if (from) hurtDir.set(Math.sin(bearingTo(from as THREE.Vector3)), Math.cos(bearingTo(from as THREE.Vector3)));
@@ -2256,18 +2265,36 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     d.cam.update(fdt);
     world.camera.position.copy(d.cam.pos);
     world.camera.rotation.set(d.cam.pitch, d.cam.yaw, d.cam.roll, "YXZ");
-    world.camera.fov = st.fov;
+    // Down, the lens pushes in on him over 900 ms until he stands about 40% of the frame tall: at fighting range he
+    // is a man, not a dot (a slow telephoto push, the eye finding him).
+    const push = d.killer ? Math.min(1, Math.max(0, (d.t - DT.fallEndMs) / 900)) : 0;
+    let fovK = st.fov;
+    if (d.killer) {
+      const dist = Math.max(2, d.killer.position.distanceTo(world.camera.position));
+      fovK = THREE.MathUtils.clamp(2 * THREE.MathUtils.radToDeg(Math.atan(DT.killerFrameM / dist)), DT.killerFov[0], DT.killerFov[1]);
+    }
+    world.camera.fov = st.fov - (st.fov - Math.min(st.fov, fovK)) * push * push * (3 - 2 * push);
     world.camera.updateProjectionMatrix();
     // The gun drops out of her hand at 120 ms and lands at 500 to 800 ms.
     if (!d.gun && d.t >= DT.gunDropMs) dropGun(d);
     d.gun?.update(fdt);
     arsenal.rig.root.visible = false;
-    // The killer: his visor flares twice as he stands down over her (900 ms, 1150 ms).
+    // The killer: his visor flares twice as he stands down over her (900 ms, 1150 ms), and from the moment she's
+    // down a cool light behind and above him cuts his outline out of the street (S6.6: the camera frames him).
     if (d.killer) {
       const want = d.t >= 1150 ? 2 : d.t >= DT.fallEndMs ? 1 : 0;
-      while (d.flares < want) {
-        d.flares++;
-        d.killer.body.flash("head");
+      while (d.flares < want) d.flares++;
+      if (d.visor) {
+        const f = (at: number) => (d.t >= at ? Math.exp(-(d.t - at) / 140) : 0);
+        d.visor.emissiveIntensity = d.visorBase * (1 + 3 * (f(DT.fallEndMs) + f(1150)));
+      }
+      // The rim comes up as she lands (500 to 900 ms) and holds.
+      const rimK = Math.min(1, Math.max(0, (d.t - 500) / 400));
+      d.killer.body.setRim(0.09 * rimK, 0.16 * rimK, 0.26 * rimK);
+      if (!d.rimOff && d.t >= 500 && worldLight) {
+        const k = d.killer.position;
+        const away = new THREE.Vector3(k.x - player.pos.x, 0, k.z - player.pos.z).normalize();
+        d.rimOff = worldLight(k.clone().addScaledVector(away, 1.6).add(new THREE.Vector3(0, 2.4, 0)), new THREE.Color(0.55, 0.72, 1), 14, 5.5);
       }
     }
     // Two more splats on the lens during the fall (300 ms, 600 ms).
@@ -2298,7 +2325,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       else if (d.t - d.cardAt >= DT.cardRetryAfterMs && intent.fire && !d.lastPress) retry();
     }
     d.lastPress = press;
-    s.dying = { ms: d.t, card: d.cardShown, killer: d.killerName || null };
+    s.dying = { ms: d.t, card: d.cardShown, killer: d.killerName || null, gun: d.gun ? d.gun.obj.position.toArray() : null };
   }
 
   /** Retry (S6.6): the ink recedes, a glitch, then black while the job is rebuilt; the next session fades in. */

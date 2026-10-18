@@ -408,14 +408,14 @@ const GradeShader = {
           float edge = min( min( vUv.x, 1.0 - vUv.x ) * uRes.x / uRes.y, min( vUv.y, 1.0 - vUv.y ) );
           float front = uInk * 0.62;
           float k = edge + ( n - 0.5 ) * 0.26 + ( fbm( q * 14.0 + 7.0 ) - 0.5 ) * 0.05;
-          float inkA = ( 1.0 - smoothstep( front - 0.04, front + 0.02, k ) ) * smoothstep( 0.0, 0.3, uInk );
+          float inkA = ( 1.0 - smoothstep( front - 0.018, front + 0.008, k ) ) * smoothstep( 0.0, 0.3, uInk );
           // The centre stays visible: the ink never reaches inside 18% of the height.
           inkA *= smoothstep( 0.16, 0.3, ra );
           // Blood ink (S6.6 --blood at 0.85), dark and uneven: thick where the noise pools, near black at the frame's
           // edge, a thin brighter film at the front where it is still running. Reduced violence: --night-3.
           float n2 = fbm( q * 9.0 - vec2( 3.1, uTime * 0.03 ) );
           float depth = smoothstep( 0.0, front, front - k );
-          vec3 inkC = mix( vec3( 0.105, 0.002, 0.008 ), vec3( 0.012, 0.0005, 0.002 ), depth * 0.85 + ( n2 - 0.5 ) * 0.5 );
+          vec3 inkC = mix( vec3( 0.075, 0.0015, 0.006 ), vec3( 0.006, 0.0003, 0.001 ), clamp( depth * 0.8 + ( n2 - 0.5 ) * 1.1, 0.0, 1.0 ) );
           inkC = mix( inkC, vec3( 0.0085, 0.009, 0.014 ), uInkGrey );
           float rim = smoothstep( front - 0.05, front, k ) * ( 1.0 - smoothstep( front, front + 0.02, k ) );
           mapped = mix( mapped, inkC, inkA * 0.85 );

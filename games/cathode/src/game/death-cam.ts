@@ -245,8 +245,9 @@ export class DeathCam {
         if (p.y < fl) {
           p.y = fl;
           const q = this.prev[i]!;
-          q.x += (p.x - q.x) * 0.35;
-          q.z += (p.z - q.z) * 0.35;
+          // Wet concrete and a coat: the body grips the floor, it doesn't skate.
+          q.x += (p.x - q.x) * 0.7;
+          q.z += (p.z - q.z) * 0.7;
           if (q.y < p.y) q.y = p.y;
         }
       }

@@ -421,6 +421,17 @@ export class Body {
   }
 
   /** Advances the flash on real time (it shows through a hit-stop). */
+  /**
+   * C8 (S6.6): a steady rim on every segment, on top of any hit flash: the killer standing over her body is cut out
+   * of the street in a cold edge light. (0, 0, 0) turns it off.
+   */
+  setRim(r: number, g: number, b: number): void {
+    this.rim.set(r, g, b);
+    this.flashing = true;
+    this.updateFlash(0);
+  }
+  private readonly rim = new THREE.Vector3();
+
   updateFlash(dtMs: number): void {
     if (!this.flashing) return;
     const F = flashTuning;
@@ -442,8 +453,9 @@ export class Body {
       else if (dk > k) v.set(D.red[0] * dk, D.red[1] * dk, D.red[2] * dk);
       else v.set(F.red[0] * k, F.red[1] * k, F.red[2] * k);
       if (k > 0) any = true;
+      v.add(this.rim);
     }
-    this.flashing = any;
+    this.flashing = any || this.rim.lengthSq() > 0;
   }
 
   /** The flash on a segment right now (for tests and the stage hooks): 0 when dark. */
