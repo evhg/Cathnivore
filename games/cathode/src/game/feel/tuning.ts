@@ -194,6 +194,8 @@ export const tuning = {
     killerFrame: 0.92,
     killerFov: [22, 44] as const,
     killerFrameM: 2.6,
+    pushFromMs: 700,
+    pushMs: 700,
     driftDegS: 0.4,
     reducedSlideM: 0.8,
     gunDropMs: 120,

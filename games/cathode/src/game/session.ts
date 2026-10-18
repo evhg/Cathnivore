@@ -2267,9 +2267,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     d.cam.update(fdt);
     world.camera.position.copy(d.cam.pos);
     world.camera.rotation.set(d.cam.pitch, d.cam.yaw, d.cam.roll, "YXZ");
-    // Down, the lens pushes in on him over 900 ms until he stands about 40% of the frame tall: at fighting range he
+    // As she lands, the lens pushes in on him (700 to 1400 ms) until he stands about 40% of the frame tall: at fighting range he
     // is a man, not a dot (a slow telephoto push, the eye finding him).
-    const push = d.killer ? Math.min(1, Math.max(0, (d.t - DT.fallEndMs) / 900)) : 0;
+    const push = d.killer ? Math.min(1, Math.max(0, (d.t - DT.pushFromMs) / DT.pushMs)) : 0;
     let fovK = st.fov;
     if (d.killer) {
       const dist = Math.max(2, d.killer.position.distanceTo(world.camera.position));
