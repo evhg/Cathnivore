@@ -276,7 +276,7 @@ export function tagUnflashed(o: THREE.Object3D): void {
  * so a hit lights only its segment with no per-hit material clones. Added to the emissive radiance, so it
  * reads in the dark grade.
  */
-function patchFlash(mat: THREE.Material, uniform: { value: THREE.Vector3[] }): void {
+function patchFlash(mat: THREE.Material, uniform: { value: THREE.Vector3[] }, rim: { value: THREE.Vector3 }): void {
   const m = mat as THREE.MeshStandardMaterial;
   if (m.userData.flashPatched) return;
   m.userData.flashPatched = true;
@@ -284,16 +284,17 @@ function patchFlash(mat: THREE.Material, uniform: { value: THREE.Vector3[] }): v
   m.onBeforeCompile = (shader, r) => {
     prev?.call(m, shader, r);
     shader.uniforms.uHitFlash = uniform;
+    shader.uniforms.uEdgeRim = rim;
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", `#include <common>\nattribute float aSeg;\nuniform vec3 uHitFlash[${FLASH_SLOTS}];\nvarying vec3 vHitFlash;`)
       .replace("#include <begin_vertex>", "#include <begin_vertex>\nvHitFlash = uHitFlash[ int( aSeg + 0.5 ) ];");
     shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", "#include <common>\nvarying vec3 vHitFlash;")
+      .replace("#include <common>", "#include <common>\nvarying vec3 vHitFlash;\nuniform vec3 uEdgeRim;")
       // Hottest at the silhouette (a rim), so the hit segment glows at its edges instead of turning into a
       // flat painted box; the face toward the camera keeps a third of it.
       .replace(
         "#include <emissivemap_fragment>",
-        "#include <emissivemap_fragment>\nfloat hfRim = 1.0 - clamp( dot( normalize( normal ), normalize( vViewPosition ) ), 0.0, 1.0 );\ntotalEmissiveRadiance += vHitFlash * ( 0.3 + 0.7 * hfRim * hfRim );",
+        "#include <emissivemap_fragment>\nfloat hfRim = 1.0 - clamp( dot( normalize( normal ), normalize( vViewPosition ) ), 0.0, 1.0 );\ntotalEmissiveRadiance += vHitFlash * ( 0.3 + 0.7 * hfRim * hfRim );\n// C8: the edge light on the killer: silhouette only (the suit stays dark).\ntotalEmissiveRadiance += uEdgeRim * pow( hfRim, 3.0 );",
       )
       // A glowing body cuts through the street's fog: where the flash or the death glow is lit, most of the fog
       // that would wash it to salmon (the phone's thick haze, C2 review) is taken back off.
@@ -376,7 +377,7 @@ export class Body {
       this.joints[j] = REST[j].clone().multiplyScalar(scale);
       this.prev[j] = this.joints[j].clone();
     }
-    for (const m of [look.armour, look.suit, look.visor, look.boot]) patchFlash(m, this.flashUniform);
+    for (const m of [look.armour, look.suit, look.visor, look.boot]) patchFlash(m, this.flashUniform, this.rimUniform);
     for (const [i, def] of SEGMENTS.entries()) {
       const len = REST[def.from].distanceTo(REST[def.to]) * scale;
       const group = buildSegment(def.name, len, look, i + 1);
@@ -426,11 +427,10 @@ export class Body {
    * of the street in a cold edge light. (0, 0, 0) turns it off.
    */
   setRim(r: number, g: number, b: number): void {
-    this.rim.set(r, g, b);
-    this.flashing = true;
-    this.updateFlash(0);
+    this.rimUniform.value.set(r, g, b);
   }
-  private readonly rim = new THREE.Vector3();
+  /** The edge-only rim light (setRim): applied at the silhouette alone, never on the face of the suit. */
+  readonly rimUniform = { value: new THREE.Vector3() };
 
   updateFlash(dtMs: number): void {
     if (!this.flashing) return;
@@ -453,9 +453,8 @@ export class Body {
       else if (dk > k) v.set(D.red[0] * dk, D.red[1] * dk, D.red[2] * dk);
       else v.set(F.red[0] * k, F.red[1] * k, F.red[2] * k);
       if (k > 0) any = true;
-      v.add(this.rim);
     }
-    this.flashing = any || this.rim.lengthSq() > 0;
+    this.flashing = any;
   }
 
   /** The flash on a segment right now (for tests and the stage hooks): 0 when dark. */

@@ -2196,7 +2196,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // The hit frame: the flare at full, a splat on the hit side.
     hurtV = 1;
     if (from) hurtDir.set(Math.sin(bearingTo(from as THREE.Vector3)), Math.cos(bearingTo(from as THREE.Vector3)));
-    lens.splat(hurtDir.x, hurtDir.y, woundClock, true);
+    // Reduced violence: no lens blood in the death (S6.6), not even its rain stand-in.
+    if (o.intensity !== "reduced") lens.splat(hurtDir.x, hurtDir.y, woundClock, true);
     arsenal.triggerHeld = false;
     arsenal.aiming = false;
     audio?.death();
@@ -2292,18 +2293,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
       // The rim comes up as she lands (500 to 900 ms) and holds.
       const rimK = Math.min(1, Math.max(0, (d.t - 500) / 400));
-      d.killer.body.setRim(0.09 * rimK, 0.16 * rimK, 0.26 * rimK);
+      // Edge-only (body.ts): the suit stays dark, outlined in a cold line, not lit into a pale mannequin.
+      d.killer.body.setRim(0.16 * rimK, 0.27 * rimK, 0.46 * rimK);
       if (!d.rimOff && d.t >= 500 && worldLight) {
         const k = d.killer.position;
         const away = new THREE.Vector3(k.x - player.pos.x, 0, k.z - player.pos.z).normalize();
-        d.rimOff = worldLight(k.clone().addScaledVector(away, 1.6).add(new THREE.Vector3(0, 2.4, 0)), new THREE.Color(0.55, 0.72, 1), 14, 5.5);
+        d.rimOff = worldLight(k.clone().addScaledVector(away, 1.6).add(new THREE.Vector3(0, 2.4, 0)), new THREE.Color(0.55, 0.72, 1), 6, 5.5);
       }
     }
     // Two more splats on the lens during the fall (300 ms, 600 ms).
     const splatsWant = d.t >= 600 ? 2 : d.t >= 300 ? 1 : 0;
     while (d.splats < splatsWant) {
       d.splats++;
-      lens.splat(d.splats === 1 ? -hurtDir.y : hurtDir.x * 0.6, d.splats === 1 ? hurtDir.x : -0.7, woundClock, true);
+      if (o.intensity !== "reduced") lens.splat(d.splats === 1 ? -hurtDir.y : hurtDir.x * 0.6, d.splats === 1 ? hurtDir.x : -0.7, woundClock, true);
     }
     woundClock += fdt;
     lens.update(fdt);
@@ -2354,7 +2356,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (!dying?.cardShown || dying.resync >= 0) return;
       if (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") {
         e.preventDefault();
-        if (screen.focused === 1 && e.code !== "Enter") quitToTitle();
+        // Enter and Space both activate the focused action (the bar shows which); Esc is Quit's shortcut.
+        if (screen.focused === 1) quitToTitle();
         else retry();
       } else if (e.code === "Escape") quitToTitle();
       else if (e.code === "ArrowDown" || e.code === "ArrowUp" || e.code === "Tab" || e.code === "KeyS" || e.code === "KeyW") {
@@ -2382,6 +2385,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     input.dispose();
     worldOff?.();
     for (const rm of leasedLights.splice(0)) rm();
+    // What the world keeps (its own materials and textures, shared with some of the session's objects) is never disposed.
+    const keepMats = new Set<THREE.Material>();
+    const keepTex = new Set<THREE.Texture>();
+    for (const [sc, keep] of [
+      [world.scene, baseline.scene],
+      [world.viewScene, baseline.view],
+    ] as const) {
+      for (const c of sc.children) {
+        if (!keep.has(c)) continue;
+        c.traverse((n) => {
+          const m = (n as THREE.Mesh).material;
+          for (const mat of m ? (Array.isArray(m) ? m : [m]) : []) {
+            keepMats.add(mat);
+            for (const v of Object.values(mat)) if ((v as THREE.Texture | null)?.isTexture) keepTex.add(v as THREE.Texture);
+          }
+        });
+      }
+    }
     for (const [sc, keep] of [
       [world.scene, baseline.scene],
       [world.viewScene, baseline.view],
@@ -2389,7 +2410,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       for (const c of [...sc.children]) {
         if (keep.has(c)) continue;
         sc.remove(c);
-        c.traverse((n) => (n as THREE.Mesh).geometry?.dispose?.());
+        c.traverse((n) => {
+          const m = n as THREE.Mesh;
+          m.geometry?.dispose?.();
+          // Per-body materials (body.ts, enemy.ts) and their textures go too, or every Retry leaks GPU programs' state.
+          for (const mat of m.material ? (Array.isArray(m.material) ? m.material : [m.material]) : []) {
+            if (keepMats.has(mat)) continue;
+            for (const v of Object.values(mat)) if ((v as THREE.Texture | null)?.isTexture && !keepTex.has(v as THREE.Texture)) (v as THREE.Texture).dispose();
+            mat.dispose();
+          }
+        });
       }
     }
     world.colliders.length = 0;
