@@ -137,6 +137,8 @@ const GradeShader = {
     // inside one, so the street around the blood costs nothing.
     uLensRect: { value: [0, 1, 2, 3].map(() => new THREE.Vector4(2, 2, 2, 2)) },
     uLensWipe: { value: -1 },
+    // Reduced violence (S6.4): the same slots render as grey rain on the lens, never blood.
+    uLensWater: { value: 0 },
     uBloodTex: { value: null as THREE.Texture | null },
     // uBlur: the wound's radial smear is on (desktop high and ultra). uFxCa: the Damage effects setting's CA and
     // smear (1 Full and Reduced, 0 Minimal; S9.8).
@@ -164,6 +166,7 @@ const GradeShader = {
     uniform vec4 uLensB[ 4 ];
     uniform vec4 uLensRect[ 4 ];
     uniform float uLensWipe;
+    uniform float uLensWater;
     uniform sampler2D uBloodTex;
     uniform float uBlur;
     uniform float uFxCa;
@@ -196,7 +199,7 @@ const GradeShader = {
     }
 
     // One lens slot (see main): nothing at all outside its box.
-    void lensSlot( vec4 L, vec4 B, vec4 R, inout float film, inout vec2 fg ) {
+    void lensSlot( vec4 L, vec4 B, vec4 R, inout float film, inout vec2 fg, inout float glint ) {
       if ( vUv.x < R.x || vUv.y < R.y || vUv.x > R.z || vUv.y > R.w ) return;
       vec2 s = ( vUv - L.xy ) * vec2( uRes.x / uRes.y, 1.0 );
       s.y += B.z * 0.34;
@@ -206,6 +209,7 @@ const GradeShader = {
       vec4 t = texture2D( uBloodTex, ( B.xy + clamp( q, 0.0, 1.0 ) ) * 0.5 );
       float wm = uLensWipe < 0.0 ? 1.0 : smoothstep( uLensWipe * 1.2 - 0.16, uLensWipe * 1.2 - 0.04, vUv.x );
       film = max( film, t.r * L.z * wm );
+      glint = max( glint, t.a * L.z * wm );
       // The slope back into screen space (the inverse turn).
       fg += mat2( cr, sr, -sr, cr ) * ( t.gb - 0.5 ) * L.z * wm;
     }
@@ -220,12 +224,13 @@ const GradeShader = {
       // the film (refraction) before anything else samples the frame. Everywhere else the wound is arithmetic:
       // no extra fetch and no extra pass (S6.4: no new full-screen pass on phone).
       float film = 0.0;
+      float glint = 0.0;
       vec2 fg = vec2( 0.0 );
       if ( uLensOn > 0.5 ) {
-        lensSlot( uLens[ 0 ], uLensB[ 0 ], uLensRect[ 0 ], film, fg );
-        lensSlot( uLens[ 1 ], uLensB[ 1 ], uLensRect[ 1 ], film, fg );
-        lensSlot( uLens[ 2 ], uLensB[ 2 ], uLensRect[ 2 ], film, fg );
-        lensSlot( uLens[ 3 ], uLensB[ 3 ], uLensRect[ 3 ], film, fg );
+        lensSlot( uLens[ 0 ], uLensB[ 0 ], uLensRect[ 0 ], film, fg, glint );
+        lensSlot( uLens[ 1 ], uLensB[ 1 ], uLensRect[ 1 ], film, fg, glint );
+        lensSlot( uLens[ 2 ], uLensB[ 2 ], uLensRect[ 2 ], film, fg, glint );
+        lensSlot( uLens[ 3 ], uLensB[ 3 ], uLensRect[ 3 ], film, fg, glint );
         uv += fg * 0.022 * vec2( uRes.y / uRes.x, 1.0 );
         c = uv - 0.5;
       }
@@ -294,43 +299,53 @@ const GradeShader = {
           float lobe = max( 0.0, dot( c, uHurtDir ) * inversesqrt( r2 + 1e-6 ) ) * uHurt;
           mapped = mix( mapped, mapped * vec3( 1.1, 0.14, 0.14 ) + vec3( 0.16, 0.004, 0.012 ), min( 1.0, lobe * lobe * smoothstep( 0.25, 0.7, ra ) * 0.9 ) );
         }
-        // Regen (S6.3): cold light pushing the red back. A soft wash over the vignette's inner reach (no line, no
-        // edge: two reviews read a band there as a scope ring), at the spec's 0.15, screened on so dark street
-        // lifts toward ice and lit street barely moves, while the red under it backs off. It is broken along the
-        // ring (slow angular noise) and strongest where the vignette is darkest (the frame's left and right
-        // reaches). A stim: a green-white wash in from the edges.
+        // Regen (S6.3): cold light pushing the red back. The critical red stays (she is still hurt: the frame must
+        // agree with the HUD); only its inner reach gives ground. The cold is a narrow, broken, additive rim of low
+        // luminance riding just inside the red, its radius wandering with angle and time so no circle ever reads
+        // (three reviews saw a full-band wash as a scope ring), and it drifts outward as it fades, the red pushed
+        // back toward the corners. A stim: a green-white wash in from the edges.
         if ( uRegen + uStim > 0.001 ) {
           float r = ra;
-          float d = r - inner;
-          // No edge anywhere: a soft rise from just inside the vignette's edge to its body, gone again deep in it.
-          float wash = smoothstep( -0.03, 0.1, d ) * ( 1.0 - smoothstep( 0.12, 0.42, d ) );
           float ang = atan( c.y, c.x * uRes.x / uRes.y );
-          float along = 0.35 + 0.65 * ( 0.5 + 0.5 * sin( ang * 3.0 + 1.7 + uTime * 0.6 ) * sin( ang * 5.0 - 0.4 ) );
-          along *= 0.5 + 0.5 * smoothstep( 0.08, 0.3, r2 );
-          float s = uRegen * along * wash * 0.15;
-          // The red gives ground (the blood term backs off) and the cold light screens on over it.
-          mapped = mix( mapped, mapped * vec3( 0.7, 1.12, 1.18 ), s * 2.0 );
-          mapped = 1.0 - ( 1.0 - mapped ) * ( 1.0 - vec3( 0.4, 0.88, 1.0 ) * s );
+          float wander = 0.04 * sin( ang * 3.0 + 1.7 + uTime * 0.9 ) + 0.025 * sin( ang * 7.0 - 0.4 - uTime * 1.4 );
+          float d = r - ( inner + 0.05 + 0.1 * ( 1.0 - uRegen ) + wander );
+          float rim = exp( -d * d * 1100.0 );
+          // Broken along the ring: short runs of cold with long dark gaps (most of the circle carries none), so it
+          // reads as frost creeping in at the red's edge, never as a lit circle.
+          float brk = smoothstep( 0.5, 0.9, 0.5 + 0.5 * sin( ang * 4.0 + 0.9 + uTime * 0.5 ) * sin( ang * 7.0 - 1.1 + uTime * 0.7 ) );
+          float s = uRegen * rim * brk;
+          // Lift the red's inner edge (only where the rim runs), then add the cold on top: never a desaturating band.
+          mapped.r *= 1.0 - 0.3 * s;
+          mapped += vec3( 0.015, 0.16, 0.21 ) * s;
           mapped = mix( mapped, vec3( 0.78, 1.0, 0.86 ), uStim * smoothstep( 0.3, 0.95, r ) * 0.55 );
         }
         // The lens film itself: thin blood is a translucent red over the street, thick blood is near black, and
         // its wet rim catches the light from above.
         if ( film > 0.003 ) {
-          // Light through blood (Beer-Lambert): green and blue die almost at once, red falls off slowly, so the
-          // street shows through stained deep red and refracted, thin film to thick clot, never opaque. What lies
-          // behind is capped first, so a lit window goes deep red, never pink or white.
-          float th = smoothstep( 0.0, 0.08, film );
-          vec3 T = exp( -film * vec3( 2.4, 30.0, 27.0 ) );
-          vec3 tint = min( mapped, vec3( 0.55 ) ) * T + vec3( 0.035, 0.001, 0.002 ) * th;
-          tint.r = min( tint.r, 0.28 );
+          // Light through blood (Beer-Lambert): green and blue fall off first, red slowly, so the street shows
+          // through stained and refracted. Thin film only tints (C7 review: no saturated sticker red), the core
+          // goes near black, and what lies behind is capped first so a lit window never paints it bright.
+          float th = smoothstep( 0.0, 0.1, film );
+          if ( uLensWater > 0.5 ) {
+            // Rain on the lens (reduced violence): clear water, untinted. The refraction above already bends the
+            // street through it; it dulls a touch, its rim catches a cool edge light, and the dome glints.
+            float glw = length( fg );
+            mapped = mix( mapped, mapped * 0.75 + vec3( 0.004, 0.005, 0.007 ), th * 0.5 );
+            mapped += vec3( 0.012, 0.015, 0.02 ) * smoothstep( 0.06, 0.2, glw ) * ( 1.0 - smoothstep( 0.1, 0.3, film ) ) * th;
+            mapped += vec3( 0.5, 0.52, 0.55 ) * glint * th * 0.4;
+          } else {
+          vec3 T = exp( -film * vec3( 3.2, 15.0, 14.0 ) );
+          vec3 tint = min( mapped, vec3( 0.4 ) ) * T + vec3( 0.022, 0.002, 0.003 ) * th;
+          tint *= 1.0 - 0.65 * smoothstep( 0.12, 0.4, film );
+          tint.r = min( tint.r, 0.15 );
           mapped = mix( mapped, tint, th );
-          // Wet glass: the rim of the film bends light away (a darker meniscus), and a tight highlight from a light
-          // up and to the left rides the film's slopes.
+          // Wet glass: the thin rim of the film catches a little light (a pale, desaturated meniscus), so the splat
+          // keeps its outline against the red vignette; a few tiny glints sit on the wet dome (atlas A), never arcs.
           float gl = length( fg );
-          mapped *= 1.0 - 0.25 * smoothstep( 0.04, 0.2, gl ) * th;
-          vec3 n = normalize( vec3( -fg * 7.0, 1.0 ) );
-          float sp = pow( max( 0.0, dot( n, vec3( -0.3, 0.5, 0.81 ) ) ), 60.0 );
-          mapped += vec3( 0.42, 0.36, 0.34 ) * sp * smoothstep( 0.02, 0.08, gl ) * th * 0.5;
+          float rimL = smoothstep( 0.06, 0.2, gl ) * ( 1.0 - smoothstep( 0.06, 0.2, film ) );
+          mapped += vec3( 0.018, 0.01, 0.01 ) * rimL * th;
+          mapped += vec3( 0.55, 0.5, 0.48 ) * glint * th * 0.4;
+          }
         }
       }
       // Encode to sRGB here so FXAA (phone) works on perceptual values.

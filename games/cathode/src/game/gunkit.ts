@@ -528,20 +528,21 @@ float gkBlood = 0.0;
 // Only her hands are skinned: the gun never takes it.
 if (uGloveBlood > 0.001 && vGkSkin > 0.5) {
   float gkGlove = (1.0 - step(0.5, vMR.x)) * step(0.2, vMR.w) * (1.0 - step(0.55, vMR.y));
-  // Smears, not spots: a broad, stretched field (wiped across the back of the hand and down the fingers) with a
-  // fine grain only at its edge, up to about half the leather when soaked.
-  float gkBn = gkNoise(vLocal * vec3(22.0, 55.0, 22.0) + 3.1) * 0.8 + gkNoise(vLocal * 180.0) * 0.2;
+  // Smears, not spots or rings: a broad field stretched along the hand's length (wiped down the back of the hand
+  // and along the fingers, never banded round each finger), with a fine grain only at its edge, up to about half
+  // the leather when soaked.
+  float gkBn = gkNoise(vLocal * vec3(38.0, 9.0, 38.0) + 3.1) * 0.8 + gkNoise(vLocal * vec3(160.0, 60.0, 160.0)) * 0.2;
   float gkTh = 1.0 - uGloveBlood * 0.5;
   gkBlood = gkGlove * smoothstep(gkTh, gkTh + 0.1, gkBn);
   // Fresh at the edges, darker where it has pooled: deep red, never pink (the white sheen is off under it).
-  diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.16, 0.006, 0.007), vec3(0.055, 0.002, 0.003), smoothstep(gkTh + 0.1, gkTh + 0.3, gkBn)), gkBlood);
+  diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.1, 0.004, 0.005), vec3(0.04, 0.0015, 0.002), smoothstep(gkTh + 0.1, gkTh + 0.3, gkBn)), gkBlood);
 }`,
       )
       .replace(
         "#include <roughnessmap_fragment>",
         `float gkF2 = max(length(dFdx(vUvT)), length(dFdy(vUvT))) * 1024.0;
 float roughnessFactor = clamp(vMR.y + (gkT.a - 0.5) - gkWear * 0.2 + clamp((gkF2 - 2.0) * 0.02, 0.0, 0.15), 0.04, 1.0);
-roughnessFactor = mix(roughnessFactor, 0.22, gkBlood);`,
+roughnessFactor = mix(roughnessFactor, 0.32, gkBlood);`,
       )
       .replace("#include <metalnessmap_fragment>", "float metalnessFactor = vMR.x;")
       // Blood is wet and dark: the leather's pale sheen doesn't sit on top of it (only the clearcoat's gloss does).
@@ -550,6 +551,13 @@ roughnessFactor = mix(roughnessFactor, 0.22, gkBlood);`,
         `#include <lights_physical_fragment>
 #ifdef USE_SHEEN
 material.sheenColor *= 1.0 - gkBlood;
+#endif
+// Wet blood is dark: its reflection is tinted by itself, so a street light on it gives a deep red glint, never
+// a pale lobe that reads pink over the red diffuse (C7 review). The clearcoat backs off on it too.
+material.specularColor = mix(material.specularColor, material.specularColor * vec3(0.55, 0.12, 0.12), gkBlood);
+material.specularF90 = mix(material.specularF90, 0.35, gkBlood);
+#ifdef USE_CLEARCOAT
+material.clearcoat *= 1.0 - 0.8 * gkBlood;
 #endif`,
       )
       .replace(

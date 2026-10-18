@@ -113,8 +113,12 @@ interface Held {
   locked: boolean;
 }
 
-/** Where the support hand goes to clutch the wound (view space), and how it turns there (C6). */
-const CLUTCH_AT = new THREE.Vector3(-0.06, -0.1, -0.2);
+/**
+ * Where the support hand goes to clutch the wound (view space), and how it turns there (C6). Her sternum is
+ * below the frame: the hand drops off the gun and out of view (C7 review: held in frame, a fist seen from
+ * behind read as a grey ball), so the clutch reads as the gun going one-handed, sagging and rolling away.
+ */
+const CLUTCH_AT = new THREE.Vector3(-0.05, -0.21, -0.15);
 const CLUTCH_TURN = new THREE.Euler(0.5, 0.6, 0.9);
 
 export class Arsenal {
