@@ -455,6 +455,15 @@ function patchEyebox(mat: THREE.MeshBasicMaterial): void {
   };
 }
 
+/** C7: blood on Cath's gloves, 0 clean .. 1 soaked (shared by every kit material; only leather takes it). */
+const GLOVE_BLOOD = { value: 0 };
+export function setGloveBlood(v: number): void {
+  GLOVE_BLOOD.value = Math.max(0, Math.min(1, v));
+}
+export function gloveBlood(): number {
+  return GLOVE_BLOOD.value;
+}
+
 /**
  * Injects the per-vertex PBR, the trim atlas and edge wear into a standard/physical material. Shared by the
  * guns and Cath's arms (skinning comes from three's own chunks).
@@ -465,6 +474,7 @@ export function patchKitMaterial(mat: THREE.MeshStandardMaterial, phone: boolean
   mat.customProgramCacheKey = () => `gunkit-${phone ? "p" : "d"}`;
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uTrim = uniforms.uTrim;
+    sh.uniforms.uGloveBlood = GLOVE_BLOOD;
     sh.uniforms.gkSize = { value: phone ? 512 : 1024 };
     sh.vertexShader = sh.vertexShader
       .replace(
@@ -484,6 +494,7 @@ vMR = aMR; vEdge = aEdge; vBand = aBand; vUvT = aUvT; vLocal = position;`,
         `#include <common>
 uniform sampler2D uTrim;
 uniform float gkSize;
+uniform float uGloveBlood;
 varying vec4 vMR; varying float vEdge; varying vec2 vBand; varying vec2 vUvT; varying vec3 vLocal;
 float gkHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float gkNoise(vec3 x) {
@@ -502,12 +513,27 @@ diffuseColor.rgb *= gkT.b * 2.0;
 float gkN = gkNoise(vLocal * 260.0) * 0.6 + gkNoise(vLocal * 900.0) * 0.4;
 float gkWear = smoothstep(0.5, 0.6, vEdge * (0.55 + gkN * 0.75));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.25 + vec3(0.035), gkWear * step(0.5, vMR.x));
-diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.25, gkWear * (1.0 - step(0.5, vMR.x)));`,
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.25, gkWear * (1.0 - step(0.5, vMR.x)));
+// C7 glove blood: on the black leather only (dielectric and near black), blotches that spread with the wound, wet
+// dark red with a glossy film (roughness below).
+float gkBlood = 0.0;
+#ifdef USE_SKINNING
+// Only her hands are skinned: the gun never takes it.
+if (uGloveBlood > 0.001) {
+  float gkGlove = (1.0 - step(0.5, vMR.x)) * (1.0 - smoothstep(0.02, 0.07, dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))));
+  // Smears, not spots: a stretched low-frequency field broken by fine grain, at most about 40% of the leather.
+  float gkBn = gkNoise(vLocal * vec3(38.0, 90.0, 38.0) + 3.1) * 0.7 + gkNoise(vLocal * 260.0) * 0.3;
+  float gkTh = 1.0 - uGloveBlood * 0.42;
+  gkBlood = gkGlove * smoothstep(gkTh, gkTh + 0.08, gkBn) * 0.92;
+  diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.085, 0.004, 0.006), vec3(0.035, 0.002, 0.003), smoothstep(gkTh + 0.06, gkTh + 0.2, gkBn)), gkBlood);
+}
+#endif`,
       )
       .replace(
         "#include <roughnessmap_fragment>",
         `float gkF2 = max(length(dFdx(vUvT)), length(dFdy(vUvT))) * 1024.0;
-float roughnessFactor = clamp(vMR.y + (gkT.a - 0.5) - gkWear * 0.2 + clamp((gkF2 - 2.0) * 0.02, 0.0, 0.15), 0.04, 1.0);`,
+float roughnessFactor = clamp(vMR.y + (gkT.a - 0.5) - gkWear * 0.2 + clamp((gkF2 - 2.0) * 0.02, 0.0, 0.15), 0.04, 1.0);
+roughnessFactor = mix(roughnessFactor, 0.16, gkBlood);`,
       )
       .replace("#include <metalnessmap_fragment>", "float metalnessFactor = vMR.x;")
       .replace(

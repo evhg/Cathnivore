@@ -32,10 +32,14 @@ export interface Prefs {
   binds: Binds;
   /** Settings → Reduce motion; null follows the system setting. */
   reduceMotion: boolean | null;
+  /** C7: how hard the screen sells a wound (Reduced halves the grade and drops lens blood, blur and wobble). */
+  damageFx: "full" | "reduced";
+  /** C7: the wounded heartbeat's sound (the vignette still beats). */
+  heartbeat: boolean;
 }
 
 const KEY = "cathode:prefs:v1";
-const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false, lookScale: 1, invertY: false, crossScale: 1, hudScale: 1, binds: {}, reduceMotion: null };
+const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false, lookScale: 1, invertY: false, crossScale: 1, hudScale: 1, binds: {}, reduceMotion: null, damageFx: "full", heartbeat: true };
 
 export function loadPrefs(): Prefs {
   try {
@@ -57,6 +61,8 @@ export function loadPrefs(): Prefs {
       hudScale: typeof p.hudScale === "number" && p.hudScale >= 0.8 && p.hudScale <= 1.3 ? p.hudScale : 1,
       binds: cleanBinds(p.binds),
       reduceMotion: typeof p.reduceMotion === "boolean" ? p.reduceMotion : null,
+      damageFx: p.damageFx === "reduced" ? "reduced" : "full",
+      heartbeat: p.heartbeat !== false,
     };
   } catch {
     return { ...DEFAULTS };

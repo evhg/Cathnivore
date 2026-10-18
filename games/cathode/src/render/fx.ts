@@ -518,6 +518,14 @@ export function createFx(o: {
       const gy = o.groundHeight(pos.x, pos.z);
       if (pos.y - gy < 2.2) addDecal(new THREE.Vector3(pos.x + d.x * 0.6, gy, pos.z + d.z * 0.6), new THREE.Vector3(0, 1, 0), 0.4 + a * 0.7, DECAL.blood[Math.floor(rand() * 3)]!, new THREE.Color(1, 1, 1));
     },
+    drip(pos) {
+      if (reduced) return;
+      const gy = o.groundHeight(pos.x, pos.z);
+      // Two or three drops close together, small, the darkest blood cells: a trail, not a pool.
+      const n = 2 + Math.floor(rand() * 2);
+      for (let i = 0; i < n; i++)
+        addDecal(new THREE.Vector3(pos.x + (rand() - 0.5) * 0.35, gy, pos.z + (rand() - 0.5) * 0.35), new THREE.Vector3(0, 1, 0), 0.08 + rand() * 0.12, DECAL.blood[Math.floor(rand() * 3)]!, new THREE.Color(0.85, 0.8, 0.8));
+    },
     sparks(pos, dir, amount) {
       const d = dir.clone().normalize();
       const n = Math.round(8 + amount * 30);

@@ -130,6 +130,28 @@
   color: var(--ink);
 }
 .hud-hp-text.low { color: var(--blood-hot); }
+/* C7 (S6.3): bleeding out, the numeral glows blood-hot on each beat and the Flesh bar swells 1.0 to 1.15 tall. */
+.hud-hp-text.is-bleeding { color: var(--blood-hot); text-shadow: 0 0 calc(var(--u) * 10) rgb(var(--blood-rgb) / .55); }
+.hud-hp { transform: scaleY(calc(1 + var(--beat, 0) * .15)); transform-origin: 50% 100%; }
+.hud-vbar.is-critical .hud-hp > .fill,
+.hud-vbar.is-bleeding .hud-hp > .fill { filter: brightness(calc(1 + var(--beat, 0) * .5)); }
+.hud-vbar.is-bleeding .hud-hp { box-shadow: 0 0 calc(var(--u) * 12) rgb(var(--blood-deep-rgb) / calc(.25 + var(--beat, 0) * .5)); }
+/* The tier beside her name: a hairline-ruled mono tag, beating with her heart. */
+.hud-wound {
+  flex: none;
+  margin-left: auto;
+  font: 700 var(--t-micro)/1 var(--font-ui);
+  letter-spacing: .24em;
+  color: var(--blood-hot);
+  opacity: 0;
+}
+.hud-wound.is-critical,
+.hud-wound.is-bleeding {
+  opacity: calc(.62 + var(--beat, 0) * .38);
+  padding-left: calc(var(--u) * 10);
+  border-left: calc(var(--u) * 2) solid var(--blood);
+}
+.hud-wound.is-bleeding { text-shadow: 0 0 calc(var(--u) * 8) rgb(var(--blood-rgb) / calc(.3 + var(--beat, 0) * .6)); }
 .hud-hp-text.hit { animation: hp-hit 180ms var(--ease-out); }
 @keyframes hp-hit {
   0% { transform: translateX(calc(var(--u) * -4)) scale(1.12); }

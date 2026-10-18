@@ -21,7 +21,9 @@ import { coverWireframe } from "./coverdebug";
 import { Trauma } from "./feel/trauma";
 import { Spring1 } from "./feel/spring";
 import { impulseForPeak } from "./feel/pistol";
-import { Vitals } from "../sim/vitals";
+import { Vitals, VITALS } from "../sim/vitals";
+import { HeartClock, LensBlood, PhaseMap, breath, heartBpm, muffleHz, wobble, WOUND } from "../sim/woundloop";
+import { setGloveBlood } from "./gunkit";
 import { VITALS_TAKEN } from "../sim/fightsim";
 import type { HurtKind } from "../ui/dmgring";
 import { tuning } from "./feel/tuning";
@@ -144,6 +146,12 @@ export interface Session {
   /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
   audio?: Audio | null;
   cathHurt?: (bearing: number, melee: boolean, amount?: number) => void;
+  /** C7 acceptance: the frame's histogram and the edge-to-centre saturation, now and with the wound grade off. */
+  probeWound?: () => { hist: number[]; now: { centre: number; edge: number }; fine: { centre: number; edge: number }; lens: number; glove: number; w: number; pulse: number };
+  /** C7: a stim's screen and sound (the wash, the slower heart, the lens wiped), as the Stim skill plays them. */
+  stim?: () => void;
+  /** C7 acceptance: the grade pass's mean ms with the Vitals pass idle and at its busiest. */
+  benchGrade?: (n: number) => { off: number; on: number };
   /** C6 (S6.1): Guard and Flesh. `hp` mirrors their total; writing `hp` from outside still works. */
   vitals?: Vitals;
   /** C6: a hit on Cath of `amount` from a world point (null: straight ahead), with every readout. */
@@ -909,6 +917,32 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const hurtDir = new THREE.Vector2(0, 1);
   /** A blast within 6 m adds to the wound grade for 1.5 s. */
   let blastWound = 0;
+  // C7 "Wounded" (S6.3, S6.4): the heart, its map onto the frame, the lens, the washes, the blood on her gloves.
+  const heart = new HeartClock();
+  const phase = new PhaseMap();
+  let fxPrefs = loadPrefs();
+  const lens = new LensBlood(o.intensity === "reduced" || fxPrefs.damageFx === "reduced");
+  window.addEventListener("cathode:prefs", () => {
+    fxPrefs = loadPrefs();
+    lens.reducedViolence = o.intensity === "reduced" || fxPrefs.damageFx === "reduced";
+    if (lens.reducedViolence) lens.clear();
+  });
+  /** The frame clock the wounded loop runs on (real seconds; frozen under ?shot). */
+  let woundClock = 0;
+  /** uWound as shown: eases toward the tier's w (fast in, 1.2 s out), so regen never snaps the screen. */
+  let woundShown = 0;
+  /** The regen wash (held 300 ms, then out over 300 ms) and the stim's edge wash (700 ms). */
+  let regenWash = 0;
+  let stimWash = 0;
+  /** A stim's heart slowing: 0..1 of its 30 bpm, in over 2 s, held 4 s, out over 3 s. */
+  let stimSlowT = -1;
+  let gloveBloodV = 0;
+  /** Bleeding: where the last drop fell, for one every 1.2 m. */
+  const lastDrip = new THREE.Vector3(1e9, 0, 0);
+  let lastFireAt = -1e9;
+  let pulseNow = 0;
+  /** Screenshot stages hold the eased wound and the beat where the stage put them (time is frozen under ?shot). */
+  let stageWound: { shown: number; pulse: number } | null = null;
   let hitsTaken = 0;
   /** Screenshot stages: grenade bearings to show instead of the live ones. */
   let stageNades: Array<{ bearing: number; left: number }> | null = null;
@@ -969,6 +1003,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // The Vitals grade: a flare and a red lobe on the hit side.
     hurtV = Math.max(hurtV, 0.35 + 0.25 * Math.min(1.6, k));
     hurtDir.set(Math.sin(b), Math.cos(b));
+    // C7: a heavy hit or any blow up close puts blood on the lens, on the hit's side (at most one per 400 ms).
+    if (k >= 1 || kind === "melee") lens.splat(hurtDir.x, hurtDir.y, woundClock);
+    // Her hand went to the wound: the glove comes away bloody.
+    if ((tier === "critical" || tier === "bleeding") && hitsTaken % 3 === 0) gloveBloodV = Math.min(1, gloveBloodV + 0.45);
     if (r.broke) audio?.guardBreak();
     rumble("hurt");
   }
@@ -1129,7 +1167,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     syncVitals();
     if (!dead) {
       for (const ev of vitals.update(dt)) {
-        if (ev === "regenStart") audio?.regenStart();
+        if (ev === "regenStart") {
+          audio?.regenStart();
+          regenWash = 1.5;
+        }
         else if (ev === "guardFull") audio?.guardFull();
       }
       vitals.drain();
@@ -1166,6 +1207,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (!dead) {
       // Movement looks in real time (so aiming stays crisp in bullet-time) but moves in game time.
       player.aiming = arsenal.aiming;
+      // C7 (S6.1): bleeding out, she can't sprint.
+      if (vitals.tier === "bleeding") intent.sprint = false;
       player.step(Math.max(dt, realDt * 0.35), intent);
       keepInBounds();
     }
@@ -1183,7 +1226,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Scope sway: a slow figure-of-eight; held breath (Focus while scoped) all but stills it.
     if (arsenal.scopedIn) {
       swayT += realDt;
-      const amp = (calm ? 0.4 : 1) * 0.0045 * progress.stats.swayMultiplier * run.sway * (focusing ? 0.12 : 1) * (1 + player.speed * 0.4);
+      const amp = (vitals.tier === "critical" || vitals.tier === "bleeding" ? 1.6 : 1) * (calm ? 0.4 : 1) * 0.0045 * progress.stats.swayMultiplier * run.sway * (focusing ? 0.12 : 1) * (1 + player.speed * 0.4);
       world.camera.rotation.x += Math.sin(swayT * 0.9) * amp;
       world.camera.rotation.y += Math.sin(swayT * 0.45) * amp * 1.4;
     }
@@ -1214,7 +1257,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.camera.position.addScaledVector(shoveDir, flinch.shove.update(fdt));
       hurtV *= Math.exp(-fdt / 0.16);
       blastWound = Math.max(0, blastWound - fdt / 1.5);
-      world.setVitals?.(hurtV, hurtDir.x, hurtDir.y, Math.min(1, vitals.w + blastWound * 0.25));
+      woundLoop(fdt);
     }
 
     // Weapons.
@@ -1237,6 +1280,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (gun.noReload) arsenal.topUp();
     const shot = dead ? null : arsenal.update((dt || realDt) * gun.rate, trigger, eye, fwd, world.camera.quaternion, spreadMul);
     if (shot) {
+      lastFireAt = woundClock;
       const nx = actives.takeNextShot(shot.weapon.weaponClass);
       const mul = gun.dmg * nx.mul * progress.weaponScale(shot.weapon.id);
       if (mul !== 1) shot.weapon = { ...shot.weapon, damage: shot.weapon.damage * mul };
@@ -1313,8 +1357,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
     // Active skills: quick-slots, thrown things, explosions, the lunge's strike.
     const ctx = { player, eye, fwd, enemies, world, maxHp: s.maxHp };
+    const healing0 = (actives as unknown as { healing: object | null }).healing;
     if (!dead && intent.skill1) actives.use(0, progress.character, progress.stats, ctx);
     if (!dead && intent.skill2) actives.use(1, progress.character, progress.stats, ctx);
+    const healing1 = (actives as unknown as { healing: object | null }).healing;
+    if (healing1 && healing1 !== healing0) onStim();
     actives.update(dt, progress.stats, world, world.colliders, ground, enemies);
     // Ammo and cash are walk-in; a gun she hasn't carried is taken with a press (S7.1), like the first one.
     const needsPress = (d: { gun?: string }) => !!d.gun && !arsenal.owned.has(d.gun) && (!job || job.done);
@@ -1559,7 +1606,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
 
     // Camera zoom while aiming, and the weapon rig.
-    world.camera.fov = arsenal.worldFov + (calm ? 0.4 : 1) * fovPunch.update(realDt);
+    world.camera.fov = (arsenal.worldFov + (calm ? 0.4 : 1) * fovPunch.update(realDt)) * woundFov;
     world.camera.updateProjectionMatrix();
     if (world.ambientAt) {
       const ambC = ambColor;
@@ -1856,6 +1903,74 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
     }
   }
+
+  /** The bleeding wobble's FOV breathe for this frame (1 when she isn't bleeding out). */
+  let woundFov = 1;
+  /**
+   * C7 "Wounded" (S6.3, S6.4), once a frame on real time: w eased onto the screen, the heartbeat scheduled on the
+   * audio clock and its pulse read back through the phase map, breath and muffle, the bleeding wobble and drip
+   * trail, the regen and stim washes, the lens, the glove blood and the HUD's beat.
+   */
+  function woundLoop(fdt: number): void {
+    woundClock += fdt;
+    const reducedFx = fxPrefs.damageFx === "reduced";
+    const wTarget = dead ? woundShown : Math.min(1, vitals.w + blastWound * 0.25);
+    // In fast (a hit should land on its frame), out over about 1.2 s (S6.3: never snap on regen).
+    const tau = wTarget > woundShown ? 0.12 : 0.4;
+    woundShown += (wTarget - woundShown) * (1 - Math.exp(-fdt / tau));
+    if (stimSlowT >= 0) stimSlowT += fdt;
+    const stimSlow = stimSlowT < 0 ? 0 : stimSlowT < WOUND.stimSlowS ? stimSlowT / WOUND.stimSlowS : stimSlowT < 6 ? 1 : Math.max(0, 1 - (stimSlowT - 6) / 3);
+    if (stimSlowT > 9) stimSlowT = -1;
+    const w = vitals.w;
+    // The heart: heard from critical (S6.1), scheduled 120 ms ahead on the audio clock; the frame reads the same clock.
+    const audioOn = !!audio && audio.enabled;
+    phase.sync(audioOn ? audio!.now : woundClock, woundClock);
+    const bpm = !dead && w >= WOUND.heartFromW ? heartBpm(w, stimSlow) : 0;
+    const audioT = phase.toAudio(woundClock);
+    for (const lub of heart.schedule(audioT, 0.12, bpm)) if (audioOn && fxPrefs.heartbeat) audio!.heartbeat(lub, 0.55 + 0.45 * w);
+    pulseNow = bpm > 0 ? heart.pulse(audioT) : pulseNow * Math.exp(-fdt / 0.1);
+    if (audioOn) {
+      const br = breath(w);
+      audio!.wounded(fdt, { muffleHz: muffleHz(dead ? 0 : w * (reducedFx ? 0.6 : 1)), breathHz: br.hz, breathLevel: dead ? 0 : br.level, firing: woundClock - lastFireAt < 0.6, heart: bpm > 0 });
+    }
+    // Bleeding: a slow roll and a FOV breathe (off under reduced motion or reduced damage effects), and drops on
+    // the floor every 1.2 m.
+    const wob = wobble(woundClock, w, trauma.reducedMotion || reducedFx || calm);
+    world.camera.rotation.z += wob.roll;
+    woundFov = wob.fovMul;
+    if (vitals.tier === "bleeding" && !dead && player.onGround) {
+      const fp = player.pos;
+      if (Math.hypot(fp.x - lastDrip.x, fp.z - lastDrip.z) >= 1.2) {
+        lastDrip.copy(fp);
+        world.fx.drip?.(fp.clone());
+      }
+    }
+    arsenal.adsSlow = vitals.tier === "critical" || vitals.tier === "bleeding" ? 1.2 : 1;
+    regenWash = Math.max(0, regenWash - fdt / 0.3);
+    stimWash = Math.max(0, stimWash - fdt / 0.7);
+    lens.update(fdt);
+    // Glove blood: she has it on her hands while she's wounded; it dries off over about 20 s once she's whole.
+    const gloveFloor = vitals.tier === "bleeding" ? 0.55 : 0;
+    gloveBloodV = vitals.tier === "fine" ? Math.max(0, gloveBloodV - fdt / 20) : Math.max(gloveBloodV, gloveFloor);
+    setGloveBlood(o.intensity === "reduced" ? 0 : gloveBloodV);
+    const k = reducedFx ? 0.5 : 1;
+    if (stageWound) {
+      woundShown = stageWound.shown;
+      pulseNow = stageWound.pulse;
+    }
+    world.setVitals?.(hurtV * k, hurtDir.x, hurtDir.y, woundShown * k);
+    world.setWounded?.({ pulse: pulseNow, regen: Math.min(1, regenWash) * k, stim: stimWash * k, lens: lens.slots, wipe: lens.wipe });
+    hud.setWound(pulseNow, dead ? "fine" : vitals.tier);
+  }
+  /** A stim goes in (S6.3): a green-white edge wash, the heart slows 30 bpm over 2 s, she wipes the lens clean. */
+  function onStim(): void {
+    stimWash = 1;
+    stimSlowT = 0;
+    lens.startWipe();
+    audio?.stim();
+  }
+  s.stim = onStim;
+  s.benchGrade = (n) => ({ off: world.benchGrade?.(n, false) ?? 0, on: world.benchGrade?.(n, true) ?? 0 });
 
   /** A blast within 6 m (S6.2): tinnitus, the world muffled, the wound grade up for 1.5 s. */
   function blastNear(at: THREE.Vector3): void {
@@ -2365,10 +2480,74 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     vitals.reset(s.maxHp);
     s.hp = vitals.total;
     world.setVitals?.(0, 0, 1, 0);
+    heart.reset();
+    lens.clear();
+    woundShown = 0;
+    regenWash = stimWash = 0;
+    stimSlowT = -1;
+    pulseNow = 0;
+    gloveBloodV = 0;
+    setGloveBlood(0);
+    woundFov = 1;
+    stageWound = null;
+    world.setWounded?.({ pulse: 0, regen: 0, stim: 0, lens: lens.slots, wipe: -1 });
+    hud.setWound(0, "fine");
   };
   // C6 "I know I'm hit": a hit from 90 degrees right, one from behind, the hit that breaks Guard, and a live
   // grenade 3 m off to the front left, each held `tMs` after the moment, in the street the pistol stages use.
   const C6_STAGES = ["player-hurt-100", "player-hurt-behind", "vitals-guardbreak", "grenade-near", "player-hurt-melee", "player-hurt-critical"];
+  // C7 "Wounded": the four states of the wounded loop, each held `tMs` after its moment (S6.3).
+  //   vitals-hurt      Flesh 45%, Guard whole: no heart yet, the edges just starting to go;
+  //   vitals-critical  Flesh 20% after a heavy hit from the right: the heart on its beat, blood on the lens, she
+  //                    clutched the wound so the glove is bloody;
+  //   vitals-bleeding  Flesh 5%: everything at its worst, two splats, the bar swelling on the beat;
+  //   vitals-regen     Flesh 25% and Guard coming back, 300 ms in: the cyan breath along the edge.
+  const C7_STAGES = ["vitals-hurt", "vitals-critical", "vitals-bleeding", "vitals-regen"];
+  const c7Setup = (name: string, tMs: number): void => {
+    const maxT = vitals.maxTotal;
+    const at = (fleshShare: number, guardShare: number) => {
+      vitals.flesh = vitals.maxFlesh * fleshShare;
+      vitals.guard = vitals.maxGuard * guardShare;
+      s.hp = vitals.total;
+      hud.primeVitals(vitals.guardFrac, vitals.fleshFrac);
+    };
+    const age = tMs / 1000;
+    if (name === "vitals-hurt") {
+      at(0.45, 1);
+      stageWound = { shown: vitals.w, pulse: 0 };
+      return;
+    }
+    if (name === "vitals-critical") {
+      at(0.2 + (0.1 * maxT) / vitals.maxFlesh, 0);
+      hitsTaken = 2;
+      cathHurt(0.95, false, maxT * 0.1);
+      gloveBloodV = 0.7;
+      for (const sl of lens.slots) if (sl.age >= 0) sl.age = age;
+      stageWound = { shown: vitals.w, pulse: 1 };
+      return;
+    }
+    if (name === "vitals-bleeding") {
+      at(0.05 + (0.12 * maxT) / vitals.maxFlesh, 0);
+      cathHurt(-0.9, false, maxT * 0.12);
+      for (const sl of lens.slots) if (sl.age >= 0) sl.age = age;
+      // An earlier one on the other side, older and running.
+      const i = lens.splat(1, 0.35, woundClock + 10, true);
+      if (i >= 0) lens.slots[i]!.age = Math.min(1.5, age + 0.7);
+      gloveBloodV = 1;
+      stageWound = { shown: vitals.w, pulse: 1 };
+      return;
+    }
+    // vitals-regen: down to a quarter of Flesh, then 4.0 s without a hit and `tMs` into Guard coming back.
+    at(0.25, 0);
+    vitals.damage(0);
+    vitals.drain();
+    let started = false;
+    for (let t = 0; t < VITALS.regenDelayS + age - 1e-9; t += 1 / 60) for (const ev of vitals.update(1 / 60)) if (ev === "regenStart") started = true;
+    vitals.drain();
+    s.hp = vitals.total;
+    if (started) regenWash = Math.max(0, 1.5 - age / 0.3);
+    stageWound = { shown: vitals.w, pulse: 0.35 };
+  };
   const c6Stage = (name: string, tMs: number): string => {
     c4Stage("pistol-idle", 0);
     hud.freeze(null);
@@ -2381,7 +2560,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const maxT = vitals.maxTotal;
     hitsTaken = 0;
     hud.primeVitals(1, 1);
-    if (name === "grenade-near") stageNades = [{ bearing: -0.55, left: 0.3 }];
+    if (C7_STAGES.includes(name)) c7Setup(name, tMs);
+    else if (name === "grenade-near") stageNades = [{ bearing: -0.55, left: 0.3 }];
     else if (name === "vitals-guardbreak") {
       // Guard already chipped, then the hit that breaks it and carries into Flesh.
       vitals.damage(maxT * 0.3);
@@ -2410,7 +2590,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return "ok";
   };
   s.stage = (name: string, tMs = 60): string => {
-    if (C6_STAGES.includes(name)) return c6Stage(name, tMs);
+    if (C6_STAGES.includes(name) || C7_STAGES.includes(name)) return c6Stage(name, tMs);
     calmVitals();
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
     if (C4_STAGES.includes(name)) return c4Stage(name, tMs);
@@ -2591,6 +2771,64 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         if (rr > 45 && rr > px[o4 + 1]! * 1.8 && rr > px[o4 + 2]! * 1.8) red++;
       }
     return { red, total, mean: mean.map((v) => Math.round(v / Math.max(1, total))) };
+  };
+  /**
+   * C7 acceptance: the frame as a 4x4x4 RGB histogram (shares), and the edge-to-centre saturation probe: mean HSV
+   * saturation in the centre (r < 0.12 of the height) and in a ring (0.26 to 0.38, inside the blood vignette),
+   * for the frame as it stands and for the same frame with the wound grade off (lens off for both, so the probe
+   * reads the grade, not a splat).
+   */
+  s.probeWound = () => {
+    const c = world.renderer.domElement;
+    const W = 192;
+    const H = Math.max(1, Math.round((W * c.height) / Math.max(1, c.width)));
+    const cv = document.createElement("canvas");
+    cv.width = W;
+    cv.height = H;
+    const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+    const grab = () => {
+      render();
+      g2.drawImage(c, 0, 0, c.width, c.height, 0, 0, W, H);
+      return g2.getImageData(0, 0, W, H).data;
+    };
+    const sat = (px: Uint8ClampedArray) => {
+      const acc = { centre: 0, nc: 0, edge: 0, ne: 0 };
+      for (let j = 0; j < H; j++)
+        for (let i = 0; i < W; i++) {
+          const r = Math.hypot(i - W / 2, j - H / 2) / H;
+          const zone = r < 0.12 ? 0 : r > 0.26 && r < 0.38 ? 1 : -1;
+          if (zone < 0) continue;
+          const o4 = (j * W + i) * 4;
+          const mx = Math.max(px[o4]!, px[o4 + 1]!, px[o4 + 2]!);
+          const mn = Math.min(px[o4]!, px[o4 + 1]!, px[o4 + 2]!);
+          const sv = mx > 8 ? (mx - mn) / mx : 0;
+          if (zone === 0) {
+            acc.centre += sv;
+            acc.nc++;
+          } else {
+            acc.edge += sv;
+            acc.ne++;
+          }
+        }
+      return { centre: acc.centre / Math.max(1, acc.nc), edge: acc.edge / Math.max(1, acc.ne) };
+    };
+    const px = grab();
+    const hist = new Array(64).fill(0) as number[];
+    for (let o4 = 0; o4 < px.length; o4 += 4) hist[(px[o4]! >> 6) * 16 + (px[o4 + 1]! >> 6) * 4 + (px[o4 + 2]! >> 6)]!++;
+    const n = px.length / 4;
+    const u = world as unknown as { setWounded?: World["setWounded"] };
+    const noLens = lens.slots.map((sl) => ({ ...sl, age: -1 }));
+    const pulse = pulseNow;
+    u.setWounded?.({ pulse, regen: Math.min(1, regenWash), stim: stimWash, lens: noLens, wipe: -1 });
+    const now = sat(grab());
+    world.setVitals?.(0, 0, 1, 0);
+    u.setWounded?.({ pulse: 0, regen: 0, stim: 0, lens: noLens, wipe: -1 });
+    const fine = sat(grab());
+    // Back as it was.
+    world.setVitals?.(hurtV, hurtDir.x, hurtDir.y, woundShown);
+    u.setWounded?.({ pulse, regen: Math.min(1, regenWash), stim: stimWash, lens: lens.slots, wipe: lens.wipe });
+    render();
+    return { hist: hist.map((v) => v / n), now, fine, lens: lens.active, glove: gloveBloodV, w: woundShown, pulse };
   };
   s.traceShot = (from, to) => combat.traceShot(new THREE.Vector3(from.x, from.y, from.z), new THREE.Vector3(to.x, to.y, to.z), arsenal.weapon, build());
   // window.cathode.combat (S0): replay HitEvents through the bus exactly as combat emits them, and trace a shot.

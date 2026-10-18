@@ -256,6 +256,8 @@ export class Arsenal {
   private readonly smp: Sample = { pos: [0, 0, 0], rot: [0, 0, 0] };
   /** Reduced motion: the clips turn the gun half as far (S2.4). */
   reducedMotion = false;
+  /** C7 (S6.1): critical or worse, aiming down the sights takes 20% longer (1.2). */
+  adsSlow = 1;
   /** Screenshot stages hold the pistol's clips and springs where they were left (time frozen). */
   freeze = false;
 
@@ -843,7 +845,7 @@ export class Arsenal {
     const a = this.anim;
     const pistol = this.kestrel;
     // S2.4: she can aim during a pistol reload (the clip turns at half strength), not during the draw.
-    a.aim = THREE.MathUtils.damp(a.aim, this.aiming && (pistol ? this.raising <= 0 : !this.busy) ? 1 : 0, 14, dt);
+    a.aim = THREE.MathUtils.damp(a.aim, this.aiming && (pistol ? this.raising <= 0 : !this.busy) ? 1 : 0, 14 / Math.max(1, this.adsSlow), dt);
     // Dip for reloads and raising; the pump, slide and bolt travel. The Kestrel's draw and reloads are clips.
     let dip = pistol ? 0 : this.raising / 0.35;
     if (this.reloading > 0) dip = Math.max(dip, this.shellReload ? 0.35 : 0.6);

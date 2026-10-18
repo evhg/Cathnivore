@@ -104,6 +104,9 @@ export class Hud {
   private lastGuard = -1;
   private hpText: HTMLElement;
   private lvl: HTMLElement;
+  /** C7: the wound state beside her name ("Critical", "Bleeding out"), and the last tier shown. */
+  private woundTag!: HTMLElement;
+  private woundTier = "fine";
   private xpBar: ReturnType<typeof bar>;
   private armRow: HTMLElement;
   private armBar: ReturnType<typeof bar>;
@@ -164,6 +167,8 @@ export class Hud {
     const vit = el("div", "hud-vitals", tl);
     const name = el("p", "hud-name", vit);
     el("span", "hud-name-text", name).textContent = "Cath Hale";
+    this.woundTag = el("span", "hud-wound", name);
+    this.woundTag.setAttribute("aria-live", "polite");
     this.lvl = el("span", "c-chip lvl hud-level", name);
     const hpRow = el("div", "hud-hp-row", vit);
     this.hpText = el("span", "hud-hp-text num", hpRow);
@@ -526,6 +531,24 @@ export class Hud {
   /** A damage arc on the ring pointing where the hit came from (S6.2). A bare bearing is a one-off source. */
   hurtFrom(bearing: number | HurtSource): void {
     this.dmg.hit(typeof bearing === "number" ? { key: null, bearing, elevDeg: 0, kind: "bullet", share: 0.12 } : bearing);
+  }
+
+  /**
+   * C7 (S6.3): the wounded loop on the HUD, once a frame. `pulse` is the heartbeat (0..1): bleeding, the Flesh bar
+   * swells 1.0 to 1.15 tall on each beat and its numeral turns blood-hot. The tag beside her name says the tier.
+   */
+  setWound(pulse: number, tier: "fine" | "hurt" | "critical" | "bleeding"): void {
+    const bleeding = tier === "bleeding";
+    this.hpBar.root.style.setProperty("--beat", bleeding ? pulse.toFixed(3) : "0");
+    this.vbar.classList.toggle("is-critical", tier === "critical");
+    this.vbar.classList.toggle("is-bleeding", bleeding);
+    this.hpText.classList.toggle("is-bleeding", bleeding);
+    this.woundTag.style.setProperty("--beat", pulse.toFixed(3));
+    if (tier !== this.woundTier) {
+      this.woundTier = tier;
+      this.woundTag.textContent = tier === "critical" ? "Critical" : bleeding ? "Bleeding out" : "";
+      this.woundTag.className = `hud-wound${tier === "critical" || bleeding ? ` is-${tier}` : ""}`;
+    }
   }
 
   /** Screenshot stages: the bars were last drawn at these shares, so the next drop shows its damage ghost. */
@@ -998,8 +1021,21 @@ export class Hud {
         prefs.intensity,
         (v) => savePrefs({ ...loadPrefs(), intensity: v }),
       );
+      // C7: how hard the screen sells a wound, and the heartbeat you hear when she's in trouble.
+      choice<"full" | "reduced">(
+        "Damage effects",
+        [
+          ["full", "Full"],
+          ["reduced", "Reduced"],
+        ],
+        prefs.damageFx,
+        (v) => {
+          savePrefs({ ...loadPrefs(), damageFx: v });
+          window.dispatchEvent(new Event("cathode:prefs"));
+        },
+      );
 
-      const toggle = (name: string, key: "bigSubs" | "calmCamera" | "colourSafe" | "holdToggle" | "invertY", apply?: (on: boolean) => void) => {
+      const toggle = (name: string, key: "bigSubs" | "calmCamera" | "colourSafe" | "holdToggle" | "invertY" | "heartbeat", apply?: (on: boolean) => void) => {
         const row = el("div", "hud-set", set);
         el("span", "hud-set-name", row).textContent = name;
         const seg = el("div", "hud-seg", row);
@@ -1018,6 +1054,7 @@ export class Hud {
         });
       };
       toggle("Large subtitles", "bigSubs", (on) => this.root.classList.toggle("big-subs", on));
+      toggle("Heartbeat", "heartbeat", () => window.dispatchEvent(new Event("cathode:prefs")));
       if (!touch) {
         const sens = el("label", "hud-set", set);
         el("span", "hud-set-name", sens).textContent = "Look speed";

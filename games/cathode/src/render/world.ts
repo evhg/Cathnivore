@@ -21,6 +21,7 @@ import { buildAtmosphere, type AtmoUniforms } from "./atmosphere";
 import { PlanarReflection, LAYER_NO_REFLECT, hideSmall, unshadowSmall, showAll } from "./reflection";
 import { createFx } from "./fx";
 import { createPost } from "./post";
+import { lensFade } from "../sim/woundloop";
 
 interface Preset {
   pool: number;
@@ -386,6 +387,27 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       u.uHurt!.value = THREE.MathUtils.clamp(hurt, 0, 1);
       (u.uHurtDir!.value as THREE.Vector2).set(dirX, dirY);
       u.uWound!.value = THREE.MathUtils.clamp(wound, 0, 1);
+    },
+    setWounded(o) {
+      const u = post.grade.uniforms;
+      u.uPulse!.value = THREE.MathUtils.clamp(o.pulse, 0, 1);
+      u.uRegen!.value = THREE.MathUtils.clamp(o.regen, 0, 1);
+      u.uStim!.value = THREE.MathUtils.clamp(o.stim, 0, 1);
+      u.uLensWipe!.value = o.wipe;
+      const L = u.uLens!.value as THREE.Vector4[];
+      const B = u.uLensB!.value as THREE.Vector4[];
+      let any = 0;
+      o.lens.forEach((sl, i) => {
+        if (i > 3) return;
+        const f = lensFade(sl.age);
+        L[i]!.set(sl.x, sl.y, f.alpha, sl.size);
+        B[i]!.set(sl.cell % 2, Math.floor(sl.cell / 2) % 2, f.drip, 0);
+        if (f.alpha > 0.002) any = 1;
+      });
+      u.uLensOn!.value = any;
+    },
+    benchGrade(n, on) {
+      return post.benchGrade(n, on);
     },
     light(pos, color, intensity, range) {
       return pool.add({ pos: pos.clone(), color: color.clone(), intensity, range, normal: null, flicker: 0, seed: 0, real: true });

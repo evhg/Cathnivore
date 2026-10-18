@@ -61,7 +61,12 @@ export class Audio {
     this.muffle = c.createBiquadFilter();
     this.muffle.type = "lowpass";
     this.muffle.frequency.value = 22000;
-    this.duckBus.connect(this.muffle).connect(this.master);
+    // C7 (S6.3): wounded, the world closes in (22 kHz fine to 1.5 kHz bleeding out), on its own stage so a
+    // blast's muffle and the wound's never fight over one parameter.
+    this.woundMuffle = c.createBiquadFilter();
+    this.woundMuffle.type = "lowpass";
+    this.woundMuffle.frequency.value = 22000;
+    this.duckBus.connect(this.muffle).connect(this.woundMuffle).connect(this.master);
     this.sfx.connect(this.duckBus);
     // The dry bus joins after the slow-motion lowpass: a confirm is never muffled or reverberant.
     this.dry = c.createGain();
@@ -97,6 +102,12 @@ export class Audio {
 
   private dryOut: GainNode;
   private muffle: BiquadFilterNode;
+  private woundMuffle: BiquadFilterNode;
+  /** C7: the breath loop (lazy: built the first time she's hurt). */
+  private breathNode: { f: BiquadFilterNode; g: GainNode } | null = null;
+  private breathPh = 0;
+  /** The wounded heart is beating: the slow-motion heartbeat stands down so there's only ever one heart. */
+  private woundHeart = false;
   private lastGrunt = -1;
   private gruntN = 0;
   private duckBus: GainNode;
@@ -624,6 +635,99 @@ export class Audio {
     o.stop(t + 1.9);
   }
 
+  /** The audio clock (s): the heartbeat is scheduled on it, and the vignette's pulse is mapped back from it. */
+  get now(): number {
+    return this.ctx.currentTime;
+  }
+
+  /**
+   * One heartbeat at audio time `at` (S6.3): a lub (55 Hz, 90 ms) and a dub (48 Hz, 70 ms, 110 ms later), each with
+   * a 4 ms attack, on the dry bus so slow motion and the world's muffle never touch it. A quiet octave and a
+   * lowpassed thud give it a body on laptop and phone speakers, which can't play 55 Hz.
+   */
+  heartbeat(at: number, gain: number): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const one = (t: number, f: number, dur: number, peak: number) => {
+      const o = c.createOscillator();
+      o.frequency.setValueAtTime(f * 1.25, t);
+      o.frequency.exponentialRampToValueAtTime(f, t + 0.03);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(this.dry);
+      o.start(t);
+      o.stop(t + dur + 0.02);
+      const h = c.createOscillator();
+      h.frequency.value = f * 2;
+      const hg = c.createGain();
+      hg.gain.setValueAtTime(0.0001, t);
+      hg.gain.exponentialRampToValueAtTime(peak * 0.28, t + 0.004);
+      hg.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.7);
+      h.connect(hg).connect(this.dry);
+      h.start(t);
+      h.stop(t + dur);
+      const n = c.createBufferSource();
+      n.buffer = this.noise.brown;
+      const lp = c.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 160;
+      const ng = c.createGain();
+      ng.gain.setValueAtTime(0.0001, t);
+      ng.gain.exponentialRampToValueAtTime(peak * 0.5, t + 0.006);
+      ng.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.8);
+      n.connect(lp).connect(ng).connect(this.dry);
+      n.start(t, Math.random() * 2);
+      n.stop(t + dur);
+    };
+    const t = Math.max(at, c.currentTime);
+    one(t, 55, 0.09, 0.55 * gain);
+    one(t + 0.11, 48, 0.07, 0.4 * gain);
+  }
+
+  /**
+   * The wounded loop, once a frame (S6.3): the world's muffle for `w`, and the breath (noise band-passed at 500 Hz
+   * on the exhale and 1.4 kHz on the inhale, `hz` breaths a second at `0.25 * level`, ducked while she fires).
+   * `heart` says the wounded heart is beating (the slow-motion heartbeat stands down).
+   */
+  wounded(dt: number, o: { muffleHz: number; breathHz: number; breathLevel: number; firing: boolean; heart: boolean }): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const t = c.currentTime;
+    this.woundHeart = o.heart;
+    this.woundMuffle.frequency.setTargetAtTime(Math.max(300, o.muffleHz), t, 0.25);
+    if (o.breathLevel <= 0.001 && !this.breathNode) return;
+    if (!this.breathNode) {
+      const n = c.createBufferSource();
+      n.buffer = this.noise.pink;
+      n.loop = true;
+      const f = c.createBiquadFilter();
+      f.type = "bandpass";
+      f.frequency.value = 500;
+      f.Q.value = 1.4;
+      const g = c.createGain();
+      g.gain.value = 0;
+      n.connect(f).connect(g).connect(this.dry);
+      n.start();
+      this.breathNode = { f, g };
+    }
+    this.breathPh += dt * o.breathHz;
+    const s = Math.sin(this.breathPh * Math.PI * 2);
+    // In (s > 0) is brighter and shorter-sounding; out is lower and longer. Both swell and fall with the breath.
+    const env = Math.pow(Math.abs(s), 1.6);
+    const duck = o.firing ? 0.3 : 1;
+    this.breathNode.f.frequency.setTargetAtTime(s > 0 ? 1400 : 500, t, 0.05);
+    this.breathNode.g.gain.setTargetAtTime(0.25 * o.breathLevel * env * duck * (s > 0 ? 0.8 : 1), t, 0.04);
+  }
+
+  /** A stim (S6.3): a cold hiss in through the teeth and a bright lift. */
+  stim(): void {
+    if (!this.enabled) return;
+    this.hiss("bandpass", 2400, 0.35, 0.08);
+    this.tone("sine", 520, 1040, 0.5, 0.05, 0.05, 0.5);
+  }
+
   /** Guard is whole again (S6.3): 660 Hz then 990 Hz, 90 ms each. */
   guardFull(): void {
     if (!this.enabled) return;
@@ -918,7 +1022,7 @@ export class Audio {
     this.music.gain.setTargetAtTime(0.5 + this.tension * 0.2, t, 0.5);
     this.slowFilter.frequency.setTargetAtTime(slow > 0 ? 700 + (1 - slow) * 6000 : 20000, t, 0.08);
     this.score.update(this.tension);
-    if (slow > 0.2) {
+    if (slow > 0.2 && !this.woundHeart) {
       this.heartT -= dt;
       if (this.heartT <= 0) {
         this.heartT = 0.85;

@@ -40,6 +40,8 @@ export interface Effects {
   readonly gore?: { counts: { mist: number; drops: number; wounds: number; puffM: number }; caps: { mist: number; drops: number; wounds: number }; splats: readonly { point: THREE.Vector3; size: number }[] };
   /** Sparks and coolant from a cyborg or machine hit. */
   sparks(pos: THREE.Vector3, dir: THREE.Vector3, amount: number): void;
+  /** C7: Cath bleeding out leaves drops on the floor where she stands (S6.1: one every 1.2 m). */
+  drip?(pos: THREE.Vector3): void;
   /** A brass casing ejected from `pos` with `vel`; it bounces and rings on the ground. */
   casing(pos: THREE.Vector3, vel: THREE.Vector3): void;
   /** A tracer streak from a to b (sniper rounds, the kill-cam). */
@@ -98,6 +100,13 @@ export interface World {
   setDrama(amount: number): void;
   /** C6/C7 Vitals grade (S6.4): `hurt` 0..1, the hit's side on screen (unit, +x right, +y up), `wound` w 0..1. */
   setVitals?(hurt: number, dirX: number, dirY: number, wound: number): void;
+  /**
+   * C7 (S6.3, S6.4): the wounded loop's screen. `pulse` the heartbeat 0..1, `regen` and `stim` the two washes,
+   * `lens` the four lens-blood slots (sim/woundloop.ts LensSlot; age < 0 is empty) and the stim wipe's front.
+   */
+  setWounded?(o: { pulse: number; regen: number; stim: number; lens: ReadonlyArray<{ x: number; y: number; cell: number; age: number; size: number }>; wipe: number }): void;
+  /** C7 acceptance: the grade pass's mean ms per draw with the Vitals pass idle or at its busiest. */
+  benchGrade?(n: number, on: boolean): number;
   /** Wind for ballistics and rain, metres per second along x and z. */
   /** The district's walkable bounds, when it defines them (interiors). */
   readonly bounds?: { xMin: number; xMax: number; zMin: number; zMax: number };

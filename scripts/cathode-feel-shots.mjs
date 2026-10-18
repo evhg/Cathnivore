@@ -31,7 +31,9 @@ const C5X = ['pistol-reload-cancel@0', 'pistol-reload-cancel@60', 'pistol-reload
 // near; C6X are the review extras (a melee hit, a hit in critical with the clutch).
 const C6 = ['player-hurt-100@100', 'player-hurt-behind@100', 'vitals-guardbreak@100', 'grenade-near@0']
 const C6X = ['player-hurt-melee@60', 'player-hurt-critical@200', 'player-hurt-100@700']
-const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X }
+// C7 "Wounded": the four states of the wounded loop (hurt, critical on the beat, bleeding out, Guard coming back).
+const C7 = ['vitals-hurt@0', 'vitals-critical@250', 'vitals-bleeding@400', 'vitals-regen@300']
+const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7 }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set(C3.map((s) => s.split('@')[0]))
@@ -59,6 +61,10 @@ const vps = (process.env.VPS ?? '5k,d,phone').split(',')
 const failures = []
 // C5: each size's idle muzzle luminance, for the fire-0 comparison.
 const idleMuzzle = {}
+// C7: each size's four histograms, compared pairwise once the size is done.
+const C7_HIST_MIN = 0.12
+const c7Hist = {}
+const C7_SAT_EDGE = 0.8
 const fail = (msg) => {
   failures.push(msg)
   console.log('  FAIL', msg)
@@ -187,6 +193,8 @@ for (const vp of vps) {
       const nade = [...document.querySelectorAll('.hud-dmg-nade')].map((e) => Number(getComputedStyle(e).opacity)).reduce((m, v) => Math.max(m, v), 0)
       const vbar = document.querySelector('.hud-vbar')
       const vitals = vbar ? { broken: vbar.classList.contains('is-broken'), shards: !!document.querySelector('.hud-shards.go'), guard: r(document.querySelector('.hud-guard')), flesh: r(document.querySelector('.hud-hp')) } : null
+      const wt = document.querySelector('.hud-wound')
+      const wound = wt ? { critical: wt.classList.contains('is-critical') && /critical/i.test(wt.textContent), bleeding: wt.classList.contains('is-bleeding') && /bleeding/i.test(wt.textContent) } : null
       const clusters = ['.hud-objective', '.hud-vitals', '.hud-arms', '.hud-feed-line', '.hud-sub', '.hud-target', '.hud-prompt', '.hud-threats > *', '.hud-wprompt', '.hud-toast', '.hud-teach.on',
         // C3: the off-screen chevron and its plate against everything, the touch controls included (a plate on FIRE).
         '.hud-wp:not([hidden]).off .hud-wp-arrow', '.hud-wp:not([hidden]).off .hud-wp-dist', '.tbtn', '.tbtn-menu', '.stick', '.look-hint:not(.gone)']
@@ -227,6 +235,7 @@ for (const vp of vps) {
       }
       return {
         texts,
+        wound,
         wpMark: r(document.querySelector('.hud-wp:not([hidden]) .hud-wp-mark')),
         // The marker's parts as drawn (opacity is the wrapper's: a faded, shrunk marker over the reticle is fine).
         wpParts: [...document.querySelectorAll('.hud-wp:not([hidden]) .hud-wp-mark, .hud-wp:not([hidden]) .hud-wp-dist')]
@@ -468,7 +477,8 @@ for (const vp of vps) {
     // The bar collapses for real (180 ms flash + 400 ms fade): gone by 600 ms.
     if (stage === 'hit-kill' && t >= 600 && !side.targetHidden) fail(`${vp} ${spec}: target bar still showing`)
     // Every stage starts clean: full health, no hurt arc from before.
-    const c6 = /^(player-hurt|vitals-|grenade-near)/.test(stage)
+    const c7 = /^vitals-(hurt|critical|bleeding|regen)$/.test(stage)
+    const c6 = /^(player-hurt|vitals-|grenade-near)/.test(stage) && !c7
     if (!c6 && side.arcA > 0.05) fail(`${vp} ${spec}: a stale hurt arc shows (--a ${side.arcA})`)
     // ---- C6 acceptance ----
     if (c6) {
@@ -492,6 +502,27 @@ for (const vp of vps) {
       if (stage === 'player-hurt-100' && side.chevs.length) fail(`${vp} ${spec}: a chevron shows for a hit in front of her`)
       if (stage === 'vitals-guardbreak' && !(side.vitals?.broken && side.vitals?.shards)) fail(`${vp} ${spec}: Guard isn't shown breaking`)
       if (stage === 'grenade-near' && side.nade < 0.5) fail(`${vp} ${spec}: no grenade glyph on the ring`)
+    }
+    // ---- C7 acceptance ----
+    if (c7) {
+      const wp = await page.evaluate(() => window.cathode.probeWound())
+      ;(side.c7 ??= {}).probe = wp
+      c7Hist[stage] = wp.hist
+      const kc = wp.now.centre / Math.max(1e-4, wp.fine.centre)
+      const ke = wp.now.edge / Math.max(1e-4, wp.fine.edge)
+      console.log(`  w ${wp.w.toFixed(2)} pulse ${wp.pulse.toFixed(2)} lens ${wp.lens} glove ${wp.glove.toFixed(2)}; saturation centre ${wp.fine.centre.toFixed(3)} -> ${wp.now.centre.toFixed(3)} (x${kc.toFixed(2)}), ring ${wp.fine.edge.toFixed(3)} -> ${wp.now.edge.toFixed(3)} (x${ke.toFixed(2)})`)
+      if (stage === 'vitals-bleeding') {
+        // The colour drains from the edges first: the ring keeps clearly less of its saturation than the centre.
+        if (!(ke < kc * C7_SAT_EDGE)) fail(`${vp} ${spec}: edge saturation x${ke.toFixed(2)} isn't below ${C7_SAT_EDGE} of the centre's x${kc.toFixed(2)}`)
+        if (wp.lens < 1) fail(`${vp} ${spec}: no blood on the lens`)
+        const b = await page.evaluate(() => window.cathode.benchGrade(12))
+        const over = (b.on - b.off) / Math.max(1e-3, b.off)
+        console.log(`  grade pass ${b.off.toFixed(2)} ms idle, ${b.on.toFixed(2)} ms bleeding (+${(over * 100).toFixed(1)}%)`)
+        if (over > 0.15) fail(`${vp} ${spec}: the Vitals pass costs +${(over * 100).toFixed(1)}% of the grade pass (> 15%)`)
+      }
+      if (stage === 'vitals-critical' && wp.lens < 1) fail(`${vp} ${spec}: a heavy hit put no blood on the lens`)
+      if (stage === 'vitals-critical' && !side.wound?.critical) fail(`${vp} ${spec}: the HUD doesn't say Critical`)
+      if (stage === 'vitals-bleeding' && !side.wound?.bleeding) fail(`${vp} ${spec}: the HUD doesn't say Bleeding out`)
     }
     if (side.spill.length) fail(`${vp} ${spec}: HUD past the screen edge: ${side.spill.slice(0, 4).join('; ')}`)
     // The objective marker never sits on the reticle at full strength (S7.2): over it, it must have stepped back.
@@ -575,6 +606,17 @@ for (const vp of vps) {
         }
     }
   }
+  // C7: the four wounded states must look distinct from each other (a pairwise histogram difference).
+  const ks = Object.keys(c7Hist)
+  for (let i = 0; i < ks.length; i++)
+    for (let j = i + 1; j < ks.length; j++) {
+      const a = c7Hist[ks[i]]
+      const b = c7Hist[ks[j]]
+      const d = a.reduce((acc, v, k) => acc + Math.abs(v - b[k]), 0) / 2
+      console.log(`  ${vp} histogram ${ks[i]} vs ${ks[j]}: ${d.toFixed(3)}`)
+      if (d < C7_HIST_MIN) fail(`${vp}: ${ks[i]} and ${ks[j]} look too alike (histogram difference ${d.toFixed(3)} < ${C7_HIST_MIN})`)
+    }
+  for (const k of ks) delete c7Hist[k]
   await ctx.close()
 }
 await browser.close()
