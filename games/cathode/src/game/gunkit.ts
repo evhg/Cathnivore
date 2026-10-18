@@ -481,12 +481,18 @@ export function patchKitMaterial(mat: THREE.MeshStandardMaterial, phone: boolean
         "#include <common>",
         `#include <common>
 attribute vec4 aMR; attribute float aEdge; attribute vec2 aBand; attribute vec2 aUvT;
-varying vec4 vMR; varying float vEdge; varying vec2 vBand; varying vec2 vUvT; varying vec3 vLocal;`,
+varying vec4 vMR; varying float vEdge; varying vec2 vBand; varying vec2 vUvT; varying vec3 vLocal; varying float vGkSkin;`,
       )
       .replace(
         "#include <begin_vertex>",
         `#include <begin_vertex>
-vMR = aMR; vEdge = aEdge; vBand = aBand; vUvT = aUvT; vLocal = position;`,
+vMR = aMR; vEdge = aEdge; vBand = aBand; vUvT = aUvT; vLocal = position;
+// USE_SKINNING is a vertex-stage define only: hand the fragment stage the fact that this is her (skinned) arm.
+#ifdef USE_SKINNING
+vGkSkin = 1.0;
+#else
+vGkSkin = 0.0;
+#endif`,
       );
     sh.fragmentShader = sh.fragmentShader
       .replace(
@@ -495,7 +501,7 @@ vMR = aMR; vEdge = aEdge; vBand = aBand; vUvT = aUvT; vLocal = position;`,
 uniform sampler2D uTrim;
 uniform float gkSize;
 uniform float uGloveBlood;
-varying vec4 vMR; varying float vEdge; varying vec2 vBand; varying vec2 vUvT; varying vec3 vLocal;
+varying vec4 vMR; varying float vEdge; varying vec2 vBand; varying vec2 vUvT; varying vec3 vLocal; varying float vGkSkin;
 float gkHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float gkNoise(vec3 x) {
   vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
@@ -514,28 +520,38 @@ float gkN = gkNoise(vLocal * 260.0) * 0.6 + gkNoise(vLocal * 900.0) * 0.4;
 float gkWear = smoothstep(0.5, 0.6, vEdge * (0.55 + gkN * 0.75));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.25 + vec3(0.035), gkWear * step(0.5, vMR.x));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.25, gkWear * (1.0 - step(0.5, vMR.x)));
-// C7 glove blood: on the black leather only (dielectric and near black), blotches that spread with the wound, wet
-// dark red with a glossy film (roughness below).
+// C7 glove blood: on the leather only, picked by its finish (aMR: dielectric, sheen above 0.2, roughness under
+// 0.55 is the glove and its seams; the sleeve, silk cuff and pearls never qualify), not by how dark it renders.
+// Blotches spread with the wound: wet red where it's fresh, near black where it's pooled, with a glossy film
+// (roughness below) so it catches the street's light at arm's length.
 float gkBlood = 0.0;
-#ifdef USE_SKINNING
 // Only her hands are skinned: the gun never takes it.
-if (uGloveBlood > 0.001) {
-  float gkGlove = (1.0 - step(0.5, vMR.x)) * (1.0 - smoothstep(0.02, 0.07, dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))));
-  // Smears, not spots: a stretched low-frequency field broken by fine grain, at most about 40% of the leather.
-  float gkBn = gkNoise(vLocal * vec3(38.0, 90.0, 38.0) + 3.1) * 0.7 + gkNoise(vLocal * 260.0) * 0.3;
-  float gkTh = 1.0 - uGloveBlood * 0.42;
-  gkBlood = gkGlove * smoothstep(gkTh, gkTh + 0.08, gkBn) * 0.92;
-  diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.085, 0.004, 0.006), vec3(0.035, 0.002, 0.003), smoothstep(gkTh + 0.06, gkTh + 0.2, gkBn)), gkBlood);
-}
-#endif`,
+if (uGloveBlood > 0.001 && vGkSkin > 0.5) {
+  float gkGlove = (1.0 - step(0.5, vMR.x)) * step(0.2, vMR.w) * (1.0 - step(0.55, vMR.y));
+  // Smears, not spots: a broad, stretched field (wiped across the back of the hand and down the fingers) with a
+  // fine grain only at its edge, up to about half the leather when soaked.
+  float gkBn = gkNoise(vLocal * vec3(22.0, 55.0, 22.0) + 3.1) * 0.8 + gkNoise(vLocal * 180.0) * 0.2;
+  float gkTh = 1.0 - uGloveBlood * 0.5;
+  gkBlood = gkGlove * smoothstep(gkTh, gkTh + 0.1, gkBn);
+  // Fresh at the edges, darker where it has pooled: deep red, never pink (the white sheen is off under it).
+  diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.16, 0.006, 0.007), vec3(0.055, 0.002, 0.003), smoothstep(gkTh + 0.1, gkTh + 0.3, gkBn)), gkBlood);
+}`,
       )
       .replace(
         "#include <roughnessmap_fragment>",
         `float gkF2 = max(length(dFdx(vUvT)), length(dFdy(vUvT))) * 1024.0;
 float roughnessFactor = clamp(vMR.y + (gkT.a - 0.5) - gkWear * 0.2 + clamp((gkF2 - 2.0) * 0.02, 0.0, 0.15), 0.04, 1.0);
-roughnessFactor = mix(roughnessFactor, 0.16, gkBlood);`,
+roughnessFactor = mix(roughnessFactor, 0.22, gkBlood);`,
       )
       .replace("#include <metalnessmap_fragment>", "float metalnessFactor = vMR.x;")
+      // Blood is wet and dark: the leather's pale sheen doesn't sit on top of it (only the clearcoat's gloss does).
+      .replace(
+        "#include <lights_physical_fragment>",
+        `#include <lights_physical_fragment>
+#ifdef USE_SHEEN
+material.sheenColor *= 1.0 - gkBlood;
+#endif`,
+      )
       .replace(
         "#include <normal_fragment_maps>",
         `#include <normal_fragment_maps>

@@ -648,43 +648,19 @@ export class Audio {
   heartbeat(at: number, gain: number): void {
     if (!this.enabled) return;
     const c = this.ctx;
-    const one = (t: number, f: number, dur: number, peak: number) => {
-      const o = c.createOscillator();
-      o.frequency.setValueAtTime(f * 1.25, t);
-      o.frequency.exponentialRampToValueAtTime(f, t + 0.03);
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(peak, t + 0.004);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g).connect(this.dry);
-      o.start(t);
-      o.stop(t + dur + 0.02);
-      const h = c.createOscillator();
-      h.frequency.value = f * 2;
-      const hg = c.createGain();
-      hg.gain.setValueAtTime(0.0001, t);
-      hg.gain.exponentialRampToValueAtTime(peak * 0.28, t + 0.004);
-      hg.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.7);
-      h.connect(hg).connect(this.dry);
-      h.start(t);
-      h.stop(t + dur);
-      const n = c.createBufferSource();
-      n.buffer = this.noise.brown;
-      const lp = c.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = 160;
-      const ng = c.createGain();
-      ng.gain.setValueAtTime(0.0001, t);
-      ng.gain.exponentialRampToValueAtTime(peak * 0.5, t + 0.006);
-      ng.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.8);
-      n.connect(lp).connect(ng).connect(this.dry);
-      n.start(t, Math.random() * 2);
-      n.stop(t + dur);
-    };
+    // One buffer source and one gain a beat (the lub-dub is rendered once): 2 nodes, not 12, so a 120 bpm heart
+    // never crowds the voice cap.
+    this.heartBuf ??= renderHeartbeat(c.sampleRate);
     const t = Math.max(at, c.currentTime);
-    one(t, 55, 0.09, 0.55 * gain);
-    one(t + 0.11, 48, 0.07, 0.4 * gain);
+    const src = c.createBufferSource();
+    src.buffer = this.heartBuf;
+    const g = c.createGain();
+    g.gain.value = gain;
+    src.connect(g).connect(this.dry);
+    src.start(t);
+    src.onended = () => g.disconnect();
   }
+  private heartBuf: AudioBuffer | null = null;
 
   /**
    * The wounded loop, once a frame (S6.3): the world's muffle for `w`, and the breath (noise band-passed at 500 Hz
@@ -1048,4 +1024,43 @@ export class Audio {
       this.thunder();
     }
   }
+}
+
+/**
+ * The heartbeat's lub-dub, rendered once into a buffer (S6.3): a lub (55 Hz, 90 ms) and a dub (48 Hz, 70 ms, 110 ms
+ * later), each a pitch-dropping sine (from 1.25x over 30 ms) with its octave, and a thump of brown noise under
+ * 160 Hz, all with a 4 ms attack and an exponential fall.
+ */
+function renderHeartbeat(rate: number): AudioBuffer {
+  const len = Math.ceil(rate * 0.21);
+  const buf = new AudioBuffer({ length: len, numberOfChannels: 1, sampleRate: rate });
+  const d = buf.getChannelData(0);
+  let seed = 12345;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * 2 - 1;
+  // Exponential ramps the way WebAudio draws them: 0.0001 to peak in `att`, then back to 0.0001 by `dur`.
+  const env = (t: number, peak: number, att: number, dur: number) => {
+    if (t < 0 || t > dur) return 0;
+    if (t < att) return 0.0001 * Math.pow(peak / 0.0001, t / att);
+    return peak * Math.pow(0.0001 / peak, (t - att) / (dur - att));
+  };
+  const beat = (start: number, f: number, dur: number, peak: number) => {
+    let ph = 0;
+    let ph2 = 0;
+    let brown = 0;
+    let lp = 0;
+    const a = 1 - Math.exp((-2 * Math.PI * 160) / rate);
+    const n0 = Math.floor(start * rate);
+    for (let i = 0; i < Math.ceil((dur + 0.02) * rate) && n0 + i < len; i++) {
+      const t = i / rate;
+      const fi = t < 0.03 ? f * 1.25 * Math.pow(1 / 1.25, t / 0.03) : f;
+      ph += (2 * Math.PI * fi) / rate;
+      ph2 += (2 * Math.PI * f * 2) / rate;
+      brown = Math.max(-1, Math.min(1, brown + rnd() * 0.04)) * 0.998;
+      lp += a * (brown * 3 - lp);
+      d[n0 + i]! += Math.sin(ph) * env(t, peak, 0.004, dur) + Math.sin(ph2) * env(t, peak * 0.28, 0.004, dur * 0.7) + lp * env(t, peak * 0.5, 0.006, dur * 0.8);
+    }
+  };
+  beat(0, 55, 0.09, 0.55);
+  beat(0.11, 48, 0.07, 0.4);
+  return buf;
 }
