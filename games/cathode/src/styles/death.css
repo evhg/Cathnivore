@@ -43,15 +43,26 @@
   gap: calc(var(--u) * 6);
   opacity: 0;
   text-align: right;
-  text-shadow: 0 0 calc(var(--u) * 18) rgb(var(--black-rgb) / .9);
+  text-shadow: 0 0 calc(var(--u) * 18) rgb(var(--black-rgb) / .9), 0 calc(var(--u) * 1) calc(var(--u) * 3) rgb(var(--black-rgb) / .95);
+  isolation: isolate;
 }
-.death-killer.on { opacity: var(--killer, 0); }
+/* A local scrim: a soft dark pool behind the block, so the name reads over any neon sign behind it. */
+.death-killer::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--u) * -40) calc(var(--u) * -48) calc(var(--u) * -40) calc(var(--u) * -120);
+  z-index: var(--z-under);
+  background: radial-gradient(closest-side, rgb(var(--black-rgb) / .72), rgb(var(--black-rgb) / .4) 60%, transparent);
+  pointer-events: none;
+}
+/* The card's stats row names the killer too: the corner gives way as the card rises. */
+.death-killer.on { opacity: calc(var(--killer, 0) * (1 - var(--card, 0))); }
 .death-killer.is-none { display: none; }
 .death-killer-tag {
   font: 700 var(--d-eyebrow)/1 var(--font-ui);
   letter-spacing: .32em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--ink-2);
 }
 .death-killer-name {
   position: relative;
