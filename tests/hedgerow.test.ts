@@ -101,7 +101,7 @@ describe("hedgerow engine", () => {
     expect(place(game, "hedgerow", 0, 0).ok).toBe(false);
   });
 
-  it("is deterministic: the same build order gives the same result", { timeout: 20_000 }, () => {
+  it("is deterministic: the same build order gives the same result", { timeout: 60_000 }, () => {
     const a = playLevel(LEVELS[11]!, "competent");
     const b = playLevel(LEVELS[11]!, "competent");
     expect([a.tick, a.goodwill, a.marks]).toEqual([

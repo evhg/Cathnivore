@@ -33,7 +33,7 @@ describe("County Show bot", () => {
     for (const [n, l] of showFields(w).entries()) {
       it(`clears week ${w} field ${n + 1} (level ${l.id}) on the Show kit`, () => {
         expect(playLevel(l, "best").phase, `week ${w} ${l.id}`).toBe("won");
-      }, 120000);
+      }, 300000);
     }
   }
 });

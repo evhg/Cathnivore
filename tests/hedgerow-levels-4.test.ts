@@ -27,6 +27,6 @@ describe("hedgerow levels 76-100", () => {
       expect(won.phase).toBe("won");
       expect(stars(won)).toBeGreaterThanOrEqual(1);
       expect(kept(won)).toBeGreaterThanOrEqual(0.5);
-    }, 120_000);
+    }, 300_000); // a bot fight: about 60 s alone, over 200 s on a loaded runner
   }
 });

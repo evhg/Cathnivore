@@ -217,7 +217,7 @@ describe("hedgerow fleet: twists keep a round's weight and length", () => {
         expect(fv / want, `level ${lv.id} wave ${w + 1}`).toBeLessThan(1.2);
       }
     }
-  });
+  }, 30_000); // wall-clock only: about 1.3 s alone, 6 s once beside two SwiftShader browsers
 
   it("Air drop flies a third of a round in; Crowds bring the round a rung smaller and more of it", () => {
     const air = LEVELS[7]!;
@@ -549,9 +549,10 @@ describe("hedgerow fleet: the live cap", () => {
   // about 0.8-1.2 ms a step, so 2 ms leaves room for a busy runner without hiding a real slowdown. The
   // median shares the CPU with the rest of the parallel vitest pool (it measured 3.75 ms once in a full
   // `npm run check`, and 5.8 ms with two SwiftShader browsers running beside it), so it gets 8 ms: a code
-  // regression still moves the fastest batch past 2 ms.
+  // regression still moves the fastest batch past 3 ms (it read 2.03 ms once with the machine at a load of 14 on 4
+  // cores: when every batch shares a core, even the fastest one is slowed, so 3 ms is still 2.5x the code's cost).
   const budgetOk = (batches: number[]) => {
-    expect(batches[0]!).toBeLessThanOrEqual(2);
+    expect(batches[0]!).toBeLessThanOrEqual(3);
     expect(batches[5]!).toBeLessThanOrEqual(8);
   };
 
