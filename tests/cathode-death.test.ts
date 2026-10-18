@@ -184,7 +184,7 @@ describe("C8 Retry from checkpoint (S6.6)", () => {
 
 // ---------------------------------------------------------------- C9 "Deaths that land" (S4.4)
 import { Body, JOINTS, REST, enforcerLook, type Joint } from "../games/cathode/src/game/body";
-import { DEATH, DEATH_VARIANTS, DeathRun, DroppedProp, kneeInfo, limitJoints, pickVariant, poseK, visorLevel, type DeathCtx, type DeathVariant } from "../games/cathode/src/game/death";
+import { DEATH, DEATH_VARIANTS, DeathRun, DroppedProp, helmetPops, kneeInfo, limitJoints, pickVariant, poseK, visorLevel, type DeathCtx, type DeathVariant } from "../games/cathode/src/game/death";
 
 const flat = { colliders: [] as THREE.Box3[], ground: () => 0 };
 const look = enforcerLook();
@@ -369,5 +369,36 @@ describe("C9 deaths that land (S4.4)", () => {
     expect(g.asleep).toBe(true);
     expect(Math.abs(g.a.y - g.b.y)).toBeLessThan(0.02);
     expect(g.a.y).toBeLessThan(0.06);
+  });
+  it("a headshot knocks the helmet off 40% of the time, and it rolls to rest on its shell beside him", () => {
+    let pops = 0;
+    for (let seed = 0; seed < 2000; seed++) if (helmetPops(seed)) pops++;
+    expect(pops / 2000).toBeGreaterThan(0.35);
+    expect(pops / 2000).toBeLessThan(0.45);
+    expect(helmetPops(17)).toBe(helmetPops(17));
+    const b = new Body(look);
+    standing(b);
+    die(b, "headshot", new THREE.Vector3(0, 0.5, -3.5));
+    const clatters: number[] = [];
+    expect(b.popHelmet(new THREE.Vector3(0, 2.6, -3.2), 9, (s) => clatters.push(s))).toBe(true);
+    expect(b.popHelmet(new THREE.Vector3(0, 2.6, -3.2), 9)).toBe(false);
+    const helm = b.root.getObjectByName("helmet")!;
+    expect(helm.parent).toBe(b.root);
+    for (let i = 0; i < 300; i++) {
+      b.physics(1 / 60, flat);
+      b.pose();
+    }
+    const h = b.helmetOff!;
+    expect(h.asleep).toBe(true);
+    expect(clatters.length).toBeGreaterThanOrEqual(1);
+    // Resting on its shell (its points at about the helmet's radius), off his head and on the street behind him.
+    expect(Math.min(h.a.y, h.b.y)).toBeGreaterThan(0.1);
+    expect(Math.max(h.a.y, h.b.y)).toBeLessThan(0.2);
+    expect(h.a.z).toBeLessThan(-0.3);
+    for (const v of [h.a, h.b, helm.position]) expect(Number.isFinite(v.x + v.y + v.z)).toBe(true);
+    // A stage revive puts it back on his head.
+    b.revive();
+    expect(b.helmetOff).toBe(null);
+    expect(helm.parent).toBe(b.segs.get("head")!.group);
   });
 });

@@ -40,7 +40,10 @@ const C8 = ['death-400', 'death-1200', 'death-2000', 'death-card', 'resync@420',
 // C9 "Deaths that land": four of the eight deaths at their telling moment, framed on the body at 4.6 m, and the
 // pool 8 s on (the neon must show in it: a highlight probe). VPS=rv checks reduced violence leaves no pool.
 const C9 = ['death-gutclutch-450', 'death-wallslump-1200', 'death-headshot-300', 'death-spin-400', 'blood-pool-8s']
-const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9 }
+// C9X: the other deaths that can be staged in the open street (knees then face, blown back), and the head kill a
+// moment later, when the knocked-off helmet has landed.
+const C9X = ['death-knees-500', 'death-blownback-350', 'death-headshot-900']
+const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set(C3.map((s) => s.split('@')[0]))
@@ -453,7 +456,7 @@ for (const vp of vps) {
       }
     }
     // ---- C9 acceptance ----
-    if (/^(death-(gutclutch|wallslump|headshot|spin)|blood-pool)/.test(stage) && info) {
+    if (/^(death-(gutclutch|wallslump|headshot|spin|knees|blownback)|blood-pool)/.test(stage) && info) {
       const want = stage.startsWith('blood-pool') ? 'gutclutch' : stage.split('-')[1]
       console.log(`  C9 ${vp} ${spec}: variant ${info.variant}, asleep ${info.asleep}, pool ${info.pool ? `${info.pool.rx.toFixed(0)}x${info.pool.ry.toFixed(0)} px, ${info.pool.age.toFixed(1)} s` : 'none'}`)
       if (info.variant !== want) fail(`${vp} ${spec}: died as ${info.variant}, not ${want}`)
@@ -532,7 +535,7 @@ for (const vp of vps) {
       if (stage === 'grenade-near' && side.nade < 0.5) fail(`${vp} ${spec}: no grenade glyph on the ring`)
     }
     // ---- C8 acceptance ----
-    if ((stage.startsWith('death-') && !/^death-(gutclutch|wallslump|headshot|spin)/.test(stage)) || stage.startsWith('resync')) {
+    if ((stage.startsWith('death-') && !/^death-(gutclutch|wallslump|headshot|spin|knees|blownback)/.test(stage)) || stage.startsWith('resync')) {
       const dc = await page.evaluate(() => {
         const d = devicePixelRatio
         const box = (q) => {

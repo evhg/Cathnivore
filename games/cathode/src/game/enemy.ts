@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { Body, enforcerLook, place, tagUnflashed, type BodyLook, type Zone } from "./body";
-import { DEATH, DeathRun, DroppedProp, pickVariant, visorLevel, type DeathCtx, type DeathVariant } from "./death";
+import { DEATH, DeathRun, DroppedProp, helmetPops, pickVariant, visorLevel, type DeathCtx, type DeathVariant } from "./death";
 import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
 import { animate, muzzleOf, type Motion } from "./animate";
 import type { RayWorld } from "./ray";
@@ -861,7 +861,14 @@ export class Enemy {
       const have = impulse.length() * Math.max(0.25, 1 - this.body.joints.head.distanceTo(at) * 0.8);
       const more = Math.max(0, DEATH.headKick - have);
       this.body.kick("head", d.clone().multiplyScalar(more));
-      this.body.kick("neck", d.multiplyScalar(more * 0.5));
+      this.body.kick("neck", d.clone().multiplyScalar(more * 0.5));
+      // 40% of the time the helmet goes: off the back of his head along the round, rolling on its shell.
+      if (c.helmetPop ?? helmetPops(c.seed)) {
+        const H = DEATH.helmet;
+        const vel = d.multiplyScalar(H.along).add(new THREE.Vector3(0, H.up, 0));
+        const spin = (c.seed % 2 ? 1 : -1) * H.spin;
+        this.body.popHelmet(vel, spin, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 5) }));
+      }
     }
     this.body.deathGlow();
     this.deathEvents.push({ kind: "rattle", at: this.body.joints.head.clone(), k: 1 });

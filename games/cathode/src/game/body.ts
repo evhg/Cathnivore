@@ -7,9 +7,12 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { tuning } from "./feel/tuning";
-import { DEATH, limitJoints, type DeathRun } from "./death";
+import { DEATH, DroppedProp, limitJoints, type DeathRun } from "./death";
 
 const flashTuning = tuning.hitFlash;
+/** The helmet's centre up the head segment (m), and its radius where it lies on the street. */
+const HELM_Y = 0.15;
+const HELM_R = 0.14;
 
 /** S4.1: the flash's level at `ageMs` after a hit: white for a frame, then red at 0.6 fading to 0 over 150 ms. */
 /** The death glow's strength for this session: the phone's fog and lighter grade need it brighter (set by session.ts). */
@@ -157,16 +160,28 @@ function buildSegment(name: string, len: number, look: BodyLook, seg = 0): THREE
       break;
     case "head": {
       g.add(mesh(cyl(0.05, 0.06, 0.08), s, 0, 0.03, 0)); // neck
-      const helm = mesh(sphere(0.145), a, 0, 0.15, -0.005);
+      // C9: the head under the helmet, a black balaclava, seen only when a headshot knocks the helmet off.
+      const skull = mesh(sphere(0.118), s, 0, 0.145, 0);
+      skull.scale.set(0.92, 1.08, 1);
+      g.add(skull);
+      g.add(mesh(rbox(0.1, 0.09, 0.08, 0.03), s, 0, 0.075, 0.05)); // jaw
+      // The helmet is its own group (merged on its own) so it can come off: built around its centre, which sits
+      // HELM_Y up the head segment.
+      const hg = new THREE.Group();
+      hg.name = "helmet";
+      hg.position.set(0, HELM_Y, 0);
+      const helm = mesh(sphere(0.145), a, 0, 0, -0.005);
       helm.scale.set(1, 1.05, 1.15);
-      g.add(mesh(rbox(0.27, 0.05, 0.25, 0.02), a, 0, 0.21, -0.02)); // brow ridge
-      g.add(helm);
-      g.add(mesh(rbox(0.22, 0.05, 0.08, 0.02), v, 0, 0.15, 0.12)); // the visor strip
-      g.add(mesh(rbox(0.22, 0.09, 0.06, 0.02), a, 0, 0.08, 0.1)); // jaw guard
-      g.add(mesh(cyl(0.012, 0.012, 0.12, 6), a, 0.1, 0.27, -0.04)); // antenna
-      g.add(mesh(rbox(0.035, 0.1, 0.24, 0.012), a, 0, 0.3, -0.02)); // a crest fin: the helmet reads from behind
-      g.add(mesh(rbox(0.06, 0.07, 0.05, 0.015), a, -0.15, 0.13, 0.04)); // ear comms cup
-      g.add(mesh(rbox(0.06, 0.07, 0.05, 0.015), a, 0.15, 0.13, 0.04));
+      hg.add(mesh(rbox(0.27, 0.05, 0.25, 0.02), a, 0, 0.06, -0.02)); // brow ridge
+      hg.add(helm);
+      hg.add(mesh(rbox(0.22, 0.05, 0.08, 0.02), v, 0, 0, 0.12)); // the visor strip
+      hg.add(mesh(rbox(0.22, 0.09, 0.06, 0.02), a, 0, -0.07, 0.1)); // jaw guard
+      hg.add(mesh(cyl(0.012, 0.012, 0.12, 6), a, 0.1, 0.12, -0.04)); // antenna
+      hg.add(mesh(rbox(0.035, 0.1, 0.24, 0.012), a, 0, 0.15, -0.02)); // a crest fin: the helmet reads from behind
+      hg.add(mesh(rbox(0.06, 0.07, 0.05, 0.015), a, -0.15, -0.02, 0.04)); // ear comms cup
+      hg.add(mesh(rbox(0.06, 0.07, 0.05, 0.015), a, 0.15, -0.02, 0.04));
+      mergeByMaterial(hg, seg);
+      g.add(hg);
       break;
     }
     case "upperArmL":
@@ -392,6 +407,7 @@ export class Body {
    * segment (a severed one can't be put back).
    */
   revive(): void {
+    this.putHelmetBack();
     this.ragdoll = false;
     this.dying = null;
     this.asleep = false;
@@ -430,9 +446,13 @@ export class Body {
       dk = a < D.holdMs ? L : a < D.holdMs + D.fadeMs ? L * (1 - (a - D.holdMs) / D.fadeMs) ** 2 : 0;
       if (dk > 0) any = true;
       else this.deathAge = 1e9;
-      // C9: the kill glow lives on the silhouette only (the edge rim), so the falling body keeps its own shading
-      // and the pose reads; a flat red fill turned every death into a red mannequin.
-      this.rimUniform.value.set(D.red[0] * dk * D.rimGain, D.red[1] * dk * D.rimGain, D.red[2] * dk * D.rimGain, D.rimPow);
+      // C9: the kill glow is a pulse on the silhouette only (the edge rim), gone within 0.65 s, so the fall reads as
+      // a body and not a red mannequin. It hands over to a faint cold street rim that stays on the dead (the noir
+      // edge light), so a dark body on a dark street still has a shape.
+      const r = L > 0 ? dk / L : 0;
+      const g = D.rimGain * dk;
+      const c = 1 - r;
+      this.rimUniform.value.set(D.red[0] * g + D.cold[0] * c, D.red[1] * g + D.cold[1] * c, D.red[2] * g + D.cold[2] * c, D.rimPow * r + D.coldPow * c);
     }
     for (let i = 1; i < FLASH_SLOTS; i++) {
       const age = (this.flashAge[i] = this.flashAge[i]! + dtMs);
@@ -451,8 +471,46 @@ export class Body {
     return i < 0 ? 0 : this.flashUniform.value[i + 1]!.x;
   }
 
+  /** C9 (S4.4): the helmet a headshot knocked off, tumbling on its own (null while he wears it). */
+  helmetOff: DroppedProp | null = null;
+  private helmG: THREE.Object3D | null = null;
+  private readonly helmFacing = new THREE.Vector3(0, 0, 1);
+
+  /**
+   * The headshot drop's helmet pop (S4.4, 40% of headshots): the helmet leaves the head with `vel` (m/s) and a
+   * tumble, rolls on its shell and clatters, and the black balaclava under it shows. False if it can't come off.
+   */
+  popHelmet(vel: THREE.Vector3, spin: number, onClatter?: (speed: number, at: THREE.Vector3) => void): boolean {
+    const head = this.segs.get("head");
+    const hg = head?.group.getObjectByName("helmet");
+    if (!head || head.loose || !hg || this.helmetOff) return false;
+    this.pose();
+    head.group.updateMatrixWorld(true);
+    const a = hg.getWorldPosition(new THREE.Vector3());
+    const b = hg.localToWorld(new THREE.Vector3(0, 0.15, 0));
+    this.helmFacing.set(0, 0, 1).transformDirection(hg.matrixWorld);
+    this.root.add(hg);
+    this.helmG = hg;
+    const prop = new DroppedProp(a, b, vel, spin, onClatter);
+    prop.lift = HELM_R;
+    this.helmetOff = prop;
+    this.pose();
+    return true;
+  }
+
+  private putHelmetBack(): void {
+    const head = this.segs.get("head");
+    if (!this.helmG || !head) return;
+    head.group.add(this.helmG);
+    this.helmG.position.set(0, HELM_Y, 0);
+    this.helmG.quaternion.identity();
+    this.helmG = null;
+    this.helmetOff = null;
+  }
+
   /** Places every attached segment between its joints. */
   pose(): void {
+    if (this.helmetOff && this.helmG) place(this.helmG, this.helmetOff.a, this.helmetOff.b, this.helmFacing);
     tmpZ.copy(this.facing).normalize();
     for (const s of this.segs.values()) {
       if (s.loose) {
@@ -557,6 +615,7 @@ export class Body {
    */
   physics(dt: number, w: RagdollWorld): void {
     const g = -19 * dt * dt;
+    if (this.helmetOff && dt > 0) this.helmetOff.step(dt, (x, z) => w.ground(x, z), w.colliders);
     if (this.ragdoll && this.asleep) this.asleepFor += dt;
     if (this.ragdoll && !this.asleep && dt > 0) {
       this.restTime += dt;

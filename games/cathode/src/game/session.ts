@@ -3052,10 +3052,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * C9 "Deaths that land": a kill at close range with the variant forced, framed on the body at the stage's
    * moment (the base hit stage, a distance, a forced death, a wall behind him, and how he is turned).
    */
-  const C9_STAGES: Record<string, { base: string; dist: number; variant: DeathVariant; wall?: boolean; turn?: number; pool?: boolean; ms: number }> = {
+  const C9_STAGES: Record<string, { base: string; dist: number; variant: DeathVariant; wall?: boolean; turn?: number; pool?: boolean; helmet?: boolean; ms: number }> = {
     "death-gutclutch": { base: "hit-kill", dist: 4.6, variant: "gutclutch", ms: 450 },
     "death-wallslump": { base: "hit-kill", dist: 4.6, variant: "wallslump", wall: true, ms: 1200 },
-    "death-headshot": { base: "hit-headkill", dist: 4.6, variant: "headshot", ms: 300 },
+    "death-headshot": { base: "hit-headkill", dist: 4.6, variant: "headshot", helmet: true, ms: 300 },
+    "death-knees": { base: "hit-kill", dist: 4.6, variant: "knees", ms: 500 },
+    "death-blownback": { base: "hit-kill", dist: 4.6, variant: "blownback", ms: 350 },
     "death-spin": { base: "hit-kill", dist: 4.6, variant: "spin", turn: 1.25, ms: 400 },
     "blood-pool": { base: "hit-kill", dist: 4.6, variant: "gutclutch", pool: true, ms: 8000 },
   };
@@ -3404,11 +3406,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const dir = aim.clone().sub(origin).normalize();
     combat.quiet = true;
     combat.forceVariant = c9?.variant ?? null;
+    combat.forceHelmet = c9 ? (c9.helmet ?? false) : null;
     lastHitPoint = null;
     // No random crit: a stage shows the same class every time.
     combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], { ...build(), crit: 0 });
     combat.quiet = false;
     combat.forceVariant = null;
+    combat.forceHelmet = null;
     drainEvents();
     // A death stage shows the death: no loot beam standing through the body.
     if (c9) pickups.clear();

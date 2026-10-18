@@ -34,6 +34,13 @@ export interface DeathCtx {
   firstGunKill?: boolean;
   /** Any stable number from the hit (enemy id, damage): breaks ties without Math.random. */
   seed: number;
+  /** A headshot knocks the helmet off (stages force it; otherwise helmetPops(seed)). */
+  helmetPop?: boolean;
+}
+
+/** S4.4: the helmet pops off 40% of headshot drops, deterministically from the seed. */
+export function helmetPops(seed: number): boolean {
+  return hash(seed * 3.7 + 1.3) < DEATH.helmetChance;
 }
 
 /** S4.4 numbers. */
@@ -71,6 +78,9 @@ export const DEATH = {
   clutchK: 0.15,
   /** The headshot's backward kick on the head (m/s), and the blown-back multiplier and lift. */
   headKick: 6,
+  /** The headshot's helmet pop: the share of headshots, and how it leaves (m/s along the round, up, tumble). */
+  helmetChance: 0.4,
+  helmet: { along: 3.2, up: 2.6, spin: 9 },
   blownMul: 1.5,
   blownUp: 1.5,
   /** The impulse carries the posed body along the round for about this long (s) before the pose holds it. */
@@ -608,6 +618,8 @@ export class DroppedProp {
   private readonly len: number;
   clatters = 0;
   asleep = false;
+  /** How high its points rest over the street (m): a rifle lies flat, a helmet rolls on its shell (C9). */
+  lift = 0.03;
   private still = 0;
   private lastClatter = -1;
   private t = 0;
@@ -662,7 +674,7 @@ export class DroppedProp {
         [this.a, this.pa],
         [this.b, this.pb],
       ] as const) {
-        const fl = ground(p.x, p.z) + 0.03;
+        const fl = ground(p.x, p.z) + this.lift;
         if (p.y < fl) {
           const vy = (q.y - p.y) / Math.max(1e-4, dt);
           p.y = fl;
@@ -678,7 +690,7 @@ export class DroppedProp {
         }
         for (const c of colliders) {
           if (p.x <= c.min.x || p.x >= c.max.x || p.y <= c.min.y || p.y >= c.max.y || p.z <= c.min.z || p.z >= c.max.z) continue;
-          p.y = c.max.y + 0.03;
+          p.y = c.max.y + this.lift;
           q.y = p.y;
         }
       }

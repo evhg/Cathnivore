@@ -434,6 +434,8 @@ export class Combat {
   firstGunKill = false;
   /** Screenshot stages (C9): the next kill dies this way, whatever the hit says. */
   forceVariant: DeathVariant | null = null;
+  /** Screenshot stages (C9): whether a headshot knocks the helmet off, instead of the 40% roll. */
+  forceHelmet: boolean | null = null;
 
   /**
    * What the street around a dying body says (S4.4's variant triggers): a wall within 1.2 m behind him along the
@@ -541,6 +543,7 @@ export class Combat {
     if (killed) {
       const gun = w.kind !== "melee";
       const ctx = this.deathCtx(e, zone, dir, w.weaponClass, dist, gun && this.firstGunKill);
+      if (this.forceHelmet != null) ctx.helmetPop = this.forceHelmet;
       if (gun) this.firstGunKill = false;
       const imp = DEATH.impulse[w.weaponClass] ?? 3.5;
       e.die(dir.clone().multiplyScalar(imp).add(new THREE.Vector3(0, 1, 0)), point, ctx, this.forceVariant ?? undefined);
