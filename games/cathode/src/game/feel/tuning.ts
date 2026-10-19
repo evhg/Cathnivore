@@ -104,13 +104,13 @@ export const tuning = {
    * 0.32 since the glow takes its fog back off (C2 fix): unfogged, 0.45 lit the whole corpse salmon at 5K.
    */
   /**
-   * C10 "Enforcer v2" (S3.1, S3.2, S4.1): the faction rim (a fresnel edge in the faction's emissive at 40%
-   * saturation: 0.3 at rest, 0.6 in combat, 1.0 for 120 ms after a hit, a 3 Hz pulse when takedown-eligible; `gain`
+   * C10 "Enforcer v2" (S3.1, S3.2, S4.1): the faction rim (a fresnel edge in the faction's hue, kept saturated at
+   * `lum` so it reads amber through AgX, on the silhouette only: 0.3 at rest, 0.6 in combat, 1.0 for 120 ms after a hit, a 3 Hz pulse when takedown-eligible; `gain`
    * turns those strengths into radiance), the LOD distances (m) and the 0.3 s dither, the antenna's blink and the
    * coolant window's pulse, the visor, and the hand that opens on an arm hit.
    */
   enemyLook: {
-    rim: { rest: 0.3, combat: 0.6, hit: 1.0, hitMs: 120, pulseHz: 3, sat: 0.4, pow: 3.2, gain: 9, phoneGain: 7, phonePow: 2.6 },
+    rim: { rest: 0.3, combat: 0.6, hit: 1.0, hitMs: 120, pulseHz: 3, sat: 0.9, lum: 0.5, pow: 3, gain: 3.2, phoneGain: 2.6, phonePow: 3.6 },
     lod: { phone: [12, 30] as const, desktop: [16, 39] as const, hyst: 1, fadeMs: 300 },
     blinkHz: 1,
     coolantHz: 1.2,

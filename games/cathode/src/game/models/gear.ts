@@ -14,6 +14,10 @@ import { box, chamfer, cyl, plate } from "./parts";
 
 /** Where the support hand holds the foregrip, metres up the line from the right hand (animate.ts reads it). */
 export const FOREGRIP_M = 0.3;
+/** The gun's broadening across and up (gun space x, y): the length stays true. */
+const RIFLE_BULK = [1.45, 1.3] as const;
+/** The riot shield viewport's inner light: Hollowell amber (body.ts HOLLOWELL_AMBER). */
+const SHIELD_GLASS = 0xffa040;
 /** The bolt's kick when he fires (m). */
 export const BOLT_KICK_M = 0.015;
 
@@ -47,6 +51,10 @@ export function buildRifle(phone: boolean, sniper = false, lod = phone): Rifle {
   const gun = new THREE.Group();
   // Gun space (y up, -z muzzle) onto the hands' frame (+Y toward the left hand, +Z up).
   gun.rotation.x = Math.PI / 2;
+  // A carbine's real cross-section (a 60 mm receiver, 80 mm deep with the rail) next to the armoured body reads as a
+  // pencil from 3 m: the whole gun is built at service proportions and then broadened, so the receiver, the magazine
+  // and the stock hold as a silhouette in the takedown camera and at 10 m.
+  gun.scale.set(RIFLE_BULK[0], RIFLE_BULK[1], 1);
   root.add(gun);
   const k = new GunKit(gun, phone || lod);
   const bolt = k.part("bolt", [0, 0, 0]);
@@ -80,7 +88,7 @@ export function buildRifle(phone: boolean, sniper = false, lod = phone): Rifle {
   // The foregrip, its centre on the support hand.
   k.add(lathe([[0.0, 0.0], [0.016, 0.003], [0.017, 0.07], [0.0145, 0.082]], { phone, seg: lod ? 6 : undefined }), F.grip, { p: [0, 0.052, -FOREGRIP_M], r: [Math.PI / 2, 0, 0] });
   // The curved magazine ahead of the trigger.
-  const mag: P2[] = [[-0.032, 0.052], [-0.085, 0.052], [-0.118, -0.06], [-0.13, -0.108], [-0.078, -0.12], [-0.06, -0.06]];
+  const mag: P2[] = [[-0.03, 0.052], [-0.092, 0.052], [-0.128, -0.07], [-0.142, -0.13], [-0.082, -0.142], [-0.06, -0.066]];
   k.add(profile(chamfer(mag, 0.005), 0.03, { bevel: 0.003, phone, lod }), F.steel);
   // The trigger guard.
   const tg: P2[] = [[0.0, 0.05], [-0.004, 0.03], [-0.03, 0.022], [-0.032, 0.05], [-0.026, 0.05], [-0.024, 0.03], [-0.006, 0.036], [-0.006, 0.05]];
@@ -121,6 +129,7 @@ export function buildRifle(phone: boolean, sniper = false, lod = phone): Rifle {
     const one = collapse(lowG);
     if (one) {
       one.rotation.copy(gun.rotation);
+      one.scale.copy(gun.scale);
       far.add(one);
     }
   }
@@ -182,11 +191,13 @@ export function buildShield(visor: number, phone: boolean): THREE.Group {
   ] as const)
     k.add(box(t, len, 0.004, 0), paint, { p: [x, y, 0.013], r: [0, 0, rot] });
   void s;
+  void visor;
   k.finish();
-  // The viewport: dark glass tinted with the bearer's visor.
-  // Smoked glass with the faintest tint of the visor behind it: it reads as a window, not a lamp.
-  const c = new THREE.Color(visor).multiplyScalar(0.16).add(new THREE.Color(0x05070a));
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.12), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.88, depthWrite: false }));
+  // The viewport: smoked glass lit faintly from inside by the faction's amber (S3.1's emissive language), so it
+  // reads as a window onto a lit visor and not a red lamp. Opaque enough that the role's visor colour behind it
+  // (the riot's red) can't paint the whole port.
+  const c = new THREE.Color(SHIELD_GLASS).multiplyScalar(0.22).add(new THREE.Color(0x06080b));
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.12), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.94, depthWrite: false }));
   glass.position.set(0, 0.34, 0.003);
   glass.name = "viewport";
   root.add(glass);

@@ -138,12 +138,15 @@ export interface RagdollWorld {
   ground(x: number, z: number): number;
 }
 
-/** The faction rim's colour for a visor colour: the same hue at S3.1's 40% saturation, linear. */
-function rimTint(visor: number, out: THREE.Color): THREE.Color {
-  out.set(visor);
+/**
+ * The faction rim's colour for a faction emissive: the same hue, kept saturated and mid-dark (linear). S3.1's 40%
+ * saturation turned pale tan and, through the gain and the AgX shoulder, near white; `sat` and `lum` keep it amber.
+ */
+function rimTint(faction: number, out: THREE.Color): THREE.Color {
+  out.set(faction);
   const hsl = { h: 0, s: 0, l: 0 };
   out.getHSL(hsl);
-  out.setHSL(hsl.h, hsl.s * LOOK.rim.sat, Math.max(0.5, hsl.l));
+  out.setHSL(hsl.h, Math.min(1, hsl.s * LOOK.rim.sat), LOOK.rim.lum);
   return out;
 }
 

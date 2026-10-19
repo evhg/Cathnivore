@@ -251,6 +251,17 @@ function onRing(r: number, y: number, phi: number, sx = 1, extra?: THREE.Quatern
   return new THREE.Matrix4().compose(new THREE.Vector3(Math.sin(phi) * r * sx, y, Math.cos(phi) * r), q, new THREE.Vector3(1, 1, 1));
 }
 
+/**
+ * The squad leader's command collar: a high flared gorget standing up behind and beside the helmet, open at the
+ * front. With the crest it gives him a second silhouette cue (a broad head-and-shoulders block) that holds at 64 px,
+ * where the crest alone was a few pixels.
+ */
+function commandCollar(b: Builder, seg: number): void {
+  const uL = segLen("upperChest");
+  const pr: P2[] = [[0.13, uL - 0.05], [0.2, uL + 0.06], [0.215, uL + 0.13], [0.2, uL + 0.135], [0.186, uL + 0.07], [0.118, uL - 0.035]];
+  b.add("upperChest", shell(pr, Math.PI - 115 * D, 230 * D, seg, 0.5), FINISH.plateDark);
+}
+
 function torso(b: Builder, arch: Arch): void {
   const { lod } = b.o;
   const S = FINISH;
@@ -258,6 +269,7 @@ function torso(b: Builder, arch: Arch): void {
   const cL = segLen("chest");
   const uL = segLen("upperChest");
   const sniper = arch === "sniper";
+  if (arch === "leader") commandCollar(b, b.seg(20));
   // ---- abdomen: the soft core, the belt with its buckle and pouches, two stacked ab lames, the codpiece.
   b.add("abdomen", lathe([[0.0, -0.1], [0.12, -0.095], [0.152, -0.04], [0.15, 0.06], [0.156, 0.16], [0.172, aL + 0.02]], 1.05, 0.72, b.seg(18)), S.suit);
   if (lod < 2) {
@@ -384,10 +396,24 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
   b.add(h, limb(0.06, (t) => 0.05 - 0.008 * t, b.seg(12), 2), S.leather, { p: [0, -0.035, 0] });
   b.add(h, b.box(0.034, 0.095, 0.078, 0.012, 1), S.leather, { p: [0, 0.05, 0.004] });
   if (lod < 2) b.add(h, b.box(0.012, 0.06, 0.07, 0.005, 1), S.plate, { p: [0.022 * out, 0.06, 0.004] });
-  if (lod === 0) b.add(h, limb(0.06, (t) => 0.014 - 0.003 * t, 8, 2), S.leather, { p: [-0.014 * out, 0.035, 0.04], r: [0.9, 0, 0.5 * out] });
+  // The thumb: a two-joint digit standing off the palm, so the glove reads as a hand and not a mitten.
+  if (lod < 2) {
+    b.add(h, limb(0.05, (t) => 0.0165 - 0.003 * t, lod ? 5 : 8, 2), S.leather, { p: [-0.012 * out, 0.03, 0.042], r: [0.85, 0, 0.45 * out] });
+    if (lod === 0) b.add(h, limb(0.032, (t) => 0.0135 - 0.002 * t, 8, 2), S.leather, { p: [-0.016 * out, 0.06, 0.074], r: [1.35, 0, 0.6 * out] });
+  }
   // The fingers: built straight along the bone from the knuckles, curled round the grip by the bone's own rotation.
-  b.add(f, b.box(0.024, 0.05, 0.074, 0.008, 1), S.leather, { p: [0, 0.024, 0.004] });
-  if (lod < 2) b.add(f, b.box(0.021, 0.045, 0.07, 0.008, 1), S.leather, { p: [-0.012 * out, 0.058, 0.004], r: [0, 0, -0.9 * out] });
+  // Up close (LOD0) they are four, with gaps between them and a knuckle guard over the first joints; further off,
+  // a slab that keeps the same outline.
+  if (lod === 0) {
+    b.add(f, b.box(0.03, 0.016, 0.078, 0.005, 1), S.plateDark, { p: [0.006 * out, 0.004, 0.004] });
+    for (const [z, l] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) {
+      b.add(f, b.box(0.022, l, 0.0165, 0.005, 1), S.leather, { p: [0, l / 2 + 0.004, z + 0.004] });
+      b.add(f, b.box(0.019, l * 0.85, 0.015, 0.005, 1), S.leather, { p: [-0.011 * out, l + 0.004 + l * 0.38, z + 0.004], r: [0, 0, -0.9 * out] });
+    }
+  } else {
+    b.add(f, b.box(0.024, 0.05, 0.074, 0.008, 1), S.leather, { p: [0, 0.024, 0.004] });
+    if (lod < 2) b.add(f, b.box(0.021, 0.045, 0.07, 0.008, 1), S.leather, { p: [-0.012 * out, 0.058, 0.004], r: [0, 0, -0.9 * out] });
+  }
 }
 
 function leg(b: Builder, side: "L" | "R", arch: Arch): void {
@@ -460,8 +486,8 @@ function head(b: Builder, arch: Arch): void {
   }
   if (arch === "leader") {
     // The squad leader: a tall crest fin and a red stripe under the visor.
-    const crest: P2[] = [[-0.14, 0.08], [0.06, 0.135], [0.11, 0.12], [0.08, 0.2], [-0.03, 0.25], [-0.17, 0.19]];
-    b.add(H, b.plate(chamfer(crest, 0.01), { depth: 0.01, bevel: 0.004 }), S.plate, { p: [-0.009, 0, -0.008], r: [0, Math.PI / 2, 0] });
+    const crest: P2[] = [[-0.15, 0.08], [0.06, 0.135], [0.115, 0.12], [0.1, 0.22], [0.0, 0.33], [-0.1, 0.3], [-0.2, 0.2]];
+    b.add(H, b.plate(chamfer(crest, 0.012), { depth: 0.022, bevel: 0.005 }), S.plateDark, { p: [-0.011, 0, -0.008], r: [0, Math.PI / 2, 0] });
     ring([[0.1586, -0.013], [0.1606, -0.012], [0.1606, -0.005], [0.1586, -0.004]], 0, 40 * D, GLOWS.stripe, 10);
   } else if (!sniper && lod < 2) {
     // Everyone else: a low ridge over the crown.
@@ -513,11 +539,14 @@ function silhouette(b: Builder, arch: Arch): void {
   b.add("head", limb(0.1, () => 0.056, n, 1), S.knit, { p: [0, -0.01, 0] });
   const H = "helmet";
   const outer: P2[] = [[0.0, 0.158], [0.12, 0.11], [0.157, 0.022], [0.15, -0.06], [0.166, -0.12]];
-  b.add(H, shell([...outer, [0.13, -0.11], [0.0, 0.13]], 0, Math.PI * 2, b.o.phone ? 5 : 8, 0.5), arch === "sniper" ? S.coat : S.plate, { p: [0, 0, -0.008], s: [1, 1, 1.12] });
+  b.add(H, shell([...outer, [0.152, -0.11], [0.138, -0.06], [0.145, 0.02], [0.11, 0.098], [0.0, 0.144]], 0, Math.PI * 2, b.o.phone ? 5 : 8, 0.5), arch === "sniper" ? S.coat : S.plate, { p: [0, 0, -0.008], s: [1, 1, 1.12] });
   if (arch === "sniper") b.add(H, cyl(0.022, 0.022, 0.012, 6), GLOWS.lens, { p: [0.0, 0.012, 0.18], r: [Math.PI / 2, 0, 0] });
   else b.add(H, shell([[0.157, 0.0], [0.163, 0.002], [0.163, 0.016], [0.157, 0.018]], -36 * D, 72 * D, 3), GLOWS.slit, { p: [0, 0, -0.008], s: [1, 1, 1.12] });
   b.add(H, shell([[0.15, -0.044], [0.156, -0.043], [0.156, -0.023], [0.15, -0.022]], Math.PI - 30 * D, 60 * D, 2), GLOWS.strip, { p: [0, 0, -0.008], s: [1, 1, 1.12] });
-  if (arch === "leader") b.add(H, plate([[-0.13, 0.085], [0.06, 0.135], [0.07, 0.175], [-0.04, 0.21], [-0.15, 0.17]], { depth: 0.01, bevel: 0 }), S.plate, { p: [-0.005, 0, -0.008], r: [0, Math.PI / 2, 0] });
+  if (arch === "leader") {
+    b.add(H, plate([[-0.15, 0.08], [0.06, 0.135], [0.115, 0.12], [0.1, 0.22], [0.0, 0.33], [-0.1, 0.3], [-0.2, 0.2]], { depth: 0.022, bevel: 0 }), S.plateDark, { p: [-0.011, 0, -0.008], r: [0, Math.PI / 2, 0] });
+    commandCollar(b, b.o.phone ? 5 : 7);
+  }
 }
 
 export interface ArchGeometry {
