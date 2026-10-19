@@ -4058,12 +4058,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const hand = right ? g.body.joints.handR : g.body.joints.handL;
       const out = (right ? g.body.joints.shoulderR : g.body.joints.shoulderL).clone().sub(g.body.joints.chest).setY(0).normalize();
       const toHer = eye.clone().sub(hand).setY(0).normalize();
-      // Aimed past the palm at the fingers (the joint is the palm's centre: the open fingers ran off the frame).
-      const wrist = right ? g.body.joints.wristR : g.body.joints.wristL;
-      zoomAt = () => {
-        const at = hand.clone().addScaledVector(hand.clone().sub(wrist), 0.6);
-        return { at, from: at.clone().addScaledVector(out.clone().add(toHer).normalize(), 1.1).add(new THREE.Vector3(0, 0.25, 0)) };
-      };
+      zoomAt = () => ({ at: hand, from: hand.clone().addScaledVector(out.clone().add(toHer).normalize(), 1.1).add(new THREE.Vector3(0, 0.25, 0)) });
     }
     if (name === "hit-soft") hud.hitMarker("armour");
     if (name === "hit-pen") hud.hitMarker("pen");
