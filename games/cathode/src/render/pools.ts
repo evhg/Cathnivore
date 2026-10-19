@@ -124,6 +124,11 @@ ${mirrorOn ? "uniform sampler2D uRefl;\nuniform mat4 uReflMatrix;\nuniform float
   float inner = 1.0 - smoothstep( edge - 0.06, edge, pr );
   if ( inner < 0.003 ) discard;
   float rim = smoothstep( edge - 0.16, edge - 0.03, pr ) * inner;
+  // The lip: a hairline just inside the edge where the meniscus turns to the light (C9 review: without it the
+  // pool read as a flat decal disc, not liquid standing on the street).
+  float lip = smoothstep( edge - 0.075, edge - 0.035, pr ) * ( 1.0 - smoothstep( edge - 0.03, edge - 0.005, pr ) );
+  // Broken along its length, as a real edge catches light only where it faces it.
+  lip *= smoothstep( 0.35, 0.75, texture2D( uPoolNoise, nuv * 4.1 + 0.61 ).b );
   diffuseColor.rgb = mix( uFresh, uOld, vPool.x ) * ( 1.0 - 0.45 * rim );
   diffuseColor.a = inner * 0.96;`,
         )
@@ -132,7 +137,8 @@ ${mirrorOn ? "uniform sampler2D uRefl;\nuniform mat4 uReflMatrix;\nuniform float
           `#include <emissivemap_fragment>
   // Lifted out of the noir grade like the rest of the blood (S4.5's "emissive lift, ignoring local light"): a
   // pool on black asphalt has to read as blood, not as more wet street.
-  totalEmissiveRadiance += diffuseColor.rgb * ( 1.6 + 2.2 * ( 1.0 - vPool.x ) ) * ( 1.0 - 0.5 * rim );`,
+  totalEmissiveRadiance += diffuseColor.rgb * ( 1.6 + 2.2 * ( 1.0 - vPool.x ) ) * ( 1.0 - 0.5 * rim );
+  totalEmissiveRadiance += vec3( 0.012, 0.01, 0.012 ) * lip;`,
         )
         .replace(
           "#include <normal_fragment_maps>",
@@ -146,15 +152,25 @@ ${mirrorOn ? "uniform sampler2D uRefl;\nuniform mat4 uReflMatrix;\nuniform float
         );
       if (mirrorOn)
         shader.fragmentShader = shader.fragmentShader.replace(
-          "#include <lights_fragment_maps>",
-          `#include <lights_fragment_maps>
-  {
+          "#include <opaque_fragment>",
+          `{
+    // The mirror, added straight to the pool's colour rather than as image-based specular: through the dielectric
+    // BRDF a non-metal reflects 4% head on, so the neon over it all but vanished and the pool read as a flat maroon
+    // decal (C9 review). Standing liquid at a low angle is mostly mirror: 40% head on, rising with Fresnel.
     vec4 pRC = uReflMatrix * vec4( vPoolW, 1.0 );
     vec2 pUv = pRC.xy / pRC.w;
     vec3 pRefl = textureLod( uRefl, pUv, 0.0 ).rgb * 0.5 + textureLod( uRefl, pUv + vec2( 0.003, 0.0 ), 0.0 ).rgb * 0.25 + textureLod( uRefl, pUv - vec2( 0.003, 0.0 ), 0.0 ).rgb * 0.25;
-    // Blood is thicker than rain water: the mirror is a little darker and redder, but it is a mirror.
-    radiance = mix( radiance, pRefl * vec3( 1.0, 0.42, 0.38 ) * 1.5, uReflOn );
-  }`,
+    float pFres = pow( 1.0 - clamp( dot( normal, normalize( vViewPosition ) ), 0.0, 1.0 ), 5.0 );
+    float pW = ( 0.45 + 0.5 * pFres ) * uReflOn;
+    // Blood is thicker than rain water: a dark red mirror. The haze and the dim street fall away in it (they would
+    // milk the whole pool grey) and only the lights come through, redder, but keeping their hue.
+    float pL = dot( pRefl, vec3( 0.2126, 0.7152, 0.0722 ) );
+    vec3 pHi = pRefl * smoothstep( 0.12, 0.45, pL );
+    outgoingLight = outgoingLight * ( 1.0 - 0.25 * pW * smoothstep( 0.12, 0.45, pL ) ) + pHi * vec3( 1.0, 0.5, 0.46 ) * 1.4 * pW;
+    // The lip catches the street's light whiter than the body of the pool (a thin film, less tinted).
+    outgoingLight += ( pHi * 1.4 + vec3( 0.02, 0.022, 0.026 ) ) * lip * uReflOn;
+  }
+  #include <opaque_fragment>`,
         );
     };
     mat.customProgramCacheKey = () => `cathode-pool-${mirrorOn ? 1 : 0}`;

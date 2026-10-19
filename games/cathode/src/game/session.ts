@@ -11,7 +11,7 @@ import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
 import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
-import { deathGlowScale } from "./body";
+import { deadCost, deathGlowScale } from "./body";
 import { POOLS } from "../render/pools";
 import { deathFx, type DeathVariant } from "./death";
 import { RayWorld, rayGround } from "./ray";
@@ -172,7 +172,7 @@ export interface Session {
     heights?: Record<string, number>;
   } | null;
   /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
-  probePool?: (x: number, y: number, rx: number, ry: number) => { bright: number; red: number; total: number; maxLum: number };
+  probePool?: (x: number, y: number, rx: number, ry: number, o?: { quick?: boolean; noRender?: boolean }) => { bright: number; red: number; total: number; maxLum: number };
   /** C5: the Kestrel at the stage's moment (part travel, rounds shown, the muzzle and slide on screen). */
   pistolInfo?: Record<string, unknown> | null;
   /** C4: the hands' share of viewmodel pixels and the slide's mean luminance (0..1) in the shown frame. */
@@ -265,6 +265,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   deathGlowScale.value = o.quality === "phone" ? 1.5 : 1;
   deathGlowScale.rimPow = o.quality === "phone" ? 1.2 : 0;
   deathGlowScale.rimGain = o.quality === "phone" ? 0.22 : 1;
+  deadCost.cheap = o.quality === "phone";
   setBeaconProfile(o.quality === "phone" ? "phone" : "desktop");
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
@@ -767,7 +768,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const actives = new Actives();
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;
-  setTimeout(() => voice.say(inVault ? "startVault" : inTower ? "startTower" : inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
+  // Not over a screenshot stage: a stage that takes a while to set up would get the opening line across it.
+  setTimeout(() => staged || voice.say(inVault ? "startVault" : inTower ? "startTower" : inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
   const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, rescueMin: 0.4 });
@@ -2029,6 +2031,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   /** Enemies who see a dead colleague raise the alarm for everyone nearby. */
   function discoverBodies(): void {
+    // A screenshot stage's body is set dressing for the shot: nobody raises the alarm over it.
+    if (staged) return;
     for (const body of enemies) {
       if (body.alive || body.found || body.deadFor < 1) continue;
       for (const e of enemies) {
@@ -3477,6 +3481,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // A body at rest is shot from beside it (a three-quarter view from the side she stands on): lying along the
       // line of fire, it is foreshortened into a lump whatever its pose (C9 review).
       const axis = new THREE.Vector3().subVectors(g.body.joints.head, g.body.joints.pelvis).setY(0);
+      let otherSide: THREE.Vector3 | null = null;
       const lying = (c9.pool || tMs >= 1500) && c9.variant !== "wallslump" && axis.lengthSq() > 0.09;
       if (lying) {
         axis.normalize();
@@ -3503,7 +3508,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
             break;
           }
         }
-      } else if (!c9.pool && (c9.variant === "gutclutch" || c9.variant === "knees" || c9.variant === "blownback")) {
+      } else if (!c9.pool && (c9.variant === "gutclutch" || c9.variant === "knees" || c9.variant === "blownback" || c9.variant === "headshot" || c9.variant === "spin")) {
         // The fall itself is shot three-quarters on from the side: head on, the clutch, the knee going down and
         // the flight backward all collapse into the same upright figure (C9 review).
         const facing = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
@@ -3515,6 +3520,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const dist = want + 0.4;
         player.pos.set(focus.x + d.x * dist, 0, focus.z + d.z * dist);
         player.pos.y = ground(player.pos.x, player.pos.z);
+        // The other side, for the foreground check below.
+        const d2 = facing.clone().multiplyScalar(0.5).addScaledVector(side, d.dot(side) > 0 ? -0.87 : 0.87).normalize();
+        if (!rays.cast(from, d2, want + 0.6, { thin: false })) otherSide = focus.clone().addScaledVector(d2, dist).setY(0);
       } else if (c9.variant === "wallslump") {
         // The sit is shot three-quarters on, 40 degrees off the wall's normal: head on, the legs run straight at
         // the lens and he reads as a man standing against the shutter (C9 review). The side with room wins.
@@ -3533,23 +3541,80 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         player.pos.sub(back);
         player.pos.y = ground(player.pos.x, player.pos.z);
       }
-      player.applyCamera(world.camera, 0);
-      world.camera.updateMatrixWorld();
-      world.camera.getWorldPosition(eye);
-      const look2 = focus.clone().add(new THREE.Vector3(0, c9.pool ? 0 : 0.1, 0)).sub(eye).normalize();
-      player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1)) + (c9.pool ? 0.04 : 0);
-      // A touch off centre to the left, clear of the gun in her right hand.
-      // The pool stage puts him further left, so the crosshair sits on the open pool and not on the body.
-      player.yaw = Math.atan2(-look2.x, -look2.z) - (c9.pool ? 0.24 : lying ? 0.28 : 0.13);
-      player.applyCamera(world.camera, 0);
-      world.camera.updateMatrixWorld();
-      if (pl) {
-        const c = toScreen(pl.at);
-        const camX = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0);
-        const rx = Math.abs(toScreen(pl.at.clone().addScaledVector(camX, pl.r * 0.7)).x - c.x);
-        const fwdFlat = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 2).setY(0).normalize();
-        const ry = Math.abs(toScreen(pl.at.clone().addScaledVector(fwdFlat, pl.r * 0.7)).y - c.y);
-        poolInfo = { x: c.x, y: c.y, rx, ry, age: pl.age };
+      const pool = !!c9.pool;
+      const headKill = c9.variant === "headshot";
+      const frameOn = () => {
+        player.applyCamera(world.camera, 0);
+        world.camera.updateMatrixWorld();
+        world.camera.getWorldPosition(eye);
+        const look2 = focus.clone().add(new THREE.Vector3(0, pool ? 0 : 0.1, 0)).sub(eye).normalize();
+        player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1)) + (pool ? 0.04 : 0);
+        // A touch off centre to the left, clear of the gun in her right hand.
+        // The pool stage puts him further left, so the crosshair sits on the open pool and not on the body.
+        // The head kill's ring is the biggest marker: he falls left of it, not under it (C9 review).
+        player.yaw = Math.atan2(-look2.x, -look2.z) - (pool ? 0.24 : lying ? 0.28 : headKill ? 0.24 : 0.13);
+        player.applyCamera(world.camera, 0);
+        world.camera.updateMatrixWorld();
+        poolInfo = null;
+        if (pl) {
+          const c = toScreen(pl.at);
+          const camX = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0);
+          const rx = Math.abs(toScreen(pl.at.clone().addScaledVector(camX, pl.r * 0.7)).x - c.x);
+          const fwdFlat = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 2).setY(0).normalize();
+          const ry = Math.abs(toScreen(pl.at.clone().addScaledVector(fwdFlat, pl.r * 0.7)).y - c.y);
+          poolInfo = { x: c.x, y: c.y, rx, ry, age: pl.age };
+        }
+      };
+      frameOn();
+      if (otherSide && s.probePool) {
+        // A big out-of-focus sign or window reflected in the wet street at her feet, under the vitals, reads as a
+        // rendering artefact (C9 review): if this side has one and the other side doesn't, shoot from the other.
+        const vw = world.renderer.domElement.clientWidth;
+        const vh = world.renderer.domElement.clientHeight;
+        const fgAt = () => s.probePool!(vw * 0.36, vh * 0.86, vw * 0.3, vh * 0.13, { quick: true }).bright;
+        const here = player.pos.clone();
+        const a = fgAt();
+        if (a > 0.02) {
+          player.pos.set(otherSide.x, ground(otherSide.x, otherSide.z), otherSide.z);
+          frameOn();
+          if (fgAt() > a * 0.5) {
+            player.pos.copy(here);
+            frameOn();
+          }
+        }
+      }
+      if (c9.pool && pl && poolInfo && s.probePool) {
+        // A pool is only as good as what it reflects: from beside the body the planar mirror can show a dark
+        // shopfront, and the pool reads as a flat maroon disc (C9 review). So walk round the pool at the same
+        // distance and keep the view where the most neon lands in it (the body still in frame).
+        const r0 = new THREE.Vector3(player.pos.x - focus.x, 0, player.pos.z - focus.z);
+        const dist = r0.length();
+        const from = focus.clone().setY(ground(focus.x, focus.z) + 1.2);
+        const vw = world.renderer.domElement.clientWidth;
+        const vh = world.renderer.domElement.clientHeight;
+        let best: { score: number; pos: THREE.Vector3 } | null = null;
+        const tries: [number, number][] = [];
+        for (let i = 0; i < 12; i++) tries.push([i <= 6 ? i * 0.5236 : (i - 12) * 0.5236, dist]);
+        for (const [a, dd] of tries) {
+          const d = r0.clone().normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), a);
+          if (a !== 0 && rays.cast(from, d, dd + 0.6, { thin: false })) continue;
+          player.pos.set(focus.x + d.x * dd, 0, focus.z + d.z * dd);
+          player.pos.y = ground(player.pos.x, player.pos.z);
+          frameOn();
+          const pi = poolInfo as { x: number; y: number; rx: number; ry: number } | null;
+          const ch = toScreen(g.body.joints.chest);
+          if (!pi || ch.x < vw * 0.08 || ch.x > vw * 0.92 || ch.y < vh * 0.1 || ch.y > vh * 0.85) continue;
+          const pr = s.probePool(pi.x, pi.y, pi.rx, pi.ry, { quick: true });
+          // It must still read as blood (a pool that mirrors a lit sign whole goes milky), then the most highlight up
+          // to a few percent (lights caught in it, not a sheet of them); a near-even pair goes to the side framing.
+          // And no big out-of-focus sign reflection filling the foreground under the vitals (C9 review: it read as
+          // a rendering artefact): the bright share of the lower-left of the frame counts against a view.
+          const fg = s.probePool(vw * 0.28, vh * 0.82, vw * 0.22, vh * 0.14, { noRender: true });
+          const score = (pr.red >= 0.25 ? 1 : 0) + Math.min(pr.bright, 0.06) * 10 + pr.red * 0.1 - fg.bright * 2 - Math.abs(a) * 0.0005;
+          if (!best || score > best.score) best = { score, pos: player.pos.clone() };
+        }
+        if (best) player.pos.copy(best.pos);
+        frameOn();
       }
     }
     // Classes the street can't produce on cue yet (no plates until C15): show them over the real hit.
@@ -3606,18 +3671,29 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * C8 acceptance: pixels of the rendered frame (full resolution) with hue 350..10 degrees, saturation above 0.6 and
    * value above 0.25: blood red. Reduced violence's death-2000 must have none.
    */
-  s.probePool = (x, y, rx, ry) => {
-    render();
+  s.probePool = (x, y, rx, ry, po = {}) => {
     const c = world.renderer.domElement;
     const k = c.width / Math.max(1, c.clientWidth);
     const W = Math.max(2, Math.round(rx * 2 * k));
     const H = Math.max(2, Math.round(ry * 2 * k));
-    const cv = document.createElement("canvas");
-    cv.width = W;
-    cv.height = H;
-    const g2 = cv.getContext("2d", { willReadFrequently: true })!;
-    g2.drawImage(c, Math.round((x - rx) * k), Math.round((y - ry) * k), W, H, 0, 0, W, H);
-    const px = g2.getImageData(0, 0, W, H).data;
+    const grab = (draw = true) => {
+      if (draw) render();
+      const cv = document.createElement("canvas");
+      cv.width = W;
+      cv.height = H;
+      const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+      g2.drawImage(c, Math.round((x - rx) * k), Math.round((y - ry) * k), W, H, 0, 0, W, H);
+      return g2.getImageData(0, 0, W, H).data;
+    };
+    // The pool alone counts: a pixel where a body lying in it (with its cold rim) is drawn is not highlight, so the
+    // frame is grabbed with the bodies hidden and again as shown, and only pixels that match are the pool's.
+    // `quick` (the stage's own search, many views): one frame with the bodies hidden, read as is; `noRender` reads
+    // the frame already drawn.
+    const shown = enemies.filter((e) => e.body.root.visible);
+    for (const e of shown) e.body.root.visible = false;
+    const bare = grab(!po.noRender);
+    for (const e of shown) e.body.root.visible = true;
+    const px = po.quick || po.noRender ? bare : grab();
     let bright = 0;
     let red = 0;
     let total = 0;
@@ -3632,6 +3708,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const r = px[o4]!;
         const gg = px[o4 + 1]!;
         const b = px[o4 + 2]!;
+        if (Math.abs(r - bare[o4]!) + Math.abs(gg - bare[o4 + 1]!) + Math.abs(b - bare[o4 + 2]!) > 24) continue;
         const lum = (0.2126 * r + 0.7152 * gg + 0.0722 * b) / 255;
         maxLum = Math.max(maxLum, lum);
         if (lum > 0.3) bright++;

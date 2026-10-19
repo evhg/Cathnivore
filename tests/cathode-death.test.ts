@@ -235,7 +235,8 @@ describe("C9 deaths that land (S4.4)", () => {
     expect(poseK("gutclutch", 900)).toBe(0);
     // The slump's sit is held until he sleeps in it.
     expect(poseK("wallslump", 5000)).toBeGreaterThan(0);
-    expect(poseK("headshot", 0)).toBe(0);
+    // The headshot's short drop pose is gone by 380 ms.
+    expect(poseK("headshot", 380)).toBe(0);
     for (let t = 0; t < 900; t += 10) expect(poseK("gutclutch", t + 10)).toBeLessThanOrEqual(poseK("gutclutch", t));
   });
 

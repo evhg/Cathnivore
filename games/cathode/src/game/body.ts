@@ -17,6 +17,12 @@ const HELM_R = 0.14;
 /** S4.1: the flash's level at `ageMs` after a hit: white for a frame, then red at 0.6 fading to 0 over 150 ms. */
 /** The death glow's strength for this session: the phone's fog and lighter grade need it brighter (set by session.ts). */
 export const deathGlowScale = { value: 1, rimPow: 0, rimGain: 1 };
+/**
+ * Phone (S0 budget, C9 review: four death stages at 261 to 300 calls against 260): a body that has gone down leaves
+ * the street's mirror and stops casting shadows. On the floor its reflection lies under it and its shadow is a
+ * smear the half-resolution mirror and the phone's shadow map lose anyway, so it costs one pass, not three.
+ */
+export const deadCost = { cheap: false };
 
 export function flashLevel(ageMs: number): number {
   const F = flashTuning;
@@ -27,6 +33,7 @@ export function flashLevel(ageMs: number): number {
 
 export { JOINTS, REST, type Joint, type Zone } from "./rig";
 import { JOINTS, REST, type Joint, type Zone } from "./rig";
+import { LAYER_NO_REFLECT } from "../render/reflection";
 
 
 export interface SegmentDef {
@@ -408,6 +415,7 @@ export class Body {
    */
   revive(): void {
     this.putHelmetBack();
+    this.setCheap(false);
     this.ragdoll = false;
     this.dying = null;
     this.asleep = false;
@@ -421,6 +429,31 @@ export class Body {
     for (const v of this.flashUniform.value) v.set(0, 0, 0);
     this.flashing = false;
     this.rimUniform.value.set(0, 0, 0, 3);
+  }
+
+  private cheapMeshes: THREE.Mesh[] | null = null;
+  /** deadCost: out of the mirror and the shadow pass (on), or back as it was (off). */
+  private setCheap(on: boolean): void {
+    if (on && !this.cheapMeshes) {
+      this.cheapMeshes = [];
+      this.root.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || !m.layers.isEnabled(0)) return;
+        m.layers.set(LAYER_NO_REFLECT);
+        if (m.castShadow) {
+          m.castShadow = false;
+          m.userData.cheapShadow = true;
+        }
+        this.cheapMeshes!.push(m);
+      });
+    } else if (!on && this.cheapMeshes) {
+      for (const m of this.cheapMeshes) {
+        m.layers.set(0);
+        if (m.userData.cheapShadow) m.castShadow = true;
+        delete m.userData.cheapShadow;
+      }
+      this.cheapMeshes = null;
+    }
   }
 
   /** Advances the flash on real time (it shows through a hit-stop). */
@@ -453,7 +486,8 @@ export class Body {
       // The phone renders at half resolution: a tight rim (power 3) on the plates' bevels breaks into speckle
       // there, so it gets a wider, softer one (deathGlowScale.rimPow, set by session.ts).
       const g = D.rimGain * deathGlowScale.rimGain * dk;
-      const c = 1 - r;
+      // The cold edge comes in under the end of the pulse (squared), so the kill still reads red while it lasts.
+      const c = (1 - r) * (1 - r);
       const pow = deathGlowScale.rimPow || D.rimPow;
       this.rimUniform.value.set(D.red[0] * g + D.cold[0] * c, D.red[1] * g + D.cold[1] * c, D.red[2] * g + D.cold[2] * c, pow * r + D.coldPow * c);
     }
@@ -547,6 +581,7 @@ export class Body {
   goLimp(impulse: THREE.Vector3, at?: THREE.Vector3, run?: DeathRun): void {
     if (this.ragdoll) return;
     this.ragdoll = true;
+    if (deadCost.cheap) this.setCheap(true);
     this.asleep = false;
     this.asleepFor = 0;
     this.stillFrames = 0;

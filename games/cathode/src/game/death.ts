@@ -59,7 +59,7 @@ export const DEATH = {
   } as Record<string, number>,
   /** Active-phase length per variant (ms). */
   durMs: {
-    headshot: 0,
+    headshot: 380,
     gutclutch: 900,
     spin: 600,
     wallslump: 1200,
@@ -307,6 +307,31 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
   const sg = c.side >= 0 ? 1 : -1;
   const t = tMs;
   switch (v) {
+    case "headshot": {
+      // The strings cut: the knees go at once, the head snaps back along the round and the body follows it over
+      // backward, arms flying loose. A short pose (380 ms) so the drop shows its direction; a plain ragdoll at this
+      // moment folded in on itself into a heap of plates (C9 review).
+      const drop = easeOut(t / 260);
+      const over = smooth((t - 60) / 300);
+      p.h = REST.pelvis.y - 0.42 * drop;
+      p.fz = -0.16 * over;
+      p.pitch = -0.75 * over;
+      p.head = -0.65 * smooth(t / 120);
+      p.roll = 0.12 * sg * over;
+      p.footL.z = 0.1 * drop;
+      p.footR.z = 0.16 * drop;
+      p.footL.x = STANCE_L.x + 0.06 * drop;
+      p.footR.x = STANCE_R.x - 0.05 * drop;
+      // Arms thrown up and out by the snap, trailing the shoulders.
+      rot(vS, 0, 1, 0, p.pitch, 0, p.roll);
+      rot(vF, 0, 0, 1, p.pitch, 0, p.roll);
+      const fl = smooth(t / 200);
+      hL.set(p.fx + 0.3 + 0.22 * fl, p.h, p.fz).addScaledVector(vS, 0.15 + 0.4 * fl).addScaledVector(vF, 0.2 * fl);
+      hR.set(p.fx - 0.3 - 0.18 * fl, p.h, p.fz).addScaledVector(vS, 0.1 + 0.36 * fl).addScaledVector(vF, 0.25 * fl);
+      p.handL = hL;
+      p.handR = hR;
+      break;
+    }
     case "gutclutch": {
       // The pelvis drops half a metre over 500 ms, he folds over the wound with both hands on it, the head goes
       // down, and he starts to tip over to one side.
@@ -336,9 +361,10 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
       // A 90 degree turn along the round, the arm on the hit side flung out, then he pitches over.
       const u = easeOut(t / 450);
       p.yaw = sg * 1.45 * u;
-      p.h = REST.pelvis.y - 0.22 * smooth(t / 600);
-      p.pitch = 0.65 * smooth((t - 250) / 350);
-      p.roll = 0.15 * sg * u;
+      // He is going over by 400 ms (C9 review: at 400 ms the spin read as a man standing and turning).
+      p.h = REST.pelvis.y - 0.32 * smooth(t / 550);
+      p.pitch = 0.7 * smooth((t - 150) / 350);
+      p.roll = 0.3 * sg * u;
       p.twist = 0.35 * sg * smooth(t / 250) * (1 - u * 0.5);
       p.head = -0.3 * smooth(t / 200);
       rot(p.footL, STANCE_L.x, STANCE_L.y, STANCE_L.z, 0, p.yaw * 0.6, 0);
@@ -466,7 +492,7 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
 export type RestKind = "back" | "front" | "side";
 export const REST_POSE = {
   /** Limp seconds before the pull starts (a headshot drops, a blown-back body flies first). */
-  delayS: { headshot: 0.3, blownback: 0.12, gutclutch: 0.05, spin: 0.12, knees: 0.08 } as Partial<Record<DeathVariant, number>>,
+  delayS: { headshot: 0.38, blownback: 0.12, gutclutch: 0.05, spin: 0.12, knees: 0.08 } as Partial<Record<DeathVariant, number>>,
   /** Seconds the pull takes to come up to strength, and its strength (share of the gap closed per 60 Hz frame). */
   rampS: 0.6,
   k: 0.2,

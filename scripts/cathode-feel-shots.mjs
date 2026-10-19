@@ -474,7 +474,9 @@ for (const vp of vps) {
           const pr = await page.evaluate(([x, y, rx, ry]) => window.cathode.probePool(x, y, rx, ry), [info.pool.x, info.pool.y, info.pool.rx, info.pool.ry])
           console.log(`  C9 ${vp} ${spec}: pool ${(pr.red * 100).toFixed(0)}% blood red, ${(pr.bright * 100).toFixed(1)}% highlight, max luminance ${pr.maxLum.toFixed(2)}`)
           if (pr.red < 0.12) fail(`${vp} ${spec}: the pool is only ${(pr.red * 100).toFixed(0)}% red (< 12%)`)
-          if (pr.maxLum < 0.3 || pr.bright < 0.002) fail(`${vp} ${spec}: no neon reflection in the pool (max luminance ${pr.maxLum.toFixed(2)}, ${(pr.bright * 100).toFixed(2)}% bright)`)
+          // probePool counts only pixels a body in the pool doesn't cover: 1% is the floor (the C9 review found 0.6%
+          // passing a 0.2% floor while the pool showed no neon at all).
+          if (pr.maxLum < 0.3 || pr.bright < 0.01) fail(`${vp} ${spec}: no neon reflection in the pool (max luminance ${pr.maxLum.toFixed(2)}, ${(pr.bright * 100).toFixed(2)}% bright)`)
         }
       }
     }
