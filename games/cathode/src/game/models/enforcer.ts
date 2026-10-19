@@ -49,12 +49,12 @@ const GLOWS = {
   strip: { surf: { emit: 0xffffff, intensity: 3.2 }, visor: true },
   status: { surf: { emit: 0xffffff, intensity: 2.4 }, visor: true },
   tip: { surf: { emit: 0xff2018, intensity: 7 }, blink: true },
-  coolant: { surf: { emit: 0xffa040, intensity: 3.6 }, pulse: true },
+  coolant: { surf: { emit: 0xffa040, intensity: 5 }, pulse: true },
   stripe: { surf: { emit: 0xff2420, intensity: 5 } },
   /** Retro-reflective tape (pillar 4: overstate what matters): pale bands that make him read from behind in the rain. */
-  tape: { surf: { emit: 0xe9e1cf, intensity: 2.6 } },
+  tape: { surf: { emit: 0xe9e1cf, intensity: 4 } },
   /** The unit number, backlit in the visor's colour on the back plate. */
-  unit: { surf: { emit: 0xffffff, intensity: 2.2 }, visor: true },
+  unit: { surf: { emit: 0xffffff, intensity: 3.6 }, visor: true },
   lens: { surf: { emit: 0xffffff, intensity: 5 }, visor: true },
 } satisfies Record<string, Glow>;
 
