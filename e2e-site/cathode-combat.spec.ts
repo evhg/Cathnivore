@@ -182,3 +182,62 @@ test.describe('CATHODE death and Retry', () => {
     await page.waitForFunction((f) => (window as unknown as { cathode: C }).cathode.stats.frames > f + 2, f0, { timeout: 60_000 })
   })
 })
+
+// C11 "Takedowns" (S5.2): the press locks input for the paired sequence (0.9 to 1.4 s of game time), the camera
+// is the director's, and the guard ends as a sleeping ragdoll on the street.
+test.describe('CATHODE takedowns', () => {
+  test('the first guard: the chip, a locked 0.9-1.4 s sequence under the letterbox, and he ends asleep on the street', async ({ page, hasTouch }) => {
+    test.skip(hasTouch, 'one layout is enough: the sequence is the same on a phone')
+    test.setTimeout(400_000)
+    await page.goto('/cathode/')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/cathode/?play&class=ghost&rs=0.5')
+    type V3 = { x: number; y: number; z: number; set(x: number, y: number, z: number): void; distanceTo(o: V3): number }
+    type E = { alive: boolean; position: V3; motion: { yaw: number }; body: { asleep: boolean; joints: { pelvis: V3 } } }
+    type C = {
+      stats: { frames: number }
+      enemies: E[]
+      job: { skipTo(n: number): void }
+      player: { pos: V3; yaw: number; pitch: number }
+      input: { forced: Record<string, boolean> }
+      combat: { kills: unknown[] }
+      takedown: { active: boolean; lockMs: number; real: number; variant: { id: string } | null }
+    }
+    await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number }; job?: unknown } }).cathode?.job ? 1 : 0) && ((window as unknown as { cathode: C }).cathode.stats.frames >= 3), null, { timeout: 200_000 })
+    // Behind the guard under the lamp, 1.3 m off, looking at him.
+    await page.evaluate(() => {
+      const c = (window as unknown as { cathode: C }).cathode
+      c.job.skipTo(1)
+      const g = c.enemies.filter((e) => e.alive).sort((a, b) => a.position.distanceTo(c.player.pos) - b.position.distanceTo(c.player.pos))[0]!
+      const yaw = g.motion.yaw
+      c.player.pos.set(g.position.x - Math.sin(yaw) * 1.3, g.position.y, g.position.z - Math.cos(yaw) * 1.3)
+      // Player yaw faces -z at 0: look along his facing (at his back).
+      c.player.yaw = Math.atan2(-Math.sin(yaw), -Math.cos(yaw))
+      c.player.pitch = -0.15
+    })
+    await page.waitForFunction((f) => (window as unknown as { cathode: C }).cathode.stats.frames >= f + 2, await page.evaluate(() => (window as unknown as { cathode: C }).cathode.stats.frames))
+    await expect(page.locator('.hud-prompt.world')).toBeVisible()
+    await page.evaluate(() => ((window as unknown as { cathode: C }).cathode.input.forced = { takedown: true }))
+    await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.takedown.active, null, { timeout: 60_000 })
+    expect(await page.evaluate(() => (window as unknown as { cathode: C }).cathode.takedown.variant?.id)).toBe('behindWrap')
+    // Input is locked: a trigger pull mid-sequence does nothing, and the cinema letterbox is up.
+    await page.evaluate(() => ((window as unknown as { cathode: C }).cathode.input.forced = { fire: true }))
+    await expect(page.locator('.hud-root.td-cine')).toHaveCount(1)
+    await page.waitForFunction(() => !(window as unknown as { cathode: C }).cathode.takedown.active, null, { timeout: 200_000 })
+    const lock = await page.evaluate(() => (window as unknown as { cathode: C }).cathode.takedown.lockMs)
+    expect(lock).toBeGreaterThanOrEqual(900)
+    expect(lock).toBeLessThanOrEqual(1400)
+    // He ends as a sleeping ragdoll, lying on the street.
+    await page.waitForFunction(() => {
+      const c = (window as unknown as { cathode: C }).cathode
+      return c.enemies.some((e) => !e.alive && e.body.asleep)
+    }, null, { timeout: 200_000 })
+    const pelvisUp = await page.evaluate(() => {
+      const c = (window as unknown as { cathode: C }).cathode
+      const e = c.enemies.find((x) => !x.alive && x.body.asleep)!
+      return e.body.joints.pelvis.y - e.position.y
+    })
+    expect(pelvisUp).toBeLessThan(0.45)
+    await expect(page.locator('.hud-root.td-cine')).toHaveCount(0)
+  })
+})

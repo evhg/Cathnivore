@@ -9,7 +9,7 @@
 import * as THREE from "three";
 import { REST, deriveJoints, type Joint, type Zone } from "./rig";
 
-export type DeathVariant = "headshot" | "gutclutch" | "spin" | "wallslump" | "knees" | "blownback" | "rail" | "crawlout";
+export type DeathVariant = "headshot" | "gutclutch" | "spin" | "wallslump" | "knees" | "blownback" | "rail" | "crawlout" | "takedown";
 export const DEATH_VARIANTS: readonly DeathVariant[] = ["headshot", "gutclutch", "spin", "wallslump", "knees", "blownback", "rail", "crawlout"];
 
 /** What the killing blow and the street around the body say about how he goes down. */
@@ -67,6 +67,8 @@ export const DEATH = {
     blownback: 450,
     rail: 700,
     crawlout: 2400,
+    // C11: a takedown's run carries its own script (and its own length).
+    takedown: 1200,
   } as Record<DeathVariant, number>,
   /** The pose spring's starting strength (per 60 Hz frame). */
   k0: 0.6,
@@ -161,7 +163,7 @@ export function poseK(v: DeathVariant, tMs: number): number {
 // ------------------------------------------------------------------ dying poses (body space, FK)
 
 /** A dying pose, as a few numbers: the pelvis, how the spine leans, where the feet and hands are. Body space. */
-interface PoseP {
+export interface PoseP {
   /** Pelvis height and its offset (+x left, +z ahead). */
   h: number;
   fx: number;
@@ -173,6 +175,8 @@ interface PoseP {
   twist: number;
   /** The head's extra bow forward. */
   head: number;
+  /** C11: the head's tilt toward his right shoulder (+), on top of the spine's roll (a blow to the temple). */
+  headRoll?: number;
   /** Knee pole: how far the knees are pushed up (a sit's raised knees) and out to the sides, on top of forward. */
   kneeUp: number;
   kneeOut: number;
@@ -183,7 +187,7 @@ interface PoseP {
   handR: THREE.Vector3 | null;
 }
 
-const LEN = {
+export const LEN = {
   chest: REST.chest.y - REST.pelvis.y,
   neck: REST.neck.y - REST.pelvis.y,
   head: REST.head.y - REST.neck.y,
@@ -232,10 +236,10 @@ export function ik2(root: THREE.Vector3, end: THREE.Vector3, l1: number, l2: num
 }
 
 /** Builds every joint (body space, unit scale) from the pose numbers. */
-function buildPose(p: PoseP, out: Record<Joint, THREE.Vector3>): void {
+export function buildPose(p: PoseP, out: Record<Joint, THREE.Vector3>): void {
   const pel = out.pelvis.set(p.fx, p.h, p.fz);
   rot(vS, 0, 1, 0, p.pitch, p.yaw, p.roll); // spine
-  rot(vH, 0, 1, 0, p.pitch + p.head, p.yaw + p.twist, p.roll); // head
+  rot(vH, 0, 1, 0, p.pitch + p.head, p.yaw + p.twist, p.roll + (p.headRoll ?? 0)); // head
   rot(vA, 1, 0, 0, p.pitch, p.yaw + p.twist, p.roll); // shoulders across (to his left)
   rot(vA2, 1, 0, 0, 0, p.yaw, p.roll * 0.5); // hips across
   rot(vF, 0, 0, 1, 0, p.yaw, 0); // his front, flat
@@ -276,8 +280,8 @@ function buildPose(p: PoseP, out: Record<Joint, THREE.Vector3>): void {
   deriveJoints(out);
 }
 
-const STANCE_L = new THREE.Vector3(REST.footL.x, REST.footL.y, 0);
-const STANCE_R = new THREE.Vector3(REST.footR.x, REST.footR.y, 0);
+export const STANCE_L = new THREE.Vector3(REST.footL.x, REST.footL.y, 0);
+export const STANCE_R = new THREE.Vector3(REST.footR.x, REST.footR.y, 0);
 const tmpPose: PoseP = {
   h: 0,
   fx: 0,
@@ -302,6 +306,7 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
   const p = tmpPose;
   p.h = REST.pelvis.y;
   p.fx = p.fz = p.pitch = p.roll = p.yaw = p.twist = p.head = p.kneeUp = p.kneeOut = 0;
+  p.headRoll = 0;
   p.footL.copy(STANCE_L);
   p.footR.copy(STANCE_R);
   p.handL = p.handR = null;
@@ -493,7 +498,7 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
 export type RestKind = "back" | "front" | "side";
 export const REST_POSE = {
   /** Limp seconds before the pull starts (a headshot drops, a blown-back body flies first). */
-  delayS: { headshot: 0.38, blownback: 0.12, gutclutch: 0.05, spin: 0.12, knees: 0.08 } as Partial<Record<DeathVariant, number>>,
+  delayS: { headshot: 0.38, blownback: 0.12, gutclutch: 0.05, spin: 0.12, knees: 0.08, takedown: 0.02 } as Partial<Record<DeathVariant, number>>,
   /** Seconds the pull takes to come up to strength, and its strength (share of the gap closed per 60 Hz frame). */
   rampS: 0.6,
   k: 0.2,
@@ -507,6 +512,7 @@ export const REST_POSE = {
 
 /** The lying pose a variant ends in, or null for one that holds its own end (a sit, a fold over a rail, a crawl). */
 export function restKindFor(v: DeathVariant, frontY: number): RestKind | null {
+  if (v === "takedown") return frontY < -0.5 ? "front" : frontY > 0.5 ? "back" : "side";
   if (v === "gutclutch") return "side";
   if (v === "headshot" || v === "blownback") return frontY < -0.5 ? "front" : "back";
   if (v === "spin" || v === "knees") return frontY > 0.5 ? "back" : "front";
@@ -625,6 +631,17 @@ for (const j of Object.keys(REST) as Joint[]) {
 }
 
 /**
+ * C11: a takedown's authored body (game/takedown.ts): the whole paired sequence as a pose in body space (unit scale,
+ * feet on y = 0, facing +z), with its own strength curve, so Cath's arm can carry him down and lay him on the street.
+ */
+export interface DeathScript {
+  durMs: number;
+  /** Pose strength (share of the gap closed per 60 Hz frame; 1 is kinematic) `tMs` in. */
+  k(tMs: number): number;
+  pose(tMs: number, out: Record<Joint, THREE.Vector3>): void;
+}
+
+/**
  * One body's death: the variant, its clock, and the frame its dying pose is placed in (where he stood, the way he
  * faced, his scale). `targets` writes this frame's world-space pose and the pose's own velocity.
  */
@@ -646,12 +663,14 @@ export class DeathRun {
     origin: THREE.Vector3,
     readonly yaw: number,
     readonly scale = 1,
+    readonly script: DeathScript | null = null,
   ) {
-    this.dur = DEATH.durMs[variant];
+    this.dur = script ? script.durMs : DEATH.durMs[variant];
     this.origin.copy(origin);
   }
   get k(): number {
-    return this.fellBack ? 0 : poseK(this.variant, this.t);
+    if (this.fellBack) return 0;
+    return this.script ? this.script.k(this.t) : poseK(this.variant, this.t);
   }
   get active(): boolean {
     return this.t < this.dur && !this.fellBack;
@@ -706,7 +725,8 @@ export class DeathRun {
   }
   /** The world pose at `tMs` (the impulse's drift along the round included) into `out`. */
   pose(tMs: number, out: Record<Joint, THREE.Vector3>): void {
-    dyingPose(this.variant, tMs, this.ctx, out);
+    if (this.script) this.script.pose(tMs, out);
+    else dyingPose(this.variant, tMs, this.ctx, out);
     const tS = tMs / 1000;
     const drift = DEATH.driftS * (1 - Math.exp(-tS / DEATH.driftS));
     const c = Math.cos(this.yaw);

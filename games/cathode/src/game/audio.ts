@@ -1029,6 +1029,80 @@ export class Audio {
     this.tone("sine", 1400, 1700, 0.05, 0.05);
   }
 
+  // ---- C11: takedowns (S5.1, S5.2) ----
+  /** The first time a man becomes takeable: a two-tone tick, low then high, quiet and dry. */
+  takedownTell(): void {
+    if (!this.enabled) return;
+    this.tone("sine", 880, 880, 0.05, 0.05);
+    this.tone("sine", 1320, 1320, 0.07, 0.055, 0.07);
+  }
+
+  /** The grab: her coat and his collar, a sharp cloth rip, a gear rattle and his breath forced out. */
+  takedownGrab(): void {
+    if (!this.enabled) return;
+    this.burst({ type: "bandpass", freq: 1800, sweepTo: 600, q: 0.9, decay: 0.16, gain: 0.32, noise: "pink" });
+    this.burst({ type: "highpass", freq: 4200, decay: 0.05, gain: 0.12, when: 0.02 });
+    this.burst({ freq: 2600, q: 5, decay: 0.04, gain: 0.08, when: 0.05 });
+    this.burst({ type: "lowpass", freq: 900, sweepTo: 300, decay: 0.22, gain: 0.18, when: 0.06, noise: "brown" });
+  }
+
+  /**
+   * A takedown blow (S5.2's 420 ms impact): a hard thud and a 45 Hz sub on the dry bus, so slow motion never muffles
+   * it; a suppressed shot is a cough, a crack and a body-borne thump; the choke is a throat-crush and a gear creak.
+   */
+  takedownImpact(kind: "blunt" | "shot" | "choke", last = true): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const sub = (f0: number, gain: number, dur: number) => {
+      const t = c.currentTime;
+      const o = c.createOscillator();
+      o.type = "sine";
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(f0 * 0.62, t + dur);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(gain, t + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(this.dry);
+      o.start(t);
+      o.stop(t + dur + 0.05);
+    };
+    if (kind === "blunt") {
+      this.tone("sine", 160, 70, 0.11, 0.85);
+      this.hiss("lowpass", 1400, 0.09, 0.5, 0, "brown");
+      this.hiss("bandpass", 3200, 0.025, 0.22);
+      this.burst({ type: "lowpass", freq: 700, sweepTo: 180, decay: 0.3, gain: 0.35, noise: "brown", verb: 0.35, when: 0.01 });
+      sub(45, last ? 0.9 : 0.6, 0.35);
+    } else if (kind === "shot") {
+      // Up against him: a suppressed cough, the slide's clack, and the round's thump through the body.
+      this.burst({ type: "bandpass", freq: 900, sweepTo: 300, q: 0.8, decay: 0.12, gain: 0.55, noise: "pink" });
+      this.hiss("highpass", 5200, 0.03, 0.35);
+      this.clack(0.03, 0.18, 2900);
+      this.tone("sine", 120, 55, 0.14, 0.7, 0.004);
+      sub(45, last ? 0.8 : 0.5, 0.3);
+    } else {
+      this.burst({ type: "bandpass", freq: 420, sweepTo: 260, q: 3, decay: 0.28, gain: 0.3, noise: "brown" });
+      this.burst({ freq: 2200, q: 9, decay: 0.05, gain: 0.08, when: 0.12 });
+      sub(45, 0.45, 0.4);
+    }
+  }
+
+  /** The body laid down (S5.2's 900 to 1200 ms): gear settling on wet concrete, no crash. */
+  takedownLay(): void {
+    if (!this.enabled) return;
+    this.burst({ type: "lowpass", freq: 600, sweepTo: 200, decay: 0.35, gain: 0.25, noise: "brown" });
+    this.burst({ freq: 2400, q: 6, decay: 0.03, gain: 0.07, when: 0.16 });
+    this.burst({ type: "highpass", freq: 3000, decay: 0.2, gain: 0.05, when: 0.05, noise: "pink" });
+  }
+
+  /** An orb taken: a small rising chime (health warm, Guard cool). */
+  orb(kind: "health" | "guard" | "ammo"): void {
+    if (!this.enabled) return;
+    const f = kind === "guard" ? 1560 : kind === "ammo" ? 990 : 1170;
+    this.tone("sine", f, f * 1.5, 0.08, 0.05);
+    this.tone("triangle", f * 2, f * 2, 0.12, 0.02, 0.04);
+  }
+
   killcamWhoosh(): void {
     this.burst({ type: "bandpass", freq: 300, sweepTo: 3200, q: 1.2, decay: 1.4, attack: 0.3, gain: 0.35, noise: "pink", verb: 0.5 });
   }

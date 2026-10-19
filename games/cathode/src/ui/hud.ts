@@ -44,6 +44,9 @@ export interface HudState {
   /** The case the objective belongs to ("The Drowned Market"); shown as the note's eyebrow. */
   caseName?: string;
   takedown: boolean;
+  /** C11 (S5.1): the world-anchored takedown chip's point on screen (CSS px, over his shoulders), and its key. */
+  takedownAt?: { x: number; y: number } | null;
+  takedownKey?: string;
   bulletTime: number;
   /** The two active-skill slots (name and readiness 0..1), and the battery 0..1. */
   skills: Array<{ name: string; ready: number; key: string } | null>;
@@ -125,6 +128,7 @@ export class Hud {
   private objective: HTMLElement;
   private objText: HTMLElement;
   private prompt: HTMLElement;
+  private promptKey: HTMLElement;
   private banner: HTMLElement;
   private focus: HTMLElement;
   private slots: HTMLElement;
@@ -241,7 +245,8 @@ export class Hud {
     el("span", "hud-blocked-word", this.blockedEl).textContent = "Cover";
     this.threats = el("div", "hud-threats", this.root);
     this.prompt = el("p", "hud-prompt", this.root);
-    el("span", "c-key", this.prompt).textContent = "F";
+    this.promptKey = el("span", "c-key hud-prompt-key", this.prompt);
+    this.promptKey.textContent = "F";
     el("span", "hud-prompt-text", this.prompt).textContent = "Takedown";
     this.focus = el("div", "hud-focus", this.root);
     // Overlays.
@@ -482,6 +487,20 @@ export class Hud {
       c.classList.toggle("ready", k.ready >= 1);
     });
     this.show(this.prompt, s.takedown);
+    // C11 (S5.1): the chip rides on him (over his shoulders), and while it is up the teach line doesn't repeat it.
+    const at = s.takedown ? s.takedownAt : null;
+    this.prompt.classList.toggle("world", !!at);
+    if (at) {
+      this.prop(this.prompt, "--px", `${Math.round(at.x)}px`);
+      this.prop(this.prompt, "--py", `${Math.round(at.y)}px`);
+    }
+    if (s.takedownKey) {
+      const tap = s.takedownKey === "Tap";
+      this.text(this.promptKey, tap ? "" : s.takedownKey);
+      this.promptKey.classList.toggle("tap", tap);
+      this.promptKey.classList.toggle("wide", !tap && s.takedownKey.length > 1);
+    }
+    this.root.classList.toggle("td-tell", s.takedown);
     set(this.focus, "--a", s.bulletTime.toFixed(2));
     // The marker holds at full strength, then fades (per-class hold and fade, S1.2), on real time.
     this.hitAge += dt * 1000;
@@ -665,6 +684,33 @@ export class Hud {
   }
 
   /** Clears the marker and the brackets (a new screenshot stage starts clean). */
+  private cineOn = false;
+  private flashEl?: HTMLElement;
+  /** C11: the takedown's letterbox (0..1 of the boss intro's bars); above 0 the corner clusters step back. */
+  cinema(bars: number): void {
+    const on = bars > 0.001;
+    if (on !== this.cineOn) {
+      this.cineOn = on;
+      this.root.classList.toggle("td-cine", on);
+    }
+    if (on) this.prop(this.root, "--td-bars", bars.toFixed(3));
+  }
+
+  /** C11: the blow's white flash (S5.2's 420 ms "white flash"): a short bloom from the edges in. */
+  cinemaFlash(): void {
+    if (!this.flashEl) this.flashEl = el("i", "hud-td-flash", this.root);
+    this.punch(this.flashEl, "on", 200);
+  }
+
+  /** C11 (S5.2): a chip that rises from the body ("+60 XP") at a point on screen (CSS px). */
+  riseChip(text: string, at: { x: number; y: number }): void {
+    const c = el("p", "hud-rise", this.root);
+    c.textContent = text;
+    this.prop(c, "--px", `${Math.round(at.x)}px`);
+    this.prop(c, "--py", `${Math.round(at.y)}px`);
+    window.setTimeout(() => c.remove(), 1400);
+  }
+
   clearFeedback(): void {
     this.dmg.clear();
     this.lastHp = -1;

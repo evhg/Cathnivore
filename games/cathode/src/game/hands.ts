@@ -246,7 +246,7 @@ export class Arm {
    * the hand) and solves the elbow. `shoulder` in the arm's parent space (the view scene, i.e. camera space).
    * `trigger` 0..1 curls the index onto the trigger.
    */
-  pose(grip: THREE.Object3D, shoulder: THREE.Vector3, hp: HandPose, trigger = 0): void {
+  pose(grip: THREE.Object3D, shoulder: THREE.Vector3, hp: HandPose, trigger = 0, poleOff?: THREE.Vector3): void {
     grip.updateWorldMatrix(true, false);
     const parentInv = this.mesh.parent ? new THREE.Matrix4().copy(this.mesh.parent.matrixWorld).invert() : new THREE.Matrix4();
     const m = new THREE.Matrix4().multiplyMatrices(parentInv, grip.matrixWorld);
@@ -254,7 +254,8 @@ export class Arm {
     const b = this.bones;
     this._z.set(0, 0, 1).applyQuaternion(this._q);
     // The elbow hangs down and out.
-    this._pole.copy(shoulder).lerp(this._w, 0.5).add(new THREE.Vector3(this.side * 0.35, -0.6, 0.1));
+    // (C11's world-space takedown arms pass their own offset, in her frame: out and down from her shoulders.)
+    this._pole.copy(shoulder).lerp(this._w, 0.5).add(poleOff ?? new THREE.Vector3(this.side * 0.35, -0.6, 0.1));
     const r = solveTwoBone(shoulder, this._w, this._pole, ARM.upper, ARM.fore, true, this.ik);
     b.upper.position.copy(r.root);
     boneQuat(r.root, r.mid, this._z, b.upper.quaternion);

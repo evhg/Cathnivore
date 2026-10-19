@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { Body, enforcerLook, place, tagUnflashed, bodyView, type BodyLook, type Zone } from "./body";
 import { archFor } from "./models/enforcer";
 import { buildRifle, buildShield, rifleLod, BOLT_KICK_M, type Rifle } from "./models/gear";
-import { DEATH, DeathRun, DroppedProp, helmetPops, pickVariant, visorLevel, type DeathCtx, type DeathVariant } from "./death";
+import { DEATH, DeathRun, DroppedProp, helmetPops, pickVariant, visorLevel, type DeathCtx, type DeathScript, type DeathVariant } from "./death";
 import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
 import { animate, muzzleOf, type Motion } from "./animate";
 import type { RayWorld } from "./ray";
@@ -831,6 +831,7 @@ export class Enemy {
   /** Screenshot stages (S0): alive, calm, unhurt and standing still, so every stage starts from the same body. */
   revive(): void {
     this.state = "unaware";
+    this.lightOutAt = 0;
     this.hp = this.kit.maxHp;
     this.detect = 0;
     this.deadFor = 0;
@@ -855,19 +856,21 @@ export class Enemy {
    * a wall or rail nearby); `forced` picks the variant outright (screenshot stages). Without a context the push
    * itself says which way it came from.
    */
-  die(impulse: THREE.Vector3, at: THREE.Vector3, ctx?: Partial<DeathCtx>, forced?: DeathVariant): void {
+  die(impulse: THREE.Vector3, at: THREE.Vector3, ctx?: Partial<DeathCtx>, forced?: DeathVariant, script?: DeathScript): void {
     this.state = "dead";
     this.hp = 0;
+    // C11: a takedown hands his body to its script at the first frame; the light goes out at the blow (lethal()).
+    this.lightOutAt = script ? Infinity : 0;
     const yaw = this.motion.yaw;
     const left = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
     const flat = new THREE.Vector3(impulse.x, 0, impulse.z);
     const side = flat.lengthSq() > 1e-8 ? flat.normalize().dot(left) : 0;
     this.deathDir.copy(flat);
     const c: DeathCtx = { zone: "torso", weaponCls: "rifle", distance: 10, side, seed: this.id, ...ctx };
-    const v = forced ?? pickVariant(c);
+    const v = script ? "takedown" : (forced ?? pickVariant(c));
     this.deathVariant = v;
     // A body that is already missing parts falls as a plain ragdoll: no pose to pull a stump toward.
-    const run = this.body.lost.size ? null : new DeathRun(v, c, this.motion.pos, yaw);
+    const run = this.body.lost.size && !script ? null : new DeathRun(v, c, this.motion.pos, yaw, 1, script ?? null);
     let imp = impulse;
     if (v === "blownback") imp = impulse.clone().multiplyScalar(DEATH.blownMul).add(new THREE.Vector3(0, DEATH.blownUp, 0));
     this.body.onImpact = (j, speed, p) => this.deathEvents.push({ kind: j === "chest" || j === "pelvis" ? "gear" : "thud", at: p.clone(), k: Math.min(1, speed / 5) });
@@ -887,6 +890,16 @@ export class Enemy {
         this.body.popHelmet(vel, spin, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 5) }));
       }
     }
+    if (script) return;
+    this.body.deathGlow();
+    this.deathEvents.push({ kind: "rattle", at: this.body.joints.head.clone(), k: 1 });
+  }
+
+  /** C11: when a takedown's visor light starts to go out (ms after die()); Infinity until the blow lands. */
+  private lightOutAt = 0;
+  /** C11: the takedown's lethal blow: the kill glow, the rattle, and the visor going out from now. */
+  lethal(): void {
+    this.lightOutAt = this.deadFor * 1000;
     this.body.deathGlow();
     this.deathEvents.push({ kind: "rattle", at: this.body.joints.head.clone(), k: 1 });
   }
@@ -897,8 +910,9 @@ export class Enemy {
    * two-point body, and a slump down a wall leaves a smear.
    */
   private deathTick(dt: number, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
-    const ms = this.deadFor * 1000;
-    this.body.visorLevel = visorLevel(ms);
+    const ms = this.deadFor * 1000 - this.lightOutAt;
+    // Held in a takedown before the blow, the visor flares (S5.2: "the visor flares" at 0 ms).
+    this.body.visorLevel = ms < 0 ? 1.5 : visorLevel(ms);
     const run = this.body.dying;
     const b = this.body;
     if (!this.drop && this.rifle.visible && this.kit.role !== "orderly" && !this.shield && (!run || run.t >= Math.min(run.dur, DEATH.dropMs) || !run.active)) {
@@ -906,6 +920,8 @@ export class Enemy {
       if (!Number.isFinite(vel.x) || vel.lengthSq() > 100) vel.set(0, 0, 0);
       // Thrown a little out from the body, along his front.
       vel.add(new THREE.Vector3(Math.sin(this.motion.yaw), 0.6, Math.cos(this.motion.yaw)).multiplyScalar(0.9));
+      // C11: held in a takedown his hands leave the carbine to grab her arm: it just drops off the sling.
+      if (this.deathVariant === "takedown") vel.set(Math.sin(this.motion.yaw) * 0.3, 0.2, Math.cos(this.motion.yaw) * 0.3);
       const a = b.joints.handR.clone();
       const dirG = new THREE.Vector3().subVectors(b.joints.handL, b.joints.handR);
       if (dirG.lengthSq() < 1e-4) dirG.set(0, 0, 1);

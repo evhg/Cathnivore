@@ -125,8 +125,8 @@ export interface TakedownVariant {
 /** S5.2's table: three per approach, one for a man on the floor, one for a man with his hands up. */
 export const TAKEDOWN_VARIANTS: readonly TakedownVariant[] = [
   { id: "behindWrap", approach: "behind", weapon: "any", durMs: 1200, syncM: 0.78, impacts: [420], kind: "blunt", releaseMs: 900, label: "Neck wrap and baton" },
-  { id: "behindChoke", approach: "behind", weapon: "any", durMs: 1250, syncM: 0.75, impacts: [900], kind: "choke", releaseMs: 950, nonLethal: true, label: "Choke-down" },
-  { id: "behindPistol", approach: "behind", weapon: "pistol", durMs: 1200, syncM: 0.78, impacts: [650], kind: "shot", releaseMs: 900, label: "Shot under the jaw" },
+  { id: "behindChoke", approach: "behind", weapon: "any", durMs: 1350, syncM: 0.75, impacts: [900], kind: "choke", releaseMs: 950, nonLethal: true, label: "Choke-down" },
+  { id: "behindPistol", approach: "behind", weapon: "pistol", durMs: 1300, syncM: 0.78, impacts: [650], kind: "shot", releaseMs: 900, label: "Shot under the jaw" },
   { id: "frontCollar", approach: "front", weapon: "pistol", durMs: 1200, syncM: 0.8, impacts: [650, 300], kind: "shot", releaseMs: 900, label: "Collar grab" },
   { id: "frontKick", approach: "front", weapon: "pistol", durMs: 1150, syncM: 0.85, impacts: [700, 820], kind: "shot", releaseMs: 900, label: "Chest kick" },
   { id: "frontBaton", approach: "front", weapon: "any", durMs: 1150, syncM: 0.85, impacts: [600, 250], kind: "blunt", releaseMs: 880, label: "Baton combo" },

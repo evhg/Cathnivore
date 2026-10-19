@@ -579,24 +579,9 @@ export class Combat {
     return true;
   }
 
-  /** A silent takedown from behind (or on anyone not yet hunting her) within reach: instant and quiet. */
-  takedown(eye: THREE.Vector3, dir: THREE.Vector3, pin: WeaponDef, reach = 1.9): Enemy | null {
-    for (const e of this.enemies) {
-      if (!e.alive || e.state === "combat") continue;
-      const to = new THREE.Vector3().subVectors(e.body.joints.chest, eye);
-      const d = to.length();
-      if (d > reach || to.normalize().dot(dir) < 0.5) continue;
-      const theirFwd = new THREE.Vector3(Math.sin(e.motion.yaw), 0, Math.cos(e.motion.yaw));
-      const behind = theirFwd.dot(new THREE.Vector3(dir.x, 0, dir.z).normalize()) > 0.2;
-      if (!behind && e.state !== "unaware") continue;
-      const unseen = !this.anyHunting();
-      e.damage(e.hp + 1, dir.clone());
-      e.die(dir.clone().multiplyScalar(2.5).add(new THREE.Vector3(0, 0.5, 0)), e.body.joints.neck, this.deathCtx(e, "torso", dir, "melee", d, false));
-      if (this.gore) this.world.fx.blood(e.body.joints.neck, dir, 0.7);
-      this.killed({ enemy: e, weapon: pin, zone: "head", headshot: false, distance: d, unseen, severed: [], takedown: true });
-      return e;
-    }
-    return null;
+  /** C11: a takedown's lethal blow, landed by the director (game/takedown.ts): the kill, counted as a takedown. */
+  takedownKill(e: Enemy, w: WeaponDef, dist: number, unseen: boolean): void {
+    this.killed({ enemy: e, weapon: w, zone: "head", headshot: false, distance: dist, unseen, severed: [], takedown: true });
   }
 
   /** Simulates a ballistic round's whole flight against the current scene, without side effects. */

@@ -188,3 +188,61 @@ describe("CATHODE takedown rewards (S5.2)", () => {
     expect(holdKnocksOut(600)).toBe(true);
   });
 });
+
+import * as THREE from "three";
+import { REST, type Joint } from "../games/cathode/src/game/rig";
+import { TD, targetPose, targetScript } from "../games/cathode/src/game/takedown";
+
+describe("CATHODE takedown bodies (S5.2)", () => {
+  const out = {} as Record<Joint, THREE.Vector3>;
+  for (const j of Object.keys(REST) as Joint[]) out[j] = new THREE.Vector3();
+
+  it("every variant's body is finite at every moment, and is down on the street by the end (the wall: sat against it)", () => {
+    for (const v of TAKEDOWN_VARIANTS) {
+      for (let t = 0; t <= v.durMs; t += 10) {
+        targetPose(v, t, 1, out, 0.9);
+        for (const j of Object.keys(out) as Joint[]) {
+          const p = out[j];
+          expect(Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z), `${v.id} ${j} at ${t}`).toBe(true);
+        }
+      }
+      targetPose(v, v.durMs, 1, out, 0.9);
+      // Laid down, not dropped: the pelvis under 0.5 m, the head under 0.75 m.
+      expect(out.pelvis.y, v.id).toBeLessThan(0.5);
+      expect(out.head.y, v.id).toBeLessThan(v.id === "sideWall" ? 1.05 : 0.75);
+    }
+  });
+
+  it("held kinematic until she lets go, then a ragdoll by the end", () => {
+    for (const v of TAKEDOWN_VARIANTS) {
+      const sc = targetScript(v, 1);
+      expect(sc.durMs).toBe(v.durMs);
+      expect(Math.min(1, sc.k(0) * (1 / 60) * 60)).toBe(1);
+      expect(Math.min(1, sc.k(v.releaseMs) * (1 / 240) * 60)).toBe(1);
+      expect(sc.k(v.durMs)).toBeLessThan(0.01);
+    }
+  });
+
+  it("the lay-down is slow (no crash): after she lets go the pelvis moves under 2.5 m/s, the chest 3.5, the head 5.5", () => {
+    const prev = {} as Record<Joint, THREE.Vector3>;
+    for (const j of Object.keys(REST) as Joint[]) prev[j] = new THREE.Vector3();
+    for (const v of TAKEDOWN_VARIANTS) {
+      if (v.id === "frontKick" || v.id === "sideSweep") continue; // a kick and a sweep throw him
+      targetPose(v, v.releaseMs, 1, prev, 0.9);
+      for (let t = v.releaseMs + 10; t <= v.durMs; t += 10) {
+        targetPose(v, t, 1, out, 0.9);
+        const lim = { pelvis: 2.5, chest: 3.5, head: 5.5 } as Record<string, number>;
+        for (const j of ["pelvis", "chest", "head"] as Joint[]) expect(out[j].distanceTo(prev[j]) / 0.01, `${v.id} ${j} at ${t}`).toBeLessThan(lim[j]!);
+        for (const j of Object.keys(REST) as Joint[]) prev[j].copy(out[j]);
+      }
+    }
+  });
+
+  it("the framing is the spec's shape: behind her, over her right shoulder, FOV +12", () => {
+    expect(TD.cam.back).toBeGreaterThan(0.3);
+    expect(TD.cam.right).toBeGreaterThan(0);
+    expect(TD.cam.fovAdd).toBe(12);
+    expect(TD.stopMs).toBe(80);
+    expect(TD.trauma).toBe(0.35);
+  });
+});

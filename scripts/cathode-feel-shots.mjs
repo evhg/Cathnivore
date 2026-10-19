@@ -48,10 +48,14 @@ const C9X = ['death-knees-650', 'death-blownback-350', 'death-headshot-900']
 // hand open, with a -hand crop), and the owner's audit frame of the first guard under his lamp with no diamond (&job).
 const C10 = ['enemy-front-10m', 'enemy-back-10m', 'turntable-enforcer', 'silhouette-lineup', 'hit-arm@60', 'guard-from-10m']
 const C10X = ['turntable-riot', 'turntable-sniper', 'turntable-leader']
-const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X }
+// C11 "Takedowns": Behind A on the guard under the lamp at 0 (the grab), 420 (the blow: her arm and his helmet both
+// in frame), 800 (the knees gone, her arm lowering him), and Front A's shot under the chin at 650. C11X: the others.
+const C11 = ['takedown-0', 'takedown-420', 'takedown-800', 'takedown-front-650']
+const C11X = ['takedown-behindChoke-700', 'takedown-behindPistol-640', 'takedown-frontKick-700', 'takedown-frontBaton-600', 'takedown-sideKnee-600', 'takedown-sideSweep-720', 'takedown-1150']
+const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
-const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m'])
+const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
 // C2's red-pixel probe: the share of rendered pixels within 0.2 m of the projected hit point that are
 // red-dominant (the spec's "N", as a share so it holds at every render scale).
 const RED_MIN = 0.1
@@ -459,6 +463,14 @@ for (const vp of vps) {
           if (g > r * 0.6 && b > r * 0.6 && best.share < 0.3) warn(`${vp} ${spec}: the splat reads pink (mean ${best.pr.mean})`)
         }
       }
+    }
+    // ---- C11 acceptance ----
+    if (stage.startsWith('takedown-')) {
+      const td = info?.takedown
+      console.log(`  C11 ${vp} ${spec}: ${info?.variant ?? '?'} t ${td?.t?.toFixed(0)} ms, helmet ${td?.headIn ? 'in' : 'OUT'}, arm ${td?.armIn ? 'in' : 'OUT'}, bars ${td?.bars?.toFixed(2)}`)
+      if (process.env.TD_DEBUG) console.log('  debug', JSON.stringify(td?.debug))
+      if (!td) fail(`${vp} ${spec}: no takedown info`)
+      else if (stage === 'takedown-420' && !(td.headIn && td.armIn)) fail(`${vp} ${spec}: at 420 ms her arm and his helmet must both be in frame`)
     }
     // ---- C10 acceptance ----
     if (/^(enemy-(front|back)-10m|guard-from-10m)$/.test(stage)) {

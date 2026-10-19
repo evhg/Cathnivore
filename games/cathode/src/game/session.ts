@@ -34,6 +34,8 @@ import { REFL_DIRS } from "./gunsound";
 import { AUTOMATIC, confirmSound, hitClass, hitStopMs, type HitEvent } from "../sim/hitevent";
 import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
+import { Orbs, Takedown, targetScript } from "./takedown";
+import { TAKEDOWN, TAKEDOWN_VARIANTS, pickTakedownVariant, syncPoint, takedownEligible, takedownRewards, variantById, type Rect, type TakedownApproach, type TakedownVariantId } from "../sim/takedown";
 import { Hud, type HudState } from "../ui/hud";
 import { Audio } from "./audio";
 import { CLASS_WEAPON, Progress } from "./progress";
@@ -176,6 +178,8 @@ export interface Session {
     /** C10: the segment the stage's round struck, and the hands on screen (CSS px) with 0.12 m in px, for the hand crop. */
     seg?: string | null;
     hands?: { L: { x: number; y: number }; R: { x: number; y: number }; r: number };
+    /** C11: the takedown at the stage's moment: its clock, whether her arm and his helmet are in frame, the bars. */
+    takedown?: { t: number; active: boolean; headIn: boolean; armIn: boolean; handR: { x: number; y: number }; handL: { x: number; y: number }; bars: number; debug?: Record<string, number[] | null> };
   } | null;
   /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
   probePool?: (x: number, y: number, rx: number, ry: number, o?: { quick?: boolean; noRender?: boolean }) => { bright: number; red: number; total: number; maxLum: number };
@@ -225,6 +229,8 @@ export interface Session {
   vitals?: Vitals;
   /** C6: a hit on Cath of `amount` from a world point (null: straight ahead), with every readout. */
   hurtCath?: (amount: number, from: { x: number; y: number; z: number } | null, kind?: HurtKind) => void;
+  /** C11: the takedown director (tests read `active`, `lockMs`, `target`, `variant`). */
+  takedown?: Takedown;
   /** Debug: what a round from `from` to `to` would do with the gun in hand. */
   traceShot?: (from: { x: number; y: number; z: number }, to: { x: number; y: number; z: number }) => ReturnType<Combat["traceShot"]>;
 }
@@ -382,6 +388,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   arsenal.lightRoom(world.renderer);
   const combat = new Combat(world, rays, enemies, o.intensity === "full");
   const killcam = new KillCam(world);
+  // C11: the paired takedown (her arms in the street, the camera, the target's body script) and its reward orbs.
+  const td = new Takedown(world.scene, o.quality === "phone");
+  td.castRay = (from, dir, len) => rays.cast(from, dir, len)?.dist ?? null;
+  const orbs = new Orbs(world.scene, (x, z) => world.groundHeight(x, z));
   const hud = new Hud(o.hud);
   // The case note's eyebrow: the district the job is in ("Case · The Drowned Market").
   const caseName = loadingTitle(o.district).split(" · ").pop() ?? "";
@@ -910,7 +920,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         ? { hand: dr.a.clone(), dir: dr.b.clone().sub(dr.a), vel: new THREE.Vector3() }
         : { hand: eb.joints.handR.clone(), dir: eb.joints.handL.clone().sub(eb.joints.handR), vel: new THREE.Vector3(Math.sin(yawE) * 0.9, 1.2, Math.cos(yawE) * 0.9) };
     if (from) k.enemy.rifle.visible = false;
-    pickups.drop(at, found, from);
+    // C11: a takedown's gear falls once she has let him go (a beacon mid-sequence pulls the eye off the moment).
+    if (k.takedown && td.active) tdAfter.push(() => pickups.drop(at, found, from));
+    else pickups.drop(at, found, from);
     const ammo = arsenal.scavenge();
     if (ammo) hud.feedLine(`+${ammo} rounds`);
     // Kills by a round confirm through the hit (drainEvents); takedowns and blasts confirm here.
@@ -1341,6 +1353,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     time += dt;
 
+    // C11: a takedown owns the frame until it ends (input locked).
+    if (td.active) {
+      takedownFrame(realDt, dt);
+      wasFire = intent.fire;
+      render();
+      requestAnimationFrame(frame);
+      return;
+    }
+
     if (killcam.active) {
       // The kill-cam is cinema: no gun in hand, no HUD.
       arsenal.rig.root.visible = false;
@@ -1494,20 +1515,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (intent.reload && arsenal.weapon.kind !== "melee" && !arsenal.kestrel) audio?.reload();
     drainGunCues();
-    const canTakedown = !dead && takedownTarget() !== null;
-    if (intent.takedown && canTakedown) {
-      // With Cat's Cradle in hand the takedown is a garrotte: the wire reaches further (3 m) than the Pin.
-      const garrotte = arsenal.weapon.id === "catsCradle";
-      const pin = garrotte ? arsenal.weapon : arsenal.held[0]!.def;
-      if (combat.takedown(eye, fwd, pin, garrotte ? 3 : 1.9)) {
-        arsenal.strike();
-        // S6.1: a takedown gives back 15% of Flesh.
-        syncVitals();
-        vitals.healShare(0.15);
-        s.hp = vitals.total;
-        audio?.pin(true);
-      }
-    }
+    const tdCand = dead ? null : takedownCandidate();
+    const canTakedown = tdCand !== null;
+    // C11 (S5.1): the tell, the first time a man becomes takeable: his rim and visor pulse, a two-tone tick.
+    for (const e of enemies) e.body.eligible = !!tdCand && tdCand.e === e;
+    if (tdCand && tdCand.e.id !== tdTold) audio?.takedownTell();
+    tdTold = tdCand ? tdCand.e.id : -1;
+    if (intent.takedown && tdCand) startTakedown(tdCand);
     // Weapons need a press (S7.1): the same key as a takedown, when there's no one to take down.
     if (intent.takedown && !canTakedown && !dead && job?.take()) audio?.promptUp();
     const combatT0 = performance.now();
@@ -1524,6 +1538,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Ammo and cash are walk-in; a gun she hasn't carried is taken with a press (S7.1), like the first one.
     const needsPress = (d: { gun?: string }) => !!d.gun && !arsenal.owned.has(d.gun) && (!job || job.done);
     if (!dead) for (const d of pickups.update(dt, player.pos, { needsPress, take: intent.takedown && !canTakedown })) collect(d);
+    // C11 (S5.2): the takedown's orbs home in after 400 ms; red into Flesh, cyan into Guard, gold a half magazine.
+    if (!dead && orbs.list.length) {
+      for (const ob of orbs.update(dt, player.pos.clone().add(new THREE.Vector3(0, 1.0, 0)))) {
+        syncVitals();
+        if (ob.kind === "health") vitals.heal(ob.amount);
+        else if (ob.kind === "guard") vitals.guard = Math.min(vitals.maxGuard, vitals.guard + ob.amount);
+        else {
+          const h = arsenal.held[arsenal.current];
+          if (h && h.def.mag > 0) h.reserve += Math.ceil(h.def.mag * ob.amount);
+        }
+        s.hp = vitals.total;
+        audio?.orb(ob.kind);
+      }
+    }
     if (!dead && s.hp > 0) {
       const zone = inMarket ? zones.update(player.pos.z) : undefined;
       if (zone) hud.showBanner(zone.name, zone.sub);
@@ -1824,6 +1852,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // Inspecting or reloading, the gun is the subject and the crosshair steps aside.
       inspect: Math.max(arsenal.inspectW, arsenal.reloadW),
       takedown: canTakedown,
+      takedownAt: tdCand ? tdChipAt(tdCand.e) : null,
+      takedownKey: input.isTouch ? "Tap" : takeKeyNow(),
       bulletTime: focusing ? 1 : 0,
       skills: [0, 1].map((i) => {
         const st = actives.state(progress.character, progress.stats, i);
@@ -2051,15 +2081,211 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.feedLine("Back on the street");
   }
 
-  function takedownTarget(): Enemy | null {
+  /** C11 (S5.1): the man she could take down now (the nearest eligible), the approach, and her side of him. */
+  function takedownCandidate(): { e: Enemy; approach: TakedownApproach; side: number } | null {
+    const wire = arsenal.weapon.id === "catsCradle";
+    // Ghost's Silent Takedown reaches further (stats.takedownRange over its 2 m base).
+    const bonus = Math.max(0, progress.stats.takedownRange - 2);
+    let best: { e: Enemy; approach: TakedownApproach; side: number } | null = null;
+    let bestD = Infinity;
+    const cl = (x: number) => Math.max(-1, Math.min(1, x));
     for (const e of enemies) {
-      if (!e.alive || e.state === "combat") continue;
-      const to = new THREE.Vector3().subVectors(e.body.joints.chest, eye);
-      if (to.length() > (arsenal.weapon.id === "catsCradle" ? 3 : 1.9) || to.normalize().dot(fwd) < 0.5) continue;
+      if (!e.alive) continue;
+      const to = new THREE.Vector3().subVectors(e.position, player.pos).setY(0);
+      const dist = to.length();
+      if (dist > TAKEDOWN.wireRangeM + bonus || dist < 1e-4) continue;
+      to.multiplyScalar(1 / dist);
+      const toChest = new THREE.Vector3().subVectors(e.body.joints.chest, eye).normalize();
       const theirFwd = new THREE.Vector3(Math.sin(e.motion.yaw), 0, Math.cos(e.motion.yaw));
-      if (theirFwd.dot(new THREE.Vector3(fwd.x, 0, fwd.z).normalize()) > 0.2 || e.state === "unaware") return e;
+      const role = e.kit.role ?? "";
+      const r = takedownEligible(
+        {
+          state: e.state,
+          hpFrac: e.hp / e.kit.maxHp,
+          dist: Math.max(0, dist - bonus),
+          // His back is -theirFwd and the way to her is -to: the angle between them is theirFwd's to `to`.
+          fromBack: Math.acos(cl(theirFwd.dot(to))),
+          viewOff: Math.acos(cl(toChest.dot(fwd))),
+          machine: role === "turret" || role === "hunter" || e.kit === POLICE_DRONE,
+        },
+        wire,
+      );
+      if (!r.ok || dist >= bestD) continue;
+      const left = new THREE.Vector3(Math.cos(e.motion.yaw), 0, -Math.sin(e.motion.yaw));
+      bestD = dist;
+      best = { e, approach: r.approach, side: -to.dot(left) >= 0 ? 1 : -1 };
     }
-    return null;
+    return best;
+  }
+
+  /** C11 (S5.1): the takedown chip's point on screen: just over his shoulders, or null when he is off screen. */
+  function tdChipAt(e: Enemy): { x: number; y: number } | null {
+    const p = e.body.joints.neck.clone().add(new THREE.Vector3(0, 0.12, 0));
+    const v = p.clone().project(world.camera);
+    if (v.z > 1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) return null;
+    const c = world.renderer.domElement;
+    return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight };
+  }
+
+  /** What waits for the end of the sequence (the dead man's gear). */
+  const tdAfter: Array<() => void> = [];
+  /** The man she last heard the tell for (the tick plays once per man). */
+  let tdTold = -1;
+  /** Unseen at the press (the kill feed's "Unseen" is decided before the world reacts). */
+  let tdUnseen = false;
+
+  /** C11 (S5.2): the press. He is turned to the approach and handed to the script; she is pulled in; time slows. */
+  function startTakedown(c: { e: Enemy; approach: TakedownApproach; side: number }, force?: TakedownVariantId): void {
+    const e = c.e;
+    const first = !!job && job.stage === 1;
+    const pistol = arsenal.weapon.weaponClass === "pistol" && arsenal.weapon.kind !== "melee";
+    const yaw0 = e.motion.yaw;
+    const fwdE = new THREE.Vector3(Math.sin(yaw0), 0, Math.cos(yaw0));
+    const left = new THREE.Vector3(Math.cos(yaw0), 0, -Math.sin(yaw0));
+    const g = ground(e.position.x, e.position.z);
+    // Side C needs a wall on his far side within 1.5 m.
+    let wallM: number | null = null;
+    if (c.approach === "side") {
+      const h = rays.cast(new THREE.Vector3(e.position.x, g + 1.2, e.position.z), left.clone().multiplyScalar(-c.side), 1.5, { thin: false });
+      if (h) wallM = h.dist;
+    }
+    const v = force ? variantById(force) : pickTakedownVariant({ approach: c.approach, pistol, wall: wallM !== null, seed: e.id * 13.1 + Math.floor(combat.clock * 10), recent: td.recent, first });
+    const toHer = new THREE.Vector3().subVectors(player.pos, e.position).setY(0).normalize();
+    const along = c.approach === "behind" ? fwdE.clone().negate() : c.approach === "front" ? fwdE.clone() : c.approach === "side" ? left.clone().multiplyScalar(c.side) : toHer;
+    const rects: Rect[] = [];
+    for (const b of world.colliders) {
+      if (b.max.y < g + 0.25 || b.min.y > g + 1.8) continue;
+      // Not a box he stands in (a stall's awning post, a kerb under him).
+      if (e.position.x > b.min.x && e.position.x < b.max.x && e.position.z > b.min.z && e.position.z < b.max.z) continue;
+      rects.push({ minX: b.min.x, minZ: b.min.z, maxX: b.max.x, maxZ: b.max.z });
+    }
+    const sp = syncPoint(e.position, along, v.syncM, rects, player.pos);
+    const sync = new THREE.Vector3(sp.x, ground(sp.x, sp.z), sp.z);
+    // Turned to the approach (snapped in the first 120 ms, under the camera's ease): she is where the script says.
+    const to = new THREE.Vector3().subVectors(sync, e.position).setY(0);
+    if (to.lengthSq() > 1e-6) {
+      to.normalize();
+      if (v.approach === "behind") e.motion.yaw = Math.atan2(-to.x, -to.z);
+      else if (v.approach === "front" || v.approach === "surrender") e.motion.yaw = Math.atan2(to.x, to.z);
+      else if (v.approach === "side") e.motion.yaw = Math.atan2(-c.side * to.z, c.side * to.x);
+    }
+    tdUnseen = !enemies.some((x) => x.alive && x.state === "combat");
+    e.die(new THREE.Vector3(), e.body.joints.chest.clone(), { zone: "head", weaponCls: "melee", distance: 0.8, side: 0, seed: e.id }, undefined, targetScript(v, c.side, wallM ?? 1));
+    e.body.eligible = false;
+    td.begin({ target: e, variant: v, approach: v.approach, from: player.pos.clone(), sync, side: c.side, pistol, first, wallM: wallM ?? undefined }, world.camera);
+    timescale.push("takedown", td.worldScale, -1, 120, 300, "takedown");
+    combat.noise(e.position, TAKEDOWN.noiseM);
+    combat.bus.emit("takedownStart", { t: combat.clock, targetUid: String(e.id) });
+    audio?.takedownGrab();
+    hud.cinema(Math.max(0.002, td.bars()));
+    world.viewScene.visible = false;
+    player.vel.set(0, 0, 0);
+  }
+
+  /** C11: a takedown's frame. Input is locked; the director has the camera, her arms and his body. */
+  function takedownFrame(realDt: number, dt: number): void {
+    const e = td.target as Enemy | null;
+    arsenal.rig.root.visible = false;
+    // (A screenshot stage's frame is frozen: the stage steps the sequence itself.)
+    const bodyMs = td.update(o.shot ? 0 : realDt * 1000);
+    takedownEvents(e, realDt);
+    // Everyone else in slowed time; him on the sequence's own clock.
+    for (const x of enemies) {
+      if (x === e) continue;
+      x.update(dt, sightOf(), rays, world.colliders, ground);
+      x.body.updateFlash(o.shot ? 0 : realDt * 1000);
+    }
+    if (e) e.feel(o.shot ? 0 : bodyMs / 1000, world.colliders, ground);
+    combat.update(dt, build());
+    drainEvents();
+    takedownCamera(realDt);
+    audio?.update(realDt, 0.6, td.worldScale);
+    world.update(dt, time);
+  }
+
+  /** C11 review: the pair framed from her left, 2.4 m off (the `-x` stages). */
+  let tdSideView: Enemy | null = null;
+  function sideView(): void {
+    if (!tdSideView) return;
+    const n = tdSideView.body.joints.neck;
+    const mid = n.clone().lerp(player.pos.clone().setY(n.y), 0.5);
+    const side = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
+    mid.y = ground(mid.x, mid.z) + 1.1;
+    world.camera.position.copy(mid).addScaledVector(side, -2.6).add(new THREE.Vector3(0, 0.15, 0));
+    world.camera.lookAt(mid);
+    world.camera.fov = 50;
+    world.camera.updateProjectionMatrix();
+    world.camera.updateMatrixWorld();
+    td.rig.bust.visible = true;
+    hud.cinema(0);
+  }
+
+  /** The takedown's camera this frame: first person where she now stands, handed to the director's framing. */
+  function takedownCamera(realDt: number): void {
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    const fp = { pos: world.camera.position.clone(), quat: world.camera.quaternion.clone(), fov: arsenal.worldFov };
+    if (td.active) td.applyCamera(world.camera, fp);
+    trauma.update(realDt);
+    const shake = trauma.sample();
+    world.camera.rotation.x += shake.pitch;
+    world.camera.rotation.y += shake.yaw;
+    world.camera.updateMatrixWorld();
+    hud.cinema(td.active ? Math.max(0.002, td.bars()) : 0);
+    if (tdSideView) sideView();
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
+  }
+
+  /** Plays what the director's last step said: blows, the kill, the lay-down, the line, the end. */
+  function takedownEvents(e: Enemy | null, realDt: number): void {
+    // The magnet: her capsule rides to the sync point; she faces him.
+    player.pos.copy(td.feet);
+    player.yaw = td.yaw;
+    player.pitch = THREE.MathUtils.lerp(player.pitch, -0.12, Math.min(1, realDt * 6));
+    player.vel.set(0, 0, 0);
+    for (const ev of td.events) {
+      if (ev.kind === "impact" && ev.at) {
+        const lethal = !!ev.lethal;
+        timescale.hitStop(lethal ? tuning.hitStop.takedown : 60);
+        trauma.add(lethal ? 0.35 : 0.22);
+        audio?.takedownImpact(td.variant!.kind, lethal);
+        if (world.fx.gore && td.variant!.kind !== "choke") world.fx.blood(ev.at, ev.dir ?? new THREE.Vector3(0, 1, 0), lethal ? 0.85 : 0.5);
+        // A gun finisher: the Kestrel's suppressed flash at the muzzle, pressed against him.
+        if (td.variant!.kind === "shot" && td.rig.props.pistol.rig.root.visible) world.fx.muzzle(td.rig.muzzle, td.rig.axis, 0.7, true);
+        hud.cinemaFlash();
+        rumble(lethal ? "kill" : "hit");
+        combat.bus.emit("takedownImpact", { t: combat.clock, targetUid: String(e?.id ?? "") });
+      } else if (ev.kind === "lethal" && e) {
+        e.lethal();
+        const garrotte = arsenal.weapon.id === "catsCradle";
+        combat.takedownKill(e, garrotte ? arsenal.weapon : arsenal.held[0]!.def, 0.8, tdUnseen);
+      } else if (ev.kind === "lay") audio?.takedownLay();
+      else if (ev.kind === "line") hud.subtitle("Cath: Shh. Sleep now.");
+      else if (ev.kind === "end") endTakedown(e);
+    }
+    td.events.length = 0;
+  }
+
+  /** The sequence is over: control back, rewards out, the body left where she laid it. */
+  function endTakedown(e: Enemy | null): void {
+    timescale.release("takedown");
+    hud.cinema(0);
+    world.viewScene.visible = true;
+    arsenal.rig.root.visible = true;
+    for (const f of tdAfter.splice(0)) f();
+    // The gun comes back up with its draw (a staged frame has no time: it is simply up).
+    if (o.shot) arsenal.settle();
+    else arsenal.redraw();
+    if (!e) return;
+    combat.bus.emit("takedownEnd", { t: combat.clock, targetUid: String(e.id) });
+    // S6.1: a takedown gives back 15% of Flesh; S5.2: the orbs pop from the body.
+    syncVitals();
+    vitals.healShare(0.15);
+    s.hp = vitals.total;
+    if (e.kit.role !== "civilian") orbs.spawn(takedownRewards(td.variant!, s.maxHp, e.id), e.body.joints.chest.clone().add(new THREE.Vector3(0, 0.15, 0)), e.id);
+    const xp = progress.lastXp;
+    if (xp > 0) hud.riseChip(`+${xp} XP`, toScreen(e.body.joints.chest.clone().add(new THREE.Vector3(0, 0.5, 0))));
   }
 
   /** Enemies who see a dead colleague raise the alarm for everyone nearby. */
@@ -2801,6 +3027,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.clearFeedback();
     showCover(false);
     pickups.clear();
+    orbs.clear();
+    if (td.active) {
+      td.finish();
+      timescale.release("takedown");
+      hud.cinema(0);
+      world.viewScene.visible = true;
+    }
     world.fx.clear?.();
     arsenal.freeze = false;
     arsenal.restock();
@@ -3049,6 +3282,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.clearFeedback();
     showCover(false);
     pickups.clear();
+    orbs.clear();
+    if (td.active) {
+      td.finish();
+      timescale.release("takedown");
+      hud.cinema(0);
+      world.viewScene.visible = true;
+    }
     world.fx.clear?.();
     // Stage hygiene: enemies a stage reset kills (skipTo clears the wave) are props of the previous shot, not
     // bodies she dropped: they leave the frame instead of piling up corpses (and draw calls) between stages.
@@ -3395,6 +3635,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.clearFeedback();
     showCover(false);
     pickups.clear();
+    orbs.clear();
+    if (td.active) {
+      td.finish();
+      timescale.release("takedown");
+      hud.cinema(0);
+      world.viewScene.visible = true;
+    }
     world.fx.clear?.();
     if (stageCrate) stageCrate.visible = false;
     if (crateCollider) crateCollider.off = true;
@@ -3697,9 +3944,142 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     o2.drawImage(c, x0, y0, x1 - x0 + 1, y1 - y0 + 1, pad, pad, out.width - pad * 2, 64);
     return out.toDataURL("image/png");
   };
+  /**
+   * C11 "Takedowns": a takedown frozen `ms` into its sequence. `takedown-<ms>` is Behind A on the guard under the
+   * lamp (with &job; otherwise the nearest rifleman, stood in the street); `takedown-front-<ms>` is Front A (the
+   * collar grab, the Kestrel in hand); `takedown-<variantId>-<ms>` any other, for review.
+   */
+  const c11Stage = (name: string): string => {
+    // A trailing "-x" frames the pair from the side, 2.4 m off (a review view of the choreography, not a game shot).
+    const xView = name.endsWith("-x");
+    if (xView) name = name.slice(0, -2);
+    const m = /^takedown-(?:([A-Za-z]+)-)?(\d+)$/.exec(name);
+    if (!m) return `unknown stage ${name}`;
+    const ms = Number(m[2]);
+    const id = (m[1] === "front" ? "frontCollar" : m[1] ?? "behindWrap") as TakedownVariantId;
+    const v = TAKEDOWN_VARIANTS.find((x) => x.id === id);
+    if (!v) return `unknown takedown ${id}`;
+    if (td.active) td.finish();
+    timescale.release("takedown");
+    hud.cinema(0);
+    world.viewScene.visible = true;
+    hud.freeze(null);
+    hud.clearFeedback();
+    showCover(false);
+    pickups.clear();
+    orbs.clear();
+    world.fx.clear?.();
+    arsenal.restock();
+    const pistolNeeded = v.weapon === "pistol";
+    if (pistolNeeded && arsenal.weapon.id !== "kestrel") {
+      arsenal.owned.add("kestrel");
+      arsenal.equipId("kestrel");
+    }
+    arsenal.settle();
+    let g: Enemy | null = null;
+    if (job) {
+      job.skipTo(1);
+      g = enemies.filter((e) => e.alive).sort((a, b) => a.position.distanceTo(player.pos) - b.position.distanceTo(player.pos))[0] ?? null;
+      // The stage before's bodies leave the shot.
+      for (const e of enemies) if (!e.alive) e.body.root.visible = e.rifle.visible = false;
+    } else {
+      if (stageGuard && !enemies.includes(stageGuard)) stageGuard = null;
+      g = stageGuard ?? enemies.filter((e) => (e.kit.role ?? "rifle") === "rifle" && e.body.lost.size === 0).sort((a, b) => a.position.distanceTo(player.pos) - b.position.distanceTo(player.pos))[0] ?? null;
+      if (g) {
+        stageGuard = g;
+        if (!stageHome) stageHome = { pos: player.pos.clone(), yaw: player.yaw, pitch: player.pitch };
+        const f = new THREE.Vector3(-Math.sin(stageHome.yaw), 0, -Math.cos(stageHome.yaw));
+        g.revive();
+        g.body.root.visible = true;
+        g.motion.pos.copy(stageHome.pos).addScaledVector(f, 4);
+        g.motion.pos.y = ground(g.motion.pos.x, g.motion.pos.z);
+        g.motion.yaw = Math.atan2(f.x, f.z);
+      }
+    }
+    if (!g) return "no enemy";
+    for (const e of enemies) {
+      if (e.alive) e.state = "unaware";
+      e.detect = 0;
+    }
+    g.revive();
+    g.rifle.visible = true;
+    g.passive = true;
+    if (v.approach === "front") g.hp = g.kit.maxHp * 0.15;
+    // Cath 1.3 m off him along the approach, looking at him; the guard settles into his stance.
+    const yaw = g.motion.yaw;
+    const gf = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+    const gl = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+    const off = v.approach === "behind" ? gf.clone().negate() : v.approach === "front" ? gf.clone() : gl.clone();
+    player.pos.copy(g.motion.pos).addScaledVector(off, 1.3);
+    player.pos.y = ground(player.pos.x, player.pos.z);
+    player.yaw = Math.atan2(off.x, off.z);
+    player.pitch = -0.18;
+    player.vel.set(0, 0, 0);
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    for (let t = 0; t < 0.5; t += 1 / 60) {
+      g.feel(1 / 60, world.colliders, ground);
+      world.update(0, 1, 1 / 60);
+    }
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
+    staged = true;
+    const approach: TakedownApproach = v.approach;
+    const toHer = new THREE.Vector3().subVectors(player.pos, g.position).setY(0).normalize();
+    startTakedown({ e: g, approach, side: toHer.dot(gl) >= 0 ? 1 : -1 }, v.id);
+    // The sequence to its moment, at 60 Hz: her arms, his body, the blows' blood (the particles step too).
+    const step = 1000 / 60;
+    // (`ms` is the sequence's own clock: a blow's hit-stop holds it, so 800 is 800 ms of the choreography.)
+    for (let i = 0; i < 600 && td.active && td.t < ms; i++) {
+      const bodyMs = td.update(Math.min(step, Math.max(1, ms - td.t)));
+      takedownEvents(g, step / 1000);
+      g.feel(bodyMs / 1000, world.colliders, ground);
+      combat.update(0, build());
+      drainEvents();
+      world.update(0, 1, step / 1000);
+    }
+    // The world's own hit-stop and slow motion are the live game's; the frozen frame shows the pose.
+    takedownCamera(0);
+    tdSideView = xView ? g : null;
+    if (xView) sideView();
+    world.camera.updateMatrixWorld();
+    const J = g.body.joints;
+    const onScreen = (p: THREE.Vector3) => {
+      const q = p.clone().project(world.camera);
+      return q.z < 1 && Math.abs(q.x) <= 1 && Math.abs(q.y) <= 1;
+    };
+    const handR = td.rig.wrist.clone();
+    const handL = td.rig.wristL.clone();
+    const z0 = { x: 0, y: 0 };
+    s.stageInfo = {
+      hit: z0, r02: 0, head0: z0, head1: toScreen(J.head), puffM: 0, splats: [], corpse: { pelvis: toScreen(J.pelvis), head: toScreen(J.head), chest: toScreen(J.chest) },
+      variant: v.id,
+      asleep: g.body.asleep,
+      heights: jointHeights(g),
+      takedown: {
+        t: td.active ? td.t : v.durMs,
+        active: td.active,
+        headIn: onScreen(J.head),
+        armIn: onScreen(handR) || (td.rig.hasL && onScreen(handL)),
+        handR: toScreen(handR),
+        handL: toScreen(handL),
+        bars: td.active ? td.bars() : 0,
+        debug: { ...td.rig.debug, neck: J.neck.toArray(), head: J.head.toArray(), feet: player.pos.toArray(), cam: world.camera.position.toArray() },
+      },
+    };
+    hud.freeze(ms);
+    return "ok";
+  };
+
   s.stage = (name: string, tMs = 60): string => {
+    tdSideView = null;
+    tdAfter.length = 0;
     endReview();
     restarting = false;
+    if (name.startsWith("takedown-")) {
+      calmVitals();
+      return c11Stage(name);
+    }
     c9 = C9_STAGES[name.replace(/-\d+s?$/, "")] ?? null;
     if (c9) {
       const m = /-(\d+)(s?)$/.exec(name);
@@ -3725,6 +4105,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Nothing carries over from the stage before: ammo, loot on the ground, particles and decals.
     arsenal.restock();
     pickups.clear();
+    orbs.clear();
+    if (td.active) {
+      td.finish();
+      timescale.release("takedown");
+      hud.cinema(0);
+      world.viewScene.visible = true;
+    }
     world.fx.clear?.();
     showCover(name === "cover-debug-market");
     if (name === "cover-debug-market") {
@@ -4224,6 +4611,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return { hist: hist.map((v) => v / n), now, fine, lens: lens.active, glove: gloveBloodV, w: woundShown, pulse };
   };
   s.traceShot = (from, to) => combat.traceShot(new THREE.Vector3(from.x, from.y, from.z), new THREE.Vector3(to.x, to.y, to.z), arsenal.weapon, build());
+  s.takedown = td;
   // window.cathode.combat (S0): replay HitEvents through the bus exactly as combat emits them, and trace a shot.
   combat.held = () => ({ w: arsenal.weapon, build: build() });
   combat.replay = (events) => {

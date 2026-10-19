@@ -1616,3 +1616,112 @@
 /* A frozen stage holds the toast at its time even under reduced motion (that rule above resets the animation). */
 :root .hud-root.is-frozen .hud-toast.on,
 :root .hud-root.is-frozen .hud-toast.on .hud-toast-rule { animation-play-state: paused; animation-delay: var(--freeze-t, 0ms); }
+
+/* ---- C11 takedowns (S5.1, S5.2) ---- */
+/* The tell: a world-anchored chip over his shoulders, an amber 22u keycap and "TAKEDOWN" on a cut plate, with a
+   leader down to him. Desktop and pad show the key; touch shows the tap glyph (the chip is not the button: the
+   touch Takedown button is). */
+.hud-prompt.world {
+  left: 0;
+  top: 0;
+  transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, calc(-100% - var(--u) * 26));
+  gap: calc(var(--u) * 12);
+  padding: calc(var(--u) * 8) calc(var(--u) * 20) calc(var(--u) * 8) calc(var(--u) * 8);
+  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .7));
+  box-shadow: inset calc(var(--u) * 3) 0 0 var(--amber), inset 0 0 0 1px rgb(var(--amber-rgb) / .35), 0 calc(var(--u) * 6) calc(var(--u) * 18) rgb(var(--black-rgb) / .45);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%);
+  font: 700 max(12px, calc(var(--u) * 17))/1 var(--font-ui);
+  letter-spacing: .24em;
+  color: var(--amber);
+  white-space: nowrap;
+  animation: td-tell-in 240ms var(--ease-out);
+}
+.hud-prompt.world::after {
+  /* the leader: a short amber tick from the plate down to his shoulders */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: max(1px, calc(var(--u) * 2));
+  height: calc(var(--u) * 22);
+  background: linear-gradient(180deg, rgb(var(--amber-rgb) / .9), rgb(var(--amber-rgb) / 0));
+}
+.hud-prompt.world .hud-prompt-key {
+  min-width: max(26px, calc(var(--u) * 22 * 1.4));
+  height: max(26px, calc(var(--u) * 22 * 1.4));
+  font: 700 max(13px, calc(var(--u) * 19))/1 var(--font-num);
+  color: var(--night);
+  background: linear-gradient(180deg, var(--amber-hi), var(--amber));
+  box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
+  animation: td-key-pulse 333ms ease-in-out infinite alternate;
+}
+.hud-prompt-key.wide { font-family: var(--font-ui); letter-spacing: .08em; text-transform: uppercase; }
+.hud-prompt-key.tap::before {
+  content: "";
+  width: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--night) 0 26%, transparent 28% 44%, var(--night) 46% 54%, transparent 56% 70%);
+}
+@keyframes td-tell-in {
+  from { opacity: 0; transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, calc(-100% - var(--u) * 14)); }
+}
+/* 3 Hz, in step with his rim and visor */
+@keyframes td-key-pulse {
+  from { box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6), 0 0 0 rgb(var(--amber-rgb) / 0); }
+  to { box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6), 0 0 calc(var(--u) * 16) rgb(var(--amber-rgb) / .75); }
+}
+/* The teach line doesn't repeat the chip while it is up (the audit's overlap). */
+.hud-root.td-tell .hud-teach { opacity: 0; }
+
+/* The sequence: the letterbox comes in with the camera, every corner cluster steps back, subtitles ride above it. */
+.hud-root.td-cine::before,
+.hud-root.td-cine::after { transform: scaleY(var(--td-bars, 0)); transition: none; }
+.hud-root.td-cine .hud-objective,
+.hud-root.td-cine .hud-vitals,
+.hud-root.td-cine .hud-arms,
+.hud-root.td-cine .hud-feed,
+.hud-root.td-cine .hud-teach,
+.hud-root.td-cine .hud-prompt,
+.hud-root.td-cine .hud-wprompt,
+.hud-root.td-cine .hud-wp,
+.hud-root.td-cine .hud-cross,
+.hud-root.td-cine .hud-target { opacity: 0; transition: opacity 120ms var(--ease-out); }
+.hud-root.td-cine .hud-sub { bottom: calc(11vh * var(--td-bars, 0) + var(--sp-3)); }
+.hud-td-flash {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-hud-top);
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgb(var(--white-rgb) / 0) 30%, rgb(var(--white-rgb) / .55) 100%);
+}
+.hud-td-flash.on { animation: td-flash 200ms var(--ease-out); }
+@keyframes td-flash {
+  0% { opacity: .9; }
+  100% { opacity: 0; }
+}
+/* The reward: "+60 XP" rising off the body. */
+.hud-rise {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -50%);
+  font: 700 max(14px, calc(var(--u) * 26))/1 var(--font-num);
+  letter-spacing: .06em;
+  color: var(--amber-hi);
+  white-space: nowrap;
+  opacity: 0;
+  animation: td-rise 1300ms var(--ease-out) forwards;
+}
+@keyframes td-rise {
+  0% { opacity: 0; transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -20%) scale(.8); }
+  15% { opacity: 1; transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -60%) scale(1.06); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -260%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-prompt.world .hud-prompt-key { animation: none; }
+  .hud-rise { animation-duration: 1ms; animation-fill-mode: none; opacity: 1; }
+}

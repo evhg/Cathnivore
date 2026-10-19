@@ -548,6 +548,12 @@ export class Arsenal {
     }
   }
 
+  /** C11: after a takedown the gun in hand comes back up with its draw. */
+  redraw(): void {
+    this.rig.root.visible = false;
+    this.equip(this.current);
+  }
+
   /** Screenshot stages (time frozen): the gun is up and ready, not caught mid-draw or mid-reload. */
   settle(): void {
     this.raising = 0;
