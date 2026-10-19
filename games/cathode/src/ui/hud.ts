@@ -640,6 +640,8 @@ export class Hud {
   /** C10 review renders (the turntable, the silhouette lineup): the HUD steps out of the frame. */
   review(on: boolean): void {
     this.root.classList.toggle("is-review", on);
+    // The touch controls live outside the HUD root: the look hint sat over the lineup's figures (C10 review).
+    document.documentElement.classList.toggle("hud-review", on);
   }
 
   freeze(tMs: number | null): void {

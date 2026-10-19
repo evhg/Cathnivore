@@ -45,6 +45,8 @@ const tC = new THREE.Vector3();
 const across = new THREE.Vector3();
 const up = new THREE.Vector3();
 const fwd = new THREE.Vector3();
+// write()'s scratch: no per-frame allocation (S0: zero per-frame JS allocations in combat).
+const cxT = new THREE.Vector3();
 
 /** A capsule the cloth can't enter: two joints and a radius. */
 type Cap = [Joint, Joint, number];
@@ -243,7 +245,7 @@ export class Cloth {
     const R = this.def.rows;
     const hw = this.def.width / 2;
     let o = 0;
-    const cx = new THREE.Vector3();
+    const cx = cxT.set(0, 0, 0);
     let minY = Infinity;
     for (let s = 0; s < S; s++) {
       // Across: the strip's own sideways, the pelvis's across axis turned with where the pin sits (the coat's
