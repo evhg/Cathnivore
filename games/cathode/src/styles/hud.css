@@ -1725,3 +1725,7 @@
   .hud-prompt.world .hud-prompt-key { animation: none; }
   .hud-rise { animation-duration: 1ms; animation-fill-mode: none; opacity: 1; }
 }
+/* The touch sticks and buttons step back while a takedown plays (input is locked); the pause button stays. */
+:root.hud-td-cine .tbtn,
+:root.hud-td-cine .stick,
+:root.hud-td-cine .look-hint { opacity: 0; pointer-events: none; transition: opacity 120ms var(--ease-out); }

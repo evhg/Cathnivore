@@ -692,6 +692,8 @@ export class Hud {
     if (on !== this.cineOn) {
       this.cineOn = on;
       this.root.classList.toggle("td-cine", on);
+      // The touch controls live outside the HUD root: they step back with it (input is locked anyway).
+      document.documentElement.classList.toggle("hud-td-cine", on);
     }
     if (on) this.prop(this.root, "--td-bars", bars.toFixed(3));
   }
