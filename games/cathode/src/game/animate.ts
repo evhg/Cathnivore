@@ -40,8 +40,15 @@ const UPPER = REST.shoulderL.distanceTo(REST.elbowL);
 const FORE = REST.elbowL.distanceTo(REST.handL);
 
 /** Two-bone IK: the middle joint for a chain root→end with lengths l1, l2, bending towards `pole`. */
+// C10 review: the chain's own scratch vectors. It used to share `tmp` with its callers, who pass the pole in
+// `tmp`: the first line overwrote the pole with the chain, so every knee bent inwards (knock-kneed, the knees
+// touching) and every elbow tucked in under the pauldrons.
+const ikD = new THREE.Vector3();
+const ikDir = new THREE.Vector3();
+const ikP = new THREE.Vector3();
 function ik(root: THREE.Vector3, end: THREE.Vector3, l1: number, l2: number, pole: THREE.Vector3, out: THREE.Vector3): void {
-  const d = tmp.subVectors(end, root);
+  const p = ikP.subVectors(pole, root);
+  const d = ikD.subVectors(end, root);
   let len = d.length();
   const max = l1 + l2 - 1e-3;
   if (len > max) {
@@ -51,8 +58,7 @@ function ik(root: THREE.Vector3, end: THREE.Vector3, l1: number, l2: number, pol
   }
   const a = (l1 * l1 - l2 * l2 + len * len) / (2 * len);
   const h = Math.sqrt(Math.max(0, l1 * l1 - a * a));
-  const dir = d.clone().normalize();
-  const p = pole.clone().sub(root);
+  const dir = ikDir.copy(d).normalize();
   p.addScaledVector(dir, -p.dot(dir)).normalize();
   out.copy(root).addScaledVector(dir, a).addScaledVector(p, h);
 }
@@ -96,9 +102,11 @@ export function animate(body: Body, m: Motion): void {
     const fwd = Math.cos(ph) * stride * walk;
     const lift = Math.max(0, Math.sin(ph)) * (0.1 + 0.12 * run) * walk;
     hip.copy(L ? local.hipL : local.hipR);
-    foot.set(0.13 * s + m.crouch * 0.06 * s, 0.07 + lift, fwd + m.crouch * 0.12);
+    // A heavy man's stance: feet a little wider than the hips (narrowing to the hips as the stride opens), the
+    // knees over the feet and a touch outward.
+    foot.set((0.155 - 0.02 * walk) * s + m.crouch * 0.06 * s, 0.07 + lift, fwd + m.crouch * 0.12);
     const knee = L ? local.kneeL : local.kneeR;
-    ik(hip, foot, THIGH, SHIN, tmp.set(hip.x, hip.y - 0.3, hip.z + 1), knee);
+    ik(hip, foot, THIGH, SHIN, tmp.set(hip.x + 0.12 * s, hip.y - 0.3, hip.z + 1), knee);
     (L ? local.footL : local.footR).copy(foot);
   }
 

@@ -355,27 +355,35 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
   const fL = segLen(fa);
   b.add(ua, limb(uL + 0.02, (t) => 0.068 - 0.012 * t + 0.009 * Math.sin(Math.PI * t), b.seg(14), lod ? 3 : 6), arch === "sniper" ? S.coat : S.suit, { p: [0, -0.02, 0] });
   if (arch !== "sniper") {
-    // Three lames stacked down the shoulder, the top one standing 0.12 m proud of it (S3.2). They ride the upper
-    // chest (like a real pauldron on its harness, they don't tip with every swing of the arm), built round the
-    // shoulder's axis hanging down from the joint.
+    // Three lames stacked down the shoulder, the top one standing 0.12 m proud of it (S3.2). The top lame is a
+    // rounded dome that rides the upper chest (like a real pauldron on its harness, it doesn't tip with every swing
+    // of the arm) and wraps well round the front and back of the deltoid towards the collar, so it reads as plate
+    // over a shoulder and not a box floating beside the chest (C10 review). The two lames under it hang on the
+    // upper arm and tip with it, the sleeve showing beneath them.
     const shoulder = REST[`shoulder${side}`].clone().sub(REST.spine2);
     const outC = side === "L" ? 1 : -1;
     const phiC = outC > 0 ? Math.PI / 2 : -Math.PI / 2;
     const frameC = new THREE.Matrix4().compose(
-      new THREE.Vector3(shoulder.x + 0.02 * outC, shoulder.y, shoulder.z),
+      new THREE.Vector3(shoulder.x + 0.005 * outC, shoulder.y - 0.005, shoulder.z),
       new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI),
       new THREE.Vector3(1, 1, 1),
     );
+    const dome: P2[] = [[0.03, -0.096], [0.075, -0.092], [0.112, -0.078], [0.138, -0.054], [0.152, -0.022], [0.156, 0.03], [0.144, 0.03], [0.141, -0.016], [0.128, -0.046], [0.104, -0.066], [0.07, -0.079], [0.03, -0.083]];
+    // Further off, the same outline from fewer rings.
+    const domeLo: P2[] = [[0.03, -0.096], [0.112, -0.078], [0.152, -0.022], [0.156, 0.03], [0.144, 0.03], [0.128, -0.046], [0.07, -0.079], [0.03, -0.083]];
+    const domeDeg = 230;
+    const domeSpan = domeDeg * D;
+    b.add("upperChest", shell(b.det >= 2 ? domeLo : dome, phiC - domeSpan / 2, domeSpan, b.seg(Math.round(domeDeg / (b.o.phone ? 16 : 10))), 0.5), S.plate, frameC);
+    // The lower lames on the arm (its bone runs down from the shoulder, its x mirrored: `phiOut` faces out).
     const lames: Array<[P2[], number]> = [
-      [[[0.05, -0.088], [0.112, -0.083], [0.142, -0.06], [0.152, -0.02], [0.155, 0.03], [0.143, 0.03], [0.14, -0.016], [0.13, -0.05], [0.104, -0.07], [0.05, -0.074]], 170],
-      [[[0.146, 0.022], [0.16, 0.03], [0.162, 0.072], [0.15, 0.072], [0.148, 0.034], [0.136, 0.028]], 150],
-      [[[0.14, 0.064], [0.153, 0.072], [0.153, 0.108], [0.142, 0.108], [0.14, 0.076], [0.13, 0.07]], 130],
+      [[[0.116, 0.012], [0.128, 0.02], [0.13, 0.068], [0.12, 0.068], [0.118, 0.028], [0.108, 0.02]], 120],
+      [[[0.104, 0.058], [0.116, 0.066], [0.116, 0.106], [0.106, 0.106], [0.104, 0.072], [0.095, 0.066]], 100],
     ];
     lames.forEach(([pr, deg], i) => {
-      if (lod === 2 && i > 0) return;
-      if ((lod === 1 && i > 1) || (b.det === 3 && i > 0)) return;
+      if (lod === 2) return;
+      if ((lod === 1 && i > 0) || b.det === 3) return;
       const span = deg * D;
-      b.add("upperChest", shell(pr, phiC - span / 2, span, b.seg(Math.round(deg / (b.o.phone ? 13 : 8))), 0.5), S.plate, frameC);
+      b.add(ua, shell(pr, phiOut - span / 2, span, b.seg(Math.round(deg / (b.o.phone ? 13 : 8))), 0.5), S.plate, { p: [0.012 * out, 0, 0] });
     });
     if (side === "L" && lod === 0) {
       // The "H in a tower" on the outer face of the top lame.
