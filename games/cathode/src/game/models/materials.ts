@@ -123,7 +123,9 @@ function patchGlow(mat: THREE.MeshBasicMaterial, fx0: number): void {
         "#include <begin_vertex>",
         `#include <begin_vertex>\n${vertFx(fx0)}
 vBodyGlow = aMR.y > 0.5 ? vBodyVisor.rgb * vBodyVisor.a : vec3(1.0);
-vBodyGlow *= aMR.z > 0.5 ? vBodyBlink : 1.0;`,
+vBodyGlow *= aMR.z > 0.5 ? vBodyBlink : 1.0;
+// Tape and lights that die with him (aMR.x): they follow the visor's level (it goes out over 0.9 s), untinted.
+vBodyGlow *= aMR.x > 0.5 ? min(vBodyVisor.a, 1.0) : 1.0;`,
       );
     sh.fragmentShader = sh.fragmentShader
       .replace("#include <common>", `#include <common>\n${VARYINGS}\nvarying vec3 vBodyGlow;\n${BAYER}`)

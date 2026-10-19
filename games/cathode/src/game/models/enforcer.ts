@@ -43,6 +43,8 @@ interface Glow {
   visor?: boolean;
   blink?: boolean;
   pulse?: boolean;
+  /** Goes out with the visor when he dies (untinted). */
+  fade?: boolean;
 }
 const GLOWS = {
   slit: { surf: { emit: 0xffffff, intensity: 4.2 }, visor: true },
@@ -52,7 +54,7 @@ const GLOWS = {
   coolant: { surf: { emit: 0xffa040, intensity: 5 }, pulse: true },
   stripe: { surf: { emit: 0xff2420, intensity: 5 } },
   /** Retro-reflective tape (pillar 4: overstate what matters): pale bands that make him read from behind in the rain. */
-  tape: { surf: { emit: 0xe9e1cf, intensity: 4 } },
+  tape: { surf: { emit: 0xe9e1cf, intensity: 4 }, fade: true },
   /** The unit number, backlit in the visor's colour on the back plate. */
   unit: { surf: { emit: 0xffffff, intensity: 3.6 }, visor: true },
   lens: { surf: { emit: 0xffffff, intensity: 5 }, visor: true },
@@ -121,7 +123,7 @@ class Builder {
     g.setAttribute("aRimN", new THREE.BufferAttribute(rimNormals(g, bone), 3));
     if (glow) {
       const mr = g.getAttribute("aMR") as THREE.BufferAttribute;
-      for (let i = 0; i < n; i++) mr.setXYZW(i, 0, glow.visor ? 1 : 0, glow.blink ? 1 : 0, glow.pulse ? 1 : 0);
+      for (let i = 0; i < n; i++) mr.setXYZW(i, glow.fade ? 1 : 0, glow.visor ? 1 : 0, glow.blink ? 1 : 0, glow.pulse ? 1 : 0);
       this.glow.push(g);
     } else this.opaque.push(g);
   }
