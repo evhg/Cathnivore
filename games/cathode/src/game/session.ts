@@ -13,7 +13,7 @@ import { Player } from "./player";
 import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
 import { deathGlowScale } from "./body";
 import { POOLS } from "../render/pools";
-import type { DeathVariant } from "./death";
+import { deathFx, type DeathVariant } from "./death";
 import { RayWorld, rayGround } from "./ray";
 import { KESTREL_DOT } from "./kestrel";
 import { Arsenal } from "./weapons";
@@ -261,6 +261,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // It no longer has to fight the fog (the glow takes its fog back off, body.ts), and at 2.6x the tone map turned
   // it salmon: 1.5x stays a saturated dark red.
   deathGlowScale.value = o.quality === "phone" ? 1.5 : 1;
+  deathGlowScale.rimPow = o.quality === "phone" ? 1.2 : 0;
+  deathGlowScale.rimGain = o.quality === "phone" ? 0.22 : 1;
   setBeaconProfile(o.quality === "phone" ? "phone" : "desktop");
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
@@ -993,6 +995,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const trauma = new Trauma();
   const syncMotion = () => {
     trauma.reducedMotion = reduceMotionOn();
+    deathFx.steady = trauma.reducedMotion;
     arsenal.reducedMotion = trauma.reducedMotion;
   };
   syncMotion();
@@ -2702,6 +2705,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   if (new URLSearchParams(location.search).get("debug") === "cover") showCover(true);
   let stageCrate: THREE.Mesh | null = null;
   let stageHome: { pos: THREE.Vector3; yaw: number; pitch: number } | null = null;
+  let stageChar: Progress["character"] | null = null;
   let stageGuard: Enemy | null = null;
   let crateCollider: { off?: boolean } | null = null;
   // C4 "Kestrel 9, built like a real gun": the pistol at rest, aimed, and mid-inspect, in the street where the
@@ -3072,6 +3076,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   /** A stage starts with her whole and still: no flinch ringing, no flare, no grenade, full Guard and Flesh. */
   const calmVitals = () => {
     if (dead || dying || resyncT >= 0) clearDeath();
+    // Nor does an earlier stage's kill XP: every stage shows her at the level the first one found her at.
+    if (!stageChar) stageChar = progress.character;
+    else if (progress.character !== stageChar) {
+      progress.set(stageChar);
+      s.maxHp = progress.stats.maxHealth;
+      s.level = progress.character.level;
+    }
     for (const sp of Object.values(flinch)) {
       sp.x = 0;
       sp.v = 0;
@@ -3440,7 +3451,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const pl = gp?.pools[gp.pools.length - 1];
       const focus = c9.pool && pl ? pl.at.clone() : g.body.joints.chest.clone().lerp(g.body.joints.pelvis, 0.5).lerp(g.body.joints.head, c9.variant === "wallslump" ? 0.3 : 0);
       const back = new THREE.Vector3(eye.x - focus.x, 0, eye.z - focus.z);
-      const want = c9.pool ? 3.2 : 3.3;
+      // A phone's screen is small: it frames the body closer, so he isn't a 60 px figure behind her gun.
+      const want = (c9.pool ? 3.2 : 3.3) * (o.quality === "phone" ? 0.72 : 1);
       // A body at rest is shot from beside it (a three-quarter view from the side she stands on): lying along the
       // line of fire, it is foreshortened into a lump whatever its pose (C9 review).
       const axis = new THREE.Vector3().subVectors(g.body.joints.head, g.body.joints.pelvis).setY(0);

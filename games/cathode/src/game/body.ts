@@ -16,7 +16,7 @@ const HELM_R = 0.14;
 
 /** S4.1: the flash's level at `ageMs` after a hit: white for a frame, then red at 0.6 fading to 0 over 150 ms. */
 /** The death glow's strength for this session: the phone's fog and lighter grade need it brighter (set by session.ts). */
-export const deathGlowScale = { value: 1 };
+export const deathGlowScale = { value: 1, rimPow: 0, rimGain: 1 };
 
 export function flashLevel(ageMs: number): number {
   const F = flashTuning;
@@ -450,9 +450,12 @@ export class Body {
       // a body and not a red mannequin. It hands over to a faint cold street rim that stays on the dead (the noir
       // edge light), so a dark body on a dark street still has a shape.
       const r = L > 0 ? dk / L : 0;
-      const g = D.rimGain * dk;
+      // The phone renders at half resolution: a tight rim (power 3) on the plates' bevels breaks into speckle
+      // there, so it gets a wider, softer one (deathGlowScale.rimPow, set by session.ts).
+      const g = D.rimGain * deathGlowScale.rimGain * dk;
       const c = 1 - r;
-      this.rimUniform.value.set(D.red[0] * g + D.cold[0] * c, D.red[1] * g + D.cold[1] * c, D.red[2] * g + D.cold[2] * c, D.rimPow * r + D.coldPow * c);
+      const pow = deathGlowScale.rimPow || D.rimPow;
+      this.rimUniform.value.set(D.red[0] * g + D.cold[0] * c, D.red[1] * g + D.cold[1] * c, D.red[2] * g + D.cold[2] * c, pow * r + D.coldPow * c);
     }
     for (let i = 1; i < FLASH_SLOTS; i++) {
       const age = (this.flashAge[i] = this.flashAge[i]! + dtMs);

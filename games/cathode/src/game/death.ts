@@ -911,12 +911,19 @@ export class DroppedProp {
 
 // ------------------------------------------------------------------ the light going out
 
-/** The visor's light `tMs` after death: 1 fading to 0 over 900 ms, flicking back up at 300 and 550 ms. */
-export function visorLevel(tMs: number): number {
+/** Session-wide death presentation: with reduced motion the light goes out without flickering (set by session.ts). */
+export const deathFx = { steady: false };
+
+/**
+ * The visor's light `tMs` after death: 1 fading to 0 over 900 ms, flicking back up at 300 and 550 ms (a steady
+ * fade with `steady`, for reduced motion).
+ */
+export function visorLevel(tMs: number, steady = deathFx.steady): number {
   const L = DEATH.lightOut;
   if (tMs <= 0) return 1;
   if (tMs >= L.ms) return 0;
   let k = (1 - tMs / L.ms) ** 1.6;
+  if (steady) return k;
   for (const f of L.flickers) {
     // Off for a beat, then a stutter back on.
     if (tMs >= f - L.flickerMs && tMs < f) k *= 0.1;

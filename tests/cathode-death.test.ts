@@ -392,6 +392,8 @@ describe("C9 deaths that land (S4.4)", () => {
     expect(visorLevel(280)).toBeLessThan(visorLevel(310) * 0.5);
     expect(visorLevel(530)).toBeLessThan(visorLevel(560) * 0.5);
     expect(visorLevel(450)).toBeLessThan(visorLevel(100));
+    // Reduced motion: the same fade, no flicker (monotonic).
+    for (let t = 0; t < 900; t += 5) expect(visorLevel(t + 5, true)).toBeLessThanOrEqual(visorLevel(t, true));
   });
 
   it("a dropped rifle clatters at least twice and comes to rest flat on the floor", () => {

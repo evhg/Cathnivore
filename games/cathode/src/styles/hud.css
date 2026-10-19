@@ -447,6 +447,7 @@
 .hud-root.is-frozen .hud-hit-ring.go,
 .hud-root.is-frozen .hud-hit-shatter.go,
 .hud-root.is-frozen .hud-target.is-dead,
+.hud-root.is-frozen .hud-target.is-dead .hud-target-bar,
 .hud-root.is-frozen .hud-blocked.pop i,
 .hud-root.is-frozen .hud-toast.on,
 .hud-root.is-frozen .hud-toast.on .hud-toast-rule { animation-play-state: paused; animation-delay: var(--freeze-t, 0ms); }
@@ -614,13 +615,20 @@
 }
 .hud-rim.flash { animation: rim-flash 120ms steps(1, end); }
 @keyframes rim-flash { from { opacity: .25; } to { opacity: 0; } }
+/* The target sits on its own dark plate: street signs and neon glow behind it never show through the name
+   (C9 review: the bar over the expressway sign read as text on text). */
 .hud-target {
   position: absolute;
   left: 50%;
   top: 12%;
+  box-sizing: border-box;
   width: min(calc(var(--u) * 320), 50vw);
+  padding: calc(var(--u) * 6) calc(var(--u) * 14) calc(var(--u) * 8);
   transform: translateX(-50%);
   text-align: center;
+  background: linear-gradient(180deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .82));
+  box-shadow: 0 0 0 1px var(--line-3), 0 calc(var(--u) * 4) calc(var(--u) * 18) rgb(var(--black-rgb) / .5);
+  backdrop-filter: blur(6px);
 }
 .hud-target-name {
   display: block;
@@ -651,6 +659,9 @@
 .hud-target.is-dead { animation: target-gone 580ms linear forwards; }
 /* The name fades back to muted ink and a red DOWN tag is stamped beside it: a kill state, not a strikethrough. */
 .hud-target.is-dead .hud-target-name { color: var(--ink-muted); text-shadow: var(--hud-shadow); }
+/* A kill drops the bar after its collapse: the plate carries only the name and its DOWN stamp. */
+.hud-target.is-dead .hud-target-bar { animation: target-bar-out 1ms linear 200ms forwards; }
+@keyframes target-bar-out { to { height: 0; margin-top: 0; box-shadow: none; } }
 .hud-target.is-dead .hud-target-name::after {
   content: "Down";
   display: inline-block;
