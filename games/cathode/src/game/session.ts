@@ -2740,20 +2740,31 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     for (const e of lineup) e.body.pose();
     if (reviewRender) reviewRender();
     else if (zoomOn && zoomAt) {
-      // The close-up: the camera moved off his struck side and turned on the hand, a lens 0.6 m across, her gun hidden.
+      // The close-up: the camera moved off his struck side and turned on the hand, a lens 0.4 m across, her gun hidden.
       const cam = world.camera;
       const q = cam.quaternion.clone();
       const pos = cam.position.clone();
       const fov = cam.fov;
       const z = zoomAt();
       cam.position.copy(cam.parent ? cam.parent.worldToLocal(z.from.clone()) : z.from);
-      cam.fov = THREE.MathUtils.radToDeg(2 * Math.atan(0.3 / z.from.distanceTo(z.at)));
+      cam.fov = THREE.MathUtils.radToDeg(2 * Math.atan(0.2 / z.from.distanceTo(z.at)));
       cam.lookAt(z.at);
       cam.updateProjectionMatrix();
       cam.updateMatrixWorld();
       const vs = world.viewScene.visible;
       world.viewScene.visible = false;
+      // The blood puff hides the glove 1.1 m from the lens (C10 review: "a red mist blob"): the close-up judges the
+      // hand, so the particles sit this frame out.
+      const motes: THREE.Object3D[] = [];
+      world.scene.traverse((o) => {
+        const mote = (o as THREE.Points).isPoints || (o as THREE.Sprite).isSprite || o.name === "gore:mist" || o.name === "gore:drops" || o.name === "fx:light" || o.name === "fx:matter";
+        if (mote && o.visible) {
+          o.visible = false;
+          motes.push(o);
+        }
+      });
       world.render();
+      for (const o of motes) o.visible = true;
       world.viewScene.visible = vs;
       cam.quaternion.copy(q);
       cam.position.copy(pos);
@@ -3349,7 +3360,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // turntable-<arch>: four of one archetype side by side, turned 0, 45, 90 and 180 degrees, 4.6 m off.
   // silhouette-lineup: the archetypes side by side as flat black on mid grey (S3.1's silhouette test).
   // guard-from-10m: the owner's audit frame, the first job's guard under his lamp 10 m off, with no diamond (&job).
-  const C10_STAGES = ["enemy-front-10m", "enemy-back-10m", "turntable-enforcer", "turntable-riot", "turntable-sniper", "turntable-leader", "silhouette-lineup", "guard-from-10m"];
+  // firefight-<n> (S0 performance, scripts/cathode-perf.mjs): n riflemen shouldered and firing at her, spread 6 to
+  // 16 m down the street ahead, in the whole lit, reflected scene (the street's own enemies all hidden, so the
+  // count is exactly n; any n works, these two are the budget's): the draw-call and triangle budget frame.
+  const C10_STAGES = ["firefight-6", "firefight-12", "enemy-front-10m", "enemy-back-10m", "turntable-enforcer", "turntable-riot", "turntable-sniper", "turntable-leader", "silhouette-lineup", "guard-from-10m"];
   let reviewRender: (() => void) | null = null;
   let lineup: Enemy[] = [];
   let probeGuard: Enemy | null = null;
@@ -3435,6 +3449,36 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // Framed on him, a touch left of centre so the reticle sits beside him and not on his chest.
       lookFrom(stageHome.pos, g.body.joints.chest.clone().addScaledVector(side, -0.55));
       probeGuard = g;
+      hud.freeze(tMs);
+      return "ok";
+    }
+    const ff = /^firefight-(\d+)$/.exec(name);
+    if (ff) {
+      const n = Number(ff[1]);
+      // Every street enemy out (the far ones' LOD2 and mirror stand-ins were 20 calls of their own): exactly n.
+      const hide = enemies.filter((e) => e.body.root.visible);
+      for (const e of hide) e.body.root.visible = false;
+      lineupHidden.push(...hide);
+      bodyView.eye.copy(eye);
+      for (let i = 0; i < n; i++) {
+        const e = new Enemy({ ...ENFORCER }, [new THREE.Vector3()], 1);
+        const ang = ((i % 6) / 5 - 0.5) * 0.9;
+        const dist = 6 + (i / Math.max(1, n - 1)) * 10;
+        const at = eye.clone().addScaledVector(flat, Math.cos(ang) * dist).addScaledVector(side, Math.sin(ang) * dist);
+        at.y = ground(at.x, at.z);
+        e.motion.pos.copy(at);
+        e.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z);
+        e.motion.aim = 1;
+        e.motion.kick = 0.6;
+        e.passive = true;
+        world.scene.add(e.body.root);
+        e.update(0.0001, sightNone(), rays, world.colliders, ground);
+        e.motion.aim = 1;
+        e.motion.kick = 0.6;
+        e.body.pose();
+        lineup.push(e);
+      }
+      lookFrom(stageHome.pos, eye.clone().addScaledVector(flat, 10).setY(ground(eye.x, eye.z) + 1.2));
       hud.freeze(tMs);
       return "ok";
     }
@@ -3666,7 +3710,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (C8_STAGES.includes(name)) return c8Stage(name, tMs);
     if (C6_STAGES.includes(name) || C7_STAGES.includes(name)) return c6Stage(name, tMs);
     calmVitals();
-    if (C10_STAGES.includes(name)) return c10Stage(name, tMs);
+    if (C10_STAGES.includes(name) || /^firefight-\d+$/.test(name)) return c10Stage(name, tMs);
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
     if (C4_STAGES.includes(name)) return c4Stage(name, tMs);
     arsenal.holdAim = false;
@@ -4014,7 +4058,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const hand = right ? g.body.joints.handR : g.body.joints.handL;
       const out = (right ? g.body.joints.shoulderR : g.body.joints.shoulderL).clone().sub(g.body.joints.chest).setY(0).normalize();
       const toHer = eye.clone().sub(hand).setY(0).normalize();
-      zoomAt = () => ({ at: hand, from: hand.clone().addScaledVector(out.clone().add(toHer).normalize(), 1.1).add(new THREE.Vector3(0, 0.25, 0)) });
+      // Aimed past the palm at the fingers (the joint is the palm's centre: the open fingers ran off the frame).
+      const wrist = right ? g.body.joints.wristR : g.body.joints.wristL;
+      zoomAt = () => {
+        const at = hand.clone().addScaledVector(hand.clone().sub(wrist), 0.6);
+        return { at, from: at.clone().addScaledVector(out.clone().add(toHer).normalize(), 1.1).add(new THREE.Vector3(0, 0.25, 0)) };
+      };
     }
     if (name === "hit-soft") hud.hitMarker("armour");
     if (name === "hit-pen") hud.hitMarker("pen");

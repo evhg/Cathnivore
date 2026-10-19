@@ -48,6 +48,10 @@ run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwrig
 // built exactly as Vercel builds it. Part of gate 5: main must not move if the site around the game breaks.
 run('Gate 5 (site): Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test -c playwright.site.config.ts`)
 
+// CATHODE's performance budget (docs/design/cathode-combat.md S0, from C10): a staged firefight's whole-scene
+// draw calls and triangles, phone (6 enemies) and desktop (12), on the dist-site Gate 1 built.
+run('Gate 5 (CATHODE): performance budget', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} node scripts/cathode-perf.mjs`)
+
 run('Gate 6: Accessibility (axe)', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} e2e/accessibility.spec.ts`)
 
 // SPEC 11.4 gate 7: "Lighthouse mobile performance score of 85 or more on the production build served

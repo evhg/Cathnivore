@@ -25,7 +25,8 @@
     "shots:feel": "node scripts/cathode-feel-shots.mjs",
     "shots": "playwright test --project=phone --project=phone-landscape --project=desktop-chromium e2e/screenshots.spec.ts",
     "font-budget": "tsx scripts/font-budget.ts",
-    "shots:portfolio": "tsx scripts/portfolio-shots.mjs"
+    "shots:portfolio": "tsx scripts/portfolio-shots.mjs",
+    "perf:cathode": "node scripts/cathode-perf.mjs"
   },
   "dependencies": {
     "@capacitor/browser": "^8.0.4",

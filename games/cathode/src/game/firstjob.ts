@@ -229,7 +229,10 @@ class Lamp {
     this.group.add(shade, bulb, cable, pool);
     this.group.position.copy(at);
     scene.add(this.group);
-    this.unlight = light?.(at.clone().add(new THREE.Vector3(0, 3, 0)), SODIUM, 9, 9) ?? null;
+    // C10 review: at 9 the lamp lit the pool decal and not him (the owner's audit frame read x0.95 of the street).
+    // The light is 1.2 m over his helmet and 3 m over the street, so a brighter lamp lifts his helmet and
+    // shoulders six times as much as the stones round him.
+    this.unlight = light?.(at.clone().add(new THREE.Vector3(0, 3, 0)), SODIUM, 24, 9) ?? null;
   }
   remove(): void {
     this.group.removeFromParent();

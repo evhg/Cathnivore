@@ -23,7 +23,7 @@ export type Lod = 0 | 1 | 2;
 
 /** S3.1's materials as kit finishes (sRGB base colours; the kit's shader adds edge wear and the trim atlas). */
 export const FINISH = {
-  plate: { color: 0x2e333c, metal: 0.2, rough: 0.36, coat: 0.7, band: "peel", wear: 1 },
+  plate: { color: 0x3a404a, metal: 0.2, rough: 0.36, coat: 0.7, band: "peel", wear: 1 },
   plateDark: { color: 0x1d2026, metal: 0.25, rough: 0.5, coat: 0.3, band: "peel", wear: 0.8 },
   suit: { color: 0x121418, metal: 0, rough: 0.86, sheen: 0.12, band: "nylon", wear: 0 },
   web: { color: 0x23262c, metal: 0, rough: 0.8, sheen: 0.3, band: "nylon", wear: 0.35 },
@@ -54,7 +54,7 @@ const GLOWS = {
   coolant: { surf: { emit: 0xffa040, intensity: 5 }, pulse: true },
   stripe: { surf: { emit: 0xff2420, intensity: 5 } },
   /** Retro-reflective tape (pillar 4: overstate what matters): pale bands that make him read from behind in the rain. */
-  tape: { surf: { emit: 0xe9e1cf, intensity: 4 }, fade: true },
+  tape: { surf: { emit: 0xe9e1cf, intensity: 5.2 }, fade: true },
   /** The unit number, backlit in the visor's colour on the back plate. */
   unit: { surf: { emit: 0xffffff, intensity: 3.6 }, visor: true },
   lens: { surf: { emit: 0xffffff, intensity: 5 }, visor: true },
@@ -376,7 +376,10 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
     const domeLo: P2[] = [[0.03, -0.096], [0.112, -0.078], [0.152, -0.022], [0.156, 0.03], [0.144, 0.03], [0.128, -0.046], [0.07, -0.079], [0.03, -0.083]];
     const domeDeg = 230;
     const domeSpan = domeDeg * D;
-    b.add("upperChest", shell(b.det >= 2 ? domeLo : dome, phiC - domeSpan / 2, domeSpan, b.seg(Math.round(domeDeg / (b.o.phone ? 16 : 10))), 0.5), S.plate, frameC);
+    b.add("upperChest", shell(b.det >= 2 ? domeLo : dome, phiC - domeSpan / 2, domeSpan, b.seg(Math.round(domeDeg / (b.o.phone ? 18 : 13))), 0.5), S.plate, frameC);
+    // A tape band round the dome's lower edge: the shoulders read pale from the front and from behind at 10 m,
+    // where the plate is dark on a dark street (C10 review: x1.00 from the front).
+    if (b.det <= 2) b.add("upperChest", shell([[0.1565, 0.004], [0.1605, 0.012], [0.1565, 0.02]], phiC - domeSpan / 2 + 0.15, domeSpan - 0.3, b.seg(Math.round(domeDeg / (b.o.phone ? 30 : 20))), 0.5), GLOWS.tape, frameC);
     // The lower lames on the arm (its bone runs down from the shoulder, its x mirrored: `phiOut` faces out).
     const lames: Array<[P2[], number]> = [
       [[[0.116, 0.012], [0.128, 0.02], [0.13, 0.068], [0.12, 0.068], [0.118, 0.028], [0.108, 0.02]], 120],
@@ -384,7 +387,8 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
     ];
     lames.forEach(([pr, deg], i) => {
       if (lod === 2) return;
-      if ((lod === 1 && i > 0) || b.det === 3) return;
+      if ((lod === 1 || b.det === 1) && i > 0) return;
+      if (b.det === 3) return;
       const span = deg * D;
       b.add(ua, shell(pr, phiOut - span / 2, span, b.seg(Math.round(deg / (b.o.phone ? 13 : 8))), 0.5), S.plate, { p: [0.012 * out, 0, 0] });
     });
@@ -420,6 +424,12 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
   if (lod === 0) {
     b.add(f, b.box(0.03, 0.016, 0.078, 0.005, 1), S.plateDark, { p: [0.006 * out, 0.004, 0.004] });
     for (const [z, l] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) {
+      if (b.det === 0) {
+        // Desktop close-up (C10 review: "box fingers"): rounded digits, the second joint hinged at the first's end.
+        b.add(f, limb(l, (t) => 0.0098 - 0.0008 * t, 5, 1), S.leather, { p: [0, 0.004, z + 0.004] });
+        b.add(f, limb(l * 0.8, (t) => 0.0088 - 0.0014 * t, 5, 1), S.leather, { p: [0, l + 0.002, z + 0.004], r: [0, 0, -0.9 * out] });
+        continue;
+      }
       b.add(f, box(0.022, l, 0.0165, 0, 0), S.leather, { p: [0, l / 2 + 0.004, z + 0.004] });
       b.add(f, box(0.019, l * 0.85, 0.015, 0, 0), S.leather, { p: [-0.011 * out, l + 0.004 + l * 0.38, z + 0.004], r: [0, 0, -0.9 * out] });
     }
