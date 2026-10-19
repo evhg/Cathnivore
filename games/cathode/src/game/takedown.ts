@@ -40,7 +40,7 @@ const snap = (t: number, a: number, b: number) => {
 /** Feel numbers (S5.2), here so the tests and the session read one table. */
 export const TD = {
   /** The authored framing, in her frame (m): back, right, up; and the FOV it adds (degrees). */
-  cam: { back: 0.6, right: 0.38, up: 0.1, fovAdd: 12, easeInMs: 120, easeOutMs: 200, kickDeg: 3, driftDeg: 6 },
+  cam: { back: 0.6, right: 0.5, up: 0.12, fovAdd: 12, easeInMs: 120, easeOutMs: 200, kickDeg: 3, driftDeg: 6 },
   /** The letterbox (share of the boss intro's 11vh bars). */
   bars: 0.75,
   /** Hit-stop on the lethal blow and on any other (ms); trauma per blow. */
@@ -601,8 +601,8 @@ function buildBust(phone: boolean): THREE.Group {
     g.add(m);
   };
   // The trench: its back from the shoulder line to the waist, an oval in section, and the shoulders' rounds.
-  piece(new THREE.CylinderGeometry(0.165, 0.15, 0.56, seg, 1, true), FIN.sleeve, { p: [0, -0.52, 0.07], s: [1, 1, 0.66] });
-  piece(new THREE.SphereGeometry(0.168, seg, phone ? 8 : 12, 0, Math.PI * 2, 0, Math.PI / 2), FIN.sleeve, { p: [0, -0.24, 0.07], s: [1, 0.42, 0.66] });
+  piece(new THREE.CylinderGeometry(0.185, 0.155, 0.56, seg, 1, true), FIN.sleeve, { p: [0, -0.52, 0.07], s: [1, 1, 0.62] });
+  piece(new THREE.SphereGeometry(0.188, seg, phone ? 8 : 12, 0, Math.PI * 2, 0, Math.PI / 2), FIN.sleeve, { p: [0, -0.24, 0.07], s: [1, 0.36, 0.62] });
   for (const x of [-0.165, 0.165]) piece(new THREE.SphereGeometry(0.062, seg, phone ? 8 : 12), FIN.sleeve, { p: [x, -0.245, 0.045], s: [1.1, 0.9, 1] });
   // The collar turned up round her neck, open at the front.
   piece(new THREE.CylinderGeometry(0.078, 0.1, 0.11, seg, 1, true, Math.PI * 0.18, Math.PI * 1.64), FIN.sleeve, { p: [0, -0.17, 0.035] });
@@ -613,22 +613,38 @@ function buildBust(phone: boolean): THREE.Group {
   // centre-parted (a shallow groove), falling in two soft waves.
   piece(new THREE.SphereGeometry(0.098, seg, phone ? 10 : 16, 0, Math.PI * 2, 0, Math.PI * 0.62), HAIR, { p: [0, 0.008, 0.012], s: [0.92, 1.08, 1.04] });
   piece(new THREE.SphereGeometry(0.1, seg, phone ? 10 : 16, Math.PI * 0.08, Math.PI * 0.84), HAIR, { p: [0, 0, 0.018], s: [0.94, 1.06, 1.06], r: [0, Math.PI / 2, 0] });
-  const curtain = new THREE.CylinderGeometry(0.095, 0.15, 0.5, seg, phone ? 4 : 8, true, -Math.PI * 0.62, Math.PI * 1.24);
+  // The fall: a lathe round her back, full over the crown, drawn in at the nape, then spreading over her shoulder
+  // blades to a soft, uneven hem; two loose waves run down it.
+  const prof = [
+    [0.096, 0.07],
+    [0.1, 0.0],
+    [0.092, -0.08],
+    [0.084, -0.14],
+    [0.105, -0.2],
+    [0.135, -0.27],
+    [0.15, -0.35],
+    [0.148, -0.43],
+    [0.13, -0.48],
+  ]
+    .reverse()
+    .map(([r, y]) => new THREE.Vector2(r!, y!));
+  const curtain = new THREE.LatheGeometry(prof, phone ? 14 : 28, -Math.PI * 0.6, Math.PI * 1.2);
   {
-    // Waves: the curtain's radius breathes along its length, and its hem curls in.
     const pos = curtain.getAttribute("position") as THREE.BufferAttribute;
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
       const y = pos.getY(i);
       const z = pos.getZ(i);
-      const u = 0.5 - y / 0.5; // 0 at the top, 1 at the hem
+      const u = Math.max(0, -y / 0.48);
       const a = Math.atan2(x, z);
-      const k = 1 + 0.05 * Math.sin(u * 9 + a * 2) + 0.03 * Math.sin(a * 7);
-      pos.setXYZ(i, x * k, y, z * k * (1 - 0.15 * u * u));
+      const k = 1 + 0.06 * u * Math.sin(u * 11 + a * 2.2) + 0.025 * Math.sin(a * 9 + u * 3);
+      // The hem dips in the middle of her back and lifts at the sides.
+      const hem = u > 0.85 ? (1 - Math.abs(a) / (Math.PI * 0.6)) * 0.04 * (u - 0.85) / 0.15 : 0;
+      pos.setXYZ(i, x * k, y - hem, z * k);
     }
     curtain.computeVertexNormals();
   }
-  piece(curtain, HAIR, { p: [0, -0.2, 0.03] });
+  piece(curtain, HAIR, { p: [0, 0, 0.022] });
   g.visible = false;
   return g;
 }

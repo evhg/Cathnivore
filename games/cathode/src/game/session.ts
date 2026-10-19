@@ -34,7 +34,7 @@ import { REFL_DIRS } from "./gunsound";
 import { AUTOMATIC, confirmSound, hitClass, hitStopMs, type HitEvent } from "../sim/hitevent";
 import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
-import { Orbs, Takedown, targetScript } from "./takedown";
+import { Orbs, TD, Takedown, targetScript } from "./takedown";
 import { TAKEDOWN, TAKEDOWN_VARIANTS, pickTakedownVariant, syncPoint, takedownEligible, takedownRewards, variantById, type Rect, type TakedownApproach, type TakedownVariantId } from "../sim/takedown";
 import { Hud, type HudState } from "../ui/hud";
 import { Audio } from "./audio";
@@ -2127,6 +2127,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight };
   }
 
+  /** The sequence's own lights, and their removal. */
+  const tdLights: Array<() => void> = [];
+  const tdLightsOff = () => {
+    for (const off of tdLights.splice(0)) off();
+  };
   /** What waits for the end of the sequence (the dead man's gear). */
   const tdAfter: Array<() => void> = [];
   /** The man she last heard the tell for (the tick plays once per man). */
@@ -2179,6 +2184,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     audio?.takedownGrab();
     hud.cinema(Math.max(0.002, td.bars()));
     world.viewScene.visible = false;
+    // The shot's own practicals (from the real-light pool: no shader recompiles): a cyan rim beyond her right
+    // shoulder that draws her hair and his helmet out of the night, and a low cool fill from behind the lens on her
+    // back and arms. They go with the sequence.
+    tdLightsOff();
+    if (worldLight) {
+      const f = new THREE.Vector3().subVectors(e.position, sync).setY(0).normalize();
+      const r = new THREE.Vector3(-f.z, 0, f.x);
+      const eyeAt = sync.clone().add(new THREE.Vector3(0, TD.eye, 0));
+      tdLights.push(worldLight(eyeAt.clone().addScaledVector(f, 1.5).addScaledVector(r, 1.1).add(new THREE.Vector3(0, 0.7, 0)), new THREE.Color(0.35, 0.85, 1.6), 9, 4));
+      tdLights.push(worldLight(eyeAt.clone().addScaledVector(f, -1.4).addScaledVector(r, 0.6).add(new THREE.Vector3(0, 0.3, 0)), new THREE.Color(0.55, 0.62, 0.85), 3, 3));
+    }
     player.vel.set(0, 0, 0);
   }
 
@@ -2273,6 +2289,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.cinema(0);
     world.viewScene.visible = true;
     arsenal.rig.root.visible = true;
+    tdLightsOff();
     for (const f of tdAfter.splice(0)) f();
     // The gun comes back up with its draw (a staged frame has no time: it is simply up).
     if (o.shot) arsenal.settle();
@@ -3960,6 +3977,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const v = TAKEDOWN_VARIANTS.find((x) => x.id === id);
     if (!v) return `unknown takedown ${id}`;
     if (td.active) td.finish();
+    tdLightsOff();
     timescale.release("takedown");
     hud.cinema(0);
     world.viewScene.visible = true;
