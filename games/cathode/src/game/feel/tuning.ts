@@ -110,7 +110,7 @@ export const tuning = {
    * coolant window's pulse, the visor, and the hand that opens on an arm hit.
    */
   enemyLook: {
-    rim: { rest: 0.3, combat: 0.6, hit: 1.0, hitMs: 120, pulseHz: 3, sat: 0.4, pow: 3.2, gain: 7.5, phoneGain: 6, phonePow: 2.6 },
+    rim: { rest: 0.3, combat: 0.6, hit: 1.0, hitMs: 120, pulseHz: 3, sat: 0.4, pow: 3.2, gain: 9, phoneGain: 7, phonePow: 2.6 },
     lod: { phone: [12, 30] as const, desktop: [16, 39] as const, hyst: 1, fadeMs: 300 },
     blinkHz: 1,
     coolantHz: 1.2,

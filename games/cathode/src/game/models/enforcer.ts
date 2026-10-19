@@ -305,11 +305,11 @@ function torso(b: Builder, arch: Arch): void {
     if (lod < 2) b.add("upperChest", b.plate(chamfer(rect(0.024, -0.012, 0.11), 0.007), { depth: 0.006, bevel: 0.004, bendY: 0.4 }), S.plate, { p: [0, 0, 0.148] });
     b.add("upperChest", b.plate(chamfer(rect(0.38, -0.012, 0.15, 0.3), 0.02), { depth: 0.012, bevel: 0.006, bend: 0.25, bendY: 0.4 }), S.plate, { p: [0, 0, -0.126], r: [0, Math.PI, 0] });
     // Retro-reflective tape across the shoulders and in a chevron over the coolant pack: it reads from behind.
-    b.add("upperChest", b.plate(rect(0.3, -0.011, 0.011), { depth: 0.003, bevel: 0, bend: 0.2716 }), GLOWS.tape, { p: [0, 0.012, -0.1458], r: [0, Math.PI, 0] });
+    b.add("upperChest", b.plate(rect(0.3, -0.016, 0.016), { depth: 0.003, bevel: 0, bend: 0.2716 }), GLOWS.tape, { p: [0, 0.012, -0.1458], r: [0, Math.PI, 0] });
     if (lod < 2)
       for (const sg of [1, -1]) {
         const a = Math.asin(0.095 / 0.2616);
-        b.add("chest", b.plate(rect(0.12, -0.009, 0.009), { depth: 0.003, bevel: 0 }), GLOWS.tape, { p: [0.095 * sg, 0.115, 0.116 - Math.cos(a) * 0.2616 - 0.001], r: [0, Math.PI - a * sg, 0.5 * sg] });
+        b.add("chest", b.plate(rect(0.12, -0.013, 0.013), { depth: 0.003, bevel: 0 }), GLOWS.tape, { p: [0.095 * sg, 0.115, 0.116 - Math.cos(a) * 0.2616 - 0.001], r: [0, Math.PI - a * sg, 0.5 * sg] });
       }
     // The unit number, backlit (it reads from behind, at range, in the rain).
     if (b.det !== 3) strips(b, "upperChest", digits("07", 0.06), new THREE.Matrix4().compose(new THREE.Vector3(0.0, 0.07, -0.149), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI, 0)), new THREE.Vector3(1, 1, 1)), GLOWS.unit);
@@ -411,7 +411,7 @@ function leg(b: Builder, side: "L" | "R", arch: Arch): void {
   if (b.det <= 2)
     b.add(sh, shell([[0.07, -0.065], [0.094, -0.045], [0.1, 0.02], [0.09, 0.07], [0.076, 0.07], [0.084, 0.02], [0.082, -0.03], [0.064, -0.05]], -1.25, 2.5, b.seg(16)), S.plate);
   b.add(sh, b.plate(chamfer(rect(0.1, 0.09, sL - 0.12, 0.085), 0.016), { depth: 0.01, bevel: 0.005, bend: 0.08 }), S.plate, { p: [0, 0, 0.076] });
-  if (arch !== "sniper") b.add(sh, b.box(0.022, 0.16, 0.004, 0), GLOWS.tape, onRing(0.086, sL * 0.42, Math.PI));
+  if (arch !== "sniper") b.add(sh, b.box(0.032, 0.18, 0.004, 0), GLOWS.tape, onRing(0.086, sL * 0.42, Math.PI));
   // The boot: a shaft, the foot with a toe cap, a sole with a heel step.
   b.add(sh, limb(0.14, (t) => 0.072 + 0.006 * t, b.seg(16), 2, false), S.leather, { p: [0, sL - 0.13, 0] });
   b.add(sh, b.box(0.104, 0.075, 0.24, 0.022, 1), S.leather, { p: [0, sL + 0.012, 0.045] });
