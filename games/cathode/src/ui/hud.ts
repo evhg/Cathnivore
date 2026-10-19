@@ -129,6 +129,7 @@ export class Hud {
   private objText: HTMLElement;
   private prompt: HTMLElement;
   private promptKey: HTMLElement;
+  private tellOn = false;
   private banner: HTMLElement;
   private focus: HTMLElement;
   private slots: HTMLElement;
@@ -247,6 +248,12 @@ export class Hud {
     this.prompt = el("p", "hud-prompt", this.root);
     this.promptKey = el("span", "c-key hud-prompt-key", this.prompt);
     this.promptKey.textContent = "F";
+    // On touch the world chip is the button (it shows the tap glyph): a tap on it is the takedown.
+    this.prompt.addEventListener("pointerdown", (e) => {
+      if (!this.prompt.classList.contains("world")) return;
+      e.preventDefault();
+      this.onTake?.();
+    });
     el("span", "hud-prompt-text", this.prompt).textContent = "Takedown";
     this.focus = el("div", "hud-focus", this.root);
     // Overlays.
@@ -500,7 +507,12 @@ export class Hud {
       this.promptKey.classList.toggle("tap", tap);
       this.promptKey.classList.toggle("wide", !tap && s.takedownKey.length > 1);
     }
-    this.root.classList.toggle("td-tell", s.takedown);
+    if (s.takedown !== this.tellOn) {
+      this.tellOn = s.takedown;
+      this.root.classList.toggle("td-tell", s.takedown);
+      // The touch "Drag to aim" hint steps aside while the chip is up (one instruction at a time).
+      document.documentElement.classList.toggle("hud-td-tell", s.takedown);
+    }
     set(this.focus, "--a", s.bulletTime.toFixed(2));
     // The marker holds at full strength, then fades (per-class hold and fade, S1.2), on real time.
     this.hitAge += dt * 1000;

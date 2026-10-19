@@ -238,10 +238,11 @@ describe("CATHODE takedown bodies (S5.2)", () => {
     }
   });
 
-  it("the framing is the spec's shape: behind her, over her right shoulder, FOV +12", () => {
-    expect(TD.cam.back).toBeGreaterThan(0.3);
-    expect(TD.cam.right).toBeGreaterThan(0);
-    expect(TD.cam.fovAdd).toBe(12);
+  it("the framing is a paired first-person shot from her eyes (never a blockout of her in the foreground)", () => {
+    expect(TD.cam.back).toBeLessThan(0.25);
+    expect(TD.cam.up).toBeLessThan(0.15);
+    expect(TD.cam.fovAdd).toBeGreaterThan(0);
+    expect(TD.cam.pitchMinDeg).toBeGreaterThanOrEqual(-60);
     expect(TD.stopMs).toBe(80);
     expect(TD.trauma).toBe(0.35);
   });

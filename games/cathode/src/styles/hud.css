@@ -1619,8 +1619,8 @@
 
 /* ---- C11 takedowns (S5.1, S5.2) ---- */
 /* The tell: a world-anchored chip over his shoulders, an amber 22u keycap and "TAKEDOWN" on a cut plate, with a
-   leader down to him. Desktop and pad show the key; touch shows the tap glyph (the chip is not the button: the
-   touch Takedown button is). */
+   leader down to him. Desktop and pad show the key; touch shows the tap glyph, and there the chip itself is a
+   button (a tap on it is the takedown, as is the touch Takedown button). */
 .hud-prompt.world {
   left: 0;
   top: 0;
@@ -1671,8 +1671,14 @@
   from { box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6), 0 0 0 rgb(var(--amber-rgb) / 0); }
   to { box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6), 0 0 calc(var(--u) * 16) rgb(var(--amber-rgb) / .75); }
 }
-/* The teach line doesn't repeat the chip while it is up (the audit's overlap). */
+@media (pointer: coarse) {
+  .hud-prompt.world { pointer-events: auto; cursor: pointer; touch-action: none; }
+}
+:root.hud-td-tell .look-hint { opacity: 0; transition: opacity 120ms var(--ease-out); }
+/* The teach line doesn't repeat the chip while it is up (the audit's overlap), and nor does the objective marker
+   (he is the objective; the chip already sits on him). */
 .hud-root.td-tell .hud-teach { opacity: 0; }
+.hud-root.td-tell .hud-wp { visibility: hidden; }
 
 /* The sequence: the letterbox comes in with the camera, every corner cluster steps back, subtitles ride above it. */
 .hud-root.td-cine::before,
@@ -1722,8 +1728,20 @@
   100% { opacity: 0; transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -260%) scale(1); }
 }
 @media (prefers-reduced-motion: reduce) {
+  .hud-prompt.world { animation: none; }
   .hud-prompt.world .hud-prompt-key { animation: none; }
   .hud-rise { animation-duration: 1ms; animation-fill-mode: none; opacity: 1; }
+  /* The blow's white flash becomes a brief static dim. */
+  .hud-td-flash { background: rgb(var(--black-rgb) / .28); }
+  .hud-td-flash.on { animation: td-dim 200ms steps(1, end); }
+}
+:root.reduce-motion .hud-prompt.world,
+:root.reduce-motion .hud-prompt.world .hud-prompt-key { animation: none; }
+:root.reduce-motion .hud-td-flash { background: rgb(var(--black-rgb) / .28); }
+:root.reduce-motion .hud-td-flash.on { animation: td-dim 200ms steps(1, end); }
+@keyframes td-dim {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
 }
 /* The touch sticks and buttons step back while a takedown plays (input is locked); the pause button stays. */
 :root.hud-td-cine .tbtn,

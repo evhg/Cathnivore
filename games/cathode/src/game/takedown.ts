@@ -5,9 +5,11 @@
 // script (death.ts's DeathScript: kinematic while she holds him, a powered ragdoll as she lets him down, then
 // asleep), pulls Cath to the sync point over 120 to 300 ms, and runs its own clock (the hit-stop freezes it; the
 // world around runs at 0.4). Each frame it poses her arms in the street (hands.ts's skinned arms, a second pair
-// that lives in the world scene, with the Pin or the Kestrel in the right hand), and frames the camera: eased off
-// first person over 120 ms to 0.35 m back, 0.15 m right and 0.25 m up, FOV +12, a 3 degree kick down on each
-// blow, a 6 degree drift round him after the first, and 200 ms back to her eyes at the end.
+// that lives in the world scene, with the Pin or the Kestrel in the right hand), and frames the camera: a paired
+// first-person shot from her eyes (C11 review: an over-the-shoulder view put a blockout bust of her in the
+// foreground), turned onto him over 120 ms, FOV +10, leaning in with her, a 3 degree kick down on each blow, a
+// 4 degree dutch tilt after the lethal one, and 200 ms back to her own view at the end. Reduced motion cuts the
+// turns, the kick and the tilt.
 //
 // The session reads `events` each frame (grab, impact, lethal, release, lay, end) and plays them: the hit-stop,
 // the trauma, the thud and its sub, the blood mist, the kill, the orbs.
@@ -17,7 +19,7 @@ import { LEN, STANCE_L, STANCE_R, buildPose, type DeathScript, type PoseP } from
 import { REST, type Joint } from "./rig";
 import { Arms, POSES, type HandPose } from "./hands";
 import { buildGun, type GunRig } from "./viewmodel";
-import { FIN, bake, gripFrame, kitMaterials, placeMatrix, type Finish } from "./gunkit";
+import { gripFrame } from "./gunkit";
 import { TAKEDOWN, blowsInOrder, lethalMs, orbPull, type OrbDrop, type TakedownApproach, type TakedownVariant } from "../sim/takedown";
 
 const smooth = (x: number) => {
@@ -39,8 +41,13 @@ const snap = (t: number, a: number, b: number) => {
 
 /** Feel numbers (S5.2), here so the tests and the session read one table. */
 export const TD = {
-  /** The authored framing, in her frame (m): back, right, up; and the FOV it adds (degrees). */
-  cam: { back: 0.6, right: 0.5, up: 0.12, fovAdd: 12, easeInMs: 120, easeOutMs: 200, kickDeg: 3, driftDeg: 6 },
+  /**
+   * The paired first-person framing, from her eyes (m): back, up and toward her striking hand by a hand's width
+   * (her head, never drawn, is between the lens and him, so he never fills the frame and the blow is in it), the FOV it adds (degrees), the eases, the kick, the dutch tilt after the lethal blow,
+   * and how far the lens may pitch down (degrees: a body on the street is framed, not looked straight down on,
+   * and her shoulders, where the arms begin, stay below the frame).
+   */
+  cam: { back: 0.1, up: 0.1, right: 0.08, fovAdd: 14, easeInMs: 120, easeOutMs: 200, kickDeg: 3, rollDeg: 4, pitchMinDeg: -28, pitchMaxDeg: 20 },
   /** The letterbox (share of the boss intro's 11vh bars). */
   bars: 0.75,
   /** Hit-stop on the lethal blow and on any other (ms); trauma per blow. */
@@ -426,9 +433,12 @@ function dir(F: CathFrame, r: number, u: number, f: number): THREE.Vector3 {
 /** Her hands `t` ms in, from his joints this frame (world) and her frame. */
 function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3>, F: CathFrame, side: number, pistol: boolean): HandsKey {
   const eye = F.feet.clone().add(vA.set(0, TD.eye, 0));
-  // Rest: low and in front of her, as if the gun had just been lowered.
-  const restR = at(F, eye, 0.2, -0.45, 0.3);
-  const restL = at(F, eye, -0.2, -0.45, 0.28);
+  // Rest: low and in front of her, as if the gun had just been lowered; once she has let him go they drop on out
+  // of the lens (the session hides the rig once they are gone), so nothing hangs in the frame while the view
+  // comes home and her own gun comes back up.
+  const gone = ss(t, v.releaseMs + 120, v.releaseMs + 320);
+  const restR = at(F, eye, 0.2, -0.45 - 0.55 * gone, 0.3 - 0.2 * gone);
+  const restL = at(F, eye, -0.2, -0.45 - 0.55 * gone, 0.28 - 0.2 * gone);
   const k: HandsKey = {
     prop: v.kind === "shot" && pistol ? "pistol" : "pin",
     rW: restR,
@@ -581,74 +591,6 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
   return k;
 }
 
-/** Her hair (OWNER.md's #2E211C): glossy, a little sheen. Her skin (OWNER.md's #F7DCCB), a touch down for the night. */
-const HAIR: Finish = { color: 0x2e211c, metal: 0, rough: 0.34, coat: 0.5, sheen: 0.7, band: "grain", wear: 0 };
-const SKIN: Finish = { color: 0xd9bfae, metal: 0, rough: 0.55, sheen: 0.2, wear: 0 };
-
-/**
- * Cath from behind, over her shoulder (VISION.md: Cath is the face of every game): her head of very long, glossy
- * dark hair falling down her back, the collar of her charcoal trench turned up, its shoulders and back, so the
- * arms belong to someone. Built in her frame (x right, y up, +z behind her), origin at her eyes.
- */
-function buildBust(phone: boolean): THREE.Group {
-  const g = new THREE.Group();
-  g.name = "takedown:cath";
-  const mat = kitMaterials(phone).opaque;
-  const seg = phone ? 14 : 24;
-  const piece = (geo: THREE.BufferGeometry, fin: Finish, pl: Parameters<typeof placeMatrix>[0]) => {
-    const m = new THREE.Mesh(bake(geo, fin, placeMatrix(pl)), mat);
-    m.frustumCulled = false;
-    g.add(m);
-  };
-  // The trench: its back from the shoulder line to the waist, an oval in section, and the shoulders' rounds.
-  piece(new THREE.CylinderGeometry(0.185, 0.155, 0.56, seg, 1, true), FIN.sleeve, { p: [0, -0.52, 0.07], s: [1, 1, 0.62] });
-  piece(new THREE.SphereGeometry(0.188, seg, phone ? 8 : 12, 0, Math.PI * 2, 0, Math.PI / 2), FIN.sleeve, { p: [0, -0.24, 0.07], s: [1, 0.36, 0.62] });
-  for (const x of [-0.165, 0.165]) piece(new THREE.SphereGeometry(0.062, seg, phone ? 8 : 12), FIN.sleeve, { p: [x, -0.245, 0.045], s: [1.1, 0.9, 1] });
-  // The collar turned up round her neck, open at the front.
-  piece(new THREE.CylinderGeometry(0.078, 0.1, 0.11, seg, 1, true, Math.PI * 0.18, Math.PI * 1.64), FIN.sleeve, { p: [0, -0.17, 0.035] });
-  // Neck, and the face (the cheek's edge shows past the hair from over her right shoulder).
-  piece(new THREE.CylinderGeometry(0.043, 0.048, 0.14, seg, 1, true), SKIN, { p: [0, -0.12, 0.025] });
-  piece(new THREE.SphereGeometry(0.082, seg, phone ? 10 : 16), SKIN, { p: [0, -0.005, -0.012], s: [0.86, 1.08, 1] });
-  // The hair: over the crown and the back of her head, then a long curtain down her back to the shoulder blades,
-  // centre-parted (a shallow groove), falling in two soft waves.
-  piece(new THREE.SphereGeometry(0.098, seg, phone ? 10 : 16, 0, Math.PI * 2, 0, Math.PI * 0.62), HAIR, { p: [0, 0.008, 0.012], s: [0.92, 1.08, 1.04] });
-  piece(new THREE.SphereGeometry(0.1, seg, phone ? 10 : 16, Math.PI * 0.08, Math.PI * 0.84), HAIR, { p: [0, 0, 0.018], s: [0.94, 1.06, 1.06], r: [0, Math.PI / 2, 0] });
-  // The fall: a lathe round her back, full over the crown, drawn in at the nape, then spreading over her shoulder
-  // blades to a soft, uneven hem; two loose waves run down it.
-  const prof = [
-    [0.096, 0.07],
-    [0.1, 0.0],
-    [0.092, -0.08],
-    [0.084, -0.14],
-    [0.105, -0.2],
-    [0.135, -0.27],
-    [0.15, -0.35],
-    [0.148, -0.43],
-    [0.13, -0.48],
-  ]
-    .reverse()
-    .map(([r, y]) => new THREE.Vector2(r!, y!));
-  const curtain = new THREE.LatheGeometry(prof, phone ? 14 : 28, -Math.PI * 0.6, Math.PI * 1.2);
-  {
-    const pos = curtain.getAttribute("position") as THREE.BufferAttribute;
-    for (let i = 0; i < pos.count; i++) {
-      const x = pos.getX(i);
-      const y = pos.getY(i);
-      const z = pos.getZ(i);
-      const u = Math.max(0, -y / 0.48);
-      const a = Math.atan2(x, z);
-      const k = 1 + 0.06 * u * Math.sin(u * 11 + a * 2.2) + 0.025 * Math.sin(a * 9 + u * 3);
-      // The hem dips in the middle of her back and lifts at the sides.
-      const hem = u > 0.85 ? (1 - Math.abs(a) / (Math.PI * 0.6)) * 0.04 * (u - 0.85) / 0.15 : 0;
-      pos.setXYZ(i, x * k, y - hem, z * k);
-    }
-    curtain.computeVertexNormals();
-  }
-  piece(curtain, HAIR, { p: [0, 0, 0.022] });
-  g.visible = false;
-  return g;
-}
-
 /** Her arms and the props they hold, in the world scene (built once, shown only for a takedown). */
 export class TakedownRig {
   readonly group = new THREE.Group();
@@ -656,8 +598,6 @@ export class TakedownRig {
   readonly props: Record<"pin" | "pistol", { rig: GunRig; grip: THREE.Matrix4; axis: THREE.Vector3; dorsal: THREE.Vector3 }>;
   private readonly fistGrip = new THREE.Object3D();
   private readonly gripL = new THREE.Object3D();
-  /** Cath herself, over whose shoulder the camera looks. */
-  readonly bust: THREE.Group;
   readonly muzzle = new THREE.Vector3();
   /** The prop's axis this frame (the Kestrel's barrel), for the finisher's muzzle flash. */
   readonly axis = new THREE.Vector3(0, 0, -1);
@@ -688,8 +628,6 @@ export class TakedownRig {
       return { rig, grip, axis: tip.normalize().applyQuaternion(inv), dorsal: new THREE.Vector3(0, 0, 1) };
     };
     this.props = { pin: mk("pin"), pistol: mk("pistol") };
-    this.bust = buildBust(phone);
-    this.group.add(this.bust);
     this.group.traverse((o) => {
       o.frustumCulled = false;
       if ((o as THREE.Mesh).isMesh) (o as THREE.Mesh).castShadow = false;
@@ -705,9 +643,6 @@ export class TakedownRig {
     const eye = F.feet.clone().add(vA.set(0, TD.eye, 0)).addScaledVector(F.f, TD.lean * k.lean);
     const shR = eye.clone().add(vB.set(0, -TD.shoulderDrop, 0)).addScaledVector(F.r, TD.shoulderW).addScaledVector(F.f, -0.04);
     const shL = eye.clone().add(vB.set(0, -TD.shoulderDrop, 0)).addScaledVector(F.r, -TD.shoulderW).addScaledVector(F.f, -0.04);
-    // Her head and back, in her frame (x right, y up, +z behind): the arms come out of her shoulders.
-    this.bust.position.copy(eye);
-    this.bust.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(F.r, vB.set(0, 1, 0), F.f.clone().negate()));
     // Elbows out and down, in her frame.
     const poleR = F.r.clone().multiplyScalar(0.4).add(vB.set(0, -0.55, 0)).addScaledVector(F.f, -0.1);
     const poleL = F.r.clone().multiplyScalar(-0.4).add(vB.set(0, -0.55, 0)).addScaledVector(F.f, -0.1);
@@ -803,6 +738,8 @@ export class Takedown {
   worldScale: number = TAKEDOWN.worldScale;
   private kick = 0;
   private kickV = 0;
+  /** Reduced motion (set by the session): no camera ease, kick, tilt or letterbox slide; the magnet is a cut. */
+  reduced = false;
   /** Camera collision (set by the session): the free distance along a ray, or null. */
   castRay: ((from: THREE.Vector3, dir: THREE.Vector3, len: number) => number | null) | null = null;
 
@@ -875,7 +812,7 @@ export class Takedown {
     const t0 = this.t;
     this.t = Math.min(v.durMs, this.t + seq);
     // The magnet: her feet to the sync point.
-    const m = easeOut(this.real / this.magnet);
+    const m = this.reduced ? 1 : easeOut(this.real / this.magnet);
     this.feet.lerpVectors(this.start0.from, this.start0.sync, m);
     this.frame.feet.copy(this.feet);
     const J = this.start0.target.body.joints;
@@ -902,9 +839,10 @@ export class Takedown {
     const w = 2 * Math.PI * 7;
     this.kickV += (-w * w * this.kick - 2 * 0.75 * w * this.kickV) * dt;
     this.kick += this.kickV * dt;
-    // Her arms.
+    // Her arms (gone from the lens once they have dropped away after the release).
     const hk = cathHands(v, this.t, J, this.frame, this.start0.side, this.start0.pistol);
     this.rig.pose(hk, this.frame);
+    this.rig.group.visible = this.t < v.releaseMs + 320;
     if (this.t >= v.durMs && this.stopLeft <= 0) {
       this.lockMs = this.real;
       this.emit("end");
@@ -917,13 +855,13 @@ export class Takedown {
   finish(): void {
     this.active = false;
     this.rig.group.visible = false;
-    this.rig.bust.visible = false;
     this.target = null;
   }
 
   /**
    * Places the camera for this frame. `fp` is where first person would put it (her eyes at the sync point, her
-   * yaw): eased from the press's camera over 120 ms, back to `fp` over the last 200 ms.
+   * yaw). The sequence's own view is first person too: from her eyes (leaning in with her), turned onto him over
+   * 120 ms and back to `fp` over the last 200 (cuts under reduced motion).
    */
   applyCamera(cam: THREE.PerspectiveCamera, fp: { pos: THREE.Vector3; quat: THREE.Quaternion; fov: number }): void {
     if (!this.variant || !this.start0) return;
@@ -931,44 +869,46 @@ export class Takedown {
     const C = TD.cam;
     const F = this.frame;
     const J = this.start0.target.body.joints;
+    const rm = this.reduced;
     const lean = cathHands(v, this.t, J, F, this.start0.side, this.start0.pistol).lean;
-    const eye = F.feet.clone().add(vA.set(0, TD.eye, 0)).addScaledVector(F.f, TD.lean * lean * 0.5);
-    // What the shot is about: his head, pulled toward her right hand so the blow is in frame, lower once he's down.
-    const want = J.neck.clone().lerp(J.head, 0.35).lerp(this.rig.wrist, 0.25);
+    const eye = F.feet.clone().add(vA.set(0, TD.eye, 0)).addScaledVector(F.f, TD.lean * lean);
+    // What the shot is about: his head, pulled toward her right hand so the blow is in frame; after the lethal blow
+    // it drops toward his pelvis, so the knees going and the body settling stay in the shot.
+    const lethal = lethalMs(v);
+    const want = vB.copy(J.neck).lerp(J.head, 0.35).lerp(this.rig.wrist, 0.25);
     if (v.approach === "down") want.copy(J.chest).lerp(J.head, 0.6);
-    if (!this.lookInit) {
+    else want.lerp(J.pelvis, 0.4 * ss(this.t, lethal + 60, lethal + 420));
+    if (!this.lookInit || rm) {
       this.look.copy(want);
       this.lookInit = true;
     } else this.look.lerp(want, 0.25);
-    // The authored framing: back, right, up from her eyes, drifting 6 degrees round him after the first blow.
-    const drift = ((C.driftDeg * Math.PI) / 180) * ss(this.t, lethalMs(v), v.durMs) * (this.start0.side >= 0 ? 1 : -1);
-    const off = new THREE.Vector3().addScaledVector(F.f, -C.back).addScaledVector(F.r, C.right).add(vB.set(0, C.up, 0));
-    if (v.approach === "down") off.add(vB.set(0, 0.1, 0)).addScaledVector(F.f, 0.1);
-    const pivot = this.look;
-    const camPos = eye.clone().add(off).sub(pivot).applyAxisAngle(vB.set(0, 1, 0), drift).add(pivot);
-    // Never through a wall behind her: pull in along the ray from her eyes.
+    const camPos = eye.clone().addScaledVector(F.f, -C.back).addScaledVector(F.r, C.right).add(vC.set(0, C.up, 0));
+    // Never through a wall behind her.
     if (this.castRay) {
       const d = camPos.clone().sub(eye);
       const len = d.length();
-      const hit = this.castRay(eye, d.normalize(), len + 0.12);
-      if (hit !== null && hit < len + 0.12) camPos.copy(eye).addScaledVector(d, Math.max(0.02, hit - 0.12));
+      const hit = len > 1e-4 ? this.castRay(eye, d.normalize(), len + 0.05) : null;
+      if (hit !== null && hit < len + 0.05) camPos.copy(eye).addScaledVector(d, Math.max(0, hit - 0.05));
     }
-    const m = new THREE.Matrix4().lookAt(camPos, this.look, vB.set(0, 1, 0));
-    const q = new THREE.Quaternion().setFromRotationMatrix(m);
-    // The kick pitches the view down (about her right).
-    q.premultiply(new THREE.Quaternion().setFromAxisAngle(F.r, -this.kick));
+    // Yaw and pitch onto him (the pitch clamped: a body on the street is framed, never looked straight down on).
+    const d = vC.subVectors(this.look, camPos);
+    const yaw = Math.atan2(-d.x, -d.z);
+    const flat = Math.hypot(d.x, d.z);
+    const deg = Math.PI / 180;
+    const pitch = THREE.MathUtils.clamp(Math.atan2(d.y, Math.max(1e-4, flat)), C.pitchMinDeg * deg, C.pitchMaxDeg * deg);
+    // The dutch tilt after the lethal blow (toward her side of him), and the kick down on each blow.
+    const roll = rm ? 0 : C.rollDeg * deg * ss(this.t, lethal, v.durMs - C.easeOutMs) * (this.start0.side >= 0 ? -1 : 1);
+    const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch - (rm ? 0 : this.kick), yaw, roll, "YXZ"));
     let fov = fp.fov + C.fovAdd;
-    // In from first person over 120 ms; back to her eyes over the last 200.
-    const kin = easeOut(this.real / C.easeInMs);
-    const kout = ss(this.t, v.durMs - C.easeOutMs, v.durMs);
+    // In from first person over 120 ms; back to her own view over the last 200 (cuts under reduced motion).
+    const kin = rm ? 1 : easeOut(this.real / C.easeInMs);
+    const kout = rm ? (this.t >= v.durMs - C.easeOutMs ? 1 : 0) : ss(this.t, v.durMs - C.easeOutMs, v.durMs);
     const pos = this.camFrom.pos.clone().lerp(camPos, kin);
     const quat = this.camFrom.quat.clone().slerp(q, kin);
     fov = THREE.MathUtils.lerp(this.camFrom.fov, fov, kin);
     pos.lerp(fp.pos, kout);
     quat.slerp(fp.quat, kout);
     fov = THREE.MathUtils.lerp(fov, fp.fov, kout);
-    // Her head and shoulders are in the shot once the lens is out of them (not in first person).
-    this.rig.bust.visible = pos.distanceTo(eye) > 0.24;
     cam.position.copy(pos);
     cam.quaternion.copy(quat);
     cam.fov = fov;
@@ -976,10 +916,11 @@ export class Takedown {
     cam.updateMatrixWorld();
   }
 
-  /** The letterbox (0..1 of the boss intro's bars). */
+  /** The letterbox (0..1 of the boss intro's bars); under reduced motion it is simply there, no slide. */
   bars(): number {
     if (!this.variant) return 0;
     const v = this.variant;
+    if (this.reduced) return this.active && this.t < v.durMs - TD.cam.easeOutMs ? TD.bars : 0;
     return TD.bars * Math.min(easeOut(this.real / TD.cam.easeInMs), 1 - ss(this.t, v.durMs - TD.cam.easeOutMs, v.durMs));
   }
 }

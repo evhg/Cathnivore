@@ -48,9 +48,9 @@ const C9X = ['death-knees-650', 'death-blownback-350', 'death-headshot-900']
 // hand open, with a -hand crop), and the owner's audit frame of the first guard under his lamp with no diamond (&job).
 const C10 = ['enemy-front-10m', 'enemy-back-10m', 'turntable-enforcer', 'silhouette-lineup', 'hit-arm@60', 'guard-from-10m']
 const C10X = ['turntable-riot', 'turntable-sniper', 'turntable-leader']
-// C11 "Takedowns": Behind A on the guard under the lamp at 0 (the grab), 420 (the blow: her arm and his helmet both
+// C11 "Takedowns": the tell (the world chip over his helmet, the teach line and phone look hint out of its way), Behind A on the guard under the lamp at 0 (the grab), 420 (the blow: her arm and his helmet both
 // in frame), 800 (the knees gone, her arm lowering him), and Front A's shot under the chin at 650. C11X: the others.
-const C11 = ['takedown-0', 'takedown-420', 'takedown-800', 'takedown-front-650']
+const C11 = ['takedown-tell', 'takedown-0', 'takedown-420', 'takedown-800', 'takedown-front-650']
 const C11X = ['takedown-behindChoke-700', 'takedown-behindPistol-640', 'takedown-frontKick-700', 'takedown-frontBaton-600', 'takedown-sideKnee-600', 'takedown-sideSweep-720', 'takedown-1150']
 const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
@@ -465,7 +465,34 @@ for (const vp of vps) {
       }
     }
     // ---- C11 acceptance ----
-    if (stage.startsWith('takedown-')) {
+    if (stage === 'takedown-tell') {
+      const t = info?.tell
+      const dom = await page.evaluate(() => {
+        const box = (sel) => {
+          const e = document.querySelector(sel)
+          if (!e) return null
+          const b = e.getBoundingClientRect()
+          const cs = getComputedStyle(e)
+          return { x: b.x, y: b.y, w: b.width, h: b.height, opacity: Number(cs.opacity), hidden: e.hidden || cs.display === 'none', pe: cs.pointerEvents }
+        }
+        return { chip: box('.hud-prompt.world'), teach: box('.hud-teach'), look: box('.look-hint'), key: box('.hud-prompt.world .hud-prompt-key') }
+      })
+      side.tell = { ...t, dom }
+      const c = dom.chip
+      console.log(`  C11 ${vp} ${spec}: chip ${c ? `${c.w.toFixed(0)}x${c.h.toFixed(0)} CSS px at ${c.x.toFixed(0)},${c.y.toFixed(0)} (bottom ${(c.y + c.h).toFixed(0)}), helmet top at y ${t?.helmetTop?.y?.toFixed(0)}, pointer-events ${c.pe}` : 'MISSING'}`)
+      if (!c || c.hidden) fail(`${vp} ${spec}: no world takedown chip`)
+      else {
+        // The chip's plate clears his helmet (the leader may run down to it), it is on screen, and it is big enough to read.
+        if (t?.helmetTop && c.y + c.h > t.helmetTop.y + 2) fail(`${vp} ${spec}: the chip (bottom ${(c.y + c.h).toFixed(0)}) overlaps his helmet (top ${t.helmetTop.y.toFixed(0)})`)
+        if (c.x < 0 || c.y < 0 || c.x + c.w > V.viewport.width || c.y + c.h > V.viewport.height) fail(`${vp} ${spec}: the chip runs off screen`)
+        const minH = Math.max(26, V.viewport.height * 0.03)
+        if (c.h < minH) fail(`${vp} ${spec}: the chip is ${c.h.toFixed(0)} CSS px tall (< ${minH.toFixed(0)})`)
+        if (V.touch && c.pe !== 'auto') fail(`${vp} ${spec}: on touch the chip must be tappable (pointer-events ${c.pe})`)
+      }
+      if (dom.teach && !dom.teach.hidden && dom.teach.opacity > 0.05) fail(`${vp} ${spec}: the teach line shows under the chip`)
+      if (V.touch && dom.look && !dom.look.hidden && dom.look.opacity > 0.05) fail(`${vp} ${spec}: "Drag to aim" shows while the chip is up`)
+    }
+    if (stage.startsWith('takedown-') && stage !== 'takedown-tell') {
       const td = info?.takedown
       console.log(`  C11 ${vp} ${spec}: ${info?.variant ?? '?'} t ${td?.t?.toFixed(0)} ms, helmet ${td?.headIn ? 'in' : 'OUT'}, arm ${td?.armIn ? 'in' : 'OUT'}, bars ${td?.bars?.toFixed(2)}`)
       if (process.env.TD_DEBUG) console.log('  debug', JSON.stringify(td?.debug))

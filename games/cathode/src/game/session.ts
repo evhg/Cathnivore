@@ -179,6 +179,8 @@ export interface Session {
     seg?: string | null;
     hands?: { L: { x: number; y: number }; R: { x: number; y: number }; r: number };
     /** C11: the takedown at the stage's moment: its clock, whether her arm and his helmet are in frame, the bars. */
+    /** C11: the tell stage: his head and helmet top on screen and where the chip is anchored (CSS px). */
+    tell?: { head: { x: number; y: number }; helmetTop: { x: number; y: number }; chip: { x: number; y: number } | null };
     takedown?: { t: number; active: boolean; headIn: boolean; armIn: boolean; handR: { x: number; y: number }; handL: { x: number; y: number }; bars: number; debug?: Record<string, number[] | null> };
   } | null;
   /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
@@ -2081,22 +2083,30 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.feedLine("Back on the street");
   }
 
+  /** C11: scratch vectors for the per-frame takedown scan and chip (no allocations per enemy per frame). */
+  const tdTo = new THREE.Vector3();
+  const tdChest = new THREE.Vector3();
+  const tdChip = new THREE.Vector3();
+  const tdBest = { e: null as Enemy | null, approach: "behind" as TakedownApproach, side: 1 };
+
   /** C11 (S5.1): the man she could take down now (the nearest eligible), the approach, and her side of him. */
   function takedownCandidate(): { e: Enemy; approach: TakedownApproach; side: number } | null {
     const wire = arsenal.weapon.id === "catsCradle";
     // Ghost's Silent Takedown reaches further (stats.takedownRange over its 2 m base).
     const bonus = Math.max(0, progress.stats.takedownRange - 2);
-    let best: { e: Enemy; approach: TakedownApproach; side: number } | null = null;
+    tdBest.e = null;
     let bestD = Infinity;
     const cl = (x: number) => Math.max(-1, Math.min(1, x));
     for (const e of enemies) {
       if (!e.alive) continue;
-      const to = new THREE.Vector3().subVectors(e.position, player.pos).setY(0);
+      const to = tdTo.subVectors(e.position, player.pos).setY(0);
       const dist = to.length();
-      if (dist > TAKEDOWN.wireRangeM + bonus || dist < 1e-4) continue;
+      if (dist > TAKEDOWN.wireRangeM + bonus || dist < 1e-4 || dist >= bestD) continue;
       to.multiplyScalar(1 / dist);
-      const toChest = new THREE.Vector3().subVectors(e.body.joints.chest, eye).normalize();
-      const theirFwd = new THREE.Vector3(Math.sin(e.motion.yaw), 0, Math.cos(e.motion.yaw));
+      const toChest = tdChest.subVectors(e.body.joints.chest, eye).normalize();
+      const yaw = e.motion.yaw;
+      const sy = Math.sin(yaw);
+      const cy = Math.cos(yaw);
       const role = e.kit.role ?? "";
       const r = takedownEligible(
         {
@@ -2104,28 +2114,30 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           hpFrac: e.hp / e.kit.maxHp,
           dist: Math.max(0, dist - bonus),
           // His back is -theirFwd and the way to her is -to: the angle between them is theirFwd's to `to`.
-          fromBack: Math.acos(cl(theirFwd.dot(to))),
+          fromBack: Math.acos(cl(sy * to.x + cy * to.z)),
           viewOff: Math.acos(cl(toChest.dot(fwd))),
           machine: role === "turret" || role === "hunter" || e.kit === POLICE_DRONE,
         },
         wire,
       );
-      if (!r.ok || dist >= bestD) continue;
-      const left = new THREE.Vector3(Math.cos(e.motion.yaw), 0, -Math.sin(e.motion.yaw));
+      if (!r.ok) continue;
       bestD = dist;
-      best = { e, approach: r.approach, side: -to.dot(left) >= 0 ? 1 : -1 };
+      tdBest.e = e;
+      tdBest.approach = r.approach;
+      // His left is (cos yaw, 0, -sin yaw).
+      tdBest.side = -(to.x * cy - to.z * sy) >= 0 ? 1 : -1;
     }
-    return best;
+    return tdBest.e ? (tdBest as { e: Enemy; approach: TakedownApproach; side: number }) : null;
   }
 
-  /** C11 (S5.1): the takedown chip's point on screen: just over his shoulders, or null when he is off screen. */
+  /** C11 (S5.1): the takedown chip's point on screen: just over his helmet (the leader ends there), or null off screen. */
   function tdChipAt(e: Enemy): { x: number; y: number } | null {
-    const p = e.body.joints.neck.clone().add(new THREE.Vector3(0, 0.12, 0));
-    const v = p.clone().project(world.camera);
+    const v = tdChip.copy(e.body.joints.head).add(vUp.set(0, 0.19, 0)).project(world.camera);
     if (v.z > 1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) return null;
     const c = world.renderer.domElement;
     return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight };
   }
+  const vUp = new THREE.Vector3();
 
   /** The sequence's own lights, and their removal. */
   const tdLights: Array<() => void> = [];
@@ -2177,6 +2189,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     tdUnseen = !enemies.some((x) => x.alive && x.state === "combat");
     e.die(new THREE.Vector3(), e.body.joints.chest.clone(), { zone: "head", weaponCls: "melee", distance: 0.8, side: 0, seed: e.id }, undefined, targetScript(v, c.side, wallM ?? 1));
     e.body.eligible = false;
+    td.reduced = reduceMotionOn();
     td.begin({ target: e, variant: v, approach: v.approach, from: player.pos.clone(), sync, side: c.side, pistol, first, wallM: wallM ?? undefined }, world.camera);
     timescale.push("takedown", td.worldScale, -1, 120, 300, "takedown");
     combat.noise(e.position, TAKEDOWN.noiseM);
@@ -2211,7 +2224,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       x.update(dt, sightOf(), rays, world.colliders, ground);
       x.body.updateFlash(o.shot ? 0 : realDt * 1000);
     }
-    if (e) e.feel(o.shot ? 0 : bodyMs / 1000, world.colliders, ground);
+    if (e) {
+      e.feel(o.shot ? 0 : bodyMs / 1000, world.colliders, ground);
+      // His kill glow runs on the sequence's clock (it held at full red for the whole sequence before).
+      e.body.updateFlash(o.shot ? 0 : bodyMs);
+    }
     combat.update(dt, build());
     drainEvents();
     takedownCamera(realDt);
@@ -2232,7 +2249,6 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.camera.fov = 50;
     world.camera.updateProjectionMatrix();
     world.camera.updateMatrixWorld();
-    td.rig.bust.visible = true;
     hud.cinema(0);
   }
 
@@ -3970,6 +3986,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // A trailing "-x" frames the pair from the side, 2.4 m off (a review view of the choreography, not a game shot).
     const xView = name.endsWith("-x");
     if (xView) name = name.slice(0, -2);
+    // `takedown-tell`: the moment before, the guard eligible and the world chip over his helmet (no press).
+    const tell = name === "takedown-tell";
+    if (tell) name = "takedown-0";
     const m = /^takedown-(?:([A-Za-z]+)-)?(\d+)$/.exec(name);
     if (!m) return `unknown stage ${name}`;
     const ms = Number(m[2]);
@@ -4042,6 +4061,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.camera.getWorldPosition(eye);
     world.camera.getWorldDirection(fwd);
     staged = true;
+    if (tell) {
+      s.stageInfo = {
+        hit: { x: 0, y: 0 }, r02: 0, head0: { x: 0, y: 0 }, head1: toScreen(g.body.joints.head), puffM: 0, splats: [],
+        corpse: { pelvis: toScreen(g.body.joints.pelvis), head: toScreen(g.body.joints.head), chest: toScreen(g.body.joints.chest) },
+        variant: "tell",
+        tell: { head: toScreen(g.body.joints.head), helmetTop: toScreen(g.body.joints.head.clone().add(new THREE.Vector3(0, 0.17, 0))), chip: tdChipAt(g) },
+      };
+      hud.freeze(0);
+      return "ok";
+    }
     const approach: TakedownApproach = v.approach;
     const toHer = new THREE.Vector3().subVectors(player.pos, g.position).setY(0).normalize();
     startTakedown({ e: g, approach, side: toHer.dot(gl) >= 0 ? 1 : -1 }, v.id);
@@ -4052,6 +4081,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const bodyMs = td.update(Math.min(step, Math.max(1, ms - td.t)));
       takedownEvents(g, step / 1000);
       g.feel(bodyMs / 1000, world.colliders, ground);
+      g.body.updateFlash(bodyMs);
       combat.update(0, build());
       drainEvents();
       world.update(0, 1, step / 1000);

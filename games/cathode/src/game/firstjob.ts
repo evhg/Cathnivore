@@ -207,6 +207,28 @@ export class Case {
   }
 }
 
+let poolTex: THREE.DataTexture | null = null;
+/** The lamp pool's falloff: an inverse-square-ish glow to nothing at the rim, with a little dither against banding. */
+function poolTexture(): THREE.DataTexture {
+  if (poolTex) return poolTex;
+  const N = 64;
+  const d = new Uint8Array(N * N * 4);
+  for (let y = 0; y < N; y++)
+    for (let x = 0; x < N; x++) {
+      const r = Math.min(1, Math.hypot((x + 0.5) / N - 0.5, (y + 0.5) / N - 0.5) * 2);
+      const k = Math.pow(1 - r * r, 2.2) / (1 + 6 * r * r);
+      const dither = (((x * 7 + y * 13) % 5) - 2) / 255;
+      const o = (y * N + x) * 4;
+      d[o] = d[o + 1] = d[o + 2] = Math.max(0, Math.min(255, Math.round((k + dither) * 255)));
+      d[o + 3] = 255;
+    }
+  poolTex = new THREE.DataTexture(d, N, N);
+  poolTex.magFilter = THREE.LinearFilter;
+  poolTex.minFilter = THREE.LinearFilter;
+  poolTex.needsUpdate = true;
+  return poolTex;
+}
+
 /** A street lamp hung over the first guard, so he reads as a silhouette in the rain from down the street. */
 class Lamp {
   readonly group = new THREE.Group();
@@ -219,10 +241,11 @@ class Lamp {
     bulb.position.y = 3.2;
     const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 3, 4), metal);
     cable.position.y = 4.9;
-    // A pool of light on the wet street under him.
+    // A pool of light on the wet street under him: a soft radial falloff (C11 review: a hard-edged disc read as a
+    // painted stage floor from the takedown camera), so the real lamp and the wet road do the work.
     const pool = new THREE.Mesh(
-      new THREE.CircleGeometry(2.2, 32),
-      new THREE.MeshBasicMaterial({ color: 0xffa860, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false }),
+      new THREE.CircleGeometry(2.6, 48),
+      new THREE.MeshBasicMaterial({ color: 0xffa860, map: poolTexture(), transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false }),
     );
     pool.rotation.x = -Math.PI / 2;
     pool.position.y = 0.03;

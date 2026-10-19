@@ -43,6 +43,9 @@ export interface EnemyKit {
   leader?: boolean;
 }
 
+/** C11: a takedown's kill glow, as a share of a gun kill's (at arm's length the full one swamps him). */
+const TAKEDOWN_GLOW = 0.3;
+
 export const RIOT_SHIELD: EnemyKit = {
   name: "Riot-Shield Enforcer",
   maxHp: 130,
@@ -900,7 +903,9 @@ export class Enemy {
   /** C11: the takedown's lethal blow: the kill glow, the rattle, and the visor going out from now. */
   lethal(): void {
     this.lightOutAt = this.deadFor * 1000;
-    this.body.deathGlow();
+    // At arm's length the gun kill's glow swamps him (C11 review: "a salmon-pink mannequin"): a takedown's is a
+    // thin edge, and the visor going out does the rest.
+    this.body.deathGlow(TAKEDOWN_GLOW);
     this.deathEvents.push({ kind: "rattle", at: this.body.joints.head.clone(), k: 1 });
   }
 
@@ -924,6 +929,9 @@ export class Enemy {
       if (this.deathVariant === "takedown") vel.set(Math.sin(this.motion.yaw) * 0.3, 0.2, Math.cos(this.motion.yaw) * 0.3);
       const a = b.joints.handR.clone();
       const dirG = new THREE.Vector3().subVectors(b.joints.handL, b.joints.handR);
+      // C11: in a takedown his hands are wherever the script threw them; the carbine leaves them lying along his
+      // shoulders (near flat), so it falls and lands on its side instead of standing on its muzzle.
+      if (this.deathVariant === "takedown") dirG.set(Math.cos(this.motion.yaw), -0.1, -Math.sin(this.motion.yaw));
       if (dirG.lengthSq() < 1e-4) dirG.set(0, 0, 1);
       const bb = a.clone().addScaledVector(dirG.normalize(), 0.62);
       this.drop = new DroppedProp(a, bb, vel, ((this.id % 5) - 2) * 2.5, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 4) }));

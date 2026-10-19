@@ -348,9 +348,10 @@ export class Body {
    * The kill confirmed on the body (C2): every segment's rim glows a deep red as he goes down, holds, then
    * dies away, so a dark body falling on a dark street still catches the eye where the kill landed.
    */
-  deathGlow(): void {
+  deathGlow(mul = 1): void {
     this.deathAge = 0;
-    this.deathMul = deathGlowScale.value;
+    this.rimMul = Math.min(1, mul);
+    this.deathMul = deathGlowScale.value * mul;
     this.flashing = true;
     this.updateFlash(0);
   }
@@ -399,6 +400,8 @@ export class Body {
   setRim(r: number, g: number, b: number, width = 3): void {
     this.rimUniform.value.set(r, g, b, width);
   }
+  /** The death rims' share (deathGlow's `mul`, capped at 1). */
+  private rimMul = 1;
   /** The edge-only rim light (setRim): applied at the silhouette alone, never on the face of the suit; `w` is the falloff power (lower is wider). */
   readonly rimUniform = { value: new THREE.Vector4(0, 0, 0, 3) };
 
@@ -423,7 +426,10 @@ export class Body {
       const g = D.rimGain * deathGlowScale.rimGain * dk;
       const c = (1 - r) * (1 - r);
       const pow = deathGlowScale.rimPow || D.rimPow;
-      this.rimUniform.value.set(D.red[0] * g + D.cold[0] * c, D.red[1] * g + D.cold[1] * c, D.red[2] * g + D.cold[2] * c, pow * r + D.coldPow * c);
+      // A takedown's body (deathGlow(mul < 1)) is at arm's length: both rims scale down with it, or the edge term
+      // spreads over his whole front and he reads as a pink (then grey) mannequin.
+      const m = this.rimMul;
+      this.rimUniform.value.set((D.red[0] * g + D.cold[0] * c) * m, (D.red[1] * g + D.cold[1] * c) * m, (D.red[2] * g + D.cold[2] * c) * m, pow * r + D.coldPow * c);
     }
     for (let i = 1; i < FLASH_SLOTS; i++) {
       const age = (this.flashAge[i] = this.flashAge[i]! + dtMs);
