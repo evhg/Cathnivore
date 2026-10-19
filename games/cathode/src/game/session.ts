@@ -1598,7 +1598,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // A screenshot stage is one held moment: a guard the stage round alerted doesn't shoot back into it.
       if (staged) e.shots.length = 0;
       for (const sh of e.shots) {
-        if (!sh.melee) world.fx.muzzle(sh.from, sh.dir, 0.6);
+        if (!sh.melee) {
+          world.fx.muzzle(sh.from, sh.dir, 0.6);
+          // C10: his carbine throws its brass too (snipers and turrets eject nothing you'd see).
+          if (e.kit.role === "rifle" || e.kit.role === undefined || e.kit.role === "shield") {
+            const bp = new THREE.Vector3();
+            const bv = new THREE.Vector3();
+            e.brass(bp, bv);
+            world.fx.casing(bp, bv);
+          }
+        }
         const hitWorld = rays.cast(sh.from, sh.dir, sh.melee ? 3 : 120);
         const toChest = sight.chest.clone().sub(sh.from);
         const along = toChest.dot(sh.dir);

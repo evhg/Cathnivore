@@ -668,6 +668,12 @@ export class Enemy {
         const from = new THREE.Vector3();
         const dir = new THREE.Vector3();
         muzzleOf(b, from, dir);
+        // S3.2: the sniper's laser starts at the round lens on his helmet (it reads as him looking at her).
+        const helm = b.root.getObjectByName("helmet");
+        if (helm && !b.helmetOff) {
+          helm.updateMatrixWorld();
+          helm.localToWorld(from.set(0, 0.012, 0.19));
+        }
         this.laser.position.copy(from);
         this.laser.lookAt(from.clone().add(dir));
         this.laser.scale.set(1 + this.charge, 1 + this.charge, 60);
@@ -917,6 +923,15 @@ export class Enemy {
   }
   private lastHand = new THREE.Vector3();
   private animTick = 0;
+
+  /** S3.2: where a fired round's casing leaves the carbine (its right flank, over the grip) and how fast. */
+  brass(pos: THREE.Vector3, vel: THREE.Vector3): void {
+    const b = this.body;
+    const d = new THREE.Vector3().subVectors(b.joints.handL, b.joints.handR).normalize();
+    const right = new THREE.Vector3().crossVectors(d, new THREE.Vector3(0, 1, 0)).normalize();
+    pos.copy(b.joints.handR).addScaledVector(d, 0.04).add(new THREE.Vector3(0, 0.08, 0)).addScaledVector(right, 0.03);
+    vel.copy(right).multiplyScalar(2.2 + Math.random() * 0.6).add(new THREE.Vector3(0, 1.6 + Math.random() * 0.5, 0)).addScaledVector(d, -0.4);
+  }
 }
 
 /** A world direction into body space (yaw undone): x to the body's left, z forward. */
