@@ -512,12 +512,26 @@ export class Body {
   pose(): void {
     if (this.helmetOff && this.helmG) place(this.helmG, this.helmetOff.a, this.helmetOff.b, this.helmFacing);
     tmpZ.copy(this.facing).normalize();
+    // A ragdoll's segments roll with his torso, not with the way he faced standing: a body lying along that
+    // direction otherwise leaves every bone's roll to chance, and the plates scatter into a heap of boxes.
+    const J = this.joints;
+    let upperF = tmpZ;
+    let lowerF = tmpZ;
+    if (this.ragdoll) {
+      fUp.crossVectors(fA.subVectors(J.shoulderL, J.shoulderR), fB.subVectors(J.neck, J.chest));
+      fLo.crossVectors(fA.subVectors(J.hipL, J.hipR), fB.subVectors(J.chest, J.pelvis));
+      if (fUp.lengthSq() > 1e-8 && fLo.lengthSq() > 1e-8) {
+        upperF = fUp.normalize();
+        lowerF = fLo.normalize();
+      }
+    }
     for (const s of this.segs.values()) {
       if (s.loose) {
-        place(s.group, s.loose.a, s.loose.b, tmpZ.set(0, 0, 1));
+        place(s.group, s.loose.a, s.loose.b, looseZ);
         continue;
       }
-      place(s.group, this.joints[s.def.from], this.joints[s.def.to], tmpZ);
+      const z = s.def.zone === "legL" || s.def.zone === "legR" || s.def.name === "abdomen" ? lowerF : upperF;
+      place(s.group, J[s.def.from], J[s.def.to], z);
     }
   }
 
@@ -628,6 +642,10 @@ export class Body {
       // Settling (S4.4: bodies settle within 2 s): extra damping once limp for a while.
       const settle = limpS > DEATH.settleS ? Math.min(0.6, (limpS - DEATH.settleS) * 0.9) : 0;
       const keep = 0.985 * (1 - settle);
+      // C9 review: once the fall is over he is drawn into a lying pose that reads (not a heap of plates).
+      const rb = run && !run.active ? run.restK(limpS) : 0;
+      if (rb > 0 && run && !run.rest && run.restKind === null) run.anchorRest(this.joints, (x, z) => w.ground(x, z));
+      const rest = rb > 0 && run ? run.rest : null;
       const vmax = DEATH.maxSpeed * dt;
       let fast = false;
       for (const j of JOINTS) {
@@ -644,6 +662,16 @@ export class Body {
           vy *= c;
           vz *= c;
         }
+        if (rest) {
+          // Coming to rest: drawn into the lying pose, the fall's speed bled off as it takes him.
+          const T = rest[j];
+          vx -= vx * rb;
+          vy -= vy * rb;
+          vz -= vz * rb;
+          p.x += (T.x - p.x) * rb;
+          p.y += (T.y - p.y) * rb;
+          p.z += (T.z - p.z) * rb;
+        }
         if (tgt) {
           // The powered fall: position and velocity both blend toward the pose's (no spring to ring).
           const T = tgt.at[j];
@@ -657,7 +685,7 @@ export class Body {
         }
         q.copy(p);
         p.x += vx;
-        p.y += vy + g * (1 - blend);
+        p.y += vy + g * (1 - blend) * Math.max(0, 1 - rb * 4);
         p.z += vz;
       }
       if (fast && run) run.fellBack = true;
@@ -697,7 +725,7 @@ export class Body {
       }
       // Sleep: still under 2 mm a frame for 30 frames, once the pose has let go.
       const poseDone = !run || !run.active;
-      if (poseDone && moved < DEATH.sleepM * dt * 60) this.stillFrames++;
+      if (poseDone && moved < DEATH.sleepM * dt * 60 && (!run || run.restSettled(limpS))) this.stillFrames++;
       else this.stillFrames = 0;
       if (poseDone && (this.stillFrames >= DEATH.sleepFrames || limpS > DEATH.forceSleepS)) {
         this.asleep = true;
@@ -753,6 +781,12 @@ export class Body {
     this.root.removeFromParent();
   }
 }
+
+const looseZ = new THREE.Vector3(0, 0, 1);
+const fUp = new THREE.Vector3();
+const fLo = new THREE.Vector3();
+const fA = new THREE.Vector3();
+const fB = new THREE.Vector3();
 
 export function place(group: THREE.Object3D, a: THREE.Vector3, b: THREE.Vector3, facing: THREE.Vector3): void {
   // An orthonormal frame: Y along the bone, Z as close to the facing direction as the bone allows.

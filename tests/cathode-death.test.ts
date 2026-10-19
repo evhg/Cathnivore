@@ -314,6 +314,39 @@ describe("C9 deaths that land (S4.4)", () => {
     }
   });
 
+  it("a body comes to rest in a pose that reads, not a heap: stretched out flat, or curled with hands on the wound", () => {
+    for (const v of ["headshot", "blownback", "knees", "spin", "gutclutch"] as DeathVariant[]) {
+      const b = new Body(look);
+      standing(b);
+      const run = die(b, v, new THREE.Vector3(0, 0.3, -4), { side: 0.8 })!;
+      for (let t = 0; t < 4 && !b.asleep; t += 1 / 60) b.physics(1 / 60, flat);
+      expect(b.asleep, v).toBe(true);
+      expect(run.rest, v).not.toBe(null);
+      const J = b.joints;
+      // Reached the pose (within a few cm), every joint low on the street.
+      for (const j of JOINTS) expect(J[j].distanceTo(run.rest![j]), `${v} ${j}`).toBeLessThan(0.08);
+      for (const j of JOINTS) expect(J[j].y, `${v} ${j}`).toBeLessThan(0.62);
+      const flatD = (a: THREE.Vector3, c: THREE.Vector3) => Math.hypot(a.x - c.x, a.z - c.z);
+      if (v === "gutclutch") {
+        // Curled: the knees drawn up toward the chest, both hands at the belly.
+        expect(flatD(J.handL, J.pelvis), v).toBeLessThan(0.4);
+        expect(flatD(J.handR, J.pelvis), v).toBeLessThan(0.4);
+        expect(run.restKind).toBe("side");
+      } else {
+        // Stretched out: head to feet well over a metre and a half, the hands away from the trunk.
+        expect(flatD(J.head, J.footL) + flatD(J.head, J.footR), v).toBeGreaterThan(3);
+        expect(Math.max(flatD(J.handL, J.chest), flatD(J.handR, J.chest)), v).toBeGreaterThan(0.45);
+      }
+    }
+    // A headshot drops him on his back, head the way the round went; knees then face ends face down.
+    const b = new Body(look);
+    standing(b);
+    const run = die(b, "headshot", new THREE.Vector3(0, 0.3, -4))!;
+    for (let t = 0; t < 4 && !b.asleep; t += 1 / 60) b.physics(1 / 60, flat);
+    expect(run.restKind).toBe("back");
+    expect(b.joints.head.z).toBeLessThan(b.joints.pelvis.z);
+  });
+
   it("no NaN and nothing flies off over 10k random lethal impulses (the quick fuzz)", () => {
     const b = new Body(look);
     let rnd = 12345;

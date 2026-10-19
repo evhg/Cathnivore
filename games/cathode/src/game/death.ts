@@ -64,7 +64,7 @@ export const DEATH = {
     spin: 600,
     wallslump: 1200,
     knees: 800,
-    blownback: 0,
+    blownback: 450,
     rail: 700,
     crawlout: 2400,
   } as Record<DeathVariant, number>,
@@ -385,6 +385,27 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
       p.roll = 0.1 * sg * down;
       break;
     }
+    case "blownback": {
+      // Lifted off his feet and thrown back: the pelvis flies a metre and a half back on an arc, the body laid out
+      // backward through the air, the legs swinging up in front of him, the arms trailing forward.
+      const u = t / 450;
+      const travel = 1.6 * easeOut(u * 1.15);
+      const arc = 0.42 * Math.sin(Math.PI * Math.min(1, u * 0.85));
+      p.fz = -travel;
+      p.h = REST.pelvis.y + arc - 0.55 * smooth((u - 0.55) / 0.45);
+      p.pitch = -1.25 * smooth(u * 1.3);
+      p.head = 0.35 * smooth(u * 2);
+      p.footL.set(STANCE_L.x + 0.05, 0.1 + 0.45 * smooth(u * 1.6), -travel + 0.55 * smooth(u * 1.4));
+      p.footR.set(STANCE_R.x - 0.08, 0.06 + 0.3 * smooth(u * 1.4), -travel + 0.4 * smooth(u * 1.2));
+      rot(vS, 0, 1, 0, p.pitch, 0, 0);
+      rot(vF, 0, 0, 1, p.pitch, 0, 0);
+      const fl = smooth(u * 2.2);
+      hL.set(p.fx + 0.3, p.h, p.fz).addScaledVector(vS, 0.55 - 0.1 * fl).addScaledVector(vF, 0.45 * fl);
+      hR.set(p.fx - 0.32, p.h, p.fz).addScaledVector(vS, 0.5 - 0.1 * fl).addScaledVector(vF, 0.5 * fl);
+      p.handL = hL;
+      p.handR = hR;
+      break;
+    }
     case "rail": {
       // Folded over the edge: the pelvis to the rail top, the torso over it, the feet on this side.
       const r = c.rail ?? { z: -0.6, h: 1 };
@@ -418,6 +439,140 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
   }
   buildPose(p, out);
 }
+
+// ------------------------------------------------------------------ where he comes to rest (C9 review)
+
+/**
+ * How a body lies once the fall is over. A plain ragdoll settles into whatever heap the floor leaves, and with
+ * rigid armoured segments that heap reads as a pile of boxes (C9 review). So once the variant's active phase is over
+ * and he has had a moment to fall, each joint is drawn toward a lying pose that reads as a dead man: flat on his
+ * back with the limbs splayed, face down with an arm up by his head and a knee drawn up, or curled on his side
+ * with both hands still on the wound. The pose is placed where the ragdoll put him (pelvis, head direction) and
+ * matched to the way he actually landed (face up or down, which side), so it never flips him through the floor.
+ */
+export type RestKind = "back" | "front" | "side";
+export const REST_POSE = {
+  /** Limp seconds before the pull starts (a headshot drops, a blown-back body flies first). */
+  delayS: { headshot: 0.3, blownback: 0.12, gutclutch: 0.05, spin: 0.12, knees: 0.08 } as Partial<Record<DeathVariant, number>>,
+  /** Seconds the pull takes to come up to strength, and its strength (share of the gap closed per 60 Hz frame). */
+  rampS: 0.6,
+  k: 0.2,
+  /** Joint heights over the street (m): the torso's plates, the helmet, the limbs. */
+  torsoH: 0.13,
+  headH: 0.12,
+  limbH: 0.075,
+  /** The spine's height lying on his side: half the chest plates' width. */
+  sideH: 0.19,
+};
+
+/** The lying pose a variant ends in, or null for one that holds its own end (a sit, a fold over a rail, a crawl). */
+export function restKindFor(v: DeathVariant, frontY: number): RestKind | null {
+  if (v === "gutclutch") return "side";
+  if (v === "headshot" || v === "blownback") return frontY < -0.5 ? "front" : "back";
+  if (v === "spin" || v === "knees") return frontY > 0.5 ? "back" : "front";
+  return null;
+}
+
+const rS = new THREE.Vector3();
+const rA = new THREE.Vector3();
+const rF = new THREE.Vector3();
+const rD = new THREE.Vector3();
+const rP = new THREE.Vector3();
+const TORSO: readonly Joint[] = ["pelvis", "chest", "neck", "shoulderL", "shoulderR", "hipL", "hipR"];
+
+/** A limb bone from `from` along `dir` (body basis), its end at height `h`: the floor flattens it, length kept. */
+function bone(from: THREE.Vector3, dir: THREE.Vector3, len: number, h: number, out: THREE.Vector3): void {
+  const dy = Math.max(-len * 0.95, Math.min(len * 0.95, h - from.y));
+  rD.set(dir.x, 0, dir.z);
+  if (rD.lengthSq() < 1e-6) rD.set(0, 0, -1);
+  rD.setLength(Math.sqrt(len * len - dy * dy));
+  out.copy(from).add(rD).y += dy;
+}
+
+/**
+ * A lying pose in its own frame: the pelvis over the origin, the head toward +z, y up from the street. `sg` picks
+ * which arm is flung up (or which side is down, for the curl).
+ */
+export function lyingPose(kind: RestKind, sg: number, out: Record<Joint, THREE.Vector3>, flung = false): void {
+  const s = sg >= 0 ? 1 : -1;
+  // The body's basis: spine, his left, his front.
+  rS.set(0, 0, 1);
+  if (kind === "back") rA.set(-1, 0, 0);
+  else if (kind === "front") rA.set(1, 0, 0);
+  else rA.set(0, s, 0.12).normalize(); // on his side, his left up (s = 1), the top shoulder rolled a touch forward
+  rF.crossVectors(rA, rS).normalize();
+  // A slight curve: the shoulders a little off the spine's line, so it isn't a plank.
+  if (kind !== "side") rS.addScaledVector(rA, 0.06 * s).normalize();
+  for (const j of TORSO) {
+    const R = REST[j];
+    out[j].set(0, 0, 0).addScaledVector(rA, R.x).addScaledVector(rS, R.y - REST.pelvis.y).addScaledVector(rF, R.z);
+  }
+  // The head: rolled onto one cheek on his back or front, bowed onto his chest when curled.
+  rD.copy(rS);
+  if (kind === "side") rD.addScaledVector(rF, 0.55);
+  else rD.addScaledVector(rA, kind === "back" ? 0.5 * s : -0.6 * s).addScaledVector(rF, kind === "back" ? 0.1 : -0.1);
+  out.head.copy(out.neck).addScaledVector(rD.normalize(), LEN.head);
+  // Lift the torso onto the street: the spine at half the plates' depth (their width, on his side), every other
+  // joint just off the floor.
+  let lift = -Infinity;
+  const spineH = kind === "side" ? REST_POSE.sideH : REST_POSE.torsoH;
+  for (const j of TORSO) lift = Math.max(lift, (j === "pelvis" || j === "chest" || j === "neck" ? spineH : REST_POSE.limbH) - out[j].y);
+  lift = Math.max(lift, REST_POSE.headH - out.head.y);
+  for (const j of [...TORSO, "head" as const]) out[j].y += lift;
+  const H = REST_POSE.limbH;
+  // Limbs: (along his left/right outward, along the spine, along his front), then flattened onto the street.
+  const limb = (side: "L" | "R", upper: [number, number, number], lower: [number, number, number], kneeH = H, arm = true) => {
+    const o = side === "L" ? 1 : -1;
+    const root = arm ? out[`shoulder${side}`] : out[`hip${side}`];
+    const mid = arm ? out[`elbow${side}`] : out[`knee${side}`];
+    const end = arm ? out[`hand${side}`] : out[`foot${side}`];
+    rP.set(0, 0, 0).addScaledVector(rA, upper[0] * o).addScaledVector(rS, upper[1]).addScaledVector(rF, upper[2]);
+    bone(root, rP, arm ? LEN.upper : LEN.thigh, kneeH, mid);
+    rP.set(0, 0, 0).addScaledVector(rA, lower[0] * o).addScaledVector(rS, lower[1]).addScaledVector(rF, lower[2]);
+    bone(mid, rP, arm ? LEN.fore : LEN.shin, H, end);
+  };
+  // `up` is the side whose arm goes up by the head.
+  const up = s > 0 ? "L" : "R";
+  const dn = s > 0 ? "R" : "L";
+  if (kind === "back") {
+    limb(up, [0.85, 0.4, 0], [0.25, 0.95, 0]);
+    limb(dn, [0.45, -0.9, 0], [0.55, -0.8, 0]);
+    // One leg long and splayed, the other's knee fallen out and up.
+    limb(up, [0.15, -1, 0], [0.22, -1, 0], H + 0.03, false);
+    limb(dn, [0.55, -0.85, 0], [-0.05, -1, 0], 0.24, false);
+  } else if (kind === "front" && flung) {
+    // Spun down: the arm on the hit side flung straight out, the other under his chest, the legs scissored.
+    limb(up, [1, 0.12, 0], [0.97, -0.2, 0]);
+    limb(dn, [0.15, -0.7, 0.3], [-0.6, 0.2, 0.3]);
+    limb(up, [0.25, -0.95, 0], [0.4, -0.92, 0], H, false);
+    limb(dn, [0.45, -0.85, 0], [-0.25, -0.97, 0], H, false);
+  } else if (kind === "front") {
+    limb(up, [0.9, 0.35, 0], [-0.25, 0.95, 0]);
+    limb(dn, [0.3, -0.95, 0], [0.1, -1, 0]);
+    // The knee on the raised arm's side drawn up, the other leg straight.
+    limb(up, [0.7, -0.7, 0], [-0.1, -1, 0], H, false);
+    limb(dn, [0.06, -1, 0], [0.12, -1, 0], H, false);
+  } else {
+    // Curled on his side: knees drawn up in front of him, both hands still at the wound.
+    for (const sd of ["L", "R"] as const) {
+      const top = (sd === "L") === s > 0;
+      const o = sd === "L" ? 1 : -1;
+      const hip = out[`hip${sd}`];
+      rP.copy(rF).multiplyScalar(top ? 0.9 : 0.75).addScaledVector(rS, top ? -0.45 : -0.65);
+      bone(hip, rP, LEN.thigh, top ? hip.y - 0.05 : H + 0.02, out[`knee${sd}`]);
+      rP.copy(rS).multiplyScalar(-1).addScaledVector(rF, top ? 0.1 : -0.2);
+      bone(out[`knee${sd}`], rP, LEN.shin, top ? H + 0.08 : H, out[`foot${sd}`]);
+      const hand = out[`hand${sd}`];
+      hand.copy(out.pelvis).addScaledVector(rF, 0.2).addScaledVector(rS, 0.16).addScaledVector(rA, 0.05 * o);
+      hand.y = Math.max(H, hand.y);
+      rP.copy(rS).multiplyScalar(-1).addScaledVector(rF, 0.4);
+      ik2(out[`shoulder${sd}`], hand, LEN.upper, LEN.fore, rP, out[`elbow${sd}`]);
+    }
+  }
+  for (const j of JOINTS_ALL) out[j].y = Math.max(out[j].y, H - 0.01);
+  limitJoints(out);
+}
+const JOINTS_ALL = Object.keys(REST) as Joint[];
 
 // ------------------------------------------------------------------ the run (one body's death)
 
@@ -459,6 +614,54 @@ export class DeathRun {
   }
   get active(): boolean {
     return this.t < this.dur && !this.fellBack;
+  }
+  /** The lying pose he is drawn into once the fall is over (world space), anchored where he landed; and its kind. */
+  rest: Record<Joint, THREE.Vector3> | null = null;
+  restKind: RestKind | null = null;
+  /** The pull toward the lying pose `limpS` seconds into the limp phase: 0 before it starts or without one. */
+  restK(limpS: number): number {
+    const d = REST_POSE.delayS[this.variant];
+    if (d == null) return 0;
+    return REST_POSE.k * smooth((limpS - d) / REST_POSE.rampS);
+  }
+  /** The lying pose has had time to take him (or this death has none): he may sleep. */
+  restSettled(limpS: number): boolean {
+    const d = REST_POSE.delayS[this.variant];
+    return d == null || limpS > d + REST_POSE.rampS + 0.2;
+  }
+  /** Places the lying pose where the ragdoll has put him: under his pelvis, head the way his head lies. */
+  anchorRest(J: Record<Joint, THREE.Vector3>, ground: (x: number, z: number) => number): void {
+    rA.subVectors(J.hipL, J.hipR).add(rD.subVectors(J.shoulderL, J.shoulderR));
+    rS.subVectors(J.neck, J.pelvis);
+    rF.crossVectors(rA, rS);
+    const frontY = rF.lengthSq() > 1e-8 ? rF.normalize().y : 0;
+    const kind = restKindFor(this.variant, frontY);
+    this.restKind = kind;
+    if (!kind) return;
+    const across = rA.lengthSq() > 1e-8 ? rA.normalize().y : 0;
+    const sg = kind === "side" ? (Math.abs(across) > 0.15 ? Math.sign(across) : this.ctx.side >= 0 ? 1 : -1) : this.ctx.side >= 0 ? 1 : -1;
+    // His head's way along the street; straight up (a body still upright) falls back to the way he faced.
+    rS.y = 0;
+    // A drop onto his back goes the way the round pushed him, unless he has plainly already gone the other way.
+    rD.set(this.impulse.x, 0, this.impulse.z);
+    if (kind === "back" && rD.lengthSq() > 0.25 && (rS.lengthSq() < 0.16 || rS.dot(rD) > 0)) rS.copy(rD);
+    if (rS.lengthSq() < 0.01) rS.set(Math.sin(this.yaw), 0, Math.cos(this.yaw));
+    rS.normalize();
+    const hx = rS.x;
+    const hz = rS.z;
+    const out = {} as Record<Joint, THREE.Vector3>;
+    for (const j of JOINTS_ALL) out[j] = new THREE.Vector3();
+    lyingPose(kind, sg, out, this.variant === "spin");
+    const ox = J.pelvis.x;
+    const oz = J.pelvis.z;
+    const sc = this.scale;
+    for (const j of JOINTS_ALL) {
+      const v = out[j];
+      const x = ox + (v.x * hz + v.z * hx) * sc;
+      const z = oz + (-v.x * hx + v.z * hz) * sc;
+      v.set(x, ground(x, z) + v.y * sc, z);
+    }
+    this.rest = out;
   }
   /** The world pose at `tMs` (the impulse's drift along the round included) into `out`. */
   pose(tMs: number, out: Record<Joint, THREE.Vector3>): void {
@@ -523,6 +726,22 @@ function limitBend(root: THREE.Vector3, mid: THREE.Vector3, end: THREE.Vector3, 
     .addScaledVector(jW, Math.sin(minInterior) * lv);
 }
 
+/** Mirrors a knee that sits behind the hip-foot line (bent the wrong way) to the front of it. */
+function kneeFront(hip: THREE.Vector3, knee: THREE.Vector3, foot: THREE.Vector3, hasFront: boolean): void {
+  if (!hasFront) return;
+  jC.subVectors(foot, hip);
+  const len = jC.length();
+  if (len < 1e-6) return;
+  jC.multiplyScalar(1 / len);
+  // The front, square to the leg.
+  jU.copy(jF).addScaledVector(jC, -jF.dot(jC));
+  if (jU.lengthSq() < 1e-8) return;
+  jU.normalize();
+  jV.subVectors(knee, hip);
+  const off = jV.dot(jU);
+  if (off < 0) knee.addScaledVector(jU, -2 * off);
+}
+
 /**
  * S4.4's limp-phase limits, in place: knees fold backward only (the knee stays in front of the hip-foot line, a dot
  * product against the thigh's forward), knees and elbows bend no further than their limits, and the head stays
@@ -540,23 +759,10 @@ export function limitJoints(J: Record<Joint, THREE.Vector3>, lost?: ReadonlySet<
     const hip = J[`hip${s}`];
     const knee = J[`knee${s}`];
     const foot = J[`foot${s}`];
-    if (hasFront) {
-      jC.subVectors(foot, hip);
-      const len = jC.length();
-      if (len > 1e-6) {
-        jC.multiplyScalar(1 / len);
-        // The front, square to the leg.
-        jU.copy(jF).addScaledVector(jC, -jF.dot(jC));
-        if (jU.lengthSq() > 1e-8) {
-          jU.normalize();
-          jV.subVectors(knee, hip);
-          const off = jV.dot(jU);
-          // Behind the line: the knee bends the wrong way. Mirror it to the front.
-          if (off < 0) knee.addScaledVector(jU, -2 * off);
-        }
-      }
-    }
+    kneeFront(hip, knee, foot, hasFront);
     limitBend(hip, knee, foot, DEATH.kneeDeg, jF.lengthSq() > 0 ? jW.copy(jF).negate() : jW.set(0, 0, -1));
+    // Swinging the foot out to the bend limit moves the hip-foot line: check the knee against it again.
+    kneeFront(hip, knee, foot, hasFront);
   }
   for (const s of ["L", "R"] as const) {
     if (lost?.has(`upperArm${s}`) || lost?.has(`forearm${s}`)) continue;

@@ -3441,7 +3441,48 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const focus = c9.pool && pl ? pl.at.clone() : g.body.joints.chest.clone().lerp(g.body.joints.pelvis, 0.5).lerp(g.body.joints.head, c9.variant === "wallslump" ? 0.3 : 0);
       const back = new THREE.Vector3(eye.x - focus.x, 0, eye.z - focus.z);
       const want = c9.pool ? 3.2 : 3.3;
-      if (back.length() > want) {
+      // A body at rest is shot from beside it (a three-quarter view from the side she stands on): lying along the
+      // line of fire, it is foreshortened into a lump whatever its pose (C9 review).
+      const axis = new THREE.Vector3().subVectors(g.body.joints.head, g.body.joints.pelvis).setY(0);
+      const lying = (c9.pool || tMs >= 1500) && c9.variant !== "wallslump" && axis.lengthSq() > 0.09;
+      if (lying) {
+        axis.normalize();
+        // From the side that puts his head on the left of the frame, clear of her gun (the curl: from his front,
+        // so the hands on the wound show).
+        const side = new THREE.Vector3(-axis.z, 0, axis.x);
+        if (c9.variant === "gutclutch") {
+          const J = g.body.joints;
+          const front = new THREE.Vector3().subVectors(J.hipL, J.hipR).cross(new THREE.Vector3().subVectors(J.neck, J.pelvis)).setY(0);
+          if (side.dot(front) < 0) side.negate();
+        } else {
+          // Looking along -d from d's side: his head is on the left when axis . (d x up) > 0.
+          const d0 = side.clone().multiplyScalar(0.95).addScaledVector(axis, -0.3);
+          if (axis.dot(new THREE.Vector3(-d0.z, 0, d0.x)) < 0) side.negate();
+        }
+        // Three-quarters on from the side, a little toward his feet; the other side if a wall is in the way.
+        for (const sg of [1, -1]) {
+          const d = side.clone().multiplyScalar(sg).multiplyScalar(0.95).addScaledVector(axis, -0.3).normalize();
+          const from = focus.clone().setY(ground(focus.x, focus.z) + 1.2);
+          const hit = rays.cast(from, d, want + 0.6, { thin: false });
+          if (!hit || sg === -1) {
+            player.pos.set(focus.x + d.x * (want - 0.3), 0, focus.z + d.z * (want - 0.3));
+            player.pos.y = ground(player.pos.x, player.pos.z);
+            break;
+          }
+        }
+      } else if (!c9.pool && (c9.variant === "gutclutch" || c9.variant === "knees" || c9.variant === "blownback")) {
+        // The fall itself is shot three-quarters on from the side: head on, the clutch, the knee going down and
+        // the flight backward all collapse into the same upright figure (C9 review).
+        const facing = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
+        const side = new THREE.Vector3(-facing.z, 0, facing.x);
+        if (side.dot(back) < 0) side.negate();
+        const d = facing.clone().multiplyScalar(0.5).addScaledVector(side, 0.87).normalize();
+        const from = focus.clone().setY(ground(focus.x, focus.z) + 1.2);
+        if (rays.cast(from, d, want + 0.6, { thin: false })) d.addScaledVector(side, -1.74).normalize();
+        const dist = want + 0.4;
+        player.pos.set(focus.x + d.x * dist, 0, focus.z + d.z * dist);
+        player.pos.y = ground(player.pos.x, player.pos.z);
+      } else if (back.length() > want) {
         back.setLength(back.length() - want);
         player.pos.sub(back);
         player.pos.y = ground(player.pos.x, player.pos.z);
@@ -3452,7 +3493,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const look2 = focus.clone().add(new THREE.Vector3(0, c9.pool ? 0 : 0.1, 0)).sub(eye).normalize();
       player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1)) + (c9.pool ? 0.04 : 0);
       // A touch off centre to the left, clear of the gun in her right hand.
-      player.yaw = Math.atan2(-look2.x, -look2.z) - 0.13;
+      // The pool stage puts him further left, so the crosshair sits on the open pool and not on the body.
+      player.yaw = Math.atan2(-look2.x, -look2.z) - (c9.pool ? 0.24 : lying ? 0.28 : 0.13);
       player.applyCamera(world.camera, 0);
       world.camera.updateMatrixWorld();
       if (pl) {
