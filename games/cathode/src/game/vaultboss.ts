@@ -74,10 +74,7 @@ export class VaultBossJob {
     if (!b || phase === this.lastPhase) return;
     this.lastPhase = phase;
     b.body.root.scale.setScalar(1.2 + phase * 0.1);
-    const visor = b.body.look?.visor as THREE.MeshStandardMaterial | undefined;
-    if (!visor) return;
-    visor.emissive.setHex([0x30d0ff, 0xffa040, 0xff1a2a][phase] ?? 0xff1a2a);
-    visor.emissiveIntensity = 6 + phase * 4;
+    b.body.setVisor?.([0x30d0ff, 0xffa040, 0xff1a2a][phase] ?? 0xff1a2a, (6 + phase * 4) / 6);
   }
 
   update(dt: number): void {

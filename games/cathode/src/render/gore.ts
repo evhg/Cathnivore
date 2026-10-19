@@ -524,12 +524,27 @@ export function createGore(o: GoreDeps): Gore {
     raycaster.far = 0.8;
     hits.length = 0;
     const meshes = seg.children.filter((c) => (c as THREE.Mesh).isMesh && c.visible && !c.name.startsWith("cap"));
-    raycaster.intersectObjects(meshes, false, hits);
-    const hit = hits[0];
-    if (!hit || !hit.face) return;
     inv.copy(seg.matrixWorld).invert();
-    const pL = hit.point.clone().applyMatrix4(inv);
-    nrm.copy(hit.face.normal); // already in the mesh's frame, which is the segment's (merged at identity)
+    let pL: THREE.Vector3;
+    if (meshes.length) {
+      raycaster.intersectObjects(meshes, false, hits);
+      const hit = hits[0];
+      if (!hit || !hit.face) return;
+      pL = hit.point.clone().applyMatrix4(inv);
+      nrm.copy(hit.face.normal); // already in the mesh's frame, which is the segment's (merged at identity)
+    } else {
+      // C10: a skinned body has no meshes on its bones: the wound goes on the segment's armour surface, a capsule of
+      // the radius the body gives it, at the point square to the round's hit.
+      const R = seg.userData.surfaceR as number | undefined;
+      const len = seg.userData.len as number | undefined;
+      if (R === undefined || len === undefined) return;
+      pL = h.point.clone().applyMatrix4(inv);
+      const ay = Math.max(0, Math.min(len, pL.y));
+      nrm.set(pL.x, pL.y - ay, pL.z);
+      if (nrm.lengthSq() < 1e-8) nrm.copy(h.dir).transformDirection(inv).negate();
+      nrm.normalize();
+      pL.set(0, ay, 0).addScaledVector(nrm, R);
+    }
     // Two quads: the hole, square to the surface, and the run, hanging below it along the surface.
     for (const run of [false, true]) {
       if (run && rand() < 0.25) continue;

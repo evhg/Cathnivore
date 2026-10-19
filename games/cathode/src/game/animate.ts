@@ -3,6 +3,8 @@
 
 import * as THREE from "three";
 import { REST, type Body, type Joint } from "./body";
+import { deriveJoints } from "./rig";
+import { FOREGRIP_M } from "./models/gear";
 import type { Dir, Flinch } from "./anim/springs";
 
 export interface Motion {
@@ -113,10 +115,13 @@ export function animate(body: Body, m: Motion): void {
   const rot = (v: THREE.Vector3) => new THREE.Vector3(v.x, v.y * cp + v.z * sp, -v.y * sp + v.z * cp).add(sh);
   local.handR.copy(rot(gripR));
   local.handL.copy(rot(gripL));
+  // C10: the support hand sits on the carbine's foregrip, a fixed distance up the line from the trigger hand.
+  local.handL.sub(local.handR).setLength(FOREGRIP_M).add(local.handR);
   ik(local.shoulderR, local.handR, UPPER, FORE, tmp.set(sh.x - 0.4, sh.y - 0.6, sh.z - 0.2), local.elbowR);
   ik(local.shoulderL, local.handL, UPPER, FORE, tmp.set(local.shoulderL.x + 0.5, local.shoulderL.y - 0.6, local.shoulderL.z), local.elbowL);
 
   if (f) applyFlinch(f);
+  deriveJoints(local);
 
   // Body space to world: yaw about Y, then translate. The body faces +Z locally.
   q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), m.yaw);

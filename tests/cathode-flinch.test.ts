@@ -177,3 +177,23 @@ describe("CATHODE hit flash (S4.1)", () => {
     expect(mats.size).toBeLessThanOrEqual(4);
   });
 });
+
+describe("CATHODE hands (C10, S4.1)", () => {
+  it("an arm hit opens the struck hand 30 degrees off the grip, and it closes again", async () => {
+    const { Enemy, ENFORCER } = await import("../games/cathode/src/game/enemy");
+    const e = new Enemy({ ...ENFORCER }, [new THREE.Vector3()]);
+    const ground = () => 0;
+    e.feel(1 / 60, [], ground);
+    const grip = e.body.root.getObjectByName("fingersL")!.rotation.z;
+    const at = e.body.joints.elbowL.clone().lerp(e.body.joints.handL, 0.5);
+    e.react("armL", new THREE.Vector3(0, 0, -1), at, 20, "pistol", 10, "forearmL");
+    for (let t = 0; t < 60; t += 1000 / 60) e.feel(1 / 60, [], ground);
+    expect(e.body.handOpenDeg("L")).toBeCloseTo(tuning.enemyLook.hand.openDeg, 5);
+    expect(e.body.handOpenDeg("R")).toBe(0);
+    const open = e.body.root.getObjectByName("fingersL")!.rotation.z;
+    expect(Math.abs(open - grip) * (180 / Math.PI)).toBeCloseTo(30, 1);
+    for (let t = 0; t < 600; t += 1000 / 60) e.feel(1 / 60, [], ground);
+    expect(e.body.handOpenDeg("L")).toBe(0);
+  });
+});
+

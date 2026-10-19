@@ -709,12 +709,13 @@ export class Combat {
 export type { Projectile };
 
 /** Distance along a ray to a riot shield (an oriented thin box), or null. */
-function rayShield(shield: THREE.Mesh, origin: THREE.Vector3, dir: THREE.Vector3): number | null {
+function rayShield(shield: THREE.Object3D, origin: THREE.Vector3, dir: THREE.Vector3): number | null {
   shield.updateMatrixWorld();
   const inv = new THREE.Matrix4().copy(shield.matrixWorld).invert();
   const o = origin.clone().applyMatrix4(inv);
   const d = dir.clone().transformDirection(inv);
-  const box = new THREE.Box3(new THREE.Vector3(-0.31, -0.53, -0.04), new THREE.Vector3(0.31, 0.53, 0.04));
+  // C10: the curved 0.62 x 1.2 m shield, its edges bent 5 cm back toward the bearer.
+  const box = new THREE.Box3(new THREE.Vector3(-0.31, -0.6, -0.07), new THREE.Vector3(0.31, 0.6, 0.03));
   const hit = new THREE.Ray(o, d).intersectBox(box, new THREE.Vector3());
   return hit ? hit.applyMatrix4(shield.matrixWorld).distanceTo(origin) : null;
 }

@@ -103,6 +103,21 @@ export const tuning = {
    * bright red to salmon (1.1 radiance maps to about rgb 216,118,103; 0.45 keeps a red 176,85,78 rim over a deep 105,38,35 face).
    * 0.32 since the glow takes its fog back off (C2 fix): unfogged, 0.45 lit the whole corpse salmon at 5K.
    */
+  /**
+   * C10 "Enforcer v2" (S3.1, S3.2, S4.1): the faction rim (a fresnel edge in the faction's emissive at 40%
+   * saturation: 0.3 at rest, 0.6 in combat, 1.0 for 120 ms after a hit, a 3 Hz pulse when takedown-eligible; `gain`
+   * turns those strengths into radiance), the LOD distances (m) and the 0.3 s dither, the antenna's blink and the
+   * coolant window's pulse, the visor, and the hand that opens on an arm hit.
+   */
+  enemyLook: {
+    rim: { rest: 0.3, combat: 0.6, hit: 1.0, hitMs: 120, pulseHz: 3, sat: 0.4, pow: 3, gain: 1.6, phoneGain: 1.6, phonePow: 2.4 },
+    lod: { phone: [12, 30] as const, desktop: [16, 39] as const, hyst: 1, fadeMs: 300 },
+    blinkHz: 1,
+    coolantHz: 1.2,
+    visor: { level: 1, aimFlare: 1.6 },
+    hand: { gripDeg: 72, openDeg: 30, inMs: 30, holdMs: 170, outMs: 220 },
+    cloth: { phoneSubsteps: 1, desktopSubsteps: 2 },
+  },
   hitFlash: { whiteMs: 25, white: 1.8, fadeMs: 150, red: [1, 0.165, 0.1] as const, redGain: 0.6, death: { level: 0.32, holdMs: 110, fadeMs: 520, red: [1, 0.02, 0.01] as const, rimGain: 2.2, rimPow: 3, cold: [0.1, 0.15, 0.22] as const, coldPow: 2.4 } },
   /**
    * C5 "Kestrel 9 in motion" (S2.2 to S2.4): the pistol's choreography. Times in ms from the trigger breaking,

@@ -11,7 +11,7 @@ import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
 import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
-import { deadCost, deathGlowScale } from "./body";
+import { bodyView, deadCost, deathGlowScale, type Body } from "./body";
 import { POOLS } from "../render/pools";
 import { deathFx, type DeathVariant } from "./death";
 import { RayWorld, rayGround } from "./ray";
@@ -170,6 +170,9 @@ export interface Session {
     asleep?: boolean;
     /** C9: joint heights over the street under them (m), for the pose checks (a slump sits, a fall is down). */
     heights?: Record<string, number>;
+    /** C10: the review lineup's box on screen (CSS px), and how far each hand is open on the hit-arm stage (degrees). */
+    box?: { x: number; y: number; w: number; h: number };
+    handOpen?: { L: number; R: number };
   } | null;
   /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
   probePool?: (x: number, y: number, rx: number, ry: number, o?: { quick?: boolean; noRender?: boolean }) => { bright: number; red: number; total: number; maxLum: number };
@@ -181,6 +184,13 @@ export interface Session {
   dotProbe?: () => { x: number; y: number; cx: number; cy: number; aim: number } | null;
   /** C6: the red-dot optic's screen box (CSS px; hood, base and emitter, with the rear sight behind it), or null. */
   opticProbe?: () => { x: number; y: number; w: number; h: number } | null;
+  /**
+   * C10 acceptance: the staged guard's own pixels (a flat mask render) against the street around him: their mean
+   * luminance (0..1) in the shown frame, and his height on screen (CSS px).
+   */
+  probeEnemy?: () => { enemy: number; street: number; ratio: number; px: number; heightPx: number; box: { x: number; y: number; w: number; h: number } } | null;
+  /** C10: the silhouette lineup scaled so its tallest figure is 64 px tall, as a PNG data URL. */
+  silhouetteThumb?: () => string | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
   probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[] };
   /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
@@ -266,6 +276,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   deathGlowScale.rimPow = o.quality === "phone" ? 1.2 : 0;
   deathGlowScale.rimGain = o.quality === "phone" ? 0.22 : 1;
   deadCost.cheap = o.quality === "phone";
+  // C10: the enemies' LODs, geometry profile and cloth read the view (?lod=0|1|2 forces a LOD for review shots).
+  bodyView.phone = o.quality === "phone";
+  {
+    const fl = new URLSearchParams(location.search).get("lod");
+    bodyView.forceLod = fl === "0" || fl === "1" || fl === "2" ? (Number(fl) as 0 | 1 | 2) : -1;
+  }
   setBeaconProfile(o.quality === "phone" ? "phone" : "desktop");
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
   const ground = (x: number, z: number) => world.groundHeight(x, z);
@@ -328,7 +344,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           ? [inTower ? BOARD_GUARD : RIOT_SHIELD, "riotShield"]
           : [ENFORCER, "enforcer"];
       const elite = Math.random() < ELITE_CHANCE[progress.character.difficulty] + ngPlusEliteBonus(ngPlusLap(progress.jobsDone));
-      const e = new Enemy({ ...guarded(Progress.kit(base, archetype, areaLevel, seed++, elite), base), role: base.role }, route.map((p) => p.clone()), areaLevel);
+      // C10 (S3.2): every fifth rifle patrol is led by a sergeant (the helmet crest and the red visor stripe).
+      const leader = base === ENFORCER && n % 5 === 1;
+      const e = new Enemy({ ...guarded(Progress.kit(base, archetype, areaLevel, seed++, elite), base), role: base.role, leader }, route.map((p) => p.clone()), areaLevel);
       if (civ) {
         e.passive = true;
         e.kit.maxHp = e.hp = CIVILIAN.maxHp;
@@ -1289,6 +1307,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Hit-stop: a landed blow holds the world for a few frames, so it lands with weight. The lowest scale
     // wins (a stop inside slow motion returns to the slow motion); particles drift at a quarter speed.
     timescale.update(realDt);
+    world.camera.getWorldPosition(bodyView.eye);
     const fxScale = Math.min(scale, timescale.fxScale);
     scale = Math.min(scale, timescale.simScale);
     const dt = o.shot ? 0 : realDt * scale;
@@ -2141,8 +2160,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     /** The pad's A and B last frame (edge-detected: a held A from the fall never skips the card). */
     padA: boolean;
     padB: boolean;
-    /** The killer's visor material and its resting glow (it flares twice as he stands down). */
-    visor: THREE.MeshStandardMaterial | null;
+    /** The killer's body and its visor's resting level (it flares twice as he stands down). */
+    visor: Body | null;
     visorBase: number;
     /** The cool light that rims him against the street while she lies there (handed back on Retry). */
     rimOff: (() => void) | null;
@@ -2154,7 +2173,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   /** Screenshot stages: back to the living, from any death stage. */
   function clearDeath(): void {
     if (dying?.killer) dying.killer.standDown = null;
-    if (dying?.visor) dying.visor.emissiveIntensity = dying.visorBase;
+    if (dying?.visor) dying.visor.visorLevel = dying.visorBase;
     dying?.killer?.body.setRim(0, 0, 0);
     dying?.rimOff?.();
     for (const e of enemies) e.standDown = null;
@@ -2234,8 +2253,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       touch: input.isTouch,
     });
     screen.setKiller(near ? near.kit.name : "");
-    const visor = near ? ((near.body.look.visor as THREE.MeshStandardMaterial).isMeshStandardMaterial ? (near.body.look.visor as THREE.MeshStandardMaterial) : null) : null;
-    dying = { t: 0, cam, killer: near, killerName: near?.kit.name ?? "", gun: null, cardShown: false, cardAt: 0, resync: -1, flares: 0, splats: 0, lastPress: true, padA: true, padB: true, visor, visorBase: visor?.emissiveIntensity ?? 0, rimOff: null };
+    const visor = near ? near.body : null;
+    dying = { t: 0, cam, killer: near, killerName: near?.kit.name ?? "", gun: null, cardShown: false, cardAt: 0, resync: -1, flares: 0, splats: 0, lastPress: true, padA: true, padB: true, visor, visorBase: visor?.visorLevel ?? 0, rimOff: null };
     // The hit frame: the flare at full, a splat on the hit side.
     hurtV = 1;
     if (from) hurtDir.set(Math.sin(bearingTo(from as THREE.Vector3)), Math.cos(bearingTo(from as THREE.Vector3)));
@@ -2341,7 +2360,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       while (d.flares < want) d.flares++;
       if (d.visor) {
         const f = (at: number) => (d.t >= at ? Math.exp(-(d.t - at) / 140) : 0);
-        d.visor.emissiveIntensity = d.visorBase * (1 + 3 * (f(DT.fallEndMs) + f(1150)));
+        d.visor.visorLevel = d.visorBase * (1 + 3 * (f(DT.fallEndMs) + f(1150)));
       }
       // The rim comes up as she lands (500 to 900 ms) and holds.
       const rimK = Math.min(1, Math.max(0, (d.t - 500) / 400));
@@ -2697,7 +2716,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   function render(): void {
     const t0 = performance.now();
-    world.render();
+    // C10: the review lineups aren't in the street's enemy list: their visors, blinks and LODs still tick.
+    for (const e of lineup) e.body.pose();
+    if (reviewRender) reviewRender();
+    else world.render();
     perfPanel?.update();
     s.stats.ms = s.stats.ms * 0.9 + (performance.now() - t0) * 0.1;
     s.stats.frames++;
@@ -3082,7 +3104,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     return out;
   };
-  const STAGES = ["hit-body", "hit-head", "hit-kill", "hit-headkill", "hit-soft", "hit-pen", "hit-armourbreak", "blocked", "peek-head", "cover-debug-market", "enemy-flinch-head-60", "wall-splat"];
+  const STAGES = ["hit-arm", "hit-body", "hit-head", "hit-kill", "hit-headkill", "hit-soft", "hit-pen", "hit-armourbreak", "blocked", "peek-head", "cover-debug-market", "enemy-flinch-head-60", "wall-splat"];
   /** A world point on screen, in CSS px. */
   const toScreen = (p: THREE.Vector3) => {
     const v = p.clone().project(world.camera);
@@ -3281,7 +3303,310 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     return "ok";
   };
+  // ---- C10 "Enforcer v2" review stages ----
+  // enemy-front-10m / enemy-back-10m: the stage guard 10 m down the street, idle, facing her or turned away.
+  // turntable-<arch>: four of one archetype side by side, turned 0, 45, 90 and 180 degrees, 4.6 m off.
+  // silhouette-lineup: the archetypes side by side as flat black on mid grey (S3.1's silhouette test).
+  // guard-from-10m: the owner's audit frame, the first job's guard under his lamp 10 m off, with no diamond (&job).
+  const C10_STAGES = ["enemy-front-10m", "enemy-back-10m", "turntable-enforcer", "turntable-riot", "turntable-sniper", "turntable-leader", "silhouette-lineup", "guard-from-10m"];
+  let reviewRender: (() => void) | null = null;
+  let lineup: Enemy[] = [];
+  let probeGuard: Enemy | null = null;
+  const LINEUP_KITS: Record<string, EnemyKit> = { enforcer: ENFORCER, leader: { ...ENFORCER, name: "Enforcer Sergeant", leader: true }, riot: RIOT_SHIELD, sniper: ENFORCER_SNIPER };
+  const clearReview = () => {
+    for (const e of lineup) e.body.dispose();
+    lineup = [];
+    reviewRender = null;
+    probeGuard = null;
+    hud.review(false);
+    world.viewScene.visible = true;
+  };
+  const sightNone = (): Sight => ({ eye: new THREE.Vector3(0, -500, 0), chest: new THREE.Vector3(0, -500, 0), light: 0, low: 1, speed: 0, stealth: 0 });
+  /** Puts the camera at `from` (her feet), looking at `at`. */
+  const lookFrom = (from: THREE.Vector3, at: THREE.Vector3) => {
+    player.pos.copy(from);
+    player.vel.set(0, 0, 0);
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    world.camera.getWorldPosition(eye);
+    const d = at.clone().sub(eye).normalize();
+    player.pitch = Math.asin(THREE.MathUtils.clamp(d.y, -1, 1));
+    player.yaw = Math.atan2(-d.x, -d.z);
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+  };
+  const c10Stage = (name: string, tMs: number): string => {
+    hud.freeze(null);
+    hud.clearFeedback();
+    showCover(false);
+    pickups.clear();
+    world.fx.clear?.();
+    if (stageCrate) stageCrate.visible = false;
+    if (crateCollider) crateCollider.off = true;
+    staged = true;
+    s.stageInfo = null;
+    for (const e of enemies) {
+      if (e.alive && e.state !== "dead") e.state = "unaware";
+      e.detect = 0;
+    }
+    s.hp = s.maxHp;
+    if (name === "guard-from-10m") {
+      if (!job) return "no job (load with &job)";
+      job.skipTo(1);
+      // No diamond: the frame asks whether he reads on his own.
+      job.target = null;
+      const g = enemies.find((e) => e.alive && e.passive);
+      if (!g) return "no guard";
+      g.update(0.0001, sightNone(), rays, world.colliders, ground);
+      const from = new THREE.Vector3(g.position.x, 0, g.position.z + 10);
+      from.y = ground(from.x, from.z);
+      lookFrom(from, g.body.joints.chest.clone());
+      probeGuard = g;
+      hud.freeze(tMs);
+      return "ok";
+    }
+    if (!stageHome) stageHome = { pos: player.pos.clone(), yaw: player.yaw, pitch: player.pitch };
+    player.pos.copy(stageHome.pos);
+    player.yaw = stageHome.yaw;
+    player.pitch = stageHome.pitch;
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
+    const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
+    const side = new THREE.Vector3(-flat.z, 0, flat.x);
+    if (name === "enemy-front-10m" || name === "enemy-back-10m") {
+      if (stageGuard && stageGuard.body.lost.size === 0 && enemies.includes(stageGuard)) {
+        if (!stageGuard.alive) stageGuard.revive();
+      } else stageGuard = null;
+      const rifle = enemies.filter((e) => e.alive && (e.kit.role ?? "rifle") === "rifle").sort((a, b) => a.position.distanceTo(eye) - b.position.distanceTo(eye));
+      const g = stageGuard ?? rifle[0];
+      if (!g) return "no enemy";
+      stageGuard = g;
+      g.revive();
+      const at = eye.clone().addScaledVector(flat, 10);
+      at.y = ground(at.x, at.z);
+      g.motion.pos.copy(at);
+      g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z) + (name === "enemy-back-10m" ? Math.PI : 0);
+      g.hp = g.kit.maxHp;
+      g.flinch.reset();
+      g.update(0.0001, sightNone(), rays, world.colliders, ground);
+      // Framed on him, a touch left of centre so the reticle sits beside him and not on his chest.
+      lookFrom(stageHome.pos, g.body.joints.chest.clone().addScaledVector(side, -0.55));
+      probeGuard = g;
+      hud.freeze(tMs);
+      return "ok";
+    }
+    // The lineups: their own figures in the open street ahead, the street's own enemies out of the frame.
+    const arch = name.startsWith("turntable-") ? name.slice("turntable-".length) : null;
+    const kits = arch ? [arch, arch, arch, arch] : ["enforcer", "leader", "riot", "sniper"];
+    const turns = arch ? [0, Math.PI / 4, Math.PI / 2, Math.PI] : [0.35, 0.35, 0.35, 0.35];
+    const centre = eye.clone().addScaledVector(flat, arch ? 3.6 : 4.4);
+    const gap = arch ? 0.95 : 1.05;
+    for (const [i, k] of kits.entries()) {
+      const kit = LINEUP_KITS[k];
+      if (!kit) return `unknown archetype ${k}`;
+      const e = new Enemy({ ...kit }, [new THREE.Vector3()], 1);
+      const at = centre.clone().addScaledVector(side, (i - (kits.length - 1) / 2) * gap);
+      at.y = ground(at.x, at.z);
+      e.motion.pos.copy(at);
+      e.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z) + turns[i]!;
+      e.passive = true;
+      world.scene.add(e.body.root);
+      e.update(0.0001, sightNone(), rays, world.colliders, ground);
+      lineup.push(e);
+    }
+    const hide = enemies.filter((e) => e.body.root.visible && e.body.root.position.distanceTo(centre) < 30);
+    for (const e of hide) e.body.root.visible = false;
+    lineupHidden.push(...hide);
+    world.viewScene.visible = false;
+    hud.review(true);
+    lookFrom(stageHome.pos, centre.clone().setY(ground(centre.x, centre.z) + 0.95));
+    bodyView.eye.copy(eye);
+    {
+      // The lineup's box on screen (CSS px), for the review crop.
+      let x0 = Infinity;
+      let x1 = -Infinity;
+      let y0 = Infinity;
+      let y1 = -Infinity;
+      for (const e of lineup)
+        for (const j of ["head", "footL", "footR", "handL", "handR", "shoulderL", "shoulderR"] as const) {
+          const p = toScreen(e.body.joints[j].clone().add(new THREE.Vector3(0, j === "head" ? 0.2 : j.startsWith("foot") ? -0.08 : 0, 0)));
+          x0 = Math.min(x0, p.x);
+          x1 = Math.max(x1, p.x);
+          y0 = Math.min(y0, p.y);
+          y1 = Math.max(y1, p.y);
+        }
+      const z0 = { x: 0, y: 0 };
+      s.stageInfo = { hit: z0, r02: 0, head0: z0, head1: z0, puffM: 0, splats: [], corpse: { pelvis: z0, head: z0, chest: z0 }, box: { x: x0 - 30, y: y0 - 20, w: x1 - x0 + 60, h: y1 - y0 + 40 } };
+    }
+    if (name === "silhouette-lineup") {
+      const black = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      const grey = new THREE.Color(0x808080);
+      const keep = new Set<THREE.Object3D>();
+      for (const e of lineup) e.body.root.traverse((o) => keep.add(o));
+      reviewRender = () => {
+        const sc = world.scene;
+        const off: THREE.Object3D[] = [];
+        sc.traverse((o) => {
+          const m = o as THREE.Mesh & THREE.Points & THREE.Line & THREE.Sprite;
+          if ((m.isMesh || m.isPoints || m.isLine || m.isSprite) && m.visible && !keep.has(o)) {
+            m.visible = false;
+            off.push(m);
+          }
+        });
+        const bg = sc.background;
+        const fog = sc.fog;
+        const ov = sc.overrideMaterial;
+        sc.background = grey;
+        sc.fog = null;
+        sc.overrideMaterial = black;
+        const r = world.renderer;
+        const tm = r.toneMapping;
+        r.toneMapping = THREE.NoToneMapping;
+        r.setRenderTarget(null);
+        r.render(sc, world.camera);
+        r.toneMapping = tm;
+        sc.background = bg;
+        sc.fog = fog;
+        sc.overrideMaterial = ov;
+        for (const m of off) m.visible = true;
+      };
+    }
+    hud.freeze(tMs);
+    return "ok";
+  };
+  const lineupHidden: Enemy[] = [];
+  const endReview = () => {
+    clearReview();
+    for (const e of lineupHidden) e.body.root.visible = true;
+    lineupHidden.length = 0;
+  };
+  s.probeEnemy = () => {
+    const g = probeGuard;
+    if (!g) return null;
+    render();
+    const r = world.renderer;
+    const c = r.domElement;
+    const w = c.width;
+    const h = c.height;
+    const cv = document.createElement("canvas");
+    cv.width = w;
+    cv.height = h;
+    const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+    g2.drawImage(c, 0, 0, w, h);
+    const frame = g2.getImageData(0, 0, w, h).data;
+    // His mask: everything else hidden, his meshes flat white, no fog, into a target the canvas's size.
+    const rt = new THREE.WebGLRenderTarget(w, h);
+    const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const keep = new Set<THREE.Object3D>();
+    g.body.root.traverse((o) => keep.add(o));
+    const off: THREE.Object3D[] = [];
+    world.scene.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if ((m.isMesh || (o as THREE.Points).isPoints || (o as THREE.Line).isLine || (o as THREE.Sprite).isSprite) && o.visible && !keep.has(o)) {
+        o.visible = false;
+        off.push(o);
+      }
+    });
+    const sc = world.scene;
+    const bg = sc.background;
+    const fog = sc.fog;
+    sc.background = null;
+    sc.fog = null;
+    sc.overrideMaterial = white;
+    const prevT = r.getRenderTarget();
+    const prevC = r.getClearColor(new THREE.Color());
+    const prevA = r.getClearAlpha();
+    r.setRenderTarget(rt);
+    r.setClearColor(0x000000, 0);
+    r.clear();
+    r.render(sc, world.camera);
+    const px = new Uint8Array(w * h * 4);
+    r.readRenderTargetPixels(rt, 0, 0, w, h, px);
+    r.setRenderTarget(prevT);
+    r.setClearColor(prevC, prevA);
+    sc.overrideMaterial = null;
+    sc.background = bg;
+    sc.fog = fog;
+    for (const o of off) o.visible = true;
+    white.dispose();
+    rt.dispose();
+    const lum = (o: number) => (0.2126 * frame[o]! + 0.7152 * frame[o + 1]! + 0.0722 * frame[o + 2]!) / 255;
+    let x0 = w;
+    let x1 = -1;
+    let y0 = h;
+    let y1 = -1;
+    let n = 0;
+    let sum = 0;
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        if (px[(y * w + x) * 4 + 3]! < 128) continue;
+        const fy = h - 1 - y;
+        n++;
+        sum += lum((fy * w + x) * 4);
+        x0 = Math.min(x0, x);
+        x1 = Math.max(x1, x);
+        y0 = Math.min(y0, fy);
+        y1 = Math.max(y1, fy);
+      }
+    if (!n) return { enemy: 0, street: 0, ratio: 0, px: 0, heightPx: 0, box: { x: 0, y: 0, w: 0, h: 0 } };
+    // The street around him: a box one figure-width out each side and a fifth of his height above and below,
+    // his own pixels left out.
+    const bw = x1 - x0 + 1;
+    const bh = y1 - y0 + 1;
+    let sn = 0;
+    let ss = 0;
+    for (let y = Math.max(0, y0 - Math.round(bh * 0.2)); y <= Math.min(h - 1, y1 + Math.round(bh * 0.2)); y++)
+      for (let x = Math.max(0, x0 - bw); x <= Math.min(w - 1, x1 + bw); x++) {
+        if (px[((h - 1 - y) * w + x) * 4 + 3]! >= 128) continue;
+        sn++;
+        ss += lum((y * w + x) * 4);
+      }
+    const enemy = sum / n;
+    const street = ss / Math.max(1, sn);
+    const k = w / c.clientWidth;
+    return { enemy, street, ratio: enemy / Math.max(1e-4, street), px: n, heightPx: bh / k, box: { x: x0 / k, y: y0 / k, w: bw / k, h: bh / k } };
+  };
+  s.silhouetteThumb = () => {
+    if (!lineup.length) return null;
+    render();
+    const c = world.renderer.domElement;
+    const w = c.width;
+    const h = c.height;
+    const cv = document.createElement("canvas");
+    cv.width = w;
+    cv.height = h;
+    const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+    g2.drawImage(c, 0, 0);
+    const px = g2.getImageData(0, 0, w, h).data;
+    let x0 = w;
+    let x1 = -1;
+    let y0 = h;
+    let y1 = -1;
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++)
+        if (px[(y * w + x) * 4]! < 64) {
+          x0 = Math.min(x0, x);
+          x1 = Math.max(x1, x);
+          y0 = Math.min(y0, y);
+          y1 = Math.max(y1, y);
+        }
+    if (x1 < 0) return null;
+    const k = 64 / (y1 - y0 + 1);
+    const pad = 8;
+    const out = document.createElement("canvas");
+    out.width = Math.round((x1 - x0 + 1) * k) + pad * 2;
+    out.height = 64 + pad * 2;
+    const o2 = out.getContext("2d")!;
+    o2.fillStyle = "#808080";
+    o2.fillRect(0, 0, out.width, out.height);
+    o2.imageSmoothingQuality = "high";
+    o2.drawImage(c, x0, y0, x1 - x0 + 1, y1 - y0 + 1, pad, pad, out.width - pad * 2, 64);
+    return out.toDataURL("image/png");
+  };
   s.stage = (name: string, tMs = 60): string => {
+    endReview();
     restarting = false;
     c9 = C9_STAGES[name.replace(/-\d+s?$/, "")] ?? null;
     if (c9) {
@@ -3293,6 +3618,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (C8_STAGES.includes(name)) return c8Stage(name, tMs);
     if (C6_STAGES.includes(name) || C7_STAGES.includes(name)) return c6Stage(name, tMs);
     calmVitals();
+    if (C10_STAGES.includes(name)) return c10Stage(name, tMs);
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
     if (C4_STAGES.includes(name)) return c4Stage(name, tMs);
     arsenal.holdAim = false;
@@ -3418,7 +3744,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (stageCrate) stageCrate.visible = crated;
     if (crateCollider) crateCollider.off = !crated;
-    const joint = name === "hit-head" || name === "hit-headkill" || name === "peek-head" || name === "enemy-flinch-head-60" ? g.body.joints.head : g.body.joints.chest;
+    // C10: hit-arm takes the round on the support forearm, between the elbow and the hand.
+    const joint = name === "hit-arm" ? g.body.joints.elbowL.clone().lerp(g.body.joints.handL, 0.45) : name === "hit-head" || name === "hit-headkill" || name === "peek-head" || name === "enemy-flinch-head-60" ? g.body.joints.head : g.body.joints.chest;
     const aim = joint.clone();
     // Blocked: the round goes into the crate's upper face, square on, with the guard's head showing behind it.
     if (name === "blocked" && stageCrate) aim.copy(stageCrate.position).y += 0.35;
@@ -3627,7 +3954,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     });
     // Where the body is now (the kill stage looks for the corpse): pelvis and head on screen.
     const corpse = { pelvis: toScreen(g.body.joints.pelvis), head: toScreen(g.body.joints.head), chest: toScreen(g.body.joints.chest) };
-    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse, variant: g.deathVariant, pool: poolInfo, asleep: g.body.asleep, heights: c9 ? jointHeights(g) : undefined };
+    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse, variant: g.deathVariant, pool: poolInfo, asleep: g.body.asleep, heights: c9 ? jointHeights(g) : undefined, handOpen: { L: g.body.handOpenDeg("L"), R: g.body.handOpenDeg("R") } };
     if (name === "hit-soft") hud.hitMarker("armour");
     if (name === "hit-pen") hud.hitMarker("pen");
     if (name === "hit-armourbreak") hud.hitMarker("armourBreak");

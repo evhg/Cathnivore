@@ -637,6 +637,11 @@ export class Hud {
 
   /** Screenshot stages: hold the marker, brackets and their animations at `tMs` after the event. */
   private frozen = false;
+  /** C10 review renders (the turntable, the silhouette lineup): the HUD steps out of the frame. */
+  review(on: boolean): void {
+    this.root.classList.toggle("is-review", on);
+  }
+
   freeze(tMs: number | null): void {
     this.frozen = tMs !== null;
     this.root.classList.toggle("is-frozen", this.frozen);

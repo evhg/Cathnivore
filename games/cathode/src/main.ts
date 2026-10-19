@@ -157,7 +157,13 @@ function fontsReady(ms = 600): Promise<void> {
   return Promise.race([loads, new Promise<void>((resolve) => setTimeout(resolve, ms))]);
 }
 
-if (!prefs.adult && !shotBypass) {
+// C10: ?shot&arch=<id> is the enemy review turntable (game/turntable.ts), not the game.
+const turntable = params.has("shot") && params.has("arch");
+if (turntable) {
+  show("screen-game");
+  $("hud").hidden = true;
+  void import("./game/turntable").then(({ openTurntable }) => openTurntable($<HTMLCanvasElement>("view")));
+} else if (!prefs.adult && !shotBypass) {
   $("gate-cath").innerHTML = cathSvg({ expression: "smirk", framing: "half", outfit: "trench" });
   void fontsReady().then(() => show("screen-gate"));
 }

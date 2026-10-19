@@ -4,9 +4,9 @@
 
 import { tuning } from "./feel/tuning";
 import * as THREE from "three";
-import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { Body, enforcerLook, place, tagUnflashed, type BodyLook, type Zone } from "./body";
+import { Body, enforcerLook, place, tagUnflashed, bodyView, type BodyLook, type Zone } from "./body";
+import { archFor } from "./models/enforcer";
+import { buildRifle, buildShield, rifleLod, BOLT_KICK_M, type Rifle } from "./models/gear";
 import { DEATH, DeathRun, DroppedProp, helmetPops, pickVariant, visorLevel, type DeathCtx, type DeathVariant } from "./death";
 import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
 import { animate, muzzleOf, type Motion } from "./animate";
@@ -39,6 +39,8 @@ export interface EnemyKit {
   drain?: number;
   /** Shield bearers with this slam the shield into Cath when she's within reach (melee). */
   bash?: boolean;
+  /** C10 (S3.2): a squad leader wears the helmet crest and a red visor stripe. */
+  leader?: boolean;
 }
 
 export const RIOT_SHIELD: EnemyKit = {
@@ -228,6 +230,8 @@ export class Enemy {
   readonly id = nextId++;
   readonly body: Body;
   readonly rifle: THREE.Group;
+  /** C10: the carbine's moving parts (the bolt kicks when he fires). */
+  private readonly gun: Rifle;
   hp: number;
   state: Awareness = "unaware";
   /** 0..1 detection meter: fills while she's seen, drains when she's not. */
@@ -255,7 +259,7 @@ export class Enemy {
   found = false;
   readonly vel = new THREE.Vector3();
   /** The riot shield (shield bearers only), and the sniper's laser. */
-  shield: THREE.Mesh | null = null;
+  shield: THREE.Object3D | null = null;
   private bashCd = 0;
   laser: THREE.Mesh | null = null;
   /** Sniper: seconds of steady aim built up; fires at SNIPER_CHARGE. */
@@ -272,7 +276,6 @@ export class Enemy {
   private trailFrom = new THREE.Vector3(NaN, 0, 0);
   /** The killing round's travel, flat (where the wall behind him is, for the slump smear). */
   readonly deathDir = new THREE.Vector3();
-  private visorBase = 1;
   private smeared = false;
   /** Shots this frame, for the session to resolve: from, direction. */
   readonly shots: Array<{ from: THREE.Vector3; dir: THREE.Vector3; melee?: boolean }> = [];
@@ -281,7 +284,7 @@ export class Enemy {
     readonly kit: EnemyKit,
     route: THREE.Vector3[],
     readonly level = 1,
-    look: BodyLook = enforcerLook(kit.visor),
+    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader)),
   ) {
     this.body = new Body(look);
     this.hp = kit.maxHp;
@@ -301,19 +304,12 @@ export class Enemy {
     // Face along the route from the start, not at whatever happens to lie north.
     const next = this.route[1];
     if (next) this.motion.yaw = Math.atan2(next.x - start.x, next.z - start.z);
-    this.visorBase = (look.visor as THREE.MeshStandardMaterial).emissiveIntensity ?? 1;
-    this.rifle = buildRifle(look);
+    this.gun = buildRifle(bodyView.phone, kit.role === "sniper");
+    this.rifle = this.gun.root;
     tagUnflashed(this.rifle);
     this.body.root.add(this.rifle);
     if (kit.role === "shield") {
-      const g = new RoundedBoxGeometry(0.62, 1.05, 0.05, 2, 0.02);
-      this.shield = new THREE.Mesh(
-        g,
-        new THREE.MeshStandardMaterial({ color: 0x1a2028, roughness: 0.25, metalness: 0.4, transparent: true, opacity: 0.82 }),
-      );
-      const slot = new THREE.Mesh(new RoundedBoxGeometry(0.34, 0.06, 0.055, 1, 0.01), look.visor);
-      slot.position.set(0, 0.32, 0);
-      this.shield.add(slot);
+      this.shield = buildShield(kit.visor, bodyView.phone);
       tagUnflashed(this.shield);
       this.body.root.add(this.shield);
     }
@@ -386,7 +382,7 @@ export class Enemy {
       this.deadFor += dt;
       this.body.physics(dt, { colliders, ground });
       this.deathTick(dt, colliders, ground);
-      this.body.pose();
+      this.body.pose(dt);
       this.placeRifle();
       return;
     }
@@ -609,7 +605,11 @@ export class Enemy {
     if (this.kit.role === "sniper" && this.state !== "combat") this.charge = 0;
     animate(this.body, this.motion);
     this.body.carry();
-    this.body.pose();
+    // S3.1: the faction rim comes up in a fight (0.3 at rest, 0.6 in combat).
+    this.body.alert += ((this.state === "combat" ? 1 : 0) - this.body.alert) * Math.min(1, dt * 3);
+    // S3.5: raising the rifle to aim flares the visor (x1.0 to x1.6): the tell that he's about to fire.
+    this.body.visorAim = 1 + (tuning.enemyLook.visor.aimFlare - 1) * Math.max(0, Math.min(1, this.motion.aim));
+    this.body.pose(dt);
     this.placeRifle();
   }
 
@@ -679,6 +679,10 @@ export class Enemy {
       return;
     }
     place(this.rifle, b.joints.handR, b.joints.handL, b.facing.clone().set(0, 1, 0));
+    this.rifle.scale.setScalar(b.scale);
+    rifleLod(this.gun, b.lod);
+    // The bolt kicks back 15 mm on each round (the recoil kick decays at 8/s).
+    this.gun.bolt.position.z = Math.min(1, this.motion.kick * 2) * BOLT_KICK_M;
   }
 
   private fleeT = 0;
@@ -770,7 +774,7 @@ export class Enemy {
       animate(this.body, this.motion);
       this.body.carry();
     }
-    this.body.pose();
+    this.body.pose(dt);
     this.placeRifle();
   }
 
@@ -798,6 +802,8 @@ export class Enemy {
     // flipped it from run to run, so the same staged chest shot moved the head 2.6 or 9.2 px (C2 review).
     const side = Math.abs(rel.x) > 0.04 ? rel.x : d.x <= 0 ? 1 : -1;
     this.flinch.hit(zone, flinchImpulse(zone, d, side, scale, weaponCls, distance), d, side);
+    // S4.1: an arm hit opens that hand 30 degrees off the grip.
+    if (zone === "armL" || zone === "armR") this.body.openHand(zone === "armL" ? "L" : "R");
   }
 
   /** A hit: takes the damage (the flinch is react's job), and returns true if it died. */
@@ -830,7 +836,7 @@ export class Enemy {
     this.smeared = false;
     this.deathEvents.length = 0;
     this.rifle.visible = this.kit.role !== "orderly";
-    (this.body.look.visor as THREE.MeshStandardMaterial).emissiveIntensity = this.visorBase;
+    this.body.visorLevel = 1;
   }
 
   /**
@@ -881,8 +887,7 @@ export class Enemy {
    */
   private deathTick(dt: number, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
     const ms = this.deadFor * 1000;
-    const visor = this.body.look.visor as THREE.MeshStandardMaterial;
-    visor.emissiveIntensity = this.visorBase * visorLevel(ms);
+    this.body.visorLevel = visorLevel(ms);
     const run = this.body.dying;
     const b = this.body;
     if (!this.drop && this.rifle.visible && this.kit.role !== "orderly" && !this.shield && (!run || run.t >= Math.min(run.dur, DEATH.dropMs) || !run.active)) {
@@ -915,28 +920,4 @@ function toBody(v: THREE.Vector3, inv: number): { x: number; y: number; z: numbe
 
 function flatDist(a: THREE.Vector3, b: THREE.Vector3): number {
   return Math.hypot(a.x - b.x, a.z - b.z);
-}
-
-/** A compact bullpup rifle, built along +Y from the trigger hand towards the support hand. */
-function buildRifle(look: BodyLook): THREE.Group {
-  const g = new THREE.Group();
-  const dark = new THREE.MeshStandardMaterial({ color: 0x0d0e10, roughness: 0.45, metalness: 0.7 });
-  const add = (geo: THREE.BufferGeometry, m: THREE.Material, x: number, y: number, z: number) => {
-    const o = new THREE.Mesh(geo, m);
-    o.position.set(x, y, z);
-    o.castShadow = true;
-    g.add(o);
-    return o;
-  };
-  // The dark steel parts share one geometry: one draw call instead of four per rifle (S0 budget).
-  const steel = [
-    new RoundedBoxGeometry(0.06, 0.62, 0.1, 2, 0.015).translate(0, 0.12, 0.03), // receiver
-    new THREE.CylinderGeometry(0.013, 0.013, 0.32, 8).translate(0, 0.58, 0.05), // barrel
-    new RoundedBoxGeometry(0.045, 0.06, 0.14, 2, 0.01).translate(0, 0.0, -0.06), // grip
-    new RoundedBoxGeometry(0.05, 0.08, 0.16, 2, 0.012).translate(0, -0.18, -0.04), // magazine (behind the grip)
-  ].map((geo) => (geo.index ? geo.toNonIndexed() : geo));
-  add(mergeGeometries(steel, false)!, dark, 0, 0, 0);
-  add(new RoundedBoxGeometry(0.04, 0.1, 0.09, 2, 0.01), look.armour, 0, 0.3, 0.1); // optic
-  add(new RoundedBoxGeometry(0.03, 0.08, 0.016, 1, 0.005), look.visor, 0, 0.3, 0.155); // optic glow
-  return g;
 }

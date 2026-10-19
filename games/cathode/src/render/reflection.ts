@@ -7,6 +7,10 @@ import * as THREE from "three";
 
 /** Layer for things the reflection must not see: the mirror surfaces themselves, rain and lens effects. */
 export const LAYER_NO_REFLECT = 1;
+/** C10: things only the mirror draws (an enemy's LOD2 stand-in: the street reflects a cheap body, S3.1). */
+export const LAYER_MIRROR_ONLY = 2;
+/** C10: 1 while the mirror pass draws (shared by the enemy materials: no rim light in the reflection, S3.1). */
+export const mirrorPass = { value: 0 };
 
 export class PlanarReflection {
   readonly target: THREE.WebGLRenderTarget;
@@ -38,6 +42,7 @@ export class PlanarReflection {
       depthBuffer: true,
     });
     this.cam.layers.set(0);
+    this.cam.layers.enable(LAYER_MIRROR_ONLY);
   }
 
   setSize(width: number, height: number): void {
@@ -101,7 +106,9 @@ export class PlanarReflection {
         hidden.push(decals);
       }
     }
+    mirrorPass.value = 1;
     renderer.render(scene, cam);
+    mirrorPass.value = 0;
     showAll(hidden);
     renderer.setRenderTarget(prevTarget);
     renderer.shadowMap.autoUpdate = prevShadow;
@@ -114,6 +121,14 @@ export class PlanarReflection {
 }
 
 const cullCentre = new THREE.Vector3();
+/** A mesh's bounding sphere in its own space: a skinned body keeps its own (its shared geometry's is bone-local). */
+function sphereOf(m: THREE.Mesh): THREE.Sphere {
+  const sk = m as THREE.SkinnedMesh;
+  if (sk.isSkinnedMesh && sk.boundingSphere) return sk.boundingSphere;
+  const g = m.geometry;
+  if (!g.boundingSphere) g.computeBoundingSphere();
+  return g.boundingSphere!;
+}
 /**
  * Hides (and lists in `out`) every visible layer-0 mesh whose bounding sphere spans less than `k` radians from
  * `eye` (radius over distance). Instanced meshes are aggregates and always stay. Undo with showAll(out).
@@ -122,10 +137,8 @@ export function hideSmall(scene: THREE.Object3D, eye: THREE.Vector3, k: number, 
   const k2 = k * k;
   scene.traverseVisible((o) => {
     const m = o as THREE.Mesh;
-    if (!m.isMesh || (m as THREE.InstancedMesh).isInstancedMesh || !m.layers.isEnabled(0)) return;
-    const g = m.geometry;
-    if (!g.boundingSphere) g.computeBoundingSphere();
-    const bs = g.boundingSphere!;
+    if (!m.isMesh || (m as THREE.InstancedMesh).isInstancedMesh || !(m.layers.isEnabled(0) || m.layers.isEnabled(LAYER_MIRROR_ONLY))) return;
+    const bs = sphereOf(m);
     const r = bs.radius * m.matrixWorld.getMaxScaleOnAxis();
     if (r * r < k2 * cullCentre.copy(bs.center).applyMatrix4(m.matrixWorld).distanceToSquared(eye)) {
       m.visible = false;
@@ -140,9 +153,7 @@ export function unshadowSmall(scene: THREE.Object3D, eye: THREE.Vector3, k: numb
   scene.traverseVisible((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh || !m.castShadow || (m as THREE.InstancedMesh).isInstancedMesh) return;
-    const g = m.geometry;
-    if (!g.boundingSphere) g.computeBoundingSphere();
-    const bs = g.boundingSphere!;
+    const bs = sphereOf(m);
     const r = bs.radius * m.matrixWorld.getMaxScaleOnAxis();
     if (r * r < k2 * cullCentre.copy(bs.center).applyMatrix4(m.matrixWorld).distanceToSquared(eye)) {
       m.castShadow = false;

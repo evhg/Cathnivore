@@ -43,10 +43,15 @@ const C9 = ['death-gutclutch-450', 'death-wallslump-1200', 'death-headshot-300',
 // C9X: the other deaths that can be staged in the open street (knees then face, blown back), and the head kill a
 // moment later, when the knocked-off helmet has landed.
 const C9X = ['death-knees-650', 'death-blownback-350', 'death-headshot-900']
-const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X }
+// C10 "Enforcer v2": the guard at 10 m from the front and from behind (his mask must out-read the street behind,
+// x1.3), the turntable, the silhouette lineup (also saved at 64 px tall), an arm hit 60 ms on (the struck hand
+// open), and the owner's audit frame of the first guard under his lamp with no diamond (&job).
+const C10 = ['enemy-front-10m', 'enemy-back-10m', 'turntable-enforcer', 'silhouette-lineup', 'hit-arm@60', 'guard-from-10m']
+const C10X = ['turntable-riot', 'turntable-sniper', 'turntable-leader']
+const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
-const JOB_STAGES = new Set(C3.map((s) => s.split('@')[0]))
+const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m'])
 // C2's red-pixel probe: the share of rendered pixels within 0.2 m of the projected hit point that are
 // red-dominant (the spec's "N", as a share so it holds at every render scale).
 const RED_MIN = 0.1
@@ -454,6 +459,39 @@ for (const vp of vps) {
           if (g > r * 0.6 && b > r * 0.6 && best.share < 0.3) warn(`${vp} ${spec}: the splat reads pink (mean ${best.pr.mean})`)
         }
       }
+    }
+    // ---- C10 acceptance ----
+    if (/^(enemy-(front|back)-10m|guard-from-10m)$/.test(stage)) {
+      const pe = await page.evaluate(() => window.cathode.probeEnemy?.() ?? null)
+      side.c10 = { probe: pe }
+      if (!pe || !pe.px) fail(`${vp} ${spec}: the guard isn't on screen`)
+      else {
+        // A close crop on him, for judging the model (2.2x his height, square-ish).
+        const bh = pe.box.h * 1.5
+        const bw = Math.max(pe.box.w * 1.6, bh * 0.8)
+        const cx = Math.max(0, Math.min(V.viewport.width - bw, pe.box.x + pe.box.w / 2 - bw / 2))
+        const cy = Math.max(0, Math.min(V.viewport.height - bh, pe.box.y + pe.box.h / 2 - bh / 2))
+        await page.screenshot({ path: `${file}-body.png`, clip: { x: cx, y: cy, width: bw, height: bh }, timeout: 300_000 })
+        console.log(`  C10 ${vp} ${spec}: guard mean luminance ${pe.enemy.toFixed(3)} against the street's ${pe.street.toFixed(3)} (x${pe.ratio.toFixed(2)}), ${pe.heightPx.toFixed(0)} CSS px tall`)
+        if (stage === 'enemy-back-10m' && pe.ratio < 1.3) fail(`${vp} ${spec}: from behind he reads at x${pe.ratio.toFixed(2)} of the street (< 1.3)`)
+        if (stage === 'guard-from-10m' && pe.ratio < 1.3) warn(`${vp} ${spec}: the guard under the lamp reads at x${pe.ratio.toFixed(2)} of the street`)
+      }
+    }
+    if (/^(turntable-|silhouette-lineup)/.test(stage) && info?.box) {
+      const b = info.box
+      const cx = Math.max(0, b.x)
+      const cy = Math.max(0, b.y)
+      await page.screenshot({ path: `${file}-body.png`, clip: { x: cx, y: cy, width: Math.min(V.viewport.width - cx, b.w), height: Math.min(V.viewport.height - cy, b.h) }, timeout: 300_000 })
+    }
+    if (stage === 'silhouette-lineup') {
+      const url = await page.evaluate(() => window.cathode.silhouetteThumb?.() ?? null)
+      if (!url) fail(`${vp} ${spec}: no silhouettes`)
+      else writeFileSync(`${file}-64.png`, Buffer.from(url.split(',')[1], 'base64'))
+    }
+    if (stage === 'hit-arm') {
+      const hand = info?.handOpen
+      console.log(`  C10 ${vp} ${spec}: hit ${info?.seg ?? '?'}, hands open L ${hand?.L?.toFixed(0) ?? '-'} R ${hand?.R?.toFixed(0) ?? '-'} deg`)
+      if (!hand || !(Math.max(hand.L, hand.R) >= 20)) fail(`${vp} ${spec}: the struck hand isn't open (${hand ? Math.max(hand.L, hand.R).toFixed(0) : '-'} deg < 20)`)
     }
     // ---- C9 acceptance ----
     if (/^(death-(gutclutch|wallslump|headshot|spin|knees|blownback)|blood-pool)/.test(stage) && info) {

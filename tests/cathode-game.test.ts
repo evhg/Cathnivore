@@ -75,7 +75,7 @@ describe("CATHODE bodies", () => {
   it("severing an upper arm takes the forearm with it and stops it being hit", () => {
     const b = new Body(enforcerLook());
     const gone = b.sever("upperArmL", V(3, 2, 0));
-    expect(gone).toEqual(["upperArmL", "forearmL"]);
+    expect(gone).toEqual(["upperArmL", "forearmL", "handL"]);
     expect(b.sever("forearmL", V(0, 0, 0))).toEqual([]);
     for (let i = 0; i < 120; i++) b.physics(1 / 60, { colliders: [], ground: () => 0 });
     expect(b.segs.get("forearmL")!.loose!.a.y).toBeGreaterThanOrEqual(0);

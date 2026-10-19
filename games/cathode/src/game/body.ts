@@ -1,20 +1,30 @@
 // A humanoid built from rigid armoured segments hung between joints. One representation serves three
 // jobs: procedural animation writes joint positions, a Verlet ragdoll simulates them after death, and a
-// severed limb is just a segment that leaves the body and tumbles on its own. Segment meshes are placed
-// between their two joints every frame, so animation, ragdoll and gore share one code path.
+// severed limb is just a segment that leaves the body and tumbles on its own. Each segment is a bone placed
+// between its two joints every frame, so animation, ragdoll and gore share one code path.
+//
+// C10 "Enforcer v2" (S3.1): the body draws as skinned meshes over those bones, every piece rigidly bound to its
+// segment (or to the helmet or a finger set), from geometry shared by every body of the archetype
+// (models/enforcer.ts) on two materials shared by every body in the game (models/materials.ts). What differs per
+// body (the hit flash, the rims, the visor, the LOD dither) rides the body's own skeleton as data bones. Three LODs
+// swap on distance with a 0.3 s dither; the street's mirror sees a LOD2 stand-in; the tabard is cloth.
 
 import * as THREE from "three";
-import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { tuning } from "./feel/tuning";
 import { DEATH, DroppedProp, limitJoints, type DeathRun } from "./death";
+import { BASE_JOINTS, JOINTS, REST, SEGMENTS, FX0, HELM_Y, KNUCKLE_Y, ACCESSORY_BONES, deriveJoints, type Joint, type SegmentDef } from "./rig";
+import { LAYER_NO_REFLECT, LAYER_MIRROR_ONLY } from "../render/reflection";
+import { archGeometry, type Arch, type Lod } from "./models/enforcer";
+import { enemyMaterials, fxBone, setFx, FX_BONES, GORE_MAT } from "./models/materials";
+import { Cloth, TABARD, COAT_TAILS } from "./cloth";
+
+export { JOINTS, REST, SEGMENTS, type Joint, type Zone, type SegmentDef } from "./rig";
 
 const flashTuning = tuning.hitFlash;
-/** The helmet's centre up the head segment (m), and its radius where it lies on the street. */
-const HELM_Y = 0.15;
+const LOOK = tuning.enemyLook;
+/** The helmet's radius where it lies on the street. */
 const HELM_R = 0.14;
 
-/** S4.1: the flash's level at `ageMs` after a hit: white for a frame, then red at 0.6 fading to 0 over 150 ms. */
 /** The death glow's strength for this session: the phone's fog and lighter grade need it brighter (set by session.ts). */
 export const deathGlowScale = { value: 1, rimPow: 0, rimGain: 1 };
 /**
@@ -23,7 +33,13 @@ export const deathGlowScale = { value: 1, rimPow: 0, rimGain: 1 };
  * smear the half-resolution mirror and the phone's shadow map lose anyway, so it costs one pass, not three.
  */
 export const deadCost = { cheap: false };
+/**
+ * C10: what every body needs to know about the view: where the eye is (LOD distances), the profile (phone
+ * geometry, LOD distances, cloth substeps), and a forced LOD for the review stages (`?lod=`, -1 = by distance).
+ */
+export const bodyView = { eye: new THREE.Vector3(0, 1.6, 0), phone: false, forceLod: -1 as -1 | Lod, clock: () => (typeof performance === "undefined" ? 0 : performance.now()) };
 
+/** S4.1: the flash's level at `ageMs` after a hit: white for a frame, then red at 0.6 fading to 0 over 150 ms. */
 export function flashLevel(ageMs: number): number {
   const F = flashTuning;
   if (ageMs < F.whiteMs) return F.white;
@@ -31,38 +47,11 @@ export function flashLevel(ageMs: number): number {
   return k > 0 ? F.redGain * k * k : 0;
 }
 
-export { JOINTS, REST, type Joint, type Zone } from "./rig";
-import { JOINTS, REST, type Joint, type Zone } from "./rig";
-import { LAYER_NO_REFLECT } from "../render/reflection";
-
-
-export interface SegmentDef {
-  name: string;
-  from: Joint;
-  to: Joint;
-  zone: Zone;
-  /** Hit volume radius, metres. */
-  radius: number;
-  /** Severing this segment also takes these (a forearm goes with the upper arm). */
-  carries?: string[];
-}
-
-export const SEGMENTS: SegmentDef[] = [
-  { name: "abdomen", from: "pelvis", to: "chest", zone: "torso", radius: 0.16 },
-  { name: "chest", from: "chest", to: "neck", zone: "torso", radius: 0.2 },
-  { name: "head", from: "neck", to: "head", zone: "head", radius: 0.13 },
-  { name: "upperArmL", from: "shoulderL", to: "elbowL", zone: "armL", radius: 0.07, carries: ["forearmL"] },
-  { name: "forearmL", from: "elbowL", to: "handL", zone: "armL", radius: 0.06 },
-  { name: "upperArmR", from: "shoulderR", to: "elbowR", zone: "armR", radius: 0.07, carries: ["forearmR"] },
-  { name: "forearmR", from: "elbowR", to: "handR", zone: "armR", radius: 0.06 },
-  { name: "thighL", from: "hipL", to: "kneeL", zone: "legL", radius: 0.09, carries: ["shinL"] },
-  { name: "shinL", from: "kneeL", to: "footL", zone: "legL", radius: 0.075 },
-  { name: "thighR", from: "hipR", to: "kneeR", zone: "legR", radius: 0.09, carries: ["shinR"] },
-  { name: "shinR", from: "kneeR", to: "footR", zone: "legR", radius: 0.075 },
-];
-
-/** Rest lengths between joints that the ragdoll keeps (bones plus bracing so the torso stays a box). */
-const LINKS: Array<[Joint, Joint, number?]> = [
+/**
+ * Rest lengths between joints that the ragdoll keeps (bones plus bracing so the torso stays a box). The ragdoll
+ * simulates the sixteen authored joints; the five riding ones (rig.ts) are placed from them after every step, rigid.
+ */
+export const LINKS: Array<[Joint, Joint, number?]> = [
   ["pelvis", "chest"],
   ["chest", "neck"],
   ["neck", "head"],
@@ -90,176 +79,23 @@ const LINKS: Array<[Joint, Joint, number?]> = [
   ["head", "chest"],
 ];
 
+/** What a body wears: the archetype's geometry and the visor's colour (the faction rim is the visor's, desaturated). */
 export interface BodyLook {
-  armour: THREE.Material;
-  suit: THREE.Material;
-  visor: THREE.Material;
-  gore: THREE.Material;
-  boot: THREE.Material;
+  arch: Arch;
+  visor: number;
 }
 
-/** The standard Hollowell Enforcer kit: charcoal plates, black undersuit, an amber visor strip. */
-export function enforcerLook(visorColor = 0xffa040): BodyLook {
-  return {
-    armour: new THREE.MeshStandardMaterial({ color: 0x2b2e35, roughness: 0.38, metalness: 0.55 }),
-    suit: new THREE.MeshStandardMaterial({ color: 0x101114, roughness: 0.85, metalness: 0.05 }),
-    visor: new THREE.MeshStandardMaterial({ color: 0x110800, emissive: visorColor, emissiveIntensity: 6, roughness: 0.2 }),
-    gore: new THREE.MeshStandardMaterial({ color: 0x5a0008, roughness: 0.35, metalness: 0.1, emissive: 0x120000 }),
-    boot: new THREE.MeshStandardMaterial({ color: 0x0b0b0c, roughness: 0.6, metalness: 0.2 }),
-  };
+/** The standard Hollowell Enforcer kit: charcoal plates, black undersuit, an amber visor slit. */
+export function enforcerLook(visorColor = 0xffa040, arch: Arch = "enforcer"): BodyLook {
+  return { arch, visor: visorColor };
 }
 
-const geoCache = new Map<string, THREE.BufferGeometry>();
-function rbox(w: number, h: number, d: number, r = 0.02): THREE.BufferGeometry {
-  const k = `b${w}:${h}:${d}:${r}`;
-  let g = geoCache.get(k);
-  if (!g) geoCache.set(k, (g = new RoundedBoxGeometry(w, h, d, 2, r)));
-  return g;
-}
-function cyl(rt: number, rb: number, h: number, seg = 10): THREE.BufferGeometry {
-  const k = `c${rt}:${rb}:${h}:${seg}`;
-  let g = geoCache.get(k);
-  if (!g) geoCache.set(k, (g = new THREE.CylinderGeometry(rt, rb, h, seg)));
-  return g;
-}
-function sphere(r: number): THREE.BufferGeometry {
-  const k = `s${r}`;
-  let g = geoCache.get(k);
-  if (!g) geoCache.set(k, (g = new THREE.SphereGeometry(r, 16, 12)));
-  return g;
-}
+const IDENT = new THREE.Matrix4();
+const capGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.02, 10);
+/** Each segment's outer surface round its bone (m): where wounds sit on the plates, the suit and the helmet. */
+const SURFACE_R: Record<string, number> = { abdomen: 0.122, chest: 0.142, upperChest: 0.142, head: 0.165, upperArmL: 0.074, upperArmR: 0.074, forearmL: 0.066, forearmR: 0.066, handL: 0.04, handR: 0.04, thighL: 0.104, thighR: 0.104, shinL: 0.088, shinR: 0.088 };
 
-function mesh(g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0): THREE.Mesh {
-  const o = new THREE.Mesh(g, m);
-  o.position.set(x, y, z);
-  o.castShadow = true;
-  return o;
-}
-
-/**
- * Builds a segment's meshes in its local frame: +Y runs from `from` to `to` (length `len`), +Z faces the
- * way the body faces. Each segment also gets a gore cap at both ends, hidden until it's severed.
- */
-function buildSegment(name: string, len: number, look: BodyLook, seg = 0): THREE.Group {
-  const g = new THREE.Group();
-  const { armour: a, suit: s, visor: v, boot: b } = look;
-  const mid = len / 2;
-  switch (name) {
-    case "abdomen":
-      g.add(mesh(cyl(0.15, 0.16, len, 12), s, 0, mid, 0));
-      g.add(mesh(rbox(0.3, 0.12, 0.2, 0.03), a, 0, len * 0.15, 0.02)); // belt
-      g.add(mesh(rbox(0.14, len * 0.95, 0.025, 0.01), s, 0, len * 0.45, 0.165)); // tabard hanging off the belt
-      g.add(mesh(rbox(0.04, len * 0.55, 0.012, 0.005), v, 0, len * 0.42, 0.18)); // a lit stripe down it
-      g.add(mesh(rbox(0.07, 0.08, 0.05, 0.015), a, 0.11, len * 0.15, 0.12)); // pouches
-      g.add(mesh(rbox(0.07, 0.08, 0.05, 0.015), a, -0.11, len * 0.15, 0.12));
-      break;
-    case "chest":
-      g.add(mesh(rbox(0.42, len, 0.26, 0.06), s, 0, mid, 0));
-      g.add(mesh(rbox(0.44, len * 0.62, 0.12, 0.04), a, 0, len * 0.6, 0.1)); // upper chest plate
-      g.add(mesh(rbox(0.38, len * 0.3, 0.11, 0.035), a, 0, len * 0.22, 0.11)); // lower plate, layered
-      g.add(mesh(rbox(0.4, len * 0.8, 0.1, 0.04), a, 0, mid + 0.02, -0.11)); // back plate
-      g.add(mesh(rbox(0.3, 0.09, 0.26, 0.03), a, 0, len - 0.02, 0)); // gorget
-      g.add(mesh(rbox(0.1, 0.025, 0.02, 0.008), v, 0.13, len * 0.8, 0.165)); // status light
-      g.add(mesh(rbox(0.03, len * 0.5, 0.012, 0.005), v, -0.17, len * 0.55, 0.162)); // amber trim
-      for (const x of [-0.1, 0, 0.1]) g.add(mesh(rbox(0.085, 0.13, 0.06, 0.02), s, x, len * 0.18, 0.18)); // mag pouches
-      g.add(mesh(rbox(0.26, 0.3, 0.1, 0.03), a, 0, mid, -0.19)); // radio pack
-      g.add(mesh(cyl(0.008, 0.008, 0.34, 6), s, 0.1, len + 0.08, -0.2)); // radio whip
-      break;
-    case "head": {
-      g.add(mesh(cyl(0.05, 0.06, 0.08), s, 0, 0.03, 0)); // neck
-      // C9: the head under the helmet, a black balaclava, seen only when a headshot knocks the helmet off.
-      const skull = mesh(sphere(0.118), s, 0, 0.145, 0);
-      skull.scale.set(0.92, 1.08, 1);
-      g.add(skull);
-      g.add(mesh(rbox(0.1, 0.09, 0.08, 0.03), s, 0, 0.075, 0.05)); // jaw
-      // The helmet is its own group (merged on its own) so it can come off: built around its centre, which sits
-      // HELM_Y up the head segment.
-      const hg = new THREE.Group();
-      hg.name = "helmet";
-      hg.position.set(0, HELM_Y, 0);
-      const helm = mesh(sphere(0.145), a, 0, 0, -0.005);
-      helm.scale.set(1, 1.05, 1.15);
-      hg.add(mesh(rbox(0.27, 0.05, 0.25, 0.02), a, 0, 0.06, -0.02)); // brow ridge
-      hg.add(helm);
-      hg.add(mesh(rbox(0.22, 0.05, 0.08, 0.02), v, 0, 0, 0.12)); // the visor strip
-      hg.add(mesh(rbox(0.22, 0.09, 0.06, 0.02), a, 0, -0.07, 0.1)); // jaw guard
-      hg.add(mesh(cyl(0.012, 0.012, 0.12, 6), a, 0.1, 0.12, -0.04)); // antenna
-      hg.add(mesh(rbox(0.035, 0.1, 0.24, 0.012), a, 0, 0.15, -0.02)); // a crest fin: the helmet reads from behind
-      hg.add(mesh(rbox(0.06, 0.07, 0.05, 0.015), a, -0.15, -0.02, 0.04)); // ear comms cup
-      hg.add(mesh(rbox(0.06, 0.07, 0.05, 0.015), a, 0.15, -0.02, 0.04));
-      mergeByMaterial(hg, seg);
-      g.add(hg);
-      break;
-    }
-    case "upperArmL":
-    case "upperArmR":
-      g.add(mesh(cyl(0.075, 0.065, len, 12), s, 0, mid, 0));
-      g.add(mesh(rbox(0.19, 0.13, 0.19, 0.05), a, 0, 0.03, 0)); // pauldron
-      g.add(mesh(rbox(0.2, 0.03, 0.2, 0.01), a, 0, 0.11, 0)); // a stacked shoulder lip, a wider silhouette
-      g.add(mesh(rbox(0.05, 0.05, 0.012, 0.004), v, 0, 0.03, 0.1)); // faction mark
-      g.add(mesh(rbox(0.12, len * 0.4, 0.13, 0.03), a, 0, len * 0.5, 0)); // bicep guard
-      break;
-    case "forearmL":
-    case "forearmR":
-      g.add(mesh(cyl(0.062, 0.05, len, 12), s, 0, mid, 0));
-      g.add(mesh(rbox(0.11, len * 0.65, 0.12, 0.03), a, 0, mid, 0.01)); // vambrace
-      g.add(mesh(rbox(0.11, 0.06, 0.12, 0.025), a, 0, 0.02, 0)); // elbow cop
-      g.add(mesh(rbox(0.07, 0.09, 0.05, 0.02), b, 0, len + 0.03, 0.01)); // glove
-      break;
-    case "thighL":
-    case "thighR":
-      g.add(mesh(cyl(0.105, 0.085, len, 12), s, 0, mid, 0));
-      g.add(mesh(rbox(0.18, len * 0.6, 0.07, 0.03), a, 0, mid, 0.085)); // thigh plate
-      g.add(mesh(rbox(0.09, 0.14, 0.08, 0.02), s, 0.1, len * 0.4, 0)); // holster pouch
-      break;
-    case "shinL":
-    case "shinR":
-      g.add(mesh(cyl(0.08, 0.065, len, 12), s, 0, mid, 0));
-      g.add(mesh(rbox(0.13, len * 0.62, 0.07, 0.03), a, 0, mid, 0.07)); // shin guard
-      g.add(mesh(rbox(0.15, 0.11, 0.12, 0.035), a, 0, 0.03, 0.06)); // knee pad
-      g.add(mesh(rbox(0.13, 0.1, 0.27, 0.035), b, 0, len + 0.01, 0.05)); // boot
-      g.add(mesh(rbox(0.135, 0.03, 0.28, 0.01), s, 0, len + 0.06, 0.05)); // sole
-      break;
-  }
-  mergeByMaterial(g, seg);
-  const capA = mesh(cyl(0.05, 0.05, 0.02, 10), look.gore, 0, 0, 0);
-  const capB = mesh(cyl(0.05, 0.05, 0.02, 10), look.gore, 0, len, 0);
-  capA.name = "capFrom";
-  capB.name = "capTo";
-  capA.visible = capB.visible = false;
-  g.add(capA, capB);
-  return g;
-}
-
-/**
- * Merges a segment's meshes that share a material into one mesh each, so an Enforcer costs a handful of
- * draw calls per segment instead of dozens (it's drawn again for reflections and shadows).
- */
-function mergeByMaterial(g: THREE.Group, seg = 0): void {
-  const groups = new Map<THREE.Material, THREE.BufferGeometry[]>();
-  for (const c of [...g.children]) {
-    const m = c as THREE.Mesh;
-    if (!m.isMesh) continue;
-    c.updateMatrix();
-    const geo = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
-    geo.applyMatrix4(c.matrix);
-    for (const k of Object.keys(geo.attributes)) if (!["position", "normal", "uv"].includes(k)) geo.deleteAttribute(k);
-    const mat = m.material as THREE.Material;
-    if (!groups.has(mat)) groups.set(mat, []);
-    groups.get(mat)!.push(geo);
-    g.remove(c);
-  }
-  for (const [mat, geos] of groups) {
-    const merged = mergeGeometries(geos, false);
-    if (!merged) continue;
-    tagSegment(merged, seg);
-    const m = new THREE.Mesh(merged, mat);
-    m.castShadow = true;
-    g.add(m);
-  }
-}
-
-/** Segment slots in the flash uniform: 0 is "not a segment" (the rifle, the shield), then SEGMENTS in order. */
+/** Segment slots in the flash: 0 is "not a segment" (the rifle, the shield, the cloth), then SEGMENTS in order. */
 const FLASH_SLOTS = SEGMENTS.length + 1;
 
 /** Gives a geometry the per-vertex segment slot the hit flash reads (S4.1). */
@@ -268,7 +104,7 @@ export function tagSegment(geo: THREE.BufferGeometry, seg: number): void {
   geo.setAttribute("aSeg", new THREE.BufferAttribute(new Float32Array(n).fill(seg), 1));
 }
 
-/** Tags every mesh under `o` that wears a flashing material but isn't a body segment (slot 0: never flashes). */
+/** Tags every mesh under `o` that isn't a body segment (slot 0: never flashes). */
 export function tagUnflashed(o: THREE.Object3D): void {
   o.traverse((c) => {
     const m = c as THREE.Mesh;
@@ -276,48 +112,10 @@ export function tagUnflashed(o: THREE.Object3D): void {
   });
 }
 
-/**
- * The hit flash (S4.1): one uniform array per body, indexed by a per-vertex segment slot on the merged meshes,
- * so a hit lights only its segment with no per-hit material clones. Added to the emissive radiance, so it
- * reads in the dark grade.
- */
-function patchFlash(mat: THREE.Material, uniform: { value: THREE.Vector3[] }, rim: { value: THREE.Vector4 }): void {
-  const m = mat as THREE.MeshStandardMaterial;
-  if (m.userData.flashPatched) return;
-  m.userData.flashPatched = true;
-  const prev = m.onBeforeCompile;
-  m.onBeforeCompile = (shader, r) => {
-    prev?.call(m, shader, r);
-    shader.uniforms.uHitFlash = uniform;
-    shader.uniforms.uEdgeRim = rim;
-    shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", `#include <common>\nattribute float aSeg;\nuniform vec3 uHitFlash[${FLASH_SLOTS}];\nvarying vec3 vHitFlash;`)
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvHitFlash = uHitFlash[ int( aSeg + 0.5 ) ];");
-    shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", "#include <common>\nvarying vec3 vHitFlash;\nuniform vec4 uEdgeRim;")
-      // Hottest at the silhouette (a rim), so the hit segment glows at its edges instead of turning into a
-      // flat painted box; the face toward the camera keeps a third of it.
-      .replace(
-        "#include <emissivemap_fragment>",
-        "#include <emissivemap_fragment>\nfloat hfRim = 1.0 - clamp( dot( normalize( normal ), normalize( vViewPosition ) ), 0.0, 1.0 );\ntotalEmissiveRadiance += vHitFlash * ( 0.3 + 0.7 * hfRim * hfRim );\n// C8: the edge light on the killer: silhouette only (the suit stays dark).\ntotalEmissiveRadiance += uEdgeRim.rgb * pow( hfRim, uEdgeRim.w );",
-      )
-      // A glowing body cuts through the street's fog: where the flash or the death glow is lit, most of the fog
-      // that would wash it to salmon (the phone's thick haze, C2 review) is taken back off.
-      .replace(
-        "#include <fog_fragment>",
-        "vec3 hfPre = gl_FragColor.rgb;\n#include <fog_fragment>\n#ifdef USE_FOG\ngl_FragColor.rgb = mix( gl_FragColor.rgb, hfPre, fogFactor * clamp( vHitFlash.r * 3.0 + max( uEdgeRim.r, uEdgeRim.b ) * pow( hfRim, uEdgeRim.w ) * 2.0, 0.0, 0.9 ) );\n#endif",
-      );
-  };
-  const key = m.customProgramCacheKey?.bind(m);
-  m.customProgramCacheKey = () => `${key ? key() : ""}|cathode-hitflash`;
-  m.needsUpdate = true;
-}
-
-
-
 interface Seg {
   def: SegmentDef;
-  group: THREE.Group;
+  /** The segment's bone: placed between its joints each frame (wounds and gore caps ride it). */
+  group: THREE.Bone;
   len: number;
   /** Severed: the segment flies on its own (two free points). */
   loose: { a: THREE.Vector3; b: THREE.Vector3; pa: THREE.Vector3; pb: THREE.Vector3; t: number } | null;
@@ -333,6 +131,15 @@ const tmpZ = new THREE.Vector3();
 export interface RagdollWorld {
   colliders: THREE.Box3[];
   ground(x: number, z: number): number;
+}
+
+/** The faction rim's colour for a visor colour: the same hue at S3.1's 40% saturation, linear. */
+function rimTint(visor: number, out: THREE.Color): THREE.Color {
+  out.set(visor);
+  const hsl = { h: 0, s: 0, l: 0 };
+  out.getHSL(hsl);
+  out.setHSL(hsl.h, hsl.s * LOOK.rim.sat, Math.max(0.5, hsl.l));
+  return out;
 }
 
 export class Body {
@@ -368,34 +175,163 @@ export class Body {
   /** Ms since this body died (the death glow, C2), or 1e9 while it lives. */
   private deathAge = 1e9;
   private deathMul = 1;
+  /** C10: the skeleton every LOD's meshes share: segment bones, the helmet, the finger sets, then the fx bones. */
+  readonly skeleton: THREE.Skeleton;
+  private readonly fx: THREE.Bone[] = [];
+  private readonly helmetBone: THREE.Bone;
+  private readonly fingers: Record<"L" | "R", THREE.Bone>;
+  /** The LODs' meshes (opaque, glow) and the mirror's LOD2 stand-in. */
+  private readonly lods: Array<[THREE.SkinnedMesh, THREE.SkinnedMesh]> = [];
+  private readonly mirror: THREE.SkinnedMesh[] = [];
+  private readonly sphere = new THREE.Sphere(new THREE.Vector3(), 1.5);
+  /** The LOD showing (the crossfade's target), the one fading out, and when the fade began (ms). */
+  lod: Lod = 0;
+  private lodFrom: Lod = 0;
+  private lodAt = -1e9;
+  /** C10: the tabard (or the sniper's coat tails), LOD0 only. */
+  readonly cloth: Cloth | null;
+  /** The visor's colour (linear) and level (the death fades it, the raise to aim flares it). */
+  readonly visor = new THREE.Color();
+  visorLevel = 1;
+  /** S3.5: the raise to aim flares the visor from x1.0 to x1.6 (set by the brain from its aim). */
+  visorAim = 1;
+  private readonly facRim = new THREE.Color();
+  /** S3.1 rim state: 0 at rest .. 1 in combat, set by the brain; and takedown eligibility (the 3 Hz pulse). */
+  alert = 0;
+  eligible = false;
+  private hitAt = -1e9;
+  /** S4.1: each hand's opening (degrees past the grip) and ms since an arm hit opened it. */
+  private handAge: Record<"L" | "R", number> = { L: 1e9, R: 1e9 };
 
   constructor(
     readonly look: BodyLook,
-    scale = 1,
+    readonly scale = 1,
   ) {
     for (const j of JOINTS) {
       this.joints[j] = REST[j].clone().multiplyScalar(scale);
       this.prev[j] = this.joints[j].clone();
       this.last[j] = this.joints[j].clone();
     }
-    for (const m of [look.armour, look.suit, look.visor, look.boot]) patchFlash(m, this.flashUniform, this.rimUniform);
-    for (const [i, def] of SEGMENTS.entries()) {
+    this.visor.set(look.visor);
+    rimTint(look.visor, this.facRim);
+    const bones: THREE.Bone[] = [];
+    for (const def of SEGMENTS) {
       const len = REST[def.from].distanceTo(REST[def.to]) * scale;
-      const group = buildSegment(def.name, len, look, i + 1);
-      group.userData.segment = def.name;
-      this.root.add(group);
-      this.segs.set(def.name, { def, group, len, loose: null });
+      const bone = new THREE.Bone();
+      bone.name = def.name;
+      bone.userData.segment = def.name;
+      bone.scale.setScalar(scale);
+      // Where a wound sits (render/gore.ts): the armour's surface round the bone, in the bone's own units.
+      bone.userData.surfaceR = SURFACE_R[def.name] ?? def.radius * 0.8;
+      bone.userData.len = len / scale;
+      // The stump's gore caps, hidden until the segment is severed (one shared material).
+      const capA = new THREE.Mesh(capGeo, GORE_MAT);
+      const capB = new THREE.Mesh(capGeo, GORE_MAT);
+      capB.position.y = len / scale;
+      capA.name = "capFrom";
+      capB.name = "capTo";
+      capA.visible = capB.visible = false;
+      bone.add(capA, capB);
+      this.root.add(bone);
+      bones.push(bone);
+      this.segs.set(def.name, { def, group: bone, len, loose: null });
     }
+    this.helmetBone = new THREE.Bone();
+    this.helmetBone.name = "helmet";
+    this.helmetBone.position.set(0, HELM_Y, 0);
+    this.segs.get("head")!.group.add(this.helmetBone);
+    const fingers = (s: "L" | "R") => {
+      const b = new THREE.Bone();
+      b.name = `fingers${s}`;
+      b.position.set(0, KNUCKLE_Y, 0);
+      this.segs.get(`hand${s}`)!.group.add(b);
+      return b;
+    };
+    this.fingers = { L: fingers("L"), R: fingers("R") };
+    bones.push(this.helmetBone, this.fingers.L, this.fingers.R);
+    if (bones.length !== FX0) throw new Error("body skeleton out of step with rig.FX0");
+    void ACCESSORY_BONES;
+    for (let i = 0; i < FX_BONES; i++) {
+      const b = fxBone();
+      this.fx.push(b);
+      bones.push(b);
+    }
+    this.skeleton = new THREE.Skeleton(bones, bones.map(() => new THREE.Matrix4()));
+    const phone = bodyView.phone;
+    const mats = enemyMaterials(phone, FX0);
+    for (const lod of [0, 1, 2] as Lod[]) {
+      const g = archGeometry(look.arch, lod, phone);
+      const pair = [new THREE.SkinnedMesh(g.opaque, mats.opaque), new THREE.SkinnedMesh(g.glow, mats.glow)] as [THREE.SkinnedMesh, THREE.SkinnedMesh];
+      pair.forEach((m, i) => {
+        m.name = `body:lod${lod}:${i ? "glow" : "opaque"}`;
+        m.bind(this.skeleton, IDENT);
+        m.boundingSphere = this.sphere;
+        m.layers.set(LAYER_NO_REFLECT);
+        m.castShadow = i === 0;
+        m.visible = lod === 0;
+        this.root.add(m);
+      });
+      this.lods.push(pair);
+    }
+    // The mirror's stand-in: LOD2, seen only by the street's reflection.
+    const g2 = archGeometry(look.arch, 2, phone);
+    for (const [geo, mat] of [
+      [g2.opaque, mats.opaque],
+      [g2.glow, mats.glow],
+    ] as const) {
+      const m = new THREE.SkinnedMesh(geo, mat);
+      m.name = "body:mirror";
+      m.bind(this.skeleton, IDENT);
+      m.boundingSphere = this.sphere;
+      m.layers.set(LAYER_MIRROR_ONLY);
+      m.castShadow = false;
+      this.root.add(m);
+      this.mirror.push(m);
+    }
+    const S = LOOK.cloth;
+    this.cloth = look.arch === "sniper" ? new Cloth(COAT_TAILS, mats.opaque, phone ? S.phoneSubsteps : S.desktopSubsteps) : new Cloth(TABARD, mats.opaque, phone ? S.phoneSubsteps : S.desktopSubsteps);
+    this.cloth.mesh.layers.set(LAYER_NO_REFLECT);
+    this.root.add(this.cloth.mesh);
     for (const [a, b] of LINKS) this.rest.set(`${a}|${b}`, REST[a].distanceTo(REST[b]) * scale);
+    this.writeFx();
   }
 
-  /** A round lands on a segment: it flashes white for a frame, then red, fading out (S4.1). */
+  /** A round lands on a segment: it flashes white for a frame, then red, fading out (S4.1); the rim flares. */
   flash(segment: string): void {
     const i = SEGMENTS.findIndex((d) => d.name === segment);
     if (i < 0) return;
     this.flashAge[i + 1] = 0;
     this.flashing = true;
+    this.hitAt = bodyView.clock();
     this.updateFlash(0);
+  }
+
+  /** S4.1: an arm hit opens that hand 30 degrees off the grip for a moment. */
+  openHand(side: "L" | "R"): void {
+    this.handAge[side] = 0;
+  }
+
+  /** How far each hand is open past the grip right now (degrees). */
+  handOpenDeg(side: "L" | "R"): number {
+    const H = LOOK.hand;
+    const a = this.handAge[side];
+    if (a < H.inMs) return H.openDeg * (a / H.inMs);
+    if (a < H.inMs + H.holdMs) return H.openDeg;
+    const k = 1 - (a - H.inMs - H.holdMs) / H.outMs;
+    return k > 0 ? H.openDeg * k * k * (3 - 2 * k) : 0;
+  }
+
+  /** Advances the hands' clocks (ms, real time). */
+  updateHands(dtMs: number): void {
+    this.handAge.L += dtMs;
+    this.handAge.R += dtMs;
+  }
+
+  /** Sets the visor's colour (and level): the vault boss's phases, a stage. */
+  setVisor(color: number, level = this.visorLevel): void {
+    this.visor.set(color);
+    rimTint(color, this.facRim);
+    this.visorLevel = level;
   }
 
   /**
@@ -429,34 +365,23 @@ export class Body {
     for (const v of this.flashUniform.value) v.set(0, 0, 0);
     this.flashing = false;
     this.rimUniform.value.set(0, 0, 0, 3);
+    this.visorLevel = 1;
+    this.hitAt = -1e9;
+    this.handAge.L = this.handAge.R = 1e9;
+    this.clothReset = true;
   }
+  private clothReset = true;
 
-  private cheapMeshes: THREE.Mesh[] | null = null;
+  private cheap = false;
   /** deadCost: out of the mirror and the shadow pass (on), or back as it was (off). */
   private setCheap(on: boolean): void {
-    if (on && !this.cheapMeshes) {
-      this.cheapMeshes = [];
-      this.root.traverse((o) => {
-        const m = o as THREE.Mesh;
-        if (!m.isMesh || !m.layers.isEnabled(0)) return;
-        m.layers.set(LAYER_NO_REFLECT);
-        if (m.castShadow) {
-          m.castShadow = false;
-          m.userData.cheapShadow = true;
-        }
-        this.cheapMeshes!.push(m);
-      });
-    } else if (!on && this.cheapMeshes) {
-      for (const m of this.cheapMeshes) {
-        m.layers.set(0);
-        if (m.userData.cheapShadow) m.castShadow = true;
-        delete m.userData.cheapShadow;
-      }
-      this.cheapMeshes = null;
-    }
+    if (on === this.cheap) return;
+    this.cheap = on;
+    for (const m of this.mirror) m.visible = !on;
+    for (const [o] of this.lods) o.castShadow = !on;
+    if (this.cloth) this.cloth.mesh.castShadow = !on;
   }
 
-  /** Advances the flash on real time (it shows through a hit-stop). */
   /**
    * C8 (S6.6): a steady rim on every segment, on top of any hit flash: the killer standing over her body is cut out
    * of the street in a cold edge light. (0, 0, 0) turns it off.
@@ -467,7 +392,9 @@ export class Body {
   /** The edge-only rim light (setRim): applied at the silhouette alone, never on the face of the suit; `w` is the falloff power (lower is wider). */
   readonly rimUniform = { value: new THREE.Vector4(0, 0, 0, 3) };
 
+  /** Advances the flash on real time (it shows through a hit-stop). */
   updateFlash(dtMs: number): void {
+    this.updateHands(dtMs);
     if (!this.flashing) return;
     const F = flashTuning;
     const D = F.death;
@@ -483,10 +410,7 @@ export class Body {
       // a body and not a red mannequin. It hands over to a faint cold street rim that stays on the dead (the noir
       // edge light), so a dark body on a dark street still has a shape.
       const r = L > 0 ? dk / L : 0;
-      // The phone renders at half resolution: a tight rim (power 3) on the plates' bevels breaks into speckle
-      // there, so it gets a wider, softer one (deathGlowScale.rimPow, set by session.ts).
       const g = D.rimGain * deathGlowScale.rimGain * dk;
-      // The cold edge comes in under the end of the pulse (squared), so the kill still reads red while it lasts.
       const c = (1 - r) * (1 - r);
       const pow = deathGlowScale.rimPow || D.rimPow;
       this.rimUniform.value.set(D.red[0] * g + D.cold[0] * c, D.red[1] * g + D.cold[1] * c, D.red[2] * g + D.cold[2] * c, pow * r + D.coldPow * c);
@@ -508,6 +432,72 @@ export class Body {
     return i < 0 ? 0 : this.flashUniform.value[i + 1]!.x;
   }
 
+  /** The faction rim's strength right now (S3.1): rest, combat, a hit's flare, the takedown pulse. */
+  rimLevel(now = bodyView.clock()): number {
+    const R = LOOK.rim;
+    if (this.ragdoll) return 0;
+    let k = R.rest + (R.combat - R.rest) * Math.max(0, Math.min(1, this.alert));
+    if (now - this.hitAt < R.hitMs) k = R.hit;
+    if (this.eligible) k *= 0.6 + 0.4 * (0.5 + 0.5 * Math.sin((now / 1000) * Math.PI * 2 * R.pulseHz));
+    return k;
+  }
+
+  /** Writes this body's state into its fx bones (models/materials.ts's layout). */
+  private writeFx(): void {
+    const now = bodyView.clock();
+    const F = this.fx;
+    const fl = this.flashUniform.value;
+    for (let s = 0; s < 16; s++) {
+      const v = fl[s];
+      setFx(F[s >> 2]!, s & 3, v ? v.x : 0, v ? v.y : 0, v ? v.z : 0, 0);
+    }
+    const R = LOOK.rim;
+    const rim = this.rimUniform.value;
+    const P = F[4]!;
+    setFx(P, 0, rim.x, rim.y, rim.z, rim.w);
+    const lvl = this.visorLevel * (this.ragdoll ? 1 : this.visorAim);
+    setFx(P, 1, this.visor.r, this.visor.g, this.visor.b, lvl);
+    const k = this.rimLevel(now) * (bodyView.phone ? R.phoneGain : R.gain);
+    setFx(P, 2, this.facRim.r * k, this.facRim.g * k, this.facRim.b * k, bodyView.phone ? R.phonePow : R.pow);
+    const fade = Math.min(1, (now - this.lodAt) / LOOK.lod.fadeMs);
+    const blink = this.visorLevel > 0.05 && Math.floor(((now / 1000) * LOOK.blinkHz * 2) % 2) === 0 ? 1 : 0.06;
+    setFx(P, 3, this.lodFrom, this.lod, fade, blink * Math.min(1, this.visorLevel * 1.5));
+    // The coolant window's pulse rides the spare flash slot (15): a slow 1.2 Hz swell, out when he dies.
+    const pulse = this.ragdoll ? 0.15 * this.visorLevel : 0.55 + 0.45 * Math.sin((now / 1000) * Math.PI * 2 * LOOK.coolantHz);
+    setFx(F[3]!, 3, pulse, 0, 0, 0);
+    // Dithering away a LOD: both stay visible until the fade ends.
+    if (fade >= 1 && this.lodFrom !== this.lod) {
+      this.lods[this.lodFrom]!.forEach((m) => (m.visible = false));
+      this.lodFrom = this.lod;
+    }
+  }
+
+  /** Picks the LOD for the eye's distance (with hysteresis) and starts the crossfade when it changes. */
+  private chooseLod(): void {
+    const L = LOOK.lod;
+    const [a, b] = bodyView.phone ? L.phone : L.desktop;
+    let want: Lod;
+    if (bodyView.forceLod >= 0) want = bodyView.forceLod as Lod;
+    else {
+      const d = this.joints.pelvis.distanceTo(bodyView.eye) / this.scale;
+      const h = L.hyst;
+      const cur = this.lod;
+      want = d < a - (cur === 0 ? -h : h) ? 0 : d < b - (cur <= 1 ? -h : h) ? 1 : 2;
+    }
+    if (want === this.lod) return;
+    const now = bodyView.clock();
+    // A change in mid-fade snaps the fade-out (one pair dithering out at a time).
+    if (this.lodFrom !== this.lod) this.lods[this.lodFrom]!.forEach((m) => (m.visible = false));
+    this.lodFrom = this.lod;
+    this.lod = want;
+    this.lodAt = bodyView.forceLod >= 0 ? -1e9 : now;
+    this.lods[want]!.forEach((m) => (m.visible = true));
+    if (bodyView.forceLod >= 0) {
+      this.lods[this.lodFrom]!.forEach((m) => (m.visible = false));
+      this.lodFrom = want;
+    }
+  }
+
   /** C9 (S4.4): the helmet a headshot knocked off, tumbling on its own (null while he wears it). */
   helmetOff: DroppedProp | null = null;
   private helmG: THREE.Object3D | null = null;
@@ -519,8 +509,8 @@ export class Body {
    */
   popHelmet(vel: THREE.Vector3, spin: number, onClatter?: (speed: number, at: THREE.Vector3) => void): boolean {
     const head = this.segs.get("head");
-    const hg = head?.group.getObjectByName("helmet");
-    if (!head || head.loose || !hg || this.helmetOff) return false;
+    const hg = this.helmetBone;
+    if (!head || head.loose || this.helmetOff) return false;
     this.pose();
     head.group.updateMatrixWorld(true);
     const a = hg.getWorldPosition(new THREE.Vector3());
@@ -541,13 +531,20 @@ export class Body {
     head.group.add(this.helmG);
     this.helmG.position.set(0, HELM_Y, 0);
     this.helmG.quaternion.identity();
+    this.helmG.scale.setScalar(1);
     this.helmG = null;
     this.helmetOff = null;
   }
 
-  /** Places every attached segment between its joints. */
-  pose(): void {
-    if (this.helmetOff && this.helmG) place(this.helmG, this.helmetOff.a, this.helmetOff.b, this.helmFacing);
+  /**
+   * Places every attached segment between its joints, the fingers at their grip (opened by an arm hit), the LOD
+   * for the eye, the cloth (stepped `dt` seconds), and the body's fx data.
+   */
+  pose(dt = 0): void {
+    if (this.helmetOff && this.helmG) {
+      place(this.helmG, this.helmetOff.a, this.helmetOff.b, this.helmFacing);
+      this.helmG.scale.setScalar(this.scale);
+    }
     tmpZ.copy(this.facing).normalize();
     // A ragdoll's segments roll with his torso, not with the way he faced standing: a body lying along that
     // direction otherwise leaves every bone's roll to chance, and the plates scatter into a heap of boxes.
@@ -570,6 +567,26 @@ export class Body {
       const z = s.def.zone === "legL" || s.def.zone === "legR" || s.def.name === "abdomen" ? lowerF : upperF;
       place(s.group, J[s.def.from], J[s.def.to], z);
     }
+    // The fingers wrap the grip; a hit on the arm opens them (S4.1). On a ragdoll they slacken half open.
+    const H = LOOK.hand;
+    for (const sd of ["L", "R"] as const) {
+      const out = sd === "L" ? -1 : 1;
+      const open = this.ragdoll ? H.openDeg * 0.8 : this.handOpenDeg(sd);
+      this.fingers[sd].rotation.set(0, 0, ((H.gripDeg - open) * Math.PI * out) / 180);
+    }
+    this.sphere.center.copy(J.pelvis);
+    this.sphere.radius = 1.4 * this.scale;
+    this.chooseLod();
+    if (this.cloth) {
+      if (this.clothReset) {
+        this.cloth.reset(J, this.scale);
+        this.clothReset = false;
+      }
+      const show = (this.lod === 0 || this.lodFrom === 0) && !this.lost.has("abdomen");
+      this.cloth.mesh.visible = show;
+      if (dt > 0 && show) this.cloth.step(dt, J, this.scale, this.asleep);
+    }
+    this.writeFx();
   }
 
   /**
@@ -654,7 +671,7 @@ export class Body {
       }
     }
     if (s.def.zone === "head") {
-      const chest = this.segs.get("chest");
+      const chest = this.segs.get("upperChest");
       if (chest) chest.group.getObjectByName("capTo")!.visible = true;
     }
     return out;
@@ -686,7 +703,7 @@ export class Body {
       const rest = rb > 0 && run ? run.rest : null;
       const vmax = DEATH.maxSpeed * dt;
       let fast = false;
-      for (const j of JOINTS) {
+      for (const j of BASE_JOINTS) {
         const p = this.joints[j];
         const q = this.prev[j];
         let vx = (p.x - q.x) * keep;
@@ -734,8 +751,8 @@ export class Body {
           solve(this.joints[a], this.joints[b], r, 0.5, 0.5);
         }
         if (it >= 3) limitJoints(this.joints, this.lost);
-        for (let i = 0; i < JOINTS.length; i++) {
-          const j = JOINTS[i]!;
+        for (let i = 0; i < BASE_JOINTS.length; i++) {
+          const j = BASE_JOINTS[i]!;
           const v = collide(this.joints[j], this.prev[j], w, fr, it === 0 ? dt : 0);
           if (v > DEATH.thudSpeed && this.onImpact && this.restTime - this.impactAt[i]! > 0.25) {
             this.impactAt[i] = this.restTime;
@@ -745,10 +762,12 @@ export class Body {
       }
       // The limits have the last word (the floor pass can bend a knee past them by a few degrees).
       limitJoints(this.joints, this.lost);
+      // C10: the riding joints (spine2, clavicles, wrists) follow the simulated ones rigidly.
+      deriveJoints(this.joints, this.scale);
       // NaN guard: a broken step puts the body back where it was, at rest.
       let bad = false;
       let moved = 0;
-      for (const j of JOINTS) {
+      for (const j of BASE_JOINTS) {
         const p = this.joints[j];
         if (!Number.isFinite(p.x) || !Number.isFinite(p.y) || !Number.isFinite(p.z)) bad = true;
         else moved = Math.max(moved, p.distanceTo(this.prev[j]));
@@ -759,6 +778,7 @@ export class Body {
           if (!Number.isFinite(q.x) || !Number.isFinite(q.y) || !Number.isFinite(q.z)) q.copy(this.last[j]);
           this.joints[j].copy(q);
         }
+        deriveJoints(this.joints, this.scale);
         if (run) run.fellBack = true;
       }
       // Sleep: still under 2 mm a frame for 30 frames, once the pose has let go.
@@ -766,6 +786,13 @@ export class Body {
       if (poseDone && moved < DEATH.sleepM * dt * 60 && (!run || run.restSettled(limpS))) this.stillFrames++;
       else this.stillFrames = 0;
       if (poseDone && (this.stillFrames >= DEATH.sleepFrames || limpS > DEATH.forceSleepS)) {
+        // C10: before he freezes, the bones are relaxed back to their lengths (the pose pull and the joint limits
+        // fight the links by a few millimetres; 2% of a 16 cm chest segment shows on the 21-joint rig).
+        for (let it = 0; it < 24; it++) {
+          for (const [a, b] of LINKS) solve(this.joints[a], this.joints[b], this.rest.get(`${a}|${b}`)!, 0.5, 0.5);
+          for (const j of BASE_JOINTS) collide(this.joints[j], this.prev[j], w, fr, 0);
+        }
+        deriveJoints(this.joints, this.scale);
         this.asleep = true;
         this.asleepFor = 0;
         for (const j of JOINTS) this.prev[j].copy(this.joints[j]);
@@ -808,7 +835,7 @@ export class Body {
     }
     // The chest's rounded top reaches past the neck: anything that lands above the neck is a headshot.
     const head = this.segs.get("head");
-    if (best && best.seg.name === "chest" && head && !head.loose) {
+    if (best && (best.seg.name === "upperChest" || best.seg.name === "chest") && head && !head.loose) {
       const spine = new THREE.Vector3().subVectors(this.joints.neck, this.joints.chest).normalize();
       if (new THREE.Vector3().subVectors(best.point, this.joints.neck).dot(spine) > 0) best = { ...best, seg: head.def };
     }
@@ -817,6 +844,8 @@ export class Body {
 
   dispose(): void {
     this.root.removeFromParent();
+    this.skeleton.dispose();
+    this.cloth?.mesh.geometry.dispose();
   }
 }
 

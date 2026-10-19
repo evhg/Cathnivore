@@ -36,6 +36,8 @@
   --cluster-w: calc(var(--u) * 373.3);
 }
 .hud-root p { margin: 0; }
+/* C10: a model review render (turntable, silhouette lineup) shows the figures alone. */
+.hud-root.is-review { visibility: hidden; }
 /* Layers inside the HUD: screen effects (hurt, focus, scope) sit under the readouts, so text never dims. */
 .hud-rim,
 .hud-focus,

@@ -7,7 +7,7 @@
 // hit, so screenshots are stable. Everything here is pure maths on joint positions: body.ts runs it.
 
 import * as THREE from "three";
-import { REST, type Joint, type Zone } from "./rig";
+import { REST, deriveJoints, type Joint, type Zone } from "./rig";
 
 export type DeathVariant = "headshot" | "gutclutch" | "spin" | "wallslump" | "knees" | "blownback" | "rail" | "crawlout";
 export const DEATH_VARIANTS: readonly DeathVariant[] = ["headshot", "gutclutch", "spin", "wallslump", "knees", "blownback", "rail", "crawlout"];
@@ -273,6 +273,7 @@ function buildPose(p: PoseP, out: Record<Joint, THREE.Vector3>): void {
       .addScaledVector(vA, s === "L" ? 0.5 : -0.5);
     ik2(sh, hand, LEN.upper, LEN.fore, vT, out[`elbow${s}`]);
   }
+  deriveJoints(out);
 }
 
 const STANCE_L = new THREE.Vector3(REST.footL.x, REST.footL.y, 0);
@@ -610,6 +611,7 @@ export function lyingPose(kind: RestKind, sg: number, out: Record<Joint, THREE.V
   }
   for (const j of JOINTS_ALL) out[j].y = Math.max(out[j].y, H - 0.01);
   limitJoints(out);
+  deriveJoints(out);
 }
 const JOINTS_ALL = Object.keys(REST) as Joint[];
 
