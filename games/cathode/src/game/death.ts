@@ -9,8 +9,25 @@
 import * as THREE from "three";
 import { REST, type Joint, type Zone } from "./rig";
 
-export type DeathVariant = "headshot" | "gutclutch" | "spin" | "wallslump" | "knees" | "blownback" | "rail" | "crawlout";
-export const DEATH_VARIANTS: readonly DeathVariant[] = ["headshot", "gutclutch", "spin", "wallslump", "knees", "blownback", "rail", "crawlout"];
+export type DeathVariant =
+  | "headshot"
+  | "gutclutch"
+  | "spin"
+  | "wallslump"
+  | "knees"
+  | "blownback"
+  | "rail"
+  | "crawlout";
+export const DEATH_VARIANTS: readonly DeathVariant[] = [
+  "headshot",
+  "gutclutch",
+  "spin",
+  "wallslump",
+  "knees",
+  "blownback",
+  "rail",
+  "crawlout",
+];
 
 /** What the killing blow and the street around the body say about how he goes down. */
 export interface DeathCtx {
@@ -73,7 +90,9 @@ export const DEATH = {
   /** The share of the active phase the pose holds at full strength before it starts to fade. */
   holdShare: 0.5,
   /** Variants whose end pose is held at this strength until the body sleeps (a sit can't balance on points). */
-  restHold: { wallslump: 0.3, crawlout: 0.2 } as Partial<Record<DeathVariant, number>>,
+  restHold: { wallslump: 0.3, crawlout: 0.2 } as Partial<
+    Record<DeathVariant, number>
+  >,
   /** Hand IK (the clutch) lets go below this. */
   clutchK: 0.15,
   /** The headshot's backward kick on the head (m/s), and the blown-back multiplier and lift. */
@@ -119,14 +138,30 @@ export const DEATH = {
 export function pickVariant(c: DeathCtx): DeathVariant {
   if (c.crawlEnded) return "crawlout";
   const cls = c.weaponCls;
-  if (c.explosive || cls === "launcher" || (cls === "shotgun" && c.distance <= DEATH.blownM)) return "blownback";
+  if (
+    c.explosive ||
+    cls === "launcher" ||
+    (cls === "shotgun" && c.distance <= DEATH.blownM)
+  )
+    return "blownback";
   if (c.zone === "head") return "headshot";
   if (c.rail) return "rail";
   if (c.wallBehind != null && c.wallBehind <= DEATH.wallM) return "wallslump";
   if (c.zone === "legL" || c.zone === "legR") return "knees";
-  const gunTorso = c.zone === "torso" && (cls === "pistol" || cls === "rifle" || cls === "revolver" || cls === "smg" || cls === "smart") && c.distance <= DEATH.gutM;
+  const gunTorso =
+    c.zone === "torso" &&
+    (cls === "pistol" ||
+      cls === "rifle" ||
+      cls === "revolver" ||
+      cls === "smg" ||
+      cls === "smart") &&
+    c.distance <= DEATH.gutM;
   if (c.firstGunKill && gunTorso) return "gutclutch";
-  if ((c.zone === "torso" || c.zone === "armL" || c.zone === "armR") && Math.abs(c.side) >= DEATH.sideMin) return "spin";
+  if (
+    (c.zone === "torso" || c.zone === "armL" || c.zone === "armR") &&
+    Math.abs(c.side) >= DEATH.sideMin
+  )
+    return "spin";
   if (gunTorso) return "gutclutch";
   // Far torso hits and arm hits from the front: seeded between the two that read at range.
   return hash(c.seed) < 0.5 ? "spin" : "gutclutch";
@@ -153,7 +188,9 @@ function easeOut(x: number): number {
 export function poseK(v: DeathVariant, tMs: number): number {
   const dur = DEATH.durMs[v];
   if (dur <= 0) return 0;
-  const k = DEATH.k0 * (1 - smooth((tMs - dur * DEATH.holdShare) / (dur * (1 - DEATH.holdShare))));
+  const k =
+    DEATH.k0 *
+    (1 - smooth((tMs - dur * DEATH.holdShare) / (dur * (1 - DEATH.holdShare))));
   // A sit against a wall is held (the back stays pinned to it) until the body sleeps in it.
   return Math.max(k, DEATH.restHold[v] ?? 0);
 }
@@ -173,6 +210,9 @@ interface PoseP {
   twist: number;
   /** The head's extra bow forward. */
   head: number;
+  /** Knee pole: how far the knees are pushed up (a sit's raised knees) and out to the sides, on top of forward. */
+  kneeUp: number;
+  kneeOut: number;
   footL: THREE.Vector3;
   footR: THREE.Vector3;
   /** Hand targets (body space), or null to hang. */
@@ -205,13 +245,28 @@ const vT = new THREE.Vector3();
 const vP = new THREE.Vector3();
 const vD = new THREE.Vector3();
 
-function rot(out: THREE.Vector3, x: number, y: number, z: number, pitch: number, yaw: number, roll: number): THREE.Vector3 {
+function rot(
+  out: THREE.Vector3,
+  x: number,
+  y: number,
+  z: number,
+  pitch: number,
+  yaw: number,
+  roll: number,
+): THREE.Vector3 {
   eu.set(pitch, yaw, -roll, "YZX");
   return out.set(x, y, z).applyQuaternion(qa.setFromEuler(eu));
 }
 
 /** Two-bone IK in place: `mid` for a chain root→end bending toward `pole`; `end` is pulled in if out of reach. */
-export function ik2(root: THREE.Vector3, end: THREE.Vector3, l1: number, l2: number, pole: THREE.Vector3, mid: THREE.Vector3): void {
+export function ik2(
+  root: THREE.Vector3,
+  end: THREE.Vector3,
+  l1: number,
+  l2: number,
+  pole: THREE.Vector3,
+  mid: THREE.Vector3,
+): void {
   vD.subVectors(end, root);
   const len = vD.length();
   if (len < 1e-5) vD.set(0, -1, 0);
@@ -239,17 +294,33 @@ function buildPose(p: PoseP, out: Record<Joint, THREE.Vector3>): void {
   out.chest.copy(pel).addScaledVector(vS, LEN.chest);
   out.neck.copy(pel).addScaledVector(vS, LEN.neck);
   out.head.copy(out.neck).addScaledVector(vH, LEN.head);
-  out.shoulderL.copy(out.neck).addScaledVector(vS, -LEN.shoulderDrop).addScaledVector(vA, LEN.shoulderW);
-  out.shoulderR.copy(out.neck).addScaledVector(vS, -LEN.shoulderDrop).addScaledVector(vA, -LEN.shoulderW);
-  out.hipL.copy(pel).addScaledVector(vS, -LEN.hipDrop).addScaledVector(vA2, LEN.hipW);
-  out.hipR.copy(pel).addScaledVector(vS, -LEN.hipDrop).addScaledVector(vA2, -LEN.hipW);
+  out.shoulderL
+    .copy(out.neck)
+    .addScaledVector(vS, -LEN.shoulderDrop)
+    .addScaledVector(vA, LEN.shoulderW);
+  out.shoulderR
+    .copy(out.neck)
+    .addScaledVector(vS, -LEN.shoulderDrop)
+    .addScaledVector(vA, -LEN.shoulderW);
+  out.hipL
+    .copy(pel)
+    .addScaledVector(vS, -LEN.hipDrop)
+    .addScaledVector(vA2, LEN.hipW);
+  out.hipR
+    .copy(pel)
+    .addScaledVector(vS, -LEN.hipDrop)
+    .addScaledVector(vA2, -LEN.hipW);
   // Legs: the feet where the pose puts them, knees bending forward.
   out.footL.copy(p.footL);
   out.footR.copy(p.footR);
-  vT.copy(vF).multiplyScalar(2).add(out.hipL);
-  ik2(out.hipL, out.footL, LEN.thigh, LEN.shin, vT.sub(out.hipL), out.kneeL);
-  vT.copy(vF).multiplyScalar(2).add(out.hipR);
-  ik2(out.hipR, out.footR, LEN.thigh, LEN.shin, vT.sub(out.hipR), out.kneeR);
+  // The pole is a direction: forward, plus up and out for a sit (with the feet out ahead of the hips, a forward pole
+  // lies along the leg and the knee's bend is a coin toss, which folded the slump's legs into an X).
+  vT.copy(vF).multiplyScalar(2).addScaledVector(vA2, p.kneeOut);
+  vT.y += p.kneeUp;
+  ik2(out.hipL, out.footL, LEN.thigh, LEN.shin, vT, out.kneeL);
+  vT.copy(vF).multiplyScalar(2).addScaledVector(vA2, -p.kneeOut);
+  vT.y += p.kneeUp;
+  ik2(out.hipR, out.footR, LEN.thigh, LEN.shin, vT, out.kneeR);
   // Arms: to a target or hanging, elbows bending back and out.
   for (const s of ["L", "R"] as const) {
     const sh = out[`shoulder${s}`];
@@ -279,6 +350,8 @@ const tmpPose: PoseP = {
   yaw: 0,
   twist: 0,
   head: 0,
+  kneeUp: 0,
+  kneeOut: 0,
   footL: new THREE.Vector3(),
   footR: new THREE.Vector3(),
   handL: new THREE.Vector3(),
@@ -288,10 +361,24 @@ const hL = new THREE.Vector3();
 const hR = new THREE.Vector3();
 
 /** The variant's dying pose `tMs` into its active phase, body space, unit scale (feet on y = 0, facing +z). */
-export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side" | "wallBehind" | "rail">, out: Record<Joint, THREE.Vector3>): void {
+export function dyingPose(
+  v: DeathVariant,
+  tMs: number,
+  c: Pick<DeathCtx, "side" | "wallBehind" | "rail">,
+  out: Record<Joint, THREE.Vector3>,
+): void {
   const p = tmpPose;
   p.h = REST.pelvis.y;
-  p.fx = p.fz = p.pitch = p.roll = p.yaw = p.twist = p.head = 0;
+  p.fx =
+    p.fz =
+    p.pitch =
+    p.roll =
+    p.yaw =
+    p.twist =
+    p.head =
+    p.kneeUp =
+    p.kneeOut =
+      0;
   p.footL.copy(STANCE_L);
   p.footR.copy(STANCE_R);
   p.handL = p.handR = null;
@@ -314,11 +401,23 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
       rot(vF, 0, 0, 1, p.pitch, 0, p.roll);
       rot(vA, 1, 0, 0, p.pitch, p.twist, p.roll);
       const reach = smooth(t / 260);
-      hL.set(p.fx, p.h, p.fz).addScaledVector(vS, 0.16).addScaledVector(vF, 0.2).addScaledVector(vA, 0.06);
-      hR.set(p.fx, p.h, p.fz).addScaledVector(vS, 0.2).addScaledVector(vF, 0.21).addScaledVector(vA, -0.04);
+      hL.set(p.fx, p.h, p.fz)
+        .addScaledVector(vS, 0.16)
+        .addScaledVector(vF, 0.2)
+        .addScaledVector(vA, 0.06);
+      hR.set(p.fx, p.h, p.fz)
+        .addScaledVector(vS, 0.2)
+        .addScaledVector(vF, 0.21)
+        .addScaledVector(vA, -0.04);
       // From the hang into the clutch over 260 ms.
-      hL.lerp(vT.set(REST.handL.x, REST.handL.y - 0.5 * u, p.fz + 0.05), 1 - reach);
-      hR.lerp(vT.set(REST.handR.x, REST.handR.y - 0.5 * u, p.fz + 0.05), 1 - reach);
+      hL.lerp(
+        vT.set(REST.handL.x, REST.handL.y - 0.5 * u, p.fz + 0.05),
+        1 - reach,
+      );
+      hR.lerp(
+        vT.set(REST.handR.x, REST.handR.y - 0.5 * u, p.fz + 0.05),
+        1 - reach,
+      );
       p.handL = hL;
       p.handR = hR;
       break;
@@ -350,20 +449,27 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
     }
     case "wallslump": {
       // Slammed back into the wall, then the back slides down it to sit, legs out, head dropping last.
-      const wd = Math.max(0.3, Math.min(DEATH.wallM, c.wallBehind ?? DEATH.wallM));
+      const wd = Math.max(
+        0.3,
+        Math.min(DEATH.wallM, c.wallBehind ?? DEATH.wallM),
+      );
       const slam = easeOut(t / 220);
       const slide = smooth((t - 220) / 980);
       // The pelvis ends a hand's width off the wall with the spine leaning back into it, the shoulders touching.
       p.fz = -(wd - 0.06 - 0.12 * slide) * slam;
       p.h = REST.pelvis.y - 0.78 * slide;
       p.pitch = -0.08 * slam - 0.2 * slide;
-      p.head = 0.15 * slam + 0.45 * smooth((t - 900) / 300);
-      p.roll = 0.04 * sg * smooth((t - 700) / 500);
-      // Legs out long and splayed, knees soft: a sit, not a squat (raised knees crossed into an X from the front).
-      p.footL.z = p.footR.z = p.fz + 0.84 * slide + 0.12 * (1 - slide) * slam;
-      p.footL.x = STANCE_L.x + 0.17 * slide;
-      p.footR.x = STANCE_R.x - 0.13 * slide;
-      p.footR.z += 0.06 * slide;
+      p.head = 0.15 * slam + 0.55 * smooth((t - 900) / 300);
+      p.roll = 0.12 * sg * smooth((t - 700) / 500);
+      // A sit you can read from any side (C9 review: two straight legs toward the camera read as a man standing):
+      // the left knee drawn up and fallen out, the right leg out long with the knee soft.
+      const foot0 = p.fz + 0.12 * (1 - slide) * slam;
+      p.footL.z = foot0 + 0.46 * slide;
+      p.footR.z = foot0 + 0.8 * slide;
+      p.footL.x = STANCE_L.x + 0.2 * slide;
+      p.footR.x = STANCE_R.x - 0.16 * slide;
+      p.kneeUp = 3 * slide;
+      p.kneeOut = 1.2 * slide;
       // Hands fall to the floor beside him.
       hL.set(0.34, Math.max(0.05, REST.handL.y - 0.8 * slide), p.fz + 0.14);
       hR.set(-0.34, Math.max(0.05, REST.handR.y - 0.8 * slide), p.fz + 0.14);
@@ -395,13 +501,25 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
       p.h = REST.pelvis.y + arc - 0.55 * smooth((u - 0.55) / 0.45);
       p.pitch = -1.25 * smooth(u * 1.3);
       p.head = 0.35 * smooth(u * 2);
-      p.footL.set(STANCE_L.x + 0.05, 0.1 + 0.45 * smooth(u * 1.6), -travel + 0.55 * smooth(u * 1.4));
-      p.footR.set(STANCE_R.x - 0.08, 0.06 + 0.3 * smooth(u * 1.4), -travel + 0.4 * smooth(u * 1.2));
+      p.footL.set(
+        STANCE_L.x + 0.05,
+        0.1 + 0.45 * smooth(u * 1.6),
+        -travel + 0.55 * smooth(u * 1.4),
+      );
+      p.footR.set(
+        STANCE_R.x - 0.08,
+        0.06 + 0.3 * smooth(u * 1.4),
+        -travel + 0.4 * smooth(u * 1.2),
+      );
       rot(vS, 0, 1, 0, p.pitch, 0, 0);
       rot(vF, 0, 0, 1, p.pitch, 0, 0);
       const fl = smooth(u * 2.2);
-      hL.set(p.fx + 0.3, p.h, p.fz).addScaledVector(vS, 0.55 - 0.1 * fl).addScaledVector(vF, 0.45 * fl);
-      hR.set(p.fx - 0.32, p.h, p.fz).addScaledVector(vS, 0.5 - 0.1 * fl).addScaledVector(vF, 0.5 * fl);
+      hL.set(p.fx + 0.3, p.h, p.fz)
+        .addScaledVector(vS, 0.55 - 0.1 * fl)
+        .addScaledVector(vF, 0.45 * fl);
+      hR.set(p.fx - 0.32, p.h, p.fz)
+        .addScaledVector(vS, 0.5 - 0.1 * fl)
+        .addScaledVector(vF, 0.5 * fl);
       p.handL = hL;
       p.handR = hR;
       break;
@@ -422,7 +540,8 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
     }
     case "crawlout": {
       // Prone, three breaths, then still.
-      const breath = Math.sin((Math.PI * 2 * t) / 800) * (1 - smooth((t - 1600) / 800));
+      const breath =
+        Math.sin((Math.PI * 2 * t) / 800) * (1 - smooth((t - 1600) / 800));
       p.h = 0.16;
       p.pitch = 1.5 - 0.05 * breath;
       p.head = -0.4;
@@ -453,7 +572,13 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
 export type RestKind = "back" | "front" | "side";
 export const REST_POSE = {
   /** Limp seconds before the pull starts (a headshot drops, a blown-back body flies first). */
-  delayS: { headshot: 0.3, blownback: 0.12, gutclutch: 0.05, spin: 0.12, knees: 0.08 } as Partial<Record<DeathVariant, number>>,
+  delayS: {
+    headshot: 0.3,
+    blownback: 0.12,
+    gutclutch: 0.05,
+    spin: 0.12,
+    knees: 0.08,
+  } as Partial<Record<DeathVariant, number>>,
   /** Seconds the pull takes to come up to strength, and its strength (share of the gap closed per 60 Hz frame). */
   rampS: 0.6,
   k: 0.2,
@@ -468,7 +593,8 @@ export const REST_POSE = {
 /** The lying pose a variant ends in, or null for one that holds its own end (a sit, a fold over a rail, a crawl). */
 export function restKindFor(v: DeathVariant, frontY: number): RestKind | null {
   if (v === "gutclutch") return "side";
-  if (v === "headshot" || v === "blownback") return frontY < -0.5 ? "front" : "back";
+  if (v === "headshot" || v === "blownback")
+    return frontY < -0.5 ? "front" : "back";
   if (v === "spin" || v === "knees") return frontY > 0.5 ? "back" : "front";
   return null;
 }
@@ -478,10 +604,24 @@ const rA = new THREE.Vector3();
 const rF = new THREE.Vector3();
 const rD = new THREE.Vector3();
 const rP = new THREE.Vector3();
-const TORSO: readonly Joint[] = ["pelvis", "chest", "neck", "shoulderL", "shoulderR", "hipL", "hipR"];
+const TORSO: readonly Joint[] = [
+  "pelvis",
+  "chest",
+  "neck",
+  "shoulderL",
+  "shoulderR",
+  "hipL",
+  "hipR",
+];
 
 /** A limb bone from `from` along `dir` (body basis), its end at height `h`: the floor flattens it, length kept. */
-function bone(from: THREE.Vector3, dir: THREE.Vector3, len: number, h: number, out: THREE.Vector3): void {
+function bone(
+  from: THREE.Vector3,
+  dir: THREE.Vector3,
+  len: number,
+  h: number,
+  out: THREE.Vector3,
+): void {
   const dy = Math.max(-len * 0.95, Math.min(len * 0.95, h - from.y));
   rD.set(dir.x, 0, dir.z);
   if (rD.lengthSq() < 1e-6) rD.set(0, 0, -1);
@@ -493,7 +633,12 @@ function bone(from: THREE.Vector3, dir: THREE.Vector3, len: number, h: number, o
  * A lying pose in its own frame: the pelvis over the origin, the head toward +z, y up from the street. `sg` picks
  * which arm is flung up (or which side is down, for the curl).
  */
-export function lyingPose(kind: RestKind, sg: number, out: Record<Joint, THREE.Vector3>, flung = false): void {
+export function lyingPose(
+  kind: RestKind,
+  sg: number,
+  out: Record<Joint, THREE.Vector3>,
+  flung = false,
+): void {
   const s = sg >= 0 ? 1 : -1;
   // The body's basis: spine, his left, his front.
   rS.set(0, 0, 1);
@@ -505,30 +650,56 @@ export function lyingPose(kind: RestKind, sg: number, out: Record<Joint, THREE.V
   if (kind !== "side") rS.addScaledVector(rA, 0.06 * s).normalize();
   for (const j of TORSO) {
     const R = REST[j];
-    out[j].set(0, 0, 0).addScaledVector(rA, R.x).addScaledVector(rS, R.y - REST.pelvis.y).addScaledVector(rF, R.z);
+    out[j]
+      .set(0, 0, 0)
+      .addScaledVector(rA, R.x)
+      .addScaledVector(rS, R.y - REST.pelvis.y)
+      .addScaledVector(rF, R.z);
   }
   // The head: rolled onto one cheek on his back or front, bowed onto his chest when curled.
   rD.copy(rS);
   if (kind === "side") rD.addScaledVector(rF, 0.55);
-  else rD.addScaledVector(rA, kind === "back" ? 0.5 * s : -0.6 * s).addScaledVector(rF, kind === "back" ? 0.1 : -0.1);
+  else
+    rD.addScaledVector(
+      rA,
+      kind === "back" ? 0.5 * s : -0.6 * s,
+    ).addScaledVector(rF, kind === "back" ? 0.1 : -0.1);
   out.head.copy(out.neck).addScaledVector(rD.normalize(), LEN.head);
   // Lift the torso onto the street: the spine at half the plates' depth (their width, on his side), every other
   // joint just off the floor.
   let lift = -Infinity;
   const spineH = kind === "side" ? REST_POSE.sideH : REST_POSE.torsoH;
-  for (const j of TORSO) lift = Math.max(lift, (j === "pelvis" || j === "chest" || j === "neck" ? spineH : REST_POSE.limbH) - out[j].y);
+  for (const j of TORSO)
+    lift = Math.max(
+      lift,
+      (j === "pelvis" || j === "chest" || j === "neck"
+        ? spineH
+        : REST_POSE.limbH) - out[j].y,
+    );
   lift = Math.max(lift, REST_POSE.headH - out.head.y);
   for (const j of [...TORSO, "head" as const]) out[j].y += lift;
   const H = REST_POSE.limbH;
   // Limbs: (along his left/right outward, along the spine, along his front), then flattened onto the street.
-  const limb = (side: "L" | "R", upper: [number, number, number], lower: [number, number, number], kneeH = H, arm = true) => {
+  const limb = (
+    side: "L" | "R",
+    upper: [number, number, number],
+    lower: [number, number, number],
+    kneeH = H,
+    arm = true,
+  ) => {
     const o = side === "L" ? 1 : -1;
     const root = arm ? out[`shoulder${side}`] : out[`hip${side}`];
     const mid = arm ? out[`elbow${side}`] : out[`knee${side}`];
     const end = arm ? out[`hand${side}`] : out[`foot${side}`];
-    rP.set(0, 0, 0).addScaledVector(rA, upper[0] * o).addScaledVector(rS, upper[1]).addScaledVector(rF, upper[2]);
+    rP.set(0, 0, 0)
+      .addScaledVector(rA, upper[0] * o)
+      .addScaledVector(rS, upper[1])
+      .addScaledVector(rF, upper[2]);
     bone(root, rP, arm ? LEN.upper : LEN.thigh, kneeH, mid);
-    rP.set(0, 0, 0).addScaledVector(rA, lower[0] * o).addScaledVector(rS, lower[1]).addScaledVector(rF, lower[2]);
+    rP.set(0, 0, 0)
+      .addScaledVector(rA, lower[0] * o)
+      .addScaledVector(rS, lower[1])
+      .addScaledVector(rF, lower[2]);
     bone(mid, rP, arm ? LEN.fore : LEN.shin, H, end);
   };
   // `up` is the side whose arm goes up by the head.
@@ -558,15 +729,36 @@ export function lyingPose(kind: RestKind, sg: number, out: Record<Joint, THREE.V
       const top = (sd === "L") === s > 0;
       const o = sd === "L" ? 1 : -1;
       const hip = out[`hip${sd}`];
-      rP.copy(rF).multiplyScalar(top ? 0.9 : 0.75).addScaledVector(rS, top ? -0.45 : -0.65);
+      rP.copy(rF)
+        .multiplyScalar(top ? 0.9 : 0.75)
+        .addScaledVector(rS, top ? -0.45 : -0.65);
       bone(hip, rP, LEN.thigh, top ? hip.y - 0.05 : H + 0.02, out[`knee${sd}`]);
-      rP.copy(rS).multiplyScalar(-1).addScaledVector(rF, top ? 0.1 : -0.2);
-      bone(out[`knee${sd}`], rP, LEN.shin, top ? H + 0.08 : H, out[`foot${sd}`]);
+      rP.copy(rS)
+        .multiplyScalar(-1)
+        .addScaledVector(rF, top ? 0.1 : -0.2);
+      bone(
+        out[`knee${sd}`],
+        rP,
+        LEN.shin,
+        top ? H + 0.08 : H,
+        out[`foot${sd}`],
+      );
       const hand = out[`hand${sd}`];
-      hand.copy(out.pelvis).addScaledVector(rF, 0.2).addScaledVector(rS, 0.16).addScaledVector(rA, 0.05 * o);
+      hand
+        .copy(out.pelvis)
+        .addScaledVector(rF, 0.2)
+        .addScaledVector(rS, 0.16)
+        .addScaledVector(rA, 0.05 * o);
       hand.y = Math.max(H, hand.y);
       rP.copy(rS).multiplyScalar(-1).addScaledVector(rF, 0.4);
-      ik2(out[`shoulder${sd}`], hand, LEN.upper, LEN.fore, rP, out[`elbow${sd}`]);
+      ik2(
+        out[`shoulder${sd}`],
+        hand,
+        LEN.upper,
+        LEN.fore,
+        rP,
+        out[`elbow${sd}`],
+      );
     }
   }
   for (const j of JOINTS_ALL) out[j].y = Math.max(out[j].y, H - 0.01);
@@ -630,7 +822,10 @@ export class DeathRun {
     return d == null || limpS > d + REST_POSE.rampS + 0.2;
   }
   /** Places the lying pose where the ragdoll has put him: under his pelvis, head the way his head lies. */
-  anchorRest(J: Record<Joint, THREE.Vector3>, ground: (x: number, z: number) => number): void {
+  anchorRest(
+    J: Record<Joint, THREE.Vector3>,
+    ground: (x: number, z: number) => number,
+  ): void {
     rA.subVectors(J.hipL, J.hipR).add(rD.subVectors(J.shoulderL, J.shoulderR));
     rS.subVectors(J.neck, J.pelvis);
     rF.crossVectors(rA, rS);
@@ -639,12 +834,26 @@ export class DeathRun {
     this.restKind = kind;
     if (!kind) return;
     const across = rA.lengthSq() > 1e-8 ? rA.normalize().y : 0;
-    const sg = kind === "side" ? (Math.abs(across) > 0.15 ? Math.sign(across) : this.ctx.side >= 0 ? 1 : -1) : this.ctx.side >= 0 ? 1 : -1;
+    const sg =
+      kind === "side"
+        ? Math.abs(across) > 0.15
+          ? Math.sign(across)
+          : this.ctx.side >= 0
+            ? 1
+            : -1
+        : this.ctx.side >= 0
+          ? 1
+          : -1;
     // His head's way along the street; straight up (a body still upright) falls back to the way he faced.
     rS.y = 0;
     // A drop onto his back goes the way the round pushed him, unless he has plainly already gone the other way.
     rD.set(this.impulse.x, 0, this.impulse.z);
-    if (kind === "back" && rD.lengthSq() > 0.25 && (rS.lengthSq() < 0.16 || rS.dot(rD) > 0)) rS.copy(rD);
+    if (
+      kind === "back" &&
+      rD.lengthSq() > 0.25 &&
+      (rS.lengthSq() < 0.16 || rS.dot(rD) > 0)
+    )
+      rS.copy(rD);
     if (rS.lengthSq() < 0.01) rS.set(Math.sin(this.yaw), 0, Math.cos(this.yaw));
     rS.normalize();
     const hx = rS.x;
@@ -674,8 +883,17 @@ export class DeathRun {
       const v = out[j];
       const x = v.x * this.scale;
       const z = v.z * this.scale;
-      v.set(this.origin.x + x * c + z * s, this.origin.y + v.y * this.scale, this.origin.z - x * s + z * c);
-      v.addScaledVector(this.impulse, drift * (this.near[j] ?? 0.6) * (this.variant === "wallslump" ? 0.25 : 1));
+      v.set(
+        this.origin.x + x * c + z * s,
+        this.origin.y + v.y * this.scale,
+        this.origin.z - x * s + z * c,
+      );
+      v.addScaledVector(
+        this.impulse,
+        drift *
+          (this.near[j] ?? 0.6) *
+          (this.variant === "wallslump" ? 0.25 : 1),
+      );
     }
   }
   /** This frame's targets and their per-step motion (target now minus target a step ago). */
@@ -703,7 +921,13 @@ const jW = new THREE.Vector3();
  * Keeps the joint between `root` and `end` from folding past `maxBendDeg` from straight: `end` swings out to the
  * limit, keeping its distance. `hint` picks the bend plane when the chain is folded flat.
  */
-function limitBend(root: THREE.Vector3, mid: THREE.Vector3, end: THREE.Vector3, maxBendDeg: number, hint: THREE.Vector3): void {
+function limitBend(
+  root: THREE.Vector3,
+  mid: THREE.Vector3,
+  end: THREE.Vector3,
+  maxBendDeg: number,
+  hint: THREE.Vector3,
+): void {
   jU.subVectors(root, mid);
   jV.subVectors(end, mid);
   const lu = jU.length();
@@ -727,7 +951,12 @@ function limitBend(root: THREE.Vector3, mid: THREE.Vector3, end: THREE.Vector3, 
 }
 
 /** Mirrors a knee that sits behind the hip-foot line (bent the wrong way) to the front of it. */
-function kneeFront(hip: THREE.Vector3, knee: THREE.Vector3, foot: THREE.Vector3, hasFront: boolean): void {
+function kneeFront(
+  hip: THREE.Vector3,
+  knee: THREE.Vector3,
+  foot: THREE.Vector3,
+  hasFront: boolean,
+): void {
   if (!hasFront) return;
   jC.subVectors(foot, hip);
   const len = jC.length();
@@ -747,7 +976,10 @@ function kneeFront(hip: THREE.Vector3, knee: THREE.Vector3, foot: THREE.Vector3,
  * product against the thigh's forward), knees and elbows bend no further than their limits, and the head stays
  * within 70 degrees of the spine.
  */
-export function limitJoints(J: Record<Joint, THREE.Vector3>, lost?: ReadonlySet<string>): void {
+export function limitJoints(
+  J: Record<Joint, THREE.Vector3>,
+  lost?: ReadonlySet<string>,
+): void {
   // His front, from the hips and the spine.
   jA.subVectors(J.hipL, J.hipR);
   jB.subVectors(J.chest, J.pelvis);
@@ -760,13 +992,25 @@ export function limitJoints(J: Record<Joint, THREE.Vector3>, lost?: ReadonlySet<
     const knee = J[`knee${s}`];
     const foot = J[`foot${s}`];
     kneeFront(hip, knee, foot, hasFront);
-    limitBend(hip, knee, foot, DEATH.kneeDeg, jF.lengthSq() > 0 ? jW.copy(jF).negate() : jW.set(0, 0, -1));
+    limitBend(
+      hip,
+      knee,
+      foot,
+      DEATH.kneeDeg,
+      jF.lengthSq() > 0 ? jW.copy(jF).negate() : jW.set(0, 0, -1),
+    );
     // Swinging the foot out to the bend limit moves the hip-foot line: check the knee against it again.
     kneeFront(hip, knee, foot, hasFront);
   }
   for (const s of ["L", "R"] as const) {
     if (lost?.has(`upperArm${s}`) || lost?.has(`forearm${s}`)) continue;
-    limitBend(J[`shoulder${s}`], J[`elbow${s}`], J[`hand${s}`], DEATH.elbowDeg, hasFront ? jW.copy(jF) : jW.set(0, 0, 1));
+    limitBend(
+      J[`shoulder${s}`],
+      J[`elbow${s}`],
+      J[`hand${s}`],
+      DEATH.elbowDeg,
+      hasFront ? jW.copy(jF) : jW.set(0, 0, 1),
+    );
   }
   if (!lost?.has("head")) {
     // The neck: the head within 70 degrees of the spine's line through the neck.
@@ -796,14 +1040,23 @@ export function limitJoints(J: Record<Joint, THREE.Vector3>, lost?: ReadonlySet<
 }
 
 /** Interior knee angle (degrees) and whether the knee is in front of the hip-foot line: for tests. */
-export function kneeInfo(J: Record<Joint, THREE.Vector3>, s: "L" | "R"): { interiorDeg: number; front: number } {
+export function kneeInfo(
+  J: Record<Joint, THREE.Vector3>,
+  s: "L" | "R",
+): { interiorDeg: number; front: number } {
   const hip = J[`hip${s}`];
   const knee = J[`knee${s}`];
   const foot = J[`foot${s}`];
   const u = new THREE.Vector3().subVectors(hip, knee).normalize();
   const v = new THREE.Vector3().subVectors(foot, knee).normalize();
-  const interiorDeg = (Math.acos(Math.max(-1, Math.min(1, u.dot(v)))) * 180) / Math.PI;
-  const f = new THREE.Vector3().crossVectors(new THREE.Vector3().subVectors(J.hipL, J.hipR), new THREE.Vector3().subVectors(J.chest, J.pelvis)).normalize();
+  const interiorDeg =
+    (Math.acos(Math.max(-1, Math.min(1, u.dot(v)))) * 180) / Math.PI;
+  const f = new THREE.Vector3()
+    .crossVectors(
+      new THREE.Vector3().subVectors(J.hipL, J.hipR),
+      new THREE.Vector3().subVectors(J.chest, J.pelvis),
+    )
+    .normalize();
   const leg = new THREE.Vector3().subVectors(foot, hip).normalize();
   f.addScaledVector(leg, -f.dot(leg)).normalize();
   return {
@@ -852,7 +1105,11 @@ export class DroppedProp {
       .addScaledVector(vel, -dt)
       .addScaledVector(jA, -spin * this.len * dt);
   }
-  step(dt: number, ground: (x: number, z: number) => number, colliders: readonly THREE.Box3[] = []): void {
+  step(
+    dt: number,
+    ground: (x: number, z: number) => number,
+    colliders: readonly THREE.Box3[] = [],
+  ): void {
     if (this.asleep) return;
     this.t += dt;
     const g = -9.8 * dt * dt;
@@ -886,7 +1143,12 @@ export class DroppedProp {
         if (p.y < fl) {
           const vy = (q.y - p.y) / Math.max(1e-4, dt);
           p.y = fl;
-          if (it === 0 && vy > 1 && this.t - this.lastClatter > 0.07 && this.clatters < 4) {
+          if (
+            it === 0 &&
+            vy > 1 &&
+            this.t - this.lastClatter > 0.07 &&
+            this.clatters < 4
+          ) {
             this.clatters++;
             this.lastClatter = this.t;
             this.onClatter?.(vy, p);
@@ -897,7 +1159,15 @@ export class DroppedProp {
           q.z = p.z - (p.z - q.z) * 0.45;
         }
         for (const c of colliders) {
-          if (p.x <= c.min.x || p.x >= c.max.x || p.y <= c.min.y || p.y >= c.max.y || p.z <= c.min.z || p.z >= c.max.z) continue;
+          if (
+            p.x <= c.min.x ||
+            p.x >= c.max.x ||
+            p.y <= c.min.y ||
+            p.y >= c.max.y ||
+            p.z <= c.min.z ||
+            p.z >= c.max.z
+          )
+            continue;
           p.y = c.max.y + this.lift;
           q.y = p.y;
         }

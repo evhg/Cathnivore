@@ -460,6 +460,10 @@ for (const vp of vps) {
       const want = stage.startsWith('blood-pool') ? 'gutclutch' : stage.split('-')[1]
       console.log(`  C9 ${vp} ${spec}: variant ${info.variant}, asleep ${info.asleep}, pool ${info.pool ? `${info.pool.rx.toFixed(0)}x${info.pool.ry.toFixed(0)} px, ${info.pool.age.toFixed(1)} s` : 'none'}`)
       if (info.variant !== want) fail(`${vp} ${spec}: died as ${info.variant}, not ${want}`)
+      const H = info.heights ?? {}
+      console.log(`  C9 ${vp} ${spec}: heights ${Object.entries(H).map(([j, h]) => `${j} ${h}`).join(', ')}`)
+      // The slump is a sit: by 1200 ms the pelvis is on the floor, not a figure standing against the wall.
+      if (stage.startsWith('death-wallslump') && Number(/-(\d+)$/.exec(stage)?.[1] ?? 0) >= 1200 && !(H.pelvis < 0.35)) fail(`${vp} ${spec}: the pelvis is ${H.pelvis} m up (>= 0.35): he isn't sitting`)
       const c = info.corpse.chest
       if (!(c.x > 0 && c.x < V.viewport.width && c.y > 0 && c.y < V.viewport.height)) fail(`${vp} ${spec}: the body is off screen`)
       if (stage.startsWith('blood-pool')) {
