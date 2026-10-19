@@ -351,7 +351,12 @@ export class Hud {
     this.show(this.target, this.targetT > 0);
     // The phone's look hint sits where the target bar's long names run (C9: "DOWN" over "DRAG TO AIM"): it steps
     // aside while a target is up.
-    document.documentElement.classList.toggle("hud-target-on", this.targetT > 0);
+    // Only on a change: a classList call every frame is DOM work for nothing.
+    const targetOn = this.targetT > 0;
+    if (targetOn !== this.targetOn) {
+      this.targetOn = targetOn;
+      document.documentElement.classList.toggle("hud-target-on", targetOn);
+    }
     this.dmg.setUrgent(low);
     this.dmg.update(dt, s.hurtResolve ?? null, s.nades ?? []);
     // Armour as its own bar; the resistances line only when she has some.
@@ -670,6 +675,9 @@ export class Hud {
     // Kill-feed lines from the stage before would read as this stage's.
     this.feed.replaceChildren();
     this.toastEl?.classList.remove("on");
+    // Nor a line of voiceover from before the stage.
+    clearTimeout(this.subTimer);
+    this.sub?.classList.remove("on");
     // One-shot animations (the kill rings, the armour shatter, the pops) are held while frozen: drop them.
     const oneShots: Array<[HTMLElement | null, string[]]> = [
       [this.hit, ["pop"]],
@@ -895,6 +903,7 @@ export class Hud {
 
   private sub?: HTMLElement;
   private subTimer = 0;
+  private targetOn = false;
 
   /** Cath's voiceover (or Bea on the wire), as a subtitle on per-line plates with the speaker's colour. */
   subtitle(text: string): void {

@@ -675,7 +675,9 @@
   box-shadow: 0 0 0 1px var(--hit-outline), 0 0 calc(var(--u) * 10) rgb(var(--blood-rgb) / .55);
   transform: skewX(-8deg);
 }
-@keyframes target-gone { 0%, 30% { opacity: 1; } 100% { opacity: 0; } }
+/* The plate holds opaque while DOWN is stamped (half-faded, the street showed through the name: C9 review) and
+   goes in the last 120 ms. */
+@keyframes target-gone { 0%, 79% { opacity: 1; } 100% { opacity: 0; } }
 .hud-threats {
   position: absolute;
   left: 50%;
@@ -1518,7 +1520,9 @@
   .hud-root { --t-num-hero: 26px; --t-num-ammo: 34px; --t-body-l: 15px; --cluster-w: 12.5rem; }
   /* The arms cluster and the feed under it sit top right on a phone: the target bar drops below both (a kill's
      DOWN stamp and its +XP line arrive together), sitting just over the crosshair like a name over his head. */
-  .hud-target { top: 36%; width: min(calc(var(--u) * 420), 36vw); }
+  /* Above the body rather than on it (C9 review: at 36% the plate sat over a body framed at the centre): in the band
+     under the objective, nudged left of centre so the feed's short +XP lines on the right stay clear. */
+  .hud-target { top: 25%; left: 46%; width: min(calc(var(--u) * 420), 36vw); }
   .hud-objective { max-width: 36ch; }
   .hud-hp,
   .hud-guard { height: 6px; }
