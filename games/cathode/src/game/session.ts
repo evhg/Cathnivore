@@ -2619,7 +2619,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         else if (ev.kind === "clatter") audio?.gunClatter(ev.k * 0.8, pan);
         else if (ev.kind === "smear" && gore) {
           const hit = rays.cast(ev.at, e.deathDir.lengthSq() > 0 ? e.deathDir : new THREE.Vector3(0, 0, -1), 1.8, { thin: false });
-          if (hit && Math.abs(hit.normal.y) < 0.4) gore.smear(hit.point.clone(), hit.normal.clone());
+          // From his shoulders (a hand above the chest joint), so the top of the run shows over his head as he sits.
+          if (hit && Math.abs(hit.normal.y) < 0.4) gore.smear(hit.point.clone().add(new THREE.Vector3(0, 0.25, 0)), hit.normal.clone());
         } else if (ev.kind === "trail") gore?.trail(ev.at);
       }
       e.deathEvents.length = 0;

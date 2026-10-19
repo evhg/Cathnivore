@@ -406,6 +406,8 @@ export function createGore(o: GoreDeps): Gore {
   const SPLAT_TINT = new THREE.Color(1.55, 0.55, 0.5);
   // Phone: G and B held low so the heavy phone fog lifts it toward crimson, not coral (C2 review).
   const SPLAT_TINT_PHONE = new THREE.Color(2.3, 0.34, 0.3);
+  // The slump's smear: older, darker blood dragged down the wall, closer to #5C0707 than a fresh splat.
+  const SMEAR_TINT = new THREE.Color(1.4, 0.2, 0.17);
   /** The last hit's wall splats (world point, size in m), for the C2 probe. */
   const splats: { point: THREE.Vector3; size: number }[] = [];
 
@@ -803,15 +805,26 @@ export function createGore(o: GoreDeps): Gore {
     },
     smear(top, normal) {
       if (o.reduced) return;
-      // Three overlapping runs from his shoulders to the floor, streaked along the wall's down.
+      // A 0.4 m wide run from where his shoulders hit to where he sits (C9 review: round splats read as paint):
+      // the impact mark at the top, then three columns of drip runs stacked down the wall, darker toward #5C0707.
       const gy = o.ground(top.x, top.z);
-      const h = Math.max(0.5, Math.min(1.3, top.y - gy));
-      for (let i = 0; i < 4; i++) {
-        const y = top.y - (h * i) / 3.2;
-        const at = tp.set(top.x, Math.max(gy + 0.18, y), top.z).addScaledVector(normal, 0.005);
-        o.decal(at, normal, 0.36 + rand() * 0.1, DECAL.blood[3 + (i % 3)]!, SPLAT_TINT, GORE.splat.wetInMs + i * 140, down);
+      const h = Math.max(0.5, Math.min(1.3, top.y - gy - 0.15));
+      const side = ts.crossVectors(normal, down).normalize();
+      const sx = side.x;
+      const sz = side.z;
+      const run = 0.42;
+      const rows = Math.max(2, Math.ceil(h / (run * 0.7)));
+      for (let c = 0; c < 3; c++) {
+        const off = (c - 1) * 0.13 + (rand() - 0.5) * 0.04;
+        // The middle column runs all the way down; the outer ones stop short, a dragged edge.
+        const n = c === 1 ? rows : Math.max(1, rows - 1 - Math.floor(rand() * 2));
+        for (let i = 0; i < n; i++) {
+          const y = top.y - run * 0.5 - i * run * 0.7;
+          const at = tp.set(top.x + sx * off, Math.max(gy + run * 0.5 + 0.05, y), top.z + sz * off).addScaledVector(normal, 0.004 + c * 0.0005);
+          o.decal(at, normal, run * (0.9 + rand() * 0.2), DECAL.run[0]!, SMEAR_TINT, GORE.splat.wetInMs + i * 160, down);
+        }
       }
-      o.decal(tp.set(top.x, top.y + 0.04, top.z).addScaledVector(normal, 0.006), normal, 0.5, DECAL.blood[3]!, SPLAT_TINT, GORE.splat.wetInMs, down);
+      o.decal(tp.set(top.x, top.y + 0.02, top.z).addScaledVector(normal, 0.006), normal, 0.42, DECAL.blood[3]!, SMEAR_TINT, GORE.splat.wetInMs, down);
     },
     trail(at) {
       if (o.reduced) return;
