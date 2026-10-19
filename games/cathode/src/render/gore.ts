@@ -58,7 +58,7 @@ export const GORE = {
   // Fanned across the view (a spurt straight at the camera barely moves on screen), with a pull back toward her.
   spurt: { count: [7, 11] as const, speed: [5, 9] as const, coneDeg: 70, lift: 1.9, back: 0.6 },
   /** The wound keeps bleeding where it was hit: slow, heavy drops that hang at the hole and fall (the fast spurt has gone by 160 ms). */
-  ooze: { count: [5, 7] as const, speed: [0.3, 1] as const, size: [0.03, 0.05] as const, headMul: 1.6 },
+  ooze: { count: [5, 7] as const, speed: [0.3, 1] as const, size: [0.036, 0.06] as const, headMul: 1.6 },
   /** Air drag on droplets (1/s): a fast spurt bursts out, then slows and falls, instead of flying on as long laser-straight streaks. */
   dropDrag: 5,
   exit: { pistol: 15, rifle: 22, smg: 18, shotgun: 6, sniper: 40, melee: 8, launcher: 30, coneDeg: 35, wallRays: 24, speed: [2, 6] as const, size: [0.015, 0.04] as const, color: "#5C0707" },
@@ -729,7 +729,11 @@ export function createGore(o: GoreDeps): Gore {
         if (pool.grav[i]) {
           const dk = Math.max(0, 1 - GORE.dropDrag * dt);
           pool.vel[i * 3]! *= dk;
-          pool.vel[i * 3 + 1]! = pool.vel[i * 3 + 1]! * dk - 9.8 * dt;
+          // Air drag slows the burst sideways, but a falling drop is heavy: a third of the drag on the way down
+          // (terminal ~6 m/s, not 2) once the wound's first 250 ms have read, so drops land and leave the air clear instead of hanging over a body as red
+          // spikes for a second (C9).
+          const vy0 = pool.vel[i * 3 + 1]!;
+          pool.vel[i * 3 + 1]! = vy0 * (vy0 < 0 && age > 0.25 ? Math.max(0, 1 - GORE.dropDrag * 0.3 * dt) : dk) - 9.8 * dt;
           pool.vel[i * 3 + 2]! *= dk;
           const x = (pool.pos[i * 3]! += pool.vel[i * 3]! * dt);
           const y = (pool.pos[i * 3 + 1]! += pool.vel[i * 3 + 1]! * dt);
