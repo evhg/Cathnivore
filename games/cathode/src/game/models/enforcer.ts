@@ -256,9 +256,11 @@ function onRing(r: number, y: number, phi: number, sx = 1, extra?: THREE.Quatern
  * front. With the crest it gives him a second silhouette cue (a broad head-and-shoulders block) that holds at 64 px,
  * where the crest alone was a few pixels.
  */
-function commandCollar(b: Builder, seg: number): void {
+function commandCollar(b: Builder, seg: number, low = false): void {
   const uL = segLen("upperChest");
-  const pr: P2[] = [[0.13, uL - 0.05], [0.2, uL + 0.06], [0.215, uL + 0.13], [0.2, uL + 0.135], [0.186, uL + 0.07], [0.118, uL - 0.035]];
+  const pr: P2[] = low
+    ? [[0.13, uL - 0.05], [0.215, uL + 0.13], [0.195, uL + 0.135], [0.118, uL - 0.035]]
+    : [[0.13, uL - 0.05], [0.2, uL + 0.06], [0.215, uL + 0.13], [0.2, uL + 0.135], [0.186, uL + 0.07], [0.118, uL - 0.035]];
   b.add("upperChest", shell(pr, Math.PI - 115 * D, 230 * D, seg, 0.5), FINISH.plateDark);
 }
 
@@ -269,7 +271,7 @@ function torso(b: Builder, arch: Arch): void {
   const cL = segLen("chest");
   const uL = segLen("upperChest");
   const sniper = arch === "sniper";
-  if (arch === "leader") commandCollar(b, b.seg(20));
+  if (arch === "leader") commandCollar(b, b.seg(14), lod > 0);
   // ---- abdomen: the soft core, the belt with its buckle and pouches, two stacked ab lames, the codpiece.
   b.add("abdomen", lathe([[0.0, -0.1], [0.12, -0.095], [0.152, -0.04], [0.15, 0.06], [0.156, 0.16], [0.172, aL + 0.02]], 1.05, 0.72, b.seg(18)), S.suit);
   if (lod < 2) {
@@ -398,8 +400,8 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
   if (lod < 2) b.add(h, b.box(0.012, 0.06, 0.07, 0.005, 1), S.plate, { p: [0.022 * out, 0.06, 0.004] });
   // The thumb: a two-joint digit standing off the palm, so the glove reads as a hand and not a mitten.
   if (lod < 2) {
-    b.add(h, limb(0.05, (t) => 0.0165 - 0.003 * t, lod ? 5 : 8, 2), S.leather, { p: [-0.012 * out, 0.03, 0.042], r: [0.85, 0, 0.45 * out] });
-    if (lod === 0) b.add(h, limb(0.032, (t) => 0.0135 - 0.002 * t, 8, 2), S.leather, { p: [-0.016 * out, 0.06, 0.074], r: [1.35, 0, 0.6 * out] });
+    b.add(h, limb(0.05, (t) => 0.0165 - 0.003 * t, lod ? 4 : 6, 1), S.leather, { p: [-0.012 * out, 0.03, 0.042], r: [0.85, 0, 0.45 * out] });
+    if (lod === 0) b.add(h, limb(0.032, (t) => 0.0135 - 0.002 * t, 6, 1), S.leather, { p: [-0.016 * out, 0.06, 0.074], r: [1.35, 0, 0.6 * out] });
   }
   // The fingers: built straight along the bone from the knuckles, curled round the grip by the bone's own rotation.
   // Up close (LOD0) they are four, with gaps between them and a knuckle guard over the first joints; further off,
@@ -407,8 +409,8 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
   if (lod === 0) {
     b.add(f, b.box(0.03, 0.016, 0.078, 0.005, 1), S.plateDark, { p: [0.006 * out, 0.004, 0.004] });
     for (const [z, l] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) {
-      b.add(f, b.box(0.022, l, 0.0165, 0.005, 1), S.leather, { p: [0, l / 2 + 0.004, z + 0.004] });
-      b.add(f, b.box(0.019, l * 0.85, 0.015, 0.005, 1), S.leather, { p: [-0.011 * out, l + 0.004 + l * 0.38, z + 0.004], r: [0, 0, -0.9 * out] });
+      b.add(f, box(0.022, l, 0.0165, 0, 0), S.leather, { p: [0, l / 2 + 0.004, z + 0.004] });
+      b.add(f, box(0.019, l * 0.85, 0.015, 0, 0), S.leather, { p: [-0.011 * out, l + 0.004 + l * 0.38, z + 0.004], r: [0, 0, -0.9 * out] });
     }
   } else {
     b.add(f, b.box(0.024, 0.05, 0.074, 0.008, 1), S.leather, { p: [0, 0.024, 0.004] });
@@ -517,7 +519,8 @@ function tabardStatic(b: Builder): void {
 function silhouette(b: Builder, arch: Arch): void {
   const S = FINISH;
   const n = b.o.phone ? 5 : 6;
-  const cap = (bone: string, r0: number, r1: number, surf: Surface = S.suit, y0 = 0, extra = 0) => b.add(bone, limb(segLen(bone) + extra, (t) => r0 + (r1 - r0) * t, n, 1), surf, { p: [0, y0, 0] });
+  // Limbs are square on the phone: at 30 m and more a limb is a few pixels across.
+  const cap = (bone: string, r0: number, r1: number, surf: Surface = S.suit, y0 = 0, extra = 0) => b.add(bone, limb(segLen(bone) + extra, (t) => r0 + (r1 - r0) * t, b.o.phone ? 4 : n, 1), surf, { p: [0, y0, 0] });
   b.add("abdomen", lathe([[0.0, -0.1], [0.15, -0.06], [0.155, 0.12], [0.17, segLen("abdomen") + 0.02]], 1.05, 0.72, n), S.suit);
   b.add("chest", lathe([[0.17, -0.02], [0.205, segLen("chest") + 0.01]], 1.06, 0.7, n), arch === "sniper" ? S.coat : S.plate);
   b.add("upperChest", lathe([[0.205, -0.01], [0.2, 0.1], [0.12, segLen("upperChest") + 0.02]], 1.08, 0.7, n), arch === "sniper" ? S.coat : S.plate);
@@ -539,13 +542,13 @@ function silhouette(b: Builder, arch: Arch): void {
   b.add("head", limb(0.1, () => 0.056, n, 1), S.knit, { p: [0, -0.01, 0] });
   const H = "helmet";
   const outer: P2[] = [[0.0, 0.158], [0.12, 0.11], [0.157, 0.022], [0.15, -0.06], [0.166, -0.12]];
-  b.add(H, shell([...outer, [0.152, -0.11], [0.138, -0.06], [0.145, 0.02], [0.11, 0.098], [0.0, 0.144]], 0, Math.PI * 2, b.o.phone ? 5 : 8, 0.5), arch === "sniper" ? S.coat : S.plate, { p: [0, 0, -0.008], s: [1, 1, 1.12] });
+  b.add(H, shell([...outer, [0.15, -0.11], [0.12, 0.09], [0.0, 0.144]], 0, Math.PI * 2, b.o.phone ? 5 : 8, 0.5), arch === "sniper" ? S.coat : S.plate, { p: [0, 0, -0.008], s: [1, 1, 1.12] });
   if (arch === "sniper") b.add(H, cyl(0.022, 0.022, 0.012, 6), GLOWS.lens, { p: [0.0, 0.012, 0.18], r: [Math.PI / 2, 0, 0] });
   else b.add(H, shell([[0.157, 0.0], [0.163, 0.002], [0.163, 0.016], [0.157, 0.018]], -36 * D, 72 * D, 3), GLOWS.slit, { p: [0, 0, -0.008], s: [1, 1, 1.12] });
   b.add(H, shell([[0.15, -0.044], [0.156, -0.043], [0.156, -0.023], [0.15, -0.022]], Math.PI - 30 * D, 60 * D, 2), GLOWS.strip, { p: [0, 0, -0.008], s: [1, 1, 1.12] });
   if (arch === "leader") {
     b.add(H, plate([[-0.15, 0.08], [0.06, 0.135], [0.115, 0.12], [0.1, 0.22], [0.0, 0.33], [-0.1, 0.3], [-0.2, 0.2]], { depth: 0.022, bevel: 0 }), S.plateDark, { p: [-0.011, 0, -0.008], r: [0, Math.PI / 2, 0] });
-    commandCollar(b, b.o.phone ? 5 : 7);
+    commandCollar(b, b.o.phone ? 3 : 6, true);
   }
 }
 

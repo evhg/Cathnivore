@@ -173,6 +173,9 @@ export interface Session {
     /** C10: the review lineup's box on screen (CSS px), and how far each hand is open on the hit-arm stage (degrees). */
     box?: { x: number; y: number; w: number; h: number };
     handOpen?: { L: number; R: number };
+    /** C10: the segment the stage's round struck, and the hands on screen (CSS px) with 0.12 m in px, for the hand crop. */
+    seg?: string | null;
+    hands?: { L: { x: number; y: number }; R: { x: number; y: number }; r: number };
   } | null;
   /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
   probePool?: (x: number, y: number, rx: number, ry: number, o?: { quick?: boolean; noRender?: boolean }) => { bright: number; red: number; total: number; maxLum: number };
@@ -188,6 +191,8 @@ export interface Session {
    * C10 acceptance: the staged guard's own pixels (a flat mask render) against the street around him: their mean
    * luminance (0..1) in the shown frame, and his height on screen (CSS px).
    */
+  /** C10: a close-up of the hit-arm stage's struck hand from 1.1 m off his struck side (true), or back to her view (false). */
+  zoom?: (on: boolean) => boolean;
   probeEnemy?: () => { enemy: number; street: number; ratio: number; px: number; heightPx: number; box: { x: number; y: number; w: number; h: number } } | null;
   /** C10: the silhouette lineup scaled so its tallest figure is 64 px tall, as a PNG data URL. */
   silhouetteThumb?: () => string | null;
@@ -2602,9 +2607,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let frameBlocks = 0;
   /** Where the last round landed (the stage hooks project it for the C2 blood probe). */
   let lastHitPoint: THREE.Vector3 | null = null;
+  /** And the segment it struck (the C10 hit-arm stage reports it). */
+  let lastHitSeg: string | null = null;
+  /** C10: what `s.zoom` frames (the hit-arm stage's struck hand), and whether the close-up is on. */
+  let zoomAt: (() => { at: THREE.Vector3; from: THREE.Vector3 }) | null = null;
+  let zoomOn = false;
   combat.bus.on("hit", (h) => {
     frameHits.push(h);
     lastHitPoint = new THREE.Vector3(h.point.x, h.point.y, h.point.z);
+    lastHitSeg = h.seg;
   });
   combat.bus.on("blocked", () => frameBlocks++);
   combat.bus.on("fire", () => rumble("fire"));
@@ -2728,7 +2739,28 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // C10: the review lineups aren't in the street's enemy list: their visors, blinks and LODs still tick.
     for (const e of lineup) e.body.pose();
     if (reviewRender) reviewRender();
-    else world.render();
+    else if (zoomOn && zoomAt) {
+      // The close-up: the camera moved off his struck side and turned on the hand, a lens 0.6 m across, her gun hidden.
+      const cam = world.camera;
+      const q = cam.quaternion.clone();
+      const pos = cam.position.clone();
+      const fov = cam.fov;
+      const z = zoomAt();
+      cam.position.copy(cam.parent ? cam.parent.worldToLocal(z.from.clone()) : z.from);
+      cam.fov = THREE.MathUtils.radToDeg(2 * Math.atan(0.3 / z.from.distanceTo(z.at)));
+      cam.lookAt(z.at);
+      cam.updateProjectionMatrix();
+      cam.updateMatrixWorld();
+      const vs = world.viewScene.visible;
+      world.viewScene.visible = false;
+      world.render();
+      world.viewScene.visible = vs;
+      cam.quaternion.copy(q);
+      cam.position.copy(pos);
+      cam.fov = fov;
+      cam.updateProjectionMatrix();
+      cam.updateMatrixWorld();
+    } else world.render();
     perfPanel?.update();
     s.stats.ms = s.stats.ms * 0.9 + (performance.now() - t0) * 0.1;
     s.stats.frames++;
@@ -3474,6 +3506,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const tm = r.toneMapping;
         r.toneMapping = THREE.NoToneMapping;
         r.setRenderTarget(null);
+        // The world resets the renderer's counters itself (autoReset is off): without this the review frame's
+        // calls piled up frame on frame and the draw-call budget check read 600-800 for four figures.
+        r.info.reset();
         r.render(sc, world.camera);
         r.toneMapping = tm;
         sc.background = bg;
@@ -3490,6 +3525,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     clearReview();
     for (const e of lineupHidden) e.body.root.visible = true;
     lineupHidden.length = 0;
+  };
+  s.zoom = (on: boolean) => {
+    zoomOn = on && !!zoomAt;
+    return zoomOn;
   };
   s.probeEnemy = () => {
     const g = probeGuard;
@@ -3675,7 +3714,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // A guard 10 m down the crosshair, facing her, unaware.
     // A phone screen is small: the cover stages bring the crate and the guard in so his head over it reads.
     const near = o.quality === "phone" && (name === "blocked" || name === "peek-head") ? 0.6 : 1;
-    let at = eye.clone().addScaledVector(flat, (c9?.dist ?? 10) * near);
+    // hit-arm stands him at 4 m: the struck hand opening is a few centimetres of glove and must show in the frame.
+    let at = eye.clone().addScaledVector(flat, (c9?.dist ?? (name === "hit-arm" ? 4 : 10)) * near);
     if (c9?.wall) {
       // A wall 1 m behind him: find a solid face 5 to 9 m off around the view and stand him 0.9 m in front of it.
       const yaw0 = Math.atan2(flat.x, flat.z);
@@ -3753,8 +3793,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (stageCrate) stageCrate.visible = crated;
     if (crateCollider) crateCollider.off = !crated;
-    // C10: hit-arm takes the round on the support forearm, between the elbow and the hand.
-    const joint = name === "hit-arm" ? g.body.joints.elbowL.clone().lerp(g.body.joints.handL, 0.45) : name === "hit-head" || name === "hit-headkill" || name === "peek-head" || name === "enemy-flinch-head-60" ? g.body.joints.head : g.body.joints.chest;
+    // C10: hit-arm takes the round on the support forearm, nearer the elbow (the hand that opens stays clear of the marker).
+    const joint = name === "hit-arm" ? g.body.joints.elbowL.clone().lerp(g.body.joints.handL, 0.3) : name === "hit-head" || name === "hit-headkill" || name === "peek-head" || name === "enemy-flinch-head-60" ? g.body.joints.head : g.body.joints.chest;
     const aim = joint.clone();
     // Blocked: the round goes into the crate's upper face, square on, with the guard's head showing behind it.
     if (name === "blocked" && stageCrate) aim.copy(stageCrate.position).y += 0.35;
@@ -3780,6 +3820,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     combat.forceVariant = c9?.variant ?? null;
     combat.forceHelmet = c9 ? (c9.helmet ?? false) : null;
     lastHitPoint = null;
+    lastHitSeg = null;
+    zoomAt = null;
+    zoomOn = false;
     // No random crit: a stage shows the same class every time.
     combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], { ...build(), crit: 0 });
     combat.quiet = false;
@@ -3963,7 +4006,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     });
     // Where the body is now (the kill stage looks for the corpse): pelvis and head on screen.
     const corpse = { pelvis: toScreen(g.body.joints.pelvis), head: toScreen(g.body.joints.head), chest: toScreen(g.body.joints.chest) };
-    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse, variant: g.deathVariant, pool: poolInfo, asleep: g.body.asleep, heights: c9 ? jointHeights(g) : undefined, handOpen: { L: g.body.handOpenDeg("L"), R: g.body.handOpenDeg("R") } };
+    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse, variant: g.deathVariant, pool: poolInfo, asleep: g.body.asleep, heights: c9 ? jointHeights(g) : undefined, handOpen: { L: g.body.handOpenDeg("L"), R: g.body.handOpenDeg("R") }, seg: lastHitSeg, hands: name === "hit-arm" ? { L: toScreen(g.body.joints.handL), R: toScreen(g.body.joints.handR), r: Math.abs(toScreen(g.body.joints.handL.clone().addScaledVector(camX, 0.12)).x - toScreen(g.body.joints.handL).x) } : undefined };
+    if (name === "hit-arm") {
+      // Seen from her side of him and off his struck shoulder, 1.1 m out: from where she stands the hand is end-on behind
+      // his rifle, dark on dark.
+      const right = /R$/.test(lastHitSeg ?? "");
+      const hand = right ? g.body.joints.handR : g.body.joints.handL;
+      const out = (right ? g.body.joints.shoulderR : g.body.joints.shoulderL).clone().sub(g.body.joints.chest).setY(0).normalize();
+      const toHer = eye.clone().sub(hand).setY(0).normalize();
+      zoomAt = () => ({ at: hand, from: hand.clone().addScaledVector(out.clone().add(toHer).normalize(), 1.1).add(new THREE.Vector3(0, 0.25, 0)) });
+    }
     if (name === "hit-soft") hud.hitMarker("armour");
     if (name === "hit-pen") hud.hitMarker("pen");
     if (name === "hit-armourbreak") hud.hitMarker("armourBreak");

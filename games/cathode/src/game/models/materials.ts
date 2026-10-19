@@ -67,7 +67,7 @@ vBodyLodA = 1.0; vBodyLodT = 1.0; vBodyBlink = 1.0;
 }
 
 /** The faction rim's peak radiance (linear): under the AgX shoulder, where amber would wash out to white. */
-const RIM_CAP = 1.1;
+const RIM_CAP = 1.5;
 
 const VARYINGS = "varying vec3 vBodyRimN; varying vec3 vBodyFlash; varying vec4 vBodyRim; varying vec4 vBodyVisor; varying vec4 vBodyFac; varying float vBodyLodA; varying float vBodyLodT; varying float vBodyBlink;";
 
@@ -100,12 +100,16 @@ float bRim = 1.0 - clamp(abs(dot(normalize(vBodyRimN), normalize(vViewPosition))
 totalEmissiveRadiance += vBodyFlash * (0.3 + 0.7 * bFlashRim * bFlashRim);
 totalEmissiveRadiance += vBodyRim.rgb * pow(bRim, vBodyRim.w);
 // The faction rim (S3.1) lights the man's outline only: the smooth body normal finds the silhouette, the plate's own
-// normal keeps it off any face turned to the camera (so the dark #2E333C paint shows), and it thins out where the
-// edge is under a couple of pixels wide (rs 0.5 on the phone) so it can't step into a sticker outline. Capped below
-// the tone map's shoulder, so the amber stays amber.
-float bFace = smoothstep(0.25, 0.75, bFlashRim);
-float bAA = 1.0 - smoothstep(0.12, 0.45, fwidth(bRim));
-vec3 bFac = vBodyFac.rgb * pow(bRim, vBodyFac.w) * bFace * (0.35 + 0.65 * bAA);
+// normal keeps it off any face turned to the camera (so the dark #2E333C paint shows). Where the edge falls under a
+// couple of pixels (far off, or rs 0.5 on the phone) a hard fresnel steps into a beaded sticker outline, so there
+// it softens into a wide, even amber sheen over the figure instead (same light, no stair-steps): far off he still
+// reads against the street. Capped below the tone map's shoulder, so the amber stays amber.
+float bFar = smoothstep(0.12, 0.45, fwidth(bRim));
+// The plate gate is a per-facet switch: at the phone's half resolution it turns every box side on or off whole and
+// draws a one-pixel stroke round each figure. The phone's rim (a falloff power under 2.5) is a soft, wide sheen on
+// the smooth body normal alone instead.
+float bFace = vBodyFac.w < 2.5 ? 1.0 : mix(smoothstep(0.15, 0.85, bFlashRim), 1.0, bFar * 0.7);
+vec3 bFac = vBodyFac.rgb * pow(bRim, mix(vBodyFac.w, 1.4, bFar)) * bFace;
 float bFacMax = max(bFac.r, max(bFac.g, bFac.b));
 bFac *= bFacMax > ${RIM_CAP.toFixed(2)} ? ${RIM_CAP.toFixed(2)} / bFacMax : 1.0;
 totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);`,
@@ -115,7 +119,7 @@ totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);`,
         `vec3 bPre = gl_FragColor.rgb;
 #include <fog_fragment>
 #ifdef USE_FOG
-gl_FragColor.rgb = mix(gl_FragColor.rgb, bPre, fogFactor * clamp(vBodyFlash.r * 3.0 + max(vBodyRim.r, vBodyRim.b) * pow(bRim, vBodyRim.w) * 2.0 + max(vBodyFac.r, max(vBodyFac.g, vBodyFac.b)) * pow(bRim, vBodyFac.w) * bFace * (1.0 - uBodyMirror) * 0.8, 0.0, 0.9));
+gl_FragColor.rgb = mix(gl_FragColor.rgb, bPre, fogFactor * clamp(vBodyFlash.r * 3.0 + max(vBodyRim.r, vBodyRim.b) * pow(bRim, vBodyRim.w) * 2.0 + max(bFac.r, max(bFac.g, bFac.b)) * (1.0 - uBodyMirror) * 0.8, 0.0, 0.9));
 #endif`,
       );
   };

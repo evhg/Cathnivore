@@ -104,14 +104,16 @@ export function animate(body: Body, m: Motion): void {
 
   // Arms: the rifle. Low ready points it down and across; shouldered points it where they look.
   const aim = m.aim;
-  const pitch = m.pitch * (0.4 + 0.6 * aim) - (1 - aim) * 0.6;
+  const pitch = m.pitch * (0.4 + 0.6 * aim) - (1 - aim) * 0.45;
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
   const kick = m.kick * 0.06;
   // Grip points in a frame centred on the right shoulder, then pitched.
   const sh = local.shoulderR;
-  const gripR = new THREE.Vector3(0.08 + 0.04 * (1 - aim), -0.12 - 0.08 * (1 - aim), 0.22 - kick);
-  const gripL = new THREE.Vector3(0.2 - 0.05 * aim, -0.1 - 0.12 * (1 - aim), 0.52 - kick);
+  // C10: low ready holds the carbine out in front of the chest plate, muzzle forward and down, not tucked into the
+  // belt with the barrel at his groin (the hands were inside the armour and the gun disappeared into him).
+  const gripR = new THREE.Vector3(0.08 + 0.04 * (1 - aim), -0.12 - 0.08 * (1 - aim), 0.22 + 0.14 * (1 - aim) - kick);
+  const gripL = new THREE.Vector3(0.2 - 0.05 * aim, -0.1 - 0.12 * (1 - aim), 0.52 + 0.1 * (1 - aim) - kick);
   const rot = (v: THREE.Vector3) => new THREE.Vector3(v.x, v.y * cp + v.z * sp, -v.y * sp + v.z * cp).add(sh);
   local.handR.copy(rot(gripR));
   local.handL.copy(rot(gripL));

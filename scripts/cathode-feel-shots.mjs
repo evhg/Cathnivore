@@ -44,8 +44,8 @@ const C9 = ['death-gutclutch-450', 'death-wallslump-1200', 'death-headshot-300',
 // moment later, when the knocked-off helmet has landed.
 const C9X = ['death-knees-650', 'death-blownback-350', 'death-headshot-900']
 // C10 "Enforcer v2": the guard at 10 m from the front and from behind (his mask must out-read the street behind,
-// x1.3), the turntable, the silhouette lineup (also saved at 64 px tall), an arm hit 60 ms on (the struck hand
-// open), and the owner's audit frame of the first guard under his lamp with no diamond (&job).
+// x1.3), the turntable, the silhouette lineup (also saved at 64 px tall), an arm hit 60 ms on at 4 m (the struck
+// hand open, with a -hand crop), and the owner's audit frame of the first guard under his lamp with no diamond (&job).
 const C10 = ['enemy-front-10m', 'enemy-back-10m', 'turntable-enforcer', 'silhouette-lineup', 'hit-arm@60', 'guard-from-10m']
 const C10X = ['turntable-riot', 'turntable-sniper', 'turntable-leader']
 const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X }
@@ -491,7 +491,22 @@ for (const vp of vps) {
     if (stage === 'hit-arm') {
       const hand = info?.handOpen
       console.log(`  C10 ${vp} ${spec}: hit ${info?.seg ?? '?'}, hands open L ${hand?.L?.toFixed(0) ?? '-'} R ${hand?.R?.toFixed(0) ?? '-'} deg`)
-      if (!hand || !(Math.max(hand.L, hand.R) >= 20)) fail(`${vp} ${spec}: the struck hand isn't open (${hand ? Math.max(hand.L, hand.R).toFixed(0) : '-'} deg < 20)`)
+      // S4.1: the hand opens 30 degrees on an arm hit (the struck side's hand).
+      const side = /R$/.test(info?.seg ?? '') ? 'R' : 'L'
+      if (!/^(upperArm|forearm|hand)/.test(info?.seg ?? '')) fail(`${vp} ${spec}: the round struck ${info?.seg ?? 'nothing'}, not an arm`)
+      if (!hand || !(hand[side] >= 30 - 1e-3)) fail(`${vp} ${spec}: the struck hand isn't open (${hand ? hand[side].toFixed(0) : '-'} deg < 30)`)
+      // A close-up of the struck hand (the session moves the camera off his struck shoulder, 1.1 m out), HUD and her
+      // gun hidden, for judging the open glove by eye.
+      if (await page.evaluate(() => window.cathode.zoom?.(true) ?? false)) {
+        await page.evaluate(() => document.querySelector('.hud-root')?.classList.add('is-review'))
+        await page.waitForTimeout(2500)
+        const sq = V.viewport.height
+        await page.screenshot({ path: `${file}-hand.png`, clip: { x: (V.viewport.width - sq) / 2, y: 0, width: sq, height: sq }, timeout: 300_000 })
+        await page.evaluate(() => {
+          window.cathode.zoom?.(false)
+          document.querySelector('.hud-root')?.classList.remove('is-review')
+        })
+      } else fail(`${vp} ${spec}: no hand close-up`)
     }
     // ---- C9 acceptance ----
     if (/^(death-(gutclutch|wallslump|headshot|spin|knees|blownback)|blood-pool)/.test(stage) && info) {
