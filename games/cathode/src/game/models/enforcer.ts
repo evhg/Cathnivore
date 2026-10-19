@@ -52,7 +52,9 @@ const GLOWS = {
   coolant: { surf: { emit: 0xffa040, intensity: 3.6 }, pulse: true },
   stripe: { surf: { emit: 0xff2420, intensity: 5 } },
   /** Retro-reflective tape (pillar 4: overstate what matters): pale bands that make him read from behind in the rain. */
-  tape: { surf: { emit: 0xe9e1cf, intensity: 1.7 } },
+  tape: { surf: { emit: 0xe9e1cf, intensity: 2.6 } },
+  /** The unit number, backlit in the visor's colour on the back plate. */
+  unit: { surf: { emit: 0xffffff, intensity: 2.2 }, visor: true },
   lens: { surf: { emit: 0xffffff, intensity: 5 }, visor: true },
 } satisfies Record<string, Glow>;
 
@@ -86,7 +88,7 @@ class Builder {
   }
   /** Lathe and shell segments round for this profile and LOD. */
   seg(n: number): number {
-    const k = [1, 0.55, 0.5, 0.3, 0.3][this.det]!;
+    const k = [1, 0.52, 0.5, 0.3, 0.3][this.det]!;
     return Math.max(4, Math.round(n * k));
   }
   /** A plate at this detail: bevels go to one segment on the phone and away at a distance. */
@@ -199,10 +201,10 @@ const rect = (w: number, y0: number, y1: number, topW = w): P2[] => [
 const D = Math.PI / 180;
 
 /** Thin pale-paint strips on a plate face (the emblem, the unit number), in the face's XY plane, proud along +Z. */
-function strips(b: Builder, bone: string, list: Array<[number, number, number, number, number]>, m: THREE.Matrix4): void {
+function strips(b: Builder, bone: string, list: Array<[number, number, number, number, number]>, m: THREE.Matrix4, surf: Surface | Glow = FINISH.paint): void {
   for (const [x, y, len, th, rot] of list) {
     const pm = new THREE.Matrix4().compose(new THREE.Vector3(x, y, 0.0015), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, rot)), new THREE.Vector3(1, 1, 1));
-    b.add(bone, b.box(th, len, 0.003, 0, 0), FINISH.paint, new THREE.Matrix4().multiplyMatrices(m, pm));
+    b.add(bone, b.box(th, len, 0.003, 0, 0), surf, new THREE.Matrix4().multiplyMatrices(m, pm));
   }
 }
 
@@ -309,7 +311,8 @@ function torso(b: Builder, arch: Arch): void {
         const a = Math.asin(0.095 / 0.2616);
         b.add("chest", b.plate(rect(0.12, -0.009, 0.009), { depth: 0.003, bevel: 0 }), GLOWS.tape, { p: [0.095 * sg, 0.115, 0.116 - Math.cos(a) * 0.2616 - 0.001], r: [0, Math.PI - a * sg, 0.5 * sg] });
       }
-    if (b.det === 0) strips(b, "upperChest", digits("07", 0.05), new THREE.Matrix4().compose(new THREE.Vector3(0.0, 0.06, -0.152), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI, 0)), new THREE.Vector3(1, 1, 1)));
+    // The unit number, backlit (it reads from behind, at range, in the rain).
+    if (b.det !== 3) strips(b, "upperChest", digits("07", 0.06), new THREE.Matrix4().compose(new THREE.Vector3(0.0, 0.07, -0.149), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI, 0)), new THREE.Vector3(1, 1, 1)), GLOWS.unit);
   }
   if (lod < 2) b.add("upperChest", shell([[0.1, 0.125], [0.136, 0.13], [0.13, 0.2], [0.098, 0.195]], 0, Math.PI * 2, b.seg(20)), arch === "sniper" ? S.web : S.plateDark, { s: [1.05, 1, 0.92] });
   if (lod === 0) {
@@ -455,7 +458,7 @@ function head(b: Builder, arch: Arch): void {
   }
   if (arch === "leader") {
     // The squad leader: a tall crest fin and a red stripe under the visor.
-    const crest: P2[] = [[-0.13, 0.085], [0.06, 0.135], [0.1, 0.12], [0.07, 0.175], [-0.04, 0.21], [-0.15, 0.17]];
+    const crest: P2[] = [[-0.14, 0.08], [0.06, 0.135], [0.11, 0.12], [0.08, 0.2], [-0.03, 0.25], [-0.17, 0.19]];
     b.add(H, b.plate(chamfer(crest, 0.01), { depth: 0.01, bevel: 0.004 }), S.plate, { p: [-0.009, 0, -0.008], r: [0, Math.PI / 2, 0] });
     ring([[0.1586, -0.013], [0.1606, -0.012], [0.1606, -0.005], [0.1586, -0.004]], 0, 40 * D, GLOWS.stripe, 10);
   } else if (!sniper && lod < 2) {

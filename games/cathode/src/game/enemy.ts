@@ -284,7 +284,8 @@ export class Enemy {
     readonly kit: EnemyKit,
     route: THREE.Vector3[],
     readonly level = 1,
-    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader)),
+    // Hollowell's roles rim in its amber; the Candor staff and bystanders who borrow the body rim in their own colour.
+    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "civilian"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
   ) {
     this.body = new Body(look);
     this.hp = kit.maxHp;
@@ -603,8 +604,12 @@ export class Enemy {
     }
     this.motion.aim = THREE.MathUtils.damp(this.motion.aim, aim, this.standDown ? 14 : 5, dt);
     if (this.kit.role === "sniper" && this.state !== "combat") this.charge = 0;
-    animate(this.body, this.motion);
-    this.body.carry();
+    // S3.1: past LOD1's range the body animates at 15 Hz (every fourth frame at 60).
+    this.animTick = (this.animTick + 1) % 4;
+    if (this.body.lod < 2 || this.animTick === 0) {
+      animate(this.body, this.motion);
+      this.body.carry();
+    }
     // S3.1: the faction rim comes up in a fight (0.3 at rest, 0.6 in combat).
     this.body.alert += ((this.state === "combat" ? 1 : 0) - this.body.alert) * Math.min(1, dt * 3);
     // S3.5: raising the rifle to aim flares the visor (x1.0 to x1.6): the tell that he's about to fire.
@@ -911,6 +916,7 @@ export class Enemy {
     }
   }
   private lastHand = new THREE.Vector3();
+  private animTick = 0;
 }
 
 /** A world direction into body space (yaw undone): x to the body's left, z forward. */

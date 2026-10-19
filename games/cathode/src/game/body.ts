@@ -83,11 +83,16 @@ export const LINKS: Array<[Joint, Joint, number?]> = [
 export interface BodyLook {
   arch: Arch;
   visor: number;
+  /** The faction's emissive (S3.1's faction languages): the rim's hue. Hollowell's amber unless said otherwise. */
+  faction?: number;
 }
 
+/** Hollowell's amber (S3.1): every Enforcer role's rim, whatever colour its visor shows. */
+export const HOLLOWELL_AMBER = 0xffa040;
+
 /** The standard Hollowell Enforcer kit: charcoal plates, black undersuit, an amber visor slit. */
-export function enforcerLook(visorColor = 0xffa040, arch: Arch = "enforcer"): BodyLook {
-  return { arch, visor: visorColor };
+export function enforcerLook(visorColor = HOLLOWELL_AMBER, arch: Arch = "enforcer", faction = HOLLOWELL_AMBER): BodyLook {
+  return { arch, visor: visorColor, faction };
 }
 
 const IDENT = new THREE.Matrix4();
@@ -213,7 +218,7 @@ export class Body {
       this.last[j] = this.joints[j].clone();
     }
     this.visor.set(look.visor);
-    rimTint(look.visor, this.facRim);
+    rimTint(look.faction ?? look.visor, this.facRim);
     const bones: THREE.Bone[] = [];
     for (const def of SEGMENTS) {
       const len = REST[def.from].distanceTo(REST[def.to]) * scale;
@@ -330,7 +335,6 @@ export class Body {
   /** Sets the visor's colour (and level): the vault boss's phases, a stage. */
   setVisor(color: number, level = this.visorLevel): void {
     this.visor.set(color);
-    rimTint(color, this.facRim);
     this.visorLevel = level;
   }
 

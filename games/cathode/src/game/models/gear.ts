@@ -184,8 +184,9 @@ export function buildShield(visor: number, phone: boolean): THREE.Group {
   void s;
   k.finish();
   // The viewport: dark glass tinted with the bearer's visor.
-  const c = new THREE.Color(visor).multiplyScalar(0.55);
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.12), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.75, depthWrite: false }));
+  // Smoked glass with the faintest tint of the visor behind it: it reads as a window, not a lamp.
+  const c = new THREE.Color(visor).multiplyScalar(0.16).add(new THREE.Color(0x05070a));
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.12), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.88, depthWrite: false }));
   glass.position.set(0, 0.34, 0.003);
   glass.name = "viewport";
   root.add(glass);
