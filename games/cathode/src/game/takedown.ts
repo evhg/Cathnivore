@@ -19,7 +19,7 @@ import { LEN, STANCE_L, STANCE_R, buildPose, type DeathScript, type PoseP } from
 import { REST, type Joint } from "./rig";
 import { Arms, POSES, type HandPose } from "./hands";
 import { buildGun, type GunRig } from "./viewmodel";
-import { gripFrame } from "./gunkit";
+import { gripFrame, patchKitMaterial } from "./gunkit";
 import { TAKEDOWN, blowsInOrder, lethalMs, orbPull, type OrbDrop, type TakedownApproach, type TakedownVariant } from "../sim/takedown";
 
 const smooth = (x: number) => {
@@ -42,16 +42,33 @@ const snap = (t: number, a: number, b: number) => {
 /** Feel numbers (S5.2), here so the tests and the session read one table. */
 export const TD = {
   /**
-   * The paired first-person framing, from her eyes (m): back, up and toward her striking hand by a hand's width
-   * (her head, never drawn, is between the lens and him, so he never fills the frame and the blow is in it), the FOV it adds (degrees), the eases, the kick, the dutch tilt after the lethal blow,
-   * and how far the lens may pitch down (degrees: a body on the street is framed, not looked straight down on;
-   * pitched down, the lens slides forward over her eyes so her shoulders stay out of the frame).
+   * The paired framing (C11 review 2): not her eyes (a lens 1.7 m up looked down onto the top of his helmet), but a
+   * lens per variant (`lens` below) lowered to his ear line and kept off his head. The FOV it adds (degrees), the
+   * eases, the kick, the dutch tilt after the lethal blow, the pitch window (degrees: never down onto the crown, never
+   * up his nose), and the nearest the lens may come to his head's centre (m: closer, a helmet ring fills the frame).
    */
-  cam: { back: 0.1, up: 0.1, right: 0.08, fovAdd: 14, easeInMs: 120, easeOutMs: 200, kickDeg: 3, rollDeg: 4, pitchMinDeg: -42, pitchMaxDeg: 20 },
+  cam: { fovAdd: 10, easeInMs: 120, easeOutMs: 200, kickDeg: 3, rollDeg: 4, pitchMinDeg: -20, pitchMaxDeg: 14, minHeadM: 0.42, overHeadM: 0.06, minEyeM: 1.0 },
+  /**
+   * The lens per variant, from her eye in her frame (m: right, up, forward), and what it looks at: his neck pulled
+   * `head` of the way to his head, then `wrist` of the way to her striking hand (so the blow is in the shot);
+   * `pitchMin` overrides the window's floor (the man on the floor is looked down on, S5.2: -35 degrees).
+   */
+  lens: {
+    behind: { r: -0.2, u: -0.02, f: 0.0, head: 0.55, wrist: 0.35 },
+    behindChoke: { r: -0.26, u: -0.1, f: 0.0, head: 0.6, wrist: 0.1, overHead: -0.06 },
+    behindPistol: { r: 0.22, u: -0.08, f: 0.08, head: 0.35, wrist: 0.5 },
+    front: { r: 0.12, u: 0.0, f: 0.0, head: 0.3, wrist: 0.35, overHead: 0.0 },
+    frontKick: { r: 0.08, u: -0.06, f: -0.05, head: 0.3, wrist: 0.2 },
+    side: { r: 0.06, u: -0.08, f: 0.0, head: 0.45, wrist: 0.3 },
+    down: { r: 0.1, u: -0.05, f: -0.05, head: 0.6, wrist: 0.3, pitchMin: -40 },
+    surrender: { r: 0.08, u: -0.1, f: 0.0, head: 0.5, wrist: 0.3, pitchMin: -30 },
+  } as Record<string, Lens>,
   /** The letterbox (share of the boss intro's 11vh bars). */
   bars: 0.75,
   /** Hit-stop on the lethal blow and on any other (ms); trauma per blow. */
   stopMs: 80,
+  /** A shot finisher's lethal round (S5.2 Front A: 110 ms, a headshot kill's stop). */
+  stopShotMs: 110,
   stopMinorMs: 60,
   trauma: 0.35,
   traumaMinor: 0.22,
@@ -60,8 +77,30 @@ export const TD = {
   shoulderDrop: 0.24,
   shoulderW: 0.17,
   /** How far she leans into a hold (m along her forward). */
-  lean: 0.18,
+  lean: 0.08,
+  /** The neck wrap: her left wrist on the near side of his neck (her frame from his neck joint, m), and her elbow. */
+  wrap: { r: -0.08, u: 0.02, f: 0.0, poleR: -0.42, poleU: 0.4, poleF: 0.1 },
+  /** Her arms' albedo in the street (a share of the viewmodel's). */
+  armTone: 0.4,
+  /** Her arms' dielectric specular in the street (of the kit's). */
+  armSpec: 0.3,
 };
+
+/** One variant's lens (TD.lens). */
+export interface Lens {
+  r: number;
+  u: number;
+  f: number;
+  head: number;
+  wrist: number;
+  pitchMin?: number;
+  /** How far over his head's centre the lens may be (m; TD.cam.overHeadM). */
+  overHead?: number;
+}
+/** The lens for a variant: its own, or its approach's. */
+export function lensFor(v: TakedownVariant): Lens {
+  return TD.lens[v.id] ?? TD.lens[v.approach]!;
+}
 
 export type TakedownEventKind = "grab" | "impact" | "lethal" | "release" | "lay" | "end" | "line";
 export interface TakedownEvent {
@@ -176,10 +215,11 @@ export function targetPose(v: TakedownVariant, t: number, side: number, out: Rec
     case "behindChoke": {
       // Pulled back into her, off balance: the pelvis 0.2 m back and a little down, knees giving, heels dragged
       // back under him, the spine leaning back, the head forced back 30 degrees.
+      // (Not into her face: his head stays a forearm's length ahead of her eyes, so the shot can frame it.)
       const pull = ss(t, 40, 300);
-      p.fz = -0.2 * pull;
+      p.fz = -0.1 * pull;
       p.h -= 0.07 * pull;
-      p.pitch = -0.2 * pull;
+      p.pitch = -0.13 * pull;
       p.head = -0.52 * pull;
       p.footL.z -= 0.1 * pull;
       p.footR.z -= 0.03 * pull;
@@ -216,7 +256,7 @@ export function targetPose(v: TakedownVariant, t: number, side: number, out: Rec
     case "behindPistol": {
       // Her hand over his mouth drags the head back and up; the Kestrel under the jaw; 650 the round goes up.
       const pull = ss(t, 40, 280);
-      p.fz = -0.17 * pull;
+      p.fz = -0.09 * pull;
       p.h -= 0.06 * pull;
       p.pitch = -0.15 * pull;
       p.head = -0.62 * pull;
@@ -413,6 +453,10 @@ interface HandsKey {
   lKnuckles: THREE.Vector3;
   lDorsal: THREE.Vector3;
   lPose: HandPose;
+  /** The gun's muzzle here (world), the wrist found from it: the Kestrel pressed under a jaw, never through it. */
+  muzzleAt?: THREE.Vector3;
+  /** Where the left elbow goes (her frame, from the shoulder-wrist midpoint), or the default out and down. */
+  lPole?: THREE.Vector3;
   /** How far she leans in (0..1 of TD.lean). */
   lean: number;
 }
@@ -420,6 +464,7 @@ interface HandsKey {
 const vA = new THREE.Vector3();
 const vB = new THREE.Vector3();
 const vC = new THREE.Vector3();
+const vD = new THREE.Vector3();
 const lerp3 = (a: THREE.Vector3, b: THREE.Vector3, k: number) => a.clone().lerp(b, Math.min(1, Math.max(0, k)));
 
 /** A point in her frame (right, up, forward) from `base`. */
@@ -457,21 +502,26 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
       // The left forearm across his throat, the hand round the far side of his neck.
       const wrap = ss(t, 40, 240);
       k.lean = wrap * out;
-      const throat = at(F, J.neck, 0.075, -0.05, 0.1);
+      const W = TD.wrap;
+      const throat = at(F, J.neck, W.r, W.u, W.f);
       k.lW = lerp3(restL, throat, wrap * out);
-      k.lKnuckles = dir(F, 0.45, 0, -0.9);
+      k.lKnuckles = dir(F, 0.9, 0, 0.3);
       k.lDorsal = dir(F, 0.1, 0.1, 1);
       k.lPose = HANDS.wrap!;
+      // The elbow out round his left shoulder, so the forearm wraps the side of his neck (in the shot), not
+      // tucked under his chin out of sight.
+      k.lPole = vD.set(0, W.poleU, 0).addScaledVector(F.r, W.poleR).addScaledVector(F.f, W.poleF).clone();
       if (v.id === "behindWrap") {
         // The Pin up by 380 (cocked high, over her right shoulder), down on his temple at 420, a bounce, then lowered.
         const raise = ss(t, 120, 360);
         const swing = ss(t, 372, 420);
         const back = ss(t, 470, 620) * 0.6 + ss(t, 620, 900) * 0.4;
-        const up = at(F, J.head, 0.42, 0.22, -0.18);
-        const hit = at(F, J.head, 0.5, -0.02, -0.04);
+        const up = at(F, J.head, 0.3, 0.3, -0.1);
+        const hit = at(F, J.head, 0.36, 0.2, -0.04);
         k.rW = lerp3(lerp3(lerp3(restR, up, raise), hit, swing), restR, back);
         const axUp = dir(F, -0.1, 0.85, -0.5);
-        const axHit = dir(F, -0.88, -0.05, 0.4);
+        // Coming down on his temple: the Pin's tip down and across onto the side of his head.
+        const axHit = dir(F, -0.68, -0.6, 0.35);
         k.rAxis = lerp3(lerp3(lerp3(k.rAxis, axUp, raise), axHit, swing), dir(F, -0.2, 0.3, 0.9), back).normalize();
         k.rDorsal = dir(F, 0.3, 0.9, 0.2);
       } else {
@@ -494,15 +544,18 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
       k.lPose = HANDS.clamp!;
       const jaw = ss(t, 140, 420);
       const recoil = snap(t, 650, 700) * (1 - ss(t, 700, 820));
-      k.rW = lerp3(lerp3(restR, at(F, J.neck, 0.14, -0.12, 0.02), jaw), restR, ss(t, 760, 1000));
-      k.rAxis = lerp3(k.rAxis, dir(F, -0.35, 0.82, 0.45), jaw).addScaledVector(F.f, -0.2 * recoil).normalize();
+      const away = ss(t, 760, 1000);
+      k.rAxis = lerp3(k.rAxis, dir(F, -0.2, 0.9, 0.3), jaw * (1 - away)).addScaledVector(F.f, -0.2 * recoil).normalize();
+      // The muzzle up under the right side of his jaw (his helmet's chin), the gun hanging below it beside his neck.
+      if (jaw * (1 - away) > 0.02) k.muzzleAt = lerp3(at(F, restR, 0, 0.25, 0.1), at(F, J.neck.clone().lerp(J.head, 0.3), 0.07, 0, 0.04).addScaledVector(F.f, -0.01 * recoil), jaw * (1 - away));
       k.rDorsal = dir(F, 0.9, -0.2, 0.1);
       break;
     }
     case "frontCollar": {
       const grab = ss(t, 30, 240) * (1 - ss(t, 700, 900));
       k.lean = grab * 0.5;
-      k.lW = lerp3(restL, at(F, J.chest, -0.05, 0.16, -0.16), grab);
+      // A fist in his collar on her left of his throat, low, so the Kestrel comes up under his jaw in the open.
+      k.lW = lerp3(restL, at(F, J.chest, -0.11, 0.12, -0.16), grab);
       k.lKnuckles = dir(F, 0, 0.6, 0.8);
       k.lDorsal = dir(F, 0, 0.1, -1);
       k.lPose = HANDS.fist!;
@@ -513,9 +566,11 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
         const chin = ss(t, 420, 620);
         const wW = at(F, J.head, 0.46, 0.14, -0.28);
         const wH = at(F, J.head, 0.12, 0, -0.14);
-        k.rW = lerp3(lerp3(lerp3(restR, wW, wind), wH, whip), at(F, J.neck, 0.03, -0.08, -0.17), chin);
-        k.rW = lerp3(k.rW, restR, ss(t, 760, 1000));
-        k.rAxis = lerp3(dir(F, -0.6, -0.6, 0.5), dir(F, -0.1, 0.75, 0.65), chin).normalize();
+        k.rW = lerp3(lerp3(restR, wW, wind), wH, whip);
+        const under = chin * (1 - ss(t, 760, 1000));
+        k.rAxis = lerp3(dir(F, -0.6, -0.6, 0.5), dir(F, -0.45, 0.8, 0.3), under).normalize();
+        // 650: the muzzle pressed up under his chin (the gun angled in from below, in the open between her fists).
+        if (under > 0.02) k.muzzleAt = lerp3(at(F, k.rW, 0, 0.2, 0), at(F, J.neck.clone().lerp(J.head, 0.3), 0.02, 0, -0.1), under);
         k.rDorsal = dir(F, 0.6, 0.4, -0.3);
       }
       break;
@@ -611,6 +666,27 @@ export class TakedownRig {
   constructor(phone: boolean) {
     this.group.name = "takedown:rig";
     this.arms = new Arms(phone);
+    // Her arms in the street take the street's lights (a lamp overhead, the sequence's rim): built for the
+    // viewmodel's own soft rig, the charcoal gabardine went peach under them (C11 review). Their own copy of the
+    // kit material, its albedo a step down, keeps the trench charcoal and the gloves black at 0.3 m.
+    const mat = phone ? new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 1 }) : new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 1, metalness: 1, clearcoat: 0.3, clearcoatRoughness: 0.22, sheen: 0.25, sheenRoughness: 0.5, sheenColor: new THREE.Color(0xd8d0cc) });
+    patchKitMaterial(mat, phone);
+    // What washed it out was the dielectric's grazing specular under a lamp straight ahead (a rough sleeve lit from
+    // behind went pale peach), not the albedo: damp it for cloth and leather (metal keeps it).
+    const kit = mat.onBeforeCompile;
+    mat.onBeforeCompile = (sh, r) => {
+      kit.call(mat, sh, r);
+      sh.fragmentShader = sh.fragmentShader.replace(
+        "#include <lights_physical_fragment>",
+        `#include <lights_physical_fragment>
+material.specularColor *= mix(${TD.armSpec.toFixed(3)}, 1.0, step(0.5, vMR.x));
+material.specularF90 *= mix(${TD.armSpec.toFixed(3)}, 1.0, step(0.5, vMR.x));`,
+      );
+    };
+    mat.customProgramCacheKey = () => `gunkit-${phone ? "p" : "d"}-takedown`;
+    mat.color.setScalar(TD.armTone);
+    this.arms.right.mesh.material = mat;
+    this.arms.left.mesh.material = mat;
     this.group.add(this.arms.right.mesh, this.arms.left.mesh, this.fistGrip, this.gripL);
     const mk = (model: "pin" | "pistol") => {
       const rig = buildGun(model, phone);
@@ -664,6 +740,15 @@ export class TakedownRig {
       const m = wrist.multiply(P.grip.clone().invert());
       m.decompose(P.rig.root.position, P.rig.root.quaternion, P.rig.root.scale);
       P.rig.root.updateMatrixWorld(true);
+      if (k.muzzleAt) {
+        // Placed by its muzzle: the whole gun (and so her wrist) slides by the miss.
+        P.rig.muzzle.getWorldPosition(this.muzzle);
+        vD.subVectors(k.muzzleAt, this.muzzle);
+        P.rig.root.position.add(vD);
+        k.rW.add(vD);
+        this.wrist.copy(k.rW);
+        P.rig.root.updateMatrixWorld(true);
+      }
       grip = P.rig.gripR;
       pose = P.rig.poseR;
       P.rig.muzzle.getWorldPosition(this.muzzle);
@@ -677,7 +762,7 @@ export class TakedownRig {
       this.gripL.quaternion.copy(g.quat);
       this.gripL.updateMatrixWorld(true);
       this.arms.left.mesh.visible = true;
-      this.arms.left.pose(this.gripL, shL, k.lPose, 0, poleL);
+      this.arms.left.pose(this.gripL, shL, k.lPose, 0, k.lPole ?? poleL);
     } else this.arms.left.mesh.visible = false;
   }
 }
@@ -693,6 +778,14 @@ function basisQuat(y: THREE.Vector3, z: THREE.Vector3): THREE.Quaternion {
 }
 
 // ------------------------------------------------------------------ the director
+
+/** The camera's scratch (no allocations per frame). */
+const cE = new THREE.Vector3();
+const cP = new THREE.Vector3();
+const cD = new THREE.Vector3();
+const cQ = new THREE.Quaternion();
+const cQ2 = new THREE.Quaternion();
+const cEu = new THREE.Euler();
 
 export interface TakedownStart {
   target: TakedownTarget;
@@ -738,6 +831,10 @@ export class Takedown {
   worldScale: number = TAKEDOWN.worldScale;
   private kick = 0;
   private kickV = 0;
+  /** How far she leans in this frame (0..1 of TD.lean), from her hands' last pose. */
+  private leanK = 0;
+  /** The feel numbers, for the review harness to tune live (window.cathode.takedown.tune). */
+  readonly tune = TD;
   /** Reduced motion (set by the session): no camera ease, kick, tilt or letterbox slide; the magnet is a cut. */
   reduced = false;
   /** Camera collision (set by the session): the free distance along a ray, or null. */
@@ -827,7 +924,7 @@ export class Takedown {
         this.emit("impact", { at, dir: d, lethal: isLethal });
         if (isLethal) this.emit("lethal", { at });
         // (The choke is a squeeze, not a blow: no hold.)
-        if (v.kind !== "choke") this.stopLeft += isLethal ? TD.stopMs : TD.stopMinorMs;
+        if (v.kind !== "choke") this.stopLeft += isLethal ? (v.kind === "shot" ? TD.stopShotMs : TD.stopMs) : TD.stopMinorMs;
         this.kickV += ((TD.cam.kickDeg * Math.PI) / 180) * (isLethal ? 1 : 0.6) * 14;
       }
     }
@@ -841,6 +938,7 @@ export class Takedown {
     this.kick += this.kickV * dt;
     // Her arms (gone from the lens once they have dropped away after the release).
     const hk = cathHands(v, this.t, J, this.frame, this.start0.side, this.start0.pistol);
+    this.leanK = hk.lean;
     this.rig.pose(hk, this.frame);
     this.rig.group.visible = this.t < v.releaseMs + 320;
     if (this.t >= v.durMs && this.stopLeft <= 0) {
@@ -870,47 +968,48 @@ export class Takedown {
     const F = this.frame;
     const J = this.start0.target.body.joints;
     const rm = this.reduced;
-    const lean = cathHands(v, this.t, J, F, this.start0.side, this.start0.pistol).lean;
-    const eye = F.feet.clone().add(vA.set(0, TD.eye, 0)).addScaledVector(F.f, TD.lean * lean);
-    // What the shot is about: his head, pulled toward her right hand so the blow is in frame; after the lethal blow
-    // it drops toward his pelvis, so the knees going and the body settling stay in the shot.
+    const L = lensFor(v);
+    const eye = cE.copy(F.feet).add(vA.set(0, TD.eye, 0)).addScaledVector(F.f, TD.lean * this.leanK);
+    // What the shot is about: his neck toward his head, pulled toward her right hand so the blow is in frame; after
+    // the lethal blow it drops toward his pelvis, so the knees going and the body settling stay in the shot.
     const lethal = lethalMs(v);
-    const want = vB.copy(J.neck).lerp(J.head, 0.35).lerp(this.rig.wrist, 0.25);
-    if (v.approach === "down") want.copy(J.chest).lerp(J.head, 0.6);
-    else want.lerp(J.pelvis, 0.4 * ss(this.t, lethal + 60, lethal + 420));
+    const want = vB.copy(J.neck).lerp(J.head, L.head).lerp(this.rig.wrist, L.wrist);
+    want.lerp(J.pelvis, 0.4 * ss(this.t, lethal + 60, lethal + 420));
     if (!this.lookInit || rm) {
       this.look.copy(want);
       this.lookInit = true;
     } else this.look.lerp(want, 0.25);
-    // Looking down at a body on the street, the lens slides forward over her eyes (a hand's width back would put
-    // her shoulders, where the arms begin, in the bottom of the frame).
-    const deg0 = Math.PI / 180;
-    const down = -Math.atan2(this.look.y - eye.y, Math.max(1e-4, Math.hypot(this.look.x - eye.x, this.look.z - eye.z)));
-    const k = smooth((down - 15 * deg0) / (20 * deg0));
-    const back = C.back * (1 - k) - 0.06 * k;
-    const camPos = eye.clone().addScaledVector(F.f, -back).addScaledVector(F.r, C.right).add(vC.set(0, C.up, 0));
+    // The lens: from her eye by the variant's offsets, then kept off his head (a lens inside the helmet is a
+    // clipping bug, not a close-up): pushed back out along the line from his head.
+    const camPos = cP.copy(eye).addScaledVector(F.r, L.r).addScaledVector(F.f, L.f).add(vC.set(0, L.u, 0));
+    // At his ear line, not over his crown: as he sinks (the choke, the knees going) she goes down with him, to a
+    // crouch at most; the man on the floor is the exception (looked down on).
+    if (v.approach !== "down") camPos.y = Math.max(F.feet.y + C.minEyeM, Math.min(camPos.y, J.head.y + (L.overHead ?? C.overHeadM)));
+    const away = cD.subVectors(camPos, J.head);
+    const dh = away.length();
+    if (dh < C.minHeadM) camPos.copy(J.head).addScaledVector(dh > 1e-4 ? away.multiplyScalar(1 / dh) : vC.copy(F.f).negate(), C.minHeadM);
     // Never through a wall behind her.
     if (this.castRay) {
-      const d = camPos.clone().sub(eye);
+      const d = cD.subVectors(camPos, eye);
       const len = d.length();
       const hit = len > 1e-4 ? this.castRay(eye, d.normalize(), len + 0.05) : null;
       if (hit !== null && hit < len + 0.05) camPos.copy(eye).addScaledVector(d, Math.max(0, hit - 0.05));
     }
-    // Yaw and pitch onto him (the pitch clamped: a body on the street is framed, never looked straight down on).
+    // Yaw and pitch onto him (the pitch in its window: framed, never looked straight down on).
     const d = vC.subVectors(this.look, camPos);
     const yaw = Math.atan2(-d.x, -d.z);
     const flat = Math.hypot(d.x, d.z);
     const deg = Math.PI / 180;
-    const pitch = THREE.MathUtils.clamp(Math.atan2(d.y, Math.max(1e-4, flat)), C.pitchMinDeg * deg, C.pitchMaxDeg * deg);
+    const pitch = THREE.MathUtils.clamp(Math.atan2(d.y, Math.max(1e-4, flat)), (L.pitchMin ?? C.pitchMinDeg) * deg, C.pitchMaxDeg * deg);
     // The dutch tilt after the lethal blow (toward her side of him), and the kick down on each blow.
     const roll = rm ? 0 : C.rollDeg * deg * ss(this.t, lethal, v.durMs - C.easeOutMs) * (this.start0.side >= 0 ? -1 : 1);
-    const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch - (rm ? 0 : this.kick), yaw, roll, "YXZ"));
+    const q = cQ.setFromEuler(cEu.set(pitch - (rm ? 0 : this.kick), yaw, roll, "YXZ"));
     let fov = fp.fov + C.fovAdd;
     // In from first person over 120 ms; back to her own view over the last 200 (cuts under reduced motion).
     const kin = rm ? 1 : easeOut(this.real / C.easeInMs);
     const kout = rm ? (this.t >= v.durMs - C.easeOutMs ? 1 : 0) : ss(this.t, v.durMs - C.easeOutMs, v.durMs);
-    const pos = this.camFrom.pos.clone().lerp(camPos, kin);
-    const quat = this.camFrom.quat.clone().slerp(q, kin);
+    const pos = cD.copy(this.camFrom.pos).lerp(camPos, kin);
+    const quat = cQ2.copy(this.camFrom.quat).slerp(q, kin);
     fov = THREE.MathUtils.lerp(this.camFrom.fov, fov, kin);
     pos.lerp(fp.pos, kout);
     quat.slerp(fp.quat, kout);

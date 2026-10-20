@@ -137,7 +137,44 @@ export function bend(g: THREE.BufferGeometry, r: number, ry = 0): void {
  * A closed profile `ry` ([radius, y] going round the section) turned round Y from `phi0` over `phiLen` radians (phi
  * 0 faces +Z, pi/2 faces +X), with flat caps on the open ends. `seg` segments over the arc.
  */
-export function shell(ry: P2[], phi0: number, phiLen: number, seg: number, crease = 0.6): THREE.BufferGeometry {
+/**
+ * C11: hero detail, for the one body a takedown frames at 0.3 to 1 m. While `hero` is set, lathe and shell
+ * profiles are refined along their smooth runs (a Catmull-Rom midpoint between points that turn less than the
+ * crease), so a helmet's dome curves at the rim instead of showing its eleven facets. Corners stay corners.
+ */
+export const partsDetail = { hero: false };
+export function refine(ry: P2[], crease: number, closed = false): P2[] {
+  if (!partsDetail.hero || ry.length < 3) return ry;
+  const n = ry.length;
+  const P = (i: number): P2 => (closed ? ry[((i % n) + n) % n]! : ry[Math.max(0, Math.min(n - 1, i))]!);
+  const turn = (i: number): number => {
+    if (!closed && (i <= 0 || i >= n - 1)) return 0;
+    const a = P(i - 1);
+    const b = P(i);
+    const c = P(i + 1);
+    const a1 = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    const a2 = Math.atan2(c[1] - b[1], c[0] - b[0]);
+    return Math.abs(Math.atan2(Math.sin(a2 - a1), Math.cos(a2 - a1)));
+  };
+  const out: P2[] = [];
+  const last = closed ? n : n - 1;
+  for (let i = 0; i < last; i++) {
+    out.push(P(i));
+    if (turn(i) < crease && turn(i + 1) < crease) {
+      const p0 = P(i - 1);
+      const p1 = P(i);
+      const p2 = P(i + 1);
+      const p3 = P(i + 2);
+      // Catmull-Rom at t = 0.5.
+      out.push([(-p0[0] + 9 * p1[0] + 9 * p2[0] - p3[0]) / 16, (-p0[1] + 9 * p1[1] + 9 * p2[1] - p3[1]) / 16]);
+    }
+  }
+  if (!closed) out.push(P(n - 1));
+  return out;
+}
+
+export function shell(ry0: P2[], phi0: number, phiLen: number, seg: number, crease = 0.6): THREE.BufferGeometry {
+  const ry = refine(ry0, crease, true);
   const key = `shell:${ry.map((p) => p.map((v) => v.toFixed(4)).join(",")).join(";")}:${phi0.toFixed(4)}:${phiLen.toFixed(4)}:${seg}:${crease}`;
   return cached(key, () => {
     const pts = ry.map(([r, y]) => new THREE.Vector2(Math.max(0, r), y));
@@ -192,7 +229,8 @@ export function shell(ry: P2[], phi0: number, phiLen: number, seg: number, creas
 }
 
 /** A soft limb along +Y from 0 to `len`: radius r(t) for t in 0..1 sampled at `rings`, `seg` round. */
-export function limb(len: number, r: (t: number) => number, seg: number, rings: number, caps = true): THREE.BufferGeometry {
+export function limb(len: number, r: (t: number) => number, seg: number, rings0: number, caps = true): THREE.BufferGeometry {
+  const rings = partsDetail.hero ? rings0 * 2 : rings0;
   const key = `limb:${len.toFixed(4)}:${[0, 0.25, 0.5, 0.75, 1].map((t) => r(t).toFixed(4)).join(",")}:${seg}:${rings}:${caps}`;
   return cached(key, () => {
     const pts: THREE.Vector2[] = [];
@@ -211,7 +249,8 @@ export function limb(len: number, r: (t: number) => number, seg: number, rings: 
 }
 
 /** An ellipsoid-ish lathe body along Y (a torso core, a skull): `ry` [radius, y] open profile, scaled in x and z. */
-export function body(ry: P2[], sx: number, sz: number, seg: number): THREE.BufferGeometry {
+export function body(ry0: P2[], sx: number, sz: number, seg: number): THREE.BufferGeometry {
+  const ry = refine(ry0, 0.9);
   const key = `body:${ry.map((p) => p.map((v) => v.toFixed(4)).join(",")).join(";")}:${sx}:${sz}:${seg}`;
   return cached(key, () => {
     let g: THREE.BufferGeometry = new THREE.LatheGeometry(

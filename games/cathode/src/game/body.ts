@@ -488,6 +488,19 @@ export class Body {
     }
   }
 
+  /**
+   * C11: the takedown's close-up. On, LOD0 draws the hero geometry (twice the segments round, refined profiles:
+   * the helmet's rim and the pauldrons' domes stay curves at 0.3 m); off, the shared LOD0 again.
+   */
+  heroDetail(on: boolean): void {
+    if (this.hero === on) return;
+    this.hero = on;
+    const g = archGeometry(this.look.arch, 0, bodyView.phone, on);
+    this.lods[0]![0].geometry = g.opaque;
+    this.lods[0]![1].geometry = g.glow;
+  }
+  private hero = false;
+
   /** Picks the LOD for the eye's distance (with hysteresis) and starts the crossfade when it changes. */
   private chooseLod(): void {
     const L = LOOK.lod;

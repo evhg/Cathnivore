@@ -497,7 +497,24 @@ for (const vp of vps) {
       console.log(`  C11 ${vp} ${spec}: ${info?.variant ?? '?'} t ${td?.t?.toFixed(0)} ms, helmet ${td?.headIn ? 'in' : 'OUT'}, arm ${td?.armIn ? 'in' : 'OUT'}, bars ${td?.bars?.toFixed(2)}`)
       if (process.env.TD_DEBUG) console.log('  debug', JSON.stringify(td?.debug))
       if (!td) fail(`${vp} ${spec}: no takedown info`)
-      else if (stage === 'takedown-420' && !(td.headIn && td.armIn)) fail(`${vp} ${spec}: at 420 ms her arm and his helmet must both be in frame`)
+      else {
+        if (stage === 'takedown-420' && !(td.headIn && td.armIn)) fail(`${vp} ${spec}: at 420 ms her arm and his helmet must both be in frame`)
+        // C11 review 2: a lens inside the helmet (one ring over 70% of the frame) reads as a clipping bug.
+        console.log(`  C11 ${vp} ${spec}: helmet ${(td.helmetShare * 100).toFixed(1)}% of the frame, prop ${td.prop} ${td.propIn ? 'in' : 'OUT'}`)
+        if (td.active && td.helmetShare > 0.35) fail(`${vp} ${spec}: the helmet fills ${(td.helmetShare * 100).toFixed(0)}% of the frame (> 35%)`)
+        // A gun finisher shows the gun (and the hand on it) in frame.
+        if (td.active && /^(frontCollar|behindPistol|frontKick)$/.test(info.variant) && !td.propIn) fail(`${vp} ${spec}: the Kestrel or her hand on it is out of frame`)
+        // Front A's shot under the chin (S5.2): the contact flash at the muzzle and the blood (mist, exit spray, splat).
+        if (stage === 'takedown-front-650' && td.muzzle) {
+          const fl = await page.evaluate(([x, y]) => window.cathode.probeRed(x, y, 28), [td.muzzle.x, td.muzzle.y])
+          const lum = (fl.mean[0] + fl.mean[1] + fl.mean[2]) / 3
+          const br = await page.evaluate(() => window.cathode.probeBloodRed())
+          side.c11 = { flashLum: lum, bloodRed: br.red / br.total }
+          console.log(`  C11 ${vp} ${spec}: flash mean ${lum.toFixed(0)} within 28 px of the muzzle; blood red ${(100 * br.red / br.total).toFixed(2)}% of the frame`)
+          if (lum < 140) fail(`${vp} ${spec}: no contact flash at the muzzle (mean ${lum.toFixed(0)} < 140)`)
+          if (br.red / br.total < 0.002) fail(`${vp} ${spec}: no blood on the shot (${(100 * br.red / br.total).toFixed(2)}% red < 0.2%)`)
+        }
+      }
     }
     // ---- C10 acceptance ----
     if (/^(enemy-(front|back)-10m|guard-from-10m)$/.test(stage)) {

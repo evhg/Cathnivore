@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import { archGeometry, type Arch, type Lod } from "../games/cathode/src/game/models/enforcer";
 import { buildRifle, rifleLod } from "../games/cathode/src/game/models/gear";
+import { partsDetail, refine } from "../games/cathode/src/game/models/parts";
 import { Body, bodyView, enforcerLook, JOINTS } from "../games/cathode/src/game/body";
 import { FX0, SEGMENTS } from "../games/cathode/src/game/rig";
 
@@ -134,5 +135,22 @@ describe("CATHODE 21-joint rig (C10, S3.1)", () => {
   it("has 21 joints and 14 segments", () => {
     expect(JOINTS.length).toBe(21);
     expect(SEGMENTS.length).toBe(14);
+  });
+});
+
+describe("C11 hero detail (the takedown's close-up)", () => {
+  it("draws the target at more detail than LOD0, and refining a profile keeps every authored point (corners stay corners)", () => {
+    const lod0 = archGeometry("enforcer", 0, false);
+    const hero = archGeometry("enforcer", 0, false, true);
+    expect(hero.tris).toBeGreaterThan(lod0.tris * 1.8);
+    // Same skinning layout, so the body can swap it in on its LOD0 meshes.
+    expect(Object.keys(hero.opaque.attributes).sort()).toEqual(Object.keys(lod0.opaque.attributes).sort());
+    const prof: [number, number][] = [[0, 0.158], [0.072, 0.146], [0.114, 0.118], [0.14, 0.078], [0.152, 0.036], [0.166, -0.12], [0.16, -0.128]];
+    partsDetail.hero = true;
+    const r = refine(prof, 0.5);
+    partsDetail.hero = false;
+    expect(r.length).toBeGreaterThan(prof.length);
+    for (const p of prof) expect(r.some((q) => q[0] === p[0] && q[1] === p[1])).toBe(true);
+    expect(refine(prof, 0.5)).toBe(prof);
   });
 });

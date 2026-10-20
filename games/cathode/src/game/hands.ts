@@ -162,8 +162,9 @@ export class Arm {
     // C5 review: the forearm read as "a featureless matte cylinder" once the reload turned it to the eye. Now
     // the gabardine tapers hard to the wrist, bunches in soft rings above the turned-back cuff, twists in long
     // diagonal folds down the forearm and creases at the elbow, with a sunk seam along the underside.
-    // The upper arm is rarely on screen: a plain tube keeps the triangles for the forearm.
-    add(upper, tube(ARM.upper + 0.03, 0.046, 0.043, { seg: phone ? 12 : 20, caps: false, phone }), FIN.sleeve, { p: [0, -0.01, 0] });
+    // The upper arm is on screen in the takedowns (C11 review: "a large flat brown cylinder"): the same gabardine,
+    // its folds twisting down to a crease at the elbow, the seam along the underside, no bunching.
+    add(upper, sleeve(ARM.upper + 0.03, 0.05, 0.045, { seg: phone ? 14 : 24, phone, side, elbowAt: 1, bunch: false }), FIN.sleeve, { p: [0, -0.01, 0] });
     add(fore, sphere(0.044, phone), FIN.sleeve);
     add(fore, sleeve(ARM.fore - 0.055, 0.045, 0.033, { seg: phone ? 16 : 28, phone, side, elbowAt: 0 }), FIN.sleeve);
     // The turned-back trench cuff: a wider band with a rolled lip, and its button on the outside.
@@ -324,7 +325,7 @@ export class Arm {
  * carry folds. `elbowAt` (0 or 1) says which end is the elbow, where the cloth creases across the bend; the
  * wrist end bunches above the cuff. The seam runs along the underside (-Z in the bone's frame, mirrored per side).
  */
-export function sleeve(len: number, r0: number, r1: number, opts: { seg: number; phone: boolean; side: 1 | -1; elbowAt: 0 | 1 }): THREE.BufferGeometry {
+export function sleeve(len: number, r0: number, r1: number, opts: { seg: number; phone: boolean; side: 1 | -1; elbowAt: 0 | 1; bunch?: boolean }): THREE.BufferGeometry {
   const rows = opts.phone ? 6 : 10;
   const pts: THREE.Vector2[] = [];
   for (let i = 0; i <= rows; i++) {
@@ -350,7 +351,7 @@ export function sleeve(len: number, r0: number, r1: number, opts: { seg: number;
     // Long diagonal folds twisting down the forearm, fading out at both ends.
     d += 0.075 * Math.sin(3 * a + t * 9 + opts.side) * Math.sin(Math.PI * t);
     // Bunching rings above the cuff (the far end of the forearm), wobbling round the arm.
-    const bunch = THREE.MathUtils.smoothstep(e, 0.55, 0.95);
+    const bunch = opts.bunch === false ? 0 : THREE.MathUtils.smoothstep(e, 0.55, 0.95);
     d += 0.13 * bunch * Math.max(0, Math.sin(t * len * 210 + 1.4 * Math.sin(2 * a + 0.7)));
     // The elbow's crease: two or three tight folds across the inside of the bend.
     const crease = 1 - THREE.MathUtils.smoothstep(e, 0.0, 0.22);

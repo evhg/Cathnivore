@@ -16,7 +16,7 @@ import * as THREE from "three";
 import { bake, placeMatrix, type Finish, type Emit, type Surface, type P2, type Place } from "../gunkit";
 import { BANDS } from "../../render/guntex";
 import { REST, SEGMENTS, boneIndex, HELM_Y, KNUCKLE_Y } from "../rig";
-import { box, chamfer, cyl, limb, plate, shell, body as lathe, tris, type PlateOpts } from "./parts";
+import { box, chamfer, cyl, limb, partsDetail, plate, shell, body as lathe, tris, type PlateOpts } from "./parts";
 
 export type Arch = "enforcer" | "leader" | "riot" | "sniper";
 export type Lod = 0 | 1 | 2;
@@ -77,6 +77,8 @@ const SLOT_OF: Record<string, number> = (() => {
 interface Opts {
   lod: Lod;
   phone: boolean;
+  /** C11: the takedown's close-up (LOD0 at twice the segments round and refined profiles). */
+  hero?: boolean;
 }
 
 /** Collects pieces per layer with their bone, slot and LOD, then merges each layer into one geometry. */
@@ -90,7 +92,7 @@ class Builder {
   }
   /** Lathe and shell segments round for this profile and LOD. */
   seg(n: number): number {
-    const k = [1, 0.52, 0.5, 0.3, 0.3][this.det]!;
+    const k = this.o.hero ? (this.o.phone ? 1 : 2) : [1, 0.52, 0.5, 0.3, 0.3][this.det]!;
     return Math.max(4, Math.round(n * k));
   }
   /** A plate at this detail: bevels go to one segment on the phone and away at a distance. */
@@ -590,22 +592,28 @@ export interface ArchGeometry {
 const ARCH_CACHE = new Map<string, ArchGeometry>();
 
 /** The two layers of an archetype at a LOD for a profile (built once, shared by every body). */
-export function archGeometry(arch: Arch, lod: Lod, phone: boolean): ArchGeometry {
-  const key = `${arch}:${lod}:${phone ? "p" : "d"}`;
+export function archGeometry(arch: Arch, lod: Lod, phone: boolean, hero = false): ArchGeometry {
+  hero = hero && lod === 0;
+  const key = `${arch}:${lod}:${phone ? "p" : "d"}${hero ? ":hero" : ""}`;
   const have = ARCH_CACHE.get(key);
   if (have) return have;
-  const b = new Builder({ lod, phone });
-  if (lod === 2) silhouette(b, arch);
-  else {
-    torso(b, arch);
-    head(b, arch);
-    for (const s of ["L", "R"] as const) {
-      arm(b, s, arch);
-      leg(b, s, arch);
+  const b = new Builder({ lod, phone, hero });
+  partsDetail.hero = hero;
+  try {
+    if (lod === 2) silhouette(b, arch);
+    else {
+      torso(b, arch);
+      head(b, arch);
+      for (const s of ["L", "R"] as const) {
+        arm(b, s, arch);
+        leg(b, s, arch);
+      }
+      if (arch === "sniper") sniperPack(b);
     }
-    if (arch === "sniper") sniperPack(b);
+    if (lod === 1 && arch !== "sniper") tabardStatic(b);
+  } finally {
+    partsDetail.hero = false;
   }
-  if (lod === 1 && arch !== "sniper") tabardStatic(b);
   const g = b.finish();
   const out: ArchGeometry = { ...g, tris: Math.round(tris(g.opaque) + tris(g.glow)) };
   ARCH_CACHE.set(key, out);

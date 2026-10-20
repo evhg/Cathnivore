@@ -191,7 +191,7 @@ describe("CATHODE takedown rewards (S5.2)", () => {
 
 import * as THREE from "three";
 import { REST, type Joint } from "../games/cathode/src/game/rig";
-import { TD, targetPose, targetScript } from "../games/cathode/src/game/takedown";
+import { TD, lensFor, targetPose, targetScript } from "../games/cathode/src/game/takedown";
 
 describe("CATHODE takedown bodies (S5.2)", () => {
   const out = {} as Record<Joint, THREE.Vector3>;
@@ -238,9 +238,15 @@ describe("CATHODE takedown bodies (S5.2)", () => {
     }
   });
 
-  it("the framing is a paired first-person shot from her eyes (never a blockout of her in the foreground)", () => {
-    expect(TD.cam.back).toBeLessThan(0.25);
-    expect(TD.cam.up).toBeLessThan(0.15);
+  it("the framing: a lens per variant at his ear line, ahead of her shoulders, kept off his head, never looking onto his crown", () => {
+    for (const v of TAKEDOWN_VARIANTS) {
+      const L = lensFor(v);
+      // Ahead of her shoulders (her body is not drawn) and below her eye (her eye looked down onto his helmet).
+      expect(L.f, v.id).toBeGreaterThanOrEqual(-0.06);
+      expect(L.u, v.id).toBeLessThanOrEqual(0);
+      if (v.approach !== "down" && v.approach !== "surrender") expect(L.pitchMin ?? TD.cam.pitchMinDeg, v.id).toBeGreaterThanOrEqual(-25);
+    }
+    expect(TD.cam.minHeadM).toBeGreaterThanOrEqual(0.35);
     expect(TD.cam.fovAdd).toBeGreaterThan(0);
     expect(TD.cam.pitchMinDeg).toBeGreaterThanOrEqual(-60);
     expect(TD.stopMs).toBe(80);

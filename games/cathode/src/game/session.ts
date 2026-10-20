@@ -35,6 +35,7 @@ import { AUTOMATIC, confirmSound, hitClass, hitStopMs, type HitEvent } from "../
 import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
 import { Orbs, TD, Takedown, targetScript } from "./takedown";
+import { archGeometry } from "./models/enforcer";
 import { TAKEDOWN, TAKEDOWN_VARIANTS, pickTakedownVariant, syncPoint, takedownEligible, takedownRewards, variantById, type Rect, type TakedownApproach, type TakedownVariantId } from "../sim/takedown";
 import { Hud, type HudState } from "../ui/hud";
 import { Audio } from "./audio";
@@ -181,7 +182,7 @@ export interface Session {
     /** C11: the takedown at the stage's moment: its clock, whether her arm and his helmet are in frame, the bars. */
     /** C11: the tell stage: his head and helmet top on screen and where the chip is anchored (CSS px). */
     tell?: { head: { x: number; y: number }; helmetTop: { x: number; y: number }; chip: { x: number; y: number } | null };
-    takedown?: { t: number; active: boolean; headIn: boolean; armIn: boolean; handR: { x: number; y: number }; handL: { x: number; y: number }; bars: number; debug?: Record<string, number[] | null> };
+    takedown?: { t: number; active: boolean; headIn: boolean; armIn: boolean; handR: { x: number; y: number }; handL: { x: number; y: number }; bars: number; helmetShare: number; prop: string; propIn: boolean; muzzle: { x: number; y: number } | null; debug?: Record<string, number[] | null> };
   } | null;
   /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
   probePool?: (x: number, y: number, rx: number, ry: number, o?: { quick?: boolean; noRender?: boolean }) => { bright: number; red: number; total: number; maxLum: number };
@@ -1521,7 +1522,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const canTakedown = tdCand !== null;
     // C11 (S5.1): the tell, the first time a man becomes takeable: his rim and visor pulse, a two-tone tick.
     for (const e of enemies) e.body.eligible = !!tdCand && tdCand.e === e;
-    if (tdCand && tdCand.e.id !== tdTold) audio?.takedownTell();
+    if (tdCand && tdCand.e.id !== tdTold) {
+      audio?.takedownTell();
+      // The close-up's geometry is built (once per archetype, cached) while the tell is up, not on the press.
+      const arch = tdCand.e.body.look.arch;
+      setTimeout(() => archGeometry(arch, 0, o.quality === "phone", true), 0);
+    }
     tdTold = tdCand ? tdCand.e.id : -1;
     if (intent.takedown && tdCand) startTakedown(tdCand);
     // Weapons need a press (S7.1): the same key as a takedown, when there's no one to take down.
@@ -2150,6 +2156,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let tdTold = -1;
   /** Unseen at the press (the kill feed's "Unseen" is decided before the world reacts). */
   let tdUnseen = false;
+  /** The body last drawn at hero detail (one at a time). */
+  let tdHero: Enemy | null = null;
 
   /** C11 (S5.2): the press. He is turned to the approach and handed to the script; she is pulled in; time slows. */
   function startTakedown(c: { e: Enemy; approach: TakedownApproach; side: number }, force?: TakedownVariantId): void {
@@ -2189,6 +2197,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     tdUnseen = !enemies.some((x) => x.alive && x.state === "combat");
     e.die(new THREE.Vector3(), e.body.joints.chest.clone(), { zone: "head", weaponCls: "melee", distance: 0.8, side: 0, seed: e.id }, undefined, targetScript(v, c.side, wallM ?? 1));
     e.body.eligible = false;
+    // The close-up: his body at hero detail for the sequence (and where she leaves him), the last one's back to LOD0.
+    if (tdHero && tdHero !== e) tdHero.body.heroDetail(false);
+    tdHero = e;
+    e.body.heroDetail(true);
     td.reduced = reduceMotionOn();
     td.begin({ target: e, variant: v, approach: v.approach, from: player.pos.clone(), sync, side: c.side, pistol, first, wallM: wallM ?? undefined }, world.camera);
     timescale.push("takedown", td.worldScale, -1, 120, 300, "takedown");
@@ -2279,12 +2291,21 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     for (const ev of td.events) {
       if (ev.kind === "impact" && ev.at) {
         const lethal = !!ev.lethal;
-        timescale.hitStop(lethal ? tuning.hitStop.takedown : 60);
+        // A shot finisher's lethal round is a headshot kill (S5.2 Front A: 110 ms); a blow, the takedown's 80.
+        timescale.hitStop(lethal ? (td.variant!.kind === "shot" ? tuning.hitStop.headKill : tuning.hitStop.takedown) : 60);
         trauma.add(lethal ? 0.35 : 0.22);
         audio?.takedownImpact(td.variant!.kind, lethal);
-        if (world.fx.gore && td.variant!.kind !== "choke") world.fx.blood(ev.at, ev.dir ?? new THREE.Vector3(0, 1, 0), lethal ? 0.85 : 0.5);
-        // A gun finisher: the Kestrel's suppressed flash at the muzzle, pressed against him.
-        if (td.variant!.kind === "shot" && td.rig.props.pistol.rig.root.visible) world.fx.muzzle(td.rig.muzzle, td.rig.axis, 0.7, true);
+        const gunShot = td.variant!.kind === "shot" && td.rig.props.pistol.rig.root.visible && (lethal || td.variant!.id === "frontKick");
+        if (gunShot && e) {
+          // A gun finisher (S5.2: "110 ms hit-stop, wall splat behind, headshot drop"): a contact shot, so the can
+          // can't eat it all: a short hot flash at the muzzle pressed under his jaw, then C2's flesh hit (the mist,
+          // the exit spray and the splat on the wall behind him) along the round's way out.
+          // (Drawn a few cm short of the muzzle, toward the lens: at the muzzle it would be inside his jaw.)
+          world.fx.muzzle(td.rig.muzzle.clone().addScaledVector(td.rig.axis, -0.05).lerp(world.camera.position, 0.08), td.rig.axis, 0.4, false);
+          const head = e.body.segs.get("head");
+          if (world.fx.flesh) world.fx.flesh({ point: td.rig.muzzle.clone().addScaledVector(td.rig.axis, 0.06), dir: td.rig.axis.clone(), damage: e.kit.maxHp, maxHp: e.kit.maxHp, weaponCls: "pistol", distance: 0.3, anchor: head?.group, owner: e, root: e.body.root, head: true, lethal });
+          else if (world.fx.gore) world.fx.blood(ev.at, td.rig.axis, 0.85);
+        } else if (world.fx.gore && td.variant!.kind !== "choke") world.fx.blood(ev.at, ev.dir ?? new THREE.Vector3(0, 1, 0), lethal ? 0.85 : 0.5);
         hud.cinemaFlash();
         rumble(lethal ? "kill" : "hit");
         combat.bus.emit("takedownImpact", { t: combat.clock, targetUid: String(e?.id ?? "") });
@@ -4098,6 +4119,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     };
     const handR = td.rig.wrist.clone();
     const handL = td.rig.wristL.clone();
+    // The helmet's share of the frame (C11 review: a lens inside the helmet showed one ring over 70% of it): a
+    // 0.17 m sphere at his head, projected.
+    const camR = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0);
+    const camU = new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 1);
+    const hc = J.head.clone().project(world.camera);
+    const hx = J.head.clone().addScaledVector(camR, 0.17).project(world.camera);
+    const hy = J.head.clone().addScaledVector(camU, 0.17).project(world.camera);
+    const helmetShare = hc.z < 1 ? Math.min(1, (Math.PI * Math.abs(hx.x - hc.x) * Math.abs(hy.y - hc.y)) / 4) : 0;
+    const prop = td.rig.props.pistol.rig.root.visible ? "pistol" : td.rig.props.pin.rig.root.visible ? "pin" : "fist";
+    const muzzleW = prop === "fist" ? null : td.rig.muzzle.clone();
     const z0 = { x: 0, y: 0 };
     s.stageInfo = {
       hit: z0, r02: 0, head0: z0, head1: toScreen(J.head), puffM: 0, splats: [], corpse: { pelvis: toScreen(J.pelvis), head: toScreen(J.head), chest: toScreen(J.chest) },
@@ -4112,6 +4143,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         handR: toScreen(handR),
         handL: toScreen(handL),
         bars: td.active ? td.bars() : 0,
+        helmetShare,
+        prop,
+        propIn: !!muzzleW && onScreen(muzzleW) && onScreen(handR),
+        muzzle: muzzleW ? toScreen(muzzleW) : null,
         debug: { ...td.rig.debug, neck: J.neck.toArray(), head: J.head.toArray(), feet: player.pos.toArray(), cam: world.camera.position.toArray() },
       },
     };
