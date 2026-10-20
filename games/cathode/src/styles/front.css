@@ -615,14 +615,14 @@
   .the-list { display: none; }
   /* Cath stays visible on the right (the scene frames her at 80% of the width while the gate is up). */
   .gate-plate { bottom: var(--safe-y); width: min(55vw, calc(100vw - 2 * var(--safe-x))); padding: 12px 16px 12px; } /* px-ok: phone plate */
-  .gate-stamp { margin-bottom: 8px; font-size: 12px; } /* px-ok */
-  .gate-text { margin-bottom: 8px; font-size: 12px; line-height: 1.3; } /* px-ok */
+  .gate-stamp { margin-bottom: 8px; font-size: max(12px, calc(var(--u) * 12)); } /* px-ok */
+  .gate-text { margin-bottom: 8px; font-size: max(12px, calc(var(--u) * 12)); line-height: 1.3; } /* px-ok */
   .gate-tiles { gap: 6px; } /* px-ok */
-  .gate-tiles legend { margin-bottom: 4px; font-size: 10px; } /* px-ok */
+  .gate-tiles legend { margin-bottom: 4px; font-size: max(10px, calc(var(--u) * 10)); } /* px-ok */
   .gate-tile { padding: 6px 10px; gap: 2px; } /* px-ok */
-  .tile-name { font-size: 16px; } /* px-ok */
-  .tile-desc { font-size: 10px; } /* px-ok */
-  .gate-enter { min-height: 40px; padding: 0 16px; font-size: 13px; } /* px-ok: tap target */
+  .tile-name { font-size: max(16px, calc(var(--u) * 16)); } /* px-ok */
+  .tile-desc { font-size: max(10px, calc(var(--u) * 10)); } /* px-ok */
+  .gate-enter { min-height: 40px; padding: 0 16px; font-size: max(13px, calc(var(--u) * 13)); } /* px-ok: tap target */
   .gate-actions { gap: 14px; } /* px-ok */
   .gate-tile { min-height: 0; }
   .gate-tiles { margin-bottom: 8px; } /* px-ok */
@@ -785,15 +785,15 @@ html.reduce-motion .front-grain { animation: none; }
 }
 @media (max-height: 520px) {
   .front-credits-plate { padding: 14px 20px 12px; width: min(calc(var(--u) * 1180), calc(100vw - 2 * var(--safe-x))); } /* px-ok: phone plate */
-  .front-credits-eyebrow { margin-bottom: 2px; font-size: 10px; } /* px-ok */
-  .front-credits-h { margin-bottom: 8px; font-size: 22px; } /* px-ok */
+  .front-credits-eyebrow { margin-bottom: 2px; font-size: max(10px, calc(var(--u) * 10)); } /* px-ok */
+  .front-credits-h { margin-bottom: 8px; font-size: max(22px, calc(var(--u) * 22)); } /* px-ok */
   .front-credits-list { grid-template-columns: 1fr 1fr; align-items: start; gap: 6px 28px; margin-bottom: 10px; } /* px-ok */
   .front-credits-row { grid-template-columns: 1fr; gap: 1px; padding-bottom: 5px; } /* px-ok */
-  .front-credits-role { font-size: 10px; } /* px-ok */
-  .front-credits-name { font-size: 14px; } /* px-ok */
-  .front-credits-note { margin-top: 1px; font-size: 10px; } /* px-ok */
+  .front-credits-role { font-size: max(10px, calc(var(--u) * 10)); } /* px-ok */
+  .front-credits-name { font-size: max(14px, calc(var(--u) * 14)); } /* px-ok */
+  .front-credits-note { margin-top: 1px; font-size: max(10px, calc(var(--u) * 10)); } /* px-ok */
   .front-credits-row:last-child { grid-column: 1 / -1; border-bottom: 0; }
-  .front-credits-back { min-height: 40px; font-size: 13px; } /* px-ok: tap target */
+  .front-credits-back { min-height: 40px; font-size: max(13px, calc(var(--u) * 13)); } /* px-ok: tap target */
 }
 @media (max-width: 600px) and (orientation: portrait) {
   .front-credits-row { grid-template-columns: 1fr; gap: calc(var(--u) * 4); }
