@@ -233,7 +233,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   let last = performance.now();
   let raf = 0;
   let acc = 0;
-  const frameMin = phone ? 1 / 30 : 0;
+  // Phones hold 30 fps (S9.2 cost). Automated runs draw twice a second: software WebGL takes seconds a frame, and
+  // a busy main thread would make every key and timer in the menu wait behind it.
+  const frameMin = typeof navigator !== "undefined" && navigator.webdriver ? 0.5 : phone ? 1 / 30 : 0;
   const resize = () => {
     const w = canvas.clientWidth || innerWidth;
     const h = canvas.clientHeight || innerHeight;

@@ -724,7 +724,7 @@ test.describe('CATHODE', () => {
     await assertNoSeriousIssues(page)
     await page.getByRole('radio', { name: /Reduced.*no gore/ }).check()
     await page.getByRole('button', { name: "I'm 18 or over" }).click()
-    await expect(page.locator('#screen-title')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('#screen-title')).toBeVisible({ timeout: 60_000 })
     await expect(page.locator('#title-word')).toHaveText('CATHODE')
     await noSideways(page)
     await assertNoSeriousIssues(page)

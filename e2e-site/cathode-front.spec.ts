@@ -37,9 +37,9 @@ test.describe('CATHODE front door', () => {
     await expect(page.locator('#menu-hint')).toHaveText(/GRAPHICS/)
     // Settings opens and Escape brings the menu back with its focus.
     await page.keyboard.press('Enter')
-    await expect(page.locator('#dlg-settings')).toBeVisible()
+    await expect(page.locator('#dlg-settings')).toBeVisible({ timeout: 30_000 })
     await page.keyboard.press('Escape')
-    await expect(page.locator('#dlg-settings')).toBeHidden()
+    await expect(page.locator('#dlg-settings')).toBeHidden({ timeout: 30_000 })
     await expect(page.locator('#btn-settings')).toHaveClass(/is-focus/)
     // The subtitle and The List come from progress.
     await expect(page.locator('#title-sub')).toHaveText('HOLLOWELL PROPER · 2079 · 5 NAMES LEFT')
