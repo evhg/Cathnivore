@@ -1676,7 +1676,9 @@ fieldset label:has(input:checked:focus-visible) span::after { opacity: 1; }
 
 /* ---- the pause menu (C13T): Paused, a short list with one red marker, and Settings / Controls as pages in
    the same column. The HUD steps out while it is open, so nothing reads through the words. ---- */
-.hud-root:has(~ .hud-pause:not([hidden])) { visibility: hidden; }
+.hud-root:has(~ .hud-pause:not([hidden])),
+body:has(.hud-pause:not([hidden])) .touch,
+body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 .hud-pm { display: grid; justify-items: start; margin: calc(var(--u) * 34) 0 0; }
 .hud-pm-item,
 .hud-pm-back {

@@ -1392,11 +1392,10 @@
   position: absolute;
   right: 22%;
   top: 34%;
-  padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-2);
-  color: rgb(var(--ink-rgb) / .86);
-  background: rgb(var(--shade-rgb) / .72);
-  box-shadow: inset 0 0 0 1px var(--line-2), inset calc(var(--u) * 2.7) 0 0 rgb(var(--cyan-rgb) / .8);
-  text-shadow: none;
+  /* C13T: no plate, no rim, no tick. A soft pool of shade under the words, so it holds over a lamp cone. */
+  padding: var(--sp-2) var(--sp-4);
+  color: rgb(var(--ink-rgb) / .9);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .7), rgb(var(--shade-rgb) / .4) 60%, transparent);
   transition: opacity 600ms var(--ease-out);
   pointer-events: none;
 }
