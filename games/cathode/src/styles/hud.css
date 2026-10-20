@@ -134,6 +134,7 @@
   letter-spacing: var(--num-hero-track);
   color: var(--ink);
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 .hud-hp-text.low { color: var(--blood-hot); }
 /* C7 (S6.3): bleeding out, the numeral glows blood-hot on each beat and the Flesh bar swells 1.0 to 1.15 tall. */
@@ -248,12 +249,13 @@
   font-stretch: var(--wdth-label);
 }
 .hud-armour { flex: 1; height: calc(var(--u) * 4); }
-.hud-arm-text { font: 600 var(--t-data)/1 var(--font-num); color: var(--ink-2); font-stretch: var(--wdth-num); }
+.hud-arm-text { font: 600 var(--t-data)/1 var(--font-num); color: var(--ink-2); font-stretch: var(--wdth-num); font-variant-numeric: tabular-nums; }
 .hud-defence {
   margin-top: var(--sp-1);
   font: 500 var(--t-data)/1.2 var(--font-num);
   color: var(--ink-2);
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 .hud-xp { margin-top: var(--sp-2); }
 
@@ -301,11 +303,13 @@
   letter-spacing: var(--num-hero-track);
   color: var(--ink);
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 .hud-reserve {
   font: 500 var(--t-num-l)/1 var(--font-num);
   color: var(--ink-3);
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 .hud-ammo.low .hud-mag { color: var(--amber); }
 .hud-ammo.empty .hud-mag { color: var(--blood-hot); }
@@ -780,6 +784,7 @@
   text-transform: uppercase;
   color: var(--cyan);
   font-stretch: var(--wdth-label);
+  font-variant-numeric: tabular-nums;
 }
 .hud-scope-range { top: calc(50% + min(24vh, 24vw)); }
 .hud-scope-wind { top: calc(50% + min(24vh, 24vw) + 1.4em); }
@@ -806,6 +811,7 @@
   white-space: nowrap;
   animation: feed-life 4.4s var(--ease-out) both;
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 .hud-feed-line .mod {
   font: 700 var(--t-micro)/1 var(--font-ui);
@@ -986,6 +992,7 @@
   font: 700 var(--t-display-l) / 1 var(--font-num);
   color: var(--ink);
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 @keyframes killcap-in {
   0% { opacity: 0; transform: translate(-50%, calc(var(--u) * 10.7)); }
@@ -1097,6 +1104,7 @@
   background: rgb(var(--shade-rgb) / .5);
   white-space: nowrap;
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 .hud-wp.near .hud-wp-mark { transform: rotate(45deg) scale(.6); opacity: .4; }
 /* The plate keeps its backing at full strength (a ghost of cyan over lamp light can't be read); over the reticle
@@ -1215,6 +1223,7 @@
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
   box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 .hud-wprompt-key.wide { font-family: var(--font-ui); letter-spacing: .04em; text-transform: uppercase; font-stretch: var(--wdth-label); }
 /* Touch: the chip is the button; the cap shows a tap glyph (a fingertip dot inside two ripple rings), not a key. */
@@ -1261,7 +1270,7 @@
   color: var(--ink-2);
   font-stretch: var(--wdth-label);
 }
-.hud-wprompt-stat b { font: 700 max(12px, calc(var(--u) * 21))/1 var(--font-num); color: var(--ink); font-stretch: var(--wdth-num); }
+.hud-wprompt-stat b { font: 700 max(12px, calc(var(--u) * 21))/1 var(--font-num); color: var(--ink); font-stretch: var(--wdth-num); font-variant-numeric: tabular-nums; }
 .hud-wprompt.is-in .hud-wprompt-chip { animation: wprompt-in 280ms var(--ease-out); }
 .hud-wprompt.is-in .hud-wprompt-lead { animation: wprompt-lead 200ms var(--ease-out); }
 @keyframes wprompt-in { from { opacity: 0; translate: calc(var(--u) * -12) 0; } }
@@ -1688,6 +1697,7 @@
   box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
   position: relative;
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 /* The 3 Hz pulse is a glow layer's opacity (composited), not an animated box-shadow (a repaint every frame). */
 .hud-prompt.world .hud-prompt-key::after {
@@ -1770,6 +1780,7 @@
   opacity: 0;
   animation: td-rise 1300ms var(--ease-out) forwards;
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 @keyframes td-rise {
   0% { opacity: 0; transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -20%) scale(.8); }

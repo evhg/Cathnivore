@@ -43,3 +43,13 @@ describe("CATHODE type rules (C13T)", () => {
     expect(bad).toEqual([])
   })
 })
+
+describe("CATHODE figures (C13T)", () => {
+  it("keeps tabular figures wherever a font shorthand sets the numeral face (the shorthand resets them)", () => {
+    const bad: string[] = []
+    for (const { f, css } of sheets)
+      for (const m of css.matchAll(/[^{}]*\{([^{}]*)\}/g))
+        if (/\bfont:[^;]*var\(--(font-num|mono)\)/.test(m[1]!) && !/font-variant-numeric:\s*tabular-nums/.test(m[1]!)) bad.push(`${f}: ${m[0].trim().slice(0, 60)}`)
+    expect(bad).toEqual([])
+  })
+})

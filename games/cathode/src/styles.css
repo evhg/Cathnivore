@@ -889,7 +889,7 @@ input[type="radio"] {
 .cx-second:hover { background: rgba(255, 179, 71, 0.14); border-color: var(--neon-amber); }
 .cx-second-note { font-size: 13px; color: var(--ink-muted); }
 .cx-pts { margin: 0 0 0 auto; font-size: 13px; letter-spacing: 0.06em; color: var(--ink-muted); }
-.cx-pts-n { font: 700 22px/1 var(--font-num); color: var(--ink-muted); font-stretch: var(--wdth-num); }
+.cx-pts-n { font: 700 22px/1 var(--font-num); color: var(--ink-muted); font-stretch: var(--wdth-num); font-variant-numeric: tabular-nums; }
 .cx-pts.on .cx-pts-n { color: var(--neon-amber); }
 .cx-respec { min-height: 40px; padding: 0 16px; font-size: 14px; }
 .cx-trees { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; min-height: 0; }
@@ -1442,6 +1442,7 @@ input[type="radio"] {
   text-shadow: 0 0 28px rgba(255, 46, 136, 0.45), 0 0 2px rgba(255, 255, 255, 0.7);
   animation: lvl-num 1800ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 .lvl-points {
   margin: 2px 0 0;

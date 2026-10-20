@@ -72,6 +72,7 @@
   text-transform: uppercase;
   color: var(--ink);
   font-stretch: var(--wdth-label);
+  font-variant-numeric: tabular-nums;
 }
 /* The double: a second copy that slides off the name and fades, as if the name were burned into the eye. */
 .death-killer-name::after {
@@ -160,6 +161,7 @@
   letter-spacing: .04em;
   text-transform: uppercase;
   font-stretch: var(--wdth-label);
+  font-variant-numeric: tabular-nums;
 }
 .death-stat { display: grid; grid-template-columns: calc(var(--u) * 210) auto; gap: calc(var(--u) * 20); }
 .death-stat dt { color: var(--ink-3); }
@@ -238,6 +240,7 @@
   text-shadow: 0 0 calc(var(--u) * 16) rgb(var(--cyan-rgb) / .45), 0 0 calc(var(--u) * 4) rgb(var(--black-rgb) / .9);
   opacity: 0;
   font-stretch: var(--wdth-num);
+  font-variant-numeric: tabular-nums;
 }
 .death-resync.on { animation: death-resync 2s linear both; }
 .death-resync.on.is-held { animation: none; opacity: 1; }
