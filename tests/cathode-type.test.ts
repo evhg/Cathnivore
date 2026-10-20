@@ -30,6 +30,19 @@ describe("CATHODE type rules (C13T)", () => {
     expect(root).not.toMatch(/--t-[a-z]/);
   });
 
+  it("declares only the two families' faces, and none of the retired ones", () => {
+    const dir = resolve(__dirname, "../games/cathode/src");
+    const all = ["styles/fonts.css", "styles/tokens.css", "styles.css"].map((f) => readFileSync(resolve(dir, f), "utf8")).join("\n");
+    expect(familiesIn(all).sort()).toEqual(["Cathode UI", "Cathode Voice"]);
+    expect(all.replace(/\/\*[\s\S]*?\*\//g, "")).not.toMatch(/rajdhani|jetbrains|Cathode Mono|Cathode Figures|Georgia"/i);
+  });
+
+  it("keeps tabular figures through font shorthands (an inherited tnum feature, which a shorthand never resets)", () => {
+    const css = readFileSync(resolve(__dirname, "../games/cathode/src/styles.css"), "utf8");
+    const body = css.slice(css.indexOf("html,\nbody {"), css.indexOf("}", css.indexOf("html,\nbody {")));
+    expect(body).toMatch(/font-feature-settings: "tnum" 1;/);
+  });
+
   it("counts @font-face families, not their metric fallbacks", () => {
     const css = '@font-face{font-family:Cathode UI;src:url(a.woff2)}@font-face{font-family:"Cathode Voice";src:url(b.woff2)}@font-face{font-family:Cathode UI Fallback;src:local(Arial)}';
     expect(familiesIn(css)).toEqual(["Cathode UI", "Cathode Voice"]);

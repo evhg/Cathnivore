@@ -10,8 +10,10 @@ body {
   background: var(--night);
   color: var(--ink);
   font-family: var(--font-ui);
-  /* C13T: one grotesk for words and numbers, so every count is tabular. */
+  /* C13T: one grotesk for words and numbers, so every count is tabular. Set as a feature (inherited), not as
+     font-variant-numeric: a font shorthand on any element resets font-variant but never font-feature-settings. */
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
