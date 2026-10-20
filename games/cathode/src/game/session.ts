@@ -4215,7 +4215,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // C13T: the character sheet (dossier) on its skills tab.
     if (name === "sheet" || name === "sheet-attributes" || name === "sheet-inventory") {
       calmVitals();
-      if (!charScreen) openSheet(name === "sheet" ? undefined : (name.slice(6) as "attributes" | "inventory"));
+      const tab = name === "sheet" ? undefined : (name.slice(6) as "attributes" | "inventory");
+      if (!charScreen) openSheet(tab);
+      else if (tab) document.querySelector<HTMLElement>(`#cx-tab-${tab}`)?.click();
       return "ok";
     }
     if (name === "levelup") {

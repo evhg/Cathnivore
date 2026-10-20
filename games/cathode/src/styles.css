@@ -487,7 +487,8 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-weapon-nums dt { font: 700 var(--fs-1)/1.2 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-stretch: var(--wdth-label); }
 .cp-weapon-nums dd { margin: 0; font: 700 var(--fs-3)/1 var(--font-ui); font-variant-numeric: tabular-nums; font-stretch: var(--wdth-num); }
 .cp-weapon-pin { margin: calc(var(--u) * 16) 0 0; font: 400 var(--fs-2)/1.4 var(--font-ui); color: var(--ink-3); }
-.cp-go { justify-self: start; margin-top: calc(var(--u) * 48); font-size: var(--fs-4); }
+/* The dash hangs in the gutter, so the words sit on the column's left edge with the numbers above them. */
+.cp-go { justify-self: start; margin-top: calc(var(--u) * 48); margin-left: calc(var(--u) * -40); font-size: var(--fs-4); }
 /* Phones held sideways (844x390): the same three columns, tighter. */
 @media (max-height: 560px) {
   .cp { gap: calc(var(--u) * 24); padding-top: max(14px, env(safe-area-inset-top)); padding-bottom: max(10px, env(safe-area-inset-bottom)); } /* px-ok */
@@ -1199,8 +1200,10 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cx-scrip { display: flex; align-items: baseline; gap: 8px; min-height: 26px; } /* px-ok */
   .cx-badge-n,
   .cx-scrip-n { font-size: var(--fs-2); min-width: 2.2ch; }
-  .cx-close { position: absolute; top: 0; right: 0; z-index: var(--z-lift-3); min-height: 40px; padding-left: 20px; } /* px-ok */
+  /* Back sits at the foot of the sidebar, under the tabs, so it never lands on a column of the page. */
+  .cx-close { position: absolute; left: 0; bottom: 0; z-index: var(--z-lift-3); min-height: 40px; padding-left: 22px; } /* px-ok */
   .cx-close::before { width: 14px; } /* px-ok */
+  .cx-close-word { font-size: var(--fs-2); }
   .cx-tabs { grid-column: 1; grid-row: 2; flex-direction: column; align-self: start; gap: 0; padding: 6px 0 0; } /* px-ok */
   .cx-tab { min-height: 40px; padding-left: 22px; font-size: var(--fs-2); } /* px-ok */
   .cx-tab::before { width: 14px; } /* px-ok */
@@ -1208,7 +1211,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cx-tabs .cx-savecode::before { width: 14px; } /* px-ok */
   .cx-main { grid-column: 2; grid-row: 1 / 3; padding: 2px 0 6px; } /* px-ok */
   .cx-skills { gap: 6px; } /* px-ok */
-  .cx-skbar { gap: 4px 18px; padding-right: 96px; } /* px-ok: clear of Back */
+  .cx-skbar { gap: 4px 18px; } /* px-ok */
   .cx-ctab,
   .cx-solo { min-height: 36px; font-size: var(--fs-2); } /* px-ok */
   .cx-second-note { font-size: var(--fs-1); }
