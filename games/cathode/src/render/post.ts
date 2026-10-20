@@ -281,13 +281,17 @@ const GradeShader = {
         film *= lensK;
         fg *= lensK;
         glint *= lensK;
+        // Water (the title's rain on the lens) bends the street far less than blood and spreads no colour: a clear
+        // drop, not a blob with a coloured fringe.
+        float wK = uLensWater > 0.5 ? 0.35 : 1.0;
+        fg *= wK;
         uv += fg * 0.022 * vec2( uRes.y / uRes.x, 1.0 );
         c = uv - 0.5;
       }
       // Chromatic aberration: only toward the edges. Three taps along the radius, one per channel.
       float ca = ( 0.005 * smoothstep( 0.06, 0.5, r2 ) + uDrama * 0.006 ) * ( 1.0 + uFxCa * ( 2.0 * uWound + 3.0 * uHurt ) ) * uDeathCa;
       // Under blood on the glass the taps also spread with its thickness and slope: the street behind it goes soft.
-      vec2 d = c * ca + ( fg * 0.012 + vec2( 0.004, 0.006 ) * film ) * vec2( uRes.y / uRes.x, 1.0 );
+      vec2 d = c * ca + ( fg * 0.012 + vec2( 0.004, 0.006 ) * film ) * vec2( uRes.y / uRes.x, 1.0 ) * ( 1.0 - uLensWater );
       vec3 t0 = texture2D( tDiffuse, uv + d + vec2( gsplit, 0.0 ) ).rgb;
       vec3 t1 = texture2D( tDiffuse, uv ).rgb;
       vec3 t2 = texture2D( tDiffuse, uv - d - vec2( gsplit, 0.0 ) ).rgb;
@@ -379,10 +383,13 @@ const GradeShader = {
           if ( uLensWater > 0.5 ) {
             // Rain on the lens (reduced violence): clear water, untinted. The refraction above already bends the
             // street through it; it dulls a touch, its rim catches a cool edge light, and the dome glints.
+            // Soft edges (a wide ramp on the film, no dark outline): a drop only dulls its middle a touch, its
+            // edge lifts a little, and the dome glints.
             float glw = length( fg );
-            mapped = mix( mapped, mapped * 0.75 + vec3( 0.004, 0.005, 0.007 ), th * 0.5 );
-            mapped += vec3( 0.012, 0.015, 0.02 ) * smoothstep( 0.06, 0.2, glw ) * ( 1.0 - smoothstep( 0.1, 0.3, film ) ) * th;
-            mapped += vec3( 0.5, 0.52, 0.55 ) * glint * th * 0.4;
+            float tw = smoothstep( 0.02, 0.3, film );
+            mapped = mix( mapped, mapped * 0.9 + vec3( 0.003, 0.004, 0.006 ), tw * 0.35 );
+            mapped += vec3( 0.008, 0.01, 0.014 ) * smoothstep( 0.04, 0.2, glw ) * tw;
+            mapped += vec3( 0.42, 0.44, 0.47 ) * glint * tw * 0.3;
           } else {
           vec3 T = exp( -film * vec3( 3.2, 15.0, 14.0 ) );
           vec3 tint = min( mapped, vec3( 0.4 ) ) * T + vec3( 0.022, 0.002, 0.003 ) * th;
