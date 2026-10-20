@@ -483,7 +483,20 @@ void fetch(`${import.meta.env.BASE_URL}../version.json`)
   .catch(() => ($("build-ver").textContent = "BUILD DEV"));
 
 // The screenshot hook: the stages wait on `ready`.
-const hook = { ready: false, ticks: 0, scene: () => scene, stage: frontStage, begin: () => begin(true) };
+const hook = {
+  ready: false,
+  ticks: 0,
+  scene: () => scene,
+  stage: frontStage,
+  begin: () => begin(true),
+  /** Screenshot runs only: a save with these jobs done, written by the game's own serializer. */
+  demoSave: (done: string[]) => {
+    if (!shot) return;
+    const p = new Progress("ghost");
+    p.jobsDone = done;
+    p.set(newCharacter("ghost"));
+  },
+};
 (window as unknown as { cathodeFront: typeof hook }).cathodeFront = hook;
 
 // ?play&shot is for screenshots: skip the gate for this visit only, without saving the 18+ answer.

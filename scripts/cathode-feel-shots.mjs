@@ -53,7 +53,11 @@ const C10X = ['turntable-riot', 'turntable-sniper', 'turntable-leader']
 // frame 16 re-shot (`takedown-body`: where she laid him, 1.2 s on; 420 and 800 are frames 14 and 15). C11X: the others.
 const C11 = ['takedown-tell', 'takedown-0', 'takedown-420', 'takedown-800', 'takedown-front-650', 'takedown-body']
 const C11X = ['takedown-behindChoke-700', 'takedown-behindPistol-640', 'takedown-frontKick-700', 'takedown-frontBaton-600', 'takedown-sideKnee-600', 'takedown-sideSweep-720', 'takedown-1150']
-const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X }
+// C13 "A front door that looks AAA" (S9.2 to S9.4): the gate, the title at 8 s, CONTINUE focused (a save), the dolly
+// at 30 s and 60 s (they must differ: the camera moves), and the area title after the push into the street. These
+// load the front door (?front=<stage>&shot&t=), not the game, and are checked by frontChecks() below.
+const C13 = ['gate', 'title', 'title-continue-focus', 'title-30s', 'title-60s', 'areatitle']
+const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13 }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
@@ -96,6 +100,158 @@ const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
   args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'],
 })
+const FRONT = new Set(C13)
+if (stages.every((st) => FRONT.has(st))) {
+  await frontRun()
+  await browser.close()
+  if (failures.length) {
+    console.log(`\n${failures.length} check(s) failed`)
+    process.exit(1)
+  }
+  console.log('\nall checks passed')
+  process.exit(0)
+}
+
+/** Decodes a screenshot into luminance rows in a blank page (no CSP there), sampled every `step` pixels. */
+async function lumaOf(png, step = 4) {
+  const pg = await browser.newPage()
+  const r = await pg.evaluate(
+    async ([b64, st]) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${b64}`
+      await img.decode()
+      const w = Math.floor(img.width / st)
+      const h = Math.floor(img.height / st)
+      const c = document.createElement('canvas')
+      c.width = w
+      c.height = h
+      const g = c.getContext('2d')
+      g.drawImage(img, 0, 0, w, h)
+      const d = g.getImageData(0, 0, w, h).data
+      const L = new Array(w * h)
+      for (let i = 0; i < w * h; i++) L[i] = (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255
+      return { w, h, L }
+    },
+    [png.toString('base64'), step],
+  )
+  await pg.close()
+  return r
+}
+
+/** Share of the frame's width that is empty: columns with almost no detail (std dev of luminance < 0.012). */
+function emptyWidth(f) {
+  let empty = 0
+  for (let x = 0; x < f.w; x++) {
+    let m = 0
+    let m2 = 0
+    for (let y = 0; y < f.h; y++) {
+      const v = f.L[y * f.w + x]
+      m += v
+      m2 += v * v
+    }
+    m /= f.h
+    const sd = Math.sqrt(Math.max(0, m2 / f.h - m * m))
+    if (sd < 0.012) empty++
+  }
+  return empty / f.w
+}
+
+async function frontRun() {
+  for (const vp of vps) {
+    const V = VIEWPORTS[vp]
+    if (!V || vp === 'portrait') continue
+    const ctx = await browser.newContext({ viewport: V.viewport, deviceScaleFactor: V.dsf, hasTouch: !!V.touch, isMobile: !!V.touch, reducedMotion: V.reduced ? 'reduce' : 'no-preference' })
+    const frames = {}
+    for (const stage of stages) {
+      const page = await ctx.newPage()
+      page.on('pageerror', (e) => fail(`${vp} ${stage}: page error ${e.message}`))
+      // A clean slate on this origin (a static file, so nothing boots), then the prefs: the gate only shows unanswered.
+      await page.goto(`${base}favicon.svg`)
+      await page.evaluate(([intensity, adult]) => {
+        localStorage.clear()
+        localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult, intensity }))
+      }, [V.intensity ?? 'full', stage !== 'gate'])
+      const name = stage.startsWith('title') ? 'title' : stage
+      const t = stage === 'title-30s' ? 30 : stage === 'title-60s' ? 60 : 8
+      if (stage === 'title-continue-focus') {
+        // A save two jobs in, made by the game's own code (window.cathodeFront.demoSave, screenshot runs only).
+        await page.goto(`${base}?front=title&shot&t=8${V.q}`, { timeout: 180_000 })
+        await page.waitForFunction(() => window.cathodeFront?.ready, null, { timeout: 400_000 })
+        await page.evaluate(() => window.cathodeFront.demoSave(['fishMarket', 'crispLead']))
+      }
+      const focus = stage === 'title-continue-focus' ? '&focus=continue' : ''
+      await page.goto(`${base}?front=${name}&shot&t=${t}${focus}${stage === 'areatitle' ? '&class=ghost' : ''}${V.q}`, { timeout: 180_000 })
+      await page.waitForFunction(() => window.cathodeFront?.ready, null, { timeout: 400_000 })
+      if (stage === 'areatitle') await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) >= 2, null, { timeout: 400_000 })
+      await page.waitForTimeout(1200)
+      const file = `${out}/c-${stage}-${vp}`
+      const png = await page.screenshot({ path: `${file}.png`, timeout: 300_000 })
+      const m = await page.evaluate(() => {
+        const d = devicePixelRatio
+        const r = (q) => {
+          const e = document.querySelector(q)
+          if (!e || e.closest('[hidden]')) return null
+          const b = e.getBoundingClientRect()
+          return { x: b.x, y: b.y, w: b.width, h: b.height, bottom: b.bottom, right: b.right }
+        }
+        const items = [...document.querySelectorAll('#menu .menu-item')].map((e) => parseFloat(getComputedStyle(e).fontSize) * d)
+        const s = window.cathodeFront.scene?.()
+        return {
+          H: innerHeight,
+          W: innerWidth,
+          dpr: d,
+          logo: r('#title-word'),
+          menu: r('#menu'),
+          hint: r('#menu-hint'),
+          back: r('.front-back'),
+          plate: r('#gate-plate'),
+          area: r('#area-title'),
+          itemPx: items.length ? Math.min(...items) : null,
+          focus: document.querySelector('#menu .is-focus')?.dataset.slot ?? null,
+          hintText: document.getElementById('menu-hint')?.textContent ?? '',
+          areaText: document.getElementById('area-name')?.textContent ?? '',
+          stats: s ? { ...s.stats } : null,
+        }
+      })
+      const f = await lumaOf(png, V.dsf * 4)
+      frames[stage] = f
+      const empty = emptyWidth(f)
+      console.log(`  C13 ${vp} ${stage}: empty width ${(empty * 100).toFixed(1)}%, scene ${m.stats ? `${m.stats.drawCalls} calls, ${m.stats.triangles} tris (Cath ${m.stats.cathTriangles})` : 'none'}`)
+      if (empty > 0.35) fail(`${vp} ${stage}: ${(empty * 100).toFixed(0)}% of the width is empty (max 35%)`)
+      if (stage.startsWith('title')) {
+        if (!m.logo || !m.menu) fail(`${vp} ${stage}: no logotype or menu`)
+        else {
+          const top = Math.min(m.logo.y, m.menu.y)
+          const bottom = Math.max(m.logo.bottom, m.menu.bottom)
+          const share = (bottom - top) / m.H
+          console.log(`  C13 ${vp} ${stage}: logotype + menu ${(share * 100).toFixed(1)}% of the height, menu items ${m.itemPx?.toFixed(0)} physical px, focus ${m.focus}, hint "${m.hintText}"`)
+          if (vp === '5k' && share < 0.3) fail(`${vp} ${stage}: logotype and menu take ${(share * 100).toFixed(0)}% of the height (min 30%)`)
+          if (vp === '5k' && m.itemPx < 88) fail(`${vp} ${stage}: menu items ${m.itemPx.toFixed(0)} physical px (min 88)`)
+          if (m.back && m.logo) {
+            const ov = Math.max(0, Math.min(m.back.right, m.logo.right) - Math.max(m.back.x, m.logo.x)) * Math.max(0, Math.min(m.back.bottom, m.logo.bottom) - Math.max(m.back.y, m.logo.y))
+            if (ov > 0) fail(`${vp} ${stage}: the Games link overlaps the logotype (${ov.toFixed(0)} px²)`)
+          }
+        }
+        if (stage === 'title-continue-focus' && (m.focus !== 'continue' || !/^RESUME/.test(m.hintText))) fail(`${vp} ${stage}: CONTINUE not focused with its resume hint (focus ${m.focus}, "${m.hintText}")`)
+      }
+      if (stage === 'gate' && !m.plate) fail(`${vp} gate: no gate plate`)
+      if (stage === 'areatitle' && !/FISH MARKET/.test(m.areaText)) fail(`${vp} areatitle: area title "${m.areaText}"`)
+      await page.close()
+    }
+    // The dolly moves: 60 s differs from 30 s.
+    const a = frames['title-30s']
+    const b = frames['title-60s']
+    if (a && b) {
+      let d = 0
+      for (let i = 0; i < a.L.length; i++) d += Math.abs(a.L[i] - b.L[i])
+      d /= a.L.length
+      console.log(`  C13 ${vp}: 30 s vs 60 s mean luminance difference ${d.toFixed(4)}`)
+      if (d < 0.01) fail(`${vp}: the 60 s frame matches the 30 s frame (difference ${d.toFixed(4)}): the dolly is not moving`)
+    }
+    await ctx.close()
+  }
+}
+
 for (const vp of vps) {
   const V = VIEWPORTS[vp]
   const ctx = await browser.newContext({ viewport: V.viewport, deviceScaleFactor: V.dsf, hasTouch: !!V.touch, isMobile: !!V.touch, reducedMotion: V.reduced ? 'reduce' : 'no-preference' })

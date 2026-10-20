@@ -95,6 +95,61 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     removers.push(world.light(toWorld(-2.4, 1.9, -1.6), new THREE.Color(0.08, 0.62, 0.85), phone ? 3.5 : 4, 6));
   }
 
+  // ---- progress set pieces (S9.2): the egg shop's sign dark after the Fish Market, a chalk tally of the names ----
+  if (o.set.signDark) {
+    // Tomas Reed's TOMAS EGGS fascia on the west side, beside where she stands: its quads go out (aInfo.x is the
+    // sign's intensity, y its flicker).
+    world.scene.traverse((obj) => {
+      const g = (obj as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
+      const info = g?.attributes.aInfo as THREE.BufferAttribute | undefined;
+      const pos = g?.attributes.position as THREE.BufferAttribute | undefined;
+      if (!info || !pos) return;
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const z = pos.getZ(i);
+        if (x < -7 && z > 45.4 && z < 55.1 && pos.getY(i) < 8) {
+          info.setX(i, info.getX(i) * 0.03);
+          info.setY(i, 0);
+        }
+      }
+      info.needsUpdate = true;
+    });
+  }
+  const chalk: THREE.Object3D[] = [];
+  if (o.set.tally > 0) {
+    const c = document.createElement("canvas");
+    c.width = 256;
+    c.height = 128;
+    const g = c.getContext("2d");
+    if (g) {
+      g.strokeStyle = "rgba(235,232,224,0.85)";
+      g.lineCap = "round";
+      let x = 24;
+      for (let i = 0; i < o.set.tally; i++) {
+        g.lineWidth = 5 + (i % 2);
+        g.beginPath();
+        g.moveTo(x + (i % 3) * 2, 22);
+        g.lineTo(x - 3 + (i % 2) * 4, 104);
+        g.stroke();
+        x += 26;
+      }
+      if (o.set.tally >= 5) {
+        g.lineWidth = 6;
+        g.beginPath();
+        g.moveTo(12, 92);
+        g.lineTo(x - 6, 34);
+        g.stroke();
+      }
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.45), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.7, depthWrite: false, color: 0x8f8c86 }));
+    plane.position.set(-9.84, 1.55, feet.z + 1.6);
+    plane.rotation.y = Math.PI / 2;
+    world.scene.add(plane);
+    chalk.push(plane);
+  }
+
   // ---- the camera loop ----
   const posCurve = new THREE.CatmullRomCurve3(
     FRAMES.map((f) => toWorld(...f.pos)),
@@ -300,6 +355,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cancelAnimationFrame(raf);
       removeEventListener("resize", resize);
       for (const r of removers) r();
+      for (const c of chalk) c.removeFromParent();
       cath.dispose();
       world.setWounded?.({ pulse: 0, regen: 0, stim: 0, wipe: -1, lens: [], water: false });
       return world;

@@ -81,7 +81,32 @@ export function buildFrontCath(phone: boolean): FrontCath {
     : new THREE.MeshPhysicalMaterial({ color: 0x1d1f25, roughness: 0.55, metalness: 0, clearcoat: 0.45, clearcoatRoughness: 0.35, sheen: 0.5, sheenRoughness: 0.45, sheenColor: new THREE.Color(0x6a7080) });
   // Gloves, boots, hair and the umbrella: near-black with a wet sheen.
   const blackMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0d, roughness: 0.32, metalness: 0.05 });
-  const hairMat = new THREE.MeshStandardMaterial({ color: 0x1a110e, roughness: 0.38, metalness: 0 });
+  // Hair: combed-back strands as a streaked colour and roughness map (a shine band reads as hair, not a helmet).
+  const strands = (() => {
+    const c = document.createElement("canvas");
+    c.width = 64;
+    c.height = 128;
+    const g = c.getContext("2d");
+    if (g) {
+      g.fillStyle = "#2a1c17";
+      g.fillRect(0, 0, 64, 128);
+      let sd = 7;
+      const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+      for (let i = 0; i < 90; i++) {
+        const x = rnd() * 64;
+        const l = 40 + rnd() * 30;
+        g.fillStyle = `rgba(${rnd() < 0.5 ? "90,64,52" : "10,6,5"},${0.25 + rnd() * 0.35})`;
+        g.fillRect(x, 0, 0.6 + rnd() * 1.2, 128);
+        void l;
+      }
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = THREE.RepeatWrapping;
+    t.repeat.set(3, 1);
+    return t;
+  })();
+  const hairMat = new THREE.MeshStandardMaterial({ color: 0x8a7a72, map: strands, roughness: 0.42, metalness: 0 });
   const skinMat = new THREE.MeshStandardMaterial({ color: 0xd9ad98, roughness: 0.55, metalness: 0 });
   const mats: THREE.Material[] = [coatMat, blackMat, hairMat, skinMat];
   // The back light's rim (S9.2 "lit from behind"): a Fresnel edge in --neon-pink, strongest on the side facing
@@ -205,9 +230,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   add(belt, blackMat, pelvis);
   const collar = lathe(
     [
-      [0.098, 0.5],
-      [0.108, 0.56],
-      [0.128, 0.645],
+      [0.096, 0.5],
+      [0.1, 0.56],
+      [0.108, 0.625],
     ],
     seg(20),
     0.8,
@@ -234,8 +259,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
   cap.translate(0, 0.006, -0.008);
   add(cap, hairMat, headPivot);
   const knot = new THREE.SphereGeometry(1, seg(16), seg(10));
-  knot.scale(0.046, 0.036, 0.034);
-  knot.translate(0, -0.05, -0.09);
+  knot.scale(0.052, 0.042, 0.04);
+  knot.translate(0, -0.03, -0.098);
   add(knot, hairMat, headPivot);
   // Pearl studs catch the back light.
   const pearlMat = new THREE.MeshStandardMaterial({ color: 0xf2ebe2, roughness: 0.18, metalness: 0.1, emissive: 0x2a2624 });
@@ -538,6 +563,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       });
       for (const m of mats) m.dispose();
       smokeTex.dispose();
+      strands.dispose();
       group.removeFromParent();
     },
   };

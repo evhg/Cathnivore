@@ -443,7 +443,6 @@
 .menu-item.is-focus::before { transform: scaleX(1); }
 .menu-item:focus,
 .menu-item:focus-visible { outline: none; box-shadow: none; }
-.menu-item:focus-visible .menu-label { text-decoration: underline; text-decoration-color: rgb(var(--cyan-rgb) / .7); text-decoration-thickness: calc(var(--u) * 2); text-underline-offset: calc(var(--u) * 8); }
 .menu-item:disabled {
   color: var(--ink-dim);
   cursor: default;
@@ -540,6 +539,17 @@
   text-align: center;
   pointer-events: none;
   animation: area-in 3.2s linear forwards;
+}
+.area-title::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--u) * 1100);
+  height: calc(var(--u) * 260);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgb(4 5 8 / .62), rgb(4 5 8 / .3) 60%, transparent);
+  z-index: -1;
 }
 .area-name {
   margin: 0;
