@@ -8,6 +8,10 @@
    - One accent: blood red. Cyan and magenta live in the world (neon), not here.
    Colours come from tokens.css; every font size is one of the six --fs tokens. */
 
+/* ---- focus: never a box. The shared grammar's halo ring goes; where a component draws its own marker it also
+   drops the outline (and otherwise the plain outline stays, so nothing loses its focus). ---- */
+:where(a, button, [role="tab"], [tabindex], input, select, summary):focus-visible { box-shadow: none; }
+
 /* ---- surfaces ---- */
 .gate-card,
 .hud-pause-card,
@@ -94,41 +98,43 @@
   font-stretch: var(--wdth-num);
 }
 
-/* ---- tabs: words; the chosen one is ink with the red marker under it ---- */
-.cx-tabs { display: flex; align-items: stretch; gap: calc(var(--u) * 40); padding: 0 var(--sp-5); border-bottom: 1px solid var(--line-1); }
+/* ---- tabs: words in a row; the open one is ink with the menu's red marker before it (C13T) ---- */
+.cx-tabs { display: flex; align-items: stretch; gap: calc(var(--u) * 40); padding: 0; }
 .cx-tab {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: calc(var(--u) * 10);
   min-height: max(44px, calc(var(--u) * 58)); /* px-ok: tap target */
-  padding: 0;
+  padding: 0 0 0 calc(var(--u) * 40);
   border: 0;
   background: none;
   color: var(--ink-3);
-  font: 700 var(--fs-2)/1 var(--font-ui);
-  letter-spacing: .04em;
+  font: 700 var(--fs-3)/1 var(--font-ui);
+  letter-spacing: .03em;
   text-transform: uppercase;
   cursor: pointer;
   transition: color var(--d-2) var(--ease-out);
   font-stretch: var(--wdth-label);
 }
-.cx-tab::after {
+.cx-tab::before {
   content: "";
   position: absolute;
   left: 0;
-  right: 0;
-  bottom: -1px;
-  height: max(2px, calc(var(--u) * 2)); /* px-ok */
-  background: var(--blood);
+  top: 50%;
+  width: calc(var(--u) * 24);
+  height: max(2px, calc(var(--u) * 3)); /* px-ok */
+  margin-top: calc(var(--u) * -1.5);
+  background: var(--blood-hot);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform var(--d-3) var(--ease-out);
+  transition: transform var(--d-2) var(--ease-out);
 }
 @media (hover: hover) { .cx-tab:hover { color: var(--ink-2); } }
 .cx-tab[aria-selected="true"] { color: var(--ink); }
-.cx-tab[aria-selected="true"]::after { transform: scaleX(1); }
+.cx-tab[aria-selected="true"]::before { transform: none; }
 .cx-tab:focus-visible { outline: none; color: var(--ink); }
+.cx-tab:focus-visible::before { transform: none; }
 /* Unspent points: a small red dot after the word. */
 .cx-tab-dot { width: calc(var(--u) * 7); height: calc(var(--u) * 7); border-radius: 50%; background: var(--blood-hot); opacity: 0; transition: opacity var(--d-2); }
 .cx-tab.has-points .cx-tab-dot { opacity: 1; }

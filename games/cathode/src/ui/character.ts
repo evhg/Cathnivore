@@ -5,11 +5,12 @@
 //   second class and its hybrid capstone, and respecs.
 // - Inventory: the nine equipment slots and the bag, with rarity-coloured item tooltips.
 // Everything goes through the pure rules in ../sim; this file only draws and forwards intents.
-// CSP-safe: no innerHTML with data (Cath's own SVG generator is the only markup injected), no style
-// attributes; positions and sizes travel as CSS custom properties.
+// C13T: type over the blurred street, like pause and death. Tabs are words with the one red marker, numbers
+// are tabular type, skill nodes are glyphs whose state is opacity, and nothing has a border, chip or hatching.
+// CSP-safe: no innerHTML with data (the skill sigils are the only markup injected), no style attributes;
+// positions and sizes travel as CSS custom properties.
 
 import { skillSigil } from "./skillsigil";
-import { cathSvg } from "../../../../shared/cath/cath";
 import {
   allocateAttribute,
   characterStats,
@@ -60,7 +61,7 @@ import {
 import { sumModifiers, xpForLevel, xpToNext, MAX_LEVEL, type DerivedStats, type StatTotals } from "../sim/stats";
 import { ATTRIBUTES, CLASS_IDS, WEAPON_CLASSES, type AttributeId, type ClassId, type WeaponClass } from "../sim/types";
 import { PART_SLOTS, TIER_NAMES, WEAPON_BASES, WEAPON_PARTS, partFits, upgradeCost } from "../sim/weapons";
-import { CLASS_COPY, classEmblem, itemGlyph } from "./classart";
+import { CLASS_COPY, itemGlyph } from "./classart";
 import { ATTRIBUTE_LABEL } from "./classpick";
 import { attrs, button, cssVar, el, num, reducedMotion, svg, trapTab } from "./dom";
 import { RARITY_LABEL, WEAPON_CLASS_LABEL, baseName, fixedModText, itemTypeLine, modText, scripText } from "./itemtext";
@@ -250,9 +251,6 @@ export function openCharacter(
 
   // ---- header ----
   const head = el("header", "cx-head", panel);
-  const portrait = el("div", "cx-portrait", head);
-  portrait.setAttribute("aria-hidden", "true");
-  portrait.innerHTML = cathSvg({ framing: "bust", expression: "determined", outfit: "trench" });
   const id = el("div", "cx-id", head);
   const classLine = el("p", "cx-classes", id);
   const name = el("h2", "cx-name", id);
@@ -267,8 +265,8 @@ export function openCharacter(
   const badges = el("div", "cx-badges", head);
   const closeBtn = button("cx-close", head);
   closeBtn.setAttribute("aria-label", "Close (Esc)");
-  closeBtn.append(svg("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }));
-  svg("path", { d: "M6 6 L18 18 M18 6 L6 18" }, closeBtn.firstElementChild);
+  el("span", "cx-close-word", closeBtn, "Back");
+  el("span", "cx-close-key", closeBtn, "Esc").setAttribute("aria-hidden", "true");
   closeBtn.addEventListener("click", () => close());
 
   // ---- tabs ----
@@ -286,7 +284,7 @@ export function openCharacter(
   }
   if (opts.exportCode) {
     const code = opts.exportCode;
-    button("cx-savecode", tabs, "Save code").addEventListener("click", () => openSaveCode(code));
+    button("btn cx-savecode", tabs, "Save code").addEventListener("click", () => openSaveCode(code));
   }
   tabs.addEventListener("keydown", (ev) => {
     const order = TABS.map((t) => t.id);
@@ -384,8 +382,7 @@ export function openCharacter(
       const b = button(`cx-badge${n > 0 ? " on" : ""}`, badges);
       b.dataset.k = `badge:${to}`;
       el("span", "cx-badge-n", b, String(n));
-      const l = el("span", "cx-badge-l", b, label);
-      el("span", "cx-badge-pts", l, " points");
+      el("span", "cx-badge-l", b, label);
       b.setAttribute("aria-label", `${n} unspent ${label.toLowerCase()} points. Open ${to}.`);
       b.addEventListener("click", () => show(to, true));
     };
@@ -721,8 +718,7 @@ export function openCharacter(
         const b = button(`cx-ctab cls-${k}`, ct);
         attrs(b, { role: "tab", "aria-selected": String(i === view), "data-k": `ctab:${k}` });
         b.tabIndex = i === view ? 0 : -1;
-        b.append(classEmblem(k));
-        el("span", "", b, CLASSES[k].name);
+        el("span", "cx-ctab-name", b, CLASSES[k].name);
         el("span", "cx-ctab-role", b, i === 0 ? "Primary" : "Second");
         b.addEventListener("click", () => {
           classView = i;
@@ -740,7 +736,6 @@ export function openCharacter(
       });
     } else {
       const solo = el("div", `cx-solo cls-${cls}`, bar);
-      solo.append(classEmblem(cls));
       el("span", "cx-solo-name", solo, CLASSES[cls].name);
       if (c.level >= DUAL_CLASS_LEVEL) {
         const b = button("btn cx-second", bar, "Take a second class");
@@ -753,7 +748,7 @@ export function openCharacter(
     const pts = el("p", `cx-pts${c.unspentSkills > 0 ? " on" : ""}`, bar);
     el("span", "cx-pts-n", pts, String(c.unspentSkills));
     el("span", "", pts, c.unspentSkills === 1 ? " skill point" : " skill points");
-    const rs = button("btn btn-ghost cx-respec", bar, "Respec…");
+    const rs = button("btn cx-respec", bar, "Respec");
     rs.dataset.k = "respec";
     rs.addEventListener("click", () => openRespec());
 
@@ -912,7 +907,6 @@ export function openCharacter(
         const o = button(`cx-sc cls-${k}`, list);
         attrs(o, { role: "radio", "aria-checked": "false" });
         o.tabIndex = opts.length === 0 ? 0 : -1;
-        o.append(classEmblem(k));
         const w = el("span", "cx-sc-words", o);
         el("span", "cx-sc-name", w, CLASSES[k].name);
         el("span", "cx-sc-line", w, CLASS_COPY[k].playsLike);

@@ -4210,6 +4210,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       menuOpen = true;
       return "ok";
     }
+    // C13T: the character sheet (dossier) on its skills tab.
+    if (name === "sheet") {
+      calmVitals();
+      if (!charScreen) openSheet();
+      return "ok";
+    }
     if (name === "levelup") {
       calmVitals();
       void levelUpToast(o.hud.parentElement ?? o.hud, 7, { attributes: 5, skills: 1 }, true);

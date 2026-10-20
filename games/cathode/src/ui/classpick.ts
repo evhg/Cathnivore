@@ -1,14 +1,15 @@
-// The class pick: a full-screen case file where the player chooses how Cath works. Five classes down the
-// side (a radio group: arrows, Home/End and 1–5 move, Enter or the button commits), the chosen one's file
-// open beside it: emblem, one-liner, how it plays, its three trees, starting attributes and weapon.
+// The class pick: a case file set as type straight over the blurred street (C13T: like pause and death, no
+// cards, no emblems, no hatching). Five class names down the left edge (a radio group: arrows, Home/End and
+// 1–5 move, Enter or the commit walks in), the chosen one's file beside them: one-liner, Cath's line, how it
+// plays, its three trees, then the starting attributes and weapon as plain tabular figures.
 
 import { CLASSES, TREES } from "../sim/classes";
 import { STARTING_WEAPON, newCharacter } from "../sim/character";
 import { CLASS_START_ATTRIBUTES } from "../sim/stats";
 import { ATTRIBUTES, CLASS_IDS, type AttributeId, type ClassId } from "../sim/types";
 import { WEAPON_BASES } from "../sim/weapons";
-import { CLASS_COPY, classEmblem } from "./classart";
-import { button, cssVar, el, reducedMotion, trapTab } from "./dom";
+import { CLASS_COPY } from "./classart";
+import { button, el, reducedMotion, trapTab } from "./dom";
 import { WEAPON_CLASS_LABEL } from "./itemtext";
 
 export interface ClassPickHandle {
@@ -17,9 +18,6 @@ export interface ClassPickHandle {
 }
 
 export const ATTRIBUTE_LABEL: Record<AttributeId, string> = { grit: "Grit", aim: "Aim", nerve: "Nerve", wire: "Wire" };
-
-/** The highest starting value any class has in one attribute (bars are drawn against it). */
-const ATTR_SCALE = 40;
 
 /**
  * Opens the class pick over `host` and calls `onPick` once with the chosen class, after the exit
@@ -34,8 +32,6 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   root.setAttribute("role", "dialog");
   root.setAttribute("aria-modal", "true");
   root.setAttribute("aria-labelledby", "cp-title");
-  el("div", "cp-rain", root).setAttribute("aria-hidden", "true");
-  el("div", "cp-glow", root).setAttribute("aria-hidden", "true");
 
   const head = el("header", "cp-head", root);
   el("p", "eyebrow cp-eyebrow", head, "Case file · Hollowell Proper");
@@ -52,11 +48,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     const opt = button(`cp-opt cls-${cls}`, list);
     opt.setAttribute("role", "radio");
     opt.dataset.cls = cls;
-    opt.append(classEmblem(cls));
-    const words = el("span", "cp-opt-words", opt);
-    el("span", "cp-opt-name", words, CLASSES[cls].name);
-    el("span", "cp-opt-fantasy", words, CLASSES[cls].fantasy.replace(/\.$/, ""));
-    el("span", "cp-opt-file", opt, CLASS_COPY[cls].file).setAttribute("aria-hidden", "true");
+    el("span", "cp-opt-name", opt, CLASSES[cls].name);
     opt.addEventListener("click", () => select(cls, true));
     opt.addEventListener("dblclick", () => commit());
     options.set(cls, opt);
@@ -75,12 +67,8 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     detail.replaceChildren();
     detail.className = `cp-detail cls-${cls}`;
 
-    const art = el("div", "cp-art", detail);
-    art.append(classEmblem(cls));
-    el("span", "cp-art-file", art, `No. ${copy.file}`).setAttribute("aria-hidden", "true");
-
     const words = el("div", "cp-words", detail);
-    el("p", "cp-kicker", words, def.fantasy);
+    el("p", "cp-kicker", words, def.fantasy.replace(/\.$/, ""));
     el("h2", "cp-name", words, def.name);
     el("p", "cp-line", words, `“${copy.line}”`);
     const plays = el("p", "cp-plays", words);
@@ -102,11 +90,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     for (const a of ATTRIBUTES) {
       const row = el("div", "cp-attr", attrs);
       el("dt", "", row, ATTRIBUTE_LABEL[a]);
-      const dd = el("dd", "", row);
-      const bar = el("span", "cp-bar", dd);
-      bar.setAttribute("aria-hidden", "true");
-      cssVar(bar, "--v", Math.min(1, start[a] / ATTR_SCALE).toFixed(3));
-      el("span", "cp-attr-n", dd, String(start[a]));
+      el("dd", "cp-attr-n", row, String(start[a]));
     }
     const fresh = newCharacter(cls);
     const w = WEAPON_BASES[STARTING_WEAPON[cls]];

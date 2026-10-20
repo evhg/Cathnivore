@@ -53,7 +53,7 @@ function setChecked(name: string, value: string): void {
   if (el) el.checked = true;
 }
 
-// ?front=gate|title|settings|credits|loading|areatitle&shot&t=30&focus=continue: the screenshot stages (scripts/cathode-feel-shots.mjs).
+// ?front=gate|title|settings|credits|loading|areatitle|classpick&shot&t=30&focus=continue: the screenshot stages (scripts/cathode-feel-shots.mjs).
 const frontStage = params.get("front");
 const shot = params.has("shot");
 const audio = new FrontAudio(prefs.volume);
@@ -590,6 +590,10 @@ async function boot(): Promise<void> {
     if (frontStage === "settings") openSettings();
     if (frontStage === "loading") stageLoading();
     if (frontStage === "areatitle") await begin(true);
+    if (frontStage === "classpick") {
+      $("screen-title").classList.add("is-leaving");
+      openClassPick(document.body, () => undefined, (params.get("class") as ClassId | null) ?? "ghost");
+    }
     hook.ready = true;
     return;
   }

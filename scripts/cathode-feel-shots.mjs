@@ -60,7 +60,7 @@ const C13 = ['gate', 'title', 'title-continue-focus', 'title-30s', 'title-60s', 
 // C13T "Type and UI that look like a AAA game": every screen the type rules cover. The front-door ones load
 // ?front=<stage>; pause, level-up, the death card and the firefight HUD are game stages; VPS=portrait adds the
 // rotate prompt.
-const C13T = ['gate', 'title', 'settings', 'loading', 'pause', 'levelup', 'death-card', 'firefight-6']
+const C13T = ['gate', 'title', 'settings', 'credits', 'classpick', 'loading', 'pause', 'sheet', 'levelup', 'death-card', 'firefight-6']
 const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
@@ -104,7 +104,7 @@ const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
   args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'],
 })
-const FRONT = new Set([...C13, 'settings', 'loading'])
+const FRONT = new Set([...C13, 'settings', 'loading', 'credits', 'classpick'])
 const frontStages = stages.filter((st) => FRONT.has(st))
 const gameStages = stages.filter((st) => !FRONT.has(st))
 if (frontStages.length) await frontRun(frontStages)
@@ -227,7 +227,7 @@ async function frontRun(list) {
       console.log(`  C13 ${vp} ${stage}: empty width ${(empty * 100).toFixed(1)}%, scene ${m.stats ? `${m.stats.drawCalls} calls, ${m.stats.triangles} tris (Cath ${m.stats.cathTriangles})` : 'none'}`)
       // The empty-width rule (C13) judges the scene's composition; the Settings sheet (added by C13T) deliberately
       // darkens the street behind its column, so it only logs.
-      if (empty > 0.35 && stage !== 'settings') fail(`${vp} ${stage}: ${(empty * 100).toFixed(0)}% of the width is empty (max 35%)`)
+      if (empty > 0.35 && !['settings', 'credits', 'classpick'].includes(stage)) fail(`${vp} ${stage}: ${(empty * 100).toFixed(0)}% of the width is empty (max 35%)`)
       if (stage.startsWith('title')) {
         if (!m.logo || !m.menu) fail(`${vp} ${stage}: no logotype or menu`)
         else {
