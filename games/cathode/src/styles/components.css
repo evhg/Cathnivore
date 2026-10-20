@@ -237,9 +237,10 @@
 }
 .dialog > * { max-width: calc(var(--u) * 820); }
 .dialog::backdrop {
-  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .92) 0%, rgb(var(--shade-rgb) / .74) 45%, rgb(var(--shade-rgb) / .5) 100%);
-  -webkit-backdrop-filter: blur(calc(var(--u) * 8));
-  backdrop-filter: blur(calc(var(--u) * 8));
+  /* The street stays a place behind the sheet: a light blur and a shade that lifts towards the right. */
+  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .9) 0%, rgb(var(--shade-rgb) / .66) 40%, rgb(var(--shade-rgb) / .3) 100%);
+  -webkit-backdrop-filter: blur(calc(var(--u) * 3));
+  backdrop-filter: blur(calc(var(--u) * 3));
 }
 /* One layer of words at a time: the title's own column steps back while a sheet is open over it. */
 body:has(.dialog[open]) .title-col,
