@@ -141,7 +141,7 @@
 .death-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--u) * 14) calc(var(--u) * 40);
+  gap: calc(var(--u) * 14) calc(var(--u) * 64);
   margin-top: calc(var(--u) * 44);
 }
 .death-btn {
@@ -150,7 +150,7 @@
   align-items: center;
   gap: calc(var(--u) * 14);
   min-height: max(40px, calc(var(--u) * 52));
-  padding: 0 calc(var(--u) * 6) 0 calc(var(--u) * 40);
+  padding: 0 calc(var(--u) * 6) 0 0;
   border: 0;
   background: none;
   color: var(--ink-2);
@@ -166,7 +166,7 @@
 /* The one marker every CATHODE menu uses (C13T): a short red dash on the left, drawn out on focus. */
 .death-btn-bar {
   position: absolute;
-  left: 0;
+  left: calc(-1 * var(--mark-hang));
   top: 50%;
   width: calc(var(--u) * 24);
   height: max(2px, calc(var(--u) * 3)); /* px-ok */

@@ -73,7 +73,9 @@ const VIEWPORTS = {
   d: { viewport: { width: 1440, height: 900 }, dsf: 1, q: '' },
   // The phone's blocked frame renders at full resolution: at rs=0.5 the crate and the guard's head over it blur
   // into one grey block and the brackets have no visible reason.
-  phone: { viewport: { width: 844, height: 390 }, dsf: 3, q: '&rs=0.5&quality=phone', touch: true, stageQ: { blocked: '&rs=1&quality=phone' } },
+  // The front door (C13T review) shoots at the phone's shipping scale (frontscene's own 0.75), not the harness's 0.5:
+  // at 0.5 the rain and the lit sign behind the type stair-stepped, which no player sees.
+  phone: { viewport: { width: 844, height: 390 }, dsf: 3, q: '&rs=0.5&quality=phone', frontQ: '&quality=phone', touch: true, stageQ: { blocked: '&rs=1&quality=phone' } },
   rm: { viewport: { width: 1440, height: 900 }, dsf: 1, q: '', reduced: true },
   // C8: reduced violence (the 18+ gate's other choice) at the desktop size.
   rv: { viewport: { width: 1440, height: 900 }, dsf: 1, q: '', intensity: 'reduced' },
@@ -183,12 +185,12 @@ async function frontRun(list) {
       const t = stage === 'title-30s' ? 30 : stage === 'title-60s' ? 60 : 8
       if (stage === 'title-continue-focus') {
         // A save two jobs in, made by the game's own code (window.cathodeFront.demoSave, screenshot runs only).
-        await page.goto(`${base}?front=title&shot&t=8${V.q}`, { timeout: 180_000 })
+        await page.goto(`${base}?front=title&shot&t=8${V.frontQ ?? V.q}`, { timeout: 180_000 })
         await page.waitForFunction(() => window.cathodeFront?.ready, null, { timeout: 400_000 })
         await page.evaluate(() => window.cathodeFront.demoSave(['fishMarket', 'crispLead']))
       }
       const focus = stage === 'title-continue-focus' ? '&focus=continue' : ''
-      await page.goto(`${base}?front=${name}&shot&t=${t}${focus}${stage === 'areatitle' ? '&class=ghost' : ''}${V.q}`, { timeout: 180_000 })
+      await page.goto(`${base}?front=${name}&shot&t=${t}${focus}${stage === 'areatitle' ? '&class=ghost' : ''}${V.frontQ ?? V.q}`, { timeout: 180_000 })
       await page.waitForFunction(() => window.cathodeFront?.ready, null, { timeout: 400_000 })
       if (stage === 'areatitle') await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) >= 2, null, { timeout: 400_000 })
       await page.waitForTimeout(1200)

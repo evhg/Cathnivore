@@ -38,7 +38,7 @@
   justify-content: flex-start;
   gap: calc(var(--u) * 14);
   min-height: max(44px, calc(var(--u) * 56)); /* px-ok: tap target */
-  padding: 0 0 0 calc(var(--u) * 40);
+  padding: 0;
   font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .04em;
   text-transform: uppercase;
@@ -55,7 +55,7 @@
 .btn::before {
   content: "";
   position: absolute;
-  left: 0;
+  left: calc(-1 * var(--mark-hang));
   top: 50%;
   width: calc(var(--u) * 24);
   height: max(2px, calc(var(--u) * 3)); /* px-ok */
@@ -74,7 +74,7 @@
 .btn-primary::before { transform: none; }
 /* One dash at a time (C13T): the primary's resting dash marks where Enter goes, so it steps back while focus sits
    on another control on the same screen (a Settings choice, a class name, a dossier node). */
-:is(.dialog, .cp, .cx, .cx-dlg, .hud-pause, .gate-card):has(:focus-visible:not(.btn-primary)) .btn-primary:not(:focus-visible):not(:hover)::before { transform: scaleX(0); }
+:is(.dialog, .cx, .cx-dlg, .hud-pause, .gate-card):has(:focus-visible:not(.btn-primary)) .btn-primary:not(:focus-visible):not(:hover)::before { transform: scaleX(0); }
 .btn:focus-visible { outline: none; color: var(--ink); }
 .btn:focus-visible::before { transform: none; }
 .btn[disabled],
@@ -102,14 +102,14 @@
 }
 
 /* ---- tabs: words in a row; the open one is ink with the menu's red marker before it (C13T) ---- */
-.cx-tabs { display: flex; align-items: stretch; gap: calc(var(--u) * 40); padding: 0; }
+.cx-tabs { display: flex; align-items: stretch; gap: calc(var(--u) * 64); padding: 0; }
 .cx-tab {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: calc(var(--u) * 10);
   min-height: max(44px, calc(var(--u) * 58)); /* px-ok: tap target */
-  padding: 0 0 0 calc(var(--u) * 40);
+  padding: 0;
   border: 0;
   background: none;
   color: var(--ink-3);
@@ -123,7 +123,7 @@
 .cx-tab::before {
   content: "";
   position: absolute;
-  left: 0;
+  left: calc(-1 * var(--mark-hang));
   top: 50%;
   width: calc(var(--u) * 24);
   height: max(2px, calc(var(--u) * 3)); /* px-ok */
@@ -235,7 +235,7 @@
   max-width: none;
   max-height: none;
   margin: 0;
-  padding: var(--safe-y) calc(var(--safe-x) + var(--frame-x));
+  padding: var(--top-safe) calc(var(--safe-x) + var(--frame-x));
   color: var(--ink);
   overflow-y: auto;
 }
@@ -263,6 +263,21 @@ body:has(.dialog[open]) .front-back { opacity: 0; transition: opacity var(--d-2)
   font-stretch: var(--wdth-head);
 }
 .dialog .btn { margin-top: calc(var(--u) * 12); }
+/* C13T: on a desktop the sheet steps down the scale in order (heading fs-5, choices fs-3, labels fs-2), not from
+   huge to tiny; a phone held sideways keeps the compact sizes. */
+/* A phone held sideways: the sheet fits between the bands (the build stamp sat on the lower one). */
+@media (max-height: 520px) {
+  .dialog h2 { margin-bottom: 10px; } /* px-ok */
+  .dialog fieldset { margin-bottom: 4px; } /* px-ok */
+  .dialog .btn { margin-top: 2px; } /* px-ok */
+  .dialog .build-ver { margin-top: 4px; } /* px-ok */
+}
+@media (min-height: 521px) {
+  .dialog legend { margin-bottom: calc(var(--u) * 10); font-size: var(--fs-2); }
+  .dialog fieldset { margin-bottom: calc(var(--u) * 44); }
+  .dialog fieldset label { margin-right: calc(var(--u) * 48); font-size: var(--fs-3); }
+  .dialog .btn { margin-top: calc(var(--u) * 24); font-size: var(--fs-3); }
+}
 @supports (transition-behavior: allow-discrete) {
   .dialog {
     transition:

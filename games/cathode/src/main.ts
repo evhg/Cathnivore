@@ -233,11 +233,18 @@ function fillTitle(): void {
   $("title-sub").textContent = titleSubtitle(done);
   const list = $("the-list");
   list.replaceChildren();
+  // C13T: names the player hasn't reached are not drawn as grey bars (they read as a web skeleton loader): the
+  // file just says how many more there are.
+  let sealed = 0;
   for (const r of listRows(done)) {
-    const li = el("li", r.done ? "is-done" : r.next ? "is-next" : r.redacted ? "is-redacted" : "", list, r.name);
+    if (r.redacted) {
+      sealed++;
+      continue;
+    }
+    const li = el("li", r.done ? "is-done" : r.next ? "is-next" : "", list, r.name);
     if (r.done) li.setAttribute("aria-label", `${r.name}, dealt with`);
-    if (r.redacted) li.setAttribute("aria-label", "A name you haven't reached");
   }
+  if (sealed) el("li", "is-more", list, `${sealed} more ${sealed === 1 ? "name" : "names"}`);
   $<HTMLButtonElement>("btn-continue").disabled = !hasSave();
   const ng = hasSave() && canStartNewGamePlus(done);
   $("btn-continue").querySelector(".menu-label")!.textContent = ng ? "New Game+" : "Continue";

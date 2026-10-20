@@ -3485,6 +3485,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       s.maxHp = progress.stats.maxHealth;
       s.level = progress.character.level;
     }
+    // A staged level-up raises the HUD's level for its frame; the next stage shows her real one again.
+    s.level = progress.character.level;
     for (const sp of Object.values(flinch)) {
       sp.x = 0;
       sp.v = 0;
@@ -4226,7 +4228,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     if (name === "levelup") {
       calmVitals();
-      void levelUpToast(o.hud.parentElement ?? o.hud, 7, { attributes: 5, skills: 1 }, true);
+      // The staged moment agrees with itself (C13T review): the HUD's vitals read the level the stage announces.
+      const lv = progress.character.level + 1;
+      s.level = lv;
+      void levelUpToast(o.hud.parentElement ?? o.hud, lv, { attributes: 5, skills: 1 }, true);
       return "ok";
     }
     c9 = C9_STAGES[name.replace(/-\d+s?$/, "")] ?? null;

@@ -115,6 +115,12 @@
   --safe-x: max(env(safe-area-inset-left, 0px), 4vw);
   --safe-y: max(env(safe-area-inset-top, 0px), 4.5svh);
   --frame-x: max(0px, (100vw - 100svh * 16 / 9) / 2);
+  /* C13T one left edge: the focus marker hangs this far into the margin, so text never moves off the edge. */
+  --mark-hang: calc(var(--u) * 40);
+  /* The front door's letterbox band (2.39:1, capped at 9% of the height) and the top margin every screen under it
+     uses: the band plus a margin, so a heading never sits on the band's edge (C13T). */
+  --letterbox: min(9svh, max(0px, (100svh - 100vw / 2.39) / 2));
+  --top-safe: max(var(--safe-y), env(safe-area-inset-top, 0px), calc(var(--letterbox) + max(14px, var(--u) * 40))); /* px-ok */
 
   /* --- hit confirm (S1.2): the marker's colours by class --- */
   --hit-body: #f4f1ea;

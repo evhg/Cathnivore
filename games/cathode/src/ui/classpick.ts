@@ -110,7 +110,11 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     }
     el("p", "cp-weapon-pin", kit, "and the Pin, her steel baton.");
 
-    go.textContent = `Walk in as the ${def.name}`;
+    // C13T: the commit reads as an action, not a heading: the words, then its key as a quiet word (as on the
+    // death card's Retry).
+    go.replaceChildren();
+    el("span", "cp-go-label", go, `Walk in as the ${def.name}`);
+    el("span", "cp-go-key", go, "Enter").setAttribute("aria-hidden", "true");
     kit.append(go);
   }
 
