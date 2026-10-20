@@ -1,55 +1,38 @@
-import { readdirSync, readFileSync, statSync } from "node:fs"
-import { join, resolve } from "node:path"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { CATHODE_MAX_FAMILIES, cssTypeProblems, familiesIn, lintCathodeCss } from "../scripts/font-budget";
 
-// C13T (docs/design/cathode-combat.md): CATHODE's type rules, enforced on every stylesheet under games/cathode/src.
-// Two families only (the --font-* tokens), and caps tracking of 0.06em at most: wide-tracked labels were the
-// owner's "looks like a 5 year old made them".
-const root = resolve(import.meta.dirname, "../games/cathode/src")
-function cssUnder(dir: string): string[] {
-  return readdirSync(dir).flatMap((n) => {
-    const p = join(dir, n)
-    return statSync(p).isDirectory() ? cssUnder(p) : n.endsWith(".css") ? [p] : []
-  })
-}
-const sheets = cssUnder(root).map((f) => ({ f: f.slice(root.length + 1), css: readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "") }))
-const TOKENS = /^var\(--(font-ui|font-num|font-display|font-voice|ui|display|mono)\)$/
-
+// C13T "Type and UI that look like a AAA game" (docs/design/cathode-combat.md): two families, one six-step type
+// scale, and no wide tracking anywhere in games/cathode/src.
 describe("CATHODE type rules (C13T)", () => {
-  it("declares only the two families' faces", () => {
-    const faces = new Set(sheets.flatMap(({ css }) => [...css.matchAll(/@font-face\s*{[^}]*font-family:\s*"([^"]+)"/g)].map((m) => m[1]!)))
-    expect([...faces].filter((f) => !/Fallback$/.test(f)).sort()).toEqual(["Cathode UI", "Cathode Voice"])
-    const all = sheets.map((s) => s.css).join("\n")
-    expect(all).not.toMatch(/rajdhani|jetbrains|Cathode Mono|Cathode Figures|Cathode Display"/i)
-  })
-  it("sets every font-family through a token", () => {
-    const bad: string[] = []
-    for (const { f, css } of sheets) {
-      const noFaces = css.replace(/@font-face\s*{[^}]*}/g, "")
-      for (const m of noFaces.matchAll(/font-family:\s*([^;}]+)/g)) if (!TOKENS.test(m[1]!.trim()) && m[1]!.trim() !== "inherit") bad.push(`${f}: ${m[0]}`)
-      for (const m of noFaces.matchAll(/\bfont:\s*([^;}]+)/g)) if (!/var\(--[\w-]+\)\s*$/.test(m[1]!.trim()) && m[1]!.trim() !== "inherit") bad.push(`${f}: ${m[0]}`)
-    }
-    expect(bad).toEqual([])
-  })
-  it("never tracks wider than 0.06em", () => {
-    const bad: string[] = []
-    for (const { f, css } of sheets) {
-      for (const m of css.matchAll(/letter-spacing:\s*([^;}]+)/g)) {
-        const v = m[1]!.trim()
-        const em = v.match(/^(-?\d*\.?\d+)em$/)
-        if (em ? Number(em[1]) > 0.06 : !/^(0|normal|var\(--num-hero-track\))$/.test(v)) bad.push(`${f}: ${m[0]}`)
-      }
-    }
-    expect(bad).toEqual([])
-  })
-})
+  it("every CATHODE stylesheet passes the type and px lint", () => {
+    expect(lintCathodeCss()).toEqual([]);
+  });
 
-describe("CATHODE figures (C13T)", () => {
-  it("keeps tabular figures wherever a font shorthand sets the numeral face (the shorthand resets them)", () => {
-    const bad: string[] = []
-    for (const { f, css } of sheets)
-      for (const m of css.matchAll(/[^{}]*\{([^{}]*)\}/g))
-        if (/\bfont:[^;]*var\(--(font-num|mono)\)/.test(m[1]!) && !/font-variant-numeric:\s*tabular-nums/.test(m[1]!)) bad.push(`${f}: ${m[0].trim().slice(0, 60)}`)
-    expect(bad).toEqual([])
-  })
-})
+  it("flags a third family, an off-scale size and wide tracking", () => {
+    const bad = cssTypeProblems(
+      ".a { font-family: 'Rajdhani'; font-size: 13px; letter-spacing: .3em; font: 700 12px/1 var(--font-num); }\n.b { font: italic 650 var(--fs-6)/1.02 var(--font-voice); letter-spacing: -.01em; }",
+    );
+    expect(bad).toHaveLength(4);
+    expect(bad.join(" ")).toMatch(/font-family 'Rajdhani'/);
+    expect(bad.join(" ")).toMatch(/letter-spacing \.3em/);
+  });
+
+  it("allows inherit, the six tokens and tracking up to 0.06em", () => {
+    expect(cssTypeProblems(".a { font: inherit; font-size: var(--fs-3); letter-spacing: .06em; }\n.b { font: 700 var(--fs-1)/1.2 var(--font-ui); letter-spacing: 0; }")).toEqual([]);
+  });
+
+  it("tokens.css defines exactly six sizes", () => {
+    const tokens = readFileSync(resolve(__dirname, "../games/cathode/src/styles/tokens.css"), "utf8");
+    const root = tokens.slice(tokens.indexOf(":root {"), tokens.indexOf("\n}", tokens.indexOf(":root {")));
+    expect([...root.matchAll(/--fs-(\d):/g)].map((m) => m[1])).toEqual(["1", "2", "3", "4", "5", "6"]);
+    expect(root).not.toMatch(/--t-[a-z]/);
+  });
+
+  it("counts @font-face families, not their metric fallbacks", () => {
+    const css = '@font-face{font-family:Cathode UI;src:url(a.woff2)}@font-face{font-family:"Cathode Voice";src:url(b.woff2)}@font-face{font-family:Cathode UI Fallback;src:local(Arial)}';
+    expect(familiesIn(css)).toEqual(["Cathode UI", "Cathode Voice"]);
+    expect(CATHODE_MAX_FAMILIES).toBe(2);
+  });
+});

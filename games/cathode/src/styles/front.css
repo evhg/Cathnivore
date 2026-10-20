@@ -106,7 +106,7 @@
   font-family: var(--font-voice);
   font-style: italic;
   font-weight: 400;
-  font-size: max(17px, calc(var(--u) * 34));
+  font-size: var(--fs-4);
   line-height: 1.35;
   text-align: center;
   color: var(--ink);
@@ -183,7 +183,7 @@
 .gate-age {
   font-weight: 800;
   font-stretch: 72%;
-  font-size: max(40px, calc(var(--u) * 120));
+  font-size: var(--fs-6);
   letter-spacing: -.02em;
   line-height: .78;
   color: var(--blood-hot);
@@ -191,7 +191,7 @@
 .gate-age-l {
   font-weight: 600;
   font-stretch: var(--wdth-label);
-  font-size: max(12px, calc(var(--u) * 21));
+  font-size: var(--fs-2);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink);
@@ -201,7 +201,7 @@
   max-width: 34ch;
   font-family: var(--font-ui);
   font-weight: 400;
-  font-size: max(14px, calc(var(--u) * 26));
+  font-size: var(--fs-3);
   line-height: 1.4;
   color: var(--ink-2);
   text-shadow: var(--hud-shadow);
@@ -219,7 +219,7 @@
   font-family: var(--font-ui);
   font-weight: 600;
   font-stretch: var(--wdth-label);
-  font-size: max(11px, calc(var(--u) * 15));
+  font-size: var(--fs-1);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -260,7 +260,7 @@
   font-family: var(--font-ui);
   font-weight: 700;
   font-stretch: var(--wdth-label);
-  font-size: max(16px, calc(var(--u) * 34));
+  font-size: var(--fs-4);
   letter-spacing: .03em;
   line-height: 1;
   text-transform: uppercase;
@@ -274,7 +274,7 @@
   align-self: center;
   font-family: var(--font-ui);
   font-weight: 400;
-  font-size: max(12px, calc(var(--u) * 21));
+  font-size: var(--fs-2);
   line-height: 1.3;
   color: var(--ink-3);
 }
@@ -295,7 +295,7 @@
   font-family: var(--font-ui);
   font-weight: 700;
   font-stretch: var(--wdth-label);
-  font-size: max(15px, calc(var(--u) * 34));
+  font-size: var(--fs-4);
   letter-spacing: .03em;
   text-transform: uppercase;
   text-shadow: var(--hud-shadow);
@@ -323,7 +323,7 @@
   font-family: var(--font-ui);
   font-weight: 600;
   font-stretch: var(--wdth-label);
-  font-size: max(13px, calc(var(--u) * 19));
+  font-size: var(--fs-2);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -352,7 +352,7 @@
   font-family: var(--font-ui);
   font-weight: 600;
   font-stretch: var(--wdth-label);
-  font-size: max(12px, calc(var(--u) * 17));
+  font-size: var(--fs-1);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -420,7 +420,7 @@
   font-family: var(--font-ui);
   font-weight: 600;
   font-stretch: var(--wdth-label);
-  font-size: max(12px, calc(var(--u) * 19));
+  font-size: var(--fs-2);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-2);
@@ -446,7 +446,7 @@
   font-family: var(--font-ui);
   font-weight: 700;
   font-stretch: var(--wdth-label);
-  font-size: max(17px, calc(var(--u) * 40));
+  font-size: var(--fs-4);
   letter-spacing: .02em;
   text-transform: uppercase;
   color: var(--ink-2);
@@ -495,7 +495,7 @@
   font-family: var(--font-ui);
   font-weight: 500;
   font-stretch: var(--wdth-label);
-  font-size: max(12px, calc(var(--u) * 17));
+  font-size: var(--fs-1);
   letter-spacing: .04em;
   color: var(--ink-3);
   text-shadow: var(--hud-shadow);
@@ -514,7 +514,7 @@
   font-family: var(--font-ui);
   font-weight: 700;
   font-stretch: var(--wdth-label);
-  font-size: max(11px, calc(var(--u) * 16));
+  font-size: var(--fs-1);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--blood-hot);
@@ -530,7 +530,7 @@
   position: relative;
   font-family: var(--font-ui);
   font-weight: 500;
-  font-size: max(13px, calc(var(--u) * 21));
+  font-size: var(--fs-2);
   line-height: 1.25;
   color: var(--ink-2);
   text-shadow: var(--hud-shadow);
@@ -566,7 +566,7 @@
   margin: 0;
   font-family: var(--font-ui);
   font-weight: 500;
-  font-size: max(10px, calc(var(--u) * 13));
+  font-size: var(--fs-1);
   letter-spacing: .04em;
   color: var(--ink-3);
   opacity: .7;
@@ -603,7 +603,7 @@
   font-family: var(--font-ui);
   font-weight: 800;
   font-stretch: 74%;
-  font-size: max(26px, calc(var(--u) * 76));
+  font-size: var(--fs-6);
   letter-spacing: .02em;
   line-height: 1;
   text-transform: uppercase;
@@ -616,7 +616,7 @@
   font-style: italic;
   font-weight: 500;
   /* aaa-ui: Cath's voice over 3D at 20 px or more, on the radial ink behind. */
-  font-size: max(20px, calc(var(--u) * 32));
+  font-size: var(--fs-3);
   color: var(--ink);
   text-shadow: 0 0 calc(var(--u) * 16) rgb(var(--black-rgb) / .9);
 }
@@ -649,18 +649,18 @@
      type takes the left 44% and the lower two thirds, no more. */
   .gate-plate { bottom: var(--safe-y); width: min(44vw, calc(100vw - 2 * var(--safe-x))); } /* px-ok */
   .gate-h { margin-bottom: 6px; gap: 10px; } /* px-ok */
-  .gate-age { font-size: max(34px, calc(var(--u) * 34)); } /* px-ok */
-  .gate-age-l { font-size: max(12px, calc(var(--u) * 12)); } /* px-ok */
-  .gate-text { margin-bottom: 8px; font-size: max(13px, calc(var(--u) * 13)); line-height: 1.3; } /* px-ok */
+  .gate-age { font-size: var(--fs-4); } /* px-ok */
+  .gate-age-l { font-size: var(--fs-1); } /* px-ok */
+  .gate-text { margin-bottom: 8px; font-size: var(--fs-1); line-height: 1.3; } /* px-ok */
   .gate-tiles { gap: 0; margin-bottom: 6px; } /* px-ok */
-  .gate-tiles legend { margin-bottom: 0; font-size: max(10px, calc(var(--u) * 10)); } /* px-ok */
+  .gate-tiles legend { margin-bottom: 0; font-size: var(--fs-1); } /* px-ok */
   .gate-tile { min-height: 32px; padding-left: 26px; gap: 10px; } /* px-ok: tap target */
   .gate-tile::before, .gate-enter::before { width: 16px; } /* px-ok */
-  .tile-name { font-size: max(15px, calc(var(--u) * 15)); } /* px-ok */
-  .tile-desc { font-size: max(11px, calc(var(--u) * 11)); } /* px-ok */
-  .gate-enter { min-height: 40px; padding-left: 26px; font-size: max(15px, calc(var(--u) * 15)); } /* px-ok: tap target */
+  .tile-name { font-size: var(--fs-2); } /* px-ok */
+  .tile-desc { font-size: var(--fs-1); } /* px-ok */
+  .gate-enter { min-height: 40px; padding-left: 26px; font-size: var(--fs-2); } /* px-ok: tap target */
   .gate-actions { gap: 20px; } /* px-ok */
-  .gate-back { font-size: max(12px, calc(var(--u) * 12)); } /* px-ok */
+  .gate-back { font-size: var(--fs-1); } /* px-ok */
 }
 /* Upright phones: the street stays behind; the column spans the width. */
 @media (max-width: 600px) and (orientation: portrait) {
@@ -680,8 +680,8 @@
 @media (max-height: 520px) {
   .area-title { top: 21svh; }
   .area-title::before { width: min(92vw, calc(var(--u) * 1100)); height: max(110px, calc(var(--u) * 240)); } /* px-ok */
-  .area-name { font-size: max(24px, calc(var(--u) * 48)); } /* px-ok */
-  .area-sub { margin-top: 4px; font-size: max(20px, calc(var(--u) * 20)); } /* px-ok: aaa-ui's floor for Cath's voice */
+  .area-name { font-size: var(--fs-4); } /* px-ok */
+  .area-sub { margin-top: 4px; font-size: var(--fs-3); } /* px-ok: aaa-ui's floor for Cath's voice */
   .area-title::after { margin-top: 8px; } /* px-ok */
 }
 
@@ -727,7 +727,7 @@ html.reduce-motion .front-grain { animation: none; }
   margin: 0 0 calc(var(--u) * 8);
   font-family: var(--font-ui);
   font-weight: 700;
-  font-size: max(11px, calc(var(--u) * 15));
+  font-size: var(--fs-1);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--blood-hot);
@@ -738,7 +738,7 @@ html.reduce-motion .front-grain { animation: none; }
   font-family: var(--font-ui);
   font-weight: 800;
   font-stretch: 74%;
-  font-size: max(26px, calc(var(--u) * 72));
+  font-size: var(--fs-5);
   letter-spacing: .02em;
   line-height: 1;
   color: var(--ink);
@@ -760,7 +760,7 @@ html.reduce-motion .front-grain { animation: none; }
 .front-credits-role {
   font-family: var(--font-ui);
   font-weight: 700;
-  font-size: max(11px, calc(var(--u) * 15));
+  font-size: var(--fs-1);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -770,7 +770,7 @@ html.reduce-motion .front-grain { animation: none; }
   margin: 0;
   font-family: var(--font-ui);
   font-weight: 500;
-  font-size: max(16px, calc(var(--u) * 26));
+  font-size: var(--fs-3);
   line-height: 1.2;
   color: var(--ink);
 }
@@ -778,7 +778,7 @@ html.reduce-motion .front-grain { animation: none; }
   display: block;
   margin-top: calc(var(--u) * 4);
   font-family: var(--font-ui);
-  font-size: max(11px, calc(var(--u) * 16));
+  font-size: var(--fs-1);
   line-height: 1.4;
   color: var(--ink-3);
 }
@@ -793,7 +793,7 @@ html.reduce-motion .front-grain { animation: none; }
   background: transparent;
   font-family: var(--font-ui);
   font-weight: 700;
-  font-size: max(14px, calc(var(--u) * 24));
+  font-size: var(--fs-2);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink);
@@ -815,20 +815,20 @@ html.reduce-motion .front-grain { animation: none; }
   border-radius: calc(var(--u) * 4);
   font-family: var(--font-ui);
   font-weight: 600;
-  font-size: max(10px, calc(var(--u) * 14));
+  font-size: var(--fs-1);
   color: var(--ink-2);
 }
 @media (max-height: 520px) {
   .front-credits-plate { padding: 0; width: min(calc(var(--u) * 1180), calc(100vw - 2 * var(--safe-x))); } /* px-ok: phone plate */
-  .front-credits-eyebrow { margin-bottom: 2px; font-size: max(10px, calc(var(--u) * 10)); } /* px-ok */
-  .front-credits-h { margin-bottom: 8px; font-size: max(22px, calc(var(--u) * 22)); } /* px-ok */
+  .front-credits-eyebrow { margin-bottom: 2px; font-size: var(--fs-1); } /* px-ok */
+  .front-credits-h { margin-bottom: 8px; font-size: var(--fs-3); } /* px-ok */
   .front-credits-list { grid-template-columns: 1fr 1fr; align-items: start; gap: 6px 28px; margin-bottom: 10px; } /* px-ok */
   .front-credits-row { grid-template-columns: 1fr; gap: 1px; padding-bottom: 5px; } /* px-ok */
-  .front-credits-role { font-size: max(10px, calc(var(--u) * 10)); } /* px-ok */
-  .front-credits-name { font-size: max(14px, calc(var(--u) * 14)); } /* px-ok */
-  .front-credits-note { margin-top: 1px; font-size: max(10px, calc(var(--u) * 10)); } /* px-ok */
+  .front-credits-role { font-size: var(--fs-1); } /* px-ok */
+  .front-credits-name { font-size: var(--fs-1); } /* px-ok */
+  .front-credits-note { margin-top: 1px; font-size: var(--fs-1); } /* px-ok */
   .front-credits-row:last-child { grid-column: 1 / -1; border-bottom: 0; }
-  .front-credits-back { min-height: 40px; font-size: max(13px, calc(var(--u) * 13)); } /* px-ok: tap target */
+  .front-credits-back { min-height: 40px; font-size: var(--fs-1); } /* px-ok: tap target */
 }
 @media (max-width: 600px) and (orientation: portrait) {
   .front-credits-row { grid-template-columns: 1fr; gap: calc(var(--u) * 4); }

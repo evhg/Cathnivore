@@ -57,7 +57,11 @@ const C11X = ['takedown-behindChoke-700', 'takedown-behindPistol-640', 'takedown
 // at 30 s and 60 s (they must differ: the camera moves), and the area title after the push into the street. These
 // load the front door (?front=<stage>&shot&t=), not the game, and are checked by frontChecks() below.
 const C13 = ['gate', 'title', 'title-continue-focus', 'title-30s', 'title-60s', 'areatitle']
-const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13 }
+// C13T "Type and UI that look like a AAA game": every screen the type rules cover. The front-door ones load
+// ?front=<stage>; pause, level-up, the death card and the firefight HUD are game stages; VPS=portrait adds the
+// rotate prompt.
+const C13T = ['gate', 'title', 'settings', 'loading', 'pause', 'levelup', 'death-card', 'firefight-6']
+const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
@@ -100,9 +104,11 @@ const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
   args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'],
 })
-const FRONT = new Set(C13)
-if (stages.every((st) => FRONT.has(st))) {
-  await frontRun()
+const FRONT = new Set([...C13, 'settings', 'loading'])
+const frontStages = stages.filter((st) => FRONT.has(st))
+const gameStages = stages.filter((st) => !FRONT.has(st))
+if (frontStages.length) await frontRun(frontStages)
+if (!gameStages.length) {
   await browser.close()
   if (failures.length) {
     console.log(`\n${failures.length} check(s) failed`)
@@ -156,12 +162,12 @@ function emptyWidth(f) {
   return empty / f.w
 }
 
-async function frontRun() {
+async function frontRun(list) {
   for (const vp of vps) {
     const V = VIEWPORTS[vp]
     if (!V || vp === 'portrait') continue
     const frames = {}
-    for (const stage of stages) {
+    for (const stage of list) {
       // A fresh context per stage: SwiftShader keeps a closed page's WebGL memory until its context goes, and a
       // shared context crashed on the second or third 5K page ("Target page, context or browser has been closed").
       const ctx = await browser.newContext({ viewport: V.viewport, deviceScaleFactor: V.dsf, hasTouch: !!V.touch, isMobile: !!V.touch, reducedMotion: V.reduced ? 'reduce' : 'no-preference' })
@@ -287,7 +293,7 @@ for (const vp of vps) {
     await ctx.close()
     continue
   }
-  for (const spec of stages) {
+  for (const spec of gameStages) {
     const [stage, at] = spec.split('@')
     const t = at ? Number(at) : stage === 'hit-kill' ? 230 : stage === 'enemy-flinch-head-60' ? 60 : stage.startsWith('pistol-') ? 0 : 40
     await load((V.stageQ?.[stage] ?? V.q) + (JOB_STAGES.has(stage) ? '&job' : ''))

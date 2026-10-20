@@ -33,19 +33,18 @@ describe("CATHODE HUD scale (S8, C3)", () => {
     const phys = (u: number) => u * hudUnit(2560, 1440) * 2;
     expect(phys(uOf(hud, ".hud-wp", "--d"))).toBeGreaterThanOrEqual(48); // waypoint diamond
     expect(phys(uOf(hud, ".hud-wprompt-key", "height"))).toBeGreaterThanOrEqual(58); // prompt keycap
-    expect(phys(uOf(hud, ".hud-root", "--t-num-ammo")) * 0.9).toBeGreaterThanOrEqual(150); // ammo numerals (line-height .9)
+    expect(phys(uOf(styles("tokens.css"), ":root", "--fs-5"))).toBeGreaterThanOrEqual(150); // ammo numerals (.hud-mag is --fs-5)
+    expect(hud).toContain("font: 700 var(--fs-5)/1 var(--font-ui);");
     expect(phys(uOf(hud, ".hud-hit", "--len"))).toBeGreaterThanOrEqual(26); // hit tick length
     expect(phys(uOf(hud, ".hud-wp.off .hud-wp-arrow", "--a"))).toBeGreaterThanOrEqual(58); // off-screen chevron
   });
 
-  it("no HUD text token can drop under 12 CSS px on a phone", () => {
-    const hud = styles("hud.css");
-    const root = hud.slice(hud.indexOf(".hud-root {"), hud.indexOf("}", hud.indexOf(".hud-root {")));
-    const tokens = [...root.matchAll(/(--t-[\w-]+): max\((\d+)px, calc\(var\(--u\) \* ([\d.]+)\)\)/g)];
-    expect(tokens.length).toBeGreaterThanOrEqual(12);
-    for (const [, name, floor] of tokens) expect(Number(floor), name).toBeGreaterThanOrEqual(12);
-    // Every literal font size written in u in the HUD carries a floor.
-    for (const m of hud.matchAll(/font(?:-size)?:[^;]*calc\(var\(--u\)[^;]*;/g)) expect(m[0], m[0]).toMatch(/max\(\d+px,/);
+  it("no type size can drop under 12 CSS px on a phone", () => {
+    // C13T: the HUD's own --t-* sizes are gone; every size is one of the six --fs tokens in tokens.css.
+    const tokens = styles("tokens.css");
+    const sizes = [...tokens.matchAll(/(--fs-\d): max\((\d+)px, calc\(var\(--u\) \* ([\d.]+)\)\)/g)];
+    expect(sizes.length).toBeGreaterThanOrEqual(6);
+    for (const [, name, floor] of sizes) expect(Number(floor), name).toBeGreaterThanOrEqual(12);
   });
 });
 

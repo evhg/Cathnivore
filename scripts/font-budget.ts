@@ -76,10 +76,78 @@ function cssUnder(dir: string): string[] {
   })
 }
 
-/** Lints every stylesheet under games/cathode/src/styles; returns the problems. */
-export function lintCathodeCss(): string[] {
-  return cssUnder(resolve(root, 'games/cathode/src/styles')).flatMap((f) => cssPxProblems(readFileSync(f, 'utf8'), relative(root, f)))
+/** The two CATHODE families (C13T): the grotesk for every word of UI, and the serif for Cath's voice. */
+export const CATHODE_FAMILIES = ['var(--font-ui)', 'var(--font-voice)']
+/** The type scale (C13T): six size tokens and no others. */
+const SIZE = /^var\(--fs-[1-6]\)$/
+const FONT_SHORTHAND = /^(?:(?:italic|normal)\s+)?(?:(?:\d{3}|bold|normal)\s+)?var\(--fs-[1-6]\)\s*(?:\/\s*[\d.]+\s*)?var\(--font-(?:ui|voice)\)$/
+/** Wide tracking reads as a template: caps labels get at most 0.06em, sentences 0. */
+export const MAX_TRACKING_EM = 0.06
+
+/**
+ * C13T type rules for a CATHODE stylesheet: every font-family is one of the two tokens, every font size one of
+ * the six --fs tokens (in font-size or a font shorthand), and no letter-spacing above 0.06em (em only, no var()).
+ * `inherit` passes. @font-face blocks are skipped; a line marked /* fs-ok *\/ (the html rem base) is exempt.
+ */
+export function cssTypeProblems(css: string, file = 'css'): string[] {
+  const out: string[] = []
+  let inComment = false
+  let inFace = false
+  css.split('\n').forEach((raw, i) => {
+    if (/\/\* fs-ok\b/.test(raw)) return
+    let line = ''
+    for (let j = 0; j < raw.length; j++) {
+      if (inComment) {
+        if (raw.startsWith('*/', j)) {
+          inComment = false
+          j++
+        }
+      } else if (raw.startsWith('/*', j)) {
+        inComment = true
+        j++
+      } else line += raw[j]
+    }
+    if (/@font-face/.test(line)) inFace = true
+    if (inFace) {
+      if (line.includes('}')) inFace = false
+      return
+    }
+    const at = `${file}:${i + 1}`
+    for (const m of line.matchAll(/(?<![\w-])(font-family|font-size|font|letter-spacing)\s*:\s*([^;{}]+)/g)) {
+      const prop = m[1]
+      const v = (m[2] ?? '').trim()
+      if (v === 'inherit') continue
+      if (prop === 'font-family' && !CATHODE_FAMILIES.includes(v)) out.push(`${at}: font-family ${v} (use var(--font-ui) or var(--font-voice))`)
+      if (prop === 'font-size' && !SIZE.test(v)) out.push(`${at}: font-size ${v} (use one of var(--fs-1) to var(--fs-6))`)
+      if (prop === 'font' && !FONT_SHORTHAND.test(v)) out.push(`${at}: font ${v} (a weight, var(--fs-N), an optional /line-height, and a family token)`)
+      if (prop === 'letter-spacing') {
+        const n = /^(-?\d*\.?\d+)em$/.exec(v)
+        if (!(v === '0' || v === 'normal' || (n && Number(n[1]) <= MAX_TRACKING_EM))) out.push(`${at}: letter-spacing ${v} (at most ${MAX_TRACKING_EM}em)`)
+      }
+    }
+  })
+  return out
 }
+
+/** Lints CATHODE's stylesheets: the S8 px rule under games/cathode/src/styles, the C13T type rules everywhere in
+ *  games/cathode/src. Returns the problems. */
+export function lintCathodeCss(): string[] {
+  const px = cssUnder(resolve(root, 'games/cathode/src/styles')).flatMap((f) => cssPxProblems(readFileSync(f, 'utf8'), relative(root, f)))
+  const type = cssUnder(resolve(root, 'games/cathode/src')).flatMap((f) => cssTypeProblems(readFileSync(f, 'utf8'), relative(root, f)))
+  return [...px, ...type]
+}
+
+/** The font families a built page declares with @font-face (metric fallbacks, named "... Fallback", don't count). */
+export function familiesIn(css: string): string[] {
+  const names = new Set<string>()
+  for (const m of css.matchAll(/@font-face\s*\{[^}]*?font-family\s*:\s*["']?([^;"'}]+)["']?/g)) {
+    const n = (m[1] ?? '').trim()
+    if (!/fallback$/i.test(n)) names.add(n)
+  }
+  return [...names]
+}
+/** C13T: /cathode/ ships at most two families. */
+export const CATHODE_MAX_FAMILIES = 2
 
 interface PageRow {
   page: string
@@ -123,9 +191,16 @@ function main(): void {
     const ok = !over && bad.length === 0
     console.log(`| ${r.page} | ${r.files.length} | ${r.bytes} | ${(r.bytes / 1000).toFixed(1)} | ${(r.bytes / 1024).toFixed(1)} | ${ok ? 'ok' : 'FAIL'} |`)
   }
+  if (!dist) {
+    const dir = resolve(root, 'dist-site/cathode/assets')
+    const css = existsSync(dir) ? readdirSync(dir).filter((n) => n.endsWith('.css')).map((n) => readFileSync(join(dir, n), 'utf8')).join('\n') : ''
+    const fams = familiesIn(css)
+    console.log(`\n/cathode/ font families: ${fams.join(', ') || 'none'} (limit ${CATHODE_MAX_FAMILIES})`)
+    if (fams.length > CATHODE_MAX_FAMILIES) problems.push(`/cathode/ declares ${fams.length} font families (${fams.join(', ')}), over ${CATHODE_MAX_FAMILIES}`)
+  }
   const px = lintCathodeCss()
   problems.push(...px)
-  console.log(`\nCATHODE stylesheets (S8 px lint): ${px.length ? `${px.length} raw px value(s)` : 'every size in --u'}`)
+  console.log(`\nCATHODE stylesheets (S8 px lint, C13T type lint): ${px.length ? `${px.length} problem(s)` : 'every size in --u and on the six-step scale, two families, tracking at most 0.06em'}`)
   if (process.argv.includes('--verbose')) {
     for (const r of rows) for (const f of r.files) console.log(`  ${r.page}  ${relative(root, f)}  ${statSync(f).size}`)
   }

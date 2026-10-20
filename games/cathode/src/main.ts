@@ -53,7 +53,7 @@ function setChecked(name: string, value: string): void {
   if (el) el.checked = true;
 }
 
-// ?front=gate|title|areatitle&shot&t=30&focus=continue: the screenshot stages (scripts/cathode-feel-shots.mjs).
+// ?front=gate|title|settings|credits|loading|areatitle&shot&t=30&focus=continue: the screenshot stages (scripts/cathode-feel-shots.mjs).
 const frontStage = params.get("front");
 const shot = params.has("shot");
 const audio = new FrontAudio(prefs.volume);
@@ -525,6 +525,20 @@ void fetch(`${import.meta.env.BASE_URL}../version.json`)
   })
   .catch(() => ($("build-ver").textContent = "BUILD DEV"));
 
+/** C13T stage: the loading screen as it looks 40% in, over the frozen street (screenshot runs only). */
+function stageLoading(): void {
+  show("screen-game");
+  $("hud").hidden = true;
+  const loading = $("loading");
+  loading.hidden = false;
+  loading.dataset.district = "market";
+  $("loading-fill").style.setProperty("--p", "40%");
+  void import("./game/zones").then((zones) => {
+    $("loading-eyebrow").textContent = zones.loadingTitle(undefined);
+    $("loading-line").textContent = zones.loadingFlavour(undefined);
+  });
+}
+
 // The screenshot hook: the stages wait on `ready`.
 const hook = {
   ready: false,
@@ -573,6 +587,8 @@ async function boot(): Promise<void> {
     } else openTitle(false);
     s?.setTime(t);
     if (frontStage === "credits") await openCredits();
+    if (frontStage === "settings") openSettings();
+    if (frontStage === "loading") stageLoading();
     if (frontStage === "areatitle") await begin(true);
     hook.ready = true;
     return;

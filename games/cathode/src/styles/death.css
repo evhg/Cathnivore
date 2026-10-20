@@ -11,11 +11,6 @@
   color: var(--ink);
   --d-edge-x: calc(max(var(--safe-x), var(--safe-l, 0px)) + var(--frame-x));
   --d-edge-y: var(--safe-y);
-  --d-head: max(30px, calc(var(--u) * 88));
-  --d-eyebrow: max(12px, calc(var(--u) * 16));
-  --d-data: max(12px, calc(var(--u) * 16));
-  --d-act: max(13px, calc(var(--u) * 19));
-  --d-key: max(11px, calc(var(--u) * 14));
 }
 
 /* ---- the 2.39:1 letterbox: two night bars that slide in from the frame (scaleY only) ---- */
@@ -59,7 +54,7 @@
 .death-killer.on { opacity: calc(var(--killer, 0) * (1 - var(--card, 0))); }
 .death-killer.is-none { display: none; }
 .death-killer-tag {
-  font: 700 var(--d-eyebrow)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--ink-2);
@@ -67,7 +62,7 @@
 }
 .death-killer-name {
   position: relative;
-  font: 500 max(14px, calc(var(--u) * 30))/1 var(--font-num);
+  font: 500 var(--fs-3)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink);
@@ -122,56 +117,30 @@
 }
 @keyframes death-rise { to { opacity: 1; transform: none; } }
 
-.death-eyebrow {
-  margin: 0;
-  font: 700 var(--d-eyebrow)/1.2 var(--font-ui);
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--blood-hot);
-  text-shadow: 0 0 calc(var(--u) * 14) rgb(var(--black-rgb) / .8);
-  font-stretch: var(--wdth-label);
-}
+/* C13T: the headline is Cath's line, nothing above it; one quiet line of facts under it. */
 .death-line {
-  margin: calc(var(--u) * 14) 0 0;
-  /* A text optical size (not the wordmark's 96) at 650: Bodoni's hairlines (the t's crossbar, the G's spur) hold at
-     every size from the phone's 30 px to 5K's 240 px; at opsz 96 "eight" read as "eighl". */
-  font: italic 650 var(--d-head)/1.02 var(--font-voice);
+  margin: 0;
+  /* A text optical size at 650: Bodoni's hairlines (the t's crossbar, the G's spur) hold from the phone to 5K. */
+  font: italic 650 var(--fs-6)/1.02 var(--font-voice);
   letter-spacing: -.005em;
   color: var(--ink);
   text-wrap: balance;
   text-shadow: 0 calc(var(--u) * 2) calc(var(--u) * 30) rgb(var(--black-rgb) / .85);
 }
-/* The logotype's rule: 1u of hot blood, 360u long, drawn in from the left. */
-.death-rule {
-  display: block;
-  width: calc(var(--u) * 360);
-  height: max(1px, var(--u));
-  margin: calc(var(--u) * 26) 0 calc(var(--u) * 22);
-  background: linear-gradient(90deg, var(--blood-hot), rgb(var(--blood-rgb) / .2));
-  transform-origin: left;
-}
-.death-card.on .death-rule { animation: death-rule 400ms var(--ease-out) both; animation-delay: 260ms; }
-@keyframes death-rule { from { opacity: 1; transform: scaleX(0); } to { opacity: 1; transform: none; } }
-
-.death-stats {
-  display: grid;
-  gap: calc(var(--u) * 8);
-  margin: 0;
-  font: 500 var(--d-data)/1.2 var(--font-num);
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  font-stretch: var(--wdth-label);
+.death-facts {
+  margin: calc(var(--u) * 22) 0 0;
+  font: 400 var(--fs-2)/1.35 var(--font-ui);
+  letter-spacing: 0;
+  color: var(--ink-2);
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 calc(var(--u) * 12) rgb(var(--black-rgb) / .9);
 }
-.death-stat { display: grid; grid-template-columns: calc(var(--u) * 210) auto; gap: calc(var(--u) * 20); }
-.death-stat dt { color: var(--ink-3); }
-.death-stat dd { margin: 0; color: var(--ink); }
 
 .death-actions {
   display: flex;
   flex-wrap: wrap;
   gap: calc(var(--u) * 14) calc(var(--u) * 40);
-  margin-top: calc(var(--u) * 38);
+  margin-top: calc(var(--u) * 44);
 }
 .death-btn {
   position: relative;
@@ -183,7 +152,7 @@
   border: 0;
   background: none;
   color: var(--ink-2);
-  font: 700 var(--d-act)/1 var(--font-ui);
+  font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   cursor: pointer;
@@ -206,22 +175,15 @@
 .death-btn.is-focus .death-btn-bar { transform: none; }
 .death-btn:focus,
 .death-btn:focus-visible { outline: none; box-shadow: none; }
+/* The key is a quiet word after the label, not a keycap. */
 .death-btn-key {
-  display: inline-grid;
-  place-items: center;
-  min-width: calc(var(--u) * 30);
-  height: calc(var(--u) * 30);
-  padding: 0 calc(var(--u) * 8);
-  border-radius: calc(var(--u) * 4);
-  box-shadow: inset 0 0 0 1px var(--line-3), inset 0 calc(var(--u) * -2) 0 rgb(var(--black-rgb) / .5);
-  background: rgb(var(--shade-rgb) / .6);
-  font: 700 var(--d-key)/1 var(--font-ui);
-  letter-spacing: .05em;
-  color: var(--ink-2);
+  font: 500 var(--fs-1)/1 var(--font-ui);
+  letter-spacing: .04em;
+  color: var(--ink-3);
 }
 .death.is-touch .death-btn-key { display: none; }
 
-/* ---- the re-sync: black, then the cyan line top left ---- */
+/* ---- the re-sync: black, then a quiet line top left ---- */
 .death-black {
   position: absolute;
   inset: 0;
@@ -234,10 +196,10 @@
   top: calc(var(--d-edge-y) + var(--u) * 4);
   left: var(--d-edge-x);
   margin: 0;
-  font: 600 max(12px, calc(var(--u) * 17))/1 var(--font-num);
+  font: 600 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .06em;
-  color: var(--cyan);
-  text-shadow: 0 0 calc(var(--u) * 16) rgb(var(--cyan-rgb) / .45), 0 0 calc(var(--u) * 4) rgb(var(--black-rgb) / .9);
+  color: var(--ink-2);
+  text-shadow: 0 0 calc(var(--u) * 4) rgb(var(--black-rgb) / .9);
   opacity: 0;
   font-stretch: var(--wdth-num);
   font-variant-numeric: tabular-nums;
@@ -254,28 +216,15 @@
 
 /* A short landscape phone: the card tightens so it fits under the bars. */
 @media (max-height: 500px) {
-  .death { --d-head: max(26px, calc(var(--u) * 64)); }
   .death-card { padding-bottom: calc(max(var(--d-edge-y), (100svh - 100vw / 2.39) / 2) + var(--u) * 20); }
-  .death-line { margin-top: calc(var(--u) * 8); }
-  .death-rule { margin: calc(var(--u) * 12) 0 calc(var(--u) * 10); }
-  .death-actions { margin-top: calc(var(--u) * 14); }
-  .death-stats { gap: calc(var(--u) * 3); }
+  .death-facts { margin-top: calc(var(--u) * 12); }
+  .death-actions { margin-top: calc(var(--u) * 20); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .death-card.on .death-card-in > *,
-  .death-card.on .death-rule,
   .death-killer.on .death-killer-name::after { animation-duration: 1ms; }
 }
 
 /* While the re-sync line shows, the objective card steps back so the two never stack in the corner. */
 .game:has(.death-resync.on) .hud-objective { opacity: 0; }
-
-/* A desktop cinematic card: the small type (tag, eyebrow, stats, keycaps) keeps a 13 px floor on a big screen. */
-@media (min-width: 1200px) and (min-height: 700px) {
-  .death {
-    --d-eyebrow: max(13px, calc(var(--u) * 16));
-    --d-data: max(13px, calc(var(--u) * 16));
-    --d-key: max(12px, calc(var(--u) * 14));
-  }
-}

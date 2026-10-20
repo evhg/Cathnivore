@@ -1110,8 +1110,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   /** Screenshot stages hold the eased wound and the beat where the stage put them (time is frozen under ?shot). */
   let stageWound: { shown: number; pulse: number } | null = null;
   let hitsTaken = 0;
-  /** C8: damage taken this life, and the last hit (its kind, its source, where from), for the death card. */
-  let damageTaken = 0;
+  /** C8: the last hit (its kind, its source, where from), for the death card. */
   let lastHurt: { kind: HurtKind; key: unknown; from: THREE.Vector3 | null; share: number } | null = null;
   /** Screenshot stages: grenade bearings to show instead of the live ones. */
   let stageNades: Array<{ bearing: number; left: number }> | null = null;
@@ -1144,7 +1143,6 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (r.broke) vitals.drain();
     s.hp = vitals.total;
     hitsTaken++;
-    damageTaken += amount;
     lastHurt = { kind, key, from: from ? new THREE.Vector3(from.x, from.y, from.z) : null, share: amount / vitals.maxTotal };
     const maxT = vitals.maxTotal;
     const at = from ? new THREE.Vector3(from.x, from.y, from.z) : null;
@@ -2466,7 +2464,6 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   /** The session has been taken down by a restart: its frame loop stops. */
   let ended = false;
   let restarting = false;
-  const sessionT0 = performance.now();
   interface Dying {
     t: number;
     cam: DeathCam;
@@ -2520,16 +2517,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const DEATH_WEAPON: Record<string, string> = { rifle: "Rifle", shield: "SMG", sniper: "Sniper rifle", turret: "Turret", hunter: "Drone gun", orderly: "Shock baton", nurse: "Needle", police: "Drone gun", boss: "Rifle" };
   const causeOf = (k: HurtKind | undefined, e: Enemy | null): DeathCause =>
     k === "blast" ? "blast" : k === "laser" ? "laser" : k === "melee" ? "melee" : e?.kit.role === "sniper" ? "sniper" : k ? "bullet" : "any";
-  const mmss = (ms: number) => {
-    const t = Math.max(0, Math.floor(ms / 1000));
-    return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
-  };
   /** The checkpoint she goes back to, for the re-sync line. */
   const checkpointLine = (): string => {
     const cp = hud.checkpoint?.();
     return cp === "the walkway" ? "RE-SYNCED · CHECKPOINT 2" : cp === "the flyover" ? "RE-SYNCED · CHECKPOINT 1" : `RE-SYNCED · ${caseName.toUpperCase() || "CHECKPOINT"}`;
   };
-  const namesLeft = () => ["crispBoss", "vaneBoss", "pellBoss", "boardBoss", "vaultBoss"].filter((j) => !progress.jobsDone.includes(j)).length;
 
   /** The killing blow (S6.6 t = 0): input locks, the body cam takes over, the sound and the grade start. */
   function beginDeath(seedOverride?: number): void {
@@ -2558,21 +2550,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const cause = causeOf(lastHurt?.kind, killer);
     const dist = killer ? Math.round(killer.position.distanceTo(player.pos)) : 0;
     const by = killer
-      ? `${killer.kit.name.toUpperCase()} · ${dist} M · ${(lastHurt?.kind === "melee" ? "Bare hands" : DEATH_WEAPON[killer.kit.role ?? "rifle"] ?? "Rifle").toUpperCase()}`
+      ? `Killed by ${killer.kit.name} · ${dist} m · ${(lastHurt?.kind === "melee" ? "bare hands" : (DEATH_WEAPON[killer.kit.role ?? "rifle"] ?? "Rifle").toLowerCase())}`
       : cause === "blast"
-        ? "A BLAST"
+        ? "Killed by a blast"
         : cause === "laser"
-          ? "A TRIPWIRE LASER"
-          : "UNKNOWN";
-    const where = caseName.toUpperCase() || "MARROW";
+          ? "Killed by a tripwire laser"
+          : "Killed in the dark";
     screen.fill({
-      eyebrow: `Flatlined · File closed · ${mmss(performance.now() - sessionT0)} · ${where}`,
       line: deathLine(cause, (seed * 7.31) % 1),
-      stats: [
-        ["Killed by", by],
-        ["Damage taken", String(Math.round(damageTaken))],
-        ["Names left", String(namesLeft())],
-      ],
+      facts: by,
       touch: input.isTouch,
     });
     screen.setKiller(near ? near.kit.name : "");
@@ -3653,8 +3639,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       for (let i = 0; i < 30; i++) g.update(1 / 30, sightHer, rays, world.colliders, ground);
       g.shots.length = 0;
     }
-    // A fight's worth of damage taken, then the round that kills her.
-    damageTaken = Math.round(vitals.maxTotal * 1.6);
+    // The round that kills her.
     vitals.flesh = vitals.maxFlesh * 0.08;
     vitals.guard = 0;
     s.hp = vitals.total;
@@ -4216,6 +4201,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (name.startsWith("takedown-")) {
       calmVitals();
       return c11Stage(name);
+    }
+    // C13T: the pause menu over the street, and the level-up held at its settled beat.
+    menuOpen = false;
+    (o.hud.parentElement ?? o.hud).querySelector(".lvl-toast")?.remove();
+    if (name === "pause") {
+      calmVitals();
+      menuOpen = true;
+      return "ok";
+    }
+    if (name === "levelup") {
+      calmVitals();
+      void levelUpToast(o.hud.parentElement ?? o.hud, 7, { attributes: 5, skills: 1 }, true);
+      return "ok";
     }
     c9 = C9_STAGES[name.replace(/-\d+s?$/, "")] ?? null;
     if (c9) {

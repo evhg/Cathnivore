@@ -18,19 +18,6 @@
   --edge-b: max(var(--hud-edge-y), var(--safe-b));
   /* Type and spacing in u (S8), floored at 12 CSS px so a phone never reads smaller. Sized so 1440x900 keeps
      its look (1u = .75 px there); a 5K screen gets 1.78x that, and the HUD-size setting scales them all. */
-  --t-display-l: max(12px, calc(var(--u) * 96));
-  --t-display-m: max(12px, calc(var(--u) * 64));
-  --t-display-s: max(12px, calc(var(--u) * 37.3));
-  --t-voice: max(12px, calc(var(--u) * 32));
-  --t-head: max(12px, calc(var(--u) * 22.7));
-  --t-body-l: max(13px, calc(var(--u) * 26.7));
-  --t-body: max(12px, calc(var(--u) * 22.7));
-  --t-label: max(12px, calc(var(--u) * 18.7));
-  --t-micro: max(12px, calc(var(--u) * 16));
-  --t-data: max(12px, calc(var(--u) * 18.7));
-  --t-num-hero: max(26px, calc(var(--u) * 53.3));
-  --t-num-ammo: max(34px, calc(var(--u) * 74.7));
-  --t-num-l: max(16px, calc(var(--u) * 32));
   --sp-0: calc(var(--u) * 2.7); --sp-1: calc(var(--u) * 5.3); --sp-2: calc(var(--u) * 10.7); --sp-3: calc(var(--u) * 16);
   --sp-4: calc(var(--u) * 21.3); --sp-5: calc(var(--u) * 32); --sp-6: calc(var(--u) * 42.7); --sp-7: calc(var(--u) * 64);
   --cluster-w: calc(var(--u) * 373.3);
@@ -68,8 +55,7 @@
   /* C10 review: the last word ran to the card's faded edge; the plate now holds until the text ends. */
   padding: var(--sp-2) var(--sp-6) var(--sp-2) var(--sp-4);
   background: linear-gradient(90deg, rgb(var(--shade-rgb) / .72), rgb(var(--shade-rgb) / .42) 82%, rgb(var(--shade-rgb) / 0));
-  border-left: calc(var(--u) * 2.7) solid var(--cyan);
-  font: 500 var(--t-body-l)/1.3 var(--font-ui);
+  font: 500 var(--fs-3)/1.3 var(--font-ui);
   letter-spacing: .01em;
   color: var(--ink);
   text-wrap: pretty;
@@ -78,10 +64,10 @@
   content: attr(data-case);
   display: block;
   margin-bottom: calc(var(--u) * 4);
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: var(--cyan);
+  color: var(--ink-3);
   font-stretch: var(--wdth-label);
 }
 .hud-objective.is-new { animation: obj-in var(--d-4) var(--ease-out) both; }
@@ -115,7 +101,7 @@
   gap: var(--sp-3);
   margin-bottom: var(--sp-1);
   white-space: nowrap;
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-2);
@@ -130,8 +116,8 @@
 .hud-hp-text {
   flex: none;
   min-width: 2.4ch;
-  font: 700 var(--t-num-hero)/1 var(--font-num);
-  letter-spacing: var(--num-hero-track);
+  font: 700 var(--fs-5)/1 var(--font-ui);
+  letter-spacing: -.02em;
   color: var(--ink);
   font-stretch: var(--wdth-num);
   font-variant-numeric: tabular-nums;
@@ -147,7 +133,7 @@
 .hud-wound {
   flex: none;
   margin-left: auto;
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .06em;
   color: var(--blood-hot);
   opacity: 0;
@@ -242,17 +228,17 @@
   margin: var(--sp-2) 0 0 calc(2.4ch * 1.15 + var(--sp-3));
 }
 .hud-arm-label {
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--steel);
   font-stretch: var(--wdth-label);
 }
 .hud-armour { flex: 1; height: calc(var(--u) * 4); }
-.hud-arm-text { font: 600 var(--t-data)/1 var(--font-num); color: var(--ink-2); font-stretch: var(--wdth-num); font-variant-numeric: tabular-nums; }
+.hud-arm-text { font: 600 var(--fs-2)/1 var(--font-ui); color: var(--ink-2); font-stretch: var(--wdth-num); font-variant-numeric: tabular-nums; }
 .hud-defence {
   margin-top: var(--sp-1);
-  font: 500 var(--t-data)/1.2 var(--font-num);
+  font: 500 var(--fs-2)/1.2 var(--font-ui);
   color: var(--ink-2);
   font-stretch: var(--wdth-num);
   font-variant-numeric: tabular-nums;
@@ -275,7 +261,7 @@
 }
 .hud-weapon {
   white-space: nowrap;
-  font: 700 var(--t-head)/1.1 var(--font-ui);
+  font: 700 var(--fs-2)/1.1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink);
@@ -287,7 +273,7 @@
   margin-left: calc(var(--u) * 10);
   padding: calc(var(--u) * 3) calc(var(--u) * 7) calc(var(--u) * 2);
   vertical-align: .18em;
-  font: 700 max(12px, calc(var(--u) * 12))/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   color: var(--ink-2);
   border: max(1px, calc(var(--u) * 1.5)) solid rgb(var(--ink-rgb) / .35);
@@ -299,14 +285,14 @@
   line-height: 1;
 }
 .hud-mag {
-  font: 700 var(--t-num-ammo)/.9 var(--font-num);
-  letter-spacing: var(--num-hero-track);
+  font: 700 var(--fs-5)/1 var(--font-ui);
+  letter-spacing: -.02em;
   color: var(--ink);
   font-stretch: var(--wdth-num);
   font-variant-numeric: tabular-nums;
 }
 .hud-reserve {
-  font: 500 var(--t-num-l)/1 var(--font-num);
+  font: 500 var(--fs-3)/1 var(--font-ui);
   color: var(--ink-3);
   font-stretch: var(--wdth-num);
   font-variant-numeric: tabular-nums;
@@ -325,7 +311,7 @@
   align-items: center;
   gap: var(--sp-2);
   padding-bottom: calc(var(--u) * 6.7);
-  font: 700 var(--t-label)/1 var(--font-ui);
+  font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--ink-2);
@@ -500,7 +486,7 @@
   transform: translateX(-50%);
   display: none;
   padding: calc(var(--u) * 4) calc(var(--u) * 6) calc(var(--u) * 4) calc(var(--u) * 6 + .3em);
-  font: 700 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--hit-blocked);
@@ -649,7 +635,7 @@
 }
 .hud-target-name {
   display: block;
-  font: 700 var(--t-label)/1.2 var(--font-ui);
+  font: 700 var(--fs-2)/1.2 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink);
@@ -684,14 +670,11 @@
   content: "Down";
   display: inline-block;
   margin-left: .6em;
-  padding: .1em .45em .05em;
   vertical-align: .08em;
-  font: 800 .82em/1.1 var(--font-ui);
+  font: 800 var(--fs-1)/1.1 var(--font-ui);
   letter-spacing: .05em;
-  color: var(--night);
-  background: var(--hit-crit);
-  box-shadow: 0 0 0 1px var(--hit-outline), 0 0 calc(var(--u) * 10) rgb(var(--blood-rgb) / .55);
-  transform: skewX(-8deg);
+  text-transform: uppercase;
+  color: var(--blood-hot);
 }
 /* The plate holds opaque while DOWN is stamped (half-faded, the street showed through the name: C9 review) and
    goes in the last 120 ms. */
@@ -730,7 +713,7 @@
   transform: translateX(-50%);
   background: rgb(var(--shade-rgb) / .72);
   box-shadow: inset 0 0 0 1px var(--line-2);
-  font: 700 var(--t-label)/1 var(--font-ui);
+  font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   font-stretch: var(--wdth-label);
@@ -779,7 +762,7 @@
 .hud-scope-wind {
   position: absolute;
   left: calc(50% + min(26vh, 26vw));
-  font: 600 var(--t-data)/1 var(--font-num);
+  font: 600 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--cyan);
@@ -806,7 +789,7 @@
   gap: .55em;
   padding: calc(var(--u) * 4) var(--sp-2) calc(var(--u) * 4) var(--sp-4);
   background: linear-gradient(270deg, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .3) 70%, transparent);
-  font: 500 var(--t-data)/1.25 var(--font-num);
+  font: 500 var(--fs-2)/1.25 var(--font-ui);
   color: var(--ink);
   white-space: nowrap;
   animation: feed-life 4.4s var(--ease-out) both;
@@ -814,7 +797,7 @@
   font-variant-numeric: tabular-nums;
 }
 .hud-feed-line .mod {
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--cyan);
@@ -825,7 +808,7 @@
 .hud-feed-line.strong {
   box-shadow: inset calc(var(--u) * -2.7) 0 0 var(--blood-hot);
 }
-.hud-feed-line.strong .noun { font: 700 var(--t-head)/1.1 var(--font-ui); letter-spacing: .04em; }
+.hud-feed-line.strong .noun { font: 700 var(--fs-2)/1.1 var(--font-ui); letter-spacing: .04em; }
 .hud-feed-line.item { box-shadow: inset calc(var(--u) * -4) 0 0 var(--rc, var(--ink)); }
 
 .hud-feed-line.item .noun { color: var(--rc, var(--ink)); font-weight: 700; }
@@ -852,7 +835,7 @@
   display: none;
 }
 .hud-feed-tag {
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-2);
@@ -884,7 +867,7 @@
 }
 .hud-banner.on { animation: banner 3.2s var(--ease-out) forwards; }
 .hud-banner-title {
-  font: 600 var(--t-display-l)/1.05 var(--font-display);
+  font: 600 var(--fs-6)/1.05 var(--font-ui);
   letter-spacing: .01em;
   color: var(--ink);
   text-wrap: balance;
@@ -892,7 +875,7 @@
 }
 .hud-banner-sub {
   order: -1;
-  font: 700 var(--t-label)/1 var(--font-ui);
+  font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--cyan);
@@ -940,7 +923,7 @@
 .hud-root.boss-intro .hud-sub { bottom: calc(11vh + var(--sp-3)); }
 .hud-root.boss-intro .hud-banner { top: 38%; padding-block: var(--sp-5); }
 .hud-root.boss-intro .hud-banner-sub { color: var(--blood-hot); }
-.hud-root.boss-intro .hud-banner-title { font-size: calc(var(--t-display-l) * 1.2); }
+.hud-root.boss-intro .hud-banner-title { font-size: var(--fs-6); }
 /* The name lands: tracked wide, it snaps tight under a red rule that draws across. Static under reduced motion. */
 .hud-root.boss-intro .hud-banner.on .hud-banner-title { animation: boss-name 1.1s var(--ease-out) both; }
 .hud-root.boss-intro .hud-banner-title::after {
@@ -982,14 +965,14 @@
 }
 .hud-killcap.on { animation: killcap-in 3s ease-out both; }
 .hud-killcap-tag {
-  font: 700 var(--t-label)/1 var(--font-ui);
+  font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--blood-hot);
   font-stretch: var(--wdth-label);
 }
 .hud-killcap-m {
-  font: 700 var(--t-display-l) / 1 var(--font-num);
+  font: 700 var(--fs-6)/1 var(--font-ui);
   color: var(--ink);
   font-stretch: var(--wdth-num);
   font-variant-numeric: tabular-nums;
@@ -1012,7 +995,7 @@
   width: min(46ch, calc(100vw - 2 * (var(--cluster-w) + var(--hud-edge) + calc(var(--u) * 21.3))));
   transform: translateX(-50%);
   text-align: center;
-  font: 500 calc(var(--t-body-l) * var(--sub-scale))/1.36 var(--font-ui);
+  font: 500 var(--fs-3)/1.36 var(--font-ui);
   letter-spacing: .01em;
   color: var(--ink);
   opacity: 0;
@@ -1031,16 +1014,18 @@
 .hud-sub-name {
   display: block;
   margin-bottom: calc(var(--u) * 6.7);
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--speaker, var(--blood-hot));
   font-stretch: var(--wdth-label);
 }
-.big-subs { --sub-scale: 1.3; }
+/* Large subtitles: one step up the scale. */
+.big-subs .hud-sub,
+:root.large-subs .hud-sub { font-size: var(--fs-4); }
 .big-subs .hud-sub > .line { background: rgb(var(--shade-rgb) / .9); }
 
-/* ---- teaching card: a small cut frame with real keycaps ---- */
+/* ---- teaching card: a line of type with real keycaps, on a soft shade (C13T: no frame) ---- */
 .hud-teach {
   position: absolute;
   left: 50%;
@@ -1048,12 +1033,8 @@
   max-width: min(calc(var(--u) * 746.7), calc(100% - calc(var(--u) * 53.3)));
   padding: var(--sp-2) var(--sp-4);
   transform: translateX(-50%);
-  clip-path: polygon(var(--cut-s) 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%, 0 var(--cut-s));
-  background:
-    linear-gradient(var(--amber) 0 0) left / calc(var(--u) * 2.7) 100% no-repeat,
-    rgb(var(--shade-rgb) / .84);
-  box-shadow: inset 0 0 0 1px rgb(var(--amber-rgb) / .4);
-  font: 500 var(--t-body)/1.5 var(--font-ui);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .8), rgb(var(--shade-rgb) / .55) 70%, rgb(var(--shade-rgb) / 0));
+  font: 500 var(--fs-2)/1.5 var(--font-ui);
   color: var(--ink);
   text-shadow: none;
   text-align: center;
@@ -1098,7 +1079,7 @@
   top: calc(var(--d) * .78 + var(--u) * 6);
   transform: translateX(-50%);
   padding: calc(var(--u) * 2) calc(var(--u) * 6);
-  font: 600 max(12px, calc(var(--u) * 14))/1 var(--font-num);
+  font: 600 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .04em;
   color: var(--cyan-ink);
   background: rgb(var(--shade-rgb) / .5);
@@ -1205,9 +1186,7 @@
   column-gap: calc(var(--u) * 16);
   row-gap: calc(var(--u) * 8);
   padding: calc(var(--u) * 14) calc(var(--u) * 22) calc(var(--u) * 14) calc(var(--u) * 14);
-  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .72));
-  box-shadow: inset calc(var(--u) * 3) 0 0 var(--amber), inset 0 0 0 1px rgb(var(--amber-rgb) / .35), 0 calc(var(--u) * 8) calc(var(--u) * 24) rgb(var(--black-rgb) / .5);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%);
+  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .86), rgb(var(--shade-rgb) / .5) 80%, rgb(var(--shade-rgb) / 0));
   white-space: nowrap;
   text-shadow: none;
 }
@@ -1218,7 +1197,7 @@
   min-width: max(28px, calc(var(--u) * 30));
   height: max(28px, calc(var(--u) * 30));
   padding: 0 calc(var(--u) * 8);
-  font: 700 max(13px, calc(var(--u) * 19))/1 var(--font-num);
+  font: 700 var(--fs-2)/1 var(--font-ui);
   color: var(--night);
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
   box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
@@ -1243,7 +1222,7 @@
   margin: 0;
 }
 .hud-wprompt-verb {
-  font: 700 max(12px, calc(var(--u) * 18))/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--amber);
@@ -1251,7 +1230,7 @@
 }
 .hud-wprompt-sep { color: var(--ink-3); }
 .hud-wprompt-name {
-  font: 600 max(28px, calc(var(--u) * 32))/1 var(--font-display);
+  font: 600 var(--fs-4)/1 var(--font-ui);
   letter-spacing: .01em;
   color: var(--ink);
   font-stretch: var(--wdth-head);
@@ -1263,14 +1242,14 @@
 }
 .hud-wprompt-stat { display: grid; gap: calc(var(--u) * 2); }
 .hud-wprompt-stat i {
-  font: 700 max(14px, calc(var(--u) * 14))/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   font-style: normal;
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-2);
   font-stretch: var(--wdth-label);
 }
-.hud-wprompt-stat b { font: 700 max(12px, calc(var(--u) * 21))/1 var(--font-num); color: var(--ink); font-stretch: var(--wdth-num); font-variant-numeric: tabular-nums; }
+.hud-wprompt-stat b { font: 700 var(--fs-2)/1 var(--font-ui); color: var(--ink); font-stretch: var(--wdth-num); font-variant-numeric: tabular-nums; }
 .hud-wprompt.is-in .hud-wprompt-chip { animation: wprompt-in 280ms var(--ease-out); }
 .hud-wprompt.is-in .hud-wprompt-lead { animation: wprompt-lead 200ms var(--ease-out); }
 @keyframes wprompt-in { from { opacity: 0; translate: calc(var(--u) * -12) 0; } }
@@ -1308,14 +1287,14 @@
 }
 .hud-toast-kind {
   padding-right: calc(var(--u) * 4);
-  font: 700 max(12px, calc(var(--u) * 16))/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--amber);
   font-stretch: var(--wdth-label);
 }
 .hud-toast-name {
-  font: 600 max(22px, calc(var(--u) * 56))/1 var(--font-display);
+  font: 600 var(--fs-5)/1 var(--font-ui);
   color: var(--ink);
   text-shadow: 0 0 calc(var(--u) * 24) rgb(var(--amber-rgb) / .35), var(--hud-shadow);
   font-stretch: var(--wdth-head);
@@ -1327,7 +1306,7 @@
   transform-origin: right;
 }
 .hud-toast-sub {
-  font: 600 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
+  font: 600 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-2);
@@ -1384,7 +1363,7 @@
 }
 .stick-label,
 .look-hint {
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: rgb(var(--ink-rgb) / .78);
@@ -1423,7 +1402,7 @@
   background: rgb(var(--shade-rgb) / .5);
   box-shadow: inset 0 0 0 1.5px rgb(var(--ink-rgb) / .45), 0 2px 10px rgb(var(--black-rgb) / .45);
   color: var(--ink);
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   text-shadow: var(--hud-shadow);
@@ -1462,7 +1441,7 @@
   height: 88px;
   background: radial-gradient(circle at 50% 35%, rgb(var(--blood-rgb) / .55), rgb(var(--blood-rgb) / .32));
   box-shadow: inset 0 0 0 2px var(--blood-hot), 0 0 18px rgb(var(--blood-rgb) / .35);
-  font: 700 var(--t-label)/1 var(--font-ui);
+  font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .05em;
 }
 .tbtn-aim { right: calc(128px + var(--safe-r)); bottom: 40px; }
@@ -1471,17 +1450,16 @@
 .tbtn-reload { right: calc(128px + var(--safe-r)); bottom: 124px; }
 .tbtn-focus { right: calc(36px + var(--safe-r)); bottom: 196px; }
 .tbtn-takedown { right: calc(208px + var(--safe-r)); bottom: 100px; }
-.tbtn-skill { right: calc(208px + var(--safe-r)); bottom: 184px; box-shadow: inset 0 0 0 1.5px rgb(var(--cyan-rgb) / .6); }
+.tbtn-skill { right: calc(208px + var(--safe-r)); bottom: 184px; }
 .tbtn-cycle,
 .tbtn-sheet {
   top: calc(12px + var(--safe-t));
   width: 56px;
   height: 44px;
-  border-radius: 0;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%);
+  border-radius: 22px;
 }
 .tbtn-cycle { right: calc(64px + var(--safe-r)); }
-.tbtn-sheet { right: calc(128px + var(--safe-r)); box-shadow: inset 0 0 0 1.5px rgb(var(--amber-rgb) / .7); }
+.tbtn-sheet { right: calc(128px + var(--safe-r)); }
 .tbtn-menu {
   position: absolute;
   top: max(10px, var(--safe-t));
@@ -1508,7 +1486,7 @@
   .hud-objective { max-width: calc(100% - 2 * var(--hud-edge)); }
   .hud-vitals { width: min(calc(var(--u) * 293.3), 46vw); }
   .hud-arms { max-width: 46vw; }
-  .hud-weapon { white-space: normal; font-size: var(--t-label); }
+  .hud-weapon { white-space: normal; font-size: var(--fs-2); }
   .hud-sub { width: calc(100vw - 2 * var(--gutter)); bottom: calc(var(--edge-b) + calc(var(--u) * 170.7)); }
   .hud-feed { top: 22%; }
 }
@@ -1534,13 +1512,13 @@
   .hud-tr > .hud-toast { padding: 2px 0 4px 56px; gap: 2px; }
   /* Under 28 px the display face doesn't sit over the 3D view (aaa-ui.md): the phone's name is the head style. */
   .hud-tr > .hud-toast .hud-toast-name {
-    font: 700 var(--t-display-s)/1 var(--font-ui);
+    font: 700 var(--fs-4)/1 var(--font-ui);
     font-variation-settings: normal;
     letter-spacing: .05em;
     text-transform: uppercase;
   font-stretch: var(--wdth-label);
 }
-  .hud-objective { max-width: min(40ch, 46vw); font-size: var(--t-body); }
+  .hud-objective { max-width: min(40ch, 46vw); font-size: var(--fs-2); }
   .hud-vitals { width: min(220px, 30vw); }
   .hud-feed { max-width: 44vw; }
   .hud-feed-line:nth-last-child(n + 3) { display: none; }
@@ -1554,12 +1532,12 @@
   .hud-teach {
     left: calc(50% + 70px);
     max-width: min(420px, calc(100% - 330px));
-    font-size: var(--t-label);
+    font-size: var(--fs-2);
   }
 }
 @media (max-height: 430px) and (orientation: landscape) {
   /* A phone sits at the u floor: its hero numerals and clusters keep the sizes its layout was fitted to. */
-  .hud-root { --t-num-hero: 26px; --t-num-ammo: 34px; --t-body-l: 15px; --cluster-w: 12.5rem; }
+  .hud-root { --cluster-w: 12.5rem; }
   /* The arms cluster and the feed under it sit top right on a phone: the target bar drops below both (a kill's
      DOWN stamp and its +XP line arrive together), sitting just over the crosshair like a name over his head. */
   /* Above the body rather than on it (C9 review: at 36% the plate sat over a body framed at the centre): in the band
@@ -1585,10 +1563,10 @@
     top: 51%;
     padding: var(--sp-3) var(--sp-3);
   }
-  .hud-banner-title { font-size: calc(var(--t-display-l) * .82); }
+  .hud-banner-title { font-size: var(--fs-5); }
   /* The intro clears the corners, so the boss card can stand higher, clear of the subtitle line. */
   .hud-root.boss-intro .hud-banner { top: 22%; }
-  .hud-root.boss-intro .hud-banner-title { font-size: var(--t-display-l); }
+  .hud-root.boss-intro .hud-banner-title { font-size: var(--fs-6); }
 }
 
 /* px-ok:end */
@@ -1667,12 +1645,10 @@
   transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(calc(var(--u) * 20), -50%);
   gap: calc(var(--u) * 12);
   padding: calc(var(--u) * 8) calc(var(--u) * 20) calc(var(--u) * 8) calc(var(--u) * 8);
-  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .7));
-  box-shadow: inset calc(var(--u) * 3) 0 0 var(--amber), inset 0 0 0 1px rgb(var(--amber-rgb) / .35), 0 calc(var(--u) * 6) calc(var(--u) * 18) rgb(var(--black-rgb) / .45);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%);
-  font: 700 max(12px, calc(var(--u) * 17))/1 var(--font-ui);
+  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .86), rgb(var(--shade-rgb) / .5) 80%, rgb(var(--shade-rgb) / 0));
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .06em;
-  color: var(--amber);
+  color: var(--ink);
   white-space: nowrap;
   animation: td-tell-in 240ms var(--ease-out);
 }
@@ -1691,7 +1667,7 @@
 .hud-prompt.world .hud-prompt-key {
   min-width: max(26px, calc(var(--u) * 22 * 1.4));
   height: max(26px, calc(var(--u) * 22 * 1.4));
-  font: 700 max(13px, calc(var(--u) * 19))/1 var(--font-num);
+  font: 700 var(--fs-2)/1 var(--font-ui);
   color: var(--night);
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
   box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
@@ -1773,7 +1749,7 @@
   top: 0;
   margin: 0;
   transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -50%);
-  font: 700 max(14px, calc(var(--u) * 26))/1 var(--font-num);
+  font: 700 var(--fs-3)/1 var(--font-ui);
   letter-spacing: .06em;
   color: var(--amber-hi);
   white-space: nowrap;

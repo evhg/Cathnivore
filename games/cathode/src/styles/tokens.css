@@ -1,5 +1,5 @@
-/* CATHODE tokens ("Wet Ink", docs/design/aaa-ui-specs.md §3). Colour has strict jobs: blood red is commit
-   or danger, cyan is system and selection, amber is reward. Imported after shared/ui/base.css and fonts.css,
+/* CATHODE tokens (C13T, docs/design/cathode-combat.md). One accent: blood red is commit, focus and danger.
+   Everything else is warm off-white and greys; the world's neon lives in the 3D scene, never in the chrome. Imported after shared/ui/base.css and fonts.css,
    before components.css, hud.css and styles.css. The only file in this game that may hold raw colours. */
 :root {
   --load-market: radial-gradient(120% 70% at 50% 100%, #0e3a46 0%, var(--night) 70%);
@@ -51,27 +51,29 @@
   --blood: #c8102e;      /* fills only */
   --blood-hot: #ff3b55;  /* danger text and numbers */
   --on-blood: #fff4f0;
-  --cyan: #2ee6ff;
-  --cyan-ink: #7ff0ff;
+  /* C13T: one accent in the chrome. The old system cyan and reward amber are now warm neutrals under their old
+     names (so every HUD rule keeps its job and contrast), and the world keeps its neon in the 3D scene. */
+  --cyan: #e2ddd3;
+  --cyan-ink: var(--ink);
   /* C6 Guard: the fill's deep end, its hot highlight, and the laser arc's glow. */
-  --cyan-deep: #0d9fb8;
-  --cyan-hot: #e9fdff;
-  --cyan-night: #04414c;
-  --amber: #ffb347;
-  --amber-hi: #ffd27d;
-  --amber-deep: #7a4d12;
-  --green: #5fe08f;
+  --cyan-deep: #8a857c;
+  --cyan-hot: #fffaf2;
+  --cyan-night: #24221e;
+  --amber: #f2ede4;
+  --amber-hi: #fffaf2;
+  --amber-deep: #5e5a52;
+  --green: #b4aea3;
   --steel: #8fa3b8;
   --steel-deep: #5d6f82;
-  --neon-pink: #ff2e88;
-  --cyan-rgb: 46 230 255;
-  --pink-rgb: 255 46 136;
+  --neon-pink: var(--blood-hot);
+  --cyan-rgb: 226 221 211;
+  --pink-rgb: 255 59 85;
   /* C13 front door: the no-WebGL night and the gate plate's glass */
   --front-night: linear-gradient(180deg, #06070b 0%, #0b0e15 55%, #05060a 100%);
   --front-plate: linear-gradient(180deg, rgb(16 19 26 / .9), rgb(10 12 17 / .86));
   --blood-rgb: 255 59 85;
   --blood-deep-rgb: 140 0 16;
-  --amber-rgb: 255 179 71;
+  --amber-rgb: 242 237 228;
   --ink-rgb: 235 230 220;
   --neon-cyan: var(--cyan);
   --neon-amber: var(--amber);
@@ -141,12 +143,16 @@
   --z-touch: 40; --z-sheet: 50;     /* character sheet, class pick */
   --z-modal: 60; --z-toast: 70; --z-tip: 80; --z-gate: 90;
 
-  /* --- type (phone first) --- */
-  --t-wordmark: clamp(3rem, 13vw, 4.5rem);
-  --t-display-l: 2.5rem; --t-display-m: 2rem; --t-display-s: 1.375rem; --t-voice: 1.25rem;
-  --t-head: 1rem; --t-body-l: 1.0625rem; --t-body: 1rem; --t-label: .8125rem; --t-micro: .75rem;
-  --t-data: .8125rem; --t-num-hero: 2rem; --t-num-ammo: 2.75rem; --t-num-l: 1.25rem;
-  --sub-scale: 1;
+  /* --- the type scale (C13T): six sizes and no others (scripts/font-budget.ts lints every font size in
+     games/cathode/src against these). In the HUD unit, so 5K and the phone are composed, not stretched:
+     at 1440x900 they are 12 / 15.75 / 21 / 30 / 45 / 72 px; at 5K 20 / 28 / 37 / 53 / 80 / 128 px. --- */
+  --fs-1: max(12px, calc(var(--u) * 15));  /* captions, keys, small caps labels */
+  --fs-2: max(13px, calc(var(--u) * 21));  /* body, list rows, settings, facts */
+  --fs-3: max(15px, calc(var(--u) * 28));  /* lead lines, subtitles, HUD numbers */
+  --fs-4: max(19px, calc(var(--u) * 40));  /* menu items, headings */
+  --fs-5: max(26px, calc(var(--u) * 60));  /* ammo, area and screen titles */
+  --fs-6: max(34px, calc(var(--u) * 96));  /* the one headline: death, level */
+
 
   /* --- motion: names from shared/ui/base.css; CATHODE keeps the same durations --- */
   --d-tap: 60ms; --d-1: var(--dur-1); --d-2: var(--dur-2); --d-3: var(--dur-3); --d-4: var(--dur-4); --d-hero: var(--dur-hero);
@@ -155,20 +161,12 @@
   /* One accent in the chrome (C13T): focus is ink and blood, never the world's cyan. */
   --focus: var(--ink);
   --focus-halo: rgb(var(--ink-rgb) / .22);
-   font-stretch: var(--wdth-num);
-}
-@media (min-width: 1024px) and (min-height: 600px) {
-  :root {
-    --t-wordmark: clamp(5rem, 8vw, 9rem);
-    --t-display-l: 4.5rem; --t-display-m: 3rem; --t-display-s: 1.75rem; --t-voice: 1.5rem;
-    --t-head: 1.0625rem; --t-body-l: 1.25rem; --t-body: 1.0625rem; --t-label: .875rem;
-    --t-data: .875rem; --t-num-hero: 2.5rem; --t-num-ammo: 3.5rem; --t-num-l: 1.5rem;
-  }
 }
 /* Phones held sideways (844x390): tighter numerals, narrower clusters so subtitles fit between them. */
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
-    --t-num-hero: 1.625rem; --t-num-ammo: 2.125rem; --t-body-l: .9375rem;
+    /* The two display sizes step down on a 390 px tall screen; the four reading sizes keep their floors. */
+    --fs-5: max(26px, calc(var(--u) * 44)); --fs-6: max(34px, calc(var(--u) * 64));
     --hud-edge-x: 10px; --hud-edge-y: 10px; --frame-x: 0px; --cluster-w: 12.5rem; /* px-ok: a phone keeps its corners for the thumbs */
   }
 }
@@ -176,17 +174,13 @@
 @media (max-width: 600px) and (orientation: portrait) {
   :root { --cluster-w: 0px; }
 }
-:root.large-subs { --sub-scale: 1.3; }
 
-/* colour-safe (Okabe-Ito leaning): the red/amber/pink trio becomes vermillion, yellow and blue */
+/* colour-safe (Okabe-Ito leaning): the one accent becomes vermillion */
 :root.colour-safe {
-  --blood: #b84a00; --blood-hot: #ff7a1a; --amber: #f0e442; --neon-pink: #56b4e9;
-  --blood-rgb: 255 122 26; --amber-rgb: 240 228 66;
+  --blood: #b84a00; --blood-hot: #ff7a1a;
+  --blood-rgb: 255 122 26;
 }
 
-/* class accents: --accent-sp (and the legacy --accent-rgb) in the space form for rgb(var(--accent-sp) / a) */
-.cls-ghost { --accent: #2ee6ff; --accent-sp: 46 230 255; --accent-rgb: var(--accent-sp); }
-.cls-butcher { --accent: #ff4a5e; --accent-sp: 255 74 94; --accent-rgb: var(--accent-sp); }
-.cls-gunslinger { --accent: #ffb347; --accent-sp: 255 179 71; --accent-rgb: var(--accent-sp); }
-.cls-wirewitch { --accent: #ff4fa0; --accent-sp: 255 79 160; --accent-rgb: var(--accent-sp); }
-.cls-fixer { --accent: #a6f05a; --accent-sp: 166 240 90; --accent-rgb: var(--accent-sp); }
+/* class accents (C13T: one accent): every class reads in the same red; classes differ by name, art and stats.
+   --accent-sp (and the legacy --accent-rgb) in the space form for rgb(var(--accent-sp) / a). */
+.cls-ghost, .cls-butcher, .cls-gunslinger, .cls-wirewitch, .cls-fixer { --accent: var(--blood-hot); --accent-sp: var(--blood-rgb); --accent-rgb: var(--accent-sp); }

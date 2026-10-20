@@ -6,12 +6,10 @@
 import { el } from "./dom";
 
 export interface DeathCardInfo {
-  /** "FLATLINED · FILE CLOSED · 02:14 · THE FISH MARKET". */
-  eyebrow: string;
-  /** One of Cath's death lines (voice.ts DEATH_LINES). */
+  /** One of Cath's death lines (voice.ts DEATH_LINES): the card's only headline. */
   line: string;
-  /** Mono rows: [label, value]. */
-  stats: Array<[string, string]>;
+  /** One quiet line of facts (C13T): "Killed by Hollowell Enforcer · 11 m · rifle". */
+  facts: string;
   /** The keys shown on the two actions (touch shows none). */
   touch: boolean;
 }
@@ -22,9 +20,8 @@ export class DeathScreen {
   private killer: HTMLElement;
   private killerName: HTMLElement;
   private card: HTMLElement;
-  private eyebrow: HTMLElement;
   private line: HTMLElement;
-  private stats: HTMLElement;
+  private facts: HTMLElement;
   private retryBtn: HTMLButtonElement;
   private quitBtn: HTMLButtonElement;
   private black: HTMLElement;
@@ -50,10 +47,9 @@ export class DeathScreen {
     this.card.setAttribute("role", "dialog");
     this.card.setAttribute("aria-label", "Flatlined");
     const inner = el("div", "death-card-in", this.card);
-    this.eyebrow = el("p", "death-eyebrow", inner);
+    // C13T: one headline (Cath's line), one quiet line of facts, two actions. Type over the darkened frame.
     this.line = el("h2", "death-line", inner);
-    el("span", "death-rule", inner);
-    this.stats = el("dl", "death-stats", inner);
+    this.facts = el("p", "death-facts", inner);
     const acts = el("div", "death-actions", inner);
     this.retryBtn = this.action(acts, "Retry from checkpoint", "Enter", true);
     this.quitBtn = this.action(acts, "Quit to title", "Esc", false);
@@ -81,7 +77,7 @@ export class DeathScreen {
     b.type = "button";
     el("span", "death-btn-bar", b);
     el("span", "death-btn-label", b, label);
-    el("kbd", "death-btn-key", b, key);
+    el("span", "death-btn-key", b, key);
     return b;
   }
 
@@ -104,14 +100,8 @@ export class DeathScreen {
 
   /** Fills the card. Call before it shows. */
   fill(info: DeathCardInfo): void {
-    this.eyebrow.textContent = info.eyebrow;
     this.line.textContent = info.line;
-    this.stats.replaceChildren();
-    for (const [k, v] of info.stats) {
-      const row = el("div", "death-stat", this.stats);
-      el("dt", "", row, k);
-      el("dd", "", row, v);
-    }
+    this.facts.textContent = info.facts;
     this.root.classList.toggle("is-touch", info.touch);
   }
 

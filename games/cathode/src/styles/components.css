@@ -1,19 +1,18 @@
-/* CATHODE component layer ("Wet Ink", docs/design/aaa-ui-specs.md §4). Existing class names are restyled in
-   place (.btn, .gate-card, .hud-pause-card, .dialog, .cx-panel, .coach-card, .cx-tab, .cx-tip) so the
-   TypeScript barely changes; the new kit is .c-frame, .c-key, .c-card, .c-bar, .c-chip and .c-points.
-   Clip-path kills outlines and box-shadows, so lift and focus on clipped things are drop-shadow filters, and
-   only on static screens (never on the per-frame HUD). Colours come from tokens.css. */
+/* CATHODE component layer (C13T, docs/design/cathode-combat.md): type over the world, not a kit of frames.
+   The old "Wet Ink" kit (cut-corner frames, ticket buttons, bracket ticks, scanlines, hatching, glow rings,
+   skewed tab slabs) is gone. What is left:
+   - Surfaces (.dialog, .coach-card, .gate-card, .hud-pause-card) have no rim and no fill of their own: they sit
+     on a scrim that darkens the scene behind them.
+   - Buttons are words. The primary action carries the one marker: a short red bar on its left edge.
+   - Focus is shown by weight, opacity and that marker; never by a box or a glow.
+   - One accent: blood red. Cyan and magenta live in the world (neon), not here.
+   Colours come from tokens.css; every font size is one of the six --fs tokens. */
 
-/* ---- frame: a cut-corner rim, a fill with grain and scanlines, bracket ticks ---- */
-.c-frame,
+/* ---- surfaces ---- */
 .gate-card,
 .hud-pause-card,
 .dialog,
 .coach-card {
-  --cut: var(--cut-m);
-  --rim: var(--line-2);
-  --tk: rgb(var(--ink-rgb) / .5);
-  --shape: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
   position: relative;
   isolation: isolate;
   border: 0;
@@ -21,306 +20,124 @@
   background: transparent;
   box-shadow: none;
 }
-.c-frame::before,
-.gate-card::before,
-.dialog::before,
-.coach-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: var(--z-under-2);
-  clip-path: var(--shape);
-  background: linear-gradient(180deg, var(--line-3), var(--rim) 30%, var(--rim));
-  pointer-events: none;
-}
-.c-frame::after,
-.gate-card::after,
-.dialog::after,
-.coach-card::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  z-index: var(--z-under);
-  clip-path: var(--shape);
-  background:
-    linear-gradient(var(--tk) 0 0) right 0 top 0 / var(--tick) 1px no-repeat,
-    linear-gradient(var(--tk) 0 0) right 0 top 0 / 1px var(--tick) no-repeat,
-    linear-gradient(var(--tk) 0 0) left 0 bottom 0 / var(--tick) 1px no-repeat,
-    linear-gradient(var(--tk) 0 0) left 0 bottom 0 / 1px var(--tick) no-repeat,
-    linear-gradient(180deg, rgb(var(--ink-rgb) / .06), transparent calc(var(--u) * 2.7)),
-    var(--scan),
-    var(--grain),
-    var(--mat-ink);
-  background-blend-mode: normal, normal, normal, normal, normal, normal, soft-light, normal;
-  pointer-events: none;
-}
-.c-frame.is-lifted,
-.gate-card,
-.dialog {
-  filter: drop-shadow(0 calc(var(--u) * 24) calc(var(--u) * 40) rgb(var(--black-rgb) / .7));
-}
-.c-frame.is-accent { --rim: rgb(var(--accent-sp, var(--cyan-rgb)) / .55); --tk: var(--accent, var(--cyan)); }
-.c-frame.is-danger,
-.gate-card { --rim: rgb(var(--blood-rgb) / .55); --tk: var(--blood-hot); }
-.c-frame.is-sys,
-.hud-pause-card { --rim: rgb(var(--cyan-rgb) / .35); --tk: var(--cyan); }
-.c-frame.is-small { --cut: var(--cut-s); }
-/* A frame that scrolls its own content (the pause card) paints on the element itself, so the fill stays
-   put while the content scrolls; the clip-path cuts the corners and the inset shadow is the rim. */
-.c-frame.is-scroll,
-.hud-pause-card {
-  clip-path: var(--shape);
-  background:
-    linear-gradient(var(--tk) 0 0) right 0 top 0 / var(--tick) 1px no-repeat,
-    linear-gradient(var(--tk) 0 0) right 0 top 0 / 1px var(--tick) no-repeat,
-    linear-gradient(var(--tk) 0 0) left 0 bottom 0 / var(--tick) 1px no-repeat,
-    linear-gradient(var(--tk) 0 0) left 0 bottom 0 / 1px var(--tick) no-repeat,
-    var(--scan),
-    var(--grain),
-    var(--mat-ink);
-  background-blend-mode: normal, normal, normal, normal, normal, soft-light, normal;
-  box-shadow: inset 0 0 0 1px var(--rim), inset 0 1px 0 var(--line-3);
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-3) transparent;
-  overscroll-behavior: contain;
-}
-.c-frame.is-scroll::before,
-.c-frame.is-scroll::after { content: none; }
-/* A frame draws in on static screens; the ticks follow. */
-.c-frame.is-in,
-.gate-card,
-.hud-pause-card,
-.dialog[open] {
-  animation: frame-in var(--d-4) var(--ease-out) backwards;
-}
-@keyframes frame-in {
-  from { clip-path: inset(0 100% 0 0); opacity: .4; }
-  to { clip-path: inset(0); opacity: 1; }
-}
-/* Header strip: a cyan "file" eyebrow, the Bodoni title, a rule with a short accent segment. */
-.c-frame > header {
-  margin: 0 0 var(--sp-4);
-  padding-bottom: var(--sp-3);
-  background:
-    linear-gradient(var(--accent, var(--cyan)) 0 0) left bottom / calc(var(--u) * 32) 1px no-repeat,
-    linear-gradient(var(--line-1) 0 0) left bottom / 100% 1px no-repeat;
-}
-.c-eyebrow {
-  margin: 0 0 var(--sp-1);
-  font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  color: var(--cyan);
-  font-stretch: var(--wdth-label);
+/* A coach card sits over live play, so it brings its own soft shade (a pool, not a box). */
+.coach-card {
+  padding: calc(var(--u) * 28) calc(var(--u) * 34);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .82), rgb(var(--shade-rgb) / .6) 70%, transparent);
 }
 
-/* ---- buttons: a ticket-stub cut, a light sweep, a cyan halo for focus, hatched when disabled ---- */
+/* ---- buttons: words with a marker ---- */
 .btn {
-  --cut: var(--cut-s);
   position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--sp-2);
-  min-height: max(48px, calc(var(--u) * 64));
-  padding: 0 var(--sp-5);
-  overflow: hidden;
-  font: 700 var(--t-head)/1 var(--font-ui);
-  letter-spacing: .05em;
+  justify-content: flex-start;
+  gap: calc(var(--u) * 14);
+  min-height: max(44px, calc(var(--u) * 56)); /* px-ok: tap target */
+  padding: 0 0 0 calc(var(--u) * 22);
+  font: 700 var(--fs-2)/1 var(--font-ui);
+  letter-spacing: .04em;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--ink);
-  background: transparent;
+  color: var(--ink-2);
+  background: none;
   border: 0;
   border-radius: 0;
   cursor: pointer;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
-  transition:
-    transform var(--d-2) var(--spring),
-    filter var(--d-2) var(--ease-out),
-    background-color var(--d-2) var(--ease-out),
-    color var(--d-2) var(--ease-out);
+  transition: color var(--d-2) var(--ease-out);
   -webkit-tap-highlight-color: transparent;
   font-stretch: var(--wdth-label);
 }
-.btn::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(105deg, transparent 35%, rgb(var(--white-rgb) / .22) 50%, transparent 65%);
-  transform: translateX(-120%);
-}
-@media (hover: hover) {
-  .btn:hover { filter: brightness(1.08); }
-  .btn:hover::after { transform: translateX(120%); transition: transform var(--d-4) var(--ease-out); }
-}
-.btn:active { transform: translateY(1px) scale(.985); transition-duration: var(--d-tap); filter: brightness(.92); }
-.btn-primary {
-  color: var(--on-blood);
-  background: linear-gradient(180deg, rgb(var(--white-rgb) / .14), transparent 45%), var(--blood);
-  box-shadow: inset 0 calc(var(--u) * -2.7) 0 rgb(var(--black-rgb) / .35);
-}
-.btn-ghost {
-  background: linear-gradient(var(--line-2) 0 0) bottom / 100% 1px no-repeat, rgb(var(--ink-rgb) / .03);
-}
-.btn-ghost::before {
+.btn::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: calc(var(--u) * 2.7);
-  background: var(--line-3);
-  transition: background var(--d-2) var(--ease-out);
+  top: 22%;
+  bottom: 22%;
+  width: max(2px, calc(var(--u) * 3)); /* px-ok */
+  background: var(--blood);
+  transform: scaleY(0);
+  transition: transform var(--d-2) var(--ease-out);
 }
 @media (hover: hover) {
-  .btn-ghost:hover { background-color: rgb(var(--ink-rgb) / .08); }
-  .btn-ghost:hover::before { background: var(--cyan); }
+  .btn:hover { color: var(--ink); }
+  .btn:hover::before { transform: none; }
 }
-.btn-icon {
-  --cut: calc(var(--u) * 6.7);
-  min-width: max(44px, calc(var(--u) * 58.7));
-  min-height: max(44px, calc(var(--u) * 58.7));
-  padding: 0;
-  background: rgb(var(--ink-rgb) / .05);
-}
-.btn-icon svg { width: calc(var(--u) * 26.7); height: calc(var(--u) * 26.7); stroke: currentColor; fill: none; stroke-width: 1.6; }
-/* Focus: the button is clip-pathed, and clip-path cuts anything drawn outside the shape (an outline, a
-   drop-shadow halo), so the ring is drawn inside it: ::after becomes a 2px cyan band clipped to a ring that
-   follows the ticket cut (an even-odd polygon: the outline, then the same shape inset by --ring). */
-.btn:focus-visible { outline: none; }
-.btn:focus-visible::after {
-  --ring: calc(var(--u) * 2.7);
-  --ring-d: calc(var(--ring) * .414); /* where the inset diagonal meets the inset edges */
-  transform: none;
-  transition: none;
-  background: var(--cyan);
-  clip-path: polygon(evenodd,
-    0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 0,
-    var(--ring) var(--ring), var(--ring) calc(100% - var(--ring)),
-    calc(100% - var(--cut) - var(--ring-d)) calc(100% - var(--ring)),
-    calc(100% - var(--ring)) calc(100% - var(--cut) - var(--ring-d)),
-    calc(100% - var(--ring)) var(--ring), var(--ring) var(--ring));
-}
+.btn:active { opacity: .8; transition-duration: var(--d-tap); }
+.btn-primary { color: var(--ink); }
+.btn-primary::before { transform: none; }
+.btn:focus-visible { outline: none; color: var(--ink); }
+.btn:focus-visible::before { transform: none; }
 .btn[disabled],
-.btn[aria-disabled="true"] {
-  cursor: not-allowed;
-  color: var(--ink-dim);
-  background: var(--hatch), var(--plate);
-  box-shadow: none;
-  filter: none;
-  transform: none;
-}
-.btn .c-key { margin-left: var(--sp-2); }
+.btn[aria-disabled="true"] { cursor: not-allowed; color: var(--ink-dim); }
+.btn[disabled]::before,
+.btn[aria-disabled="true"]::before { transform: scaleY(0); }
+.btn .c-key { margin-left: calc(var(--u) * 4); }
 
-/* ---- keycap ---- */
+/* ---- keycap: a key glyph, drawn as a hairline outline ---- */
 .c-key {
   display: inline-grid;
   place-items: center;
   min-width: 1.9em;
   height: 1.9em;
   padding: 0 .45em;
-  font: 600 var(--t-data)/1 var(--font-num);
+  font: 600 var(--fs-1)/1 var(--font-ui);
   letter-spacing: 0;
   text-transform: none;
   color: var(--ink);
   text-shadow: none;
-  background: linear-gradient(180deg, var(--plate-hi), var(--plate));
-  border-radius: var(--r-1);
-  box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .1), 0 calc(var(--u) * 2.7) 0 var(--night), 0 0 0 1px var(--line-2);
+  background: rgb(var(--shade-rgb) / .45);
+  border-radius: calc(var(--u) * 4);
+  box-shadow: inset 0 0 0 1px var(--line-3);
   font-stretch: var(--wdth-num);
-  font-variant-numeric: tabular-nums;
 }
 
-/* ---- tabs: a Persona selection slab and a cyan underline ---- */
-.cx-tabs { display: flex; align-items: stretch; gap: 0; padding: 0 var(--sp-5); border-bottom: 1px solid var(--line-1); }
+/* ---- tabs: words; the chosen one is ink with the red marker under it ---- */
+.cx-tabs { display: flex; align-items: stretch; gap: calc(var(--u) * 40); padding: 0 var(--sp-5); border-bottom: 1px solid var(--line-1); }
 .cx-tab {
   position: relative;
-  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  min-height: max(44px, calc(var(--u) * 58.7));
-  padding: 0 var(--sp-4);
+  min-height: max(44px, calc(var(--u) * 58)); /* px-ok: tap target */
+  padding: 0;
   border: 0;
   background: none;
   color: var(--ink-3);
-  font: 700 var(--t-label)/1 var(--font-ui);
-  letter-spacing: .05em;
+  font: 700 var(--fs-2)/1 var(--font-ui);
+  letter-spacing: .04em;
   text-transform: uppercase;
   cursor: pointer;
   transition: color var(--d-2) var(--ease-out);
   font-stretch: var(--wdth-label);
 }
-.cx-tab::before {
-  content: "";
-  position: absolute;
-  inset: calc(var(--u) * 8) calc(var(--u) * 5.3);
-  z-index: var(--z-under);
-  background: rgb(var(--cyan-rgb) / .1);
-  transform: skewX(-14deg) scaleX(0);
-  transform-origin: left;
-  transition: transform var(--d-3) var(--ease-out);
-}
 .cx-tab::after {
   content: "";
   position: absolute;
-  left: calc(var(--u) * 16);
-  right: calc(var(--u) * 16);
+  left: 0;
+  right: 0;
   bottom: -1px;
-  height: calc(var(--u) * 2.7);
-  background: var(--cyan);
-  box-shadow: 0 0 calc(var(--u) * 13.3) rgb(var(--cyan-rgb) / .7);
+  height: max(2px, calc(var(--u) * 2)); /* px-ok */
+  background: var(--blood);
   transform: scaleX(0);
+  transform-origin: left;
   transition: transform var(--d-3) var(--ease-out);
 }
-@media (hover: hover) { .cx-tab:hover { color: var(--ink); } }
+@media (hover: hover) { .cx-tab:hover { color: var(--ink-2); } }
 .cx-tab[aria-selected="true"] { color: var(--ink); }
-.cx-tab[aria-selected="true"]::before { transform: skewX(-14deg) scaleX(1); }
 .cx-tab[aria-selected="true"]::after { transform: scaleX(1); }
-.cx-tab:focus-visible { outline-offset: calc(var(--u) * -2.7); }
-.cx-tab-dot { width: calc(var(--u) * 8); height: calc(var(--u) * 8); border-radius: 0; transform: rotate(45deg); background: var(--amber); opacity: 0; transition: opacity var(--d-2); }
-.cx-tab.has-points .cx-tab-dot { opacity: 1; box-shadow: 0 0 calc(var(--u) * 10.7) var(--amber); }
-
-/* ---- cards with an accent bar ---- */
-.c-card {
-  position: relative;
-  padding: var(--sp-3) var(--sp-4);
-  background: rgb(var(--ink-rgb) / .03);
-  box-shadow: inset 0 0 0 1px var(--line-1);
-  transition: background var(--d-2), box-shadow var(--d-2), transform var(--d-3) var(--ease-out);
-}
-.c-card::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: calc(var(--u) * 4);
-  background: var(--accent, var(--cyan));
-  transform: scaleY(.2);
-  opacity: .4;
-  transition: transform var(--d-3) var(--ease-out), opacity var(--d-2);
-}
-@media (hover: hover) { .c-card:hover { background: rgb(var(--ink-rgb) / .06); } }
-.c-card[aria-selected="true"],
-.c-card[aria-pressed="true"] {
-  background: linear-gradient(90deg, rgb(var(--accent-sp, var(--cyan-rgb)) / .16), transparent 75%);
-  box-shadow: inset 0 0 0 1px rgb(var(--accent-sp, var(--cyan-rgb)) / .5);
-  transform: translateX(calc(var(--u) * 8));
-}
-.c-card[aria-selected="true"]::before,
-.c-card[aria-pressed="true"]::before { transform: none; opacity: 1; box-shadow: 0 0 calc(var(--u) * 16) var(--accent, var(--cyan)); }
+.cx-tab:focus-visible { outline: none; color: var(--ink); }
+/* Unspent points: a small red dot after the word. */
+.cx-tab-dot { width: calc(var(--u) * 7); height: calc(var(--u) * 7); border-radius: 50%; background: var(--blood-hot); opacity: 0; transition: opacity var(--d-2); }
+.cx-tab.has-points .cx-tab-dot { opacity: 1; }
 
 /* ---- bars: --v (0..1), --trail (the damage ghost), --max and --seg for notches. Transform only. ---- */
 .c-bar {
   --v: 1;
   --seg: 25;
   position: relative;
-  height: calc(var(--u) * 8);
-  background: rgb(var(--ink-rgb) / .1);
-  box-shadow: inset 0 0 0 1px rgb(var(--black-rgb) / .6);
+  height: calc(var(--u) * 6);
+  background: rgb(var(--ink-rgb) / .14);
   overflow: hidden;
 }
 .c-bar > .fill,
@@ -332,125 +149,125 @@
 .c-bar > .fill {
   transform: scaleX(var(--v));
   transition: transform var(--d-2) var(--ease-out);
-  background: linear-gradient(90deg, var(--blood), var(--blood-hot));
+  background: var(--ink);
 }
 .c-bar > .trail {
   transform: scaleX(var(--trail, 1));
-  background: rgb(var(--ink-rgb) / .55);
+  background: rgb(var(--ink-rgb) / .4);
   transition: transform var(--d-4) var(--ease-io) 280ms;
 }
 .c-bar.is-seg {
   -webkit-mask: repeating-linear-gradient(90deg, black 0 calc(100% * var(--seg) / var(--max, 100) - calc(var(--u) * 2.7)), transparent 0 calc(100% * var(--seg) / var(--max, 100)));
   mask: repeating-linear-gradient(90deg, black 0 calc(100% * var(--seg) / var(--max, 100) - calc(var(--u) * 2.7)), transparent 0 calc(100% * var(--seg) / var(--max, 100)));
 }
-.c-bar.is-low > .fill { animation: low-pulse 1.1s var(--ease-io) infinite; }
+/* Health is the one bar in the accent: red when she is hurt badly, ink otherwise (hud.css sets .hp). */
+.c-bar.is-low > .fill { background: var(--blood-hot); animation: low-pulse 1.1s var(--ease-io) infinite; }
 @keyframes low-pulse { 50% { opacity: .55; } }
-.c-bar.armour > .fill { background: linear-gradient(90deg, var(--steel-deep), var(--steel)); }
-.c-bar.sys > .fill { background: var(--cyan); }
-/* XP: a thin but legible strip, a lit track with a dark keyline so it reads over any part of the street. */
+.c-bar.armour > .fill { background: rgb(var(--ink-rgb) / .62); }
+.c-bar.sys > .fill { background: var(--ink); }
 .c-bar.xp {
-  height: calc(var(--u) * 4);
-  background: rgb(var(--ink-rgb) / .2);
-  box-shadow: 0 0 0 1px rgb(var(--black-rgb) / .55), inset 0 1px 0 rgb(var(--white-rgb) / .08);
+  height: max(2px, calc(var(--u) * 3)); /* px-ok */
+  background: rgb(var(--ink-rgb) / .16);
 }
-.c-bar.xp > .fill { background: var(--amber); }
-@media (min-width: 1024px) and (hover: hover) { .c-bar.xp { height: calc(var(--u) * 5.3); } }
+.c-bar.xp > .fill { background: rgb(var(--ink-rgb) / .7); }
 
-/* ---- chips and point counters ---- */
+/* ---- chips: small caps words in their colour (no box) ---- */
 .c-chip {
   display: inline-flex;
-  align-items: center;
-  gap: .4em;
-  height: calc(var(--u) * 29.3);
-  padding: 0 .6em;
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  align-items: baseline;
+  gap: .35em;
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--chip, var(--ink-2));
-  background: color-mix(in oklab, var(--chip, var(--ink)) 12%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--chip, var(--ink)) 40%, transparent);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - calc(var(--u) * 6.7)), calc(100% - calc(var(--u) * 6.7)) 100%, 0 100%);
   font-stretch: var(--wdth-label);
 }
-.c-chip .n { font-family: var(--font-num); letter-spacing: 0; font-variant-numeric: tabular-nums; font-stretch: var(--wdth-num); }
-.c-chip.lvl { --chip: var(--amber); }
+.c-chip .n { letter-spacing: 0; font-stretch: var(--wdth-num); }
+.c-chip.lvl { --chip: var(--ink-2); }
 .c-chip.danger { --chip: var(--blood-hot); }
-.c-chip.sys { --chip: var(--cyan); }
+.c-chip.sys { --chip: var(--ink-2); }
 .c-chip.rarity { --chip: var(--rc, var(--ink-2)); }
-.c-points { display: grid; justify-items: center; gap: calc(var(--u) * 2.7); }
+.c-points { display: grid; justify-items: center; gap: calc(var(--u) * 4); }
 .c-points .n {
-  font: 700 var(--t-num-l)/1 var(--font-num);
-  font-variant-numeric: tabular-nums;
-  color: var(--amber);
-  text-shadow: 0 0 calc(var(--u) * 18.7) rgb(var(--amber-rgb) / .45);
+  font: 700 var(--fs-3)/1 var(--font-ui);
+  color: var(--ink);
   font-stretch: var(--wdth-num);
 }
-.c-points .n[data-zero] { color: var(--ink-3); text-shadow: none; }
+.c-points .n[data-zero] { color: var(--ink-3); }
 .c-points .l {
-  font: 700 var(--t-micro)/1 var(--font-ui);
+  font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-3);
   font-stretch: var(--wdth-label);
 }
 
-/* ---- tooltip (the Diablo-style item and skill card): a rarity rim on opaque ink ---- */
+/* ---- tooltip (the item and skill card): opaque ink, the rarity as a top line ---- */
 .cx-tip {
-  --rc: var(--accent, var(--ink));
+  --rc: var(--ink-3);
   padding: var(--sp-3) var(--sp-4);
   border: 0;
-  background: var(--mat-ink);
-  box-shadow: 0 0 0 1px rgb(var(--ink-rgb) / .16), inset 0 calc(var(--u) * 2.7) 0 var(--rc), var(--sh-2);
+  background: rgb(var(--shade-rgb) / .94);
+  box-shadow: inset 0 max(2px, calc(var(--u) * 2)) 0 var(--rc), var(--sh-2); /* px-ok */
 }
-.item-tip { box-shadow: 0 0 0 1px color-mix(in oklab, var(--rc) 45%, transparent), inset 0 calc(var(--u) * 2.7) 0 var(--rc), var(--sh-2); }
 .tip-sub { color: var(--ink-3); }
 .tip-rank,
-.tip-syn-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-stretch: var(--wdth-num); }
+.tip-syn-n { font-stretch: var(--wdth-num); }
 
-/* ---- modals and sheets: an opaque radial scrim, never a backdrop blur (the world keeps rendering) ---- */
+/* ---- full-screen sheets (Settings): the dialog is the whole viewport; its words sit on the left edge ---- */
 .dialog {
-  width: min(calc(var(--u) * 613.3), calc(100% - calc(var(--u) * 42.7)));
-  padding: var(--sp-5);
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: var(--safe-y) calc(var(--safe-x) + var(--frame-x));
   color: var(--ink);
-  overflow: visible;
+  overflow-y: auto;
 }
-.dialog::backdrop { background: var(--mat-scrim); }
+.dialog[open] {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+}
+.dialog > * { max-width: calc(var(--u) * 820); }
+.dialog::backdrop {
+  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .92) 0%, rgb(var(--shade-rgb) / .74) 45%, rgb(var(--shade-rgb) / .5) 100%);
+}
 .dialog h2 {
-  margin: 0 0 var(--sp-4);
-  font: 600 var(--t-display-s)/1.1 var(--font-display);
+  margin: 0 0 calc(var(--u) * 40);
+  font: 800 var(--fs-5)/1 var(--font-ui);
+  letter-spacing: -.01em;
+  text-transform: uppercase;
   font-stretch: var(--wdth-head);
 }
+.dialog .btn { margin-top: calc(var(--u) * 12); }
 @supports (transition-behavior: allow-discrete) {
   .dialog {
     transition:
       opacity var(--d-2) var(--ease-in),
-      transform var(--d-2) var(--ease-in),
       overlay var(--d-2) allow-discrete,
       display var(--d-2) allow-discrete;
     opacity: 0;
-    transform: translateY(calc(var(--u) * 16)) scale(.98);
   }
   .dialog[open] {
     opacity: 1;
-    transform: none;
     transition-duration: var(--d-3);
     transition-timing-function: var(--ease-out);
   }
   @starting-style {
-    .dialog[open] { opacity: 0; transform: translateY(calc(var(--u) * 16)) scale(.98); }
+    .dialog[open] { opacity: 0; }
   }
 }
+.hud-pause-card,
+.gate-card { animation: ui-fade 200ms var(--ease-out) both; }
+@keyframes ui-fade { from { opacity: 0; } }
 
 /* ---- reduced motion (OS setting or the Settings toggle, which sets html.reduce-motion) ---- */
 @media (prefers-reduced-motion: reduce) {
-  .c-frame.is-in, .gate-card, .hud-pause-card, .dialog[open] { animation: ui-fade 160ms linear both; }
-  .btn::after { display: none; }
   .c-bar.is-low > .fill { animation: none; }
 }
-:root.reduce-motion .c-frame.is-in,
-:root.reduce-motion .gate-card,
-:root.reduce-motion .hud-pause-card,
-:root.reduce-motion .dialog[open] { animation: ui-fade 160ms linear both; }
-:root.reduce-motion .btn::after { display: none; }
 :root.reduce-motion .c-bar.is-low > .fill { animation: none; }
