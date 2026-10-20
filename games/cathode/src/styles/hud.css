@@ -1801,5 +1801,7 @@
 
 /* C13: the arrival beat. While the area title plays, the HUD, the objective, the subtitles and the touch controls
    wait (ui/hud.ts hold()); then the HUD draws in with its boot animation. */
-.hud-root.is-arriving > :not(.hud-banner) { visibility: hidden; }
-:root:has(.hud-root.is-arriving) .touch { visibility: hidden; }
+.hud-root.is-arriving > :not(.hud-banner),
+:root.area-arriving .hud-root > :not(.hud-banner) { visibility: hidden; }
+:root:has(.hud-root.is-arriving) .touch,
+:root.area-arriving .touch { visibility: hidden; }

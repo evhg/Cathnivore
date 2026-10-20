@@ -61,7 +61,8 @@ const CATH_BACK = 1.2;
  * camera then turns so she sits on the right third.
  */
 const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, number, number] }> = [
-  { pos: [-1.9, 1.55, -5.6], look: [0.2, 1.2, 0.5] },
+  // Low, so the umbrella's crown rises clear of the TOMAS EGGS fascia instead of cutting across its lettering.
+  { pos: [-1.9, 1.2, -5.6], look: [0.2, 1.25, 0.5] },
   { pos: [-4.7, 1.1, -2.4], look: [0, 1.15, 0.6] },
   { pos: [0.6, 1.9, -6.2], look: [0, 1.25, 0.6] },
   { pos: [4.6, 1.3, -2.6], look: [0, 1.15, 0.4] },
@@ -98,9 +99,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   }
 
   // ---- progress set pieces (S9.2): the egg shop's sign dark after the Fish Market, a chalk tally of the names ----
-  if (o.set.signDark) {
-    // Tomas Reed's TOMAS EGGS fascia on the west side, beside where she stands: its quads go out (aInfo.x is the
-    // sign's intensity, y its flicker).
+  {
+    // Tomas Reed's TOMAS EGGS fascia on the west side, beside where she stands (aInfo.x is the sign's intensity, y
+    // its flicker). On the title it is the hero landmark: held under clipping so its letters read (it blew out to
+    // a white box), and after the Fish Market it goes out.
+    const k = o.set.signDark ? 0.03 : 0.2;
     world.scene.traverse((obj) => {
       const g = (obj as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
       const info = g?.attributes.aInfo as THREE.BufferAttribute | undefined;
@@ -110,8 +113,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         const x = pos.getX(i);
         const z = pos.getZ(i);
         if (x < -7 && z > 45.4 && z < 55.1 && pos.getY(i) < 8) {
-          info.setX(i, info.getX(i) * 0.03);
-          info.setY(i, 0);
+          info.setX(i, info.getX(i) * k);
+          if (o.set.signDark) info.setY(i, 0);
         }
       }
       info.needsUpdate = true;

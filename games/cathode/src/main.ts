@@ -494,10 +494,12 @@ function showAreaTitle(district: string | undefined): void {
   const root = document.documentElement;
   root.classList.add("hud-banner-on");
   box.classList.toggle("is-held", frontStage === "areatitle" && shot);
+  // The area title plays alone: the HUD, touch controls and Cath's first line wait for it (hud.css, Hud.hold).
+  root.classList.add("area-arriving");
   if (!(frontStage === "areatitle" && shot))
     setTimeout(() => {
       box.hidden = true;
-      root.classList.remove("hud-banner-on");
+      root.classList.remove("hud-banner-on", "area-arriving");
     }, 3300);
 }
 

@@ -97,7 +97,58 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // ---- materials (4) ----
   const coatMat = phone
     ? new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.45, metalness: 0 })
-    : new THREE.MeshPhysicalMaterial({ color: 0x1d1f25, roughness: 0.55, metalness: 0, clearcoat: 0.45, clearcoatRoughness: 0.35, sheen: 0.5, sheenRoughness: 0.45, sheenColor: new THREE.Color(0x6a7080) });
+    : new THREE.MeshPhysicalMaterial({ color: 0x1d1f25, roughness: 0.6, metalness: 0, clearcoat: 0.85, clearcoatRoughness: 0.14, sheen: 0.5, sheenRoughness: 0.45, sheenColor: new THREE.Color(0x6a7080) });
+  // The cloth itself (C13 review: "faceted, no wet"): a gabardine twill and rain running down the drape, baked
+  // once into a normal map, so the coat's highlights break up like wet wool instead of shading like plastic.
+  const clothNormal = (() => {
+    const W = 256;
+    const H = 256;
+    const c = document.createElement("canvas");
+    c.width = W;
+    c.height = H;
+    const g = c.getContext("2d");
+    if (!g) return null;
+    const h = new Float32Array(W * H);
+    let sd = 11;
+    const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) h[y * W + x] = 0.5 + 0.5 * Math.sin(((x + y) / W) * Math.PI * 2 * 48);
+    // Rivulets: thin vertical runs of water, slightly wavy, raised over the weave.
+    for (let i = 0; i < 26; i++) {
+      let x = rnd() * W;
+      const y0 = Math.floor(rnd() * H);
+      const len = 40 + rnd() * 140;
+      for (let k = 0; k < len; k++) {
+        x += (rnd() - 0.5) * 0.6;
+        const y = (y0 + k) % H;
+        for (let d = -1; d <= 1; d++) {
+          const xi = ((Math.round(x) + d) % W + W) % W;
+          h[y * W + xi] = (h[y * W + xi] ?? 0) + (d === 0 ? 1.6 : 0.7);
+        }
+      }
+    }
+    const img = g.createImageData(W, H);
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const at = (xx: number, yy: number) => h[((yy + H) % H) * W + ((xx + W) % W)]!;
+        const dx = (at(x + 1, y) - at(x - 1, y)) * 0.5;
+        const dy = (at(x, y + 1) - at(x, y - 1)) * 0.5;
+        const n = new THREE.Vector3(-dx, -dy, 1).normalize();
+        const o = (y * W + x) * 4;
+        img.data[o] = (n.x * 0.5 + 0.5) * 255;
+        img.data[o + 1] = (n.y * 0.5 + 0.5) * 255;
+        img.data[o + 2] = (n.z * 0.5 + 0.5) * 255;
+        img.data[o + 3] = 255;
+      }
+    g.putImageData(img, 0, 0);
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(6, 3);
+    return t;
+  })();
+  if (clothNormal) {
+    coatMat.normalMap = clothNormal;
+    coatMat.normalScale.set(0.32, 0.32);
+  }
   // Gloves, boots, hair and the umbrella: near-black with a wet sheen.
   const blackMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0d, roughness: 0.32, metalness: 0.05 });
   // Hair: combed-back strands as a streaked colour and roughness map (a shine band reads as hair, not a helmet).
@@ -133,7 +184,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // makes her read as a silhouette against the neon at any framing.
   const rimU = {
     uRimDir: { value: new THREE.Vector3(0, 0.3, -1).normalize() },
-    uRimA: { value: new THREE.Color(1.0, 0.1, 0.42).multiplyScalar(phone ? 1.6 : 2.0) },
+    uRimA: { value: new THREE.Color(1.0, 0.3, 0.52).multiplyScalar(phone ? 0.9 : 1.1) },
     uRimB: { value: new THREE.Color(0.1, 0.55, 0.8).multiplyScalar(0.28) },
   };
   const rimify = (m: THREE.MeshStandardMaterial, gain: number) => {
@@ -146,7 +197,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
           `#include <emissivemap_fragment>
           {
             float facing = saturate( dot( normal, normalize( vViewPosition ) ) );
-            float fr = pow( 1.0 - facing, 4.0 );
+            // A wide, soft Fresnel (C13 review: the narrow pow-4 edge drew as one-pixel pink stair-steps).
+            float fr = smoothstep( 0.0, 1.0, pow( 1.0 - facing, 2.2 ) );
             float side = dot( normal, uRimDir );
             totalEmissiveRadiance += ${gain.toFixed(2)} * fr * ( uRimA * smoothstep( -0.2, 0.7, side ) + uRimB * smoothstep( 0.1, -0.8, side ) );
           }`,
@@ -243,11 +295,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
     [0.148, 0.24],
     [0.117, 0.12], // the belted waist
     [0.138, 0.05],
-    [0.172, -0.05], // hips
-    [0.198, -0.19],
-    [0.232, -0.33],
-    [0.268, -0.46], // the hem, just below the knee
-    [0.264, -0.475],
+    [0.178, -0.05], // hips
+    [0.196, -0.19],
+    [0.214, -0.33],
+    [0.238, -0.46], // the hem, just below the knee: a trench falls, it doesn't bell
+    [0.234, -0.475],
   ];
   const HEM_FROM = 9; // profile rows from here down follow the hem particles
   const coatSegs = seg(32);
@@ -267,10 +319,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
       if (r < 1e-4) continue;
       const a = Math.atan2(z / 0.7, x);
       const depth = Math.min(1, (0.08 - y) / 0.5);
-      const fold = Math.sin(a * 7 + 0.6) * 0.5 + Math.sin(a * 11 + 2.1) * 0.3;
+      // Deep, irregular drape folds (a turned cone reads as a mannequin): two families plus a sharper crease.
+      const fold = Math.sin(a * 7 + 0.6) * 0.5 + Math.sin(a * 13 + 2.1) * 0.3 + Math.pow(Math.abs(Math.sin(a * 5 + 1.3)), 6) * 0.55;
       // A back vent: the two skirts part a little at the back below the hips.
       const vent = Math.max(0, 1 - Math.abs(Math.atan2(x, -z / 0.7)) / 0.18) * Math.max(0, (-0.12 - y) / 0.35);
-      const k = 1 + fold * 0.07 * depth - vent * 0.04;
+      const k = 1 + fold * 0.11 * depth - vent * 0.05;
       p.setXYZ(i, x * k, y, z * k);
     }
     coatGeo.computeVertexNormals();

@@ -982,7 +982,12 @@ export class Hud {
   hold(ms: number): void {
     this.holding = true;
     this.root.classList.add("is-arriving");
-    window.setTimeout(() => {
+    const release = () => {
+      // The front door's area title may still be up (a slow first frame): wait for it to go.
+      if (document.documentElement.classList.contains("area-arriving")) {
+        window.setTimeout(release, 200);
+        return;
+      }
       this.holding = false;
       this.root.classList.remove("is-arriving");
       this.root.classList.add("is-booting");
@@ -990,7 +995,8 @@ export class Hud {
       const line = this.heldSub;
       this.heldSub = null;
       if (line) window.setTimeout(() => this.subtitle(line), 450);
-    }, ms);
+    };
+    window.setTimeout(release, ms);
   }
 
   /** Cath's voiceover (or Bea on the wire), as a subtitle on per-line plates with the speaker's colour. */

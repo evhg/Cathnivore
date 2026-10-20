@@ -43,6 +43,9 @@ class ScenePass extends Pass {
   private readonly low: THREE.WebGLRenderTarget;
   private readonly quad: FullScreenQuad;
   private readonly blit: THREE.ShaderMaterial;
+  /** No MSAA (phone): FXAA runs on the low-resolution frame before the upscale, where a stair-step is one texel
+   *  wide, instead of after it, where the upscale has already made each step a block (C13 review). */
+  private readonly aa: { target: THREE.WebGLRenderTarget; quad: FullScreenQuad; mat: THREE.ShaderMaterial } | null;
 
   constructor(
     private readonly scene: THREE.Scene,
@@ -77,6 +80,17 @@ class ScenePass extends Pass {
       depthWrite: false,
     });
     this.quad = new FullScreenQuad(this.blit);
+    if (samples === 0) {
+      const mat = new THREE.ShaderMaterial({
+        uniforms: THREE.UniformsUtils.clone(FXAAShader.uniforms),
+        vertexShader: FXAAShader.vertexShader,
+        fragmentShader: FXAAShader.fragmentShader,
+        depthTest: false,
+        depthWrite: false,
+      });
+      const target = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType });
+      this.aa = { target, quad: new FullScreenQuad(mat), mat };
+    } else this.aa = null;
   }
 
   setSize(width: number, height: number): void {
@@ -84,8 +98,13 @@ class ScenePass extends Pass {
     const h = Math.max(1, Math.round(height * this.worldScale));
     this.low.setSize(w, h);
     this.blit.uniforms.uTexel!.value.set(1 / w, 1 / h);
-    // The less the world is scaled, the more the upscale needs crispening (none at full scale).
-    this.blit.uniforms.uSharp!.value = THREE.MathUtils.clamp((1 - this.worldScale) * 0.35, 0, 0.18);
+    // The less the world is scaled, the more the upscale needs crispening (none at full scale). Kept gentle: a
+    // strong unsharp mask re-draws every aliased edge as a hard stair (the C13 review's "pink jaggies").
+    this.blit.uniforms.uSharp!.value = THREE.MathUtils.clamp((1 - this.worldScale) * 0.16, 0, 0.08);
+    if (this.aa) {
+      this.aa.target.setSize(w, h);
+      (this.aa.mat.uniforms.resolution!.value as THREE.Vector2).set(1 / w, 1 / h);
+    }
   }
 
   render(renderer: THREE.WebGLRenderer, _write: THREE.WebGLRenderTarget, read: THREE.WebGLRenderTarget): void {
@@ -95,6 +114,12 @@ class ScenePass extends Pass {
       renderer.setRenderTarget(this.low);
       renderer.clear(true, true, true);
       renderer.render(this.scene, this.camera);
+      if (this.aa) {
+        this.aa.mat.uniforms.tDiffuse!.value = this.low.texture;
+        renderer.setRenderTarget(this.aa.target);
+        this.aa.quad.render(renderer);
+        this.blit.uniforms.tLow!.value = this.aa.target.texture;
+      }
       renderer.setRenderTarget(read);
       renderer.clear(true, true, true);
       this.quad.render(renderer);
