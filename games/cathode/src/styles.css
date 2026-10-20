@@ -1420,9 +1420,9 @@ fieldset label:has(input:checked:focus-visible) span::after { opacity: 1; }
 .lvl-toast::before {
   content: "";
   position: absolute;
-  inset: calc(var(--u) * -40) calc(var(--u) * -120);
+  inset: calc(var(--u) * -90) calc(var(--u) * -220);
   z-index: var(--z-under);
-  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .78), rgb(var(--shade-rgb) / .48) 58%, transparent);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .86), rgb(var(--shade-rgb) / .6) 50%, transparent);
 }
 .lvl-eyebrow, .lvl-points { text-shadow: var(--hud-shadow); }
 .lvl-rule {
@@ -1665,7 +1665,7 @@ fieldset label:has(input:checked:focus-visible) span::after { opacity: 1; }
    darkened), a vignette, and the type. No scan line and no glow on the bar. */
 .loading { overflow: hidden; }
 .loading::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(var(--shade-rgb) / .78) 0%, rgb(var(--shade-rgb) / .35) 55%, rgb(var(--shade-rgb) / .2) 100%), radial-gradient(90% 70% at 50% 45%, transparent 40%, rgb(0 0 0 / .65) 100%); pointer-events: none; }
-.loading[data-district="market"]::before { content: ""; position: absolute; inset: calc(var(--u) * -40); background: url("/rotate-street.webp") 64% 50% / cover no-repeat; filter: blur(calc(var(--u) * 10)) brightness(.55) saturate(.8); animation: load-drift 24s ease-out both; pointer-events: none; }
+.loading[data-district="market"]::before { content: ""; position: absolute; inset: calc(var(--u) * -40); background: url("/rotate-street.webp") 64% 50% / cover no-repeat; filter: blur(calc(var(--u) * 10)) brightness(.8) saturate(.85); animation: load-drift 24s ease-out both; pointer-events: none; }
 @keyframes load-drift { from { transform: scale(1.06); } to { transform: none; } }
 .loading > * { position: relative; z-index: var(--z-base, 1); }
 .loading .eyebrow { margin: 0 0 10px; letter-spacing: .06em; color: var(--ink-2); }

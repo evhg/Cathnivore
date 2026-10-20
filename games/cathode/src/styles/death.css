@@ -149,7 +149,7 @@
   align-items: center;
   gap: calc(var(--u) * 14);
   min-height: max(40px, calc(var(--u) * 52));
-  padding: 0 calc(var(--u) * 6) 0 calc(var(--u) * 20);
+  padding: 0 calc(var(--u) * 6) 0 calc(var(--u) * 40);
   border: 0;
   background: none;
   color: var(--ink-2);
@@ -162,14 +162,17 @@
   font-stretch: var(--wdth-label);
 }
 /* Focus: a 2u blood bar on the left, the label tracking out 2%, ink to full. */
+/* The one marker every CATHODE menu uses (C13T): a short red dash on the left, drawn out on focus. */
 .death-btn-bar {
   position: absolute;
   left: 0;
-  top: 18%;
-  bottom: 18%;
-  width: max(2px, calc(var(--u) * 2));
-  background: var(--blood);
-  transform: scaleY(0);
+  top: 50%;
+  width: calc(var(--u) * 24);
+  height: max(2px, calc(var(--u) * 3)); /* px-ok */
+  margin-top: calc(var(--u) * -1.5);
+  background: var(--blood-hot);
+  transform-origin: left;
+  transform: scaleX(0);
   transition: transform var(--d-2) var(--ease-out);
 }
 .death-btn.is-focus { color: var(--ink); letter-spacing: .05em; }

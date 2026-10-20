@@ -34,7 +34,7 @@
   justify-content: flex-start;
   gap: calc(var(--u) * 14);
   min-height: max(44px, calc(var(--u) * 56)); /* px-ok: tap target */
-  padding: 0 0 0 calc(var(--u) * 22);
+  padding: 0 0 0 calc(var(--u) * 40);
   font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .04em;
   text-transform: uppercase;
@@ -52,11 +52,13 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 22%;
-  bottom: 22%;
-  width: max(2px, calc(var(--u) * 3)); /* px-ok */
-  background: var(--blood);
-  transform: scaleY(0);
+  top: 50%;
+  width: calc(var(--u) * 24);
+  height: max(2px, calc(var(--u) * 3)); /* px-ok */
+  margin-top: calc(var(--u) * -1.5);
+  background: var(--blood-hot);
+  transform-origin: left;
+  transform: scaleX(0);
   transition: transform var(--d-2) var(--ease-out);
 }
 @media (hover: hover) {
@@ -71,7 +73,7 @@
 .btn[disabled],
 .btn[aria-disabled="true"] { cursor: not-allowed; color: var(--ink-dim); }
 .btn[disabled]::before,
-.btn[aria-disabled="true"]::before { transform: scaleY(0); }
+.btn[aria-disabled="true"]::before { transform: scaleX(0); }
 .btn .c-key { margin-left: calc(var(--u) * 4); }
 
 /* ---- keycap: a key glyph, drawn as a hairline outline ---- */
