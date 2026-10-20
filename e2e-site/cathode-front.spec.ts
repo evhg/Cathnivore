@@ -55,7 +55,9 @@ test.describe('CATHODE front door', () => {
     await expect(page.locator('.front-back')).toBeFocused()
     // The subtitle and The List come from progress.
     await expect(page.locator('#title-sub')).toHaveText('HOLLOWELL PROPER · 2079 · 5 NAMES LEFT')
-    await expect(page.locator('#the-list li')).toHaveCount(5)
+    // The next name, then the unreached ones as a count (C13T: no grey skeleton bars).
+    await expect(page.locator('#the-list li')).toHaveCount(2)
+    await expect(page.locator('#the-list li.is-more')).toHaveText('4 more names')
   })
 
   test('New Case pushes into the street and names the area, with no navigation', async ({ page, hasTouch }) => {
