@@ -44,10 +44,10 @@ export const TD = {
   /**
    * The paired first-person framing, from her eyes (m): back, up and toward her striking hand by a hand's width
    * (her head, never drawn, is between the lens and him, so he never fills the frame and the blow is in it), the FOV it adds (degrees), the eases, the kick, the dutch tilt after the lethal blow,
-   * and how far the lens may pitch down (degrees: a body on the street is framed, not looked straight down on,
-   * and her shoulders, where the arms begin, stay below the frame).
+   * and how far the lens may pitch down (degrees: a body on the street is framed, not looked straight down on;
+   * pitched down, the lens slides forward over her eyes so her shoulders stay out of the frame).
    */
-  cam: { back: 0.1, up: 0.1, right: 0.08, fovAdd: 14, easeInMs: 120, easeOutMs: 200, kickDeg: 3, rollDeg: 4, pitchMinDeg: -28, pitchMaxDeg: 20 },
+  cam: { back: 0.1, up: 0.1, right: 0.08, fovAdd: 14, easeInMs: 120, easeOutMs: 200, kickDeg: 3, rollDeg: 4, pitchMinDeg: -42, pitchMaxDeg: 20 },
   /** The letterbox (share of the boss intro's 11vh bars). */
   bars: 0.75,
   /** Hit-stop on the lethal blow and on any other (ms); trauma per blow. */
@@ -882,7 +882,13 @@ export class Takedown {
       this.look.copy(want);
       this.lookInit = true;
     } else this.look.lerp(want, 0.25);
-    const camPos = eye.clone().addScaledVector(F.f, -C.back).addScaledVector(F.r, C.right).add(vC.set(0, C.up, 0));
+    // Looking down at a body on the street, the lens slides forward over her eyes (a hand's width back would put
+    // her shoulders, where the arms begin, in the bottom of the frame).
+    const deg0 = Math.PI / 180;
+    const down = -Math.atan2(this.look.y - eye.y, Math.max(1e-4, Math.hypot(this.look.x - eye.x, this.look.z - eye.z)));
+    const k = smooth((down - 15 * deg0) / (20 * deg0));
+    const back = C.back * (1 - k) - 0.06 * k;
+    const camPos = eye.clone().addScaledVector(F.f, -back).addScaledVector(F.r, C.right).add(vC.set(0, C.up, 0));
     // Never through a wall behind her.
     if (this.castRay) {
       const d = camPos.clone().sub(eye);

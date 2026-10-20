@@ -1673,6 +1673,8 @@
 }
 @media (pointer: coarse) {
   .hud-prompt.world { pointer-events: auto; cursor: pointer; touch-action: none; }
+  /* The phone's weapon name sits top centre, where the chip rides over a close guard's helmet: it steps aside. */
+  .hud-root.td-tell .hud-arms { visibility: hidden; }
 }
 :root.hud-td-tell .look-hint { opacity: 0; transition: opacity 120ms var(--ease-out); }
 /* The teach line doesn't repeat the chip while it is up (the audit's overlap), and nor does the objective marker
