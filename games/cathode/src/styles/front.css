@@ -372,8 +372,10 @@
 }
 .logo-text {
   font-family: var(--font-display);
-  font-weight: 560;
-  font-variation-settings: "opsz" 96;
+  /* opsz 96 thins the H bar and the A's left stroke to a hairline that vanishes below 5K ("CATIIODE" at 1440):
+     opsz 36 at 600 keeps the Didone contrast and holds every hairline at 1 px or more down to the phone. */
+  font-weight: 600;
+  font-variation-settings: "opsz" 36;
   fill: var(--ink);
   fill-opacity: 1;
   stroke: var(--ink);
@@ -485,7 +487,8 @@
 .the-list {
   position: absolute;
   left: max(var(--safe-x), var(--frame-x) + var(--safe-x));
-  bottom: var(--safe-y);
+  /* Above the lower letterbox bar (at most 9svh), never straddling its edge. */
+  bottom: max(var(--safe-y), calc(9svh + var(--u) * 24));
   margin: 0;
 }
 .the-list-h {
