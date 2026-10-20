@@ -122,6 +122,7 @@
   margin: 0;
   /* A text optical size at 650: Bodoni's hairlines (the t's crossbar, the G's spur) hold from the phone to 5K. */
   font: italic 650 var(--fs-6)/1.02 var(--font-voice);
+  font-variation-settings: "opsz" 11; /* C13T: a text cut, so the hairlines hold at display sizes */
   letter-spacing: -.005em;
   color: var(--ink);
   text-wrap: balance;

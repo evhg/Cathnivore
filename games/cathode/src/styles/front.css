@@ -104,6 +104,7 @@
   margin: 0;
   max-width: 28ch;
   font-family: var(--font-voice);
+  font-variation-settings: "opsz" 11;
   font-style: italic;
   font-weight: 400;
   font-size: var(--fs-4);
@@ -613,6 +614,7 @@
 .area-sub {
   margin: calc(var(--u) * 14) 0 0;
   font-family: var(--font-voice);
+  font-variation-settings: "opsz" 11;
   font-style: italic;
   font-weight: 500;
   /* aaa-ui: Cath's voice over 3D at 20 px or more, on the radial ink behind. */
