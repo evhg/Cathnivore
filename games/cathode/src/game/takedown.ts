@@ -46,17 +46,23 @@ export const TD = {
    * lens per variant (`lens` below) lowered to his ear line and kept off his head. The FOV it adds (degrees), the
    * eases, the kick, the dutch tilt after the lethal blow, the pitch window (degrees: never down onto the crown, never
    * up his nose), and the nearest the lens may come to his head's centre (m: closer, a helmet ring fills the frame).
+   * `minEyeM` is the floor as he sinks from behind: her shoulder line (her arms hang from it; a lens under it looked up
+   * at two sleeve tubes coming down from the top of the frame). From the front or side (her lens over her own
+   * shoulders, not pulled back) she can go down to a crouch (`crouchM`) after a man going to the floor.
    */
-  cam: { fovAdd: 10, easeInMs: 120, easeOutMs: 200, kickDeg: 3, rollDeg: 4, pitchMinDeg: -20, pitchMaxDeg: 14, minHeadM: 0.42, overHeadM: 0.06, minEyeM: 1.0 },
+  cam: { fovAdd: 10, easeInMs: 120, easeOutMs: 200, kickDeg: 3, rollDeg: 4, pitchMinDeg: -20, pitchMaxDeg: 14, minHeadM: 0.42, overHeadM: 0.06, minEyeM: 1.46, crouchM: 1.0 },
   /**
    * The lens per variant, from her eye in her frame (m: right, up, forward), and what it looks at: his neck pulled
    * `head` of the way to his head, then `wrist` of the way to her striking hand (so the blow is in the shot);
    * `pitchMin` overrides the window's floor (the man on the floor is looked down on, S5.2: -35 degrees).
    */
   lens: {
-    behind: { r: -0.2, u: -0.02, f: 0.0, head: 0.55, wrist: 0.35 },
-    behindChoke: { r: -0.26, u: -0.1, f: 0.0, head: 0.6, wrist: 0.1, overHead: -0.06 },
-    behindPistol: { r: 0.22, u: -0.08, f: 0.08, head: 0.35, wrist: 0.5 },
+    // From behind, pulled back 0.3 to 0.4 m (S5.2: "0.35 m back"; C11 review 3: at her eye the lens sat 0.42 m
+    // off his helmet and one dome, or one sleeve, filled the frame): his head, her wrapping arm and the raised Pin
+    // all in one shot, his head about 3% of the frame.
+    behind: { r: 0.12, u: -0.04, f: -0.38, head: 0.5, wrist: 0.35 },
+    behindChoke: { r: -0.2, u: 0.0, f: -0.3, head: 0.7, wrist: 0.0, overHead: 0.12 },
+    behindPistol: { r: 0.2, u: -0.08, f: -0.3, head: 0.4, wrist: 0.5 },
     front: { r: 0.12, u: 0.0, f: 0.0, head: 0.3, wrist: 0.35, overHead: 0.0 },
     frontKick: { r: 0.08, u: -0.06, f: -0.05, head: 0.3, wrist: 0.2 },
     side: { r: 0.06, u: -0.08, f: 0.0, head: 0.45, wrist: 0.3 },
@@ -80,6 +86,8 @@ export const TD = {
   lean: 0.08,
   /** The neck wrap: her left wrist on the near side of his neck (her frame from his neck joint, m), and her elbow. */
   wrap: { r: -0.08, u: 0.02, f: 0.0, poleR: -0.42, poleU: 0.4, poleF: 0.1 },
+  /** Where the Pin hand drops after Behind A's blow (her frame from her eye, m): at her hip, out of the lens. */
+  hang: { r: 0.3, u: -0.9, f: 0.02 },
   /** Her arms' albedo in the street (a share of the viewmodel's). */
   armTone: 0.4,
   /** Her arms' dielectric specular in the street (of the kit's). */
@@ -528,7 +536,9 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
         const back = ss(t, 470, 620) * 0.6 + ss(t, 620, 900) * 0.4;
         const up = at(F, J.head, 0.3, 0.3, -0.1);
         const hit = at(F, J.head, 0.36, 0.2, -0.04);
-        k.rW = lerp3(lerp3(lerp3(restR, up, raise), hit, swing), restR, back);
+        // After the blow the Pin hand drops to her hip, out of the pulled-back lens (back at rest, low in front of
+        // her, the arm was a dark tube across his back as she lowered him).
+        k.rW = lerp3(lerp3(lerp3(restR, up, raise), hit, swing), at(F, eye, TD.hang.r, TD.hang.u, TD.hang.f), back);
         const axUp = dir(F, -0.1, 0.85, -0.5);
         // Coming down on his temple: the Pin's tip down and across onto the side of his head.
         const axHit = dir(F, -0.68, -0.6, 0.35);
@@ -1009,7 +1019,7 @@ export class Takedown {
     const camPos = cP.copy(eye).addScaledVector(F.r, L.r).addScaledVector(F.f, L.f).add(vC.set(0, L.u, 0));
     // At his ear line, not over his crown: as he sinks (the choke, the knees going) she goes down with him, to a
     // crouch at most; the man on the floor is the exception (looked down on).
-    if (v.approach !== "down") camPos.y = Math.max(F.feet.y + C.minEyeM, Math.min(camPos.y, J.head.y + (L.overHead ?? C.overHeadM)));
+    if (v.approach !== "down") camPos.y = Math.max(F.feet.y + (v.approach === "behind" ? C.minEyeM : C.crouchM), Math.min(camPos.y, J.head.y + (L.overHead ?? C.overHeadM)));
     const away = cD.subVectors(camPos, J.head);
     const dh = away.length();
     if (dh < C.minHeadM) camPos.copy(J.head).addScaledVector(dh > 1e-4 ? away.multiplyScalar(1 / dh) : vC.copy(F.f).negate(), C.minHeadM);

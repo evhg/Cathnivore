@@ -238,15 +238,17 @@ describe("CATHODE takedown bodies (S5.2)", () => {
     }
   });
 
-  it("the framing: a lens per variant at his ear line, ahead of her shoulders, kept off his head, never looking onto his crown", () => {
+  it("the framing: a lens per variant at his ear line, pulled back off his head, never looking onto his crown", () => {
     for (const v of TAKEDOWN_VARIANTS) {
       const L = lensFor(v);
-      // Ahead of her shoulders (her body is not drawn) and below her eye (her eye looked down onto his helmet).
-      expect(L.f, v.id).toBeGreaterThanOrEqual(-0.06);
+      // At most 0.45 m back (S5.2: 0.35 m) and below her eye (her eye looked down onto his helmet).
+      expect(L.f, v.id).toBeGreaterThanOrEqual(-0.45);
       expect(L.u, v.id).toBeLessThanOrEqual(0);
       if (v.approach !== "down" && v.approach !== "surrender") expect(L.pitchMin ?? TD.cam.pitchMinDeg, v.id).toBeGreaterThanOrEqual(-25);
     }
     expect(TD.cam.minHeadM).toBeGreaterThanOrEqual(0.35);
+    // Never under her shoulder line as he sinks.
+    expect(TD.cam.minEyeM).toBeGreaterThanOrEqual(TD.eye - TD.shoulderDrop);
     expect(TD.cam.fovAdd).toBeGreaterThan(0);
     expect(TD.cam.pitchMinDeg).toBeGreaterThanOrEqual(-60);
     expect(TD.stopMs).toBe(80);
