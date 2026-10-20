@@ -45,7 +45,7 @@ export interface HudState {
   caseName?: string;
   takedown: boolean;
   /** C11 (S5.1): the world-anchored takedown chip's point on screen (CSS px, over his shoulders), and its key. */
-  takedownAt?: { x: number; y: number } | null;
+  takedownAt?: { x: number; y: number; left?: boolean } | null;
   takedownKey?: string;
   bulletTime: number;
   /** The two active-skill slots (name and readiness 0..1), and the battery 0..1. */
@@ -494,9 +494,10 @@ export class Hud {
       c.classList.toggle("ready", k.ready >= 1);
     });
     this.show(this.prompt, s.takedown);
-    // C11 (S5.1): the chip rides on him (over his shoulders), and while it is up the teach line doesn't repeat it.
+    // C11 (S5.1): the chip rides on him (beside his helmet), and while it is up the teach line doesn't repeat it.
     const at = s.takedown ? s.takedownAt : null;
     this.prompt.classList.toggle("world", !!at);
+    this.prompt.classList.toggle("left", !!at?.left);
     if (at) {
       this.prop(this.prompt, "--px", `${Math.round(at.x)}px`);
       this.prop(this.prompt, "--py", `${Math.round(at.y)}px`);

@@ -142,6 +142,8 @@ const P0: PoseP = {
 const hLt = new THREE.Vector3();
 const hRt = new THREE.Vector3();
 const tmpV = new THREE.Vector3();
+const tmpV2 = new THREE.Vector3();
+const nkV = new THREE.Vector3();
 
 function blank(p: PoseP): PoseP {
   p.h = REST.pelvis.y;
@@ -209,7 +211,7 @@ function crumple(p: PoseP, t: number, t0: number, t1: number, t2: number, back =
  */
 export function targetPose(v: TakedownVariant, t: number, side: number, out: Record<Joint, THREE.Vector3>, wallM = 1): void {
   const p = blank(P0);
-  const nk = new THREE.Vector3();
+  const nk = nkV;
   switch (v.id) {
     case "behindWrap":
     case "behindChoke": {
@@ -234,7 +236,7 @@ export function targetPose(v: TakedownVariant, t: number, side: number, out: Rec
         p.head = -0.52 * pull * (1 - ss(t, 430, 700)) + 0.35 * ss(t, 500, 860);
         const let_ = 1 - ss(t, 440, 560);
         reach(p, "L", tmpV.set(nk.x + 0.05, nk.y - 0.08, nk.z + 0.12), grab * let_);
-        reach(p, "R", new THREE.Vector3(nk.x - 0.07, nk.y - 0.1, nk.z + 0.1), grab * let_);
+        reach(p, "R", tmpV2.set(nk.x - 0.07, nk.y - 0.1, nk.z + 0.1), grab * let_);
         // The knees buckle (420 to 900), then Cath lays him forward on his front.
         crumple(p, t, 440, 800, 1190);
       } else {
@@ -248,7 +250,7 @@ export function targetPose(v: TakedownVariant, t: number, side: number, out: Rec
         const slack = ss(t, 890, 1120);
         p.head = p.head * (1 - slack) + 0.45 * slack;
         reach(p, "L", tmpV.set(nk.x + 0.06, nk.y - 0.09, nk.z + 0.12 + 0.02 * kick), grab * (1 - slack));
-        reach(p, "R", new THREE.Vector3(nk.x - 0.05, nk.y - 0.08, nk.z + 0.11), grab * (1 - slack));
+        reach(p, "R", tmpV2.set(nk.x - 0.05, nk.y - 0.08, nk.z + 0.11), grab * (1 - slack));
         crumple(p, t, 800, 990, 1345, false, 0.18);
       }
       break;
@@ -264,7 +266,7 @@ export function targetPose(v: TakedownVariant, t: number, side: number, out: Rec
       neckOf(p, nk);
       const grab = ss(t, 120, 320) * (1 - ss(t, 650, 720));
       reach(p, "L", tmpV.set(nk.x + 0.02, nk.y + 0.08, nk.z + 0.13), grab);
-      reach(p, "R", new THREE.Vector3(nk.x - 0.1, nk.y - 0.05, nk.z + 0.08), grab * 0.8);
+      reach(p, "R", tmpV2.set(nk.x - 0.1, nk.y - 0.05, nk.z + 0.08), grab * 0.8);
       const hit = snap(t, 650, 720);
       p.head -= 0.25 * hit;
       p.headRoll = -0.3 * hit;
@@ -310,7 +312,7 @@ export function targetPose(v: TakedownVariant, t: number, side: number, out: Rec
       // Arms flung forward in the air, then out on the street.
       neckOf(p, nk);
       reach(p, "L", tmpV.set(0.45, Math.max(0.08, p.h + 0.2 - 0.3 * u), p.fz + 0.25 + 0.2 * u), ss(t, 200, 330));
-      reach(p, "R", new THREE.Vector3(-0.5, Math.max(0.08, p.h + 0.25 - 0.3 * u), p.fz + 0.35 + 0.25 * u), ss(t, 200, 330));
+      reach(p, "R", tmpV2.set(-0.5, Math.max(0.08, p.h + 0.25 - 0.3 * u), p.fz + 0.35 + 0.25 * u), ss(t, 200, 330));
       break;
     }
     case "frontBaton": {
@@ -323,7 +325,7 @@ export function targetPose(v: TakedownVariant, t: number, side: number, out: Rec
       neckOf(p, nk);
       const clutch = ss(t, 260, 380) * (1 - ss(t, 600, 680));
       reach(p, "L", tmpV.set(0.05, p.h + 0.12, p.fz + 0.22), clutch);
-      reach(p, "R", new THREE.Vector3(-0.06, p.h + 0.15, p.fz + 0.23), clutch);
+      reach(p, "R", tmpV2.set(-0.06, p.h + 0.15, p.fz + 0.23), clutch);
       const down = snap(t, 600, 660);
       p.head += 0.35 * down;
       crumple(p, t, 610, 760, 1100);
@@ -404,7 +406,7 @@ export function targetPose(v: TakedownVariant, t: number, side: number, out: Rec
       neckOf(p, nk);
       const up = 1 - ss(t, 520, 600);
       reach(p, "L", tmpV.set(0.22, nk.y + 0.25, nk.z + 0.05), up);
-      reach(p, "R", new THREE.Vector3(-0.22, nk.y + 0.25, nk.z + 0.05), up);
+      reach(p, "R", tmpV2.set(-0.22, nk.y + 0.25, nk.z + 0.05), up);
       p.headRoll = 0.6 * snap(t, 520, 590);
       crumple(p, t, 540, 560, 960);
       break;
@@ -465,19 +467,27 @@ const vA = new THREE.Vector3();
 const vB = new THREE.Vector3();
 const vC = new THREE.Vector3();
 const vD = new THREE.Vector3();
-const lerp3 = (a: THREE.Vector3, b: THREE.Vector3, k: number) => a.clone().lerp(b, Math.min(1, Math.max(0, k)));
+/**
+ * Her hands' per-frame scratch: a pool handed out in order and rewound at the top of each `cathHands` (its
+ * vectors live until her arms are posed, the same frame), so a takedown allocates nothing per frame.
+ */
+const POOL: THREE.Vector3[] = [];
+let poolAt = 0;
+const tv = (): THREE.Vector3 => (POOL[poolAt++] ??= new THREE.Vector3());
+const lerp3 = (a: THREE.Vector3, b: THREE.Vector3, k: number) => tv().copy(a).lerp(b, Math.min(1, Math.max(0, k)));
 
 /** A point in her frame (right, up, forward) from `base`. */
 function at(F: CathFrame, base: THREE.Vector3, r: number, u: number, f: number): THREE.Vector3 {
-  return base.clone().addScaledVector(F.r, r).addScaledVector(F.f, f).add(vC.set(0, u, 0));
+  return tv().copy(base).addScaledVector(F.r, r).addScaledVector(F.f, f).add(vC.set(0, u, 0));
 }
 function dir(F: CathFrame, r: number, u: number, f: number): THREE.Vector3 {
-  return new THREE.Vector3().addScaledVector(F.r, r).addScaledVector(F.f, f).add(vC.set(0, u, 0)).normalize();
+  return tv().set(0, u, 0).addScaledVector(F.r, r).addScaledVector(F.f, f).normalize();
 }
 
 /** Her hands `t` ms in, from his joints this frame (world) and her frame. */
 function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3>, F: CathFrame, side: number, pistol: boolean): HandsKey {
-  const eye = F.feet.clone().add(vA.set(0, TD.eye, 0));
+  poolAt = 0;
+  const eye = tv().copy(F.feet).add(vA.set(0, TD.eye, 0));
   // Rest: low and in front of her, as if the gun had just been lowered; once she has let him go they drop on out
   // of the lens (the session hides the rig once they are gone), so nothing hangs in the frame while the view
   // comes home and her own gun comes back up.
@@ -510,7 +520,7 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
       k.lPose = HANDS.wrap!;
       // The elbow out round his left shoulder, so the forearm wraps the side of his neck (in the shot), not
       // tucked under his chin out of sight.
-      k.lPole = vD.set(0, W.poleU, 0).addScaledVector(F.r, W.poleR).addScaledVector(F.f, W.poleF).clone();
+      k.lPole = tv().set(0, W.poleU, 0).addScaledVector(F.r, W.poleR).addScaledVector(F.f, W.poleF);
       if (v.id === "behindWrap") {
         // The Pin up by 380 (cocked high, over her right shoulder), down on his temple at 420, a bounce, then lowered.
         const raise = ss(t, 120, 360);
@@ -547,7 +557,7 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
       const away = ss(t, 760, 1000);
       k.rAxis = lerp3(k.rAxis, dir(F, -0.2, 0.9, 0.3), jaw * (1 - away)).addScaledVector(F.f, -0.2 * recoil).normalize();
       // The muzzle up under the right side of his jaw (his helmet's chin), the gun hanging below it beside his neck.
-      if (jaw * (1 - away) > 0.02) k.muzzleAt = lerp3(at(F, restR, 0, 0.25, 0.1), at(F, J.neck.clone().lerp(J.head, 0.3), 0.07, 0, 0.04).addScaledVector(F.f, -0.01 * recoil), jaw * (1 - away));
+      if (jaw * (1 - away) > 0.02) k.muzzleAt = lerp3(at(F, restR, 0, 0.25, 0.1), at(F, tv().copy(J.neck).lerp(J.head, 0.3), 0.07, 0, 0.04).addScaledVector(F.f, -0.01 * recoil), jaw * (1 - away));
       k.rDorsal = dir(F, 0.9, -0.2, 0.1);
       break;
     }
@@ -570,7 +580,7 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
         const under = chin * (1 - ss(t, 760, 1000));
         k.rAxis = lerp3(dir(F, -0.6, -0.6, 0.5), dir(F, -0.45, 0.8, 0.3), under).normalize();
         // 650: the muzzle pressed up under his chin (the gun angled in from below, in the open between her fists).
-        if (under > 0.02) k.muzzleAt = lerp3(at(F, k.rW, 0, 0.2, 0), at(F, J.neck.clone().lerp(J.head, 0.3), 0.02, 0, -0.1), under);
+        if (under > 0.02) k.muzzleAt = lerp3(at(F, k.rW, 0, 0.2, 0), at(F, tv().copy(J.neck).lerp(J.head, 0.3), 0.02, 0, -0.1), under);
         k.rDorsal = dir(F, 0.6, 0.4, -0.3);
       }
       break;
@@ -578,8 +588,8 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
     case "frontKick": {
       // Both hands come up to the Kestrel as he lands and she puts two in him.
       const aim = ss(t, 420, 640) * out;
-      const target = J.chest.clone().lerp(J.head, 0.3);
-      const muzzleTo = target.clone().sub(at(F, eye, 0.1, -0.3, 0.45)).normalize();
+      const target = tv().copy(J.chest).lerp(J.head, 0.3);
+      const muzzleTo = tv().copy(target).sub(at(F, eye, 0.1, -0.3, 0.45)).normalize();
       const recoil = (snap(t, 700, 740) * (1 - ss(t, 740, 800)) + snap(t, 820, 860) * (1 - ss(t, 860, 920))) * 0.06;
       k.rW = lerp3(restR, at(F, eye, 0.08, -0.32 + recoil, 0.42 - recoil), aim);
       k.rAxis = lerp3(k.rAxis, muzzleTo, aim).normalize();
@@ -602,13 +612,13 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
     case "surrender": {
       // The Pin: wind-ups and blows at each impact time, her left hand on him (or out for balance).
       const blows = blowsInOrder(v);
-      let r = restR.clone();
-      let ax = k.rAxis.clone();
+      let r = tv().copy(restR);
+      let ax = tv().copy(k.rAxis);
       for (const b of blows) {
         const wind = ss(t, b - 230, b - 50);
         const hit = ss(t, b - 45, b);
         const after = ss(t, b + 40, b + 260);
-        const tgt = v.id === "frontBaton" && b === 250 ? J.pelvis.clone().lerp(J.chest, 0.4) : v.id === "sideKnee" && b === 250 ? (side > 0 ? J.kneeL : J.kneeR).clone() : J.head.clone();
+        const tgt = v.id === "frontBaton" && b === 250 ? tv().copy(J.pelvis).lerp(J.chest, 0.4) : v.id === "sideKnee" && b === 250 ? tv().copy(side > 0 ? J.kneeL : J.kneeR) : tv().copy(J.head);
         const from = at(F, eye, 0.36, 0.2, 0.15);
         const contact = at(F, tgt, 0.36, 0.12, -0.18);
         const axW = dir(F, -0.1, 0.85, -0.45);
@@ -650,7 +660,7 @@ function cathHands(v: TakedownVariant, t: number, J: Record<Joint, THREE.Vector3
 export class TakedownRig {
   readonly group = new THREE.Group();
   readonly arms: Arms;
-  readonly props: Record<"pin" | "pistol", { rig: GunRig; grip: THREE.Matrix4; axis: THREE.Vector3; dorsal: THREE.Vector3 }>;
+  readonly props: Record<"pin" | "pistol", { rig: GunRig; grip: THREE.Matrix4; gripInv: THREE.Matrix4; axis: THREE.Vector3; dorsal: THREE.Vector3 }>;
   private readonly fistGrip = new THREE.Object3D();
   private readonly gripL = new THREE.Object3D();
   readonly muzzle = new THREE.Vector3();
@@ -662,6 +672,8 @@ export class TakedownRig {
   hasL = false;
   /** The last pose's anchors (world), for the review stages. */
   debug: Record<string, number[] | null> = {};
+  /** Record `debug` (the review stages set it; the live game doesn't pay for it). */
+  keepDebug = false;
 
   constructor(phone: boolean) {
     this.group.name = "takedown:rig";
@@ -701,7 +713,7 @@ material.specularF90 *= mix(${TD.armSpec.toFixed(3)}, 1.0, step(0.5, vMR.x));`,
       const inv = gq.clone().invert();
       this.group.add(rig.root);
       rig.root.visible = false;
-      return { rig, grip, axis: tip.normalize().applyQuaternion(inv), dorsal: new THREE.Vector3(0, 0, 1) };
+      return { rig, grip, gripInv: grip.clone().invert(), axis: tip.normalize().applyQuaternion(inv), dorsal: new THREE.Vector3(0, 0, 1) };
     };
     this.props = { pin: mk("pin"), pistol: mk("pistol") };
     this.group.traverse((o) => {
@@ -716,12 +728,12 @@ material.specularF90 *= mix(${TD.armSpec.toFixed(3)}, 1.0, step(0.5, vMR.x));`,
     this.wrist.copy(k.rW);
     this.hasL = !!k.lW;
     if (k.lW) this.wristL.copy(k.lW);
-    const eye = F.feet.clone().add(vA.set(0, TD.eye, 0)).addScaledVector(F.f, TD.lean * k.lean);
-    const shR = eye.clone().add(vB.set(0, -TD.shoulderDrop, 0)).addScaledVector(F.r, TD.shoulderW).addScaledVector(F.f, -0.04);
-    const shL = eye.clone().add(vB.set(0, -TD.shoulderDrop, 0)).addScaledVector(F.r, -TD.shoulderW).addScaledVector(F.f, -0.04);
+    const eye = rE.copy(F.feet).add(vA.set(0, TD.eye, 0)).addScaledVector(F.f, TD.lean * k.lean);
+    const shR = rShR.copy(eye).add(vB.set(0, -TD.shoulderDrop, 0)).addScaledVector(F.r, TD.shoulderW).addScaledVector(F.f, -0.04);
+    const shL = rShL.copy(eye).add(vB.set(0, -TD.shoulderDrop, 0)).addScaledVector(F.r, -TD.shoulderW).addScaledVector(F.f, -0.04);
     // Elbows out and down, in her frame.
-    const poleR = F.r.clone().multiplyScalar(0.4).add(vB.set(0, -0.55, 0)).addScaledVector(F.f, -0.1);
-    const poleL = F.r.clone().multiplyScalar(-0.4).add(vB.set(0, -0.55, 0)).addScaledVector(F.f, -0.1);
+    const poleR = rPR.copy(F.r).multiplyScalar(0.4).add(vB.set(0, -0.55, 0)).addScaledVector(F.f, -0.1);
+    const poleL = rPL.copy(F.r).multiplyScalar(-0.4).add(vB.set(0, -0.55, 0)).addScaledVector(F.f, -0.1);
     for (const id of ["pin", "pistol"] as const) this.props[id].rig.root.visible = k.prop === id;
     let grip: THREE.Object3D;
     let pose: HandPose;
@@ -735,9 +747,8 @@ material.specularF90 *= mix(${TD.armSpec.toFixed(3)}, 1.0, step(0.5, vMR.x));`,
     } else {
       const P = this.props[k.prop];
       // The wrist frame that turns the prop's axis onto rAxis with the back of the hand toward rDorsal.
-      const q = basisQuat(k.rAxis, k.rDorsal).multiply(basisQuat(P.axis, P.dorsal).invert());
-      const wrist = new THREE.Matrix4().compose(k.rW, q, new THREE.Vector3(1, 1, 1));
-      const m = wrist.multiply(P.grip.clone().invert());
+      const q = basisQuat(k.rAxis, k.rDorsal, rQ).multiply(basisQuat(P.axis, P.dorsal, rQ2).invert());
+      const m = rM.compose(k.rW, q, ONE).multiply(P.gripInv);
       m.decompose(P.rig.root.position, P.rig.root.quaternion, P.rig.root.scale);
       P.rig.root.updateMatrixWorld(true);
       if (k.muzzleAt) {
@@ -754,7 +765,7 @@ material.specularF90 *= mix(${TD.armSpec.toFixed(3)}, 1.0, step(0.5, vMR.x));`,
       P.rig.muzzle.getWorldPosition(this.muzzle);
       this.axis.copy(k.rAxis);
     }
-    this.debug = { shR: shR.toArray(), shL: shL.toArray(), rW: k.rW.toArray(), lW: k.lW?.toArray() ?? null };
+    if (this.keepDebug) this.debug = { shR: shR.toArray(), shL: shL.toArray(), rW: k.rW.toArray(), lW: k.lW?.toArray() ?? null };
     this.arms.right.pose(grip, shR, pose, 0, poleR);
     if (k.lW) {
       const g = gripFrame(k.lW, k.lKnuckles, k.lDorsal);
@@ -768,14 +779,28 @@ material.specularF90 *= mix(${TD.armSpec.toFixed(3)}, 1.0, step(0.5, vMR.x));`,
 }
 
 /** A rotation whose Y goes along `y` and whose Z is as near `z` as it can be (an orthonormal basis). */
-function basisQuat(y: THREE.Vector3, z: THREE.Vector3): THREE.Quaternion {
-  const Y = y.clone().normalize();
-  const Z = z.clone().addScaledVector(Y, -z.dot(Y));
+function basisQuat(y: THREE.Vector3, z: THREE.Vector3, out: THREE.Quaternion): THREE.Quaternion {
+  const Y = bY.copy(y).normalize();
+  const Z = bZ.copy(z).addScaledVector(Y, -z.dot(Y));
   if (Z.lengthSq() < 1e-8) Z.set(0, 0, 1).addScaledVector(Y, -Y.z);
   Z.normalize();
-  const X = new THREE.Vector3().crossVectors(Y, Z).normalize();
-  return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(X, Y, Z));
+  const X = bX.crossVectors(Y, Z).normalize();
+  return out.setFromRotationMatrix(bM.makeBasis(X, Y, Z));
 }
+const bX = new THREE.Vector3();
+const bY = new THREE.Vector3();
+const bZ = new THREE.Vector3();
+const bM = new THREE.Matrix4();
+/** The rig's pose scratch. */
+const rE = new THREE.Vector3();
+const rShR = new THREE.Vector3();
+const rShL = new THREE.Vector3();
+const rPR = new THREE.Vector3();
+const rPL = new THREE.Vector3();
+const rQ = new THREE.Quaternion();
+const rQ2 = new THREE.Quaternion();
+const rM = new THREE.Matrix4();
+const ONE = new THREE.Vector3(1, 1, 1);
 
 // ------------------------------------------------------------------ the director
 

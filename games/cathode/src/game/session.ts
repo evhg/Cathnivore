@@ -2136,12 +2136,21 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return tdBest.e ? (tdBest as { e: Enemy; approach: TakedownApproach; side: number }) : null;
   }
 
-  /** C11 (S5.1): the takedown chip's point on screen: just over his helmet (the leader ends there), or null off screen. */
-  function tdChipAt(e: Enemy): { x: number; y: number } | null {
-    const v = tdChip.copy(e.body.joints.head).add(vUp.set(0, 0.19, 0)).project(world.camera);
-    if (v.z > 1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) return null;
+  /**
+   * C11 (S5.1): the takedown chip's point on screen: beside his helmet at his visor line (the leader runs in to it),
+   * on his right, or his left when that would run off the screen; null off screen. (C11 review 2: over his helmet
+   * it sat on the overhead signs of the street behind him.)
+   */
+  function tdChipAt(e: Enemy): { x: number; y: number; left: boolean } | null {
     const c = world.renderer.domElement;
-    return { x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight };
+    const camR = vUp.setFromMatrixColumn(world.camera.matrixWorld, 0);
+    const h = tdChip.copy(e.body.joints.head).project(world.camera);
+    if (h.z > 1 || Math.abs(h.x) > 1 || Math.abs(h.y) > 1) return null;
+    const hx = ((h.x + 1) / 2) * c.clientWidth;
+    const left = hx > c.clientWidth * 0.66;
+    const v = tdChip.copy(e.body.joints.head).addScaledVector(camR, left ? -0.26 : 0.26).project(world.camera);
+    if (v.z > 1) return null;
+    return { x: Math.min(c.clientWidth, Math.max(0, ((v.x + 1) / 2) * c.clientWidth)), y: Math.min(c.clientHeight, Math.max(0, ((1 - v.y) / 2) * c.clientHeight)), left };
   }
   const vUp = new THREE.Vector3();
 
@@ -4094,6 +4103,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     const approach: TakedownApproach = v.approach;
     const toHer = new THREE.Vector3().subVectors(player.pos, g.position).setY(0).normalize();
+    td.rig.keepDebug = true;
     startTakedown({ e: g, approach, side: toHer.dot(gl) >= 0 ? 1 : -1 }, v.id);
     // The sequence to its moment, at 60 Hz: her arms, his body, the blows' blood (the particles step too).
     const step = 1000 / 60;

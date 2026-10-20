@@ -240,4 +240,39 @@ test.describe('CATHODE takedowns', () => {
     expect(pelvisUp).toBeLessThan(0.45)
     await expect(page.locator('.hud-root.td-cine')).toHaveCount(0)
   })
+
+  // On touch the world chip is the takedown button (C11 review 2: that path was never driven): a 44 px target
+  // beside his helmet, and a tap on it starts the sequence.
+  test('touch: a tap on the world chip is the takedown', async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'the chip is a button on touch only')
+    test.setTimeout(400_000)
+    await page.goto('/cathode/')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/cathode/?play&class=ghost&rs=0.5')
+    type V3 = { x: number; y: number; z: number; set(x: number, y: number, z: number): void; distanceTo(o: V3): number }
+    type E = { alive: boolean; position: V3; motion: { yaw: number } }
+    type C = {
+      stats: { frames: number }
+      enemies: E[]
+      job: { skipTo(n: number): void }
+      player: { pos: V3; yaw: number; pitch: number }
+      takedown: { active: boolean }
+    }
+    await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number }; job?: unknown } }).cathode?.job ? 1 : 0) && ((window as unknown as { cathode: C }).cathode.stats.frames >= 3), null, { timeout: 200_000 })
+    await page.evaluate(() => {
+      const c = (window as unknown as { cathode: C }).cathode
+      c.job.skipTo(1)
+      const g = c.enemies.filter((e) => e.alive).sort((a, b) => a.position.distanceTo(c.player.pos) - b.position.distanceTo(c.player.pos))[0]!
+      const yaw = g.motion.yaw
+      c.player.pos.set(g.position.x - Math.sin(yaw) * 1.3, g.position.y, g.position.z - Math.cos(yaw) * 1.3)
+      c.player.yaw = Math.atan2(-Math.sin(yaw), -Math.cos(yaw))
+      c.player.pitch = -0.15
+    })
+    const chip = page.locator('.hud-prompt.world')
+    await expect(chip).toBeVisible({ timeout: 60_000 })
+    const box = (await chip.boundingBox())!
+    expect(box.height).toBeGreaterThanOrEqual(44)
+    await chip.tap()
+    await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.takedown.active, null, { timeout: 60_000 })
+  })
 })

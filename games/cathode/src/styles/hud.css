@@ -1618,13 +1618,14 @@
 :root .hud-root.is-frozen .hud-toast.on .hud-toast-rule { animation-play-state: paused; animation-delay: var(--freeze-t, 0ms); }
 
 /* ---- C11 takedowns (S5.1, S5.2) ---- */
-/* The tell: a world-anchored chip over his shoulders, an amber 22u keycap and "TAKEDOWN" on a cut plate, with a
-   leader down to him. Desktop and pad show the key; touch shows the tap glyph, and there the chip itself is a
-   button (a tap on it is the takedown, as is the touch Takedown button). */
+/* The tell: a world-anchored chip beside his helmet at his visor line (C11 review 2: over it, the plate sat on the
+   street's overhead signs), an amber 22u keycap and "TAKEDOWN" on a cut plate, with a leader in to him. Desktop and
+   pad show the key; touch shows the tap glyph, and there the chip itself is a button (a tap on it is the takedown,
+   as is the touch Takedown button). `.left`: the chip on his left, when his right would run off the screen. */
 .hud-prompt.world {
   left: 0;
   top: 0;
-  transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, calc(-100% - var(--u) * 26));
+  transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(calc(var(--u) * 20), -50%);
   gap: calc(var(--u) * 12);
   padding: calc(var(--u) * 8) calc(var(--u) * 20) calc(var(--u) * 8) calc(var(--u) * 8);
   background: linear-gradient(90deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .7));
@@ -1636,16 +1637,18 @@
   white-space: nowrap;
   animation: td-tell-in 240ms var(--ease-out);
 }
+.hud-prompt.world.left { transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(calc(-100% - var(--u) * 20), -50%); }
 .hud-prompt.world::after {
-  /* the leader: a short amber tick from the plate down to his shoulders */
+  /* the leader: a short amber tick from the plate in to his helmet */
   content: "";
   position: absolute;
-  left: 50%;
-  top: 100%;
-  width: max(1px, calc(var(--u) * 2));
-  height: calc(var(--u) * 22);
-  background: linear-gradient(180deg, rgb(var(--amber-rgb) / .9), rgb(var(--amber-rgb) / 0));
+  right: 100%;
+  top: 50%;
+  width: calc(var(--u) * 20);
+  height: max(1px, calc(var(--u) * 2));
+  background: linear-gradient(270deg, rgb(var(--amber-rgb) / .9), rgb(var(--amber-rgb) / 0));
 }
+.hud-prompt.world.left::after { right: auto; left: 100%; background: linear-gradient(90deg, rgb(var(--amber-rgb) / .9), rgb(var(--amber-rgb) / 0)); }
 .hud-prompt.world .hud-prompt-key {
   min-width: max(26px, calc(var(--u) * 22 * 1.4));
   height: max(26px, calc(var(--u) * 22 * 1.4));
@@ -1653,6 +1656,18 @@
   color: var(--night);
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
   box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
+  position: relative;
+}
+/* The 3 Hz pulse is a glow layer's opacity (composited), not an animated box-shadow (a repaint every frame). */
+.hud-prompt.world .hud-prompt-key::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 calc(var(--u) * 16) rgb(var(--amber-rgb) / .75);
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
   animation: td-key-pulse 333ms ease-in-out infinite alternate;
 }
 .hud-prompt-key.wide { font-family: var(--font-ui); letter-spacing: .08em; text-transform: uppercase; }
@@ -1664,15 +1679,16 @@
   background: radial-gradient(circle, var(--night) 0 26%, transparent 28% 44%, var(--night) 46% 54%, transparent 56% 70%);
 }
 @keyframes td-tell-in {
-  from { opacity: 0; transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, calc(-100% - var(--u) * 14)); }
+  from { opacity: 0; }
 }
 /* 3 Hz, in step with his rim and visor */
 @keyframes td-key-pulse {
-  from { box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6), 0 0 0 rgb(var(--amber-rgb) / 0); }
-  to { box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6), 0 0 calc(var(--u) * 16) rgb(var(--amber-rgb) / .75); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 @media (pointer: coarse) {
-  .hud-prompt.world { pointer-events: auto; cursor: pointer; touch-action: none; }
+  /* On touch the chip is the button: at least 44 px tall (the iOS minimum target). */
+  .hud-prompt.world { pointer-events: auto; cursor: pointer; touch-action: none; min-height: 44px; box-sizing: border-box; }
   /* The phone's weapon name sits top centre, where the chip rides over a close guard's helmet: it steps aside. */
   .hud-root.td-tell .hud-arms { visibility: hidden; }
 }
@@ -1731,14 +1747,15 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .hud-prompt.world { animation: none; }
-  .hud-prompt.world .hud-prompt-key { animation: none; }
+  .hud-prompt.world .hud-prompt-key::after { animation: none; }
   .hud-rise { animation-duration: 1ms; animation-fill-mode: none; opacity: 1; }
   /* The blow's white flash becomes a brief static dim. */
   .hud-td-flash { background: rgb(var(--black-rgb) / .28); }
   .hud-td-flash.on { animation: td-dim 200ms steps(1, end); }
 }
 :root.reduce-motion .hud-prompt.world,
-:root.reduce-motion .hud-prompt.world .hud-prompt-key { animation: none; }
+:root.reduce-motion .hud-prompt.world .hud-prompt-key::after { animation: none; }
+:root.reduce-motion .hud-rise { animation-duration: 1ms; animation-fill-mode: none; opacity: 1; }
 :root.reduce-motion .hud-td-flash { background: rgb(var(--black-rgb) / .28); }
 :root.reduce-motion .hud-td-flash.on { animation: td-dim 200ms steps(1, end); }
 @keyframes td-dim {

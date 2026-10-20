@@ -249,14 +249,14 @@ export class Arm {
    */
   pose(grip: THREE.Object3D, shoulder: THREE.Vector3, hp: HandPose, trigger = 0, poleOff?: THREE.Vector3): void {
     grip.updateWorldMatrix(true, false);
-    const parentInv = this.mesh.parent ? new THREE.Matrix4().copy(this.mesh.parent.matrixWorld).invert() : new THREE.Matrix4();
-    const m = new THREE.Matrix4().multiplyMatrices(parentInv, grip.matrixWorld);
-    m.decompose(this._w, this._q, new THREE.Vector3());
+    const parentInv = this.mesh.parent ? this._pInv.copy(this.mesh.parent.matrixWorld).invert() : this._pInv.identity();
+    const m = this._pm.multiplyMatrices(parentInv, grip.matrixWorld);
+    m.decompose(this._w, this._q, this._sc);
     const b = this.bones;
     this._z.set(0, 0, 1).applyQuaternion(this._q);
     // The elbow hangs down and out.
     // (C11's world-space takedown arms pass their own offset, in her frame: out and down from her shoulders.)
-    this._pole.copy(shoulder).lerp(this._w, 0.5).add(poleOff ?? new THREE.Vector3(this.side * 0.35, -0.6, 0.1));
+    this._pole.copy(shoulder).lerp(this._w, 0.5).add(poleOff ?? this._pd.set(this.side * 0.35, -0.6, 0.1));
     const r = solveTwoBone(shoulder, this._w, this._pole, ARM.upper, ARM.fore, true, this.ik);
     b.upper.position.copy(r.root);
     boneQuat(r.root, r.mid, this._z, b.upper.quaternion);
@@ -286,6 +286,11 @@ export class Arm {
   }
 
   private readonly _m = new THREE.Matrix4();
+  /** Pose scratch (no allocations per frame). */
+  private readonly _pInv = new THREE.Matrix4();
+  private readonly _pm = new THREE.Matrix4();
+  private readonly _sc = new THREE.Vector3();
+  private readonly _pd = new THREE.Vector3();
   private readonly _a = new THREE.Vector3();
   private readonly _b = new THREE.Vector3();
   private readonly _c = new THREE.Vector3();

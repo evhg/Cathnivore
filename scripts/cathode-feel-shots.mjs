@@ -482,8 +482,15 @@ for (const vp of vps) {
       console.log(`  C11 ${vp} ${spec}: chip ${c ? `${c.w.toFixed(0)}x${c.h.toFixed(0)} CSS px at ${c.x.toFixed(0)},${c.y.toFixed(0)} (bottom ${(c.y + c.h).toFixed(0)}), helmet top at y ${t?.helmetTop?.y?.toFixed(0)}, pointer-events ${c.pe}` : 'MISSING'}`)
       if (!c || c.hidden) fail(`${vp} ${spec}: no world takedown chip`)
       else {
-        // The chip's plate clears his helmet (the leader may run down to it), it is on screen, and it is big enough to read.
-        if (t?.helmetTop && c.y + c.h > t.helmetTop.y + 2) fail(`${vp} ${spec}: the chip (bottom ${(c.y + c.h).toFixed(0)}) overlaps his helmet (top ${t.helmetTop.y.toFixed(0)})`)
+        // The chip's plate clears his helmet (it rides beside it, at his visor line), it is on screen, and it is big
+        // enough to read; on touch it is a 44 px target.
+        if (t?.helmetTop && t?.head) {
+          const r = Math.abs(t.head.y - t.helmetTop.y)
+          const hx0 = t.head.x - r, hx1 = t.head.x + r, hy0 = t.helmetTop.y, hy1 = t.head.y + r
+          if (c.x < hx1 && c.x + c.w > hx0 && c.y < hy1 && c.y + c.h > hy0) fail(`${vp} ${spec}: the chip (${c.x.toFixed(0)},${c.y.toFixed(0)} ${c.w.toFixed(0)}x${c.h.toFixed(0)}) overlaps his helmet`)
+          if (Math.abs(c.y + c.h / 2 - t.head.y) > r * 2.5) fail(`${vp} ${spec}: the chip is not beside his helmet (centre y ${(c.y + c.h / 2).toFixed(0)}, head y ${t.head.y.toFixed(0)})`)
+        }
+        if (V.touch && c.h < 44) fail(`${vp} ${spec}: the chip is ${c.h.toFixed(0)} CSS px tall, under the 44 px touch target`)
         if (c.x < 0 || c.y < 0 || c.x + c.w > V.viewport.width || c.y + c.h > V.viewport.height) fail(`${vp} ${spec}: the chip runs off screen`)
         const minH = Math.max(26, V.viewport.height * 0.03)
         if (c.h < minH) fail(`${vp} ${spec}: the chip is ${c.h.toFixed(0)} CSS px tall (< ${minH.toFixed(0)})`)
