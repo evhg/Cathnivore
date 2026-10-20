@@ -1338,6 +1338,49 @@ Unless a milestone says otherwise, "3 sizes" means its stages are shot at all th
   - The critique rates it "AAA-adjacent" against The Last of Us Part II, Hitman and Control.
 - **Size:** 4.
 
+### C13T. "Type and UI that look like a AAA game" (owner, 2026-10-20; 3 sessions; runs right after C13)
+- **Why:** the owner looked at the live title, death screen and rotate prompt and said the style, typefaces and fonts "look like a 5 year old made them". This is the second time (the first was 2026-10-11, Phase U). Phase U picked fonts and a theme, then graded its own work "finished". This milestone replaces the type system and the UI language, not just the screens.
+- **What is wrong today (evidence: the owner's three screenshots, plus the C13 shots):**
+  - **Fonts:** five families on one screen (Bodoni Moda roman and italic, Rajdhani, JetBrains Mono, Cathode Figures, plus a Georgia fallback in The List). Rajdhani is a free "sci-fi gaming" display face and reads as a template. A code font sets body copy on the gate and the death stats. Bodoni Moda at 150 px+ with wide tracking loses its hairlines: "CATHODE" reads as broken strokes.
+  - **Spacing:** tracking of 0.2–0.4em on almost every label, so nothing has a texture or a hierarchy.
+  - **Web-page idioms instead of game UI:** a pull-quote box with a red rule, a red button with a cyan border, chamfered clip-path frames, a rotated "RATED 18" rubber stamp, diagonal hatching, a glowing modal card with a pink top border, a clip-art phone icon, flat circles as bokeh, and a black pill artifact on the left edge.
+  - **Colour:** three accents (red, cyan, magenta) fighting on one screen.
+  - **Content:** The List shows a placeholder-looking name ("HollowCandor").
+  - **Death screen:** the stats are a monospace debug table, and a white bloom blob sits behind the headline.
+- **The rules (all CATHODE screens: gate, title, menus, settings, credits, class pick, loading, chapter and area titles, pause, dossier, HUD, death, level-up, rotate prompt):**
+  1. **At most two families:**
+     - One grotesk superfamily for all UI, HUD, numbers and body text, with real weights, a condensed or narrow width for labels, and tabular figures.
+     - One serif, used only for the logotype (as an SVG lockup with outlines, not live text) and Cath's spoken lines.
+     - Rajdhani, JetBrains Mono and Cathode Figures leave CATHODE completely.
+     - Choose the grotesk by rendering the title, the death screen and the HUD in 3 OFL candidates from `@fontsource` (for example Archivo with its width axis, Instrument Sans, Inter Tight, Schibsted Grotesk) at 5K and on the phone. Pick the one that looks most like a shipped AAA title, and log the comparison sheet path in DECISIONS.md.
+  2. **Type scale and tracking:**
+     - One type scale of at most 6 sizes as tokens; no other font sizes.
+     - Tracking: 0 for sentence text; at most 0.06em for caps labels; caps only for short labels and menu items.
+     - The logotype's hairlines must survive at phone size: choose a sturdier optical size or weight, or draw the lockup.
+  3. **One accent:** the CATHODE red. Neutrals are a warm off-white and greys. Cyan and magenta live in the world (neon), never in the UI chrome.
+  4. **No decoration standing in for design:** no boxed cards, pull-quote boxes, bordered or chamfered buttons, stamps, hatching, glowing borders or clip-art icons.
+     - Menus are text lists with one quiet focus marker.
+     - Overlays (gate, pause, death, rotate) are type set directly over a darkened or blurred scene.
+     - Focus is shown by weight, opacity and the marker, not by boxes.
+  5. **One grid:**
+     - One left edge and one baseline rhythm per screen.
+     - Safe margins come from the viewport, so the 5K and phone layouts look composed, not stretched.
+  6. **Death screen:** one headline (Cath's line), one quiet line of facts (killed by, distance, weapon), two actions. No bloom blob behind the text.
+  7. **Rotate prompt:** a full-bleed blurred still of the street with one line of type, no card and no clip-art.
+  8. **Content:** replace any placeholder text (The List's names, labels) with final copy.
+- **Process (this is what Phase U skipped):**
+  - Before building, make a reference board: describe, and where the network allows fetch, the menu, pause and death screens of The Last of Us Part II, Control, Hitman 3, Cyberpunk 2077 and Death Stranding. Save it in the scratchpad.
+  - Write down the five type and layout traits they share; the build follows them.
+  - After building, an independent critique agent compares before and after shots against the board, defaulting to fail.
+  - It must find none of the "web page" tells listed above, and must rate each screen at least 8/10 as "could ship in a AAA game".
+- **Tests:**
+  - The font budget check now allows at most 2 families on `/cathode/`.
+  - A lint check (`scripts/` or a test) fails on any `font-family` other than the two tokens, any `letter-spacing` above 0.06em, or any font size outside the scale in `games/cathode/src`.
+- **Screenshot acceptance (5K, desktop, phone):**
+  - Shots of the gate, title, settings, pause, death, HUD in a firefight, level-up, loading and the rotate prompt.
+  - Side-by-side with the owner's three screenshots for the title, death and rotate prompt.
+- **Size:** 3.
+
 ### C14. "Class pick, loading and pause" (2 sessions)
 - **Goal:** every screen between the menu and play is part of the game's story.
 - **Files:**
