@@ -49,6 +49,25 @@ function limb(a: THREE.Vector3, b: THREE.Vector3, ra: number, rb: number, segs =
   return merged;
 }
 
+/**
+ * A body part turned along a→b with a radius profile (t from 0 at a to 1 at b), squashed to `depth` front to back
+ * around `up` (a thigh is wider than deep). Closed at both ends.
+ */
+function turned(a: THREE.Vector3, b: THREE.Vector3, profile: Array<[number, number]>, segs: number, depth = 1, twist = 0): THREE.BufferGeometry {
+  const len = a.distanceTo(b);
+  const pts = [new THREE.Vector2(0.0005, 0)];
+  for (const [t, r] of profile) pts.push(new THREE.Vector2(r, t * len));
+  pts.push(new THREE.Vector2(0.0005, len));
+  const g = new THREE.LatheGeometry(pts, segs);
+  g.scale(1, 1, depth);
+  if (twist) g.rotateY(twist);
+  const q = new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), b.clone().sub(a).normalize());
+  g.applyQuaternion(q);
+  g.translate(a.x, a.y, a.z);
+  g.computeVertexNormals();
+  return g;
+}
+
 /** Merges non-indexed copies of geometries that share position and normal attributes. */
 function mergeGeos(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
   const parts = list.map((g) => (g.index ? g.toNonIndexed() : g));
@@ -106,7 +125,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     t.repeat.set(3, 1);
     return t;
   })();
-  const hairMat = new THREE.MeshStandardMaterial({ color: 0x8a7a72, map: strands, roughness: 0.42, metalness: 0 });
+  const hairMat = new THREE.MeshPhysicalMaterial({ color: 0x9a8678, map: strands, roughness: 0.38, metalness: 0, sheen: 0.6, sheenRoughness: 0.3, sheenColor: new THREE.Color(0x7a5a48) });
   const skinMat = new THREE.MeshStandardMaterial({ color: 0xd9ad98, roughness: 0.55, metalness: 0 });
   const mats: THREE.Material[] = [coatMat, blackMat, hairMat, skinMat];
   // The back light's rim (S9.2 "lit from behind"): a Fresnel edge in --neon-pink, strongest on the side facing
@@ -159,22 +178,57 @@ export function buildFrontCath(phone: boolean): FrontCath {
   pelvis.add(chest);
 
   // ---- legs and heeled boots (in the group: the feet stay planted) ----
+  // Contrapposto: her weight on the right leg, the left a half step forward and turned out. Dark sheer tights to
+  // the knee (a warm skin under charcoal), then knee boots with a shaped calf, a pointed toe and a 7 cm heel.
+  const tightsMat = new THREE.MeshStandardMaterial({ color: 0x3a2c2a, roughness: 0.5, metalness: 0 });
+  mats.push(tightsMat);
+  rimify(tightsMat, 0.9);
   const legs: THREE.Mesh[] = [];
   for (const side of [1, -1]) {
-    const hip = V(0.072 * side, 0.9, 0);
-    const knee = V(0.078 * side, 0.5, 0.02);
-    const calf = V(0.082 * side, 0.34, -0.012);
-    const ankle = V(0.086 * side, 0.12, -0.01);
-    legs.push(add(limb(hip, knee, 0.064, 0.044, seg(12)), skinMat));
-    // Dark tights would vanish in the night: the shin is the boot, knee-high, with a calf.
-    add(limb(knee.clone().add(V(0, -0.02, 0)), calf, 0.046, 0.05, seg(12)), blackMat);
-    add(limb(calf, ankle, 0.05, 0.03, seg(12)), blackMat);
-    // The foot on a 7 cm heel: the toe down at the front, a thin heel post at the back.
-    const foot = limb(V(0.087 * side, 0.095, -0.025), V(0.089 * side, 0.02, 0.1), 0.026, 0.017, seg(10));
-    add(foot, blackMat);
-    const heel = new THREE.CylinderGeometry(0.006, 0.01, 0.075, 8);
-    heel.translate(0.087 * side, 0.038, -0.04);
+    const fwd = side > 0 ? 0.05 : 0; // her left leg forward
+    const hip = V(0.078 * side, 0.92, 0.0);
+    const knee = V(0.07 * side, 0.5, 0.012 + fwd * 0.6);
+    const ankle = V(0.075 * side + (side > 0 ? 0.012 : 0), 0.105, -0.005 + fwd);
+    // Thigh: full at the top, slim to the knee.
+    legs.push(add(turned(hip, knee, [[0, 0.066], [0.15, 0.068], [0.45, 0.06], [0.8, 0.047], [1, 0.042]], seg(14), 0.92), tightsMat));
+    // The boot shaft: knee to ankle with a calf, a turned-down cuff at the top.
+    add(turned(knee.clone().add(V(0, 0.03, 0)), ankle, [[0, 0.05], [0.06, 0.05], [0.1, 0.046], [0.32, 0.05], [0.5, 0.044], [0.8, 0.031], [1, 0.029]], seg(14), 0.95), blackMat);
+    // The foot: a pointed toe down on the ground, the heel up on its post.
+    const toe = V(ankle.x + (side > 0 ? 0.03 : 0.008) * side, 0.012, ankle.z + 0.15);
+    add(turned(V(ankle.x, 0.09, ankle.z - 0.035), toe, [[0, 0.03], [0.3, 0.034], [0.7, 0.028], [0.92, 0.014], [1, 0.004]], seg(10), 0.62, Math.PI / 2), blackMat);
+    const heel = new THREE.CylinderGeometry(0.007, 0.012, 0.072, 8);
+    heel.translate(ankle.x, 0.036, ankle.z - 0.04);
     add(heel, blackMat);
+  }
+
+  // A contact shadow under her: soft, darkest under the boots (ambient occlusion the street's lights can't give).
+  const shadowTex = (() => {
+    const c = document.createElement("canvas");
+    c.width = c.height = 128;
+    const g = c.getContext("2d");
+    if (g) {
+      const grd = g.createRadialGradient(64, 64, 4, 64, 64, 62);
+      grd.addColorStop(0, "rgba(0,0,0,0.85)");
+      grd.addColorStop(0.45, "rgba(0,0,0,0.5)");
+      grd.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = grd;
+      g.fillRect(0, 0, 128, 128);
+    }
+    const t = new THREE.CanvasTexture(c);
+    return t;
+  })();
+  const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, color: 0x000000, opacity: 0.8, polygonOffset: true, polygonOffsetFactor: -2 });
+  mats.push(shadowMat);
+  const contact = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.5), shadowMat);
+  contact.rotation.x = -Math.PI / 2;
+  contact.position.set(0.005, 0.004, 0.04);
+  contact.renderOrder = -1;
+  group.add(contact);
+  for (const side of [1, -1]) {
+    const blob = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.26), shadowMat);
+    blob.rotation.x = -Math.PI / 2;
+    blob.position.set(0.08 * side, 0.005, 0.06 + (side > 0 ? 0.05 : 0));
+    group.add(blob);
   }
 
   // ---- the trench: body lathe from collar to hem (belted waist), hem rows driven by the Verlet ring ----
@@ -214,7 +268,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const a = Math.atan2(z / 0.7, x);
       const depth = Math.min(1, (0.08 - y) / 0.5);
       const fold = Math.sin(a * 7 + 0.6) * 0.5 + Math.sin(a * 11 + 2.1) * 0.3;
-      const k = 1 + fold * 0.045 * depth;
+      // A back vent: the two skirts part a little at the back below the hips.
+      const vent = Math.max(0, 1 - Math.abs(Math.atan2(x, -z / 0.7)) / 0.18) * Math.max(0, (-0.12 - y) / 0.35);
+      const k = 1 + fold * 0.07 * depth - vent * 0.04;
       p.setXYZ(i, x * k, y, z * k);
     }
     coatGeo.computeVertexNormals();
@@ -228,16 +284,57 @@ export function buildFrontCath(phone: boolean): FrontCath {
   belt.scale(1, 1, 0.72);
   belt.translate(0, 0.12, 0);
   add(belt, blackMat, pelvis);
-  const collar = lathe(
-    [
-      [0.096, 0.5],
-      [0.1, 0.56],
-      [0.108, 0.625],
-    ],
-    seg(20),
-    0.8,
-  );
-  add(collar, coatMat, pelvis);
+  // The popped collar: open at the throat (a gap at the front), flaring out as it rises, and the notched lapels
+  // folded back over the chest; double-breasted buttons; epaulettes on the shoulders; a buckle on the belt.
+  {
+    const open = 1.15; // radians left open at the front
+    const pts = [
+      [0.1, 0.495],
+      [0.104, 0.54],
+      [0.118, 0.6],
+      [0.132, 0.64],
+    ].map(([r, y]) => new THREE.Vector2(r!, y!));
+    // Lathe angle 0 faces +x; +z (her front) is at π/2 in three's lathe (x = sin, z = cos): start past the gap.
+    const collar = new THREE.LatheGeometry(pts, seg(22), open / 2, Math.PI * 2 - open);
+    collar.scale(1, 1, 0.82);
+    collar.computeVertexNormals();
+    // Its own material: the collar is seen from inside too (double-sided), the coat is not (no shadow acne).
+    const collarMat = coatMat.clone();
+    collarMat.side = THREE.DoubleSide;
+    rimify(collarMat, 1);
+    mats.push(collarMat);
+    add(collar, collarMat, pelvis);
+  }
+  for (const side of [1, -1]) {
+    // A lapel: a thin folded wedge from the collar's corner down to the top button, angled out.
+    const lap = new THREE.BufferGeometry();
+    const a = V(0.045 * side, 0.5, 0.098);
+    const b = V(0.14 * side, 0.43, 0.088);
+    const c = V(0.052 * side, 0.27, 0.112);
+    const d = V(0.105 * side, 0.36, 0.1);
+    const t = 0.008;
+    const v = [a, d, b, a, c, d].flatMap((p) => [p.x, p.y, p.z + t]);
+    lap.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
+    lap.computeVertexNormals();
+    add(lap, coatMat, pelvis);
+    // Buttons: two columns of three down the front.
+    for (let i = 0; i < 3; i++) {
+      const bt = new THREE.SphereGeometry(0.009, 8, 6);
+      bt.scale(1, 1, 0.5);
+      bt.translate(0.06 * side, 0.25 - i * 0.075, 0.112 - i * 0.004);
+      add(bt, blackMat, pelvis);
+    }
+    // Epaulette: a flat strap across the shoulder to the collar.
+    const ep = new THREE.BoxGeometry(0.1, 0.012, 0.045);
+    ep.rotateZ(-0.38 * side);
+    ep.translate(0.135 * side, 0.488, -0.004);
+    add(ep, coatMat, pelvis);
+  }
+  const buckle = new THREE.TorusGeometry(0.022, 0.005, 4, 4);
+  buckle.rotateZ(Math.PI / 4);
+  buckle.scale(1.3, 1, 1);
+  buckle.translate(0.0, 0.12, 0.09);
+  add(buckle, blackMat, pelvis);
   // Belt tails hanging at her right hip.
   add(limb(V(-0.1, 0.1, 0.09), V(-0.115, -0.08, 0.1), 0.012, 0.01, 6), blackMat, pelvis);
 
@@ -248,20 +345,68 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const headPivot = new THREE.Group();
   headPivot.position.set(0, 0.455, 0.012);
   chest.add(headPivot);
-  const skull = new THREE.SphereGeometry(1, seg(24), seg(16));
-  skull.scale(0.076, 0.1, 0.09);
-  skull.translate(0, 0.0, 0.006);
+  // The head: an egg with a jaw. The lower front narrows to a chin, the cheekbones sit high, a small nose.
+  const skull = new THREE.SphereGeometry(1, seg(28), seg(18));
+  {
+    const p = skull.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < p.count; i++) {
+      let x = p.getX(i);
+      let y = p.getY(i);
+      let z = p.getZ(i);
+      // Jaw: below the cheekbones the sides draw in, the chin comes forward.
+      if (y < 0) {
+        const k = -y;
+        x *= 1 - 0.32 * k * k;
+        z = z > 0 ? z * (1 - 0.1 * k) + 0.06 * k : z * (1 - 0.45 * k);
+        y *= 1.06;
+      }
+      // Nose: a small ridge on the front centreline.
+      const nose = Math.max(0, 1 - Math.hypot(x / 0.18, (y + 0.1) / 0.3)) * Math.max(0, z);
+      z += nose * 0.18;
+      p.setXYZ(i, x, y, z);
+    }
+  }
+  skull.scale(0.072, 0.098, 0.088);
+  skull.translate(0, 0.0, 0.01);
+  skull.computeVertexNormals();
   add(skull, skinMat, headPivot);
-  // Hair: a cap over the crown and back, swept back from a centre parting, and the knot at the nape.
-  const cap = new THREE.SphereGeometry(1, seg(24), seg(14), 0, Math.PI * 2, 0, Math.PI * 0.62);
-  cap.scale(0.084, 0.108, 0.098);
-  cap.rotateX(-0.42);
-  cap.translate(0, 0.006, -0.008);
+  // Hair: a glossy shell over the crown, swept back from a centre parting, full at the sides over the tops of the
+  // ears, gathered at the nape into a low twisted knot (CATHODE's work look).
+  const cap = new THREE.SphereGeometry(1, seg(96), seg(18), 0, Math.PI * 2, 0, Math.PI * 0.7);
+  {
+    const p = cap.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i);
+      const y = p.getY(i);
+      const z = p.getZ(i);
+      // The parting: a shallow groove down the middle at the front; volume at the crown.
+      const part = Math.max(0, 1 - Math.abs(x) / 0.12) * Math.max(0, z) * Math.max(0, y) * 0.05;
+      const crown = 1 + Math.max(0, y) * Math.max(0, -z) * 0.08;
+      // Combed ridges running front to back (around the azimuth): they catch the back light as strands do.
+      const az = Math.atan2(x, z);
+      const ridge = 1 + 0.018 * Math.sin(az * 38) * (0.4 + 0.6 * Math.max(0, y));
+      p.setXYZ(i, x * crown * ridge, y * crown - part, z * crown * ridge);
+    }
+  }
+  cap.scale(0.081, 0.108, 0.1);
+  cap.rotateX(-0.5);
+  cap.translate(0, 0.008, -0.012);
+  cap.computeVertexNormals();
   add(cap, hairMat, headPivot);
+  // The sides swept back behind the ears to the nape.
+  for (const side of [1, -1]) {
+    add(turned(V(0.058 * side, 0.03, 0.03), V(0.03 * side, -0.05, -0.085), [[0, 0.02], [0.4, 0.03], [1, 0.022]], seg(10), 0.7), hairMat, headPivot);
+  }
+  // The knot: a twisted coil (torus) round a core, low on the nape.
   const knot = new THREE.SphereGeometry(1, seg(16), seg(10));
-  knot.scale(0.052, 0.042, 0.04);
-  knot.translate(0, -0.03, -0.098);
+  knot.scale(0.05, 0.04, 0.038);
+  knot.translate(0, -0.05, -0.105);
   add(knot, hairMat, headPivot);
+  const coil = new THREE.TorusGeometry(0.038, 0.016, seg(8), seg(18));
+  coil.scale(1.15, 0.9, 1);
+  coil.rotateX(0.35);
+  coil.translate(0, -0.05, -0.098);
+  add(coil, hairMat, headPivot);
   // Pearl studs catch the back light.
   const pearlMat = new THREE.MeshStandardMaterial({ color: 0xf2ebe2, roughness: 0.18, metalness: 0.1, emissive: 0x2a2624 });
   mats.push(pearlMat);
@@ -274,25 +419,44 @@ export function buildFrontCath(phone: boolean): FrontCath {
   headPivot.add(head);
 
   // ---- arms: her right holds the umbrella up, her left hangs with the cigarette ----
-  const shoulderR = V(-0.162, 0.245, -0.005);
+  // Set-in sleeves: full at the shoulder seam (inside the coat's shoulder line, so no ball shows), easing to the
+  // elbow, flaring a touch at the cuff with a strap; black leather gloves with a thumb.
+  const sleeve = (sh: THREE.Vector3, el: THREE.Vector3, wr: THREE.Vector3, parent: THREE.Object3D) => {
+    add(turned(sh, el, [[0, 0.03], [0.06, 0.052], [0.3, 0.05], [0.85, 0.042], [1, 0.04]], seg(12), 0.9), coatMat, parent);
+    add(turned(el.clone().add(el.clone().sub(sh).normalize().multiplyScalar(-0.02)), wr, [[0, 0.04], [0.5, 0.039], [0.88, 0.044], [0.97, 0.047], [1, 0.03]], seg(12), 0.9), coatMat, parent);
+    // The cuff strap.
+    const d = wr.clone().sub(el).normalize();
+    const strap = new THREE.TorusGeometry(0.044, 0.005, 4, seg(14));
+    strap.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), d));
+    const at = wr.clone().addScaledVector(d, -0.04);
+    strap.translate(at.x, at.y, at.z);
+    add(strap, blackMat, parent);
+  };
+  const glove = (at: THREE.Vector3, dir: THREE.Vector3, side: number, parent: THREE.Object3D) => {
+    // The hand: a flattened, rounded block along `dir`, fingers curled; the thumb wrapped across.
+    const palm = new THREE.SphereGeometry(1, seg(10), seg(8));
+    palm.scale(0.026, 0.05, 0.036);
+    palm.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), dir));
+    palm.translate(at.x + dir.x * 0.04, at.y + dir.y * 0.04, at.z + dir.z * 0.04);
+    add(palm, blackMat, parent);
+    const wrist = turned(at.clone().addScaledVector(dir, -0.01), at.clone().addScaledVector(dir, 0.03), [[0, 0.024], [1, 0.027]], seg(8), 0.8);
+    add(wrist, blackMat, parent);
+    const t0 = at.clone().addScaledVector(dir, 0.03).add(V(-0.02 * side, 0, 0.02));
+    add(limb(t0, t0.clone().add(V(0.012 * side, 0.02 * Math.sign(dir.y || 1), 0.02)), 0.011, 0.009, 6), blackMat, parent);
+  };
+  const shoulderR = V(-0.15, 0.25, -0.005);
   const elbowR = V(-0.192, 0.0, 0.07);
   const handR = V(-0.085, 0.12, 0.185);
-  add(limb(shoulderR, elbowR, 0.052, 0.043, seg(12)), coatMat, chest);
-  add(limb(elbowR, handR.clone().add(V(0, -0.02, -0.02)), 0.043, 0.04, seg(12)), coatMat, chest);
-  const fistR = new THREE.SphereGeometry(1, seg(12), seg(8));
-  fistR.scale(0.036, 0.045, 0.04);
-  fistR.translate(handR.x, handR.y + 0.01, handR.z + 0.01);
-  add(fistR, blackMat, chest);
+  const wristR = handR.clone().add(V(-0.012, -0.045, -0.03));
+  sleeve(shoulderR, elbowR, wristR, chest);
+  glove(wristR, handR.clone().sub(wristR).normalize(), -1, chest);
 
-  const shoulderL = V(0.162, 0.245, -0.005);
+  const shoulderL = V(0.15, 0.25, -0.005);
   const elbowL = V(0.192, -0.02, -0.035);
   const handL = V(0.175, -0.26, 0.05);
-  add(limb(shoulderL, elbowL, 0.052, 0.043, seg(12)), coatMat, chest);
-  add(limb(elbowL, handL.clone().add(V(0, 0.03, -0.01)), 0.043, 0.04, seg(12)), coatMat, chest);
-  const fistL = new THREE.SphereGeometry(1, seg(12), seg(8));
-  fistL.scale(0.034, 0.05, 0.038);
-  fistL.translate(handL.x, handL.y - 0.03, handL.z + 0.01);
-  add(fistL, blackMat, chest);
+  const wristL = handL.clone().add(V(0, 0.04, -0.012));
+  sleeve(shoulderL, elbowL, wristL, chest);
+  glove(wristL, V(0, -1, 0.15).normalize(), 1, chest);
   // The cigarette between two fingers, the ember at its tip.
   const cig = new THREE.CylinderGeometry(0.0035, 0.0035, 0.075, 6);
   cig.rotateX(Math.PI / 2 - 0.3);
