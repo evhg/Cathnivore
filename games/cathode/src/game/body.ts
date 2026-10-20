@@ -772,7 +772,10 @@ export class Body {
         p.y += vy + g * (1 - blend) * Math.max(0, 1 - rb * 4);
         p.z += vz;
       }
-      if (fast && run) run.fellBack = true;
+      // (Not a takedown's script: it owns the body to its end. A hit-stop shortens his step to a millisecond or two
+      // while the Verlet velocity still holds a whole frame's travel, so a fast authored move such as Front C's gut
+      // fold read as "too fast" and he dropped as a plain ragdoll at her feet, 350 ms early. The cap above still holds.)
+      if (fast && run && !run.script) run.fellBack = true;
       const fr = DEATH.friction;
       for (let it = 0; it < 6; it++) {
         for (const [a, b] of LINKS) {

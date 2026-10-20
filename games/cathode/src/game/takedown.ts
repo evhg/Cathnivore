@@ -60,11 +60,16 @@ export const TD = {
     // From behind, pulled back 0.3 to 0.4 m (S5.2: "0.35 m back"; C11 review 3: at her eye the lens sat 0.42 m
     // off his helmet and one dome, or one sleeve, filled the frame): his head, her wrapping arm and the raised Pin
     // all in one shot, his head about 3% of the frame.
-    behind: { r: 0.12, u: -0.04, f: -0.38, head: 0.5, wrist: 0.35 },
+    // (C11 review 4: further back and right, so her raised right arm is an arm coming down with the Pin, not a
+    // dark slab beside the lens, and her left sleeve shows hooked round his neck.)
+    behind: { r: 0.22, u: 0.0, f: -0.45, head: 0.5, wrist: 0.35 },
     behindChoke: { r: -0.2, u: 0.0, f: -0.3, head: 0.7, wrist: 0.0, overHead: 0.12 },
     behindPistol: { r: 0.2, u: -0.08, f: -0.3, head: 0.4, wrist: 0.5 },
     front: { r: 0.12, u: 0.0, f: 0.0, head: 0.3, wrist: 0.35, overHead: 0.0 },
-    frontKick: { r: 0.08, u: -0.06, f: -0.05, head: 0.3, wrist: 0.2 },
+    // He lands 2 to 3 m off and she shoots from her feet: the lens stays at her eye (`overHead` never pulls it down
+    // after him; crouched under her own arms, the Kestrel left the frame) and looks down on him past the gun (off her
+    // right shoulder: down her sights the Kestrel and her hands covered him).
+    frontKick: { r: 0.24, u: -0.02, f: -0.12, head: 0.3, wrist: 0.45, overHead: 3, pitchMin: -25 },
     side: { r: 0.06, u: -0.08, f: 0.0, head: 0.45, wrist: 0.3 },
     down: { r: 0.1, u: -0.05, f: -0.05, head: 0.6, wrist: 0.3, pitchMin: -40 },
     surrender: { r: 0.08, u: -0.1, f: 0.0, head: 0.5, wrist: 0.3, pitchMin: -30 },
@@ -89,7 +94,7 @@ export const TD = {
   /** Where the Pin hand drops after Behind A's blow (her frame from her eye, m): at her hip, out of the lens. */
   hang: { r: 0.3, u: -0.9, f: 0.02 },
   /** Her arms' albedo in the street (a share of the viewmodel's). */
-  armTone: 0.4,
+  armTone: 0.5,
   /** Her arms' dielectric specular in the street (of the kit's). */
   armSpec: 0.3,
 };

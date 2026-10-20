@@ -2227,7 +2227,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const r = new THREE.Vector3(-f.z, 0, f.x);
       const eyeAt = sync.clone().add(new THREE.Vector3(0, TD.eye, 0));
       tdLights.push(worldLight(eyeAt.clone().addScaledVector(f, 1.5).addScaledVector(r, 1.1).add(new THREE.Vector3(0, 0.7, 0)), new THREE.Color(0.35, 0.85, 1.6), 9, 4));
-      tdLights.push(worldLight(eyeAt.clone().addScaledVector(f, -1.4).addScaledVector(r, 0.6).add(new THREE.Vector3(0, 0.3, 0)), new THREE.Color(0.55, 0.62, 0.85), 3, 3));
+      // (C11 review 3: at 3 the fill left her sleeves and his back flat black silhouettes against the lamp; a
+      // stronger, warmer one from just over the lens shows the gabardine's weave, the cuffs and his harness.)
+      tdLights.push(worldLight(eyeAt.clone().addScaledVector(f, -1.1).addScaledVector(r, 0.45).add(new THREE.Vector3(0, 0.35, 0)), new THREE.Color(0.85, 0.78, 0.82), 7, 3.2));
     }
     player.vel.set(0, 0, 0);
   }
@@ -2311,12 +2313,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           // the exit spray and the splat on the wall behind him) along the round's way out.
           // (Drawn a few cm short of the muzzle, toward the lens: at the muzzle it would be inside his jaw.)
           world.fx.muzzle(td.rig.muzzle.clone().addScaledVector(td.rig.axis, -0.05).lerp(world.camera.position, 0.08), td.rig.axis, 0.4, false);
-          const head = e.body.segs.get("head");
-          if (world.fx.flesh) world.fx.flesh({ point: td.rig.muzzle.clone().addScaledVector(td.rig.axis, 0.06), dir: td.rig.axis.clone(), damage: e.kit.maxHp, maxHp: e.kit.maxHp, weaponCls: "pistol", distance: 0.3, anchor: head?.group, owner: e, root: e.body.root, head: true, lethal });
+          // Front B's double tap is fired from her feet at a man 2 to 3 m off on his back: the round lands in his
+          // chest, not at her muzzle (C11 review 3: the mist bloomed at the gun and hid him behind a red cloud).
+          const contact = td.variant!.id !== "frontKick";
+          const J = e.body.joints;
+          const hitAt = contact ? td.rig.muzzle.clone().addScaledVector(td.rig.axis, 0.06) : J.chest.clone().lerp(J.head, 0.3);
+          const hitDir = contact ? td.rig.axis.clone() : hitAt.clone().sub(td.rig.muzzle).normalize();
+          const seg = e.body.segs.get(contact ? "head" : "upperChest");
+          if (world.fx.flesh) world.fx.flesh({ point: hitAt, dir: hitDir, damage: e.kit.maxHp, maxHp: e.kit.maxHp, weaponCls: "pistol", distance: contact ? 0.3 : hitAt.distanceTo(td.rig.muzzle), anchor: seg?.group, owner: e, root: e.body.root, head: contact, lethal });
           // And the spatter that reads at arm's length: droplets out along the round and back across his chest at her.
           if (world.fx.gore) {
-            world.fx.blood(td.rig.muzzle, td.rig.axis, 1);
-            world.fx.blood(td.rig.muzzle, vUp.copy(world.camera.position).sub(td.rig.muzzle).normalize(), 0.7);
+            world.fx.blood(hitAt, hitDir, 1);
+            if (contact) world.fx.blood(td.rig.muzzle, vUp.copy(world.camera.position).sub(td.rig.muzzle).normalize(), 0.7);
           }
         } else if (world.fx.gore && td.variant!.kind !== "choke") world.fx.blood(ev.at, ev.dir ?? new THREE.Vector3(0, 1, 0), lethal ? 0.85 : 0.5);
         hud.cinemaFlash();
@@ -4023,6 +4031,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // `takedown-tell`: the moment before, the guard eligible and the world chip over his helmet (no press).
     const tell = name === "takedown-tell";
     if (tell) name = "takedown-0";
+    // The owner's audit frame 16 re-shot: the guard where she laid him, 1.2 s after the sequence.
+    if (name === "takedown-body") name = "takedown-2400";
     const m = /^takedown-(?:([A-Za-z]+)-)?(\d+)$/.exec(name);
     if (!m) return `unknown stage ${name}`;
     const ms = Number(m[2]);
@@ -4120,6 +4130,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       combat.update(0, build());
       drainEvents();
       world.update(0, 1, step / 1000);
+    }
+    // Past the end (the re-shot audit frame 16, `takedown-body`, is 2400): the body settles where she laid him, and
+    // she looks down at him, as a player does after the camera comes home.
+    if (!td.active && ms > v.durMs) {
+      for (let t = v.durMs; t < ms; t += step) {
+        g.feel(step / 1000, world.colliders, ground);
+        world.update(0, 1, step / 1000);
+      }
+      // A step back off him first: from where she stood over him the lens looked straight down onto his back.
+      const mid = g.body.joints.pelvis.clone().lerp(g.body.joints.chest, 0.5);
+      const back = player.pos.clone().sub(mid).setY(0);
+      if (back.lengthSq() > 1e-6) player.pos.copy(mid).addScaledVector(back.normalize(), 1.9).setY(0);
+      player.pos.y = ground(player.pos.x, player.pos.z);
+      player.applyCamera(world.camera, 0);
+      world.camera.getWorldPosition(eye);
+      const to = mid.sub(eye);
+      player.yaw = Math.atan2(-to.x, -to.z);
+      player.pitch = Math.atan2(to.y, Math.hypot(to.x, to.z));
+      player.applyCamera(world.camera, 0);
     }
     // The world's own hit-stop and slow motion are the live game's; the frozen frame shows the pose. A stage on a
     // blow's own ms shows its hit-stop as played: the blood hangs, having drifted at fxScale 0.25 (about 30 ms of

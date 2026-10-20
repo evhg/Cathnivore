@@ -49,8 +49,9 @@ const C9X = ['death-knees-650', 'death-blownback-350', 'death-headshot-900']
 const C10 = ['enemy-front-10m', 'enemy-back-10m', 'turntable-enforcer', 'silhouette-lineup', 'hit-arm@60', 'guard-from-10m']
 const C10X = ['turntable-riot', 'turntable-sniper', 'turntable-leader']
 // C11 "Takedowns": the tell (the world chip over his helmet, the teach line and phone look hint out of its way), Behind A on the guard under the lamp at 0 (the grab), 420 (the blow: her arm and his helmet both
-// in frame), 800 (the knees gone, her arm lowering him), and Front A's shot under the chin at 650. C11X: the others.
-const C11 = ['takedown-tell', 'takedown-0', 'takedown-420', 'takedown-800', 'takedown-front-650']
+// in frame), 800 (the knees gone, her arm lowering him), Front A's shot under the chin at 650, and the owner's audit
+// frame 16 re-shot (`takedown-body`: where she laid him, 1.2 s on; 420 and 800 are frames 14 and 15). C11X: the others.
+const C11 = ['takedown-tell', 'takedown-0', 'takedown-420', 'takedown-800', 'takedown-front-650', 'takedown-body']
 const C11X = ['takedown-behindChoke-700', 'takedown-behindPistol-640', 'takedown-frontKick-700', 'takedown-frontBaton-600', 'takedown-sideKnee-600', 'takedown-sideSweep-720', 'takedown-1150']
 const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
@@ -509,6 +510,15 @@ for (const vp of vps) {
         // C11 review 2: a lens inside the helmet (one ring over 70% of the frame) reads as a clipping bug.
         console.log(`  C11 ${vp} ${spec}: helmet ${(td.helmetShare * 100).toFixed(1)}% of the frame, prop ${td.prop} ${td.propIn ? 'in' : 'OUT'}`)
         if (td.active && td.helmetShare > 0.35) fail(`${vp} ${spec}: the helmet fills ${(td.helmetShare * 100).toFixed(0)}% of the frame (> 35%)`)
+        // Every blow mid-sequence frames the man taking it (C11 review 3: Front C's gut fold dropped him as a plain
+        // ragdoll at her feet, and the lens looked down on an empty street with his head out of frame).
+        // Audit frame 16: a staged fall, laid down on the street and in view (not a heap, not out of shot).
+        if (stage === 'takedown-body') {
+          const h = info.heights
+          console.log(`  C11 ${vp} ${spec}: laid down, asleep ${info.asleep}, joint heights ${h ? JSON.stringify(h) : '?'}`)
+          if (!td.headIn) fail(`${vp} ${spec}: the body she laid down is out of frame`)
+        }
+        if (td.active && !td.headIn) fail(`${vp} ${spec}: his head is out of frame mid-sequence`)
         // A gun finisher shows the gun (and the hand on it) in frame.
         if (td.active && /^(frontCollar|behindPistol|frontKick)$/.test(info.variant) && !td.propIn) fail(`${vp} ${spec}: the Kestrel or her hand on it is out of frame`)
         // Front A's shot under the chin (S5.2): the contact flash at the muzzle and the blood (mist, exit spray, splat).
