@@ -60,6 +60,10 @@
   --steel-deep: #5d6f82;
   --neon-pink: #ff2e88;
   --cyan-rgb: 46 230 255;
+  --pink-rgb: 255 46 136;
+  /* C13 front door: the no-WebGL night and the gate plate's glass */
+  --front-night: linear-gradient(180deg, #06070b 0%, #0b0e15 55%, #05060a 100%);
+  --front-plate: linear-gradient(180deg, rgb(16 19 26 / .9), rgb(10 12 17 / .86));
   --blood-rgb: 255 59 85;
   --blood-deep-rgb: 140 0 16;
   --amber-rgb: 255 179 71;
