@@ -189,6 +189,8 @@ test.describe('CATHODE takedowns', () => {
   test('the first guard: the chip, a locked 0.9-1.4 s sequence under the letterbox, and he ends asleep on the street', async ({ page, hasTouch }) => {
     test.skip(hasTouch, 'one layout is enough: the sequence is the same on a phone')
     test.setTimeout(400_000)
+    // Landscape: in portrait the rotate card holds the game and the chip never shows.
+    await page.setViewportSize({ width: 844, height: 390 })
     await page.goto('/cathode/')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
     await page.goto('/cathode/?play&class=ghost&rs=0.5')
@@ -246,6 +248,8 @@ test.describe('CATHODE takedowns', () => {
   test('touch: a tap on the world chip is the takedown', async ({ page, hasTouch }) => {
     test.skip(!hasTouch, 'the chip is a button on touch only')
     test.setTimeout(400_000)
+    // Landscape: in portrait the rotate card holds the game and the chip never shows.
+    await page.setViewportSize({ width: 844, height: 390 })
     await page.goto('/cathode/')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
     await page.goto('/cathode/?play&class=ghost&rs=0.5')
