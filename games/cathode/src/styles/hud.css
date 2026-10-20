@@ -54,7 +54,9 @@
   max-width: min(42ch, 46vw);
   /* C10 review: the last word ran to the card's faded edge; the plate now holds until the text ends. */
   padding: var(--sp-2) var(--sp-6) var(--sp-2) var(--sp-4);
-  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .72), rgb(var(--shade-rgb) / .42) 82%, rgb(var(--shade-rgb) / 0));
+  /* C13T: no plate with edges. A soft pool of shade under the words (::after) and the HUD's text shadow. */
+  isolation: isolate;
+  text-shadow: var(--hud-shadow);
   font: 500 var(--fs-3)/1.3 var(--font-ui);
   letter-spacing: .01em;
   color: var(--ink);
@@ -70,10 +72,19 @@
   color: var(--ink-3);
   font-stretch: var(--wdth-label);
 }
+.hud-objective::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--u) * -28) calc(var(--u) * -60) calc(var(--u) * -28) calc(var(--u) * -40);
+  z-index: -1;
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .34) 62%, transparent);
+  pointer-events: none;
+}
 .hud-objective.is-new { animation: obj-in var(--d-4) var(--ease-out) both; }
 @keyframes obj-in {
-  from { clip-path: inset(0 100% 0 0); }
-  to { clip-path: inset(0 0 0 0); }
+  /* Ends wider than the box, so the shade pool (::after) is never cut to a hard edge. */
+  from { clip-path: inset(calc(var(--u) * -40) 100% calc(var(--u) * -40) calc(var(--u) * -60)); }
+  to { clip-path: inset(calc(var(--u) * -40) calc(var(--u) * -80) calc(var(--u) * -40) calc(var(--u) * -60)); }
 }
 
 /* ---- vitals: name and level, hero HP over a segmented bar with a damage trail, armour, XP ---- */
@@ -267,16 +278,14 @@
   color: var(--ink);
   font-stretch: var(--wdth-label);
 }
-/* The variant (suppressed, scoped): a small outlined chip after the name. */
+/* The variant (suppressed, scoped): a quieter word after the name (C13T: no outlined chip). */
 .hud-weapon-tag {
   display: inline-block;
   margin-left: calc(var(--u) * 10);
-  padding: calc(var(--u) * 3) calc(var(--u) * 7) calc(var(--u) * 2);
-  vertical-align: .18em;
-  font: 700 var(--fs-1)/1 var(--font-ui);
+  font: 600 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
-  color: var(--ink-2);
-  border: max(1px, calc(var(--u) * 1.5)) solid rgb(var(--ink-rgb) / .35);
+  color: var(--ink-3);
+  font-stretch: var(--wdth-label);
 }
 .hud-ammo {
   display: flex;

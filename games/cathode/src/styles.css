@@ -87,7 +87,10 @@ fieldset label span::after {
 @media (hover: hover) { fieldset label:hover { color: var(--ink-2); } }
 fieldset label:has(input:checked) { color: var(--ink); font-weight: 700; }
 fieldset label:has(input:checked) span::after { transform: none; }
-fieldset label:has(input:focus-visible) span { outline: 1px solid var(--line-3); outline-offset: calc(var(--u) * 6); }
+/* C13T: focus is weight, brightness and the marker, never a box. */
+fieldset label:has(input:focus-visible) { color: var(--ink); }
+fieldset label:has(input:focus-visible) span::after { transform: none; opacity: .55; }
+fieldset label:has(input:checked:focus-visible) span::after { opacity: 1; }
 
 /* ---- the game ---- */
 .game {
@@ -199,9 +202,6 @@ fieldset label:has(input:focus-visible) span { outline: 1px solid var(--line-3);
   font: 400 var(--fs-2)/1.2 var(--font-ui);
   color: var(--ink-2);
 }
-.hud-resume {
-  margin: calc(var(--u) * 36) 0 calc(var(--u) * 30);
-}
 .hud-settings {
   display: grid;
   gap: calc(var(--u) * 4);
@@ -247,7 +247,9 @@ fieldset label:has(input:focus-visible) span { outline: 1px solid var(--line-3);
   border: 0;
   background: var(--ink);
 }
-.hud-slider:focus-visible { outline: 1px solid var(--line-3); outline-offset: calc(var(--u) * 4); }
+.hud-slider:focus-visible { outline: none; }
+.hud-slider:focus-visible::-webkit-slider-thumb { background: var(--blood-hot); }
+.hud-slider:focus-visible::-moz-range-thumb { background: var(--blood-hot); }
 .hud-seg {
   display: flex;
   flex-wrap: wrap;
@@ -279,7 +281,9 @@ fieldset label:has(input:focus-visible) span { outline: 1px solid var(--line-3);
 @media (hover: hover) { .hud-seg-btn:hover { color: var(--ink-2); } }
 .hud-seg-btn[aria-pressed="true"] { color: var(--ink); font-weight: 700; }
 .hud-seg-btn[aria-pressed="true"]::after { transform: none; }
-.hud-seg-btn:focus-visible { outline: 1px solid var(--line-3); outline-offset: calc(var(--u) * 4); }
+.hud-seg-btn:focus-visible { outline: none; color: var(--ink); }
+.hud-seg-btn:focus-visible::after { transform: none; opacity: .55; }
+.hud-seg-btn[aria-pressed="true"]:focus-visible::after { opacity: 1; }
 
 /* ---- progression ---- */
 /* Class pick, character screen (attributes, skill trees, inventory), level-up toast: src/ui/. Each class
@@ -1418,8 +1422,9 @@ fieldset label:has(input:focus-visible) span { outline: 1px solid var(--line-3);
   position: absolute;
   inset: calc(var(--u) * -40) calc(var(--u) * -120);
   z-index: var(--z-under);
-  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .3) 60%, transparent);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .78), rgb(var(--shade-rgb) / .48) 58%, transparent);
 }
+.lvl-eyebrow, .lvl-points { text-shadow: var(--hud-shadow); }
 .lvl-rule {
   order: 2;
   display: block;
@@ -1455,7 +1460,7 @@ fieldset label:has(input:focus-visible) span { outline: 1px solid var(--line-3);
   order: 3;
   margin: 0;
   font: 500 var(--fs-2)/1.2 var(--font-ui);
-  color: var(--ink-2);
+  color: var(--ink);
   white-space: pre;
   animation: rise 360ms 700ms ease-out both;
 }
@@ -1615,9 +1620,9 @@ fieldset label:has(input:focus-visible) span { outline: 1px solid var(--line-3);
 .photo-fov { display: flex; align-items: center; gap: 6px; font: 600 var(--fs-1) var(--font-ui); color: var(--ink); }
 .photo-bar .photo-save { background: var(--blood); border-color: var(--blood); }
 .photo-on .hud-root { visibility: hidden; }
-.hud-set-head { margin: 12px 0 4px; font: 700 var(--fs-1) var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-muted); font-stretch: var(--wdth-label); }
+.hud-set-head { margin: calc(var(--u) * 26) 0 calc(var(--u) * 6); font: 700 var(--fs-1) var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-muted); font-stretch: var(--wdth-label); }
 .hud-bind { min-width: 84px; background: transparent; }
-.hud-bind:hover .c-key, .hud-bind:focus-visible .c-key { box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .1), 0 2px 0 var(--night), 0 0 0 1px var(--cyan); }
+.hud-bind:hover .c-key, .hud-bind:focus-visible .c-key { color: var(--ink); border-color: var(--blood-hot); }
 
 /* The ending credits (ui/credits.ts). */
 .credits { position: fixed; inset: 0; z-index: var(--z-modal); background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; animation: credits-fade 2.4s ease both; pointer-events: auto; }
@@ -1656,15 +1661,78 @@ fieldset label:has(input:focus-visible) span { outline: 1px solid var(--line-3);
 .dmap-leads { margin: 0 0 12px; padding: 0; list-style: none; font: 500 var(--fs-1) var(--font-ui); color: var(--ink-2); }
 .dmap-taxi { margin: 0 0 6px; font: 600 var(--fs-1) var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--cyan-ink); font-stretch: var(--wdth-label); }
 
-/* Loading card: a vignette and a slow scan so the wait has some life. */
+/* Loading card (C13T): the district itself behind the words (the market is the title street, blurred and
+   darkened), a vignette, and the type. No scan line and no glow on the bar. */
 .loading { overflow: hidden; }
-.loading::before { content: ""; position: absolute; inset: 0; background: radial-gradient(90% 70% at 50% 45%, transparent 40%, rgb(0 0 0 / .65) 100%); pointer-events: none; }
-.loading::after { content: ""; position: absolute; left: 0; right: 0; height: 30%; top: -30%; background: linear-gradient(180deg, transparent, rgb(var(--cyan-rgb) / .06), transparent); animation: load-scan 3.4s linear infinite; pointer-events: none; }
-@keyframes load-scan { to { top: 100%; } }
+.loading::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(var(--shade-rgb) / .78) 0%, rgb(var(--shade-rgb) / .35) 55%, rgb(var(--shade-rgb) / .2) 100%), radial-gradient(90% 70% at 50% 45%, transparent 40%, rgb(0 0 0 / .65) 100%); pointer-events: none; }
+.loading[data-district="market"]::before { content: ""; position: absolute; inset: calc(var(--u) * -40); background: url("/rotate-street.webp") 64% 50% / cover no-repeat; filter: blur(calc(var(--u) * 10)) brightness(.55) saturate(.8); animation: load-drift 24s ease-out both; pointer-events: none; }
+@keyframes load-drift { from { transform: scale(1.06); } to { transform: none; } }
 .loading > * { position: relative; z-index: var(--z-base, 1); }
-.loading .eyebrow { margin: 0 0 10px; letter-spacing: .06em; color: var(--cyan-ink); }
-.loading-bar span { box-shadow: 0 0 12px rgb(var(--blood-rgb) / .7); }
-@media (prefers-reduced-motion: reduce) { .loading::after { animation: none; display: none; } }
+.loading .eyebrow { margin: 0 0 10px; letter-spacing: .06em; color: var(--ink-2); }
+@media (prefers-reduced-motion: reduce) { .loading::before { animation: none; } }
 /* Screenshot stages (C13T): the level-up held at its settled beat. */
 .lvl-toast.is-held,
 .lvl-toast.is-held * { animation: none; }
+
+/* ---- the pause menu (C13T): Paused, a short list with one red marker, and Settings / Controls as pages in
+   the same column. The HUD steps out while it is open, so nothing reads through the words. ---- */
+.hud-root:has(~ .hud-pause:not([hidden])) { visibility: hidden; }
+.hud-pm { display: grid; justify-items: start; margin: calc(var(--u) * 34) 0 0; }
+.hud-pm-item,
+.hud-pm-back {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: max(44px, calc(var(--u) * 70)); /* px-ok: tap target */
+  margin: 0;
+  padding: 0 calc(var(--u) * 24) 0 calc(var(--u) * 40);
+  border: 0;
+  background: none;
+  font: 700 var(--fs-4)/1 var(--font-ui);
+  font-stretch: var(--wdth-label);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-2);
+  opacity: .78;
+  cursor: pointer;
+  transition: color 160ms ease, opacity 160ms ease;
+}
+.hud-pm-back { min-height: max(40px, calc(var(--u) * 52)); padding-left: calc(var(--u) * 40); font-size: var(--fs-2); letter-spacing: .05em; }
+.hud-pm-item::before,
+.hud-pm-back::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: calc(var(--u) * 24);
+  height: max(2px, calc(var(--u) * 3)); /* px-ok */
+  margin-top: calc(var(--u) * -1.5);
+  background: var(--blood-hot);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 160ms cubic-bezier(.2, .7, .2, 1);
+}
+@media (hover: hover) {
+  .hud-pm-item:hover, .hud-pm-back:hover { color: var(--ink); opacity: 1; }
+  .hud-pm-item:hover::before, .hud-pm-back:hover::before { transform: none; }
+}
+.hud-pm-item:focus-visible, .hud-pm-back:focus-visible { outline: none; color: var(--ink); opacity: 1; }
+.hud-pm-item:focus-visible::before, .hud-pm-back:focus-visible::before { transform: none; }
+/* Resume is the default: it carries the marker until another item takes focus. */
+.hud-pm:not(:has(:focus-visible)):not(:hover) .hud-resume { color: var(--ink); opacity: 1; }
+.hud-pm:not(:has(:focus-visible)):not(:hover) .hud-resume::before { transform: none; }
+.hud-pm-page { display: none; }
+.hud-pause-card[data-view="settings"] .hud-pm-settings,
+.hud-pause-card[data-view="controls"] .hud-pm-controls { display: block; }
+.hud-pause-card:not([data-view="menu"]) .hud-pm { display: none; }
+.hud-pm-h {
+  margin: calc(var(--u) * 6) 0 calc(var(--u) * 22);
+  font: 700 var(--fs-3)/1.1 var(--font-ui);
+  font-stretch: var(--wdth-label);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.hud-pm-page .hud-pm-back { margin: calc(var(--u) * 22) 0 0 calc(var(--u) * -40); }
+.hud-pm-page .hud-pm-h, .hud-pm-page .hud-settings, .hud-pm-page .hud-keys, .hud-pm-page .hud-set-head { margin-left: 0; }

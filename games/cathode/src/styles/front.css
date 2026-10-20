@@ -269,7 +269,10 @@
   text-shadow: var(--hud-shadow);
 }
 .gate-tile:not(:has(input:checked)) .tile-name { color: var(--ink-3); }
-.gate-tile:has(input:focus-visible)::before { width: calc(var(--u) * 32); }
+.gate-tile:has(input:focus-visible)::before { width: calc(var(--u) * 32); opacity: 1; transform: none; }
+/* The tile has its own marker (::before): no underline, no outline on its words. */
+.gate-tile span::after { content: none; }
+.gate-tile:has(input:focus-visible) .tile-name { color: var(--ink); }
 .gate-tile:hover .tile-name { color: var(--ink); }
 .tile-desc {
   align-self: center;

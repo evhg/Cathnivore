@@ -1074,13 +1074,46 @@ export class Hud {
       card.setAttribute("aria-label", "Paused");
       this.pauseTitle = el("p", "hud-pause-title", card);
       this.pauseCheck = el("p", "hud-pause-check", card);
-      const resume = el("button", "btn btn-primary hud-resume", card);
-      resume.setAttribute("type", "button");
-      resume.textContent = "Resume";
+      // C13T: a pause menu, not a form. A short list (Resume, Settings, Controls, Quit) with one red marker;
+      // Settings and Controls open as their own page in the same column, with a Back item on top.
+      card.dataset.view = "menu";
+      const menu = el("nav", "hud-pm", card);
+      menu.setAttribute("aria-label", "Pause menu");
+      const item = (label: string, cls = "") => {
+        const b = el("button", `hud-pm-item ${cls}`.trim(), menu);
+        b.setAttribute("type", "button");
+        b.textContent = label;
+        return b;
+      };
+      const resume = item("Resume", "hud-resume");
       resume.addEventListener("click", () => this.onResume?.());
+      const views: Record<string, HTMLElement> = {};
+      const show = (v: string) => {
+        card.dataset.view = v;
+        card.scrollTop = 0;
+        const first = v === "menu" ? resume : views[v]?.querySelector<HTMLElement>("button, input");
+        first?.focus({ preventScroll: true });
+      };
+      const page = (key: string, title: string) => {
+        const pg = el("section", `hud-pm-page hud-pm-${key}`, card);
+        pg.setAttribute("aria-label", title);
+        const back = el("button", "hud-pm-back", pg);
+        back.setAttribute("type", "button");
+        back.textContent = "Back";
+        back.addEventListener("click", () => show("menu"));
+        el("h3", "hud-pm-h", pg).textContent = title;
+        views[key] = pg;
+        item(title).addEventListener("click", () => show(key));
+        return pg;
+      };
+      const settingsPage = page("settings", "Settings");
+      const controlsPage = touch ? null : page("controls", "Controls");
+      const quit = el("a", "hud-pm-item hud-quit", menu);
+      quit.textContent = "Quit to title";
+      quit.setAttribute("href", "./");
 
       const prefs = loadPrefs();
-      const set = el("div", "hud-settings", card);
+      const set = el("div", "hud-settings", settingsPage);
       const vol = el("label", "hud-set", set);
       el("span", "hud-set-name", vol).textContent = "Volume";
       const slider = el("input", "hud-slider", vol) as HTMLInputElement;
@@ -1246,8 +1279,9 @@ export class Hud {
       toggle("Toggle sprint and aim", "holdToggle", () => window.dispatchEvent(new Event("cathode:prefs")));
 
       if (!touch) {
-        el("h3", "hud-set-head", set).textContent = "Keys (click to rebind)";
-        const rows = el("div", "hud-binds", set);
+        const kp = controlsPage ?? set;
+        el("h4", "hud-set-head", kp).textContent = "Keys";
+        const rows = el("div", "hud-settings hud-binds", kp);
         const drawBinds = () => {
           rows.replaceChildren();
           const cur = loadPrefs().binds;
@@ -1300,7 +1334,7 @@ export class Hud {
           ["1–9 · Wheel", "Switch weapons"],
           ["K", "Cath's sheet: skills and kit"],
         ];
-        const dl = el("dl", "hud-keys", card);
+        const dl = el("dl", "hud-keys", controlsPage ?? card);
         for (const [k, v] of keys) {
           const dt = el("dt", "", dl);
           // "Q / E" and "1–9 · Wheel" become one keycap per key.
@@ -1311,11 +1345,11 @@ export class Hud {
           el("dd", "", dl).textContent = v;
         }
       }
-      const quit = el("a", "hud-quit", card);
-      quit.textContent = "Back to the title";
-      quit.setAttribute("href", "./");
     }
-    if (this.pauseTitle) this.pauseTitle.textContent = touch ? "Paused" : "Paused · click to play";
+    if (this.pauseTitle) this.pauseTitle.textContent = "Paused";
+    // Every pause opens on the menu, not on the page it was left on.
+    const card = this.pause.querySelector<HTMLElement>(".hud-pause-card");
+    if (card && on) card.dataset.view = "menu";
     if (this.pauseCheck) {
       const c = this.checkpoint?.() ?? null;
       this.pauseCheck.textContent = c ? `Checkpoint: ${c}. Dying restarts you there.` : "";
