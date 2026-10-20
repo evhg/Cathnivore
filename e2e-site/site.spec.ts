@@ -714,21 +714,24 @@ test.describe('Hedgerow', () => {
 
 test.describe('CATHODE', () => {
   test('asks for age first, then shows the title, accessibly and without sideways scroll', async ({ page }) => {
+    // C13: the street behind the gate builds in software WebGL here, which holds the main thread for a while.
+    test.setTimeout(300_000)
     const errors = trackErrors(page)
     await page.goto('/cathode/')
-    await expect(page.locator('#screen-gate')).toBeVisible()
+    // C13: a cold open (one line over black while the street builds) comes first.
+    await expect(page.locator('#screen-gate')).toBeVisible({ timeout: 120_000 })
     await expect(page.locator('#screen-title')).toBeHidden()
     await assertNoSeriousIssues(page)
     await page.getByRole('radio', { name: /Reduced.*no gore/ }).check()
     await page.getByRole('button', { name: "I'm 18 or over" }).click()
-    await expect(page.locator('#screen-title')).toBeVisible()
+    await expect(page.locator('#screen-title')).toBeVisible({ timeout: 10_000 })
     await expect(page.locator('#title-word')).toHaveText('CATHODE')
     await noSideways(page)
     await assertNoSeriousIssues(page)
     const prefs = await page.evaluate(() => JSON.parse(localStorage.getItem('cathode:prefs:v1') ?? '{}'))
     expect(prefs).toMatchObject({ adult: true, intensity: 'reduced' })
     await page.reload()
-    await expect(page.locator('#screen-title')).toBeVisible()
+    await expect(page.locator('#screen-title')).toBeVisible({ timeout: 120_000 })
     expect(errors).toEqual([])
   })
 

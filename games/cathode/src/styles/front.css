@@ -1,0 +1,610 @@
+/* C13 "A front door that looks AAA" (docs/design/cathode-combat.md S9.1 to S9.4). The front door is the live
+   street behind three faces with strict jobs: Bodoni for story (the logotype, the cold open, The List, the area
+   subline), Rajdhani caps for system text (the menu, the subtitle, the gate's switches), JetBrains Mono for data
+   (hints, the build). Every size is in --u (S8), so the column is the same share of the screen from a phone to
+   5K. No chibi Cath here: Cath is the 3D figure in the street (render/frontcath.ts). */
+
+/* ---- the canvas and what sits on it ---- */
+#view {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  background: var(--night);
+}
+/* No WebGL (or before the street is built): a still, wet night instead of a flat colour. */
+.front-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 55% at 72% 38%, rgb(255 46 136 / .22), transparent 70%),
+    radial-gradient(30% 40% at 86% 62%, rgb(var(--cyan-rgb) / .14), transparent 70%),
+    radial-gradient(120% 80% at 50% 120%, rgb(var(--blood-deep-rgb) / .35), transparent 60%),
+    linear-gradient(180deg, #06070b 0%, #0b0e15 55%, #05060a 100%);
+  opacity: 1;
+  transition: opacity 1400ms ease;
+}
+.front-fallback.is-off { opacity: 0; }
+/* Film grain over the street and the type: one layer, no animation under reduced motion. */
+.front-grain {
+  position: fixed;
+  inset: -10%;
+  z-index: 3;
+  pointer-events: none;
+  background: var(--grain);
+  background-size: calc(var(--u) * 240);
+  opacity: .07;
+  mix-blend-mode: overlay;
+  animation: front-grain 0.9s steps(6) infinite;
+}
+@keyframes front-grain {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-3%, 2%); }
+  66% { transform: translate(2%, -3%); }
+  100% { transform: translate(-1%, 1%); }
+}
+.front-grain.is-off { display: none; }
+
+/* The 2.39:1 bars ease to 2.0:1 on the first interaction (S9.2), and away for play. */
+.front-bars {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  --aspect: 2.39;
+}
+.front-bars i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Capped at 9% of the height: on 16:10 a true 2.39 would take a third of the screen. */
+  height: min(9svh, max(0px, (100svh - 100vw / var(--aspect)) / 2));
+  background: #000;
+  transition: height 600ms cubic-bezier(.6, 0, .2, 1);
+}
+.front-bars i:first-child { top: 0; }
+.front-bars i:last-child { bottom: 0; }
+.front-bars.is-wide { --aspect: 2; }
+.front-bars.is-wide i { height: min(5svh, max(0px, (100svh - 100vw / 2) / 2)); }
+.front-bars.is-gone i { height: 0; }
+
+/* A fade to and from black (the push's end, the cold open's start). */
+.front-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--fade-ms, 300ms) ease;
+}
+.front-fade.is-black { opacity: 1; }
+
+/* ---- the cold open (S9.3): black, rain, one Bodoni italic line ---- */
+.coldopen {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 0 var(--safe-x);
+  background: #000;
+  transition: background-color 1400ms ease;
+  pointer-events: none;
+}
+.coldopen.is-up { background: rgb(0 0 0 / 0); }
+.coldopen-line {
+  margin: 0;
+  max-width: 28ch;
+  font-family: var(--font-voice);
+  font-style: italic;
+  font-weight: 400;
+  font-size: max(17px, calc(var(--u) * 34));
+  line-height: 1.35;
+  text-align: center;
+  color: var(--ink);
+  text-shadow: 0 0 calc(var(--u) * 24) rgb(0 0 0 / .9);
+  opacity: 0;
+  transform: translateY(calc(var(--u) * 6));
+  transition: opacity 600ms ease, transform 900ms cubic-bezier(.2, .7, .2, 1);
+}
+.coldopen.is-line .coldopen-line { opacity: 1; transform: none; }
+.coldopen.is-out .coldopen-line { opacity: 0; transition-duration: 500ms; }
+
+/* ---- shared front screen frame ---- */
+.screen.front {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  color: var(--ink);
+}
+.screen.front > * { pointer-events: auto; }
+/* A left-hand shade so the type always sits on dark, wherever the dolly is. */
+.screen.front::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgb(4 5 8 / .78) 0%, rgb(4 5 8 / .52) 30%, rgb(4 5 8 / .08) 52%, transparent 62%),
+    linear-gradient(0deg, rgb(4 5 8 / .55) 0%, transparent 32%);
+}
+
+/* ---- the gate plate (S9.3): bottom left, not a centred modal ---- */
+.gate-plate {
+  position: absolute;
+  left: max(var(--safe-x), var(--frame-x) + var(--safe-x));
+  bottom: calc(var(--safe-y) + var(--u) * 24);
+  width: min(calc(var(--u) * 640), calc(100vw - 2 * var(--safe-x)));
+  padding: calc(var(--u) * 34) calc(var(--u) * 38) calc(var(--u) * 30);
+  background:
+    linear-gradient(180deg, rgb(16 19 26 / .9), rgb(10 12 17 / .86)),
+    var(--hatch);
+  border: 1px solid rgb(var(--ink-rgb) / .14);
+  box-shadow: inset 0 0 0 calc(var(--u) * 1) rgb(var(--ink-rgb) / .04), var(--sh-2);
+  clip-path: polygon(0 0, calc(100% - var(--cut-m)) 0, 100% var(--cut-m), 100% 100%, 0 100%);
+  backdrop-filter: blur(calc(var(--u) * 10));
+  -webkit-backdrop-filter: blur(calc(var(--u) * 10));
+  opacity: 0;
+  transform: translateY(calc(var(--u) * 14));
+  transition: opacity 500ms ease, transform 700ms cubic-bezier(.2, .7, .2, 1);
+}
+.gate.is-in .gate-plate { opacity: 1; transform: none; }
+/* Accept: the plate wipes away right to left like ink drawn off glass (450 ms). */
+@property --wipe {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+.gate-plate.is-wiping {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--wipe) - 14%), rgb(0 0 0 / .4) calc(var(--wipe) - 6%), transparent var(--wipe));
+  mask-image: linear-gradient(90deg, #000 calc(var(--wipe) - 14%), rgb(0 0 0 / .4) calc(var(--wipe) - 6%), transparent var(--wipe));
+  animation: gate-wipe 450ms cubic-bezier(.6, 0, .4, 1) forwards;
+}
+@keyframes gate-wipe {
+  from { --wipe: 114%; }
+  to { --wipe: -2%; }
+}
+.gate-stamp {
+  display: inline-flex;
+  align-items: baseline;
+  gap: calc(var(--u) * 10);
+  margin: 0 0 calc(var(--u) * 20);
+  padding: calc(var(--u) * 6) calc(var(--u) * 16) calc(var(--u) * 4);
+  border: calc(var(--u) * 2) solid var(--blood);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(13px, calc(var(--u) * 22));
+  letter-spacing: .22em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--blood-hot);
+  transform: rotate(-4deg);
+  transform-origin: left center;
+  filter: url("#stamp-rough");
+  opacity: .92;
+}
+.gate-stamp b { font-size: 1.9em; letter-spacing: .04em; font-weight: 700; }
+.gate-text {
+  margin: 0 0 calc(var(--u) * 24);
+  max-width: 44ch;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: max(14px, calc(var(--u) * 20));
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.gate-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--u) * 14);
+  margin: 0 0 calc(var(--u) * 26);
+  padding: 0;
+  border: 0;
+}
+.gate-tiles legend {
+  margin: 0 0 calc(var(--u) * 10);
+  padding: 0;
+  font-family: var(--font-num);
+  font-size: max(11px, calc(var(--u) * 13));
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.gate-tile {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: calc(var(--u) * 8);
+  min-height: calc(var(--u) * 120);
+  padding: calc(var(--u) * 18) calc(var(--u) * 20);
+  border: 1px solid rgb(var(--ink-rgb) / .14);
+  background: rgb(4 5 8 / .5);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+.gate-tile input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.gate-tile::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(var(--u) * 3);
+  background: var(--blood);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 200ms cubic-bezier(.2, .7, .2, 1);
+}
+.gate-tile:has(input:checked) {
+  border-color: rgb(var(--blood-rgb) / .7);
+  background: linear-gradient(90deg, rgb(var(--blood-deep-rgb) / .35), rgb(4 5 8 / .55) 70%);
+}
+.gate-tile:has(input:checked)::after { transform: scaleY(1); }
+.gate-tile:has(input:focus-visible) { box-shadow: 0 0 0 calc(var(--u) * 2) var(--cyan); }
+.tile-name {
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-variation-settings: "opsz" 14;
+  font-size: max(18px, calc(var(--u) * 34));
+  line-height: 1;
+  color: var(--ink);
+}
+.gate-tile:not(:has(input:checked)) .tile-name { color: var(--ink-2); }
+.tile-desc {
+  font-family: var(--font-num);
+  font-size: max(11px, calc(var(--u) * 14));
+  letter-spacing: .02em;
+  line-height: 1.35;
+  color: var(--ink-3);
+}
+.gate-actions {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 28);
+}
+.gate-enter {
+  min-height: max(44px, calc(var(--u) * 64));
+  padding: 0 calc(var(--u) * 34);
+  border: 0;
+  background: var(--blood);
+  color: var(--on-blood);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(14px, calc(var(--u) * 22));
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%);
+  transition: filter 160ms ease;
+}
+.gate-enter:hover,
+.gate-enter:focus-visible { filter: brightness(1.18); outline: none; }
+.gate-enter:focus-visible { box-shadow: inset 0 0 0 calc(var(--u) * 2) var(--on-blood); }
+.gate-back {
+  min-height: 44px; /* px-ok: tap target */
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: max(13px, calc(var(--u) * 18));
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-decoration: none;
+}
+.gate-back:hover,
+.gate-back:focus-visible { color: var(--ink); }
+
+/* ---- the title (S9.4) ---- */
+.front-back {
+  position: absolute;
+  left: max(var(--safe-x), var(--frame-x) + var(--safe-x));
+  top: calc(var(--safe-y) - var(--u) * 12);
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  min-height: 44px; /* px-ok: tap target */
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: max(12px, calc(var(--u) * 16));
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-decoration: none;
+  opacity: .8;
+}
+.front-back svg {
+  width: max(14px, calc(var(--u) * 18));
+  height: max(14px, calc(var(--u) * 18));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.front-back:hover,
+.front-back:focus-visible { color: var(--ink); opacity: 1; }
+
+.title-col {
+  position: absolute;
+  left: max(var(--safe-x), var(--frame-x) + var(--safe-x));
+  top: calc(var(--safe-y) + var(--u) * 120);
+  width: max(34%, calc(var(--u) * 640));
+  pointer-events: none;
+}
+.title-col > * { pointer-events: auto; }
+.logo {
+  margin: 0;
+  line-height: 0;
+}
+/* The logotype: 840 x 150 user units, Bodoni caps on a fixed measure (textLength), so the name is data (C12). */
+.logo-svg {
+  display: block;
+  width: min(calc(var(--u) * 1040), 46vw);
+  height: auto;
+  overflow: visible;
+}
+.logo-text {
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-variation-settings: "opsz" 18;
+  font-size: 132px; /* px-ok: SVG user units, scaled with the viewBox */
+  fill: var(--ink);
+  fill-opacity: 1;
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  stroke-opacity: .0;
+  paint-order: stroke;
+  filter: drop-shadow(0 0 calc(var(--u) * 18) rgb(255 46 136 / .28));
+}
+/* The draw-in (S9.3): the strokes over 900 ms, then the fill. */
+.logo.is-drawing .logo-text {
+  stroke-dasharray: 520;
+  stroke-dashoffset: 520;
+  stroke-opacity: 1;
+  fill-opacity: 0;
+  animation: logo-stroke 900ms cubic-bezier(.5, 0, .3, 1) forwards, logo-fill 600ms ease 820ms forwards;
+}
+@keyframes logo-stroke { to { stroke-dashoffset: 0; } }
+@keyframes logo-fill { from { fill-opacity: 0; } to { fill-opacity: 1; stroke-opacity: 0; } }
+/* A blood rule under the name: the logotype's underline and, at C14, the loading screen's ink. */
+.logo::after {
+  content: "";
+  display: block;
+  width: calc(var(--u) * 120);
+  height: calc(var(--u) * 2);
+  margin-top: calc(var(--u) * 18);
+  background: var(--blood);
+}
+.title-sub {
+  margin: calc(var(--u) * 16) 0 calc(var(--u) * 56);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(11px, calc(var(--u) * 17));
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--cyan-ink);
+  text-shadow: var(--hud-shadow);
+}
+
+.menu {
+  display: grid;
+  grid-auto-rows: calc(var(--u) * 64);
+  justify-items: start;
+  pointer-events: none;
+}
+.menu-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  min-height: 40px; /* px-ok: tap target on a phone held sideways */
+  margin: 0;
+  padding: 0 calc(var(--u) * 24) 0 calc(var(--u) * 36);
+  border: 0;
+  background: none;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(16px, calc(var(--u) * 34));
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  text-shadow: var(--hud-shadow);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 160ms ease, letter-spacing 160ms ease, opacity 160ms ease;
+}
+.menu-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: calc(var(--u) * 24);
+  height: calc(var(--u) * 2);
+  margin-top: calc(var(--u) * -1);
+  background: var(--blood);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 160ms cubic-bezier(.2, .7, .2, 1);
+}
+.menu-item.is-focus {
+  color: var(--ink);
+  letter-spacing: .14em;
+}
+.menu-item.is-focus::before { transform: scaleX(1); }
+.menu-item:focus,
+.menu-item:focus-visible { outline: none; box-shadow: none; }
+.menu-item:focus-visible .menu-label { text-decoration: underline; text-decoration-color: rgb(var(--cyan-rgb) / .7); text-decoration-thickness: calc(var(--u) * 2); text-underline-offset: calc(var(--u) * 8); }
+.menu-item:disabled {
+  color: var(--ink-dim);
+  cursor: default;
+  text-shadow: none;
+}
+/* Confirm: one frame of on-blood on blood. */
+.menu-item.is-confirm {
+  color: var(--on-blood);
+  background: var(--blood);
+  transition: none;
+}
+.menu-item.is-armed { color: var(--blood-hot); }
+.menu-hint {
+  min-height: calc(var(--u) * 20);
+  margin: calc(var(--u) * 22) 0 0 calc(var(--u) * 36);
+  font-family: var(--font-num);
+  font-size: max(11px, calc(var(--u) * 13));
+  letter-spacing: .12em;
+  color: var(--ink-3);
+  text-shadow: var(--hud-shadow);
+}
+
+/* THE LIST (S9.4): bottom left, five names in Bodoni, the dealt-with struck through. */
+.the-list {
+  position: absolute;
+  left: max(var(--safe-x), var(--frame-x) + var(--safe-x));
+  bottom: var(--safe-y);
+  margin: 0;
+}
+.the-list-h {
+  margin: 0 0 calc(var(--u) * 10);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(11px, calc(var(--u) * 14));
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: var(--blood-hot);
+}
+.the-list-names {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: calc(var(--u) * 4);
+}
+.the-list-names li {
+  position: relative;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variation-settings: "opsz" 11;
+  font-size: max(13px, calc(var(--u) * 22));
+  line-height: 1.25;
+  color: var(--ink-2);
+  text-shadow: var(--hud-shadow);
+}
+.the-list-names li.is-done {
+  color: var(--ink-3);
+  text-decoration: line-through;
+  text-decoration-color: var(--blood);
+  text-decoration-thickness: calc(var(--u) * 2);
+}
+.the-list-names li.is-next { color: var(--ink); }
+.the-list-names li.is-next::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--u) * -14);
+  top: 18%;
+  bottom: 18%;
+  width: max(1px, var(--u));
+  background: var(--blood-hot);
+}
+.build-ver {
+  position: absolute;
+  right: max(var(--safe-x), var(--frame-x) + var(--safe-x));
+  bottom: var(--safe-y);
+  margin: 0;
+  font-family: var(--font-num);
+  font-size: max(10px, calc(var(--u) * 12));
+  letter-spacing: .12em;
+  color: var(--ink-3);
+  opacity: .7;
+}
+/* The UI fades over 400 ms for the push. */
+.screen.front.is-leaving { opacity: 0; transition: opacity 400ms ease; pointer-events: none; }
+.screen.front.is-leaving * { pointer-events: none; }
+
+/* ---- the area title (S9.4): in 400 ms, held 2.2 s, out 600 ms ---- */
+.area-title {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 22svh;
+  z-index: 20;
+  text-align: center;
+  pointer-events: none;
+  animation: area-in 3.2s linear forwards;
+}
+.area-name {
+  margin: 0;
+  padding-left: .5em; /* the tracking's trailing space, so the name sits centred */
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(20px, calc(var(--u) * 44));
+  letter-spacing: .5em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: 0 0 calc(var(--u) * 20) rgb(0 0 0 / .9), var(--hud-shadow);
+}
+.area-sub {
+  margin: calc(var(--u) * 10) 0 0;
+  font-family: var(--font-voice);
+  font-style: italic;
+  font-size: max(14px, calc(var(--u) * 22));
+  color: var(--ink-2);
+  text-shadow: 0 0 calc(var(--u) * 16) rgb(0 0 0 / .9);
+}
+.area-title::after {
+  content: "";
+  display: block;
+  width: calc(var(--u) * 64);
+  height: calc(var(--u) * 2);
+  margin: calc(var(--u) * 16) auto 0;
+  background: var(--blood);
+}
+@keyframes area-in {
+  0% { opacity: 0; transform: translateY(calc(var(--u) * 8)); }
+  12.5% { opacity: 1; transform: none; }
+  81% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.area-title.is-held { animation: none; opacity: 1; }
+
+/* ---- phones held sideways: the column tightens; The List gives way to the subtitle's count ---- */
+@media (max-height: 520px) {
+  .title-col { top: calc(var(--safe-y) + var(--u) * 70); width: auto; }
+  .logo-svg { width: min(calc(var(--u) * 1040), 44vw); }
+  .logo::after { margin-top: calc(var(--u) * 12); }
+  .title-sub { margin-bottom: calc(var(--u) * 20); }
+  .menu { grid-auto-rows: max(40px, calc(var(--u) * 64)); }
+  .menu-hint { margin-top: calc(var(--u) * 10); }
+  .the-list { display: none; }
+  .gate-plate { bottom: var(--safe-y); width: min(calc(var(--u) * 900), calc(100vw - 2 * var(--safe-x))); padding: calc(var(--u) * 22) calc(var(--u) * 30) calc(var(--u) * 22); }
+  .gate-stamp { margin-bottom: calc(var(--u) * 12); }
+  .gate-text { margin-bottom: calc(var(--u) * 14); }
+  .gate-tile { min-height: 0; }
+  .gate-tiles { margin-bottom: calc(var(--u) * 16); }
+}
+/* Upright phones: the street stays behind; the column spans the width. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .title-col { top: calc(var(--safe-y) + 48px); width: calc(100vw - 2 * var(--safe-x)); } /* px-ok: under the back link */
+  .logo-svg { width: 100%; }
+  .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
+  .gate-tiles { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .front-grain { animation: none; }
+  .logo.is-drawing .logo-text { animation: logo-fill 1ms forwards; }
+  .gate-plate, .coldopen, .coldopen-line, .front-bars i, .menu-item, .menu-item::before { transition-duration: 1ms; }
+  .gate-plate.is-wiping { animation-duration: 1ms; }
+  .area-title { animation-duration: 3.2s; }
+}
+html.reduce-motion .front-grain { animation: none; }
+.svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }

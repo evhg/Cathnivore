@@ -94,6 +94,8 @@ export interface SessionOptions {
   onExit: () => void;
   /** C8: a restart from the checkpoint inside the same page (the world, audio and window.cathode carried over). */
   warm?: WarmStart;
+  /** C13: the world the title scene already built for this district (the push hands it over: no second load). */
+  world?: World;
 }
 
 /** What a restart carries into the next session (S6.6 "Retry without a page reload"). */
@@ -266,7 +268,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // Every window and document listener the session adds goes on this signal, so dispose() takes them all back.
   const life = new AbortController();
   const lifeOpt = { signal: life.signal };
-  const world = o.warm?.world ?? (await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress));
+  const world = o.warm?.world ?? o.world ?? (await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress));
   // C8: what the world holds before this session adds anything, so a restart can take the session back out.
   const baseline: WorldBaseline = o.warm?.baseline ?? {
     scene: new Set(world.scene.children),

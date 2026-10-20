@@ -1,0 +1,313 @@
+// C13 (docs/design/cathode-combat.md S9.2, S9.4): the title's live scene. The Drowned Market, built by the same
+// renderer the game uses (render/world.ts), with Cath standing at the north end of the street where the job starts,
+// under her umbrella, lit from behind by a pink sign and filled cyan. The camera runs a 36 s Catmull-Rom loop
+// through four framings around her at FOV 38, always behind or beside her (silhouette first), with her on the
+// right third so the menu column has the left. Mouse or tilt parallax (±1.5 degrees yaw, ±1 pitch) through a
+// 2 Hz spring, biased half a degree toward the focused menu row. Rain runs down the lens through the post chain's
+// four lens slots in water mode (C7's uLens).
+//
+// Starting the game is a camera move (`push`): 1.6 s on a smootherstep spline past her right shoulder to the first
+// person eye at the job's start. Then `handover` gives the world to the game session (Cath and the scene lights
+// leave it; the street, its build and its shaders stay warm), so no second load runs for the market.
+
+import * as THREE from "three";
+import { createWorld } from "./world";
+import type { Quality, World } from "./types";
+import { buildFrontCath, type FrontCath } from "./frontcath";
+
+export interface FrontSceneOptions {
+  quality: Quality;
+  intensity: "full" | "reduced";
+  /** Screenshot run: the clock only moves through `setTime`. */
+  shot: boolean;
+  /** Reduced motion: no dolly, no parallax, no lens rain sliding (a still framing). */
+  still: boolean;
+  /** Forced 3D render scale (?rs=). */
+  renderScale: number;
+  set: { signDark: boolean; tally: number };
+  onProgress?: (share: number, label: string) => void;
+}
+
+export interface FrontScene {
+  readonly world: World;
+  readonly cath: FrontCath;
+  /** The focused menu row, -1..1 from the middle (the camera leans half a degree toward it). */
+  focusBias(v: number): void;
+  /** Pointer or tilt, each -1..1. */
+  parallax(x: number, y: number): void;
+  /** Loop time in seconds (screenshots; the live loop also advances it). */
+  time: number;
+  setTime(t: number): void;
+  /** The push into the street; resolves when the camera is at the first-person eye. */
+  push(seconds?: number): Promise<void>;
+  /** Stops drawing (the last frame stays on the canvas behind the loading screen). */
+  freeze(): void;
+  /** Takes Cath and the scene's lights out and gives the world to the game. The scene stops for good. */
+  handover(): World;
+  dispose(): void;
+  readonly stats: { frames: number; drawCalls: number; triangles: number; cathTriangles: number; ms: number };
+}
+
+const LOOP_S = 36;
+const FOV = 38;
+/** Cath stands 1.2 m north of the job's start, facing south down the street: the push passes her shoulder. */
+const CATH_BACK = 1.2;
+
+/**
+ * The four framings in Cath's frame (x her left, y up, z ahead of her), metres: behind her right shoulder, her
+ * right profile low, behind her left shoulder high, her left side. `look` is the point the lens aims at; the
+ * camera then turns so she sits on the right third.
+ */
+const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, number, number] }> = [
+  { pos: [-1.9, 1.55, -5.6], look: [0.2, 1.2, 0.5] },
+  { pos: [-4.7, 1.1, -2.4], look: [0, 1.15, 0.6] },
+  { pos: [0.6, 1.9, -6.2], look: [0, 1.25, 0.6] },
+  { pos: [4.6, 1.3, -2.6], look: [0, 1.15, 0.4] },
+];
+
+const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
+
+export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOptions): Promise<FrontScene> {
+  const world = await createWorld(canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot }, o.onProgress);
+  const phone = o.quality === "phone";
+  const cam = world.camera;
+  cam.fov = FOV;
+  cam.near = 0.05;
+  cam.updateProjectionMatrix();
+
+  // ---- where she stands ----
+  const start = world.markers.player?.[0]?.clone() ?? new THREE.Vector3(-2.5, 0, 57);
+  const feet = new THREE.Vector3(start.x + 0.6, 0, start.z + CATH_BACK);
+  feet.y = world.floorAt?.(feet.x, feet.y + 1, feet.z) ?? world.groundHeight(feet.x, feet.z);
+  const cath = buildFrontCath(phone);
+  cath.group.position.copy(feet);
+  cath.group.rotation.y = Math.PI; // facing -z (south), the way the player starts
+  world.scene.add(cath.group);
+  // Local frame -> world.
+  const toWorld = (x: number, y: number, z: number, out = new THREE.Vector3()) => out.set(-x, y, -z).add(feet);
+  // The back light: pink, high and ahead of her (the camera is always behind or beside her, so it rims her
+  // silhouette and the umbrella's edge); a cool cyan fill from behind her right; a small warm kick on the coat.
+  const removers: Array<() => void> = [];
+  const rimLight = toWorld(0.4, 2.7, 2.2);
+  const rimDir = new THREE.Vector3();
+  if (world.light) {
+    removers.push(world.light(toWorld(0.4, 2.7, 2.2), new THREE.Color(1.0, 0.09, 0.42), phone ? 9 : 10, 6));
+    removers.push(world.light(toWorld(-2.4, 1.9, -1.6), new THREE.Color(0.08, 0.62, 0.85), phone ? 3.5 : 4, 6));
+  }
+
+  // ---- the camera loop ----
+  const posCurve = new THREE.CatmullRomCurve3(
+    FRAMES.map((f) => toWorld(...f.pos)),
+    true,
+    "centripetal",
+  );
+  const lookCurve = new THREE.CatmullRomCurve3(
+    FRAMES.map((f) => toWorld(...f.look)),
+    true,
+    "centripetal",
+  );
+  const p = new THREE.Vector3();
+  const l = new THREE.Vector3();
+  // Parallax springs (2 Hz, critically damped).
+  const spring = { x: 0, vx: 0, y: 0, vy: 0, tx: 0, ty: 0, bias: 0, tb: 0, vb: 0 };
+  const W = 2 * Math.PI * 2;
+  let time = 0;
+  let pushT = -1;
+  let pushDur = 1.6;
+  let pushDone: (() => void) | null = null;
+  const pushFrom = { pos: new THREE.Vector3(), quat: new THREE.Quaternion() };
+  const eye = new THREE.Vector3(start.x, (world.floorAt?.(start.x, start.y + 1, start.z) ?? start.y) + 1.62, start.z);
+  const pushCurve = new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], false, "centripetal");
+  const endQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, "YXZ"));
+  const q = new THREE.Quaternion();
+  const m4 = new THREE.Matrix4();
+  const up = new THREE.Vector3(0, 1, 0);
+
+  function aim(t: number, dt: number): void {
+    const u = (((t / LOOP_S) % 1) + 1) % 1;
+    posCurve.getPointAt(u, p);
+    lookCurve.getPointAt(u, l);
+    cam.position.copy(p);
+    m4.lookAt(p, l, up);
+    cam.quaternion.setFromRotationMatrix(m4);
+    // Her on the right third: turn the lens left by the angle that puts her at 0.3 of the half-width.
+    const aspect = Math.max(0.5, cam.aspect);
+    const half = Math.atan(Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect);
+    cam.rotateY(Math.atan(Math.tan(half) * (aspect < 1.2 ? 0.12 : 0.42)));
+    if (!o.still) {
+      const k = Math.min(dt, 1 / 20);
+      spring.vx += (W * W * (spring.tx - spring.x) - 2 * W * spring.vx) * k;
+      spring.x += spring.vx * k;
+      spring.vy += (W * W * (spring.ty - spring.y) - 2 * W * spring.vy) * k;
+      spring.y += spring.vy * k;
+      spring.vb += (W * W * (spring.tb - spring.bias) - 2 * W * spring.vb) * k;
+      spring.bias += spring.vb * k;
+      cam.rotateY(THREE.MathUtils.degToRad(-1.5 * spring.x));
+      cam.rotateX(THREE.MathUtils.degToRad(-1 * spring.y - 0.5 * spring.bias));
+    }
+  }
+
+  // ---- rain on the lens: the four lens slots in water mode, each drop sliding then fading ----
+  const LENS = [
+    { x: 0.78, y: 0.7, cell: 0, phase: 0.0, size: 0.8, rot: 0.3 },
+    { x: 0.22, y: 0.36, cell: 1, phase: 0.45, size: 0.65, rot: 1.9 },
+    { x: 0.6, y: 0.2, cell: 2, phase: 0.2, size: 0.7, rot: 4.1 },
+    { x: 0.9, y: 0.32, cell: 3, phase: 0.7, size: 0.55, rot: 2.6 },
+  ];
+  const lensOut = LENS.map((s) => ({ x: s.x, y: s.y, cell: s.cell, age: -1, size: s.size, rot: s.rot }));
+  function lens(t: number): void {
+    if (!world.setWounded) return;
+    const cycle = 2.6;
+    LENS.forEach((s, i) => {
+      const c = (t / cycle + s.phase + i * 0.13) % 1.6;
+      const out = lensOut[i]!;
+      out.age = c < 1 ? c * 1.6 : -1;
+      // Each time a drop comes back it lands somewhere new.
+      const n = Math.floor((t / cycle + s.phase + i * 0.13) / 1.6);
+      out.x = (s.x + n * 0.317) % 1;
+      out.y = 0.15 + ((s.y + n * 0.211) % 0.75);
+      if (o.still) out.age = 0.6;
+    });
+    world.setWounded({ pulse: 0, regen: 0, stim: 0, wipe: -1, water: true, lens: lensOut, still: o.still });
+  }
+
+  // ---- the loop ----
+  const stats = { frames: 0, drawCalls: 0, triangles: 0, cathTriangles: cath.triangles, ms: 0 };
+  let running = true;
+  let frozen = false;
+  let last = performance.now();
+  let raf = 0;
+  let acc = 0;
+  const frameMin = phone ? 1 / 30 : 0;
+  const resize = () => {
+    const w = canvas.clientWidth || innerWidth;
+    const h = canvas.clientHeight || innerHeight;
+    // The 3D DPR caps at 1.5 at 5K and on phones (S8); the phone scene runs at 0.75 render scale (S9.2 cost).
+    const cap = phone || innerHeight * devicePixelRatio > 2000 ? 1.5 : 2;
+    const dpr = Math.min(devicePixelRatio, cap);
+    const scale = (phone ? 0.75 : 1) * o.renderScale;
+    world.resize(w, h, dpr * (phone ? 0.9 : 1), Math.min(1, scale / (phone ? 0.9 : 1)));
+    cam.fov = FOV;
+    cam.updateProjectionMatrix();
+  };
+  addEventListener("resize", resize);
+  resize();
+
+  function frame(dt: number): void {
+    const t0 = performance.now();
+    if (pushT >= 0) {
+      pushT += dt;
+      const u = smoother(Math.min(1, pushT / pushDur));
+      pushCurve.getPoint(u, cam.position);
+      q.copy(pushFrom.quat).slerp(endQuat, smoother(Math.min(1, pushT / (pushDur * 0.85))));
+      cam.quaternion.copy(q);
+      cam.fov = FOV + (75 - FOV) * u;
+      cam.updateProjectionMatrix();
+      if (pushT >= pushDur && pushDone) {
+        const d = pushDone;
+        pushDone = null;
+        d();
+      }
+    } else aim(time, dt);
+    cath.update(dt, time, world.wind);
+    // The rim follows the back light as the camera moves round her.
+    cam.updateMatrixWorld();
+    rimDir.copy(rimLight).sub(cam.position).normalize().transformDirection(cam.matrixWorldInverse);
+    cath.setRim(rimDir);
+    lens(time);
+    world.update(dt, time);
+    world.render();
+    stats.frames++;
+    stats.ms = performance.now() - t0;
+    if (world.perf) {
+      stats.drawCalls = world.perf.drawCalls;
+      stats.triangles = world.perf.triangles;
+    }
+  }
+
+  const loop = (now: number) => {
+    if (!running) return;
+    raf = requestAnimationFrame(loop);
+    if (frozen) return;
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    if (o.shot) return;
+    acc += dt;
+    if (acc < frameMin) return;
+    const step = acc;
+    acc = 0;
+    time += o.still ? 0 : step;
+    frame(step);
+  };
+  // The first frame now, so the canvas never shows black once the scene is ready.
+  aim(0, 0);
+  frame(1 / 60);
+  raf = requestAnimationFrame(loop);
+
+  const scene: FrontScene = {
+    world,
+    cath,
+    stats,
+    get time() {
+      return time;
+    },
+    set time(v: number) {
+      time = v;
+    },
+    focusBias(v) {
+      spring.tb = THREE.MathUtils.clamp(v, -1, 1);
+    },
+    parallax(x, y) {
+      spring.tx = THREE.MathUtils.clamp(x, -1, 1);
+      spring.ty = THREE.MathUtils.clamp(y, -1, 1);
+    },
+    setTime(t) {
+      time = t;
+      // Settle the hem, the smoke and the springs as a live run would have, then draw once.
+      const steps = 30;
+      for (let i = 0; i < steps; i++) cath.update(1 / 30, t - (steps - i) / 30, world.wind);
+      spring.x = spring.tx;
+      spring.y = spring.ty;
+      spring.bias = spring.tb;
+      frame(0);
+    },
+    push(seconds = 1.6) {
+      pushDur = o.still ? 0.3 : seconds;
+      pushFrom.pos.copy(cam.position);
+      pushFrom.quat.copy(cam.quaternion);
+      const pts = pushCurve.points;
+      pts[0]!.copy(cam.position);
+      // Past her right shoulder, then into the street at eye height.
+      toWorld(-0.42, 1.68, 0.15, pts[1]!);
+      pts[2]!.copy(eye).add(new THREE.Vector3(0, 0.05, 0.45));
+      pts[3]!.copy(eye);
+      pushCurve.updateArcLengths();
+      pushT = 0;
+      return new Promise<void>((resolve) => {
+        pushDone = resolve;
+        if (o.shot) {
+          // Screenshot runs draw the end of the push at once.
+          pushT = pushDur;
+          frame(0);
+        }
+      });
+    },
+    freeze() {
+      frozen = true;
+    },
+    handover() {
+      running = false;
+      cancelAnimationFrame(raf);
+      removeEventListener("resize", resize);
+      for (const r of removers) r();
+      cath.dispose();
+      world.setWounded?.({ pulse: 0, regen: 0, stim: 0, wipe: -1, lens: [], water: false });
+      return world;
+    },
+    dispose() {
+      scene.handover();
+      world.dispose();
+    },
+  };
+  return scene;
+}
