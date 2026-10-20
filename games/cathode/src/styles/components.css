@@ -72,6 +72,9 @@
 .btn:active { opacity: .8; transition-duration: var(--d-tap); }
 .btn-primary { color: var(--ink); }
 .btn-primary::before { transform: none; }
+/* One dash at a time (C13T): the primary's resting dash marks where Enter goes, so it steps back while focus sits
+   on another control on the same screen (a Settings choice, a class name, a dossier node). */
+:is(.dialog, .cp, .cx, .cx-dlg, .hud-pause, .gate-card):has(:focus-visible:not(.btn-primary)) .btn-primary:not(:focus-visible):not(:hover)::before { transform: scaleX(0); }
 .btn:focus-visible { outline: none; color: var(--ink); }
 .btn:focus-visible::before { transform: none; }
 .btn[disabled],

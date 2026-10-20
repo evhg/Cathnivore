@@ -1942,7 +1942,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
 
   /** The character screen (K or Tab): the game waits behind it. */
-  function openSheet(): void {
+  function openSheet(tab?: "attributes" | "skills" | "inventory"): void {
     s.paused = true;
     document.exitPointerLock?.();
     const wasFocus = s.focus;
@@ -1963,7 +1963,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         input.lock();
       },
       {
-        tab: progress.character.unspentSkills > 0 ? "skills" : "attributes",
+        tab: tab ?? (progress.character.unspentSkills > 0 ? "skills" : "attributes"),
         exportCode: () => exportCode(makeSave(progress.character, new Date().toISOString(), { jobsDone: progress.jobsDone })),
       },
     );
@@ -4202,7 +4202,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       calmVitals();
       return c11Stage(name);
     }
-    // C13T: the pause menu over the street, and the level-up held at its settled beat.
+    // C13T: the pause menu over the street, and the level-up held at its settled beat. A sheet staged before
+    // closes, so the next stage is not shot under it.
+    if (charScreen && !name.startsWith("sheet")) charScreen.close();
     menuOpen = false;
     (o.hud.parentElement ?? o.hud).querySelector(".lvl-toast")?.remove();
     if (name === "pause") {
@@ -4211,9 +4213,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       return "ok";
     }
     // C13T: the character sheet (dossier) on its skills tab.
-    if (name === "sheet") {
+    if (name === "sheet" || name === "sheet-attributes" || name === "sheet-inventory") {
       calmVitals();
-      if (!charScreen) openSheet();
+      if (!charScreen) openSheet(name === "sheet" ? undefined : (name.slice(6) as "attributes" | "inventory"));
       return "ok";
     }
     if (name === "levelup") {

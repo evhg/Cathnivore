@@ -277,6 +277,7 @@
 .gate-tile:not(:has(input:checked)) .tile-name { color: var(--ink-3); }
 .gate-tile:has(input:focus-visible)::before { background: var(--blood-hot); opacity: 1; transform: none; }
 /* The tile has its own marker (::before): no underline, no outline on its words. */
+.gate-tile span { padding-bottom: 0; }
 .gate-tile span::after { content: none; }
 .gate-tile:has(input:focus-visible) .tile-name { color: var(--ink); }
 .gate-tile:hover .tile-name { color: var(--ink); }
@@ -834,7 +835,9 @@ html.reduce-motion .front-grain { animation: none; }
   .front-credits-note { margin-top: 1px; font-size: var(--fs-1); } /* px-ok */
   .front-credits-row:last-child { grid-column: 1 / -1; }
   .front-credits-back { min-height: 40px; padding-left: 22px; font-size: var(--fs-2); } /* px-ok: tap target */
-  .front-credits-back::before { width: 14px; } /* px-ok */
+  .front-credits-back::before,
+  .front-credits-back:hover::before,
+  .front-credits-back:focus-visible::before { width: 14px; } /* px-ok */
 }
 @media (max-width: 600px) and (orientation: portrait) {
   .front-credits-row { grid-template-columns: 1fr; gap: calc(var(--u) * 4); }
