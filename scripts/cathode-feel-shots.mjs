@@ -160,9 +160,11 @@ async function frontRun() {
   for (const vp of vps) {
     const V = VIEWPORTS[vp]
     if (!V || vp === 'portrait') continue
-    const ctx = await browser.newContext({ viewport: V.viewport, deviceScaleFactor: V.dsf, hasTouch: !!V.touch, isMobile: !!V.touch, reducedMotion: V.reduced ? 'reduce' : 'no-preference' })
     const frames = {}
     for (const stage of stages) {
+      // A fresh context per stage: SwiftShader keeps a closed page's WebGL memory until its context goes, and a
+      // shared context crashed on the second or third 5K page ("Target page, context or browser has been closed").
+      const ctx = await browser.newContext({ viewport: V.viewport, deviceScaleFactor: V.dsf, hasTouch: !!V.touch, isMobile: !!V.touch, reducedMotion: V.reduced ? 'reduce' : 'no-preference' })
       const page = await ctx.newPage()
       page.on('pageerror', (e) => fail(`${vp} ${stage}: page error ${e.message}`))
       // A clean slate on this origin (a static file, so nothing boots), then the prefs: the gate only shows unanswered.
@@ -235,8 +237,9 @@ async function frontRun() {
         if (stage === 'title-continue-focus' && (m.focus !== 'continue' || !/^RESUME/.test(m.hintText))) fail(`${vp} ${stage}: CONTINUE not focused with its resume hint (focus ${m.focus}, "${m.hintText}")`)
       }
       if (stage === 'gate' && !m.plate) fail(`${vp} gate: no gate plate`)
-      if (stage === 'areatitle' && !/FISH MARKET/.test(m.areaText)) fail(`${vp} areatitle: area title "${m.areaText}"`)
-      await page.close()
+      if (stage === 'areatitle' && !/FISH MARKET/i.test(m.areaText)) fail(`${vp} areatitle: area title "${m.areaText}"`)
+      await page.close({ runBeforeUnload: true })
+      await ctx.close()
     }
     // The dolly moves: 60 s differs from 30 s.
     const a = frames['title-30s']
@@ -248,7 +251,6 @@ async function frontRun() {
       console.log(`  C13 ${vp}: 30 s vs 60 s mean luminance difference ${d.toFixed(4)}`)
       if (d < 0.01) fail(`${vp}: the 60 s frame matches the 30 s frame (difference ${d.toFixed(4)}): the dolly is not moving`)
     }
-    await ctx.close()
   }
 }
 

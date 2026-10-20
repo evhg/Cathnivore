@@ -7,7 +7,7 @@ export const THE_LIST: ReadonlyArray<{ job: string; name: string }> = [
   { job: "vaneBoss", name: "Dr Octavia Vane" },
   { job: "pellBoss", name: "Councillor Marcus Pell" },
   { job: "boardBoss", name: "The Chair" },
-  { job: "vaultBoss", name: "HollowCandor" },
+  { job: "vaultBoss", name: "The Mind Under the River" },
 ];
 
 export interface ListRow {
@@ -15,6 +15,8 @@ export interface ListRow {
   done: boolean;
   /** The next name: the caret sits on it. */
   next: boolean;
+  /** Not reached yet (after the next name): drawn as a redaction bar, so a fresh save spoils nobody. */
+  redacted: boolean;
 }
 
 export function listRows(jobsDone: readonly string[]): ListRow[] {
@@ -22,8 +24,9 @@ export function listRows(jobsDone: readonly string[]): ListRow[] {
   return THE_LIST.map((n) => {
     const done = jobsDone.includes(n.job);
     const next = !done && !nextSet;
+    const redacted = !done && !next && nextSet;
     if (next) nextSet = true;
-    return { name: n.name, done, next };
+    return { name: n.name, done, next, redacted };
   });
 }
 

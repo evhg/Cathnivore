@@ -480,7 +480,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     : "Get to the fish market. Somebody there knows who put Tomas in the water.";
   // One area title on arrival: the front door's (main.ts) when it shows one, else the HUD's banner.
   if (o.areaTitle && !o.warm) {
-    // main.ts shows #area-title once the session is up.
+    // main.ts shows #area-title once the session is up; it plays alone (3.2 s), then the HUD draws in.
+    hud.hold(3300);
   } else if (inVault) hud.showBanner("The Hollow Vault", "Act 5 · 04:50");
   else if (inTower) hud.showBanner("The Board Tower", "Act 4 · 03:30");
   else if (inPlaza) hud.showBanner("Hollowell Plaza", "Act 3 · 00:00");

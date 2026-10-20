@@ -60,16 +60,18 @@
 .death-killer.is-none { display: none; }
 .death-killer-tag {
   font: 700 var(--d-eyebrow)/1 var(--font-ui);
-  letter-spacing: .32em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--ink-2);
+  font-stretch: var(--wdth-label);
 }
 .death-killer-name {
   position: relative;
   font: 500 max(14px, calc(var(--u) * 30))/1 var(--font-num);
-  letter-spacing: .18em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink);
+  font-stretch: var(--wdth-label);
 }
 /* The double: a second copy that slides off the name and fades, as if the name were burned into the eye. */
 .death-killer-name::after {
@@ -122,17 +124,17 @@
 .death-eyebrow {
   margin: 0;
   font: 700 var(--d-eyebrow)/1.2 var(--font-ui);
-  letter-spacing: .32em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--blood-hot);
   text-shadow: 0 0 calc(var(--u) * 14) rgb(var(--black-rgb) / .8);
+  font-stretch: var(--wdth-label);
 }
 .death-line {
   margin: calc(var(--u) * 14) 0 0;
   /* A text optical size (not the wordmark's 96) at 650: Bodoni's hairlines (the t's crossbar, the G's spur) hold at
      every size from the phone's 30 px to 5K's 240 px; at opsz 96 "eight" read as "eighl". */
   font: italic 650 var(--d-head)/1.02 var(--font-voice);
-  font-variation-settings: "opsz" 18;
   letter-spacing: -.005em;
   color: var(--ink);
   text-wrap: balance;
@@ -155,8 +157,9 @@
   gap: calc(var(--u) * 8);
   margin: 0;
   font: 500 var(--d-data)/1.2 var(--font-num);
-  letter-spacing: .08em;
+  letter-spacing: .04em;
   text-transform: uppercase;
+  font-stretch: var(--wdth-label);
 }
 .death-stat { display: grid; grid-template-columns: calc(var(--u) * 210) auto; gap: calc(var(--u) * 20); }
 .death-stat dt { color: var(--ink-3); }
@@ -179,11 +182,12 @@
   background: none;
   color: var(--ink-2);
   font: 700 var(--d-act)/1 var(--font-ui);
-  letter-spacing: .16em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   cursor: pointer;
   text-shadow: 0 0 calc(var(--u) * 12) rgb(var(--black-rgb) / .9);
   transition: color var(--d-2) var(--ease-out), letter-spacing var(--d-2) var(--ease-out);
+  font-stretch: var(--wdth-label);
 }
 /* Focus: a 2u blood bar on the left, the label tracking out 2%, ink to full. */
 .death-btn-bar {
@@ -196,7 +200,7 @@
   transform: scaleY(0);
   transition: transform var(--d-2) var(--ease-out);
 }
-.death-btn.is-focus { color: var(--ink); letter-spacing: .18em; }
+.death-btn.is-focus { color: var(--ink); letter-spacing: .05em; }
 .death-btn.is-focus .death-btn-bar { transform: none; }
 .death-btn:focus,
 .death-btn:focus-visible { outline: none; box-shadow: none; }
@@ -210,7 +214,7 @@
   box-shadow: inset 0 0 0 1px var(--line-3), inset 0 calc(var(--u) * -2) 0 rgb(var(--black-rgb) / .5);
   background: rgb(var(--shade-rgb) / .6);
   font: 700 var(--d-key)/1 var(--font-ui);
-  letter-spacing: .1em;
+  letter-spacing: .05em;
   color: var(--ink-2);
 }
 .death.is-touch .death-btn-key { display: none; }
@@ -229,10 +233,11 @@
   left: var(--d-edge-x);
   margin: 0;
   font: 600 max(12px, calc(var(--u) * 17))/1 var(--font-num);
-  letter-spacing: .2em;
+  letter-spacing: .06em;
   color: var(--cyan);
   text-shadow: 0 0 calc(var(--u) * 16) rgb(var(--cyan-rgb) / .45), 0 0 calc(var(--u) * 4) rgb(var(--black-rgb) / .9);
   opacity: 0;
+  font-stretch: var(--wdth-num);
 }
 .death-resync.on { animation: death-resync 2s linear both; }
 .death-resync.on.is-held { animation: none; opacity: 1; }

@@ -10,16 +10,21 @@
 
   color-scheme: dark;
 
-  /* --- font roles (one vocabulary with the portfolio); --display, --ui and --mono are legacy aliases --- */
-  --font-display: "Cathode Display", "Cathode Display Fallback", "Didot", serif;
+  /* --- font roles (C13T: two families). --font-num is the UI grotesk too: every CATHODE screen sets tabular
+     figures on :root (styles.css), so counts never jitter. --display, --ui and --mono are legacy aliases. --- */
+  /* Headings and names are the grotesk, heavy and narrow (C13T): the serif is only Cath's voice. */
+  --font-display: var(--font-ui);
   --font-voice: "Cathode Voice", "Cathode Voice Fallback", "Didot", serif;
   --font-ui: "Cathode UI", "Cathode UI Fallback", system-ui, sans-serif;
-  --font-num: "Cathode Figures", "Cathode Mono", "Cathode Mono Fallback", ui-monospace, monospace;
+  --font-num: var(--font-ui);
   --display: var(--font-display);
   --ui: var(--font-ui);
   --mono: var(--font-num);
-  /* Rajdhani has no tabular figures, so hero numerals are JetBrains Mono 700, tightened */
-  --num-hero-track: -0.04em;
+  /* Archivo's widths: labels and menus set narrow, numerals a touch narrow, sentences at the normal width. */
+  --wdth-label: 78%;
+  --wdth-num: 86%;
+  --wdth-head: 76%;
+  --num-hero-track: -0.02em;
 
   /* --- colour: base (contrast against --night in the comments) --- */
   --night: #07080b;
@@ -147,8 +152,10 @@
   --d-tap: 60ms; --d-1: var(--dur-1); --d-2: var(--dur-2); --d-3: var(--dur-3); --d-4: var(--dur-4); --d-hero: var(--dur-hero);
   --stagger: 40ms;
 
-  --focus: var(--cyan);
-  --focus-halo: rgb(var(--cyan-rgb) / .25);
+  /* One accent in the chrome (C13T): focus is ink and blood, never the world's cyan. */
+  --focus: var(--ink);
+  --focus-halo: rgb(var(--ink-rgb) / .22);
+   font-stretch: var(--wdth-num);
 }
 @media (min-width: 1024px) and (min-height: 600px) {
   :root {

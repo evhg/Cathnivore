@@ -10,7 +10,7 @@ export const CREDITS: readonly (readonly [string, string])[] = [
   ["Dr Vane, Councillor Pell, the Chair", "Gone, and the debts with them. Mostly."],
   ["HollowCandor", "Silent at last. The lights in Candor Tower went out one floor at a time."],
   ["Built with", "three.js, Poly Haven textures (CC0) and a great many neon tubes."],
-  ["Set in", "Bodoni Moda, Rajdhani and JetBrains Mono, under the SIL Open Font License."],
+  ["Set in", "Archivo and Bodoni Moda, under the SIL Open Font License."],
   ["Thank you for playing", "The city is still hers. Hardboiled is waiting."],
 ];
 
@@ -37,7 +37,7 @@ export function showCredits(host: HTMLElement, onDone: () => void): HTMLElement 
 
 /**
  * The title menu's CREDITS (C13, S9.1): who made it and with what, and nothing of the story (the ending roll above
- * is for the ending). The three front-door faces: Rajdhani caps for roles, Bodoni for names, Mono for the small
+ * is for the ending). The front door's one grotesk (Archivo) for roles, names and the small
  * print. Escape, Backspace, the pad's B or BACK closes it.
  */
 export const STUDIO_CREDITS: readonly { role: string; name: string; note?: string }[] = [
@@ -46,7 +46,7 @@ export const STUDIO_CREDITS: readonly { role: string; name: string; note?: strin
   { role: "World, code and art", name: "three.js · TypeScript · WebGL 2" },
   { role: "Textures", name: "Poly Haven", note: "CC0, with thanks" },
   { role: "Sound", name: "Synthesised live", note: "Web Audio, no samples" },
-  { role: "Type", name: "Bodoni Moda · Rajdhani · JetBrains Mono", note: "SIL Open Font License 1.1" },
+  { role: "Type", name: "Archivo · Bodoni Moda", note: "SIL Open Font License 1.1" },
   { role: "Thank you", name: "for walking in out of the rain." },
 ];
 

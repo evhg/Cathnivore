@@ -972,9 +972,33 @@ export class Hud {
   private sub?: HTMLElement;
   private subTimer = 0;
   private targetOn = false;
+  private holding = false;
+  private heldSub: string | null = null;
+
+  /**
+   * The arrival beat (C13): while the front door's area title plays, nothing else speaks. The HUD, the touch
+   * controls, the objective and Cath's first line wait `ms`, then the HUD draws in and the held line plays.
+   */
+  hold(ms: number): void {
+    this.holding = true;
+    this.root.classList.add("is-arriving");
+    window.setTimeout(() => {
+      this.holding = false;
+      this.root.classList.remove("is-arriving");
+      this.root.classList.add("is-booting");
+      window.setTimeout(() => this.root.classList.remove("is-booting"), 1100);
+      const line = this.heldSub;
+      this.heldSub = null;
+      if (line) window.setTimeout(() => this.subtitle(line), 450);
+    }, ms);
+  }
 
   /** Cath's voiceover (or Bea on the wire), as a subtitle on per-line plates with the speaker's colour. */
   subtitle(text: string): void {
+    if (this.holding) {
+      this.heldSub = text;
+      return;
+    }
     if (!this.sub) {
       this.sub = el("p", "hud-sub", this.root);
     }

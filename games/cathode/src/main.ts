@@ -64,7 +64,10 @@ let scene: FrontScene | null = null;
 let sceneReady: Promise<FrontScene | null> = Promise.resolve(null);
 function webgl2(): boolean {
   try {
-    return !!document.createElement("canvas").getContext("webgl2");
+    // A probe, so give its context straight back: an unreleased probe holds a second GL context for the page's life.
+    const gl = document.createElement("canvas").getContext("webgl2");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return !!gl;
   } catch {
     return false;
   }
@@ -88,6 +91,13 @@ function startScene(): void {
     )
     .then((s) => {
       scene = s;
+      // Leaving the page (or a bfcache eviction): free the street's GPU memory and its context now, not at GC.
+      addEventListener("pagehide", (e) => {
+        if (e.persisted || scene !== s) return;
+        scene = null;
+        s.dispose();
+        ($<HTMLCanvasElement>("view").getContext("webgl2") as WebGL2RenderingContext | null)?.getExtension("WEBGL_lose_context")?.loseContext();
+      });
       $("front-fallback").classList.add("is-off");
       $("front-grain").classList.add("is-baked");
       return s;
@@ -224,8 +234,9 @@ function fillTitle(): void {
   const list = $("the-list");
   list.replaceChildren();
   for (const r of listRows(done)) {
-    const li = el("li", r.done ? "is-done" : r.next ? "is-next" : "", list, r.name);
+    const li = el("li", r.done ? "is-done" : r.next ? "is-next" : r.redacted ? "is-redacted" : "", list, r.name);
     if (r.done) li.setAttribute("aria-label", `${r.name}, dealt with`);
+    if (r.redacted) li.setAttribute("aria-label", "A name you haven't reached");
   }
   $<HTMLButtonElement>("btn-continue").disabled = !hasSave();
   const ng = hasSave() && canStartNewGamePlus(done);
@@ -490,13 +501,12 @@ function showAreaTitle(district: string | undefined): void {
     }, 3300);
 }
 
-// AAA UI M1: give the display and UI faces up to 600 ms before the first screen, so the wordmark doesn't
+// AAA UI M1: give the UI and voice faces up to 600 ms before the first screen, so the wordmark doesn't
 // visibly swap from the fallback. Never blocks longer than that.
 function fontsReady(ms = 600): Promise<void> {
   const fonts = document.fonts;
   if (!fonts?.load) return Promise.resolve();
   const loads = Promise.all([
-    fonts.load('560 64px "Cathode Display"'),
     fonts.load('700 16px "Cathode UI"'),
     fonts.load('italic 400 32px "Cathode Voice"'),
   ]).then(

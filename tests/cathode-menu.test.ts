@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { MenuModel, menuKey } from "../games/cathode/src/ui/menu"
-import { areaTitle, frontSet, listRows, namesLeft, slotHint, titleSubtitle } from "../games/cathode/src/ui/frontcopy"
+import { areaTitle, frontSet, listRows, namesLeft, slotHint, THE_LIST, titleSubtitle } from "../games/cathode/src/ui/frontcopy"
 
 const SLOTS = () => [
   { id: "continue", enabled: false },
@@ -70,6 +70,10 @@ describe("front door copy from progress (C13)", () => {
     expect(rows[0]).toMatchObject({ done: true, next: false })
     expect(rows[1]).toMatchObject({ name: "Dr Octavia Vane", done: false, next: true })
     expect(rows.filter((r) => r.next)).toHaveLength(1)
+    // Names past the next one are redacted until reached; the dealt-with and the next never are.
+    expect(rows.map((r) => r.redacted)).toEqual([false, false, true, true, true])
+    expect(listRows([]).filter((r) => !r.redacted).map((r) => r.name)).toEqual(["Julian Crisp"])
+    expect(THE_LIST.every((n) => /^[A-Z][A-Za-z]*( [A-Za-z]+)*$/.test(n.name) && !/[a-z][A-Z]/.test(n.name))).toBe(true)
   })
 
   it("hints where Continue resumes, and never a district the save hasn't reached", () => {

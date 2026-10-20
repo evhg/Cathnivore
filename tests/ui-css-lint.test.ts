@@ -52,7 +52,7 @@ function italicFamilies(): Map<string, Set<string>> {
 }
 
 const ALLOWED_WEIGHTS: Array<[RegExp, (w: number) => boolean]> = [
-  [/Rajdhani/, (w) => w === 500 || w === 700],
+  [/Archivo/, (w) => w >= 100 && w <= 900],
   [/Nunito/, (w) => w >= 200 && w <= 1000],
   [/Atkinson/, (w) => w >= 200 && w <= 800],
   [/Figtree|Outfit/, (w) => w >= 100 && w <= 900],

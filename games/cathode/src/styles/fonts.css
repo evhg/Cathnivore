@@ -1,13 +1,16 @@
-/* CATHODE type ("Wet Ink", docs/design/aaa-ui.md): Cathode Display (Bodoni Moda, opsz + wght) for story,
-   names and rewards; Cathode Voice (Bodoni Moda italic, only fetched on screens that set a voice line);
-   Cathode UI (Rajdhani 500 and 700) for everything Cath reads off the world; Cathode Mono (JetBrains
-   Mono) for data and hero numerals. Rajdhani has no tabular figures (0 is 52 units, 1 is 32, with or
-   without tnum), so hero numerals are JetBrains Mono 700 at -0.04em. Latin files only; no Fraunces and
-   no Atkinson in this game. Fallbacks are metric-matched local fonts. */
+/* CATHODE type (C13T, docs/design/cathode-combat.md): two families and no more.
+   - Cathode UI is Archivo (OFL), one grotesk superfamily for every word of UI, HUD, numbers and body text:
+     wght 100 to 900 and wdth 62 to 125, so labels set condensed (font-stretch) and figures tabular, from one file.
+   - Cathode Voice is Bodoni Moda italic (OFL), and only for Cath's spoken lines. Headings, names and titles are
+     the grotesk set heavy and narrow (--font-display is an alias of --font-ui). The logotype is outlined Bodoni
+     paths (index.html), so it needs no font file at all.
+   Rajdhani, JetBrains Mono and the Cathode Figures cut left the game at C13T. Latin files only; fallbacks are
+   metric-matched local fonts. */
 @font-face {
-  font-family: "Cathode Display";
-  src: url("../../../../node_modules/@fontsource-variable/bodoni-moda/files/bodoni-moda-latin-opsz-normal.woff2") format("woff2");
-  font-weight: 400 900;
+  font-family: "Cathode UI";
+  src: url("../../../../node_modules/@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-style: normal;
   font-display: swap;
 }
@@ -19,43 +22,6 @@
   font-display: swap;
 }
 @font-face {
-  font-family: "Cathode UI";
-  src: url("../../../../node_modules/@fontsource/rajdhani/files/rajdhani-latin-500-normal.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Cathode UI";
-  src: url("../../../../node_modules/@fontsource/rajdhani/files/rajdhani-latin-700-normal.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-/* The digits of JetBrains Mono with a plain zero (no centre dot) for the HUD's counts: see src/fonts/README.md. */
-@font-face {
-  font-family: "Cathode Figures";
-  src: url("../fonts/cathode-figures-latin-wght.woff2") format("woff2");
-  font-weight: 100 800;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0030-0039;
-}
-@font-face {
-  font-family: "Cathode Mono";
-  src: url("../../../../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2") format("woff2");
-  font-weight: 100 800;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Cathode Display Fallback";
-  src: local("Times New Roman"), local("Liberation Serif"), local("Georgia");
-  size-adjust: 109.6%;
-  ascent-override: 103.1%;
-  descent-override: 36.5%;
-}
-@font-face {
   font-family: "Cathode Voice Fallback";
   font-style: italic;
   src: local("Times New Roman Italic"), local("Liberation Serif Italic"), local("Georgia Italic");
@@ -65,15 +31,8 @@
 }
 @font-face {
   font-family: "Cathode UI Fallback";
-  src: local("Arial Narrow"), local("Arial"), local("Liberation Sans");
-  size-adjust: 90.5%;
-  ascent-override: 102.8%;
-  descent-override: 38.7%;
-}
-@font-face {
-  font-family: "Cathode Mono Fallback";
-  src: local("Courier New"), local("Liberation Mono"), local("Menlo");
-  size-adjust: 100%;
-  ascent-override: 102%;
-  descent-override: 30%;
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 104%;
+  ascent-override: 84%;
+  descent-override: 20%;
 }

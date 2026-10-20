@@ -43,8 +43,7 @@ const FONT_FAMILIES: Array<[string, string, string]> = [
   ['Outfit', '@fontsource-variable/outfit', 'Runnel'],
   ['Nunito', '@fontsource-variable/nunito', 'Hedgerow'],
   ['Bodoni Moda', '@fontsource-variable/bodoni-moda', 'CATHODE'],
-  ['Rajdhani', '@fontsource/rajdhani', 'CATHODE'],
-  ['JetBrains Mono', '@fontsource-variable/jetbrains-mono', 'CATHODE'],
+  ['Archivo', '@fontsource-variable/archivo', 'CATHODE'],
 ]
 
 function writeFontLicences(): void {

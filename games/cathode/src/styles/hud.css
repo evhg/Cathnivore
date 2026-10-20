@@ -79,9 +79,10 @@
   display: block;
   margin-bottom: calc(var(--u) * 4);
   font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .18em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--cyan);
+  font-stretch: var(--wdth-label);
 }
 .hud-objective.is-new { animation: obj-in var(--d-4) var(--ease-out) both; }
 @keyframes obj-in {
@@ -115,9 +116,10 @@
   margin-bottom: var(--sp-1);
   white-space: nowrap;
   font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .18em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-2);
+  font-stretch: var(--wdth-label);
 }
 .hud-level { text-shadow: none; }
 .hud-hp-row {
@@ -131,6 +133,7 @@
   font: 700 var(--t-num-hero)/1 var(--font-num);
   letter-spacing: var(--num-hero-track);
   color: var(--ink);
+  font-stretch: var(--wdth-num);
 }
 .hud-hp-text.low { color: var(--blood-hot); }
 /* C7 (S6.3): bleeding out, the numeral glows blood-hot on each beat and the Flesh bar swells 1.0 to 1.15 tall. */
@@ -144,7 +147,7 @@
   flex: none;
   margin-left: auto;
   font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .24em;
+  letter-spacing: .06em;
   color: var(--blood-hot);
   opacity: 0;
 }
@@ -239,16 +242,18 @@
 }
 .hud-arm-label {
   font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .16em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--steel);
+  font-stretch: var(--wdth-label);
 }
 .hud-armour { flex: 1; height: calc(var(--u) * 4); }
-.hud-arm-text { font: 600 var(--t-data)/1 var(--font-num); color: var(--ink-2); }
+.hud-arm-text { font: 600 var(--t-data)/1 var(--font-num); color: var(--ink-2); font-stretch: var(--wdth-num); }
 .hud-defence {
   margin-top: var(--sp-1);
   font: 500 var(--t-data)/1.2 var(--font-num);
   color: var(--ink-2);
+  font-stretch: var(--wdth-num);
 }
 .hud-xp { margin-top: var(--sp-2); }
 
@@ -269,9 +274,10 @@
 .hud-weapon {
   white-space: nowrap;
   font: 700 var(--t-head)/1.1 var(--font-ui);
-  letter-spacing: .12em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink);
+  font-stretch: var(--wdth-label);
 }
 /* The variant (suppressed, scoped): a small outlined chip after the name. */
 .hud-weapon-tag {
@@ -280,7 +286,7 @@
   padding: calc(var(--u) * 3) calc(var(--u) * 7) calc(var(--u) * 2);
   vertical-align: .18em;
   font: 700 max(12px, calc(var(--u) * 12))/1 var(--font-ui);
-  letter-spacing: .16em;
+  letter-spacing: .05em;
   color: var(--ink-2);
   border: max(1px, calc(var(--u) * 1.5)) solid rgb(var(--ink-rgb) / .35);
 }
@@ -294,10 +300,12 @@
   font: 700 var(--t-num-ammo)/.9 var(--font-num);
   letter-spacing: var(--num-hero-track);
   color: var(--ink);
+  font-stretch: var(--wdth-num);
 }
 .hud-reserve {
   font: 500 var(--t-num-l)/1 var(--font-num);
   color: var(--ink-3);
+  font-stretch: var(--wdth-num);
 }
 .hud-ammo.low .hud-mag { color: var(--amber); }
 .hud-ammo.empty .hud-mag { color: var(--blood-hot); }
@@ -314,9 +322,10 @@
   gap: var(--sp-2);
   padding-bottom: calc(var(--u) * 6.7);
   font: 700 var(--t-label)/1 var(--font-ui);
-  letter-spacing: .08em;
+  letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--ink-2);
+  font-stretch: var(--wdth-label);
 }
 .hud-slot::after {
   /* readiness: a cyan underline that charges up */
@@ -488,12 +497,13 @@
   display: none;
   padding: calc(var(--u) * 4) calc(var(--u) * 6) calc(var(--u) * 4) calc(var(--u) * 6 + .3em);
   font: 700 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
-  letter-spacing: .3em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--hit-blocked);
   background: rgb(var(--black-rgb) / .55);
   text-shadow: var(--hud-shadow);
   white-space: nowrap;
+  font-stretch: var(--wdth-label);
 }
 .hud-blocked.worded .hud-blocked-word { display: block; }
 .hud-blocked.pop .hud-blocked-l { animation: blocked-in-l 200ms var(--ease-out); }
@@ -636,9 +646,10 @@
 .hud-target-name {
   display: block;
   font: 700 var(--t-label)/1.2 var(--font-ui);
-  letter-spacing: .14em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink);
+  font-stretch: var(--wdth-label);
 }
 .hud-target-bar {
   position: relative;
@@ -672,7 +683,7 @@
   padding: .1em .45em .05em;
   vertical-align: .08em;
   font: 800 .82em/1.1 var(--font-ui);
-  letter-spacing: .18em;
+  letter-spacing: .05em;
   color: var(--night);
   background: var(--hit-crit);
   box-shadow: 0 0 0 1px var(--hit-outline), 0 0 calc(var(--u) * 10) rgb(var(--blood-rgb) / .55);
@@ -716,8 +727,9 @@
   background: rgb(var(--shade-rgb) / .72);
   box-shadow: inset 0 0 0 1px var(--line-2);
   font: 700 var(--t-label)/1 var(--font-ui);
-  letter-spacing: .14em;
+  letter-spacing: .05em;
   text-transform: uppercase;
+  font-stretch: var(--wdth-label);
 }
 
 .hud-focus {
@@ -767,6 +779,7 @@
   letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--cyan);
+  font-stretch: var(--wdth-label);
 }
 .hud-scope-range { top: calc(50% + min(24vh, 24vw)); }
 .hud-scope-wind { top: calc(50% + min(24vh, 24vw) + 1.4em); }
@@ -792,12 +805,14 @@
   color: var(--ink);
   white-space: nowrap;
   animation: feed-life 4.4s var(--ease-out) both;
+  font-stretch: var(--wdth-num);
 }
 .hud-feed-line .mod {
   font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .14em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--cyan);
+  font-stretch: var(--wdth-label);
 }
 .hud-feed-line .xp { font-weight: 700; color: var(--amber); }
 .hud-feed-line .sep { color: var(--ink-3); }
@@ -832,9 +847,10 @@
 }
 .hud-feed-tag {
   font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .14em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-2);
+  font-stretch: var(--wdth-label);
 }
 @keyframes feed-life {
   0% { opacity: 0; transform: translateX(calc(var(--u) * 16)); }
@@ -863,17 +879,18 @@
 .hud-banner.on { animation: banner 3.2s var(--ease-out) forwards; }
 .hud-banner-title {
   font: 600 var(--t-display-l)/1.05 var(--font-display);
-  font-variation-settings: "opsz" 72;
   letter-spacing: .01em;
   color: var(--ink);
   text-wrap: balance;
+  font-stretch: var(--wdth-head);
 }
 .hud-banner-sub {
   order: -1;
   font: 700 var(--t-label)/1 var(--font-ui);
-  letter-spacing: .2em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--cyan);
+  font-stretch: var(--wdth-label);
 }
 @keyframes banner {
   0% { opacity: 0; transform: scaleY(.6); }
@@ -931,7 +948,7 @@
 }
 .hud-root.boss-intro .hud-banner.on .hud-banner-title::after { animation: boss-rule .9s .25s var(--ease-out) both; }
 @keyframes boss-name {
-  0% { letter-spacing: .22em; opacity: 0; filter: blur(calc(var(--u) * 8)); }
+  0% { letter-spacing: .06em; opacity: 0; filter: blur(calc(var(--u) * 8)); }
   60% { opacity: 1; filter: none; }
   100% { letter-spacing: .01em; }
 }
@@ -960,13 +977,15 @@
 .hud-killcap.on { animation: killcap-in 3s ease-out both; }
 .hud-killcap-tag {
   font: 700 var(--t-label)/1 var(--font-ui);
-  letter-spacing: 0.4em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--blood-hot);
+  font-stretch: var(--wdth-label);
 }
 .hud-killcap-m {
   font: 700 var(--t-display-l) / 1 var(--font-num);
   color: var(--ink);
+  font-stretch: var(--wdth-num);
 }
 @keyframes killcap-in {
   0% { opacity: 0; transform: translate(-50%, calc(var(--u) * 10.7)); }
@@ -1006,9 +1025,10 @@
   display: block;
   margin-bottom: calc(var(--u) * 6.7);
   font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .18em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--speaker, var(--blood-hot));
+  font-stretch: var(--wdth-label);
 }
 .big-subs { --sub-scale: 1.3; }
 .big-subs .hud-sub > .line { background: rgb(var(--shade-rgb) / .9); }
@@ -1076,6 +1096,7 @@
   color: var(--cyan-ink);
   background: rgb(var(--shade-rgb) / .5);
   white-space: nowrap;
+  font-stretch: var(--wdth-num);
 }
 .hud-wp.near .hud-wp-mark { transform: rotate(45deg) scale(.6); opacity: .4; }
 /* The plate keeps its backing at full strength (a ghost of cyan over lamp light can't be read); over the reticle
@@ -1193,8 +1214,9 @@
   color: var(--night);
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
   box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
+  font-stretch: var(--wdth-num);
 }
-.hud-wprompt-key.wide { font-family: var(--font-ui); letter-spacing: .08em; text-transform: uppercase; }
+.hud-wprompt-key.wide { font-family: var(--font-ui); letter-spacing: .04em; text-transform: uppercase; font-stretch: var(--wdth-label); }
 /* Touch: the chip is the button; the cap shows a tap glyph (a fingertip dot inside two ripple rings), not a key. */
 .hud-wprompt-key.tap { position: relative; min-width: max(34px, calc(var(--u) * 34)); height: max(34px, calc(var(--u) * 34)); }
 .hud-wprompt-key.tap::before {
@@ -1213,15 +1235,17 @@
 }
 .hud-wprompt-verb {
   font: 700 max(12px, calc(var(--u) * 18))/1 var(--font-ui);
-  letter-spacing: .2em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--amber);
+  font-stretch: var(--wdth-label);
 }
 .hud-wprompt-sep { color: var(--ink-3); }
 .hud-wprompt-name {
   font: 600 max(28px, calc(var(--u) * 32))/1 var(--font-display);
   letter-spacing: .01em;
   color: var(--ink);
+  font-stretch: var(--wdth-head);
 }
 .hud-wprompt-stats {
   display: flex;
@@ -1232,11 +1256,12 @@
 .hud-wprompt-stat i {
   font: 700 max(14px, calc(var(--u) * 14))/1 var(--font-ui);
   font-style: normal;
-  letter-spacing: .16em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-2);
+  font-stretch: var(--wdth-label);
 }
-.hud-wprompt-stat b { font: 700 max(12px, calc(var(--u) * 21))/1 var(--font-num); color: var(--ink); }
+.hud-wprompt-stat b { font: 700 max(12px, calc(var(--u) * 21))/1 var(--font-num); color: var(--ink); font-stretch: var(--wdth-num); }
 .hud-wprompt.is-in .hud-wprompt-chip { animation: wprompt-in 280ms var(--ease-out); }
 .hud-wprompt.is-in .hud-wprompt-lead { animation: wprompt-lead 200ms var(--ease-out); }
 @keyframes wprompt-in { from { opacity: 0; translate: calc(var(--u) * -12) 0; } }
@@ -1275,15 +1300,16 @@
 .hud-toast-kind {
   padding-right: calc(var(--u) * 4);
   font: 700 max(12px, calc(var(--u) * 16))/1 var(--font-ui);
-  letter-spacing: .34em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--amber);
+  font-stretch: var(--wdth-label);
 }
 .hud-toast-name {
   font: 600 max(22px, calc(var(--u) * 56))/1 var(--font-display);
-  font-variation-settings: "opsz" 72;
   color: var(--ink);
   text-shadow: 0 0 calc(var(--u) * 24) rgb(var(--amber-rgb) / .35), var(--hud-shadow);
+  font-stretch: var(--wdth-head);
 }
 .hud-toast-rule {
   width: calc(var(--u) * 260);
@@ -1293,9 +1319,10 @@
 }
 .hud-toast-sub {
   font: 600 max(12px, calc(var(--u) * 15))/1 var(--font-ui);
-  letter-spacing: .14em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-2);
+  font-stretch: var(--wdth-label);
 }
 .hud-toast.on { animation: toast-life 3.2s var(--ease-out) forwards; }
 .hud-toast.on .hud-toast-rule { animation: toast-rule 600ms 120ms var(--ease-out) backwards; }
@@ -1349,10 +1376,11 @@
 .stick-label,
 .look-hint {
   font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .2em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: rgb(var(--ink-rgb) / .78);
   text-shadow: var(--hud-shadow);
+  font-stretch: var(--wdth-label);
 }
 .stick-label {
   position: absolute;
@@ -1387,11 +1415,12 @@
   box-shadow: inset 0 0 0 1.5px rgb(var(--ink-rgb) / .45), 0 2px 10px rgb(var(--black-rgb) / .45);
   color: var(--ink);
   font: 700 var(--t-micro)/1 var(--font-ui);
-  letter-spacing: .1em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   text-shadow: var(--hud-shadow);
   transition: transform var(--d-tap) var(--ease-out), background-color var(--d-tap);
   -webkit-tap-highlight-color: transparent;
+  font-stretch: var(--wdth-label);
 }
 .tbtn:active { transform: scale(.94); background-color: rgb(var(--cyan-rgb) / .18); }
 .tbtn {
@@ -1425,7 +1454,7 @@
   background: radial-gradient(circle at 50% 35%, rgb(var(--blood-rgb) / .55), rgb(var(--blood-rgb) / .32));
   box-shadow: inset 0 0 0 2px var(--blood-hot), 0 0 18px rgb(var(--blood-rgb) / .35);
   font: 700 var(--t-label)/1 var(--font-ui);
-  letter-spacing: .14em;
+  letter-spacing: .05em;
 }
 .tbtn-aim { right: calc(128px + var(--safe-r)); bottom: 40px; }
 .tbtn-jump { right: calc(28px + var(--safe-r)); bottom: 16px; }
@@ -1498,9 +1527,10 @@
   .hud-tr > .hud-toast .hud-toast-name {
     font: 700 var(--t-display-s)/1 var(--font-ui);
     font-variation-settings: normal;
-    letter-spacing: .1em;
+    letter-spacing: .05em;
     text-transform: uppercase;
-  }
+  font-stretch: var(--wdth-label);
+}
   .hud-objective { max-width: min(40ch, 46vw); font-size: var(--t-body); }
   .hud-vitals { width: min(220px, 30vw); }
   .hud-feed { max-width: 44vw; }
@@ -1632,7 +1662,7 @@
   box-shadow: inset calc(var(--u) * 3) 0 0 var(--amber), inset 0 0 0 1px rgb(var(--amber-rgb) / .35), 0 calc(var(--u) * 6) calc(var(--u) * 18) rgb(var(--black-rgb) / .45);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-s)), calc(100% - var(--cut-s)) 100%, 0 100%);
   font: 700 max(12px, calc(var(--u) * 17))/1 var(--font-ui);
-  letter-spacing: .24em;
+  letter-spacing: .06em;
   color: var(--amber);
   white-space: nowrap;
   animation: td-tell-in 240ms var(--ease-out);
@@ -1657,6 +1687,7 @@
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
   box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
   position: relative;
+  font-stretch: var(--wdth-num);
 }
 /* The 3 Hz pulse is a glow layer's opacity (composited), not an animated box-shadow (a repaint every frame). */
 .hud-prompt.world .hud-prompt-key::after {
@@ -1670,7 +1701,7 @@
   will-change: opacity;
   animation: td-key-pulse 333ms ease-in-out infinite alternate;
 }
-.hud-prompt-key.wide { font-family: var(--font-ui); letter-spacing: .08em; text-transform: uppercase; }
+.hud-prompt-key.wide { font-family: var(--font-ui); letter-spacing: .04em; text-transform: uppercase; font-stretch: var(--wdth-label); }
 .hud-prompt-key.tap::before {
   content: "";
   width: 62%;
@@ -1738,6 +1769,7 @@
   white-space: nowrap;
   opacity: 0;
   animation: td-rise 1300ms var(--ease-out) forwards;
+  font-stretch: var(--wdth-num);
 }
 @keyframes td-rise {
   0% { opacity: 0; transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -20%) scale(.8); }
@@ -1766,3 +1798,8 @@
 :root.hud-td-cine .tbtn,
 :root.hud-td-cine .stick,
 :root.hud-td-cine .look-hint { opacity: 0; pointer-events: none; transition: opacity 120ms var(--ease-out); }
+
+/* C13: the arrival beat. While the area title plays, the HUD, the objective, the subtitles and the touch controls
+   wait (ui/hud.ts hold()); then the HUD draws in with its boot animation. */
+.hud-root.is-arriving > :not(.hud-banner) { visibility: hidden; }
+:root:has(.hud-root.is-arriving) .touch { visibility: hidden; }
