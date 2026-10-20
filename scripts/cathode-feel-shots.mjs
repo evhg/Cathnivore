@@ -225,7 +225,9 @@ async function frontRun(list) {
       frames[stage] = f
       const empty = emptyWidth(f)
       console.log(`  C13 ${vp} ${stage}: empty width ${(empty * 100).toFixed(1)}%, scene ${m.stats ? `${m.stats.drawCalls} calls, ${m.stats.triangles} tris (Cath ${m.stats.cathTriangles})` : 'none'}`)
-      if (empty > 0.35) fail(`${vp} ${stage}: ${(empty * 100).toFixed(0)}% of the width is empty (max 35%)`)
+      // The empty-width rule (C13) judges the scene's composition; the Settings sheet (added by C13T) deliberately
+      // darkens the street behind its column, so it only logs.
+      if (empty > 0.35 && stage !== 'settings') fail(`${vp} ${stage}: ${(empty * 100).toFixed(0)}% of the width is empty (max 35%)`)
       if (stage.startsWith('title')) {
         if (!m.logo || !m.menu) fail(`${vp} ${stage}: no logotype or menu`)
         else {
