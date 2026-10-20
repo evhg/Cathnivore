@@ -381,7 +381,7 @@ export class Hud {
     const resist = (s.defence ?? "").split(" · ").filter((b) => b && !/^ARM /.test(b)).join(" · ");
     this.text(this.defence, resist);
     this.show(this.defence, !!resist);
-    this.text(this.lvl, `Lv ${String(s.level).padStart(2, "0")}`);
+    this.text(this.lvl, `Lv ${s.level}`);
     set(this.xpBar.root, "--v", Math.min(1, s.xp / Math.max(1, s.xpNext)).toFixed(3));
     // Arms: mag goes amber at a quarter, blood at empty (with a reload prompt).
     // A variant in brackets ("Kestrel 9 (suppressed)") becomes a small tag chip after the name, not header text.

@@ -57,7 +57,6 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
           <span>Games</span>
         </a>
-        <p class="build-ver" id="build-ver">BUILD</p>
       </section>
 
       <div class="coldopen" id="coldopen" hidden><p class="coldopen-line" id="coldopen-line"></p></div>
@@ -96,6 +95,8 @@
           <label><input type="radio" name="motion" value="off" /> <span>Off</span></label>
         </fieldset>
         <button type="button" id="settings-close" class="btn btn-primary">Done</button>
+        <!-- C13T: the build stamp lives here, not on the front door. -->
+        <p class="build-ver" id="build-ver">Build</p>
       </dialog>
     </main>
     <script type="module" src="/src/main.ts"></script>

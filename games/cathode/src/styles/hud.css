@@ -179,8 +179,7 @@
   flex: 2;
   height: calc(var(--u) * 10.7);
   overflow: visible;
-  background: rgb(var(--cyan-rgb) / .1);
-  box-shadow: inset 0 0 0 1px rgb(var(--cyan-rgb) / .28);
+  background: rgb(var(--cyan-rgb) / .14);
 }
 .hud-vbar .c-bar > .trail { background: rgb(var(--white-rgb) / .82); transition: none; }
 .hud-guard > .fill { background: linear-gradient(90deg, var(--cyan-deep), var(--cyan)); transition: transform 60ms linear; }
@@ -201,7 +200,7 @@
 }
 .hud-guard-crack path { fill: none; stroke: var(--cyan-ink); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
 .hud-vbar.is-broken .hud-guard-crack { opacity: .9; }
-.hud-vbar.is-broken .hud-guard { box-shadow: inset 0 0 0 1px rgb(var(--cyan-rgb) / .55); }
+.hud-vbar.is-broken .hud-guard { background: rgb(var(--cyan-rgb) / .24); }
 .hud-shards { position: absolute; inset: 0; pointer-events: none; }
 .hud-shards i {
   position: absolute;
@@ -242,7 +241,7 @@
   font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: var(--steel);
+  color: var(--ink-3);
   font-stretch: var(--wdth-label);
 }
 .hud-armour { flex: 1; height: calc(var(--u) * 4); }
@@ -627,8 +626,8 @@
 }
 .hud-rim.flash { animation: rim-flash 120ms steps(1, end); }
 @keyframes rim-flash { from { opacity: .25; } to { opacity: 0; } }
-/* The target sits on its own dark plate: street signs and neon glow behind it never show through the name
-   (C9 review: the bar over the expressway sign read as text on text). */
+/* The target sits in a soft pool of shade, like the objective (C13T: no ringed plate, no backdrop blur over
+   the WebGL frame): street signs and neon behind it never show through the name (C9 review). */
 .hud-target {
   position: absolute;
   left: 50%;
@@ -638,9 +637,16 @@
   padding: calc(var(--u) * 6) calc(var(--u) * 14) calc(var(--u) * 8);
   transform: translateX(-50%);
   text-align: center;
-  background: linear-gradient(180deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .82));
-  box-shadow: 0 0 0 1px var(--line-3), 0 calc(var(--u) * 4) calc(var(--u) * 18) rgb(var(--black-rgb) / .5);
-  backdrop-filter: blur(calc(var(--u) * 6));
+  isolation: isolate;
+  text-shadow: var(--hud-shadow);
+}
+.hud-target::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--u) * -26) calc(var(--u) * -70);
+  z-index: var(--z-under);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .85), rgb(var(--shade-rgb) / .6) 60%, transparent);
+  pointer-events: none;
 }
 .hud-target-name {
   display: block;
@@ -656,8 +662,7 @@
   height: max(4px, calc(var(--u) * 7));
   margin-top: var(--sp-1);
   overflow: hidden;
-  background: rgb(var(--black-rgb) / .6);
-  box-shadow: 0 0 0 1px var(--line-3);
+  background: rgb(var(--ink-rgb) / .16);
 }
 .hud-target-fill {
   position: absolute;
@@ -720,8 +725,8 @@
   gap: var(--sp-2);
   padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-1);
   transform: translateX(-50%);
-  background: rgb(var(--shade-rgb) / .72);
-  box-shadow: inset 0 0 0 1px var(--line-2);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .78), rgb(var(--shade-rgb) / .5) 65%, transparent);
+  text-shadow: var(--hud-shadow);
   font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
@@ -752,7 +757,7 @@
   background:
     linear-gradient(var(--shade) 0 0) center / 1px 100% no-repeat,
     linear-gradient(var(--shade) 0 0) center / 100% 1px no-repeat;
-  box-shadow: inset 0 0 0 1px rgb(var(--cyan-rgb) / .5), inset 0 0 calc(var(--u) * 80) rgb(var(--black-rgb) / .7);
+  box-shadow: inset 0 0 calc(var(--u) * 80) rgb(var(--black-rgb) / .7);
 }
 .hud-mil {
   position: absolute;
@@ -928,6 +933,8 @@
 .hud-root.boss-intro .hud-teach,
 .hud-root.boss-intro .hud-prompt { opacity: 0; }
 :root.hud-banner-on .look-hint { opacity: 0; }
+/* One instruction at a time: the level-up line owns the upper screen while it is up (C13T). */
+body:has(.lvl-toast) .look-hint { opacity: 0; }
 /* Subtitles ride above the bottom bar during the intro, so a boss's line is never cut by it. */
 .hud-root.boss-intro .hud-sub { bottom: calc(11vh + var(--sp-3)); }
 .hud-root.boss-intro .hud-banner { top: 38%; padding-block: var(--sp-5); }
@@ -1079,7 +1086,7 @@
   background:
     radial-gradient(circle, var(--cyan) 0 calc(var(--u) * 2.6), transparent calc(var(--u) * 3.2)),
     rgb(var(--shade-rgb) / .35);
-  box-shadow: 0 0 0 1px rgb(var(--black-rgb) / .7), 0 0 calc(var(--u) * 14) rgb(var(--cyan-rgb) / .6), inset 0 0 calc(var(--u) * 6) rgb(var(--cyan-rgb) / .45);
+  box-shadow: 0 0 calc(var(--u) * 12) rgb(var(--shade-rgb) / .7);
   transition: transform var(--d-3) var(--ease-out), opacity var(--d-3);
 }
 .hud-wp-dist {
@@ -1142,15 +1149,14 @@
   background:
     radial-gradient(closest-side, rgb(var(--cyan-rgb) / .34), rgb(var(--cyan-rgb) / 0) 46%),
     radial-gradient(closest-side, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .3) 70%, transparent);
-  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 1.5)) rgb(var(--cyan-rgb) / .35);
 }
 .hud-wp.off.pulse .hud-wp-arrow { animation: wp-nudge 1s ease-in-out infinite; }
 @keyframes wp-nudge { 50% { opacity: .55; } }
 .hud-wp.off .hud-wp-dist {
   top: calc(var(--u) * 30);
   color: var(--cyan-ink);
-  background: rgb(var(--shade-rgb) / .78);
-  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 1.5)) rgb(var(--cyan-rgb) / .35), 0 0 0 1px rgb(var(--black-rgb) / .5);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .8), rgb(var(--shade-rgb) / .5) 65%, transparent);
+  text-shadow: var(--hud-shadow);
 }
 
 /* ---- world prompt (S7.1 layer 5): a pin on the gun, an amber leader, and a chip with the keycap, the verb, the
@@ -1171,7 +1177,7 @@
   height: calc(var(--u) * 10);
   transform: rotate(45deg);
   background: var(--amber);
-  box-shadow: 0 0 0 1px rgb(var(--black-rgb) / .7), 0 0 calc(var(--u) * 12) rgb(var(--amber-rgb) / .8);
+  box-shadow: 0 0 calc(var(--u) * 10) rgb(var(--shade-rgb) / .7);
 }
 .hud-wprompt-lead {
   /* rises up and to the right off the gun, so the chip never covers what it names */
@@ -1209,7 +1215,7 @@
   font: 700 var(--fs-2)/1 var(--font-ui);
   color: var(--night);
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
-  box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
+  box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep);
   font-stretch: var(--wdth-num);
   font-variant-numeric: tabular-nums;
 }
@@ -1678,7 +1684,7 @@
   font: 700 var(--fs-2)/1 var(--font-ui);
   color: var(--night);
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
-  box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep), 0 0 0 1px rgb(var(--black-rgb) / .6);
+  box-shadow: inset 0 1px 0 rgb(var(--white-rgb) / .5), 0 calc(var(--u) * 3) 0 var(--amber-deep);
   position: relative;
   font-stretch: var(--wdth-num);
   font-variant-numeric: tabular-nums;

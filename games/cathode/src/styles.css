@@ -34,7 +34,7 @@ body {
 }
 
 /* Choices (C13T): a fieldset is a caps label over a row of words. The radio is hidden; the chosen word is ink and
-   bold with the one red marker under it; the others are quiet. No boxes, no circles. */
+   bold, the others quiet. The one red marker means focus only: a short bar under the focused word. No boxes. */
 fieldset {
   min-width: 0;
   margin: 0 0 calc(var(--u) * 30);
@@ -76,21 +76,18 @@ fieldset label span::after {
   content: "";
   position: absolute;
   left: 0;
-  right: 0;
   bottom: 0;
-  height: max(2px, calc(var(--u) * 2)); /* px-ok */
-  background: var(--blood);
+  width: calc(var(--u) * 24);
+  height: max(2px, calc(var(--u) * 3)); /* px-ok */
+  background: var(--blood-hot);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform var(--d-2) var(--ease-out);
 }
 @media (hover: hover) { fieldset label:hover { color: var(--ink-2); } }
 fieldset label:has(input:checked) { color: var(--ink); font-weight: 700; }
-fieldset label:has(input:checked) span::after { transform: none; }
-/* C13T: focus is weight, brightness and the marker, never a box. */
 fieldset label:has(input:focus-visible) { color: var(--ink); }
-fieldset label:has(input:focus-visible) span::after { transform: none; opacity: .55; }
-fieldset label:has(input:checked:focus-visible) span::after { opacity: 1; }
+fieldset label:has(input:focus-visible) span::after { transform: none; }
 
 /* ---- the game ---- */
 .game {
@@ -270,20 +267,19 @@ fieldset label:has(input:checked:focus-visible) span::after { opacity: 1; }
   content: "";
   position: absolute;
   left: 0;
-  right: 0;
   bottom: calc(var(--u) * 6);
-  height: max(2px, calc(var(--u) * 2)); /* px-ok */
-  background: var(--blood);
+  width: calc(var(--u) * 24);
+  height: max(2px, calc(var(--u) * 3)); /* px-ok */
+  background: var(--blood-hot);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform var(--d-2) var(--ease-out);
 }
 @media (hover: hover) { .hud-seg-btn:hover { color: var(--ink-2); } }
+/* Chosen: ink and bold. The red bar under the word is focus only (C13T: one mark, one meaning). */
 .hud-seg-btn[aria-pressed="true"] { color: var(--ink); font-weight: 700; }
-.hud-seg-btn[aria-pressed="true"]::after { transform: none; }
 .hud-seg-btn:focus-visible { outline: none; color: var(--ink); }
-.hud-seg-btn:focus-visible::after { transform: none; opacity: .55; }
-.hud-seg-btn[aria-pressed="true"]:focus-visible::after { opacity: 1; }
+.hud-seg-btn:focus-visible::after { transform: none; }
 
 /* ---- progression ---- */
 /* Class pick, character screen (attributes, skill trees, inventory), level-up toast: src/ui/. Each class
@@ -1517,11 +1513,13 @@ fieldset label:has(input:checked:focus-visible) span::after { opacity: 1; }
 .credits { position: fixed; inset: 0; z-index: var(--z-modal); background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; animation: credits-fade 2.4s ease both; pointer-events: auto; }
 .credits-roll { display: flex; flex-direction: column; gap: 1.1rem; max-width: 34rem; padding: 0 1.2rem; text-align: center; max-height: 70vh; overflow: hidden; }
 .credits-row { opacity: 0; animation: credits-in 1.2s ease forwards; animation-delay: calc(2.4s + var(--i) * 1.4s); }
-.credits-title { margin: 0; font: 700 var(--fs-2)/1.2 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--blood-hot); font-stretch: var(--wdth-label); }
+.credits-title { margin: 0; font: 700 var(--fs-2)/1.2 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-stretch: var(--wdth-label); }
 .credits-line { margin: .2rem 0 0; font: italic 400 var(--fs-3)/1.4 var(--font-voice); font-variation-settings: "opsz" 11; color: var(--ink); }
-.credits-go { min-height: 48px; padding: 0 2rem; border: 1px solid var(--blood-hot); background: transparent; color: #fff; font: 700 var(--fs-2) var(--font-ui); letter-spacing: .05em; text-transform: uppercase; cursor: pointer; opacity: 0; animation: credits-in 1s ease forwards; animation-delay: 6s; font-stretch: var(--wdth-label); }
+.credits-go { position: relative; min-height: 48px; padding: 0 0 0 calc(var(--u) * 40); border: 0; background: transparent; color: var(--ink); font: 700 var(--fs-2) var(--font-ui); letter-spacing: .05em; text-transform: uppercase; cursor: pointer; opacity: 0; animation: credits-in 1s ease forwards; animation-delay: 6s; font-stretch: var(--wdth-label); }
 @keyframes credits-fade { from { background: transparent; } to { background: #000; } }
 @keyframes credits-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.credits-go::before { content: ""; position: absolute; left: 0; top: 50%; width: calc(var(--u) * 24); height: max(2px, calc(var(--u) * 3)); margin-top: calc(var(--u) * -1.5); background: var(--blood-hot); }
+.credits-go:focus-visible { outline: none; }
 @media (prefers-reduced-motion: reduce) { .credits, .credits-row, .credits-go { animation-duration: .01s; animation-delay: 0s; } }
 @media (max-height: 460px) { .credits { gap: .6rem; } .credits-roll { gap: .45rem; max-height: 80vh; } .credits-title { font-size: var(--fs-1); } .credits-line { font-size: var(--fs-1); margin: 0; } .credits-go { min-height: 44px; } }
 

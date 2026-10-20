@@ -22,11 +22,12 @@
   right: 0;
   /* 2.39:1 inside the viewport: each bar is half of what a 2.39 frame leaves (never negative on a tall phone). */
   height: max(0px, calc((100svh - 100vw / 2.39) / 2));
-  background: var(--night);
+  /* Pure black, the front door's bar colour (C13T: one letterbox in the game). */
+  background: var(--shade);
   transform: scaleY(var(--bars, 0));
 }
-.death-bar-t { top: 0; transform-origin: top; box-shadow: 0 1px 0 rgb(var(--ink-rgb) / .06); }
-.death-bar-b { bottom: 0; transform-origin: bottom; box-shadow: 0 -1px 0 rgb(var(--ink-rgb) / .06); }
+.death-bar-t { top: 0; transform-origin: top; }
+.death-bar-b { bottom: 0; transform-origin: bottom; }
 
 /* ---- the killer's name: mono in the top-right corner, lingering, a ghost copy drifting off it (Max Payne 3) ---- */
 .death-killer {

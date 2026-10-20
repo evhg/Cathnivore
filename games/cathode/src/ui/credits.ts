@@ -73,8 +73,8 @@ export function showFrontCredits(host: HTMLElement, o: { onClose: () => void; ti
   });
   const foot = el("div", "front-credits-foot", plate);
   const back = button("front-credits-back", foot);
-  el("span", "front-credits-key", back, "Esc");
-  el("span", "", back, "Back");
+  el("span", "front-credits-word", back, "Back");
+  el("span", "front-credits-key", back, "Esc").setAttribute("aria-hidden", "true");
   let open = true;
   let raf = 0;
   const close = () => {

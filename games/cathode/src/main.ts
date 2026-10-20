@@ -521,9 +521,9 @@ function fontsReady(ms = 600): Promise<void> {
 void fetch(`${import.meta.env.BASE_URL}../version.json`)
   .then((r) => (r.ok ? r.json() : null))
   .then((v: { commit?: string } | null) => {
-    $("build-ver").textContent = v?.commit && v.commit !== "unknown" ? `BUILD ${v.commit.slice(0, 7).toUpperCase()}` : "BUILD DEV";
+    $("build-ver").textContent = v?.commit && v.commit !== "unknown" ? `Build ${v.commit.slice(0, 7)}` : "Build dev";
   })
-  .catch(() => ($("build-ver").textContent = "BUILD DEV"));
+  .catch(() => ($("build-ver").textContent = "Build dev"));
 
 /** C13T stage: the loading screen as it looks 40% in, over the frozen street (screenshot runs only). */
 function stageLoading(): void {
@@ -575,8 +575,25 @@ async function boot(): Promise<void> {
     return begin(false);
   }
   show("none");
-  startScene();
+  // A first visit: the age gate is a question, so it never waits on the street. The cold open plays over black,
+  // the gate paints, and only then does the street start building behind it (a slow GPU or software WebGL can
+  // hold the main thread for a long time while it builds). A returning player's street builds at once.
+  const firstVisit = !prefs.adult && !(frontStage && shot);
+  if (!firstVisit) startScene();
   await fontsReady();
+  if (firstVisit) {
+    await coldOpen(true);
+    const gate = openGate();
+    await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 120))));
+    startScene();
+    void sceneReady.then((s) => {
+      if (!$("screen-gate").hidden) s?.setFraming(gateFraming());
+    });
+    await gate;
+    openTitle(true);
+    hook.ready = true;
+    return;
+  }
   if (frontStage && shot) {
     // A stage: the scene at a fixed time, no cold open.
     const s = await sceneReady;
@@ -597,14 +614,8 @@ async function boot(): Promise<void> {
     hook.ready = true;
     return;
   }
-  if (!prefs.adult) {
-    await coldOpen(true);
-    await openGate();
-    openTitle(true);
-  } else {
-    await coldOpen(false);
-    openTitle(true);
-  }
+  await coldOpen(false);
+  openTitle(true);
   hook.ready = true;
 }
 void boot();

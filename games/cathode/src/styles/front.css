@@ -225,11 +225,11 @@
   text-transform: uppercase;
   color: var(--ink-3);
 }
-/* A choice is a line of type: the marker, the name, what it means. Chosen = the blood marker and full ink. */
+/* A choice is a line of type: the name and what it means. Chosen = full ink and weight; the marker is focus. */
 .gate-tile {
   position: relative;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: calc(var(--u) * 18);
   min-height: max(36px, calc(var(--u) * 50));
   padding: 0 0 0 calc(var(--u) * 40);
@@ -260,7 +260,8 @@
   transform-origin: left;
   transition: transform 180ms cubic-bezier(.2, .7, .2, 1), background-color 180ms ease, opacity 180ms ease;
 }
-.gate-tile:has(input:checked)::before { background: var(--blood-hot); opacity: 1; transform: none; }
+/* C13T: the chosen tile is ink and full weight; the red dash is focus only (one mark, one meaning). */
+.gate-tile:has(input:checked) .tile-name { font-weight: 800; }
 .tile-name {
   align-self: center;
   font-family: var(--font-ui);
@@ -274,7 +275,7 @@
   text-shadow: var(--hud-shadow);
 }
 .gate-tile:not(:has(input:checked)) .tile-name { color: var(--ink-3); }
-.gate-tile:has(input:focus-visible)::before { width: calc(var(--u) * 32); opacity: 1; transform: none; }
+.gate-tile:has(input:focus-visible)::before { background: var(--blood-hot); opacity: 1; transform: none; }
 /* The tile has its own marker (::before): no underline, no outline on its words. */
 .gate-tile span::after { content: none; }
 .gate-tile:has(input:focus-visible) .tile-name { color: var(--ink); }
@@ -319,10 +320,13 @@
   height: max(2px, calc(var(--u) * 2.5));
   margin-top: calc(var(--u) * -1);
   background: var(--blood-hot);
-  transition: width 180ms cubic-bezier(.2, .7, .2, 1);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms cubic-bezier(.2, .7, .2, 1);
 }
+/* The red dash is focus (and the mouse's hover), never "primary": one dash on the gate at a time (C13T). */
 .gate-enter:hover::before,
-.gate-enter:focus-visible::before { width: calc(var(--u) * 32); }
+.gate-enter:focus-visible::before { transform: none; }
 .gate-enter:hover,
 .gate-enter:focus-visible { outline: none; color: var(--on-blood); }
 .gate-back {
@@ -550,16 +554,8 @@
   text-decoration-color: var(--blood);
   text-decoration-thickness: calc(var(--u) * 2);
 }
-.the-list-names li.is-next { color: var(--ink); font-weight: 600; }
-.the-list-names li.is-next::before {
-  content: "";
-  position: absolute;
-  left: calc(var(--u) * -16);
-  top: 18%;
-  bottom: 18%;
-  width: max(2px, calc(var(--u) * 2.5));
-  background: var(--blood-hot);
-}
+/* The next name: ink and heavier (C13T: current is weight and opacity; the red dash means focus only). */
+.the-list-names li.is-next { color: var(--ink); font-weight: 700; }
 /* A name the player hasn't reached: a black bar the length of the name, as on a redacted file. */
 .the-list-names li.is-redacted {
   width: max-content;
@@ -568,11 +564,9 @@
   background: linear-gradient(rgb(var(--ink-rgb) / .16), rgb(var(--ink-rgb) / .16)) 0 55% / 100% 62% no-repeat;
   user-select: none;
 }
+/* The build stamp: a quiet line under Settings' Done (C13T: off the front door). */
 .build-ver {
-  position: absolute;
-  right: max(var(--safe-x), var(--frame-x) + var(--safe-x));
-  bottom: var(--safe-y);
-  margin: 0;
+  margin: calc(var(--u) * 28) 0 0;
   font-family: var(--font-ui);
   font-weight: 500;
   font-size: var(--fs-1);
@@ -738,40 +732,33 @@ html.reduce-motion .front-grain { animation: none; }
   font-family: var(--font-ui);
   font-weight: 700;
   font-size: var(--fs-1);
-  letter-spacing: .06em;
+  letter-spacing: .05em;
   text-transform: uppercase;
-  color: var(--blood-hot);
+  color: var(--ink-3);
   font-stretch: var(--wdth-label);
 }
 .front-credits-h {
-  margin: 0 0 calc(var(--u) * 26);
+  margin: 0 0 calc(var(--u) * 40);
   font-family: var(--font-ui);
   font-weight: 800;
-  font-stretch: 74%;
+  font-stretch: var(--wdth-head);
   font-size: var(--fs-5);
-  letter-spacing: .02em;
+  letter-spacing: -.01em;
   line-height: 1;
   color: var(--ink);
 }
+/* A stacked list on the screen's grid: each role a quiet caps label over its name. No rules, no columns. */
 .front-credits-list {
   display: grid;
-  gap: calc(var(--u) * 16);
-  margin: 0 0 calc(var(--u) * 30);
+  gap: calc(var(--u) * 30);
+  margin: 0 0 calc(var(--u) * 44);
 }
-.front-credits-row {
-  display: grid;
-  grid-template-columns: calc(var(--u) * 230) 1fr;
-  align-items: baseline;
-  gap: calc(var(--u) * 24);
-  padding-bottom: calc(var(--u) * 14);
-  border-bottom: 1px solid rgb(var(--ink-rgb) / .08);
-}
-.front-credits-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.front-credits-row { display: grid; gap: calc(var(--u) * 6); }
 .front-credits-role {
   font-family: var(--font-ui);
   font-weight: 700;
   font-size: var(--fs-1);
-  letter-spacing: .06em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--ink-3);
   font-stretch: var(--wdth-label);
@@ -783,50 +770,58 @@ html.reduce-motion .front-grain { animation: none; }
   font-size: var(--fs-3);
   line-height: 1.2;
   color: var(--ink);
+  text-shadow: var(--hud-shadow);
 }
 .front-credits-note {
   display: block;
   margin-top: calc(var(--u) * 4);
   font-family: var(--font-ui);
-  font-size: var(--fs-1);
+  font-size: var(--fs-2);
   line-height: 1.4;
   color: var(--ink-3);
 }
 .front-credits-foot { display: flex; justify-content: flex-start; }
+/* BACK is the menu's language: the red dash (it is the one action), the word, then the key as a quiet word. */
 .front-credits-back {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: calc(var(--u) * 14);
   min-height: max(44px, calc(var(--u) * 56));
-  padding: 0 calc(var(--u) * 24) 0 calc(var(--u) * 10);
+  padding: 0 calc(var(--u) * 6) 0 calc(var(--u) * 40);
   border: 0;
   background: transparent;
   font-family: var(--font-ui);
   font-weight: 700;
-  font-size: var(--fs-2);
-  letter-spacing: .05em;
+  font-size: var(--fs-4);
+  letter-spacing: .03em;
   text-transform: uppercase;
   color: var(--ink);
+  text-shadow: var(--hud-shadow);
   cursor: pointer;
-  transition: border-color 160ms ease, background-color 160ms ease;
   font-stretch: var(--wdth-label);
 }
-.front-credits-back:hover,
-.front-credits-back:focus-visible { outline: none; box-shadow: none; color: var(--on-blood); }
-.front-credits-back:focus-visible .front-credits-key { border-color: var(--blood-hot); color: var(--ink); }
-.front-credits-back:focus { outline: none; box-shadow: none; }
+.front-credits-back::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: calc(var(--u) * 24);
+  height: max(2px, calc(var(--u) * 3));
+  margin-top: calc(var(--u) * -1.5);
+  background: var(--blood-hot);
+  transition: width 160ms cubic-bezier(.2, .7, .2, 1);
+}
+.front-credits-back:hover::before,
+.front-credits-back:focus-visible::before { width: calc(var(--u) * 32); }
+.front-credits-back:focus,
+.front-credits-back:focus-visible { outline: none; box-shadow: none; }
 .front-credits-key {
-  display: inline-grid;
-  place-items: center;
-  min-width: calc(var(--u) * 46);
-  height: calc(var(--u) * 30);
-  padding: 0 calc(var(--u) * 8);
-  border: 1px solid rgb(var(--ink-rgb) / .3);
-  border-radius: calc(var(--u) * 4);
   font-family: var(--font-ui);
-  font-weight: 600;
+  font-weight: 500;
   font-size: var(--fs-1);
-  color: var(--ink-2);
+  letter-spacing: .04em;
+  color: var(--ink-3);
 }
 @media (max-height: 520px) {
   .front-credits-plate { padding: 0; width: min(calc(var(--u) * 1180), calc(100vw - 2 * var(--safe-x))); } /* px-ok: phone plate */
@@ -835,10 +830,11 @@ html.reduce-motion .front-grain { animation: none; }
   .front-credits-list { grid-template-columns: 1fr 1fr; align-items: start; gap: 6px 28px; margin-bottom: 10px; } /* px-ok */
   .front-credits-row { grid-template-columns: 1fr; gap: 1px; padding-bottom: 5px; } /* px-ok */
   .front-credits-role { font-size: var(--fs-1); } /* px-ok */
-  .front-credits-name { font-size: var(--fs-1); } /* px-ok */
+  .front-credits-name { font-size: var(--fs-2); }
   .front-credits-note { margin-top: 1px; font-size: var(--fs-1); } /* px-ok */
-  .front-credits-row:last-child { grid-column: 1 / -1; border-bottom: 0; }
-  .front-credits-back { min-height: 40px; font-size: var(--fs-1); } /* px-ok: tap target */
+  .front-credits-row:last-child { grid-column: 1 / -1; }
+  .front-credits-back { min-height: 40px; padding-left: 22px; font-size: var(--fs-2); } /* px-ok: tap target */
+  .front-credits-back::before { width: 14px; } /* px-ok */
 }
 @media (max-width: 600px) and (orientation: portrait) {
   .front-credits-row { grid-template-columns: 1fr; gap: calc(var(--u) * 4); }
