@@ -96,6 +96,8 @@ export interface SessionOptions {
   warm?: WarmStart;
   /** C13: the world the title scene already built for this district (the push hands it over: no second load). */
   world?: World;
+  /** C13: the front door names the area itself (main.ts #area-title), so the HUD's district banner stays off. */
+  areaTitle?: boolean;
 }
 
 /** What a restart carries into the next session (S6.6 "Retry without a page reload"). */
@@ -476,7 +478,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     : inClinic
     ? "Find Dr Vane. Her theatre is at the north end of the clinic."
     : "Get to the fish market. Somebody there knows who put Tomas in the water.";
-  if (inVault) hud.showBanner("The Hollow Vault", "Act 5 · 04:50");
+  // One area title on arrival: the front door's (main.ts) when it shows one, else the HUD's banner.
+  if (o.areaTitle && !o.warm) {
+    // main.ts shows #area-title once the session is up.
+  } else if (inVault) hud.showBanner("The Hollow Vault", "Act 5 · 04:50");
   else if (inTower) hud.showBanner("The Board Tower", "Act 4 · 03:30");
   else if (inPlaza) hud.showBanner("Hollowell Plaza", "Act 3 · 00:00");
   else if (inClinic) hud.showBanner("The Candor Clinic", "Act 2 · 02:10");

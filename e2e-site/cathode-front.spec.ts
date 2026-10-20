@@ -41,6 +41,18 @@ test.describe('CATHODE front door', () => {
     await page.keyboard.press('Escape')
     await expect(page.locator('#dlg-settings')).toBeHidden({ timeout: 30_000 })
     await expect(page.locator('#btn-settings')).toHaveClass(/is-focus/)
+    // CREDITS: who made it, nothing of the story, and Escape goes back (S9.1).
+    await page.keyboard.press('ArrowDown')
+    await expect(page.locator('#btn-credits')).toHaveClass(/is-focus/)
+    await page.keyboard.press('Enter')
+    await expect(page.locator('.front-credits')).toBeVisible({ timeout: 30_000 })
+    await expect(page.locator('.front-credits')).not.toContainText(/crossed off|Gone|Silent at last/)
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.front-credits')).toHaveCount(0, { timeout: 30_000 })
+    await expect(page.locator('#btn-credits')).toHaveClass(/is-focus/)
+    // Tab leaves the roving menu for the Games link, not the page body.
+    await page.keyboard.press('Tab')
+    await expect(page.locator('.front-back')).toBeFocused()
     // The subtitle and The List come from progress.
     await expect(page.locator('#title-sub')).toHaveText('HOLLOWELL PROPER · 2079 · 5 NAMES LEFT')
     await expect(page.locator('#the-list li')).toHaveCount(5)

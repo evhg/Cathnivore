@@ -41,6 +41,9 @@
   mix-blend-mode: overlay;
   animation: front-grain 0.9s steps(6) infinite;
 }
+/* Once the 3D street is up, the post chain's own film grain covers the frame: no full-screen blended layer over a
+   live WebGL canvas (aaa-ui cost). The CSS grain stays for the still fallback night only. */
+.front-grain.is-baked { display: none; }
 @keyframes front-grain {
   0% { transform: translate(0, 0); }
   33% { transform: translate(-3%, 2%); }
@@ -142,17 +145,31 @@
   bottom: calc(var(--safe-y) + var(--u) * 24);
   width: min(calc(var(--u) * 640), calc(100vw - 2 * var(--safe-x)));
   padding: calc(var(--u) * 34) calc(var(--u) * 38) calc(var(--u) * 30);
+  /* Opaque ink, no backdrop-filter (aaa-ui: the street keeps rendering behind it, and a blur re-samples it every
+     frame); a radial scrim lifts the top left so it still reads as a lit plate, not a hole. */
   background:
-    var(--front-plate),
-    var(--hatch);
+    radial-gradient(120% 90% at 0% 0%, rgb(var(--ink-rgb) / .045), transparent 60%),
+    var(--hatch),
+    var(--mat-ink);
   border: 1px solid rgb(var(--ink-rgb) / .14);
   box-shadow: inset 0 0 0 calc(var(--u) * 1) rgb(var(--ink-rgb) / .04), var(--sh-2);
   clip-path: polygon(0 0, calc(100% - var(--cut-m)) 0, 100% var(--cut-m), 100% 100%, 0 100%);
-  backdrop-filter: blur(calc(var(--u) * 10));
-  -webkit-backdrop-filter: blur(calc(var(--u) * 10));
   opacity: 0;
   transform: translateY(calc(var(--u) * 14));
   transition: opacity 500ms ease, transform 700ms cubic-bezier(.2, .7, .2, 1);
+}
+/* The clip cuts the border off the diagonal corner: draw that edge of the rim back on (inside the clip). */
+.gate-plate::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(100% - var(--cut-m));
+  width: calc(var(--cut-m) * 1.4142);
+  height: 1px;
+  background: rgb(var(--ink-rgb) / .14);
+  transform-origin: 0 0;
+  transform: rotate(45deg);
+  pointer-events: none;
 }
 .gate.is-in .gate-plate { opacity: 1; transform: none; }
 /* Accept: the plate wipes away right to left like ink drawn off glass (450 ms). */
@@ -356,7 +373,7 @@
 .logo-text {
   font-family: var(--font-display);
   font-weight: 560;
-  font-variation-settings: "opsz" 18;
+  font-variation-settings: "opsz" 96;
   fill: var(--ink);
   fill-opacity: 1;
   stroke: var(--ink);
@@ -547,7 +564,7 @@
   width: calc(var(--u) * 1100);
   height: calc(var(--u) * 260);
   transform: translate(-50%, -50%);
-  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .3) 60%, transparent);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .8), rgb(var(--shade-rgb) / .5) 55%, transparent);
   z-index: var(--z-under);
 }
 .area-name {
@@ -565,8 +582,10 @@
   margin: calc(var(--u) * 10) 0 0;
   font-family: var(--font-voice);
   font-style: italic;
-  font-size: max(14px, calc(var(--u) * 22));
-  color: var(--ink-2);
+  font-weight: 500;
+  /* aaa-ui: Bodoni over 3D only at 28 px or more, on a plate (the radial shade behind). */
+  font-size: max(15px, calc(var(--u) * 30));
+  color: var(--ink);
   text-shadow: 0 0 calc(var(--u) * 16) rgb(var(--black-rgb) / .9);
 }
 .area-title::after {
@@ -594,18 +613,40 @@
   .menu { grid-auto-rows: max(40px, calc(var(--u) * 64)); }
   .menu-hint { margin-top: calc(var(--u) * 10); }
   .the-list { display: none; }
-  .gate-plate { bottom: var(--safe-y); width: min(calc(var(--u) * 900), calc(100vw - 2 * var(--safe-x))); padding: calc(var(--u) * 22) calc(var(--u) * 30) calc(var(--u) * 22); }
-  .gate-stamp { margin-bottom: calc(var(--u) * 12); }
-  .gate-text { margin-bottom: calc(var(--u) * 14); }
+  /* Cath stays visible on the right (the scene frames her at 80% of the width while the gate is up). */
+  .gate-plate { bottom: var(--safe-y); width: min(55vw, calc(100vw - 2 * var(--safe-x))); padding: 12px 16px 12px; } /* px-ok: phone plate */
+  .gate-stamp { margin-bottom: 8px; font-size: 12px; } /* px-ok */
+  .gate-text { margin-bottom: 8px; font-size: 12px; line-height: 1.3; } /* px-ok */
+  .gate-tiles { gap: 6px; } /* px-ok */
+  .gate-tiles legend { margin-bottom: 4px; font-size: 10px; } /* px-ok */
+  .gate-tile { padding: 6px 10px; gap: 2px; } /* px-ok */
+  .tile-name { font-size: 16px; } /* px-ok */
+  .tile-desc { font-size: 10px; } /* px-ok */
+  .gate-enter { min-height: 40px; padding: 0 16px; font-size: 13px; } /* px-ok: tap target */
+  .gate-actions { gap: 14px; } /* px-ok */
   .gate-tile { min-height: 0; }
-  .gate-tiles { margin-bottom: calc(var(--u) * 16); }
+  .gate-tiles { margin-bottom: 8px; } /* px-ok */
 }
 /* Upright phones: the street stays behind; the column spans the width. */
 @media (max-width: 600px) and (orientation: portrait) {
+  /* Upright, the column spans the width over the brightest part of the street: a full top-to-bottom scrim. */
+  .screen.front::before {
+    background:
+      linear-gradient(180deg, rgb(var(--shade-rgb) / .9) 0%, rgb(var(--shade-rgb) / .8) 45%, rgb(var(--shade-rgb) / .55) 70%, rgb(var(--shade-rgb) / .7) 100%);
+  }
   .title-col { top: calc(var(--safe-y) + 48px); width: calc(100vw - 2 * var(--safe-x)); } /* px-ok: under the back link */
   .logo-svg { width: 100%; }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
   .gate-tiles { grid-template-columns: 1fr; }
+}
+
+/* Short landscape (phones): a smaller, tighter name that clears the HUD's top clusters and the crosshair. */
+@media (max-height: 520px) {
+  .area-title { top: 21svh; }
+  .area-title::before { width: min(92vw, calc(var(--u) * 1100)); height: max(96px, calc(var(--u) * 220)); } /* px-ok */
+  .area-name { font-size: max(16px, calc(var(--u) * 34)); letter-spacing: .3em; padding-left: .3em; } /* px-ok */
+  .area-sub { margin-top: 2px; font-size: max(15px, calc(var(--u) * 24)); } /* px-ok */
+  .area-title::after { margin-top: 8px; } /* px-ok */
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -617,3 +658,146 @@
 }
 html.reduce-motion .front-grain { animation: none; }
 .svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* ---- the title's CREDITS (C13): a plate where the menu column was; the column steps back ---- */
+.screen.front .title-col,
+.screen.front .the-list { transition: opacity 220ms ease, transform 320ms cubic-bezier(.2, .7, .2, 1); }
+.screen.front.is-credits .title-col,
+.screen.front.is-credits .the-list { opacity: 0; transform: translateX(calc(var(--u) * -18)); pointer-events: none; }
+.screen.front.is-credits .title-col * { pointer-events: none; }
+.front-credits {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .55), rgb(var(--shade-rgb) / .2) 60%, transparent 80%);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+.front-credits.is-in { opacity: 1; }
+.front-credits.is-out { opacity: 0; transition-duration: 180ms; }
+.front-credits-plate {
+  position: absolute;
+  left: max(var(--safe-x), var(--frame-x) + var(--safe-x));
+  top: 50%;
+  width: min(calc(var(--u) * 760), calc(100vw - 2 * var(--safe-x)));
+  max-height: calc(100svh - 2 * var(--safe-y));
+  overflow: auto;
+  padding: calc(var(--u) * 40) calc(var(--u) * 46) calc(var(--u) * 34);
+  background: var(--mat-ink);
+  border-left: calc(var(--u) * 3) solid var(--blood);
+  box-shadow: var(--sh-2);
+  transform: translateY(-50%) translateX(calc(var(--u) * 18));
+  transition: transform 320ms cubic-bezier(.2, .7, .2, 1);
+}
+.front-credits.is-in .front-credits-plate { transform: translateY(-50%); }
+.front-credits-eyebrow {
+  margin: 0 0 calc(var(--u) * 8);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(11px, calc(var(--u) * 15));
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: var(--blood-hot);
+}
+.front-credits-h {
+  margin: 0 0 calc(var(--u) * 26);
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-variation-settings: "opsz" 96;
+  font-size: max(26px, calc(var(--u) * 64));
+  letter-spacing: .04em;
+  line-height: 1;
+  color: var(--ink);
+}
+.front-credits-list {
+  display: grid;
+  gap: calc(var(--u) * 16);
+  margin: 0 0 calc(var(--u) * 30);
+}
+.front-credits-row {
+  display: grid;
+  grid-template-columns: calc(var(--u) * 230) 1fr;
+  align-items: baseline;
+  gap: calc(var(--u) * 24);
+  padding-bottom: calc(var(--u) * 14);
+  border-bottom: 1px solid rgb(var(--ink-rgb) / .08);
+}
+.front-credits-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.front-credits-role {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(11px, calc(var(--u) * 15));
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.front-credits-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variation-settings: "opsz" 24;
+  font-size: max(16px, calc(var(--u) * 28));
+  line-height: 1.2;
+  color: var(--ink);
+}
+.front-credits-note {
+  display: block;
+  margin-top: calc(var(--u) * 4);
+  font-family: var(--font-num);
+  font-size: max(11px, calc(var(--u) * 13));
+  letter-spacing: .06em;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+.front-credits-foot { display: flex; justify-content: flex-start; }
+.front-credits-back {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 14);
+  min-height: max(44px, calc(var(--u) * 56));
+  padding: 0 calc(var(--u) * 24) 0 calc(var(--u) * 10);
+  border: 1px solid rgb(var(--ink-rgb) / .18);
+  background: transparent;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(14px, calc(var(--u) * 20));
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.front-credits-back:hover,
+.front-credits-back:focus-visible { outline: none; box-shadow: none; border-color: var(--blood); background: rgb(var(--blood-deep-rgb) / .35); }
+.front-credits-back:focus { outline: none; box-shadow: none; }
+.front-credits-key {
+  display: inline-grid;
+  place-items: center;
+  min-width: calc(var(--u) * 46);
+  height: calc(var(--u) * 30);
+  padding: 0 calc(var(--u) * 8);
+  border: 1px solid rgb(var(--ink-rgb) / .3);
+  font-family: var(--font-num);
+  font-weight: 400;
+  font-size: max(10px, calc(var(--u) * 13));
+  letter-spacing: .08em;
+  color: var(--ink-2);
+}
+@media (max-height: 520px) {
+  .front-credits-plate { padding: 14px 20px 12px; width: min(calc(var(--u) * 1180), calc(100vw - 2 * var(--safe-x))); } /* px-ok: phone plate */
+  .front-credits-eyebrow { margin-bottom: 2px; font-size: 10px; } /* px-ok */
+  .front-credits-h { margin-bottom: 8px; font-size: 22px; } /* px-ok */
+  .front-credits-list { grid-template-columns: 1fr 1fr; align-items: start; gap: 6px 28px; margin-bottom: 10px; } /* px-ok */
+  .front-credits-row { grid-template-columns: 1fr; gap: 1px; padding-bottom: 5px; } /* px-ok */
+  .front-credits-role { font-size: 10px; } /* px-ok */
+  .front-credits-name { font-size: 14px; } /* px-ok */
+  .front-credits-note { margin-top: 1px; font-size: 10px; } /* px-ok */
+  .front-credits-row:last-child { grid-column: 1 / -1; border-bottom: 0; }
+  .front-credits-back { min-height: 40px; font-size: 13px; } /* px-ok: tap target */
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .front-credits-row { grid-template-columns: 1fr; gap: calc(var(--u) * 4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .front-credits, .front-credits-plate, .screen.front .title-col, .screen.front .the-list { transition-duration: 1ms; }
+}

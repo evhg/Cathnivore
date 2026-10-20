@@ -49,8 +49,8 @@ const DISTRICT_NAME: Record<string, string> = {
 /** The open lead the player is on, in the order the case board opens them (null when every case is closed). */
 const LEADS: ReadonlyArray<{ job: string; line: string }> = [
   { job: "fishMarket", line: "THE FISH MARKET" },
-  { job: "crispLead", line: "CRISP'S LEDGER" },
-  { job: "quayContracts", line: "ANA'S CONTRACT" },
+  { job: "crispLead", line: "CRISP’S LEDGER" },
+  { job: "quayContracts", line: "ANA’S CONTRACT" },
   { job: "candorManifest", line: "THE CANDOR MANIFEST" },
   { job: "crispBoss", line: "JULIAN CRISP" },
   { job: "vaneLead", line: "THE CLINIC REGISTER" },
@@ -119,4 +119,4 @@ export function frontSet(jobsDone: readonly string[]): { signDark: boolean; tall
 }
 
 /** The cold open's line (S9.3). */
-export const COLD_OPEN_LINE = "Everyone's got a list. Mine's just shorter every night.";
+export const COLD_OPEN_LINE = "Everyone’s got a list. Mine’s just shorter every night.";

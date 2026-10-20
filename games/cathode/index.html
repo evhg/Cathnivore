@@ -23,24 +23,20 @@
       <section id="screen-gate" class="screen gate front" aria-labelledby="gate-title" hidden>
         <div class="gate-plate" id="gate-plate">
           <h1 id="gate-title" class="gate-stamp"><span>Rated</span> <b>18</b></h1>
-          <p class="gate-text">CATHODE has strong bloody violence and strong language throughout. It's a game for adults.</p>
+          <p class="gate-text">CATHODE has strong bloody violence and strong language throughout. It’s a game for adults.</p>
           <fieldset class="gate-tiles">
             <legend>Violence</legend>
             <label class="gate-tile"><input type="radio" name="intensity" value="full" checked /> <span class="tile-name">Full</span> <span class="tile-desc">Blood, severed limbs, kill-cams</span></label>
             <label class="gate-tile"><input type="radio" name="intensity" value="reduced" /> <span class="tile-name">Reduced</span> <span class="tile-desc">Hits and falls, no gore</span></label>
           </fieldset>
           <div class="gate-actions">
-            <button type="button" id="gate-yes" class="gate-enter">I'm 18 or over</button>
+            <button type="button" id="gate-yes" class="gate-enter">I’m 18 or over</button>
             <a class="gate-back" href="/">Take me back</a>
           </div>
         </div>
       </section>
 
       <section id="screen-title" class="screen title front" aria-labelledby="title-word" hidden>
-        <a class="front-back" href="/" aria-label="All games">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
-          <span>Games</span>
-        </a>
         <div class="title-col">
           <h1 id="title-word" class="logo"><svg class="logo-svg" viewBox="0 0 840 150"><text class="logo-text" x="4" y="128" font-size="132" textLength="832" lengthAdjust="spacing">CATHODE</text></svg></h1>
           <p class="title-sub" id="title-sub">HOLLOWELL PROPER · 2079</p>
@@ -56,6 +52,11 @@
           <h2 id="the-list-h" class="the-list-h">The List</h2>
           <ol class="the-list-names" id="the-list"></ol>
         </section>
+        <!-- After the menu in the tab order (Tab from the roving menu lands here); placed top left by CSS. -->
+        <a class="front-back" href="/" aria-label="All games">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
+          <span>Games</span>
+        </a>
         <p class="build-ver" id="build-ver">BUILD</p>
       </section>
 

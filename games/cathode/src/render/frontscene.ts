@@ -33,6 +33,8 @@ export interface FrontScene {
   readonly cath: FrontCath;
   /** The focused menu row, -1..1 from the middle (the camera leans half a degree toward it). */
   focusBias(v: number): void;
+  /** Where she sits across the frame: 0 centre, 1 the right edge (default 0.42, the right third). */
+  setFraming(k: number): void;
   /** Pointer or tilt, each -1..1. */
   parallax(x: number, y: number): void;
   /** Loop time in seconds (screenshots; the live loop also advances it). */
@@ -167,6 +169,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const spring = { x: 0, vx: 0, y: 0, vy: 0, tx: 0, ty: 0, bias: 0, tb: 0, vb: 0 };
   const W = 2 * Math.PI * 2;
   let time = 0;
+  let framing = 0.42;
   let pushT = -1;
   let pushDur = 1.6;
   let pushDone: (() => void) | null = null;
@@ -188,7 +191,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // Her on the right third: turn the lens left by the angle that puts her at 0.3 of the half-width.
     const aspect = Math.max(0.5, cam.aspect);
     const half = Math.atan(Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect);
-    cam.rotateY(Math.atan(Math.tan(half) * (aspect < 1.2 ? 0.12 : 0.42)));
+    cam.rotateY(Math.atan(Math.tan(half) * (aspect < 1.2 ? 0.12 : framing)));
     if (!o.still) {
       const k = Math.min(dt, 1 / 20);
       spring.vx += (W * W * (spring.tx - spring.x) - 2 * W * spring.vx) * k;
@@ -233,9 +236,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   let last = performance.now();
   let raf = 0;
   let acc = 0;
-  // Phones hold 30 fps (S9.2 cost). Automated runs draw twice a second: software WebGL takes seconds a frame, and
-  // a busy main thread would make every key and timer in the menu wait behind it.
-  const frameMin = typeof navigator !== "undefined" && navigator.webdriver ? 0.5 : phone ? 1 / 30 : 0;
+  let since = 0;
+  // Phones hold 30 fps, desktops 60 (S9.2 cost: a 144 Hz 5K panel must not draw the title 144 times a second).
+  // Automated runs draw once every 3 s: software WebGL stalls the main thread for seconds a frame, and every key,
+  // timer and axe pass in the front door would wait behind it.
+  const frameMin = typeof navigator !== "undefined" && navigator.webdriver ? 3 : phone ? 1 / 30 : 1 / 60;
   const resize = () => {
     const w = canvas.clientWidth || innerWidth;
     const h = canvas.clientHeight || innerHeight;
@@ -290,9 +295,12 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     last = now;
     if (o.shot) return;
     acc += dt;
-    if (acc < frameMin) return;
-    const step = acc;
-    acc = 0;
+    since += dt;
+    if (acc < frameMin - 0.002) return;
+    // Keep the remainder at the 60 fps cap so a 144 Hz panel paces evenly (2 or 3 vsyncs a frame, 60 on average).
+    acc = frameMin < 0.05 ? Math.max(0, Math.min(acc - frameMin, frameMin)) : 0;
+    const step = since;
+    since = 0;
     time += o.still ? 0 : step;
     frame(step);
   };
@@ -310,6 +318,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     set time(v: number) {
       time = v;
+    },
+    setFraming(k) {
+      framing = THREE.MathUtils.clamp(k, 0, 0.9);
     },
     focusBias(v) {
       spring.tb = THREE.MathUtils.clamp(v, -1, 1);

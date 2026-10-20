@@ -89,6 +89,7 @@ function startScene(): void {
     .then((s) => {
       scene = s;
       $("front-fallback").classList.add("is-off");
+      $("front-grain").classList.add("is-baked");
       return s;
     })
     .catch((e: unknown) => {
@@ -136,11 +137,15 @@ async function coldOpen(full: boolean): Promise<void> {
     await wait(1200);
   }
   // The street fades up behind the line once it is built (at most 4 s more; the fallback night if not).
+  const t0 = performance.now();
   await Promise.race([sceneReady, sleep(skip ? 600 : 4000)]);
+  // A hard bound: if the build held the main thread past the 4 s (a slow GPU, software WebGL), the player has
+  // waited long enough; the line goes at once instead of holding through more slow frames.
+  const late = performance.now() - t0 > 4500;
   co.classList.add("is-up");
-  await wait(full ? 1400 : 500);
+  if (!late) await wait(full ? 1400 : 500);
   co.classList.add("is-out");
-  await sleep(full ? 450 : 0);
+  await sleep(full && !late ? 450 : 0);
   co.hidden = true;
   co.classList.remove("is-line", "is-up", "is-out");
   removeEventListener("keydown", onKey);
@@ -148,8 +153,14 @@ async function coldOpen(full: boolean): Promise<void> {
 }
 
 // ---- the gate (S9.3) ----
+/** On a phone held sideways the gate plate takes the left 55%: Cath moves to 80% of the width so she stays in view. */
+const gateFraming = () => (innerHeight <= 520 && innerWidth > innerHeight ? 0.62 : 0.42);
 function openGate(): Promise<void> {
   show("screen-gate");
+  scene?.setFraming(gateFraming());
+  void sceneReady.then((s) => {
+    if (!$("screen-gate").hidden) s?.setFraming(gateFraming());
+  });
   const gate = $("screen-gate");
   requestAnimationFrame(() => gate.classList.add("is-in"));
   const tiles = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="intensity"]'));
@@ -164,6 +175,7 @@ function openGate(): Promise<void> {
       const plate = $("gate-plate");
       plate.classList.add("is-wiping");
       setTimeout(() => {
+        scene?.setFraming(0.42);
         gate.classList.remove("is-in");
         plate.classList.remove("is-wiping");
         resolve();
@@ -278,15 +290,7 @@ async function confirm(id: string): Promise<void> {
   flash(id);
   audio.confirm();
   if (id === "settings") return openSettings();
-  if (id === "credits") {
-    if (menu) menu.active = false;
-    const { showCredits } = await import("./ui/credits");
-    showCredits(document.body, () => {
-      if (menu) menu.active = true;
-      document.querySelector<HTMLElement>("#menu .is-focus")?.focus();
-    });
-    return;
-  }
+  if (id === "credits") return openCredits();
   if (id === "new") {
     try {
       localStorage.removeItem(SAVE_KEY);
@@ -302,6 +306,25 @@ async function confirm(id: string): Promise<void> {
     p.save();
   }
   void begin(true);
+}
+
+// ---- credits: who made it, no story (the ending roll stays for the ending) ----
+async function openCredits(): Promise<void> {
+  if (menu) menu.active = false;
+  const title = $("screen-title");
+  const { showFrontCredits } = await import("./ui/credits");
+  title.classList.add("is-credits");
+  showFrontCredits(title, {
+    tick: () => audio.tick(),
+    onClose: () => {
+      title.classList.remove("is-credits");
+      // The key that closed it must not reach the menu as a "back" in the same event.
+      setTimeout(() => {
+        if (menu) menu.active = true;
+        document.querySelector<HTMLElement>("#menu .is-focus")?.focus({ preventScroll: true });
+      }, 0);
+    },
+  });
 }
 
 // ---- settings ----
@@ -437,6 +460,7 @@ async function begin(fromTitle: boolean): Promise<void> {
     shot,
     district,
     world,
+    areaTitle: true,
     onProgress: progress,
     onExit: () => location.reload(),
   });
@@ -455,8 +479,15 @@ function showAreaTitle(district: string | undefined): void {
   $("area-name").textContent = a.title;
   $("area-sub").textContent = a.sub;
   box.hidden = false;
+  // One instruction at a time: the touch coach chips step aside while the area is named (hud.css).
+  const root = document.documentElement;
+  root.classList.add("hud-banner-on");
   box.classList.toggle("is-held", frontStage === "areatitle" && shot);
-  if (!(frontStage === "areatitle" && shot)) setTimeout(() => (box.hidden = true), 3300);
+  if (!(frontStage === "areatitle" && shot))
+    setTimeout(() => {
+      box.hidden = true;
+      root.classList.remove("hud-banner-on");
+    }, 3300);
 }
 
 // AAA UI M1: give the display and UI faces up to 600 ms before the first screen, so the wordmark doesn't
@@ -529,6 +560,7 @@ async function boot(): Promise<void> {
       $("screen-gate").classList.add("is-in");
     } else openTitle(false);
     s?.setTime(t);
+    if (frontStage === "credits") await openCredits();
     if (frontStage === "areatitle") await begin(true);
     hook.ready = true;
     return;
