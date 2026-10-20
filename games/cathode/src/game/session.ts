@@ -36,7 +36,7 @@ import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
 import { Orbs, TD, Takedown, targetScript } from "./takedown";
 import { archGeometry } from "./models/enforcer";
-import { TAKEDOWN, TAKEDOWN_VARIANTS, pickTakedownVariant, syncPoint, takedownEligible, takedownRewards, variantById, type Rect, type TakedownApproach, type TakedownVariantId } from "../sim/takedown";
+import { TAKEDOWN, TAKEDOWN_VARIANTS, blowsInOrder, pickTakedownVariant, syncPoint, takedownEligible, takedownRewards, variantById, type Rect, type TakedownApproach, type TakedownVariantId } from "../sim/takedown";
 import { Hud, type HudState } from "../ui/hud";
 import { Audio } from "./audio";
 import { CLASS_WEAPON, Progress } from "./progress";
@@ -2313,7 +2313,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           world.fx.muzzle(td.rig.muzzle.clone().addScaledVector(td.rig.axis, -0.05).lerp(world.camera.position, 0.08), td.rig.axis, 0.4, false);
           const head = e.body.segs.get("head");
           if (world.fx.flesh) world.fx.flesh({ point: td.rig.muzzle.clone().addScaledVector(td.rig.axis, 0.06), dir: td.rig.axis.clone(), damage: e.kit.maxHp, maxHp: e.kit.maxHp, weaponCls: "pistol", distance: 0.3, anchor: head?.group, owner: e, root: e.body.root, head: true, lethal });
-          else if (world.fx.gore) world.fx.blood(ev.at, td.rig.axis, 0.85);
+          // And the spatter that reads at arm's length: droplets out along the round and back across his chest at her.
+          if (world.fx.gore) {
+            world.fx.blood(td.rig.muzzle, td.rig.axis, 1);
+            world.fx.blood(td.rig.muzzle, vUp.copy(world.camera.position).sub(td.rig.muzzle).normalize(), 0.7);
+          }
         } else if (world.fx.gore && td.variant!.kind !== "choke") world.fx.blood(ev.at, ev.dir ?? new THREE.Vector3(0, 1, 0), lethal ? 0.85 : 0.5);
         hud.cinemaFlash();
         rumble(lethal ? "kill" : "hit");
@@ -4117,7 +4121,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       drainEvents();
       world.update(0, 1, step / 1000);
     }
-    // The world's own hit-stop and slow motion are the live game's; the frozen frame shows the pose.
+    // The world's own hit-stop and slow motion are the live game's; the frozen frame shows the pose. A stage on a
+    // blow's own ms shows its hit-stop as played: the blood hangs, having drifted at fxScale 0.25 (about 30 ms of
+    // particle time over the stop), not still balled up inside the muzzle flash.
+    if (blowsInOrder(v).includes(ms)) for (let i = 0; i < 2; i++) world.update(0, 1, 0.016);
     takedownCamera(0);
     tdSideView = xView ? g : null;
     if (xView) sideView();

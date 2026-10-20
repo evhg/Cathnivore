@@ -1688,7 +1688,7 @@
 }
 @media (pointer: coarse) {
   /* On touch the chip is the button: at least 44 px tall (the iOS minimum target). */
-  .hud-prompt.world { pointer-events: auto; cursor: pointer; touch-action: none; min-height: 44px; box-sizing: border-box; }
+  .hud-prompt.world { pointer-events: auto; cursor: pointer; touch-action: none; min-height: max(44px, calc(var(--u) * 44)); box-sizing: border-box; }
   /* The phone's weapon name sits top centre, where the chip rides over a close guard's helmet: it steps aside. */
   .hud-root.td-tell .hud-arms { visibility: hidden; }
 }

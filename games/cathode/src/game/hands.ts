@@ -164,7 +164,7 @@ export class Arm {
     // diagonal folds down the forearm and creases at the elbow, with a sunk seam along the underside.
     // The upper arm is on screen in the takedowns (C11 review: "a large flat brown cylinder"): the same gabardine,
     // its folds twisting down to a crease at the elbow, the seam along the underside, no bunching.
-    add(upper, sleeve(ARM.upper + 0.03, 0.05, 0.045, { seg: phone ? 14 : 24, phone, side, elbowAt: 1, bunch: false }), FIN.sleeve, { p: [0, -0.01, 0] });
+    add(upper, sleeve(ARM.upper + 0.03, 0.05, 0.045, { seg: phone ? 12 : 18, phone, side, elbowAt: 1, bunch: false }), FIN.sleeve, { p: [0, -0.01, 0] });
     add(fore, sphere(0.044, phone), FIN.sleeve);
     add(fore, sleeve(ARM.fore - 0.055, 0.045, 0.033, { seg: phone ? 16 : 28, phone, side, elbowAt: 0 }), FIN.sleeve);
     // The turned-back trench cuff: a wider band with a rolled lip, and its button on the outside.
