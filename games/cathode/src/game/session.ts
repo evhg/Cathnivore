@@ -1946,7 +1946,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     s.paused = true;
     document.exitPointerLock?.();
     const wasFocus = s.focus;
-    charScreen = openCharacter(
+    const sheet: { close(): void; refresh(): void } = openCharacter(
       o.hud.parentElement ?? o.hud,
       () => progress.character,
       (next) => {
@@ -1957,6 +1957,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         s.hp = Math.round(s.maxHp * ratio);
       },
       () => {
+        // A staged reopen may already have replaced this sheet: only the current one clears the slot.
+        if (charScreen !== sheet) return;
         charScreen = null;
         s.paused = false;
         s.focus = wasFocus;
@@ -1967,6 +1969,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         exportCode: () => exportCode(makeSave(progress.character, new Date().toISOString(), { jobsDone: progress.jobsDone })),
       },
     );
+    charScreen = sheet;
   }
 
   /**
@@ -4216,8 +4219,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (name === "sheet" || name === "sheet-attributes" || name === "sheet-inventory") {
       calmVitals();
       const tab = name === "sheet" ? undefined : (name.slice(6) as "attributes" | "inventory");
-      if (!charScreen) openSheet(tab);
-      else if (tab) document.querySelector<HTMLElement>(`#cx-tab-${tab}`)?.click();
+      charScreen?.close();
+      charScreen = null;
+      openSheet(tab);
       return "ok";
     }
     if (name === "levelup") {
