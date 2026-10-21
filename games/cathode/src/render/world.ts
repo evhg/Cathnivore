@@ -344,6 +344,17 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     render() {
       const t0 = performance.now();
       renderer.info.reset();
+      if (post.frozen) {
+        // C14: a fully closed pause shows a held, blurred frame. Present the cached one (grade, FXAA, grain)
+        // instead of drawing the world, its mirror and the bloom again for no visible change.
+        post.renderFrozen(clock);
+        perf.reflCalls = 0;
+        perf.shadowed = false;
+        perf.renderMs = performance.now() - t0;
+        perf.drawCalls = renderer.info.render.calls;
+        perf.triangles = renderer.info.render.triangles;
+        return;
+      }
       frameNo++;
       const shadowing = frameNo % shadowEvery === 0;
       if (shadowing) renderer.shadowMap.needsUpdate = true;

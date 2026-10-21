@@ -136,6 +136,159 @@ class ScenePass extends Pass {
   }
 }
 
+/**
+ * C14 (S9.7): the pause's defocus. While the pause is opening it downsamples the HDR frame (Karis-weighted, so a
+ * neon glint cannot become a speckled disc) to about 1/4 or 1/8 of the screen and runs three separable Gaussian
+ * passes; the grade then reads that with one fetch. Once the pause is fully closed it also keeps a copy of the
+ * frame it blurred, so the world, its mirror and the bloom stop rendering until the pause lifts (`Post.frozen`).
+ */
+class PauseBlurPass extends Pass {
+  readonly cache = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType });
+  /** True once `cache` holds the frame behind a fully closed pause. */
+  valid = false;
+  private readonly levels: THREE.WebGLRenderTarget[] = [];
+  private readonly tmp = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType });
+  private readonly out = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType });
+  private readonly quad = new FullScreenQuad();
+  private spread = 1;
+  private readonly down = new THREE.ShaderMaterial({
+    uniforms: { tSrc: { value: null as THREE.Texture | null }, uTexel: { value: new THREE.Vector2() }, uKaris: { value: 1 } },
+    vertexShader: VERT,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D tSrc;
+      uniform vec2 uTexel;
+      uniform float uKaris;
+      varying vec2 vUv;
+      ${SANITIZE}
+      vec4 tap( vec2 o ) {
+        vec3 c = hdrSafe( texture2D( tSrc, vUv + o * uTexel ).rgb );
+        float w = mix( 1.0, 1.0 / ( 1.0 + dot( c, vec3( 0.2126, 0.7152, 0.0722 ) ) ), uKaris );
+        return vec4( c * w, w );
+      }
+      void main() {
+        vec4 s = tap( vec2( -1.0, -1.0 ) ) + tap( vec2( 1.0, -1.0 ) ) + tap( vec2( -1.0, 1.0 ) ) + tap( vec2( 1.0, 1.0 ) );
+        gl_FragColor = vec4( s.rgb / max( s.a, 1e-4 ), 1.0 );
+      }`,
+    depthTest: false,
+    depthWrite: false,
+  });
+  private readonly blur = new THREE.ShaderMaterial({
+    uniforms: { tSrc: { value: null as THREE.Texture | null }, uDir: { value: new THREE.Vector2() } },
+    vertexShader: VERT,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D tSrc;
+      uniform vec2 uDir;
+      varying vec2 vUv;
+      void main() {
+        // A 9-tap Gaussian in five bilinear fetches.
+        vec3 c = texture2D( tSrc, vUv ).rgb * 0.2270270270;
+        c += ( texture2D( tSrc, vUv + uDir * 1.3846153846 ).rgb + texture2D( tSrc, vUv - uDir * 1.3846153846 ).rgb ) * 0.3162162162;
+        c += ( texture2D( tSrc, vUv + uDir * 3.2307692308 ).rgb + texture2D( tSrc, vUv - uDir * 3.2307692308 ).rgb ) * 0.0702702703;
+        gl_FragColor = vec4( c, 1.0 );
+      }`,
+    depthTest: false,
+    depthWrite: false,
+  });
+  private readonly copy = new THREE.ShaderMaterial({
+    uniforms: { tSrc: { value: null as THREE.Texture | null } },
+    vertexShader: VERT,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D tSrc;
+      varying vec2 vUv;
+      void main() { gl_FragColor = vec4( texture2D( tSrc, vUv ).rgb, 1.0 ); }`,
+    depthTest: false,
+    depthWrite: false,
+  });
+
+  constructor(private readonly pause: () => number) {
+    super();
+    this.needsSwap = false;
+  }
+
+  get texture(): THREE.Texture {
+    return this.out.texture;
+  }
+
+  setSize(width: number, height: number): void {
+    this.valid = false;
+    this.cache.setSize(width, height);
+    // Halve until the frame is at most about 360 px tall (1/4 at 1440p, 1/8 at 5K): the blur's reach is then a
+    // share of the screen, the same at every size.
+    for (const l of this.levels) l.dispose();
+    this.levels.length = 0;
+    let w = width;
+    let h = height;
+    do {
+      w = Math.max(1, Math.round(w / 2));
+      h = Math.max(1, Math.round(h / 2));
+      this.levels.push(new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType }));
+    } while (h > 360 && this.levels.length < 4);
+    if (this.levels.length < 2) {
+      w = Math.max(1, Math.round(w / 2));
+      h = Math.max(1, Math.round(h / 2));
+      this.levels.push(new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType }));
+    }
+    this.tmp.setSize(w, h);
+    this.out.setSize(w, h);
+    // Three passes whose sigmas add to about 1.2% of the screen's height (the old disc's radius was 2%).
+    this.spread = Math.max(0.75, (0.012 * h) / (1.75 * Math.sqrt(3)));
+  }
+
+  render(renderer: THREE.WebGLRenderer, _write: THREE.WebGLRenderTarget, read: THREE.WebGLRenderTarget): void {
+    const k = this.pause();
+    if (k <= 0.001) {
+      this.valid = false;
+      return;
+    }
+    let src: THREE.WebGLRenderTarget = read;
+    this.levels.forEach((dst, i) => {
+      this.down.uniforms.tSrc!.value = src.texture;
+      this.down.uniforms.uKaris!.value = i === 0 ? 1 : 0;
+      (this.down.uniforms.uTexel!.value as THREE.Vector2).set(1 / src.width, 1 / src.height);
+      this.draw(renderer, this.down, dst);
+      src = dst;
+    });
+    const last = this.levels[this.levels.length - 1]!;
+    const w = last.width;
+    const h = last.height;
+    [0.8, 1, 1.25].forEach((m, i) => {
+      const s = this.spread * m;
+      this.blur.uniforms.tSrc!.value = (i === 0 ? last : this.out).texture;
+      (this.blur.uniforms.uDir!.value as THREE.Vector2).set(s / w, 0);
+      this.draw(renderer, this.blur, this.tmp);
+      this.blur.uniforms.tSrc!.value = this.tmp.texture;
+      (this.blur.uniforms.uDir!.value as THREE.Vector2).set(0, s / h);
+      this.draw(renderer, this.blur, this.out);
+    });
+    if (k >= 0.999 && !this.valid) {
+      this.copy.uniforms.tSrc!.value = read.texture;
+      this.draw(renderer, this.copy, this.cache);
+      this.valid = true;
+    } else if (k < 0.999) this.valid = false;
+  }
+
+  private draw(renderer: THREE.WebGLRenderer, m: THREE.ShaderMaterial, to: THREE.WebGLRenderTarget): void {
+    this.quad.material = m;
+    renderer.setRenderTarget(to);
+    this.quad.render(renderer);
+  }
+
+  dispose(): void {
+    for (const l of this.levels) l.dispose();
+    this.tmp.dispose();
+    this.out.dispose();
+    this.cache.dispose();
+    this.quad.dispose();
+    this.down.dispose();
+    this.blur.dispose();
+    this.copy.dispose();
+  }
+}
+
+const VERT = /* glsl */ `
+    varying vec2 vUv;
+    void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`;
+
 const GradeShader = {
   uniforms: {
     tDiffuse: { value: null as THREE.Texture | null },
@@ -179,8 +332,8 @@ const GradeShader = {
     uGlitch: { value: 0 },
     // C14 (S9.7): the pause. The held frame drains to a cold near-monochrome, dims and closes at the edges.
     uPause: { value: 0 },
-    // S9.7: the pause blur's taps (9 on desktop, 5 on phone).
-    uPauseTaps: { value: 9 },
+    // S9.7: the held frame, blurred once (PauseBlurPass): a smooth defocus, sampled with one fetch.
+    tPauseBlur: { value: null as THREE.Texture | null },
     uDeathCa: { value: 1 },
   },
   vertexShader: /* glsl */ `
@@ -210,7 +363,7 @@ const GradeShader = {
     uniform float uPulseMove;
     uniform float uDeath;
     uniform float uPause;
-    uniform float uPauseTaps;
+    uniform sampler2D tPauseBlur;
     uniform float uInk;
     uniform float uInkGrey;
     uniform float uGlitch;
@@ -345,23 +498,9 @@ const GradeShader = {
         }
         col = mix( col, acc / wsum, smoothstep( 0.0, 0.3, uDrama ) );
       }
-      // C14 (S9.7): the pause blurs the held frame (9 taps on desktop, 5 on phone) so the menu and the case note
-      // sit on a soft street, not a sharp, busy one. A golden-angle disc turned per pixel (interleaved gradient
-      // noise): no ghosting, only a fine grain that the film grain already carries.
-      if ( uPause > 0.001 ) {
-        vec3 acc = vec3( 0.0 );
-        float ign = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
-        float rot = ign * 6.2831853;
-        float rad = 0.02 * uPause;
-        for ( int i = 0; i < 9; i++ ) {
-          if ( float( i ) >= uPauseTaps ) break;
-          float a = float( i ) * 2.39996 + rot;
-          float rr = sqrt( ( float( i ) + 0.5 ) / uPauseTaps );
-          vec2 o = vec2( cos( a ), sin( a ) ) * rr * rad * vec2( uRes.y / uRes.x, 1.0 );
-          acc += hdrSafe( texture2D( tDiffuse, uv + o ).rgb );
-        }
-        col = mix( col, acc / uPauseTaps, smoothstep( 0.0, 0.5, uPause ) );
-      }
+      // C14 (S9.7): the pause blurs the held frame so the menu and the case note sit on a soft street, not a
+      // sharp, busy one. PauseBlurPass has already downsampled and Gaussian-blurred it (a smooth defocus, no taps).
+      if ( uPause > 0.001 ) col = mix( col, hdrSafe( texture2D( tPauseBlur, uv ).rgb ), smoothstep( 0.0, 0.5, uPause ) );
       col *= uExposure * ( 1.0 + uFlash );
       // Noir grading in linear light, before the tone map.
       float lum = dot( col, vec3( 0.2126, 0.7152, 0.0722 ) );
@@ -565,6 +704,10 @@ export interface Post {
   /** `dpr` is the screen's (the viewmodel and post render at it); `worldScale` scales the world's render only. */
   setSize(w: number, h: number, dpr: number, worldScale?: number): void;
   render(time: number): void;
+  /** The pause has fully closed over a held frame that is cached: `renderFrozen` can present it without the world. */
+  readonly frozen: boolean;
+  /** Grade, FXAA and grain over the cached held frame: three full-screen quads instead of the world and its mirror. */
+  renderFrozen(time: number): void;
   /**
    * C7 acceptance: the grade pass's mean time over `n` draws (ms, synced with a 1-pixel read each), with the
    * Vitals pass idle (`on` false) or at its busiest (bleeding, a hit, the pulse, two lens splats). Restores the
@@ -609,7 +752,9 @@ export function createPost(
   // The wound's radial smear: desktop high and ultra only (S6.4; quality is "phone" | "high" | "ultra"). It
   // reuses the CA's three taps instead of six more fetches (DECISIONS 2026-10-18).
   grade.uniforms.uBlur!.value = quality === "phone" ? 0 : 1;
-  grade.uniforms.uPauseTaps!.value = quality === "phone" ? 5 : 9;
+  const pauseBlur = new PauseBlurPass(() => grade.uniforms.uPause!.value as number);
+  grade.uniforms.tPauseBlur!.value = pauseBlur.texture;
+  composer.addPass(pauseBlur);
   composer.addPass(grade);
   // Phone has no MSAA: FXAA on the graded (sRGB) image.
   const fxaa = quality === "phone" ? new ShaderPass(FXAAShader) : null;
@@ -638,6 +783,22 @@ export function createPost(
       final.uniforms.uTime!.value = time;
       grade.uniforms.uTime!.value = time;
       composer.render();
+    },
+    get frozen() {
+      return pauseBlur.valid && (grade.uniforms.uPause!.value as number) >= 0.999;
+    },
+    renderFrozen(time) {
+      final.uniforms.uTime!.value = time;
+      grade.uniforms.uTime!.value = time;
+      const a = composer.writeBuffer;
+      const b = composer.readBuffer;
+      grade.render(renderer, a, pauseBlur.cache, 0, false);
+      let src = a;
+      if (fxaa) {
+        fxaa.render(renderer, b, a, 0, false);
+        src = b;
+      }
+      final.render(renderer, b === src ? a : b, src, 0, false);
     },
     benchGrade(n, on) {
       const u = grade.uniforms;
