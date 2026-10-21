@@ -179,6 +179,8 @@ const GradeShader = {
     uGlitch: { value: 0 },
     // C14 (S9.7): the pause. The held frame drains to a cold near-monochrome, dims and closes at the edges.
     uPause: { value: 0 },
+    // S9.7: the pause blur's taps (9 on desktop, 5 on phone).
+    uPauseTaps: { value: 9 },
     uDeathCa: { value: 1 },
   },
   vertexShader: /* glsl */ `
@@ -208,6 +210,7 @@ const GradeShader = {
     uniform float uPulseMove;
     uniform float uDeath;
     uniform float uPause;
+    uniform float uPauseTaps;
     uniform float uInk;
     uniform float uInkGrey;
     uniform float uGlitch;
@@ -341,6 +344,23 @@ const GradeShader = {
           wsum += 1.0;
         }
         col = mix( col, acc / wsum, smoothstep( 0.0, 0.3, uDrama ) );
+      }
+      // C14 (S9.7): the pause blurs the held frame (9 taps on desktop, 5 on phone) so the menu and the case note
+      // sit on a soft street, not a sharp, busy one. A golden-angle disc turned per pixel (interleaved gradient
+      // noise): no ghosting, only a fine grain that the film grain already carries.
+      if ( uPause > 0.001 ) {
+        vec3 acc = vec3( 0.0 );
+        float ign = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
+        float rot = ign * 6.2831853;
+        float rad = 0.02 * uPause;
+        for ( int i = 0; i < 9; i++ ) {
+          if ( float( i ) >= uPauseTaps ) break;
+          float a = float( i ) * 2.39996 + rot;
+          float rr = sqrt( ( float( i ) + 0.5 ) / uPauseTaps );
+          vec2 o = vec2( cos( a ), sin( a ) ) * rr * rad * vec2( uRes.y / uRes.x, 1.0 );
+          acc += hdrSafe( texture2D( tDiffuse, uv + o ).rgb );
+        }
+        col = mix( col, acc / uPauseTaps, smoothstep( 0.0, 0.5, uPause ) );
       }
       col *= uExposure * ( 1.0 + uFlash );
       // Noir grading in linear light, before the tone map.
@@ -589,6 +609,7 @@ export function createPost(
   // The wound's radial smear: desktop high and ultra only (S6.4; quality is "phone" | "high" | "ultra"). It
   // reuses the CA's three taps instead of six more fetches (DECISIONS 2026-10-18).
   grade.uniforms.uBlur!.value = quality === "phone" ? 0 : 1;
+  grade.uniforms.uPauseTaps!.value = quality === "phone" ? 5 : 9;
   composer.addPass(grade);
   // Phone has no MSAA: FXAA on the graded (sRGB) image.
   const fxaa = quality === "phone" ? new ShaderPass(FXAAShader) : null;

@@ -330,11 +330,21 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 /* The case note: the objective as a sentence, then the district, the in-city time and the names left. */
 .hud-pm-note {
+  position: relative;
   align-self: center;
   justify-self: end;
   width: 100%;
   pointer-events: none;
   transition: opacity 160ms ease;
+  text-shadow: var(--hud-shadow);
+}
+/* Local shade under the note (C14 review): the held street's brightest signs sit right behind it. */
+.hud-pm-note::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--u) * -90) calc(var(--u) * -120);
+  z-index: -1;
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .72), rgb(var(--shade-rgb) / .4) 60%, rgb(var(--shade-rgb) / 0));
 }
 .hud-pause:has(.hud-pause-card:not([data-view="menu"])) .hud-pm-note { opacity: 0; }
 .hud-pm-note-h {
@@ -364,7 +374,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 .hud-pm-note-facts div { display: grid; gap: calc(var(--u) * 6); }
 .hud-pm-note-facts dt { font: 700 var(--fs-1)/1.2 var(--font-ui); font-stretch: var(--wdth-label); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
-.hud-pm-note-facts dd { margin: 0; font: 600 var(--fs-2)/1.2 var(--font-ui); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.hud-pm-note-facts dd { margin: 0; font: 600 var(--fs-2)/1.2 var(--font-ui); font-variant-numeric: tabular-nums; color: var(--ink); }
 @media (max-height: 560px) {
   .hud-pause { grid-template-columns: minmax(0, 1fr) minmax(0, 44%); column-gap: 24px; } /* px-ok */
   .hud-pm-note-obj { margin-bottom: 12px; font-size: var(--fs-2); } /* px-ok */

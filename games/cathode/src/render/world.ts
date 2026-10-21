@@ -390,6 +390,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     },
     setPause(k) {
       post.grade.uniforms.uPause!.value = THREE.MathUtils.clamp(k, 0, 1);
+      // The viewmodel leaves as the blur comes in (S9.7): a sharp baton under the case note reads as a bug.
+      viewScene.visible = k < 0.35;
     },
     setDeath(o) {
       const u = post.grade.uniforms;
