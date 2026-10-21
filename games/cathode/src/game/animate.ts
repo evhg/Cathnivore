@@ -6,6 +6,7 @@ import { REST, type Body, type Joint } from "./body";
 import { deriveJoints } from "./rig";
 import { FOREGRIP_M } from "./models/gear";
 import type { Dir, Flinch } from "./anim/springs";
+import type { ReactPose } from "./anim/react";
 
 export interface Motion {
   pos: THREE.Vector3;
@@ -24,6 +25,8 @@ export interface Motion {
   flinch?: Flinch;
   /** Recoil kick 0..1. */
   kick: number;
+  /** C15 (S4.2): a stagger, knockdown or visor snap playing, laid over the gait and aim, under the flinch. */
+  react?: ReactPose | null;
 }
 
 const local = {} as Record<Joint, THREE.Vector3>;
@@ -78,7 +81,8 @@ export function animate(body: Body, m: Motion): void {
   const rootZ = f ? f.get("rootZ") : 0;
   const pelvisDrop = f ? f.get("pelvisDrop") : 0;
   // Spine: pelvis up through chest and neck, leaning forward when running.
-  local.pelvis.set(rootX, pelvisY - pelvisDrop, rootZ);
+  const r = m.react ?? null;
+  local.pelvis.set(rootX + (r ? r.pelvisX : 0), pelvisY - pelvisDrop - (r ? r.pelvisDrop : 0), rootZ + (r ? r.pelvisZ : 0));
   const spineTilt = lean;
   const chestUp = REST.chest.y - REST.pelvis.y;
   const neckUp = REST.neck.y - REST.chest.y;
@@ -105,6 +109,7 @@ export function animate(body: Body, m: Motion): void {
     // A heavy man's stance: feet a little wider than the hips (narrowing to the hips as the stride opens), the
     // knees over the feet and a touch outward.
     foot.set((0.155 - 0.02 * walk) * s + m.crouch * 0.06 * s, 0.07 + lift, fwd + m.crouch * 0.12);
+    if (r) foot.add(tmp.set(L ? r.footLX : r.footRX, L ? r.footLLift : r.footRLift, L ? r.footLZ : r.footRZ));
     const knee = L ? local.kneeL : local.kneeR;
     ik(hip, foot, THIGH, SHIN, tmp.set(hip.x + 0.12 * s, hip.y - 0.3, hip.z + 1), knee);
     (L ? local.footL : local.footR).copy(foot);
@@ -130,6 +135,7 @@ export function animate(body: Body, m: Motion): void {
   ik(local.shoulderR, local.handR, UPPER, FORE, tmp.set(sh.x - 0.4, sh.y - 0.6, sh.z - 0.2), local.elbowR);
   ik(local.shoulderL, local.handL, UPPER, FORE, tmp.set(local.shoulderL.x + 0.5, local.shoulderL.y - 0.6, local.shoulderL.z), local.elbowL);
 
+  if (r) applyReact(r);
   if (f) applyFlinch(f);
   deriveJoints(local);
 
@@ -192,6 +198,103 @@ function applyFlinch(f: Flinch): void {
   tip(UPPER_BODY, pelvis, local.neck, f.torsoDir, f.get("torsoTip"));
   const twist = f.get("twist");
   if (Math.abs(twist) > 1e-5) turn(UPPER_BODY, pelvis, rq.setFromAxisAngle(Y, twist));
+}
+
+const LIE: Partial<Record<Joint, THREE.Vector3>> = {};
+const lieTmp = new THREE.Vector3();
+const pole = new THREE.Vector3();
+const SPINE: Array<[Joint, Joint]> = [
+  ["pelvis", "chest"],
+  ["chest", "neck"],
+  ["neck", "head"],
+];
+const SPINE_LEN = SPINE.map(([a, b]) => REST[a].distanceTo(REST[b]));
+
+/**
+ * The knockdown's resting pose (S4.2), body space, falling toward -z: down on his back, the torso propped up on his
+ * left elbow at about 25 degrees, the knees up, the rifle hand across his chest, the head lifted to look back at her.
+ */
+function lyingPose(breathe: number): void {
+  const set = (j: Joint, x: number, y: number, z: number) => (LIE[j] ??= new THREE.Vector3()).set(x, y, z);
+  const el = 25 * (Math.PI / 180);
+  const c = Math.cos(el);
+  const sn = Math.sin(el);
+  const px = 0.0;
+  const py = 0.17;
+  const pz = -0.52;
+  const up = (d: number, off: number) => [px, py + sn * d + off, pz - c * d] as const;
+  set("pelvis", px, py, pz);
+  const [cx, cy, cz] = up(SPINE_LEN[0]!, breathe);
+  set("chest", cx, cy, cz);
+  const [nx, ny, nz] = up(SPINE_LEN[0]! + SPINE_LEN[1]!, breathe);
+  set("neck", nx, ny, nz);
+  // The head lifts off the street (chin to chest), looking back down his body at her.
+  set("head", nx, ny + 0.2, nz - 0.2);
+  set("shoulderL", nx + 0.22, ny - 0.04, nz + 0.03);
+  set("shoulderR", nx - 0.22, ny - 0.04, nz + 0.03);
+  set("hipL", px + 0.11, py, pz + 0.02);
+  set("hipR", px - 0.11, py, pz + 0.02);
+  // Feet flat, drawn up toward him, a little apart; one leg further out.
+  set("footL", 0.2, 0.07, 0.05);
+  set("footR", -0.24, 0.07, -0.08);
+  // The left hand props him up behind; the right holds the rifle across his chest.
+  set("handL", 0.3, 0.05, -0.86);
+  set("handR", -0.08, cy + 0.12, cz + 0.12);
+}
+
+/** C15 (S4.2): the stagger set, the knockdown and the visor snap, over the pose (body space). */
+function applyReact(r: ReactPose): void {
+  const D = Math.PI / 180;
+  // The weapon arm and the rifle in it drop about the shoulder.
+  if (Math.abs(r.armDrop) > 1e-5) turn(["elbowR", "handR", "elbowL", "handL"], local.shoulderR.clone(), rq.setFromAxisAngle(axis.set(1, 0, 0), r.armDrop));
+  // Arms flung out to the side, or up for balance (about the body's forward axis).
+  const outL = r.flailL + r.upL;
+  const outR = r.flailR + r.upR;
+  if (Math.abs(outL) > 1e-5) turn(["elbowL", "handL"], local.shoulderL.clone(), rq.setFromAxisAngle(axis.set(0, 0, 1), outL));
+  if (Math.abs(outR) > 1e-5) turn(["elbowR", "handR"], local.shoulderR.clone(), rq.setFromAxisAngle(axis.set(0, 0, 1), -outR));
+  // The off hand to the wound (on the chest plate, his left of centre), the elbow re-solved.
+  if (r.clutch > 1e-3) {
+    lieTmp.set(local.chest.x + 0.03, local.chest.y + 0.1, local.chest.z + 0.2);
+    local.handL.lerp(lieTmp, r.clutch);
+    ik(local.shoulderL, local.handL, UPPER, FORE, pole.set(local.shoulderL.x + 0.4, local.shoulderL.y - 0.5, local.shoulderL.z - 0.1), local.elbowL);
+  }
+  // The visor snap: both hands to the helmet.
+  if (r.helmet > 1e-3) {
+    for (const s of [1, -1]) {
+      const hand = s > 0 ? local.handL : local.handR;
+      const sh = s > 0 ? local.shoulderL : local.shoulderR;
+      lieTmp.set(local.head.x + 0.13 * s, local.head.y - 0.06, local.head.z + 0.1);
+      hand.lerp(lieTmp, r.helmet);
+      ik(sh, hand, UPPER, FORE, pole.set(sh.x + 0.5 * s, sh.y - 0.3, sh.z - 0.1), s > 0 ? local.elbowL : local.elbowR);
+    }
+  }
+  if (Math.abs(r.headPitch) > 1e-5) turn(["head"], local.neck.clone(), rq.setFromAxisAngle(axis.set(1, 0, 0), r.headPitch));
+  const pelvis = local.pelvis.clone();
+  if (Math.abs(r.pitch) > 1e-5) turn(UPPER_BODY, pelvis, rq.setFromAxisAngle(axis.set(1, 0, 0), r.pitch));
+  if (Math.abs(r.roll) > 1e-5) turn(UPPER_BODY, pelvis, rq.setFromAxisAngle(axis.set(0, 0, 1), -r.roll));
+  if (r.lie > 1e-3) {
+    lyingPose(r.breathe);
+    const k = Math.min(1, r.lie);
+    rq.setFromAxisAngle(Y, r.lieYaw);
+    for (const j of Object.keys(LIE) as Joint[]) local[j].lerp(lieTmp.copy(LIE[j]!).applyQuaternion(rq), k);
+    // Keep the bones their length through the blend: the spine re-laid from the pelvis, the limbs re-solved.
+    for (let i = 0; i < SPINE.length; i++) {
+      const [a, b] = SPINE[i]!;
+      lieTmp.subVectors(local[b], local[a]);
+      if (lieTmp.lengthSq() > 1e-8) local[b].copy(local[a]).addScaledVector(lieTmp.normalize(), SPINE_LEN[i]!);
+    }
+    const fwdUp = pole.set(0, 1, 0.6).applyQuaternion(rq);
+    for (const s of [1, -1]) {
+      const L = s > 0;
+      const hipJ = L ? local.hipL : local.hipR;
+      const footJ = L ? local.footL : local.footR;
+      ik(hipJ, footJ, THIGH, SHIN, tmp.copy(hipJ).add(fwdUp).add(lieTmp.set(0.15 * s, 0, 0).applyQuaternion(rq)), L ? local.kneeL : local.kneeR);
+      const shJ = L ? local.shoulderL : local.shoulderR;
+      const handJ = L ? local.handL : local.handR;
+      ik(shJ, handJ, UPPER, FORE, tmp.copy(shJ).add(lieTmp.set(0.5 * s, 0.3, -0.2).applyQuaternion(rq)), L ? local.elbowL : local.elbowR);
+    }
+  }
+  void D;
 }
 
 /** The muzzle and its direction for a body holding a rifle (from the hands), world space. */

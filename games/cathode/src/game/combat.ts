@@ -15,6 +15,10 @@ import { tuning } from "./feel/tuning";
 import { AUTOMATIC, type HitEvent as HitData, type HitLayer, type Vec3Like } from "../sim/hitevent";
 import { PASS_THROUGH, passes, penetrationOf, type CoverMat } from "../sim/penetration";
 import { surfaceOf } from "../render/builder";
+import { armourHit, plateFor, shotgunSplit, ARMOUR, PLATE_SLOT, type ArmourHit, type PlateId } from "../sim/armour";
+import { staggerHit, POISE } from "../sim/stagger";
+import { PlateDebris } from "./armourfx";
+import { bodyView } from "./body";
 
 export interface KillEvent {
   enemy: Enemy;
@@ -483,27 +487,63 @@ export class Combat {
     const falloff = w.weaponClass === "shotgun" ? THREE.MathUtils.clamp(1.4 - dist / 14, 0.25, 1) : w.weaponClass === "pistol" ? THREE.MathUtils.clamp(1.3 - dist / 50, 0.5, 1) : 1;
     let mul = ZONE_MUL[zone];
     if (zone === "head") mul *= build.headshot * (w.weaponClass === "sniper" ? 1.6 : 1);
-    const crit = Math.random() < build.crit;
+    // C15 (S4.2): a staggered man's next hit within 1.5 s is a guaranteed crit.
+    const crit = (e.alive && e.stag.critMs > 0) || Math.random() < build.crit;
     const armour = w.weaponClass === "sniper" ? e.kit.armour * 0.3 : e.kit.armour;
     let dmg = w.damage * build.damage(w.weaponClass) * mul * falloff * (crit ? build.critMul : 1) * (1 - armour) * this.penMul;
+    const wasAlive = e.alive;
+    // C15 (S4.3): an Enforcer's plates, visor and coolant can decide what the round meets and what reaches him.
+    const bodyDir = this.bodyDir(e, dir);
+    let ah: ArmourHit | null = null;
+    if (e.armour && wasAlive && !e.armourOff) {
+      const raw = w.damage * build.damage(w.weaponClass) * falloff * (crit ? build.critMul : 1) * this.penMul;
+      const where = this.armourSite(e, segName, point);
+      if (w.weaponClass === "shotgun" && dist < ARMOUR.shotgunSplitM && where && where !== "visor" && where !== "helmet" && where !== "coolant") {
+        // Close buckshot spreads over the plate and its neighbours (S4.3).
+        const over = shotgunSplit(where).filter((id) => e.armour!.plates[id].state !== "broken");
+        const split = over.length ? over : [where];
+        for (const id of split) {
+          const r = armourHit(e.armour, zone, id === where ? where : id, raw / split.length, w.weaponClass);
+          if (!ah) ah = { ...r };
+          else {
+            ah.body += r.body;
+            ah.plate += r.plate;
+            if (r.broke) {
+              ah.broke = true;
+              ah.plateId = r.plateId;
+            }
+            if (r.cracked && !ah.broke) ah.cracked = true;
+          }
+        }
+      } else ah = armourHit(e.armour, zone, where, raw, w.weaponClass);
+      if (ah) dmg = ah.body * (zone === "head" ? build.headshot : 1);
+    }
     if (!e.alive) dmg *= 0.5;
     if (e.marked) dmg *= 1.25;
-    const wasAlive = e.alive;
 
     this.shotDamage.set(segName, (this.shotDamage.get(segName) ?? 0) + dmg);
-    // Reduced violence swaps blood for sparks; at full intensity a flesh hit is blood only (blue coolant sparks on
-    // a headshot read as "machine", not "hit", until visors break in C15).
-    if (!this.gore) this.world.fx.sparks(point, dir.clone().negate(), 0.4);
+    // C15: what the round met. A standing plate (or the visor's first crack) throws hot sparks and keeps the blood in;
+    // the coolant can sprays coolant; flesh (and the face behind a shattering visor) bleeds.
+    const metal = !!ah && (ah.layer === "plate" || (ah.layer === "visor" && ah.visorStage === 1));
+    if (ah && (metal || ah.layer === "visor")) {
+      const n = this.surfaceNormal(e, segName, point, dir);
+      this.world.fx.armourSparks?.(point, n, dir, Math.min(1, ah.plate / 30 + 0.3), !!ah.broke);
+    }
+    if (ah?.layer === "weakpoint") this.world.fx.sparks(point, dir.clone().negate(), 0.5);
+    // Reduced violence swaps blood for sparks; at full intensity a flesh hit is blood only.
+    if (!this.gore && !metal) this.world.fx.sparks(point, dir.clone().negate(), 0.4);
     // Flesh (S4.5): puff, spurt, exit spray, wall splat and a wound on the segment. Reduced violence draws ink.
-    if (this.world.fx.flesh) this.world.fx.flesh({ point, dir, damage: dmg, maxHp: e.kit.maxHp, weaponCls: w.weaponClass, distance: dist, anchor: seg.group, owner: e, root: e.body.root, head: zone === "head", lethal: wasAlive && dmg >= e.hp });
+    if (metal || ah?.layer === "weakpoint") {
+      // No blood off a plate (S4.5: "sparks only").
+    } else if (this.world.fx.flesh) this.world.fx.flesh({ point, dir, damage: dmg, maxHp: e.kit.maxHp, weaponCls: w.weaponClass, distance: dist, anchor: seg.group, owner: e, root: e.body.root, head: zone === "head", lethal: wasAlive && dmg >= e.hp });
     else if (this.gore) this.world.fx.blood(point, dir, Math.min(1, dmg / 60));
 
     const push = dir.clone().multiplyScalar(w.weaponClass === "shotgun" ? 3 : w.weaponClass === "sniper" ? 6 : 1.5);
     // The body takes it (S4.1): the hit segment's chain flinches along the round, before the damage lands.
     if (wasAlive) e.react(zone, dir, point, dmg, w.weaponClass, dist, segName);
     const killed = wasAlive && e.damage(dmg, push);
-    // Torso hits on a vested enemy land on the plate (S1.2's armour marker); the head is always flesh for now.
-    const layer: HitLayer = e.kit.armour >= 0.3 && zone === "torso" && w.weaponClass !== "sniper" ? "plate" : "flesh";
+    // C15: the armour says what the round met; unarmoured kits keep the old vest rule (S1.2's armour marker).
+    const layer: HitLayer = ah ? ah.layer : e.kit.armour >= 0.3 && zone === "torso" && w.weaponClass !== "sniper" ? "plate" : "flesh";
     const data: HitData = {
       t: this.clock,
       targetUid: String(e.id),
@@ -520,9 +560,18 @@ export class Combat {
       penetrated: this.penThrough,
       lethal: killed,
       reaction: wasAlive ? "flinch" : "none",
+      ...(ah?.plateId ? { plateId: ah.plateId } : {}),
+      ...(ah?.broke && ah.layer !== "visor" ? { plateBroke: true } : {}),
+      ...(ah?.visorStage !== undefined ? { visorStage: ah.visorStage } : {}),
     };
+    // C15: the stagger meter (S4.2), then the plates' and visor's states, the loose plate, the vent.
+    if (wasAlive && !killed) this.staggerFrom(e, data, bodyDir, dmg, ah);
+    if (ah && wasAlive) this.armourAfter(e, ah, data, point, dir, killed);
     this.hits.push({ enemy: e, zone, damage: dmg, point, killed, data });
     if (wasAlive) this.bus.emit("hit", data);
+    if (wasAlive && data.plateBroke) this.bus.emit("plateBreak", data);
+    if (wasAlive && data.visorStage === 2 && ah?.broke) this.bus.emit("visorBreak", data);
+    if (wasAlive && (data.reaction === "stagger" || data.reaction === "knockdown")) this.bus.emit("stagger", data);
 
     // Severing: a big hit to a limb or the head takes it off (full intensity only).
     const severed: string[] = [];
@@ -554,6 +603,106 @@ export class Combat {
       e.die(push.multiplyScalar(2), point, this.deathCtx(e, zone, dir, w.weaponClass, dist, false));
       this.killed({ enemy: e, weapon: w, zone, headshot: false, distance: dist, unseen, severed, takedown });
     }
+  }
+
+  /** A world direction in his body space (yaw undone): x to his left, z forward. */
+  private bodyDir(e: Enemy, d: THREE.Vector3): { x: number; z: number } {
+    const inv = -e.motion.yaw;
+    const x = d.x * Math.cos(inv) + d.z * Math.sin(inv);
+    const z = -d.x * Math.sin(inv) + d.z * Math.cos(inv);
+    const h = Math.hypot(x, z) || 1;
+    return { x: x / h, z: z / h };
+  }
+
+  /** Where round the segment the hit point lies (unit, body space) and how far up it (0..1). */
+  private segSite(e: Enemy, segName: string, point: THREE.Vector3): { side: { x: number; z: number }; along: number } {
+    const s = e.body.segs.get(segName)!;
+    const a = e.body.joints[s.def.from];
+    const b = e.body.joints[s.def.to];
+    const ab = new THREE.Vector3().subVectors(b, a);
+    const len2 = Math.max(1e-6, ab.lengthSq());
+    const along = Math.max(0, Math.min(1, new THREE.Vector3().subVectors(point, a).dot(ab) / len2));
+    const radial = new THREE.Vector3().subVectors(point, a.clone().addScaledVector(ab, along));
+    return { side: this.bodyDir(e, radial.lengthSq() > 1e-8 ? radial : new THREE.Vector3(Math.sin(e.motion.yaw), 0, Math.cos(e.motion.yaw))), along };
+  }
+
+  /** Which plate (or the visor, or the coolant can) a round on this segment meets (sim/armour.ts plateFor). */
+  private armourSite(e: Enemy, segName: string, point: THREE.Vector3): PlateId | "visor" | null {
+    const seg = e.body.segs.get(segName);
+    if (!seg) return null;
+    const { side, along } = this.segSite(e, segName, point);
+    // The visor is the front of the helmet (about 50 degrees either side of straight ahead).
+    if (seg.def.zone === "head") return plateFor("head", segName, side, along, side.z > 0.6);
+    return plateFor(seg.def.zone, segName, side, along, side.z >= 0);
+  }
+
+  /** The face a round struck, in the world (the radial out of the segment): the sparks reflect about it. */
+  private surfaceNormal(e: Enemy, segName: string, point: THREE.Vector3, dir: THREE.Vector3): THREE.Vector3 {
+    const s = e.body.segs.get(segName);
+    if (!s) return dir.clone().negate();
+    const a = e.body.joints[s.def.from];
+    const b = e.body.joints[s.def.to];
+    const ab = new THREE.Vector3().subVectors(b, a);
+    const t = Math.max(0, Math.min(1, new THREE.Vector3().subVectors(point, a).dot(ab) / Math.max(1e-6, ab.lengthSq())));
+    const n = new THREE.Vector3().subVectors(point, a.clone().addScaledVector(ab, t));
+    return n.lengthSq() > 1e-8 ? n.normalize() : dir.clone().negate();
+  }
+
+  /** How much this man's stagger meter fills per share of health (S4.2): 0 for the machines. */
+  private poiseOf(e: Enemy): number {
+    const role = e.kit.role ?? "rifle";
+    if (role === "turret" || role === "hunter") return 0;
+    if (role === "shield") return POISE.riot!;
+    return e.kit.elite ? 0.8 : POISE.enforcer!;
+  }
+
+  /** C15 (S4.2): the meter, and a stagger, knockdown or visor snap when it says so. Writes the event's reaction. */
+  private staggerFrom(e: Enemy, data: HitData, bodyDir: { x: number; z: number }, dmg: number, ah: ArmourHit | null): void {
+    const poise = this.poiseOf(e);
+    if (poise <= 0) return;
+    const r = staggerHit(e.stag, {
+      damage: dmg,
+      plateDamage: ah?.plate,
+      maxHp: e.kit.maxHp,
+      poise,
+      zone: data.zone,
+      weaponCls: data.weaponCls,
+      distance: data.distance,
+      // The visor's own shattering round is still stopped by the helmet: it plays the snap, not a stagger.
+      helmetUp: !!ah && !!e.armour && (e.armour.visor < 2 || (ah.layer === "visor" && ah.visorStage === 2)),
+      dir: bodyDir,
+      force: !!ah?.vented,
+      heavyMelee: data.weaponCls === "melee" && dmg >= e.kit.maxHp * 0.3,
+    });
+    data.staggerDir = r.dir;
+    if (r.reaction !== "flinch") {
+      data.reaction = r.reaction;
+      e.startReact(r.reaction, r.dir, bodyDir);
+    } else if (ah?.layer === "visor" && ah.visorStage === 2) e.startReact("visorSnap", r.dir, bodyDir);
+  }
+
+  /** C15 (S4.3): the plates' new states on the body, the loose plate, the visor's crack and shards, the vent. */
+  private armourAfter(e: Enemy, ah: ArmourHit, data: HitData, point: THREE.Vector3, dir: THREE.Vector3, killed: boolean): void {
+    e.syncPlates();
+    if (ah.layer === "visor") {
+      if (ah.visorStage === 1) e.visorCracked();
+      else if (ah.visorStage === 2) this.world.fx.shards?.(point, dir, e.body.visor);
+    }
+    if (ah.broke && ah.plateId && ah.plateId !== "coolant") {
+      if (ah.plateId === "helmet") {
+        // The helmet's shell gives: it comes off his head along the round, and the balaclava shows.
+        const vel = dir.clone().setY(0).normalize().multiplyScalar(2.2).add(new THREE.Vector3(0, 2.4, 0));
+        if (!killed) e.body.popHelmet(vel, 9, (speed, at) => e.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 5) }));
+      } else {
+        const d = new PlateDebris(e.body, e.body.look.arch, PLATE_SLOT[ah.plateId], dir, bodyView.phone, (speed, at) => e.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 4) }));
+        e.debris.push(d);
+      }
+    }
+    if (ah.vented) {
+      const back = new THREE.Vector3(-Math.sin(e.motion.yaw), 0.35, -Math.cos(e.motion.yaw));
+      this.world.fx.vent?.(e.body.joints.chest.clone().addScaledVector(back, 0.22), back);
+    }
+    void data;
   }
 
   /** The Pin: hits the first enemy in a short arc in front. */

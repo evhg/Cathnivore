@@ -106,3 +106,39 @@ describe("cathode-stagger: direction and the helmet", () => {
     expect(reactionMs("flinch", "front")).toBe(0);
   });
 });
+
+import { reactDuration, reactPose, reactTravel } from "../games/cathode/src/game/anim/react";
+
+describe("cathode-stagger: the reaction poses (game/anim/react.ts)", () => {
+  for (const dir of ["front", "back", "left", "right"] as const) {
+    it(`the ${dir} stagger starts at rest and ends on the steps it took`, () => {
+      const p0 = reactPose("stagger", dir, 0);
+      expect(Math.abs(p0.pelvisX) + Math.abs(p0.pelvisZ) + Math.abs(p0.pitch) + Math.abs(p0.roll)).toBeLessThan(1e-6);
+      const dur = reactDuration("stagger", dir);
+      const p1 = reactPose("stagger", dir, dur);
+      const tr = reactTravel("stagger", dir);
+      expect(p1.pelvisX).toBeCloseTo(tr.x, 3);
+      expect(p1.pelvisZ).toBeCloseTo(tr.z, 3);
+      // Both feet end where the hips went (he stands square again when the steps are committed).
+      expect(p1.footLX).toBeCloseTo(tr.x, 3);
+      expect(p1.footRZ).toBeCloseTo(tr.z, 3);
+      expect(Math.abs(p1.pitch) + Math.abs(p1.roll) + Math.abs(p1.armDrop) + p1.clutch).toBeLessThan(1e-3);
+    });
+  }
+  it("front: two steps back of 0.35 m, the arm drops 45 degrees, the off hand clutches", () => {
+    const mid = reactPose("stagger", "front", 300);
+    expect(mid.armDrop).toBeCloseTo((45 * Math.PI) / 180, 2);
+    expect(mid.clutch).toBeCloseTo(1, 2);
+    expect(reactTravel("stagger", "front").z).toBeCloseTo(-0.35);
+  });
+  it("back: pitched 25 degrees forward", () => {
+    expect(reactPose("stagger", "back", 275).pitch).toBeCloseTo((25 * Math.PI) / 180, 2);
+  });
+  it("knockdown: down by the end of the fall, up again at the end", () => {
+    const fall = reactPose("knockdown", "front", 450);
+    expect(fall.lie).toBeGreaterThan(0.95);
+    const dur = reactDuration("knockdown", "front");
+    expect(reactPose("knockdown", "front", dur).lie).toBeLessThan(1e-3);
+    expect(reactPose("knockdown", "front", 1000).lie).toBeGreaterThan(0.95);
+  });
+});

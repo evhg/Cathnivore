@@ -362,6 +362,7 @@ export class Body {
    */
   revive(): void {
     this.putHelmetBack();
+    this.resetPlates();
     this.setCheap(false);
     this.ragdoll = false;
     this.dying = null;
@@ -405,9 +406,33 @@ export class Body {
   /** The edge-only rim light (setRim): applied at the silhouette alone, never on the face of the suit; `w` is the falloff power (lower is wider). */
   readonly rimUniform = { value: new THREE.Vector4(0, 0, 0, 3) };
 
+  /**
+   * C15 (S4.3): each plate slot's state (sim/armour.ts PLATE_SLOT, 0 intact, 1 cracked, 2 broken) and ms since it
+   * changed, read by the shader from fx5; the face's skin tone (0..3) and the crack seed (0..1) ride slot 8.
+   */
+  private readonly plateState = new Float32Array(8);
+  private readonly plateAge = new Float32Array(8).fill(1e7);
+  skinTone = 0;
+  crackSeed = 0.37;
+  /** Sets a plate slot's state (1..7). */
+  setPlate(slot: number, state: 0 | 1 | 2): void {
+    if (slot < 1 || slot > 7 || this.plateState[slot] === state) return;
+    this.plateState[slot] = state;
+    this.plateAge[slot] = 0;
+  }
+  plateOf(slot: number): number {
+    return this.plateState[slot] ?? 0;
+  }
+  /** Every plate back on (screenshot stages). */
+  resetPlates(): void {
+    this.plateState.fill(0);
+    this.plateAge.fill(1e7);
+  }
+
   /** Advances the flash on real time (it shows through a hit-stop). */
   updateFlash(dtMs: number): void {
     this.updateHands(dtMs);
+    for (let i = 1; i < 8; i++) this.plateAge[i] = Math.min(1e7, this.plateAge[i]! + dtMs);
     if (!this.flashing) return;
     const F = flashTuning;
     const D = F.death;
@@ -479,8 +504,17 @@ export class Body {
     const blink = this.visorLevel > 0.05 && Math.floor(((now / 1000) * LOOK.blinkHz * 2) % 2) === 0 ? 1 : 0.06;
     setFx(P, 3, this.lodFrom, this.lod, fade, blink * Math.min(1, this.visorLevel * 1.5));
     // The coolant window's pulse rides the spare flash slot (15): a slow 1.2 Hz swell, out when he dies.
-    const pulse = this.ragdoll ? 0.15 * this.visorLevel : 0.55 + 0.45 * Math.sin((now / 1000) * Math.PI * 2 * LOOK.coolantHz);
+    const pulse = this.plateState[7] === 2 ? 0 : this.ragdoll ? 0.15 * this.visorLevel : 0.55 + 0.45 * Math.sin((now / 1000) * Math.PI * 2 * LOOK.coolantHz);
     setFx(F[3]!, 3, pulse, 0, 0, 0);
+    // C15: the plates (two floats a slot), slot 8 the skin tone and the crack seed.
+    const ps = this.plateState;
+    const pa = this.plateAge;
+    for (let c = 0; c < 4; c++) {
+      const a = c * 2 + 1;
+      const b = a + 1;
+      if (b === 8) setFx(F[5]!, c, ps[a]!, pa[a]! / 1000, this.skinTone, this.crackSeed);
+      else setFx(F[5]!, c, ps[a]!, pa[a]! / 1000, ps[b]!, pa[b]! / 1000);
+    }
     // Dithering away a LOD: both stay visible until the fade ends.
     if (fade >= 1 && this.lodFrom !== this.lod) {
       this.lods[this.lodFrom]!.forEach((m) => (m.visible = false));

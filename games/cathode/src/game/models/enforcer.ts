@@ -16,6 +16,7 @@ import * as THREE from "three";
 import { bake, placeMatrix, type Finish, type Emit, type Surface, type P2, type Place } from "../gunkit";
 import { BANDS } from "../../render/guntex";
 import { REST, SEGMENTS, boneIndex, HELM_Y, KNUCKLE_Y } from "../rig";
+import { PLATE_SLOT } from "../../sim/armour";
 import { box, chamfer, cyl, limb, partsDetail, plate, shell, body as lathe, tris, type PlateOpts } from "./parts";
 
 export type Arch = "enforcer" | "leader" | "riot" | "sniper";
@@ -35,6 +36,11 @@ export const FINISH = {
   glass: { color: 0x05080a, metal: 0.2, rough: 0.07, coat: 1, band: "flat", wear: 0 },
   coat: { color: 0x1c1f26, metal: 0, rough: 0.7, sheen: 0.6, band: "nylon", wear: 0 },
   under: { color: 0x3b3530, metal: 0, rough: 0.9, band: "nylon", wear: 0 },
+  /** C15: the coyote-tan padded carrier under a plate, seen once it breaks off (pillar 4: it must read at 10 m). */
+  padding: { color: 0x7a6447, metal: 0, rough: 0.92, sheen: 0.25, band: "nylon", scale: 1.5, wear: 0.15 },
+  strap: { color: 0x2c2a26, metal: 0, rough: 0.85, sheen: 0.2, band: "nylon", wear: 0.3 },
+  /** C15: the face behind a shattered visor (its tone is per body, set in the shader). */
+  skin: { color: 0xa07a62, metal: 0, rough: 0.55, sheen: 0.15, band: "flat", wear: 0 },
 } satisfies Record<string, Finish>;
 
 /** Self-lit parts: `visor` takes the body's visor tint and level; `blink` the antenna's 1 Hz blink; `pulse` the coolant window. */
@@ -79,12 +85,33 @@ interface Opts {
   phone: boolean;
   /** C11: the takedown's close-up (LOD0 at twice the segments round and refined profiles). */
   hero?: boolean;
+  /** C15: keep only the pieces of this plate slot, grouped by bone (the plate knocked off as a loose piece). */
+  only?: number;
 }
 
 /** Collects pieces per layer with their bone, slot and LOD, then merges each layer into one geometry. */
 class Builder {
   readonly opaque: THREE.BufferGeometry[] = [];
   readonly glow: THREE.BufferGeometry[] = [];
+  /**
+   * C15: the plate the next pieces belong to (models/materials.ts reads it per vertex): PLATE ids, negative for the
+   * layer under a plate that shows only once it breaks; `pivot` is a strap tab's hinge (m up its bone), 0 otherwise.
+   */
+  tag = 0;
+  pivot = 0;
+  /** Runs `fn` with every piece it adds on plate `id`. */
+  on(id: number, fn: () => void, pivot = 0): void {
+    const t = this.tag;
+    const pv = this.pivot;
+    this.tag = id;
+    this.pivot = pivot;
+    try {
+      fn();
+    } finally {
+      this.tag = t;
+      this.pivot = pv;
+    }
+  }
   constructor(readonly o: Opts) {}
   /** Detail: 0 desktop LOD0, 1 phone LOD0, 2 desktop LOD1, 3 phone LOD1, 4 LOD2. */
   get det(): number {
@@ -104,7 +131,10 @@ class Builder {
   box(w: number, h: number, d: number, r: number, seg = 2): THREE.BufferGeometry {
     return box(w, h, d, this.det >= 1 ? 0 : r, this.det >= 1 ? 0 : seg);
   }
+  /** C15: with `only`, the kept pieces by bone. */
+  readonly byBone = new Map<string, { opaque: THREE.BufferGeometry[]; glow: THREE.BufferGeometry[] }>();
   add(bone: string, geo: THREE.BufferGeometry, surf: Surface | Glow, pl?: Place | THREE.Matrix4): void {
+    if (this.o.only !== undefined && this.tag !== this.o.only) return;
     if (TRI_LOG) TRI_LOG.push([bone, tris(geo), new Error().stack?.split("\n")[2]?.trim() ?? ""]);
     const m = pl instanceof THREE.Matrix4 ? pl : placeMatrix(pl);
     const glow = typeof surf === "object" && "surf" in surf ? (surf as Glow) : null;
@@ -123,17 +153,28 @@ class Builder {
     g.setAttribute("aSeg", new THREE.BufferAttribute(new Float32Array(n).fill(SLOT_OF[bone] ?? 0), 1));
     g.setAttribute("aLod", new THREE.BufferAttribute(new Float32Array(n).fill(this.o.lod), 1));
     g.setAttribute("aRimN", new THREE.BufferAttribute(rimNormals(g, bone), 3));
+    const pa = new Float32Array(n * 2);
+    for (let i = 0; i < n; i++) {
+      pa[i * 2] = this.tag;
+      pa[i * 2 + 1] = this.pivot;
+    }
+    g.setAttribute("aPlate", new THREE.BufferAttribute(pa, 2));
     if (glow) {
       const mr = g.getAttribute("aMR") as THREE.BufferAttribute;
       for (let i = 0; i < n; i++) mr.setXYZW(i, glow.fade ? 1 : 0, glow.visor ? 1 : 0, glow.blink ? 1 : 0, glow.pulse ? 1 : 0);
       this.glow.push(g);
     } else this.opaque.push(g);
+    if (this.o.only !== undefined) {
+      let e = this.byBone.get(bone);
+      if (!e) this.byBone.set(bone, (e = { opaque: [], glow: [] }));
+      (glow ? e.glow : e.opaque).push(g);
+    }
   }
   finish(): { opaque: THREE.BufferGeometry; glow: THREE.BufferGeometry } {
     const m = (list: THREE.BufferGeometry[]) => {
       if (!list.length) {
         const e = new THREE.BufferGeometry();
-        for (const [k, s] of [["position", 3], ["normal", 3], ["color", 3], ["aMR", 4], ["aEdge", 1], ["aBand", 2], ["aUvT", 2], ["skinIndex", 4], ["skinWeight", 4], ["aSeg", 1], ["aLod", 1], ["aRimN", 3]] as const)
+        for (const [k, s] of [["position", 3], ["normal", 3], ["color", 3], ["aMR", 4], ["aEdge", 1], ["aBand", 2], ["aUvT", 2], ["skinIndex", 4], ["skinWeight", 4], ["aSeg", 1], ["aLod", 1], ["aRimN", 3], ["aPlate", 2]] as const)
           e.setAttribute(k, new THREE.BufferAttribute(k === "skinIndex" ? new Uint16Array(0) : new Float32Array(0), s));
         return e;
       }
@@ -293,19 +334,25 @@ function torso(b: Builder, arch: Arch): void {
   // coolant pack.
   b.add("chest", lathe([[0.168, -0.02], [0.188, 0.07], [0.2, cL + 0.01]], 1.06, 0.66, b.seg(18)), S.suit);
   if (!sniper) {
-    b.add("chest", b.plate(chamfer(rect(0.37, -0.005, 0.17, 0.4), 0.022), { depth: 0.012, bevel: 0.006, bend: 0.24 }), S.plate, { p: [0, 0, 0.124] });
-    if (lod < 2) b.add("chest", b.plate(chamfer(rect(0.024, 0.005, 0.17), 0.007), { depth: 0.006, bevel: 0.004 }), S.plate, { p: [0, 0, 0.146] });
-    b.add("chest", b.plate(chamfer(rect(0.34, 0.0, 0.17, 0.37), 0.02), { depth: 0.012, bevel: 0.006, bend: 0.24 }), S.plate, { p: [0, 0, -0.124], r: [0, Math.PI, 0] });
+    b.on(PLATE_SLOT.chestF, () => {
+      b.add("chest", b.plate(chamfer(rect(0.37, -0.005, 0.17, 0.4), 0.022), { depth: 0.012, bevel: 0.006, bend: 0.24 }), S.plate, { p: [0, 0, 0.124] });
+      if (lod < 2) b.add("chest", b.plate(chamfer(rect(0.024, 0.005, 0.17), 0.007), { depth: 0.006, bevel: 0.004 }), S.plate, { p: [0, 0, 0.146] });
+    });
+    b.on(PLATE_SLOT.chestB, () => b.add("chest", b.plate(chamfer(rect(0.34, 0.0, 0.17, 0.37), 0.02), { depth: 0.012, bevel: 0.006, bend: 0.24 }), S.plate, { p: [0, 0, -0.124], r: [0, Math.PI, 0] }));
+    if (lod === 0) underLayer(b);
   } else {
     // The sniper's long coat closes over a lighter vest: a plain carrier, no ridge.
     b.add("chest", b.plate(chamfer(rect(0.33, 0.0, 0.16, 0.35), 0.03), { depth: 0.01, bevel: 0.004, bend: 0.22 }), S.plateDark, { p: [0, 0, 0.122] });
   }
   if (lod === 0 && !sniper) {
-    for (const x of [-0.088, 0, 0.088]) {
-      b.add("chest", b.box(0.074, 0.11, 0.042, 0.01), S.web, { p: [x, 0.055, 0.178] });
-      b.add("chest", b.box(0.079, 0.03, 0.05, 0.008), S.web, { p: [x, 0.112, 0.18] });
-      b.add("chest", b.box(0.06, 0.02, 0.026, 0.004), S.metal, { p: [x, 0.13, 0.178] });
-    }
+    // The chest rig rides the front plate: it goes with it.
+    b.on(PLATE_SLOT.chestF, () => {
+      for (const x of [-0.088, 0, 0.088]) {
+        b.add("chest", b.box(0.074, 0.11, 0.042, 0.01), S.web, { p: [x, 0.055, 0.178] });
+        b.add("chest", b.box(0.079, 0.03, 0.05, 0.008), S.web, { p: [x, 0.112, 0.18] });
+        b.add("chest", b.box(0.06, 0.02, 0.026, 0.004), S.metal, { p: [x, 0.13, 0.178] });
+      }
+    });
   }
   if (!sniper) {
     // The coolant pack (S3.2's weak point): a can on a cradle over the lower back, its window lit.
@@ -319,21 +366,25 @@ function torso(b: Builder, arch: Arch): void {
   b.add("upperChest", lathe([[0.2, -0.01], [0.205, 0.05], [0.185, 0.11], [0.125, uL + 0.015], [0.07, uL + 0.03]], 1.08, 0.64, b.seg(18)), S.suit);
   const neckCut: P2[] = [[-0.2, -0.012], [0.2, -0.012], [0.214, 0.085], [0.14, 0.15], [0.058, 0.15], [0.042, 0.122], [-0.042, 0.122], [-0.058, 0.15], [-0.14, 0.15], [-0.214, 0.085]];
   if (!sniper) {
-    b.add("upperChest", b.plate(chamfer(neckCut, 0.012), { depth: 0.012, bevel: 0.006, bend: 0.25, bendY: 0.4 }), S.plate, { p: [0, 0, 0.126] });
-    if (lod < 2) b.add("upperChest", b.plate(chamfer(rect(0.024, -0.012, 0.11), 0.007), { depth: 0.006, bevel: 0.004, bendY: 0.4 }), S.plate, { p: [0, 0, 0.148] });
-    b.add("upperChest", b.plate(chamfer(rect(0.38, -0.012, 0.15, 0.3), 0.02), { depth: 0.012, bevel: 0.006, bend: 0.25, bendY: 0.4 }), S.plate, { p: [0, 0, -0.126], r: [0, Math.PI, 0] });
-    // Retro-reflective tape across the shoulders and in a chevron over the coolant pack: it reads from behind.
-    b.add("upperChest", b.plate(rect(0.3, -0.016, 0.016), { depth: 0.003, bevel: 0, bend: 0.2716 }), GLOWS.tape, { p: [0, 0.012, -0.1458], r: [0, Math.PI, 0] });
-    if (lod < 2)
-      for (const sg of [1, -1]) {
-        const a = Math.asin(0.095 / 0.2616);
-        b.add("chest", b.plate(rect(0.12, -0.013, 0.013), { depth: 0.003, bevel: 0 }), GLOWS.tape, { p: [0.095 * sg, 0.115, 0.116 - Math.cos(a) * 0.2616 - 0.001], r: [0, Math.PI - a * sg, 0.5 * sg] });
-      }
-    // C10 review: from the front he didn't separate from the street at 10 m (x1.00). A tape band across the
-    // upper chest plate, under the gorget, gives the front the same pale read the back has.
-    for (const sg of [1, -1]) b.add("upperChest", b.plate(rect(0.1, -0.013, 0.013), { depth: 0.003, bevel: 0 }), GLOWS.tape, { p: [0.08 * sg, 0.07, 0.1525], r: [0, 0.32 * sg, 0] });
-    // The unit number, backlit (it reads from behind, at range, in the rain).
-    if (b.det !== 3) strips(b, "upperChest", digits("07", 0.06), new THREE.Matrix4().compose(new THREE.Vector3(0.0, 0.07, -0.149), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI, 0)), new THREE.Vector3(1, 1, 1)), GLOWS.unit);
+    b.on(PLATE_SLOT.chestF, () => {
+      b.add("upperChest", b.plate(chamfer(neckCut, 0.012), { depth: 0.012, bevel: 0.006, bend: 0.25, bendY: 0.4 }), S.plate, { p: [0, 0, 0.126] });
+      if (lod < 2) b.add("upperChest", b.plate(chamfer(rect(0.024, -0.012, 0.11), 0.007), { depth: 0.006, bevel: 0.004, bendY: 0.4 }), S.plate, { p: [0, 0, 0.148] });
+      // C10 review: from the front he didn't separate from the street at 10 m (x1.00). A tape band across the
+      // upper chest plate, under the gorget, gives the front the same pale read the back has.
+      for (const sg of [1, -1]) b.add("upperChest", b.plate(rect(0.1, -0.013, 0.013), { depth: 0.003, bevel: 0 }), GLOWS.tape, { p: [0.08 * sg, 0.07, 0.1525], r: [0, 0.32 * sg, 0] });
+    });
+    b.on(PLATE_SLOT.chestB, () => {
+      b.add("upperChest", b.plate(chamfer(rect(0.38, -0.012, 0.15, 0.3), 0.02), { depth: 0.012, bevel: 0.006, bend: 0.25, bendY: 0.4 }), S.plate, { p: [0, 0, -0.126], r: [0, Math.PI, 0] });
+      // Retro-reflective tape across the shoulders and in a chevron over the coolant pack: it reads from behind.
+      b.add("upperChest", b.plate(rect(0.3, -0.016, 0.016), { depth: 0.003, bevel: 0, bend: 0.2716 }), GLOWS.tape, { p: [0, 0.012, -0.1458], r: [0, Math.PI, 0] });
+      if (lod < 2)
+        for (const sg of [1, -1]) {
+          const a = Math.asin(0.095 / 0.2616);
+          b.add("chest", b.plate(rect(0.12, -0.013, 0.013), { depth: 0.003, bevel: 0 }), GLOWS.tape, { p: [0.095 * sg, 0.115, 0.116 - Math.cos(a) * 0.2616 - 0.001], r: [0, Math.PI - a * sg, 0.5 * sg] });
+        }
+      // The unit number, backlit (it reads from behind, at range, in the rain).
+      if (b.det !== 3) strips(b, "upperChest", digits("07", 0.06), new THREE.Matrix4().compose(new THREE.Vector3(0.0, 0.07, -0.149), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI, 0)), new THREE.Vector3(1, 1, 1)), GLOWS.unit);
+    });
   }
   if (lod < 2) b.add("upperChest", shell([[0.1, 0.125], [0.136, 0.13], [0.13, 0.2], [0.098, 0.195]], 0, Math.PI * 2, b.seg(20)), arch === "sniper" ? S.web : S.plateDark, { s: [1.05, 1, 0.92] });
   if (lod === 0) {
@@ -378,6 +429,8 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
     const domeLo: P2[] = [[0.03, -0.096], [0.112, -0.078], [0.152, -0.022], [0.156, 0.03], [0.144, 0.03], [0.128, -0.046], [0.07, -0.079], [0.03, -0.083]];
     const domeDeg = 230;
     const domeSpan = domeDeg * D;
+    const pid = side === "L" ? PLATE_SLOT.pauldronL : PLATE_SLOT.pauldronR;
+    b.tag = pid;
     b.add("upperChest", shell(b.det >= 2 ? domeLo : dome, phiC - domeSpan / 2, domeSpan, b.seg(Math.round(domeDeg / (b.o.phone ? 18 : 13))), 0.5), S.plate, frameC);
     // A tape band round the dome's lower edge: the shoulders read pale from the front and from behind at 10 m,
     // where the plate is dark on a dark street (C10 review: x1.00 from the front).
@@ -399,6 +452,13 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
       const m = new THREE.Matrix4().multiplyMatrices(frameC, onRing(0.1555, -0.012, phiC, 1, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI))));
       strips(b, "upperChest", emblem(0.05), m);
     }
+    b.tag = 0;
+    // C15: under the dome, the padded shoulder cap of the carrier and its strap (they show once the pauldron is off).
+    if (lod === 0)
+      b.on(-pid, () => {
+        const cap: P2[] = [[0.03, -0.088], [0.07, -0.082], [0.1, -0.068], [0.122, -0.044], [0.132, -0.012], [0.134, 0.02], [0.124, 0.02], [0.12, -0.012], [0.11, -0.04], [0.09, -0.06], [0.06, -0.072], [0.03, -0.076]];
+        b.add("upperChest", shell(cap, phiC - (150 * D) / 2, 150 * D, 7, 0.5), S.padding, frameC);
+      });
     if (lod < 2) b.add(ua, b.plate(chamfer(rect(0.075, -0.045, 0.045), 0.014), { depth: 0.008, bevel: 0.004, bend: 0.072 }), S.plate, new THREE.Matrix4().multiplyMatrices(onRing(0.07, uL * 0.62, phiOut), new THREE.Matrix4()));
   }
   b.add(fa, limb(fL + 0.02, (t) => 0.06 - 0.014 * t + 0.006 * Math.sin(Math.PI * t), b.seg(14), lod ? 3 : 5), arch === "sniper" ? S.coat : S.suit, { p: [0, -0.01, 0] });
@@ -490,12 +550,15 @@ function head(b: Builder, arch: Arch): void {
   const outer: P2[] = [[0.0, 0.158], [0.072, 0.146], [0.114, 0.118], [0.14, 0.078], [0.152, 0.036], [0.157, 0.022], [0.151, 0.0], [0.149, -0.05], [0.153, -0.09], [0.166, -0.12], [0.16, -0.128]];
   const inner: P2[] = [[0.142, -0.118], [0.135, -0.06], [0.0, 0.135]];
   const sniper = arch === "sniper";
-  b.add(H, shell([...outer, ...inner], 0, Math.PI * 2, hs(26), 0.5), sniper ? S.plateDark : S.plate, { p: [0, 0, -0.008], s: [1, 1, sz] });
+  b.on(PLATE_SLOT.helmet, () => b.add(H, shell([...outer, ...inner], 0, Math.PI * 2, hs(26), 0.5), sniper ? S.plateDark : S.plate, { p: [0, 0, -0.008], s: [1, 1, sz] }));
   const ring = (pr: P2[], c: number, half: number, surf: Surface | Glow, n: number) => b.add(H, shell(pr, c - half, half * 2, hs(n)), surf, { p: [0, 0, -0.008], s: [1, 1, sz] });
   if (!sniper) {
     // The visor: a band of black glass, the amber slit lit inside it (the crit target), a heavy brow over it.
-    ring([[0.149, -0.016], [0.1585, -0.014], [0.1585, 0.03], [0.149, 0.032]], 0, 52 * D, S.glass, 14);
-    ring([[0.157, 0.0], [0.1612, 0.002], [0.1612, 0.016], [0.157, 0.018]], 0, 36 * D, GLOWS.slit, 10);
+    b.on(PLATE_SLOT.visor, () => {
+      ring([[0.149, -0.016], [0.1585, -0.014], [0.1585, 0.03], [0.149, 0.032]], 0, 52 * D, S.glass, 14);
+      ring([[0.157, 0.0], [0.1612, 0.002], [0.1612, 0.016], [0.157, 0.018]], 0, 36 * D, GLOWS.slit, 10);
+    });
+    if (lod === 0) face(b);
     if (lod < 2) ring([[0.152, 0.03], [0.166, 0.034], [0.165, 0.048], [0.153, 0.056]], 0, 40 * D, S.plate, 12);
   } else {
     // The sniper: one round lens where the slit would be (his laser's origin), a hood over the shell.
@@ -521,6 +584,50 @@ function head(b: Builder, arch: Arch): void {
   } else if (!sniper && lod < 2) {
     // Everyone else: a low ridge over the crown.
     b.add(H, b.plate(chamfer([[-0.13, 0.09], [0.05, 0.14], [0.085, 0.125], [0.05, 0.165], [-0.06, 0.168], [-0.15, 0.12]], 0.01), { depth: 0.012, bevel: 0.004 }), S.plateDark, { p: [-0.01, 0, -0.008], r: [0, Math.PI / 2, 0] });
+  }
+}
+
+/**
+ * C15 (S4.3): the face a shattered visor shows, on the head bone so it stays with him when the helmet goes: the
+ * skin across the eyes (its tone is per body, from the shader's seed), the black balaclava's edge over the brow,
+ * two wet dark eye sockets and the bridge of the nose. Hidden (plate -visor) until the visor shatters.
+ */
+function face(b: Builder): void {
+  const y0 = HELM_Y - 0.004;
+  // Skin across the eyes (its tone per body), within the visor's own triangle count: it draws in place of the glass.
+  b.on(-PLATE_SLOT.visor, () => b.add("head", shell([[0.104, y0 - 0.024], [0.114, y0 - 0.012], [0.117, y0 + 0.012], [0.112, y0 + 0.036]], -38 * D, 76 * D, b.seg(8), 0.5), FINISH.skin, { s: [0.92, 1, 1.02] }), -1);
+  b.on(-PLATE_SLOT.visor, () => {
+    // The eyes in their sockets: wet and dark, catching the street (the glass finish's clearcoat).
+    for (const x of [-0.033, 0.033]) {
+      if (b.o.phone) b.add("head", box(0.022, 0.011, 0.008, 0, 0), FINISH.glass, { p: [x, y0 + 0.012, 0.116] });
+      else b.add("head", lathe([[0, -0.008], [0.011, -0.003], [0.011, 0.003], [0, 0.008]], 1.3, 1, 4), FINISH.glass, { p: [x, y0 + 0.012, 0.113], r: [Math.PI / 2, 0, 0] });
+    }
+    b.add("head", box(0.014, 0.034, 0.018, 0, 0), FINISH.skin, { p: [0, y0 - 0.004, 0.118] });
+  });
+}
+
+/**
+ * C15 (S4.3): the carrier under the chest plates, seen once a plate breaks off: a coyote-tan padded panel quilted in
+ * three bands, the two webbing straps up over the shoulders, and two torn strap tabs at the top corners that flap
+ * (in the shader, about their hinge) when the plate goes. Front and back.
+ */
+function underLayer(b: Builder): void {
+  const S = FINISH;
+  for (const [id, z, ry] of [
+    [-PLATE_SLOT.chestF, 0.129, 0],
+    [-PLATE_SLOT.chestB, -0.129, Math.PI],
+  ] as const) {
+    b.on(id, () => {
+      b.add("chest", b.plate(chamfer(rect(0.33, -0.005, 0.165, 0.36), 0.025), { depth: 0.008, bevel: 0, bend: 0.25 }), S.padding, { p: [0, 0, z], r: [0, ry, 0] });
+      b.add("upperChest", b.plate(chamfer(rect(0.34, -0.02, 0.12, 0.28), 0.025), { depth: 0.008, bevel: 0, bend: 0.26, bendY: 0.4 }), S.padding, { p: [0, 0, z * 1.03], r: [0, ry, 0] });
+      // The quilting: dark stitched seams across the panel.
+      const sg = z > 0 ? 1 : -1;
+      for (const y of [0.05, 0.11]) b.add("chest", b.plate(rect(0.3, -0.0025, 0.0025, 0.32), { depth: 0.002, bevel: 0, bend: 0.25 }), S.strap, { p: [0, y, z + sg * 0.0095], r: [0, ry, 0] });
+      for (const x of [-0.105, 0.105]) b.add("upperChest", box(0.034, 0.16, 0.008, 0, 0), S.strap, { p: [x, 0.06, z * 1.03 + sg * 0.012], r: [sg * -0.1, ry, 0] });
+    });
+    // The torn tabs, hinged at their top edge.
+    for (const x of [-0.14, 0.14])
+      b.on(id, () => b.add("chest", box(0.042, 0.07, 0.006, 0, 0), S.strap, { p: [x, 0.13, z + (z > 0 ? 0.016 : -0.016)], r: [0, ry, 0] }), 0.165);
   }
 }
 
@@ -617,6 +724,26 @@ export function archGeometry(arch: Arch, lod: Lod, phone: boolean, hero = false)
   const g = b.finish();
   const out: ArchGeometry = { ...g, tris: Math.round(tris(g.opaque) + tris(g.glow)) };
   ARCH_CACHE.set(key, out);
+  return out;
+}
+
+const PLATE_CACHE = new Map<string, Map<string, { opaque: THREE.BufferGeometry | null; glow: THREE.BufferGeometry | null }>>();
+
+/**
+ * C15 (S4.3): one plate's pieces (sim/armour.ts PLATE_SLOT) as loose geometry by bone, in each bone's own frame: the
+ * plate that a broken plate leaves the body as, drawn with the same two materials (unskinned, it keeps its cracks).
+ */
+export function plateGeometry(arch: Arch, slot: number, phone: boolean): Map<string, { opaque: THREE.BufferGeometry | null; glow: THREE.BufferGeometry | null }> {
+  const key = `${arch}:${slot}:${phone ? "p" : "d"}`;
+  const have = PLATE_CACHE.get(key);
+  if (have) return have;
+  const b = new Builder({ lod: 0, phone, only: slot });
+  torso(b, arch);
+  head(b, arch);
+  for (const s of ["L", "R"] as const) arm(b, s, arch);
+  const out = new Map<string, { opaque: THREE.BufferGeometry | null; glow: THREE.BufferGeometry | null }>();
+  for (const [bone, e] of b.byBone) out.set(bone, { opaque: e.opaque.length ? mergeAll(e.opaque) : null, glow: e.glow.length ? mergeAll(e.glow) : null });
+  PLATE_CACHE.set(key, out);
   return out;
 }
 

@@ -538,6 +538,43 @@ export function createFx(o: {
       spawn({ pos: pos.clone(), kind: K.flash, additive: true, life: 0.06, size0: 0.2, color: new THREE.Color(3, 5, 9) });
       flashLight(pos, "#9fd8ff", 12 * (0.5 + amount), 0.08, 5);
     },
+    armourSparks(pos, normal, dir, amount, broke) {
+      // Reflected off the plate: the round's travel mirrored about the face's normal, jittered +-35 degrees.
+      const n = normal.clone().normalize();
+      const d = dir.clone().normalize();
+      const refl = d.clone().addScaledVector(n, -2 * d.dot(n)).normalize();
+      const count = Math.round((6 + amount * 8) * (broke ? 1.8 : 1));
+      const hot = new THREE.Color(9, 6.6, 3.6);
+      const cool = new THREE.Color(7, 2.2, 0.35);
+      for (let i = 0; i < count; i++) {
+        const c = hot.clone().lerp(cool, rand());
+        spawn({ pos: pos.clone().addScaledVector(n, 0.01), vel: cone(refl, 0.61, new THREE.Vector3()).multiplyScalar(4 + rand() * 5), kind: K.streak, additive: true, life: 0.12 + rand() * 0.14, size0: 0.008, len: 0.06, color: c, color1: cool, grav: 1, drag: 0.6, ground: 2 });
+      }
+      // Paint chips: dark flakes tumbling off the face.
+      for (let i = 0; i < (broke ? 8 : 3); i++)
+        spawn({ pos: pos.clone(), vel: cone(n, 0.9, new THREE.Vector3()).multiplyScalar(1 + rand() * 2.5).add(new THREE.Vector3(0, 0.8, 0)), kind: K.drop, life: 0.7 + rand() * 0.5, size0: 0.012 + rand() * 0.01, color: ambient(pos, new THREE.Color(0.18, 0.19, 0.21), 0.5), grav: 1, ground: 1 });
+      spawn({ pos: pos.clone().addScaledVector(n, 0.02), kind: K.flash, additive: true, life: 0.05, size0: broke ? 0.38 : 0.22, color: new THREE.Color(9, 5.5, 2.2) });
+      flashLight(pos, "#ffb060", (broke ? 18 : 9) * (0.6 + amount), 0.07, 4);
+    },
+    shards(pos, dir, tint) {
+      const d = dir.clone().normalize();
+      const n = 12 + Math.floor(rand() * 9);
+      const glass = new THREE.Color(tint.r * 2.4 + 0.3, tint.g * 2.4 + 0.25, tint.b * 2.4 + 0.2);
+      for (let i = 0; i < n; i++)
+        spawn({ pos: pos.clone(), vel: cone(d.clone().negate(), 0.9, new THREE.Vector3()).multiplyScalar(1.5 + rand() * 3.5).add(new THREE.Vector3(0, 1.2, 0)), kind: K.streak, additive: true, life: 0.9 + rand() * 0.3, size0: 0.008 + rand() * 0.008, len: 0.035, color: glass, color1: new THREE.Color(tint.r * 0.4, tint.g * 0.4, tint.b * 0.4), grav: 1, drag: 0.3, ground: 2 });
+      spawn({ pos: pos.clone(), kind: K.flash, additive: true, life: 0.07, size0: 0.32, color: new THREE.Color(tint.r * 6 + 2, tint.g * 6 + 1.5, tint.b * 6 + 1) });
+      flashLight(pos, "#ffc070", 14, 0.09, 4);
+    },
+    vent(pos, dir) {
+      const d = dir.clone().normalize();
+      for (let i = 0; i < 26; i++) {
+        const t = i / 26;
+        spawn({ pos: pos.clone(), vel: cone(d, 0.35, new THREE.Vector3()).multiplyScalar(2.5 + rand() * 2.5).add(new THREE.Vector3(0, 0.6 + t, 0)), kind: K.smoke, additive: true, life: 0.5 + rand() * 0.3, size0: 0.06, size1: 0.5 + rand() * 0.3, color: new THREE.Color(3.2, 1.2, 0.25), color1: new THREE.Color(0.3, 0.12, 0.04), alpha: 0.7, grav: -0.15, drag: 1.4 });
+      }
+      for (let i = 0; i < 10; i++)
+        spawn({ pos: pos.clone(), vel: cone(d, 0.5, new THREE.Vector3()).multiplyScalar(2 + rand() * 4), kind: K.drop, life: 0.8, size0: 0.012, color: new THREE.Color(1.6, 0.6, 0.12), additive: true, grav: 1, ground: 1 });
+      flashLight(pos, "#ff8a30", 16, 0.8, 5);
+    },
     casing(pos, vel) {
       const i = casingNext++ % casingCap;
       const c: Casing = casings[i] ?? { pos: new THREE.Vector3(), vel: new THREE.Vector3(), rot: new THREE.Euler(), spin: new THREE.Vector3(), rest: 0, bounces: 0 };

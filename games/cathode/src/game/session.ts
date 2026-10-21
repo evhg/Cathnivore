@@ -82,6 +82,7 @@ import { DeathCam, GunDrop, deathState, resyncState } from "./death-cam";
 import { DeathScreen } from "../ui/deathcard";
 import { deathLine, type DeathCause } from "./voice";
 import { ESC_DEBOUNCE_MS, nextResuming, pauseView } from "./pausegate";
+import { clearDebris, liveDebris } from "./armourfx";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -188,6 +189,8 @@ export interface Session {
     /** C11: the takedown at the stage's moment: its clock, whether her arm and his helmet are in frame, the bars. */
     /** C11: the tell stage: his head and helmet top on screen and where the chip is anchored (CSS px). */
     tell?: { head: { x: number; y: number }; helmetTop: { x: number; y: number }; chip: { x: number; y: number } | null };
+    /** C15: the plates' states, his reaction, the carrier under the chest plate on screen (CSS px, with 5 cm in px), the loose plates. */
+    armour?: { plates: Record<string, string>; visor: number; reaction: string | null; t: number; under: { x: number; y: number; r: number }; face: { x: number; y: number; r: number }; debris: { x: number; y: number; asleep: boolean }[]; meter: number; heights: Record<string, number> };
     takedown?: { t: number; active: boolean; headIn: boolean; armIn: boolean; handR: { x: number; y: number }; handL: { x: number; y: number }; bars: number; helmetShare: number; prop: string; propIn: boolean; muzzle: { x: number; y: number } | null; debug?: Record<string, number[] | null> };
   } | null;
   /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
@@ -2189,6 +2192,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           fromBack: Math.acos(cl(sy * to.x + cy * to.z)),
           viewOff: Math.acos(cl(toChest.dot(fwd))),
           machine: role === "turret" || role === "hunter" || e.kit === POLICE_DRONE,
+          staggered: e.staggered,
+          knockedDown: e.knockedDown,
         },
         wire,
       );
@@ -3545,6 +3550,43 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     "blood-pool": { base: "hit-kill", dist: 4.6, variant: "gutclutch", pool: true, ms: 8000 },
   };
   let c9: (typeof C9_STAGES)[string] | null = null;
+  /**
+   * C15 "Armour that breaks, enemies that stagger": a Kestrel round on the stage guard with his armour or stagger
+   * meter set up so that this round does the thing (cracks the chest plate, breaks it, shatters the visor, staggers
+   * him from the front or the back, knocks him down), shot at its moment and framed close and three-quarters on so
+   * the plate, the carrier under it, the face, the steps read.
+   */
+  const C15_STAGES: Record<string, { base: string; dist: number; ms: number; turn?: number; pre: (g: Enemy) => void; frame: "plate" | "head" | "body" | "back" }> = {
+    "enemy-plate-cracked": { base: "hit-body", dist: 3.4, ms: 140, frame: "plate", pre: () => {} },
+    "enemy-plate-broken": {
+      base: "hit-body",
+      dist: 3.4,
+      ms: 650,
+      frame: "plate",
+      pre: (g) => {
+        const p = g.armour!.plates.chestF;
+        p.hp = p.maxHp * 0.3;
+        p.state = "cracked";
+        g.syncPlates();
+      },
+    },
+    "visor-shatter": {
+      base: "hit-head",
+      dist: 3.4,
+      ms: 120,
+      frame: "head",
+      pre: (g) => {
+        g.armour!.visor = 1;
+        g.syncPlates();
+        // A Kestrel headshot through a cracked visor kills a fresh guard: this one lives to show the face and the snap.
+        g.hp = g.kit.maxHp * 3;
+      },
+    },
+    "enemy-stagger-front": { base: "hit-body", dist: 5.5, ms: 200, frame: "body", pre: (g) => (g.stag.meter = 0.34) },
+    "enemy-stagger-back": { base: "hit-body", dist: 5.5, ms: 200, turn: Math.PI, frame: "back", pre: (g) => (g.stag.meter = 0.34) },
+    "enemy-knockdown": { base: "hit-body", dist: 5.5, ms: 1000, frame: "body", pre: (g) => (g.stag.meter = 0.79) },
+  };
+  let c15: (typeof C15_STAGES)[string] | null = null;
   /** C9: a body's joint heights over the street under each joint (m), rounded to the centimetre. */
   const jointHeights = (g: Enemy): Record<string, number> => {
     const out: Record<string, number> = {};
@@ -4347,6 +4389,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       void levelUpToast(o.hud.parentElement ?? o.hud, lv, { attributes: 5, skills: 1 }, true);
       return "ok";
     }
+    c15 = C15_STAGES[name.replace(/-\d+$/, "")] ?? C15_STAGES[name] ?? null;
+    if (c15) {
+      const m = /-(\d+)$/.exec(name);
+      if (m && tMs === 40) tMs = Number(m[1]);
+      else if (tMs === 40) tMs = c15.ms;
+      name = c15.base;
+    }
     c9 = C9_STAGES[name.replace(/-\d+s?$/, "")] ?? null;
     if (c9) {
       const m = /-(\d+)(s?)$/.exec(name);
@@ -4413,7 +4462,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // A phone screen is small: the cover stages bring the crate and the guard in so his head over it reads.
     const near = o.quality === "phone" && (name === "blocked" || name === "peek-head") ? 0.6 : 1;
     // hit-arm stands him at 4 m: the struck hand opening is a few centimetres of glove and must show in the frame.
-    let at = eye.clone().addScaledVector(flat, (c9?.dist ?? (name === "hit-arm" ? 4 : 10)) * near);
+    let at = eye.clone().addScaledVector(flat, (c9?.dist ?? c15?.dist ?? (name === "hit-arm" ? 4 : 10)) * near);
     if (c9?.wall) {
       // A wall 1 m behind him: find a solid face 5 to 9 m off around the view and stand him 0.9 m in front of it.
       const yaw0 = Math.atan2(flat.x, flat.z);
@@ -4459,7 +4508,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     at.y = ground(at.x, at.z);
     g.motion.pos.copy(at);
-    g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z);
+    g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z) + (c15?.turn ?? 0);
+    clearDebris();
     // A calm street: nobody hunting her, no hurt arcs, full health, so the frame shows only this hit.
     for (const e of enemies) {
       if (e.alive && e.state !== "dead") e.state = "unaware";
@@ -4497,6 +4547,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Blocked: the round goes into the crate's upper face, square on, with the guard's head showing behind it.
     if (name === "blocked" && stageCrate) aim.copy(stageCrate.position).y += 0.35;
     if (name === "hit-kill" || name === "hit-headkill") g.hp = 1;
+    // The C1/C2 flesh stages are about blood on flesh: they shoot the guard as if unplated (C15 has its own stages).
+    g.armourOff = !c15;
+    if (c15 && g.armour) c15.pre(g);
     const w = SLICE_WEAPONS.find((x) => x.id === "kestrel")!;
     // The shot is a Kestrel round, so she holds the Kestrel.
     if (arsenal.weapon.id !== "kestrel") {
@@ -4694,6 +4747,34 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         frameOn();
       }
     }
+    if (c15) {
+      // Framed close and three-quarters on (from his right, her left), at eye height: the plate, the carrier under it
+      // and the face read at every size; the staggers and the knockdown from further back, the whole man in frame.
+      const J = g.body.joints;
+      const focus = c15.frame === "head" ? J.head.clone() : c15.frame === "plate" ? J.chest.clone().lerp(J.neck, 0.35) : J.pelvis.clone().lerp(J.chest, 0.6);
+      const facing = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
+      const side = new THREE.Vector3(-facing.z, 0, facing.x);
+      const close = c15.frame === "head" ? 1.5 : c15.frame === "plate" ? 2.1 : 4.6;
+      const dist = close * (o.quality === "phone" ? 0.85 : 1);
+      const sk = c15.frame === "plate" || c15.frame === "head" ? 0.36 : 0.5;
+      const off = c15.frame === "back" ? facing.clone().negate().multiplyScalar(0.86).addScaledVector(side, sk) : facing.clone().multiplyScalar(0.93).addScaledVector(side, -sk);
+      // The knockdown falls away from her: frame him from the side he fell along.
+      if (name === "hit-body" && g.knockedDown) off.copy(side).multiplyScalar(-0.9).addScaledVector(facing, 0.44);
+      off.normalize();
+      const from = focus.clone().setY(ground(focus.x, focus.z) + 1.2);
+      if (rays.cast(from, off, dist + 0.4, { thin: false })) off.reflect(side).normalize();
+      player.pos.set(focus.x + off.x * dist, 0, focus.z + off.z * dist);
+      player.pos.y = ground(player.pos.x, player.pos.z);
+      player.applyCamera(world.camera, 0);
+      world.camera.updateMatrixWorld();
+      world.camera.getWorldPosition(eye);
+      const look2 = focus.clone().sub(eye).normalize();
+      player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1));
+      // A touch off centre to the left, clear of the gun in her right hand.
+      player.yaw = Math.atan2(-look2.x, -look2.z) - (c15.frame === "body" || c15.frame === "back" ? 0.1 : 0.16);
+      player.applyCamera(world.camera, 0);
+      world.camera.updateMatrixWorld();
+    }
     // Classes the street can't produce on cue yet (no plates until C15): show them over the real hit.
     const r02 = Math.abs(toScreen(hitAt.clone().addScaledVector(new THREE.Vector3().setFromMatrixColumn(world.camera.matrixWorld, 0), 0.2)).x - toScreen(hitAt).x);
     // The wall splats, on screen: centre and radius (CSS px), for the wall-splat probe.
@@ -4705,6 +4786,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Where the body is now (the kill stage looks for the corpse): pelvis and head on screen.
     const corpse = { pelvis: toScreen(g.body.joints.pelvis), head: toScreen(g.body.joints.head), chest: toScreen(g.body.joints.chest) };
     s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse, variant: g.deathVariant, pool: poolInfo, asleep: g.body.asleep, heights: c9 ? jointHeights(g) : undefined, handOpen: { L: g.body.handOpenDeg("L"), R: g.body.handOpenDeg("R") }, seg: lastHitSeg, hands: name === "hit-arm" ? { L: toScreen(g.body.joints.handL), R: toScreen(g.body.joints.handR), r: Math.abs(toScreen(g.body.joints.handL.clone().addScaledVector(camX, 0.12)).x - toScreen(g.body.joints.handL).x) } : undefined };
+    if (c15 && g.armour) {
+      const J = g.body.joints;
+      const up = new THREE.Vector3().subVectors(J.neck, J.chest).normalize();
+      const fwdB = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
+      const under = J.chest.clone().addScaledVector(up, 0.08).addScaledVector(fwdB, 0.13);
+      const face = J.head.clone().addScaledVector(up, 0.01 - 0.12).addScaledVector(fwdB, 0.12);
+      const px = (p: THREE.Vector3) => Math.abs(toScreen(p.clone().addScaledVector(camX, 0.05)).x - toScreen(p).x);
+      s.stageInfo.armour = {
+        plates: Object.fromEntries(Object.values(g.armour.plates).map((p) => [p.id, p.state])),
+        visor: g.armour.visor,
+        reaction: g.reaction?.kind ?? null,
+        t: g.reaction?.t ?? 0,
+        under: { ...toScreen(under), r: px(under) },
+        face: { ...toScreen(face), r: px(face) },
+        debris: liveDebris().map((d) => ({ ...toScreen(d.position), asleep: d.asleep })),
+        meter: g.stag.meter,
+        heights: jointHeights(g),
+      };
+    }
     if (name === "hit-arm") {
       // Seen from her side of him and off his struck shoulder, 1.1 m out: from where she stands the hand is end-on behind
       // his rifle, dark on dark.

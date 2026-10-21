@@ -7,6 +7,10 @@ import * as THREE from "three";
 import { Body, enforcerLook, place, tagUnflashed, bodyView, type BodyLook, type Zone } from "./body";
 import { archFor } from "./models/enforcer";
 import { buildRifle, buildShield, rifleLod, BOLT_KICK_M, type Rifle } from "./models/gear";
+import { makeArmour, resetArmour, stateCode, PLATE_SLOT, type Armour, type PlateId } from "../sim/armour";
+import { makeStagger, staggerTick, type StaggerDir } from "../sim/stagger";
+import { reactDuration, reactPose, reactTravel, type ReactKind } from "./anim/react";
+import type { PlateDebris } from "./armourfx";
 import { DEATH, DeathRun, DroppedProp, helmetPops, pickVariant, visorLevel, type DeathCtx, type DeathScript, type DeathVariant } from "./death";
 import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
 import { animate, muzzleOf, type Motion } from "./animate";
@@ -242,6 +246,18 @@ export class Enemy {
   readonly motion: Motion;
   /** Hit flinch springs (S4.1), read by animate(). */
   readonly flinch = new Flinch();
+  /** C15 (S4.3): his plates, visor, coolant can and the one disarm; null for the unarmoured (no plates to break). */
+  readonly armour: Armour | null;
+  /** Screenshot stages (C1/C2): the flesh-hit stages shoot an unplated man (his armour is ignored). */
+  armourOff = false;
+  /** C15 (S4.2): the stagger meter. */
+  readonly stag = makeStagger();
+  /** C15: the stagger, knockdown or visor snap playing (ms in), and the heading a knockdown falls toward. */
+  reaction: { kind: ReactKind; dir: StaggerDir; t: number; dur: number; fallYaw: number } | null = null;
+  /** C15: plates knocked off him, tumbling in the street (stepped with him, cleared when he's put back up). */
+  readonly debris: PlateDebris[] = [];
+  /** C15: ms left of the cracked visor's 14 Hz flicker. */
+  private visorFlickMs = 0;
   private route: THREE.Vector3[];
   private routeIdx = 0;
   private wait = 0;
@@ -292,6 +308,11 @@ export class Enemy {
   ) {
     this.body = new Body(look);
     this.hp = kit.maxHp;
+    // Riflemen, squad leaders and shield bearers wear the full Enforcer set; the sniper's coat has no plates.
+    const role = kit.role ?? "rifle";
+    this.armour = role === "rifle" || role === "shield" ? makeArmour(kit.maxHp) : null;
+    this.body.skinTone = this.id % 4;
+    this.body.crackSeed = ((this.id * 0.6180339) % 1 + 1) % 1;
     this.route = route.length ? route : [new THREE.Vector3()];
     const start = this.route[0]!.clone();
     this.motion = {
@@ -377,6 +398,17 @@ export class Enemy {
     // Bystanders never fight: once they stop running they calm down and wander again.
     if (this.kit.role === "civilian" && this.state === "combat" && this.fleeT <= 0) this.state = "unaware";
     this.flinch.update(dt);
+    for (const d of this.debris) d.step(dt, ground, colliders);
+    staggerTick(this.stag, dt);
+    this.tickVisor(dt);
+    if (this.alive && this.reaction) {
+      this.reactTick(dt, colliders);
+      animate(this.body, this.motion);
+      this.body.carry();
+      this.body.pose(dt);
+      this.placeRifle();
+      return;
+    }
     // A round that just missed: a duck that eases back up, and shakier aim for a second (S1.1).
     this.suppressT = Math.max(0, this.suppressT - dt);
     this.duckT = Math.max(0, this.duckT - dt);
@@ -485,11 +517,11 @@ export class Enemy {
         const side = new THREE.Vector3(-flat.z, 0, flat.x).multiplyScalar(this.strafe);
         const along = flat.clone().multiplyScalar(d > want + 4 ? 1 : d < want - 6 ? -1 : 0);
         target = this.motion.pos.clone().add(side.add(along).multiplyScalar(3));
-        speed = d > want + 8 ? this.kit.run : this.kit.walk * 1.4;
+        speed = d > want + 8 ? this.runSpeed : this.kit.walk * 1.4;
         if (this.kit.role === "turret") target = null;
         if (this.kit.role === "hunter") {
           this.strafeT -= dt * 1.5;
-          speed = this.kit.run;
+          speed = this.runSpeed;
           target = this.motion.pos.clone().add(side.clone().multiplyScalar(2)).add(along.clone().multiplyScalar(2));
         }
         if (this.kit.role === "shield") {
@@ -507,7 +539,7 @@ export class Enemy {
         if (this.kit.role === "orderly") {
           // Orderlies never keep their distance: sprint, lunge over the last few metres, then strike.
           target = d > 1.3 ? sight.chest.clone() : null;
-          speed = d < 7 && d > ORDERLY_REACH ? ORDERLY_LUNGE : this.kit.run;
+          speed = d < 7 && d > ORDERLY_REACH ? ORDERLY_LUNGE : this.runSpeed;
           this.fireCd -= dt;
           if (seen && d <= ORDERLY_REACH && this.fireCd <= 0) {
             this.fireCd = this.kit.burst[2] * (0.8 + Math.random() * 0.4);
@@ -569,7 +601,7 @@ export class Enemy {
       this.shots.length = 0;
       const away = this.motion.pos.clone().sub(this.fleeFrom).setY(0).normalize().multiplyScalar(6);
       target = this.motion.pos.clone().add(away);
-      speed = this.kit.run;
+      speed = this.runSpeed;
       face = null;
       aim = 0;
     }
@@ -780,6 +812,9 @@ export class Enemy {
   feel(dt: number, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
     this.flinch.update(dt);
     this.body.updateFlash(dt * 1000);
+    this.tickVisor(dt);
+    for (const d of this.debris) d.step(dt, ground, colliders);
+    if (this.alive && this.reaction) this.reactTick(dt, colliders);
     if (!this.alive) {
       this.deadFor += dt;
       this.body.physics(dt, { colliders, ground });
@@ -790,6 +825,85 @@ export class Enemy {
     }
     this.body.pose(dt);
     this.placeRifle();
+  }
+
+  /** C15 (S4.3): a vented coolant pack stops him sprinting. */
+  get runSpeed(): number {
+    return this.armour?.vented && this.armour.plates.coolant.maxHp > 0 ? this.kit.walk * 1.3 : this.kit.run;
+  }
+
+  /** C15: staggered right now (a takedown window: the rim pulses at 3 Hz). */
+  get staggered(): boolean {
+    return !!this.reaction && this.reaction.kind === "stagger";
+  }
+  /** C15: knocked down and not yet back on his feet. */
+  get knockedDown(): boolean {
+    return !!this.reaction && this.reaction.kind === "knockdown";
+  }
+
+  /**
+   * C15 (S4.2): plays a stagger, knockdown or visor snap. `dir` is the round's travel in body space (a knockdown
+   * falls that way). A knockdown outranks a stagger, which outranks the snap; a stagger never cuts a knockdown short.
+   */
+  startReact(kind: ReactKind, stagDir: StaggerDir, dir: { x: number; z: number }): void {
+    if (!this.alive) return;
+    const rank = (k: ReactKind) => (k === "knockdown" ? 2 : k === "stagger" ? 1 : 0);
+    if (this.reaction && rank(this.reaction.kind) > rank(kind)) return;
+    // The fall heads along the round: atan2 of its travel against "straight back" (-z).
+    const fallYaw = Math.atan2(-dir.x, -dir.z);
+    this.reaction = { kind, dir: stagDir, t: 0, dur: reactDuration(kind, stagDir), fallYaw };
+    // The attack is cancelled (its token with it): no round leaves the gun while he reels.
+    this.burstLeft = 0;
+    this.fireCd = Math.max(this.fireCd, this.reaction.dur / 1000 + 0.35);
+    this.motion.react = reactPose(kind, stagDir, 0, fallYaw);
+    if (kind === "stagger") this.visorFlickMs = Math.max(this.visorFlickMs, this.reaction.dur);
+  }
+
+  /** Advances a reaction: the pose, his aim off her, and at the end the steps he took become where he stands. */
+  private reactTick(dt: number, colliders: THREE.Box3[]): void {
+    const r = this.reaction!;
+    r.t += dt * 1000;
+    this.motion.speed = 0;
+    this.vel.set(0, 0, 0);
+    this.motion.aim = THREE.MathUtils.damp(this.motion.aim, 0, 10, dt);
+    this.body.eligible = r.kind !== "visorSnap";
+    if (r.t >= r.dur) {
+      const tr = reactTravel(r.kind, r.dir);
+      const yaw = this.motion.yaw;
+      // Body space (x his left, z forward) to world.
+      const d = new THREE.Vector3(tr.x * Math.cos(yaw) + tr.z * Math.sin(yaw), 0, -tr.x * Math.sin(yaw) + tr.z * Math.cos(yaw));
+      this.reaction = null;
+      this.motion.react = null;
+      this.body.eligible = false;
+      this.moveWithCollision(d, colliders);
+      return;
+    }
+    this.motion.react = reactPose(r.kind, r.dir, r.t, r.fallYaw);
+  }
+
+  /** C15: the visor's light: a 14 Hz flicker while cracked or staggered, 0.3 once it has shattered. */
+  private tickVisor(dt: number): void {
+    if (!this.alive) return;
+    this.visorFlickMs = Math.max(0, this.visorFlickMs - dt * 1000);
+    const shattered = this.armour?.visor === 2;
+    const base = shattered ? 0.3 : 1;
+    const on = this.visorFlickMs <= 0 || Math.floor((this.visorFlickMs / 1000) * 14 * 2) % 2 === 0;
+    this.body.visorLevel = on ? base : base * 0.18;
+  }
+
+  /** C15: the visor cracked: a 300 ms flicker. */
+  visorCracked(): void {
+    this.visorFlickMs = Math.max(this.visorFlickMs, 300);
+  }
+
+  /** C15: mirrors the armour's plate states onto the body (the shader's per-plate tags). */
+  syncPlates(): void {
+    const a = this.armour;
+    if (!a) return;
+    for (const id of Object.keys(PLATE_SLOT) as Array<keyof typeof PLATE_SLOT>) {
+      if (id === "visor") this.body.setPlate(PLATE_SLOT.visor, a.visor === 2 ? 2 : a.visor === 1 ? 1 : 0);
+      else this.body.setPlate(PLATE_SLOT[id], stateCode(a.plates[id as PlateId].state));
+    }
   }
 
   /** How much this archetype shrugs a hit off (S4.1): heavier kits flinch less, but always flinch. */
@@ -852,6 +966,14 @@ export class Enemy {
     this.deathEvents.length = 0;
     this.rifle.visible = this.kit.role !== "orderly";
     this.body.visorLevel = 1;
+    if (this.armour) resetArmour(this.armour);
+    for (const d of this.debris) d.dispose();
+    this.debris.length = 0;
+    Object.assign(this.stag, makeStagger());
+    this.reaction = null;
+    this.motion.react = null;
+    this.visorFlickMs = 0;
+    this.body.eligible = false;
   }
 
   /**

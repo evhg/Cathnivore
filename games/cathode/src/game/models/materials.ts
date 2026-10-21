@@ -13,13 +13,15 @@
 //   fx4 col1: the visor's tint (rgb) and level (a).
 //   fx4 col2: the faction rim (rgb), falloff power.
 //   fx4 col3: LOD crossfade: from, to, t (0..1), blink (0..1).
+//   fx5: C15's plates, two floats per slot (sim/armour.ts PLATE_SLOT 1..7): state (0 intact, 1 cracked, 2 broken) and
+//        seconds since it changed; slot 8 holds the face's skin tone (0..3) and the crack seed (0..1).
 
 import * as THREE from "three";
 import { patchKitMaterial } from "../gunkit";
 import { mirrorPass } from "../../render/reflection";
 
 /** How many fx bones follow the segment and accessory bones in every body skeleton. */
-export const FX_BONES = 5;
+export const FX_BONES = 6;
 
 export interface EnemyMaterials {
   opaque: THREE.MeshStandardMaterial;
@@ -37,10 +39,63 @@ float bodyBayer(vec2 p) {
   return (float(b[i]) + 0.5) / 16.0;
 }`;
 
+/** The four skin tones a shattered visor can show (linear), picked per body by its seed. */
+const TONES = [0xd2a98c, 0xa97c5d, 0x7c5339, 0x51341f].map((h) => new THREE.Color(h));
+const toneGlsl = TONES.map((c) => `vec3(${c.r.toFixed(4)}, ${c.g.toFixed(4)}, ${c.b.toFixed(4)})`).join(", ");
+
+/**
+ * C15: a piece's plate state, from fx5 (skinned bodies only). A broken plate's pieces collapse to their bone's origin
+ * (no triangles left); the layer under it (a negative tag) does the opposite, shown only once the plate is gone, and
+ * its strap tabs flap about their hinge, settling over a second. A cracked plate sinks 4 mm into the suit.
+ * Out: vPlate = (cracked 0/1, seconds since it changed, tag, skin 0/1), vPlateSeed.
+ */
+function vertPlate(fx0: number, sink: boolean): string {
+  return `
+{
+  float pid = aPlate.x;
+  int slot = int(abs(pid) + 0.5);
+  vPlate = vec4(0.0, 10.0, pid, 0.0);
+  mat4 bpl = getBoneMatrix(float(${fx0 + 5}));
+  vPlateSeed = bpl[3].w;
+  vPlateTone = vec3(0.0);
+  if (slot > 0) {
+    int c = (slot - 1) / 2;
+    vec4 col = c == 0 ? bpl[0] : c == 1 ? bpl[1] : c == 2 ? bpl[2] : bpl[3];
+    bool lo = (slot - 1) - c * 2 == 0;
+    float st = lo ? col.x : col.z;
+    float age = lo ? col.y : col.w;
+    bool broken = st > 1.5;
+    bool under = pid < 0.0;
+    if (under != broken) transformed = vec3(0.0);
+    else if (!under) {
+      vPlate.x = st > 0.5 ? 1.0 : 0.0;
+      vPlate.y = age;
+      ${sink ? "if (st > 0.5) transformed -= objectNormal * 0.004;" : ""}
+    } else {
+      vPlate.y = age;
+      if (aPlate.y > 0.0) {
+        // A torn strap tab: it swings out about its top edge and settles, hanging a little off the panel.
+        float below = max(0.0, aPlate.y - transformed.y);
+        float sw = 0.45 + sin(age * 15.0) * exp(-age * 2.4) * 1.3;
+        transformed.z += sign(transformed.z) * below * sw;
+        transformed.y += below * (1.0 - cos(sw)) * 0.5;
+      }
+      if (aPlate.y < -0.5) {
+        vPlate.w = 1.0;
+        int ti = int(clamp(bpl[3].z + 0.5, 0.0, 3.0));
+        vec3 tones[4] = vec3[4](${toneGlsl});
+        vPlateTone = tones[ti];
+      }
+    }
+  }
+}`;
+}
+
 /** Vertex code reading this body's fx bones (the first fx bone's index is `fx0`). */
-function vertFx(fx0: number): string {
+function vertFx(fx0: number, sink = false): string {
   return `
 #ifdef USE_SKINNING
+${vertPlate(fx0, sink)}
 {
   int bs = int(aSeg + 0.5);
   mat4 bf = getBoneMatrix(float(${fx0} + bs / 4));
@@ -61,15 +116,48 @@ function vertFx(fx0: number): string {
 }
 #else
 vBodyRimN = vec3(0.0, 0.0, 1.0);
+// Unskinned (a plate knocked off, the cloth): a plate piece keeps its cracks.
+vPlate = vec4(aPlate.x > 0.5 ? 1.0 : 0.0, 10.0, aPlate.x, 0.0); vPlateSeed = 0.37; vPlateTone = vec3(0.0);
 vBodyFlash = vec3(0.0); vBodyRim = vec4(0.0, 0.0, 0.0, 3.0); vBodyVisor = vec4(1.0); vBodyFac = vec4(0.0, 0.0, 0.0, 3.0);
 vBodyLodA = 1.0; vBodyLodT = 1.0; vBodyBlink = 1.0;
 #endif`;
 }
 
+/**
+ * C15's fracture network (fragment): 3D Voronoi cells on the plate's own surface, seeded per plate and per body,
+ * the cell borders jittered by noise. Returns (groove 0..1, chipped edge 0..1), anti-aliased by its own derivatives.
+ * The visor (tag 6) cracks finer.
+ */
+const CRACK = `
+vec3 pcHash3(vec3 p) {
+  p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6)));
+  return fract(sin(p) * 43758.5453);
+}
+vec2 plateCrack(vec3 lp, float tag, float seed) {
+  float dens = tag > 5.5 ? 70.0 : 34.0;
+  vec3 p = lp * dens + vec3(seed * 17.0 + tag * 3.1, tag * 5.7, seed * 11.0);
+  p += vec3(gkNoise(lp * 90.0), gkNoise(lp * 90.0 + 7.0), gkNoise(lp * 90.0 + 13.0)) * 0.55;
+  vec3 i = floor(p); vec3 f = fract(p);
+  float d1 = 8.0; float d2 = 8.0;
+  for (int z = -1; z <= 1; z++) for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
+    vec3 g = vec3(float(x), float(y), float(z));
+    vec3 o = pcHash3(i + g);
+    float d = length(g + o - f);
+    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+  }
+  float e = d2 - d1;
+  float w = max(fwidth(e), 1e-4);
+  // Not every border cracks: about half the cells' walls fracture, so it reads as a crack and not a grid.
+  float keep = step(0.45, pcHash3(i + vec3(seed)).x + gkNoise(lp * 20.0) * 0.5);
+  float groove = (1.0 - smoothstep(0.03, 0.03 + w * 1.5, e)) * keep;
+  float chip = (1.0 - smoothstep(0.1, 0.1 + w * 1.5, e)) * keep - groove;
+  return vec2(groove, max(0.0, chip));
+}`;
+
 /** The faction rim's peak radiance (linear): under the AgX shoulder, where amber would wash out to white. */
 const RIM_CAP = 1.5;
 
-const VARYINGS = "varying vec3 vBodyRimN; varying vec3 vBodyFlash; varying vec4 vBodyRim; varying vec4 vBodyVisor; varying vec4 vBodyFac; varying float vBodyLodA; varying float vBodyLodT; varying float vBodyBlink;";
+const VARYINGS = "varying vec4 vPlate; varying float vPlateSeed; varying vec3 vPlateTone; varying vec3 vBodyRimN; varying vec3 vBodyFlash; varying vec4 vBodyRim; varying vec4 vBodyVisor; varying vec4 vBodyFac; varying float vBodyLodA; varying float vBodyLodT; varying float vBodyBlink;";
 
 const DITHER = `
 {
@@ -87,10 +175,41 @@ function patchOpaque(mat: THREE.MeshStandardMaterial, fx0: number): void {
     prev.call(mat, sh, r);
     sh.uniforms.uBodyMirror = mirrorPass;
     sh.vertexShader = sh.vertexShader
-      .replace("#include <common>", `#include <common>\nattribute float aSeg; attribute float aLod; attribute vec3 aRimN;\n${VARYINGS}`)
-      .replace("#include <begin_vertex>", `#include <begin_vertex>\n${vertFx(fx0)}`);
+      .replace("#include <common>", `#include <common>\nattribute float aSeg; attribute float aLod; attribute vec3 aRimN; attribute vec2 aPlate;\n${VARYINGS}`)
+      .replace("#include <begin_vertex>", `#include <begin_vertex>\n${vertFx(fx0, true)}`);
     sh.fragmentShader = sh.fragmentShader
       .replace("#include <common>", `#include <common>\n${VARYINGS}\nuniform float uBodyMirror;\n${BAYER}`)
+      // After the kit's own declarations (its noise and vLocal): the fracture network.
+      .replace("void main() {", `${CRACK}\nvoid main() {`)
+      .replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>
+// C15: the face behind a shattered visor takes this body's skin tone; a cracked plate shows its fracture lines
+// (a dark groove with the paint chipped back to bright metal along each side).
+if (vPlate.w > 0.5) diffuseColor.rgb = vPlateTone;
+float pCrack = 0.0;
+float pChip = 0.0;
+if (vPlate.x > 0.5) {
+  vec2 cr = plateCrack(vLocal, vPlate.z, vPlateSeed);
+  pCrack = cr.x;
+  pChip = cr.y;
+  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 2.2 + vec3(0.07), pChip * 0.85);
+  diffuseColor.rgb *= 1.0 - 0.9 * pCrack;
+}`,
+      )
+      .replace(
+        "#include <normal_fragment_maps>",
+        `#include <normal_fragment_maps>
+if (vPlate.x > 0.5) {
+  // The groove as a height field (S4.3: x1.6 normal strength), bumped through the screen-space surface gradient.
+  float ph = -(pCrack + pChip * 0.35) * 0.0016 * 1.6;
+  vec3 sx = dFdx(-vViewPosition); vec3 sy = dFdy(-vViewPosition);
+  vec3 r1 = cross(sy, normal); vec3 r2 = cross(normal, sx);
+  float det = dot(sx, r1);
+  vec3 grad = sign(det) * (dFdx(ph) * r1 + dFdy(ph) * r2);
+  normal = normalize(abs(det) * normal - grad);
+}`,
+      )
       .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>\n${DITHER}`)
       .replace(
         "#include <emissivemap_fragment>",
@@ -112,7 +231,10 @@ float bFace = vBodyFac.w < 2.5 ? 1.0 : mix(smoothstep(0.15, 0.85, bFlashRim), 1.
 vec3 bFac = vBodyFac.rgb * pow(bRim, mix(vBodyFac.w, 1.4, bFar)) * bFace;
 float bFacMax = max(bFac.r, max(bFac.g, bFac.b));
 bFac *= bFacMax > ${RIM_CAP.toFixed(2)} ? ${RIM_CAP.toFixed(2)} / bFacMax : 1.0;
-totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);`,
+totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);
+// C15: a fresh crack glows in the faction amber for 0.4 s (S4.3: 0.3, overstated x3 so it reads at 10 m in the
+// grade), then keeps a faint ember in the groove.
+if (vPlate.x > 0.5) totalEmissiveRadiance += vec3(1.0, 0.42, 0.08) * pCrack * (0.9 * max(0.0, 1.0 - vPlate.y / 0.4) + 0.05) * (1.0 - uBodyMirror);`,
       )
       .replace(
         "#include <fog_fragment>",
@@ -134,7 +256,7 @@ gl_FragColor.rgb = mix(gl_FragColor.rgb, bPre, fogFactor * clamp(vBodyFlash.r * 
 function patchGlow(mat: THREE.MeshBasicMaterial, fx0: number): void {
   mat.onBeforeCompile = (sh) => {
     sh.vertexShader = sh.vertexShader
-      .replace("#include <common>", `#include <common>\nattribute float aSeg; attribute float aLod; attribute vec4 aMR; attribute vec3 aRimN;\n${VARYINGS}\nvarying vec3 vBodyGlow;`)
+      .replace("#include <common>", `#include <common>\nattribute float aSeg; attribute float aLod; attribute vec4 aMR; attribute vec3 aRimN; attribute vec2 aPlate;\n${VARYINGS}\nvarying vec3 vBodyGlow;`)
       .replace(
         "#include <begin_vertex>",
         `#include <begin_vertex>\n${vertFx(fx0)}

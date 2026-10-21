@@ -149,6 +149,8 @@ describe("CATHODE cover (S1.1)", () => {
     const fly = (rays: RayWorld, low = false) => {
       const { e, combat } = scene(rays);
       e.hp = 1e6;
+      // C15: plates don't scale linearly (a plate takes a fixed HP before it breaks): measure the share on bare flesh.
+      Object.assign(e, { armour: null });
       const from = V(0, low ? 0.9 : 1.2, 0);
       // The round drops under a millimetre over 10 m: aim straight at the chest (or level, low behind the crate).
       const dir = (low ? e.body.joints.chest.clone().setY(0.9) : e.body.joints.chest.clone()).sub(from).normalize();

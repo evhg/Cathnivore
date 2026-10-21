@@ -8,6 +8,12 @@ import type { HitZone, HitLayer } from "./hitevent";
 export type PlateId = "chestF" | "chestB" | "pauldronL" | "pauldronR" | "helmet" | "coolant";
 export type PlateState = "intact" | "cracked" | "broken";
 
+/**
+ * Each plate's slot in a body's per-vertex plate tag and its fx bone (game/models): 1 to 7. The layer under a plate,
+ * which shows only once it breaks, carries the negative slot. Slot 8 holds the face's skin tone and the crack seed.
+ */
+export const PLATE_SLOT = { chestF: 1, chestB: 2, pauldronL: 3, pauldronR: 4, helmet: 5, visor: 6, coolant: 7 } as const;
+
 export interface Plate {
   id: PlateId;
   /** The segment it rides (game/rig.ts names). */

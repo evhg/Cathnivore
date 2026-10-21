@@ -65,7 +65,11 @@ const C13T = ['gate', 'title', 'settings', 'credits', 'classpick', 'loading', 'p
 // Wetwork), the case file for the fish market and for a travel into the clinic, and the pause.
 const C14 = ['classpick-operative', 'classpick-wetwork', 'loading-fishmarket', 'loading-travel', 'pause']
 const CP_CLASS = { 'classpick-operative': 'ghost', 'classpick-wetwork': 'butcher' }
-const MS = { C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
+// C15 "Armour that breaks, enemies that stagger": a Kestrel round cracking the chest plate (140 ms on, the crack
+// still glowing), breaking it (650 ms: the plate in the street, the padded carrier showing), shattering the visor
+// (120 ms: the shards and the face), the front and back staggers 200 ms in, and the knockdown a second on.
+const C15 = ['enemy-plate-cracked', 'enemy-plate-broken', 'visor-shatter', 'enemy-stagger-front-200', 'enemy-stagger-back-200', 'enemy-knockdown-1000']
+const MS = { C15, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
@@ -656,6 +660,28 @@ for (const vp of vps) {
           if (best.px < minPx) fail(`${vp} ${spec}: the splat is ${best.px.toFixed(0)} physical px (< ${minPx.toFixed(0)}, 3% of the screen height)`)
           const [r, g, b] = best.pr.mean
           if (g > r * 0.6 && b > r * 0.6 && best.share < 0.3) warn(`${vp} ${spec}: the splat reads pink (mean ${best.pr.mean})`)
+        }
+      }
+    }
+    // ---- C15 acceptance ----
+    if (C15.includes(stage)) {
+      const a = info?.armour
+      if (!a) fail(`${vp} ${spec}: no armour info (the stage guard has no plates?)`)
+      else {
+        console.log(`  C15 ${vp} ${spec}: plates ${JSON.stringify(a.plates)}, visor ${a.visor}, reaction ${a.reaction} at ${a.t?.toFixed(0)} ms, debris ${a.debris.length}, pelvis ${a.heights?.pelvis}`)
+        const want = { 'enemy-plate-cracked': () => a.plates.chestF === 'cracked', 'enemy-plate-broken': () => a.plates.chestF === 'broken' && a.debris.length >= 1, 'visor-shatter': () => a.visor === 2, 'enemy-stagger-front-200': () => a.reaction === 'stagger', 'enemy-stagger-back-200': () => a.reaction === 'stagger', 'enemy-knockdown-1000': () => a.reaction === 'knockdown' && a.heights.pelvis < 0.45 }[stage]
+        if (want && !want()) fail(`${vp} ${spec}: the stage didn't do its thing (${JSON.stringify(a.plates)}, visor ${a.visor}, ${a.reaction})`)
+        if (stage === 'enemy-plate-broken') {
+          // The under-layer must read: the coyote-tan carrier where the plate was (warm, and lighter than the plate).
+          const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r), [a.under.x, a.under.y, Math.max(3, a.under.r * 1.2)])
+          const [r, g, b] = pr.mean
+          const warm = r > b * 1.2 && r >= g
+          console.log(`  C15 ${vp} ${spec}: carrier mean rgb ${pr.mean} (${warm ? 'warm' : 'NOT warm'}) over ${pr.total} px`)
+          if (!warm || r < 28) fail(`${vp} ${spec}: the under-layer doesn't read (mean ${pr.mean}: want warm tan, r >= 28)`)
+        }
+        if (stage === 'visor-shatter') {
+          const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r), [a.face.x, a.face.y, Math.max(3, a.face.r * 0.6)])
+          console.log(`  C15 ${vp} ${spec}: face mean rgb ${pr.mean}`)
         }
       }
     }

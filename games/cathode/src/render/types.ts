@@ -50,6 +50,15 @@ export interface Effects {
   };
   /** Sparks and coolant from a cyborg or machine hit. */
   sparks(pos: THREE.Vector3, dir: THREE.Vector3, amount: number): void;
+  /**
+   * C15 (S4.3): a round on a standing plate: 6-14 hot sparks (#FFD8A0 to #FF7A1A, 120-260 ms, 4-9 m/s) thrown off the
+   * plate about its normal (+-35 degrees), a few paint chips, a pin of light. `amount` 0..1; `broke` throws more.
+   */
+  armourSparks?(pos: THREE.Vector3, normal: THREE.Vector3, dir: THREE.Vector3, amount: number, broke?: boolean): void;
+  /** C15: a shattered visor: 12-20 amber-tinted glass shards flying off the face, falling, 1.2 s. */
+  shards?(pos: THREE.Vector3, dir: THREE.Vector3, tint: THREE.Color): void;
+  /** C15: a vented coolant pack: an 800 ms orange plume out of his back, hissing. */
+  vent?(pos: THREE.Vector3, dir: THREE.Vector3): void;
   /** C7: Cath bleeding out leaves drops on the floor where she stands (S6.1: one every 1.2 m). */
   drip?(pos: THREE.Vector3): void;
   /** A brass casing ejected from `pos` with `vel`; it bounces and rings on the ground. */

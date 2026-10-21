@@ -17,7 +17,9 @@ const BUDGET = {
 /** What one enemy draws at a LOD: the body's two layers, the cloth at LOD0, and the rifle's meshes for that LOD. */
 function cost(arch: Arch, lod: Lod, phone: boolean): { tris: number; calls: number } {
   const g = archGeometry(arch, lod, phone);
-  let tris = g.tris;
+  // C15: the layers under the plates (negative plate tags) draw only in place of the plate they replace, which is
+  // never smaller (asserted below), so what's drawn at once is the intact set.
+  let tris = g.tris - underTris(g.opaque) - underTris(g.glow);
   let calls = (g.opaque.getAttribute("position").count ? 1 : 0) + (g.glow.getAttribute("position").count ? 1 : 0);
   if (lod === 0) {
     // The tabard: 8 strips x 3 quads x 2 faces x 2 triangles (the coat: 10 x 4).
@@ -34,6 +36,36 @@ function cost(arch: Arch, lod: Lod, phone: boolean): { tris: number; calls: numb
   });
   return { tris: Math.round(tris), calls };
 }
+
+/** Triangles whose plate tag is negative (C15's under-layers), and per tag. */
+function tagTris(geo: THREE.BufferGeometry): Map<number, number> {
+  const out = new Map<number, number>();
+  const a = geo.getAttribute("aPlate") as THREE.BufferAttribute | undefined;
+  if (!a) return out;
+  for (let i = 0; i < a.count; i += 3) {
+    const t = Math.round(a.getX(i));
+    if (t !== 0) out.set(t, (out.get(t) ?? 0) + 1);
+  }
+  return out;
+}
+function underTris(geo: THREE.BufferGeometry): number {
+  let n = 0;
+  for (const [t, c] of tagTris(geo)) if (t < 0) n += c;
+  return n;
+}
+
+describe("CATHODE enemy models (C15 plates)", () => {
+  for (const phone of [false, true])
+    for (const arch of ["enforcer", "leader", "riot"] as Arch[])
+      it(`${arch} ${phone ? "phone" : "desktop"}: every under-layer draws no more than the plate it replaces`, () => {
+        const g = archGeometry(arch, 0, phone);
+        const t = tagTris(g.opaque);
+        for (const [k, v] of tagTris(g.glow)) t.set(k, (t.get(k) ?? 0) + v);
+        for (const [k, v] of t) if (k < 0) expect(v, `slot ${-k}`).toBeLessThanOrEqual(t.get(-k) ?? 0);
+        // The plates are tagged at all: chest front, back, both pauldrons, the helmet, the visor.
+        for (const k of [1, 2, 3, 4, 5, 6]) expect(t.get(k) ?? 0, `slot ${k}`).toBeGreaterThan(0);
+      });
+});
 
 describe("CATHODE enemy models (C10)", () => {
   for (const phone of [false, true]) {
