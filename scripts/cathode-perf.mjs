@@ -21,6 +21,9 @@ let server = null
 let base = process.env.CATHODE_URL
 if (!base) {
   base = 'http://localhost:4181/cathode/'
+  // A preview left over from another run would hold :4181 (and may serve a stale or missing dist): say so plainly.
+  const busy = await fetch('http://localhost:4181/').then(() => true, () => false)
+  if (busy) throw new Error(':4181 is already taken (a leftover vite preview?). Kill it, e.g. `kill $(lsof -t -i :4181)`, then rerun.')
   server = spawn('npx', ['vite', 'preview', '--outDir', 'dist-site', '--port', '4181', '--strictPort'], { stdio: 'ignore', detached: true })
   const t0 = Date.now()
   for (;;) {
