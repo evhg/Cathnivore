@@ -5031,8 +5031,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const bb = px[o4 + 2]!;
         const mx = Math.max(rr, gg, bb);
         const mn = Math.min(rr, gg, bb);
-        // C15: the hot amber of a fresh crack's seam (or an ember): bright, red-led, orange to amber, saturated.
-        if (rr >= 150 && rr >= bb * 2 && gg >= rr * 0.3 && gg <= rr * 0.88) glow++;
+        // C15: the hot amber of a fresh crack's seam (or an ember): bright, red-led, orange to amber, well off grey (the
+        // seam's core reads peach through the rain's haze, so the blue channel's gap is absolute, not a ratio).
+        if (rr >= 140 && rr - px[o4 + 2]! >= 70 && px[o4 + 1]! >= rr * 0.3 && px[o4 + 1]! <= rr * 0.9) glow++;
         if (mx === rr && gg >= bb && mx >= 60 && mx - mn >= 0.18 * mx && mx - mn <= 0.8 * mx) {
           const hue = (60 * (gg - bb)) / Math.max(1, mx - mn);
           if (hue >= 5 && hue <= 50) skin++;
