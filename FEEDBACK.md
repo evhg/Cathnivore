@@ -18,7 +18,7 @@ Sessions: handle every note under "Open". When a note is done (or turned into a 
 
   This became ROADMAP Phase C, top priority for every session until it is done (at least a week). Spec: `docs/design/cathode-combat.md`. Keep this note open until Phase C is done.
 
-- 2026-10-20 (owner chat, with screenshots of the live CATHODE title, death screen and phone rotate prompt): **"evaluate the style typescript and fonts… these look like a 5 year old made them. How are these aaa game design?"** This became milestone C13T in `docs/design/cathode-combat.md`. It replaces CATHODE's type system and UI language: two families at most, one accent colour, no boxed or web-page idioms, and an independent critique against AAA references. It runs right after C13. (Keep open until C13T ships.)
+- 2026-10-20 (owner chat, with screenshots of the live CATHODE title, death screen and phone rotate prompt): **"evaluate the style typescript and fonts… these look like a 5 year old made them. How are these aaa game design?"** This became milestone C13T in `docs/design/cathode-combat.md`. It replaces CATHODE's type system and UI language: two families at most, one accent colour, no boxed or web-page idioms, and an independent critique against AAA references. It runs right after C13. (C13T shipped live 2026-10-21 at 767b904. Keep open for the owner's verdict.)
 
 - 2026-10-11 (owner chat): **"I noticed fonts and css is especially rudimentary in your designs. Take it to the next level of AAA games."** This became ROADMAP Phase U (`docs/design/aaa-ui.md`): its own type and material identity per game, a shared foundation and 14 milestones. (Keep open until Phase U is done.)
 
