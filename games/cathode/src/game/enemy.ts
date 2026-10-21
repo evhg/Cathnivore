@@ -983,6 +983,7 @@ export class Enemy {
     this.rifle.visible = this.kit.role !== "orderly";
     this.body.visorLevel = 1;
     if (this.armour) resetArmour(this.armour);
+    this.body.crackAt.set(0, 0, 0);
     for (const d of [...this.debris]) d.dispose();
     this.debris.length = 0;
     Object.assign(this.stag, makeStagger());

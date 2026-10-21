@@ -1556,7 +1556,10 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
      DOWN stamp and its +XP line arrive together), sitting just over the crosshair like a name over his head. */
   /* Above the body rather than on it (C9 review: at 36% the plate sat over a body framed at the centre): in the band
      under the objective, nudged left of centre so the feed's short +XP lines on the right stay clear. */
-  .hud-target { top: 25%; left: 46%; width: min(calc(var(--u) * 420), 36vw); }
+  /* C15 review: at 25% centred it crossed a close guard's helmet and visor (the crit target). It now sits in the left
+     column, under the vitals and over the move stick, out of the central third where the fight is framed. */
+  .hud-target { top: 39%; left: var(--edge-l); width: var(--cluster-w); transform: none; text-align: left; padding-inline: 0; }
+  .hud-target::after { inset: calc(var(--u) * -18) calc(var(--u) * -40); }
   .hud-objective { max-width: 36ch; }
   .hud-hp,
   .hud-guard { height: 6px; }

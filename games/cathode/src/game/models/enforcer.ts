@@ -37,8 +37,12 @@ export const FINISH = {
   coat: { color: 0x1c1f26, metal: 0, rough: 0.7, sheen: 0.6, band: "nylon", wear: 0 },
   under: { color: 0x3b3530, metal: 0, rough: 0.9, band: "nylon", wear: 0 },
   /** C15: the coyote-tan padded carrier under a plate, seen once it breaks off (pillar 4: it must read at 10 m). */
-  padding: { color: 0xd2b98c, metal: 0, rough: 0.85, sheen: 0.4, band: "nylon", scale: 1.5, wear: 0.15 },
-  strap: { color: 0x2c2a26, metal: 0, rough: 0.85, sheen: 0.2, band: "nylon", wear: 0.3 },
+  // A saturated coyote: the noir grade pulls colour down a long way, and the material's grey-blue sheen used to turn
+  // the tan neutral grey (C15 review), so the sheen is low and the base well warm.
+  padding: { color: 0xc8924a, metal: 0, rough: 0.8, sheen: 0.06, band: "nylon", scale: 1.5, wear: 0.1 },
+  strap: { color: 0x1e1b17, metal: 0, rough: 0.85, sheen: 0.1, band: "nylon", wear: 0.3 },
+  /** The carrier's torn strap tabs: a darker coyote webbing, so they read against the panel as they flap. */
+  tab: { color: 0x6e5432, metal: 0, rough: 0.85, sheen: 0.05, band: "nylon", wear: 0.2 },
   /** C15: the face behind a shattered visor (its tone is per body, set in the shader). */
   skin: { color: 0xa07a62, metal: 0, rough: 0.55, sheen: 0.15, band: "flat", wear: 0 },
 } satisfies Record<string, Finish>;
@@ -595,7 +599,7 @@ function head(b: Builder, arch: Arch): void {
 function face(b: Builder): void {
   const y0 = HELM_Y - 0.004;
   // Skin across the eyes (its tone per body), within the visor's own triangle count: it draws in place of the glass.
-  b.on(-PLATE_SLOT.visor, () => b.add("head", shell([[0.104, y0 - 0.024], [0.114, y0 - 0.012], [0.117, y0 + 0.012], [0.112, y0 + 0.036]], -38 * D, 76 * D, b.seg(8), 0.5), FINISH.skin, { s: [0.92, 1, 1.02] }), -1);
+  b.on(-PLATE_SLOT.visor, () => b.add("head", shell([[0.104, y0 - 0.03], [0.115, y0 - 0.014], [0.118, y0 + 0.012], [0.113, y0 + 0.04]], -44 * D, 88 * D, b.seg(8), 0.5), FINISH.skin, { s: [0.92, 1, 1.02] }), -1);
   b.on(-PLATE_SLOT.visor, () => {
     // The eyes in their sockets: wet and dark, catching the street (the glass finish's clearcoat).
     for (const x of [-0.033, 0.033]) {
@@ -630,13 +634,15 @@ function underLayer(b: Builder): void {
       b.add("chest", shell(lo, phi - span / 2, span, n, 0.5), S.padding, { s: [1.06, 1, 0.68] });
       b.add("upperChest", shell(hi, phi - span / 2, span, n, 0.5), S.padding, { s: [1.08, 1, 0.67] });
       if (!front) return;
-      // The quilting: dark stitched seams across the panel.
-      for (const y of [0.05, 0.11]) b.add("chest", shell(quilt(y, 0.198 + (y - 0.05) * 0.1), -span / 2 + 0.05, span - 0.1, b.seg(8), 0.5), S.strap, { s: [1.06, 1, 0.685] });
-      for (const x of [-0.105, 0.105]) b.add("upperChest", box(0.034, 0.16, 0.008, 0, 0), S.strap, { p: [x, 0.06, 0.15], r: [-0.1, 0, 0] });
+      // The quilting: dark stitched seams across the panel, four rows (the padding bulges between them), and MOLLE
+      // webbing rows up the upper chest.
+      for (const y of [0.02, 0.06, 0.1, 0.14]) b.add("chest", shell(quilt(y, 0.194 + y * 0.09), -span / 2 + 0.04, span - 0.08, b.seg(8), 0.5), S.strap, { s: [1.06, 1, 0.685] });
+      for (const y of [0.0, 0.035, 0.07]) b.add("upperChest", shell(quilt(y, 0.214 - y * 0.12), -span / 2 + 0.07, span - 0.14, b.seg(8), 0.5), S.strap, { s: [1.08, 1, 0.675] });
+      for (const x of [-0.105, 0.105]) b.add("upperChest", box(0.036, 0.16, 0.009, 0, 0), S.strap, { p: [x, 0.06, 0.15], r: [-0.1, 0, 0] });
     });
     // The torn tabs at the top corners, hinged at their top edge.
     for (const x of [-0.13, 0.13])
-      b.on(id, () => b.add("chest", box(0.042, 0.07, 0.006, 0, 0), S.strap, { p: [x, 0.13, (phi === 0 ? 1 : -1) * 0.142], r: [0, phi, 0] }), 0.165);
+      b.on(id, () => b.add("chest", box(0.058, 0.1, 0.007, 0, 0), S.tab, { p: [x, 0.115, (phi === 0 ? 1 : -1) * 0.143], r: [0, phi, 0] }), 0.165);
   }
 }
 

@@ -525,7 +525,8 @@ export class Combat {
     // C15: what the round met. A standing plate (or the visor's first crack) throws hot sparks and keeps the blood in;
     // the coolant can sprays coolant; flesh (and the face behind a shattering visor) bleeds.
     const metal = !!ah && (ah.layer === "plate" || (ah.layer === "visor" && ah.visorStage === 1));
-    if (ah && (metal || ah.layer === "visor")) {
+    // (The visor's shatter throws its own glass, held close round the head: no sparks across the frame.)
+    if (ah && metal) {
       const n = this.surfaceNormal(e, segName, point, dir);
       this.world.fx.armourSparks?.(point, n, dir, Math.min(1, ah.plate / 30 + 0.3), !!ah.broke);
     }
@@ -686,6 +687,8 @@ export class Combat {
 
   /** C15 (S4.3): the plates' new states on the body, the loose plate, the visor's crack and shards, the vent. */
   private armourAfter(e: Enemy, ah: ArmourHit, data: HitData, point: THREE.Vector3, dir: THREE.Vector3, killed: boolean): void {
+    // The fracture starts where this round struck the chest plate.
+    if (ah.cracked && (ah.plateId === "chestF" || ah.plateId === "chestB")) e.body.markCrack(point);
     e.syncPlates();
     if (ah.layer === "visor") {
       if (ah.visorStage === 1) e.visorCracked();

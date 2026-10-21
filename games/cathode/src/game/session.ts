@@ -83,6 +83,7 @@ import { DeathScreen } from "../ui/deathcard";
 import { deathLine, type DeathCause } from "./voice";
 import { ESC_DEBOUNCE_MS, nextResuming, pauseView } from "./pausegate";
 import { clearDebris, liveDebris } from "./armourfx";
+import { HELM_Y } from "./rig";
 import { plateWear } from "../sim/armour";
 import { makeStagger } from "../sim/stagger";
 
@@ -97,6 +98,8 @@ export interface SessionOptions {
   district?: string;
   onProgress: (share: number, label: string) => void;
   onExit: () => void;
+  /** C8/C15: she started dying (the page drops a loading card still easing out, so it never sits over the fall). */
+  onDying?: () => void;
   /** C8: a restart from the checkpoint inside the same page (the world, audio and window.cathode carried over). */
   warm?: WarmStart;
   /** C13: the world the title scene already built for this district (the push hands it over: no second load). */
@@ -215,7 +218,7 @@ export interface Session {
   /** C10: the silhouette lineup scaled so its tallest figure is 64 px tall, as a PNG data URL. */
   silhouetteThumb?: () => string | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
-  probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[] };
+  probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[]; skin: number };
   /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
   audio?: Audio | null;
   cathHurt?: (bearing: number, melee: boolean, amount?: number) => void;
@@ -1319,6 +1322,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (ended) return;
     // rAF timestamps can trail performance.now() (set when resuming), so never let time run backwards.
     const realDt = Math.max(0, Math.min(0.05, (now - last) / 1000));
+    const prevNow = last;
     if (autoOn && !s.paused && !menuOpen && auto.frame(now - last) !== null) {
       if (auto.rescued) world.cool?.();
       resize();
@@ -1379,7 +1383,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     // C8: dying is its own frame (the body cam, the grade, the card), until Retry or Quit.
     if (dying) {
-      deathFrame(realDt, intent);
+      // The death is cinema on the real clock: a slow frame (a loaded box, a phone hitch) advances it by up to 250 ms,
+      // not the 50 ms a gameplay step is held to, so the card comes due in seconds however few frames get drawn.
+      // (Stepped 50 ms at a time, so the bodies and the dropped gun integrate as they always do.)
+      for (let rem = Math.max(0, Math.min(0.25, (now - prevNow) / 1000)), n = 0; n === 0 || (rem > 1e-4 && dying && n < 5); n++) {
+        const h = Math.min(0.05, rem);
+        deathFrame(h, intent);
+        rem -= h;
+      }
       render();
       requestAnimationFrame(frame);
       return;
@@ -2642,6 +2653,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     audio?.death();
     rumble("hurt");
     s.dying = { ms: 0, card: false, killer: dying.killerName || null };
+    o.onDying?.();
   }
 
   /** The gun leaves her hand (S6.6): the viewmodel's gun, moved into the street, thrown toward where she'll look. */
@@ -3009,6 +3021,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     lastHitSeg = h.seg;
   });
   combat.bus.on("blocked", () => frameBlocks++);
+  // C15 (S4.2, S4.3): the armour and stagger beats the feed and the squad call out. A stagger names the takedown
+  // window and the crit it opens; a plate coming off can draw "Plate's gone!" (30%, at most once per 10 s).
+  let plateBarkAt = -1e9;
+  combat.bus.on("stagger", (h) => {
+    if (!o.shot) hud.feedLine(h.reaction === "knockdown" ? "Knocked down · Takedown" : "Staggered · Crit · Takedown", true);
+  });
+  combat.bus.on("plateBreak", () => {
+    if (o.shot || combat.clock - plateBarkAt < 10 || Math.random() >= 0.3) return;
+    plateBarkAt = combat.clock;
+    hud.subtitle(`${ENFORCER.name}: Plate's gone!`);
+  });
   combat.bus.on("fire", () => rumble("fire"));
   // The last enemy of the encounter (S1.4, S1.5): the world holds 120 ms, then runs at 0.35x for 700 ms and
   // ramps back over 250 ms, with the grade deepening while it lasts. Not during the kill-cam (it has its own).
@@ -3101,6 +3124,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const d = best.d;
       hud.hitMarker(best.cls);
       audio?.confirm(confirmSound(best.cls, d));
+      // A crit that didn't kill (the stagger window's guaranteed one, or a lucky round) says so in the feed (S4.2).
+      if (d.crit && !d.lethal && !o.shot) hud.feedLine("Crit", true);
       const auto = AUTOMATIC.has(d.weaponCls);
       const stop = hitStopMs(d);
       if (d.lethal) killConfirm(stop, auto);
@@ -4781,10 +4806,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const focus = c15.frame === "head" ? J.head.clone() : c15.frame === "plate" ? J.chest.clone().lerp(J.neck, 0.35) : J.pelvis.clone().lerp(J.chest, 0.6);
       const facing = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
       const side = new THREE.Vector3(-facing.z, 0, facing.x);
-      const close = c15.frame === "head" ? 1.6 : c15.frame === "plate" ? 1.45 : 3.0;
+      const close = c15.frame === "head" ? 1.05 : c15.frame === "plate" ? 1.45 : 3.0;
       const dist = close * (o.quality === "phone" ? 0.85 : 1);
       const sk = c15.frame === "plate" || c15.frame === "head" ? 0.36 : 0.5;
-      const off = c15.frame === "back" ? facing.clone().negate().multiplyScalar(0.86).addScaledVector(side, sk) : facing.clone().multiplyScalar(0.93).addScaledVector(side, -sk);
+      // The head from in front and off his right (the hand that goes to the helmet is his left, on the far side); the
+      // staggers square to the reaction axis (side-on, a touch in front), so the pitch, the steps and the flung arms read.
+      const off =
+        c15.frame === "head"
+          ? facing.clone().multiplyScalar(0.93).addScaledVector(side, sk)
+          : c15.frame === "body" || c15.frame === "back"
+            ? side.clone().multiplyScalar(0.95).addScaledVector(facing, c15.frame === "back" ? -0.3 : 0.3)
+            : facing.clone().multiplyScalar(0.93).addScaledVector(side, -sk);
       // The knockdown falls away from her: frame him from the side he fell along.
       if (name === "hit-body" && g.knockedDown) off.copy(side).multiplyScalar(-0.9).addScaledVector(facing, 0.44);
       off.normalize();
@@ -4818,7 +4850,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const up = new THREE.Vector3().subVectors(J.neck, J.chest).normalize();
       const fwdB = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
       const under = J.chest.clone().addScaledVector(up, 0.08).addScaledVector(fwdB, 0.13);
-      const face = J.head.clone().addScaledVector(up, 0.01 - 0.12).addScaledVector(fwdB, 0.12);
+      // The eye strip the shattered visor opens (enforcer.ts face(): head bone, y0 + 1.2 cm, 11.7 cm forward).
+      const headBone = g.body.root.getObjectByName("head");
+      headBone?.updateWorldMatrix(true, false);
+      const face = headBone ? headBone.localToWorld(new THREE.Vector3(0, HELM_Y + 0.008, 0.117)) : J.head.clone().addScaledVector(up, 0.01 - 0.12).addScaledVector(fwdB, 0.12);
       const px = (p: THREE.Vector3) => Math.abs(toScreen(p.clone().addScaledVector(camX, 0.05)).x - toScreen(p).x);
       s.stageInfo.armour = {
         plates: Object.fromEntries(Object.values(g.armour.plates).map((p) => [p.id, p.state])),
@@ -4826,7 +4861,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         reaction: g.reaction?.kind ?? null,
         t: g.reaction?.t ?? 0,
         under: { ...toScreen(under), r: px(under) },
-        face: { ...toScreen(face), r: px(face) },
+        face: { ...toScreen(face), r: px(face) * 0.7 },
         debris: liveDebris().map((d) => ({ ...toScreen(d.position), asleep: d.asleep })),
         meter: g.stag.meter,
         heights: jointHeights(g),
@@ -4858,6 +4893,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     g2.drawImage(c, Math.round(x * k) - R, Math.round(y * k) - R, R * 2, R * 2, 0, 0, R * 2, R * 2);
     const px = g2.getImageData(0, 0, R * 2, R * 2).data;
     let red = 0;
+    let skin = 0;
     let total = 0;
     const mean = [0, 0, 0];
     for (let j = 0; j < R * 2; j++)
@@ -4871,8 +4907,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         mean[1] = mean[1]! + px[o4 + 1]!;
         mean[2] = mean[2]! + px[o4 + 2]!;
         if (rr > 45 && rr > px[o4 + 1]! * 1.8 && rr > px[o4 + 2]! * 1.8) red++;
+        // C15: skin (a warm hue 5 to 50 degrees, moderately saturated, lit): the face behind a shattered visor.
+        const gg = px[o4 + 1]!;
+        const bb = px[o4 + 2]!;
+        const mx = Math.max(rr, gg, bb);
+        const mn = Math.min(rr, gg, bb);
+        if (mx === rr && gg >= bb && mx >= 60 && mx - mn >= 0.18 * mx && mx - mn <= 0.8 * mx) {
+          const hue = (60 * (gg - bb)) / Math.max(1, mx - mn);
+          if (hue >= 5 && hue <= 50) skin++;
+        }
       }
-    return { red, total, mean: mean.map((v) => Math.round(v / Math.max(1, total))) };
+    return { red, total, mean: mean.map((v) => Math.round(v / Math.max(1, total))), skin };
   };
   /**
    * C7 acceptance: the frame as an 8x8x8 RGB histogram (shares), and the edge-to-centre saturation probe: mean HSV

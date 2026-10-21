@@ -561,8 +561,10 @@ export function createFx(o: {
       const n = 12 + Math.floor(rand() * 9);
       const glass = new THREE.Color(tint.r * 2.4 + 0.3, tint.g * 2.4 + 0.25, tint.b * 2.4 + 0.2);
       for (let i = 0; i < n; i++)
-        spawn({ pos: pos.clone(), vel: cone(d.clone().negate(), 0.9, new THREE.Vector3()).multiplyScalar(1.5 + rand() * 3.5).add(new THREE.Vector3(0, 1.2, 0)), kind: K.streak, additive: true, life: 0.9 + rand() * 0.3, size0: 0.008 + rand() * 0.008, len: 0.035, color: glass, color1: new THREE.Color(tint.r * 0.4, tint.g * 0.4, tint.b * 0.4), grav: 1, drag: 0.3, ground: 2 });
-      spawn({ pos: pos.clone(), kind: K.flash, additive: true, life: 0.07, size0: 0.32, color: new THREE.Color(tint.r * 6 + 2, tint.g * 6 + 1.5, tint.b * 6 + 1) });
+        // Held close round the head (C15 review): slow, dragged, a short cone off the face, so the glass reads as his visor
+        // breaking, not a spray across the frame.
+        spawn({ pos: pos.clone(), vel: cone(d.clone().negate(), 0.7, new THREE.Vector3()).multiplyScalar(0.7 + rand() * 1.6).add(new THREE.Vector3(0, 0.7, 0)), kind: K.streak, additive: true, life: 0.9 + rand() * 0.3, size0: 0.006 + rand() * 0.006, len: 0.022, color: glass, color1: new THREE.Color(tint.r * 0.4, tint.g * 0.4, tint.b * 0.4), grav: 1, drag: 1.4, ground: 2 });
+      spawn({ pos: pos.clone(), kind: K.flash, additive: true, life: 0.07, size0: 0.22, color: new THREE.Color(tint.r * 6 + 2, tint.g * 6 + 1.5, tint.b * 6 + 1) });
       flashLight(pos, "#ffc070", 14, 0.09, 4);
     },
     vent(pos, dir) {

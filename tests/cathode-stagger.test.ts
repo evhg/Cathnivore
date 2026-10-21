@@ -131,8 +131,13 @@ describe("cathode-stagger: the reaction poses (game/anim/react.ts)", () => {
     expect(mid.clutch).toBeCloseTo(1, 2);
     expect(reactTravel("stagger", "front").z).toBeCloseTo(-0.35);
   });
-  it("back: pitched 25 degrees forward", () => {
-    expect(reactPose("stagger", "back", 275).pitch).toBeCloseTo((25 * Math.PI) / 180, 2);
+  it("back: pitched at least 25 degrees forward, and already most of the way there at 200 ms (overstated)", () => {
+    expect(reactPose("stagger", "back", 275).pitch).toBeGreaterThanOrEqual((25 * Math.PI) / 180);
+    expect(reactPose("stagger", "back", 200).pitch).toBeGreaterThanOrEqual((25 * Math.PI) / 180);
+  });
+  it("the visor snap shows the face before the hand comes up", () => {
+    expect(reactPose("visorSnap", "front", 120).helmet).toBeLessThan(0.01);
+    expect(reactPose("visorSnap", "front", 275).helmet).toBeGreaterThan(0.9);
   });
   it("knockdown: down by the end of the fall, up again at the end", () => {
     const fall = reactPose("knockdown", "front", 450);

@@ -414,6 +414,15 @@ export class Body {
   private readonly plateAge = new Float32Array(8).fill(1e7);
   skinTone = 0;
   crackSeed = 0.37;
+  /** C15: where the round that last cracked a chest plate landed, in the chest bone's frame (zero: none). */
+  readonly crackAt = new THREE.Vector3();
+  /** Records a crack's impact (world point) for the shader. */
+  markCrack(world: THREE.Vector3): void {
+    const chest = this.root.getObjectByName("chest");
+    if (!chest) return;
+    chest.updateWorldMatrix(true, false);
+    this.crackAt.copy(chest.worldToLocal(world.clone()));
+  }
   /** Sets a plate slot's state (1..7). */
   setPlate(slot: number, state: 0 | 1 | 2): void {
     if (slot < 1 || slot > 7 || this.plateState[slot] === state) return;
@@ -479,7 +488,9 @@ export class Body {
     if (this.ragdoll) return 0;
     let k = R.rest + (R.combat - R.rest) * Math.max(0, Math.min(1, this.alert));
     if (now - this.hitAt < R.hitMs) k = R.hit;
-    if (this.eligible) k *= 0.6 + 0.4 * (0.5 + 0.5 * Math.sin((now / 1000) * Math.PI * 2 * R.pulseHz));
+    // Takedown-eligible (staggered or down, S4.2): the rim throbs at 3 Hz from a dim floor up past a hit's flare, so
+    // the window reads at a glance, not as a flicker of the resting rim.
+    if (this.eligible) k = R.hit * R.eligiblePeak * (0.2 + 0.8 * (0.5 + 0.5 * Math.sin((now / 1000) * Math.PI * 2 * R.pulseHz)));
     return k;
   }
 
@@ -498,14 +509,21 @@ export class Body {
     setFx(P, 0, rim.x, rim.y, rim.z, rim.w);
     const lvl = this.visorLevel * (this.ragdoll ? 1 : this.visorAim);
     setFx(P, 1, this.visor.r, this.visor.g, this.visor.b, lvl);
-    const k = this.rimLevel(now) * (bodyView.phone ? R.phoneGain : R.gain);
+    // The faction rim is for reading him at 10 m in the rain. Up close (inside 2 m, fading in by 6 m) it would wash his
+    // whole figure peach: it falls to 30% there, so the suit's own paint and the street's light carry him. The
+    // takedown pulse keeps most of its strength (it is a call to act, not a silhouette aid).
+    const dEye = this.joints.chest.distanceTo(bodyView.eye);
+    const nearK = THREE.MathUtils.smoothstep(dEye, 2, 6);
+    const rimNear = this.eligible ? Math.max(0.75, 0.3 + 0.7 * nearK) : 0.3 + 0.7 * nearK;
+    const k = this.rimLevel(now) * rimNear * (bodyView.phone ? R.phoneGain : R.gain);
     setFx(P, 2, this.facRim.r * k, this.facRim.g * k, this.facRim.b * k, bodyView.phone ? R.phonePow : R.pow);
     const fade = Math.min(1, (now - this.lodAt) / LOOK.lod.fadeMs);
     const blink = this.visorLevel > 0.05 && Math.floor(((now / 1000) * LOOK.blinkHz * 2) % 2) === 0 ? 1 : 0.06;
     setFx(P, 3, this.lodFrom, this.lod, fade, blink * Math.min(1, this.visorLevel * 1.5));
     // The coolant window's pulse rides the spare flash slot (15): a slow 1.2 Hz swell, out when he dies.
     const pulse = this.plateState[7] === 2 ? 0 : this.ragdoll ? 0.15 * this.visorLevel : 0.55 + 0.45 * Math.sin((now / 1000) * Math.PI * 2 * LOOK.coolantHz);
-    setFx(F[3]!, 3, pulse, 0, 0, 0);
+    // C15: the last crack's impact in the chest bone's frame (z = 0: none yet), so the fracture radiates from it.
+    setFx(F[3]!, 3, pulse, this.crackAt.x, this.crackAt.y, this.crackAt.z);
     // C15: the plates (two floats a slot), slot 8 the skin tone and the crack seed.
     const ps = this.plateState;
     const pa = this.plateAge;

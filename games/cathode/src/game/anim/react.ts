@@ -69,7 +69,9 @@ export function reactTravel(kind: ReactKind, dir: StaggerDir): { x: number; z: n
 
 /** Overstated (pillar 4: a stagger must read twice as clearly as feels natural, at 10 m in rain). */
 export const REACT = {
-  stagger: { frontStepM: 0.35, stepMs: 180, backStepM: 0.4, sideStepM: 0.32, armDropDeg: 45, headDropDeg: 15, backPitchDeg: 25, flailDeg: 20, rollDeg: 20, recoilDeg: 16 },
+  // S4.2's numbers are the floor: the head drop (15), the back pitch (25) and the flail (20) are pushed past them so
+  // a still at 200 ms reads as a stagger, not a walk (C15 review).
+  stagger: { frontStepM: 0.35, stepMs: 180, backStepM: 0.4, sideStepM: 0.32, armDropDeg: 45, headDropDeg: 22, backPitchDeg: 32, flailDeg: 38, rollDeg: 24, recoilDeg: 24, whipDeg: 14 },
   visorSnap: { headDeg: 25 },
 } as const;
 
@@ -84,7 +86,8 @@ export function reactPose(kind: ReactKind, dir: StaggerDir, t: number, fallYaw =
     const dur = STAGGER.visorSnapMs;
     const k = envelope(t, 60, dur, 220);
     p.headPitch = -REACT.visorSnap.headDeg * DEG * (t < 60 ? smooth(t / 60) : Math.max(0, 1 - (t - 60) / 340));
-    p.helmet = k;
+    // The hand comes up after the snap (from 140 ms), so the face shows first, then he covers it.
+    p.helmet = step(t, 140, 300) * (t > dur - 120 ? smooth((dur - t) / 120) : 1);
     p.pitch = -6 * DEG * k;
     p.armDrop = 40 * DEG * k;
     return p;
@@ -101,23 +104,25 @@ export function reactPose(kind: ReactKind, dir: StaggerDir, t: number, fallYaw =
       p.footLZ = -S.frontStepM * step(t, st, st * 2);
       p.footLLift = lift(t, st, st * 2, 0.07);
       p.pelvisZ = -S.frontStepM * step(t, 20, st * 2 + 30);
-      p.pelvisDrop = 0.05 * env;
-      p.pitch = -S.recoilDeg * DEG * (t < 90 ? smooth(t / 90) : Math.max(0, 1 - (t - 90) / (dur - 90))) - 4 * DEG * env;
+      p.pelvisDrop = 0.09 * env;
+      p.pitch = -S.recoilDeg * DEG * (t < 90 ? smooth(t / 90) : Math.max(0, 1 - (t - 90) / (dur - 90))) - 6 * DEG * env;
       p.armDrop = S.armDropDeg * DEG * envelope(t, 110, dur, 220);
       p.clutch = envelope(t, 160, dur, 200);
-      p.headPitch = S.headDropDeg * DEG * envelope(t, 140, dur, 200);
+      // The head whips back with the blow, then drops as he folds over the wound.
+      p.headPitch = -S.whipDeg * DEG * Math.sin(clamp01(t / 140) * Math.PI) + S.headDropDeg * DEG * envelope(t, 140, dur, 200) * step(t, 90, 220);
     } else if (dir === "back") {
       // Hit from behind: pitched 25 degrees forward, one stumble step, arms flung out.
-      p.pitch = S.backPitchDeg * DEG * envelope(t, 120, dur, 260);
+      p.pitch = S.backPitchDeg * DEG * envelope(t, 100, dur, 240);
       p.footLZ = S.backStepM * step(t, 60, 250);
       p.footLLift = lift(t, 60, 250, 0.1);
       p.footRZ = S.backStepM * step(t, 250, 420);
       p.footRLift = lift(t, 250, 420, 0.06);
       p.pelvisZ = S.backStepM * step(t, 30, 400);
-      p.pelvisDrop = 0.06 * env;
-      p.flailL = p.flailR = S.flailDeg * DEG * envelope(t, 100, dur, 240);
+      p.pelvisDrop = 0.1 * env;
+      p.flailL = p.flailR = S.flailDeg * DEG * envelope(t, 90, dur, 240);
       p.armDrop = 30 * DEG * env;
-      p.headPitch = -10 * DEG * env;
+      // The head whips back as the shoulders are thrown forward.
+      p.headPitch = -(S.whipDeg + 8) * DEG * env;
     } else {
       // Left or right: a crossover step, rolled 20 degrees, the far arm up for balance.
       const s = dir === "left" ? 1 : -1;

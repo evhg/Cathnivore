@@ -15,10 +15,19 @@
 //   fx4 col3: LOD crossfade: from, to, t (0..1), blink (0..1).
 //   fx5: C15's plates, two floats per slot (sim/armour.ts PLATE_SLOT 1..7): state (0 intact, 1 cracked, 2 broken) and
 //        seconds since it changed; slot 8 holds the face's skin tone (0..3) and the crack seed (0..1).
+//   fx3 col3: (coolant window pulse, then the last crack's impact point in the chest bone's frame, xyz; z = 0: none).
 
 import * as THREE from "three";
 import { patchKitMaterial } from "../gunkit";
 import { mirrorPass } from "../../render/reflection";
+import { REST, SEGMENTS, boneIndex } from "../rig";
+
+/** The upper chest bone, and its offset up the chest bone (rest pose): both chest plates' pieces in one frame. */
+const UC_BONE = boneIndex("upperChest");
+const CHEST_LEN = (() => {
+  const s = SEGMENTS.find((d) => d.name === "chest")!;
+  return REST[s.from].distanceTo(REST[s.to]);
+})();
 
 /** How many fx bones follow the segment and accessory bones in every body skeleton. */
 export const FX_BONES = 6;
@@ -57,6 +66,10 @@ function vertPlate(fx0: number, sink: boolean): string {
   vPlate = vec4(0.0, 10.0, pid, 0.0);
   mat4 bpl = getBoneMatrix(float(${fx0 + 5}));
   vPlateSeed = bpl[3].w;
+  // The plate's surface in the chest bone's frame (the upper chest's pieces lifted by the chest's length), and where
+  // the round that cracked it landed: the fracture radiates from there.
+  vPlateP = position + (abs(skinIndex.x - ${UC_BONE.toFixed(1)}) < 0.5 ? vec3(0.0, ${CHEST_LEN.toFixed(4)}, 0.0) : vec3(0.0));
+  vCrackAt = getBoneMatrix(float(${fx0 + 3}))[3].yzw;
   vPlateTone = vec3(0.0);
   if (slot > 0) {
     int c = (slot - 1) / 2;
@@ -117,47 +130,100 @@ ${vertPlate(fx0, sink)}
 #else
 vBodyRimN = vec3(0.0, 0.0, 1.0);
 // Unskinned (a plate knocked off, the cloth): a plate piece keeps its cracks.
-vPlate = vec4(aPlate.x > 0.5 ? 1.0 : 0.0, 10.0, aPlate.x, 0.0); vPlateSeed = 0.37; vPlateTone = vec3(0.0);
-vBodyFlash = vec3(0.0); vBodyRim = vec4(0.0, 0.0, 0.0, 3.0); vBodyVisor = vec4(1.0); vBodyFac = vec4(0.0, 0.0, 0.0, 3.0);
+vPlate = vec4(aPlate.x > 0.5 ? 1.0 : 0.0, 10.0, aPlate.x, 0.0); vPlateSeed = 0.37; vPlateTone = vec3(0.0); vPlateP = position; vCrackAt = vec3(0.0);
+// A loose plate keeps a cool edge (the street's sky catching its rim), so it reads on the wet asphalt; cloth doesn't.
+vBodyFlash = vec3(0.0); vBodyRim = aPlate.x > 0.5 ? vec4(0.16, 0.22, 0.3, 2.2) : vec4(0.0, 0.0, 0.0, 3.0); vBodyVisor = vec4(1.0); vBodyFac = vec4(0.0, 0.0, 0.0, 3.0);
 vBodyLodA = 1.0; vBodyLodT = 1.0; vBodyBlink = 1.0;
 #endif`;
 }
 
 /**
- * C15's fracture network (fragment): 3D Voronoi cells on the plate's own surface, seeded per plate and per body,
- * the cell borders jittered by noise. Returns (groove 0..1, chipped edge 0..1), anti-aliased by its own derivatives.
- * The visor (tag 6) cracks finer.
+ * C15's fracture (fragment). The chest plates (tags 1, 2) break from the impact: 5 primary cracks radiating from the
+ * hit point, each wandering and tapering to a hairline, three with a side branch, a small crushed ring at the strike,
+ * and (desktop) a few Voronoi walls near it, all fading with distance. Other plates and the visor keep a sparse
+ * Voronoi network. Returns (groove 0..1, chipped edge 0..1, distance from the impact m), anti-aliased by derivatives.
  */
 const CRACK = `
 vec3 pcHash3(vec3 p) {
   p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6)));
   return fract(sin(p) * 43758.5453);
 }
-vec2 plateCrack(vec3 lp, float tag, float seed) {
-  float dens = tag > 5.5 ? 60.0 : 20.0;
+vec2 pcVoronoi(vec3 lp, float dens, float tag, float seed, float keepAt) {
   vec3 p = lp * dens + vec3(seed * 17.0 + tag * 3.1, tag * 5.7, seed * 11.0);
-  p += vec3(gkNoise(lp * 90.0), gkNoise(lp * 90.0 + 7.0), gkNoise(lp * 90.0 + 13.0)) * 0.55;
+  p += vec3(sin(lp.y * 70.0 + seed * 9.0), sin(lp.z * 70.0 + tag), sin(lp.x * 70.0)) * 0.18;
   vec3 i = floor(p); vec3 f = fract(p);
-  float d1 = 8.0; float d2 = 8.0;
+  float d1 = 8.0; float d2 = 8.0; vec3 cid = i;
   for (int z = -1; z <= 1; z++) for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
     vec3 g = vec3(float(x), float(y), float(z));
     vec3 o = pcHash3(i + g);
     float d = length(g + o - f);
-    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+    if (d < d1) { d2 = d1; d1 = d; cid = i + g; } else if (d < d2) d2 = d;
   }
   float e = d2 - d1;
   float w = max(fwidth(e), 1e-4);
-  // Not every border cracks: about half the cells' walls fracture, so it reads as a crack and not a grid.
-  float keep = step(0.55, pcHash3(i + vec3(seed)).x + gkNoise(lp * 14.0) * 0.5);
-  float groove = (1.0 - smoothstep(0.018, 0.018 + w * 1.2, e)) * keep;
-  float chip = (1.0 - smoothstep(0.05, 0.05 + w * 1.2, e)) * keep - groove;
+  float keep = step(keepAt, pcHash3(cid + vec3(seed)).x);
+  float groove = (1.0 - smoothstep(0.02, 0.02 + w * 1.2, e)) * keep;
+  float chip = (1.0 - smoothstep(0.06, 0.06 + w * 1.2, e)) * keep - groove;
   return vec2(groove, max(0.0, chip));
+}
+// One crack from o heading a0 (rad) for len m in the plate's xy plane: (groove, chip).
+vec2 pcRay(vec2 p, vec2 o, float a0, float len, float w0, float seed) {
+  vec2 d = p - o;
+  float r = length(d);
+  // It wanders: a slow bend and a fine jag along its length.
+  float a = a0 + 0.22 * sin(r * 38.0 + seed * 7.0) + 0.07 * sin(r * 150.0 + seed * 3.0);
+  vec2 dir = vec2(cos(a), sin(a));
+  float along = dot(d, dir);
+  float perp = abs(d.x * dir.y - d.y * dir.x);
+  if (along < 0.0 || along > len) return vec2(0.0);
+  float t = along / len;
+  float w = mix(w0, w0 * 0.2, t);
+  float fw = max(fwidth(perp), 1e-5);
+  float g = 1.0 - smoothstep(w, w + fw * 1.2, perp);
+  float c = 1.0 - smoothstep(w * 3.2, w * 3.2 + fw * 1.2, perp);
+  float fade = 1.0 - smoothstep(0.75, 1.0, t);
+  return vec2(g, max(0.0, c - g)) * fade;
+}
+vec3 plateCrack(vec3 lp, float tag, float seed, vec3 at) {
+  if (tag > 2.5) {
+    // Pauldrons, helmet, visor: a sparse network (the visor finer).
+    vec2 v = pcVoronoi(lp, tag > 5.5 ? 48.0 : 12.0, tag, seed, 0.62);
+    return vec3(v, 0.0);
+  }
+  // The chest plates: from where the round landed (or, for the plate it didn't hit, a seeded point near its middle).
+  float side = tag < 1.5 ? 1.0 : -1.0;
+  vec2 c = at.z * side > 0.02 ? at.xy : vec2((pcHash3(vec3(seed, tag, 1.0)).x - 0.5) * 0.12, 0.14 + (pcHash3(vec3(tag, seed, 2.0)).y - 0.5) * 0.1);
+  vec2 p = lp.xy;
+  float r = length(p - c);
+  vec2 acc = vec2(0.0);
+  for (int k = 0; k < 5; k++) {
+    float fk = float(k);
+    vec3 h = pcHash3(vec3(seed * 13.0 + fk, tag, fk * 1.7));
+    float a = (fk + 0.15 + 0.7 * h.x) * 1.2566;
+    float len = 0.07 + 0.11 * h.y;
+    acc = max(acc, pcRay(p, c, a, len, 0.0016, seed + fk));
+    if (k < 3) {
+      // A side branch from partway along.
+      vec2 o = c + vec2(cos(a), sin(a)) * len * (0.35 + 0.2 * h.z);
+      acc = max(acc, pcRay(p, o, a + (h.z > 0.5 ? 0.62 : -0.62), len * 0.45, 0.0009, seed + fk + 9.0));
+    }
+  }
+  // The strike: a crushed ring 1.2 cm across.
+  float fr = max(fwidth(r), 1e-5);
+  float ring = 1.0 - smoothstep(0.0009, 0.0009 + fr * 1.2, abs(r - 0.012 - 0.002 * sin(atan(p.y - c.y, p.x - c.x) * 7.0 + seed * 5.0)));
+  acc.x = max(acc.x, ring);
+#ifndef BODY_PHONE
+  // A few short walls round the strike, gone within 6 cm.
+  vec2 v = pcVoronoi(lp, 26.0, tag, seed, 0.45) * exp(-r / 0.035);
+  acc = max(acc, v);
+#endif
+  return vec3(acc, r);
 }`;
 
 /** The faction rim's peak radiance (linear): under the AgX shoulder, where amber would wash out to white. */
 const RIM_CAP = 1.5;
 
-const VARYINGS = "varying vec4 vPlate; varying float vPlateSeed; varying vec3 vPlateTone; varying vec3 vBodyRimN; varying vec3 vBodyFlash; varying vec4 vBodyRim; varying vec4 vBodyVisor; varying vec4 vBodyFac; varying float vBodyLodA; varying float vBodyLodT; varying float vBodyBlink;";
+const VARYINGS = "varying vec4 vPlate; varying vec3 vPlateP; varying vec3 vCrackAt; varying float vPlateSeed; varying vec3 vPlateTone; varying vec3 vBodyRimN; varying vec3 vBodyFlash; varying vec4 vBodyRim; varying vec4 vBodyVisor; varying vec4 vBodyFac; varying float vBodyLodA; varying float vBodyLodT; varying float vBodyBlink;";
 
 const DITHER = `
 {
@@ -189,10 +255,12 @@ function patchOpaque(mat: THREE.MeshStandardMaterial, fx0: number): void {
 if (vPlate.w > 0.5) diffuseColor.rgb = vPlateTone;
 float pCrack = 0.0;
 float pChip = 0.0;
+float pCrackR = 1.0;
 if (vPlate.x > 0.5) {
-  vec2 cr = plateCrack(vLocal, vPlate.z, vPlateSeed);
+  vec3 cr = plateCrack(vPlateP, vPlate.z, vPlateSeed, vCrackAt);
   pCrack = cr.x;
   pChip = cr.y;
+  pCrackR = cr.z;
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 2.4 + vec3(0.09), pChip * 0.9);
   diffuseColor.rgb *= 1.0 - 0.9 * pCrack;
 }`,
@@ -232,9 +300,12 @@ vec3 bFac = vBodyFac.rgb * pow(bRim, mix(vBodyFac.w, 1.4, bFar)) * bFace;
 float bFacMax = max(bFac.r, max(bFac.g, bFac.b));
 bFac *= bFacMax > ${RIM_CAP.toFixed(2)} ? ${RIM_CAP.toFixed(2)} / bFacMax : 1.0;
 totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);
-// C15: a fresh crack glows in the faction amber for 0.4 s (S4.3: 0.3, overstated x3 so it reads at 10 m in the
-// grade), then keeps a faint ember in the groove.
-if (vPlate.x > 0.5) totalEmissiveRadiance += vec3(1.0, 0.42, 0.08) * pCrack * (2.2 * max(0.0, 1.0 - vPlate.y / 0.4) + 0.12) * (1.0 - uBodyMirror);`,
+// C15: a fresh crack glows in the faction amber for 0.4 s (S4.3's 0.3, lifted a little for the grade), hottest at the
+// strike and cooling along the cracks, then keeps a faint ember in the groove.
+// C15: the face behind a shattered visor catches a little of the street's bounce (the helmet's shell shades it
+// from every key), so the skin reads as skin in the noir grade, not as a dark hole.
+if (vPlate.w > 0.5) totalEmissiveRadiance += vPlateTone * 0.16 * (1.0 - uBodyMirror);
+if (vPlate.x > 0.5) totalEmissiveRadiance += vec3(1.0, 0.42, 0.08) * pCrack * (0.9 * exp(-pCrackR / 0.05) * max(0.0, 1.0 - vPlate.y / 0.4) + 0.06) * (1.0 - uBodyMirror);`,
       )
       .replace(
         "#include <fog_fragment>",
@@ -294,6 +365,8 @@ export function enemyMaterials(phone: boolean, fx0: number): EnemyMaterials {
     : new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 1, metalness: 1, clearcoat: 0.4, clearcoatRoughness: 0.3, sheen: 0.5, sheenRoughness: 0.6, sheenColor: new THREE.Color(0x9aa0b0) });
   patchKitMaterial(opaque, phone);
   patchOpaque(opaque, fx0);
+  // The phone's cracks skip the Voronoi walls round the strike (27 hashes a pixel on every cracked plate).
+  if (phone) opaque.defines = { ...(opaque.defines ?? {}), BODY_PHONE: "" };
   const glow = new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: true });
   patchGlow(glow, fx0);
   const m: EnemyMaterials = { opaque, glow };

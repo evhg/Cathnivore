@@ -683,7 +683,11 @@ for (const vp of vps) {
         }
         if (stage === 'visor-shatter') {
           const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r), [a.face.x, a.face.y, Math.max(3, a.face.r * 0.6)])
-          console.log(`  C15 ${vp} ${spec}: face mean rgb ${pr.mean}`)
+          // The face must show: skin-toned pixels (a warm hue, lit) over at least a fifth of the face probe. A raised
+          // arm, the viewmodel or a glove over it reads as dark suit and fails this.
+          const share = pr.skin / Math.max(1, pr.total)
+          console.log(`  C15 ${vp} ${spec}: face mean rgb ${pr.mean}, skin ${(share * 100).toFixed(0)}% of ${pr.total} px`)
+          if (share < 0.2) fail(`${vp} ${spec}: the face behind the visor doesn't read (${(share * 100).toFixed(0)}% skin-tone px, want >= 20%; mean ${pr.mean})`)
         }
       }
     }

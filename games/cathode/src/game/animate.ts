@@ -263,7 +263,8 @@ function applyReact(r: ReactPose): void {
     for (const s of [1]) {
       const hand = s > 0 ? local.handL : local.handR;
       const sh = s > 0 ? local.shoulderL : local.shoulderR;
-      lieTmp.set(local.head.x + 0.13 * s, local.head.y - 0.06, local.head.z + 0.1);
+      // To the side of the helmet, at the temple: the palm on the shell, the face (behind the broken visor) left open.
+      lieTmp.set(local.head.x + 0.16 * s, local.head.y + 0.02, local.head.z - 0.02);
       hand.lerp(lieTmp, r.helmet);
       ik(sh, hand, UPPER, FORE, pole.set(sh.x + 0.5 * s, sh.y - 0.3, sh.z - 0.1), s > 0 ? local.elbowL : local.elbowR);
     }
