@@ -603,6 +603,8 @@ async function boot(): Promise<void> {
     $("hud").hidden = true;
     $("front-bars").classList.add("is-gone");
     $("front-grain").classList.add("is-off");
+    // The no-WebGL fallback sky would sit over the studio (C14: the portrait plates came out as its gradient).
+    $("front-fallback").hidden = true;
     const { openTurntable } = await import("./game/turntable");
     openTurntable($<HTMLCanvasElement>("view"));
     return;

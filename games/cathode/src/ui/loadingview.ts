@@ -43,6 +43,16 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   el("div", "ld-grain", art);
 
   const file = el("div", "ld-file", root);
+  // S9.6: the halftone plate of the next name, their rig under a top light (scripts/cathode-portraits.mjs).
+  if (card.job) {
+    const plate = el("figure", "ld-plate", file);
+    plate.dataset.job = card.job;
+    plate.setAttribute("aria-hidden", "true");
+    el("div", "ld-plate-img", plate);
+    el("div", "ld-plate-dots", plate);
+    const n = ["crispBoss", "vaneBoss", "pellBoss", "boardBoss", "vaultBoss"].indexOf(card.job) + 1;
+    el("figcaption", "ld-plate-tag", plate, `Subject ${String(n).padStart(2, "0")}`);
+  }
   el("p", "ld-place", file, card.place);
   el("h2", "ld-name", file, card.name);
   const meter = el("div", "ld-meter", file);

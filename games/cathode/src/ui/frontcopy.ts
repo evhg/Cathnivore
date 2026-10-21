@@ -166,6 +166,8 @@ export interface LoadingCard {
   place: string;
   /** The next name on the list (or "The List", closed). */
   name: string;
+  /** The next name's job (their portrait plate, public/portraits/<job>.webp); undefined once the list is closed. */
+  job?: string;
   /** Cath's lines about them, at most 55 words. */
   lore: string;
   /** The list for the corner: every reached name, done ones struck. `fresh` strikes through as it loads. */
@@ -198,6 +200,7 @@ export function loadingCard(jobsDone: readonly string[], target: string | undefi
     district: id,
     place: `ACT ${d.act} · ${d.place.toUpperCase()}`,
     name: next ? next.name : "The List",
+    job: next?.job,
     lore: next ? LORE[next.job]! : CLOSED_LORE,
     list,
     sealed: rows.filter((r) => r.redacted).length,

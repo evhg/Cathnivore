@@ -9,11 +9,14 @@ import { chromium } from '@playwright/test'
 import { mkdirSync, writeFileSync } from 'node:fs'
 
 const base = process.env.CATHODE_URL ?? 'http://localhost:4180/cathode/'
-const out = 'games/cathode/public/keyart'
+const out = process.env.KEYART_OUT ?? 'games/cathode/public/keyart'
 mkdirSync(out, { recursive: true })
 const districts = process.argv.slice(2).length ? process.argv.slice(2) : ['market', 'clinic', 'plaza', 'tower', 'vault']
-const W = 1920
-const H = 1080
+// Per-district lens moves off her start (session.ts keyart stage: kx/kz/ky metres, kyaw/kpitch degrees), for a
+// district whose start frame reads as a blockout. Override with KEYART_Q for exploring.
+const LENS = { clinic: '&kz=-6&kx=-0.9&kyaw=-6' }
+const W = Number(process.env.KW ?? 1920)
+const H = Number(process.env.KH ?? 1080)
 
 const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
@@ -23,7 +26,7 @@ for (const d of districts) {
   const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })
   await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
   const page = await ctx.newPage()
-  const q = d === 'market' ? '' : `&district=${d}`
+  const q = (d === 'market' ? '' : `&district=${d}`) + (process.env.KEYART_Q ?? LENS[d] ?? '')
   await page.goto(`${base}?play&shot&quality=${process.env.Q ?? 'high'}${q}`, { waitUntil: 'domcontentloaded', timeout: 180_000 })
   await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) > 2 && typeof window.cathode?.stage === 'function', null, { timeout: 600_000 })
   // The case file covers the street until its figure has eased to 100% (dozens of frames under SwiftShader): the

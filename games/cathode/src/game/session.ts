@@ -4312,6 +4312,22 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       o.touch.hidden = true;
       player.pos.y += 0.45;
       player.pitch = -0.07;
+      // scripts/cathode-keyart.mjs can move the lens off her start for a district whose start frame reads as a
+      // blockout (C14 review: the clinic): &kx=&kz= metres, &kyaw=&kpitch= degrees, &ky= metres up.
+      {
+        const kq = new URLSearchParams(location.search);
+        const num = (k: string) => (kq.has(k) ? Number(kq.get(k)) || 0 : null);
+        const kx = num("kx");
+        const kz = num("kz");
+        const ky = num("ky");
+        const kyaw = num("kyaw");
+        const kpitch = num("kpitch");
+        if (kx !== null) player.pos.x += kx;
+        if (kz !== null) player.pos.z += kz;
+        if (ky !== null) player.pos.y += ky;
+        if (kyaw !== null) player.yaw += THREE.MathUtils.degToRad(kyaw);
+        if (kpitch !== null) player.pitch = THREE.MathUtils.degToRad(kpitch);
+      }
       return "ok";
     }
     // C13T: the character sheet (dossier) on its skills tab.

@@ -28,6 +28,9 @@ export function openTurntable(canvas: HTMLCanvasElement): void {
   const pose = q.get("pose") ?? "idle";
   const archParam = q.get("arch") ?? "enforcer";
   const archs = archParam === "all" ? ["enforcer", "leader", "riot", "sniper"] : [archParam];
+  // C14 (S9.6): view=portrait is the loading screen's plate of the next name: head and shoulders, 1:1.25, under one
+  // hard top light (a surveillance still), turned by `yaw` (degrees). scripts/cathode-portraits.mjs renders them.
+  const portrait = view === "portrait";
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -36,8 +39,20 @@ export function openTurntable(canvas: HTMLCanvasElement): void {
   renderer.shadowMap.enabled = !sil;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(sil ? 0x808080 : 0x161a22);
-  if (!sil) {
+  scene.background = new THREE.Color(sil ? 0x808080 : portrait ? 0x07080a : 0x161a22);
+  if (portrait) {
+    renderer.toneMappingExposure = 0.9;
+    // The top light: straight down, a touch in front, a tight cone (the brow and the visor rim take it, the face
+    // falls into shadow under them), and a faint cold edge from behind so the shoulders hold the frame.
+    const top = new THREE.SpotLight(0xfff1de, 34, 12, 0.3, 0.7, 1.2);
+    top.position.set(0.1, 4.6, 0.35);
+    top.target.position.set(0, 1.45, 0);
+    scene.add(top, top.target);
+    const edge = new THREE.SpotLight(0x9fc4ff, 14, 12, 0.5, 0.6, 1.4);
+    edge.position.set(-1.8, 2.4, -2.6);
+    edge.target.position.set(0, 1.5, 0);
+    scene.add(edge, edge.target);
+  } else if (!sil) {
     const pm = new THREE.PMREMGenerator(renderer);
     scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
     scene.environmentIntensity = 0.35;
@@ -57,15 +72,17 @@ export function openTurntable(canvas: HTMLCanvasElement): void {
     rim.position.set(3.4, 3.2, -3.6);
     scene.add(rim, rim.target);
   }
-  const turns = archs.length === 1 ? (view === "back" ? [Math.PI] : [0, Math.PI / 4, Math.PI / 2, Math.PI]) : archs.map(() => 0.35);
+  const yawDeg = Number(q.get("yaw") ?? "18") || 0;
+  const turns = portrait ? [THREE.MathUtils.degToRad(yawDeg)] : archs.length === 1 ? (view === "back" ? [Math.PI] : [0, Math.PI / 4, Math.PI / 2, Math.PI]) : archs.map(() => 0.35);
   const kits = archs.length === 1 ? turns.map(() => archs[0]!) : archs;
-  const gap = view === "close" ? 0 : 1.05;
-  const shown = view === "close" ? 1 : kits.length;
+  const gap = view === "close" || portrait ? 0 : 1.05;
+  const shown = view === "close" || portrait ? 1 : kits.length;
   const black = new THREE.MeshBasicMaterial({ color: 0x000000 });
   const enemies: Enemy[] = [];
   for (let i = 0; i < shown; i++) {
     const kit = KITS[kits[i]!] ?? ENFORCER;
-    const e = new Enemy({ ...kit }, [new THREE.Vector3()], 1);
+    // The portrait is the person, not their shield.
+    const e = new Enemy({ ...kit, ...(portrait && kit.role === "shield" ? { role: "rifle" as const } : {}) }, [new THREE.Vector3()], 1);
     e.motion.pos.set((i - (shown - 1) / 2) * gap, 0, 0);
     e.motion.yaw = turns[i]!;
     e.motion.aim = pose === "aim" ? 1 : 0;
@@ -82,17 +99,17 @@ export function openTurntable(canvas: HTMLCanvasElement): void {
       e.feel(1 / 60, [], () => 0);
     }
   if (sil) scene.overrideMaterial = black;
-  const cam = new THREE.PerspectiveCamera(view === "close" ? 26 : 30, window.innerWidth / window.innerHeight, 0.05, 60);
+  const cam = new THREE.PerspectiveCamera(portrait ? 22 : view === "close" ? 26 : 30, window.innerWidth / window.innerHeight, 0.05, 60);
   // The bodies draw on the main view's layer (the street's mirror sees a LOD2 stand-in instead).
   cam.layers.enable(LAYER_NO_REFLECT);
   const frame = () => {
     cam.aspect = window.innerWidth / window.innerHeight;
-    const w = Math.max(1.2, shown * gap + 0.6);
-    const h = view === "close" ? 1.1 : 2.15;
+    const w = portrait ? 0.5 : Math.max(1.2, shown * gap + 0.6);
+    const h = portrait ? 0.82 : view === "close" ? 1.1 : 2.15;
     const fy = THREE.MathUtils.degToRad(cam.fov);
     const dist = Math.max(h / 2 / Math.tan(fy / 2), w / 2 / (Math.tan(fy / 2) * cam.aspect)) * 1.08;
-    const ty = view === "close" ? 1.42 : 0.98;
-    cam.position.set(0, ty + 0.15, dist);
+    const ty = portrait ? 1.62 : view === "close" ? 1.42 : 0.98;
+    cam.position.set(0, ty + (portrait ? 0.02 : 0.15), dist);
     cam.lookAt(0, ty, 0);
     cam.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
