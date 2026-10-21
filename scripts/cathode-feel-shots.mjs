@@ -69,7 +69,10 @@ const CP_CLASS = { 'classpick-operative': 'ghost', 'classpick-wetwork': 'butcher
 // still glowing), breaking it (650 ms: the plate in the street, the padded carrier showing), shattering the visor
 // (120 ms: the shards and the face), the front and back staggers 200 ms in, and the knockdown a second on.
 const C15 = ['enemy-plate-cracked', 'enemy-plate-broken', 'visor-shatter', 'enemy-stagger-front-200', 'enemy-stagger-back-200', 'enemy-knockdown-1000']
-const MS = { C15, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
+// C15X (review): the systems that have no acceptance stage of their own: a disarm 700 ms on (the carbine in the
+// street, the sidearm coming off his thigh), a crawl a second into it, and a guard limping with an arm hanging, hunched.
+const C15X = ['enemy-disarm-700', 'enemy-crawl-3900', 'enemy-wounded-900', 'enemy-shield-break-450']
+const MS = { C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
@@ -664,12 +667,12 @@ for (const vp of vps) {
       }
     }
     // ---- C15 acceptance ----
-    if (C15.includes(stage)) {
+    if (C15.includes(stage) || C15X.includes(stage)) {
       const a = info?.armour
       if (!a) fail(`${vp} ${spec}: no armour info (the stage guard has no plates?)`)
       else {
         console.log(`  C15 ${vp} ${spec}: plates ${JSON.stringify(a.plates)}, visor ${a.visor}, reaction ${a.reaction} at ${a.t?.toFixed(0)} ms, debris ${a.debris.length}, pelvis ${a.heights?.pelvis}`)
-        const want = { 'enemy-plate-cracked': () => a.plates.chestF === 'cracked', 'enemy-plate-broken': () => a.plates.chestF === 'broken' && a.debris.length >= 1, 'visor-shatter': () => a.visor === 2, 'enemy-stagger-front-200': () => a.reaction === 'stagger', 'enemy-stagger-back-200': () => a.reaction === 'stagger', 'enemy-knockdown-1000': () => a.reaction === 'knockdown' && a.heights.pelvis < 0.45 }[stage]
+        const want = { 'enemy-plate-cracked': () => a.plates.chestF === 'cracked', 'enemy-plate-broken': () => a.plates.chestF === 'broken' && a.debris.length >= 1, 'visor-shatter': () => a.visor === 2, 'enemy-stagger-front-200': () => a.reaction === 'stagger', 'enemy-stagger-back-200': () => a.reaction === 'stagger', 'enemy-knockdown-1000': () => a.reaction === 'knockdown' && a.heights.pelvis < 0.45, 'enemy-disarm-700': () => a.arms === 'draw', 'enemy-crawl-3900': () => a.crawling && a.heights.pelvis < 0.3, 'enemy-wounded-900': () => a.wound?.limp && a.wound?.hang && a.wound?.hunch > 0.5, 'enemy-shield-break-450': () => a.shards >= 3 }[stage]
         if (want && !want()) fail(`${vp} ${spec}: the stage didn't do its thing (${JSON.stringify(a.plates)}, visor ${a.visor}, ${a.reaction})`)
         if (stage === 'enemy-plate-broken') {
           // The under-layer must read: the coyote-tan carrier where the plate was (warm, and lighter than the plate).
@@ -680,6 +683,14 @@ for (const vp of vps) {
           const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
           console.log(`  C15 ${vp} ${spec}: carrier mean rgb ${pr.mean} (lum ${lum.toFixed(0)}, ${warm ? 'warm' : 'cold'}) over ${pr.total} px`)
           if (!warm || lum < 60) fail(`${vp} ${spec}: the under-layer doesn't read (mean ${pr.mean}: want lum >= 60, r >= b)`)
+        }
+        if (stage === 'enemy-plate-cracked') {
+          // The crack must burn (C15 review: a dark smudge): warm amber seam pixels within 10 cm of the strike.
+          const at = a.crack ?? { x: info.hit.x, y: info.hit.y, r: info.r02 * 0.5 }
+          const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r), [at.x, at.y, Math.max(4, at.r)])
+          const share = pr.glow / Math.max(1, pr.total)
+          console.log(`  C15 ${vp} ${spec}: crack glow ${(share * 100).toFixed(1)}% of ${pr.total} px (mean ${pr.mean})`)
+          if (share < 0.03) fail(`${vp} ${spec}: the crack doesn't glow (${(share * 100).toFixed(1)}% warm seam px within 10 cm of the strike, want >= 3%)`)
         }
         if (stage === 'visor-shatter') {
           const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r), [a.face.x, a.face.y, Math.max(3, a.face.r * 0.6)])

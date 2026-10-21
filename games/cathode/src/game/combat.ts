@@ -15,7 +15,7 @@ import { tuning } from "./feel/tuning";
 import { AUTOMATIC, type HitEvent as HitData, type HitLayer, type Vec3Like } from "../sim/hitevent";
 import { PASS_THROUGH, passes, penetrationOf, type CoverMat } from "../sim/penetration";
 import { surfaceOf } from "../render/builder";
-import { armourHit, plateFor, shotgunSplit, ARMOUR, PLATE_SLOT, type ArmourHit, type PlateId } from "../sim/armour";
+import { armourHit, disarmRoll, plateFor, plateWear, shotgunSplit, ARMOUR, PLATE_SLOT, type ArmourHit, type PlateId } from "../sim/armour";
 import { staggerHit, POISE } from "../sim/stagger";
 import { PlateDebris } from "./armourfx";
 import { bodyView } from "./body";
@@ -131,7 +131,7 @@ export class Combat {
   /** Screenshot stages: no tracer or muzzle flash (seen end-on from the eye, a frozen tracer fills the frame). */
   quiet = false;
   /** The last round a riot shield stopped (for sparks). */
-  blocked: { point: THREE.Vector3; normal: THREE.Vector3 } | null = null;
+  blocked: { point: THREE.Vector3; normal: THREE.Vector3; by?: Enemy } | null = null;
   /** Damage dealt to each segment by the current shot (pellets add up). */
   private shotDamage = new Map<string, number>();
 
@@ -268,9 +268,14 @@ export class Combat {
     }
     if (!hitE && this.blocked) {
       // A riot shield took it.
-      const b = this.blocked as { point: THREE.Vector3; normal: THREE.Vector3 };
+      const b = this.blocked as { point: THREE.Vector3; normal: THREE.Vector3; by?: Enemy };
       this.world.fx.impact(b.point, b.normal, "metal");
       this.blocks++;
+      // C15: the shield wears like a plate (by class); worn through, it breaks in three.
+      if (b.by && b.by.shieldHit(plateWear(w.weaponClass, w.damage * build.damage(w.weaponClass)), dir)) {
+        this.world.fx.armourSparks?.(b.point, b.normal, dir, 1, true);
+        this.bus.emit("plateBreak", { t: this.clock, targetUid: String(b.by.id), seg: "shield", zone: "torso", point: b.point.clone(), normal: b.normal.clone(), dir: dir.clone(), distance: origin.distanceTo(b.point), weaponCls: w.weaponClass, damage: 0, crit: false, layer: "shield", penetrated: false, lethal: false, reaction: "stagger", plateBroke: true } as HitData);
+      }
       this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), b.point);
       return;
     }
@@ -422,7 +427,7 @@ export class Combat {
       if (e.shield && e.alive) {
         const t = rayShield(e.shield, origin, dir);
         if (t !== null && t < h.dist) {
-          this.blocked = { point: origin.clone().addScaledVector(dir, t), normal: dir.clone().negate() };
+          this.blocked = { point: origin.clone().addScaledVector(dir, t), normal: dir.clone().negate(), by: e };
           continue;
         }
       }
@@ -440,6 +445,18 @@ export class Combat {
   forceVariant: DeathVariant | null = null;
   /** Screenshot stages (C9): whether a headshot knocks the helmet off, instead of the 40% roll. */
   forceHelmet: boolean | null = null;
+  /** Screenshot stages (C15): the disarm roll's value (0 always disarms), instead of a random one. */
+  forceDisarm: number | null = null;
+
+  /**
+   * C15 (S4.2): a crawl ended in his death (he bled out where he lay): the kill goes to whoever put him down, with
+   * the gun that last hit him, so it scores and drops loot like any other.
+   */
+  bledOut(e: Enemy): void {
+    const cls = e.lastHitBy?.weaponCls ?? "rifle";
+    const w = (this.held?.().w.weaponClass === cls ? this.held().w : null) ?? ({ ...EXPLOSIVE, weaponClass: cls } as WeaponDef);
+    this.killed({ enemy: e, weapon: w, zone: "torso", headshot: false, distance: e.lastHitBy?.distance ?? 10, unseen: !this.anyHunting(), severed: [], takedown: false });
+  }
 
   /**
    * What the street around a dying body says (S4.4's variant triggers): a wall within 1.2 m behind him along the
@@ -569,6 +586,15 @@ export class Combat {
     };
     // C15: the stagger meter (S4.2), then the plates' and visor's states, the loose plate, the vent.
     if (wasAlive && !killed) this.staggerFrom(e, data, bodyDir, dmg, ah);
+    // C15 (S4.3): a round on the weapon forearm or hand can take the carbine out of his hands (once per man).
+    if (wasAlive && !killed && e.rifle.visible && !e.drop && !e.shield && e.kit.role !== "orderly" && e.kit.role !== "turret" && e.kit.role !== "hunter") {
+      const holder = e.armour ?? { disarmed: e.disarmMs >= 0 };
+      const roll = this.forceDisarm ?? Math.random();
+      if (disarmRoll(holder, segName, w.weaponClass, dmg, e.kit.maxHp, roll)) {
+        e.disarm(dir);
+        data.disarmed = true;
+      }
+    }
     if (ah && wasAlive) this.armourAfter(e, ah, data, point, dir, killed);
     this.hits.push({ enemy: e, zone, damage: dmg, point, killed, data });
     if (wasAlive) this.bus.emit("hit", data);

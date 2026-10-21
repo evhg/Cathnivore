@@ -6,11 +6,12 @@ import { tuning } from "./feel/tuning";
 import * as THREE from "three";
 import { Body, enforcerLook, place, tagUnflashed, bodyView, type BodyLook, type Zone } from "./body";
 import { archFor } from "./models/enforcer";
-import { buildRifle, buildShield, rifleLod, BOLT_KICK_M, type Rifle } from "./models/gear";
+import { buildRifle, buildShield, buildSidearm, rifleLod, BOLT_KICK_M, type Rifle } from "./models/gear";
+import { WOUNDS, crawlRoll, makeWounds, resetWounds, woundHit, woundState } from "../sim/wounds";
 import { makeArmour, resetArmour, stateCode, PLATE_SLOT, type Armour, type PlateId } from "../sim/armour";
-import { makeStagger, staggerTick, type StaggerDir } from "../sim/stagger";
+import { STAGGER, makeStagger, staggerTick, type StaggerDir } from "../sim/stagger";
 import { reactDuration, reactPose, reactTravel, type ReactKind } from "./anim/react";
-import type { PlateDebris } from "./armourfx";
+import { ShieldShard, type PlateDebris } from "./armourfx";
 import { DEATH, DeathRun, DroppedProp, helmetPops, pickVariant, visorLevel, type DeathCtx, type DeathScript, type DeathVariant } from "./death";
 import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
 import { animate, muzzleOf, type Motion } from "./animate";
@@ -46,6 +47,14 @@ export interface EnemyKit {
   /** C10 (S3.2): a squad leader wears the helmet crest and a red visor stripe. */
   leader?: boolean;
 }
+
+/** C15 (S4.3): the disarm's stung-hand shake and the sidearm draw (ms). */
+const ARMS_SHAKE_MS = 400;
+const ARMS_DRAW_MS = 900;
+/** C15: the riot shield holds this share of its bearer's max HP of (class-worn) rounds before it breaks. */
+const SHIELD_HP_SHARE = 0.9;
+/** The knockdown's get-up (ms): a crawl starts partway into it. */
+const STAGGER_UP_MS = STAGGER.knock.upMs;
 
 /** C11: a takedown's kill glow, as a share of a gun kill's (at arm's length the full one swamps him). */
 const TAKEDOWN_GLOW = 0.3;
@@ -283,6 +292,10 @@ export class Enemy {
   readonly vel = new THREE.Vector3();
   /** The riot shield (shield bearers only), and the sniper's laser. */
   shield: THREE.Object3D | null = null;
+  /** C15: what the riot shield can still take before it breaks (S4.3's plate wear by class), and its pieces. */
+  shieldHp = 0;
+  shieldMax = 0;
+  readonly shards: ShieldShard[] = [];
   private bashCd = 0;
   laser: THREE.Mesh | null = null;
   /** Sniper: seconds of steady aim built up; fires at SNIPER_CHARGE. */
@@ -300,8 +313,28 @@ export class Enemy {
   /** The killing round's travel, flat (where the wall behind him is, for the slump smear). */
   readonly deathDir = new THREE.Vector3();
   private smeared = false;
-  /** Shots this frame, for the session to resolve: from, direction. */
-  readonly shots: Array<{ from: THREE.Vector3; dir: THREE.Vector3; melee?: boolean }> = [];
+  /** Shots this frame, for the session to resolve: from, direction, and a damage scale (the sidearm hits softer). */
+  readonly shots: Array<{ from: THREE.Vector3; dir: THREE.Vector3; melee?: boolean; mul?: number }> = [];
+  /** C15 (S4.2): the damage each limb has taken (the limp, the hanging arm, the hunch). */
+  readonly wounds = makeWounds();
+  /** C15: his wounds' accuracy multiplier this frame (a hanging arm x0.7, a crawl x0.25). */
+  private woundAcc = 1;
+  /** C15 (S4.3): ms since the carbine was shot out of his hands (-1: it never was). */
+  disarmMs = -1;
+  /** C15: the holstered sidearm he draws after a disarm or to fire from a crawl (built when first drawn). */
+  private sidearm: { root: THREE.Group; muzzle: THREE.Object3D } | null = null;
+  /** C15: the sidearm falling from his hand when he dies holding it. */
+  sideDrop: DroppedProp | null = null;
+  /** C15 (S4.2): seconds into a crawl (-1: not crawling); the knockdown that turns into one; the blind shot's clock. */
+  crawlT = -1;
+  private crawlNext = false;
+  private crawlShotT = -1;
+  private crawlShotCd = 1.4;
+  private crawlSmear = new THREE.Vector3();
+  /** C15: set on the frame a crawl ends in death (the session credits the kill to whoever put him down). */
+  bledOut = false;
+  /** The last gun that hit him and from how far (the crawl's death is credited to it). */
+  lastHitBy: { weaponCls: string; distance: number } | null = null;
 
   constructor(
     readonly kit: EnemyKit,
@@ -341,6 +374,7 @@ export class Enemy {
       this.shield = buildShield(kit.visor, bodyView.phone);
       tagUnflashed(this.shield);
       this.body.root.add(this.shield);
+      this.shieldMax = this.shieldHp = kit.maxHp * SHIELD_HP_SHARE;
     }
     if (kit.role === "sniper") {
       const lg = new THREE.CylinderGeometry(0.004, 0.004, 1, 4, 1, true);
@@ -403,8 +437,19 @@ export class Enemy {
     if (this.kit.role === "civilian" && this.state === "combat" && this.fleeT <= 0) this.state = "unaware";
     this.flinch.update(dt);
     for (const d of this.debris) d.step(dt, ground, colliders);
+    for (const d of this.shards) d.step(dt, ground, colliders);
     staggerTick(this.stag, dt);
     this.tickVisor(dt);
+    this.tickArms(dt, ground, colliders);
+    this.tickWound(dt);
+    if (this.alive && this.crawlT >= 0) {
+      this.crawlTick(dt, sight.chest, colliders, ground);
+      animate(this.body, this.motion);
+      this.body.carry();
+      this.body.pose(dt);
+      this.placeRifle();
+      return;
+    }
     if (this.alive && this.reaction) {
       this.reactTick(dt, colliders);
       animate(this.body, this.motion);
@@ -571,9 +616,24 @@ export class Enemy {
           }
           break;
         }
-        // Fire in bursts while she's in sight.
+        // Fire in bursts while she's in sight. Disarmed, nothing until the sidearm is up; then single, softer shots.
         this.fireCd -= dt;
-        if (seen && this.fireCd <= 0) {
+        const armsMode = this.motion.arms?.mode ?? "rifle";
+        if (armsMode === "shake" || armsMode === "draw") this.fireCd = Math.max(this.fireCd, 0.25);
+        else if (armsMode === "pistol" && seen && this.fireCd <= 0) {
+          this.fireCd = 0.55 + Math.random() * 0.35;
+          const from = new THREE.Vector3();
+          const dir = new THREE.Vector3();
+          this.muzzle(from, dir);
+          const aimDir = new THREE.Vector3().subVectors(sight.chest, from).normalize();
+          const spread = (this.kit.spread * 1.3 * (1 + Math.min(2, sight.speed / 3)) * (0.6 + 0.4 * (dist / 10))) / this.aimMul();
+          aimDir.x += (Math.random() - 0.5) * spread;
+          aimDir.y += (Math.random() - 0.5) * spread;
+          aimDir.z += (Math.random() - 0.5) * spread;
+          this.shots.push({ from, dir: aimDir.normalize(), mul: 0.7 });
+          this.motion.kick = 1;
+        }
+        if (armsMode === "rifle" && seen && this.fireCd <= 0) {
           if (this.burstLeft <= 0) this.burstLeft = this.kit.burst[0];
           this.burstLeft--;
           this.fireCd = this.burstLeft > 0 ? this.kit.burst[1] : this.kit.burst[2] * (0.7 + Math.random() * 0.6);
@@ -616,6 +676,8 @@ export class Enemy {
       this.shots.length = 0;
     }
     if (this.tag) this.tag.position.copy(this.head).add(new THREE.Vector3(0, 0.45, 0));
+    // S4.2: a hurt leg limps at x0.6.
+    speed *= woundState(this.wounds, this.hp, this.kit.maxHp).speedMul;
     const step = new THREE.Vector3();
     if (target) {
       step.subVectors(target, this.motion.pos).setY(0);
@@ -723,12 +785,13 @@ export class Enemy {
       this.rifle.visible = false;
       return;
     }
+    this.placeSidearm();
     if (this.drop) {
       // On the floor where it fell (C9): placed along its two points, the optic up.
       place(this.rifle, this.drop.a, this.drop.b, b.facing.clone().set(0, 1, 0));
       return;
     }
-    place(this.rifle, b.joints.handR, b.joints.handL, b.facing.clone().set(0, 1, 0));
+    place(this.rifle, b.grip, b.foregrip, b.facing.clone().set(0, 1, 0));
     this.rifle.scale.setScalar(b.scale);
     rifleLod(this.gun, b.lod);
     // The bolt kicks back 15 mm on each round (the recoil kick decays at 8/s).
@@ -783,7 +846,7 @@ export class Enemy {
 
   /** Accuracy multiplier: a near miss leaves them at 0.6 for a second. */
   aimMul(): number {
-    return this.suppressT > 0 ? tuning.nearMiss.accuracyMul : 1;
+    return (this.suppressT > 0 ? tuning.nearMiss.accuracyMul : 1) * this.woundAcc;
   }
 
   /**
@@ -817,8 +880,12 @@ export class Enemy {
     this.flinch.update(dt);
     this.body.updateFlash(dt * 1000);
     this.tickVisor(dt);
+    this.tickArms(dt, ground, colliders);
+    this.tickWound(dt);
     for (const d of this.debris) d.step(dt, ground, colliders);
-    if (this.alive && this.reaction) this.reactTick(dt, colliders);
+    for (const d of this.shards) d.step(dt, ground, colliders);
+    if (this.alive && this.crawlT >= 0) this.crawlTick(dt, null, colliders, ground);
+    else if (this.alive && this.reaction) this.reactTick(dt, colliders);
     if (!this.alive) {
       this.deadFor += dt;
       this.body.physics(dt, { colliders, ground });
@@ -856,6 +923,8 @@ export class Enemy {
     // The fall heads along the round: atan2 of its travel against "straight back" (-z).
     const fallYaw = Math.atan2(-dir.x, -dir.z);
     this.reaction = { kind, dir: stagDir, t: 0, dur: reactDuration(kind, stagDir), fallYaw };
+    // S4.2: knocked down below 10% health, an Enforcer may not get up: he rolls onto his front and crawls.
+    if (kind === "knockdown") this.crawlNext = Enemy.forceCrawl ?? crawlRoll(this.hp, this.kit.maxHp, this.kit.role === "turret" || this.kit.role === "hunter" ? "machine" : "enforcer", Math.random());
     // The attack is cancelled (its token with it): no round leaves the gun while he reels.
     this.burstLeft = 0;
     this.fireCd = Math.max(this.fireCd, this.reaction.dur / 1000 + 0.35);
@@ -871,6 +940,12 @@ export class Enemy {
     this.vel.set(0, 0, 0);
     this.motion.aim = THREE.MathUtils.damp(this.motion.aim, 0, 10, dt);
     this.body.eligible = r.kind !== "visorSnap";
+    // The crawl starts where the get-up would: he gets halfway to his knees and goes over onto his front.
+    if (r.kind === "knockdown" && this.crawlNext && r.t >= reactDuration("knockdown", r.dir) - STAGGER_UP_MS * 0.6) {
+      this.crawlNext = false;
+      this.startCrawl();
+      return;
+    }
     if (r.t >= r.dur) {
       const tr = reactTravel(r.kind, r.dir);
       const yaw = this.motion.yaw;
@@ -937,6 +1012,9 @@ export class Enemy {
   react(zone: Zone, dir: THREE.Vector3, point: THREE.Vector3, damage: number, weaponCls = "pistol", distance = 10, segment?: string): void {
     if (!this.alive) return;
     if (segment) this.body.flash(segment);
+    // S4.2: what each limb has taken (the limp, the hanging arm, the hunch).
+    woundHit(this.wounds, zone, damage);
+    this.lastHitBy = { weaponCls, distance };
     const inv = -this.motion.yaw;
     const d = toBody(dir, inv);
     const rel = toBody(new THREE.Vector3().subVectors(point, this.motion.pos), inv);
@@ -991,6 +1069,29 @@ export class Enemy {
     this.motion.react = null;
     this.visorFlickMs = 0;
     this.body.eligible = false;
+    resetWounds(this.wounds);
+    this.woundAcc = 1;
+    for (const d of this.shards) d.dispose();
+    this.shards.length = 0;
+    if (this.kit.role === "shield" && this.shieldMax > 0) {
+      if (!this.shield) {
+        this.shield = buildShield(this.kit.visor, bodyView.phone);
+        tagUnflashed(this.shield);
+        this.body.root.add(this.shield);
+      }
+      this.shieldHp = this.shieldMax;
+    }
+    this.disarmMs = -1;
+    this.motion.arms = null;
+    this.motion.wound = null;
+    this.motion.crawl = null;
+    if (this.sidearm) this.sidearm.root.visible = false;
+    this.sideDrop = null;
+    this.crawlT = -1;
+    this.crawlNext = false;
+    this.crawlShotT = -1;
+    this.bledOut = false;
+    this.lastHitBy = null;
   }
 
   /**
@@ -1075,6 +1176,14 @@ export class Enemy {
       const bb = a.clone().addScaledVector(dirG.normalize(), 0.62);
       this.drop = new DroppedProp(a, bb, vel, ((this.id % 5) - 2) * 2.5, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 4) }));
     }
+    // C15: a sidearm in his hand falls too.
+    if (!this.sideDrop && this.sidearm?.root.visible && this.sidearm.root.parent) {
+      const a = this.sidearm.root.position.clone();
+      const bb = a.clone().add(new THREE.Vector3(0, 0, 0.17).applyQuaternion(this.sidearm.root.quaternion).setY(0).normalize().multiplyScalar(0.17));
+      this.sideDrop = new DroppedProp(a, bb, new THREE.Vector3(Math.sin(this.motion.yaw) * 0.6, 0.8, Math.cos(this.motion.yaw) * 0.6), 4, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 6) }));
+      this.sideDrop.lift = 0.02;
+    }
+    this.sideDrop?.step(dt, ground, colliders);
     this.lastHand.copy(b.joints.handR);
     this.drop?.step(dt, ground, colliders);
     if (this.deathVariant === "wallslump" && !this.smeared && run && run.t > 260) {
@@ -1086,6 +1195,203 @@ export class Enemy {
   }
   private lastHand = new THREE.Vector3();
   private animTick = 0;
+
+  /**
+   * C15: a round the riot shield stopped wears it (`wear`, already scaled by the class); at nothing left it breaks in
+   * three pieces along a jagged fracture, thrown off along the round, and he reels back a step without it. True when
+   * it broke.
+   */
+  shieldHit(wear: number, dir: THREE.Vector3): boolean {
+    if (!this.shield || !this.alive || this.shieldMax <= 0) return false;
+    this.shieldHp -= wear;
+    if (this.shieldHp > 0) return false;
+    const sh = this.shield;
+    for (let i = 0; i < 3; i++) this.shards.push(new ShieldShard(sh, i, dir, bodyView.phone, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 3) })));
+    sh.removeFromParent();
+    this.shield = null;
+    this.shieldHp = 0;
+    // Knocked back a step by the blow that broke it: a front stagger (the takedown window).
+    const inv = -this.motion.yaw;
+    this.startReact("stagger", "front", { x: dir.x * Math.cos(inv) + dir.z * Math.sin(inv), z: -dir.x * Math.sin(inv) + dir.z * Math.cos(inv) });
+    return true;
+  }
+
+  /** Screenshot stages: forces the next knockdown's crawl roll (null: roll it). */
+  static forceCrawl: boolean | null = null;
+
+  /**
+   * C15 (S4.3): a round on his weapon hand took the carbine: it flies off along the round with a tumble and clatters
+   * in the street, he shakes the stung hand for 400 ms, then draws the sidearm off his thigh over 900 ms. Once only.
+   */
+  disarm(dir: THREE.Vector3): void {
+    if (!this.alive || this.disarmMs >= 0 || this.drop || !this.rifle.visible || this.kit.role === "orderly" || this.shield) return;
+    const b = this.body;
+    const flat = new THREE.Vector3(dir.x, 0, dir.z).normalize();
+    const vel = flat.multiplyScalar(2.6).add(new THREE.Vector3(0, 1.9, 0)).add(new THREE.Vector3(Math.cos(this.motion.yaw), 0, -Math.sin(this.motion.yaw)).multiplyScalar(-0.7));
+    const a = b.grip.clone();
+    const dirG = new THREE.Vector3().subVectors(b.foregrip, b.grip);
+    if (dirG.lengthSq() < 1e-4) dirG.set(0, 0, 1);
+    const bb = a.clone().addScaledVector(dirG.normalize(), 0.62);
+    this.drop = new DroppedProp(a, bb, vel, (this.id % 2 ? 1 : -1) * 9, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 4) }));
+    this.disarmMs = 0;
+    this.burstLeft = 0;
+    this.fireCd = Math.max(this.fireCd, 1.4);
+    this.motion.arms = { mode: "shake", t: 0 };
+    this.body.openHand("R");
+  }
+
+  /** True while a disarmed man has no gun up (shaking the hand, drawing). */
+  get unarmed(): boolean {
+    const m = this.motion.arms?.mode;
+    return m === "shake" || m === "draw";
+  }
+
+  /** C15: the disarm's clock, the carbine in the street, and which hold his hands are in. */
+  private tickArms(dt: number, ground: (x: number, z: number) => number, colliders: THREE.Box3[]): void {
+    if (this.disarmMs < 0 || !this.alive) return;
+    this.disarmMs += dt * 1000;
+    const t = this.disarmMs;
+    this.motion.arms = t < ARMS_SHAKE_MS ? { mode: "shake", t } : t < ARMS_SHAKE_MS + ARMS_DRAW_MS ? { mode: "draw", t: t - ARMS_SHAKE_MS } : { mode: "pistol", t: t - ARMS_SHAKE_MS - ARMS_DRAW_MS };
+    this.drop?.step(dt, ground, colliders);
+  }
+
+  /** C15 (S4.2): his wounds as animation layers (eased in) and their accuracy cost. */
+  private tickWound(dt: number): void {
+    if (!this.alive) return;
+    const ws = woundState(this.wounds, this.hp, this.kit.maxHp);
+    const w = (this.motion.wound ??= { limp: null, limpK: 0, hang: null, hangK: 0, hunch: 0, worst: null, breath: 0 });
+    const ease = Math.min(1, dt * 4);
+    if (ws.limp) w.limp = ws.limp;
+    w.limpK += ((ws.limp ? 1 : 0) - w.limpK) * ease;
+    if (ws.oneArm) w.hang = ws.oneArm;
+    w.hangK += ((ws.oneArm ? 1 : 0) - w.hangK) * ease;
+    if (w.hangK < 0.01 && !ws.oneArm) w.hang = null;
+    w.hunch += ((ws.hunch ? 1 : 0) - w.hunch) * ease;
+    w.worst = ws.worst;
+    w.breath += dt;
+    this.woundAcc = ws.accuracyMul * (this.crawlT >= 0 ? WOUNDS.crawl.accuracy : 1);
+  }
+
+  /** C15 (S4.2): he goes over onto his front and crawls away from her (takedown-eligible, the rim pulsing). */
+  private startCrawl(): void {
+    this.reaction = null;
+    this.motion.react = null;
+    this.crawlT = 0;
+    this.crawlShotT = -1;
+    this.crawlShotCd = 1.6;
+    this.crawlSmear.copy(this.motion.pos);
+    // Away from where he last saw her.
+    const away = new THREE.Vector3().subVectors(this.motion.pos, this.lastKnown).setY(0);
+    if (away.lengthSq() > 0.01) this.motion.yaw = Math.atan2(away.x, away.z);
+    this.motion.crawl = { phase: 0, shoot: 0, blend: 0 };
+    this.body.eligible = true;
+  }
+
+  /** True while he crawls (S4.2: a takedown target). */
+  get crawling(): boolean {
+    return this.crawlT >= 0;
+  }
+
+  /**
+   * The crawl (S4.2): 0.4 m/s on his front for up to 6 s, leaving a smear; every couple of seconds a blind shot back
+   * over his shoulder with the sidearm at x0.25 accuracy. It ends in a death rattle (bledOut: the session credits it).
+   */
+  private crawlTick(dt: number, at: THREE.Vector3 | null, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
+    const C = WOUNDS.crawl;
+    this.crawlT += dt;
+    const c = this.motion.crawl!;
+    c.blend = Math.min(1, c.blend + dt / 0.45);
+    this.motion.speed = 0;
+    this.motion.aim = 0;
+    this.vel.set(0, 0, 0);
+    this.body.eligible = true;
+    // He pulls in surges: fast on the pull, slow on the reach.
+    const pull = 0.55 + 0.45 * Math.max(0, Math.sin(c.phase));
+    if (c.blend >= 1) {
+      c.phase += dt * 3.2;
+      const v = C.speed * pull * 1.25;
+      this.moveWithCollision(new THREE.Vector3(Math.sin(this.motion.yaw), 0, Math.cos(this.motion.yaw)).multiplyScalar(v * dt), colliders);
+      this.motion.pos.y = ground(this.motion.pos.x, this.motion.pos.z);
+    }
+    if (flatDist(this.crawlSmear, this.motion.pos) >= C.smearM) {
+      this.crawlSmear.copy(this.motion.pos);
+      this.deathEvents.push({ kind: "trail", at: this.motion.pos.clone(), k: 1 });
+    }
+    // The blind shot: the arm comes back over the shoulder (250 ms), fires, and goes back down (300 ms).
+    if (at) {
+      this.crawlShotCd -= dt;
+      if (this.crawlShotT < 0 && this.crawlShotCd <= 0) this.crawlShotT = 0;
+    }
+    if (this.crawlShotT >= 0) {
+      const tt = (this.crawlShotT += dt);
+      c.shoot = tt < 0.25 ? tt / 0.25 : Math.max(0, 1 - (tt - 0.35) / 0.3);
+      if (at && tt >= 0.25 && tt - dt < 0.25) {
+        const from = new THREE.Vector3();
+        const dir = new THREE.Vector3();
+        this.muzzle(from, dir);
+        const aimDir = new THREE.Vector3().subVectors(at, from).normalize();
+        const spread = (this.kit.spread * 1.3) / this.aimMul();
+        aimDir.x += (Math.random() - 0.5) * spread;
+        aimDir.y += (Math.random() - 0.5) * spread;
+        aimDir.z += (Math.random() - 0.5) * spread;
+        this.shots.push({ from, dir: aimDir.normalize(), mul: 0.7 });
+      }
+      if (tt > 0.7) {
+        this.crawlShotT = -1;
+        this.crawlShotCd = 1.8 + Math.random() * 0.8;
+        c.shoot = 0;
+      }
+    }
+    if (this.crawlT >= C.maxS) {
+      this.crawlT = -1;
+      this.motion.crawl = null;
+      this.body.eligible = false;
+      this.bledOut = true;
+      this.die(new THREE.Vector3(0, -0.3, 0), this.body.joints.chest.clone(), { zone: "torso", weaponCls: this.lastHitBy?.weaponCls ?? "rifle", distance: this.lastHitBy?.distance ?? 10, crawlEnded: true });
+    }
+  }
+
+  /** Where his shots leave from, and which way: the sidearm's muzzle once it is out, else the carbine's. */
+  muzzle(from: THREE.Vector3, dir: THREE.Vector3): void {
+    const sa = this.sidearm;
+    if (sa && sa.root.visible) {
+      sa.root.updateMatrixWorld(true);
+      sa.muzzle.getWorldPosition(from);
+      dir.set(0, 1, 0).transformDirection(sa.root.matrixWorld);
+      return;
+    }
+    muzzleOf(this.body, from, dir);
+  }
+
+  /** The sidearm: in his right hand once drawn (or for a crawl's blind shot), on the street after he dies. */
+  private placeSidearm(): void {
+    const mode = this.motion.arms?.mode;
+    const t = this.motion.arms?.t ?? 0;
+    const inHand = this.alive && (mode === "pistol" || (mode === "draw" && t > 330) || (this.crawlT >= 0 && (this.motion.crawl?.shoot ?? 0) > 0.15));
+    if (!inHand && !this.sideDrop && !this.sidearm) return;
+    if (!this.sidearm) {
+      this.sidearm = buildSidearm(bodyView.phone);
+      tagUnflashed(this.sidearm.root);
+      this.body.root.add(this.sidearm.root);
+    }
+    const sa = this.sidearm.root;
+    const b = this.body;
+    if (this.sideDrop) {
+      sa.visible = true;
+      place(sa, this.sideDrop.a, this.sideDrop.b, b.facing.clone().set(0, 1, 0));
+      return;
+    }
+    sa.visible = inHand;
+    if (!inHand) return;
+    // Along the forearm, out of the fist: from the elbow through the hand, tipped up toward level as he aims.
+    const fwd = new THREE.Vector3().subVectors(b.joints.handR, b.joints.elbowR).normalize();
+    if (mode === "pistol") {
+      const aimD = new THREE.Vector3(Math.sin(this.motion.yaw), 0, Math.cos(this.motion.yaw));
+      fwd.lerp(aimD, 0.6).normalize();
+    }
+    place(sa, b.joints.handR, b.joints.handR.clone().addScaledVector(fwd, 0.17), b.facing.clone().set(0, 1, 0));
+    sa.scale.setScalar(b.scale);
+  }
 
   /** S3.2: where a fired round's casing leaves the carbine (its right flank, over the grip) and how fast. */
   brass(pos: THREE.Vector3, vel: THREE.Vector3): void {

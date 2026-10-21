@@ -175,6 +175,9 @@ export class Body {
   private rest = new Map<string, number>();
   /** Which way the body faces (for segment roll), updated by animation. */
   readonly facing = new THREE.Vector3(0, 0, 1);
+  /** C15: where the carbine is held (world): the pistol grip and the foregrip (animate.ts; the hands while both hold it). */
+  readonly grip = new THREE.Vector3();
+  readonly foregrip = new THREE.Vector3();
   restTime = 0;
   /** The hit flash per segment slot (radiance), and ms since each slot was hit. */
   readonly flashUniform = { value: Array.from({ length: FLASH_SLOTS }, () => new THREE.Vector3()) };

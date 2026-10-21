@@ -20,7 +20,7 @@
 import * as THREE from "three";
 import { patchKitMaterial } from "../gunkit";
 import { mirrorPass } from "../../render/reflection";
-import { REST, SEGMENTS, boneIndex } from "../rig";
+import { HELM_Y, REST, SEGMENTS, boneIndex } from "../rig";
 
 /** The upper chest bone, and its offset up the chest bone (rest pose): both chest plates' pieces in one frame. */
 const UC_BONE = boneIndex("upperChest");
@@ -64,6 +64,7 @@ function vertPlate(fx0: number, sink: boolean): string {
   float pid = aPlate.x;
   int slot = int(abs(pid) + 0.5);
   vPlate = vec4(0.0, 10.0, pid, 0.0);
+  vPlateTab = aPlate.y > 0.0 ? 1.0 : 0.0;
   mat4 bpl = getBoneMatrix(float(${fx0 + 5}));
   vPlateSeed = bpl[3].w;
   // The plate's surface in the chest bone's frame (the upper chest's pieces lifted by the chest's length), and where
@@ -130,7 +131,7 @@ ${vertPlate(fx0, sink)}
 #else
 vBodyRimN = vec3(0.0, 0.0, 1.0);
 // Unskinned (a plate knocked off, the cloth): a plate piece keeps its cracks.
-vPlate = vec4(aPlate.x > 0.5 ? 1.0 : 0.0, 10.0, aPlate.x, 0.0); vPlateSeed = 0.37; vPlateTone = vec3(0.0); vPlateP = position; vCrackAt = vec3(0.0);
+vPlate = vec4(aPlate.x > 0.5 ? 1.0 : 0.0, 10.0, aPlate.x, 0.0); vPlateTab = 0.0; vPlateSeed = 0.37; vPlateTone = vec3(0.0); vPlateP = position; vCrackAt = vec3(0.0);
 // A loose plate keeps a cool edge (the street's sky catching its rim), so it reads on the wet asphalt; cloth doesn't.
 vBodyFlash = vec3(0.0); vBodyRim = aPlate.x > 0.5 ? vec4(0.16, 0.22, 0.3, 2.2) : vec4(0.0, 0.0, 0.0, 3.0); vBodyVisor = vec4(1.0); vBodyFac = vec4(0.0, 0.0, 0.0, 3.0);
 vBodyLodA = 1.0; vBodyLodT = 1.0; vBodyBlink = 1.0;
@@ -167,59 +168,69 @@ vec2 pcVoronoi(vec3 lp, float dens, float tag, float seed, float keepAt) {
   return vec2(groove, max(0.0, chip));
 }
 // One crack from o heading a0 (rad) for len m in the plate's xy plane: (groove, chip).
-vec2 pcRay(vec2 p, vec2 o, float a0, float len, float w0, float seed) {
+// (groove, chip, hot core): the core is the fracture's bright seam, the groove its dark lips, the chip the bare
+// metal either side. Every width is held to at least a pixel and a half on screen (fwidth of the distance), so a ray
+// stays a continuous, anti-aliased line at the phone's half-resolution render (C15 review: it broke into speckle).
+vec3 pcRay(vec2 p, vec2 o, float a0, float len, float w0, float seed) {
   vec2 d = p - o;
   float r = length(d);
-  // It wanders in a slow bend (a fine jag broke it into dashes at screen scale). Widths are overstated (pillar 4): at 2 m on a 1440p
-  // screen a pixel is about 3 mm of plate, so a true-to-life hairline would vanish into speckle.
-  float a = a0 + 0.2 * sin(r * 30.0 + seed * 7.0) / (1.0 + r * 20.0);
+  // It wanders in a slow bend (a fine jag broke it into dashes at screen scale). Widths are overstated (pillar 4).
+  float a = a0 + 0.16 * sin(r * 24.0 + seed * 7.0) / (1.0 + r * 12.0);
   vec2 dir = vec2(cos(a), sin(a));
   float along = dot(d, dir);
   float perp = abs(d.x * dir.y - d.y * dir.x);
-  if (along < 0.0 || along > len) return vec2(0.0);
-  float t = along / len;
-  float w = mix(w0, w0 * 0.5, t);
-  float fw = clamp(fwidth(perp), 1e-5, w0);
+  // Derivatives before any branch: fwidth inside a pixel-varying branch is undefined, and it was (C15 review r2:
+  // the "speckled smudge" was the width blowing up at random pixels across the whole plate).
+  float fw = max(fwidth(perp), 1e-5);
+  float inside = step(-0.004, along) * step(along, len);
+  float t = clamp(along / len, 0.0, 1.0);
+  float w = max(mix(w0, w0 * 0.55, t), fw * 1.5);
+  float core = 1.0 - smoothstep(w * 0.45, w * 0.45 + fw * 1.2, perp);
   float g = 1.0 - smoothstep(w, w + fw * 1.2, perp);
-  float c = 1.0 - smoothstep(w * 1.7, w * 1.7 + fw * 1.2, perp);
-  float fade = 1.0 - smoothstep(0.75, 1.0, t);
-  return vec2(g, max(0.0, c - g)) * fade;
+  float c = 1.0 - smoothstep(w * 1.8, w * 1.8 + fw * 1.2, perp);
+  float fade = (1.0 - smoothstep(0.8, 1.0, t)) * inside;
+  return vec3(g, max(0.0, c - g), core) * fade;
 }
-vec3 plateCrack(vec3 lp, float tag, float seed, vec3 at) {
+vec4 plateCrack(vec3 lp, float tag, float seed, vec3 at) {
   if (tag > 2.5) {
     // Pauldrons, helmet, visor: a sparse network (the visor finer).
     vec2 v = pcVoronoi(lp, tag > 5.5 ? 48.0 : 12.0, tag, seed, 0.62);
-    return vec3(v, 0.0);
+    return vec4(v, 0.0, v.x * 0.5);
   }
   // The chest plates: from where the round landed (or, for the plate it didn't hit, a seeded point near its middle).
   float side = tag < 1.5 ? 1.0 : -1.0;
   vec2 c = at.z * side > 0.02 ? at.xy : vec2((pcHash3(vec3(seed, tag, 1.0)).x - 0.5) * 0.12, 0.14 + (pcHash3(vec3(tag, seed, 2.0)).y - 0.5) * 0.1);
   vec2 p = lp.xy;
   float r = length(p - c);
-  vec2 acc = vec2(0.0);
-  for (int k = 0; k < 5; k++) {
+  // Four long rays (they read as a fracture at 10 m; five short ones and their branches read as a smudge), two of
+  // them forking once, well out from the strike.
+  vec3 acc = vec3(0.0);
+  for (int k = 0; k < 4; k++) {
     float fk = float(k);
     vec3 h = pcHash3(vec3(seed * 13.0 + fk, tag, fk * 1.7));
-    float a = (fk + 0.15 + 0.7 * h.x) * 1.2566;
-    float len = 0.1 + 0.1 * h.y;
-    acc = max(acc, pcRay(p, c, a, len, 0.012, seed + fk));
-    if (k < 3) {
-      // A side branch from partway along.
-      vec2 o = c + vec2(cos(a), sin(a)) * len * (0.35 + 0.2 * h.z);
-      acc = max(acc, pcRay(p, o, a + (h.z > 0.5 ? 0.62 : -0.62), len * 0.5, 0.007, seed + fk + 9.0));
+    float a = (fk + 0.2 + 0.6 * h.x) * 1.5708;
+    float len = 0.15 + 0.09 * h.y;
+    acc = max(acc, pcRay(p, c, a, len, 0.009, seed + fk));
+    if (k < 2) {
+      vec2 o = c + vec2(cos(a), sin(a)) * len * (0.5 + 0.15 * h.z);
+      acc = max(acc, pcRay(p, o, a + (h.z > 0.5 ? 0.55 : -0.55), len * 0.45, 0.006, seed + fk + 9.0));
     }
   }
   // The strike: a crushed ring 1.2 cm across.
   float fr = max(fwidth(r), 1e-5);
   float ring = 1.0 - smoothstep(0.004, 0.004 + fr * 1.2, abs(r - 0.016 - 0.002 * sin(atan(p.y - c.y, p.x - c.x) * 7.0 + seed * 5.0)));
   acc.x = max(acc.x, ring);
-  return vec3(acc, r);
+  acc.z = max(acc.z, ring * 0.8);
+  return vec4(acc.xy, r, acc.z);
 }`;
+
+/** C15 review: the character key's strength on his albedo (a fill that shapes him; the street's lights still do most). */
+const BODY_KEY = 1.15;
 
 /** The faction rim's peak radiance (linear): under the AgX shoulder, where amber would wash out to white. */
 const RIM_CAP = 1.5;
 
-const VARYINGS = "varying vec4 vPlate; varying vec3 vPlateP; varying vec3 vCrackAt; varying float vPlateSeed; varying vec3 vPlateTone; varying vec3 vBodyRimN; varying vec3 vBodyFlash; varying vec4 vBodyRim; varying vec4 vBodyVisor; varying vec4 vBodyFac; varying float vBodyLodA; varying float vBodyLodT; varying float vBodyBlink;";
+const VARYINGS = "varying float vPlateTab; varying vec4 vPlate; varying vec3 vPlateP; varying vec3 vCrackAt; varying float vPlateSeed; varying vec3 vPlateTone; varying vec3 vBodyRimN; varying vec3 vBodyFlash; varying vec4 vBodyRim; varying vec4 vBodyVisor; varying vec4 vBodyFac; varying float vBodyLodA; varying float vBodyLodT; varying float vBodyBlink;";
 
 const DITHER = `
 {
@@ -248,23 +259,67 @@ function patchOpaque(mat: THREE.MeshStandardMaterial, fx0: number): void {
         `#include <color_fragment>
 // C15: the face behind a shattered visor takes this body's skin tone; a cracked plate shows its fracture lines
 // (a dark groove with the paint chipped back to bright metal along each side).
-if (vPlate.w > 0.5) diffuseColor.rgb = vPlateTone;
+// The face is shaded in the skin's own frame (head bone, m): the eye sockets darken toward the eyes, the bridge of
+// the nose and the cheekbones catch a little more, and the skin falls off into the balaclava's edge above and below,
+// so it reads as a face set in fabric, not a lit strip.
+float fSock = 0.0;
+if (vPlate.w > 0.5) {
+  vec2 fp = vPlateP.xy;
+  float fy = ${(HELM_Y - 0.004 + 0.008).toFixed(4)};
+  float sk = max(1.0 - smoothstep(0.55, 1.05, length((fp - vec2(0.033, fy)) / vec2(0.02, 0.013))), 1.0 - smoothstep(0.55, 1.05, length((fp - vec2(-0.033, fy)) / vec2(0.02, 0.013))));
+  fSock = sk;
+  float edge = smoothstep(fy - 0.046, fy - 0.03, fp.y) * (1.0 - smoothstep(fy + 0.026, fy + 0.04, fp.y));
+  float bridge = 1.0 - smoothstep(0.004, 0.012, abs(fp.x));
+  float cheek = smoothstep(fy - 0.03, fy - 0.016, fp.y) * (1.0 - smoothstep(fy - 0.012, fy - 0.004, fp.y)) * smoothstep(0.02, 0.04, abs(fp.x));
+  diffuseColor.rgb = vPlateTone * (1.0 - 0.62 * sk) * mix(0.35, 1.0, edge) * (1.0 + 0.12 * bridge) * mix(vec3(1.0), vec3(1.1, 0.96, 0.93), cheek);
+}
 float pCrack = 0.0;
 float pChip = 0.0;
 float pCrackR = 1.0;
+float pCore = 0.0;
 if (vPlate.x > 0.5) {
-  vec3 cr = plateCrack(vPlateP, vPlate.z, vPlateSeed, vCrackAt);
+  vec4 cr = plateCrack(vPlateP, vPlate.z, vPlateSeed, vCrackAt);
   pCrack = cr.x;
   pChip = cr.y;
   pCrackR = cr.z;
+  pCore = cr.w;
   // The chipped edge is bare bright metal (a flat colour: scaling the paint lit up its peel speckle into glitter).
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.46, 0.47, 0.5), pChip * 0.9);
   diffuseColor.rgb *= 1.0 - 0.95 * pCrack;
-}`,
+}
+// C15 review: the carrier under a chest plate (tags -1, -2, not the tabs) is quilted padding, not a flat box: puffed
+// bands 4 cm apart, a dark seam between each with a row of stitches beside it, and the nylon's weave.
+float pQuilt = 0.0;
+if (vPlate.z < -0.5 && vPlate.z > -2.5 && vPlateTab < 0.5) {
+  float qs = fract(vPlateP.y / 0.04 + 0.5);
+  float qseam = 1.0 - smoothstep(0.0, 0.1, min(qs, 1.0 - qs));
+  float qst = step(0.5, fract(vPlateP.x / 0.009)) * (1.0 - smoothstep(0.0, 0.035, abs(qs - 0.16)));
+  pQuilt = sin(qs * 3.14159);
+  diffuseColor.rgb *= (0.78 + 0.22 * pQuilt) * (1.0 - 0.6 * qseam) * (1.0 + 0.35 * qst);
+  diffuseColor.rgb *= 0.92 + 0.16 * gkNoise(vLocal * vec3(900.0, 900.0, 900.0));
+}
+// C15 (C10 carry-over): the plates' paint isn't one flat grey. Grime settles in broad patches and the paint is
+// lighter where it's been rubbed; on the coated plates (aMR.z) only, at a scale that holds at 3 to 10 m.
+float pBreak = gkNoise(vLocal * 9.0) * 0.55 + gkNoise(vLocal * 31.0) * 0.3 + gkNoise(vLocal * 97.0) * 0.15;
+float pCoated = step(0.25, vMR.z);
+diffuseColor.rgb *= mix(1.0, mix(0.62, 1.3, smoothstep(0.25, 0.75, pBreak)), pCoated);`,
       )
       .replace(
         "#include <normal_fragment_maps>",
         `#include <normal_fragment_maps>
+{
+  // The plates' surface (C10 carry-over): hammered, faintly dented steel under the paint and fine vertical scuffs,
+  // as a height field bumped through the screen-space gradient, faded out where it would only shimmer.
+  float hd = gkNoise(vLocal * 26.0) * 0.65 + gkNoise(vLocal * 70.0) * 0.35;
+  float scuff = smoothstep(0.78, 0.95, gkNoise(vLocal * vec3(260.0, 9.0, 260.0)));
+  float hh = (hd * 0.0024 + scuff * 0.0005) * pCoated + pQuilt * 0.006;
+  vec3 sx0 = dFdx(-vViewPosition); vec3 sy0 = dFdy(-vViewPosition);
+  vec3 r10 = cross(sy0, normal); vec3 r20 = cross(normal, sx0);
+  float det0 = dot(sx0, r10);
+  float fade0 = clamp(0.004 / max(length(sx0) + length(sy0), 1e-5), 0.0, 1.0);
+  vec3 grad0 = sign(det0) * (dFdx(hh) * r10 + dFdy(hh) * r20) * fade0;
+  normal = normalize(abs(det0) * normal - grad0);
+}
 if (vPlate.x > 0.5) {
   // The groove as a height field (S4.3: x1.6 normal strength), bumped through the screen-space surface gradient.
   float ph = -(pCrack + pChip * 0.35) * 0.0016 * 1.6;
@@ -276,6 +331,8 @@ if (vPlate.x > 0.5) {
 }`,
       )
       .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>\n${DITHER}`)
+      // The coated plates' roughness breaks up with the grime (rubbed paint is glossier, grime duller).
+      .replace("float metalnessFactor = vMR.x;", "float metalnessFactor = vMR.x;\nroughnessFactor = clamp(roughnessFactor * mix(1.0, mix(1.35, 0.7, pBreak), pCoated), 0.04, 1.0);")
       .replace(
         "#include <emissivemap_fragment>",
         `#include <emissivemap_fragment>
@@ -293,7 +350,11 @@ float bFar = smoothstep(0.12, 0.45, fwidth(bRim));
 // draws a one-pixel stroke round each figure. The phone's rim (a falloff power under 2.5) is a soft, wide sheen on
 // the smooth body normal alone instead.
 float bFace = vBodyFac.w < 2.5 ? 1.0 : mix(smoothstep(0.15, 0.85, bFlashRim), 1.0, bFar * 0.7);
-vec3 bFac = vBodyFac.rgb * pow(bRim, mix(vBodyFac.w, 1.4, bFar)) * bFace;
+// The rim is a light, not a selection outline (C15 review, the C10 carry-over): it comes from one side, high and
+// behind him (screen right), and fades round the edges that face away from it. Far off it wraps further round, so
+// he still reads as a shape against the street.
+float bDirM = smoothstep(-0.45, 0.55, dot(normalize(vBodyRimN), normalize(vec3(0.74, 0.58, -0.2))));
+vec3 bFac = vBodyFac.rgb * pow(bRim, mix(vBodyFac.w, 1.4, bFar)) * bFace * mix(bDirM, 1.0, bFar * 0.55);
 float bFacMax = max(bFac.r, max(bFac.g, bFac.b));
 bFac *= bFacMax > ${RIM_CAP.toFixed(2)} ? ${RIM_CAP.toFixed(2)} / bFacMax : 1.0;
 totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);
@@ -301,10 +362,21 @@ totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);
 // strike and cooling along the cracks, then keeps a faint ember in the groove.
 // C15: the face behind a shattered visor catches a little of the street's bounce (the helmet's shell shades it
 // from every key), so the skin reads as skin in the noir grade, not as a dark hole.
-if (vPlate.w > 0.5) totalEmissiveRadiance += vPlateTone * 0.16 * (1.0 - uBodyMirror);
+if (vPlate.w > 0.5) totalEmissiveRadiance += vPlateTone * 0.08 * (1.0 - 0.7 * fSock) * (1.0 - uBodyMirror);
 // The chest carrier (tags -1, -2) sits in the plate's shadow: a little bounce so its coyote reads where the plate was.
 if (vPlate.z < -0.5 && vPlate.z > -2.5) totalEmissiveRadiance += diffuseColor.rgb * 0.07 * (1.0 - uBodyMirror);
-if (vPlate.x > 0.5) totalEmissiveRadiance += vec3(1.0, 0.42, 0.08) * pCrack * (1.1 * exp(-pCrackR / 0.08) * max(0.0, 1.0 - vPlate.y / 0.4) + 0.22 * exp(-pCrackR / 0.12)) * (1.0 - uBodyMirror);`,
+// C15 review: the fracture's seam burns in the faction amber, held at full heat for 0.4 s (S4.3), cooling over the
+// next half second to an ember that stays in the seam; the dark groove either side gives it an edge.
+if (vPlate.x > 0.5) {
+  float pHeat = vPlate.y < 0.4 ? 1.0 : 0.3 + 0.7 * exp(-(vPlate.y - 0.4) / 0.45);
+  totalEmissiveRadiance += vec3(1.0, 0.4, 0.07) * pCore * (2.6 * pHeat) * (0.55 + 0.45 * exp(-pCrackR / 0.12)) * (1.0 - uBodyMirror);
+}
+// C15 review ("a hologram inside an orange outline"): a soft character key from high on her left, wrapped, on his
+// own albedo, so his form (plates, folds, the chest's curve) is shaded under the rim wherever he stands in the dark.
+{
+  float bKey = clamp(dot(normalize(normal), normalize(vec3(-0.5, 0.62, 0.6))) * 0.55 + 0.45, 0.0, 1.0);
+  totalEmissiveRadiance += diffuseColor.rgb * (bKey * bKey) * ${BODY_KEY.toFixed(2)} * (1.0 - 0.6 * uBodyMirror);
+}`,
       )
       .replace(
         "#include <fog_fragment>",

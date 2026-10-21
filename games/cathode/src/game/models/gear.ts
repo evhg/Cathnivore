@@ -207,3 +207,61 @@ export function buildShield(visor: number, phone: boolean): THREE.Group {
   });
   return root;
 }
+
+/**
+ * C15 (S4.3): the holstered sidearm he draws after a disarm, a compact service pistol in gun space (y up, -z the
+ * muzzle) with its grip's centre on the origin, so the hand holds it there. Broadened like the carbine, so it holds
+ * as a silhouette in his fist from 10 m. `muzzle` is the barrel's tip.
+ */
+export function buildSidearm(phone: boolean): { root: THREE.Group; muzzle: THREE.Object3D } {
+  const root = new THREE.Group();
+  root.name = "enemySidearm";
+  const gun = new THREE.Group();
+  // Gun space onto place()'s frame, as the carbine: the muzzle along +Y (grip to muzzle), the sights up +Z.
+  gun.rotation.x = Math.PI / 2;
+  gun.scale.set(1.35, 1.25, 1.1);
+  root.add(gun);
+  const k = new GunKit(gun, phone);
+  const muzzle = k.empty("muzzle", [0, 0.062, -0.17]);
+  // The grip, raked back, with stippling; the frame and dust cover under the slide; the slide with its serrations.
+  k.add(profile([[0.03, 0.04], [-0.006, 0.04], [-0.02, -0.05], [0.004, -0.058], [0.026, -0.054], [0.036, 0.0]], 0.03, { bevel: 0.004, phone }), F.grip);
+  k.add(profile(chamfer([[0.03, 0.036], [-0.15, 0.036], [-0.15, 0.05], [0.03, 0.05]], 0.004), 0.026, { bevel: 0.002, phone }), F.polymer);
+  k.add(profile(chamfer([[0.04, 0.05], [-0.165, 0.05], [-0.165, 0.078], [0.03, 0.08], [0.042, 0.07]], 0.005), 0.028, { bevel: 0.003, phone }), F.steel);
+  k.add(profile([[0.0, 0.04], [-0.004, 0.022], [-0.034, 0.016], [-0.036, 0.036], [-0.03, 0.036], [-0.028, 0.024], [-0.008, 0.028], [-0.008, 0.04]], 0.008, { bevel: 0.001, phone }), F.dark);
+  k.add(lathe([[0.005, -0.164], [0.005, -0.17]], { phone }), F.bore, { p: [0, 0.062, 0] });
+  // Tritium dots on the sights: the faction amber, so the drawn gun reads in the dark.
+  k.add(rounded(0.012, 0.006, 0.006, 0.002, phone), { emit: 0xffa040, intensity: 2.2 }, { p: [0, 0.083, -0.155] });
+  k.finish();
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh) m.castShadow = true;
+  });
+  return { root, muzzle };
+}
+
+/**
+ * C15 (C10 carry-over, S4.3's language for armour): the riot shield breaks into three pieces along a jagged fracture:
+ * the top with the viewport, and the lower half split down the middle. Each piece is built in the shield's own frame
+ * (its centre on the shield's origin), so placed where the shield was it is exactly the part of it it was.
+ */
+export const SHIELD_PIECES: ReadonlyArray<{ outline: P2[]; port: boolean }> = [
+  { outline: [[-0.31, 0.6], [-0.31, 0.04], [-0.17, 0.09], [-0.05, 0.03], [0.06, 0.1], [0.18, 0.02], [0.31, 0.08], [0.31, 0.6]], port: true },
+  { outline: [[-0.31, 0.04], [-0.31, -0.6], [0.03, -0.6], [-0.04, -0.38], [0.02, -0.2], [-0.05, 0.03], [-0.17, 0.09]], port: false },
+  { outline: [[-0.05, 0.03], [0.02, -0.2], [-0.04, -0.38], [0.03, -0.6], [0.31, -0.6], [0.31, 0.08], [0.18, 0.02], [0.06, 0.1]], port: false },
+];
+
+export function buildShieldPiece(i: number, phone: boolean): THREE.Group {
+  const root = new THREE.Group();
+  root.name = `riotShieldPiece${i}`;
+  const k = new GunKit(root, phone);
+  const P = SHIELD_PIECES[i]!;
+  const port: P2[] = chamfer([[-0.17, 0.28], [0.17, 0.28], [0.17, 0.4], [-0.17, 0.4]], 0.02);
+  const body: Finish = { color: 0x1a2028, metal: 0.15, rough: 0.28, coat: 1, band: "peel", wear: 0.9 };
+  k.add(plate(P.outline, { depth: 0.014, bevel: 0, bend: 0.9, ...(P.port ? { holes: [port] } : {}) }), body, { p: [0, 0, -0.012] });
+  k.finish();
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh) m.castShadow = true;
+  });
+  return root;
+}

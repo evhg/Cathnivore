@@ -82,7 +82,7 @@ import { DeathCam, GunDrop, deathState, resyncState } from "./death-cam";
 import { DeathScreen } from "../ui/deathcard";
 import { deathLine, type DeathCause } from "./voice";
 import { ESC_DEBOUNCE_MS, nextResuming, pauseView } from "./pausegate";
-import { clearDebris, liveDebris } from "./armourfx";
+import { clearDebris, clearShards, liveDebris } from "./armourfx";
 import { HELM_Y } from "./rig";
 import { plateWear } from "../sim/armour";
 import { makeStagger } from "../sim/stagger";
@@ -195,7 +195,7 @@ export interface Session {
     /** C11: the tell stage: his head and helmet top on screen and where the chip is anchored (CSS px). */
     tell?: { head: { x: number; y: number }; helmetTop: { x: number; y: number }; chip: { x: number; y: number } | null };
     /** C15: the plates' states, his reaction, the carrier under the chest plate on screen (CSS px, with 5 cm in px), the loose plates. */
-    armour?: { plates: Record<string, string>; visor: number; reaction: string | null; t: number; under: { x: number; y: number; r: number }; face: { x: number; y: number; r: number }; debris: { x: number; y: number; asleep: boolean }[]; meter: number; heights: Record<string, number> };
+    armour?: { crack?: { x: number; y: number; r: number } | null; plates: Record<string, string>; visor: number; reaction: string | null; t: number; under: { x: number; y: number; r: number }; face: { x: number; y: number; r: number }; debris: { x: number; y: number; asleep: boolean }[]; meter: number; heights: Record<string, number>; arms?: string; shards?: number; crawling?: boolean; wound?: { limp: string | null; hang: string | null; hunch: number } | null };
     takedown?: { t: number; active: boolean; headIn: boolean; armIn: boolean; handR: { x: number; y: number }; handL: { x: number; y: number }; bars: number; helmetShare: number; prop: string; propIn: boolean; muzzle: { x: number; y: number } | null; debug?: Record<string, number[] | null> };
   } | null;
   /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
@@ -218,7 +218,7 @@ export interface Session {
   /** C10: the silhouette lineup scaled so its tallest figure is 64 px tall, as a PNG data URL. */
   silhouetteThumb?: () => string | null;
   /** Renders a frame and counts red-dominant pixels within `r` CSS px of (x, y) (the C2 blood probe). */
-  probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[]; skin: number };
+  probeRed?: (x: number, y: number, r: number, inner?: number) => { red: number; total: number; mean: number[]; skin: number; glow: number };
   /** Test hooks (S1.3 spy): the session's audio, and Cath's hurt path (hurt arc plus her hurt sound). */
   audio?: Audio | null;
   cathHurt?: (bearing: number, melee: boolean, amount?: number) => void;
@@ -1718,6 +1718,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     for (const e of enemies) {
       e.update(dt, sight, rays, world.colliders, ground);
       e.body.updateFlash(flashMs);
+      // C15 (S4.2): a crawl that ran out ends in his death: credit it like a kill.
+      if (e.bledOut) {
+        e.bledOut = false;
+        combat.bledOut(e);
+      }
       // A screenshot stage is one held moment: a guard the stage round alerted doesn't shoot back into it.
       if (staged) e.shots.length = 0;
       for (const sh of e.shots) {
@@ -1740,7 +1745,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           world.fx.impact(sight.chest, sh.dir.clone().negate(), world.surfaceAt(sight.chest));
           world.fx.tracer(sh.from, sight.chest);
         } else if (!dead && along > 0 && miss < 0.3 && (!hitWorld || hitWorld.dist > along)) {
-          hurtCath(actives.absorb(e.kit.damage * run.guard * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)), sh.from, sh.melee ? "melee" : "bullet", e);
+          hurtCath(actives.absorb(e.kit.damage * (sh.mul ?? 1) * run.guard * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)), sh.from, sh.melee ? "melee" : "bullet", e);
           if (e.kit.drain) s.focus = Math.max(0, s.focus - e.kit.drain);
           if (!sh.melee) world.fx.tracer(sh.from, sight.chest);
         } else if (hitWorld) {
@@ -2210,6 +2215,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           machine: role === "turret" || role === "hunter" || e.kit === POLICE_DRONE,
           staggered: e.staggered,
           knockedDown: e.knockedDown,
+          crawling: e.crawling,
         },
         wire,
       );
@@ -3019,6 +3025,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let zoomOn = false;
   combat.bus.on("hit", (h) => {
     frameHits.push(h);
+    if (h.disarmed && !o.shot) hud.feedLine("Disarmed", true);
     lastHitPoint = new THREE.Vector3(h.point.x, h.point.y, h.point.z);
     lastHitSeg = h.seg;
   });
@@ -3588,7 +3595,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * him from the front or the back, knocks him down), shot at its moment and framed close and three-quarters on so
    * the plate, the carrier under it, the face, the steps read.
    */
-  const C15_STAGES: Record<string, { base: string; dist: number; ms: number; turn?: number; pre: (g: Enemy, raw: number) => void; frame: "plate" | "head" | "body" | "back"; weapon?: string; rounds?: number; aimUp?: boolean }> = {
+  const C15_STAGES: Record<string, { base: string; dist: number; ms: number; turn?: number; pre: (g: Enemy, raw: number) => void; frame: "plate" | "head" | "body" | "back" | "front" | "side" | "quarter"; weapon?: string; rounds?: number; aimUp?: boolean; aimAt?: (g: Enemy) => THREE.Vector3; tick?: (g: Enemy, dt: number) => void; far?: number; shield?: boolean }> = {
     // The e2e's check (C15): six Corridor AR rounds into a fresh guard's chest from 8 m break the front plate.
     "plate-rifle-6": { base: "hit-body", dist: 8, ms: 40, frame: "body", weapon: "corridorAR", rounds: 6, pre: (g) => (g.hp = g.kit.maxHp * 3) },
     "enemy-plate-cracked": {
@@ -3608,6 +3615,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       dist: 3.4,
       ms: 650,
       frame: "plate",
+      // Further back than the crack, so the plate is in the street at his feet (C15 review: it hung by her muzzle).
+      far: 2.3,
       pre: (g, raw) => {
         const p = g.armour!.plates.chestF;
         p.hp = Math.min(p.maxHp * 0.3, raw * 0.5);
@@ -3628,10 +3637,75 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         g.hp = g.kit.maxHp * 3;
       },
     },
-    "enemy-stagger-front": { base: "hit-body", dist: 5.5, ms: 200, frame: "body", pre: (g) => (g.stag.meter = 0.34) },
-    // Between the shoulder blades (the back plate), clear of the coolant can low on his spine.
-    "enemy-stagger-back": { base: "hit-body", dist: 5.5, ms: 200, turn: Math.PI, frame: "back", aimUp: true, pre: (g) => (g.stag.meter = 0.34) },
+    // The front stagger is shot from in front of him (three-quarters, his rifle side away): the steps back toward the
+    // lens, the dropped weapon arm and the folding head read; side-on they collapsed into a crouch (C15 review).
+    "enemy-stagger-front": { base: "hit-body", dist: 5.5, ms: 200, frame: "front", far: 3.6, pre: (g) => (g.stag.meter = 0.34) },
+    // Between the shoulder blades (the back plate), clear of the coolant can low on his spine; framed in profile, so
+    // the forward pitch and the flung arms read as a stumble, not a jog away.
+    "enemy-stagger-back": { base: "hit-body", dist: 5.5, ms: 200, turn: Math.PI, frame: "quarter", far: 3.4, aimUp: true, pre: (g) => (g.stag.meter = 0.34) },
     "enemy-knockdown": { base: "hit-body", dist: 5.5, ms: 1000, frame: "body", pre: (g) => (g.stag.meter = 0.79) },
+    // C15 (S4.3): a round through his weapon forearm takes the carbine; 700 ms on he's drawing the sidearm off his
+    // thigh, the carbine in the street.
+    "enemy-disarm": {
+      base: "hit-body",
+      dist: 4,
+      ms: 700,
+      frame: "front",
+      far: 3.4,
+      aimAt: (g) => g.body.joints.handR.clone().lerp(g.body.joints.elbowR, 0.3),
+      pre: (g) => {
+        g.hp = g.kit.maxHp * 3;
+        combat.forceDisarm = 0;
+      },
+    },
+    // C15 (S4.2): knocked down at 9% health he doesn't get up: he goes over onto his front and crawls.
+    "enemy-crawl": {
+      base: "hit-body",
+      dist: 5.5,
+      ms: 3900,
+      frame: "side",
+      far: 3.4,
+      pre: (g, raw) => {
+        g.hp = g.kit.maxHp * 0.09 + raw * 0.9;
+        g.stag.meter = 0.79;
+        g.lastKnown.copy(player.pos);
+        Enemy.forceCrawl = true;
+      },
+    },
+    // C15 (the C10 carry-over): the round that wears a riot shield through breaks it in three; 450 ms on the pieces
+    // are coming down round him and he reels back a step without it.
+    "enemy-shield-break": {
+      base: "hit-body",
+      dist: 4.5,
+      ms: 450,
+      frame: "front",
+      far: 3.6,
+      shield: true,
+      pre: (g) => {
+        g.shieldHp = 0.01;
+      },
+    },
+    // C15 (S4.2): a guard carrying his wounds: the left leg limping, the left arm hanging, hunched below 25%.
+    "enemy-wounded": {
+      base: "hit-body",
+      dist: 5.5,
+      ms: 900,
+      frame: "front",
+      far: 4.2,
+      aimAt: (g) => g.body.joints.footR.clone().lerp(g.body.joints.kneeR, 0.5),
+      pre: (g, raw) => {
+        g.hp = g.kit.maxHp * 0.22 + raw * 1.8;
+        g.wounds.dmg.legL = g.kit.maxHp * 0.2;
+        g.wounds.dmg.armL = g.kit.maxHp * 0.2;
+        g.wounds.dmg.torso = g.kit.maxHp * 0.4;
+        g.stag.staggerCd = 5;
+        g.stag.knockCd = 5;
+      },
+      tick: (g, dt) => {
+        g.motion.speed = 1.1;
+        g.motion.phase += 1.1 * dt * 3.1;
+      },
+    },
   };
   let c15: (typeof C15_STAGES)[string] | null = null;
   /** C9: a body's joint heights over the street under each joint (m), rounded to the centimetre. */
@@ -4501,9 +4575,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // A plain rifleman (a riot shield would eat the round), the nearest one.
     const rifle = enemies.filter((e) => e.alive && (e.kit.role ?? "rifle") === "rifle").sort((a, b) => a.position.distanceTo(eye) - b.position.distanceTo(eye));
     // Failing that, anyone armed (a civilian never counts as a target, so cover can't be "blocked" on one).
-    const g = stageGuard ?? rifle[0] ?? enemies.find((e) => e.alive && !e.shield && e.kit.role !== "civilian" && e.kit.role !== "nurse" && e.kit.role !== "turret");
+    // C15's shield stage takes the nearest riot-shield bearer instead (and leaves the stage guard as he is).
+    const shieldMan = c15?.shield ? enemies.filter((e) => e.kit.role === "shield" && e.body.lost.size === 0).sort((a, b) => a.position.distanceTo(eye) - b.position.distanceTo(eye))[0] : undefined;
+    if (c15?.shield && !shieldMan) return "no shield bearer";
+    const g = shieldMan ?? stageGuard ?? rifle[0] ?? enemies.find((e) => e.alive && !e.shield && e.kit.role !== "civilian" && e.kit.role !== "nurse" && e.kit.role !== "turret");
     if (!g) return "no enemy";
-    stageGuard = g;
+    if (!shieldMan) stageGuard = g;
     g.revive();
     // A guard 10 m down the crosshair, facing her, unaware.
     // A phone screen is small: the cover stages bring the crate and the guard in so his head over it reads.
@@ -4557,6 +4634,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     g.motion.pos.copy(at);
     g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z) + (c15?.turn ?? 0);
     clearDebris();
+    clearShards();
     // A calm street: nobody hunting her, no hurt arcs, full health, so the frame shows only this hit.
     for (const e of enemies) {
       if (e.alive && e.state !== "dead") e.state = "unaware";
@@ -4592,7 +4670,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (crateCollider) crateCollider.off = !crated;
     // C10: hit-arm takes the round on the support forearm, nearer the elbow (the hand that opens stays clear of the marker).
     const joint = name === "hit-arm" ? g.body.joints.elbowL.clone().lerp(g.body.joints.handL, 0.3) : name === "hit-head" || name === "hit-headkill" || name === "peek-head" || name === "enemy-flinch-head-60" ? g.body.joints.head : g.body.joints.chest;
-    const aim = c15?.aimUp ? g.body.joints.chest.clone().lerp(g.body.joints.neck, 0.55) : joint.clone();
+    const aim = c15?.aimAt ? c15.aimAt(g) : c15?.aimUp ? g.body.joints.chest.clone().lerp(g.body.joints.neck, 0.55) : joint.clone();
     // Blocked: the round goes into the crate's upper face, square on, with the guard's head showing behind it.
     if (name === "blocked" && stageCrate) aim.copy(stageCrate.position).y += 0.35;
     if (name === "hit-kill" || name === "hit-headkill") g.hp = 1;
@@ -4633,6 +4711,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     combat.quiet = false;
     combat.forceVariant = null;
     combat.forceHelmet = null;
+    combat.forceDisarm = null;
     drainEvents();
     // A death stage shows the death: no loot beam standing through the body.
     if (c9) pickups.clear();
@@ -4644,10 +4723,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const simMs = c9?.pool ? 3200 : tMs;
     for (let t = 0; t + 1e-6 < simMs / 1000; t += stepS) {
       const h = Math.min(stepS, simMs / 1000 - t);
+      if (c15?.tick) c15.tick(g, h);
       for (const e of enemies) e.feel(h, world.colliders, ground);
       if (c9) drainDeaths();
       world.update(0, 1, h);
     }
+    Enemy.forceCrawl = null;
     const gp = world.fx.gore?.pools;
     if (c9?.pool && gp) {
       const p0 = gp.pools.find(() => true);
@@ -4806,11 +4887,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // and the face read at every size; the staggers and the knockdown from further back, the whole man in frame.
       const J = g.body.joints;
       // (The head a touch under the point of aim: it snaps back and down, and the frame keeps it near the middle.)
-      const focus = c15.frame === "head" ? J.head.clone().add(new THREE.Vector3(0, -0.14, 0)) : c15.frame === "plate" ? J.chest.clone().lerp(J.neck, 0.35) : J.pelvis.clone().lerp(J.chest, 0.6);
+      // (The head from 3.2 m takes in his shoulders and the hand coming up to the helmet; the broken plate from 2.3 m
+      // looks a little down, so the plate in the street at his feet is in frame.)
+      const focus = c15.frame === "head" ? J.head.clone().lerp(J.chest, 0.3) : c15.frame === "plate" ? (c15.far ? J.chest.clone().lerp(J.pelvis, 0.45) : J.chest.clone().lerp(J.neck, 0.35)) : J.pelvis.clone().lerp(J.chest, 0.6);
       const facing = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
       const side = new THREE.Vector3(-facing.z, 0, facing.x);
-      const close = c15.frame === "head" ? 1.25 : c15.frame === "plate" ? 1.45 : 3.0;
-      const dist = close * (o.quality === "phone" ? 0.85 : 1);
+      const close = c15.far ?? (c15.frame === "head" ? 2.5 : c15.frame === "plate" ? 1.45 : 3.0);
+      // The whole-body frames stand at the same distance on every screen (the takedown chip's 2.5 m reach must agree
+      // between desktop and phone, C15 review); the close-ups come in on the phone's small screen.
+      const dist = close * (o.quality === "phone" && (c15.frame === "plate" || c15.frame === "head") ? 0.85 : 1);
       const sk = c15.frame === "plate" || c15.frame === "head" ? 0.36 : 0.5;
       // The head from in front and off his right (the hand that goes to the helmet is his left, on the far side); the
       // staggers square to the reaction axis (side-on, a touch in front), so the pitch, the steps and the flung arms read.
@@ -4819,7 +4904,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           ? facing.clone().multiplyScalar(0.93).addScaledVector(side, sk)
           : c15.frame === "body" || c15.frame === "back"
             ? side.clone().multiplyScalar(0.95).addScaledVector(facing, c15.frame === "back" ? -0.3 : 0.3)
-            : facing.clone().multiplyScalar(0.93).addScaledVector(side, -sk);
+            : c15.frame === "front"
+              ? facing.clone().multiplyScalar(0.88).addScaledVector(side, 0.47)
+              : c15.frame === "side"
+                ? side.clone().addScaledVector(facing, 0.12)
+                : c15.frame === "quarter"
+                  ? side.clone().multiplyScalar(0.8).addScaledVector(facing, 0.6)
+                : facing.clone().multiplyScalar(0.93).addScaledVector(side, -sk);
       // The knockdown falls away from her: frame him from the side he fell along.
       if (name === "hit-body" && g.knockedDown) off.copy(side).multiplyScalar(-0.9).addScaledVector(facing, 0.44);
       off.normalize();
@@ -4833,7 +4924,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const look2 = focus.clone().sub(eye).normalize();
       player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1));
       // A touch off centre to the left, clear of the gun in her right hand.
-      player.yaw = Math.atan2(-look2.x, -look2.z) - (c15.frame === "body" || c15.frame === "back" ? 0.1 : c15.frame === "head" ? 0.24 : 0.16);
+      player.yaw = Math.atan2(-look2.x, -look2.z) - (c15.frame === "body" || c15.frame === "back" || c15.frame === "front" || c15.frame === "side" || c15.frame === "quarter" ? 0.1 : c15.frame === "head" ? 0.12 : 0.16);
       player.applyCamera(world.camera, 0);
       world.camera.updateMatrixWorld();
     }
@@ -4858,7 +4949,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       headBone?.updateWorldMatrix(true, false);
       const face = headBone ? headBone.localToWorld(new THREE.Vector3(0, HELM_Y + 0.008, 0.117)) : J.head.clone().addScaledVector(up, 0.01 - 0.12).addScaledVector(fwdB, 0.12);
       const px = (p: THREE.Vector3) => Math.abs(toScreen(p.clone().addScaledVector(camX, 0.05)).x - toScreen(p).x);
+      // Where the fracture radiates from (the chest bone's crackAt), on screen.
+      const chestBone = g.body.root.getObjectByName("chest");
+      chestBone?.updateWorldMatrix(true, false);
+      const crackW = chestBone && g.body.crackAt.z !== 0 ? chestBone.localToWorld(g.body.crackAt.clone()) : null;
       s.stageInfo.armour = {
+        crack: crackW ? { ...toScreen(crackW), r: px(crackW) * 2 } : null,
         plates: Object.fromEntries(Object.values(g.armour.plates).map((p) => [p.id, p.state])),
         visor: g.armour.visor,
         reaction: g.reaction?.kind ?? null,
@@ -4868,6 +4964,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         debris: liveDebris().map((d) => ({ ...toScreen(d.position), asleep: d.asleep })),
         meter: g.stag.meter,
         heights: jointHeights(g),
+        arms: g.motion.arms?.mode ?? "rifle",
+        shards: g.shards.length,
+        crawling: g.crawling,
+        wound: g.motion.wound ? { limp: g.motion.wound.limp, hang: g.motion.wound.hang, hunch: g.motion.wound.hunch } : null,
       };
     }
     if (name === "hit-arm") {
@@ -4897,6 +4997,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const px = g2.getImageData(0, 0, R * 2, R * 2).data;
     let red = 0;
     let skin = 0;
+    let glow = 0;
     let total = 0;
     const mean = [0, 0, 0];
     for (let j = 0; j < R * 2; j++)
@@ -4915,12 +5016,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const bb = px[o4 + 2]!;
         const mx = Math.max(rr, gg, bb);
         const mn = Math.min(rr, gg, bb);
+        // C15: the hot amber of a fresh crack's seam (or an ember): bright, red-led, orange to amber, saturated.
+        if (rr >= 150 && rr >= bb * 2 && gg >= rr * 0.3 && gg <= rr * 0.88) glow++;
         if (mx === rr && gg >= bb && mx >= 60 && mx - mn >= 0.18 * mx && mx - mn <= 0.8 * mx) {
           const hue = (60 * (gg - bb)) / Math.max(1, mx - mn);
           if (hue >= 5 && hue <= 50) skin++;
         }
       }
-    return { red, total, mean: mean.map((v) => Math.round(v / Math.max(1, total))), skin };
+    return { red, total, mean: mean.map((v) => Math.round(v / Math.max(1, total))), skin, glow };
   };
   /**
    * C7 acceptance: the frame as an 8x8x8 RGB histogram (shares), and the edge-to-centre saturation probe: mean HSV

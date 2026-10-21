@@ -62,7 +62,7 @@ const lift = (t: number, t0: number, t1: number, h: number) => (t <= t0 || t >= 
 export function reactTravel(kind: ReactKind, dir: StaggerDir): { x: number; z: number } {
   if (kind !== "stagger") return { x: 0, z: 0 };
   const T = REACT.stagger;
-  if (dir === "front") return { x: 0, z: -T.frontStepM };
+  if (dir === "front") return { x: 0, z: -T.frontStepM * 1.7 };
   if (dir === "back") return { x: 0, z: T.backStepM };
   return { x: (dir === "left" ? 1 : -1) * T.sideStepM, z: 0 };
 }
@@ -71,7 +71,10 @@ export function reactTravel(kind: ReactKind, dir: StaggerDir): { x: number; z: n
 export const REACT = {
   // S4.2's numbers are the floor: the head drop (15), the back pitch (25) and the flail (20) are pushed past them so
   // a still at 200 ms reads as a stagger, not a walk (C15 review).
-  stagger: { frontStepM: 0.35, stepMs: 180, backStepM: 0.4, sideStepM: 0.32, armDropDeg: 45, headDropDeg: 22, backPitchDeg: 32, flailDeg: 38, rollDeg: 24, recoilDeg: 24, whipDeg: 14 },
+  // The front stagger's two steps back are 0.35 m each and the gun arm drops 60 (the trailing foot closes up last);
+  // the back stagger pitches 38 with the carbine flung up and the arms out, the knees buckling (C15 review r2: at
+  // 200 ms the front read as a crouch and the back as a jog).
+  stagger: { frontStepM: 0.35, stepMs: 180, backStepM: 0.42, sideStepM: 0.32, armDropDeg: 60, headDropDeg: 22, backPitchDeg: 38, flailDeg: 72, rollDeg: 24, recoilDeg: 26, whipDeg: 14, backFlingDeg: 22 },
   visorSnap: { headDeg: 25 },
 } as const;
 
@@ -98,13 +101,15 @@ export function reactPose(kind: ReactKind, dir: StaggerDir, t: number, fallYaw =
     if (dir === "front") {
       // Two steps back (right foot, then left), the weapon arm dropping 45 degrees, the off hand to the wound, the
       // head dropping as the shoulders rock back.
+      // Right foot back 0.35 m, then the left passes it to 0.7 m, then the right closes up (the man ends 0.6 m back).
       const st = S.stepMs;
-      p.footRZ = -S.frontStepM * step(t, 0, st);
-      p.footRLift = lift(t, 0, st, 0.09);
-      p.footLZ = -S.frontStepM * step(t, st, st * 2);
-      p.footLLift = lift(t, st, st * 2, 0.07);
-      p.pelvisZ = -S.frontStepM * step(t, 20, st * 2 + 30);
-      p.pelvisDrop = 0.09 * env;
+      const far = S.frontStepM * 1.7;
+      p.footRZ = -S.frontStepM * step(t, 0, st) - (far - S.frontStepM) * step(t, st * 2 + 20, dur - 60);
+      p.footRLift = lift(t, 0, st, 0.11) + lift(t, st * 2 + 20, dur - 60, 0.05);
+      p.footLZ = -S.frontStepM * 2 * step(t, st, st * 2) + (S.frontStepM * 2 - far) * step(t, st * 2 + 20, dur - 60);
+      p.footLLift = lift(t, st, st * 2, 0.09);
+      p.pelvisZ = -far * step(t, 0, st * 2);
+      p.pelvisDrop = 0.05 * env;
       p.pitch = -S.recoilDeg * DEG * (t < 90 ? smooth(t / 90) : Math.max(0, 1 - (t - 90) / (dur - 90))) - 6 * DEG * env;
       p.armDrop = S.armDropDeg * DEG * envelope(t, 110, dur, 220);
       p.clutch = envelope(t, 160, dur, 200);
@@ -112,15 +117,16 @@ export function reactPose(kind: ReactKind, dir: StaggerDir, t: number, fallYaw =
       p.headPitch = -S.whipDeg * DEG * Math.sin(clamp01(t / 140) * Math.PI) + S.headDropDeg * DEG * envelope(t, 140, dur, 200) * step(t, 90, 220);
     } else if (dir === "back") {
       // Hit from behind: pitched 25 degrees forward, one stumble step, arms flung out.
-      p.pitch = S.backPitchDeg * DEG * envelope(t, 100, dur, 240);
+      p.pitch = S.backPitchDeg * DEG * envelope(t, 90, dur, 240);
       p.footLZ = S.backStepM * step(t, 60, 250);
       p.footLLift = lift(t, 60, 250, 0.1);
       p.footRZ = S.backStepM * step(t, 250, 420);
       p.footRLift = lift(t, 250, 420, 0.06);
       p.pelvisZ = S.backStepM * step(t, 30, 400);
-      p.pelvisDrop = 0.1 * env;
-      p.flailL = p.flailR = S.flailDeg * DEG * envelope(t, 90, dur, 240);
-      p.armDrop = 30 * DEG * env;
+      p.pelvisDrop = 0.13 * env;
+      p.flailL = p.flailR = S.flailDeg * DEG * envelope(t, 80, dur, 240);
+      // The carbine flung up and forward as he pitches (negative drop lifts it about the shoulder).
+      p.armDrop = -S.backFlingDeg * DEG * envelope(t, 80, dur, 240);
       // The head whips back as the shoulders are thrown forward.
       p.headPitch = -(S.whipDeg + 8) * DEG * env;
     } else {

@@ -8,6 +8,7 @@ import { DroppedProp } from "./death";
 import { place } from "./body";
 import type { Body } from "./body";
 import { plateGeometry, type Arch } from "./models/enforcer";
+import { SHIELD_PIECES, buildShieldPiece } from "./models/gear";
 import { enemyMaterials } from "./models/materials";
 import { FX0 } from "./rig";
 
@@ -65,6 +66,11 @@ export class PlateDebris {
     const flat = dir.clone().setY(0);
     if (flat.lengthSq() < 1e-6) flat.copy(this.face).negate();
     flat.normalize();
+    // A plate can't fly on through the man it was strapped to: a throw that heads into him (the round's way, for a
+    // plate struck square on) glances off his chest instead, out and to the side, and drops in front of him, where
+    // she sees it land (C15 review: thrown through him, it hung in the air beside her muzzle).
+    const into = flat.dot(this.face);
+    if (into < 0) flat.addScaledVector(this.face, -2 * into).multiplyScalar(0.55).addScaledVector(side, (slot % 2 ? 1 : -1) * 0.45).normalize();
     const seed = (slot * 7 + Math.floor(centre.x * 100)) % 5;
     const spin = DEBRIS.spinMin + ((DEBRIS.spinMax - DEBRIS.spinMin) * seed) / 4;
     const vel = flat.multiplyScalar(DEBRIS.along).add(new THREE.Vector3(0, DEBRIS.up, 0));
@@ -126,4 +132,105 @@ export function liveDebris(): readonly PlateDebris[] {
 /** Clears the street of loose plates (screenshot stages start clean). */
 export function clearDebris(): void {
   while (live.length) live[0]!.dispose();
+}
+
+/**
+ * C15: a piece of a broken riot shield, thrown off along the round (spread, up, tumbling) as a two-point rigid body,
+ * clattering and lying flat where it lands. `shield` is the intact shield (its pose is where the pieces start).
+ */
+export class ShieldShard {
+  readonly group: THREE.Group;
+  private readonly prop: DroppedProp;
+  private readonly face = new THREE.Vector3();
+  private readonly axis = new THREE.Vector3();
+  private roll = 0;
+  private rollV: number;
+  constructor(shield: THREE.Object3D, i: number, dir: THREE.Vector3, phone: boolean, onClatter: (speed: number, at: THREE.Vector3) => void) {
+    shield.updateMatrixWorld(true);
+    const m = shield.matrixWorld;
+    // The piece's two points: across its middle, in the shield's frame.
+    const P = SHIELD_PIECES[i]!.outline;
+    const cx = P.reduce((a, p) => a + p[0], 0) / P.length;
+    const cy = P.reduce((a, p) => a + p[1], 0) / P.length;
+    const long = i === 0 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+    const half = i === 0 ? 0.25 : 0.24;
+    const c = new THREE.Vector3(cx, cy, 0);
+    const a = c.clone().addScaledVector(long, -half).applyMatrix4(m);
+    const b = c.clone().addScaledVector(long, half).applyMatrix4(m);
+    this.face.set(0, 0, 1).transformDirection(m);
+    this.group = new THREE.Group();
+    const piece = buildShieldPiece(i, phone);
+    // The piece's mesh sits in the shield frame: offset it so the two-point frame's origin (a) carries it.
+    const frame = new THREE.Group();
+    this.group.add(frame);
+    frame.add(piece);
+    this.offset = { c, long, half };
+    this.inner = frame;
+    const flat = dir.clone().setY(0).normalize();
+    const side = new THREE.Vector3(-flat.z, 0, flat.x);
+    const spread = i === 0 ? 0 : i === 1 ? -1 : 1;
+    const vel = flat.multiplyScalar(2.2).addScaledVector(side, spread * 1.3).add(new THREE.Vector3(0, i === 0 ? 2.4 : 1.2, 0));
+    const spin = (i % 2 ? 1 : -1) * (7 + i * 2);
+    this.prop = new DroppedProp(a, b, vel, spin * 0.5, (speed, at) => {
+      this.rollV *= 0.45;
+      onClatter(speed, at);
+    });
+    this.prop.lift = 0.012;
+    this.rollV = -spin * 0.5;
+    shield.parent?.add(this.group);
+    shards.push(this);
+    while (shards.length > 9) shards.shift()!.dispose();
+    this.pose();
+  }
+  private readonly offset: { c: THREE.Vector3; long: THREE.Vector3; half: number };
+  private readonly inner: THREE.Group;
+
+  get asleep(): boolean {
+    return this.prop.asleep;
+  }
+
+  private pose(): void {
+    this.axis.subVectors(this.prop.b, this.prop.a).normalize();
+    const f = this.face.clone().projectOnPlane(this.axis);
+    if (f.lengthSq() < 1e-6) f.set(0, 1, 0).projectOnPlane(this.axis);
+    f.normalize().applyAxisAngle(this.axis, this.roll);
+    // place() lays local +Y along a->b and +Z on f; the piece was built with its long axis on x (top) or y (lower).
+    place(this.group, this.prop.a, this.prop.b, f);
+    const o = this.offset;
+    if (o.long.x > 0.5) this.inner.rotation.set(0, 0, Math.PI / 2);
+    else this.inner.rotation.set(0, 0, 0);
+    // The piece's own point a (its centre less half its length along its long axis) onto the frame's origin.
+    const pa = o.c.clone().addScaledVector(o.long, -o.half).applyEuler(this.inner.rotation);
+    this.inner.position.copy(pa).negate();
+  }
+
+  step(dt: number, ground: (x: number, z: number) => number, colliders: readonly THREE.Box3[]): void {
+    if (this.prop.asleep || dt <= 0) return;
+    this.prop.step(dt, ground, colliders);
+    this.roll += this.rollV * dt;
+    const mid = (this.prop.a.y + this.prop.b.y) * 0.5;
+    if (mid - ground(this.prop.a.x, this.prop.a.z) < 0.05) {
+      this.rollV *= Math.exp(-dt * 9);
+      const flat = Math.round(this.roll / Math.PI) * Math.PI;
+      this.roll += (flat - this.roll) * Math.min(1, dt * 10);
+    }
+    this.pose();
+  }
+
+  dispose(): void {
+    this.group.removeFromParent();
+    const i = shards.indexOf(this);
+    if (i >= 0) shards.splice(i, 1);
+  }
+}
+
+const shards: ShieldShard[] = [];
+
+/** The shield pieces in the street (stepped by the session; cleared by the stages). */
+export function liveShards(): readonly ShieldShard[] {
+  return shards;
+}
+
+export function clearShards(): void {
+  while (shards.length) shards[0]!.dispose();
 }

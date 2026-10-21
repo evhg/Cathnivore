@@ -42,9 +42,11 @@ export const FINISH = {
   padding: { color: 0xd4a05c, metal: 0, rough: 0.8, sheen: 0.06, band: "nylon", scale: 1.5, wear: 0.1 },
   strap: { color: 0x1e1b17, metal: 0, rough: 0.85, sheen: 0.1, band: "nylon", wear: 0.3 },
   /** The carrier's torn strap tabs: a darker coyote webbing, so they read against the panel as they flap. */
-  tab: { color: 0x6e5432, metal: 0, rough: 0.85, sheen: 0.05, band: "nylon", wear: 0.2 },
+  tab: { color: 0x8a6a3e, metal: 0, rough: 0.85, sheen: 0.05, band: "nylon", wear: 0.2 },
   /** C15: the face behind a shattered visor (its tone is per body, set in the shader). */
   skin: { color: 0xa07a62, metal: 0, rough: 0.55, sheen: 0.15, band: "flat", wear: 0 },
+  /** C15: the whites of his eyes (a warm, wet off-white: never paper white in the noir grade). */
+  eye: { color: 0x9c9187, metal: 0, rough: 0.18, coat: 1, band: "flat", wear: 0 },
 } satisfies Record<string, Finish>;
 
 /** Self-lit parts: `visor` takes the body's visor tint and level; `blink` the antenna's 1 Hz blink; `pulse` the coolant window. */
@@ -559,8 +561,9 @@ function head(b: Builder, arch: Arch): void {
   if (!sniper) {
     // The visor: a band of black glass, the amber slit lit inside it (the crit target), a heavy brow over it.
     b.on(PLATE_SLOT.visor, () => {
-      ring([[0.149, -0.016], [0.1585, -0.014], [0.1585, 0.03], [0.149, 0.032]], 0, 52 * D, S.glass, 14);
-      ring([[0.157, 0.0], [0.1612, 0.002], [0.1612, 0.016], [0.157, 0.018]], 0, 36 * D, GLOWS.slit, 10);
+      // Finer up close (LOD0): the face behind it draws within the visor's own triangles.
+      ring([[0.149, -0.016], [0.1585, -0.014], [0.1585, 0.03], [0.149, 0.032]], 0, 52 * D, S.glass, lod === 0 ? 22 : 14);
+      ring([[0.157, 0.0], [0.1612, 0.002], [0.1612, 0.016], [0.157, 0.018]], 0, 36 * D, GLOWS.slit, lod === 0 ? 14 : 10);
     });
     if (lod === 0) face(b);
     if (lod < 2) ring([[0.152, 0.03], [0.166, 0.034], [0.165, 0.048], [0.153, 0.056]], 0, 40 * D, S.plate, 12);
@@ -577,7 +580,8 @@ function head(b: Builder, arch: Arch): void {
     ring([[0.149, -0.124], [0.163, -0.118], [0.166, -0.066], [0.158, -0.036], [0.149, -0.04]], 0, 48 * D, S.plateDark, 14);
     if (b.det === 0)
       // The respirator's vent: four slats across the chin (not two round filters: they read as a cartoon face).
-      for (let i = 0; i < 4; i++) b.add(H, b.box(0.07 - i * 0.008, 0.006, 0.012, 0.002, 1), S.metal, { p: [0, -0.06 - i * 0.012, 0.166 * sz + 0.004 - i * 0.002], r: [0.25, 0, 0] });
+      // (Plain boxes: a 2 mm chamfer on a 6 mm slat is invisible and cost 130 triangles the face behind the visor uses.)
+      for (let i = 0; i < 4; i++) b.add(H, box(0.07 - i * 0.008, 0.006, 0.012, 0, 0), S.metal, { p: [0, -0.06 - i * 0.012, 0.166 * sz + 0.004 - i * 0.002], r: [0.25, 0, 0] });
     for (const s of [1, -1]) b.add(H, cyl(0.042, 0.04, 0.026, hs(14)), S.plateDark, { p: [0.155 * s, -0.03, 0.0], r: [0, 0, (Math.PI / 2) * s] });
   }
   if (arch === "leader") {
@@ -598,16 +602,36 @@ function head(b: Builder, arch: Arch): void {
  */
 function face(b: Builder): void {
   const y0 = HELM_Y - 0.004;
-  // Skin across the eyes (its tone per body), within the visor's own triangle count: it draws in place of the glass.
-  b.on(-PLATE_SLOT.visor, () => b.add("head", shell([[0.104, y0 - 0.03], [0.115, y0 - 0.014], [0.118, y0 + 0.012], [0.113, y0 + 0.04]], -44 * D, 88 * D, b.seg(8), 0.5), FINISH.skin, { s: [0.92, 1, 1.02] }), -1);
+  const phone = b.o.phone;
+  // The skin across the eyes (its tone per body), modelled, not painted: the cheekbones under the eyes, the sockets
+  // set back, the brow ridge standing proud over them, the forehead going back under the balaclava's edge (C15
+  // review: a flat band read as a cartoon). The shader shades the sockets, the bridge of the nose and the fabric's
+  // edge (models/materials.ts); all of it draws in place of the visor, within its triangle count.
+  const prof: P2[] = [
+    [0.098, y0 - 0.036],
+    [0.11, y0 - 0.024],
+    [0.114, y0 - 0.008],
+    [0.108, y0 + 0.008],
+    [0.112, y0 + 0.02],
+    [0.121, y0 + 0.027],
+    [0.117, y0 + 0.037],
+    [0.11, y0 + 0.046],
+  ];
+  b.on(-PLATE_SLOT.visor, () => b.add("head", shell(prof, -46 * D, 92 * D, b.seg(phone ? 10 : 9), 0.35), FINISH.skin, { s: [0.92, 1, 1.02] }), -1);
   b.on(-PLATE_SLOT.visor, () => {
-    // The eyes in their sockets: wet and dark, catching the street (the glass finish's clearcoat).
     for (const x of [-0.033, 0.033]) {
-      if (b.o.phone) b.add("head", box(0.022, 0.011, 0.008, 0, 0), FINISH.glass, { p: [x, y0 + 0.012, 0.116] });
-      else b.add("head", lathe([[0, -0.008], [0.011, -0.003], [0.011, 0.003], [0, 0.008]], 1.3, 1, 4), FINISH.glass, { p: [x, y0 + 0.012, 0.113], r: [Math.PI / 2, 0, 0] });
+      if (phone) {
+        b.add("head", box(0.02, 0.01, 0.008, 0, 0), FINISH.eye, { p: [x, y0 + 0.008, 0.109] });
+        b.add("head", box(0.009, 0.009, 0.004, 0, 0), FINISH.glass, { p: [x, y0 + 0.008, 0.1135] });
+      } else {
+        // The eye: an almond of off-white, the dark iris on it catching the street (the glass finish's clearcoat).
+        b.add("head", lathe([[0, -0.006], [0.0105, -0.002], [0.0105, 0.002], [0, 0.006]], 1.55, 0.95, 6), FINISH.eye, { p: [x, y0 + 0.008, 0.106], r: [Math.PI / 2, 0, 0] });
+        b.add("head", lathe([[0, -0.0025], [0.0055, 0], [0, 0.0025]], 1, 1, 6), FINISH.glass, { p: [x * 0.97, y0 + 0.008, 0.1115], r: [Math.PI / 2, 0, 0] });
+      }
     }
-    b.add("head", box(0.014, 0.034, 0.018, 0, 0), FINISH.skin, { p: [0, y0 - 0.004, 0.118] });
   });
+  // The bridge of the nose, between the sockets.
+  b.on(-PLATE_SLOT.visor, () => b.add("head", box(0.013, 0.03, 0.016, 0, 0), FINISH.skin, { p: [0, y0 - 0.006, 0.117], r: [-0.2, 0, 0] }), -1);
 }
 
 /**
@@ -642,7 +666,8 @@ function underLayer(b: Builder): void {
     });
     // The torn tabs at the top corners, hinged at their top edge.
     for (const x of [-0.13, 0.13])
-      b.on(id, () => b.add("chest", box(0.058, 0.1, 0.007, 0, 0), S.tab, { p: [x, 0.115, (phi === 0 ? 1 : -1) * 0.143], r: [0, phi, 0] }), 0.165);
+      // (Big enough to see swing at 10 m, pillar 4: 7.5 x 13 cm, hinged at their top edge.)
+      b.on(id, () => b.add("chest", box(0.075, 0.13, 0.008, 0, 0), S.tab, { p: [x, 0.1, (phi === 0 ? 1 : -1) * 0.145], r: [0, phi, 0] }), 0.165);
   }
 }
 

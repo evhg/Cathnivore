@@ -125,11 +125,16 @@ describe("cathode-stagger: the reaction poses (game/anim/react.ts)", () => {
       expect(Math.abs(p1.pitch) + Math.abs(p1.roll) + Math.abs(p1.armDrop) + p1.clutch).toBeLessThan(1e-3);
     });
   }
-  it("front: two steps back of 0.35 m, the arm drops 45 degrees, the off hand clutches", () => {
+  it("front: two steps back of 0.35 m, the arm drops at least 45 degrees, the off hand clutches", () => {
     const mid = reactPose("stagger", "front", 300);
-    expect(mid.armDrop).toBeCloseTo((45 * Math.PI) / 180, 2);
+    expect(mid.armDrop).toBeGreaterThanOrEqual((45 * Math.PI) / 180 - 1e-3);
     expect(mid.clutch).toBeCloseTo(1, 2);
-    expect(reactTravel("stagger", "front").z).toBeCloseTo(-0.35);
+    // The right foot 0.35 m back, then the left passes it 0.35 m further.
+    expect(reactPose("stagger", "front", 180).footRZ).toBeCloseTo(-0.35, 2);
+    expect(reactPose("stagger", "front", 365).footLZ).toBeCloseTo(-0.7, 2);
+    // At 200 ms he is already well back (overstated, pillar 4).
+    expect(reactPose("stagger", "front", 200).pelvisZ).toBeLessThan(-0.3);
+    expect(reactTravel("stagger", "front").z).toBeCloseTo(-0.595);
   });
   it("back: pitched at least 25 degrees forward, and already most of the way there at 200 ms (overstated)", () => {
     expect(reactPose("stagger", "back", 275).pitch).toBeGreaterThanOrEqual((25 * Math.PI) / 180);

@@ -7,6 +7,7 @@ import { deriveJoints } from "./rig";
 import { FOREGRIP_M } from "./models/gear";
 import type { Dir, Flinch } from "./anim/springs";
 import type { ReactPose } from "./anim/react";
+import { WOUNDS, limpPhase, type WoundZone } from "../sim/wounds";
 
 export interface Motion {
   pos: THREE.Vector3;
@@ -27,6 +28,18 @@ export interface Motion {
   kick: number;
   /** C15 (S4.2): a stagger, knockdown or visor snap playing, laid over the gait and aim, under the flinch. */
   react?: ReactPose | null;
+  /**
+   * C15 (S4.3): the hands after a disarm, `t` ms into the mode: shaking the stung hand (400 ms), drawing the holstered
+   * sidearm (900 ms), then holding it two-handed. Absent (or "rifle"): the carbine.
+   */
+  arms?: { mode: "rifle" | "shake" | "draw" | "pistol"; t: number } | null;
+  /**
+   * C15 (S4.2) wounded layers: the limping leg and how far into it (0..1), the arm that hangs, the hunch (0..1) with
+   * the hand on the worst wound, and the breath clock (s).
+   */
+  wound?: { limp: "L" | "R" | null; limpK: number; hang: "L" | "R" | null; hangK: number; hunch: number; worst: WoundZone | null; breath: number } | null;
+  /** C15 (S4.2): crawling on his front, the crawl's own phase (rad) and a blind shot back over his shoulder (0..1). */
+  crawl?: { phase: number; shoot: number; blend: number } | null;
 }
 
 const local = {} as Record<Joint, THREE.Vector3>;
@@ -75,6 +88,13 @@ export function animate(body: Body, m: Motion): void {
   const lean = 0.08 * run + m.crouch * 0.15;
 
   const f = m.flinch;
+  // C15 (S4.2): a limp warps the gait clock so the injured leg's stance is short, and drops the hip onto it.
+  const wd = m.wound ?? null;
+  const limpK = wd?.limp ? wd.limpK : 0;
+  const injOff = wd?.limp === "R" ? Math.PI : 0;
+  const phaseL = limpK > 0 ? limpPhase(m.phase, injOff, limpK) : m.phase;
+  const injSin = Math.sin(phaseL + injOff);
+  const limpDrop = limpK > 0 && injSin < 0 ? WOUNDS.limpHipDropM * limpK * -injSin * walk + 0.012 * limpK : 0;
   // A hit shoves the hips along the round (the feet stay planted, so the body leans off them) and a leg hit
   // drops the pelvis onto the buckling knee.
   const rootX = f ? f.get("rootX") : 0;
@@ -82,7 +102,7 @@ export function animate(body: Body, m: Motion): void {
   const pelvisDrop = f ? f.get("pelvisDrop") : 0;
   // Spine: pelvis up through chest and neck, leaning forward when running.
   const r = m.react ?? null;
-  local.pelvis.set(rootX + (r ? r.pelvisX : 0), pelvisY - pelvisDrop - (r ? r.pelvisDrop : 0), rootZ + (r ? r.pelvisZ : 0));
+  local.pelvis.set(rootX + (r ? r.pelvisX : 0) + (wd?.limp === "L" ? -0.025 : wd?.limp === "R" ? 0.025 : 0) * limpK, pelvisY - pelvisDrop - limpDrop - (r ? r.pelvisDrop : 0), rootZ + (r ? r.pelvisZ : 0));
   const spineTilt = lean;
   const chestUp = REST.chest.y - REST.pelvis.y;
   const neckUp = REST.neck.y - REST.chest.y;
@@ -102,7 +122,7 @@ export function animate(body: Body, m: Motion): void {
   const stride = 0.22 + 0.32 * run;
   for (const s of [1, -1]) {
     const L = s > 0;
-    const ph = m.phase + (L ? 0 : Math.PI);
+    const ph = phaseL + (L ? 0 : Math.PI);
     const fwd = Math.cos(ph) * stride * walk;
     const lift = Math.max(0, Math.sin(ph)) * (0.1 + 0.12 * run) * walk;
     hip.copy(L ? local.hipL : local.hipR);
@@ -135,7 +155,13 @@ export function animate(body: Body, m: Motion): void {
   ik(local.shoulderR, local.handR, UPPER, FORE, tmp.set(sh.x - 0.4, sh.y - 0.6, sh.z - 0.2), local.elbowR);
   ik(local.shoulderL, local.handL, UPPER, FORE, tmp.set(local.shoulderL.x + 0.5, local.shoulderL.y - 0.6, local.shoulderL.z), local.elbowL);
 
+  // The carbine's two holds, before anything moves a hand off them: the gun stays where it was held (body.ts grip).
+  gripAt.copy(local.handR);
+  foreAt.copy(local.handL);
+  if (m.arms && m.arms.mode !== "rifle") applyArms(m.arms.mode, m.arms.t, rot, aim);
+  if (wd) applyWound(wd, m.arms?.mode ?? "rifle");
   if (r) applyReact(r);
+  if (m.crawl) crawlPose(m.crawl.phase, m.crawl.shoot, m.crawl.blend);
   if (f) applyFlinch(f);
   deriveJoints(local);
 
@@ -144,6 +170,144 @@ export function animate(body: Body, m: Motion): void {
   m4.compose(m.pos, q, new THREE.Vector3(1, 1, 1));
   for (const j of Object.keys(local) as Joint[]) body.joints[j].copy(local[j]).applyMatrix4(m4);
   body.facing.set(0, 0, 1).applyQuaternion(q);
+  // Where the carbine is held: by the hands while both hold it; otherwise where they would hold it, so one hand can
+  // carry it (an arm hanging, a hand to the wound). A crawling or reeling man's gun goes with his right hand.
+  const oneHanded = !!wd && (wd.hang !== null || (wd.hunch > 0.5 && m.arms?.mode !== "pistol"));
+  if (!oneHanded || m.crawl || (r && (r.lie > 0.05 || r.helmet > 0.05))) {
+    body.grip.copy(body.joints.handR);
+    body.foregrip.copy(body.joints.handL);
+  } else if (wd!.hang === "R") {
+    // The weapon arm hangs: the left hand holds the carbine by its foregrip, the stock tucked under his arm.
+    body.foregrip.copy(body.joints.handL);
+    body.grip.copy(gripAt).sub(foreAt).add(local.handL).applyMatrix4(m4);
+  } else {
+    body.grip.copy(body.joints.handR);
+    body.foregrip.copy(foreAt).sub(gripAt).add(local.handR).applyMatrix4(m4);
+  }
+}
+
+const gripAt = new THREE.Vector3();
+const foreAt = new THREE.Vector3();
+const armTmp = new THREE.Vector3();
+
+/** S4.3's disarm, body space: the stung hand shaken, the draw from the right thigh, the two-handed pistol hold. */
+function applyArms(mode: "shake" | "draw" | "pistol", t: number, rot: (v: THREE.Vector3) => THREE.Vector3, aim: number): void {
+  const shR = local.shoulderR;
+  const shL = local.shoulderL;
+  // The stung hand pulled in against his chest, shaking hard and settling; the other hand cups its wrist.
+  const sting = (u: number) => armTmp.set(shR.x + 0.08 + 0.035 * Math.sin(u * 0.06) * Math.max(0, 1 - u / 450), shR.y - 0.3 + 0.025 * Math.cos(u * 0.083) * Math.max(0, 1 - u / 450), shR.z + 0.26);
+  const holster = new THREE.Vector3(local.hipR.x - 0.12, local.hipR.y - 0.14, local.hipR.z + 0.02);
+  const hold = rot(new THREE.Vector3(0.14, -0.04 - 0.22 * (1 - aim), 0.46 + 0.1 * aim));
+  const hang = new THREE.Vector3(shL.x + 0.07, shL.y - 0.55, shL.z + 0.08);
+  if (mode === "shake") {
+    local.handR.copy(sting(t));
+    local.handL.copy(local.handR).add(armTmp.set(0.07, -0.03, -0.02));
+  } else if (mode === "draw") {
+    // Down to the holster (0 to 380 ms), then up and out to the hold, the support hand meeting it from 520 ms.
+    if (t < 380) local.handR.copy(sting(450)).lerp(holster, smooth01(t / 380));
+    else local.handR.copy(holster).lerp(hold, smooth01((t - 380) / 520));
+    const join = smooth01((t - 520) / 380);
+    local.handL.copy(hang).lerp(armTmp.copy(local.handR).add(new THREE.Vector3(0.04, -0.025, 0.0)), join);
+  } else {
+    local.handR.copy(hold);
+    local.handL.copy(hold).add(armTmp.set(0.04, -0.025, 0.0));
+  }
+  ik(shR, local.handR, UPPER, FORE, tmp.set(shR.x - 0.4, shR.y - 0.6, shR.z - 0.2), local.elbowR);
+  ik(shL, local.handL, UPPER, FORE, tmp.set(shL.x + 0.5, shL.y - 0.6, shL.z), local.elbowL);
+}
+
+const smooth01 = (x: number) => {
+  const t = Math.max(0, Math.min(1, x));
+  return t * t * (3 - 2 * t);
+};
+
+/** Where a hand presses on a wound (body space), for the hunch. */
+function woundPoint(z: WoundZone | null, out: THREE.Vector3): THREE.Vector3 {
+  const c = local.chest;
+  switch (z) {
+    case "legL":
+      return out.copy(local.hipL).lerp(local.kneeL, 0.4).add(armTmp.set(0.02, 0, 0.09));
+    case "legR":
+      return out.copy(local.hipR).lerp(local.kneeR, 0.4).add(armTmp.set(-0.02, 0, 0.09));
+    case "head":
+      return out.set(local.neck.x + 0.05, local.neck.y + 0.02, local.neck.z + 0.12);
+    case "armR":
+      return out.copy(local.shoulderR).lerp(local.elbowR, 0.45).add(armTmp.set(0.05, 0, 0.06));
+    default:
+      // The gut, under the chest plate's edge.
+      return out.set(c.x + 0.04, c.y - 0.16, c.z + 0.17);
+  }
+}
+
+/**
+ * S4.2's wounded layers over the hold: a hurt arm hangs (the gun in the other hand), and below 25% health he hunches
+ * 10 degrees with his free hand pressed to the worst wound, his shoulders rising and falling at 0.6 Hz.
+ */
+function applyWound(w: NonNullable<Motion["wound"]>, arms: string): void {
+  if (w.hang && w.hangK > 0) {
+    const L = w.hang === "L";
+    const sh = L ? local.shoulderL : local.shoulderR;
+    const hand = L ? local.handL : local.handR;
+    hand.lerp(armTmp.set(sh.x + (L ? 0.06 : -0.06), sh.y - 0.56, sh.z + 0.1), w.hangK);
+    ik(sh, hand, UPPER, FORE, tmp.set(sh.x + (L ? 0.3 : -0.3), sh.y - 0.3, sh.z - 0.4), L ? local.elbowL : local.elbowR);
+    // The good hand carries the gun lower and out to the side, one-handed.
+    const other = L ? local.handR : local.handL;
+    other.y -= 0.05 * w.hangK;
+    const osh = L ? local.shoulderR : local.shoulderL;
+    ik(osh, other, UPPER, FORE, tmp.set(osh.x + (L ? -0.4 : 0.5), osh.y - 0.6, osh.z - 0.2), L ? local.elbowR : local.elbowL);
+  }
+  if (w.hunch > 0) {
+    const k = w.hunch;
+    const bob = Math.sin(w.breath * Math.PI * 2 * WOUNDS.breathHz) * WOUNDS.breathM * k;
+    for (const j of ["chest", "neck", "head", "shoulderL", "elbowL", "handL", "shoulderR", "elbowR", "handR"] as Joint[]) local[j].y += bob * (j === "chest" ? 0.5 : 1);
+    turn(UPPER_BODY, local.pelvis.clone(), rq.setFromAxisAngle(axis.set(1, 0, 0), WOUNDS.hunchDeg * (Math.PI / 180) * k));
+    // The free hand (the left, unless that's the arm that hangs; with a pistol up it stays on the gun).
+    if (!w.hang && arms !== "pistol") {
+      const p = woundPoint(w.worst === "armL" ? "torso" : w.worst, new THREE.Vector3());
+      local.handL.lerp(p, Math.min(1, k * 1.2));
+      ik(local.shoulderL, local.handL, UPPER, FORE, pole.set(local.shoulderL.x + 0.45, local.shoulderL.y - 0.5, local.shoulderL.z - 0.15), local.elbowL);
+    }
+  }
+}
+
+/**
+ * S4.2's crawl: face down, propped on his forearms, dragging himself along with alternate arms, the legs trailing
+ * (one knee drawn up on each pull). `shoot` (0..1) twists his right arm back over his shoulder with the sidearm.
+ * Body space, heading +z (he crawls the way he faces).
+ */
+const CRAWL_FROM = {} as Record<Joint, THREE.Vector3>;
+function crawlPose(phase: number, shoot: number, blend: number): void {
+  // Blending in, it goes from whatever pose he was in (half up off the street) to the crawl.
+  if (blend < 1) for (const j of Object.keys(local) as Joint[]) (CRAWL_FROM[j] ??= new THREE.Vector3()).copy(local[j]);
+  crawlTargets(phase, shoot);
+  if (blend < 1) {
+    const k = blend * blend * (3 - 2 * blend);
+    for (const j of Object.keys(local) as Joint[]) local[j].lerpVectors(CRAWL_FROM[j], local[j], k);
+  }
+}
+
+function crawlTargets(phase: number, shoot: number): void {
+  const s = Math.sin(phase);
+  const c = Math.cos(phase);
+  local.pelvis.set(0.02 * s, 0.17, 0);
+  local.chest.set(0.03 * s, 0.27, 0.3);
+  local.neck.set(0.03 * s, 0.34, 0.52);
+  local.head.set(0.02 * s, 0.44, 0.7);
+  local.shoulderL.set(0.2, 0.31, 0.47 + 0.03 * s);
+  local.shoulderR.set(-0.2, 0.31, 0.47 - 0.03 * s);
+  local.hipL.set(0.11, 0.16, -0.02);
+  local.hipR.set(-0.11, 0.16, -0.02);
+  // Each forearm reaches ahead and drags back, in turn.
+  local.handL.set(0.24, 0.05, 0.62 + 0.16 * s);
+  local.handR.set(-0.24, 0.05, 0.62 - 0.16 * s);
+  if (shoot > 0) local.handR.lerp(armTmp.set(-0.42, 0.42, 0.25), shoot);
+  ik(local.shoulderL, local.handL, UPPER, FORE, tmp.set(local.shoulderL.x + 0.5, -0.4, local.shoulderL.z - 0.2), local.elbowL);
+  ik(local.shoulderR, local.handR, UPPER, FORE, tmp.set(local.shoulderR.x - 0.5, shoot > 0.5 ? 1 : -0.4, local.shoulderR.z - 0.2), local.elbowR);
+  // The legs trail; the knee on the pulling side draws up and out.
+  local.footL.set(0.2 + 0.08 * Math.max(0, c), 0.07, -0.86 + 0.18 * Math.max(0, c));
+  local.footR.set(-0.18 - 0.08 * Math.max(0, -c), 0.07, -0.88 + 0.18 * Math.max(0, -c));
+  ik(local.hipL, local.footL, THIGH, SHIN, tmp.set(local.hipL.x + 0.5, -1, local.hipL.z - 0.2), local.kneeL);
+  ik(local.hipR, local.footR, THIGH, SHIN, tmp.set(local.hipR.x - 0.5, -1, local.hipR.z - 0.2), local.kneeR);
 }
 
 const rq = new THREE.Quaternion();
@@ -300,6 +464,6 @@ function applyReact(r: ReactPose): void {
 
 /** The muzzle and its direction for a body holding a rifle (from the hands), world space. */
 export function muzzleOf(body: Body, out: THREE.Vector3, dir: THREE.Vector3): void {
-  dir.subVectors(body.joints.handL, body.joints.handR).normalize();
-  out.copy(body.joints.handL).addScaledVector(dir, 0.38);
+  dir.subVectors(body.foregrip, body.grip).normalize();
+  out.copy(body.foregrip).addScaledVector(dir, 0.38);
 }

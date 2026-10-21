@@ -252,7 +252,7 @@ export function shotgunSplit(where: PlateId): PlateId[] {
  * The disarm roll (S4.3): a forearm or hand hit on the weapon arm from a pistol-class weapon or heavier rolls
  * 0.25 + 0.5 x damage / max HP, once per man. `roll` is a uniform 0..1. Mutates `a.disarmed` when it lands.
  */
-export function disarmRoll(a: Armour, seg: string, weaponCls: string, damage: number, maxHp: number, roll: number, weaponArm: "L" | "R" = "R"): boolean {
+export function disarmRoll(a: Pick<Armour, "disarmed">, seg: string, weaponCls: string, damage: number, maxHp: number, roll: number, weaponArm: "L" | "R" = "R"): boolean {
   if (a.disarmed) return false;
   if (seg !== `forearm${weaponArm}` && seg !== `hand${weaponArm}`) return false;
   if (!PISTOL_OR_HEAVIER.has(weaponCls)) return false;

@@ -30,6 +30,8 @@ export interface HitEvent {
   severed?: string[];
   reaction: "flinch" | "stagger" | "knockdown" | "none";
   staggerDir?: "front" | "back" | "left" | "right";
+  /** C15 (S4.3): this round shot the carbine out of his hands. */
+  disarmed?: boolean;
 }
 
 /** A round that cover ate with an enemy in line behind it. */
