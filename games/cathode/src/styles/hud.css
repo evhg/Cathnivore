@@ -651,6 +651,10 @@
 }
 .hud-target-name {
   display: block;
+  /* One line, always (C15 review): an elite's epithet wrapped the header onto two centred lines and the bar jumped. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font: 700 var(--fs-2)/1.2 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;

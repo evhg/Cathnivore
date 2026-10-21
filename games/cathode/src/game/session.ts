@@ -373,7 +373,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         : key.includes("shield") || n % 4 === 3
           ? [inTower ? BOARD_GUARD : RIOT_SHIELD, "riotShield"]
           : [ENFORCER, "enforcer"];
-      const elite = Math.random() < ELITE_CHANCE[progress.character.difficulty] + ngPlusEliteBonus(ngPlusLap(progress.jobsDone));
+      // Screenshots never roll an elite (C15 review): an affix changes his name, his HP and so what a staged round does.
+      const elite = !o.shot && Math.random() < ELITE_CHANCE[progress.character.difficulty] + ngPlusEliteBonus(ngPlusLap(progress.jobsDone));
       // C10 (S3.2): every fifth rifle patrol is led by a sergeant (the helmet crest and the red visor stripe).
       const leader = base === ENFORCER && n % 5 === 1;
       const e = new Enemy({ ...guarded(Progress.kit(base, archetype, areaLevel, seed++, elite), base), role: base.role, leader }, route.map((p) => p.clone()), areaLevel);
@@ -1058,6 +1059,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const syncMotion = () => {
     trauma.reducedMotion = reduceMotionOn();
     Enemy.calmFlicker = trauma.reducedMotion;
+    bodyView.calm = trauma.reducedMotion;
     deathFx.steady = trauma.reducedMotion;
     arsenal.reducedMotion = trauma.reducedMotion;
   };

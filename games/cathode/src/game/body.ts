@@ -37,7 +37,7 @@ export const deadCost = { cheap: false };
  * C10: what every body needs to know about the view: where the eye is (LOD distances), the profile (phone
  * geometry, LOD distances, cloth substeps), and a forced LOD for the review stages (`?lod=`, -1 = by distance).
  */
-export const bodyView = { eye: new THREE.Vector3(0, 1.6, 0), phone: false, forceLod: -1 as -1 | Lod, clock: () => (typeof performance === "undefined" ? 0 : performance.now()) };
+export const bodyView = { eye: new THREE.Vector3(0, 1.6, 0), phone: false, forceLod: -1 as -1 | Lod, calm: false, clock: () => (typeof performance === "undefined" ? 0 : performance.now()) };
 
 /** S4.1: the flash's level at `ageMs` after a hit: white for a frame, then red at 0.6 fading to 0 over 150 ms. */
 export function flashLevel(ageMs: number): number {
@@ -490,7 +490,12 @@ export class Body {
     if (now - this.hitAt < R.hitMs) k = R.hit;
     // Takedown-eligible (staggered or down, S4.2): the rim throbs at 3 Hz from a dim floor up past a hit's flare, so
     // the window reads at a glance, not as a flicker of the resting rim.
-    if (this.eligible) k = R.hit * R.eligiblePeak * (0.2 + 0.8 * (0.5 + 0.5 * Math.sin((now / 1000) * Math.PI * 2 * R.pulseHz)));
+    // Reduced motion (and photosensitivity, C15 review): no 3 Hz swing over the whole silhouette, a steady raised rim
+    // with a slow, shallow 1 Hz breath instead.
+    if (this.eligible)
+      k = bodyView.calm
+        ? R.hit * R.eligiblePeak * (R.calmFloor + (1 - R.calmFloor) * (0.5 + 0.5 * Math.sin((now / 1000) * Math.PI * 2 * R.calmHz)))
+        : R.hit * R.eligiblePeak * (R.eligibleFloor + (1 - R.eligibleFloor) * (0.5 + 0.5 * Math.sin((now / 1000) * Math.PI * 2 * R.pulseHz)));
     return k;
   }
 
