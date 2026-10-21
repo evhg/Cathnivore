@@ -1066,16 +1066,34 @@ export class Hud {
    * The pause menu: Esc on desktop, the menu button on a phone (owner, iPhone, 2026-10-04: "once started no
    * way to open settings or access a menu"). Resume, volume, graphics, violence, the controls, and the way out.
    */
+  /** C14: Case board and Character in the pause menu. */
+  onCaseBoard: (() => void) | null = null;
+  onCharacter: (() => void) | null = null;
+  /** C14 (S9.7): the case note's lines, read each time the pause opens. */
+  caseNote: (() => { objective: string; district: string; time: string; names: number }) | null = null;
+  private noteObjective?: HTMLElement;
+  private noteFacts?: HTMLElement;
+  private pauseBackFn?: () => boolean;
+  /** Escape in the pause: a page goes back a level (true); on the menu itself it returns false (resume). */
+  pauseBack(): boolean {
+    return this.pauseBackFn?.() ?? false;
+  }
+  /** Whether the pause menu is on screen. */
+  get pauseOn(): boolean {
+    return !!this.pause && !this.pause.hidden;
+  }
+
   showPause(on: boolean, touch = false): void {
+    const wasOn = !!this.pause && !this.pause.hidden;
     if (!this.pause) {
       this.pause = el("div", "hud-pause", this.root.parentElement ?? this.root);
       const card = el("div", "hud-pause-card", this.pause);
       card.setAttribute("role", "dialog");
       card.setAttribute("aria-label", "Paused");
-      this.pauseTitle = el("p", "hud-pause-title", card);
+      // C14 (S9.7): breadcrumbs instead of a heading (PAUSE / SETTINGS / CONTROLS), the five items in the title's
+      // style, and the case note on the right: the objective, the district, the in-city time, the names left.
+      this.pauseTitle = el("p", "hud-pm-crumbs", card);
       this.pauseCheck = el("p", "hud-pause-check", card);
-      // C13T: a pause menu, not a form. A short list (Resume, Settings, Controls, Quit) with one red marker;
-      // Settings and Controls open as their own page in the same column, with a Back item on top.
       card.dataset.view = "menu";
       const menu = el("nav", "hud-pm", card);
       menu.setAttribute("aria-label", "Pause menu");
@@ -1087,30 +1105,61 @@ export class Hud {
       };
       const resume = item("Resume", "hud-resume");
       resume.addEventListener("click", () => this.onResume?.());
+      item("Case board").addEventListener("click", () => this.onCaseBoard?.());
+      item("Character").addEventListener("click", () => this.onCharacter?.());
       const views: Record<string, HTMLElement> = {};
+      const parents: Record<string, string> = {};
+      const titles: Record<string, string> = { menu: "Pause" };
+      const crumbs = (v: string): string => {
+        const path: string[] = [];
+        for (let k: string | undefined = v; k; k = k === "menu" ? undefined : parents[k] ?? "menu") path.unshift(titles[k] ?? k);
+        return path.join(" / ");
+      };
       const show = (v: string) => {
         card.dataset.view = v;
+        for (const [k, pg] of Object.entries(views)) pg.classList.toggle("is-on", k === v);
+        if (this.pauseTitle) this.pauseTitle.textContent = crumbs(v);
         card.scrollTop = 0;
         const first = v === "menu" ? resume : views[v]?.querySelector<HTMLElement>("button, input");
         first?.focus({ preventScroll: true });
       };
-      const page = (key: string, title: string) => {
+      this.pauseBackFn = () => {
+        const v = card.dataset.view ?? "menu";
+        if (v === "menu") return false;
+        show(parents[v] ?? "menu");
+        return true;
+      };
+      const page = (key: string, title: string, parent?: string) => {
         const pg = el("section", `hud-pm-page hud-pm-${key}`, card);
         pg.setAttribute("aria-label", title);
         const back = el("button", "hud-pm-back", pg);
         back.setAttribute("type", "button");
         back.textContent = "Back";
-        back.addEventListener("click", () => show("menu"));
+        back.addEventListener("click", () => show(parent ?? "menu"));
         el("h3", "hud-pm-h", pg).textContent = title;
         views[key] = pg;
-        item(title).addEventListener("click", () => show(key));
+        titles[key] = title;
+        if (parent) {
+          parents[key] = parent;
+          const link = el("button", "hud-pm-sub", views[parent]!);
+          link.setAttribute("type", "button");
+          link.textContent = title;
+          link.addEventListener("click", () => show(key));
+        } else item(title).addEventListener("click", () => show(key));
         return pg;
       };
       const settingsPage = page("settings", "Settings");
-      const controlsPage = touch ? null : page("controls", "Controls");
+      const controlsPage = touch ? null : page("controls", "Controls", "settings");
       const quit = el("a", "hud-pm-item hud-quit", menu);
       quit.textContent = "Quit to title";
       quit.setAttribute("href", "./");
+
+      // The case note (S9.7), set straight on the darkened street (C13T: no pinned card).
+      const note = el("aside", "hud-pm-note", this.pause);
+      note.setAttribute("aria-label", "The case");
+      el("p", "hud-pm-note-h", note).textContent = "The case";
+      this.noteObjective = el("p", "hud-pm-note-obj", note);
+      this.noteFacts = el("dl", "hud-pm-note-facts", note);
 
       const prefs = loadPrefs();
       const set = el("div", "hud-settings", settingsPage);
@@ -1346,10 +1395,27 @@ export class Hud {
         }
       }
     }
-    if (this.pauseTitle) this.pauseTitle.textContent = "Paused";
     // Every pause opens on the menu, not on the page it was left on.
     const card = this.pause.querySelector<HTMLElement>(".hud-pause-card");
-    if (card && on) card.dataset.view = "menu";
+    if (card && on && !wasOn) {
+      card.dataset.view = "menu";
+      for (const pg of card.querySelectorAll(".hud-pm-page")) pg.classList.remove("is-on");
+      if (this.pauseTitle) this.pauseTitle.textContent = "Pause";
+      const n = this.caseNote?.();
+      if (n && this.noteObjective && this.noteFacts) {
+        this.noteObjective.textContent = n.objective;
+        this.noteFacts.replaceChildren();
+        for (const [k, v] of [
+          ["District", n.district],
+          ["Time", n.time],
+          ["The List", n.names === 0 ? "Closed" : `${n.names} ${n.names === 1 ? "name" : "names"} left`],
+        ] as const) {
+          const d = el("div", "", this.noteFacts);
+          el("dt", "", d).textContent = k;
+          el("dd", "", d).textContent = v;
+        }
+      }
+    }
     if (this.pauseCheck) {
       const c = this.checkpoint?.() ?? null;
       this.pauseCheck.textContent = c ? `Checkpoint: ${c}. Dying restarts you there.` : "";

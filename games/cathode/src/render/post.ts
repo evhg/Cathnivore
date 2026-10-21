@@ -177,6 +177,8 @@ const GradeShader = {
     uInk: { value: 0 },
     uInkGrey: { value: 0 },
     uGlitch: { value: 0 },
+    // C14 (S9.7): the pause. The held frame drains to a cold near-monochrome, dims and closes at the edges.
+    uPause: { value: 0 },
     uDeathCa: { value: 1 },
   },
   vertexShader: /* glsl */ `
@@ -205,6 +207,7 @@ const GradeShader = {
     uniform float uFxCa;
     uniform float uPulseMove;
     uniform float uDeath;
+    uniform float uPause;
     uniform float uInk;
     uniform float uInkGrey;
     uniform float uGlitch;
@@ -429,6 +432,13 @@ const GradeShader = {
           mapped += vec3( 0.55, 0.5, 0.48 ) * glint * th * 0.4;
           }
         }
+      }
+      if ( uPause > 0.001 ) {
+        float pl = dot( mapped, vec3( 0.2126, 0.7152, 0.0722 ) );
+        vec3 cold = vec3( pl ) * vec3( 0.86, 0.94, 1.04 );
+        mapped = mix( mapped, cold, uPause * 0.82 );
+        float pr = length( c * vec2( uRes.x / uRes.y, 1.0 ) );
+        mapped *= 1.0 - uPause * ( 0.32 + 0.4 * smoothstep( 0.25, 0.95, pr ) );
       }
       // C8 (S6.6): death. The colour goes (all but 5%), what is left bleeds toward red, and the edges close to black
       // as uDeath grows; then the ink floods in from the edges on an fBm front, the centre always left visible.

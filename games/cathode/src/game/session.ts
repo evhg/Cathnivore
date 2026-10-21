@@ -71,6 +71,7 @@ import type { Difficulty } from "../sim/types";
 import { Voice } from "./voice";
 import { nearLandmark } from "./landmarks";
 import { WingWatch, ZoneWatch, loadingTitle } from "./zones";
+import { namesLeft } from "../ui/frontcopy";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
 import { exportCode, makeSave } from "../sim/save";
@@ -302,6 +303,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
   setBeaconProfile(o.quality === "phone" ? "phone" : "desktop");
   const start = world.markers.player?.[0] ?? new THREE.Vector3();
+  /** C14: the key-art stage hides her gun for good (screenshot runs only). */
+  let keyArt = false;
   const ground = (x: number, z: number) => world.groundHeight(x, z);
   const player = new Player(start, world.colliders, ground);
   const input = new Input(o.canvas, o.touch);
@@ -1206,6 +1209,29 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     menuOpen = false;
     input.lock();
   };
+  // C14 (S9.7): the pause menu's Case board and Character open those screens in its place.
+  let wantMap = false;
+  let wantSheet = false;
+  hud.onCaseBoard = () => {
+    menuOpen = false;
+    wantMap = true;
+  };
+  hud.onCharacter = () => {
+    menuOpen = false;
+    wantSheet = true;
+  };
+  hud.caseNote = () => {
+    // The in-city time: the job starts at 01:12 and a game minute passes every ten seconds.
+    const m = 72 + Math.floor(combat.clock / 10);
+    return {
+      objective,
+      district: loadingTitle(o.district).split(" · ").pop() ?? "",
+      time: `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`,
+      names: namesLeft(progress.jobsDone),
+    };
+  };
+  /** C14: the pause grade, 0..1, eased over 200 ms. */
+  let pauseK = 0;
   hud.difficulty = {
     current: progress.character.difficulty,
     options: unlockedDifficulties(progress.jobsDone).map((d) => [d, DIFFICULTY_LABEL[d]]),
@@ -1293,8 +1319,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (input.takeMenu() && !dead && !charScreen) menuOpen = true;
     const away = (!input.isTouch && !input.locked && !o.shot && !dead && !navigator.webdriver && !charScreen) || portrait || coaching || menuOpen;
     hud.showPause(away && !portrait && !coaching, input.isTouch);
+    {
+      const want = hud.pauseOn ? 1 : 0;
+      pauseK = o.shot || trauma.reducedMotion ? want : want > pauseK ? Math.min(1, pauseK + realDt / 0.2) : Math.max(0, pauseK - realDt / 0.15);
+      world.setPause?.(pauseK);
+      audio?.pause(want === 1);
+    }
+    if (wantSheet && !charScreen && !killcam.active) {
+      wantSheet = false;
+      openSheet();
+    }
     if (intent.skills && !charScreen && !killcam.active) openSheet();
-    if (intent.map && !coaching && !charScreen && !killcam.active && !dead) {
+    if ((intent.map || wantMap) && !coaching && !charScreen && !killcam.active && !dead) {
+      wantMap = false;
       coaching = true;
       document.exitPointerLock?.();
       const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
@@ -2758,6 +2795,26 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     },
     lifeOpt,
   );
+  // C14 (S9.7): Escape (or P) opens the pause on the keypress itself (not the next frame: a slow GPU must not make it
+  // lag), and one more press resumes; a page inside it (Settings, Controls) goes back a level first.
+  addEventListener(
+    "keydown",
+    (e) => {
+      if (e.repeat || (e.code !== "Escape" && e.code !== "KeyP") || dead || dying || charScreen || coaching || killcam.active) return;
+      if ((e.target as Element | null)?.closest?.("input, textarea")) return;
+      if (hud.pauseOn) {
+        if (hud.pauseBack()) return;
+        menuOpen = false;
+        hud.showPause(false, input.isTouch);
+        input.lock();
+      } else if (!menuOpen) {
+        menuOpen = true;
+        document.exitPointerLock?.();
+        hud.showPause(true, input.isTouch);
+      }
+    },
+    lifeOpt,
+  );
   // A tap on the left half of the card's screen retries (S6.6), away from the buttons.
   screen.root.addEventListener(
     "pointerdown",
@@ -3034,6 +3091,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   function render(): void {
     const t0 = performance.now();
+    if (keyArt) world.viewScene.visible = false;
     // C10: the review lineups aren't in the street's enemy list: their visors, blinks and LODs still tick.
     for (const e of lineup) e.body.pose();
     if (reviewRender) reviewRender();
@@ -4215,6 +4273,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (name === "pause") {
       calmVitals();
       menuOpen = true;
+      return "ok";
+    }
+    // C14 (S9.6): the district's establishing frame for the loading screen's key art (scripts/cathode-keyart.mjs
+    // renders it once per district into public/keyart/): her start, a little above her eye, no gun, no HUD.
+    if (name === "keyart") {
+      calmVitals();
+      keyArt = true;
+      o.hud.hidden = true;
+      o.touch.hidden = true;
+      player.pos.y += 0.45;
+      player.pitch = -0.07;
       return "ok";
     }
     // C13T: the character sheet (dossier) on its skills tab.

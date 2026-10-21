@@ -82,6 +82,12 @@ export function openDistrictMap(
     el("p", "dmap-taxi", card, "Water taxi");
     for (const d of trips) {
       button("btn", card, `Travel to ${d.name}`).addEventListener("click", () => {
+        // C14: the loading screen on the other side carries the travel motif.
+        try {
+          sessionStorage.setItem("cathode.travel", "1");
+        } catch {
+          // No storage: an ordinary arrival.
+        }
         location.search = travelUrl(d.id, location.search);
       });
     }

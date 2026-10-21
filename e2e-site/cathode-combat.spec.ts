@@ -279,4 +279,38 @@ test.describe('CATHODE takedowns', () => {
     await chip.tap()
     await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.takedown.active, null, { timeout: 60_000 })
   })
+
+  test('C14: Escape opens the pause within 200 ms over the graded frame, and one Escape resumes', async ({ page, hasTouch }) => {
+    test.skip(hasTouch, 'the pause key is a keyboard path; touch opens it from the menu button')
+    test.setTimeout(300_000)
+    await boot(page, hasTouch)
+    await page.waitForTimeout(600)
+    await expect(page.locator('.hud-pause')).toBeHidden()
+    // The keypress, timed in the page: the menu is on screen within 200 ms of the key going down.
+    const ms = await page.evaluate(
+      () =>
+        new Promise<number>((resolve) => {
+          const t0 = performance.now()
+          const poll = () => {
+            const p = document.querySelector('.hud-pause') as HTMLElement | null
+            if (p && !p.hidden) resolve(performance.now() - t0)
+            else if (performance.now() - t0 > 2000) resolve(9999)
+            else requestAnimationFrame(poll)
+          }
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }))
+          poll()
+        }),
+    )
+    expect(ms).toBeLessThan(200)
+    await expect(page.locator('.hud-pm-crumbs')).toHaveText(/pause/i)
+    await expect(page.locator('.hud-pm-item')).toHaveText([/resume/i, /case board/i, /character/i, /settings/i, /quit to title/i])
+    await expect(page.locator('.hud-pm-note-obj')).not.toBeEmpty()
+    // Settings is a page: Escape goes back to the menu first; then one Escape resumes.
+    await page.locator('.hud-pm-item', { hasText: /settings/i }).click()
+    await expect(page.locator('.hud-pm-crumbs')).toHaveText(/pause \/ settings/i)
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.hud-pm-crumbs')).toHaveText(/^pause$/i)
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.hud-pause')).toBeHidden({ timeout: 5_000 })
+  })
 })

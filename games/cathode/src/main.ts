@@ -22,7 +22,8 @@ import type { ClassId } from "./sim/types";
 import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
-import { areaTitle, COLD_OPEN_LINE, frontSet, listRows, slotHint, titleSubtitle } from "./ui/frontcopy";
+import { areaTitle, COLD_OPEN_LINE, frontSet, listRows, loadingCard, slotHint, titleSubtitle } from "./ui/frontcopy";
+import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio } from "./ui/frontaudio";
 import { el, reducedMotion } from "./ui/dom";
 
@@ -388,10 +389,15 @@ async function begin(fromTitle: boolean): Promise<void> {
   if (!Progress.hasSave()) {
     $("screen-title").classList.add("is-leaving");
     const cls = await new Promise<ClassId | null>((resolve) => {
-      const h = openClassPick(document.body, (c) => {
-        h.close();
-        resolve(c);
-      });
+      const h = openClassPick(
+        document.body,
+        (c) => {
+          h.close();
+          resolve(c);
+        },
+        "ghost",
+        { onSelect: (c) => (scene?.wardrobe(c), audio.tick()), onThump: () => audio.thump() },
+      );
       // Escape from the case file goes back to the title.
       const onKey = (e: KeyboardEvent) => {
         if (menuKey(e.key) !== "back" || e.key === "Backspace") return;
@@ -402,6 +408,7 @@ async function begin(fromTitle: boolean): Promise<void> {
       addEventListener("keydown", onKey, true);
     });
     if (!cls) {
+      scene?.wardrobe(null);
       starting = false;
       openTitle(false);
       return;
@@ -453,20 +460,12 @@ async function begin(fromTitle: boolean): Promise<void> {
   }
   $("front-grain").classList.add("is-off");
   show("screen-game");
-  const loading = $("loading");
-  const fill = $("loading-fill");
-  const line = $("loading-line");
-  if (!world) {
-    loading.hidden = false;
-    fade.classList.remove("is-black");
-  }
-  loading.dataset.district = district ?? "market";
-  line.textContent = zones.loadingFlavour(district);
-  $("loading-eyebrow").textContent = zones.loadingTitle(district);
-  const progress = (share: number, label: string) => {
-    fill.style.setProperty("--p", `${Math.round(share * 100)}%`);
-    line.textContent = label;
-  };
+  // C14 (S9.6): the case file, unless the push handed over a built street (no load to cover).
+  const travel = takeTravel();
+  const card = loadingCard(jobs(), district, { seen: listSeen(), travel });
+  const loading = world ? null : openLoading($("loading"), card, { still });
+  if (loading) fade.classList.remove("is-black");
+  const progress = (share: number) => loading?.set(share);
   const { startSession } = await sessionMod;
   await startSession({
     canvas: $<HTMLCanvasElement>("view"),
@@ -482,13 +481,28 @@ async function begin(fromTitle: boolean): Promise<void> {
     onProgress: progress,
     onExit: () => location.reload(),
   });
-  loading.hidden = true;
-  audio.close();
   $("front-fallback").classList.add("is-off");
+  if (loading) {
+    // A long load waits for the player (S9.6); a quick one walks straight in. Automated runs never wait.
+    await loading.finish(!shot && !navigator.webdriver);
+    loading.close();
+  }
+  audio.close();
   // 300 ms up from black into first person, then the area title.
   fade.style.setProperty("--fade-ms", "300ms");
   fade.classList.remove("is-black");
   showAreaTitle(district);
+}
+
+/** Whether this page load is a travel from the district map (C14: the loading screen's motif). Read once. */
+function takeTravel(): boolean {
+  try {
+    const t = sessionStorage.getItem("cathode.travel") === "1";
+    sessionStorage.removeItem("cathode.travel");
+    return t;
+  } catch {
+    return false;
+  }
 }
 
 function showAreaTitle(district: string | undefined): void {
@@ -532,18 +546,33 @@ void fetch(`${import.meta.env.BASE_URL}../version.json`)
   })
   .catch(() => ($("build-ver").textContent = "Build dev"));
 
-/** C13T stage: the loading screen as it looks 40% in, over the frozen street (screenshot runs only). */
-function stageLoading(): void {
+/**
+ * C14 stages: the case file 40% in (`loading`, `loading-fishmarket`) and a travel into a reached district
+ * (`loading-travel`, the clinic after Crisp), over the district's key art (screenshot runs only).
+ */
+function stageLoading(name: string): void {
   show("screen-game");
   $("hud").hidden = true;
-  const loading = $("loading");
-  loading.hidden = false;
-  loading.dataset.district = "market";
-  $("loading-fill").style.setProperty("--p", "40%");
-  void import("./game/zones").then((zones) => {
-    $("loading-eyebrow").textContent = zones.loadingTitle(undefined);
-    $("loading-line").textContent = zones.loadingFlavour(undefined);
-  });
+  $("front-bars").classList.add("is-gone");
+  $("front-grain").classList.add("is-off");
+  const travel = name === "loading-travel";
+  const done = travel ? ["fishMarket", "crispLead", "quayContracts", "candorManifest", "crispBoss"] : [];
+  const card = loadingCard(done, travel ? "clinic" : "market", { seen: travel ? 0 : undefined, travel });
+  const v = openLoading($("loading"), card, { still: true, held: travel ? 0.62 : 0.4 });
+  (hook as { loadTrace?: number[] }).loadTrace = v.trace;
+  // The percentage trace for the 4% rule: a real ease over a load that jumps (0, 40%, 90%, 100%) in its own view.
+  const probe = openLoading(document.createElement("div"), card, { still: true });
+  const jumps = [0.4, 0.9, 1];
+  let i = 0;
+  const step = () => {
+    probe.set(jumps[Math.min(i++ >> 3, jumps.length - 1)]!);
+    if (i < 120) requestAnimationFrame(step);
+    else {
+      (hook as { loadTrace?: number[] }).loadTrace = probe.trace.slice();
+      probe.close();
+    }
+  };
+  requestAnimationFrame(step);
 }
 
 // The screenshot hook: the stages wait on `ready`.
@@ -612,11 +641,13 @@ async function boot(): Promise<void> {
     s?.setTime(t);
     if (frontStage === "credits") await openCredits();
     if (frontStage === "settings") openSettings();
-    if (frontStage === "loading") stageLoading();
+    if (frontStage?.startsWith("loading")) stageLoading(frontStage);
     if (frontStage === "areatitle") await begin(true);
     if (frontStage === "classpick") {
       $("screen-title").classList.add("is-leaving");
-      openClassPick(document.body, () => undefined, (params.get("class") as ClassId | null) ?? "ghost");
+      const cls = (params.get("class") as ClassId | null) ?? "ghost";
+      s?.wardrobe(cls, true);
+      openClassPick(document.body, () => undefined, cls, { still: true });
     }
     hook.ready = true;
     return;

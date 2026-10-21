@@ -2,11 +2,12 @@
    Everything else is warm off-white and greys; the world's neon lives in the 3D scene, never in the chrome. Imported after shared/ui/base.css and fonts.css,
    before components.css, hud.css and styles.css. The only file in this game that may hold raw colours. */
 :root {
-  --load-market: radial-gradient(120% 70% at 50% 100%, #0e3a46 0%, var(--night) 70%);
-  --load-clinic: linear-gradient(180deg, #0b1d1a 0%, #163a33 55%, var(--night) 100%);
-  --load-plaza: linear-gradient(180deg, #0a1020 0%, #1b2a4a 60%, #2a1630 100%);
-  --load-tower: linear-gradient(180deg, #05060c 0%, #20180e 70%, #3a2a12 100%);
-  --load-vault: radial-gradient(100% 80% at 50% 110%, #5a0d12 0%, #12060a 65%, var(--night) 100%);
+  /* C14 loading key art: each district's hint of colour in the duotone (S9.6). */
+  --tint-market: linear-gradient(160deg, #0d2f3a 0%, #2a1a2e 100%);
+  --tint-clinic: linear-gradient(160deg, #0f2e28 0%, #1c3a35 100%);
+  --tint-plaza: linear-gradient(160deg, #142142 0%, #33193a 100%);
+  --tint-tower: linear-gradient(160deg, #1a150c 0%, #4a361a 100%);
+  --tint-vault: linear-gradient(160deg, #3d0a10 0%, #14060a 100%);
 
   color-scheme: dark;
 

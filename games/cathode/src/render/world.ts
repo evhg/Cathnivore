@@ -388,6 +388,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       (u.uHurtDir!.value as THREE.Vector2).set(dirX, dirY);
       u.uWound!.value = THREE.MathUtils.clamp(wound, 0, 1);
     },
+    setPause(k) {
+      post.grade.uniforms.uPause!.value = THREE.MathUtils.clamp(k, 0, 1);
+    },
     setDeath(o) {
       const u = post.grade.uniforms;
       u.uDeath!.value = THREE.MathUtils.clamp(o.death, 0, 1);
@@ -427,6 +430,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     },
     light(pos, color, intensity, range) {
       return pool.add({ pos: pos.clone(), color: color.clone(), intensity, range, normal: null, flicker: 0, seed: 0, real: true });
+    },
+    liveLight(l) {
+      return pool.add(Object.assign(l, { normal: null, flicker: 0, seed: 0, real: true }));
     },
     wetten(material, wetness = 0.5) {
       patchMaterial(material, shared, { kind: "prop", wet: wetness });

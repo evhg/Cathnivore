@@ -61,7 +61,11 @@ const C13 = ['gate', 'title', 'title-continue-focus', 'title-30s', 'title-60s', 
 // ?front=<stage>; pause, level-up, the death card and the firefight HUD are game stages; VPS=portrait adds the
 // rotate prompt.
 const C13T = ['gate', 'title', 'settings', 'credits', 'classpick', 'loading', 'pause', 'sheet', 'levelup', 'death-card', 'firefight-6']
-const MS = { C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
+// C14 "Class pick, loading and pause": the wardrobe on the Ghost (the spec's Operative) and the Butcher (its
+// Wetwork), the case file for the fish market and for a travel into the clinic, and the pause.
+const C14 = ['classpick-operative', 'classpick-wetwork', 'loading-fishmarket', 'loading-travel', 'pause']
+const CP_CLASS = { 'classpick-operative': 'ghost', 'classpick-wetwork': 'butcher' }
+const MS = { C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
@@ -106,7 +110,7 @@ const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
   args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'],
 })
-const FRONT = new Set([...C13, 'settings', 'loading', 'credits', 'classpick'])
+const FRONT = new Set([...C13, 'settings', 'loading', 'credits', 'classpick', 'loading-fishmarket', 'loading-travel', 'classpick-operative', 'classpick-wetwork'])
 const frontStages = stages.filter((st) => FRONT.has(st))
 const gameStages = stages.filter((st) => !FRONT.has(st))
 if (frontStages.length) await frontRun(frontStages)
@@ -181,7 +185,8 @@ async function frontRun(list) {
         localStorage.clear()
         localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult, intensity }))
       }, [V.intensity ?? 'full', stage !== 'gate'])
-      const name = stage.startsWith('title') ? 'title' : stage
+      const name = stage.startsWith('title') ? 'title' : stage.startsWith('classpick') ? 'classpick' : stage
+      const cpClass = CP_CLASS[stage] ? `&class=${CP_CLASS[stage]}` : ''
       const t = stage === 'title-30s' ? 30 : stage === 'title-60s' ? 60 : 8
       if (stage === 'title-continue-focus') {
         // A save two jobs in, made by the game's own code (window.cathodeFront.demoSave, screenshot runs only).
@@ -190,7 +195,7 @@ async function frontRun(list) {
         await page.evaluate(() => window.cathodeFront.demoSave(['fishMarket', 'crispLead']))
       }
       const focus = stage === 'title-continue-focus' ? '&focus=continue' : ''
-      await page.goto(`${base}?front=${name}&shot&t=${t}${focus}${stage === 'areatitle' ? '&class=ghost' : ''}${V.frontQ ?? V.q}`, { timeout: 180_000 })
+      await page.goto(`${base}?front=${name}&shot&t=${t}${focus}${cpClass}${stage === 'areatitle' ? '&class=ghost' : ''}${V.frontQ ?? V.q}`, { timeout: 180_000 })
       await page.waitForFunction(() => window.cathodeFront?.ready, null, { timeout: 400_000 })
       if (stage === 'areatitle') await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) >= 2, null, { timeout: 400_000 })
       await page.waitForTimeout(1200)
@@ -223,13 +228,34 @@ async function frontRun(list) {
           stats: s ? { ...s.stats } : null,
         }
       })
+      // C14: the loading percentage never moves more than 4% a frame (the stage eases a 0/40/90/100% load).
+      if (stage.startsWith('loading-')) {
+        await page.waitForFunction(() => (window.cathodeFront?.loadTrace?.length ?? 0) >= 100, null, { timeout: 120_000 }).catch(() => undefined)
+        const tr = await page.evaluate(() => window.cathodeFront?.loadTrace ?? [])
+        let jump = 0
+        for (let i = 1; i < tr.length; i++) jump = Math.max(jump, tr[i] - tr[i - 1])
+        writeFileSync(`${file}-trace.json`, JSON.stringify(tr))
+        console.log(`  C14 ${vp} ${stage}: ${tr.length} frames, max step ${jump.toFixed(1)}%, ends ${tr.at(-1)}%`)
+        if (tr.length < 50 || jump > 4.0001) fail(`${vp} ${stage}: loading trace ${tr.length} frames, max step ${jump.toFixed(1)}% (max 4%)`)
+        const tips = await page.evaluate(() => /\b(press|click|tap|hold|wasd|mouse|button|controls?)\b/i.test(document.querySelector('.ld-file')?.textContent ?? ''))
+        if (tips) fail(`${vp} ${stage}: a control tip on the loading screen`)
+      }
+      // C14: at 5K the class pick's right column is filled (no empty 40%).
+      if (stage.startsWith('classpick-')) {
+        const sheet = await page.evaluate(() => {
+          const b = document.querySelector('.cp-sheet')?.getBoundingClientRect()
+          return b ? { left: b.left / innerWidth, right: b.right / innerWidth, h: b.height / innerHeight } : null
+        })
+        console.log(`  C14 ${vp} ${stage}: stat sheet ${sheet ? `${(sheet.left * 100).toFixed(0)}-${(sheet.right * 100).toFixed(0)}% wide, ${(sheet.h * 100).toFixed(0)}% tall` : 'missing'}`)
+        if (!sheet || sheet.right < 0.8 || sheet.left > 0.72 || sheet.h < 0.3) fail(`${vp} ${stage}: the right column is not filled`)
+      }
       const f = await lumaOf(png, V.dsf * 4)
       frames[stage] = f
       const empty = emptyWidth(f)
       console.log(`  C13 ${vp} ${stage}: empty width ${(empty * 100).toFixed(1)}%, scene ${m.stats ? `${m.stats.drawCalls} calls, ${m.stats.triangles} tris (Cath ${m.stats.cathTriangles})` : 'none'}`)
       // The empty-width rule (C13) judges the scene's composition; the Settings sheet (added by C13T) deliberately
       // darkens the street behind its column, so it only logs.
-      if (empty > 0.35 && !['settings', 'credits', 'classpick'].includes(stage)) fail(`${vp} ${stage}: ${(empty * 100).toFixed(0)}% of the width is empty (max 35%)`)
+      if (empty > 0.35 && !['settings', 'credits', 'classpick'].includes(name)) fail(`${vp} ${stage}: ${(empty * 100).toFixed(0)}% of the width is empty (max 35%)`)
       if (stage.startsWith('title')) {
         if (!m.logo || !m.menu) fail(`${vp} ${stage}: no logotype or menu`)
         else {

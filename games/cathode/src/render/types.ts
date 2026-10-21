@@ -119,6 +119,8 @@ export interface World {
    * C8 (S6.6): the death grade. `death` 0..1 (colour out, red in, edges closing), `ink` 0..1 (blood ink from the
    * edges; `grey` under reduced violence), `glitch` 0..1 (the re-sync), `ca` the edge CA multiplier (1..3).
    */
+  /** C14 (S9.7): the pause grade, 0..1. */
+  setPause?(k: number): void;
   setDeath?(o: { death: number; ink: number; glitch: number; ca: number; grey?: boolean }): void;
   /** C7 acceptance: the grade pass's mean ms per draw with the Vitals pass idle or at its busiest. */
   benchGrade?(n: number, on: boolean | { wound: number; hurt: number; pulse: number; lens: number }): number;
@@ -142,6 +144,8 @@ export interface World {
    * never changes the scene's light count (no shader recompile hitch). Returns its remover.
    */
   light?(pos: THREE.Vector3, color: THREE.Color, intensity: number, range: number): () => void;
+  /** C14: like `light`, but the caller keeps the object and may change its colour and intensity every frame. */
+  liveLight?(l: { pos: THREE.Vector3; color: THREE.Color; intensity: number; range: number }): () => void;
   /** Optional: the last render's CPU time in ms, draw calls and triangles (for ?perf). */
   readonly perf?: { renderMs: number; drawCalls: number; triangles: number };
 }

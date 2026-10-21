@@ -17,6 +17,11 @@ export interface FrontCath {
   update(dt: number, t: number, wind: { x: number; z: number }): void;
   /** The back light's direction in view space (toward the light), for the rim. */
   setRim(viewDir: THREE.Vector3): void;
+  /**
+   * C14 (S9.5): a 1.2 s class idle, from the next update (or held at `u`, 0..1, for screenshots): ghost glances over
+   * her shoulder, butcher rolls her neck, gunslinger squares up, wirewitch twirls the umbrella, fixer checks her cuff.
+   */
+  play(kind: string, u?: number): void;
   dispose(): void;
   readonly triangles: number;
 }
@@ -634,6 +639,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
   let shiftT0 = 0;
   let n = 0;
   const legRest = legs.map((l) => l.rotation.z);
+  const CLIP_S = 1.2;
+  let clip: { kind: string; t0: number | null; held?: number } | null = null;
 
   function update(dt: number, t: number, wind: { x: number; z: number }): void {
     const step = Math.min(dt, 1 / 20);
@@ -661,6 +668,49 @@ export function buildFrontCath(phone: boolean): FrontCath {
     legs.forEach((l, i) => (l.rotation.z = legRest[i]! + w * 0.01));
     // The umbrella sways a touch in the wind.
     umb.rotation.z = 0.06 + Math.sin(t * 0.9) * 0.015 + wind.x * 0.004;
+    chest.rotation.x = 0;
+    chest.rotation.y = 0;
+    umb.rotation.y = 0;
+    // C14: the class idle on top (an envelope in and out, so it starts and ends on the breathing idle).
+    if (clip) {
+      if (clip.t0 === null) clip.t0 = t;
+      const cu = clip.held ?? (t - clip.t0) / CLIP_S;
+      if (cu >= 1 || cu < 0) clip = null;
+      else {
+        const env = Math.sin(Math.PI * cu);
+        const e = env * env * (3 - 2 * env);
+        const a = Math.PI * 2 * cu;
+        switch (clip.kind) {
+          case "ghost":
+            headPivot.rotation.y += -0.62 * e;
+            headPivot.rotation.x += 0.06 * e;
+            chest.rotation.y += -0.14 * e;
+            break;
+          case "butcher":
+            headPivot.rotation.z += 0.24 * Math.sin(a) * e;
+            headPivot.rotation.x += 0.2 * (0.5 - 0.5 * Math.cos(a)) * e - 0.06 * e;
+            chest.rotation.x += -0.04 * e;
+            break;
+          case "gunslinger":
+            chest.rotation.y += 0.2 * e;
+            headPivot.rotation.y += -0.18 * e;
+            headPivot.rotation.x += 0.1 * e;
+            break;
+          case "wirewitch": {
+            const s = cu * cu * (3 - 2 * cu);
+            umb.rotation.y += Math.PI * 2 * s;
+            headPivot.rotation.z += 0.14 * e;
+            headPivot.rotation.y += 0.2 * e;
+            break;
+          }
+          default:
+            chest.rotation.x += -0.07 * e;
+            chest.rotation.z += 0.08 * Math.sin(a) * e;
+            headPivot.rotation.x += 0.22 * e;
+            headPivot.rotation.y += 0.32 * e;
+        }
+      }
+    }
 
     // The hem: Verlet with a spring home, wind and a gust that comes and goes.
     const gust = 0.5 + 0.5 * Math.sin(t * 0.7) * Math.sin(t * 0.23 + 1);
@@ -772,6 +822,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     triangles: Math.round(tris),
     setRim(viewDir) {
       rimU.uRimDir.value.copy(viewDir).normalize();
+    },
+    play(kind, u) {
+      clip = { kind, t0: null, held: u };
     },
     dispose() {
       group.traverse((o) => {

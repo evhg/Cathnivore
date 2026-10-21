@@ -35,6 +35,11 @@ export interface FrontScene {
   focusBias(v: number): void;
   /** Where she sits across the frame: 0 centre, 1 the right edge (default 0.42, the right third). */
   setFraming(k: number): void;
+  /**
+   * C14 (S9.5): the wardrobe. A close three-quarter framing of her with a key light in the class's colour (400 ms),
+   * and the class's 1.2 s idle. null goes back to the title loop. `instant` (screenshots) skips the eases.
+   */
+  wardrobe(cls: string | null, instant?: boolean): void;
   /** Pointer or tilt, each -1..1. */
   parallax(x: number, y: number): void;
   /** Loop time in seconds (screenshots; the live loop also advances it). */
@@ -67,6 +72,20 @@ const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, numb
   { pos: [0.6, 1.9, -6.2], look: [0, 1.25, 0.6] },
   { pos: [4.6, 1.3, -2.6], look: [0, 1.15, 0.4] },
 ];
+
+/**
+ * The wardrobe framing (S9.5), in her frame: a close three-quarter from behind her right shoulder, head to knee. Behind,
+ * not in front: her face is not modelled (C13's silhouette-first rule), so the lens reads her hair, collar and coat.
+ */
+const WARDROBE = { pos: [-2.05, 1.5, -1.25] as [number, number, number], look: [0.1, 1.08, 0.1] as [number, number, number] };
+/** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger tungsten, Wirewitch violet, Fixer amber. */
+const CLASS_KEY: Record<string, [number, number, number]> = {
+  ghost: [0.12, 0.72, 1.0],
+  butcher: [1.0, 0.04, 0.07],
+  gunslinger: [1.0, 0.7, 0.36],
+  wirewitch: [0.55, 0.18, 1.0],
+  fixer: [1.0, 0.5, 0.1],
+};
 
 const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
 
@@ -184,17 +203,44 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const m4 = new THREE.Matrix4();
   const up = new THREE.Vector3(0, 1, 0);
 
+  // ---- the wardrobe (C14): its framing blends over the loop; its key light changes colour over 400 ms ----
+  const wd = { w: 0, target: 0, cls: null as string | null };
+  const wPos = toWorld(...WARDROBE.pos);
+  const wLook = toWorld(...WARDROBE.look);
+  const key = { pos: toWorld(-1.7, 2.0, 0.1), color: new THREE.Color(0, 0, 0), intensity: 0, range: 7 };
+  const keyWant = new THREE.Color(0, 0, 0);
+  let keyRemove: (() => void) | null = null;
+  function wardrobeStep(dt: number): void {
+    const k = 1 - Math.exp(-dt * 4.2);
+    wd.w += (wd.target - wd.w) * k;
+    if (Math.abs(wd.target - wd.w) < 0.001) wd.w = wd.target;
+    // About 400 ms to the new colour.
+    key.color.lerp(keyWant, 1 - Math.exp(-dt * 9));
+    key.intensity = (phone ? 16 : 20) * wd.w;
+    if (wd.w > 0.002 && !keyRemove && world.liveLight) keyRemove = world.liveLight(key);
+    if (wd.w <= 0.002 && keyRemove) {
+      keyRemove();
+      keyRemove = null;
+    }
+  }
+
   function aim(t: number, dt: number): void {
     const u = (((t / LOOP_S) % 1) + 1) % 1;
     posCurve.getPointAt(u, p);
     lookCurve.getPointAt(u, l);
+    if (wd.w > 0) {
+      const e = smoother(Math.min(1, wd.w));
+      p.lerp(wPos, e);
+      l.lerp(wLook, e);
+    }
     cam.position.copy(p);
     m4.lookAt(p, l, up);
     cam.quaternion.setFromRotationMatrix(m4);
     // Her on the right third: turn the lens left by the angle that puts her at 0.3 of the half-width.
     const aspect = Math.max(0.5, cam.aspect);
     const half = Math.atan(Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect);
-    cam.rotateY(Math.atan(Math.tan(half) * (aspect < 1.2 ? 0.12 : framing)));
+    const fr = (aspect < 1.2 ? 0.12 : framing) * (1 - smoother(Math.min(1, wd.w)));
+    cam.rotateY(Math.atan(Math.tan(half) * fr));
     if (!o.still) {
       const k = Math.min(dt, 1 / 20);
       spring.vx += (W * W * (spring.tx - spring.x) - 2 * W * spring.vx) * k;
@@ -273,7 +319,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         pushDone = null;
         d();
       }
-    } else aim(time, dt);
+    } else {
+      wardrobeStep(dt);
+      aim(time, dt);
+    }
     cath.update(dt, time, world.wind);
     // The rim follows the back light as the camera moves round her.
     cam.updateMatrixWorld();
@@ -324,6 +373,19 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     setFraming(k) {
       framing = THREE.MathUtils.clamp(k, 0, 0.9);
+    },
+    wardrobe(cls, instant) {
+      wd.cls = cls;
+      wd.target = cls ? 1 : 0;
+      const c = cls ? CLASS_KEY[cls] ?? CLASS_KEY.ghost! : [0, 0, 0];
+      keyWant.setRGB(c[0]!, c[1]!, c[2]!);
+      if (cls) cath.play(cls, instant ? 0.5 : undefined);
+      if (instant) {
+        wd.w = wd.target;
+        key.color.copy(keyWant);
+        wardrobeStep(0);
+        frame(0);
+      }
     },
     focusBias(v) {
       spring.tb = THREE.MathUtils.clamp(v, -1, 1);

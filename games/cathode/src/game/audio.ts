@@ -66,7 +66,12 @@ export class Audio {
     this.woundMuffle = c.createBiquadFilter();
     this.woundMuffle.type = "lowpass";
     this.woundMuffle.frequency.value = 22000;
-    this.duckBus.connect(this.muffle).connect(this.woundMuffle).connect(this.master);
+    // C14 (S9.7): the pause closes the world to 700 Hz and ducks it (and the score) 8 dB.
+    this.pauseMuffle = c.createBiquadFilter();
+    this.pauseMuffle.type = "lowpass";
+    this.pauseMuffle.frequency.value = 22000;
+    this.pauseGain = c.createGain();
+    this.duckBus.connect(this.muffle).connect(this.woundMuffle).connect(this.pauseMuffle).connect(this.pauseGain).connect(this.master);
     this.sfx.connect(this.duckBus);
     // The dry bus joins after the slow-motion lowpass: a confirm is never muffled or reverberant.
     this.dry = c.createGain();
@@ -102,6 +107,17 @@ export class Audio {
 
   private dryOut: GainNode;
   private muffle: BiquadFilterNode;
+  private pauseMuffle: BiquadFilterNode;
+  private pauseGain: GainNode;
+  private pausedNow = false;
+  /** C14 (S9.7): the pause's muffle and duck, over 200 ms. */
+  pause(on: boolean): void {
+    if (on === this.pausedNow) return;
+    this.pausedNow = on;
+    const t = this.ctx.currentTime;
+    this.pauseMuffle.frequency.setTargetAtTime(on ? 700 : 22000, t, 0.06);
+    this.pauseGain.gain.setTargetAtTime(on ? db(-8) : 1, t, 0.06);
+  }
   private woundMuffle: BiquadFilterNode;
   /** C7: the breath loop (lazy: built the first time she's hurt). */
   private breathNode: { n: AudioBufferSourceNode; f: BiquadFilterNode; g: GainNode } | null = null;

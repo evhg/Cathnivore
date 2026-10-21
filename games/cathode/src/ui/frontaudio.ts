@@ -244,6 +244,26 @@ export class FrontAudio {
     sub.stop(now + 0.26);
   }
 
+  /** C14 (S9.5): one heartbeat thump while the class commit is held (a 55 Hz sine body under a low click). */
+  thump(): void {
+    const c = this.ctx;
+    if (!c || !this.ui || !this.awake) return;
+    const now = c.currentTime;
+    const o = c.createOscillator();
+    o.frequency.setValueAtTime(70, now);
+    o.frequency.exponentialRampToValueAtTime(42, now + 0.16);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(db(-8), now + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    const lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 220;
+    o.connect(lp).connect(g).connect(this.ui);
+    o.start(now);
+    o.stop(now + 0.24);
+  }
+
   /** The push into the street: a saw pad swelling as its low-pass sweeps 200 Hz to 2 kHz over `s` seconds. */
   swell(s = 1.6): void {
     const c = this.ctx;
