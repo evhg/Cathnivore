@@ -25,7 +25,7 @@ Every visual item is done only when:
 - C11. [x] *(released 2026-10-20 `953a355`; 2026-10-19 owner chat, session 1: rules, director, 11 variant bodies, over-the-shoulder camera with Cath from behind, orbs, chip and tell, stages and e2e; open: Cath bust art, variant review, backlit staging)* **"Takedowns" (3 sessions)**
 - C12. [ ] **"The new name" (1 session)** (waits for the owner to pick the name in FEEDBACK.md; skip it until then)
 - C13. [x] *(released 2026-10-20 `3bfdd11`; 2026-10-20 owner chat, session 1: live market title scene with 3D Cath, cold open, gate plate, menu model, The List, set pieces, ambience, push and handover into play, area title; `MILESTONE=C13` feel-shots pass at 5K/D/phone; open: Cath close-up detail, plaza loop, subagent critique)* **"A front door that looks AAA" (4 sessions)**
-- C13T. [ ] *(2026-10-20 owner chat: "these look like a 5 year old made them")* **"Type and UI that look like a AAA game" (3 sessions)**: two families at most, one accent, no web-page idioms, a reference board and an independent critique. Spec: `docs/design/cathode-combat.md` C13T.
+- C13T. [x] *(2026-10-20 owner chat: "these look like a 5 year old made them")* **"Type and UI that look like a AAA game" (3 sessions)**: two families at most, one accent, no web-page idioms, a reference board and an independent critique. Spec: `docs/design/cathode-combat.md` C13T.
 - C14. [ ] **"Class pick, loading and pause" (2 sessions)**
 - C15. [ ] **"Armour that breaks, enemies that stagger" (3 sessions)** (also carries from C10: the riot shield breaking in 3 pieces, CC0 plate normals or a plate normal/roughness breakup, a rim that fades by light direction)
 - C16. [ ] **"Firefights with intent" (4 sessions)**
