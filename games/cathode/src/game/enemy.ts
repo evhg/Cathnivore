@@ -1388,9 +1388,9 @@ export class Enemy {
     if (!inHand) return;
     // Along the forearm, out of the fist: from the elbow through the hand, tipped up toward level as he aims.
     const fwd = new THREE.Vector3().subVectors(b.joints.handR, b.joints.elbowR).normalize();
-    if (mode === "pistol") {
+    if (mode === "pistol" || (mode === "draw" && t > 600)) {
       const aimD = new THREE.Vector3(Math.sin(this.motion.yaw), 0, Math.cos(this.motion.yaw));
-      fwd.lerp(aimD, 0.6).normalize();
+      fwd.lerp(aimD, mode === "pistol" ? 0.8 : 0.8 * Math.min(1, (t - 600) / 300)).normalize();
     }
     place(sa, b.joints.handR, b.joints.handR.clone().addScaledVector(fwd, 0.17), b.facing.clone().set(0, 1, 0));
     sa.scale.setScalar(b.scale);

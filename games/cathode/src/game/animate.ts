@@ -158,7 +158,15 @@ export function animate(body: Body, m: Motion): void {
   // The carbine's two holds, before anything moves a hand off them: the gun stays where it was held (body.ts grip).
   gripAt.copy(local.handR);
   foreAt.copy(local.handL);
-  if (m.arms && m.arms.mode !== "rifle") applyArms(m.arms.mode, m.arms.t, rot, aim);
+  // The sidearm comes up to a compressed ready at chest height even at rest (a man who just lost his rifle doesn't
+  // hold the pistol at his belt), and out to arm's length on her.
+  if (m.arms && m.arms.mode !== "rifle") {
+    const pp = m.pitch * aim - (1 - aim) * 0.12;
+    const cq = Math.cos(pp);
+    const sq = Math.sin(pp);
+    const rotP = (v: THREE.Vector3) => new THREE.Vector3(v.x, v.y * cq + v.z * sq, -v.y * sq + v.z * cq).add(sh);
+    applyArms(m.arms.mode, m.arms.t, rotP, aim);
+  }
   if (wd) applyWound(wd, m.arms?.mode ?? "rifle");
   if (r) applyReact(r);
   if (m.crawl) crawlPose(m.crawl.phase, m.crawl.shoot, m.crawl.blend);
@@ -197,7 +205,7 @@ function applyArms(mode: "shake" | "draw" | "pistol", t: number, rot: (v: THREE.
   // The stung hand pulled in against his chest, shaking hard and settling; the other hand cups its wrist.
   const sting = (u: number) => armTmp.set(shR.x + 0.08 + 0.035 * Math.sin(u * 0.06) * Math.max(0, 1 - u / 450), shR.y - 0.3 + 0.025 * Math.cos(u * 0.083) * Math.max(0, 1 - u / 450), shR.z + 0.26);
   const holster = new THREE.Vector3(local.hipR.x - 0.12, local.hipR.y - 0.14, local.hipR.z + 0.02);
-  const hold = rot(new THREE.Vector3(0.14, -0.04 - 0.22 * (1 - aim), 0.46 + 0.1 * aim));
+  const hold = rot(new THREE.Vector3(0.15, -0.1 + 0.06 * aim, 0.36 + 0.2 * aim));
   const hang = new THREE.Vector3(shL.x + 0.07, shL.y - 0.55, shL.z + 0.08);
   if (mode === "shake") {
     local.handR.copy(sting(t));
