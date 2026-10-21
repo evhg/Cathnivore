@@ -14,8 +14,10 @@ import { reactDuration, reactPose, reactTravel, type ReactKind } from "./anim/re
 import { ShieldShard, type PlateDebris } from "./armourfx";
 import { DEATH, DeathRun, DroppedProp, helmetPops, pickVariant, visorLevel, type DeathCtx, type DeathScript, type DeathVariant } from "./death";
 import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
-import { animate, muzzleOf, type Motion } from "./animate";
+import { animate, muzzleOf, RELOAD_KEYS, type Motion } from "./animate";
 import type { RayWorld } from "./ray";
+import type { Tactics } from "./ai/tactics";
+import { makeMorale, type Morale } from "../sim/morale";
 
 export type Awareness = "unaware" | "suspicious" | "searching" | "combat" | "dead";
 
@@ -235,12 +237,15 @@ export interface Sight {
 }
 
 let nextId = 1;
+const UP_Y = new THREE.Vector3(0, 1, 0);
 
 /** Seconds between an enemy spotting Cath and its first shot. */
 export const REACTION = 0.9;
 
 /** Seconds of steady aim a sniper needs before firing. */
 export const SNIPER_CHARGE = 1.5;
+/** S3.5: the laser's sweep from the street to her (s). */
+export const LASER_SWEEP_S = 0.45;
 
 export class Enemy {
   readonly id = nextId++;
@@ -298,6 +303,13 @@ export class Enemy {
   readonly shards: ShieldShard[] = [];
   private bashCd = 0;
   laser: THREE.Mesh | null = null;
+  /** C16 (S3.5): the laser's dot where it lands, the sweep's clock (s, -1 none), its start on the street and its aim. */
+  laserDot: THREE.Mesh | null = null;
+  laserT = -1;
+  readonly laserFrom = new THREE.Vector3();
+  readonly laserAim = new THREE.Vector3();
+  /** Screenshot stages: hold the sweep at this many seconds. */
+  laserHold = -1;
   /** Sniper: seconds of steady aim built up; fires at SNIPER_CHARGE. */
   charge = 0;
   /** C9 (S4.4): how he went down, and the long gun once it has left his hands. */
@@ -314,7 +326,15 @@ export class Enemy {
   readonly deathDir = new THREE.Vector3();
   private smeared = false;
   /** Shots this frame, for the session to resolve: from, direction, and a damage scale (the sidearm hits softer). */
-  readonly shots: Array<{ from: THREE.Vector3; dir: THREE.Vector3; melee?: boolean; mul?: number }> = [];
+  readonly shots: Array<{ from: THREE.Vector3; dir: THREE.Vector3; melee?: boolean; mul?: number; warning?: boolean }> = [];
+  /** C16 (S11): his firefight brain (riflemen in a squad; null otherwise), his nerve, and whether he saw her this frame. */
+  tac: Tactics | null = null;
+  readonly morale: Morale;
+  seesHer = false;
+  /** Seconds since a round last hurt him. */
+  sinceHit = 99;
+  /** C16: spent magazines from his reloads, tumbling in the street. */
+  readonly magDrops: Array<{ prop: DroppedProp; obj: THREE.Object3D; age: number }> = [];
   /** C15 (S4.2): the damage each limb has taken (the limp, the hanging arm, the hunch). */
   readonly wounds = makeWounds();
   /** C15: his wounds' accuracy multiplier this frame (a hanging arm x0.7, a crawl x0.25). */
@@ -345,6 +365,7 @@ export class Enemy {
   ) {
     this.body = new Body(look);
     this.hp = kit.maxHp;
+    this.morale = makeMorale(!["turret", "police", "hunter", "civilian"].includes(kit.role ?? ""));
     // Riflemen, squad leaders and shield bearers wear the full Enforcer set; the sniper's coat has no plates.
     const role = kit.role ?? "rifle";
     this.armour = role === "rifle" || role === "shield" ? makeArmour(kit.maxHp) : null;
@@ -380,9 +401,13 @@ export class Enemy {
       const lg = new THREE.CylinderGeometry(0.004, 0.004, 1, 4, 1, true);
       lg.translate(0, 0.5, 0);
       lg.rotateX(Math.PI / 2);
-      this.laser = new THREE.Mesh(lg, new THREE.MeshBasicMaterial({ color: 0xff2030, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+      // S3.5: a 3 mm additive #ff3b1a line (the geometry is 8 mm; scaled to 3 and widened as the charge builds).
+      this.laser = new THREE.Mesh(lg, new THREE.MeshBasicMaterial({ color: 0xff3b1a, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
       this.laser.visible = false;
       this.body.root.add(this.laser);
+      this.laserDot = new THREE.Mesh(new THREE.SphereGeometry(0.022, 10, 6), new THREE.MeshBasicMaterial({ color: 0xff5a30, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+      this.laserDot.visible = false;
+      this.body.root.add(this.laserDot);
     }
   }
 
@@ -461,7 +486,20 @@ export class Enemy {
     // A round that just missed: a duck that eases back up, and shakier aim for a second (S1.1).
     this.suppressT = Math.max(0, this.suppressT - dt);
     this.duckT = Math.max(0, this.duckT - dt);
-    this.motion.crouch += ((this.duckT > 0 && this.alive ? 0.55 : 0) - this.motion.crouch) * Math.min(1, dt * 14);
+    this.sinceHit += dt;
+    this.stepMags(dt, ground, colliders);
+    if (this.alive && this.disarmMs < 0 && this.drop) this.drop.step(dt, ground, colliders);
+    const tacOn = !!this.tac && this.alive && this.state === "combat" && this.disarmMs < 0 && this.fleeT <= 0 && !this.standDown;
+    if (!tacOn) {
+      this.motion.crouch += ((this.duckT > 0 && this.alive ? 0.55 : 0) - this.motion.crouch) * Math.min(1, dt * 14);
+      if (this.motion.tac && !this.stagePose) {
+        const t = this.motion.tac;
+        t.lean *= Math.max(0, 1 - dt * 8);
+        t.blind *= Math.max(0, 1 - dt * 8);
+        t.reload = -1;
+        if (!this.tac?.surrendered) t.hands *= Math.max(0, 1 - dt * 5);
+      }
+    }
     this.motion.kick = Math.max(0, this.motion.kick - dt * 8);
     if (!this.alive) {
       this.deadFor += dt;
@@ -473,6 +511,7 @@ export class Enemy {
     }
 
     // ---- perception ----
+    this.seesHer = false;
     const eye = this.head.clone().add(new THREE.Vector3(0, -0.05, 0));
     const toCath = new THREE.Vector3().subVectors(sight.chest, eye);
     const dist = toCath.length();
@@ -493,6 +532,7 @@ export class Enemy {
       const centre = 1 - (angle / (this.kit.vision.fov / 2)) * 0.5;
       const rate = (0.35 + 2.6 * near * near) * light * stance * move * centre * sight.stealth * (alert ? 2 : 1);
       this.detect = Math.min(1, this.detect + rate * dt);
+      this.seesHer = this.state === "combat";
       if (this.detect > 0.3) this.lastKnown.copy(sight.chest).setY(ground(sight.chest.x, sight.chest.z));
     } else {
       this.detect = Math.max(0, this.detect - dt * (this.state === "combat" ? 0.12 : 0.22));
@@ -555,6 +595,15 @@ export class Enemy {
       case "combat": {
         face = sight.chest;
         aim = 1;
+        // C16 (S11): a squad rifleman fights from cover (ai/tactics.ts); a disarmed one falls back on the old fight.
+        if (tacOn && this.tac) {
+          const plan = this.tac.step(dt, seen, sight, rays);
+          target = plan.target;
+          speed = plan.speed;
+          face = plan.face;
+          aim = plan.aim;
+          break;
+        }
         // Keep a fighting distance: close in from far, back off when she's on top of them, strafe between.
         const want = this.kit.role === "hunter" ? 9 : 14;
         const d = flatDist(this.motion.pos, sight.chest);
@@ -602,6 +651,14 @@ export class Enemy {
           // Snipers hold their spot and build a steady aim; the laser gives her a second to move.
           target = null;
           this.charge = seen ? this.charge + dt : Math.max(0, this.charge - dt * 2);
+          // S3.5: the laser sweeps up the street to her over 450 ms from where it first lands (a metre short of her feet).
+          if (this.charge > 0 && this.laserT < 0) {
+            this.laserT = 0;
+            const f = sight.chest.clone().setY(ground(sight.chest.x, sight.chest.z) + 0.02);
+            this.laserFrom.copy(f.add(new THREE.Vector3(this.motion.pos.x - f.x, 0, this.motion.pos.z - f.z).setLength(1.6)));
+          } else if (this.charge <= 0) this.laserT = -1;
+          if (this.laserT >= 0) this.laserT += dt;
+          this.laserAim.copy(sight.chest);
           if (this.charge >= SNIPER_CHARGE) {
             this.charge = 0;
             const from = new THREE.Vector3();
@@ -660,6 +717,7 @@ export class Enemy {
       }
     }
 
+    if (this.tac?.surrendered) this.shots.length = 0;
     if (this.fleeT > 0) {
       this.fleeT -= dt;
       this.shots.length = 0;
@@ -765,6 +823,7 @@ export class Enemy {
     if (this.laser) {
       const show = this.alive && this.state === "combat" && this.charge > 0.05;
       this.laser.visible = show;
+      if (this.laserDot && !show) this.laserDot.visible = false;
       if (show) {
         const from = new THREE.Vector3();
         const dir = new THREE.Vector3();
@@ -775,10 +834,23 @@ export class Enemy {
           helm.updateMatrixWorld();
           helm.localToWorld(from.set(0, 0.012, 0.19));
         }
+        // The sweep: from the street short of her feet up to her chest over 450 ms, then held on her.
+        const st = this.laserHold >= 0 ? this.laserHold : Math.max(0, this.laserT);
+        const k = Math.min(1, st / LASER_SWEEP_S);
+        const e = k * k * (3 - 2 * k);
+        const end = this.laserFrom.clone().lerp(this.laserAim, e);
+        // It stops on whatever is in the way.
+        const len = from.distanceTo(end);
         this.laser.position.copy(from);
-        this.laser.lookAt(from.clone().add(dir));
-        this.laser.scale.set(1 + this.charge, 1 + this.charge, 60);
-        (this.laser.material as THREE.MeshBasicMaterial).opacity = 0.35 + 0.6 * (this.charge / SNIPER_CHARGE);
+        this.laser.lookAt(end);
+        const w = 0.375 * (1 + 1.6 * (this.charge / SNIPER_CHARGE));
+        this.laser.scale.set(w, w, len);
+        (this.laser.material as THREE.MeshBasicMaterial).opacity = 0.45 + 0.5 * (this.charge / SNIPER_CHARGE);
+        if (this.laserDot) {
+          this.laserDot.visible = true;
+          this.laserDot.position.copy(end);
+          this.laserDot.scale.setScalar(0.8 + 0.6 * (this.charge / SNIPER_CHARGE));
+        }
       }
     }
     if (this.kit.role === "orderly" || (b.lost.has("forearmR") && b.lost.has("forearmL"))) {
@@ -794,6 +866,9 @@ export class Enemy {
     place(this.rifle, b.grip, b.foregrip, b.facing.clone().set(0, 1, 0));
     this.rifle.scale.setScalar(b.scale);
     rifleLod(this.gun, b.lod);
+    // C16: the magazine is out of the carbine between the drop and the new one going in.
+    const rl = this.motion.tac?.reload ?? -1;
+    this.gun.mag.visible = !(rl >= RELOAD_KEYS.out && rl < RELOAD_KEYS.in - 250);
     // The bolt kicks back 15 mm on each round (the recoil kick decays at 8/s).
     this.gun.bolt.position.z = Math.min(1, this.motion.kick * 2) * BOLT_KICK_M;
   }
@@ -863,6 +938,7 @@ export class Enemy {
     const k = N.flinchDeg / tuning.flinch.zones.head.pitchDeg;
     this.flinch.hit("head", { ...imp, headTip: imp.headTip * k, headYaw: 0, rootX: 0, rootZ: 0 }, d);
     this.duckT = N.duckMs / 1000;
+    this.tac?.nearMiss();
     const fresh = this.suppressT <= 0;
     this.suppressT = N.accuracyMs / 1000;
     if (this.state !== "combat" && this.kit.role !== "civilian") {
@@ -1030,6 +1106,7 @@ export class Enemy {
 
   /** A hit: takes the damage (the flinch is react's job), and returns true if it died. */
   damage(amount: number, _push?: THREE.Vector3): boolean {
+    this.sinceHit = 0;
     if (!this.alive) return false;
     this.hp -= amount;
     if (this.state !== "combat") {
@@ -1057,6 +1134,13 @@ export class Enemy {
     this.deathVariant = null;
     this.drop = null;
     this.smeared = false;
+    // C16: his nerve back, a full magazine, out of any cover act; the spent mags cleared.
+    Object.assign(this.morale, makeMorale(this.morale.has));
+    this.tac?.reset();
+    this.motion.tac = null;
+    for (const d of this.magDrops) d.obj.removeFromParent();
+    this.magDrops.length = 0;
+    this.gun.mag.visible = true;
     this.deathEvents.length = 0;
     this.rifle.visible = this.kit.role !== "orderly";
     this.body.visorLevel = 1;
@@ -1218,6 +1302,75 @@ export class Enemy {
 
   /** Screenshot stages: forces the next knockdown's crawl roll (null: roll it). */
   static forceCrawl: boolean | null = null;
+
+  /** C16: his carbine is in his hands and up (not lost, dropped or swapped for the sidearm). */
+  get rifleUp(): boolean {
+    return this.alive && !this.drop && this.rifle.visible && this.disarmMs < 0;
+  }
+
+  /** C16 (S11): his squad has her: into the fight (with the reaction beat), told where she is. */
+  joinFight(at: { x: number; z: number }): void {
+    if (!this.alive || this.passive || this.fleeT > 0) return;
+    if (this.state !== "combat") {
+      this.state = "combat";
+      this.fireCd = Math.max(this.fireCd, REACTION);
+    }
+    this.detect = Math.max(this.detect, 0.5);
+    if (!this.seesHer) this.lastKnown.set(at.x, this.lastKnown.y, at.z);
+  }
+
+  /** Screenshot stages: the firefight pose layers are set by hand and held (no easing back out of them). */
+  stagePose = false;
+
+  /** C16: the spent mags tumble and settle; gone after 14 s. */
+  stepMags(dt: number, ground: (x: number, z: number) => number, colliders: THREE.Box3[]): void {
+    for (let i = this.magDrops.length - 1; i >= 0; i--) {
+      const d = this.magDrops[i]!;
+      d.age += dt;
+      d.prop.step(dt, ground, colliders);
+      place(d.obj, d.prop.a, d.prop.b, UP_Y);
+      if (d.age > 14) {
+        d.obj.removeFromParent();
+        this.magDrops.splice(i, 1);
+      }
+    }
+  }
+
+  /** C16 (S3.5): the spent magazine leaves the well and falls as a body. */
+  dropMag(): void {
+    if (!this.rifle.visible) return;
+    this.rifle.updateMatrixWorld(true);
+    const a = this.rifle.localToWorld(new THREE.Vector3(0, 0.09, -0.06));
+    const b = this.rifle.localToWorld(new THREE.Vector3(0, 0.2, -0.06));
+    const outer = new THREE.Group();
+    const wrap = new THREE.Group();
+    wrap.rotation.x = Math.PI / 2;
+    wrap.scale.copy(this.gun.near.scale);
+    wrap.add(this.gun.mag.clone());
+    wrap.position.set(0, -0.09, 0.06);
+    outer.add(wrap);
+    outer.scale.setScalar(this.body.scale);
+    this.body.root.add(outer);
+    const vel = new THREE.Vector3((Math.random() - 0.5) * 0.4, -0.6, (Math.random() - 0.5) * 0.4);
+    const prop = new DroppedProp(a, b, vel, (Math.random() - 0.5) * 6, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(0.5, speed / 6) }));
+    prop.lift = 0.02;
+    place(outer, prop.a, prop.b, UP_Y);
+    this.magDrops.push({ prop, obj: outer, age: 0 });
+    if (this.magDrops.length > 3) this.magDrops.shift()!.obj.removeFromParent();
+  }
+
+  /** C16 (S3.5): surrender: the carbine let go in front of him, straight down. */
+  dropRifle(): void {
+    if (!this.alive || this.drop || !this.rifle.visible) return;
+    const b = this.body;
+    const a = b.grip.clone();
+    const dirG = new THREE.Vector3().subVectors(b.foregrip, b.grip);
+    if (dirG.lengthSq() < 1e-4) dirG.set(0, 0, 1);
+    const bb = a.clone().addScaledVector(dirG.normalize(), 0.62);
+    const vel = new THREE.Vector3(Math.sin(this.motion.yaw), 0.6, Math.cos(this.motion.yaw)).multiplyScalar(0.9);
+    this.drop = new DroppedProp(a, bb, vel, (this.id % 2 ? 1 : -1) * 3, (speed, at) => this.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 4) }));
+    this.burstLeft = 0;
+  }
 
   /**
    * C15 (S4.3): a round on his weapon hand took the carbine: it flies off along the round with a tumble and clatters

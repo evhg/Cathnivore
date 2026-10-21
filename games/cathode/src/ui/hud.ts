@@ -1001,6 +1001,33 @@ export class Hud {
     window.setTimeout(release, ms);
   }
 
+  private barks?: HTMLElement;
+  /**
+   * C16 (S10): an enemy bark over the squad radio, as `ENFORCER "Reloading!"` with the speaker in the faction's
+   * colour, stacked above Cath's subtitle (two at most; the oldest goes first) so neither hides the other.
+   */
+  bark(who: string, line: string, hold = false): void {
+    if (!this.barks) this.barks = el("div", "hud-barks", this.root);
+    const row = el("p", "hud-bark", this.barks);
+    el("span", "hud-bark-name", row).textContent = who;
+    el("span", "line", row).textContent = `\u201c${line}\u201d`;
+    while (this.barks.children.length > 2) this.barks.firstElementChild?.remove();
+    if (hold) {
+      row.classList.add("on");
+      return;
+    }
+    requestAnimationFrame(() => row.classList.add("on"));
+    window.setTimeout(() => {
+      row.classList.remove("on");
+      window.setTimeout(() => row.remove(), 400);
+    }, 1500 + line.length * 45);
+  }
+
+  /** Screenshot stages: no bark carries over. */
+  clearBarks(): void {
+    this.barks?.replaceChildren();
+  }
+
   /** Cath's voiceover (or Bea on the wire), as a subtitle on per-line plates with the speaker's colour. */
   subtitle(text: string): void {
     if (this.holding) {

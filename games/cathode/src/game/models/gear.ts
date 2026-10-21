@@ -33,6 +33,8 @@ export interface Rifle {
   root: THREE.Group;
   bolt: THREE.Object3D;
   muzzle: THREE.Object3D;
+  /** C16: the magazine on its own node (hidden while it's out in a reload). */
+  mag: THREE.Object3D;
   /** The full gun (LOD0), its one-mesh stand-in (LOD1); at LOD2 neither draws (S3.1: capsules and the silhouette). */
   near: THREE.Object3D;
   far: THREE.Object3D;
@@ -59,6 +61,7 @@ export function buildRifle(phone: boolean, sniper = false, lod = phone): Rifle {
   const k = new GunKit(gun, phone || lod);
   const bolt = k.part("bolt", [0, 0, 0]);
   const muzzle = k.empty("muzzle", [0, 0.078, sniper ? -0.86 : -0.66]);
+  const magPart = k.part("mag", [0, 0, 0]);
   // The pistol grip, raked back, its centre on the hand.
   const gripPts: P2[] = [[0.034, 0.05], [-0.004, 0.05], [-0.016, -0.04], [0.008, -0.05], [0.03, -0.046], [0.04, 0.0]];
   k.add(profile(gripPts, 0.032, { bevel: 0.004, phone, lod }), F.grip);
@@ -89,7 +92,7 @@ export function buildRifle(phone: boolean, sniper = false, lod = phone): Rifle {
   k.add(lathe([[0.0, 0.0], [0.016, 0.003], [0.017, 0.07], [0.0145, 0.082]], { phone, seg: lod ? 6 : undefined }), F.grip, { p: [0, 0.052, -FOREGRIP_M], r: [Math.PI / 2, 0, 0] });
   // The curved magazine ahead of the trigger.
   const mag: P2[] = [[-0.03, 0.052], [-0.092, 0.052], [-0.128, -0.07], [-0.142, -0.13], [-0.082, -0.142], [-0.06, -0.066]];
-  k.add(profile(chamfer(mag, 0.005), 0.03, { bevel: 0.003, phone, lod }), F.steel);
+  k.add(profile(chamfer(mag, 0.005), 0.03, { bevel: 0.003, phone, lod }), F.steel, undefined, magPart);
   // The trigger guard.
   const tg: P2[] = [[0.0, 0.05], [-0.004, 0.03], [-0.03, 0.022], [-0.032, 0.05], [-0.026, 0.05], [-0.024, 0.03], [-0.006, 0.036], [-0.006, 0.05]];
   k.add(profile(tg, 0.01, { bevel: 0.001, phone, lod }), F.dark);
@@ -139,7 +142,7 @@ export function buildRifle(phone: boolean, sniper = false, lod = phone): Rifle {
     const m = o as THREE.Mesh;
     if (m.isMesh) m.castShadow = true;
   });
-  return { root, bolt, muzzle, near: gun, far };
+  return { root, bolt, muzzle, mag: magPart, near: gun, far };
 }
 
 /** S3.2: the riot shield, curved, with a tinted viewport and the Hollowell mark, centred on its own origin, facing +Z. */

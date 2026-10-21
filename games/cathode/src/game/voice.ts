@@ -90,3 +90,94 @@ export function deathLine(cause: DeathCause, seed: number, last?: string): strin
   if (pool[i] === last) i = (i + 1) % pool.length;
   return pool[i]!;
 }
+
+/**
+ * S10's enemy radio voice for a bark, synthesised (no recorded VO): a squelch, then a clipped run of voiced
+ * syllables (a buzzing glottal source through two moving formants, one per three letters of the line, stressed on
+ * the last when it ends in "!"), through the radio chain: band-pass 400 to 3,200 Hz, a 12% crush and a squelch tail.
+ * Placed at the man (`pan`, quieter with distance); `dest` is the world bus.
+ */
+export function radioBark(ctx: BaseAudioContext, dest: AudioNode, line: string, distance: number, pan: number, seed = Math.random()): number {
+  const t0 = ctx.currentTime + 0.01;
+  const near = Math.min(1, 7 / Math.max(4, distance));
+  const out = ctx.createGain();
+  out.gain.value = 0.55 * near;
+  const p = ctx.createStereoPanner();
+  p.pan.value = Math.max(-1, Math.min(1, pan));
+  // The radio chain.
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 400;
+  const lp = ctx.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.value = 3200;
+  const crush = ctx.createWaveShaper();
+  const curve = new Float32Array(256);
+  for (let i = 0; i < 256; i++) {
+    const x = (i / 255) * 2 - 1;
+    // 12% crush: a soft clip blended with a quantised copy.
+    curve[i] = 0.88 * Math.tanh(x * 2.2) + 0.12 * Math.round(x * 6) / 6;
+  }
+  crush.curve = curve;
+  hp.connect(lp).connect(crush).connect(out).connect(p).connect(dest);
+  const noise = (when: number, dur: number, g: number, f: number) => {
+    const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const s = ctx.createBufferSource();
+    s.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = f;
+    bp.Q.value = 0.9;
+    const gg = ctx.createGain();
+    gg.gain.value = g;
+    s.connect(bp).connect(gg).connect(hp);
+    s.start(when);
+  };
+  // Squelch in.
+  noise(t0, 0.05, 0.5, 2400);
+  const letters = line.replace(/[^a-z]/gi, "").length;
+  const syl = Math.max(2, Math.min(9, Math.round(letters / 3)));
+  const shout = line.endsWith("!");
+  let t = t0 + 0.06;
+  const f0 = 118 + seed * 34;
+  const src = ctx.createOscillator();
+  src.type = "sawtooth";
+  const f1 = ctx.createBiquadFilter();
+  f1.type = "bandpass";
+  f1.Q.value = 4;
+  const f2 = ctx.createBiquadFilter();
+  f2.type = "bandpass";
+  f2.Q.value = 6;
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0, t);
+  src.connect(f1).connect(env);
+  src.connect(f2).connect(env);
+  env.connect(hp);
+  let r = seed * 9301 + 49297;
+  const rnd = () => ((r = (r * 9301 + 49297) % 233280) / 233280);
+  for (let i = 0; i < syl; i++) {
+    const last = i === syl - 1;
+    const dur = (last && shout ? 0.17 : 0.085) + rnd() * 0.05;
+    const pitch = f0 * (shout ? 1.25 : 1) * (last && shout ? 1.18 : 0.94 + rnd() * 0.14);
+    src.frequency.setValueAtTime(pitch, t);
+    src.frequency.linearRampToValueAtTime(pitch * (last ? 0.86 : 0.97), t + dur);
+    const vowel = [[730, 1090], [530, 1840], [270, 2290], [570, 840], [440, 1020], [660, 1720]][Math.floor(rnd() * 6)]!;
+    f1.frequency.setValueAtTime(vowel[0]!, t);
+    f2.frequency.setValueAtTime(vowel[1]!, t);
+    env.gain.setValueAtTime(0.0001, t);
+    env.gain.exponentialRampToValueAtTime(shout ? 0.9 : 0.6, t + 0.015);
+    env.gain.setValueAtTime(shout ? 0.9 : 0.6, t + dur - 0.025);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    // A consonant's hiss between some syllables.
+    if (rnd() < 0.45) noise(t + dur, 0.03, 0.25, 3000 + rnd() * 2000);
+    t += dur + 0.02 + rnd() * 0.03;
+  }
+  src.start(t0 + 0.05);
+  src.stop(t + 0.05);
+  // Squelch out, a little later than the words.
+  noise(t + 0.04, 0.07, 0.45, 1900);
+  return t + 0.12 - t0;
+}

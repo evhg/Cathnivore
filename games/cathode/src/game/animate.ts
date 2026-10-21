@@ -40,6 +40,14 @@ export interface Motion {
   wound?: { limp: "L" | "R" | null; limpK: number; hang: "L" | "R" | null; hangK: number; hunch: number; worst: WoundZone | null; breath: number } | null;
   /** C15 (S4.2): crawling on his front, the crawl's own phase (rad) and a blind shot back over his shoulder (0..1). */
   crawl?: { phase: number; shoot: number; blend: number } | null;
+  /**
+   * C16 (S3.5, S11) firefight layers, each 0..1 and eased by the tactics: `lean` rolls the spine 25 degrees out round
+   * full cover (+ his left, - his right) with the hips stepping after it; `blind` lifts the carbine over the cover in
+   * both hands with his head down behind it; `reload` is ms into the 2.2 s carbine reload (-1: none), the support hand
+   * going to the mag well, the chest pouch and the charging handle; `hands` raises both hands open beside his head
+   * (surrender), the carbine gone.
+   */
+  tac?: { lean: number; blind: number; reload: number; hands: number } | null;
 }
 
 const local = {} as Record<Joint, THREE.Vector3>;
@@ -111,6 +119,21 @@ export function animate(body: Body, m: Motion): void {
   const headPitch = -m.pitch * 0.6;
   local.head.set(local.neck.x, local.neck.y + 0.28 * Math.cos(headPitch), local.neck.z + 0.28 * Math.sin(headPitch) * 0.4 + 0.02);
 
+  // C16: the lean out of full cover rolls the spine over the hips (25 degrees at full), the head staying level.
+  const tc = m.tac ?? null;
+  if (tc && tc.lean) {
+    const roll = tc.lean * LEAN_ROLL;
+    const sr = Math.sin(roll);
+    const cr = Math.cos(roll);
+    for (const j of [local.chest, local.neck, local.head]) {
+      const dx = j.x - local.pelvis.x;
+      const dy = j.y - local.pelvis.y;
+      j.x = local.pelvis.x + dx * cr + dy * sr;
+      j.y = local.pelvis.y - dx * sr + dy * cr;
+    }
+    // The head comes back toward upright (he keeps his eyes level to aim).
+    local.head.x -= sr * 0.08;
+  }
   // Shoulders hang off the neck, hips off the pelvis.
   for (const s of [1, -1]) {
     const L = s > 0;
@@ -168,6 +191,7 @@ export function animate(body: Body, m: Motion): void {
     applyArms(m.arms.mode, m.arms.t, rotP, aim);
   }
   if (wd) applyWound(wd, m.arms?.mode ?? "rifle");
+  if (tc) applyTac(tc);
   if (r) applyReact(r);
   if (m.crawl) crawlPose(m.crawl.phase, m.crawl.shoot, m.crawl.blend);
   if (f) applyFlinch(f);
@@ -180,11 +204,11 @@ export function animate(body: Body, m: Motion): void {
   body.facing.set(0, 0, 1).applyQuaternion(q);
   // Where the carbine is held: by the hands while both hold it; otherwise where they would hold it, so one hand can
   // carry it (an arm hanging, a hand to the wound). A crawling or reeling man's gun goes with his right hand.
-  const oneHanded = !!wd && (wd.hang !== null || (wd.hunch > 0.5 && m.arms?.mode !== "pistol"));
+  const oneHanded = (!!wd && (wd.hang !== null || (wd.hunch > 0.5 && m.arms?.mode !== "pistol"))) || (!!tc && tc.reload >= 0 && !m.crawl);
   if (!oneHanded || m.crawl || (r && (r.lie > 0.05 || r.helmet > 0.05))) {
     body.grip.copy(body.joints.handR);
     body.foregrip.copy(body.joints.handL);
-  } else if (wd!.hang === "R") {
+  } else if (wd?.hang === "R") {
     // The weapon arm hangs: the left hand holds the carbine by its foregrip, the stock tucked under his arm.
     body.foregrip.copy(body.joints.handL);
     body.grip.copy(gripAt).sub(foreAt).add(local.handL).applyMatrix4(m4);
@@ -196,6 +220,60 @@ export function animate(body: Body, m: Motion): void {
 
 const gripAt = new THREE.Vector3();
 const foreAt = new THREE.Vector3();
+const LEAN_ROLL = (25 * Math.PI) / 180;
+const tacA = new THREE.Vector3();
+const tacB = new THREE.Vector3();
+
+/** S3.5's reload keys (ms): the hand reaches the mag well, the mag is out (400), the hand at the pouch, the mag in (1500), the bolt (1900), back on the foregrip (2200). */
+export const RELOAD_KEYS = { reach: 250, out: 400, pouch: 900, back: 1250, in: 1500, handle: 1750, bolt: 1900, done: 2200 } as const;
+
+/**
+ * C16's firefight layers over the carbine hold (body space; `foreAt`/`gripAt` hold the gun's own two points).
+ * The reload moves only the support hand (the carbine stays where the trigger hand holds it, see oneHanded);
+ * the blind fire lifts both hands, and the gun with them, over his helmet; surrender opens both hands by his head.
+ */
+function applyTac(t: NonNullable<Motion["tac"]>): void {
+  const shR = local.shoulderR;
+  const shL = local.shoulderL;
+  if (t.blind > 0.001) {
+    const k = smooth01(t.blind);
+    // Over the top: the trigger hand above the helmet, a forearm's reach forward, the support hand up the line.
+    tacA.set(local.neck.x - 0.04, local.neck.y + 0.5, local.neck.z + 0.3);
+    tacB.set(tacA.x + 0.02, tacA.y + 0.01, tacA.z + FOREGRIP_M);
+    local.handR.lerp(tacA, k);
+    local.handL.lerp(tacB, k);
+    // His head tucks down under his arms.
+    local.head.y -= 0.06 * k;
+    local.head.z += 0.05 * k;
+  }
+  if (t.reload >= 0) {
+    const K = RELOAD_KEYS;
+    const ms = t.reload;
+    // Body-space spots on the held carbine (from where the hands hold it): the mag well under the receiver, the
+    // charging handle on its left side; and the pouch on his chest rig.
+    const well = tacA.copy(foreAt).lerp(gripAt, 0.62).add(armTmp.set(0.0, -0.09, 0.0));
+    const pouch = new THREE.Vector3(local.chest.x + 0.1, local.chest.y - 0.2, local.chest.z + 0.2);
+    const handle = tacB.copy(gripAt).lerp(foreAt, 0.25).add(armTmp.set(0.05, 0.06, 0));
+    const fore = foreAt;
+    let to: THREE.Vector3;
+    if (ms < K.reach) to = new THREE.Vector3().copy(fore).lerp(well, smooth01(ms / K.reach));
+    else if (ms < K.out) to = well.clone().add(armTmp.set(0, -0.03 * smooth01((ms - K.reach) / (K.out - K.reach)), 0));
+    else if (ms < K.pouch) to = well.clone().lerp(pouch, smooth01((ms - K.out) / (K.pouch - K.out)));
+    else if (ms < K.back) to = pouch.clone();
+    else if (ms < K.in) to = pouch.clone().lerp(well, smooth01((ms - K.back) / (K.in - K.back)));
+    else if (ms < K.handle) to = well.clone().lerp(handle, smooth01((ms - K.in) / (K.handle - K.in)));
+    else if (ms < K.bolt) to = handle.clone().add(armTmp.set(0, 0, -0.06 * smooth01((ms - K.handle) / (K.bolt - K.handle))));
+    else to = handle.clone().lerp(fore, smooth01((ms - K.bolt) / (K.done - K.bolt)));
+    local.handL.copy(to);
+  }
+  if (t.hands > 0.001) {
+    const k = smooth01(t.hands);
+    local.handR.lerp(tacA.set(shR.x - 0.1, shR.y + 0.32, shR.z + 0.12), k);
+    local.handL.lerp(tacB.set(shL.x + 0.1, shL.y + 0.32, shL.z + 0.12), k);
+  }
+  ik(shR, local.handR, UPPER, FORE, tmp.set(shR.x - 0.4, shR.y - 0.6, shR.z - 0.2), local.elbowR);
+  ik(shL, local.handL, UPPER, FORE, tmp.set(shL.x + 0.5, shL.y - 0.6, shL.z), local.elbowL);
+}
 const armTmp = new THREE.Vector3();
 
 /** S4.3's disarm, body space: the stung hand shaken, the draw from the right thigh, the two-handed pistol hold. */

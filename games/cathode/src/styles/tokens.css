@@ -73,6 +73,8 @@
   --blood-rgb: 255 59 85;
   --blood-deep-rgb: 140 0 16;
   --amber-rgb: 242 237 228;
+  /* C16 (S10): a faction's colour, used only for who is speaking in an enemy bark (Hollowell's visor amber). */
+  --faction-hollowell: #ffa040;
   --ink-rgb: 235 230 220;
   --neon-cyan: var(--cyan);
   --neon-amber: var(--amber);

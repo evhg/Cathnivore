@@ -86,6 +86,9 @@ import { clearDebris, clearShards, liveDebris } from "./armourfx";
 import { HELM_Y } from "./rig";
 import { plateWear } from "../sim/armour";
 import { makeStagger } from "../sim/stagger";
+import { Director } from "./ai/director";
+import { RELOAD_KEYS } from "./animate";
+import { loadCover } from "./ai/coverload";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -407,6 +410,22 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // The gun reflects its own small neon room (S2.1), so it never goes black in a dark alley.
   arsenal.lightRoom(world.renderer);
   const combat = new Combat(world, rays, enemies, o.intensity === "full");
+  // C16 (S11): the street's Hollowell men fight as squads from the district's cover (loaded as its own chunk).
+  const director = new Director(progress.character.difficulty);
+  director.form(enemies);
+  void loadCover(o.district).then((pts) => (director.cover = pts));
+  /** S10: the squads' barks: the subtitle in the faction's colour and the line over the radio, placed where he is. */
+  function sayBarks(): void {
+    for (const b of director.barks) {
+      if (o.shot) continue;
+      hud.bark(barkSpeaker(b.e), b.line);
+      const rel = b.e.position.clone().sub(world.camera.position);
+      const look = world.camera.getWorldDirection(new THREE.Vector3());
+      const right = new THREE.Vector3().crossVectors(look, new THREE.Vector3(0, 1, 0)).normalize();
+      audio?.radio(b.line, rel.length(), THREE.MathUtils.clamp(rel.normalize().dot(right), -1, 1));
+    }
+    director.barks.length = 0;
+  }
   const killcam = new KillCam(world);
   // C11: the paired takedown (her arms in the street, the camera, the target's body script) and its reward orbs.
   const td = new Takedown(world.scene, o.quality === "phone");
@@ -1704,6 +1723,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
     // Enemies: perception, movement, shooting back.
     const sight = sightOf();
+    // C16: men a job brought in join a squad; the squads share what they saw last frame and deal roles and tokens.
+    for (const e of enemies) director.enlist(e);
+    if (!staged) director.update(dt, sight.chest);
     // Nurses patch the wounded around them while they live.
     for (const n of enemies) {
       if (n.kit.role !== "nurse" || !n.alive) continue;
@@ -1765,6 +1787,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         audio?.enemyShot(rel.length(), THREE.MathUtils.clamp(rel.normalize().dot(right), -1, 1));
       }
     }
+    // C16: the squads' telegraphs and reload beats (sound, the spent mag), then their barks.
+    director.drain(enemies, (e, ev) => {
+      const rel = e.position.clone().sub(eye);
+      const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+      const pan = THREE.MathUtils.clamp(rel.clone().normalize().dot(right), -1, 1);
+      if (ev.kind === "chirp") audio?.chirp(rel.length(), pan);
+      else if (ev.kind === "magOut") {
+        e.dropMag();
+        audio?.enemyReload("out", rel.length(), pan);
+      } else if (ev.kind === "magIn") audio?.enemyReload("in", rel.length(), pan);
+      else if (ev.kind === "bolt") audio?.enemyReload("bolt", rel.length(), pan);
+    });
+    sayBarks();
     discoverBodies();
     drainEvents();
 
@@ -2216,6 +2251,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           staggered: e.staggered,
           knockedDown: e.knockedDown,
           crawling: e.crawling,
+          surrendered: !!e.tac?.surrendered,
         },
         wire,
       );
@@ -2308,6 +2344,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     timescale.push("takedown", td.worldScale, -1, 120, 300, "takedown");
     combat.noise(e.position, TAKEDOWN.noiseM);
     combat.bus.emit("takedownStart", { t: combat.clock, targetUid: String(e.id) });
+    director.takedownSeen(e.position);
     audio?.takedownGrab();
     hud.cinema(Math.max(0.002, td.bars()));
     world.viewScene.visible = false;
@@ -3039,7 +3076,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   combat.bus.on("plateBreak", () => {
     if (o.shot || combat.clock - plateBarkAt < 10 || Math.random() >= 0.3) return;
     plateBarkAt = combat.clock;
-    hud.subtitle(`${ENFORCER.name}: Plate's gone!`);
+    const who = enemies.find((x) => x.alive && x.state === "combat" && director.squadOf(x));
+    if (who) director.say(who, "plate");
   });
   combat.bus.on("fire", () => rumble("fire"));
   // The last enemy of the encounter (S1.4, S1.5): the world holds 120 ms, then runs at 0.35x for 700 ms and
@@ -3150,11 +3188,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     frameBlocks = 0;
     combat.blocks = 0;
     combat.blockEvents.length = 0;
-    // A near miss can make them shout (S1.1); subtitled, at most every six seconds.
+    // A near miss can make them shout (S1.1): "Taking fire!" through the squad's radio and its rate limits (S10).
     if (combat.barks.length && combat.clock - lastBark > 6) {
-      lastBark = combat.clock;
-      const who = combat.barks[0]!.kit.name;
-      hud.subtitle(`${who}: ${BARKS[Math.floor(Math.random() * BARKS.length)]}`);
+      const who = combat.barks[0]!;
+      if (director.squadOf(who) ? director.say(who, "suppressed") : true) {
+        lastBark = combat.clock;
+        if (!director.squadOf(who)) hud.bark(barkSpeaker(who), BARKS[Math.floor(Math.random() * BARKS.length)]!);
+      }
     }
     combat.barks.length = 0;
     combat.kills.length = 0;
@@ -4137,9 +4177,172 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.freeze(tMs);
     return "ok";
   };
+  // ---- C16 "Firefights with intent": a guard in cover, held at the S3.5 beat each stage names ----
+  // enemy-peek: risen over a crouch-high crate 7 m out, head and chest showing, carbine on her. enemy-lean: rolled
+  // out round a pillar. enemy-blindfire: head down behind the crate, the carbine over it, firing. enemy-reload-<ms>:
+  // kneeling behind the crate seen from 50 degrees off, the support hand at the pouch and the spent mag in the street.
+  // enemy-telegraph-<ms>: the sniper 22 m out with his laser that far into its sweep up the street to her.
+  // bark-subtitle: the reload with its "Reloading!" over the radio.
+  const C16_STAGES = ["enemy-peek", "enemy-lean", "enemy-blindfire", "enemy-reload", "enemy-telegraph", "bark-subtitle"];
+  let c16Props: THREE.Object3D[] = [];
+  const c16Stage = (name: string, tMs: number): string => {
+    hud.freeze(null);
+    hud.clearFeedback();
+    hud.clearBarks();
+    showCover(false);
+    pickups.clear();
+    orbs.clear();
+    world.fx.clear?.();
+    if (stageCrate) stageCrate.visible = false;
+    if (crateCollider) crateCollider.off = true;
+    for (const p of c16Props) p.removeFromParent();
+    c16Props = [];
+    staged = true;
+    s.stageInfo = null;
+    s.hp = s.maxHp;
+    for (const e of enemies) {
+      if (e.alive) e.state = "unaware";
+      e.detect = 0;
+    }
+    if (!stageHome) stageHome = { pos: player.pos.clone(), yaw: player.yaw, pitch: player.pitch };
+    player.pos.copy(stageHome.pos);
+    player.yaw = stageHome.yaw;
+    player.pitch = stageHome.pitch;
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
+    const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
+    const side = new THREE.Vector3(-flat.z, 0, flat.x);
+    const hide = enemies.filter((e) => e.body.root.visible);
+    for (const e of hide) e.body.root.visible = false;
+    lineupHidden.push(...hide);
+    bodyView.eye.copy(eye);
+    const base = name.replace(/-\d+$/, "");
+    const sniper = base === "enemy-telegraph";
+    const reload = base === "enemy-reload" || base === "bark-subtitle";
+    const lean = base === "enemy-lean";
+    const kit = sniper ? { ...ENFORCER_SNIPER, role: "sniper" as const } : { ...ENFORCER };
+    const e = new Enemy(kit, [new THREE.Vector3()], 1);
+    e.passive = true;
+    e.stagePose = true;
+    const dist = sniper ? 18 : 5;
+    // The cover: a rusted cargo crate (1.15 m) or a concrete pillar (2.4 m) square to her line.
+    const coverAt = eye.clone().addScaledVector(flat, dist - 0.75).addScaledVector(side, lean ? 0.6 : 0);
+    coverAt.y = ground(coverAt.x, coverAt.z);
+    const yawTo = Math.atan2(flat.x, flat.z);
+    if (!sniper) {
+      const h = lean ? 2.4 : 1.15;
+      const w = lean ? 0.9 : 1.5;
+      const mat = world.material?.(lean ? "concreteA" : "rust") ?? new THREE.MeshStandardMaterial({ color: 0x5a4a40, metalness: 0.5, roughness: 0.6 });
+      const crate = new THREE.Mesh(new THREE.BoxGeometry(w, h, lean ? 0.9 : 0.8), mat);
+      crate.castShadow = crate.receiveShadow = true;
+      crate.position.set(coverAt.x, coverAt.y + h / 2, coverAt.z);
+      crate.rotation.y = yawTo;
+      world.scene.add(crate);
+      c16Props.push(crate);
+    }
+    const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.6 - 0.5 : 0);
+    if (!sniper) at.addScaledVector(flat, 0.35);
+    at.y = ground(at.x, at.z);
+    e.motion.pos.copy(at);
+    // The camera: square on, or 50 degrees off for the reload (so the kneeling man shows past the crate's end).
+    let from = stageHome.pos.clone();
+    if (reload) {
+      const off = flat.clone().multiplyScalar(-Math.cos(0.87) * 3.9).addScaledVector(side, -Math.sin(0.87) * 3.9);
+      from = at.clone().add(off);
+      from.y = ground(from.x, from.z);
+    }
+    const eyeAt = from.clone().setY(from.y + 1.6);
+    e.motion.yaw = Math.atan2(eyeAt.x - at.x, eyeAt.z - at.z);
+    if (reload) e.motion.yaw = Math.atan2(-flat.x, -flat.z) - 0.35;
+    e.motion.aim = 1;
+    e.motion.pitch = Math.atan2(eyeAt.y - (at.y + 1.5), Math.hypot(eyeAt.x - at.x, eyeAt.z - at.z));
+    const pose = { lean: 0, blind: 0, reload: -1, hands: 0 };
+    if (base === "enemy-peek") e.motion.crouch = 0.3;
+    else if (lean) pose.lean = -1;
+    else if (base === "enemy-blindfire") {
+      e.motion.crouch = 1.6;
+      pose.blind = 1;
+      e.motion.kick = 0.7;
+    } else if (reload) {
+      e.motion.crouch = 1.25;
+      e.motion.aim = 0.3;
+      e.motion.pitch = -0.25;
+    }
+    e.motion.tac = pose;
+    world.scene.add(e.body.root);
+    lineup.push(e);
+    const sight = sniper ? { ...sightNone(), chest: eyeAt.clone().setY(eyeAt.y - 0.35), eye: eyeAt.clone() } : sightNone();
+    const ms = tMs === 40 ? Number(/-(\d+)$/.exec(name)?.[1] ?? (sniper ? 300 : reload ? 1000 : 0)) : tMs;
+    if (sniper) {
+      // The sweep: the laser starts a step short of her feet and is `ms` into its 450 ms climb to her chest.
+      e.state = "combat";
+      e.charge = Math.max(0.06, ms / 1000);
+      e.laserHold = ms / 1000;
+      const f = sight.chest.clone().setY(ground(sight.chest.x, sight.chest.z) + 0.02);
+      e.laserFrom.copy(f.add(new THREE.Vector3(at.x - f.x, 0, at.z - f.z).setLength(1.6)));
+      e.laserAim.copy(sight.chest);
+    }
+    if (sniper) e.detect = 1;
+    for (let i = 0; i < 4; i++) e.update(0.0001, sight as Sight, rays, world.colliders, ground);
+    if (sniper) {
+      e.state = "combat";
+      e.detect = 1;
+      e.charge = Math.max(0.06, ms / 1000);
+      e.motion.aim = 1;
+      e.update(0.0001, sight as Sight, rays, world.colliders, ground);
+    }
+    if (reload) {
+      // Run the hand up to the drop, let the mag go, and let it fall and settle for the rest of the beat.
+      pose.reload = Math.min(ms, RELOAD_KEYS.out);
+      e.update(0.0001, sightNone(), rays, world.colliders, ground);
+      if (ms >= RELOAD_KEYS.out) {
+        e.dropMag();
+        for (let t = RELOAD_KEYS.out; t < ms; t += 16) e.stepMags(0.016, ground, world.colliders);
+      }
+      pose.reload = ms;
+      e.update(0.0001, sightNone(), rays, world.colliders, ground);
+    }
+    if (base === "enemy-blindfire") {
+      const mf = new THREE.Vector3();
+      const md = new THREE.Vector3();
+      e.muzzle(mf, md);
+      world.fx.muzzle(mf, md, 0.6);
+    }
+    e.body.pose();
+    // A review light over the cover, like the street's sodium lamps (the turntable's key and a cold rim): the stage spot
+    // is between two lamps, where a man behind a crate is a silhouette.
+    if (!sniper) {
+      const key = new THREE.SpotLight(0xffc690, 46, 14, 0.62, 0.6, 1.4);
+      key.position.copy(coverAt).addScaledVector(flat, -2.2).addScaledVector(side, -1.6).setY(coverAt.y + 4.2);
+      key.target.position.copy(at).setY(at.y + 0.9);
+      const rim = new THREE.SpotLight(0x58d8ff, 40, 14, 0.7, 0.5, 1.4);
+      rim.position.copy(at).addScaledVector(flat, 2.6).addScaledVector(side, 1.4).setY(at.y + 3.2);
+      rim.target.position.copy(at).setY(at.y + 1.1);
+      for (const l of [key, rim]) {
+        world.scene.add(l, l.target);
+        c16Props.push(l, l.target);
+      }
+    }
+    // She holds the Kestrel (the stages read as the fight, not the tutorial's Pin).
+    if (arsenal.weapon.id !== "kestrel") {
+      arsenal.owned.add("kestrel");
+      arsenal.equipId("kestrel");
+    }
+    arsenal.settle();
+    if (base === "bark-subtitle") hud.bark("Enforcer", "Reloading!", true);
+    lookFrom(from, sniper ? e.body.joints.chest.clone().lerp(eyeAt.clone().setY(at.y), 0.2) : e.body.joints.chest.clone().addScaledVector(reload ? new THREE.Vector3(0, 0, 0) : side, -0.4).setY(e.body.joints.chest.y - 0.15));
+    probeGuard = e;
+    hud.freeze(tMs);
+    return "ok";
+  };
+
   const lineupHidden: Enemy[] = [];
   const endReview = () => {
     clearReview();
+    for (const p of c16Props) p.removeFromParent();
+    c16Props = [];
     for (const e of lineupHidden) e.body.root.visible = true;
     lineupHidden.length = 0;
   };
@@ -4532,6 +4735,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (C6_STAGES.includes(name) || C7_STAGES.includes(name)) return c6Stage(name, tMs);
     calmVitals();
     if (C10_STAGES.includes(name) || /^firefight-\d+$/.test(name)) return c10Stage(name, tMs);
+    if (C16_STAGES.includes(name.replace(/-\d+$/, ""))) return c16Stage(name, tMs);
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
     if (C4_STAGES.includes(name)) return c4Stage(name, tMs);
     arsenal.holdAim = false;
@@ -5200,6 +5404,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 }
 
 /** What a guard shouts when a round cracks past his head. */
+/** The name a bark's subtitle carries: the sergeant by rank, the rest by their kit's last word. */
+function barkSpeaker(e: Enemy): string {
+  if (e.kit.leader) return "Sergeant";
+  return e.kit.name.split(" ").pop() ?? e.kit.name;
+}
+
 const BARKS = ["Taking fire!", "Contact, she's shooting!", "Shots, get down!", "Where's that coming from?"];
 
 const RESIST_TAG: Record<string, string> = { kinetic: "KIN", shock: "SHK", toxic: "TOX", incendiary: "FIRE", monowire: "WIRE" };

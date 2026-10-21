@@ -72,7 +72,11 @@ const C15 = ['enemy-plate-cracked', 'enemy-plate-broken', 'visor-shatter', 'enem
 // C15X (review): the systems that have no acceptance stage of their own: a disarm 700 ms on (the carbine in the
 // street, the sidearm coming off his thigh), a crawl a second into it, and a guard limping with an arm hanging, hunched.
 const C15X = ['enemy-disarm-1250', 'enemy-crawl-3900', 'enemy-wounded-900', 'enemy-shield-break-450']
-const MS = { C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
+// C16 "Firefights with intent": the sniper's laser 300 ms into its sweep up the street, a guard risen over a crate,
+// one blind-firing over it, one reloading behind it a second in (the mag in the street), and the "Reloading!" bark.
+const C16 = ['enemy-telegraph-300', 'enemy-peek', 'enemy-blindfire', 'enemy-reload-1000', 'bark-subtitle']
+const C16X = ['enemy-lean']
+const MS = { C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
@@ -418,7 +422,7 @@ for (const vp of vps) {
       const vitals = vbar ? { broken: vbar.classList.contains('is-broken'), shards: !!document.querySelector('.hud-shards.go'), guard: r(document.querySelector('.hud-guard')), flesh: r(document.querySelector('.hud-hp')) } : null
       const wt = document.querySelector('.hud-wound')
       const wound = wt ? { critical: wt.classList.contains('is-critical') && /critical/i.test(wt.textContent), bleeding: wt.classList.contains('is-bleeding') && /bleeding/i.test(wt.textContent) } : null
-      const clusters = ['.hud-objective', '.hud-vitals', '.hud-arms', '.hud-feed-line', '.hud-sub', '.hud-target', '.hud-prompt', '.hud-threats > *', '.hud-wprompt', '.hud-toast', '.hud-teach.on',
+      const clusters = ['.hud-objective', '.hud-vitals', '.hud-arms', '.hud-feed-line', '.hud-sub', '.hud-bark', '.hud-target', '.hud-prompt', '.hud-threats > *', '.hud-wprompt', '.hud-toast', '.hud-teach.on',
         // C3: the off-screen chevron and its plate against everything, the touch controls included (a plate on FIRE).
         '.hud-wp:not([hidden]).off .hud-wp-arrow', '.hud-wp:not([hidden]).off .hud-wp-dist', '.tbtn', '.tbtn-menu', '.stick', '.look-hint:not(.gone)']
         .flatMap((q) => [...document.querySelectorAll(q)].map((e) => [q, r(e)]))
@@ -665,6 +669,14 @@ for (const vp of vps) {
           if (g > r * 0.6 && b > r * 0.6 && best.share < 0.3) warn(`${vp} ${spec}: the splat reads pink (mean ${best.pr.mean})`)
         }
       }
+    }
+    // ---- C16 acceptance ----
+    if (stage === 'bark-subtitle') {
+      const bark = (info?.texts ?? []).filter(([c]) => /hud-bark|^line$/.test(String(c)))
+      if (!bark.length) fail(`${vp} ${spec}: no bark subtitle on screen`)
+      const min = Math.min(...bark.map(([, px]) => px))
+      console.log(`  C16 ${vp} ${spec}: bark text ${bark.map(([c, px]) => `${c} ${px.toFixed(1)}px`).join(', ')}`)
+      if (min < 12) fail(`${vp} ${spec}: bark text at ${min.toFixed(1)} CSS px (< 12)`)
     }
     // ---- C15 acceptance ----
     if (C15.includes(stage) || C15X.includes(stage)) {

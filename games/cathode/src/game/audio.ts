@@ -6,6 +6,7 @@
 import { Score, type ScoreVariant } from "./score";
 import { db, tuning } from "./feel/tuning";
 import { GunSound } from "./gunsound";
+import { radioBark } from "./voice";
 
 /** The hit-confirm sounds (S1.3). */
 export type ConfirmKind = "body" | "head" | "armour" | "plateBreak" | "visor" | "kill" | "headKill" | "pen" | "soft";
@@ -343,6 +344,59 @@ export class Audio {
     const g = Math.min(0.9, 6 / Math.max(3, distance));
     this.burst({ type: "lowpass", freq: Math.max(700, 6000 - distance * 120), decay: 0.12, gain: g, verb: 0.8, pan });
     this.thump(160, 60, 0.1, g * 0.6);
+  }
+
+  /**
+   * C16 (S3.5): the burst's tell, 350 ms before the first round: a rising charge chirp (1.2 to 2 kHz), placed at him.
+   * Loud enough at 20 m to turn her head; a narrow tone that sits above the street's rain.
+   */
+  chirp(distance: number, pan: number): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const t = c.currentTime;
+    const g = Math.min(0.32, 3.2 / Math.max(6, distance));
+    const o = c.createOscillator();
+    o.type = "square";
+    o.frequency.setValueAtTime(1200, t);
+    o.frequency.exponentialRampToValueAtTime(2000, t + 0.26);
+    const f = c.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.setValueAtTime(1500, t);
+    f.frequency.exponentialRampToValueAtTime(2300, t + 0.26);
+    f.Q.value = 3;
+    const e = c.createGain();
+    e.gain.setValueAtTime(0.0001, t);
+    e.gain.exponentialRampToValueAtTime(g, t + 0.02);
+    e.gain.setValueAtTime(g, t + 0.22);
+    e.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    const p = c.createStereoPanner();
+    p.pan.value = Math.max(-1, Math.min(1, pan));
+    o.connect(f).connect(e).connect(p).connect(this.sfx);
+    o.start(t);
+    o.stop(t + 0.34);
+  }
+
+  /** C16 (S3.5): his carbine's reload beats, placed at him: the mag out, the new one seated, the bolt. */
+  enemyReload(beat: "out" | "in" | "bolt", distance: number, pan: number): void {
+    if (!this.enabled) return;
+    const near = Math.min(1, 6 / Math.max(3, distance));
+    const pp = Math.max(-1, Math.min(1, pan));
+    if (beat === "out") {
+      this.burst({ freq: 2100, q: 5, decay: 0.035, gain: 0.3 * near, pan: pp });
+      this.burst({ freq: 900, q: 3, decay: 0.06, gain: 0.2 * near, when: 0.02, pan: pp });
+    } else if (beat === "in") {
+      this.burst({ freq: 1500, q: 4, decay: 0.05, gain: 0.38 * near, pan: pp });
+      this.thump(260, 140, 0.05, 0.2 * near, 0.005, "triangle", 0, pp);
+    } else {
+      this.burst({ freq: 2800, q: 6, decay: 0.03, gain: 0.34 * near, pan: pp });
+      this.burst({ freq: 1800, q: 5, decay: 0.04, gain: 0.3 * near, when: 0.09, pan: pp });
+    }
+  }
+
+  /** C16 (S10): a bark over the squad's radio, placed at the man who said it. */
+  radio(line: string, distance: number, pan: number): void {
+    if (!this.enabled) return;
+    radioBark(this.ctx, this.sfx, line, distance, pan);
   }
 
   hitFlesh(heavy: boolean, pan = 0, dist = 0): void {
