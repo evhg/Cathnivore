@@ -682,9 +682,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const a = Math.PI * 2 * cu;
         switch (clip.kind) {
           case "ghost":
-            headPivot.rotation.y += -0.62 * e;
+            // A glance down the street to her left: away from the wardrobe lens (her face isn't modelled).
+            headPivot.rotation.y += 0.55 * e;
             headPivot.rotation.x += 0.06 * e;
-            chest.rotation.y += -0.14 * e;
+            chest.rotation.y += 0.12 * e;
             break;
           case "butcher":
             headPivot.rotation.z += 0.24 * Math.sin(a) * e;
@@ -693,7 +694,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             break;
           case "gunslinger":
             chest.rotation.y += 0.2 * e;
-            headPivot.rotation.y += -0.18 * e;
+            headPivot.rotation.y += 0.18 * e;
             headPivot.rotation.x += 0.1 * e;
             break;
           case "wirewitch": {

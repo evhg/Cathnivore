@@ -433,6 +433,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cancelAnimationFrame(raf);
       removeEventListener("resize", resize);
       for (const r of removers) r();
+      // The wardrobe's class key light leaves with her (it must not hang in the street once play starts).
+      keyRemove?.();
+      keyRemove = null;
       for (const c of chalk) c.removeFromParent();
       cath.dispose();
       world.setWounded?.({ pulse: 0, regen: 0, stim: 0, wipe: -1, lens: [], water: false });

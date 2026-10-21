@@ -125,9 +125,10 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   transform-origin: 64% 46%;
   animation: ld-push 20s linear both;
 }
-.loading[data-district="clinic"] .ld-img { background-image: url("/keyart/clinic.webp"); }
+/* The clinic and the tower are lit white: they drop further so the type keeps its contrast. */
+.loading[data-district="clinic"] .ld-img { background-image: url("/keyart/clinic.webp"); filter: grayscale(1) contrast(1.45) brightness(.44); }
 .loading[data-district="plaza"] .ld-img { background-image: url("/keyart/plaza.webp"); }
-.loading[data-district="tower"] .ld-img { background-image: url("/keyart/tower.webp"); }
+.loading[data-district="tower"] .ld-img { background-image: url("/keyart/tower.webp"); filter: grayscale(1) contrast(1.4) brightness(.5); }
 .loading[data-district="vault"] .ld-img { background-image: url("/keyart/vault.webp"); }
 @keyframes ld-push { from { transform: scale(1); } to { transform: scale(1.06); } }
 /* The duotone: the grey frame tinted from night to ink with a hint of the district's own colour. */

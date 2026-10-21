@@ -26,7 +26,7 @@ Every visual item is done only when:
 - C12. [ ] **"The new name" (1 session)** (waits for the owner to pick the name in FEEDBACK.md; skip it until then)
 - C13. [x] *(released 2026-10-20 `3bfdd11`; 2026-10-20 owner chat, session 1: live market title scene with 3D Cath, cold open, gate plate, menu model, The List, set pieces, ambience, push and handover into play, area title; `MILESTONE=C13` feel-shots pass at 5K/D/phone; open: Cath close-up detail, plaza loop, subagent critique)* **"A front door that looks AAA" (4 sessions)**
 - C13T. [x] *(2026-10-20 owner chat: "these look like a 5 year old made them")* **"Type and UI that look like a AAA game" (3 sessions)**: two families at most, one accent, no web-page idioms, a reference board and an independent critique. Spec: `docs/design/cathode-combat.md` C13T.
-- C14. [ ] **"Class pick, loading and pause" (2 sessions)**
+- C14. [ ] *(2026-10-21 owner chat, session 1: case-file loading over district key art, wardrobe class pick with stat sheet and hold-to-commit, pause with uPause, case note and breadcrumbs; MILESTONE=C14 feel-shots pass; open: default-fail critique, Cath close-up model in the wardrobe)* **"Class pick, loading and pause" (2 sessions)**
 - C15. [ ] **"Armour that breaks, enemies that stagger" (3 sessions)** (also carries from C10: the riot shield breaking in 3 pieces, CC0 plate normals or a plate normal/roughness breakup, a rim that fades by light direction)
 - C16. [ ] **"Firefights with intent" (4 sessions)**
 - C17. [ ] **"Second Wind and the kill cams" (3 sessions)**
