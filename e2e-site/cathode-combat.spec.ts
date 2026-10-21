@@ -149,6 +149,9 @@ test.describe('CATHODE death and Retry', () => {
       hurtCath: (n: number, at: { x: number; y: number; z: number }, k: string) => void
     }
     await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number } } }).cathode?.stats.frames ?? 0) >= 3, null, { timeout: 200_000 })
+    // The case file eases out over a few frames after the session starts; on a loaded box those frames are slow.
+    // Die once it's gone, so the fall isn't drawn under it (the game also drops it on a death: main.ts onDying).
+    await expect(page.locator('#loading')).toBeHidden({ timeout: 200_000 })
     const navigations: string[] = []
     page.on('framenavigated', (f) => {
       if (f === page.mainFrame()) navigations.push(f.url())
@@ -160,7 +163,12 @@ test.describe('CATHODE death and Retry', () => {
       c.hurtCath(c.vitals.maxTotal * 3, { x: c.player.pos.x, y: c.player.pos.y + 1.4, z: c.player.pos.z - 9 }, 'bullet')
     })
     await page.waitForFunction(() => !!(window as unknown as { cathode: C }).cathode.dying, null, { timeout: 60_000 })
-    await expect(page.locator('.death-card.on')).toBeVisible({ timeout: 200_000 })
+    // The death runs on the real clock (up to 250 ms a frame), so the card is due ~2.2 s in however slow the frames.
+    await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.dying?.card === true, null, { timeout: 200_000 }).catch(async (e) => {
+      const why = await page.evaluate(() => ({ dying: (window as unknown as { cathode: C & { dying: unknown } }).cathode.dying, frames: (window as unknown as { cathode: C }).cathode.stats.frames, loading: !document.getElementById('loading')?.hidden }))
+      throw new Error(`no death card: ${JSON.stringify(why)} (${String(e)})`)
+    })
+    await expect(page.locator('.death-card.on')).toBeVisible({ timeout: 30_000 })
     await expect(page.locator('.death-line')).not.toHaveText('')
     await expect(page.locator('.death-card')).not.toContainText(/game over/i)
     if (hasTouch) await page.locator('.death-btn.is-primary').tap()

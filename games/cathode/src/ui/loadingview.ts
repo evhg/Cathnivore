@@ -106,8 +106,8 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     },
     async finish(ask) {
       target = 1;
-      if (shown < 1) await new Promise<void>((r) => waiters.push(r));
-      if (!ask || performance.now() - t0 < 2500) return;
+      if (shown < 1 && !closed) await new Promise<void>((r) => waiters.push(r));
+      if (closed || !ask || performance.now() - t0 < 2500) return;
       ready.hidden = false;
       root.classList.add("is-ready");
       await new Promise<void>((resolve) => {
@@ -123,6 +123,8 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     close() {
       closed = true;
       cancelAnimationFrame(raf);
+      // Closed early (she died under it): whoever waits on the finish goes on.
+      while (waiters.length) waiters.shift()!();
       root.hidden = true;
       root.classList.remove("is-ready", "is-striking");
     },

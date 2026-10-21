@@ -481,6 +481,8 @@ async function begin(fromTitle: boolean): Promise<void> {
     areaTitle: true,
     onProgress: progress,
     onExit: () => location.reload(),
+    // A death while the case file is still easing out drops it: the fall is never played under the loading card.
+    onDying: () => loading?.close(),
   });
   $("front-fallback").classList.add("is-off");
   if (loading) {

@@ -4,7 +4,7 @@
 //
 //   PLAYWRIGHT_CHROMIUM_PATH=... node scripts/cathode-perf.mjs
 //
-// PERF_ONLY=phone|desktop runs one case. Serves dist-site itself on :4181 (run `npm run build:site` first) unless CATHODE_URL is set. Joins
+// PERF_ONLY=phone|desktop runs one case. Serves dist-site itself on the first free port from :4181 (run `npm run build:site` first) unless CATHODE_URL is set. Joins
 // `npm run gates` as a CATHODE sub-check from C10.
 import { chromium } from '@playwright/test'
 import { spawn } from 'node:child_process'
@@ -20,11 +20,12 @@ const CASES = [
 let server = null
 let base = process.env.CATHODE_URL
 if (!base) {
-  base = 'http://localhost:4181/cathode/'
-  // A preview left over from another run would hold :4181 (and may serve a stale or missing dist): say so plainly.
-  const busy = await fetch('http://localhost:4181/').then(() => true, () => false)
-  if (busy) throw new Error(':4181 is already taken (a leftover vite preview?). Kill it, e.g. `kill $(lsof -t -i :4181)`, then rerun.')
-  server = spawn('npx', ['vite', 'preview', '--outDir', 'dist-site', '--port', '4181', '--strictPort'], { stdio: 'ignore', detached: true })
+  // Its own preview on the first free port from :4181 (a preview left over from a shots run used to fail the gate
+  // here; it can't serve this dist, so step past it instead).
+  let port = 4181
+  while (port < 4200 && (await fetch(`http://localhost:${port}/`).then(() => true, () => false))) port++
+  base = `http://localhost:${port}/cathode/`
+  server = spawn('npx', ['vite', 'preview', '--outDir', 'dist-site', '--port', String(port), '--strictPort'], { stdio: 'ignore', detached: true })
   const t0 = Date.now()
   for (;;) {
     try {
@@ -32,7 +33,7 @@ if (!base) {
     } catch {
       // not up yet
     }
-    if (Date.now() - t0 > 60_000) throw new Error('preview server did not start on :4181')
+    if (Date.now() - t0 > 60_000) throw new Error(`preview server did not start on :${port}`)
     await new Promise((r) => setTimeout(r, 300))
   }
 }
