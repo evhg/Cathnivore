@@ -116,6 +116,12 @@ export class Director {
     return !!s && s.seen && s.outOfSight < 6;
   }
 
+  /** Where his squad last saw her (or where she is, before anyone has). */
+  target(e: Enemy): Flat {
+    const s = this.squadOf(e);
+    return s && s.seen ? { x: s.lastSeen.x, z: s.lastSeen.z } : { x: this.cath.x, z: this.cath.z };
+  }
+
   /** Advance: he's further from where she was last seen than the push wants. */
   tooFar(e: Enemy): boolean {
     const s = this.squadOf(e);

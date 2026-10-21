@@ -672,7 +672,7 @@ for (const vp of vps) {
     }
     // ---- C16 acceptance ----
     if (stage === 'bark-subtitle') {
-      const bark = (info?.texts ?? []).filter(([c]) => /hud-bark|^line$/.test(String(c)))
+      const bark = (side?.texts ?? []).filter(([c]) => /hud-bark|^line$/.test(String(c)))
       if (!bark.length) fail(`${vp} ${spec}: no bark subtitle on screen`)
       const min = Math.min(...bark.map(([, px]) => px))
       console.log(`  C16 ${vp} ${spec}: bark text ${bark.map(([c, px]) => `${c} ${px.toFixed(1)}px`).join(', ')}`)

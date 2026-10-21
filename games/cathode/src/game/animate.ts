@@ -90,7 +90,10 @@ function ik(root: THREE.Vector3, end: THREE.Vector3, l1: number, l2: number, pol
 export function animate(body: Body, m: Motion): void {
   const run = Math.min(1, m.speed / 5);
   const walk = Math.min(1, m.speed / 1.2);
-  const crouchDrop = m.crouch * 0.38;
+  // C16: past 1 the crouch becomes a kneel behind cover (the left knee down, the right foot planted ahead), its
+  // hips held higher than a squat would put them.
+  const kneel = Math.max(0, Math.min(1, (m.crouch - 1) / 0.6));
+  const crouchDrop = Math.min(1, m.crouch) * 0.38 + kneel * 0.14;
   const bob = Math.abs(Math.sin(m.phase)) * 0.05 * walk;
   const pelvisY = REST.pelvis.y - crouchDrop - 0.03 * run + bob;
   const lean = 0.08 * run + m.crouch * 0.15;
@@ -152,6 +155,7 @@ export function animate(body: Body, m: Motion): void {
     // A heavy man's stance: feet a little wider than the hips (narrowing to the hips as the stride opens), the
     // knees over the feet and a touch outward.
     foot.set((0.155 - 0.02 * walk) * s + m.crouch * 0.06 * s, 0.07 + lift, fwd + m.crouch * 0.12);
+    if (kneel > 0) foot.lerp(tmp.set(L ? 0.14 : -0.17, L ? 0.09 : 0.07, L ? -0.36 : 0.34), kneel);
     if (r) foot.add(tmp.set(L ? r.footLX : r.footRX, L ? r.footLLift : r.footRLift, L ? r.footLZ : r.footRZ));
     const knee = L ? local.kneeL : local.kneeR;
     ik(hip, foot, THIGH, SHIN, tmp.set(hip.x + 0.12 * s, hip.y - 0.3, hip.z + 1), knee);
@@ -238,8 +242,9 @@ function applyTac(t: NonNullable<Motion["tac"]>): void {
   if (t.blind > 0.001) {
     const k = smooth01(t.blind);
     // Over the top: the trigger hand above the helmet, a forearm's reach forward, the support hand up the line.
-    tacA.set(local.neck.x - 0.04, local.neck.y + 0.5, local.neck.z + 0.3);
-    tacB.set(tacA.x + 0.02, tacA.y + 0.01, tacA.z + FOREGRIP_M);
+    // Within reach: arms near straight up and forward; the carbine lies level along the two hands.
+    tacA.set(local.neck.x - 0.07, local.neck.y + 0.34, local.neck.z + 0.26);
+    tacB.set(tacA.x + 0.06, tacA.y - 0.01, tacA.z + 0.22);
     local.handR.lerp(tacA, k);
     local.handL.lerp(tacB, k);
     // His head tucks down under his arms.

@@ -4243,19 +4243,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       c16Props.push(crate);
     }
     const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.6 - 0.5 : 0);
-    if (!sniper) at.addScaledVector(flat, 0.35);
+    if (!sniper) at.addScaledVector(flat, 0.05);
     at.y = ground(at.x, at.z);
     e.motion.pos.copy(at);
     // The camera: square on, or 50 degrees off for the reload (so the kneeling man shows past the crate's end).
     let from = stageHome.pos.clone();
     if (reload) {
-      const off = flat.clone().multiplyScalar(-Math.cos(0.87) * 3.9).addScaledVector(side, -Math.sin(0.87) * 3.9);
+      // Side on and a little behind him (where a flank puts her), the crate off to his front, clear of him.
+      const off = side.clone().multiplyScalar(-3.4).addScaledVector(flat, 0.9);
       from = at.clone().add(off);
       from.y = ground(from.x, from.z);
     }
     const eyeAt = from.clone().setY(from.y + 1.6);
     e.motion.yaw = Math.atan2(eyeAt.x - at.x, eyeAt.z - at.z);
-    if (reload) e.motion.yaw = Math.atan2(-flat.x, -flat.z) - 0.35;
+    if (reload) {
+      // Facing his cover, turned a little toward the lens so the hands at the carbine show.
+      const face = flat.clone().negate().addScaledVector(side, -0.55).normalize();
+      e.motion.yaw = Math.atan2(face.x, face.z);
+    }
     e.motion.aim = 1;
     e.motion.pitch = Math.atan2(eyeAt.y - (at.y + 1.5), Math.hypot(eyeAt.x - at.x, eyeAt.z - at.z));
     const pose = { lean: 0, blind: 0, reload: -1, hands: 0 };
@@ -4314,11 +4319,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // A review light over the cover, like the street's sodium lamps (the turntable's key and a cold rim): the stage spot
     // is between two lamps, where a man behind a crate is a silhouette.
     if (!sniper) {
-      const key = new THREE.SpotLight(0xffc690, 46, 14, 0.62, 0.6, 1.4);
+      const key = new THREE.SpotLight(0xffc690, 30, 12, 0.42, 0.65, 1.4);
       key.position.copy(coverAt).addScaledVector(flat, -2.2).addScaledVector(side, -1.6).setY(coverAt.y + 4.2);
-      key.target.position.copy(at).setY(at.y + 0.9);
-      const rim = new THREE.SpotLight(0x58d8ff, 40, 14, 0.7, 0.5, 1.4);
-      rim.position.copy(at).addScaledVector(flat, 2.6).addScaledVector(side, 1.4).setY(at.y + 3.2);
+      key.target.position.copy(at).setY(at.y + 1.3);
+      const rim = new THREE.SpotLight(0x58d8ff, 22, 14, 0.5, 0.5, 1.4);
+      rim.position.copy(at).addScaledVector(flat, 2.6).addScaledVector(side, 1.4).setY(at.y + 4);
       rim.target.position.copy(at).setY(at.y + 1.1);
       for (const l of [key, rim]) {
         world.scene.add(l, l.target);
@@ -4332,7 +4337,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     arsenal.settle();
     if (base === "bark-subtitle") hud.bark("Enforcer", "Reloading!", true);
-    lookFrom(from, sniper ? e.body.joints.chest.clone().lerp(eyeAt.clone().setY(at.y), 0.2) : e.body.joints.chest.clone().addScaledVector(reload ? new THREE.Vector3(0, 0, 0) : side, -0.4).setY(e.body.joints.chest.y - 0.15));
+    // Framed with him left of centre, clear of the pistol in her right hand.
+    const camDir = e.body.joints.chest.clone().sub(eyeAt).setY(0).normalize();
+    const camRight = new THREE.Vector3(-camDir.z, 0, camDir.x);
+    lookFrom(from, sniper ? e.body.joints.chest.clone().lerp(eyeAt.clone().setY(at.y), 0.2) : e.body.joints.chest.clone().addScaledVector(camRight, reload ? 0.75 : 0.45).setY(e.body.joints.chest.y - 0.1));
     probeGuard = e;
     hud.freeze(tMs);
     return "ok";

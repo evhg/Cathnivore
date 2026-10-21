@@ -157,8 +157,9 @@ export class Tactics {
     }
 
     // ---- cover: keep it, or get a new one ----
-    const flatCath = { x: cath.x, z: cath.z };
     const knows = this.director.knows(e);
+    // Where the squad last saw her (he can't react to a flank nobody saw).
+    const flatCath = this.director.target(e);
     const cp = this.cover;
     if (cp && knows && this.act !== "move" && isFlanked({ x: cp.fx, z: cp.fz }, cp, flatCath)) {
       if (this.flankedMs < 0) {

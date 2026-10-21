@@ -1,3 +1,8 @@
+import * as THREE from "three";
+import { RayWorld } from "../games/cathode/src/game/ray";
+import { ENFORCER, Enemy, type Sight } from "../games/cathode/src/game/enemy";
+import { Director } from "../games/cathode/src/game/ai/director";
+import type { CoverPoint } from "../games/cathode/src/game/ai/cover";
 import { describe, expect, it } from "vitest";
 import {
   BarkGate,
@@ -222,5 +227,77 @@ describe("CATHODE barks (S10)", () => {
     expect(barkLine("manDown", () => 0.99, { name: "Harker" })).toBe("We lost Harker!");
     expect(barkLine("manDown", () => 0.99)).toBe("Man down!");
     expect(barkLine("flank", () => 0, { side: "right" })).toBe("She's flanking right!");
+  });
+});
+
+// ---- C16: the tactics, end to end on a crate in an empty street ----
+
+describe("CATHODE tactics (S11, S3.5) in a street", () => {
+  it("a rifleman runs to the crate, peeks over it, fires warning rounds first, reloads out loud and moves when flanked", () => {
+    const rnd = createRng(11);
+    const orig = Math.random;
+    Math.random = () => rnd.next();
+    try {
+      // A 1.15 m crate between him (z = -14) and Cath (z = 0).
+      const crate = new THREE.Box3(new THREE.Vector3(-0.75, 0, -11.4), new THREE.Vector3(0.75, 1.15, -10.6));
+      const colliders = [crate];
+      const rays = new RayWorld(colliders);
+      const cover: CoverPoint[] = [
+        { x: 0, y: 0, z: -11.9, fx: 0, fz: 1, kind: "crouch", prot: 0.9, lean: 0 },
+        { x: -1.25, y: 0, z: -11, fx: 1, fz: 0, kind: "crouch", prot: 0.9, lean: 0 },
+      ];
+      const e = new Enemy({ ...ENFORCER }, [new THREE.Vector3(1.5, 0, -15)], 1);
+      e.motion.yaw = 0;
+      const d = new Director("hardboiled");
+      d.cover = cover;
+      // A second man well back in the open, who keeps eyes on her.
+      const spotter = new Enemy({ ...ENFORCER }, [new THREE.Vector3(16, 0, -26)], 1);
+      spotter.motion.yaw = -0.6;
+      d.form([e, spotter]);
+      expect(e.tac).not.toBeNull();
+      const cath = new THREE.Vector3(0, 0, 0);
+      const sight = (): Sight => ({ eye: cath.clone().setY(1.6), chest: cath.clone().setY(1.25), light: 1, low: 0, speed: 0, stealth: 1 });
+      const acts = new Set<string>();
+      const barks: string[] = [];
+      let warn = 0;
+      let firstRoundsWide = true;
+      let rounds = 0;
+      let mags = 0;
+      let flankedEv = 0;
+      for (let f = 0; f < 30 * 40; f++) {
+        if (f === 30 * 30) cath.set(9, 0, -11); // she comes round his side
+        d.update(1 / 30, sight().chest);
+        e.update(1 / 30, sight(), rays, colliders, () => 0);
+        spotter.update(1 / 30, sight(), rays, colliders, () => 0);
+        d.drain([e, spotter], (en, ev) => {
+          if (ev.kind === "flanked") flankedEv++;
+          if (ev.kind !== "magOut") return;
+          en.dropMag();
+          mags++;
+        });
+        spotter.shots.length = 0;
+        for (const s of e.shots) {
+          if (rounds < 2 && !s.warning) firstRoundsWide = false;
+          if (s.warning) warn++;
+          rounds++;
+        }
+        for (const b of d.barks) barks.push(b.line);
+        d.barks.length = 0;
+        acts.add(e.tac!.act);
+      }
+      expect(acts.has("move")).toBe(true);
+      expect(acts.has("hide")).toBe(true);
+      expect(acts.has("peek")).toBe(true);
+      expect(rounds).toBeGreaterThan(10);
+      expect(firstRoundsWide).toBe(true);
+      expect(warn).toBeGreaterThanOrEqual(2);
+      expect(barks).toContain("Reloading!");
+      expect(mags).toBeGreaterThan(0);
+      // Flanked: he left the crate's front point for the one facing her.
+      expect(e.tac!.cover?.x).toBe(-1.25);
+      expect(flankedEv).toBeGreaterThan(0);
+    } finally {
+      Math.random = orig;
+    }
   });
 });
