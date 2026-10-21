@@ -484,7 +484,8 @@ async function begin(fromTitle: boolean): Promise<void> {
   $("front-fallback").classList.add("is-off");
   if (loading) {
     // A long load waits for the player (S9.6); a quick one walks straight in. Automated runs never wait.
-    await loading.finish(!shot && !navigator.webdriver);
+    // Screenshot runs drop it at once (the eased figure takes dozens of frames under software WebGL).
+    if (!shot) await loading.finish(!navigator.webdriver);
     loading.close();
   }
   audio.close();
