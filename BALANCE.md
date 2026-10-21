@@ -87,3 +87,9 @@ Fleet levels grow those five along paths (`paths.ts`; tier 3 from level 6); the 
 - The single pool (regen 6%/s after 5 s) becomes Guard 40% (back in 2 s, 4 s after any hit) + Flesh 60% (bleed floor 25% only). Guard refills in nearly every cover lull, so the same rounds now hit harder: damage taken noir 0.55 -> 0.69, hardboiled 0.85 -> 0.98, Hell Week 1.0 -> 1.10 (`VITALS_TAKEN`, fitted by bisection).
 - Seeded 10-minute fight (12-20 seeds, level 5, two Enforcers' 1.4 hits/s while exposed 2-7 s, cover 1.5-10 s): mean seconds per life, pool vs vitals: noir 40.3/41, hardboiled 22.2/22, Hell Week 18.2/18 (all within 2%). `tests/cathode-vitals.test.ts` holds it within 10%.
 - Sensitivity: levels 1-10 at 1.4 hits/s stay within 8%; at 1.0 hits/s (long lulls) hardboiled lasts up to 22% longer at level 1, and at 2.0 hits/s noir dies up to 16% sooner at level 10. Takedowns' +15% Flesh is not in the sim (a small extra cushion in play).
+
+## 2026-10-21 CATHODE C16: firefights with intent (scripts/cathode-firefight-sim.ts)
+- 50 seeded encounters in the Drowned Market, real Enemy/squad/tactics/cover code headless at 30 Hz: four riflemen and a sergeant (Hardboiled, 3 tokens) 18-24 m from a scripted Cath who strafes, ducks and shoots back (40% hits of 34).
+- Time to first damage after the squad's first sight of her: min 1.20 s, median 1.40 s, p90 5.30 s (bar: >= 1.0 s; the 0.9 s reaction + 350 ms windup + two warning rounds).
+- Flanks 191 (every encounter >= 1), "Reloading!" 191 (every encounter >= 1, magazine 15), longest stuck 1.57 s (bar < 5 s; a stuck run abandons its point at 1.6 s). Acts: peek 831, lean 1141, blind 524; 169 kills, 1 surrender.
+- Morale recovery (+0.1/s in cover) only counts while no round has cracked past him for 1.5 s ("no damage" read strictly); even so the median lowest morale is 0.45, so fall-backs and surrenders are rare against this Cath (CATH_HIT=0.8: median 0.33, surrenders appear). PASS.
