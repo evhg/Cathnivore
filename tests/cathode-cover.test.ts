@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { buildDistrict } from "../games/cathode/src/render/levels/index";
+import { COVER_DISTRICTS, MARKET_BOUNDS, generateCover, insideCollider, navigable, packCover, unpackCover, type CoverFile } from "../games/cathode/src/game/ai/cover";
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import { RayWorld } from "../games/cathode/src/game/ray";
@@ -177,4 +180,30 @@ describe("CATHODE cover (S1.1)", () => {
     expect(wall.combat.hits.length).toBe(0);
     expect(wall.blocked.length).toBe(1);
   });
+});
+
+// ---- C16 (S11): the generated cover points ----
+
+describe("CATHODE cover points (S11)", () => {
+  for (const id of COVER_DISTRICTS) {
+    it(`${id}: every point is on navigable ground, protects above 0.5 and sits in no collider; the file is current`, () => {
+      const level = buildDistrict(id, "high");
+      const b = level.builder;
+      const rays = new RayWorld(b.colliders, { mats: b.mats, obbs: b.obbs, thin: b.shotOnly });
+      const bounds = level.theme?.bounds ?? MARKET_BOUNDS;
+      const ground = (x: number, z: number) => level.groundHeight(x, z);
+      const file = JSON.parse(readFileSync(`games/cathode/src/render/levels/${id}.cover.json`, "utf8")) as CoverFile;
+      const pts = unpackCover(file);
+      expect(pts.length).toBeGreaterThan(20);
+      for (const p of pts) {
+        expect(navigable(b.colliders, ground, bounds, p.x, p.z)).toBe(true);
+        expect(insideCollider(b.colliders, p.x, p.y, p.z)).toBe(false);
+        expect(p.prot).toBeGreaterThan(0.5);
+        expect(Math.abs(p.y - ground(p.x, p.z))).toBeLessThan(0.02);
+        expect(Math.hypot(p.fx, p.fz)).toBeCloseTo(1, 2);
+        if (p.kind === "full") expect(p.lean).not.toBe(0);
+      }
+      expect(JSON.stringify(packCover(id, generateCover(id, b.colliders, rays, ground, bounds)))).toBe(JSON.stringify(file));
+    });
+  }
 });
