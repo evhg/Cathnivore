@@ -170,17 +170,18 @@ vec2 pcVoronoi(vec3 lp, float dens, float tag, float seed, float keepAt) {
 vec2 pcRay(vec2 p, vec2 o, float a0, float len, float w0, float seed) {
   vec2 d = p - o;
   float r = length(d);
-  // It wanders: a slow bend and a fine jag along its length.
-  float a = a0 + 0.22 * sin(r * 38.0 + seed * 7.0) + 0.07 * sin(r * 150.0 + seed * 3.0);
+  // It wanders in a slow bend (a fine jag broke it into dashes at screen scale). Widths are overstated (pillar 4): at 2 m on a 1440p
+  // screen a pixel is about 3 mm of plate, so a true-to-life hairline would vanish into speckle.
+  float a = a0 + 0.2 * sin(r * 30.0 + seed * 7.0) / (1.0 + r * 20.0);
   vec2 dir = vec2(cos(a), sin(a));
   float along = dot(d, dir);
   float perp = abs(d.x * dir.y - d.y * dir.x);
   if (along < 0.0 || along > len) return vec2(0.0);
   float t = along / len;
-  float w = mix(w0, w0 * 0.2, t);
-  float fw = max(fwidth(perp), 1e-5);
+  float w = mix(w0, w0 * 0.5, t);
+  float fw = clamp(fwidth(perp), 1e-5, w0);
   float g = 1.0 - smoothstep(w, w + fw * 1.2, perp);
-  float c = 1.0 - smoothstep(w * 3.2, w * 3.2 + fw * 1.2, perp);
+  float c = 1.0 - smoothstep(w * 1.7, w * 1.7 + fw * 1.2, perp);
   float fade = 1.0 - smoothstep(0.75, 1.0, t);
   return vec2(g, max(0.0, c - g)) * fade;
 }
@@ -200,17 +201,17 @@ vec3 plateCrack(vec3 lp, float tag, float seed, vec3 at) {
     float fk = float(k);
     vec3 h = pcHash3(vec3(seed * 13.0 + fk, tag, fk * 1.7));
     float a = (fk + 0.15 + 0.7 * h.x) * 1.2566;
-    float len = 0.07 + 0.11 * h.y;
-    acc = max(acc, pcRay(p, c, a, len, 0.0034, seed + fk));
+    float len = 0.1 + 0.1 * h.y;
+    acc = max(acc, pcRay(p, c, a, len, 0.012, seed + fk));
     if (k < 3) {
       // A side branch from partway along.
       vec2 o = c + vec2(cos(a), sin(a)) * len * (0.35 + 0.2 * h.z);
-      acc = max(acc, pcRay(p, o, a + (h.z > 0.5 ? 0.62 : -0.62), len * 0.45, 0.002, seed + fk + 9.0));
+      acc = max(acc, pcRay(p, o, a + (h.z > 0.5 ? 0.62 : -0.62), len * 0.5, 0.007, seed + fk + 9.0));
     }
   }
   // The strike: a crushed ring 1.2 cm across.
   float fr = max(fwidth(r), 1e-5);
-  float ring = 1.0 - smoothstep(0.0018, 0.0018 + fr * 1.2, abs(r - 0.014 - 0.002 * sin(atan(p.y - c.y, p.x - c.x) * 7.0 + seed * 5.0)));
+  float ring = 1.0 - smoothstep(0.004, 0.004 + fr * 1.2, abs(r - 0.016 - 0.002 * sin(atan(p.y - c.y, p.x - c.x) * 7.0 + seed * 5.0)));
   acc.x = max(acc.x, ring);
   return vec3(acc, r);
 }`;
@@ -256,8 +257,9 @@ if (vPlate.x > 0.5) {
   pCrack = cr.x;
   pChip = cr.y;
   pCrackR = cr.z;
-  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 2.4 + vec3(0.09), pChip * 0.9);
-  diffuseColor.rgb *= 1.0 - 0.9 * pCrack;
+  // The chipped edge is bare bright metal (a flat colour: scaling the paint lit up its peel speckle into glitter).
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.46, 0.47, 0.5), pChip * 0.9);
+  diffuseColor.rgb *= 1.0 - 0.95 * pCrack;
 }`,
       )
       .replace(
@@ -302,7 +304,7 @@ totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);
 if (vPlate.w > 0.5) totalEmissiveRadiance += vPlateTone * 0.16 * (1.0 - uBodyMirror);
 // The chest carrier (tags -1, -2) sits in the plate's shadow: a little bounce so its coyote reads where the plate was.
 if (vPlate.z < -0.5 && vPlate.z > -2.5) totalEmissiveRadiance += diffuseColor.rgb * 0.07 * (1.0 - uBodyMirror);
-if (vPlate.x > 0.5) totalEmissiveRadiance += vec3(1.0, 0.42, 0.08) * pCrack * (0.9 * exp(-pCrackR / 0.05) * max(0.0, 1.0 - vPlate.y / 0.4) + 0.06) * (1.0 - uBodyMirror);`,
+if (vPlate.x > 0.5) totalEmissiveRadiance += vec3(1.0, 0.42, 0.08) * pCrack * (1.1 * exp(-pCrackR / 0.08) * max(0.0, 1.0 - vPlate.y / 0.4) + 0.22 * exp(-pCrackR / 0.12)) * (1.0 - uBodyMirror);`,
       )
       .replace(
         "#include <fog_fragment>",
