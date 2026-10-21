@@ -81,6 +81,7 @@ import { AutoScale } from "./autoscale";
 import { DeathCam, GunDrop, deathState, resyncState } from "./death-cam";
 import { DeathScreen } from "../ui/deathcard";
 import { deathLine, type DeathCause } from "./voice";
+import { ESC_DEBOUNCE_MS, nextResuming, pauseView } from "./pausegate";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -1205,8 +1206,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const calm = calmCameraOn();
   // The pause menu, opened by the phone's menu button (desktop pauses whenever the mouse is free).
   let menuOpen = false;
+  // C14 (S9.7, game/pausegate.ts): a resume that hasn't got the pointer back yet waits on "click to resume"
+  // instead of letting the free mouse reopen the pause; pauseAt debounces the Esc that freed the pointer.
+  let resuming = false;
+  let pauseAt = -1e9;
   hud.onResume = () => {
     menuOpen = false;
+    resuming = true;
     input.lock();
   };
   // C14 (S9.7): the pause menu's Case board and Character open those screens in its place.
@@ -1317,8 +1323,22 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // On desktop the game waits while the mouse is free (Esc, or before the first click).
     const portrait = input.isTouch && innerHeight > innerWidth;
     if (input.takeMenu() && !dead && !charScreen) menuOpen = true;
-    const away = (!input.isTouch && !input.locked && !o.shot && !dead && !navigator.webdriver && !charScreen) || portrait || coaching || menuOpen;
-    hud.showPause(away && !portrait && !coaching, input.isTouch);
+    resuming = nextResuming(resuming, input.locked, menuOpen);
+    const view = pauseView({
+      touch: input.isTouch,
+      locked: input.locked,
+      exempt: !!o.shot || navigator.webdriver,
+      dead,
+      charScreen: !!charScreen,
+      portrait,
+      coaching,
+      menuOpen,
+      resuming,
+    });
+    const away = view.frozen;
+    if (view.menu && !hud.pauseOn) pauseAt = performance.now();
+    hud.showPause(view.menu, input.isTouch);
+    hud.showResumeHint(view.clickToResume);
     {
       const want = hud.pauseOn ? 1 : 0;
       pauseK = o.shot || trauma.reducedMotion ? want : want > pauseK ? Math.min(1, pauseK + realDt / 0.2) : Math.max(0, pauseK - realDt / 0.15);
@@ -2804,12 +2824,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if ((e.target as Element | null)?.closest?.("input, textarea")) return;
       if (hud.pauseOn) {
         if (hud.pauseBack()) return;
+        // The same press that freed the pointer (Chrome may deliver it after the unlock): not a resume.
+        if (performance.now() - pauseAt < ESC_DEBOUNCE_MS) return;
         menuOpen = false;
+        resuming = true;
         hud.showPause(false, input.isTouch);
+        hud.showResumeHint(!input.isTouch && !input.locked && !navigator.webdriver && !o.shot);
         input.lock();
       } else if (!menuOpen) {
         menuOpen = true;
+        resuming = false;
         document.exitPointerLock?.();
+        // Opened by this press itself: the next press resumes at once (only a frame-opened pause debounces).
+        pauseAt = -1e9;
+        hud.showResumeHint(false);
         hud.showPause(true, input.isTouch);
       }
     },

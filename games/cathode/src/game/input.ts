@@ -80,7 +80,15 @@ export class Input {
   }
 
   lock(): void {
-    if (!this.isTouch && !this.locked) void this.canvas.requestPointerLock?.();
+    if (this.isTouch || this.locked) return;
+    // A refused lock (no user activation: an Esc keypress, or Chrome's cool-down after the player left the lock
+    // with Esc) rejects; the game waits on "click to resume" instead (game/pausegate.ts), so it is not an error.
+    try {
+      const p = this.canvas.requestPointerLock?.() as unknown as Promise<void> | undefined;
+      p?.catch?.(() => undefined);
+    } catch {
+      /* older engines throw instead of rejecting */
+    }
   }
 
   private onKey = (e: KeyboardEvent) => {
