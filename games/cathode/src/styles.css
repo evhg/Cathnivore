@@ -133,7 +133,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-lift);
   background: radial-gradient(60% 70% at 56% 46%, transparent 30%, rgb(var(--black-rgb) / .78) 100%);
   pointer-events: none;
 }
@@ -211,7 +211,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   position: absolute;
   left: calc(var(--u) * 12);
   bottom: calc(var(--u) * 10);
-  z-index: 1;
+  z-index: var(--z-lift);
   font: 700 var(--fs-1)/1 var(--font-ui);
   font-stretch: var(--wdth-label);
   letter-spacing: .05em;
@@ -407,7 +407,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   content: "";
   position: absolute;
   inset: calc(var(--u) * -90) calc(var(--u) * -120);
-  z-index: -1;
+  z-index: calc(var(--z-lift) * -1);
   background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .72), rgb(var(--shade-rgb) / .4) 60%, rgb(var(--shade-rgb) / 0));
 }
 .hud-pause:has(.hud-pause-card:not([data-view="menu"])) .hud-pm-note { opacity: 0; }
@@ -464,7 +464,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   transform: translateX(-50%);
   font: 700 var(--fs-2)/1 var(--font-ui);
   font-stretch: var(--wdth-label);
-  letter-spacing: .12em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--ink);
   text-shadow: var(--hud-shadow);
@@ -808,7 +808,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 
 /* Phones held sideways (844x390): the same three columns, tighter; the trees and how-it-plays step out. */
 @media (max-height: 560px) {
-  .cp { grid-template-columns: minmax(0, 33%) minmax(0, 1fr) minmax(0, 37%); column-gap: 16px; padding-top: max(12px, env(safe-area-inset-top)); padding-bottom: max(10px, env(safe-area-inset-bottom)); } /* px-ok */
+  .cp { grid-template-columns: minmax(0, 33%) minmax(0, 1fr) minmax(0, 37%); column-gap: 16px; padding-top: max(12px, env(safe-area-inset-top)); padding-bottom: max(calc(var(--letterbox) + 12px), env(safe-area-inset-bottom)); } /* px-ok */
   .cp-head { margin-bottom: 8px; } /* px-ok */
   .cp-eyebrow { display: none; }
   .cp-title { font-size: var(--fs-2); }
@@ -818,7 +818,16 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-words { padding-top: 6px; } /* px-ok */
   .cp-kicker { display: none; }
   .cp-line { margin: 0; font-size: var(--fs-2); }
-  .cp-plays, .cp-trees, .cp-weapon-nums, .cp-weapon-pin { display: none; }
+  .cp-plays, .cp-weapon-pin, .cp-tree-theme { display: none; }
+  /* The right column keeps the weapon's numbers and the three trees (C14 review: it ended at the weapon's name). */
+  .cp-weapon-nums { gap: 18px; margin-top: 4px; } /* px-ok */
+  .cp-weapon-nums dt { font-size: var(--fs-1); }
+  .cp-weapon-nums dd { font-size: var(--fs-2); }
+  .cp-trees { grid-auto-flow: column; justify-content: start; gap: 14px; margin-top: 6px; } /* px-ok */
+  .cp-tree { display: block; }
+  .cp-tree-name { font-size: var(--fs-1); color: var(--ink-2); }
+  /* The marker on the name's centre line (it hung below the numeral). */
+  .cp-opt { align-items: center; }
   .cp-attrs { gap: 6px; margin: 2px 0 10px; } /* px-ok */
   .cp-attr { grid-template-columns: 52px minmax(0, 1fr); } /* px-ok */
   .cp-attr dt { font-size: var(--fs-1); }
@@ -836,6 +845,26 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-list { grid-auto-flow: column; grid-auto-columns: max-content; gap: 0 14px; overflow-x: auto; scrollbar-width: none; } /* px-ok */
   .cp-opt-name { font-size: var(--fs-2); }
   .cp-opt-n { display: none; }
+  /* The focused name gets the red marker under it, not colour alone. */
+  .cp-opt::before { left: 0; top: auto; bottom: 6px; width: 100%; height: 2px; margin: 0; } /* px-ok */
+  /* Her figure keeps the upper window (frontscene aims low on a tall screen); the words and the sheet sit on a
+     dark band below her, so no line of type crosses the coat. */
+  .cp { grid-auto-rows: max-content; align-content: start; }
+  .cp-left { display: block; min-height: auto; }
+  .cp-sheet { min-height: auto; }
+  .cp-words { position: relative; margin-top: min(46svh, 400px); padding-top: 22px; } /* px-ok */
+  .cp-words::before, .cp-sheet::before {
+    content: "";
+    position: absolute;
+    z-index: calc(var(--z-lift) * -1);
+    left: -16px; /* px-ok */
+    right: -16px; /* px-ok */
+    pointer-events: none;
+  }
+  .cp-words::before { top: -40px; bottom: 0; background: linear-gradient(180deg, transparent 0, rgb(var(--shade-rgb) / .93) 56px); } /* px-ok */
+  .cp-sheet { position: relative; margin-top: 0; padding-top: 30px; } /* px-ok */
+  .cp-sheet::before { top: 0; bottom: -16px; background: rgb(var(--shade-rgb) / .93); } /* px-ok */
+  .cp-words, .cp-sheet { max-width: none; }
 }
 
 /* ---- character screen (C13T): the dossier as type over the blurred street, like pause and death. One left

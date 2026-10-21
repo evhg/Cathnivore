@@ -74,13 +74,15 @@ const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, numb
 ];
 
 /**
- * The wardrobe framing (S9.5), in her frame: a close three-quarter from behind her right shoulder, head to knee. Behind,
- * not in front: her face is not modelled (C13's silhouette-first rule), so the lens reads her hair, collar and coat.
+ * The wardrobe framing (S9.5), in her frame: a close three-quarter from the front, off her left shoulder, head to
+ * mid-thigh. From this side the umbrella's shaft stands clear of her face, and her free left hand (the class idles
+ * reach with it) is toward the lens.
  */
-const WARDROBE = { pos: [-2.05, 1.5, -1.25] as [number, number, number], look: [0.1, 1.08, 0.1] as [number, number, number] };
+const WARDROBE = { pos: [1.2, 1.5, 1.75] as [number, number, number], look: [0.04, 1.3, 0.0] as [number, number, number] };
 /** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger tungsten, Wirewitch violet, Fixer amber. */
 const CLASS_KEY: Record<string, [number, number, number]> = {
-  ghost: [0.12, 0.72, 1.0],
+  // The Ghost's cyan is pushed hard: at the same energy as the Butcher's red it read as neutral on her (C14 review).
+  ghost: [0.18, 1.1, 1.8],
   butcher: [1.0, 0.04, 0.07],
   gunslinger: [1.0, 0.7, 0.36],
   wirewitch: [0.55, 0.18, 1.0],
@@ -111,9 +113,13 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // silhouette and the umbrella's edge); a cool cyan fill from behind her right; a small warm kick on the coat.
   const removers: Array<() => void> = [];
   const rimLight = toWorld(0.4, 2.7, 2.2);
+  // The pink is live: in the wardrobe (where the lens is in front of her) it steps back for the class's key.
+  const pinkI = phone ? 9 : 10;
+  const pink = { pos: toWorld(0.4, 2.7, 2.2), color: new THREE.Color(1.0, 0.09, 0.42), intensity: pinkI, range: 6 };
   const rimDir = new THREE.Vector3();
   if (world.light) {
-    removers.push(world.light(toWorld(0.4, 2.7, 2.2), new THREE.Color(1.0, 0.09, 0.42), phone ? 9 : 10, 6));
+    if (world.liveLight) removers.push(world.liveLight(pink));
+    else removers.push(world.light(toWorld(0.4, 2.7, 2.2), new THREE.Color(1.0, 0.09, 0.42), pinkI, 6));
     removers.push(world.light(toWorld(-2.4, 1.9, -1.6), new THREE.Color(0.08, 0.62, 0.85), phone ? 3.5 : 4, 6));
   }
 
@@ -207,7 +213,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const wd = { w: 0, target: 0, cls: null as string | null };
   const wPos = toWorld(...WARDROBE.pos);
   const wLook = toWorld(...WARDROBE.look);
-  const key = { pos: toWorld(-1.7, 2.0, 0.1), color: new THREE.Color(0, 0, 0), intensity: 0, range: 7 };
+  const key = { pos: toWorld(1.35, 1.8, 1.15), color: new THREE.Color(0, 0, 0), intensity: 0, range: 7 };
   const keyWant = new THREE.Color(0, 0, 0);
   let keyRemove: (() => void) | null = null;
   function wardrobeStep(dt: number): void {
@@ -216,7 +222,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     if (Math.abs(wd.target - wd.w) < 0.001) wd.w = wd.target;
     // About 400 ms to the new colour.
     key.color.lerp(keyWant, 1 - Math.exp(-dt * 9));
-    key.intensity = (phone ? 16 : 20) * wd.w;
+    key.intensity = (phone ? 7 : 9) * wd.w;
+    pink.intensity = pinkI * (1 - 0.78 * wd.w);
+    cath.tint(key.color, 0.6 * wd.w);
     if (wd.w > 0.002 && !keyRemove && world.liveLight) keyRemove = world.liveLight(key);
     if (wd.w <= 0.002 && keyRemove) {
       keyRemove();
@@ -232,6 +240,12 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       const e = smoother(Math.min(1, wd.w));
       p.lerp(wPos, e);
       l.lerp(wLook, e);
+      // A phone held upright: the copy takes the lower half on a dark band, so the lens aims low and lifts her
+      // (head to waist) into the upper window, from a step further back.
+      if (cam.aspect < 1) {
+        l.y -= 0.15 * e;
+        p.sub(l).multiplyScalar(1 + 0.35 * e).add(l);
+      }
     }
     cam.position.copy(p);
     m4.lookAt(p, l, up);
