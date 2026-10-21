@@ -536,7 +536,9 @@ export class Combat {
     // Flesh (S4.5): puff, spurt, exit spray, wall splat and a wound on the segment. Reduced violence draws ink.
     if (metal || ah?.layer === "weakpoint") {
       // No blood off a plate (S4.5: "sparks only").
-    } else if (this.world.fx.flesh) this.world.fx.flesh({ point, dir, damage: dmg, maxHp: e.kit.maxHp, weaponCls: w.weaponClass, distance: dist, anchor: seg.group, owner: e, root: e.body.root, head: zone === "head", lethal: wasAlive && dmg >= e.hp });
+    } else if (this.world.fx.flesh)
+      // A shattering visor opens the face: a nick, not a head shot's exit spray across the frame (the glass is the beat).
+      this.world.fx.flesh({ point, dir, damage: ah?.layer === "visor" ? Math.min(dmg, e.kit.maxHp * 0.08) : dmg, maxHp: e.kit.maxHp, weaponCls: w.weaponClass, distance: dist, anchor: seg.group, owner: e, root: e.body.root, head: zone === "head", lethal: wasAlive && dmg >= e.hp });
     else if (this.gore) this.world.fx.blood(point, dir, Math.min(1, dmg / 60));
 
     const push = dir.clone().multiplyScalar(w.weaponClass === "shotgun" ? 3 : w.weaponClass === "sniper" ? 6 : 1.5);

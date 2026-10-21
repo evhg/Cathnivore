@@ -4803,10 +4803,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // Framed close and three-quarters on (from his right, her left), at eye height: the plate, the carrier under it
       // and the face read at every size; the staggers and the knockdown from further back, the whole man in frame.
       const J = g.body.joints;
-      const focus = c15.frame === "head" ? J.head.clone() : c15.frame === "plate" ? J.chest.clone().lerp(J.neck, 0.35) : J.pelvis.clone().lerp(J.chest, 0.6);
+      // (The head a touch under the point of aim: it snaps back and down, and the frame keeps it near the middle.)
+      const focus = c15.frame === "head" ? J.head.clone().add(new THREE.Vector3(0, -0.14, 0)) : c15.frame === "plate" ? J.chest.clone().lerp(J.neck, 0.35) : J.pelvis.clone().lerp(J.chest, 0.6);
       const facing = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
       const side = new THREE.Vector3(-facing.z, 0, facing.x);
-      const close = c15.frame === "head" ? 1.05 : c15.frame === "plate" ? 1.45 : 3.0;
+      const close = c15.frame === "head" ? 1.25 : c15.frame === "plate" ? 1.45 : 3.0;
       const dist = close * (o.quality === "phone" ? 0.85 : 1);
       const sk = c15.frame === "plate" || c15.frame === "head" ? 0.36 : 0.5;
       // The head from in front and off his right (the hand that goes to the helmet is his left, on the far side); the
@@ -4830,7 +4831,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const look2 = focus.clone().sub(eye).normalize();
       player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1));
       // A touch off centre to the left, clear of the gun in her right hand.
-      player.yaw = Math.atan2(-look2.x, -look2.z) - (c15.frame === "body" || c15.frame === "back" ? 0.1 : 0.16);
+      player.yaw = Math.atan2(-look2.x, -look2.z) - (c15.frame === "body" || c15.frame === "back" ? 0.1 : c15.frame === "head" ? 0.24 : 0.16);
       player.applyCamera(world.camera, 0);
       world.camera.updateMatrixWorld();
     }

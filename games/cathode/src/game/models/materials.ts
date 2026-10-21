@@ -139,8 +139,8 @@ vBodyLodA = 1.0; vBodyLodT = 1.0; vBodyBlink = 1.0;
 
 /**
  * C15's fracture (fragment). The chest plates (tags 1, 2) break from the impact: 5 primary cracks radiating from the
- * hit point, each wandering and tapering to a hairline, three with a side branch, a small crushed ring at the strike,
- * and (desktop) a few Voronoi walls near it, all fading with distance. Other plates and the visor keep a sparse
+ * hit point, each wandering and tapering to a hairline, three with a side branch, and a small crushed ring at the
+ * strike (no scattered cell walls: they read as glitter, not a fracture). Other plates and the visor keep a sparse
  * Voronoi network. Returns (groove 0..1, chipped edge 0..1, distance from the impact m), anti-aliased by derivatives.
  */
 const CRACK = `
@@ -201,22 +201,17 @@ vec3 plateCrack(vec3 lp, float tag, float seed, vec3 at) {
     vec3 h = pcHash3(vec3(seed * 13.0 + fk, tag, fk * 1.7));
     float a = (fk + 0.15 + 0.7 * h.x) * 1.2566;
     float len = 0.07 + 0.11 * h.y;
-    acc = max(acc, pcRay(p, c, a, len, 0.0016, seed + fk));
+    acc = max(acc, pcRay(p, c, a, len, 0.0034, seed + fk));
     if (k < 3) {
       // A side branch from partway along.
       vec2 o = c + vec2(cos(a), sin(a)) * len * (0.35 + 0.2 * h.z);
-      acc = max(acc, pcRay(p, o, a + (h.z > 0.5 ? 0.62 : -0.62), len * 0.45, 0.0009, seed + fk + 9.0));
+      acc = max(acc, pcRay(p, o, a + (h.z > 0.5 ? 0.62 : -0.62), len * 0.45, 0.002, seed + fk + 9.0));
     }
   }
   // The strike: a crushed ring 1.2 cm across.
   float fr = max(fwidth(r), 1e-5);
-  float ring = 1.0 - smoothstep(0.0009, 0.0009 + fr * 1.2, abs(r - 0.012 - 0.002 * sin(atan(p.y - c.y, p.x - c.x) * 7.0 + seed * 5.0)));
+  float ring = 1.0 - smoothstep(0.0018, 0.0018 + fr * 1.2, abs(r - 0.014 - 0.002 * sin(atan(p.y - c.y, p.x - c.x) * 7.0 + seed * 5.0)));
   acc.x = max(acc.x, ring);
-#ifndef BODY_PHONE
-  // A few short walls round the strike, gone within 6 cm.
-  vec2 v = pcVoronoi(lp, 26.0, tag, seed, 0.45) * exp(-r / 0.035);
-  acc = max(acc, v);
-#endif
   return vec3(acc, r);
 }`;
 
@@ -305,6 +300,8 @@ totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);
 // C15: the face behind a shattered visor catches a little of the street's bounce (the helmet's shell shades it
 // from every key), so the skin reads as skin in the noir grade, not as a dark hole.
 if (vPlate.w > 0.5) totalEmissiveRadiance += vPlateTone * 0.16 * (1.0 - uBodyMirror);
+// The chest carrier (tags -1, -2) sits in the plate's shadow: a little bounce so its coyote reads where the plate was.
+if (vPlate.z < -0.5 && vPlate.z > -2.5) totalEmissiveRadiance += diffuseColor.rgb * 0.07 * (1.0 - uBodyMirror);
 if (vPlate.x > 0.5) totalEmissiveRadiance += vec3(1.0, 0.42, 0.08) * pCrack * (0.9 * exp(-pCrackR / 0.05) * max(0.0, 1.0 - vPlate.y / 0.4) + 0.06) * (1.0 - uBodyMirror);`,
       )
       .replace(
@@ -365,8 +362,6 @@ export function enemyMaterials(phone: boolean, fx0: number): EnemyMaterials {
     : new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 1, metalness: 1, clearcoat: 0.4, clearcoatRoughness: 0.3, sheen: 0.5, sheenRoughness: 0.6, sheenColor: new THREE.Color(0x9aa0b0) });
   patchKitMaterial(opaque, phone);
   patchOpaque(opaque, fx0);
-  // The phone's cracks skip the Voronoi walls round the strike (27 hashes a pixel on every cracked plate).
-  if (phone) opaque.defines = { ...(opaque.defines ?? {}), BODY_PHONE: "" };
   const glow = new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: true });
   patchGlow(glow, fx0);
   const m: EnemyMaterials = { opaque, glow };

@@ -1558,7 +1558,7 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
      under the objective, nudged left of centre so the feed's short +XP lines on the right stay clear. */
   /* C15 review: at 25% centred it crossed a close guard's helmet and visor (the crit target). It now sits in the left
      column, under the vitals and over the move stick, out of the central third where the fight is framed. */
-  .hud-target { top: 39%; left: var(--edge-l); width: var(--cluster-w); transform: none; text-align: left; padding-inline: 0; }
+  .hud-target { top: 43%; left: var(--edge-l); width: var(--cluster-w); transform: none; text-align: left; padding-inline: 0; }
   .hud-target::after { inset: calc(var(--u) * -18) calc(var(--u) * -40); }
   .hud-objective { max-width: 36ch; }
   .hud-hp,

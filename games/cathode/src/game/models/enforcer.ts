@@ -39,7 +39,7 @@ export const FINISH = {
   /** C15: the coyote-tan padded carrier under a plate, seen once it breaks off (pillar 4: it must read at 10 m). */
   // A saturated coyote: the noir grade pulls colour down a long way, and the material's grey-blue sheen used to turn
   // the tan neutral grey (C15 review), so the sheen is low and the base well warm.
-  padding: { color: 0xc8924a, metal: 0, rough: 0.8, sheen: 0.06, band: "nylon", scale: 1.5, wear: 0.1 },
+  padding: { color: 0xd4a05c, metal: 0, rough: 0.8, sheen: 0.06, band: "nylon", scale: 1.5, wear: 0.1 },
   strap: { color: 0x1e1b17, metal: 0, rough: 0.85, sheen: 0.1, band: "nylon", wear: 0.3 },
   /** The carrier's torn strap tabs: a darker coyote webbing, so they read against the panel as they flap. */
   tab: { color: 0x6e5432, metal: 0, rough: 0.85, sheen: 0.05, band: "nylon", wear: 0.2 },
