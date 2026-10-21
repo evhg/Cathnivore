@@ -258,6 +258,10 @@ export class Enemy {
   readonly debris: PlateDebris[] = [];
   /** C15: ms left of the cracked visor's 14 Hz flicker. */
   private visorFlickMs = 0;
+  /** The flicker window's length when it started (the reduced-motion dim runs across it). */
+  private visorFlickTotal = 0;
+  /** Reduced motion: the visor dims slowly instead of flickering at 14 Hz (set by the session from the prefs). */
+  static calmFlicker = false;
   private route: THREE.Vector3[];
   private routeIdx = 0;
   private wait = 0;
@@ -884,10 +888,22 @@ export class Enemy {
   /** C15: the visor's light: a 14 Hz flicker while cracked or staggered, 0.3 once it has shattered. */
   private tickVisor(dt: number): void {
     if (!this.alive) return;
+    if (this.visorFlickMs > 0 && this.visorFlickTotal <= 0) this.visorFlickTotal = this.visorFlickMs;
     this.visorFlickMs = Math.max(0, this.visorFlickMs - dt * 1000);
     const shattered = this.armour?.visor === 2;
     const base = shattered ? 0.3 : 1;
-    const on = this.visorFlickMs <= 0 || Math.floor((this.visorFlickMs / 1000) * 14 * 2) % 2 === 0;
+    if (this.visorFlickMs <= 0) {
+      this.visorFlickTotal = 0;
+      this.body.visorLevel = base;
+      return;
+    }
+    if (Enemy.calmFlicker) {
+      // Reduced motion (and photosensitivity): one slow dim and back over the window, never a strobe.
+      const k = 1 - this.visorFlickMs / Math.max(1, this.visorFlickTotal);
+      this.body.visorLevel = base * (1 - 0.65 * Math.sin(Math.PI * k));
+      return;
+    }
+    const on = Math.floor((this.visorFlickMs / 1000) * 14 * 2) % 2 === 0;
     this.body.visorLevel = on ? base : base * 0.18;
   }
 
@@ -967,7 +983,7 @@ export class Enemy {
     this.rifle.visible = this.kit.role !== "orderly";
     this.body.visorLevel = 1;
     if (this.armour) resetArmour(this.armour);
-    for (const d of this.debris) d.dispose();
+    for (const d of [...this.debris]) d.dispose();
     this.debris.length = 0;
     Object.assign(this.stag, makeStagger());
     this.reaction = null;

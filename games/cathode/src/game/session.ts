@@ -31,7 +31,7 @@ import type { HurtKind } from "../ui/dmgring";
 import { tuning } from "./feel/tuning";
 import { DroppedMags } from "./dropmag";
 import { REFL_DIRS } from "./gunsound";
-import { AUTOMATIC, confirmSound, hitClass, hitStopMs, type HitEvent } from "../sim/hitevent";
+import { AUTOMATIC, confirmSound, hardHit, hitClass, hitStopMs, type HitEvent } from "../sim/hitevent";
 import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
 import { Orbs, TD, Takedown, targetScript } from "./takedown";
@@ -83,6 +83,8 @@ import { DeathScreen } from "../ui/deathcard";
 import { deathLine, type DeathCause } from "./voice";
 import { ESC_DEBOUNCE_MS, nextResuming, pauseView } from "./pausegate";
 import { clearDebris, liveDebris } from "./armourfx";
+import { plateWear } from "../sim/armour";
+import { makeStagger } from "../sim/stagger";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -1052,6 +1054,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const trauma = new Trauma();
   const syncMotion = () => {
     trauma.reducedMotion = reduceMotionOn();
+    Enemy.calmFlicker = trauma.reducedMotion;
     deathFx.steady = trauma.reducedMotion;
     arsenal.reducedMotion = trauma.reducedMotion;
   };
@@ -3086,16 +3089,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (!best || rank.indexOf(cls) > rank.indexOf(best.cls)) best = { cls, d };
       const e = byUid(d.targetUid);
       if (e) hud.targetHit(e.kit.name, e.hp / e.kit.maxHp, d.lethal);
-      // The wet thud sits in the world where the round landed, panned to its side.
+      // The impact, in the world where it landed: meat on flesh, a metal tonk on armour (S4.5).
       toHit.set(d.point.x, d.point.y, d.point.z).sub(camPos);
       const dist = toHit.length();
-      audio?.hitFlesh(d.damage > 40, dist > 0.01 ? toHit.dot(camRight) / dist : 0, dist);
+      const pan = dist > 0.01 ? toHit.dot(camRight) / dist : 0;
+      if (hardHit(d)) audio?.hitPlate(d.damage > 20 || !!d.plateBroke, pan, dist);
+      else audio?.hitFlesh(d.damage > 40, pan, dist);
     }
     frameHits.length = 0;
     if (best) {
       const d = best.d;
       hud.hitMarker(best.cls);
-      audio?.confirm(confirmSound(best.cls));
+      audio?.confirm(confirmSound(best.cls, d));
       const auto = AUTOMATIC.has(d.weaponCls);
       const stop = hitStopMs(d);
       if (d.lethal) killConfirm(stop, auto);
@@ -4534,6 +4539,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     g.hp = g.kit.maxHp;
     // A stage starts from a body at rest: a previous stage's flinch still ringing would add to (or cancel) this one.
     g.flinch.reset();
+    // Nor does an earlier stage's stagger: its crit window would make this stage's round a crit, its cooldowns block it.
+    Object.assign(g.stag, makeStagger());
     const sightFar: Sight = { eye: new THREE.Vector3(0, -500, 0), chest: new THREE.Vector3(0, -500, 0), light: 0, low: 1, speed: 0, stealth: 0 };
     g.update(0.0001, sightFar, rays, world.colliders, ground);
     // Blocked: a steel crate 6 m out, chest high on him, so his head shows over it.
@@ -4566,7 +4573,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     g.armourOff = !c15;
     if (c15 && g.armour) {
       const wc = SLICE_WEAPONS.find((x) => x.id === (c15!.weapon ?? "kestrel"))!;
-      c15.pre(g, wc.damage * build().damage(wc.weaponClass));
+      // The stage's "raw" is what this round takes off a plate (its class's wear), so the pre-set lands on the state.
+      c15.pre(g, plateWear(wc.weaponClass, wc.damage * build().damage(wc.weaponClass)));
     }
     const wid = c15?.weapon ?? "kestrel";
     const w = SLICE_WEAPONS.find((x) => x.id === wid)!;

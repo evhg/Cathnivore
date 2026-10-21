@@ -26,6 +26,8 @@ export class PlateDebris {
   private readonly face = new THREE.Vector3();
   private roll = 0;
   private rollV: number;
+  /** The list that steps this piece (its enemy's), so disposing it by the cap stops the stepping too. */
+  owner: PlateDebris[] | null = null;
   constructor(body: Body, arch: Arch, slot: number, dir: THREE.Vector3, phone: boolean, onClatter: (speed: number, at: THREE.Vector3) => void) {
     const parts = plateGeometry(arch, slot, phone);
     const mats = enemyMaterials(phone, FX0);
@@ -110,6 +112,9 @@ export class PlateDebris {
     this.group.removeFromParent();
     const i = live.indexOf(this);
     if (i >= 0) live.splice(i, 1);
+    const j = this.owner ? this.owner.indexOf(this) : -1;
+    if (j >= 0) this.owner!.splice(j, 1);
+    this.owner = null;
   }
 }
 

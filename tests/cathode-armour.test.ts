@@ -73,6 +73,34 @@ describe("cathode-armour: crack and break thresholds", () => {
   });
 });
 
+describe("cathode-armour: the Kestrel against a fresh plate", () => {
+  // The Kestrel's 34 at level 1 (aim adds up to about 10%), and its crit at x1.5.
+  for (const raw of [34, 37.4, 56.1, 80]) {
+    it(`one ${raw} Kestrel round on a fresh chest plate leaves it intact or cracked, never broken`, () => {
+      const a = makeArmour(HP);
+      const r = armourHit(a, "torso", "chestF", raw, "pistol");
+      expect(r.broke).toBeUndefined();
+      expect(a.plates.chestF.state).not.toBe("broken");
+      expect(r.body).toBeCloseTo(raw * 0.35);
+    });
+  }
+  it("non-crit Kestrel rounds crack the chest plate, then break it on the third", () => {
+    const a = makeArmour(HP);
+    const states: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      armourHit(a, "torso", "chestF", 37.4, "pistol");
+      states.push(a.plates.chestF.state);
+    }
+    expect(states).toEqual(["intact", "cracked", "broken"]);
+  });
+  it("the back plate also survives one round and cracks before it breaks", () => {
+    const a = makeArmour(HP);
+    armourHit(a, "torso", "chestB", 56, "pistol");
+    expect(a.plates.chestB.state).toBe("cracked");
+    expect(armourHit(a, "torso", "chestB", 34, "pistol").broke).toBe(true);
+  });
+});
+
 describe("cathode-armour: where a round lands", () => {
   it("the pauldron covers only the outer 120 degrees of the upper arm", () => {
     // Straight out from the left arm (body +x): on the plate.

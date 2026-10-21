@@ -63,6 +63,21 @@ export const ARMOUR = {
   visorFlickerMs: 300,
 } as const;
 
+/**
+ * How hard each weapon class wears a plate, as a share of its round (the man's share is unchanged). Pistols and
+ * SMGs chip armour: a fresh chest plate takes three Kestrel rounds to break (crack on the second), so sustained
+ * fire visibly cracks then breaks it. Rifles wear it at face value; the sniper and the launcher punch it.
+ */
+export const PLATE_WEAR: Record<string, number> = { pistol: 0.42, smg: 0.4, smart: 0.45, revolver: 0.75, rifle: 1, shotgun: 1, melee: 1, sniper: 2, launcher: 3 };
+
+/** Light classes step a plate at most one state per round: a fresh plate never breaks from one of their rounds. */
+export const LIGHT_ON_PLATE: ReadonlySet<string> = new Set(["pistol", "smg", "smart"]);
+
+/** What one round of `weaponCls` takes off a plate, given the round's raw damage. */
+export function plateWear(weaponCls: string, raw: number): number {
+  return raw * (PLATE_WEAR[weaponCls] ?? 1);
+}
+
 /** Weapon classes heavy enough to disarm or to stagger with a head hit ("pistol-class or heavier"). */
 export const PISTOL_OR_HEAVIER: ReadonlySet<string> = new Set(["pistol", "revolver", "rifle", "shotgun", "sniper", "launcher", "smart"]);
 
@@ -161,7 +176,7 @@ export function armourHit(a: Armour, zone: HitZone, where: PlateId | "visor" | n
     }
     const helm = a.plates.helmet;
     if (where === "helmet" && helm.state !== "broken") {
-      const r = damagePlate(helm, raw * zoneMul);
+      const r = damagePlate(helm, raw * zoneMul, weaponCls);
       return { layer: "plate", plateId: "helmet", body: r.through, plate: r.taken, zoneMul, ...r.flags };
     }
     return { layer: "flesh", body: raw * zoneMul, plate: 0, zoneMul };
@@ -184,20 +199,27 @@ export function armourHit(a: Armour, zone: HitZone, where: PlateId | "visor" | n
   if (where && where !== "visor") {
     const p = a.plates[where];
     if (p.state !== "broken") {
-      const r = damagePlate(p, raw * zoneMul);
+      const r = damagePlate(p, raw * zoneMul, weaponCls);
       return { layer: "plate", plateId: where, body: r.through, plate: r.taken, zoneMul, ...r.flags };
     }
   }
   return { layer: "flesh", body: raw * zoneMul, plate: 0, zoneMul };
 }
 
-/** The plate takes the round; the man takes (1 - absorb) of it, and all of whatever is left when it breaks. */
-function damagePlate(p: Plate, dmg: number): { through: number; taken: number; flags: { cracked?: boolean; broke?: boolean } } {
+/**
+ * The plate takes the round (worn by the class's `PLATE_WEAR`); the man takes (1 - absorb) of the share it stood
+ * up to, and all of the rest when it breaks. A light class (pistol, SMG) steps a plate one state per round at most:
+ * an intact plate it would break stops at a sliver, cracked.
+ */
+function damagePlate(p: Plate, dmg: number, weaponCls = "rifle"): { through: number; taken: number; flags: { cracked?: boolean; broke?: boolean } } {
   const was = p.state;
-  const taken = Math.min(p.hp, dmg);
+  const wear = plateWear(weaponCls, dmg);
+  let taken = Math.min(p.hp, wear);
+  if (LIGHT_ON_PLATE.has(weaponCls) && was === "intact" && taken >= p.hp - 1e-6) taken = Math.max(0, p.hp - p.maxHp * 0.08);
   p.hp -= taken;
-  const overflow = dmg - taken;
-  const through = taken * (1 - p.absorb) + overflow;
+  // The share of the round the plate stood in front of (all of it unless it broke on this round).
+  const stood = p.hp <= 1e-6 && wear > 0 ? Math.min(1, taken / wear) : 1;
+  const through = dmg * stood * (1 - p.absorb) + dmg * (1 - stood);
   const flags: { cracked?: boolean; broke?: boolean } = {};
   if (p.hp <= 1e-6) {
     p.hp = 0;

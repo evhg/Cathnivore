@@ -354,6 +354,18 @@ export class Audio {
     if (heavy) this.burst({ freq: 2600, q: 3, decay: 0.05, gain: 0.25 * near, when: 0.01, pan: pp }); // the crunch
   }
 
+  /**
+   * A round on armour (a plate, a cracking visor, a shield, chrome), on the world bus where it landed (S4.5: a plate
+   * hit is sparks, not meat): a hard band-passed tick, a hollow ceramic "tonk" and a short ring, no brown thud.
+   */
+  hitPlate(heavy: boolean, pan = 0, dist = 0): void {
+    const near = 1 / (1 + Math.max(0, dist) / 18);
+    const pp = Math.max(-1, Math.min(1, pan));
+    this.burst({ type: "bandpass", freq: 3200, q: 2, decay: 0.03, gain: (heavy ? 0.4 : 0.28) * near, pan: pp });
+    this.thump(420 + Math.random() * 60, 260, 0.07, (heavy ? 0.3 : 0.18) * near, 0, "triangle", 0.15, pp);
+    this.thump(1900 + Math.random() * 500, 1700, 0.16, 0.06 * near, 0.004, "sine", 0.25, pp);
+  }
+
   /** Old name for the confirm (kept for callers that pass the four old kinds). */
   hitTick(kind: "body" | "head" | "kill" | "soft"): void {
     this.confirm(kind === "soft" ? "armour" : kind);

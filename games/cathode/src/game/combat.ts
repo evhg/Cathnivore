@@ -698,6 +698,8 @@ export class Combat {
         if (!killed) e.body.popHelmet(vel, 9, (speed, at) => e.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 5) }));
       } else {
         const d = new PlateDebris(e.body, e.body.look.arch, PLATE_SLOT[ah.plateId], dir, bodyView.phone, (speed, at) => e.deathEvents.push({ kind: "clatter", at: at.clone(), k: Math.min(1, speed / 4) }));
+        // The enemy steps his own loose plates; the street's cap disposing one also takes it off his list.
+        d.owner = e.debris;
         e.debris.push(d);
       }
     }

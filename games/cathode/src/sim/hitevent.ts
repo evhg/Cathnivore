@@ -54,26 +54,38 @@ export interface NearMissEvent {
 export const AUTOMATIC: ReadonlySet<WeaponClass> = new Set<WeaponClass>(["smg", "rifle", "smart"]);
 
 /** The marker class for a hit (S1.2). Plates and shields read as armour; a kill outranks everything. */
-export function hitClass(h: Pick<HitEvent, "zone" | "lethal" | "layer" | "penetrated" | "crit"> & { plateBroke?: boolean }): HitClass {
+export function hitClass(h: Pick<HitEvent, "zone" | "lethal" | "layer" | "penetrated" | "crit"> & { plateBroke?: boolean; visorStage?: 0 | 1 | 2 }): HitClass {
   const head = h.zone === "head" || h.layer === "weakpoint";
   if (h.lethal) return head ? "headKill" : "kill";
-  if (h.layer === "plate" || h.layer === "shield" || h.layer === "visor") return h.plateBroke ? "armourBreak" : "armour";
+  // A shattering visor is a break (S1.2's break marker), like a plate coming off.
+  if (h.layer === "plate" || h.layer === "shield" || h.layer === "visor") return h.plateBroke || visorShatter(h) ? "armourBreak" : "armour";
   if (h.penetrated) return "pen";
   if (head || h.crit) return "head";
   return "body";
 }
 
-/** The confirm sound for a hit class (S1.3). */
-export function confirmSound(c: HitClass): "body" | "head" | "armour" | "plateBreak" | "kill" | "headKill" | "pen" {
-  return c === "armourBreak" ? "plateBreak" : c;
+/** The round that shatters a visor (its second hit): the face shows. */
+export function visorShatter(h: { layer: HitLayer; visorStage?: 0 | 1 | 2 }): boolean {
+  return h.layer === "visor" && h.visorStage === 2;
+}
+
+/** A round that met something hard (a plate, the can, a shield, chrome, a visor still up): no meat sound (S4.5). */
+export function hardHit(h: { layer: HitLayer; visorStage?: 0 | 1 | 2 }): boolean {
+  return h.layer === "plate" || h.layer === "weakpoint" || h.layer === "shield" || h.layer === "cyber" || (h.layer === "visor" && h.visorStage !== 2);
+}
+
+/** The confirm sound for a hit class (S1.3); a visor shatter has its own (six glassy sines and a sizzle). */
+export function confirmSound(c: HitClass, h?: { layer: HitLayer; visorStage?: 0 | 1 | 2 }): "body" | "head" | "armour" | "plateBreak" | "visor" | "kill" | "headKill" | "pen" {
+  if (c === "armourBreak") return h && visorShatter(h) ? "visor" : "plateBreak";
+  return c;
 }
 
 /** How long a hit holds the world, in ms (S1.5). */
-export function hitStopMs(h: Pick<HitEvent, "zone" | "lethal" | "crit" | "weaponCls"> & { plateBroke?: boolean; melee?: boolean }): number {
+export function hitStopMs(h: Pick<HitEvent, "zone" | "lethal" | "crit" | "weaponCls"> & { plateBroke?: boolean; melee?: boolean; layer?: HitLayer; visorStage?: 0 | 1 | 2 }): number {
   const T = tuning.hitStop;
   const auto = AUTOMATIC.has(h.weaponCls);
   if (h.lethal) return h.zone === "head" ? T.headKill : auto ? T.killAuto : T.kill;
-  if (h.plateBroke) return T.plateBreak;
+  if (h.plateBroke || (h.layer && visorShatter({ layer: h.layer, ...(h.visorStage !== undefined ? { visorStage: h.visorStage } : {}) }))) return T.plateBreak;
   if (h.melee || h.weaponCls === "melee") return T.melee;
   if (h.crit || h.zone === "head") return auto ? T.critAuto : T.crit;
   return auto ? T.bodyAuto : T.body;

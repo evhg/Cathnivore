@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hitClass, hitStopMs, showsMarker, confirmSound } from "../games/cathode/src/sim/hitevent";
+import { hitClass, hitStopMs, showsMarker, confirmSound, hardHit } from "../games/cathode/src/sim/hitevent";
 import { tuning } from "../games/cathode/src/game/feel/tuning";
 
 const base = { zone: "torso" as const, lethal: false, layer: "flesh" as const, penetrated: false, crit: false };
@@ -50,5 +50,24 @@ describe("CATHODE hit classes (S1.2)", () => {
   it("maps classes to confirm sounds", () => {
     expect(confirmSound("armourBreak")).toBe("plateBreak");
     expect(confirmSound("headKill")).toBe("headKill");
+  });
+
+  it("a visor shatter reads as a break: the break marker, its own glassy confirm and the plate-break hit-stop", () => {
+    const shatter = { ...base, zone: "head" as const, layer: "visor" as const, visorStage: 2 as const };
+    const crack = { ...shatter, visorStage: 1 as const };
+    expect(hitClass(shatter)).toBe("armourBreak");
+    expect(confirmSound(hitClass(shatter), shatter)).toBe("visor");
+    expect(hitStopMs({ ...shatter, weaponCls: "pistol" })).toBe(tuning.hitStop.plateBreak);
+    // The first hit only cracks it: the armour marker and ping, the head's stop.
+    expect(hitClass(crack)).toBe("armour");
+    expect(confirmSound(hitClass(crack), crack)).toBe("armour");
+    expect(hitStopMs({ ...crack, weaponCls: "pistol" })).toBe(tuning.hitStop.crit);
+    // The world impact: metal on a plate or a visor that holds, meat only once the face is open.
+    expect(hardHit({ layer: "plate" })).toBe(true);
+    expect(hardHit(crack)).toBe(true);
+    expect(hardHit(shatter)).toBe(false);
+    expect(hardHit({ layer: "flesh" })).toBe(false);
+    // A plate break keeps its own sound.
+    expect(confirmSound("armourBreak", { layer: "plate" })).toBe("plateBreak");
   });
 });
