@@ -375,7 +375,8 @@ if (vPlate.z < -0.5 && vPlate.z > -2.5) totalEmissiveRadiance += diffuseColor.rg
 // next half second to an ember that stays in the seam; the dark groove either side gives it an edge.
 if (vPlate.x > 0.5) {
   float pHeat = vPlate.y < 0.4 ? 1.0 : 0.3 + 0.7 * exp(-(vPlate.y - 0.4) / 0.45);
-  totalEmissiveRadiance += vec3(1.0, 0.33, 0.04) * pCore * (2.2 * pHeat) * (0.55 + 0.45 * exp(-pCrackR / 0.12)) * (1.0 - uBodyMirror);
+  // (Held under the AgX shoulder like the rim, RIM_CAP: brighter, the amber washed out to peach on screen.)
+  totalEmissiveRadiance += vec3(1.0, 0.27, 0.02) * pCore * (1.35 * pHeat) * (0.55 + 0.45 * exp(-pCrackR / 0.12)) * (1.0 - uBodyMirror);
 }
 // C15 review ("a hologram inside an orange outline"): a soft character key from high on her left, wrapped, on his
 // own albedo, so his form (plates, folds, the chest's curve) is shaded under the rim wherever he stands in the dark.

@@ -3603,6 +3603,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       dist: 3.4,
       ms: 140,
       frame: "plate",
+      // High on the plate, clear of the carbine he holds across his belly.
+      aimAt: (g) => g.body.joints.chest.clone().lerp(g.body.joints.neck, 0.4),
       // The round leaves the plate at 45%: cracked, not broken; and no stagger in the way of the crack.
       pre: (g, raw) => {
         const p = g.armour!.plates.chestF;
@@ -3649,7 +3651,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     "enemy-disarm": {
       base: "hit-body",
       dist: 4,
-      ms: 1000,
+      ms: 1250,
       frame: "front",
       far: 2.8,
       aimAt: (g) => g.body.joints.handR.clone().lerp(g.body.joints.elbowR, 0.3),
@@ -4587,6 +4589,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     else if (stageGuard && stageGuard !== g) {
       stageGuard.motion.pos.x += 40;
       stageGuard.body.root.visible = false;
+      // (His joints too, or rounds still meet him where he stood.)
+      stageGuard.feel(1e-4, world.colliders, ground);
     }
     if (!shieldMan && stageGuard) stageGuard.body.root.visible = true;
     g.revive();
@@ -4898,6 +4902,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // (The head from 3.2 m takes in his shoulders and the hand coming up to the helmet; the broken plate from 2.3 m
       // looks a little down, so the plate in the street at his feet is in frame.)
       const focus = c15.frame === "head" ? J.head.clone().lerp(J.chest, 0.3) : c15.frame === "plate" ? (c15.far ? J.chest.clone().lerp(J.pelvis, 0.45) : J.chest.clone().lerp(J.neck, 0.35)) : J.pelvis.clone().lerp(J.chest, 0.6);
+      // The broken plate's frame takes in the plate where it fell, part way to it from his chest.
+      const fallen = c15.frame === "plate" && c15.far ? liveDebris()[0] : undefined;
+      if (fallen) focus.lerp(fallen.position, 0.4);
       const facing = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
       const side = new THREE.Vector3(-facing.z, 0, facing.x);
       const close = c15.far ?? (c15.frame === "head" ? 2.5 : c15.frame === "plate" ? 1.45 : 3.0);

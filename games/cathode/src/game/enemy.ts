@@ -1227,7 +1227,10 @@ export class Enemy {
     if (!this.alive || this.disarmMs >= 0 || this.drop || !this.rifle.visible || this.kit.role === "orderly" || this.shield) return;
     const b = this.body;
     const flat = new THREE.Vector3(dir.x, 0, dir.z).normalize();
-    const vel = flat.multiplyScalar(2.6).add(new THREE.Vector3(0, 1.9, 0)).add(new THREE.Vector3(Math.cos(this.motion.yaw), 0, -Math.sin(this.motion.yaw)).multiplyScalar(-0.7));
+    // Out of his right hand, wrenched aside and a little along the round, end over end, landing a couple of metres off
+    // to his right where both of them can see it.
+    const right = new THREE.Vector3(-Math.cos(this.motion.yaw), 0, Math.sin(this.motion.yaw));
+    const vel = right.multiplyScalar(2.3).addScaledVector(flat, 0.9).add(new THREE.Vector3(0, 2.1, 0));
     const a = b.grip.clone();
     const dirG = new THREE.Vector3().subVectors(b.foregrip, b.grip);
     if (dirG.lengthSq() < 1e-4) dirG.set(0, 0, 1);
