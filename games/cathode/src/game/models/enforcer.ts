@@ -131,7 +131,8 @@ class Builder {
   /** A plate at this detail: bevels go to one segment on the phone and away at a distance. */
   plate(pts: P2[], o: PlateOpts): THREE.BufferGeometry {
     const d = this.det;
-    return plate(pts, { ...o, bevel: d >= 2 ? 0 : o.bevel, bevelSeg: d === 1 ? 1 : 2 });
+    // (A plate that never comes off lies against him: its back face is never seen. One on a plate slot can fly off.)
+    return plate(pts, { ...o, bevel: d >= 2 ? 0 : o.bevel, bevelSeg: d === 1 ? 1 : 2, refine: d < 2, chord: d === 1 ? 0.014 : undefined, back: this.tag > 0 || o.back === true });
   }
   /** A chamfered box up close on desktop; a plain box on the phone and at a distance. */
   box(w: number, h: number, d: number, r: number, seg = 2): THREE.BufferGeometry {

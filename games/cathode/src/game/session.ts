@@ -3649,9 +3649,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     "enemy-disarm": {
       base: "hit-body",
       dist: 4,
-      ms: 700,
+      ms: 1000,
       frame: "front",
-      far: 3.4,
+      far: 2.8,
       aimAt: (g) => g.body.joints.handR.clone().lerp(g.body.joints.elbowR, 0.3),
       pre: (g) => {
         g.hp = g.kit.maxHp * 3;
@@ -3681,6 +3681,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       frame: "front",
       far: 3.6,
       shield: true,
+      // Into the face of the shield, square on.
+      aimAt: (g) => (g.shield ? g.shield.getWorldPosition(new THREE.Vector3()) : g.body.joints.chest.clone()),
       pre: (g) => {
         g.shieldHp = 0.01;
       },
@@ -4581,6 +4583,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const g = shieldMan ?? stageGuard ?? rifle[0] ?? enemies.find((e) => e.alive && !e.shield && e.kit.role !== "civilian" && e.kit.role !== "nurse" && e.kit.role !== "turret");
     if (!g) return "no enemy";
     if (!shieldMan) stageGuard = g;
+    // The stage guard steps out of the shield bearer's way (they would stand in the same spot).
+    else if (stageGuard && stageGuard !== g) {
+      stageGuard.motion.pos.x += 40;
+      stageGuard.body.root.visible = false;
+    }
+    if (!shieldMan && stageGuard) stageGuard.body.root.visible = true;
     g.revive();
     // A guard 10 m down the crosshair, facing her, unaware.
     // A phone screen is small: the cover stages bring the crate and the guard in so his head over it reads.

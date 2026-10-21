@@ -57,6 +57,12 @@ export interface PlateOpts {
   bendY?: number;
   /** Cut-outs (a riot shield's viewport), in the outline's plane. */
   holes?: P2[][];
+  /** Refine the face so the bend shows (default on; off at a distance, where the budget is tight). */
+  refine?: boolean;
+  /** How close the refined face keeps to the true arc (m; default CHORD_ERR). */
+  chord?: number;
+  /** Keep the back face (default on). A plate fixed against the body never shows it; one that can come off does. */
+  back?: boolean;
 }
 
 /**
@@ -68,7 +74,7 @@ export function plate(pts: P2[], o: PlateOpts = {}): THREE.BufferGeometry {
   const bevel = o.bevel ?? 0.006;
   const bseg = bevel > 0 ? (o.bevelSeg ?? 2) : 0;
   const hk = (o.holes ?? []).map((h) => h.map((p) => p.map((v) => v.toFixed(4)).join(",")).join(";")).join("|");
-  const key = `plate:${pts.map((p) => p.map((v) => v.toFixed(4)).join(",")).join(";")}:${depth}:${bevel}:${bseg}:${o.bend ?? 0}:${o.bendY ?? 0}:${hk}`;
+  const key = `plate:${pts.map((p) => p.map((v) => v.toFixed(4)).join(",")).join(";")}:${depth}:${bevel}:${bseg}:${o.bend ?? 0}:${o.bendY ?? 0}:${hk}:${o.refine !== false}:${o.back !== false}:${o.chord ?? CHORD_ERR}`;
   return cached(key, () => {
     const shape = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
     for (const h of o.holes ?? []) shape.holes.push(new THREE.Path(h.map(([x, y]) => new THREE.Vector2(x, y))));
@@ -85,6 +91,23 @@ export function plate(pts: P2[], o: PlateOpts = {}): THREE.BufferGeometry {
     if (g.index) g = g.toNonIndexed();
     g.deleteAttribute("uv");
     g.computeVertexNormals();
+    // A bent plate needs vertices inside its face to carry the curve: an extruded cap is a few long triangles from
+    // edge to edge, and bent at its edges alone its middle stays a flat sheet at the edges' depth. On the Enforcer's
+    // chest that sheet sat 5 cm back inside the suit, so the front plate (and its cracks) never showed (C15 review).
+    if (o.back === false) g = dropBack(g);
+    // Only where the bend would sink the middle visibly (over 6 mm), in steps whose chord stays within 3 mm of the arc.
+    if (o.refine !== false) {
+      const xs = pts.map((p) => p[0]);
+      const ys = pts.map((p) => p[1]);
+      const hw = (Math.max(...xs) - Math.min(...xs)) / 2;
+      const hh = (Math.max(...ys) - Math.min(...ys)) / 2;
+      const r = o.bend ?? 0;
+      const ry = o.bendY ?? 0;
+      const ce = o.chord ?? CHORD_ERR;
+      const sx = r > 0 && (hw * hw) / (2 * r) > SAG_MAX ? Math.sqrt(8 * ce * r) : Infinity;
+      const sy = ry > 0 && (hh * hh) / (2 * ry) > SAG_MAX ? Math.sqrt(8 * ce * ry) : Infinity;
+      if (sx < Infinity || sy < Infinity) g = splitFront(g, sx, sy);
+    }
     const pos = g.getAttribute("position") as THREE.BufferAttribute;
     const nor = g.getAttribute("normal") as THREE.BufferAttribute;
     const edge = new Float32Array(pos.count);
@@ -93,6 +116,82 @@ export function plate(pts: P2[], o: PlateOpts = {}): THREE.BufferGeometry {
     g.userData.edge = edge;
     return g;
   });
+}
+
+/** A bent plate's face is refined when its middle would sink more than this (m), to within this of the true arc. */
+const SAG_MAX = 0.012;
+const CHORD_ERR = 0.0075;
+
+/**
+ * Splits the front-facing triangles (normal +z) of a flat, non-indexed piece at the midpoint of any edge that spans
+ * more than `dx` across or `dy` up, until none does, so a bend has vertices to move. Only the face that shows is
+ * refined (the back of a plate lies against the body); positions and normals are interpolated.
+ */
+function splitFront(g: THREE.BufferGeometry, dx: number, dy: number): THREE.BufferGeometry {
+  const P = g.getAttribute("position") as THREE.BufferAttribute;
+  const N = g.getAttribute("normal") as THREE.BufferAttribute;
+  const outP: number[] = [];
+  const outN: number[] = [];
+  type V = { p: THREE.Vector3; n: THREE.Vector3 };
+  const emit = (a: V, b: V, c: V) => {
+    for (const v of [a, b, c]) {
+      outP.push(v.p.x, v.p.y, v.p.z);
+      outN.push(v.n.x, v.n.y, v.n.z);
+    }
+  };
+  const mid = (a: V, b: V): V => ({ p: a.p.clone().lerp(b.p, 0.5), n: a.n.clone().lerp(b.n, 0.5).normalize() });
+  const span = (a: V, b: V) => Math.max(Math.abs(a.p.x - b.p.x) / dx, Math.abs(a.p.y - b.p.y) / dy);
+  const split = (a: V, b: V, c: V, depth: number): void => {
+    const s0 = span(a, b);
+    const s1 = span(b, c);
+    const s2 = span(c, a);
+    const m = Math.max(s0, s1, s2);
+    if (m <= 1 || depth > 10) return emit(a, b, c);
+    if (m === s0) {
+      const d = mid(a, b);
+      split(a, d, c, depth + 1);
+      split(d, b, c, depth + 1);
+    } else if (m === s1) {
+      const d = mid(b, c);
+      split(a, b, d, depth + 1);
+      split(a, d, c, depth + 1);
+    } else {
+      const d = mid(c, a);
+      split(a, b, d, depth + 1);
+      split(d, b, c, depth + 1);
+    }
+  };
+  const v = (i: number): V => ({ p: new THREE.Vector3().fromBufferAttribute(P, i), n: new THREE.Vector3().fromBufferAttribute(N, i) });
+  for (let i = 0; i < P.count; i += 3) {
+    const a = v(i);
+    const b = v(i + 1);
+    const c = v(i + 2);
+    if (a.n.z > 0.7 && b.n.z > 0.7 && c.n.z > 0.7) split(a, b, c, 0);
+    else emit(a, b, c);
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute("position", new THREE.Float32BufferAttribute(outP, 3));
+  out.setAttribute("normal", new THREE.Float32BufferAttribute(outN, 3));
+  return out;
+}
+
+/** Removes the back cap (triangles facing -z) of a flat, non-indexed piece. */
+function dropBack(g: THREE.BufferGeometry): THREE.BufferGeometry {
+  const P = g.getAttribute("position") as THREE.BufferAttribute;
+  const N = g.getAttribute("normal") as THREE.BufferAttribute;
+  const outP: number[] = [];
+  const outN: number[] = [];
+  for (let i = 0; i < P.count; i += 3) {
+    if (N.getZ(i) < -0.7 && N.getZ(i + 1) < -0.7 && N.getZ(i + 2) < -0.7) continue;
+    for (let k = 0; k < 3; k++) {
+      outP.push(P.getX(i + k), P.getY(i + k), P.getZ(i + k));
+      outN.push(N.getX(i + k), N.getY(i + k), N.getZ(i + k));
+    }
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute("position", new THREE.Float32BufferAttribute(outP, 3));
+  out.setAttribute("normal", new THREE.Float32BufferAttribute(outN, 3));
+  return out;
 }
 
 /** Bends a part round Y (radius `r`, axis at z = -r) and then round X (radius `ry`, axis at z = -ry), in place. */

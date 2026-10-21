@@ -71,7 +71,7 @@ const CP_CLASS = { 'classpick-operative': 'ghost', 'classpick-wetwork': 'butcher
 const C15 = ['enemy-plate-cracked', 'enemy-plate-broken', 'visor-shatter', 'enemy-stagger-front-200', 'enemy-stagger-back-200', 'enemy-knockdown-1000']
 // C15X (review): the systems that have no acceptance stage of their own: a disarm 700 ms on (the carbine in the
 // street, the sidearm coming off his thigh), a crawl a second into it, and a guard limping with an arm hanging, hunched.
-const C15X = ['enemy-disarm-700', 'enemy-crawl-3900', 'enemy-wounded-900', 'enemy-shield-break-450']
+const C15X = ['enemy-disarm-1000', 'enemy-crawl-3900', 'enemy-wounded-900', 'enemy-shield-break-450']
 const MS = { C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
@@ -672,7 +672,7 @@ for (const vp of vps) {
       if (!a) fail(`${vp} ${spec}: no armour info (the stage guard has no plates?)`)
       else {
         console.log(`  C15 ${vp} ${spec}: plates ${JSON.stringify(a.plates)}, visor ${a.visor}, reaction ${a.reaction} at ${a.t?.toFixed(0)} ms, debris ${a.debris.length}, pelvis ${a.heights?.pelvis}`)
-        const want = { 'enemy-plate-cracked': () => a.plates.chestF === 'cracked', 'enemy-plate-broken': () => a.plates.chestF === 'broken' && a.debris.length >= 1, 'visor-shatter': () => a.visor === 2, 'enemy-stagger-front-200': () => a.reaction === 'stagger', 'enemy-stagger-back-200': () => a.reaction === 'stagger', 'enemy-knockdown-1000': () => a.reaction === 'knockdown' && a.heights.pelvis < 0.45, 'enemy-disarm-700': () => a.arms === 'draw', 'enemy-crawl-3900': () => a.crawling && a.heights.pelvis < 0.3, 'enemy-wounded-900': () => a.wound?.limp && a.wound?.hang && a.wound?.hunch > 0.5, 'enemy-shield-break-450': () => a.shards >= 3 }[stage]
+        const want = { 'enemy-plate-cracked': () => a.plates.chestF === 'cracked', 'enemy-plate-broken': () => a.plates.chestF === 'broken' && a.debris.length >= 1, 'visor-shatter': () => a.visor === 2, 'enemy-stagger-front-200': () => a.reaction === 'stagger', 'enemy-stagger-back-200': () => a.reaction === 'stagger', 'enemy-knockdown-1000': () => a.reaction === 'knockdown' && a.heights.pelvis < 0.45, 'enemy-disarm-1000': () => a.arms === 'draw', 'enemy-crawl-3900': () => a.crawling && a.heights.pelvis < 0.3, 'enemy-wounded-900': () => a.wound?.limp && a.wound?.hang && a.wound?.hunch > 0.5, 'enemy-shield-break-450': () => a.shards >= 3 }[stage]
         if (want && !want()) fail(`${vp} ${spec}: the stage didn't do its thing (${JSON.stringify(a.plates)}, visor ${a.visor}, ${a.reaction})`)
         if (stage === 'enemy-plate-broken') {
           // The under-layer must read: the coyote-tan carrier where the plate was (warm, and lighter than the plate).
