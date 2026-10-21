@@ -3556,18 +3556,32 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * him from the front or the back, knocks him down), shot at its moment and framed close and three-quarters on so
    * the plate, the carrier under it, the face, the steps read.
    */
-  const C15_STAGES: Record<string, { base: string; dist: number; ms: number; turn?: number; pre: (g: Enemy) => void; frame: "plate" | "head" | "body" | "back" }> = {
-    "enemy-plate-cracked": { base: "hit-body", dist: 3.4, ms: 140, frame: "plate", pre: () => {} },
+  const C15_STAGES: Record<string, { base: string; dist: number; ms: number; turn?: number; pre: (g: Enemy, raw: number) => void; frame: "plate" | "head" | "body" | "back"; weapon?: string; rounds?: number; aimUp?: boolean }> = {
+    // The e2e's check (C15): six Corridor AR rounds into a fresh guard's chest from 8 m break the front plate.
+    "plate-rifle-6": { base: "hit-body", dist: 8, ms: 40, frame: "body", weapon: "corridorAR", rounds: 6, pre: (g) => (g.hp = g.kit.maxHp * 3) },
+    "enemy-plate-cracked": {
+      base: "hit-body",
+      dist: 3.4,
+      ms: 140,
+      frame: "plate",
+      // The round leaves the plate at 45%: cracked, not broken; and no stagger in the way of the crack.
+      pre: (g, raw) => {
+        const p = g.armour!.plates.chestF;
+        p.hp = p.maxHp * 0.45 + raw;
+        g.stag.staggerCd = 2;
+      },
+    },
     "enemy-plate-broken": {
       base: "hit-body",
       dist: 3.4,
       ms: 650,
       frame: "plate",
-      pre: (g) => {
+      pre: (g, raw) => {
         const p = g.armour!.plates.chestF;
-        p.hp = p.maxHp * 0.3;
+        p.hp = Math.min(p.maxHp * 0.3, raw * 0.5);
         p.state = "cracked";
         g.syncPlates();
+        g.stag.staggerCd = 2;
       },
     },
     "visor-shatter": {
@@ -3583,7 +3597,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       },
     },
     "enemy-stagger-front": { base: "hit-body", dist: 5.5, ms: 200, frame: "body", pre: (g) => (g.stag.meter = 0.34) },
-    "enemy-stagger-back": { base: "hit-body", dist: 5.5, ms: 200, turn: Math.PI, frame: "back", pre: (g) => (g.stag.meter = 0.34) },
+    // Between the shoulder blades (the back plate), clear of the coolant can low on his spine.
+    "enemy-stagger-back": { base: "hit-body", dist: 5.5, ms: 200, turn: Math.PI, frame: "back", aimUp: true, pre: (g) => (g.stag.meter = 0.34) },
     "enemy-knockdown": { base: "hit-body", dist: 5.5, ms: 1000, frame: "body", pre: (g) => (g.stag.meter = 0.79) },
   };
   let c15: (typeof C15_STAGES)[string] | null = null;
@@ -4543,18 +4558,22 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (crateCollider) crateCollider.off = !crated;
     // C10: hit-arm takes the round on the support forearm, nearer the elbow (the hand that opens stays clear of the marker).
     const joint = name === "hit-arm" ? g.body.joints.elbowL.clone().lerp(g.body.joints.handL, 0.3) : name === "hit-head" || name === "hit-headkill" || name === "peek-head" || name === "enemy-flinch-head-60" ? g.body.joints.head : g.body.joints.chest;
-    const aim = joint.clone();
+    const aim = c15?.aimUp ? g.body.joints.chest.clone().lerp(g.body.joints.neck, 0.55) : joint.clone();
     // Blocked: the round goes into the crate's upper face, square on, with the guard's head showing behind it.
     if (name === "blocked" && stageCrate) aim.copy(stageCrate.position).y += 0.35;
     if (name === "hit-kill" || name === "hit-headkill") g.hp = 1;
     // The C1/C2 flesh stages are about blood on flesh: they shoot the guard as if unplated (C15 has its own stages).
     g.armourOff = !c15;
-    if (c15 && g.armour) c15.pre(g);
-    const w = SLICE_WEAPONS.find((x) => x.id === "kestrel")!;
-    // The shot is a Kestrel round, so she holds the Kestrel.
-    if (arsenal.weapon.id !== "kestrel") {
-      arsenal.owned.add("kestrel");
-      arsenal.equipId("kestrel");
+    if (c15 && g.armour) {
+      const wc = SLICE_WEAPONS.find((x) => x.id === (c15!.weapon ?? "kestrel"))!;
+      c15.pre(g, wc.damage * build().damage(wc.weaponClass));
+    }
+    const wid = c15?.weapon ?? "kestrel";
+    const w = SLICE_WEAPONS.find((x) => x.id === wid)!;
+    // The shot is a Kestrel round (or the stage's own gun), so she holds it.
+    if (arsenal.weapon.id !== wid) {
+      arsenal.owned.add(wid);
+      arsenal.equipId(wid);
     }
     arsenal.settle();
     // The crosshair sits on the round's point of aim, so the frame shows what she'd see down the sights.
@@ -4575,7 +4594,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     zoomAt = null;
     zoomOn = false;
     // No random crit: a stage shows the same class every time.
-    combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], { ...build(), crit: 0 });
+    for (let i = 0; i < (c15?.rounds ?? 1); i++) combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], { ...build(), crit: 0 });
     combat.quiet = false;
     combat.forceVariant = null;
     combat.forceHelmet = null;
@@ -4754,7 +4773,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const focus = c15.frame === "head" ? J.head.clone() : c15.frame === "plate" ? J.chest.clone().lerp(J.neck, 0.35) : J.pelvis.clone().lerp(J.chest, 0.6);
       const facing = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
       const side = new THREE.Vector3(-facing.z, 0, facing.x);
-      const close = c15.frame === "head" ? 1.5 : c15.frame === "plate" ? 2.1 : 4.6;
+      const close = c15.frame === "head" ? 1.05 : c15.frame === "plate" ? 1.45 : 3.0;
       const dist = close * (o.quality === "phone" ? 0.85 : 1);
       const sk = c15.frame === "plate" || c15.frame === "head" ? 0.36 : 0.5;
       const off = c15.frame === "back" ? facing.clone().negate().multiplyScalar(0.86).addScaledVector(side, sk) : facing.clone().multiplyScalar(0.93).addScaledVector(side, -sk);

@@ -675,10 +675,13 @@ export class Combat {
       heavyMelee: data.weaponCls === "melee" && dmg >= e.kit.maxHp * 0.3,
     });
     data.staggerDir = r.dir;
-    if (r.reaction !== "flinch") {
+    // The round that shatters the visor plays the head snap with the hands to the helmet (S4.2), whatever the meter
+    // says; the meter keeps what it took.
+    if (ah?.layer === "visor" && ah.visorStage === 2) e.startReact("visorSnap", r.dir, bodyDir);
+    else if (r.reaction !== "flinch") {
       data.reaction = r.reaction;
       e.startReact(r.reaction, r.dir, bodyDir);
-    } else if (ah?.layer === "visor" && ah.visorStage === 2) e.startReact("visorSnap", r.dir, bodyDir);
+    }
   }
 
   /** C15 (S4.3): the plates' new states on the body, the loose plate, the visor's crack and shards, the vent. */

@@ -675,9 +675,11 @@ for (const vp of vps) {
           // The under-layer must read: the coyote-tan carrier where the plate was (warm, and lighter than the plate).
           const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r), [a.under.x, a.under.y, Math.max(3, a.under.r * 1.2)])
           const [r, g, b] = pr.mean
-          const warm = r > b * 1.2 && r >= g
-          console.log(`  C15 ${vp} ${spec}: carrier mean rgb ${pr.mean} (${warm ? 'warm' : 'NOT warm'}) over ${pr.total} px`)
-          if (!warm || r < 28) fail(`${vp} ${spec}: the under-layer doesn't read (mean ${pr.mean}: want warm tan, r >= 28)`)
+          // In the noir grade a tan reads mostly as light: it must be warm-leaning and well lighter than the dark plate (~40).
+          const warm = r >= b
+          const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+          console.log(`  C15 ${vp} ${spec}: carrier mean rgb ${pr.mean} (lum ${lum.toFixed(0)}, ${warm ? 'warm' : 'cold'}) over ${pr.total} px`)
+          if (!warm || lum < 60) fail(`${vp} ${spec}: the under-layer doesn't read (mean ${pr.mean}: want lum >= 60, r >= b)`)
         }
         if (stage === 'visor-shatter') {
           const pr = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r), [a.face.x, a.face.y, Math.max(3, a.face.r * 0.6)])

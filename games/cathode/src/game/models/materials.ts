@@ -134,7 +134,7 @@ vec3 pcHash3(vec3 p) {
   return fract(sin(p) * 43758.5453);
 }
 vec2 plateCrack(vec3 lp, float tag, float seed) {
-  float dens = tag > 5.5 ? 70.0 : 34.0;
+  float dens = tag > 5.5 ? 60.0 : 20.0;
   vec3 p = lp * dens + vec3(seed * 17.0 + tag * 3.1, tag * 5.7, seed * 11.0);
   p += vec3(gkNoise(lp * 90.0), gkNoise(lp * 90.0 + 7.0), gkNoise(lp * 90.0 + 13.0)) * 0.55;
   vec3 i = floor(p); vec3 f = fract(p);
@@ -148,9 +148,9 @@ vec2 plateCrack(vec3 lp, float tag, float seed) {
   float e = d2 - d1;
   float w = max(fwidth(e), 1e-4);
   // Not every border cracks: about half the cells' walls fracture, so it reads as a crack and not a grid.
-  float keep = step(0.45, pcHash3(i + vec3(seed)).x + gkNoise(lp * 20.0) * 0.5);
-  float groove = (1.0 - smoothstep(0.03, 0.03 + w * 1.5, e)) * keep;
-  float chip = (1.0 - smoothstep(0.1, 0.1 + w * 1.5, e)) * keep - groove;
+  float keep = step(0.55, pcHash3(i + vec3(seed)).x + gkNoise(lp * 14.0) * 0.5);
+  float groove = (1.0 - smoothstep(0.018, 0.018 + w * 1.2, e)) * keep;
+  float chip = (1.0 - smoothstep(0.05, 0.05 + w * 1.2, e)) * keep - groove;
   return vec2(groove, max(0.0, chip));
 }`;
 
@@ -193,7 +193,7 @@ if (vPlate.x > 0.5) {
   vec2 cr = plateCrack(vLocal, vPlate.z, vPlateSeed);
   pCrack = cr.x;
   pChip = cr.y;
-  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 2.2 + vec3(0.07), pChip * 0.85);
+  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 2.4 + vec3(0.09), pChip * 0.9);
   diffuseColor.rgb *= 1.0 - 0.9 * pCrack;
 }`,
       )
@@ -234,7 +234,7 @@ bFac *= bFacMax > ${RIM_CAP.toFixed(2)} ? ${RIM_CAP.toFixed(2)} / bFacMax : 1.0;
 totalEmissiveRadiance += bFac * (1.0 - uBodyMirror);
 // C15: a fresh crack glows in the faction amber for 0.4 s (S4.3: 0.3, overstated x3 so it reads at 10 m in the
 // grade), then keeps a faint ember in the groove.
-if (vPlate.x > 0.5) totalEmissiveRadiance += vec3(1.0, 0.42, 0.08) * pCrack * (0.9 * max(0.0, 1.0 - vPlate.y / 0.4) + 0.05) * (1.0 - uBodyMirror);`,
+if (vPlate.x > 0.5) totalEmissiveRadiance += vec3(1.0, 0.42, 0.08) * pCrack * (2.2 * max(0.0, 1.0 - vPlate.y / 0.4) + 0.12) * (1.0 - uBodyMirror);`,
       )
       .replace(
         "#include <fog_fragment>",

@@ -100,6 +100,21 @@ test.describe('CATHODE combat feedback', () => {
     await expect(page.locator('.hud-vbar.is-broken')).toHaveCount(0)
   })
 
+  test('C15: six rifle rounds to the chest break the front plate (plateBreak on the bus)', async ({ page, hasTouch }) => {
+    test.skip(hasTouch, 'the rules are the same on the phone')
+    test.setTimeout(300_000)
+    await boot(page)
+    const r = await page.evaluate(() => {
+      const c = (window as unknown as { cathode: { stage: (n: string, t?: number) => string; combat: { bus: { log: { kind: string; e: { plateId?: string } }[] } } } }).cathode
+      c.combat.bus.log.length = 0
+      const cls = c.stage('plate-rifle-6', 40)
+      const log = c.combat.bus.log
+      return { cls, hits: log.filter((l) => l.kind === 'hit').length, breaks: log.filter((l) => l.kind === 'plateBreak').map((l) => l.e.plateId) }
+    })
+    expect(r.hits).toBe(6)
+    expect(r.breaks).toEqual(['chestF'])
+  })
+
   test('a kill rings the marker and clears the target bar', async ({ page, hasTouch }) => {
     // One phone run (the cover test) is enough: under SwiftShader each costs about a minute.
     test.skip(hasTouch, 'the phone layout is covered by the cover test above')

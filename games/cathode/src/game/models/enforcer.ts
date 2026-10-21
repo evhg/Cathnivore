@@ -37,7 +37,7 @@ export const FINISH = {
   coat: { color: 0x1c1f26, metal: 0, rough: 0.7, sheen: 0.6, band: "nylon", wear: 0 },
   under: { color: 0x3b3530, metal: 0, rough: 0.9, band: "nylon", wear: 0 },
   /** C15: the coyote-tan padded carrier under a plate, seen once it breaks off (pillar 4: it must read at 10 m). */
-  padding: { color: 0x7a6447, metal: 0, rough: 0.92, sheen: 0.25, band: "nylon", scale: 1.5, wear: 0.15 },
+  padding: { color: 0xd2b98c, metal: 0, rough: 0.85, sheen: 0.4, band: "nylon", scale: 1.5, wear: 0.15 },
   strap: { color: 0x2c2a26, metal: 0, rough: 0.85, sheen: 0.2, band: "nylon", wear: 0.3 },
   /** C15: the face behind a shattered visor (its tone is per body, set in the shader). */
   skin: { color: 0xa07a62, metal: 0, rough: 0.55, sheen: 0.15, band: "flat", wear: 0 },
@@ -613,21 +613,30 @@ function face(b: Builder): void {
  */
 function underLayer(b: Builder): void {
   const S = FINISH;
-  for (const [id, z, ry] of [
-    [-PLATE_SLOT.chestF, 0.129, 0],
-    [-PLATE_SLOT.chestB, -0.129, Math.PI],
+  // Curved shells round the torso's own ellipse, a few millimetres proud of the suit (a flat extrusion has no inner
+  // vertices to carry the curve, and its middle sank into the suit).
+  const lo: P2[] = [[0.18, -0.005], [0.198, 0.07], [0.209, 0.165], [0.2, 0.165], [0.19, 0.07], [0.172, -0.005]];
+  const hi: P2[] = [[0.213, -0.02], [0.217, 0.05], [0.198, 0.112], [0.19, 0.112], [0.209, 0.05], [0.205, -0.02]];
+  const quilt = (y: number, r: number): P2[] => [[r, y - 0.004], [r, y + 0.004], [r - 0.006, y + 0.004], [r - 0.006, y - 0.004]];
+  for (const [id, phi] of [
+    [-PLATE_SLOT.chestF, 0],
+    [-PLATE_SLOT.chestB, Math.PI],
   ] as const) {
+    const span = 104 * D;
+    // The back is the lighter set (its plate has fewer triangles to trade): no quilting or straps, coarser.
+    const front = phi === 0;
+    const n = front ? b.seg(12) : b.seg(6);
     b.on(id, () => {
-      b.add("chest", b.plate(chamfer(rect(0.33, -0.005, 0.165, 0.36), 0.025), { depth: 0.008, bevel: 0, bend: 0.25 }), S.padding, { p: [0, 0, z], r: [0, ry, 0] });
-      b.add("upperChest", b.plate(chamfer(rect(0.34, -0.02, 0.12, 0.28), 0.025), { depth: 0.008, bevel: 0, bend: 0.26, bendY: 0.4 }), S.padding, { p: [0, 0, z * 1.03], r: [0, ry, 0] });
+      b.add("chest", shell(lo, phi - span / 2, span, n, 0.5), S.padding, { s: [1.06, 1, 0.68] });
+      b.add("upperChest", shell(hi, phi - span / 2, span, n, 0.5), S.padding, { s: [1.08, 1, 0.67] });
+      if (!front) return;
       // The quilting: dark stitched seams across the panel.
-      const sg = z > 0 ? 1 : -1;
-      for (const y of [0.05, 0.11]) b.add("chest", b.plate(rect(0.3, -0.0025, 0.0025, 0.32), { depth: 0.002, bevel: 0, bend: 0.25 }), S.strap, { p: [0, y, z + sg * 0.0095], r: [0, ry, 0] });
-      for (const x of [-0.105, 0.105]) b.add("upperChest", box(0.034, 0.16, 0.008, 0, 0), S.strap, { p: [x, 0.06, z * 1.03 + sg * 0.012], r: [sg * -0.1, ry, 0] });
+      for (const y of [0.05, 0.11]) b.add("chest", shell(quilt(y, 0.198 + (y - 0.05) * 0.1), -span / 2 + 0.05, span - 0.1, b.seg(8), 0.5), S.strap, { s: [1.06, 1, 0.685] });
+      for (const x of [-0.105, 0.105]) b.add("upperChest", box(0.034, 0.16, 0.008, 0, 0), S.strap, { p: [x, 0.06, 0.15], r: [-0.1, 0, 0] });
     });
-    // The torn tabs, hinged at their top edge.
-    for (const x of [-0.14, 0.14])
-      b.on(id, () => b.add("chest", box(0.042, 0.07, 0.006, 0, 0), S.strap, { p: [x, 0.13, z + (z > 0 ? 0.016 : -0.016)], r: [0, ry, 0] }), 0.165);
+    // The torn tabs at the top corners, hinged at their top edge.
+    for (const x of [-0.13, 0.13])
+      b.on(id, () => b.add("chest", box(0.042, 0.07, 0.006, 0, 0), S.strap, { p: [x, 0.13, (phi === 0 ? 1 : -1) * 0.142], r: [0, phi, 0] }), 0.165);
   }
 }
 
