@@ -1,7 +1,8 @@
 // C14 (docs/design/cathode-combat.md S9.6): the loading screen's portrait plate of each name on The List. Each
 // name's rig (the kit they fight in) under one hard top light, head and shoulders at 1:1.25, rendered by the
 // turntable's portrait view (`?shot&arch=<kit>&view=portrait&yaw=<deg>`, game/turntable.ts) and written to
-// games/cathode/public/portraits/<job>.webp. The halftone, the duotone and the grain are CSS (styles.css `.ld-plate`).
+// games/cathode/public/portraits/<job>.webp. Not shipped (DECISIONS 2026-10-21): the bosses share one rig, so the
+// loading screen has no plate; kept for when each name has a dressed identity.
 //
 //   npm run build:site && npx vite preview --outDir dist-site --port 4180 &
 //   PLAYWRIGHT_CHROMIUM_PATH=... node scripts/cathode-portraits.mjs [job ...]

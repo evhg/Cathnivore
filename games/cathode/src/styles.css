@@ -127,8 +127,9 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 /* The clinic and the tower are lit white: they drop further so the type keeps its contrast. */
 /* The clinic is cropped in on the guard under the strip lights and burnt down at the edges (C14 review: a whitebox
-   read), so it prints like a surveillance photograph rather than a corridor of grey slabs. */
-.loading[data-district="clinic"] .ld-img { inset: -9%; background-image: url("/keyart/clinic.webp"); background-position: 54% 52%; filter: grayscale(1) contrast(1.7) brightness(.4); }
+   read), so it prints like a surveillance photograph rather than a corridor of grey slabs. The box runs 30% past the right edge so the
+   near pillar falls out of frame (C14 review: it filled a fifth of the right side). */
+.loading[data-district="clinic"] .ld-img { inset: -9% -30% -9% -9%; background-image: url("/keyart/clinic.webp"); background-position: 54% 52%; filter: grayscale(1) contrast(1.7) brightness(.4); }
 .loading[data-district="clinic"]::before, .loading[data-district="tower"]::before {
   content: "";
   position: absolute;
@@ -173,50 +174,6 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   left: var(--ld-x);
   bottom: var(--ld-y);
   width: min(40vw, calc(var(--u) * 760));
-}
-/* The portrait plate (S9.6): a 1:1.25 surveillance still of the next name, top-lit, printed in halftone, pinned
-   above the name with a hairline frame and a subject number. */
-.ld-plate {
-  position: relative;
-  width: calc(var(--u) * 216);
-  aspect-ratio: 1 / 1.25;
-  margin: 0 0 calc(var(--u) * 30);
-  overflow: hidden;
-  background: var(--night);
-  box-shadow: 0 0 0 1px rgb(var(--ink-rgb) / .22), 0 calc(var(--u) * 18) calc(var(--u) * 48) rgb(var(--black-rgb) / .7);
-}
-.ld-plate-img, .ld-plate-dots { position: absolute; inset: 0; }
-.ld-plate-img {
-  background: var(--night) 50% 30% / cover no-repeat;
-  filter: grayscale(1) contrast(1.55) brightness(.92);
-}
-.ld-plate[data-job="crispBoss"] .ld-plate-img { background-image: url("/portraits/crispBoss.webp"); }
-.ld-plate[data-job="vaneBoss"] .ld-plate-img { background-image: url("/portraits/vaneBoss.webp"); }
-.ld-plate[data-job="pellBoss"] .ld-plate-img { background-image: url("/portraits/pellBoss.webp"); }
-.ld-plate[data-job="boardBoss"] .ld-plate-img { background-image: url("/portraits/boardBoss.webp"); }
-.ld-plate[data-job="vaultBoss"] .ld-plate-img { background-image: url("/portraits/vaultBoss.webp"); }
-.ld-plate-dots {
-  inset: -30%;
-  background: radial-gradient(circle, rgb(var(--black-rgb) / .85) 0 34%, transparent 44%) 0 0 / calc(var(--u) * 4) calc(var(--u) * 4);
-  transform: rotate(15deg);
-  mix-blend-mode: multiply;
-}
-.ld-plate::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 55%, rgb(var(--shade-rgb) / .75) 100%);
-}
-.ld-plate-tag {
-  position: absolute;
-  left: calc(var(--u) * 12);
-  bottom: calc(var(--u) * 10);
-  z-index: var(--z-lift);
-  font: 700 var(--fs-1)/1 var(--font-ui);
-  font-stretch: var(--wdth-label);
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  color: var(--ink-2);
 }
 .ld-place {
   margin: 0 0 calc(var(--u) * 14);
@@ -288,11 +245,23 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   text-shadow: var(--hud-shadow);
 }
 .ld-lore {
+  position: relative;
   margin: 0;
   max-width: 38ch;
+  padding: calc(var(--u) * 16) calc(var(--u) * 22);
   font: italic 400 var(--fs-3)/1.36 var(--font-voice);
-  color: var(--ink-2);
+  color: var(--ink);
   text-wrap: pretty;
+}
+/* Cath's voice sits on a plate, never straight on the picture (aaa-ui.md, CATHODE type): a shade plate with a
+   hairline down its left edge, the same plate as her class line on the wardrobe. */
+.ld-lore::before, .cp-line::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--z-lift) * -1);
+  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .72), rgb(var(--shade-rgb) / .58));
+  box-shadow: inset max(1px, calc(var(--u) * 2)) 0 0 rgb(var(--ink-rgb) / .28); /* px-ok */
 }
 .ld-corner {
   right: var(--ld-x);
@@ -343,17 +312,18 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .loading.is-still .ld-img, .loading.is-still .ld-grain { animation: none; }
 /* A still (screenshot) stage shows the struck end state at once: no transition left mid-way in the frame. */
 .loading.is-still .ld-list li.is-fresh, .loading.is-still .ld-list li.is-fresh::after { transition: none; }
+/* Reduced motion: the OS setting or Settings → Reduce motion (html.reduce-motion), which can change mid-session. */
 @media (prefers-reduced-motion: reduce) {
-  .ld-img, .ld-grain, .ld-trace::before, .ld-ready { animation: none; }
+  .ld-img, .ld-grain, .ld-trace::before, .ld-ready, .ld-corner { animation: none; }
   .ld-list li.is-fresh::after { transition-duration: 1ms; }
 }
+:root.reduce-motion :is(.ld-img, .ld-grain, .ld-trace::before, .ld-ready, .ld-corner) { animation: none; }
+:root.reduce-motion .ld-list li.is-fresh::after { transition-duration: 1ms; }
 /* A phone held sideways: the name and lore keep the left half, The List the right corner. */
 @media (max-height: 430px) and (orientation: landscape) {
   .loading { --ld-y: max(14px, var(--safe-y)); } /* px-ok */
   .ld-file { width: 50vw; }
   .ld-meter { margin: calc(var(--u) * 20) 0 calc(var(--u) * 18); }
-  /* No height for the plate above the name: it stands beside the file instead. */
-  .ld-plate { position: absolute; left: calc(100% + 20px); bottom: 0; width: min(16vw, 120px); margin: 0; } /* px-ok */
 }
 
 /* ---- pause (C14, S9.7): the frozen frame graded down (uPause), the menu in the left column, the case note in
@@ -374,10 +344,13 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 @keyframes pm-in { from { opacity: 0; } to { opacity: 1; } }
 .hud-pause-card {
-  width: min(calc(var(--u) * 820), 100%);
+  width: min(calc(var(--u) * 820 + var(--mark-hang)), calc(100% + var(--mark-hang)));
   max-height: 100%;
   overflow-y: auto;
-  padding: 0 calc(var(--u) * 12) 0 0;
+  /* The scroller would clip the red marker that hangs left of each item: the card reaches back over the gutter
+     by the marker's hang and pads it back in (C14 review: no selection marker showed). */
+  margin-left: calc(-1 * var(--mark-hang));
+  padding: 0 calc(var(--u) * 12) 0 var(--mark-hang);
   pointer-events: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--line-2) transparent;
@@ -386,11 +359,11 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 /* Breadcrumbs (S9.7): where the player is, PAUSE / SETTINGS / CONTROLS. */
 .hud-pm-crumbs {
   margin: 0;
-  font: 700 var(--fs-1)/1.2 var(--font-ui);
+  font: 700 var(--fs-2)/1.2 var(--font-ui);
   font-stretch: var(--wdth-label);
-  letter-spacing: .05em;
+  letter-spacing: .06em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--ink-2);
 }
 /* The case note: the objective as a sentence, then the district, the in-city time and the names left. */
 .hud-pm-note {
@@ -398,6 +371,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   align-self: center;
   justify-self: end;
   width: 100%;
+  padding-left: calc(var(--u) * 34);
   pointer-events: none;
   transition: opacity 160ms ease;
   text-shadow: var(--hud-shadow);
@@ -411,9 +385,19 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .72), rgb(var(--shade-rgb) / .4) 60%, rgb(var(--shade-rgb) / 0));
 }
 .hud-pause:has(.hud-pause-card:not([data-view="menu"])) .hud-pm-note { opacity: 0; }
+/* The note's anchor: a blood spine down its left edge, the file's tab (C14 review: nothing held the eye there). */
+.hud-pm-note::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * 4);
+  bottom: calc(var(--u) * 4);
+  width: max(2px, calc(var(--u) * 4)); /* px-ok */
+  background: var(--blood);
+}
 .hud-pm-note-h {
-  margin: 0 0 calc(var(--u) * 14);
-  font: 700 var(--fs-1)/1.2 var(--font-ui);
+  margin: 0 0 calc(var(--u) * 16);
+  font: 700 var(--fs-2)/1.2 var(--font-ui);
   font-stretch: var(--wdth-label);
   letter-spacing: .05em;
   text-transform: uppercase;
@@ -444,12 +428,17 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .hud-pm-note-obj { margin-bottom: 12px; font-size: var(--fs-2); } /* px-ok */
   .hud-pm-note-facts { gap: 0 16px; padding-top: 8px; } /* px-ok */
   .hud-pm-note-facts dd { font-size: var(--fs-1); }
+  .hud-pm-note { padding-left: 14px; } /* px-ok */
+  .hud-pm-note-h { margin-bottom: 8px; font-size: var(--fs-1); } /* px-ok */
+  .hud-pm-crumbs { font-size: var(--fs-1); }
+  .hud-pm-item { font-size: var(--fs-4); }
 }
 @media (max-width: 700px) and (orientation: portrait) {
   .hud-pause { grid-template-columns: 1fr; }
   .hud-pm-note { display: none; }
 }
-@media (prefers-reduced-motion: reduce) { .hud-pause { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .hud-pause, .hud-resume-hint { animation: none; } }
+:root.reduce-motion :is(.hud-pause, .hud-resume-hint) { animation: none; }
 /* C14: after Esc resumes on desktop, the held frame waits on one quiet line for the click that re-locks the
    pointer (a keypress can't). Clicks go through to the canvas. */
 .hud-resume-hint {
@@ -717,7 +706,9 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-words { margin-top: auto; padding-top: calc(var(--u) * 28); max-width: calc(var(--u) * 620); }
 .cp-words .is-in { animation: fade-in 320ms ease-out both; }
 .cp-line {
+  position: relative;
   margin: calc(var(--u) * 4) 0 calc(var(--u) * 18);
+  padding: calc(var(--u) * 14) calc(var(--u) * 20);
   font: italic 400 var(--fs-3)/1.35 var(--font-voice);
   font-variation-settings: "opsz" 11;
   color: var(--ink);
@@ -760,7 +751,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-trees { display: grid; gap: calc(var(--u) * 10); margin: 0; padding: 0; list-style: none; }
 .cp-tree { display: grid; grid-template-columns: calc(var(--u) * 170) 1fr; gap: calc(var(--u) * 16); align-items: baseline; }
 .cp-tree-name { font: 700 var(--fs-2)/1.2 var(--font-ui); color: var(--ink); font-stretch: var(--wdth-label); text-transform: uppercase; letter-spacing: .03em; }
-.cp-tree-theme { font: 400 var(--fs-2)/1.35 var(--font-ui); color: var(--ink-3); }
+.cp-tree-theme { font: 400 var(--fs-2)/1.35 var(--font-ui); color: var(--ink-3); text-wrap: balance; }
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -785,7 +776,21 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   user-select: none;
   -webkit-user-select: none;
 }
-.cp-hold::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: max(1px, var(--u)); background: var(--line-3); } /* px-ok */
+.cp-hold::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: max(2px, calc(var(--u) * 3)); background: var(--blood); opacity: .42; transition: opacity 160ms ease; } /* px-ok: S9.5's blood bar, dim at rest */
+/* Focus (keyboard): the class list's red dash hangs off the label and the track goes full blood (C13T: focus
+   is brightness plus the dash, never an outline box). */
+.cp-hold::after {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--mark-hang));
+  top: 50%;
+  width: calc(var(--u) * 24);
+  height: max(2px, calc(var(--u) * 3)); /* px-ok */
+  background: var(--blood-hot);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 160ms cubic-bezier(.2, .7, .2, 1);
+}
 .cp-hold-fill {
   position: absolute;
   left: 0;
@@ -802,13 +807,16 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-hold-how { font: 600 var(--fs-1)/1 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-stretch: var(--wdth-label); }
 .cp-hold-how::after { content: " Enter"; }
 @media (hover: none) { .cp-hold-how::after { content: ""; } }
-.cp-hold:focus { outline: none; }
-.cp-hold:focus-visible .cp-hold-label { color: var(--on-blood); }
+.cp-hold:focus:not(:focus-visible) { outline: none; }
+.cp-hold:focus-visible { outline: none; }
+.cp-hold:focus-visible::before, .cp-hold.is-holding::before { opacity: 1; }
+.cp-hold:focus-visible::after { transform: none; }
+.cp-hold:focus-visible .cp-hold-how { color: var(--blood-hot); }
 .cp-hold.is-holding .cp-hold-how { color: var(--blood-hot); }
 
 /* Phones held sideways (844x390): the same three columns, tighter; the trees and how-it-plays step out. */
 @media (max-height: 560px) {
-  .cp { grid-template-columns: minmax(0, 33%) minmax(0, 1fr) minmax(0, 37%); column-gap: 16px; padding-top: max(12px, env(safe-area-inset-top)); padding-bottom: max(calc(var(--letterbox) + 12px), env(safe-area-inset-bottom)); } /* px-ok */
+  .cp { grid-template-columns: minmax(0, 33%) minmax(0, 1fr) minmax(0, 37%); column-gap: 16px; padding-top: max(calc(var(--letterbox) + 14px), env(safe-area-inset-top)); padding-bottom: max(calc(var(--letterbox) + 12px), env(safe-area-inset-bottom)); } /* px-ok */
   .cp-head { margin-bottom: 8px; } /* px-ok */
   .cp-eyebrow { display: none; }
   .cp-title { font-size: var(--fs-2); }
@@ -817,8 +825,11 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-opt-name { font-size: var(--fs-3); }
   .cp-words { padding-top: 6px; } /* px-ok */
   .cp-kicker { display: none; }
-  .cp-line { margin: 0; font-size: var(--fs-2); }
-  .cp-plays, .cp-weapon-pin, .cp-tree-theme { display: none; }
+  .cp-line { margin: 0; padding: 6px 10px; font-size: var(--fs-2); } /* px-ok */
+  .cp-tree-theme { display: none; }
+  /* The free band (C14 review): how it plays under her line, the baton under the weapon's numbers. */
+  .cp-plays { margin-top: 6px; font-size: var(--fs-1); line-height: 1.35; } /* px-ok */
+  .cp-weapon-pin { margin-top: 4px; font-size: var(--fs-1); } /* px-ok */
   /* The right column keeps the weapon's numbers and the three trees (C14 review: it ended at the weapon's name). */
   .cp-weapon-nums { gap: 18px; margin-top: 4px; } /* px-ok */
   .cp-weapon-nums dt { font-size: var(--fs-1); }
@@ -1921,9 +1932,9 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   padding: 0 calc(var(--u) * 24) 0 0;
   border: 0;
   background: none;
-  font: 700 var(--fs-4)/1 var(--font-ui);
+  font: 700 var(--fs-5)/1 var(--font-ui);
   font-stretch: var(--wdth-label);
-  letter-spacing: .02em;
+  letter-spacing: .01em;
   text-transform: uppercase;
   text-decoration: none;
   color: var(--ink-2);
@@ -1932,6 +1943,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   transition: color 160ms ease, opacity 160ms ease;
 }
 .hud-pm-back { min-height: max(40px, calc(var(--u) * 52)); padding-left: 0; font-size: var(--fs-2); letter-spacing: .05em; }
+.hud-pm-item { min-height: max(44px, calc(var(--u) * 84)); } /* px-ok: tap target */
 .hud-pm-item::before,
 .hud-pm-back::before {
   content: "";

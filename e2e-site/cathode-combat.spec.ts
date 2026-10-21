@@ -117,7 +117,8 @@ test.describe('CATHODE combat feedback', () => {
 // C8 "Dying, done properly" (S6.6): death is a fall and a card, and Retry rebuilds the job in the same page.
 test.describe('CATHODE death and Retry', () => {
   test('a lethal hit falls to the death card; Retry gives control back with no page load, the same session object', async ({ page, hasTouch }) => {
-    test.setTimeout(400_000)
+    // 3.7 min alone under SwiftShader, and it timed out once on a loaded box (C14 review): headroom, not a fix.
+    test.setTimeout(600_000)
     if (hasTouch) await page.setViewportSize({ width: 844, height: 390 })
     await page.goto('/cathode/')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))

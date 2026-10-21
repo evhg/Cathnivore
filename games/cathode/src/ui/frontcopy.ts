@@ -166,7 +166,7 @@ export interface LoadingCard {
   place: string;
   /** The next name on the list (or "The List", closed). */
   name: string;
-  /** The next name's job (their portrait plate, public/portraits/<job>.webp); undefined once the list is closed. */
+  /** The next name's job; undefined once the list is closed. */
   job?: string;
   /** Cath's lines about them, at most 55 words. */
   lore: string;

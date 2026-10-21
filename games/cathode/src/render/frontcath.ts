@@ -708,7 +708,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   cig.translate(handL.x + 0.008, handL.y - 0.05, handL.z + 0.05);
   const cigMat = new THREE.MeshStandardMaterial({ color: 0xe8e2d6, roughness: 0.8 });
   mats.push(cigMat);
-  add(cig, cigMat, foreL);
+  const cigMesh = add(cig, cigMat, foreL);
   const emberMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 1.1, 0.25), toneMapped: false });
   mats.push(emberMat);
   const emberMesh = new THREE.Mesh(new THREE.SphereGeometry(0.0055, 8, 6), emberMat);
@@ -963,6 +963,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
         }
       }
     }
+    // Only the Ghost's draw and the Fixer's collar keep the cigarette in hand: in a fist (the Butcher), on the hip or
+    // flung out with the umbrella it read as a loose stick by her hip (C14 review), so it is palmed away.
+    const palmed = armOn && !!clip && clip.kind !== "ghost" && clip.kind !== "fixer";
+    cigMesh.visible = !palmed;
+    ember.visible = !palmed;
     if (!armOn) {
       upperL.matrix.identity();
       foreL.matrix.identity();

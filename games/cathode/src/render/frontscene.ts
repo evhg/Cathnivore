@@ -74,11 +74,12 @@ const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, numb
 ];
 
 /**
- * The wardrobe framing (S9.5), in her frame: a close three-quarter from the front, off her left shoulder, head to
- * mid-thigh. From this side the umbrella's shaft stands clear of her face, and her free left hand (the class idles
- * reach with it) is toward the lens.
+ * The wardrobe framing (S9.5), in her frame: the title's framing brought in a step, a three-quarter from behind
+ * her left shoulder, head to toe, the class's key light rimming her coat. The close front three-quarter (C14 slice
+ * 2) put her unsculpted face and jointed limbs at the centre of every frame (C14 review); this one reads her by
+ * silhouette, coat and umbrella, as the title does, until the figure is sculpted.
  */
-const WARDROBE = { pos: [1.2, 1.5, 1.75] as [number, number, number], look: [0.04, 1.3, 0.0] as [number, number, number] };
+const WARDROBE = { pos: [-1.55, 1.45, -3.7] as [number, number, number], look: [0.05, 1.0, 0.25] as [number, number, number] };
 /** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger tungsten, Wirewitch violet, Fixer amber. */
 const CLASS_KEY: Record<string, [number, number, number]> = {
   // The Ghost's cyan is pushed hard: at the same energy as the Butcher's red it read as neutral on her (C14 review).

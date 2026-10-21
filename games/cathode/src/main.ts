@@ -58,7 +58,8 @@ function setChecked(name: string, value: string): void {
 const frontStage = params.get("front");
 const shot = params.has("shot");
 const audio = new FrontAudio(prefs.volume);
-const still = reducedMotion();
+/** Read at each use, not once at boot: Settings → Reduce motion can change it mid-session (C14 review). */
+const still = (): boolean => reducedMotion();
 
 // ---- the live street behind the front door ----
 let scene: FrontScene | null = null;
@@ -85,7 +86,7 @@ function startScene(): void {
         quality: quality(),
         intensity: prefs.intensity,
         shot,
-        still,
+        still: still(),
         renderScale: rs,
         set: frontSet(Progress.load()?.jobsDone ?? []),
       }),
@@ -190,7 +191,7 @@ function openGate(): Promise<void> {
         gate.classList.remove("is-in");
         plate.classList.remove("is-wiping");
         resolve();
-      }, still ? 0 : 460);
+      }, still() ? 0 : 460);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "a" || e.key === "d") {
@@ -437,11 +438,11 @@ async function begin(fromTitle: boolean): Promise<void> {
     audio.swell(1.6);
     if (s) {
       const pushing = s.push(1.6);
-      await sleep(still ? 300 : 1350);
+      await sleep(still() ? 300 : 1350);
       fade.style.setProperty("--fade-ms", "250ms");
       fade.classList.add("is-black");
       await pushing;
-      await sleep(still ? 0 : 200);
+      await sleep(still() ? 0 : 200);
     } else {
       fade.style.setProperty("--fade-ms", "400ms");
       fade.classList.add("is-black");
@@ -463,7 +464,7 @@ async function begin(fromTitle: boolean): Promise<void> {
   // C14 (S9.6): the case file, unless the push handed over a built street (no load to cover).
   const travel = takeTravel();
   const card = loadingCard(jobs(), district, { seen: listSeen(), travel });
-  const loading = world ? null : openLoading($("loading"), card, { still });
+  const loading = world ? null : openLoading($("loading"), card, { still: still() });
   if (loading) fade.classList.remove("is-black");
   const progress = (share: number) => loading?.set(share);
   const { startSession } = await sessionMod;
