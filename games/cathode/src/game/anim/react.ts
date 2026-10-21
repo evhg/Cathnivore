@@ -86,6 +86,7 @@ export function reactPose(kind: ReactKind, dir: StaggerDir, t: number, fallYaw =
     p.headPitch = -REACT.visorSnap.headDeg * DEG * (t < 60 ? smooth(t / 60) : Math.max(0, 1 - (t - 60) / 340));
     p.helmet = k;
     p.pitch = -6 * DEG * k;
+    p.armDrop = 40 * DEG * k;
     return p;
   }
   if (kind === "stagger") {

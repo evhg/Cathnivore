@@ -4773,7 +4773,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const focus = c15.frame === "head" ? J.head.clone() : c15.frame === "plate" ? J.chest.clone().lerp(J.neck, 0.35) : J.pelvis.clone().lerp(J.chest, 0.6);
       const facing = new THREE.Vector3(Math.sin(g.motion.yaw), 0, Math.cos(g.motion.yaw));
       const side = new THREE.Vector3(-facing.z, 0, facing.x);
-      const close = c15.frame === "head" ? 1.05 : c15.frame === "plate" ? 1.45 : 3.0;
+      const close = c15.frame === "head" ? 1.6 : c15.frame === "plate" ? 1.45 : 3.0;
       const dist = close * (o.quality === "phone" ? 0.85 : 1);
       const sk = c15.frame === "plate" || c15.frame === "head" ? 0.36 : 0.5;
       const off = c15.frame === "back" ? facing.clone().negate().multiplyScalar(0.86).addScaledVector(side, sk) : facing.clone().multiplyScalar(0.93).addScaledVector(side, -sk);

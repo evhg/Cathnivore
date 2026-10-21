@@ -360,11 +360,13 @@ export class Hud {
     this.hpText.classList.toggle("low", low);
     this.lastHp = s.hp;
     this.targetT = Math.max(0, this.targetT - dt);
-    this.show(this.target, this.targetT > 0);
+    // C15: a staggered or downed man raises the takedown chip over his head; it names him and the move, so the
+    // target bar steps out of its way (on the phone they shared the top of the screen).
+    this.show(this.target, this.targetT > 0 && !s.takedown);
     // The phone's look hint sits where the target bar's long names run (C9: "DOWN" over "DRAG TO AIM"): it steps
     // aside while a target is up.
     // Only on a change: a classList call every frame is DOM work for nothing.
-    const targetOn = this.targetT > 0;
+    const targetOn = this.targetT > 0 && !s.takedown;
     if (targetOn !== this.targetOn) {
       this.targetOn = targetOn;
       document.documentElement.classList.toggle("hud-target-on", targetOn);

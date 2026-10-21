@@ -258,9 +258,9 @@ function applyReact(r: ReactPose): void {
     local.handL.lerp(lieTmp, r.clutch);
     ik(local.shoulderL, local.handL, UPPER, FORE, pole.set(local.shoulderL.x + 0.4, local.shoulderL.y - 0.5, local.shoulderL.z - 0.1), local.elbowL);
   }
-  // The visor snap: both hands to the helmet.
+  // The visor snap: the off hand to the broken visor (the gun hand drops the muzzle, in armDrop).
   if (r.helmet > 1e-3) {
-    for (const s of [1, -1]) {
+    for (const s of [1]) {
       const hand = s > 0 ? local.handL : local.handR;
       const sh = s > 0 ? local.shoulderL : local.shoulderR;
       lieTmp.set(local.head.x + 0.13 * s, local.head.y - 0.06, local.head.z + 0.1);
