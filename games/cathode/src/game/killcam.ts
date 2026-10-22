@@ -381,7 +381,12 @@ export class KillCam {
    * which way the orbit then turns (on round toward her line). `dir` is her line onto him, flat.
    */
   private aim(target: Enemy): void {
-    const face = this.v1.copy(target.body.facing).setY(0);
+    // His chest's real front, from the shoulders (a falling man spins: his animated yaw no longer says where his
+    // face is). The body faces +Z with his left shoulder at +X, so front = up x (right - left).
+    const j = target.body.joints;
+    const face = this.v1.subVectors(j.shoulderR, j.shoulderL);
+    face.crossVectors(UP, face).setY(0);
+    if (face.lengthSq() < 0.01 * 0.01) face.copy(target.body.facing).setY(0);
     if (face.lengthSq() < 1e-6) face.copy(this.dir).negate();
     face.normalize();
     // Toward her: the turn that takes his face toward the line back to her.
@@ -533,7 +538,7 @@ export class KillCam {
       this.streak.lookAt(this.tmp.copy(p.pos).add(this.dir));
       // The push: the FOV closes from 50 toward 20 as the round eats the distance, so the man grows in the frame.
       const left = THREE.MathUtils.clamp(p.pos.distanceTo(aimPt) / this.flight0, 0, 1);
-      const fov = B.fov - 30 * Math.pow(1 - left, 0.8);
+      const fov = B.fov - 30 * Math.pow(1 - left, 0.6);
       this.setFov(fov);
       // 0.5 m behind the round and a little to the side, looking along the flight: the target sits on the line
       // ahead (the frame's centre), the round large in the lower third, its trail running back toward the lens.
