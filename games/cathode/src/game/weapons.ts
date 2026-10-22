@@ -291,6 +291,8 @@ export class Arsenal {
   adsSlow = 1;
   /** Screenshot stages hold the pistol's clips and springs where they were left (time frozen). */
   freeze = false;
+  /** C18 stages: the gun in hand is put away (the arsenal lineup). */
+  hideGun = false;
 
   /** The Kestrel (the only gun with the full C5 part list); other pistols keep the older motion. */
   get kestrel(): boolean {
@@ -1305,7 +1307,7 @@ export class Arsenal {
     const dynR = !!hero && this.heroHandR > 0.001;
     this.arms.pose(r.root, dynR ? this.gripRDyn : r.gripR, gl, dynR ? this.poseRDyn : r.poseR, pl, dynR ? 0 : curl, this.shR, this.shL);
     // The scope: past 85% aim the rig hides and the overlay takes over.
-    r.root.visible = !(r.scoped && a.aim > 0.85);
+    r.root.visible = !this.hideGun && !(r.scoped && a.aim > 0.85);
     const fov = THREE.MathUtils.lerp(baseFov, def.weaponClass === "sniper" ? r.adsFov * Arsenal.ZOOMS[this.zoom]! : baseFov * 0.82, a.aim);
     // S2.1: the viewmodel draws at 54° whatever the world's FOV (a gun that sits further out when aimed narrows it).
     const vmFov = THREE.MathUtils.lerp(54, r.adsVmFov ?? 54, a.aim);

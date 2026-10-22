@@ -3590,6 +3590,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const c4Stage = (name: string, tMs: number): string => {
     staged = true;
     if (gunLineup) gunLineup.visible = false;
+    arsenal.hideGun = false;
     hud.freeze(null);
     hud.clearFeedback();
     showCover(false);
@@ -3723,10 +3724,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
   /** The seven guns on their left flanks in two columns, lit by the viewmodel's own lights (the family read). */
   const lineupStage = (): string => {
+    arsenal.hideGun = true;
     arsenal.rig.root.visible = false;
     if (!gunLineup) {
       gunLineup = new THREE.Group();
       gunLineup.name = "arsenal-lineup";
+      // A studio plate behind them: a charcoal sweep, lighter at the top, so the family reads on its own.
+      const plate = new THREE.Mesh(new THREE.PlaneGeometry(6, 3.4), new THREE.ShaderMaterial({
+        depthWrite: false,
+        vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+        fragmentShader: "varying vec2 vUv; void main() { float r = length((vUv - vec2(0.45, 0.62)) * vec2(1.6, 1.0)); vec3 c = mix(vec3(0.034, 0.036, 0.044), vec3(0.004, 0.004, 0.006), smoothstep(0.0, 0.85, r)); gl_FragColor = vec4(c, 1.0); }",
+      }));
+      plate.position.set(0, 0, -2.2);
+      plate.renderOrder = -1;
+      gunLineup.add(plate);
       const order: [GunModel, number, number, number][] = [
         // model, x, y, scale (camera space at z -1.15; muzzles to the left, the left flank to her)
         ["pistol", -0.42, 0.3, 1.25],
