@@ -56,8 +56,10 @@ void main() {
   float core = 1.0 - smoothstep(vCore * 0.55, vCore * 1.05, x);
   float halo = exp(-x * x * 7.0) * 0.32;
   // Saturated red, never pushed past 1 (over 1 the grade and tone curve wash it to salmon): the bloom does the glow.
-  float hot = core * (0.8 + 0.2 * (1.0 - smoothstep(0.0, vCore * 0.5, x)));
-  vec3 col = uColor * (hot + halo) + vec3(0.25, 0.02, 0.0) * core;
+  // Bright like the street's neon: the noir grade drains saturation from dim midtones and keeps it only where colour
+  // is both strong and bright (post.ts), so a dim red line reads grey-pink. Pure red, no white added.
+  float hot = core * (2.2 + 0.6 * (1.0 - smoothstep(0.0, vCore * 0.5, x)));
+  vec3 col = uColor * (hot + halo * 0.8);
   // Premultiplied over: the core covers what's behind it (an additive core over the street's cyan neon summed to
   // salmon), the halo adds light on top.
   gl_FragColor = vec4(col * uOpacity, core * 0.85 * uOpacity);

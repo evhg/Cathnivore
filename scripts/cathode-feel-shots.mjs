@@ -161,7 +161,10 @@ async function lumaOf(png, step = 4) {
   return r
 }
 
-/** How many of `pts` (CSS px) have a laser-red pixel within `r` CSS px in the screenshot. */
+/**
+ * How many of `pts` (CSS px) have a laser-red pixel within `r` CSS px in the screenshot. Red-dominant, not pure red:
+ * the AgX tone map rolls a saturated red highlight toward orange (a bright #ff3b1a lands near 245,150,130).
+ */
 async function redAlong(png, pts, r, dpr) {
   if (!pts.length) return 0
   const pg = await browser.newPage()
@@ -182,7 +185,7 @@ async function redAlong(png, pts, r, dpr) {
         const y0 = Math.max(0, Math.round(p.y * dpr) - R)
         const d = g.getImageData(x0, y0, 2 * R + 1, 2 * R + 1).data
         let hit = false
-        for (let i = 0; i < d.length && !hit; i += 4) hit = d[i] > 120 && d[i] > d[i + 1] * 1.5 && d[i] > d[i + 2] * 1.5
+        for (let i = 0; i < d.length && !hit; i += 4) hit = d[i] > 90 && d[i] - Math.max(d[i + 1], d[i + 2]) > 40 && d[i] > d[i + 1] * 1.35 && d[i] > d[i + 2] * 1.45
         if (hit) hits++
       }
       return hits
