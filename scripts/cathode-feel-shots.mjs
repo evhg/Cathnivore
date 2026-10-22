@@ -80,7 +80,12 @@ const C16X = ['enemy-lean']
 // C17 "Second Wind and the kill cams": Second Wind 1.2 s in (red outlines on a grey world, the men behind cover seen
 // through it), the last-man orbit 500 ms in, the bullet follow 200 ms into its flight, the x-ray 450 ms after impact.
 const C17 = ['player-secondwind', 'killcam-orbit-500', 'killcam-bullet-200', 'xray-450']
-const MS = { C17, C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
+// C18 "Every gun is a hero": each class at rest, 20 ms after its shot (the flash on the wet street probed) and
+// mid-reload, and the seven guns side by side.
+const C18_GUNS = ['revolver', 'smg', 'rifle', 'shotgun', 'sniper', 'launcher']
+const C18 = [...C18_GUNS.flatMap((g) => [`${g}-idle`, `${g}-fire@20`, `${g}-reload-mid`]), 'arsenal-lineup']
+const C18X = C18_GUNS.flatMap((g) => [`${g}-ads`, `${g}-reload-empty@${g === 'shotgun' ? 300 : 1500}`, `${g}-fire@0`])
+const MS = { C18, C18X, C17, C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
@@ -117,6 +122,9 @@ const idleMuzzle = {}
 const C7_HIST_MIN = 0.12
 const c7Hist = {}
 const C7_SAT_EDGE = 0.8
+// C18: each size's idle floor luminance per gun, for the fire-20 comparison.
+const c18Floor = {}
+const C18_RE = /^(revolver|smg|rifle|shotgun|sniper|launcher)-/
 const fail = (msg) => {
   failures.push(msg)
   console.log('  FAIL', msg)
@@ -673,6 +681,30 @@ for (const vp of vps) {
       if (stage === 'pistol-reload' && t === 930 && !(pi.magOffMm < 1 && pi.magVisible && pi.committed)) fail(`${vp} ${spec}: the mag isn't seated at 930 ms (${pi.magOffMm.toFixed(1)} mm off, committed ${pi.committed})`)
       if (stage === 'pistol-reload' && t === 400 && !(pi.magOffMm > 20 && !pi.committed)) fail(`${vp} ${spec}: the old mag should be well out at 400 ms (${pi.magOffMm.toFixed(1)} mm)`)
       if (stage === 'pistol-draw' && !(pi.drawMs > 0)) fail(`${vp} ${spec}: no draw playing`)
+    }
+    // ---- C18 acceptance ----
+    if (pi && pi.hero && C18_RE.test(stage)) {
+      const lum = (m) => 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]
+      const fl = await page.evaluate(([x, y, r]) => window.cathode.probeRed(x, y, r).mean, [pi.floor.x, pi.floor.y, Math.max(4, Math.min(80, pi.floorR))])
+      side.floorLum = lum(fl)
+      const key = `${vp}:${pi.hero}`
+      if (stage.endsWith('-idle')) c18Floor[key] = side.floorLum
+      const P = pi.parts ?? {}
+      console.log(`  C18 ${vp} ${spec}: floor lum ${side.floorLum.toFixed(1)}${c18Floor[key] != null && !stage.endsWith('-idle') ? ` (idle ${c18Floor[key].toFixed(1)})` : ''}, fire ${pi.fireMs.toFixed(0)} ms, reload ${pi.reload ?? '-'}${pi.phase ? `/${pi.phase}` : ''} ${pi.reloadMs.toFixed(0)} ms, hand ${pi.handW.toFixed(2)}, flash ${pi.flashOn}, parts ${Object.entries(P).map(([n, v]) => `${n}[${v.slice(0, 3).map((x) => x.toFixed(0)).join(',')}|${v.slice(3, 6).map((x) => x.toFixed(0)).join(',')}${v[6] ? '' : ' hidden'}]`).join(' ')}`)
+      if (/-fire$/.test(stage) && t === 20) {
+        // Each flash lights the wet ground: the floor beside the gun is brighter than at rest.
+        if (c18Floor[key] != null && !(side.floorLum > c18Floor[key] * 1.06 + 1)) fail(`${vp} ${spec}: the flash doesn't light the floor (lum ${side.floorLum.toFixed(1)} vs idle ${c18Floor[key].toFixed(1)})`)
+        if (pi.hero === 'smg' && !(P.bolt?.[2] > 10)) fail(`${vp} ${spec}: the SMG bolt isn't back at 20 ms (${P.bolt?.[2]?.toFixed(1)} mm)`)
+        if (pi.hero === 'rifle' && !(P.bolt?.[2] > 15)) fail(`${vp} ${spec}: the rifle's carrier isn't back at 20 ms (${P.bolt?.[2]?.toFixed(1)} mm)`)
+        if (pi.hero === 'revolver' && !(Math.abs(P.cylinder?.[5] ?? 0) > 5)) fail(`${vp} ${spec}: the cylinder isn't turning at 20 ms`)
+        if ((pi.hero === 'shotgun' || pi.hero === 'launcher') && !pi.flashOn) fail(`${vp} ${spec}: the ${pi.hero}'s two-frame flash is gone at 20 ms`)
+      }
+      if (/-reload-mid$/.test(stage)) {
+        if (!pi.reload) fail(`${vp} ${spec}: no reload playing`)
+        if (pi.handW < 0.5) fail(`${vp} ${spec}: the support hand isn't on what it carries (${pi.handW.toFixed(2)})`)
+        const carried = { revolver: 'loader', shotgun: 'shell', launcher: 'round' }[pi.hero] ?? 'mag'
+        if (P[carried] && !P[carried][6]) fail(`${vp} ${spec}: the ${carried} is hidden mid-reload`)
+      }
     }
     // ---- C4 acceptance ----
     if (side.vm) {

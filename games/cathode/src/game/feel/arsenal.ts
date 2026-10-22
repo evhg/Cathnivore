@@ -121,21 +121,22 @@ const REVOLVER: ClassFeel = {
 
 /** Swing-out, six cases out on the ejector, the speedloader in, a twist, the flick closed (2.6 s). */
 function revolverReload(): Clip {
-  const open: V3 = [0.01, 0.06, -0.07];
-  const up: V3 = [0.0, 0.08, -0.05];
+  // Held where the Kestrel's reload holds it (the same hand frames): out, up and left of the hip.
+  const open: V3 = [0.035, 0.07, -0.13];
+  const up: V3 = [0.03, 0.09, -0.12];
   return {
     dur: REV_RELOAD,
     tracks: {
       gun: [
         k(0, [0, 0, 0]),
         // Rolled right so the crane swings out to her, the cylinder's face toward the eye.
-        k(260, open, [8 * D, 14 * D, -38 * D], "inOut"),
+        k(260, open, [8 * D, 18 * D, -34 * D], "inOut"),
         // Muzzle up: the ejector rod throws the six empties out of the back of the cylinder.
-        k(480, up, [48 * D, 6 * D, -20 * D], "inOut"),
-        k(640, up, [52 * D, 6 * D, -20 * D]),
-        // Muzzle down, the cylinder's face up for the speedloader.
-        k(860, open, [-26 * D, 10 * D, -30 * D], "inOut"),
-        k(1450, open, [-24 * D, 10 * D, -30 * D]),
+        k(480, up, [40 * D, 12 * D, -22 * D], "inOut"),
+        k(640, up, [44 * D, 12 * D, -22 * D]),
+        // Muzzle down a touch and out from her, the cylinder's face toward her for the speedloader.
+        k(860, open, [-4 * D, 20 * D, -36 * D], "inOut"),
+        k(1450, open, [-3 * D, 20 * D, -36 * D]),
         // The flick: closed with a turn of the wrist.
         k(1780, [0.004, 0.03, -0.03], [-6 * D, 4 * D, -6 * D], "inOut"),
         k(1840, [0.0, 0.02, -0.02], [2 * D, 0, 6 * D], "out"),
@@ -340,8 +341,8 @@ const RIFLE: ClassFeel = {
 /** S2.6: the pump's 70 mm over 380 ms, starting as the muzzle comes down from the shot. */
 export const PUMP = { m: 0.07, fromMs: 170, ms: 380 };
 export const SHELL = { openMs: 260, shellMs: 450, inAt: 300, closeMs: 300 };
-const SG_TILT: V3 = [8 * D, 8 * D, 34 * D];
-const SG_TILT_P: V3 = [-0.02, 0.06, -0.05];
+const SG_TILT: V3 = [14 * D, 6 * D, -58 * D];
+const SG_TILT_P: V3 = [-0.03, 0.075, -0.06];
 
 const pumpKeys = (t0: number): Key[] => [
   k(t0, [0, 0, 0]),
@@ -552,12 +553,12 @@ function launcherReload(): Clip {
     tracks: {
       gun: [
         k(0, [0, 0, 0]),
-        k(260, [0.0, 0.06, -0.06], [-12 * D, 18 * D, -16 * D], "inOut"),
-        k(LN_COMMIT - 4, [0.0, 0.06, -0.06], [-12 * D, 18 * D, -16 * D]),
-        k(LN_COMMIT + 20, [0.0, 0.064, -0.064], [-10 * D, 18 * D, -16 * D], "out"),
-        k(1700, [0.0, 0.06, -0.06], [-12 * D, 18 * D, -16 * D], "inOut"),
+        k(260, [-0.01, 0.03, -0.05], [6 * D, -4 * D, -20 * D], "inOut"),
+        k(LN_COMMIT - 4, [-0.01, 0.03, -0.05], [6 * D, -4 * D, -20 * D]),
+        k(LN_COMMIT + 20, [-0.01, 0.034, -0.054], [8 * D, -4 * D, -20 * D], "out"),
+        k(1700, [-0.01, 0.03, -0.05], [6 * D, -4 * D, -20 * D], "inOut"),
         // Snapped shut with a flick up.
-        k(1820, [0, 0.07, -0.05], [6 * D, 14 * D, -10 * D], "out"),
+        k(1820, [0, 0.04, -0.04], [12 * D, -2 * D, -10 * D], "out"),
         k(LN_RELOAD, [0, 0, 0], [0, 0, 0], "inOut"),
       ],
       // The barrel breaks open about its hinge under the front of the breech (muzzle down 38°).

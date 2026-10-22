@@ -3,6 +3,7 @@
 // session turns into XP and the kill-cam. Numbers mirror sim/damage.ts's rules for the slice.
 
 import * as THREE from "three";
+import { ARSENAL, isHero, type HeroModel } from "./feel/arsenal";
 import type { World } from "../render/types";
 import type { Enemy } from "./enemy";
 import type { RayWorld } from "./ray";
@@ -191,10 +192,18 @@ export class Combat {
   /** C17 (S5.3): asked about a ballistic round predict() saw kill; true rides it with the bullet follow. */
   killcamGate: ((pred: { enemy: Enemy; zone: Zone; dist: number; kill: boolean }) => boolean) | null = null;
 
+  /** C18: rounds fired (the tracer every third) and whether this shot draws one. */
+  private roundN = 0;
+  private tracerNow = true;
+
   fire(shot: Shot, build: Build): { killcam: Projectile | null } {
     const w = shot.weapon;
     if (!this.quiet) this.bus.emit("fire", { t: this.clock, weaponCls: w.weaponClass, auto: AUTOMATIC.has(w.weaponClass) });
-    if (!this.quiet) this.world.fx.muzzle(shot.muzzle, shot.dirs[0]!, w.weaponClass === "shotgun" ? 1.4 : w.weaponClass === "sniper" ? 1.2 : 0.7, w.id === "kestrel");
+    // C18 (S2.3, S2.6): each class's flash lights the street; tracers on the SMG and rifle only, one round in three.
+    const hf = isHero(w.model) ? ARSENAL[w.model as HeroModel] : null;
+    if (!this.quiet) this.world.fx.muzzle(shot.muzzle, shot.dirs[0]!, hf ? hf.flash.sizeM * 6 : w.weaponClass === "shotgun" ? 1.4 : w.weaponClass === "sniper" ? 1.2 : 0.7, w.id === "kestrel", hf ? { intensity: hf.flash.light, range: hf.flash.lightRangeM } : undefined);
+    this.roundN++;
+    this.tracerNow = hf ? hf.tracerEvery > 0 && this.roundN % hf.tracerEvery === 0 : true;
     this.noise(shot.origin, w.noise);
     if (w.kind === "ballistic") {
       const dir = shot.dirs[0]!;
@@ -283,7 +292,7 @@ export class Combat {
       return;
     }
     if (hitE) {
-      if (!this.quiet) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), hitE.point);
+      if (!this.quiet && this.tracerNow) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), hitE.point);
       this.penMul = mul;
       this.penThrough = through;
       this.strike(hitE.enemy, hitE.seg, hitE.point, dir, w, build, origin.distanceTo(hitE.point), unseen, false);
@@ -306,7 +315,7 @@ export class Combat {
       }
       // One impact, overstated by tuning.blocked.impactMul when cover stopped a round meant for someone.
       this.world.fx.impact(stop.point, stop.normal, stop.thin ? surf : this.world.surfaceAt(stop.point), behind ? tuning.blocked.impactMul : 1);
-      if (!this.quiet && (w.weaponClass !== "shotgun" || Math.random() < 0.35)) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), stop.point);
+      if (!this.quiet && this.tracerNow && (w.weaponClass !== "shotgun" || Math.random() < 0.35)) this.world.fx.tracer(origin.clone().addScaledVector(dir, 1.2), stop.point);
       this.nearMisses(origin, dir, stop.dist, null);
     } else this.nearMisses(origin, dir, w.range, null);
   }

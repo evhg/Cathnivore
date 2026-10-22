@@ -452,7 +452,7 @@ export function createFx(o: {
         lights[i]!.intensity = 0;
       }
     },
-    muzzle(pos, dir, size = 1, suppressed = false) {
+    muzzle(pos, dir, size = 1, suppressed = false, light) {
       const d = dir.clone().normalize();
       if (suppressed) {
         // S2.3: the can eats the flash. Only a faint warm light on the wet street for 40 ms (the viewmodel draws
@@ -466,7 +466,8 @@ export function createFx(o: {
       for (let i = 0; i < 5; i++)
         spawn({ pos: pos.clone(), vel: cone(d, 0.35, new THREE.Vector3()).multiplyScalar(14 + rand() * 10), kind: K.streak, additive: true, life: 0.06 + rand() * 0.06, size0: 0.008, len: 0.12, color: ORANGE, drag: 3 });
       spawn({ pos: pos.clone().addScaledVector(d, 0.2), vel: d.clone().multiplyScalar(0.8).add(tmpV.set(0, 0.25, 0)), kind: K.smoke, life: 0.9, size0: 0.12 * size, size1: 0.6 * size, color: ambient(pos, new THREE.Color(0.7, 0.7, 0.72), 0.3), alpha: 0.35, drag: 1.5 });
-      flashLight(pos.clone().addScaledVector(d, 0.3), "#ffb066", 60 * size, 0.06, 9);
+      // S2.3: the one shared light spikes to 4-8 over 4-6 m and decays over 50 ms, so the flash lights the wet street.
+      flashLight(pos.clone().addScaledVector(d, 0.3), "#ffb066", light ? light.intensity * WORLD_LIGHT_SCALE : 60 * size, light ? 0.05 : 0.06, light ? light.range : 9);
     },
     impact(pos, normal, surface, scale = 1) {
       const k = Math.max(0.25, scale);

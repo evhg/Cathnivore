@@ -56,7 +56,15 @@ if (stage) {
   const t = Number(q.get("t") ?? 0);
   const step = (dt: number) => arsenal.pose(dt, { yaw: 0, pitch: 0 }, 0, 0, false, 0, cam, 75);
   arsenal.setView(new THREE.Vector3(), new THREE.Quaternion());
-  if (stage === "fire") {
+  if (arsenal.hero && (stage === "fire" || stage === "reload" || stage === "empty")) {
+    if (stage === "fire") {
+      arsenal.stageHeroFire();
+      step(0);
+      const n = Math.max(1, Math.ceil(t / 4));
+      for (let i = 0; i < n && t > 0; i++) step(t / n / 1000);
+      arsenal.stageTime(t);
+    } else arsenal.stageHeroReload(stage === "empty" ? "empty" : "tac", t);
+  } else if (stage === "fire") {
     arsenal.stageFire();
     step(0);
     const n = Math.max(1, Math.ceil(t / 4));

@@ -11,6 +11,7 @@ import { Spring1, Spring3 } from "./feel/spring";
 import { tuning } from "./feel/tuning";
 import { CamRecoil, DRAW, EMPTY as EMPTY_CLIP, TAC as TAC_CLIP, FIRE, HERO, Heat, PRESS_CHECK, ReloadMachine, channel, impulseForPeak, pullTrigger, startReload, stepReload, track } from "./feel/pistol";
 import { GunSmoke } from "./gunsmoke";
+import { ARSENAL, ClassReload, chan, isHero, recoilPattern, type ClassFeel, type HeroModel } from "./feel/arsenal";
 
 const KF = tuning.kestrel;
 const DEG = Math.PI / 180;
@@ -258,6 +259,32 @@ export class Arsenal {
   private readonly qB = new THREE.Quaternion();
   private readonly sV = new THREE.Vector3();
   private readonly smp: Sample = { pos: [0, 0, 0], rot: [0, 0, 0] };
+  private readonly smp2: Sample = { pos: [0, 0, 0], rot: [0, 0, 0] };
+
+  // ---- C18 "Every gun is a hero" ----
+  /** The class's reload (null on the pistol and melee weapons). */
+  cr: ClassReload | null = null;
+  /** Ms since a hero gun's last shot (its fire clip), -1 when it has played out. */
+  heroFireMs = -1;
+  /** Shots in the current burst (the SMG and rifle's recoil pattern), and the time since the last. */
+  private burstN = 0;
+  private sinceShot = 9;
+  /** This shot's camera kick (degrees, [pitch, yaw]): the session applies it. */
+  readonly heroKick: [number, number] = [0, 0];
+  /** Rounds fired by the current gun (the tracer every third). */
+  roundsFired = 0;
+  /** The firing hand's frame while the sniper works the bolt. */
+  private readonly gripRDyn = new THREE.Object3D();
+  private readonly poseRDyn: HandPose = { curl: [0, 0, 0, 0], wrap: 0, thumb: [0, 0, 0], thumbCurl: [0, 0], indexLift: 0 };
+  private heroLast: { clip: Clip; t: number } | null = null;
+  private heroGhost: { clip: Clip; t: number; ms: number } | null = null;
+  private heroTrig = 0;
+  private heroHandR = 0;
+  /** The hero gun in hand, if it is one. */
+  get hero(): ClassFeel | null {
+    const m = this.weapon.model;
+    return isHero(m) && this.rig.parts.hero ? ARSENAL[m as HeroModel] : null;
+  }
   /** Reduced motion: the clips turn the gun half as far (S2.4). */
   reducedMotion = false;
   /** C7 (S6.1): critical or worse, aiming down the sights takes 20% longer (1.2). */
@@ -328,6 +355,38 @@ export class Arsenal {
     h.ammo -= 1;
   }
 
+  /** C18 stages: a hero gun fires now (its clip, springs, flash), the round spent. */
+  stageHeroFire(): void {
+    const f = this.hero;
+    if (!f) return;
+    const h = this.held[this.current]!;
+    if (h.ammo <= 1) h.ammo = 2;
+    this.cd = 0;
+    this.heroLast = this.heroGhost = null;
+    this.cr?.cancel();
+    this.fireHeroFx(f);
+    h.ammo -= 1;
+  }
+
+  /** C18 stages: a hero gun's reload (tac or empty; the shotgun's shells) held at `ms`. */
+  stageHeroReload(kind: "tac" | "empty", ms: number): void {
+    const h = this.held[this.current]!;
+    if (!this.cr) return;
+    this.heroLast = this.heroGhost = null;
+    this.cr.kind = null;
+    this.heroFireMs = -1;
+    h.ammo = kind === "empty" ? 0 : Math.max(1, Math.floor(h.mag / 3));
+    this.cr.start(h);
+    this.cr.step(h, ms);
+    this.cues.length = 0;
+  }
+
+  /** C18 stages and tests: the hero gun's state. */
+  get heroState(): { fireMs: number; reload: string | null; phase: string | null; reloadMs: number; committed: boolean; flashOn: boolean; handW: number; handR: number; burst: number } {
+    const c = this.cr;
+    return { fireMs: this.heroFireMs, reload: c?.kind ?? null, phase: c?.phase ?? null, reloadMs: c?.t ?? 0, committed: !!c?.committed, flashOn: !!this.rig.flashMesh?.visible, handW: this.handW, handR: this.heroHandR, burst: this.burstN };
+  }
+
   /** Screenshot stages: a reload (tac or empty) held at `ms`. */
   stageReload(kind: "tac" | "empty", ms: number): void {
     const h = this.held[this.current]!;
@@ -395,6 +454,213 @@ export class Arsenal {
     // front of the can and the crown's rim catch it and her gloves, a hand's length back, don't.
     this.flash.position.copy(mz).addScaledVector(mz.clone().normalize(), -KF.puff.vmEyeM);
     this.flash.position.y += KF.puff.vmUpM;
+  }
+
+  /**
+   * C18: a hero gun's shot (S2.3 per class, S2.6): its fire clip from 0 ms, the recoil springs shoved by the
+   * class (heavier guns kick harder and the spring's peak is reached through the same S2.3 springs), the
+   * patterned camera kick for the SMG and rifle, the flash for one frame (two below 50 fps and for the shotgun
+   * and launcher), the smoke and the barrel's heat.
+   */
+  private fireHeroFx(f: ClassFeel): void {
+    this.heroFireMs = 0;
+    this.roundsFired++;
+    if (this.sinceShot > 0.28) this.burstN = 0;
+    this.sinceShot = 0;
+    const side = Math.random() < 0.5 ? -1 : 1;
+    const [kp, ky] = recoilPattern(f.model, this.burstN, side);
+    this.burstN++;
+    this.heroKick[0] = kp;
+    this.heroKick[1] = ky;
+    const R = KF.recoil;
+    const m = (this.aiming ? R.adsMul : 1) * (this.reducedMotion ? 0.6 : 1);
+    const sh = f.shove;
+    this.recPos.shove(0, impulseForPeak(R.pos, sh.y * m), impulseForPeak(R.pos, sh.z * m));
+    this.recRot.shove(impulseForPeak(R.rot, sh.pitchDeg * DEG * m), impulseForPeak(R.rot, 0.5 * DEG * side * m), impulseForPeak(R.rot, sh.rollDeg * DEG * side * m));
+    this.heat.shot();
+    const frames = f.flash.frames + (this.phone ? 1 : 0);
+    this.flashT = (frames * 16.7) / 1000;
+    const r = this.rig;
+    r.root.updateMatrixWorld(true);
+    const mz = r.muzzle.getWorldPosition(this.pA);
+    const pt = r.port.getWorldPosition(this.pB);
+    const fwd = this.sV.set(0, 0, -1).transformDirection(r.root.matrixWorld);
+    this.smoke.puff(mz, pt, fwd, this.heat.smokeMul * (f.model === "shotgun" || f.model === "launcher" ? 2 : 1));
+    this.flash.position.copy(mz).addScaledVector(fwd, 0.03);
+  }
+
+  /** The hero clip posing the gun this frame (reload or draw) with its weight; a cut clip eases out. */
+  private heroClip(ms: number): { clip: Clip; t: number; w: number } | null {
+    const live = this.cr?.active ? { clip: this.cr.clip, t: this.cr.t } : this.drawMs >= 0 ? { clip: this.drawClip, t: this.drawMs } : null;
+    const last = this.heroLast;
+    this.heroLast = live;
+    if (live) {
+      this.heroGhost = null;
+      return { ...live, w: 1 };
+    }
+    if (last && last.t + ms < last.clip.dur - 1) this.heroGhost = { clip: last.clip, t: last.t, ms: 0 };
+    const g = this.heroGhost;
+    if (!g) return null;
+    g.ms += ms;
+    const p = g.ms / KF.cancelBlendMs;
+    if (p >= 1) {
+      this.heroGhost = null;
+      return null;
+    }
+    return { clip: g.clip, t: g.t, w: (1 - p) * (1 - p) * (1 - p) };
+  }
+
+  /** Moves a hand's dynamic frame from its grip toward `target` (an empty on the gun) by `w`, posing it between. */
+  private blendHand(r: GunRig, dyn: THREE.Object3D, from: THREE.Object3D, target: THREE.Object3D, w: number, poseFrom: HandPose, poseTo: HandPose, poseOut: HandPose): void {
+    if (dyn.parent !== r.root) r.root.add(dyn);
+    r.root.updateMatrixWorld(true);
+    const inv = this.mA.copy(r.root.matrixWorld).invert();
+    this.mB.multiplyMatrices(inv, target.matrixWorld).decompose(this.pB, this.qB, this.sV);
+    const k = w * w * (3 - 2 * w);
+    dyn.position.lerpVectors(from.position, this.pB, k);
+    dyn.quaternion.slerpQuaternions(from.quaternion, this.qB, k);
+    dyn.userData.thumb = k < 0.4 ? from.userData.thumb : undefined;
+    lerpPose(poseFrom, poseTo, k, poseOut);
+  }
+
+  /** The parts a class's clips move (its fire, reloads and the shotgun's shell clips), cached per class. */
+  private static readonly heroParts = new Map<string, string[]>();
+  private static partsOf(f: ClassFeel): string[] {
+    let list = Arsenal.heroParts.get(f.model);
+    if (!list) {
+      const skip = new Set(["gun", "hand", "hand2", "handR", "arm", "magVis", "rounds", "caseVis", "trigger"]);
+      const names = new Set<string>();
+      for (const c of [f.fire, f.tac, f.empty]) for (const k of Object.keys(c.tracks)) if (!skip.has(k)) names.add(k);
+      if (f.model === "shotgun") names.add("pump");
+      list = [...names];
+      Arsenal.heroParts.set(f.model, list);
+    }
+    return list;
+  }
+
+  /**
+   * C18: a hero gun in motion (S2.2 layers 3 and 4, S2.3 and S2.4 per class): the reload or draw clip on the gun
+   * root (turned about a point toward the firing wrist), the fire clip's own turn (the pump, the bolt), the recoil
+   * springs, every moving part from the fire and reload clips on its rest pose, the magazine (or loader, shell,
+   * round) shown and hidden, the bolt held open on an empty mag, both hands off to what the clips reach for, the
+   * smoke and the heat.
+   */
+  private poseHero(dt: number, r: GunRig, f: ClassFeel): void {
+    const ms = dt * 1000;
+    const h = this.held[this.current]!;
+    const P = r.parts;
+    if (this.heroFireMs >= 0) {
+      const t0 = this.heroFireMs;
+      this.heroFireMs += ms;
+      for (const e of eventsBetween(f.fire, t0 === 0 ? -1 : t0, this.heroFireMs)) if (e !== "fire") this.cues.push(e);
+      if (this.heroFireMs > f.fire.dur) {
+        this.heroFireMs = -1;
+        // An empty gun reloads once its pump or bolt has played out.
+        if (h.ammo <= 0 && h.reserve > 0) this.reload();
+      }
+    }
+    if (this.drawMs >= 0) {
+      const nt = this.drawMs + ms;
+      for (const e of eventsBetween(this.drawClip, this.drawMs, nt)) this.cues.push(e);
+      this.drawMs = nt >= this.drawClip.dur ? -1 : nt;
+    }
+    const cl = this.heroClip(ms);
+    const cw = cl ? cl.w : 0;
+    const reloading = !!cl && cl.clip !== this.drawClip;
+    const k = cl ? track(cl.clip, "gun", cl.t, this.smp) : null;
+    if (k) {
+      const sc = (this.cr?.active && this.aiming ? 0.5 : 1) * (this.reducedMotion ? 0.5 : 1) * cw;
+      this.turnGun(r, k.rot[0] * sc, k.rot[1] * sc, k.rot[2] * sc, [k.pos[0] * cw, k.pos[1] * cw, k.pos[2] * cw]);
+    }
+    const ft = this.heroFireMs;
+    const fk = ft >= 0 ? track(f.fire, "gun", ft, this.smp2) : null;
+    if (fk) {
+      const sc = (this.aiming ? 0.4 : 1) * (this.reducedMotion ? 0.5 : 1);
+      this.turnGun(r, fk.rot[0] * sc, fk.rot[1] * sc, fk.rot[2] * sc, [fk.pos[0] * sc, fk.pos[1] * sc, fk.pos[2] * sc]);
+    }
+    this.armW = reloading ? chan(cl!.clip, "arm", cl!.t, 0) * cw : 0;
+    const [rp, ry, rr] = this.recRot.update(dt);
+    const [px, py, pz] = this.recPos.update(dt);
+    // S2.2 layer 5: heavier guns ride the same springs with less travel (the spring sees the class's mass).
+    const wm = 1 / Math.sqrt(f.mass);
+    r.root.rotation.x += rp * (0.5 + 0.5 * wm);
+    r.root.rotation.y += ry;
+    r.root.rotation.z += rr;
+    r.root.position.x += px;
+    r.root.position.y += py;
+    r.root.position.z += pz;
+
+    // Every moving part: its rest pose plus the fire clip's and the reload clip's offsets.
+    for (const name of Arsenal.partsOf(f)) {
+      const part = P[name];
+      if (!part) continue;
+      const rest = part.userData.rest as { pos: number[]; rot: number[] } | undefined;
+      let x = 0, y = 0, z = 0, rx = 0, ry2 = 0, rz = 0;
+      if (ft >= 0) {
+        const a = track(f.fire, name, ft, this.smp);
+        if (a) {
+          x += a.pos[0]; y += a.pos[1]; z += a.pos[2];
+          rx += a.rot[0]; ry2 += a.rot[1]; rz += a.rot[2];
+        }
+      }
+      if (reloading) {
+        const b = track(cl!.clip, name, cl!.t, this.smp2);
+        if (b) {
+          x += b.pos[0] * cw; y += b.pos[1] * cw; z += b.pos[2] * cw;
+          rx += b.rot[0] * cw; ry2 += b.rot[1] * cw; rz += b.rot[2] * cw;
+        }
+      }
+      // The bolt held open on an empty magazine (the SMG and the rifle), until the empty reload's charge.
+      if (name === "bolt" && h.ammo <= 0 && !this.cr?.active && (f.model === "smg" || f.model === "rifle")) z = Math.max(z, f.model === "smg" ? 0.016 : 0.03);
+      if (rest) {
+        part.position.set(rest.pos[0]! + x, rest.pos[1]! + y, rest.pos[2]! + z);
+        part.rotation.set(rest.rot[0]! + rx, rest.rot[1]! + ry2, rest.rot[2]! + rz);
+      } else {
+        part.position.set(x, y, z);
+        part.rotation.set(rx, ry2, rz);
+      }
+    }
+    // What the support hand carries: shown through its clip (the mag stays shown outside a reload).
+    const vis = reloading ? chan(cl!.clip, "magVis", cl!.t, f.model === "revolver" || f.model === "shotgun" ? 0 : 1) > 0.5 : f.model !== "revolver" && f.model !== "shotgun";
+    const carried = f.model === "revolver" ? P.loader : f.model === "shotgun" ? P.shell : f.model === "launcher" ? P.round : P.mag;
+    if (carried) carried.visible = f.model === "launcher" ? reloading && vis : vis;
+    if (f.model === "revolver") {
+      if (P.rounds) P.rounds.visible = reloading ? chan(cl!.clip, "rounds", cl!.t, 1) > 0.5 : h.ammo > 0 || true;
+      if (P.loaderRounds) P.loaderRounds.visible = !(reloading && cl!.t >= 1440);
+    }
+    if (f.model === "launcher" && P.case) P.case.visible = reloading ? chan(cl!.clip, "caseVis", cl!.t, 1) > 0.5 : true;
+    if (P.magRound) P.magRound.visible = reloading ? true : h.ammo >= 2;
+
+    // The trigger: the fire clip's travel, or 30% preload while the button is held.
+    this.heroTrig = ft >= 0 ? chan(f.fire, "trigger", ft, 0) : 0;
+    if (this.triggerHeld && this.cd <= 0.02 && h.ammo > 0) this.heroTrig = Math.max(this.heroTrig, 0.3);
+    if (P.trigger && (P.trigger as THREE.Group).isGroup) P.trigger.rotation.x = -0.32 * this.heroTrig;
+
+    // The support hand: to the first target (the mag, the loader, a shell, the round) or the second (the
+    // charging handle); the firing hand to the bolt.
+    const w1 = cl ? THREE.MathUtils.clamp(chan(cl.clip, "hand", cl.t, 0) * cw, 0, 1) : 0;
+    const w2 = cl ? THREE.MathUtils.clamp(chan(cl.clip, "hand2", cl.t, 0) * cw, 0, 1) : 0;
+    this.handW = Math.max(w1, w2);
+    // The revolver's loader comes up from low left (the rack shoulder), not from under the grip.
+    this.handOnMag = w1 >= w2 && f.model !== "revolver";
+    if (this.handW > 0.001 && r.gripL) {
+      const target = P[(w1 >= w2 ? f.handTo[0] : f.handTo[1]) ?? f.handTo[0]];
+      if (target) this.blendHand(r, this.gripLDyn, r.gripL, target, this.handW, r.poseL ?? POSES.foreL!, w1 >= w2 ? POSES.magL! : POSES.rackL!, this.poseLDyn);
+    }
+    let wR = 0;
+    if (f.handRTo) {
+      wR = ft >= 0 ? chan(f.fire, "handR", ft, 0) : 0;
+      if (reloading) wR = Math.max(wR, chan(cl!.clip, "handR", cl!.t, 0) * cw);
+    }
+    this.heroHandR = THREE.MathUtils.clamp(wR, 0, 1);
+    if (this.heroHandR > 0.001 && f.handRTo && P[f.handRTo]) this.blendHand(r, this.gripRDyn, r.gripR, P[f.handRTo]!, this.heroHandR, r.poseR, POSES.rackL!, this.poseRDyn);
+
+    this.heat.update(dt);
+    if (this.smoke.glow.parent !== r.root) r.root.add(this.smoke.glow);
+    this.smoke.glow.position.copy(r.muzzle.position);
+    this.smoke.glow.position.z += 0.007;
+    this.smoke.tint(this.ambTint, this.ambLevel);
+    this.smoke.update(dt, this.heat.glow);
   }
 
   /**
@@ -483,7 +749,7 @@ export class Arsenal {
   }
 
   get busy(): boolean {
-    return this.reloading > 0 || this.raising > 0 || this.boltLeft > 0 || this.rm.active;
+    return this.reloading > 0 || this.raising > 0 || this.boltLeft > 0 || this.rm.active || !!this.cr?.active;
   }
 
   /** Weapons Cath actually has: everything else stays in the case until she finds or earns it. */
@@ -524,6 +790,13 @@ export class Arsenal {
       }
       this.rm.cancel();
     }
+    if (this.cr?.active) {
+      if (this.cr.committed && this.cr.kind !== "shell") {
+        this.pendingEquip = i;
+        return;
+      }
+      this.cr.cancel();
+    }
     this.pendingEquip = -1;
     this.rig.root.visible = false;
     this.current = i;
@@ -538,10 +811,15 @@ export class Arsenal {
     this.fireMs = -1;
     this.pressMs = -1;
     this.drawMs = -1;
-    if (this.kestrel) {
-      // S2.4: the 450 ms draw, or on the first pickup the 900 ms hero draw with its rack.
-      this.drawClip = this.heroNext ? HERO : DRAW;
-      this.heroNext = false;
+    this.heroFireMs = -1;
+    this.heroLast = this.heroGhost = null;
+    this.burstN = 0;
+    const hf = this.hero;
+    this.cr = hf ? new ClassReload(hf) : null;
+    if (this.kestrel || hf) {
+      // S2.4: the 450 ms draw, or on the Kestrel's first pickup the 900 ms hero draw with its rack.
+      this.drawClip = this.heroNext && this.kestrel ? HERO : DRAW;
+      if (this.kestrel) this.heroNext = false;
       this.drawMs = 0;
       this.raising = this.drawClip.dur / 1000;
       this.cues.push("draw");
@@ -564,6 +842,11 @@ export class Arsenal {
     this.drawMs = -1;
     this.pressMs = -1;
     this.lastClip = this.ghost = null;
+    this.cr?.cancel();
+    if (this.cr) this.cr.kind = null;
+    this.heroFireMs = -1;
+    this.heroLast = this.heroGhost = null;
+    this.burstN = 0;
     this.flashT = 0;
     this.heat.v = 0;
     this.smoke.clear();
@@ -627,6 +910,7 @@ export class Arsenal {
     h.locked = false;
     this.reloading = 0;
     this.rm.kind = null;
+    if (this.cr) this.cr.kind = null;
   }
 
   /** What the alt-fire button does with the weapon in hand, for the HUD and tests. */
@@ -713,6 +997,11 @@ export class Arsenal {
       if (this.raising <= 0 && this.inspectT < 0) startReload(h, this.rm);
       return;
     }
+    if (this.cr) {
+      // C18: the class's reload (the shotgun's shell by shell); not over a shot's pump or bolt.
+      if (this.raising <= 0 && this.heroFireMs < 0 && this.inspectT < 0) this.cr.start(h);
+      return;
+    }
     if (h.def.mag === 0 || h.ammo >= h.def.mag || h.reserve <= 0 || this.reloading > 0) return;
     this.shellReload = h.def.weaponClass === "shotgun";
     this.reloading = h.def.reload;
@@ -764,6 +1053,24 @@ export class Arsenal {
       }
     }
     if (this.boltLeft > 0) this.boltLeft = Math.max(0, this.boltLeft - dt);
+    // C18: a hero gun's reload. Sprinting cancels one that hasn't committed; a pull between shotgun shells (or
+    // before a mag's commit) ends it and fires, the shells already in stay in.
+    const cr = this.cr;
+    this.sinceShot += dt;
+    if (cr?.active) {
+      const cut = (this.sprinting || (trigger && h.ammo > 0)) && cr.cancel();
+      if (cut) this.cues.push("reloadCancel");
+      else {
+        const r = cr.step(h, dt * 1000);
+        this.cues.push(...r.events);
+        if (r.done && this.pendingEquip >= 0) {
+          const i = this.pendingEquip;
+          this.pendingEquip = -1;
+          this.equip(i);
+          return null;
+        }
+      }
+    }
 
     // Reloads: magazines in one go; the shotgun one shell at a time (and a trigger pull cancels it).
     if (this.reloading > 0) {
@@ -800,7 +1107,7 @@ export class Arsenal {
         this.swingT = 0;
         this.cd = def.cycle;
       }
-    } else if ((trigger || this.altQueue > 0) && this.cd <= 0 && (pistol ? this.raising <= 0 : !this.busy)) {
+    } else if ((trigger || this.altQueue > 0) && this.cd <= 0 && (pistol || cr ? this.raising <= 0 && !cr?.active : !this.busy)) {
       // The Kestrel's pull (S2.3/S2.4): it cancels a reload that hasn't committed, dry-fires on a locked slide.
       const pull = pistol ? pullTrigger(h, this.rm) : h.ammo > 0 ? "fire" : "empty";
       if (pull === "dry") {
@@ -819,7 +1126,7 @@ export class Arsenal {
         this.cd = this.altQueue > 0 ? this.altCycle : def.cycle;
         if (barrels > 1) this.cd = def.cycle * 1.2;
         if (this.altQueue > 0) this.altQueue--;
-        if (def.weaponClass === "sniper") this.boltLeft = def.cycle * 0.85;
+        if (def.weaponClass === "sniper" && !cr) this.boltLeft = def.cycle * 0.85;
         const spread = (this.aiming ? def.spread[1] : def.spread[0]) * spreadMul * widen;
         const dirs: THREE.Vector3[] = [];
         for (let i = 0; i < def.pellets * barrels; i++) {
@@ -840,6 +1147,7 @@ export class Arsenal {
         shot = { weapon: dmgMul !== 1 ? { ...def, damage: def.damage * dmgMul } : def, origin: eye.clone(), dirs, muzzle: worldMuzzle };
         this.flash.position.copy(this.rig.muzzle.getWorldPosition(new THREE.Vector3()));
         if (pistol) this.firePistolFx();
+        else if (cr) this.fireHeroFx(cr.feel);
         else {
           this.anim.fire(def.kick * (this.aiming ? 0.55 : 1));
           this.flashT = 0.06;
@@ -856,10 +1164,15 @@ export class Arsenal {
     const r = this.rig;
     const a = this.anim;
     const pistol = this.kestrel;
-    // S2.4: she can aim during a pistol reload (the clip turns at half strength), not during the draw.
-    a.aim = THREE.MathUtils.damp(a.aim, this.aiming && (pistol ? this.raising <= 0 : !this.busy) ? 1 : 0, 14 / Math.max(1, this.adsSlow), dt);
+    const hero = this.hero;
+    // C18: the hero guns' draws, reloads, pumps and bolts are clips too (S2.4 for every class).
+    const clipGun = pistol || !!hero;
+    // S2.4: she can aim during a pistol reload (the clip turns at half strength), not during the draw. S2.6: each
+    // class comes up to the sights at its own speed (ADS ms), slower in the critical tier.
+    const adsK = hero ? (14 * 220) / hero.adsMs : 14;
+    a.aim = THREE.MathUtils.damp(a.aim, this.aiming && (clipGun ? this.raising <= 0 : !this.busy) ? 1 : 0, adsK / Math.max(1, this.adsSlow), dt);
     // Dip for reloads and raising; the pump, slide and bolt travel. The Kestrel's draw and reloads are clips.
-    let dip = pistol ? 0 : this.raising / 0.35;
+    let dip = clipGun ? 0 : this.raising / 0.35;
     if (this.reloading > 0) dip = Math.max(dip, this.shellReload ? 0.35 : 0.6);
     if (this.boltLeft > 0) dip = Math.max(dip, 0.15);
     a.dip = THREE.MathUtils.damp(a.dip, dip, 12, dt);
@@ -873,7 +1186,7 @@ export class Arsenal {
     a.meleeT = melee && swinging ? this.swingT : -1;
     a.swing = !melee && swinging ? Math.sin(Math.min(1, this.swingT / 0.25) * Math.PI) * (this.swingT < 0.25 ? 1 : 0) : 0;
     a.roll = this.reloading > 0 && !this.shellReload ? 0.5 : 0;
-    if (pistol) a.action = 0;
+    if (clipGun) a.action = 0;
     a.update(dt, look, stride, speed, sprint && !this.aiming, landed);
     const base = r.hip.clone().lerp(r.ads, a.aim);
     r.root.position.copy(base).add(a.pos);
@@ -885,6 +1198,7 @@ export class Arsenal {
       r.root.rotation.z += r.hipRot[2] * k;
     }
     if (pistol) this.posePistol(this.freeze ? 0 : dt, r);
+    else if (hero) this.poseHero(this.freeze ? 0 : dt, r, hero);
     // C6: the hit's jolt, on top of everything the gun is doing.
     const hd = this.hurtDip.update(this.freeze ? 0 : dt);
     const hr = this.hurtRoll.update(this.freeze ? 0 : dt);
@@ -927,14 +1241,19 @@ export class Arsenal {
       this.trail.update(dt, tip, mid);
     } else this.trail.update(dt, null, null);
     if (r.flashMesh) {
-      const on = this.flashT > 0.03;
+      // The open guns' flash (S2.3): one frame at 50 fps or above, two below; a random roll and ±25% scale.
+      const on = hero ? this.flashT > 0 : this.flashT > 0.03;
+      const was = r.flashMesh.visible;
       r.flashMesh.visible = on;
-      if (on) r.flashMesh.rotation.z = Math.random() * Math.PI;
+      if (on && (!was || !hero)) {
+        r.flashMesh.rotation.z = Math.random() * Math.PI;
+        if (hero) r.flashMesh.scale.setScalar(0.75 + Math.random() * 0.5);
+      }
     }
     // Pistol reload: the magazine drops, a fresh one seats, and an empty gun has its slide dropped on it.
     let reloadP = -1;
     if (def.weaponClass === "pistol" && this.reloading > 0) reloadP = 1 - this.reloading / this.reloadTotal;
-    if (r.mag && !pistol) {
+    if (r.mag && !clipGun) {
       let out = 0;
       if (reloadP >= 0) out = reloadP < 0.2 ? 0 : reloadP < 0.4 ? (reloadP - 0.2) / 0.2 : reloadP < 0.65 ? 1 : Math.max(0, 1 - (reloadP - 0.65) / 0.15);
       r.mag.position.y = -out * 0.09;
@@ -944,7 +1263,7 @@ export class Arsenal {
     const held = this.held[this.current]!;
     const h0 = held;
     const lock = def.weaponClass === "pistol" && (held.ammo <= 0 || (reloadP >= 0 && this.reloadEmpty && reloadP < 0.85)) ? 1 : 0;
-    if (r.action && !pistol) {
+    if (r.action && !clipGun) {
       if (def.weaponClass === "pistol") r.action.position.z = Math.max(a.action, lock) * 0.024;
       else if (def.weaponClass === "shotgun") r.action.position.z = a.action * 0.08;
       else if (def.weaponClass === "sniper") {
@@ -956,7 +1275,7 @@ export class Arsenal {
     // re-cocks as the slide returns, the trigger travels 5 mm while the shot breaks.
     const firing = def.kind !== "melee" && since < 0.07 && h0.ammo >= 0 && this.cd > 0;
     const P = r.parts;
-    if (!pistol) {
+    if (!clipGun) {
       if (P.slideStop) P.slideStop.rotation.x = lock * 0.21;
       if (P.hammer) P.hammer.rotation.x = since < 0.03 && this.cd > 0 ? 0.96 * Math.min(1, Math.max(0, (since - 0.012) / 0.018)) : 0.96;
       if (P.trigger) P.trigger.rotation.x = firing ? -0.24 : 0;
@@ -972,18 +1291,19 @@ export class Arsenal {
       this.shL.lerp(SHOULDER_L_INSPECT, this.inspectW);
     }
     // C5: racking, the support shoulder drops out and left, so that forearm comes up from the corner, not across.
-    if (pistol && this.handW > 0 && !this.handOnMag) this.shL.lerp(SHOULDER_L_RACK, this.handW);
+    if (clipGun && this.handW > 0 && !this.handOnMag) this.shL.lerp(SHOULDER_L_RACK, this.handW);
     // C5: through a reload the firing shoulder drops out and right, so the forearm falls away under the gun.
-    if (pistol && this.armW > 0) this.shR.lerp(SHOULDER_R_RELOAD, this.armW);
+    if (clipGun && this.armW > 0) this.shR.lerp(SHOULDER_R_RELOAD, this.armW * (hero && hero.model !== "revolver" ? 0.6 : 1));
     // The lock's turn swings the firing forearm level across the bottom of the frame (over the ammo block):
     // drop that shoulder part-way too, so the arm falls away under the turned gun.
     if (pistol && this.lockW > 0.001) this.shR.lerp(SHOULDER_R_LOCK, this.lockW * 0.7);
     // The Kestrel's trigger finger curls while the shot breaks and while the button is held (the preload).
-    const curl = pistol ? Math.min(1, this.trigMm / KF.fire.triggerMm) : firing ? 1 : 0;
-    const dyn = pistol && (this.handW > 0.001 || this.clutchW > 0.001);
+    const curl = pistol ? Math.min(1, this.trigMm / KF.fire.triggerMm) : hero ? this.heroTrig : firing ? 1 : 0;
+    const dyn = clipGun && (this.handW > 0.001 || this.clutchW > 0.001);
     const gl = dyn ? this.gripLDyn : r.gripL;
     const pl = dyn ? this.poseLDyn : r.poseL;
-    this.arms.pose(r.root, r.gripR, gl, r.poseR, pl, curl, this.shR, this.shL);
+    const dynR = !!hero && this.heroHandR > 0.001;
+    this.arms.pose(r.root, dynR ? this.gripRDyn : r.gripR, gl, dynR ? this.poseRDyn : r.poseR, pl, dynR ? 0 : curl, this.shR, this.shL);
     // The scope: past 85% aim the rig hides and the overlay takes over.
     r.root.visible = !(r.scoped && a.aim > 0.85);
     const fov = THREE.MathUtils.lerp(baseFov, def.weaponClass === "sniper" ? r.adsFov * Arsenal.ZOOMS[this.zoom]! : baseFov * 0.82, a.aim);

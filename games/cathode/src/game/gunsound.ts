@@ -477,6 +477,82 @@ export class GunSound {
       case "settle":
         this.rub(0, 900, 0.1, 0.02, 500);
         break;
+      // ---- C18: each class's mechanics (S2.6's sound notes) ----
+      case "cylinder":
+        // The revolver indexing: a pawl tick and the bolt dropping into its notch.
+        this.click(0, 3800, 8, 0.07, 0.008);
+        this.click(0.03, 2600, 6, 0.09, 0.01);
+        break;
+      case "craneOpen":
+        this.click(0, 2200, 5, 0.14, 0.014);
+        this.rub(0.01, 1400, 0.09, 0.05, 800);
+        break;
+      case "eject":
+        // Six empties off the star: a scrape, then brass on brass.
+        this.rub(0, 2600, 0.06, 0.06, 1800);
+        for (let i = 0; i < 4; i++) this.click(0.03 + i * 0.022 + Math.random() * 0.01, 5200 + Math.random() * 1500, 9, 0.05, 0.02);
+        break;
+      case "loaderIn":
+        this.rub(0, 1800, 0.05, 0.05, 2400);
+        this.click(0.04, 3000, 6, 0.1, 0.012);
+        break;
+      case "twist":
+        this.click(0, 2400, 4, 0.12, 0.016);
+        break;
+      case "craneClose":
+        this.click(0, 2000, 4, 0.3, 0.02);
+        this.knock(0.002, 380, 160, 0.06, 0.16);
+        break;
+      case "charge":
+        this.rub(0, 2000, 0.07, 0.08, 3000);
+        this.click(0.06, 2600, 6, 0.16, 0.012);
+        break;
+      case "pumpBack":
+        // S2.6: the pump's clack, back and home: plastic on steel, a hollow knock in the tube.
+        this.rub(0, 1100, 0.12, 0.08, 1900);
+        this.click(0.1, 1700, 4, 0.26, 0.02);
+        this.knock(0.1, 260, 140, 0.05, 0.12);
+        break;
+      case "pumpHome":
+        this.rub(0, 1900, 0.1, 0.07, 1200);
+        this.click(0.09, 2200, 4, 0.34, 0.022);
+        this.knock(0.09, 300, 130, 0.07, 0.18);
+        break;
+      case "shellIn":
+        this.click(0, 1500, 4, 0.16, 0.02);
+        this.rub(0.002, 900, 0.05, 0.05, 1500);
+        break;
+      case "boltUp":
+        this.click(0, 2400, 6, 0.14, 0.012);
+        break;
+      case "boltBack":
+        this.rub(0, 1600, 0.12, 0.09, 2600);
+        this.click(0.11, 3000, 6, 0.12, 0.012);
+        break;
+      case "boltFwd":
+        this.rub(0, 2600, 0.12, 0.08, 1500);
+        this.click(0.1, 2200, 5, 0.2, 0.016);
+        break;
+      case "boltDown":
+        this.click(0, 2000, 5, 0.22, 0.014);
+        this.knock(0.002, 340, 160, 0.05, 0.1);
+        break;
+      case "breechOpen":
+        this.click(0, 1500, 4, 0.22, 0.02);
+        this.knock(0.01, 220, 110, 0.08, 0.14);
+        break;
+      case "roundIn":
+        this.rub(0, 700, 0.1, 0.06, 1300);
+        this.knock(0.09, 300, 150, 0.05, 0.12);
+        break;
+      case "breechClose":
+        this.click(0, 1200, 3, 0.36, 0.024);
+        this.knock(0, 240, 100, 0.09, 0.2);
+        break;
+      case "backblast":
+        // The launcher's whoosh behind her.
+        this.rub(0, 500, 0.5, 0.22, 140);
+        break;
       default:
         break;
     }

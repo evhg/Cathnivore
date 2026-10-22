@@ -190,7 +190,7 @@ export function buildRevolver(phone = false, lod = false): { root: THREE.Group; 
     const a = Math.PI / 2 + (c * Math.PI) / 3;
     round(kit, lr, [Math.cos(a) * CH_R, Math.sin(a) * CH_R, CYL_Z0 + 0.0013], 0.0046, 0.036, o.phone);
   }
-  pinchHand(kit, loader, "loadHand", [0, 0, CYL_Z0 + 0.02], [-0.5, -0.2, 0.85]);
+  pinchHand(kit, loader, "loadHand", [0, 0, CYL_Z0 + 0.02], [-0.85, -0.45, 0.3]);
   loader.visible = false;
 
   // ---- Empties.

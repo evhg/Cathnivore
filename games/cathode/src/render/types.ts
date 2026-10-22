@@ -29,7 +29,8 @@ export interface Effects {
   clear?(): void;
   /** A muzzle flash with a brief real light at `pos`, pointing along `dir`. */
   /** A muzzle flash; `suppressed` (the Kestrel, S2.3) is a small warm light with no white flash in the world. */
-  muzzle(pos: THREE.Vector3, dir: THREE.Vector3, size?: number, suppressed?: boolean): void;
+  /** `light`: the C18 per-class spike (spec units: intensity, metres), else the default 6 over 9 m. */
+  muzzle(pos: THREE.Vector3, dir: THREE.Vector3, size?: number, suppressed?: boolean, light?: { intensity: number; range: number }): void;
   /** A bullet impact on the world: dust or sparks or a splash by surface, plus a hole decal. */
   impact(pos: THREE.Vector3, normal: THREE.Vector3, surface: Surface, scale?: number): void;
   /** Blood from a wound, sprayed along `dir`; `amount` 0..1 scales droplets and the splatter decals. */

@@ -4,6 +4,7 @@
 import { openPhotoMode } from "../ui/photomode";
 import { calmCameraOn, damageFxLevels, loadPrefs } from "../prefs";
 import * as THREE from "three";
+import { buildGunDisplay, type GunModel } from "./viewmodel";
 import { beamLook, setBeaconProfile } from "./beacon";
 import { LASER_COOLDOWN, LASER_DAMAGE, laserState, laserTouches, lasersFrom } from "./lasers";
 import { createWorld } from "../render/world";
@@ -1500,6 +1501,22 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const j = () => 0.8 + Math.random() * 0.4;
         const v = new THREE.Vector3((1.8 + Math.random() * 0.6) * j(), (1.0 + Math.random() * 0.4) * j(), 0.3 * j()).applyQuaternion(q);
         world.fx.casing(port, v.add(player.vel.clone().multiplyScalar(0.9)));
+      } else if (c === "eject" || c === "backblast") {
+        // C18: the revolver's six empties off the ejector star, the launcher's spent case, the back-blast.
+        const r = arsenal.rig;
+        r.root.updateMatrixWorld(true);
+        const q = world.camera.getWorldQuaternion(camQuatV);
+        const eyeW = world.camera.getWorldPosition(camPosV).clone();
+        if (c === "backblast") {
+          const back = new THREE.Vector3(0.05, 0.02, 1).applyQuaternion(q);
+          world.fx.muzzle(eyeW.clone().addScaledVector(back, 0.5), back, 1.1);
+          audio?.gun.cue("backblast");
+        } else {
+          const from = (r.parts.cylinder ?? r.parts.case ?? r.port).getWorldPosition(new THREE.Vector3()).applyQuaternion(q).add(eyeW);
+          const n = arsenal.weapon.model === "revolver" ? 6 : 1;
+          for (let i = 0; i < n; i++) world.fx.casing(from.clone(), new THREE.Vector3(-0.4 + Math.random() * 0.5, -0.6 - Math.random() * 0.8, 0.6 + Math.random() * 0.4).applyQuaternion(q).add(player.vel.clone().multiplyScalar(0.9)));
+          audio?.gun.cue("eject");
+        }
       } else if (c === "dry") audio?.gun.dryFire();
       else if (c === "magDrop") {
         const mag = arsenal.rig.mag;
@@ -1510,7 +1527,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         }
       } else {
         if (c === "seat") trauma.add(tuning.kestrel.reload.seatTrauma);
-        if (c === "slam" || c === "rackHome") trauma.add(tuning.kestrel.reload.slamTrauma);
+        if (c === "slam" || c === "rackHome" || c === "pumpHome" || c === "craneClose" || c === "breechClose") trauma.add(tuning.kestrel.reload.slamTrauma);
         audio?.gun.cue(c);
       }
     }
@@ -1783,15 +1800,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (thunderCover > 0) hud.feedLine("Covered by the thunder");
       audio?.shot(shot.weapon.weaponClass, reflections());
       // Camera recoil (S2.3, S2.6): the class's kick, 70% springing back, 30% left for her to pull down.
-      const camKick = CAM_KICK[shot.weapon.weaponClass] ?? 0;
+      // C18: a hero gun kicks its class's pitch, and the SMG and rifle follow their pattern (S2.6).
+      const heroGun = !!arsenal.hero;
+      const camKick = heroGun ? arsenal.heroKick[0] : CAM_KICK[shot.weapon.weaponClass] ?? 0;
       if (camKick > 0) {
-        const keep = arsenal.camRecoil.kick(Math.random() * 2 - 1, (camKick / tuning.kestrel.camera.pitchDeg) * (arsenal.aiming ? 0.8 : 1) * (calm ? 0.5 : 1));
+        const kmul = (camKick / tuning.kestrel.camera.pitchDeg) * (arsenal.aiming ? 0.8 : 1) * (calm ? 0.5 : 1);
+        const side = heroGun ? THREE.MathUtils.clamp(arsenal.heroKick[1] / Math.max(1e-6, tuning.kestrel.camera.yawDeg * (camKick / tuning.kestrel.camera.pitchDeg)), -3, 3) : Math.random() * 2 - 1;
+        const keep = arsenal.camRecoil.kick(side, kmul);
         player.pitch = THREE.MathUtils.clamp(player.pitch + keep.pitch, -1.5, 1.5);
         player.yaw += keep.yaw;
       }
       if (shot.weapon.id === "kestrel") trauma.add(tuning.kestrel.fire.trauma);
+      else if (heroGun) trauma.add(Math.min(0.3, 0.04 + (arsenal.hero!.shove.pitchDeg / 100)));
       // The Kestrel's shell leaves the port on its clip's cue (18 ms); the older guns throw theirs at once.
-      if (shot.weapon.weaponClass !== "melee" && shot.weapon.id !== "kestrel") {
+      if (shot.weapon.weaponClass !== "melee" && shot.weapon.id !== "kestrel" && !heroGun) {
         // Brass out of the port, to the right and up; the world rings it on landing.
         const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
         const port = shot.muzzle.clone().addScaledVector(fwd, shot.weapon.weaponClass === "pistol" ? -0.25 : -0.45);
@@ -1809,6 +1831,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (struck) {
         timescale.hitStop(tuning.hitStop.melee);
         jolt = 1;
+        // C18 (S2.6 melee): a connect shakes the view (+0.2) and throws a spark off whatever it met.
+        trauma.add(0.2);
+        world.fx.impact(eye.clone().addScaledVector(fwd, Math.min(1.4, arsenal.weapon.range * 0.6)), fwd.clone().negate(), "metal", 0.35);
       }
       if (struck && run.lifeSteal > 0) s.hp = Math.min(s.maxHp, s.hp + arsenal.weapon.damage * run.lifeSteal);
     }
@@ -1826,7 +1851,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       at.y = Math.max(0, eye.y - 1.2);
       combat.explode(at, 2.6, 38, build(), false);
     }
-    if (intent.reload && arsenal.weapon.kind !== "melee" && !arsenal.kestrel) audio?.reload();
+    if (intent.reload && arsenal.weapon.kind !== "melee" && !arsenal.kestrel && !arsenal.hero) audio?.reload();
     drainGunCues();
     const tdCand = dead ? null : takedownCandidate();
     const canTakedown = tdCand !== null;
@@ -2254,6 +2279,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       speed: player.speed,
       // The first seconds of a job are hers: nobody can spot her until she's had a look round (or fires).
       stealth: dead || grace > 0 ? 0 : progress.stats.detectionMultiplier * actives.running().camo,
+      glint: arsenal.scopedIn ? { aim: world.camera.getWorldDirection(new THREE.Vector3()) } : null,
     };
   }
 
@@ -3563,6 +3589,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const C4_STAGES = ["pistol-idle", "pistol-ads", "pistol-inspect", "pistol-alley", "pistol-fire", "pistol-fire-ads", "pistol-lock", "pistol-reload", "pistol-reload-empty", "pistol-draw", "pistol-hero", "pistol-presscheck", "pistol-reload-cancel", "pistol-presscheck-cancel"];
   const c4Stage = (name: string, tMs: number): string => {
     staged = true;
+    if (gunLineup) gunLineup.visible = false;
     hud.freeze(null);
     hud.clearFeedback();
     showCover(false);
@@ -3642,6 +3669,119 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     } else s.pistolInfo = pistolInfo();
     hud.freeze(tMs);
     return "ok";
+  };
+  // C18 "Every gun is a hero": each class at rest, 20 ms after a shot, mid-reload (and aimed, and the empty
+  // reload), and the seven guns side by side. `<model>-fire` also lights the street with the class's flash (the
+  // acceptance probes the wet floor), and `heroInfo` carries the parts and probe points for the runner.
+  const C18_MODELS: Record<string, string> = { revolver: "oldTestament", smg: "rattlecan", rifle: "corridorAR", shotgun: "fishmonger", sniper: "widowmaker", launcher: "bargainBin" };
+  const C18_RE = /^(revolver|smg|rifle|shotgun|sniper|launcher)-(idle|ads|fire|reload|reload-mid|reload-empty)$/;
+  let gunLineup: THREE.Group | null = null;
+  const c18Stage = (name: string, tMs: number): string => {
+    // The Kestrel's stage set-up (the street, the calm, the settled gun), then the class.
+    c4Stage("pistol-idle", 0);
+    if (gunLineup) gunLineup.visible = false;
+    arsenal.rig.root.visible = true;
+    if (name === "arsenal-lineup") return lineupStage();
+    const m = C18_RE.exec(name)!;
+    const model = m[1]!;
+    const moment = m[2]!;
+    arsenal.owned.add(C18_MODELS[model]!);
+    arsenal.equipId(C18_MODELS[model]!);
+    arsenal.settle();
+    const aimed = moment === "ads";
+    arsenal.holdAim = aimed;
+    arsenal.aiming = aimed;
+    arsenal.anim.aim = aimed ? 1 : 0;
+    const poseOnce = (dt: number) => arsenal.pose(dt, { yaw: 0, pitch: 0 }, 0, 0, false, 0, world.viewCamera, BASE_FOV);
+    arsenal.setView(world.camera.getWorldPosition(camPosV), world.camera.getWorldQuaternion(camQuatV));
+    for (let i = 0; i < 90; i++) poseOnce(1 / 60);
+    const f = arsenal.hero!;
+    const t = Math.max(0, tMs);
+    if (moment === "fire") {
+      arsenal.stageHeroFire();
+      poseOnce(0);
+      const n = Math.max(1, Math.ceil(t / 4));
+      for (let i = 0; i < n && t > 0; i++) poseOnce(t / n / 1000);
+      arsenal.stageTime(t);
+      // The flash's light on the street (the one shared PointLight, S2.3), held at its value `t` ms in.
+      const r = arsenal.rig;
+      r.root.updateMatrixWorld(true);
+      const q = world.camera.getWorldQuaternion(camQuatV);
+      const mz = r.muzzle.getWorldPosition(new THREE.Vector3()).applyQuaternion(q).add(world.camera.getWorldPosition(camPosV));
+      world.fx.muzzle(mz, world.camera.getWorldDirection(new THREE.Vector3()), f.flash.sizeM * 6, false, { intensity: f.flash.light, range: f.flash.lightRangeM });
+    } else if (moment === "reload" || moment === "reload-mid" || moment === "reload-empty") {
+      const at = moment === "reload-mid" ? (f.model === "shotgun" ? 260 + 200 : Math.round(f.tac.dur * 0.45)) : t;
+      arsenal.stageHeroReload(moment === "reload-empty" ? "empty" : "tac", at);
+    }
+    arsenal.freeze = true;
+    poseOnce(1 / 60);
+    arsenal.freeze = !!o.shot;
+    arsenal.cues.length = 0;
+    s.pistolInfo = heroInfo();
+    hud.freeze(tMs);
+    return "ok";
+  };
+  /** The seven guns on their left flanks in two columns, lit by the viewmodel's own lights (the family read). */
+  const lineupStage = (): string => {
+    arsenal.rig.root.visible = false;
+    if (!gunLineup) {
+      gunLineup = new THREE.Group();
+      gunLineup.name = "arsenal-lineup";
+      const order: [GunModel, number, number, number][] = [
+        // model, x, y, scale (camera space at z -1.15; muzzles to the left, the left flank to her)
+        ["pistol", -0.42, 0.3, 1.25],
+        ["revolver", -0.42, 0.1, 1.15],
+        ["smg", -0.42, -0.12, 0.85],
+        ["launcher", -0.42, -0.34, 0.68],
+        ["rifle", 0.36, 0.26, 0.62],
+        ["shotgun", 0.36, 0.02, 0.56],
+        ["sniper", 0.36, -0.24, 0.5],
+      ];
+      for (const [model, x, y, k] of order) {
+        const g = buildGunDisplay(model, o.quality === "phone");
+        const box = new THREE.Box3().setFromObject(g);
+        const c = box.getCenter(new THREE.Vector3());
+        const holder = new THREE.Group();
+        g.position.sub(c);
+        holder.add(g);
+        holder.rotation.set(0.05, Math.PI / 2, 0);
+        holder.scale.setScalar(k);
+        holder.position.set(x, y, -1.15);
+        gunLineup.add(holder);
+      }
+      world.viewScene.add(gunLineup);
+    }
+    gunLineup.visible = true;
+    s.pistolInfo = null;
+    hud.freeze(0);
+    return "ok";
+  };
+  /** C18 acceptance: the hero gun's state, its muzzle on screen, and a floor point beside the gun to probe. */
+  const heroInfo = (): Record<string, unknown> => {
+    const r = arsenal.rig;
+    r.root.updateMatrixWorld(true);
+    const c = world.renderer.domElement;
+    const scrV = (v: THREE.Vector3, cam: THREE.Camera) => {
+      const p = v.clone().project(cam);
+      return { x: ((p.x + 1) / 2) * c.clientWidth, y: ((1 - p.y) / 2) * c.clientHeight };
+    };
+    const mz = r.muzzle.getWorldPosition(new THREE.Vector3());
+    // The wet street 3 m ahead and 1.2 m left of her line of sight, where neither hand nor gun sits.
+    const fwd = world.camera.getWorldDirection(new THREE.Vector3()).setY(0).normalize();
+    const left = new THREE.Vector3(fwd.z, 0, -fwd.x);
+    const eyeW = world.camera.getWorldPosition(new THREE.Vector3());
+    const fp = eyeW.clone().addScaledVector(fwd, 3).addScaledVector(left, 1.2);
+    fp.y = ground(fp.x, fp.z);
+    const fr = eyeW.clone().addScaledVector(fwd, 3).addScaledVector(left, 1.6);
+    fr.y = ground(fr.x, fr.z);
+    const floor = scrV(fp, world.camera);
+    const floorR = Math.hypot(scrV(fr, world.camera).x - floor.x, scrV(fr, world.camera).y - floor.y);
+    const parts: Record<string, number[]> = {};
+    for (const n of ["bolt", "pump", "cylinder", "crane", "breech", "mag", "charge", "ejector", "loader", "shell", "round"]) {
+      const p = r.parts[n];
+      if (p) parts[n] = [p.position.x * 1000, p.position.y * 1000, p.position.z * 1000, (p.rotation.x * 180) / Math.PI, (p.rotation.y * 180) / Math.PI, (p.rotation.z * 180) / Math.PI, p.visible ? 1 : 0];
+    }
+    return { hero: arsenal.hero?.model ?? null, ...arsenal.heroState, muzzle: scrV(mz, world.viewCamera), floor, floorR, parts, ammo: arsenal.ammo };
   };
   /** C5 acceptance: the Kestrel's parts and where its muzzle and slide land on screen (CSS px). */
   const pistolInfo = (): Record<string, unknown> => {
@@ -5422,6 +5562,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (C16_STAGES.includes(name.replace(/-\d+$/, ""))) return c16Stage(name, tMs);
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
     if (C4_STAGES.includes(name)) return c4Stage(name, tMs);
+    if (C18_RE.test(name) || name === "arsenal-lineup") return c18Stage(name, tMs);
     arsenal.holdAim = false;
     arsenal.inspectHold = -1;
     if (!STAGES.includes(name)) return `unknown stage ${name}`;

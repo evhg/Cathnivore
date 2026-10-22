@@ -235,7 +235,12 @@ export interface Sight {
   speed: number;
   /** Detection multiplier from her build (Nerve, skills, gear): below 1 is harder to see. */
   stealth: number;
+  /** C18 (S2.6): she's looking down a scope; `aim` is where it points. Men in front of it see the glint. */
+  glint?: { aim: THREE.Vector3 } | null;
 }
+
+/** C18: the scope's glint shows to anyone within this half-angle of where it points (cos), out to range x1.6. */
+export const GLINT_COS = Math.cos((22 * Math.PI) / 180);
 
 let nextId = 1;
 const UP_Y = new THREE.Vector3(0, 1, 0);
@@ -518,14 +523,16 @@ export class Enemy {
     const flat = new THREE.Vector3(toCath.x, 0, toCath.z).normalize();
     const angle = Math.acos(THREE.MathUtils.clamp(fwd.dot(flat), -1, 1));
     const alert = this.state === "combat" || this.state === "searching";
-    const range = this.kit.vision.range * (alert ? 1.3 : 1);
+    // C18: the scope's glint: a man in front of her lens sees a spark of light long before he'd see her.
+    const glinting = !!sight.glint && -toCath.dot(sight.glint.aim) > GLINT_COS * dist;
+    const range = this.kit.vision.range * (alert ? 1.3 : 1) * (glinting ? 1.6 : 1);
     const inCone = angle < (this.kit.vision.fov / 2) * (alert ? 1.3 : 1) || dist < 2.2;
     let seen = false;
     if (!(this.passive && this.state === "unaware") && dist < range && inCone && (rays.clear(eye, sight.chest) || rays.clear(eye, sight.eye))) {
       seen = true;
       // How fast the meter fills: close, lit, upright and moving fills fastest.
       const near = 1 - dist / range;
-      const light = 0.25 + 0.75 * sight.light;
+      const light = glinting ? 1 : 0.25 + 0.75 * sight.light;
       const stance = 1 - 0.55 * sight.low;
       const move = 0.6 + Math.min(1, sight.speed / 5) * 0.8;
       const centre = 1 - (angle / (this.kit.vision.fov / 2)) * 0.5;
