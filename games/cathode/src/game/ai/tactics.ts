@@ -14,7 +14,7 @@ import type { CoverPoint } from "./cover";
 import type { Director } from "./director";
 import { moraleAccuracy, moraleBand } from "../../sim/morale";
 
-export type ActKind = "move" | "hide" | "peek" | "lean" | "blind" | "reload" | "open" | "surrender";
+export type ActKind = "move" | "hide" | "peek" | "lean" | "blind" | "reload" | "open" | "surrender" | "throw";
 
 /** S3.5 action timings (ms): rise, active range, drop. */
 export const ACT = {
@@ -24,6 +24,8 @@ export const ACT = {
   /** The burst's telegraph (raise, flare, chirp) and recovery; rounds 90 ms apart, 3 to 5 a burst. */
   burst: { windup: 350, gap: 90, recover: 250, rounds: [3, 5] as const },
   reload: 2200,
+  /** The grenade (S3.5): "Frag out!" and the 600 ms arm-back, the release at 600, the follow-through back into cover. */
+  throw: { release: 600, done: 1150 },
   /** The surrender's kneel; he holds it this long before he runs. */
   kneel: 500,
   surrenderHold: 8000,
@@ -35,8 +37,10 @@ export const ACT = {
 export const MAG = 15;
 
 export interface TacEvent {
-  kind: "chirp" | "magOut" | "magIn" | "bolt" | "reloadStart" | "flanked" | "surrender" | "fallBack" | "contact";
+  kind: "chirp" | "magOut" | "magIn" | "bolt" | "reloadStart" | "flanked" | "surrender" | "fallBack" | "contact" | "fragOut" | "throw";
   side?: "left" | "right";
+  /** The throw's aim point (where his squad last saw her, scattered). */
+  at?: THREE.Vector3;
 }
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -62,7 +66,7 @@ export class Tactics {
   /** ms into a reload (-1 none). */
   reloadMs = -1;
   /** The eased pose layers, written into motion.tac. */
-  readonly pose = { lean: 0, blind: 0, reload: -1, hands: 0 };
+  readonly pose = { lean: 0, blind: 0, reload: -1, hands: 0, throw: -1 };
   private crouchWant = 0;
   private leanWant = 0;
   private blindWant = 0;
@@ -270,11 +274,34 @@ export class Tactics {
       this.blindWant = 0;
       face = knows ? last : coverFace;
       aim = 0.45;
-      if (this.t >= this.activeMs) {
+      if (this.t >= this.activeMs && knows && !seen && this.director.wantsNade(e)) {
+        // She's gone to ground where the squad last saw her: flush her out.
+        this.setAct("throw");
+        this.events.push({ kind: "fragOut" });
+      } else if (this.t >= this.activeMs) {
         // Out again: blind fire when a round just cracked past him, peek or lean otherwise. A man with no token
         // and no suppression job looks without shooting (he keeps the squad's eyes on her).
         if (this.lastNearMiss < 1.5 && knows && (c.kind === "full" || shooter)) this.setAct("blind");
         else this.setAct(c.kind === "crouch" ? "peek" : "lean");
+      }
+    } else if (this.act === "throw") {
+      // Up over crouch cover to throw (a full-cover man throws round nothing: he lobs it over), then back down.
+      const T = ACT.throw;
+      const up = this.t < T.done - 200;
+      this.crouchWant = c.kind === "crouch" ? (up ? 0.6 : 1.6) : 0;
+      this.leanWant = 0;
+      this.blindWant = 0;
+      face = last;
+      aim = 0.25;
+      if (this.t - ms < T.release && this.t >= T.release) {
+        const tgt = this.director.target(e);
+        const at = new THREE.Vector3(tgt.x + (Math.random() - 0.5) * 2.4, last.y, tgt.z + (Math.random() - 0.5) * 2.4);
+        this.events.push({ kind: "throw", at });
+      }
+      this.pose.throw = this.t;
+      if (this.t >= T.done) {
+        this.pose.throw = -1;
+        this.setAct("hide");
       }
     } else {
       const spec = ACT[this.act as "peek" | "lean" | "blind"];
@@ -320,7 +347,7 @@ export class Tactics {
     this.fellBack = false;
     this.lastNearMiss = 99;
     this.crouchWant = this.leanWant = this.blindWant = this.handsWant = 0;
-    Object.assign(this.pose, { lean: 0, blind: 0, reload: -1, hands: 0 });
+    Object.assign(this.pose, { lean: 0, blind: 0, reload: -1, hands: 0, throw: -1 });
     this.events.length = 0;
   }
 

@@ -47,7 +47,7 @@ export interface Motion {
    * going to the mag well, the chest pouch and the charging handle; `hands` raises both hands open beside his head
    * (surrender), the carbine gone.
    */
-  tac?: { lean: number; blind: number; reload: number; hands: number } | null;
+  tac?: { lean: number; blind: number; reload: number; hands: number; throw?: number } | null;
 }
 
 const local = {} as Record<Joint, THREE.Vector3>;
@@ -208,7 +208,7 @@ export function animate(body: Body, m: Motion): void {
   body.facing.set(0, 0, 1).applyQuaternion(q);
   // Where the carbine is held: by the hands while both hold it; otherwise where they would hold it, so one hand can
   // carry it (an arm hanging, a hand to the wound). A crawling or reeling man's gun goes with his right hand.
-  const oneHanded = (!!wd && (wd.hang !== null || (wd.hunch > 0.5 && m.arms?.mode !== "pistol"))) || (!!tc && tc.reload >= 0 && !m.crawl);
+  const oneHanded = (!!wd && (wd.hang !== null || (wd.hunch > 0.5 && m.arms?.mode !== "pistol"))) || (!!tc && (tc.reload >= 0 || (tc.throw ?? -1) >= 0) && !m.crawl);
   if (!oneHanded || m.crawl || (r && (r.lie > 0.05 || r.helmet > 0.05))) {
     body.grip.copy(body.joints.handR);
     body.foregrip.copy(body.joints.handL);
@@ -277,6 +277,24 @@ function applyTac(t: NonNullable<Motion["tac"]>): void {
     else if (ms < K.handle) to = well.clone().lerp(handle, smooth01((ms - K.in) / (K.handle - K.in)));
     else if (ms < K.bolt) to = handle.clone().add(armTmp.set(0, 0, -0.06 * smooth01((ms - K.handle) / (K.bolt - K.handle))));
     else to = handle.clone().lerp(fore, smooth01((ms - K.bolt) / (K.done - K.bolt)));
+    local.handL.copy(to);
+  }
+  const th = t.throw ?? -1;
+  if (th >= 0) {
+    // S3.5's throw with the support hand (the carbine hangs in the trigger hand): to his chest for the pin, back
+    // and up behind his shoulder by 600 ms ("Frag out!"), the snap forward and up to the release, the follow-through
+    // down across him, and back to the foregrip.
+    const out = Math.sign(shL.x - shR.x) || 1;
+    const pin = tacA.set(local.chest.x + out * 0.04, local.chest.y + 0.02, local.chest.z + 0.24);
+    const cocked = tacB.set(shL.x + out * 0.14, shL.y + 0.2, shL.z - 0.24);
+    const rel = armTmp.set(shL.x - out * 0.02, shL.y + 0.3, shL.z + 0.55);
+    const follow = new THREE.Vector3(local.chest.x - out * 0.1, local.chest.y - 0.18, local.chest.z + 0.4);
+    let to: THREE.Vector3;
+    if (th < 160) to = new THREE.Vector3().copy(foreAt).lerp(pin, smooth01(th / 160));
+    else if (th < 600) to = pin.clone().lerp(cocked, smooth01((th - 160) / 440));
+    else if (th < 720) to = cocked.clone().lerp(rel, smooth01((th - 600) / 120));
+    else if (th < 900) to = rel.clone().lerp(follow, smooth01((th - 720) / 180));
+    else to = follow.clone().lerp(foreAt, smooth01(Math.min(1, (th - 900) / 250)));
     local.handL.copy(to);
   }
   if (t.hands > 0.001) {

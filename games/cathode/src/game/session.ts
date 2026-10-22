@@ -88,6 +88,9 @@ import { plateWear } from "../sim/armour";
 import { makeStagger } from "../sim/stagger";
 import { Director } from "./ai/director";
 import { RELOAD_KEYS } from "./animate";
+import { stageFlash } from "./laserfx";
+import { EnemyNades, NADE_RADIUS } from "./enemynades";
+import { cargoCrate, concretePillar } from "./coverprops";
 import { loadCover } from "./ai/coverload";
 
 export interface SessionOptions {
@@ -414,6 +417,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const combat = new Combat(world, rays, enemies, o.intensity === "full");
   // C16 (S11): the street's Hollowell men fight as squads from the district's cover (loaded as its own chunk).
   const director = new Director(progress.character.difficulty);
+  // C16 (S3.5): their frag grenades, lobbed where the squad last saw her.
+  const nades = new EnemyNades(world.scene);
   director.form(enemies);
   void loadCover(o.district).then((pts) => (director.cover = pts));
   /** S10: the squads' barks: the subtitle in the faction's colour and the line over the radio, placed where he is. */
@@ -1800,7 +1805,27 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         audio?.enemyReload("out", rel.length(), pan);
       } else if (ev.kind === "magIn") audio?.enemyReload("in", rel.length(), pan);
       else if (ev.kind === "bolt") audio?.enemyReload("bolt", rel.length(), pan);
+      else if (ev.kind === "throw" && ev.at) {
+        const to = ev.at.clone();
+        to.y = ground(to.x, to.z);
+        nades.throw(e.body.joints.handL.clone(), to);
+      }
     });
+    for (const e of enemies) nades.hold(e, e.alive && e.motion.tac && (e.motion.tac.throw ?? -1) >= 120 && (e.motion.tac.throw ?? -1) < 600 ? e.body.joints.handL : null);
+    if (!staged) {
+      nades.update(dt, ground, world.colliders, (at) => {
+        world.fx.explosion(at.clone(), NADE_RADIUS * 0.6);
+        blastNear(at);
+      });
+      for (const b of nades.blasts) {
+        // Her chest in the open within the blast: damage falls off with distance; a wall between them stops it.
+        const d = b.pos.distanceTo(sight.chest);
+        if (dead || d > b.radius || !rays.clear(b.pos, sight.chest)) continue;
+        const k = 1 - d / b.radius;
+        hurtCath(actives.absorb(b.damage * k * k * run.guard * (DAMAGE_TAKEN[progress.character.difficulty] ?? 1)), b.pos, "blast", b);
+      }
+      nades.blasts.length = 0;
+    }
     sayBarks();
     discoverBodies();
     drainEvents();
@@ -1957,7 +1982,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       flesh: vitals.flesh,
       maxFlesh: vitals.maxFlesh,
       regen: vitals.regenerating,
-      nades: stageNades ?? actives.liveGrenades().filter((n) => n.pos.distanceTo(player.pos) < 6).map((n) => ({ bearing: bearingTo(n.pos), left: n.left })),
+      nades: stageNades ?? [...actives.liveGrenades(), ...nades.live()].filter((n) => n.pos.distanceTo(player.pos) < 6).map((n) => ({ bearing: bearingTo(n.pos), left: n.left })),
       hurtResolve: resolveHurt,
       level: s.level,
       xp: progress.character.xp - xpForLevel(progress.character.level),
@@ -4185,7 +4210,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // kneeling behind the crate seen from 50 degrees off, the support hand at the pouch and the spent mag in the street.
   // enemy-telegraph-<ms>: the sniper 22 m out with his laser that far into its sweep up the street to her.
   // bark-subtitle: the reload with its "Reloading!" over the radio.
-  const C16_STAGES = ["enemy-peek", "enemy-lean", "enemy-blindfire", "enemy-reload", "enemy-telegraph", "bark-subtitle"];
+  // enemy-grenade-<ms>: "Frag out!" from behind the crate, the grenade `ms` after the release on its arc to her,
+  // its fuse light blinking and the HUD's grenade glyph on the ring.
+  const C16_STAGES = ["enemy-peek", "enemy-lean", "enemy-blindfire", "enemy-reload", "enemy-telegraph", "bark-subtitle", "enemy-grenade"];
   let c16Props: THREE.Object3D[] = [];
   const c16Stage = (name: string, tMs: number): string => {
     hud.freeze(null);
@@ -4195,6 +4222,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     pickups.clear();
     orbs.clear();
     world.fx.clear?.();
+    nades.clear();
     if (stageCrate) stageCrate.visible = false;
     if (crateCollider) crateCollider.off = true;
     for (const p of c16Props) p.removeFromParent();
@@ -4228,21 +4256,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const e = new Enemy(kit, [new THREE.Vector3()], 1);
     e.passive = true;
     e.stagePose = true;
-    const dist = sniper ? 18 : 5;
+    // Close enough that he fills about a third of the frame (S3.5's beats have to read without the stage's name).
+    const dist = sniper ? 18 : lean ? 3.3 : 2.85;
     // The cover: a rusted cargo crate (1.15 m) or a concrete pillar (2.4 m) square to her line.
     const coverAt = eye.clone().addScaledVector(flat, dist - 0.75).addScaledVector(side, lean ? 0.6 : 0);
     coverAt.y = ground(coverAt.x, coverAt.z);
     const yawTo = Math.atan2(flat.x, flat.z);
     if (!sniper) {
-      const h = lean ? 2.4 : 1.15;
-      const w = lean ? 0.9 : 1.5;
-      const mat = world.material?.(lean ? "concreteA" : "rust") ?? new THREE.MeshStandardMaterial({ color: 0x5a4a40, metalness: 0.5, roughness: 0.6 });
-      const crate = new THREE.Mesh(new THREE.BoxGeometry(w, h, lean ? 0.9 : 0.8), mat);
-      crate.castShadow = crate.receiveShadow = true;
-      crate.position.set(coverAt.x, coverAt.y + h / 2, coverAt.z);
-      crate.rotation.y = yawTo;
-      world.scene.add(crate);
-      c16Props.push(crate);
+      // Built like the street's art: a corrugated Hollowell crate, or a chamfered pillar weeping rust over a puddle.
+      const matOf = (k: string) => world.material?.(k);
+      const prop = lean ? concretePillar(0.9, 2.4, matOf) : cargoCrate(1.5, 1.15, 0.8, matOf);
+      prop.position.copy(coverAt);
+      prop.rotation.y = yawTo;
+      world.scene.add(prop);
+      c16Props.push(prop);
     }
     const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.42 : 0);
     if (!sniper) at.addScaledVector(flat, 0.05);
@@ -4252,7 +4279,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     let from = stageHome.pos.clone();
     if (reload) {
       // Side on and a little behind him (where a flank puts her), the crate off to his front, clear of him.
-      const off = side.clone().multiplyScalar(-3.4).addScaledVector(flat, 0.9);
+      const off = side.clone().multiplyScalar(-2.5).addScaledVector(flat, 0.75);
       from = at.clone().add(off);
       from.y = ground(from.x, from.z);
     }
@@ -4265,8 +4292,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     e.motion.aim = 1;
     e.motion.pitch = Math.atan2(eyeAt.y - (at.y + 1.5), Math.hypot(eyeAt.x - at.x, eyeAt.z - at.z));
-    const pose = { lean: 0, blind: 0, reload: -1, hands: 0 };
-    if (base === "enemy-peek") e.motion.crouch = 0.3;
+    const grenade = base === "enemy-grenade";
+    const pose = { lean: 0, blind: 0, reload: -1, hands: 0, throw: -1 };
+    if (base === "enemy-peek") e.motion.crouch = 0.15;
+    else if (grenade) {
+      e.motion.crouch = 0.6;
+      e.motion.aim = 0.25;
+      pose.throw = 600;
+    }
     else if (lean) pose.lean = -1;
     else if (base === "enemy-blindfire") {
       e.motion.crouch = 1.6;
@@ -4281,7 +4314,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.scene.add(e.body.root);
     lineup.push(e);
     const sight = sniper ? { ...sightNone(), chest: eyeAt.clone().setY(eyeAt.y - 0.35), eye: eyeAt.clone() } : sightNone();
-    const ms = tMs === 40 ? Number(/-(\d+)$/.exec(name)?.[1] ?? (sniper ? 300 : reload ? 1000 : 0)) : tMs;
+    const ms = tMs === 40 ? Number(/-(\d+)$/.exec(name)?.[1] ?? (sniper ? 300 : reload ? 1000 : grenade ? 450 : 0)) : tMs;
     if (sniper) {
       // The sweep: the laser starts a step short of her feet and is `ms` into its 450 ms climb to her chest.
       e.state = "combat";
@@ -4311,26 +4344,62 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       pose.reload = ms;
       e.update(0.0001, sightNone(), rays, world.colliders, ground);
     }
+    e.body.pose();
+    if (grenade) {
+      // Released from his hand at 600 ms, lobbed to land a step in front of her and off to her left, then held `ms`
+      // into its flight; he's into the follow-through.
+      const from = e.body.joints.handL.clone();
+      const to = eye.clone().addScaledVector(flat, 2.3).addScaledVector(side, -0.9);
+      to.y = ground(to.x, to.z);
+      nades.throw(from, to);
+      nades.advance(ms / 1000, ground, world.colliders);
+      pose.throw = 600 + Math.min(ms, 550);
+      e.update(0.0001, sightNone(), rays, world.colliders, ground);
+      e.body.pose();
+      hud.bark("Enforcer", "Frag out!", true);
+    }
     if (base === "enemy-blindfire") {
+      // The burst over the top, held on a round: the flash star at the muzzle, its light on the crate and his
+      // arms, and the smoke it leaves hanging above the cover.
       const mf = new THREE.Vector3();
       const md = new THREE.Vector3();
       e.muzzle(mf, md);
-      world.fx.muzzle(mf, md, 0.6);
+      world.fx.muzzle(mf, md, 1);
+      for (const p of stageFlash(mf, md)) {
+        world.scene.add(p);
+        c16Props.push(p);
+      }
     }
-    e.body.pose();
+    if (reload && e.magDrops.length) {
+      // The spent mag in the street catches the lamp: a small warm light just over it brings out its edges.
+      const m = e.magDrops[e.magDrops.length - 1]!.obj;
+      m.updateMatrixWorld(true);
+      const glint = new THREE.PointLight(0xffd0a0, 1.6, 1.2, 2);
+      glint.position.setFromMatrixPosition(m.matrixWorld).add(new THREE.Vector3(0.12, 0.35, 0.1));
+      world.scene.add(glint);
+      c16Props.push(glint);
+    }
     // A review light over the cover, like the street's sodium lamps (the turntable's key and a cold rim): the stage spot
     // is between two lamps, where a man behind a crate is a silhouette.
-    if (!sniper) {
-      const key = new THREE.SpotLight(0xffc690, 30, 12, 0.42, 0.65, 1.4);
-      key.position.copy(coverAt).addScaledVector(flat, -2.2).addScaledVector(side, -1.6).setY(coverAt.y + 4.2);
-      key.target.position.copy(at).setY(at.y + 1.3);
-      const rim = new THREE.SpotLight(0x58d8ff, 22, 14, 0.5, 0.5, 1.4);
-      rim.position.copy(at).addScaledVector(flat, 2.6).addScaledVector(side, 1.4).setY(at.y + 4);
-      rim.target.position.copy(at).setY(at.y + 1.1);
+    {
+      // The key comes from a sodium lamp up and to the side of him (a lamp head on its arm is in the street), its narrow
+      // cone landing on him and the cover top, not pooling on the road in front of her. A cold rim from behind and
+      // the other side cuts his helmet and shoulders off the cover and the street behind.
+      const target = sniper ? e.motion.pos : at;
+      const key = new THREE.SpotLight(0xffb070, sniper ? 40 : 16, 9, 0.3, 0.7, 1.6);
+      key.position.copy(target).addScaledVector(flat, 0.6).addScaledVector(side, -2.2).setY(target.y + 4.4);
+      key.target.position.copy(target).setY(target.y + 1.1);
+      const rim = new THREE.SpotLight(0x58d8ff, sniper ? 60 : 34, 10, 0.34, 0.5, 1.4);
+      rim.position.copy(target).addScaledVector(flat, 2.4).addScaledVector(side, 1.8).setY(target.y + 3.4);
+      rim.target.position.copy(target).setY(target.y + 1.2);
+      const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 0.12, 14), world.material?.("glowSodium") ?? new THREE.MeshBasicMaterial({ color: 0xffa050 }));
+      lamp.position.copy(key.position);
       for (const l of [key, rim]) {
         world.scene.add(l, l.target);
         c16Props.push(l, l.target);
       }
+      world.scene.add(lamp);
+      c16Props.push(lamp);
     }
     // She holds the Kestrel (the stages read as the fight, not the tutorial's Pin).
     if (arsenal.weapon.id !== "kestrel") {

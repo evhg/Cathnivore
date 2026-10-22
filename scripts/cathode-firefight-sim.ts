@@ -38,6 +38,7 @@ interface Result {
   leans: number;
   blinds: number;
   surrenders: number;
+  throws: number;
   minMorale: number;
 }
 
@@ -72,7 +73,7 @@ function run(seed: number): Result {
       enemies.push(e);
     }
     director.form(enemies);
-    const res: Result = { firstLos: -1, firstDamage: -1, flanks: 0, reloads: 0, barks: {}, stuck: 0, kills: 0, cathHits: 0, peeks: 0, leans: 0, blinds: 0, surrenders: 0, minMorale: 1 };
+    const res: Result = { firstLos: -1, firstDamage: -1, flanks: 0, reloads: 0, barks: {}, stuck: 0, kills: 0, cathHits: 0, peeks: 0, leans: 0, blinds: 0, surrenders: 0, throws: 0, minMorale: 1 };
     const pos = cath.clone();
     let strafe = 1;
     let strafeT = 0;
@@ -109,6 +110,7 @@ function run(seed: number): Result {
       for (const e of enemies) e.update(DT, sight, rays, colliders, ground);
       director.drain(enemies, (e, ev) => {
         if (ev.kind === "magOut") e.dropMag();
+        if (ev.kind === "throw") res.throws++;
       });
       for (const bk of director.barks) {
         res.barks[bk.kind] = (res.barks[bk.kind] ?? 0) + 1;
@@ -184,7 +186,7 @@ console.log(`firefight sim: ${RUNS} encounters, ${((performance.now() - t0) / 10
 console.log(`  time to first damage after first LOS: min ${minTtd.toFixed(2)} s, median ${pct(ttd, 0.5).toFixed(2)} s, p90 ${pct(ttd, 0.9).toFixed(2)} s (${ttd.length} encounters drew blood)`);
 console.log(`  flanks: ${sum("flanks")} total, ${noFlank} encounters without one; "Reloading!": ${sum("reloads")} total, ${noReload} encounters without one`);
 console.log(`  longest stuck: ${stuck.toFixed(2)} s; kills ${sum("kills")}, rounds on Cath ${sum("cathHits")}, surrenders ${sum("surrenders")}`);
-console.log(`  acts: peek ${sum("peeks")}, lean ${sum("leans")}, blind ${sum("blinds")}; barks ${JSON.stringify(barks)}`);
+console.log(`  acts: peek ${sum("peeks")}, lean ${sum("leans")}, blind ${sum("blinds")}, grenades ${sum("throws")}; barks ${JSON.stringify(barks)}`);
 const pass = minTtd >= 1.0 && noFlank === 0 && noReload === 0 && stuck <= 5;
 console.log(`  lowest morale per encounter: median ${pct(out.map((r) => r.minMorale), 0.5).toFixed(2)}, min ${Math.min(...out.map((r) => r.minMorale)).toFixed(2)}`);
 console.log(pass ? "PASS" : "FAIL");

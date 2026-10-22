@@ -182,3 +182,46 @@ export class LaserDot extends THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMater
     u.uMinPx!.value = minPx;
   }
 }
+
+let smokeTex: THREE.CanvasTexture | null = null;
+function smokeTexture(): THREE.CanvasTexture | null {
+  if (smokeTex || typeof document === "undefined") return smokeTex;
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const g = c.getContext("2d");
+  if (!g) return null;
+  const grd = g.createRadialGradient(64, 64, 4, 64, 64, 62);
+  grd.addColorStop(0, "rgba(200,200,205,0.55)");
+  grd.addColorStop(0.5, "rgba(170,172,178,0.22)");
+  grd.addColorStop(1, "rgba(150,150,155,0)");
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 128, 128);
+  smokeTex = new THREE.CanvasTexture(c);
+  smokeTex.colorSpace = THREE.SRGBColorSpace;
+  return smokeTex;
+}
+
+/**
+ * A held muzzle flash for a screenshot stage (the live flash lasts a frame or two): the flash star a little out
+ * from the muzzle with a pixel floor, its warm light, and a few soft puffs of smoke drifting up from it.
+ */
+export function stageFlash(at: THREE.Vector3, dir: THREE.Vector3): THREE.Object3D[] {
+  const out: THREE.Object3D[] = [];
+  const star = new LaserDot(0xffb060);
+  star.place(at.clone().addScaledVector(dir, 0.1), 0.16, 1, 9);
+  const core = new LaserDot(0xfff0c0);
+  core.place(at.clone().addScaledVector(dir, 0.05), 0.06, 1, 4);
+  const light = new THREE.PointLight(0xffa850, 7, 4.5, 2);
+  light.position.copy(at).addScaledVector(dir, 0.15);
+  out.push(star, core, light);
+  const t = smokeTexture();
+  if (t) {
+    for (let i = 0; i < 4; i++) {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, opacity: 0.5 - i * 0.08, fog: true }));
+      sp.position.copy(at).addScaledVector(dir, 0.12 + i * 0.1).add(new THREE.Vector3(0, 0.05 + i * 0.09, 0));
+      sp.scale.setScalar(0.2 + i * 0.12);
+      out.push(sp);
+    }
+  }
+  return out;
+}

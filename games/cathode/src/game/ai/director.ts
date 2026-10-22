@@ -42,6 +42,8 @@ export class Director {
   readonly barks: Bark[] = [];
   cover: CoverPoint[] = [];
   private cath: Flat = { x: 0, z: 0 };
+  /** Seconds until each squad may throw again (S3.5: grenades are rare, so each one is an event). */
+  private readonly nadeCd = new Map<Squad, number>();
   private cathV = new THREE.Vector3();
 
   constructor(readonly difficulty: Difficulty) {}
@@ -153,6 +155,19 @@ export class Director {
     return Math.max(0, Math.min(1, (a - 25) / 65));
   }
 
+  /**
+   * A grenade now? She went out of the squad's sight between 1.2 and 8 s ago, he's 6 to 22 m from where they saw
+   * her, and the squad hasn't thrown in the last 14 to 20 s. Then a coin flip, so it isn't clockwork.
+   */
+  wantsNade(e: Enemy): boolean {
+    const s = this.squadOf(e);
+    if (!s || !s.seen || s.outOfSight < 1.2 || s.outOfSight > 8 || (this.nadeCd.get(s) ?? 6) > 0) return false;
+    const d = Math.hypot(e.position.x - s.lastSeen.x, e.position.z - s.lastSeen.z);
+    if (d < 6 || d > 22 || Math.random() < 0.5) return false;
+    this.nadeCd.set(s, 14 + Math.random() * 6);
+    return true;
+  }
+
   claim(e: Enemy, idx: number): void {
     this.unclaim(e);
     const en = this.byEnemy.get(e);
@@ -215,6 +230,7 @@ export class Director {
     this.cathV.copy(cath);
     for (const s of this.squads) {
       this.gates.get(s)!.tick(dt);
+      this.nadeCd.set(s, Math.max(0, (this.nadeCd.get(s) ?? 6) - dt));
     }
     // Deaths: allies within 15 m lose nerve, the leader's death shakes the whole squad; "Man down!".
     for (const en of this.byEnemy.values()) {
@@ -279,6 +295,7 @@ export class Director {
       if (!e.tac || !e.tac.events.length) continue;
       for (const ev of e.tac.events) {
         if (ev.kind === "reloadStart") this.say(e, "reload");
+        else if (ev.kind === "fragOut") this.say(e, "grenade");
         else if (ev.kind === "flanked") this.say(e, "flank", { side: ev.side });
         else if (ev.kind === "fallBack") this.say(e, "fallBack");
         else if (ev.kind === "surrender") this.say(e, "surrender");
