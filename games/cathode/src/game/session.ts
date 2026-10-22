@@ -4242,7 +4242,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.scene.add(crate);
       c16Props.push(crate);
     }
-    const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.6 - 0.5 : 0);
+    const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.42 : 0);
     if (!sniper) at.addScaledVector(flat, 0.05);
     at.y = ground(at.x, at.z);
     e.motion.pos.copy(at);
@@ -4271,7 +4271,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       pose.blind = 1;
       e.motion.kick = 0.7;
     } else if (reload) {
-      e.motion.crouch = 1.25;
+      e.motion.crouch = 1.6;
       e.motion.aim = 0.3;
       e.motion.pitch = -0.25;
     }

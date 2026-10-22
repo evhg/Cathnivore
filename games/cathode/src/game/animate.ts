@@ -244,7 +244,7 @@ function applyTac(t: NonNullable<Motion["tac"]>): void {
     // Over the top: the trigger hand above the helmet, a forearm's reach forward, the support hand up the line.
     // Within reach: arms near straight up and forward; the carbine lies level along the two hands.
     tacA.set(local.neck.x - 0.07, local.neck.y + 0.34, local.neck.z + 0.26);
-    tacB.set(tacA.x + 0.06, tacA.y - 0.01, tacA.z + 0.22);
+    tacB.set(tacA.x + 0.06, tacA.y - 0.05, tacA.z + 0.24);
     local.handR.lerp(tacA, k);
     local.handL.lerp(tacB, k);
     // His head tucks down under his arms.
