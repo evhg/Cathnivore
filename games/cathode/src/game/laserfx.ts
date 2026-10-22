@@ -58,7 +58,9 @@ void main() {
   // Saturated red, never pushed past 1 (over 1 the grade and tone curve wash it to salmon): the bloom does the glow.
   float hot = core * (0.8 + 0.2 * (1.0 - smoothstep(0.0, vCore * 0.5, x)));
   vec3 col = uColor * (hot + halo) + vec3(0.25, 0.02, 0.0) * core;
-  gl_FragColor = vec4(col * uOpacity, 1.0);
+  // Premultiplied over: the core covers what's behind it (an additive core over the street's cyan neon summed to
+  // salmon), the halo adds light on top.
+  gl_FragColor = vec4(col * uOpacity, core * 0.85 * uOpacity);
 }`;
 
 const DOT_VS = /* glsl */ `
@@ -117,6 +119,9 @@ export class LaserBeam extends THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMate
     g.setIndex([0, 2, 1, 1, 2, 3]);
     const m = new THREE.ShaderMaterial({
       ...additive,
+      blending: THREE.CustomBlending,
+      blendSrc: THREE.OneFactor,
+      blendDst: THREE.OneMinusSrcAlphaFactor,
       side: THREE.DoubleSide,
       uniforms: {
         uFrom: { value: new THREE.Vector3() },
@@ -213,7 +218,7 @@ export function stageFlash(at: THREE.Vector3, dir: THREE.Vector3): THREE.Object3
   const core = new LaserDot(0xfff0c0);
   core.place(at.clone().addScaledVector(dir, 0.05), 0.06, 1, 4);
   // Up and back over his hands (a light at the muzzle's tip would rake the cover's face toward her).
-  const light = new THREE.PointLight(0xffa850, 2.6, 3, 2);
+  const light = new THREE.PointLight(0xffa850, 1.4, 2.2, 2);
   light.position.copy(at).addScaledVector(dir, -0.3).add(new THREE.Vector3(0, 0.22, 0));
   out.push(star, core, light);
   const t = smokeTexture();

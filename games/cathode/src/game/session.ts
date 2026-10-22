@@ -4271,7 +4271,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.scene.add(prop);
       c16Props.push(prop);
     }
-    const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.24 : 0);
+    const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.36 : 0);
     if (!sniper) at.addScaledVector(flat, 0.05);
     at.y = ground(at.x, at.z);
     e.motion.pos.copy(at);
@@ -4352,7 +4352,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const to = eye.clone().addScaledVector(flat, 1.4).addScaledVector(side, -1.2);
       to.y = ground(to.x, to.z);
       nades.throw(from, to);
-      nades.advance(ms / 1000, ground, world.colliders);
+      // The street's colliders are left out of the held arc: the stage shows the throw, not whatever it might clip.
+      nades.advance(ms / 1000, ground, []);
       pose.throw = 600 + Math.min(ms, 550);
       e.update(0.0001, sightNone(), rays, world.colliders, ground);
       e.body.pose();
@@ -4364,7 +4365,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const mf = new THREE.Vector3();
       const md = new THREE.Vector3();
       e.muzzle(mf, md);
-      world.fx.muzzle(mf, md, 1);
+      // Not the live flash: its light sits at the muzzle tip, just past the crate's lip, and floods the face toward her.
       for (const p of stageFlash(mf, md)) {
         world.scene.add(p);
         c16Props.push(p);
@@ -4401,6 +4402,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
       world.scene.add(lamp);
       c16Props.push(lamp);
+      if (lean) {
+        // Neon spill from across the street on the pillar's face (unlit, it read as a black slab), cut tight to the
+        // pillar so it doesn't pool on the road.
+        const spill = new THREE.SpotLight(0x8fb8ff, 9, 8, 0.22, 0.6, 1.5);
+        spill.position.copy(coverAt).addScaledVector(flat, -3.2).addScaledVector(side, 2.4).setY(coverAt.y + 3);
+        spill.target.position.copy(coverAt).setY(coverAt.y + 1.4);
+        world.scene.add(spill, spill.target);
+        c16Props.push(spill, spill.target);
+      }
     }
     // She holds the Kestrel (the stages read as the fight, not the tutorial's Pin).
     if (arsenal.weapon.id !== "kestrel") {

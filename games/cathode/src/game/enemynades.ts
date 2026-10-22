@@ -26,6 +26,7 @@ interface Nade {
   trail: Line2;
   pts: THREE.Vector3[];
   rest: boolean;
+  age: number;
 }
 
 let bodyGeo: THREE.BufferGeometry | null = null;
@@ -61,15 +62,15 @@ export class EnemyNades {
     const geo = new LineGeometry();
     const pts = Array.from({ length: TRAIL_N }, () => from.clone());
     geo.setPositions(pts.flatMap((p) => [p.x, p.y, p.z]));
-    geo.setColors(pts.flatMap((_, i) => { const k = (i / (TRAIL_N - 1)) ** 1.6 * 0.55; return [k, k * 0.62, k * 0.4]; }));
-    const lm = new LineMaterial({ linewidth: 2.2, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, worldUnits: false });
+    geo.setColors(pts.flatMap((_, i) => { const k = (i / (TRAIL_N - 1)) ** 1.4 * 0.9; return [k, k * 0.55, k * 0.32]; }));
+    const lm = new LineMaterial({ linewidth: 3, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, worldUnits: false });
     const trail = new Line2(geo, lm);
     trail.frustumCulled = false;
     trail.onBeforeRender = (r) => {
       r.getDrawingBufferSize(lm.resolution);
     };
     this.scene.add(body, light, trail);
-    this.list.push({ pos: from.clone(), vel, fuse, body, light, trail, pts, rest: false });
+    this.list.push({ pos: from.clone(), vel, fuse, body, light, trail, pts, rest: false, age: 0 });
     this.place(this.list[this.list.length - 1]!, 0);
   }
 
@@ -102,11 +103,13 @@ export class EnemyNades {
 
   private step(n: Nade, dt: number, ground: (x: number, z: number) => number, colliders: readonly THREE.Box3[]): void {
     if (n.rest) return;
+    n.age += dt;
     n.vel.y -= G * dt;
     const next = n.pos.clone().addScaledVector(n.vel, dt);
     const floor = ground(next.x, next.z) + 0.04;
     let wall = false;
-    for (const c of colliders) if (c.containsPoint(next)) wall = true;
+    // Clear of his own cover first: a hand at the release can sit just inside its box.
+    if (n.age > 0.15) for (const c of colliders) if (c.containsPoint(next)) wall = true;
     if (wall) {
       n.vel.x *= -0.3;
       n.vel.z *= -0.3;
@@ -132,7 +135,7 @@ export class EnemyNades {
     // The fuse light on the head: on for half of every 250 ms.
     const on = ((NADE_FUSE - n.fuse) * NADE_BLINK_HZ) % 1 < 0.5;
     n.light.visible = on;
-    n.light.place(n.pos.clone().setY(n.pos.y + 0.05), 0.05, 1, 3);
+    n.light.place(n.pos.clone().setY(n.pos.y + 0.05), 0.06, 1, 4);
     // The trail: the newest point is the grenade; once it rests the trail drains away.
     n.pts.pop();
     n.pts.unshift(n.pos.clone());
