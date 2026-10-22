@@ -161,6 +161,38 @@ async function lumaOf(png, step = 4) {
   return r
 }
 
+/** How many of `pts` (CSS px) have a laser-red pixel within `r` CSS px in the screenshot. */
+async function redAlong(png, pts, r, dpr) {
+  if (!pts.length) return 0
+  const pg = await browser.newPage()
+  const n = await pg.evaluate(
+    async ([b64, pts, r, dpr]) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${b64}`
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const g = c.getContext('2d')
+      g.drawImage(img, 0, 0)
+      let hits = 0
+      for (const p of pts) {
+        const R = Math.ceil(r * dpr)
+        const x0 = Math.max(0, Math.round(p.x * dpr) - R)
+        const y0 = Math.max(0, Math.round(p.y * dpr) - R)
+        const d = g.getImageData(x0, y0, 2 * R + 1, 2 * R + 1).data
+        let hit = false
+        for (let i = 0; i < d.length && !hit; i += 4) hit = d[i] > 120 && d[i] > d[i + 1] * 1.5 && d[i] > d[i + 2] * 1.5
+        if (hit) hits++
+      }
+      return hits
+    },
+    [png.toString('base64'), pts, r, dpr],
+  )
+  await pg.close()
+  return n
+}
+
 /** Share of the frame's width that is empty: columns with almost no detail (std dev of luminance < 0.012). */
 function emptyWidth(f) {
   let empty = 0
@@ -671,6 +703,17 @@ for (const vp of vps) {
       }
     }
     // ---- C16 acceptance ----
+    if (stage.startsWith('enemy-telegraph')) {
+      // The laser must show along its projected line: laser-red pixels (r high, well over g and b) within 3 CSS px of
+      // each sample. The review saw a run pass with no beam at all on the phone (culled as "small").
+      const pts = info?.laser ?? []
+      const png = await page.screenshot({ timeout: 300_000 })
+      const hits = await redAlong(png, pts, 3, V.dsf)
+      const share = pts.length ? hits / pts.length : 0
+      console.log(`  C16 ${vp} ${spec}: laser red at ${hits}/${pts.length} samples along the beam`, process.env.DEBUG_LASER ? JSON.stringify(pts.map((p) => [Math.round(p.x), Math.round(p.y)])) : "")
+      if (!pts.length) fail(`${vp} ${spec}: the laser isn't in frame`)
+      else if (share < 0.6) fail(`${vp} ${spec}: the laser shows at only ${hits} of ${pts.length} samples along its line`)
+    }
     if (stage === 'bark-subtitle') {
       const bark = (side?.texts ?? []).filter(([c]) => /hud-bark|^line$/.test(String(c)))
       if (!bark.length) fail(`${vp} ${spec}: no bark subtitle on screen`)

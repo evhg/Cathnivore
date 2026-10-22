@@ -138,6 +138,8 @@ export function hideSmall(scene: THREE.Object3D, eye: THREE.Vector3, k: number, 
   scene.traverseVisible((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh || (m as THREE.InstancedMesh).isInstancedMesh || !(m.layers.isEnabled(0) || m.layers.isEnabled(LAYER_MIRROR_ONLY))) return;
+    // Unculled meshes (screen-space effects such as the sniper's laser, sized in the vertex shader) have no real bounds.
+    if (!m.frustumCulled) return;
     const bs = sphereOf(m);
     const r = bs.radius * m.matrixWorld.getMaxScaleOnAxis();
     if (r * r < k2 * cullCentre.copy(bs.center).applyMatrix4(m.matrixWorld).distanceToSquared(eye)) {

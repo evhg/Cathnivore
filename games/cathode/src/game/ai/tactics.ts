@@ -83,6 +83,12 @@ export class Tactics {
   stuckFor = 0;
   /** True once morale sent him back (the bark is said once). */
   fellBack = false;
+  /** Per-man scratch (step runs every frame for every man: no allocations). The plan's vectors are only read that frame. */
+  private readonly vA = new THREE.Vector3();
+  private readonly vB = new THREE.Vector3();
+  private readonly vSpot = new THREE.Vector3();
+  private readonly vTarget = new THREE.Vector3();
+  private readonly vFace = new THREE.Vector3();
 
   constructor(
     readonly self: Enemy,
@@ -193,12 +199,12 @@ export class Tactics {
       this.blindWant = 0;
       face = seen ? cath : last;
       aim = 1;
-      const toward = new THREE.Vector3(cath.x - e.position.x, 0, cath.z - e.position.z);
+      const toward = this.vA.set(cath.x - e.position.x, 0, cath.z - e.position.z);
       const d = toward.length();
       toward.normalize();
-      const side = new THREE.Vector3(-toward.z, 0, toward.x).multiplyScalar(this.director.strafeSign(e));
-      const along = toward.clone().multiplyScalar(d > 18 ? 1 : d < 8 ? -1 : 0);
-      target = e.position.clone().add(side.add(along).multiplyScalar(3));
+      const side = this.vB.set(-toward.z, 0, toward.x).multiplyScalar(this.director.strafeSign(e));
+      side.addScaledVector(toward, d > 18 ? 1 : d < 8 ? -1 : 0);
+      target = this.vTarget.copy(e.position).addScaledVector(side, 3);
       speed = e.kit.walk * 1.3;
       this.fire(dt, seen, sight, rays, role, 1);
       this.ease(dt);
@@ -206,7 +212,7 @@ export class Tactics {
     }
 
     const c = this.cover!;
-    const spot = new THREE.Vector3(c.x, c.y, c.z);
+    const spot = this.vSpot.set(c.x, c.y, c.z);
 
     // ---- running to cover ----
     if (this.act === "move") {
@@ -247,9 +253,9 @@ export class Tactics {
     this.t += ms;
     // Hold the spot (and step out to the side to lean, back in to hide).
     const leanStep = this.act === "lean" ? 0.38 * Math.min(1, this.t / ACT.lean.rise) : 0;
-    target = spot.clone().add(new THREE.Vector3(c.fz * c.lean, 0, -c.fx * c.lean).multiplyScalar(leanStep));
+    target = this.vTarget.set(c.fz * c.lean, 0, -c.fx * c.lean).multiplyScalar(leanStep).add(spot);
     speed = e.kit.walk * 1.2;
-    const coverFace = new THREE.Vector3(c.x + c.fx, c.y, c.z + c.fz);
+    const coverFace = this.vFace.set(c.x + c.fx, c.y, c.z + c.fz);
     const shooter = !!m?.token || role === "suppress";
     if (this.reloadMs >= 0) {
       this.setActIf("hide");

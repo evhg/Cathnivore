@@ -241,10 +241,18 @@ function applyTac(t: NonNullable<Motion["tac"]>): void {
   const shL = local.shoulderL;
   if (t.blind > 0.001) {
     const k = smooth01(t.blind);
-    // Over the top: the trigger hand above the helmet, a forearm's reach forward, the support hand up the line.
-    // Within reach: arms near straight up and forward; the carbine lies level along the two hands.
-    tacA.set(local.neck.x - 0.07, local.neck.y + 0.34, local.neck.z + 0.26);
-    tacB.set(tacA.x + 0.06, tacA.y - 0.05, tacA.z + 0.24);
+    // Over the top: the trigger hand above the helmet and forward, the support hand a foregrip's length straight out
+    // from it, so the carbine lies level (2 degrees down) over the cover. The pair slides back and down along that line
+    // until both hands are in reach: an out-of-reach support hand used to be clamped short by the IK, which tipped the
+    // muzzle 45 degrees up at the sky.
+    const reach = (UPPER + FORE) * 0.97;
+    tacA.set(shR.x + 0.13, Math.max(shR.y, shL.y) + 0.36, Math.max(shR.z, shL.z) + 0.2);
+    for (let i = 0; i < 24; i++) {
+      tacB.set(tacA.x + 0.05, tacA.y - 0.01, tacA.z + FOREGRIP_M);
+      if (tacA.distanceTo(shR) <= reach && tacB.distanceTo(shL) <= reach) break;
+      tacA.z -= 0.025;
+      tacA.y -= 0.012;
+    }
     local.handR.lerp(tacA, k);
     local.handL.lerp(tacB, k);
     // His head tucks down under his arms.

@@ -18,6 +18,7 @@ import { animate, muzzleOf, RELOAD_KEYS, type Motion } from "./animate";
 import type { RayWorld } from "./ray";
 import type { Tactics } from "./ai/tactics";
 import { makeMorale, type Morale } from "../sim/morale";
+import { LaserBeam, LaserDot } from "./laserfx";
 
 export type Awareness = "unaware" | "suspicious" | "searching" | "combat" | "dead";
 
@@ -302,9 +303,9 @@ export class Enemy {
   shieldMax = 0;
   readonly shards: ShieldShard[] = [];
   private bashCd = 0;
-  laser: THREE.Mesh | null = null;
+  laser: LaserBeam | null = null;
   /** C16 (S3.5): the laser's dot where it lands, the sweep's clock (s, -1 none), its start on the street and its aim. */
-  laserDot: THREE.Mesh | null = null;
+  laserDot: LaserDot | null = null;
   laserT = -1;
   readonly laserFrom = new THREE.Vector3();
   readonly laserAim = new THREE.Vector3();
@@ -398,14 +399,12 @@ export class Enemy {
       this.shieldMax = this.shieldHp = kit.maxHp * SHIELD_HP_SHARE;
     }
     if (kit.role === "sniper") {
-      const lg = new THREE.CylinderGeometry(0.004, 0.004, 1, 4, 1, true);
-      lg.translate(0, 0.5, 0);
-      lg.rotateX(Math.PI / 2);
-      // S3.5: a 3 mm additive #ff3b1a line (the geometry is 8 mm; scaled to 3 and widened as the charge builds).
-      this.laser = new THREE.Mesh(lg, new THREE.MeshBasicMaterial({ color: 0xff3b1a, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+      // S3.5: a 3 mm additive #ff3b1a line, drawn as a screen-space ribbon whose core never drops under 2 target px (at
+      // 18 m on a phone's half-scale target the real 3 mm is a tenth of a pixel), in a soft halo; a glowing dot where it lands.
+      this.laser = new LaserBeam(0xff3b1a);
       this.laser.visible = false;
       this.body.root.add(this.laser);
-      this.laserDot = new THREE.Mesh(new THREE.SphereGeometry(0.022, 10, 6), new THREE.MeshBasicMaterial({ color: 0xff5a30, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+      this.laserDot = new LaserDot(0xff5a30);
       this.laserDot.visible = false;
       this.body.root.add(this.laserDot);
     }
@@ -839,17 +838,11 @@ export class Enemy {
         const k = Math.min(1, st / LASER_SWEEP_S);
         const e = k * k * (3 - 2 * k);
         const end = this.laserFrom.clone().lerp(this.laserAim, e);
-        // It stops on whatever is in the way.
-        const len = from.distanceTo(end);
-        this.laser.position.copy(from);
-        this.laser.lookAt(end);
-        const w = 0.375 * (1 + 1.6 * (this.charge / SNIPER_CHARGE));
-        this.laser.scale.set(w, w, len);
-        (this.laser.material as THREE.MeshBasicMaterial).opacity = 0.45 + 0.5 * (this.charge / SNIPER_CHARGE);
+        const c = this.charge / SNIPER_CHARGE;
+        this.laser.span(from, end, 0.0015 * (1 + 1.6 * c), 0.55 + 0.45 * c);
         if (this.laserDot) {
           this.laserDot.visible = true;
-          this.laserDot.position.copy(end);
-          this.laserDot.scale.setScalar(0.8 + 0.6 * (this.charge / SNIPER_CHARGE));
+          this.laserDot.place(end, 0.05 * (0.8 + 0.6 * c), 0.95);
         }
       }
     }

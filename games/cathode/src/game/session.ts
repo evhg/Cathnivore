@@ -182,6 +182,8 @@ export interface Session {
     /** C3: the first gun's case on screen (CSS px), and whether it is in front of the camera. */
     caseAt?: { x: number; y: number; front: boolean };
     beam?: { x0: number; y0: number; x1: number; y1: number; r: number };
+    /** C16: the sniper's laser sampled along its length on screen (CSS px; only the samples in frame). */
+    laser?: { x: number; y: number }[];
     /** C9: how he died, and the pool under him on screen (CSS px). */
     variant?: string | null;
     pool?: { x: number; y: number; rx: number; ry: number; age: number } | null;
@@ -4340,8 +4342,31 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Framed with him left of centre, clear of the pistol in her right hand.
     const camDir = e.body.joints.chest.clone().sub(eyeAt).setY(0).normalize();
     const camRight = new THREE.Vector3(-camDir.z, 0, camDir.x);
-    lookFrom(from, sniper ? e.body.joints.chest.clone().lerp(eyeAt.clone().setY(at.y), 0.2) : e.body.joints.chest.clone().addScaledVector(camRight, reload ? 0.75 : 0.45).setY(e.body.joints.chest.y - 0.1));
+    lookFrom(from, sniper ? e.body.joints.chest.clone().lerp(eyeAt.clone().setY(at.y), 0.2).addScaledVector(camRight, 3.2) : e.body.joints.chest.clone().addScaledVector(camRight, reload ? 0.75 : 0.45).setY(e.body.joints.chest.y - 0.1));
     probeGuard = e;
+    if (sniper && e.laser) {
+      // The beam's samples on screen, for the shot runner's pixel probe (it fails the stage with no red along them).
+      world.camera.updateMatrixWorld();
+      const u = e.laser.material.uniforms;
+      const a = (u.uFrom!.value as THREE.Vector3).clone();
+      const b = (u.uTo!.value as THREE.Vector3).clone();
+      const pts: { x: number; y: number }[] = [];
+      const c = world.renderer.domElement;
+      // Evenly spaced on screen (the beam's far metres crowd into a few pixels by the sniper), the near end clipped
+      // in front of the lens as the shader clips it.
+      const va = a.applyMatrix4(world.camera.matrixWorldInverse);
+      const vb = b.applyMatrix4(world.camera.matrixWorldInverse);
+      if (va.z > -0.3) va.lerp(vb, (va.z + 0.3) / (va.z - vb.z));
+      if (vb.z > -0.3) vb.lerp(va, (vb.z + 0.3) / (vb.z - va.z));
+      const na = va.applyMatrix4(world.camera.projectionMatrix);
+      const nb = vb.applyMatrix4(world.camera.projectionMatrix);
+      for (let i = 0; i <= 24; i++) {
+        const n = na.clone().lerp(nb, i / 24);
+        if (Math.abs(n.x) > 0.98 || Math.abs(n.y) > 0.98) continue;
+        pts.push({ x: ((n.x + 1) / 2) * c.clientWidth, y: ((1 - n.y) / 2) * c.clientHeight });
+      }
+      s.stageInfo = { hit: { x: 0, y: 0 }, r02: 0, head0: { x: 0, y: 0 }, head1: { x: 0, y: 0 }, puffM: 0, splats: [], corpse: { pelvis: { x: 0, y: 0 }, head: { x: 0, y: 0 }, chest: { x: 0, y: 0 } }, laser: pts };
+    }
     hud.freeze(tMs);
     return "ok";
   };
