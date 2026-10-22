@@ -111,6 +111,8 @@ export const DEATH = {
   rail: { lo: 0.9, hi: 1.2, m: 1 },
   /** The weapon leaves the hands this far into the active phase (ms), or on the first limp frame. */
   dropMs: 200,
+  /** A headshot opens the hands at once: the carbine leaves them on the first dying frame. */
+  dropMsHeadshot: 0,
   /** The visor light-out: fade over `ms`, with a flicker back on at each `flickers` time. */
   lightOut: { ms: 900, flickers: [300, 550] as const, flickerMs: 45 },
   /** A joint landing faster than this (m/s) thuds. */
@@ -328,12 +330,13 @@ export function dyingPose(v: DeathVariant, tMs: number, c: Pick<DeathCtx, "side"
       p.footR.z = 0.16 * drop;
       p.footL.x = STANCE_L.x + 0.06 * drop;
       p.footR.x = STANCE_R.x - 0.05 * drop;
-      // Arms thrown up and out by the snap, trailing the shoulders.
+      // The arms go with the strings: limp at once, they swing loose and lag the falling chest, so they trail
+      // forward and a little up from the hips (the left higher than the right), never out in a T.
       rot(vS, 0, 1, 0, p.pitch, 0, p.roll);
       rot(vF, 0, 0, 1, p.pitch, 0, p.roll);
-      const fl = smooth(t / 200);
-      hL.set(p.fx + 0.3 + 0.22 * fl, p.h, p.fz).addScaledVector(vS, 0.15 + 0.4 * fl).addScaledVector(vF, 0.2 * fl);
-      hR.set(p.fx - 0.3 - 0.18 * fl, p.h, p.fz).addScaledVector(vS, 0.1 + 0.36 * fl).addScaledVector(vF, 0.25 * fl);
+      const fl = smooth(t / 220);
+      hL.set(p.fx + 0.24 + 0.05 * fl, p.h, p.fz).addScaledVector(vS, 0.12 + 0.16 * fl).addScaledVector(vF, 0.1 + 0.22 * fl);
+      hR.set(p.fx - 0.23 - 0.04 * fl, p.h, p.fz).addScaledVector(vS, 0.08 + 0.08 * fl).addScaledVector(vF, 0.12 + 0.12 * fl);
       p.handL = hL;
       p.handR = hR;
       break;

@@ -18,8 +18,14 @@ import * as THREE from "three";
 /** The layer only the outline pass renders (the world's cameras never enable it). */
 export const LAYER_OUTLINE = 5;
 
-/** The mask's longest side in pixels (5K's 2880-high buffer masks at 0.625: the dilate's bilinear taps hide it). */
-const MASK_MAX_H = 1800;
+/**
+ * The mask's height cap in pixels, and its supersampling: it renders at up to 2x the drawing buffer (a phone's
+ * 1.35x buffer is only ~530 px high, and a 1x mask stair-stepped every diagonal once the canvas was scaled up 2.2x
+ * to the screen; C17 review). The edge pass then reads it through bilinear taps, so its coverage, and the line's
+ * alpha, falls off over a sub-pixel ramp: an anti-aliased line at any DPR.
+ */
+const MASK_MAX_H = 2160;
+const MASK_SS = 2;
 /** Taps per ring: 12 around at 2u leaves gaps under a pixel at 844x390@3 and under 1.4 px at 5K. */
 const DIRS = 12;
 
@@ -58,13 +64,14 @@ const EdgeShader = {
         float f = texture2D(tMask, vUv + d * uR).r;
         inner = max(inner, max(h, f));
         ring += h;
-        outer = max(outer, texture2D(tMask, vUv + d * (uR + 1.25)).r);
+        // The outer edge over a 1.5 px ramp (three taps), so the rim's outside is a gradient, not a step.
+        outer = max(outer, 0.5 * texture2D(tMask, vUv + d * (uR + 0.5)).r + 0.3 * texture2D(tMask, vUv + d * (uR + 1.0)).r + 0.2 * texture2D(tMask, vUv + d * (uR + 1.6)).r);
       }
       // A pixel the body surrounds on (nearly) every side is a seam in his mesh, not the outside: closed, so the
       // rim never speckles the inside of a man.
       c = max(c, smoothstep(0.72, 0.92, ring / ${DIRS}.0));
-      // The rim: full out to 2u, then a 1.25 px soft edge (no stair-steps), and nothing over his own body.
-      float rim = max(inner, outer * 0.5) * (1.0 - smoothstep(0.15, 0.85, c));
+      // The rim: full out to 2u, then a soft 1.5 px outer ramp (no stair-steps), and nothing over his own body.
+      float rim = max(smoothstep(0.0, 0.75, inner), outer * 0.55) * (1.0 - smoothstep(0.15, 0.85, c));
       float a = max(rim, c * uFill) * uStrength;
       if (a < 0.002) discard;
       gl_FragColor = vec4(HOT, a);
@@ -155,7 +162,7 @@ export class Outlines {
     if (!this.active) return;
     for (const t of this.twins.values()) t.mask.visible = this.wanted.has(t.src) && t.src.visible && isShown(t.src);
     const size = renderer.getDrawingBufferSize(this.size);
-    const k = Math.min(1, MASK_MAX_H / Math.max(1, size.y));
+    const k = Math.min(MASK_SS, MASK_MAX_H / Math.max(1, size.y));
     const mw = Math.max(4, Math.round(size.x * k));
     const mh = Math.max(4, Math.round(size.y * k));
     if (this.target.width !== mw || this.target.height !== mh) this.target.setSize(mw, mh);

@@ -18,9 +18,28 @@ const UP = new THREE.Vector3(0, 1, 0);
 
 const XRAY_BLUE = new THREE.Color("#9fd8ff");
 
-/** Bone: a bright, slightly blue-white emissive, so it holds its colour through the kill-cam's grade. */
-const boneMat = new THREE.MeshStandardMaterial({ color: 0xd8eeff, emissive: 0x5ab8ff, emissiveIntensity: 1.6, roughness: 0.45, metalness: 0 });
-const socketMat = new THREE.MeshBasicMaterial({ color: 0x020408 });
+/**
+ * Bone: ivory, lit (the kill-cam's key and rim give it form), with a cool x-ray edge glow: the cortical rim of each
+ * bone reads brighter than its face, as on a film. A low emissive keeps it off black through the grade without
+ * flattening it (C17 review: a full-strength emissive washed the skull into a white ball with two dots).
+ */
+const boneMat = boneMaterial(THREE.FrontSide);
+const boneMat2 = boneMaterial(THREE.DoubleSide);
+function boneMaterial(side: THREE.Side): THREE.MeshStandardMaterial {
+  const m = new THREE.MeshStandardMaterial({ color: 0xe9e2d0, emissive: 0x6a8fb0, emissiveIntensity: 0.32, roughness: 0.55, metalness: 0, side });
+  m.onBeforeCompile = (sh) => {
+    sh.fragmentShader = sh.fragmentShader.replace(
+      "#include <dithering_fragment>",
+      `#include <dithering_fragment>
+      float bfr = pow( 1.0 - abs( dot( normalize( normal ), normalize( vViewPosition ) ) ), 2.0 );
+      gl_FragColor.rgb = gl_FragColor.rgb * ( 0.72 + 0.28 * ( 1.0 - bfr ) ) + vec3( 0.55, 0.8, 1.0 ) * bfr * 0.9;`,
+    );
+  };
+  m.customProgramCacheKey = () => `cathode-bone-${side}`;
+  return m;
+}
+/** The holes in the bone (orbits, nasal aperture, the fracture): a deep blue-black, so they read as cavities. */
+const socketMat = new THREE.MeshBasicMaterial({ color: 0x03070d });
 const chipMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xdff2ff, emissiveIntensity: 2.2, roughness: 0.3 });
 
 /** The x-ray shell: the body as a translucent #9FD8FF fresnel (bright at the silhouette, thin across the middle). */
@@ -32,7 +51,9 @@ function shellMaterial(): THREE.MeshStandardMaterial {
       "#include <dithering_fragment>",
       `#include <dithering_fragment>
       float fr = pow( 1.0 - abs( dot( normalize( normal ), normalize( vViewPosition ) ) ), 2.2 );
-      gl_FragColor = vec4( uXray * ( 0.35 + 2.4 * fr ), 0.25 * ( 0.35 + 1.65 * fr ) );`,
+      // The silhouette carries it (C17 review: at 0.25 x 0.35 across the middle the shell all but vanished): a
+      // bright fresnel edge at up to 0.8, a 0.12 veil across the middle, so his outline reads round the bones.
+      gl_FragColor = vec4( uXray * ( 0.45 + 2.6 * fr ), clamp( 0.12 + 0.95 * fr, 0.0, 0.8 ) );`,
     );
   };
   m.customProgramCacheKey = () => "cathode-xray-shell";
@@ -76,162 +97,399 @@ function softDot(): THREE.Texture {
   return dotTex;
 }
 
-/** A skull from a lathe (cranium, brow, cheek, jaw line), sockets, a nasal hole and a hinged jaw. */
-function skullGeometry(): THREE.LatheGeometry {
-  const pts: THREE.Vector2[] = [];
-  const prof: Array<[number, number]> = [
-    [0.0, 0.0],
-    [0.045, 0.004],
-    [0.06, 0.03],
-    [0.066, 0.06],
-    [0.078, 0.09],
-    [0.088, 0.13],
-    [0.09, 0.165],
-    [0.082, 0.2],
-    [0.062, 0.228],
-    [0.032, 0.243],
-    [0.0, 0.248],
-  ];
-  for (const [r, y] of prof) pts.push(new THREE.Vector2(r, y));
-  return new THREE.LatheGeometry(pts, 20);
-}
-
-/**
- * The face of the skull, in one merged geometry (one draw): the brow ridge, the cheekbones (zygomatic arches), the
- * maxilla and a row of teeth. In the skull's frame: Y up the neck, +Z where he faces.
- */
-function skullFaceGeometry(): THREE.BufferGeometry {
-  const parts: THREE.BufferGeometry[] = [];
-  const brow = new THREE.TorusGeometry(0.066, 0.011, 6, 18, Math.PI * 0.82);
-  brow.rotateX(Math.PI / 2);
-  brow.rotateY(Math.PI * 0.59);
-  brow.scale(1, 1, 0.75);
-  brow.translate(0, 0.162, 0.03);
-  parts.push(brow);
-  for (const x of [-1, 1]) {
-    const arch = new THREE.CapsuleGeometry(0.009, 0.05, 2, 6);
-    arch.rotateZ(Math.PI / 2);
-    arch.rotateY(x * 0.55);
-    arch.translate(x * 0.064, 0.112, 0.052);
-    parts.push(arch);
-    const cheek = new THREE.SphereGeometry(0.019, 8, 6);
-    cheek.scale(1, 0.8, 0.7);
-    cheek.translate(x * 0.045, 0.103, 0.082);
-    parts.push(cheek);
-  }
-  const maxilla = new THREE.BoxGeometry(0.066, 0.03, 0.04);
-  maxilla.translate(0, 0.078, 0.078);
-  parts.push(maxilla);
-  for (let i = 0; i < 10; i++) {
-    const a = ((i - 4.5) / 4.5) * 0.95;
-    const t = new THREE.BoxGeometry(0.0085, 0.015, 0.008);
-    t.rotateY(a);
-    t.translate(Math.sin(a) * 0.04, 0.058, 0.062 + Math.cos(a) * 0.034);
-    parts.push(t);
-  }
-  const g = mergeGeometries(parts.map((p) => (p.index ? p.toNonIndexed() : p)), false)!;
+const v = (x: number, y: number) => new THREE.Vector2(x, y);
+const flat = (g: THREE.BufferGeometry) => (g.index ? g.toNonIndexed() : g);
+function merged(parts: THREE.BufferGeometry[]): THREE.BufferGeometry {
+  const g = mergeGeometries(parts.map((p) => {
+    const f = flat(p);
+    // mergeGeometries needs the same attributes on every part.
+    for (const k of Object.keys(f.attributes)) if (k !== "position" && k !== "normal") f.deleteAttribute(k);
+    return f;
+  }), false)!;
   g.computeVertexNormals();
   return g;
 }
 
+/**
+ * The cranium: a long, high vault (deeper front to back than wide), the forehead flattening into the brow, the
+ * temples pinched in, the occiput swelling at the back. In the skull's frame: Y up the neck, +Z where he faces.
+ */
+function craniumGeometry(): THREE.BufferGeometry {
+  const g = new THREE.SphereGeometry(0.092, 28, 20);
+  const p = g.attributes.position!;
+  for (let i = 0; i < p.count; i++) {
+    let x = p.getX(i);
+    let y = p.getY(i);
+    let z = p.getZ(i);
+    // Longer front to back, narrower side to side; the vault high.
+    z *= 1.18;
+    x *= 0.9;
+    y *= y > 0 ? 1.0 : 0.72;
+    // The occiput: the back swells and drops.
+    if (z < 0) {
+      z *= 1 + 0.12 * Math.max(0, -y / 0.09);
+    }
+    // The temples: pinched in at the sides, forward of the ears.
+    if (z > 0.02 && y < 0.04) x *= 0.86;
+    // The forehead: flatter, near upright.
+    if (z > 0.06) z = 0.06 + (z - 0.06) * 0.55;
+    p.setXYZ(i, x, y + 0.16, z);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+/**
+ * The face, merged (one draw): the brow ridges over the orbits, the orbit rims, the cheekbones and their arches
+ * back to the ears, the maxilla with the nasal aperture's rim, the upper teeth.
+ */
+function faceGeometry(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  for (const sx of [-1, 1]) {
+    // The orbit's rim: a squarish ring round the socket.
+    const rim = new THREE.TorusGeometry(0.026, 0.0075, 6, 18);
+    rim.scale(1.05, 0.9, 1);
+    rim.rotateY(sx * 0.22);
+    rim.translate(sx * 0.036, 0.142, 0.083);
+    parts.push(rim);
+    // The brow ridge over it.
+    const brow = new THREE.CapsuleGeometry(0.009, 0.034, 3, 8);
+    brow.rotateZ(Math.PI / 2 + sx * 0.12);
+    brow.translate(sx * 0.034, 0.17, 0.088);
+    parts.push(brow);
+    // The cheekbone (zygoma) and its arch back toward the ear.
+    const cheek = new THREE.SphereGeometry(0.02, 10, 8);
+    cheek.scale(1.1, 0.8, 0.8);
+    cheek.translate(sx * 0.05, 0.112, 0.07);
+    parts.push(cheek);
+    const arch = new THREE.CapsuleGeometry(0.007, 0.05, 2, 6);
+    arch.rotateX(Math.PI / 2);
+    arch.rotateY(sx * 0.18);
+    arch.translate(sx * 0.07, 0.112, 0.035);
+    parts.push(arch);
+  }
+  // The maxilla: the upper jaw under the nose, rounded to the tooth row.
+  const max = new THREE.CylinderGeometry(0.038, 0.034, 0.04, 16, 1, false, -Math.PI * 0.55, Math.PI * 1.1);
+  max.scale(1, 1, 0.8);
+  max.translate(0, 0.08, 0.05);
+  parts.push(max);
+  // The nasal aperture's rim and the nasal bones over it.
+  const nose = new THREE.TorusGeometry(0.013, 0.004, 4, 12);
+  nose.scale(0.9, 1.4, 1);
+  nose.translate(0, 0.108, 0.094);
+  parts.push(nose);
+  // The upper teeth: a curved row, each a small block with a gap.
+  for (let i = 0; i < 12; i++) {
+    const a = ((i - 5.5) / 5.5) * 1.05;
+    const w = Math.abs(i - 5.5) < 2 ? 0.0078 : 0.0068;
+    const t = new THREE.BoxGeometry(w, 0.016, 0.009);
+    t.rotateY(a);
+    t.translate(Math.sin(a) * 0.033, 0.054, 0.05 + Math.cos(a) * 0.03);
+    parts.push(t);
+  }
+  return merged(parts);
+}
+
+/** The mandible: the U of the jaw with a squared chin, the two rami up to the hinge, and the lower teeth. */
+function mandibleGeometry(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  const pts: THREE.Vector3[] = [];
+  for (let i = 0; i <= 16; i++) {
+    const a = ((i / 16) * 2 - 1) * 1.45;
+    pts.push(new THREE.Vector3(Math.sin(a) * 0.044, 0.03 - 0.004 * Math.cos(a), 0.035 + Math.cos(a) * 0.04));
+  }
+  parts.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.0085, 6));
+  // The chin.
+  const chin = new THREE.SphereGeometry(0.014, 10, 8);
+  chin.scale(1.4, 1, 0.8);
+  chin.translate(0, 0.027, 0.075);
+  parts.push(chin);
+  for (const sx of [-1, 1]) {
+    const ramus = new THREE.BoxGeometry(0.008, 0.05, 0.022);
+    ramus.rotateX(-0.25);
+    ramus.translate(sx * 0.064, 0.057, 0.0);
+    parts.push(ramus);
+  }
+  for (let i = 0; i < 12; i++) {
+    const a = ((i - 5.5) / 5.5) * 1.0;
+    const t = new THREE.BoxGeometry(0.0068, 0.013, 0.008);
+    t.rotateY(a);
+    t.translate(Math.sin(a) * 0.03, 0.041, 0.047 + Math.cos(a) * 0.027);
+    parts.push(t);
+  }
+  return merged(parts);
+}
+
+/** The cavities, in one draw: the two orbits (deep, squarish, tilted out), the nasal aperture, the ear holes. */
+function cavityGeometry(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  for (const sx of [-1, 1]) {
+    const o = new THREE.SphereGeometry(0.024, 12, 10);
+    o.scale(1.05, 0.88, 0.55);
+    o.rotateY(sx * 0.22);
+    o.translate(sx * 0.036, 0.142, 0.08);
+    parts.push(o);
+  }
+  // The nasal aperture: an inverted heart, wide at the base.
+  const n = new THREE.ConeGeometry(0.012, 0.03, 3);
+  n.rotateZ(Math.PI);
+  n.scale(1, 1, 0.5);
+  n.translate(0, 0.106, 0.091);
+  parts.push(n);
+  return merged(parts);
+}
+
 /** The fracture: a jagged line of dark slivers across the cranium's front, turned to face the round on impact. */
 function crackGeometry(): THREE.BufferGeometry {
-  const pts: Array<[number, number]> = [[-0.02, 0.215], [0.004, 0.198], [-0.006, 0.182], [0.016, 0.168], [0.01, 0.15]];
+  const pts: Array<[number, number]> = [[-0.026, 0.236], [0.004, 0.214], [-0.008, 0.198], [0.018, 0.184], [0.008, 0.17], [0.024, 0.156]];
   const parts: THREE.BufferGeometry[] = [];
   for (let i = 0; i < pts.length - 1; i++) {
     const [x0, y0] = pts[i]!;
     const [x1, y1] = pts[i + 1]!;
     const len = Math.hypot(x1 - x0, y1 - y0);
-    const b = new THREE.BoxGeometry(0.0035, len + 0.003, 0.006);
+    const b = new THREE.BoxGeometry(0.004, len + 0.003, 0.008);
     b.rotateZ(-Math.atan2(x1 - x0, y1 - y0));
-    // On the cranium's surface (radius about 0.088, scaled 1.12 deep).
-    b.translate((x0 + x1) / 2, (y0 + y1) / 2, 0.094);
+    // On the cranium's face (radius about 0.092, the forehead about 0.085 forward).
+    b.translate((x0 + x1) / 2, (y0 + y1) / 2, 0.088);
     parts.push(b);
   }
-  return mergeGeometries(parts.map((p) => (p.index ? p.toNonIndexed() : p)), false)!;
+  return merged(parts);
 }
 
-/** The skeleton, hung on the body's joints: capsule long bones, a lathe skull and pelvis, a ribcage of arcs. */
+/**
+ * A long bone along +Y over unit length (stretched to the joints): a lathe with a slender shaft, flaring to the
+ * knuckled ends (the epiphyses and condyles), so it reads as bone, not a tube.
+ */
+function longBoneGeometry(r: number): THREE.BufferGeometry {
+  const pts: THREE.Vector2[] = [v(0, -0.005)];
+  const N = 22;
+  for (let i = 0; i <= N; i++) {
+    const y = i / N;
+    const e0 = Math.exp(-Math.pow(y / 0.075, 2));
+    const e1 = Math.exp(-Math.pow((1 - y) / 0.075, 2));
+    // The shaft narrows a little toward the middle.
+    const mid = 1 - 0.12 * Math.sin(Math.PI * y);
+    pts.push(v(r * (mid + 1.05 * e0 + 0.85 * e1), y));
+  }
+  pts.push(v(0, 1.005));
+  return new THREE.LatheGeometry(pts, 10);
+}
+/** A pair of long bones side by side (the forearm's radius and ulna, the shin's tibia and fibula). */
+function pairBoneGeometry(r: number): THREE.BufferGeometry {
+  const a = longBoneGeometry(r);
+  a.translate(r * 0.9, 0, 0);
+  const b = longBoneGeometry(r * 0.62);
+  b.translate(-r * 1.15, 0, -r * 0.4);
+  return merged([a, b]);
+}
+
+/**
+ * The spine over unit length (stretched pelvis to chest, or chest to neck): `n` vertebrae, each a body (a short
+ * drum) with its spinous process angled down the back and two transverse processes, with a gap (the disc) between.
+ * It sits at the back of the trunk (-Z).
+ */
+function spineGeometry(n: number, r: number, z: number): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  const h = 1 / n;
+  for (let i = 0; i < n; i++) {
+    const y = (i + 0.5) * h;
+    const k = 1 - (i / n) * 0.25;
+    const body = new THREE.CylinderGeometry(r * k, r * k, h * 0.62, 10);
+    body.translate(0, y, z);
+    parts.push(body);
+    const spinous = new THREE.BoxGeometry(r * 0.35, h * 0.32, r * 1.5);
+    spinous.rotateX(0.5);
+    spinous.translate(0, y - h * 0.1, z - r * 1.6);
+    parts.push(spinous);
+    const trans = new THREE.BoxGeometry(r * 3.0 * k, h * 0.22, r * 0.45);
+    trans.translate(0, y, z - r * 0.9);
+    parts.push(trans);
+  }
+  return merged(parts);
+}
+
+/**
+ * The ribcage in the chest's frame (origin at the chest joint, Y toward the neck, +Z his front): ten pairs of
+ * ribs from the spine at the back, round and down to the front (the lower two floating), the costal cartilage to
+ * the sternum, the sternum, and the shoulder blades on the back.
+ */
+function ribcageGeometry(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  const back = -0.075;
+  for (let i = 0; i < 10; i++) {
+    const yb = 0.27 - i * 0.027;
+    const a = 0.06 + 0.085 * Math.min(1, i / 5.5) - (i > 7 ? 0.012 * (i - 7) : 0);
+    const b = 0.075 + 0.025 * Math.min(1, i / 4);
+    const drop = 0.06 + i * 0.005;
+    const end = i >= 8 ? 0.55 : 0.84;
+    for (const sx of [-1, 1]) {
+      const pts: THREE.Vector3[] = [];
+      for (let k = 0; k <= 10; k++) {
+        const th = (k / 10) * end * Math.PI;
+        pts.push(new THREE.Vector3(sx * a * Math.sin(th) * (k === 0 ? 0.3 : 1), yb - drop * Math.pow(th / Math.PI, 1.3), back + b - b * Math.cos(th)));
+      }
+      parts.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 14, 0.0058, 5));
+      if (i < 7) {
+        // The cartilage up and in to the sternum.
+        const p = pts[pts.length - 1]!;
+        const q = new THREE.Vector3(sx * 0.012, 0.215 - i * 0.024, back + 2 * b - 0.004);
+        parts.push(new THREE.TubeGeometry(new THREE.LineCurve3(p, q), 3, 0.0042, 4));
+      }
+    }
+  }
+  // The sternum: the manubrium and the blade, tapering down.
+  const st = new THREE.CylinderGeometry(0.018, 0.011, 0.17, 6);
+  st.scale(1, 1, 0.45);
+  st.rotateX(-0.12);
+  st.translate(0, 0.15, back + 0.2 - 0.002);
+  parts.push(st);
+  // The shoulder blades: flat triangles on the upper back.
+  for (const sx of [-1, 1]) {
+    const sh = new THREE.Shape();
+    sh.moveTo(0, 0);
+    sh.lineTo(sx * 0.075, 0.012);
+    sh.lineTo(sx * 0.02, -0.12);
+    sh.closePath();
+    const sc = new THREE.ExtrudeGeometry(sh, { depth: 0.006, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.004, bevelSegments: 1 });
+    sc.rotateY(sx * 0.35);
+    sc.translate(sx * 0.035, 0.26, back - 0.03);
+    parts.push(sc);
+  }
+  return merged(parts);
+}
+
+/** The pelvis in its own frame (origin at the pelvis joint, Y toward the chest, +Z his front): the iliac wings, the sacrum, the pubic ring and the hip sockets. */
+function pelvisGeometry(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  for (const sx of [-1, 1]) {
+    // The wing: a curved, flaring plate (part of a shell), its crest a rolled rim.
+    const wing = new THREE.SphereGeometry(0.085, 12, 8, Math.PI * 0.15, Math.PI * 0.7, Math.PI * 0.12, Math.PI * 0.42);
+    wing.scale(0.85, 1.0, 0.75);
+    wing.rotateY(sx > 0 ? -Math.PI / 2 : Math.PI / 2);
+    wing.rotateZ(sx * 0.35);
+    wing.translate(sx * 0.03, -0.03, -0.01);
+    parts.push(wing);
+    const crest = new THREE.TorusGeometry(0.07, 0.007, 5, 14, Math.PI * 0.75);
+    crest.rotateY(Math.PI / 2);
+    crest.rotateX(-Math.PI * 0.05);
+    crest.rotateZ(sx * 0.4);
+    crest.translate(sx * 0.07, 0.01, 0.0);
+    parts.push(crest);
+    // The hip socket.
+    const sock = new THREE.TorusGeometry(0.022, 0.007, 5, 12);
+    sock.rotateY(Math.PI / 2);
+    sock.translate(sx * 0.1, -0.06, 0.02);
+    parts.push(sock);
+  }
+  // The pubic ring: low and forward, closing the basin.
+  const ring = new THREE.TorusGeometry(0.06, 0.011, 6, 20);
+  ring.rotateX(Math.PI / 2 - 0.5);
+  ring.scale(1.25, 1, 0.9);
+  ring.translate(0, -0.075, 0.025);
+  parts.push(ring);
+  // The sacrum: a tapering wedge down the back.
+  const sac = new THREE.CylinderGeometry(0.035, 0.012, 0.11, 6);
+  sac.scale(1, 1, 0.5);
+  sac.rotateX(0.35);
+  sac.translate(0, -0.04, -0.06);
+  parts.push(sac);
+  return merged(parts);
+}
+
+/** The hand's bones (unit length, wrist to knuckles): five metacarpals fanning out, the finger bones curled. */
+function handGeometry(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  for (let i = 0; i < 5; i++) {
+    const x = (i - 2) * 0.22;
+    const m = longBoneGeometry(0.05);
+    m.scale(1, 0.55, 1);
+    m.rotateZ(-x * 0.25);
+    m.translate(x * 0.35, 0.2, 0);
+    parts.push(m);
+    const f = longBoneGeometry(0.04);
+    f.scale(1, 0.4, 1);
+    f.rotateX(0.5);
+    f.rotateZ(-x * 0.3);
+    f.translate(x * 0.45, 0.72, 0.03);
+    parts.push(f);
+  }
+  return merged(parts);
+}
+
+// Built once (a kill-cam builds its skeleton lazily, at the impact; the geometry is shared after).
+let G: ReturnType<typeof buildGeometry> | null = null;
+function buildGeometry() {
+  return {
+    cranium: craniumGeometry(),
+    face: faceGeometry(),
+    jaw: mandibleGeometry(),
+    cavity: cavityGeometry(),
+    crack: crackGeometry(),
+    humerus: longBoneGeometry(0.016),
+    forearm: pairBoneGeometry(0.011),
+    femur: longBoneGeometry(0.021),
+    shin: pairBoneGeometry(0.016),
+    clavicle: longBoneGeometry(0.008),
+    lumbar: spineGeometry(5, 0.024, -0.05),
+    thoracic: spineGeometry(10, 0.017, -0.07),
+    ribs: ribcageGeometry(),
+    pelvis: pelvisGeometry(),
+    hand: handGeometry(),
+  };
+}
+
+/**
+ * The skeleton, hung on the body's joints (C17 review: "Sniper Elite-grade bone"): a skull with its vault, orbits,
+ * cheekbones, teeth and a hinged mandible; the spine as separate vertebrae; a ribcage of curved ribs on a sternum;
+ * the pelvis's wings and ring; long bones with knuckled ends (paired in the forearm and shin); the hands' bones.
+ */
 class Skeleton {
   readonly root = new THREE.Group();
-  private parts: Array<{ o: THREE.Object3D; a: string; b: string; stretch: boolean }> = [];
+  private parts: Array<{ o: THREE.Object3D; a: string; b: string; stretch: boolean | "all" }> = [];
   readonly skull = new THREE.Group();
   readonly ribs = new THREE.Group();
   /** The fracture line on the struck side (hidden until the round lands). */
-  readonly crack = new THREE.Mesh(crackGeometry(), socketMat);
+  readonly crack: THREE.Mesh;
 
   constructor() {
-    const limb = (a: string, b: string, r: number) => {
-      const g = new THREE.Group();
-      // A unit capsule along +Y, knuckled at both ends (the epiphyses read as joints, not tubes).
-      const shaft = new THREE.Mesh(new THREE.CapsuleGeometry(r, 1 - 2 * r, 3, 8), boneMat);
-      shaft.position.y = 0.5;
-      g.add(shaft);
-      for (const y of [0.04, 0.96]) {
-        const k = new THREE.Mesh(new THREE.SphereGeometry(r * 1.55, 10, 8), boneMat);
-        k.position.y = y;
-        k.scale.set(1, 0.7, 1);
-        g.add(k);
-      }
-      this.root.add(g);
-      this.parts.push({ o: g, a, b, stretch: true });
+    G ??= buildGeometry();
+    const g = G;
+    const bone = (geo: THREE.BufferGeometry, a: string, b: string, stretch: boolean | "all", mat = boneMat) => {
+      const grp = new THREE.Group();
+      grp.add(new THREE.Mesh(geo, mat));
+      this.root.add(grp);
+      this.parts.push({ o: grp, a, b, stretch });
+      return grp;
     };
-    limb("pelvis", "neck", 0.016);
+    bone(g.lumbar, "pelvis", "chest", true);
+    bone(g.thoracic, "chest", "neck", true);
     for (const s of ["L", "R"]) {
-      limb(`shoulder${s}`, `elbow${s}`, 0.018);
-      limb(`elbow${s}`, `hand${s}`, 0.014);
-      limb(`hip${s}`, `knee${s}`, 0.024);
-      limb(`knee${s}`, `foot${s}`, 0.02);
+      bone(g.humerus, `shoulder${s}`, `elbow${s}`, true);
+      bone(g.forearm, `elbow${s}`, `wrist${s}`, true);
+      // The hand scales whole with its length (its geometry is in units of it).
+      bone(g.hand, `wrist${s}`, `hand${s}`, "all");
+      bone(g.femur, `hip${s}`, `knee${s}`, true);
+      bone(g.shin, `knee${s}`, `foot${s}`, true);
+      bone(g.clavicle, `clavicle${s}`, `shoulder${s}`, true);
     }
-    // Clavicles: shoulder to shoulder through the neck's base.
-    limb("shoulderL", "shoulderR", 0.011);
-    // Ribs: seven pairs of tapering arcs off the spine, the sternum down the front.
-    for (let i = 0; i < 7; i++) {
-      const w = 0.125 - Math.abs(i - 2.5) * 0.009;
-      const t = new THREE.Mesh(new THREE.TorusGeometry(w, 0.0065, 5, 22, Math.PI * 1.7), boneMat);
-      t.rotation.set(Math.PI / 2 + 0.18, 0, Math.PI * 0.15 + Math.PI);
-      t.scale.set(1, 0.72, 1);
-      t.position.set(0, 0.04 + i * 0.04, -0.015);
-      this.ribs.add(t);
-    }
-    const sternum = new THREE.Mesh(new THREE.CapsuleGeometry(0.012, 0.17, 2, 6), boneMat);
-    sternum.position.set(0, 0.17, 0.085);
-    this.ribs.add(sternum);
+    this.ribs.add(new THREE.Mesh(g.ribs, boneMat2));
     this.root.add(this.ribs);
     this.parts.push({ o: this.ribs, a: "chest", b: "neck", stretch: false });
-    // The pelvis: a lathed bowl.
-    const bowl = new THREE.Mesh(
-      new THREE.LatheGeometry([new THREE.Vector2(0.05, -0.06), new THREE.Vector2(0.12, -0.02), new THREE.Vector2(0.14, 0.06), new THREE.Vector2(0.11, 0.1)], 16),
-      boneMat,
-    );
-    bowl.scale.set(1, 1, 0.7);
-    const pg = new THREE.Group();
-    pg.add(bowl);
-    this.root.add(pg);
-    this.parts.push({ o: pg, a: "pelvis", b: "chest", stretch: false });
-    // The skull.
-    const cran = new THREE.Mesh(skullGeometry(), boneMat);
-    cran.scale.set(0.95, 1, 1.12);
-    cran.position.y = 0.02;
-    this.skull.add(cran);
-    for (const x of [-0.034, 0.034]) {
-      const e = new THREE.Mesh(new THREE.SphereGeometry(0.024, 10, 8), socketMat);
-      e.position.set(x, 0.135, 0.083);
-      e.scale.set(1, 0.85, 0.6);
-      this.skull.add(e);
-    }
-    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.012, 0.03, 3), socketMat);
-    nose.position.set(0, 0.1, 0.095);
-    nose.rotation.x = Math.PI;
-    this.skull.add(nose);
-    const jaw = new THREE.Mesh(new THREE.TorusGeometry(0.048, 0.011, 5, 14, Math.PI), boneMat);
-    jaw.rotation.set(Math.PI / 2 + 0.35, 0, Math.PI);
-    jaw.position.set(0, 0.045, 0.03);
-    jaw.name = "jaw";
-    this.skull.add(jaw);
-    const face = new THREE.Mesh(skullFaceGeometry(), boneMat);
+    bone(g.pelvis, "pelvis", "chest", false, boneMat2);
+    // The skull: the vault, the face, the cavities and the mandible (hinged at the ears).
+    this.skull.add(new THREE.Mesh(g.cranium, boneMat));
+    const face = new THREE.Mesh(g.face, boneMat);
     face.name = "face";
     this.skull.add(face);
+    this.skull.add(new THREE.Mesh(g.cavity, socketMat));
+    const jaw = new THREE.Group();
+    jaw.name = "jaw";
+    jaw.position.set(0, 0.1, 0.0);
+    const jm = new THREE.Mesh(g.jaw, boneMat);
+    jm.position.set(0, -0.1, 0);
+    jaw.add(jm);
+    this.skull.add(jaw);
+    this.crack = new THREE.Mesh(g.crack, socketMat);
     this.crack.name = "crack";
     this.crack.visible = false;
     this.skull.add(this.crack);
@@ -241,12 +499,15 @@ class Skeleton {
 
   pose(e: Enemy): void {
     const j = e.body.joints as Record<string, THREE.Vector3>;
+    const k = e.body.scale ?? 1;
     for (const p of this.parts) {
       const a = j[p.a];
       const b = j[p.b];
       if (!a || !b) continue;
       place(p.o, a, b, e.body.facing);
-      if (p.stretch) p.o.scale.set(1, Math.max(0.02, a.distanceTo(b)), 1);
+      if (p.stretch === "all") p.o.scale.setScalar(Math.max(0.02, a.distanceTo(b) * 1.6));
+      else if (p.stretch) p.o.scale.set(k, Math.max(0.02, a.distanceTo(b)), k);
+      else p.o.scale.setScalar(k);
     }
     this.skull.visible = !e.body.lost.has("head");
   }
@@ -309,8 +570,11 @@ export class KillCam {
   private fov0 = 0;
   private from = new THREE.Vector3();
   private missed = false;
-  /** The orbit's home direction from him: his face, turned 35 degrees toward her side (never his back). */
+  /** The orbit's home direction from him: her line back from him, turned 35 degrees off it (S5.3). */
   private readonly home = new THREE.Vector3();
+  /** How far out the orbit stands (3.5 m, less only when no side is clear), and the point on the street it turns round. */
+  private radius: number = KILLCAM.orbit.radius;
+  private readonly anchor = new THREE.Vector3();
   /** The round's distance to the target when the follow began (the FOV push runs on how much of it is left). */
   private flight0 = 1;
   // Scratch (the cam runs every frame: no allocation).
@@ -370,31 +634,67 @@ export class KillCam {
     this.begin("orbit", target);
     this.from.copy(eye);
     this.distance = dist > 0 ? dist : eye.distanceTo(target.body.joints.chest);
-    // The camera swings off her line toward the side she hit (the side of him that faced her), in front of him.
+    // Her line onto him, flat: the camera stands 35 degrees off it, on his front (the side she shot).
     this.dir.copy(target.body.joints.chest).sub(eye).setY(0).normalize();
-    this.aim(target);
+    this.aim(target, KILLCAM.orbit.radius);
     this.world.setDrama(0.45);
   }
 
   /**
-   * Where the camera orbits from: in front of his face, turned 35 degrees toward her (the side she struck), and
-   * which way the orbit then turns (on round toward her line). `dir` is her line onto him, flat.
+   * Where the camera stands (S5.3): `radius` out from him along the line back to her, turned 35 degrees off it, at
+   * 1.4 m. The side is whichever is clear; a wall closer than 2.5 m swings the camera wider (55, then 75 degrees) or
+   * to the other side rather than pulling it in onto his chest. `dir` is her line onto him, flat. Sets `home` (the
+   * unit direction from him to the camera), `radius` (how far out it can stand) and `sign` (the orbit turns back
+   * toward her line, so the shot opens on his side and ends on the face she saw).
    */
-  private aim(target: Enemy): void {
-    // His chest's real front, from the shoulders (a falling man spins: his animated yaw no longer says where his
-    // face is). The body faces +Z with his left shoulder at +X, so front = up x (right - left).
-    const j = target.body.joints;
-    const face = this.v1.subVectors(j.shoulderR, j.shoulderL);
-    face.crossVectors(UP, face).setY(0);
-    if (face.lengthSq() < 0.01 * 0.01) face.copy(target.body.facing).setY(0);
-    if (face.lengthSq() < 1e-6) face.copy(this.dir).negate();
-    face.normalize();
-    // Toward her: the turn that takes his face toward the line back to her.
+  private aim(target: Enemy, radius: number): void {
     const toHer = this.v2.copy(this.dir).negate();
-    this.sign = this.v3.crossVectors(face, toHer).y >= 0 ? 1 : -1;
-    const between = Math.acos(THREE.MathUtils.clamp(face.dot(toHer), -1, 1));
-    const off = Math.min(between, (KILLCAM.orbit.offDeg * Math.PI) / 180);
-    this.home.copy(face).applyAxisAngle(UP, this.sign * off);
+    if (toHer.lengthSq() < 1e-6) toHer.copy(target.body.facing).setY(0);
+    toHer.normalize();
+    // His chest's real front, from the shoulders (a falling man turns; the body faces +Z with his left shoulder at
+    // +X, so front = up x (right - left)). Shot from behind, the camera takes her line from his far end instead:
+    // the reverse angle, on his face, with her down the street behind him. The shot is of his face, never his back.
+    const j = target.body.joints;
+    const face = this.v3.subVectors(j.shoulderR, j.shoulderL);
+    face.crossVectors(UP, face).setY(0);
+    if (face.lengthSq() < 1e-4) face.copy(target.body.facing).setY(0);
+    if (face.lengthSq() > 1e-6 && face.normalize().dot(toHer) < -0.2) toHer.negate();
+    const c = this.v1.copy(target.body.joints.pelvis);
+    c.y = this.groundY(target) + 1.0;
+    const D = Math.PI / 180;
+    const off = KILLCAM.orbit.offDeg;
+    // The side first: the one a deterministic coin (his id) prefers, then the other; then wider swings.
+    const pref = (target.id ?? 0) % 2 === 0 ? 1 : -1;
+    const tries = [off * pref, -off * pref, 55 * pref, -55 * pref, 75 * pref, -75 * pref, 20 * pref, -20 * pref];
+    let best = tries[0]!;
+    let bestClear = -1;
+    for (const deg of tries) {
+      // The whole sweep must be clear: the start, and where 900 ms of orbit back toward her line leaves it.
+      let clear = radius;
+      for (const sweep of [0, -Math.sign(deg) * KILLCAM.orbit.degS]) {
+        const dd = this.tmp.copy(toHer).applyAxisAngle(UP, (deg + sweep) * D);
+        const hit = this.opts.cast?.(c, dd, radius + 0.3) ?? null;
+        if (hit !== null) clear = Math.min(clear, hit - 0.3);
+      }
+      if (clear >= radius - 0.01) {
+        best = deg;
+        bestClear = clear;
+        break;
+      }
+      if (clear > bestClear + 0.05) {
+        best = deg;
+        bestClear = clear;
+      }
+    }
+    this.radius = Math.max(KILLCAM.orbit.minRadius, Math.min(radius, bestClear));
+    this.home.copy(toHer).applyAxisAngle(UP, best * D);
+    this.sign = best > 0 ? -1 : 1;
+    this.anchor.copy(target.body.joints.pelvis).setY(this.groundY(target));
+  }
+
+  /** The street under him (his feet, or his pelvis on the floor). */
+  private groundY(target: Enemy): number {
+    return target.position.y;
   }
 
   private begin(shot: KillCamShot, target: Enemy): void {
@@ -421,6 +721,22 @@ export class KillCam {
     if (this.shot === "orbit") return orbitScale(this.ms);
     if (this.missed) return 1;
     return bulletScale(this.sinceImpact < 0 ? null : this.sinceImpact);
+  }
+
+  /**
+   * The lower third's level, 0..1, on the cam's own clock (so every motion setting shows it at the same moment):
+   * the orbit's once the bars are in, the bullet follow's at the impact; out with the ramp back.
+   */
+  get captionLevel(): number {
+    if (!this.active || !this.caption) return 0;
+    const ss = (a: number, b: number, x: number) => THREE.MathUtils.smoothstep(x, a, b);
+    if (this.shot === "orbit") {
+      const O = KILLCAM.orbit;
+      return ss(O.barsMs, O.barsMs + 180, this.ms) * (1 - ss(O.holdMs, O.holdMs + O.rampMs * 0.6, this.ms));
+    }
+    if (this.sinceImpact < 0) return 0;
+    const B = KILLCAM.bullet;
+    return ss(0, 180, this.sinceImpact) * (1 - ss(B.orbitEndMs, B.orbitEndMs + B.rampMs * 0.6, this.sinceImpact));
   }
 
   /** Any input skips after 300 ms. */
@@ -470,40 +786,32 @@ export class KillCam {
     const O = KILLCAM.orbit;
     const cam = this.world.camera;
     const tgt = this.target!;
+    const want = this.orbitPose(this.ms / 1000, O.degS, this.v2);
+    // The look: between his hips and head (the head lands in the upper third at 3.5 m and FOV 45), never lower
+    // than half a metre off the street, so a man on the floor is framed with the street round him.
     const j = tgt.body.joints;
-    // Head to hips in frame, the head in the upper third: look a little above the middle of the two.
-    const centre = this.tmp.copy(j.pelvis).lerp(j.head, 0.56);
-    const span = Math.max(0.5, j.head.distanceTo(j.pelvis));
-    // The distance that makes head-to-hips about 55% of the frame's height at this FOV.
-    const fit = THREE.MathUtils.clamp(span / (0.55 * 2 * Math.tan(THREE.MathUtils.degToRad(O.fov) / 2)), 1.5, O.radius);
-    const a = this.sign * ((O.degS * Math.PI) / 180) * (this.ms / 1000);
-    // In front of his face, off toward her side (his face and the struck side are seen, never his back).
-    const back = this.v1.copy(this.home).applyAxisAngle(UP, a);
-    let r = fit;
-    const want = this.v2.copy(centre).addScaledVector(back, r);
-    want.y = centre.y + 0.12;
-    // Never inside a wall: pull in to clear it.
-    if (this.opts.cast) {
-      const d = this.v3.copy(want).sub(centre);
-      const len = d.length();
-      const hit = this.opts.cast(centre, d.divideScalar(len), len);
-      if (hit !== null) {
-        r = Math.max(1.2, hit - 0.3);
-        want.copy(centre).addScaledVector(back, r);
-        want.y = centre.y + 0.12;
-      }
-    }
+    const centre = this.tmp.copy(j.pelvis).lerp(j.head, 0.32);
+    centre.y = Math.max(centre.y, this.anchor.y + 0.5);
     if (this.ms <= realDt * 1000 + 1) {
       cam.position.copy(want);
       this.lookAt.copy(centre);
     } else {
       cam.position.lerp(want, 1 - Math.exp(-realDt * 10));
-      this.lookAt.lerp(centre, 1 - Math.exp(-realDt * 8));
+      this.lookAt.lerp(centre, 1 - Math.exp(-realDt * 6));
     }
     cam.lookAt(this.lookAt);
     this.setFov(O.fov);
     this.bars = orbitBars(this.ms);
     if (orbitDone(this.ms)) this.finish();
+  }
+
+  /** The orbit camera `s` seconds in at `degS`: `radius` out along `home` turned by the orbit, 1.4 m off the street. */
+  private orbitPose(s: number, degS: number, out: THREE.Vector3): THREE.Vector3 {
+    const a = this.sign * ((degS * Math.PI) / 180) * s;
+    const d = this.v1.copy(this.home).applyAxisAngle(UP, a);
+    out.copy(this.anchor).addScaledVector(d, this.radius);
+    out.y = this.anchor.y + KILLCAM.orbit.height;
+    return out;
   }
 
   private updateBullet(realDt: number): void {
@@ -519,7 +827,10 @@ export class KillCam {
         return;
       }
       this.sinceImpact = 0;
-      this.aim(tgt);
+      this.world.setHaze?.(0, 0, 0, 0);
+      // Her line is the round's: the body orbit stands off it as the last-man orbit does, a little closer.
+      this.dir.setY(0).normalize();
+      this.aim(tgt, B.bodyRadius);
       if (this.opts.xray) this.xray(true);
       this.crack(this.v1.copy(p.pos).lerp(aimPt, 0.5));
       this.opts.onCrack?.();
@@ -536,33 +847,48 @@ export class KillCam {
       this.dir.copy(p.vel).normalize();
       this.streak.position.copy(p.pos);
       this.streak.lookAt(this.tmp.copy(p.pos).add(this.dir));
-      // The push: the FOV closes from 50 toward 20 as the round eats the distance, so the man grows in the frame.
-      const left = THREE.MathUtils.clamp(p.pos.distanceTo(aimPt) / this.flight0, 0, 1);
-      const fov = B.fov - 30 * Math.pow(1 - left, 0.6);
+      // The push: the FOV closes from 50 toward the one that makes him 40% of the barred frame's height, fast at
+      // first (he grows in the frame while the round is still well out), so by 200 ms he is the shot.
+      const toT = p.pos.distanceTo(aimPt);
+      const left = THREE.MathUtils.clamp(toT / this.flight0, 0, 1);
+      const band = Math.min(1, cam.aspect / 2.39);
+      const camToT = toT + B.back;
+      const fit = THREE.MathUtils.radToDeg(2 * Math.atan(1.9 / (2 * 0.4 * camToT * band)));
+      const fov = THREE.MathUtils.lerp(B.fov, THREE.MathUtils.clamp(fit, 7, B.fov), Math.pow(1 - left, 0.4));
       this.setFov(fov);
-      // 0.5 m behind the round and a little to the side, looking along the flight: the target sits on the line
-      // ahead (the frame's centre), the round large in the lower third, its trail running back toward the lens.
-      const t = Math.tan(THREE.MathUtils.degToRad(fov) / 2);
+      // On the round's line: 0.5 m behind it and a touch above (the round sits just under the centre, in the
+      // lower-middle), the camera's slow roll round the line at 8 deg/s, and the look straight down the line
+      // at his head, so the round leads the eye into him.
       const up = this.v1.crossVectors(this.side, this.dir).normalize();
       if (up.y < 0) up.negate();
       const spin = (this.sign * ((B.orbitDegS * Math.PI) / 180) * this.ms) / 1000;
-      const lift = B.back * t * 0.36;
-      const across = B.back * t * 0.22 * cam.aspect;
-      cam.position.copy(p.pos).addScaledVector(this.dir, -B.back).addScaledVector(up, lift).addScaledVector(this.side, across * Math.cos(spin) * 0.6);
-      this.lookAt.copy(cam.position).addScaledVector(this.dir, 40);
+      const lift = 0.055;
+      const across = 0.03;
+      cam.position.copy(p.pos).addScaledVector(this.dir, -B.back).addScaledVector(up, lift * Math.cos(spin)).addScaledVector(this.side, across + lift * Math.sin(spin));
+      this.lookAt.copy(aimPt);
+      cam.lookAt(this.lookAt);
+      cam.updateMatrixWorld();
+      // The heat haze round the round (and its wake back to the lens).
+      const sp = this.v3.copy(p.pos).project(cam);
+      this.world.setHaze?.(sp.x * 0.5 + 0.5, sp.y * 0.5 + 0.5, 0.05, 1);
       this.bars = Math.min(1, this.ms / KILLCAM.orbit.barsMs);
     } else {
-      // The body: swung round to his side as the round arrives, then a slow orbit as he goes down.
+      // The body: the camera cuts round to 35 degrees off the round's line as it lands, then a slow orbit (0.5 of
+      // the last-man's 20 deg/s, as time runs at 0.3) while he goes down, opening out a little.
       const t = this.sinceImpact;
-      // Framed on the whole man (head to hips), 2.3 m out and opening, a little above him.
-      const centre = this.tmp.copy(aimPt).lerp(tgt.body.joints.pelvis, 0.4 + Math.min(1, t / 900) * 0.12);
-      const a = this.sign * (t / 1000) * 0.5;
-      const off = this.v1.copy(this.home).applyAxisAngle(UP, a).multiplyScalar(2.0 + t / 1500);
-      const want = this.v2.copy(centre).add(off);
-      want.y += 0.25;
-      cam.position.lerp(want, 1 - Math.exp(-realDt * (t < B.impactMs ? 9 : 4)));
-      this.lookAt.lerp(centre, 1 - Math.exp(-realDt * 10));
-      this.setFov(THREE.MathUtils.lerp(cam.fov, 50, Math.min(1, t / 600)));
+      const j = tgt.body.joints;
+      const centre = this.tmp.copy(j.pelvis).lerp(j.head, 0.32);
+      centre.y = Math.max(centre.y, this.anchor.y + 0.5);
+      const want = this.orbitPose(t / 1000, 10, this.v2);
+      want.addScaledVector(this.v3.subVectors(want, this.anchor).setY(0).normalize(), t / 2500);
+      if (t <= realDt * 1000 + 1) {
+        cam.position.copy(want);
+        this.lookAt.copy(centre);
+      } else {
+        cam.position.lerp(want, 1 - Math.exp(-realDt * 8));
+        this.lookAt.lerp(centre, 1 - Math.exp(-realDt * 8));
+      }
+      this.setFov(KILLCAM.orbit.fov);
       if (this.xrayOn && t > B.xrayMs) this.xray(false);
       this.whip = whipAt(t);
       this.bars = Math.max(0, 1 - Math.max(0, t - B.orbitEndMs) / B.rampMs);
@@ -609,7 +935,7 @@ export class KillCam {
       const local = this.v3.copy(this.dir).negate().applyQuaternion(this.q.copy(this.skel.skull.quaternion).invert());
       this.skel.crack.rotation.y = Math.atan2(local.x, local.z);
       this.skel.crack.visible = true;
-      for (const c of this.skel.skull.children) if (c.name === "jaw") c.rotation.x += 0.35;
+      for (const c of this.skel.skull.children) if (c.name === "jaw") c.rotation.x += 0.3;
     } else {
       for (const c of this.skel.ribs.children) {
         if (c.position.lengthSq() < 1e-8) continue;
@@ -686,6 +1012,7 @@ export class KillCam {
     this.key.intensity = this.rim.intensity = 0;
     if (this.fov0 > 0) this.setFov(this.fov0);
     this.world.setDrama(0);
+    this.world.setHaze?.(0, 0, 0, 0);
     this.world.setFocus?.(0.5, 0.5);
   }
 }

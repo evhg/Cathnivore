@@ -1237,7 +1237,7 @@ export class Enemy {
     this.body.visorLevel = ms < 0 ? 1.5 : visorLevel(ms);
     const run = this.body.dying;
     const b = this.body;
-    if (!this.drop && this.rifle.visible && this.kit.role !== "orderly" && !this.shield && (!run || run.t >= Math.min(run.dur, DEATH.dropMs) || !run.active)) {
+    if (!this.drop && this.rifle.visible && this.kit.role !== "orderly" && !this.shield && (!run || run.t >= Math.min(run.dur, this.deathVariant === "headshot" ? DEATH.dropMsHeadshot : DEATH.dropMs) || !run.active)) {
       const vel = new THREE.Vector3().subVectors(b.joints.handR, this.lastHand).divideScalar(Math.max(1e-3, dt));
       if (!Number.isFinite(vel.x) || vel.lengthSq() > 100) vel.set(0, 0, 0);
       // Thrown a little out from the body, along his front.

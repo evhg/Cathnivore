@@ -1673,7 +1673,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         }
         killcam.update(o.shot ? 0 : realDt);
         const aspect = innerWidth / Math.max(1, innerHeight);
-        hud.killcamBars(killcam.bars, aspect);
+        hud.killcamBars(killcam.bars, aspect, killcam.captionLevel);
         world.setWhip?.(1, 0, trauma.reducedMotion ? 0 : killcam.whip);
         audio?.update(realDt, 0.2, 1);
         drainEvents();
@@ -4822,7 +4822,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       kcBegin();
       run(ms);
     }
-    hud.killcamBars(killcam.bars, innerWidth / Math.max(1, innerHeight));
+    hud.killcamBars(killcam.bars, innerWidth / Math.max(1, innerHeight), killcam.captionLevel);
     world.setWhip?.(1, 0, killcam.whip);
     arsenal.rig.root.visible = false;
     return "ok";

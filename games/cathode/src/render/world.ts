@@ -415,6 +415,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
         outlines.strength = Math.min(1, o.outline);
       }
     },
+    setHaze(x, y, r, k) {
+      (post.grade.uniforms.uHaze!.value as THREE.Vector4).set(x, y, r, THREE.MathUtils.clamp(k, 0, 1));
+    },
     setFocus(x, y) {
       (post.grade.uniforms.uFocus!.value as THREE.Vector2).set(x, y);
     },

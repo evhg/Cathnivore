@@ -340,6 +340,7 @@ const GradeShader = {
     uSecondWind: { value: 0 },
     // C17 (S5.3): the kill-cam's whip-pan smear: xy the direction in uv, z the strength (a 3-tap directional blur).
     uWhip: { value: new THREE.Vector3() },
+    uHaze: { value: new THREE.Vector4() },
     uFocus: { value: new THREE.Vector2(0.5, 0.5) },
   },
   vertexShader: /* glsl */ `
@@ -371,6 +372,7 @@ const GradeShader = {
     uniform float uPause;
     uniform float uSecondWind;
     uniform vec3 uWhip;
+    uniform vec4 uHaze;
     uniform vec2 uFocus;
     uniform sampler2D tPauseBlur;
     uniform float uInk;
@@ -454,6 +456,18 @@ const GradeShader = {
         uv.x += ( sh - 0.5 ) * 0.04 * uGlitch * step( 0.35, vh( vec2( tick, slice ) ) );
         gsplit = 6.0 * uGlitch / uRes.x;
       }
+      // C17 (S5.3): the bullet follow's heat haze. Round the round's screen point (uHaze.xy, radius uHaze.z in
+      // screen heights) the street behind shimmers: a ripple running out from it and a wake trailing back toward
+      // the lens (down the screen), strength uHaze.w.
+      if ( uHaze.w > 0.001 ) {
+        vec2 hq = ( uv - uHaze.xy ) * vec2( uRes.x / uRes.y, 1.0 );
+        float hd = length( hq );
+        float hf = exp( -pow( hd / uHaze.z, 2.0 ) );
+        // The wake: a soft band below the round (the camera rides behind and above it), fading with distance.
+        float wk = exp( -pow( hq.x / ( uHaze.z * 0.45 ), 2.0 ) ) * smoothstep( 0.0, uHaze.z * 0.3, -hq.y ) * exp( hq.y / ( uHaze.z * 3.0 ) );
+        float rip = sin( hd * 260.0 - uTime * 38.0 ) + 0.6 * sin( hq.y * 410.0 + hq.x * 90.0 - uTime * 52.0 );
+        uv += vec2( 0.55, 1.0 ) * rip * ( hf + 0.6 * wk ) * uHaze.w * 0.0035;
+      }
       vec2 c = uv - 0.5;
       float r2 = dot( c, c );
       // C7 (S6.4): blood on the glass. Only inside a live slot's box (uLensRect, from the CPU) does a pixel read the
@@ -528,7 +542,11 @@ const GradeShader = {
       float desat = mix( 0.55, 1.0, keep ) * ( 1.0 - uDrama * 0.55 );
       col = mix( vec3( lum ), col, desat );
       // C17: what Second Wind leaves in colour: a muzzle flash (bright, saturated, warm), nothing else.
-      float swHot = uSecondWind > 0.001 ? smoothstep( 1.2, 3.2, lum ) * smoothstep( 0.2, 0.55, sat ) * step( col.b * 1.15, col.r ) : 0.0;
+      // A flash's core blows out past AgX's white (no saturation left to test), so the test is loose on
+      // saturation once it is that hot, and the halo (bloom, mid-intensity) counts too (C17 review: the kept
+      // flashes read white).
+      float swWarm = smoothstep( 1.0, 1.6, col.r / max( col.b, 1e-3 ) );
+      float swHot = uSecondWind > 0.001 ? smoothstep( 0.7, 2.2, lum ) * max( smoothstep( 0.12, 0.4, sat ), smoothstep( 2.5, 6.0, lum ) ) * swWarm : 0.0;
       // A cool cast in the shadows, a warmer one in the highlights (sodium stays sodium).
       col += vec3( -0.0006, 0.0003, 0.0016 ) * ( 1.0 - smoothstep( 0.0, 0.05, lum ) );
       // Vignette.
@@ -624,6 +642,8 @@ const GradeShader = {
         vec3 g = vec3( sl ) * vec3( 0.97, 0.99, 1.02 );
         g = mix( g, g * g * ( 3.0 - 2.0 * g ), 0.35 );
         mapped = mix( mapped, g, uSecondWind * ( 1.0 - swHot ) );
+        // ... and they burn warm in the grey: the kept flash is pushed to a sodium-amber, its blown core included.
+        mapped = mix( mapped, min( vec3( 1.0 ), mapped * vec3( 1.08, 0.74, 0.42 ) + vec3( 0.06, 0.02, 0.0 ) ), swHot * uSecondWind * 0.65 );
       }
       // C8 (S6.6): death. The colour goes (all but 5%), what is left bleeds toward red, and the edges close to black
       // as uDeath grows; then the ink floods in from the edges on an fBm front, the centre always left visible.

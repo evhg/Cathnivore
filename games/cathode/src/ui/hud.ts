@@ -954,7 +954,6 @@ export class Hud {
   }
 
   private cap?: HTMLElement;
-  private capTimer = 0;
 
   private sw?: HTMLElement;
   private swLine?: HTMLElement;
@@ -984,7 +983,7 @@ export class Hud {
    * C17 (S5.3) the kill-cam's frame: the 2.39:1 bars (`k` 0..1 of their full height, for the screen's `aspect`) and
    * every cluster stepped back while it runs (k > 0 or the cam is on). Opacity and a scale only.
    */
-  killcamBars(k: number, aspect: number): void {
+  killcamBars(k: number, aspect: number, caption = 0): void {
     const on = k > 0.001 || aspect > 0;
     this.root.classList.toggle("kc-cine", on && aspect > 0);
     // The touch controls and the look hint step back too (they live outside the HUD root).
@@ -992,9 +991,14 @@ export class Hud {
     const share = Math.max(0, (1 - aspect / 2.39) / 2);
     this.prop(this.root, "--kc-bars", k.toFixed(3));
     this.prop(this.root, "--kc-h", `${(share * 100).toFixed(2)}vh`);
+    // The lower third arrives on the cam's own clock (a fixed beat, the same at every motion setting).
+    this.prop(this.root, "--kc-cap", (on && aspect > 0 ? Math.max(0, Math.min(1, caption)) : 0).toFixed(3));
   }
 
-  /** The kill-cam's lower-third: what earned it (by trigger) and the range at the trigger pull. Fades by itself. */
+  /**
+   * The kill-cam's lower third: what earned it (by trigger) and the range at the trigger pull. Set once at the cam's
+   * start; it shows as `killcamBars`' caption level says (the cam's clock), in the bottom bar, never over him.
+   */
   killcamCaption(tag: string, metres: number): void {
     if (!this.cap) {
       this.cap = el("p", "hud-killcap", this.root);
@@ -1003,10 +1007,6 @@ export class Hud {
     this.cap.replaceChildren();
     el("span", "hud-killcap-tag", this.cap).textContent = tag;
     el("span", "hud-killcap-m", this.cap).textContent = `${Math.round(metres)} m`;
-    this.cap.classList.remove("on");
-    requestAnimationFrame(() => this.cap?.classList.add("on"));
-    clearTimeout(this.capTimer);
-    this.capTimer = window.setTimeout(() => this.cap?.classList.remove("on"), 3000);
   }
 
   private sub?: HTMLElement;

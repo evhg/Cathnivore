@@ -36,12 +36,16 @@ export const KILLCAM = {
     orbitEndMs: 1000,
     rampMs: 250,
     whipMs: 120,
+    /** The body orbit after the impact stands this far out (the last-man framing, a step closer). */
+    bodyRadius: 3.0,
     streak: { length: 0.6, color: 0xffe0b0 },
   },
   orbit: {
     /** Time 0.25; the camera 3.5 m out at 1.4 m, 35 deg off her line, FOV 45, 2.39:1 bars in over 150 ms. */
     scale: 0.25,
     radius: 3.5,
+    /** No side clear at 2.5 m: the closest the camera may stand (it swings to a clearer side first). */
+    minRadius: 2.0,
     height: 1.4,
     offDeg: 35,
     fov: 45,

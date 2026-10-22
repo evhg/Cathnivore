@@ -976,22 +976,26 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 }
 
 /* ---- kill-cam caption: the range of the shot, a lower third under a red rule ---- */
+/* The kill-cam's lower third (C17): set in the bottom 2.39:1 bar, left-aligned to the HUD's edge, so it never
+   sits over the man the shot is of. It arrives on the cam's clock (--kc-cap, the same beat at every motion
+   setting): a short slide in from the left, opacity only under reduced motion. */
 .hud-killcap {
   position: absolute;
-  left: 50%;
-  bottom: calc(11vh + var(--sp-5));
-  z-index: var(--z-hud-top);
+  left: var(--edge-l);
+  bottom: calc(var(--kc-h, 12.8vh) * var(--kc-bars, 0) / 2);
+  /* Over the bars (the root's ::after paints after its children at --z-hud-top). */
+  z-index: var(--z-touch);
   display: grid;
-  justify-items: center;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  column-gap: var(--sp-4);
   margin: 0;
-  padding: var(--sp-2) var(--sp-6);
-  border-top: calc(var(--u) * 2.7) solid var(--blood-hot);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--night) 80%, transparent), transparent);
-  transform: translateX(-50%);
-  opacity: 0;
+  padding: 0 0 0 var(--sp-4);
+  border-left: calc(var(--u) * 2.7) solid var(--blood-hot);
+  opacity: var(--kc-cap, 0);
+  transform: translate(calc((1 - var(--kc-cap, 0)) * var(--u) * -24), 50%);
   pointer-events: none;
 }
-.hud-killcap.on { animation: killcap-in 3s ease-out both; }
 .hud-killcap-tag {
   font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .06em;
@@ -1000,19 +1004,20 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   font-stretch: var(--wdth-label);
 }
 .hud-killcap-m {
-  font: 700 var(--fs-6)/1 var(--font-ui);
+  font: 700 var(--fs-4)/1 var(--font-ui);
   color: var(--ink);
   font-stretch: var(--wdth-num);
   font-variant-numeric: tabular-nums;
 }
-@keyframes killcap-in {
-  0% { opacity: 0; transform: translate(-50%, calc(var(--u) * 10.7)); }
-  12% { opacity: 1; transform: translateX(-50%); }
-  85% { opacity: 1; }
-  100% { opacity: 0; }
+/* A wide phone's bars are too thin to hold it: it sits on the bottom bar's edge in the corner instead. */
+@media (min-aspect-ratio: 19/10) {
+  .hud-killcap { bottom: calc(var(--kc-h, 0vh) * var(--kc-bars, 0) + var(--sp-3)); transform: translateX(calc((1 - var(--kc-cap, 0)) * var(--u) * -24)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hud-killcap.on { animation: none; opacity: 1; }
+  .hud-killcap { transform: translateY(50%); }
+}
+@media (prefers-reduced-motion: reduce) and (min-aspect-ratio: 19/10) {
+  .hud-killcap { transform: none; }
 }
 
 /* ---- C17 kill-cam (S5.3): 2.39:1 bars over the frame, every cluster stepped back, the range plate above the bar ---- */
@@ -1037,7 +1042,12 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 .hud-root.kc-cine .hud-tl,
 .hud-root.kc-cine .hud-tr,
 .hud-root.kc-cine .hud-target { opacity: 0; transition: opacity 120ms var(--ease-out); }
-.hud-root.kc-cine .hud-killcap { bottom: calc(var(--kc-h, 12.8vh) * var(--kc-bars, 0) + var(--sp-5)); }
+
+/* Second Wind: the red outlines show through everything, the vitals cluster's corner too, so its plate goes
+   near-opaque for the moment (C17 review: a red figure sat under ARM 35 on the phone). */
+.hud-root.sw-cine .hud-vitals::before {
+  background: radial-gradient(ellipse 70% 75% at 40% 50%, color-mix(in srgb, var(--night) 88%, transparent) 55%, transparent 100%);
+}
 
 /* ---- C17 Second Wind (S6.5): the name over the crosshair, a draining line, the one instruction ---- */
 /* While it runs, only what the comeback needs stays: the vitals, the ammo, the crosshair and the plate. */
