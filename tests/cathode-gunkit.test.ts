@@ -5,6 +5,7 @@ import { Arms } from "../games/cathode/src/game/hands";
 import { meshStats } from "../games/cathode/src/game/gunkit";
 import { KESTREL_PARTS } from "../games/cathode/src/game/kestrel";
 import { BANDS, trimAtlas } from "../games/cathode/src/render/guntex";
+import { ARSENAL, HERO_MODELS } from "../games/cathode/src/game/feel/arsenal";
 
 const MODELS: GunModel[] = ["pin", "pistol", "shotgun", "sniper", "revolver", "smg", "rifle", "launcher", "sledge", "blade", "wire"];
 // S2.1: the viewmodel budget, hands included.
@@ -94,5 +95,42 @@ describe("CATHODE gun kit (S2.1, C4)", () => {
     const d = t.image.data as Uint8Array;
     expect(Math.abs(d[0]! - 128)).toBeLessThan(3);
     expect(Math.abs(d[2]! - 128)).toBeLessThan(3);
+  });
+});
+
+describe("C18 the arsenal on the kit (S2.6)", () => {
+  for (const m of HERO_MODELS) {
+    it(`${m} has every part its clips move and every empty the hands and the stages read`, () => {
+      for (const phone of [false, true]) {
+        const r = buildGun(m, phone);
+        for (const n of ARSENAL[m].parts) expect(r.parts[n], `${m} ${phone ? "phone" : "desktop"} ${n}`).toBeTruthy();
+        // Moving parts the fire clip drives carry their own meshes (a separate draw so they can move), except
+        // the trigger, merged into the frame on a phone like the Kestrel's.
+        for (const n of Object.keys(ARSENAL[m].fire.tracks)) {
+          if (["gun", "hand", "hand2", "handR", "trigger"].includes(n)) continue;
+          let meshes = 0;
+          r.parts[n]!.traverse((o) => {
+            if ((o as THREE.Mesh).isMesh) meshes++;
+          });
+          expect(meshes, `${m} ${n}`).toBeGreaterThan(0);
+        }
+        // The muzzle is ahead of everything that isn't the flash.
+        expect(r.muzzle.position.z).toBeLessThan(-0.18);
+        // Built on the kit: one shared material, a handful of draws.
+        const st = meshStats(r.root);
+        expect(st.calls).toBeLessThanOrEqual(phone ? 8 : 12);
+      }
+    });
+  }
+
+  it("the hero guns are one family: the faction plate and the cyan line on every one", () => {
+    for (const m of HERO_MODELS) {
+      const r = buildGun(m);
+      let emissive = 0;
+      r.root.traverse((o) => {
+        if ((o as THREE.Mesh).isMesh && o.userData.kit === "emissive") emissive++;
+      });
+      expect(emissive, m).toBeGreaterThan(0);
+    }
   });
 });

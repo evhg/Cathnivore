@@ -71,12 +71,32 @@ export const FIN = {
   silk: { color: 0xbfb4a0, metal: 0, rough: 0.6, sheen: 0.3, band: "grain", wear: 0 },
   pearl: { color: 0xf4efe6, metal: 0.05, rough: 0.18, coat: 1, wear: 0 },
   gold: { color: 0xc9a25a, metal: 1, rough: 0.25, wear: 0 },
+  // C18: the arsenal's family. Hollowell charcoal Cerakote over steel (the Kestrel's slide), black polymer, TiN
+  // bronze on what moves fast (bolts, crowns, the cylinder's flutes), one cyan line, the faction mark on the left.
+  receiver: { color: 0x2a2c30, metal: 1, rough: 0.38, coat: 0.8, band: "peel" },
+  /** Blued steel for the revolver's frame and the shotgun's barrel: deeper and glossier than the Cerakote. */
+  blued: { color: 0x1c1f25, metal: 1, rough: 0.26, coat: 1, band: "brushed", wear: 1 },
+  /** The revolver's grips: dark walnut under a satin oil finish. */
+  walnut: { color: 0x3a2014, metal: 0, rough: 0.46, coat: 0.7, band: "grain", scale: 0.6, wear: 0.5 },
+  /** Recoil pads, bipod feet and the launcher's grip sleeve. */
+  rubber: { color: 0x121214, metal: 0, rough: 0.86, band: "stipple", scale: 0.5, wear: 0 },
+  /** Padded nylon (slings, the cheek riser's cover). */
+  webbing: { color: 0x22241f, metal: 0, rough: 0.9, sheen: 0.2, band: "nylon", wear: 0 },
+  /** Hollowell olive on the launcher's tube: the one heavy weapon in a field colour. */
+  olive: { color: 0x3b3f2c, metal: 0.2, rough: 0.6, coat: 0.3, band: "peel", wear: 0.8 },
+  /** A shotshell's hull (oxblood) and the grenade's yellow band. */
+  hull: { color: 0x5a1418, metal: 0, rough: 0.5, coat: 0.4, band: "flat", wear: 0 },
+  hazard: { color: 0xb08a1c, metal: 0.1, rough: 0.5, band: "flat", wear: 0.6 },
 } satisfies Record<string, Finish>;
 
 export const GLOW = {
   tritium: { emit: 0x7dffb2, intensity: 3 },
   trim: { emit: 0x3fe0ff, intensity: 1.2 },
   dot: { emit: 0xff2a47, intensity: 9, eyebox: true },
+  /** C18: the scope's coated objective, a faint blue-violet bloom where the street's light catches it. */
+  lens: { emit: 0x3a4cff, intensity: 0.5 },
+  /** C18: an amber chevron reticle in the rifle's optic, seen only from behind. */
+  chevron: { emit: 0xffa040, intensity: 6, eyebox: true },
 } satisfies Record<string, Emit>;
 
 const isEmit = (s: Surface): s is Emit => typeof s === "object" && "emit" in s;

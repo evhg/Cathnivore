@@ -964,7 +964,7 @@ export class Arsenal {
     }
     // Her hands on the grip, the index onto the trigger while the shot breaks.
     this.shR.lerpVectors(r.shoulderR ?? SHOULDER_R, SHOULDER_R_ADS, a.aim);
-    this.shL.lerpVectors(SHOULDER_L, SHOULDER_L_ADS, a.aim);
+    this.shL.lerpVectors(r.shoulderL ?? SHOULDER_L, SHOULDER_L_ADS, a.aim);
     // Inspecting, the elbows drop out and down so the forearms fall away under the turned gun instead of
     // pointing at the lens (C4 review: the sleeve filled a quarter of the frame).
     if (this.inspectW > 0) {

@@ -8,6 +8,13 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { adoptMeshes, collapse, FIN, fistGrip, GunKit } from "./gunkit";
 import { KESTREL_DOT, buildKestrel } from "./kestrel";
 import { POSES, type HandPose } from "./hands";
+import { ARSENAL, isHero, type FlashKind, type HeroModel } from "./feel/arsenal";
+import { buildRevolver as heroRevolver, REVOLVER_SIGHT } from "./guns/revolver";
+import { buildSmg, SMG_SIGHT } from "./guns/smg";
+import { buildRifle, RIFLE_SIGHT } from "./guns/rifle";
+import { buildShotgun as heroShotgun, SHOTGUN_SIGHT } from "./guns/shotgun";
+import { buildSniper as heroSniper, SNIPER_SIGHT } from "./guns/sniper";
+import { buildLauncher as heroLauncher, LAUNCHER_SIGHT } from "./guns/launcher";
 
 export type GunModel = "pin" | "pistol" | "shotgun" | "sniper" | "revolver" | "smg" | "rifle" | "launcher" | "sledge" | "blade" | "wire";
 
@@ -69,6 +76,8 @@ export interface GunRig {
   hipRot?: [number, number, number];
   /** The firing arm's shoulder at the hip (camera space), when this gun wants its own (default hands.ts's). */
   shoulderR?: THREE.Vector3;
+  /** C18: the support arm's shoulder at the hip, when this gun wants its own. */
+  shoulderL?: THREE.Vector3;
   /** Wrist frames for Cath's hands (hands.ts): Y toward the knuckles, Z the back of the hand. No gripL = one-handed. */
   gripR: THREE.Object3D;
   gripL: THREE.Object3D | null;
@@ -222,168 +231,6 @@ function buildPistol(phone: boolean): GunRig {
   return r;
 }
 
-/** The Fishmonger: a pump shotgun, walnut furniture, a heat shield, a sling swivel. */
-function buildShotgun(): GunRig {
-  const r = rig(new THREE.Vector3(0.16, -0.17, -0.42), new THREE.Vector3(0, -0.085, -0.34), 58);
-  const g = new THREE.Group();
-  g.add(at(box(0.04, 0.06, 0.2, M.blued, 0.006), 0, 0, 0)); // receiver
-  g.add(at(cyl(0.012, 0.56, M.blued, 16), 0, 0.012, -0.38)); // barrel
-  g.add(at(cyl(0.011, 0.44, M.blued, 16), 0, -0.016, -0.32)); // magazine tube
-  const shield = box(0.028, 0.012, 0.32, M.polymer, 0.003);
-  shield.position.set(0, 0.026, -0.3);
-  g.add(shield);
-  for (let i = 0; i < 8; i++) g.add(at(box(0.029, 0.013, 0.012, M.blued, 0.002), 0, 0.027, -0.18 - i * 0.034)); // shield holes (ribs)
-  g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.004, 8, 6), M.brass), 0, 0.022, -0.64)); // bead sight
-  const pump = new THREE.Group();
-  pump.add(at(box(0.042, 0.04, 0.14, M.walnut, 0.01), 0, -0.018, -0.3));
-  for (let i = 0; i < 6; i++) pump.add(at(box(0.043, 0.004, 0.006, M.polymer, 0.001), 0, -0.018, -0.25 - i * 0.018));
-  g.add(pump);
-  const stock = box(0.038, 0.07, 0.24, M.walnut, 0.012);
-  stock.position.set(0, -0.03, 0.2);
-  stock.rotation.x = 0.12;
-  g.add(stock);
-  g.add(at(box(0.04, 0.08, 0.02, M.rubber, 0.006), 0, -0.045, 0.32)); // recoil pad
-  const grip = box(0.03, 0.08, 0.04, M.walnut, 0.008);
-  grip.position.set(0, -0.055, 0.07);
-  grip.rotation.x = 0.35;
-  g.add(grip);
-  r.root.add(g);
-  r.action = pump;
-  r.muzzle.position.set(0, 0.012, -0.67);
-  r.port.position.set(0.022, 0.01, -0.02);
-  attachHands(r, [0, -0.07, 0.08], [-0.005, -0.045, -0.3], -1.2);
-  // The left hand rides the pump.
-  r.root.updateMatrixWorld(true);
-  if (r.gripL) pump.attach(r.gripL);
-  return r;
-}
-
-/** The Widowmaker: a bolt-action rifle with a long scope, a suppressor and a folding bipod. */
-function buildSniper(): GunRig {
-  const r = rig(new THREE.Vector3(0.2, -0.21, -0.5), new THREE.Vector3(0, -0.095, -0.28), 9);
-  r.scoped = true;
-  const g = new THREE.Group();
-  g.add(at(cyl(0.02, 0.24, M.blued, 18), 0, 0, -0.02)); // receiver
-  g.add(at(cyl(0.013, 0.62, M.blued, 16), 0, 0, -0.45)); // barrel
-  g.add(at(cyl(0.02, 0.2, M.polymer, 18), 0, 0, -0.84)); // suppressor
-  const stock = new THREE.Group();
-  stock.add(at(box(0.05, 0.07, 0.62, M.polymer, 0.015), 0, -0.035, -0.06));
-  stock.add(at(box(0.045, 0.1, 0.18, M.polymer, 0.02), 0, -0.05, 0.28));
-  stock.add(at(box(0.03, 0.03, 0.12, M.polymer, 0.01), 0, 0.02, 0.24)); // cheek riser
-  g.add(stock);
-  // Scope: tube, bells, turrets, lens glints.
-  const scope = new THREE.Group();
-  scope.add(at(cyl(0.017, 0.26, M.blued, 20), 0, 0, 0));
-  scope.add(at(cyl(0.026, 0.07, M.blued, 22, 0.018), 0, 0, -0.16));
-  scope.add(at(cyl(0.021, 0.05, M.blued, 22, 0.017), 0, 0, 0.14));
-  scope.add(at(cyl(0.024, 0.003, M.glass, 22), 0, 0, -0.196));
-  scope.add(at(box(0.016, 0.022, 0.022, M.blued, 0.004), 0, 0.026, -0.01));
-  scope.add(at(box(0.022, 0.016, 0.022, M.blued, 0.004), 0.026, 0, -0.01));
-  scope.add(at(box(0.012, 0.03, 0.02, M.blued, 0.003), 0, -0.024, -0.08)); // rings
-  scope.add(at(box(0.012, 0.03, 0.02, M.blued, 0.003), 0, -0.024, 0.06));
-  scope.position.set(0, 0.052, -0.04);
-  g.add(scope);
-  // The bolt handle: it's what cycles after every shot.
-  const bolt = new THREE.Group();
-  bolt.add(at(cyl(0.006, 0.05, M.steel, 10), 0.028, 0, 0));
-  bolt.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.011, 12, 10), M.steel), 0.05, -0.006, 0));
-  bolt.position.set(0, 0.004, 0.06);
-  g.add(bolt);
-  g.add(at(box(0.04, 0.035, 0.06, M.blued, 0.006), 0, -0.07, 0.0)); // magazine
-  r.root.add(g);
-  r.action = bolt;
-  // A long rifle up close swamps the frame: carry it a little smaller and lower.
-  g.scale.setScalar(0.82);
-  r.muzzle.position.set(0, 0, -0.95 * 0.82);
-  r.port.position.set(0.02, 0.01, 0.02);
-  attachHands(r, [0, -0.07, 0.17], [-0.005, -0.06, -0.24], -1.3);
-  return r;
-}
-
-/** The Old Testament: a long-barrelled revolver, walnut grip, a fluted cylinder that swings out to reload. */
-function buildRevolver(): GunRig {
-  const r = rig(new THREE.Vector3(0.14, -0.15, -0.36), new THREE.Vector3(0, -0.066, -0.3), 52);
-  const g = new THREE.Group();
-  g.add(at(box(0.03, 0.045, 0.1, M.steel, 0.006), 0, 0.01, -0.02)); // frame
-  g.add(at(cyl(0.013, 0.2, M.steel, 16), 0, 0.022, -0.2)); // barrel
-  g.add(at(box(0.012, 0.016, 0.2, M.steel, 0.003), 0, 0.04, -0.2)); // rib
-  const cyln = at(cyl(0.024, 0.065, M.blued, 6), 0, 0.01, -0.02);
-  cyln.rotation.x = Math.PI / 2;
-  g.add(cyln);
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    g.add(at(cyl(0.004, 0.066, M.brass, 8), Math.cos(a) * 0.016, 0.01 + Math.sin(a) * 0.016, -0.02)).rotation.x = Math.PI / 2;
-  }
-  g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.004, 8, 6), M.brass), 0, 0.05, -0.3)); // front sight
-  const hammer = at(box(0.008, 0.026, 0.014, M.steel, 0.002), 0, 0.045, 0.04);
-  g.add(hammer);
-  const grip = box(0.03, 0.1, 0.045, M.walnut, 0.01);
-  grip.position.set(0, -0.045, 0.05);
-  grip.rotation.x = 0.3;
-  g.add(grip);
-  g.add(at(box(0.004, 0.02, 0.03, M.steel, 0.002), 0, -0.02, 0.0)); // trigger guard
-  r.root.add(g);
-  r.action = hammer;
-  r.muzzle.position.set(0, 0.022, -0.31);
-  r.port.position.set(0.016, 0.01, -0.02);
-  attachHands(r, [0, -0.05, 0.05], [-0.012, -0.055, 0.04], -0.5);
-  return r;
-}
-
-/** SMGs and rifles share a build: a boxy receiver, a magazine, a short stock; `long` stretches it into the AR. */
-function buildAuto(long: boolean): GunRig {
-  const r = rig(new THREE.Vector3(0.17, -0.17, -0.42), new THREE.Vector3(0, -0.075, -0.32), long ? 56 : 54);
-  const g = new THREE.Group();
-  const len = long ? 0.52 : 0.28;
-  g.add(at(box(0.04, 0.062, 0.28, M.polymer, 0.008), 0, 0, -0.02)); // receiver
-  g.add(at(box(0.034, 0.02, 0.3, M.blued, 0.004), 0, 0.04, -0.02)); // top rail
-  g.add(at(cyl(0.012, len, M.blued, 14), 0, 0.012, -0.16 - len / 2)); // barrel
-  g.add(at(cyl(0.018, long ? 0.3 : 0.14, M.polymer, 16), 0, 0.012, -0.16 - (long ? 0.2 : 0.1))); // handguard / can
-  const mag = box(0.03, 0.12, 0.05, M.polymer, 0.006);
-  mag.position.set(0, -0.09, -0.06);
-  mag.rotation.x = long ? 0.18 : 0.05;
-  g.add(mag);
-  const grip = box(0.03, 0.09, 0.04, M.polymer, 0.008);
-  grip.position.set(0, -0.07, 0.1);
-  grip.rotation.x = 0.3;
-  g.add(grip);
-  g.add(at(box(0.036, 0.06, long ? 0.26 : 0.18, M.polymer, 0.01), 0, -0.01, 0.28)); // stock
-  g.add(at(box(0.012, 0.028, 0.012, M.blued, 0.002), 0, 0.066, long ? -0.5 : -0.3)); // front post
-  g.add(at(box(0.016, 0.03, 0.02, M.blued, 0.003), 0, 0.066, 0.1)); // rear sight
-  g.add(at(box(0.01, 0.012, 0.02, M.red, 0.002), 0, 0.083, 0.1));
-  const bolt = at(box(0.008, 0.012, 0.03, M.steel, 0.002), 0.022, 0.02, 0.0); // charging handle
-  g.add(bolt);
-  r.root.add(g);
-  r.action = bolt;
-  r.muzzle.position.set(0, 0.012, -(0.16 + len + 0.02));
-  r.port.position.set(0.022, 0.015, 0.0);
-  attachHands(r, [0, -0.08, 0.1], [-0.005, -0.04, long ? -0.32 : -0.2], -1.2);
-  return r;
-}
-
-/** The Bargain Bin: a fat tube launcher with a drum, a top sight and a pistol grip. */
-function buildLauncher(): GunRig {
-  const r = rig(new THREE.Vector3(0.17, -0.18, -0.44), new THREE.Vector3(0, -0.08, -0.34), 58);
-  const g = new THREE.Group();
-  g.add(at(cyl(0.04, 0.5, M.blued, 20), 0, 0.01, -0.2)); // tube
-  g.add(at(cyl(0.05, 0.05, M.steel, 20), 0, 0.01, -0.46)); // muzzle collar
-  const drum = at(cyl(0.05, 0.12, M.polymer, 6), 0, -0.01, 0.0);
-  drum.rotation.x = Math.PI / 2;
-  g.add(drum);
-  g.add(at(box(0.012, 0.04, 0.03, M.blued, 0.003), 0, 0.07, -0.1)); // sight
-  const grip = box(0.03, 0.09, 0.04, M.polymer, 0.008);
-  grip.position.set(0, -0.08, 0.06);
-  grip.rotation.x = 0.3;
-  g.add(grip);
-  g.add(at(box(0.03, 0.09, 0.03, M.polymer, 0.006), 0, -0.07, -0.2)); // foregrip
-  g.add(at(box(0.034, 0.06, 0.2, M.polymer, 0.01), 0, -0.01, 0.22)); // stock
-  r.root.add(g);
-  r.muzzle.position.set(0, 0.01, -0.5);
-  r.port.position.set(0.03, 0.01, 0.0);
-  attachHands(r, [0, -0.08, 0.06], [-0.005, -0.06, -0.2], -1.2);
-  return r;
-}
-
 /** The Repossessor: a long-hafted sledge with a brass-banded head, swung from over the shoulder like the Pin. */
 function buildSledge(): GunRig {
   const r = rig(new THREE.Vector3(0.2, -0.22, -0.4), new THREE.Vector3(0.12, -0.16, -0.34), 70);
@@ -436,19 +283,139 @@ function buildWire(): GunRig {
   return r;
 }
 
+let starTex: THREE.DataTexture | null = null;
+/** A muzzle star: a hot core and 6 tapering spikes with a little angular jitter (the unsuppressed classes, S2.3). */
+function starTexture(): THREE.DataTexture {
+  if (starTex) return starTex;
+  const N = 128;
+  const d = new Uint8Array(N * N * 4);
+  for (let y = 0; y < N; y++)
+    for (let x = 0; x < N; x++) {
+      const u = ((x + 0.5) / N - 0.5) * 2;
+      const v = ((y + 0.5) / N - 0.5) * 2;
+      const r = Math.hypot(u, v);
+      const a = Math.atan2(v, u);
+      // Six spikes of uneven length, narrowing to their tips.
+      const sp = Math.pow(Math.max(0, Math.cos(a * 3)), 18) * (0.75 + 0.25 * Math.sin(a * 7 + 1.3));
+      const core = Math.exp(-r * r * 22);
+      const spike = sp * Math.max(0, 1 - r) ** 1.4;
+      const halo = Math.max(0, 1 - r) ** 3 * 0.35;
+      const k = Math.min(1, core + spike + halo);
+      const o = (y * N + x) * 4;
+      const c = Math.round(255 * k);
+      d[o] = d[o + 1] = d[o + 2] = c;
+      d[o + 3] = c;
+    }
+  starTex = new THREE.DataTexture(d, N, N);
+  starTex.needsUpdate = true;
+  return starTex;
+}
+
+/**
+ * The first-person flash of an open gun (S2.3, S2.6): crossed quads along the bore with the puff's soft falloff,
+ * plus a star facing her, per kind. `prong` adds three comp jets, `brake` two side jets, `large` a wider cone,
+ * `backblast` a second blast out of the tube's back (`rear`). One draw each while shown.
+ */
+function heroFlash(kind: FlashKind, size: number, muzzle: THREE.Object3D, root: THREE.Object3D, rear?: THREE.Vector3): THREE.Object3D {
+  const g = new THREE.Group();
+  g.name = "flash";
+  const hot = (k: number) => new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb070).multiplyScalar(k), map: puffTexture(), transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const star = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffd29a).multiplyScalar(4), map: starTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const len = size * (kind === "large" ? 1.3 : 1.1);
+  const along: THREE.BufferGeometry[] = [];
+  for (let i = 0; i < 3; i++) along.push(new THREE.PlaneGeometry(len, size * 0.55).rotateY(Math.PI / 2).rotateZ((i * Math.PI) / 3).translate(0, 0, -len * 0.45));
+  if (kind === "prong") for (let i = 0; i < 3; i++) along.push(new THREE.PlaneGeometry(size * 0.18, size * 0.6).translate(0, size * 0.3, 0).rotateZ(Math.PI / 2 + (i * Math.PI * 2) / 3).translate(0, 0, -0.01));
+  if (kind === "brake") for (const sx of [-1, 1]) along.push(new THREE.PlaneGeometry(size * 0.75, size * 0.22).rotateX(-Math.PI / 2).translate((sx * size * 0.42), 0, 0.012));
+  const front = new THREE.Mesh(mergeGeometries(along)!, hot(kind === "large" ? 3.4 : 2.8));
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(size * 0.9, size * 0.9).translate(0, 0, -size * 0.12), star);
+  front.add(face);
+  g.add(front);
+  g.position.copy(muzzle.position);
+  if (rear) {
+    const blast = new THREE.Mesh(mergeGeometries([0, 1, 2].map((i) => new THREE.PlaneGeometry(size * 2.2, size * 0.9).rotateY(Math.PI / 2).rotateZ((i * Math.PI) / 3).translate(0, 0, size * 1.05)))!, hot(2.2));
+    blast.position.copy(rear).sub(muzzle.position);
+    g.add(blast);
+  }
+  g.visible = false;
+  root.add(g);
+  return g;
+}
+
+/**
+ * C18: a hero gun from guns/*.ts. Aimed, the sight point sits on the camera axis `sightDist` out; at the hip the
+ * firing hand lands where the Kestrel's does (`hipFs` the gun's front strap top, so the grip is under her hand).
+ */
+/** Per class: where the gun sits at the hip (camera space), how far out its sight sits aimed, its rest cant. */
+interface HeroPlace {
+  build: (phone: boolean, lod?: boolean) => { root: THREE.Group; kit: GunKit };
+  sight: readonly [number, number, number];
+  /** One-handed-style (the revolver): the hip follows the Kestrel's hand placement from the front strap's top. */
+  fs?: [number, number];
+  hip?: [number, number, number];
+  hipPhone?: [number, number, number];
+  dist: number;
+  vmFov: number;
+  hipRot: [number, number, number];
+  long: boolean;
+  scoped?: boolean;
+  adsFov: number;
+}
+export const HERO_PLACE: Record<HeroModel, HeroPlace> = {
+  revolver: { build: heroRevolver, sight: REVOLVER_SIGHT, fs: [0.016, -0.01], dist: 0.4, vmFov: 36, hipRot: [0.04, 0.18, 0.1], long: false, adsFov: 52 },
+  smg: { build: buildSmg, sight: SMG_SIGHT, hip: [0.125, -0.15, -0.36], hipPhone: [0.135, -0.14, -0.36], dist: 0.2, vmFov: 42, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 54 },
+  rifle: { build: buildRifle, sight: RIFLE_SIGHT, hip: [0.125, -0.165, -0.37], hipPhone: [0.135, -0.155, -0.37], dist: 0.2, vmFov: 40, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 50 },
+  shotgun: { build: heroShotgun, sight: SHOTGUN_SIGHT, hip: [0.125, -0.16, -0.38], hipPhone: [0.135, -0.15, -0.38], dist: 0.22, vmFov: 44, hipRot: [0.02, 0.1, 0.06], long: true, adsFov: 58 },
+  sniper: { build: heroSniper, sight: SNIPER_SIGHT, hip: [0.125, -0.175, -0.38], hipPhone: [0.135, -0.165, -0.38], dist: 0.12, vmFov: 44, hipRot: [0.02, 0.1, 0.05], long: true, scoped: true, adsFov: 9 },
+  launcher: { build: heroLauncher, sight: LAUNCHER_SIGHT, hip: [0.13, -0.17, -0.38], hipPhone: [0.14, -0.16, -0.38], dist: 0.24, vmFov: 44, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 58 },
+};
+
+function heroRig(model: HeroModel, phone: boolean): GunRig {
+  const P = HERO_PLACE[model];
+  const { root, kit } = P.build(phone);
+  const sight = P.sight;
+  let hip: THREE.Vector3;
+  if (P.fs) {
+    // The Kestrel's hip with its front strap top at (-0.004, -0.031): the hand stays where C4 placed it.
+    const kHip = phone ? new THREE.Vector3(0.072, -0.074, -0.28) : new THREE.Vector3(0.062, -0.074, -0.28);
+    hip = kHip.clone().add(new THREE.Vector3(0, -(P.fs[1] + 0.031), -(P.fs[0] + 0.004)));
+  } else hip = new THREE.Vector3(...((phone ? P.hipPhone : P.hip) ?? [0.13, -0.15, -0.3]));
+  const r = rig(hip, new THREE.Vector3(-sight[0], -sight[1], -P.dist - sight[2]), P.adsFov);
+  r.root = root;
+  r.parts = kit.parts;
+  r.hipRot = P.hipRot;
+  if (!P.long) r.shoulderR = new THREE.Vector3(0.0, -0.56, 0.2);
+  // A long gun's support arm comes up from the bottom-left corner, not the middle of the frame.
+  else r.shoulderL = new THREE.Vector3(-0.34, -0.5, 0.2);
+  r.adsVmFov = P.vmFov;
+  r.scoped = !!P.scoped;
+  r.muzzle = kit.parts.muzzle!;
+  r.port = kit.parts.port!;
+  r.gripR = kit.parts.gripR!;
+  r.gripL = kit.parts.gripL ?? null;
+  r.poseR = P.long ? POSES.rifleR! : POSES.pistolR!;
+  r.poseL = P.long ? POSES.foreL! : POSES.pistolL!;
+  r.mag = kit.parts.mag;
+  r.action = kit.parts.bolt ?? kit.parts.pump ?? kit.parts.hammer;
+  const f = ARSENAL[model].flash;
+  r.flashMesh = heroFlash(f.kind, f.sizeM, r.muzzle, root, kit.parts.rear?.position);
+  r.parts.hero = root;
+  return r;
+}
+
 export function buildGun(model: GunModel, phone = false): GunRig {
+  if (isHero(model)) {
+    const h = heroRig(model, phone);
+    h.root.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh) o.castShadow = o.receiveShadow = false;
+    });
+    return h;
+  }
   const r =
     model === "pin" ? buildPin()
     : model === "pistol" ? buildPistol(phone)
-    : model === "shotgun" ? buildShotgun()
-    : model === "revolver" ? buildRevolver()
-    : model === "smg" ? buildAuto(false)
-    : model === "rifle" ? buildAuto(true)
-    : model === "launcher" ? buildLauncher()
     : model === "sledge" ? buildSledge()
     : model === "blade" ? buildBlade()
-    : model === "wire" ? buildWire()
-    : buildSniper();
+    : buildWire();
   // Older builds fold into the kit: a few merged meshes per moving part, the kit's shading and wear.
   if (model !== "pistol") {
     adoptMeshes(r.root, [r.action, r.mag].filter((x): x is THREE.Object3D => !!x), phone);
@@ -488,7 +455,7 @@ export function buildGunLOD(model: GunModel, phone = false): THREE.LOD {
   lod.name = `${model}:lod`;
   const near = buildGunDisplay(model, phone);
   lod.addLevel(near, 0);
-  const mid = model === "pistol" ? buildKestrel(true, true).root : buildGunDisplay(model, true);
+  const mid = model === "pistol" ? buildKestrel(true, true).root : isHero(model) ? HERO_PLACE[model].build(true, true).root : buildGunDisplay(model, true);
   const one = collapse(mid);
   if (one) lod.addLevel(one, 8);
   const box = new THREE.Box3().setFromObject(near);
