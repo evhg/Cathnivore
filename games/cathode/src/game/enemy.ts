@@ -1315,6 +1315,16 @@ export class Enemy {
   /** Screenshot stages: the firefight pose layers are set by hand and held (no easing back out of them). */
   stagePose = false;
 
+  /** Screenshot stages: held mid-stride at `speed` m/s, `phase` radians into the gait (the flanker on the move). */
+  stageStride(speed: number, phase: number): void {
+    this.motion.speed = speed;
+    this.motion.phase = phase;
+    animate(this.body, this.motion);
+    this.body.carry();
+    this.body.pose(0);
+    this.placeRifle();
+  }
+
   /** C16: the spent mags tumble and settle; gone after 14 s. */
   stepMags(dt: number, ground: (x: number, z: number) => number, colliders: THREE.Box3[]): void {
     for (let i = this.magDrops.length - 1; i >= 0; i--) {
@@ -1339,7 +1349,10 @@ export class Enemy {
     const wrap = new THREE.Group();
     wrap.rotation.x = Math.PI / 2;
     wrap.scale.copy(this.gun.near.scale);
-    wrap.add(this.gun.mag.clone());
+    // The copy is of the mag in his gun, which the reload has already hidden (it's left the well): show the copy.
+    const mag = this.gun.mag.clone();
+    mag.visible = true;
+    wrap.add(mag);
     wrap.position.set(0, -0.09, 0.06);
     outer.add(wrap);
     outer.scale.setScalar(this.body.scale);

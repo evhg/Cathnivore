@@ -255,8 +255,10 @@ export class Tactics {
     // ---- in cover ----
     this.stuckFor = 0;
     this.t += ms;
-    // Hold the spot (and step out to the side to lean, back in to hide).
-    const leanStep = this.act === "lean" ? 0.38 * Math.min(1, this.t / ACT.lean.rise) : 0;
+    // Hold the spot (and step out to the side to lean, back in to hide). The step is short: his feet stay behind the
+    // cover's edge and the 25 degree roll of his spine carries his head and shoulder out (C16 review: at 0.38 m he
+    // walked clear of the pillar).
+    const leanStep = this.act === "lean" ? 0.14 * Math.min(1, this.t / ACT.lean.rise) : 0;
     target = this.vTarget.set(c.fz * c.lean, 0, -c.fx * c.lean).multiplyScalar(leanStep).add(spot);
     speed = e.kit.walk * 1.2;
     const coverFace = this.vFace.set(c.x + c.fx, c.y, c.z + c.fz);

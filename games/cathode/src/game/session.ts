@@ -88,10 +88,11 @@ import { plateWear } from "../sim/armour";
 import { makeStagger } from "../sim/stagger";
 import { Director } from "./ai/director";
 import { RELOAD_KEYS } from "./animate";
-import { stageFlash } from "./laserfx";
+import { layFlat, litEdges, stageFlash } from "./laserfx";
 import { EnemyNades, NADE_RADIUS } from "./enemynades";
 import { cargoCrate, concretePillar } from "./coverprops";
 import { loadCover } from "./ai/coverload";
+import { BARK_LINES } from "./ai/squad";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -1012,6 +1013,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let grace = o.shot ? 0 : GRACE;
   /** A screenshot stage has run (S0): the moment is held, so nobody shoots into it. */
   let staged = false;
+  /** C16 review: a firefight stage is the fight alone (no objective diamond floating over the street). */
+  let stageQuiet = false;
   // First time on a touch screen: how the controls work, before anything can shoot at her.
   let coaching = false;
   let boardShown = false;
@@ -2208,7 +2211,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   /** The objective on screen, for the waypoint diamond. */
   function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
     const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
-    if (!t || dead) return null;
+    if (!t || dead || stageQuiet) return null;
     // The diamond floats 1.2 m over the objective; over the first gun's case it rides above the beacon's shaft, so
     // the beam reads whole under it instead of being capped by the marker.
     const lift = job?.case && t === job.case.gunAt ? job.case.markLift : 1.2;
@@ -4245,6 +4248,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     for (const p of c16Props) p.removeFromParent();
     c16Props = [];
     staged = true;
+    stageQuiet = true;
     s.stageInfo = null;
     s.hp = s.maxHp;
     for (const e of enemies) {
@@ -4284,27 +4288,31 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const matOf = (k: string) => world.material?.(k);
       const prop = lean ? concretePillar(0.9, 2.4, matOf) : cargoCrate(1.5, 1.15, 0.8, matOf);
       prop.position.copy(coverAt);
-      prop.rotation.y = yawTo;
+      // Its +z face (the crate's stencil, the pillar's poster and corner guards) toward her.
+      prop.rotation.y = yawTo + Math.PI;
       world.scene.add(prop);
       c16Props.push(prop);
     }
-    const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.36 : 0);
+    // Round the pillar his hips stay 0.2 m behind its edge (his feet hidden): the 25 degree roll of his spine is what
+    // carries his head, one shoulder and the carbine out past it (C16 review: at 0.36 he stood clear of it).
+    const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.56 : reload ? 0.3 : 0);
     if (!sniper) at.addScaledVector(flat, 0.05);
     at.y = ground(at.x, at.z);
     e.motion.pos.copy(at);
     // The camera: square on, or 50 degrees off for the reload (so the kneeling man shows past the crate's end).
     let from = stageHome.pos.clone();
     if (reload) {
-      // Side on and a little behind him (where a flank puts her), the crate off to his front, clear of him.
-      const off = side.clone().multiplyScalar(-2.5).addScaledVector(flat, 0.75);
+      // C16 review: from where she stands, 20 degrees off his line: the crate hides him to the helmet, the shoulder
+      // and the carbine's receiver showing past its end, and the mag he dropped lying out in the street in front.
+      const off = side.clone().multiplyScalar(1.15).addScaledVector(flat, -3.2);
       from = at.clone().add(off);
       from.y = ground(from.x, from.z);
     }
     const eyeAt = from.clone().setY(from.y + 1.6);
     e.motion.yaw = Math.atan2(eyeAt.x - at.x, eyeAt.z - at.z);
     if (reload) {
-      // Facing his cover, turned a little toward the lens so the hands at the carbine show.
-      const face = flat.clone().negate().addScaledVector(side, -0.55).normalize();
+      // Facing his cover, head down over the carbine, turned a little toward the crate's open end.
+      const face = flat.clone().negate().addScaledVector(side, 0.35).normalize();
       e.motion.yaw = Math.atan2(face.x, face.z);
     }
     e.motion.aim = 1;
@@ -4323,7 +4331,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       pose.blind = 1;
       e.motion.kick = 0.7;
     } else if (reload) {
-      e.motion.crouch = 1.6;
+      // Down on his heels rather than on one knee: his helmet and visor clear the lid, the rest of him behind it.
+      e.motion.crouch = 1.25;
       e.motion.aim = 0.3;
       e.motion.pitch = -0.25;
     }
@@ -4387,15 +4396,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         world.scene.add(p);
         c16Props.push(p);
       }
-    }
-    if (reload && e.magDrops.length) {
-      // The spent mag in the street catches the lamp: a small warm light just over it brings out its edges.
-      const m = e.magDrops[e.magDrops.length - 1]!.obj;
-      m.updateMatrixWorld(true);
-      const glint = new THREE.PointLight(0xffd0a0, 1.6, 1.2, 2);
-      glint.position.setFromMatrixPosition(m.matrixWorld).add(new THREE.Vector3(0.12, 0.35, 0.1));
-      world.scene.add(glint);
-      c16Props.push(glint);
+      // C16 review: the carbine over the lid was a dark shape on a dark street. A cold top light from a neon sign up
+      // and to her right, cut tight to the gun and his gloves, picks out the receiver's top, the magazine and the
+      // knuckles over the lip (a light from behind him lit only faces turned away from her).
+      const gunAt = e.body.grip.clone().lerp(e.body.foregrip, 0.5);
+      const rimGun = new THREE.SpotLight(0xa8e4ff, 36, 4.5, 0.16, 0.45, 1.2);
+      rimGun.position.copy(gunAt).addScaledVector(flat, -0.9).addScaledVector(side, 1.3).setY(gunAt.y + 1.2);
+      rimGun.target.position.copy(gunAt);
+      world.scene.add(rimGun, rimGun.target);
+      c16Props.push(rimGun, rimGun.target);
     }
     // A review light over the cover, like the street's sodium lamps (the turntable's key and a cold rim): the stage spot
     // is between two lamps, where a man behind a crate is a silhouette.
@@ -4439,8 +4448,28 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Framed with him left of centre, clear of the pistol in her right hand.
     const camDir = e.body.joints.chest.clone().sub(eyeAt).setY(0).normalize();
     const camRight = new THREE.Vector3(-camDir.z, 0, camDir.x);
-    lookFrom(from, sniper ? e.body.joints.chest.clone().lerp(eyeAt.clone().setY(at.y), 0.2).addScaledVector(camRight, 3.2) : e.body.joints.chest.clone().addScaledVector(camRight, reload ? 0.75 : 0.45).setY(base === "enemy-blindfire" ? coverAt.y + 1.05 : e.body.joints.chest.y - 0.1));
+    lookFrom(from, sniper ? e.body.joints.chest.clone().lerp(eyeAt.clone().setY(at.y), 0.2).addScaledVector(camRight, 3.2) : e.body.joints.chest.clone().addScaledVector(camRight, reload ? 0.3 : 0.45).setY(base === "enemy-blindfire" ? coverAt.y + 1.05 : e.body.joints.chest.y - 0.1));
     probeGuard = e;
+    if (reload && e.magDrops.length) {
+      // The spent mag skidded out past the crate's end into the street, where she can see it: lying on its side a
+      // step in front of the cover (placed along a ray through the frame, so it's always in shot), its steel edges
+      // catching the lamp (a lit rim on every edge, not a pool of light on the road).
+      const m = e.magDrops[e.magDrops.length - 1]!.obj;
+      world.scene.attach(m);
+      world.camera.updateMatrixWorld();
+      const ray = new THREE.Raycaster();
+      ray.setFromCamera(new THREE.Vector2(-0.04, -0.5), world.camera);
+      const gy = ground(coverAt.x, coverAt.z);
+      const t = (gy - ray.ray.origin.y) / ray.ray.direction.y;
+      const lie = ray.ray.origin.clone().addScaledVector(ray.ray.direction, t > 0 ? t : 2.5);
+      lie.y = ground(lie.x, lie.z);
+      m.position.copy(lie);
+      layFlat(m, yawTo + 0.9);
+      // Its bounding box decides how high it sits so it lies on the road, not in it.
+      const bb = new THREE.Box3().setFromObject(m);
+      m.position.y += lie.y + 0.004 - bb.min.y;
+      for (const p of litEdges(m)) c16Props.push(p);
+    }
     if (sniper && e.laser) {
       // The beam's samples on screen, for the shot runner's pixel probe (it fails the stage with no red along them).
       world.camera.updateMatrixWorld();
@@ -4466,6 +4495,160 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
       s.stageInfo = { hit: { x: 0, y: 0 }, r02: 0, head0: { x: 0, y: 0 }, head1: { x: 0, y: 0 }, puffM: 0, splats: [], corpse: { pelvis: { x: 0, y: 0 }, head: { x: 0, y: 0 }, chest: { x: 0, y: 0 } }, laser: pts };
     }
+    hud.freeze(tMs);
+    return "ok";
+  };
+
+  // ---- C16 review: squad-firefight, a whole squad fighting from built cover ----
+  // The live fight the milestone is for, held on one frame from where she stands: six Hollowell men spread over the
+  // street's cover 5 to 13 m out, each in a different S3.5 beat at once. The near-left one risen over a crate and
+  // firing, one blind-firing over the crate ahead, one rolled out round a pillar, one kneeling behind the
+  // near-right crate reloading (his spent mag out in the street, "Reloading!" on the radio), the flanker running wide
+  // round her left at low ready, and the sergeant down behind the far crate watching over it. Nobody in the open but
+  // the flanker. (firefight-<n> stays the perf gate's lineup.)
+  const squadStage = (tMs: number): string => {
+    hud.freeze(null);
+    hud.clearFeedback();
+    hud.clearBarks();
+    showCover(false);
+    pickups.clear();
+    orbs.clear();
+    world.fx.clear?.();
+    nades.clear();
+    if (stageCrate) stageCrate.visible = false;
+    if (crateCollider) crateCollider.off = true;
+    for (const p of c16Props) p.removeFromParent();
+    c16Props = [];
+    staged = true;
+    stageQuiet = true;
+    s.stageInfo = null;
+    s.hp = s.maxHp;
+    for (const e of enemies) {
+      if (e.alive) e.state = "unaware";
+      e.detect = 0;
+    }
+    if (!stageHome) stageHome = { pos: player.pos.clone(), yaw: player.yaw, pitch: player.pitch };
+    player.pos.copy(stageHome.pos);
+    player.yaw = stageHome.yaw;
+    player.pitch = stageHome.pitch;
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
+    const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
+    const side = new THREE.Vector3(-flat.z, 0, flat.x);
+    const hide = enemies.filter((e) => e.body.root.visible);
+    for (const e of hide) e.body.root.visible = false;
+    lineupHidden.push(...hide);
+    bodyView.eye.copy(eye);
+    const yawTo = Math.atan2(flat.x, flat.z);
+    const matOf = (k: string) => world.material?.(k);
+    const spot = (d: number, sd: number) => {
+      const v = eye.clone().addScaledVector(flat, d).addScaledVector(side, sd);
+      v.y = ground(v.x, v.z);
+      return v;
+    };
+    const prop = (o: THREE.Object3D, at: THREE.Vector3, turn = 0) => {
+      o.position.copy(at);
+      o.rotation.y = yawTo + turn;
+      world.scene.add(o);
+      c16Props.push(o);
+    };
+    type Beat = { d: number; s: number; cover: "crate" | "pillar" | null; behind: number; off: number; turn: number; kit?: EnemyKit; set: (e: Enemy, pose: { lean: number; blind: number; reload: number; hands: number; throw: number }) => void; fire?: boolean };
+    const beats: Beat[] = [
+      // Near left: risen over the crate, shouldered, firing.
+      { d: 5.4, s: -2.0, cover: "crate", behind: 0.64, off: 0.2, turn: 0.12, fire: true, set: (e) => { e.motion.crouch = 0.15; e.motion.kick = 0.7; } },
+      // Right of centre: head down behind the crate, the carbine over it.
+      { d: 7.6, s: 0.05, cover: "crate", behind: 0.64, off: -0.15, turn: -0.08, fire: true, set: (e, p) => { e.motion.crouch = 1.6; p.blind = 1; e.motion.kick = 0.7; } },
+      // Up the street, left of centre: rolled out round the pillar's right edge, hips behind it.
+      { d: 11, s: -1.0, cover: "pillar", behind: 0.75, off: 0.22, turn: 0, set: (_e, p) => { p.lean = 1; } },
+      // Near right: kneeling behind the crate, reloading.
+      { d: 4.6, s: 3.0, cover: "crate", behind: 0.64, off: 0.1, turn: -0.2, set: (e) => { e.motion.crouch = 1.6; e.motion.aim = 0.3; e.motion.pitch = -0.25; } },
+      // The flanker: out wide on her left, running at low ready.
+      { d: 6.6, s: -4.6, cover: null, behind: 0, off: 0, turn: 0, set: (e) => { e.motion.aim = 0.15; e.motion.crouch = 0.25; } },
+      // The sergeant, down behind the far crate, watching over it.
+      { d: 12.6, s: 2.2, cover: "crate", behind: 0.64, off: 0, turn: 0.1, kit: { ...ENFORCER, name: "Enforcer Sergeant", leader: true }, set: (e) => { e.motion.crouch = 0.75; e.motion.aim = 0.6; } },
+    ];
+
+    const eyeAt = eye.clone();
+    let reloader: Enemy | null = null;
+    for (const [i, b] of beats.entries()) {
+      const coverAt = spot(b.d, b.s);
+      if (b.cover) prop(b.cover === "pillar" ? concretePillar(0.9, 2.4, matOf) : cargoCrate(1.5, 1.15, 0.8, matOf), coverAt, b.turn + Math.PI);
+      const at = spot(b.d + b.behind, b.s + b.off);
+      const e = new Enemy({ ...(b.kit ?? ENFORCER) }, [new THREE.Vector3()], 1);
+      e.passive = true;
+      e.stagePose = true;
+      e.motion.pos.copy(at);
+      e.motion.yaw = Math.atan2(eyeAt.x - at.x, eyeAt.z - at.z);
+      e.motion.aim = 1;
+      e.motion.pitch = Math.atan2(eyeAt.y - (at.y + 1.5), Math.hypot(eyeAt.x - at.x, eyeAt.z - at.z));
+      const pose = { lean: 0, blind: 0, reload: -1, hands: 0, throw: -1 };
+      b.set(e, pose);
+      e.motion.tac = pose;
+      world.scene.add(e.body.root);
+      lineup.push(e);
+      for (let k = 0; k < 4; k++) e.update(0.0001, sightNone(), rays, world.colliders, ground);
+      if (i === 3) {
+        reloader = e;
+        // Facing his cover, the hand gone to the pouch 1 s in, the empty mag already in the street.
+        pose.reload = RELOAD_KEYS.out;
+        e.update(0.0001, sightNone(), rays, world.colliders, ground);
+        e.dropMag();
+        pose.reload = 1000;
+        e.update(0.0001, sightNone(), rays, world.colliders, ground);
+      }
+      if (i === 4) {
+        // Running wide round her left: facing along his run, mid-stride.
+        const run = flat.clone().multiplyScalar(-0.35).addScaledVector(side, -1).normalize();
+        e.motion.yaw = Math.atan2(run.x, run.z);
+        e.stageStride(4.6, 1.1);
+      }
+      e.body.pose();
+      if (b.fire) {
+        const mf = new THREE.Vector3();
+        const md = new THREE.Vector3();
+        e.muzzle(mf, md);
+        for (const p of stageFlash(mf, md)) {
+          world.scene.add(p);
+          c16Props.push(p);
+        }
+      }
+    }
+    if (reloader && reloader.magDrops.length) {
+      // His spent mag skidded out past the crate's end toward her.
+      const m = reloader.magDrops[reloader.magDrops.length - 1]!.obj;
+      world.scene.attach(m);
+      const lie = spot(beats[3]!.d - 0.7, beats[3]!.s - 1.0);
+      m.position.copy(lie);
+      layFlat(m, yawTo - 0.6);
+      const bb = new THREE.Box3().setFromObject(m);
+      m.position.y += lie.y + 0.004 - bb.min.y;
+      for (const p of litEdges(m)) c16Props.push(p);
+    }
+    // The street's sodium heads over the fight (the turntable's key and a cold rim, as the single-guard stages):
+    // a warm key over each pair of men and a cold rim from up the street, so every silhouette cuts off the cover.
+    for (const [d, sd, tgt] of [[6.0, -1.6, -2.6], [8.2, 1.4, 0.6], [11.4, 0.4, -0.8]] as const) {
+      const at = spot(d, tgt);
+      const key = new THREE.SpotLight(0xffb070, 22, 11, 0.42, 0.75, 1.6);
+      key.position.copy(spot(d - 1.2, sd)).setY(at.y + 5);
+      key.target.position.copy(at).setY(at.y + 0.9);
+      world.scene.add(key, key.target);
+      c16Props.push(key, key.target);
+    }
+    const rim = new THREE.SpotLight(0x58d8ff, 40, 22, 0.5, 0.6, 1.4);
+    rim.position.copy(spot(16, 1.5)).setY(eye.y + 3.5);
+    rim.target.position.copy(spot(7, 0)).setY(eye.y - 0.4);
+    world.scene.add(rim, rim.target);
+    c16Props.push(rim, rim.target);
+    if (arsenal.weapon.id !== "kestrel") {
+      arsenal.owned.add("kestrel");
+      arsenal.equipId("kestrel");
+    }
+    arsenal.settle();
+    hud.bark("Enforcer", BARK_LINES.suppressed[0]!, true);
+    hud.bark("Enforcer", BARK_LINES.reload[0]!, true);
+    lookFrom(stageHome.pos, eye.clone().addScaledVector(flat, 9).addScaledVector(side, 0.2).setY(ground(eye.x, eye.z) + 0.85));
     hud.freeze(tMs);
     return "ok";
   };
@@ -4787,6 +4970,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
 
   s.stage = (name: string, tMs = 60): string => {
+    stageQuiet = false;
     tdSideView = null;
     tdAfter.length = 0;
     endReview();
@@ -4866,6 +5050,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (C8_STAGES.includes(name)) return c8Stage(name, tMs);
     if (C6_STAGES.includes(name) || C7_STAGES.includes(name)) return c6Stage(name, tMs);
     calmVitals();
+    if (name === "squad-firefight") return squadStage(tMs);
     if (C10_STAGES.includes(name) || /^firefight-\d+$/.test(name)) return c10Stage(name, tMs);
     if (C16_STAGES.includes(name.replace(/-\d+$/, ""))) return c16Stage(name, tMs);
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);

@@ -77,18 +77,22 @@
 .hud-objective::after {
   content: "";
   position: absolute;
-  inset: calc(var(--u) * -28) calc(var(--u) * -60) calc(var(--u) * -28) calc(var(--u) * -40);
+  inset: calc(var(--u) * -44) calc(var(--u) * -110) calc(var(--u) * -44) calc(var(--u) * -40);
   z-index: var(--z-under);
-  /* C16 review: a lit sign behind the note (the reload stage's HOLLOWELL CREDIT) washed the words out at .62; the
-     pool is now as dense as the bark's plate under the words and still fades to nothing at its edge. */
-  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .84), rgb(var(--shade-rgb) / .62) 58%, rgb(var(--shade-rgb) / .24) 86%, transparent);
+  /* C16 review: a lit sign behind the note (the reload stage's HOLLOWELL CREDIT) washed the words out: the old
+     elliptical pool left the box's corners (where the eyebrow sits) almost bare. The shade is now as dense as the
+     bark's plate under every word and eases out past them on all four sides over 40 to 110u (no plate edge, C13T);
+     feel-shots probes the words' contrast over whatever is behind it. */
+  background: linear-gradient(90deg, transparent, rgb(var(--shade-rgb) / .5) calc(var(--u) * 18), rgb(var(--shade-rgb) / .86) calc(var(--u) * 40), rgb(var(--shade-rgb) / .84) calc(100% - var(--u) * 110), rgb(var(--shade-rgb) / .45) calc(100% - var(--u) * 55), transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, rgb(var(--shade-rgb) / .55) calc(var(--u) * 20), rgb(var(--shade-rgb)) calc(var(--u) * 44), rgb(var(--shade-rgb)) calc(100% - var(--u) * 44), rgb(var(--shade-rgb) / .55) calc(100% - var(--u) * 20), transparent);
+  mask-image: linear-gradient(180deg, transparent, rgb(var(--shade-rgb) / .55) calc(var(--u) * 20), rgb(var(--shade-rgb)) calc(var(--u) * 44), rgb(var(--shade-rgb)) calc(100% - var(--u) * 44), rgb(var(--shade-rgb) / .55) calc(100% - var(--u) * 20), transparent);
   pointer-events: none;
 }
 .hud-objective.is-new { animation: obj-in var(--d-4) var(--ease-out) both; }
 @keyframes obj-in {
   /* Ends wider than the box, so the shade pool (::after) is never cut to a hard edge. */
-  from { clip-path: inset(calc(var(--u) * -40) 100% calc(var(--u) * -40) calc(var(--u) * -60)); }
-  to { clip-path: inset(calc(var(--u) * -40) calc(var(--u) * -80) calc(var(--u) * -40) calc(var(--u) * -60)); }
+  from { clip-path: inset(calc(var(--u) * -48) 100% calc(var(--u) * -48) calc(var(--u) * -60)); }
+  to { clip-path: inset(calc(var(--u) * -48) calc(var(--u) * -120) calc(var(--u) * -48) calc(var(--u) * -60)); }
 }
 
 /* ---- vitals: name and level, hero HP over a segmented bar with a damage trail, armour, XP ---- */

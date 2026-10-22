@@ -60,7 +60,7 @@ const C13 = ['gate', 'title', 'title-continue-focus', 'title-30s', 'title-60s', 
 // C13T "Type and UI that look like a AAA game": every screen the type rules cover. The front-door ones load
 // ?front=<stage>; pause, level-up, the death card and the firefight HUD are game stages; VPS=portrait adds the
 // rotate prompt.
-const C13T = ['gate', 'title', 'settings', 'credits', 'classpick', 'loading', 'pause', 'sheet', 'levelup', 'death-card', 'firefight-6']
+const C13T = ['gate', 'title', 'settings', 'credits', 'classpick', 'loading', 'pause', 'sheet', 'levelup', 'death-card', 'squad-firefight']
 // C14 "Class pick, loading and pause": the wardrobe on the Ghost (the spec's Operative) and the Butcher (its
 // Wetwork), the case file for the fish market and for a travel into the clinic, and the pause.
 const C14 = ['classpick-operative', 'classpick-wetwork', 'loading-fishmarket', 'loading-travel', 'pause']
@@ -73,8 +73,9 @@ const C15 = ['enemy-plate-cracked', 'enemy-plate-broken', 'visor-shatter', 'enem
 // street, the sidearm coming off his thigh), a crawl a second into it, and a guard limping with an arm hanging, hunched.
 const C15X = ['enemy-disarm-1250', 'enemy-crawl-3900', 'enemy-wounded-900', 'enemy-shield-break-450']
 // C16 "Firefights with intent": the sniper's laser 300 ms into its sweep up the street, a guard risen over a crate,
-// one blind-firing over it, one reloading behind it a second in (the mag in the street), and the "Reloading!" bark.
-const C16 = ['enemy-telegraph-300', 'enemy-peek', 'enemy-blindfire', 'enemy-reload-1000', 'bark-subtitle', 'enemy-grenade-520']
+// one blind-firing over it, one reloading behind it a second in (the mag in the street), and the "Reloading!" bark;
+// and the whole squad at once from built cover (squad-firefight; firefight-<n> stays the perf gate's lineup).
+const C16 = ['enemy-telegraph-300', 'enemy-peek', 'enemy-blindfire', 'enemy-reload-1000', 'bark-subtitle', 'enemy-grenade-520', 'squad-firefight']
 const C16X = ['enemy-lean']
 const MS = { C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
@@ -90,7 +91,8 @@ const VIEWPORTS = {
   // into one grey block and the brackets have no visible reason.
   // The front door (C13T review) shoots at the phone's shipping scale (frontscene's own 0.75), not the harness's 0.5:
   // at 0.5 the rain and the lit sign behind the type stair-stepped, which no player sees.
-  phone: { viewport: { width: 844, height: 390 }, dsf: 3, q: '&rs=0.5&quality=phone', frontQ: '&quality=phone', touch: true, stageQ: { blocked: '&rs=1&quality=phone' } },
+  // C16 review: the cover stages too (at 0.5 the carbine over the lid and the kneeling man were a grey smear).
+  phone: { viewport: { width: 844, height: 390 }, dsf: 3, q: '&rs=0.5&quality=phone', frontQ: '&quality=phone', touch: true, stageQ: Object.fromEntries(['blocked', 'enemy-peek', 'enemy-lean', 'enemy-blindfire', 'enemy-reload', 'bark-subtitle', 'squad-firefight'].map((k) => [k, '&rs=1&quality=phone'])) },
   rm: { viewport: { width: 1440, height: 900 }, dsf: 1, q: '', reduced: true },
   // C8: reduced violence (the 18+ gate's other choice) at the desktop size.
   rv: { viewport: { width: 1440, height: 900 }, dsf: 1, q: '', intensity: 'reduced' },
@@ -194,6 +196,66 @@ async function redAlong(png, pts, r, dpr) {
   )
   await pg.close()
   return n
+}
+
+/** WCAG relative luminance of an sRGB colour (0..255 each). */
+function relLum(r, g, b) {
+  const f = (v) => {
+    const c = v / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+}
+
+/**
+ * The case note's contrast over whatever is behind it: shoots its box with the words made transparent (custom
+ * properties set through the CSSOM, which the CSP allows), takes the 90th-percentile luminance of what's left, and
+ * returns the contrast ratios of the eyebrow's and the line's colours against it.
+ */
+async function objectiveContrast(page, V) {
+  const box = await page.evaluate(() => {
+    const el = document.querySelector('.hud-objective')
+    if (!el || el.closest('[hidden]') || getComputedStyle(el).display === 'none') return null
+    const b = el.getBoundingClientRect()
+    if (b.width < 4 || b.height < 4) return null
+    const cs = getComputedStyle(el)
+    const eyebrow = getComputedStyle(el, '::before').color
+    const line = cs.color
+    for (const k of ['--ink', '--ink-2', '--ink-3']) el.style.setProperty(k, 'transparent')
+    el.style.setProperty('--hud-shadow', 'none')
+    return { x: b.x, y: b.y, w: b.width, h: b.height, eyebrow, line }
+  })
+  if (!box) return null
+  const png = await page.screenshot({ clip: { x: box.x, y: box.y, width: box.w, height: box.h }, timeout: 300_000 })
+  await page.evaluate(() => {
+    const el = document.querySelector('.hud-objective')
+    for (const k of ['--ink', '--ink-2', '--ink-3', '--hud-shadow']) el?.style.removeProperty(k)
+  })
+  const pg = await browser.newPage()
+  const lums = await pg.evaluate(async (b64) => {
+    const img = new Image()
+    img.src = `data:image/png;base64,${b64}`
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.width
+    c.height = img.height
+    const g = c.getContext('2d')
+    g.drawImage(img, 0, 0)
+    const d = g.getImageData(0, 0, c.width, c.height).data
+    const out = []
+    for (let i = 0; i < d.length; i += 4 * 3) out.push([d[i], d[i + 1], d[i + 2]])
+    return out
+  }, png.toString('base64'))
+  await pg.close()
+  const L = lums.map(([r, g, b]) => relLum(r, g, b)).sort((a, b) => a - b)
+  const bg = L[Math.floor(L.length * 0.9)] ?? 0
+  const parse = (c) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number)
+  const ratio = (c) => {
+    const [r, g, b] = parse(c)
+    return (relLum(r, g, b) + 0.05) / (bg + 0.05)
+  }
+  void V
+  return { bg, eyebrow: ratio(box.eyebrow), line: ratio(box.line) }
 }
 
 /** Share of the frame's width that is empty: columns with almost no detail (std dev of luminance < 0.012). */
@@ -372,7 +434,7 @@ for (const vp of vps) {
   for (const spec of gameStages) {
     const [stage, at] = spec.split('@')
     const t = at ? Number(at) : stage === 'hit-kill' ? 230 : stage === 'enemy-flinch-head-60' ? 60 : stage.startsWith('pistol-') ? 0 : 40
-    await load((V.stageQ?.[stage] ?? V.q) + (JOB_STAGES.has(stage) ? '&job' : ''))
+    await load((V.stageQ?.[stage] ?? V.stageQ?.[stage.replace(/-\d+$/, '')] ?? V.q) + (JOB_STAGES.has(stage) ? '&job' : ''))
     const f0 = await page.evaluate(() => window.cathode.stats.frames)
     const cls = await page.evaluate(([s, tt]) => window.cathode.stage(s, tt), [stage, t])
     // SwiftShader draws about one frame a second: let two frames land so the HUD shows the stage.
@@ -717,6 +779,17 @@ for (const vp of vps) {
       console.log(`  C16 ${vp} ${spec}: laser red at ${hits}/${pts.length} samples along the beam`, process.env.DEBUG_LASER ? JSON.stringify(pts.map((p) => [Math.round(p.x), Math.round(p.y)])) : "")
       if (!pts.length) fail(`${vp} ${spec}: the laser isn't in frame`)
       else if (share < 0.6) fail(`${vp} ${spec}: the laser shows at only ${hits} of ${pts.length} samples along its line`)
+    }
+    // C16 review: the case note over a lit sign. The words are hidden and the box shot again: the backdrop under them
+    // (the 3D frame through the note's shade pool) must leave the eyebrow (--ink-2) at 4.5:1 and the line (--ink) at
+    // 7:1, judged against the 90th-percentile backdrop pixel.
+    if (C16.includes(spec) || C16X.includes(spec)) {
+      const c = await objectiveContrast(page, V)
+      if (c) {
+        console.log(`  C16 ${vp} ${spec}: objective backdrop p90 L ${c.bg.toFixed(3)}, eyebrow ${c.eyebrow.toFixed(1)}:1, line ${c.line.toFixed(1)}:1`)
+        if (c.eyebrow < 4.5) fail(`${vp} ${spec}: the case eyebrow is ${c.eyebrow.toFixed(1)}:1 over the scene (< 4.5)`)
+        if (c.line < 7) fail(`${vp} ${spec}: the objective line is ${c.line.toFixed(1)}:1 over the scene (< 7)`)
+      }
     }
     if (stage === 'bark-subtitle') {
       const bark = (side?.texts ?? []).filter(([c]) => /hud-bark|^line$/.test(String(c)))
