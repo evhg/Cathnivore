@@ -4314,7 +4314,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.scene.add(e.body.root);
     lineup.push(e);
     const sight = sniper ? { ...sightNone(), chest: eyeAt.clone().setY(eyeAt.y - 0.35), eye: eyeAt.clone() } : sightNone();
-    const ms = tMs === 40 ? Number(/-(\d+)$/.exec(name)?.[1] ?? (sniper ? 300 : reload ? 1000 : grenade ? 350 : 0)) : tMs;
+    const ms = tMs === 40 ? Number(/-(\d+)$/.exec(name)?.[1] ?? (sniper ? 300 : reload ? 1000 : grenade ? 520 : 0)) : tMs;
     if (sniper) {
       // The sweep: the laser starts a step short of her feet and is `ms` into its 450 ms climb to her chest.
       e.state = "combat";
@@ -4405,7 +4405,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (lean) {
         // Neon spill from across the street on the pillar's face (unlit, it read as a black slab), cut tight to the
         // pillar so it doesn't pool on the road.
-        const spill = new THREE.SpotLight(0x8fb8ff, 9, 8, 0.22, 0.6, 1.5);
+        const spill = new THREE.SpotLight(0x8fb8ff, 24, 8, 0.22, 0.6, 1.5);
         spill.position.copy(coverAt).addScaledVector(flat, -3.2).addScaledVector(side, 2.4).setY(coverAt.y + 3);
         spill.target.position.copy(coverAt).setY(coverAt.y + 1.4);
         world.scene.add(spill, spill.target);
@@ -4443,7 +4443,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       for (let i = 0; i <= 24; i++) {
         const n = na.clone().lerp(nb, i / 24);
         if (Math.abs(n.x) > 0.98 || Math.abs(n.y) > 0.98) continue;
-        pts.push({ x: ((n.x + 1) / 2) * c.clientWidth, y: ((1 - n.y) / 2) * c.clientHeight });
+        // In page CSS px: the canvas can sit offset or overscanned (the phone's safe-area layout).
+        const r = c.getBoundingClientRect();
+        pts.push({ x: r.left + ((n.x + 1) / 2) * r.width, y: r.top + ((1 - n.y) / 2) * r.height });
       }
       s.stageInfo = { hit: { x: 0, y: 0 }, r02: 0, head0: { x: 0, y: 0 }, head1: { x: 0, y: 0 }, puffM: 0, splats: [], corpse: { pelvis: { x: 0, y: 0 }, head: { x: 0, y: 0 }, chest: { x: 0, y: 0 } }, laser: pts };
     }

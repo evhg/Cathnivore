@@ -14,7 +14,7 @@ export const NADE_FUSE = 2.8;
 export const NADE_BLINK_HZ = 4;
 export const NADE_RADIUS = 5;
 export const NADE_DAMAGE = 70;
-const TRAIL_N = 24;
+const TRAIL_N = 40;
 const G = 9.81;
 
 interface Nade {
@@ -135,7 +135,7 @@ export class EnemyNades {
     // The fuse light on the head: on for half of every 250 ms.
     const on = ((NADE_FUSE - n.fuse) * NADE_BLINK_HZ) % 1 < 0.5;
     n.light.visible = on;
-    n.light.place(n.pos.clone().setY(n.pos.y + 0.05), 0.06, 1, 4);
+    n.light.place(n.pos.clone().setY(n.pos.y + 0.05), 0.08, 1, 5);
     // The trail: the newest point is the grenade; once it rests the trail drains away.
     n.pts.pop();
     n.pts.unshift(n.pos.clone());
