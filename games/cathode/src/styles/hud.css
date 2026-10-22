@@ -70,7 +70,8 @@
   font: 700 var(--fs-1)/1 var(--font-ui);
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  /* C16 review: --ink-3 vanished into a lit cyan sign behind it (it is only 4.5:1 on the plate); --ink-2 holds. */
+  color: var(--ink-2);
   font-stretch: var(--wdth-label);
 }
 .hud-objective::after {
@@ -78,7 +79,9 @@
   position: absolute;
   inset: calc(var(--u) * -28) calc(var(--u) * -60) calc(var(--u) * -28) calc(var(--u) * -40);
   z-index: var(--z-under);
-  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .34) 62%, transparent);
+  /* C16 review: a lit sign behind the note (the reload stage's HOLLOWELL CREDIT) washed the words out at .62; the
+     pool is now as dense as the bark's plate under the words and still fades to nothing at its edge. */
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .84), rgb(var(--shade-rgb) / .62) 58%, rgb(var(--shade-rgb) / .24) 86%, transparent);
   pointer-events: none;
 }
 .hud-objective.is-new { animation: obj-in var(--d-4) var(--ease-out) both; }
@@ -1079,7 +1082,9 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 :root.reduce-motion .hud-bark { transform: none; transition: opacity var(--d-2) var(--ease-out); }
 .hud-bark-name {
   margin-right: .6em;
-  font: 700 var(--fs-1)/1 var(--font-ui);
+  /* C16 review: at the 12px floor the orange caps next to a 21px line were borderline on desktop; the phone's
+     media block steps it back to --fs-1. */
+  font: 700 var(--fs-2)/1 var(--font-ui);
   font-stretch: var(--wdth-label);
   letter-spacing: .05em;
   text-transform: uppercase;
@@ -1615,6 +1620,7 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
     transform: none;
     align-items: center;
   }
+  .hud-bark-name { font-size: var(--fs-1); }
   .hud-teach {
     left: calc(50% + 70px);
     max-width: min(420px, calc(100% - 330px));

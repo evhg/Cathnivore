@@ -3097,8 +3097,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // C15 (S4.2, S4.3): the armour and stagger beats the feed and the squad call out. A stagger names the takedown
   // window and the crit it opens; a plate coming off can draw "Plate's gone!" (30%, at most once per 10 s).
   let plateBarkAt = -1e9;
+  // S10 "Pain": a squad man grunts over his open mic on 40% of the hits that don't kill him and on every stagger,
+  // never twice inside 350 ms (a burst is one grunt, not a stutter).
+  const gruntAt = new Map<string, number>();
+  const grunt = (uid: string, point: { x: number; y: number; z: number }, force: boolean) => {
+    const e = byUid(uid);
+    if (!audio || !e || !e.alive || !director.squadOf(e)) return;
+    const last = gruntAt.get(uid) ?? -1e9;
+    if (combat.clock - last < 0.35 || (!force && Math.random() >= 0.4)) return;
+    gruntAt.set(uid, combat.clock);
+    world.camera.getWorldPosition(camPos);
+    camRight.setFromMatrixColumn(world.camera.matrixWorld, 0).normalize();
+    toHit.set(point.x, point.y, point.z).sub(camPos);
+    const dist = toHit.length();
+    audio.pain(dist, dist > 0.01 ? toHit.dot(camRight) / dist : 0);
+  };
   combat.bus.on("stagger", (h) => {
     if (!o.shot) hud.feedLine(h.reaction === "knockdown" ? "Knocked down · Takedown" : "Staggered · Crit · Takedown", true);
+    grunt(h.targetUid, h.point, true);
   });
   combat.bus.on("plateBreak", () => {
     if (o.shot || combat.clock - plateBarkAt < 10 || Math.random() >= 0.3) return;
@@ -3192,6 +3208,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const pan = dist > 0.01 ? toHit.dot(camRight) / dist : 0;
       if (hardHit(d)) audio?.hitPlate(d.damage > 20 || !!d.plateBroke, pan, dist);
       else audio?.hitFlesh(d.damage > 40, pan, dist);
+      if (!d.lethal) grunt(d.targetUid, d.point, false);
     }
     frameHits.length = 0;
     if (best) {

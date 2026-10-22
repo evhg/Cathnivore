@@ -6,7 +6,7 @@
 import { Score, type ScoreVariant } from "./score";
 import { db, tuning } from "./feel/tuning";
 import { GunSound } from "./gunsound";
-import { radioBark } from "./voice";
+import { painGrunt, radioBark } from "./voice";
 
 /** The hit-confirm sounds (S1.3). */
 export type ConfirmKind = "body" | "head" | "armour" | "plateBreak" | "visor" | "kill" | "headKill" | "pen" | "soft";
@@ -397,6 +397,12 @@ export class Audio {
   radio(line: string, distance: number, pan: number): void {
     if (!this.enabled) return;
     radioBark(this.ctx, this.sfx, line, distance, pan);
+  }
+
+  /** C16 (S10 "Pain"): his 120 ms grunt over the open mic as a round lands, placed at him. */
+  pain(distance: number, pan: number): void {
+    if (!this.enabled) return;
+    painGrunt(this.ctx, this.sfx, distance, pan);
   }
 
   hitFlesh(heavy: boolean, pan = 0, dist = 0): void {

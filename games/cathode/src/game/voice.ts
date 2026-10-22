@@ -91,20 +91,13 @@ export function deathLine(cause: DeathCause, seed: number, last?: string): strin
   return pool[i]!;
 }
 
-/**
- * S10's enemy radio voice for a bark, synthesised (no recorded VO): a squelch, then a clipped run of voiced
- * syllables (a buzzing glottal source through two moving formants, one per three letters of the line, stressed on
- * the last when it ends in "!"), through the radio chain: band-pass 400 to 3,200 Hz, a 12% crush and a squelch tail.
- * Placed at the man (`pan`, quieter with distance); `dest` is the world bus.
- */
-export function radioBark(ctx: BaseAudioContext, dest: AudioNode, line: string, distance: number, pan: number, seed = Math.random()): number {
-  const t0 = ctx.currentTime + 0.01;
+/** The squad radio's chain at a man (`pan`, quieter with distance): band-pass 400 to 3,200 Hz and a 12% crush. */
+function radioChain(ctx: BaseAudioContext, dest: AudioNode, distance: number, pan: number, gain = 0.55) {
   const near = Math.min(1, 7 / Math.max(4, distance));
   const out = ctx.createGain();
-  out.gain.value = 0.55 * near;
+  out.gain.value = gain * near;
   const p = ctx.createStereoPanner();
   p.pan.value = Math.max(-1, Math.min(1, pan));
-  // The radio chain.
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.value = 400;
@@ -136,6 +129,57 @@ export function radioBark(ctx: BaseAudioContext, dest: AudioNode, line: string, 
     s.connect(bp).connect(gg).connect(hp);
     s.start(when);
   };
+  return { input: hp as AudioNode, noise };
+}
+
+/**
+ * S10 "Pain": a 120 ms two-vowel grunt keyed through his radio (an open mic as the round lands): a short squelch
+ * click, then a pushed "uh" sliding into a choked "ah" on a falling buzz. Returns its length (s).
+ */
+export function painGrunt(ctx: BaseAudioContext, dest: AudioNode, distance: number, pan: number, seed = Math.random()): number {
+  const t0 = ctx.currentTime + 0.005;
+  const { input, noise } = radioChain(ctx, dest, distance, pan, 0.6);
+  noise(t0, 0.018, 0.35, 2600);
+  const f0 = (104 + seed * 30) * (0.94 + ((seed * 7.31) % 1) * 0.12);
+  const src = ctx.createOscillator();
+  src.type = "sawtooth";
+  src.frequency.setValueAtTime(f0 * 1.12, t0);
+  src.frequency.exponentialRampToValueAtTime(f0 * 0.82, t0 + 0.12);
+  const f1 = ctx.createBiquadFilter();
+  f1.type = "bandpass";
+  f1.Q.value = 5;
+  const f2 = ctx.createBiquadFilter();
+  f2.type = "bandpass";
+  f2.Q.value = 7;
+  // Vowel one ("uh", 570/840) for 50 ms, gliding into vowel two ("ah", 730/1090).
+  f1.frequency.setValueAtTime(570, t0);
+  f2.frequency.setValueAtTime(840, t0);
+  f1.frequency.linearRampToValueAtTime(730, t0 + 0.07);
+  f2.frequency.linearRampToValueAtTime(1090, t0 + 0.07);
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0.0001, t0);
+  env.gain.exponentialRampToValueAtTime(0.95, t0 + 0.012);
+  env.gain.setValueAtTime(0.8, t0 + 0.05);
+  env.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12);
+  src.connect(f1).connect(env);
+  src.connect(f2).connect(env);
+  env.connect(input);
+  // The breath pushed out with it.
+  noise(t0 + 0.01, 0.1, 0.18, 1400);
+  src.start(t0);
+  src.stop(t0 + 0.13);
+  return 0.13;
+}
+
+/**
+ * S10's enemy radio voice for a bark, synthesised (no recorded VO): a squelch, then a clipped run of voiced
+ * syllables (a buzzing glottal source through two moving formants, one per three letters of the line, stressed on
+ * the last when it ends in "!"), through the radio chain: band-pass 400 to 3,200 Hz, a 12% crush and a squelch tail.
+ * Placed at the man (`pan`, quieter with distance); `dest` is the world bus.
+ */
+export function radioBark(ctx: BaseAudioContext, dest: AudioNode, line: string, distance: number, pan: number, seed = Math.random()): number {
+  const t0 = ctx.currentTime + 0.01;
+  const { input: hp, noise } = radioChain(ctx, dest, distance, pan);
   // Squelch in.
   noise(t0, 0.05, 0.5, 2400);
   const letters = line.replace(/[^a-z]/gi, "").length;
