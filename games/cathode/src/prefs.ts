@@ -36,6 +36,8 @@ export interface Prefs {
   damageFx: DamageFx;
   /** C7: the wounded heartbeat's sound (the vignette still beats). */
   heartbeat: boolean;
+  /** C17 (S5.3): kill cams On, Last enemy only (the default) or Off. */
+  killCams: "on" | "last" | "off";
 }
 
 export type DamageFx = "full" | "reduced" | "minimal";
@@ -56,7 +58,7 @@ export function damageFxLevels(fx: DamageFx): { grade: number; ca: number; lens:
 }
 
 const KEY = "cathode:prefs:v1";
-const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false, lookScale: 1, invertY: false, crossScale: 1, hudScale: 1, binds: {}, reduceMotion: null, damageFx: "full", heartbeat: true };
+const DEFAULTS: Prefs = { adult: false, intensity: "full", quality: "auto", volume: 1, bigSubs: false, calmCamera: false, colourSafe: false, holdToggle: false, lookScale: 1, invertY: false, crossScale: 1, hudScale: 1, binds: {}, reduceMotion: null, damageFx: "full", heartbeat: true, killCams: "last" };
 
 export function loadPrefs(): Prefs {
   try {
@@ -80,6 +82,7 @@ export function loadPrefs(): Prefs {
       reduceMotion: typeof p.reduceMotion === "boolean" ? p.reduceMotion : null,
       damageFx: p.damageFx === "reduced" || p.damageFx === "minimal" ? p.damageFx : "full",
       heartbeat: p.heartbeat !== false,
+      killCams: p.killCams === "on" || p.killCams === "off" ? p.killCams : "last",
     };
   } catch {
     return { ...DEFAULTS };

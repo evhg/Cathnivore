@@ -73,3 +73,16 @@ describe("C7 damage-effects and heartbeat prefs", () => {
     expect(red.lens).toBe(false)
   })
 })
+
+describe("C17 kill-cam setting (S5.3)", () => {
+  beforeEach(stubStorage)
+  it("defaults to Last enemy only, round-trips On and Off, rejects junk", () => {
+    expect(loadPrefs().killCams).toBe("last")
+    savePrefs({ ...loadPrefs(), killCams: "on" })
+    expect(loadPrefs().killCams).toBe("on")
+    savePrefs({ ...loadPrefs(), killCams: "off" })
+    expect(loadPrefs().killCams).toBe("off")
+    localStorage.setItem("cathode:prefs:v1", JSON.stringify({ killCams: "always" }))
+    expect(loadPrefs().killCams).toBe("last")
+  })
+})
