@@ -983,6 +983,8 @@ export class Hud {
   killcamBars(k: number, aspect: number): void {
     const on = k > 0.001 || aspect > 0;
     this.root.classList.toggle("kc-cine", on && aspect > 0);
+    // The touch controls and the look hint step back too (they live outside the HUD root).
+    document.documentElement.classList.toggle("hud-kc-cine", on && aspect > 0);
     const share = Math.max(0, (1 - aspect / 2.39) / 2);
     this.prop(this.root, "--kc-bars", k.toFixed(3));
     this.prop(this.root, "--kc-h", `${(share * 100).toFixed(2)}vh`);

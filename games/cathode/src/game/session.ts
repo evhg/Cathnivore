@@ -4760,7 +4760,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const h = Math.min(step, total - t) / 1000;
         killcam.update(h);
         const sc = killcam.timeScale;
-        for (const e of enemies) e.feel(h * sc, world.colliders, ground);
+        for (const e of enemies) {
+          e.feel(h * sc, world.colliders, ground);
+          e.body.updateFlash(h * 1000);
+        }
         world.update(0, 1, h * sc);
       }
     };

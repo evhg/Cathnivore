@@ -1048,19 +1048,15 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   display: grid;
   justify-items: center;
   gap: calc(var(--u) * 10);
+  /* A soft dark bloom behind the words, so they hold over a lit sign or a muzzle flash (no box). */
+  padding: calc(var(--u) * 34) calc(var(--u) * 90);
+  background: radial-gradient(closest-side, rgb(var(--black-rgb) / .62), rgb(var(--black-rgb) / .3) 55%, transparent);
   transform: translate(-50%, -50%);
   opacity: 0;
   pointer-events: none;
 }
 .hud-sw.on { opacity: var(--sw-a, 1); }
-/* A soft dark bloom behind the words, so they hold over a lit sign or a muzzle flash (no box). */
-.hud-sw::before {
-  content: "";
-  position: absolute;
-  inset: calc(var(--u) * -34) calc(var(--u) * -90);
-  z-index: -1;
-  background: radial-gradient(closest-side, rgb(var(--black-rgb) / .62), rgb(var(--black-rgb) / .3) 55%, transparent);
-}
+
 .hud-sw-name {
   margin: 0;
   /* S6.5 asks 28u at 0.4em; C13T caps tracking at 0.06em, so the name is one size up and set tight instead. */
@@ -1958,7 +1954,10 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 /* The touch sticks and buttons step back while a takedown plays (input is locked); the pause button stays. */
 :root.hud-td-cine .tbtn,
 :root.hud-td-cine .stick,
-:root.hud-td-cine .look-hint { opacity: 0; pointer-events: none; transition: opacity 120ms var(--ease-out); }
+:root.hud-td-cine .look-hint,
+:root.hud-kc-cine .tbtn,
+:root.hud-kc-cine .stick,
+:root.hud-kc-cine .look-hint { opacity: 0; pointer-events: none; transition: opacity 120ms var(--ease-out); }
 
 /* C13: the arrival beat. While the area title plays, the HUD, the objective, the subtitles and the touch controls
    wait (ui/hud.ts hold()); then the HUD draws in with its boot animation. */

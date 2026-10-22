@@ -398,10 +398,11 @@ export class KillCam {
     } else {
       // The body: swung round to his side as the round arrives, then a slow orbit as he goes down.
       const t = this.sinceImpact;
-      const centre = this.tmp.copy(aimPt).lerp(tgt.body.joints.pelvis, Math.min(1, t / 900) * 0.5);
+      // Framed on the whole man (head to hips), 2.3 m out and opening, a little above him.
+      const centre = this.tmp.copy(aimPt).lerp(tgt.body.joints.pelvis, 0.45 + Math.min(1, t / 900) * 0.15);
       const a = this.sign * (0.25 + (t / 1000) * 0.7);
-      const off = this.side.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(1.5 + t / 1200);
-      const want = centre.clone().add(off).addScaledVector(this.dir, -0.5).add(new THREE.Vector3(0, 0.25, 0));
+      const off = this.side.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(2.3 + t / 1500);
+      const want = centre.clone().add(off).addScaledVector(this.dir, -0.6).add(new THREE.Vector3(0, 0.4, 0));
       cam.position.lerp(want, 1 - Math.exp(-realDt * (t < B.impactMs ? 9 : 4)));
       this.lookAt.lerp(centre, 1 - Math.exp(-realDt * 10));
       this.setFov(THREE.MathUtils.lerp(B.fov, 55, Math.min(1, t / 600)));

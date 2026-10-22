@@ -118,7 +118,7 @@ export class Outlines {
     }
     const size = renderer.getDrawingBufferSize(new THREE.Vector2());
     this.uRes.value.copy(size);
-    this.uPx.value = Math.max(1.5, (2.4 * size.y) / 1080);
+    this.uPx.value = Math.max(3, (2.6 * size.y) / 1080);
     this.hullMat.opacity = this.strength;
     this.maskMat.opacity = 0.08 * this.strength;
     const mask = camera.layers.mask;
