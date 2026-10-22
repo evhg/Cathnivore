@@ -996,6 +996,8 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   transform: translate(calc((1 - var(--kc-cap, 0)) * var(--u) * -24), 50%);
   pointer-events: none;
 }
+/* Out of the layout entirely outside a kill-cam (no bars to sit in). */
+.hud-root:not(.kc-cine) .hud-killcap { display: none; }
 .hud-killcap-tag {
   font: 700 var(--fs-2)/1 var(--font-ui);
   letter-spacing: .06em;
