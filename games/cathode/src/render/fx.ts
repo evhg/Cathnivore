@@ -472,7 +472,10 @@ export function createFx(o: {
         spawn({ pos: pos.clone(), vel: cone(d, 0.35, new THREE.Vector3()).multiplyScalar(14 + rand() * 10), kind: K.streak, additive: true, life: 0.06 + rand() * 0.06, size0: 0.008, len: 0.12, color: ORANGE, drag: 3 });
       spawn({ pos: pos.clone().addScaledVector(d, 0.2), vel: d.clone().multiplyScalar(0.8).add(tmpV.set(0, 0.25, 0)), kind: K.smoke, life: 0.9, size0: 0.12 * size, size1: 0.6 * size, color: ambient(pos, new THREE.Color(0.7, 0.7, 0.72), 0.3), alpha: 0.35, drag: 1.5 });
       // S2.3: the one shared light spikes to 4-8 over 4-6 m and decays over 50 ms, so the flash lights the wet street.
-      flashLight(pos.clone().addScaledVector(d, 0.3), "#ffb066", light ? light.intensity * WORLD_LIGHT_SCALE : 60 * size, light ? 0.05 : 0.06, light ? light.range : 9);
+      // On a phone the fog scatters a light this close to the eye into a grey sheet over the frame (C18 review): her
+      // own guns' light runs at 35% and a shorter reach there; the street still warms under the shot.
+      const ph = o.quality === "phone" && !!light;
+      flashLight(pos.clone().addScaledVector(d, ph ? 0.8 : 0.3), "#ffb066", light ? light.intensity * WORLD_LIGHT_SCALE * (ph ? 0.35 : 1) : 60 * size, light ? 0.05 : 0.06, light ? light.range * (ph ? 0.75 : 1) : 9);
     },
     impact(pos, normal, surface, scale = 1) {
       const k = Math.max(0.25, scale);

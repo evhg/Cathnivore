@@ -1037,7 +1037,7 @@ export class Arsenal {
     this.flashT = Math.max(0, this.flashT - dt);
     // The Kestrel's can: a small warm light for 40 ms (S2.3), not the open guns' blaze.
     const can = def.id === "kestrel";
-    this.flash.intensity = this.flashT > 0 ? (can ? KF.puff.vmLight * (this.phone ? KF.puff.phoneLightMul : 1) : 6) : 0;
+    this.flash.intensity = this.flashT > 0 ? (can ? KF.puff.vmLight * (this.phone ? KF.puff.phoneLightMul : 1) : this.phone ? 3 : 6) : 0;
     this.flash.distance = can ? KF.puff.vmRangeM : 1.2;
     const pistol = this.kestrel;
     if (pistol && this.rm.active) {

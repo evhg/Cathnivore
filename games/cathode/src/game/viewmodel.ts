@@ -316,11 +316,15 @@ function starTexture(): THREE.DataTexture {
  * plus a star facing her, per kind. `prong` adds three comp jets, `brake` two side jets, `large` a wider cone,
  * `backblast` a second blast out of the tube's back (`rear`). One draw each while shown.
  */
-function heroFlash(kind: FlashKind, size: number, muzzle: THREE.Object3D, root: THREE.Object3D, rear?: THREE.Vector3): THREE.Object3D {
+function heroFlash(kind: FlashKind, size: number, muzzle: THREE.Object3D, root: THREE.Object3D, rear?: THREE.Vector3, phone = false): THREE.Object3D {
+  // The phone's lifted grade (exposure 1.7) and its extra frame blew a one-frame star into a white sheet over the
+  // middle of a small screen: smaller and dimmer there.
+  const pk = phone ? 0.42 : 1;
+  if (phone) size *= 0.8;
   const g = new THREE.Group();
   g.name = "flash";
-  const hot = (k: number) => new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb070).multiplyScalar(k), map: puffTexture(), transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-  const star = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffd29a).multiplyScalar(4), map: starTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const hot = (k: number) => new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffb070).multiplyScalar(k * pk), map: puffTexture(), transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const star = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffd29a).multiplyScalar(4 * pk), map: starTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
   const len = size * (kind === "large" ? 1.3 : 1.1);
   const along: THREE.BufferGeometry[] = [];
   for (let i = 0; i < 3; i++) along.push(new THREE.PlaneGeometry(len, size * 0.55).rotateY(Math.PI / 2).rotateZ((i * Math.PI) / 3).translate(0, 0, -len * 0.45));
@@ -397,7 +401,7 @@ function heroRig(model: HeroModel, phone: boolean): GunRig {
   r.mag = kit.parts.mag;
   r.action = kit.parts.bolt ?? kit.parts.pump ?? kit.parts.hammer;
   const f = ARSENAL[model].flash;
-  r.flashMesh = heroFlash(f.kind, f.sizeM, r.muzzle, root, kit.parts.rear?.position);
+  r.flashMesh = heroFlash(f.kind, f.sizeM, r.muzzle, root, kit.parts.rear?.position, phone);
   r.parts.hero = root;
   return r;
 }
