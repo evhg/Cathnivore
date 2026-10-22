@@ -74,7 +74,7 @@ const C15 = ['enemy-plate-cracked', 'enemy-plate-broken', 'visor-shatter', 'enem
 const C15X = ['enemy-disarm-1250', 'enemy-crawl-3900', 'enemy-wounded-900', 'enemy-shield-break-450']
 // C16 "Firefights with intent": the sniper's laser 300 ms into its sweep up the street, a guard risen over a crate,
 // one blind-firing over it, one reloading behind it a second in (the mag in the street), and the "Reloading!" bark.
-const C16 = ['enemy-telegraph-300', 'enemy-peek', 'enemy-blindfire', 'enemy-reload-1000', 'bark-subtitle', 'enemy-grenade-450']
+const C16 = ['enemy-telegraph-300', 'enemy-peek', 'enemy-blindfire', 'enemy-reload-1000', 'bark-subtitle', 'enemy-grenade-350']
 const C16X = ['enemy-lean']
 const MS = { C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1

@@ -1044,13 +1044,15 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 /* ---- C16 (S10): squad barks over the radio, stacked above the subtitle: the speaker in the faction's colour ---- */
 .hud-barks {
   position: absolute;
-  left: 50%;
-  bottom: calc(var(--edge-b) + calc(var(--u) * 330));
-  width: min(46ch, calc(100vw - 2 * (var(--cluster-w) + var(--hud-edge) + calc(var(--u) * 21.3))));
-  transform: translateX(-50%);
+  /* Left of centre, ending just short of the crosshair's column: the viewmodel fills the bottom right, so the radio
+     reads beside the gun, never over its slide. */
+  left: calc(50% - var(--u) * 24);
+  bottom: calc(var(--edge-b) + calc(var(--u) * 250));
+  width: min(46ch, calc(50vw - var(--cluster-w) - var(--hud-edge) - calc(var(--u) * 40)));
+  transform: translateX(-100%);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   gap: calc(var(--u) * 5.3);
   pointer-events: none;
   z-index: var(--z-hud);
@@ -1563,7 +1565,7 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   .hud-arms { max-width: 46vw; }
   .hud-weapon { white-space: normal; font-size: var(--fs-2); }
   .hud-sub { width: calc(100vw - 2 * var(--gutter)); bottom: calc(var(--edge-b) + calc(var(--u) * 170.7)); }
-  .hud-barks { width: calc(100vw - 2 * var(--gutter)); bottom: calc(var(--edge-b) + calc(var(--u) * 250)); }
+  .hud-barks { left: 50%; transform: translateX(-50%); align-items: center; width: calc(100vw - 2 * var(--gutter)); bottom: calc(var(--edge-b) + calc(var(--u) * 250)); }
   .hud-feed { top: 22%; }
 }
 
@@ -1611,6 +1613,7 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
     bottom: calc(max(10px, var(--safe-b)) + 54px);
     width: auto;
     transform: none;
+    align-items: center;
   }
   .hud-teach {
     left: calc(50% + 70px);

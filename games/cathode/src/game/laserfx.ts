@@ -55,8 +55,9 @@ void main() {
   float x = abs(vAcross);
   float core = 1.0 - smoothstep(vCore * 0.55, vCore * 1.05, x);
   float halo = exp(-x * x * 7.0) * 0.32;
-  float hot = core * (0.85 + 0.6 * (1.0 - smoothstep(0.0, vCore * 0.5, x)));
-  vec3 col = uColor * (hot + halo) + vec3(1.0, 0.75, 0.6) * core * 0.35;
+  // Saturated red, never pushed past 1 (over 1 the grade and tone curve wash it to salmon): the bloom does the glow.
+  float hot = core * (0.8 + 0.2 * (1.0 - smoothstep(0.0, vCore * 0.5, x)));
+  vec3 col = uColor * (hot + halo) + vec3(0.25, 0.02, 0.0) * core;
   gl_FragColor = vec4(col * uOpacity, 1.0);
 }`;
 
@@ -211,8 +212,9 @@ export function stageFlash(at: THREE.Vector3, dir: THREE.Vector3): THREE.Object3
   star.place(at.clone().addScaledVector(dir, 0.1), 0.16, 1, 9);
   const core = new LaserDot(0xfff0c0);
   core.place(at.clone().addScaledVector(dir, 0.05), 0.06, 1, 4);
-  const light = new THREE.PointLight(0xffa850, 7, 4.5, 2);
-  light.position.copy(at).addScaledVector(dir, 0.15);
+  // Up and back over his hands (a light at the muzzle's tip would rake the cover's face toward her).
+  const light = new THREE.PointLight(0xffa850, 2.6, 3, 2);
+  light.position.copy(at).addScaledVector(dir, -0.3).add(new THREE.Vector3(0, 0.22, 0));
   out.push(star, core, light);
   const t = smokeTexture();
   if (t) {

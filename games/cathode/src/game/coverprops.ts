@@ -213,11 +213,12 @@ export function concretePillar(w: number, h: number, mat: Mat): THREE.Group {
   }
   g.add(new THREE.Mesh(merged(bar), mat("rust") ?? fallback(0x6a4a38, 0.6, 0.6)));
   // The puddle round its foot: still water, which picks up the street's neon.
-  const water = mat("water") ?? new THREE.MeshStandardMaterial({ color: 0x0a1210, roughness: 0.02 });
+  // A thin glossy film over the asphalt (not an opaque disc): the road shows through it, darkened and mirror-smooth.
+  const water = new THREE.MeshStandardMaterial({ color: 0x06080a, roughness: 0.04, metalness: 0.2, transparent: true, opacity: 0.55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
   const pud = new THREE.Mesh(new THREE.CircleGeometry(1, 28), water);
   pud.rotation.x = -Math.PI / 2;
-  pud.scale.set(w * 1.5, w * 1.05, 1);
-  pud.position.set(0.15, 0.012, 0.3);
+  pud.scale.set(w * 1.05, w * 0.8, 1);
+  pud.position.set(0.1, 0.01, 0.2);
   pud.receiveShadow = true;
   g.add(pud);
   return g;

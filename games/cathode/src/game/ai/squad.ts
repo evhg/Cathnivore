@@ -289,8 +289,8 @@ export const BARK_LINES: Readonly<Record<BarkKind, readonly string[]>> = {
   wounded: ["I'm hit, I'm hit!"],
 };
 
-/** Barks that always play, past every rate limit. */
-export const ALWAYS: ReadonlySet<BarkKind> = new Set(["reload", "manDown"]);
+/** Barks that always play, past every rate limit ("Frag out!" is the grenade's telegraph, S3.5). */
+export const ALWAYS: ReadonlySet<BarkKind> = new Set(["reload", "manDown", "grenade"]);
 /** Per man (s), and the squad's cooldown after a bark ends (s). */
 export const BARK_PER_MAN = 4;
 export const BARK_SQUAD_COOLDOWN = 1.2;

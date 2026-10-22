@@ -4257,9 +4257,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     e.passive = true;
     e.stagePose = true;
     // Close enough that he fills about a third of the frame (S3.5's beats have to read without the stage's name).
-    const dist = sniper ? 18 : lean ? 3.3 : 2.85;
+    const dist = sniper ? 18 : lean ? 3.3 : base === "enemy-grenade" ? 5.2 : 2.55;
     // The cover: a rusted cargo crate (1.15 m) or a concrete pillar (2.4 m) square to her line.
-    const coverAt = eye.clone().addScaledVector(flat, dist - 0.75).addScaledVector(side, lean ? 0.6 : 0);
+    const coverAt = eye.clone().addScaledVector(flat, dist - (lean ? 0.75 : 0.64)).addScaledVector(side, lean ? 0.72 : 0);
     coverAt.y = ground(coverAt.x, coverAt.z);
     const yawTo = Math.atan2(flat.x, flat.z);
     if (!sniper) {
@@ -4271,7 +4271,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.scene.add(prop);
       c16Props.push(prop);
     }
-    const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.42 : 0);
+    const at = eye.clone().addScaledVector(flat, dist).addScaledVector(side, sniper ? 1.5 : lean ? 0.24 : 0);
     if (!sniper) at.addScaledVector(flat, 0.05);
     at.y = ground(at.x, at.z);
     e.motion.pos.copy(at);
@@ -4314,7 +4314,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.scene.add(e.body.root);
     lineup.push(e);
     const sight = sniper ? { ...sightNone(), chest: eyeAt.clone().setY(eyeAt.y - 0.35), eye: eyeAt.clone() } : sightNone();
-    const ms = tMs === 40 ? Number(/-(\d+)$/.exec(name)?.[1] ?? (sniper ? 300 : reload ? 1000 : grenade ? 450 : 0)) : tMs;
+    const ms = tMs === 40 ? Number(/-(\d+)$/.exec(name)?.[1] ?? (sniper ? 300 : reload ? 1000 : grenade ? 350 : 0)) : tMs;
     if (sniper) {
       // The sweep: the laser starts a step short of her feet and is `ms` into its 450 ms climb to her chest.
       e.state = "combat";
@@ -4349,7 +4349,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // Released from his hand at 600 ms, lobbed to land a step in front of her and off to her left, then held `ms`
       // into its flight; he's into the follow-through.
       const from = e.body.joints.handL.clone();
-      const to = eye.clone().addScaledVector(flat, 2.3).addScaledVector(side, -0.9);
+      const to = eye.clone().addScaledVector(flat, 1.4).addScaledVector(side, -1.2);
       to.y = ground(to.x, to.z);
       nades.throw(from, to);
       nades.advance(ms / 1000, ground, world.colliders);
@@ -4387,9 +4387,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // the other side cuts his helmet and shoulders off the cover and the street behind.
       const target = sniper ? e.motion.pos : at;
       const key = new THREE.SpotLight(0xffb070, sniper ? 40 : 16, 9, 0.3, 0.7, 1.6);
-      key.position.copy(target).addScaledVector(flat, 0.6).addScaledVector(side, -2.2).setY(target.y + 4.4);
+      // Round the pillar the lamp is on her side of it (he leans out into it; the pool falls behind him).
+      key.position.copy(target).addScaledVector(flat, lean ? -1.6 : 0.6).addScaledVector(side, -2.2).setY(target.y + 4.4);
       key.target.position.copy(target).setY(target.y + 1.1);
-      const rim = new THREE.SpotLight(0x58d8ff, sniper ? 60 : 34, 10, 0.34, 0.5, 1.4);
+      const rim = new THREE.SpotLight(0x58d8ff, sniper ? 60 : 18, 10, 0.34, 0.5, 1.4);
       rim.position.copy(target).addScaledVector(flat, 2.4).addScaledVector(side, 1.8).setY(target.y + 3.4);
       rim.target.position.copy(target).setY(target.y + 1.2);
       const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 0.12, 14), world.material?.("glowSodium") ?? new THREE.MeshBasicMaterial({ color: 0xffa050 }));
@@ -4411,7 +4412,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // Framed with him left of centre, clear of the pistol in her right hand.
     const camDir = e.body.joints.chest.clone().sub(eyeAt).setY(0).normalize();
     const camRight = new THREE.Vector3(-camDir.z, 0, camDir.x);
-    lookFrom(from, sniper ? e.body.joints.chest.clone().lerp(eyeAt.clone().setY(at.y), 0.2).addScaledVector(camRight, 3.2) : e.body.joints.chest.clone().addScaledVector(camRight, reload ? 0.75 : 0.45).setY(e.body.joints.chest.y - 0.1));
+    lookFrom(from, sniper ? e.body.joints.chest.clone().lerp(eyeAt.clone().setY(at.y), 0.2).addScaledVector(camRight, 3.2) : e.body.joints.chest.clone().addScaledVector(camRight, reload ? 0.75 : 0.45).setY(base === "enemy-blindfire" ? coverAt.y + 1.05 : e.body.joints.chest.y - 0.1));
     probeGuard = e;
     if (sniper && e.laser) {
       // The beam's samples on screen, for the shot runner's pixel probe (it fails the stage with no red along them).
