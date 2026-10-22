@@ -147,6 +147,7 @@ test.describe('CATHODE death and Retry', () => {
       player: { pos: { x: number; y: number; z: number } }
       progress: { character: unknown }
       hurtCath: (n: number, at: { x: number; y: number; z: number }, k: string) => void
+      secondWind?: { phase: string; t: number; left: number }
     }
     await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number } } }).cathode?.stats.frames ?? 0) >= 3, null, { timeout: 200_000 })
     // The case file eases out over a few frames after the session starts; on a loaded box those frames are slow.
@@ -162,7 +163,14 @@ test.describe('CATHODE death and Retry', () => {
       const c = w.cathode
       c.hurtCath(c.vitals.maxTotal * 3, { x: c.player.pos.x, y: c.player.pos.y + 1.4, z: c.player.pos.z - 9 }, 'bullet')
     })
-    await page.waitForFunction(() => !!(window as unknown as { cathode: C }).cathode.dying, null, { timeout: 60_000 })
+    // C17 (S6.5): the first killing blow of a checkpoint is a Second Wind, not a death: she is on 1 Flesh, the world
+    // slows, and with no kill in the 3.5 s window the death follows on its own.
+    await page.waitForFunction(() => ['stop', 'window'].includes((window as unknown as { cathode: C }).cathode.secondWind?.phase ?? ''), null, { timeout: 60_000 })
+    expect(await page.evaluate(() => (window as unknown as { cathode: C }).cathode.dying ?? null)).toBeNull()
+    expect(await page.evaluate(() => (window as unknown as { cathode: C }).cathode.hp)).toBeGreaterThan(0)
+    await expect(page.locator('.hud-sw.on')).toBeVisible({ timeout: 60_000 })
+    await page.waitForFunction(() => !!(window as unknown as { cathode: C }).cathode.dying, null, { timeout: 200_000 })
+    expect(await page.evaluate(() => (window as unknown as { cathode: C }).cathode.secondWind?.phase)).toBe('spent')
     // The death runs on the real clock (up to 250 ms a frame), so the card is due ~2.2 s in however slow the frames.
     await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.dying?.card === true, null, { timeout: 200_000 }).catch(async (e) => {
       const why = await page.evaluate(() => ({ dying: (window as unknown as { cathode: C & { dying: unknown } }).cathode.dying, frames: (window as unknown as { cathode: C }).cathode.stats.frames, loading: !document.getElementById('loading')?.hidden }))
@@ -200,10 +208,60 @@ test.describe('CATHODE death and Retry', () => {
     expect(after.resumed).toBe(true)
     console.log(`lastRestartMs ${after.ms}`)
     expect(after.ms).toBeLessThan(1500)
+    // The checkpoint gives the Second Wind back.
+    expect(await page.evaluate(() => (window as unknown as { cathode: C }).cathode.secondWind?.phase)).toBe('ready')
     // Control: the card is gone and the game frame runs on.
     await expect(page.locator('.death-card.on')).toHaveCount(0)
     const f0 = await page.evaluate(() => (window as unknown as { cathode: C }).cathode.stats.frames)
     await page.waitForFunction((f) => (window as unknown as { cathode: C }).cathode.stats.frames > f + 2, f0, { timeout: 60_000 })
+  })
+})
+
+// C17 "Kill cams" (S5.3): any input skips, but only after 300 ms; the camera is hers again and the world back at
+// full speed on the next frame.
+test.describe('CATHODE kill cams', () => {
+  test('a key in the first 300 ms does not skip; after it, it does, and simScale is 1 on the next frame', async ({ page, hasTouch }) => {
+    test.skip(hasTouch, 'one layout is enough: the skip is the same input path')
+    test.setTimeout(400_000)
+    await page.goto('/cathode/')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/cathode/?play&class=ghost&rs=0.5')
+    type K = { active: boolean; shot: string | null; ms: number; scale: number; returnMs: number }
+    type C = { stats: { frames: number }; killcamTest: () => boolean; killcamState: () => K }
+    const st = () => page.evaluate(() => {
+      const c = (window as unknown as { cathode: C }).cathode
+      return { ...c.killcamState(), frames: c.stats.frames }
+    })
+    await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number } } }).cathode?.stats.frames ?? 0) >= 3, null, { timeout: 200_000 })
+    await expect(page.locator('#loading')).toBeHidden({ timeout: 200_000 })
+    expect(await page.evaluate(() => (window as unknown as { cathode: C }).cathode.killcamTest())).toBe(true)
+    const a = await st()
+    expect(a.active).toBe(true)
+    expect(a.shot).toBe('orbit')
+    // Early: the press is eaten (the shot that earned it must not skip it).
+    if (a.ms < 200) {
+      await page.keyboard.press('KeyJ')
+      const f = (await st()).frames
+      await page.waitForFunction((f0) => (window as unknown as { cathode: C }).cathode.stats.frames > f0 + 1, f, { timeout: 60_000 })
+      const b = await st()
+      if (b.ms < 300 + 120) expect(b.active).toBe(true)
+    }
+    await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.killcamState().ms >= 320, null, { timeout: 200_000 })
+    const before = await st()
+    expect(before.active).toBe(true)
+    expect(before.scale).toBeLessThan(1)
+    await page.keyboard.press('KeyJ')
+    await page.waitForFunction(() => !(window as unknown as { cathode: C }).cathode.killcamState().active, null, { timeout: 60_000 })
+    const f1 = (await st()).frames
+    await page.waitForFunction((f0) => (window as unknown as { cathode: C }).cathode.stats.frames > f0, f1, { timeout: 60_000 })
+    await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.killcamState().returnMs >= 0, null, { timeout: 60_000 })
+    const after = await st()
+    expect(after.active).toBe(false)
+    expect(after.scale).toBe(1)
+    // From the key to the first frame back on her eyes at full speed (real ms, measured by the game).
+    console.log(`kill-cam return ${after.returnMs.toFixed(0)} ms`)
+    expect(after.returnMs).toBeLessThanOrEqual(300)
+    await expect(page.locator('.hud-root.kc-cine')).toHaveCount(0)
   })
 })
 

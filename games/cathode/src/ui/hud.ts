@@ -956,6 +956,38 @@ export class Hud {
   private cap?: HTMLElement;
   private capTimer = 0;
 
+  private sw?: HTMLElement;
+  private swLine?: HTMLElement;
+  /**
+   * C17 (S6.5) Second Wind: "SECOND WIND" over the crosshair with a 1u line under it that drains from both ends,
+   * and what to do about it. `a` the plate's opacity 0..1, `t` the time left 1..0. Opacity and a scale only.
+   */
+  secondWind(a: number, t: number): void {
+    if (!this.sw) {
+      if (a <= 0.001) return;
+      this.sw = el("div", "hud-sw", this.root);
+      this.sw.setAttribute("role", "status");
+      el("p", "hud-sw-name", this.sw).textContent = "Second Wind";
+      this.swLine = el("span", "hud-sw-line", this.sw);
+      el("p", "hud-sw-hint", this.sw).textContent = "Kill one to get up";
+    }
+    this.sw.classList.toggle("on", a > 0.001);
+    this.prop(this.sw, "--sw-a", a.toFixed(3));
+    this.prop(this.swLine!, "--sw-t", Math.max(0, Math.min(1, t)).toFixed(4));
+  }
+
+  /**
+   * C17 (S5.3) the kill-cam's frame: the 2.39:1 bars (`k` 0..1 of their full height, for the screen's `aspect`) and
+   * every cluster stepped back while it runs (k > 0 or the cam is on). Opacity and a scale only.
+   */
+  killcamBars(k: number, aspect: number): void {
+    const on = k > 0.001 || aspect > 0;
+    this.root.classList.toggle("kc-cine", on && aspect > 0);
+    const share = Math.max(0, (1 - aspect / 2.39) / 2);
+    this.prop(this.root, "--kc-bars", k.toFixed(3));
+    this.prop(this.root, "--kc-h", `${(share * 100).toFixed(2)}vh`);
+  }
+
   /** The kill-cam's lower-third: the range of the shot, in a red-ruled plate. Fades by itself. */
   killcamCaption(metres: number): void {
     if (!this.cap) {
@@ -1281,6 +1313,22 @@ export class Hud {
         prefs.damageFx,
         (v) => {
           savePrefs({ ...loadPrefs(), damageFx: v });
+          window.dispatchEvent(new Event("cathode:prefs"));
+        },
+        true,
+      );
+
+      // C17 (S5.3): kill cams On, on the last enemy only (the default), or Off.
+      choice<"on" | "last" | "off">(
+        "Kill cams",
+        [
+          ["on", "On"],
+          ["last", "Last enemy"],
+          ["off", "Off"],
+        ],
+        prefs.killCams,
+        (v) => {
+          savePrefs({ ...loadPrefs(), killCams: v });
           window.dispatchEvent(new Event("cathode:prefs"));
         },
         true,

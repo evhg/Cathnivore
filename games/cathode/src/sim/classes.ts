@@ -324,7 +324,7 @@ const IRON: SkillSpec[] = [
     act: { cd: 20, bat: 15, fx: (v) => ({ type: "warCry", seconds: v, radius: 10, rage: 30 }) } },
   { k: "platework", n: "Platework", r: 2, pre: ["ironHide"], d: "+{v}% kinetic resistance.", b: 3, p: 1, cap: 40,
     m: (v) => [flat("resist.kinetic", v)] },
-  { k: "secondWind", n: "Second Wind", r: 3, pre: ["platework"], d: "Once every 90 s a killing blow leaves you at {v}% health instead.", b: 10, p: 1.5, cap: 50,
+  { k: "secondWind", n: "Second Wind", r: 3, pre: ["platework"], d: "One more Second Wind each checkpoint, and a kill in it gets you up with {v}% more health.", b: 10, p: 1.5, cap: 50,
     m: (v) => [flat("secondWind", v)] },
   { k: "bloodthirst", n: "Bloodthirst", r: 3, pre: ["warCry"], d: "{v}% of damage dealt returns as health.", b: 1, p: 0.25,
     m: (v) => [flat("lifeSteal", v)] },

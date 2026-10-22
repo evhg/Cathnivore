@@ -68,7 +68,7 @@ interface Projectile {
   travelled: number;
   /** The kill-cam is riding this round. */
   cam: boolean;
-  /** For the kill-cam: the target it's predicted to hit (the round homes on it, a cinematic cheat). */
+  /** For the kill-cam: the target predict() saw it strike (C17: the round no longer steers onto it). */
   target?: { enemy: Enemy; joint: "head" | "chest" };
   alive: boolean;
   /** Layers of cover it can still punch through (S1.1: two for the sniper). */
@@ -188,6 +188,9 @@ export class Combat {
     return this.enemies.some((e) => e.alive && e.state === "combat");
   }
 
+  /** C17 (S5.3): asked about a ballistic round predict() saw kill; true rides it with the bullet follow. */
+  killcamGate: ((pred: { enemy: Enemy; zone: Zone; dist: number; kill: boolean }) => boolean) | null = null;
+
   fire(shot: Shot, build: Build): { killcam: Projectile | null } {
     const w = shot.weapon;
     if (!this.quiet) this.bus.emit("fire", { t: this.clock, weaponCls: w.weaponClass, auto: AUTOMATIC.has(w.weaponClass) });
@@ -206,9 +209,9 @@ export class Combat {
         pen: penetrationOf(w.weaponClass, this.penBonus),
         mul: 1,
       };
-      // Predict where it lands: if it's a long kill, the session rides it with the kill-cam.
-      const pred = this.predict(p, build);
-      if (pred && pred.kill && pred.dist > 18) {
+      // Predict where it lands: if the session's kill-cam rules want this kill (C17, S5.3), it rides the round.
+      const pred = this.killcamGate ? this.predict(p, build) : null;
+      if (pred && pred.kill && this.killcamGate?.(pred)) {
         p.cam = true;
         p.target = { enemy: pred.enemy, joint: pred.zone === "head" ? "head" : "chest" };
       }
@@ -818,17 +821,10 @@ export class Combat {
       while (left > 0 && p.alive) {
         const step = Math.min(left, 1 / 240);
         left -= step;
-        if (p.target) {
-          // The kill-cam's cheat: steer gently onto the predicted joint so the shot lands as shown.
-          const aim = p.target.enemy.body.joints[p.target.joint === "head" ? "head" : "chest"].clone();
-          if (p.target.joint === "head") aim.y -= 0.12;
-          const want = aim.sub(p.pos).normalize().multiplyScalar(p.vel.length());
-          p.vel.lerp(want, Math.min(1, step * 30));
-        } else {
-          p.vel.y -= GRAVITY * step;
-          p.vel.x += this.world.wind.x * 0.02 * step * 60;
-          p.vel.z += this.world.wind.z * 0.02 * step * 60;
-        }
+        // The same flight predict() flew (C17: no steering, so a kill-cam shows the shot as fired).
+        p.vel.y -= GRAVITY * step;
+        p.vel.x += this.world.wind.x * 0.02 * step * 60;
+        p.vel.z += this.world.wind.z * 0.02 * step * 60;
         const move = p.vel.clone().multiplyScalar(step);
         const len = move.length();
         const dir = move.clone().divideScalar(len);

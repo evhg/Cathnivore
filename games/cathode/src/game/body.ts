@@ -310,6 +310,13 @@ export class Body {
     this.writeFx();
   }
 
+  /** C17 (S6.5): the meshes Second Wind outlines (every LOD's opaque body and the cloth; hidden LODs stay hidden). */
+  outlineMeshes(): THREE.Mesh[] {
+    const out: THREE.Mesh[] = this.lods.map(([o]) => o);
+    if (this.cloth) out.push(this.cloth.mesh);
+    return out;
+  }
+
   /** A round lands on a segment: it flashes white for a frame, then red, fading out (S4.1); the rim flares. */
   flash(segment: string): void {
     const i = SEGMENTS.findIndex((d) => d.name === segment);

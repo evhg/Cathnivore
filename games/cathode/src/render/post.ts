@@ -335,6 +335,11 @@ const GradeShader = {
     // S9.7: the held frame, blurred once (PauseBlurPass): a smooth defocus, sampled with one fetch.
     tPauseBlur: { value: null as THREE.Texture | null },
     uDeathCa: { value: 1 },
+    // C17 (S6.5): Second Wind drains the world to grey (0..0.9); muzzle flashes (hot, saturated, warm) keep their
+    // colour. The outlines draw after the whole chain (render/outline.ts), so the grade never reaches them.
+    uSecondWind: { value: 0 },
+    // C17 (S5.3): the kill-cam's whip-pan smear: xy the direction in uv, z the strength (a 3-tap directional blur).
+    uWhip: { value: new THREE.Vector3() },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -363,6 +368,8 @@ const GradeShader = {
     uniform float uPulseMove;
     uniform float uDeath;
     uniform float uPause;
+    uniform float uSecondWind;
+    uniform vec3 uWhip;
     uniform sampler2D tPauseBlur;
     uniform float uInk;
     uniform float uInkGrey;
@@ -484,6 +491,11 @@ const GradeShader = {
       // the wound, averaged. No extra fetch, so the wound costs the grade almost nothing.
       float smear = max( uBlur * uFxCa * smoothstep( 0.03, 0.22, r2 ) * min( 1.0, uWound * 0.84 + uDeath ), min( 1.0, film * 5.0 ) );
       if ( smear > 0.001 ) col = mix( col, hdrSafe( ( t0 + t1 + t2 ) * 0.3333 ), smear );
+      // C17: the kill-cam's whip-pan, 120 ms on the way back to her eyes: three taps along the pan.
+      if ( uWhip.z > 0.001 ) {
+        vec2 wd = uWhip.xy * 0.045 * uWhip.z;
+        col = mix( col, hdrSafe( ( texture2D( tDiffuse, uv + wd ).rgb + col + texture2D( tDiffuse, uv - wd ).rgb ) * 0.3333 ), min( 1.0, uWhip.z * 1.5 ) );
+      }
       // Kill-cam depth of field: a radial blur that grows away from the centre.
       if ( uDrama > 0.01 ) {
         vec3 acc = col;
@@ -511,6 +523,8 @@ const GradeShader = {
       float keep = smoothstep( 0.35, 0.85, sat ) * smoothstep( 0.02, 0.4, lum );
       float desat = mix( 0.55, 1.0, keep ) * ( 1.0 - uDrama * 0.85 );
       col = mix( vec3( lum ), col, desat );
+      // C17: what Second Wind leaves in colour: a muzzle flash (bright, saturated, warm), nothing else.
+      float swHot = uSecondWind > 0.001 ? smoothstep( 1.2, 3.2, lum ) * smoothstep( 0.2, 0.55, sat ) * step( col.b * 1.15, col.r ) : 0.0;
       // A cool cast in the shadows, a warmer one in the highlights (sodium stays sodium).
       col += vec3( -0.0006, 0.0003, 0.0016 ) * ( 1.0 - smoothstep( 0.0, 0.05, lum ) );
       // Vignette.
@@ -598,6 +612,14 @@ const GradeShader = {
         mapped = mix( mapped, cold, uPause * 0.82 );
         float pr = length( c * vec2( uRes.x / uRes.y, 1.0 ) );
         mapped *= 1.0 - uPause * ( 0.32 + 0.4 * smoothstep( 0.25, 0.95, pr ) );
+      }
+      // C17 (S6.5): Second Wind. The world goes 90% grey with a touch more contrast (a held world, not a washed one);
+      // the flashes keep their colour, and the red outlines come after the grade.
+      if ( uSecondWind > 0.001 ) {
+        float sl = dot( mapped, vec3( 0.2126, 0.7152, 0.0722 ) );
+        vec3 g = vec3( sl ) * vec3( 0.97, 0.99, 1.02 );
+        g = mix( g, g * g * ( 3.0 - 2.0 * g ), 0.35 );
+        mapped = mix( mapped, g, uSecondWind * ( 1.0 - swHot ) );
       }
       // C8 (S6.6): death. The colour goes (all but 5%), what is left bleeds toward red, and the edges close to black
       // as uDeath grows; then the ink floods in from the edges on an fBm front, the centre always left visible.

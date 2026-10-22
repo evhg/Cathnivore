@@ -77,7 +77,10 @@ const C15X = ['enemy-disarm-1250', 'enemy-crawl-3900', 'enemy-wounded-900', 'ene
 // and the whole squad at once from built cover (squad-firefight; firefight-<n> stays the perf gate's lineup).
 const C16 = ['enemy-telegraph-300', 'enemy-peek', 'enemy-blindfire', 'enemy-reload-1000', 'bark-subtitle', 'enemy-grenade-520', 'squad-firefight']
 const C16X = ['enemy-lean']
-const MS = { C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
+// C17 "Second Wind and the kill cams": Second Wind 1.2 s in (red outlines on a grey world, the men behind cover seen
+// through it), the last-man orbit 500 ms in, the bullet follow 200 ms into its flight, the x-ray 450 ms after impact.
+const C17 = ['player-secondwind', 'killcam-orbit-500', 'killcam-bullet-200', 'xray-450']
+const MS = { C17, C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])

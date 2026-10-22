@@ -273,6 +273,8 @@ export class GunSound {
   private readonly tailInSend: GainNode;
   private readonly lp: BiquadFilterNode;
   indoor = false;
+  /** C17: the kill-cam plays every gun an octave down (0.5). */
+  rate = 1;
 
   constructor(
     private readonly ctx: AudioContext,
@@ -328,6 +330,7 @@ export class GunSound {
     const c = this.ctx;
     const t = c.currentTime;
     const src = c.createBufferSource();
+    src.playbackRate.value = this.rate;
     src.buffer = buf;
     src.connect(this.bus.world);
     const send = this.indoor ? this.tailInSend : this.tailOutSend;
@@ -335,6 +338,7 @@ export class GunSound {
     src.connect(send);
     src.start(t);
     const m = c.createBufferSource();
+    m.playbackRate.value = this.rate;
     m.buffer = mech;
     m.connect(this.bus.dry);
     m.start(t);
@@ -342,6 +346,7 @@ export class GunSound {
       if (w.d > G.reflMaxM) continue;
       const r = reflection(w.d);
       const s = c.createBufferSource();
+      s.playbackRate.value = this.rate;
       s.buffer = buf;
       const g = c.createGain();
       g.gain.value = r.gain;
@@ -371,6 +376,7 @@ export class GunSound {
     const n = c.createBuffer(1, Math.ceil(c.sampleRate * (dur + 0.01)), c.sampleRate);
     noiseInto(n.getChannelData(0), Math.random);
     const s = c.createBufferSource();
+    s.playbackRate.value = this.rate;
     s.buffer = n;
     const bp = c.createBiquadFilter();
     bp.type = "bandpass";
@@ -405,6 +411,7 @@ export class GunSound {
     const n = c.createBuffer(1, Math.ceil(c.sampleRate * (dur + 0.02)), c.sampleRate);
     noiseInto(n.getChannelData(0), Math.random);
     const s = c.createBufferSource();
+    s.playbackRate.value = this.rate;
     s.buffer = n;
     const bp = c.createBiquadFilter();
     bp.type = "bandpass";
@@ -489,6 +496,7 @@ export class GunSound {
     const n = c.createBuffer(1, Math.ceil(c.sampleRate * 0.16), c.sampleRate);
     noiseInto(n.getChannelData(0), Math.random);
     const s = c.createBufferSource();
+    s.playbackRate.value = this.rate;
     s.buffer = n;
     const bp = c.createBiquadFilter();
     bp.type = "bandpass";

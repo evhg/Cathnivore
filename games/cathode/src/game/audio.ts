@@ -243,8 +243,8 @@ export class Audio {
     src.playbackRate.value = 0.8 + Math.random() * 0.4;
     const f = c.createBiquadFilter();
     f.type = o.type ?? "bandpass";
-    f.frequency.setValueAtTime(o.freq, t);
-    if (o.sweepTo) f.frequency.exponentialRampToValueAtTime(o.sweepTo, t + o.decay);
+    f.frequency.setValueAtTime(o.freq * this.kcRate, t);
+    if (o.sweepTo) f.frequency.exponentialRampToValueAtTime(o.sweepTo * this.kcRate, t + o.decay);
     f.Q.value = o.q ?? 1;
     const g = c.createGain();
     g.gain.setValueAtTime(0.0001, t);
@@ -438,8 +438,8 @@ export class Audio {
     const t = c.currentTime + when;
     const o = c.createOscillator();
     o.type = type;
-    o.frequency.setValueAtTime(f0, t);
-    if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    o.frequency.setValueAtTime(f0 * this.kcRate, t);
+    if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1 * this.kcRate, t + dur);
     const g = c.createGain();
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(peak, t + 0.002);
@@ -735,8 +735,8 @@ export class Audio {
    * a 4 ms attack, on the dry bus so slow motion and the world's muffle never touch it. A quiet octave and a
    * lowpassed thud give it a body on laptop and phone speakers, which can't play 55 Hz.
    */
-  heartbeat(at: number, gain: number): void {
-    if (!this.enabled) return;
+  heartbeat(at: number, gain: number): AudioBufferSourceNode | null {
+    if (!this.enabled) return null;
     const c = this.ctx;
     // One buffer source and one gain a beat (the lub-dub is rendered once): 2 nodes, not 12, so a 120 bpm heart
     // never crowds the voice cap.
@@ -749,6 +749,7 @@ export class Audio {
     src.connect(g).connect(this.dry);
     src.start(t);
     src.onended = () => g.disconnect();
+    return src;
   }
   private heartBuf: AudioBuffer | null = null;
 
@@ -1191,6 +1192,134 @@ export class Audio {
     this.tone("triangle", f * 2, f * 2, 0.12, 0.02, 0.04);
   }
 
+  /** C17: Second Wind is running (the score stays down and the slow-motion heart stands aside). */
+  private swActive = false;
+  private swNodes: { osc: OscillatorNode[]; g: GainNode; f: BiquadFilterNode; beats: AudioBufferSourceNode[] } | null = null;
+
+  /**
+   * C17 Second Wind (S6.5), on the lethal hit: the impact and a gasp, the score cut, and in its place a held 55 Hz saw
+   * drone (two saws a hair apart, low-passed at 300 Hz) under a 40 bpm heart from the end of the hit-stop.
+   */
+  secondWind(): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const t = c.currentTime;
+    this.secondWindEnd(false, true);
+    this.swActive = true;
+    this.hiss("bandpass", 900, 0.09, 0.6, 0, "pink");
+    this.tone("sine", 90, 45, 0.18, 0.8);
+    this.grunt("gasp", 0.55);
+    const mg = this.music.gain;
+    mg.cancelScheduledValues(t);
+    mg.setTargetAtTime(0, t, 0.03);
+    const f = c.createBiquadFilter();
+    f.type = "lowpass";
+    f.frequency.value = 300;
+    f.Q.value = 0.9;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.14, t + 0.4);
+    f.connect(g).connect(this.dryOut);
+    const osc = [55, 55.35, 27.5].map((hz, i) => {
+      const o = c.createOscillator();
+      o.type = i === 2 ? "sine" : "sawtooth";
+      o.frequency.value = hz;
+      o.connect(f);
+      o.start(t);
+      return o;
+    });
+    const beats: AudioBufferSourceNode[] = [];
+    for (let i = 0; i < 3; i++) {
+      const b = this.heartbeat(t + 0.14 + i * 1.5, 1);
+      if (b) beats.push(b);
+    }
+    this.swNodes = { osc, g, f, beats };
+  }
+
+  /**
+   * C17: Second Wind ends. Revived: a big inhale (noise swelling at 1.6 kHz) and a sting (a low A under a bright
+   * fifth), the drone gone over 300 ms and the score back. Not revived: the drone just goes (death() takes over).
+   */
+  secondWindEnd(revived: boolean, quiet = false): void {
+    const n = this.swNodes;
+    this.swNodes = null;
+    this.swActive = false;
+    const c = this.ctx;
+    const t = c.currentTime;
+    if (n) {
+      n.g.gain.cancelScheduledValues(t);
+      n.g.gain.setTargetAtTime(0.0001, t, revived ? 0.1 : 0.05);
+      for (const o of n.osc) o.stop(t + 0.6);
+      for (const b of n.beats) {
+        try {
+          b.stop(t);
+        } catch {
+          // Already ended.
+        }
+      }
+      window.setTimeout(() => {
+        n.f.disconnect();
+        n.g.disconnect();
+      }, 800);
+    }
+    if (!revived || quiet || !this.enabled) return;
+    const src = c.createBufferSource();
+    src.buffer = this.noise.pink;
+    const bf = c.createBiquadFilter();
+    bf.type = "bandpass";
+    bf.frequency.setValueAtTime(900, t);
+    bf.frequency.exponentialRampToValueAtTime(1800, t + 0.3);
+    bf.Q.value = 1.2;
+    const bg = c.createGain();
+    bg.gain.setValueAtTime(0.0001, t);
+    bg.gain.exponentialRampToValueAtTime(0.32, t + 0.26);
+    bg.gain.exponentialRampToValueAtTime(0.0001, t + 0.42);
+    src.connect(bf).connect(bg).connect(this.dry);
+    src.start(t, Math.random());
+    src.stop(t + 0.45);
+    this.tone("sine", 110, 110, 1.4, 0.22, 0.12, 1.4);
+    this.tone("sawtooth", 220, 220, 0.9, 0.06, 0.12, 0.9);
+    this.tone("triangle", 330, 330, 0.9, 0.07, 0.12, 0.9);
+    this.tone("triangle", 880, 880, 0.5, 0.025, 0.14, 0.5);
+  }
+
+  /** C17 (S5.3): the kill-cam's sound is an octave down (gun buffers at half rate, synth voices lowered). */
+  private kcRate = 1;
+  /** The pitch every one-shot voice plays at (1, or 0.5 during a kill-cam). */
+  get voiceRate(): number {
+    return this.kcRate;
+  }
+
+  /**
+   * C17 (S5.3) the kill-cam's audio: in, everything down 12 semitones and through an 800 Hz low-pass, a two-beat
+   * heart at 55 Hz; out, a reverse whoosh (a swell that cuts off as the camera snaps back).
+   */
+  killcam(on: boolean): void {
+    if (!this.enabled) return;
+    const c = this.ctx;
+    const t = c.currentTime;
+    this.kcRate = on ? 0.5 : 1;
+    this.gun.rate = this.kcRate;
+    const f = this.slowFilter.frequency;
+    f.cancelScheduledValues(t);
+    f.setTargetAtTime(on ? KC_LOWPASS : 20000, t, on ? 0.04 : 0.12);
+    this.kcOn = on;
+    if (on) {
+      this.heartbeat(t + 0.05, 0.9);
+      this.heartbeat(t + 0.05 + 60 / 55, 0.75);
+    } else this.burst({ type: "bandpass", freq: 3200, sweepTo: 400, q: 1.1, decay: 0.03, attack: 0.32, gain: 0.3, noise: "pink", verb: 0.2 });
+  }
+  private kcOn = false;
+
+  /** C17 x-ray (S5.3): the crack. A crunch, a 90 Hz thump and three 3 ms snaps 8 ms apart. */
+  xrayCrack(): void {
+    if (!this.enabled) return;
+    this.hiss("bandpass", 2200, 0.07, 0.45, 0, "white");
+    this.hiss("bandpass", 900, 0.12, 0.3, 0.01, "pink");
+    this.tone("sine", 90, 60, 0.16, 0.7);
+    for (let i = 0; i < 3; i++) this.hiss("highpass", 5000, 0.003, 0.5, 0.02 + i * 0.008, "white");
+  }
+
   killcamWhoosh(): void {
     this.burst({ type: "bandpass", freq: 300, sweepTo: 3200, q: 1.2, decay: 1.4, attack: 0.3, gain: 0.35, noise: "pink", verb: 0.5 });
   }
@@ -1345,10 +1474,10 @@ export class Audio {
     const t = c.currentTime;
     this.tension += (tension - this.tension) * Math.min(1, dt * 1.5);
     this.musicFilter.frequency.setTargetAtTime(1600 + this.tension * 5000, t, 0.3);
-    if (!this.dead) this.music.gain.setTargetAtTime(0.5 + this.tension * 0.2, t, 0.5);
-    this.slowFilter.frequency.setTargetAtTime(slow > 0 ? 700 + (1 - slow) * 6000 : 20000, t, 0.08);
+    if (!this.dead && !this.swActive) this.music.gain.setTargetAtTime(0.5 + this.tension * 0.2, t, 0.5);
+    if (!this.kcOn) this.slowFilter.frequency.setTargetAtTime(slow > 0 ? 700 + (1 - slow) * 6000 : 20000, t, 0.08);
     this.score.update(this.tension);
-    if (slow > 0.2 && !this.woundHeart) {
+    if (slow > 0.2 && !this.woundHeart && !this.swActive) {
       this.heartT -= dt;
       if (this.heartT <= 0) {
         this.heartT = 0.85;
@@ -1381,6 +1510,8 @@ export class Audio {
  * later), each a pitch-dropping sine (from 1.25x over 30 ms) with its octave, and a thump of brown noise under
  * 160 Hz, all with a 4 ms attack and an exponential fall.
  */
+const KC_LOWPASS = 800;
+
 function renderHeartbeat(rate: number): AudioBuffer {
   const len = Math.ceil(rate * 0.21);
   const buf = new AudioBuffer({ length: len, numberOfChannels: 1, sampleRate: rate });

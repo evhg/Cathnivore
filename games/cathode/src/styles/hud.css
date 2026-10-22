@@ -1015,6 +1015,81 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   .hud-killcap.on { animation: none; opacity: 1; }
 }
 
+/* ---- C17 kill-cam (S5.3): 2.39:1 bars over the frame, every cluster stepped back, the range plate above the bar ---- */
+.hud-root.kc-cine::before,
+.hud-root.kc-cine::after { height: var(--kc-h, 12.8vh); transform: scaleY(var(--kc-bars, 0)); transition: none; }
+.hud-root.kc-cine .hud-objective,
+.hud-root.kc-cine .hud-vitals,
+.hud-root.kc-cine .hud-arms,
+.hud-root.kc-cine .hud-feed,
+.hud-root.kc-cine .hud-teach,
+.hud-root.kc-cine .hud-prompt,
+.hud-root.kc-cine .hud-wprompt,
+.hud-root.kc-cine .hud-wp,
+.hud-root.kc-cine .hud-cross,
+.hud-root.kc-cine .hud-hit,
+.hud-root.kc-cine .hud-blocked,
+.hud-root.kc-cine .hud-barks,
+.hud-root.kc-cine .hud-threats,
+.hud-root.kc-cine .hud-focus,
+.hud-root.kc-cine .hud-scope,
+.hud-root.kc-cine .hud-dmg,
+.hud-root.kc-cine .hud-tl,
+.hud-root.kc-cine .hud-tr,
+.hud-root.kc-cine .hud-target { opacity: 0; transition: opacity 120ms var(--ease-out); }
+.hud-root.kc-cine .hud-killcap { bottom: calc(var(--kc-h, 12.8vh) * var(--kc-bars, 0) + var(--sp-5)); }
+
+/* ---- C17 Second Wind (S6.5): the name over the crosshair, a draining line, the one instruction ---- */
+.hud-sw {
+  position: absolute;
+  left: 50%;
+  top: 31%;
+  z-index: var(--z-hud-top);
+  display: grid;
+  justify-items: center;
+  gap: calc(var(--u) * 10);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+}
+.hud-sw.on { opacity: var(--sw-a, 1); }
+/* A soft dark bloom behind the words, so they hold over a lit sign or a muzzle flash (no box). */
+.hud-sw::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--u) * -34) calc(var(--u) * -90);
+  z-index: -1;
+  background: radial-gradient(closest-side, rgb(var(--black-rgb) / .62), rgb(var(--black-rgb) / .3) 55%, transparent);
+}
+.hud-sw-name {
+  margin: 0;
+  /* S6.5 asks 28u at 0.4em; C13T caps tracking at 0.06em, so the name is one size up and set tight instead. */
+  font: 700 var(--fs-4)/1 var(--font-ui);
+  font-stretch: var(--wdth-head);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: 0 0 calc(var(--u) * 18) rgb(var(--black-rgb) / .9), 0 0 calc(var(--u) * 3) rgb(var(--black-rgb) / .8);
+}
+.hud-sw-line {
+  display: block;
+  width: calc(var(--u) * 360);
+  height: max(1px, calc(var(--u) * 1.5));
+  background: var(--blood-hot);
+  box-shadow: 0 0 calc(var(--u) * 8) rgb(var(--blood-rgb) / .7);
+  transform: scaleX(var(--sw-t, 1));
+  transform-origin: 50% 50%;
+}
+.hud-sw-hint {
+  margin: 0;
+  font: 600 var(--fs-1)/1 var(--font-ui);
+  font-stretch: var(--wdth-label);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  text-shadow: 0 0 calc(var(--u) * 10) rgb(var(--black-rgb) / .9);
+}
+
 /* ---- subtitles: per-line plates between the clusters, the speaker in their colour ---- */
 .hud-sub {
   position: absolute;

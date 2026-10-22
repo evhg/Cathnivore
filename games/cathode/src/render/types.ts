@@ -128,6 +128,13 @@ export interface World {
    * C8 (S6.6): the death grade. `death` 0..1 (colour out, red in, edges closing), `ink` 0..1 (blood ink from the
    * edges; `grey` under reduced violence), `glitch` 0..1 (the re-sync), `ca` the edge CA multiplier (1..3).
    */
+  /**
+   * C17 (S6.5): Second Wind. `grey` 0..0.9 drains the world (flashes keep their colour); `outline` 0..1 draws a red
+   * outline round each of `meshes` over the finished frame, through walls.
+   */
+  setSecondWind?(o: { grey: number; outline: number; meshes: Iterable<THREE.Mesh> }): void;
+  /** C17 (S5.3): the kill-cam's whip-pan smear: (dx, dy) the pan's direction on screen, `k` 0..1. */
+  setWhip?(dx: number, dy: number, k: number): void;
   /** C14 (S9.7): the pause grade, 0..1. */
   setPause?(k: number): void;
   setDeath?(o: { death: number; ink: number; glitch: number; ca: number; grey?: boolean }): void;

@@ -17,7 +17,7 @@ import { deathFx, type DeathVariant } from "./death";
 import { RayWorld, rayGround } from "./ray";
 import { KESTREL_DOT } from "./kestrel";
 import { Arsenal } from "./weapons";
-import { Combat, type Build, type KillEvent } from "./combat";
+import { Combat, encounterCleared, type Build, type KillEvent } from "./combat";
 import { Timescale } from "./feel/timescale";
 import { coverWireframe } from "./coverdebug";
 import { Trauma } from "./feel/trauma";
@@ -34,6 +34,7 @@ import { REFL_DIRS } from "./gunsound";
 import { AUTOMATIC, confirmSound, hardHit, hitClass, hitStopMs, type HitEvent } from "../sim/hitevent";
 import { reduceMotionOn } from "../prefs";
 import { KillCam } from "./killcam";
+import { KillCamRules } from "../sim/killcam";
 import { Orbs, TD, Takedown, targetScript } from "./takedown";
 import { archGeometry } from "./models/enforcer";
 import { TAKEDOWN, TAKEDOWN_VARIANTS, blowsInOrder, pickTakedownVariant, syncPoint, takedownEligible, takedownRewards, variantById, type Rect, type TakedownApproach, type TakedownVariantId } from "../sim/takedown";
@@ -93,6 +94,7 @@ import { EnemyNades, NADE_RADIUS } from "./enemynades";
 import { cargoCrate, concretePillar } from "./coverprops";
 import { loadCover } from "./ai/coverload";
 import { BARK_LINES } from "./ai/squad";
+import { SECOND_WIND, SecondWind, weaponDt, type SecondWindLook } from "../sim/secondwind";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -249,6 +251,12 @@ export interface Session {
   restartFromCheckpoint?: () => Promise<void>;
   /** C8: deaths this visit (a restart counts one). */
   deaths?: number;
+  /** C17 e2e: starts a last-man orbit on the nearest live enemy. */
+  killcamTest?: () => boolean;
+  /** C17 (S5.3): the kill-cam's state and the world's sim scale this frame. */
+  killcamState?: () => { active: boolean; shot: string | null; ms: number; sinceImpact: number; xray: boolean; scale: number; returnMs: number };
+  /** C17 (S6.5): Second Wind's state (phase, real ms in, charges left this checkpoint). */
+  secondWind?: { phase: string; t: number; left: number };
   /** C8: the death sequence while it runs (ms since the blow, and whether the card is up), else null. */
   dying?: { ms: number; card: boolean; killer: string | null; gun?: number[] | null } | null;
   /** C6 (S6.1): Guard and Flesh. `hp` mirrors their total; writing `hp` from outside still works. */
@@ -434,7 +442,65 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     director.barks.length = 0;
   }
-  const killcam = new KillCam(world);
+  // C17 (S5.3): the kill-cams and their rules (the setting, the 20 s cooldown, the first three kills of a new save).
+  // The x-ray is desktop only and never under reduced violence.
+  const killcam = new KillCam(world, {
+    xray: o.quality !== "phone" && o.intensity !== "reduced",
+    cast: (f, d, l) => rays.cast(f, d, l, { thin: false })?.dist ?? null,
+    onCrack: () => audio?.xrayCrack(),
+  });
+  const kcRules = new KillCamRules(loadPrefs().killCams);
+  window.addEventListener("cathode:prefs", () => (kcRules.setting = loadPrefs().killCams), lifeOpt);
+  let sessionKills = 0;
+  /** Kills of this save so far: a save that has levelled or finished a job is long past its first three. */
+  const killsThisSave = () => (progress.character.level > 1 || progress.jobsDone.length > 0 ? 99 : sessionKills);
+  /** Any input skips the kill-cam after 300 ms (S5.3): keys, clicks and taps, as well as the fire button. */
+  let kcSkip = false;
+  /** Real ms (the game's clamped frame clock) since a skip, and how long the world took to run at full speed again. */
+  let kcSkipAt = 0;
+  let kcReturnMs = -1;
+  const kcInput = () => {
+    if (killcam.active) kcSkip = true;
+  };
+  window.addEventListener("keydown", kcInput, lifeOpt);
+  window.addEventListener("pointerdown", kcInput, lifeOpt);
+  let kcWas = false;
+  /** The kill-cam's way in: the HUD clears to the bars, the audio drops an octave, the whoosh. */
+  function kcBegin(): void {
+    kcSkip = false;
+    kcWas = true;
+    audio?.killcam(true);
+    if (killcam.shot === "bullet") hud.killcamCaption(killcam.distance);
+  }
+  /** And out: the reverse whoosh, the bars gone, the gun back, the camera on her again. */
+  function kcEnd(): void {
+    kcWas = false;
+    audio?.killcam(false);
+    hud.killcamBars(0, 0);
+    world.setWhip?.(0, 0, 0);
+    arsenal.rig.root.visible = true;
+  }
+  let lastSimScale = 1;
+  // The bullet follow is decided at the trigger pull, from predict() (S5.3: only a round it sees kill).
+  combat.killcamGate = (pred) => {
+    if (o.shot || killcam.active || td.active || dead || secondWind.active) return false;
+    const k = {
+      now: performance.now(),
+      last: encounterCleared(pred.enemy, enemies),
+      headshot: pred.zone === "head",
+      severed: false,
+      takedown: false,
+      ballistic: true,
+      predicted: true,
+      distance: pred.dist,
+      killsThisSave: killsThisSave() + 1,
+      finale: false,
+    };
+    k.finale = !!job && k.last;
+    if (kcRules.wouldTrigger(k) !== "bullet") return false;
+    kcRules.kill(k);
+    return true;
+  };
   // C11: the paired takedown (her arms in the street, the camera, the target's body script) and its reward orbs.
   const td = new Takedown(world.scene, o.quality === "phone");
   td.castRay = (from, dir, len) => rays.cast(from, dir, len)?.dist ?? null;
@@ -929,6 +995,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let bystanders = 0;
   const onKill = (k: KillEvent) => {
     actives.onKill();
+    if (k.enemy.kit.role !== "civilian" && secondWind.active) secondWindRevive();
     if (k.enemy.kit.role === "civilian") {
       // No XP, no loot, and the square knows: every guard turns to where she stands.
       bystanders++;
@@ -1108,6 +1175,91 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // C6 "I know I'm hit" (S6.1, S6.2): Guard and Flesh, and every readout of a hit on the hit's frame.
   const vitals = new Vitals(s.maxHp);
   s.vitals = vitals;
+  s.killcamState = () => ({ active: killcam.active, shot: killcam.shot, ms: killcam.ms, sinceImpact: killcam.sinceImpact, xray: killcam.xrayOn, scale: lastSimScale, returnMs: kcReturnMs });
+  // C17 (S6.5): Second Wind, once per checkpoint (none on Hell Week; the Second Wind skill adds a charge, and its
+  // value tops up the revive).
+  const swSkill = (progress.stats as unknown as Record<string, number>).secondWind ?? 0;
+  const secondWind = new SecondWind({ hellWeek: progress.character.difficulty === "hellWeek", extraCharges: swSkill > 0 ? 1 : 0 });
+  const SW_NONE: SecondWindLook = { grey: 0, outline: 0, drop: 0, roll: 0, timer: 0, title: 0 };
+  let swLook = SW_NONE;
+  let swShown = false;
+  let swCheckpoint: string | null | undefined = undefined;
+  const swState = () => (s.secondWind = { phase: secondWind.phase, t: secondWind.t, left: secondWind.left });
+  swState();
+  /** The meshes Second Wind outlines: every live enemy (bystanders never). */
+  const swMeshes = (): THREE.Mesh[] => {
+    const out: THREE.Mesh[] = [];
+    for (const e of [...enemies, ...lineup]) if (e.alive && e.kit.role !== "civilian" && e.body.root.visible) out.push(...e.body.outlineMeshes());
+    return out;
+  };
+  /** The killing blow, taken (S6.5 t = 0): a 140 ms hit-stop, the flare at full, Flesh at 1, the gasp and the drone. */
+  function startSecondWind(): void {
+    vitals.setTotal(1);
+    s.hp = vitals.total;
+    timescale.hitStop(SECOND_WIND.stopMs);
+    hurtV = 1;
+    trauma.add(0.35);
+    rumble("hurt");
+    audio?.secondWind();
+    hud.feedLine("Second Wind", true);
+    swState();
+  }
+  /** A kill in the window: she gets up (+30% Flesh, plus the skill's value), time and colour come back. */
+  function secondWindRevive(): void {
+    const share = secondWind.kill();
+    if (share <= 0) return;
+    vitals.healShare(share + swSkill / 100);
+    s.hp = vitals.total;
+    timescale.release("secondWind");
+    audio?.secondWindEnd(true);
+    swState();
+  }
+  /** Second Wind's frame (real time): its clock, the slow motion, the grade, the outlines, the plate and the knee. */
+  function secondWindFrame(realDt: number): void {
+    // A new checkpoint gives the charge back.
+    const cp = hud.checkpoint?.() ?? null;
+    if (swCheckpoint === undefined) swCheckpoint = cp;
+    else if (cp !== swCheckpoint) {
+      swCheckpoint = cp;
+      secondWind.checkpoint();
+    }
+    if (secondWind.phase === "ready" || secondWind.phase === "spent") {
+      if (swShown) {
+        swShown = false;
+        swLook = SW_NONE;
+        world.setSecondWind?.({ grey: 0, outline: 0, meshes: [] });
+        hud.secondWind(0, 0);
+        swState();
+      }
+      return;
+    }
+    const ev = secondWind.update(o.shot ? 0 : realDt * 1000);
+    if (ev === "window") timescale.push("secondWind", SECOND_WIND.scale, -1, 0, SECOND_WIND.rampOutMs, "secondWind");
+    if (ev === "expired") {
+      // No kill: the death, from its 400 ms state and without a second hit-stop.
+      timescale.release("secondWind");
+      audio?.secondWindEnd(false);
+      swShown = false;
+      swLook = SW_NONE;
+      world.setSecondWind?.({ grey: 0, outline: 0, meshes: [] });
+      hud.secondWind(0, 0);
+      swState();
+      vitals.setTotal(0);
+      s.hp = 0;
+      beginDeath(undefined, SECOND_WIND.deathFromMs);
+      return;
+    }
+    swLook = secondWind.look();
+    swShown = true;
+    world.setSecondWind?.({ grey: swLook.grey, outline: swLook.outline, meshes: swMeshes() });
+    hud.secondWind(swLook.title, swLook.timer);
+    // Inside it she can't be killed again: the window is the whole chance.
+    if (secondWind.active && vitals.total < 1) {
+      vitals.setTotal(1);
+      s.hp = vitals.total;
+    }
+    swState();
+  }
   /** The camera flinch: a 9 Hz spring per axis (zeta 0.55), added after aim, so it never moves the aim. */
   const FLINCH = { freqHz: 9, zeta: 0.55 };
   const flinch = { yaw: new Spring1(FLINCH), pitch: new Spring1(FLINCH), roll: new Spring1(FLINCH), shove: new Spring1(FLINCH) };
@@ -1427,6 +1579,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       return;
     }
 
+    // C17 (S5.3): any input skips the kill-cam after 300 ms, and the skip lands on this frame: the world is back at
+    // full speed and the camera on her eyes before anything is drawn (the press that skips never fires the gun).
+    if (killcam.active && ((intent.fire && !wasFire) || kcSkip)) {
+      kcSkip = false;
+      if (killcam.skippable) {
+        kcSkipAt = 1e-3;
+        killcam.skip();
+        kcEnd();
+        wasFire = intent.fire;
+      }
+    }
+    if (kcSkipAt) kcSkipAt += realDt * 1000;
     // Time: the kill-cam slows the world right down; held focus (bullet-time) slows it while it lasts.
     const run = actives.running();
     let scale = killcam.timeScale * (killcam.active ? 1 : run.timeScale);
@@ -1437,11 +1601,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     } else s.focus = Math.min(progress.stats.bulletTimeSeconds, s.focus + realDt * 0.15);
     // Hit-stop: a landed blow holds the world for a few frames, so it lands with weight. The lowest scale
     // wins (a stop inside slow motion returns to the slow motion); particles drift at a quarter speed.
+    secondWindFrame(realDt);
     timescale.update(realDt);
     world.camera.getWorldPosition(bodyView.eye);
     const fxScale = Math.min(scale, timescale.fxScale);
     scale = Math.min(scale, timescale.simScale);
     const dt = o.shot ? 0 : realDt * scale;
+    lastSimScale = scale;
+    if (kcSkipAt && !killcam.active && scale >= 1) {
+      kcReturnMs = kcSkipAt;
+      kcSkipAt = 0;
+    }
     const fxDt = o.shot ? 0 : realDt * fxScale;
     combat.clock += dt;
     thunderCover = Math.max(0, thunderCover - realDt);
@@ -1477,24 +1647,31 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
 
     if (killcam.active) {
-      // The kill-cam is cinema: no gun in hand, no HUD.
+      // The kill-cam is cinema: no gun in hand, the HUD down to the 2.39:1 bars (and the range plate on a long shot).
       arsenal.rig.root.visible = false;
-      hud.visible = false;
-      if (intent.fire && !wasFire) killcam.skip();
+      hud.visible = true;
+      kcSkip = false;
       wasFire = intent.fire;
-      combat.update(dt, build());
-      for (const e of enemies) {
-        e.update(dt, sightOf(), rays, world.colliders, ground);
-        e.body.updateFlash(o.shot ? 0 : realDt * 1000);
+      if (killcam.active) {
+        combat.update(dt, build());
+        for (const e of enemies) {
+          e.update(dt, sightOf(), rays, world.colliders, ground);
+          e.body.updateFlash(o.shot ? 0 : realDt * 1000);
+        }
+        killcam.update(o.shot ? 0 : realDt);
+        const aspect = innerWidth / Math.max(1, innerHeight);
+        hud.killcamBars(killcam.bars, aspect);
+        world.setWhip?.(1, 0, trauma.reducedMotion ? 0 : killcam.whip);
+        audio?.update(realDt, 0.2, 1);
+        drainEvents();
+        world.update(dt, time, fxDt);
       }
-      killcam.update(realDt);
-      audio?.update(realDt, 0.2, 1);
-      drainEvents();
-      world.update(dt, time);
+      if (!killcam.active) kcEnd();
       render();
       requestAnimationFrame(frame);
       return;
     }
+    if (kcWas) kcEnd();
 
     hud.visible = true;
     if (!dead) {
@@ -1516,6 +1693,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         !!t && t.enemy.state === "combat" && t.angle < 0.04 && w.kind !== "melee" && t.enemy.position.distanceTo(player.pos) < w.range && arsenal.ammo.mag > 0;
     }
     player.applyCamera(world.camera, realDt);
+    // C17 (S6.5): Second Wind puts her on one knee: the eye drops 35 cm and the camera rolls 12 degrees.
+    if (swLook.drop > 0 || swLook.roll > 0) {
+      world.camera.position.y -= swLook.drop;
+      world.camera.rotation.z += (calm || trauma.reducedMotion ? 0.4 : 1) * swLook.roll;
+    }
     // Scope sway: a slow figure-of-eight; held breath (Focus while scoped) all but stills it.
     if (arsenal.scopedIn) {
       swayT += realDt;
@@ -1571,7 +1753,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (altPress && !dead) arsenal.altFire();
     const gun = actives.weaponMod(arsenal.weapon.weaponClass);
     if (gun.noReload) arsenal.topUp();
-    const shot = dead ? null : arsenal.update((dt || realDt) * gun.rate, trigger, eye, fwd, world.camera.quaternion, spreadMul);
+    // C17 (S6.5): in a Second Wind the gun fires and reloads on real time, whatever the world's scale.
+    const shot = dead ? null : arsenal.update(weaponDt(realDt, dt || realDt, secondWind.active) * gun.rate, trigger, eye, fwd, world.camera.quaternion, spreadMul);
     if (shot) {
       lastFireAt = woundClock;
       const nx = actives.takeNextShot(shot.weapon.weaponClass);
@@ -1598,9 +1781,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const port = shot.muzzle.clone().addScaledVector(fwd, shot.weapon.weaponClass === "pistol" ? -0.25 : -0.45);
         world.fx.casing(port, right.multiplyScalar(2.2 + Math.random()).add(new THREE.Vector3(0, 2.4, 0)).addScaledVector(fwd, -0.3));
       }
-      if (r.killcam) {
-        killcam.start(r.killcam);
-        hud.killcamCaption(killcam.distance);
+      if (r.killcam?.target) {
+        killcam.startBullet(r.killcam, r.killcam.target.enemy, r.killcam.target.joint);
+        kcBegin();
         audio?.killcamWhoosh();
       }
     }
@@ -1930,7 +2113,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (s.hp > 0 && s.hp < s.maxHp * 0.3) voice.say("lowHealth");
     voice.update(realDt);
 
-    if (!dead && s.hp <= 0) beginDeath();
+    if (!dead && s.hp <= 0) {
+      // C17 (S6.5): the killing blow, once per checkpoint, is a Second Wind instead.
+      if (secondWind.active) {
+        vitals.setTotal(1);
+        s.hp = vitals.total;
+      } else if (secondWind.lethal()) startSecondWind();
+      else beginDeath();
+    }
     if (!job && !jobDone && enemies.length && enemies.every((e) => !e.alive)) {
       jobDone = true;
       objective = "The street's quiet. Walk to the fish market's back door.";
@@ -2678,7 +2868,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
 
   /** The killing blow (S6.6 t = 0): input locks, the body cam takes over, the sound and the grade start. */
-  function beginDeath(seedOverride?: number): void {
+  function beginDeath(seedOverride?: number, fromMs = 0): void {
     dead = true;
     const killer = lastHurt?.key instanceof Enemy ? lastHurt.key : null;
     const cam = new DeathCam();
@@ -2729,6 +2919,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     rumble("hurt");
     s.dying = { ms: 0, card: false, killer: dying.killerName || null };
     o.onDying?.();
+    // C17: a Second Wind that ran out joins the death at its 400 ms state (the knee and the fall already begun).
+    if (fromMs > 0) {
+      const none = input.read();
+      const step = 1000 / 60;
+      for (let t = 0; t < fromMs; t += step) deathFrame(Math.min(step, fromMs - t) / 1000, none, true);
+    }
   }
 
   /** The gun leaves her hand (S6.6): the viewmodel's gun, moved into the street, thrown toward where she'll look. */
@@ -2955,6 +3151,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     life.abort();
     input.dispose();
     worldOff?.();
+    world.setSecondWind?.({ grey: 0, outline: 0, meshes: [] });
+    audio?.secondWindEnd(false, true);
     for (const rm of leasedLights.splice(0)) rm();
     // What the world keeps (its own materials and textures, shared with some of the session's objects) is never disposed.
     const keepMats = new Set<THREE.Material>();
@@ -3184,8 +3382,37 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
     }
   }
+  /**
+   * C17 (S5.3): each kill goes to the kill-cam rules (the multi-kill count, the cooldown). A kill that earns the
+   * orbit starts it here, before the last-enemy slow motion, which then stands aside. A takedown is its own cinema
+   * (it counts for the cooldown but plays no second camera), and so is a Second Wind's revive.
+   */
+  function judgeKillCams(): void {
+    for (const k of combat.kills) {
+      if (k.enemy.kit.role === "civilian") continue;
+      sessionKills++;
+      const last = !k.takedown ? encounterCleared(k.enemy, enemies) : !enemies.some((x) => x !== k.enemy && x.alive && x.state === "combat");
+      const shot = kcRules.kill({
+        now: performance.now(),
+        last,
+        headshot: k.headshot,
+        severed: k.severed.length > 0,
+        takedown: k.takedown,
+        ballistic: false,
+        predicted: false,
+        distance: k.distance,
+        killsThisSave: killsThisSave(),
+        finale: !!job && last,
+      });
+      if (!shot || o.shot || killcam.active || k.takedown || td.active || dead || secondWind.active || secondWind.phase === "revived") continue;
+      killcam.startOrbit(k.enemy, eye);
+      kcBegin();
+      audio?.killcamWhoosh();
+    }
+  }
   function drainEvents(): void {
     drainDeaths();
+    judgeKillCams();
     lastEnemySlowmo();
     for (const k of combat.kills) {
       onKill(k);
@@ -4506,6 +4733,90 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // near-right crate reloading (his spent mag out in the street, "Reloading!" on the radio), the flanker running wide
   // round her left at low ready, and the sergeant down behind the far crate watching over it. Nobody in the open but
   // the flanker. (firefight-<n> stays the perf gate's lineup.)
+  /**
+   * C17 (S5.3) kill-cam stages: killcam-orbit-<ms> (the last-man orbit round a 10 m headshot kill), killcam-bullet-<ms>
+   * (the bullet follow <ms> into its flight at a guard up to 34 m down the street, the round short of his head) and
+   * xray-<ms> (<ms> after a headshot's impact, the x-ray on at desktop sizes). The world runs at the cam's own scale.
+   */
+  const killcamStage = (kind: string, ms: number): string => {
+    if (killcam.active) killcam.finish();
+    kcEnd();
+    const lethal = kind !== "killcam-bullet";
+    const r = s.stage!(lethal ? "hit-headkill" : "enemy-front-10m", lethal ? 40 : 60);
+    const g = stageGuard;
+    if (!g) return r || "no enemy";
+    hud.freeze(null);
+    hud.clearFeedback();
+    hud.clearBarks();
+    pickups.clear();
+    const home = stageHome?.pos ?? player.pos;
+    player.applyCamera(world.camera, 0);
+    world.camera.updateMatrixWorld();
+    world.camera.getWorldPosition(eye);
+    world.camera.getWorldDirection(fwd);
+    const step = 1000 / 60;
+    const run = (total: number) => {
+      for (let t = 0; t < total && killcam.active; t += step) {
+        const h = Math.min(step, total - t) / 1000;
+        killcam.update(h);
+        const sc = killcam.timeScale;
+        for (const e of enemies) e.feel(h * sc, world.colliders, ground);
+        world.update(0, 1, h * sc);
+      }
+    };
+    if (kind === "killcam-orbit") {
+      killcam.startOrbit(g, eye.clone().setY(home.y + player.eyeHeight));
+      kcBegin();
+      run(ms);
+    } else if (kind === "killcam-bullet") {
+      // Down the street as far as it is clear (up to 34 m), facing her.
+      const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
+      const clear = rays.cast(eye, flat, 40, { thin: false })?.dist ?? 40;
+      const at = eye.clone().addScaledVector(flat, Math.max(12, Math.min(34, clear - 2.5)));
+      at.y = ground(at.x, at.z);
+      g.motion.pos.copy(at);
+      g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z);
+      for (let k = 0; k < 3; k++) g.update(0.0001, sightNone(), rays, world.colliders, ground);
+      const head = g.body.joints.head.clone();
+      const dir = head.clone().sub(eye).normalize();
+      const d = eye.distanceTo(head);
+      const round = { pos: eye.clone().addScaledVector(dir, Math.min(d - 1.6, 0.08 * ms)), vel: dir.clone().multiplyScalar(800), alive: true };
+      killcam.startBullet(round, g, "head");
+      killcam.distance = d;
+      kcBegin();
+      killcam.update(0.0001);
+      killcam.ms = ms;
+    } else {
+      const head = g.body.joints.head.clone();
+      const dir = head.clone().sub(eye).normalize();
+      killcam.startBullet({ pos: head, vel: dir.multiplyScalar(800), alive: false }, g, "head");
+      kcBegin();
+      run(ms);
+    }
+    hud.killcamBars(killcam.bars, innerWidth / Math.max(1, innerHeight));
+    world.setWhip?.(1, 0, killcam.whip);
+    arsenal.rig.root.visible = false;
+    return "ok";
+  };
+  /** C17 e2e: a last-man orbit on the nearest live enemy, now (the skip and the return are what is tested). */
+  s.killcamTest = () => {
+    let e = enemies.filter((x) => x.alive && x.kit.role !== "civilian").sort((a, b) => a.position.distanceTo(player.pos) - b.position.distanceTo(player.pos))[0];
+    if (!e) {
+      // No one in the street yet (the first job spawns its guards later): a stand-in 8 m ahead of her.
+      const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
+      const at = player.pos.clone().addScaledVector(flat, 8);
+      at.y = ground(at.x, at.z);
+      e = new Enemy({ ...ENFORCER }, [new THREE.Vector3()], 1);
+      e.passive = true;
+      e.motion.pos.copy(at);
+      world.scene.add(e.body.root);
+      lineup.push(e);
+      e.update(0.0001, sightNone(), rays, world.colliders, ground);
+    }
+    killcam.startOrbit(e, eye.clone());
+    kcBegin();
+    return true;
+  };
   const squadStage = (tMs: number): string => {
     hud.freeze(null);
     hud.clearFeedback();
@@ -4970,6 +5281,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
 
   s.stage = (name: string, tMs = 60): string => {
+    // C17: every stage starts out of Second Wind and out of any kill-cam (stages share one page).
+    if (secondWind.active || secondWind.phase === "revived" || swShown) {
+      secondWind.reset();
+      timescale.release("secondWind");
+      secondWindFrame(0);
+      vitals.reset(s.maxHp);
+      s.hp = vitals.total;
+    }
+    if (killcam.active) killcam.finish();
+    if (kcWas) kcEnd();
     stageQuiet = false;
     tdSideView = null;
     tdAfter.length = 0;
@@ -5050,7 +5371,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (C8_STAGES.includes(name)) return c8Stage(name, tMs);
     if (C6_STAGES.includes(name) || C7_STAGES.includes(name)) return c6Stage(name, tMs);
     calmVitals();
+    const kcm = /^(killcam-orbit|killcam-bullet|xray)-(\d+)$/.exec(name);
+    if (kcm) return killcamStage(kcm[1]!, Number(kcm[2]));
     if (name === "squad-firefight") return squadStage(tMs);
+    // C17 (S6.5): player-secondwind, `tMs` into a Second Wind (default 1200), over the squad firefight: red outlines
+    // on a grey world, the men behind the crates seen through them, the flashes in colour.
+    if (name === "player-secondwind") {
+      const r = squadStage(0);
+      secondWind.stageAt(tMs > 60 ? tMs : 1200);
+      vitals.setTotal(1);
+      s.hp = vitals.total;
+      if (!timescale.active("secondWind")) timescale.push("secondWind", SECOND_WIND.scale, -1, 0, SECOND_WIND.rampOutMs, "secondWind");
+      secondWindFrame(0);
+      return r;
+    }
     if (C10_STAGES.includes(name) || /^firefight-\d+$/.test(name)) return c10Stage(name, tMs);
     if (C16_STAGES.includes(name.replace(/-\d+$/, ""))) return c16Stage(name, tMs);
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);

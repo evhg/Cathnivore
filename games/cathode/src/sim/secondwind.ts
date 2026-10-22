@@ -99,6 +99,24 @@ export class SecondWind {
     return true;
   }
 
+  /** Screenshot stages: back to a fresh checkpoint, whatever was running. */
+  reset(): void {
+    this.charges = this.perCheckpoint;
+    this.phase = this.charges > 0 ? "ready" : "spent";
+    this.t = 0;
+    this.reviveT = -1;
+    this.fromLook = null;
+  }
+
+  /** Screenshot stages: in force at `tMs` from the lethal hit (spends a charge if one is there). */
+  stageAt(tMs: number): void {
+    if (this.charges > 0 && !this.active) this.charges--;
+    this.phase = tMs < SECOND_WIND.stopMs ? "stop" : "window";
+    this.t = Math.max(0, Math.min(tMs, SECOND_WIND.stopMs + SECOND_WIND.windowMs - 1));
+    this.reviveT = -1;
+    this.fromLook = null;
+  }
+
   /** A kill she made. In the window (or the stop) it revives her: returns the Flesh share to give back. */
   kill(): number {
     if (!this.active) return 0;

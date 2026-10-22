@@ -21,6 +21,7 @@ import { buildAtmosphere, type AtmoUniforms } from "./atmosphere";
 import { PlanarReflection, LAYER_NO_REFLECT, hideSmall, unshadowSmall, showAll } from "./reflection";
 import { createFx } from "./fx";
 import { createPost, lensRects } from "./post";
+import { Outlines } from "./outline";
 import { lensFade } from "../sim/woundloop";
 
 interface Preset {
@@ -192,6 +193,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   shared.uRefl.value = reflection.target.texture;
   shared.uReflMatrix.value = reflection.matrix;
   const post = createPost(renderer, scene, camera, viewScene, viewCamera, quality);
+  const outlines = new Outlines();
   // Brighter than the moody first pass: people kept losing enemies in the dark (owner, 2026-10-04:
   // "visibility is really bad"). Phones get more, since they're played on small screens in lit rooms.
   post.grade.uniforms.uExposure!.value = quality === "phone" ? 1.7 : 1.35;
@@ -370,6 +372,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       // fingers, a stall's latches), which halves the refresh frame's extra draw calls.
       if (shadowing && P.shadowCull > 0) unshadowSmall(scene, camEye.setFromMatrixPosition(camera.matrixWorld), P.shadowCull, unshadowed);
       post.render(clock);
+      outlines.render(renderer, scene, camera);
       showAll(mainHidden);
       for (const m of unshadowed) m.castShadow = true;
       unshadowed.length = 0;
@@ -403,6 +406,18 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       post.grade.uniforms.uPause!.value = THREE.MathUtils.clamp(k, 0, 1);
       // The viewmodel leaves as the blur comes in (S9.7): a sharp baton under the case note reads as a bug.
       viewScene.visible = k < 0.35;
+    },
+    setSecondWind(o) {
+      post.grade.uniforms.uSecondWind!.value = THREE.MathUtils.clamp(o.grey, 0, 1);
+      if (o.outline <= 0.001) outlines.clear();
+      else {
+        outlines.set(o.meshes);
+        outlines.strength = Math.min(1, o.outline);
+      }
+    },
+    setWhip(dx, dy, k) {
+      const l = Math.hypot(dx, dy) || 1;
+      (post.grade.uniforms.uWhip!.value as THREE.Vector3).set(dx / l, dy / l, THREE.MathUtils.clamp(k, 0, 1));
     },
     setDeath(o) {
       const u = post.grade.uniforms;
