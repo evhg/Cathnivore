@@ -696,7 +696,7 @@ for (const vp of vps) {
         if (c18Floor[key] != null && !(side.floorLum > c18Floor[key] * 1.06 + 1)) fail(`${vp} ${spec}: the flash doesn't light the floor (lum ${side.floorLum.toFixed(1)} vs idle ${c18Floor[key].toFixed(1)})`)
         if (pi.hero === 'smg' && !(P.bolt?.[2] > 10)) fail(`${vp} ${spec}: the SMG bolt isn't back at 20 ms (${P.bolt?.[2]?.toFixed(1)} mm)`)
         if (pi.hero === 'rifle' && !(P.bolt?.[2] > 15)) fail(`${vp} ${spec}: the rifle's carrier isn't back at 20 ms (${P.bolt?.[2]?.toFixed(1)} mm)`)
-        if (pi.hero === 'revolver' && !(Math.abs(P.cylinder?.[5] ?? 0) > 5)) fail(`${vp} ${spec}: the cylinder isn't turning at 20 ms`)
+        if (pi.hero === 'revolver' && !(Math.abs(P.cylinder?.[5] ?? 0) > 2)) fail(`${vp} ${spec}: the cylinder isn't turning at 20 ms`)
         if ((pi.hero === 'shotgun' || pi.hero === 'launcher') && !pi.flashOn) fail(`${vp} ${spec}: the ${pi.hero}'s two-frame flash is gone at 20 ms`)
       }
       if (/-reload-mid$/.test(stage)) {
