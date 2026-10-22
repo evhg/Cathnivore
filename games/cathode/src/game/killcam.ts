@@ -622,7 +622,9 @@ export class KillCam {
     this.joint = joint;
     this.dir.copy(round.vel).normalize();
     const aim = joint === "head" ? target.body.joints.head : target.body.joints.chest;
-    this.flight0 = Math.max(0.5, round.pos.distanceTo(aim));
+    // The whole flight (the range at the trigger pull, when the caller measured it): the push runs on how much of
+    // it is left, so a follow picked up mid-flight is already part-way pushed in.
+    this.flight0 = Math.max(0.5, round.pos.distanceTo(aim), dist);
     this.distance = dist > 0 ? dist : this.flight0;
     this.streak.visible = true;
     this.world.setDrama(0.4);
@@ -651,14 +653,6 @@ export class KillCam {
     const toHer = this.v2.copy(this.dir).negate();
     if (toHer.lengthSq() < 1e-6) toHer.copy(target.body.facing).setY(0);
     toHer.normalize();
-    // His chest's real front, from the shoulders (a falling man turns; the body faces +Z with his left shoulder at
-    // +X, so front = up x (right - left)). Shot from behind, the camera takes her line from his far end instead:
-    // the reverse angle, on his face, with her down the street behind him. The shot is of his face, never his back.
-    const j = target.body.joints;
-    const face = this.v3.subVectors(j.shoulderR, j.shoulderL);
-    face.crossVectors(UP, face).setY(0);
-    if (face.lengthSq() < 1e-4) face.copy(target.body.facing).setY(0);
-    if (face.lengthSq() > 1e-6 && face.normalize().dot(toHer) < -0.2) toHer.negate();
     const c = this.v1.copy(target.body.joints.pelvis);
     c.y = this.groundY(target) + 1.0;
     const D = Math.PI / 180;
@@ -672,9 +666,20 @@ export class KillCam {
       // The whole sweep must be clear: the start, and where 900 ms of orbit back toward her line leaves it.
       let clear = radius;
       for (const sweep of [0, -Math.sign(deg) * KILLCAM.orbit.degS]) {
+        // Cast at the camera itself (out `radius` and up to its 1.4 m), not just level with his hips: a low wall
+        // or a stall's awning can sit between the two.
         const dd = this.tmp.copy(toHer).applyAxisAngle(UP, (deg + sweep) * D);
-        const hit = this.opts.cast?.(c, dd, radius + 0.3) ?? null;
-        if (hit !== null) clear = Math.min(clear, hit - 0.3);
+        const flatHit = this.opts.cast?.(c, dd, radius + 0.3) ?? null;
+        if (flatHit !== null) clear = Math.min(clear, flatHit - 0.3);
+        dd.multiplyScalar(radius);
+        dd.y = KILLCAM.orbit.height - 1.0;
+        const len = dd.length();
+        const hit = this.opts.cast?.(c, dd.divideScalar(len), len + 0.3) ?? null;
+        if (hit !== null) clear = Math.min(clear, ((hit - 0.3) / len) * radius);
+        // And back from the camera to him: a ray that starts inside a box (he fell against a wall) never sees it.
+        const camAt = this.v3.copy(c).addScaledVector(dd, len);
+        const back = this.opts.cast?.(camAt, dd.negate(), len) ?? null;
+        if (back !== null) clear = Math.min(clear, ((len - back - 0.3) / len) * radius);
       }
       if (clear >= radius - 0.01) {
         best = deg;
@@ -861,10 +866,11 @@ export class KillCam {
       // at his head, so the round leads the eye into him.
       const up = this.v1.crossVectors(this.side, this.dir).normalize();
       if (up.y < 0) up.negate();
+      // The 8 deg/s orbit round the line, as a slow swing of the lift (never far enough to slide the round off
+      // the centre line: a 0.4 s flight turns it about 3 degrees).
       const spin = (this.sign * ((B.orbitDegS * Math.PI) / 180) * this.ms) / 1000;
-      const lift = 0.055;
-      const across = 0.03;
-      cam.position.copy(p.pos).addScaledVector(this.dir, -B.back).addScaledVector(up, lift * Math.cos(spin)).addScaledVector(this.side, across + lift * Math.sin(spin));
+      const lift = 0.06;
+      cam.position.copy(p.pos).addScaledVector(this.dir, -B.back).addScaledVector(up, lift * Math.cos(spin)).addScaledVector(this.side, lift * Math.sin(spin));
       this.lookAt.copy(aimPt);
       cam.lookAt(this.lookAt);
       cam.updateMatrixWorld();

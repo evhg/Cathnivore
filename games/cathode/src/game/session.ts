@@ -1228,6 +1228,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     swState();
   }
   /** Second Wind's frame (real time): its clock, the slow motion, the grade, the outlines, the plate and the knee. */
+  let swAvoid: { x: number; y: number; w: number; h: number } | null = null;
   function secondWindFrame(realDt: number): void {
     // A new checkpoint gives the charge back.
     const cp = hud.checkpoint?.() ?? null;
@@ -1263,8 +1264,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       return;
     }
     swLook = secondWind.look();
+    // The vitals' box is read once as Second Wind opens (one layout read, not one a frame).
+    if (!swShown) swAvoid = hud.vitalsBox();
     swShown = true;
-    world.setSecondWind?.({ grey: swLook.grey, outline: swLook.outline, meshes: swMeshes() });
+    world.setSecondWind?.({ grey: swLook.grey, outline: swLook.outline, meshes: swMeshes(), avoid: swAvoid });
     hud.secondWind(swLook.title, swLook.timer);
     // Inside it she can't be killed again: the window is the whole chance.
     if (secondWind.active && vitals.total < 1) {

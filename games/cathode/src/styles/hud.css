@@ -1046,7 +1046,8 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 /* Second Wind: the red outlines show through everything, the vitals cluster's corner too, so its plate goes
    near-opaque for the moment (C17 review: a red figure sat under ARM 35 on the phone). */
 .hud-root.sw-cine .hud-vitals::before {
-  background: radial-gradient(ellipse 70% 75% at 40% 50%, color-mix(in srgb, var(--night) 88%, transparent) 55%, transparent 100%);
+  /* Feathered to nothing at the plate's own edges (no visible box), dense under the numerals. */
+  background: radial-gradient(50% 50% at 50% 50%, color-mix(in srgb, var(--night) 90%, transparent) 50%, transparent 100%);
 }
 
 /* ---- C17 Second Wind (S6.5): the name over the crosshair, a draining line, the one instruction ---- */

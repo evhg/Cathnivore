@@ -132,7 +132,7 @@ export interface World {
    * C17 (S6.5): Second Wind. `grey` 0..0.9 drains the world (flashes keep their colour); `outline` 0..1 draws a red
    * outline round each of `meshes` over the finished frame, through walls.
    */
-  setSecondWind?(o: { grey: number; outline: number; meshes: Iterable<THREE.Mesh> }): void;
+  setSecondWind?(o: { grey: number; outline: number; meshes: Iterable<THREE.Mesh>; avoid?: { x: number; y: number; w: number; h: number } | null }): void;
   /** C17 (S5.3): the kill-cam's whip-pan smear: (dx, dy) the pan's direction on screen, `k` 0..1. */
   setWhip?(dx: number, dy: number, k: number): void;
   /** C17: the bullet follow's heat haze round screen point (x, y) (UV, y up), radius `r` (screen heights), strength `k`. */

@@ -36,6 +36,7 @@ const EdgeShader = {
     uR: { value: 3 },
     uStrength: { value: 1 },
     uFill: { value: 0.08 },
+    uAvoid: { value: new THREE.Vector4(0, 0, 0, 0) },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -49,6 +50,8 @@ const EdgeShader = {
     uniform float uR;
     uniform float uStrength;
     uniform float uFill;
+    // A HUD cluster's box (uv, x0 y0 x1 y1): the line fades out under it, so the vitals read over a man behind them.
+    uniform vec4 uAvoid;
     varying vec2 vUv;
     // --blood-hot (#ff3b55), already in the canvas's sRGB: the pass writes it as is, after the grade.
     const vec3 HOT = vec3(1.0, 0.231, 0.333);
@@ -73,6 +76,10 @@ const EdgeShader = {
       // The rim: full out to 2u, then a soft 1.5 px outer ramp (no stair-steps), and nothing over his own body.
       float rim = max(smoothstep(0.0, 0.75, inner), outer * 0.55) * (1.0 - smoothstep(0.15, 0.85, c));
       float a = max(rim, c * uFill) * uStrength;
+      if (uAvoid.z > uAvoid.x) {
+        vec2 e = min(vUv - uAvoid.xy, uAvoid.zw - vUv) / max(uPx * 24.0, vec2(1e-5));
+        a *= 1.0 - 0.85 * clamp(min(e.x, e.y), 0.0, 1.0);
+      }
       if (a < 0.002) discard;
       gl_FragColor = vec4(HOT, a);
     }`,
@@ -99,6 +106,13 @@ export class Outlines {
   private readonly size = new THREE.Vector2();
   private readonly clear0 = new THREE.Color();
   private readonly twins = new Map<THREE.Mesh, Twin>();
+  /** A screen box (CSS fractions, y down: x, y, w, h) the line fades out under; null for none. */
+  avoid(r: { x: number; y: number; w: number; h: number } | null): void {
+    const v = this.edgeMat.uniforms.uAvoid!.value as THREE.Vector4;
+    if (!r) v.set(0, 0, 0, 0);
+    else v.set(r.x, 1 - (r.y + r.h), r.x + r.w, 1 - r.y);
+  }
+
   /** 0..1: the whole effect's strength (the revive fades it over 200 ms). */
   strength = 0;
   private readonly wanted = new Set<THREE.Mesh>();

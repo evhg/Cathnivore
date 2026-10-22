@@ -412,6 +412,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       if (o.outline <= 0.001) outlines.clear();
       else {
         outlines.set(o.meshes);
+        outlines.avoid(o.avoid ?? null);
         outlines.strength = Math.min(1, o.outline);
       }
     },

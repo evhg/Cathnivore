@@ -170,6 +170,7 @@ export class Hud {
     this.objText = el("span", "hud-objective-text", this.objective);
     // Vitals, bottom left (top left on touch): name and level, hero HP over a segmented bar, armour, XP.
     const vit = el("div", "hud-vitals", tl);
+    this.vitalsEl = vit;
     const name = el("p", "hud-name", vit);
     el("span", "hud-name-text", name).textContent = "Cath Hale";
     this.woundTag = el("span", "hud-wound", name);
@@ -983,6 +984,18 @@ export class Hud {
    * C17 (S5.3) the kill-cam's frame: the 2.39:1 bars (`k` 0..1 of their full height, for the screen's `aspect`) and
    * every cluster stepped back while it runs (k > 0 or the cam is on). Opacity and a scale only.
    */
+  /** The vitals cluster's box as fractions of the viewport (Second Wind's outlines fade out under it). */
+  vitalsBox(): { x: number; y: number; w: number; h: number } | null {
+    const r = this.vitalsEl?.getBoundingClientRect();
+    if (!r || r.width < 1) return null;
+    const W = Math.max(1, innerWidth);
+    const H = Math.max(1, innerHeight);
+    // A little past the cluster, so the numerals at its edge (ARM's value) are clear too.
+    const m = 28;
+    return { x: (r.left - m) / W, y: (r.top - m) / H, w: (r.width + 2 * m) / W, h: (r.height + 2 * m) / H };
+  }
+  private vitalsEl?: HTMLElement;
+
   killcamBars(k: number, aspect: number, caption = 0): void {
     const on = k > 0.001 || aspect > 0;
     this.root.classList.toggle("kc-cine", on && aspect > 0);
