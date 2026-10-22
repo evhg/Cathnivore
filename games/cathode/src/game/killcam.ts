@@ -660,6 +660,7 @@ export class KillCam {
     // The side first: the one a deterministic coin (his id) prefers, then the other; then wider swings.
     const pref = (target.id ?? 0) % 2 === 0 ? 1 : -1;
     const tries = [off * pref, -off * pref, 55 * pref, -55 * pref, 75 * pref, -75 * pref, 20 * pref, -20 * pref];
+    this.triesLog = "";
     let best = tries[0]!;
     let bestClear = -1;
     for (const deg of tries) {
@@ -676,11 +677,16 @@ export class KillCam {
         const len = dd.length();
         const hit = this.opts.cast?.(c, dd.divideScalar(len), len + 0.3) ?? null;
         if (hit !== null) clear = Math.min(clear, ((hit - 0.3) / len) * radius);
+        // The drawn world too: an awning, a facade or a stall's roof has no collider, and a camera inside one
+        // shows a flat grey frame (C17 r3).
+        const meshHit = this.meshCast(c, dd, len + 0.3, target);
+        if (meshHit !== null) clear = Math.min(clear, ((meshHit - 0.3) / len) * radius);
         // And back from the camera to him: a ray that starts inside a box (he fell against a wall) never sees it.
         const camAt = this.v3.copy(c).addScaledVector(dd, len);
         const back = this.opts.cast?.(camAt, dd.negate(), len) ?? null;
         if (back !== null) clear = Math.min(clear, ((len - back - 0.3) / len) * radius);
       }
+      this.triesLog += `${deg}:${clear.toFixed(2)} `;
       if (clear >= radius - 0.01) {
         best = deg;
         bestClear = clear;
@@ -696,6 +702,39 @@ export class KillCam {
     this.sign = best > 0 ? -1 : 1;
     this.anchor.copy(target.body.joints.pelvis).setY(this.groundY(target));
   }
+
+  private readonly ray = new THREE.Raycaster();
+  private readonly rayHits: THREE.Intersection[] = [];
+  /** The nearest drawn, opaque world surface along a ray (not him, nor anything see-through), or null. */
+  private meshCast(from: THREE.Vector3, dir: THREE.Vector3, len: number, target: Enemy): number | null {
+    this.ray.set(from, dir);
+    this.ray.near = 0.05;
+    this.ray.far = len;
+    this.rayHits.length = 0;
+    // Only opaque, static meshes are asked (a sprite's or a line's raycast needs more than a ray, and his own
+    // body, a see-through sheet or the outline twins never block the shot).
+    const skip = new Set<THREE.Object3D>([target.body.root, target.rifle]);
+    const walk = (o: THREE.Object3D) => {
+      if (!o.visible || skip.has(o) || o.name.startsWith("killcam")) return;
+      const m = o as THREE.Mesh;
+      if (m.isMesh && !(m as THREE.SkinnedMesh).isSkinnedMesh && !(m as unknown as THREE.InstancedMesh).isInstancedMesh && m.name !== "outline") {
+        const mat = m.material as THREE.Material;
+        if (mat && !Array.isArray(mat) && !mat.transparent && mat.depthWrite) m.raycast(this.ray, this.rayHits);
+      }
+      for (const c of o.children) walk(c);
+    };
+    walk(this.world.scene);
+    let best: number | null = null;
+    for (const h of this.rayHits) if (best === null || h.distance < best) best = h.distance;
+    return best;
+  }
+
+  /** For the screenshot stages' sidecar: where the orbit stands and why. */
+  frameInfo(): { radius: number; home: number[]; anchor: number[]; cam: number[]; tries: string } {
+    const r = (v: THREE.Vector3) => v.toArray().map((x) => Math.round(x * 100) / 100);
+    return { radius: this.radius, home: r(this.home), anchor: r(this.anchor), cam: r(this.world.camera.position), tries: this.triesLog };
+  }
+  private triesLog = "";
 
   /** The street under him (his feet, or his pelvis on the floor). */
   private groundY(target: Enemy): number {

@@ -4826,6 +4826,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       run(ms);
     }
     hud.killcamBars(killcam.bars, innerWidth / Math.max(1, innerHeight), killcam.captionLevel);
+    if (s.stageInfo) (s.stageInfo as Record<string, unknown>).killcam = killcam.active ? killcam.frameInfo() : null;
     world.setWhip?.(1, 0, killcam.whip);
     arsenal.rig.root.visible = false;
     return "ok";

@@ -340,7 +340,7 @@ const GradeShader = {
     uSecondWind: { value: 0 },
     // C17 (S5.3): the kill-cam's whip-pan smear: xy the direction in uv, z the strength (a 3-tap directional blur).
     uWhip: { value: new THREE.Vector3() },
-    uHaze: { value: new THREE.Vector4() },
+    uHaze: { value: new THREE.Vector4(0, 0, 0, 0) },
     uFocus: { value: new THREE.Vector2(0.5, 0.5) },
   },
   vertexShader: /* glsl */ `
@@ -459,7 +459,7 @@ const GradeShader = {
       // C17 (S5.3): the bullet follow's heat haze. Round the round's screen point (uHaze.xy, radius uHaze.z in
       // screen heights) the street behind shimmers: a ripple running out from it and a wake trailing back toward
       // the lens (down the screen), strength uHaze.w.
-      if ( uHaze.w > 0.001 ) {
+      if ( uHaze.w > 0.001 && uHaze.z > 1e-4 ) {
         vec2 hq = ( uv - uHaze.xy ) * vec2( uRes.x / uRes.y, 1.0 );
         float hd = length( hq );
         float hf = exp( -pow( hd / uHaze.z, 2.0 ) );
