@@ -135,6 +135,8 @@ export interface World {
   setSecondWind?(o: { grey: number; outline: number; meshes: Iterable<THREE.Mesh> }): void;
   /** C17 (S5.3): the kill-cam's whip-pan smear: (dx, dy) the pan's direction on screen, `k` 0..1. */
   setWhip?(dx: number, dy: number, k: number): void;
+  /** C17: the kill-cam depth of field's focal point, in screen UV (0..1, y up); (0.5, 0.5) is the centre. */
+  setFocus?(x: number, y: number): void;
   /** C14 (S9.7): the pause grade, 0..1. */
   setPause?(k: number): void;
   setDeath?(o: { death: number; ink: number; glitch: number; ca: number; grey?: boolean }): void;

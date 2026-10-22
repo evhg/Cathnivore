@@ -1040,6 +1040,16 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 .hud-root.kc-cine .hud-killcap { bottom: calc(var(--kc-h, 12.8vh) * var(--kc-bars, 0) + var(--sp-5)); }
 
 /* ---- C17 Second Wind (S6.5): the name over the crosshair, a draining line, the one instruction ---- */
+/* While it runs, only what the comeback needs stays: the vitals, the ammo, the crosshair and the plate. */
+.hud-root.sw-cine .hud-objective,
+.hud-root.sw-cine .hud-barks,
+.hud-root.sw-cine .hud-feed,
+.hud-root.sw-cine .hud-teach,
+.hud-root.sw-cine .hud-prompt,
+.hud-root.sw-cine .hud-wprompt,
+.hud-root.sw-cine .hud-wp,
+.hud-root.sw-cine .hud-threats { opacity: 0; transition: opacity 160ms var(--ease-out); }
+:root.hud-sw-cine .look-hint { opacity: 0; transition: opacity 160ms var(--ease-out); }
 .hud-sw {
   position: absolute;
   left: 50%;

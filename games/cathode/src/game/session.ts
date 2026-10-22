@@ -448,10 +448,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     xray: o.quality !== "phone" && o.intensity !== "reduced",
     cast: (f, d, l) => rays.cast(f, d, l, { thin: false })?.dist ?? null,
     onCrack: () => audio?.xrayCrack(),
+    onMiss: () => {
+      kcMissUndo?.();
+      kcMissUndo = null;
+    },
   });
   const kcRules = new KillCamRules(loadPrefs().killCams);
   window.addEventListener("cathode:prefs", () => (kcRules.setting = loadPrefs().killCams), lifeOpt);
   let sessionKills = 0;
+  /** Undoes the bullet follow's cooldown if its round misses after all. */
+  let kcMissUndo: (() => void) | null = null;
   /** Kills of this save so far: a save that has levelled or finished a job is long past its first three. */
   const killsThisSave = () => (progress.character.level > 1 || progress.jobsDone.length > 0 ? 99 : sessionKills);
   /** Any input skips the kill-cam after 300 ms (S5.3): keys, clicks and taps, as well as the fire button. */
@@ -470,7 +476,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     kcSkip = false;
     kcWas = true;
     audio?.killcam(true);
-    if (killcam.shot === "bullet") hud.killcamCaption(killcam.distance);
+    if (killcam.caption) hud.killcamCaption(killcam.caption, killcam.distance);
   }
   /** And out: the reverse whoosh, the bars gone, the gun back, the camera on her again. */
   function kcEnd(): void {
@@ -498,7 +504,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     };
     k.finale = !!job && k.last;
     if (kcRules.wouldTrigger(k) !== "bullet") return false;
-    kcRules.kill(k);
+    // Committed at the trigger pull; a round that misses after all hands the cooldown back (killcam.onMiss).
+    kcRules.note(k);
+    const prev = kcRules.commit(k.now);
+    kcMissUndo = () => kcRules.rollback(prev);
+    killcam.caption = k.last ? (k.headshot ? "Last man · Headshot" : "Last man") : "Long shot";
+    killcam.shotDistance = pred.dist;
     return true;
   };
   // C11: the paired takedown (her arms in the street, the camera, the target's body script) and its reward orbs.
@@ -1187,10 +1198,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const swState = () => (s.secondWind = { phase: secondWind.phase, t: secondWind.t, left: secondWind.left });
   swState();
   /** The meshes Second Wind outlines: every live enemy (bystanders never). */
+  const swOut: THREE.Mesh[] = [];
   const swMeshes = (): THREE.Mesh[] => {
-    const out: THREE.Mesh[] = [];
-    for (const e of [...enemies, ...lineup]) if (e.alive && e.kit.role !== "civilian" && e.body.root.visible) out.push(...e.body.outlineMeshes());
-    return out;
+    swOut.length = 0;
+    for (const list of [enemies, lineup])
+      for (const e of list) if (e.alive && e.kit.role !== "civilian" && e.body.root.visible) e.body.outlineMeshes(swOut, o.quality === "phone");
+    return swOut;
   };
   /** The killing blow, taken (S6.5 t = 0): a 140 ms hit-stop, the flare at full, Flesh at 1, the gasp and the drone. */
   function startSecondWind(): void {
@@ -1696,7 +1709,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // C17 (S6.5): Second Wind puts her on one knee: the eye drops 35 cm and the camera rolls 12 degrees.
     if (swLook.drop > 0 || swLook.roll > 0) {
       world.camera.position.y -= swLook.drop;
-      world.camera.rotation.z += (calm || trauma.reducedMotion ? 0.4 : 1) * swLook.roll;
+      world.camera.rotation.z += (trauma.reducedMotion ? 0 : calm ? 0.4 : 1) * swLook.roll;
     }
     // Scope sway: a slow figure-of-eight; held breath (Focus while scoped) all but stills it.
     if (arsenal.scopedIn) {
@@ -3392,7 +3405,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (k.enemy.kit.role === "civilian") continue;
       sessionKills++;
       const last = !k.takedown ? encounterCleared(k.enemy, enemies) : !enemies.some((x) => x !== k.enemy && x.alive && x.state === "combat");
-      const shot = kcRules.kill({
+      const kk = {
         now: performance.now(),
         last,
         headshot: k.headshot,
@@ -3403,8 +3416,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         distance: k.distance,
         killsThisSave: killsThisSave(),
         finale: !!job && last,
-      });
-      if (!shot || o.shot || killcam.active || k.takedown || td.active || dead || secondWind.active || secondWind.phase === "revived") continue;
+      };
+      // Judged first and committed only when the camera really plays: a takedown, a revive or a death that would
+      // have earned one counts toward a multi-kill but never starts the cooldown.
+      const shot = kcRules.wouldTrigger(kk);
+      if (!shot || o.shot || killcam.active || k.takedown || td.active || dead || secondWind.active || secondWind.phase === "revived") {
+        kcRules.note(kk);
+        continue;
+      }
+      kcRules.kill(kk);
+      killcam.caption = last ? (k.headshot ? "Last man · Headshot" : "Last man") : "Multi-kill";
       killcam.startOrbit(k.enemy, eye);
       kcBegin();
       audio?.killcamWhoosh();
@@ -4768,6 +4789,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
     };
     if (kind === "killcam-orbit") {
+      killcam.caption = "Last man · Headshot";
       killcam.startOrbit(g, eye.clone().setY(home.y + player.eyeHeight));
       kcBegin();
       run(ms);
@@ -4784,14 +4806,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const dir = head.clone().sub(eye).normalize();
       const d = eye.distanceTo(head);
       const round = { pos: eye.clone().addScaledVector(dir, Math.min(d - 1.6, 0.08 * ms)), vel: dir.clone().multiplyScalar(800), alive: true };
+      killcam.caption = d > 30 ? "Long shot" : "Last man · Headshot";
+      killcam.shotDistance = d;
       killcam.startBullet(round, g, "head");
-      killcam.distance = d;
       kcBegin();
       killcam.update(0.0001);
       killcam.ms = ms;
     } else {
       const head = g.body.joints.head.clone();
       const dir = head.clone().sub(eye).normalize();
+      // The range is hers to him at the trigger pull (the round starts at his head only for the stage).
+      killcam.caption = "Last man · Headshot";
+      killcam.shotDistance = eye.distanceTo(head);
       killcam.startBullet({ pos: head, vel: dir.multiplyScalar(800), alive: false }, g, "head");
       kcBegin();
       run(ms);

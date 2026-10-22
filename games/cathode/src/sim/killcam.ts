@@ -83,14 +83,32 @@ export class KillCamRules {
 
   /** Records a kill and says which kill-cam it earns, or null. A camera it earns starts the cooldown. */
   kill(k: KillCamKill): KillCamShot | null {
+    this.note(k);
+    const shot = this.judge(k);
+    if (shot) this.commit(k.now);
+    return shot;
+  }
+
+  /**
+   * Records a kill for the multi-kill count only: a kill that earned a camera none could play (a takedown, a
+   * Second Wind revive, a death) never starts the cooldown.
+   */
+  note(k: KillCamKill): void {
     this.recent = this.recent.filter((t) => k.now - t <= KILLCAM.multiWindowMs);
     this.recent.push(k.now);
-    const shot = this.judge(k);
-    if (shot) {
-      this.lastCamAt = k.now;
-      this.recent = [];
-    }
-    return shot;
+  }
+
+  /** A camera started at `now`: the cooldown runs from here. Returns what to hand `rollback` if it never plays. */
+  commit(now: number): number {
+    const prev = this.lastCamAt;
+    this.lastCamAt = now;
+    this.recent = [];
+    return prev;
+  }
+
+  /** A camera that was committed but never showed its kill (the round missed after all): the cooldown is undone. */
+  rollback(prev: number): void {
+    this.lastCamAt = prev;
   }
 
   /** Whether a kill like this would earn one (no side effects): the gate for the bullet follow at the trigger pull. */

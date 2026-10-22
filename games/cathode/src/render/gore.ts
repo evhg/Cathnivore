@@ -283,7 +283,13 @@ void main() {
   vUv = uv;
   vCol = aCol;
   vSeed = aSize.z;
-  vec3 toCam = normalize( cameraPosition - aPos );
+  float camD = length( cameraPosition - aPos );
+  vec3 toCam = ( cameraPosition - aPos ) / max( camD, 1e-4 );
+  // C17: nothing hangs in front of the lens. A puff under a metre from the camera fades out, and none is drawn
+  // wider than a sixth of its distance, so a kill-cam passing through the hanging mist never fills the frame
+  // with a red smear (and a point-blank hit in play keeps its shape instead of becoming a wash).
+  vCol.a *= smoothstep( 0.4, 1.4, camD );
+  float sz = min( aSize.x, camD * 0.16 );
   vec3 wp;
   #ifdef DROP
     // A droplet is a streak along its velocity, longer the faster it flies.
@@ -295,14 +301,14 @@ void main() {
     // Stretched, it also thins (the drop's volume is drawn out), and it never stretches past 2.5x: a falling drop
     // a few frames old is a thin wet line, not a red rod (C9: the deaths read past them).
     float st = min( 1.0 + sp * aSize.y * 40.0, 2.5 );
-    float len = aSize.x * st;
-    wp = aPos + side * position.x * aSize.x * inversesqrt( st ) + axis * position.y * len;
+    float len = sz * st;
+    wp = aPos + side * position.x * sz * inversesqrt( st ) + axis * position.y * len;
   #else
     vec3 right = normalize( cross( vec3( 0.0, 1.0, 0.0 ), toCam ) );
     vec3 up = cross( toCam, right );
     float a = aSize.z * 6.2832;
     vec2 q = vec2( cos( a ) * position.x - sin( a ) * position.y, sin( a ) * position.x + cos( a ) * position.y );
-    wp = aPos + ( right * q.x + up * q.y ) * aSize.x;
+    wp = aPos + ( right * q.x + up * q.y ) * sz;
   #endif
   vec4 mvPosition = viewMatrix * vec4( wp, 1.0 );
   gl_Position = projectionMatrix * mvPosition;

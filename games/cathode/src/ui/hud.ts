@@ -972,6 +972,10 @@ export class Hud {
       el("p", "hud-sw-hint", this.sw).textContent = "Kill one to get up";
     }
     this.sw.classList.toggle("on", a > 0.001);
+    // The moment strips to essentials (like the kill-cam): barks, the objective and the look hint step back;
+    // the vitals and the ammo stay.
+    this.root.classList.toggle("sw-cine", a > 0.001);
+    document.documentElement.classList.toggle("hud-sw-cine", a > 0.001);
     this.prop(this.sw, "--sw-a", a.toFixed(3));
     this.prop(this.swLine!, "--sw-t", Math.max(0, Math.min(1, t)).toFixed(4));
   }
@@ -990,14 +994,14 @@ export class Hud {
     this.prop(this.root, "--kc-h", `${(share * 100).toFixed(2)}vh`);
   }
 
-  /** The kill-cam's lower-third: the range of the shot, in a red-ruled plate. Fades by itself. */
-  killcamCaption(metres: number): void {
+  /** The kill-cam's lower-third: what earned it (by trigger) and the range at the trigger pull. Fades by itself. */
+  killcamCaption(tag: string, metres: number): void {
     if (!this.cap) {
       this.cap = el("p", "hud-killcap", this.root);
       this.cap.setAttribute("aria-hidden", "true");
     }
     this.cap.replaceChildren();
-    el("span", "hud-killcap-tag", this.cap).textContent = "Long shot";
+    el("span", "hud-killcap-tag", this.cap).textContent = tag;
     el("span", "hud-killcap-m", this.cap).textContent = `${Math.round(metres)} m`;
     this.cap.classList.remove("on");
     requestAnimationFrame(() => this.cap?.classList.add("on"));

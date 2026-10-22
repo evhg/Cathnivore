@@ -311,9 +311,11 @@ export class Body {
   }
 
   /** C17 (S6.5): the meshes Second Wind outlines (every LOD's opaque body and the cloth; hidden LODs stay hidden). */
-  outlineMeshes(): THREE.Mesh[] {
-    const out: THREE.Mesh[] = this.lods.map(([o]) => o);
-    if (this.cloth) out.push(this.cloth.mesh);
+  outlineMeshes(out: THREE.Mesh[] = [], bodyOnly = false): THREE.Mesh[] {
+    // The glow half too (visor, stripes): left out, its shapes are holes in the mask that speckle his body red.
+    for (const [o, g] of this.lods) out.push(o, g);
+    // Phone: no tabard (one draw fewer per man; it hangs inside his silhouette's 2u rim anyway).
+    if (this.cloth && !bodyOnly) out.push(this.cloth.mesh);
     return out;
   }
 

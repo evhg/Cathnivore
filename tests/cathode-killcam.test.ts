@@ -23,6 +23,20 @@ describe("CATHODE kill-cam rules (S5.3)", () => {
     expect(new KillCamRules().kill(kill({ headshot: true }))).toBeNull();
   });
 
+  it("a kill noted without a camera never starts the cooldown; a missed bullet follow hands it back", () => {
+    const r = new KillCamRules();
+    const k = kill({ now: 0, last: true, headshot: true });
+    expect(r.wouldTrigger(k)).toBe("orbit");
+    r.note(k);
+    expect(r.cooldownLeft(1)).toBe(0);
+    expect(r.wouldTrigger(kill({ now: 1000, last: true, headshot: true }))).toBe("orbit");
+    const prev = r.commit(2000);
+    expect(r.cooldownLeft(2000)).toBe(KILLCAM.cooldownMs);
+    r.rollback(prev);
+    expect(r.cooldownLeft(2000)).toBe(0);
+    expect(r.kill(kill({ now: 3000, last: true, headshot: true }))).toBe("orbit");
+  });
+
   it("predict() gates the bullet follow", () => {
     expect(new KillCamRules().kill(kill({ last: true, headshot: true, ballistic: true, predicted: true }))).toBe("bullet");
     expect(new KillCamRules().kill(kill({ last: true, headshot: true, ballistic: true, predicted: false }))).toBe("orbit");

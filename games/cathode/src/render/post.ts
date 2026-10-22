@@ -340,6 +340,7 @@ const GradeShader = {
     uSecondWind: { value: 0 },
     // C17 (S5.3): the kill-cam's whip-pan smear: xy the direction in uv, z the strength (a 3-tap directional blur).
     uWhip: { value: new THREE.Vector3() },
+    uFocus: { value: new THREE.Vector2(0.5, 0.5) },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -370,6 +371,7 @@ const GradeShader = {
     uniform float uPause;
     uniform float uSecondWind;
     uniform vec3 uWhip;
+    uniform vec2 uFocus;
     uniform sampler2D tPauseBlur;
     uniform float uInk;
     uniform float uInkGrey;
@@ -496,11 +498,13 @@ const GradeShader = {
         vec2 wd = uWhip.xy * 0.045 * uWhip.z;
         col = mix( col, hdrSafe( ( texture2D( tDiffuse, uv + wd ).rgb + col + texture2D( tDiffuse, uv - wd ).rgb ) * 0.3333 ), min( 1.0, uWhip.z * 1.5 ) );
       }
-      // Kill-cam depth of field: a radial blur that grows away from the centre.
+      // Kill-cam depth of field: a blur that grows away from the focal point (the target's head, uFocus), so the
+      // man stays sharp wherever the shot frames him.
       if ( uDrama > 0.01 ) {
         vec3 acc = col;
         float wsum = 1.0;
-        float rad = uDrama * smoothstep( 0.02, 0.2, r2 ) * 0.012;
+        vec2 fc = ( uv - uFocus ) * vec2( uRes.x / uRes.y, 1.0 ) * 0.75;
+        float rad = uDrama * smoothstep( 0.02, 0.2, dot( fc, fc ) ) * 0.012;
         for ( int i = 0; i < 12; i++ ) {
           float a = float( i ) * 2.39996;
           float rr = sqrt( float( i ) + 0.5 ) / sqrt( 12.0 );
@@ -521,7 +525,7 @@ const GradeShader = {
       float sat = ( maxc - minc ) / max( maxc, 1e-4 );
       // Keep saturation where it's strong AND bright (neon); drain it from midtones.
       float keep = smoothstep( 0.35, 0.85, sat ) * smoothstep( 0.02, 0.4, lum );
-      float desat = mix( 0.55, 1.0, keep ) * ( 1.0 - uDrama * 0.85 );
+      float desat = mix( 0.55, 1.0, keep ) * ( 1.0 - uDrama * 0.55 );
       col = mix( vec3( lum ), col, desat );
       // C17: what Second Wind leaves in colour: a muzzle flash (bright, saturated, warm), nothing else.
       float swHot = uSecondWind > 0.001 ? smoothstep( 1.2, 3.2, lum ) * smoothstep( 0.2, 0.55, sat ) * step( col.b * 1.15, col.r ) : 0.0;

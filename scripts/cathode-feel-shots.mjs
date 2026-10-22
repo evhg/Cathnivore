@@ -441,7 +441,7 @@ for (const vp of vps) {
     const f0 = await page.evaluate(() => window.cathode.stats.frames)
     const cls = await page.evaluate(([s, tt]) => window.cathode.stage(s, tt), [stage, t])
     // SwiftShader draws about one frame a second: let two frames land so the HUD shows the stage.
-    await page.waitForFunction((f) => window.cathode.stats.frames >= f + 3, f0, { timeout: 120_000 })
+    await page.waitForFunction((f) => window.cathode.stats.frames >= f + 3, f0, { timeout: 600_000 })
     await page.waitForTimeout(300)
     const file = `${out}/c-${stage}${at ? `-${at}` : ''}-${vp}`
     await page.screenshot({ path: `${file}.png`, timeout: 300_000 })

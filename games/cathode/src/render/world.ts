@@ -415,6 +415,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
         outlines.strength = Math.min(1, o.outline);
       }
     },
+    setFocus(x, y) {
+      (post.grade.uniforms.uFocus!.value as THREE.Vector2).set(x, y);
+    },
     setWhip(dx, dy, k) {
       const l = Math.hypot(dx, dy) || 1;
       (post.grade.uniforms.uWhip!.value as THREE.Vector3).set(dx / l, dy / l, THREE.MathUtils.clamp(k, 0, 1));
