@@ -239,7 +239,8 @@ export interface Session {
   /** C7 acceptance: the frame's histogram and the edge-to-centre saturation, now and with the wound grade off. */
   probeWound?: () => { hist: number[]; now: { centre: number; edge: number }; fine: { centre: number; edge: number }; lens: number; glove: number; w: number; pulse: number };
   /** C8 acceptance: blood-red pixels in the rendered frame (hue 350..10, saturation > 0.6, value > 0.25). */
-  probeBloodRed?: () => { red: number; total: number };
+  /** Blood-red pixels in the world (no viewmodel): the whole frame, or a disc (CSS px) round a body. */
+  probeBloodRed?: (x?: number, y?: number, r?: number) => { red: number; total: number };
   /** C7: a stim's screen and sound (the wash, the slower heart, the lens wiped), as the Stim skill plays them. */
   stim?: () => void;
   /** C7 acceptance: the grade pass's mean ms with the Vitals pass idle and at its busiest. */
@@ -6302,7 +6303,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
     return { bright: bright / Math.max(1, total), red: red / Math.max(1, total), total, maxLum };
   };
-  s.probeBloodRed = () => {
+  s.probeBloodRed = (cx?: number, cy?: number, cr?: number) => {
     const c = world.renderer.domElement;
     const cv = document.createElement("canvas");
     cv.width = c.width;
@@ -6316,7 +6317,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.viewScene.visible = vmWas;
     const px = g2.getImageData(0, 0, cv.width, cv.height).data;
     let red = 0;
+    let total = 0;
+    const kk = cv.width / Math.max(1, c.clientWidth);
+    const disc = cx !== undefined && cy !== undefined && cr !== undefined;
     for (let i = 0; i < px.length; i += 4) {
+      if (disc) {
+        const q = i / 4;
+        const dx = (q % cv.width) / kk - cx;
+        const dy = Math.floor(q / cv.width) / kk - cy;
+        if (dx * dx + dy * dy > cr * cr) continue;
+      }
+      total++;
       const r = px[i]! / 255;
       const g = px[i + 1]! / 255;
       const b = px[i + 2]! / 255;
@@ -6327,7 +6338,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const h = (60 * (g - b)) / (mx - mn);
       if (h <= 10 && h >= -10) red++;
     }
-    return { red, total: px.length / 4 };
+    return { red, total };
   };
   s.probeWound = () => {
     const c = world.renderer.domElement;

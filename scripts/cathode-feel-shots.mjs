@@ -1009,8 +1009,12 @@ for (const vp of vps) {
         if ((sv.severed ?? []).length) fail(`${vp} ${spec}: severed ${sv.severed.join(', ')} under reduced violence`)
         if (sv.caps > 0) fail(`${vp} ${spec}: ${sv.caps} gore caps under reduced violence`)
         if (stage === 'reduced-mode-death' && info.variant !== 'blownback') fail(`${vp} ${spec}: died as ${info.variant}, not the knockdown (blownback)`)
-        const r = await page.evaluate(() => window.cathode.probeBloodRed())
-        console.log(`  C19 ${vp} ${spec}: hue probe ${r.red} blood-red pixels of ${r.total}`)
+        // Round the body (2.5 m on screen): the street's red tail lights and neon are not blood.
+        const c = info.corpse.chest
+        const p = info.corpse.pelvis
+        const rad = Math.max(60, Math.hypot(info.corpse.head.x - p.x, info.corpse.head.y - p.y) * 2.2)
+        const r = await page.evaluate(([x, y, rr]) => window.cathode.probeBloodRed(x, y, rr), [(c.x + p.x) / 2, (c.y + p.y) / 2, rad])
+        console.log(`  C19 ${vp} ${spec}: hue probe ${r.red} blood-red pixels of ${r.total} within ${rad.toFixed(0)} px of the body`)
         if (r.red > 0) fail(`${vp} ${spec}: ${r.red} blood-red pixels under reduced violence`)
       } else {
         const want = stage === 'sever-head' ? 'head' : 'forearmL'
