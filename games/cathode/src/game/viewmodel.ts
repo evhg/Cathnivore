@@ -319,7 +319,7 @@ function starTexture(): THREE.DataTexture {
 function heroFlash(kind: FlashKind, size: number, muzzle: THREE.Object3D, root: THREE.Object3D, rear?: THREE.Vector3, phone = false): THREE.Object3D {
   // The phone's lifted grade (exposure 1.7) and its extra frame blew a one-frame star into a white sheet over the
   // middle of a small screen: smaller and dimmer there.
-  const pk = phone ? 0.42 : 1;
+  const pk = phone ? 0.32 : 1;
   if (phone) size *= 0.8;
   const g = new THREE.Group();
   g.name = "flash";

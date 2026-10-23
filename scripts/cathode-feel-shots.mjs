@@ -83,8 +83,9 @@ const C17 = ['player-secondwind', 'killcam-orbit-500', 'killcam-bullet-200', 'xr
 // C18 "Every gun is a hero": each class at rest, 20 ms after its shot (the flash on the wet street probed) and
 // mid-reload, and the seven guns side by side.
 const C18_GUNS = ['revolver', 'smg', 'rifle', 'shotgun', 'sniper', 'launcher']
-const C18 = [...C18_GUNS.flatMap((g) => [`${g}-idle`, `${g}-fire@20`, `${g}-reload-mid`]), 'arsenal-lineup']
-const C18X = C18_GUNS.flatMap((g) => [`${g}-ads`, `${g}-reload-empty@${g === 'shotgun' ? 300 : 1500}`, `${g}-fire@0`])
+// fire@0 too: at 20 ms the one-frame class flash (S2.3) has gone on a 60 fps desktop, so its shape is judged at 0.
+const C18 = [...C18_GUNS.flatMap((g) => [`${g}-idle`, `${g}-fire@0`, `${g}-fire@20`, `${g}-reload-mid`]), 'arsenal-lineup']
+const C18X = C18_GUNS.flatMap((g) => [`${g}-ads`, `${g}-reload-empty@${g === 'shotgun' ? 300 : 1500}`])
 const MS = { C18, C18X, C17, C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).

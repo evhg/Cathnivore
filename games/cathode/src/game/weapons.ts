@@ -133,6 +133,8 @@ export class Arsenal {
   private boltLeft = 0;
   private swingT = -1;
   private flashT = 0;
+  /** A running estimate of the frame time (s), for S2.3's flash frame count. */
+  private frameDt = 1 / 60;
   /** Alt-fire in progress: shots still queued, the cycle they fire at, how wide, how many barrels. */
   private altQueue = 0;
   private altCycle = 0;
@@ -480,15 +482,19 @@ export class Arsenal {
     this.recPos.shove(0, impulseForPeak(R.pos, sh.y * m), impulseForPeak(R.pos, sh.z * m));
     this.recRot.shove(impulseForPeak(R.rot, sh.pitchDeg * DEG * m), impulseForPeak(R.rot, 0.5 * DEG * side * m), impulseForPeak(R.rot, sh.rollDeg * DEG * side * m));
     this.heat.shot();
-    const frames = f.flash.frames + (this.phone ? 1 : 0);
-    this.flashT = (frames * 16.7) / 1000;
+    // S2.3 counts rendered frames: one at 50 fps or above (two below), whatever the device; the shotgun's and the
+    // launcher's own two. Half a frame short, so the timer runs out on the frame after the last one.
+    const frames = f.flash.frames + (this.frameDt > 1 / 50 ? 1 : 0);
+    this.flashT = (frames - 0.5) * this.frameDt;
     const r = this.rig;
     r.root.updateMatrixWorld(true);
     const mz = r.muzzle.getWorldPosition(this.pA);
     const pt = r.port.getWorldPosition(this.pB);
     const fwd = this.sV.set(0, 0, -1).transformDirection(r.root.matrixWorld);
     this.smoke.puff(mz, pt, fwd, this.heat.smokeMul * (f.model === "shotgun" || f.model === "launcher" ? 2 : 1));
-    this.flash.position.copy(mz).addScaledVector(fwd, 0.03);
+    // Phone: 3 cm out, the inverse-square light burned the barrel's own faces white and the phone's blur spread
+    // them into a glowing square over the street (C18 review). Out 12 cm it lights the gun and gloves evenly.
+    this.flash.position.copy(mz).addScaledVector(fwd, this.phone ? 0.12 : 0.03);
   }
 
   /** The hero clip posing the gun this frame (reload or draw) with its weight; a cut clip eases out. */
@@ -1035,9 +1041,13 @@ export class Arsenal {
     this.meleeNow = false;
     if (this.raising > 0) this.raising = Math.max(0, this.raising - dt);
     this.flashT = Math.max(0, this.flashT - dt);
-    // The Kestrel's can: a small warm light for 40 ms (S2.3), not the open guns' blaze.
+    if (dt > 0) this.frameDt += (Math.min(dt, 0.1) - this.frameDt) * 0.1;
+    // The Kestrel's can: a small warm light for 40 ms (S2.3), not the open guns' blaze. A hero class lights the gun
+    // by its own flash (S2.6's `light`, 8 is the old 6); on a phone at 30%, or its lifted grade blows the gun and
+    // gloves flat white-orange (C18 review).
     const can = def.id === "kestrel";
-    this.flash.intensity = this.flashT > 0 ? (can ? KF.puff.vmLight * (this.phone ? KF.puff.phoneLightMul : 1) : this.phone ? 3 : 6) : 0;
+    const open = this.hero ? this.hero.flash.light * 0.75 : 6;
+    this.flash.intensity = this.flashT > 0 ? (can ? KF.puff.vmLight * (this.phone ? KF.puff.phoneLightMul : 1) : open * (this.phone ? 0.3 : 1)) : 0;
     this.flash.distance = can ? KF.puff.vmRangeM : 1.2;
     const pistol = this.kestrel;
     if (pistol && this.rm.active) {

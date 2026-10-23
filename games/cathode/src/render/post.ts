@@ -792,6 +792,10 @@ export function createPost(
     .replace("void main() {", `${SANITIZE}\nvoid main() {`)
     .replace("vec4 texel = texture2D( tDiffuse, vUv );", "vec4 texel = texture2D( tDiffuse, vUv ); texel.rgb = hdrSafe( texel.rgb );");
   hp.needsUpdate = true;
+  // Phone: the bloom runs at half of a reduced render, so its two widest mips are 1/64 of the screen or less. A
+  // flash there bloomed as hard square blocks and a brown veil over half the frame (C18 review): keep the tight
+  // mips, fade the wide ones.
+  if (quality === "phone") (bloom.compositeMaterial.uniforms.bloomFactors as { value: number[] }).value = [1.0, 0.8, 0.42, 0.12, 0.03];
   composer.addPass(bloom);
   const grade = new ShaderPass(GradeShader);
   grade.uniforms.uBloodTex!.value = lensBloodTexture();
