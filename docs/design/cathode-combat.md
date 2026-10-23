@@ -335,7 +335,7 @@ Mixing:
   - `spine2`, `clavicleL`, `clavicleR`, `wristL`, `wristR`.
   - New segments `upperChest`, `handL` and `handR`.
   - The ragdoll `LINKS` table gains matching links and bracing.
-  - `jaw` is deferred to C19.
+  - `jaw` (C19) is a hinge carried by the head bone, not a rig joint: only a severed head shows it (it drops open and swings as the head tumbles, `game/body.ts` `JAW`), so the ragdoll's links don't change.
 - **Parts library** (`models/parts.ts`, pure, cached by parameters):
 
   | Part | Built from |

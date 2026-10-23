@@ -35,7 +35,7 @@ export const CAP = {
    * The emissive lift on every cap (x base colour) and the glow gain on the cyber ring. Over S4.5's 0.18 for the puff:
    * a cap is a few centimetres across and must read as wet meat and bone in the noir grade, not a dark disc (C19 review).
    */
-  lift: 0.42,
+  lift: 0.62,
   /** The cap is drawn this much over the cut's own radius: the meat and the rolled-back suit swell out of the cut. */
   viewScale: 1.22,
   glow: 2.2,

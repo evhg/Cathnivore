@@ -6073,6 +6073,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           obj.updateWorldMatrix(true, false);
           return { p: new THREE.Vector3().setFromMatrixPosition(obj.matrixWorld), n: new THREE.Vector3().setFromMatrixColumn(obj.matrixWorld, 1).normalize() };
         };
+        const J = g.body.joints;
         const S = cut.stump ? capOf(cut.stump) : null;
         const P = capOf(cut.piece);
         const vw = world.renderer.domElement.clientWidth;
@@ -6090,9 +6091,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           let k = 0;
           if (nx < 0.08 || nx > 0.92 || ny < 0.16 || ny > 0.78) k += 3 + Math.max(0.08 - nx, nx - 0.92, 0.16 - ny, ny - 0.78, 0) * 10;
           const dc = Math.hypot(x - vw / 2, y - vh / 2);
-          if (dc < ringR) k += 2 * (1 - dc / ringR);
+          if (dc < ringR) k += 4 * (1 - dc / ringR);
           if (nx > 0.47 && ny > 0.5) k += 2;
           return k;
+        };
+        const vr = new THREE.Vector3();
+        const ringOnly = (p: THREE.Vector3) => {
+          vr.copy(p).project(world.camera);
+          if (vr.z > 1) return 0;
+          const dc = Math.hypot(((vr.x + 1) / 2) * vw - vw / 2, ((1 - vr.y) / 2) * vh - vh / 2);
+          return dc < ringR ? 3 * (1 - dc / ringR) : 0;
         };
         const from = focus.clone().setY(ground(focus.x, focus.z) + 1.2);
         const here = player.pos.clone();
@@ -6106,13 +6114,23 @@ export async function startSession(o: SessionOptions): Promise<Session> {
             player.pos.y = ground(player.pos.x, player.pos.z);
             cutAim = { yaw: 0, pitch: 0 };
             frameOn();
-            // The caps face her: the stump's counts most (it is the gore beat that stays), the piece's after it.
-            const face = (S ? S.n.dot(v3.subVectors(eye, S.p).normalize()) : 0) + 0.6 * P.n.dot(v3.subVectors(eye, P.p).normalize());
+            // The caps face her: the stump's counts most (it is the gore beat that stays), the piece's after it. A cap
+            // behind his own body counts against the view (C19: the stump sat behind his chest).
+            const seen = (c: { p: THREE.Vector3; n: THREE.Vector3 }) => {
+              const to = v3.subVectors(c.p, eye);
+              const dd = to.length();
+              const hit = g.body.raycast(eye, to.normalize(), dd);
+              if (hit && hit.dist < dd - 0.09) return -1;
+              return c.n.dot(v3.subVectors(eye, c.p).normalize());
+            };
+            const face = (S ? 1.4 * seen(S) : 0) + 0.6 * seen(P);
             for (let yo = -0.5; yo <= 0.5001; yo += 0.0625) {
               for (const po of [-0.16, -0.08, 0, 0.08]) {
                 cutAim = { yaw: yo, pitch: po };
                 frameOn();
-                const pen = (S ? miss(S.p) : 0) + miss(P.p) + 0.5 * miss(g.body.joints.chest) + 0.3 * miss(g.body.joints.pelvis);
+                // (His carbine leaves his hands on the shot, at the point of aim: it must not sit in the ring either.)
+                const gun = g.drop ? ringOnly(v3.addVectors(g.drop.a, g.drop.b).multiplyScalar(0.5)) : 0;
+                const pen = (S ? miss(S.p) : 0) + miss(P.p) + 0.5 * miss(g.body.joints.chest) + 0.3 * miss(g.body.joints.pelvis) + gun + 0.25 * (miss(J.kneeL) + miss(J.kneeR) + miss(J.footL) + miss(J.footR));
                 const score = face * 1.5 - pen - Math.abs(yo) * 0.2 - (dist - want) * 0.3;
                 if (!best || score > best.score) best = { score, pos: player.pos.clone(), aim: cutAim };
               }
@@ -6490,7 +6508,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           const mx = Math.max(r, gg, b);
           const mn = Math.min(r, gg, b);
           if (gg > r * 1.3 && b > r * 1.3 && mx > 0.3) cyan++;
-          else if (mx > 0.38 && r >= b && (mx - mn) < 0.55 * mx) pale++;
+          // (Warm: bone and fat, not the grey of the cut suit.)
+          else if (mx > 0.38 && r >= gg && r > b * 1.08 && (mx - mn) < 0.55 * mx) pale++;
           else if (mx === r && mx > 0.12 && mx - mn > 0.5 * mx) flesh++;
         }
       }

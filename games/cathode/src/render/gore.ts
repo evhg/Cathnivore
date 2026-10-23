@@ -51,6 +51,8 @@ export const SEVER_FX = {
   flyMin: 4,
   flyMax: 8,
   flyUp: 1.5,
+  /** And out from his centre line, across the round (m/s), so the cut opens up between the stump and the piece. */
+  flyOut: 2.5,
   spinMin: 10,
   spinMax: 20,
   /** The stump spurts for 1.5 s on a 2 Hz heartbeat: four pulses at these amplitudes, 6 droplets a pulse. */

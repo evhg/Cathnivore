@@ -1025,6 +1025,9 @@ export class Body {
       const jaw = this.segs.get("head")!.group.getObjectByName("jaw");
       if (jaw) jaw.rotation.x = JAW.open * (1 - Math.exp(-t / JAW.tauS) * Math.cos(t * JAW.ringHz * Math.PI * 2));
     }
+    // (Verlet carries its velocity in the last step: a frozen frame (dt 0, a screenshot stage's or a hit-stop) must not
+    // step the pieces, or they fly on through the freeze; C19 review: the piece drifted into the reticle.)
+    if (dt <= 0) return;
     for (const s of this.segs.values()) {
       const l = s.loose;
       if (!l) continue;

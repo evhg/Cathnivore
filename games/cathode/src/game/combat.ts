@@ -646,6 +646,11 @@ export class Combat {
       const fly = dir.clone().multiplyScalar(SEVER_FX.flyMin + (SEVER_FX.flyMax - SEVER_FX.flyMin) * Math.min(1, 0.4 + brutal * 0.6)).add(new THREE.Vector3(0, SEVER_FX.flyUp, 0));
       // A forearm hit takes the forearm (and the hand); the hand alone stays a forearm sever (the stump needs bone).
       const cut = segName.startsWith("hand") ? segName.replace("hand", "forearm") : segName;
+      // The piece is levered out away from his body as well (C19 review: the round throws the whole man back as fast as
+      // the piece, and the two flew together, the cut never opening up): outward from his centre line, across the round.
+      const out = new THREE.Vector3().subVectors(point, e.body.joints.chest);
+      out.addScaledVector(dir, -out.dot(dir)).setY(0);
+      if (out.lengthSq() > 1e-6) fly.addScaledVector(out.normalize(), SEVER_FX.flyOut);
       severed.push(...e.body.sever(cut, fly, SEVER_FX.spinMin + Math.random() * (SEVER_FX.spinMax - SEVER_FX.spinMin)));
       const lc = e.body.lastCut;
       if (severed.length && lc) this.world.fx.sever?.({ stump: lc.stump, piece: lc.piece, point, dir, weaponCls: w.weaponClass, cyber: lc.cyber });
