@@ -87,7 +87,7 @@ export const SLICE_WEAPONS: WeaponDef[] = [
   { id: "oldTestament", name: "Old Testament", model: "revolver", weaponClass: "revolver", kind: "hitscan", damage: 62, pellets: 1, cycle: 0.45, mag: 6, reserve: 36, reload: 2.2, spread: [0.02, 0.003], noise: 55, kick: 2.0, range: 80, brutal: 0.5 },
   { id: "rattlecan", name: "Rattlecan", model: "smg", weaponClass: "smg", kind: "hitscan", damage: 15, pellets: 1, cycle: 0.075, mag: 30, reserve: 150, reload: 1.8, spread: [0.04, 0.016], noise: 40, kick: 0.5, range: 45 },
   { id: "corridorAR", name: "Corridor AR", model: "rifle", weaponClass: "rifle", kind: "hitscan", damage: 24, pellets: 1, cycle: 0.11, mag: 30, reserve: 120, reload: 2.1, spread: [0.03, 0.006], noise: 60, kick: 0.9, range: 120 },
-  { id: "bargainBin", name: "Bargain Bin", model: "launcher", weaponClass: "launcher", kind: "hitscan", damage: 140, pellets: 1, cycle: 0.9, mag: 4, reserve: 12, reload: 3.2, spread: [0.02, 0.004], noise: 90, kick: 2.6, range: 140, blast: 5, brutal: 1 },
+  { id: "bargainBin", name: "Bargain Bin", model: "launcher", weaponClass: "launcher", kind: "hitscan", damage: 190, pellets: 1, cycle: 0.9, mag: 1, reserve: 12, reload: 2.6, spread: [0.02, 0.004], noise: 90, kick: 2.6, range: 140, blast: 5, brutal: 1 },
   { id: "nightShift", name: "Night Shift", model: "blade", weaponClass: "melee", kind: "melee", damage: 75, pellets: 1, cycle: 0.4, mag: 0, reserve: 0, reload: 0, spread: [0, 0], noise: 2, kick: 0, range: 2.0, brutal: 0.8 },
   { id: "repossessor", name: "Repossessor", model: "sledge", weaponClass: "melee", kind: "melee", damage: 150, pellets: 1, cycle: 1.0, mag: 0, reserve: 0, reload: 0, spread: [0, 0], noise: 10, kick: 0, range: 2.4, brutal: 1 },
   { id: "candorSeeker", name: "Candor Seeker", model: "smg", weaponClass: "smart", kind: "hitscan", damage: 17, pellets: 1, cycle: 0.14, mag: 24, reserve: 120, reload: 2.0, spread: [0.05, 0.02], noise: 45, kick: 0.5, range: 120 },
@@ -922,8 +922,9 @@ export class Arsenal {
       case "smg":
       case "rifle":
       case "smart":
-      case "launcher":
         return "burst";
+      // C18: the Bargain Bin is a single break-open tube, so its alt is a hot load, not a burst.
+      case "launcher":
       case "sniper":
         return "charge";
       case "revolver":
@@ -980,8 +981,7 @@ export class Arsenal {
       this.altCycle = this.weapon.cycle * 1.4;
     } else if (kind === "burst") {
       const wc = this.weapon.weaponClass;
-      this.altQueue = Math.min(h.ammo, wc === "rifle" || wc === "smart" ? 5 : wc === "launcher" ? 2 : 3);
-      if (wc === "launcher") this.altCycle = this.weapon.cycle * 0.35;
+      this.altQueue = Math.min(h.ammo, wc === "rifle" || wc === "smart" ? 5 : 3);
     } else if (kind === "fan") {
       this.altQueue = h.ammo;
       this.altCycle = this.weapon.cycle * 0.22;

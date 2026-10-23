@@ -199,11 +199,11 @@ export const WEAPON_BASES: Readonly<Record<string, WeaponBase>> = Object.fromEnt
       adsTime: 0.35, zoom: 6, sway: 0.7, altFire: { type: "zoom", description: "Toggle thermal.", zoom: 6 },
       lore: "Integrally suppressed, subsonic. Made for rooftops." }),
     // Launchers.
-    base({ id: "bargainBin", name: "Bargain Bin", cls: "launcher", level: 4, damage: 110, fireRate: 1, magazine: 6, reload: 3.5, spread: 1.5,
+    base({ id: "bargainBin", name: "Bargain Bin", cls: "launcher", level: 4, damage: 150, fireRate: 1, magazine: 1, reload: 2.6, spread: 1.5,
       recoil: pattern([0.5, 5.0]), falloff: { start: 60, end: 120, min: 0.8 }, range: 120, noise: 140, velocity: 70, pellets: 1,
       pierce: 0.3, damageType: "kinetic", requirements: { grit: 25, wire: 20 }, maxSockets: 3, twoHanded: true, adsTime: 0.35,
       altFire: { type: "remote", description: "Grenades stick and detonate on release.", radius: 4 },
-      lore: "Six-shot drum grenade launcher, bought by the kilo." }),
+      lore: "A break-open 40 mm tube, one round at a time, bought by the kilo." }),
     base({ id: "lastOrders", name: "Last Orders", cls: "launcher", level: 16, damage: 260, fireRate: 0.5, magazine: 1, reload: 3.0, spread: 0.5,
       recoil: pattern([0.3, 7.0]), falloff: { start: 150, end: 300, min: 0.8 }, range: 300, noise: 200, velocity: 120, pellets: 1,
       pierce: 0.5, damageType: "incendiary", requirements: { grit: 35, wire: 30 }, maxSockets: 3, twoHanded: true, adsTime: 0.45,

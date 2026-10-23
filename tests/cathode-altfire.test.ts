@@ -90,12 +90,12 @@ describe("CATHODE alt-fires, heavy weapons", () => {
     }
     expect(dmg).toBeCloseTo(140 * 1.6);
   });
-  it("the launcher fires two grenades and the smart gun five rounds", () => {
+  it("the single-shot launcher's alt is one hot round and the smart gun fires five", () => {
     const a = new Arsenal(new THREE.Scene());
     a.equip(idx("bargainBin"));
     run(a, 0.5);
     expect(a.altFire()).toBe(true);
-    expect(run(a, 2)).toBe(2);
+    expect(run(a, 2)).toBe(1);
     a.equip(idx("candorSeeker"));
     run(a, 0.5);
     expect(a.altFire()).toBe(true);

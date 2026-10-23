@@ -49,7 +49,8 @@ describe("C18 the hero guns in hand", () => {
     it(`${m}: a reload seats at its commit and leaves the parts at rest`, () => {
       const { a, tick } = setup(IDS[m]!);
       const h = a.held[a.current]!;
-      h.ammo = 1;
+      // The single-shot launcher is full at 1: it reloads from empty.
+      h.ammo = h.mag > 1 ? 1 : 0;
       a.reload();
       expect(a.cr?.active).toBe(true);
       let t = 0;
