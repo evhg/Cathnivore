@@ -3590,6 +3590,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const c4Stage = (name: string, tMs: number): string => {
     staged = true;
     if (gunLineup) gunLineup.visible = false;
+    if (streetVmEnv) world.viewScene.environment = streetVmEnv;
+    hud.review(false);
     arsenal.hideGun = false;
     hud.freeze(null);
     hud.clearFeedback();
@@ -3722,46 +3724,143 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     hud.freeze(tMs);
     return "ok";
   };
-  /** The seven guns on their left flanks in two columns, lit by the viewmodel's own lights (the family read). */
+  /**
+   * The seven guns on their left flanks, one real-world scale, as an armoury plate (C18 review: the HUD sat over
+   * it, the scales lied and the guns went black): handguns and the SMG on the left, long guns on the right, each
+   * with its name, under a studio key, a warm top rim and a cool kick, with a studio softbox swapped in for the
+   * viewmodel's reflections so the Cerakote, the bronze and the faction plates read.
+   */
+  let lineupEnv: THREE.Texture | null = null;
+  let streetVmEnv: THREE.Texture | null = null;
+  const LINEUP: [GunModel, string, number][] = [
+    // model, name, column (0 handguns, 1 long guns)
+    ["pistol", "KESTREL 9", 0],
+    ["revolver", "OLD TESTAMENT", 0],
+    ["smg", "RATTLECAN", 0],
+    ["rifle", "CORRIDOR AR", 1],
+    ["shotgun", "FISHMONGER", 1],
+    ["sniper", "WIDOWMAKER", 1],
+    ["launcher", "BARGAIN BIN", 1],
+  ];
+  const nameTag = (text: string): THREE.Mesh => {
+    const c = document.createElement("canvas");
+    c.width = 1024;
+    c.height = 96;
+    const g = c.getContext("2d");
+    if (g) {
+      g.font = '600 52px "Cathode UI", "Cathode UI Fallback", sans-serif';
+      g.textBaseline = "middle";
+      (g as unknown as { letterSpacing: string }).letterSpacing = "8px";
+      g.fillStyle = "#3fe0ff";
+      g.fillRect(0, 30, 4, 36);
+      g.fillStyle = "rgba(236, 232, 226, 0.92)";
+      g.fillText(text, 26, 50);
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 96 / 1024), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false }));
+    m.name = `tag:${text}`;
+    return m;
+  };
+  const studioEnv = (): THREE.Texture => {
+    if (lineupEnv) return lineupEnv;
+    const room = new THREE.Scene();
+    room.background = new THREE.Color(0x050608);
+    const box = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 6), new THREE.MeshBasicMaterial({ color: 0x0b0c10, side: THREE.BackSide }));
+    room.add(box);
+    const panel = (c: number, k: number, p: [number, number, number], sz: [number, number, number]) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(...sz), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(k) }));
+      m.position.set(...p);
+      room.add(m);
+    };
+    // A big softbox behind the camera and above (what the flanks face), a strip over the top, a cyan kick behind.
+    panel(0xfff4ea, 1.1, [-0.6, 1.3, 2.95], [2.2, 1.0, 0.05]);
+    panel(0xffd8b0, 2.4, [0, 1.95, 0.4], [4.2, 0.05, 0.6]);
+    panel(0x3fe0ff, 2.2, [2.0, 0.4, -2.95], [1.2, 2.2, 0.05]);
+    panel(0x8090a8, 0.5, [0, -1.95, 1.2], [5, 0.05, 2.5]);
+    const gen = new THREE.PMREMGenerator(world.renderer);
+    lineupEnv = gen.fromScene(room, 0.03).texture;
+    gen.dispose();
+    return lineupEnv;
+  };
   const lineupStage = (): string => {
     arsenal.hideGun = true;
     arsenal.rig.root.visible = false;
+    hud.review(true);
     if (!gunLineup) {
       gunLineup = new THREE.Group();
       gunLineup.name = "arsenal-lineup";
-      // A studio plate behind them: a charcoal sweep, lighter at the top, so the family reads on its own.
-      const plate = new THREE.Mesh(new THREE.PlaneGeometry(6, 3.4), new THREE.ShaderMaterial({
+      // A studio plate behind them: a graphite sweep, a soft pool of light behind each column, a dark vignette.
+      const plate = new THREE.Mesh(new THREE.PlaneGeometry(9, 5), new THREE.ShaderMaterial({
         depthWrite: false,
         vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-        fragmentShader: "varying vec2 vUv; void main() { float r = length((vUv - vec2(0.45, 0.62)) * vec2(1.6, 1.0)); vec3 c = mix(vec3(0.034, 0.036, 0.044), vec3(0.004, 0.004, 0.006), smoothstep(0.0, 0.85, r)); gl_FragColor = vec4(c, 1.0); }",
+        fragmentShader: "varying vec2 vUv; void main() { vec2 p = (vUv - 0.5) * vec2(1.8, 1.0); float a = exp(-dot(p - vec2(-0.2, 0.06), p - vec2(-0.2, 0.06)) * 9.0); float b = exp(-dot(p - vec2(0.22, 0.04), p - vec2(0.22, 0.04)) * 7.0); float v = smoothstep(1.1, 0.2, length(p)); vec3 c = vec3(0.0025, 0.0027, 0.0034) + vec3(0.011, 0.0115, 0.0135) * v + vec3(0.012, 0.0115, 0.011) * (a + b); gl_FragColor = vec4(c, 1.0); }",
       }));
-      plate.position.set(0, 0, -2.2);
+      plate.position.set(0, 0, -2.6);
       plate.renderOrder = -1;
       gunLineup.add(plate);
-      const order: [GunModel, number, number, number][] = [
-        // model, x, y, scale (camera space at z -1.15; muzzles to the left, the left flank to her)
-        ["pistol", -0.42, 0.3, 1.25],
-        ["revolver", -0.42, 0.1, 1.15],
-        ["smg", -0.42, -0.12, 0.85],
-        ["launcher", -0.42, -0.34, 0.68],
-        ["rifle", 0.36, 0.26, 0.62],
-        ["shotgun", 0.36, 0.02, 0.56],
-        ["sniper", 0.36, -0.24, 0.5],
-      ];
-      for (const [model, x, y, k] of order) {
+      // The studio lights: they ride the group, so they're only on while the plate is up.
+      const key = new THREE.DirectionalLight(0xfff1e4, 1.3);
+      key.position.set(-0.5, 0.8, 1);
+      const top = new THREE.DirectionalLight(0xffd2a0, 1.8);
+      top.position.set(0.2, 1, -0.3);
+      const kick = new THREE.DirectionalLight(0x5fd8ff, 1.6);
+      kick.position.set(1, 0.1, -0.6);
+      gunLineup.add(key, top, kick);
+      for (const [model, label] of LINEUP) {
         const g = buildGunDisplay(model, o.quality === "phone");
         const box = new THREE.Box3().setFromObject(g);
         const c = box.getCenter(new THREE.Vector3());
         const holder = new THREE.Group();
+        holder.name = `lineup:${model}`;
         g.position.sub(c);
         holder.add(g);
-        holder.rotation.set(0.05, Math.PI / 2, 0);
-        holder.scale.setScalar(k);
-        holder.position.set(x, y, -1.15);
-        gunLineup.add(holder);
+        // The left flank to her, muzzle left, turned a few degrees so the top and the plate catch the key.
+        holder.rotation.set(0.1, Math.PI / 2 - 0.16, 0, "YXZ");
+        holder.userData.size = box.getSize(new THREE.Vector3());
+        const tag = nameTag(label);
+        tag.name = `tag:${model}`;
+        gunLineup.add(holder, tag);
       }
       world.viewScene.add(gunLineup);
     }
+    // Lay out for this view: one scale for all seven (S2.6's real sizes), two columns inside a safe margin.
+    const cam = world.viewCamera;
+    const Z = 1.3;
+    const H = 2 * Z * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
+    const W = H * cam.aspect;
+    const colW = W * 0.4;
+    const gap = H * 0.035;
+    const cols: [GunModel, number][][] = [[], []];
+    for (const [m, , col] of LINEUP) cols[col]!.push([m, col]);
+    const sizeOf = (m: GunModel) => (gunLineup!.getObjectByName(`lineup:${m}`)!.userData.size as THREE.Vector3);
+    const tagH = H * 0.03;
+    const colH = (list: [GunModel, number][], k: number) => list.reduce((a, [m]) => a + sizeOf(m).y * k + tagH + gap, -gap);
+    let k = Math.min(...cols.map((l) => colW / Math.max(...l.map(([m]) => sizeOf(m).z))));
+    k = Math.min(k, ...cols.map((l) => (H * 0.78) / colH(l, 1)));
+    // The long guns fill the rack's height; muzzles and names align left in each column.
+    const span = Math.max(...cols.map((l) => colH(l, k)));
+    for (let ci = 0; ci < 2; ci++) {
+      const list = cols[ci]!;
+      const left = (ci === 0 ? -0.37 : -0.03) * W;
+      // The handguns sit as a group, centred, a little looser than the rack.
+      const g2 = ci === 1 ? gap + (span - colH(list, k)) / Math.max(1, list.length - 1) : gap * 2.4;
+      let y = ci === 1 ? span / 2 : (colH(list, k) + (g2 - gap) * (list.length - 1)) / 2;
+      for (const [m] of list) {
+        const sz = sizeOf(m);
+        const h = gunLineup.getObjectByName(`lineup:${m}`)!;
+        h.scale.setScalar(k);
+        h.position.set(left + (sz.z * k) / 2, y - (sz.y * k) / 2, -Z);
+        const tag = gunLineup.getObjectByName(`tag:${m}`)!;
+        const tw = H * 0.36;
+        tag.scale.setScalar(tw);
+        tag.position.set(left + tw / 2, y - sz.y * k - tagH * 0.45, -Z);
+        y -= sz.y * k + tagH + g2;
+      }
+    }
+    if (world.viewScene.environment !== studioEnv()) streetVmEnv = world.viewScene.environment;
+    world.viewScene.environment = studioEnv();
     gunLineup.visible = true;
     s.pistolInfo = null;
     hud.freeze(0);

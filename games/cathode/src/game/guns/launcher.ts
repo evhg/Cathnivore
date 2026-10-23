@@ -63,9 +63,13 @@ export function buildLauncher(phone = false, lod = false): { root: THREE.Group; 
   const guardOut: P2[] = [[0.03, -0.012], [-0.03, -0.012], [-0.034, -0.03], [-0.026, -0.046], [0.012, -0.048], [0.03, -0.034]];
   const guardIn: P2[] = [[0.024, -0.016], [-0.024, -0.016], [-0.027, -0.028], [-0.021, -0.041], [0.01, -0.042], [0.024, -0.032]];
   kit.add(profile(guardOut, 0.012, { holes: [guardIn], bevel: 0.0008, ...o }), FIN.receiver, undefined, body);
-  const stockOut: P2[] = [[0.08, 0.02], [0.3, 0.03], [0.306, 0.022], [0.306, -0.07], [0.29, -0.078], [0.12, -0.03], [0.08, -0.012]];
-  kit.add(profile(stockOut, 0.04, { bevel: 0.003, holes: o.lod ? [] : [[[0.13, -0.006], [0.27, 0.012], [0.27, -0.05], [0.18, -0.03]]], ...o }), FIN.frame, undefined, body);
-  kit.add(rounded(0.042, 0.108, 0.014, 0.005, o.phone), FIN.rubber, { p: [0, -0.024, 0.312] }, body);
+  // A solid, deep buttstock with a raised comb (not the SMG's skeleton strut, C18 review: the two read as one
+  // silhouette), a thick recoil pad and a sling slot through its belly.
+  const stockOut: P2[] = [[0.08, 0.03], [0.14, 0.046], [0.284, 0.042], [0.31, 0.036], [0.316, 0.026], [0.316, -0.088], [0.302, -0.096], [0.21, -0.074], [0.13, -0.042], [0.08, -0.014]];
+  const sling: P2[] = [[0.2, -0.05], [0.236, -0.058], [0.236, -0.068], [0.2, -0.06]];
+  kit.add(profile(stockOut, 0.046, { bevel: 0.004, holes: o.lod ? [] : [sling], ...o }), FIN.frame, undefined, body);
+  kit.add(profile([[0.15, 0.036], [0.28, 0.034], [0.28, -0.03], [0.15, -0.006]], 0.0465, { bevel: 0.001, ...o }), FIN.grip, undefined, body);
+  kit.add(rounded(0.05, 0.13, 0.02, 0.007, o.phone), FIN.rubber, { p: [0, -0.03, 0.326] }, body);
 
   // ---- The tube: olive, hinged under its breech end, a ladder sight and the forend riding it.
   const breech = kit.part("breech", HINGE);

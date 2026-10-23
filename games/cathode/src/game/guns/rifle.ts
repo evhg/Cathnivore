@@ -58,10 +58,13 @@ export function buildRifle(phone = false, lod = false): { root: THREE.Group; kit
   kit.add(profile([[-0.1, 0.01], [-0.1, 0.05], [-0.346, 0.05], [-0.352, 0.044], [-0.352, 0.016], [-0.346, 0.01]], 0.038, { bevel: 0.002, holes: vents, ...o }), FIN.receiver, undefined, body);
   rail(kit, body, 0.05, -0.104, 0.24, 0.02, o);
   // The barrel and the compensator: three prongs at the muzzle.
-  kit.add(lathe([[0.0085, -0.352], [0.0085, -0.4]], { phone: o.phone }), FIN.receiver, { p: [0, BORE, 0] }, body);
-  kit.add(lathe([[0.0108, -0.4], [0.0108, -0.448], [0.0098, -0.452]], { phone: o.phone }), FIN.receiver, { p: [0, BORE, 0] }, body);
-  if (!o.lod) for (let i = 0; i < 3; i++) kit.add(rounded(0.0026, 0.012, 0.03, 0.0006, o.phone), FIN.bore, { p: [Math.cos(Math.PI / 2 + (i * 2 * Math.PI) / 3) * 0.0086, BORE + Math.sin(Math.PI / 2 + (i * 2 * Math.PI) / 3) * 0.0086, -0.434], r: [0, 0, (i * 2 * Math.PI) / 3] }, body);
-  crown(kit, body, BORE, -0.4532, 0.0098, 0.0042, o.phone);
+  // C18 review: a rifle-length barrel (the gun read as a short PDW), a gas block and the comp past the handguard.
+  const BX = -0.07;
+  kit.add(lathe([[0.0085, -0.352], [0.0085, -0.4 + BX]], { phone: o.phone }), FIN.receiver, { p: [0, BORE, 0] }, body);
+  kit.add(rounded(0.022, 0.024, 0.018, 0.003, o.phone), FIN.receiver, { p: [0, BORE + 0.002, -0.37] }, body);
+  kit.add(lathe([[0.0108, -0.4 + BX], [0.0108, -0.448 + BX], [0.0098, -0.452 + BX]], { phone: o.phone }), FIN.receiver, { p: [0, BORE, 0] }, body);
+  if (!o.lod) for (let i = 0; i < 3; i++) kit.add(rounded(0.0026, 0.012, 0.03, 0.0006, o.phone), FIN.bore, { p: [Math.cos(Math.PI / 2 + (i * 2 * Math.PI) / 3) * 0.0086, BORE + Math.sin(Math.PI / 2 + (i * 2 * Math.PI) / 3) * 0.0086, -0.434 + BX], r: [0, 0, (i * 2 * Math.PI) / 3] }, body);
+  crown(kit, body, BORE, -0.4532 + BX, 0.0098, 0.0042, o.phone);
 
   // ---- The optic: a prism housing on the rail, glass front and back, an amber chevron at the sight line.
   const oz = RIFLE_SIGHT[2];
@@ -116,7 +119,7 @@ export function buildRifle(phone = false, lod = false): { root: THREE.Group; kit
   const trigger = o.phone ? kit.empty("trigger", [0, -0.02, -0.01], body) : kit.part("trigger", [0, -0.02, -0.01]);
   if (!o.phone) kit.add(profile([[0.002, 0], [-0.003, 0], [-0.006, -0.012], [-0.005, -0.019], [-0.002, -0.019], [-0.001, -0.011], [0.0025, -0.004]], 0.0058, { bevel: 0.0006, ...o }), FIN.control, undefined, trigger);
 
-  kit.empty("muzzle", [0, BORE, -0.456]);
+  kit.empty("muzzle", [0, BORE, -0.526]);
   kit.empty("port", [0.018, 0.031, -0.01]);
   rifleGripR(kit, root, [0, -0.07, 0.048]);
   foreGripL(kit, root, [0, 0.03, -0.25], 0.019);

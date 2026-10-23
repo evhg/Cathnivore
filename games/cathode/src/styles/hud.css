@@ -1516,6 +1516,8 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 /* px-ok:begin: touch controls are physical tap targets (44 to 88 CSS px, Apple HIG), not HUD readouts */
 /* ---- touch controls (a phone held sideways): dark discs, a thin rim, no blur over the world ---- */
 .touch { pointer-events: auto; }
+/* C18 review: a review render (the arsenal plate) shows the models alone, the touch controls too. */
+:root.hud-review .stick, :root.hud-review .tbtn, :root.hud-review .tbtn-menu { visibility: hidden; }
 .stick {
   position: absolute;
   left: var(--sx, calc(96px + var(--safe-l)));
