@@ -19,7 +19,7 @@ import { REST, SEGMENTS, boneIndex, HELM_Y, KNUCKLE_Y } from "../rig";
 import { PLATE_SLOT } from "../../sim/armour";
 import { box, chamfer, cyl, limb, partsDetail, plate, shell, body as lathe, tris, type PlateOpts } from "./parts";
 
-export type Arch = "enforcer" | "leader" | "riot" | "sniper";
+export type Arch = "enforcer" | "leader" | "riot" | "sniper" | "orderly" | "nurse";
 export type Lod = 0 | 1 | 2;
 
 /** S3.1's materials as kit finishes (sRGB base colours; the kit's shader adds edge wear and the trim atlas). */
@@ -47,6 +47,14 @@ export const FINISH = {
   skin: { color: 0xa07a62, metal: 0, rough: 0.55, sheen: 0.15, band: "flat", wear: 0 },
   /** C15: the whites of his eyes (a warm, wet off-white: never paper white in the noir grade). */
   eye: { color: 0x9c9187, metal: 0, rough: 0.18, coat: 1, band: "flat", wear: 0 },
+  /** C20 (S3.3): Candor's clinical staff: pale scrubs `#9FB3AE`, a darker trim, pale gloves and clogs. */
+  scrubs: { color: 0x6f8a86, metal: 0, rough: 0.82, sheen: 0.2, band: "nylon", wear: 0 },
+  scrubsDark: { color: 0x44585a, metal: 0, rough: 0.8, sheen: 0.3, band: "nylon", wear: 0.1 },
+  glove: { color: 0xc9cfcc, metal: 0, rough: 0.55, sheen: 0.2, band: "flat", wear: 0 },
+  /** The orderly's restraint gauntlets: scuffed grey polymer. */
+  cuff: { color: 0x4a5058, metal: 0.1, rough: 0.45, coat: 0.4, band: "peel", wear: 1 },
+  /** A face shield: clear polycarbonate, only its edge and glare show. */
+  shield: { color: 0x7d9aa0, metal: 0.1, rough: 0.05, coat: 1, band: "flat", wear: 0 },
 } satisfies Record<string, Finish>;
 
 /** Self-lit parts: `visor` takes the body's visor tint and level; `blink` the antenna's 1 Hz blink; `pulse` the coolant window. */
@@ -70,6 +78,8 @@ const GLOWS = {
   /** The unit number, backlit in the visor's colour on the back plate. */
   unit: { surf: { emit: 0xffffff, intensity: 3.6 }, visor: true },
   lens: { surf: { emit: 0xffffff, intensity: 5 }, visor: true },
+  /** The nurse's injector vials and the clinic cross: lit in the body's own colour. */
+  dose: { surf: { emit: 0xffffff, intensity: 4.4 }, visor: true, pulse: true },
 } satisfies Record<string, Glow>;
 
 const segLen = (name: string): number => {
@@ -315,6 +325,7 @@ function commandCollar(b: Builder, seg: number, low = false): void {
 }
 
 function torso(b: Builder, arch: Arch): void {
+  if (arch === "orderly" || arch === "nurse") return clinicTorso(b, arch);
   const { lod } = b.o;
   const S = FINISH;
   const aL = segLen("abdomen");
@@ -408,6 +419,7 @@ function torso(b: Builder, arch: Arch): void {
 
 /** Arms: the soft sleeve, the stacked pauldron with the mark on the left, the bicep guard, the vambrace and elbow cop, the gauntlet. */
 function arm(b: Builder, side: "L" | "R", arch: Arch): void {
+  if (arch === "orderly" || arch === "nurse") return clinicArm(b, side, arch);
   const { lod } = b.o;
   const S = FINISH;
   const out = side === "L" ? -1 : 1;
@@ -509,6 +521,7 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
 }
 
 function leg(b: Builder, side: "L" | "R", arch: Arch): void {
+  if (arch === "orderly" || arch === "nurse") return clinicLeg(b, side, arch);
   const { lod } = b.o;
   const S = FINISH;
   const out = side === "L" ? -1 : 1;
@@ -545,6 +558,7 @@ function leg(b: Builder, side: "L" | "R", arch: Arch): void {
 }
 
 function head(b: Builder, arch: Arch): void {
+  if (arch === "orderly" || arch === "nurse") return clinicHead(b, arch);
   const { lod } = b.o;
   const S = FINISH;
   // The neck and the balaclava'd head under the helmet (seen when a headshot knocks it off).
@@ -695,6 +709,7 @@ function tabardStatic(b: Builder): void {
  * flare); the sniper's hood. A few hundred triangles, read at 40 m by its outline and its lights alone.
  */
 function silhouette(b: Builder, arch: Arch): void {
+  if (arch === "orderly" || arch === "nurse") return clinicSilhouette(b, arch);
   const S = FINISH;
   const n = b.o.phone ? 5 : 6;
   // Limbs are square on the phone: at 30 m and more a limb is a few pixels across.
@@ -730,6 +745,159 @@ function silhouette(b: Builder, arch: Arch): void {
   }
 }
 
+/**
+ * C20 (S3.3): Candor's clinical staff. No plates: pale scrubs, a quiet silhouette. The Orderly has a face shield, a
+ * cross-strap harness with restraint cuffs on the belt and grey restraint gauntlets (a broad, heavy-handed outline);
+ * the Nurse a surgical cap and mask, a smock with a lit cross and an injector pack of glowing vials on her back (the
+ * tell that she heals: it reads from behind at 10 m).
+ */
+function clinicTorso(b: Builder, arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const nurse = arch === "nurse";
+  const aL = segLen("abdomen");
+  const cL = segLen("chest");
+  const uL = segLen("upperChest");
+  const k = nurse ? 0.94 : 1.04;
+  b.add("abdomen", lathe([[0.0, -0.1], [0.12, -0.095], [0.15, -0.04], [0.148, 0.06], [0.152, 0.16], [0.17, aL + 0.02]], 1.05 * k, 0.72, b.seg(18)), S.scrubs);
+  b.add("chest", lathe([[0.168, -0.02], [0.188, 0.07], [0.2, cL + 0.01]], 1.06 * k, 0.66, b.seg(18)), S.scrubs);
+  b.add("upperChest", lathe([[0.2, -0.01], [0.205, 0.05], [0.185, 0.11], [0.125, uL + 0.015], [0.07, uL + 0.03]], 1.08 * k, 0.64, b.seg(18)), S.scrubs);
+  if (lod < 2) {
+    // The belt, the V of the neck, a pale back so the staff read as a different faction at once.
+    b.add("abdomen", shell([[0.166, -0.005], [0.18, -0.005], [0.18, 0.05], [0.166, 0.05]], 0, Math.PI * 2, b.seg(22)), S.scrubsDark, { s: [1.03 * k, 1, 0.75] });
+    b.add("upperChest", shell([[0.1, 0.125], [0.136, 0.13], [0.13, 0.19], [0.098, 0.185]], 0, Math.PI * 2, b.seg(20)), S.scrubsDark, { s: [1.05 * k, 1, 0.92] });
+  }
+  if (nurse) {
+    // The smock's hem over the hips, a lit cross on the chest, a pocket.
+    if (lod < 2) b.add("abdomen", shell([[0.19, 0.0], [0.215, -0.1], [0.21, -0.14], [0.2, -0.14], [0.205, -0.1], [0.182, 0.0]], 0, Math.PI * 2, b.seg(20), 0.5), S.scrubs, { s: [1.0, 1, 0.78] });
+    b.add("chest", b.box(0.012, 0.07, 0.006, 0.001), GLOWS.dose, { p: [-0.06, 0.1, 0.13] });
+    b.add("chest", b.box(0.07, 0.012, 0.006, 0.001), GLOWS.dose, { p: [-0.06, 0.1, 0.13] });
+    if (lod === 0) b.add("chest", b.box(0.07, 0.05, 0.012, 0.004), S.scrubsDark, { p: [0.07, 0.05, 0.128] });
+    // The injector pack: a frame on the back with five tall vials, lit, and a hose to the right arm.
+    b.add("chest", b.box(0.2, 0.26, 0.05, 0.01), S.cuff, { p: [0, 0.09, -0.15] });
+    for (const x of [-0.07, -0.035, 0, 0.035, 0.07]) {
+      b.add("chest", cyl(0.012, 0.012, 0.2, 6), GLOWS.dose, { p: [x, 0.1, -0.186] });
+      if (lod < 2) b.add("chest", cyl(0.016, 0.016, 0.02, 6), S.metal, { p: [x, 0.205, -0.186] });
+    }
+    if (lod === 0) b.add("upperChest", limb(0.3, () => 0.008, 5, 1), S.rubber, { p: [0.09, -0.02, -0.14], r: [0, 0, -0.5] });
+  } else {
+    // The orderly: cross-straps over the chest with a ring at the crossing, restraint cuffs and a baton at the belt.
+    for (const sg of [1, -1]) {
+      b.add("chest", b.box(0.052, 0.4, 0.012, 0.003), S.strap, { p: [0.03 * sg, 0.12, 0.139], r: [0, 0, 0.62 * sg] });
+      b.add("chest", b.box(0.052, 0.4, 0.012, 0.003), S.strap, { p: [0.03 * sg, 0.12, -0.139], r: [0, 0, -0.62 * sg] });
+    }
+    if (lod < 2) {
+      b.add("chest", cyl(0.026, 0.026, 0.012, 10), S.metal, { p: [0, 0.13, 0.15], r: [Math.PI / 2, 0, 0] });
+      for (const sg of [1, -1]) {
+        b.add("abdomen", cyl(0.04, 0.04, 0.016, 10), S.metal, { p: [0.16 * sg, 0.02, 0.07], r: [0, 0, Math.PI / 2] });
+        b.add("abdomen", cyl(0.04, 0.04, 0.016, 10), S.metal, { p: [0.16 * sg, 0.02, 0.1], r: [0, 0, Math.PI / 2] });
+      }
+      b.add("abdomen", cyl(0.016, 0.016, 0.36, 6), S.cuff, { p: [-0.12, -0.08, -0.14], r: [0.2, 0, 1.2] });
+      // Pale tape across the shoulders, so he reads from behind in the rain.
+      b.add("upperChest", b.box(0.34, 0.03, 0.01, 0), GLOWS.tape, { p: [0, 0.08, -0.126] });
+    }
+    // Wide, hunched shoulders: a pad of scrub-grey yoke over the trapezius.
+    if (lod < 2) b.add("upperChest", shell([[0.12, 0.09], [0.2, 0.06], [0.23, 0.0], [0.218, -0.004], [0.19, 0.045], [0.12, 0.075]], 0, Math.PI * 2, b.seg(20), 0.5), S.scrubsDark, { s: [1.1, 1, 0.7] });
+  }
+  // The clinic tag on the left breast (and a status light).
+  if (lod === 0) b.add("upperChest", b.box(0.012, 0.012, 0.006, 0.002), GLOWS.status, { p: [0.12, 0.085, 0.158], r: [0, 0.3, 0] });
+}
+
+function clinicArm(b: Builder, side: "L" | "R", arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const nurse = arch === "nurse";
+  const out = side === "L" ? -1 : 1;
+  const ua = `upperArm${side}`;
+  const fa = `forearm${side}`;
+  const uL = segLen(ua);
+  const fL = segLen(fa);
+  b.add(ua, limb(uL + 0.02, (t) => 0.066 - 0.012 * t + 0.009 * Math.sin(Math.PI * t), b.seg(14), lod ? 3 : 6), S.scrubs, { p: [0, -0.02, 0] });
+  b.add(fa, limb(fL + 0.02, (t) => 0.058 - 0.014 * t + 0.006 * Math.sin(Math.PI * t), b.seg(14), lod ? 3 : 5), S.scrubs, { p: [0, -0.01, 0] });
+  if (!nurse) {
+    // Restraint gauntlets: a thick polymer sleeve over most of the forearm, its metal bands, a cuff clasp.
+    b.add(fa, limb(fL * 0.74, (t) => 0.088 - 0.012 * t, b.seg(14), 2), S.cuff, { p: [0, fL * 0.2, 0] });
+    if (lod < 2) {
+      for (const y of [0.24, 0.5, 0.8]) b.add(fa, limb(0.018, () => 0.092 - 0.012 * (y - 0.1), b.seg(14), 1), S.metal, { p: [0, fL * y, 0] });
+      if (lod === 0) b.add(fa, b.box(0.03, 0.08, 0.02, 0.004), GLOWS.status, { p: [0, fL * 0.5, 0.088] });
+    }
+  }
+  const h = `hand${side}`;
+  const f = `fingers${side}`;
+  const gl = nurse ? S.glove : S.leather;
+  b.add(h, limb(0.06, (t) => 0.048 - 0.008 * t, b.seg(12), 2), gl, { p: [0, -0.035, 0] });
+  b.add(h, b.box(0.032, 0.095, 0.074, 0.012, 1), gl, { p: [0, 0.05, 0.004] });
+  if (lod < 2) b.add(h, limb(0.05, (t) => 0.0155 - 0.003 * t, lod ? 4 : 6, 1), gl, { p: [-0.012 * out, 0.03, 0.04], r: [0.85, 0, 0.45 * out] });
+  if (lod === 0) {
+    for (const [z, l] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) b.add(f, box(0.02, l, 0.0165, 0, 0), gl, { p: [0, l / 2 + 0.004, z + 0.004] });
+  } else b.add(f, b.box(0.024, 0.05, 0.074, 0.008, 1), gl, { p: [0, 0.024, 0.004] });
+}
+
+function clinicLeg(b: Builder, side: "L" | "R", arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const nurse = arch === "nurse";
+  const th = `thigh${side}`;
+  const sh = `shin${side}`;
+  const tL = segLen(th);
+  const sL = segLen(sh);
+  b.add(th, limb(tL + 0.04, (t) => 0.094 - 0.022 * t + 0.008 * Math.sin(Math.PI * t), b.seg(16), lod ? 3 : 6), S.scrubs, { p: [0, -0.04, 0] });
+  b.add(sh, limb(sL - 0.08, (t) => 0.07 + 0.012 * Math.sin(Math.PI * Math.min(1, t * 1.3)) - 0.012 * t, b.seg(16), lod ? 3 : 6), S.scrubs);
+  const shoe = nurse ? S.glove : S.rubber;
+  b.add(sh, limb(0.12, (t) => 0.068 + 0.004 * t, b.seg(16), 2, false), nurse ? S.scrubsDark : S.leather, { p: [0, sL - 0.11, 0] });
+  b.add(sh, b.box(0.1, 0.07, 0.24, 0.022, 1), shoe, { p: [0, sL + 0.012, 0.045] });
+  b.add(sh, b.box(0.108, 0.022, 0.26, 0.006, 1), S.rubber, { p: [0, sL + 0.05, 0.048] });
+  if (lod < 2 && !nurse) b.add(sh, b.box(0.07, 0.024, 0.004, 0), GLOWS.tape, { p: [0, sL * 0.3, 0.082] });
+}
+
+function clinicHead(b: Builder, arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const nurse = arch === "nurse";
+  b.add("head", limb(0.1, (t) => 0.052 + 0.004 * t, b.seg(12), 1), S.skin, { p: [0, -0.01, 0] });
+  b.add("head", lathe([[0, 0.03], [0.06, 0.04], [0.1, 0.09], [0.112, 0.15], [0.1, 0.22], [0.06, 0.255], [0, 0.262]], 0.92, 1.0, b.seg(14)), S.skin);
+  const H = "helmet";
+  const sz = 1.04;
+  const ring = (pr: P2[], c: number, half: number, surf: Surface | Glow, n: number) => b.add(H, shell(pr, c - half, half * 2, b.seg(n)), surf, { p: [0, 0, -0.008], s: [1, 1, sz] });
+  // The cap: the surgical scrub cap, hugging the skull and tied at the back.
+  b.add(H, shell([[0.0, 0.15], [0.07, 0.14], [0.11, 0.11], [0.126, 0.07], [0.128, 0.03], [0.122, 0.0], [0.114, -0.01], [0.108, -0.006], [0.116, 0.03], [0.114, 0.075], [0.098, 0.105], [0.066, 0.128], [0.0, 0.138]], 0, Math.PI * 2, b.seg(22), 0.5), nurse ? S.scrubsDark : S.scrubs, { p: [0, 0, -0.012], s: [1, 1, sz] });
+  if (lod < 2) b.add(H, b.box(0.05, 0.05, 0.03, 0.01), nurse ? S.scrubsDark : S.scrubs, { p: [0, 0.01, -0.13] });
+  if (nurse) {
+    // The mask across the lower face, the lit goggle slit over the eyes.
+    ring([[0.103, -0.1], [0.12, -0.09], [0.126, -0.05], [0.12, -0.02], [0.105, -0.03]], 0, 62 * D, S.glove, 12);
+    ring([[0.1175, 0.0], [0.1215, 0.002], [0.1215, 0.016], [0.1175, 0.018]], 0, 46 * D, GLOWS.slit, lod === 0 ? 12 : 8);
+  } else {
+    // The orderly: a clear face shield on a headband, its edge catching the light, the slit behind it.
+    b.add(H, shell([[0.125, -0.02], [0.14, 0.0], [0.142, 0.05], [0.13, 0.08], [0.128, 0.05], [0.128, 0.0]], -1.45, 2.9, b.seg(18), 0.3), S.cuff, { p: [0, 0, -0.008], s: [1, 1, sz] });
+    ring([[0.1175, 0.0], [0.1215, 0.002], [0.1215, 0.016], [0.1175, 0.018]], 0, 46 * D, GLOWS.slit, lod === 0 ? 12 : 8);
+    if (lod < 2) ring([[0.138, -0.11], [0.148, -0.1], [0.152, 0.03], [0.146, 0.09], [0.14, 0.09], [0.145, 0.03], [0.142, -0.095]], 0, 70 * D, S.shield, lod === 0 ? 16 : 10);
+  }
+  ring([[0.1105, -0.044], [0.1145, -0.043], [0.1145, -0.023], [0.1105, -0.022]], Math.PI, 30 * D, GLOWS.strip, 8);
+}
+
+function clinicSilhouette(b: Builder, arch: Arch): void {
+  const S = FINISH;
+  const nurse = arch === "nurse";
+  const n = b.o.phone ? 5 : 6;
+  const cap = (bone: string, r0: number, r1: number, surf: Surface = S.scrubs, y0 = 0, extra = 0) => b.add(bone, limb(segLen(bone) + extra, (t) => r0 + (r1 - r0) * t, b.o.phone ? 4 : n, 1), surf, { p: [0, y0, 0] });
+  const k = nurse ? 0.94 : 1.04;
+  b.add("abdomen", lathe([[0.0, -0.1], [0.15, -0.06], [0.155, 0.12], [0.17, segLen("abdomen") + 0.02]], 1.05 * k, 0.72, n), S.scrubs);
+  b.add("chest", lathe([[0.17, -0.02], [0.205, segLen("chest") + 0.01]], 1.06 * k, 0.7, n), S.scrubs);
+  b.add("upperChest", lathe([[0.205, -0.01], [0.2, 0.1], [0.12, segLen("upperChest") + 0.02]], 1.08 * k, 0.7, n), S.scrubs);
+  if (nurse) b.add("chest", b.box(0.2, 0.26, 0.06, 0), GLOWS.dose, { p: [0, 0.09, -0.17] });
+  for (const sd of ["L", "R"] as const) {
+    cap(`upperArm${sd}`, 0.07, 0.06, S.scrubs, -0.02, 0.02);
+    cap(`forearm${sd}`, nurse ? 0.058 : 0.085, nurse ? 0.048 : 0.07, nurse ? S.scrubs : S.cuff, -0.01, 0.02);
+    b.add(`hand${sd}`, box(0.034, 0.1, 0.075, 0, 0), nurse ? S.glove : S.leather, { p: [0, 0.05, 0] });
+    cap(`thigh${sd}`, 0.094, 0.078, S.scrubs, -0.04, 0.04);
+    cap(`shin${sd}`, 0.078, 0.068, S.scrubs, 0, -0.08);
+    b.add(`shin${sd}`, box(0.1, 0.09, 0.26, 0, 0), nurse ? S.glove : S.leather, { p: [0, segLen(`shin${sd}`) + 0.02, 0.045] });
+  }
+  b.add("head", limb(0.1, () => 0.054, n, 1), S.skin, { p: [0, -0.01, 0] });
+  b.add("helmet", shell([[0.0, 0.15], [0.11, 0.11], [0.128, 0.03], [0.116, -0.01], [0.0, 0.138]], 0, Math.PI * 2, b.o.phone ? 5 : 8, 0.5), nurse ? S.scrubsDark : S.scrubs, { p: [0, 0, -0.012], s: [1, 1, 1.04] });
+  b.add("helmet", shell([[0.1175, 0.0], [0.1215, 0.002], [0.1215, 0.016], [0.1175, 0.018]], -23 * D, 46 * D, 3), GLOWS.slit, { p: [0, 0, -0.008], s: [1, 1, 1.04] });
+}
+
 export interface ArchGeometry {
   opaque: THREE.BufferGeometry;
   glow: THREE.BufferGeometry;
@@ -758,7 +926,7 @@ export function archGeometry(arch: Arch, lod: Lod, phone: boolean, hero = false)
       }
       if (arch === "sniper") sniperPack(b);
     }
-    if (lod === 1 && arch !== "sniper") tabardStatic(b);
+    if (lod === 1 && arch !== "sniper" && arch !== "orderly" && arch !== "nurse") tabardStatic(b);
   } finally {
     partsDetail.hero = false;
   }
@@ -792,6 +960,8 @@ export function plateGeometry(arch: Arch, slot: number, phone: boolean): Map<str
 export function archFor(role: string | undefined, leader = false): Arch {
   if (role === "shield") return "riot";
   if (role === "sniper") return "sniper";
+  if (role === "orderly") return "orderly";
+  if (role === "nurse") return "nurse";
   return leader ? "leader" : "enforcer";
 }
 

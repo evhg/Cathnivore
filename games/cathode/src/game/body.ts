@@ -322,12 +322,14 @@ export class Body {
       this.mirror.push(m);
     }
     const S = LOOK.cloth;
-    this.cloth = look.arch === "sniper" ? new Cloth(COAT_TAILS, mats.opaque, phone ? S.phoneSubsteps : S.desktopSubsteps) : new Cloth(TABARD, mats.opaque, phone ? S.phoneSubsteps : S.desktopSubsteps);
+    this.cloth = look.arch === "orderly" || look.arch === "nurse" ? null : look.arch === "sniper" ? new Cloth(COAT_TAILS, mats.opaque, phone ? S.phoneSubsteps : S.desktopSubsteps) : new Cloth(TABARD, mats.opaque, phone ? S.phoneSubsteps : S.desktopSubsteps);
     // S0 phone budget (C10 perf gate: 263 calls for 6 firing enemies): the tabard's thin shadow is a draw call per
     // enemy on every shadow refresh, and in a 1024 map on a phone it is a smudge under his legs.
-    if (phone) this.cloth.mesh.castShadow = false;
-    this.cloth.mesh.layers.set(LAYER_NO_REFLECT);
-    this.root.add(this.cloth.mesh);
+    if (this.cloth) {
+      if (phone) this.cloth.mesh.castShadow = false;
+      this.cloth.mesh.layers.set(LAYER_NO_REFLECT);
+      this.root.add(this.cloth.mesh);
+    }
     for (const [a, b] of LINKS) this.rest.set(`${a}|${b}`, REST[a].distanceTo(REST[b]) * scale);
     this.writeFx();
   }

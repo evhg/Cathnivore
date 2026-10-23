@@ -583,3 +583,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-23 17:51: CI-red fix was in the test (gorecap sampler now skips the glowing ring), not the art. Skipped the 5K C19 shots (about 10 min a stage); release moves to next session.
 2026-10-23: C19 not released this session: gates alone ran ~55 min. Next session runs release first, before other work.
 2026-10-23: shipped C19 via release (ad95e02); gates took ~50 min so the session did no code work.
+
+- 2026-10-23: C20 starts with the clinical staff (Orderly, Nurse) because they already spawn in-game on the Enforcer body; Price-War/Chrome/Psycho have no kits yet, so they come after.
