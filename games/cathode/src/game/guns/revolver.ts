@@ -11,7 +11,8 @@ import { FIN, GLOW, GunKit, arc, facade, lathe, profile, rounded, sphere, type P
 import { crown, faction, optsOf, pinchHand, pistolGripHands, round, trim } from "./common";
 
 const BORE = 0.036;
-const CYL_R = 0.0195;
+// Proud of the 34 mm frame flats (C18 review: from the eye the cylinder hid inside the frame's outline).
+const CYL_R = 0.0216;
 const CH_R = 0.0118; // chamber circle radius
 const CYL_Y = BORE - CH_R;
 const CYL_Z0 = 0.012; // rear face
@@ -190,7 +191,8 @@ export function buildRevolver(phone = false, lod = false): { root: THREE.Group; 
     const a = Math.PI / 2 + (c * Math.PI) / 3;
     round(kit, lr, [Math.cos(a) * CH_R, Math.sin(a) * CH_R, CYL_Z0 + 0.0013], 0.0046, 0.036, o.phone);
   }
-  pinchHand(kit, loader, "loadHand", [0, 0, CYL_Z0 + 0.02], [-0.85, -0.45, 0.3]);
+  // The fingers pinch the knob's end from behind and below (C18 review: the fist from the left hid the cylinder face).
+  pinchHand(kit, loader, "loadHand", [0, 0, CYL_Z0 + 0.035], [-0.5, -0.8, 0.9]);
   loader.visible = false;
 
   // ---- Empties.

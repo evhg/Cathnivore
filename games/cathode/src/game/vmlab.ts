@@ -41,6 +41,7 @@ scene.add(cam);
 scene.add(new THREE.HemisphereLight(0x8899bb, 0x111111, 0.35));
 const arsenal = new Arsenal(scene, phone);
 arsenal.lightRoom(renderer);
+arsenal.owned.add(q.get("gun") ?? "kestrel");
 arsenal.equipId(q.get("gun") ?? "kestrel");
 arsenal.settle();
 const aim = Number(q.get("aim") ?? 0);

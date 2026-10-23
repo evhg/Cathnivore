@@ -355,6 +355,8 @@ interface HeroPlace {
   sight: readonly [number, number, number];
   /** One-handed-style (the revolver): the hip follows the Kestrel's hand placement from the front strap's top. */
   fs?: [number, number];
+  /** Added to the front-strap hip (C18 review: the revolver sat so close behind the eye it read as a block). */
+  fsHip?: [number, number, number];
   hip?: [number, number, number];
   hipPhone?: [number, number, number];
   dist: number;
@@ -365,7 +367,7 @@ interface HeroPlace {
   adsFov: number;
 }
 export const HERO_PLACE: Record<HeroModel, HeroPlace> = {
-  revolver: { build: heroRevolver, sight: REVOLVER_SIGHT, fs: [0.016, -0.01], dist: 0.4, vmFov: 36, hipRot: [0.03, 0.11, 0.09], long: false, adsFov: 52 },
+  revolver: { build: heroRevolver, sight: REVOLVER_SIGHT, fs: [0.016, -0.01], fsHip: [0.06, -0.045, -0.12], dist: 0.4, vmFov: 36, hipRot: [0.03, 0.5, 0.22], long: false, adsFov: 52 },
   smg: { build: buildSmg, sight: SMG_SIGHT, hip: [0.125, -0.15, -0.36], hipPhone: [0.135, -0.14, -0.36], dist: 0.2, vmFov: 42, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 54 },
   rifle: { build: buildRifle, sight: RIFLE_SIGHT, hip: [0.125, -0.165, -0.37], hipPhone: [0.135, -0.155, -0.37], dist: 0.2, vmFov: 40, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 50 },
   shotgun: { build: heroShotgun, sight: SHOTGUN_SIGHT, hip: [0.125, -0.16, -0.38], hipPhone: [0.135, -0.15, -0.38], dist: 0.22, vmFov: 44, hipRot: [0.02, 0.1, 0.06], long: true, adsFov: 58 },
@@ -382,6 +384,7 @@ function heroRig(model: HeroModel, phone: boolean): GunRig {
     // The Kestrel's hip with its front strap top at (-0.004, -0.031): the hand stays where C4 placed it.
     const kHip = phone ? new THREE.Vector3(0.072, -0.074, -0.28) : new THREE.Vector3(0.062, -0.074, -0.28);
     hip = kHip.clone().add(new THREE.Vector3(0, -(P.fs[1] + 0.031), -(P.fs[0] + 0.004)));
+    if (P.fsHip) hip.add(new THREE.Vector3(...P.fsHip));
   } else hip = new THREE.Vector3(...((phone ? P.hipPhone : P.hip) ?? [0.13, -0.15, -0.3]));
   const r = rig(hip, new THREE.Vector3(-sight[0], -sight[1], -P.dist - sight[2]), P.adsFov);
   r.root = root;
