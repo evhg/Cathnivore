@@ -454,6 +454,12 @@
 .hud-hit-ring.go { animation: hit-ring 420ms linear; }
 .hud-hit-ring-2 { border-color: var(--hit-gold); box-shadow: 0 0 calc(var(--u) * 14) var(--hit-gold); }
 .hud-hit-ring-2.go { animation: hit-ring 420ms linear 90ms backwards; }
+/* C19: a cut's confirm: the ring a hairline with no glow, gone in 200 ms; the ticks dim (the piece is the beat). */
+.hud-hit.is-sever .hud-hit-ring,
+.hud-hit.is-sever .hud-hit-ring-2 { border-width: max(1px, var(--u)); box-shadow: none; }
+.hud-hit.is-sever .hud-hit-ring.go,
+.hud-hit.is-sever .hud-hit-ring-2.go { animation-duration: 200ms; animation-fill-mode: forwards; }
+.hud-hit.is-sever i { opacity: .55; box-shadow: 0 0 0 max(1px, var(--u)) var(--hit-outline); }
 /* Eased by hand (12u to 40u): fast out, then a long bright hang before it thins away. */
 @keyframes hit-ring { 0% { opacity: 1; transform: scale(.3); } 25% { opacity: 1; transform: scale(.72); } 55% { opacity: .85; transform: scale(.9); } 100% { opacity: 0; transform: scale(1); } }
 .hud-hit.pop { animation: hit-pop var(--pop-ms, 60ms) var(--ease-out); }
@@ -641,7 +647,11 @@
   left: 50%;
   top: 12%;
   box-sizing: border-box;
-  width: min(calc(var(--u) * 320), 50vw);
+  /* As wide as the name needs (C19 review: "HOLLOWELL ENFORCER" and its DOWN stamp were cut to an ellipsis with
+     half the screen free), never under the bar's 320u, never over half the screen. */
+  width: max-content;
+  min-width: min(calc(var(--u) * 320), 50vw);
+  max-width: 50vw;
   padding: calc(var(--u) * 6) calc(var(--u) * 14) calc(var(--u) * 8);
   transform: translateX(-50%);
   text-align: center;
@@ -1736,7 +1746,7 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
      under the objective, nudged left of centre so the feed's short +XP lines on the right stay clear. */
   /* C15 review: at 25% centred it crossed a close guard's helmet and visor (the crit target). It now sits in the left
      column, under the vitals and over the move stick, out of the central third where the fight is framed. */
-  .hud-target { top: 43%; left: var(--edge-l); width: var(--cluster-w); transform: none; text-align: left; padding-inline: 0; }
+  .hud-target { top: 43%; left: var(--edge-l); width: var(--cluster-w); min-width: 0; max-width: none; transform: none; text-align: left; padding-inline: 0; }
   .hud-target::after { inset: calc(var(--u) * -18) calc(var(--u) * -40); }
   .hud-objective { max-width: 36ch; }
   .hud-hp,

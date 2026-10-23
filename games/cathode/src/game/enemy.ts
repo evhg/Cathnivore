@@ -4,7 +4,7 @@
 
 import { tuning } from "./feel/tuning";
 import * as THREE from "three";
-import { Body, enforcerLook, place, tagUnflashed, bodyView, type BodyLook, type Zone } from "./body";
+import { Body, enforcerLook, place, tagUnflashed, bodyView, SEVER_GLOW, type BodyLook, type Zone } from "./body";
 import { archFor } from "./models/enforcer";
 import { buildRifle, buildShield, buildSidearm, rifleLod, BOLT_KICK_M, type Rifle } from "./models/gear";
 import { WOUNDS, crawlRoll, makeWounds, resetWounds, woundHit, woundState } from "../sim/wounds";
@@ -1183,16 +1183,16 @@ export class Enemy {
     this.lastHitBy = null;
   }
 
-  /**
-   * The lethal frame (S4.4). `ctx` is what combat knows about the killing blow (zone, weapon, range, which side,
-   * a wall or rail nearby); `forced` picks the variant outright (screenshot stages). Without a context the push
-   * itself says which way it came from.
-   */
   /** C19: this segment is chrome (it leaks coolant and sparks; its stump arcs). */
   isCyber(seg: string): boolean {
     return this.body.isCyber(seg);
   }
 
+  /**
+   * The lethal frame (S4.4). `ctx` is what combat knows about the killing blow (zone, weapon, range, which side,
+   * a wall or rail nearby); `forced` picks the variant outright (screenshot stages). Without a context the push
+   * itself says which way it came from.
+   */
   die(impulse: THREE.Vector3, at: THREE.Vector3, ctx?: Partial<DeathCtx>, forced?: DeathVariant, script?: DeathScript): void {
     this.state = "dead";
     this.hp = 0;
@@ -1228,7 +1228,9 @@ export class Enemy {
       }
     }
     if (script) return;
-    this.body.deathGlow();
+    // C19: a cut body's kill pulse is a thin edge gone in 150 ms: the caps and the stump read on his own suit.
+    if (this.body.lost.size) this.body.deathGlow(SEVER_GLOW.mul, true);
+    else this.body.deathGlow();
     this.deathEvents.push({ kind: "rattle", at: this.body.joints.head.clone(), k: 1 });
   }
 
@@ -1251,7 +1253,9 @@ export class Enemy {
   private deathTick(dt: number, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
     const ms = this.deadFor * 1000 - this.lightOutAt;
     // Held in a takedown before the blow, the visor flares (S5.2: "the visor flares" at 0 ms).
-    this.body.visorLevel = ms < 0 ? 1.5 : visorLevel(ms);
+    // C19: a head that came off takes his lights with it: the collar tape and the strips go dark at once, not
+    // over 0.9 s (C19 review: a white ring glowing round an empty collar read as a light, not a neck).
+    this.body.visorLevel = this.body.lost.has("head") ? 0 : ms < 0 ? 1.5 : visorLevel(ms);
     const run = this.body.dying;
     const b = this.body;
     if (!this.drop && this.rifle.visible && this.kit.role !== "orderly" && !this.shield && (!run || run.t >= Math.min(run.dur, this.deathVariant === "headshot" ? DEATH.dropMsHeadshot : DEATH.dropMs) || !run.active)) {

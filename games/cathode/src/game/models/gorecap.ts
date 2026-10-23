@@ -11,7 +11,7 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 /** S4.5's cap colours (sRGB). Glow parts are written above 1 and the shader turns the excess into light. */
 export const CAP = {
-  core: "#7A0A0E",
+  core: "#A0141A",
   coreDeep: "#3A0306",
   fat: "#C9A27A",
   bone: "#E6DCC8",
@@ -22,10 +22,22 @@ export const CAP = {
   /** The bone stands this proud of the flesh (m); the fat ring is this thick (m). */
   boneProudM: 0.015,
   fatM: 0.002,
-  /** The bone's radius as a share of the stump's (a thigh's femur is about a quarter of the thigh). */
-  boneShare: 0.24,
-  /** The emissive lift on every cap (x base colour) and the glow gain on the cyber ring. */
-  lift: 0.18,
+  /**
+   * The bone's radius as a share of the stump's (a thigh's femur is about a quarter of the thigh; a little more here,
+   * so the bone reads as a white disc at 2 m on a phone: C19 review).
+   */
+  boneShare: 0.3,
+  /** The fat ring's radial width as a share of the stump's (its 2 mm is its height; this is what the eye sees). */
+  fatShare: 0.16,
+  /** The flesh core's dome (m): cut muscle swells proud of the lip, so the cap reads at a glancing angle. */
+  domeM: 0.012,
+  /**
+   * The emissive lift on every cap (x base colour) and the glow gain on the cyber ring. Over S4.5's 0.18 for the puff:
+   * a cap is a few centimetres across and must read as wet meat and bone in the noir grade, not a dark disc (C19 review).
+   */
+  lift: 0.42,
+  /** The cap is drawn this much over the cut's own radius: the meat and the rolled-back suit swell out of the cut. */
+  viewScale: 1.22,
   glow: 2.2,
 };
 
@@ -99,7 +111,7 @@ function strand(r: number, a: number, len: number, w: number, c: THREE.Color, se
 /**
  * A stump cap of radius `r` (m) facing +Y. `cyber` builds the machine version. Phone halves the lathe's segments.
  */
-export function buildCap(r: number, cyber: boolean, phone: boolean): THREE.BufferGeometry {
+export function buildCap(r: number, cyber: boolean, phone: boolean, neck = false): THREE.BufferGeometry {
   const n = phone ? 9 : 16;
   const parts: THREE.BufferGeometry[] = [];
   const core = col(cyber ? "#20252B" : CAP.core);
@@ -108,12 +120,13 @@ export function buildCap(r: number, cyber: boolean, phone: boolean): THREE.Buffe
   const suit = col(CAP.suit);
   // The disc: a domed core (raw muscle, darker at the middle where it is wettest), the fat (or steel) ring, the
   // suit's cut lip rolled back under it.
-  const fr = r * 0.84;
+  const fr = r * (0.95 - CAP.fatShare);
+  const dome = cyber ? 0.006 : CAP.domeM;
   const prof = [
-    new THREE.Vector2(0, 0.006),
-    new THREE.Vector2(fr * 0.45, 0.0065),
-    new THREE.Vector2(fr * 0.85, 0.0045),
-    new THREE.Vector2(fr, 0.0025),
+    new THREE.Vector2(0, dome),
+    new THREE.Vector2(fr * 0.45, dome * 0.9),
+    new THREE.Vector2(fr * 0.85, dome * 0.55),
+    // (The core meets the fat flush: a fold under the fat's edge flipped the lathe's normals.)
     new THREE.Vector2(fr, 0.0025 + CAP.fatM),
     new THREE.Vector2(r * 0.95, 0.0025 + CAP.fatM),
     new THREE.Vector2(r * 0.97, 0.001),
@@ -135,16 +148,28 @@ export function buildCap(r: number, cyber: boolean, phone: boolean): THREE.Buffe
   );
   // The bone (a femur, a humerus, the neck's spine), off centre, its end split and the marrow showing; cyber: a
   // steel rod with a glowing coolant ring round it.
-  const br = r * CAP.boneShare;
-  const ox = r * 0.12;
-  const bone = new THREE.CylinderGeometry(br * 0.92, br, CAP.boneProudM + 0.004, phone ? 7 : 10, 1, false);
+  // (The neck's spine sits at the back of the neck, the windpipe in front of it.)
+  const br = r * CAP.boneShare * (neck ? 1.05 : 1);
+  const ox = neck ? 0 : r * 0.12;
+  const oz = neck ? -r * 0.3 : 0;
+  const bone = new THREE.CylinderGeometry(br * 0.92, br, CAP.boneProudM + dome, phone ? 7 : 10, 1, false);
   // The split end: the top rim jagged.
   const bp = bone.getAttribute("position");
   for (let i = 0; i < bp.count; i++) {
     if (bp.getY(i) > 0) bp.setY(i, bp.getY(i) - hash(i * 3.1) * 0.006);
   }
-  bone.translate(ox, (CAP.boneProudM + 0.004) / 2 + 0.002, 0);
-  parts.push(paint(bone, (x, y, z) => (Math.hypot(x - ox, z) < br * 0.55 && y > CAP.boneProudM - 0.002 ? col(cyber ? "#0A0C0E" : CAP.marrow) : col(cyber ? "#8A949E" : CAP.bone))));
+  bone.translate(ox, (CAP.boneProudM + dome) / 2 + 0.002, oz);
+  const boneTop = CAP.boneProudM + dome;
+  parts.push(paint(bone, (x, y, z) => (Math.hypot(x - ox, z - oz) < br * 0.55 && y > boneTop - 0.004 ? col(cyber ? "#0A0C0E" : CAP.marrow) : col(cyber ? "#8A949E" : CAP.bone))));
+  if (neck && !cyber) {
+    // The windpipe: a pale cartilage ring round a dark hole, in front of the spine.
+    const tr = r * 0.2;
+    const pipe = new THREE.LatheGeometry([new THREE.Vector2(tr * 0.55, dome + 0.003), new THREE.Vector2(tr, dome + 0.004), new THREE.Vector2(tr * 1.05, dome * 0.5)].reverse(), phone ? 7 : 10);
+    pipe.translate(0, 0, r * 0.38);
+    parts.push(paint(pipe, col(CAP.fat)));
+    const hole = new THREE.CircleGeometry(tr * 0.58, phone ? 7 : 10).rotateX(-Math.PI / 2).translate(0, dome + 0.0028, r * 0.38);
+    parts.push(paint(hole, col("#140204")));
+  }
   if (cyber) {
     // The coolant ring: a thin lathe band at the core's edge, glowing cyan (above 1: the shader's glow).
     const ring = new THREE.LatheGeometry([new THREE.Vector2(fr * 0.8, 0.0072), new THREE.Vector2(fr * 0.9, 0.0072)].reverse(), n);
@@ -154,7 +179,7 @@ export function buildCap(r: number, cyber: boolean, phone: boolean): THREE.Buffe
   const strandCol = cyber ? col("#2C3238") : suit;
   for (let k = 0; k < 3; k++) {
     const a = k * 2.2 + 0.4 + hash(k + 3) * 0.6;
-    parts.push(strand(r, a, 0.028 + hash(k + 5) * 0.02, cyber ? 0.004 : r * 0.16, strandCol, k * 13));
+    parts.push(strand(r, a, 0.034 + hash(k + 5) * 0.026, cyber ? 0.004 : r * 0.18, strandCol, k * 13));
   }
   const g = mergeGeometries(parts, false)!;
   for (const p of parts) p.dispose();
@@ -180,11 +205,11 @@ const caps = new Map<string, THREE.BufferGeometry>();
 const mats = new Map<boolean, THREE.MeshStandardMaterial>();
 
 /** A cached cap geometry (radius to the millimetre). */
-export function capGeometry(r: number, cyber: boolean, phone: boolean): THREE.BufferGeometry {
-  const key = `${Math.round(r * 1000)}:${cyber ? 1 : 0}:${phone ? 1 : 0}`;
+export function capGeometry(r: number, cyber: boolean, phone: boolean, neck = false): THREE.BufferGeometry {
+  const key = `${Math.round(r * 1000)}:${cyber ? 1 : 0}:${phone ? 1 : 0}:${neck ? 1 : 0}`;
   let g = caps.get(key);
   if (!g) {
-    g = buildCap(r, cyber, phone);
+    g = buildCap(r, cyber, phone, neck);
     caps.set(key, g);
   }
   return g;
@@ -197,6 +222,47 @@ export function sharedCapMaterial(phone: boolean): THREE.MeshStandardMaterial {
     mats.set(phone, m);
   }
   return m;
+}
+
+/**
+ * C19 (S4.5 "head severs with the jaw"): the lower jaw a severed head carries on its hinge, in the head bone's frame
+ * (+Y up the head, +Z the face): a U of jawbone under the balaclava, the lower teeth along its top and the wet dark
+ * of the mouth behind them. The hinge is at the origin (under the ears); the body swings it open as the head tumbles.
+ */
+export function jawGeometry(phone: boolean): THREE.BufferGeometry {
+  const key = `jaw:${phone ? 1 : 0}`;
+  const hit = caps.get(key);
+  if (hit) return hit;
+  const parts: THREE.BufferGeometry[] = [];
+  const n = phone ? 6 : 10;
+  // The mandible: half a torus opening back toward the hinge, dropping from the ears to the chin.
+  const arc = new THREE.TorusGeometry(0.046, 0.011, phone ? 4 : 6, n, Math.PI);
+  arc.rotateX(Math.PI / 2).rotateY(-Math.PI / 2).scale(1, 1, 1.5);
+  arc.translate(0, -0.03, 0.012);
+  parts.push(paint(arc, col(CAP.suit)));
+  // The lower teeth along its top, and the mouth (a dark wet floor) inside the U.
+  const teeth = new THREE.TorusGeometry(0.04, 0.0055, 3, n, Math.PI * 0.8);
+  teeth.rotateX(Math.PI / 2).rotateY(-Math.PI / 2).rotateY(Math.PI * 0.1).scale(1, 1, 1.45);
+  teeth.translate(0, -0.019, 0.016);
+  parts.push(paint(teeth, col(CAP.bone)));
+  const mouth = new THREE.CircleGeometry(0.038, n).rotateX(-Math.PI / 2).scale(1, 1, 1.5).translate(0, -0.027, 0.03);
+  parts.push(paint(mouth, col(CAP.coreDeep)));
+  const g = mergeGeometries(parts, false)!;
+  for (const p of parts) p.dispose();
+  g.computeBoundingSphere();
+  caps.set(key, g);
+  return g;
+}
+
+/**
+ * Builds every cap a body can show up front (C19 review: the first sever built its lathe mid-fight and the frame
+ * that cut the arm went over the combat budget). `radii` are the segments' cut radii.
+ */
+export function prewarmCaps(radii: readonly number[], neckR: number, phone: boolean): void {
+  for (const r of radii) for (const cyber of [false, true]) capGeometry(r, cyber, phone);
+  capGeometry(neckR, false, phone, true);
+  sharedCapMaterial(phone);
+  jawGeometry(phone);
 }
 
 // ------------------------------------------------------------------ chrome limbs (Candor augments)

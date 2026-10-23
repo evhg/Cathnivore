@@ -1023,6 +1023,19 @@ for (const vp of vps) {
         if (!sv.stumps) fail(`${vp} ${spec}: no live stump (spurt/trail) at the frame`)
         if (!sv.stump?.front && !sv.piece?.front) fail(`${vp} ${spec}: neither the stump nor the piece is in frame`)
         if (stage === 'coolant-cyber' && !(sv.cyber && (sv.arcs > 0 || sv.puddles > 0))) fail(`${vp} ${spec}: the chrome cut shows no arcs or coolant`)
+        // C19 review: counting caps passed while no cap could be seen. The caps' own pixels: drawn with and without
+        // them, the fat and bone (pale) and the red core must both show round the stump and the piece.
+        const pr = Math.round(Math.max(24, V.viewport.width * 0.03))
+        const cp = await page.evaluate((r) => window.cathode.probeCaps?.(r) ?? null, pr)
+        const dpr2 = (V.dsf ?? 1) ** 2
+        console.log(`  C19 ${vp} ${spec}: cap pixels ${cp ? `${cp.pale} fat/bone, ${cp.flesh} flesh, ${cp.cyan} coolant, ${cp.changed} changed` : 'n/a'} within ${pr} px (x${dpr2} device px)`)
+        if (sv.cyber) {
+          // Chrome: the steel collar and rod, and the coolant ring glowing cyan.
+          if (!cp || cp.cyan + cp.pale < 12 * dpr2) fail(`${vp} ${spec}: the chrome caps' steel and coolant don't show (${cp ? cp.cyan + cp.pale : 0} px)`)
+        } else {
+          if (!cp || cp.pale < 12 * dpr2) fail(`${vp} ${spec}: the caps' fat and bone don't show (${cp?.pale ?? 0} px)`)
+          if (!cp || cp.flesh < 12 * dpr2) warn(`${vp} ${spec}: the caps' flesh barely shows (${cp?.flesh ?? 0} px)`)
+        }
         // A crop on the cut, for judging the cap at full size.
         const fo = sv.stump?.front ? sv.stump : sv.piece
         if (fo) {

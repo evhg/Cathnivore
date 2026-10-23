@@ -12,7 +12,7 @@ import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
 import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
-import { bodyView, deadCost, deathGlowScale, type Body } from "./body";
+import { bodyView, deadCost, deathGlowScale, prewarmGore, type Body } from "./body";
 import { POOLS } from "../render/pools";
 import { deathFx, type DeathVariant } from "./death";
 import { RayWorld, rayGround } from "./ray";
@@ -241,6 +241,12 @@ export interface Session {
   /** C8 acceptance: blood-red pixels in the rendered frame (hue 350..10, saturation > 0.6, value > 0.25). */
   /** Blood-red pixels in the world (no viewmodel): the whole frame, or a disc (CSS px) round a body. */
   probeBloodRed?: (x?: number, y?: number, r?: number) => { red: number; total: number };
+  /**
+   * C19 acceptance: the last cut's caps as seen. The frame is drawn with and without the caps (and the jaw); of the
+   * pixels within `r` CSS px of each cap's screen point that the caps change, `pale` are the fat and bone (warm, light,
+   * not saturated) and `flesh` the red core. (Pixels, not a count of meshes: C19 review.)
+   */
+  probeCaps?: (r?: number) => { pale: number; flesh: number; cyan: number; changed: number };
   /** C7: a stim's screen and sound (the wash, the slower heart, the lens wiped), as the Stim skill plays them. */
   stim?: () => void;
   /** C7 acceptance: the grade pass's mean ms with the Vitals pass idle and at its busiest. */
@@ -327,6 +333,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   deadCost.cheap = o.quality === "phone";
   // C10: the enemies' LODs, geometry profile and cloth read the view (?lod=0|1|2 forces a LOD for review shots).
   bodyView.phone = o.quality === "phone";
+  // C19: the gore caps are built now, not on the frame of the first sever (it went over the combat budget).
+  prewarmGore(bodyView.phone);
   {
     const fl = new URLSearchParams(location.search).get("lod");
     bodyView.forceLod = fl === "0" || fl === "1" || fl === "2" ? (Number(fl) as 0 | 1 | 2) : -1;
@@ -3475,6 +3483,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     drainDeaths();
     judgeKillCams();
     lastEnemySlowmo();
+    const severNow = combat.kills.some((k) => k.severed.length > 0);
     for (const k of combat.kills) {
       onKill(k);
       if (k.severed.length) audio?.sever(k.enemy.isCyber(k.severed[0]!));
@@ -3505,6 +3514,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (best) {
       const d = best.d;
       hud.hitMarker(best.cls);
+      // C19: a cut is its own confirm: the kill ring is a thin, quick line, so the piece flying through the centre
+      // of the screen isn't hidden behind a glowing disc (C19 review).
+      if (severNow) hud.severMark();
       audio?.confirm(confirmSound(best.cls, d));
       // A crit that didn't kill (the stagger window's guaranteed one, or a lucky round) says so in the feed (S4.2).
       if (d.crit && !d.lethal && !o.shot) hud.feedLine("Crit", true);
@@ -5904,6 +5916,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     lastHitSeg = null;
     zoomAt = null;
     zoomOn = false;
+    // C19 review: a death stage frames the same way every run (the sever's spin, the spray, the ragdoll's jitter):
+    // Math.random is a seeded stream from the shot until the stage's moment.
+    const mathRandom = Math.random;
+    if (c9) {
+      let seed = 0x1919;
+      Math.random = () => {
+        seed = (seed + 0x6d2b79f5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
     // No random crit: a stage shows the same class every time.
     for (let i = 0; i < (c15?.rounds ?? 1); i++) combat.fire({ weapon: w, origin, muzzle: origin.clone(), dirs: [dir] } as unknown as Parameters<Combat["fire"]>[0], { ...build(), crit: 0 });
     combat.quiet = false;
@@ -5929,6 +5953,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (c9) drainDeaths();
       world.update(0, 1, h);
     }
+    Math.random = mathRandom;
     Enemy.forceCrawl = null;
     const gp = world.fx.gore?.pools;
     if (c9?.pool && gp) {
@@ -5946,8 +5971,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const focus = cutAt ?? (c9.pool && pl ? pl.at.clone() : g.body.joints.chest.clone().lerp(g.body.joints.pelvis, 0.5).lerp(g.body.joints.head, c9.variant === "wallslump" ? 0.3 : 0));
       const back = new THREE.Vector3(eye.x - focus.x, 0, eye.z - focus.z);
       // A phone's screen is small: it frames the body closer, so he isn't a 60 px figure behind her gun.
-      // (A cut is framed at 2.3 m on every screen: closer on a phone, the body sat behind her gun.)
-      const want = cutAt ? 2.3 : (c9.pool ? 3.2 : 3.3) * (o.quality === "phone" ? 0.72 : 1);
+      // (A cut is framed at the same distance on every screen: closer on a phone, the body sat behind her gun.)
+      // (C19 review: from 2.3 m the caps were a few pixels; 1.8 m holds the stump, the piece and his chest.)
+      const want = cutAt ? 1.8 : (c9.pool ? 3.2 : 3.3) * (o.quality === "phone" ? 0.72 : 1);
       // A body at rest is shot from beside it (a three-quarter view from the side she stands on): lying along the
       // line of fire, it is foreshortened into a lump whatever its pose (C9 review).
       const axis = new THREE.Vector3().subVectors(g.body.joints.head, g.body.joints.pelvis).setY(0);
@@ -6013,16 +6039,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
       const pool = !!c9.pool;
       const headKill = c9.variant === "headshot";
+      /** C19: a cut's frame, once chosen (below): the yaw and pitch offsets off the cut. */
+      let cutAim: { yaw: number; pitch: number } | null = null;
       const frameOn = () => {
         player.applyCamera(world.camera, 0);
         world.camera.updateMatrixWorld();
         world.camera.getWorldPosition(eye);
         const look2 = focus.clone().add(new THREE.Vector3(0, pool ? 0 : 0.1, 0)).sub(eye).normalize();
-        player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1)) + (pool ? 0.04 : 0);
+        player.pitch = Math.asin(THREE.MathUtils.clamp(look2.y, -1, 1)) + (pool ? 0.04 : 0) + (cutAim?.pitch ?? 0);
         // A touch off centre to the left, clear of the gun in her right hand.
         // The pool stage puts him further left, so the crosshair sits on the open pool and not on the body.
         // The head kill's ring is the biggest marker: he falls left of it, not under it (C9 review).
-        player.yaw = Math.atan2(-look2.x, -look2.z) - (pool ? 0.24 : cutAt ? 0.3 : lying ? 0.28 : headKill ? 0.24 : 0.13);
+        player.yaw = Math.atan2(-look2.x, -look2.z) - (cutAim ? cutAim.yaw : pool ? 0.24 : lying ? 0.28 : headKill ? 0.24 : 0.13);
         player.applyCamera(world.camera, 0);
         world.camera.updateMatrixWorld();
         poolInfo = null;
@@ -6036,6 +6064,71 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         }
       };
       frameOn();
+      if (cut && cutAt) {
+        // C19 review: the caps faced away, the piece tumbled into the kill ring, and the body fell behind her gun or the
+        // vitals. The cut is framed for the cut: from the side its stump's cap faces (the piece's counts too), then
+        // turned so the stump, the piece and his chest all sit clear of the ring at the centre, her gun at the lower
+        // right and the HUD's corners.
+        const capOf = (obj: THREE.Object3D) => {
+          obj.updateWorldMatrix(true, false);
+          return { p: new THREE.Vector3().setFromMatrixPosition(obj.matrixWorld), n: new THREE.Vector3().setFromMatrixColumn(obj.matrixWorld, 1).normalize() };
+        };
+        const S = cut.stump ? capOf(cut.stump) : null;
+        const P = capOf(cut.piece);
+        const vw = world.renderer.domElement.clientWidth;
+        const vh = world.renderer.domElement.clientHeight;
+        const ringR = Math.max(vw * 0.1, vh * 0.16);
+        const v3 = new THREE.Vector3();
+        // How badly a point sits in the frame: off the safe area, under the ring, behind her gun.
+        const miss = (p: THREE.Vector3) => {
+          v3.copy(p).project(world.camera);
+          if (v3.z > 1) return 6;
+          const x = ((v3.x + 1) / 2) * vw;
+          const y = ((1 - v3.y) / 2) * vh;
+          const nx = x / vw;
+          const ny = y / vh;
+          let k = 0;
+          if (nx < 0.08 || nx > 0.92 || ny < 0.16 || ny > 0.78) k += 3 + Math.max(0.08 - nx, nx - 0.92, 0.16 - ny, ny - 0.78, 0) * 10;
+          const dc = Math.hypot(x - vw / 2, y - vh / 2);
+          if (dc < ringR) k += 2 * (1 - dc / ringR);
+          if (nx > 0.47 && ny > 0.5) k += 2;
+          return k;
+        };
+        const from = focus.clone().setY(ground(focus.x, focus.z) + 1.2);
+        const here = player.pos.clone();
+        let best: { score: number; pos: THREE.Vector3; aim: { yaw: number; pitch: number } } | null = null;
+        for (let i = 0; i < 16; i++) {
+          const a = (i / 16) * Math.PI * 2;
+          const d = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
+          for (const dist of [want, want + 0.4]) {
+            if (rays.cast(from, d, dist + 0.5, { thin: false })) continue;
+            player.pos.set(focus.x + d.x * dist, 0, focus.z + d.z * dist);
+            player.pos.y = ground(player.pos.x, player.pos.z);
+            cutAim = { yaw: 0, pitch: 0 };
+            frameOn();
+            // The caps face her: the stump's counts most (it is the gore beat that stays), the piece's after it.
+            const face = (S ? S.n.dot(v3.subVectors(eye, S.p).normalize()) : 0) + 0.6 * P.n.dot(v3.subVectors(eye, P.p).normalize());
+            for (let yo = -0.5; yo <= 0.5001; yo += 0.0625) {
+              for (const po of [-0.16, -0.08, 0, 0.08]) {
+                cutAim = { yaw: yo, pitch: po };
+                frameOn();
+                const pen = (S ? miss(S.p) : 0) + miss(P.p) + 0.5 * miss(g.body.joints.chest) + 0.3 * miss(g.body.joints.pelvis);
+                const score = face * 1.5 - pen - Math.abs(yo) * 0.2 - (dist - want) * 0.3;
+                if (!best || score > best.score) best = { score, pos: player.pos.clone(), aim: cutAim };
+              }
+            }
+          }
+        }
+        if (best) {
+          player.pos.copy(best.pos);
+          cutAim = best.aim;
+        } else {
+          player.pos.copy(here);
+          cutAim = { yaw: 0.3, pitch: 0 };
+        }
+        otherSide = null;
+        frameOn();
+      }
       if (otherSide && s.probePool) {
         // A big out-of-focus sign or window reflected in the wet street at her feet, under the vitals, reads as a
         // rendering artefact (C9 review): if this side has one and the other side doesn't, shoot from the other.
@@ -6340,6 +6433,69 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (h <= 10 && h >= -10) red++;
     }
     return { red, total };
+  };
+  s.probeCaps = (cr = 40) => {
+    const g0 = enemies.find((e) => e.body.lastCut);
+    const cut = g0?.body.lastCut;
+    if (!cut) return { pale: 0, flesh: 0, cyan: 0, changed: 0 };
+    const c = world.renderer.domElement;
+    const kk = c.width / Math.max(1, c.clientWidth);
+    const caps = [cut.stump, cut.piece].filter((o): o is THREE.Object3D => !!o);
+    const jaw = g0!.body.root.getObjectByName("jaw");
+    const pts = caps.map((o) => toScreen(o.getWorldPosition(new THREE.Vector3())));
+    const vmWas = world.viewScene.visible;
+    world.viewScene.visible = false;
+    const grab = () => {
+      render();
+      const cv = document.createElement("canvas");
+      cv.width = c.width;
+      cv.height = c.height;
+      const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+      g2.drawImage(c, 0, 0);
+      return g2.getImageData(0, 0, cv.width, cv.height).data;
+    };
+    const on = grab();
+    const vis = caps.map((o) => o.visible);
+    const jawVis = jaw?.visible ?? false;
+    for (const o of caps) o.visible = false;
+    if (jaw) jaw.visible = false;
+    const off = grab();
+    caps.forEach((o, i) => (o.visible = vis[i]!));
+    if (jaw) jaw.visible = jawVis;
+    world.viewScene.visible = vmWas;
+    render();
+    let pale = 0;
+    let flesh = 0;
+    let cyan = 0;
+    let changed = 0;
+    const R = cr * kk;
+    const seen = new Set<number>();
+    for (const p of pts) {
+      const x0 = Math.max(0, Math.floor(p.x * kk - R));
+      const x1 = Math.min(c.width - 1, Math.ceil(p.x * kk + R));
+      const y0 = Math.max(0, Math.floor(p.y * kk - R));
+      const y1 = Math.min(c.height - 1, Math.ceil(p.y * kk + R));
+      for (let y = y0; y <= y1; y++) {
+        for (let x = x0; x <= x1; x++) {
+          const q = y * c.width + x;
+          if (seen.has(q) || (x - p.x * kk) ** 2 + (y - p.y * kk) ** 2 > R * R) continue;
+          seen.add(q);
+          const i = q * 4;
+          const d = Math.abs(on[i]! - off[i]!) + Math.abs(on[i + 1]! - off[i + 1]!) + Math.abs(on[i + 2]! - off[i + 2]!);
+          if (d < 24) continue;
+          changed++;
+          const r = on[i]! / 255;
+          const gg = on[i + 1]! / 255;
+          const b = on[i + 2]! / 255;
+          const mx = Math.max(r, gg, b);
+          const mn = Math.min(r, gg, b);
+          if (gg > r * 1.3 && b > r * 1.3 && mx > 0.3) cyan++;
+          else if (mx > 0.38 && r >= b && (mx - mn) < 0.55 * mx) pale++;
+          else if (mx === r && mx > 0.12 && mx - mn > 0.5 * mx) flesh++;
+        }
+      }
+    }
+    return { pale, flesh, cyan, changed };
   };
   s.probeWound = () => {
     const c = world.renderer.domElement;

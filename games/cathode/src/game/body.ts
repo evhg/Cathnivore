@@ -16,7 +16,7 @@ import { BASE_JOINTS, JOINTS, REST, SEGMENTS, FX0, HELM_Y, KNUCKLE_Y, ACCESSORY_
 import { LAYER_NO_REFLECT, LAYER_MIRROR_ONLY } from "../render/reflection";
 import { archGeometry, type Arch, type Lod } from "./models/enforcer";
 import { enemyMaterials, fxBone, setFx, FX_BONES, GORE_MAT } from "./models/materials";
-import { capGeometry, chromeMaterial, chromeSleeve, sharedCapMaterial } from "./models/gorecap";
+import { CAP, capGeometry, chromeMaterial, chromeSleeve, jawGeometry, prewarmCaps, sharedCapMaterial } from "./models/gorecap";
 import { Cloth, TABARD, COAT_TAILS } from "./cloth";
 
 export { JOINTS, REST, SEGMENTS, type Joint, type Zone, type SegmentDef } from "./rig";
@@ -28,6 +28,8 @@ const HELM_R = 0.14;
 
 /** The death glow's strength for this session: the phone's fog and lighter grade need it brighter (set by session.ts). */
 export const deathGlowScale = { value: 1, rimPow: 0, rimGain: 1 };
+/** C19: the kill pulse on a body that was cut (deathGlow(mul, true)): its share, fade and a tighter edge. */
+export const SEVER_GLOW = { mul: 0.45, fadeMs: 150, pow: 5 };
 /**
  * Phone (S0 budget, C9 review: four death stages at 261 to 300 calls against 260): a body that has gone down leaves
  * the street's mirror and stops casting shadows. On the floor its reflection lies under it and its shadow is a
@@ -101,6 +103,13 @@ export function enforcerLook(visorColor = HOLLOWELL_AMBER, arch: Arch = "enforce
 const IDENT = new THREE.Matrix4();
 /** C19 (S4.5): the cut's flesh radius per segment (m, the suit's tube under any plate): the gore cap's size. */
 const CUT_R: Record<string, number> = { head: 0.062, upperArmL: 0.066, upperArmR: 0.066, forearmL: 0.058, forearmR: 0.058, handL: 0.045, handR: 0.045, thighL: 0.088, thighR: 0.088, shinL: 0.072, shinR: 0.072 };
+/** C19: builds every gore cap a body can show (cached), so the frame that cuts a man doesn't build one (session start). */
+export function prewarmGore(phone: boolean): void {
+  prewarmCaps(Object.values(CUT_R), CUT_R.head!, phone);
+}
+
+/** C19: the severed head's jaw hinge in the head bone's frame (m), how far it drops open (rad) and its swing. */
+const JAW = { hingeY: 0.1, hingeZ: 0.03, open: 0.42, tauS: 0.35, ringHz: 3.2 };
 /** A cap before any cut (never seen: caps are hidden until a sever gives them their real geometry). */
 const capGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.02, 6);
 /** Each segment's outer surface round its bone (m): where wounds sit on the plates, the suit and the helmet. */
@@ -192,6 +201,11 @@ export class Body {
   /** Ms since this body died (the death glow, C2), or 1e9 while it lives. */
   private deathAge = 1e9;
   private deathMul = 1;
+  /**
+   * C19: a body that lost a part to the killing blow: the kill pulse is a thin edge, gone in 150 ms with no hold,
+   * so the gore caps and the stump's blood read on his own dark suit, not on a pink-lit mannequin (C19 review).
+   */
+  private deathFast = false;
   /** C10: the skeleton every LOD's meshes share: segment bones, the helmet, the finger sets, then the fx bones. */
   readonly skeleton: THREE.Skeleton;
   private readonly fx: THREE.Bone[] = [];
@@ -247,6 +261,8 @@ export class Body {
       capB.position.y = len / scale;
       capA.name = "capFrom";
       capB.name = "capTo";
+      capA.scale.setScalar(CAP.viewScale);
+      capB.scale.setScalar(CAP.viewScale);
       capA.visible = capB.visible = false;
       bone.add(capA, capB);
       this.root.add(bone);
@@ -366,7 +382,8 @@ export class Body {
    * The kill confirmed on the body (C2): every segment's rim glows a deep red as he goes down, holds, then
    * dies away, so a dark body falling on a dark street still catches the eye where the kill landed.
    */
-  deathGlow(mul = 1): void {
+  deathGlow(mul = 1, fast = false): void {
+    this.deathFast = fast;
     this.deathAge = 0;
     this.rimMul = Math.min(1, mul);
     this.deathMul = deathGlowScale.value * mul;
@@ -388,6 +405,9 @@ export class Body {
     }
     this.lost.clear();
     this.lastCut = null;
+    const jaw = this.segs.get("head")?.group.getObjectByName("jaw");
+    if (jaw) jaw.visible = false;
+    this.jawT = -1;
     this.resetPlates();
     this.setCheap(false);
     this.ragdoll = false;
@@ -476,7 +496,9 @@ export class Body {
     if (this.deathAge < 1e8) {
       const a = (this.deathAge += dtMs);
       const L = D.level * this.deathMul;
-      dk = a < D.holdMs ? L : a < D.holdMs + D.fadeMs ? L * (1 - (a - D.holdMs) / D.fadeMs) ** 2 : 0;
+      const holdMs = this.deathFast ? 0 : D.holdMs;
+      const fadeMs = this.deathFast ? SEVER_GLOW.fadeMs : D.fadeMs;
+      dk = a < holdMs ? L : a < holdMs + fadeMs ? L * (1 - (a - holdMs) / fadeMs) ** 2 : 0;
       if (dk > 0) any = true;
       else this.deathAge = 1e9;
       // C9: the kill glow is a pulse on the silhouette only (the edge rim), gone within 0.65 s, so the fall reads as
@@ -485,7 +507,7 @@ export class Body {
       const r = L > 0 ? dk / L : 0;
       const g = D.rimGain * deathGlowScale.rimGain * dk;
       const c = (1 - r) * (1 - r);
-      const pow = deathGlowScale.rimPow || D.rimPow;
+      const pow = this.deathFast ? SEVER_GLOW.pow : deathGlowScale.rimPow || D.rimPow;
       // A takedown's body (deathGlow(mul < 1)) is at arm's length: both rims scale down with it, or the edge term
       // spreads over his whole front and he reads as a pink (then grey) mannequin.
       const m = this.rimMul;
@@ -750,6 +772,9 @@ export class Body {
   /** C19: the last cut's two caps (the stump's and the flying piece's), for the spurt and the trail (render/gore.ts). */
   lastCut: { stump: THREE.Object3D | null; piece: THREE.Object3D; seg: string; cyber: boolean } | null = null;
 
+  /** C19: seconds since the head (and its jaw) came off; the jaw's swing runs on it. */
+  private jawT = -1;
+
   /** C19: true when this segment is chrome (its look's cyber list). */
   isCyber(seg: string): boolean {
     return !!this.look.cyber?.includes(seg);
@@ -779,12 +804,16 @@ export class Body {
     const out: string[] = [];
     const cyber = this.isCyber(name);
     const r = CUT_R[name] ?? s.def.radius * 0.8;
-    const geo = capGeometry(r, cyber, bodyView.phone);
+    const neck = name === "head";
+    const geo = capGeometry(r, cyber, bodyView.phone, neck);
     const mat = sharedCapMaterial(bodyView.phone);
     // The spin: the piece's two ends get opposite tangential velocities about an axis across the bone.
     const axis = tmpA.subVectors(this.joints[s.def.to], this.joints[s.def.from]);
-    const across = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).cross(axis);
-    if (across.lengthSq() < 1e-8) across.set(1, 0, 0);
+    // The ends move apart across both the bone and the flight (the piece spins about its line of flight like a thrown
+    // baton, its cap sweeping round where she can see it), so the same cut tumbles the same way every time (C19 review: the stages framed differently run to run).
+    const across = vel.clone().cross(axis);
+    if (across.lengthSq() < 1e-8) across.set(1, 0, 0).cross(axis);
+    if (across.lengthSq() < 1e-8) across.set(0, 0, 1);
     across.normalize().multiplyScalar((spin * s.len) / 2);
     const go = (seg: Seg, v: THREE.Vector3, parent: Seg | undefined) => {
       const a = this.joints[seg.def.from].clone();
@@ -827,6 +856,7 @@ export class Body {
       if (host) {
         const cap = new THREE.Mesh(geo, mat);
         cap.name = "capCut";
+        cap.scale.setScalar(CAP.viewScale);
         host.group.updateMatrixWorld(true);
         const at = host.group.worldToLocal(this.joints[s.def.from].clone());
         const toward = host.group.worldToLocal(this.joints[s.def.to].clone()).sub(at).normalize();
@@ -846,6 +876,20 @@ export class Body {
         cap.visible = true;
         stump = cap;
       }
+    }
+    if (neck && !cyber) {
+      // The jaw goes with the head, on its hinge under the ears: it drops open and swings as the head tumbles.
+      const head = this.segs.get("head")!.group;
+      let jaw = head.getObjectByName("jaw") as THREE.Mesh | undefined;
+      if (!jaw) {
+        jaw = new THREE.Mesh(jawGeometry(bodyView.phone), mat);
+        jaw.name = "jaw";
+        jaw.position.set(0, JAW.hingeY, JAW.hingeZ);
+        head.add(jaw);
+      }
+      jaw.rotation.set(0, 0, 0);
+      jaw.visible = true;
+      this.jawT = 0;
     }
     this.lastCut = { stump, piece: pc, seg: name, cyber };
     return out;
@@ -974,6 +1018,12 @@ export class Body {
         this.asleepFor = 0;
         for (const j of JOINTS) this.prev[j].copy(this.joints[j]);
       }
+    }
+    if (this.jawT >= 0 && dt > 0) {
+      // The jaw drops open on its hinge and rings about it as the head tumbles (a damped swing, settling half open).
+      const t = (this.jawT += dt);
+      const jaw = this.segs.get("head")!.group.getObjectByName("jaw");
+      if (jaw) jaw.rotation.x = JAW.open * (1 - Math.exp(-t / JAW.tauS) * Math.cos(t * JAW.ringHz * Math.PI * 2));
     }
     for (const s of this.segs.values()) {
       const l = s.loose;

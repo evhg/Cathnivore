@@ -223,7 +223,7 @@ export function createFx(o: {
   const pool: P[] = [];
   const live: P[] = [];
   const reduced = o.intensity === "reduced";
-  const rand = Math.random;
+  const rand = () => Math.random();
   const tmpV = new THREE.Vector3();
   const lit = new THREE.Color();
 

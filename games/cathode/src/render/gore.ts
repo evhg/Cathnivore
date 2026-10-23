@@ -63,12 +63,16 @@ export const SEVER_FX = {
   trail: { per: 2, stepS: 0.1, forS: 0.8 },
   /** The cut itself: drops thrown out of both faces at the moment of the sever. */
   burst: 14,
+  /** The severing round's own spray slows to this share when its segment flies off (it stays at the cut). */
+  hitDamp: 0.45,
   /** Coolant (S4.5's cyber hit): its colour, its emissive (x0.8), and its puddles fading to #0A3A35 over 20 s. */
   coolant: "#00E5C8",
   coolantGlow: 0.8,
-  puddle: { to: "#0A3A35", fadeS: 20, size: [0.12, 0.26] as const, phone: 10, desktop: 24 },
+  /** Coolant puddles: `hot` x the cyan on landing, cooling over `hotS`, then to `to` over `fadeS`. */
+  puddle: { to: "#0A3A35", fadeS: 20, size: [0.18, 0.34] as const, phone: 10, desktop: 24, hot: 2.4, hotS: 4 },
   /** Chrome stumps arc: four 3-segment lines, re-struck every frame, for this long; sparks with each pulse. */
-  arcs: { count: 4, segs: 3, forS: 1.6, len: [0.05, 0.15] as const, sparks: 0.22 },
+  /** Chrome arcs: `width` m wide ribbons (a few px at 2.3 m), joints jumping `kink` x a segment off the line. */
+  arcs: { count: 4, segs: 3, forS: 1.6, len: [0.07, 0.18] as const, sparks: 0.22, width: 0.007, kink: 1.6 },
   /** Cyber hits: 2 to 4 sparks. */
   cyberSparks: [2, 4] as const,
 };
@@ -414,7 +418,7 @@ export function createGore(o: GoreDeps): Gore {
   const mist = new Pool(C.mist, false, o.noise);
   const drops = new Pool(C.drops, true, o.noise);
   o.scene.add(mist.mesh, drops.mesh);
-  const rand = Math.random;
+  const rand = () => Math.random();
   // Segments effects ride for their first 80 ms, refcounted by the particles on them (no per-frame pool scan).
   const anchors: (THREE.Object3D | null)[] = [];
   const refs: number[] = [];
@@ -878,7 +882,8 @@ export function createGore(o: GoreDeps): Gore {
   puddleMesh.name = "gore:coolant";
   puddleMesh.count = 0;
   puddleMesh.frustumCulled = false;
-  puddleMesh.layers.enable(LAYER_NO_REFLECT);
+  // Off the planar mirror's pass like every other gore mesh (layers.set: enable() left it on layer 0 too).
+  puddleMesh.layers.set(LAYER_NO_REFLECT);
   puddleMesh.setColorAt(0, COOL);
   o.scene.add(puddleMesh);
   const puddles: { at: THREE.Vector3; r: number; age: number }[] = [];
@@ -916,17 +921,43 @@ export function createGore(o: GoreDeps): Gore {
   }
   const cuts: Cut[] = [];
   const ARC_MAX = 2;
-  const arcVerts = SEVER_FX.arcs.count * SEVER_FX.arcs.segs * 2;
-  const arcPos = new Float32Array(ARC_MAX * arcVerts * 3);
+  // C19 review: a GL line is one pixel wide at any size and read as a straight white bloom bar. Each arc segment is a
+  // ribbon now: two crossed quads (so it has width from any side), a few millimetres wide, tapering along the arc.
+  const arcQuads = SEVER_FX.arcs.count * SEVER_FX.arcs.segs * 2;
+  const arcPos = new Float32Array(ARC_MAX * arcQuads * 6 * 3);
   const arcGeo = new THREE.BufferGeometry();
   arcGeo.setAttribute("position", new THREE.BufferAttribute(arcPos, 3));
   arcGeo.setDrawRange(0, 0);
-  const arcMat = new THREE.LineBasicMaterial({ color: new THREE.Color(2.6, 6.5, 6.2), transparent: true, opacity: 0.95, depthWrite: false });
-  const arcLines = new THREE.LineSegments(arcGeo, arcMat);
+  const arcMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 6.5, 6.2), transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide });
+  const arcLines = new THREE.Mesh(arcGeo, arcMat);
   arcLines.name = "gore:arcs";
   arcLines.frustumCulled = false;
-  arcLines.layers.enable(LAYER_NO_REFLECT);
+  arcLines.layers.set(LAYER_NO_REFLECT);
   o.scene.add(arcLines);
+  const arcU = new THREE.Vector3();
+  const arcV = new THREE.Vector3();
+  const arcD = new THREE.Vector3();
+  /** Writes one ribbon segment (p to q, `w0`/`w1` wide at its ends) as two crossed quads at float `at`; returns the next. */
+  const arcQuad = (at: number, px: number, py: number, pz: number, qx: number, qy: number, qz: number, w0: number, w1: number): number => {
+    arcD.set(qx - px, qy - py, qz - pz);
+    arcU.set(0, 1, 0).cross(arcD);
+    if (arcU.lengthSq() < 1e-10) arcU.set(1, 0, 0).cross(arcD);
+    arcU.normalize();
+    arcV.crossVectors(arcD, arcU).normalize();
+    for (const ax of [arcU, arcV]) {
+      const ax0 = ax.x * w0, ay0 = ax.y * w0, az0 = ax.z * w0;
+      const ax1 = ax.x * w1, ay1 = ax.y * w1, az1 = ax.z * w1;
+      const P = arcPos;
+      // (p - a0, p + a0, q + a1) and (p - a0, q + a1, q - a1)
+      P[at++] = px - ax0; P[at++] = py - ay0; P[at++] = pz - az0;
+      P[at++] = px + ax0; P[at++] = py + ay0; P[at++] = pz + az0;
+      P[at++] = qx + ax1; P[at++] = qy + ay1; P[at++] = qz + az1;
+      P[at++] = px - ax0; P[at++] = py - ay0; P[at++] = pz - az0;
+      P[at++] = qx + ax1; P[at++] = qy + ay1; P[at++] = qz + az1;
+      P[at++] = qx - ax1; P[at++] = qy - ay1; P[at++] = qz - az1;
+    }
+    return at;
+  };
   let arcsLive = 0;
   const capAt = (obj: THREE.Object3D, pos: THREE.Vector3, nrm: THREE.Vector3) => {
     obj.updateWorldMatrix(true, false);
@@ -940,8 +971,33 @@ export function createGore(o: GoreDeps): Gore {
   // seen for 1.5 s and must read as blood, not embers.
   const spurtColor = (p: THREE.Vector3, cyber: boolean, out: THREE.Color) => (cyber ? coolant(p, out) : tinted(p, PUFF, GORE.puff.lift, out).multiplyScalar(1.15));
   const ARC_GLOW = new THREE.Color(1.2, 3.4, 3.2);
+  // Scratch (updateCuts runs every frame: no allocation in it).
+  const cutCol = new THREE.Color();
+  const pm4 = new THREE.Matrix4();
+  const pcol = new THREE.Color();
   const sever = (cut: SeverCut) => {
     if (o.reduced) return;
+    // The round's own matter (puff, spurt, exit spray) rode the segment it hit for 80 ms; that segment is the piece
+    // now, flying off at 4 to 8 m/s, and it dragged the cloud away from the body (C19 review: a red cloud hanging in
+    // the sky 2 m from the stump). It rides the body's side of the cut instead, slowed, so the burst stays at the cut.
+    const from = cut.piece.parent;
+    const ix = from ? anchors.indexOf(from) : -1;
+    if (ix >= 0) {
+      const to = cut.stump?.parent ?? null;
+      if (to) anchors[ix] = to;
+      for (const pool of [mist, drops]) {
+        for (let i = 0; i < pool.n; i++) {
+          if (pool.anchorIx[i] !== ix) continue;
+          if (to) {
+            pool.anchorAt[i * 3] = to.position.x;
+            pool.anchorAt[i * 3 + 1] = to.position.y;
+            pool.anchorAt[i * 3 + 2] = to.position.z;
+          }
+          for (let a = 0; a < 3; a++) pool.vel[i * 3 + a]! *= SEVER_FX.hitDamp;
+        }
+      }
+      if (!to) for (const pool of [mist, drops]) for (let i = 0; i < pool.n; i++) if (pool.anchorIx[i] === ix) ride(pool, i, -1);
+    }
     const c = new THREE.Color();
     // The cut: a burst out of both faces, a cloud at the stump.
     for (const obj of [cut.stump, cut.piece]) {
@@ -965,28 +1021,30 @@ export function createGore(o: GoreDeps): Gore {
       while (k.stump && k.pulse < P.length && k.t >= k.pulse / SEVER_FX.pulseHz) {
         const amp = P[k.pulse]!;
         capAt(k.stump, cp, cn);
-        const c = spurtColor(cp, k.cyber, new THREE.Color());
+        const c = spurtColor(cp, k.cyber, cutCol);
         for (let j = 0; j < SEVER_FX.perPulse; j++) {
           const sp = (SEVER_FX.pulseSpeed[0] + rand() * (SEVER_FX.pulseSpeed[1] - SEVER_FX.pulseSpeed[0])) * (0.4 + 0.6 * amp);
           drop(cp, cone(cn, SEVER_FX.pulseConeDeg, cv).multiplyScalar(sp), (0.014 + rand() * 0.016) * (0.7 + 0.5 * amp), c, -1, k.cyber ? 3 : j < 2 ? 2 : 1);
         }
         if (k.cyber) o.sparks?.(cp, cn, SEVER_FX.arcs.sparks * amp);
-        else puff(cp.clone().addScaledVector(cn, 0.03), 0.12 + 0.12 * amp, tinted(cp, PUFF, GORE.puff.lift, new THREE.Color()).multiplyScalar(0.8), 0.7 * amp + 0.2, 0.32, -1, cn.clone().multiplyScalar(0.6 * amp));
+        else puff(tp.copy(cp).addScaledVector(cn, 0.03), 0.12 + 0.12 * amp, tinted(cp, PUFF, GORE.puff.lift, cutCol).multiplyScalar(0.8), 0.7 * amp + 0.2, 0.32, -1, cv.copy(cn).multiplyScalar(0.6 * amp));
         k.pulse++;
       }
       // The flying piece trails drops for 0.8 s.
       const T = SEVER_FX.trail;
       while (k.t < T.forS && k.t >= k.trail * T.stepS) {
         capAt(k.piece, cp, cn);
-        const c = spurtColor(cp, k.cyber, new THREE.Color());
+        const c = spurtColor(cp, k.cyber, cutCol);
         for (let j = 0; j < T.per; j++) drop(cp, cone(cn, 60, cv).multiplyScalar(0.4 + rand()), 0.012 + rand() * 0.012, c, -1, k.cyber ? 3 : 2);
         k.trail++;
       }
       // Chrome arcs at the stump: four jagged three-segment lines, struck afresh each frame (two flicker out).
       if (k.cyber && k.stump && k.t < SEVER_FX.arcs.forS && arcN < ARC_MAX) {
         capAt(k.stump, cp, cn);
-        let w = arcN * arcVerts * 3;
+        let w = arcN * arcQuads * 18;
         const A = SEVER_FX.arcs;
+        // Ribbon width (m): a few pixels at the stage's 2.3 m, tapering to a point at the arc's tip.
+        const W = A.width;
         for (let a = 0; a < A.count; a++) {
           const on = rand() < 0.75 - (k.t / A.forS) * 0.4;
           let px = cp.x, py = cp.y, pz = cp.z;
@@ -994,16 +1052,15 @@ export function createGore(o: GoreDeps): Gore {
           cone(cn, 120, cv);
           for (let sgi = 0; sgi < A.segs; sgi++) {
             const st = len / A.segs;
-            const qx = px + (cv.x + (rand() - 0.5) * 0.9) * st;
-            const qy = py + (cv.y + (rand() - 0.5) * 0.9) * st;
-            const qz = pz + (cv.z + (rand() - 0.5) * 0.9) * st;
+            // Kinked: each joint jumps well off the arc's line (lightning, not a rod).
+            const qx = px + (cv.x + (rand() - 0.5) * A.kink) * st;
+            const qy = py + (cv.y + (rand() - 0.5) * A.kink) * st;
+            const qz = pz + (cv.z + (rand() - 0.5) * A.kink) * st;
             if (on) {
-              arcPos.set([px, py, pz, qx, qy, qz], w);
-              // A line is a pixel wide at any size: each live joint of the arc also glows (a small, brief cyan bloom).
+              w = arcQuad(w, px, py, pz, qx, qy, qz, W * (1 - sgi / A.segs), W * (1 - (sgi + 1) / A.segs) + W * 0.15);
+              // Each live joint of the arc also glows (a small, brief cyan bloom).
               if (sgi < A.segs - 1 && rand() < 0.5) puff(tp.set(qx, qy, qz), 0.035 + rand() * 0.03, ARC_GLOW, 0.9, 0.05, -1);
-            }
-            else arcPos.set([px, py, pz, px, py, pz], w);
-            w += 6;
+            } else w = arcQuad(w, px, py, pz, px, py, pz, 0, 0);
             px = qx;
             py = qy;
             pz = qz;
@@ -1014,24 +1071,30 @@ export function createGore(o: GoreDeps): Gore {
       if (k.t > Math.max(SEVER_FX.trail.forS, SEVER_FX.pulses.length / SEVER_FX.pulseHz, k.cyber ? SEVER_FX.arcs.forS : 0) + 0.1) cuts.splice(i, 1);
     }
     arcsLive = arcN;
-    arcGeo.setDrawRange(0, arcN * arcVerts);
+    arcGeo.setDrawRange(0, arcN * arcQuads * 6);
     arcGeo.attributes.position!.needsUpdate = arcN > 0;
     arcLines.visible = arcN > 0;
-    // Puddles fade.
-    const m = new THREE.Matrix4();
-    const pc = new THREE.Color();
+    // Puddles fade (and upload only while there are any).
+    if (!puddles.length) {
+      puddleMesh.count = 0;
+      puddleMesh.visible = false;
+      return;
+    }
+    const P = SEVER_FX.puddle;
     for (let i = 0; i < puddles.length; i++) {
       const p = puddles[i]!;
       p.age += dt;
-      const g = Math.min(1, 0.6 + p.age * 3);
-      m.makeScale(p.r * g, 1, p.r * g).setPosition(p.at);
-      puddleMesh.setMatrixAt(i, m);
-      const f = Math.min(1, p.age / SEVER_FX.puddle.fadeS);
-      pc.copy(COOL).multiplyScalar(1.4).lerp(COOL_DIM, Math.sqrt(f));
-      puddleMesh.setColorAt(i, pc);
+      // It spreads fast as it lands, then creeps out a little.
+      const g = Math.min(1, 0.6 + p.age * 3) * (1 + Math.min(0.25, p.age * 0.05));
+      pm4.makeScale(p.r * g, 1, p.r * g).setPosition(p.at);
+      puddleMesh.setMatrixAt(i, pm4);
+      // Fresh coolant glows hot (blooms) for its first seconds, then cools to #0A3A35 over 20 s.
+      const f = Math.min(1, p.age / P.fadeS);
+      pcol.copy(COOL).multiplyScalar(P.hot * (1 - Math.min(1, p.age / P.hotS)) + 1.4).lerp(COOL_DIM, Math.sqrt(f));
+      puddleMesh.setColorAt(i, pcol);
     }
     puddleMesh.count = puddles.length;
-    puddleMesh.visible = puddles.length > 0;
+    puddleMesh.visible = true;
     puddleMesh.instanceMatrix.needsUpdate = true;
     if (puddleMesh.instanceColor) puddleMesh.instanceColor.needsUpdate = true;
   };
@@ -1116,6 +1179,9 @@ export function createGore(o: GoreDeps): Gore {
       woundMat.dispose();
       puddleMat.dispose();
       arcMat.dispose();
+      arcGeo.dispose();
+      puddleGeo.dispose();
+      puddleMesh.dispose();
       for (const p of [mist, drops]) (p.mesh.material as THREE.Material).dispose();
     },
   };

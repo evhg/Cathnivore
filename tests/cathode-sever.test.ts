@@ -57,9 +57,14 @@ describe("cathode-sever: the other rules", () => {
     expect(severs(q({ weaponCls: "rifle", part: "thigh", damage: t }))).toBe(true);
     expect(severs(q({ weaponCls: "rifle", part: "thigh", damage: t - 0.1 }))).toBe(false);
   });
-  it("the sniper takes an open head, not a helmeted one", () => {
+  it("the sniper takes an open head; a helmeted one only to the heavy rule", () => {
     expect(severs(q({ weaponCls: "sniper", part: "head", damage: 30, headOpen: true }))).toBe(true);
-    expect(severs(q({ weaponCls: "sniper", part: "head", damage: 900, headOpen: false }))).toBe(false);
+    expect(severs(q({ weaponCls: "sniper", part: "head", damage: 30, headOpen: false }))).toBe(false);
+    // S4.5's general rule holds under a helmet: share x maxHp x 1.5 takes the head, helmet and all.
+    const t = SEVER.headShare * HP * SEVER.killMul;
+    expect(severs(q({ weaponCls: "sniper", part: "head", damage: t, headOpen: false }))).toBe(true);
+    expect(severs(q({ weaponCls: "rifle", part: "head", damage: t, headOpen: false }))).toBe(true);
+    expect(severs(q({ weaponCls: "rifle", part: "head", damage: t - 0.1, headOpen: false }))).toBe(false);
     // And a non-lethal sniper round only ever takes a forearm.
     expect(severs(q({ weaponCls: "sniper", part: "head", lethal: false, damage: 900 }))).toBe(false);
     expect(severs(q({ weaponCls: "sniper", part: "forearm", lethal: false, damage: 98 }))).toBe(true);

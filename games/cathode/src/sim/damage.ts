@@ -336,7 +336,7 @@ export interface SeverQuery {
  * S4.5's rule: does this hit take the segment off? Pure, so the game and `cathode-sever` read the same numbers.
  *   - a killing blow on a limb or the head with damage >= share x maxHp x 1.5;
  *   - a shotgun within CLOSE_SEVER_RANGE (lethal), an explosive within 3 m;
- *   - the sniper on a head whose visor is broken (a helmeted head comes off only once it is open);
+ *   - the sniper on a head whose visor is broken (below the heavy threshold, a helmeted head needs it open first);
  *   - non-lethal severs only on forearms (and the hand they carry), from the shotgun or the sniper;
  *   - the pistol never severs, except a lethal forearm crit of at least 0.4 x max HP;
  *   - reduced violence never severs.
@@ -359,10 +359,11 @@ export function severs(q: SeverQuery): boolean {
   const share = q.part === "head" ? SEVER.headShare : SEVER.limbShare;
   const heavy = q.damage >= share * hp * SEVER.killMul * (edged ? SEVER.edgedMul : 1);
   if (q.part === "head") {
-    // A head under an intact helmet and visor comes off only to buckshot at the muzzle or a blast beside it.
-    if (shotgunClose || blast) return true;
-    if (!q.headOpen) return false;
-    return q.weaponCls === "sniper" || heavy;
+    // Buckshot at the muzzle or a blast beside it takes any head; a heavy enough killing blow (S4.5's general rule)
+    // takes a helmeted head too, the helmet going with it. The sniper's extra rule (any killing round, not just a heavy
+    // one) needs the visor broken first.
+    if (shotgunClose || blast || heavy) return true;
+    return !!q.headOpen && q.weaponCls === "sniper";
   }
   return heavy || shotgunClose || blast;
 }

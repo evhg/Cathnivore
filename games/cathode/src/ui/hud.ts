@@ -649,6 +649,7 @@ export class Hud {
     const c: HitClass = typeof cls === "string" ? cls : cls ? (head ? "headKill" : "kill") : head ? "head" : soft ? "armour" : "body";
     const m = tuning.marker[c];
     for (const k of HIT_CLASSES) this.hit.classList.toggle(`c-${k}`, k === c);
+    this.hit.classList.remove("is-sever");
     this.hit.classList.add("on");
     // Sizes come straight from the tuning table, in --u (S8), so tests and the HUD read the same numbers.
     this.prop(this.hit, "--len", `calc(var(--u) * ${m.len})`);
@@ -668,6 +669,15 @@ export class Hud {
     if (c === "kill" || c === "headKill") this.punch(this.hitRing, "go", tuning.killRing.ms + 40);
     if (c === "headKill") this.punch(this.hit.querySelector(".hud-hit-ring-2") as HTMLElement, "go", tuning.killRing.ms + 160);
     if (c === "armourBreak") this.punch(this.hit.querySelector(".hud-hit-shatter") as HTMLElement, "go", 260);
+  }
+
+  /**
+   * C19: the hit that just landed cut a piece off: the kill ring thins to a hairline and is gone in 200 ms, and the
+   * ticks step back, so the piece tumbling through the middle of the screen reads (C19 review).
+   */
+  severMark(): void {
+    this.hit.classList.add("is-sever");
+    this.hitFade = Math.min(this.hitFade, 200);
   }
 
   /** Screenshot stages: hold the marker, brackets and their animations at `tMs` after the event. */
@@ -741,6 +751,7 @@ export class Hud {
     this.hitAge = 1e9;
     this.blockedAge = 1e9;
     for (const k of HIT_CLASSES) this.hit.classList.remove(`c-${k}`);
+    this.hit.classList.remove("is-sever");
     this.prop(this.hit, "--a", "0");
     this.prop(this.blockedEl, "--a", "0");
     // Kill-feed lines from the stage before would read as this stage's.
