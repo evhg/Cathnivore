@@ -149,7 +149,7 @@ export function buildRevolver(phone = false, lod = false): { root: THREE.Group; 
   kit.add(lathe([[0.0052, CYL_Z1 - 0.001], [0.0052, CYL_Z1 - 0.007]], { seg: o.phone ? 10 : 16 }), FIN.blued, { p: [CYL_IN_CRANE[0], CYL_IN_CRANE[1], 0] }, crane);
   const cyl = kit.part("cylinder", [CYL_IN_CRANE[0], CYL_IN_CRANE[1], 0], crane);
   const co = cylinderOutline(o.phone ? 36 : 72);
-  kit.add(facade(co.outer, CYL_Z0 - CYL_Z1, { bevel: 0.0009, holes: co.holes, ...o, curve: 1 }), FIN.blued, { p: [0, 0, (CYL_Z0 + CYL_Z1) / 2] }, cyl);
+  kit.add(facade(co.outer, CYL_Z0 - CYL_Z1, { bevel: 0.0009, holes: co.holes, ...o, curve: 1 }), FIN.cylinder, { p: [0, 0, (CYL_Z0 + CYL_Z1) / 2] }, cyl);
   // The front face's forcing ring, bronze, so the chambers' mouths read.
   const ej = kit.part("ejector", [0, 0, 0], cyl);
   // The ejector rod forward of the cylinder (inside the underlug when closed) and the extractor star at the back.

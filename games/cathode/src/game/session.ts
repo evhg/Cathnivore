@@ -1469,6 +1469,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const fwd = new THREE.Vector3();
   const camPosV = new THREE.Vector3();
   const camQuatV = new THREE.Quaternion();
+  // C18 review r2: scratch for the gun cues (shells, empties, the back-blast, a dropped mag), so a shot allocates nothing.
+  const cueA = new THREE.Vector3();
+  const cueB = new THREE.Vector3();
+  const cueC = new THREE.Vector3();
+  const cueEye = new THREE.Vector3();
   /** S2.6 camera pitch per shot, by class (degrees). */
   const CAM_KICK: Record<string, number> = { pistol: 1.1, revolver: 2.6, smg: 0.45, smart: 0.45, rifle: 0.7, shotgun: 4.5, sniper: 6, launcher: 5 };
   // The empty reload's spent mags lie in the street (S2.4) and clack when they land.
@@ -1497,24 +1502,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const r = arsenal.rig;
         r.root.updateMatrixWorld(true);
         const q = world.camera.getWorldQuaternion(camQuatV);
-        const port = r.port.getWorldPosition(new THREE.Vector3()).applyQuaternion(q).add(world.camera.getWorldPosition(camPosV));
+        const port = r.port.getWorldPosition(cueA).applyQuaternion(q).add(world.camera.getWorldPosition(camPosV));
         const j = () => 0.8 + Math.random() * 0.4;
-        const v = new THREE.Vector3((1.8 + Math.random() * 0.6) * j(), (1.0 + Math.random() * 0.4) * j(), 0.3 * j()).applyQuaternion(q);
-        world.fx.casing(port, v.add(player.vel.clone().multiplyScalar(0.9)));
+        const v = cueB.set((1.8 + Math.random() * 0.6) * j(), (1.0 + Math.random() * 0.4) * j(), 0.3 * j()).applyQuaternion(q);
+        world.fx.casing(port, v.addScaledVector(player.vel, 0.9));
       } else if (c === "eject" || c === "backblast") {
         // C18: the revolver's six empties off the ejector star, the launcher's spent case, the back-blast.
         const r = arsenal.rig;
         r.root.updateMatrixWorld(true);
         const q = world.camera.getWorldQuaternion(camQuatV);
-        const eyeW = world.camera.getWorldPosition(camPosV).clone();
+        const eyeW = world.camera.getWorldPosition(cueEye);
         if (c === "backblast") {
-          const back = new THREE.Vector3(0.05, 0.02, 1).applyQuaternion(q);
-          world.fx.muzzle(eyeW.clone().addScaledVector(back, 0.5), back, 1.1);
+          const back = cueB.set(0.05, 0.02, 1).applyQuaternion(q);
+          world.fx.muzzle(cueA.copy(eyeW).addScaledVector(back, 0.5), back, 1.1);
           audio?.gun.cue("backblast");
         } else {
-          const from = (r.parts.cylinder ?? r.parts.case ?? r.port).getWorldPosition(new THREE.Vector3()).applyQuaternion(q).add(eyeW);
+          const from = (r.parts.cylinder ?? r.parts.case ?? r.port).getWorldPosition(cueA).applyQuaternion(q).add(eyeW);
           const n = arsenal.weapon.model === "revolver" ? 6 : 1;
-          for (let i = 0; i < n; i++) world.fx.casing(from.clone(), new THREE.Vector3(-0.4 + Math.random() * 0.5, -0.6 - Math.random() * 0.8, 0.6 + Math.random() * 0.4).applyQuaternion(q).add(player.vel.clone().multiplyScalar(0.9)));
+          // fx.casing copies both vectors into its pooled casing, so the scratch is safe to reuse each round.
+          for (let i = 0; i < n; i++) world.fx.casing(from, cueC.set(-0.4 + Math.random() * 0.5, -0.6 - Math.random() * 0.8, 0.6 + Math.random() * 0.4).applyQuaternion(q).addScaledVector(player.vel, 0.9));
           audio?.gun.cue("eject");
         }
       } else if (c === "dry") audio?.gun.dryFire();
@@ -1522,7 +1528,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const mag = arsenal.rig.mag;
         if (mag) {
           const q = world.camera.getWorldQuaternion(camQuatV);
-          const v = new THREE.Vector3(-0.2, -0.6, 0.1).applyQuaternion(q).add(player.vel.clone().multiplyScalar(0.8));
+          const v = cueB.set(-0.2, -0.6, 0.1).applyQuaternion(q).addScaledVector(player.vel, 0.8);
           droppedMags.drop(mag, world.camera.getWorldPosition(camPosV), q, v);
         }
       } else {
@@ -2270,6 +2276,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     requestAnimationFrame(frame);
   };
 
+  // C18 review r2: the scoped glint's aim, reused (sightOf runs per enemy per frame while she's scoped).
+  const glintAim = new THREE.Vector3();
   function sightOf(): Sight {
     return {
       eye: world.camera.position.clone(),
@@ -2279,7 +2287,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       speed: player.speed,
       // The first seconds of a job are hers: nobody can spot her until she's had a look round (or fires).
       stealth: dead || grace > 0 ? 0 : progress.stats.detectionMultiplier * actives.running().camo,
-      glint: arsenal.scopedIn ? { aim: world.camera.getWorldDirection(new THREE.Vector3()) } : null,
+      glint: arsenal.scopedIn ? { aim: world.camera.getWorldDirection(glintAim) } : null,
     };
   }
 
@@ -3748,9 +3756,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     c.height = 96;
     const g = c.getContext("2d");
     if (g) {
-      g.font = '600 52px "Cathode UI", "Cathode UI Fallback", sans-serif';
+      // C13T: caps labels track at most 0.06em (3 px on 60 px; C18 review r2: 8 px on 52 px was 0.15em).
+      g.font = '600 60px "Cathode UI", "Cathode UI Fallback", sans-serif';
       g.textBaseline = "middle";
-      (g as unknown as { letterSpacing: string }).letterSpacing = "8px";
+      (g as unknown as { letterSpacing: string }).letterSpacing = "3px";
       g.fillStyle = "#3fe0ff";
       g.fillRect(0, 30, 4, 36);
       g.fillStyle = "rgba(236, 232, 226, 0.92)";
@@ -3795,19 +3804,23 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const plate = new THREE.Mesh(new THREE.PlaneGeometry(9, 5), new THREE.ShaderMaterial({
         depthWrite: false,
         vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-        fragmentShader: "varying vec2 vUv; void main() { vec2 p = (vUv - 0.5) * vec2(1.8, 1.0); float a = exp(-dot(p - vec2(-0.2, 0.06), p - vec2(-0.2, 0.06)) * 9.0); float b = exp(-dot(p - vec2(0.22, 0.04), p - vec2(0.22, 0.04)) * 7.0); float v = smoothstep(1.1, 0.2, length(p)); vec3 c = vec3(0.0025, 0.0027, 0.0034) + vec3(0.011, 0.0115, 0.0135) * v + vec3(0.012, 0.0115, 0.011) * (a + b); gl_FragColor = vec4(c, 1.0); }",
+        fragmentShader: "varying vec2 vUv; void main() { vec2 p = (vUv - 0.5) * vec2(1.8, 1.0); float a = exp(-dot(p - vec2(-0.2, 0.06), p - vec2(-0.2, 0.06)) * 9.0); float b = exp(-dot(p - vec2(0.22, 0.04), p - vec2(0.22, 0.04)) * 7.0); float v = smoothstep(1.1, 0.2, length(p)); vec3 c = vec3(0.0008, 0.0009, 0.0012) + vec3(0.0045, 0.0048, 0.0058) * v * v + vec3(0.009, 0.0085, 0.008) * (a + b); gl_FragColor = vec4(c, 1.0); }",
       }));
       plate.position.set(0, 0, -2.6);
       plate.renderOrder = -1;
       gunLineup.add(plate);
       // The studio lights: they ride the group, so they're only on while the plate is up.
-      const key = new THREE.DirectionalLight(0xfff1e4, 1.3);
+      // C18 review r2: a hero-shot rig on a near-black plate: the key, a hot warm top rim and a cool kick that
+      // trace every edge and bevel, and a second warm rim from behind-left so the muzzles' ends separate too.
+      const key = new THREE.DirectionalLight(0xfff1e4, 1.5);
       key.position.set(-0.5, 0.8, 1);
-      const top = new THREE.DirectionalLight(0xffd2a0, 1.8);
+      const top = new THREE.DirectionalLight(0xffd2a0, 2.8);
       top.position.set(0.2, 1, -0.3);
-      const kick = new THREE.DirectionalLight(0x5fd8ff, 1.6);
+      const kick = new THREE.DirectionalLight(0x5fd8ff, 2.6);
       kick.position.set(1, 0.1, -0.6);
-      gunLineup.add(key, top, kick);
+      const rim = new THREE.DirectionalLight(0xffcf9a, 1.8);
+      rim.position.set(-1, 0.35, -0.8);
+      gunLineup.add(key, top, kick, rim);
       for (const [model, label] of LINEUP) {
         const g = buildGunDisplay(model, o.quality === "phone");
         const box = new THREE.Box3().setFromObject(g);
@@ -3830,22 +3843,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const Z = 1.3;
     const H = 2 * Z * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
     const W = H * cam.aspect;
-    const colW = W * 0.4;
+    // C18 review r2: each column has its own scale (the handguns at one scale, the long guns at another), so the
+    // handguns fill their column instead of sitting small beside a dead gap.
+    const colWs = [W * 0.34, W * 0.44];
     const gap = H * 0.035;
     const cols: [GunModel, number][][] = [[], []];
     for (const [m, , col] of LINEUP) cols[col]!.push([m, col]);
     const sizeOf = (m: GunModel) => (gunLineup!.getObjectByName(`lineup:${m}`)!.userData.size as THREE.Vector3);
-    const tagH = H * 0.03;
+    const tagH = H * 0.045;
     const colH = (list: [GunModel, number][], k: number) => list.reduce((a, [m]) => a + sizeOf(m).y * k + tagH + gap, -gap);
-    let k = Math.min(...cols.map((l) => colW / Math.max(...l.map(([m]) => sizeOf(m).z))));
-    k = Math.min(k, ...cols.map((l) => (H * 0.78) / colH(l, 1)));
+    const ks = cols.map((l, ci) => Math.min(colWs[ci]! / Math.max(...l.map(([m]) => sizeOf(m).z)), (H * 0.8) / colH(l, 1)));
     // The long guns fill the rack's height; muzzles and names align left in each column.
-    const span = Math.max(...cols.map((l) => colH(l, k)));
+    const span = colH(cols[1]!, ks[1]!);
     for (let ci = 0; ci < 2; ci++) {
       const list = cols[ci]!;
-      const left = (ci === 0 ? -0.37 : -0.03) * W;
+      const k = ks[ci]!;
+      const left = (ci === 0 ? -0.43 : -0.05) * W;
       // The handguns sit as a group, centred, a little looser than the rack.
-      const g2 = ci === 1 ? gap + (span - colH(list, k)) / Math.max(1, list.length - 1) : gap * 2.4;
+      const g2 = ci === 1 ? gap + (span - colH(list, k)) / Math.max(1, list.length - 1) : gap + Math.max(0, span - colH(list, k)) / Math.max(1, list.length - 1);
       let y = ci === 1 ? span / 2 : (colH(list, k) + (g2 - gap) * (list.length - 1)) / 2;
       for (const [m] of list) {
         const sz = sizeOf(m);
@@ -3853,9 +3868,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         h.scale.setScalar(k);
         h.position.set(left + (sz.z * k) / 2, y - (sz.y * k) / 2, -Z);
         const tag = gunLineup.getObjectByName(`tag:${m}`)!;
-        const tw = H * 0.36;
+        const tw = H * 0.4;
         tag.scale.setScalar(tw);
-        tag.position.set(left + tw / 2, y - sz.y * k - tagH * 0.45, -Z);
+        tag.position.set(left + tw / 2, y - sz.y * k - tagH * 0.6, -Z);
         y -= sz.y * k + tagH + g2;
       }
     }

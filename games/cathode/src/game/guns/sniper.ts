@@ -59,7 +59,7 @@ export function buildSniper(phone = false, lod = false): { root: THREE.Group; ki
   ];
   const guard: P2[] = [[-0.052, -0.02], [-0.048, -0.036], [-0.008, -0.038], [0.012, -0.026], [0.01, -0.016]];
   const butt: P2[] = [[0.2, -0.026], [0.31, -0.042], [0.31, 0.036], [0.21, 0.036]];
-  kit.add(profile(chassis, 0.042, { bevel: 0.0026, holes: o.lod ? [guard] : [guard, butt], ...o }), FIN.frame, undefined, body);
+  kit.add(profile(chassis, 0.042, { bevel: 0.0026, holes: o.lod ? [guard] : [guard, butt], ...o }), FIN.stock, undefined, body);
   kit.add(profile([[0.034, -0.038], [0.038, -0.106], [0.06, -0.109], [0.058, -0.038]], 0.0435, { bevel: 0.001, ...o }), FIN.grip, undefined, body);
   kit.add(rounded(0.03, 0.022, 0.12, 0.006, o.phone), FIN.webbing, { p: [0, 0.074, 0.25] }, body);
   kit.add(rounded(0.044, 0.124, 0.014, 0.005, o.phone), FIN.rubber, { p: [0, 0.004, 0.342] }, body);

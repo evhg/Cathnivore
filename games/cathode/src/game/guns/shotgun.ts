@@ -81,7 +81,7 @@ export function buildShotgun(phone = false, lod = false): { root: THREE.Group; k
     [0.06, -0.03],
     [0.072, -0.004],
   ];
-  kit.add(profile(stockOut, 0.034, { bevel: 0.0024, ...o }), FIN.frame, undefined, body);
+  kit.add(profile(stockOut, 0.034, { bevel: 0.0024, ...o }), FIN.stock, undefined, body);
   kit.add(profile([[0.07, -0.036], [0.064, -0.106], [0.094, -0.108], [0.1, -0.036]], 0.0355, { bevel: 0.001, ...o }), FIN.grip, undefined, body);
   kit.add(rounded(0.036, 0.112, 0.014, 0.005, o.phone), FIN.rubber, { p: [0, -0.022, 0.332] }, body);
   // The guard: a loop under the receiver.

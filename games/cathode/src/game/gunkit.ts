@@ -46,6 +46,8 @@ export type Layer = "opaque" | "emissive" | "glass";
 export const FIN = {
   frame: { color: 0x1b1c1f, metal: 0, rough: 0.62, band: "grain", wear: 0.5 },
   grip: { color: 0x1b1c1f, metal: 0, rough: 0.7, band: "stipple", wear: 0.3 },
+  /** C18 review r2: the long guns' polymer stocks: a stippled, satin-coated moulding a shade lighter than the frame, worn bright at the edges (they read as flat grey slabs in plain `frame`). */
+  stock: { color: 0x1d1f22, metal: 0, rough: 0.6, coat: 0.15, band: "stipple", scale: 1.6, wear: 1 },
   slide: { color: 0x2a2c30, metal: 1, rough: 0.34, coat: 1, band: "peel" },
   serration: { color: 0x2a2c30, metal: 1, rough: 0.34, coat: 1, band: "serration" },
   /** Twice the slide's colour, halved by the band off the letters: the cuts show bare steel at up to 2x. */
@@ -76,6 +78,8 @@ export const FIN = {
   receiver: { color: 0x2a2c30, metal: 1, rough: 0.38, coat: 0.8, band: "peel" },
   /** Blued steel for the revolver's frame and the shotgun's barrel: deeper and glossier than the Cerakote. */
   blued: { color: 0x1c1f25, metal: 1, rough: 0.26, coat: 1, band: "brushed", wear: 1 },
+  /** C18 review r2: the revolver's cylinder, a brighter turned steel than the blued frame so the flank and its flutes catch the key and rim light from the eye. */
+  cylinder: { color: 0x33363c, metal: 1, rough: 0.32, coat: 0.6, band: "brushed", wear: 1 },
   /** The revolver's grips: dark walnut under a satin oil finish. */
   walnut: { color: 0x3a2014, metal: 0, rough: 0.46, coat: 0.7, band: "grain", scale: 0.6, wear: 0.5 },
   /** Recoil pads, bipod feet and the launcher's grip sleeve. */

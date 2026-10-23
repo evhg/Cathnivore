@@ -84,7 +84,7 @@ export function buildRifle(phone = false, lod = false): { root: THREE.Group; kit
   // ---- The stock: a buffer tube and an adjustable polymer stock with a cheek weld and a rubber pad.
   kit.add(lathe([[0.0145, 0.09], [0.0145, 0.25]], { phone: o.phone }), FIN.receiver, { p: [0, 0.03, 0] }, body);
   const stockOut: P2[] = [[0.17, 0.05], [0.29, 0.05], [0.296, 0.044], [0.296, -0.05], [0.282, -0.056], [0.25, -0.034], [0.19, 0.008], [0.17, 0.012]];
-  kit.add(profile(stockOut, 0.036, { bevel: 0.002, holes: o.lod ? [] : [[[0.215, 0.002], [0.262, -0.03], [0.27, -0.03], [0.27, 0.0], [0.24, 0.002]]], ...o }), FIN.frame, undefined, body);
+  kit.add(profile(stockOut, 0.036, { bevel: 0.002, holes: o.lod ? [] : [[[0.215, 0.002], [0.262, -0.03], [0.27, -0.03], [0.27, 0.0], [0.24, 0.002]]], ...o }), FIN.stock, undefined, body);
   kit.add(rounded(0.034, 0.104, 0.012, 0.004, o.phone), FIN.rubber, { p: [0, -0.003, 0.302] }, body);
 
   // ---- The carrier in the port: bronze, cycling 30 mm.
