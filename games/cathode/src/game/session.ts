@@ -6123,7 +6123,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
               if (hit && hit.dist < dd - 0.09) return -1;
               return c.n.dot(v3.subVectors(eye, c.p).normalize());
             };
-            const face = (S ? 1.4 * seen(S) : 0) + 0.6 * seen(P);
+            const face = (S ? 2.4 * seen(S) : 0) + 0.8 * seen(P);
             for (let yo = -0.5; yo <= 0.5001; yo += 0.0625) {
               for (const po of [-0.16, -0.08, 0, 0.08]) {
                 cutAim = { yaw: yo, pitch: po };
