@@ -246,7 +246,7 @@ export interface Session {
    * pixels within `r` CSS px of each cap's screen point that the caps change, `pale` are the fat and bone (warm, light,
    * not saturated) and `flesh` the red core. (Pixels, not a count of meshes: C19 review.)
    */
-  probeCaps?: (r?: number) => { pale: number; flesh: number; cyan: number; changed: number };
+  probeCaps?: (r?: number) => { pale: number; flesh: number; cyan: number; steel?: number; changed: number };
   /** C7: a stim's screen and sound (the wash, the slower heart, the lens wiped), as the Stim skill plays them. */
   stim?: () => void;
   /** C7 acceptance: the grade pass's mean ms with the Vitals pass idle and at its busiest. */
@@ -6485,6 +6485,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     let pale = 0;
     let flesh = 0;
     let cyan = 0;
+    let steel = 0;
     let changed = 0;
     const R = cr * kk;
     const seen = new Set<number>();
@@ -6510,11 +6511,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           if (gg > r * 1.3 && b > r * 1.3 && mx > 0.3) cyan++;
           // (Warm: bone and fat, not the grey of the cut suit.)
           else if (mx > 0.38 && r >= gg && r > b * 1.08 && (mx - mn) < 0.55 * mx) pale++;
+          // (Neutral and bright: a chrome collar or rod.)
+          else if (mx > 0.3 && mx - mn < 0.22 * mx) steel++;
           else if (mx === r && mx > 0.12 && mx - mn > 0.5 * mx) flesh++;
         }
       }
     }
-    return { pale, flesh, cyan, changed };
+    return { pale, flesh, cyan, steel, changed };
   };
   s.probeWound = () => {
     const c = world.renderer.domElement;

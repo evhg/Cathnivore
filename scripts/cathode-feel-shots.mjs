@@ -1028,10 +1028,10 @@ for (const vp of vps) {
         const pr = Math.round(Math.max(24, V.viewport.width * 0.03))
         const cp = await page.evaluate((r) => window.cathode.probeCaps?.(r) ?? null, pr)
         const dpr2 = (V.dsf ?? 1) ** 2
-        console.log(`  C19 ${vp} ${spec}: cap pixels ${cp ? `${cp.pale} fat/bone, ${cp.flesh} flesh, ${cp.cyan} coolant, ${cp.changed} changed` : 'n/a'} within ${pr} px (x${dpr2} device px)`)
+        console.log(`  C19 ${vp} ${spec}: cap pixels ${cp ? `${cp.pale} fat/bone, ${cp.flesh} flesh, ${cp.cyan} coolant, ${cp.steel ?? 0} steel, ${cp.changed} changed` : 'n/a'} within ${pr} px (x${dpr2} device px)`)
         if (sv.cyber) {
           // Chrome: the steel collar and rod, and the coolant ring glowing cyan.
-          if (!cp || cp.cyan + cp.pale < 12 * dpr2) fail(`${vp} ${spec}: the chrome caps' steel and coolant don't show (${cp ? cp.cyan + cp.pale : 0} px)`)
+          if (!cp || cp.cyan + cp.pale + (cp.steel ?? 0) < 12 * dpr2) fail(`${vp} ${spec}: the chrome caps' steel and coolant don't show (${cp ? cp.cyan + cp.pale + (cp.steel ?? 0) : 0} px)`)
         } else {
           if (!cp || cp.pale < 12 * dpr2) fail(`${vp} ${spec}: the caps' fat and bone don't show (${cp?.pale ?? 0} px)`)
           if (!cp || cp.flesh < 12 * dpr2) warn(`${vp} ${spec}: the caps' flesh barely shows (${cp?.flesh ?? 0} px)`)

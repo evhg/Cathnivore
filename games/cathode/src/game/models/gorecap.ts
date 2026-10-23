@@ -17,7 +17,7 @@ export const CAP = {
   bone: "#E6DCC8",
   marrow: "#8A3A2C",
   suit: "#15171B",
-  steel: "#4A525C",
+  steel: "#808C98",
   coolant: "#00E5C8",
   /** The bone stands this proud of the flesh (m); the fat ring is this thick (m). */
   boneProudM: 0.015,
@@ -172,7 +172,7 @@ export function buildCap(r: number, cyber: boolean, phone: boolean, neck = false
   }
   if (cyber) {
     // The coolant ring: a thin lathe band at the core's edge, glowing cyan (above 1: the shader's glow).
-    const ring = new THREE.LatheGeometry([new THREE.Vector2(fr * 0.8, 0.0072), new THREE.Vector2(fr * 0.9, 0.0072)].reverse(), n);
+    const ring = new THREE.LatheGeometry([new THREE.Vector2(fr * 0.68, 0.0072), new THREE.Vector2(fr * 0.92, 0.0072)].reverse(), n);
     parts.push(paint(ring, col(CAP.coolant, 1 + CAP.glow)));
   }
   // Three torn strands off the rim: the suit (or, on chrome, cables with a cyan core).
