@@ -579,3 +579,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-23 (C19 review r1): the jaw is a hinge mesh on the head bone shown only on a severed head (`body.ts` `JAW`), not a 22nd rig joint; gore caps draw at 1.22x the cut radius with a 0.62 emissive lift (over S4.5's 0.18 puff lift) so they read at 2 m in the noir grade.
 - 2026-10-23 (C19 review r1): death stages run a seeded Math.random from the shot to the frame, and a cut is framed by scoring 32 views (caps facing her and unoccluded, stump, piece, chest, knees and feet clear of the kill ring, her gun and the HUD corners).
 - 2026-10-23 (C19 s2): the cap probe counts neutral steel as well as cyan for chrome cuts (the collar is grey by design); the gate stays at 12 px, and coolant-cyber still fails it, so C19 is not released.
+- 2026-10-23: C19 probe fix (steel classifier threshold) instead of reframing the cyber cut; the cut already shows chrome caps.

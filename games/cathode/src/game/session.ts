@@ -6512,7 +6512,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           // (Warm: bone and fat, not the grey of the cut suit.)
           else if (mx > 0.38 && r >= gg && r > b * 1.08 && (mx - mn) < 0.55 * mx) pale++;
           // (Neutral and bright: a chrome collar or rod.)
-          else if (mx > 0.3 && mx - mn < 0.22 * mx) steel++;
+          else if (mx > 0.16 && mx - mn < 0.3 * mx) steel++;
           else if (mx === r && mx > 0.12 && mx - mn > 0.5 * mx) flesh++;
         }
       }
