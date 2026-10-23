@@ -21,14 +21,14 @@ export function buildSniper(phone = false, lod = false): { root: THREE.Group; ki
   for (const n of ["receiver", "barrel", "brake", "scope"]) kit.empty(n, [0, BORE, 0], body);
 
   // ---- Receiver: a round action with its ejection port on the right, a rail for the scope.
-  kit.add(lathe([[0.0165, 0.075], [0.018, 0.07], [0.018, -0.13], [0.0165, -0.134]], { phone: o.phone }), FIN.receiver, { p: [0, BORE, 0] }, body);
+  kit.add(lathe([[0.0165, 0.075], [0.018, 0.07], [0.018, -0.13], [0.0165, -0.134]], { phone: o.phone, seg: o.phone ? 16 : 24 }), FIN.receiver, { p: [0, BORE, 0] }, body);
   kit.add(rounded(0.016, 0.006, 0.2, 0.0015, o.phone), FIN.receiver, { p: [0, BORE + 0.02, -0.03] }, body);
   // The port: a dark window on the right.
   kit.add(rounded(0.002, 0.012, 0.05, 0.001, o.phone), FIN.bore, { p: [0.0175, BORE + 0.004, -0.0] }, body);
   faction(kit, body, -0.0181, BORE - 0.002, -0.07, 0.07);
   // ---- Barrel: tapering, then the brake with two big side ports.
   kit.add(lathe([[0.0128, -0.134], [0.0112, -0.3], [0.0094, -0.66]], { phone: o.phone }), FIN.receiver, { p: [0, BORE, 0] }, body);
-  kit.add(lathe([[0.0145, -0.66], [0.0145, -0.735], [0.0132, -0.74]], { phone: o.phone }), FIN.receiver, { p: [0, BORE, 0] }, body);
+  kit.add(lathe([[0.0145, -0.66], [0.0145, -0.735], [0.0132, -0.74]], { phone: o.phone, seg: o.phone ? 16 : 24 }), FIN.receiver, { p: [0, BORE, 0] }, body);
   if (!o.lod) for (const x of [-1, 1]) for (const z of [-0.678, -0.7, -0.722]) kit.add(rounded(0.004, 0.016, 0.012, 0.0015, o.phone), FIN.bore, { p: [x * 0.0128, BORE, z] }, body);
   crown(kit, body, BORE, -0.7412, 0.0132, 0.0048, o.phone);
 
@@ -67,11 +67,11 @@ export function buildSniper(phone = false, lod = false): { root: THREE.Group; ki
 
   // ---- The scope: rings, the 30 mm tube, turrets, the bells, glass, the coated objective.
   const sy = SCOPE_Y;
-  kit.add(lathe([[0.0185, 0.15], [0.0195, 0.14], [0.0195, 0.1], [0.0128, 0.078], [0.0128, -0.17], [0.024, -0.2], [0.026, -0.262], [0.0245, -0.266]], { phone: o.phone, seg: o.phone ? 14 : 28 }), FIN.housing, { p: [0, sy, 0] }, body);
+  kit.add(lathe([[0.0185, 0.15], [0.0195, 0.14], [0.0195, 0.1], [0.0128, 0.078], [0.0128, -0.17], [0.024, -0.2], [0.026, -0.262], [0.0245, -0.266]], { phone: o.phone, seg: o.phone ? 20 : 28 }), FIN.housing, { p: [0, sy, 0] }, body);
   kit.add(lathe([[0.0085, 0.009], [0.0085, -0.009]], { seg: o.phone ? 10 : 18 }), FIN.knurl, { p: [0, sy + 0.022, -0.04], r: [-Math.PI / 2, 0, 0] }, body);
   kit.add(lathe([[0.0085, 0.008], [0.0085, -0.008]], { seg: o.phone ? 10 : 18 }), FIN.knurl, { p: [0.022, sy, -0.04], r: [0, Math.PI / 2, 0] }, body);
   for (const z of [0.03, -0.11]) {
-    kit.add(lathe([[0.0158, 0.008], [0.0158, -0.008]], { seg: o.phone ? 12 : 20 }), FIN.receiver, { p: [0, sy, z] }, body);
+    kit.add(lathe([[0.0158, 0.008], [0.0158, -0.008]], { seg: o.phone ? 16 : 20 }), FIN.receiver, { p: [0, sy, z] }, body);
     kit.add(rounded(0.018, sy - BORE - 0.02, 0.016, 0.002, o.phone), FIN.receiver, { p: [0, (sy + BORE + 0.02) / 2 - 0.006, z] }, body);
   }
   kit.add(new THREE.CircleGeometry(0.0235, o.phone ? 14 : 28), GLOW.lens, { p: [0, sy, -0.263], r: [0, Math.PI, 0] }, body);

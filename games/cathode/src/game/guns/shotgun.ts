@@ -14,9 +14,10 @@ export const SHOTGUN_SIGHT: readonly [number, number, number] = [0, 0.067, 0.046
 
 /** A shotshell along -Z from its head at p: a brass base and an oxblood hull. */
 function shell(kit: GunKit, part: THREE.Object3D, p: [number, number, number], phone: boolean, r: [number, number, number] = [0, 0, 0]): void {
-  const seg = phone ? 8 : 12;
+  // 12 sides at least: at 8 the kit's 43° crease kept every face flat and the shells read as boxes (C18 review).
+  const seg = phone ? 12 : 16;
   kit.add(lathe([[0.0105, 0], [0.0105, -0.0015], [0.0098, -0.002], [0.0098, -0.014]], { seg }), FIN.brass, { p, r }, part);
-  kit.add(lathe([[0.0096, -0.014], [0.0096, -0.066], [0.0088, -0.069], [0.004, -0.07], [0, -0.0702]], { seg }), FIN.hull, { p, r }, part);
+  kit.add(lathe([[0.0096, -0.014], [0.0096, -0.066], [0.0091, -0.0685], [0.0072, -0.0698], [0.003, -0.0702], [0, -0.0703]], { seg }), FIN.hull, { p, r }, part);
   kit.add(new THREE.CircleGeometry(0.0105, seg), FIN.brass, { p, r }, part);
 }
 

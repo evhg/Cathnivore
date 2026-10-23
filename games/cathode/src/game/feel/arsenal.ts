@@ -476,7 +476,7 @@ const SNIPER: ClassFeel = {
   tac: {
     dur: SN_TAC,
     tracks: {
-      gun: gunTrack(SN_TAC, SN_TAC * 0.6, [6 * D, 14 * D, -24 * D], [0.02, 0.05, -0.04]),
+      gun: gunTrack(SN_TAC, SN_TAC * 0.6, [6 * D, -2 * D, -20 * D], [-0.05, 0.04, -0.02]),
       mag: magTrack(SN_MAG_AXIS, SN_TAC * 0.6, false),
       hand: [s(0, 0), s(220, 1, "inOut"), s(SN_TAC * 0.6 + 40, 1), s(SN_TAC * 0.6 + 360, 0, "inOut")],
       arm: [s(0, 0), s(220, 1, "inOut"), s(SN_TAC * 0.6 + 90, 1), s(SN_TAC, 0, "inOut")],
@@ -494,7 +494,7 @@ const SNIPER: ClassFeel = {
   empty: {
     dur: SN_EMPTY,
     tracks: {
-      gun: gunTrack(SN_EMPTY, SN_EMPTY * 0.6, [6 * D, 14 * D, -24 * D], [0.02, 0.05, -0.04]),
+      gun: gunTrack(SN_EMPTY, SN_EMPTY * 0.6, [6 * D, -2 * D, -20 * D], [-0.05, 0.04, -0.02]),
       mag: magTrack(SN_MAG_AXIS, SN_EMPTY * 0.6, true),
       magVis: [s(0, 1), s(240, 0, "step"), s(560, 1, "step")],
       bolt: SN_EMPTY_BOLT.bolt,
