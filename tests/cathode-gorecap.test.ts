@@ -37,10 +37,12 @@ describe("cathode gore caps", () => {
       // Sample the core's normal opposite the bone (the bone sits off centre at +x): it faces out of the cut (+Y).
       const p = g.getAttribute("position");
       const nn = g.getAttribute("normal");
+      const colr = g.getAttribute("color");
       let best = -1;
       let bestY = -Infinity;
+      // (The cyber coolant ring glows above 1 and sits just over the core; it's a flat band, not the core.)
       for (let i = 0; i < p.count; i++)
-        if (Math.hypot(p.getX(i) + 0.03, p.getZ(i)) < 0.012 && p.getY(i) > bestY) {
+        if (colr.getY(i) <= 1 && Math.hypot(p.getX(i) + 0.03, p.getZ(i)) < 0.012 && p.getY(i) > bestY) {
           bestY = p.getY(i);
           best = i;
         }
