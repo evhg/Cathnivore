@@ -376,7 +376,7 @@ export const HERO_PLACE: Record<HeroModel, HeroPlace> = {
   smg: { build: buildSmg, sight: SMG_SIGHT, hip: [0.125, -0.15, -0.36], hipPhone: [0.112, -0.14, -0.36], dist: 0.2, vmFov: 42, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 54 },
   rifle: { build: buildRifle, sight: RIFLE_SIGHT, hip: [0.125, -0.165, -0.37], hipPhone: [0.112, -0.155, -0.37], dist: 0.2, vmFov: 40, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 50 },
   shotgun: { build: heroShotgun, sight: SHOTGUN_SIGHT, hip: [0.125, -0.16, -0.38], hipPhone: [0.112, -0.15, -0.38], dist: 0.22, vmFov: 44, hipRot: [0.02, 0.1, 0.06], long: true, adsFov: 58 },
-  sniper: { build: heroSniper, sight: SNIPER_SIGHT, hip: [0.125, -0.175, -0.38], hipPhone: [0.088, -0.165, -0.38], dist: 0.12, vmFov: 44, hipRot: [0.02, 0.1, 0.05], long: true, scoped: true, adsFov: 9 },
+  sniper: { build: heroSniper, sight: SNIPER_SIGHT, hip: [0.1, -0.175, -0.38], hipPhone: [0.088, -0.165, -0.38], dist: 0.12, vmFov: 44, hipRot: [0.02, 0.1, 0.05], long: true, scoped: true, adsFov: 9 },
   launcher: { build: heroLauncher, sight: LAUNCHER_SIGHT, hip: [0.13, -0.17, -0.38], hipPhone: [0.085, -0.165, -0.38], dist: 0.24, vmFov: 44, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 58 },
 };
 
