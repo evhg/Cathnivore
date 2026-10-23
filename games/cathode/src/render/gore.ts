@@ -936,7 +936,10 @@ export function createGore(o: GoreDeps): Gore {
   const cp = new THREE.Vector3();
   const cn = new THREE.Vector3();
   const cv = new THREE.Vector3();
-  const spurtColor = (p: THREE.Vector3, cyber: boolean, out: THREE.Color) => (cyber ? coolant(p, out) : tinted(p, PUFF, GORE.puff.lift, out).multiplyScalar(GORE.spurt.lift));
+  // Arterial, but deeper than a hit's spurt (which is lifted x1.9 to cross the marker at 40 ms): a stump's jets are
+  // seen for 1.5 s and must read as blood, not embers.
+  const spurtColor = (p: THREE.Vector3, cyber: boolean, out: THREE.Color) => (cyber ? coolant(p, out) : tinted(p, PUFF, GORE.puff.lift, out).multiplyScalar(1.15));
+  const ARC_GLOW = new THREE.Color(1.2, 3.4, 3.2);
   const sever = (cut: SeverCut) => {
     if (o.reduced) return;
     const c = new THREE.Color();
@@ -994,7 +997,11 @@ export function createGore(o: GoreDeps): Gore {
             const qx = px + (cv.x + (rand() - 0.5) * 0.9) * st;
             const qy = py + (cv.y + (rand() - 0.5) * 0.9) * st;
             const qz = pz + (cv.z + (rand() - 0.5) * 0.9) * st;
-            if (on) arcPos.set([px, py, pz, qx, qy, qz], w);
+            if (on) {
+              arcPos.set([px, py, pz, qx, qy, qz], w);
+              // A line is a pixel wide at any size: each live joint of the arc also glows (a small, brief cyan bloom).
+              if (sgi < A.segs - 1 && rand() < 0.5) puff(tp.set(qx, qy, qz), 0.035 + rand() * 0.03, ARC_GLOW, 0.9, 0.05, -1);
+            }
             else arcPos.set([px, py, pz, px, py, pz], w);
             w += 6;
             px = qx;

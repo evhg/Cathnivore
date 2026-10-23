@@ -49,6 +49,8 @@ export interface Effects {
     hasPool(owner: object): boolean;
     smear(top: THREE.Vector3, normal: THREE.Vector3): void;
     trail(at: THREE.Vector3): void;
+    /** C19: live stumps, chrome arcs and coolant puddles. */
+    readonly severCounts?: { stumps: number; arcs: number; puddles: number };
     readonly pools: { readonly pools: readonly { at: THREE.Vector3; r: number; age: number }[]; age(s: number): void };
   };
   /** Sparks and coolant from a cyborg or machine hit. */

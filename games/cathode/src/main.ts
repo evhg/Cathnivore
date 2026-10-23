@@ -57,6 +57,8 @@ function setChecked(name: string, value: string): void {
 // ?front=gate|title|settings|credits|loading|areatitle|classpick&shot&t=30&focus=continue: the screenshot stages (scripts/cathode-feel-shots.mjs).
 const frontStage = params.get("front");
 const shot = params.has("shot");
+// C19: screenshot runs shoot the reduced-violence stages at every size (&intensity=reduced, ?shot only; never saved).
+if (shot && params.get("intensity") === "reduced") prefs.intensity = "reduced";
 const audio = new FrontAudio(prefs.volume);
 /** Read at each use, not once at boot: Settings → Reduce motion can change it mid-session (C14 review). */
 const still = (): boolean => reducedMotion();

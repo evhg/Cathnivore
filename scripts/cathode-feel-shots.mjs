@@ -86,7 +86,13 @@ const C18_GUNS = ['revolver', 'smg', 'rifle', 'shotgun', 'sniper', 'launcher']
 // fire@0 too: at 20 ms the one-frame class flash (S2.3) has gone on a 60 fps desktop, so its shape is judged at 0.
 const C18 = [...C18_GUNS.flatMap((g) => [`${g}-idle`, `${g}-fire@0`, `${g}-fire@20`, `${g}-reload-mid`]), 'arsenal-lineup']
 const C18X = C18_GUNS.flatMap((g) => [`${g}-ads`, `${g}-reload-empty@${g === 'shotgun' ? 300 : 1500}`])
-const MS = { C18, C18X, C17, C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
+// C19 "Gore and dismemberment": the Fishmonger taking a forearm at 3.2 m (300 ms: the arm tumbling, the stump
+// spurting), the Widowmaker taking a head through a broken visor, a chrome forearm leaking coolant and arcing, and
+// the same buckshot under reduced violence (the knockdown, no caps, no red: the hue probe). Every size shoots the
+// reduced stage with &intensity=reduced.
+const C19 = ['sever-arm', 'sever-head', 'coolant-cyber', 'reduced-mode-death']
+const STAGE_EXTRA = { 'reduced-mode-death': '&intensity=reduced' }
+const MS = { C19, C18, C18X, C17, C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
 const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
@@ -446,7 +452,7 @@ for (const vp of vps) {
   for (const spec of gameStages) {
     const [stage, at] = spec.split('@')
     const t = at ? Number(at) : stage === 'hit-kill' ? 230 : stage === 'enemy-flinch-head-60' ? 60 : stage.startsWith('pistol-') ? 0 : 40
-    await load((V.stageQ?.[stage] ?? V.stageQ?.[stage.replace(/-\d+$/, '')] ?? V.q) + (JOB_STAGES.has(stage) ? '&job' : ''))
+    await load((V.stageQ?.[stage] ?? V.stageQ?.[stage.replace(/-\d+$/, '')] ?? V.q) + (JOB_STAGES.has(stage) ? '&job' : '') + (STAGE_EXTRA[stage] ?? ''))
     const f0 = await page.evaluate(() => window.cathode.stats.frames)
     const cls = await page.evaluate(([s, tt]) => window.cathode.stage(s, tt), [stage, t])
     // SwiftShader draws about one frame a second: let two frames land so the HUD shows the stage.
@@ -993,6 +999,34 @@ for (const vp of vps) {
           document.querySelector('.hud-root')?.classList.remove('is-review')
         })
       } else fail(`${vp} ${spec}: no hand close-up`)
+    }
+    // ---- C19 acceptance ----
+    if (C19.includes(stage) && info) {
+      const sv = info.sever ?? {}
+      const reduced = V.intensity === 'reduced' || stage === 'reduced-mode-death'
+      console.log(`  C19 ${vp} ${spec}: severed [${(sv.severed ?? []).join(', ')}], caps ${sv.caps}, stumps ${sv.stumps}, arcs ${sv.arcs}, puddles ${sv.puddles}, cyber ${sv.cyber}, variant ${info.variant}`)
+      if (reduced) {
+        if ((sv.severed ?? []).length) fail(`${vp} ${spec}: severed ${sv.severed.join(', ')} under reduced violence`)
+        if (sv.caps > 0) fail(`${vp} ${spec}: ${sv.caps} gore caps under reduced violence`)
+        if (stage === 'reduced-mode-death' && info.variant !== 'blownback') fail(`${vp} ${spec}: died as ${info.variant}, not the knockdown (blownback)`)
+        const r = await page.evaluate(() => window.cathode.probeBloodRed())
+        console.log(`  C19 ${vp} ${spec}: hue probe ${r.red} blood-red pixels of ${r.total}`)
+        if (r.red > 0) fail(`${vp} ${spec}: ${r.red} blood-red pixels under reduced violence`)
+      } else {
+        const want = stage === 'sever-head' ? 'head' : 'forearmL'
+        if (!(sv.severed ?? []).includes(want)) fail(`${vp} ${spec}: ${want} not severed`)
+        if (!(sv.caps >= 2)) fail(`${vp} ${spec}: ${sv.caps} caps showing (want the stump's and the piece's)`)
+        if (!sv.stumps) fail(`${vp} ${spec}: no live stump (spurt/trail) at the frame`)
+        if (!sv.stump?.front && !sv.piece?.front) fail(`${vp} ${spec}: neither the stump nor the piece is in frame`)
+        if (stage === 'coolant-cyber' && !(sv.cyber && (sv.arcs > 0 || sv.puddles > 0))) fail(`${vp} ${spec}: the chrome cut shows no arcs or coolant`)
+        // A crop on the cut, for judging the cap at full size.
+        const fo = sv.stump?.front ? sv.stump : sv.piece
+        if (fo) {
+          const cw4 = Math.round(V.viewport.width * 0.3)
+          const ch4 = Math.round(cw4 * 0.66)
+          await page.screenshot({ path: `${file}-cut.png`, clip: { x: Math.max(0, Math.min(V.viewport.width - cw4, fo.x - cw4 / 2)), y: Math.max(0, Math.min(V.viewport.height - ch4, fo.y - ch4 / 2)), width: cw4, height: ch4 }, timeout: 300_000 })
+        }
+      }
     }
     // ---- C9 acceptance ----
     if (/^(death-(gutclutch|wallslump|headshot|spin|knees|blownback)|blood-pool)/.test(stage) && info) {

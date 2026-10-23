@@ -208,6 +208,8 @@ export interface Session {
     tell?: { head: { x: number; y: number }; helmetTop: { x: number; y: number }; chip: { x: number; y: number } | null };
     /** C15: the plates' states, his reaction, the carrier under the chest plate on screen (CSS px, with 5 cm in px), the loose plates. */
     armour?: { crack?: { x: number; y: number; r: number } | null; plates: Record<string, string>; visor: number; reaction: string | null; t: number; under: { x: number; y: number; r: number }; face: { x: number; y: number; r: number }; debris: { x: number; y: number; asleep: boolean }[]; meter: number; heights: Record<string, number>; arms?: string; shards?: number; crawling?: boolean; wound?: { limp: string | null; hang: string | null; hunch: number } | null };
+    /** C19: the cut on screen (CSS px): the stump's cap and the flying piece, what severed, the caps showing, live cuts. */
+    sever?: { stump: { x: number; y: number; front: boolean } | null; piece: { x: number; y: number; front: boolean } | null; severed: string[]; caps: number; stumps: number; arcs: number; puddles: number; cyber: boolean };
     takedown?: { t: number; active: boolean; headIn: boolean; armIn: boolean; handR: { x: number; y: number }; handL: { x: number; y: number }; bars: number; helmetShare: number; prop: string; propIn: boolean; muzzle: { x: number; y: number } | null; debug?: Record<string, number[] | null> };
   } | null;
   /** C9 acceptance: inside an ellipse (CSS px), the share of bright pixels (a highlight: the neon in the pool) and of dark-red ones. */
@@ -4187,7 +4189,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * C9 "Deaths that land": a kill at close range with the variant forced, framed on the body at the stage's
    * moment (the base hit stage, a distance, a forced death, a wall behind him, and how he is turned).
    */
-  const C9_STAGES: Record<string, { base: string; dist: number; variant: DeathVariant; wall?: boolean; turn?: number; pool?: boolean; helmet?: boolean; ms: number }> = {
+  const C9_STAGES: Record<string, { base: string; dist: number; variant?: DeathVariant; wall?: boolean; turn?: number; pool?: boolean; helmet?: boolean; ms: number; weapon?: string; hitscan?: boolean; aimAt?: (g: Enemy) => THREE.Vector3; pre?: (g: Enemy) => void; cyber?: readonly string[] }> = {
     "death-gutclutch": { base: "hit-kill", dist: 4.6, variant: "gutclutch", ms: 450 },
     "death-wallslump": { base: "hit-kill", dist: 4.6, variant: "wallslump", wall: true, ms: 1200 },
     "death-headshot": { base: "hit-headkill", dist: 4.6, variant: "headshot", helmet: true, ms: 300 },
@@ -4195,6 +4197,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     "death-blownback": { base: "hit-kill", dist: 4.6, variant: "blownback", ms: 350 },
     "death-spin": { base: "hit-kill", dist: 4.6, variant: "spin", turn: 1.25, ms: 400 },
     "blood-pool": { base: "hit-kill", dist: 4.6, variant: "gutclutch", pool: true, ms: 8000 },
+    // C19 "Gore and dismemberment" (S4.5): the Fishmonger at 3.2 m into his support forearm takes it off (the spin
+    // throws the stump out toward the lens while the arm tumbles away along the buckshot); the Widowmaker through a
+    // broken visor takes the head; the same buckshot on a Candor chrome forearm leaks coolant, sparks and arcs; and
+    // under reduced violence the killing blow that would sever plays the knockdown instead (no caps, no red).
+    "sever-arm": { base: "hit-kill", dist: 3.2, variant: "spin", ms: 300, weapon: "fishmonger", aimAt: (g) => g.body.joints.elbowL.clone().lerp(g.body.joints.wristL, 0.45) },
+    "sever-head": {
+      base: "hit-headkill",
+      dist: 4.6,
+      variant: "headshot",
+      ms: 320,
+      weapon: "widowmaker",
+      hitscan: true,
+      pre: (g) => {
+        if (g.armour) g.armour.visor = 2;
+        g.syncPlates();
+      },
+    },
+    "coolant-cyber": { base: "hit-kill", dist: 3.2, variant: "spin", ms: 420, weapon: "fishmonger", cyber: ["forearmL", "forearmR", "handL", "handR"], aimAt: (g) => g.body.joints.elbowL.clone().lerp(g.body.joints.wristL, 0.45) },
+    "reduced-mode-death": { base: "hit-kill", dist: 3.2, ms: 600, weapon: "fishmonger", aimAt: (g) => g.body.joints.elbowL.clone().lerp(g.body.joints.wristL, 0.45) },
   };
   let c9: (typeof C9_STAGES)[string] | null = null;
   /**
@@ -5841,7 +5862,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (crateCollider) crateCollider.off = !crated;
     // C10: hit-arm takes the round on the support forearm, nearer the elbow (the hand that opens stays clear of the marker).
     const joint = name === "hit-arm" ? g.body.joints.elbowL.clone().lerp(g.body.joints.handL, 0.3) : name === "hit-head" || name === "hit-headkill" || name === "peek-head" || name === "enemy-flinch-head-60" ? g.body.joints.head : g.body.joints.chest;
-    const aim = c15?.aimAt ? c15.aimAt(g) : c15?.aimUp ? g.body.joints.chest.clone().lerp(g.body.joints.neck, 0.55) : joint.clone();
+    // C19: chrome (or not) for this stage only, then the stage's own set-up.
+    g.body.setCyber(c9?.cyber ?? g.kit.cyber ?? []);
+    c9?.pre?.(g);
+    const aim = c9?.aimAt ? c9.aimAt(g) : c15?.aimAt ? c15.aimAt(g) : c15?.aimUp ? g.body.joints.chest.clone().lerp(g.body.joints.neck, 0.55) : joint.clone();
     // Blocked: the round goes into the crate's upper face, square on, with the guard's head showing behind it.
     if (name === "blocked" && stageCrate) aim.copy(stageCrate.position).y += 0.35;
     if (name === "hit-kill" || name === "hit-headkill") g.hp = 1;
@@ -5852,8 +5876,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       // The stage's "raw" is what this round takes off a plate (its class's wear), so the pre-set lands on the state.
       c15.pre(g, plateWear(wc.weaponClass, wc.damage * build().damage(wc.weaponClass)));
     }
-    const wid = c15?.weapon ?? "kestrel";
-    const w = SLICE_WEAPONS.find((x) => x.id === wid)!;
+    const wid = c15?.weapon ?? c9?.weapon ?? "kestrel";
+    const w0 = SLICE_WEAPONS.find((x) => x.id === wid)!;
+    // C19: the sever-head stage's sniper round lands on the stage's frame (a hitscan copy, not a round in flight).
+    const w = c9?.hitscan ? { ...w0, kind: "hitscan" as const } : w0;
     // The shot is a Kestrel round (or the stage's own gun), so she holds it.
     if (arsenal.weapon.id !== wid) {
       arsenal.owned.add(wid);
@@ -5886,6 +5912,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     drainEvents();
     // A death stage shows the death: no loot beam standing through the body.
     if (c9) pickups.clear();
+    // C19: a stage that leaves the death to the rules (reduced violence) frames the death it got.
+    if (c9 && !c9.variant) c9 = { ...c9, variant: (g.deathVariant ?? "blownback") as DeathVariant };
+    const severedNow = [...g.body.lost];
     const hitAt = (lastHitPoint as THREE.Vector3 | null)?.clone() ?? aim.clone();
     const head0 = toScreen(g.body.joints.head);
     // The world moves on to the stage's moment: the body flinches or falls, blood flies and lands (S0, C2).
@@ -5910,10 +5939,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (c9) {
       // Framed on him where he lies (or on the pool), from a little closer, looking down at the street.
       const pl = gp?.pools[gp.pools.length - 1];
-      const focus = c9.pool && pl ? pl.at.clone() : g.body.joints.chest.clone().lerp(g.body.joints.pelvis, 0.5).lerp(g.body.joints.head, c9.variant === "wallslump" ? 0.3 : 0);
+      // C19: a sever stage frames the cut (between the stump and the flying piece), from closer in.
+      const cut = c9.weapon && g.body.lastCut ? g.body.lastCut : null;
+      const cutAt = cut ? (cut.stump ?? cut.piece).getWorldPosition(new THREE.Vector3()).lerp(cut.piece.getWorldPosition(new THREE.Vector3()), cut.stump ? 0.4 : 0) : null;
+      const focus = cutAt ?? (c9.pool && pl ? pl.at.clone() : g.body.joints.chest.clone().lerp(g.body.joints.pelvis, 0.5).lerp(g.body.joints.head, c9.variant === "wallslump" ? 0.3 : 0));
       const back = new THREE.Vector3(eye.x - focus.x, 0, eye.z - focus.z);
       // A phone's screen is small: it frames the body closer, so he isn't a 60 px figure behind her gun.
-      const want = (c9.pool ? 3.2 : 3.3) * (o.quality === "phone" ? 0.72 : 1);
+      const want = (c9.pool ? 3.2 : cutAt ? 2.3 : 3.3) * (o.quality === "phone" ? 0.72 : 1);
       // A body at rest is shot from beside it (a three-quarter view from the side she stands on): lying along the
       // line of fire, it is foreshortened into a lump whatever its pose (C9 review).
       const axis = new THREE.Vector3().subVectors(g.body.joints.head, g.body.joints.pelvis).setY(0);
@@ -6112,7 +6144,22 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     });
     // Where the body is now (the kill stage looks for the corpse): pelvis and head on screen.
     const corpse = { pelvis: toScreen(g.body.joints.pelvis), head: toScreen(g.body.joints.head), chest: toScreen(g.body.joints.chest) };
-    s.stageInfo = { hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse, variant: g.deathVariant, pool: poolInfo, asleep: g.body.asleep, heights: c9 ? jointHeights(g) : undefined, handOpen: { L: g.body.handOpenDeg("L"), R: g.body.handOpenDeg("R") }, seg: lastHitSeg, hands: name === "hit-arm" ? { L: toScreen(g.body.joints.handL), R: toScreen(g.body.joints.handR), r: Math.abs(toScreen(g.body.joints.handL.clone().addScaledVector(camX, 0.12)).x - toScreen(g.body.joints.handL).x) } : undefined };
+    let severInfo: { stump: { x: number; y: number; front: boolean } | null; piece: { x: number; y: number; front: boolean } | null; severed: string[]; caps: number; stumps: number; arcs: number; puddles: number; cyber: boolean } | undefined = undefined;
+    if (c9) {
+      const at = (o3: THREE.Object3D | null | undefined) => {
+        if (!o3) return null;
+        const p = o3.getWorldPosition(new THREE.Vector3());
+        const v = p.clone().project(world.camera);
+        return { ...toScreen(p), front: v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1 };
+      };
+      let caps = 0;
+      g.body.root.traverse((c) => {
+        if ((c.name === "capFrom" || c.name === "capTo" || c.name === "capCut") && c.visible) caps++;
+      });
+      const sc = world.fx.gore?.severCounts ?? { stumps: 0, arcs: 0, puddles: 0 };
+      severInfo = { stump: at(g.body.lastCut?.stump), piece: at(g.body.lastCut?.piece), severed: severedNow, caps, ...sc, cyber: !!g.body.lastCut?.cyber };
+    }
+    s.stageInfo = { sever: severInfo, hit: toScreen(hitAt), r02, head0, head1: toScreen(g.body.joints.head), puffM: world.fx.gore?.counts.puffM ?? 0, splats, corpse, variant: g.deathVariant, pool: poolInfo, asleep: g.body.asleep, heights: c9 ? jointHeights(g) : undefined, handOpen: { L: g.body.handOpenDeg("L"), R: g.body.handOpenDeg("R") }, seg: lastHitSeg, hands: name === "hit-arm" ? { L: toScreen(g.body.joints.handL), R: toScreen(g.body.joints.handR), r: Math.abs(toScreen(g.body.joints.handL.clone().addScaledVector(camX, 0.12)).x - toScreen(g.body.joints.handL).x) } : undefined };
     if (c15 && g.armour) {
       const J = g.body.joints;
       const up = new THREE.Vector3().subVectors(J.neck, J.chest).normalize();
@@ -6261,8 +6308,12 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     cv.width = c.width;
     cv.height = c.height;
     const g2 = cv.getContext("2d", { willReadFrequently: true })!;
+    // The world only: her gun's red shotgun shells (C19's reduced-mode-death holds the Fishmonger) are not blood.
+    const vmWas = world.viewScene.visible;
+    world.viewScene.visible = false;
     render();
     g2.drawImage(c, 0, 0);
+    world.viewScene.visible = vmWas;
     const px = g2.getImageData(0, 0, cv.width, cv.height).data;
     let red = 0;
     for (let i = 0; i < px.length; i += 4) {
