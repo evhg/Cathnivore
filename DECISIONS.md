@@ -580,3 +580,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-23 (C19 review r1): death stages run a seeded Math.random from the shot to the frame, and a cut is framed by scoring 32 views (caps facing her and unoccluded, stump, piece, chest, knees and feet clear of the kill ring, her gun and the HUD corners).
 - 2026-10-23 (C19 s2): the cap probe counts neutral steel as well as cyan for chrome cuts (the collar is grey by design); the gate stays at 12 px, and coolant-cyber still fails it, so C19 is not released.
 - 2026-10-23: C19 probe fix (steel classifier threshold) instead of reframing the cyber cut; the cut already shows chrome caps.
+- 2026-10-23 17:51: CI-red fix was in the test (gorecap sampler now skips the glowing ring), not the art. Skipped the 5K C19 shots (about 10 min a stage); release moves to next session.
