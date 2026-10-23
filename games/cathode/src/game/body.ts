@@ -16,6 +16,7 @@ import { BASE_JOINTS, JOINTS, REST, SEGMENTS, FX0, HELM_Y, KNUCKLE_Y, ACCESSORY_
 import { LAYER_NO_REFLECT, LAYER_MIRROR_ONLY } from "../render/reflection";
 import { archGeometry, type Arch, type Lod } from "./models/enforcer";
 import { enemyMaterials, fxBone, setFx, FX_BONES, GORE_MAT } from "./models/materials";
+import { capGeometry, chromeMaterial, chromeSleeve, sharedCapMaterial } from "./models/gorecap";
 import { Cloth, TABARD, COAT_TAILS } from "./cloth";
 
 export { JOINTS, REST, SEGMENTS, type Joint, type Zone, type SegmentDef } from "./rig";
@@ -85,6 +86,8 @@ export interface BodyLook {
   visor: number;
   /** The faction's emissive (S3.1's faction languages): the rim's hue. Hollowell's amber unless said otherwise. */
   faction?: number;
+  /** C19: segments that are chrome (Candor's augments): a chrome sleeve over them, coolant and sparks for blood. */
+  cyber?: readonly string[];
 }
 
 /** Hollowell's amber (S3.1): every Enforcer role's rim, whatever colour its visor shows. */
@@ -96,7 +99,10 @@ export function enforcerLook(visorColor = HOLLOWELL_AMBER, arch: Arch = "enforce
 }
 
 const IDENT = new THREE.Matrix4();
-const capGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.02, 10);
+/** C19 (S4.5): the cut's flesh radius per segment (m, the suit's tube under any plate): the gore cap's size. */
+const CUT_R: Record<string, number> = { head: 0.062, upperArmL: 0.066, upperArmR: 0.066, forearmL: 0.058, forearmR: 0.058, handL: 0.045, handR: 0.045, thighL: 0.088, thighR: 0.088, shinL: 0.072, shinR: 0.072 };
+/** A cap before any cut (never seen: caps are hidden until a sever gives them their real geometry). */
+const capGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.02, 6);
 /** Each segment's outer surface round its bone (m): where wounds sit on the plates, the suit and the helmet. */
 const SURFACE_R: Record<string, number> = { abdomen: 0.122, chest: 0.142, upperChest: 0.142, head: 0.165, upperArmL: 0.074, upperArmR: 0.074, forearmL: 0.066, forearmR: 0.066, handL: 0.04, handR: 0.04, thighL: 0.104, thighR: 0.104, shinL: 0.088, shinR: 0.088 };
 
@@ -123,7 +129,7 @@ interface Seg {
   group: THREE.Bone;
   len: number;
   /** Severed: the segment flies on its own (two free points). */
-  loose: { a: THREE.Vector3; b: THREE.Vector3; pa: THREE.Vector3; pb: THREE.Vector3; t: number } | null;
+  loose: { a: THREE.Vector3; b: THREE.Vector3; pa: THREE.Vector3; pb: THREE.Vector3; t: number; parent?: Seg } | null;
 }
 
 const up = new THREE.Vector3(0, 1, 0);
@@ -215,7 +221,7 @@ export class Body {
   private handAge: Record<"L" | "R", number> = { L: 1e9, R: 1e9 };
 
   constructor(
-    readonly look: BodyLook,
+    public look: BodyLook,
     readonly scale = 1,
   ) {
     for (const j of JOINTS) {
@@ -369,11 +375,19 @@ export class Body {
   }
 
   /**
-   * Screenshot stages (S0): back on his feet, unlit, as if never hit. Only for a body that still has every
-   * segment (a severed one can't be put back).
+   * Screenshot stages (S0): back on his feet, unlit, as if never hit, every severed piece put back.
    */
   revive(): void {
     this.putHelmetBack();
+    // C19: severed pieces go back (stages reuse one guard); the caps hide again.
+    for (const sg of this.segs.values()) {
+      sg.loose = null;
+      for (const n of ["capFrom", "capTo"]) sg.group.getObjectByName(n)!.visible = false;
+      const cut = sg.group.getObjectByName("capCut");
+      if (cut) sg.group.remove(cut);
+    }
+    this.lost.clear();
+    this.lastCut = null;
     this.resetPlates();
     this.setCheap(false);
     this.ragdoll = false;
@@ -733,45 +747,107 @@ export class Body {
     this.lastValid = true;
   }
 
-  /** Severs a segment (and what it carries): it flies off with `vel`; stumps show gore caps. */
-  sever(name: string, vel: THREE.Vector3): string[] {
+  /** C19: the last cut's two caps (the stump's and the flying piece's), for the spurt and the trail (render/gore.ts). */
+  lastCut: { stump: THREE.Object3D | null; piece: THREE.Object3D; seg: string; cyber: boolean } | null = null;
+
+  /** C19: true when this segment is chrome (its look's cyber list). */
+  isCyber(seg: string): boolean {
+    return !!this.look.cyber?.includes(seg);
+  }
+
+  /** C19: makes these segments chrome (a stage, or a kit with augments): sleeves over them now, cyber caps when cut. */
+  setCyber(segs: readonly string[]): void {
+    this.look = { ...this.look, cyber: segs };
+    for (const s of this.segs.values()) {
+      const old = s.group.getObjectByName("chrome");
+      if (old) s.group.remove(old);
+      if (!segs.includes(s.def.name)) continue;
+      const sleeve = new THREE.Mesh(chromeSleeve(s.len / this.scale, CUT_R[s.def.name] ?? s.def.radius * 0.8, s.def.name.startsWith("hand"), bodyView.phone), chromeMaterial(bodyView.phone));
+      sleeve.name = "chrome";
+      sleeve.castShadow = true;
+      s.group.add(sleeve);
+    }
+  }
+
+  /**
+   * Severs a segment (and what it carries): it flies off with `vel`, spinning at `spin` rad/s (S4.5: 10 to 20), and
+   * the cut shows the lathe gore caps (flesh or chrome) on the stump and on the piece.
+   */
+  sever(name: string, vel: THREE.Vector3, spin = 14): string[] {
     const s = this.segs.get(name);
     if (!s || s.loose) return [];
     const out: string[] = [];
-    const go = (seg: Seg, v: THREE.Vector3) => {
+    const cyber = this.isCyber(name);
+    const r = CUT_R[name] ?? s.def.radius * 0.8;
+    const geo = capGeometry(r, cyber, bodyView.phone);
+    const mat = sharedCapMaterial(bodyView.phone);
+    // The spin: the piece's two ends get opposite tangential velocities about an axis across the bone.
+    const axis = tmpA.subVectors(this.joints[s.def.to], this.joints[s.def.from]);
+    const across = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).cross(axis);
+    if (across.lengthSq() < 1e-8) across.set(1, 0, 0);
+    across.normalize().multiplyScalar((spin * s.len) / 2);
+    const go = (seg: Seg, v: THREE.Vector3, parent: Seg | undefined) => {
       const a = this.joints[seg.def.from].clone();
       const b = this.joints[seg.def.to].clone();
-      const spin = new THREE.Vector3((Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2);
-      seg.loose = {
-        a,
-        b,
-        pa: a.clone().addScaledVector(v, -1 / 60),
-        pb: b.clone().addScaledVector(v.clone().add(spin), -1 / 60),
-        t: 0,
-      };
-      seg.group.getObjectByName("capFrom")!.visible = true;
+      const root = !parent;
+      const va = root ? v.clone().sub(across) : v;
+      const vb = v.clone().add(root ? across : across.clone().multiplyScalar(2));
+      seg.loose = { a, b, pa: a.clone().addScaledVector(va, -1 / 60), pb: b.clone().addScaledVector(vb, -1 / 60), t: 0, ...(parent ? { parent } : {}) };
       this.lost.add(seg.def.name);
       out.push(seg.def.name);
       for (const c of seg.def.carries ?? []) {
         const cs = this.segs.get(c);
-        if (cs && !cs.loose) {
-          // A carried segment stays rigidly attached to the flying part: fly it with the same velocity.
-          go(cs, v);
-        }
+        // A carried segment hangs off the flying part (pinned at the joint they share, free to swing).
+        if (cs && !cs.loose) go(cs, v, seg);
       }
     };
-    go(s, vel);
-    // The stump: the parent end of the cut shows a cap.
+    go(s, vel, undefined);
+    // The piece's cap faces out of its "from" end; the stump's out of the parent's end at the cut.
+    const pc = s.group.getObjectByName("capFrom") as THREE.Mesh;
+    pc.geometry = geo;
+    pc.material = mat;
+    pc.rotation.set(Math.PI, 0, 0);
+    pc.visible = true;
+    let stump: THREE.Object3D | null = null;
     for (const p of this.segs.values()) {
-      if (!p.loose && (p.def.to === s.def.from || p.def.from === s.def.from)) {
-        const cap = p.def.to === s.def.from ? "capTo" : "capFrom";
-        p.group.getObjectByName(cap)!.visible = true;
+      if (p.loose) continue;
+      const parentEnd = p.def.to === s.def.from ? "capTo" : p.def.from === s.def.from && p.def.zone !== s.def.zone ? "capFrom" : null;
+      if (!parentEnd) continue;
+      const cap = p.group.getObjectByName(parentEnd) as THREE.Mesh;
+      cap.geometry = geo;
+      cap.material = mat;
+      cap.rotation.set(parentEnd === "capFrom" ? Math.PI : 0, 0, 0);
+      cap.visible = true;
+      stump ??= cap;
+    }
+    if (!stump && s.def.zone !== "head") {
+      // A cut at the shoulder or the hip: no segment ends there, so the trunk carries a cap at the joint, its face
+      // along the limb that went.
+      const host = this.segs.get(s.def.zone === "legL" || s.def.zone === "legR" ? "abdomen" : "upperChest");
+      if (host) {
+        const cap = new THREE.Mesh(geo, mat);
+        cap.name = "capCut";
+        host.group.updateMatrixWorld(true);
+        const at = host.group.worldToLocal(this.joints[s.def.from].clone());
+        const toward = host.group.worldToLocal(this.joints[s.def.to].clone()).sub(at).normalize();
+        cap.position.copy(at);
+        cap.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), toward);
+        host.group.add(cap);
+        stump = cap;
       }
     }
     if (s.def.zone === "head") {
       const chest = this.segs.get("upperChest");
-      if (chest) chest.group.getObjectByName("capTo")!.visible = true;
+      if (chest) {
+        const cap = chest.group.getObjectByName("capTo") as THREE.Mesh;
+        cap.geometry = geo;
+        cap.material = mat;
+        cap.rotation.set(0, 0, 0);
+        cap.visible = true;
+        stump = cap;
+      }
     }
+    this.lastCut = { stump, piece: pc, seg: name, cyber };
     return out;
   }
 
@@ -916,7 +992,10 @@ export class Body {
         p.z += vz;
       }
       for (let it = 0; it < 3; it++) {
-        solve(l.a, l.b, s.len, 0.5, 0.5);
+        // A carried piece hangs off its parent piece at the joint they share.
+        const pl = l.parent?.loose;
+        if (pl) l.a.copy(pl.b);
+        solve(l.a, l.b, s.len, pl ? 0 : 0.5, pl ? 1 : 0.5);
         collide(l.a, l.pa, w);
         collide(l.b, l.pb, w);
       }

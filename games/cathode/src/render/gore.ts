@@ -29,7 +29,49 @@ export interface FleshHit {
   owner?: object;
   /** The body's root: when it leaves the scene its wounds go too. */
   root?: THREE.Object3D;
+  /** C19: a chrome segment: coolant (#00E5C8, lit from within) and sparks instead of blood, and no wound. */
+  cyber?: boolean;
 }
+
+/** C19 (S4.5): one sever, as combat reports it: the two caps the body showed (game/body.ts lastCut). */
+export interface SeverCut {
+  /** The stump's cap (its +Y faces out of the cut), or null when the trunk had nowhere to carry one. */
+  stump: THREE.Object3D | null;
+  /** The flying piece's cap. */
+  piece: THREE.Object3D;
+  point: THREE.Vector3;
+  dir: THREE.Vector3;
+  weaponCls: string;
+  cyber: boolean;
+}
+
+/** C19: S4.5's stump and piece numbers. */
+export const SEVER_FX = {
+  /** The piece flies 4 to 8 m/s along the round, 1.5 m/s up, spinning 10 to 20 rad/s. */
+  flyMin: 4,
+  flyMax: 8,
+  flyUp: 1.5,
+  spinMin: 10,
+  spinMax: 20,
+  /** The stump spurts for 1.5 s on a 2 Hz heartbeat: four pulses at these amplitudes, 6 droplets a pulse. */
+  pulses: [1.0, 0.7, 0.45, 0.25] as const,
+  pulseHz: 2,
+  perPulse: 6,
+  pulseSpeed: [2.4, 4.4] as const,
+  pulseConeDeg: 26,
+  /** The flying piece trails 2 droplets every 100 ms for 0.8 s. */
+  trail: { per: 2, stepS: 0.1, forS: 0.8 },
+  /** The cut itself: drops thrown out of both faces at the moment of the sever. */
+  burst: 14,
+  /** Coolant (S4.5's cyber hit): its colour, its emissive (x0.8), and its puddles fading to #0A3A35 over 20 s. */
+  coolant: "#00E5C8",
+  coolantGlow: 0.8,
+  puddle: { to: "#0A3A35", fadeS: 20, size: [0.12, 0.26] as const, phone: 10, desktop: 24 },
+  /** Chrome stumps arc: four 3-segment lines, re-struck every frame, for this long; sparks with each pulse. */
+  arcs: { count: 4, segs: 3, forS: 1.6, len: [0.05, 0.15] as const, sparks: 0.22 },
+  /** Cyber hits: 2 to 4 sparks. */
+  cyberSparks: [2, 4] as const,
+};
 
 export interface GoreDeps {
   scene: THREE.Scene;
@@ -47,6 +89,8 @@ export interface GoreDeps {
   light(pos: THREE.Vector3, out: THREE.Color): THREE.Color;
   /** The wet street's planar mirror (C9 pools reflect the neon in it); absent in tests. */
   mirror?: PoolMirror;
+  /** C19: sparks off chrome (render/fx.ts's spark burst), `amount` 0..1. */
+  sparks?(pos: THREE.Vector3, dir: THREE.Vector3, amount: number): void;
 }
 
 /** S4.5 numbers. */
@@ -108,6 +152,10 @@ export interface Gore {
   smear(top: THREE.Vector3, normal: THREE.Vector3): void;
   /** C9: a drip on the street under a badly hurt enemy (every 1.2 m he walks). */
   trail(at: THREE.Vector3): void;
+  /** C19: a sever (none under reduced violence). */
+  sever(cut: SeverCut): void;
+  /** C19: live stumps, arcs and coolant puddles (stages and tests). */
+  readonly severCounts: { stumps: number; arcs: number; puddles: number };
   readonly pools: BloodPools;
   dispose(): void;
 }
@@ -597,6 +645,10 @@ export function createGore(o: GoreDeps): Gore {
       puff(h.point.clone().addScaledVector(back, 0.05), sz * 0.8, INK, 0.8, 0.45, ix);
       return;
     }
+    if (h.cyber) {
+      coolantHit(h, ix, sz);
+      return;
+    }
     const P = GORE.puff;
     // 1. The entry puff, facing the player, lifted out of the dark.
     const nPuff = P.count[0] + Math.floor(rand() * (P.count[1] - P.count[0] + 1));
@@ -765,6 +817,7 @@ export function createGore(o: GoreDeps): Gore {
           if (y < gy) {
             // Landed: a drop decal (the bigger ones), then it's gone.
             if (pool.land[i] === 2) o.decal(tp.set(x, gy, z), ts.set(0, 1, 0), 0.06 + rand() * 0.1, DECAL.blood[Math.floor(rand() * 3)]!, WHITE);
+            else if (pool.land[i] === 3) puddle(tp.set(x, gy, z), pool.size[i * 3]! * 6);
             kill(pool, i);
             continue;
           }
@@ -808,14 +861,187 @@ export function createGore(o: GoreDeps): Gore {
     woundCell.needsUpdate = true;
   };
 
+  // ---- C19: severs (S4.5 "The stump"), coolant and chrome
+  const COOL = new THREE.Color(SEVER_FX.coolant);
+  const COOL_DIM = new THREE.Color(SEVER_FX.puddle.to);
+  /** Coolant lit by the street plus its own glow (x0.8): it reads cyan in the dark grade. */
+  const coolant = (p: THREE.Vector3, out: THREE.Color) => {
+    o.light(p, lit);
+    const k = SEVER_FX.coolantGlow * 1.6;
+    return out.setRGB(COOL.r * (0.3 + lit.r * 0.6 + k), COOL.g * (0.3 + lit.g * 0.6 + k), COOL.b * (0.3 + lit.b * 0.6 + k));
+  };
+  // Coolant puddles: flat discs, unlit (they glow), fading from cyan to #0A3A35 over 20 s.
+  const PCAP = o.quality === "phone" ? SEVER_FX.puddle.phone : SEVER_FX.puddle.desktop;
+  const puddleGeo = new THREE.CircleGeometry(1, o.quality === "phone" ? 10 : 18).rotateX(-Math.PI / 2);
+  const puddleMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+  const puddleMesh = new THREE.InstancedMesh(puddleGeo, puddleMat, PCAP);
+  puddleMesh.name = "gore:coolant";
+  puddleMesh.count = 0;
+  puddleMesh.frustumCulled = false;
+  puddleMesh.layers.enable(LAYER_NO_REFLECT);
+  puddleMesh.setColorAt(0, COOL);
+  o.scene.add(puddleMesh);
+  const puddles: { at: THREE.Vector3; r: number; age: number }[] = [];
+  let puddleNext = 0;
+  const puddle = (at: THREE.Vector3, r: number) => {
+    const R = Math.max(SEVER_FX.puddle.size[0], Math.min(SEVER_FX.puddle.size[1], r + rand() * 0.06));
+    const p = { at: at.clone().setY(at.y + 0.012 + puddles.length * 0.0004), r: R, age: 0 };
+    if (puddles.length < PCAP) puddles.push(p);
+    else puddles[puddleNext++ % PCAP] = p;
+  };
+  const coolantHit = (h: FleshHit, ix: number, sz: number) => {
+    const d = h.dir;
+    const back = tmp3.copy(d).negate();
+    const c = coolant(h.point, new THREE.Color());
+    // A thin cyan mist, then the spray: the droplet system tinted coolant, landing as glowing puddles.
+    puff(h.point.clone().addScaledVector(back, 0.04), sz * 0.55, c.clone().multiplyScalar(0.6), 0.6, 0.35, ix);
+    const v = new THREE.Vector3();
+    const n = Math.round(exitCount(h.weaponCls) * 0.6) + 4;
+    for (let k = 0; k < n; k++) {
+      const out = k % 3 === 0 ? cone(back, 70, v) : cone(d, GORE.exit.coneDeg + 10, v);
+      drop(h.point, out.multiplyScalar(1.5 + rand() * 4), (0.012 + rand() * 0.02) * Math.min(GORE.dropRange.max, 1 + h.distance * GORE.dropRange.perM), c, ix, rand() < 0.5 ? 3 : 1);
+    }
+    const ns = SEVER_FX.cyberSparks[0] + Math.floor(rand() * (SEVER_FX.cyberSparks[1] - SEVER_FX.cyberSparks[0] + 1));
+    for (let k = 0; k < ns; k++) o.sparks?.(h.point, cone(back, 80, v).clone(), 0.15);
+  };
+  // Live cuts: the stump's heartbeat spurt (or leak and arcs on chrome) and the piece's trail.
+  interface Cut {
+    stump: THREE.Object3D | null;
+    piece: THREE.Object3D;
+    cyber: boolean;
+    t: number;
+    pulse: number;
+    trail: number;
+    seg: number;
+  }
+  const cuts: Cut[] = [];
+  const ARC_MAX = 2;
+  const arcVerts = SEVER_FX.arcs.count * SEVER_FX.arcs.segs * 2;
+  const arcPos = new Float32Array(ARC_MAX * arcVerts * 3);
+  const arcGeo = new THREE.BufferGeometry();
+  arcGeo.setAttribute("position", new THREE.BufferAttribute(arcPos, 3));
+  arcGeo.setDrawRange(0, 0);
+  const arcMat = new THREE.LineBasicMaterial({ color: new THREE.Color(2.6, 6.5, 6.2), transparent: true, opacity: 0.95, depthWrite: false });
+  const arcLines = new THREE.LineSegments(arcGeo, arcMat);
+  arcLines.name = "gore:arcs";
+  arcLines.frustumCulled = false;
+  arcLines.layers.enable(LAYER_NO_REFLECT);
+  o.scene.add(arcLines);
+  let arcsLive = 0;
+  const capAt = (obj: THREE.Object3D, pos: THREE.Vector3, nrm: THREE.Vector3) => {
+    obj.updateWorldMatrix(true, false);
+    pos.setFromMatrixPosition(obj.matrixWorld);
+    nrm.setFromMatrixColumn(obj.matrixWorld, 1).normalize();
+  };
+  const cp = new THREE.Vector3();
+  const cn = new THREE.Vector3();
+  const cv = new THREE.Vector3();
+  const spurtColor = (p: THREE.Vector3, cyber: boolean, out: THREE.Color) => (cyber ? coolant(p, out) : tinted(p, PUFF, GORE.puff.lift, out).multiplyScalar(GORE.spurt.lift));
+  const sever = (cut: SeverCut) => {
+    if (o.reduced) return;
+    const c = new THREE.Color();
+    // The cut: a burst out of both faces, a cloud at the stump.
+    for (const obj of [cut.stump, cut.piece]) {
+      if (!obj) continue;
+      capAt(obj, cp, cn);
+      spurtColor(cp, cut.cyber, c);
+      for (let k = 0; k < SEVER_FX.burst / 2; k++) drop(cp, cone(cn, 55, cv).multiplyScalar(2 + rand() * 4).addScaledVector(cut.dir, 1.5), 0.014 + rand() * 0.018, c, -1, cut.cyber ? 3 : rand() < 0.5 ? 2 : 1);
+      if (!cut.cyber) puff(cp.clone().addScaledVector(cn, 0.04), 0.28, tinted(cp, PUFF, GORE.puff.lift, new THREE.Color()), 0.8, 0.5, -1);
+      else o.sparks?.(cp, cn, 0.6);
+    }
+    cuts.push({ stump: cut.stump, piece: cut.piece, cyber: cut.cyber, t: 0, pulse: 0, trail: 0, seg: cuts.length });
+    if (cuts.length > 6) cuts.shift();
+  };
+  const updateCuts = (dt: number) => {
+    let arcN = 0;
+    for (let i = cuts.length - 1; i >= 0; i--) {
+      const k = cuts[i]!;
+      k.t += dt;
+      const P = SEVER_FX.pulses;
+      // The heartbeat: a pulse every 0.5 s from the moment of the cut.
+      while (k.stump && k.pulse < P.length && k.t >= k.pulse / SEVER_FX.pulseHz) {
+        const amp = P[k.pulse]!;
+        capAt(k.stump, cp, cn);
+        const c = spurtColor(cp, k.cyber, new THREE.Color());
+        for (let j = 0; j < SEVER_FX.perPulse; j++) {
+          const sp = (SEVER_FX.pulseSpeed[0] + rand() * (SEVER_FX.pulseSpeed[1] - SEVER_FX.pulseSpeed[0])) * (0.4 + 0.6 * amp);
+          drop(cp, cone(cn, SEVER_FX.pulseConeDeg, cv).multiplyScalar(sp), (0.014 + rand() * 0.016) * (0.7 + 0.5 * amp), c, -1, k.cyber ? 3 : j < 2 ? 2 : 1);
+        }
+        if (k.cyber) o.sparks?.(cp, cn, SEVER_FX.arcs.sparks * amp);
+        else puff(cp.clone().addScaledVector(cn, 0.03), 0.12 + 0.12 * amp, tinted(cp, PUFF, GORE.puff.lift, new THREE.Color()).multiplyScalar(0.8), 0.7 * amp + 0.2, 0.32, -1, cn.clone().multiplyScalar(0.6 * amp));
+        k.pulse++;
+      }
+      // The flying piece trails drops for 0.8 s.
+      const T = SEVER_FX.trail;
+      while (k.t < T.forS && k.t >= k.trail * T.stepS) {
+        capAt(k.piece, cp, cn);
+        const c = spurtColor(cp, k.cyber, new THREE.Color());
+        for (let j = 0; j < T.per; j++) drop(cp, cone(cn, 60, cv).multiplyScalar(0.4 + rand()), 0.012 + rand() * 0.012, c, -1, k.cyber ? 3 : 2);
+        k.trail++;
+      }
+      // Chrome arcs at the stump: four jagged three-segment lines, struck afresh each frame (two flicker out).
+      if (k.cyber && k.stump && k.t < SEVER_FX.arcs.forS && arcN < ARC_MAX) {
+        capAt(k.stump, cp, cn);
+        let w = arcN * arcVerts * 3;
+        const A = SEVER_FX.arcs;
+        for (let a = 0; a < A.count; a++) {
+          const on = rand() < 0.75 - (k.t / A.forS) * 0.4;
+          let px = cp.x, py = cp.y, pz = cp.z;
+          const len = A.len[0] + rand() * (A.len[1] - A.len[0]);
+          cone(cn, 120, cv);
+          for (let sgi = 0; sgi < A.segs; sgi++) {
+            const st = len / A.segs;
+            const qx = px + (cv.x + (rand() - 0.5) * 0.9) * st;
+            const qy = py + (cv.y + (rand() - 0.5) * 0.9) * st;
+            const qz = pz + (cv.z + (rand() - 0.5) * 0.9) * st;
+            if (on) arcPos.set([px, py, pz, qx, qy, qz], w);
+            else arcPos.set([px, py, pz, px, py, pz], w);
+            w += 6;
+            px = qx;
+            py = qy;
+            pz = qz;
+          }
+        }
+        arcN++;
+      }
+      if (k.t > Math.max(SEVER_FX.trail.forS, SEVER_FX.pulses.length / SEVER_FX.pulseHz, k.cyber ? SEVER_FX.arcs.forS : 0) + 0.1) cuts.splice(i, 1);
+    }
+    arcsLive = arcN;
+    arcGeo.setDrawRange(0, arcN * arcVerts);
+    arcGeo.attributes.position!.needsUpdate = arcN > 0;
+    arcLines.visible = arcN > 0;
+    // Puddles fade.
+    const m = new THREE.Matrix4();
+    const pc = new THREE.Color();
+    for (let i = 0; i < puddles.length; i++) {
+      const p = puddles[i]!;
+      p.age += dt;
+      const g = Math.min(1, 0.6 + p.age * 3);
+      m.makeScale(p.r * g, 1, p.r * g).setPosition(p.at);
+      puddleMesh.setMatrixAt(i, m);
+      const f = Math.min(1, p.age / SEVER_FX.puddle.fadeS);
+      pc.copy(COOL).multiplyScalar(1.4).lerp(COOL_DIM, Math.sqrt(f));
+      puddleMesh.setColorAt(i, pc);
+    }
+    puddleMesh.count = puddles.length;
+    puddleMesh.visible = puddles.length > 0;
+    puddleMesh.instanceMatrix.needsUpdate = true;
+    if (puddleMesh.instanceColor) puddleMesh.instanceColor.needsUpdate = true;
+  };
+
   // ---- C9: pools, smears and trails (none under reduced violence: S4.5 drops pools and splats)
   const pools = new BloodPools(o.scene, o.quality, o.noise, o.mirror);
   const down = new THREE.Vector3(0, -1, 0);
   return {
     hit,
     update(dt) {
+      updateCuts(dt);
       update(dt);
       pools.update(dt);
+    },
+    sever,
+    get severCounts() {
+      return { stumps: cuts.length, arcs: arcsLive, puddles: puddles.length };
     },
     pool(at, R, seed, owner) {
       if (o.reduced) return;
@@ -854,6 +1080,11 @@ export function createGore(o: GoreDeps): Gore {
     pools,
     clear() {
       pools.clear();
+      cuts.length = 0;
+      puddles.length = 0;
+      puddleMesh.count = 0;
+      arcsLive = 0;
+      arcGeo.setDrawRange(0, 0);
       splats.length = 0;
       mist.n = drops.n = 0;
       mist.anchorIx.fill(-1);
@@ -876,6 +1107,8 @@ export function createGore(o: GoreDeps): Gore {
     dispose() {
       pools.dispose();
       woundMat.dispose();
+      puddleMat.dispose();
+      arcMat.dispose();
       for (const p of [mist, drops]) (p.mesh.material as THREE.Material).dispose();
     },
   };

@@ -20,6 +20,8 @@ import { armourHit, disarmRoll, plateFor, plateWear, shotgunSplit, ARMOUR, PLATE
 import { staggerHit, POISE } from "../sim/stagger";
 import { PlateDebris } from "./armourfx";
 import { bodyView } from "./body";
+import { blastSevers, severPart, severs, type SeverQuery } from "../sim/damage";
+import { SEVER_FX } from "../render/gore";
 
 export interface KillEvent {
   enemy: Enemy;
@@ -159,10 +161,13 @@ export class Combat {
       const killed = wasAlive && e.damage(dmg, dir.clone().multiplyScalar(6));
       if (this.gore) {
         this.world.fx.blood(e.body.joints.chest, dir, Math.min(1, dmg / 50));
-        // Close to the blast, limbs go.
-        if (!silent && (k > 0.55 || (killed && k > 0.3)))
-          for (const seg of ["forearmL", "forearmR", "shinL", "shinR"])
-            if (Math.random() < k * 0.7) e.body.sever(seg, dir.clone().multiplyScalar(6 + k * 8).add(new THREE.Vector3(0, 4, 0)));
+        // C19 (S4.5): a blast within 3 m takes the legs first, then the forearms; a body it doesn't kill keeps them.
+        if (!silent && (killed || !e.alive) && e.kit.role !== "turret" && e.kit.role !== "hunter")
+          for (const seg of blastSevers(d, true, false, Math.random)) {
+            const gone = e.body.sever(seg, dir.clone().multiplyScalar(6 + k * 2).add(new THREE.Vector3(0, SEVER_FX.flyUp + 1, 0)), SEVER_FX.spinMin + Math.random() * (SEVER_FX.spinMax - SEVER_FX.spinMin));
+            const lc = e.body.lastCut;
+            if (gone.length && lc) this.world.fx.sever?.({ stump: lc.stump, piece: lc.piece, point: e.body.joints.chest.clone(), dir, weaponCls: "launcher", cyber: lc.cyber });
+          }
       }
       if (killed) {
         e.die(dir.clone().multiplyScalar(8 + 10 * k).add(new THREE.Vector3(0, 5 * k, 0)), at, { ...this.deathCtx(e, "torso", dir, "launcher", d, false), explosive: true });
@@ -455,6 +460,8 @@ export class Combat {
   firstGunKill = false;
   /** Screenshot stages (C9): the next kill dies this way, whatever the hit says. */
   forceVariant: DeathVariant | null = null;
+  /** C19 stages: force (or forbid) the sever on the next strike; null leaves it to the rule. */
+  forceSever: boolean | null = null;
   /** Screenshot stages (C9): whether a headshot knocks the helmet off, instead of the 40% roll. */
   forceHelmet: boolean | null = null;
   /** Screenshot stages (C15): the disarm roll's value (0 always disarms), instead of a random one. */
@@ -567,7 +574,7 @@ export class Combat {
       // No blood off a plate (S4.5: "sparks only").
     } else if (this.world.fx.flesh)
       // A shattering visor opens the face: a nick, not a head shot's exit spray across the frame (the glass is the beat).
-      this.world.fx.flesh({ point, dir, damage: ah?.layer === "visor" ? Math.min(dmg, e.kit.maxHp * 0.08) : dmg, maxHp: e.kit.maxHp, weaponCls: w.weaponClass, distance: dist, anchor: seg.group, owner: e, root: e.body.root, head: zone === "head", lethal: wasAlive && dmg >= e.hp });
+      this.world.fx.flesh({ point, dir, damage: ah?.layer === "visor" ? Math.min(dmg, e.kit.maxHp * 0.08) : dmg, maxHp: e.kit.maxHp, weaponCls: w.weaponClass, distance: dist, anchor: seg.group, owner: e, root: e.body.root, head: zone === "head", lethal: wasAlive && dmg >= e.hp, cyber: e.isCyber(segName) });
     else if (this.gore) this.world.fx.blood(point, dir, Math.min(1, dmg / 60));
 
     const push = dir.clone().multiplyScalar(w.weaponClass === "shotgun" ? 3 : w.weaponClass === "sniper" ? 6 : 1.5);
@@ -614,32 +621,48 @@ export class Combat {
     if (wasAlive && data.visorStage === 2 && ah?.broke) this.bus.emit("visorBreak", data);
     if (wasAlive && (data.reaction === "stagger" || data.reaction === "knockdown")) this.bus.emit("stagger", data);
 
-    // Severing: a big hit to a limb or the head takes it off (full intensity only).
+    // C19 (S4.5): the sever rule (sim/damage.ts severs), on what this trigger pull did to the segment. Reduced
+    // violence never severs: a killing blow that would have plays the knockdown death instead.
     const severed: string[] = [];
-    if (this.gore) {
-      const total = this.shotDamage.get(segName)!;
+    const total = this.shotDamage.get(segName)!;
+    const machine = e.kit.role === "turret" || e.kit.role === "hunter";
+    const sq: SeverQuery = {
+      part: severPart(segName),
+      weaponCls: w.weaponClass,
+      damage: total,
+      maxHp: e.kit.maxHp,
+      lethal: killed || !e.alive,
+      distance: dist,
+      crit,
+      edged: w.weaponClass === "melee" && (w.model === "blade" || w.model === "wire"),
+      headOpen: !e.armour || e.armour.visor === 2 || !!e.body.helmetOff,
+      severable: !machine && !e.body.lost.has(segName),
+    };
+    const wouldSever = (this.forceSever ?? severs(sq)) && sq.severable !== false && sq.part !== "torso";
+    let knockInstead = false;
+    if (wouldSever && this.gore) {
       const brutal = w.brutal ?? 0;
-      const limb = zone !== "torso" && zone !== "head";
-      const headOff = zone === "head" && (killed || !e.alive) && (w.weaponClass === "sniper" || (w.weaponClass === "shotgun" && dist < 7) || total > 150);
-      const limbOff = limb && total > e.kit.maxHp * (0.55 - brutal * 0.25) && (killed || !e.alive || total > e.kit.maxHp * 0.7);
-      if (headOff || limbOff) {
-        const fly = dir.clone().multiplyScalar(4 + brutal * 5).add(new THREE.Vector3(0, 2.5, 0));
-        severed.push(...e.body.sever(segName, fly));
-        this.world.fx.blood(point, dir, 1);
-        this.world.fx.blood(point, new THREE.Vector3(0, 1, 0), 1);
-      }
-    }
+      // S4.5: the piece flies 4 to 8 m/s along the round, 1.5 m/s up, spinning 10 to 20 rad/s.
+      const fly = dir.clone().multiplyScalar(SEVER_FX.flyMin + (SEVER_FX.flyMax - SEVER_FX.flyMin) * Math.min(1, 0.4 + brutal * 0.6)).add(new THREE.Vector3(0, SEVER_FX.flyUp, 0));
+      // A forearm hit takes the forearm (and the hand); the hand alone stays a forearm sever (the stump needs bone).
+      const cut = segName.startsWith("hand") ? segName.replace("hand", "forearm") : segName;
+      severed.push(...e.body.sever(cut, fly, SEVER_FX.spinMin + Math.random() * (SEVER_FX.spinMax - SEVER_FX.spinMin)));
+      const lc = e.body.lastCut;
+      if (severed.length && lc) this.world.fx.sever?.({ stump: lc.stump, piece: lc.piece, point, dir, weaponCls: w.weaponClass, cyber: lc.cyber });
+    } else if (wouldSever && (killed || !e.alive)) knockInstead = true;
 
     if (killed) {
       const gun = w.kind !== "melee";
       const ctx = this.deathCtx(e, zone, dir, w.weaponClass, dist, gun && this.firstGunKill);
       if (this.forceHelmet != null) ctx.helmetPop = this.forceHelmet;
+      // A head that came off has no helmet to pop.
+      if (severed.includes("head")) ctx.helmetPop = false;
       if (gun) this.firstGunKill = false;
       const imp = DEATH.impulse[w.weaponClass] ?? 3.5;
-      e.die(dir.clone().multiplyScalar(imp).add(new THREE.Vector3(0, 1, 0)), point, ctx, this.forceVariant ?? undefined);
+      e.die(dir.clone().multiplyScalar(imp).add(new THREE.Vector3(0, 1, 0)), point, ctx, this.forceVariant ?? (knockInstead ? "blownback" : undefined));
       this.killed({ enemy: e, weapon: w, zone, headshot: zone === "head", distance: dist, unseen, severed, takedown });
     } else if (severed.length && e.alive) {
-      // Losing a leg or an arm puts them down for good.
+      // Losing a forearm to buckshot or a sniper round puts him down: the shock (S4.5's non-lethal sever).
       e.damage(e.hp + 1, push);
       e.die(push.multiplyScalar(2), point, this.deathCtx(e, zone, dir, w.weaponClass, dist, false));
       this.killed({ enemy: e, weapon: w, zone, headshot: false, distance: dist, unseen, severed, takedown });

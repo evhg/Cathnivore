@@ -49,6 +49,8 @@ export interface EnemyKit {
   bash?: boolean;
   /** C10 (S3.2): a squad leader wears the helmet crest and a red visor stripe. */
   leader?: boolean;
+  /** C19: chrome segments (Candor augments): they leak coolant and spark instead of bleeding, and sever as machines. */
+  cyber?: readonly string[];
 }
 
 /** C15 (S4.3): the disarm's stung-hand shake and the sidearm draw (ms). */
@@ -122,6 +124,8 @@ export const ORDERLY: EnemyKit = {
   xp: 70,
   visor: 0x58ffb0,
   role: "orderly",
+  // Candor's augments: chrome forearms and hands (S4.5's cyber hit).
+  cyber: ["forearmL", "forearmR", "handL", "handR"],
 };
 
 /** A Candor nurse: frail and armed with a dart pistol, but patches every ally within NURSE_RANGE. Kill her first. */
@@ -370,6 +374,7 @@ export class Enemy {
     look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "civilian"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
   ) {
     this.body = new Body(look);
+    if (kit.cyber?.length) this.body.setCyber(kit.cyber);
     this.hp = kit.maxHp;
     this.morale = makeMorale(!["turret", "police", "hunter", "civilian"].includes(kit.role ?? ""));
     // Riflemen, squad leaders and shield bearers wear the full Enforcer set; the sniper's coat has no plates.
@@ -1183,6 +1188,11 @@ export class Enemy {
    * a wall or rail nearby); `forced` picks the variant outright (screenshot stages). Without a context the push
    * itself says which way it came from.
    */
+  /** C19: this segment is chrome (it leaks coolant and sparks; its stump arcs). */
+  isCyber(seg: string): boolean {
+    return this.body.isCyber(seg);
+  }
+
   die(impulse: THREE.Vector3, at: THREE.Vector3, ctx?: Partial<DeathCtx>, forced?: DeathVariant, script?: DeathScript): void {
     this.state = "dead";
     this.hp = 0;

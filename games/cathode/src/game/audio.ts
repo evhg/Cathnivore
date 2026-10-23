@@ -13,6 +13,9 @@ export type ConfirmKind = "body" | "head" | "armour" | "plateBreak" | "visor" | 
 
 type Noise = "white" | "pink" | "brown";
 
+/** C19: the stump spurt's heartbeat amplitudes (render/gore.ts SEVER_FX.pulses), 0.5 s apart. */
+const SEVER_PULSES = [1.0, 0.7, 0.45, 0.25] as const;
+
 export class Audio {
   readonly ctx: AudioContext;
   private master: GainNode;
@@ -1016,9 +1019,30 @@ export class Audio {
     this.burst({ type: "highpass", freq: 4000, decay: 0.04, gain: 0.2 });
   }
 
-  sever(): void {
-    this.burst({ type: "lowpass", freq: 900, sweepTo: 200, decay: 0.25, gain: 0.7, noise: "brown" });
-    this.burst({ freq: 1800, q: 2, decay: 0.12, gain: 0.35, when: 0.02 });
+  /**
+   * C19 (S4.5): a sever. Flesh: a wet tear (noise swept 600 Hz to 2 kHz over 140 ms), a crunch (the bone), and a
+   * hiss in time with the stump's spurt (2 Hz, pulses at 1.0, 0.7, 0.45 and 0.25). Chrome: a metal shear, an
+   * electrical crackle with the arcs and a servo whining down.
+   */
+  sever(cyber = false): void {
+    if (!this.enabled) return;
+    if (cyber) {
+      this.burst({ type: "highpass", freq: 2500, sweepTo: 6000, decay: 0.12, gain: 0.45 });
+      this.thump(2600, 1900, 0.1, 0.12, 0, "triangle");
+      for (let i = 0; i < 9; i++) this.burst({ type: "highpass", freq: 3500 + Math.random() * 3000, decay: 0.012 + Math.random() * 0.02, gain: 0.18 + Math.random() * 0.14, when: 0.04 + i * 0.09 + Math.random() * 0.05 });
+      // The servo whine-down.
+      this.thump(1700, 140, 0.95, 0.07, 0.05, "sawtooth");
+      // The coolant hiss, in time with the leak's pulses.
+      for (const [i, a] of SEVER_PULSES.entries()) this.burst({ type: "highpass", freq: 4200, decay: 0.32, gain: 0.12 * a, when: i * 0.5 });
+      return;
+    }
+    this.burst({ type: "bandpass", freq: 600, sweepTo: 2000, q: 1.2, decay: 0.14, gain: 0.6 });
+    this.burst({ type: "lowpass", freq: 900, sweepTo: 200, decay: 0.25, gain: 0.7, noise: "brown", when: 0.01 });
+    // The crunch: a short knock with a gritty top.
+    this.thump(260, 90, 0.07, 0.5, 0.03, "triangle");
+    this.burst({ type: "bandpass", freq: 1400, q: 3, decay: 0.05, gain: 0.35, when: 0.035 });
+    // The spurt's hiss (S4.5's heartbeat).
+    for (const [i, a] of SEVER_PULSES.entries()) this.burst({ type: "bandpass", freq: 2600, q: 0.8, decay: 0.22, gain: 0.16 * a, when: 0.08 + i * 0.5 });
   }
 
   pin(hit: boolean, model = "pin"): void {

@@ -3474,7 +3474,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     lastEnemySlowmo();
     for (const k of combat.kills) {
       onKill(k);
-      if (k.severed.length) audio?.sever();
+      if (k.severed.length) audio?.sever(k.enemy.isCyber(k.severed[0]!));
     }
     // Every hit: a marker by class, a dry confirm, a hit-stop from the table, and on a kill the FOV punch,
     // trauma and the target bar's collapse (S1.2 to S1.5). Several pellets in one frame confirm once, as
@@ -5732,7 +5732,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.camera.getWorldPosition(eye);
     world.camera.getWorldDirection(fwd);
     const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
-    if (stageGuard && stageGuard.body.lost.size === 0 && enemies.includes(stageGuard)) {
+    if (stageGuard && enemies.includes(stageGuard)) {
       if (!stageGuard.alive) stageGuard.revive();
     } else stageGuard = null;
     // A plain rifleman (a riot shield would eat the round), the nearest one.

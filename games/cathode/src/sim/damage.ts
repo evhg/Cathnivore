@@ -272,6 +272,116 @@ function severCheck(
   return undefined;
 }
 
+// ------------------------------------------------------------------ C19: S4.5 "Dismemberment"
+
+/** S4.5's sever numbers. */
+export const SEVER = {
+  /** A limb's and the head's share of max HP (sim/wounds.ts limbShare for limbs). */
+  limbShare: 0.3,
+  headShare: 0.4,
+  /** A killing blow severs at `share x maxHp x killMul`. */
+  killMul: 1.5,
+  /** Non-lethal (forearm only, shotgun or sniper): one hit of at least this share of max HP. */
+  nonLethalShare: 0.3,
+  /** An explosive within this many metres severs (legs first). */
+  explosiveM: 3,
+  /** The pistol's one exception: a lethal forearm crit of at least this share of max HP. */
+  pistolCritShare: 0.4,
+  /** Bladed melee severs a killing blow at this share of the threshold. */
+  edgedMul: 0.5,
+} as const;
+
+/** The handguns: "the pistol never severs" (S4.5) covers every one-handed gun. */
+const HANDGUNS = new Set(["pistol", "revolver", "smart"]);
+
+/** What a body segment is, for the sever rules: the head, one of the limb pieces, or the trunk (never severs). */
+export type SeverPart = "head" | "upperArm" | "forearm" | "hand" | "thigh" | "shin" | "torso";
+
+/** A segment name (game/rig.ts SEGMENTS) as a sever part. */
+export function severPart(seg: string): SeverPart {
+  if (seg === "head") return "head";
+  if (seg.startsWith("upperArm")) return "upperArm";
+  if (seg.startsWith("forearm")) return "forearm";
+  if (seg.startsWith("hand")) return "hand";
+  if (seg.startsWith("thigh")) return "thigh";
+  if (seg.startsWith("shin")) return "shin";
+  return "torso";
+}
+
+export interface SeverQuery {
+  part: SeverPart;
+  /** The weapon class (pistol, revolver, smg, rifle, shotgun, sniper, launcher, melee...). */
+  weaponCls: string;
+  /** What this trigger pull did to the segment (pellets summed). */
+  damage: number;
+  maxHp: number;
+  /** The hit killed him (or he was already down). */
+  lethal: boolean;
+  /** Metres from the shooter (or the blast). */
+  distance: number;
+  crit?: boolean;
+  /** An explosion (launcher, grenade, mine). */
+  explosive?: boolean;
+  /** A bladed melee weapon. */
+  edged?: boolean;
+  /** The head is open: the visor broken, the helmet off, or no helmet at all. */
+  headOpen?: boolean;
+  /** The segment can come off at all (false for a drone's core, an already lost piece). */
+  severable?: boolean;
+  /** Reduced violence (the gate's other choice): nothing ever severs. */
+  reduced?: boolean;
+}
+
+/**
+ * S4.5's rule: does this hit take the segment off? Pure, so the game and `cathode-sever` read the same numbers.
+ *   - a killing blow on a limb or the head with damage >= share x maxHp x 1.5;
+ *   - a shotgun within CLOSE_SEVER_RANGE (lethal), an explosive within 3 m;
+ *   - the sniper on a head whose visor is broken (a helmeted head comes off only once it is open);
+ *   - non-lethal severs only on forearms (and the hand they carry), from the shotgun or the sniper;
+ *   - the pistol never severs, except a lethal forearm crit of at least 0.4 x max HP;
+ *   - reduced violence never severs.
+ */
+export function severs(q: SeverQuery): boolean {
+  if (q.reduced || q.severable === false || q.part === "torso") return false;
+  const hp = Math.max(1, q.maxHp);
+  const fore = q.part === "forearm" || q.part === "hand";
+  if (HANDGUNS.has(q.weaponCls)) return q.lethal && fore && !!q.crit && q.damage >= SEVER.pistolCritShare * hp;
+  const shotgunClose = q.weaponCls === "shotgun" && q.distance <= CLOSE_SEVER_RANGE;
+  const blast = (q.explosive || q.weaponCls === "launcher") && q.distance <= SEVER.explosiveM;
+  if (!q.lethal) {
+    if (!fore) return false;
+    if (q.weaponCls !== "shotgun" && q.weaponCls !== "sniper") return false;
+    if (q.weaponCls === "shotgun" && !shotgunClose) return false;
+    return q.damage >= SEVER.nonLethalShare * hp;
+  }
+  const edged = q.weaponCls === "melee" && !!q.edged;
+  if (q.weaponCls === "melee" && !edged) return false;
+  const share = q.part === "head" ? SEVER.headShare : SEVER.limbShare;
+  const heavy = q.damage >= share * hp * SEVER.killMul * (edged ? SEVER.edgedMul : 1);
+  if (q.part === "head") {
+    // A head under an intact helmet and visor comes off only to buckshot at the muzzle or a blast beside it.
+    if (shotgunClose || blast) return true;
+    if (!q.headOpen) return false;
+    return q.weaponCls === "sniper" || heavy;
+  }
+  return heavy || shotgunClose || blast;
+}
+
+/**
+ * What a blast takes (S4.5: "an explosive within 3 m (legs first)"): the shins, then the forearms on a closer or
+ * killing blast. `roll` (0..1) per candidate decides; deterministic for a given roll function.
+ */
+export function blastSevers(distance: number, lethal: boolean, reduced: boolean, roll: () => number): string[] {
+  if (reduced || distance > SEVER.explosiveM) return [];
+  const k = 1 - distance / SEVER.explosiveM;
+  const out: string[] = [];
+  for (const s of ["shinL", "shinR"]) if (roll() < 0.35 + k * 0.6) out.push(s);
+  // Legs first: one leg always goes inside 1.5 m.
+  if (!out.length && k > 0.5) out.push("shinL");
+  if (lethal || k > 0.7) for (const s of ["forearmL", "forearmR"]) if (roll() < k * 0.5) out.push(s);
+  return out;
+}
+
 /** Writes a hit's outcome onto a target (health, shield and severed zones). */
 export function applyHit<T extends DamageTarget>(target: T, hit: HitResult): T {
   return {

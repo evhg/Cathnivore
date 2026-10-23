@@ -400,6 +400,7 @@ export function createFx(o: {
     decal: addDecal,
     light: (p, out) => o.volume.sample(p, out),
     mirror: o.shared,
+    sparks: (p, d, a) => fx.sparks(p, d, a),
   });
 
   // ---------------------------------------------------------------- casings
@@ -433,6 +434,9 @@ export function createFx(o: {
     gore,
     flesh(h) {
       gore.hit(h);
+    },
+    sever(cut) {
+      gore.sever(cut);
     },
     clear() {
       // A screenshot stage starts clean: no particles, decals, casings or flash lights from the stage before.

@@ -1,4 +1,4 @@
-import type { FleshHit } from "./gore";
+import type { FleshHit, SeverCut } from "./gore";
 // The contract between the renderer (src/render/) and the game layer (src/game/). The renderer owns the
 // scene, lighting, post-processing and effects; the game layer owns the camera's transform, the player,
 // enemies and rules. Keep this file small and stable: both sides build against it.
@@ -37,6 +37,8 @@ export interface Effects {
   blood(pos: THREE.Vector3, dir: THREE.Vector3, amount: number): void;
   /** A round in flesh (S4.5): entry puff, spurt, exit spray, wall splat and a wound on the segment. */
   flesh?(hit: FleshHit): void;
+  /** C19 (S4.5): a sever: the stump spurts on a heartbeat, the piece trails drops; chrome sparks, arcs and leaks coolant. */
+  sever?(cut: SeverCut): void;
   /** Live gore counts against their caps (the soak test, the budget sidecar). */
   readonly gore?: {
     counts: { mist: number; drops: number; wounds: number; puffM: number };
