@@ -46,6 +46,15 @@ describe("C18 the hero guns in hand", () => {
       expect(a.heroState.fireMs).toBe(-1);
     });
 
+    it(`${m}: the screenshot stages start a reload, tac and empty (C18 review r2: the single-shot launcher's tac stage didn't)`, () => {
+      for (const kind of ["tac", "empty"] as const) {
+        const { a } = setup(IDS[m]!);
+        a.stageHeroReload(kind, 300);
+        expect(a.heroState.reload, `${m} ${kind}`).not.toBeNull();
+        expect(a.heroState.reloadMs, `${m} ${kind}`).toBeGreaterThan(0);
+      }
+    });
+
     it(`${m}: a reload seats at its commit and leaves the parts at rest`, () => {
       const { a, tick } = setup(IDS[m]!);
       const h = a.held[a.current]!;

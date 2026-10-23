@@ -296,8 +296,10 @@ function starTexture(): THREE.DataTexture {
       const r = Math.hypot(u, v);
       const a = Math.atan2(v, u);
       // Six spikes of uneven length, narrowing to their tips.
-      const sp = Math.pow(Math.max(0, Math.cos(a * 3)), 18) * (0.75 + 0.25 * Math.sin(a * 7 + 1.3));
-      const core = Math.exp(-r * r * 22);
+      // C18 review r2: at 18 the spikes were hairlines and a small flash read as a stroked vector star; at 7 they
+      // are filled flames, and the core is wider so the small and medium stars burn as a solid hot disc.
+      const sp = Math.pow(Math.max(0, Math.cos(a * 3)), 7) * (0.75 + 0.25 * Math.sin(a * 7 + 1.3));
+      const core = Math.exp(-r * r * 9);
       const spike = sp * Math.max(0, 1 - r) ** 1.4;
       const halo = Math.max(0, 1 - r) ** 3 * 0.35;
       const k = Math.min(1, core + spike + halo);
@@ -332,7 +334,10 @@ function heroFlash(kind: FlashKind, size: number, muzzle: THREE.Object3D, root: 
   if (kind === "brake") for (const sx of [-1, 1]) along.push(new THREE.PlaneGeometry(size * 0.75, size * 0.22).rotateX(-Math.PI / 2).translate((sx * size * 0.42), 0, 0.012));
   const front = new THREE.Mesh(mergeGeometries(along)!, hot(kind === "large" ? 3.4 : 2.8));
   const face = new THREE.Mesh(new THREE.PlaneGeometry(size * 0.9, size * 0.9).translate(0, 0, -size * 0.12), star);
+  face.name = "flash-star";
   front.add(face);
+  // A soft filled body behind the star (C18 review r2: the SMG's and rifle's stars read as outlines without it).
+  front.add(new THREE.Mesh(new THREE.PlaneGeometry(size * 0.6, size * 0.6).translate(0, 0, -size * 0.1), hot(2.2)));
   g.add(front);
   g.position.copy(muzzle.position);
   if (rear) {
@@ -368,11 +373,11 @@ interface HeroPlace {
 }
 export const HERO_PLACE: Record<HeroModel, HeroPlace> = {
   revolver: { build: heroRevolver, sight: REVOLVER_SIGHT, fs: [0.016, -0.01], fsHip: [0.06, -0.045, -0.12], dist: 0.4, vmFov: 36, hipRot: [0.03, 0.5, 0.22], long: false, adsFov: 52 },
-  smg: { build: buildSmg, sight: SMG_SIGHT, hip: [0.125, -0.15, -0.36], hipPhone: [0.135, -0.14, -0.36], dist: 0.2, vmFov: 42, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 54 },
-  rifle: { build: buildRifle, sight: RIFLE_SIGHT, hip: [0.125, -0.165, -0.37], hipPhone: [0.135, -0.155, -0.37], dist: 0.2, vmFov: 40, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 50 },
-  shotgun: { build: heroShotgun, sight: SHOTGUN_SIGHT, hip: [0.125, -0.16, -0.38], hipPhone: [0.135, -0.15, -0.38], dist: 0.22, vmFov: 44, hipRot: [0.02, 0.1, 0.06], long: true, adsFov: 58 },
-  sniper: { build: heroSniper, sight: SNIPER_SIGHT, hip: [0.125, -0.175, -0.38], hipPhone: [0.135, -0.165, -0.38], dist: 0.12, vmFov: 44, hipRot: [0.02, 0.1, 0.05], long: true, scoped: true, adsFov: 9 },
-  launcher: { build: heroLauncher, sight: LAUNCHER_SIGHT, hip: [0.13, -0.17, -0.38], hipPhone: [0.14, -0.16, -0.38], dist: 0.24, vmFov: 44, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 58 },
+  smg: { build: buildSmg, sight: SMG_SIGHT, hip: [0.125, -0.15, -0.36], hipPhone: [0.112, -0.14, -0.36], dist: 0.2, vmFov: 42, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 54 },
+  rifle: { build: buildRifle, sight: RIFLE_SIGHT, hip: [0.125, -0.165, -0.37], hipPhone: [0.112, -0.155, -0.37], dist: 0.2, vmFov: 40, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 50 },
+  shotgun: { build: heroShotgun, sight: SHOTGUN_SIGHT, hip: [0.125, -0.16, -0.38], hipPhone: [0.112, -0.15, -0.38], dist: 0.22, vmFov: 44, hipRot: [0.02, 0.1, 0.06], long: true, adsFov: 58 },
+  sniper: { build: heroSniper, sight: SNIPER_SIGHT, hip: [0.125, -0.175, -0.38], hipPhone: [0.088, -0.165, -0.38], dist: 0.12, vmFov: 44, hipRot: [0.02, 0.1, 0.05], long: true, scoped: true, adsFov: 9 },
+  launcher: { build: heroLauncher, sight: LAUNCHER_SIGHT, hip: [0.13, -0.17, -0.38], hipPhone: [0.105, -0.16, -0.38], dist: 0.24, vmFov: 44, hipRot: [0.02, 0.1, 0.05], long: true, adsFov: 58 },
 };
 
 function heroRig(model: HeroModel, phone: boolean): GunRig {
@@ -385,6 +390,11 @@ function heroRig(model: HeroModel, phone: boolean): GunRig {
     const kHip = phone ? new THREE.Vector3(0.072, -0.074, -0.28) : new THREE.Vector3(0.062, -0.074, -0.28);
     hip = kHip.clone().add(new THREE.Vector3(0, -(P.fs[1] + 0.031), -(P.fs[0] + 0.004)));
     if (P.fsHip) hip.add(new THREE.Vector3(...P.fsHip));
+    // C18 review r2: on a phone the long revolver's frame ran under the AIM button, and on desktop its recoil
+    // carried the firing glove into the weapon's name: in and left of both.
+    hip.x -= phone ? 0.018 : 0.01;
+  // C18 review r2: on a phone the long guns' hips sit in and left of the desktop's (the sniper's scope furthest),
+  // so no receiver or optic runs under the AIM thumb button (the C18 shots check the HUD clusters).
   } else hip = new THREE.Vector3(...((phone ? P.hipPhone : P.hip) ?? [0.13, -0.15, -0.3]));
   const r = rig(hip, new THREE.Vector3(-sight[0], -sight[1], -P.dist - sight[2]), P.adsFov);
   r.root = root;

@@ -477,8 +477,12 @@ export function createFx(o: {
       // S2.3: the one shared light spikes to 4-8 over 4-6 m and decays over 50 ms, so the flash lights the wet street.
       // On a phone the fog scatters a light this close to the eye into a grey sheet over the frame (C18 review): her
       // own guns' light runs at 20% and a shorter reach there (C18 review: at 35% a block 3 m out still blew to a white square); the street still warms under the shot.
+      // A floor under the phone's cut (C18 review r2): at 20% the SMG's small flash (5 over 4.5 m) no longer reached
+      // the street under the gun, so the quietest class still warms the wet ground at the larger guns' level.
       const ph = o.quality === "phone" && !!light;
-      flashLight(pos.clone().addScaledVector(d, ph ? 0.8 : 0.3), "#ffb066", light ? light.intensity * WORLD_LIGHT_SCALE * (ph ? 0.2 : 1) : 60 * size, light ? 0.05 : 0.06, light ? light.range * (ph ? 0.65 : 1) : 9);
+      const li = light ? (ph ? Math.max(light.intensity * 0.2, 1.4) : light.intensity) : 0;
+      const lr = light ? (ph ? Math.max(light.range * 0.65, 3.6) : light.range) : 9;
+      flashLight(pos.clone().addScaledVector(d, ph ? 0.8 : 0.3), "#ffb066", light ? li * WORLD_LIGHT_SCALE : 60 * size, light ? 0.05 : 0.06, lr);
     },
     impact(pos, normal, surface, scale = 1) {
       const k = Math.max(0.25, scale);

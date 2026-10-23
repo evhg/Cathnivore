@@ -379,7 +379,9 @@ export class Arsenal {
     this.heroLast = this.heroGhost = null;
     this.cr.kind = null;
     this.heroFireMs = -1;
-    h.ammo = kind === "empty" ? 0 : Math.max(1, Math.floor(h.mag / 3));
+    // A single-round gun (the Bargain Bin) has no tac reload: stage it empty.
+    h.ammo = kind === "empty" || h.mag <= 1 ? 0 : Math.max(1, Math.floor(h.mag / 3));
+    if (h.reserve <= 0) h.reserve = h.mag;
     this.cr.start(h);
     this.cr.step(h, ms);
     this.cues.length = 0;
@@ -492,9 +494,10 @@ export class Arsenal {
     const pt = r.port.getWorldPosition(this.pB);
     const fwd = this.sV.set(0, 0, -1).transformDirection(r.root.matrixWorld);
     this.smoke.puff(mz, pt, fwd, this.heat.smokeMul * (f.model === "shotgun" || f.model === "launcher" ? 2 : 1));
-    // Phone: 3 cm out, the inverse-square light burned the barrel's own faces white and the phone's blur spread
-    // them into a glowing square over the street (C18 review). Out 12 cm it lights the gun and gloves evenly.
-    this.flash.position.copy(mz).addScaledVector(fwd, this.phone ? 0.12 : 0.03);
+    // 3 cm out, the inverse-square light burned the barrel's own faces white (the phone's blur spread them into a
+    // glowing square over the street; on desktop the optic, the tube's mouth and the gloves went chrome-white: C18
+    // review r2). Out 12 cm, on every device, it lights the gun and gloves evenly.
+    this.flash.position.copy(mz).addScaledVector(fwd, 0.12);
   }
 
   /** The hero clip posing the gun this frame (reload or draw) with its weight; a cut clip eases out. */
@@ -1044,10 +1047,10 @@ export class Arsenal {
     if (dt > 0) this.frameDt += (Math.min(dt, 0.1) - this.frameDt) * 0.1;
     // The Kestrel's can: a small warm light for 40 ms (S2.3), not the open guns' blaze. A hero class lights the gun
     // by its own flash (S2.6's `light`, 8 is the old 6); on a phone at 30%, or its lifted grade blows the gun and
-    // gloves flat white-orange (C18 review).
+    // gloves flat white-orange (C18 review); on desktop at 60% (C18 review r2: at full the optic's face burned white).
     const can = def.id === "kestrel";
     const open = this.hero ? this.hero.flash.light * 0.75 : 6;
-    this.flash.intensity = this.flashT > 0 ? (can ? KF.puff.vmLight * (this.phone ? KF.puff.phoneLightMul : 1) : open * (this.phone ? 0.3 : 1)) : 0;
+    this.flash.intensity = this.flashT > 0 ? (can ? KF.puff.vmLight * (this.phone ? KF.puff.phoneLightMul : 1) : open * (this.phone ? 0.3 : 0.6)) : 0;
     this.flash.distance = can ? KF.puff.vmRangeM : 1.2;
     const pistol = this.kestrel;
     if (pistol && this.rm.active) {

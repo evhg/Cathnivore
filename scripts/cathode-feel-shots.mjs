@@ -622,7 +622,8 @@ for (const vp of vps) {
     // C4 review: the viewmodel never sits on a HUD cluster (the ammo block, the vitals, the thumb buttons): the
     // share of each cluster's box the gun or the hands cover, from the same mask.
     const VM_CLEAR = ['.hud-weapon', '.hud-ammo', '.hud-vitals', '.tbtn']
-    if (stage.startsWith('pistol-')) {
+    // C18 review: the hero guns' held poses (at rest and firing) are kept off the HUD the same way.
+    if (stage.startsWith('pistol-') || /^(revolver|smg|rifle|shotgun|sniper|launcher)-(idle|fire)$/.test(stage)) {
       const boxes = await page.evaluate((qs) => qs.flatMap((q) => [...document.querySelectorAll(q)].filter((e) => {
         const cs = getComputedStyle(e)
         const b = e.getBoundingClientRect()
@@ -707,8 +708,15 @@ for (const vp of vps) {
         if (P[carried] && !P[carried][6]) fail(`${vp} ${spec}: the ${carried} is hidden mid-reload`)
       }
     }
+    // ---- C18: hero guns held off the HUD clusters (aimed, the hands drop under the thumb buttons by design) ----
+    if (side.vm && C18_RE.test(stage)) {
+      for (const [q, share] of side.vm.clear ?? []) {
+        console.log(`  C18 ${vp} ${spec}: the viewmodel covers ${(share * 100).toFixed(1)}% of ${q}`)
+        if (share > 0.02) fail(`${vp} ${spec}: the viewmodel covers ${(share * 100).toFixed(1)}% of ${q}`)
+      }
+    }
     // ---- C4 acceptance ----
-    if (side.vm) {
+    if (side.vm && stage.startsWith('pistol-')) {
       console.log(`  C4 ${vp} ${spec}: hands ${(side.vm.handShare * 100).toFixed(1)}% of ${side.vm.vmPx} viewmodel px; slide luminance ${side.vm.slideLum.toFixed(3)} over ${side.vm.slidePx} px`)
       if (stage === 'pistol-idle' && side.vm.handShare < 0.25) fail(`${vp} ${spec}: hands are ${(side.vm.handShare * 100).toFixed(1)}% of the viewmodel (< 25%)`)
       if ((stage === 'pistol-idle' || stage === 'pistol-ads' || stage === 'pistol-alley') && side.vm.slideLum < 0.08) fail(`${vp} ${spec}: slide luminance ${side.vm.slideLum.toFixed(3)} (< 0.08)`)
