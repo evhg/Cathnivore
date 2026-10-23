@@ -4019,8 +4019,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.viewScene.traverse((o) => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
-      // Smoke and the crown's glow aren't the gun (C5): out of the mask.
-      if (m.name.startsWith("vm:") && m.visible) {
+      // Smoke and the crown's glow aren't the gun (C5): out of the mask. Nor is a hero gun's flash (C18 review
+      // r2: the launcher's additive back-blast, nearly invisible in the frame, filled the mask over AIM).
+      const inFlash = (() => {
+        for (let q: THREE.Object3D | null = m; q; q = q.parent) if (q.name === "flash") return true;
+        return false;
+      })();
+      if ((m.name.startsWith("vm:") || inFlash) && m.visible) {
         m.visible = false;
         hidden.push(m);
         return;
