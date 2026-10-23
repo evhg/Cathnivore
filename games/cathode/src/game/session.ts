@@ -5946,7 +5946,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const focus = cutAt ?? (c9.pool && pl ? pl.at.clone() : g.body.joints.chest.clone().lerp(g.body.joints.pelvis, 0.5).lerp(g.body.joints.head, c9.variant === "wallslump" ? 0.3 : 0));
       const back = new THREE.Vector3(eye.x - focus.x, 0, eye.z - focus.z);
       // A phone's screen is small: it frames the body closer, so he isn't a 60 px figure behind her gun.
-      const want = (c9.pool ? 3.2 : cutAt ? 2.3 : 3.3) * (o.quality === "phone" ? 0.72 : 1);
+      // (A cut is framed at 2.3 m on every screen: closer on a phone, the body sat behind her gun.)
+      const want = cutAt ? 2.3 : (c9.pool ? 3.2 : 3.3) * (o.quality === "phone" ? 0.72 : 1);
       // A body at rest is shot from beside it (a three-quarter view from the side she stands on): lying along the
       // line of fire, it is foreshortened into a lump whatever its pose (C9 review).
       const axis = new THREE.Vector3().subVectors(g.body.joints.head, g.body.joints.pelvis).setY(0);
@@ -6021,7 +6022,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         // A touch off centre to the left, clear of the gun in her right hand.
         // The pool stage puts him further left, so the crosshair sits on the open pool and not on the body.
         // The head kill's ring is the biggest marker: he falls left of it, not under it (C9 review).
-        player.yaw = Math.atan2(-look2.x, -look2.z) - (pool ? 0.24 : lying ? 0.28 : headKill ? 0.24 : 0.13);
+        player.yaw = Math.atan2(-look2.x, -look2.z) - (pool ? 0.24 : cutAt ? 0.3 : lying ? 0.28 : headKill ? 0.24 : 0.13);
         player.applyCamera(world.camera, 0);
         world.camera.updateMatrixWorld();
         poolInfo = null;
