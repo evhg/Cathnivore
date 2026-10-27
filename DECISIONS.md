@@ -587,3 +587,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-23: C20 starts with the clinical staff (Orderly, Nurse) because they already spawn in-game on the Enforcer body; Price-War/Chrome/Psycho have no kits yet, so they come after.
 - 2026-10-27 (C20 s2): Price-War Boy and the bystander share the `street*` model builders (arch `thug` / `civilian`); civilians now get their own body instead of the Enforcer's. PRICE_WAR_BOY is defined but unspawned until a map gets a `patrol:thug` marker.
 - 2026-10-27: C20 s3: Candor Chrome and Cyberpsycho share one `aug*` builder set keyed on arch, mirroring the thug/clinic pattern; kits are defined but not spawned until a district map places them.
+- 2026-10-27: C20 s4: machine models for drone/turret and elite floor rings; check green (the 900 s timeout wrapper kills long checks; run it detached to a log).
