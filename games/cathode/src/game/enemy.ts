@@ -256,6 +256,13 @@ export const CIVILIAN: EnemyKit = {
   role: "civilian",
 };
 
+/** The floor ring's colour for an elite's first affix. */
+function eliteTint(mods: readonly string[] | undefined): number {
+  const m = mods?.[0];
+  return m === "shockEnchanted" ? 0x40e0ff : m === "stoneskin" ? 0xd0a060 : m === "explosiveOnDeath" ? 0xff5a20 : m === "cursed" ? 0xb060ff : m === "multipleShots" ? 0xff50c0 : 0xfff0a0;
+}
+const reducedMotion = (): boolean => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 /** Metres within which a nurse heals allies, the fraction of max health restored per second, and the cap. */
 export const NURSE_RANGE = 9;
 export const NURSE_HEAL = 0.06;
@@ -368,6 +375,8 @@ export class Enemy {
   laser: LaserBeam | null = null;
   /** C16 (S3.5): the laser's dot where it lands, the sweep's clock (s, -1 none), its start on the street and its aim. */
   laserDot: LaserDot | null = null;
+  /** C20 (S3.3): the elite's 1.2 m floor ring, pulsing at 0.5 Hz in its first affix's colour. */
+  private eliteRing: THREE.Mesh | null = null;
   laserT = -1;
   readonly laserFrom = new THREE.Vector3();
   readonly laserAim = new THREE.Vector3();
@@ -424,7 +433,7 @@ export class Enemy {
     route: THREE.Vector3[],
     readonly level = 1,
     // Hollowell's roles rim in its amber; the Candor staff and bystanders who borrow the body rim in their own colour.
-    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "civilian", "thug", "chrome", "psycho"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
+    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "turret", "civilian", "thug", "chrome", "psycho"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
   ) {
     this.body = new Body(look);
     if (kit.cyber?.length) this.body.setCyber(kit.cyber);
@@ -455,6 +464,17 @@ export class Enemy {
     this.rifle = this.gun.root;
     tagUnflashed(this.rifle);
     this.body.root.add(this.rifle);
+    if (kit.role === "turret" || kit.role === "hunter") this.rifle.visible = false;
+    if (kit.elite) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.62, 0.78, 48),
+        new THREE.MeshBasicMaterial({ color: eliteTint(kit.mods), transparent: true, opacity: 0.8, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }),
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.renderOrder = 3;
+      this.eliteRing = ring;
+      this.body.root.add(ring);
+    }
     if (kit.role === "shield") {
       this.shield = buildShield(kit.visor, bodyView.phone);
       tagUnflashed(this.shield);
@@ -511,8 +531,20 @@ export class Enemy {
     this.searchLeft = 20;
   }
 
+  /** The floor ring follows his feet (body roots stay at the origin) and pulses; it goes out when he dies. */
+  private tickEliteRing(): void {
+    const ring = this.eliteRing;
+    if (!ring) return;
+    ring.visible = this.alive;
+    ring.position.set(this.motion.pos.x, this.motion.pos.y + 0.04, this.motion.pos.z);
+    const k = reducedMotion() ? 0.7 : 0.7 + 0.3 * Math.sin(performance.now() * 0.001 * Math.PI);
+    (ring.material as THREE.MeshBasicMaterial).opacity = k;
+    ring.scale.setScalar(0.94 + 0.06 * k);
+  }
+
   update(dt: number, sight: Sight, rays: RayWorld, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
     this.shots.length = 0;
+    this.tickEliteRing();
     if (this.alive && this.hp < this.kit.maxHp * 0.25 && this.kit.role !== "turret") {
       if (Number.isNaN(this.trailFrom.x)) this.trailFrom.copy(this.motion.pos);
       else if (flatDist(this.trailFrom, this.motion.pos) >= 1.2) {
@@ -911,7 +943,7 @@ export class Enemy {
         }
       }
     }
-    if (this.kit.role === "orderly" || (b.lost.has("forearmR") && b.lost.has("forearmL"))) {
+    if (this.kit.role === "orderly" || this.kit.role === "turret" || this.kit.role === "hunter" || (b.lost.has("forearmR") && b.lost.has("forearmL"))) {
       this.rifle.visible = false;
       return;
     }
@@ -1011,6 +1043,7 @@ export class Enemy {
    * movement, so a frozen frame can show the moment `t` ms after a round.
    */
   feel(dt: number, colliders: THREE.Box3[], ground: (x: number, z: number) => number): void {
+    this.tickEliteRing();
     this.flinch.update(dt);
     this.body.updateFlash(dt * 1000);
     this.tickVisor(dt);
@@ -1200,7 +1233,7 @@ export class Enemy {
     this.magDrops.length = 0;
     this.gun.mag.visible = true;
     this.deathEvents.length = 0;
-    this.rifle.visible = this.kit.role !== "orderly";
+    this.rifle.visible = this.kit.role !== "orderly" && this.kit.role !== "turret" && this.kit.role !== "hunter";
     this.body.visorLevel = 1;
     if (this.armour) resetArmour(this.armour);
     this.body.crackAt.set(0, 0, 0);
@@ -1311,7 +1344,7 @@ export class Enemy {
     this.body.visorLevel = this.body.lost.has("head") ? 0 : ms < 0 ? 1.5 : visorLevel(ms);
     const run = this.body.dying;
     const b = this.body;
-    if (!this.drop && this.rifle.visible && this.kit.role !== "orderly" && !this.shield && (!run || run.t >= Math.min(run.dur, this.deathVariant === "headshot" ? DEATH.dropMsHeadshot : DEATH.dropMs) || !run.active)) {
+    if (!this.drop && this.rifle.visible && this.kit.role !== "orderly" && this.kit.role !== "turret" && this.kit.role !== "hunter" && !this.shield && (!run || run.t >= Math.min(run.dur, this.deathVariant === "headshot" ? DEATH.dropMsHeadshot : DEATH.dropMs) || !run.active)) {
       const vel = new THREE.Vector3().subVectors(b.joints.handR, this.lastHand).divideScalar(Math.max(1e-3, dt));
       if (!Number.isFinite(vel.x) || vel.lengthSq() > 100) vel.set(0, 0, 0);
       // Thrown a little out from the body, along his front.
