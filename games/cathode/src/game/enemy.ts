@@ -39,7 +39,7 @@ export interface EnemyKit {
   xp: number;
   visor: number;
   /** Rifleman, a shield bearer (a riot shield stops rounds from the front), or a sniper with a laser. */
-  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | "civilian" | "turret" | "hunter" | "thug";
+  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | "civilian" | "turret" | "hunter" | "thug" | "chrome" | "psycho";
   /** Elite modifiers (sim/enemies.ts): extraFast, stoneskin, multipleShots and the rest. */
   elite?: boolean;
   mods?: readonly string[];
@@ -143,6 +143,42 @@ export const PRICE_WAR_BOY: EnemyKit = {
   xp: 45,
   visor: 0xffc03a,
   role: "thug",
+};
+
+/** Candor Chrome: an elegant cyborg in a white longcoat. Armoured, accurate, slow to rattle; the cyan spine port is the soft spot. */
+export const CANDOR_CHROME: EnemyKit = {
+  name: "Candor Chrome",
+  maxHp: 220,
+  armour: 0.3,
+  damage: 12,
+  burst: [3, 0.1, 1.1],
+  spread: 0.025,
+  walk: 1.5,
+  run: 4.2,
+  vision: { range: 50, fov: (100 * Math.PI) / 180 },
+  hearing: 0.9,
+  xp: 140,
+  visor: 0x30e0ff,
+  role: "chrome",
+  cyber: ["head", "forearmL", "forearmR", "handL", "handR", "shinL", "shinR"],
+};
+
+/** A Cyberpsycho: long arms, forearm blades, hunched and fast. Unarmed; wants to be close. */
+export const CYBERPSYCHO: EnemyKit = {
+  name: "Cyberpsycho",
+  maxHp: 260,
+  armour: 0.1,
+  damage: 22,
+  burst: [1, 0, 0.8],
+  spread: 0,
+  walk: 2.2,
+  run: 7,
+  vision: { range: 30, fov: (130 * Math.PI) / 180 },
+  hearing: 1.3,
+  xp: 150,
+  visor: 0xff2a2a,
+  role: "psycho",
+  cyber: ["forearmL", "forearmR", "handL", "handR"],
 };
 
 /** A Candor nurse: frail and armed with a dart pistol, but patches every ally within NURSE_RANGE. Kill her first. */
@@ -388,7 +424,7 @@ export class Enemy {
     route: THREE.Vector3[],
     readonly level = 1,
     // Hollowell's roles rim in its amber; the Candor staff and bystanders who borrow the body rim in their own colour.
-    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "civilian", "thug"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
+    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "civilian", "thug", "chrome", "psycho"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
   ) {
     this.body = new Body(look);
     if (kit.cyber?.length) this.body.setCyber(kit.cyber);

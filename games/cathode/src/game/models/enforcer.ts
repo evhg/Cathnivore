@@ -19,7 +19,7 @@ import { REST, SEGMENTS, boneIndex, HELM_Y, KNUCKLE_Y } from "../rig";
 import { PLATE_SLOT } from "../../sim/armour";
 import { box, chamfer, cyl, limb, partsDetail, plate, shell, body as lathe, tris, type PlateOpts } from "./parts";
 
-export type Arch = "enforcer" | "leader" | "riot" | "sniper" | "orderly" | "nurse" | "thug" | "civilian";
+export type Arch = "enforcer" | "leader" | "riot" | "sniper" | "orderly" | "nurse" | "thug" | "civilian" | "chrome" | "psycho";
 export type Lod = 0 | 1 | 2;
 
 /** S3.1's materials as kit finishes (sRGB base colours; the kit's shader adds edge wear and the trim atlas). */
@@ -58,6 +58,12 @@ export const FINISH = {
   denim: { color: 0x2f3a52, metal: 0, rough: 0.9, sheen: 0.15, band: "nylon", wear: 0.4 },
   bandana: { color: 0x9a2a22, metal: 0, rough: 0.85, sheen: 0.1, band: "nylon", wear: 0.2 },
   roadsign: { color: 0xc99a1e, metal: 0.6, rough: 0.45, coat: 0.3, band: "peel", wear: 1 },
+  /** C20 (S3.3): Candor Chrome: a mirror shell (metal 1, roughness 0.08) under a white high-collar longcoat. */
+  mirror: { color: 0xb8c4cc, metal: 1, rough: 0.08, coat: 0.3, band: "flat", wear: 0 },
+  longcoat: { color: 0xc4c6c4, metal: 0, rough: 0.6, sheen: 0.5, band: "nylon", wear: 0.05 },
+  /** The Cyberpsycho's grey, scarred, over-worked skin and rusted blades. */
+  graySkin: { color: 0x7d7a76, metal: 0, rough: 0.6, sheen: 0.1, band: "flat", wear: 0 },
+  blade: { color: 0x9aa3ab, metal: 1, rough: 0.28, coat: 0.2, band: "brushed", wear: 1 },
   hair: { color: 0x15110e, metal: 0, rough: 0.8, band: "flat", wear: 0 },
   /** A face shield: clear polycarbonate, only its edge and glare show. */
   shield: { color: 0x7d9aa0, metal: 0.1, rough: 0.05, coat: 1, band: "flat", wear: 0 },
@@ -85,6 +91,8 @@ const GLOWS = {
   unit: { surf: { emit: 0xffffff, intensity: 3.6 }, visor: true },
   lens: { surf: { emit: 0xffffff, intensity: 5 }, visor: true },
   /** The nurse's injector vials and the clinic cross: lit in the body's own colour. */
+  /** The chrome man's spine port (his weak point): cyan, pulsing. */
+  port: { surf: { emit: 0x30e0ff, intensity: 6 }, pulse: true },
   dose: { surf: { emit: 0xffffff, intensity: 4.4 }, visor: true, pulse: true },
 } satisfies Record<string, Glow>;
 
@@ -333,6 +341,7 @@ function commandCollar(b: Builder, seg: number, low = false): void {
 function torso(b: Builder, arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicTorso(b, arch);
   if (arch === "thug" || arch === "civilian") return streetTorso(b, arch);
+  if (arch === "chrome" || arch === "psycho") return augTorso(b, arch);
   const { lod } = b.o;
   const S = FINISH;
   const aL = segLen("abdomen");
@@ -428,6 +437,7 @@ function torso(b: Builder, arch: Arch): void {
 function arm(b: Builder, side: "L" | "R", arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicArm(b, side, arch);
   if (arch === "thug" || arch === "civilian") return streetArm(b, side, arch);
+  if (arch === "chrome" || arch === "psycho") return augArm(b, side, arch);
   const { lod } = b.o;
   const S = FINISH;
   const out = side === "L" ? -1 : 1;
@@ -531,6 +541,7 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
 function leg(b: Builder, side: "L" | "R", arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicLeg(b, side, arch);
   if (arch === "thug" || arch === "civilian") return streetLeg(b, side, arch);
+  if (arch === "chrome" || arch === "psycho") return augLeg(b, side, arch);
   const { lod } = b.o;
   const S = FINISH;
   const out = side === "L" ? -1 : 1;
@@ -569,6 +580,7 @@ function leg(b: Builder, side: "L" | "R", arch: Arch): void {
 function head(b: Builder, arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicHead(b, arch);
   if (arch === "thug" || arch === "civilian") return streetHead(b, arch);
+  if (arch === "chrome" || arch === "psycho") return augHead(b, arch);
   const { lod } = b.o;
   const S = FINISH;
   // The neck and the balaclava'd head under the helmet (seen when a headshot knocks it off).
@@ -721,6 +733,7 @@ function tabardStatic(b: Builder): void {
 function silhouette(b: Builder, arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicSilhouette(b, arch);
   if (arch === "thug" || arch === "civilian") return streetSilhouette(b, arch);
+  if (arch === "chrome" || arch === "psycho") return augSilhouette(b, arch);
   const S = FINISH;
   const n = b.o.phone ? 5 : 6;
   // Limbs are square on the phone: at 30 m and more a limb is a few pixels across.
@@ -1031,6 +1044,125 @@ function streetSilhouette(b: Builder, arch: Arch): void {
   if (thug) b.add("helmet", b.box(0.03, 0.09, 0.2, 0), S.bandana, { p: [0, 0.155, -0.02] });
 }
 
+/**
+ * C20 (S3.3): the augmented. Candor Chrome is elegant and too smooth: a mirror head shell, a cyan spine port, a white
+ * high-collar longcoat and chrome hands. The Cyberpsycho has the wrong proportions: arms 1.25x long, forearm blades,
+ * a hunched back, a cracked faceplate and cables hanging from the spine.
+ */
+function augTorso(b: Builder, arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const chrome = arch === "chrome";
+  const aL = segLen("abdomen");
+  const cL = segLen("chest");
+  const uL = segLen("upperChest");
+  const skin = chrome ? S.longcoat : S.graySkin;
+  const k = chrome ? 0.96 : 1.1;
+  b.add("abdomen", lathe([[0.0, -0.1], [0.12, -0.095], [0.145, -0.04], [0.145, 0.06], [0.15, 0.16], [0.165, aL + 0.02]], 1.0 * k, 0.72, b.seg(18)), skin);
+  b.add("chest", lathe([[0.165, -0.02], [0.185, 0.07], [0.2, cL + 0.01]], 1.04 * k, 0.66, b.seg(18)), skin);
+  b.add("upperChest", lathe([[0.2, -0.01], [0.205, 0.05], [0.186, 0.11], [0.125, uL + 0.015], [0.07, uL + 0.03]], 1.06 * k, 0.64, b.seg(18)), skin);
+  if (chrome) {
+    // The high collar, and the cyan port between the shoulder blades.
+    if (lod < 2) {
+      b.add("upperChest", shell([[0.1, 0.1], [0.17, 0.12], [0.18, 0.25], [0.15, 0.255], [0.14, 0.16], [0.09, 0.14]], 0, Math.PI * 2, b.seg(20)), S.longcoat, { s: [1.04, 1, 0.9] });
+      b.add("upperChest", b.box(0.05, 0.12, 0.016, 0.004), GLOWS.port, { p: [0, 0.06, -0.14] });
+      b.add("abdomen", b.box(0.36, 0.03, 0.012, 0.003), S.mirror, { p: [0, 0.02, 0.13] });
+    }
+  } else if (lod < 2) {
+    // A strapped harness, a spine of cables, and a bolted rib plate.
+    b.add("upperChest", b.box(0.05, 0.3, 0.012, 0.003), S.strap, { p: [0.09, 0.05, 0.19], r: [0, 0, 0.2] });
+    b.add("upperChest", b.box(0.05, 0.3, 0.012, 0.003), S.strap, { p: [-0.09, 0.05, 0.19], r: [0, 0, -0.2] });
+    b.add("chest", b.box(0.16, 0.14, 0.02, 0.006), S.metal, { p: [0.08, 0.05, 0.19] });
+    if (lod === 0) b.add("chest", cyl(0.014, 0.014, 0.3, 6), S.rubber, { p: [0.03, 0.0, -0.17], r: [0.15, 0, 0.1] });
+  }
+}
+
+function augArm(b: Builder, side: "L" | "R", arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const chrome = arch === "chrome";
+  const out = side === "L" ? -1 : 1;
+  const ua = `upperArm${side}`;
+  const fa = `forearm${side}`;
+  const uL = segLen(ua);
+  const fL = segLen(fa);
+  const stretch = chrome ? 1 : 1.25;
+  const sleeve = chrome ? S.longcoat : S.graySkin;
+  b.add(ua, limb(uL + 0.02, (t) => 0.066 - 0.012 * t + 0.008 * Math.sin(Math.PI * t), b.seg(14), lod ? 3 : 6), sleeve, { p: [0, -0.02, 0], s: [1, stretch, 1] });
+  b.add(fa, limb(fL + 0.02, (t) => 0.056 - 0.014 * t + 0.005 * Math.sin(Math.PI * t), b.seg(14), lod ? 3 : 5), chrome ? S.mirror : S.graySkin, { p: [0, -0.01, 0], s: [1, stretch, 1] });
+  if (!chrome && lod < 2) {
+    // A blade lashed along the outside of each forearm, past the wrist.
+    b.add(fa, b.box(0.012, fL * 1.1 + 0.2, 0.05, 0.003), S.blade, { p: [0.05 * out, fL * 0.55 + 0.04, 0.0] });
+    b.add(fa, limb(fL * 0.35, () => 0.062, b.seg(12), 1), S.web, { p: [0, fL * 0.1, 0] });
+  }
+  const h = `hand${side}`;
+  const f = `fingers${side}`;
+  const gl = chrome ? S.mirror : S.graySkin;
+  b.add(h, limb(0.06, (t) => 0.046 - 0.008 * t, b.seg(12), 2), gl, { p: [0, -0.035, 0] });
+  b.add(h, b.box(0.03, 0.095, 0.07, 0.012, 1), gl, { p: [0, 0.05, 0.004] });
+  if (lod < 2) b.add(h, limb(0.05, (t) => 0.0145 - 0.003 * t, lod ? 4 : 6, 1), gl, { p: [-0.012 * out, 0.03, 0.04], r: [0.85, 0, 0.45 * out] });
+  if (lod === 0) {
+    for (const [z, l] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) b.add(f, box(0.019, l * (chrome ? 1.15 : 1.4), 0.0155, 0, 0), gl, { p: [0, l / 2 + 0.004, z + 0.004] });
+  } else b.add(f, b.box(0.024, 0.05, 0.07, 0.008, 1), gl, { p: [0, 0.024, 0.004] });
+}
+
+function augLeg(b: Builder, side: "L" | "R", arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const chrome = arch === "chrome";
+  const th = `thigh${side}`;
+  const sh = `shin${side}`;
+  const tL = segLen(th);
+  const sL = segLen(sh);
+  const cloth = chrome ? S.longcoat : S.graySkin;
+  b.add(th, limb(tL + 0.04, (t) => 0.09 - 0.022 * t + 0.006 * Math.sin(Math.PI * t), b.seg(16), lod ? 3 : 6), chrome ? S.longcoat : S.denim, { p: [0, -0.04, 0] });
+  b.add(sh, limb(sL - 0.08, (t) => 0.066 + 0.01 * Math.sin(Math.PI * Math.min(1, t * 1.3)) - 0.012 * t, b.seg(16), lod ? 3 : 6), chrome ? S.mirror : cloth);
+  b.add(sh, b.box(0.09, 0.07, 0.24, 0.022, 1), chrome ? S.mirror : S.rubber, { p: [0, sL + 0.012, 0.045] });
+}
+
+function augHead(b: Builder, arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const chrome = arch === "chrome";
+  b.add("head", limb(0.1, () => 0.05, b.seg(12), 1), chrome ? S.mirror : S.graySkin, { p: [0, -0.01, 0] });
+  b.add("head", lathe([[0, 0.03], [0.058, 0.04], [0.098, 0.09], [0.108, 0.15], [0.098, 0.22], [0.06, 0.255], [0, 0.262]], chrome ? 0.88 : 0.94, chrome ? 1.04 : 1.0, b.seg(14)), chrome ? S.mirror : S.graySkin);
+  const H = "helmet";
+  if (chrome) {
+    // A seamless mirror shell over the whole head with one thin cyan slit: no face at all.
+    b.add(H, shell([[0.0, 0.17], [0.07, 0.16], [0.112, 0.12], [0.128, 0.06], [0.126, 0.0], [0.118, -0.02], [0.0, -0.02]], 0, Math.PI * 2, b.seg(22), 0.5), S.mirror, { p: [0, 0, -0.012], s: [0.96, 1, 1.04] });
+    b.add(H, shell([[0.1215, 0.04], [0.1265, 0.042], [0.1265, 0.054], [0.1215, 0.056]], -48 * D, 96 * D, lod === 0 ? 12 : 8), GLOWS.slit, { p: [0, 0, -0.008], s: [0.96, 1, 1.04] });
+  } else {
+    // A cracked half-faceplate bolted on, one lens lit, the other dead; a scarred, bare scalp.
+    b.add(H, shell([[0.0, 0.15], [0.11, 0.11], [0.124, 0.05], [0.12, 0.03], [0.0, 0.14]], 0, Math.PI * 2, b.seg(18), 0.5), S.graySkin, { p: [0, 0, -0.012], s: [1, 1, 1.04] });
+    b.add(H, shell([[0.1175, -0.03], [0.1255, -0.028], [0.1255, 0.035], [0.1175, 0.037]], -55 * D, 110 * D, lod === 0 ? 12 : 8), S.metal, { p: [0, 0, -0.008], s: [1, 1, 1.04] });
+    b.add(H, shell([[0.1255, 0.0], [0.1295, 0.002], [0.1295, 0.016], [0.1255, 0.018]], -35 * D, 20 * D, 6), GLOWS.lens, { p: [0, 0, -0.008], s: [1, 1, 1.04] });
+  }
+}
+
+function augSilhouette(b: Builder, arch: Arch): void {
+  const S = FINISH;
+  const chrome = arch === "chrome";
+  const n = b.o.phone ? 5 : 6;
+  const skin = chrome ? S.longcoat : S.graySkin;
+  const cap = (bone: string, r0: number, r1: number, surf: Surface, y0 = 0, extra = 0, sy = 1) => b.add(bone, limb(segLen(bone) + extra, (t) => r0 + (r1 - r0) * t, b.o.phone ? 4 : n, 1), surf, { p: [0, y0, 0], s: [1, sy, 1] });
+  const k = chrome ? 0.96 : 1.1;
+  b.add("abdomen", lathe([[0.0, -0.1], [0.145, -0.06], [0.15, 0.12], [0.165, segLen("abdomen") + 0.02]], 1.0 * k, 0.72, n), skin);
+  b.add("chest", lathe([[0.165, -0.02], [0.2, segLen("chest") + 0.01]], 1.04 * k, 0.68, n), skin);
+  b.add("upperChest", lathe([[0.2, -0.01], [0.196, 0.1], [0.12, segLen("upperChest") + 0.02]], 1.06 * k, 0.68, n), skin);
+  if (chrome) b.add("upperChest", shell([[0.1, 0.1], [0.17, 0.12], [0.18, 0.25], [0.14, 0.16]], 0, Math.PI * 2, n), S.longcoat, { s: [1.04, 1, 0.9] });
+  for (const sd of ["L", "R"] as const) {
+    cap(`upperArm${sd}`, 0.066, 0.056, skin, -0.02, 0.02, chrome ? 1 : 1.25);
+    cap(`forearm${sd}`, 0.056, 0.044, chrome ? S.mirror : S.graySkin, -0.01, 0.02, chrome ? 1 : 1.25);
+    if (!chrome) b.add(`forearm${sd}`, box(0.012, 0.5, 0.05, 0, 0), S.blade, { p: [sd === "L" ? -0.05 : 0.05, 0.25, 0] });
+    b.add(`hand${sd}`, box(0.03, 0.1, 0.07, 0, 0), chrome ? S.mirror : S.graySkin, { p: [0, 0.05, 0] });
+    cap(`thigh${sd}`, 0.09, 0.074, chrome ? S.longcoat : S.denim, -0.04, 0.04);
+    cap(`shin${sd}`, 0.074, 0.062, chrome ? S.mirror : S.graySkin, 0, -0.08);
+    b.add(`shin${sd}`, box(0.09, 0.09, 0.26, 0, 0), chrome ? S.mirror : S.rubber, { p: [0, segLen(`shin${sd}`) + 0.02, 0.045] });
+  }
+  b.add("head", limb(0.1, () => 0.05, n, 1), chrome ? S.mirror : S.graySkin, { p: [0, -0.01, 0] });
+  b.add("helmet", shell([[0.0, 0.17], [0.112, 0.12], [0.126, 0.0], [0.0, -0.02]], 0, Math.PI * 2, b.o.phone ? 5 : 8, 0.5), chrome ? S.mirror : S.graySkin, { p: [0, 0, -0.012], s: [1, 1, 1.04] });
+}
+
 export interface ArchGeometry {
   opaque: THREE.BufferGeometry;
   glow: THREE.BufferGeometry;
@@ -1059,7 +1191,7 @@ export function archGeometry(arch: Arch, lod: Lod, phone: boolean, hero = false)
       }
       if (arch === "sniper") sniperPack(b);
     }
-    if (lod === 1 && arch !== "sniper" && arch !== "orderly" && arch !== "nurse" && arch !== "thug" && arch !== "civilian") tabardStatic(b);
+    if (lod === 1 && arch !== "sniper" && arch !== "orderly" && arch !== "nurse" && arch !== "thug" && arch !== "civilian" && arch !== "chrome" && arch !== "psycho") tabardStatic(b);
   } finally {
     partsDetail.hero = false;
   }
@@ -1097,6 +1229,8 @@ export function archFor(role: string | undefined, leader = false): Arch {
   if (role === "nurse") return "nurse";
   if (role === "thug") return "thug";
   if (role === "civilian") return "civilian";
+  if (role === "chrome") return "chrome";
+  if (role === "psycho") return "psycho";
   return leader ? "leader" : "enforcer";
 }
 

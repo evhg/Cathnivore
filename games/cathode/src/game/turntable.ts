@@ -6,7 +6,7 @@
 
 import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { ENFORCER, ENFORCER_SNIPER, NURSE, ORDERLY, CIVILIAN, PRICE_WAR_BOY, Enemy, RIOT_SHIELD, type EnemyKit } from "./enemy";
+import { ENFORCER, ENFORCER_SNIPER, NURSE, ORDERLY, CIVILIAN, PRICE_WAR_BOY, CANDOR_CHROME, CYBERPSYCHO, Enemy, RIOT_SHIELD, type EnemyKit } from "./enemy";
 import { bodyView } from "./body";
 import { LAYER_NO_REFLECT } from "../render/reflection";
 
@@ -19,6 +19,8 @@ const KITS: Record<string, EnemyKit> = {
   nurse: NURSE,
   thug: PRICE_WAR_BOY,
   civilian: CIVILIAN,
+  chrome: CANDOR_CHROME,
+  psycho: CYBERPSYCHO,
 };
 
 export function openTurntable(canvas: HTMLCanvasElement): void {
@@ -31,7 +33,7 @@ export function openTurntable(canvas: HTMLCanvasElement): void {
   const view = q.get("view") ?? "lineup";
   const pose = q.get("pose") ?? "idle";
   const archParam = q.get("arch") ?? "enforcer";
-  const archs = archParam === "all" ? ["enforcer", "leader", "riot", "sniper", "orderly", "nurse", "thug", "civilian"] : [archParam];
+  const archs = archParam === "all" ? ["enforcer", "leader", "riot", "sniper", "orderly", "nurse", "thug", "civilian", "chrome", "psycho"] : [archParam];
   // C14 (S9.6): view=portrait is the loading screen's plate of the next name: head and shoulders, 1:1.25, under one
   // hard top light (a surveillance still), turned by `yaw` (degrees). scripts/cathode-portraits.mjs renders them.
   const portrait = view === "portrait";
