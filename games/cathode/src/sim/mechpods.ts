@@ -13,9 +13,12 @@ export interface Pod {
 /** Each pod holds this share of the mech's max HP; a pod keeps this share of a round from the hull while it stands. */
 export const POD = { share: 0.08, absorb: 0.7, volley: 4 } as const;
 
-export function makePods(mechMaxHp: number): Pod[] {
+export function makePods(mechMaxHp: number): [Pod, Pod] {
   const hp = Math.round(mechMaxHp * POD.share);
-  return (["podL", "podR"] as const).map((id) => ({ id, hp, maxHp: hp, broken: false }));
+  return [
+    { id: "podL", hp, maxHp: hp, broken: false },
+    { id: "podR", hp, maxHp: hp, broken: false },
+  ];
 }
 
 export interface PodHit {

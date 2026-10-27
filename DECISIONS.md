@@ -589,3 +589,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-27: C20 s3: Candor Chrome and Cyberpsycho share one `aug*` builder set keyed on arch, mirroring the thug/clinic pattern; kits are defined but not spawned until a district map places them.
 - 2026-10-27: C20 s4: machine models for drone/turret and elite floor rings; check green (the 900 s timeout wrapper kills long checks; run it detached to a log).
 - 2026-10-27: C20 s5 mech body added; headless turntable never reported ready in this sandbox (also for enforcer), so unreviewed visually.
+- 2026-10-27: C20 pods and DR controller built as pure sim first (tested), game wiring deferred to next session.
