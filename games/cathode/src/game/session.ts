@@ -945,7 +945,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   setTimeout(() => staged || voice.say(inVault ? "startVault" : inTower ? "startTower" : inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
-  const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, rescueMin: 0.4 });
+  const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, slowMs: 15.5, fastMs: 11, rescueMin: 0.4 });
   const autoOn = !o.shot && !navigator.webdriver;
   const renderScaleParam = Math.max(0.25, Math.min(1, Number(new URLSearchParams(location.search).get("rs") ?? 1) || 1));
   const ambColor = new THREE.Color();
