@@ -17,6 +17,7 @@ import { Flinch, flinchImpulse, flinchScale } from "./anim/springs";
 import { animate, muzzleOf, RELOAD_KEYS, type Motion } from "./animate";
 import type { RayWorld } from "./ray";
 import type { Tactics } from "./ai/tactics";
+import { makePods, type Pod } from "../sim/mechpods";
 import { makeMorale, type Morale } from "../sim/morale";
 import { LaserBeam, LaserDot } from "./laserfx";
 
@@ -343,6 +344,8 @@ export class Enemy {
   /** C10: the carbine's moving parts (the bolt kicks when he fires). */
   private readonly gun: Rifle;
   hp: number;
+  /** C20: the ED-Class Mech's shoulder missile pods (null on everything else). */
+  pods: [Pod, Pod] | null = null;
   state: Awareness = "unaware";
   /** 0..1 detection meter: fills while she's seen, drains when she's not. */
   detect = 0;
@@ -460,6 +463,7 @@ export class Enemy {
     this.morale = makeMorale(!["turret", "police", "hunter", "civilian"].includes(kit.role ?? ""));
     // Riflemen, squad leaders and shield bearers wear the full Enforcer set; the sniper's coat has no plates.
     const role = kit.role ?? "rifle";
+    if (role === "mech") this.pods = makePods(kit.maxHp);
     this.armour = role === "rifle" || role === "shield" ? makeArmour(kit.maxHp) : null;
     this.body.skinTone = this.id % 4;
     this.body.crackSeed = ((this.id * 0.6180339) % 1 + 1) % 1;

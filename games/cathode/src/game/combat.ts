@@ -2,6 +2,7 @@
 // Pin's swing, silent takedowns, hit zones, armour, severed limbs, gore, noise, and the kill events the
 // session turns into XP and the kill-cam. Numbers mirror sim/damage.ts's rules for the slice.
 
+import { podHit } from "../sim/mechpods";
 import * as THREE from "three";
 import { ARSENAL, isHero, type HeroModel } from "./feel/arsenal";
 import type { World } from "../render/types";
@@ -553,6 +554,13 @@ export class Combat {
         }
       } else ah = armourHit(e.armour, zone, where, raw, w.weaponClass);
       if (ah) dmg = ah.body * (zone === "head" ? build.headshot : 1);
+    }
+    // C20: a standing missile pod on the mech's shoulder keeps most of a round from the hull; a broken one fires no more.
+    if (e.pods && e.alive && (zone === "armL" || zone === "armR" || zone === "torso")) {
+      const side = zone === "armL" ? 0 : zone === "armR" ? 1 : e.body.root.worldToLocal(point.clone()).x >= 0 ? 0 : 1;
+      const r = podHit(e.pods[side], dmg);
+      dmg = r.through;
+      if (r.broke) this.world.fx.sparks(point, dir.clone().negate(), 1);
     }
     if (!e.alive) dmg *= 0.5;
     if (e.marked) dmg *= 1.25;
