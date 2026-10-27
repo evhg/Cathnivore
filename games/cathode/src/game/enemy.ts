@@ -39,7 +39,7 @@ export interface EnemyKit {
   xp: number;
   visor: number;
   /** Rifleman, a shield bearer (a riot shield stops rounds from the front), or a sniper with a laser. */
-  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | "civilian" | "turret" | "hunter";
+  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | "civilian" | "turret" | "hunter" | "thug";
   /** Elite modifiers (sim/enemies.ts): extraFast, stoneskin, multipleShots and the rest. */
   elite?: boolean;
   mods?: readonly string[];
@@ -126,6 +126,23 @@ export const ORDERLY: EnemyKit = {
   role: "orderly",
   // Candor's augments: chrome forearms and hands (S4.5's cyber hit).
   cyber: ["forearmL", "forearmR", "handL", "handR"],
+};
+
+/** A Price-War Boy: a street thug with a pipe, fast and reckless, cheap to kill. Wears his own bomber-and-bandana model. */
+export const PRICE_WAR_BOY: EnemyKit = {
+  name: "Price-War Boy",
+  maxHp: 85,
+  armour: 0,
+  damage: 8,
+  burst: [2, 0.14, 1.2],
+  spread: 0.06,
+  walk: 1.6,
+  run: 5,
+  vision: { range: 28, fov: (110 * Math.PI) / 180 },
+  hearing: 1.1,
+  xp: 45,
+  visor: 0xffc03a,
+  role: "thug",
 };
 
 /** A Candor nurse: frail and armed with a dart pistol, but patches every ally within NURSE_RANGE. Kill her first. */
@@ -371,7 +388,7 @@ export class Enemy {
     route: THREE.Vector3[],
     readonly level = 1,
     // Hollowell's roles rim in its amber; the Candor staff and bystanders who borrow the body rim in their own colour.
-    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "civilian"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
+    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "civilian", "thug"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
   ) {
     this.body = new Body(look);
     if (kit.cyber?.length) this.body.setCyber(kit.cyber);

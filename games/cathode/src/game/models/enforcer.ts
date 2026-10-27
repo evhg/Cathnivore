@@ -19,7 +19,7 @@ import { REST, SEGMENTS, boneIndex, HELM_Y, KNUCKLE_Y } from "../rig";
 import { PLATE_SLOT } from "../../sim/armour";
 import { box, chamfer, cyl, limb, partsDetail, plate, shell, body as lathe, tris, type PlateOpts } from "./parts";
 
-export type Arch = "enforcer" | "leader" | "riot" | "sniper" | "orderly" | "nurse";
+export type Arch = "enforcer" | "leader" | "riot" | "sniper" | "orderly" | "nurse" | "thug" | "civilian";
 export type Lod = 0 | 1 | 2;
 
 /** S3.1's materials as kit finishes (sRGB base colours; the kit's shader adds edge wear and the trim atlas). */
@@ -53,6 +53,12 @@ export const FINISH = {
   glove: { color: 0xc9cfcc, metal: 0, rough: 0.55, sheen: 0.2, band: "flat", wear: 0 },
   /** The orderly's restraint gauntlets: scuffed grey polymer. */
   cuff: { color: 0x4a5058, metal: 0.1, rough: 0.45, coat: 0.4, band: "peel", wear: 1 },
+  /** C20 (S3.3): the Price-War Boy's street kit: a washed bomber, denim, a bandana and a road-sign pauldron. */
+  bomber: { color: 0x6b5a3a, metal: 0, rough: 0.7, sheen: 0.3, band: "leather", scale: 1.5, wear: 0.5 },
+  denim: { color: 0x2f3a52, metal: 0, rough: 0.9, sheen: 0.15, band: "nylon", wear: 0.4 },
+  bandana: { color: 0x9a2a22, metal: 0, rough: 0.85, sheen: 0.1, band: "nylon", wear: 0.2 },
+  roadsign: { color: 0xc99a1e, metal: 0.6, rough: 0.45, coat: 0.3, band: "peel", wear: 1 },
+  hair: { color: 0x15110e, metal: 0, rough: 0.8, band: "flat", wear: 0 },
   /** A face shield: clear polycarbonate, only its edge and glare show. */
   shield: { color: 0x7d9aa0, metal: 0.1, rough: 0.05, coat: 1, band: "flat", wear: 0 },
 } satisfies Record<string, Finish>;
@@ -326,6 +332,7 @@ function commandCollar(b: Builder, seg: number, low = false): void {
 
 function torso(b: Builder, arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicTorso(b, arch);
+  if (arch === "thug" || arch === "civilian") return streetTorso(b, arch);
   const { lod } = b.o;
   const S = FINISH;
   const aL = segLen("abdomen");
@@ -420,6 +427,7 @@ function torso(b: Builder, arch: Arch): void {
 /** Arms: the soft sleeve, the stacked pauldron with the mark on the left, the bicep guard, the vambrace and elbow cop, the gauntlet. */
 function arm(b: Builder, side: "L" | "R", arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicArm(b, side, arch);
+  if (arch === "thug" || arch === "civilian") return streetArm(b, side, arch);
   const { lod } = b.o;
   const S = FINISH;
   const out = side === "L" ? -1 : 1;
@@ -522,6 +530,7 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
 
 function leg(b: Builder, side: "L" | "R", arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicLeg(b, side, arch);
+  if (arch === "thug" || arch === "civilian") return streetLeg(b, side, arch);
   const { lod } = b.o;
   const S = FINISH;
   const out = side === "L" ? -1 : 1;
@@ -559,6 +568,7 @@ function leg(b: Builder, side: "L" | "R", arch: Arch): void {
 
 function head(b: Builder, arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicHead(b, arch);
+  if (arch === "thug" || arch === "civilian") return streetHead(b, arch);
   const { lod } = b.o;
   const S = FINISH;
   // The neck and the balaclava'd head under the helmet (seen when a headshot knocks it off).
@@ -710,6 +720,7 @@ function tabardStatic(b: Builder): void {
  */
 function silhouette(b: Builder, arch: Arch): void {
   if (arch === "orderly" || arch === "nurse") return clinicSilhouette(b, arch);
+  if (arch === "thug" || arch === "civilian") return streetSilhouette(b, arch);
   const S = FINISH;
   const n = b.o.phone ? 5 : 6;
   // Limbs are square on the phone: at 30 m and more a limb is a few pixels across.
@@ -898,6 +909,128 @@ function clinicSilhouette(b: Builder, arch: Arch): void {
   b.add("helmet", shell([[0.1175, 0.0], [0.1215, 0.002], [0.1215, 0.016], [0.1175, 0.018]], -23 * D, 46 * D, 3), GLOWS.slit, { p: [0, 0, -0.008], s: [1, 1, 1.04] });
 }
 
+/**
+ * C20 (S3.3): street bodies, no plates and no tabard. The Price-War Boy is an asymmetric thug: a bomber jacket, a
+ * bandana, a mohawk fin and one road-sign pauldron on the left shoulder. The bystander wears a plain coat and a
+ * scarf, so a civilian at the rally no longer reads as a trooper in armour.
+ */
+function streetTorso(b: Builder, arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const thug = arch === "thug";
+  const aL = segLen("abdomen");
+  const cL = segLen("chest");
+  const uL = segLen("upperChest");
+  const k = thug ? 1.06 : 1.0;
+  const jacket = thug ? S.bomber : S.coat;
+  b.add("abdomen", lathe([[0.0, -0.1], [0.12, -0.095], [0.15, -0.04], [0.15, 0.06], [0.156, 0.16], [0.172, aL + 0.02]], 1.05 * k, 0.74, b.seg(18)), jacket);
+  b.add("chest", lathe([[0.17, -0.02], [0.19, 0.07], [0.204, cL + 0.01]], 1.07 * k, 0.68, b.seg(18)), jacket);
+  b.add("upperChest", lathe([[0.204, -0.01], [0.21, 0.05], [0.19, 0.11], [0.125, uL + 0.015], [0.07, uL + 0.03]], 1.09 * k, 0.66, b.seg(18)), jacket);
+  if (lod < 2) {
+    // The ribbed waistband and collar, and a zip down the front.
+    b.add("abdomen", shell([[0.166, -0.01], [0.18, -0.01], [0.18, 0.05], [0.166, 0.05]], 0, Math.PI * 2, b.seg(22)), thug ? S.knit : S.scrubsDark, { s: [1.03 * k, 1, 0.76] });
+    b.add("upperChest", shell([[0.1, 0.125], [0.14, 0.13], [0.136, 0.2], [0.098, 0.19]], 0, Math.PI * 2, b.seg(20)), thug ? S.knit : S.bandana, { s: [1.06, 1, 0.94] });
+    if (lod === 0) b.add("chest", b.box(0.01, 0.34, 0.006, 0.001), S.metal, { p: [0, 0.1, 0.14] });
+  }
+  if (thug) {
+    // A road-sign pauldron on the left shoulder, a belt of tools, a pale stripe across the back so he reads at 10 m.
+    if (lod < 2) {
+      b.add("upperChest", b.box(0.07, 0.17, 0.22, 0.012), S.roadsign, { p: [-0.225, 0.07, 0], r: [0, 0, 0.3] });
+      b.add("upperChest", b.box(0.012, 0.09, 0.12, 0.004), S.bandana, { p: [-0.262, 0.07, 0], r: [0, 0, 0.3] });
+      b.add("abdomen", b.box(0.34, 0.04, 0.012, 0.003), S.strap, { p: [0, 0.0, 0.14] });
+      b.add("upperChest", b.box(0.34, 0.03, 0.01, 0), GLOWS.tape, { p: [0, 0.08, -0.126] });
+    }
+    if (lod === 0) b.add("abdomen", cyl(0.012, 0.012, 0.3, 6), S.metal, { p: [0.15, -0.08, 0.02], r: [0.1, 0, 0.1] });
+  }
+}
+
+function streetArm(b: Builder, side: "L" | "R", arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const thug = arch === "thug";
+  const out = side === "L" ? -1 : 1;
+  const ua = `upperArm${side}`;
+  const fa = `forearm${side}`;
+  const uL = segLen(ua);
+  const fL = segLen(fa);
+  const sleeve = thug ? S.bomber : S.coat;
+  b.add(ua, limb(uL + 0.02, (t) => 0.07 - 0.012 * t + 0.01 * Math.sin(Math.PI * t), b.seg(14), lod ? 3 : 6), sleeve, { p: [0, -0.02, 0] });
+  // The thug's left forearm is bare and wrapped; the right keeps the jacket sleeve (the asymmetry).
+  const bare = thug && side === "L";
+  b.add(fa, limb(fL + 0.02, (t) => 0.06 - 0.014 * t + 0.006 * Math.sin(Math.PI * t), b.seg(14), lod ? 3 : 5), bare ? S.skin : sleeve, { p: [0, -0.01, 0] });
+  if (bare && lod < 2) b.add(fa, limb(fL * 0.5, () => 0.064, b.seg(12), 1), S.web, { p: [0, fL * 0.3, 0] });
+  const h = `hand${side}`;
+  const f = `fingers${side}`;
+  const gl = thug ? S.leather : S.skin;
+  b.add(h, limb(0.06, (t) => 0.048 - 0.008 * t, b.seg(12), 2), gl, { p: [0, -0.035, 0] });
+  b.add(h, b.box(0.032, 0.095, 0.074, 0.012, 1), gl, { p: [0, 0.05, 0.004] });
+  if (lod < 2) b.add(h, limb(0.05, (t) => 0.0155 - 0.003 * t, lod ? 4 : 6, 1), gl, { p: [-0.012 * out, 0.03, 0.04], r: [0.85, 0, 0.45 * out] });
+  if (lod === 0) {
+    for (const [z, l] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) b.add(f, box(0.02, l, 0.0165, 0, 0), gl, { p: [0, l / 2 + 0.004, z + 0.004] });
+  } else b.add(f, b.box(0.024, 0.05, 0.074, 0.008, 1), gl, { p: [0, 0.024, 0.004] });
+}
+
+function streetLeg(b: Builder, side: "L" | "R", arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const thug = arch === "thug";
+  const th = `thigh${side}`;
+  const sh = `shin${side}`;
+  const tL = segLen(th);
+  const sL = segLen(sh);
+  const cloth = thug ? S.denim : S.coat;
+  b.add(th, limb(tL + 0.04, (t) => 0.096 - 0.022 * t + 0.008 * Math.sin(Math.PI * t), b.seg(16), lod ? 3 : 6), cloth, { p: [0, -0.04, 0] });
+  b.add(sh, limb(sL - 0.08, (t) => 0.072 + 0.012 * Math.sin(Math.PI * Math.min(1, t * 1.3)) - 0.012 * t, b.seg(16), lod ? 3 : 6), cloth);
+  b.add(sh, limb(0.12, (t) => 0.07 + 0.004 * t, b.seg(16), 2, false), S.leather, { p: [0, sL - 0.11, 0] });
+  b.add(sh, b.box(0.1, 0.07, 0.24, 0.022, 1), S.leather, { p: [0, sL + 0.012, 0.045] });
+  b.add(sh, b.box(0.108, 0.022, 0.26, 0.006, 1), thug ? S.paint : S.rubber, { p: [0, sL + 0.05, 0.048] });
+}
+
+function streetHead(b: Builder, arch: Arch): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const thug = arch === "thug";
+  b.add("head", limb(0.1, (t) => 0.052 + 0.004 * t, b.seg(12), 1), S.skin, { p: [0, -0.01, 0] });
+  b.add("head", lathe([[0, 0.03], [0.06, 0.04], [0.1, 0.09], [0.112, 0.15], [0.1, 0.22], [0.06, 0.255], [0, 0.262]], 0.92, 1.0, b.seg(14)), S.skin);
+  const H = "helmet";
+  // Hair: a close crop for the bystander, a shaved side and a mohawk fin for the thug.
+  b.add(H, shell([[0.0, 0.15], [0.07, 0.14], [0.11, 0.11], [0.124, 0.07], [0.124, 0.03], [0.118, 0.012], [0.11, 0.02], [0.116, 0.05], [0.1, 0.105], [0.066, 0.128], [0.0, 0.138]], 0, Math.PI * 2, b.seg(22), 0.5), S.hair, { p: [0, 0, -0.012], s: [1, 1, 1.04] });
+  if (thug) {
+    if (lod < 2) b.add(H, b.box(0.03, 0.09, 0.2, 0.012), S.bandana, { p: [0, 0.155, -0.02] });
+    // The bandana tied across the brow, its tails at the back.
+    b.add(H, shell([[0.118, 0.03], [0.128, 0.034], [0.128, 0.062], [0.118, 0.06]], 0, Math.PI * 2, b.seg(16)), S.bandana, { p: [0, 0, -0.012], s: [1, 1, 1.04] });
+    if (lod < 2) b.add(H, b.box(0.04, 0.12, 0.012, 0.004), S.bandana, { p: [0.03, 0.0, -0.14], r: [0.2, 0, 0.2] });
+    // A goggle band over the eyes: his visor.
+    b.add(H, shell([[0.1175, 0.0], [0.1215, 0.002], [0.1215, 0.016], [0.1175, 0.018]], -50 * D, 100 * D, lod === 0 ? 12 : 8), GLOWS.slit, { p: [0, 0, -0.008], s: [1, 1, 1.04] });
+  } else {
+    b.add(H, shell([[0.1175, 0.0], [0.1215, 0.002], [0.1215, 0.016], [0.1175, 0.018]], -40 * D, 80 * D, lod === 0 ? 12 : 8), GLOWS.status, { p: [0, 0, -0.008], s: [1, 1, 1.04] });
+  }
+}
+
+function streetSilhouette(b: Builder, arch: Arch): void {
+  const S = FINISH;
+  const thug = arch === "thug";
+  const n = b.o.phone ? 5 : 6;
+  const jacket = thug ? S.bomber : S.coat;
+  const cap = (bone: string, r0: number, r1: number, surf: Surface, y0 = 0, extra = 0) => b.add(bone, limb(segLen(bone) + extra, (t) => r0 + (r1 - r0) * t, b.o.phone ? 4 : n, 1), surf, { p: [0, y0, 0] });
+  const k = thug ? 1.06 : 1.0;
+  b.add("abdomen", lathe([[0.0, -0.1], [0.15, -0.06], [0.155, 0.12], [0.17, segLen("abdomen") + 0.02]], 1.05 * k, 0.74, n), jacket);
+  b.add("chest", lathe([[0.17, -0.02], [0.205, segLen("chest") + 0.01]], 1.07 * k, 0.7, n), jacket);
+  b.add("upperChest", lathe([[0.205, -0.01], [0.2, 0.1], [0.12, segLen("upperChest") + 0.02]], 1.09 * k, 0.7, n), jacket);
+  if (thug) b.add("upperChest", b.box(0.07, 0.17, 0.22, 0), S.roadsign, { p: [-0.225, 0.07, 0], r: [0, 0, 0.3] });
+  for (const sd of ["L", "R"] as const) {
+    cap(`upperArm${sd}`, 0.072, 0.06, jacket, -0.02, 0.02);
+    cap(`forearm${sd}`, 0.06, 0.048, thug && sd === "L" ? S.skin : jacket, -0.01, 0.02);
+    b.add(`hand${sd}`, box(0.034, 0.1, 0.075, 0, 0), thug ? S.leather : S.skin, { p: [0, 0.05, 0] });
+    cap(`thigh${sd}`, 0.096, 0.078, thug ? S.denim : S.coat, -0.04, 0.04);
+    cap(`shin${sd}`, 0.08, 0.068, thug ? S.denim : S.coat, 0, -0.08);
+    b.add(`shin${sd}`, box(0.1, 0.09, 0.26, 0, 0), S.leather, { p: [0, segLen(`shin${sd}`) + 0.02, 0.045] });
+  }
+  b.add("head", limb(0.1, () => 0.054, n, 1), S.skin, { p: [0, -0.01, 0] });
+  b.add("helmet", shell([[0.0, 0.15], [0.11, 0.11], [0.124, 0.03], [0.116, 0.012], [0.0, 0.138]], 0, Math.PI * 2, b.o.phone ? 5 : 8, 0.5), S.hair, { p: [0, 0, -0.012], s: [1, 1, 1.04] });
+  if (thug) b.add("helmet", b.box(0.03, 0.09, 0.2, 0), S.bandana, { p: [0, 0.155, -0.02] });
+}
+
 export interface ArchGeometry {
   opaque: THREE.BufferGeometry;
   glow: THREE.BufferGeometry;
@@ -926,7 +1059,7 @@ export function archGeometry(arch: Arch, lod: Lod, phone: boolean, hero = false)
       }
       if (arch === "sniper") sniperPack(b);
     }
-    if (lod === 1 && arch !== "sniper" && arch !== "orderly" && arch !== "nurse") tabardStatic(b);
+    if (lod === 1 && arch !== "sniper" && arch !== "orderly" && arch !== "nurse" && arch !== "thug" && arch !== "civilian") tabardStatic(b);
   } finally {
     partsDetail.hero = false;
   }
@@ -962,6 +1095,8 @@ export function archFor(role: string | undefined, leader = false): Arch {
   if (role === "sniper") return "sniper";
   if (role === "orderly") return "orderly";
   if (role === "nurse") return "nurse";
+  if (role === "thug") return "thug";
+  if (role === "civilian") return "civilian";
   return leader ? "leader" : "enforcer";
 }
 
