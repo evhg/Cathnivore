@@ -70,7 +70,7 @@ describe("CATHODE enemy models (C15 plates)", () => {
 describe("CATHODE enemy models (C10)", () => {
   for (const phone of [false, true]) {
     const B = BUDGET[phone ? "phone" : "desktop"];
-    for (const arch of ["enforcer", "leader", "riot", "sniper", "orderly", "nurse", "thug", "civilian", "chrome", "psycho", "drone", "turret"] as Arch[])
+    for (const arch of ["enforcer", "leader", "riot", "sniper", "orderly", "nurse", "thug", "civilian", "chrome", "psycho", "drone", "turret", "mech"] as Arch[])
       for (const lod of [0, 1, 2] as Lod[])
         it(`${arch} LOD${lod} on ${phone ? "phone" : "desktop"} stays inside ${B.tris[lod]} triangles and ${B.calls[lod]} draw calls`, () => {
           const c = cost(arch, lod, phone);

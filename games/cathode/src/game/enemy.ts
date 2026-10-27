@@ -39,7 +39,9 @@ export interface EnemyKit {
   xp: number;
   visor: number;
   /** Rifleman, a shield bearer (a riot shield stops rounds from the front), or a sniper with a laser. */
-  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | "civilian" | "turret" | "hunter" | "thug" | "chrome" | "psycho";
+  role?: "rifle" | "shield" | "sniper" | "orderly" | "nurse" | "civilian" | "turret" | "hunter" | "thug" | "chrome" | "psycho" | "mech";
+  /** Body scale (the ED-Class Mech is drawn at 1.9x). */
+  scale?: number;
   /** Elite modifiers (sim/enemies.ts): extraFast, stoneskin, multipleShots and the rest. */
   elite?: boolean;
   mods?: readonly string[];
@@ -196,6 +198,23 @@ export const NURSE: EnemyKit = {
   xp: 60,
   visor: 0xff7ad0,
   role: "nurse",
+};
+/** The ED-Class Mech: boss-scale (the body is drawn at 1.9x), slow and thickly armoured, two tonnes of liability. */
+export const ED_MECH: EnemyKit = {
+  name: "ED-Class Mech",
+  maxHp: 1400,
+  armour: 0.55,
+  damage: 16,
+  burst: [4, 0.14, 1.8],
+  spread: 0.04,
+  walk: 1.5,
+  run: 2.5,
+  vision: { range: 60, fov: (120 * Math.PI) / 180 },
+  hearing: 0.6,
+  xp: 400,
+  visor: 0xff2a2a,
+  role: "mech",
+  scale: 1.9,
 };
 /** A vault sentry turret: bolted down, thick plating, wide fast bursts. Never moves; flank it or break line of sight. */
 export const TURRET: EnemyKit = {
@@ -433,9 +452,9 @@ export class Enemy {
     route: THREE.Vector3[],
     readonly level = 1,
     // Hollowell's roles rim in its amber; the Candor staff and bystanders who borrow the body rim in their own colour.
-    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "turret", "civilian", "thug", "chrome", "psycho"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
+    look: BodyLook = enforcerLook(kit.visor, archFor(kit.role, kit.leader), ["orderly", "nurse", "hunter", "turret", "civilian", "thug", "chrome", "psycho", "mech"].includes(kit.role ?? "") ? kit.visor : 0xffa040),
   ) {
-    this.body = new Body(look);
+    this.body = new Body(look, kit.scale);
     if (kit.cyber?.length) this.body.setCyber(kit.cyber);
     this.hp = kit.maxHp;
     this.morale = makeMorale(!["turret", "police", "hunter", "civilian"].includes(kit.role ?? ""));
@@ -467,7 +486,7 @@ export class Enemy {
     if (kit.role === "turret" || kit.role === "hunter") this.rifle.visible = false;
     if (kit.elite) {
       const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.62, 0.78, 48),
+        new THREE.RingGeometry(0.62 * (kit.scale ?? 1), 0.78 * (kit.scale ?? 1), 48),
         new THREE.MeshBasicMaterial({ color: eliteTint(kit.mods), transparent: true, opacity: 0.8, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }),
       );
       ring.rotation.x = -Math.PI / 2;

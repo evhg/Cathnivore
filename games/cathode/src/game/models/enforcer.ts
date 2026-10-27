@@ -19,7 +19,7 @@ import { REST, SEGMENTS, boneIndex, HELM_Y, KNUCKLE_Y } from "../rig";
 import { PLATE_SLOT } from "../../sim/armour";
 import { box, chamfer, cyl, limb, partsDetail, plate, shell, body as lathe, tris, type PlateOpts } from "./parts";
 
-export type Arch = "enforcer" | "leader" | "riot" | "sniper" | "orderly" | "nurse" | "thug" | "civilian" | "chrome" | "psycho" | "drone" | "turret";
+export type Arch = "enforcer" | "leader" | "riot" | "sniper" | "orderly" | "nurse" | "thug" | "civilian" | "chrome" | "psycho" | "drone" | "turret" | "mech";
 export type Lod = 0 | 1 | 2;
 
 /** S3.1's materials as kit finishes (sRGB base colours; the kit's shader adds edge wear and the trim atlas). */
@@ -401,6 +401,7 @@ function machineModel(b: Builder, arch: Arch): void {
 
 function torso(b: Builder, arch: Arch): void {
   if (arch === "drone" || arch === "turret") return;
+  if (arch === "mech") return mechPart(b, "torso");
   if (arch === "orderly" || arch === "nurse") return clinicTorso(b, arch);
   if (arch === "thug" || arch === "civilian") return streetTorso(b, arch);
   if (arch === "chrome" || arch === "psycho") return augTorso(b, arch);
@@ -498,6 +499,7 @@ function torso(b: Builder, arch: Arch): void {
 /** Arms: the soft sleeve, the stacked pauldron with the mark on the left, the bicep guard, the vambrace and elbow cop, the gauntlet. */
 function arm(b: Builder, side: "L" | "R", arch: Arch): void {
   if (arch === "drone" || arch === "turret") return;
+  if (arch === "mech") return mechPart(b, "arm", side);
   if (arch === "orderly" || arch === "nurse") return clinicArm(b, side, arch);
   if (arch === "thug" || arch === "civilian") return streetArm(b, side, arch);
   if (arch === "chrome" || arch === "psycho") return augArm(b, side, arch);
@@ -603,6 +605,7 @@ function arm(b: Builder, side: "L" | "R", arch: Arch): void {
 
 function leg(b: Builder, side: "L" | "R", arch: Arch): void {
   if (arch === "drone" || arch === "turret") return;
+  if (arch === "mech") return mechPart(b, "leg", side);
   if (arch === "orderly" || arch === "nurse") return clinicLeg(b, side, arch);
   if (arch === "thug" || arch === "civilian") return streetLeg(b, side, arch);
   if (arch === "chrome" || arch === "psycho") return augLeg(b, side, arch);
@@ -643,6 +646,7 @@ function leg(b: Builder, side: "L" | "R", arch: Arch): void {
 
 function head(b: Builder, arch: Arch): void {
   if (arch === "drone" || arch === "turret") return;
+  if (arch === "mech") return mechPart(b, "head");
   if (arch === "orderly" || arch === "nurse") return clinicHead(b, arch);
   if (arch === "thug" || arch === "civilian") return streetHead(b, arch);
   if (arch === "chrome" || arch === "psycho") return augHead(b, arch);
@@ -796,6 +800,7 @@ function tabardStatic(b: Builder): void {
  * flare); the sniper's hood. A few hundred triangles, read at 40 m by its outline and its lights alone.
  */
 function silhouette(b: Builder, arch: Arch): void {
+  if (arch === "mech") return mechSilhouette(b);
   if (arch === "orderly" || arch === "nurse") return clinicSilhouette(b, arch);
   if (arch === "thug" || arch === "civilian") return streetSilhouette(b, arch);
   if (arch === "chrome" || arch === "psycho") return augSilhouette(b, arch);
@@ -1228,6 +1233,100 @@ function augSilhouette(b: Builder, arch: Arch): void {
   b.add("helmet", shell([[0.0, 0.17], [0.112, 0.12], [0.126, 0.0], [0.0, -0.02]], 0, Math.PI * 2, b.o.phone ? 5 : 8, 0.5), chrome ? S.mirror : S.graySkin, { p: [0, 0, -0.012], s: [1, 1, 1.04] });
 }
 
+/**
+ * C20 (S3.3): the ED-Class Mech, a boss-scale (the body is drawn at 1.9x) corporate walker: a slab chest with a glazed
+ * cockpit and bolted hatch plates, a missile pod on each shoulder, a heavy cannon arm and a clamp, reverse-jointed
+ * legs (the shin kicks forward of the knee) on broad foot pads. Dull grey-blue armour with hazard stripes.
+ */
+function mechPart(b: Builder, part: "torso" | "head" | "arm" | "leg", side: "L" | "R" = "L"): void {
+  const { lod } = b.o;
+  const S = FINISH;
+  const n = b.seg(14);
+  const out = side === "L" ? -1 : 1;
+  if (part === "torso") {
+    b.add("abdomen", b.box(0.3, segLen("abdomen") + 0.1, 0.24, 0.03), S.plateDark, { p: [0, 0.02, 0] });
+    b.add("chest", b.box(0.5, segLen("chest") + 0.1, 0.34, 0.04), S.plate, { p: [0, 0.04, 0] });
+    b.add("upperChest", b.box(0.62, segLen("upperChest") + 0.06, 0.4, 0.05), S.plate, { p: [0, 0.03, 0] });
+    // The cockpit: a tinted glass wedge in the front, with a hazard-yellow frame and bolted hatch plates either side.
+    b.add("upperChest", b.box(0.3, 0.16, 0.05, 0.02), S.glass, { p: [0, 0.1, 0.2] });
+    b.add("upperChest", b.box(0.34, 0.03, 0.06, 0.006), S.paint, { p: [0, 0.2, 0.2] });
+    if (lod < 2) {
+      for (const x of [-0.22, 0.22]) b.add("upperChest", b.box(0.14, 0.2, 0.035, 0.012), S.plateDark, { p: [x, 0.08, 0.205] });
+      b.add("upperChest", b.box(0.2, 0.014, 0.03, 0), GLOWS.slit, { p: [0, 0.1, 0.228] });
+      b.add("chest", b.box(0.46, 0.035, 0.37, 0.01), S.paint, { p: [0, 0.04, 0] });
+      b.add("abdomen", b.box(0.06, 0.06, 0.06, 0), GLOWS.tip, { p: [0.1, 0.06, -0.14] });
+    }
+    // The power pack on the back, venting coolant.
+    b.add("upperChest", b.box(0.4, 0.3, 0.2, 0.03), S.metal, { p: [0, 0.04, -0.28] });
+    if (lod < 2) b.add("upperChest", b.box(0.3, 0.03, 0.03, 0), GLOWS.coolant, { p: [0, 0.14, -0.385] });
+    return;
+  }
+  if (part === "head") {
+    // The sensor pod, sunk between the shoulders: a squat dome with one wide red lens.
+    b.add("head", lathe([[0, -0.04], [0.12, -0.02], [0.14, 0.08], [0.09, 0.15], [0, 0.17]], 1.1, 1.0, n), S.plateDark);
+    b.add("head", b.box(0.2, 0.04, 0.03, 0), GLOWS.lens, { p: [0, 0.06, 0.145] });
+    return;
+  }
+  if (part === "arm") {
+    const ua = `upperArm${side}`;
+    const fa = `forearm${side}`;
+    const uL = segLen(ua);
+    const fL = segLen(fa);
+    b.add(ua, limb(uL + 0.04, (t) => 0.095 - 0.01 * t + 0.01 * Math.sin(Math.PI * t), n, lod ? 3 : 6), S.plate, { p: [0, -0.02, 0] });
+    b.add(fa, b.box(0.17, fL + 0.04, 0.17, 0.03), S.plateDark, { p: [0, fL / 2 - 0.01, 0] });
+    if (side === "L") {
+      // The shoulder pod: a rack of missile tubes, each tipped hot.
+      b.add("upperChest", b.box(0.22, 0.2, 0.32, 0.03), S.plate, { p: [-0.42, 0.2, -0.02] });
+      if (lod < 2) {
+        for (const [dx, dy] of [[-0.055, -0.045], [0.055, -0.045], [-0.055, 0.055], [0.055, 0.055]] as const) {
+          b.add("upperChest", cyl(0.04, 0.04, 0.05, 8), S.rubber, { p: [-0.42 + dx, 0.2 + dy, 0.155], r: [Math.PI / 2, 0, 0] });
+          b.add("upperChest", cyl(0.028, 0.028, 0.012, 8), GLOWS.tip, { p: [-0.42 + dx, 0.2 + dy, 0.18], r: [Math.PI / 2, 0, 0] });
+        }
+      }
+    } else {
+      b.add("upperChest", b.box(0.22, 0.2, 0.32, 0.03), S.plate, { p: [0.42, 0.2, -0.02] });
+      if (lod < 2) {
+        for (const [dx, dy] of [[-0.055, -0.045], [0.055, -0.045], [-0.055, 0.055], [0.055, 0.055]] as const) {
+          b.add("upperChest", cyl(0.04, 0.04, 0.05, 8), S.rubber, { p: [0.42 + dx, 0.2 + dy, 0.155], r: [Math.PI / 2, 0, 0] });
+          b.add("upperChest", cyl(0.028, 0.028, 0.012, 8), GLOWS.tip, { p: [0.42 + dx, 0.2 + dy, 0.18], r: [Math.PI / 2, 0, 0] });
+        }
+      }
+    }
+    // The right forearm is the cannon: a barrel and a shroud past the wrist. The left ends in a hydraulic clamp.
+    const h = `hand${side}`;
+    if (side === "R") {
+      b.add(h, b.box(0.16, 0.2, 0.16, 0.03), S.metal, { p: [0, 0.08, 0] });
+      if (lod < 2) {
+        b.add(h, cyl(0.038, 0.044, 0.7, 10), S.rubber, { p: [0, 0.45, 0.04] });
+        b.add(h, cyl(0.06, 0.06, 0.18, 10), S.plateDark, { p: [0, 0.2, 0.04] });
+        b.add(h, b.box(0.03, 0.03, 0.03, 0), GLOWS.tip, { p: [0, 0.8, 0.04] });
+      }
+    } else {
+      b.add(h, b.box(0.14, 0.12, 0.14, 0.02), S.metal, { p: [0, 0.05, 0] });
+      if (lod < 2) for (const x of [-0.05, 0.05]) b.add(h, b.box(0.035, 0.2, 0.08, 0.008), S.plate, { p: [x * out * -1, 0.2, 0.0] });
+    }
+    return;
+  }
+  // Legs: broad armoured thighs, a shin that kicks forward of the knee (digitigrade, reversed), a flat foot pad.
+  const th = `thigh${side}`;
+  const sh = `shin${side}`;
+  const tL = segLen(th);
+  const sL = segLen(sh);
+  b.add(th, b.box(0.2, tL + 0.04, 0.22, 0.04), S.plate, { p: [0, tL / 2 - 0.02, 0] });
+  if (lod < 2) b.add(th, cyl(0.1, 0.1, 0.26, n), S.metal, { p: [0, tL, 0], r: [0, 0, Math.PI / 2] });
+  b.add(sh, limb(sL, (t) => 0.1 - 0.035 * t, n, lod ? 3 : 5), S.plateDark, { p: [0, 0, 0.07], r: [0.18, 0, 0] });
+  b.add(sh, b.box(0.26, 0.07, 0.42, 0.03), S.plateDark, { p: [0, sL + 0.01, 0.1] });
+  if (lod < 2) b.add(sh, b.box(0.27, 0.025, 0.1, 0), S.paint, { p: [0, sL + 0.045, 0.28] });
+}
+
+function mechSilhouette(b: Builder): void {
+  for (const part of ["torso", "head"] as const) mechPart(b, part);
+  for (const sd of ["L", "R"] as const) {
+    mechPart(b, "arm", sd);
+    mechPart(b, "leg", sd);
+  }
+}
+
 export interface ArchGeometry {
   opaque: THREE.BufferGeometry;
   glow: THREE.BufferGeometry;
@@ -1257,7 +1356,7 @@ export function archGeometry(arch: Arch, lod: Lod, phone: boolean, hero = false)
       }
       if (arch === "sniper") sniperPack(b);
     }
-    if (lod === 1 && arch !== "sniper" && arch !== "orderly" && arch !== "nurse" && arch !== "thug" && arch !== "civilian" && arch !== "chrome" && arch !== "psycho" && arch !== "drone" && arch !== "turret") tabardStatic(b);
+    if (lod === 1 && arch !== "sniper" && arch !== "orderly" && arch !== "nurse" && arch !== "thug" && arch !== "civilian" && arch !== "chrome" && arch !== "psycho" && arch !== "drone" && arch !== "turret" && arch !== "mech") tabardStatic(b);
   } finally {
     partsDetail.hero = false;
   }
@@ -1299,6 +1398,7 @@ export function archFor(role: string | undefined, leader = false): Arch {
   if (role === "psycho") return "psycho";
   if (role === "hunter") return "drone";
   if (role === "turret") return "turret";
+  if (role === "mech") return "mech";
   return leader ? "leader" : "enforcer";
 }
 
