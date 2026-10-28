@@ -4753,7 +4753,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const kits = arch ? [arch, arch, arch, arch] : all ? Object.keys(LINEUP_KITS) : ["enforcer", "leader", "riot", "sniper"];
     const turns = arch ? [0, Math.PI / 4, Math.PI / 2, Math.PI] : kits.map(() => 0.35);
     const centre = eye.clone().addScaledVector(flat, arch ? 3.6 : all ? 9 : 4.4);
-    const gap = arch ? 0.95 : all ? 1.5 : 1.05;
+    const gap = arch ? 0.95 : all ? 1.9 : 1.05;
     for (const [i, k] of kits.entries()) {
       const kit = LINEUP_KITS[k];
       if (!kit) return `unknown archetype ${k}`;
