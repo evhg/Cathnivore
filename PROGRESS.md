@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-28 11:52 session (short, notes only):** audited H13 against the code (liveries, Crown circlet idle, Heirloom motes, vans folding up all present) and ticked it. Open D/H leftovers: H6 tray, H12 remainder, C14 critique. Next: screenshot-critique loop on Hedgerow/landing for whole-feature items.
 - **2026-10-28 10:51 session (Phase C, C20 done):** re-shot `silhouette-lineup-all` at desktop after the gap fix: ten figures, no overlaps, mech reads at boss scale. C20 ticked; Phase C is complete. Spacing change is on `build`, unreleased. Next: owner-direction Phase D/H (first open item), plus the screenshot-critique loop.
 - **2026-10-28 09:51 session (Phase C, C20 session 14, release only):** ran `npm run release`; gates 1-8 passed, `main` moved to `205d01a` and live `version.json` matches (tag push 403 as usual). C20 stays open: 5K re-shoot and critique, lineup overlap re-check, then tick C20.
 - **2026-10-28 08:51 session (Phase C, C20 session 13, short):** widened the `silhouette-lineup-all` gap (1.5 to 1.9) so the mech no longer overlaps its neighbour (one-number change, not re-shot; the full `npm run check` took over 25 min here and was not seen finishing). Next: 5K re-shoot and critique, then start `npm run release` first thing for C20.
