@@ -364,6 +364,17 @@ button {
   animation: bob 1.6s ease-in-out infinite;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
 }
+.you.walking {
+  animation: bob 1.6s ease-in-out infinite, walk 1.4s cubic-bezier(0.45, 0, 0.25, 1) 0.3s both;
+}
+@keyframes walk {
+  from {
+    translate: var(--walk-x, 0) var(--walk-y, 0);
+  }
+  to {
+    translate: 0 0;
+  }
+}
 .you svg {
   width: 100%;
   height: 100%;
@@ -1283,6 +1294,7 @@ button {
   .chip.hurt,
   .stars .star.earned,
   .you,
+  .you.walking,
   .stop,
   .node.next .level-num,
   #btn-pie.ready,

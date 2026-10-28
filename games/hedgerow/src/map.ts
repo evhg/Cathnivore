@@ -1316,6 +1316,9 @@ export function trailPath(pts: [number, number][]): string {
   return d;
 }
 
+/** The node Cath stood on at the last render, so she can walk to the new one. */
+let lastNextId: number | null = null;
+
 export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, open: (lv: Level) => void, openEndless?: (act: number) => void): void {
   list.replaceChildren();
   const acts = new Map<number, Level[]>();
@@ -1468,5 +1471,17 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     li.append(trail);
     list.append(li);
   }
-  (current as HTMLElement | null)?.scrollIntoView({ block: "center" });
+  const here = current as HTMLElement | null;
+  const from = lastNextId !== null && lastNextId !== nextId ? list.querySelector<HTMLElement>(`[data-level="${lastNextId}"]`) : null;
+  lastNextId = nextId;
+  here?.scrollIntoView({ block: "center" });
+  const you = here?.querySelector<HTMLElement>(".you");
+  if (you && from && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // She walks the trail from the stop she just cleared (an individual `translate`, so the bob keeps running).
+    const a = from.getBoundingClientRect();
+    const z = here!.getBoundingClientRect();
+    you.style.setProperty("--walk-x", `${a.left - z.left}px`);
+    you.style.setProperty("--walk-y", `${a.top - z.top}px`);
+    you.classList.add("walking");
+  }
 }

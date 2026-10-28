@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-28 21:51 session (N4 continued):** Cath now walks the trail from the cleared stop to the next one (`walking` class, `translate` keyframe, off in reduced motion; `map.ts`). tsc and eslint pass; full `npm run check` was still running at wrap-up; not shot. Next: N4 landmark nodes.
 - **2026-10-28 20:53 session (N4 started):** on portrait phones the Hedgerow map's tool row is now a fixed bottom tab bar (scrolling icon-over-label tabs, safe-area aware); shot at 390x844, `npm run check` passes. Painted act scenes already existed. Next: N4 landmark nodes and Cath walking between stops (e2e not run).
 - **2026-10-28 19:51 session (N3 done):** result-card stars now burst gold sparks and play a rising chime per earned star (`playStar`, `burst`; off in reduced motion). tsc, eslint, hedgerow.test pass; not shot. N3 ticked, unreleased. Next: N4 illustrated world map.
 - **2026-10-28 18:52 session (N3 continued):** win now slows time 1.2 s under a gold "The lane holds" banner before the result card (`main.ts`, off in reduced motion). tsc, eslint and `hedgerow.test.ts` pass; not shot. Boss intro banner already existed. Next: N3 star fanfare scene, then N4.
