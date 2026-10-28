@@ -1316,6 +1316,22 @@ export function trailPath(pts: [number, number][]): string {
   return d;
 }
 
+/** Little painted landmarks, one per stop (cycled by level), so the trail reads as a place and not a row of numbers. */
+const LANDMARKS: string[] = [
+  '<path d="M3 15v-6l7-5 7 5v6z" fill="#e9d6a8" stroke="#6b4a2b" stroke-width="1.2"/><path d="M2 9.5l8-6.5 8 6.5" fill="#b5533c" stroke="#6b4a2b" stroke-width="1.2"/><rect x="8" y="10" width="4" height="5" fill="#6b4a2b"/>',
+  '<path d="M7 16l1.5-8h3L13 16z" fill="#e9d6a8" stroke="#6b4a2b" stroke-width="1.2"/><path d="M10 8L3 3M10 8l7-5M10 8l-5 6M10 8l5-6" stroke="#6b4a2b" stroke-width="1.6" stroke-linecap="round"/>',
+  '<rect x="9" y="10" width="2.4" height="6" fill="#6b4a2b"/><circle cx="10" cy="7" r="5" fill="#6aa04a" stroke="#3f6b2b" stroke-width="1.2"/>',
+  '<path d="M5 16v-5h10v5z" fill="#b9a58a" stroke="#6b4a2b" stroke-width="1.2"/><path d="M4 11l6-5 6 5" fill="none" stroke="#6b4a2b" stroke-width="1.4"/><path d="M10 6v5" stroke="#6b4a2b" stroke-width="1.2"/>',
+  '<path d="M2 16c0-6 4-10 8-10s8 4 8 10z" fill="#e2bf62" stroke="#a07a24" stroke-width="1.2"/><path d="M6 14l4-6 4 6" fill="none" stroke="#a07a24" stroke-width="1"/>',
+  '<path d="M1 11q9-7 18 0" fill="none" stroke="#6b4a2b" stroke-width="2.2"/><path d="M1 15q9-3 18 0" fill="none" stroke="#6aa8c8" stroke-width="2"/>',
+  '<ellipse cx="10" cy="12" rx="8" ry="4" fill="#8fc1dc" stroke="#4d86a6" stroke-width="1.2"/><path d="M5 11q2-2 4 0" fill="none" stroke="#fff" stroke-width="1" opacity=".7"/>',
+  '<path d="M10 3v14M4 8h12" stroke="#6b4a2b" stroke-width="1.8" stroke-linecap="round"/><path d="M6 3h8l-1 3H7z" fill="#d9b45a" stroke="#6b4a2b" stroke-width="1"/>',
+  '<path d="M3 16V8l7-4 7 4v8z" fill="#b5533c" stroke="#6b4a2b" stroke-width="1.2"/><path d="M7 16v-5h6v5M7 11l6 5M13 11l-6 5" fill="none" stroke="#f3e6c8" stroke-width="1"/>',
+  '<rect x="3" y="7" width="2.6" height="9" fill="#9a8a78" stroke="#6b4a2b" stroke-width="1"/><rect x="14.4" y="7" width="2.6" height="9" fill="#9a8a78" stroke="#6b4a2b" stroke-width="1"/><path d="M5.6 9h8.8M5.6 13h8.8" stroke="#6b4a2b" stroke-width="1.6"/>',
+];
+const BOSS_LANDMARK =
+  '<path d="M2 17V8l2-1v2h2V7h2v2h4V7h2v2h2V7l2 1v9z" fill="#6b4a2b" stroke="#3a2a14" stroke-width="1"/><path d="M10 3v5" stroke="#3a2a14" stroke-width="1.2"/><path d="M10 3l5 1.6L10 6.2z" fill="#d9b45a"/><path d="M8.5 17v-4a1.5 1.5 0 013 0v4z" fill="#d9b45a"/>';
+
 /** The node Cath stood on at the last render, so she can walk to the new one. */
 let lastNextId: number | null = null;
 
@@ -1440,7 +1456,12 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         tw.textContent = lv.twists.map((t) => TWISTS[t].name).join(" · ");
         name.append(tw);
       }
-      b.append(numEl, st, medals, name);
+      const mark = document.createElementNS(svgNS, "svg");
+      mark.setAttribute("class", "level-landmark");
+      mark.setAttribute("viewBox", "0 0 20 20");
+      mark.setAttribute("aria-hidden", "true");
+      mark.innerHTML = boss ? BOSS_LANDMARK : LANDMARKS[(lv.id - 1) % LANDMARKS.length]!;
+      b.append(numEl, mark, st, medals, name);
       if (!unlocked) {
         // A faint silhouette of the lane, so locked nodes differ from one another.
         const pts = lv.path.map(([c, r]) => `${f(c + 0.5)},${f(r + 0.5)}`).join(" ");

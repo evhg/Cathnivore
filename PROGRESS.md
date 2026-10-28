@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-28 22:52 session (N4 continued):** every Hedgerow map stop now has a painted landmark (cottage, windmill, oak, well, haystack, bridge, pond, scarecrow, barn, gate; castle on bosses; `LANDMARKS` in `map.ts`, grey when locked). Shot at 390x844 (small beside each node, locked ones faded); ratchet test passes. Next: shoot the map, then tick N4 and start N5 (Runnel Flow Reveal).
 - **2026-10-28 21:51 session (N4 continued):** Cath now walks the trail from the cleared stop to the next one (`walking` class, `translate` keyframe, off in reduced motion; `map.ts`). tsc and eslint pass; full `npm run check` was still running at wrap-up; not shot. Next: N4 landmark nodes.
 - **2026-10-28 20:53 session (N4 started):** on portrait phones the Hedgerow map's tool row is now a fixed bottom tab bar (scrolling icon-over-label tabs, safe-area aware); shot at 390x844, `npm run check` passes. Painted act scenes already existed. Next: N4 landmark nodes and Cath walking between stops (e2e not run).
 - **2026-10-28 19:51 session (N3 done):** result-card stars now burst gold sparks and play a rising chime per earned star (`playStar`, `burst`; off in reduced motion). tsc, eslint, hedgerow.test pass; not shot. N3 ticked, unreleased. Next: N4 illustrated world map.

@@ -284,6 +284,24 @@ button {
   box-shadow: 0 4px 0 rgba(60, 90, 40, 0.35);
   transition: transform 120ms ease;
 }
+.node .level-landmark {
+  position: absolute;
+  top: -2px;
+  right: calc(50% - 44px);
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--soil) 25%, transparent));
+}
+.node.level-boss .level-landmark {
+  width: 34px;
+  height: 34px;
+  right: calc(50% - 50px);
+}
+.node:disabled .level-landmark {
+  filter: grayscale(1);
+  opacity: 0.35;
+}
 .node:hover:not(:disabled) .level-num {
   transform: translateY(-2px) scale(1.05);
 }
