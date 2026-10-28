@@ -595,3 +595,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-28: C20 elite glyph is a HUD diamond pool (max 3, 25 m), not per-enemy DOM.
 - 2026-10-28: mech intro reuses hud.showBanner("boss") on first sight; no new component.
 - 2026-10-28: session spent on a full release of C20 work to main (205d01a); C20 stays open for 5K polish.
+2026-10-28: C20 ticked after the lineup re-shot clean (desktop only; 5K skipped, ~10 min a stage). Phase C complete; sessions return to D/H.
