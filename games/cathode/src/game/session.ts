@@ -11,7 +11,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
-import { CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
+import { ED_MECH, CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
 import { bodyView, deadCost, deathGlowScale, prewarmGore, type Body } from "./body";
 import { POOLS } from "../render/pools";
 import { deathFx, type DeathVariant } from "./death";
@@ -91,6 +91,7 @@ import { makeStagger } from "../sim/stagger";
 import { Director } from "./ai/director";
 import { RELOAD_KEYS } from "./animate";
 import { layFlat, litEdges, stageFlash } from "./laserfx";
+import { missileVolley } from "../sim/mechpods";
 import { EnemyNades, NADE_RADIUS } from "./enemynades";
 import { cargoCrate, concretePillar } from "./coverprops";
 import { loadCover } from "./ai/coverload";
@@ -389,6 +390,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         ? [CIVILIAN, "candorChrome"]
         : key.includes("turret")
         ? [TURRET, "enforcer"]
+        : key.includes("mech")
+        ? [ED_MECH, "enforcer"]
         : key.includes("police")
         ? [POLICE_DRONE, "candorChrome"]
         : key.includes("hunter")
@@ -440,6 +443,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const director = new Director(progress.character.difficulty);
   // C16 (S3.5): their frag grenades, lobbed where the squad last saw her.
   const nades = new EnemyNades(world.scene);
+  const mechCool = new Map<Enemy, number>();
   director.form(enemies);
   void loadCover(o.district).then((pts) => (director.cover = pts));
   /** S10: the squads' barks: the subtitle in the faction's colour and the line over the radio, placed where he is. */
@@ -2055,6 +2059,28 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         nades.throw(e.body.joints.handL.clone(), to);
       }
     });
+    // C20: the ED-Class Mech's missile volley: four lobbed rockets per live pod, none once both pods are gone.
+    for (const e of enemies) {
+      if (!e.pods || !e.alive || e.state !== "combat" || !e.seesHer || dead) {
+        mechCool.delete(e);
+        continue;
+      }
+      const left = (mechCool.get(e) ?? 3) - dt;
+      if (left > 0 || missileVolley(e.pods) === 0 || e.position.distanceTo(player.pos) < 6) {
+        mechCool.set(e, Math.max(0, left));
+        continue;
+      }
+      mechCool.set(e, 7);
+      const n = missileVolley(e.pods);
+      for (let i = 0; i < n; i++) {
+        const side = i % 2 === 0 ? 1 : -1;
+        const from = e.body.joints.chest.clone().add(new THREE.Vector3(side * 0.9, 1.0, 0));
+        const to = sight.chest.clone().add(new THREE.Vector3((Math.random() - 0.5) * 5, 0, (Math.random() - 0.5) * 5));
+        to.y = ground(to.x, to.z);
+        nades.throw(from, to, 0.9 + i * 0.25, { radius: 3.5, damage: 32 });
+      }
+      audio?.chirp(e.position.distanceTo(player.pos), 0);
+    }
     for (const e of enemies) nades.hold(e, e.alive && e.motion.tac && (e.motion.tac.throw ?? -1) >= 120 && (e.motion.tac.throw ?? -1) < 600 ? e.body.joints.handL : null);
     if (!staged) {
       nades.update(dt, ground, world.colliders, (at) => {

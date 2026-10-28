@@ -27,6 +27,8 @@ interface Nade {
   pts: THREE.Vector3[];
   rest: boolean;
   age: number;
+  radius: number;
+  damage: number;
 }
 
 let bodyGeo: THREE.BufferGeometry | null = null;
@@ -52,7 +54,7 @@ export class EnemyNades {
   constructor(private readonly scene: THREE.Object3D) {}
 
   /** The lob: from his hand to `to`, a high arc whose flight time grows with the range. */
-  throw(from: THREE.Vector3, to: THREE.Vector3, fuse = NADE_FUSE): void {
+  throw(from: THREE.Vector3, to: THREE.Vector3, fuse = NADE_FUSE, blast: { radius: number; damage: number } = { radius: NADE_RADIUS, damage: NADE_DAMAGE }): void {
     const d = Math.hypot(to.x - from.x, to.z - from.z);
     const T = THREE.MathUtils.clamp(d / 10, 0.7, 1.6);
     const vel = new THREE.Vector3((to.x - from.x) / T, (to.y - from.y) / T + 0.5 * G * T, (to.z - from.z) / T);
@@ -70,7 +72,7 @@ export class EnemyNades {
       r.getDrawingBufferSize(lm.resolution);
     };
     this.scene.add(body, light, trail);
-    this.list.push({ pos: from.clone(), vel, fuse, body, light, trail, pts, rest: false, age: 0 });
+    this.list.push({ pos: from.clone(), vel, fuse, body, light, trail, pts, rest: false, age: 0, radius: blast.radius, damage: blast.damage });
     this.place(this.list[this.list.length - 1]!, 0);
   }
 
@@ -82,7 +84,7 @@ export class EnemyNades {
       n.fuse -= dt;
       this.place(n, dt);
       if (n.fuse <= 0) {
-        this.blasts.push({ pos: n.pos.clone().setY(n.pos.y + 0.15), radius: NADE_RADIUS, damage: NADE_DAMAGE });
+        this.blasts.push({ pos: n.pos.clone().setY(n.pos.y + 0.15), radius: n.radius, damage: n.damage });
         onBang(n.pos.clone());
         this.drop(n);
         this.list.splice(i, 1);
