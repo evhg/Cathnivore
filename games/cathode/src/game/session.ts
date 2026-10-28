@@ -444,6 +444,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // C16 (S3.5): their frag grenades, lobbed where the squad last saw her.
   const nades = new EnemyNades(world.scene);
   const mechCool = new Map<Enemy, number>();
+  let mechIntroShown = false;
   director.form(enemies);
   void loadCover(o.district).then((pts) => (director.cover = pts));
   /** S10: the squads' barks: the subtitle in the faction's colour and the line over the radio, placed where he is. */
@@ -2064,6 +2065,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (!e.pods || !e.alive || e.state !== "combat" || !e.seesHer || dead) {
         mechCool.delete(e);
         continue;
+      }
+      if (!mechIntroShown) {
+        mechIntroShown = true;
+        hud.showBanner("ED-Class Mech", "Hollowell Enforcement · Heavy", "boss");
       }
       const left = (mechCool.get(e) ?? 3) - dt;
       if (left > 0 || missileVolley(e.pods) === 0 || e.position.distanceTo(player.pos) < 6) {
