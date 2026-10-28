@@ -598,3 +598,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 2026-10-28: C20 ticked after the lineup re-shot clean (desktop only; 5K skipped, ~10 min a stage). Phase C complete; sessions return to D/H.
 2026-10-28: H13 ticked after a code audit; no code change this session.
 - 2026-10-28: hero Cath gets a CSS bottom mask fade (desktop showed a hard cut at the waist); no release, CSS only.
+- 2026-10-28: C14 ticked after a desktop shot review (Cath stays a back view in the wardrobe); N1 added to plan big features next.
