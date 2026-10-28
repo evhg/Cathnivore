@@ -466,6 +466,11 @@ export function playWin(): void {
   [523, 659, 784, 1047, 1319].forEach((f, i) => bell(f, i * 0.11, 0.9, 0.04));
   [262, 330, 392].forEach((f) => voice(f, 0.5, 1.4, { peak: 0.025, type: "triangle", cutoff: 1800, attack: 0.2 }));
 }
+/** One rising chime per earned star, timed with the stamp animation (0, 260, 520 ms). */
+export function playStar(i: number): void {
+  if (!ready()) return;
+  bell([784, 988, 1319][i] ?? 1319, 0, 0.8, 0.045);
+}
 export function playLose(): void {
   if (!ready()) return;
   [392, 330, 262, 196].forEach((f, i) => voice(f, i * 0.16, 0.4, { peak: 0.04, type: "triangle", cutoff: 1200 }));

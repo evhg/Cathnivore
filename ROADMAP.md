@@ -35,7 +35,7 @@ Every visual item is done only when:
 - N1. [x] *(2026-10-28: critique below; 2D shots only, 3D and CATHODE not shot)* **Plan next big items (whole features):** screenshot NIGHT SHIFT districts 2-5, Hedgerow and landing, have a subagent critique them against `VISION.md`, add whole features here (CLAUDE.md step 4).
 - C20. [x] *(2026-10-28: ten bodies, mech pods and missiles, elite glyph, boss intro, lineup re-shot with no overlaps; released `205d01a`, lineup spacing ships next release)* **"District roster and the 5K polish pass" (4 sessions)**
 - N2. [x] **Hedgerow 3D as the default "Living Field"** (3-4 sessions): tower build animations, enemy weight/squash, projectile trails, hit sparks, per-act lighting, boss-wave camera nudge. Verify what `render3d/` already does first. Files: `games/hedgerow/src/render3d/`.
-- N3. [ ] **Hedgerow wave-clear and boss cinematics** (2-3 sessions): wave banner, last-enemy slow-mo, boss intro card with Cath, star fanfare victory scene.
+- N3. [x] *(2026-10-28: wave banner, win slow-mo, boss intro, star burst + chime)* **Hedgerow wave-clear and boss cinematics** (2-3 sessions): wave banner, last-enemy slow-mo, boss intro card with Cath, star fanfare victory scene.
 - N4. [ ] **Hedgerow illustrated world map** (2-3 sessions): painted landscape per act, nodes as landmarks, Cath walking between them, top pill bar becomes a bottom tab bar.
 - N5. [ ] **Runnel "Flow Reveal" win scene** (1-2 sessions): water surges through the network, crops bloom, Bea's drawing revealed, spoiler-free share grid; gradient water on the pipes.
 - N6. [ ] **Hedgerow Workshop panel** (2 sessions): tower card with portrait, stat bars, upgrade branches and merge preview; refill the empty right panel with a shop and Cath tip.

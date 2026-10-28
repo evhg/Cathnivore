@@ -3022,6 +3022,13 @@ function finish(g: Game): void {
       sEl.className = `star${i < n ? " earned" : ""}`;
       sEl.textContent = i < n ? "★" : "☆";
       ui.resultStars.append(sEl);
+      if (i < n) {
+        // The fanfare: a gold spark burst and a rising chime as each star lands.
+        setTimeout(() => {
+          burst(sEl, { color: "#f2c94c", n: 10, dist: 54 });
+          sfx.playStar(i);
+        }, 260 * i + 200);
+      }
     }
   }
   ui.resultStars.setAttribute("aria-label", won ? `${n} of 3 stars` : "");
