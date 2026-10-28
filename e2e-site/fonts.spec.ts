@@ -81,7 +81,7 @@ test.describe('AAA UI fonts', () => {
     // One size is enough, and the 3D street boots slowly under swiftshader at 1440x900.
     test.skip(info.project.name !== 'site-phone', 'one WebGL boot per run')
     test.setTimeout(180_000)
-    await page.goto('/cathode/?play&shot')
+    await page.goto('/nightshift/?play&shot')
     const p = await probe(page, '.hud-hp-text')
     expectHouseRules(p, 'Cathode UI')
     expect(p.numeric).toContain('tabular-nums')

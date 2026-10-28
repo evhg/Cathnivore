@@ -146,7 +146,7 @@ export function familiesIn(css: string): string[] {
   }
   return [...names]
 }
-/** C13T: /cathode/ ships at most two families. */
+/** C13T: /nightshift/ ships at most two families. */
 export const CATHODE_MAX_FAMILIES = 2
 
 interface PageRow {
@@ -166,7 +166,7 @@ function pages(dist: boolean): PageRow[] {
     row('/cathnivore/', ['dist-site/cathnivore/assets']),
     row('/runnel/', ['dist-site/runnel/assets']),
     row('/hedgerow/', ['dist-site/hedgerow/assets']),
-    row('/cathode/', ['dist-site/cathode/assets']),
+    row('/nightshift/', ['dist-site/nightshift/assets']),
   ]
 }
 
@@ -192,11 +192,11 @@ function main(): void {
     console.log(`| ${r.page} | ${r.files.length} | ${r.bytes} | ${(r.bytes / 1000).toFixed(1)} | ${(r.bytes / 1024).toFixed(1)} | ${ok ? 'ok' : 'FAIL'} |`)
   }
   if (!dist) {
-    const dir = resolve(root, 'dist-site/cathode/assets')
+    const dir = resolve(root, 'dist-site/nightshift/assets')
     const css = existsSync(dir) ? readdirSync(dir).filter((n) => n.endsWith('.css')).map((n) => readFileSync(join(dir, n), 'utf8')).join('\n') : ''
     const fams = familiesIn(css)
     console.log(`\n/cathode/ font families: ${fams.join(', ') || 'none'} (limit ${CATHODE_MAX_FAMILIES})`)
-    if (fams.length > CATHODE_MAX_FAMILIES) problems.push(`/cathode/ declares ${fams.length} font families (${fams.join(', ')}), over ${CATHODE_MAX_FAMILIES}`)
+    if (fams.length > CATHODE_MAX_FAMILIES) problems.push(`/nightshift/ declares ${fams.length} font families (${fams.join(', ')}), over ${CATHODE_MAX_FAMILIES}`)
   }
   const px = lintCathodeCss()
   problems.push(...px)

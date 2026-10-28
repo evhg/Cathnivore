@@ -24,7 +24,7 @@ if (!base) {
   // here; it can't serve this dist, so step past it instead).
   let port = 4181
   while (port < 4200 && (await fetch(`http://localhost:${port}/`).then(() => true, () => false))) port++
-  base = `http://localhost:${port}/cathode/`
+  base = `http://localhost:${port}/nightshift/`
   server = spawn('npx', ['vite', 'preview', '--outDir', 'dist-site', '--port', String(port), '--strictPort'], { stdio: 'ignore', detached: true })
   const t0 = Date.now()
   for (;;) {

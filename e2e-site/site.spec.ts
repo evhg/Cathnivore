@@ -717,7 +717,7 @@ test.describe('CATHODE', () => {
     // C13: the street behind the gate builds in software WebGL here, which holds the main thread for a while.
     test.setTimeout(420_000)
     const errors = trackErrors(page)
-    await page.goto('/cathode/')
+    await page.goto('/nightshift/')
     // C13: a cold open (one line over black while the street builds) comes first. The build and its first frame
     // hold the main thread for a minute or more here when the suite runs four workers on four cores.
     await expect(page.locator('#screen-gate')).toBeVisible({ timeout: 200_000 })
@@ -726,7 +726,7 @@ test.describe('CATHODE', () => {
     await page.getByRole('radio', { name: /Reduced.*no gore/ }).check()
     await page.getByRole('button', { name: /I.m 18 or over/ }).click()
     await expect(page.locator('#screen-title')).toBeVisible({ timeout: 120_000 })
-    await expect(page.locator('#title-word')).toHaveText('CATHODE')
+    await expect(page.locator('#title-word')).toHaveText('NIGHT SHIFT')
     await noSideways(page)
     await assertNoSeriousIssues(page)
     const prefs = await page.evaluate(() => JSON.parse(localStorage.getItem('cathode:prefs:v1') ?? '{}'))
@@ -740,9 +740,9 @@ test.describe('CATHODE', () => {
     // The full street renders at well under 1 fps on the CI's software GPU.
     test.setTimeout(240_000)
     const errors = trackErrors(page)
-    await page.goto('/cathode/')
+    await page.goto('/nightshift/')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
-    await page.goto('/cathode/?play&shot')
+    await page.goto('/nightshift/?play&shot')
     await page.waitForFunction(() => ((window as unknown as { cathode?: { stats: { frames: number } } }).cathode?.stats.frames ?? 0) >= 1, null, { timeout: 200_000 })
     await expect(page.locator('#loading')).toBeHidden()
     // A portrait touch screen waits behind "turn your phone sideways".
@@ -753,7 +753,7 @@ test.describe('CATHODE', () => {
 
   test('the landing page links to it with an 18+ badge', async ({ page }) => {
     await page.goto('/')
-    const card = page.locator('a[href="/cathode/"]')
+    const card = page.locator('a[href="/nightshift/"]')
     await expect(card).toContainText('18+')
   })
 })

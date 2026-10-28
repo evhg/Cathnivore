@@ -9,9 +9,9 @@ type Win = { cathode?: { stats: { frames: number }; stage?: (n: string, t?: numb
 async function boot(page: Page, touch = false): Promise<void> {
   // The phone project is upright; CATHODE plays held sideways (844x390), so turn it.
   if (touch) await page.setViewportSize({ width: 844, height: 390 })
-  await page.goto('/cathode/')
+  await page.goto('/nightshift/')
   await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
-  await page.goto('/cathode/?play&shot&rs=0.5')
+  await page.goto('/nightshift/?play&shot&rs=0.5')
   await page.waitForFunction(() => ((window as unknown as Win).cathode?.stats.frames ?? 0) >= 2 && typeof (window as unknown as Win).cathode?.stage === 'function', null, { timeout: 200_000 })
 }
 
@@ -135,9 +135,9 @@ test.describe('CATHODE death and Retry', () => {
     // 3.7 min alone under SwiftShader, and it timed out once on a loaded box (C14 review): headroom, not a fix.
     test.setTimeout(600_000)
     if (hasTouch) await page.setViewportSize({ width: 844, height: 390 })
-    await page.goto('/cathode/')
+    await page.goto('/nightshift/')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
-    await page.goto('/cathode/?play&class=ghost&rs=0.5')
+    await page.goto('/nightshift/?play&class=ghost&rs=0.5')
     type C = {
       stats: { frames: number; lastRestartMs?: number }
       hp: number
@@ -223,9 +223,9 @@ test.describe('CATHODE kill cams', () => {
   test('a key in the first 300 ms does not skip; after it, it does, and simScale is 1 on the next frame', async ({ page, hasTouch }) => {
     test.skip(hasTouch, 'one layout is enough: the skip is the same input path')
     test.setTimeout(400_000)
-    await page.goto('/cathode/')
+    await page.goto('/nightshift/')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
-    await page.goto('/cathode/?play&class=ghost&rs=0.5')
+    await page.goto('/nightshift/?play&class=ghost&rs=0.5')
     type K = { active: boolean; shot: string | null; ms: number; scale: number; returnMs: number }
     type C = { stats: { frames: number }; killcamTest: () => boolean; killcamState: () => K }
     const st = () => page.evaluate(() => {
@@ -273,9 +273,9 @@ test.describe('CATHODE takedowns', () => {
     test.setTimeout(400_000)
     // Landscape: in portrait the rotate card holds the game and the chip never shows.
     await page.setViewportSize({ width: 844, height: 390 })
-    await page.goto('/cathode/')
+    await page.goto('/nightshift/')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
-    await page.goto('/cathode/?play&class=ghost&rs=0.5')
+    await page.goto('/nightshift/?play&class=ghost&rs=0.5')
     type V3 = { x: number; y: number; z: number; set(x: number, y: number, z: number): void; distanceTo(o: V3): number }
     type E = { alive: boolean; position: V3; motion: { yaw: number }; body: { asleep: boolean; joints: { pelvis: V3 } } }
     type C = {
@@ -332,9 +332,9 @@ test.describe('CATHODE takedowns', () => {
     test.setTimeout(400_000)
     // Landscape: in portrait the rotate card holds the game and the chip never shows.
     await page.setViewportSize({ width: 844, height: 390 })
-    await page.goto('/cathode/')
+    await page.goto('/nightshift/')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
-    await page.goto('/cathode/?play&class=ghost&rs=0.5')
+    await page.goto('/nightshift/?play&class=ghost&rs=0.5')
     type V3 = { x: number; y: number; z: number; set(x: number, y: number, z: number): void; distanceTo(o: V3): number }
     type E = { alive: boolean; position: V3; motion: { yaw: number } }
     type C = {

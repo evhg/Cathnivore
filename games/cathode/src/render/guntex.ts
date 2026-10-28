@@ -60,7 +60,7 @@ export const BANDS: Record<BandName, Band> = (() => {
 
 /** Engraved on the slide's left flank and the faction mark on the frame. */
 export const ENGRAVING = "KESTREL 9  ·  HOLLOWELL ARMS  ·  9×21";
-export const FACTION = "HOLLOWELL ARMS  ·  CATHODE CITY  ·  PROPERTY OF CATH HALE";
+export const FACTION = "HOLLOWELL ARMS  ·  HOLLOWELL CITY  ·  PROPERTY OF CATH HALE";
 
 // ---- Periodic noise (tiles with the band) -------------------------------------------------------------
 

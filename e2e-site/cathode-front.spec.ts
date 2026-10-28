@@ -7,12 +7,12 @@ type Front = { cathodeFront?: { ready: boolean; ticks: number }; cathode?: { sta
 
 async function open(page: Page, touch: boolean, q = ''): Promise<void> {
   if (touch) await page.setViewportSize({ width: 844, height: 390 })
-  await page.goto('/cathode/?shot')
+  await page.goto('/nightshift/?shot')
   await page.evaluate(() => {
     localStorage.clear()
     localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' }))
   })
-  await page.goto(`/cathode/?rs=0.5${q}`)
+  await page.goto(`/nightshift/?rs=0.5${q}`)
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 120_000 })
 }
 

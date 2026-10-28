@@ -125,14 +125,14 @@ if (all && want('hedgerow')) {
 }
 
 if (all && want('cathode')) {
-  let s = await fresh('/cathode/', { webgl: true })
+  let s = await fresh('/nightshift/', { webgl: true })
   await shoot(s.page, 'cathode-gate', PLD, { dir, settle: (p) => p.waitForTimeout(1500) })
   await s.page.locator('#gate-yes').click()
   await s.page.waitForTimeout(1500)
   await shoot(s.page, 'cathode-title', PLD, { dir, settle: (p) => p.waitForTimeout(1500) })
   await done(s, 'cathode-front')
 
-  s = await fresh('/cathode/?play&shot', { webgl: true })
+  s = await fresh('/nightshift/?play&shot', { webgl: true })
   await s.page.waitForTimeout(8000)
   await shoot(s.page, 'cathode-hud', ['L', 'D'], { dir, settle: (p) => p.waitForTimeout(4000) })
   report.fonts.cathode = await fontOf(s.page, '.hud-hp-text')

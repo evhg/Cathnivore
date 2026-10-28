@@ -1,4 +1,4 @@
-// C10: shoots the enemy review turntable (`/cathode/?shot&arch=...`, game/turntable.ts) at the three Phase C sizes.
+// C10: shoots the enemy review turntable (`/nightshift/?shot&arch=...`, game/turntable.ts) at the three Phase C sizes.
 //   PLAYWRIGHT_CHROMIUM_PATH=... node scripts/cathode-turntable.mjs [query ...]
 // Each query is the part after ?shot& (default: arch=enforcer, arch=all, arch=enforcer&view=close, arch=all&sil=1,
 // arch=enforcer&lod=1, arch=enforcer&lod=2). Env: CATHODE_URL (default http://localhost:4180/cathode/), OUT, VPS.

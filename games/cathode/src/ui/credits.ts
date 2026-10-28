@@ -4,7 +4,7 @@
 import { button, el } from "./dom";
 
 export const CREDITS: readonly (readonly [string, string])[] = [
-  ["CATHODE", "Five names on the list. All of them crossed off."],
+  ["NIGHT SHIFT", "Five names on the list. All of them crossed off."],
   ["Cath Hale", "Mum. Fixer. The only honest ledger in Marrow."],
   ["Bea", "On the radio, every step of the way."],
   ["Dr Vane, Councillor Pell, the Chair", "Gone, and the debts with them. Mostly."],
@@ -61,7 +61,7 @@ export function showFrontCredits(host: HTMLElement, o: { onClose: () => void; ti
   root.setAttribute("aria-labelledby", "front-credits-h");
   const plate = el("div", "front-credits-plate", root);
   el("p", "front-credits-eyebrow", plate, "Credits");
-  const h = el("h2", "front-credits-h", plate, "CATHODE");
+  const h = el("h2", "front-credits-h", plate, "NIGHT SHIFT");
   h.id = "front-credits-h";
   const list = el("dl", "front-credits-list", plate);
   STUDIO_CREDITS.forEach((c, i) => {

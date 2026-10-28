@@ -4,7 +4,7 @@
 //   /cathnivore/  Cathnivore, the same app `npm run build` makes, rebuilt under a base path
 //   /runnel/      Runnel, the daily irrigation puzzle (games/runnel/)
 //   /hedgerow/    Hedgerow, Cath's tower defence (games/hedgerow/)
-//   /cathode/     CATHODE, the noir shooter (games/cathode/), behind an 18+ gate
+//   /nightshift/     CATHODE, the noir shooter (games/cathode/), behind an 18+ gate
 //   /privacy, /support, /type, /licences/fonts, icons, version.json   shared files at the root
 //
 // `npm run build` is unchanged and still builds Cathnivore alone into dist/ for the iPhone app, e2e and
@@ -42,8 +42,8 @@ const FONT_FAMILIES: Array<[string, string, string]> = [
   ['Figtree', '@fontsource-variable/figtree', 'Cathnivore'],
   ['Outfit', '@fontsource-variable/outfit', 'Runnel'],
   ['Nunito', '@fontsource-variable/nunito', 'Hedgerow'],
-  ['Bodoni Moda', '@fontsource-variable/bodoni-moda', 'CATHODE'],
-  ['Archivo', '@fontsource-variable/archivo', 'CATHODE'],
+  ['Bodoni Moda', '@fontsource-variable/bodoni-moda', 'NIGHT SHIFT'],
+  ['Archivo', '@fontsource-variable/archivo', 'NIGHT SHIFT'],
 ]
 
 function writeFontLicences(): void {
@@ -122,10 +122,10 @@ async function main(): Promise<void> {
     await build({
       configFile: false,
       root: resolve(root, 'games/cathode'),
-      base: '/cathode/',
+      base: '/nightshift/',
       publicDir: resolve(root, 'games/cathode/public'),
       logLevel: 'warn',
-      build: { outDir: resolve(out, 'cathode'), emptyOutDir: true, chunkSizeWarningLimit: 1500 },
+      build: { outDir: resolve(out, 'nightshift'), emptyOutDir: true, chunkSizeWarningLimit: 1500 },
     })
   }
   if (want('cathnivore')) {

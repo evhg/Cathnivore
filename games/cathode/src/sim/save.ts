@@ -168,7 +168,7 @@ export function exportCode(save: SaveFile): string {
 export function importCode(code: string): LoadResult {
   const clean = code.replace(/\s+/g, "");
   const m = /^CATH(\d+)\.([A-Za-z0-9_-]+)\.([0-9a-z]+)$/.exec(clean);
-  if (!m) return { ok: false, error: "not a CATHODE code" };
+  if (!m) return { ok: false, error: "not a NIGHT SHIFT code" };
   const [, , payload = "", sum = ""] = m;
   if (checksum(payload) !== sum) return { ok: false, error: "the code is damaged (checksum mismatch)" };
   const bytes = fromBase64Url(payload);
