@@ -222,6 +222,8 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     "crowd:tram": [V(21, 0, 38)],
     "crowd:rally": [V(0, 0, -17)],
     "patrol:sniper-roof": [V(34, 8, -4)],
+    // C20: the ED mech guards the approach to the steps and lobs missile volleys once it sees her.
+    "patrol:mech-steps": [V(-12, 0, -34), V(12, 0, -34)],
   };
 
   const key = { pos: V(-14, 17, 46), target: V(0, 0, -6), color: C("#ffe9c8") };
