@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-28 14:03 session (landing polish):** shot landing and Hedgerow L12 at D; both read well. Fixed the hard flat edge under Cath on the desktop hero (bottom mask fade, `site/src/styles.css`); shot-checked D and P, CSS only, full `npm run check` not run (25+ min here), unreleased. Hedgerow's desktop side panel still has an empty strip under Your field. Next: that gap, then C14 wardrobe close-up.
 - **2026-10-28 12:53 session (short, notes only):** audited H6: the crown-ability tray (`syncCrownTray`, `.crown-ability` buttons with cooldown rings, Last Orders) already exists, so H6 is ticked. Open: H12 remainder, C14 critique. Next: screenshot-critique loop on Hedgerow/landing for whole-feature items.
 - **2026-10-28 11:52 session (short, notes only):** audited H13 against the code (liveries, Crown circlet idle, Heirloom motes, vans folding up all present) and ticked it. Open D/H leftovers: H6 tray, H12 remainder, C14 critique. Next: screenshot-critique loop on Hedgerow/landing for whole-feature items.
 - **2026-10-28 10:51 session (Phase C, C20 done):** re-shot `silhouette-lineup-all` at desktop after the gap fix: ten figures, no overlaps, mech reads at boss scale. C20 ticked; Phase C is complete. Spacing change is on `build`, unreleased. Next: owner-direction Phase D/H (first open item), plus the screenshot-critique loop.
