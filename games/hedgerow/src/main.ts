@@ -2766,7 +2766,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       }
       case "cleared":
         sfx.playCleared();
-        if (canCallEarlyHintable(g)) break;
+        if (ev.wave < g.level.waves.length) banner(isFleet(g.level) ? `Round ${ev.wave} cleared` : `Wave ${ev.wave} cleared`, ev.reward > 0 ? `+${ev.reward} Marks` : "", false, "small");
         break;
       case "pie":
         break;
@@ -2849,10 +2849,6 @@ function onEvents(g: Game, evs: GameEvent[]): void {
     // The first time something actually peels down a rung (not a courier vanishing), say what happened.
     if (peeled && isFleet(g.level)) tip("knock", "Every pop knocks a layer off and pays a Mark. A hatchback peels down to a courier; vans peel to hatchbacks.", "delighted");
   }
-}
-
-function canCallEarlyHintable(g: Game): boolean {
-  return g.level.id <= 4 && canCallEarly(g);
 }
 
 /** Phones: x5 steps down to x3 while the lane is crowded, so a big cascade doesn't cost frames (section 5). */
