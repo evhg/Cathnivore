@@ -2940,6 +2940,9 @@ function frame(now: number): void {
       sfx.playWin();
       haptic.win();
       renderer?.celebrate();
+      // The last enemy falls in slow motion under a gold banner; the result card follows it.
+      if (!REDUCED) slowUntil = performance.now() + 1200;
+      banner("The lane holds", "Last one down", false, "hero");
     } else {
       sfx.playLose();
       haptic.lose();

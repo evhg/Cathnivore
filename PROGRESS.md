@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-28 18:52 session (N3 continued):** win now slows time 1.2 s under a gold "The lane holds" banner before the result card (`main.ts`, off in reduced motion). tsc, eslint and `hedgerow.test.ts` pass; not shot. Boss intro banner already existed. Next: N3 star fanfare scene, then N4.
 - **2026-10-28 17:52 session (CI fix, N2 ticked, N3 started):** CI had been red on two commits: the landing mask used `#000`, which broke the raw-colour ratchet; now `black`. Hedgerow vitest 330/330. N2 audit: `render3d/` already has build animations, trails, sparks, per-act light and weather, so ticked. N3: a "Wave/Round N cleared +Marks" banner on every cleared wave (`main.ts`, tsc/eslint clean, not shot). Next: N3 boss intro card and last-enemy slow-mo.
 - **2026-10-28 16:52 session (N2 started):** Hedgerow 3D already had trails, sparks, shake. Added hit squash-and-stretch spring on enemies and a boss-presence camera push-in (7%, eased, off in reduced motion) in `render3d/index.ts`. tsc and eslint pass; hedgerow vitest was still running at wrap-up, not shot. Next: N2 tower build animations, per-act lighting, then N3.
 - **2026-10-28 15:53 session (N1 done):** shot landing, Hedgerow and Runnel at P/L/D; subagent critique vs VISION turned into ROADMAP N2-N8 (whole features). No code changed. Next: N2 (check `render3d/` first), then N3.
