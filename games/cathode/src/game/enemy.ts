@@ -277,7 +277,7 @@ export const CIVILIAN: EnemyKit = {
 };
 
 /** The floor ring's colour for an elite's first affix. */
-function eliteTint(mods: readonly string[] | undefined): number {
+export function eliteTint(mods: readonly string[] | undefined): number {
   const m = mods?.[0];
   return m === "shockEnchanted" ? 0x40e0ff : m === "stoneskin" ? 0xd0a060 : m === "explosiveOnDeath" ? 0xff5a20 : m === "cursed" ? 0xb060ff : m === "multipleShots" ? 0xff50c0 : 0xfff0a0;
 }

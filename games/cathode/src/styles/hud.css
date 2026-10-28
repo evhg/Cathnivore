@@ -2000,3 +2000,20 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 :root.area-arriving .hud-root > :not(.hud-banner) { visibility: hidden; }
 :root:has(.hud-root.is-arriving) .touch,
 :root.area-arriving .touch { visibility: hidden; }
+
+/* C20 (S3.3): the elite glyph, a tinted diamond over the head, pulsing with the floor ring at 0.5 Hz */
+.hud-elite {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: max(10px, calc(var(--u) * 14));
+  height: max(10px, calc(var(--u) * 14));
+  background: var(--tint, rgb(var(--amber-rgb)));
+  border: 1px solid rgb(var(--shade-rgb) / .9);
+  box-shadow: 0 0 calc(var(--u) * 10) var(--tint, rgb(var(--amber-rgb)));
+  transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -50%) rotate(45deg);
+  pointer-events: none;
+  animation: elite-glyph 2s ease-in-out infinite;
+}
+@keyframes elite-glyph { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hud-elite { animation: none; } }

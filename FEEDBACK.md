@@ -6,7 +6,6 @@ Sessions: handle every note under "Open". When a note is done (or turned into a 
 
 ## Open
 
-- 2026-10-28 (owner chat): **CATHODE's new name is NIGHT SHIFT.** The owner turned down MOTHER'S RUIN, STRIKETHROUGH, HOLLOWELL, LAST ORDERS, MAIDEN NAME, RAIN CHECK, WIDOW'S PEAK and HUSH. Do ROADMAP C12 (`docs/design/cathode-combat.md` C12) with this name now: logotype, favicon, page copy, landing card, the 18+ gate, a redirect from `/cathode/` to the new path, and the trademark-search note in `DECISIONS.md`. If the search finds a clash, log it in `DECISIONS.md` and still ship NIGHT SHIFT unless the clash is a video game.
 - 2026-10-15 (owner chat, after playing CATHODE on a 5K desktop): **"Focus on combat mechanics, look and feel, the weapons and enemy design, and make the visuals when getting hit, being wounded and dying very high quality. Spend at least a week on this. Work on it non-stop."** The owner's points:
   - **Name:** doesn't like the name "CATHODE"; a new name is coming.
   - **Front door:** still feels budget, especially the loading screen, the menus and the start screen. Take inspiration from real AAA game designs.
@@ -52,3 +51,5 @@ Sessions: handle every note under "Open". When a note is done (or turned into a 
   "I'm okay with month long, start building. Push the limits." Design: `docs/design/cathode.md`; plan: ROADMAP Phase 6 (63–80), which comes before every other ROADMAP item until done. Keep this note open.
 
 ## Handled
+
+- 2026-10-28 (owner chat): **CATHODE's new name is NIGHT SHIFT.** The owner turned down MOTHER'S RUIN, STRIKETHROUGH, HOLLOWELL, LAST ORDERS, MAIDEN NAME, RAIN CHECK, WIDOW'S PEAK and HUSH. Do ROADMAP C12 (`docs/design/cathode-combat.md` C12) with this name now: logotype, favicon, page copy, landing card, the 18+ gate, a redirect from `/cathode/` to the new path, and the trademark-search note in `DECISIONS.md`. If the search finds a clash, log it in `DECISIONS.md` and still ship NIGHT SHIFT unless the clash is a video game. Done 2026-10-28 (ROADMAP C12, 0ec6ccb).

@@ -47,6 +47,8 @@ export interface HudState {
   /** C11 (S5.1): the world-anchored takedown chip's point on screen (CSS px, over his shoulders), and its key. */
   takedownAt?: { x: number; y: number; left?: boolean } | null;
   takedownKey?: string;
+  /** C20 (S3.3): glyphs over live elites within 25 m (CSS px over the head, the affix colour as #rrggbb). */
+  eliteGlyphs?: Array<{ x: number; y: number; tint: string }>;
   bulletTime: number;
   /** The two active-skill slots (name and readiness 0..1), and the battery 0..1. */
   skills: Array<{ name: string; ready: number; key: string } | null>;
@@ -277,6 +279,21 @@ export class Hud {
   }
 
   /** Sets a custom property only when its value changed. */
+  private eliteGlyphEls: HTMLElement[] = [];
+  /** C20: a small diamond over each elite's head; a pool, so nothing is built per frame. */
+  private eliteGlyphsUpdate(list: ReadonlyArray<{ x: number; y: number; tint: string }>): void {
+    while (this.eliteGlyphEls.length < list.length) this.eliteGlyphEls.push(el("span", "hud-elite", this.root));
+    this.eliteGlyphEls.forEach((g, i) => {
+      const on = i < list.length;
+      this.show(g, on);
+      const d = list[i];
+      if (!d) return;
+      this.prop(g, "--px", `${Math.round(d.x)}px`);
+      this.prop(g, "--py", `${Math.round(d.y)}px`);
+      this.prop(g, "--tint", d.tint);
+    });
+  }
+
   private prop(e: HTMLElement, k: string, v: string): void {
     let m = this.written.get(e);
     if (!m) this.written.set(e, (m = new Map()));
@@ -496,6 +513,7 @@ export class Hud {
       set(c, "--ready", k.ready.toFixed(2));
       c.classList.toggle("ready", k.ready >= 1);
     });
+    this.eliteGlyphsUpdate(s.eliteGlyphs ?? []);
     this.show(this.prompt, s.takedown);
     // C11 (S5.1): the chip rides on him (beside his helmet), and while it is up the teach line doesn't repeat it.
     const at = s.takedown ? s.takedownAt : null;

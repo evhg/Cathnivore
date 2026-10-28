@@ -11,7 +11,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
-import { ED_MECH, CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
+import { ED_MECH, CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, eliteTint, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
 import { bodyView, deadCost, deathGlowScale, prewarmGore, type Body } from "./body";
 import { POOLS } from "../render/pools";
 import { deathFx, type DeathVariant } from "./death";
@@ -2287,6 +2287,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       inspect: Math.max(arsenal.inspectW, arsenal.reloadW),
       takedown: canTakedown,
       takedownAt: tdCand ? tdChipAt(tdCand.e) : null,
+      eliteGlyphs: staged ? [] : eliteGlyphs(),
       takedownKey: input.isTouch ? "Tap" : takeKeyNow(),
       bulletTime: focusing ? 1 : 0,
       skills: [0, 1].map((i) => {
@@ -2589,6 +2590,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return { x: Math.min(c.clientWidth, Math.max(0, ((v.x + 1) / 2) * c.clientWidth)), y: Math.min(c.clientHeight, Math.max(0, ((1 - v.y) / 2) * c.clientHeight)), left };
   }
   const vUp = new THREE.Vector3();
+  /** C20 (S3.3): glyph points over the (up to three nearest) live elites within 25 m and in front of the camera. */
+  function eliteGlyphs(): Array<{ x: number; y: number; tint: string }> {
+    const c = world.renderer.domElement;
+    const near: Array<{ e: Enemy; d: number }> = [];
+    for (const e of enemies) {
+      if (!e.alive || !e.kit.elite) continue;
+      const d = e.position.distanceTo(player.pos);
+      if (d <= 25) near.push({ e, d });
+    }
+    near.sort((a, b) => a.d - b.d);
+    const out: Array<{ x: number; y: number; tint: string }> = [];
+    for (const { e } of near.slice(0, 3)) {
+      const v = tdChip.copy(e.body.joints.head).add(vUp.set(0, 0.45, 0)).project(world.camera);
+      if (v.z > 1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) continue;
+      out.push({ x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight, tint: "#" + eliteTint(e.kit.mods).toString(16).padStart(6, "0") });
+    }
+    return out;
+  }
 
   /** The sequence's own lights, and their removal. */
   const tdLights: Array<() => void> = [];
