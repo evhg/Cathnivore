@@ -11,7 +11,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
-import { ED_MECH, CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, eliteTint, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
+import { ED_MECH, PRICE_WAR_BOY, CANDOR_CHROME, CYBERPSYCHO, CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, eliteTint, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
 import { bodyView, deadCost, deathGlowScale, prewarmGore, type Body } from "./body";
 import { POOLS } from "../render/pools";
 import { deathFx, type DeathVariant } from "./death";
@@ -4621,11 +4621,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // firefight-<n> (S0 performance, scripts/cathode-perf.mjs): n riflemen shouldered and firing at her, spread 6 to
   // 16 m down the street ahead, in the whole lit, reflected scene (the street's own enemies all hidden, so the
   // count is exactly n; any n works, these two are the budget's): the draw-call and triangle budget frame.
-  const C10_STAGES = ["firefight-6", "firefight-12", "enemy-front-10m", "enemy-back-10m", "turntable-enforcer", "turntable-riot", "turntable-sniper", "turntable-leader", "silhouette-lineup", "guard-from-10m"];
+  const C10_STAGES = ["firefight-6", "firefight-12", "enemy-front-10m", "enemy-back-10m", "turntable-enforcer", "turntable-riot", "turntable-sniper", "turntable-leader", "silhouette-lineup", "silhouette-lineup-all", "guard-from-10m"];
   let reviewRender: (() => void) | null = null;
   let lineup: Enemy[] = [];
   let probeGuard: Enemy | null = null;
-  const LINEUP_KITS: Record<string, EnemyKit> = { enforcer: ENFORCER, leader: { ...ENFORCER, name: "Enforcer Sergeant", leader: true }, riot: RIOT_SHIELD, sniper: ENFORCER_SNIPER };
+  const LINEUP_KITS: Record<string, EnemyKit> = { enforcer: ENFORCER, leader: { ...ENFORCER, name: "Enforcer Sergeant", leader: true }, riot: RIOT_SHIELD, sniper: ENFORCER_SNIPER, pricewar: PRICE_WAR_BOY, chrome: CANDOR_CHROME, cyberpsycho: CYBERPSYCHO, orderly: ORDERLY, nurse: NURSE, mech: ED_MECH };
   const clearReview = () => {
     for (const e of lineup) e.body.dispose();
     lineup = [];
@@ -4749,10 +4749,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     // The lineups: their own figures in the open street ahead, the street's own enemies out of the frame.
     const arch = name.startsWith("turntable-") ? name.slice("turntable-".length) : null;
-    const kits = arch ? [arch, arch, arch, arch] : ["enforcer", "leader", "riot", "sniper"];
-    const turns = arch ? [0, Math.PI / 4, Math.PI / 2, Math.PI] : [0.35, 0.35, 0.35, 0.35];
-    const centre = eye.clone().addScaledVector(flat, arch ? 3.6 : 4.4);
-    const gap = arch ? 0.95 : 1.05;
+    const all = name === "silhouette-lineup-all";
+    const kits = arch ? [arch, arch, arch, arch] : all ? Object.keys(LINEUP_KITS) : ["enforcer", "leader", "riot", "sniper"];
+    const turns = arch ? [0, Math.PI / 4, Math.PI / 2, Math.PI] : kits.map(() => 0.35);
+    const centre = eye.clone().addScaledVector(flat, arch ? 3.6 : all ? 9 : 4.4);
+    const gap = arch ? 0.95 : all ? 1.5 : 1.05;
     for (const [i, k] of kits.entries()) {
       const kit = LINEUP_KITS[k];
       if (!kit) return `unknown archetype ${k}`;
@@ -4790,7 +4791,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const z0 = { x: 0, y: 0 };
       s.stageInfo = { hit: z0, r02: 0, head0: z0, head1: z0, puffM: 0, splats: [], corpse: { pelvis: z0, head: z0, chest: z0 }, box: { x: x0 - 30, y: y0 - 20, w: x1 - x0 + 60, h: y1 - y0 + 40 } };
     }
-    if (name === "silhouette-lineup") {
+    if (name === "silhouette-lineup" || all) {
       const black = new THREE.MeshBasicMaterial({ color: 0x000000 });
       const grey = new THREE.Color(0x808080);
       const keep = new Set<THREE.Object3D>();

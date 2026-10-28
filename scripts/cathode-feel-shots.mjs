@@ -47,7 +47,7 @@ const C9X = ['death-knees-650', 'death-blownback-350', 'death-headshot-900']
 // x1.3), the turntable, the silhouette lineup (also saved at 64 px tall), an arm hit 60 ms on at 4 m (the struck
 // hand open, with a -hand crop), and the owner's audit frame of the first guard under his lamp with no diamond (&job).
 const C10 = ['enemy-front-10m', 'enemy-back-10m', 'turntable-enforcer', 'silhouette-lineup', 'hit-arm@60', 'guard-from-10m']
-const C10X = ['turntable-riot', 'turntable-sniper', 'turntable-leader']
+const C10X = ['turntable-riot', 'turntable-sniper', 'turntable-leader', 'silhouette-lineup-all']
 // C11 "Takedowns": the tell (the world chip over his helmet, the teach line and phone look hint out of its way), Behind A on the guard under the lamp at 0 (the grab), 420 (the blow: her arm and his helmet both
 // in frame), 800 (the knees gone, her arm lowering him), Front A's shot under the chin at 650, and the owner's audit
 // frame 16 re-shot (`takedown-body`: where she laid him, 1.2 s on; 420 and 800 are frames 14 and 15). C11X: the others.
