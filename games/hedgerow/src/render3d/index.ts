@@ -185,6 +185,9 @@ export class Renderer3D {
   private bossName: HTMLElement;
   private clock = 0;
   private shake = 0;
+  /** 1 while a big enemy is on the field: the camera eases in a few percent (the boss-wave nudge). */
+  private bossPush = 0;
+  private bossEase = 0;
   private camBase = new THREE.Vector3();
   private camTarget = new THREE.Vector3();
   private heroSwung = 9;
@@ -1068,7 +1071,8 @@ export class Renderer3D {
     this.fx.update(dt);
     // Camera: zoom towards the target, offset by the pan; then shake.
     const look = this.v3.copy(this.camTarget).add(this.v2.set(this.pan.x, 0, this.pan.y));
-    this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / this.zoom).add(look);
+    this.bossEase += (this.bossPush - this.bossEase) * Math.min(1, dt * 1.2);
+    this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / (this.zoom * (1 + this.bossEase * 0.07))).add(look);
     if (this.shake > 0) {
       const m = this.shake * 0.12;
       this.camera.position.x += (Math.random() - 0.5) * m;
@@ -1384,7 +1388,10 @@ export class Renderer3D {
         v.fill.position.x = -(1 - frac) / 2;
         v.fill.material = frac > 0.6 ? this.fillMats.good : frac > 0.3 ? this.fillMats.mid : this.fillMats.low;
       }
-      inner.scale.setScalar(enemyScale(e.kind) * 1.3 * (v.hit < 0.06 ? 1.07 : 1));
+      // Weight: a hit squashes the body down and out, then it springs back past rest and settles (heavier kinds move less).
+      const base = enemyScale(e.kind) * 1.3;
+      const sq = this.reducedMotion || v.hit > 0.35 ? 0 : Math.exp(-v.hit * 14) * Math.cos(v.hit * 38) * 0.16 / Math.max(1, enemyScale(e.kind) * 0.9);
+      inner.scale.set(base * (1 + sq * 0.6), base * (1 - sq), base * (1 + sq * 0.6));
       // Hit flash: swap in one shared bright material for a moment (shared materials are never mutated).
       const flash = v.hit < FLASH && v.obj.visible;
       if (flash !== v.flashing) this.setFlash(v, flash);
@@ -1797,6 +1804,7 @@ export class Renderer3D {
   private syncBoss(game: Game): void {
     const boss = game.enemies.filter((e) => isBig(e.kind)).sort((a, b) => b.dist - a.dist)[0];
     this.bossBar.hidden = !boss;
+    this.bossPush = boss && !this.reducedMotion ? 1 : 0;
     if (boss) {
       this.bossName.textContent = ENEMIES[boss.kind].name;
       this.bossFill.style.setProperty("--f", String(Math.max(0, boss.hp / maxHpOf(boss))));

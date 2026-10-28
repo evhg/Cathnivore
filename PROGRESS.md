@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-28 16:52 session (N2 started):** Hedgerow 3D already had trails, sparks, shake. Added hit squash-and-stretch spring on enemies and a boss-presence camera push-in (7%, eased, off in reduced motion) in `render3d/index.ts`. tsc and eslint pass; hedgerow vitest was still running at wrap-up, not shot. Next: N2 tower build animations, per-act lighting, then N3.
 - **2026-10-28 15:53 session (N1 done):** shot landing, Hedgerow and Runnel at P/L/D; subagent critique vs VISION turned into ROADMAP N2-N8 (whole features). No code changed. Next: N2 (check `render3d/` first), then N3.
 - **2026-10-28 14:52 session (C14 closed):** shot C14 at desktop (classpick, loading, pause, squad firefight): all checks pass, 4% loading-step cap holds, screens read AAA; C14 ticked, Phase C fully done. Added N1 (plan whole-feature items via critique). No code changed; nothing to release. Feel-shots need `CATHODE_URL=http://localhost:4180/nightshift/` now.
 - **2026-10-28 14:03 session (landing polish):** shot landing and Hedgerow L12 at D; both read well. Fixed the hard flat edge under Cath on the desktop hero (bottom mask fade, `site/src/styles.css`); shot-checked D and P, CSS only, full `npm run check` not run (25+ min here), unreleased. Hedgerow's desktop side panel still has an empty strip under Your field. Next: that gap, then C14 wardrobe close-up.
