@@ -594,3 +594,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-28 C12 trademark note: no network search tool in this sandbox beyond proxy, so no clash search could be run; "Night Shift" is a common phrase and several indie titles use it. Per owner rule, ship it unless the clash is a video game; owner to run a USPTO/EUIPO check before any store launch.
 - 2026-10-28: C20 elite glyph is a HUD diamond pool (max 3, 25 m), not per-enemy DOM.
 - 2026-10-28: mech intro reuses hud.showBanner("boss") on first sight; no new component.
+- 2026-10-28: session spent on a full release of C20 work to main (205d01a); C20 stays open for 5K polish.
