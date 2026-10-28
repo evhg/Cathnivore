@@ -2710,3 +2710,44 @@ img.act-scene {
     box-shadow: 0 3px 0 var(--oak-ink);
   }
 }
+
+/* N4: on portrait phones the tools become a bottom tab bar (thumb reach), one scrolling row of icon-over-label tabs. */
+@media (max-width: 640px) and (orientation: portrait) {
+  #screen-select .top-tools {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-raise);
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--surface);
+    border-top: 1px solid var(--ink-muted);
+    box-shadow: 0 -6px 18px rgba(22, 15, 10, 0.18);
+  }
+  #screen-select .top-tools::-webkit-scrollbar {
+    display: none;
+  }
+  #screen-select .top-tools .bank-btn {
+    flex: 0 0 auto;
+    width: 74px;
+    min-height: 52px;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 1px;
+    padding: 4px 2px;
+    font-size: 0.72rem;
+  }
+  #screen-select .top-tools .bank-btn .bank-word {
+    font-size: 0.72rem;
+  }
+  #screen-select .top-tools .almanac-btn .bank-word {
+    display: block;
+  }
+  #screen-select .levels {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+}
