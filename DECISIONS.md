@@ -609,3 +609,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-29: owner chat: `/` became a portfolio of apps, games landing moved to `/games/`; Kinetiq gated server-side by a Vercel function with only a password hash in Vercel env (public repo); SwitchBot shown as Sleep Lab (the switchbot repo's app), linked to its simulated-data demo.
 - 2026-10-29: N12 scoped to what was missing (progress track, locked silhouette); headers/stars already existed.
 - 2026-10-29: N13 critique kept short (swiftshader too slow for districts 2-5); planned N14-N15 from the shots taken.
+- 2026-10-29: N16 slice = corkboard case board; hud.css z-index literal fixed (N15 broke the ratchet).

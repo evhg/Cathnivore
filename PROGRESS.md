@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-29 15:07 session (N16 started):** the NIGHT SHIFT case board is a corkboard of tilted pinned cards with red string and CLOSED stamps (`ui/caseboard.ts`, `.case-list` in `styles.css`); shot in a static harness at 900x600. Also fixed a `z-index: -1` ratchet failure in `hud.css` left by N15. Cathode tests 721/721 after the letter-spacing fix; not released. Next: N16 title-menu entry for the board and photo-mode polaroid frame.
 - **2026-10-29 14:10 session (planning, short):** shot NIGHT SHIFT HUD at P and D: subtitle scrim and objective read well, N15 confirmed. ROADMAP N-list was empty, so added N16-N19 (photo mode and case board, Hedgerow daily field and ghost, Runnel seasons, shared Cath wardrobe). Next: N16.
 - **2026-10-29 13:03 session (N15 done):** NIGHT SHIFT subtitle has a soft scrim pool and a denser plate on small screens (`hud.css`); lint passes, not shot. ROADMAP N-list is finished: next session plans new whole-feature items (shoot, critique vs VISION).
 - **2026-10-29 11:53 session (N14 done):** cold-open card got kicker, rule and slow drift; lint and tests pass, not shot. Next: N15.
