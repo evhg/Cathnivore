@@ -26,6 +26,8 @@ export interface SaveData {
   rosettes?: Record<string, boolean>;
   /** Best daily-challenge score by day number (daily.ts). Optional in old saves. */
   daily?: Record<string, number>;
+  /** Tower placements of the best run on a recent day (the ghost shown on the next try). Optional in old saves. */
+  ghosts?: Record<string, Array<[string, number, number]>>;
   /** Best wave reached on each act's Endless field (by act number). Optional in old saves. */
   endless?: Record<string, number>;
   /** Levels won in a Heroic run (one Goodwill, no pies): the fourth star. Optional in old saves. */
@@ -139,6 +141,11 @@ export function parseSave(raw: string | null): SaveData {
       }
       for (const [k, v] of Object.entries(obj.endless ?? {})) if (typeof v === "number" && v >= 1) (data.endless ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
+      for (const [k, v] of Object.entries(obj.ghosts ?? {})) {
+        if (!Array.isArray(v)) continue;
+        const ok = v.filter((g): g is [string, number, number] => Array.isArray(g) && typeof g[0] === "string" && g[0] in TOWERS && Number.isInteger(g[1]) && Number.isInteger(g[2])).slice(0, 60);
+        if (ok.length) (data.ghosts ??= {})[k] = ok;
+      }
       for (const [k, v] of Object.entries(obj.xp ?? {})) if (k in TOWERS && typeof v === "number" && v >= 1) (data.xp ??= {})[k as TowerKind] = Math.min(1e9, Math.floor(v));
       for (const [k, v] of Object.entries(obj.packets ?? {})) if (typeof v === "number" && v >= 1) (data.packets ??= {})[k] = Math.min(99, Math.floor(v));
       if (typeof obj.packetSpend === "number" && obj.packetSpend >= 1) data.packetSpend = Math.min(1e9, Math.floor(obj.packetSpend));
@@ -251,10 +258,14 @@ export function recordEndless(data: SaveData, act: number, wave: number): boolea
   return true;
 }
 
-export function recordDaily(data: SaveData, day: number, score: number): boolean {
+export function recordDaily(data: SaveData, day: number, score: number, ghost?: Array<[string, number, number]>): boolean {
   const best = data.daily?.[String(day)];
   if (best !== undefined && score <= best) return false;
   (data.daily ??= {})[String(day)] = score;
+  if (ghost?.length) {
+    (data.ghosts ??= {})[String(day)] = ghost.slice(0, 60);
+    for (const k of Object.keys(data.ghosts)) if (Number(k) < day - 6) delete data.ghosts[k];
+  }
   save(data);
   return true;
 }

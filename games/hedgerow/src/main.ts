@@ -753,6 +753,31 @@ function levelFor(setup: Setup): Level | undefined {
   return LEVELS.find((l) => l.id === setup.id);
 }
 
+/** The daily ghost: your best run's tower placements as translucent icons on cells that are still empty. */
+const ghostEls = new Map<string, HTMLImageElement>();
+function drawGhost(g: Game): void {
+  const spots = dailyDay !== null && !player ? data.ghosts?.[String(dailyDay)] : undefined;
+  const live = new Set<string>();
+  if (spots && g.phase !== "won" && g.phase !== "lost") {
+    for (const [kind, col, row] of spots) {
+      const key = `${col},${row}`;
+      if (g.towers.some((t) => t.col === col && t.row === row)) continue;
+      const at = renderer?.cellCenter(col, row);
+      if (!at) continue;
+      live.add(key);
+      let el = ghostEls.get(key);
+      if (!el) {
+        el = img(towerIcon(kind as TowerKind), "daily-ghost");
+        document.body.append(el);
+        ghostEls.set(key, el);
+      }
+      el.style.left = `${at.x}px`;
+      el.style.top = `${at.y}px`;
+    }
+  }
+  for (const [key, el] of ghostEls) if (!live.has(key)) { el.remove(); ghostEls.delete(key); }
+}
+
 /** Every input goes through here: applied, and recorded for the replay. Nothing is accepted while watching. */
 function doAct(a: Action): boolean {
   if (!game || player) return false;
@@ -850,6 +875,8 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
 
 function leaveLevel(): void {
   dailyDay = null;
+  for (const el of ghostEls.values()) el.remove();
+  ghostEls.clear();
   showRun = null;
   player = null;
   ui.replayBar.hidden = true;
@@ -2938,6 +2965,7 @@ function frame(now: number): void {
     }
   }
   renderer.draw(g, paused ? 0 : dt * Math.min(speed, 2));
+  drawGhost(g);
   drawDuel(g);
   if (!finished && !player && (g.phase === "won" || g.phase === "lost")) {
     finished = true;
@@ -3261,7 +3289,9 @@ function finishShow(g: Game, lv: Level, run: ShowRun): void {
 function finishDaily(g: Game, lv: Level, day: number): void {
   const won = g.phase === "won";
   const score = dailyScore(won, g.goodwill / g.maxGoodwill, earlyCalls);
-  const record = recordDaily(data, day, score);
+  const placed: Array<[string, number, number]> = [];
+  for (const [, a] of recorder?.replay().log ?? []) if (a.t === "place" || a.t === "packet") placed.push([a.kind, a.col, a.row]);
+  const record = recordDaily(data, day, won ? score : 0, won ? placed : undefined);
   ui.resultCath.innerHTML = cath(won ? "delighted" : "worried");
   ui.resultEyebrow.textContent = `Daily #${day + 1}: ${lv.name}`;
   ui.resultTitle.textContent = won ? `${score} out of 100.` : "Not today.";

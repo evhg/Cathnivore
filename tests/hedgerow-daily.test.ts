@@ -27,6 +27,20 @@ describe("daily challenge", () => {
   });
 });
 
+describe("daily ghost", () => {
+  it("keeps the best run's placements, drops old days and bad rows", () => {
+    const d = emptySave();
+    recordDaily(d, 10, 60, [["scarecrow", 3, 4]]);
+    recordDaily(d, 10, 50, [["scarecrow", 9, 9]]);
+    expect(d.ghosts?.["10"]).toEqual([["scarecrow", 3, 4]]);
+    recordDaily(d, 20, 70, [["scarecrow", 1, 1]]);
+    expect(d.ghosts?.["10"]).toBeUndefined();
+    const raw = JSON.parse(JSON.stringify(d));
+    raw.ghosts["20"].push(["nope", 1, 1], "x");
+    expect(parseSave(JSON.stringify(raw)).ghosts).toEqual({ "20": [["scarecrow", 1, 1]] });
+  });
+});
+
 describe("daily rule", () => {
   it("is the same for everyone on a day, varies across days and shows on the card for Fleet levels", async () => {
     const { dailyRule } = await import("../games/hedgerow/src/daily");
