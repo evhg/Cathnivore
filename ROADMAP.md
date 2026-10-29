@@ -43,7 +43,7 @@ Every visual item is done only when:
 - N8. [x] *(2026-10-29: Hedgerow and Runnel layered; Cathnivore keeps its ambient pad, bug fixes only)* **Score and sound pass** (2 sessions): layered music per game (see older sound item).
 - N9. [x] *(2026-10-29: shot level 6 at 390x844 and 1440x900 with a tower selected; upgrade cards, badge fade and Details already polished, nothing needed changing)* **Hedgerow act 1 finish (H2 open items):** upgrade-UI polish, then a full-act playthrough with screenshots at 390x844 and 1440x900.
 - N10. [x] *(2026-10-29: verify passes at shipped values for levels 1-100, BALANCE.md)* **Hedgerow balance pass (item 31):** `hedgerow-tune.ts --verify` across all levels, logged in BALANCE.md.
-- N11. [ ] **Hedgerow chapter scenes (item 58):** staged speakers with a pose per line and a backdrop per chapter.
+- N11. [x] *(2026-10-29: per-act backdrops already existed; per-line poses and pan added and shot at 390x844 and 1440x900)* **Hedgerow chapter scenes (item 58):** staged speakers with a pose per line and a backdrop per chapter.
 - N12. [ ] **Campaign and setup art (item 62):** illustrated chapter headers, locked-chapter silhouettes, progress track.
 - N13. [ ] **NIGHT SHIFT fresh-eyes critique:** shoot title, class pick and districts 2-5, have a subagent critique against VISION.md, add whole features from it.
 
