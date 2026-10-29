@@ -333,6 +333,33 @@ body {
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
 }
 
+/* Painted doors (N7): each art tile is an arched doorway with a wooden frame that glows when the door "opens". */
+.card:not(.card-cathode) .card-art {
+  border-radius: 38px 38px 12px 12px;
+  box-shadow:
+    0 0 0 4px #6b4426,
+    0 0 0 5px rgba(255, 220, 160, 0.25),
+    0 8px 22px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 500ms var(--ease-out),
+    box-shadow 400ms;
+}
+
+.ready .card:not(.card-cathode):hover .card-art {
+  transform: scale(1.06);
+  box-shadow:
+    0 0 0 4px #8a5a30,
+    0 0 0 5px rgba(255, 220, 160, 0.5),
+    0 0 26px rgba(244, 199, 116, 0.55),
+    0 8px 22px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ready .card:not(.card-cathode):hover .card-art {
+    transform: none;
+  }
+}
+
 .art-cath {
   background: #d9b45a;
 }
