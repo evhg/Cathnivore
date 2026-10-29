@@ -1108,3 +1108,20 @@ body {
   .btn-cta { transition: none; }
   .btn-cta:hover { transform: none; }
 }
+
+/* N7 hover demos: Runnel's water runs along the channels, Hedgerow's windmill spins up, when a card is hovered. */
+@media (prefers-reduced-motion: no-preference) {
+  .ready .card:hover .rn-water {
+    stroke-dasharray: 9 7;
+    animation: rn-flow 600ms linear infinite;
+  }
+  .ready .card:hover .hg-sails {
+    animation-duration: 1.4s;
+  }
+}
+
+@keyframes rn-flow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
