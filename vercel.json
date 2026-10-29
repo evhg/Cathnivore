@@ -1,66 +1,162 @@
 {
   "git": {
-    "deploymentEnabled": { "build": false, "ci-status": false, "claude/*": false }
+    "deploymentEnabled": {
+      "build": false,
+      "ci-status": false,
+      "claude/*": false
+    }
   },
   "buildCommand": "npm run build:site",
   "outputDirectory": "dist-site",
   "redirects": [
-    { "source": "/cathnivore", "destination": "/cathnivore/", "permanent": true },
-    { "source": "/runnel", "destination": "/runnel/", "permanent": true },
-    { "source": "/hedgerow", "destination": "/hedgerow/", "permanent": true },
-    { "source": "/cathode", "destination": "/nightshift/", "permanent": true },
-    { "source": "/cathode/:path*", "destination": "/nightshift/:path*", "permanent": true },
-    { "source": "/nightshift", "destination": "/nightshift/", "permanent": true },
+    {
+      "source": "/games",
+      "destination": "/games/",
+      "permanent": true
+    },
+    {
+      "source": "/cathnivore",
+      "destination": "/cathnivore/",
+      "permanent": true
+    },
+    {
+      "source": "/runnel",
+      "destination": "/runnel/",
+      "permanent": true
+    },
+    {
+      "source": "/hedgerow",
+      "destination": "/hedgerow/",
+      "permanent": true
+    },
+    {
+      "source": "/cathode",
+      "destination": "/nightshift/",
+      "permanent": true
+    },
+    {
+      "source": "/cathode/",
+      "destination": "/nightshift/",
+      "permanent": true
+    },
+    {
+      "source": "/cathode/:path*",
+      "destination": "/nightshift/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/nightshift",
+      "destination": "/nightshift/",
+      "permanent": true
+    },
     {
       "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.cathnivore.com" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "www.cathnivore.com"
+        }
+      ],
       "destination": "https://cathnivore.com/:path*",
       "permanent": true
     }
   ],
   "rewrites": [
-    { "source": "/privacy", "destination": "/privacy/index.html" },
-    { "source": "/support", "destination": "/support/index.html" },
-    { "source": "/cathnivore/((?!assets/|.*\\..*).*)", "destination": "/cathnivore/index.html" },
-    { "source": "/runnel/((?!assets/|.*\\..*).*)", "destination": "/runnel/index.html" },
-    { "source": "/hedgerow/((?!assets/|.*\\..*).*)", "destination": "/hedgerow/index.html" },
-    { "source": "/nightshift/((?!assets/|.*\\..*).*)", "destination": "/nightshift/index.html" }
+    {
+      "source": "/kinetiq",
+      "destination": "/api/kinetiq"
+    },
+    {
+      "source": "/kinetiq/",
+      "destination": "/api/kinetiq"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/support",
+      "destination": "/support/index.html"
+    },
+    {
+      "source": "/cathnivore/((?!assets/|.*\\..*).*)",
+      "destination": "/cathnivore/index.html"
+    },
+    {
+      "source": "/runnel/((?!assets/|.*\\..*).*)",
+      "destination": "/runnel/index.html"
+    },
+    {
+      "source": "/hedgerow/((?!assets/|.*\\..*).*)",
+      "destination": "/hedgerow/index.html"
+    },
+    {
+      "source": "/nightshift/((?!assets/|.*\\..*).*)",
+      "destination": "/nightshift/index.html"
+    }
   ],
   "headers": [
     {
       "source": "/:dir(cathnivore|runnel|hedgerow|nightshift)/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
-      "source": "/site-assets/(.*)",
+      "source": "/games/site-assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/portfolio-assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/(.*)index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/((?!.*\\..*).*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/(.*)(sw.js|manifest.webmanifest)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/version.json",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
       ]
     },
     {
@@ -70,8 +166,14 @@
           "key": "Content-Security-Policy",
           "value": "default-src 'self'; style-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self'; connect-src 'self'; base-uri 'self'; frame-ancestors 'none'"
         },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
   ]

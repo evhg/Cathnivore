@@ -1,10 +1,12 @@
 // Builds the whole cathnivore.com website into dist-site/ (Vercel's output directory):
 //
-//   /             the games landing page (site/)
+//   /             the portfolio of apps (portfolio/, cards from portfolio/src/apps.ts)
+//   /games/       the games landing page (site/)
+//   /kinetiq      the password gate in front of Kinetiq (a Vercel function, api/kinetiq.ts; not built here)
 //   /cathnivore/  Cathnivore, the same app `npm run build` makes, rebuilt under a base path
 //   /runnel/      Runnel, the daily irrigation puzzle (games/runnel/)
 //   /hedgerow/    Hedgerow, Cath's tower defence (games/hedgerow/)
-//   /nightshift/     CATHODE, the noir shooter (games/cathode/), behind an 18+ gate
+//   /nightshift/  NIGHT SHIFT, the noir shooter (games/cathode/), behind an 18+ gate
 //   /privacy, /support, /type, /licences/fonts, icons, version.json   shared files at the root
 //
 // `npm run build` is unchanged and still builds Cathnivore alone into dist/ for the iPhone app, e2e and
@@ -15,6 +17,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } fr
 import { resolve } from 'node:path'
 import { build } from 'vite'
 import { siteServiceWorkerSource } from './siteServiceWorker'
+import { appsHtml } from '../portfolio/src/apps'
 
 const root = resolve(import.meta.dirname, '..')
 // SITE_OUT builds into another folder (a second preview beside a running one, for before/after shots).
@@ -72,7 +75,7 @@ function writeFontLicences(): void {
       <ul>
 ${rows.join('\n')}
       </ul>
-      <p><a href="/">Back to the games</a></p>
+      <p><a href="/games/">Back to the games</a></p>
     </main>
   </body>
 </html>
@@ -84,15 +87,28 @@ async function main(): Promise<void> {
   if (!only) rmSync(out, { recursive: true, force: true })
   mkdirSync(out, { recursive: true })
 
+  if (want('portfolio')) {
+    console.log('\n=== Portfolio ===')
+    await build({
+      configFile: false,
+      root: resolve(root, 'portfolio'),
+      base: '/',
+      publicDir: resolve(root, 'portfolio/public'),
+      logLevel: 'warn',
+      // The cards are rendered from portfolio/src/apps.ts into the page at build time, so it works without JS.
+      plugins: [{ name: 'portfolio-apps', transformIndexHtml: (html: string) => html.replace('<!--apps-->', appsHtml()) }],
+      build: { outDir: out, emptyOutDir: false, assetsDir: 'portfolio-assets' },
+    })
+  }
   if (want('landing')) {
-    console.log('\n=== Landing page ===')
+    console.log('\n=== Games landing page ===')
     await build({
       configFile: false,
       root: resolve(root, 'site'),
-      base: '/',
+      base: '/games/',
       publicDir: resolve(root, 'site/public'),
       logLevel: 'warn',
-      build: { outDir: out, emptyOutDir: false, assetsDir: 'site-assets' },
+      build: { outDir: resolve(out, 'games'), emptyOutDir: true, assetsDir: 'site-assets' },
     })
   }
   if (want('runnel')) {

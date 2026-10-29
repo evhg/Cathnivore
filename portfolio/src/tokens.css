@@ -1,0 +1,43 @@
+/* Portfolio tokens: a quiet ink-dark studio page with one accent per app. Spacing and motion come from
+   shared/ui/base.css. */
+:root {
+  color-scheme: dark;
+  --font-display: "Studio Display", "Studio Display Fallback", Georgia, serif;
+  --font-ui: "Studio UI", "Studio UI Fallback", system-ui, sans-serif;
+  --font-num: var(--font-ui);
+  --font-voice: var(--font-display);
+
+  --ink: #0e0d12;
+  --ink-raised: #17151d;
+  --ink-hover: #1e1b26;
+  --line: rgba(240, 235, 225, 0.12);
+  --line-strong: rgba(240, 235, 225, 0.26);
+  --text: #f0ebe1;
+  --text-muted: rgba(240, 235, 225, 0.72);
+  --text-faint: rgba(240, 235, 225, 0.56);
+  --shadow: rgba(0, 0, 0, 0.45);
+
+  --accent-gold: #f4c774;
+  --accent-gold-soft: rgba(244, 199, 116, 0.14);
+  --accent-lime: #c6ec6a;
+  --accent-lime-soft: rgba(198, 236, 106, 0.14);
+  --accent-violet: #b8a2ff;
+  --accent-violet-soft: rgba(184, 162, 255, 0.16);
+  --accent-teal: #7fd8cf;
+  --accent-teal-soft: rgba(127, 216, 207, 0.14);
+  --glow-a: rgba(184, 162, 255, 0.16);
+  --glow-b: rgba(244, 199, 116, 0.1);
+
+  --focus: #f4c774;
+  --focus-halo: rgba(244, 199, 116, 0.3);
+
+  --fs-eyebrow: 0.8125rem;
+  --fs-body: 1rem;
+  --fs-lede: clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem);
+  --fs-h1: clamp(2.5rem, 1.6rem + 4.2vw, 5rem);
+  --fs-card: 1.5rem;
+  --fs-mark: 2.25rem;
+  --r-card: 20px;
+  --z-glow: 0;
+  --z-page: 1;
+}

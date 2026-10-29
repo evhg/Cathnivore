@@ -162,7 +162,8 @@ function pages(dist: boolean): PageRow[] {
   }
   if (dist) return [row('/ (Cathnivore, dist/)', ['dist/assets'])]
   return [
-    row('/', ['dist-site/site-assets', 'dist-site/marks']),
+    row('/', ['dist-site/portfolio-assets']),
+    row('/games/', ['dist-site/games/site-assets', 'dist-site/marks']),
     row('/cathnivore/', ['dist-site/cathnivore/assets']),
     row('/runnel/', ['dist-site/runnel/assets']),
     row('/hedgerow/', ['dist-site/hedgerow/assets']),

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
 
 const root = resolve(import.meta.dirname, '..')
 const BASELINE = resolve(root, 'tests/ui-css-baseline.json')
-const SCAN = ['src', 'site/src', 'site/index.html', 'games', 'shared', 'index.html', 'public/pages.css']
+const SCAN = ['src', 'site/src', 'site/index.html', 'portfolio/src', 'portfolio/index.html', 'games', 'shared', 'index.html', 'public/pages.css']
 const SKIP = /node_modules|\/dist|\/public\/(?!pages\.css)|\.test\.|games\/[^/]+\/src\/(sim|render|render3d)\//
 
 function walk(p: string): string[] {
@@ -28,6 +28,7 @@ function gameOf(f: string): string {
   const m = f.match(/^games\/([^/]+)\//)
   if (m) return m[1]!
   if (f.startsWith('site/')) return 'site'
+  if (f.startsWith('portfolio/')) return 'portfolio'
   if (f.startsWith('shared/')) return 'shared'
   return 'cathnivore'
 }

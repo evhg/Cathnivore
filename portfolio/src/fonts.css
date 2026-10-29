@@ -1,0 +1,30 @@
+/* Portfolio type: Fraunces for display, Instrument Sans for everything else. Latin files only, hashed by
+   Vite; the Fallback faces are the landing's metric-matched locals, so the swap doesn't shift the layout. */
+@font-face {
+  font-family: "Studio Display";
+  src: url("../../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Studio UI";
+  src: url("../../node_modules/@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Studio Display Fallback";
+  src: local("Times New Roman"), local("Liberation Serif"), local("Georgia");
+  size-adjust: 93.3%;
+  ascent-override: 105%;
+  descent-override: 27.9%;
+}
+@font-face {
+  font-family: "Studio UI Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 102.3%;
+  ascent-override: 94.8%;
+  descent-override: 24.4%;
+}

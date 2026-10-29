@@ -1,0 +1,308 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+a {
+  color: inherit;
+}
+a:focus-visible {
+  outline: var(--focus-w) solid var(--focus);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 8px var(--focus-halo);
+}
+
+/* A soft wash of colour behind the hero. */
+.glow {
+  position: fixed;
+  inset: -20vh -10vw auto;
+  height: 80vh;
+  background:
+    radial-gradient(40% 50% at 25% 40%, var(--glow-a), transparent 70%),
+    radial-gradient(35% 45% at 75% 30%, var(--glow-b), transparent 70%);
+  pointer-events: none;
+  z-index: var(--z-glow);
+}
+
+.top,
+main,
+.foot {
+  position: relative;
+  z-index: var(--z-page);
+  width: min(1160px, 100% - 2 * var(--gutter));
+  margin-inline: auto;
+}
+.top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding-top: max(var(--sp-6), var(--safe-t));
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1.375rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+.top-note,
+.eyebrow,
+.section-title {
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.hero {
+  padding: var(--sp-9) 0 var(--sp-8);
+  max-width: 820px;
+}
+.eyebrow {
+  margin: 0 0 var(--sp-4);
+  color: var(--accent-gold);
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  font-variation-settings: "opsz" 144;
+}
+.lede {
+  margin: var(--sp-5) 0 0;
+  max-width: 620px;
+  font-size: var(--fs-lede);
+  color: var(--text-muted);
+}
+
+.section-title {
+  margin: 0 0 var(--sp-5);
+}
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+  gap: var(--sp-5);
+}
+.grid > li {
+  display: flex;
+}
+
+.card {
+  --accent: var(--accent-gold);
+  --accent-soft: var(--accent-gold-soft);
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "mark status"
+    "name name"
+    "tagline tagline"
+    "blurb blurb"
+    "tags go";
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-6);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: linear-gradient(160deg, var(--accent-soft), transparent 45%), var(--ink-raised);
+  text-decoration: none;
+  transition:
+    border-color var(--dur-2) var(--ease-out),
+    background-color var(--dur-2) var(--ease-out),
+    transform var(--dur-3) var(--ease-out),
+    box-shadow var(--dur-3) var(--ease-out);
+}
+.accent-lime {
+  --accent: var(--accent-lime);
+  --accent-soft: var(--accent-lime-soft);
+}
+.accent-violet {
+  --accent: var(--accent-violet);
+  --accent-soft: var(--accent-violet-soft);
+}
+.accent-teal {
+  --accent: var(--accent-teal);
+  --accent-soft: var(--accent-teal-soft);
+}
+a.card:hover {
+  border-color: var(--line-strong);
+  background-color: var(--ink-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px -20px var(--shadow);
+}
+
+.mark {
+  grid-area: mark;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-display);
+  font-size: var(--fs-mark);
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.status {
+  grid-area: status;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.status-live::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+/* A small padlock drawn in CSS: a rounded body and a shackle. */
+.lock {
+  position: relative;
+  width: 10px;
+  height: 8px;
+  margin-top: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.lock::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  bottom: 6px;
+  width: 6px;
+  height: 6px;
+  border: 2px solid var(--accent);
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+}
+.card-name {
+  grid-area: name;
+  margin-top: var(--sp-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-card);
+  font-weight: 600;
+  line-height: 1.15;
+}
+.card-tagline {
+  grid-area: tagline;
+  color: var(--accent);
+  font-weight: 600;
+}
+.card-blurb {
+  grid-area: blurb;
+  color: var(--text-muted);
+}
+.tags {
+  grid-area: tags;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+.tag {
+  font-size: var(--fs-floor-label);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: var(--sp-0) var(--sp-2);
+  border-radius: 6px;
+  color: var(--text-faint);
+  border: 1px solid var(--line);
+}
+.go {
+  grid-area: go;
+  justify-self: end;
+  align-self: end;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.go::after {
+  content: " \2192";
+  display: inline-block;
+  transition: transform var(--dur-2) var(--ease-out);
+}
+a.card:hover .go::after {
+  transform: translateX(4px);
+}
+.card-lab {
+  border-style: dashed;
+}
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-top: var(--sp-9);
+  padding: var(--sp-6) 0 max(var(--sp-6), var(--safe-b));
+  border-top: 1px solid var(--line);
+  color: var(--text-faint);
+  font-size: var(--fs-floor-small);
+}
+.foot-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-5);
+}
+.foot-links a {
+  text-decoration: none;
+}
+.foot-links a:hover {
+  color: var(--text);
+}
+
+/* Entrance: cards rise in order once the script has numbered them. */
+@media (prefers-reduced-motion: no-preference) {
+  .ready .card {
+    animation: rise var(--dur-hero) var(--ease-out) both;
+    animation-delay: calc(var(--order, 0) * 80ms);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@media (max-width: 520px) {
+  .hero {
+    padding: var(--sp-8) 0 var(--sp-7);
+  }
+  .card {
+    padding: var(--sp-5);
+  }
+}

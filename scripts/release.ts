@@ -66,10 +66,17 @@ export async function liveSmokeTest(base: string): Promise<SmokeResult> {
       if (msg.type() === 'error') errors.push(msg.text())
     })
 
-    // The site root is the games landing page; each game lives under its own path.
-    const landing = await page.goto(`${base}/`, { waitUntil: 'load' })
+    // The site root is the portfolio of apps; the games landing page is at /games/ and each game lives
+    // under its own path.
+    const portfolio = await page.goto(`${base}/`, { waitUntil: 'load' })
+    if (!portfolio || !portfolio.ok()) {
+      console.log(`Smoke test failed: ${base}/ returned ${portfolio?.status()}`)
+      return 'failed'
+    }
+    await page.locator('a[data-app="games"]').waitFor({ timeout: 15_000 })
+    const landing = await page.goto(`${base}/games/`, { waitUntil: 'load' })
     if (!landing || !landing.ok()) {
-      console.log(`Smoke test failed: ${base}/ returned ${landing?.status()}`)
+      console.log(`Smoke test failed: ${base}/games/ returned ${landing?.status()}`)
       return 'failed'
     }
     await page.locator('a.card[href="/cathnivore/"]').waitFor({ timeout: 15_000 })

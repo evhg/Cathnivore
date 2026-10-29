@@ -25,10 +25,41 @@ async function noSideways(page: Page): Promise<void> {
   expect(overflow).toBeLessThanOrEqual(0)
 }
 
+test.describe('portfolio', () => {
+  test('lists every app, with no errors or sideways scroll', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1, name: 'Apps we build with AI' })).toBeVisible()
+    for (const id of ['games', 'kicksmash', 'kinetiq', 'sleeplab']) await expect(page.locator(`[data-app="${id}"]`)).toBeVisible()
+    await expect(page.locator('a[data-app="games"]')).toHaveAttribute('href', '/games/')
+    await expect(page.locator('a[data-app="kinetiq"]')).toHaveAttribute('href', '/kinetiq')
+    await expect(page.locator('a[data-app="kicksmash"]')).toHaveAttribute('href', 'https://kicksma.sh')
+    await noSideways(page)
+    expect(errors).toEqual([])
+  })
+
+  test('the games card opens the games page', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('a[data-app="games"]').click()
+    await expect(page).toHaveURL(/\/games\/$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore' })).toBeVisible()
+  })
+
+  test('has no serious or critical accessibility issues', async ({ browser }) => {
+    test.setTimeout(90_000)
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' })
+    const page = await ctx.newPage()
+    await page.goto('/')
+    await expect(page.locator('[data-app="games"]')).toBeVisible()
+    await assertNoSeriousIssues(page)
+    await ctx.close()
+  })
+})
+
 test.describe('landing page', () => {
   test('shows the title and both games, with no errors or sideways scroll', async ({ page }) => {
     const errors = trackErrors(page)
-    await page.goto('/')
+    await page.goto('/games/')
     await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore' })).toBeVisible()
     await expect(page.locator('a.card[href="/cathnivore/"]')).toBeVisible()
     await expect(page.locator('a.card[href="/runnel/"]')).toBeVisible()
@@ -40,28 +71,28 @@ test.describe('landing page', () => {
     const ctx = await browser.newContext({ reducedMotion: 'reduce' })
     const page = await ctx.newPage()
     const errors = trackErrors(page)
-    await page.goto('http://localhost:4175/')
+    await page.goto('http://localhost:4175/games/')
     await expect(page.locator('a.card[href="/runnel/"]')).toBeVisible()
     expect(errors).toEqual([])
     await ctx.close()
   })
 
   test('the Cathnivore card opens the game', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/games/')
     await page.locator('a.card[href="/cathnivore/"]').click()
     await expect(page).toHaveURL(/\/cathnivore\/$/)
     await expect(page.getByText('Quick Game')).toBeVisible()
   })
 
   test('the Runnel card opens the puzzle', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/games/')
     await page.locator('a.card[href="/runnel/"]').click()
     await expect(page).toHaveURL(/\/runnel\/$/)
     await expect(page.getByRole('heading', { name: 'Runnel' })).toBeVisible()
   })
 
   test('the Hedgerow card opens the game', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/games/')
     await page.locator('a.card[href="/hedgerow/"]').click()
     await expect(page).toHaveURL(/\/hedgerow\/$/)
     await expect(page.getByRole('heading', { name: 'Hedgerow' })).toBeVisible()
@@ -90,7 +121,7 @@ test.describe('landing page', () => {
     // of an animation frame, the same context the "still works with reduced motion" test above already uses.
     const ctx = await browser.newContext({ reducedMotion: 'reduce' })
     const page = await ctx.newPage()
-    await page.goto('/')
+    await page.goto('/games/')
     await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore' })).toBeVisible()
     await assertNoSeriousIssues(page)
     await ctx.close()
@@ -752,8 +783,8 @@ test.describe('CATHODE', () => {
   })
 
   test('the landing page links to it with an 18+ badge', async ({ page }) => {
-    await page.goto('/')
-    const card = page.locator('a[href="/nightshift/"]')
+    await page.goto('/games/')
+    const card = page.locator('a.card[href="/nightshift/"]')
     await expect(card).toContainText('18+')
   })
 })

@@ -46,7 +46,7 @@ test.describe('AAA UI fonts', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'font loading checks run in Chromium')
 
   test('landing: meta figures in Site UI, Cath in the voice face', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/games/')
     const p = await probe(page, '.card-meta')
     expectHouseRules(p, 'Site UI')
     const voice = await page.locator('.lede').evaluate((el) => [getComputedStyle(el).fontFamily, getComputedStyle(el).fontStyle])
