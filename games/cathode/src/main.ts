@@ -250,6 +250,7 @@ function fillTitle(): void {
   }
   if (sealed) el("li", "is-more", list, `${sealed} more ${sealed === 1 ? "name" : "names"}`);
   $<HTMLButtonElement>("btn-continue").disabled = !hasSave();
+  $<HTMLButtonElement>("btn-cases").disabled = !hasSave();
   const ng = hasSave() && canStartNewGamePlus(done);
   $("btn-continue").querySelector(".menu-label")!.textContent = ng ? "New Game+" : "Continue";
 }
@@ -313,6 +314,7 @@ async function confirm(id: string): Promise<void> {
   audio.confirm();
   if (id === "settings") return openSettings();
   if (id === "credits") return openCredits();
+  if (id === "cases") return openCases();
   if (id === "new") {
     try {
       localStorage.removeItem(SAVE_KEY);
@@ -331,6 +333,17 @@ async function confirm(id: string): Promise<void> {
 }
 
 // ---- credits: who made it, no story (the ending roll stays for the ending) ----
+async function openCases(): Promise<void> {
+  if (menu) menu.active = false;
+  const { openCaseBoard } = await import("./ui/caseboard");
+  openCaseBoard($("screen-title"), jobs(), () => {
+    setTimeout(() => {
+      if (menu) menu.active = true;
+      document.querySelector<HTMLElement>("#menu .is-focus")?.focus({ preventScroll: true });
+    }, 0);
+  });
+}
+
 async function openCredits(): Promise<void> {
   if (menu) menu.active = false;
   const title = $("screen-title");
