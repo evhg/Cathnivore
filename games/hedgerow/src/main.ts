@@ -171,7 +171,7 @@ import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, 
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
 import { KITS } from "./hero";
-import { OUTFITS, outfitFor, wear, wornOutfit } from "./wardrobe";
+import { OUTFITS, isUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
 import { FINALE } from "./story/acts6to10";
@@ -3971,7 +3971,7 @@ function renderWardrobe(): void {
   row.className = "wardrobe";
   const on = outfitFor(data);
   for (const o of OUTFITS) {
-    const ok = o.unlocked(data);
+    const ok = isUnlocked(o, data);
     const b = document.createElement("button");
     b.type = "button";
     b.className = `outfit${o === on ? " picked" : ""}`;
@@ -3988,6 +3988,7 @@ function renderWardrobe(): void {
     b.onclick = () => {
       data.outfit = o.id;
       wear(o);
+      shareOutfit(o);
       save(data);
       ui.cathPortrait.innerHTML = cath("delighted");
       ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined", outfit: o.art });

@@ -612,3 +612,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-29: N16 slice = corkboard case board; hud.css z-index literal fixed (N15 broke the ratchet).
 - 2026-10-29: N17: daily level/card already existed, so only the ghost (best win's placements as DOM icons via renderer.cellCenter) was built; ticked.
 - 2026-10-29: N19 wardrobe unlocks derive from other games' localStorage saves (no cross-imports); Hedgerow keeps its own per-outfit gear.
+- 2026-10-29: N19 NIGHT SHIFT Cath keeps her fixed black noir coat (3D model, tone); wardrobe applies to the other three games.

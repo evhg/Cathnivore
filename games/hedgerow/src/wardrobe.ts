@@ -4,6 +4,7 @@
 
 import type { SaveData } from "./store";
 import type { CathOutfit } from "../../../shared/cath/cath";
+import { chooseOutfit, chosenOutfit, readProgress, unlockedOutfits as sharedUnlocked } from "../../../shared/cath/wardrobe";
 
 export interface Outfit {
   id: string;
@@ -94,18 +95,41 @@ export const OUTFITS: Outfit[] = [
   },
 ];
 
-export function unlockedOutfits(d: SaveData): Outfit[] {
-  return OUTFITS.filter((o) => o.unlocked(d));
+/** Earned here, or earned in another game (shared wardrobe, ROADMAP N19). */
+export function isUnlocked(o: Outfit, d: SaveData): boolean {
+  if (o.unlocked(d)) return true;
+  try {
+    return sharedUnlocked(readProgress()).includes(o.art);
+  } catch {
+    return false;
+  }
 }
 
-/** The outfit the save asks for, falling back to the blazer if it is unknown or not yet earned. */
+export function unlockedOutfits(d: SaveData): Outfit[] {
+  return OUTFITS.filter((o) => isUnlocked(o, d));
+}
+
+/** The outfit the save asks for (else the shared choice), falling back to the blazer if unknown or not yet earned. */
 export function outfitFor(d: SaveData): Outfit {
-  const o = OUTFITS.find((x) => x.id === d.outfit);
-  return o && o.unlocked(d) ? o : OUTFITS[0]!;
+  let o = OUTFITS.find((x) => x.id === d.outfit);
+  if (!o) {
+    try {
+      const shared = chosenOutfit();
+      o = OUTFITS.find((x) => x.art === shared);
+    } catch {
+      // Blocked storage: the blazer.
+    }
+  }
+  return o && isUnlocked(o, d) ? o : OUTFITS[0]!;
 }
 
 let worn: Outfit = OUTFITS[0]!;
 export const wornOutfit = (): Outfit => worn;
 export function wear(o: Outfit): void {
   worn = o;
+}
+
+/** Remember the player's pick for the other games too. */
+export function shareOutfit(o: Outfit): void {
+  chooseOutfit(o.art);
 }

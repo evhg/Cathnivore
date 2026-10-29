@@ -1,8 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { emptySave, parseSave } from "../games/hedgerow/src/store";
 import { OUTFITS, outfitFor, unlockedOutfits } from "../games/hedgerow/src/wardrobe";
 
 describe("wardrobe", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it("unlocks outfits earned in other games (shared wardrobe)", () => {
+    const store: Record<string, string> = { "runnel:v1": JSON.stringify({ results: { a: 1, b: 1, c: 1, d: 1, e: 1 } }) };
+    vi.stubGlobal("localStorage", { getItem: (k: string) => store[k] ?? null, setItem: () => {} });
+    const d = emptySave();
+    expect(unlockedOutfits(d).map((o) => o.id)).toContain("market");
+  });
   it("starts with only the blazer", () => {
     expect(unlockedOutfits(emptySave()).map((o) => o.id)).toEqual(["blazer"]);
   });
