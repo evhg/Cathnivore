@@ -2804,3 +2804,11 @@ img.act-scene {
     background: radial-gradient(circle at 50% 38%, var(--paper) 0%, var(--paper-2) 80%);
   }
 }
+
+/* ROADMAP N12: act progress track and the locked-act silhouette. */
+.act-track { display: flex; gap: 3px; padding: 6px 14px 0; }
+.act-track i { flex: 1; height: 5px; border-radius: 3px; background: rgba(107, 74, 43, 0.16); }
+.act-track i.pip-done { background: #7fa35a; }
+.act-track i.pip-gold { background: #e6b93c; }
+.act-locked .act-scene { filter: grayscale(1) brightness(0.55) contrast(1.1); }
+.act-veil { position: absolute; inset: 0 0 44px 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 16px; color: #fffaf0; font-size: var(--fs-small); font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,.7); }

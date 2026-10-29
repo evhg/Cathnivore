@@ -1387,7 +1387,24 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       title.append(eb);
     }
     head.append(title);
+    if (!firstUnlocked) {
+      const veil = document.createElement("div");
+      veil.className = "act-veil";
+      veil.textContent = "🔒 Finish the act before to open this";
+      head.append(veil);
+    }
     li.append(head);
+    // Progress track: one pip per field, filled once it has a star.
+    const track = document.createElement("div");
+    track.className = "act-track";
+    track.setAttribute("aria-hidden", "true");
+    for (const lv of lvs) {
+      const pip = document.createElement("i");
+      const st = data.stars[String(lv.id)] ?? 0;
+      if (st) pip.className = st >= 3 ? "pip-gold" : "pip-done";
+      track.append(pip);
+    }
+    li.append(track);
 
     const trail = document.createElement("ol");
     trail.className = "trail";
