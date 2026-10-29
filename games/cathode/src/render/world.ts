@@ -128,6 +128,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   scene.add(hemi);
   /** 0..1: the clinic's power cut (set piece), dims the fill and the key. */
   let blackoutK = 0;
+  const blackoutTint = new THREE.Color(0xff2418);
   const key = new THREE.SpotLight(level.key.color, 1100, 110, Math.PI * 0.16, 0.55, 2);
   key.position.copy(level.key.pos);
   key.target.position.copy(level.key.target);
@@ -344,7 +345,10 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       }
       shared.uLightning.value = flash;
       lightning.intensity = flash * 2.2;
-      hemi.intensity = (ambient + flash * 0.5) * (1 - blackoutK * 0.93);
+      // Blackout: the ward falls to a slow red emergency pulse instead of pure black.
+      const pulse = blackoutK > 0 ? 0.5 + 0.5 * Math.sin(time * 3.2) : 0;
+      hemi.intensity = (ambient + flash * 0.5) * (1 - blackoutK * 0.93) + blackoutK * (0.05 + 0.1 * pulse);
+      hemi.color.setHex(outdoor ? 0x6f86b0 : 0xcfeee0).lerp(blackoutTint, blackoutK * 0.85);
       // The floodlight hums and sways a hair in the wind.
       key.intensity = 1100 * (0.97 + 0.03 * Math.sin(time * 37 + hash1(Math.floor(time * 3)))) * (1 - blackoutK * 0.9);
     },
