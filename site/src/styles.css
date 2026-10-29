@@ -1141,14 +1141,14 @@ body {
   font-size: 0.8rem;
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid rgb(255 255 255 / 0.4);
-  background: rgb(0 0 0 / 0.25);
+  border: 1px solid var(--cream);
+  background: var(--shadow-deep);
   color: inherit;
   cursor: pointer;
 }
 .wardrobe-pick[aria-pressed='true'] {
-  background: #e8c15a;
-  color: #2a2110;
+  background: var(--cream);
+  color: var(--night);
 }
 .wardrobe-pick:disabled {
   opacity: 0.45;
